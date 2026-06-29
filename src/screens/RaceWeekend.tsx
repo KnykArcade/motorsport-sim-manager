@@ -1,35 +1,34 @@
 import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useGame } from '../game/GameContext';
-import { currentRace, driversForTeam } from '../game/careerState';
+import { currentRace, driversForTeam, carForTeam } from '../game/careerState';
 import { lastBreakdowns } from '../game/gameReducer';
 import { getTrackById, setupOptions } from '../data';
 import { qualifyingRunPlans } from '../data/decisions/qualifyingRunPlans';
 import { raceStrategies } from '../data/decisions/raceStrategies';
 import { driverInstructions } from '../data/decisions/driverInstructions';
 import { recommendSetup } from '../sim/recommendation';
+import { runPractice, type PracticeSummary } from '../sim/practiceEngine';
 import { Panel } from '../components/Panel';
 import { Button } from '../components/Button';
 import { TrackDemandBars } from '../components/TrackDemandBars';
-import type { Driver, Track } from '../types/gameTypes';
+import type { Car, Driver, SetupOption, Track } from '../types/gameTypes';
 import type { QualifyingDecision, RaceDecision } from '../types/simTypes';
 
 type Phase =
   | 'briefing'
-  | 'quali-setup'
+  | 'practice'
   | 'quali-run'
   | 'quali-review'
-  | 'race-setup'
   | 'race-strategy'
   | 'race-instructions';
 
 const PHASE_ORDER: { id: Phase; label: string }[] = [
   { id: 'briefing', label: 'Track Briefing' },
-  { id: 'quali-setup', label: 'Qualifying Setup' },
-  { id: 'quali-run', label: 'Qualifying Run Plan' },
+  { id: 'practice', label: 'Practice / Setup' },
+  { id: 'quali-run', label: 'Qualifying Run Strategy' },
   { id: 'quali-review', label: 'Qualifying Review' },
-  { id: 'race-setup', label: 'Race Setup' },
-  { id: 'race-strategy', label: 'Race Strategy' },
+  { id: 'race-strategy', label: 'Pre-Race Strategy' },
   { id: 'race-instructions', label: 'Driver Instructions' },
 ];
 
@@ -50,21 +49,23 @@ export function RaceWeekend() {
     [track],
   );
 
-  // Only the player's deviations from the recommended defaults are stored; the
-  // full decision is derived during render. This avoids setState-in-render.
+  // Setup trim is selected automatically (professional team preparation): a
+  // track-appropriate package, run with a qualifying trim on Saturday and a
+  // race trim on Sunday. The player only chooses run plan / strategy /
+  // instructions, so we store just those overrides and derive the rest.
   const [qualiOverrides, setQualiOverrides] = useState<Record<string, Partial<QualifyingDecision>>>({});
   const [raceOverrides, setRaceOverrides] = useState<Record<string, Partial<RaceDecision>>>({});
 
   const recommendedId = recommended.id;
   const qualiFor = (driverId: string): QualifyingDecision => {
     const o = qualiOverrides[driverId] ?? {};
-    return { driverId, setupId: o.setupId ?? recommendedId, runPlanId: o.runPlanId ?? 'StandardPush' };
+    return { driverId, setupId: recommendedId, runPlanId: o.runPlanId ?? 'StandardPush' };
   };
   const raceFor = (driverId: string): RaceDecision => {
     const o = raceOverrides[driverId] ?? {};
     return {
       driverId,
-      setupId: o.setupId ?? recommendedId,
+      setupId: recommendedId,
       strategyId: o.strategyId ?? 'BalancedOneStop',
       instructionId: o.instructionId ?? 'Balanced',
     };
@@ -98,20 +99,14 @@ export function RaceWeekend() {
       <PhaseStepper phase={phase} hasQuali={!!qualifyingResults} />
 
       {phase === 'briefing' && (
-        <Briefing track={track} race={race} onNext={() => setPhase('quali-setup')} />
+        <Briefing track={track} race={race} onNext={() => setPhase('practice')} />
       )}
 
-      {phase === 'quali-setup' && (
-        <DecisionPhase
-          title="Qualifying Setup Selection"
-          subtitle="Choose a qualifying setup for each driver. This is independent from your race setup."
-          drivers={playerDrivers}
-          recommendedId={recommended.id}
-          options={setupOptions.map((s) => ({ id: s.id, name: s.name, description: s.description }))}
-          valueFor={(id) => qualiFor(id).setupId}
-          onSelect={(driverId, optId) =>
-            setQualiOverrides((p) => ({ ...p, [driverId]: { ...p[driverId], setupId: optId } }))
-          }
+      {phase === 'practice' && (
+        <PracticePhase
+          state={state}
+          track={track}
+          setup={recommended}
           onBack={() => setPhase('briefing')}
           onNext={() => setPhase('quali-run')}
         />
@@ -127,7 +122,7 @@ export function RaceWeekend() {
           onSelect={(driverId, optId) =>
             setQualiOverrides((p) => ({ ...p, [driverId]: { ...p[driverId], runPlanId: optId as QualifyingDecision['runPlanId'] } }))
           }
-          onBack={() => setPhase('quali-setup')}
+          onBack={() => setPhase('practice')}
           onNext={runQualifying}
           nextLabel="Simulate Qualifying →"
         />
@@ -138,37 +133,21 @@ export function RaceWeekend() {
           state={state}
           raceId={race.id}
           debug={settings.debugMode}
-          onNext={() => setPhase('race-setup')}
-        />
-      )}
-
-      {phase === 'race-setup' && (
-        <DecisionPhase
-          title="Race Setup Selection"
-          subtitle="Now that the grid is set, choose your race-day setup. React to your qualifying result."
-          drivers={playerDrivers}
-          recommendedId={recommended.id}
-          options={setupOptions.map((s) => ({ id: s.id, name: s.name, description: s.description }))}
-          valueFor={(id) => raceFor(id).setupId}
-          onSelect={(driverId, optId) =>
-            setRaceOverrides((p) => ({ ...p, [driverId]: { ...p[driverId], setupId: optId } }))
-          }
-          onBack={() => setPhase('quali-review')}
           onNext={() => setPhase('race-strategy')}
         />
       )}
 
       {phase === 'race-strategy' && (
         <DecisionPhase
-          title="Race Strategy Selection"
-          subtitle="Pick a pit/tyre strategy for each driver."
+          title="Pre-Race Strategy Selection"
+          subtitle="The grid is set. Pick a pit/tyre strategy for each driver — you can still adapt live during the race."
           drivers={playerDrivers}
           options={raceStrategies.map((s) => ({ id: s.id, name: s.name, description: s.description }))}
           valueFor={(id) => raceFor(id).strategyId}
           onSelect={(driverId, optId) =>
             setRaceOverrides((p) => ({ ...p, [driverId]: { ...p[driverId], strategyId: optId as RaceDecision['strategyId'] } }))
           }
-          onBack={() => setPhase('race-setup')}
+          onBack={() => setPhase('quali-review')}
           onNext={() => setPhase('race-instructions')}
         />
       )}
@@ -263,6 +242,88 @@ function InfoBox({ label, text }: { label: string; text: string }) {
     <div className="rounded-lg border border-neutral-800 bg-neutral-900/40 p-3">
       <div className="mb-1 text-xs uppercase tracking-wide text-neutral-500">{label}</div>
       <p className="text-sm text-neutral-300">{text}</p>
+    </div>
+  );
+}
+
+function PracticePhase({
+  state,
+  track,
+  setup,
+  onBack,
+  onNext,
+}: {
+  state: NonNullable<ReturnType<typeof useGame>['state']>;
+  track: Track;
+  setup: SetupOption;
+  onBack: () => void;
+  onNext: () => void;
+}) {
+  const summary: PracticeSummary = useMemo(() => {
+    const race = currentRace(state);
+    const entrants = driversForTeam(state, state.selectedTeamId)
+      .map((d) => ({ driver: d, car: carForTeam(state, d.teamId) }))
+      .filter((e): e is { driver: Driver; car: Car } => !!e.car);
+    return runPractice({ track, entrants, setup, seed: `${state.randomSeed}-r${race?.round ?? 0}` });
+  }, [state, track, setup]);
+
+  const driverName = (id: string) => state.drivers.find((d) => d.id === id)?.name ?? id;
+  const driverNumber = (id: string) => state.drivers.find((d) => d.id === id)?.number ?? '';
+
+  return (
+    <div className="space-y-4">
+      <div>
+        <h2 className="text-lg font-semibold text-neutral-100">Practice Summary &amp; Setup Confidence</h2>
+        <p className="text-sm text-neutral-400">
+          The team has prepared the car automatically. Use the confidence read-out to plan your
+          qualifying run and race strategy.
+        </p>
+      </div>
+
+      <div className="grid gap-3 md:grid-cols-2">
+        <InfoBox label="Qualifying Trim (auto)" text={summary.qualifyingTrimName} />
+        <InfoBox label="Race Trim (auto)" text={summary.raceTrimName} />
+      </div>
+
+      <div className="grid gap-4 md:grid-cols-2">
+        {summary.drivers.map((d) => (
+          <Panel key={d.driverId} title={`#${driverNumber(d.driverId)} ${driverName(d.driverId)}`}>
+            <div className="space-y-3">
+              <div>
+                <div className="mb-1 flex items-center justify-between text-xs uppercase tracking-wide text-neutral-500">
+                  <span>Setup Confidence</span>
+                  <span className="font-semibold text-neutral-200">{d.confidenceLabel}</span>
+                </div>
+                <div className="h-2 overflow-hidden rounded bg-neutral-800">
+                  <div
+                    className="h-full rounded bg-amber-500"
+                    style={{ width: `${d.confidence}%` }}
+                  />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-2 text-sm">
+                <PaceStat label="One-Lap Pace" value={d.onePLapPace} />
+                <PaceStat label="Long-Run Pace" value={d.longRunPace} />
+              </div>
+              <div className="text-xs text-neutral-400">{d.notes.join(' ')}</div>
+            </div>
+          </Panel>
+        ))}
+      </div>
+
+      <div className="flex justify-between">
+        <Button variant="ghost" onClick={onBack}>← Back</Button>
+        <Button variant="primary" onClick={onNext}>Plan Qualifying Run →</Button>
+      </div>
+    </div>
+  );
+}
+
+function PaceStat({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="rounded-lg border border-neutral-800 bg-neutral-900/40 px-3 py-2">
+      <div className="text-[10px] uppercase tracking-wide text-neutral-500">{label}</div>
+      <div className="font-semibold text-neutral-100">{value}</div>
     </div>
   );
 }
