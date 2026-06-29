@@ -21,6 +21,8 @@ import { getMarketBundle, getStaffPool } from '../data';
 import { signProspectToAcademy } from '../sim/driverMarketEngine';
 import { makeTransaction, toMoney } from '../sim/financeEngine';
 import { developmentSuccessBonus } from '../sim/staffEngine';
+import { classifyCrashDamage, damageConditionHit, repairCost } from '../sim/repairEngine';
+import { createSeededRandom, deriveSeed } from '../sim/random';
 import type { SeatSigning } from '../types/marketTypes';
 import type { FinanceTransaction } from '../types/financeTypes';
 import type {
@@ -362,19 +364,23 @@ function applyRaceResults(
     morale: morale.driverMorale[d.id] ?? d.morale,
   }));
 
-  // Budget: prize money for points + repair costs for DNFs/crashes.
+  // Budget: prize money for points + crash repair costs scaled by damage.
   const teams = state.teams.map((t) => ({ ...t, morale: morale.teamMorale[t.id] ?? t.morale }));
   let cars = state.cars.map((c) => ({ ...c }));
   const financeTxns: FinanceTransaction[] = [];
+  const damageMessages: string[] = [];
+  const conditionHitByTeam: Record<string, number> = {};
   for (const r of results) {
     const team = teams.find((t) => t.id === r.teamId);
     if (!team) continue;
     const prize = r.points * 250_000; // prize money per point
     team.budget += prize;
-    let repair = 0;
-    if (r.status === 'DNF' && r.incidents.some((i) => /crash|collision|spun/i.test(i))) {
-      repair = 500_000; // crash repair
+    const roll = createSeededRandom(deriveSeed(state.randomSeed, 'damage', race.round, r.driverId)).next();
+    const severity = classifyCrashDamage(r.status, r.incidents, roll);
+    const repair = repairCost(severity);
+    if (repair > 0) {
       team.budget -= repair;
+      conditionHitByTeam[team.id] = (conditionHitByTeam[team.id] ?? 0) + damageConditionHit(severity);
     }
     if (team.id === state.selectedTeamId) {
       const driverName = state.drivers.find((d) => d.id === r.driverId)?.name ?? r.driverId;
@@ -385,13 +391,23 @@ function applyRaceResults(
       }
       if (repair > 0) {
         financeTxns.push(
-          makeTransaction(state.seasonYear, 'Repairs', `${race.gpName}: ${driverName} damage`, -repair, race.round),
+          makeTransaction(
+            state.seasonYear,
+            'Repairs',
+            `${race.gpName}: ${driverName} — ${severity.toLowerCase()} damage`,
+            -repair,
+            race.round,
+          ),
         );
+        damageMessages.push(`${driverName} sustained ${severity.toLowerCase()} damage — repairs cost $${(repair / 1_000_000).toFixed(2)}M.`);
       }
     }
   }
-  // Reset car condition for next round.
-  cars = cars.map((c) => ({ ...c, condition: Math.min(100, c.condition + 20) }));
+  // Apply crash damage, then the standard between-race recovery.
+  cars = cars.map((c) => ({
+    ...c,
+    condition: Math.min(100, Math.max(20, c.condition - (conditionHitByTeam[c.teamId] ?? 0) + 20)),
+  }));
 
   // Development progress (player team only, for MVP).
   const playerCar = carForTeam(state, state.selectedTeamId);
@@ -438,6 +454,9 @@ function applyRaceResults(
   for (const m of devMessages) {
     news.unshift({ id: `news-dev-${race.round}-${m.slice(0, 8)}`, round: race.round, headline: m, timestamp: new Date().toISOString() });
   }
+  damageMessages.forEach((m, i) => {
+    news.unshift({ id: `news-damage-${race.round}-${i}`, round: race.round, headline: m, timestamp: new Date().toISOString() });
+  });
 
   // Advance the calendar.
   const calendar = state.calendar.map((r) => (r.id === race.id ? { ...r, completed: true } : r));
