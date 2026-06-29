@@ -173,7 +173,7 @@ export function createLiveRace(context: RaceContext, options: LiveRaceOptions): 
     events,
     pendingPrompt: null,
     promptCooldown: {},
-    themeEventFired: false,
+    firedEventIds: [],
   };
 }
 
