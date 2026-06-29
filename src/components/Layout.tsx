@@ -8,6 +8,7 @@ const NAV = [
   { to: '/hq', label: 'Team HQ', icon: '◧' },
   { to: '/calendar', label: 'Calendar', icon: '▦' },
   { to: '/standings', label: 'Standings', icon: '▤' },
+  { to: '/history', label: 'Race History', icon: '⌚' },
   { to: '/drivers', label: 'Drivers', icon: '☷' },
   { to: '/market', label: 'Driver Market', icon: '⇄' },
   { to: '/development', label: 'Development', icon: '⚙' },

@@ -22,6 +22,7 @@ import { signProspectToAcademy } from '../sim/driverMarketEngine';
 import { makeTransaction, toMoney } from '../sim/financeEngine';
 import { developmentSuccessBonus } from '../sim/staffEngine';
 import { classifyCrashDamage, damageConditionHit, repairCost } from '../sim/repairEngine';
+import { buildRaceArchiveEntry } from '../sim/lapArchiveEngine';
 import { createSeededRandom, deriveSeed } from '../sim/random';
 import type { SeatSigning } from '../types/marketTypes';
 import type { FinanceTransaction } from '../types/financeTypes';
@@ -458,6 +459,18 @@ function applyRaceResults(
     news.unshift({ id: `news-damage-${race.round}-${i}`, round: race.round, headline: m, timestamp: new Date().toISOString() });
   });
 
+  // Archive this race (results + deterministic lap-time archive).
+  const archiveEntry = buildRaceArchiveEntry(
+    race,
+    state.seasonYear,
+    results,
+    qualifying,
+    driverNames,
+    teamNames,
+    state.randomSeed,
+  );
+  const raceArchive = [...(state.raceArchive ?? []), archiveEntry];
+
   // Advance the calendar.
   const calendar = state.calendar.map((r) => (r.id === race.id ? { ...r, completed: true } : r));
   const nextIndex = state.currentRaceIndex + 1;
@@ -476,6 +489,7 @@ function applyRaceResults(
     activeDevelopmentProjects,
     completedDevelopmentProjects,
     finance: [...(state.finance ?? []), ...financeTxns],
+    raceArchive,
     news: [...news, ...state.news].slice(0, 50),
     currentRaceIndex: seasonComplete ? state.currentRaceIndex : nextIndex,
     seasonComplete,
