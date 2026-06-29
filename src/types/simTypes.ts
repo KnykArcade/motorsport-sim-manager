@@ -38,6 +38,9 @@ export type QualifyingContext = {
   setupOptions: Record<string, SetupOption>;
   runPlans: Record<string, QualifyingRunPlan>;
   seed: string;
+  // Maximum number of cars allowed to start the race. Cars slower than this in
+  // qualifying are flagged DNQ. Undefined means no cap.
+  maxQualifiers?: number;
 };
 
 export type RaceContext = {

@@ -132,6 +132,13 @@ export function getSeasonBundle(year: number, series: Series = 'F1'): SeasonBund
   return seasonBundles[`${year}-${series}`];
 }
 
+// Maximum number of cars allowed to start a race. F1 has historically capped the
+// grid (e.g. 24 cars in the early-mid 1990s); cars slower than the cap in
+// qualifying do not start (DNQ). Series without a cap return undefined.
+export function getMaxQualifiers(series: string): number | undefined {
+  return series === 'F1' ? 24 : undefined;
+}
+
 // Track ids are unique across all seasons (later seasons are year-suffixed), so a
 // single global lookup serves every season's calendar.
 const allTracks: Track[] = [

@@ -22,7 +22,7 @@ import {
 import { buildRaceContext, playerTunedSetups } from './raceSetup';
 import { createNewGame, type NewGameOptions } from './initialCareer';
 import { advanceSeason } from './seasonRollover';
-import { getMarketBundle, getStaffPool } from '../data';
+import { getMarketBundle, getMaxQualifiers, getStaffPool } from '../data';
 import { signProspectToAcademy } from '../sim/driverMarketEngine';
 import { makeTransaction, toMoney } from '../sim/financeEngine';
 import { racePerformanceBonuses } from '../sim/commercialEngine';
@@ -415,6 +415,7 @@ function runQualifying(state: GameState, playerDecisions: QualifyingDecision[]):
     setupOptions: { ...setupOptionsById, ...autoSetupOptionsForTrack(track), ...tuned.overlay },
     runPlans: qualifyingRunPlansById,
     seed: `${state.randomSeed}-r${race.round}`,
+    maxQualifiers: getMaxQualifiers(state.series),
   });
 
   lastBreakdowns.qualifying = breakdowns;

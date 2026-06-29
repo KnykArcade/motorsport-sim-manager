@@ -155,18 +155,26 @@ export function simulateQualifying(context: QualifyingContext): {
 
   rows.sort((a, b) => b.score - a.score);
 
+  const cap = context.maxQualifiers;
   const pole = rows[0]?.score ?? 0;
-  const results: QualifyingResult[] = rows.map((row, i) => ({
-    position: i + 1,
-    driverId: row.driver.id,
-    teamId: row.driver.teamId,
-    qualifyingScore: round2(row.score),
-    gapText: i === 0 ? 'POLE' : `+${round2((pole - row.score) * 0.18)}s`,
-    runPlan: context.runPlans[context.decisions[row.driver.id].runPlanId].name,
-    setupChoice: context.setupOptions[context.decisions[row.driver.id].setupId].name,
-    notes: row.notes,
-    incident: row.incident,
-  }));
+  const results: QualifyingResult[] = rows.map((row, i) => {
+    const dnq = cap !== undefined && i + 1 > cap;
+    const notes = dnq
+      ? [...row.notes, `Did not qualify — outside the ${cap}-car cap`]
+      : row.notes;
+    return {
+      position: i + 1,
+      driverId: row.driver.id,
+      teamId: row.driver.teamId,
+      qualifyingScore: round2(row.score),
+      gapText: i === 0 ? 'POLE' : `+${round2((pole - row.score) * 0.18)}s`,
+      runPlan: context.runPlans[context.decisions[row.driver.id].runPlanId].name,
+      setupChoice: context.setupOptions[context.decisions[row.driver.id].setupId].name,
+      notes,
+      incident: row.incident,
+      dnq: dnq || undefined,
+    };
+  });
 
   return { results, breakdowns };
 }
