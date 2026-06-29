@@ -33,6 +33,12 @@ export {
   developmentProjectCatalog,
   developmentProjectsById,
 } from './development/developmentProjects';
+export {
+  driverMarket1995,
+  youthProspects1995,
+  getMarketBundle,
+  type MarketBundle,
+} from './market';
 
 export type SeasonBundle = {
   season: Season;
