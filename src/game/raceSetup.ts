@@ -8,13 +8,36 @@ import { getTrackById } from '../data';
 import { getPointsSystem } from '../data/pointsSystems/pointsSystems';
 import { setupOptionsById } from '../data/setupOptions/setupOptions';
 import { autoSetupOptionsForTrack } from '../sim/autoSetup';
+import { deriveSetupOption, type SetupTrim } from '../sim/setupDerive';
 import { raceStrategiesById } from '../data/decisions/raceStrategies';
 import { driverInstructionsById } from '../data/decisions/driverInstructions';
 import { aiRaceDecision } from './ai';
-import { carForTeam, currentRace, type GameState } from './careerState';
-import type { Track } from '../types/gameTypes';
+import { carForTeam, currentRace, driversForTeam, type GameState } from './careerState';
+import type { SetupOption, Track } from '../types/gameTypes';
 import type { Entrant, RaceContext, RaceDecision } from '../types/simTypes';
 import type { LiveRaceMeta, LiveRaceOptions } from '../sim/liveRaceEngine';
+
+// Build the derived session setups for the player's tuned car setups, plus a
+// lookup from driverId to the setup id to use for the given session trim. Cars
+// without a tuned setup (AI teams, or before the workshop runs) fall back to the
+// automatic track-appropriate trim.
+export function playerTunedSetups(
+  state: GameState,
+  track: Track,
+  trim: SetupTrim,
+): { overlay: Record<string, SetupOption>; setupIdByDriver: Record<string, string> } {
+  const overlay: Record<string, SetupOption> = {};
+  const setupIdByDriver: Record<string, string> = {};
+  const carSetups = state.carSetups ?? {};
+  for (const driver of driversForTeam(state, state.selectedTeamId)) {
+    const tuned = carSetups[driver.id];
+    if (!tuned) continue;
+    const option = deriveSetupOption(tuned, track, driver, trim);
+    overlay[option.id] = option;
+    setupIdByDriver[driver.id] = option.id;
+  }
+  return { overlay, setupIdByDriver };
+}
 
 export type BuiltRaceContext = {
   context: RaceContext;
@@ -42,10 +65,14 @@ export function buildRaceContext(
     if (car) entrants.push({ driver, car });
   }
 
+  const tuned = playerTunedSetups(state, track, 'race');
+
   const decisions: Record<string, RaceDecision> = {};
   const playerById = new Map(playerDecisions.map((d) => [d.driverId, d]));
   for (const e of entrants) {
-    decisions[e.driver.id] = playerById.get(e.driver.id) ?? aiRaceDecision(e.driver.id, track);
+    const decision = playerById.get(e.driver.id) ?? aiRaceDecision(e.driver.id, track);
+    const tunedId = tuned.setupIdByDriver[e.driver.id];
+    decisions[e.driver.id] = tunedId ? { ...decision, setupId: tunedId } : decision;
   }
 
   const pointsSystem = getPointsSystem(state.pointsSystemId);
@@ -55,7 +82,7 @@ export function buildRaceContext(
     entrants,
     qualifyingResults: qualifying,
     decisions,
-    setupOptions: { ...setupOptionsById, ...autoSetupOptionsForTrack(track) },
+    setupOptions: { ...setupOptionsById, ...autoSetupOptionsForTrack(track), ...tuned.overlay },
     strategies: raceStrategiesById,
     instructions: driverInstructionsById,
     pointsByPosition: pointsSystem.pointsByPosition,

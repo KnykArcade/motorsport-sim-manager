@@ -18,6 +18,7 @@ import type {
   Team,
 } from '../types/gameTypes';
 import type { RaceEvent } from '../types/simTypes';
+import type { CarSetup } from '../types/setupTypes';
 
 export type GameState = {
   id: string;
@@ -42,6 +43,10 @@ export type GameState = {
   completedRaceResults: Record<string, RaceResult[]>;
   qualifyingResults: Record<string, QualifyingResult[]>;
   raceEvents: Record<string, RaceEvent[]>;
+
+  // Player-tuned engineering setup per driver (Car Setup Workshop). Optional so
+  // older saves load cleanly; reducers/UI fall back to a balanced default.
+  carSetups?: Record<string, CarSetup>;
 
   driverStandings: StandingsEntry[];
   constructorStandings: StandingsEntry[];

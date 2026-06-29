@@ -1,7 +1,9 @@
 // Build a fresh GameState from a season bundle and the player's chosen team.
 
 import { getSeasonBundle } from '../data';
+import { BALANCED_SETUP } from '../data/setup/setupComponents';
 import type { GameMode, Series } from '../types/gameTypes';
+import type { CarSetup } from '../types/setupTypes';
 import type { GameState } from './careerState';
 
 // Deep clone via structuredClone (available in modern browsers / Node 18+).
@@ -26,6 +28,12 @@ export function createNewGame(options: NewGameOptions): GameState {
   const now = new Date().toISOString();
   const seed = options.seed ?? `${options.teamId}-${Date.now()}`;
 
+  // Start each of the player team's drivers with a balanced base setup.
+  const carSetups: Record<string, CarSetup> = {};
+  for (const driver of bundle.drivers) {
+    if (driver.teamId === options.teamId) carSetups[driver.id] = { ...BALANCED_SETUP };
+  }
+
   return {
     id: `save-${Date.now()}`,
     createdAt: now,
@@ -44,6 +52,7 @@ export function createNewGame(options: NewGameOptions): GameState {
     completedRaceResults: {},
     qualifyingResults: {},
     raceEvents: {},
+    carSetups,
     driverStandings: [],
     constructorStandings: [],
     activeDevelopmentProjects: [],
