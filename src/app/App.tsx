@@ -8,6 +8,7 @@ import { TeamHQ } from '../screens/TeamHQ';
 import { Calendar } from '../screens/Calendar';
 import { Standings } from '../screens/Standings';
 import { Drivers } from '../screens/Drivers';
+import { DriverMarket } from '../screens/DriverMarket';
 import { Development } from '../screens/Development';
 import { DataViewer } from '../screens/DataViewer';
 import { Settings } from '../screens/Settings';
@@ -39,6 +40,7 @@ export default function App() {
           <Route path="/calendar" element={<InGame><Calendar /></InGame>} />
           <Route path="/standings" element={<InGame><Standings /></InGame>} />
           <Route path="/drivers" element={<InGame><Drivers /></InGame>} />
+          <Route path="/market" element={<InGame><DriverMarket /></InGame>} />
           <Route path="/development" element={<InGame><Development /></InGame>} />
           <Route path="/weekend" element={<InGame><RaceWeekend /></InGame>} />
           <Route path="/live-race/:raceId" element={<InGame><LiveRace /></InGame>} />
