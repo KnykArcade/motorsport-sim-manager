@@ -1,0 +1,62 @@
+import { describe, expect, it } from 'vitest';
+import { createNewGame } from './initialCareer';
+import { migrateSave, CURRENT_SAVE_VERSION } from './saveSystem';
+import type { GameState } from './careerState';
+import type { CommercialState } from '../types/sponsorTypes';
+
+function freshState(): GameState {
+  return createNewGame({
+    gameMode: 'Career',
+    seasonYear: 1995,
+    series: 'F1',
+    teamId: 't-benetton',
+    seed: 'save-test',
+  });
+}
+
+describe('save model', () => {
+  it('exposes a current save version of at least 2', () => {
+    expect(CURRENT_SAVE_VERSION).toBeGreaterThanOrEqual(2);
+  });
+
+  it('leaves Living Universe systems unset on a fresh state', () => {
+    const s = freshState();
+    expect(s.commercial).toBeUndefined();
+    expect(s.engine).toBeUndefined();
+    expect(s.facilities).toBeUndefined();
+    expect(s.principal).toBeUndefined();
+    expect(s.universeHistory).toBeUndefined();
+  });
+
+  it('migrates a legacy (v1) save forward without dropping data', () => {
+    const legacy = freshState();
+    const migrated = migrateSave(legacy, 1);
+    expect(migrated.id).toBe(legacy.id);
+    expect(migrated.teams.length).toBe(legacy.teams.length);
+    expect(migrated.drivers.length).toBe(legacy.drivers.length);
+  });
+
+  it('round-trips the new optional systems through JSON', () => {
+    const commercial: CommercialState = {
+      teamId: 't-benetton',
+      commercialReputation: 60,
+      sponsors: [
+        {
+          id: 'spo-1',
+          name: 'Test Co',
+          type: 'Title',
+          annualValue: 25,
+          bonusTerms: [],
+          objectives: [],
+          confidence: 70,
+          contractYearsRemaining: 2,
+          renewalChance: 0.6,
+        },
+      ],
+    };
+    const withSystems: GameState = { ...freshState(), commercial };
+    const cloned = JSON.parse(JSON.stringify(withSystems)) as GameState;
+    expect(cloned.commercial?.sponsors[0].name).toBe('Test Co');
+    expect(migrateSave(cloned, CURRENT_SAVE_VERSION).commercial?.commercialReputation).toBe(60);
+  });
+});

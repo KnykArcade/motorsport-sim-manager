@@ -23,6 +23,18 @@ import type { AcademyMember, SeatSigning } from '../types/marketTypes';
 import type { FinanceTransaction } from '../types/financeTypes';
 import type { StaffMember } from '../types/staffTypes';
 import type { RaceArchiveEntry } from '../types/historyTypes';
+import type { WeekendPractice } from '../types/practiceTypes';
+import type { CommercialState } from '../types/sponsorTypes';
+import type { EngineState } from '../types/engineTypes';
+import type { TeamReputation, TeamExpectation } from '../types/expectationTypes';
+import type { TeamPrincipalProfile, JobOffer } from '../types/principalTypes';
+import type { FacilitiesState } from '../types/facilityTypes';
+import type { DriverRelationship, TeamOrderDecision } from '../types/relationshipTypes';
+import type { RegulationProposal } from '../types/politicsTypes';
+import type { HistoricalEventHook, FiredEvent } from '../types/eventHookTypes';
+import type { ScoutingState } from '../types/scoutingTypes';
+import type { DriverDevelopmentCurve } from '../types/developmentCurveTypes';
+import type { UniverseHistory } from '../types/universeTypes';
 
 export type GameState = {
   id: string;
@@ -79,6 +91,43 @@ export type GameState = {
   news: NewsItem[];
   regulationHistory: RegulationChangeEvent[];
   offseasonHistory: OffseasonSummary[];
+
+  // ---------------------------------------------------------------------------
+  // Living Universe systems (Phase 1: persisted state shape only — populated by
+  // later phases). All optional so existing saves continue to load cleanly; the
+  // save version below is bumped so a migration layer can backfill defaults.
+  // ---------------------------------------------------------------------------
+
+  // 1. Practice sessions & setup feedback for the active weekend.
+  weekendPractice?: WeekendPractice;
+  // 2. Sponsor & commercial system (player team).
+  commercial?: CommercialState;
+  // 3. Engine supplier / manufacturer deal (player team).
+  engine?: EngineState;
+  // 4. Team reputation & per-season owner expectations.
+  teamReputations?: Record<string, TeamReputation>;
+  teamExpectations?: Record<string, TeamExpectation>;
+  // 5. Team Principal profile + outstanding job offers/rumors.
+  principal?: TeamPrincipalProfile;
+  jobOffers?: JobOffer[];
+  // 6. Facilities (player team).
+  facilities?: FacilitiesState;
+  // 7. Tire/fuel/weather strategy is per-race (built at runtime); no persisted
+  //    top-level field is required yet — forecasts live with the live race.
+  // 8. Driver relationships + team-order decisions taken this season.
+  driverRelationships?: Record<string, DriverRelationship>;
+  teamOrderHistory?: TeamOrderDecision[];
+  // 9. Regulation voting / political system (career mode offseason).
+  regulationProposals?: RegulationProposal[];
+  // 10. Historical event hooks: available pool + ones that have fired.
+  eventHooks?: HistoricalEventHook[];
+  firedEvents?: FiredEvent[];
+  // 11. Scouting / fog of war (player team).
+  scouting?: ScoutingState;
+  // 12. Driver aging & development curves, keyed by driverId.
+  developmentCurves?: Record<string, DriverDevelopmentCurve>;
+  // 13. Universe records / history database.
+  universeHistory?: UniverseHistory;
 
   randomSeed: string;
   seasonComplete: boolean;
