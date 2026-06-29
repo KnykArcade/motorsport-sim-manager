@@ -19,7 +19,9 @@ import { createNewGame, type NewGameOptions } from './initialCareer';
 import { advanceSeason } from './seasonRollover';
 import { getMarketBundle } from '../data';
 import { signProspectToAcademy } from '../sim/driverMarketEngine';
+import { makeTransaction, toMoney } from '../sim/financeEngine';
 import type { SeatSigning } from '../types/marketTypes';
+import type { FinanceTransaction } from '../types/financeTypes';
 import type {
   DevelopmentProject,
   QualifyingResult,
@@ -162,8 +164,22 @@ export function gameReducer(state: GameState | null, action: GameAction): GameSt
   }
 }
 
+// Apply a finance transaction to the player's team: adjust the team balance and
+// append the entry to the ledger.
+function applyTransaction(state: GameState, txn: FinanceTransaction): GameState {
+  const teams = state.teams.map((t) =>
+    t.id === state.selectedTeamId ? { ...t, budget: t.budget + txn.amount } : t,
+  );
+  return { ...state, teams, finance: [...(state.finance ?? []), txn] };
+}
+
+function playerBudget(state: GameState): number {
+  return state.teams.find((t) => t.id === state.selectedTeamId)?.budget ?? 0;
+}
+
 // Queue (or replace) a seat change for the player's seat held by seatDriverId.
-// Signings are only allowed during the offseason (season complete).
+// Signings are only allowed during the offseason (season complete). The buyout
+// is charged at the season rollover; here we only check affordability.
 function queueSigning(
   state: GameState,
   seatDriverId: string,
@@ -180,6 +196,7 @@ function queueSigning(
       (d) => d.id === sourceId,
     );
     if (!m || (state.signedMarketIds ?? []).includes(m.id)) return state;
+    if (toMoney(m.buyoutCost) > playerBudget(state)) return state; // cannot afford buyout
     name = m.name;
   } else {
     const a = (state.academy ?? []).find((x) => x.id === sourceId);
@@ -196,14 +213,22 @@ function queueSigning(
   };
 }
 
+// Sign a youth prospect into the academy. The one-off signing fee is charged
+// immediately; the player must be able to afford it.
 function signYouth(state: GameState, youthId: string): GameState {
   if ((state.academy ?? []).some((a) => a.prospectId === youthId)) return state;
   const prospect = getMarketBundle(state.seasonYear, state.series)?.youth.find(
     (y) => y.id === youthId,
   );
   if (!prospect) return state;
+  const fee = toMoney(prospect.signingCost);
+  if (fee > playerBudget(state)) return state;
   const member = signProspectToAcademy(prospect, state.seasonYear);
-  return { ...state, academy: [...(state.academy ?? []), member] };
+  const charged = applyTransaction(
+    state,
+    makeTransaction(state.seasonYear, 'Academy', `Signed ${prospect.name} to academy`, -fee),
+  );
+  return { ...charged, academy: [...(charged.academy ?? []), member] };
 }
 
 function runQualifying(state: GameState, playerDecisions: QualifyingDecision[]): GameState {
@@ -310,12 +335,29 @@ function applyRaceResults(
   // Budget: prize money for points + repair costs for DNFs/crashes.
   const teams = state.teams.map((t) => ({ ...t, morale: morale.teamMorale[t.id] ?? t.morale }));
   let cars = state.cars.map((c) => ({ ...c }));
+  const financeTxns: FinanceTransaction[] = [];
   for (const r of results) {
     const team = teams.find((t) => t.id === r.teamId);
     if (!team) continue;
-    team.budget += r.points * 250_000; // prize money per point
+    const prize = r.points * 250_000; // prize money per point
+    team.budget += prize;
+    let repair = 0;
     if (r.status === 'DNF' && r.incidents.some((i) => /crash|collision|spun/i.test(i))) {
-      team.budget -= 500_000; // crash repair
+      repair = 500_000; // crash repair
+      team.budget -= repair;
+    }
+    if (team.id === state.selectedTeamId) {
+      const driverName = state.drivers.find((d) => d.id === r.driverId)?.name ?? r.driverId;
+      if (prize > 0) {
+        financeTxns.push(
+          makeTransaction(state.seasonYear, 'Prize Money', `${race.gpName}: ${driverName}`, prize, race.round),
+        );
+      }
+      if (repair > 0) {
+        financeTxns.push(
+          makeTransaction(state.seasonYear, 'Repairs', `${race.gpName}: ${driverName} damage`, -repair, race.round),
+        );
+      }
     }
   }
   // Reset car condition for next round.
@@ -383,6 +425,7 @@ function applyRaceResults(
     constructorStandings,
     activeDevelopmentProjects,
     completedDevelopmentProjects,
+    finance: [...(state.finance ?? []), ...financeTxns],
     news: [...news, ...state.news].slice(0, 50),
     currentRaceIndex: seasonComplete ? state.currentRaceIndex : nextIndex,
     seasonComplete,
@@ -408,6 +451,10 @@ function startDevelopment(state: GameState, projectId: string): GameState {
   return {
     ...state,
     teams,
+    finance: [
+      ...(state.finance ?? []),
+      makeTransaction(state.seasonYear, 'Development', template.name, -template.cost),
+    ],
     activeDevelopmentProjects: [...state.activeDevelopmentProjects, instance],
   };
 }

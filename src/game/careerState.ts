@@ -20,6 +20,7 @@ import type {
 import type { RaceEvent } from '../types/simTypes';
 import type { CarSetup } from '../types/setupTypes';
 import type { AcademyMember, SeatSigning } from '../types/marketTypes';
+import type { FinanceTransaction } from '../types/financeTypes';
 
 export type GameState = {
   id: string;
@@ -56,6 +57,10 @@ export type GameState = {
   academy?: AcademyMember[];
   pendingSignings?: SeatSigning[];
   signedMarketIds?: string[];
+
+  // Finance ledger for the player's team (Phase D). Optional for save compat;
+  // the running balance remains on Team.budget.
+  finance?: FinanceTransaction[];
 
   driverStandings: StandingsEntry[];
   constructorStandings: StandingsEntry[];

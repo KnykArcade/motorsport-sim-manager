@@ -1,8 +1,9 @@
 import { useMemo, useState } from 'react';
 import { useGame } from '../game/GameContext';
-import { driversForTeam } from '../game/careerState';
+import { driversForTeam, teamById } from '../game/careerState';
 import { getMarketBundle } from '../data';
 import { isAcademyReady } from '../sim/driverMarketEngine';
+import { toMoney } from '../sim/financeEngine';
 import { Panel } from '../components/Panel';
 import { StatBar } from '../components/StatBar';
 import { Button } from '../components/Button';
@@ -30,6 +31,7 @@ export function DriverMarket() {
   if (!state) return null;
 
   const offseason = state.seasonComplete;
+  const budget = teamById(state, state.selectedTeamId)?.budget ?? 0;
   const seats = driversForTeam(state, state.selectedTeamId);
   const signings = state.pendingSignings ?? [];
   const academy = state.academy ?? [];
@@ -44,6 +46,7 @@ export function DriverMarket() {
           <h1 className="text-2xl font-bold text-neutral-100">Driver Market</h1>
           <p className="text-sm text-neutral-400">
             Scout senior drivers for {state.seasonYear + 1} and grow under-18 talent in your academy.
+            {' '}Budget: <span className="font-semibold text-neutral-200">{formatMoney(budget)}</span>
           </p>
         </div>
         <div className="flex gap-2">
@@ -114,6 +117,7 @@ export function DriverMarket() {
                 seats={seats}
                 signed={signedMarketIds.has(d.id)}
                 pending={signingBySource.get(d.id)}
+                affordable={toMoney(d.buyoutCost) <= budget}
                 seatName={seatName}
                 onSign={(seatDriverId) =>
                   dispatch({ type: 'SIGN_MARKET_DRIVER', marketId: d.id, seatDriverId })
@@ -132,6 +136,7 @@ export function DriverMarket() {
           academy={academy}
           offseason={offseason}
           seats={seats}
+          budget={budget}
           signingBySource={signingBySource}
           seatName={seatName}
           onSignYouth={(youthId) => dispatch({ type: 'SIGN_YOUTH', youthId })}
@@ -213,6 +218,7 @@ function SeniorCard({
   seats,
   signed,
   pending,
+  affordable,
   seatName,
   onSign,
   onRelease,
@@ -222,6 +228,7 @@ function SeniorCard({
   seats: Driver[];
   signed: boolean;
   pending?: SeatSigning;
+  affordable: boolean;
   seatName: (id: string) => string;
   onSign: (seatDriverId: string) => void;
   onRelease: (seatDriverId: string) => void;
@@ -277,6 +284,8 @@ function SeniorCard({
               Cancel
             </button>
           </div>
+        ) : offseason && !affordable ? (
+          <span className="text-xs text-red-400">Buyout exceeds budget.</span>
         ) : offseason ? (
           <SeatButtons seats={seats} label="Sign →" onPick={onSign} />
         ) : (
@@ -294,6 +303,7 @@ function YouthTab({
   academy,
   offseason,
   seats,
+  budget,
   signingBySource,
   seatName,
   onSignYouth,
@@ -305,6 +315,7 @@ function YouthTab({
   academy: AcademyMember[];
   offseason: boolean;
   seats: Driver[];
+  budget: number;
   signingBySource: Map<string, SeatSigning>;
   seatName: (id: string) => string;
   onSignYouth: (youthId: string) => void;
@@ -437,9 +448,10 @@ function YouthTab({
                 <Button
                   variant="primary"
                   className="w-full px-2 py-1 text-xs"
+                  disabled={toMoney(y.signingCost) > budget}
                   onClick={() => onSignYouth(y.id)}
                 >
-                  Add to Academy
+                  {toMoney(y.signingCost) > budget ? 'Insufficient budget' : 'Add to Academy'}
                 </Button>
               </div>
               <p className="mt-2 text-[11px] text-neutral-400">{y.suggestedPath}</p>

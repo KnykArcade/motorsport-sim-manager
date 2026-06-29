@@ -12,9 +12,23 @@ import {
   marketDriverToDriver,
   progressAcademyMember,
 } from '../sim/driverMarketEngine';
-import type { Car, Driver, OffseasonSummary } from '../types/gameTypes';
+import { driverSalary, makeTransaction, toMoney } from '../sim/financeEngine';
+import type { Car, Driver, OffseasonSummary, Team } from '../types/gameTypes';
 import type { AcademyMember } from '../types/marketTypes';
+import type { FinanceTransaction } from '../types/financeTypes';
 import { carForTeam, type GameState } from './careerState';
+
+// Annual sponsorship the player's team earns, driven by reputation and the
+// appeal (overall rating) of its driver line-up. Invented but ties sponsorship
+// to sporting success and to signing stronger drivers.
+function sponsorshipIncome(team: Team | undefined, playerDrivers: Driver[]): number {
+  const base = toMoney((team?.reputation ?? 0) * 0.05);
+  const fromDrivers = playerDrivers.reduce(
+    (sum, d) => sum + toMoney(Math.max(0, d.ratings.overall - 3) * 0.8),
+    0,
+  );
+  return base + fromDrivers;
+}
 
 export function advanceSeason(state: GameState): GameState {
   const nextYear = state.seasonYear + 1;
@@ -87,6 +101,40 @@ export function advanceSeason(state: GameState): GameState {
     return { ...c, seasonYear: nextYear, condition: 100 };
   });
 
+  // Settle the offseason finances for the player's team: buyouts for new
+  // signings, annual salaries for the new line-up, academy fees, and the
+  // upcoming year's sponsorship income.
+  const playerDrivers = drivers.filter((d) => d.teamId === state.selectedTeamId);
+  const academyYearlyById: Record<string, number> = {};
+  for (const y of market?.youth ?? []) academyYearlyById[y.id] = y.yearlyAcademyCost;
+
+  const txns: FinanceTransaction[] = [];
+  for (const sign of signings) {
+    if (sign.source !== 'market') continue;
+    const m = market?.drivers.find((d) => d.id === sign.sourceId);
+    if (m && m.buyoutCost > 0) {
+      txns.push(makeTransaction(nextYear, 'Driver Signing', `Buyout: ${m.name}`, -toMoney(m.buyoutCost)));
+    }
+  }
+  for (const d of playerDrivers) {
+    txns.push(makeTransaction(nextYear, 'Driver Salary', `Salary: ${d.name}`, -driverSalary(d)));
+  }
+  for (const a of nextAcademy) {
+    const yearly = academyYearlyById[a.prospectId] ?? 0;
+    if (yearly > 0) {
+      txns.push(makeTransaction(nextYear, 'Academy', `Academy fees: ${a.name}`, -toMoney(yearly)));
+    }
+  }
+  const playerTeam = state.teams.find((t) => t.id === state.selectedTeamId);
+  const sponsorship = sponsorshipIncome(playerTeam, playerDrivers);
+  if (sponsorship > 0) {
+    txns.push(makeTransaction(nextYear, 'Sponsorship', `${nextYear} sponsorship`, sponsorship));
+  }
+  const budgetDelta = txns.reduce((sum, t) => sum + t.amount, 0);
+  const teams = state.teams.map((t) =>
+    t.id === state.selectedTeamId ? { ...t, budget: t.budget + budgetDelta } : t,
+  );
+
   // Fresh calendar (same template, uncompleted) and reset season bookkeeping.
   const calendar = state.calendar.map((r) => ({ ...r, completed: false }));
 
@@ -112,6 +160,8 @@ export function advanceSeason(state: GameState): GameState {
     calendar,
     drivers,
     cars,
+    teams,
+    finance: [...(state.finance ?? []), ...txns],
     carSetups,
     academy: nextAcademy,
     pendingSignings: [],
