@@ -215,6 +215,6 @@ export type LiveRaceState = {
   pendingPrompt: RaceDecisionPrompt | null;
   // Categories already prompted recently, keyed by driverId, to avoid spam.
   promptCooldown: Record<string, number>;
-  // True once the track's unique themed race event has fired (once per race).
-  themeEventFired: boolean;
+  // Ids of unique race events already fired this race (each fires at most once).
+  firedEventIds: string[];
 };

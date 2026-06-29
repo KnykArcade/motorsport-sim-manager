@@ -37,6 +37,7 @@ import {
 
 const PACE_K = 0.45;
 const PROMPT_COOLDOWN = 6;
+const MAX_RACE_EVENTS = 3;
 
 function paceTimeAdj(mode: PaceMode): number {
   switch (mode) {
@@ -218,19 +219,48 @@ export function stepLiveRace(state: LiveRaceState, meta: LiveRaceMeta): LiveRace
     return c;
   });
 
-  // --- Unique themed race event (fires once, affects the whole field) ---
-  let themeEventFired = state.themeEventFired;
-  if (!themeEventFired) {
+  // --- Unique race events (each fires at most once; up to a few per race) ---
+  let firedEventIds = state.firedEventIds;
+  if (firedEventIds.length < MAX_RACE_EVENTS) {
     const pool = generateRaceEventPool(track, weather);
-    const fired = resolveRaceEventTrigger(pool, state.seed, track.id, nextLap, state.totalLaps);
+    const fired = resolveRaceEventTrigger(
+      pool,
+      state.seed,
+      track.id,
+      nextLap,
+      state.totalLaps,
+      firedEventIds,
+    );
     if (fired) {
-      themeEventFired = true;
+      firedEventIds = [...firedEventIds, fired.template.id];
       lapEvents.push({ lap: nextLap, text: `${fired.template.title} — ${fired.template.description}` });
-      const sys = fired.template.affectedSystems;
-      for (const c of newCars) {
-        if (!c.running) continue;
-        if (sys.includes('Tires')) c.tire.wear = Math.min(100, c.tire.wear + 6);
-        if (sys.includes('Reliability')) c.reliabilityRisk += 0.003;
+      const fx = fired.template.effect;
+      if (fx) {
+        for (const c of newCars) {
+          if (!c.running) continue;
+          if (fx.tyreWear) c.tire.wear = clamp(c.tire.wear + fx.tyreWear, 0, 100);
+          if (fx.reliabilityRisk) c.reliabilityRisk += fx.reliabilityRisk;
+          if (fx.paceDelta) {
+            c.lastLapTime = round1(c.lastLapTime + fx.paceDelta);
+            c.totalTime += fx.paceDelta;
+          }
+        }
+        if (fx.retireRandomCar) {
+          const erng = createSeededRandom(deriveSeed(state.seed, 'event-crash', nextLap, fired.template.id));
+          const victims = newCars.filter((c) => c.running && !c.isPlayer);
+          if (victims.length > 0) {
+            const victim = erng.pick(victims);
+            const idx = newCars.findIndex((c) => c.driverId === victim.driverId);
+            newCars[idx] = retire(newCars[idx], nextLap, 'Crashed out');
+            lapEvents.push({ lap: nextLap, text: `${name(victim.driverId)} is caught up in it and retires.` });
+            incidentThisLap = true;
+            incidentSeverity = Math.max(incidentSeverity, 0.7);
+          }
+        }
+        if (fx.triggerSafetyCar) {
+          incidentThisLap = true;
+          incidentSeverity = Math.max(incidentSeverity, 0.8);
+        }
       }
     }
   }
@@ -361,7 +391,7 @@ export function stepLiveRace(state: LiveRaceState, meta: LiveRaceMeta): LiveRace
     events: [...state.events, ...lapEvents],
     pendingPrompt,
     promptCooldown: cooldown,
-    themeEventFired,
+    firedEventIds,
   };
 }
 
