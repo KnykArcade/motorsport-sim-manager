@@ -12,6 +12,7 @@ import { Development } from '../screens/Development';
 import { DataViewer } from '../screens/DataViewer';
 import { Settings } from '../screens/Settings';
 import { RaceWeekend } from '../screens/RaceWeekend';
+import { LiveRace } from '../screens/LiveRace';
 import { RaceResults } from '../screens/RaceResults';
 import { SeasonReview } from '../screens/SeasonReview';
 import { Offseason } from '../screens/Offseason';
@@ -40,6 +41,7 @@ export default function App() {
           <Route path="/drivers" element={<InGame><Drivers /></InGame>} />
           <Route path="/development" element={<InGame><Development /></InGame>} />
           <Route path="/weekend" element={<InGame><RaceWeekend /></InGame>} />
+          <Route path="/live-race/:raceId" element={<InGame><LiveRace /></InGame>} />
           <Route path="/results/:raceId" element={<InGame><RaceResults /></InGame>} />
           <Route path="/season-review" element={<InGame><SeasonReview /></InGame>} />
           <Route path="/offseason" element={<InGame><Offseason /></InGame>} />
