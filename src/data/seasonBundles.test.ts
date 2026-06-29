@@ -1,0 +1,43 @@
+import { describe, expect, it } from 'vitest';
+import { availableSeasons, getSeasonBundle, getTrackById, getMarketBundle } from './index';
+
+describe('season bundles', () => {
+  it('exposes more than one startable season', () => {
+    expect(availableSeasons.length).toBeGreaterThan(1);
+  });
+
+  for (const s of availableSeasons) {
+    describe(`${s.year} ${s.series}`, () => {
+      const bundle = getSeasonBundle(s.year, s.series);
+
+      it('is registered with a non-empty grid', () => {
+        expect(bundle).toBeDefined();
+        expect(bundle!.teams.length).toBeGreaterThan(0);
+        expect(bundle!.drivers.length).toBeGreaterThan(0);
+        expect(bundle!.cars.length).toBe(bundle!.teams.length);
+      });
+
+      it('links every team to a car and resolvable drivers', () => {
+        const driverIds = new Set(bundle!.drivers.map((d) => d.id));
+        for (const team of bundle!.teams) {
+          expect(bundle!.cars.find((c) => c.id === team.carId)).toBeDefined();
+          for (const id of team.driverIds) expect(driverIds.has(id)).toBe(true);
+        }
+      });
+
+      it('resolves every calendar track', () => {
+        expect(bundle!.season.calendar.length).toBeGreaterThan(0);
+        for (const race of bundle!.season.calendar) {
+          expect(getTrackById(race.trackId)).toBeDefined();
+        }
+      });
+
+      it('has a market + youth pool', () => {
+        const market = getMarketBundle(s.year, s.series);
+        expect(market).toBeDefined();
+        expect(market!.drivers.length).toBeGreaterThan(0);
+        expect(market!.youth.length).toBeGreaterThan(0);
+      });
+    });
+  }
+});

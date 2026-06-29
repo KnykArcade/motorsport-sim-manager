@@ -3,6 +3,14 @@
 import type { MarketDriver, YouthProspect } from '../../types/marketTypes';
 import { driverMarket1995 } from './driverMarket1995';
 import { youthProspects1995 } from './youthProspects1995';
+import { driverMarket1997 } from './driverMarket1997';
+import { youthProspects1997 } from './youthProspects1997';
+import { driverMarket1998 } from './driverMarket1998';
+import { youthProspects1998 } from './youthProspects1998';
+import { driverMarket1999 } from './driverMarket1999';
+import { youthProspects1999 } from './youthProspects1999';
+import { driverMarket2000 } from './driverMarket2000';
+import { youthProspects2000 } from './youthProspects2000';
 
 export { driverMarket1995 } from './driverMarket1995';
 export { youthProspects1995 } from './youthProspects1995';
@@ -13,10 +21,11 @@ export type MarketBundle = {
 };
 
 const marketBundles: Record<string, MarketBundle> = {
-  '1995-F1': {
-    drivers: driverMarket1995,
-    youth: youthProspects1995,
-  },
+  '1995-F1': { drivers: driverMarket1995, youth: youthProspects1995 },
+  '1997-F1': { drivers: driverMarket1997, youth: youthProspects1997 },
+  '1998-F1': { drivers: driverMarket1998, youth: youthProspects1998 },
+  '1999-F1': { drivers: driverMarket1999, youth: youthProspects1999 },
+  '2000-F1': { drivers: driverMarket2000, youth: youthProspects2000 },
 };
 
 export function getMarketBundle(year: number, series = 'F1'): MarketBundle | undefined {

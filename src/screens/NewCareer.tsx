@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useGame } from '../game/GameContext';
-import { getSeasonBundle } from '../data';
+import { getSeasonBundle, availableSeasons } from '../data';
 import { effectiveCarRatings } from '../sim/trackFitEngine';
 import { Button } from '../components/Button';
 import { StatBar } from '../components/StatBar';
@@ -16,7 +16,7 @@ export function NewCareer() {
   const { dispatch } = useGame();
   const [step, setStep] = useState<Step>('mode');
   const [mode, setMode] = useState<GameMode>('SingleSeason');
-  const [year] = useState(1995);
+  const [year, setYear] = useState(1995);
   const [series] = useState<'F1'>('F1');
   const [selectedTeamId, setSelectedTeamId] = useState<string | null>(null);
 
@@ -47,7 +47,7 @@ export function NewCareer() {
               blurb="Replay one historical season from start to finish. Best for quick historical what-if simulations."
               selected={mode === 'SingleSeason'}
               onClick={() => setMode('SingleSeason')}
-              bullets={['Full 1995 calendar', 'Race weekend decisions', 'In-season development', 'Season review at the end']}
+              bullets={['Full historical calendar', 'Race weekend decisions', 'In-season development', 'Season review at the end']}
             />
             <ModeCard
               title="Career Mode"
@@ -66,9 +66,30 @@ export function NewCareer() {
 
         {step === 'setup' && (
           <div className="space-y-4">
-            <div className="grid gap-4 sm:grid-cols-2">
-              <SelectCard label="Series" value="Formula 1" note="More series coming later" />
-              <SelectCard label="Starting Year" value="1995" note="Only fully-seeded season for the MVP" />
+            <SelectCard label="Series" value="Formula 1" note="More series coming soon" />
+            <div>
+              <p className="mb-2 text-sm font-medium text-neutral-300">Starting Season</p>
+              <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                {availableSeasons
+                  .filter((s) => s.series === series)
+                  .map((s) => (
+                    <button
+                      key={s.year}
+                      onClick={() => {
+                        setYear(s.year);
+                        setSelectedTeamId(null);
+                      }}
+                      className={`rounded-xl border p-4 text-left transition ${
+                        year === s.year
+                          ? 'border-sky-500 bg-sky-500/10'
+                          : 'border-neutral-800 bg-neutral-900/40 hover:border-neutral-700'
+                      }`}
+                    >
+                      <div className="text-lg font-semibold text-neutral-100">{s.year}</div>
+                      <div className="text-xs text-neutral-400">{s.label}</div>
+                    </button>
+                  ))}
+              </div>
             </div>
             <div className="flex justify-between">
               <Button variant="ghost" onClick={() => setStep('mode')}>
