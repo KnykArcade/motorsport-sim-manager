@@ -4,6 +4,7 @@
 import { getTrackById } from '../data';
 import { getPointsSystem } from '../data/pointsSystems/pointsSystems';
 import { setupOptionsById } from '../data/setupOptions/setupOptions';
+import { autoSetupOptionsForTrack } from '../sim/autoSetup';
 import { qualifyingRunPlansById } from '../data/decisions/qualifyingRunPlans';
 import { raceStrategiesById } from '../data/decisions/raceStrategies';
 import { driverInstructionsById } from '../data/decisions/driverInstructions';
@@ -103,7 +104,7 @@ function runQualifying(state: GameState, playerDecisions: QualifyingDecision[]):
     track,
     entrants,
     decisions,
-    setupOptions: setupOptionsById,
+    setupOptions: { ...setupOptionsById, ...autoSetupOptionsForTrack(track) },
     runPlans: qualifyingRunPlansById,
     seed: `${state.randomSeed}-r${race.round}`,
   });
@@ -149,7 +150,7 @@ function runRace(state: GameState, playerDecisions: RaceDecision[]): GameState {
     entrants,
     qualifyingResults: qualifying,
     decisions,
-    setupOptions: setupOptionsById,
+    setupOptions: { ...setupOptionsById, ...autoSetupOptionsForTrack(track) },
     strategies: raceStrategiesById,
     instructions: driverInstructionsById,
     pointsByPosition: pointsSystem.pointsByPosition,
