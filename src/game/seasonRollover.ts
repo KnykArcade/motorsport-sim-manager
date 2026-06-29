@@ -4,7 +4,7 @@
 // season for a fresh championship. Only the player's seats change; the AI grid
 // is stable for now. Pure and deterministic.
 
-import { getMarketBundle } from '../data';
+import { getMarketBundle, getSeasonBundle } from '../data';
 import { BALANCED_SETUP } from '../data/setup/setupComponents';
 import { calculateOffseasonCarryover } from '../sim/developmentEngine';
 import {
@@ -279,8 +279,18 @@ export function advanceSeason(state: GameState): GameState {
     }
   }
 
-  // Fresh calendar (same template, uncompleted) and reset season bookkeeping.
-  const calendar = state.calendar.map((r) => ({ ...r, completed: false }));
+  // Load next year's real schedule (and its points system / regulations) when
+  // we have data for it; otherwise reuse the current calendar. The career's
+  // teams/drivers carry over as alternate history — only the schedule follows
+  // the new season.
+  const nextBundle = getSeasonBundle(nextYear, state.series);
+  const nextSeason = nextBundle?.season;
+  const calendar = (nextSeason?.calendar ?? state.calendar).map((r) => ({
+    ...r,
+    completed: false,
+  }));
+  const pointsSystemId = nextSeason?.pointsSystemId ?? state.pointsSystemId;
+  const regulationSetId = nextSeason?.regulationSetId ?? state.regulationSetId;
 
   const champion = state.driverStandings[0];
   const constructorChamp = state.constructorStandings[0];
@@ -308,6 +318,8 @@ export function advanceSeason(state: GameState): GameState {
     currentRaceIndex: 0,
     seasonComplete: false,
     calendar,
+    pointsSystemId,
+    regulationSetId,
     drivers,
     cars,
     teams,
