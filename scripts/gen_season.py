@@ -222,6 +222,18 @@ TEAM_META = {
     "jaguar": ("JAG", "United Kingdom", "#0b5d2e"),
     "forti": ("FOR", "Italy", "#d6c200"),
     "pacific": ("PAC", "United Kingdom", "#2aa198"),
+    "larrousse": ("LAR", "France", "#1f3a8a"),
+    "lotus": ("LOT", "United Kingdom", "#0b6b3a"),
+    "simtek": ("SIM", "United Kingdom", "#5a5f6a"),
+    # modern (2026) constructors, keyed by first slug token
+    "mercedes": ("MER", "Germany", "#00a19c"),
+    "red": ("RBR", "Austria", "#1e40af"),
+    "alpine": ("ALP", "France", "#0090d0"),
+    "racing": ("RB", "Italy", "#2b4cc0"),
+    "haas": ("HAA", "United States", "#9aa0a6"),
+    "audi": ("AUD", "Germany", "#bb0a30"),
+    "aston": ("AMR", "United Kingdom", "#00665e"),
+    "cadillac": ("CAD", "United States", "#c8a24a"),
 }
 PALETTE = ["#8a7ad6", "#d68a3a", "#3ad6c2", "#d63a8a", "#6ad63a", "#3a6ad6"]
 
@@ -360,11 +372,13 @@ def gen(year, series="F1"):
     header = HEADER_TMPL.format(src=src)
     wb = openpyxl.load_workbook(path, data_only=True, read_only=True)
     y = year
+    tag = str(y) if series == "F1" else f"{y}{series}"
 
     cal_sn = pick_sheet(wb, (["calendar"],), (["track", "rating"],))
     car_sn = pick_sheet(wb, (["car", "performance"],), (["team", "car"],),
                         (["carperformance"],), (["car"],))
     drv_sn = pick_sheet(wb, (["driver", "rating"],), (["drivers"],),
+                        (["current"], ["market", "youth"]),
                         (["driver"], ["market"]))
     mkt_sn = pick_sheet(wb, (["driver", "market"],), (["market"],))
     yth_sn = pick_sheet(wb, (["youth"],), (["prospect"],))
@@ -398,7 +412,7 @@ def gen(year, series="F1"):
             "enduranceConsistency": num(get(row, cal, *SKILL_ALIASES["enduranceConsistency"])) or 5,
         }
         tracks.append({
-            "id": f"{slug(name)}-{y}",
+            "id": f"{slug(name)}-{tag}",
             "name": str(name).strip(),
             "gpName": str(get(row, cal, "gp name", "grand prix", "race") or name).strip(),
             "country": (str(get(row, cal, "country", "location") or "").strip()),
@@ -551,7 +565,7 @@ def gen(year, series="F1"):
     youth = []
     if yth:
         for row in yth.data_rows():
-            name = get(row, yth, "prospect", "name", "driver")
+            name = get(row, yth, "name", "prospect", "driver")
             if not name:
                 continue
             name = str(name).strip()
@@ -589,23 +603,31 @@ def gen(year, series="F1"):
             })
 
     wb.close()
-    write_ts(y, src, header, tracks, teams, drivers, market, youth, budget_for, difficulty)
+    points_id = "pts-modern" if y >= 2006 else "pts-1995"
+    write_ts(y, src, header, tracks, teams, drivers, market, youth, budget_for,
+             difficulty, series=series, points_id=points_id)
     print(f"OK {series} {y}: tracks={len(tracks)} teams={len(teams)} drivers={len(drivers)} market={len(market)} youth={len(youth)}")
     if unassigned:
         print(f"   (off-grid drivers not seated: {unassigned})")
 
 
-def write_ts(y, src, header, tracks, teams, drivers, market, youth, budget_for, difficulty):
+SERIES_NAME = {"F1": "Formula 1 World Championship", "IndyCar": "IndyCar Series"}
+
+
+def write_ts(y, src, header, tracks, teams, drivers, market, youth, budget_for,
+             difficulty, series="F1", points_id="pts-1995"):
+    tag = str(y) if series == "F1" else f"{y}{series}"
+
     def ensure(*parts):
         d = os.path.join(OUT, *parts)
         os.makedirs(os.path.dirname(d), exist_ok=True)
         return d
 
     # tracks
-    with open(ensure("tracks", f"tracks{y}.ts"), "w") as f:
+    with open(ensure("tracks", f"tracks{tag}.ts"), "w") as f:
         f.write(header)
         f.write("import type { Track } from '../../types/gameTypes';\n\n")
-        f.write(f"export const tracks{y}: Track[] = [\n")
+        f.write(f"export const tracks{tag}: Track[] = [\n")
         for t in tracks:
             a, s = t["attrs"], t["setup"]
             f.write("  {\n")
@@ -634,11 +656,11 @@ def write_ts(y, src, header, tracks, teams, drivers, market, youth, budget_for, 
         f.write("];\n")
 
     # season + calendar
-    with open(ensure("seasons", f"season{y}.ts"), "w") as f:
+    with open(ensure("seasons", f"season{tag}.ts"), "w") as f:
         f.write(header)
         f.write("import type { Race, Season } from '../../types/gameTypes';\n")
-        f.write(f"import {{ tracks{y} }} from '../tracks/tracks{y}';\n\n")
-        f.write(f"export const calendar{y}: Race[] = [\n")
+        f.write(f"import {{ tracks{tag} }} from '../tracks/tracks{tag}';\n\n")
+        f.write(f"export const calendar{tag}: Race[] = [\n")
         for t in tracks:
             dist = r1(t["km"] * t["laps"]) if (t["km"] and t["laps"]) else "undefined"
             f.write("  {\n")
@@ -650,17 +672,19 @@ def write_ts(y, src, header, tracks, teams, drivers, market, youth, budget_for, 
             f.write(f"    laps: {int(t['laps']) if t['laps'] else 0},\n")
             f.write(f"    distanceKm: {dist},\n    completed: false,\n  }},\n")
         f.write("];\n\n")
-        f.write(f"void tracks{y};\n\n")
-        f.write(f"export const season{y}: Season = {{\n")
-        f.write(f"  id: 's-{y}-f1',\n  year: {y},\n  name: '{y} Formula 1 World Championship',\n")
-        f.write("  series: 'F1',\n")
-        f.write(f"  calendar: calendar{y},\n  pointsSystemId: 'pts-1995',\n  regulationSetId: 'reg-1995',\n}};\n")
+        f.write(f"void tracks{tag};\n\n")
+        sid = f"s-{y}-{series.lower()}"
+        sname = f"{y} {SERIES_NAME.get(series, 'Championship')}"
+        f.write(f"export const season{tag}: Season = {{\n")
+        f.write(f"  id: {ts_str(sid)},\n  year: {y},\n  name: {ts_str(sname)},\n")
+        f.write(f"  series: {ts_str(series)},\n")
+        f.write(f"  calendar: calendar{tag},\n  pointsSystemId: {ts_str(points_id)},\n  regulationSetId: 'reg-1995',\n}};\n")
 
     # teams
-    with open(ensure("teams", f"teams{y}.ts"), "w") as f:
+    with open(ensure("teams", f"teams{tag}.ts"), "w") as f:
         f.write(header)
         f.write("import type { Team } from '../../types/gameTypes';\n\n")
-        f.write(f"export const teams{y}: Team[] = [\n")
+        f.write(f"export const teams{tag}: Team[] = [\n")
         for t in teams:
             short, country, color = team_meta(t["name"])
             rank = t["rank"]
@@ -687,10 +711,10 @@ def write_ts(y, src, header, tracks, teams, drivers, market, youth, budget_for, 
         f.write("];\n")
 
     # cars
-    with open(ensure("cars", f"cars{y}.ts"), "w") as f:
+    with open(ensure("cars", f"cars{tag}.ts"), "w") as f:
         f.write(header)
         f.write("import type { Car } from '../../types/gameTypes';\n\n")
-        f.write(f"export const cars{y}: Car[] = [\n")
+        f.write(f"export const cars{tag}: Car[] = [\n")
         for t in teams:
             c = t["ratings"]
             f.write("  {\n")
@@ -704,10 +728,10 @@ def write_ts(y, src, header, tracks, teams, drivers, market, youth, budget_for, 
         f.write("];\n")
 
     # drivers
-    with open(ensure("drivers", f"drivers{y}.ts"), "w") as f:
+    with open(ensure("drivers", f"drivers{tag}.ts"), "w") as f:
         f.write(header)
         f.write("import type { Driver } from '../../types/gameTypes';\n\n")
-        f.write(f"export const drivers{y}: Driver[] = [\n")
+        f.write(f"export const drivers{tag}: Driver[] = [\n")
         for d in drivers:
             sk = d["skills"]
             f.write("  {\n")
@@ -739,10 +763,10 @@ def write_ts(y, src, header, tracks, teams, drivers, market, youth, budget_for, 
         f.write("];\n")
 
     # market
-    with open(ensure("market", f"driverMarket{y}.ts"), "w") as f:
+    with open(ensure("market", f"driverMarket{tag}.ts"), "w") as f:
         f.write(header)
         f.write("import type { MarketDriver } from '../../types/marketTypes';\n\n")
-        f.write(f"export const driverMarket{y}: MarketDriver[] = [\n")
+        f.write(f"export const driverMarket{tag}: MarketDriver[] = [\n")
         for m in market:
             f.write("  {\n")
             f.write(f"    id: {ts_str(m['id'])},\n    name: {ts_str(m['name'])},\n")
@@ -760,10 +784,10 @@ def write_ts(y, src, header, tracks, teams, drivers, market, youth, budget_for, 
         f.write("];\n")
 
     # youth
-    with open(ensure("market", f"youthProspects{y}.ts"), "w") as f:
+    with open(ensure("market", f"youthProspects{tag}.ts"), "w") as f:
         f.write(header)
         f.write("import type { YouthProspect } from '../../types/marketTypes';\n\n")
-        f.write(f"export const youthProspects{y}: YouthProspect[] = [\n")
+        f.write(f"export const youthProspects{tag}: YouthProspect[] = [\n")
         for p in youth:
             f.write("  {\n")
             f.write(f"    id: {ts_str(p['id'])},\n    name: {ts_str(p['name'])},\n")
