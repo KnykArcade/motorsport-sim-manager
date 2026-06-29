@@ -588,11 +588,19 @@ function QualifyingReview({
   const teamColor = (id: string) => state.teams.find((t) => t.id === id)?.color ?? '#666';
   const isPlayer = (teamId: string) => teamId === state.selectedTeamId;
 
+  const dnqCount = results.filter((r) => r.dnq).length;
+
   return (
     <div className="space-y-4">
       <div>
         <h2 className="text-lg font-semibold text-neutral-100">Qualifying Review</h2>
         <p className="text-sm text-neutral-400">Review the grid, then choose your race strategy in response.</p>
+        {dnqCount > 0 && (
+          <p className="mt-1 text-sm text-red-400">
+            {dnqCount} car{dnqCount > 1 ? 's' : ''} did not qualify — only the fastest{' '}
+            {results.length - dnqCount} start the race.
+          </p>
+        )}
       </div>
       <div className="overflow-hidden rounded-lg border border-neutral-800">
         <table className="w-full text-sm">
@@ -608,15 +616,26 @@ function QualifyingReview({
             </tr>
           </thead>
           <tbody>
-            {results.map((r) => {
+            {results.map((r, idx) => {
               const bd = lastBreakdowns.qualifying[r.driverId];
+              const firstDnq = r.dnq && !results[idx - 1]?.dnq;
               return (
-                <tr key={r.driverId} className={`border-t border-neutral-800/60 ${isPlayer(r.teamId) ? 'bg-amber-500/10' : ''}`}>
+                <tr
+                  key={r.driverId}
+                  className={`border-t ${firstDnq ? 'border-red-600/70' : 'border-neutral-800/60'} ${
+                    r.dnq ? 'bg-red-950/30 text-neutral-500' : isPlayer(r.teamId) ? 'bg-amber-500/10' : ''
+                  }`}
+                >
                   <td className="px-3 py-1.5 font-semibold tabular-nums text-neutral-200">{r.position}</td>
                   <td className="px-3 py-1.5">
                     <span className="inline-flex items-center gap-2">
                       <span className="h-3 w-1 rounded-sm" style={{ backgroundColor: teamColor(r.teamId) }} />
                       {driverName(r.driverId)}
+                      {r.dnq && (
+                        <span className="rounded bg-red-900/60 px-1.5 py-0.5 text-[10px] font-bold uppercase text-red-300">
+                          DNQ
+                        </span>
+                      )}
                     </span>
                   </td>
                   <td className="px-3 py-1.5 text-neutral-400">{teamName(r.teamId)}</td>

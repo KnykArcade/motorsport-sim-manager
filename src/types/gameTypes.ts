@@ -373,6 +373,9 @@ export type QualifyingResult = {
   setupChoice: string;
   notes: string[];
   incident?: QualifyingIncident;
+  // True when the car finished outside the series' qualifying cap and is not
+  // allowed to start the race (DNQ — Did Not Qualify).
+  dnq?: boolean;
 };
 
 // ---------------------------------------------------------------------------

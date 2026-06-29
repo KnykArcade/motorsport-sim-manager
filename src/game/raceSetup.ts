@@ -73,11 +73,15 @@ export function buildRaceContext(
   const qualifying = state.qualifyingResults[race.id];
   if (!qualifying) return null;
 
+  // Cars flagged DNQ in qualifying do not start the race.
+  const didNotQualify = new Set(qualifying.filter((q) => q.dnq).map((q) => q.driverId));
+
   const entrants: Entrant[] = [];
   for (const team of state.teams) {
     const car = carForTeam(state, team.id);
     if (!car) continue;
     for (const driver of activeDriversForTeam(state, team.id)) {
+      if (didNotQualify.has(driver.id)) continue;
       entrants.push({ driver, car });
     }
   }
