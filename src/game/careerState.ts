@@ -19,6 +19,7 @@ import type {
 } from '../types/gameTypes';
 import type { RaceEvent } from '../types/simTypes';
 import type { CarSetup } from '../types/setupTypes';
+import type { AcademyMember, SeatSigning } from '../types/marketTypes';
 
 export type GameState = {
   id: string;
@@ -47,6 +48,14 @@ export type GameState = {
   // Player-tuned engineering setup per driver (Car Setup Workshop). Optional so
   // older saves load cleanly; reducers/UI fall back to a balanced default.
   carSetups?: Record<string, CarSetup>;
+
+  // Driver market & academy (Phase C). All optional for save compatibility:
+  //  - academy: youth prospects signed to the team, progressing each offseason.
+  //  - pendingSignings: queued seat changes applied at the next season rollover.
+  //  - signedMarketIds: market drivers already taken, hidden from the market.
+  academy?: AcademyMember[];
+  pendingSignings?: SeatSigning[];
+  signedMarketIds?: string[];
 
   driverStandings: StandingsEntry[];
   constructorStandings: StandingsEntry[];

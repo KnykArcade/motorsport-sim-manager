@@ -1,15 +1,25 @@
 import { useMemo, useState } from 'react';
 import { useGame } from '../game/GameContext';
+import { driversForTeam } from '../game/careerState';
 import { getMarketBundle } from '../data';
+import { isAcademyReady } from '../sim/driverMarketEngine';
 import { Panel } from '../components/Panel';
 import { StatBar } from '../components/StatBar';
+import { Button } from '../components/Button';
 import { formatMoney } from '../components/ui';
-import type { MarketDriver, MarketSkillRatings, YouthProspect } from '../types/marketTypes';
+import type {
+  AcademyMember,
+  MarketDriver,
+  MarketSkillRatings,
+  SeatSigning,
+  YouthProspect,
+} from '../types/marketTypes';
+import type { Driver } from '../types/gameTypes';
 
 type Tab = 'senior' | 'youth';
 
 export function DriverMarket() {
-  const { state } = useGame();
+  const { state, dispatch } = useGame();
   const [tab, setTab] = useState<Tab>('senior');
 
   const bundle = useMemo(
@@ -19,13 +29,21 @@ export function DriverMarket() {
 
   if (!state) return null;
 
+  const offseason = state.seasonComplete;
+  const seats = driversForTeam(state, state.selectedTeamId);
+  const signings = state.pendingSignings ?? [];
+  const academy = state.academy ?? [];
+  const signedMarketIds = new Set(state.signedMarketIds ?? []);
+  const signingBySource = new Map(signings.map((s) => [s.sourceId, s]));
+  const seatName = (id: string) => state.drivers.find((d) => d.id === id)?.name ?? id;
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-neutral-100">Driver Market</h1>
           <p className="text-sm text-neutral-400">
-            Scout senior drivers available for {state.seasonYear + 1} and under-18 academy prospects.
+            Scout senior drivers for {state.seasonYear + 1} and grow under-18 talent in your academy.
           </p>
         </div>
         <div className="flex gap-2">
@@ -37,6 +55,44 @@ export function DriverMarket() {
           </TabButton>
         </div>
       </div>
+
+      <div
+        className={`rounded-md border px-4 py-2 text-sm ${
+          offseason
+            ? 'border-green-700/50 bg-green-500/10 text-green-300'
+            : 'border-neutral-800 bg-neutral-900/40 text-neutral-400'
+        }`}
+      >
+        {offseason
+          ? 'Offseason — you can sign drivers for next season. Confirm them in the Offseason screen.'
+          : 'Senior signings open during the offseason (after the final race). You can still scout and add youth prospects to your academy now.'}
+      </div>
+
+      {signings.length > 0 && (
+        <Panel title={`Pending Signings for ${state.seasonYear + 1}`}>
+          <ul className="space-y-1.5 text-sm">
+            {signings.map((s) => (
+              <li key={s.seatDriverId} className="flex items-center justify-between">
+                <span className="text-neutral-200">
+                  <span className="font-semibold">{s.name}</span>{' '}
+                  <span className="text-neutral-500">→ replaces {seatName(s.seatDriverId)}</span>
+                  {s.source === 'academy' && (
+                    <span className="ml-2 rounded bg-sky-500/15 px-1.5 py-0.5 text-[10px] text-sky-300">
+                      academy
+                    </span>
+                  )}
+                </span>
+                <button
+                  className="text-xs text-red-400 hover:text-red-300"
+                  onClick={() => dispatch({ type: 'RELEASE_SIGNING', seatDriverId: s.seatDriverId })}
+                >
+                  Cancel
+                </button>
+              </li>
+            ))}
+          </ul>
+        </Panel>
+      )}
 
       {!bundle && (
         <Panel>
@@ -51,19 +107,42 @@ export function DriverMarket() {
           {[...bundle.drivers]
             .sort((a, b) => b.overall - a.overall)
             .map((d) => (
-              <SeniorCard key={d.id} d={d} />
+              <SeniorCard
+                key={d.id}
+                d={d}
+                offseason={offseason}
+                seats={seats}
+                signed={signedMarketIds.has(d.id)}
+                pending={signingBySource.get(d.id)}
+                seatName={seatName}
+                onSign={(seatDriverId) =>
+                  dispatch({ type: 'SIGN_MARKET_DRIVER', marketId: d.id, seatDriverId })
+                }
+                onRelease={(seatDriverId) =>
+                  dispatch({ type: 'RELEASE_SIGNING', seatDriverId })
+                }
+              />
             ))}
         </div>
       )}
 
       {bundle && tab === 'youth' && (
-        <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
-          {[...bundle.youth]
-            .sort((a, b) => b.potential - a.potential)
-            .map((y) => (
-              <YouthCard key={y.id} y={y} />
-            ))}
-        </div>
+        <YouthTab
+          prospects={bundle.youth}
+          academy={academy}
+          offseason={offseason}
+          seats={seats}
+          signingBySource={signingBySource}
+          seatName={seatName}
+          onSignYouth={(youthId) => dispatch({ type: 'SIGN_YOUTH', youthId })}
+          onReleaseAcademy={(academyId) => dispatch({ type: 'RELEASE_ACADEMY', academyId })}
+          onPromote={(academyId, seatDriverId) =>
+            dispatch({ type: 'PROMOTE_ACADEMY', academyId, seatDriverId })
+          }
+          onReleaseSigning={(seatDriverId) =>
+            dispatch({ type: 'RELEASE_SIGNING', seatDriverId })
+          }
+        />
       )}
     </div>
   );
@@ -107,7 +186,46 @@ function Money({ m }: { m: number }) {
   return <>{formatMoney(m * 1_000_000)}</>;
 }
 
-function SeniorCard({ d }: { d: MarketDriver }) {
+// Buttons to assign an incoming driver to one of the player's seats.
+function SeatButtons({
+  seats,
+  label,
+  onPick,
+}: {
+  seats: Driver[];
+  label: string;
+  onPick: (seatDriverId: string) => void;
+}) {
+  return (
+    <div className="flex flex-wrap gap-1.5">
+      {seats.map((s) => (
+        <Button key={s.id} variant="primary" className="px-2 py-1 text-xs" onClick={() => onPick(s.id)}>
+          {label} #{s.number}
+        </Button>
+      ))}
+    </div>
+  );
+}
+
+function SeniorCard({
+  d,
+  offseason,
+  seats,
+  signed,
+  pending,
+  seatName,
+  onSign,
+  onRelease,
+}: {
+  d: MarketDriver;
+  offseason: boolean;
+  seats: Driver[];
+  signed: boolean;
+  pending?: SeatSigning;
+  seatName: (id: string) => string;
+  onSign: (seatDriverId: string) => void;
+  onRelease: (seatDriverId: string) => void;
+}) {
   return (
     <Panel>
       <div className="mb-1 flex items-start justify-between gap-2">
@@ -121,9 +239,7 @@ function SeniorCard({ d }: { d: MarketDriver }) {
           <span className="rounded bg-neutral-800 px-2 py-0.5 text-xs font-semibold text-amber-300">
             {d.overall.toFixed(1)}
           </span>
-          <div className="mt-0.5 text-[10px] text-neutral-500">
-            POT {d.potential.toFixed(1)}
-          </div>
+          <div className="mt-0.5 text-[10px] text-neutral-500">POT {d.potential.toFixed(1)}</div>
         </div>
       </div>
 
@@ -148,53 +264,200 @@ function SeniorCard({ d }: { d: MarketDriver }) {
         </Stat>
       </div>
 
+      <div className="mt-3 border-t border-neutral-800 pt-2">
+        {signed ? (
+          <span className="text-xs text-neutral-500">Already racing for you.</span>
+        ) : pending ? (
+          <div className="flex items-center justify-between text-xs">
+            <span className="text-green-300">Queued → replaces {seatName(pending.seatDriverId)}</span>
+            <button
+              className="text-red-400 hover:text-red-300"
+              onClick={() => onRelease(pending.seatDriverId)}
+            >
+              Cancel
+            </button>
+          </div>
+        ) : offseason ? (
+          <SeatButtons seats={seats} label="Sign →" onPick={onSign} />
+        ) : (
+          <span className="text-xs text-neutral-600">Signings open in the offseason.</span>
+        )}
+      </div>
+
       {d.notes && <p className="mt-2 text-[11px] italic text-neutral-500">{d.notes}</p>}
     </Panel>
   );
 }
 
-function YouthCard({ y }: { y: YouthProspect }) {
+function YouthTab({
+  prospects,
+  academy,
+  offseason,
+  seats,
+  signingBySource,
+  seatName,
+  onSignYouth,
+  onReleaseAcademy,
+  onPromote,
+  onReleaseSigning,
+}: {
+  prospects: YouthProspect[];
+  academy: AcademyMember[];
+  offseason: boolean;
+  seats: Driver[];
+  signingBySource: Map<string, SeatSigning>;
+  seatName: (id: string) => string;
+  onSignYouth: (youthId: string) => void;
+  onReleaseAcademy: (academyId: string) => void;
+  onPromote: (academyId: string, seatDriverId: string) => void;
+  onReleaseSigning: (seatDriverId: string) => void;
+}) {
+  const academyByProspect = new Set(academy.map((a) => a.prospectId));
+  const available = [...prospects]
+    .filter((p) => !academyByProspect.has(p.id))
+    .sort((a, b) => b.potential - a.potential);
+
   return (
-    <Panel>
-      <div className="mb-1 flex items-start justify-between gap-2">
-        <div>
-          <div className="font-bold text-neutral-100">{y.name}</div>
-          <div className="text-xs text-neutral-500">
-            {y.nationality} · age {y.age} · {y.currentLevel}
+    <div className="space-y-6">
+      <div>
+        <h2 className="mb-2 text-lg font-semibold text-neutral-100">
+          Your Academy ({academy.length})
+        </h2>
+        {academy.length === 0 ? (
+          <Panel>
+            <p className="text-sm text-neutral-400">
+              No academy drivers yet. Sign prospects below; they gain ratings each offseason and can
+              be promoted to a race seat once F1-ready.
+            </p>
+          </Panel>
+        ) : (
+          <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+            {[...academy]
+              .sort((a, b) => b.potential - a.potential)
+              .map((a) => {
+                const ready = isAcademyReady(a);
+                const pending = signingBySource.get(a.id);
+                return (
+                  <Panel key={a.id}>
+                    <div className="mb-1 flex items-start justify-between gap-2">
+                      <div>
+                        <div className="font-bold text-neutral-100">{a.name}</div>
+                        <div className="text-xs text-neutral-500">{a.nationality}</div>
+                      </div>
+                      <div className="text-right">
+                        <span className="rounded bg-neutral-800 px-2 py-0.5 text-xs font-semibold text-sky-300">
+                          {a.overall.toFixed(1)} → {a.potential.toFixed(1)}
+                        </span>
+                      </div>
+                    </div>
+                    <div className="mb-2 flex flex-wrap gap-1 text-[10px]">
+                      {ready ? (
+                        <Tag tone="good">F1-ready</Tag>
+                      ) : (
+                        <Tag>~{a.yearsUntilF1Ready}y to F1</Tag>
+                      )}
+                    </div>
+                    <TopSkills skills={a.skills} />
+                    <div className="mt-3 border-t border-neutral-800 pt-2">
+                      {pending ? (
+                        <div className="flex items-center justify-between text-xs">
+                          <span className="text-green-300">
+                            Promoting → {seatName(pending.seatDriverId)}
+                          </span>
+                          <button
+                            className="text-red-400 hover:text-red-300"
+                            onClick={() => onReleaseSigning(pending.seatDriverId)}
+                          >
+                            Cancel
+                          </button>
+                        </div>
+                      ) : offseason && ready ? (
+                        <SeatButtons
+                          seats={seats}
+                          label="Promote →"
+                          onPick={(seatId) => onPromote(a.id, seatId)}
+                        />
+                      ) : (
+                        <div className="flex items-center justify-between text-xs">
+                          <span className="text-neutral-600">
+                            {ready ? 'Promote in the offseason.' : 'Still developing.'}
+                          </span>
+                          <button
+                            className="text-red-400 hover:text-red-300"
+                            onClick={() => onReleaseAcademy(a.id)}
+                          >
+                            Release
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  </Panel>
+                );
+              })}
           </div>
+        )}
+      </div>
+
+      <div>
+        <h2 className="mb-2 text-lg font-semibold text-neutral-100">
+          Available Prospects ({available.length})
+        </h2>
+        <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+          {available.map((y) => (
+            <Panel key={y.id}>
+              <div className="mb-1 flex items-start justify-between gap-2">
+                <div>
+                  <div className="font-bold text-neutral-100">{y.name}</div>
+                  <div className="text-xs text-neutral-500">
+                    {y.nationality} · age {y.age} · {y.currentLevel}
+                  </div>
+                </div>
+                <div className="text-right">
+                  <span className="rounded bg-neutral-800 px-2 py-0.5 text-xs font-semibold text-sky-300">
+                    POT {y.potential.toFixed(1)}
+                  </span>
+                  <div className="mt-0.5 text-[10px] text-neutral-500">now {y.overall.toFixed(1)}</div>
+                </div>
+              </div>
+              <div className="mb-2 flex flex-wrap gap-1 text-[10px]">
+                {y.academyEligibleNow && <Tag tone="good">Eligible now</Tag>}
+                <Tag>{y.riskLevel} risk</Tag>
+                <Tag>~{y.yearsUntilF1Ready}y to F1</Tag>
+              </div>
+              <TopSkills skills={y.skills} />
+              <div className="mt-3 grid grid-cols-2 gap-2 text-xs">
+                <Stat label="Signing">
+                  <Money m={y.signingCost} />
+                </Stat>
+                <Stat label="Academy/yr">
+                  <Money m={y.yearlyAcademyCost} />
+                </Stat>
+              </div>
+              <div className="mt-3 border-t border-neutral-800 pt-2">
+                <Button
+                  variant="primary"
+                  className="w-full px-2 py-1 text-xs"
+                  onClick={() => onSignYouth(y.id)}
+                >
+                  Add to Academy
+                </Button>
+              </div>
+              <p className="mt-2 text-[11px] text-neutral-400">{y.suggestedPath}</p>
+            </Panel>
+          ))}
         </div>
-        <div className="text-right">
-          <span className="rounded bg-neutral-800 px-2 py-0.5 text-xs font-semibold text-sky-300">
-            POT {y.potential.toFixed(1)}
-          </span>
-          <div className="mt-0.5 text-[10px] text-neutral-500">now {y.overall.toFixed(1)}</div>
-        </div>
       </div>
-
-      <div className="mb-2 flex flex-wrap gap-1 text-[10px]">
-        {y.academyEligibleNow && <Tag tone="good">Eligible now</Tag>}
-        <Tag>{y.riskLevel} risk</Tag>
-        <Tag>~{y.yearsUntilF1Ready}y to F1</Tag>
-      </div>
-
-      <TopSkills skills={y.skills} />
-
-      <div className="mt-3 grid grid-cols-2 gap-2 text-xs">
-        <Stat label="Signing">
-          <Money m={y.signingCost} />
-        </Stat>
-        <Stat label="Academy/yr">
-          <Money m={y.yearlyAcademyCost} />
-        </Stat>
-      </div>
-
-      <p className="mt-2 text-[11px] text-neutral-400">{y.suggestedPath}</p>
-      {y.notes && <p className="mt-1 text-[11px] italic text-neutral-500">{y.notes}</p>}
-    </Panel>
+    </div>
   );
 }
 
-function Tag({ children, tone = 'neutral' }: { children: React.ReactNode; tone?: 'neutral' | 'good' | 'warn' }) {
+function Tag({
+  children,
+  tone = 'neutral',
+}: {
+  children: React.ReactNode;
+  tone?: 'neutral' | 'good' | 'warn';
+}) {
   const tones = {
     neutral: 'bg-neutral-800 text-neutral-300',
     good: 'bg-green-500/15 text-green-300',

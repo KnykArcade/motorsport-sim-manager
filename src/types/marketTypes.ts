@@ -69,3 +69,27 @@ export type YouthProspect = {
   suggestedPath: string;
   notes: string;
 };
+
+// A youth prospect signed into the team academy. Carries live (progressing)
+// ratings derived from the seed prospect; advances each offseason toward F1.
+export type AcademyMember = {
+  id: string;
+  prospectId: string;
+  name: string;
+  nationality: string;
+  skills: MarketSkillRatings;
+  overall: number;
+  potential: number;
+  developmentRate: number;
+  yearsUntilF1Ready: number;
+  signedYear: number;
+};
+
+// A queued driver change for one of the player's seats, applied at the next
+// season rollover. The seat is identified by the driver currently filling it.
+export type SeatSigning = {
+  seatDriverId: string;
+  source: 'market' | 'academy';
+  sourceId: string;
+  name: string;
+};
