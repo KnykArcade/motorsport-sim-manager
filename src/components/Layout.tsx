@@ -11,6 +11,7 @@ const NAV = [
   { to: '/drivers', label: 'Drivers', icon: '☷' },
   { to: '/market', label: 'Driver Market', icon: '⇄' },
   { to: '/development', label: 'Development', icon: '⚙' },
+  { to: '/finance', label: 'Finance', icon: '$' },
   { to: '/data', label: 'Data Viewer', icon: '⛁' },
   { to: '/settings', label: 'Settings', icon: '⚙' },
 ];
