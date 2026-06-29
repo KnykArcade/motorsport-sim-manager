@@ -13,7 +13,7 @@ import { applyDevelopmentProgress } from '../sim/developmentEngine';
 import { updateMorale } from '../sim/moraleEngine';
 import { generateRaceNews } from '../sim/newsEngine';
 import { aiQualifyingDecision } from './ai';
-import { carForTeam, currentRace, type GameState } from './careerState';
+import { carForTeam, currentRace, driversForTeam, type GameState } from './careerState';
 import { buildRaceContext, playerTunedSetups } from './raceSetup';
 import { createNewGame, type NewGameOptions } from './initialCareer';
 import { advanceSeason } from './seasonRollover';
@@ -28,6 +28,7 @@ import type { SeatSigning } from '../types/marketTypes';
 import type { FinanceTransaction } from '../types/financeTypes';
 import type {
   DevelopmentProject,
+  Driver,
   QualifyingResult,
   RaceResult,
 } from '../types/gameTypes';
@@ -39,6 +40,13 @@ import type {
   ScoreBreakdown,
 } from '../types/simTypes';
 import type { CarSetup } from '../types/setupTypes';
+import type { PracticeAssignment, PracticeSession, PracticeSessionKind } from '../types/practiceTypes';
+import { BALANCED_SETUP } from '../data/setup/setupComponents';
+import {
+  accumulateKnowledge,
+  emptyKnowledge,
+  runPracticeSession,
+} from '../sim/practiceProgramEngine';
 
 export type GameAction =
   | { type: 'NEW_GAME'; options: NewGameOptions }
@@ -53,6 +61,12 @@ export type GameAction =
     }
   | { type: 'START_DEVELOPMENT'; projectId: string }
   | { type: 'SET_CAR_SETUP'; driverId: string; setup: CarSetup }
+  | {
+      type: 'RUN_PRACTICE_SESSION';
+      raceId: string;
+      kind: PracticeSessionKind;
+      assignments: PracticeAssignment[];
+    }
   | { type: 'SIGN_MARKET_DRIVER'; marketId: string; seatDriverId: string }
   | { type: 'PROMOTE_ACADEMY'; academyId: string; seatDriverId: string }
   | { type: 'RELEASE_SIGNING'; seatDriverId: string }
@@ -62,6 +76,67 @@ export type GameAction =
   | { type: 'FIRE_STAFF'; staffId: string }
   | { type: 'ADVANCE_SEASON' }
   | { type: 'ADVANCE_RACE' };
+
+// Run one practice session for the player's drivers: simulate each assignment,
+// fold the results into the weekend knowledge, and apply the one-off confidence
+// nudges to the drivers. Each session kind runs at most once per weekend, and
+// the knowledge resets when a new race weekend begins.
+function runPracticeSessionAction(
+  state: GameState,
+  raceId: string,
+  kind: PracticeSessionKind,
+  assignments: PracticeAssignment[],
+): GameState {
+  const race = currentRace(state);
+  if (!race || race.id !== raceId) return state;
+  const track = getTrackById(race.trackId);
+  if (!track) return state;
+
+  let wp = state.weekendPractice;
+  if (!wp || wp.raceId !== raceId) {
+    wp = { raceId, sessions: [], knowledge: emptyKnowledge(raceId) };
+  }
+  if (wp.sessions.some((s) => s.kind === kind && s.completed)) return state;
+
+  const players = driversForTeam(state, state.selectedTeamId);
+  const driversById: Record<string, Driver> = {};
+  const setupsById: Record<string, CarSetup> = {};
+  for (const d of players) {
+    driversById[d.id] = d;
+    setupsById[d.id] = state.carSetups?.[d.id] ?? BALANCED_SETUP;
+  }
+  const validAssignments = assignments.filter((a) => driversById[a.driverId]);
+  const session: PracticeSession = {
+    id: `${raceId}-${kind}`,
+    raceId,
+    kind,
+    assignments: validAssignments,
+    completed: true,
+  };
+
+  const results = runPracticeSession(session, {
+    raceId,
+    track,
+    seed: state.randomSeed,
+    driversById,
+    setupsById,
+    knowledge: wp.knowledge,
+  });
+  session.results = results;
+
+  const knowledge = accumulateKnowledge(wp.knowledge, results);
+
+  const gainById: Record<string, number> = {};
+  for (const r of results) gainById[r.driverId] = (gainById[r.driverId] ?? 0) + r.confidenceGain;
+  const drivers = state.drivers.map((d) =>
+    gainById[d.id]
+      ? { ...d, confidence: Math.max(1, Math.min(100, Math.round(d.confidence + gainById[d.id]))) }
+      : d,
+  );
+
+  const sessions = [...wp.sessions.filter((s) => s.kind !== kind), session];
+  return { ...state, drivers, weekendPractice: { raceId, sessions, knowledge } };
+}
 
 function buildEntrants(state: GameState): Entrant[] {
   const entrants: Entrant[] = [];
@@ -115,6 +190,11 @@ export function gameReducer(state: GameState | null, action: GameAction): GameSt
         ...state,
         carSetups: { ...(state.carSetups ?? {}), [action.driverId]: action.setup },
       };
+    }
+
+    case 'RUN_PRACTICE_SESSION': {
+      if (!state) return state;
+      return runPracticeSessionAction(state, action.raceId, action.kind, action.assignments);
     }
 
     case 'SIGN_MARKET_DRIVER': {
