@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useGame } from '../game/GameContext';
-import { currentRace, driversForTeam } from '../game/careerState';
+import { activeDriversForTeam, currentRace } from '../game/careerState';
 import { lastBreakdowns } from '../game/gameReducer';
 import { getTrackById } from '../data';
 import { qualifyingRunPlans } from '../data/decisions/qualifyingRunPlans';
@@ -59,7 +59,7 @@ export function RaceWeekend() {
   const race = state ? currentRace(state) : undefined;
   const track = race ? getTrackById(race.trackId) : undefined;
   const playerDrivers = useMemo(
-    () => (state ? driversForTeam(state, state.selectedTeamId) : []),
+    () => (state ? activeDriversForTeam(state, state.selectedTeamId) : []),
     [state],
   );
 
@@ -332,7 +332,7 @@ function PracticePhase({
 }) {
   const race = currentRace(state)!;
   const players = useMemo(
-    () => driversForTeam(state, state.selectedTeamId),
+    () => activeDriversForTeam(state, state.selectedTeamId),
     [state],
   );
   const kinds = useMemo(

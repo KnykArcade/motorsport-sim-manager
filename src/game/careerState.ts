@@ -149,6 +149,42 @@ export function carForTeam(state: GameState, teamId: string): Car | undefined {
 export function driversForTeam(state: GameState, teamId: string): Driver[] {
   return state.drivers.filter((d) => d.teamId === teamId);
 }
+
+// Only two cars per team race. The active race drivers are the first two entries
+// of the team's roster (`team.driverIds`), resolved to the driver objects that
+// actually belong to that team. Any further roster members are reserves.
+export const MAX_RACE_DRIVERS = 2;
+
+export function activeDriversForTeam(state: GameState, teamId: string): Driver[] {
+  const team = teamById(state, teamId);
+  const active: Driver[] = [];
+  const seen = new Set<string>();
+  for (const id of team?.driverIds ?? []) {
+    if (active.length >= MAX_RACE_DRIVERS) break;
+    if (seen.has(id)) continue;
+    const driver = state.drivers.find((d) => d.id === id && d.teamId === teamId);
+    if (driver) {
+      active.push(driver);
+      seen.add(id);
+    }
+  }
+  // Fallback for rosters that don't fully specify driverIds: fill from the pool.
+  if (active.length < MAX_RACE_DRIVERS) {
+    for (const d of state.drivers) {
+      if (active.length >= MAX_RACE_DRIVERS) break;
+      if (d.teamId === teamId && !seen.has(d.id)) {
+        active.push(d);
+        seen.add(d.id);
+      }
+    }
+  }
+  return active;
+}
+
+export function reserveDriversForTeam(state: GameState, teamId: string): Driver[] {
+  const active = new Set(activeDriversForTeam(state, teamId).map((d) => d.id));
+  return state.drivers.filter((d) => d.teamId === teamId && !active.has(d.id));
+}
 export function currentRace(state: GameState): Race | undefined {
   return state.calendar[state.currentRaceIndex];
 }

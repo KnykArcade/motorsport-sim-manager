@@ -13,7 +13,12 @@ import { applyDevelopmentProgress } from '../sim/developmentEngine';
 import { updateMorale } from '../sim/moraleEngine';
 import { generateRaceNews } from '../sim/newsEngine';
 import { aiQualifyingDecision } from './ai';
-import { carForTeam, currentRace, driversForTeam, type GameState } from './careerState';
+import {
+  activeDriversForTeam,
+  carForTeam,
+  currentRace,
+  type GameState,
+} from './careerState';
 import { buildRaceContext, playerTunedSetups } from './raceSetup';
 import { createNewGame, type NewGameOptions } from './initialCareer';
 import { advanceSeason } from './seasonRollover';
@@ -75,6 +80,7 @@ export type GameAction =
   | { type: 'RELEASE_ACADEMY'; academyId: string }
   | { type: 'HIRE_STAFF'; staffId: string }
   | { type: 'FIRE_STAFF'; staffId: string }
+  | { type: 'SWAP_RACE_DRIVER'; seatIndex: number; reserveDriverId: string }
   | { type: 'ADVANCE_SEASON' }
   | { type: 'ADVANCE_RACE' };
 
@@ -99,7 +105,7 @@ function runPracticeSessionAction(
   }
   if (wp.sessions.some((s) => s.kind === kind && s.completed)) return state;
 
-  const players = driversForTeam(state, state.selectedTeamId);
+  const players = activeDriversForTeam(state, state.selectedTeamId);
   const driversById: Record<string, Driver> = {};
   const setupsById: Record<string, CarSetup> = {};
   for (const d of players) {
@@ -141,11 +147,47 @@ function runPracticeSessionAction(
 
 function buildEntrants(state: GameState): Entrant[] {
   const entrants: Entrant[] = [];
-  for (const driver of state.drivers) {
-    const car = carForTeam(state, driver.teamId);
-    if (car) entrants.push({ driver, car });
+  for (const team of state.teams) {
+    const car = carForTeam(state, team.id);
+    if (!car) continue;
+    for (const driver of activeDriversForTeam(state, team.id)) {
+      entrants.push({ driver, car });
+    }
   }
   return entrants;
+}
+
+// Promote a reserve driver into one of the two race seats for the player team.
+// The roster order (`team.driverIds`) defines who races: the first two entries
+// are on track, the rest are reserves. Swapping reorders that list so the chosen
+// reserve takes the seat and the displaced driver becomes a reserve.
+function swapRaceDriver(state: GameState, seatIndex: number, reserveDriverId: string): GameState {
+  if (seatIndex !== 0 && seatIndex !== 1) return state;
+  const teamId = state.selectedTeamId;
+  const team = state.teams.find((t) => t.id === teamId);
+  if (!team) return state;
+
+  const active = activeDriversForTeam(state, teamId).map((d) => d.id);
+  if (active.includes(reserveDriverId)) return state;
+  const reserve = state.drivers.find((d) => d.id === reserveDriverId && d.teamId === teamId);
+  if (!reserve) return state;
+  const seatDriverId = active[seatIndex];
+  if (!seatDriverId) return state;
+
+  const ids = [...team.driverIds];
+  const seatPos = ids.indexOf(seatDriverId);
+  const reservePos = ids.indexOf(reserveDriverId);
+  if (seatPos === -1) return state;
+  if (reservePos === -1) {
+    ids[seatPos] = reserveDriverId;
+    ids.push(seatDriverId);
+  } else {
+    ids[seatPos] = reserveDriverId;
+    ids[reservePos] = seatDriverId;
+  }
+
+  const teams = state.teams.map((t) => (t.id === teamId ? { ...t, driverIds: ids } : t));
+  return { ...state, teams };
 }
 
 // Track the last debug breakdowns so the UI can show them (kept outside state
@@ -243,6 +285,11 @@ export function gameReducer(state: GameState | null, action: GameAction): GameSt
     case 'FIRE_STAFF': {
       if (!state) return state;
       return { ...state, staff: (state.staff ?? []).filter((s) => s.id !== action.staffId) };
+    }
+
+    case 'SWAP_RACE_DRIVER': {
+      if (!state) return state;
+      return swapRaceDriver(state, action.seatIndex, action.reserveDriverId);
     }
 
     case 'ADVANCE_SEASON': {

@@ -24,7 +24,7 @@ export const teams1994: Team[] = [
     shortName: 'BEN',
     country: 'United Kingdom',
     carId: 'car-benetton-1994',
-    driverIds: ['d-1994-michael-schumacher', 'd-1994-johnny-herbert'],
+    driverIds: ['d-1994-michael-schumacher', 'd-1994-jos-verstappen'],
     budget: 84000000,
     reputation: 93,
     morale: 65,
