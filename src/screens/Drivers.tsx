@@ -74,6 +74,11 @@ export function Drivers() {
                       <span className="text-xs text-amber-300/80">
                         {r.ratings.overall.toFixed(1)}
                       </span>
+                      {r.contractType === 'third' && (
+                        <span className="ml-2 rounded bg-sky-500/15 px-1.5 py-0.5 text-[10px] text-sky-300">
+                          3rd driver
+                        </span>
+                      )}
                     </span>
                     <div className="flex gap-2">
                       {[0, 1].map((seat) => (

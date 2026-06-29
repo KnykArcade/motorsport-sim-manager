@@ -89,7 +89,9 @@ export type AcademyMember = {
 // season rollover. The seat is identified by the driver currently filling it.
 export type SeatSigning = {
   seatDriverId: string;
-  source: 'market' | 'academy';
+  // 'market' = sign an off-grid driver, 'academy' = promote an academy member,
+  // 'reserve' = promote the team's own existing 3rd/reserve driver into a seat.
+  source: 'market' | 'academy' | 'reserve';
   sourceId: string;
   name: string;
 };

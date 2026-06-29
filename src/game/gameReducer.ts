@@ -17,14 +17,17 @@ import {
   activeDriversForTeam,
   carForTeam,
   currentRace,
+  driversForTeam,
+  MAX_RACE_DRIVERS,
   type GameState,
 } from './careerState';
 import { buildRaceContext, playerTunedSetups } from './raceSetup';
 import { createNewGame, type NewGameOptions } from './initialCareer';
 import { advanceSeason } from './seasonRollover';
 import { getMarketBundle, getMaxQualifiers, getStaffPool } from '../data';
-import { signProspectToAcademy } from '../sim/driverMarketEngine';
+import { marketDriverToDriver, signProspectToAcademy } from '../sim/driverMarketEngine';
 import { makeTransaction, toMoney } from '../sim/financeEngine';
+import { thirdDriverMidSeasonFee, thirdDriverSalary } from '../sim/contractEngine';
 import { racePerformanceBonuses } from '../sim/commercialEngine';
 import { developmentSuccessBonus } from '../sim/staffEngine';
 import { classifyCrashDamage, damageConditionHit, repairCost } from '../sim/repairEngine';
@@ -81,6 +84,8 @@ export type GameAction =
   | { type: 'HIRE_STAFF'; staffId: string }
   | { type: 'FIRE_STAFF'; staffId: string }
   | { type: 'SWAP_RACE_DRIVER'; seatIndex: number; reserveDriverId: string }
+  | { type: 'SIGN_THIRD_DRIVER'; marketId: string }
+  | { type: 'PROMOTE_THIRD_DRIVER'; seatDriverId: string; thirdDriverId: string }
   | { type: 'ADVANCE_SEASON' }
   | { type: 'ADVANCE_RACE' };
 
@@ -190,6 +195,52 @@ function swapRaceDriver(state: GameState, seatIndex: number, reserveDriverId: st
   return { ...state, teams };
 }
 
+// Sign a free-agent market driver mid-season as the player team's 3rd driver.
+// They join the reserve pool on a cheaper deal and can be swapped into a race
+// seat. One 3rd driver at a time; the prorated retainer is charged immediately.
+function signThirdDriver(state: GameState, marketId: string): GameState {
+  if (state.seasonComplete) return state; // mid-season signing only
+  const teamId = state.selectedTeamId;
+  const team = state.teams.find((t) => t.id === teamId);
+  if (!team) return state;
+
+  const roster = driversForTeam(state, teamId);
+  if (roster.length >= MAX_RACE_DRIVERS + 1) return state; // already have a 3rd driver
+  if (roster.some((d) => d.contractType === 'third')) return state;
+
+  const m = getMarketBundle(state.seasonYear, state.series)?.drivers.find((d) => d.id === marketId);
+  if (!m || (state.signedMarketIds ?? []).includes(m.id)) return state;
+
+  const racesRemaining = Math.max(1, state.calendar.length - state.currentRaceIndex);
+  const fee = thirdDriverMidSeasonFee(m.salary, racesRemaining, state.calendar.length);
+  if (fee > playerBudget(state)) return state;
+
+  const used = new Set(state.drivers.map((d) => d.number));
+  let number = 1;
+  while (used.has(number)) number += 1;
+
+  const base = marketDriverToDriver(m, { teamId, number });
+  const driver: Driver = {
+    ...base,
+    salary: thirdDriverSalary(m.salary),
+    contractType: 'third',
+    contractYearsRemaining: 1,
+  };
+
+  const charged = applyTransaction(
+    state,
+    makeTransaction(state.seasonYear, 'Driver Signing', `3rd driver: ${m.name}`, -fee),
+  );
+  return {
+    ...charged,
+    drivers: [...charged.drivers, driver],
+    teams: charged.teams.map((t) =>
+      t.id === teamId ? { ...t, driverIds: [...t.driverIds, driver.id] } : t,
+    ),
+    signedMarketIds: [...(charged.signedMarketIds ?? []), m.id],
+  };
+}
+
 // Track the last debug breakdowns so the UI can show them (kept outside state
 // to avoid bloating the save file).
 export const lastBreakdowns: {
@@ -292,6 +343,16 @@ export function gameReducer(state: GameState | null, action: GameAction): GameSt
       return swapRaceDriver(state, action.seatIndex, action.reserveDriverId);
     }
 
+    case 'SIGN_THIRD_DRIVER': {
+      if (!state) return state;
+      return signThirdDriver(state, action.marketId);
+    }
+
+    case 'PROMOTE_THIRD_DRIVER': {
+      if (!state) return state;
+      return queueSigning(state, action.seatDriverId, 'reserve', action.thirdDriverId);
+    }
+
     case 'ADVANCE_SEASON': {
       if (!state) return state;
       if (!state.seasonComplete) return state;
@@ -342,6 +403,13 @@ function queueSigning(
     if (!m || (state.signedMarketIds ?? []).includes(m.id)) return state;
     if (toMoney(m.buyoutCost) > playerBudget(state)) return state; // cannot afford buyout
     name = m.name;
+  } else if (source === 'reserve') {
+    // Promote the team's own 3rd driver into a seat — no buyout, no double-fill.
+    const r = state.drivers.find(
+      (d) => d.id === sourceId && d.teamId === state.selectedTeamId && d.contractType === 'third',
+    );
+    if (!r) return state;
+    name = r.name;
   } else {
     const a = (state.academy ?? []).find((x) => x.id === sourceId);
     if (!a) return state;
