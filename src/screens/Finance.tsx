@@ -116,7 +116,8 @@ export function Finance() {
           </div>
           <p className="mt-3 text-xs text-neutral-500">
             Salaries and academy fees are charged at each season rollover. Prize money is earned per
-            race; sponsorship is paid annually based on reputation and line-up strength.
+            race; sponsorship pays guaranteed annual income plus per-race performance bonuses (see
+            the Sponsors screen).
           </p>
         </Panel>
       </div>

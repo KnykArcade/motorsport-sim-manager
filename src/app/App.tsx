@@ -11,6 +11,7 @@ import { Drivers } from '../screens/Drivers';
 import { DriverMarket } from '../screens/DriverMarket';
 import { Development } from '../screens/Development';
 import { Finance } from '../screens/Finance';
+import { Sponsors } from '../screens/Sponsors';
 import { Staff } from '../screens/Staff';
 import { RaceHistory } from '../screens/RaceHistory';
 import { DataViewer } from '../screens/DataViewer';
@@ -46,6 +47,7 @@ export default function App() {
           <Route path="/market" element={<InGame><DriverMarket /></InGame>} />
           <Route path="/development" element={<InGame><Development /></InGame>} />
           <Route path="/finance" element={<InGame><Finance /></InGame>} />
+          <Route path="/sponsors" element={<InGame><Sponsors /></InGame>} />
           <Route path="/staff" element={<InGame><Staff /></InGame>} />
           <Route path="/history" element={<InGame><RaceHistory /></InGame>} />
           <Route path="/weekend" element={<InGame><RaceWeekend /></InGame>} />
