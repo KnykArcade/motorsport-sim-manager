@@ -1,16 +1,29 @@
 import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useGame } from '../game/GameContext';
-import { currentRace, driversForTeam, carForTeam } from '../game/careerState';
+import { currentRace, driversForTeam } from '../game/careerState';
 import { lastBreakdowns } from '../game/gameReducer';
 import { getTrackById } from '../data';
 import { qualifyingRunPlans } from '../data/decisions/qualifyingRunPlans';
 import { raceStrategies } from '../data/decisions/raceStrategies';
 import { driverInstructions } from '../data/decisions/driverInstructions';
 import { autoSetupsForTrack } from '../sim/autoSetup';
-import { deriveSetupOption } from '../sim/setupDerive';
-import { runPractice, type PracticeSummary } from '../sim/practiceEngine';
 import { BALANCED_SETUP } from '../data/setup/setupComponents';
+import {
+  weekendSessionKinds,
+  defaultAssignments,
+  PROGRAM_LABELS,
+  SESSION_LABELS,
+  ALL_PROGRAMS,
+  PROGRAM_META,
+} from '../sim/practiceProgramEngine';
+import type {
+  PracticeProgram,
+  PracticeSession,
+  PracticeSessionKind,
+  PracticeAssignment,
+  FeedbackSentiment,
+} from '../types/practiceTypes';
 import { Panel } from '../components/Panel';
 import { Button } from '../components/Button';
 import { TrackDemandBars } from '../components/TrackDemandBars';
@@ -130,8 +143,8 @@ export function RaceWeekend() {
       {phase === 'practice' && (
         <PracticePhase
           state={state}
+          dispatch={dispatch}
           track={track}
-          setups={resolvedSetups}
           onBack={() => setPhase('briefing')}
           onNext={() => setPhase('setup')}
         />
@@ -298,98 +311,192 @@ function InfoBox({ label, text }: { label: string; text: string }) {
   );
 }
 
+const SENTIMENT_STYLE: Record<FeedbackSentiment, string> = {
+  Positive: 'text-emerald-400',
+  Neutral: 'text-neutral-400',
+  Concern: 'text-amber-400',
+  Warning: 'text-red-400',
+};
+
 function PracticePhase({
   state,
-  track,
-  setups,
+  dispatch,
   onBack,
   onNext,
 }: {
   state: NonNullable<ReturnType<typeof useGame>['state']>;
+  dispatch: ReturnType<typeof useGame>['dispatch'];
   track: Track;
-  setups: Record<string, CarSetup>;
   onBack: () => void;
   onNext: () => void;
 }) {
-  const summary: PracticeSummary = useMemo(() => {
-    const race = currentRace(state);
-    const entrants = driversForTeam(state, state.selectedTeamId)
-      .map((d) => {
-        const car = carForTeam(state, d.teamId);
-        if (!car) return undefined;
-        const setup = setups[d.id] ?? { ...BALANCED_SETUP };
-        return {
-          driver: d,
-          car,
-          qualifyingSetup: deriveSetupOption(setup, track, d, 'qualifying'),
-          raceSetup: deriveSetupOption(setup, track, d, 'race'),
-        };
-      })
-      .filter((e): e is NonNullable<typeof e> => !!e);
-    return runPractice({
-      track,
-      entrants,
-      seed: `${state.randomSeed}-r${race?.round ?? 0}`,
+  const race = currentRace(state)!;
+  const players = useMemo(
+    () => driversForTeam(state, state.selectedTeamId),
+    [state],
+  );
+  const kinds = useMemo(
+    () => weekendSessionKinds(state.seasonYear, state.series),
+    [state.seasonYear, state.series],
+  );
+
+  const wp =
+    state.weekendPractice && state.weekendPractice.raceId === race.id
+      ? state.weekendPractice
+      : undefined;
+  const completedByKind = useMemo(() => {
+    const m: Record<string, PracticeSession> = {};
+    for (const s of wp?.sessions ?? []) if (s.completed) m[s.kind] = s;
+    return m;
+  }, [wp]);
+
+  // Local per-session program selections, defaulted to a sensible spread.
+  const [assignments, setAssignments] = useState<Record<string, Record<string, PracticeProgram>>>(
+    () => {
+      const init: Record<string, Record<string, PracticeProgram>> = {};
+      for (const k of kinds) {
+        init[k] = {};
+        for (const a of defaultAssignments(players.map((d) => d.id), k)) {
+          init[k][a.driverId] = a.program;
+        }
+      }
+      return init;
+    },
+  );
+
+  const setProgram = (kind: string, driverId: string, program: PracticeProgram) =>
+    setAssignments((prev) => ({ ...prev, [kind]: { ...prev[kind], [driverId]: program } }));
+
+  const runSession = (kind: PracticeSessionKind) => {
+    const sel = assignments[kind] ?? {};
+    const list: PracticeAssignment[] = players.map((d) => {
+      const program = sel[d.id] ?? 'SetupExploration';
+      return { driverId: d.id, program, lapsPlanned: PROGRAM_META[program].defaultLaps };
     });
-  }, [state, track, setups]);
+    dispatch({ type: 'RUN_PRACTICE_SESSION', raceId: race.id, kind, assignments: list });
+  };
 
   const driverName = (id: string) => state.drivers.find((d) => d.id === id)?.name ?? id;
   const driverNumber = (id: string) => state.drivers.find((d) => d.id === id)?.number ?? '';
 
+  const allRun = kinds.every((k) => completedByKind[k]);
+
   return (
     <div className="space-y-4">
       <div>
-        <h2 className="text-lg font-semibold text-neutral-100">Practice Summary &amp; Setup Confidence</h2>
+        <h2 className="text-lg font-semibold text-neutral-100">Practice</h2>
         <p className="text-sm text-neutral-400">
-          Baseline read-out for the current setup. Use it — and the feedback in the Car Setup
-          workshop next — to dial the car in before qualifying.
+          Assign a program to each driver and run the session. Practice builds setup, tyre and
+          reliability knowledge plus driver confidence — it gives directional feedback, never the
+          perfect setup. Carry what you learn into the Car Setup workshop next.
         </p>
       </div>
 
-      <div className="grid gap-3 md:grid-cols-2">
-        <InfoBox label="Qualifying Trim" text={summary.qualifyingTrimName} />
-        <InfoBox label="Race Trim" text={summary.raceTrimName} />
-      </div>
-
-      <div className="grid gap-4 md:grid-cols-2">
-        {summary.drivers.map((d) => (
-          <Panel key={d.driverId} title={`#${driverNumber(d.driverId)} ${driverName(d.driverId)}`}>
-            <div className="space-y-3">
-              <div>
-                <div className="mb-1 flex items-center justify-between text-xs uppercase tracking-wide text-neutral-500">
-                  <span>Setup Confidence</span>
-                  <span className="font-semibold text-neutral-200">{d.confidenceLabel}</span>
-                </div>
-                <div className="h-2 overflow-hidden rounded bg-neutral-800">
-                  <div
-                    className="h-full rounded bg-amber-500"
-                    style={{ width: `${d.confidence}%` }}
-                  />
+      {players.map((d) => {
+        const k = wp?.knowledge;
+        const conf = state.drivers.find((x) => x.id === d.id)?.confidence ?? d.confidence;
+        const delta = k?.confidenceDelta[d.id] ?? 0;
+        return (
+          <Panel key={d.id} title={`#${driverNumber(d.id)} ${driverName(d.id)} — Weekend Knowledge`}>
+            <div className="grid gap-3 sm:grid-cols-4">
+              <KnowledgeBar label="Setup" value={k?.setupKnowledge[d.id] ?? 0} />
+              <KnowledgeBar label="Tyres" value={k?.tireKnowledge[d.id] ?? 0} />
+              <KnowledgeBar label="Reliability" value={k?.reliabilityKnowledge[d.id] ?? 0} />
+              <div className="rounded-lg border border-neutral-800 bg-neutral-900/40 px-3 py-2">
+                <div className="text-[10px] uppercase tracking-wide text-neutral-500">Confidence</div>
+                <div className="font-semibold text-neutral-100">
+                  {conf}
+                  {delta ? (
+                    <span className={delta > 0 ? 'text-emerald-400' : 'text-red-400'}>
+                      {' '}({delta > 0 ? '+' : ''}{delta.toFixed(1)})
+                    </span>
+                  ) : null}
                 </div>
               </div>
-              <div className="grid grid-cols-2 gap-2 text-sm">
-                <PaceStat label="One-Lap Pace" value={d.onePLapPace} />
-                <PaceStat label="Long-Run Pace" value={d.longRunPace} />
-              </div>
-              <div className="text-xs text-neutral-400">{d.notes.join(' ')}</div>
             </div>
           </Panel>
-        ))}
-      </div>
+        );
+      })}
+
+      {kinds.map((kind) => {
+        const done = completedByKind[kind];
+        return (
+          <Panel key={kind} title={SESSION_LABELS[kind]}>
+            {done ? (
+              <div className="space-y-3">
+                {(done.results ?? []).map((r) => (
+                  <div key={r.driverId} className="rounded-lg border border-neutral-800 bg-neutral-900/40 p-3">
+                    <div className="mb-1 flex items-center justify-between text-sm">
+                      <span className="font-semibold text-neutral-100">
+                        #{driverNumber(r.driverId)} {driverName(r.driverId)}
+                      </span>
+                      <span className="text-xs text-neutral-400">
+                        {PROGRAM_LABELS[r.program]} · {r.lapsCompleted} laps
+                        {r.incident ? ' · incident' : ''}
+                      </span>
+                    </div>
+                    <ul className="space-y-0.5 text-sm">
+                      {r.feedback.map((f) => (
+                        <li key={f.id} className={SENTIMENT_STYLE[f.sentiment]}>
+                          • {f.message}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {players.map((d) => (
+                  <div key={d.id} className="flex items-center justify-between gap-3">
+                    <span className="text-sm text-neutral-200">
+                      #{driverNumber(d.id)} {driverName(d.id)}
+                    </span>
+                    <select
+                      className="rounded border border-neutral-700 bg-neutral-900 px-2 py-1 text-sm text-neutral-100"
+                      value={assignments[kind]?.[d.id] ?? 'SetupExploration'}
+                      onChange={(e) => setProgram(kind, d.id, e.target.value as PracticeProgram)}
+                    >
+                      {ALL_PROGRAMS.map((p) => (
+                        <option key={p} value={p}>
+                          {PROGRAM_LABELS[p]}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                ))}
+                <div className="flex justify-end">
+                  <Button variant="primary" onClick={() => runSession(kind)}>
+                    Run {SESSION_LABELS[kind]}
+                  </Button>
+                </div>
+              </div>
+            )}
+          </Panel>
+        );
+      })}
 
       <div className="flex justify-between">
         <Button variant="ghost" onClick={onBack}>← Back</Button>
-        <Button variant="primary" onClick={onNext}>Plan Qualifying Run →</Button>
+        <Button variant="primary" onClick={onNext}>
+          {allRun ? 'Car Setup →' : 'Skip to Car Setup →'}
+        </Button>
       </div>
     </div>
   );
 }
 
-function PaceStat({ label, value }: { label: string; value: string }) {
+function KnowledgeBar({ label, value }: { label: string; value: number }) {
+  const pct = Math.round(value * 100);
   return (
     <div className="rounded-lg border border-neutral-800 bg-neutral-900/40 px-3 py-2">
-      <div className="text-[10px] uppercase tracking-wide text-neutral-500">{label}</div>
-      <div className="font-semibold text-neutral-100">{value}</div>
+      <div className="mb-1 flex items-center justify-between text-[10px] uppercase tracking-wide text-neutral-500">
+        <span>{label}</span>
+        <span className="text-neutral-300">{pct}%</span>
+      </div>
+      <div className="h-2 overflow-hidden rounded bg-neutral-800">
+        <div className="h-full rounded bg-sky-500" style={{ width: `${pct}%` }} />
+      </div>
     </div>
   );
 }
