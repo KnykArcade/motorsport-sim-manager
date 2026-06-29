@@ -15,6 +15,8 @@ import { driverMarket2000 } from './driverMarket2000';
 import { youthProspects2000 } from './youthProspects2000';
 import { driverMarket2026 } from './driverMarket2026';
 import { youthProspects2026 } from './youthProspects2026';
+import { driverMarket2026IndyCar } from './driverMarket2026IndyCar';
+import { youthProspects2026IndyCar } from './youthProspects2026IndyCar';
 
 export { driverMarket1995 } from './driverMarket1995';
 export { youthProspects1995 } from './youthProspects1995';
@@ -32,6 +34,7 @@ const marketBundles: Record<string, MarketBundle> = {
   '1999-F1': { drivers: driverMarket1999, youth: youthProspects1999 },
   '2000-F1': { drivers: driverMarket2000, youth: youthProspects2000 },
   '2026-F1': { drivers: driverMarket2026, youth: youthProspects2026 },
+  '2026-IndyCar': { drivers: driverMarket2026IndyCar, youth: youthProspects2026IndyCar },
 };
 
 export function getMarketBundle(year: number, series = 'F1'): MarketBundle | undefined {

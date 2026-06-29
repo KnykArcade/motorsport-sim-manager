@@ -1,7 +1,7 @@
 // Central access point for all seed data. Screens/engines import from here so
 // future seasons can be registered in one place.
 
-import type { Car, Driver, Season, Team, Track } from '../types/gameTypes';
+import type { Car, Driver, Season, Series, Team, Track } from '../types/gameTypes';
 import type { StaffMember } from '../types/staffTypes';
 import { season1995, calendar1995 } from './seasons/season1995';
 import { tracks1995 } from './tracks/tracks1995';
@@ -38,6 +38,11 @@ import { tracks2026 } from './tracks/tracks2026';
 import { teams2026 } from './teams/teams2026';
 import { drivers2026 } from './drivers/drivers2026';
 import { cars2026 } from './cars/cars2026';
+import { season2026IndyCar } from './seasons/season2026IndyCar';
+import { tracks2026IndyCar } from './tracks/tracks2026IndyCar';
+import { teams2026IndyCar } from './teams/teams2026IndyCar';
+import { drivers2026IndyCar } from './drivers/drivers2026IndyCar';
+import { cars2026IndyCar } from './cars/cars2026IndyCar';
 import { staffPool1995 } from './staff/staffPool1995';
 
 export { tracks1995 } from './tracks/tracks1995';
@@ -95,10 +100,11 @@ export const seasonBundles: Record<string, SeasonBundle> = {
   '1999-F1': { season: season1999, teams: teams1999, drivers: drivers1999, cars: cars1999 },
   '2000-F1': { season: season2000, teams: teams2000, drivers: drivers2000, cars: cars2000 },
   '2026-F1': { season: season2026, teams: teams2026, drivers: drivers2026, cars: cars2026 },
+  '2026-IndyCar': { season: season2026IndyCar, teams: teams2026IndyCar, drivers: drivers2026IndyCar, cars: cars2026IndyCar },
 };
 
 // Seasons available to start a new game, in display order.
-export const availableSeasons: { year: number; series: 'F1'; label: string }[] = [
+export const availableSeasons: { year: number; series: Series; label: string }[] = [
   { year: 1994, series: 'F1', label: '1994 Formula 1 World Championship' },
   { year: 1995, series: 'F1', label: '1995 Formula 1 World Championship' },
   { year: 1997, series: 'F1', label: '1997 Formula 1 World Championship' },
@@ -106,9 +112,16 @@ export const availableSeasons: { year: number; series: 'F1'; label: string }[] =
   { year: 1999, series: 'F1', label: '1999 Formula 1 World Championship' },
   { year: 2000, series: 'F1', label: '2000 Formula 1 World Championship' },
   { year: 2026, series: 'F1', label: '2026 Formula 1 World Championship' },
+  { year: 2026, series: 'IndyCar', label: '2026 IndyCar Series' },
 ];
 
-export function getSeasonBundle(year: number, series = 'F1'): SeasonBundle | undefined {
+// Series available to start a new game, in display order.
+export const availableSeries: { id: Series; label: string }[] = [
+  { id: 'F1', label: 'Formula 1' },
+  { id: 'IndyCar', label: 'IndyCar' },
+];
+
+export function getSeasonBundle(year: number, series: Series = 'F1'): SeasonBundle | undefined {
   return seasonBundles[`${year}-${series}`];
 }
 
@@ -116,7 +129,7 @@ export function getSeasonBundle(year: number, series = 'F1'): SeasonBundle | und
 // single global lookup serves every season's calendar.
 const allTracks: Track[] = [
   ...tracks1994, ...tracks1995, ...tracks1997, ...tracks1998, ...tracks1999,
-  ...tracks2000, ...tracks2026,
+  ...tracks2000, ...tracks2026, ...tracks2026IndyCar,
 ];
 export const tracksById = Object.fromEntries(allTracks.map((t) => [t.id, t]));
 

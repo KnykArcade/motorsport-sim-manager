@@ -234,6 +234,18 @@ TEAM_META = {
     "audi": ("AUD", "Germany", "#bb0a30"),
     "aston": ("AMR", "United Kingdom", "#00665e"),
     "cadillac": ("CAD", "United States", "#c8a24a"),
+    # IndyCar 2026 teams, matched by a distinctive name token
+    "ganassi": ("CGR", "United States", "#e2231a"),
+    "penske": ("PEN", "United States", "#d4a017"),
+    "andretti": ("AND", "United States", "#1f6fd0"),
+    "arrow": ("AMS", "United States", "#ff8000"),
+    "meyer": ("MSR", "United States", "#1aa6a6"),
+    "rahal": ("RLL", "United States", "#d11f3a"),
+    "carpenter": ("ECR", "United States", "#0a3a8a"),
+    "foyt": ("AJF", "United States", "#b08d2a"),
+    "coyne": ("DCR", "United States", "#2a8a3a"),
+    "juncos": ("JHR", "Argentina", "#5a2ad6"),
+    "prema": ("PRE", "Italy", "#d6202a"),
 }
 PALETTE = ["#8a7ad6", "#d68a3a", "#3ad6c2", "#d63a8a", "#6ad63a", "#3a6ad6"]
 
@@ -243,9 +255,14 @@ def team_base(name):
 
 
 def team_meta(name):
-    base = team_base(name)
+    s = slug(name)
+    base = s.split("-")[0]
     if base in TEAM_META:
         return TEAM_META[base]
+    tokens = s.split("-")
+    for k, v in TEAM_META.items():
+        if k in tokens:
+            return v
     short = re.sub(r"[^A-Z]", "", name.upper())[:3] or name[:3].upper()
     color = PALETTE[hash(base) % len(PALETTE)]
     return (short, "", color)
@@ -611,6 +628,295 @@ def gen(year, series="F1"):
         print(f"   (off-grid drivers not seated: {unassigned})")
 
 
+def scale10(v, default=5.0):
+    """Normalize a rating to a 0-10 scale (workbooks mix 0-10 and 0-100)."""
+    n = num(v)
+    if n is None:
+        return default
+    return r1(n / 10) if n > 10 else r1(n)
+
+
+def avg(*xs):
+    xs = [x for x in xs if x is not None]
+    return r1(sum(xs) / len(xs)) if xs else 5.0
+
+
+def indy_skills(row, sheet):
+    """Map the IndyCar driver skill columns onto the F1 10-skill model.
+
+    Oval aptitude drives top-speed/traction skills; road/street aptitude drives
+    cornering/technical; the remaining columns map by closest analogue.
+    """
+    oval = num(get(row, sheet, "oval")) or 5
+    road = num(get(row, sheet, "road street", "road")) or 5
+    racecraft = num(get(row, sheet, "racecraft")) or 5
+    crash = num(get(row, sheet, "crash avoidance")) or 5
+    consistency = num(get(row, sheet, "consistency")) or 5
+    return {
+        "cornering": r1(road),
+        "braking": avg(road, oval),
+        "straights": r1(oval),
+        "tractionAcceleration": r1(oval),
+        "elevationBlindCorners": r1(road),
+        "technical": r1(road),
+        "overtakingRacecraft": r1(racecraft),
+        "surfaceGripBumpiness": avg(oval, road),
+        "riskManagement": r1(crash),
+        "enduranceConsistency": r1(consistency),
+    }
+
+
+def gen_indycar(year=2026):
+    series = "IndyCar"
+    path = find_workbook(year, series)
+    if not path:
+        print(f"!! no workbook for {series} {year}")
+        return
+    src = os.path.basename(path)
+    header = HEADER_TMPL.format(src=src)
+    wb = openpyxl.load_workbook(path, data_only=True, read_only=True)
+    y, tag = year, f"{year}{series}"
+
+    cal = Sheet(wb[pick_sheet(wb, (["calendar"],))], ["round"])
+    setup_sn = pick_sheet(wb, (["setup", "profile"],), (["track", "setup"],))
+    setup = Sheet(wb[setup_sn], ["round"]) if setup_sn else None
+    car = Sheet(wb[pick_sheet(wb, (["team", "car"],), (["teams", "cars"],))], ["team"])
+    drv = Sheet(wb[pick_sheet(wb, (["driver"], ["market", "youth"]), (["drivers"],))], ["driver"])
+    mkt = Sheet(wb[pick_sheet(wb, (["driver", "market"],), (["market"],))], ["driver"])
+    yth = Sheet(wb[pick_sheet(wb, (["youth"],), (["prospect"],))], ["prospect", "name"])
+
+    # ---- setup profiles keyed by round ----
+    setup_by_round = {}
+    if setup:
+        for row in setup.data_rows():
+            rnd = num(get(row, setup, "round"))
+            if rnd is not None:
+                setup_by_round[int(rnd)] = row
+
+    # ---- tracks + calendar (distances are in miles) ----
+    MI_KM = 1.60934
+    tracks = []
+    for row in cal.data_rows():
+        name = get(row, cal, "track")
+        rnd = num(get(row, cal, "round"))
+        if not name or rnd is None:
+            continue
+        rnd = int(rnd)
+        attrs = {
+            "corners": num(get(row, cal, "corners")) or 5,
+            "braking": num(get(row, cal, "braking")) or 5,
+            "straights": num(get(row, cal, "straights")) or 5,
+            "tractionAcceleration": num(get(row, cal, "traction")) or 5,
+            "elevationBlindCorners": num(get(row, cal, "elevation blind", "elevation_blind")) or 5,
+            "technical": num(get(row, cal, "technical")) or 5,
+            "overtakingRacecraft": num(get(row, cal, "overtaking")) or 5,
+            "surfaceGripBumpiness": num(get(row, cal, "surface bumpiness", "surface_bumpiness")) or 5,
+            "riskWallProximity": num(get(row, cal, "risk wall", "risk_wall")) or 5,
+            "enduranceConsistency": num(get(row, cal, "endurance")) or 5,
+        }
+        miles = num(get(row, cal, "track length mi", "track_length_mi"))
+        sp = setup_by_round.get(rnd)
+
+        def sget(*a):
+            return get(sp, setup, *a) if (sp and setup) else None
+
+        ttype = str(get(row, cal, "track type", "track_type") or "").strip()
+        tracks.append({
+            "id": f"{slug(name)}-{tag}",
+            "name": str(name).strip(),
+            "gpName": str(get(row, cal, "race") or name).strip(),
+            "country": str(get(row, cal, "location") or "United States").strip(),
+            "round": rnd,
+            "km": r1(miles * MI_KM) if miles else None,
+            "laps": num(get(row, cal, "laps sim default", "laps_sim_default")),
+            "archetype": str(get(row, cal, "track archetype", "track_archetype") or ttype or "Balanced").strip(),
+            "attrs": attrs,
+            "setup": {
+                "primarySetupProfile": ttype or "Balanced",
+                "downforceLevel": str(sget("recommended downforce", "recommended_downforce") or "Medium").strip(),
+                "topSpeedEmphasis": wordnum(sget("top speed emphasis", "top_speed_emphasis")),
+                "mechanicalGripEmphasis": wordnum(sget("mechanical grip emphasis", "mechanical_grip_emphasis")),
+                "brakeDemand": wordnum(sget("brake demand", "brake_demand")),
+                "reliabilityRiskFocus": wordnum(sget("tire degradation", "tire_degradation")),
+                "strategyNotes": str(sget("recommended strategy", "recommended_strategy") or get(row, cal, "strategy notes", "strategy_notes") or "").strip(),
+                "aeroDemand": num(get(row, cal, "aero demand", "aero_demand")) or 5,
+                "powerDemand": num(get(row, cal, "power demand", "power_demand")) or 5,
+                "mechanicalDemand": num(get(row, cal, "mechanical demand", "mechanical_demand")) or 5,
+                "riskDemand": num(get(row, cal, "yellow caution risk", "yellow_caution_risk")) or 5,
+            },
+            "notes": str(get(row, cal, "strategy notes", "strategy_notes") or "").strip(),
+        })
+    tracks.sort(key=lambda t: t["round"])
+
+    # ---- teams + cars ----
+    teams = []
+    for row in car.data_rows():
+        name = get(row, car, "team")
+        if not name:
+            continue
+        name = str(name).strip()
+        ratings = {
+            "enginePower": num(get(row, car, "engineering")) or 5,
+            "aeroEfficiency": num(get(row, car, "road street setup", "road_street_setup")) or 5,
+            "mechanicalGrip": num(get(row, car, "oval setup", "oval_setup")) or 5,
+            "reliability": num(get(row, car, "reliability")) or 5,
+            "pitCrewOperations": num(get(row, car, "pit crew", "pit_crew")) or 5,
+        }
+        teams.append({
+            "name": name,
+            "ratings": ratings,
+            "score": num(get(row, car, "overall")) or sum(ratings.values()),
+            "devBudget": num(get(row, car, "development budget", "development_budget")),
+            "reputation": num(get(row, car, "sponsor strength", "sponsor_strength")),
+        })
+    teams.sort(key=lambda t: -t["score"])
+    for i, t in enumerate(teams):
+        t["rank"] = i + 1
+    team_by_slug = {slug(t["name"]): t for t in teams}
+
+    def budget_for(t):
+        b = t["devBudget"]
+        b = (b * 10) if b else max(20, 90 - (t["rank"] - 1) * 6)
+        return int(round(b)) * 1_000_000
+
+    def difficulty(rank):
+        return "Easy" if rank <= 3 else ("Medium" if rank <= 6 else ("Hard" if rank <= 9 else "Very Hard"))
+
+    # ---- drivers (full-time entrants only) ----
+    drivers = []
+    for row in drv.data_rows():
+        name = get(row, drv, "driver")
+        if not name:
+            continue
+        status = norm(get(row, drv, "status") or "")
+        if status and "full" not in status:
+            continue
+        name = str(name).strip()
+        team_raw = str(get(row, drv, "team") or "").strip()
+        if not team_raw:
+            continue
+        overall = scale10(get(row, drv, "overall"), 6.0)
+        sk = indy_skills(row, drv)
+        oval = num(get(row, drv, "oval")) or 5
+        road = num(get(row, drv, "road street", "road")) or 5
+        drivers.append({
+            "id": f"d-{tag}-{slug(name)}",
+            "name": name,
+            "team_slug": slug(team_raw),
+            "team_raw": team_raw,
+            "age": num(get(row, drv, "age 2026", "age_2026", "age")),
+            "nationality": str(get(row, drv, "nationality") or "").strip(),
+            "skills": sk,
+            "qualifying": scale10(get(row, drv, "qualifying"), overall),
+            "racePace": scale10(get(row, drv, "race pace", "race_pace"), overall),
+            "adaptability": avg(oval, road),
+            "aggression": num(get(row, drv, "passing defense", "passing_defense")) or 5,
+            "composure": num(get(row, drv, "consistency")) or 5,
+            "overall": overall,
+        })
+
+    # assign every full-time driver to its team (IndyCar runs 2-4 cars/team)
+    for t in teams:
+        t["driver_ids"] = []
+    unassigned = []
+    for d in sorted(drivers, key=lambda x: -x["overall"]):
+        team = team_by_slug.get(d["team_slug"])
+        if team is None:
+            for s, tm in team_by_slug.items():
+                if s.split("-")[0] == d["team_slug"].split("-")[0] and d["team_slug"]:
+                    team = tm
+                    break
+        if team is not None:
+            team["driver_ids"].append(d["id"])
+        else:
+            unassigned.append(d["name"])
+    teams = [t for t in teams if t["driver_ids"]]
+    for i, t in enumerate(teams):
+        t["rank"] = i + 1
+    grid_ids = {i for t in teams for i in t["driver_ids"]}
+    drivers = [d for d in drivers if d["id"] in grid_ids]
+    drivers.sort(key=lambda d: -d["overall"])
+    for n, d in enumerate(drivers):
+        d["number"] = n + 1
+
+    # ---- market (no per-skill columns; skills derived from overall) ----
+    market = []
+    for row in mkt.data_rows():
+        name = get(row, mkt, "driver")
+        if not name:
+            continue
+        name = str(name).strip()
+        overall = scale10(get(row, mkt, "overall"), 6.0)
+        sk = read_skills(row, mkt, overall)
+        context = str(get(row, mkt, "current status", "current_status") or "").strip()
+        status = str(get(row, mkt, "market status", "market_status") or "Senior").strip()
+        potential = scale10(get(row, mkt, "potential"), r1(min(10, overall + 0.4)))
+        age = int(num(get(row, mkt, "age 2026", "age_2026", "age")) or 0)
+        market.append({
+            "id": f"mkt-{tag}-{slug(name)}",
+            "name": name, "age": age,
+            "nationality": str(get(row, mkt, "nationality") or "").strip(),
+            "context": context, "pool": "Senior", "status": status, "role": "",
+            "eligible": overall >= 6.5,
+            "skills": sk, "overall": overall, "potential": potential,
+            "potentialDelta": r1(potential - overall),
+            "devRate": derive_devrate(age, None),
+            "readiness": derive_readiness(overall, context, get(row, mkt, "oval readiness", "oval_readiness")),
+            "salary": derive_salary(overall, get(row, mkt, "estimated cost", "estimated_cost")),
+            "sponsor": derive_sponsor(overall, None),
+            "buyout": derive_buyout(overall, get(row, mkt, "estimated cost", "estimated_cost")),
+            "negDiff": derive_difficulty(overall, get(row, mkt, "willingness to move", "willingness_to_move")),
+            "use": "", "notes": str(get(row, mkt, "notes") or "").strip(),
+        })
+
+    # ---- youth ----
+    youth = []
+    for row in yth.data_rows():
+        name = get(row, yth, "name", "prospect")
+        if not name:
+            continue
+        name = str(name).strip()
+        oval = num(get(row, yth, "oval aptitude", "oval_aptitude")) or 5
+        road = num(get(row, yth, "road street aptitude", "road_street_aptitude")) or 5
+        rawpace = num(get(row, yth, "raw pace", "raw_pace")) or 5
+        racecraft = num(get(row, yth, "racecraft")) or 5
+        composure = num(get(row, yth, "composure")) or 5
+        sk = {
+            "cornering": r1(road), "braking": avg(road, oval), "straights": r1(oval),
+            "tractionAcceleration": r1(oval), "elevationBlindCorners": r1(road),
+            "technical": r1(road), "overtakingRacecraft": r1(racecraft),
+            "surfaceGripBumpiness": avg(oval, road), "riskManagement": r1(composure),
+            "enduranceConsistency": r1(composure),
+        }
+        overall = avg(oval, road, rawpace, racecraft)
+        potential = scale10(get(row, yth, "potential"), r1(min(10, overall + 1)))
+        age = num(get(row, yth, "age 2026", "age_2026", "age"))
+        youth.append({
+            "id": f"yth-{tag}-{slug(name)}",
+            "name": name, "age": int(age or 0),
+            "birthYear": int(y - (age or 17)),
+            "nationality": str(get(row, yth, "nationality") or "").strip(),
+            "level": str(get(row, yth, "current level", "current_level") or "Karting").strip(),
+            "pool": "Youth", "status": "Prospect", "eligible": True, "earliest": y,
+            "skills": sk, "overall": overall, "potential": potential,
+            "potentialDelta": r1(potential - overall),
+            "devRate": derive_devrate(age, get(row, yth, "development rate", "development_rate")),
+            "years": int(num(get(row, yth, "years until indycar ready", "years_until_indycar_ready")) or max(1, 18 - int(age or 17))),
+            "signing": r1(num(get(row, yth, "signing cost", "signing_cost")) or 0.5),
+            "academy": r1(num(get(row, yth, "yearly academy cost", "yearly_academy_cost")) or 0.3),
+            "risk": str(get(row, yth, "risk level", "risk_level") or "Medium").strip(),
+            "path": "Academy",
+            "notes": str(get(row, yth, "notes", "traits") or "").strip(),
+        })
+
+    wb.close()
+    write_ts(y, src, header, tracks, teams, drivers, market, youth, budget_for,
+             difficulty, series=series, points_id="pts-indycar-2026")
+    print(f"OK {series} {y}: tracks={len(tracks)} teams={len(teams)} drivers={len(drivers)} market={len(market)} youth={len(youth)}")
+    if unassigned:
+        print(f"   (drivers not seated: {unassigned})")
+
+
 SERIES_NAME = {"F1": "Formula 1 World Championship", "IndyCar": "IndyCar Series"}
 
 
@@ -805,6 +1111,10 @@ def write_ts(y, src, header, tracks, teams, drivers, market, youth, budget_for,
 
 
 def main():
+    args = [a.lower() for a in sys.argv[1:]]
+    if "indycar" in args:
+        gen_indycar(2026)
+        return
     years = [int(a) for a in sys.argv[1:] if a.isdigit()]
     if not years and os.environ.get("YEAR"):
         years = [int(os.environ["YEAR"])]
