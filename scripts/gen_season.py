@@ -391,7 +391,8 @@ def gen(year, series="F1"):
     y = year
     tag = str(y) if series == "F1" else f"{y}{series}"
 
-    cal_sn = pick_sheet(wb, (["calendar"],), (["track", "rating"],))
+    cal_sn = pick_sheet(wb, (["calendar"],), (["track", "rating"],),
+                        (["ratings"], ["key", "driver", "car"]))
     car_sn = pick_sheet(wb, (["car", "performance"],), (["team", "car"],),
                         (["carperformance"],), (["car"],))
     drv_sn = pick_sheet(wb, (["driver", "rating"],), (["drivers"],),

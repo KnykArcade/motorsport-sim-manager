@@ -13,6 +13,11 @@ import { tracks1994 } from './tracks/tracks1994';
 import { teams1994 } from './teams/teams1994';
 import { drivers1994 } from './drivers/drivers1994';
 import { cars1994 } from './cars/cars1994';
+import { season1996 } from './seasons/season1996';
+import { tracks1996 } from './tracks/tracks1996';
+import { teams1996 } from './teams/teams1996';
+import { drivers1996 } from './drivers/drivers1996';
+import { cars1996 } from './cars/cars1996';
 import { season1997 } from './seasons/season1997';
 import { tracks1997 } from './tracks/tracks1997';
 import { teams1997 } from './teams/teams1997';
@@ -95,6 +100,7 @@ export type SeasonBundle = {
 export const seasonBundles: Record<string, SeasonBundle> = {
   '1994-F1': { season: season1994, teams: teams1994, drivers: drivers1994, cars: cars1994 },
   '1995-F1': { season: season1995, teams: teams1995, drivers: drivers1995, cars: cars1995 },
+  '1996-F1': { season: season1996, teams: teams1996, drivers: drivers1996, cars: cars1996 },
   '1997-F1': { season: season1997, teams: teams1997, drivers: drivers1997, cars: cars1997 },
   '1998-F1': { season: season1998, teams: teams1998, drivers: drivers1998, cars: cars1998 },
   '1999-F1': { season: season1999, teams: teams1999, drivers: drivers1999, cars: cars1999 },
@@ -107,6 +113,7 @@ export const seasonBundles: Record<string, SeasonBundle> = {
 export const availableSeasons: { year: number; series: Series; label: string }[] = [
   { year: 1994, series: 'F1', label: '1994 Formula 1 World Championship' },
   { year: 1995, series: 'F1', label: '1995 Formula 1 World Championship' },
+  { year: 1996, series: 'F1', label: '1996 Formula 1 World Championship' },
   { year: 1997, series: 'F1', label: '1997 Formula 1 World Championship' },
   { year: 1998, series: 'F1', label: '1998 Formula 1 World Championship' },
   { year: 1999, series: 'F1', label: '1999 Formula 1 World Championship' },
@@ -128,8 +135,8 @@ export function getSeasonBundle(year: number, series: Series = 'F1'): SeasonBund
 // Track ids are unique across all seasons (later seasons are year-suffixed), so a
 // single global lookup serves every season's calendar.
 const allTracks: Track[] = [
-  ...tracks1994, ...tracks1995, ...tracks1997, ...tracks1998, ...tracks1999,
-  ...tracks2000, ...tracks2026, ...tracks2026IndyCar,
+  ...tracks1994, ...tracks1995, ...tracks1996, ...tracks1997, ...tracks1998,
+  ...tracks1999, ...tracks2000, ...tracks2026, ...tracks2026IndyCar,
 ];
 export const tracksById = Object.fromEntries(allTracks.map((t) => [t.id, t]));
 
