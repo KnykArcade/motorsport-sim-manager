@@ -19,6 +19,16 @@ export const pointsSystems: Record<string, PointsSystem> = {
       1: 25, 2: 18, 3: 15, 4: 12, 5: 10, 6: 8, 7: 6, 8: 4, 9: 2, 10: 1,
     },
   },
+  'pts-indycar-2026': {
+    id: 'pts-indycar-2026',
+    name: 'IndyCar 2026 (50-40-35-...)',
+    pointsByPosition: {
+      1: 50, 2: 40, 3: 35, 4: 32, 5: 30, 6: 28, 7: 26, 8: 24, 9: 22, 10: 20,
+      11: 19, 12: 18, 13: 17, 14: 16, 15: 15, 16: 14, 17: 13, 18: 12, 19: 11,
+      20: 10, 21: 9, 22: 8, 23: 7, 24: 6, 25: 5, 26: 5, 27: 5, 28: 5, 29: 5,
+      30: 5, 31: 5, 32: 5, 33: 5,
+    },
+  },
 };
 
 export function getPointsSystem(id: string): PointsSystem {

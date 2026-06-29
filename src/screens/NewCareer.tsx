@@ -1,13 +1,13 @@
 import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useGame } from '../game/GameContext';
-import { getSeasonBundle, availableSeasons } from '../data';
+import { getSeasonBundle, availableSeasons, availableSeries } from '../data';
 import { effectiveCarRatings } from '../sim/trackFitEngine';
 import { Button } from '../components/Button';
 import { StatBar } from '../components/StatBar';
 import { formatMoney } from '../components/ui';
 import { hasSave } from '../game/saveSystem';
-import type { GameMode } from '../types/gameTypes';
+import type { GameMode, Series } from '../types/gameTypes';
 
 type Step = 'mode' | 'setup' | 'team';
 
@@ -17,8 +17,15 @@ export function NewCareer() {
   const [step, setStep] = useState<Step>('mode');
   const [mode, setMode] = useState<GameMode>('SingleSeason');
   const [year, setYear] = useState(1995);
-  const [series] = useState<'F1'>('F1');
+  const [series, setSeries] = useState<Series>('F1');
   const [selectedTeamId, setSelectedTeamId] = useState<string | null>(null);
+
+  const selectSeries = (next: Series) => {
+    setSeries(next);
+    const first = availableSeasons.find((s) => s.series === next);
+    if (first) setYear(first.year);
+    setSelectedTeamId(null);
+  };
 
   const bundle = useMemo(() => getSeasonBundle(year, series), [year, series]);
 
@@ -66,7 +73,27 @@ export function NewCareer() {
 
         {step === 'setup' && (
           <div className="space-y-4">
-            <SelectCard label="Series" value="Formula 1" note="More series coming soon" />
+            <div>
+              <p className="mb-2 text-sm font-medium text-neutral-300">Series</p>
+              <div className="grid gap-3 sm:grid-cols-2">
+                {availableSeries.map((s) => (
+                  <button
+                    key={s.id}
+                    onClick={() => selectSeries(s.id)}
+                    className={`rounded-xl border p-4 text-left transition ${
+                      series === s.id
+                        ? 'border-amber-500 bg-amber-500/10'
+                        : 'border-neutral-800 bg-neutral-900/40 hover:border-neutral-700'
+                    }`}
+                  >
+                    <div className="text-lg font-semibold text-neutral-100">{s.label}</div>
+                    <div className="text-xs text-neutral-400">
+                      {availableSeasons.filter((y) => y.series === s.id).length} season(s) available
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </div>
             <div>
               <p className="mb-2 text-sm font-medium text-neutral-300">Starting Season</p>
               <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
@@ -220,12 +247,3 @@ function ModeCard({
   );
 }
 
-function SelectCard({ label, value, note }: { label: string; value: string; note: string }) {
-  return (
-    <div className="rounded-xl border border-amber-500/40 bg-amber-500/5 p-5">
-      <div className="text-xs uppercase tracking-wide text-neutral-500">{label}</div>
-      <div className="mt-1 text-2xl font-bold text-neutral-100">{value}</div>
-      <div className="mt-1 text-xs text-neutral-500">{note}</div>
-    </div>
-  );
-}

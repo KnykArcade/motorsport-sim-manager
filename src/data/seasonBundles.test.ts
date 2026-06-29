@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { availableSeasons, getSeasonBundle, getTrackById, getMarketBundle } from './index';
+import { pointsSystems } from './pointsSystems/pointsSystems';
 
 describe('season bundles', () => {
   it('exposes more than one startable season', () => {
@@ -30,6 +31,10 @@ describe('season bundles', () => {
         for (const race of bundle!.season.calendar) {
           expect(getTrackById(race.trackId)).toBeDefined();
         }
+      });
+
+      it('references a registered points system', () => {
+        expect(pointsSystems[bundle!.season.pointsSystemId]).toBeDefined();
       });
 
       it('has a market + youth pool', () => {
