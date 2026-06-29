@@ -121,6 +121,7 @@ export function TeamHQ() {
             <div className="grid grid-cols-2 gap-2">
               <Button onClick={() => navigate('/calendar')}>Calendar</Button>
               <Button onClick={() => navigate('/standings')}>Standings</Button>
+              <Button onClick={() => navigate('/history')}>Race History</Button>
               <Button onClick={() => navigate('/drivers')}>Drivers</Button>
               <Button onClick={() => navigate('/development')}>Development</Button>
               <Button onClick={() => navigate('/finance')}>Finance</Button>

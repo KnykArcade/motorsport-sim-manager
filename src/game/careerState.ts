@@ -22,6 +22,7 @@ import type { CarSetup } from '../types/setupTypes';
 import type { AcademyMember, SeatSigning } from '../types/marketTypes';
 import type { FinanceTransaction } from '../types/financeTypes';
 import type { StaffMember } from '../types/staffTypes';
+import type { RaceArchiveEntry } from '../types/historyTypes';
 
 export type GameState = {
   id: string;
@@ -65,6 +66,9 @@ export type GameState = {
 
   // Specialists hired by the player's team (Phase D). Optional for save compat.
   staff?: StaffMember[];
+
+  // Per-race history + lap-time archive (Phase D). Optional for save compat.
+  raceArchive?: RaceArchiveEntry[];
 
   driverStandings: StandingsEntry[];
   constructorStandings: StandingsEntry[];
