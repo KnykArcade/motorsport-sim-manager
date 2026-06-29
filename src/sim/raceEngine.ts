@@ -56,11 +56,31 @@ export function calculateRacePace(
   return { score, breakdown };
 }
 
+// Representative race distance used to scale the lap log and DNF laps. Exposed
+// so the live-race state machine animates over the same number of laps.
+export const RACE_TOTAL_LAPS = 60;
+
+export type RaceOutcome = {
+  results: RaceResult[];
+  events: RaceEvent[];
+  breakdowns: Record<string, ScoreBreakdown>;
+  totalLaps: number;
+};
+
 export function simulateRace(context: RaceContext): {
   results: RaceResult[];
   events: RaceEvent[];
   breakdowns: Record<string, ScoreBreakdown>;
 } {
+  const { results, events, breakdowns } = computeRaceOutcome(context);
+  return { results, events, breakdowns };
+}
+
+// The deterministic, single-shot race computation. The live-race engine
+// (src/sim/liveRace) converges to exactly this outcome, so the final
+// classification is identical whether a race is played out live or resolved
+// instantly. All randomness flows through the seeded RNG in a fixed order.
+export function computeRaceOutcome(context: RaceContext): RaceOutcome {
   const rng = createSeededRandom(deriveSeed(context.seed, 'race', context.track.id));
   const breakdowns: Record<string, ScoreBreakdown> = {};
   const events: RaceEvent[] = [];
@@ -80,7 +100,7 @@ export function simulateRace(context: RaceContext): {
     lapsCompleted: number;
   };
 
-  const totalLaps = 60; // representative; lap log scales to this
+  const totalLaps = RACE_TOTAL_LAPS; // representative; lap log scales to this
   const rows: Row[] = context.entrants.map((e) => {
     const decision = context.decisions[e.driver.id];
     const setup = context.setupOptions[decision.setupId];
@@ -192,7 +212,7 @@ export function simulateRace(context: RaceContext): {
 
   buildEventLog(context, results, rng, events, totalLaps);
 
-  return { results, events, breakdowns };
+  return { results, events, breakdowns, totalLaps };
 }
 
 function buildEventLog(
