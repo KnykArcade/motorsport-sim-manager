@@ -16,6 +16,10 @@ import { aiQualifyingDecision } from './ai';
 import { carForTeam, currentRace, type GameState } from './careerState';
 import { buildRaceContext, playerTunedSetups } from './raceSetup';
 import { createNewGame, type NewGameOptions } from './initialCareer';
+import { advanceSeason } from './seasonRollover';
+import { getMarketBundle } from '../data';
+import { signProspectToAcademy } from '../sim/driverMarketEngine';
+import type { SeatSigning } from '../types/marketTypes';
 import type {
   DevelopmentProject,
   QualifyingResult,
@@ -43,6 +47,12 @@ export type GameAction =
     }
   | { type: 'START_DEVELOPMENT'; projectId: string }
   | { type: 'SET_CAR_SETUP'; driverId: string; setup: CarSetup }
+  | { type: 'SIGN_MARKET_DRIVER'; marketId: string; seatDriverId: string }
+  | { type: 'PROMOTE_ACADEMY'; academyId: string; seatDriverId: string }
+  | { type: 'RELEASE_SIGNING'; seatDriverId: string }
+  | { type: 'SIGN_YOUTH'; youthId: string }
+  | { type: 'RELEASE_ACADEMY'; academyId: string }
+  | { type: 'ADVANCE_SEASON' }
   | { type: 'ADVANCE_RACE' };
 
 function buildEntrants(state: GameState): Entrant[] {
@@ -99,6 +109,49 @@ export function gameReducer(state: GameState | null, action: GameAction): GameSt
       };
     }
 
+    case 'SIGN_MARKET_DRIVER': {
+      if (!state) return state;
+      return queueSigning(state, action.seatDriverId, 'market', action.marketId);
+    }
+
+    case 'PROMOTE_ACADEMY': {
+      if (!state) return state;
+      return queueSigning(state, action.seatDriverId, 'academy', action.academyId);
+    }
+
+    case 'RELEASE_SIGNING': {
+      if (!state) return state;
+      return {
+        ...state,
+        pendingSignings: (state.pendingSignings ?? []).filter(
+          (s) => s.seatDriverId !== action.seatDriverId,
+        ),
+      };
+    }
+
+    case 'SIGN_YOUTH': {
+      if (!state) return state;
+      return signYouth(state, action.youthId);
+    }
+
+    case 'RELEASE_ACADEMY': {
+      if (!state) return state;
+      return {
+        ...state,
+        academy: (state.academy ?? []).filter((a) => a.id !== action.academyId),
+        // Drop any pending promotion that referenced this academy member.
+        pendingSignings: (state.pendingSignings ?? []).filter(
+          (s) => !(s.source === 'academy' && s.sourceId === action.academyId),
+        ),
+      };
+    }
+
+    case 'ADVANCE_SEASON': {
+      if (!state) return state;
+      if (!state.seasonComplete) return state;
+      return advanceSeason(state);
+    }
+
     case 'ADVANCE_RACE': {
       if (!state) return state;
       return state;
@@ -107,6 +160,50 @@ export function gameReducer(state: GameState | null, action: GameAction): GameSt
     default:
       return state;
   }
+}
+
+// Queue (or replace) a seat change for the player's seat held by seatDriverId.
+// Signings are only allowed during the offseason (season complete).
+function queueSigning(
+  state: GameState,
+  seatDriverId: string,
+  source: SeatSigning['source'],
+  sourceId: string,
+): GameState {
+  if (!state.seasonComplete) return state;
+  const seat = state.drivers.find((d) => d.id === seatDriverId);
+  if (!seat || seat.teamId !== state.selectedTeamId) return state;
+
+  let name: string;
+  if (source === 'market') {
+    const m = getMarketBundle(state.seasonYear, state.series)?.drivers.find(
+      (d) => d.id === sourceId,
+    );
+    if (!m || (state.signedMarketIds ?? []).includes(m.id)) return state;
+    name = m.name;
+  } else {
+    const a = (state.academy ?? []).find((x) => x.id === sourceId);
+    if (!a) return state;
+    name = a.name;
+  }
+
+  const others = (state.pendingSignings ?? []).filter(
+    (s) => s.seatDriverId !== seatDriverId && s.sourceId !== sourceId,
+  );
+  return {
+    ...state,
+    pendingSignings: [...others, { seatDriverId, source, sourceId, name }],
+  };
+}
+
+function signYouth(state: GameState, youthId: string): GameState {
+  if ((state.academy ?? []).some((a) => a.prospectId === youthId)) return state;
+  const prospect = getMarketBundle(state.seasonYear, state.series)?.youth.find(
+    (y) => y.id === youthId,
+  );
+  if (!prospect) return state;
+  const member = signProspectToAcademy(prospect, state.seasonYear);
+  return { ...state, academy: [...(state.academy ?? []), member] };
 }
 
 function runQualifying(state: GameState, playerDecisions: QualifyingDecision[]): GameState {
