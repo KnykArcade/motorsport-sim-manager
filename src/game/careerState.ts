@@ -26,7 +26,7 @@ import type { RaceArchiveEntry } from '../types/historyTypes';
 import type { WeekendPractice } from '../types/practiceTypes';
 import type { CommercialState } from '../types/sponsorTypes';
 import type { EngineState } from '../types/engineTypes';
-import type { TeamReputation, TeamExpectation } from '../types/expectationTypes';
+import type { TeamReputation, TeamExpectation, ExpectationReview } from '../types/expectationTypes';
 import type { TeamPrincipalProfile, JobOffer } from '../types/principalTypes';
 import type { FacilitiesState } from '../types/facilityTypes';
 import type { DriverRelationship, TeamOrderDecision } from '../types/relationshipTypes';
@@ -107,6 +107,7 @@ export type GameState = {
   // 4. Team reputation & per-season owner expectations.
   teamReputations?: Record<string, TeamReputation>;
   teamExpectations?: Record<string, TeamExpectation>;
+  expectationReviews?: ExpectationReview[];
   // 5. Team Principal profile + outstanding job offers/rumors.
   principal?: TeamPrincipalProfile;
   jobOffers?: JobOffer[];

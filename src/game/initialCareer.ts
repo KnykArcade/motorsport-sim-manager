@@ -5,6 +5,8 @@ import { BALANCED_SETUP } from '../data/setup/setupComponents';
 import type { GameMode, Series } from '../types/gameTypes';
 import type { CarSetup } from '../types/setupTypes';
 import type { GameState } from './careerState';
+import { buildInitialCommercial } from '../sim/commercialEngine';
+import { buildTeamReputations, buildTeamExpectations } from '../sim/expectationEngine';
 
 // Deep clone via structuredClone (available in modern browsers / Node 18+).
 function clone<T>(value: T): T {
@@ -33,6 +35,15 @@ export function createNewGame(options: NewGameOptions): GameState {
   for (const driver of bundle.drivers) {
     if (driver.teamId === options.teamId) carSetups[driver.id] = { ...BALANCED_SETUP };
   }
+
+  // Commercial & owner-expectation state (Living Universe Phase 3).
+  const playerTeam = bundle.teams.find((t) => t.id === options.teamId);
+  const playerDrivers = bundle.drivers.filter((d) => d.teamId === options.teamId);
+  const commercial = playerTeam
+    ? buildInitialCommercial(playerTeam, playerDrivers, seed, options.series)
+    : undefined;
+  const teamReputations = buildTeamReputations(bundle.teams);
+  const teamExpectations = buildTeamExpectations(bundle.teams, options.seasonYear);
 
   return {
     id: `save-${Date.now()}`,
@@ -67,6 +78,9 @@ export function createNewGame(options: NewGameOptions): GameState {
     ],
     regulationHistory: [],
     offseasonHistory: [],
+    commercial,
+    teamReputations,
+    teamExpectations,
     randomSeed: seed,
     seasonComplete: false,
   };

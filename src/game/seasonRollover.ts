@@ -13,9 +13,21 @@ import {
   progressAcademyMember,
 } from '../sim/driverMarketEngine';
 import { driverSalary, makeTransaction, toMoney } from '../sim/financeEngine';
+import {
+  evaluateSeasonObjectives,
+  rollSponsorRenewals,
+  sponsorAnnualIncome,
+} from '../sim/commercialEngine';
+import {
+  buildTeamExpectations,
+  reviewExpectation,
+  applyPatience,
+} from '../sim/expectationEngine';
 import type { Car, Driver, OffseasonSummary, Team } from '../types/gameTypes';
 import type { AcademyMember } from '../types/marketTypes';
 import type { FinanceTransaction } from '../types/financeTypes';
+import type { CommercialState } from '../types/sponsorTypes';
+import type { ExpectationReview, TeamExpectation, TeamReputation } from '../types/expectationTypes';
 import { carForTeam, type GameState } from './careerState';
 
 // Annual sponsorship the player's team earns, driven by reputation and the
@@ -129,14 +141,83 @@ export function advanceSeason(state: GameState): GameState {
     txns.push(makeTransaction(nextYear, 'Staff', `Salary: ${s.name} (${s.role})`, -toMoney(s.salary)));
   }
   const playerTeam = state.teams.find((t) => t.id === state.selectedTeamId);
-  const sponsorship = sponsorshipIncome(playerTeam, playerDrivers);
-  if (sponsorship > 0) {
-    txns.push(makeTransaction(nextYear, 'Sponsorship', `${nextYear} sponsorship`, sponsorship));
+
+  // Commercial settlement: evaluate the season's sponsor objectives, renew the
+  // portfolio for next year, then book the new annual sponsorship income. Falls
+  // back to the legacy reputation-based formula for pre-Phase-3 saves.
+  const commercialNotes: string[] = [];
+  let nextCommercial: CommercialState | undefined = state.commercial;
+  if (state.commercial && playerTeam) {
+    const playerConstructor = state.constructorStandings.findIndex((s) => s.entityId === playerTeam.id);
+    const playerStanding = playerConstructor >= 0 ? state.constructorStandings[playerConstructor] : undefined;
+    const failedToQualify = Object.values(state.completedRaceResults).some((res) =>
+      res.some((r) => r.teamId === playerTeam.id && r.status === 'DNS'),
+    );
+    const evalResult = evaluateSeasonObjectives(state.commercial, {
+      constructorPosition: playerConstructor >= 0 ? playerConstructor + 1 : state.teams.length,
+      points: playerStanding?.points ?? 0,
+      wins: playerStanding?.wins ?? 0,
+      failedToQualify,
+    });
+    for (const p of evalResult.payouts) {
+      txns.push(makeTransaction(state.seasonYear, 'Sponsorship', p.label, p.amount));
+    }
+    commercialNotes.push(...evalResult.notes);
+
+    const renewed = rollSponsorRenewals(
+      { ...state.commercial, sponsors: evalResult.sponsors },
+      playerTeam,
+      state.randomSeed,
+      nextYear,
+    );
+    nextCommercial = renewed.commercial;
+    commercialNotes.push(...renewed.notes);
+
+    const annual = sponsorAnnualIncome(nextCommercial);
+    if (annual > 0) {
+      txns.push(makeTransaction(nextYear, 'Sponsorship', `${nextYear} sponsorship income`, annual));
+    }
+  } else {
+    const sponsorship = sponsorshipIncome(playerTeam, playerDrivers);
+    if (sponsorship > 0) {
+      txns.push(makeTransaction(nextYear, 'Sponsorship', `${nextYear} sponsorship`, sponsorship));
+    }
   }
   const budgetDelta = txns.reduce((sum, t) => sum + t.amount, 0);
   const teams = state.teams.map((t) =>
     t.id === state.selectedTeamId ? { ...t, budget: t.budget + budgetDelta } : t,
   );
+
+  // Owner-expectation review for the completed season → owner patience, then
+  // fresh expectations for the upcoming season.
+  const expectationReviews: ExpectationReview[] = [...(state.expectationReviews ?? [])];
+  let teamReputations: Record<string, TeamReputation> | undefined = state.teamReputations;
+  if (playerTeam && state.teamExpectations?.[playerTeam.id]) {
+    const exp = state.teamExpectations[playerTeam.id];
+    const idx = state.constructorStandings.findIndex((s) => s.entityId === playerTeam.id);
+    const standing = idx >= 0 ? state.constructorStandings[idx] : undefined;
+    const review = reviewExpectation(exp, {
+      constructorPosition: idx >= 0 ? idx + 1 : state.teams.length,
+      points: standing?.points ?? 0,
+      wins: standing?.wins ?? 0,
+    });
+    expectationReviews.push(review);
+    commercialNotes.push(review.summary);
+    const patience = applyPatience(state.teamReputations?.[playerTeam.id], exp, review);
+    if (patience.reputation && teamReputations) {
+      teamReputations = { ...teamReputations, [playerTeam.id]: patience.reputation };
+    }
+  }
+  const nextExpectations: Record<string, TeamExpectation> | undefined = state.teamExpectations
+    ? buildTeamExpectations(teams, nextYear)
+    : undefined;
+  // Carry forward the matured owner patience into next season's expectation.
+  if (nextExpectations && teamReputations) {
+    for (const id of Object.keys(nextExpectations)) {
+      const patience = teamReputations[id]?.ownerPatience;
+      if (patience !== undefined) nextExpectations[id] = { ...nextExpectations[id], ownerPatience: patience };
+    }
+  }
 
   // Fresh calendar (same template, uncompleted) and reset season bookkeeping.
   const calendar = state.calendar.map((r) => ({ ...r, completed: false }));
@@ -150,6 +231,7 @@ export function advanceSeason(state: GameState): GameState {
     notes: [
       ...signings.map((s) => `Signed ${s.name} for ${nextYear}.`),
       ...(nextAcademy.length ? [`${nextAcademy.length} academy driver(s) progressed.`] : []),
+      ...commercialNotes,
     ],
   };
 
@@ -165,6 +247,10 @@ export function advanceSeason(state: GameState): GameState {
     cars,
     teams,
     finance: [...(state.finance ?? []), ...txns],
+    commercial: nextCommercial,
+    teamExpectations: nextExpectations ?? state.teamExpectations,
+    teamReputations,
+    expectationReviews,
     carSetups,
     academy: nextAcademy,
     pendingSignings: [],

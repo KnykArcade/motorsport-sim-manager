@@ -19,9 +19,13 @@ describe('save model', () => {
     expect(CURRENT_SAVE_VERSION).toBeGreaterThanOrEqual(2);
   });
 
-  it('leaves Living Universe systems unset on a fresh state', () => {
+  it('populates the implemented systems and leaves unbuilt ones unset', () => {
     const s = freshState();
-    expect(s.commercial).toBeUndefined();
+    // Phase 3: commercial + owner expectations are seeded on a new career.
+    expect(s.commercial).toBeDefined();
+    expect(s.teamExpectations).toBeDefined();
+    expect(s.teamReputations).toBeDefined();
+    // Systems from later phases remain unset.
     expect(s.engine).toBeUndefined();
     expect(s.facilities).toBeUndefined();
     expect(s.principal).toBeUndefined();

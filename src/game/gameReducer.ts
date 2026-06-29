@@ -20,6 +20,7 @@ import { advanceSeason } from './seasonRollover';
 import { getMarketBundle, getStaffPool } from '../data';
 import { signProspectToAcademy } from '../sim/driverMarketEngine';
 import { makeTransaction, toMoney } from '../sim/financeEngine';
+import { racePerformanceBonuses } from '../sim/commercialEngine';
 import { developmentSuccessBonus } from '../sim/staffEngine';
 import { classifyCrashDamage, damageConditionHit, repairCost } from '../sim/repairEngine';
 import { buildRaceArchiveEntry } from '../sim/lapArchiveEngine';
@@ -484,6 +485,22 @@ function applyRaceResults(
       }
     }
   }
+  // Sponsor performance bonuses for the player team's result this round.
+  const playerResults = results.filter((r) => r.teamId === state.selectedTeamId);
+  const playerQualy = qualifying.filter((q) => q.teamId === state.selectedTeamId);
+  const sponsorBonuses = racePerformanceBonuses(state.commercial, {
+    wins: playerResults.filter((r) => r.position === 1).length,
+    podiums: playerResults.filter((r) => r.position !== null && r.position <= 3).length,
+    poles: playerQualy.filter((q) => q.position === 1).length,
+  });
+  for (const b of sponsorBonuses) {
+    const team = teams.find((t) => t.id === state.selectedTeamId);
+    if (team) team.budget += b.amount;
+    financeTxns.push(
+      makeTransaction(state.seasonYear, 'Sponsorship', `${race.gpName}: ${b.label}`, b.amount, race.round),
+    );
+  }
+
   // Apply crash damage, then the standard between-race recovery.
   cars = cars.map((c) => ({
     ...c,
