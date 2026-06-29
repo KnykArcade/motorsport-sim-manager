@@ -33,12 +33,17 @@ export type PracticeSummary = {
   drivers: PracticeDriverSummary[];
 };
 
-export type PracticeContext = {
-  track: Track;
-  entrants: { driver: Driver; car: Car }[];
-  // Auto-selected, track-appropriate trims (distinct quali vs race packages).
+export type PracticeEntrant = {
+  driver: Driver;
+  car: Car;
+  // Per-driver session trims derived from that driver's tuned setup.
   qualifyingSetup: SetupOption;
   raceSetup: SetupOption;
+};
+
+export type PracticeContext = {
+  track: Track;
+  entrants: PracticeEntrant[];
   seed: string;
 };
 
@@ -62,13 +67,12 @@ const FLAVOR = {
 
 export function runPractice(context: PracticeContext): PracticeSummary {
   const rng = createSeededRandom(deriveSeed(context.seed, 'practice', context.track.id));
-  // Both trims share the base downforce profile, so the underlying setup fit is
-  // common; the trims differ in qualifying/race pace bias used for the pace labels.
-  const setupFit = calculateSetupFit(context.raceSetup, context.track);
-  const qualiSetup = context.qualifyingSetup;
-  const raceSetup = context.raceSetup;
 
   const drivers: PracticeDriverSummary[] = context.entrants.map((e) => {
+    // Each driver's setup fit is evaluated against their own tuned trims.
+    const setupFit = calculateSetupFit(e.raceSetup, context.track);
+    const qualiSetup = e.qualifyingSetup;
+    const raceSetup = e.raceSetup;
     const trackFit = calculateTrackFit(e.driver, e.car, context.track);
     const variance = rng.variance(4);
 
@@ -106,10 +110,11 @@ export function runPractice(context: PracticeContext): PracticeSummary {
     };
   });
 
+  const first = context.entrants[0];
   return {
     trackId: context.track.id,
-    qualifyingTrimName: qualiSetup.name,
-    raceTrimName: raceSetup.name,
+    qualifyingTrimName: first?.qualifyingSetup.name ?? 'Qualifying Trim',
+    raceTrimName: first?.raceSetup.name ?? 'Race Trim',
     drivers,
   };
 }

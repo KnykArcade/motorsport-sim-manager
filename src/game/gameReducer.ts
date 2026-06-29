@@ -14,7 +14,7 @@ import { updateMorale } from '../sim/moraleEngine';
 import { generateRaceNews } from '../sim/newsEngine';
 import { aiQualifyingDecision } from './ai';
 import { carForTeam, currentRace, type GameState } from './careerState';
-import { buildRaceContext } from './raceSetup';
+import { buildRaceContext, playerTunedSetups } from './raceSetup';
 import { createNewGame, type NewGameOptions } from './initialCareer';
 import type {
   DevelopmentProject,
@@ -28,6 +28,7 @@ import type {
   RaceEvent,
   ScoreBreakdown,
 } from '../types/simTypes';
+import type { CarSetup } from '../types/setupTypes';
 
 export type GameAction =
   | { type: 'NEW_GAME'; options: NewGameOptions }
@@ -41,6 +42,7 @@ export type GameAction =
       breakdowns: Record<string, ScoreBreakdown>;
     }
   | { type: 'START_DEVELOPMENT'; projectId: string }
+  | { type: 'SET_CAR_SETUP'; driverId: string; setup: CarSetup }
   | { type: 'ADVANCE_RACE' };
 
 function buildEntrants(state: GameState): Entrant[] {
@@ -89,6 +91,14 @@ export function gameReducer(state: GameState | null, action: GameAction): GameSt
       return startDevelopment(state, action.projectId);
     }
 
+    case 'SET_CAR_SETUP': {
+      if (!state) return state;
+      return {
+        ...state,
+        carSetups: { ...(state.carSetups ?? {}), [action.driverId]: action.setup },
+      };
+    }
+
     case 'ADVANCE_RACE': {
       if (!state) return state;
       return state;
@@ -106,18 +116,20 @@ function runQualifying(state: GameState, playerDecisions: QualifyingDecision[]):
   if (!track) return state;
 
   const entrants = buildEntrants(state);
+  const tuned = playerTunedSetups(state, track, 'qualifying');
   const decisions: Record<string, QualifyingDecision> = {};
   const playerById = new Map(playerDecisions.map((d) => [d.driverId, d]));
   for (const e of entrants) {
-    decisions[e.driver.id] =
-      playerById.get(e.driver.id) ?? aiQualifyingDecision(e.driver.id, track);
+    const decision = playerById.get(e.driver.id) ?? aiQualifyingDecision(e.driver.id, track);
+    const tunedId = tuned.setupIdByDriver[e.driver.id];
+    decisions[e.driver.id] = tunedId ? { ...decision, setupId: tunedId } : decision;
   }
 
   const { results, breakdowns } = simulateQualifying({
     track,
     entrants,
     decisions,
-    setupOptions: { ...setupOptionsById, ...autoSetupOptionsForTrack(track) },
+    setupOptions: { ...setupOptionsById, ...autoSetupOptionsForTrack(track), ...tuned.overlay },
     runPlans: qualifyingRunPlansById,
     seed: `${state.randomSeed}-r${race.round}`,
   });

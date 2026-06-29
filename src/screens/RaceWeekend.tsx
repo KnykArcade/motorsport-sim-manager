@@ -7,17 +7,22 @@ import { getTrackById } from '../data';
 import { qualifyingRunPlans } from '../data/decisions/qualifyingRunPlans';
 import { raceStrategies } from '../data/decisions/raceStrategies';
 import { driverInstructions } from '../data/decisions/driverInstructions';
-import { autoSetupsForTrack, type AutoSetups } from '../sim/autoSetup';
+import { autoSetupsForTrack } from '../sim/autoSetup';
+import { deriveSetupOption } from '../sim/setupDerive';
 import { runPractice, type PracticeSummary } from '../sim/practiceEngine';
+import { BALANCED_SETUP } from '../data/setup/setupComponents';
 import { Panel } from '../components/Panel';
 import { Button } from '../components/Button';
 import { TrackDemandBars } from '../components/TrackDemandBars';
-import type { Car, Driver, Track } from '../types/gameTypes';
+import { SetupWorkshop } from '../components/SetupWorkshop';
+import type { Driver, Track } from '../types/gameTypes';
+import type { CarSetup } from '../types/setupTypes';
 import type { QualifyingDecision, RaceDecision } from '../types/simTypes';
 
 type Phase =
   | 'briefing'
   | 'practice'
+  | 'setup'
   | 'quali-run'
   | 'quali-review'
   | 'race-strategy'
@@ -25,7 +30,8 @@ type Phase =
 
 const PHASE_ORDER: { id: Phase; label: string }[] = [
   { id: 'briefing', label: 'Track Briefing' },
-  { id: 'practice', label: 'Practice / Setup' },
+  { id: 'practice', label: 'Practice' },
+  { id: 'setup', label: 'Car Setup' },
   { id: 'quali-run', label: 'Qualifying Run Strategy' },
   { id: 'quali-review', label: 'Qualifying Review' },
   { id: 'race-strategy', label: 'Pre-Race Strategy' },
@@ -49,12 +55,28 @@ export function RaceWeekend() {
     [track],
   );
 
-  // Setup trim is selected automatically (professional team preparation): a
-  // track-appropriate base package, run as a distinct qualifying trim on
-  // Saturday and a distinct race trim on Sunday. The player only chooses run
-  // plan / strategy / instructions, so we store just those overrides.
+  // The player tunes the base engineering setup in the Car Setup phase; the team
+  // still derives a distinct qualifying trim (Saturday) and race trim (Sunday)
+  // automatically. For run plan / strategy / instructions we store overrides.
   const [qualiOverrides, setQualiOverrides] = useState<Record<string, Partial<QualifyingDecision>>>({});
   const [raceOverrides, setRaceOverrides] = useState<Record<string, Partial<RaceDecision>>>({});
+
+  // Unsaved edits made in the Car Setup phase, layered over the committed setups
+  // in game state. Resolved into a complete per-driver map for the children.
+  const [setupDraft, setSetupDraft] = useState<Record<string, CarSetup>>({});
+  const resolvedSetups = useMemo(() => {
+    const m: Record<string, CarSetup> = {};
+    for (const d of playerDrivers) {
+      m[d.id] = setupDraft[d.id] ?? state?.carSetups?.[d.id] ?? { ...BALANCED_SETUP };
+    }
+    return m;
+  }, [playerDrivers, setupDraft, state]);
+
+  const commitSetups = () => {
+    for (const d of playerDrivers) {
+      dispatch({ type: 'SET_CAR_SETUP', driverId: d.id, setup: resolvedSetups[d.id] });
+    }
+  };
 
   const qualiFor = (driverId: string): QualifyingDecision => {
     const o = qualiOverrides[driverId] ?? {};
@@ -109,10 +131,37 @@ export function RaceWeekend() {
         <PracticePhase
           state={state}
           track={track}
-          autoSetups={autoSetups}
+          setups={resolvedSetups}
           onBack={() => setPhase('briefing')}
-          onNext={() => setPhase('quali-run')}
+          onNext={() => setPhase('setup')}
         />
+      )}
+
+      {phase === 'setup' && (
+        <div className="space-y-4">
+          <SetupWorkshop
+            track={track}
+            drivers={playerDrivers}
+            setups={resolvedSetups}
+            onChangeParam={(driverId, key, value) =>
+              setSetupDraft((p) => ({ ...p, [driverId]: { ...p[driverId], [key]: value } }))
+            }
+            onApplySetup={(driverId, setup) =>
+              setSetupDraft((p) => ({ ...p, [driverId]: setup }))
+            }
+            onCopy={(fromId, toId) =>
+              setSetupDraft((p) => ({ ...p, [toId]: { ...p[fromId] } }))
+            }
+          />
+          <div className="flex justify-between">
+            <Button variant="ghost" onClick={() => { commitSetups(); setPhase('practice'); }}>
+              ← Back to Practice
+            </Button>
+            <Button variant="primary" onClick={() => { commitSetups(); setPhase('quali-run'); }}>
+              Confirm Setup →
+            </Button>
+          </div>
+        </div>
       )}
 
       {phase === 'quali-run' && (
@@ -125,7 +174,7 @@ export function RaceWeekend() {
           onSelect={(driverId, optId) =>
             setQualiOverrides((p) => ({ ...p, [driverId]: { ...p[driverId], runPlanId: optId as QualifyingDecision['runPlanId'] } }))
           }
-          onBack={() => setPhase('practice')}
+          onBack={() => setPhase('setup')}
           onNext={runQualifying}
           nextLabel="Simulate Qualifying →"
         />
@@ -252,29 +301,37 @@ function InfoBox({ label, text }: { label: string; text: string }) {
 function PracticePhase({
   state,
   track,
-  autoSetups,
+  setups,
   onBack,
   onNext,
 }: {
   state: NonNullable<ReturnType<typeof useGame>['state']>;
   track: Track;
-  autoSetups: AutoSetups;
+  setups: Record<string, CarSetup>;
   onBack: () => void;
   onNext: () => void;
 }) {
   const summary: PracticeSummary = useMemo(() => {
     const race = currentRace(state);
     const entrants = driversForTeam(state, state.selectedTeamId)
-      .map((d) => ({ driver: d, car: carForTeam(state, d.teamId) }))
-      .filter((e): e is { driver: Driver; car: Car } => !!e.car);
+      .map((d) => {
+        const car = carForTeam(state, d.teamId);
+        if (!car) return undefined;
+        const setup = setups[d.id] ?? { ...BALANCED_SETUP };
+        return {
+          driver: d,
+          car,
+          qualifyingSetup: deriveSetupOption(setup, track, d, 'qualifying'),
+          raceSetup: deriveSetupOption(setup, track, d, 'race'),
+        };
+      })
+      .filter((e): e is NonNullable<typeof e> => !!e);
     return runPractice({
       track,
       entrants,
-      qualifyingSetup: autoSetups.qualifying,
-      raceSetup: autoSetups.race,
       seed: `${state.randomSeed}-r${race?.round ?? 0}`,
     });
-  }, [state, track, autoSetups]);
+  }, [state, track, setups]);
 
   const driverName = (id: string) => state.drivers.find((d) => d.id === id)?.name ?? id;
   const driverNumber = (id: string) => state.drivers.find((d) => d.id === id)?.number ?? '';
@@ -284,14 +341,14 @@ function PracticePhase({
       <div>
         <h2 className="text-lg font-semibold text-neutral-100">Practice Summary &amp; Setup Confidence</h2>
         <p className="text-sm text-neutral-400">
-          The team has prepared the car automatically. Use the confidence read-out to plan your
-          qualifying run and race strategy.
+          Baseline read-out for the current setup. Use it — and the feedback in the Car Setup
+          workshop next — to dial the car in before qualifying.
         </p>
       </div>
 
       <div className="grid gap-3 md:grid-cols-2">
-        <InfoBox label="Qualifying Trim (auto)" text={summary.qualifyingTrimName} />
-        <InfoBox label="Race Trim (auto)" text={summary.raceTrimName} />
+        <InfoBox label="Qualifying Trim" text={summary.qualifyingTrimName} />
+        <InfoBox label="Race Trim" text={summary.raceTrimName} />
       </div>
 
       <div className="grid gap-4 md:grid-cols-2">
