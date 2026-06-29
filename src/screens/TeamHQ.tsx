@@ -124,6 +124,7 @@ export function TeamHQ() {
               <Button onClick={() => navigate('/drivers')}>Drivers</Button>
               <Button onClick={() => navigate('/development')}>Development</Button>
               <Button onClick={() => navigate('/finance')}>Finance</Button>
+              <Button onClick={() => navigate('/staff')}>Staff</Button>
               <Button onClick={() => navigate('/data')}>Team Data</Button>
               <Button onClick={() => navigate('/settings')}>Settings</Button>
             </div>

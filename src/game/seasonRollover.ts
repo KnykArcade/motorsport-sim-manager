@@ -125,6 +125,9 @@ export function advanceSeason(state: GameState): GameState {
       txns.push(makeTransaction(nextYear, 'Academy', `Academy fees: ${a.name}`, -toMoney(yearly)));
     }
   }
+  for (const s of state.staff ?? []) {
+    txns.push(makeTransaction(nextYear, 'Staff', `Salary: ${s.name} (${s.role})`, -toMoney(s.salary)));
+  }
   const playerTeam = state.teams.find((t) => t.id === state.selectedTeamId);
   const sponsorship = sponsorshipIncome(playerTeam, playerDrivers);
   if (sponsorship > 0) {

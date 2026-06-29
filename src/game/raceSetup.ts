@@ -9,6 +9,7 @@ import { getPointsSystem } from '../data/pointsSystems/pointsSystems';
 import { setupOptionsById } from '../data/setupOptions/setupOptions';
 import { autoSetupOptionsForTrack } from '../sim/autoSetup';
 import { deriveSetupOption, type SetupTrim } from '../sim/setupDerive';
+import { setupConfidenceBonus } from '../sim/staffEngine';
 import { raceStrategiesById } from '../data/decisions/raceStrategies';
 import { driverInstructionsById } from '../data/decisions/driverInstructions';
 import { aiRaceDecision } from './ai';
@@ -29,10 +30,11 @@ export function playerTunedSetups(
   const overlay: Record<string, SetupOption> = {};
   const setupIdByDriver: Record<string, string> = {};
   const carSetups = state.carSetups ?? {};
+  const confidenceBonus = setupConfidenceBonus(state.staff ?? []);
   for (const driver of driversForTeam(state, state.selectedTeamId)) {
     const tuned = carSetups[driver.id];
     if (!tuned) continue;
-    const option = deriveSetupOption(tuned, track, driver, trim);
+    const option = deriveSetupOption(tuned, track, driver, trim, confidenceBonus);
     overlay[option.id] = option;
     setupIdByDriver[driver.id] = option.id;
   }

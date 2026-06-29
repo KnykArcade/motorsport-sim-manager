@@ -3,6 +3,7 @@ import { useGame } from '../game/GameContext';
 import { driversForTeam, teamById } from '../game/careerState';
 import { getMarketBundle } from '../data';
 import { projectedAnnualCosts, summarize } from '../sim/financeEngine';
+import { totalStaffSalary } from '../sim/staffEngine';
 import { Panel } from '../components/Panel';
 import { formatMoney } from '../components/ui';
 import type { FinanceCategory } from '../types/financeTypes';
@@ -13,6 +14,7 @@ const CATEGORY_ORDER: FinanceCategory[] = [
   'Driver Salary',
   'Driver Signing',
   'Academy',
+  'Staff',
   'Development',
   'Repairs',
 ];
@@ -44,6 +46,8 @@ export function Finance() {
     state.academy ?? [],
     academyYearlyById,
   );
+  const staffWages = totalStaffSalary(state.staff ?? []);
+  const projectedTotal = projected.total + staffWages;
 
   return (
     <div className="space-y-6">
@@ -104,9 +108,10 @@ export function Finance() {
           <div className="space-y-1.5 text-sm">
             <Row label="Driver salaries" value={`−${formatMoney(projected.salaries)}`} />
             <Row label="Academy fees" value={`−${formatMoney(projected.academy)}`} />
+            <Row label="Staff wages" value={`−${formatMoney(staffWages)}`} />
             <div className="mt-2 flex items-center justify-between border-t border-neutral-800 pt-2 font-semibold">
               <span className="text-neutral-200">Total committed / year</span>
-              <span className="tabular-nums text-red-300">−{formatMoney(projected.total)}</span>
+              <span className="tabular-nums text-red-300">−{formatMoney(projectedTotal)}</span>
             </div>
           </div>
           <p className="mt-3 text-xs text-neutral-500">
