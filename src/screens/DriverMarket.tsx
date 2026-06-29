@@ -1,9 +1,10 @@
 import { useMemo, useState } from 'react';
 import { useGame } from '../game/GameContext';
-import { driversForTeam, teamById } from '../game/careerState';
+import { activeDriversForTeam, driversForTeam, teamById } from '../game/careerState';
 import { getMarketBundle } from '../data';
 import { isAcademyReady } from '../sim/driverMarketEngine';
 import { toMoney } from '../sim/financeEngine';
+import { thirdDriverMidSeasonFee } from '../sim/contractEngine';
 import { Panel } from '../components/Panel';
 import { StatBar } from '../components/StatBar';
 import { Button } from '../components/Button';
@@ -32,7 +33,11 @@ export function DriverMarket() {
 
   const offseason = state.seasonComplete;
   const budget = teamById(state, state.selectedTeamId)?.budget ?? 0;
-  const seats = driversForTeam(state, state.selectedTeamId);
+  const seats = activeDriversForTeam(state, state.selectedTeamId);
+  const roster = driversForTeam(state, state.selectedTeamId);
+  const hasThirdDriver = roster.some((d) => d.contractType === 'third');
+  const canSignThird = !offseason && !hasThirdDriver && roster.length < 3;
+  const racesRemaining = Math.max(1, state.calendar.length - state.currentRaceIndex);
   const signings = state.pendingSignings ?? [];
   const academy = state.academy ?? [];
   const signedMarketIds = new Set(state.signedMarketIds ?? []);
@@ -68,7 +73,9 @@ export function DriverMarket() {
       >
         {offseason
           ? 'Offseason — you can sign drivers for next season. Confirm them in the Offseason screen.'
-          : 'Senior signings open during the offseason (after the final race). You can still scout and add youth prospects to your academy now.'}
+          : hasThirdDriver
+            ? 'You have a 3rd driver. Seat signings open in the offseason; you can still add youth prospects now.'
+            : 'Seat signings open in the offseason, but you can sign one free agent now as a cheaper 3rd driver (a reserve you can swap into a race seat).'}
       </div>
 
       {signings.length > 0 && (
@@ -118,10 +125,14 @@ export function DriverMarket() {
                 signed={signedMarketIds.has(d.id)}
                 pending={signingBySource.get(d.id)}
                 affordable={toMoney(d.buyoutCost) <= budget}
+                canSignThird={canSignThird}
+                thirdFee={thirdDriverMidSeasonFee(d.salary, racesRemaining, state.calendar.length)}
+                budget={budget}
                 seatName={seatName}
                 onSign={(seatDriverId) =>
                   dispatch({ type: 'SIGN_MARKET_DRIVER', marketId: d.id, seatDriverId })
                 }
+                onSignThird={() => dispatch({ type: 'SIGN_THIRD_DRIVER', marketId: d.id })}
                 onRelease={(seatDriverId) =>
                   dispatch({ type: 'RELEASE_SIGNING', seatDriverId })
                 }
@@ -219,8 +230,12 @@ function SeniorCard({
   signed,
   pending,
   affordable,
+  canSignThird,
+  thirdFee,
+  budget,
   seatName,
   onSign,
+  onSignThird,
   onRelease,
 }: {
   d: MarketDriver;
@@ -229,8 +244,12 @@ function SeniorCard({
   signed: boolean;
   pending?: SeatSigning;
   affordable: boolean;
+  canSignThird: boolean;
+  thirdFee: number;
+  budget: number;
   seatName: (id: string) => string;
   onSign: (seatDriverId: string) => void;
+  onSignThird: () => void;
   onRelease: (seatDriverId: string) => void;
 }) {
   return (
@@ -288,6 +307,14 @@ function SeniorCard({
           <span className="text-xs text-red-400">Buyout exceeds budget.</span>
         ) : offseason ? (
           <SeatButtons seats={seats} label="Sign →" onPick={onSign} />
+        ) : canSignThird && thirdFee > budget ? (
+          <span className="text-xs text-red-400">
+            3rd-driver fee {formatMoney(thirdFee)} exceeds budget.
+          </span>
+        ) : canSignThird ? (
+          <Button variant="primary" className="w-full px-2 py-1 text-xs" onClick={onSignThird}>
+            Sign as 3rd driver — {formatMoney(thirdFee)}
+          </Button>
         ) : (
           <span className="text-xs text-neutral-600">Signings open in the offseason.</span>
         )}

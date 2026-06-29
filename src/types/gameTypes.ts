@@ -137,6 +137,9 @@ export type Driver = {
   confidence: number; // 0-100
   contractYearsRemaining?: number;
   salary?: number;
+  // Contract tier. 'third' marks a cheaper mid-season reserve/3rd-driver deal;
+  // undefined or 'seat' is a full race-seat contract.
+  contractType?: 'seat' | 'third';
   traits: string[];
 };
 

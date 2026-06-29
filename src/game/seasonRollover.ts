@@ -13,6 +13,7 @@ import {
   progressAcademyMember,
 } from '../sim/driverMarketEngine';
 import { driverSalary, makeTransaction, toMoney } from '../sim/financeEngine';
+import { thirdDriverAmbitions, THIRD_DRIVER_SALARY_FACTOR } from '../sim/contractEngine';
 import {
   evaluateSeasonObjectives,
   rollSponsorRenewals,
@@ -48,8 +49,12 @@ export function advanceSeason(state: GameState): GameState {
   const signings = state.pendingSignings ?? [];
   const academy = state.academy ?? [];
 
-  // Resolve each queued signing into the replacement driver for that seat.
-  const replacements = new Map<string, Driver>();
+  // Resolve each queued signing.
+  //  - market/academy: a new driver replaces the seat's current driver.
+  //  - reserve: the team's own 3rd driver is promoted into the seat (the
+  //    displaced seat driver leaves).
+  const replacements = new Map<string, Driver>(); // oldSeatId -> new driver
+  const reservePromotions: { seatDriverId: string; reserveId: string; upgraded: Driver }[] = [];
   const usedAcademyIds = new Set<string>();
   const newSignedMarketIds = [...(state.signedMarketIds ?? [])];
 
@@ -62,6 +67,17 @@ export function advanceSeason(state: GameState): GameState {
       if (!m) continue;
       replacements.set(sign.seatDriverId, marketDriverToDriver(m, seat));
       newSignedMarketIds.push(m.id);
+    } else if (sign.source === 'reserve') {
+      const r = state.drivers.find((d) => d.id === sign.sourceId && d.teamId === seat.teamId);
+      if (!r) continue;
+      const upgraded: Driver = {
+        ...r,
+        number: seat.number,
+        contractType: 'seat',
+        contractYearsRemaining: 2,
+        salary: r.salary ? r.salary / THIRD_DRIVER_SALARY_FACTOR : undefined,
+      };
+      reservePromotions.push({ seatDriverId: sign.seatDriverId, reserveId: r.id, upgraded });
     } else {
       const a = academy.find((x) => x.id === sign.sourceId);
       if (!a) continue;
@@ -70,10 +86,47 @@ export function advanceSeason(state: GameState): GameState {
     }
   }
 
-  // Apply seat replacements.
-  const drivers = state.drivers.map((d) => replacements.get(d.id) ?? d);
+  // A 3rd driver who outperformed a seat driver but wasn't promoted leaves for a
+  // race seat at another team next season.
+  const promotedReserveIds = new Set(reservePromotions.map((p) => p.reserveId));
+  const departures = new Set<string>();
+  const departureNotes: string[] = [];
+  for (const amb of thirdDriverAmbitions(state)) {
+    if (amb.wantsSeat && !promotedReserveIds.has(amb.driverId)) {
+      departures.add(amb.driverId);
+      departureNotes.push(
+        `${amb.name} left for a race seat elsewhere after outscoring a seat driver as your 3rd driver.`,
+      );
+    }
+  }
 
-  // Carry per-driver setups across; drop replaced drivers, seed new ones.
+  // Build next season's driver list: apply replacements, promote reserves
+  // (dropping the displaced seat driver), then remove departures.
+  const promotedSeatIds = new Set(reservePromotions.map((p) => p.seatDriverId));
+  const upgradeById = new Map(reservePromotions.map((p) => [p.reserveId, p.upgraded]));
+  const drivers = state.drivers
+    .map((d) => replacements.get(d.id) ?? d)
+    .filter((d) => !promotedSeatIds.has(d.id))
+    .map((d) => upgradeById.get(d.id) ?? d)
+    .filter((d) => !departures.has(d.id));
+
+  // Keep team rosters (driverIds) consistent with the moves above.
+  const remapId = (id: string): string => replacements.get(id)?.id ?? id;
+  const rebuildRoster = (ids: string[]): string[] => {
+    let next = ids.map(remapId);
+    for (const p of reservePromotions) {
+      next = next.filter((id) => id !== p.reserveId); // pull reserve out of its slot
+      const pos = next.indexOf(p.seatDriverId);
+      if (pos >= 0) next[pos] = p.reserveId; // reserve takes the seat
+    }
+    return next.filter((id) => !departures.has(id));
+  };
+
+  // Departing 3rd drivers (signed off the market) return to the market.
+  const departedMarketIds = new Set([...departures].map((id) => id.replace(/^d-/, '')));
+  const finalSignedMarketIds = newSignedMarketIds.filter((id) => !departedMarketIds.has(id));
+
+  // Carry per-driver setups across; drop replaced/departed drivers, seed new ones.
   const carSetups = { ...(state.carSetups ?? {}) };
   for (const [oldId, newDriver] of replacements) {
     delete carSetups[oldId];
@@ -81,6 +134,11 @@ export function advanceSeason(state: GameState): GameState {
       carSetups[newDriver.id] = { ...BALANCED_SETUP };
     }
   }
+  for (const p of reservePromotions) {
+    delete carSetups[p.seatDriverId];
+    if (p.upgraded.teamId === state.selectedTeamId) carSetups[p.upgraded.id] = { ...BALANCED_SETUP };
+  }
+  for (const id of departures) delete carSetups[id];
 
   // Progress remaining academy members one offseason; promoted ones leave.
   const nextAcademy: AcademyMember[] = academy
@@ -185,7 +243,9 @@ export function advanceSeason(state: GameState): GameState {
   }
   const budgetDelta = txns.reduce((sum, t) => sum + t.amount, 0);
   const teams = state.teams.map((t) =>
-    t.id === state.selectedTeamId ? { ...t, budget: t.budget + budgetDelta } : t,
+    t.id === state.selectedTeamId
+      ? { ...t, budget: t.budget + budgetDelta, driverIds: rebuildRoster(t.driverIds) }
+      : t,
   );
 
   // Owner-expectation review for the completed season → owner patience, then
@@ -229,7 +289,12 @@ export function advanceSeason(state: GameState): GameState {
     championDriverId: champion?.entityId,
     championTeamId: constructorChamp?.entityId,
     notes: [
-      ...signings.map((s) => `Signed ${s.name} for ${nextYear}.`),
+      ...signings.map((s) =>
+        s.source === 'reserve'
+          ? `Promoted ${s.name} to a race seat for ${nextYear}.`
+          : `Signed ${s.name} for ${nextYear}.`,
+      ),
+      ...departureNotes,
       ...(nextAcademy.length ? [`${nextAcademy.length} academy driver(s) progressed.`] : []),
       ...commercialNotes,
     ],
@@ -254,7 +319,7 @@ export function advanceSeason(state: GameState): GameState {
     carSetups,
     academy: nextAcademy,
     pendingSignings: [],
-    signedMarketIds: newSignedMarketIds,
+    signedMarketIds: finalSignedMarketIds,
     completedRaceResults: {},
     qualifyingResults: {},
     raceEvents: {},

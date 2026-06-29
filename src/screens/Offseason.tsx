@@ -2,6 +2,8 @@ import { useNavigate } from 'react-router-dom';
 import { useGame } from '../game/GameContext';
 import { Panel } from '../components/Panel';
 import { Button } from '../components/Button';
+import { activeDriversForTeam } from '../game/careerState';
+import { thirdDriverAmbitions } from '../sim/contractEngine';
 
 export function Offseason() {
   const { state, dispatch } = useGame();
@@ -12,6 +14,11 @@ export function Offseason() {
   const signings = state.pendingSignings ?? [];
   const academy = state.academy ?? [];
   const driverName = (id: string) => state.drivers.find((d) => d.id === id)?.name ?? id;
+
+  const ambitions = thirdDriverAmbitions(state);
+  const seatDrivers = activeDriversForTeam(state, state.selectedTeamId);
+  const reservePromotionFor = (thirdDriverId: string) =>
+    signings.find((s) => s.source === 'reserve' && s.sourceId === thirdDriverId);
 
   const advance = () => {
     dispatch({ type: 'ADVANCE_SEASON' });
@@ -91,6 +98,79 @@ export function Offseason() {
           Academy drivers gain ratings when you advance the season.
         </p>
       </Panel>
+
+      {ambitions.length > 0 && (
+        <Panel title="3rd Driver Contracts">
+          <p className="mb-3 text-sm text-neutral-400">
+            Your reserve drivers want to talk about their future. Promote one into a race seat for{' '}
+            {nextYear}, or risk losing an out-performer to a rival team.
+          </p>
+          <ul className="space-y-3 text-sm">
+            {ambitions.map((a) => {
+              const queued = reservePromotionFor(a.driverId);
+              return (
+                <li
+                  key={a.driverId}
+                  className="rounded border border-neutral-800 bg-neutral-900/40 p-3"
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="font-semibold text-neutral-100">{a.name}</span>
+                    <span
+                      className={`rounded px-1.5 py-0.5 text-[10px] ${
+                        a.wantsSeat
+                          ? 'bg-amber-500/15 text-amber-300'
+                          : 'bg-neutral-800 text-neutral-400'
+                      }`}
+                    >
+                      {a.wantsSeat ? 'Wants a race seat' : 'Happy as reserve'}
+                    </span>
+                  </div>
+                  <div className="mt-1 text-xs text-neutral-500">
+                    Scored {a.points} pts as 3rd driver (weakest seat driver: {a.bestSeatPoints} pts).
+                    {a.wantsSeat && ' Will leave for another team if not promoted.'}
+                  </div>
+                  <div className="mt-2">
+                    {queued ? (
+                      <div className="flex items-center justify-between text-xs">
+                        <span className="text-green-300">
+                          Promoting → replaces {driverName(queued.seatDriverId)}
+                        </span>
+                        <button
+                          className="text-red-400 hover:text-red-300"
+                          onClick={() =>
+                            dispatch({ type: 'RELEASE_SIGNING', seatDriverId: queued.seatDriverId })
+                          }
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="flex flex-wrap gap-2">
+                        {seatDrivers.map((s) => (
+                          <Button
+                            key={s.id}
+                            variant="ghost"
+                            className="px-2 py-1 text-xs"
+                            onClick={() =>
+                              dispatch({
+                                type: 'PROMOTE_THIRD_DRIVER',
+                                seatDriverId: s.id,
+                                thirdDriverId: a.driverId,
+                              })
+                            }
+                          >
+                            Promote → seat of #{s.number} {s.name}
+                          </Button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </li>
+              );
+            })}
+          </ul>
+        </Panel>
+      )}
 
       <Panel title="Advance the Season">
         <p className="text-sm text-neutral-300">
