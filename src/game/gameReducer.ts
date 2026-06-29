@@ -2,12 +2,9 @@
 // Keeping this outside React keeps the simulation testable and deterministic.
 
 import { getTrackById } from '../data';
-import { getPointsSystem } from '../data/pointsSystems/pointsSystems';
 import { setupOptionsById } from '../data/setupOptions/setupOptions';
 import { autoSetupOptionsForTrack } from '../sim/autoSetup';
 import { qualifyingRunPlansById } from '../data/decisions/qualifyingRunPlans';
-import { raceStrategiesById } from '../data/decisions/raceStrategies';
-import { driverInstructionsById } from '../data/decisions/driverInstructions';
 import { developmentProjectsById } from '../data/development/developmentProjects';
 import { simulateQualifying } from '../sim/qualifyingEngine';
 import { simulateRace } from '../sim/raceEngine';
@@ -15,17 +12,20 @@ import { buildConstructorStandings, buildDriverStandings } from '../sim/standing
 import { applyDevelopmentProgress } from '../sim/developmentEngine';
 import { updateMorale } from '../sim/moraleEngine';
 import { generateRaceNews } from '../sim/newsEngine';
-import { aiQualifyingDecision, aiRaceDecision } from './ai';
+import { aiQualifyingDecision } from './ai';
 import { carForTeam, currentRace, type GameState } from './careerState';
+import { buildRaceContext } from './raceSetup';
 import { createNewGame, type NewGameOptions } from './initialCareer';
 import type {
   DevelopmentProject,
   QualifyingResult,
+  RaceResult,
 } from '../types/gameTypes';
 import type {
   Entrant,
   QualifyingDecision,
   RaceDecision,
+  RaceEvent,
   ScoreBreakdown,
 } from '../types/simTypes';
 
@@ -34,6 +34,12 @@ export type GameAction =
   | { type: 'LOAD_GAME'; state: GameState }
   | { type: 'RUN_QUALIFYING'; decisions: QualifyingDecision[] }
   | { type: 'RUN_RACE'; decisions: RaceDecision[] }
+  | {
+      type: 'COMMIT_LIVE_RACE';
+      results: RaceResult[];
+      events: RaceEvent[];
+      breakdowns: Record<string, ScoreBreakdown>;
+    }
   | { type: 'START_DEVELOPMENT'; projectId: string }
   | { type: 'ADVANCE_RACE' };
 
@@ -69,6 +75,13 @@ export function gameReducer(state: GameState | null, action: GameAction): GameSt
     case 'RUN_RACE': {
       if (!state) return state;
       return runRace(state, action.decisions);
+    }
+
+    case 'COMMIT_LIVE_RACE': {
+      if (!state) return state;
+      const race = currentRace(state);
+      if (!race) return state;
+      return applyRaceResults(state, race, action.results, action.events, action.breakdowns);
     }
 
     case 'START_DEVELOPMENT': {
@@ -130,32 +143,25 @@ function runQualifying(state: GameState, playerDecisions: QualifyingDecision[]):
 function runRace(state: GameState, playerDecisions: RaceDecision[]): GameState {
   const race = currentRace(state);
   if (!race) return state;
-  const track = getTrackById(race.trackId);
-  if (!track) return state;
 
-  const qualifying = state.qualifyingResults[race.id];
-  if (!qualifying) return state;
+  const built = buildRaceContext(state, playerDecisions);
+  if (!built) return state;
 
-  const entrants = buildEntrants(state);
-  const decisions: Record<string, RaceDecision> = {};
-  const playerById = new Map(playerDecisions.map((d) => [d.driverId, d]));
-  for (const e of entrants) {
-    decisions[e.driver.id] = playerById.get(e.driver.id) ?? aiRaceDecision(e.driver.id, track);
-  }
+  const { results, events, breakdowns } = simulateRace(built.context);
+  return applyRaceResults(state, race, results, events, breakdowns);
+}
 
-  const pointsSystem = getPointsSystem(state.pointsSystemId);
-
-  const { results, events, breakdowns } = simulateRace({
-    track,
-    entrants,
-    qualifyingResults: qualifying,
-    decisions,
-    setupOptions: { ...setupOptionsById, ...autoSetupOptionsForTrack(track) },
-    strategies: raceStrategiesById,
-    instructions: driverInstructionsById,
-    pointsByPosition: pointsSystem.pointsByPosition,
-    seed: `${state.randomSeed}-r${race.round}`,
-  });
+// Shared post-race handling: standings, morale, budget, development, news and
+// calendar advance. Used by both the quick race (RUN_RACE) and the live race
+// (COMMIT_LIVE_RACE), so both paths update the season identically.
+function applyRaceResults(
+  state: GameState,
+  race: NonNullable<ReturnType<typeof currentRace>>,
+  results: RaceResult[],
+  events: RaceEvent[],
+  breakdowns: Record<string, ScoreBreakdown>,
+): GameState {
+  const qualifying = state.qualifyingResults[race.id] ?? [];
 
   lastBreakdowns.race = breakdowns;
 

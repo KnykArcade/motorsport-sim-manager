@@ -83,10 +83,10 @@ export function RaceWeekend() {
     setPhase('quali-review');
   };
 
-  const runRace = () => {
-    const raceId = race.id;
-    dispatch({ type: 'RUN_RACE', decisions: playerDrivers.map((d) => raceFor(d.id)) });
-    navigate(`/results/${raceId}`);
+  const startLiveRace = () => {
+    navigate(`/live-race/${race.id}`, {
+      state: { decisions: playerDrivers.map((d) => raceFor(d.id)) },
+    });
   };
 
   return (
@@ -166,8 +166,8 @@ export function RaceWeekend() {
             setRaceOverrides((p) => ({ ...p, [driverId]: { ...p[driverId], instructionId: optId as RaceDecision['instructionId'] } }))
           }
           onBack={() => setPhase('race-strategy')}
-          onNext={runRace}
-          nextLabel="Simulate Race →"
+          onNext={startLiveRace}
+          nextLabel="Start Live Race →"
         />
       )}
     </div>

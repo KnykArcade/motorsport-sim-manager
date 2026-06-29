@@ -76,10 +76,10 @@ export function simulateRace(context: RaceContext): {
   return { results, events, breakdowns };
 }
 
-// The deterministic, single-shot race computation. The live-race engine
-// (src/sim/liveRace) converges to exactly this outcome, so the final
-// classification is identical whether a race is played out live or resolved
-// instantly. All randomness flows through the seeded RNG in a fixed order.
+// The deterministic, single-shot race computation used for quick simulation
+// and tests. The live race (src/sim/liveRaceEngine + raceTickEngine) is a
+// separate forward simulation whose classification emerges from the running
+// order. All randomness flows through the seeded RNG in a fixed order.
 export function computeRaceOutcome(context: RaceContext): RaceOutcome {
   const rng = createSeededRandom(deriveSeed(context.seed, 'race', context.track.id));
   const breakdowns: Record<string, ScoreBreakdown> = {};
