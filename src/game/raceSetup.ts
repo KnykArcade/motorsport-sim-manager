@@ -14,7 +14,13 @@ import { practiceSetupConfidenceBonus } from '../sim/practiceProgramEngine';
 import { raceStrategiesById } from '../data/decisions/raceStrategies';
 import { driverInstructionsById } from '../data/decisions/driverInstructions';
 import { aiRaceDecision } from './ai';
-import { carForTeam, currentRace, driversForTeam, type GameState } from './careerState';
+import {
+  activeDriversForTeam,
+  carForTeam,
+  currentRace,
+  driversForTeam,
+  type GameState,
+} from './careerState';
 import type { SetupOption, Track } from '../types/gameTypes';
 import type { Entrant, RaceContext, RaceDecision } from '../types/simTypes';
 import type { LiveRaceMeta, LiveRaceOptions } from '../sim/liveRaceEngine';
@@ -68,9 +74,12 @@ export function buildRaceContext(
   if (!qualifying) return null;
 
   const entrants: Entrant[] = [];
-  for (const driver of state.drivers) {
-    const car = carForTeam(state, driver.teamId);
-    if (car) entrants.push({ driver, car });
+  for (const team of state.teams) {
+    const car = carForTeam(state, team.id);
+    if (!car) continue;
+    for (const driver of activeDriversForTeam(state, team.id)) {
+      entrants.push({ driver, car });
+    }
   }
 
   const tuned = playerTunedSetups(state, track, 'race');
