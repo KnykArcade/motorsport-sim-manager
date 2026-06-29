@@ -21,20 +21,17 @@ Backend-less Vite + React SPA. No auth, no secrets, no external services. Everyt
   - Each race row's **Grid** column must equal that driver's qualifying position (proves state threads through).
   - DNFs sit at the bottom with `—` position, no points, `DNF (lap N)`, and a cause in the Race Event Log.
   - Constructor points == sum of its two drivers' points.
-- **Setup trim is automatic** (professional team prep): the player no longer picks a qualifying or race
-  setup. Practice reports per-driver Setup Confidence + one-lap / long-run pace. The player chooses the
-  qualifying run strategy, the pre-race strategy, and driver instructions (plus live decisions later).
-- **Separated decisions** are still a core requirement: the qualifying run strategy is chosen BEFORE
-  simulating qualifying; race strategy + instructions only become reachable AFTER. To test the gate, on
-  the Track Briefing step click a later stepper item like "5. Pre-Race Strategy" — it must NOT navigate.
+- **Separated decisions** are a core requirement: qualifying setup + run plan are chosen BEFORE simulating
+  qualifying; race setup + strategy + instructions only become reachable AFTER. To test the gate, on the
+  Track Briefing step click a later stepper item like "5. Race Setup" — it must NOT navigate.
 - Results aren't scripted to history (alternate history) — a pole-sitter retiring / a non-historical winner
   is expected, not a bug.
 
 ## UI path (Brazilian GP, Round 1)
 Main Menu → New Game → Single Season (default) → Continue → (Series & Year default 1995 F1) → Select Team →
-click a team card (e.g. Benetton) → Start Season → Team HQ. From HQ: "Go to Next Race" → 6-phase weekend:
-Track Briefing → Practice / Setup → Qualifying Run Strategy → **Simulate Qualifying** → Qualifying Review →
-Pre-Race Strategy → Driver Instructions → **Simulate Race** → Results.
+click a team card (e.g. Benetton) → Start Season → Team HQ. From HQ: "Go to Next Race" → 7-phase weekend:
+Track Briefing → Qualifying Setup → Qualifying Run Plan → **Simulate Qualifying** → Qualifying Review →
+Choose Race Strategy → Race Setup → Race Strategy → Driver Instructions → **Simulate Race** → Results.
 Results header shows the advanced round/budget; "Back to HQ" returns. Save persistence: reload page →
 "Continue" should be enabled and restore the post-race state.
 
