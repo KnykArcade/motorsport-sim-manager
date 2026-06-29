@@ -113,9 +113,10 @@ export function signProspectToAcademy(p: YouthProspect, year: number): AcademyMe
 
 // Advance one academy member by a single offseason: ratings grow toward the
 // member's potential ceiling, scaled by development rate; readiness counts down.
-export function progressAcademyMember(a: AcademyMember): AcademyMember {
+// `boost` (e.g. from a Driver Academy facility) accelerates the growth step.
+export function progressAcademyMember(a: AcademyMember, boost = 0): AcademyMember {
   const gap = Math.max(0, a.potential - a.overall);
-  const step = Math.min(gap, a.developmentRate * 0.15);
+  const step = Math.min(gap, a.developmentRate * 0.15 * (1 + boost));
   const factor = a.overall > 0 ? (a.overall + step) / a.overall : 1;
   const skills: MarketSkillRatings = {
     cornering: r1(clamp(a.skills.cornering * factor)),

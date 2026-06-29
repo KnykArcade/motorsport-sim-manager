@@ -5,6 +5,11 @@
 // is stable for now. Pure and deterministic.
 
 import { getMarketBundle, getSeasonBundle } from '../data';
+import {
+  FACILITY_SPECS,
+  facilityYouthDevelopmentBonus,
+  resolvePendingUpgrades,
+} from '../sim/facilityEngine';
 import { BALANCED_SETUP } from '../data/setup/setupComponents';
 import { calculateOffseasonCarryover } from '../sim/developmentEngine';
 import {
@@ -141,9 +146,22 @@ export function advanceSeason(state: GameState): GameState {
   for (const id of departures) delete carSetups[id];
 
   // Progress remaining academy members one offseason; promoted ones leave.
+  // A Driver Academy facility accelerates their growth.
+  const youthBoost = facilityYouthDevelopmentBonus(state.facilities);
   const nextAcademy: AcademyMember[] = academy
     .filter((a) => !usedAcademyIds.has(a.id))
-    .map(progressAcademyMember);
+    .map((a) => progressAcademyMember(a, youthBoost));
+
+  // Resolve any facility upgrades ordered during the season (they take effect now).
+  const facilityResolution = state.facilities
+    ? resolvePendingUpgrades(state.facilities)
+    : undefined;
+  const nextFacilities = facilityResolution?.state ?? state.facilities;
+  const facilityNotes = (facilityResolution?.completed ?? []).map(
+    (u) => `${FACILITY_SPECS[
+      state.facilities!.facilities.find((f) => f.id === u.facilityId)!.type
+    ].label} upgraded to level ${u.toLevel}.`,
+  );
 
   // Carry the player car's development into the new baseline; reset condition.
   const playerCar = carForTeam(state, state.selectedTeamId);
@@ -306,6 +324,7 @@ export function advanceSeason(state: GameState): GameState {
       ),
       ...departureNotes,
       ...(nextAcademy.length ? [`${nextAcademy.length} academy driver(s) progressed.`] : []),
+      ...facilityNotes,
       ...commercialNotes,
     ],
   };
@@ -323,6 +342,7 @@ export function advanceSeason(state: GameState): GameState {
     drivers,
     cars,
     teams,
+    facilities: nextFacilities,
     finance: [...(state.finance ?? []), ...txns],
     commercial: nextCommercial,
     teamExpectations: nextExpectations ?? state.teamExpectations,

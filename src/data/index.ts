@@ -48,7 +48,7 @@ import { tracks2026IndyCar } from './tracks/tracks2026IndyCar';
 import { teams2026IndyCar } from './teams/teams2026IndyCar';
 import { drivers2026IndyCar } from './drivers/drivers2026IndyCar';
 import { cars2026IndyCar } from './cars/cars2026IndyCar';
-import { staffPool1995 } from './staff/staffPool1995';
+import { generateStaffPool } from '../sim/staffGenerator';
 
 export { tracks1995 } from './tracks/tracks1995';
 export { teams1995 } from './teams/teams1995';
@@ -83,10 +83,16 @@ export {
 } from './market';
 export { staffPool1995 } from './staff/staffPool1995';
 
+// A large, varied pool of hireable specialists is generated per season/series
+// (deterministic). Memoized so the same season returns a stable pool.
+const staffPoolCache = new Map<string, StaffMember[]>();
 export function getStaffPool(year: number, series = 'F1'): StaffMember[] {
-  void year;
-  void series;
-  return staffPool1995; // single pool for now; later years can override
+  const key = `${year}-${series}`;
+  const cached = staffPoolCache.get(key);
+  if (cached) return cached;
+  const pool = generateStaffPool(year, series);
+  staffPoolCache.set(key, pool);
+  return pool;
 }
 
 export type SeasonBundle = {

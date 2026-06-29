@@ -10,6 +10,7 @@ import { setupOptionsById } from '../data/setupOptions/setupOptions';
 import { autoSetupOptionsForTrack } from '../sim/autoSetup';
 import { deriveSetupOption, type SetupTrim } from '../sim/setupDerive';
 import { setupConfidenceBonus } from '../sim/staffEngine';
+import { facilitySetupFeedbackBonus } from '../sim/facilityEngine';
 import { practiceSetupConfidenceBonus } from '../sim/practiceProgramEngine';
 import { raceStrategiesById } from '../data/decisions/raceStrategies';
 import { driverInstructionsById } from '../data/decisions/driverInstructions';
@@ -37,7 +38,7 @@ export function playerTunedSetups(
   const overlay: Record<string, SetupOption> = {};
   const setupIdByDriver: Record<string, string> = {};
   const carSetups = state.carSetups ?? {};
-  const staffBonus = setupConfidenceBonus(state.staff ?? []);
+  const staffBonus = setupConfidenceBonus(state.staff ?? []) + facilitySetupFeedbackBonus(state.facilities);
   const practice =
     state.weekendPractice && state.weekendPractice.raceId === currentRace(state)?.id
       ? state.weekendPractice.knowledge
