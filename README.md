@@ -7,7 +7,8 @@ The first playable build ships the **1995 Formula 1 season**, seeded from a sour
 ## Highlights
 
 - **Two game modes** — Single Season (one historical year) and Career (multi-season, with offseason/regulations/development carryover scaffolding).
-- **Separated race-weekend decisions** — choose your *qualifying* setup and run plan **before** qualifying; choose your *race* setup, strategy, and driver instructions **after** you see the grid. Qualifying aggression never silently carries into the race.
+- **Separated race-weekend decisions** — setup trim is handled automatically (professional team prep runs a qualifying trim on Saturday and a race trim on Sunday). You choose the *qualifying run strategy* **before** qualifying, then your *race strategy and driver instructions* **after** you see the grid. Qualifying aggression never silently carries into the race.
+- **Practice / setup confidence** — a pre-qualifying readout of each driver's setup confidence and one-lap vs. long-run pace to inform your run and strategy choices.
 - **Deterministic simulation** — all randomness flows through a seeded RNG, so a save replays identically. No `Math.random` in the sim.
 - **Pure, testable engines** — track fit (55% driver / 45% car), setup fit, qualifying, race, reliability, mistakes, pit stops, standings, development, morale, and news are plain functions outside React.
 - **Alternate history** — the historical data is a *starting baseline*, not a script. Winners, champions, and development paths can diverge.
