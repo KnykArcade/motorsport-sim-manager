@@ -2,11 +2,13 @@
 // future seasons can be registered in one place.
 
 import type { Car, Driver, Season, Team } from '../types/gameTypes';
+import type { StaffMember } from '../types/staffTypes';
 import { season1995, calendar1995 } from './seasons/season1995';
 import { tracks1995 } from './tracks/tracks1995';
 import { teams1995 } from './teams/teams1995';
 import { drivers1995 } from './drivers/drivers1995';
 import { cars1995 } from './cars/cars1995';
+import { staffPool1995 } from './staff/staffPool1995';
 
 export { tracks1995 } from './tracks/tracks1995';
 export { teams1995 } from './teams/teams1995';
@@ -39,6 +41,13 @@ export {
   getMarketBundle,
   type MarketBundle,
 } from './market';
+export { staffPool1995 } from './staff/staffPool1995';
+
+export function getStaffPool(year: number, series = 'F1'): StaffMember[] {
+  void year;
+  void series;
+  return staffPool1995; // single pool for now; later years can override
+}
 
 export type SeasonBundle = {
   season: Season;

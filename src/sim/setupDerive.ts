@@ -19,9 +19,10 @@ export function deriveSetupOption(
   track: Track,
   driver: Driver | undefined,
   trim: SetupTrim,
+  confidenceBonus = 0,
 ): SetupOption {
   const fit = calculateSetupFit(setup, track, driver);
-  const conf = fit.confidence;
+  const conf = clamp(fit.confidence + confidenceBonus, 0, 100);
 
   const downforce = clamp(Math.round((setup.frontWing + setup.rearWing) / 2), 1, 10);
   const topSpeed = clamp(Math.round(((11 - downforce) + setup.gearing) / 2), 1, 10);

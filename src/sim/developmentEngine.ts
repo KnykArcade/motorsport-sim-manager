@@ -15,12 +15,14 @@ export type DevelopmentTickResult = {
   messages: string[];
 };
 
-// Advance all active projects by one race; resolve completed ones.
+// Advance all active projects by one race; resolve completed ones. An optional
+// successBonus (e.g. from a Technical Director) shifts each project's odds.
 export function applyDevelopmentProgress(
   active: DevelopmentProject[],
   car: Car,
   seed: string,
   round: number,
+  successBonus = 0,
 ): DevelopmentTickResult {
   const rng = createSeededRandom(deriveSeed(seed, 'dev', round));
   const stillActive: DevelopmentProject[] = [];
@@ -36,7 +38,8 @@ export function applyDevelopmentProgress(
     }
 
     // Resolve success/failure.
-    const success = rng.chance(progressed.successChance);
+    const odds = Math.max(0.05, Math.min(0.98, progressed.successChance + successBonus));
+    const success = rng.chance(odds);
     if (success && progressed.currentSeasonEffects) {
       for (const [k, v] of Object.entries(progressed.currentSeasonEffects)) {
         const key = k as keyof CarRatings;

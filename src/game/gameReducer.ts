@@ -17,9 +17,10 @@ import { carForTeam, currentRace, type GameState } from './careerState';
 import { buildRaceContext, playerTunedSetups } from './raceSetup';
 import { createNewGame, type NewGameOptions } from './initialCareer';
 import { advanceSeason } from './seasonRollover';
-import { getMarketBundle } from '../data';
+import { getMarketBundle, getStaffPool } from '../data';
 import { signProspectToAcademy } from '../sim/driverMarketEngine';
 import { makeTransaction, toMoney } from '../sim/financeEngine';
+import { developmentSuccessBonus } from '../sim/staffEngine';
 import type { SeatSigning } from '../types/marketTypes';
 import type { FinanceTransaction } from '../types/financeTypes';
 import type {
@@ -54,6 +55,8 @@ export type GameAction =
   | { type: 'RELEASE_SIGNING'; seatDriverId: string }
   | { type: 'SIGN_YOUTH'; youthId: string }
   | { type: 'RELEASE_ACADEMY'; academyId: string }
+  | { type: 'HIRE_STAFF'; staffId: string }
+  | { type: 'FIRE_STAFF'; staffId: string }
   | { type: 'ADVANCE_SEASON' }
   | { type: 'ADVANCE_RACE' };
 
@@ -148,6 +151,16 @@ export function gameReducer(state: GameState | null, action: GameAction): GameSt
       };
     }
 
+    case 'HIRE_STAFF': {
+      if (!state) return state;
+      return hireStaff(state, action.staffId);
+    }
+
+    case 'FIRE_STAFF': {
+      if (!state) return state;
+      return { ...state, staff: (state.staff ?? []).filter((s) => s.id !== action.staffId) };
+    }
+
     case 'ADVANCE_SEASON': {
       if (!state) return state;
       if (!state.seasonComplete) return state;
@@ -211,6 +224,23 @@ function queueSigning(
     ...state,
     pendingSignings: [...others, { seatDriverId, source, sourceId, name }],
   };
+}
+
+// Hire a specialist: charge the one-off signing fee (must be affordable) and
+// add them to the roster. One member per role — a new hire replaces the old.
+function hireStaff(state: GameState, staffId: string): GameState {
+  const roster = state.staff ?? [];
+  if (roster.some((s) => s.id === staffId)) return state;
+  const recruit = getStaffPool(state.seasonYear, state.series).find((s) => s.id === staffId);
+  if (!recruit) return state;
+  const fee = toMoney(recruit.signingFee);
+  if (fee > playerBudget(state)) return state;
+  const charged = applyTransaction(
+    state,
+    makeTransaction(state.seasonYear, 'Staff', `Hired ${recruit.name} (${recruit.role})`, -fee),
+  );
+  const nextRoster = [...roster.filter((s) => s.role !== recruit.role), recruit];
+  return { ...charged, staff: nextRoster };
 }
 
 // Sign a youth prospect into the academy. The one-off signing fee is charged
@@ -374,6 +404,7 @@ function applyRaceResults(
       playerCar,
       state.randomSeed,
       race.round,
+      developmentSuccessBonus(state.staff ?? []),
     );
     activeDevelopmentProjects = tick.active;
     completedDevelopmentProjects = [...completedDevelopmentProjects, ...tick.completed];
