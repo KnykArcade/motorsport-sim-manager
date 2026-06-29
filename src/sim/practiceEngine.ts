@@ -36,7 +36,9 @@ export type PracticeSummary = {
 export type PracticeContext = {
   track: Track;
   entrants: { driver: Driver; car: Car }[];
-  setup: SetupOption; // auto-selected, track-appropriate package
+  // Auto-selected, track-appropriate trims (distinct quali vs race packages).
+  qualifyingSetup: SetupOption;
+  raceSetup: SetupOption;
   seed: string;
 };
 
@@ -60,7 +62,11 @@ const FLAVOR = {
 
 export function runPractice(context: PracticeContext): PracticeSummary {
   const rng = createSeededRandom(deriveSeed(context.seed, 'practice', context.track.id));
-  const setupFit = calculateSetupFit(context.setup, context.track);
+  // Both trims share the base downforce profile, so the underlying setup fit is
+  // common; the trims differ in qualifying/race pace bias used for the pace labels.
+  const setupFit = calculateSetupFit(context.raceSetup, context.track);
+  const qualiSetup = context.qualifyingSetup;
+  const raceSetup = context.raceSetup;
 
   const drivers: PracticeDriverSummary[] = context.entrants.map((e) => {
     const trackFit = calculateTrackFit(e.driver, e.car, context.track);
@@ -75,8 +81,12 @@ export function runPractice(context: PracticeContext): PracticeSummary {
       variance;
     const confidence = clamp(Math.round(confidenceRaw), 1, 99);
 
-    const onePLapPace = paceLabel(trackFit + setupFit + variance * 0.2 + 0.5);
-    const longRunPace = paceLabel(trackFit + setupFit * 0.6 + variance * 0.2);
+    const onePLapPace = paceLabel(
+      trackFit + setupFit + qualiSetup.qualifyingBoost * 0.4 + variance * 0.2 + 0.5,
+    );
+    const longRunPace = paceLabel(
+      trackFit + setupFit * 0.6 + raceSetup.racePaceBoost * 0.4 + variance * 0.2,
+    );
 
     const notes: string[] = [];
     if (confidence >= 72) notes.push(rng.pick(FLAVOR.strong));
@@ -85,7 +95,7 @@ export function runPractice(context: PracticeContext): PracticeSummary {
 
     return {
       driverId: e.driver.id,
-      setupName: context.setup.name,
+      setupName: raceSetup.name,
       trackFit,
       setupFit,
       confidence,
@@ -98,8 +108,8 @@ export function runPractice(context: PracticeContext): PracticeSummary {
 
   return {
     trackId: context.track.id,
-    qualifyingTrimName: `${context.setup.name} (qualifying trim)`,
-    raceTrimName: `${context.setup.name} (race trim)`,
+    qualifyingTrimName: qualiSetup.name,
+    raceTrimName: raceSetup.name,
     drivers,
   };
 }

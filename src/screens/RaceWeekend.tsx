@@ -3,16 +3,16 @@ import { useNavigate } from 'react-router-dom';
 import { useGame } from '../game/GameContext';
 import { currentRace, driversForTeam, carForTeam } from '../game/careerState';
 import { lastBreakdowns } from '../game/gameReducer';
-import { getTrackById, setupOptions } from '../data';
+import { getTrackById } from '../data';
 import { qualifyingRunPlans } from '../data/decisions/qualifyingRunPlans';
 import { raceStrategies } from '../data/decisions/raceStrategies';
 import { driverInstructions } from '../data/decisions/driverInstructions';
-import { recommendSetup } from '../sim/recommendation';
+import { autoSetupsForTrack, type AutoSetups } from '../sim/autoSetup';
 import { runPractice, type PracticeSummary } from '../sim/practiceEngine';
 import { Panel } from '../components/Panel';
 import { Button } from '../components/Button';
 import { TrackDemandBars } from '../components/TrackDemandBars';
-import type { Car, Driver, SetupOption, Track } from '../types/gameTypes';
+import type { Car, Driver, Track } from '../types/gameTypes';
 import type { QualifyingDecision, RaceDecision } from '../types/simTypes';
 
 type Phase =
@@ -44,34 +44,37 @@ export function RaceWeekend() {
     [state],
   );
 
-  const recommended = useMemo(
-    () => (track ? recommendSetup(track, setupOptions) : setupOptions[0]),
+  const autoSetups = useMemo(
+    () => (track ? autoSetupsForTrack(track) : undefined),
     [track],
   );
 
   // Setup trim is selected automatically (professional team preparation): a
-  // track-appropriate package, run with a qualifying trim on Saturday and a
-  // race trim on Sunday. The player only chooses run plan / strategy /
-  // instructions, so we store just those overrides and derive the rest.
+  // track-appropriate base package, run as a distinct qualifying trim on
+  // Saturday and a distinct race trim on Sunday. The player only chooses run
+  // plan / strategy / instructions, so we store just those overrides.
   const [qualiOverrides, setQualiOverrides] = useState<Record<string, Partial<QualifyingDecision>>>({});
   const [raceOverrides, setRaceOverrides] = useState<Record<string, Partial<RaceDecision>>>({});
 
-  const recommendedId = recommended.id;
   const qualiFor = (driverId: string): QualifyingDecision => {
     const o = qualiOverrides[driverId] ?? {};
-    return { driverId, setupId: recommendedId, runPlanId: o.runPlanId ?? 'StandardPush' };
+    return {
+      driverId,
+      setupId: autoSetups?.qualifying.id ?? '',
+      runPlanId: o.runPlanId ?? 'StandardPush',
+    };
   };
   const raceFor = (driverId: string): RaceDecision => {
     const o = raceOverrides[driverId] ?? {};
     return {
       driverId,
-      setupId: recommendedId,
+      setupId: autoSetups?.race.id ?? '',
       strategyId: o.strategyId ?? 'BalancedOneStop',
       instructionId: o.instructionId ?? 'Balanced',
     };
   };
 
-  if (!state || !race || !track) return null;
+  if (!state || !race || !track || !autoSetups) return null;
 
   const qualifyingResults = state.qualifyingResults[race.id];
 
@@ -106,7 +109,7 @@ export function RaceWeekend() {
         <PracticePhase
           state={state}
           track={track}
-          setup={recommended}
+          autoSetups={autoSetups}
           onBack={() => setPhase('briefing')}
           onNext={() => setPhase('quali-run')}
         />
@@ -249,13 +252,13 @@ function InfoBox({ label, text }: { label: string; text: string }) {
 function PracticePhase({
   state,
   track,
-  setup,
+  autoSetups,
   onBack,
   onNext,
 }: {
   state: NonNullable<ReturnType<typeof useGame>['state']>;
   track: Track;
-  setup: SetupOption;
+  autoSetups: AutoSetups;
   onBack: () => void;
   onNext: () => void;
 }) {
@@ -264,8 +267,14 @@ function PracticePhase({
     const entrants = driversForTeam(state, state.selectedTeamId)
       .map((d) => ({ driver: d, car: carForTeam(state, d.teamId) }))
       .filter((e): e is { driver: Driver; car: Car } => !!e.car);
-    return runPractice({ track, entrants, setup, seed: `${state.randomSeed}-r${race?.round ?? 0}` });
-  }, [state, track, setup]);
+    return runPractice({
+      track,
+      entrants,
+      qualifyingSetup: autoSetups.qualifying,
+      raceSetup: autoSetups.race,
+      seed: `${state.randomSeed}-r${race?.round ?? 0}`,
+    });
+  }, [state, track, autoSetups]);
 
   const driverName = (id: string) => state.drivers.find((d) => d.id === id)?.name ?? id;
   const driverNumber = (id: string) => state.drivers.find((d) => d.id === id)?.number ?? '';
