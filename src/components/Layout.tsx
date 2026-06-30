@@ -19,6 +19,7 @@ const NAV = [
   { to: '/engine', label: 'Engine', icon: '⛽' },
   { to: '/principal', label: 'Principal', icon: '★' },
   { to: '/relationships', label: 'Relationships', icon: '♥' },
+  { to: '/politics', label: 'Regulations', icon: '⚖' },
   { to: '/data', label: 'Data Viewer', icon: '⛁' },
   { to: '/settings', label: 'Settings', icon: '⚙' },
 ];

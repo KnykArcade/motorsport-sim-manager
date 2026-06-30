@@ -43,6 +43,7 @@ import {
 import { buildInitialCommercial } from '../sim/commercialEngine';
 import { createInitialFacilities } from '../sim/facilityEngine';
 import { rolloverRelationships } from '../sim/relationshipEngine';
+import { generateRegulationProposals, resolveRegulationVoting } from '../sim/politicsEngine';
 import type { Car, Driver, OffseasonSummary, Team } from '../types/gameTypes';
 import type { AcademyMember } from '../types/marketTypes';
 import type { FinanceTransaction } from '../types/financeTypes';
@@ -178,6 +179,25 @@ export function advanceSeason(state: GameState): GameState {
     ].label} upgraded to level ${u.toLevel}.`,
   );
 
+  // Regulation voting / politics (Living Universe Phase 8): settle the votes on
+  // the proposals that were up for the upcoming season. Passed proposals become
+  // real regulation changes that feed the car carryover below, and every
+  // outcome is recorded for the universe history.
+  const proposalsToVote = (state.regulationProposals ?? []).filter(
+    (p) => p.seasonYearEffective === nextYear,
+  );
+  const voteResolution = resolveRegulationVoting(
+    proposalsToVote,
+    state.teams,
+    state.teamReputations,
+    state.engine,
+    state.selectedTeamId,
+  );
+  const regulationHistoryWithVotes = [
+    ...state.regulationHistory,
+    ...voteResolution.regulationChanges,
+  ];
+
   // Carry the player car's development into the new baseline; reset condition.
   const playerCar = carForTeam(state, state.selectedTeamId);
   const carsRaw: Car[] = state.cars.map((c) => {
@@ -185,7 +205,7 @@ export function advanceSeason(state: GameState): GameState {
       const ratings = calculateOffseasonCarryover(
         c,
         state.completedDevelopmentProjects,
-        state.regulationHistory,
+        regulationHistoryWithVotes,
       );
       return {
         ...c,
@@ -438,6 +458,18 @@ export function advanceSeason(state: GameState): GameState {
     }
   }
 
+  // Fresh regulation proposals for the season after the new one, voted on
+  // during the upcoming season. Uses the updated grid + owner-patience profiles.
+  const nextProposals = generateRegulationProposals(
+    teams,
+    teamReputations,
+    nextEngine,
+    nextYear + 1,
+    `${state.randomSeed}-reg-${nextYear}`,
+    3,
+    state.series,
+  );
+
   const champion = state.driverStandings[0];
   const constructorChamp = state.constructorStandings[0];
   const summary: OffseasonSummary = {
@@ -457,6 +489,7 @@ export function advanceSeason(state: GameState): GameState {
       ...commercialNotes,
       ...principalNotes,
       ...relationshipNotes,
+      ...voteResolution.notes,
     ],
   };
 
@@ -485,6 +518,9 @@ export function advanceSeason(state: GameState): GameState {
     acceptedJobOfferId: undefined,
     driverRelationships: nextRelationships,
     teamOrderHistory: [],
+    regulationHistory: regulationHistoryWithVotes,
+    regulationProposals: nextProposals,
+    regulationVoteHistory: [...(state.regulationVoteHistory ?? []), ...voteResolution.results],
     carSetups,
     academy: nextAcademy,
     pendingSignings: [],
