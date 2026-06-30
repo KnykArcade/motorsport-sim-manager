@@ -7,6 +7,7 @@ import { academyCapacityFor } from '../sim/teamRatingsEngine';
 import { toMoney } from '../sim/financeEngine';
 import { thirdDriverMidSeasonFee } from '../sim/contractEngine';
 import { fogView } from '../sim/scoutingEngine';
+import { competingBidFor, bidToWin, resolveDriverBid } from '../sim/driverBiddingEngine';
 import { Panel } from '../components/Panel';
 import { StatBar } from '../components/StatBar';
 import { Button } from '../components/Button';
@@ -35,6 +36,7 @@ export function DriverMarket() {
 
   const offseason = state.seasonComplete;
   const budget = teamById(state, state.selectedTeamId)?.budget ?? 0;
+  const orgOverall = state.teamOrgRatings?.[state.selectedTeamId]?.overallTeamRating ?? 50;
   const seats = activeDriversForTeam(state, state.selectedTeamId);
   const roster = driversForTeam(state, state.selectedTeamId);
   const hasThirdDriver = roster.some((d) => d.contractType === 'third');
@@ -144,8 +146,12 @@ export function DriverMarket() {
                 thirdFee={thirdDriverMidSeasonFee(d.salary, racesRemaining, state.calendar.length)}
                 budget={budget}
                 seatName={seatName}
-                onSign={(seatDriverId) =>
-                  dispatch({ type: 'SIGN_MARKET_DRIVER', marketId: d.id, seatDriverId })
+                competingBid={competingBidFor(d, state.randomSeed)}
+                suggestedBid={bidToWin(d, orgOverall, state.randomSeed)}
+                teamOverall={orgOverall}
+                seed={state.randomSeed}
+                onSign={(seatDriverId, bid) =>
+                  dispatch({ type: 'SIGN_MARKET_DRIVER', marketId: d.id, seatDriverId, bid })
                 }
                 onSignThird={() => dispatch({ type: 'SIGN_THIRD_DRIVER', marketId: d.id })}
                 onRelease={(seatDriverId) =>
@@ -219,6 +225,10 @@ function Money({ m }: { m: number }) {
   return <>{formatMoney(m * 1_000_000)}</>;
 }
 
+function round1(n: number): number {
+  return Math.round(n * 10) / 10;
+}
+
 // Buttons to assign an incoming driver to one of the player's seats.
 function SeatButtons({
   seats,
@@ -252,6 +262,10 @@ function SeniorCard({
   thirdFee,
   budget,
   seatName,
+  competingBid,
+  suggestedBid,
+  teamOverall,
+  seed,
   onSign,
   onSignThird,
   onRelease,
@@ -267,10 +281,17 @@ function SeniorCard({
   thirdFee: number;
   budget: number;
   seatName: (id: string) => string;
-  onSign: (seatDriverId: string) => void;
+  competingBid: number;
+  suggestedBid: number;
+  teamOverall: number;
+  seed: string;
+  onSign: (seatDriverId: string, bid: number) => void;
   onSignThird: () => void;
   onRelease: (seatDriverId: string) => void;
 }) {
+  const [bid, setBid] = useState<number>(round1(Math.max(d.buyoutCost, suggestedBid)));
+  const resolution = resolveDriverBid(bid, d, teamOverall, seed);
+  const affordableBid = toMoney(bid) <= budget;
   return (
     <Panel>
       <div className="mb-1 flex items-start justify-between gap-2">
@@ -325,7 +346,35 @@ function SeniorCard({
         ) : offseason && !affordable ? (
           <span className="text-xs text-red-400">Buyout exceeds budget.</span>
         ) : offseason ? (
-          <SeatButtons seats={seats} label="Sign →" onPick={onSign} />
+          <div className="space-y-2">
+            <div className="flex items-center justify-between text-[11px] text-neutral-400">
+              <span>Rival interest</span>
+              {competingBid > 0 ? (
+                <span className="tabular-nums text-amber-300">~<Money m={competingBid} /></span>
+              ) : (
+                <span className="text-neutral-500">None</span>
+              )}
+            </div>
+            <div className="flex items-center gap-2">
+              <label className="text-[11px] text-neutral-500">Your bid ($M)</label>
+              <input
+                type="number"
+                min={d.buyoutCost}
+                step={0.1}
+                value={bid}
+                onChange={(e) => setBid(round1(Math.max(d.buyoutCost, Number(e.target.value) || 0)))}
+                className="w-20 rounded bg-neutral-800 px-2 py-1 text-xs tabular-nums text-neutral-100"
+              />
+              <span className={`text-[11px] font-semibold ${resolution.won ? 'text-green-400' : 'text-red-400'}`}>
+                {resolution.won ? 'Winning bid' : 'Likely outbid'}
+              </span>
+            </div>
+            {!affordableBid ? (
+              <span className="text-xs text-red-400">Bid exceeds budget.</span>
+            ) : (
+              <SeatButtons seats={seats} label="Bid →" onPick={(seatId) => onSign(seatId, bid)} />
+            )}
+          </div>
         ) : canSignThird && thirdFee > budget ? (
           <span className="text-xs text-red-400">
             3rd-driver fee {formatMoney(thirdFee)} exceeds budget.

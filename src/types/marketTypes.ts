@@ -94,4 +94,7 @@ export type SeatSigning = {
   source: 'market' | 'academy' | 'reserve';
   sourceId: string;
   name: string;
+  // For contested market signings: the bid ($M) offered for the driver. Resolved
+  // against rival interest at the season rollover. Absent for academy/reserve.
+  bid?: number;
 };

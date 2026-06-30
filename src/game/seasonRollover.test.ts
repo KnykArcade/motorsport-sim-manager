@@ -7,6 +7,7 @@ import {
   synthesizeDriverRatings,
 } from '../sim/driverMarketEngine';
 import { driverMarket1995, youthProspects1995 } from '../data';
+import { bidToWin, competingBidFor } from '../sim/driverBiddingEngine';
 import type { GameState } from './careerState';
 
 function newOffseasonState(): GameState {
@@ -53,7 +54,14 @@ describe('advanceSeason', () => {
     const state: GameState = {
       ...base,
       pendingSignings: [
-        { seatDriverId: seat.id, source: 'market', sourceId: incoming.id, name: incoming.name },
+        // A generous bid guarantees the contested signing is won.
+        {
+          seatDriverId: seat.id,
+          source: 'market',
+          sourceId: incoming.id,
+          name: incoming.name,
+          bid: incoming.buyoutCost * 5,
+        },
       ],
     };
 
@@ -72,6 +80,58 @@ describe('advanceSeason', () => {
     expect(next.signedMarketIds).toContain(incoming.id);
     // Calendar reset to uncompleted.
     expect(next.calendar.every((r) => !r.completed)).toBe(true);
+  });
+
+  it('drops a market signing when the bid loses, leaving the seat unchanged', () => {
+    const base = newOffseasonState();
+    const seat = base.drivers.find((d) => d.teamId === base.selectedTeamId)!;
+    // Pick a driver that draws a competing bid so a tiny offer loses.
+    const incoming = driverMarket1995.find(
+      (d) => competingBidFor(d, base.randomSeed) > 0,
+    )!;
+    const state: GameState = {
+      ...base,
+      pendingSignings: [
+        {
+          seatDriverId: seat.id,
+          source: 'market',
+          sourceId: incoming.id,
+          name: incoming.name,
+          bid: 0.01, // far below the competing bid
+        },
+      ],
+    };
+
+    const next = advanceSeason(state);
+
+    // Seat keeps its original driver; no new driver and no charge applied.
+    expect(next.drivers.find((d) => d.id === seat.id)).toBeDefined();
+    expect(next.drivers.find((d) => d.id === `d-${incoming.id}`)).toBeUndefined();
+    expect((next.finance ?? []).some((t) => t.label.includes(incoming.name))).toBe(false);
+  });
+
+  it('applies a market signing when the bid wins', () => {
+    const base = newOffseasonState();
+    const seat = base.drivers.find((d) => d.teamId === base.selectedTeamId)!;
+    const incoming = driverMarket1995[0];
+    const overall = base.teamOrgRatings?.[base.selectedTeamId]?.overallTeamRating ?? 50;
+    const winning = bidToWin(incoming, overall, base.randomSeed);
+    const state: GameState = {
+      ...base,
+      pendingSignings: [
+        {
+          seatDriverId: seat.id,
+          source: 'market',
+          sourceId: incoming.id,
+          name: incoming.name,
+          bid: winning,
+        },
+      ],
+    };
+
+    const next = advanceSeason(state);
+    expect(next.drivers.find((d) => d.id === `d-${incoming.id}`)).toBeDefined();
+    expect((next.finance ?? []).some((t) => t.label.includes(incoming.name))).toBe(true);
   });
 
   it('progresses academy members across the rollover', () => {
