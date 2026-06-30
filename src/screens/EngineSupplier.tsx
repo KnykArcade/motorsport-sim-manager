@@ -3,11 +3,13 @@ import { teamById } from '../game/careerState';
 import {
   ENGINE_DEAL_SPECS,
   availableEngineOffers,
+  engineSwitchFee,
   type EngineOffer,
 } from '../sim/engineSupplierEngine';
+import { toMoney } from '../sim/financeEngine';
 import { Panel } from '../components/Panel';
 import { Button } from '../components/Button';
-import type { EngineSupplierDeal } from '../types/engineTypes';
+import type { EngineState, EngineSupplierDeal } from '../types/engineTypes';
 
 function signed(n: number): string {
   return `${n >= 0 ? '+' : ''}${n.toFixed(2)}`;
@@ -33,6 +35,7 @@ export function EngineSupplier() {
 
   const current = engine.currentDeal;
   const pending = engine.pendingDeal;
+  const budget = team.budget;
   const offers = availableEngineOffers(engine, team);
   const bySupplier = new Map<string, EngineOffer[]>();
   for (const o of offers) {
@@ -61,10 +64,14 @@ export function EngineSupplier() {
         {pending && (
           <p className="mt-3 rounded-md bg-sky-950/40 px-3 py-2 text-xs text-sky-300">
             Signed for next season: {ENGINE_DEAL_SPECS[pending.dealType].label} with {pending.supplierName}
-            {' '}(${pending.annualCost}M/yr). Cancel by re-signing your current deal.
+            {' '}(${pending.annualCost}M/yr)
+            {engine.pendingDealFee ? ` · $${engine.pendingDealFee}M switch fee paid` : ''}.
+            {' '}Cancel by re-signing your current deal{engine.pendingDealFee ? ' (fee refunded)' : ''}.
           </p>
         )}
       </Panel>
+
+      <ManufacturerPanel engine={engine} />
 
       <Panel title="Negotiate">
         <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
@@ -80,6 +87,8 @@ export function EngineSupplier() {
                 {list.map((o) => {
                   const cur = isCurrent(o);
                   const pend = isPending(o);
+                  const fee = engineSwitchFee(current, o);
+                  const affordable = toMoney(fee) <= budget + toMoney(engine.pendingDealFee ?? 0);
                   return (
                     <div key={o.dealType} className="rounded-md border border-neutral-800/80 p-2">
                       <div className="flex items-center justify-between">
@@ -100,15 +109,21 @@ export function EngineSupplier() {
                         ) : pend ? (
                           <div className="text-center text-[11px] text-sky-300">Signed for next season</div>
                         ) : (
-                          <Button
-                            variant="primary"
-                            className="w-full px-2 py-1 text-xs"
-                            onClick={() =>
-                              dispatch({ type: 'SIGN_ENGINE_DEAL', supplierId: o.supplier.id, dealType: o.dealType })
-                            }
-                          >
-                            Sign for next season
-                          </Button>
+                          <>
+                            <Button
+                              variant="primary"
+                              className="w-full px-2 py-1 text-xs"
+                              disabled={!affordable}
+                              onClick={() =>
+                                dispatch({ type: 'SIGN_ENGINE_DEAL', supplierId: o.supplier.id, dealType: o.dealType })
+                              }
+                            >
+                              {fee > 0 ? `Sign — $${fee}M buyout` : 'Sign for next season'}
+                            </Button>
+                            {!affordable && (
+                              <div className="mt-1 text-center text-[10px] text-red-400">Insufficient budget</div>
+                            )}
+                          </>
                         )}
                       </div>
                     </div>
@@ -164,5 +179,54 @@ function Metric({ label, value }: { label: string; value: string }) {
 function Tag({ children }: { children: React.ReactNode }) {
   return (
     <span className="rounded bg-neutral-800/60 px-1.5 py-0.5 text-neutral-300">{children}</span>
+  );
+}
+
+function ManufacturerPanel({ engine }: { engine: EngineState }) {
+  const confidence = engine.manufacturerConfidence;
+  const objective = engine.manufacturerObjective;
+  if (confidence === undefined || !objective) {
+    return (
+      <Panel title="Manufacturer Relationship">
+        <p className="text-sm text-neutral-400">
+          Customer engine deals carry no manufacturer relationship. Sign a works or factory deal to take
+          on a performance partnership.
+        </p>
+      </Panel>
+    );
+  }
+  const reviews = [...(engine.manufacturerReviews ?? [])].slice(-3).reverse();
+  const tone =
+    confidence >= 70 ? 'text-green-400' : confidence >= 40 ? 'text-amber-400' : 'text-red-400';
+  return (
+    <Panel title="Manufacturer Relationship">
+      <div className="flex items-center justify-between">
+        <div className="text-sm text-neutral-300">
+          Target: <span className="font-semibold text-neutral-100">{objective.description}</span>
+        </div>
+        <div className={`text-sm font-bold ${tone}`}>Confidence {confidence}</div>
+      </div>
+      <div className="mt-2 h-2 w-full overflow-hidden rounded bg-neutral-800">
+        <div
+          className={`h-full ${confidence >= 70 ? 'bg-green-500' : confidence >= 40 ? 'bg-amber-500' : 'bg-red-500'}`}
+          style={{ width: `${confidence}%` }}
+        />
+      </div>
+      <p className="mt-2 text-xs text-neutral-500">
+        Meeting the target lifts confidence; missing it dents it. Strong confidence can earn a works
+        upgrade, while a collapse scales the deal back a tier.
+      </p>
+      {reviews.length > 0 && (
+        <ul className="mt-3 space-y-1">
+          {reviews.map((r, i) => (
+            <li key={i} className="flex items-center gap-2 text-xs">
+              <span className={r.met ? 'text-green-400' : 'text-red-400'}>{r.met ? '▲' : '▼'}</span>
+              <span className="text-neutral-500">{r.seasonYear}</span>
+              <span className="text-neutral-300">{r.summary}</span>
+            </li>
+          ))}
+        </ul>
+      )}
+    </Panel>
   );
 }

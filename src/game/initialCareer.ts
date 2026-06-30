@@ -8,7 +8,13 @@ import type { GameState } from './careerState';
 import { buildInitialCommercial } from '../sim/commercialEngine';
 import { buildTeamReputations, buildTeamExpectations } from '../sim/expectationEngine';
 import { createInitialFacilities } from '../sim/facilityEngine';
-import { applyEngineBonuses, createInitialEngineState } from '../sim/engineSupplierEngine';
+import {
+  applyEngineBonuses,
+  applyInitialEngineSelection,
+  createInitialEngineState,
+  seedManufacturerRelationship,
+} from '../sim/engineSupplierEngine';
+import type { EngineDealType } from '../types/engineTypes';
 import { createPrincipalProfile, generateJobOffers } from '../sim/principalEngine';
 import { createDriverRelationships } from '../sim/relationshipEngine';
 import { generateRegulationProposals } from '../sim/politicsEngine';
@@ -32,6 +38,10 @@ export type NewGameOptions = {
   // The player-created Team Principal ("Paddock Credentials"). Optional so tests
   // and legacy callers still work; when absent a default profile is used.
   teamPrincipal?: TeamPrincipal;
+  // The player's chosen season-1 engine deal. Optional; when absent the deal is
+  // the auto-assigned one from createInitialEngineState.
+  initialEngineSupplierId?: string;
+  initialEngineDealType?: EngineDealType;
 };
 
 export function createNewGame(options: NewGameOptions): GameState {
@@ -61,13 +71,24 @@ export function createNewGame(options: NewGameOptions): GameState {
 
   // Engine supplier deals for the whole grid (Living Universe Phase 5); apply
   // each deal's power/reliability modifier to the corresponding car.
-  const engine = createInitialEngineState(
+  let engine = createInitialEngineState(
     bundle.teams,
     options.teamId,
     options.seasonYear,
     options.series,
     seed,
   );
+  // Apply the player's starting-engine choice (if any), then seed the works/
+  // factory manufacturer relationship from whatever deal they begin with.
+  if (playerTeam && options.initialEngineSupplierId && options.initialEngineDealType) {
+    engine = applyInitialEngineSelection(
+      engine,
+      playerTeam,
+      options.initialEngineSupplierId,
+      options.initialEngineDealType,
+    );
+  }
+  engine = seedManufacturerRelationship(engine);
   const cars = applyEngineBonuses(clone(bundle.cars), engine);
 
   // Team Principal job market (Living Universe Phase 6): the player's own
