@@ -51,6 +51,7 @@ import type {
   RaceResult,
 } from '../types/gameTypes';
 import type { EngineDealType } from '../types/engineTypes';
+import type { RegulationVote } from '../types/politicsTypes';
 import type {
   Entrant,
   QualifyingDecision,
@@ -98,6 +99,7 @@ export type GameAction =
   | { type: 'SIGN_ENGINE_DEAL'; supplierId: string; dealType: EngineDealType }
   | { type: 'ACCEPT_JOB_OFFER'; offerId: string }
   | { type: 'DECLINE_JOB_OFFER'; offerId: string }
+  | { type: 'SET_REGULATION_VOTE'; proposalId: string; vote: RegulationVote }
   | { type: 'SWAP_RACE_DRIVER'; seatIndex: number; reserveDriverId: string }
   | { type: 'SIGN_THIRD_DRIVER'; marketId: string }
   | { type: 'PROMOTE_THIRD_DRIVER'; seatDriverId: string; thirdDriverId: string }
@@ -382,6 +384,18 @@ export function gameReducer(state: GameState | null, action: GameAction): GameSt
         jobOffers: (state.jobOffers ?? []).filter((o) => o.id !== action.offerId),
         acceptedJobOfferId:
           state.acceptedJobOfferId === action.offerId ? undefined : state.acceptedJobOfferId,
+      };
+    }
+
+    case 'SET_REGULATION_VOTE': {
+      if (!state) return state;
+      return {
+        ...state,
+        regulationProposals: (state.regulationProposals ?? []).map((p) =>
+          p.id === action.proposalId
+            ? { ...p, playerVote: p.playerVote === action.vote ? undefined : action.vote }
+            : p,
+        ),
       };
     }
 

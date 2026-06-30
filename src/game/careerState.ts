@@ -30,7 +30,7 @@ import type { TeamReputation, TeamExpectation, ExpectationReview } from '../type
 import type { TeamPrincipalProfile, JobOffer } from '../types/principalTypes';
 import type { FacilitiesState } from '../types/facilityTypes';
 import type { DriverRelationship, TeamOrderDecision } from '../types/relationshipTypes';
-import type { RegulationProposal } from '../types/politicsTypes';
+import type { RegulationProposal, RegulationVoteResult } from '../types/politicsTypes';
 import type { HistoricalEventHook, FiredEvent } from '../types/eventHookTypes';
 import type { ScoutingState } from '../types/scoutingTypes';
 import type { DriverDevelopmentCurve } from '../types/developmentCurveTypes';
@@ -120,8 +120,10 @@ export type GameState = {
   // 8. Driver relationships + team-order decisions taken this season.
   driverRelationships?: Record<string, DriverRelationship>;
   teamOrderHistory?: TeamOrderDecision[];
-  // 9. Regulation voting / political system (career mode offseason).
+  // 9. Regulation voting / political system (career mode offseason): proposals
+  //    up for the next season's vote, plus the historical record of outcomes.
   regulationProposals?: RegulationProposal[];
+  regulationVoteHistory?: RegulationVoteResult[];
   // 10. Historical event hooks: available pool + ones that have fired.
   eventHooks?: HistoricalEventHook[];
   firedEvents?: FiredEvent[];

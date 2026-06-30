@@ -11,6 +11,7 @@ import { createInitialFacilities } from '../sim/facilityEngine';
 import { applyEngineBonuses, createInitialEngineState } from '../sim/engineSupplierEngine';
 import { createPrincipalProfile, generateJobOffers } from '../sim/principalEngine';
 import { createDriverRelationships } from '../sim/relationshipEngine';
+import { generateRegulationProposals } from '../sim/politicsEngine';
 
 // Deep clone via structuredClone (available in modern browsers / Node 18+).
 function clone<T>(value: T): T {
@@ -79,6 +80,19 @@ export function createNewGame(options: NewGameOptions): GameState {
     seed,
   );
 
+  // Regulation voting / politics (Living Universe Phase 8): proposals up for a
+  // vote, effective the season after this one. The player lobbies all year and
+  // the outcome is settled at the offseason rollover.
+  const regulationProposals = generateRegulationProposals(
+    bundle.teams,
+    teamReputations,
+    engine,
+    options.seasonYear + 1,
+    seed,
+    3,
+    options.series,
+  );
+
   return {
     id: `save-${Date.now()}`,
     createdAt: now,
@@ -121,6 +135,8 @@ export function createNewGame(options: NewGameOptions): GameState {
     jobOffers,
     driverRelationships,
     teamOrderHistory: [],
+    regulationProposals,
+    regulationVoteHistory: [],
     randomSeed: seed,
     seasonComplete: false,
   };
