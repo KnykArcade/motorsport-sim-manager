@@ -78,7 +78,8 @@ export function createLiveRace(context: RaceContext, options: LiveRaceOptions): 
     const instruction = context.instructions[decision.instructionId];
     const grid = gridByDriver[e.driver.id] ?? context.entrants.length;
 
-    const { score } = calculateRacePace(e.driver, e.car, track, setup, strategy, instruction);
+    const teamRating = (options.teamReputation[e.driver.teamId] ?? 50) / 10;
+    const { score } = calculateRacePace(e.driver, e.car, track, setup, strategy, instruction, teamRating);
 
     // Reliability: per-race risk amplified by quali incidents, spread per lap.
     const stress = Math.max(0, instruction.reliabilityStressModifier + setup.riskModifier * 0.2);

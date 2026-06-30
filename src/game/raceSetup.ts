@@ -98,6 +98,8 @@ export function buildRaceContext(
   }
 
   const pointsSystem = getPointsSystem(state.pointsSystemId);
+  const teamReputation: Record<string, number> = {};
+  state.teams.forEach((t) => (teamReputation[t.id] = t.reputation));
 
   const context: RaceContext = {
     track,
@@ -109,6 +111,7 @@ export function buildRaceContext(
     instructions: driverInstructionsById,
     pointsByPosition: pointsSystem.pointsByPosition,
     seed: `${state.randomSeed}-r${race.round}`,
+    teamReputation,
   };
 
   return { context, track, raceId: race.id, totalLaps: race.laps };
