@@ -16,8 +16,14 @@ import {
 import { Panel } from '../components/Panel';
 import { Button } from '../components/Button';
 import { RaceTrack2D, type TrackDot } from '../components/RaceTrack2D';
+import {
+  applyTeamOrderToLive,
+  recordTeamOrder,
+  TEAM_ORDER_SPECS,
+} from '../sim/relationshipEngine';
 import type { LiveCarState, LiveRaceState, PaceMode } from '../types/liveTypes';
 import type { RaceDecision } from '../types/simTypes';
+import type { TeamOrder, TeamOrderDecision } from '../types/relationshipTypes';
 
 type Speed = 1 | 2 | 4;
 
@@ -43,6 +49,8 @@ export function LiveRace() {
   const [playing, setPlaying] = useState(false);
   const [speed, setSpeed] = useState<Speed>(1);
   const committed = useRef(false);
+  // Team orders called during the race, resolved into relationships at the flag.
+  const teamOrders = useRef<TeamOrderDecision[]>([]);
 
   // Playback loop — steps a lap on an interval while playing, paused on prompts.
   useEffect(() => {
@@ -77,6 +85,15 @@ export function LiveRace() {
     setLive((s) => (s ? resolvePrompt(s, optionId, engine.meta) : s));
   const pitNow = (driverId: string) =>
     setLive((s) => (s ? requestPlayerPit(s, driverId) : s));
+  const issueOrder = (order: TeamOrder, favoredDriverId?: string) =>
+    setLive((s) => {
+      if (!s) return s;
+      const applied = applyTeamOrderToLive(s, order, favoredDriverId, driverName);
+      if (!applied) return s;
+      const activeIds = s.cars.filter((c) => c.isPlayer).map((c) => c.driverId);
+      teamOrders.current.push(recordTeamOrder(s.raceId, order, favoredDriverId, activeIds, s.currentLap));
+      return applied.state;
+    });
 
   const finishRace = () => {
     if (committed.current) {
@@ -85,7 +102,7 @@ export function LiveRace() {
     }
     const { results, events, breakdowns } = finalizeResults(live, engine.context);
     committed.current = true;
-    dispatch({ type: 'COMMIT_LIVE_RACE', results, events, breakdowns });
+    dispatch({ type: 'COMMIT_LIVE_RACE', results, events, breakdowns, teamOrders: teamOrders.current });
     navigate(`/results/${raceId}`);
   };
 
@@ -240,6 +257,15 @@ export function LiveRace() {
               </div>
             </Panel>
           )}
+          {!finished && playerCars.some((c) => c.running) && (
+            <Panel title="Team Orders">
+              <TeamOrdersPanel
+                playerCars={playerCars.filter((c) => c.running)}
+                nameOf={driverName}
+                onOrder={issueOrder}
+              />
+            </Panel>
+          )}
           {playerCars.length > 0 && (
             <Panel title="Pit Strategy">
               <div className="space-y-3">
@@ -387,6 +413,66 @@ function PitStrategyCard({
       >
         {car.pit.pitRequested ? 'Boxing…' : '🔧 Pit Now'}
       </Button>
+    </div>
+  );
+}
+
+function TeamOrdersPanel({
+  playerCars,
+  nameOf,
+  onOrder,
+}: {
+  playerCars: LiveCarState[];
+  nameOf: (id: string) => string;
+  onOrder: (order: TeamOrder, favoredDriverId?: string) => void;
+}) {
+  const twoCars = playerCars.length >= 2;
+  return (
+    <div className="space-y-2.5">
+      <p className="text-xs text-neutral-400">
+        Call the pit wall. Orders take effect on track immediately and shape morale, loyalty and the
+        teammate relationship after the race.
+      </p>
+      {TEAM_ORDER_SPECS.map((spec) => {
+        const needsTwo =
+          spec.order === 'SwapPositions' || spec.order === 'HoldPosition' || spec.order === 'LetThemRace';
+        const disabled = needsTwo && !twoCars;
+        return (
+          <div key={spec.order} className="rounded-lg border border-neutral-800 bg-neutral-900/40 p-2.5">
+            <div className="flex items-baseline justify-between gap-2">
+              <span className="text-sm font-semibold text-neutral-100">{spec.label}</span>
+            </div>
+            <p className="mt-0.5 text-[11px] text-neutral-500">{spec.description}</p>
+            <div className="mt-2 flex flex-wrap gap-2">
+              {spec.needsFavored ? (
+                playerCars.map((c) => (
+                  <Button
+                    key={c.driverId}
+                    variant="ghost"
+                    onClick={() => onOrder(spec.order, c.driverId)}
+                    disabled={disabled}
+                    className="text-xs"
+                  >
+                    {nameOf(c.driverId)}
+                  </Button>
+                ))
+              ) : (
+                <Button
+                  variant="ghost"
+                  onClick={() => onOrder(spec.order)}
+                  disabled={disabled}
+                  className="text-xs"
+                >
+                  Issue
+                </Button>
+              )}
+            </div>
+            {disabled && (
+              <p className="mt-1 text-[10px] text-neutral-600">Needs both cars running.</p>
+            )}
+          </div>
+        );
+      })}
     </div>
   );
 }

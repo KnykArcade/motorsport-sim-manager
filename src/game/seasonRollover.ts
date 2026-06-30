@@ -42,6 +42,7 @@ import {
 } from '../sim/principalEngine';
 import { buildInitialCommercial } from '../sim/commercialEngine';
 import { createInitialFacilities } from '../sim/facilityEngine';
+import { rolloverRelationships } from '../sim/relationshipEngine';
 import type { Car, Driver, OffseasonSummary, Team } from '../types/gameTypes';
 import type { AcademyMember } from '../types/marketTypes';
 import type { FinanceTransaction } from '../types/financeTypes';
@@ -418,6 +419,25 @@ export function advanceSeason(state: GameState): GameState {
   const pointsSystemId = nextSeason?.pointsSystemId ?? state.pointsSystemId;
   const regulationSetId = nextSeason?.regulationSetId ?? state.regulationSetId;
 
+  // Carry driver relationships into the new line-up: loyalty drifts toward
+  // neutral, chemistry grows another year, morale/frustration recover, and
+  // teammate links + number-one status are recomputed. Unhappy player drivers
+  // are flagged in the offseason notes.
+  const nextRelationships = rolloverRelationships(
+    state.driverRelationships,
+    teams,
+    drivers,
+    teamReputations,
+    `${state.randomSeed}-rel-${nextYear}`,
+  );
+  const relationshipNotes: string[] = [];
+  for (const d of drivers.filter((x) => x.teamId === state.selectedTeamId)) {
+    const prev = state.driverRelationships?.[d.id];
+    if (prev && (prev.morale < 30 || prev.teamLoyalty < 25)) {
+      relationshipNotes.push(`${d.name} is unhappy at the team and may look elsewhere.`);
+    }
+  }
+
   const champion = state.driverStandings[0];
   const constructorChamp = state.constructorStandings[0];
   const summary: OffseasonSummary = {
@@ -436,6 +456,7 @@ export function advanceSeason(state: GameState): GameState {
       ...engineNotes,
       ...commercialNotes,
       ...principalNotes,
+      ...relationshipNotes,
     ],
   };
 
@@ -462,6 +483,8 @@ export function advanceSeason(state: GameState): GameState {
     principal: nextPrincipal,
     jobOffers: nextJobOffers,
     acceptedJobOfferId: undefined,
+    driverRelationships: nextRelationships,
+    teamOrderHistory: [],
     carSetups,
     academy: nextAcademy,
     pendingSignings: [],

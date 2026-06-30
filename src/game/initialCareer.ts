@@ -10,6 +10,7 @@ import { buildTeamReputations, buildTeamExpectations } from '../sim/expectationE
 import { createInitialFacilities } from '../sim/facilityEngine';
 import { applyEngineBonuses, createInitialEngineState } from '../sim/engineSupplierEngine';
 import { createPrincipalProfile, generateJobOffers } from '../sim/principalEngine';
+import { createDriverRelationships } from '../sim/relationshipEngine';
 
 // Deep clone via structuredClone (available in modern browsers / Node 18+).
 function clone<T>(value: T): T {
@@ -69,6 +70,15 @@ export function createNewGame(options: NewGameOptions): GameState {
     ? generateJobOffers(principal, bundle.teams, teamReputations, options.seasonYear, seed)
     : undefined;
 
+  // Driver relationships + team orders (Living Universe Phase 7): the human side
+  // of every garage — loyalty, chemistry, teammate rivalry, morale, frustration.
+  const driverRelationships = createDriverRelationships(
+    bundle.teams,
+    bundle.drivers,
+    teamReputations,
+    seed,
+  );
+
   return {
     id: `save-${Date.now()}`,
     createdAt: now,
@@ -109,6 +119,8 @@ export function createNewGame(options: NewGameOptions): GameState {
     engine,
     principal,
     jobOffers,
+    driverRelationships,
+    teamOrderHistory: [],
     randomSeed: seed,
     seasonComplete: false,
   };
