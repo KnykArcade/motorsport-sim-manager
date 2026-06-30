@@ -39,6 +39,8 @@ import {
 import { availableEngineOffers, buildSignedDeal } from '../sim/engineSupplierEngine';
 import { classifyCrashDamage, damageConditionHit, repairCost } from '../sim/repairEngine';
 import { buildRaceArchiveEntry } from '../sim/lapArchiveEngine';
+import { resolveTeamOrderConsequences } from '../sim/relationshipEngine';
+import type { TeamOrderDecision } from '../types/relationshipTypes';
 import { createSeededRandom, deriveSeed } from '../sim/random';
 import type { SeatSigning } from '../types/marketTypes';
 import type { FinanceTransaction } from '../types/financeTypes';
@@ -75,6 +77,7 @@ export type GameAction =
       results: RaceResult[];
       events: RaceEvent[];
       breakdowns: Record<string, ScoreBreakdown>;
+      teamOrders?: TeamOrderDecision[];
     }
   | { type: 'START_DEVELOPMENT'; projectId: string }
   | { type: 'SET_CAR_SETUP'; driverId: string; setup: CarSetup }
@@ -282,7 +285,14 @@ export function gameReducer(state: GameState | null, action: GameAction): GameSt
       if (!state) return state;
       const race = currentRace(state);
       if (!race) return state;
-      return applyRaceResults(state, race, action.results, action.events, action.breakdowns);
+      return applyRaceResults(
+        state,
+        race,
+        action.results,
+        action.events,
+        action.breakdowns,
+        action.teamOrders ?? [],
+      );
     }
 
     case 'START_DEVELOPMENT': {
@@ -610,6 +620,7 @@ function applyRaceResults(
   results: RaceResult[],
   events: RaceEvent[],
   breakdowns: Record<string, ScoreBreakdown>,
+  teamOrders: TeamOrderDecision[] = [],
 ): GameState {
   const qualifying = state.qualifyingResults[race.id] ?? [];
 
@@ -642,11 +653,34 @@ function applyRaceResults(
     driverTeam,
   );
 
-  const drivers = state.drivers.map((d) => ({
+  let drivers = state.drivers.map((d) => ({
     ...d,
     confidence: morale.driverConfidence[d.id] ?? d.confidence,
     morale: morale.driverMorale[d.id] ?? d.morale,
   }));
+
+  // Team-order fallout (Living Universe Phase 7): resolve the orders called this
+  // race into the relationship map, nudge the affected drivers' morale, and keep
+  // the season's order log + any media reactions for the news.
+  let driverRelationships = state.driverRelationships;
+  let teamOrderHistory = state.teamOrderHistory ?? [];
+  const relationshipNews: string[] = [];
+  if (teamOrders.length > 0 && driverRelationships) {
+    const driverNameOf = (id: string) => state.drivers.find((d) => d.id === id)?.name ?? id;
+    const resolved = resolveTeamOrderConsequences(teamOrders, driverRelationships, driverNameOf);
+    driverRelationships = resolved.relationships;
+    teamOrderHistory = [...teamOrderHistory, ...teamOrders];
+    relationshipNews.push(...resolved.news);
+    const moraleDeltaById: Record<string, number> = {};
+    for (const c of resolved.consequences) {
+      moraleDeltaById[c.driverId] = (moraleDeltaById[c.driverId] ?? 0) + c.moraleDelta;
+    }
+    drivers = drivers.map((d) =>
+      moraleDeltaById[d.id]
+        ? { ...d, morale: Math.max(0, Math.min(100, Math.round(d.morale + moraleDeltaById[d.id]))) }
+        : d,
+    );
+  }
 
   // Budget: prize money for points + crash repair costs scaled by damage.
   const teams = state.teams.map((t) => ({ ...t, morale: morale.teamMorale[t.id] ?? t.morale }));
@@ -758,6 +792,9 @@ function applyRaceResults(
   damageMessages.forEach((m, i) => {
     news.unshift({ id: `news-damage-${race.round}-${i}`, round: race.round, headline: m, timestamp: new Date().toISOString() });
   });
+  relationshipNews.forEach((m, i) => {
+    news.unshift({ id: `news-order-${race.round}-${i}`, round: race.round, headline: m, timestamp: new Date().toISOString() });
+  });
 
   // Archive this race (results + deterministic lap-time archive).
   const archiveEntry = buildRaceArchiveEntry(
@@ -790,6 +827,8 @@ function applyRaceResults(
     completedDevelopmentProjects,
     finance: [...(state.finance ?? []), ...financeTxns],
     raceArchive,
+    driverRelationships,
+    teamOrderHistory,
     news: [...news, ...state.news].slice(0, 50),
     currentRaceIndex: seasonComplete ? state.currentRaceIndex : nextIndex,
     seasonComplete,

@@ -32,6 +32,8 @@ describe('save model', () => {
     // Phase 6: the Team Principal profile + job market are seeded on a new career.
     expect(s.principal).toBeDefined();
     expect(s.jobOffers).toBeDefined();
+    // Phase 7: driver relationships are seeded on a new career.
+    expect(s.driverRelationships).toBeDefined();
     // Systems from later phases remain unset.
     expect(s.universeHistory).toBeUndefined();
   });
