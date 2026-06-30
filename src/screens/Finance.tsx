@@ -17,6 +17,7 @@ const CATEGORY_ORDER: FinanceCategory[] = [
   'Staff',
   'Facilities',
   'Development',
+  'Scouting',
   'Repairs',
 ];
 

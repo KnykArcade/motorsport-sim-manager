@@ -16,6 +16,7 @@ import type {
   VisibleRating,
 } from '../types/scoutingTypes';
 import { facilityEffect } from './facilityEngine';
+import { MILLION } from './financeEngine';
 import { createSeededRandom, deriveSeed } from './random';
 
 const SKILL_KEYS: (keyof MarketSkillRatings)[] = [
@@ -139,6 +140,23 @@ export function buildScoutingReport(
     notes,
     lastUpdated: now,
   };
+}
+
+// Base cost ($M) of one scouting trip by target type — established senior
+// drivers cost more to scout than youth/staff.
+const SCOUT_BASE_COST_M: Record<ScoutedEntityType, number> = {
+  Driver: 0.6,
+  YouthProspect: 0.35,
+  Staff: 0.4,
+};
+
+// The cost (raw dollars) of the next scouting trip on a target. Refining a
+// target you already know is progressively more expensive (deeper intel), so
+// cost scales with the effort already invested.
+export function scoutingCost(entityType: ScoutedEntityType, currentScoutingLevel: number): number {
+  const baseM = SCOUT_BASE_COST_M[entityType];
+  const refinement = 1 + clamp01(currentScoutingLevel / 100) * 0.8;
+  return Math.round(baseM * refinement * MILLION);
 }
 
 export function createInitialScoutingState(

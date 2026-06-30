@@ -12,6 +12,7 @@ export type FinanceCategory =
   | 'Facilities'
   | 'Engine'
   | 'Development'
+  | 'Scouting'
   | 'Repairs';
 
 export type FinanceTransaction = {
