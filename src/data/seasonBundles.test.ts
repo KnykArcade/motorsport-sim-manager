@@ -37,6 +37,15 @@ describe('season bundles', () => {
         expect(pointsSystems[bundle!.season.pointsSystemId]).toBeDefined();
       });
 
+      it('uses the sim 0-10 scale for every car rating', () => {
+        for (const c of bundle!.cars) {
+          for (const [key, value] of Object.entries(c.ratings)) {
+            expect(value, `${c.id} ${key}=${value}`).toBeGreaterThanOrEqual(0);
+            expect(value, `${c.id} ${key}=${value}`).toBeLessThanOrEqual(10);
+          }
+        }
+      });
+
       it('has a market + youth pool', () => {
         const market = getMarketBundle(s.year, s.series);
         expect(market).toBeDefined();
