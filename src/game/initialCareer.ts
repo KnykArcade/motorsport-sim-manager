@@ -14,6 +14,7 @@ import { createDriverRelationships } from '../sim/relationshipEngine';
 import { generateRegulationProposals } from '../sim/politicsEngine';
 import { createInitialScoutingState } from '../sim/scoutingEngine';
 import { seedDevelopmentCurves } from '../sim/developmentCurveEngine';
+import { createInitialUniverseHistory } from '../sim/universeHistoryEngine';
 
 // Deep clone via structuredClone (available in modern browsers / Node 18+).
 function clone<T>(value: T): T {
@@ -148,6 +149,7 @@ export function createNewGame(options: NewGameOptions): GameState {
     regulationVoteHistory: [],
     scouting: createInitialScoutingState(options.teamId, facilities),
     developmentCurves,
+    universeHistory: createInitialUniverseHistory(),
     randomSeed: seed,
     seasonComplete: false,
   };

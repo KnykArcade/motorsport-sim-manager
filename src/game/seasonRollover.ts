@@ -46,6 +46,7 @@ import { rolloverRelationships } from '../sim/relationshipEngine';
 import { generateRegulationProposals, resolveRegulationVoting } from '../sim/politicsEngine';
 import { refreshScoutingNetwork } from '../sim/scoutingEngine';
 import { createDriverDevelopmentCurve, developmentStep } from '../sim/developmentCurveEngine';
+import { finalizeSeasonHistory } from '../sim/universeHistoryEngine';
 import type { DriverDevelopmentCurve } from '../types/developmentCurveTypes';
 import type { Car, Driver, OffseasonSummary, Team } from '../types/gameTypes';
 import type { AcademyMember } from '../types/marketTypes';
@@ -524,6 +525,28 @@ export function advanceSeason(state: GameState): GameState {
     ],
   };
 
+  // Universe history / records (Living Universe Phase 11): archive the season
+  // that just finished — its race records, champions and final standings — and
+  // roll the career stats + all-time records forward before the per-season state
+  // is cleared below.
+  const driverNameById = new Map(state.drivers.map((d) => [d.id, d.name] as const));
+  const teamNameById = new Map(state.teams.map((t) => [t.id, t.name] as const));
+  const prevDriverStats = state.universeHistory?.driverCareerStats ?? {};
+  const prevTeamStats = state.universeHistory?.teamCareerStats ?? {};
+  const nextUniverseHistory = finalizeSeasonHistory(state.universeHistory, {
+    seasonYear: state.seasonYear,
+    series: state.series,
+    driverChampionId: champion?.entityId,
+    constructorChampionId: constructorChamp?.entityId,
+    finalDriverStandings: state.driverStandings,
+    finalConstructorStandings: state.constructorStandings,
+    raceArchive: (state.raceArchive ?? []).filter((a) => a.season === state.seasonYear),
+    completedRaceResults: state.completedRaceResults,
+    regulationChanges: voteResolution.notes,
+    nameOfDriver: (id) => driverNameById.get(id) ?? prevDriverStats[id]?.name ?? id,
+    nameOfTeam: (id) => teamNameById.get(id) ?? prevTeamStats[id]?.name ?? id,
+  });
+
   const now = new Date().toISOString();
   const nextState: GameState = {
     ...state,
@@ -556,6 +579,7 @@ export function advanceSeason(state: GameState): GameState {
       ? { ...refreshScoutingNetwork(state.scouting, nextFacilities)!, reports: {} }
       : state.scouting,
     developmentCurves: nextCurves,
+    universeHistory: nextUniverseHistory,
     carSetups,
     academy: nextAcademy,
     pendingSignings: [],
