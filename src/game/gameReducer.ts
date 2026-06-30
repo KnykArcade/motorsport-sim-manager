@@ -26,6 +26,7 @@ import { createNewGame, type NewGameOptions } from './initialCareer';
 import { advanceSeason } from './seasonRollover';
 import { getMarketBundle, getMaxQualifiers, getStaffPool } from '../data';
 import { marketDriverToDriver, signProspectToAcademy } from '../sim/driverMarketEngine';
+import { academyCapacityFor } from '../sim/teamRatingsEngine';
 import { makeTransaction, toMoney } from '../sim/financeEngine';
 import { thirdDriverMidSeasonFee, thirdDriverSalary } from '../sim/contractEngine';
 import { racePerformanceBonuses } from '../sim/commercialEngine';
@@ -596,7 +597,12 @@ function acceptJobOffer(state: GameState, offerId: string): GameState {
 // Sign a youth prospect into the academy. The one-off signing fee is charged
 // immediately; the player must be able to afford it.
 function signYouth(state: GameState, youthId: string): GameState {
-  if ((state.academy ?? []).some((a) => a.prospectId === youthId)) return state;
+  const academy = state.academy ?? [];
+  if (academy.some((a) => a.prospectId === youthId)) return state;
+  // Academy capacity (Career Mode Phase 1): a team can only hold so many youth
+  // drivers, based on its overall team rating. Block signings past the limit.
+  const capacity = academyCapacityFor(state.teamOrgRatings, state.selectedTeamId);
+  if (academy.length >= capacity) return state;
   const prospect = getMarketBundle(state.seasonYear, state.series)?.youth.find(
     (y) => y.id === youthId,
   );

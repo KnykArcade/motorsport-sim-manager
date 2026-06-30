@@ -7,9 +7,11 @@ import { Button } from '../components/Button';
 import { StatBar } from '../components/StatBar';
 import { formatMoney } from '../components/ui';
 import { hasSave } from '../game/saveSystem';
+import { PrincipalCreator } from './PrincipalCreator';
 import type { GameMode, Series } from '../types/gameTypes';
+import type { TeamPrincipal } from '../types/principalTypes';
 
-type Step = 'mode' | 'setup' | 'team';
+type Step = 'mode' | 'setup' | 'team' | 'principal';
 
 export function NewCareer() {
   const navigate = useNavigate();
@@ -29,14 +31,19 @@ export function NewCareer() {
 
   const bundle = useMemo(() => getSeasonBundle(year, series), [year, series]);
 
-  const startGame = () => {
+  const startGame = (teamPrincipal: TeamPrincipal) => {
     if (!selectedTeamId) return;
     if (hasSave() && !confirm('Starting a new game overwrites your existing save. Continue?')) {
       return;
     }
-    dispatch({ type: 'NEW_GAME', options: { gameMode: mode, seasonYear: year, series, teamId: selectedTeamId } });
+    dispatch({
+      type: 'NEW_GAME',
+      options: { gameMode: mode, seasonYear: year, series, teamId: selectedTeamId, teamPrincipal },
+    });
     navigate('/hq');
   };
+
+  const selectedTeam = bundle?.teams.find((t) => t.id === selectedTeamId);
 
   return (
     <div className="min-h-screen bg-[#0a0c10] px-6 py-10">
@@ -180,11 +187,21 @@ export function NewCareer() {
               <Button variant="ghost" onClick={() => setStep('setup')}>
                 ← Back
               </Button>
-              <Button variant="primary" disabled={!selectedTeamId} onClick={startGame}>
-                Start {mode === 'Career' ? 'Career' : 'Season'} →
+              <Button variant="primary" disabled={!selectedTeamId} onClick={() => setStep('principal')}>
+                Create Principal →
               </Button>
             </div>
           </div>
+        )}
+
+        {step === 'principal' && selectedTeam && (
+          <PrincipalCreator
+            teamName={selectedTeam.name}
+            teamColor={selectedTeam.color}
+            confirmLabel={`Start ${mode === 'Career' ? 'Career' : 'Season'}`}
+            onBack={() => setStep('team')}
+            onConfirm={startGame}
+          />
         )}
       </div>
     </div>
@@ -192,8 +209,13 @@ export function NewCareer() {
 }
 
 function Steps({ step }: { step: Step }) {
-  const order: Step[] = ['mode', 'setup', 'team'];
-  const labels: Record<Step, string> = { mode: 'Game Mode', setup: 'Series & Year', team: 'Team' };
+  const order: Step[] = ['mode', 'setup', 'team', 'principal'];
+  const labels: Record<Step, string> = {
+    mode: 'Game Mode',
+    setup: 'Series & Year',
+    team: 'Team',
+    principal: 'Principal',
+  };
   return (
     <div className="mb-8 flex items-center gap-2 text-sm">
       {order.map((s, i) => (
