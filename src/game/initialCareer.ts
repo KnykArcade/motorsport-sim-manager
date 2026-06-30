@@ -8,6 +8,7 @@ import type { GameState } from './careerState';
 import { buildInitialCommercial } from '../sim/commercialEngine';
 import { buildTeamReputations, buildTeamExpectations } from '../sim/expectationEngine';
 import { createInitialFacilities } from '../sim/facilityEngine';
+import { applyEngineBonuses, createInitialEngineState } from '../sim/engineSupplierEngine';
 
 // Deep clone via structuredClone (available in modern browsers / Node 18+).
 function clone<T>(value: T): T {
@@ -47,6 +48,17 @@ export function createNewGame(options: NewGameOptions): GameState {
   const facilities = createInitialFacilities(options.teamId, playerTeam?.reputation ?? 0);
   const teamExpectations = buildTeamExpectations(bundle.teams, options.seasonYear);
 
+  // Engine supplier deals for the whole grid (Living Universe Phase 5); apply
+  // each deal's power/reliability modifier to the corresponding car.
+  const engine = createInitialEngineState(
+    bundle.teams,
+    options.teamId,
+    options.seasonYear,
+    options.series,
+    seed,
+  );
+  const cars = applyEngineBonuses(clone(bundle.cars), engine);
+
   return {
     id: `save-${Date.now()}`,
     createdAt: now,
@@ -59,7 +71,7 @@ export function createNewGame(options: NewGameOptions): GameState {
     calendar: clone(bundle.season.calendar),
     teams: clone(bundle.teams),
     drivers: clone(bundle.drivers),
-    cars: clone(bundle.cars),
+    cars,
     pointsSystemId: bundle.season.pointsSystemId,
     regulationSetId: bundle.season.regulationSetId,
     completedRaceResults: {},
@@ -84,6 +96,7 @@ export function createNewGame(options: NewGameOptions): GameState {
     teamReputations,
     teamExpectations,
     facilities,
+    engine,
     randomSeed: seed,
     seasonComplete: false,
   };

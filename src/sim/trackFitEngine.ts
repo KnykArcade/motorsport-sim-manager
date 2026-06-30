@@ -6,11 +6,13 @@ import type { Car, CarRatings, Driver, Track } from '../types/gameTypes';
 export function effectiveCarRatings(car: Car): CarRatings {
   const d = car.developmentLevel;
   const r = car.ratings;
+  const eng = car.engineBonus;
+  const clamp10 = (n: number) => Math.max(1, Math.min(10, n));
   return {
-    enginePower: r.enginePower + d.enginePower,
+    enginePower: clamp10(r.enginePower + d.enginePower + (eng?.power ?? 0)),
     aeroEfficiency: r.aeroEfficiency + d.aeroEfficiency,
     mechanicalGrip: r.mechanicalGrip + d.mechanicalGrip,
-    reliability: r.reliability + d.reliability,
+    reliability: clamp10(r.reliability + d.reliability + (eng?.reliability ?? 0)),
     pitCrewOperations: r.pitCrewOperations + d.pitCrewOperations,
   };
 }

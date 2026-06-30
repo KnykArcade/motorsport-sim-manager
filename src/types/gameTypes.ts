@@ -104,6 +104,9 @@ export type Car = {
   condition: number; // 0-100
   // Accumulated development applied on top of base ratings.
   developmentLevel: CarRatings;
+  // Engine supplier deal contribution to enginePower / reliability (Phase 5).
+  // A delta on the 1-10 ratings scale; absent = no engine-deal modifier.
+  engineBonus?: { power: number; reliability: number };
 };
 
 export type DriverRatings = {

@@ -36,6 +36,7 @@ import {
   facilityRepairCostReduction,
   orderUpgrade,
 } from '../sim/facilityEngine';
+import { availableEngineOffers, buildSignedDeal } from '../sim/engineSupplierEngine';
 import { classifyCrashDamage, damageConditionHit, repairCost } from '../sim/repairEngine';
 import { buildRaceArchiveEntry } from '../sim/lapArchiveEngine';
 import { createSeededRandom, deriveSeed } from '../sim/random';
@@ -47,6 +48,7 @@ import type {
   QualifyingResult,
   RaceResult,
 } from '../types/gameTypes';
+import type { EngineDealType } from '../types/engineTypes';
 import type {
   Entrant,
   QualifyingDecision,
@@ -90,6 +92,7 @@ export type GameAction =
   | { type: 'HIRE_STAFF'; staffId: string }
   | { type: 'FIRE_STAFF'; staffId: string }
   | { type: 'UPGRADE_FACILITY'; facilityId: string }
+  | { type: 'SIGN_ENGINE_DEAL'; supplierId: string; dealType: EngineDealType }
   | { type: 'SWAP_RACE_DRIVER'; seatIndex: number; reserveDriverId: string }
   | { type: 'SIGN_THIRD_DRIVER'; marketId: string }
   | { type: 'PROMOTE_THIRD_DRIVER'; seatDriverId: string; thirdDriverId: string }
@@ -350,6 +353,11 @@ export function gameReducer(state: GameState | null, action: GameAction): GameSt
       return upgradeFacility(state, action.facilityId);
     }
 
+    case 'SIGN_ENGINE_DEAL': {
+      if (!state) return state;
+      return signEngineDeal(state, action.supplierId, action.dealType);
+    }
+
     case 'SWAP_RACE_DRIVER': {
       if (!state) return state;
       return swapRaceDriver(state, action.seatIndex, action.reserveDriverId);
@@ -470,6 +478,25 @@ function upgradeFacility(state: GameState, facilityId: string): GameState {
     makeTransaction(state.seasonYear, 'Facilities', `Upgrade ${label} to L${(facility?.level ?? 0) + 1}`, -fee),
   );
   return { ...charged, facilities: ordered.state };
+}
+
+// Negotiate a new engine deal. It's queued as the pending deal and takes effect
+// (with its power/reliability modifier and annual cost) at the next season
+// rollover, so it behaves as offseason planning. Only valid offers are accepted.
+function signEngineDeal(state: GameState, supplierId: string, dealType: EngineDealType): GameState {
+  const engine = state.engine;
+  const team = state.teams.find((t) => t.id === state.selectedTeamId);
+  if (!engine || !team) return state;
+  const offer = availableEngineOffers(engine, team).find(
+    (o) => o.supplier.id === supplierId && o.dealType === dealType,
+  );
+  if (!offer) return state;
+  // Signing the same deal you already run clears any pending change.
+  const current = engine.currentDeal;
+  if (current && current.supplierName === offer.supplier.name && current.dealType === dealType) {
+    return { ...state, engine: { ...engine, pendingDeal: undefined } };
+  }
+  return { ...state, engine: { ...engine, pendingDeal: buildSignedDeal(team, offer) } };
 }
 
 // Sign a youth prospect into the academy. The one-off signing fee is charged

@@ -10,6 +10,7 @@ export type FinanceCategory =
   | 'Academy'
   | 'Staff'
   | 'Facilities'
+  | 'Engine'
   | 'Development'
   | 'Repairs';
 
