@@ -21,7 +21,7 @@ import { calculateRacePace } from './raceEngine';
 import { calculateReliabilityRisk, perLapFailureRisk } from './reliabilityEngine';
 import { calculateMistakeRisk } from './mistakeEngine';
 import { assignPersonality } from './aiStrategyEngine';
-import { buildPitPlan, pitStopLoss } from './pitStrategyEngine';
+import { buildPitPlan, pitStopLoss, pitWindowFor } from './pitStrategyEngine';
 import { initialWeather } from './weatherEngine';
 import { initialSafetyCar, SAFETY_CAR_PIT_SAVING } from './safetyCarEngine';
 
@@ -141,6 +141,13 @@ export function createLiveRace(context: RaceContext, options: LiveRaceOptions): 
         scheduledLaps: pitPlan.scheduledLaps,
         lastPitLap: null,
         inPitThisLap: false,
+        // The player owns pit timing: show an advisory window for the first
+        // stop and wait for the player to call the car in. AI cars pit off
+        // their schedule and leave these unset.
+        window: isPlayer && pitPlan.scheduledLaps.length > 0
+          ? pitWindowFor(pitPlan.scheduledLaps[0], totalLaps)
+          : null,
+        pitRequested: false,
       },
       reliabilityIssue: null,
       reliabilityRisk: baseFailureRisk,

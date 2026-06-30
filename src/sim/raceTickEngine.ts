@@ -21,11 +21,13 @@ import {
   SAFETY_CAR_PIT_SAVING,
 } from './safetyCarEngine';
 import { aiLapDecision } from './aiStrategyEngine';
+import { pitWindowFor } from './pitStrategyEngine';
 import { generateRaceEventPool, resolveRaceEventTrigger } from './raceEventEngine';
 import { rollReliabilityIssue } from './reliabilityEngine';
 import {
   damagePrompt,
   findOption,
+  pitWindowPrompt,
   rainPrompt,
   reliabilityPrompt,
   rivalPitPrompt,
@@ -128,9 +130,23 @@ export function stepLiveRace(state: LiveRaceState, meta: LiveRaceMeta): LiveRace
         wantsPit = true;
         if (action.note) lapEvents.push({ lap: nextLap, text: `${name(c.driverId)} ${action.note}.` });
       }
+      // AI fallback: pit on the scheduled lap.
+      if (!wantsPit && c.pit.scheduledLaps.length > 0 && nextLap >= c.pit.scheduledLaps[0]) wantsPit = true;
+    } else {
+      // Player owns pit timing: only pit when the player has called the car in,
+      // or as a fallback once the advisory window has closed with a stop still
+      // owed (so the planned stop is never silently skipped).
+      if (c.pit.pitRequested) wantsPit = true;
+      else if (
+        c.pit.window &&
+        nextLap >= c.pit.window.close &&
+        c.pit.stopsMade < c.pit.plannedStops
+      ) {
+        wantsPit = true;
+        lapEvents.push({ lap: nextLap, text: `${name(c.driverId)} boxes as the pit window closes.` });
+      }
     }
-    // Scheduled stop (player + AI fallback) and tyre-cliff forced stop.
-    if (!wantsPit && c.pit.scheduledLaps.length > 0 && nextLap >= c.pit.scheduledLaps[0]) wantsPit = true;
+    // Tyre-cliff forced stop (both player and AI) — safety net.
     if (!wantsPit && c.tire.wear > 92) wantsPit = true;
 
     // --- Execute pit stop ---
@@ -140,6 +156,12 @@ export function stepLiveRace(state: LiveRaceState, meta: LiveRaceMeta): LiveRace
       c.pit.stopsMade += 1;
       c.pit.lastPitLap = nextLap;
       c.pit.inPitThisLap = true;
+      c.pit.pitRequested = false;
+      // Advance the advisory window to the player's next planned stop (if any).
+      c.pit.window =
+        c.isPlayer && c.pit.scheduledLaps.length > 0
+          ? pitWindowFor(c.pit.scheduledLaps[0], state.totalLaps)
+          : null;
       pitLoss = state.safetyCar.active
         ? Math.max(8, c.pitLossBase - SAFETY_CAR_PIT_SAVING)
         : c.pitLossBase;
@@ -262,6 +284,21 @@ export function stepLiveRace(state: LiveRaceState, meta: LiveRaceMeta): LiveRace
           incidentSeverity = Math.max(incidentSeverity, 0.8);
         }
       }
+    }
+  }
+
+  // --- Pit window opens prompt (player) ---
+  for (const c of newCars) {
+    if (
+      c.isPlayer &&
+      c.running &&
+      !c.pit.inPitThisLap &&
+      !c.pit.pitRequested &&
+      c.pit.window &&
+      nextLap === c.pit.window.open &&
+      c.pit.stopsMade < c.pit.plannedStops
+    ) {
+      candidates.push({ prompt: pitWindowPrompt(c, nextLap), priority: 2 });
     }
   }
 
@@ -411,6 +448,18 @@ export function resolvePrompt(state: LiveRaceState, optionId: string, meta: Live
     : state.events;
 
   return { ...state, cars, events, pendingPrompt: null };
+}
+
+// Call a player car into the pits. The stop is executed on the next lap step.
+// No-op if the car has retired or finished, or already requested a stop.
+export function requestPlayerPit(state: LiveRaceState, driverId: string): LiveRaceState {
+  let changed = false;
+  const cars = state.cars.map((c) => {
+    if (c.driverId !== driverId || !c.isPlayer || !c.running || c.pit.pitRequested) return c;
+    changed = true;
+    return { ...c, pit: { ...c.pit, pitRequested: true } };
+  });
+  return changed ? { ...state, cars } : state;
 }
 
 // Resolve a pending prompt with its default (first) option — used by skip-to-end.

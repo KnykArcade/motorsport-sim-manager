@@ -5,7 +5,22 @@
 // Reactive decisions (undercut/cover, safety-car stops) mutate the schedule.
 
 import type { Car, RaceStrategy } from '../types/gameTypes';
+import type { PitWindow } from '../types/liveTypes';
 import { effectiveCarRatings } from './trackFitEngine';
+
+// Laps either side of the strategist's ideal stop lap that make up the window.
+const WINDOW_BEFORE = 3;
+const WINDOW_AFTER = 4;
+
+// The advisory pit window around a planned stop lap, clamped to the race length.
+export function pitWindowFor(idealLap: number, totalLaps: number): PitWindow {
+  const ideal = Math.max(1, Math.min(totalLaps - 1, Math.round(idealLap)));
+  return {
+    open: Math.max(1, ideal - WINDOW_BEFORE),
+    ideal,
+    close: Math.max(ideal, Math.min(totalLaps - 1, ideal + WINDOW_AFTER)),
+  };
+}
 
 // Base time lost for a green-flag stop (pit lane + service), before crew skill.
 const BASE_PIT_LOSS = 22;
