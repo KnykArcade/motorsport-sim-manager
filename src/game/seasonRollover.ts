@@ -17,6 +17,7 @@ import {
   marketDriverToDriver,
   progressAcademyMember,
 } from '../sim/driverMarketEngine';
+import { resolveDriverBid } from '../sim/driverBiddingEngine';
 import { driverSalary, makeTransaction, toMoney } from '../sim/financeEngine';
 import { thirdDriverAmbitions, THIRD_DRIVER_SALARY_FACTOR } from '../sim/contractEngine';
 import {
@@ -83,6 +84,32 @@ export function advanceSeason(state: GameState): GameState {
   const usedAcademyIds = new Set<string>();
   const newSignedMarketIds = [...(state.signedMarketIds ?? [])];
 
+  // Contested market signings (driver bidding): each queued market signing is
+  // resolved against rival interest, weighted by the team's prestige. Losing a
+  // bid leaves the seat unchanged and the driver leaves the market (signs with a
+  // rival). Compute the outcomes once so the replacement, finance and summary
+  // passes all agree.
+  const playerTeamOverall =
+    state.teamOrgRatings?.[state.selectedTeamId]?.overallTeamRating ?? 50;
+  const marketBidWon = new Map<string, boolean>();
+  const biddingNotes: string[] = [];
+  for (const sign of signings) {
+    if (sign.source !== 'market') continue;
+    const m = market?.drivers.find((d) => d.id === sign.sourceId);
+    if (!m) {
+      marketBidWon.set(sign.sourceId, false);
+      continue;
+    }
+    const res = resolveDriverBid(sign.bid ?? m.buyoutCost, m, playerTeamOverall, state.randomSeed);
+    marketBidWon.set(sign.sourceId, res.won);
+    if (!res.won) {
+      newSignedMarketIds.push(m.id); // signed with a rival — off the market
+      biddingNotes.push(
+        `Lost the bidding for ${m.name} — a rival outbid you (competing offer ~$${res.rivalBid}M).`,
+      );
+    }
+  }
+
   for (const sign of signings) {
     const seatDriver = state.drivers.find((d) => d.id === sign.seatDriverId);
     if (!seatDriver) continue;
@@ -90,6 +117,7 @@ export function advanceSeason(state: GameState): GameState {
     if (sign.source === 'market') {
       const m = market?.drivers.find((d) => d.id === sign.sourceId);
       if (!m) continue;
+      if (!marketBidWon.get(sign.sourceId)) continue; // outbid — seat unchanged
       replacements.set(sign.seatDriverId, marketDriverToDriver(m, seat));
       newSignedMarketIds.push(m.id);
     } else if (sign.source === 'reserve') {
@@ -238,9 +266,11 @@ export function advanceSeason(state: GameState): GameState {
   const txns: FinanceTransaction[] = [];
   for (const sign of signings) {
     if (sign.source !== 'market') continue;
+    if (!marketBidWon.get(sign.sourceId)) continue; // only the winning bid pays
     const m = market?.drivers.find((d) => d.id === sign.sourceId);
-    if (m && m.buyoutCost > 0) {
-      txns.push(makeTransaction(nextYear, 'Driver Signing', `Buyout: ${m.name}`, -toMoney(m.buyoutCost)));
+    const fee = sign.bid ?? m?.buyoutCost ?? 0;
+    if (m && fee > 0) {
+      txns.push(makeTransaction(nextYear, 'Driver Signing', `Signed ${m.name} (winning bid)`, -toMoney(fee)));
     }
   }
   for (const d of playerDrivers) {
@@ -508,11 +538,12 @@ export function advanceSeason(state: GameState): GameState {
     championDriverId: champion?.entityId,
     championTeamId: constructorChamp?.entityId,
     notes: [
-      ...signings.map((s) =>
-        s.source === 'reserve'
-          ? `Promoted ${s.name} to a race seat for ${nextYear}.`
-          : `Signed ${s.name} for ${nextYear}.`,
-      ),
+      ...signings.flatMap((s) => {
+        if (s.source === 'reserve') return [`Promoted ${s.name} to a race seat for ${nextYear}.`];
+        if (s.source === 'market' && marketBidWon.get(s.sourceId) === false) return [];
+        return [`Signed ${s.name} for ${nextYear}.`];
+      }),
+      ...biddingNotes,
       ...departureNotes,
       ...(nextAcademy.length ? [`${nextAcademy.length} academy driver(s) progressed.`] : []),
       ...facilityNotes,

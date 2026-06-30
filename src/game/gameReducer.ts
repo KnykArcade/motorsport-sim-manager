@@ -91,7 +91,7 @@ export type GameAction =
       kind: PracticeSessionKind;
       assignments: PracticeAssignment[];
     }
-  | { type: 'SIGN_MARKET_DRIVER'; marketId: string; seatDriverId: string }
+  | { type: 'SIGN_MARKET_DRIVER'; marketId: string; seatDriverId: string; bid?: number }
   | { type: 'PROMOTE_ACADEMY'; academyId: string; seatDriverId: string }
   | { type: 'RELEASE_SIGNING'; seatDriverId: string }
   | { type: 'SIGN_YOUTH'; youthId: string }
@@ -321,7 +321,7 @@ export function gameReducer(state: GameState | null, action: GameAction): GameSt
 
     case 'SIGN_MARKET_DRIVER': {
       if (!state) return state;
-      return queueSigning(state, action.seatDriverId, 'market', action.marketId);
+      return queueSigning(state, action.seatDriverId, 'market', action.marketId, action.bid);
     }
 
     case 'PROMOTE_ACADEMY': {
@@ -460,18 +460,23 @@ function queueSigning(
   seatDriverId: string,
   source: SeatSigning['source'],
   sourceId: string,
+  bidM?: number,
 ): GameState {
   if (!state.seasonComplete) return state;
   const seat = state.drivers.find((d) => d.id === seatDriverId);
   if (!seat || seat.teamId !== state.selectedTeamId) return state;
 
   let name: string;
+  let bid: number | undefined;
   if (source === 'market') {
     const m = getMarketBundle(state.seasonYear, state.series)?.drivers.find(
       (d) => d.id === sourceId,
     );
     if (!m || (state.signedMarketIds ?? []).includes(m.id)) return state;
-    if (toMoney(m.buyoutCost) > playerBudget(state)) return state; // cannot afford buyout
+    // The bid (defaulting to the buyout) must clear the buyout floor and be
+    // affordable now; it is charged at the rollover only if the bid wins.
+    bid = Math.max(m.buyoutCost, bidM ?? m.buyoutCost);
+    if (toMoney(bid) > playerBudget(state)) return state;
     name = m.name;
   } else if (source === 'reserve') {
     // Promote the team's own 3rd driver into a seat — no buyout, no double-fill.
@@ -491,7 +496,7 @@ function queueSigning(
   );
   return {
     ...state,
-    pendingSignings: [...others, { seatDriverId, source, sourceId, name }],
+    pendingSignings: [...others, { seatDriverId, source, sourceId, name, bid }],
   };
 }
 
