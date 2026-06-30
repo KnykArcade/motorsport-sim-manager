@@ -126,6 +126,21 @@ describe('live race engine', () => {
     expect(new Set(finishPositions).size).toBe(finishPositions.length);
   });
 
+  it('classifies finishers as Finished (not DNF) and records best laps', () => {
+    const context = buildContext();
+    const meta = buildMeta(context, context.entrants[0].driver.teamId);
+    let state = createRace(context, context.entrants[0].driver.teamId);
+    state = stepLiveRaceToEnd(state, meta);
+
+    const finishers = state.cars.filter((c) => c.status === 'Finished');
+    // The whole field shouldn't retire — most cars finish.
+    expect(finishers.length).toBeGreaterThan(state.cars.length / 2);
+    // Finishers are flagged not-running at the flag but must not read as DNF.
+    expect(finishers.every((c) => c.status === 'Finished' && c.position != null)).toBe(true);
+    // A representative best lap is captured for cars that ran green laps.
+    expect(finishers.every((c) => c.bestLap != null && c.bestLap > 0)).toBe(true);
+  });
+
   it('is deterministic for a fixed seed', () => {
     const a = buildContext('seed-A');
     const b = buildContext('seed-A');

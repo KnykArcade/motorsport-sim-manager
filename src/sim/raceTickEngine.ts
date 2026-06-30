@@ -238,6 +238,10 @@ export function stepLiveRace(state: LiveRaceState, meta: LiveRaceMeta): LiveRace
     c.lastLapTime = round1(lapTime);
     c.totalTime += lapTime;
     c.lapsCompleted = nextLap;
+    // Track the fastest representative lap (ignore pit and safety-car laps).
+    if (!wantsPit && !state.safetyCar.active) {
+      c.bestLap = c.bestLap == null ? c.lastLapTime : Math.min(c.bestLap, c.lastLapTime);
+    }
     return c;
   });
 

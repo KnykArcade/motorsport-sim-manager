@@ -16,6 +16,11 @@ import type {
 import { createSeededRandom, deriveSeed } from './random';
 import { toMoney } from './financeEngine';
 
+// Round a $M value to whole cents, avoiding binary-float display noise.
+function round2(n: number): number {
+  return Math.round(n * 100) / 100;
+}
+
 // Generic, era-agnostic sponsor brand pools (no real licensing). Picked
 // deterministically per team so a given save always shows the same portfolio.
 const TITLE_BRANDS = [
@@ -51,7 +56,10 @@ const TECH_BRANDS = [
 ];
 
 // Performance-bonus templates scaled by the team's commercial tier.
-function makeBonus(id: string, kind: SponsorBonus['trigger'], amount: number, threshold?: number): SponsorBonus {
+function makeBonus(id: string, kind: SponsorBonus['trigger'], rawAmount: number, threshold?: number): SponsorBonus {
+  // Tier scaling (e.g. 0.3 + tier * 0.15) introduces float noise like
+  // 0.44999999999999996, so round to whole cents of a $M before storing/showing.
+  const amount = round2(rawAmount);
   const description =
     kind === 'PerWin'
       ? `$${amount}M per race win`

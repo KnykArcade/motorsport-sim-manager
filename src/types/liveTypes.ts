@@ -189,6 +189,7 @@ export type LiveCarState = {
   gapToLeader: number; // seconds
   interval: number; // seconds to car ahead
   lastLapTime: number;
+  bestLap: number | null; // fastest clean lap so far (s); null until set
   lapsCompleted: number;
   running: boolean;
   status: RaceFinishStatus;

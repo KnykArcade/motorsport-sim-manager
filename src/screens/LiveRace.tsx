@@ -104,6 +104,14 @@ export function LiveRace() {
     .filter((c) => c.isPlayer)
     .sort((a, b) => (a.position ?? 99) - (b.position ?? 99));
 
+  // Race-wide analytics for the info strip.
+  const leader = live.cars.find((c) => (c.running || c.status === 'Finished') && c.position === 1);
+  const fastest = live.cars.reduce<LiveCarState | null>(
+    (best, c) => (c.bestLap != null && (best?.bestLap == null || c.bestLap < best.bestLap) ? c : best),
+    null,
+  );
+  const runningCount = live.cars.filter((c) => c.running).length;
+
   return (
     <div className="space-y-5">
       <div className="flex items-center justify-between">
@@ -124,18 +132,36 @@ export function LiveRace() {
           tone={live.safetyCar.active ? 'warn' : 'normal'} />
       </div>
 
+      {/* Race analytics strip */}
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+        <Stat label="Leader" value={leader ? driverName(leader.driverId) : '—'} />
+        <Stat
+          label="Fastest Lap"
+          value={fastest?.bestLap != null ? `${driverName(fastest.driverId)} ${fmtLap(fastest.bestLap)}` : '—'}
+          tone={fastest?.isPlayer ? 'good' : 'normal'}
+        />
+        <Stat label="Cars Running" value={`${runningCount} / ${live.cars.length}`}
+          tone={runningCount < live.cars.length ? 'warn' : 'normal'} />
+        <Stat label="Track" value={live.weather.wet ? 'Wet' : 'Dry'} tone={live.weather.wet ? 'warn' : 'good'} />
+      </div>
+
       {/* Your drivers' current race positions */}
       {playerCars.length > 0 && (
         <div className={`grid gap-3 grid-cols-1 ${playerCars.length > 1 ? 'sm:grid-cols-2' : ''}`}>
           {playerCars.map((c) => {
             const name = state.drivers.find((d) => d.id === c.driverId)?.name ?? c.driverId;
-            const posLabel = !c.running ? 'OUT' : c.pit.inPitThisLap ? 'PIT' : ordinal(c.position);
+            const dnf = !c.running && c.status !== 'Finished';
+            const posLabel = dnf
+              ? 'OUT'
+              : c.pit.inPitThisLap
+              ? 'PIT'
+              : ordinal(c.position);
             return (
               <Stat
                 key={c.driverId}
                 label={`${name} — Position`}
                 value={posLabel}
-                tone={!c.running ? 'warn' : 'good'}
+                tone={dnf ? 'warn' : 'good'}
               />
             );
           })}
@@ -206,6 +232,15 @@ export function LiveRace() {
 
         <div className="space-y-5">
           {playerCars.length > 0 && (
+            <Panel title="Pit Wall — Telemetry">
+              <div className="space-y-3">
+                {playerCars.map((c) => (
+                  <TelemetryCard key={c.driverId} car={c} name={driverName(c.driverId)} />
+                ))}
+              </div>
+            </Panel>
+          )}
+          {playerCars.length > 0 && (
             <Panel title="Pit Strategy">
               <div className="space-y-3">
                 {playerCars.map((c) => (
@@ -226,6 +261,82 @@ export function LiveRace() {
           </Panel>
         </div>
       </div>
+    </div>
+  );
+}
+
+// Format a lap time in seconds as M:SS.mmm (or SS.mmm under a minute).
+function fmtLap(seconds: number): string {
+  if (seconds < 60) return `${seconds.toFixed(1)}s`;
+  const m = Math.floor(seconds / 60);
+  const s = seconds - m * 60;
+  return `${m}:${s.toFixed(1).padStart(4, '0')}`;
+}
+
+function TelemetryCard({ car, name }: { car: LiveCarState; name: string }) {
+  const finishedRace = car.status === 'Finished';
+  const dnf = !car.running && !finishedRace;
+  const wear = Math.round(car.tire.wear);
+  const wearTone = wear > 80 ? 'text-red-300' : wear > 55 ? 'text-amber-300' : 'text-green-300';
+  // Rough laps-to-cliff estimate from the per-lap degradation rate.
+  const lapsLeft =
+    car.tireDegRate > 0 ? Math.max(0, Math.round((90 - car.tire.wear) / car.tireDegRate)) : null;
+  const relPct = Math.round(Math.min(1, car.reliabilityRisk * (car.lapsCompleted || 1)) * 100);
+  const gridDelta = car.position != null ? car.grid - car.position : 0;
+
+  if (dnf) {
+    return (
+      <div className="rounded-lg border border-neutral-800 bg-neutral-900/40 p-3">
+        <div className="flex items-center justify-between">
+          <span className="text-sm font-semibold text-neutral-100">{name}</span>
+          <span className="text-xs font-medium text-red-400">{car.lastIncident ?? 'Out of the race'}</span>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="rounded-lg border border-neutral-800 bg-neutral-900/40 p-3">
+      <div className="flex items-center justify-between">
+        <span className="text-sm font-semibold text-neutral-100">{name}</span>
+        <span className="text-sm font-semibold tabular-nums text-neutral-100">
+          {car.pit.inPitThisLap ? 'IN PIT' : ordinal(car.position)}
+          {gridDelta !== 0 && (
+            <span className={`ml-1.5 text-xs ${gridDelta > 0 ? 'text-green-400' : 'text-red-400'}`}>
+              {gridDelta > 0 ? `▲${gridDelta}` : `▼${-gridDelta}`}
+            </span>
+          )}
+        </span>
+      </div>
+      <div className="mt-2 grid grid-cols-2 gap-x-4 gap-y-1 text-xs">
+        <Telem label="Gap to leader" value={car.position === 1 ? 'Leader' : `+${car.gapToLeader.toFixed(1)}s`} />
+        <Telem label="Interval" value={car.position === 1 ? '—' : `+${car.interval.toFixed(1)}s`} />
+        <Telem label="Last lap" value={car.lastLapTime > 0 ? fmtLap(car.lastLapTime) : '—'} />
+        <Telem label="Best lap" value={car.bestLap != null ? fmtLap(car.bestLap) : '—'} />
+        <Telem label="Tyre" value={`${car.tire.compound} · ${wear}%`} valueClass={wearTone} />
+        <Telem label="Est. laps left" value={lapsLeft != null ? `~${lapsLeft}` : '—'} />
+        <Telem label="Pace" value={PACE_LABEL[car.paceMode]} />
+        <Telem
+          label="Reliability risk"
+          value={`${relPct}%`}
+          valueClass={relPct > 50 ? 'text-red-300' : relPct > 25 ? 'text-amber-300' : 'text-green-300'}
+        />
+      </div>
+      {car.reliabilityIssue && (
+        <p className="mt-2 text-xs font-medium text-amber-300">⚠ {car.reliabilityIssue.label}</p>
+      )}
+      {car.damaged && !car.reliabilityIssue && (
+        <p className="mt-2 text-xs font-medium text-amber-300">⚠ Car damaged</p>
+      )}
+    </div>
+  );
+}
+
+function Telem({ label, value, valueClass = 'text-neutral-200' }: { label: string; value: string; valueClass?: string }) {
+  return (
+    <div className="flex items-center justify-between">
+      <span className="text-neutral-500">{label}</span>
+      <span className={`tabular-nums font-medium ${valueClass}`}>{value}</span>
     </div>
   );
 }
@@ -324,10 +435,13 @@ function RunningOrder({
           {cars.map((c, i) => {
             const wearPct = Math.round(c.tire.wear);
             const wearColor = wearPct > 80 ? 'bg-red-500' : wearPct > 55 ? 'bg-amber-500' : 'bg-green-500';
+            const finishedRace = c.status === 'Finished';
+            const dnf = !c.running && !finishedRace;
+            const classified = c.running || finishedRace;
             return (
               <tr
                 key={c.driverId}
-                className={`border-t border-neutral-800/60 ${c.isPlayer ? 'bg-amber-500/10' : ''} ${!c.running ? 'opacity-50' : ''}`}
+                className={`border-t border-neutral-800/60 ${c.isPlayer ? 'bg-amber-500/10' : ''} ${dnf ? 'opacity-50' : ''}`}
               >
                 <td className="px-2 py-1.5 font-semibold tabular-nums text-neutral-200">
                   {c.position ?? '—'}
@@ -339,7 +453,7 @@ function RunningOrder({
                   </span>
                 </td>
                 <td className="px-2 py-1.5 tabular-nums text-neutral-300">
-                  {!c.running ? '—' : i === 0 ? 'Leader' : `+${c.gapToLeader.toFixed(1)}s`}
+                  {!classified ? '—' : i === 0 ? 'Leader' : `+${c.gapToLeader.toFixed(1)}s`}
                 </td>
                 <td className="px-2 py-1.5">
                   <div className="flex items-center gap-1.5">
@@ -349,13 +463,16 @@ function RunningOrder({
                     </span>
                   </div>
                 </td>
-                <td className="px-2 py-1.5 text-xs text-neutral-400">{c.running ? PACE_LABEL[c.paceMode] : '—'}</td>
+                <td className="px-2 py-1.5 text-xs text-neutral-400">
+                  {finishedRace ? 'Finished' : c.running ? PACE_LABEL[c.paceMode] : '—'}
+                </td>
                 <td className="px-2 py-1.5 tabular-nums text-neutral-400">{c.pit.stopsMade}</td>
                 <td className="px-2 py-1.5 text-xs">
+                  {finishedRace && <span className="text-green-400">✓ Finished</span>}
                   {c.reliabilityIssue && c.running && (
                     <span className="text-amber-300" title={c.reliabilityIssue.label}>⚠ {c.reliabilityIssue.label}</span>
                   )}
-                  {!c.running && <span className="text-red-400">{c.lastIncident ?? 'DNF'}</span>}
+                  {dnf && <span className="text-red-400">{c.lastIncident ?? 'DNF'}</span>}
                   {c.running && !c.reliabilityIssue && c.damaged && <span className="text-amber-300">Damaged</span>}
                 </td>
               </tr>

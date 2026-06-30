@@ -120,6 +120,7 @@ export function createLiveRace(context: RaceContext, options: LiveRaceOptions): 
       gapToLeader: 0,
       interval: 0,
       lastLapTime: 0,
+      bestLap: null,
       lapsCompleted: 0,
       running: true,
       status: 'Finished',
