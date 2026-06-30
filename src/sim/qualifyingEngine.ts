@@ -13,9 +13,24 @@ import type {
 import type { WeatherState } from '../types/liveTypes';
 import type { QualifyingContext, QualifyingFormat, ScoreBreakdown } from '../types/simTypes';
 import { createSeededRandom, deriveSeed, type Rng } from './random';
-import { calculateTrackFit } from './trackFitEngine';
+import {
+  calculateCarTrackFit,
+  calculateDriverTrackFit,
+  calculateTrackFit,
+  effectiveCarRatings,
+} from './trackFitEngine';
 import { calculateSetupFit } from './setupEngine';
 import { calculateCrashRisk, calculateMistakeRisk } from './mistakeEngine';
+import { PACE_SPREAD, PACE_WEIGHTS } from './raceEngine';
+
+function clamp10(n: number): number {
+  return Math.max(1, Math.min(10, n));
+}
+
+function avgCar(car: Car): number {
+  const c = effectiveCarRatings(car);
+  return (c.enginePower + c.aeroEfficiency + c.mechanicalGrip + c.reliability + c.pitCrewOperations) / 5;
+}
 
 export function calculateQualifyingSetupFit(
   _driver: Driver,
@@ -46,26 +61,31 @@ export function calculateQualifyingPace(
   track: Track,
   setup: SetupOption,
   runPlan: QualifyingRunPlan,
+  teamRating = 5,
 ): { score: number; breakdown: ScoreBreakdown } {
-  const driverBase = (driver.ratings.qualifying + driver.ratings.overall) / 2; // ~1-10
-  const trackFit = calculateTrackFit(driver, car, track);
+  // Same 50/25/15/10 car/driver/team/other weighting as race pace, so the car
+  // is the dominant factor in qualifying too.
+  const carComp = clamp10(avgCar(car) + calculateCarTrackFit(car, track));
+  const driverComp = clamp10(
+    (driver.ratings.qualifying + driver.ratings.overall) / 2 + calculateDriverTrackFit(driver, track),
+  );
+  const teamComp = clamp10(teamRating);
   const setupFit = calculateQualifyingSetupFit(driver, car, track, setup);
-
-  // Confidence nudges peak performance.
-  const confidenceFactor = (driver.confidence - 65) / 100; // ~[-0.65, 0.35]
+  const confidenceFactor = (driver.confidence - 65) / 15;
+  const otherComp = clamp10(5.5 + setupFit * 0.5 + runPlan.paceModifier + confidenceFactor);
 
   const score =
-    driverBase * 1.0 +
-    trackFit * 1.2 +
-    setupFit * 0.8 +
-    runPlan.paceModifier +
-    confidenceFactor;
+    PACE_SPREAD *
+    (PACE_WEIGHTS.car * carComp +
+      PACE_WEIGHTS.driver * driverComp +
+      PACE_WEIGHTS.team * teamComp +
+      PACE_WEIGHTS.other * otherComp);
 
   const breakdown: ScoreBreakdown = {
     driverId: driver.id,
-    driverBase,
-    carBase: 0,
-    trackFit,
+    driverBase: driverComp,
+    carBase: carComp,
+    trackFit: calculateTrackFit(driver, car, track),
     setupFit,
     reliabilityRisk: 0,
     mistakeRisk: 0,
@@ -117,6 +137,7 @@ type Entry = {
   runs: number;
   conserve: boolean;
   wetReady: boolean;
+  teamRating: number;
 };
 
 type LapOutcome = {
@@ -137,7 +158,7 @@ function simulateLap(
   rng: Rng,
 ): LapOutcome {
   const { driver, car, setup, runPlan } = entry;
-  const { score, breakdown } = calculateQualifyingPace(driver, car, track, setup, runPlan);
+  const { score, breakdown } = calculateQualifyingPace(driver, car, track, setup, runPlan, entry.teamRating);
 
   let base = score + evolution;
 
@@ -277,6 +298,7 @@ export function simulateQualifying(context: QualifyingContext): {
       runs: clampRuns(decision.runs),
       conserve: decision.tyreApproach === 'Conserve',
       wetReady: wetReady.has(e.driver.id),
+      teamRating: (context.teamReputation?.[e.driver.teamId] ?? 50) / 10,
     };
   });
 

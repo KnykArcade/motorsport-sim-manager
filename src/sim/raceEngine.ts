@@ -12,11 +12,28 @@ import type {
 } from '../types/gameTypes';
 import type { RaceContext, RaceEvent, ScoreBreakdown } from '../types/simTypes';
 import { createSeededRandom, deriveSeed } from './random';
-import { calculateTrackFit, effectiveCarRatings } from './trackFitEngine';
+import {
+  calculateCarTrackFit,
+  calculateDriverTrackFit,
+  calculateTrackFit,
+  effectiveCarRatings,
+} from './trackFitEngine';
 import { calculateSetupFit } from './setupEngine';
 import { calculateReliabilityRisk } from './reliabilityEngine';
 import { calculateMistakeRisk } from './mistakeEngine';
 import { calculatePitStopPerformance } from './pitStopEngine';
+
+// Pace is a weighted blend of four components, each on a ~1-10 scale:
+//   50% car, 25% driver, 15% team, 10% form/morale/setup/strategy.
+// Car strength is deliberately the dominant factor. PACE_SPREAD scales the
+// blend up so the deterministic spread between cars dominates the stochastic
+// per-race variance (~1.6), keeping results car-led rather than random.
+export const PACE_WEIGHTS = { car: 0.5, driver: 0.25, team: 0.15, other: 0.1 } as const;
+export const PACE_SPREAD = 4;
+
+function clamp10(n: number): number {
+  return Math.max(1, Math.min(10, n));
+}
 
 export function calculateRacePace(
   driver: Driver,
@@ -25,28 +42,35 @@ export function calculateRacePace(
   setup: SetupOption,
   strategy: RaceStrategy,
   instruction: DriverInstruction,
+  teamRating = 5,
 ): { score: number; breakdown: ScoreBreakdown } {
-  const driverBase = (driver.ratings.racePace + driver.ratings.overall) / 2;
-  const carBase = avgCar(car);
-  const trackFit = calculateTrackFit(driver, car, track);
+  // Car component: raw car strength plus how well the car suits the circuit.
+  const carComp = clamp10(avgCar(car) + calculateCarTrackFit(car, track));
+  // Driver component: race pace / overall plus the driver's track fit.
+  const driverComp = clamp10(
+    (driver.ratings.racePace + driver.ratings.overall) / 2 + calculateDriverTrackFit(driver, track),
+  );
+  // Team component: organisation strength (reputation/10).
+  const teamComp = clamp10(teamRating);
+  // Everything else: setup, strategy, driver instruction and morale.
   const setupFit = calculateSetupFit(setup, track) + setup.racePaceBoost;
-
-  const moraleFactor = (driver.morale - 65) / 120;
+  const moraleFactor = (driver.morale - 65) / 15;
+  const otherComp = clamp10(
+    5.5 + setupFit * 0.5 + strategy.paceModifier + instruction.paceModifier + moraleFactor,
+  );
 
   const score =
-    driverBase * 0.9 +
-    carBase * 0.4 +
-    trackFit * 1.1 +
-    setupFit * 0.7 +
-    strategy.paceModifier +
-    instruction.paceModifier +
-    moraleFactor;
+    PACE_SPREAD *
+    (PACE_WEIGHTS.car * carComp +
+      PACE_WEIGHTS.driver * driverComp +
+      PACE_WEIGHTS.team * teamComp +
+      PACE_WEIGHTS.other * otherComp);
 
   const breakdown: ScoreBreakdown = {
     driverId: driver.id,
-    driverBase,
-    carBase,
-    trackFit,
+    driverBase: driverComp,
+    carBase: carComp,
+    trackFit: calculateTrackFit(driver, car, track),
     setupFit,
     reliabilityRisk: 0,
     mistakeRisk: 0,
@@ -108,6 +132,7 @@ export function computeRaceOutcome(context: RaceContext): RaceOutcome {
     const instruction = context.instructions[decision.instructionId];
     const grid = gridByDriver[e.driver.id] ?? context.entrants.length;
 
+    const teamRating = (context.teamReputation?.[e.driver.teamId] ?? 50) / 10;
     const { score, breakdown } = calculateRacePace(
       e.driver,
       e.car,
@@ -115,6 +140,7 @@ export function computeRaceOutcome(context: RaceContext): RaceOutcome {
       setup,
       strategy,
       instruction,
+      teamRating,
     );
 
     // Grid position matters but the race can reorder things.

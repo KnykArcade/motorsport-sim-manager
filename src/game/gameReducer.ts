@@ -786,6 +786,9 @@ function runQualifying(state: GameState, playerDecisions: QualifyingDecision[]):
       ? wetPreparedDrivers(state.weekendPractice)
       : [];
 
+  const teamReputation: Record<string, number> = {};
+  state.teams.forEach((t) => (teamReputation[t.id] = t.reputation));
+
   const { results, breakdowns } = simulateQualifying({
     track,
     entrants,
@@ -797,6 +800,7 @@ function runQualifying(state: GameState, playerDecisions: QualifyingDecision[]):
     weather: forecast.Qualifying,
     wetPreparedDriverIds,
     format: qualifyingFormatFor(state.seasonYear, state.series),
+    teamReputation,
   });
 
   lastBreakdowns.qualifying = breakdowns;

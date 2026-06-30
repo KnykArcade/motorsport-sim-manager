@@ -1,0 +1,549 @@
+Season,Name,Team,OrigDriver,AdjDriver,OrigCar,AdjCar,OrigTeam,AdjTeam,TotalChange
+1990 F1,Ayrton Senna,McLaren Honda,9.8,9.5,9,8.5,10,9.7,-1.1
+1990 F1,Gerhard Berger,McLaren Honda,8.5,8,9,8.5,10,9.7,-1.3
+1990 F1,Alain Prost,Ferrari,9.5,9.2,8.9,8.2,9.3,9,-1.3
+1990 F1,Nigel Mansell,Ferrari,8.6,8.1,8.9,8.2,9.3,9,-1.5
+1990 F1,Thierry Boutsen,Williams Renault,8.3,7.8,8.6,7.9,8.6,8,-1.8
+1990 F1,Riccardo Patrese,Williams Renault,8.1,7.6,8.6,7.9,8.6,8,-1.8
+1990 F1,Nelson Piquet,Benetton Ford,8.7,8.2,8.4,7.6,7.9,7,-2.2
+1990 F1,Alessandro Nannini,Benetton Ford,8,7.3,8.4,7.6,7.9,7,-2.4
+1990 F1,Jean Alesi,Tyrrell Ford,8.3,7.8,7.7,6.8,7.2,6.3,-2.3
+1990 F1,Satoru Nakajima,Tyrrell Ford,7,6.2,7.7,6.8,7.2,6.3,-2.6
+1990 F1,Ivan Capelli,Leyton House Judd,7.8,7.1,7.4,6.5,6.5,5.5,-2.6
+1990 F1,Mauricio Gugelmin,Leyton House Judd,7.1,6.4,7.4,6.5,6.5,5.5,-2.6
+1990 F1,Éric Bernard,Larrousse Lamborghini,7.5,6.8,7.4,6.4,5.8,5,-2.5
+1990 F1,Aguri Suzuki,Larrousse Lamborghini,7.2,6.5,7.4,6.4,5.8,5,-2.5
+1990 F1,Johnny Herbert,Lotus Lamborghini,7.9,7.2,7,5.9,5.1,4.3,-2.6
+1990 F1,Derek Warwick,Lotus Lamborghini,7.8,7.1,7,5.9,5.1,4.3,-2.6
+1990 F1,Michele Alboreto,Arrows Ford,7.6,6.9,6.8,5.6,4.4,4,-2.3
+1990 F1,Alex Caffi,Arrows Ford,7.1,6.4,6.8,5.6,4.4,4,-2.3
+1990 F1,Stefano Modena,Brabham Judd,7.8,7.1,6.7,5.5,3.7,3.7,-1.9
+1990 F1,David Brabham,Brabham Judd,7,6.2,6.7,5.5,3.7,3.7,-2
+1990 F1,Pierluigi Martini,Minardi Ford,7.8,7.1,6.7,5.5,3,3,-1.9
+1990 F1,Gianni Morbidelli,Minardi Ford,7.1,6.4,6.7,5.5,3,3,-1.9
+1990 F1,Nicola Larini,Ligier Ford,7,6.2,6.6,5.4,2.3,2.3,-2
+1990 F1,Philippe Alliot,Ligier Ford,6.9,6.1,6.6,5.4,2.3,2.3,-2
+1990 F1,Emanuele Pirro,Dallara Judd,7.2,6.5,6.5,5.3,2,2,-1.9
+1990 F1,Andrea de Cesaris,Dallara Judd,7.1,6.4,6.5,5.3,2,2,-1.9
+1990 F1,Gabriele Tarquini,AGS Ford,6.9,6.1,6,4.9,2,2,-1.9
+1990 F1,Yannick Dalmas,AGS Ford,6.8,6,6,4.9,2,2,-1.9
+1990 F1,Roberto Moreno,EuroBrun Judd,7.4,6.7,5.6,4.6,2,2,-1.7
+1990 F1,Claudio Langes,EuroBrun Judd,5,4.6,5.6,4.6,2,2,-1.4
+1990 F1,J.J. Lehto,Onyx / Monteverdi Ford,7.1,6.4,5.6,4.6,2,2,-1.7
+1990 F1,Bertrand Gachot,Coloni Subaru/Ford,6.9,6.1,5,4.4,2,2,-1.4
+1990 F1,Bruno Giacomelli,Life W12,5.3,4.6,3,3,2,2,-0.7
+1990 F1,Gary Brabham,Life W12,5,4.6,3,3,2,2,-0.4
+1991 F1,Ayrton Senna,McLaren Honda,9.7,9.4,9.3,8.8,10,9.7,-1.1
+1991 F1,Gerhard Berger,McLaren Honda,8.7,8.2,9.3,8.8,10,9.7,-1.3
+1991 F1,Nigel Mansell,Williams Renault,9.2,8.9,9.2,8.6,9.3,9,-1.2
+1991 F1,Riccardo Patrese,Williams Renault,8.6,8.1,9.2,8.6,9.3,9,-1.4
+1991 F1,Alain Prost,Ferrari,9,8.5,8.6,7.9,8.6,8,-1.8
+1991 F1,Jean Alesi,Ferrari,8.7,8.2,8.6,7.9,8.6,8,-1.8
+1991 F1,Nelson Piquet,Benetton Ford,8.5,8,8.5,7.7,7.9,7,-2.2
+1991 F1,Roberto Moreno,Benetton Ford,7.8,7.1,8.5,7.7,7.9,7,-2.4
+1991 F1,Stefano Modena,Tyrrell Honda,7.9,7.2,8.1,7.3,7.2,6.3,-2.4
+1991 F1,Satoru Nakajima,Tyrrell Honda,7.1,6.4,8.1,7.3,7.2,6.3,-2.4
+1991 F1,Michael Schumacher,Jordan Ford,8.6,8.1,8.1,7.3,6.5,5.5,-2.3
+1991 F1,Andrea de Cesaris,Jordan Ford,7.8,7.1,8.1,7.3,6.5,5.5,-2.5
+1991 F1,Pierluigi Martini,Minardi Ferrari,7.8,7.1,7.7,6.7,5.8,5,-2.5
+1991 F1,Gianni Morbidelli,Minardi Ferrari,7.5,6.8,7.7,6.7,5.8,5,-2.5
+1991 F1,JJ Lehto,Dallara Judd,7.8,7.1,7.6,6.6,5.1,4.3,-2.5
+1991 F1,Emanuele Pirro,Dallara Judd,7.5,6.8,7.6,6.6,5.1,4.3,-2.5
+1991 F1,Mika Häkkinen,Lotus Judd,8.1,7.6,7.5,6.4,4.4,4,-2
+1991 F1,Johnny Herbert,Lotus Judd,7.7,7,7.5,6.4,4.4,4,-2.2
+1991 F1,Ivan Capelli,Leyton House Ilmor,7.7,7,7.4,6.4,3.7,3.7,-1.7
+1991 F1,Maurício Gugelmin,Leyton House Ilmor,7.5,6.8,7.4,6.4,3.7,3.7,-1.7
+1991 F1,Martin Brundle,Brabham Yamaha,7.8,7.1,7.3,6.2,3,3,-1.8
+1991 F1,Mark Blundell,Brabham Yamaha,7.5,6.8,7.3,6.2,3,3,-1.8
+1991 F1,Thierry Boutsen,Ligier Lamborghini,7.8,7.1,7.3,6.3,2.3,2.3,-1.7
+1991 F1,Érik Comas,Ligier Lamborghini,7.3,6.6,7.3,6.3,2.3,2.3,-1.7
+1991 F1,Nicola Larini,Lambo Modena,7.5,6.8,6.9,5.9,2,2,-1.7
+1991 F1,Eric van de Poele,Lambo Modena,7,6.2,6.9,5.9,2,2,-1.8
+1991 F1,Michele Alboreto,Footwork Porsche/Ford,7.7,7,6.8,5.8,2,2,-1.7
+1991 F1,Alex Caffi,Footwork Porsche/Ford,7.2,6.5,6.8,5.8,2,2,-1.7
+1991 F1,Olivier Grouillard,Fondmetal Ford,7,6.2,6.7,5.7,2,2,-1.8
+1991 F1,Gabriele Tarquini,AGS Ford,7.1,6.4,6.4,5.4,2,2,-1.7
+1991 F1,Fabrizio Barbazza,AGS Ford,6.8,6,6.4,5.4,2,2,-1.8
+1991 F1,Pedro Chaves,Coloni Ford,6.7,5.9,6.1,5.1,2,2,-1.8
+1992 F1,Nigel Mansell,Williams Renault,9.2,8.9,9.4,9,10,9.7,-1
+1992 F1,Riccardo Patrese,Williams Renault,8.6,8.1,9.4,9,10,9.7,-1.2
+1992 F1,Ayrton Senna,McLaren Honda,9.7,9.4,9,8.5,9.3,9,-1.1
+1992 F1,Gerhard Berger,McLaren Honda,8.6,8.1,9,8.5,9.3,9,-1.3
+1992 F1,Michael Schumacher,Benetton Ford,9.2,8.9,8.7,8,8.6,8,-1.6
+1992 F1,Martin Brundle,Benetton Ford,8.2,7.7,8.7,8,8.6,8,-1.8
+1992 F1,Jean Alesi,Ferrari,8.5,8,7.9,7,7.9,7,-2.3
+1992 F1,Nicola Larini,Ferrari,7.3,6.6,7.9,7,7.9,7,-2.5
+1992 F1,Mika Häkkinen,Lotus Ford,8.3,7.8,7.8,6.8,7.2,6.3,-2.4
+1992 F1,Johnny Herbert,Lotus Ford,7.7,7,7.8,6.8,7.2,6.3,-2.6
+1992 F1,Thierry Boutsen,Ligier Renault,7.6,6.9,7.8,6.8,6.5,5.5,-2.7
+1992 F1,Érik Comas,Ligier Renault,7.2,6.5,7.8,6.8,6.5,5.5,-2.7
+1992 F1,Michele Alboreto,Footwork Mugen Honda,7.6,6.9,7.5,6.5,5.8,5,-2.5
+1992 F1,Aguri Suzuki,Footwork Mugen Honda,7,6.2,7.5,6.5,5.8,5,-2.6
+1992 F1,Andrea de Cesaris,Tyrrell Ilmor,7.5,6.8,7.5,6.5,5.1,4.3,-2.5
+1992 F1,Olivier Grouillard,Tyrrell Ilmor,6.7,5.9,7.5,6.5,5.1,4.3,-2.6
+1992 F1,JJ Lehto,BMS Scuderia Italia Ferrari,7.7,7,7.3,6.3,4.4,4,-2.1
+1992 F1,Pierluigi Martini,BMS Scuderia Italia Ferrari,7.2,6.5,7.3,6.3,4.4,4,-2.1
+1992 F1,Karl Wendlinger,March Ilmor,7.3,6.6,7,5.8,3.7,3.7,-1.9
+1992 F1,Jan Lammers,March Ilmor,6.7,5.9,7,5.8,3.7,3.7,-2
+1992 F1,Gianni Morbidelli,Minardi Lamborghini,7.3,6.6,7,5.8,3,3,-1.9
+1992 F1,Christian Fittipaldi,Minardi Lamborghini,7.1,6.4,7,5.8,3,3,-1.9
+1992 F1,Stefano Modena,Jordan Yamaha,7.2,6.5,6.8,5.8,2.3,2.3,-1.7
+1992 F1,Maurício Gugelmin,Jordan Yamaha,6.9,6.1,6.8,5.8,2.3,2.3,-1.8
+1992 F1,Bertrand Gachot,Venturi Lamborghini,6.9,6.1,6.8,5.7,2,2,-1.9
+1992 F1,Ukyo Katayama,Venturi Lamborghini,6.5,5.7,6.8,5.7,2,2,-1.9
+1992 F1,Gabriele Tarquini,Fondmetal Ford,6.6,5.8,6.6,5.5,2,2,-1.9
+1992 F1,Andrea Chiesa,Fondmetal Ford,6,5.3,6.6,5.5,2,2,-1.8
+1992 F1,Damon Hill,Brabham Judd,7,6.2,6.2,5.2,2,2,-1.8
+1992 F1,Eric van de Poele,Brabham Judd,6.5,5.7,6.2,5.2,2,2,-1.8
+1992 F1,Roberto Moreno,Andrea Moda Judd,7.1,6.4,5,4.4,2,2,-1.3
+1992 F1,Alex Caffi,Andrea Moda Judd,6.6,5.8,5,4.4,2,2,-1.4
+1993 F1,Alain Prost,Williams Renault,9.3,9,9.4,8.8,10,9.7,-1.2
+1993 F1,Damon Hill,Williams Renault,8.3,7.8,9.4,8.8,10,9.7,-1.4
+1993 F1,Ayrton Senna,McLaren Ford,9.7,9.4,8.9,8.2,9.3,9,-1.3
+1993 F1,Mika Häkkinen,McLaren Ford,8.3,7.8,8.9,8.2,9.3,9,-1.5
+1993 F1,Michael Schumacher,Benetton Ford,9.3,9,8.7,8,8.6,8,-1.6
+1993 F1,Riccardo Patrese,Benetton Ford,7.8,7.1,8.7,8,8.6,8,-2
+1993 F1,Jean Alesi,Ferrari,8.6,8.1,8.3,7.5,7.9,7,-2.2
+1993 F1,Gerhard Berger,Ferrari,8.3,7.8,8.3,7.5,7.9,7,-2.2
+1993 F1,Martin Brundle,Ligier Renault,8,7.3,8.1,7.2,7.2,6.3,-2.5
+1993 F1,Mark Blundell,Ligier Renault,7.6,6.9,8.1,7.2,7.2,6.3,-2.5
+1993 F1,Karl Wendlinger,Sauber,7.4,6.7,7.7,6.8,6.5,5.5,-2.6
+1993 F1,JJ Lehto,Sauber,7.3,6.6,7.7,6.8,6.5,5.5,-2.6
+1993 F1,Johnny Herbert,Lotus Ford,7.8,7.1,7.5,6.5,5.8,5,-2.5
+1993 F1,Alessandro Zanardi,Lotus Ford,7.2,6.5,7.5,6.5,5.8,5,-2.5
+1993 F1,Pierluigi Martini,Minardi Ford,7.1,6.4,7.1,6.1,5.1,4.3,-2.5
+1993 F1,Christian Fittipaldi,Minardi Ford,7,6.2,7.1,6.1,5.1,4.3,-2.6
+1993 F1,Derek Warwick,Footwork Mugen-Honda,7.3,6.6,7.1,6,4.4,4,-2.2
+1993 F1,Aguri Suzuki,Footwork Mugen-Honda,6.6,5.8,7.1,6,4.4,4,-2.3
+1993 F1,Érik Comas,Larrousse Lamborghini,6.9,6.1,7,5.9,3.7,3.7,-1.9
+1993 F1,Philippe Alliot,Larrousse Lamborghini,6.7,5.9,7,5.9,3.7,3.7,-1.9
+1993 F1,Rubens Barrichello,Jordan Hart,7.6,6.9,6.9,5.8,3,3,-1.8
+1993 F1,Eddie Irvine,Jordan Hart,7.4,6.7,6.9,5.8,3,3,-1.8
+1993 F1,Andrea de Cesaris,Tyrrell Yamaha,6.8,6,6.8,5.7,2.3,2.3,-1.9
+1993 F1,Ukyo Katayama,Tyrrell Yamaha,6.5,5.7,6.8,5.7,2.3,2.3,-1.9
+1993 F1,Michele Alboreto,Lola Ferrari / BMS Scuderia Italia,6.8,6,6.1,5.3,2,2,-1.6
+1993 F1,Luca Badoer,Lola Ferrari / BMS Scuderia Italia,6.5,5.7,6.1,5.3,2,2,-1.6
+1994 F1,Ayrton Senna,Williams,9.8,9.5,8.7,8,10,9.7,-1.3
+1994 F1,Damon Hill,Williams,8.3,7.8,8.7,8,10,9.7,-1.5
+1994 F1,Michael Schumacher,Benetton,9.4,9.1,8.7,8,9.3,9,-1.3
+1994 F1,Jos Verstappen,Benetton,6.3,5.5,8.7,8,9.3,9,-1.8
+1994 F1,Jean Alesi,Ferrari,8.1,7.6,8,7.1,8.6,8,-2
+1994 F1,Gerhard Berger,Ferrari,7.7,7,8,7.1,8.6,8,-2.2
+1994 F1,Mika Hakkinen,McLaren,7.8,7.1,7.6,6.6,7.9,7,-2.6
+1994 F1,Martin Brundle,McLaren,7.5,6.8,7.6,6.6,7.9,7,-2.6
+1994 F1,Olivier Panis,Ligier,7.4,6.7,7.6,6.6,7.2,6.3,-2.6
+1994 F1,Eric Bernard,Ligier,6.6,5.8,7.6,6.6,7.2,6.3,-2.7
+1994 F1,Rubens Barrichello,Jordan,7.7,7,7.3,6.3,6.5,5.5,-2.7
+1994 F1,Eddie Irvine,Jordan,6.8,6,7.3,6.3,6.5,5.5,-2.8
+1994 F1,Heinz-Harald Frentzen,Sauber,7.5,6.8,7.3,6.3,5.8,5,-2.5
+1994 F1,Karl Wendlinger,Sauber,7.4,6.7,7.3,6.3,5.8,5,-2.5
+1994 F1,Mark Blundell,Tyrrell,6.9,6.1,7.1,6,5.1,4.3,-2.7
+1994 F1,Ukyo Katayama,Tyrrell,6.7,5.9,7.1,6,5.1,4.3,-2.7
+1994 F1,Christian Fittipaldi,Footwork,6.7,5.9,6.8,5.6,4.4,4,-2.4
+1994 F1,Gianni Morbidelli,Footwork,6.7,5.9,6.8,5.6,4.4,4,-2.4
+1994 F1,Pierluigi Martini,Minardi,6.9,6.1,6.6,5.4,3.7,3.7,-2
+1994 F1,Michele Alboreto,Minardi,6.6,5.8,6.6,5.4,3.7,3.7,-2
+1994 F1,Alessandro Zanardi,Lotus,6.9,6.1,6.3,5.2,3,3,-1.9
+1994 F1,Johnny Herbert,Lotus,6.8,6,6.3,5.2,3,3,-1.9
+1994 F1,Erik Comas,Larrousse,6.7,5.9,6.3,5.1,2.3,2.3,-2
+1994 F1,Yannick Dalmas,Larrousse,6.2,5.4,6.3,5.1,2.3,2.3,-2
+1994 F1,David Brabham,Simtek,6.1,5.3,5.8,4.8,2,2,-1.8
+1994 F1,Roland Ratzenberger,Simtek,6.1,5.3,5.8,4.8,2,2,-1.8
+1994 F1,Bertrand Gachot,Pacific,6,5.3,5.4,4.4,2,2,-1.7
+1994 F1,Paul Belmondo,Pacific,5.1,4.4,5.4,4.4,2,2,-1.7
+1995 F1,D Hill,Williams,8.3,7.8,8.6,7.8,10,9.7,-1.6
+1995 F1,D Coulthard,Williams,7.4,6.7,8.6,7.8,10,9.7,-1.8
+1995 F1,M. Schumacher,Benetton,9.5,9.2,8.4,7.5,9.3,9,-1.5
+1995 F1,J. Herbert,Benetton,6.6,5.8,8.4,7.5,9.3,9,-2
+1995 F1,J Alesi,Ferrari,8.1,7.6,7.6,6.5,8.6,8,-2.2
+1995 F1,G Berger,Ferrari,7.7,7,7.6,6.5,8.6,8,-2.4
+1995 F1,N Mansell,McLaren,6.1,5.3,7.2,6,7.9,7,-2.9
+1995 F1,M Hakkinen,McLaren,7.8,7.1,7.2,6,7.9,7,-2.8
+1995 F1,M Brundle,Ligier,7.3,6.6,6.2,5.2,7.2,6.3,-2.6
+1995 F1,O Panis,Ligier,7.4,6.7,6.2,5.2,7.2,6.3,-2.6
+1995 F1,K Wendlinger,Sauber,6.1,5.3,6,5,6.5,5.5,-2.8
+1995 F1,HH Frentzen,Sauber,7.4,6.7,6,5,6.5,5.5,-2.7
+1995 F1,D Schiattarella,Jordan,4.8,4.4,6,5,5.8,5,-2.2
+1995 F1,J Verstappen,Jordan,6.3,5.5,6,5,5.8,5,-2.6
+1995 F1,U. Katayama,Tyrrell,5.3,4.6,5.2,4.6,5.1,4.3,-2.1
+1995 F1,M. Salo,Tyrrell,6.5,5.7,5.2,4.6,5.1,4.3,-2.2
+1995 F1,G Morbidelli,Footwork,5.6,4.9,4,4,4.4,4,-1.1
+1995 F1,T Inoue,Footwork,3.9,3.9,4,4,4.4,4,-0.4
+1995 F1,P Martini,Minardi,5.7,5,3.6,3.6,3.7,3.7,-0.7
+1995 F1,L Badoer,Minardi,5.9,5.2,3.6,3.6,3.7,3.7,-0.7
+1995 F1,P Diniz,Forti,5.6,4.9,2.6,2.6,3,3,-0.7
+1995 F1,P Moreno,Forti,4.9,4.5,2.6,2.6,3,3,-0.4
+1995 F1,B Gachot,Pacific,4.7,4.3,2.6,2.6,2.3,2.3,-0.4
+1995 F1,JD Deletraz,Pacific,2.9,2.9,2.6,2.6,2.3,2.3,0
+1996 F1,Damon Hill,Williams Renault,8.5,8,9.3,8.8,10,9.7,-1.3
+1996 F1,Jacques Villeneuve,Williams Renault,8.4,7.9,9.3,8.8,10,9.7,-1.3
+1996 F1,Jean Alesi,Benetton Renault,8.1,7.6,8.3,7.5,9.3,9,-1.6
+1996 F1,Gerhard Berger,Benetton Renault,7.7,7,8.3,7.5,9.3,9,-1.8
+1996 F1,Mika Häkkinen,McLaren Mercedes,8.1,7.6,7.9,7,8.6,8,-2
+1996 F1,David Coulthard,McLaren Mercedes,7.5,6.8,7.9,7,8.6,8,-2.2
+1996 F1,Michael Schumacher,Ferrari,9.6,9.3,7.7,6.8,7.9,7,-2.1
+1996 F1,Eddie Irvine,Ferrari,7.1,6.4,7.7,6.8,7.9,7,-2.5
+1996 F1,Rubens Barrichello,Jordan Peugeot,7.7,7,7,5.9,7.2,6.3,-2.7
+1996 F1,Martin Brundle,Jordan Peugeot,7.4,6.7,7,5.9,7.2,6.3,-2.7
+1996 F1,Olivier Panis,Ligier Mugen Honda,7.5,6.8,6.8,5.6,6.5,5.5,-2.9
+1996 F1,Pedro Diniz,Ligier Mugen Honda,5.1,4.4,6.8,5.6,6.5,5.5,-2.9
+1996 F1,Heinz-Harald Frentzen,Sauber Ford,7.7,7,6.6,5.4,5.8,5,-2.7
+1996 F1,Johnny Herbert,Sauber Ford,6.8,6,6.6,5.4,5.8,5,-2.8
+1996 F1,Mika Salo,Tyrrell Yamaha,6.6,5.8,6,4.9,5.1,4.3,-2.7
+1996 F1,Ukyo Katayama,Tyrrell Yamaha,5.5,4.8,6,4.9,5.1,4.3,-2.6
+1996 F1,Jos Verstappen,Footwork Hart,6.5,5.7,5.6,4.6,4.4,4,-2.2
+1996 F1,Ricardo Rosset,Footwork Hart,4.8,4.4,5.6,4.6,4.4,4,-1.8
+1996 F1,Giancarlo Fisichella,Minardi Ford,6.9,6.1,4.9,4.4,3.7,3.7,-1.3
+1996 F1,Pedro Lamy,Minardi Ford,5.9,5.2,4.9,4.4,3.7,3.7,-1.2
+1996 F1,Luca Badoer,Forti Ford,5.8,5.1,3.8,3.8,3,3,-0.7
+1996 F1,Andrea Montermini,Forti Ford,4.9,4.5,3.8,3.8,3,3,-0.4
+1997 F1,Jacques Villeneuve,Williams Renault,8.9,8.4,9.3,8.8,10,9.7,-1.3
+1997 F1,Heinz-Harald Frentzen,Williams Renault,8.5,8,9.3,8.8,10,9.7,-1.3
+1997 F1,Michael Schumacher,Ferrari,9.6,9.3,8.8,8.1,10,9.7,-1.3
+1997 F1,Eddie Irvine,Ferrari,8,7.3,8.8,8.1,10,9.7,-1.7
+1997 F1,Jean Alesi,Benetton Renault,8.4,7.9,8.5,7.8,8,7.1,-2.1
+1997 F1,Gerhard Berger,Benetton Renault,8.3,7.8,8.5,7.8,8,7.1,-2.1
+1997 F1,Mika Häkkinen,McLaren Mercedes,8.7,8.2,8.4,7.6,8,7.1,-2.2
+1997 F1,David Coulthard,McLaren Mercedes,8.5,8,8.4,7.6,8,7.1,-2.2
+1997 F1,Giancarlo Fisichella,Jordan Peugeot,8.3,7.8,7.7,6.7,7,6,-2.5
+1997 F1,Ralf Schumacher,Jordan Peugeot,7.8,7.1,7.7,6.7,7,6,-2.7
+1997 F1,Olivier Panis,Prost Mugen Honda,8.3,7.8,7.5,6.5,6,5.2,-2.3
+1997 F1,Shinji Nakano,Prost Mugen Honda,6.8,6,7.5,6.5,6,5.2,-2.6
+1997 F1,Johnny Herbert,Sauber Petronas,7.9,7.2,7.3,6.2,6,5.2,-2.6
+1997 F1,Gianni Morbidelli,Sauber Petronas,7.1,6.4,7.3,6.2,6,5.2,-2.6
+1997 F1,Damon Hill,Arrows Yamaha,8.4,7.9,6.7,5.5,5,4.6,-2.1
+1997 F1,Pedro Diniz,Arrows Yamaha,6.8,6,6.7,5.5,5,4.6,-2.4
+1997 F1,Mika Salo,Tyrrell Ford,7.7,7,6.5,5.3,4,4,-1.9
+1997 F1,Jos Verstappen,Tyrrell Ford,7.2,6.5,6.5,5.3,4,4,-1.9
+1997 F1,Rubens Barrichello,Stewart Ford,8.1,7.6,6.2,5.2,5,4.6,-1.9
+1997 F1,Jan Magnussen,Stewart Ford,7,6.2,6.2,5.2,5,4.6,-2.2
+1997 F1,Jarno Trulli,Minardi Hart,7.6,6.9,5.8,4.8,3,3,-1.7
+1997 F1,Ukyo Katayama,Minardi Hart,6.6,5.8,5.8,4.8,3,3,-1.8
+1997 F1,Vincenzo Sospiri,Lola Ford,6.7,5.9,4.2,3.8,2,2,-1.2
+1997 F1,Ricardo Rosset,Lola Ford,6.3,5.5,4.2,3.8,2,2,-1.2
+1998 F1,Mika Häkkinen,McLaren Mercedes,9.3,9,9.4,9,10,9.7,-1
+1998 F1,David Coulthard,McLaren Mercedes,8.6,8.1,9.4,9,10,9.7,-1.2
+1998 F1,Michael Schumacher,Ferrari,9.6,9.3,9.1,8.6,10,9.7,-1.1
+1998 F1,Eddie Irvine,Ferrari,8.2,7.7,9.1,8.6,10,9.7,-1.3
+1998 F1,Jacques Villeneuve,Williams Mecachrome,8.6,8.1,8.1,7.2,9,8.4,-2
+1998 F1,Heinz-Harald Frentzen,Williams Mecachrome,8.2,7.7,8.1,7.2,9,8.4,-2
+1998 F1,Damon Hill,Jordan Mugen Honda,8.3,7.8,8,7.3,8,7.1,-2.1
+1998 F1,Ralf Schumacher,Jordan Mugen Honda,8.2,7.7,8,7.3,8,7.1,-2.1
+1998 F1,Giancarlo Fisichella,Benetton Playlife,8.5,8,8,7.2,8,7.1,-2.2
+1998 F1,Alexander Wurz,Benetton Playlife,8,7.3,8,7.2,8,7.1,-2.4
+1998 F1,Jean Alesi,Sauber Petronas,8.2,7.7,7.6,6.6,7,6,-2.5
+1998 F1,Johnny Herbert,Sauber Petronas,7.9,7.2,7.6,6.6,7,6,-2.7
+1998 F1,Jarno Trulli,Prost Peugeot,8,7.3,7.2,6.1,6,5.2,-2.6
+1998 F1,Olivier Panis,Prost Peugeot,7.9,7.2,7.2,6.1,6,5.2,-2.6
+1998 F1,Mika Salo,Arrows,7.9,7.2,7.1,6.1,6,5.2,-2.5
+1998 F1,Pedro Diniz,Arrows,7.1,6.4,7.1,6.1,6,5.2,-2.5
+1998 F1,Rubens Barrichello,Stewart Ford,8.3,7.8,7,6,6,5.2,-2.3
+1998 F1,Jos Verstappen,Stewart Ford,7.6,6.9,7,6,6,5.2,-2.5
+1998 F1,Toranosuke Takagi,Tyrrell Ford,7.1,6.4,6.7,5.5,4,4,-1.9
+1998 F1,Ricardo Rosset,Tyrrell Ford,6.4,5.6,6.7,5.5,4,4,-2
+1998 F1,Shinji Nakano,Minardi Ford,7.1,6.4,6.5,5.3,4,4,-1.9
+1998 F1,Esteban Tuero,Minardi Ford,6.7,5.9,6.5,5.3,4,4,-2
+1999 F1,Michael Schumacher,Ferrari,9.5,9.2,9,8.4,10,9.7,-1.2
+1999 F1,Eddie Irvine,Ferrari,8.4,7.9,9,8.4,10,9.7,-1.4
+1999 F1,Mika Häkkinen,McLaren Mercedes,9,8.5,9,8.4,9.3,9,-1.4
+1999 F1,David Coulthard,McLaren Mercedes,8.3,7.8,9,8.4,9.3,9,-1.4
+1999 F1,Heinz-Harald Frentzen,Jordan Mugen Honda,8.7,8.2,8.3,7.6,8.6,8,-1.8
+1999 F1,Damon Hill,Jordan Mugen Honda,8.1,7.6,8.3,7.6,8.6,8,-1.8
+1999 F1,Rubens Barrichello,Stewart Ford,8.6,8.1,7.9,7,7.9,7,-2.3
+1999 F1,Johnny Herbert,Stewart Ford,8,7.3,7.9,7,7.9,7,-2.5
+1999 F1,Ralf Schumacher,Williams Supertec,8.4,7.9,7.9,6.9,7.2,6.3,-2.4
+1999 F1,Alex Zanardi,Williams Supertec,7.6,6.9,7.9,6.9,7.2,6.3,-2.6
+1999 F1,Giancarlo Fisichella,Benetton Playlife,8.4,7.9,7.5,6.5,6.5,5.5,-2.5
+1999 F1,Alexander Wurz,Benetton Playlife,7.9,7.2,7.5,6.5,6.5,5.5,-2.7
+1999 F1,Jarno Trulli,Prost Peugeot,8.3,7.8,7.2,6.1,5.8,5,-2.4
+1999 F1,Olivier Panis,Prost Peugeot,7.8,7.1,7.2,6.1,5.8,5,-2.6
+1999 F1,Jean Alesi,Sauber Petronas,8.2,7.7,7.1,6,5.1,4.3,-2.4
+1999 F1,Pedro Diniz,Sauber Petronas,7.2,6.5,7.1,6,5.1,4.3,-2.6
+1999 F1,Jacques Villeneuve,BAR Supertec,8.4,7.9,6.4,5.3,4.4,4,-2
+1999 F1,Ricardo Zonta,BAR Supertec,7.6,6.9,6.4,5.3,4.4,4,-2.2
+1999 F1,Marc Gené,Minardi Ford,7.5,6.8,6.3,5.2,3.7,3.7,-1.8
+1999 F1,Luca Badoer,Minardi Ford,7.5,6.8,6.3,5.2,3.7,3.7,-1.8
+1999 F1,Pedro de la Rosa,Arrows,7.7,7,6.3,5.1,3,3,-1.9
+1999 F1,Toranosuke Takagi,Arrows,7.2,6.5,6.3,5.1,3,3,-1.9
+2000 F1,Michael Schumacher,Ferrari,9.8,9.5,9.4,9,10,9.7,-1
+2000 F1,Rubens Barrichello,Ferrari,8.8,8.3,9.4,9,10,9.7,-1.2
+2000 F1,Mika Hakkinen,McLaren Mercedes,9.4,9.1,9.3,8.8,9.3,9,-1.1
+2000 F1,David Coulthard,McLaren Mercedes,8.7,8.2,9.3,8.8,9.3,9,-1.3
+2000 F1,Ralf Schumacher,Williams BMW,8.5,8,8,7.1,8.6,8,-2
+2000 F1,Jenson Button,Williams BMW,8,7.3,8,7.1,8.6,8,-2.2
+2000 F1,Heinz-Harald Frentzen,Jordan Mugen-Honda,8.4,7.9,7.8,6.9,7.9,7,-2.3
+2000 F1,Jarno Trulli,Jordan Mugen-Honda,8.4,7.9,7.8,6.9,7.9,7,-2.3
+2000 F1,Giancarlo Fisichella,Benetton Playlife,8.6,8.1,7.5,6.5,7.2,6.3,-2.4
+2000 F1,Alexander Wurz,Benetton Playlife,7.8,7.1,7.5,6.5,7.2,6.3,-2.6
+2000 F1,Jacques Villeneuve,BAR Honda,8.5,8,7.5,6.5,6.5,5.5,-2.5
+2000 F1,Ricardo Zonta,BAR Honda,7.5,6.8,7.5,6.5,6.5,5.5,-2.7
+2000 F1,Mika Salo,Sauber Petronas,7.9,7.2,7.1,6,5.8,5,-2.6
+2000 F1,Pedro Diniz,Sauber Petronas,7,6.2,7.1,6,5.8,5,-2.7
+2000 F1,Pedro de la Rosa,Arrows Supertec,7.8,7.1,6.9,5.8,5.1,4.3,-2.6
+2000 F1,Jos Verstappen,Arrows Supertec,7.8,7.1,6.9,5.8,5.1,4.3,-2.6
+2000 F1,Eddie Irvine,Jaguar Cosworth,8,7.3,6.7,5.6,4.4,4,-2.2
+2000 F1,Johnny Herbert,Jaguar Cosworth,7.7,7,6.7,5.6,4.4,4,-2.2
+2000 F1,Jean Alesi,Prost Peugeot,8.1,7.6,6.2,5,3.7,3.7,-1.7
+2000 F1,Nick Heidfeld,Prost Peugeot,7.8,7.1,6.2,5,3.7,3.7,-1.9
+2000 F1,Marc Gene,Minardi Fondmetal,7.4,6.7,6,5,3,3,-1.7
+2000 F1,Gaston Mazzacane,Minardi Fondmetal,6.4,5.6,6,5,3,3,-1.8
+2001 F1,Michael Schumacher,Ferrari,9.9,9.6,9.6,9.2,10,9.7,-1
+2001 F1,Rubens Barrichello,Ferrari,8.9,8.4,9.6,9.2,10,9.7,-1.2
+2001 F1,Mika Hakkinen,McLaren Mercedes,9.3,9,9.1,8.6,9.3,9,-1.1
+2001 F1,David Coulthard,McLaren Mercedes,8.9,8.4,9.1,8.6,9.3,9,-1.3
+2001 F1,Ralf Schumacher,Williams BMW,9,8.5,8.7,8,8.6,8,-1.8
+2001 F1,Juan Pablo Montoya,Williams BMW,8.8,8.3,8.7,8,8.6,8,-1.8
+2001 F1,Nick Heidfeld,Sauber Petronas,8.3,7.8,8.2,7.3,7.9,7,-2.3
+2001 F1,Kimi Räikkönen,Sauber Petronas,8.1,7.6,8.2,7.3,7.9,7,-2.3
+2001 F1,Jarno Trulli,Jordan Honda,8.5,8,8.1,7.4,7.2,6.3,-2.1
+2001 F1,Heinz-Harald Frentzen,Jordan Honda,8.4,7.9,8.1,7.4,7.2,6.3,-2.1
+2001 F1,Jacques Villeneuve,BAR Honda,8.4,7.9,8,7.1,6.5,5.5,-2.4
+2001 F1,Olivier Panis,BAR Honda,8.1,7.6,8,7.1,6.5,5.5,-2.4
+2001 F1,Giancarlo Fisichella,Benetton Renault,8.5,8,7.4,6.4,5.8,5,-2.3
+2001 F1,Jenson Button,Benetton Renault,7.8,7.1,7.4,6.4,5.8,5,-2.5
+2001 F1,Eddie Irvine,Jaguar Cosworth,8,7.3,7.4,6.4,5.1,4.3,-2.5
+2001 F1,Pedro de la Rosa,Jaguar Cosworth,7.8,7.1,7.4,6.4,5.1,4.3,-2.5
+2001 F1,Heinz-Harald Frentzen,Prost Acer,8.4,7.9,7.2,6.2,4.4,4,-1.9
+2001 F1,Jean Alesi,Prost Acer,8.1,7.6,7.2,6.2,4.4,4,-1.9
+2001 F1,Jos Verstappen,Arrows Asiatech,7.7,7,6.9,5.7,3.7,3.7,-1.9
+2001 F1,Enrique Bernoldi,Arrows Asiatech,7.2,6.5,6.9,5.7,3.7,3.7,-1.9
+2001 F1,Fernando Alonso,Minardi European,7.8,7.1,6.2,5,3,3,-1.9
+2001 F1,Tarso Marques,Minardi European,6.3,5.5,6.2,5,3,3,-2
+2002 F1,Michael Schumacher,Ferrari,10,9.7,9.9,9.5,10,9.7,-1
+2002 F1,Rubens Barrichello,Ferrari,9.1,8.8,9.9,9.5,10,9.7,-1
+2002 F1,Juan Pablo Montoya,Williams BMW,9.2,8.9,8.9,8.2,9.3,9,-1.3
+2002 F1,Ralf Schumacher,Williams BMW,8.9,8.4,8.9,8.2,9.3,9,-1.5
+2002 F1,David Coulthard,McLaren Mercedes,8.9,8.4,8.9,8.2,8.6,8,-1.8
+2002 F1,Kimi Räikkönen,McLaren Mercedes,8.8,8.3,8.9,8.2,8.6,8,-1.8
+2002 F1,Jenson Button,Renault,8.5,8,8.4,7.7,7.9,7,-2.1
+2002 F1,Jarno Trulli,Renault,8.5,8,8.4,7.7,7.9,7,-2.1
+2002 F1,Nick Heidfeld,Sauber Petronas,8.4,7.9,8.1,7.4,7.2,6.3,-2.1
+2002 F1,Heinz-Harald Frentzen,Sauber Petronas,8.2,7.7,8.1,7.4,7.2,6.3,-2.1
+2002 F1,Jacques Villeneuve,BAR Honda,8.3,7.8,7.8,6.9,6.5,5.5,-2.4
+2002 F1,Olivier Panis,BAR Honda,8.1,7.6,7.8,6.9,6.5,5.5,-2.4
+2002 F1,Giancarlo Fisichella,Jordan Honda,8.7,8.2,7.8,6.8,5.8,5,-2.3
+2002 F1,Takuma Sato,Jordan Honda,7.8,7.1,7.8,6.8,5.8,5,-2.5
+2002 F1,Mika Salo,Toyota,8.1,7.6,7.6,6.6,5.1,4.3,-2.3
+2002 F1,Allan McNish,Toyota,7.9,7.2,7.6,6.6,5.1,4.3,-2.5
+2002 F1,Eddie Irvine,Jaguar Cosworth,8.3,7.8,7.6,6.6,4.4,4,-1.9
+2002 F1,Pedro de la Rosa,Jaguar Cosworth,7.9,7.2,7.6,6.6,4.4,4,-2.1
+2002 F1,Enrique Bernoldi,Arrows Cosworth,7.5,6.8,7.4,6.4,3.7,3.7,-1.7
+2002 F1,Mark Webber,Minardi Asiatech,8.1,7.6,7,5.8,3,3,-1.7
+2002 F1,Anthony Davidson,Minardi Asiatech,7.6,6.9,7,5.8,3,3,-1.9
+2003 F1,Michael Schumacher,Ferrari,9.9,9.6,9.6,9.2,10,9.7,-1
+2003 F1,Rubens Barrichello,Ferrari,9.2,8.9,9.6,9.2,10,9.7,-1
+2003 F1,Kimi Räikkönen,McLaren Mercedes,9.6,9.3,9.3,8.8,9.3,9,-1.1
+2003 F1,David Coulthard,McLaren Mercedes,8.9,8.4,9.3,8.8,9.3,9,-1.3
+2003 F1,Juan Pablo Montoya,Williams BMW,9.4,9.1,9.2,8.6,8.6,8,-1.5
+2003 F1,Ralf Schumacher,Williams BMW,9,8.5,9.2,8.6,8.6,8,-1.7
+2003 F1,Fernando Alonso,Renault,9.4,9.1,8.9,8.4,7.9,7,-1.7
+2003 F1,Jarno Trulli,Renault,8.8,8.3,8.9,8.4,7.9,7,-1.9
+2003 F1,Jenson Button,BAR Honda,8.9,8.4,8.4,7.7,7.2,6.3,-2.1
+2003 F1,Jacques Villeneuve,BAR Honda,8.4,7.9,8.4,7.7,7.2,6.3,-2.1
+2003 F1,Heinz-Harald Frentzen,Sauber Petronas,8.6,8.1,8.2,7.3,6.5,5.5,-2.4
+2003 F1,Nick Heidfeld,Sauber Petronas,8.3,7.8,8.2,7.3,6.5,5.5,-2.4
+2003 F1,Mark Webber,Jaguar Cosworth,8.8,8.3,8,7.2,5.8,5,-2.1
+2003 F1,Justin Wilson,Jaguar Cosworth,7.8,7.1,8,7.2,5.8,5,-2.3
+2003 F1,Olivier Panis,Toyota,8.2,7.7,8,7.1,5.1,4.3,-2.2
+2003 F1,Cristiano da Matta,Toyota,8.1,7.6,8,7.1,5.1,4.3,-2.2
+2003 F1,Giancarlo Fisichella,Jordan Ford,8.8,8.3,7.5,6.5,4.4,4,-1.9
+2003 F1,Ralph Firman,Jordan Ford,7.4,6.7,7.5,6.5,4.4,4,-2.1
+2003 F1,Justin Wilson,Minardi Cosworth,7.8,7.1,7,5.9,3.7,3.7,-1.8
+2003 F1,Jos Verstappen,Minardi Cosworth,7.6,6.9,7,5.9,3.7,3.7,-1.8
+2004 F1,Michael Schumacher,Ferrari,10,9.7,9.9,9.5,10,9.7,-1
+2004 F1,Rubens Barrichello,Ferrari,9.3,9,9.9,9.5,10,9.7,-1
+2004 F1,Jenson Button,BAR Honda,9,8.5,9,8.4,9.3,9,-1.4
+2004 F1,Takuma Sato,BAR Honda,8,7.3,9,8.4,9.3,9,-1.6
+2004 F1,Fernando Alonso,Renault,9.3,9,8.9,8.3,8.6,8,-1.5
+2004 F1,Jacques Villeneuve,Renault,9.1,8.8,8.9,8.3,8.6,8,-1.5
+2004 F1,Juan Pablo Montoya,Williams BMW,9.4,9.1,8.8,8.1,7.9,7,-1.9
+2004 F1,Ralf Schumacher,Williams BMW,8.8,8.3,8.8,8.1,7.9,7,-2.1
+2004 F1,Kimi Räikkönen,McLaren Mercedes,9.9,9.6,8.5,7.8,7.2,6.3,-1.9
+2004 F1,David Coulthard,McLaren Mercedes,8.7,8.2,8.5,7.8,7.2,6.3,-2.1
+2004 F1,Felipe Massa,Sauber Petronas,9.3,9,8.4,7.7,6.5,5.5,-2
+2004 F1,Giancarlo Fisichella,Sauber Petronas,8.8,8.3,8.4,7.7,6.5,5.5,-2.2
+2004 F1,Olivier Panis,Toyota,8.2,7.7,7.9,7,5.8,5,-2.2
+2004 F1,Cristiano da Matta,Toyota,8.1,7.6,7.9,7,5.8,5,-2.2
+2004 F1,Mark Webber,Jaguar Cosworth,9.2,8.9,7.9,6.9,5.1,4.3,-2.1
+2004 F1,Christian Klien,Jaguar Cosworth,8.4,7.9,7.9,6.9,5.1,4.3,-2.3
+2004 F1,Nick Heidfeld,Jordan Ford,8.8,8.3,7,5.9,4.4,4,-2
+2004 F1,Timo Glock,Jordan Ford,8.8,8.3,7,5.9,4.4,4,-2
+2004 F1,Gianmaria Bruni,Minardi Cosworth,7.8,7.1,6.3,5.1,3.7,3.7,-1.9
+2004 F1,Zsolt Baumgartner,Minardi Cosworth,7.2,6.5,6.3,5.1,3.7,3.7,-1.9
+2005 F1,Fernando Alonso,Renault,9.5,9.2,9.5,9.1,10,9.7,-1
+2005 F1,Giancarlo Fisichella,Renault,8.6,8.1,9.5,9.1,10,9.7,-1.2
+2005 F1,Kimi Räikkönen,McLaren Mercedes,9.7,9.4,9.2,8.7,9.3,9,-1.1
+2005 F1,Juan Pablo Montoya,McLaren Mercedes,9.1,8.8,9.2,8.7,9.3,9,-1.1
+2005 F1,Michael Schumacher,Ferrari,9.8,9.5,8.9,8.3,8.6,8,-1.5
+2005 F1,Rubens Barrichello,Ferrari,8.7,8.2,8.9,8.3,8.6,8,-1.7
+2005 F1,Ralf Schumacher,Toyota,8.5,8,8.6,8,7.9,7,-2
+2005 F1,Jarno Trulli,Toyota,8.5,8,8.6,8,7.9,7,-2
+2005 F1,Mark Webber,Williams BMW,8.4,7.9,8.4,7.7,7.2,6.3,-2.1
+2005 F1,Nick Heidfeld,Williams BMW,8.4,7.9,8.4,7.7,7.2,6.3,-2.1
+2005 F1,Jenson Button,BAR Honda,8.6,8.1,8.3,7.5,6.5,5.5,-2.3
+2005 F1,Takuma Sato,BAR Honda,8,7.3,8.3,7.5,6.5,5.5,-2.5
+2005 F1,David Coulthard,RBR Cosworth,8.2,7.7,7.9,7,5.8,5,-2.2
+2005 F1,Vitantonio Liuzzi,RBR Cosworth,7.7,7,7.9,7,5.8,5,-2.4
+2005 F1,Felipe Massa,Sauber Petronas,8.1,7.6,7.7,6.8,5.1,4.3,-2.2
+2005 F1,Jacques Villeneuve,Sauber Petronas,7.8,7.1,7.7,6.8,5.1,4.3,-2.4
+2005 F1,Tiago Monteiro,Jordan Toyota,7.2,6.5,6.8,5.6,4.4,4,-2.3
+2005 F1,Narain Karthikeyan,Jordan Toyota,7,6.2,6.8,5.6,4.4,4,-2.4
+2005 F1,Christijan Albers,Minardi Cosworth,7.1,6.4,6.2,5.1,3.7,3.7,-1.8
+2005 F1,Robert Doornbos,Minardi Cosworth,7,6.2,6.2,5.1,3.7,3.7,-1.9
+2006 F1,Michael Schumacher,Ferrari,9.6,9.3,9.3,8.9,10,9.7,-1
+2006 F1,Felipe Massa,Ferrari,8.5,8,9.3,8.9,10,9.7,-1.2
+2006 F1,Fernando Alonso,Renault,9.4,9.1,9.3,8.9,9.3,9,-1
+2006 F1,Giancarlo Fisichella,Renault,8.4,7.9,9.3,8.9,9.3,9,-1.2
+2006 F1,Kimi Räikkönen,McLaren Mercedes,9.1,8.8,8.7,8,8.6,8,-1.6
+2006 F1,Juan Pablo Montoya,McLaren Mercedes,8.6,8.1,8.7,8,8.6,8,-1.8
+2006 F1,Jenson Button,Honda,8.8,8.3,8.4,7.7,7.9,7,-2.1
+2006 F1,Rubens Barrichello,Honda,8.5,8,8.4,7.7,7.9,7,-2.1
+2006 F1,Nick Heidfeld,BMW Sauber,8.5,8,8.3,7.6,7.2,6.3,-2.1
+2006 F1,Robert Kubica,BMW Sauber,8.5,8,8.3,7.6,7.2,6.3,-2.1
+2006 F1,Jarno Trulli,Toyota,8.3,7.8,8.1,7.2,6.5,5.5,-2.4
+2006 F1,Ralf Schumacher,Toyota,8.1,7.6,8.1,7.2,6.5,5.5,-2.4
+2006 F1,David Coulthard,RBR Ferrari,8.2,7.7,7.8,6.8,5.8,5,-2.3
+2006 F1,Christian Klien,RBR Ferrari,7.7,7,7.8,6.8,5.8,5,-2.5
+2006 F1,Mark Webber,Williams Cosworth,8.5,8,7.7,6.7,5.1,4.3,-2.3
+2006 F1,Nico Rosberg,Williams Cosworth,8,7.3,7.7,6.7,5.1,4.3,-2.5
+2006 F1,Vitantonio Liuzzi,STR Cosworth,7.7,7,7.3,6.2,4.4,4,-2.2
+2006 F1,Scott Speed,STR Cosworth,7.3,6.6,7.3,6.2,4.4,4,-2.2
+2006 F1,Tiago Monteiro,MF1 Toyota,7.3,6.6,6.9,5.8,3.7,3.7,-1.8
+2006 F1,Christijan Albers,MF1 Toyota,7.3,6.6,6.9,5.8,3.7,3.7,-1.8
+2006 F1,Takuma Sato,Super Aguri Honda,7.7,7,6.4,5.2,3,3,-1.9
+2006 F1,Franck Montagny,Super Aguri Honda,7.2,6.5,6.4,5.2,3,3,-1.9
+2007 F1,Kimi Räikkönen,Ferrari,9.4,9.1,9.4,9,10,9.7,-1
+2007 F1,Felipe Massa,Ferrari,8.7,8.2,9.4,9,10,9.7,-1.2
+2007 F1,Fernando Alonso,McLaren Mercedes,9.6,9.3,9.4,9,9.3,9,-1
+2007 F1,Lewis Hamilton,McLaren Mercedes,9.3,9,9.4,9,9.3,9,-1
+2007 F1,Nick Heidfeld,BMW Sauber,8.7,8.2,8.9,8.2,8.6,8,-1.8
+2007 F1,Robert Kubica,BMW Sauber,8.6,8.1,8.9,8.2,8.6,8,-1.8
+2007 F1,Heikki Kovalainen,Renault,8.3,7.8,8.5,7.8,7.9,7,-2.1
+2007 F1,Giancarlo Fisichella,Renault,8.2,7.7,8.5,7.8,7.9,7,-2.1
+2007 F1,Nico Rosberg,Williams Toyota,8.3,7.8,8.3,7.6,7.2,6.3,-2.1
+2007 F1,Alexander Wurz,Williams Toyota,7.8,7.1,8.3,7.6,7.2,6.3,-2.3
+2007 F1,Mark Webber,Red Bull Renault,8.4,7.9,8.1,7.3,6.5,5.5,-2.3
+2007 F1,David Coulthard,Red Bull Renault,7.9,7.2,8.1,7.3,6.5,5.5,-2.5
+2007 F1,Jarno Trulli,Toyota,8.3,7.8,8,7.1,5.8,5,-2.2
+2007 F1,Ralf Schumacher,Toyota,7.8,7.1,8,7.1,5.8,5,-2.4
+2007 F1,Jenson Button,Honda,8.6,8.1,7.7,6.8,5.1,4.3,-2.2
+2007 F1,Rubens Barrichello,Honda,8,7.3,7.7,6.8,5.1,4.3,-2.4
+2007 F1,Sebastian Vettel,Toro Rosso Ferrari,8.2,7.7,7.7,6.8,4.4,4,-1.8
+2007 F1,Vitantonio Liuzzi,Toro Rosso Ferrari,7.4,6.7,7.7,6.8,4.4,4,-2
+2007 F1,Takuma Sato,Super Aguri Honda,7.6,6.9,7.6,6.6,3.7,3.7,-1.7
+2007 F1,Anthony Davidson,Super Aguri Honda,7.5,6.8,7.6,6.6,3.7,3.7,-1.7
+2007 F1,Adrian Sutil,Spyker Ferrari,7.1,6.4,7.1,6,3,3,-1.8
+2007 F1,Christijan Albers,Spyker Ferrari,6.8,6,7.1,6,3,3,-1.9
+2008 F1,Kimi Räikkönen,Ferrari,9,8.5,9.3,8.9,10,9.7,-1.2
+2008 F1,Felipe Massa,Ferrari,8.9,8.4,9.3,8.9,10,9.7,-1.2
+2008 F1,Lewis Hamilton,McLaren Mercedes,9.2,8.9,9.2,8.8,9.3,9,-1
+2008 F1,Heikki Kovalainen,McLaren Mercedes,8.2,7.7,9.2,8.8,9.3,9,-1.2
+2008 F1,Robert Kubica,BMW Sauber,8.9,8.4,9,8.4,8.6,8,-1.7
+2008 F1,Nick Heidfeld,BMW Sauber,8.5,8,9,8.4,8.6,8,-1.7
+2008 F1,Fernando Alonso,Renault,9.3,9,8.4,7.7,7.9,7,-1.9
+2008 F1,Nelson Piquet Jr.,Renault,7.4,6.7,8.4,7.7,7.9,7,-2.3
+2008 F1,Jarno Trulli,Toyota,8.2,7.7,8.3,7.6,7.2,6.3,-2.1
+2008 F1,Timo Glock,Toyota,8,7.3,8.3,7.6,7.2,6.3,-2.3
+2008 F1,Mark Webber,Red Bull Renault,8.6,8.1,8.2,7.5,6.5,5.5,-2.2
+2008 F1,David Coulthard,Red Bull Renault,7.9,7.2,8.2,7.5,6.5,5.5,-2.4
+2008 F1,Sebastian Vettel,Toro Rosso Ferrari,8.7,8.2,8.2,7.3,5.8,5,-2.2
+2008 F1,Sébastien Bourdais,Toro Rosso Ferrari,7.9,7.2,8.2,7.3,5.8,5,-2.4
+2008 F1,Nico Rosberg,Williams Toyota,8.6,8.1,8,7.2,5.1,4.3,-2.1
+2008 F1,Kazuki Nakajima,Williams Toyota,7.4,6.7,8,7.2,5.1,4.3,-2.3
+2008 F1,Jenson Button,Honda,8.6,8.1,7.5,6.5,4.4,4,-1.9
+2008 F1,Rubens Barrichello,Honda,8.4,7.9,7.5,6.5,4.4,4,-1.9
+2008 F1,Giancarlo Fisichella,Force India Ferrari,8.1,7.6,7.1,6,3.7,3.7,-1.6
+2008 F1,Adrian Sutil,Force India Ferrari,7.8,7.1,7.1,6,3.7,3.7,-1.8
+2008 F1,Takuma Sato,Super Aguri Honda,7.8,7.1,6.6,5.4,3,3,-1.9
+2008 F1,Anthony Davidson,Super Aguri Honda,7.7,7,6.6,5.4,3,3,-1.9
+2009 F1,Jenson Button,Brawn Mercedes,9.4,9.1,9.3,8.9,10,9.7,-1
+2009 F1,Rubens Barrichello,Brawn Mercedes,8.9,8.4,9.3,8.9,10,9.7,-1.2
+2009 F1,Sebastian Vettel,RBR Renault,9.3,9,9.2,8.6,9.3,9,-1.2
+2009 F1,Mark Webber,RBR Renault,9,8.5,9.2,8.6,9.3,9,-1.4
+2009 F1,Lewis Hamilton,McLaren Mercedes,9.4,9.1,9,8.4,8.6,8,-1.5
+2009 F1,Heikki Kovalainen,McLaren Mercedes,8.4,7.9,9,8.4,8.6,8,-1.7
+2009 F1,Kimi Räikkönen,Ferrari,9.1,8.8,8.9,8.3,7.9,7,-1.8
+2009 F1,Felipe Massa,Ferrari,8.9,8.4,8.9,8.3,7.9,7,-2
+2009 F1,Nico Rosberg,Williams Toyota,8.9,8.4,8.9,8.2,7.2,6.3,-2.1
+2009 F1,Kazuki Nakajima,Williams Toyota,7.8,7.1,8.9,8.2,7.2,6.3,-2.3
+2009 F1,Jarno Trulli,Toyota,8.6,8.1,8.8,8.2,6.5,5.5,-2.1
+2009 F1,Timo Glock,Toyota,8.4,7.9,8.8,8.2,6.5,5.5,-2.1
+2009 F1,Robert Kubica,Sauber BMW,8.9,8.4,8.7,8,5.8,5,-2
+2009 F1,Nick Heidfeld,Sauber BMW,8.7,8.2,8.7,8,5.8,5,-2
+2009 F1,Fernando Alonso,Renault,9.5,9.2,8.6,7.9,5.1,4.3,-1.8
+2009 F1,Romain Grosjean,Renault,7.9,7.2,8.6,7.9,5.1,4.3,-2.2
+2009 F1,Adrian Sutil,Force India Mercedes,8.2,7.7,8.5,7.9,4.4,4,-1.5
+2009 F1,Vitantonio Liuzzi,Force India Mercedes,7.9,7.2,8.5,7.9,4.4,4,-1.7
+2009 F1,Sébastien Buemi,STR Ferrari,8,7.3,8.3,7.6,3.7,3.7,-1.4
+2009 F1,Sébastien Bourdais,STR Ferrari,8,7.3,8.3,7.6,3.7,3.7,-1.4
+2010 F1,Sebastian Vettel,RBR Renault,9.4,9.1,9.3,8.8,10,9.7,-1.1
+2010 F1,Mark Webber,RBR Renault,9.1,8.8,9.3,8.8,10,9.7,-1.1
+2010 F1,Lewis Hamilton,McLaren Mercedes,9.5,9.2,9.3,8.9,9.3,9,-1
+2010 F1,Jenson Button,McLaren Mercedes,9.2,8.9,9.3,8.9,9.3,9,-1
+2010 F1,Fernando Alonso,Ferrari,9.6,9.3,9.3,8.9,8.6,8,-1.3
+2010 F1,Felipe Massa,Ferrari,8.9,8.4,9.3,8.9,8.6,8,-1.5
+2010 F1,Nico Rosberg,Mercedes,9,8.5,9,8.4,7.9,7,-2
+2010 F1,Michael Schumacher,Mercedes,8.7,8.2,9,8.4,7.9,7,-2
+2010 F1,Robert Kubica,Renault,9.3,9,8.9,8.3,7.2,6.3,-1.8
+2010 F1,Vitaly Petrov,Renault,8,7.3,8.9,8.3,7.2,6.3,-2.2
+2010 F1,Adrian Sutil,Force India Mercedes,8.6,8.1,8.8,8.2,6.5,5.5,-2.1
+2010 F1,Vitantonio Liuzzi,Force India Mercedes,8,7.3,8.8,8.2,6.5,5.5,-2.3
+2010 F1,Rubens Barrichello,Williams Cosworth,8.8,8.3,8.8,8.1,5.8,5,-2
+2010 F1,Nico Hülkenberg,Williams Cosworth,8.7,8.2,8.8,8.1,5.8,5,-2
+2010 F1,Kamui Kobayashi,Sauber Ferrari,8.7,8.2,8.6,7.9,5.1,4.3,-2
+2010 F1,Nick Heidfeld,Sauber Ferrari,8.5,8,8.6,7.9,5.1,4.3,-2
+2010 F1,Sébastien Buemi,STR Ferrari,8.3,7.8,8.5,7.8,4.4,4,-1.6
+2010 F1,Jaime Alguersuari,STR Ferrari,8,7.3,8.5,7.8,4.4,4,-1.8
+2010 F1,Heikki Kovalainen,Lotus Cosworth,8.3,7.8,7.9,7,3.7,3.7,-1.4
+2010 F1,Jarno Trulli,Lotus Cosworth,8.2,7.7,7.9,7,3.7,3.7,-1.4
+2010 F1,Timo Glock,Virgin Cosworth,8.3,7.8,7.4,6.3,3,3,-1.6
+2010 F1,Lucas di Grassi,Virgin Cosworth,7.6,6.9,7.4,6.3,3,3,-1.8
+2010 F1,Christian Klien,HRT Cosworth,7.9,7.2,7.1,6,2.3,2.3,-1.8
+2010 F1,Bruno Senna,HRT Cosworth,7.5,6.8,7.1,6,2.3,2.3,-1.8
+2026 F1,Kimi Antonelli,Mercedes,9,8.5,9.1,8.6,10,9.7,-1.3
+2026 F1,George Russell,Mercedes,9,8.5,9.1,8.6,10,9.7,-1.3
+2026 F1,Lewis Hamilton,Ferrari,9.3,9,8.9,8.2,9.3,9,-1.3
+2026 F1,Charles Leclerc,Ferrari,9.1,8.8,8.9,8.2,9.3,9,-1.3
+2026 F1,Oscar Piastri,McLaren,9,8.5,8.8,8.1,8.6,8,-1.8
+2026 F1,Lando Norris,McLaren,9,8.5,8.8,8.1,8.6,8,-1.8
+2026 F1,Max Verstappen,Red Bull Racing,9.7,9.4,8.5,7.8,7.9,7,-1.9
+2026 F1,Isack Hadjar,Red Bull Racing,8.2,7.7,8.5,7.8,7.9,7,-2.1
+2026 F1,Pierre Gasly,Alpine,8.4,7.9,7.7,6.7,7.2,6.3,-2.4
+2026 F1,Franco Colapinto,Alpine,7.9,7.2,7.7,6.7,7.2,6.3,-2.6
+2026 F1,Liam Lawson,Racing Bulls,8,7.3,7.5,6.5,6.5,5.5,-2.7
+2026 F1,Arvid Lindblad,Racing Bulls,7.7,7,7.5,6.5,6.5,5.5,-2.7
+2026 F1,Esteban Ocon,Haas F1 Team,8.1,7.6,7.3,6.3,5.8,5,-2.3
+2026 F1,Oliver Bearman,Haas F1 Team,7.9,7.2,7.3,6.3,5.8,5,-2.5
+2026 F1,Carlos Sainz,Williams,8.7,8.2,7.2,6.1,5.1,4.3,-2.4
+2026 F1,Alexander Albon,Williams,8.3,7.8,7.2,6.1,5.1,4.3,-2.4
+2026 F1,Nico Hulkenberg,Audi,8.1,7.6,6.8,5.6,4.4,4,-2.1
+2026 F1,Gabriel Bortoleto,Audi,7.6,6.9,6.8,5.6,4.4,4,-2.3
+2026 F1,Fernando Alonso,Aston Martin,9.1,8.8,6.7,5.5,3.7,3.7,-1.5
+2026 F1,Lance Stroll,Aston Martin,7.3,6.6,6.7,5.5,3.7,3.7,-1.9
+2026 F1,Sergio Perez,Cadillac,8.1,7.6,6.1,5,3,3,-1.6
+2026 F1,Valtteri Bottas,Cadillac,8.1,7.6,6.1,5,3,3,-1.6
+2026 IndyCar,Alex Palou,Chip Ganassi Racing,9.7,9.4,9.6,9.1,9,8.4,-1.4
+2026 IndyCar,Scott Dixon,Chip Ganassi Racing,9.3,9,9.6,9.1,9,8.4,-1.4
+2026 IndyCar,Kyffin Simpson,Chip Ganassi Racing,7,6.2,9.6,9.1,9,8.4,-1.9
+2026 IndyCar,Josef Newgarden,Team Penske,8.4,7.9,9.6,9.1,10,9.7,-1.3
+2026 IndyCar,Scott McLaughlin,Team Penske,8.3,7.8,9.6,9.1,10,9.7,-1.3
+2026 IndyCar,David Malukas,Team Penske,8.1,7.6,9.6,9.1,10,9.7,-1.3
+2026 IndyCar,Pato O'Ward,Arrow McLaren,8.5,8,8.4,7.5,10,9.7,-1.7
+2026 IndyCar,Christian Lundgaard,Arrow McLaren,8.3,7.8,8.4,7.5,10,9.7,-1.7
+2026 IndyCar,Nolan Siegel,Arrow McLaren,7,6.2,8.4,7.5,10,9.7,-2
+2026 IndyCar,Kyle Kirkwood,Andretti Global,8.3,7.8,8.2,7.3,9,8.4,-2
+2026 IndyCar,Will Power,Andretti Global,8.3,7.8,8.2,7.3,9,8.4,-2
+2026 IndyCar,Marcus Ericsson,Andretti Global,7.9,7.2,8.2,7.3,9,8.4,-2.2
+2026 IndyCar,Felix Rosenqvist,Meyer Shank Racing,8.2,7.7,8,7,8,7.1,-2.4
+2026 IndyCar,Marcus Armstrong,Meyer Shank Racing,7.8,7.1,8,7,8,7.1,-2.6
+2026 IndyCar,Graham Rahal,Rahal Letterman Lanigan Racing,7.6,6.9,7.8,6.8,8,7.1,-2.6
+2026 IndyCar,Mick Schumacher,Rahal Letterman Lanigan Racing,7.5,6.8,7.8,6.8,8,7.1,-2.6
+2026 IndyCar,Louis Foster,Rahal Letterman Lanigan Racing,7.4,6.7,7.8,6.8,8,7.1,-2.6
+2026 IndyCar,Santino Ferrucci,A.J. Foyt Enterprises,7.6,6.9,7.4,6.3,7,6,-2.8
+2026 IndyCar,Caio Collet,A.J. Foyt Enterprises,7.3,6.6,7.4,6.3,7,6,-2.8
+2026 IndyCar,Alexander Rossi,ECR,7.9,7.2,7.4,6.3,7,6,-2.8
+2026 IndyCar,Christian Rasmussen,ECR,7,6.2,7.4,6.3,7,6,-2.9
+2026 IndyCar,Rinus VeeKay,Juncos Hollinger Racing,7.6,6.9,6.8,5.6,6,5.2,-2.7
+2026 IndyCar,Sting Ray Robb,Juncos Hollinger Racing,6.2,5.4,6.8,5.6,6,5.2,-2.8
+2026 IndyCar,Dennis Hauger,Dale Coyne Racing,7.4,6.7,6.4,5.3,6,5.2,-2.6
+2026 IndyCar,Romain Grosjean,Dale Coyne Racing,7.4,6.7,6.4,5.3,6,5.2,-2.6
