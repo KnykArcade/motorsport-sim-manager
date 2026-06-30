@@ -104,4 +104,6 @@ export type WeekendPractice = {
   raceId: string;
   sessions: PracticeSession[];
   knowledge: WeekendKnowledge;
+  // Practice laps consumed so far this weekend (against the weekend lap budget).
+  lapsUsed?: number;
 };

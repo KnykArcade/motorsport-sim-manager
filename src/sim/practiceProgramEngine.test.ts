@@ -8,13 +8,18 @@ import {
   defaultAssignments,
   emptyKnowledge,
   generatePracticeFeedback,
+  practiceLapBudget,
   practiceSetupConfidenceBonus,
+  recommendedPracticeProgram,
   runDriverProgram,
   runPracticeSession,
+  sessionLapCost,
+  teamKnowledgeGaps,
   updateDriverConfidenceFromPractice,
   weekendSessionKinds,
   type DriverProgramContext,
 } from './practiceProgramEngine';
+import { makeWeatherState } from './weatherEngine';
 import type { PracticeSession } from '../types/practiceTypes';
 
 const track = tracks1995[0];
@@ -139,5 +144,77 @@ describe('runPracticeSession', () => {
     });
     expect(results).toHaveLength(2);
     expect(new Set(results.map((r) => r.driverId))).toEqual(new Set(ids));
+  });
+});
+
+describe('wet-weather payoff', () => {
+  it('boosts Wet-Weather Preparation confidence when the race is forecast wet', () => {
+    const dry = runDriverProgram(ctx({ raceWet: false }), 'WetWeatherPreparation', 12, createSeededRandom('w'));
+    const wet = runDriverProgram(ctx({ raceWet: true }), 'WetWeatherPreparation', 12, createSeededRandom('w'));
+    expect(wet.confidenceGain).toBeGreaterThan(dry.confidenceGain);
+    expect(wet.feedback.some((f) => /wet-weather/i.test(f.message))).toBe(true);
+  });
+
+  it('does not change other programs based on the wet flag', () => {
+    const dry = runDriverProgram(ctx({ raceWet: false }), 'SetupExploration', 14, createSeededRandom('w'));
+    const wet = runDriverProgram(ctx({ raceWet: true }), 'SetupExploration', 14, createSeededRandom('w'));
+    expect(wet.confidenceGain).toBe(dry.confidenceGain);
+  });
+});
+
+describe('recommendedPracticeProgram', () => {
+  const noKnowledge = { setup: 0, tire: 0, reliability: 0 };
+
+  it('recommends wet-weather prep when the relevant session is wet', () => {
+    const rec = recommendedPracticeProgram('Practice1', track, makeWeatherState('HeavyRain'), noKnowledge);
+    expect(rec.program).toBe('WetWeatherPreparation');
+  });
+
+  it('recommends a qualifying sim before qualifying', () => {
+    const rec = recommendedPracticeProgram('QualifyingPrep', track, makeWeatherState('Dry'), noKnowledge);
+    expect(rec.program).toBe('QualifyingSimulation');
+  });
+
+  it('addresses the biggest knowledge gap in the dry', () => {
+    // Setup already mastered, tyre unknown -> gather tyre data.
+    const rec = recommendedPracticeProgram(
+      'Practice1',
+      track,
+      makeWeatherState('Dry'),
+      { setup: 1, tire: 0, reliability: 1 },
+    );
+    expect(rec.program).toBe('TireWearAnalysis');
+  });
+
+  it('always returns a reason', () => {
+    const rec = recommendedPracticeProgram('Practice1', track, undefined, noKnowledge);
+    expect(rec.reason.length).toBeGreaterThan(0);
+  });
+});
+
+describe('practice lap budget', () => {
+  it('scales with car count and gives modern eras more running than classic', () => {
+    expect(practiceLapBudget(2026, 'F1', 2)).toBeGreaterThan(practiceLapBudget(1995, 'F1', 2));
+    expect(practiceLapBudget(2026, 'F1', 2)).toBe(practiceLapBudget(2026, 'F1', 1) * 2);
+  });
+
+  it('sums planned laps for a session', () => {
+    const cost = sessionLapCost([
+      { driverId: 'a', program: 'SetupExploration', lapsPlanned: 14 },
+      { driverId: 'b', program: 'QualifyingSimulation', lapsPlanned: 6 },
+    ]);
+    expect(cost).toBe(20);
+  });
+});
+
+describe('teamKnowledgeGaps', () => {
+  it('averages each axis across the team drivers', () => {
+    const k = emptyKnowledge('r1');
+    k.setupKnowledge = { a: 0.4, b: 0.6 };
+    k.tireKnowledge = { a: 0.2, b: 0.2 };
+    const gaps = teamKnowledgeGaps(k, ['a', 'b']);
+    expect(gaps.setup).toBeCloseTo(0.5, 5);
+    expect(gaps.tire).toBeCloseTo(0.2, 5);
+    expect(gaps.reliability).toBe(0);
   });
 });

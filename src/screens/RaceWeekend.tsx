@@ -16,6 +16,10 @@ import {
   SESSION_LABELS,
   ALL_PROGRAMS,
   PROGRAM_META,
+  practiceLapBudget,
+  sessionLapCost,
+  teamKnowledgeGaps,
+  recommendedPracticeProgram,
 } from '../sim/practiceProgramEngine';
 import type {
   PracticeProgram,
@@ -181,6 +185,7 @@ export function RaceWeekend() {
           state={state}
           dispatch={dispatch}
           track={track}
+          forecast={forecast}
           onBack={() => setPhase('briefing')}
           onNext={() => setPhase('setup')}
         />
@@ -363,12 +368,15 @@ const SENTIMENT_STYLE: Record<FeedbackSentiment, string> = {
 function PracticePhase({
   state,
   dispatch,
+  track,
+  forecast,
   onBack,
   onNext,
 }: {
   state: NonNullable<ReturnType<typeof useGame>['state']>;
   dispatch: ReturnType<typeof useGame>['dispatch'];
   track: Track;
+  forecast?: WeekendForecast;
   onBack: () => void;
   onNext: () => void;
 }) {
@@ -391,6 +399,23 @@ function PracticePhase({
     for (const s of wp?.sessions ?? []) if (s.completed) m[s.kind] = s;
     return m;
   }, [wp]);
+
+  const lapBudget = practiceLapBudget(state.seasonYear, state.series, players.length);
+  const lapsUsed = wp?.lapsUsed ?? 0;
+  const lapsRemaining = Math.max(0, lapBudget - lapsUsed);
+
+  const gaps = useMemo(
+    () => teamKnowledgeGaps(wp?.knowledge, players.map((d) => d.id)),
+    [wp, players],
+  );
+
+  // The forecast session whose conditions are most relevant to a practice kind.
+  const weatherForKind = (kind: PracticeSessionKind) => {
+    if (!forecast) return undefined;
+    if (kind === 'QualifyingPrep' || kind === 'Practice3') return forecast.Qualifying;
+    if (kind === 'Warmup' || kind === 'RaceSimulation') return forecast.Race;
+    return forecast.Practice;
+  };
 
   // Local per-session program selections, defaulted to a sensible spread.
   const [assignments, setAssignments] = useState<Record<string, Record<string, PracticeProgram>>>(
@@ -434,6 +459,27 @@ function PracticePhase({
         </p>
       </div>
 
+      <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-neutral-800 bg-neutral-900/40 px-3 py-2">
+        <div className="text-sm">
+          <span className="text-neutral-400">Practice laps remaining</span>{' '}
+          <span className={`font-semibold ${lapsRemaining <= 0 ? 'text-red-400' : 'text-neutral-100'}`}>
+            {lapsRemaining}
+          </span>{' '}
+          <span className="text-neutral-500">/ {lapBudget}</span>
+        </div>
+        <div className="h-2 w-40 overflow-hidden rounded-full bg-neutral-800">
+          <div
+            className="h-full bg-amber-500"
+            style={{ width: `${lapBudget > 0 ? (lapsUsed / lapBudget) * 100 : 0}%` }}
+          />
+        </div>
+      </div>
+      {lapsRemaining <= 0 && (
+        <p className="text-xs text-red-400">
+          Practice budget spent — no laps left to run further sessions this weekend.
+        </p>
+      )}
+
       {players.map((d) => {
         const k = wp?.knowledge;
         const conf = state.drivers.find((x) => x.id === d.id)?.confidence ?? d.confidence;
@@ -462,6 +508,16 @@ function PracticePhase({
 
       {kinds.map((kind) => {
         const done = completedByKind[kind];
+        const rec = recommendedPracticeProgram(kind, track, weatherForKind(kind), gaps);
+        const sel = assignments[kind] ?? {};
+        const cost = sessionLapCost(
+          players.map((d) => ({
+            driverId: d.id,
+            program: sel[d.id] ?? 'SetupExploration',
+            lapsPlanned: PROGRAM_META[sel[d.id] ?? 'SetupExploration'].defaultLaps,
+          })),
+        );
+        const overBudget = cost > lapsRemaining;
         return (
           <Panel key={kind} title={SESSION_LABELS[kind]}>
             {done ? (
@@ -489,6 +545,18 @@ function PracticePhase({
               </div>
             ) : (
               <div className="space-y-3">
+                <div className="flex flex-wrap items-center justify-between gap-2 rounded-md border border-green-500/30 bg-green-500/10 px-3 py-1.5 text-xs text-green-300">
+                  <span>
+                    <span className="font-semibold">Engineer recommends {PROGRAM_LABELS[rec.program]}:</span>{' '}
+                    {rec.reason}
+                  </span>
+                  <button
+                    className="rounded border border-green-500/40 px-2 py-0.5 font-semibold text-green-200 hover:bg-green-500/20"
+                    onClick={() => players.forEach((d) => setProgram(kind, d.id, rec.program))}
+                  >
+                    Use for both cars
+                  </button>
+                </div>
                 {players.map((d) => (
                   <div key={d.id} className="flex items-center justify-between gap-3">
                     <span className="text-sm text-neutral-200">
@@ -502,13 +570,17 @@ function PracticePhase({
                       {ALL_PROGRAMS.map((p) => (
                         <option key={p} value={p}>
                           {PROGRAM_LABELS[p]}
+                          {p === rec.program ? ' (recommended)' : ''}
                         </option>
                       ))}
                     </select>
                   </div>
                 ))}
-                <div className="flex justify-end">
-                  <Button variant="primary" onClick={() => runSession(kind)}>
+                <div className="flex items-center justify-end gap-3">
+                  <span className={`text-xs ${overBudget ? 'text-red-400' : 'text-neutral-500'}`}>
+                    {cost} laps {overBudget ? `· over budget (${lapsRemaining} left)` : `· ${lapsRemaining} left`}
+                  </span>
+                  <Button variant="primary" disabled={overBudget} onClick={() => runSession(kind)}>
                     Run {SESSION_LABELS[kind]}
                   </Button>
                 </div>

@@ -76,8 +76,11 @@ import { BALANCED_SETUP } from '../data/setup/setupComponents';
 import {
   accumulateKnowledge,
   emptyKnowledge,
+  practiceLapBudget,
   runPracticeSession,
+  sessionLapCost,
 } from '../sim/practiceProgramEngine';
+import { weekendForecast } from '../sim/weatherEngine';
 
 export type GameAction =
   | { type: 'NEW_GAME'; options: NewGameOptions }
@@ -137,7 +140,7 @@ function runPracticeSessionAction(
 
   let wp = state.weekendPractice;
   if (!wp || wp.raceId !== raceId) {
-    wp = { raceId, sessions: [], knowledge: emptyKnowledge(raceId) };
+    wp = { raceId, sessions: [], knowledge: emptyKnowledge(raceId), lapsUsed: 0 };
   }
   if (wp.sessions.some((s) => s.kind === kind && s.completed)) return state;
 
@@ -149,6 +152,14 @@ function runPracticeSessionAction(
     setupsById[d.id] = state.carSetups?.[d.id] ?? BALANCED_SETUP;
   }
   const validAssignments = assignments.filter((a) => driversById[a.driverId]);
+
+  // Enforce the weekend practice lap budget: a session can't be run if it would
+  // exceed the remaining laps.
+  const budget = practiceLapBudget(state.seasonYear, state.series, players.length);
+  const lapsUsed = wp.lapsUsed ?? 0;
+  const cost = sessionLapCost(validAssignments);
+  if (lapsUsed + cost > budget) return state;
+
   const session: PracticeSession = {
     id: `${raceId}-${kind}`,
     raceId,
@@ -157,6 +168,7 @@ function runPracticeSessionAction(
     completed: true,
   };
 
+  const raceWet = weekendForecast(track, `${state.randomSeed}-r${race.round}`).Race.wet;
   const results = runPracticeSession(session, {
     raceId,
     track,
@@ -164,6 +176,7 @@ function runPracticeSessionAction(
     driversById,
     setupsById,
     knowledge: wp.knowledge,
+    raceWet,
   });
   session.results = results;
 
@@ -178,7 +191,11 @@ function runPracticeSessionAction(
   );
 
   const sessions = [...wp.sessions.filter((s) => s.kind !== kind), session];
-  return { ...state, drivers, weekendPractice: { raceId, sessions, knowledge } };
+  return {
+    ...state,
+    drivers,
+    weekendPractice: { raceId, sessions, knowledge, lapsUsed: lapsUsed + cost },
+  };
 }
 
 function buildEntrants(state: GameState): Entrant[] {
