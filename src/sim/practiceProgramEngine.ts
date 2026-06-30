@@ -8,6 +8,7 @@
 
 import type { Driver, Track } from '../types/gameTypes';
 import type { CarSetup } from '../types/setupTypes';
+import type { WeatherState } from '../types/liveTypes';
 import type {
   FeedbackSentiment,
   FeedbackTopic,
@@ -184,6 +185,8 @@ export type DriverProgramContext = {
   priorSetupKnowledge: number;
   priorTireKnowledge: number;
   priorReliabilityKnowledge: number;
+  // Whether the race is forecast to be wet; makes Wet-Weather Preparation pay off.
+  raceWet?: boolean;
 };
 
 // Run one driver's assigned program. Pure + deterministic given the rng.
@@ -216,18 +219,32 @@ export function runDriverProgram(
   const tireKnowledgeGain = gain(ctx.priorTireKnowledge, meta.tire);
   const reliabilityKnowledgeGain = gain(ctx.priorReliabilityKnowledge, meta.reliability);
 
+  // Wet-Weather Preparation pays off when the race is forecast wet: the driver
+  // banks valuable running and goes in more confident for the conditions.
+  const wetPayoff = program === 'WetWeatherPreparation' && ctx.raceWet ? 3 : 0;
+
   const confidenceGain = r1(
     clamp(
       (fit.confidence - 60) / 12 +
         meta.confidence * 2.5 +
+        wetPayoff +
         (incident ? -5 : 0) +
         rng.variance(1.5),
       -6,
-      8,
+      11,
     ),
   );
 
   const feedback = generatePracticeFeedback(ctx.driver, ctx.setup, ctx.track, program, rng);
+  if (wetPayoff > 0) {
+    feedback.unshift({
+      id: `${ctx.driver.id}-${program}-wet`,
+      driverId: ctx.driver.id,
+      topic: 'Confidence',
+      sentiment: 'Positive',
+      message: 'Banked valuable wet-weather running — the driver is ready if it rains on Sunday.',
+    });
+  }
   if (incident) {
     feedback.unshift({
       id: `${ctx.driver.id}-${program}-incident`,
@@ -259,6 +276,8 @@ export type SessionContext = {
   driversById: Record<string, Driver>;
   setupsById: Record<string, CarSetup>;
   knowledge: WeekendKnowledge;
+  // Whether the race is forecast wet (rewards Wet-Weather Preparation).
+  raceWet?: boolean;
 };
 
 // Run a full session: every assignment is simulated against the current
@@ -285,6 +304,7 @@ export function runPracticeSession(
           priorSetupKnowledge: ctx.knowledge.setupKnowledge[a.driverId] ?? 0,
           priorTireKnowledge: ctx.knowledge.tireKnowledge[a.driverId] ?? 0,
           priorReliabilityKnowledge: ctx.knowledge.reliabilityKnowledge[a.driverId] ?? 0,
+          raceWet: ctx.raceWet,
         },
         a.program,
         a.lapsPlanned,
@@ -387,4 +407,85 @@ function defaultProgramForSession(kind: PracticeSessionKind): PracticeProgram {
     default:
       return 'SetupExploration';
   }
+}
+
+function weatherIsWet(w?: WeatherState): boolean {
+  return !!w && (w.condition === 'LightRain' || w.condition === 'HeavyRain');
+}
+
+// The team's average weekend knowledge (0-1) on each axis, used to spot the
+// biggest gap to address next.
+export type KnowledgeGaps = { setup: number; tire: number; reliability: number };
+
+export function teamKnowledgeGaps(knowledge: WeekendKnowledge | undefined, driverIds: string[]): KnowledgeGaps {
+  if (!knowledge || driverIds.length === 0) return { setup: 0, tire: 0, reliability: 0 };
+  const avg = (m: Record<string, number>) =>
+    driverIds.reduce((s, id) => s + (m[id] ?? 0), 0) / driverIds.length;
+  return {
+    setup: avg(knowledge.setupKnowledge),
+    tire: avg(knowledge.tireKnowledge),
+    reliability: avg(knowledge.reliabilityKnowledge),
+  };
+}
+
+export type ProgramRecommendation = { program: PracticeProgram; reason: string };
+
+// The engineer's recommended program for a session, given the forecast for the
+// relevant session, the track's demands, and the team's current knowledge gaps.
+export function recommendedPracticeProgram(
+  kind: PracticeSessionKind,
+  track: Track,
+  weather: WeatherState | undefined,
+  gaps: KnowledgeGaps,
+): ProgramRecommendation {
+  if (weatherIsWet(weather)) {
+    return { program: 'WetWeatherPreparation', reason: 'Rain forecast — bank wet-weather running while you can.' };
+  }
+  if (kind === 'QualifyingPrep' || kind === 'Practice3') {
+    return { program: 'QualifyingSimulation', reason: 'Qualifying is next — dial in a single-lap setup.' };
+  }
+  if (kind === 'Warmup') {
+    return { program: 'DriverConfidenceRun', reason: 'Final tune-up — build the driver up for the race.' };
+  }
+
+  // Otherwise address the biggest knowledge gap, weighted by the circuit's
+  // demands (high-deg tracks prize tyre data; endurance tracks prize reliability).
+  const highDeg = track.attributes.enduranceConsistency >= 7 || track.attributes.tractionAcceleration >= 8;
+  const enduranceRisk = track.attributes.enduranceConsistency >= 7 || track.attributes.riskWallProximity >= 7;
+  const setupNeed = (1 - gaps.setup) * 1.1;
+  const tireNeed = (1 - gaps.tire) * (highDeg ? 1.35 : 1);
+  const relNeed = (1 - gaps.reliability) * (enduranceRisk ? 1.3 : 0.85);
+
+  if (tireNeed >= setupNeed && tireNeed >= relNeed) {
+    return {
+      program: 'TireWearAnalysis',
+      reason: highDeg ? 'High tyre wear here — gather degradation data.' : 'Tyre knowledge is thin — log some long-run data.',
+    };
+  }
+  if (relNeed >= setupNeed && relNeed >= tireNeed) {
+    return {
+      program: 'ReliabilityShakedown',
+      reason: enduranceRisk ? 'Hard on the car here — shake down reliability.' : 'Verify reliability before committing to a plan.',
+    };
+  }
+  return { program: 'SetupExploration', reason: 'Setup is still unknown — explore the balance window first.' };
+}
+
+// The weekend's practice lap budget (per car), era/series-scaled. Modern weekends
+// have generous running; classic eras and IndyCar have tighter pools — so you
+// cannot run every program on every car and must triage what to learn.
+export function practiceLapBudgetPerCar(year: number, series: string): number {
+  if (series === 'IndyCar') return 40;
+  if (year >= 2006) return 46;
+  return 38; // classic F1
+}
+
+// Total lap budget for the weekend across the player's cars.
+export function practiceLapBudget(year: number, series: string, carCount: number): number {
+  return practiceLapBudgetPerCar(year, series) * Math.max(1, carCount);
+}
+
+// Laps a planned session would consume (sum of its assignments).
+export function sessionLapCost(assignments: PracticeAssignment[]): number {
+  return assignments.reduce((s, a) => s + a.lapsPlanned, 0);
 }
