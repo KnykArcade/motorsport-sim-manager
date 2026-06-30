@@ -111,6 +111,8 @@ export type GameState = {
   // 5. Team Principal profile + outstanding job offers/rumors.
   principal?: TeamPrincipalProfile;
   jobOffers?: JobOffer[];
+  // A job offer the player has accepted; the move takes effect at the rollover.
+  acceptedJobOfferId?: string;
   // 6. Facilities (player team).
   facilities?: FacilitiesState;
   // 7. Tire/fuel/weather strategy is per-race (built at runtime); no persisted

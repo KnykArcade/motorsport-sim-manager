@@ -9,6 +9,7 @@ import { buildInitialCommercial } from '../sim/commercialEngine';
 import { buildTeamReputations, buildTeamExpectations } from '../sim/expectationEngine';
 import { createInitialFacilities } from '../sim/facilityEngine';
 import { applyEngineBonuses, createInitialEngineState } from '../sim/engineSupplierEngine';
+import { createPrincipalProfile, generateJobOffers } from '../sim/principalEngine';
 
 // Deep clone via structuredClone (available in modern browsers / Node 18+).
 function clone<T>(value: T): T {
@@ -59,6 +60,15 @@ export function createNewGame(options: NewGameOptions): GameState {
   );
   const cars = applyEngineBonuses(clone(bundle.cars), engine);
 
+  // Team Principal job market (Living Universe Phase 6): the player's own
+  // manager profile plus the rival approaches their reputation attracts.
+  const principal = playerTeam
+    ? createPrincipalProfile(playerTeam, teamReputations, options.seasonYear, seed)
+    : undefined;
+  const jobOffers = principal
+    ? generateJobOffers(principal, bundle.teams, teamReputations, options.seasonYear, seed)
+    : undefined;
+
   return {
     id: `save-${Date.now()}`,
     createdAt: now,
@@ -97,6 +107,8 @@ export function createNewGame(options: NewGameOptions): GameState {
     teamExpectations,
     facilities,
     engine,
+    principal,
+    jobOffers,
     randomSeed: seed,
     seasonComplete: false,
   };

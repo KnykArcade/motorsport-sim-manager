@@ -34,10 +34,19 @@ import {
   resolveEngineRollover,
   ENGINE_DEAL_SPECS,
 } from '../sim/engineSupplierEngine';
+import {
+  bestRehireOffer,
+  generateJobOffers,
+  reviewPrincipal,
+  type PrincipalSeasonOutcome,
+} from '../sim/principalEngine';
+import { buildInitialCommercial } from '../sim/commercialEngine';
+import { createInitialFacilities } from '../sim/facilityEngine';
 import type { Car, Driver, OffseasonSummary, Team } from '../types/gameTypes';
 import type { AcademyMember } from '../types/marketTypes';
 import type { FinanceTransaction } from '../types/financeTypes';
 import type { CommercialState } from '../types/sponsorTypes';
+import type { CarSetup } from '../types/setupTypes';
 import type { ExpectationReview, TeamExpectation, TeamReputation } from '../types/expectationTypes';
 import { carForTeam, type GameState } from './careerState';
 
@@ -293,6 +302,7 @@ export function advanceSeason(state: GameState): GameState {
   // fresh expectations for the upcoming season.
   const expectationReviews: ExpectationReview[] = [...(state.expectationReviews ?? [])];
   let teamReputations: Record<string, TeamReputation> | undefined = state.teamReputations;
+  let playerReview: ExpectationReview | undefined;
   if (playerTeam && state.teamExpectations?.[playerTeam.id]) {
     const exp = state.teamExpectations[playerTeam.id];
     const idx = state.constructorStandings.findIndex((s) => s.entityId === playerTeam.id);
@@ -302,6 +312,7 @@ export function advanceSeason(state: GameState): GameState {
       points: standing?.points ?? 0,
       wins: standing?.wins ?? 0,
     });
+    playerReview = review;
     expectationReviews.push(review);
     commercialNotes.push(review.summary);
     const patience = applyPatience(state.teamReputations?.[playerTeam.id], exp, review);
@@ -318,6 +329,80 @@ export function advanceSeason(state: GameState): GameState {
       const patience = teamReputations[id]?.ownerPatience;
       if (patience !== undefined) nextExpectations[id] = { ...nextExpectations[id], ownerPatience: patience };
     }
+  }
+
+  // Team Principal review: the owner judges your season, moving job security and
+  // reputation and possibly renewing or sacking you. If you accepted a rival
+  // offer (or were sacked but another team still wants you) you change teams for
+  // the new season. Fresh approaches are generated for next year.
+  let nextPrincipal = state.principal;
+  let nextJobOffers = state.jobOffers;
+  let moveTeamId: string | undefined;
+  const principalNotes: string[] = [];
+  if (nextPrincipal && playerTeam && playerReview) {
+    const champDriver = state.driverStandings[0];
+    const champDriverTeam = champDriver
+      ? state.drivers.find((d) => d.id === champDriver.entityId)?.teamId
+      : undefined;
+    const standingIdx = state.constructorStandings.findIndex((s) => s.entityId === playerTeam.id);
+    const playerStandingRow = standingIdx >= 0 ? state.constructorStandings[standingIdx] : undefined;
+    const podiums = Object.values(state.completedRaceResults).reduce(
+      (sum, res) =>
+        sum +
+        res.filter((r) => r.teamId === playerTeam.id && r.position != null && r.position >= 1 && r.position <= 3)
+          .length,
+      0,
+    );
+    const outcome: PrincipalSeasonOutcome = {
+      wins: playerStandingRow?.wins ?? 0,
+      podiums,
+      driverTitle: champDriverTeam === playerTeam.id,
+      constructorTitle: state.constructorStandings[0]?.entityId === playerTeam.id,
+    };
+
+    const reviewed = reviewPrincipal(nextPrincipal, playerReview, outcome);
+    nextPrincipal = reviewed.profile;
+    principalNotes.push(...reviewed.notes);
+
+    // Decide whether the principal changes teams next season.
+    const accepted = state.acceptedJobOfferId
+      ? (state.jobOffers ?? []).find((o) => o.id === state.acceptedJobOfferId && o.kind === 'Offer')
+      : undefined;
+    if (accepted) {
+      moveTeamId = accepted.teamId;
+      const dest = state.teams.find((t) => t.id === accepted.teamId);
+      principalNotes.push(`You accepted the job at ${dest?.name ?? 'a new team'} for ${nextYear}.`);
+    } else if (reviewed.status === 'sacked') {
+      const rehire = bestRehireOffer(state.jobOffers ?? []);
+      if (rehire) {
+        moveTeamId = rehire.teamId;
+        const dest = state.teams.find((t) => t.id === rehire.teamId);
+        principalNotes.push(`After being let go, ${dest?.name ?? 'another team'} have hired you for ${nextYear}.`);
+      } else {
+        // No rival wants you: a one-year probation lifeline at the same team.
+        nextPrincipal = { ...nextPrincipal, jobSecurity: 35, contractYearsRemaining: 1 };
+        principalNotes.push('No rival team came calling — the board grants you one final year on probation.');
+      }
+    }
+
+    // Move the principal's record/contract to the destination team.
+    if (moveTeamId) {
+      nextPrincipal = {
+        ...nextPrincipal,
+        currentTeamId: moveTeamId,
+        contractYearsRemaining: accepted?.contractYears ?? 2,
+        jobSecurity: Math.max(nextPrincipal.jobSecurity, 50),
+        careerStats: {
+          ...nextPrincipal.careerStats,
+          teamsManaged: nextPrincipal.careerStats.teamsManaged.includes(moveTeamId)
+            ? nextPrincipal.careerStats.teamsManaged
+            : [...nextPrincipal.careerStats.teamsManaged, moveTeamId],
+        },
+      };
+    }
+
+    // Generate next season's approaches from the principal's new standing.
+    nextJobOffers = generateJobOffers(nextPrincipal, teams, teamReputations, nextYear, state.randomSeed);
   }
 
   // Load next year's real schedule (and its points system / regulations) when
@@ -350,11 +435,12 @@ export function advanceSeason(state: GameState): GameState {
       ...facilityNotes,
       ...engineNotes,
       ...commercialNotes,
+      ...principalNotes,
     ],
   };
 
   const now = new Date().toISOString();
-  return {
+  const nextState: GameState = {
     ...state,
     updatedAt: now,
     seasonYear: nextYear,
@@ -373,6 +459,9 @@ export function advanceSeason(state: GameState): GameState {
     teamExpectations: nextExpectations ?? state.teamExpectations,
     teamReputations,
     expectationReviews,
+    principal: nextPrincipal,
+    jobOffers: nextJobOffers,
+    acceptedJobOfferId: undefined,
     carSetups,
     academy: nextAcademy,
     pendingSignings: [],
@@ -397,5 +486,37 @@ export function advanceSeason(state: GameState): GameState {
       },
       ...state.news,
     ].slice(0, 50),
+  };
+
+  // If the principal switched teams, re-point the player-scoped systems
+  // (selected team, setups, commercial, facilities, engine deal) at the new team.
+  return moveTeamId ? applyPrincipalMove(nextState, moveTeamId) : nextState;
+}
+
+// Switch the player to a new team after a principal move: rebuild the
+// team-scoped systems for the destination team. The principal carries their
+// staff, academy and finance ledger; the new team's drivers, car, budget and
+// engine deal come from the existing universe state.
+function applyPrincipalMove(state: GameState, newTeamId: string): GameState {
+  const newTeam = state.teams.find((t) => t.id === newTeamId);
+  if (!newTeam) return state;
+  const newDrivers = state.drivers.filter((d) => d.teamId === newTeamId);
+
+  const carSetups: Record<string, CarSetup> = {};
+  for (const d of newDrivers) carSetups[d.id] = { ...BALANCED_SETUP };
+
+  const commercial = buildInitialCommercial(newTeam, newDrivers, state.randomSeed, state.series);
+  const facilities = createInitialFacilities(newTeamId, newTeam.reputation);
+  const engine = state.engine
+    ? { ...state.engine, currentDeal: state.engine.deals?.[newTeamId], pendingDeal: undefined }
+    : state.engine;
+
+  return {
+    ...state,
+    selectedTeamId: newTeamId,
+    carSetups,
+    commercial,
+    facilities,
+    engine,
   };
 }

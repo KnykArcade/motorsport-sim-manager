@@ -29,8 +29,10 @@ describe('save model', () => {
     expect(s.facilities).toBeDefined();
     // Phase 5: engine supplier deals are seeded on a new career.
     expect(s.engine).toBeDefined();
+    // Phase 6: the Team Principal profile + job market are seeded on a new career.
+    expect(s.principal).toBeDefined();
+    expect(s.jobOffers).toBeDefined();
     // Systems from later phases remain unset.
-    expect(s.principal).toBeUndefined();
     expect(s.universeHistory).toBeUndefined();
   });
 
