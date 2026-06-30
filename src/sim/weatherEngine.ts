@@ -41,10 +41,11 @@ export function makeWeatherState(condition: WeatherCondition, changingSoon = fal
   };
 }
 
-// Choose the weather at the start of the race. Most races start dry; tracks with
-// a wet/changeable reputation (high risk + endurance demand) lean damper.
-export function initialWeather(track: Track, seed: string): WeatherState {
-  const rng = createSeededRandom(deriveSeed(seed, 'weather-start', track.id));
+// Roll a session's starting weather from a derived key. Most sessions are dry;
+// tracks with a wet/changeable reputation (high risk + endurance demand) lean
+// damper. Deterministic per (seed, key, track).
+function rollSessionWeather(track: Track, seed: string, key: string): WeatherState {
+  const rng = createSeededRandom(deriveSeed(seed, key, track.id));
   const rainProneness =
     (track.attributes.riskWallProximity + track.attributes.enduranceConsistency) / 20; // 0..1
   const roll = rng.next();
@@ -52,6 +53,28 @@ export function initialWeather(track: Track, seed: string): WeatherState {
   if (roll < 0.12 + rainProneness * 0.12) return makeWeatherState('Cloudy', true);
   if (roll < 0.2) return makeWeatherState('Cloudy');
   return makeWeatherState('Dry');
+}
+
+// Choose the weather at the start of the race. Most races start dry; tracks with
+// a wet/changeable reputation (high risk + endurance demand) lean damper.
+export function initialWeather(track: Track, seed: string): WeatherState {
+  return rollSessionWeather(track, seed, 'weather-start');
+}
+
+// The sessions a weekend forecast covers.
+export type WeekendSession = 'Practice' | 'Qualifying' | 'Race';
+
+export type WeekendForecast = Record<WeekendSession, WeatherState>;
+
+// A deterministic three-day forecast for the weekend. The Race entry matches
+// initialWeather (what the Live Race actually starts with), so the forecast and
+// the race never disagree.
+export function weekendForecast(track: Track, seed: string): WeekendForecast {
+  return {
+    Practice: rollSessionWeather(track, seed, 'weather-practice'),
+    Qualifying: rollSessionWeather(track, seed, 'weather-quali'),
+    Race: initialWeather(track, seed),
+  };
 }
 
 // Adjacent transitions, so weather drifts realistically rather than teleporting.

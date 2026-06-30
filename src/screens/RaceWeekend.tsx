@@ -24,15 +24,23 @@ import type {
   PracticeAssignment,
   FeedbackSentiment,
 } from '../types/practiceTypes';
+import { weekendForecast, type WeekendForecast } from '../sim/weatherEngine';
+import {
+  recommendedQualiRunPlan,
+  recommendedRaceStrategy,
+  recommendedInstruction,
+} from '../sim/weekendAdvisorEngine';
 import { Panel } from '../components/Panel';
 import { Button } from '../components/Button';
 import { TrackDemandBars } from '../components/TrackDemandBars';
 import { SetupWorkshop } from '../components/SetupWorkshop';
-import type { Driver, Track } from '../types/gameTypes';
+import type { Driver, Track, StandingsEntry } from '../types/gameTypes';
+import type { WeatherState } from '../types/liveTypes';
 import type { CarSetup } from '../types/setupTypes';
 import type { QualifyingDecision, RaceDecision } from '../types/simTypes';
 
 type Phase =
+  | 'hub'
   | 'briefing'
   | 'practice'
   | 'setup'
@@ -42,6 +50,7 @@ type Phase =
   | 'race-instructions';
 
 const PHASE_ORDER: { id: Phase; label: string }[] = [
+  { id: 'hub', label: 'Weekend Hub' },
   { id: 'briefing', label: 'Track Briefing' },
   { id: 'practice', label: 'Practice' },
   { id: 'setup', label: 'Car Setup' },
@@ -54,10 +63,14 @@ const PHASE_ORDER: { id: Phase; label: string }[] = [
 export function RaceWeekend() {
   const { state, dispatch, settings } = useGame();
   const navigate = useNavigate();
-  const [phase, setPhase] = useState<Phase>('briefing');
+  const [phase, setPhase] = useState<Phase>('hub');
 
   const race = state ? currentRace(state) : undefined;
   const track = race ? getTrackById(race.trackId) : undefined;
+  const forecast = useMemo(
+    () => (track && state && race ? weekendForecast(track, `${state.randomSeed}-r${race.round}`) : undefined),
+    [track, state, race],
+  );
   const playerDrivers = useMemo(
     () => (state ? activeDriversForTeam(state, state.selectedTeamId) : []),
     [state],
@@ -136,6 +149,29 @@ export function RaceWeekend() {
 
       <PhaseStepper phase={phase} hasQuali={!!qualifyingResults} />
 
+      {forecast && phase !== 'hub' && (
+        <ForecastBanner
+          forecast={forecast}
+          highlight={
+            phase === 'practice' || phase === 'setup'
+              ? 'Practice'
+              : phase === 'quali-run' || phase === 'quali-review'
+              ? 'Qualifying'
+              : 'Race'
+          }
+        />
+      )}
+
+      {phase === 'hub' && forecast && (
+        <WeekendHub
+          state={state}
+          race={race}
+          track={track}
+          forecast={forecast}
+          onNext={() => setPhase('briefing')}
+        />
+      )}
+
       {phase === 'briefing' && (
         <Briefing track={track} race={race} onNext={() => setPhase('practice')} />
       )}
@@ -187,6 +223,8 @@ export function RaceWeekend() {
           onSelect={(driverId, optId) =>
             setQualiOverrides((p) => ({ ...p, [driverId]: { ...p[driverId], runPlanId: optId as QualifyingDecision['runPlanId'] } }))
           }
+          recommendedId={recommendedQualiRunPlan(track, forecast?.Qualifying).optionId}
+          recommendedReason={recommendedQualiRunPlan(track, forecast?.Qualifying).reason}
           onBack={() => setPhase('setup')}
           onNext={runQualifying}
           nextLabel="Simulate Qualifying →"
@@ -212,6 +250,8 @@ export function RaceWeekend() {
           onSelect={(driverId, optId) =>
             setRaceOverrides((p) => ({ ...p, [driverId]: { ...p[driverId], strategyId: optId as RaceDecision['strategyId'] } }))
           }
+          recommendedId={recommendedRaceStrategy(track, forecast?.Race).optionId}
+          recommendedReason={recommendedRaceStrategy(track, forecast?.Race).reason}
           onBack={() => setPhase('quali-review')}
           onNext={() => setPhase('race-instructions')}
         />
@@ -227,6 +267,8 @@ export function RaceWeekend() {
           onSelect={(driverId, optId) =>
             setRaceOverrides((p) => ({ ...p, [driverId]: { ...p[driverId], instructionId: optId as RaceDecision['instructionId'] } }))
           }
+          recommendedId={recommendedInstruction(track, forecast?.Race).optionId}
+          recommendedReason={recommendedInstruction(track, forecast?.Race).reason}
           onBack={() => setPhase('race-strategy')}
           onNext={startLiveRace}
           nextLabel="Start Live Race →"
@@ -514,6 +556,7 @@ function DecisionPhase({
   onNext,
   nextLabel = 'Continue →',
   recommendedId,
+  recommendedReason,
 }: {
   title: string;
   subtitle: string;
@@ -525,12 +568,19 @@ function DecisionPhase({
   onNext: () => void;
   nextLabel?: string;
   recommendedId?: string;
+  recommendedReason?: string;
 }) {
+  const recommendedName = options.find((o) => o.id === recommendedId)?.name;
   return (
     <div className="space-y-4">
       <div>
         <h2 className="text-lg font-semibold text-neutral-100">{title}</h2>
         <p className="text-sm text-neutral-400">{subtitle}</p>
+        {recommendedName && recommendedReason && (
+          <p className="mt-2 rounded-md border border-green-500/30 bg-green-500/10 px-3 py-1.5 text-xs text-green-300">
+            <span className="font-semibold">Engineer recommends {recommendedName}:</span> {recommendedReason}
+          </p>
+        )}
       </div>
       <div className="grid gap-4 md:grid-cols-2">
         {drivers.map((d) => (
@@ -566,6 +616,165 @@ function DecisionPhase({
       <div className="flex justify-between">
         <Button variant="ghost" onClick={onBack}>← Back</Button>
         <Button variant="primary" onClick={onNext}>{nextLabel}</Button>
+      </div>
+    </div>
+  );
+}
+
+const WEATHER_TONE: Record<string, string> = {
+  Dry: 'text-sky-300 border-sky-500/30 bg-sky-500/10',
+  Cloudy: 'text-neutral-300 border-neutral-600 bg-neutral-800/60',
+  Drying: 'text-amber-300 border-amber-500/30 bg-amber-500/10',
+  Changeable: 'text-amber-300 border-amber-500/30 bg-amber-500/10',
+  LightRain: 'text-blue-300 border-blue-500/30 bg-blue-500/10',
+  HeavyRain: 'text-blue-200 border-blue-400/40 bg-blue-500/20',
+};
+
+function WeatherChip({ weather }: { weather: WeatherState }) {
+  const tone = WEATHER_TONE[weather.condition] ?? WEATHER_TONE.Cloudy;
+  return (
+    <span className={`inline-flex items-center gap-1 rounded border px-2 py-0.5 text-xs ${tone}`}>
+      {weather.label}
+      {weather.changingSoon && <span className="text-[10px] uppercase opacity-80">· changing</span>}
+    </span>
+  );
+}
+
+function ForecastBanner({
+  forecast,
+  highlight,
+}: {
+  forecast: WeekendForecast;
+  highlight: 'Practice' | 'Qualifying' | 'Race';
+}) {
+  const sessions: ('Practice' | 'Qualifying' | 'Race')[] = ['Practice', 'Qualifying', 'Race'];
+  return (
+    <div className="flex flex-wrap items-center gap-3 rounded-lg border border-neutral-800 bg-neutral-900/40 px-3 py-2">
+      <span className="text-[10px] uppercase tracking-wide text-neutral-500">Forecast</span>
+      {sessions.map((s) => (
+        <div
+          key={s}
+          className={`flex items-center gap-1.5 rounded px-1.5 py-0.5 ${
+            s === highlight ? 'bg-neutral-800/80' : ''
+          }`}
+        >
+          <span className={`text-xs ${s === highlight ? 'font-semibold text-neutral-200' : 'text-neutral-500'}`}>
+            {s}
+          </span>
+          <WeatherChip weather={forecast[s]} />
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function WeekendHub({
+  state,
+  race,
+  track,
+  forecast,
+  onNext,
+}: {
+  state: NonNullable<ReturnType<typeof useGame>['state']>;
+  race: { gpName: string; trackName: string; round: number; laps: number; distanceKm?: number };
+  track: Track;
+  forecast: WeekendForecast;
+  onNext: () => void;
+}) {
+  const calendarLength = state.calendar.length;
+  const completed = state.calendar.filter((r) => r.completed).length;
+  const players = activeDriversForTeam(state, state.selectedTeamId);
+
+  const standingsPos = (list: StandingsEntry[], id: string) => {
+    const idx = list.findIndex((s) => s.entityId === id);
+    return idx >= 0 ? { pos: idx + 1, entry: list[idx] } : undefined;
+  };
+  const teamStanding = standingsPos(state.constructorStandings, state.selectedTeamId);
+  const leaderPoints = state.constructorStandings[0]?.points ?? 0;
+  const wet = forecast.Race.wet;
+
+  return (
+    <div className="space-y-4">
+      <div className="grid gap-4 lg:grid-cols-3">
+        <Panel title="This Weekend">
+          <div className="text-xl font-bold text-neutral-100">{race.gpName}</div>
+          <div className="text-sm text-neutral-400">{track.name}</div>
+          <div className="mt-2 inline-block rounded bg-neutral-800 px-2 py-0.5 text-xs text-neutral-300">
+            {track.archetype}
+          </div>
+          <div className="mt-3 text-xs text-neutral-500">
+            Round {race.round} of {calendarLength} · {race.laps} laps
+          </div>
+          {wet && (
+            <div className="mt-3 rounded-md border border-blue-500/30 bg-blue-500/10 px-3 py-1.5 text-xs text-blue-200">
+              Rain forecast for race day — plan a wet-weather setup and strategy.
+            </div>
+          )}
+        </Panel>
+
+        <Panel title="Forecast">
+          <div className="space-y-2">
+            {(['Practice', 'Qualifying', 'Race'] as const).map((s) => (
+              <div key={s} className="flex items-center justify-between">
+                <span className="text-sm text-neutral-300">{s}</span>
+                <WeatherChip weather={forecast[s]} />
+              </div>
+            ))}
+          </div>
+          <p className="mt-3 text-[11px] text-neutral-500">
+            The forecast is the team's best read — conditions can still shift live during the race.
+          </p>
+        </Panel>
+
+        <Panel title="Championship Stakes">
+          {teamStanding ? (
+            <div className="space-y-1.5 text-sm">
+              <div className="flex items-center justify-between">
+                <span className="text-neutral-400">Constructors</span>
+                <span className="font-semibold text-neutral-100">P{teamStanding.pos}</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-neutral-400">Points</span>
+                <span className="text-neutral-200">{teamStanding.entry.points}</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-neutral-400">Gap to leader</span>
+                <span className="text-neutral-200">
+                  {teamStanding.pos === 1 ? '— (leading)' : `${leaderPoints - teamStanding.entry.points} pts`}
+                </span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-neutral-400">Wins / Podiums</span>
+                <span className="text-neutral-200">
+                  {teamStanding.entry.wins} / {teamStanding.entry.podiums}
+                </span>
+              </div>
+            </div>
+          ) : (
+            <p className="text-sm text-neutral-400">Standings open once the season is under way.</p>
+          )}
+        </Panel>
+      </div>
+
+      <Panel title="Your Drivers">
+        <div className="grid gap-3 sm:grid-cols-2">
+          {players.map((d) => {
+            const ds = standingsPos(state.driverStandings, d.id);
+            return (
+              <div key={d.id} className="flex items-center justify-between rounded-lg border border-neutral-800 bg-neutral-900/40 px-3 py-2">
+                <span className="text-sm text-neutral-100">#{d.number} {d.name}</span>
+                <span className="text-xs text-neutral-400">
+                  {ds ? `P${ds.pos} · ${ds.entry.points} pts` : 'Unranked'}
+                </span>
+              </div>
+            );
+          })}
+        </div>
+      </Panel>
+
+      <div className="flex items-center justify-between">
+        <div className="text-xs text-neutral-500">{completed} of {calendarLength} rounds completed this season.</div>
+        <Button variant="primary" onClick={onNext}>Enter Race Weekend →</Button>
       </div>
     </div>
   );
