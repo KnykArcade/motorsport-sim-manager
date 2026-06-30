@@ -15,6 +15,8 @@ import { generateRegulationProposals } from '../sim/politicsEngine';
 import { createInitialScoutingState } from '../sim/scoutingEngine';
 import { seedDevelopmentCurves } from '../sim/developmentCurveEngine';
 import { createInitialUniverseHistory } from '../sim/universeHistoryEngine';
+import { buildAllTeamOrganizationRatings } from '../sim/teamRatingsEngine';
+import type { TeamPrincipal } from '../types/principalTypes';
 
 // Deep clone via structuredClone (available in modern browsers / Node 18+).
 function clone<T>(value: T): T {
@@ -27,6 +29,9 @@ export type NewGameOptions = {
   series: Series;
   teamId: string;
   seed?: string;
+  // The player-created Team Principal ("Paddock Credentials"). Optional so tests
+  // and legacy callers still work; when absent a default profile is used.
+  teamPrincipal?: TeamPrincipal;
 };
 
 export function createNewGame(options: NewGameOptions): GameState {
@@ -67,9 +72,20 @@ export function createNewGame(options: NewGameOptions): GameState {
 
   // Team Principal job market (Living Universe Phase 6): the player's own
   // manager profile plus the rival approaches their reputation attracts.
+  const teamPrincipal = options.teamPrincipal;
   const principal = playerTeam
-    ? createPrincipalProfile(playerTeam, teamReputations, options.seasonYear, seed)
+    ? createPrincipalProfile(
+        playerTeam,
+        teamReputations,
+        options.seasonYear,
+        seed,
+        teamPrincipal?.name ?? 'You',
+      )
     : undefined;
+  // Seed the job-market profile's starting reputation from the created identity.
+  if (principal && teamPrincipal) {
+    principal.reputation = Math.round((principal.reputation + teamPrincipal.reputation) / 2);
+  }
   const jobOffers = principal
     ? generateJobOffers(principal, bundle.teams, teamReputations, options.seasonYear, seed)
     : undefined;
@@ -101,6 +117,17 @@ export function createNewGame(options: NewGameOptions): GameState {
   const { curves: developmentCurves, drivers: agedDrivers } = seedDevelopmentCurves(
     clone(bundle.drivers),
     seed,
+  );
+
+  // Team organization ratings (Career Mode Phase 1): a detailed 0-100 profile
+  // per team, derived from car/reputation/budget. Powers academy capacity now
+  // and driver/sponsor/staff interest later.
+  const teamOrgRatings = buildAllTeamOrganizationRatings(
+    bundle.teams,
+    cars,
+    options.seasonYear,
+    seed,
+    options.series,
   );
 
   return {
@@ -143,6 +170,8 @@ export function createNewGame(options: NewGameOptions): GameState {
     engine,
     principal,
     jobOffers,
+    teamPrincipal,
+    teamOrgRatings,
     driverRelationships,
     teamOrderHistory: [],
     regulationProposals,

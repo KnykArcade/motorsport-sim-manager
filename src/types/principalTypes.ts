@@ -34,6 +34,61 @@ export type TeamPrincipalProfile = {
   careerStats: PrincipalCareerStats;
 };
 
+// ---------------------------------------------------------------------------
+// Team Principal Creator ("Paddock Credentials") — Career Mode Phase 1.
+//
+// The player-created manager identity, set up before entering a save. The
+// background and management-style choices produce small gameplay modifiers; the
+// derived 0-100 trait scores below feed those modifiers and future systems.
+// ---------------------------------------------------------------------------
+
+export type TeamPrincipal = {
+  id: string;
+  name: string;
+  nationality?: string;
+  age?: number;
+  background: string;
+  managementStyle: string;
+  primaryStrength: string;
+  secondaryStrength: string;
+  weakness: string;
+  mediaPersonality: string;
+  driverManagementStyle: string;
+  developmentPhilosophy: string;
+  raceStrategyPhilosophy: string;
+  // Derived 0-100 trait scores.
+  riskTolerance: number;
+  driverManagement: number;
+  developmentFocus: number;
+  raceStrategy: number;
+  commercialSkill: number;
+  politicalSkill: number;
+  reputation: number;
+};
+
+// Named gameplay modifiers a principal's choices contribute. Each value is a
+// small signed fraction (e.g. +0.06 = +6%). Used for the creator's preview and,
+// in later phases, applied to the relevant subsystems.
+export type PrincipalModifierKey =
+  | 'driverMorale'
+  | 'driverDevelopment'
+  | 'research'
+  | 'setupFeedback'
+  | 'sponsorNegotiation'
+  | 'budgetManagement'
+  | 'raceStrategy'
+  | 'reliabilityDiagnosis'
+  | 'mediaHandling'
+  | 'marketing'
+  | 'academyDevelopment'
+  | 'youngDriverInterest'
+  | 'veteranDriverAppeal'
+  | 'inRaceDecisions'
+  | 'commercialSkill'
+  | 'politicalInfluence';
+
+export type PrincipalModifiers = Partial<Record<PrincipalModifierKey, number>>;
+
 // A job approach/offer from another team in the universe.
 export type JobOffer = {
   id: string;

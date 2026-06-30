@@ -15,6 +15,16 @@ import { StandingsTable } from '../components/StandingsTable';
 import { NewsFeed } from '../components/NewsFeed';
 import { TrackDemandBars } from '../components/TrackDemandBars';
 import { formatMoney } from '../components/ui';
+import {
+  BACKGROUNDS,
+  MANAGEMENT_STYLES,
+  STRENGTHS,
+  optionById,
+  type PrincipalOption,
+} from '../data/principal/principalOptions';
+import { calculateAcademyCapacity } from '../sim/teamRatingsEngine';
+import type { TeamOrganizationRatings } from '../types/teamRatingsTypes';
+import type { TeamPrincipal } from '../types/principalTypes';
 
 export function TeamHQ() {
   const { state } = useGame();
@@ -27,6 +37,9 @@ export function TeamHQ() {
   const race = currentRace(state);
   const track = race ? getTrackById(race.trackId) : undefined;
   const ratings = car ? effectiveCarRatings(car) : null;
+
+  const principal = state.teamPrincipal;
+  const orgRatings = state.teamOrgRatings?.[state.selectedTeamId];
 
   const driverName = (id: string) => state.drivers.find((d) => d.id === id)?.name ?? id;
   const teamName = (id: string) => state.teams.find((t) => t.id === id)?.name ?? id;
@@ -95,6 +108,9 @@ export function TeamHQ() {
             </Panel>
           )}
 
+          {/* Team organization ratings */}
+          {orgRatings && <TeamRatingsPanel ratings={orgRatings} academyUsed={(state.academy ?? []).length} />}
+
           {/* Drivers */}
           <Panel title="Drivers">
             <div className="grid gap-3 sm:grid-cols-2">
@@ -117,6 +133,8 @@ export function TeamHQ() {
         </div>
 
         <div className="space-y-6">
+          {principal && <PrincipalPanel principal={principal} />}
+
           <Panel title="Quick Actions">
             <div className="grid grid-cols-2 gap-2">
               <Button onClick={() => navigate('/calendar')}>Calendar</Button>
@@ -170,6 +188,121 @@ function KpiCard({ label, value }: { label: string; value: string }) {
     <div className="rounded-xl border border-neutral-800 bg-neutral-900/40 p-4">
       <div className="text-xs uppercase tracking-wide text-neutral-500">{label}</div>
       <div className="mt-1 text-2xl font-bold text-neutral-100">{value}</div>
+    </div>
+  );
+}
+
+function PrincipalPanel({ principal }: { principal: TeamPrincipal }) {
+  const labelOf = (list: PrincipalOption[], id: string) => optionById(list, id)?.label ?? id;
+  return (
+    <Panel title="Team Principal">
+      <div className="flex items-center gap-3">
+        <div className="flex h-12 w-12 items-center justify-center rounded-lg border border-neutral-700 bg-neutral-800 text-lg font-black text-neutral-200">
+          {principal.name
+            .trim()
+            .split(/\s+/)
+            .map((w) => w[0])
+            .filter(Boolean)
+            .slice(0, 2)
+            .join('')
+            .toUpperCase() || '??'}
+        </div>
+        <div className="min-w-0">
+          <div className="truncate font-bold text-neutral-100">{principal.name}</div>
+          <div className="text-xs text-neutral-500">
+            {labelOf(BACKGROUNDS, principal.background)}
+            {principal.nationality ? ` · ${principal.nationality}` : ''}
+            {principal.age ? ` · ${principal.age}` : ''}
+          </div>
+        </div>
+      </div>
+      <div className="mt-3 space-y-1 text-xs">
+        <Row label="Management" value={labelOf(MANAGEMENT_STYLES, principal.managementStyle)} />
+        <Row label="Strength" value={labelOf(STRENGTHS, principal.primaryStrength)} />
+        <Row label="Weakness" value={labelOf(STRENGTHS, principal.weakness)} />
+      </div>
+      <div className="mt-3 grid grid-cols-3 gap-2">
+        <MiniStat label="Reputation" value={principal.reputation} />
+        <MiniStat label="Driver Mgmt" value={principal.driverManagement} />
+        <MiniStat label="Development" value={principal.developmentFocus} />
+        <MiniStat label="Strategy" value={principal.raceStrategy} />
+        <MiniStat label="Commercial" value={principal.commercialSkill} />
+        <MiniStat label="Risk" value={principal.riskTolerance} />
+      </div>
+    </Panel>
+  );
+}
+
+function TeamRatingsPanel({
+  ratings,
+  academyUsed,
+}: {
+  ratings: TeamOrganizationRatings;
+  academyUsed: number;
+}) {
+  const capacity = calculateAcademyCapacity(ratings);
+  const rows: { label: string; value: number }[] = [
+    { label: 'Car Performance', value: ratings.carPerformance },
+    { label: 'Research', value: ratings.research },
+    { label: 'Facilities', value: ratings.facilities },
+    { label: 'Financial Stability', value: ratings.financialStability },
+    { label: 'Staff Quality', value: ratings.staffQuality },
+    { label: 'Driver Appeal', value: ratings.driverAppeal },
+    { label: 'Sponsor Appeal', value: ratings.sponsorAppeal },
+    { label: 'Operations', value: ratings.operations },
+    { label: 'Reliability Dept', value: ratings.reliabilityDepartment },
+    { label: 'Pit Crew', value: ratings.pitCrew },
+    { label: 'Marketing', value: ratings.marketing },
+    { label: 'Fan Support', value: ratings.fanSupport },
+    { label: 'Media Reach', value: ratings.mediaReach },
+    { label: 'Scouting', value: ratings.scouting },
+    { label: 'Youth Academy', value: ratings.youthAcademy },
+  ];
+  return (
+    <Panel
+      title="Team Rating"
+      actions={
+        <div className="flex items-baseline gap-1">
+          <span className="text-2xl font-black text-amber-400">{ratings.overallTeamRating}</span>
+          <span className="text-xs text-neutral-500">/ 100</span>
+        </div>
+      }
+    >
+      <div className="mb-3 flex items-center justify-between rounded-lg border border-neutral-800 bg-neutral-900/60 px-3 py-2 text-sm">
+        <span className="text-neutral-400">Academy Capacity</span>
+        <span className="font-semibold text-neutral-100">
+          {academyUsed} / {capacity} slot{capacity === 1 ? '' : 's'}
+        </span>
+      </div>
+      <div className="grid gap-x-4 gap-y-1.5 sm:grid-cols-2">
+        {rows.map((r) => (
+          <div key={r.label} className="flex items-center gap-2 text-xs">
+            <span className="w-28 shrink-0 text-neutral-400">{r.label}</span>
+            <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-neutral-800">
+              <div className="h-full bg-sky-500" style={{ width: `${r.value}%` }} />
+            </div>
+            <span className="w-6 text-right tabular-nums text-neutral-300">{r.value}</span>
+          </div>
+        ))}
+      </div>
+    </Panel>
+  );
+}
+
+function Row({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="flex items-center justify-between gap-2">
+      <span className="text-neutral-500">{label}</span>
+      <span className="truncate font-medium text-neutral-200">{value}</span>
+    </div>
+  );
+}
+
+function MiniStat({ label, value }: { label: string; value: number }) {
+  return (
+    <div className="rounded-md border border-neutral-800 bg-neutral-900/40 px-2 py-1 text-center">
+      <div className="text-sm font-bold text-neutral-100">{value}</div>
+      <div className="text-[9px] uppercase tracking-wide text-neutral-500">{label}</div>
     </div>
   );
 }

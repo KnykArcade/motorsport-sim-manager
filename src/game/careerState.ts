@@ -27,7 +27,8 @@ import type { WeekendPractice } from '../types/practiceTypes';
 import type { CommercialState } from '../types/sponsorTypes';
 import type { EngineState } from '../types/engineTypes';
 import type { TeamReputation, TeamExpectation, ExpectationReview } from '../types/expectationTypes';
-import type { TeamPrincipalProfile, JobOffer } from '../types/principalTypes';
+import type { TeamPrincipalProfile, JobOffer, TeamPrincipal } from '../types/principalTypes';
+import type { TeamOrganizationRatings } from '../types/teamRatingsTypes';
 import type { FacilitiesState } from '../types/facilityTypes';
 import type { DriverRelationship, TeamOrderDecision } from '../types/relationshipTypes';
 import type { RegulationProposal, RegulationVoteResult } from '../types/politicsTypes';
@@ -111,6 +112,11 @@ export type GameState = {
   // 5. Team Principal profile + outstanding job offers/rumors.
   principal?: TeamPrincipalProfile;
   jobOffers?: JobOffer[];
+  // The player-created Team Principal identity ("Paddock Credentials"). Optional
+  // so existing saves load cleanly; new games created via the creator set it.
+  teamPrincipal?: TeamPrincipal;
+  // Organization ratings (0-100) for every team, keyed by teamId.
+  teamOrgRatings?: Record<string, TeamOrganizationRatings>;
   // A job offer the player has accepted; the move takes effect at the rollover.
   acceptedJobOfferId?: string;
   // 6. Facilities (player team).

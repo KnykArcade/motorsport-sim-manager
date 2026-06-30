@@ -3,6 +3,7 @@ import { useGame } from '../game/GameContext';
 import { activeDriversForTeam, driversForTeam, teamById } from '../game/careerState';
 import { getMarketBundle } from '../data';
 import { isAcademyReady } from '../sim/driverMarketEngine';
+import { academyCapacityFor } from '../sim/teamRatingsEngine';
 import { toMoney } from '../sim/financeEngine';
 import { thirdDriverMidSeasonFee } from '../sim/contractEngine';
 import { fogView } from '../sim/scoutingEngine';
@@ -41,6 +42,7 @@ export function DriverMarket() {
   const racesRemaining = Math.max(1, state.calendar.length - state.currentRaceIndex);
   const signings = state.pendingSignings ?? [];
   const academy = state.academy ?? [];
+  const academyCapacity = academyCapacityFor(state.teamOrgRatings, state.selectedTeamId);
   const signedMarketIds = new Set(state.signedMarketIds ?? []);
   const signingBySource = new Map(signings.map((s) => [s.sourceId, s]));
   const seatName = (id: string) => state.drivers.find((d) => d.id === id)?.name ?? id;
@@ -158,6 +160,7 @@ export function DriverMarket() {
         <YouthTab
           prospects={bundle.youth}
           academy={academy}
+          academyCapacity={academyCapacity}
           offseason={offseason}
           seats={seats}
           budget={budget}
@@ -344,6 +347,7 @@ function SeniorCard({
 function YouthTab({
   prospects,
   academy,
+  academyCapacity,
   offseason,
   seats,
   budget,
@@ -357,6 +361,7 @@ function YouthTab({
 }: {
   prospects: YouthProspect[];
   academy: AcademyMember[];
+  academyCapacity: number;
   offseason: boolean;
   seats: Driver[];
   budget: number;
@@ -372,13 +377,26 @@ function YouthTab({
   const available = [...prospects]
     .filter((p) => !academyByProspect.has(p.id))
     .sort((a, b) => b.potential - a.potential);
+  const academyFull = academy.length >= academyCapacity;
 
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="mb-2 text-lg font-semibold text-neutral-100">
-          Your Academy ({academy.length})
-        </h2>
+        <div className="mb-2 flex items-center justify-between gap-2">
+          <h2 className="text-lg font-semibold text-neutral-100">Your Academy</h2>
+          <span
+            className={`rounded px-2 py-0.5 text-xs font-semibold ${
+              academyFull ? 'bg-amber-500/15 text-amber-300' : 'bg-neutral-800 text-neutral-300'
+            }`}
+          >
+            Academy Slots: {academy.length} / {academyCapacity}
+          </span>
+        </div>
+        {academyFull && (
+          <p className="mb-2 rounded-lg border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-xs text-amber-200">
+            Academy Full: Upgrade facilities or improve team rating to expand capacity.
+          </p>
+        )}
         {academy.length === 0 ? (
           <Panel>
             <p className="text-sm text-neutral-400">
@@ -493,10 +511,14 @@ function YouthTab({
                 <Button
                   variant="primary"
                   className="w-full px-2 py-1 text-xs"
-                  disabled={toMoney(y.signingCost) > budget}
+                  disabled={academyFull || toMoney(y.signingCost) > budget}
                   onClick={() => onSignYouth(y.id)}
                 >
-                  {toMoney(y.signingCost) > budget ? 'Insufficient budget' : 'Add to Academy'}
+                  {academyFull
+                    ? 'Academy full'
+                    : toMoney(y.signingCost) > budget
+                      ? 'Insufficient budget'
+                      : 'Add to Academy'}
                 </Button>
               </div>
               <p className="mt-2 text-[11px] text-neutral-400">{y.suggestedPath}</p>
