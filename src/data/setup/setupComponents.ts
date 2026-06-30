@@ -158,12 +158,6 @@ export const SETUP_PRESETS: SetupPreset[] = [
     description: 'Gentle on the tyres for long stints and consistency.',
     setup: { ...BALANCED_SETUP, tyreUsage: 2, differential: 4, suspensionStiffness: 4 },
   },
-  {
-    id: 'preset-aggressive-quali',
-    name: 'Aggressive Qualifying',
-    description: 'Everything biased toward one-lap pace.',
-    setup: { ...BALANCED_SETUP, frontWing: 6, rearWing: 6, differential: 7, tyreUsage: 8, brakeBias: 6 },
-  },
 ];
 
 export const SETUP_PRESETS_BY_ID: Record<string, SetupPreset> = Object.fromEntries(

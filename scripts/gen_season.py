@@ -613,8 +613,12 @@ def gen(year, series="F1"):
                 "potentialDelta": r1(potential - overall),
                 "devRate": derive_devrate(age, get(row, yth, "development rate")),
                 "years": int(num(get(row, yth, "years until f1 ready", "years until f1 ready estimate", "years until indycar ready")) or max(1, 18 - int(age or 17))),
-                "signing": r1(num(get(row, yth, "signing cost")) or 0.5),
-                "academy": r1(num(get(row, yth, "yearly academy cost")) or 0.3),
+                # Youth are unproven: derive cheap, consistent $M costs from
+                # potential rather than the inconsistent source columns (some
+                # sheets store $M, others raw dollars). Mirrors the runtime
+                # normalization in src/data/market/index.ts.
+                "signing": r1(0.02 + (max(0.0, min(10.0, potential)) / 10) * 0.13),
+                "academy": r1(0.01 + (max(0.0, min(10.0, potential)) / 10) * 0.09),
                 "risk": str(get(row, yth, "risk level") or "Medium").strip(),
                 "path": str(get(row, yth, "suggested path") or "Academy").strip(),
                 "notes": str(get(row, yth, "game notes", "notes", "traits") or "").strip(),
@@ -903,8 +907,9 @@ def gen_indycar(year=2026):
             "potentialDelta": r1(potential - overall),
             "devRate": derive_devrate(age, get(row, yth, "development rate", "development_rate")),
             "years": int(num(get(row, yth, "years until indycar ready", "years_until_indycar_ready")) or max(1, 18 - int(age or 17))),
-            "signing": r1(num(get(row, yth, "signing cost", "signing_cost")) or 0.5),
-            "academy": r1(num(get(row, yth, "yearly academy cost", "yearly_academy_cost")) or 0.3),
+            # Cheap, potential-derived $M costs (see note in the F1 youth block).
+            "signing": r1(0.02 + (max(0.0, min(10.0, potential)) / 10) * 0.13),
+            "academy": r1(0.01 + (max(0.0, min(10.0, potential)) / 10) * 0.09),
             "risk": str(get(row, yth, "risk level", "risk_level") or "Medium").strip(),
             "path": "Academy",
             "notes": str(get(row, yth, "notes", "traits") or "").strip(),
