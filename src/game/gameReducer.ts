@@ -93,6 +93,8 @@ export type GameAction =
   | { type: 'FIRE_STAFF'; staffId: string }
   | { type: 'UPGRADE_FACILITY'; facilityId: string }
   | { type: 'SIGN_ENGINE_DEAL'; supplierId: string; dealType: EngineDealType }
+  | { type: 'ACCEPT_JOB_OFFER'; offerId: string }
+  | { type: 'DECLINE_JOB_OFFER'; offerId: string }
   | { type: 'SWAP_RACE_DRIVER'; seatIndex: number; reserveDriverId: string }
   | { type: 'SIGN_THIRD_DRIVER'; marketId: string }
   | { type: 'PROMOTE_THIRD_DRIVER'; seatDriverId: string; thirdDriverId: string }
@@ -358,6 +360,21 @@ export function gameReducer(state: GameState | null, action: GameAction): GameSt
       return signEngineDeal(state, action.supplierId, action.dealType);
     }
 
+    case 'ACCEPT_JOB_OFFER': {
+      if (!state) return state;
+      return acceptJobOffer(state, action.offerId);
+    }
+
+    case 'DECLINE_JOB_OFFER': {
+      if (!state) return state;
+      return {
+        ...state,
+        jobOffers: (state.jobOffers ?? []).filter((o) => o.id !== action.offerId),
+        acceptedJobOfferId:
+          state.acceptedJobOfferId === action.offerId ? undefined : state.acceptedJobOfferId,
+      };
+    }
+
     case 'SWAP_RACE_DRIVER': {
       if (!state) return state;
       return swapRaceDriver(state, action.seatIndex, action.reserveDriverId);
@@ -497,6 +514,18 @@ function signEngineDeal(state: GameState, supplierId: string, dealType: EngineDe
     return { ...state, engine: { ...engine, pendingDeal: undefined } };
   }
   return { ...state, engine: { ...engine, pendingDeal: buildSignedDeal(team, offer) } };
+}
+
+// Accept a firm job offer from a rival team. The move is queued and takes effect
+// at the next season rollover (where the player switches teams). Accepting the
+// same offer again cancels it; only firm offers (not rumors) can be accepted.
+function acceptJobOffer(state: GameState, offerId: string): GameState {
+  const offer = (state.jobOffers ?? []).find((o) => o.id === offerId);
+  if (!offer || offer.kind !== 'Offer') return state;
+  if (state.acceptedJobOfferId === offerId) {
+    return { ...state, acceptedJobOfferId: undefined };
+  }
+  return { ...state, acceptedJobOfferId: offerId };
 }
 
 // Sign a youth prospect into the academy. The one-off signing fee is charged
