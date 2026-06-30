@@ -369,6 +369,10 @@ export type QualifyingIncident = {
   raceImpact?: string;
 };
 
+// The qualifying segment a driver's final time was set in (knockout format).
+// 'Single' = a one-session (non-knockout) format.
+export type QualifyingSegment = 'Q1' | 'Q2' | 'Q3' | 'Single';
+
 export type QualifyingResult = {
   position: number;
   driverId: string;
@@ -382,6 +386,9 @@ export type QualifyingResult = {
   // True when the car finished outside the series' qualifying cap and is not
   // allowed to start the race (DNQ — Did Not Qualify).
   dnq?: boolean;
+  // Knockout segment this driver reached / was eliminated in. Optional for
+  // backward compatibility with saves made before knockout qualifying.
+  segment?: QualifyingSegment;
 };
 
 // ---------------------------------------------------------------------------
