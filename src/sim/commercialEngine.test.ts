@@ -84,6 +84,19 @@ describe('commercialEngine', () => {
     expect(rolled.commercial.sponsors.every((s) => s.objectives.every((o) => o.status === 'Pending'))).toBe(true);
   });
 
+  it('rounds bonus amounts and descriptions to 2 decimals (no float noise)', () => {
+    // Tier scaling like 0.3 + tier * 0.15 used to leak 0.44999999999999996.
+    for (const team of teams1995) {
+      const c = buildInitialCommercial(team, drivers1995.filter((d) => d.teamId === team.id), 's', 'Formula 1');
+      for (const s of c.sponsors) {
+        for (const b of s.bonusTerms) {
+          expect(b.amount).toBe(Math.round(b.amount * 100) / 100);
+          expect(b.description).not.toMatch(/\d\.\d{3,}/); // no 3+ decimal runs
+        }
+      }
+    }
+  });
+
   it('reports zero income for undefined commercial state', () => {
     expect(sponsorAnnualIncome(undefined)).toBe(0);
     expect(racePerformanceBonuses(undefined, { wins: 5, podiums: 5, poles: 5 })).toEqual([]);
