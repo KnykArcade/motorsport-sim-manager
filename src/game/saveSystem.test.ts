@@ -25,9 +25,10 @@ describe('save model', () => {
     expect(s.commercial).toBeDefined();
     expect(s.teamExpectations).toBeDefined();
     expect(s.teamReputations).toBeDefined();
+    // Phase 4: facilities are seeded on a new career.
+    expect(s.facilities).toBeDefined();
     // Systems from later phases remain unset.
     expect(s.engine).toBeUndefined();
-    expect(s.facilities).toBeUndefined();
     expect(s.principal).toBeUndefined();
     expect(s.universeHistory).toBeUndefined();
   });

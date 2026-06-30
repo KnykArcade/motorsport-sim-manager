@@ -45,6 +45,7 @@ const EMPTY_BY_CATEGORY = (): Record<FinanceCategory, number> => ({
   'Driver Signing': 0,
   Academy: 0,
   Staff: 0,
+  Facilities: 0,
   Development: 0,
   Repairs: 0,
 });

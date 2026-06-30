@@ -9,6 +9,7 @@ export type FinanceCategory =
   | 'Driver Signing'
   | 'Academy'
   | 'Staff'
+  | 'Facilities'
   | 'Development'
   | 'Repairs';
 

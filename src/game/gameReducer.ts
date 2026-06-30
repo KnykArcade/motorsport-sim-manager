@@ -30,6 +30,12 @@ import { makeTransaction, toMoney } from '../sim/financeEngine';
 import { thirdDriverMidSeasonFee, thirdDriverSalary } from '../sim/contractEngine';
 import { racePerformanceBonuses } from '../sim/commercialEngine';
 import { developmentSuccessBonus } from '../sim/staffEngine';
+import {
+  FACILITY_SPECS,
+  facilityDevelopmentSuccessBonus,
+  facilityRepairCostReduction,
+  orderUpgrade,
+} from '../sim/facilityEngine';
 import { classifyCrashDamage, damageConditionHit, repairCost } from '../sim/repairEngine';
 import { buildRaceArchiveEntry } from '../sim/lapArchiveEngine';
 import { createSeededRandom, deriveSeed } from '../sim/random';
@@ -83,6 +89,7 @@ export type GameAction =
   | { type: 'RELEASE_ACADEMY'; academyId: string }
   | { type: 'HIRE_STAFF'; staffId: string }
   | { type: 'FIRE_STAFF'; staffId: string }
+  | { type: 'UPGRADE_FACILITY'; facilityId: string }
   | { type: 'SWAP_RACE_DRIVER'; seatIndex: number; reserveDriverId: string }
   | { type: 'SIGN_THIRD_DRIVER'; marketId: string }
   | { type: 'PROMOTE_THIRD_DRIVER'; seatDriverId: string; thirdDriverId: string }
@@ -338,6 +345,11 @@ export function gameReducer(state: GameState | null, action: GameAction): GameSt
       return { ...state, staff: (state.staff ?? []).filter((s) => s.id !== action.staffId) };
     }
 
+    case 'UPGRADE_FACILITY': {
+      if (!state) return state;
+      return upgradeFacility(state, action.facilityId);
+    }
+
     case 'SWAP_RACE_DRIVER': {
       if (!state) return state;
       return swapRaceDriver(state, action.seatIndex, action.reserveDriverId);
@@ -440,6 +452,24 @@ function hireStaff(state: GameState, staffId: string): GameState {
   );
   const nextRoster = [...roster.filter((s) => s.role !== recruit.role), recruit];
   return { ...charged, staff: nextRoster };
+}
+
+// Order a facility upgrade: charge the cost now (must be affordable); the level
+// gain resolves at the next season rollover. One pending upgrade per facility.
+function upgradeFacility(state: GameState, facilityId: string): GameState {
+  const facilities = state.facilities;
+  if (!facilities) return state;
+  const ordered = orderUpgrade(facilities, facilityId);
+  if (!ordered) return state;
+  const fee = toMoney(ordered.cost);
+  if (fee > playerBudget(state)) return state;
+  const facility = facilities.facilities.find((f) => f.id === facilityId);
+  const label = facility ? FACILITY_SPECS[facility.type].label : 'facility';
+  const charged = applyTransaction(
+    state,
+    makeTransaction(state.seasonYear, 'Facilities', `Upgrade ${label} to L${(facility?.level ?? 0) + 1}`, -fee),
+  );
+  return { ...charged, facilities: ordered.state };
 }
 
 // Sign a youth prospect into the academy. The one-off signing fee is charged
@@ -575,7 +605,8 @@ function applyRaceResults(
     team.budget += prize;
     const roll = createSeededRandom(deriveSeed(state.randomSeed, 'damage', race.round, r.driverId)).next();
     const severity = classifyCrashDamage(r.status, r.incidents, roll);
-    const repair = repairCost(severity);
+    const reduction = team.id === state.selectedTeamId ? facilityRepairCostReduction(state.facilities) : 0;
+    const repair = Math.round(repairCost(severity) * (1 - reduction));
     if (repair > 0) {
       team.budget -= repair;
       conditionHitByTeam[team.id] = (conditionHitByTeam[team.id] ?? 0) + damageConditionHit(severity);
@@ -634,7 +665,7 @@ function applyRaceResults(
       playerCar,
       state.randomSeed,
       race.round,
-      developmentSuccessBonus(state.staff ?? []),
+      developmentSuccessBonus(state.staff ?? []) + facilityDevelopmentSuccessBonus(state.facilities),
     );
     activeDevelopmentProjects = tick.active;
     completedDevelopmentProjects = [...completedDevelopmentProjects, ...tick.completed];

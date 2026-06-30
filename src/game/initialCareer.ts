@@ -7,6 +7,7 @@ import type { CarSetup } from '../types/setupTypes';
 import type { GameState } from './careerState';
 import { buildInitialCommercial } from '../sim/commercialEngine';
 import { buildTeamReputations, buildTeamExpectations } from '../sim/expectationEngine';
+import { createInitialFacilities } from '../sim/facilityEngine';
 
 // Deep clone via structuredClone (available in modern browsers / Node 18+).
 function clone<T>(value: T): T {
@@ -43,6 +44,7 @@ export function createNewGame(options: NewGameOptions): GameState {
     ? buildInitialCommercial(playerTeam, playerDrivers, seed, options.series)
     : undefined;
   const teamReputations = buildTeamReputations(bundle.teams);
+  const facilities = createInitialFacilities(options.teamId, playerTeam?.reputation ?? 0);
   const teamExpectations = buildTeamExpectations(bundle.teams, options.seasonYear);
 
   return {
@@ -81,6 +83,7 @@ export function createNewGame(options: NewGameOptions): GameState {
     commercial,
     teamReputations,
     teamExpectations,
+    facilities,
     randomSeed: seed,
     seasonComplete: false,
   };
