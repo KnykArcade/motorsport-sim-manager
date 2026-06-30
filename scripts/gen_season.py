@@ -496,11 +496,11 @@ def gen(year, series="F1"):
             continue
         name = str(name).strip()
         ratings = {
-            "enginePower": num(get(row, car, "engine power")) or 5,
-            "aeroEfficiency": num(get(row, car, "aero efficiency")) or 5,
-            "mechanicalGrip": num(get(row, car, "mechanical grip")) or 5,
-            "reliability": num(get(row, car, "reliability")) or 5,
-            "pitCrewOperations": num(get(row, car, "pit crew operations")) or 5,
+            "enginePower": scale10(get(row, car, "engine power")),
+            "aeroEfficiency": scale10(get(row, car, "aero efficiency")),
+            "mechanicalGrip": scale10(get(row, car, "mechanical grip")),
+            "reliability": scale10(get(row, car, "reliability")),
+            "pitCrewOperations": scale10(get(row, car, "pit crew operations")),
         }
         teams.append({
             "name": name,
@@ -793,11 +793,11 @@ def gen_indycar(year=2026):
             continue
         name = str(name).strip()
         ratings = {
-            "enginePower": num(get(row, car, "engineering")) or 5,
-            "aeroEfficiency": num(get(row, car, "road street setup", "road_street_setup")) or 5,
-            "mechanicalGrip": num(get(row, car, "oval setup", "oval_setup")) or 5,
-            "reliability": num(get(row, car, "reliability")) or 5,
-            "pitCrewOperations": num(get(row, car, "pit crew", "pit_crew")) or 5,
+            "enginePower": scale10(get(row, car, "engineering")),
+            "aeroEfficiency": scale10(get(row, car, "road street setup", "road_street_setup")),
+            "mechanicalGrip": scale10(get(row, car, "oval setup", "oval_setup")),
+            "reliability": scale10(get(row, car, "reliability")),
+            "pitCrewOperations": scale10(get(row, car, "pit crew", "pit_crew")),
         }
         teams.append({
             "name": name,
