@@ -254,6 +254,27 @@ def team_base(name):
     return slug(name).split("-")[0]
 
 
+# Some workbooks name the same constructor differently in the car sheet vs the
+# driver sheet within one season (e.g. "RBR Renault" vs "Red Bull Renault",
+# "STR Ferrari" vs "Toro Rosso Ferrari"). Canonicalize so both resolve to the
+# same team when seating drivers.
+CANON_ALIASES = {
+    "red bull": "redbull",
+    "rbr": "redbull",
+    "toro rosso": "tororosso",
+    "str": "tororosso",
+    "force india": "forceindia",
+}
+
+
+def canon_team(name):
+    s = norm(name)
+    for k, v in CANON_ALIASES.items():
+        if k in s:
+            return v
+    return slug(name).split("-")[0]
+
+
 def team_meta(name):
     s = slug(name)
     base = s.split("-")[0]
@@ -365,6 +386,17 @@ def derive_difficulty(overall, raw):
     if overall >= 5.5:
         return "Medium"
     return "Easy"
+
+
+def points_for(y):
+    """Historical F1 points system in effect for season year ``y``."""
+    if y <= 1990:
+        return "pts-1990"   # 9-6-4-3-2-1 (top 6)
+    if y <= 2002:
+        return "pts-1995"   # 10-6-4-3-2-1 (top 6)
+    if y <= 2009:
+        return "pts-2003"   # 10-8-6-5-4-3-2-1 (top 8)
+    return "pts-modern"     # 25-18-15-... (top 10)
 
 
 def yesno(v, default=False):
@@ -491,6 +523,7 @@ def gen(year, series="F1"):
         return "Easy" if rank <= 3 else ("Medium" if rank <= 6 else ("Hard" if rank <= 9 else "Very Hard"))
 
     team_by_slug = {slug(t["name"]): t for t in teams}
+    team_by_canon = {canon_team(t["name"]): t for t in teams}
 
     # ---- drivers ----
     drivers = []
@@ -500,14 +533,12 @@ def gen(year, series="F1"):
             continue
         name = str(name).strip()
         team_raw = str(get(row, drv, "team") or "").strip()
-        overall = num(get(row, drv, "overall rating", "overall")) or 6.0
+        overall = scale10(get(row, drv, "overall rating", "overall"), 6.0)
         sk = read_skills(row, drv, overall)
-        qual = num(get(row, drv, "qualifying"))
-        pace = num(get(row, drv, "race pace"))
-        if qual is None:
-            qual = r1((overall + sk["cornering"] + sk["braking"]) / 3)
-        if pace is None:
-            pace = r1((overall + sk["enduranceConsistency"] + sk["tractionAcceleration"]) / 3)
+        qual = scale10(get(row, drv, "qualifying"),
+                       r1((overall + sk["cornering"] + sk["braking"]) / 3))
+        pace = scale10(get(row, drv, "race pace"),
+                       r1((overall + sk["enduranceConsistency"] + sk["tractionAcceleration"]) / 3))
         adaptability = r1((overall + sk["technical"] + sk["surfaceGripBumpiness"]) / 3)
         aggression = r1((sk["overtakingRacecraft"] + (11 - sk["riskManagement"])) / 2)
         composure = r1((sk["riskManagement"] + sk["enduranceConsistency"] + overall) / 3)
@@ -529,7 +560,7 @@ def gen(year, series="F1"):
     unassigned = []
     for d in sorted(drivers, key=lambda x: -x["overall"]):
         tslug = d["team_slug"]
-        team = team_by_slug.get(tslug)
+        team = team_by_slug.get(tslug) or team_by_canon.get(canon_team(d["team_raw"]))
         if team is None:
             for s, tm in team_by_slug.items():
                 if s.split("-")[0] == tslug.split("-")[0] and tslug:
@@ -537,6 +568,7 @@ def gen(year, series="F1"):
                     break
         if team is not None and len(team["driver_ids"]) < 2:
             team["driver_ids"].append(d["id"])
+            d["team_raw"] = team["name"]
         else:
             unassigned.append(d["name"])
     grid_ids = {i for t in teams for i in t["driver_ids"]}
@@ -553,13 +585,13 @@ def gen(year, series="F1"):
             if not name:
                 continue
             name = str(name).strip()
-            overall = num(get(row, mkt, "overall rating", "overall")) or 6.0
+            overall = scale10(get(row, mkt, "overall rating", "overall"), 6.0)
             sk = read_skills(row, mkt, overall)
             context = str(get(row, mkt, "current series status", "current series context", "current series", "current series role", "current status") or "").strip()
             pool = str(get(row, mkt, "market pool", "pool") or "Senior").strip()
             status = str(get(row, mkt, "market status") or pool).strip()
             role = str(get(row, mkt, "likely role", "suggested role", "primary role", "suggested use") or "").strip()
-            potential = num(get(row, mkt, "potential rating")) or r1(min(10, overall + 0.4))
+            potential = scale10(get(row, mkt, "potential rating"), r1(min(10, overall + 0.4)))
             market.append({
                 "id": f"mkt-{y}-{slug(name)}",
                 "name": name,
@@ -568,7 +600,7 @@ def gen(year, series="F1"):
                 "context": context, "pool": pool, "status": status, "role": role,
                 "eligible": yesno(get(row, mkt, "immediate f1 eligible"), overall >= 6.5 and "senior" in pool.lower()),
                 "skills": sk, "overall": overall, "potential": potential,
-                "potentialDelta": num(get(row, mkt, "potential delta")) if num(get(row, mkt, "potential delta")) is not None else r1(potential - overall),
+                "potentialDelta": r1(potential - overall),
                 "devRate": derive_devrate(num(get(row, mkt, f"age in {y}", "age")), get(row, mkt, "development rate")),
                 "readiness": derive_readiness(overall, context, get(row, mkt, "f1 readiness")),
                 "salary": derive_salary(overall, get(row, mkt, "salary estimate", "estimated salary", "salary demand", "salary tier", "salary demand tier", "estimated cost", "salary")),
@@ -587,7 +619,7 @@ def gen(year, series="F1"):
             if not name:
                 continue
             name = str(name).strip()
-            overall = num(get(row, yth, "overall youth rating", "overall rating", "potential rating")) or 6.0
+            overall = scale10(get(row, yth, "overall youth rating", "overall rating", "potential rating"), 6.0)
             sk = read_skills(row, yth, overall)
             rawpace = num(get(row, yth, "raw pace"))
             if rawpace is not None:
@@ -597,7 +629,7 @@ def gen(year, series="F1"):
             if race is not None and not get(row, yth, "overtaking"):
                 sk["overtakingRacecraft"] = race
             age = num(get(row, yth, f"age in {y}", "age"))
-            potential = num(get(row, yth, "potential rating")) or r1(min(10, overall + 1))
+            potential = scale10(get(row, yth, "potential rating"), r1(min(10, overall + 1)))
             youth.append({
                 "id": f"yth-{y}-{slug(name)}",
                 "name": name,
@@ -625,7 +657,7 @@ def gen(year, series="F1"):
             })
 
     wb.close()
-    points_id = "pts-modern" if y >= 2006 else "pts-1995"
+    points_id = points_for(y)
     write_ts(y, src, header, tracks, teams, drivers, market, youth, budget_for,
              difficulty, series=series, points_id=points_id)
     print(f"OK {series} {y}: tracks={len(tracks)} teams={len(teams)} drivers={len(drivers)} market={len(market)} youth={len(youth)}")
@@ -833,6 +865,7 @@ def gen_indycar(year=2026):
                     break
         if team is not None:
             team["driver_ids"].append(d["id"])
+            d["team_raw"] = team["name"]
         else:
             unassigned.append(d["name"])
     teams = [t for t in teams if t["driver_ids"]]
