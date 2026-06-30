@@ -10,6 +10,7 @@ const NAV = [
   { to: '/standings', label: 'Standings', icon: '▤' },
   { to: '/history', label: 'Race History', icon: '⌚' },
   { to: '/drivers', label: 'Drivers', icon: '☷' },
+  { to: '/curves', label: 'Dev Curves', icon: '↗' },
   { to: '/market', label: 'Driver Market', icon: '⇄' },
   { to: '/scouting', label: 'Scouting', icon: '⚲' },
   { to: '/development', label: 'Development', icon: '⚙' },

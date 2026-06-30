@@ -45,6 +45,8 @@ import { createInitialFacilities } from '../sim/facilityEngine';
 import { rolloverRelationships } from '../sim/relationshipEngine';
 import { generateRegulationProposals, resolveRegulationVoting } from '../sim/politicsEngine';
 import { refreshScoutingNetwork } from '../sim/scoutingEngine';
+import { createDriverDevelopmentCurve, developmentStep } from '../sim/developmentCurveEngine';
+import type { DriverDevelopmentCurve } from '../types/developmentCurveTypes';
 import type { Car, Driver, OffseasonSummary, Team } from '../types/gameTypes';
 import type { AcademyMember } from '../types/marketTypes';
 import type { FinanceTransaction } from '../types/financeTypes';
@@ -471,6 +473,33 @@ export function advanceSeason(state: GameState): GameState {
     state.series,
   );
 
+  // Driver aging & development (Living Universe Phase 10): every driver ages a
+  // year and their ratings move along their curve — youngsters improve toward
+  // their ceiling, peak drivers hold, veterans decline. The player's Driver
+  // Academy lifts their own developing drivers a little more.
+  const academyBoost = facilityYouthDevelopmentBonus(nextFacilities);
+  const nextCurves: Record<string, DriverDevelopmentCurve> = { ...(state.developmentCurves ?? {}) };
+  const developmentNotes: string[] = [];
+  const developedDrivers = drivers.map((d) => {
+    let curve = nextCurves[d.id];
+    if (!curve) {
+      curve = createDriverDevelopmentCurve(d, state.randomSeed);
+      nextCurves[d.id] = curve;
+    }
+    const isPlayer = d.teamId === state.selectedTeamId;
+    const { driver, result } = developmentStep(curve, d, state.randomSeed, {
+      seasonYear: nextYear,
+      academyBoost: isPlayer ? academyBoost : 0,
+    });
+    if (isPlayer && Math.abs(result.overallAfter - result.overallBefore) >= 0.2) {
+      const dir = result.overallAfter >= result.overallBefore ? 'improved to' : 'slipped to';
+      developmentNotes.push(
+        `${driver.name} ${dir} ${result.overallAfter.toFixed(1)} overall (${result.phase.toLowerCase()}).`,
+      );
+    }
+    return driver;
+  });
+
   const champion = state.driverStandings[0];
   const constructorChamp = state.constructorStandings[0];
   const summary: OffseasonSummary = {
@@ -491,6 +520,7 @@ export function advanceSeason(state: GameState): GameState {
       ...principalNotes,
       ...relationshipNotes,
       ...voteResolution.notes,
+      ...developmentNotes,
     ],
   };
 
@@ -504,7 +534,7 @@ export function advanceSeason(state: GameState): GameState {
     calendar,
     pointsSystemId,
     regulationSetId,
-    drivers,
+    drivers: developedDrivers,
     cars,
     teams,
     facilities: nextFacilities,
@@ -525,6 +555,7 @@ export function advanceSeason(state: GameState): GameState {
     scouting: state.scouting
       ? { ...refreshScoutingNetwork(state.scouting, nextFacilities)!, reports: {} }
       : state.scouting,
+    developmentCurves: nextCurves,
     carSetups,
     academy: nextAcademy,
     pendingSignings: [],
