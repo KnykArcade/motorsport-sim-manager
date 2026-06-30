@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useState, type ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useGame } from '../game/GameContext';
 import { activeDriversForTeam, currentRace } from '../game/careerState';
@@ -8,6 +8,7 @@ import { qualifyingRunPlans } from '../data/decisions/qualifyingRunPlans';
 import { raceStrategies } from '../data/decisions/raceStrategies';
 import { driverInstructions } from '../data/decisions/driverInstructions';
 import { autoSetupsForTrack } from '../sim/autoSetup';
+import { qualifyingFormatFor } from '../sim/qualifyingEngine';
 import { BALANCED_SETUP } from '../data/setup/setupComponents';
 import {
   weekendSessionKinds,
@@ -41,7 +42,7 @@ import { SetupWorkshop } from '../components/SetupWorkshop';
 import type { Driver, Track, StandingsEntry } from '../types/gameTypes';
 import type { WeatherState } from '../types/liveTypes';
 import type { CarSetup } from '../types/setupTypes';
-import type { QualifyingDecision, RaceDecision } from '../types/simTypes';
+import type { QualifyingDecision, QualifyingFormat, RaceDecision } from '../types/simTypes';
 
 type Phase =
   | 'hub'
@@ -114,6 +115,8 @@ export function RaceWeekend() {
       driverId,
       setupId: autoSetups?.qualifying.id ?? '',
       runPlanId: o.runPlanId ?? 'StandardPush',
+      runs: o.runs ?? 2,
+      tyreApproach: o.tyreApproach ?? 'Standard',
     };
   };
   const raceFor = (driverId: string): RaceDecision => {
@@ -230,6 +233,23 @@ export function RaceWeekend() {
           }
           recommendedId={recommendedQualiRunPlan(track, forecast?.Qualifying).optionId}
           recommendedReason={recommendedQualiRunPlan(track, forecast?.Qualifying).reason}
+          headerExtra={
+            <QualifyingSessionInfo
+              format={qualifyingFormatFor(state.seasonYear, state.series)}
+              weather={forecast?.Qualifying}
+            />
+          }
+          extraControls={(driverId) => (
+            <QualifyingRunControls
+              decision={qualiFor(driverId)}
+              onRuns={(runs) =>
+                setQualiOverrides((p) => ({ ...p, [driverId]: { ...p[driverId], runs } }))
+              }
+              onTyre={(tyreApproach) =>
+                setQualiOverrides((p) => ({ ...p, [driverId]: { ...p[driverId], tyreApproach } }))
+              }
+            />
+          )}
           onBack={() => setPhase('setup')}
           onNext={runQualifying}
           nextLabel="Simulate Qualifying →"
@@ -241,6 +261,7 @@ export function RaceWeekend() {
           state={state}
           raceId={race.id}
           debug={settings.debugMode}
+          weather={forecast?.Qualifying}
           onNext={() => setPhase('race-strategy')}
         />
       )}
@@ -629,6 +650,8 @@ function DecisionPhase({
   nextLabel = 'Continue →',
   recommendedId,
   recommendedReason,
+  headerExtra,
+  extraControls,
 }: {
   title: string;
   subtitle: string;
@@ -641,6 +664,8 @@ function DecisionPhase({
   nextLabel?: string;
   recommendedId?: string;
   recommendedReason?: string;
+  headerExtra?: ReactNode;
+  extraControls?: (driverId: string) => ReactNode;
 }) {
   const recommendedName = options.find((o) => o.id === recommendedId)?.name;
   return (
@@ -653,6 +678,7 @@ function DecisionPhase({
             <span className="font-semibold">Engineer recommends {recommendedName}:</span> {recommendedReason}
           </p>
         )}
+        {headerExtra}
       </div>
       <div className="grid gap-4 md:grid-cols-2">
         {drivers.map((d) => (
@@ -681,6 +707,7 @@ function DecisionPhase({
                   </button>
                 );
               })}
+              {extraControls?.(d.id)}
             </div>
           </Panel>
         ))}
@@ -709,6 +736,93 @@ function WeatherChip({ weather }: { weather: WeatherState }) {
       {weather.label}
       {weather.changingSoon && <span className="text-[10px] uppercase opacity-80">· changing</span>}
     </span>
+  );
+}
+
+function QualifyingSessionInfo({
+  format,
+  weather,
+}: {
+  format: QualifyingFormat;
+  weather?: WeatherState;
+}) {
+  const wet = weather?.wet || weather?.changingSoon;
+  return (
+    <div className="mt-2 flex flex-wrap items-center gap-2 text-xs text-neutral-400">
+      <span className="inline-flex items-center gap-1 rounded border border-neutral-700 bg-neutral-800/60 px-2 py-0.5">
+        Format:{' '}
+        <span className="font-semibold text-neutral-200">
+          {format === 'Knockout' ? 'Knockout (Q1 / Q2 / Q3)' : 'Single session'}
+        </span>
+      </span>
+      {weather && (
+        <span className="inline-flex items-center gap-1">
+          Conditions: <WeatherChip weather={weather} />
+        </span>
+      )}
+      {wet && (
+        <span className="text-blue-300">
+          Wet/changeable — rewards driver skill; Wet-Weather Prep practice pays off.
+        </span>
+      )}
+    </div>
+  );
+}
+
+function QualifyingRunControls({
+  decision,
+  onRuns,
+  onTyre,
+}: {
+  decision: QualifyingDecision;
+  onRuns: (runs: number) => void;
+  onTyre: (tyreApproach: NonNullable<QualifyingDecision['tyreApproach']>) => void;
+}) {
+  const runs = decision.runs ?? 1;
+  const tyre = decision.tyreApproach ?? 'Standard';
+  return (
+    <div className="mt-2 space-y-2 rounded-lg border border-neutral-800 bg-neutral-900/40 p-2.5">
+      <div className="flex items-center justify-between gap-2">
+        <span className="text-xs text-neutral-400">Timed runs</span>
+        <div className="flex gap-1">
+          {[1, 2, 3].map((n) => (
+            <button
+              key={n}
+              onClick={() => onRuns(n)}
+              className={`h-7 w-7 rounded border text-xs font-semibold transition-colors ${
+                runs === n
+                  ? 'border-amber-500 bg-amber-500/20 text-amber-200'
+                  : 'border-neutral-700 text-neutral-300 hover:border-neutral-500'
+              }`}
+            >
+              {n}
+            </button>
+          ))}
+        </div>
+      </div>
+      <div className="flex items-center justify-between gap-2">
+        <span className="text-xs text-neutral-400">Tyre approach</span>
+        <div className="flex gap-1">
+          {(['Standard', 'Conserve'] as const).map((t) => (
+            <button
+              key={t}
+              onClick={() => onTyre(t)}
+              className={`rounded border px-2 py-1 text-xs font-medium transition-colors ${
+                tyre === t
+                  ? 'border-amber-500 bg-amber-500/20 text-amber-200'
+                  : 'border-neutral-700 text-neutral-300 hover:border-neutral-500'
+              }`}
+            >
+              {t}
+            </button>
+          ))}
+        </div>
+      </div>
+      <p className="text-[10px] leading-tight text-neutral-500">
+        More runs find pace but raise incident risk and tyre wear. Conserve protects tyres for the
+        race at a small pace cost.
+      </p>
+    </div>
   );
 }
 
@@ -852,15 +966,23 @@ function WeekendHub({
   );
 }
 
+const SEGMENT_BADGE: Record<string, string> = {
+  Q3: 'bg-amber-500/20 text-amber-300',
+  Q2: 'bg-neutral-500/20 text-neutral-300',
+  Q1: 'bg-neutral-700/40 text-neutral-400',
+};
+
 function QualifyingReview({
   state,
   raceId,
   debug,
+  weather,
   onNext,
 }: {
   state: NonNullable<ReturnType<typeof useGame>['state']>;
   raceId: string;
   debug: boolean;
+  weather?: WeatherState;
   onNext: () => void;
 }) {
   const results = state.qualifyingResults[raceId] ?? [];
@@ -870,11 +992,20 @@ function QualifyingReview({
   const isPlayer = (teamId: string) => teamId === state.selectedTeamId;
 
   const dnqCount = results.filter((r) => r.dnq).length;
+  const knockout = results.some((r) => r.segment && r.segment !== 'Single');
 
   return (
     <div className="space-y-4">
       <div>
-        <h2 className="text-lg font-semibold text-neutral-100">Qualifying Review</h2>
+        <div className="flex flex-wrap items-center gap-2">
+          <h2 className="text-lg font-semibold text-neutral-100">Qualifying Review</h2>
+          {knockout && (
+            <span className="rounded border border-neutral-700 bg-neutral-800/60 px-2 py-0.5 text-xs text-neutral-300">
+              Knockout · Q1 / Q2 / Q3
+            </span>
+          )}
+          {weather && <WeatherChip weather={weather} />}
+        </div>
         <p className="text-sm text-neutral-400">Review the grid, then choose your race strategy in response.</p>
         {dnqCount > 0 && (
           <p className="mt-1 text-sm text-red-400">
@@ -891,6 +1022,7 @@ function QualifyingReview({
               <th className="px-3 py-2">Driver</th>
               <th className="px-3 py-2">Team</th>
               <th className="px-3 py-2">Gap</th>
+              {knockout && <th className="px-3 py-2">Out</th>}
               <th className="px-3 py-2">Run Plan</th>
               <th className="px-3 py-2">Notes</th>
               {debug && <th className="px-3 py-2">Score</th>}
@@ -900,10 +1032,15 @@ function QualifyingReview({
             {results.map((r, idx) => {
               const bd = lastBreakdowns.qualifying[r.driverId];
               const firstDnq = r.dnq && !results[idx - 1]?.dnq;
+              // Divider when the knockout segment changes (Q3 -> Q2 -> Q1).
+              const segmentBreak =
+                knockout && idx > 0 && r.segment !== results[idx - 1]?.segment;
               return (
                 <tr
                   key={r.driverId}
-                  className={`border-t ${firstDnq ? 'border-red-600/70' : 'border-neutral-800/60'} ${
+                  className={`border-t ${
+                    firstDnq || segmentBreak ? 'border-neutral-600' : 'border-neutral-800/60'
+                  } ${firstDnq ? 'border-red-600/70' : ''} ${
                     r.dnq ? 'bg-red-950/30 text-neutral-500' : isPlayer(r.teamId) ? 'bg-amber-500/10' : ''
                   }`}
                 >
@@ -921,6 +1058,19 @@ function QualifyingReview({
                   </td>
                   <td className="px-3 py-1.5 text-neutral-400">{teamName(r.teamId)}</td>
                   <td className="px-3 py-1.5 text-neutral-300">{r.gapText}</td>
+                  {knockout && (
+                    <td className="px-3 py-1.5">
+                      {r.segment && r.segment !== 'Single' && (
+                        <span
+                          className={`rounded px-1.5 py-0.5 text-[10px] font-semibold ${
+                            SEGMENT_BADGE[r.segment] ?? ''
+                          }`}
+                        >
+                          {r.segment}
+                        </span>
+                      )}
+                    </td>
+                  )}
                   <td className="px-3 py-1.5 text-neutral-500">{r.runPlan}</td>
                   <td className="px-3 py-1.5 text-xs text-neutral-400">
                     {r.incident?.type === 'Crash' && <span className="mr-1 text-red-400">CRASH</span>}

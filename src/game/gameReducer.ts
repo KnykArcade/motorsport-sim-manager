@@ -6,7 +6,7 @@ import { setupOptionsById } from '../data/setupOptions/setupOptions';
 import { autoSetupOptionsForTrack } from '../sim/autoSetup';
 import { qualifyingRunPlansById } from '../data/decisions/qualifyingRunPlans';
 import { developmentProjectsById } from '../data/development/developmentProjects';
-import { simulateQualifying } from '../sim/qualifyingEngine';
+import { qualifyingFormatFor, simulateQualifying } from '../sim/qualifyingEngine';
 import { simulateRace } from '../sim/raceEngine';
 import { buildConstructorStandings, buildDriverStandings } from '../sim/standingsEngine';
 import { applyDevelopmentProgress } from '../sim/developmentEngine';
@@ -71,7 +71,12 @@ import type {
   ScoreBreakdown,
 } from '../types/simTypes';
 import type { CarSetup } from '../types/setupTypes';
-import type { PracticeAssignment, PracticeSession, PracticeSessionKind } from '../types/practiceTypes';
+import type {
+  PracticeAssignment,
+  PracticeSession,
+  PracticeSessionKind,
+  WeekendPractice,
+} from '../types/practiceTypes';
 import { BALANCED_SETUP } from '../data/setup/setupComponents';
 import {
   accumulateKnowledge,
@@ -744,6 +749,19 @@ function signYouth(state: GameState, youthId: string): GameState {
   return { ...charged, academy: [...(charged.academy ?? []), member] };
 }
 
+// Drivers who ran the Wet-Weather Preparation program in any completed practice
+// session this weekend — they cope better if qualifying turns wet.
+function wetPreparedDrivers(wp: WeekendPractice): string[] {
+  const ids = new Set<string>();
+  for (const session of wp.sessions) {
+    if (!session.completed) continue;
+    for (const a of session.assignments) {
+      if (a.program === 'WetWeatherPreparation') ids.add(a.driverId);
+    }
+  }
+  return [...ids];
+}
+
 function runQualifying(state: GameState, playerDecisions: QualifyingDecision[]): GameState {
   const race = currentRace(state);
   if (!race) return state;
@@ -760,6 +778,14 @@ function runQualifying(state: GameState, playerDecisions: QualifyingDecision[]):
     decisions[e.driver.id] = tunedId ? { ...decision, setupId: tunedId } : decision;
   }
 
+  // Qualifying picks up the weekend forecast for its own session, the era's
+  // format (knockout vs single), and which drivers banked wet running in practice.
+  const forecast = weekendForecast(track, `${state.randomSeed}-r${race.round}`);
+  const wetPreparedDriverIds =
+    state.weekendPractice && state.weekendPractice.raceId === race.id
+      ? wetPreparedDrivers(state.weekendPractice)
+      : [];
+
   const { results, breakdowns } = simulateQualifying({
     track,
     entrants,
@@ -768,6 +794,9 @@ function runQualifying(state: GameState, playerDecisions: QualifyingDecision[]):
     runPlans: qualifyingRunPlansById,
     seed: `${state.randomSeed}-r${race.round}`,
     maxQualifiers: getMaxQualifiers(state.series),
+    weather: forecast.Qualifying,
+    wetPreparedDriverIds,
+    format: qualifyingFormatFor(state.seasonYear, state.series),
   });
 
   lastBreakdowns.qualifying = breakdowns;

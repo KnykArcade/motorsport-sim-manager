@@ -35,6 +35,26 @@ Choose Race Strategy → Race Setup → Race Strategy → Driver Instructions �
 Results header shows the advanced round/budget; "Back to HQ" returns. Save persistence: reload page →
 "Continue" should be enabled and restore the post-race state.
 
+## Driver Relationships & Team Orders (Phase 7)
+- Pick a team whose lead driver seeds `numberOneExpectation` to test the #1 path. **Benetton (1995)** works:
+  Schumacher (overall 9.5) gets the amber "Expects #1 status" badge, Herbert (#2) does not. Seeding needs
+  overall ≥ ~8.3 on a credible team, so a midfield team may seed neither driver as #1.
+- **Relationships screen** (sidebar/HQ): each driver shows 5 bars (Morale, Team Loyalty, Engineer Chemistry,
+  Teammate Relationship, Frustration, 0–100) + a "Team-Order Log (this season)". Record the lead driver's
+  baseline numbers before the race so you can diff afterward.
+- **Issuing an order:** in the Live Race, the **Team Orders** pit-wall panel (right column, scroll down) has
+  7 order types. "Swap positions" / "Protect lead driver" etc. have a driver button each — clicking
+  "Swap → J. Herbert" favours Herbert and disadvantages the #1. Effect is **immediate**: running order flips
+  (Herbert P→1, Schumacher →2) and the event log adds "Positions swapped in favour of …". Swap buttons need
+  both cars running.
+- **Key gotcha:** the swap only adjusts on-track time at the moment issued — the race then plays out, so the
+  faster driver can recover positions by the flag. Don't assert on *final* finishing order; the consequence
+  engine keys off the **recorded order**, so the #1 still takes the fallout regardless of recovery.
+- **Post-race fallout** (Relationships screen after committing results): disadvantaged #1 driver's Morale,
+  Team Loyalty, Teammate Relationship drop and Frustration rises (≈2× hit for a #1); favoured driver's morale
+  rises slightly. A media headline appears in the Results "Headlines" panel ("… openly questions the team after
+  being told to give best position to …"). The Team-Order Log lists "Lap N · Swap positions · favouring X over Y".
+
 ## Recording tips
 - Maximize first: `sudo apt-get install -y wmctrl 2>/dev/null; wmctrl -r :ACTIVE: -b add,maximized_vert,maximized_horz`.
 - The full loop is ~1–2 min; annotate per test (T1 HQ, T2 gate, T3 quali, T4 race, T5 standings, T6 save).
