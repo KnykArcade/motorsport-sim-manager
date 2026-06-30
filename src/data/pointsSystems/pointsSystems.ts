@@ -2,6 +2,11 @@ import type { PointsSystem } from '../../types/gameTypes';
 
 // Points systems are configurable per-season so future years can differ.
 export const pointsSystems: Record<string, PointsSystem> = {
+  'pts-1990': {
+    id: 'pts-1990',
+    name: '1990 (9-6-4-3-2-1)',
+    pointsByPosition: { 1: 9, 2: 6, 3: 4, 4: 3, 5: 2, 6: 1 },
+  },
   'pts-1995': {
     id: 'pts-1995',
     name: '1995 (10-6-4-3-2-1)',
