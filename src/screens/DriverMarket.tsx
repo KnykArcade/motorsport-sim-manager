@@ -5,6 +5,7 @@ import { getMarketBundle } from '../data';
 import { isAcademyReady } from '../sim/driverMarketEngine';
 import { toMoney } from '../sim/financeEngine';
 import { thirdDriverMidSeasonFee } from '../sim/contractEngine';
+import { fogView } from '../sim/scoutingEngine';
 import { Panel } from '../components/Panel';
 import { StatBar } from '../components/StatBar';
 import { Button } from '../components/Button';
@@ -43,6 +44,17 @@ export function DriverMarket() {
   const signedMarketIds = new Set(state.signedMarketIds ?? []);
   const signingBySource = new Map(signings.map((s) => [s.sourceId, s]));
   const seatName = (id: string) => state.drivers.find((d) => d.id === id)?.name ?? id;
+
+  // Fogged potential label: scouted targets show an exact ceiling, the rest a
+  // range you can narrow on the Scouting screen.
+  const scouting = state.scouting;
+  const potLabel = (id: string, skills: MarketSkillRatings, potential: number): string => {
+    if (!scouting) return potential.toFixed(1);
+    const v = fogView({ id, skills, potential }, scouting.reports[id], scouting.networkAccuracy, state.randomSeed);
+    return v.potential.revealed
+      ? v.potential.value!.toFixed(1)
+      : `${v.potential.range[0].toFixed(1)}–${v.potential.range[1].toFixed(1)}`;
+  };
 
   return (
     <div className="space-y-6">
@@ -124,6 +136,7 @@ export function DriverMarket() {
                 seats={seats}
                 signed={signedMarketIds.has(d.id)}
                 pending={signingBySource.get(d.id)}
+                potLabel={potLabel(d.id, d.skills, d.potential)}
                 affordable={toMoney(d.buyoutCost) <= budget}
                 canSignThird={canSignThird}
                 thirdFee={thirdDriverMidSeasonFee(d.salary, racesRemaining, state.calendar.length)}
@@ -150,6 +163,7 @@ export function DriverMarket() {
           budget={budget}
           signingBySource={signingBySource}
           seatName={seatName}
+          potLabel={potLabel}
           onSignYouth={(youthId) => dispatch({ type: 'SIGN_YOUTH', youthId })}
           onReleaseAcademy={(academyId) => dispatch({ type: 'RELEASE_ACADEMY', academyId })}
           onPromote={(academyId, seatDriverId) =>
@@ -229,6 +243,7 @@ function SeniorCard({
   seats,
   signed,
   pending,
+  potLabel,
   affordable,
   canSignThird,
   thirdFee,
@@ -243,6 +258,7 @@ function SeniorCard({
   seats: Driver[];
   signed: boolean;
   pending?: SeatSigning;
+  potLabel: string;
   affordable: boolean;
   canSignThird: boolean;
   thirdFee: number;
@@ -265,7 +281,7 @@ function SeniorCard({
           <span className="rounded bg-neutral-800 px-2 py-0.5 text-xs font-semibold text-amber-300">
             {d.overall.toFixed(1)}
           </span>
-          <div className="mt-0.5 text-[10px] text-neutral-500">POT {d.potential.toFixed(1)}</div>
+          <div className="mt-0.5 text-[10px] text-neutral-500">POT {potLabel}</div>
         </div>
       </div>
 
@@ -333,6 +349,7 @@ function YouthTab({
   budget,
   signingBySource,
   seatName,
+  potLabel,
   onSignYouth,
   onReleaseAcademy,
   onPromote,
@@ -345,6 +362,7 @@ function YouthTab({
   budget: number;
   signingBySource: Map<string, SeatSigning>;
   seatName: (id: string) => string;
+  potLabel: (id: string, skills: MarketSkillRatings, potential: number) => string;
   onSignYouth: (youthId: string) => void;
   onReleaseAcademy: (academyId: string) => void;
   onPromote: (academyId: string, seatDriverId: string) => void;
@@ -452,7 +470,7 @@ function YouthTab({
                 </div>
                 <div className="text-right">
                   <span className="rounded bg-neutral-800 px-2 py-0.5 text-xs font-semibold text-sky-300">
-                    POT {y.potential.toFixed(1)}
+                    POT {potLabel(y.id, y.skills, y.potential)}
                   </span>
                   <div className="mt-0.5 text-[10px] text-neutral-500">now {y.overall.toFixed(1)}</div>
                 </div>

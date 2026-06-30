@@ -11,6 +11,7 @@ const NAV = [
   { to: '/history', label: 'Race History', icon: '⌚' },
   { to: '/drivers', label: 'Drivers', icon: '☷' },
   { to: '/market', label: 'Driver Market', icon: '⇄' },
+  { to: '/scouting', label: 'Scouting', icon: '⚲' },
   { to: '/development', label: 'Development', icon: '⚙' },
   { to: '/finance', label: 'Finance', icon: '$' },
   { to: '/sponsors', label: 'Sponsors', icon: '✦' },

@@ -52,6 +52,8 @@ import type {
 } from '../types/gameTypes';
 import type { EngineDealType } from '../types/engineTypes';
 import type { RegulationVote } from '../types/politicsTypes';
+import type { ScoutedEntityType } from '../types/scoutingTypes';
+import { recordScouting, type ScoutTarget } from '../sim/scoutingEngine';
 import type {
   Entrant,
   QualifyingDecision,
@@ -100,6 +102,7 @@ export type GameAction =
   | { type: 'ACCEPT_JOB_OFFER'; offerId: string }
   | { type: 'DECLINE_JOB_OFFER'; offerId: string }
   | { type: 'SET_REGULATION_VOTE'; proposalId: string; vote: RegulationVote }
+  | { type: 'SCOUT_TARGET'; entityId: string; entityType: ScoutedEntityType }
   | { type: 'SWAP_RACE_DRIVER'; seatIndex: number; reserveDriverId: string }
   | { type: 'SIGN_THIRD_DRIVER'; marketId: string }
   | { type: 'PROMOTE_THIRD_DRIVER'; seatDriverId: string; thirdDriverId: string }
@@ -399,6 +402,11 @@ export function gameReducer(state: GameState | null, action: GameAction): GameSt
       };
     }
 
+    case 'SCOUT_TARGET': {
+      if (!state) return state;
+      return scoutTargetAction(state, action.entityId, action.entityType);
+    }
+
     case 'SWAP_RACE_DRIVER': {
       if (!state) return state;
       return swapRaceDriver(state, action.seatIndex, action.reserveDriverId);
@@ -519,6 +527,39 @@ function upgradeFacility(state: GameState, facilityId: string): GameState {
     makeTransaction(state.seasonYear, 'Facilities', `Upgrade ${label} to L${(facility?.level ?? 0) + 1}`, -fee),
   );
   return { ...charged, facilities: ordered.state };
+}
+
+// Spend one round of scouting effort on a market driver or youth prospect,
+// sharpening the fogged view of their true ratings. The target's true ratings
+// come from the current season's market bundle.
+function scoutTargetAction(
+  state: GameState,
+  entityId: string,
+  entityType: ScoutedEntityType,
+): GameState {
+  if (!state.scouting) return state;
+  const bundle = getMarketBundle(state.seasonYear, state.series);
+  if (!bundle) return state;
+
+  let target: ScoutTarget | undefined;
+  if (entityType === 'Driver') {
+    const d = bundle.drivers.find((x) => x.id === entityId);
+    if (d) target = { id: d.id, skills: d.skills, potential: d.potential };
+  } else if (entityType === 'YouthProspect') {
+    const y = bundle.youth.find((x) => x.id === entityId);
+    if (y) target = { id: y.id, skills: y.skills, potential: y.potential };
+  }
+  if (!target) return state;
+
+  const scouting = recordScouting(
+    state.scouting,
+    target,
+    entityType,
+    state.facilities,
+    state.randomSeed,
+    new Date().toISOString(),
+  );
+  return { ...state, scouting };
 }
 
 // Negotiate a new engine deal. It's queued as the pending deal and takes effect

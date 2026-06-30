@@ -20,6 +20,7 @@ import { EngineSupplier } from '../screens/EngineSupplier';
 import { TeamPrincipal } from '../screens/TeamPrincipal';
 import { Relationships } from '../screens/Relationships';
 import { Politics } from '../screens/Politics';
+import { Scouting } from '../screens/Scouting';
 import { Settings } from '../screens/Settings';
 import { RaceWeekend } from '../screens/RaceWeekend';
 import { LiveRace } from '../screens/LiveRace';
@@ -59,6 +60,7 @@ export default function App() {
           <Route path="/principal" element={<InGame><TeamPrincipal /></InGame>} />
           <Route path="/relationships" element={<InGame><Relationships /></InGame>} />
           <Route path="/politics" element={<InGame><Politics /></InGame>} />
+          <Route path="/scouting" element={<InGame><Scouting /></InGame>} />
           <Route path="/history" element={<InGame><RaceHistory /></InGame>} />
           <Route path="/weekend" element={<InGame><RaceWeekend /></InGame>} />
           <Route path="/live-race/:raceId" element={<InGame><LiveRace /></InGame>} />

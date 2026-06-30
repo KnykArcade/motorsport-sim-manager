@@ -131,6 +131,7 @@ export function TeamHQ() {
               <Button onClick={() => navigate('/principal')}>Principal</Button>
               <Button onClick={() => navigate('/relationships')}>Relationships</Button>
               <Button onClick={() => navigate('/politics')}>Regulations</Button>
+              <Button onClick={() => navigate('/scouting')}>Scouting</Button>
               <Button onClick={() => navigate('/data')}>Team Data</Button>
               <Button onClick={() => navigate('/settings')}>Settings</Button>
             </div>
