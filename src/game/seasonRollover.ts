@@ -44,6 +44,7 @@ import { buildInitialCommercial } from '../sim/commercialEngine';
 import { createInitialFacilities } from '../sim/facilityEngine';
 import { rolloverRelationships } from '../sim/relationshipEngine';
 import { generateRegulationProposals, resolveRegulationVoting } from '../sim/politicsEngine';
+import { refreshScoutingNetwork } from '../sim/scoutingEngine';
 import type { Car, Driver, OffseasonSummary, Team } from '../types/gameTypes';
 import type { AcademyMember } from '../types/marketTypes';
 import type { FinanceTransaction } from '../types/financeTypes';
@@ -521,6 +522,9 @@ export function advanceSeason(state: GameState): GameState {
     regulationHistory: regulationHistoryWithVotes,
     regulationProposals: nextProposals,
     regulationVoteHistory: [...(state.regulationVoteHistory ?? []), ...voteResolution.results],
+    scouting: state.scouting
+      ? { ...refreshScoutingNetwork(state.scouting, nextFacilities)!, reports: {} }
+      : state.scouting,
     carSetups,
     academy: nextAcademy,
     pendingSignings: [],
