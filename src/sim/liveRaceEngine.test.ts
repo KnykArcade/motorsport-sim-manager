@@ -14,7 +14,12 @@ import { autoSetupOptionsForTrack } from './autoSetup';
 import { aiQualifyingDecision, aiRaceDecision } from '../game/ai';
 import { simulateQualifying } from './qualifyingEngine';
 import { createLiveRace, finalizeResults, type LiveRaceMeta } from './liveRaceEngine';
-import { stepLiveRace, stepLiveRaceToEnd, resolvePrompt } from './raceTickEngine';
+import {
+  stepLiveRace,
+  stepLiveRaceToEnd,
+  resolvePrompt,
+  requestPlayerPit,
+} from './raceTickEngine';
 import type {
   Entrant,
   QualifyingDecision,
@@ -166,5 +171,72 @@ describe('live race engine', () => {
     }
     // Not strictly guaranteed, but with this seed/field a prompt should occur.
     void sawPrompt;
+  });
+});
+
+describe('player-controlled pit strategy', () => {
+  it('gives player cars an advisory pit window but not AI cars', () => {
+    const context = buildContext();
+    const playerTeam = context.entrants[0].driver.teamId;
+    const state = createRace(context, playerTeam);
+    const playerCars = state.cars.filter((c) => c.isPlayer);
+    const aiCars = state.cars.filter((c) => !c.isPlayer);
+
+    expect(playerCars.length).toBeGreaterThan(0);
+    for (const c of playerCars) {
+      expect(c.pit.window).not.toBeNull();
+      const w = c.pit.window!;
+      expect(w.open).toBeLessThanOrEqual(w.ideal);
+      expect(w.ideal).toBeLessThanOrEqual(w.close);
+      expect(c.pit.pitRequested).toBe(false);
+    }
+    expect(aiCars.every((c) => c.pit.window === null)).toBe(true);
+  });
+
+  it('does not pit a player car before its window opens without a request', () => {
+    const context = buildContext('pit-window-seed');
+    const playerTeam = context.entrants[0].driver.teamId;
+    const meta = buildMeta(context, playerTeam);
+    let state = createRace(context, playerTeam);
+    const target = state.cars.find((c) => c.isPlayer)!;
+    const openLap = target.pit.window!.open;
+
+    for (let i = 0; i < openLap - 1 && state.phase !== 'finished'; i++) {
+      if (state.pendingPrompt) {
+        // Resolve with a non-pitting option so we isolate window behaviour.
+        const stay = state.pendingPrompt.options.find((o) => !o.effects.pitNow);
+        state = resolvePrompt(state, (stay ?? state.pendingPrompt.options[0]).id, meta);
+      } else {
+        state = stepLiveRace(state, meta);
+      }
+    }
+
+    const car = state.cars.find((c) => c.driverId === target.driverId)!;
+    // Without a pit request, the car shouldn't have taken its planned stop yet
+    // (unless forced by the tyre cliff, which this seed doesn't reach pre-window).
+    if (car.running) expect(car.pit.stopsMade).toBe(0);
+  });
+
+  it('boxes a player car the lap after a pit request', () => {
+    const context = buildContext('pit-request-seed');
+    const playerTeam = context.entrants[0].driver.teamId;
+    const meta = buildMeta(context, playerTeam);
+    let state = createRace(context, playerTeam);
+    state = stepLiveRace(state, meta); // get racing
+
+    const target = state.cars.find((c) => c.isPlayer && c.running);
+    if (!target) return; // unlucky early DNF — nothing to assert
+
+    state = requestPlayerPit(state, target.driverId);
+    expect(state.cars.find((c) => c.driverId === target.driverId)!.pit.pitRequested).toBe(true);
+
+    if (state.pendingPrompt) state = resolvePrompt(state, state.pendingPrompt.options[0].id, meta);
+    state = stepLiveRace(state, meta);
+
+    const after = state.cars.find((c) => c.driverId === target.driverId)!;
+    if (after.running) {
+      expect(after.pit.stopsMade).toBe(1);
+      expect(after.pit.pitRequested).toBe(false);
+    }
   });
 });

@@ -7,7 +7,12 @@ import {
   buildRaceContext,
 } from '../game/raceSetup';
 import { createLiveRace, finalizeResults } from '../sim/liveRaceEngine';
-import { resolvePrompt, stepLiveRace, stepLiveRaceToEnd } from '../sim/raceTickEngine';
+import {
+  requestPlayerPit,
+  resolvePrompt,
+  stepLiveRace,
+  stepLiveRaceToEnd,
+} from '../sim/raceTickEngine';
 import { Panel } from '../components/Panel';
 import { Button } from '../components/Button';
 import { RaceTrack2D, type TrackDot } from '../components/RaceTrack2D';
@@ -70,6 +75,8 @@ export function LiveRace() {
   };
   const chooseOption = (optionId: string) =>
     setLive((s) => (s ? resolvePrompt(s, optionId, engine.meta) : s));
+  const pitNow = (driverId: string) =>
+    setLive((s) => (s ? requestPlayerPit(s, driverId) : s));
 
   const finishRace = () => {
     if (committed.current) {
@@ -198,11 +205,77 @@ export function LiveRace() {
         </div>
 
         <div className="space-y-5">
+          {playerCars.length > 0 && (
+            <Panel title="Pit Strategy">
+              <div className="space-y-3">
+                {playerCars.map((c) => (
+                  <PitStrategyCard
+                    key={c.driverId}
+                    car={c}
+                    name={driverName(c.driverId)}
+                    currentLap={live.currentLap}
+                    finished={finished}
+                    onPit={() => pitNow(c.driverId)}
+                  />
+                ))}
+              </div>
+            </Panel>
+          )}
           <Panel title="Event Log">
             <EventLog events={live.events} />
           </Panel>
         </div>
       </div>
+    </div>
+  );
+}
+
+function PitStrategyCard({
+  car,
+  name,
+  currentLap,
+  finished,
+  onPit,
+}: {
+  car: LiveCarState;
+  name: string;
+  currentLap: number;
+  finished: boolean;
+  onPit: () => void;
+}) {
+  const w = car.pit.window;
+  const stopsLeft = car.pit.plannedStops - car.pit.stopsMade;
+  const open = !!w && currentLap >= w.open && currentLap <= w.close;
+
+  let status: { text: string; tone: 'normal' | 'warn' | 'good' };
+  if (!car.running) status = { text: 'Out of the race', tone: 'warn' };
+  else if (car.pit.pitRequested) status = { text: 'Box, box! Pitting this lap', tone: 'warn' };
+  else if (!w || stopsLeft <= 0) status = { text: 'No more stops planned', tone: 'normal' };
+  else if (currentLap < w.open) status = { text: `Window opens L${w.open} (in ${w.open - currentLap})`, tone: 'normal' };
+  else if (open) status = { text: `WINDOW OPEN — box now (ideal L${w.ideal}, through L${w.close})`, tone: 'good' };
+  else status = { text: 'Window closed — stop overdue', tone: 'warn' };
+
+  const canPit = car.running && !car.pit.pitRequested && !finished;
+  const toneColor =
+    status.tone === 'good' ? 'text-green-300' : status.tone === 'warn' ? 'text-amber-300' : 'text-neutral-300';
+
+  return (
+    <div className="rounded-lg border border-neutral-800 bg-neutral-900/40 p-3">
+      <div className="flex items-center justify-between">
+        <span className="text-sm font-semibold text-neutral-100">{name}</span>
+        <span className="text-xs text-neutral-400">
+          Stops {car.pit.stopsMade}/{car.pit.plannedStops} · {car.tire.compound} · wear {Math.round(car.tire.wear)}%
+        </span>
+      </div>
+      <p className={`mt-1 text-xs font-medium ${toneColor}`}>{status.text}</p>
+      <Button
+        variant={open ? 'primary' : 'ghost'}
+        onClick={onPit}
+        disabled={!canPit}
+        className="mt-2 w-full"
+      >
+        {car.pit.pitRequested ? 'Boxing…' : '🔧 Pit Now'}
+      </Button>
     </div>
   );
 }

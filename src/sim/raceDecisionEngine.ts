@@ -138,6 +138,32 @@ export function rainPrompt(car: LiveCarState, lap: number, heavy: boolean): Race
   };
 }
 
+export function pitWindowPrompt(car: LiveCarState, lap: number): RaceDecisionPrompt {
+  const close = car.pit.window?.close ?? lap;
+  return {
+    id: promptId(car.driverId, lap),
+    driverId: car.driverId,
+    category: 'Pit',
+    lap,
+    title: 'Pit window open',
+    description: `Your strategist's pit window is open (through lap ${close}). Box this lap for fresh tyres, or stay out and run longer?`,
+    options: [
+      {
+        id: 'box',
+        label: 'Box this lap',
+        detail: 'Take the planned stop now for fresh tyres.',
+        effects: { pitNow: true, note: 'boxes in the pit window' },
+      },
+      {
+        id: 'stay',
+        label: 'Stay out',
+        detail: 'Run longer — you can still box later in the window.',
+        effects: { note: 'stays out and runs longer' },
+      },
+    ],
+  };
+}
+
 export function tyreWearPrompt(car: LiveCarState, lap: number): RaceDecisionPrompt {
   return {
     id: promptId(car.driverId, lap),
@@ -243,10 +269,8 @@ export function applyDecisionEffects(
   }
 
   if (effects.pitNow) {
-    // Schedule a stop for the very next lap (deduped) so the tick engine pits.
-    const nextLap = currentLap + 1;
-    const scheduled = [nextLap, ...next.pit.scheduledLaps.filter((l) => l !== nextLap)];
-    next.pit = { ...next.pit, scheduledLaps: scheduled };
+    // Flag the car to box on the next lap; the tick engine executes the stop.
+    next.pit = { ...next.pit, pitRequested: true };
   }
 
   if (effects.retire) {

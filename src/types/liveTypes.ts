@@ -62,6 +62,14 @@ export type TireState = {
 // Pit stops
 // ---------------------------------------------------------------------------
 
+// The advisory pit window for a car's next planned stop. The player can box at
+// any time, but the window shows when the strategist recommends stopping.
+export type PitWindow = {
+  open: number; // first lap of the window
+  ideal: number; // strategist's target lap
+  close: number; // last lap before the stop is forced
+};
+
 export type PitStopState = {
   plannedStops: number;
   stopsMade: number;
@@ -69,6 +77,11 @@ export type PitStopState = {
   scheduledLaps: number[];
   lastPitLap: number | null;
   inPitThisLap: boolean;
+  // Player-controlled pitting: the next stop's advisory window, and a flag set
+  // when the player has called the car in. AI cars leave these null/false and
+  // pit off their scheduledLaps as before.
+  window: PitWindow | null;
+  pitRequested: boolean;
 };
 
 // ---------------------------------------------------------------------------
