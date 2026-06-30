@@ -9,6 +9,8 @@
 import type { Series, Team } from '../types/gameTypes';
 import type {
   EngineDealType,
+  EngineManufacturerObjective,
+  EngineManufacturerReview,
   EngineState,
   EngineSupplier,
   EngineSupplierDeal,
@@ -277,5 +279,174 @@ export function resolveEngineRollover(engine: EngineState | undefined, playerTea
     deals[playerTeamId] = currentDeal;
   }
 
-  return { ...engine, deals, currentDeal, pendingDeal: undefined };
+  return { ...engine, deals, currentDeal, pendingDeal: undefined, pendingDealFee: undefined };
+}
+
+// The order of deal tiers from best to worst, used for upgrade/downgrade steps.
+const TIER_ORDER: EngineDealType[] = [
+  'Works',
+  'FactoryBacked',
+  'PreferredCustomer',
+  'Customer',
+  'BudgetCustomer',
+];
+
+// Whether a deal is a manufacturer (works/factory) partnership, which carries a
+// performance relationship rather than a plain customer supply.
+export function isManufacturerDeal(dealType: EngineDealType): boolean {
+  return dealType === 'Works' || dealType === 'FactoryBacked';
+}
+
+// The upfront buyout fee ($M) to switch away from the current deal: it buys out
+// the remaining years of the running contract. Re-signing the same deal, or the
+// initial (no current deal) selection, is free.
+export function engineSwitchFee(
+  current: EngineSupplierDeal | undefined,
+  offer: EngineOffer,
+): number {
+  if (!current) return 0;
+  if (current.supplierName === offer.supplier.name && current.dealType === offer.dealType) return 0;
+  return round2(current.annualCost * Math.max(0, current.contractYearsRemaining) * 0.5);
+}
+
+// Apply the player's chosen starting engine deal at new-game: it becomes the
+// active deal immediately (season 1), free of any switch fee.
+export function applyInitialEngineSelection(
+  engine: EngineState,
+  team: Team,
+  supplierId: string,
+  dealType: EngineDealType,
+): EngineState {
+  const offer = availableEngineOffers(engine, team).find(
+    (o) => o.supplier.id === supplierId && o.dealType === dealType,
+  );
+  if (!offer) return engine;
+  const deal = buildSignedDeal(team, offer);
+  return {
+    ...engine,
+    currentDeal: deal,
+    deals: { ...(engine.deals ?? {}), [team.id]: deal },
+  };
+}
+
+// The performance target a manufacturer attaches to a works/factory deal.
+function manufacturerObjectiveFor(dealType: EngineDealType): EngineManufacturerObjective | undefined {
+  if (dealType === 'Works') {
+    return { description: 'Finish top 3 in the constructors', metric: 'constructorPosition', targetValue: 3 };
+  }
+  if (dealType === 'FactoryBacked') {
+    return { description: 'Finish top 6 in the constructors', metric: 'constructorPosition', targetValue: 6 };
+  }
+  return undefined;
+}
+
+// Seed the manufacturer relationship from the player's current deal. Customer
+// deals carry no relationship (the fields stay undefined).
+export function seedManufacturerRelationship(engine: EngineState): EngineState {
+  const deal = engine.currentDeal;
+  if (!deal || !isManufacturerDeal(deal.dealType)) {
+    return { ...engine, manufacturerConfidence: undefined, manufacturerObjective: undefined, manufacturerReviews: [] };
+  }
+  return {
+    ...engine,
+    manufacturerConfidence: 60,
+    manufacturerObjective: manufacturerObjectiveFor(deal.dealType),
+    manufacturerReviews: [],
+  };
+}
+
+// Rebuild the player's deal at a new tier with the same supplier (used when the
+// manufacturer upgrades or scales back support).
+function rebuildPlayerDealAtTier(
+  engine: EngineState,
+  playerTeamId: string,
+  dealType: EngineDealType,
+): EngineState {
+  const deal = engine.currentDeal;
+  if (!deal) return engine;
+  const supplier = (engine.suppliers ?? []).find((s) => s.name === deal.supplierName);
+  if (!supplier) return engine;
+  const spec = ENGINE_DEAL_SPECS[dealType];
+  const bonus = engineBonusFromDeal({ dealType } as EngineSupplierDeal, supplier);
+  const rebuilt: EngineSupplierDeal = {
+    ...deal,
+    dealType,
+    annualCost: dealAnnualCost(dealType, supplier),
+    powerRating: round2(supplier.basePower + bonus.power),
+    reliabilityRating: round2(supplier.baseReliability + bonus.reliability),
+    upgradeFrequency: spec.upgradeFrequency,
+    politicalInfluence: spec.politicalInfluence,
+    exclusivity: spec.exclusivity,
+    notes: [spec.description],
+  };
+  return { ...engine, currentDeal: rebuilt, deals: { ...(engine.deals ?? {}), [playerTeamId]: rebuilt } };
+}
+
+export type ManufacturerSeasonContext = {
+  constructorPosition: number; // 1 = best
+  wins: number;
+  points: number;
+};
+
+// Evaluate the manufacturer relationship at the season rollover: meeting the
+// target lifts confidence, missing it dents it. Sustained confidence can earn a
+// works upgrade; collapsed confidence scales the deal back a tier. Returns the
+// updated engine state and any summary notes. No-op for customer deals.
+export function evaluateManufacturerRelationship(
+  engine: EngineState | undefined,
+  playerTeamId: string,
+  ctx: ManufacturerSeasonContext,
+  seasonYear: number,
+): { engine: EngineState | undefined; notes: string[] } {
+  if (!engine?.currentDeal || !engine.manufacturerObjective || engine.manufacturerConfidence === undefined) {
+    return { engine, notes: [] };
+  }
+  const obj = engine.manufacturerObjective;
+  const met =
+    obj.metric === 'constructorPosition'
+      ? ctx.constructorPosition <= obj.targetValue
+      : obj.metric === 'wins'
+      ? ctx.wins >= obj.targetValue
+      : ctx.points >= obj.targetValue;
+
+  const confidenceDelta = met ? 10 : -15;
+  const confidence = Math.max(0, Math.min(100, engine.manufacturerConfidence + confidenceDelta));
+  const supplierName = engine.currentDeal.supplierName;
+  const notes: string[] = [
+    met
+      ? `${supplierName} are pleased — partnership target met (${obj.description.toLowerCase()}).`
+      : `${supplierName} are unhappy — partnership target missed (${obj.description.toLowerCase()}).`,
+  ];
+  const review: EngineManufacturerReview = {
+    seasonYear,
+    met,
+    summary: notes[0],
+    confidenceDelta,
+  };
+
+  let next: EngineState = {
+    ...engine,
+    manufacturerConfidence: confidence,
+    manufacturerReviews: [...(engine.manufacturerReviews ?? []), review],
+  };
+
+  const tierIdx = TIER_ORDER.indexOf(next.currentDeal!.dealType);
+  // Strong confidence earns a works upgrade for a factory partner.
+  if (confidence >= 85 && next.currentDeal!.dealType === 'FactoryBacked') {
+    next = rebuildPlayerDealAtTier(next, playerTeamId, 'Works');
+    notes.push(`${supplierName} upgrade you to a full works deal for ${seasonYear}.`);
+  } else if (confidence <= 25 && tierIdx < TIER_ORDER.length - 1) {
+    // Collapsed confidence: the manufacturer scales support back one tier.
+    const downgraded = TIER_ORDER[tierIdx + 1];
+    next = rebuildPlayerDealAtTier(next, playerTeamId, downgraded);
+    notes.push(`${supplierName} scale back support to a ${ENGINE_DEAL_SPECS[downgraded].label} deal.`);
+  }
+
+  // Refresh the objective to match the (possibly changed) deal tier for next year.
+  next = { ...next, manufacturerObjective: manufacturerObjectiveFor(next.currentDeal!.dealType) ?? next.manufacturerObjective };
+  if (!isManufacturerDeal(next.currentDeal!.dealType)) {
+    next = { ...next, manufacturerObjective: undefined };
+  }
+
+  return { engine: next, notes };
 }

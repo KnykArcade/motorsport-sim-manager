@@ -38,12 +38,32 @@ export type EngineSupplier = {
   willingTeamIds?: string[];
 };
 
+// A works/factory manufacturer's performance target for the partnership.
+export type EngineManufacturerObjective = {
+  description: string;
+  // constructorPosition: finish at or above targetValue (lower is better);
+  // wins/points: reach at least targetValue.
+  metric: 'constructorPosition' | 'wins' | 'points';
+  targetValue: number;
+};
+
+// A season-end review of how the manufacturer rates the partnership.
+export type EngineManufacturerReview = {
+  seasonYear: number;
+  met: boolean;
+  summary: string;
+  confidenceDelta: number;
+};
+
 // The player team's engine state, persisted in career mode.
 export type EngineState = {
   // The player team's active deal for the current season.
   currentDeal?: EngineSupplierDeal;
   // A deal signed during the season that takes effect at the next rollover.
   pendingDeal?: EngineSupplierDeal;
+  // Buyout fee ($M) already charged for the queued pendingDeal, so canceling the
+  // switch (or re-negotiating) refunds it.
+  pendingDealFee?: number;
   // Every team's active deal this season (keyed by teamId), so AI cars also
   // carry an engine-supplier modifier.
   deals?: Record<string, EngineSupplierDeal>;
@@ -51,4 +71,9 @@ export type EngineState = {
   suppliers?: EngineSupplier[];
   // Supplier-level expectations (e.g. a works partner expecting wins).
   manufacturerExpectation?: string;
+  // Manufacturer relationship for works/factory deals: the supplier's confidence
+  // in the partnership (0-100), its performance target, and a per-season log.
+  manufacturerConfidence?: number;
+  manufacturerObjective?: EngineManufacturerObjective;
+  manufacturerReviews?: EngineManufacturerReview[];
 };

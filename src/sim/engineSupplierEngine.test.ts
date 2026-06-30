@@ -9,6 +9,11 @@ import {
   createInitialEngineState,
   dealAnnualCost,
   engineBonusFromDeal,
+  engineSwitchFee,
+  applyInitialEngineSelection,
+  seedManufacturerRelationship,
+  evaluateManufacturerRelationship,
+  isManufacturerDeal,
   resolveEngineRollover,
 } from './engineSupplierEngine';
 import { suppliersFor } from '../data/engine/engineSuppliers';
@@ -97,5 +102,71 @@ describe('engineSupplierEngine', () => {
     for (const key of Object.keys(ENGINE_DEAL_SPECS)) {
       expect(ENGINE_DEAL_SPECS[key as keyof typeof ENGINE_DEAL_SPECS].label.length).toBeGreaterThan(0);
     }
+  });
+
+  it('charges a switch fee to leave a contract but not to re-sign or pick initially', () => {
+    const engine = createInitialEngineState(teams1995, PLAYER, 1995, 'F1', 'seed');
+    const offers = availableEngineOffers(engine, topTeam);
+    const current = engine.deals![topTeam.id];
+    // Re-signing the exact current deal is free.
+    const same = offers.find((o) => o.supplier.name === current.supplierName && o.dealType === current.dealType);
+    if (same) expect(engineSwitchFee(current, same)).toBe(0);
+    // A genuinely different deal costs a buyout (current has contract years left).
+    const different = offers.find((o) => !(o.supplier.name === current.supplierName && o.dealType === current.dealType))!;
+    expect(engineSwitchFee(current, different)).toBeGreaterThan(0);
+    // No current deal -> initial selection is free.
+    expect(engineSwitchFee(undefined, different)).toBe(0);
+  });
+
+  it('applies the player initial engine selection as the active deal', () => {
+    const engine = createInitialEngineState(teams1995, topTeam.id, 1995, 'F1', 'seed');
+    const offers = availableEngineOffers(engine, topTeam);
+    const pick = offers[offers.length - 1]; // a modest tier, likely different from auto-assigned
+    const next = applyInitialEngineSelection(engine, topTeam, pick.supplier.id, pick.dealType);
+    expect(next.currentDeal?.supplierName).toBe(pick.supplier.name);
+    expect(next.currentDeal?.dealType).toBe(pick.dealType);
+    expect(next.deals?.[topTeam.id]?.dealType).toBe(pick.dealType);
+  });
+
+  it('seeds a manufacturer relationship only for works/factory deals', () => {
+    const works = { ...createInitialEngineState(teams1995, PLAYER, 1995, 'F1', 's') };
+    works.currentDeal = { ...works.currentDeal!, dealType: 'Works' };
+    const seededWorks = seedManufacturerRelationship(works);
+    expect(seededWorks.manufacturerConfidence).toBeDefined();
+    expect(seededWorks.manufacturerObjective).toBeDefined();
+
+    const cust = { ...createInitialEngineState(teams1995, PLAYER, 1995, 'F1', 's') };
+    cust.currentDeal = { ...cust.currentDeal!, dealType: 'Customer' };
+    const seededCust = seedManufacturerRelationship(cust);
+    expect(seededCust.manufacturerConfidence).toBeUndefined();
+    expect(seededCust.manufacturerObjective).toBeUndefined();
+    expect(isManufacturerDeal('Works')).toBe(true);
+    expect(isManufacturerDeal('Customer')).toBe(false);
+  });
+
+  it('raises confidence when the manufacturer target is met and dents it when missed', () => {
+    const base = createInitialEngineState(teams1995, topTeam.id, 1995, 'F1', 's');
+    base.currentDeal = { ...base.currentDeal!, dealType: 'Works', supplierName: base.suppliers![0].name };
+    base.deals![topTeam.id] = base.currentDeal;
+    const seeded = seedManufacturerRelationship(base);
+    const start = seeded.manufacturerConfidence!;
+
+    const met = evaluateManufacturerRelationship(seeded, topTeam.id, { constructorPosition: 1, wins: 5, points: 200 }, 1995);
+    expect(met.engine!.manufacturerConfidence!).toBeGreaterThan(start);
+    expect(met.notes.length).toBeGreaterThan(0);
+
+    const missed = evaluateManufacturerRelationship(seeded, topTeam.id, { constructorPosition: 10, wins: 0, points: 0 }, 1995);
+    expect(missed.engine!.manufacturerConfidence!).toBeLessThan(start);
+  });
+
+  it('scales a deal back a tier when manufacturer confidence collapses', () => {
+    const base = createInitialEngineState(teams1995, topTeam.id, 1995, 'F1', 's');
+    base.currentDeal = { ...base.currentDeal!, dealType: 'Works', supplierName: base.suppliers![0].name };
+    base.deals![topTeam.id] = base.currentDeal;
+    let eng = seedManufacturerRelationship(base);
+    eng = { ...eng, manufacturerConfidence: 30 };
+    // One disastrous season drops confidence below 25 and triggers a downgrade.
+    const after = evaluateManufacturerRelationship(eng, topTeam.id, { constructorPosition: 12, wins: 0, points: 0 }, 1995);
+    expect(after.engine!.currentDeal!.dealType).not.toBe('Works');
   });
 });

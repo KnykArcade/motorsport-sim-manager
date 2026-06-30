@@ -33,6 +33,7 @@ import {
 import {
   applyEngineBonuses,
   resolveEngineRollover,
+  evaluateManufacturerRelationship,
   ENGINE_DEAL_SPECS,
 } from '../sim/engineSupplierEngine';
 import {
@@ -289,11 +290,33 @@ export function advanceSeason(state: GameState): GameState {
   // Engine supplier: resolve any deal signed this season (it takes effect now),
   // re-apply the grid's engine modifiers to next year's cars, and bill the
   // player's annual engine cost.
-  const nextEngine = resolveEngineRollover(state.engine, state.selectedTeamId);
+  let nextEngine = resolveEngineRollover(state.engine, state.selectedTeamId);
   const engineNotes: string[] = [];
   if (state.engine?.pendingDeal && nextEngine?.currentDeal) {
     const d = nextEngine.currentDeal;
     engineNotes.push(`New engine deal: ${ENGINE_DEAL_SPECS[d.dealType].label} with ${d.supplierName}.`);
+  }
+  // Manufacturer relationship review (works/factory deals): the supplier rates the
+  // season against its target, adjusting confidence and possibly the deal tier
+  // for the coming year. Evaluated before billing so an up/downgrade is charged.
+  {
+    const playerTeamForEngine = state.teams.find((t) => t.id === state.selectedTeamId);
+    const idx = playerTeamForEngine
+      ? state.constructorStandings.findIndex((s) => s.entityId === playerTeamForEngine.id)
+      : -1;
+    const standing = idx >= 0 ? state.constructorStandings[idx] : undefined;
+    const manuf = evaluateManufacturerRelationship(
+      nextEngine,
+      state.selectedTeamId,
+      {
+        constructorPosition: idx >= 0 ? idx + 1 : state.teams.length,
+        wins: standing?.wins ?? 0,
+        points: standing?.points ?? 0,
+      },
+      state.seasonYear,
+    );
+    nextEngine = manuf.engine;
+    engineNotes.push(...manuf.notes);
   }
   const engineDeal = nextEngine?.currentDeal;
   if (engineDeal && engineDeal.annualCost > 0) {

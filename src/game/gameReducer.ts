@@ -41,7 +41,11 @@ import {
   facilityRepairCostReduction,
   orderUpgrade,
 } from '../sim/facilityEngine';
-import { availableEngineOffers, buildSignedDeal } from '../sim/engineSupplierEngine';
+import {
+  availableEngineOffers,
+  buildSignedDeal,
+  engineSwitchFee,
+} from '../sim/engineSupplierEngine';
 import { classifyCrashDamage, damageConditionHit, repairCost } from '../sim/repairEngine';
 import { buildRaceArchiveEntry } from '../sim/lapArchiveEngine';
 import { resolveTeamOrderConsequences } from '../sim/relationshipEngine';
@@ -612,12 +616,47 @@ function signEngineDeal(state: GameState, supplierId: string, dealType: EngineDe
     (o) => o.supplier.id === supplierId && o.dealType === dealType,
   );
   if (!offer) return state;
-  // Signing the same deal you already run clears any pending change.
+
+  // A switch fee may already have been charged for a queued deal; canceling or
+  // re-negotiating refunds it.
+  const refundM = engine.pendingDealFee ?? 0;
   const current = engine.currentDeal;
+
+  // Re-signing the deal you already run clears any pending change and refunds the
+  // fee paid for it.
   if (current && current.supplierName === offer.supplier.name && current.dealType === dealType) {
-    return { ...state, engine: { ...engine, pendingDeal: undefined } };
+    let next = state;
+    if (refundM > 0) {
+      next = applyTransaction(
+        next,
+        makeTransaction(state.seasonYear, 'Engine', 'Refund: engine switch canceled', toMoney(refundM)),
+      );
+    }
+    return { ...next, engine: { ...next.engine!, pendingDeal: undefined, pendingDealFee: undefined } };
   }
-  return { ...state, engine: { ...engine, pendingDeal: buildSignedDeal(team, offer) } };
+
+  // A new switch: buy out the current contract. The fee is affordable against the
+  // budget after refunding any previously-queued fee.
+  const fee = engineSwitchFee(current, offer);
+  if (toMoney(fee) > playerBudget(state) + toMoney(refundM)) return state;
+
+  let next = state;
+  if (refundM > 0) {
+    next = applyTransaction(
+      next,
+      makeTransaction(state.seasonYear, 'Engine', 'Refund: engine deal re-negotiated', toMoney(refundM)),
+    );
+  }
+  if (fee > 0) {
+    next = applyTransaction(
+      next,
+      makeTransaction(state.seasonYear, 'Engine', `Engine switch fee: ${offer.supplier.name}`, -toMoney(fee)),
+    );
+  }
+  return {
+    ...next,
+    engine: { ...next.engine!, pendingDeal: buildSignedDeal(team, offer), pendingDealFee: fee },
+  };
 }
 
 // Sign a sponsor from the available offers into an open portfolio slot. Blocked
