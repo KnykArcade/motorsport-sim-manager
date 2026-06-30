@@ -8,6 +8,8 @@ import {
   evaluateSeasonObjectives,
   rollSponsorRenewals,
   averageSponsorConfidence,
+  generateSponsorOffers,
+  sponsorSlotCapacity,
 } from './commercialEngine';
 import { toMoney } from './financeEngine';
 
@@ -95,6 +97,35 @@ describe('commercialEngine', () => {
         }
       }
     }
+  });
+
+  it('sizes sponsor slot capacity by reputation, within 4..8', () => {
+    expect(sponsorSlotCapacity(williams)).toBeGreaterThanOrEqual(4);
+    expect(sponsorSlotCapacity(williams)).toBeLessThanOrEqual(8);
+    expect(sponsorSlotCapacity(williams)).toBeGreaterThanOrEqual(sponsorSlotCapacity(minardi));
+  });
+
+  it('offers deterministic sponsor deals and excludes already-signed ones', () => {
+    const c = buildInitialCommercial(williams, williamsDrivers, 's', 'Formula 1');
+    const a = generateSponsorOffers(williams, c, 's', 1996, 'Formula 1');
+    const b = generateSponsorOffers(williams, c, 's', 1996, 'Formula 1');
+    expect(a.length).toBeGreaterThan(0);
+    expect(JSON.stringify(a)).toEqual(JSON.stringify(b));
+    // No offer duplicates a sponsor already in the portfolio.
+    const signedIds = new Set(c.sponsors.map((s) => s.id));
+    expect(a.every((o) => !signedIds.has(o.id))).toBe(true);
+    // Signing one removes it from the next round of offers.
+    const withSigned = { ...c, sponsors: [...c.sponsors, a[0]] };
+    const after = generateSponsorOffers(williams, withSigned, 's', 1996, 'Formula 1');
+    expect(after.some((o) => o.id === a[0].id)).toBe(false);
+  });
+
+  it('offers a title deal only when the title slot is open', () => {
+    const c = buildInitialCommercial(williams, williamsDrivers, 's', 'Formula 1');
+    // Portfolio already has a title sponsor -> no title offer.
+    expect(generateSponsorOffers(williams, c, 's', 1996, 'Formula 1').some((o) => o.type === 'Title')).toBe(false);
+    const noTitle = { ...c, sponsors: c.sponsors.filter((s) => s.type !== 'Title') };
+    expect(generateSponsorOffers(williams, noTitle, 's', 1996, 'Formula 1').some((o) => o.type === 'Title')).toBe(true);
   });
 
   it('reports zero income for undefined commercial state', () => {
