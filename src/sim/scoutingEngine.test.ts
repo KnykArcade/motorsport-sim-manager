@@ -6,6 +6,7 @@ import {
   fogView,
   isRevealed,
   recordScouting,
+  scoutingCost,
   scoutingNetworkAccuracy,
   visiblePotentialRange,
   visibleSkill,
@@ -106,5 +107,20 @@ describe('scoutingEngine — fogView', () => {
     expect(revealed.revealed).toBe(true);
     expect(revealed.potential.value).toBe(8.5);
     expect(revealed.skills.overtakingRacecraft).toBe(9);
+  });
+});
+
+describe('scoutingEngine — scoutingCost', () => {
+  it('charges more for senior drivers than youth', () => {
+    expect(scoutingCost('Driver', 0)).toBeGreaterThan(scoutingCost('YouthProspect', 0));
+  });
+
+  it('rises as a target is refined', () => {
+    expect(scoutingCost('Driver', 75)).toBeGreaterThan(scoutingCost('Driver', 0));
+  });
+
+  it('returns positive raw-dollar amounts', () => {
+    expect(scoutingCost('Driver', 0)).toBeGreaterThan(0);
+    expect(Number.isInteger(scoutingCost('Driver', 50))).toBe(true);
   });
 });

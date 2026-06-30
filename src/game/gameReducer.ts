@@ -54,7 +54,7 @@ import type {
 import type { EngineDealType } from '../types/engineTypes';
 import type { RegulationVote } from '../types/politicsTypes';
 import type { ScoutedEntityType } from '../types/scoutingTypes';
-import { recordScouting, type ScoutTarget } from '../sim/scoutingEngine';
+import { recordScouting, scoutingCost, type ScoutTarget } from '../sim/scoutingEngine';
 import type {
   Entrant,
   QualifyingDecision,
@@ -543,14 +543,27 @@ function scoutTargetAction(
   if (!bundle) return state;
 
   let target: ScoutTarget | undefined;
+  let targetName = 'target';
   if (entityType === 'Driver') {
     const d = bundle.drivers.find((x) => x.id === entityId);
-    if (d) target = { id: d.id, skills: d.skills, potential: d.potential };
+    if (d) {
+      target = { id: d.id, skills: d.skills, potential: d.potential };
+      targetName = d.name;
+    }
   } else if (entityType === 'YouthProspect') {
     const y = bundle.youth.find((x) => x.id === entityId);
-    if (y) target = { id: y.id, skills: y.skills, potential: y.potential };
+    if (y) {
+      target = { id: y.id, skills: y.skills, potential: y.potential };
+      targetName = y.name;
+    }
   }
   if (!target) return state;
+
+  // A scouting trip costs budget; refining a known target costs more. Block the
+  // trip if the team can't afford it.
+  const currentLevel = state.scouting.reports[target.id]?.scoutingLevel ?? 0;
+  const cost = scoutingCost(entityType, currentLevel);
+  if (cost > playerBudget(state)) return state;
 
   const scouting = recordScouting(
     state.scouting,
@@ -560,7 +573,11 @@ function scoutTargetAction(
     state.randomSeed,
     new Date().toISOString(),
   );
-  return { ...state, scouting };
+  const charged = applyTransaction(
+    state,
+    makeTransaction(state.seasonYear, 'Scouting', `Scouted ${targetName}`, -cost),
+  );
+  return { ...charged, scouting };
 }
 
 // Negotiate a new engine deal. It's queued as the pending deal and takes effect

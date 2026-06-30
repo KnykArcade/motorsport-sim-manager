@@ -1,9 +1,11 @@
 import { useMemo, useState } from 'react';
 import { useGame } from '../game/GameContext';
+import { teamById } from '../game/careerState';
 import { getMarketBundle } from '../data';
 import { Panel } from '../components/Panel';
 import { Button } from '../components/Button';
-import { fogView, type FogView, type ScoutTarget } from '../sim/scoutingEngine';
+import { fogView, scoutingCost, type FogView, type ScoutTarget } from '../sim/scoutingEngine';
+import { formatMoney } from '../components/ui';
 import type { ScoutedEntityType, VisibleRating } from '../types/scoutingTypes';
 
 type Tab = 'senior' | 'youth';
@@ -39,9 +41,13 @@ export function Scouting() {
   }
 
   const networkPct = Math.round(scouting.networkAccuracy * 100);
+  const budget = teamById(state, state.selectedTeamId)?.budget ?? 0;
 
   const view = (target: ScoutTarget): FogView =>
     fogView(target, scouting.reports[target.id], scouting.networkAccuracy, state.randomSeed);
+
+  const costOf = (entityId: string, entityType: ScoutedEntityType): number =>
+    scoutingCost(entityType, scouting.reports[entityId]?.scoutingLevel ?? 0);
 
   return (
     <div className="space-y-6">
@@ -73,6 +79,9 @@ export function Scouting() {
           <span className="text-xs text-neutral-500">
             Upgrade the Scouting Network facility to raise the baseline.
           </span>
+          <span className="ml-auto text-xs text-neutral-400">
+            Budget: <span className="font-semibold text-neutral-200">{formatMoney(budget)}</span>
+          </span>
         </div>
       </Panel>
 
@@ -95,6 +104,8 @@ export function Scouting() {
                 subtitle={`${d.nationality} · ${d.age} · ${d.context}`}
                 overall={d.overall}
                 view={view({ id: d.id, skills: d.skills, potential: d.potential })}
+                cost={costOf(d.id, 'Driver')}
+                budget={budget}
                 onScout={() => dispatch({ type: 'SCOUT_TARGET', entityId: d.id, entityType: 'Driver' as ScoutedEntityType })}
               />
             ))}
@@ -112,6 +123,8 @@ export function Scouting() {
                 subtitle={`${y.nationality} · age ${y.age} · ${y.currentLevel}`}
                 overall={y.overall}
                 view={view({ id: y.id, skills: y.skills, potential: y.potential })}
+                cost={costOf(y.id, 'YouthProspect')}
+                budget={budget}
                 onScout={() => dispatch({ type: 'SCOUT_TARGET', entityId: y.id, entityType: 'YouthProspect' as ScoutedEntityType })}
               />
             ))}
@@ -132,15 +145,20 @@ function ScoutCard({
   subtitle,
   overall,
   view,
+  cost,
+  budget,
   onScout,
 }: {
   title: string;
   subtitle: string;
   overall: number;
   view: FogView;
+  cost: number;
+  budget: number;
   onScout: () => void;
 }) {
   const accPct = Math.round(view.accuracy * 100);
+  const affordable = cost <= budget;
   return (
     <Panel>
       <div className="mb-1 flex items-start justify-between gap-2">
@@ -183,9 +201,19 @@ function ScoutCard({
         {view.revealed ? (
           <span className="text-xs text-green-400">Fully scouted.</span>
         ) : (
-          <Button variant="primary" className="w-full px-2 py-1 text-xs" onClick={onScout}>
-            Scout this target
-          </Button>
+          <>
+            <Button
+              variant="primary"
+              className="w-full px-2 py-1 text-xs"
+              disabled={!affordable}
+              onClick={onScout}
+            >
+              Scout this target — {formatMoney(cost)}
+            </Button>
+            {!affordable && (
+              <p className="mt-1 text-center text-[11px] text-red-400">Insufficient budget</p>
+            )}
+          </>
         )}
       </div>
     </Panel>
