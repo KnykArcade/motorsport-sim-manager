@@ -13,6 +13,7 @@ import { createPrincipalProfile, generateJobOffers } from '../sim/principalEngin
 import { createDriverRelationships } from '../sim/relationshipEngine';
 import { generateRegulationProposals } from '../sim/politicsEngine';
 import { createInitialScoutingState } from '../sim/scoutingEngine';
+import { seedDevelopmentCurves } from '../sim/developmentCurveEngine';
 
 // Deep clone via structuredClone (available in modern browsers / Node 18+).
 function clone<T>(value: T): T {
@@ -94,6 +95,13 @@ export function createNewGame(options: NewGameOptions): GameState {
     options.series,
   );
 
+  // Driver aging & development curves (Living Universe Phase 10): a static curve
+  // per driver plus a synthesized age where the season data omits one.
+  const { curves: developmentCurves, drivers: agedDrivers } = seedDevelopmentCurves(
+    clone(bundle.drivers),
+    seed,
+  );
+
   return {
     id: `save-${Date.now()}`,
     createdAt: now,
@@ -105,7 +113,7 @@ export function createNewGame(options: NewGameOptions): GameState {
     currentRaceIndex: 0,
     calendar: clone(bundle.season.calendar),
     teams: clone(bundle.teams),
-    drivers: clone(bundle.drivers),
+    drivers: agedDrivers,
     cars,
     pointsSystemId: bundle.season.pointsSystemId,
     regulationSetId: bundle.season.regulationSetId,
@@ -139,6 +147,7 @@ export function createNewGame(options: NewGameOptions): GameState {
     regulationProposals,
     regulationVoteHistory: [],
     scouting: createInitialScoutingState(options.teamId, facilities),
+    developmentCurves,
     randomSeed: seed,
     seasonComplete: false,
   };
