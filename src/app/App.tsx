@@ -16,6 +16,7 @@ import { Staff } from '../screens/Staff';
 import { RaceHistory } from '../screens/RaceHistory';
 import { DataViewer } from '../screens/DataViewer';
 import { Facilities } from '../screens/Facilities';
+import { EngineSupplier } from '../screens/EngineSupplier';
 import { Settings } from '../screens/Settings';
 import { RaceWeekend } from '../screens/RaceWeekend';
 import { LiveRace } from '../screens/LiveRace';
@@ -51,6 +52,7 @@ export default function App() {
           <Route path="/sponsors" element={<InGame><Sponsors /></InGame>} />
           <Route path="/staff" element={<InGame><Staff /></InGame>} />
           <Route path="/facilities" element={<InGame><Facilities /></InGame>} />
+          <Route path="/engine" element={<InGame><EngineSupplier /></InGame>} />
           <Route path="/history" element={<InGame><RaceHistory /></InGame>} />
           <Route path="/weekend" element={<InGame><RaceWeekend /></InGame>} />
           <Route path="/live-race/:raceId" element={<InGame><LiveRace /></InGame>} />

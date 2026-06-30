@@ -29,6 +29,11 @@ import {
   reviewExpectation,
   applyPatience,
 } from '../sim/expectationEngine';
+import {
+  applyEngineBonuses,
+  resolveEngineRollover,
+  ENGINE_DEAL_SPECS,
+} from '../sim/engineSupplierEngine';
 import type { Car, Driver, OffseasonSummary, Team } from '../types/gameTypes';
 import type { AcademyMember } from '../types/marketTypes';
 import type { FinanceTransaction } from '../types/financeTypes';
@@ -165,7 +170,7 @@ export function advanceSeason(state: GameState): GameState {
 
   // Carry the player car's development into the new baseline; reset condition.
   const playerCar = carForTeam(state, state.selectedTeamId);
-  const cars: Car[] = state.cars.map((c) => {
+  const carsRaw: Car[] = state.cars.map((c) => {
     if (playerCar && c.id === playerCar.id) {
       const ratings = calculateOffseasonCarryover(
         c,
@@ -216,6 +221,24 @@ export function advanceSeason(state: GameState): GameState {
   for (const s of state.staff ?? []) {
     txns.push(makeTransaction(nextYear, 'Staff', `Salary: ${s.name} (${s.role})`, -toMoney(s.salary)));
   }
+
+  // Engine supplier: resolve any deal signed this season (it takes effect now),
+  // re-apply the grid's engine modifiers to next year's cars, and bill the
+  // player's annual engine cost.
+  const nextEngine = resolveEngineRollover(state.engine, state.selectedTeamId);
+  const engineNotes: string[] = [];
+  if (state.engine?.pendingDeal && nextEngine?.currentDeal) {
+    const d = nextEngine.currentDeal;
+    engineNotes.push(`New engine deal: ${ENGINE_DEAL_SPECS[d.dealType].label} with ${d.supplierName}.`);
+  }
+  const engineDeal = nextEngine?.currentDeal;
+  if (engineDeal && engineDeal.annualCost > 0) {
+    txns.push(
+      makeTransaction(nextYear, 'Engine', `${engineDeal.supplierName} engine supply`, -toMoney(engineDeal.annualCost)),
+    );
+  }
+  const cars = applyEngineBonuses(carsRaw, nextEngine);
+
   const playerTeam = state.teams.find((t) => t.id === state.selectedTeamId);
 
   // Commercial settlement: evaluate the season's sponsor objectives, renew the
@@ -325,6 +348,7 @@ export function advanceSeason(state: GameState): GameState {
       ...departureNotes,
       ...(nextAcademy.length ? [`${nextAcademy.length} academy driver(s) progressed.`] : []),
       ...facilityNotes,
+      ...engineNotes,
       ...commercialNotes,
     ],
   };
@@ -343,6 +367,7 @@ export function advanceSeason(state: GameState): GameState {
     cars,
     teams,
     facilities: nextFacilities,
+    engine: nextEngine,
     finance: [...(state.finance ?? []), ...txns],
     commercial: nextCommercial,
     teamExpectations: nextExpectations ?? state.teamExpectations,

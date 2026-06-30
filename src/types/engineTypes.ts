@@ -40,7 +40,15 @@ export type EngineSupplier = {
 
 // The player team's engine state, persisted in career mode.
 export type EngineState = {
+  // The player team's active deal for the current season.
   currentDeal?: EngineSupplierDeal;
+  // A deal signed during the season that takes effect at the next rollover.
+  pendingDeal?: EngineSupplierDeal;
+  // Every team's active deal this season (keyed by teamId), so AI cars also
+  // carry an engine-supplier modifier.
+  deals?: Record<string, EngineSupplierDeal>;
+  // Manufacturers present in the universe this era (negotiation pool).
+  suppliers?: EngineSupplier[];
   // Supplier-level expectations (e.g. a works partner expecting wins).
   manufacturerExpectation?: string;
 };
