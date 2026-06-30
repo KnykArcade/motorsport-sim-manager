@@ -401,6 +401,86 @@ function resetObjectives(objectives: SponsorObjective[]): SponsorObjective[] {
   return objectives.map((o) => ({ ...o, status: 'Pending' }));
 }
 
+// How many sponsor slots a team can hold at once, sized by commercial tier so a
+// front-running team can carry a deeper portfolio than a backmarker. 4 .. 8.
+export function sponsorSlotCapacity(team: Team): number {
+  return 4 + commercialTier(team.reputation);
+}
+
+// Generate the pool of sponsor deals on offer to the player during the
+// offseason. Deterministic per (seed, team, year). A title deal is offered only
+// when the title slot is open; values scale with commercial tier. Deals already
+// in the portfolio are excluded so signed offers disappear from the pool.
+export function generateSponsorOffers(
+  team: Team,
+  commercial: CommercialState | undefined,
+  seed: string,
+  year: number,
+  series: string,
+): Sponsor[] {
+  const rng = createSeededRandom(deriveSeed(seed, 'sponsor-offers', team.id, year, series));
+  const tier = commercialTier(team.reputation);
+  const current = commercial?.sponsors ?? [];
+  const usedNames = new Set(current.map((s) => s.name));
+  const signedIds = new Set(current.map((s) => s.id));
+
+  const pickUnique = (pool: string[]): string => {
+    let n = rng.pick(pool);
+    let guard = 0;
+    while (usedNames.has(n) && guard++ < 12) n = rng.pick(pool);
+    usedNames.add(n);
+    return n;
+  };
+
+  const offers: Sponsor[] = [];
+
+  // A title deal only when that slot is empty (you can't run two title sponsors).
+  if (!current.some((s) => s.type === 'Title')) {
+    offers.push(
+      buildSponsor(
+        `${team.id}-offer-${year}-title`,
+        pickUnique(TITLE_BRANDS),
+        'Title',
+        5 + tier * 8 + rng.range(0, 3),
+        [makeBonus(`${team.id}-offer-${year}-title-win`, 'PerWin', 1 + tier * 0.5)],
+        [OBJECTIVE_TEMPLATES[1](tier)],
+        55 + tier * 3,
+        rng.int(2, 3),
+      ),
+    );
+  }
+
+  for (let i = 0; i < 2; i++) {
+    offers.push(
+      buildSponsor(
+        `${team.id}-offer-${year}-sec-${i}`,
+        pickUnique(SECONDARY_BRANDS),
+        'Secondary',
+        1.5 + tier * 2 + rng.range(0, 2),
+        [makeBonus(`${team.id}-offer-${year}-sec-${i}-pod`, 'PerPodium', 0.3 + tier * 0.15)],
+        i === 0 ? [OBJECTIVE_TEMPLATES[0](tier)] : [],
+        52 + tier * 3,
+        rng.int(1, 3),
+      ),
+    );
+  }
+
+  offers.push(
+    buildSponsor(
+      `${team.id}-offer-${year}-tech`,
+      pickUnique(TECH_BRANDS),
+      'TechnicalPartner',
+      1 + tier * 1.5,
+      [makeBonus(`${team.id}-offer-${year}-tech-pole`, 'PerPole', 0.2 + tier * 0.1)],
+      [OBJECTIVE_TEMPLATES[2](tier)],
+      55 + tier * 3,
+      rng.int(2, 3),
+    ),
+  );
+
+  return offers.filter((o) => !signedIds.has(o.id));
+}
+
 // Average sponsor confidence (0-100), used for UI and reputation feedback.
 export function averageSponsorConfidence(commercial: CommercialState | undefined): number {
   if (!commercial || commercial.sponsors.length === 0) return 0;

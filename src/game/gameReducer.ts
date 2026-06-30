@@ -29,7 +29,11 @@ import { marketDriverToDriver, signProspectToAcademy } from '../sim/driverMarket
 import { academyCapacityFor } from '../sim/teamRatingsEngine';
 import { makeTransaction, toMoney } from '../sim/financeEngine';
 import { thirdDriverMidSeasonFee, thirdDriverSalary } from '../sim/contractEngine';
-import { racePerformanceBonuses } from '../sim/commercialEngine';
+import {
+  generateSponsorOffers,
+  racePerformanceBonuses,
+  sponsorSlotCapacity,
+} from '../sim/commercialEngine';
 import { developmentSuccessBonus } from '../sim/staffEngine';
 import {
   FACILITY_SPECS,
@@ -100,6 +104,8 @@ export type GameAction =
   | { type: 'FIRE_STAFF'; staffId: string }
   | { type: 'UPGRADE_FACILITY'; facilityId: string }
   | { type: 'SIGN_ENGINE_DEAL'; supplierId: string; dealType: EngineDealType }
+  | { type: 'SIGN_SPONSOR'; offerId: string }
+  | { type: 'DROP_SPONSOR'; sponsorId: string }
   | { type: 'ACCEPT_JOB_OFFER'; offerId: string }
   | { type: 'DECLINE_JOB_OFFER'; offerId: string }
   | { type: 'SET_REGULATION_VOTE'; proposalId: string; vote: RegulationVote }
@@ -371,6 +377,16 @@ export function gameReducer(state: GameState | null, action: GameAction): GameSt
       return upgradeFacility(state, action.facilityId);
     }
 
+    case 'SIGN_SPONSOR': {
+      if (!state) return state;
+      return signSponsor(state, action.offerId);
+    }
+
+    case 'DROP_SPONSOR': {
+      if (!state) return state;
+      return dropSponsor(state, action.sponsorId);
+    }
+
     case 'SIGN_ENGINE_DEAL': {
       if (!state) return state;
       return signEngineDeal(state, action.supplierId, action.dealType);
@@ -602,6 +618,39 @@ function signEngineDeal(state: GameState, supplierId: string, dealType: EngineDe
     return { ...state, engine: { ...engine, pendingDeal: undefined } };
   }
   return { ...state, engine: { ...engine, pendingDeal: buildSignedDeal(team, offer) } };
+}
+
+// Sign a sponsor from the available offers into an open portfolio slot. Blocked
+// when the portfolio is at capacity (sized by commercial tier) or the deal is no
+// longer on offer. The deal's annual value feeds next season's income.
+function signSponsor(state: GameState, offerId: string): GameState {
+  const commercial = state.commercial;
+  const team = state.teams.find((t) => t.id === state.selectedTeamId);
+  if (!commercial || !team) return state;
+  if (commercial.sponsors.length >= sponsorSlotCapacity(team)) return state;
+  const offers = generateSponsorOffers(
+    team,
+    commercial,
+    state.randomSeed,
+    state.seasonYear,
+    state.series,
+  );
+  const offer = offers.find((o) => o.id === offerId);
+  if (!offer) return state;
+  if (commercial.sponsors.some((s) => s.id === offer.id)) return state;
+  return {
+    ...state,
+    commercial: { ...commercial, sponsors: [...commercial.sponsors, offer] },
+  };
+}
+
+// Drop a sponsor from the portfolio to free a slot (e.g. to take a bigger deal).
+function dropSponsor(state: GameState, sponsorId: string): GameState {
+  const commercial = state.commercial;
+  if (!commercial) return state;
+  const sponsors = commercial.sponsors.filter((s) => s.id !== sponsorId);
+  if (sponsors.length === commercial.sponsors.length) return state;
+  return { ...state, commercial: { ...commercial, sponsors } };
 }
 
 // Accept a firm job offer from a rival team. The move is queued and takes effect
