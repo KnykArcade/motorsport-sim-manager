@@ -28,16 +28,44 @@ export type MarketBundle = {
   youth: YouthProspect[];
 };
 
+// Youth signing/academy costs in the raw season files are inconsistent: some
+// were authored in $M (e.g. 0.2) while others came through as raw dollars
+// (e.g. 550000), which the finance layer then multiplied by 1M. Unproven youth
+// prospects should also simply be cheap — potential is not a guarantee. So we
+// derive both costs from the prospect's potential on a single low $M scale,
+// ignoring the unreliable source columns. Higher potential costs a little more.
+function round2(n: number): number {
+  return Math.round(n * 100) / 100;
+}
+export function youthSigningCost(potential: number): number {
+  return round2(0.02 + (Math.max(0, Math.min(10, potential)) / 10) * 0.13);
+}
+export function youthYearlyAcademyCost(potential: number): number {
+  return round2(0.01 + (Math.max(0, Math.min(10, potential)) / 10) * 0.09);
+}
+
+function normalizeYouth(youth: YouthProspect[]): YouthProspect[] {
+  return youth.map((y) => ({
+    ...y,
+    signingCost: youthSigningCost(y.potential),
+    yearlyAcademyCost: youthYearlyAcademyCost(y.potential),
+  }));
+}
+
+function bundle(drivers: MarketDriver[], youth: YouthProspect[]): MarketBundle {
+  return { drivers, youth: normalizeYouth(youth) };
+}
+
 const marketBundles: Record<string, MarketBundle> = {
-  '1994-F1': { drivers: driverMarket1994, youth: youthProspects1994 },
-  '1995-F1': { drivers: driverMarket1995, youth: youthProspects1995 },
-  '1996-F1': { drivers: driverMarket1996, youth: youthProspects1996 },
-  '1997-F1': { drivers: driverMarket1997, youth: youthProspects1997 },
-  '1998-F1': { drivers: driverMarket1998, youth: youthProspects1998 },
-  '1999-F1': { drivers: driverMarket1999, youth: youthProspects1999 },
-  '2000-F1': { drivers: driverMarket2000, youth: youthProspects2000 },
-  '2026-F1': { drivers: driverMarket2026, youth: youthProspects2026 },
-  '2026-IndyCar': { drivers: driverMarket2026IndyCar, youth: youthProspects2026IndyCar },
+  '1994-F1': bundle(driverMarket1994, youthProspects1994),
+  '1995-F1': bundle(driverMarket1995, youthProspects1995),
+  '1996-F1': bundle(driverMarket1996, youthProspects1996),
+  '1997-F1': bundle(driverMarket1997, youthProspects1997),
+  '1998-F1': bundle(driverMarket1998, youthProspects1998),
+  '1999-F1': bundle(driverMarket1999, youthProspects1999),
+  '2000-F1': bundle(driverMarket2000, youthProspects2000),
+  '2026-F1': bundle(driverMarket2026, youthProspects2026),
+  '2026-IndyCar': bundle(driverMarket2026IndyCar, youthProspects2026IndyCar),
 };
 
 export function getMarketBundle(year: number, series = 'F1'): MarketBundle | undefined {

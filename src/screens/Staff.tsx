@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useGame } from '../game/GameContext';
 import { teamById } from '../game/careerState';
 import { getStaffPool } from '../data';
@@ -11,10 +12,11 @@ import { Panel } from '../components/Panel';
 import { Button } from '../components/Button';
 import { StatBar } from '../components/StatBar';
 import { formatMoney } from '../components/ui';
-import { ROLE_EFFECT, STAFF_ROLES, type StaffMember } from '../types/staffTypes';
+import { ROLE_EFFECT, STAFF_ROLES, type StaffMember, type StaffRole } from '../types/staffTypes';
 
 export function Staff() {
   const { state, dispatch } = useGame();
+  const [activeRole, setActiveRole] = useState<StaffRole>(STAFF_ROLES[0]);
   if (!state) return null;
 
   const budget = teamById(state, state.selectedTeamId)?.budget ?? 0;
@@ -25,6 +27,11 @@ export function Staff() {
 
   const devBonus = developmentSuccessBonus(roster);
   const setupBonus = setupConfidenceBonus(roster);
+
+  const current = byRole[activeRole];
+  const candidates = pool
+    .filter((s) => s.role === activeRole)
+    .sort((a, b) => b.rating - a.rating);
 
   return (
     <div className="space-y-6">
@@ -42,32 +49,49 @@ export function Staff() {
         <Kpi label="Setup Confidence Bonus" value={`${setupBonus >= 0 ? '+' : ''}${setupBonus.toFixed(1)}`} />
       </div>
 
-      <div className="space-y-6">
+      <div className="flex flex-wrap gap-1 border-b border-neutral-800">
         {STAFF_ROLES.map((role) => {
-          const current = byRole[role];
-          const candidates = pool
-            .filter((s) => s.role === role)
-            .sort((a, b) => b.rating - a.rating);
+          const filled = !!byRole[role];
+          const isActive = role === activeRole;
           return (
-            <Panel key={role} title={role}>
-              <p className="mb-3 text-xs text-neutral-500">{ROLE_EFFECT[role]}</p>
-              <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
-                {candidates.map((s) => (
-                  <StaffCard
-                    key={s.id}
-                    s={s}
-                    hired={hiredById.has(s.id)}
-                    current={current?.id === s.id}
-                    affordable={toMoney(s.signingFee) <= budget}
-                    onHire={() => dispatch({ type: 'HIRE_STAFF', staffId: s.id })}
-                    onFire={() => dispatch({ type: 'FIRE_STAFF', staffId: s.id })}
-                  />
-                ))}
-              </div>
-            </Panel>
+            <button
+              key={role}
+              type="button"
+              onClick={() => setActiveRole(role)}
+              className={`-mb-px rounded-t-md border-b-2 px-3 py-2 text-sm font-medium transition-colors ${
+                isActive
+                  ? 'border-amber-500 text-neutral-100'
+                  : 'border-transparent text-neutral-400 hover:text-neutral-200'
+              }`}
+            >
+              {role}
+              <span
+                className={`ml-1.5 inline-block h-1.5 w-1.5 rounded-full ${
+                  filled ? 'bg-emerald-500' : 'bg-neutral-600'
+                }`}
+                title={filled ? 'Position filled' : 'Vacant'}
+              />
+            </button>
           );
         })}
       </div>
+
+      <Panel title={activeRole}>
+        <p className="mb-3 text-xs text-neutral-500">{ROLE_EFFECT[activeRole]}</p>
+        <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+          {candidates.map((s) => (
+            <StaffCard
+              key={s.id}
+              s={s}
+              hired={hiredById.has(s.id)}
+              current={current?.id === s.id}
+              affordable={toMoney(s.signingFee) <= budget}
+              onHire={() => dispatch({ type: 'HIRE_STAFF', staffId: s.id })}
+              onFire={() => dispatch({ type: 'FIRE_STAFF', staffId: s.id })}
+            />
+          ))}
+        </div>
+      </Panel>
     </div>
   );
 }

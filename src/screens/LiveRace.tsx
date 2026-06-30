@@ -93,6 +93,9 @@ export function LiveRace() {
     rank: c.position ?? 99,
   }));
   const rotation = (live.currentLap / 5) % 1;
+  const playerCars = live.cars
+    .filter((c) => c.isPlayer)
+    .sort((a, b) => (a.position ?? 99) - (b.position ?? 99));
 
   return (
     <div className="space-y-5">
@@ -113,6 +116,24 @@ export function LiveRace() {
         <Stat label="Safety Car" value={live.safetyCar.active ? `Out (${live.safetyCar.lapsRemaining})` : 'No'}
           tone={live.safetyCar.active ? 'warn' : 'normal'} />
       </div>
+
+      {/* Your drivers' current race positions */}
+      {playerCars.length > 0 && (
+        <div className={`grid gap-3 grid-cols-1 ${playerCars.length > 1 ? 'sm:grid-cols-2' : ''}`}>
+          {playerCars.map((c) => {
+            const name = state.drivers.find((d) => d.id === c.driverId)?.name ?? c.driverId;
+            const posLabel = !c.running ? 'OUT' : c.pit.inPitThisLap ? 'PIT' : ordinal(c.position);
+            return (
+              <Stat
+                key={c.driverId}
+                label={`${name} — Position`}
+                value={posLabel}
+                tone={!c.running ? 'warn' : 'good'}
+              />
+            );
+          })}
+        </div>
+      )}
 
       {/* Controls */}
       <Panel title="Race Control">
@@ -271,6 +292,10 @@ function RunningOrder({
       </table>
     </div>
   );
+}
+
+function ordinal(pos: number | null): string {
+  return pos == null ? '—' : `P${pos}`;
 }
 
 function EventLog({ events }: { events: { lap: number; text: string }[] }) {
