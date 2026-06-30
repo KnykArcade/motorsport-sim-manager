@@ -34,8 +34,8 @@ describe('save model', () => {
     expect(s.jobOffers).toBeDefined();
     // Phase 7: driver relationships are seeded on a new career.
     expect(s.driverRelationships).toBeDefined();
-    // Systems from later phases remain unset.
-    expect(s.universeHistory).toBeUndefined();
+    // Phase 11: universe history / records is seeded on a new career.
+    expect(s.universeHistory).toBeDefined();
   });
 
   it('migrates a legacy (v1) save forward without dropping data', () => {
