@@ -56,17 +56,15 @@ export const DECISION_COUNTDOWN_SECONDS = 10;
 
 const PRIORITY_RANK: Record<RecPriority, number> = { low: 1, medium: 2, high: 3, urgent: 4 };
 
-// Medium recommendations that still pause the race because they affect pit /
-// weather / safety-car timing (higher priorities always pause).
-const PAUSE_MEDIUM_KINDS = new Set(['safetyCarPit', 'pitWindow', 'weatherTyres', 'tyres']);
-
 // Whether a pending recommendation should pause playback and run the decision
-// countdown. Low priority (and non-timing medium) advice appears quietly.
+// countdown. Every candidate the engine raises is actionable (it asks the player
+// to Accept / Modify / Ignore / Let Crew Decide), so any pending medium+ rec
+// pauses — single-driver strategy calls (Attack, Defend, Protect Engine, Pit
+// Now, …) just as much as grouped safety-car / weather decisions. Only truly
+// optional low-priority advice appears quietly without pausing.
 export function requiresDecision(rec: AnalyticsRecommendation): boolean {
   if (rec.status !== 'pending') return false;
-  if (rec.priority === 'urgent' || rec.priority === 'high') return true;
-  if (rec.priority === 'medium' && PAUSE_MEDIUM_KINDS.has(rec.kind)) return true;
-  return false;
+  return rec.priority !== 'low';
 }
 
 // A strategy-mode instruction (as opposed to a one-shot pit / stay-out / team
@@ -366,7 +364,7 @@ function candidatesFor(
   if (car.fuel < 12 && !finalLaps) {
     out.push({
       kind: 'fuel',
-      priority: 'low',
+      priority: 'medium',
       issue: `Fuel down to ${Math.round(car.fuel)}% — margin is tight.`,
       recommendedAction: 'Lift-and-coast to save fuel.',
       suggestedDuration: '2-3 laps',

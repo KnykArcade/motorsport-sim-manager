@@ -214,9 +214,14 @@ describe('requiresDecision (pause/countdown)', () => {
     expect(requiresDecision(rec({ priority: 'urgent' }))).toBe(true);
     expect(requiresDecision(rec({ priority: 'high' }))).toBe(true);
   });
-  it('pauses for timing-sensitive medium recs but not others', () => {
+  it('pauses for any actionable medium rec, single-driver or grouped', () => {
+    // Every generated rec is actionable, so all medium kinds pause — not just
+    // the grouped/timing-sensitive ones.
     expect(requiresDecision(rec({ priority: 'medium', kind: 'safetyCarPit' }))).toBe(true);
-    expect(requiresDecision(rec({ priority: 'medium', kind: 'damage' }))).toBe(false);
+    expect(requiresDecision(rec({ priority: 'medium', kind: 'attack' }))).toBe(true);
+    expect(requiresDecision(rec({ priority: 'medium', kind: 'defend' }))).toBe(true);
+    expect(requiresDecision(rec({ priority: 'medium', kind: 'damage' }))).toBe(true);
+    expect(requiresDecision(rec({ priority: 'medium', kind: 'fuel' }))).toBe(true);
   });
   it('never pauses for low recs or non-pending recs', () => {
     expect(requiresDecision(rec({ priority: 'low' }))).toBe(false);
