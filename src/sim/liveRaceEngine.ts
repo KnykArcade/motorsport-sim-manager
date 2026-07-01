@@ -187,6 +187,12 @@ export function createLiveRace(context: RaceContext, options: LiveRaceOptions): 
       reliabilityRisk: baseFailureRisk,
       crashRisk: baseCrashRisk,
       damaged: false,
+      fuel: 100,
+      engineHealth: 100,
+      gearboxHealth: 100,
+      brakeHealth: 100,
+      lastSectors: null,
+      bestSectors: null,
       reliabilityRiskLevel: 'Low',
       crashRiskLevel: 'Low',
       trafficStatus: 'Clear',
@@ -220,6 +226,9 @@ export function createLiveRace(context: RaceContext, options: LiveRaceOptions): 
     pendingPrompt: null,
     promptCooldown: {},
     firedEventIds: [],
+    recommendations: [],
+    ignoredRecs: [],
+    retirements: 0,
   };
 }
 

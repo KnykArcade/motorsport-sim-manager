@@ -38,6 +38,15 @@ function InGame({ children }: { children: ReactNode }) {
   return <Layout>{children}</Layout>;
 }
 
+// Full-screen in-game route (no app sidebar/header) — used by the Live Race
+// broadcast dashboard, which brings its own top status bar and must fill the
+// viewport so the whole race fits without vertical scrolling.
+function FullScreenGame({ children }: { children: ReactNode }) {
+  const { state } = useGame();
+  if (!state) return <Navigate to="/" replace />;
+  return <>{children}</>;
+}
+
 export default function App() {
   return (
     <GameProvider>
@@ -67,7 +76,7 @@ export default function App() {
           <Route path="/records" element={<InGame><UniverseHistory /></InGame>} />
           <Route path="/history" element={<InGame><RaceHistory /></InGame>} />
           <Route path="/weekend" element={<InGame><RaceWeekend /></InGame>} />
-          <Route path="/live-race/:raceId" element={<InGame><LiveRace /></InGame>} />
+          <Route path="/live-race/:raceId" element={<FullScreenGame><LiveRace /></FullScreenGame>} />
           <Route path="/results/:raceId" element={<InGame><RaceResults /></InGame>} />
           <Route path="/season-review" element={<InGame><SeasonReview /></InGame>} />
           <Route path="/offseason" element={<InGame><Offseason /></InGame>} />
