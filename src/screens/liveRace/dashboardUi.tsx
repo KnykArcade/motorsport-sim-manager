@@ -5,7 +5,33 @@
 
 import type { ReactNode } from 'react';
 import type { RiskLevel } from '../../types/liveTypes';
-import { RISK_STYLE } from './dashboardFormat';
+import { RISK_STYLE, deltaDisplay } from './dashboardFormat';
+import { positionDeltaValue } from '../../sim/positionDelta';
+
+// Standardized grid-movement tag (▲n / ━0 / ▼n) shown next to a driver's
+// position across the timing tower and pit-wall cards. `grid`/`position` are the
+// starting-grid and current positions; `muted` grays out an unclassified driver.
+export function DeltaTag({
+  grid,
+  position,
+  muted = false,
+  className = '',
+}: {
+  grid: number;
+  position: number | null;
+  muted?: boolean;
+  className?: string;
+}) {
+  const d = deltaDisplay(muted ? null : positionDeltaValue(grid, position));
+  return (
+    <span
+      title="Change from starting grid position"
+      className={`font-semibold tabular-nums ${d.className} ${className}`}
+    >
+      {d.text}
+    </span>
+  );
+}
 
 // A large colour-coded risk chip for the pit-wall driver cards.
 export function RiskChip({ kind, level }: { kind: 'R' | 'C'; level: RiskLevel }) {

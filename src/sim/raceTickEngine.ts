@@ -7,11 +7,12 @@
 
 import type { RaceEvent } from '../types/simTypes';
 import type {
+  AnalyticsRecommendation,
   LiveCarState,
   LiveRaceState,
   PaceMode,
-  RaceDecisionPrompt,
   RecAction,
+  RecPriority,
 } from '../types/liveTypes';
 import { createSeededRandom, deriveSeed } from './random';
 import { REF_LAP, type LiveRaceMeta } from './liveRaceEngine';
@@ -29,7 +30,7 @@ import {
   DIRTY_AIR_GAP,
 } from './liveRacePace';
 import { mechanicalLabel, crashLabel, tyreLabel, otherLabel } from './dnfModel';
-import { generateRecommendations, REC_COOLDOWN } from './analyticsEngine';
+import { generateCandidates, cooldownFor, isModeAction, REC_COOLDOWN } from './analyticsEngine';
 import type { Track } from '../types/gameTypes';
 import type { StrategyModeSpec } from './liveRacePace';
 import type { Rng } from './random';
@@ -43,25 +44,24 @@ import { aiLapDecision } from './aiStrategyEngine';
 import { pitWindowFor } from './pitStrategyEngine';
 import { generateRaceEventPool, resolveRaceEventTrigger } from './raceEventEngine';
 import { rollReliabilityIssue } from './reliabilityEngine';
-import {
-  damagePrompt,
-  findOption,
-  pitWindowPrompt,
-  rainPrompt,
-  reliabilityPrompt,
-  rivalPitPrompt,
-  safetyCarPrompt,
-  teammateBattlePrompt,
-  tyreWearPrompt,
-  applyDecisionEffects,
-} from './raceDecisionEngine';
+import { findOption, applyDecisionEffects } from './raceDecisionEngine';
 
-const PROMPT_COOLDOWN = 6;
 const MAX_RACE_EVENTS = 3;
 // Baseline "other" (fuel system, illness, debris, etc.) per-lap DNF probability.
 const OTHER_PER_LAP = 0.00015;
 
-type PromptCandidate = { prompt: RaceDecisionPrompt; priority: number };
+const PRIORITY_RANK: Record<RecPriority, number> = { low: 1, medium: 2, high: 3, urgent: 4 };
+
+// --- Battle / position-change event tuning -------------------------------
+// Gap (s) within which a car behind is "challenging" the car ahead.
+const BATTLE_GAP = 1.0;
+// Consecutive laps of sustained pressure before a defend / stuck-behind line.
+const BATTLE_DEFEND_LAPS = 3;
+// Max battle events logged per lap (player-involved always kept, then front-runners).
+const MAX_BATTLE_EVENTS = 4;
+// A position battle is "meaningful" (worth logging) if it involves a player
+// driver, teammates, the closing laps, or the points/podium positions.
+const BATTLE_POINTS_CUTOFF = 10;
 
 // Advance one lap. `meta` carries track + names + player team.
 export function stepLiveRace(state: LiveRaceState, meta: LiveRaceMeta): LiveRaceState {
@@ -74,7 +74,6 @@ export function stepLiveRace(state: LiveRaceState, meta: LiveRaceMeta): LiveRace
   const name = (id: string) => meta.driverNames[id] ?? id;
 
   const lapEvents: RaceEvent[] = [];
-  const candidates: PromptCandidate[] = [];
   const pittedThisLap: LiveCarState[] = [];
   let incidentThisLap = false;
   let incidentSeverity = 0;
@@ -189,7 +188,6 @@ export function stepLiveRace(state: LiveRaceState, meta: LiveRaceMeta): LiveRace
       if (issue) {
         c.reliabilityIssue = issue;
         lapEvents.push({ lap: nextLap, text: `${name(c.driverId)} reports ${issue.label.toLowerCase()}.` });
-        if (c.isPlayer) candidates.push({ prompt: reliabilityPrompt(c, nextLap, issue.label), priority: 3 });
       }
     } else if (!c.isPlayer && !c.reliabilityIssue.managed && c.reliabilityIssue.lap < nextLap) {
       // AI teams react to a warning (turn the engine down, adjust) so it doesn't
@@ -264,7 +262,6 @@ export function stepLiveRace(state: LiveRaceState, meta: LiveRaceMeta): LiveRace
       if (!c.damaged && rng.chance(0.25)) {
         c.damaged = true;
         lapEvents.push({ lap: nextLap, text: `${name(c.driverId)} picks up front-wing damage.` });
-        if (c.isPlayer) candidates.push({ prompt: damagePrompt(c, nextLap), priority: 2 });
       }
     }
     mistakeByDriver[c.driverId] = mistakeThisLap;
@@ -358,44 +355,15 @@ export function stepLiveRace(state: LiveRaceState, meta: LiveRaceMeta): LiveRace
     }
   }
 
-  // --- Pit window opens prompt (player) ---
-  for (const c of newCars) {
-    if (
-      c.isPlayer &&
-      c.running &&
-      !c.pit.inPitThisLap &&
-      !c.pit.pitRequested &&
-      c.pit.window &&
-      nextLap === c.pit.window.open &&
-      c.pit.stopsMade < c.pit.plannedStops
-    ) {
-      candidates.push({ prompt: pitWindowPrompt(c, nextLap), priority: 2 });
-    }
-  }
+  // Normal in-race strategy decisions (pit window, tyre wear, rain, safety-car
+  // pit, rival stop, teammate battle) no longer raise separate Decision pop-ups.
+  // They are surfaced entirely by the Data Analytics recommendation panel — see
+  // the analytics engine + the lifecycle merge below — so the player answers each
+  // question exactly once.
 
-  // --- High tyre wear prompt (player) ---
-  for (const c of newCars) {
-    if (
-      c.isPlayer &&
-      c.running &&
-      c.tire.compound === 'Dry' &&
-      c.tire.wear >= 78 &&
-      c.pit.stopsMade < c.pit.plannedStops
-    ) {
-      candidates.push({ prompt: tyreWearPrompt(c, nextLap), priority: 2 });
-    }
-  }
-
-  // --- Weather change events / player rain prompt ---
+  // --- Weather change event line (no pop-up; the wet-tyre call is an analytics rec) ---
   if (weatherChanged) {
     lapEvents.push({ lap: nextLap, text: `Weather update: ${weather.label}.` });
-    if (weather.wet) {
-      for (const c of newCars) {
-        if (c.isPlayer && c.running && c.tire.compound === 'Dry') {
-          candidates.push({ prompt: rainPrompt(c, nextLap, weather.condition === 'HeavyRain'), priority: 4 });
-        }
-      }
-    }
   }
 
   // --- Safety car ---
@@ -410,35 +378,8 @@ export function stepLiveRace(state: LiveRaceState, meta: LiveRaceMeta): LiveRace
   );
   if (scResult.justDeployed) {
     lapEvents.push({ lap: nextLap, text: `Safety car deployed — ${scResult.safetyCar.reason}.` });
-    for (const c of newCars) {
-      if (c.isPlayer && c.running && c.pit.stopsMade < c.pit.plannedStops) {
-        candidates.push({ prompt: safetyCarPrompt(c, nextLap), priority: 5 });
-      }
-    }
   }
   if (scResult.justEnded) lapEvents.push({ lap: nextLap, text: 'Safety car in this lap — racing resumes.' });
-
-  // --- Rival pits early prompt ---
-  for (const player of newCars) {
-    if (!player.isPlayer || !player.running || player.pit.inPitThisLap) continue;
-    const rival = pittedThisLap.find(
-      (r) => !r.isPlayer && Math.abs(r.totalTime - player.totalTime) < 6,
-    );
-    if (rival) {
-      candidates.push({ prompt: rivalPitPrompt(player, nextLap, name(rival.driverId)), priority: 1 });
-    }
-  }
-
-  // --- Teammate battle prompt ---
-  const playerRunning = newCars.filter((c) => c.isPlayer && c.running);
-  if (playerRunning.length === 2 && nextLap > state.totalLaps * 0.25 && nextLap < state.totalLaps * 0.9) {
-    const [a, b] = playerRunning;
-    if (Math.abs(a.totalTime - b.totalTime) < 1.5) {
-      const lead = a.totalTime <= b.totalTime ? a : b;
-      const chase = lead === a ? b : a;
-      candidates.push({ prompt: teammateBattlePrompt(chase, nextLap, name(lead.driverId)), priority: 1 });
-    }
-  }
 
   // --- Order the field ---
   const running = newCars.filter((c) => c.running).sort((x, y) => x.totalTime - y.totalTime);
@@ -462,6 +403,17 @@ export function stepLiveRace(state: LiveRaceState, meta: LiveRaceMeta): LiveRace
     c.gapToLeader = 0;
     c.interval = 0;
   });
+
+  // --- Battle / position-change events for the log's Battles feed ---------
+  const { events: battleEvents, tracker: battleTracker } = detectBattleEvents(
+    state.cars,
+    running,
+    nextLap,
+    state.totalLaps,
+    state.battleTracker,
+    name,
+  );
+  lapEvents.push(...battleEvents);
 
   // --- Live status (risk bands, traffic, readable message) for running cars ---
   running.forEach((c, i) => {
@@ -497,36 +449,17 @@ export function stepLiveRace(state: LiveRaceState, meta: LiveRaceMeta): LiveRace
   }
 
   // --- Data analytics recommendations for the player's drivers -------------
-  // Generated before prompt selection so a decision covered by an active
-  // recommendation card is not also asked again as a Decision pop-up.
+  // The analytics panel is the sole decision interface. The lifecycle merge
+  // carries active instructions forward (without re-prompting), completes them
+  // when their duration ends, and only raises genuinely new / worsened advice.
   const recEvents: RaceEvent[] = [];
-  const { recommendations, ignoredRecs } = refreshRecommendations(
+  const { recommendations, ignoredRecs, recCooldowns } = refreshRecommendations(
     orderedCars,
     { ...state, currentLap: nextLap, weather, safetyCar: scResult.safetyCar },
     nextLap,
     name,
     recEvents,
   );
-  const driversWithRec = new Set(recommendations.map((r) => r.driverId));
-
-  // --- Choose a single pending prompt (highest priority, off cooldown) ---
-  // The analytics card is the primary decision interface: skip any prompt for a
-  // driver who already has an active recommendation so the same question is not
-  // asked twice. Prompts still fire when no recommendation covers the situation.
-  const cooldown = { ...state.promptCooldown };
-  let pendingPrompt: RaceDecisionPrompt | null = null;
-  if (!isFinalLap) {
-    candidates.sort((p, q) => q.priority - p.priority);
-    for (const cand of candidates) {
-      if (driversWithRec.has(cand.prompt.driverId)) continue;
-      const until = cooldown[cand.prompt.driverId] ?? 0;
-      if (nextLap >= until) {
-        pendingPrompt = cand.prompt;
-        cooldown[cand.prompt.driverId] = nextLap + PROMPT_COOLDOWN;
-        break;
-      }
-    }
-  }
 
   const retirements = orderedCars.filter((c) => c.status === 'DNF').length;
 
@@ -538,11 +471,13 @@ export function stepLiveRace(state: LiveRaceState, meta: LiveRaceMeta): LiveRace
     safetyCar: scResult.safetyCar,
     cars: orderedCars,
     events: [...state.events, ...lapEvents, ...recEvents],
-    pendingPrompt,
-    promptCooldown: cooldown,
+    pendingPrompt: null,
+    promptCooldown: state.promptCooldown,
     firedEventIds,
     recommendations,
     ignoredRecs,
+    recCooldowns,
+    battleTracker,
     retirements,
   };
 }
@@ -668,64 +603,195 @@ function updateFuelAndComponents(
   c.brakeHealth = clamp(c.brakeHealth - brake, 0, 100);
 }
 
-// Rebuild the player-driver recommendation list from the advanced state, prune
-// stale ignore records, and log when an ignored reliability warning has since
-// worsened into a High/Critical risk.
-function refreshRecommendations(
+// Advance the recommendation lifecycle for the player's drivers each lap:
+//  1. carry active instructions forward (no re-prompt), completing them when
+//     their approved duration ends;
+//  2. keep still-valid pending recs (stable createdLap, refreshed wording);
+//  3. raise genuinely new pending advice, deduped against live recs and per-kind
+//     cooldowns (urgent bypasses cooldown; worsened ignored warnings re-raise).
+// Also prunes stale ignore records and logs when an ignored reliability warning
+// has since worsened into a High/Critical risk.
+export function refreshRecommendations(
   cars: LiveCarState[],
   partial: LiveRaceState,
   lap: number,
   name: (id: string) => string,
   events: RaceEvent[],
-): { recommendations: LiveRaceState['recommendations']; ignoredRecs: LiveRaceState['ignoredRecs'] } {
-  const recommendations = generateRecommendations(cars, partial, lap);
+): {
+  recommendations: LiveRaceState['recommendations'];
+  ignoredRecs: LiveRaceState['ignoredRecs'];
+  recCooldowns: LiveRaceState['recCooldowns'];
+} {
+  const prev = partial.recommendations;
+  const candidates = generateCandidates(cars, partial, lap);
+  const candById = new Map(candidates.map((c) => [c.id, c]));
+  const carFor = (id: string) => cars.find((c) => c.driverId === id);
 
+  const recCooldowns: Record<string, number> = { ...partial.recCooldowns };
+  // Clear situational cooldowns once the situation resets so a fresh event can
+  // raise new advice: safety-car pit calls when the SC is gone, wet-tyre calls
+  // once the track is dry again.
+  for (const key of Object.keys(recCooldowns)) {
+    if (key.endsWith(':safetyCarPit') && !partial.safetyCar.active) delete recCooldowns[key];
+    if (key.endsWith(':weatherTyres') && !partial.weather.wet) delete recCooldowns[key];
+  }
+
+  // Escalate ignored warnings that have since worsened (a current candidate for
+  // the same key now outranks the priority it had when ignored) and clear their
+  // cooldown so the re-raise is allowed this lap.
+  const escalatedIds = new Set<string>();
   const ignoredRecs = partial.ignoredRecs
     .filter((i) => lap - i.lap < REC_COOLDOWN * 3)
     .map((i) => {
       if (i.escalated) return i;
-      const [driverId, kind] = i.key.split(':');
-      if (kind !== 'reliability' && kind !== 'component') return i;
-      const car = cars.find((c) => c.driverId === driverId && c.running);
-      if (!car) return i;
-      if (car.reliabilityRiskLevel === 'High' || car.reliabilityRiskLevel === 'Critical') {
-        events.push({
-          lap,
-          text: `${name(driverId)} — earlier ignored warning worsens; reliability risk now ${car.reliabilityRiskLevel}.`,
-        });
-        return { ...i, escalated: true };
-      }
-      return i;
+      const cand = candById.get(i.key);
+      if (!cand || PRIORITY_RANK[cand.priority] <= PRIORITY_RANK[i.priority]) return i;
+      const [driverId] = i.key.split(':');
+      events.push({
+        lap,
+        text: `Lap ${lap} — ${name(driverId)}: earlier ignored warning worsens — ${cand.issue}`,
+      });
+      delete recCooldowns[i.key];
+      escalatedIds.add(i.key);
+      return { ...i, escalated: true };
     });
 
-  return { recommendations, ignoredRecs };
+  const result: AnalyticsRecommendation[] = [];
+  const liveIds = new Set<string>();
+
+  // 1. Advance existing recommendations: carry active instructions, complete them
+  //    when their duration ends, keep still-valid pending recs.
+  for (const rec of prev) {
+    const car = carFor(rec.driverId);
+    if (rec.status === 'active') {
+      if (!car || !car.running) continue; // car gone — instruction moot
+      if (rec.appliedUntilLap != null && lap >= rec.appliedUntilLap) {
+        // Completed: return to Balanced if still running the applied mode, and
+        // log the completion once for the notable racing instructions.
+        const applied = rec.appliedAction;
+        if (applied?.paceMode && applied.paceMode !== 'Balanced' && car.paceMode === applied.paceMode) {
+          car.paceMode = 'Balanced';
+        }
+        if (rec.priority === 'high' || rec.priority === 'urgent' || rec.kind === 'attack' || rec.kind === 'defend') {
+          events.push({
+            lap,
+            text: `Lap ${lap} — ${name(rec.driverId)} completes ${applied?.label ?? rec.action.label} instruction and returns to Balanced.`,
+          });
+        }
+        recCooldowns[rec.id] = lap + cooldownFor(rec.kind);
+        continue;
+      }
+      result.push(rec);
+      liveIds.add(rec.id);
+      continue;
+    }
+    if (rec.status === 'pending') {
+      const cand = candById.get(rec.id);
+      if (cand) {
+        // Still applies — keep it pending, refreshing wording/priority if it has
+        // worsened, but preserve the original createdLap so the card is stable.
+        result.push({ ...cand, createdLap: rec.createdLap, status: 'pending' });
+        liveIds.add(rec.id);
+      }
+      // Trigger gone → drop (superseded); no log noise.
+      continue;
+    }
+    // Terminal statuses are not carried.
+  }
+
+  // 2. Raise genuinely new pending recommendations (dedup vs live recs + cooldown).
+  for (const cand of candidates) {
+    if (liveIds.has(cand.id)) continue;
+    const cd = recCooldowns[cand.id];
+    if (cand.priority !== 'urgent' && cd != null && lap < cd) continue;
+    result.push(cand);
+    liveIds.add(cand.id);
+    // Log the first appearance of important advice once (skip if it was just
+    // surfaced by the "ignored warning worsens" line above).
+    if ((cand.priority === 'high' || cand.priority === 'urgent') && !escalatedIds.has(cand.id)) {
+      events.push({ lap, text: `Lap ${lap} — analytics alert (${name(cand.driverId)}): ${cand.issue}` });
+    }
+  }
+
+  return { recommendations: result, ignoredRecs, recCooldowns };
 }
 
 // ---------------------------------------------------------------------------
 // Data analytics recommendation actions (Accept / Modify / Ignore)
 // ---------------------------------------------------------------------------
 
-// Apply a recommendation's concrete on-track effect (mode switch and/or pit
-// call), remove it from the active list, and log the decision. Team-order
-// actions carry no mode/pit effect here — the UI applies the on-track order via
-// the relationship engine and still calls this to remove + log the decision.
+function addEvent(state: LiveRaceState, text: string): LiveRaceState {
+  return { ...state, events: [...state.events, { lap: state.currentLap, text }] };
+}
+
+function withCooldown(state: LiveRaceState, rec: AnalyticsRecommendation): LiveRaceState {
+  return {
+    ...state,
+    recCooldowns: { ...state.recCooldowns, [rec.id]: state.currentLap + cooldownFor(rec.kind) },
+  };
+}
+
+function removeRec(state: LiveRaceState, recId: string): LiveRaceState {
+  return { ...state, recommendations: state.recommendations.filter((r) => r.id !== recId) };
+}
+
+// Apply a chosen action to a recommendation and advance its lifecycle:
+//  • Duration-based mode instructions (Attack for 4 laps, Protect Engine for 6,
+//    Fuel Save, …) become `active` and are kept in the list until their duration
+//    ends — the merge does not re-prompt while active and completes them later.
+//  • Pit calls schedule exactly one stop (duplicate calls are logged, not doubled)
+//    and are then removed + put on cooldown.
+//  • Other one-shot actions (stay out, one-off mode change) are removed + cooled.
+// "Let Crew Decide" resolves to the recommended action. Team-order actions carry
+// no mode/pit effect here — the UI applies the on-track order via the relationship
+// engine and calls resolveRecommendationExternally to remove + log the decision.
 function applyRecAction(
   state: LiveRaceState,
-  rec: LiveRaceState['recommendations'][number],
-  action: { paceMode?: PaceMode; pitNow?: boolean; label: string },
+  rec: AnalyticsRecommendation,
+  action: RecAction,
   meta: LiveRaceMeta,
   verb: 'accepted' | 'modified',
 ): LiveRaceState {
-  let s = state;
-  if (action.paceMode) s = setPlayerPaceMode(s, rec.driverId, action.paceMode);
-  if (action.pitNow) s = requestPlayerPit(s, rec.driverId);
-  const recommendations = s.recommendations.filter((r) => r.id !== rec.id);
+  const lap = state.currentLap;
   const name = meta.driverNames[rec.driverId] ?? rec.driverId;
-  const events = [
-    ...s.events,
-    { lap: s.currentLap, text: `Lap ${s.currentLap} — pit wall ${verb} analytics recommendation: ${name} — ${action.label}.` },
-  ];
-  return { ...s, recommendations, events };
+  const eff = action.type === 'LetCrewDecide' ? rec.action : action;
+
+  // --- Pit call: schedule at most one stop, with duplicate protection ---
+  if (eff.pitNow) {
+    const car = state.cars.find((c) => c.driverId === rec.driverId);
+    let s = withCooldown(removeRec(state, rec.id), rec);
+    if (!car || !car.running) return s;
+    if (car.pit.inPitThisLap) return addEvent(s, `Lap ${lap} — ${name}'s pit call — already in the pits this lap.`);
+    if (car.pit.pitRequested) return addEvent(s, `Lap ${lap} — ${name} is already called to the pits; duplicate stop avoided.`);
+    if (car.pit.stopsMade >= car.pit.plannedStops && car.tire.wear < 60) {
+      return addEvent(s, `Lap ${lap} — ${name}'s pit call postponed; no further stop planned.`);
+    }
+    s = requestPlayerPit(s, rec.driverId);
+    return addEvent(s, `Lap ${lap} — pit wall ${verb} analytics recommendation: ${name} will pit this lap.`);
+  }
+
+  // --- Strategy-mode instruction ---
+  if (eff.paceMode) {
+    let s = setPlayerPaceMode(state, rec.driverId, eff.paceMode);
+    const duration = isModeAction(eff) ? rec.suggestedDurationLaps : undefined;
+    if (duration && duration > 0) {
+      // Becomes an active instruction for its approved duration.
+      const recommendations = s.recommendations.map((r) =>
+        r.id === rec.id
+          ? { ...r, status: 'active' as const, appliedAction: eff, appliedUntilLap: lap + duration }
+          : r,
+      );
+      s = { ...s, recommendations };
+      return addEvent(s, `Lap ${lap} — ${name} switches to ${eff.label} for ${duration} lap${duration > 1 ? 's' : ''}.`);
+    }
+    // One-off mode change (no approved duration): apply, remove, cool down.
+    s = withCooldown(removeRec(s, rec.id), rec);
+    return addEvent(s, `Lap ${lap} — pit wall ${verb} analytics recommendation: ${name} — ${eff.label}.`);
+  }
+
+  // --- Any other one-shot action (e.g. stay out) ---
+  const s = withCooldown(removeRec(state, rec.id), rec);
+  return addEvent(s, `Lap ${lap} — pit wall ${verb} analytics recommendation: ${name} — ${eff.label}.`);
 }
 
 // Accept a recommendation's recommended action.
@@ -749,11 +815,11 @@ export function modifyRecommendation(
   return applyRecAction(state, rec, action, meta, 'modified');
 }
 
-// Apply an arbitrary action to a recommendation (mode + pit effects), removing +
-// logging it. Unlike modifyRecommendation this does not require the action to be
-// one of the recommendation's own alternatives — used by "Apply to both drivers"
-// where the same action is pushed onto every player driver. Team-order actions
-// carry no effect here (the caller applies the on-track order separately).
+// Apply an arbitrary action to a recommendation. Unlike modifyRecommendation this
+// does not require the action to be one of the recommendation's own alternatives —
+// used by "Apply to both drivers" where the same action is pushed onto every
+// player driver. Team-order actions carry no effect here (caller applies the
+// on-track order separately).
 export function applyRecommendationAction(
   state: LiveRaceState,
   recId: string,
@@ -772,20 +838,34 @@ export function applyRecommendationAction(
 export function ignoreRecommendation(state: LiveRaceState, recId: string, meta?: LiveRaceMeta): LiveRaceState {
   const rec = state.recommendations.find((r) => r.id === recId);
   if (!rec) return state;
-  const recommendations = state.recommendations.filter((r) => r.id !== recId);
+  const lap = state.currentLap;
   const ignoredRecs = [
     ...state.ignoredRecs.filter((i) => i.key !== rec.id),
-    { key: rec.id, lap: state.currentLap, issue: rec.issue, escalated: false },
+    { key: rec.id, lap, issue: rec.issue, priority: rec.priority, escalated: false },
   ];
+  let s = withCooldown(removeRec(state, rec.id), rec);
+  s = { ...s, ignoredRecs };
   const name = meta?.driverNames[rec.driverId] ?? rec.driverId;
-  const events =
-    rec.priority === 'low'
-      ? state.events
-      : [
-          ...state.events,
-          { lap: state.currentLap, text: `Lap ${state.currentLap} — ${name} ignored analytics recommendation: ${rec.recommendedAction}` },
-        ];
-  return { ...state, recommendations, ignoredRecs, events };
+  return rec.priority === 'low'
+    ? s
+    : addEvent(s, `Lap ${lap} — ${name} ignored analytics recommendation: ${rec.recommendedAction}`);
+}
+
+// Auto-dismiss a recommendation whose decision countdown elapsed with no player
+// response. Treated as an ignore (so a worsening warning can still re-raise) but
+// logged as "no pit wall response — stays on the current plan".
+export function expireRecommendation(state: LiveRaceState, recId: string, meta?: LiveRaceMeta): LiveRaceState {
+  const rec = state.recommendations.find((r) => r.id === recId);
+  if (!rec) return state;
+  const lap = state.currentLap;
+  const ignoredRecs = [
+    ...state.ignoredRecs.filter((i) => i.key !== rec.id),
+    { key: rec.id, lap, issue: rec.issue, priority: rec.priority, escalated: false },
+  ];
+  let s = withCooldown(removeRec(state, rec.id), rec);
+  s = { ...s, ignoredRecs };
+  const name = meta?.driverNames[rec.driverId] ?? rec.driverId;
+  return addEvent(s, `Lap ${lap} — no pit wall response; ${name} stays on the current plan.`);
 }
 
 // Remove + log a recommendation whose on-track effect the caller applied itself
@@ -800,13 +880,128 @@ export function resolveRecommendationExternally(
 ): LiveRaceState {
   const rec = state.recommendations.find((r) => r.id === recId);
   if (!rec) return state;
-  const recommendations = state.recommendations.filter((r) => r.id !== recId);
+  const s = withCooldown(removeRec(state, rec.id), rec);
   const name = meta.driverNames[rec.driverId] ?? rec.driverId;
-  const events = [
-    ...state.events,
-    { lap: state.currentLap, text: `Lap ${state.currentLap} — pit wall ${verb} analytics recommendation: ${name} — ${label}.` },
-  ];
-  return { ...state, recommendations, events };
+  return addEvent(s, `Lap ${s.currentLap} — pit wall ${verb} analytics recommendation: ${name} — ${label}.`);
+}
+
+// Detect meaningful on-track battles and pit-cycle position changes for the
+// event log's Battles feed. Compares the previous running order (prevCars) with
+// the freshly-ordered `running` field to spot completed passes, sustained
+// defends, faded attacks and stops that cost/gain places — without spamming the
+// log every lap. Only battles involving a player driver, teammates, the closing
+// laps or the points/podium places are kept, and at most MAX_BATTLE_EVENTS fire
+// per lap (player-involved prioritised, then front-runners).
+export function detectBattleEvents(
+  prevCars: LiveCarState[],
+  running: LiveCarState[],
+  lap: number,
+  totalLaps: number,
+  prevTracker: Record<string, number>,
+  name: (id: string) => string,
+): { events: RaceEvent[]; tracker: Record<string, number> } {
+  const finalLaps = lap > totalLaps - 10;
+  const prevPos: Record<string, number | null> = {};
+  for (const c of prevCars) prevPos[c.driverId] = c.position;
+  const runningById: Record<string, LiveCarState> = {};
+  for (const c of running) runningById[c.driverId] = c;
+
+  const candidates: { text: string; score: number }[] = [];
+  const tracker: Record<string, number> = {};
+  const passedPairs = new Set<string>();
+  const activeKeys = new Set<string>();
+
+  const significant = (posA: number, posB: number, players: boolean, sameTeam: boolean): boolean =>
+    players || sameTeam || finalLaps || Math.min(posA, posB) <= BATTLE_POINTS_CUTOFF;
+  const scoreOf = (posA: number, posB: number, players: boolean): number =>
+    (players ? 1000 : 0) + (100 - Math.min(posA, posB));
+
+  for (let i = 0; i < running.length - 1; i++) {
+    const a = running[i]; // now ahead (P{i+1})
+    const b = running[i + 1]; // now directly behind (P{i+2})
+    const pa = prevPos[a.driverId];
+    const pb = prevPos[b.driverId];
+    const posA = i + 1;
+    const posB = i + 2;
+    const players = a.isPlayer || b.isPlayer;
+    const sameTeam = a.teamId === b.teamId;
+
+    // Clean on-track pass: the pair swapped since last lap, neither pitted.
+    if (pa != null && pb != null && pa > pb && !a.pit.inPitThisLap && !b.pit.inPitThisLap) {
+      passedPairs.add(`${a.driverId}>${b.driverId}`);
+      passedPairs.add(`${b.driverId}>${a.driverId}`);
+      if (significant(posA, posB, players, sameTeam)) {
+        const suffix = sameTeam ? ' (teammates)' : '';
+        candidates.push({
+          text: `${name(a.driverId)} passes ${name(b.driverId)} for P${posA}${suffix}.`,
+          score: scoreOf(posA, posB, players) + 5,
+        });
+      }
+      continue;
+    }
+
+    // Sustained pressure: b sits within striking distance behind a.
+    const gap = b.interval; // b's gap to the car ahead (a)
+    if (gap > 0 && gap <= BATTLE_GAP && !a.pit.inPitThisLap && !b.pit.inPitThisLap) {
+      const key = `${b.driverId}>${a.driverId}`;
+      const streak = (prevTracker[key] ?? 0) + 1;
+      tracker[key] = streak;
+      activeKeys.add(key);
+      if (streak === BATTLE_DEFEND_LAPS && significant(posA, posB, players, sameTeam)) {
+        candidates.push({
+          text: `${name(a.driverId)} defends P${posA} from ${name(b.driverId)}.`,
+          score: scoreOf(posA, posB, players),
+        });
+      }
+    }
+  }
+
+  // Pit-cycle position changes: a car that pitted this lap and rejoined in a
+  // different place.
+  for (let i = 0; i < running.length; i++) {
+    const c = running[i];
+    if (!c.pit.inPitThisLap) continue;
+    const pc = prevPos[c.driverId];
+    if (pc == null) continue;
+    const posC = i + 1;
+    const delta = pc - posC;
+    if (delta === 0) continue;
+    const players = c.isPlayer;
+    const n = Math.abs(delta);
+    if (!players && n < 2) continue; // ignore minor AI shuffles
+    if (!significant(posC, pc, players, false)) continue;
+    candidates.push({
+      text:
+        delta > 0
+          ? `${name(c.driverId)} gains ${n} place${n === 1 ? '' : 's'} through the pit cycle to P${posC}.`
+          : `${name(c.driverId)} drops ${n} place${n === 1 ? '' : 's'} to P${posC} after the stop.`,
+      score: scoreOf(posC, pc, players) - 2,
+    });
+  }
+
+  // Faded challenges: a threshold-length pressure streak that is no longer live
+  // and did not end in a pass — log the failed attack once (both cars running).
+  for (const [key, streak] of Object.entries(prevTracker)) {
+    if (streak < BATTLE_DEFEND_LAPS) continue;
+    if (activeKeys.has(key) || passedPairs.has(key)) continue;
+    const [attackerId, defenderId] = key.split('>');
+    const attacker = runningById[attackerId];
+    const defender = runningById[defenderId];
+    if (!attacker || !defender) continue;
+    const players = attacker.isPlayer || defender.isPlayer;
+    if (!players && !finalLaps) continue;
+    candidates.push({
+      text: `${name(attackerId)}'s attack on ${name(defenderId)} fades.`,
+      score: players ? 1000 : 50,
+    });
+  }
+
+  const events = candidates
+    .sort((x, y) => y.score - x.score)
+    .slice(0, MAX_BATTLE_EVENTS)
+    .map<RaceEvent>((c) => ({ lap, text: c.text, category: 'battle' }));
+
+  return { events, tracker };
 }
 
 function clamp(v: number, lo: number, hi: number): number {

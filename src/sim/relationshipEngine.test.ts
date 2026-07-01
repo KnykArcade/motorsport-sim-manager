@@ -93,6 +93,8 @@ function liveWith(cars: LiveCarState[]): LiveRaceState {
     firedEventIds: [],
     recommendations: [],
     ignoredRecs: [],
+    recCooldowns: {},
+    battleTracker: {},
     retirements: 0,
   };
 }

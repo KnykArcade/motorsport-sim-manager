@@ -7,14 +7,29 @@ import { useLayoutEffect, useRef, useState } from 'react';
 import type { RaceEvent } from '../../types/simTypes';
 import { DashPanel } from './dashboardUi';
 
-type Filter = 'All' | 'Incidents' | 'Strategy' | 'Status';
-const FILTERS: Filter[] = ['All', 'Incidents', 'Strategy', 'Status'];
+type Filter = 'All' | 'Incidents' | 'Strategy' | 'Battles' | 'Status';
+const FILTERS: Filter[] = ['All', 'Incidents', 'Strategy', 'Battles', 'Status'];
 
-// Classify an event line into a filter bucket from keywords.
-function bucket(text: string): Exclude<Filter, 'All'> {
-  const t = text.toLowerCase();
+// Classify an event into a filter bucket. Prefer the explicit `category` set by
+// the sim; fall back to keyword matching for legacy/uncategorised lines.
+function bucket(e: RaceEvent): Exclude<Filter, 'All'> {
+  switch (e.category) {
+    case 'incident':
+      return 'Incidents';
+    case 'strategy':
+      return 'Strategy';
+    case 'battle':
+      return 'Battles';
+    case 'status':
+    case 'weather':
+    case 'race-control':
+      return 'Status';
+  }
+  const t = e.text.toLowerCase();
   if (/(retir|crash|contact|accident|puncture|damage|spin|collision|incident|off|failure|dnf)/.test(t))
     return 'Incidents';
+  if (/(passes|overtake|overtak|defends|clears|holds off|through the pit cycle|position)/.test(t))
+    return 'Battles';
   if (/(pit|box|tyre|tire|strateg|recommendation|mode|stop|undercut|order|swap|protect|conservativ|attack|push|defend)/.test(t))
     return 'Strategy';
   return 'Status';
@@ -34,7 +49,7 @@ export function EventLogPanel({
   const [atBottom, setAtBottom] = useState(true);
 
   // Chronological (oldest first, newest last), capped to keep the DOM light.
-  const filtered = events.filter((e) => filter === 'All' || bucket(e.text) === filter).slice(-80);
+  const filtered = events.filter((e) => filter === 'All' || bucket(e) === filter).slice(-80);
 
   // Auto-scroll to the newest event while the player is following the feed.
   useLayoutEffect(() => {

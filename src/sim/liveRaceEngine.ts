@@ -228,6 +228,8 @@ export function createLiveRace(context: RaceContext, options: LiveRaceOptions): 
     firedEventIds: [],
     recommendations: [],
     ignoredRecs: [],
+    recCooldowns: {},
+    battleTracker: {},
     retirements: 0,
   };
 }

@@ -57,6 +57,25 @@ export function ordinal(pos: number | null): string {
   return pos == null ? 'OUT' : `P${pos}`;
 }
 
+// Standardized position-delta (grid movement) display used across the Live Race
+// UI. `delta = startingGrid - currentPosition` (positive = gained). A null delta
+// (driver not classified) renders as a muted em dash.
+//   > 0  ▲{n}  green
+//   = 0  ━0    neutral gray
+//   < 0  ▼{n}  red
+export type DeltaTone = 'up' | 'flat' | 'down' | 'none';
+
+export function deltaDisplay(delta: number | null): {
+  text: string;
+  tone: DeltaTone;
+  className: string;
+} {
+  if (delta == null) return { text: '—', tone: 'none', className: 'text-slate-600' };
+  if (delta > 0) return { text: `▲${delta}`, tone: 'up', className: 'text-emerald-400' };
+  if (delta < 0) return { text: `▼${-delta}`, tone: 'down', className: 'text-red-400' };
+  return { text: '━0', tone: 'flat', className: 'text-slate-400' };
+}
+
 // Tyre compound letter + colour (the sim models Dry/Wet only).
 export function tyreLetter(compound: string): { letter: string; className: string } {
   if (compound === 'Wet') return { letter: 'W', className: 'bg-sky-500 text-white' };

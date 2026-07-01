@@ -5,7 +5,7 @@
 
 import type { LiveCarState, PaceMode } from '../../types/liveTypes';
 import { SELECTABLE_MODES, modeSpec } from '../../sim/liveRacePace';
-import { Gauge, RiskChip } from './dashboardUi';
+import { DeltaTag, Gauge, RiskChip } from './dashboardUi';
 import { fmtLap, ordinal, tyreLetter } from './dashboardFormat';
 
 const PACE_LABEL: Record<PaceMode, string> = {
@@ -37,7 +37,6 @@ export function PitWallCard({
   const wear = Math.round(car.tire.wear);
   const life = Math.max(0, 100 - wear);
   const tyre = tyreLetter(car.tire.compound);
-  const gridDelta = car.position != null ? car.grid - car.position : 0;
   const canPit = car.running && !car.pit.pitRequested && !finished;
   const highRisk =
     car.reliabilityRiskLevel === 'High' ||
@@ -53,7 +52,10 @@ export function PitWallCard({
             <span className="h-3 w-1 rounded-sm" style={{ backgroundColor: teamColor }} />
             {name}
           </span>
-          <span className="text-xs font-semibold text-red-400">OUT — {car.lastIncident ?? 'Retired'}</span>
+          <span className="flex items-center gap-1.5 text-xs font-semibold text-red-400">
+            OUT — {car.lastIncident ?? 'Retired'}
+            <DeltaTag grid={car.grid} position={car.position} muted className="text-[11px]" />
+          </span>
         </div>
       </div>
     );
@@ -78,11 +80,7 @@ export function PitWallCard({
           <span className="text-lg font-bold tabular-nums text-slate-100">
             {car.pit.inPitThisLap ? 'PIT' : ordinal(car.position)}
           </span>
-          {gridDelta !== 0 && (
-            <span className={`ml-1 text-[11px] ${gridDelta > 0 ? 'text-emerald-400' : 'text-red-400'}`}>
-              {gridDelta > 0 ? `▲${gridDelta}` : `▼${-gridDelta}`}
-            </span>
-          )}
+          <DeltaTag grid={car.grid} position={car.position} className="ml-1 text-[11px]" />
         </div>
       </div>
 

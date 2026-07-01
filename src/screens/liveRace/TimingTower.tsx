@@ -4,7 +4,7 @@
 
 import { useState } from 'react';
 import type { LiveCarState } from '../../types/liveTypes';
-import { RiskDot } from './dashboardUi';
+import { DeltaTag, RiskDot } from './dashboardUi';
 import { fmtLap, fmtSector, tyreLetter } from './dashboardFormat';
 
 type Tab = 'Overview' | 'Gaps' | 'Tyres' | 'Stops' | 'Sectors';
@@ -67,7 +67,10 @@ function Row({ car, tab, name, color }: { car: LiveCarState; tab: Tab; name: str
       }`}
     >
       <td className="w-6 py-1 pl-2 text-right font-bold tabular-nums text-slate-200">{car.position ?? '–'}</td>
-      <td className="py-1 pl-2">
+      <td className="w-7 py-1 pl-1 text-center text-[10px]">
+        <DeltaTag grid={car.grid} position={car.position} muted={!classified} />
+      </td>
+      <td className="py-1 pl-1">
         <span className="flex items-center gap-1.5">
           <span className="h-3 w-1 shrink-0 rounded-sm" style={{ backgroundColor: color }} />
           <span className={`truncate ${car.isPlayer ? 'font-semibold text-amber-200' : 'text-slate-200'}`}>
