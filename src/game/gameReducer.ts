@@ -9,7 +9,7 @@ import { developmentProjectsById } from '../data/development/developmentProjects
 import { qualifyingFormatFor, simulateQualifying } from '../sim/qualifyingEngine';
 import { simulateRace } from '../sim/raceEngine';
 import { buildConstructorStandings, buildDriverStandings } from '../sim/standingsEngine';
-import { applyDevelopmentProgress } from '../sim/developmentEngine';
+import { applyDevelopmentProgress, raceOpsDevelopmentBonus } from '../sim/developmentEngine';
 import { updateMorale } from '../sim/moraleEngine';
 import { generateRaceNews } from '../sim/newsEngine';
 import { aiQualifyingDecision } from './ai';
@@ -976,12 +976,15 @@ function applyRaceResults(
   let completedDevelopmentProjects = state.completedDevelopmentProjects;
   const devMessages: string[] = [];
   if (playerCar && activeDevelopmentProjects.length > 0) {
+    const playerTeamData = state.teams.find((t) => t.id === state.selectedTeamId);
     const tick = applyDevelopmentProgress(
       activeDevelopmentProjects,
       playerCar,
       state.randomSeed,
       race.round,
-      developmentSuccessBonus(state.staff ?? []) + facilityDevelopmentSuccessBonus(state.facilities),
+      developmentSuccessBonus(state.staff ?? []) +
+        facilityDevelopmentSuccessBonus(state.facilities) +
+        raceOpsDevelopmentBonus(playerTeamData?.raceOperations),
     );
     activeDevelopmentProjects = tick.active;
     completedDevelopmentProjects = [...completedDevelopmentProjects, ...tick.completed];

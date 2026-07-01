@@ -104,14 +104,16 @@ export function aiLapDecision(
   }
 
   // 2. Safety car: opportunistic / undercut personalities grab the cheap stop if
-  //    they still have a scheduled stop to make.
+  //    they still have a scheduled stop to make. Sharper race operations react
+  //    to the safety car more reliably; weaker operations miss the window more.
   if (state.safetyCar.active && car.pit.stopsMade < car.pit.plannedStops && car.tire.age >= 5) {
-    const grabChance =
+    const baseGrab =
       car.personality === 'Opportunistic' || car.personality === 'UndercutFocused'
         ? 0.85
         : car.personality === 'TrackPositionFocused' || car.personality === 'OvercutFocused'
           ? 0.25
           : 0.55;
+    const grabChance = Math.max(0.1, Math.min(0.97, baseGrab + car.opsForm * 0.4));
     if (rng.chance(grabChance)) {
       action.pitNow = true;
       action.switchCompound = state.weather.wet ? 'Wet' : 'Dry';

@@ -5,6 +5,18 @@ import type { ReliabilityIssue, ReliabilityIssueType } from '../types/liveTypes'
 import type { Rng } from './random';
 import { effectiveCarRatings } from './trackFitEngine';
 
+// Sensitivity of DNF risk to the weekend's operations execution (see
+// `operationsForm` in raceEngine). Zero-mean: a sharp operations weekend
+// (opsForm > 0) reduces reliability risk, a scrappy one raises it, so the
+// *average* risk is unchanged and only its weekend-to-weekend swing grows.
+export const RELIABILITY_OPS_SENS = 0.8;
+
+// Multiplier applied to reliability risk for a given weekend operations-form
+// value (0 = neutral, preserving prior behaviour). Clamped so risk stays sane.
+export function operationsRiskMultiplier(opsForm = 0): number {
+  return Math.max(0.3, Math.min(1.9, 1 - opsForm * RELIABILITY_OPS_SENS));
+}
+
 // Returns a per-race DNF probability in [0, 1].
 export function calculateReliabilityRisk(
   car: Car,
@@ -12,6 +24,8 @@ export function calculateReliabilityRisk(
   setup: SetupOption,
   // Extra stress from aggressive driving / run plans (0+).
   stress: number,
+  // Weekend operations-form (0 neutral): reliability management consistency.
+  opsForm = 0,
 ): number {
   const c = effectiveCarRatings(car);
 
@@ -29,7 +43,9 @@ export function calculateReliabilityRisk(
   // Car condition: a damaged car (e.g. quali crash) is more fragile.
   const conditionFactor = (100 - car.condition) * 0.0015;
 
-  const risk = base + trackFactor + setupFactor + conditionFactor + stress * 0.03;
+  const risk =
+    (base + trackFactor + setupFactor + conditionFactor + stress * 0.03) *
+    operationsRiskMultiplier(opsForm);
   return clamp(risk, 0.01, 0.6);
 }
 
