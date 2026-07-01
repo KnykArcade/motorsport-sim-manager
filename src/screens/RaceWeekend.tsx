@@ -1,7 +1,7 @@
 import { useMemo, useState, type ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useGame } from '../game/GameContext';
-import { activeDriversForTeam, currentRace } from '../game/careerState';
+import { activeDriversForTeam, carForTeam, currentRace } from '../game/careerState';
 import { lastBreakdowns } from '../game/gameReducer';
 import { getTrackById } from '../data';
 import { qualifyingRunPlans } from '../data/decisions/qualifyingRunPlans';
@@ -21,6 +21,7 @@ import {
   sessionLapCost,
   teamKnowledgeGaps,
   recommendedPracticeProgram,
+  driverPracticeSummary,
 } from '../sim/practiceProgramEngine';
 import type {
   PracticeProgram,
@@ -38,7 +39,7 @@ import {
 import { Panel } from '../components/Panel';
 import { Button } from '../components/Button';
 import { TrackDemandBars } from '../components/TrackDemandBars';
-import { SetupWorkshop } from '../components/SetupWorkshop';
+import { SetupWorkshop, type WorkshopPractice } from '../components/SetupWorkshop';
 import type { Driver, Track, StandingsEntry } from '../types/gameTypes';
 import type { WeatherState } from '../types/liveTypes';
 import type { CarSetup } from '../types/setupTypes';
@@ -108,6 +109,28 @@ export function RaceWeekend() {
       dispatch({ type: 'SET_CAR_SETUP', driverId: d.id, setup: resolvedSetups[d.id] });
     }
   };
+
+  // Per-driver practice context for the setup workshop: knowledge (gates
+  // certainty), the practised setup family + laps (drive comfort/familiarity),
+  // and which programs were run.
+  const workshopPractice = useMemo<WorkshopPractice | undefined>(() => {
+    if (!state || !race) return undefined;
+    const wp =
+      state.weekendPractice && state.weekendPractice.raceId === race.id
+        ? state.weekendPractice
+        : undefined;
+    const summaryByDriver: WorkshopPractice['summaryByDriver'] = {};
+    for (const d of playerDrivers) summaryByDriver[d.id] = driverPracticeSummary(wp, d.id);
+    return {
+      setupKnowledge: wp?.knowledge.setupKnowledge ?? {},
+      tyreKnowledge: wp?.knowledge.tireKnowledge ?? {},
+      reliabilityKnowledge: wp?.knowledge.reliabilityKnowledge ?? {},
+      practicedSetupByDriver: wp?.practicedSetupByDriver ?? {},
+      practiceLapsByDriver: wp?.practiceLapsByDriver ?? {},
+      summaryByDriver,
+      raceWet: forecast?.Race.wet ?? false,
+    };
+  }, [state, race, playerDrivers, forecast]);
 
   const qualiFor = (driverId: string): QualifyingDecision => {
     const o = qualiOverrides[driverId] ?? {};
@@ -200,6 +223,8 @@ export function RaceWeekend() {
             track={track}
             drivers={playerDrivers}
             setups={resolvedSetups}
+            car={carForTeam(state, state.selectedTeamId)}
+            practice={workshopPractice}
             onChangeParam={(driverId, key, value) =>
               setSetupDraft((p) => ({ ...p, [driverId]: { ...p[driverId], [key]: value } }))
             }

@@ -6,23 +6,43 @@
 // feedback is generated from the signed gaps between the setup and the ideal,
 // so it hints at a direction without revealing the perfect setup.
 
-import type { Driver, Track } from '../types/gameTypes';
+import type { Car, Driver, Track } from '../types/gameTypes';
 import type {
   CarSetup,
   ComponentFit,
+  ObjectiveSetupEffects,
+  ObjectiveSetupQuality,
   SetupComponentKey,
   SetupEffects,
   SetupFeedback,
   SetupFitResult,
 } from '../types/setupTypes';
-import { SETUP_COMPONENTS } from '../data/setup/setupComponents';
+import { BALANCED_SETUP, SETUP_COMPONENTS } from '../data/setup/setupComponents';
+import { effectiveCarRatings } from './trackFitEngine';
 
 function clamp(v: number, lo = 1, hi = 10): number {
   return Math.max(lo, Math.min(hi, v));
 }
 
-// The track-and-driver-specific ideal value for every tunable parameter.
-export function idealSetup(track: Track, driver?: Driver): CarSetup {
+// The engineer's initial baseline setup at the start of a weekend: a coarse,
+// track/car-appropriate starting point (half-way between neutral and the ideal),
+// not a solved setup. Practice is run on this baseline family, and the player
+// refines it in the workshop afterwards.
+export function initialBaselineSetup(track: Track, car?: Car): CarSetup {
+  const ideal = idealSetup(track, undefined, car);
+  const out = {} as CarSetup;
+  for (const key of Object.keys(BALANCED_SETUP) as (keyof CarSetup)[]) {
+    out[key] = clamp(Math.round((BALANCED_SETUP[key] + ideal[key]) / 2));
+  }
+  return out;
+}
+
+// The track-and-driver-specific ideal value for every tunable parameter, also
+// shaped by the CURRENT CAR package when one is supplied: a strong aero car can
+// run slightly less wing and keep its grip; a low-power car needs less drag on
+// power circuits; a weak mechanical-grip car wants softer suspension and a safer
+// diff; a fragile car needs more cooling and more conservative tyre usage.
+export function idealSetup(track: Track, driver?: Driver, car?: Car): CarSetup {
   const a = track.attributes;
   const p = track.setupProfile;
 
@@ -30,7 +50,7 @@ export function idealSetup(track: Track, driver?: Driver): CarSetup {
   const aggro = driver ? (driver.ratings.aggression - 5) / 5 : 0;
   const lowComposure = driver ? Math.max(0, (5 - driver.ratings.composure) / 5) : 0;
 
-  return {
+  const base: CarSetup = {
     frontWing: clamp(p.aeroDemand),
     rearWing: clamp(p.aeroDemand - (a.straights >= 8 ? 1 : 0)),
     suspensionStiffness: clamp(11 - a.surfaceGripBumpiness + aggro * 0.8),
@@ -41,6 +61,36 @@ export function idealSetup(track: Track, driver?: Driver): CarSetup {
     differential: clamp((a.tractionAcceleration + a.technical) / 2 + aggro * 1.2 - lowComposure),
     engineCooling: clamp((p.reliabilityRiskFocus + p.powerDemand) / 2),
     tyreUsage: clamp(11 - a.enduranceConsistency + aggro * 0.6),
+  };
+  if (!car) return base;
+  return applyCarShaping(base, track, car);
+}
+
+// Shift a track's ideal setup to suit the current car package. Deltas are on the
+// 1-10 parameter scale, normalised around a mid car (rating 5).
+function applyCarShaping(base: CarSetup, track: Track, car: Car): CarSetup {
+  const c = effectiveCarRatings(car);
+  const aero = (c.aeroEfficiency - 5) / 5; // -1..1
+  const power = (c.enginePower - 5) / 5;
+  const mech = (c.mechanicalGrip - 5) / 5;
+  const reli = (c.reliability - 5) / 5;
+  const powerCircuit = track.attributes.straights >= 7 || track.setupProfile.powerDemand >= 7;
+  // A low-power car on a power circuit especially wants to shed drag.
+  const lowPowerTrim = powerCircuit ? Math.max(0, -power) : 0;
+
+  return {
+    ...base,
+    // High aero efficiency => less wing needed; strong engine => tolerate more
+    // wing (recover on the straights); low power on a power track => trim wing.
+    frontWing: clamp(base.frontWing - aero * 0.8 + power * 0.4 - lowPowerTrim * 0.8),
+    rearWing: clamp(base.rearWing - aero * 0.9 + power * 0.5 - lowPowerTrim * 1.0),
+    gearing: clamp(base.gearing + power * 0.4 + lowPowerTrim * 0.4),
+    // Weak mechanical grip => softer suspension and a safer differential.
+    suspensionStiffness: clamp(base.suspensionStiffness + mech * 0.8),
+    differential: clamp(base.differential + mech * 0.6),
+    // Fragile car => more cooling and more conservative tyre usage.
+    engineCooling: clamp(base.engineCooling - reli * 1.2),
+    tyreUsage: clamp(base.tyreUsage + reli * 0.5),
   };
 }
 
@@ -178,6 +228,67 @@ export function calculateSetupFit(setup: CarSetup, track: Track, driver?: Driver
     components,
     effects: effects(setup, confidence),
     warnings: buildWarnings(setup, track, components),
+  };
+}
+
+// ---------------------------------------------------------------------------
+// Objective Setup Quality — the engineering answer, car-aware and driver-free.
+// This is what suits the track + weather + tyres + CURRENT CAR package, and it
+// drives pace ceilings, tyre wear and reliability/overheating risk. The driver's
+// feel for the setup is a separate axis (see driverComfortEngine).
+// ---------------------------------------------------------------------------
+
+// A fixed engineering tolerance: the objective quality does not widen with a
+// driver's adaptability (that is a comfort concern), so use a neutral window.
+const OBJECTIVE_TOLERANCE = 2.2;
+
+export function objectiveSetupQuality(
+  setup: CarSetup,
+  track: Track,
+  car?: Car,
+): ObjectiveSetupQuality {
+  const ideal = idealSetup(track, undefined, car);
+  const weights = componentWeights(track);
+  const components: ComponentFit[] = SETUP_COMPONENTS.map((c) => ({
+    component: c.key,
+    fit: Math.round(componentFit(c.key, setup, ideal, OBJECTIVE_TOLERANCE)),
+  }));
+  let weighted = 0;
+  let total = 0;
+  for (const f of components) {
+    weighted += f.fit * weights[f.component];
+    total += weights[f.component];
+  }
+  const quality = Math.round(total > 0 ? weighted / total : 0);
+  return {
+    quality,
+    components,
+    effects: objectiveEffects(setup, track, car, quality),
+    warnings: buildWarnings(setup, track, components),
+  };
+}
+
+function objectiveEffects(
+  setup: CarSetup,
+  track: Track,
+  car: Car | undefined,
+  quality: number,
+): ObjectiveSetupEffects {
+  // Reliability of the underlying car: a fragile car is punished far harder by
+  // tight cooling than a bulletproof one.
+  const reli = car ? (effectiveCarRatings(car).reliability - 5) / 5 : 0; // -1..1
+  const coolingShort = Math.max(0, 5 - setup.engineCooling); // how tight cooling is
+  const brakeShort = Math.max(0, track.setupProfile.brakeDemand - setup.brakeCooling);
+  return {
+    qualifyingPaceCeiling: round1((quality - 62) / 12),
+    racePaceCeiling: round1((quality - 62) / 14),
+    tyreWear: round1((62 - quality) / 40 + (setup.tyreUsage - 5) * 0.06),
+    reliabilityRisk: round1((62 - quality) / 55 + coolingShort * 0.06 * (1 - reli * 0.6)),
+    overheatingRisk: round1(
+      coolingShort * 0.07 * (1 - reli * 0.5) +
+        brakeShort * 0.05 +
+        (track.setupProfile.reliabilityRiskFocus - 5) * 0.03,
+    ),
   };
 }
 

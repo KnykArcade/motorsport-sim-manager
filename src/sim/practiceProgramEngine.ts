@@ -19,6 +19,7 @@ import type {
   PracticeSession,
   PracticeSessionKind,
   WeekendKnowledge,
+  WeekendPractice,
 } from '../types/practiceTypes';
 import { createSeededRandom, deriveSeed, type Rng } from './random';
 import { calculateSetupFit, idealSetup } from './setupFitEngine';
@@ -483,6 +484,43 @@ export function practiceLapBudgetPerCar(year: number, series: string): number {
 // Total lap budget for the weekend across the player's cars.
 export function practiceLapBudget(year: number, series: string, carCount: number): number {
   return practiceLapBudgetPerCar(year, series) * Math.max(1, carCount);
+}
+
+// A per-driver summary of what was actually run in practice this weekend, used
+// to compute the driver's setup comfort (which programs were run, laps banked,
+// whether an incident cut a run short).
+export type DriverPracticeSummary = {
+  laps: number;
+  ranQualiSim: boolean;
+  ranRacePace: boolean;
+  ranWetPrep: boolean;
+  hadIncident: boolean;
+};
+
+export function driverPracticeSummary(
+  wp: WeekendPractice | undefined,
+  driverId: string,
+): DriverPracticeSummary {
+  const summary: DriverPracticeSummary = {
+    laps: wp?.practiceLapsByDriver?.[driverId] ?? 0,
+    ranQualiSim: false,
+    ranRacePace: false,
+    ranWetPrep: false,
+    hadIncident: false,
+  };
+  for (const session of wp?.sessions ?? []) {
+    if (!session.completed) continue;
+    for (const a of session.assignments) {
+      if (a.driverId !== driverId) continue;
+      if (a.program === 'QualifyingSimulation') summary.ranQualiSim = true;
+      if (a.program === 'RacePaceRun' || a.program === 'FuelLoadTest') summary.ranRacePace = true;
+      if (a.program === 'WetWeatherPreparation') summary.ranWetPrep = true;
+    }
+    for (const r of session.results ?? []) {
+      if (r.driverId === driverId && r.incident) summary.hadIncident = true;
+    }
+  }
+  return summary;
 }
 
 // Laps a planned session would consume (sum of its assignments).

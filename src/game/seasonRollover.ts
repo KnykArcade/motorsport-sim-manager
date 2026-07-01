@@ -63,7 +63,8 @@ import { refreshScoutingNetwork } from '../sim/scoutingEngine';
 import { createDriverDevelopmentCurve, developmentStep } from '../sim/developmentCurveEngine';
 import { finalizeSeasonHistory } from '../sim/universeHistoryEngine';
 import { buildAITeamState, rolloverAITeamStates } from '../sim/aiTeamEngine';
-import { runAIOffseason } from '../sim/aiOffseasonEngine';
+import { runAIOffseason, makeRookieDriver } from '../sim/aiOffseasonEngine';
+import { createSeededRandom, deriveSeed } from '../sim/random';
 import { applyDriverRetirements } from '../sim/driverRetirementEngine';
 import type { DriverDevelopmentCurve } from '../types/developmentCurveTypes';
 import type { Car, Driver, OffseasonSummary, Team } from '../types/gameTypes';
@@ -171,6 +172,74 @@ function resolvePlayerFirstOptions(
     }
   }
   return res;
+}
+
+// A reserve/third/test driver never fills a race seat until promoted.
+function isReserveTier(d: Driver): boolean {
+  return d.contractType === 'third' || d.contractType === 'reserve' || d.contractType === 'test';
+}
+
+// Grid-integrity safety net: a seat vacated late in the rollover (retirement,
+// contract expiry) — or a team the AI market pass skipped (no AI brain) — can
+// leave a team a car short. Guarantee every team fields two race-seat drivers by
+// promoting its strongest reserve into any empty seat, and generating a rookie
+// only when the team has no reserve to promote. Deterministic and idempotent.
+function fillEmptyRaceSeats(
+  drivers: Driver[],
+  teams: Team[],
+  seed: string,
+  year: number,
+): { drivers: Driver[]; teams: Team[] } {
+  const promote = new Set<string>();
+  const rosterAdds = new Map<string, string[]>(); // teamId -> driverIds to append
+  const added: Driver[] = [];
+  const takenNames = new Set(drivers.map((d) => d.name.trim().toLowerCase()));
+  const usedNumbers = new Set(drivers.map((d) => d.number));
+  const freeNumber = (): number => {
+    let n = 1;
+    while (usedNumbers.has(n)) n += 1;
+    usedNumbers.add(n);
+    return n;
+  };
+  for (const team of teams) {
+    const onTeam = drivers.filter((d) => d.teamId === team.id);
+    const seatCount = onTeam.filter((d) => !isReserveTier(d)).length;
+    if (seatCount >= 2) continue;
+    let needed = 2 - seatCount;
+    const reserves = onTeam
+      .filter((d) => isReserveTier(d) && !promote.has(d.id))
+      .sort((a, b) => b.ratings.overall - a.ratings.overall);
+    for (const r of reserves) {
+      if (needed <= 0) break;
+      promote.add(r.id);
+      if (!team.driverIds.includes(r.id)) {
+        rosterAdds.set(team.id, [...(rosterAdds.get(team.id) ?? []), r.id]);
+      }
+      needed -= 1;
+    }
+    // No reserve available — generate a rookie so the team is never a car short.
+    while (needed > 0) {
+      const rng = createSeededRandom(deriveSeed(seed, 'grid-fill', team.id, year, needed));
+      const rookie = makeRookieDriver(team.id, freeNumber(), rng, takenNames);
+      takenNames.add(rookie.name.trim().toLowerCase());
+      added.push(rookie);
+      rosterAdds.set(team.id, [...(rosterAdds.get(team.id) ?? []), rookie.id]);
+      needed -= 1;
+    }
+  }
+  if (promote.size === 0 && added.length === 0) return { drivers, teams };
+  const nextDrivers = [
+    ...drivers.map((d) =>
+      promote.has(d.id)
+        ? { ...d, contractType: 'seat' as const, contractYearsRemaining: d.contractYearsRemaining ?? 2 }
+        : d,
+    ),
+    ...added,
+  ];
+  const nextTeams = teams.map((t) =>
+    rosterAdds.has(t.id) ? { ...t, driverIds: [...t.driverIds, ...rosterAdds.get(t.id)!] } : t,
+  );
+  return { drivers: nextDrivers, teams: nextTeams };
 }
 
 export function advanceSeason(state: GameState): GameState {
@@ -812,6 +881,14 @@ export function advanceSeason(state: GameState): GameState {
     nameOfTeam: (id) => teamNameById.get(id) ?? prevTeamStats[id]?.name ?? id,
   });
 
+  // Final grid-integrity pass: no team may start the new season a car short.
+  const gridFilled = fillEmptyRaceSeats(
+    aiOffseason.drivers,
+    aiOffseason.teams,
+    state.randomSeed,
+    nextYear,
+  );
+
   const now = new Date().toISOString();
   const nextState: GameState = {
     ...state,
@@ -822,9 +899,9 @@ export function advanceSeason(state: GameState): GameState {
     calendar,
     pointsSystemId,
     regulationSetId,
-    drivers: aiOffseason.drivers,
+    drivers: gridFilled.drivers,
     cars: aiOffseason.cars,
-    teams: aiOffseason.teams,
+    teams: gridFilled.teams,
     teamOrgRatings: aiOffseason.orgRatings,
     aiAcademies: aiOffseason.aiAcademies,
     facilities: nextFacilities,

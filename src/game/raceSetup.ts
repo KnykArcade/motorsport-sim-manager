@@ -11,7 +11,13 @@ import { autoSetupOptionsForTrack } from '../sim/autoSetup';
 import { deriveSetupOption, type SetupTrim } from '../sim/setupDerive';
 import { setupConfidenceBonus } from '../sim/staffEngine';
 import { facilitySetupFeedbackBonus } from '../sim/facilityEngine';
-import { practiceSetupConfidenceBonus } from '../sim/practiceProgramEngine';
+import {
+  driverPracticeSummary,
+  practiceSetupConfidenceBonus,
+} from '../sim/practiceProgramEngine';
+import { objectiveSetupQuality } from '../sim/setupFitEngine';
+import { driverSetupComfort } from '../sim/driverComfortEngine';
+import { weekendForecast } from '../sim/weatherEngine';
 import { raceStrategiesById } from '../data/decisions/raceStrategies';
 import { driverInstructionsById } from '../data/decisions/driverInstructions';
 import { aiRaceDecision } from './ai';
@@ -39,15 +45,44 @@ export function playerTunedSetups(
   const setupIdByDriver: Record<string, string> = {};
   const carSetups = state.carSetups ?? {};
   const staffBonus = setupConfidenceBonus(state.staff ?? []) + facilitySetupFeedbackBonus(state.facilities);
-  const practice =
-    state.weekendPractice && state.weekendPractice.raceId === currentRace(state)?.id
-      ? state.weekendPractice.knowledge
+  const race = currentRace(state);
+  const wp =
+    state.weekendPractice && state.weekendPractice.raceId === race?.id
+      ? state.weekendPractice
       : undefined;
+  const knowledge = wp?.knowledge;
+  const car = carForTeam(state, state.selectedTeamId);
+  const raceWet =
+    race != null ? weekendForecast(track, `${state.randomSeed}-r${race.round}`).Race.wet : false;
+
   for (const driver of driversForTeam(state, state.selectedTeamId)) {
     const tuned = carSetups[driver.id];
     if (!tuned) continue;
-    const confidenceBonus = staffBonus + practiceSetupConfidenceBonus(practice, driver.id);
-    const option = deriveSetupOption(tuned, track, driver, trim, confidenceBonus);
+    const confidenceBonus = staffBonus + practiceSetupConfidenceBonus(knowledge, driver.id);
+
+    // Objective quality (engineering fit vs track + this car) and the driver's
+    // comfort with the tuned setup relative to what they ran in practice.
+    const quality = objectiveSetupQuality(tuned, track, car);
+    const summary = driverPracticeSummary(wp, driver.id);
+    const comfort = driverSetupComfort({
+      driver,
+      currentSetup: tuned,
+      practicedSetup: wp?.practicedSetupByDriver?.[driver.id],
+      practiceLaps: summary.laps,
+      setupKnowledge: knowledge?.setupKnowledge[driver.id] ?? 0,
+      ranQualiSim: summary.ranQualiSim,
+      ranRacePace: summary.ranRacePace,
+      ranWetPrep: summary.ranWetPrep,
+      raceWet,
+      hadIncident: summary.hadIncident,
+    });
+
+    const option = deriveSetupOption(tuned, track, driver, trim, {
+      car,
+      quality,
+      comfort,
+      confidenceBonus,
+    });
     overlay[option.id] = option;
     setupIdByDriver[driver.id] = option.id;
   }

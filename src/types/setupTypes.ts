@@ -94,3 +94,70 @@ export type SetupPreset = {
   description: string;
   setup: CarSetup;
 };
+
+// ---------------------------------------------------------------------------
+// Objective Setup Quality vs Driver Setup Comfort
+//
+// Two separate answers about a setup that interact but are not the same:
+//   * Objective Setup Quality — the engineering answer: how well the setup
+//     suits the track, weather, tyres and the CURRENT CAR package. Driver
+//     independent.
+//   * Driver Setup Comfort — the driver-feel answer: how comfortable this
+//     specific driver is with this setup, driven by practice familiarity,
+//     adaptability and setup-style preference. Per driver.
+// ---------------------------------------------------------------------------
+
+// What Objective Setup Quality drives in the sim.
+export type ObjectiveSetupEffects = {
+  qualifyingPaceCeiling: number; // delta, higher = more one-lap pace on tap
+  racePaceCeiling: number; // delta, higher = more race pace on tap
+  tyreWear: number; // positive = more wear
+  reliabilityRisk: number; // positive = more risk
+  overheatingRisk: number; // positive = more brake/engine overheating risk
+};
+
+export type ObjectiveSetupQuality = {
+  quality: number; // 0-100 engineering fit vs track + car
+  components: ComponentFit[];
+  effects: ObjectiveSetupEffects;
+  warnings: string[];
+};
+
+export type ComfortLabel = 'Unknown' | 'Uneasy' | 'Workable' | 'Comfortable' | 'Gelled';
+
+// What Driver Setup Comfort drives in the sim.
+export type DriverComfortEffects = {
+  execution: number; // one-lap (qualifying) execution, +/- delta
+  consistency: number; // race-stint consistency, +/- delta
+  mistakeRisk: number; // positive = more mistakes
+  lockupSpinRisk: number; // positive = more lockups/spins
+  tyreManagement: number; // +/- delta, positive = manages tyres better
+};
+
+export type DriverComfort = {
+  comfort: number; // 0-100
+  label: ComfortLabel;
+  familiarity: number; // 0-1 practice running banked on this setup family
+  relevance: number; // 0-1 how relevant the practised data is to this setup
+  changeDelta: number; // 0-1 normalised distance from the practised setup
+  stale: boolean; // practised feedback no longer reflects the current setup
+  effects: DriverComfortEffects;
+  notes: string[];
+};
+
+// A knowledge-gated estimate: practice narrows the shown range and only reveals
+// an exact value once knowledge is high enough.
+export type Estimate = { low: number; high: number; exact?: number };
+
+// Inferred (or, in future, explicit) driver setup-feel preferences. Each is a
+// signed lean on a -1..1 scale (positive = wants that trait); adaptabilityWindow
+// scales the comfort tolerance band.
+export type SetupPreferences = {
+  prefersStableRear: number;
+  prefersSharpFrontEnd: number;
+  prefersAggressiveDiff: number;
+  prefersSoftSuspension: number;
+  prefersLowDrag: number;
+  prefersTyrePreservation: number;
+  adaptabilityWindow: number; // ~0.4 (narrow) .. ~1.6 (wide)
+};
