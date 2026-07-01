@@ -10,6 +10,7 @@ import { driverInstructions } from '../data/decisions/driverInstructions';
 import { autoSetupsForTrack } from '../sim/autoSetup';
 import { qualifyingFormatFor } from '../sim/qualifyingEngine';
 import { BALANCED_SETUP } from '../data/setup/setupComponents';
+import { sanitizeSetupProfile } from '../sim/setupSanitize';
 import {
   weekendSessionKinds,
   defaultAssignments,
@@ -97,10 +98,13 @@ export function RaceWeekend() {
   // Unsaved edits made in the Car Setup phase, layered over the committed setups
   // in game state. Resolved into a complete per-driver map for the children.
   const [setupDraft, setSetupDraft] = useState<Record<string, CarSetup>>({});
+  // Always resolve to a COMPLETE, numeric setup per driver so the workshop and
+  // its score maths never see undefined fields (which produced "NaN–NaN"). The
+  // baseline exists from career start / rollover; sanitize is a final guard.
   const resolvedSetups = useMemo(() => {
     const m: Record<string, CarSetup> = {};
     for (const d of playerDrivers) {
-      m[d.id] = setupDraft[d.id] ?? state?.carSetups?.[d.id] ?? { ...BALANCED_SETUP };
+      m[d.id] = sanitizeSetupProfile(setupDraft[d.id] ?? state?.carSetups?.[d.id] ?? BALANCED_SETUP);
     }
     return m;
   }, [playerDrivers, setupDraft, state]);
@@ -242,17 +246,22 @@ export function RaceWeekend() {
           car={carForTeam(state, state.selectedTeamId)}
           practice={workshopPractice}
           onChangeParam={(driverId, key, value) =>
-            setSetupDraft((p) => ({ ...p, [driverId]: { ...p[driverId], [key]: value } }))
+            // Spread over the COMPLETE resolved setup (not the possibly-undefined
+            // draft) so a single-slider edit keeps every other field valid.
+            setSetupDraft((p) => ({
+              ...p,
+              [driverId]: sanitizeSetupProfile({ ...resolvedSetups[driverId], [key]: value }),
+            }))
           }
           onApplySetup={(driverId, setup) =>
-            setSetupDraft((p) => ({ ...p, [driverId]: setup }))
+            setSetupDraft((p) => ({ ...p, [driverId]: sanitizeSetupProfile(setup) }))
           }
           onCopy={(fromId, toId) =>
-            setSetupDraft((p) => ({ ...p, [toId]: { ...p[fromId] } }))
+            setSetupDraft((p) => ({ ...p, [toId]: sanitizeSetupProfile(resolvedSetups[fromId]) }))
           }
           onResetDriver={(driverId) => {
             const practiced = workshopPractice?.practicedSetupByDriver?.[driverId];
-            if (practiced) setSetupDraft((p) => ({ ...p, [driverId]: { ...practiced } }));
+            if (practiced) setSetupDraft((p) => ({ ...p, [driverId]: sanitizeSetupProfile(practiced) }));
           }}
           onBack={() => { commitSetups(); setPhase('practice'); }}
           onConfirm={() => { commitSetups(); setPhase('quali-run'); }}

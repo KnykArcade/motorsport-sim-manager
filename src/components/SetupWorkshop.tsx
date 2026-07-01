@@ -8,6 +8,7 @@ import {
 } from '../data/setup/setupComponents';
 import { generateSetupFeedback, objectiveSetupQuality } from '../sim/setupFitEngine';
 import { driverSetupComfort } from '../sim/driverComfortEngine';
+import { formatSetupRange, formatSetupScore, safeScore, sanitizeSetupProfile } from '../sim/setupSanitize';
 import type { DriverPracticeSummary } from '../sim/practiceProgramEngine';
 import {
   canRevealComponentFit,
@@ -53,7 +54,8 @@ type Props = {
 };
 
 function fmtDelta(v: number): string {
-  return v > 0 ? `+${v}` : `${v}`;
+  const s = safeScore(v, 0);
+  return s > 0 ? `+${s}` : `${s}`;
 }
 
 function engineerConfidenceLabel(setupKnowledge: number): string {
@@ -63,8 +65,26 @@ function engineerConfidenceLabel(setupKnowledge: number): string {
 }
 
 function estimateText(e: Estimate): string {
-  if (e.exact != null) return `${e.exact}`;
-  return `${e.low}–${e.high}`;
+  if (e.exact != null) return formatSetupRange(e.exact, e.exact);
+  return formatSetupRange(e.low, e.high);
+}
+
+// How far the current setup has drifted from the practised baseline (0-1).
+function changeSeverityLabel(changeDelta: number): string {
+  const d = safeScore(changeDelta, 0);
+  if (d < 0.08) return 'None';
+  if (d < 0.2) return 'Minor';
+  if (d < 0.4) return 'Moderate';
+  return 'Major';
+}
+
+// How relevant the practised data is to the current setup (0-1).
+function relevanceLabel(relevance: number): string {
+  const r = safeScore(relevance, 0);
+  if (r >= 0.75) return 'Strong';
+  if (r >= 0.4) return 'Partial';
+  if (r > 0) return 'Weak';
+  return 'None';
 }
 
 export function SetupWorkshop({
@@ -83,7 +103,13 @@ export function SetupWorkshop({
   const [activeId, setActiveId] = useState(drivers[0]?.id ?? '');
   const [activeComp, setActiveComp] = useState(SETUP_COMPONENTS[0]?.key ?? '');
   const driver = drivers.find((d) => d.id === activeId) ?? drivers[0];
-  const setup = driver ? setups[driver.id] : undefined;
+  // Defensive: always work from a complete, numeric setup so the score maths
+  // never see undefined fields (which produced "NaN–NaN"). The parent already
+  // sanitizes, but this keeps the workshop robust standalone.
+  const setup = useMemo(
+    () => (driver ? sanitizeSetupProfile(setups[driver.id]) : undefined),
+    [driver, setups],
+  );
   const other = drivers.find((d) => d.id !== driver?.id);
 
   const setupKnowledge = driver ? practice?.setupKnowledge[driver.id] ?? 0 : 0;
@@ -196,7 +222,7 @@ export function SetupWorkshop({
               );
             })}
           </div>
-          <div className="min-h-0 flex-1 overflow-y-auto rounded-b-lg border border-t-0 border-neutral-800 bg-neutral-900/20 p-3">
+          <div className="min-h-0 flex-1 overflow-y-auto border border-t-0 border-neutral-800 bg-neutral-900/20 p-3">
             <div className="mb-3 flex items-center justify-between gap-4">
               <p className="text-xs text-neutral-400">{comp.description}</p>
               <div className="flex shrink-0 items-center gap-2">
@@ -243,37 +269,81 @@ export function SetupWorkshop({
                 );
               })}
             </div>
+          </div>
 
-            {/* Presets — apply to this driver only, or both cars. */}
-            <div className="mt-4 border-t border-neutral-800 pt-3">
-              <div className="mb-1.5 text-[10px] uppercase tracking-wide text-neutral-500">Quick-start presets</div>
-              <div className="flex flex-wrap gap-1.5">
-                {SETUP_PRESETS.map((p) => (
-                  <div key={p.id} className="flex overflow-hidden rounded-md border border-neutral-700">
+          {/* Presets — below the sliders (shrink-0), apply to this driver or both. */}
+          <div className="shrink-0 border border-t-0 border-neutral-800 bg-neutral-900/40 px-3 py-2">
+            <div className="mb-1.5 text-[10px] uppercase tracking-wide text-neutral-500">Quick-start presets</div>
+            <div className="flex flex-wrap gap-1.5">
+              {SETUP_PRESETS.map((p) => (
+                <div key={p.id} className="flex overflow-hidden rounded-md border border-neutral-700">
+                  <button
+                    title={`Apply ${p.name} to ${driver.name}`}
+                    onClick={() => onApplySetup(driver.id, { ...p.setup })}
+                    className="bg-neutral-800/60 px-2.5 py-1 text-xs text-neutral-200 hover:bg-neutral-700"
+                  >
+                    {p.name}
+                  </button>
+                  {drivers.length > 1 && (
                     <button
-                      title={`Apply ${p.name} to ${driver.name}`}
-                      onClick={() => onApplySetup(driver.id, { ...p.setup })}
-                      className="bg-neutral-800/60 px-2.5 py-1 text-xs text-neutral-200 hover:bg-neutral-700"
+                      title={`Apply ${p.name} to both cars`}
+                      onClick={() => drivers.forEach((d) => onApplySetup(d.id, { ...p.setup }))}
+                      className="border-l border-neutral-700 bg-neutral-900/60 px-1.5 text-[10px] text-neutral-400 hover:bg-neutral-700 hover:text-neutral-100"
                     >
-                      {p.name}
+                      ×2
                     </button>
-                    {drivers.length > 1 && (
-                      <button
-                        title={`Apply ${p.name} to both cars`}
-                        onClick={() => drivers.forEach((d) => onApplySetup(d.id, { ...p.setup }))}
-                        className="border-l border-neutral-700 bg-neutral-900/60 px-1.5 text-[10px] text-neutral-400 hover:bg-neutral-700 hover:text-neutral-100"
-                      >
-                        ×2
-                      </button>
-                    )}
-                  </div>
-                ))}
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Core score cards under presets: Objective Quality + Driver Comfort. */}
+          <div className="grid shrink-0 gap-2 rounded-b-lg border border-t-0 border-neutral-800 bg-neutral-900/20 p-3 sm:grid-cols-2">
+            <div className="rounded-lg border border-neutral-800 bg-neutral-900/50 p-2.5">
+              <div className="mb-1 flex items-center justify-between">
+                <span className="text-[10px] font-semibold uppercase tracking-wide text-neutral-400">Objective Setup Quality</span>
+                <span className="text-[10px] text-neutral-500">Conf: {engineerConfidenceLabel(setupKnowledge)}</span>
+              </div>
+              <div className="flex items-end gap-1.5">
+                <span className="text-2xl font-bold tabular-nums" style={{ color: ratingColor(safeScore(quality.quality) / 10) }}>
+                  {estimateText(qualityEstimate)}
+                </span>
+                <span className="pb-0.5 text-[11px] text-neutral-500">/ 100</span>
+              </div>
+              <div className="mt-2 grid grid-cols-2 gap-1 text-[11px]">
+                <Effect label="Quali Ceiling" value={quality.effects.qualifyingPaceCeiling} goodHigh />
+                <Effect label="Race Ceiling" value={quality.effects.racePaceCeiling} goodHigh />
+                <Effect label="Tyre Wear" value={quality.effects.tyreWear} goodHigh={false} />
+                <Effect label="Reliability" value={quality.effects.reliabilityRisk} goodHigh={false} />
+                <Effect label="Overheating" value={quality.effects.overheatingRisk} goodHigh={false} />
+              </div>
+            </div>
+
+            <div className="rounded-lg border border-neutral-800 bg-neutral-900/50 p-2.5">
+              <div className="mb-1 flex items-center justify-between">
+                <span className="text-[10px] font-semibold uppercase tracking-wide text-neutral-400">Driver Setup Comfort</span>
+                <span className="text-[10px] font-medium text-neutral-300">{comfort.label}</span>
+              </div>
+              <div className="flex items-end gap-1.5">
+                <span className="text-2xl font-bold tabular-nums" style={{ color: ratingColor(safeScore(comfort.comfort) / 10) }}>
+                  {comfort.label === 'Unknown' ? '—' : formatSetupScore(comfort.comfort)}
+                </span>
+                <span className="pb-0.5 text-[11px] text-neutral-500">/ 100</span>
+              </div>
+              <div className="mt-1.5 space-y-1">
+                <MiniBar label="Familiarity" value={comfort.familiarity} />
+                <MiniBar label="Practice Relevance" value={comfort.relevance} />
+              </div>
+              <div className="mt-1.5 grid grid-cols-2 gap-1 text-[11px]">
+                <Effect label="Mistake Risk" value={comfort.effects.mistakeRisk} goodHigh={false} />
+                <Effect label="Consistency" value={comfort.effects.consistency} goodHigh />
               </div>
             </div>
           </div>
         </div>
 
-        {/* Right: setup readout panel (internal scroll). */}
+        {/* Right: analysis / insight column (internal scroll). */}
         <div className="flex min-h-0 flex-col gap-3 overflow-y-auto">
           <Panel title="Setup Profile">
             <SetupRadar data={radar} />
@@ -281,49 +351,6 @@ export function SetupWorkshop({
               <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-full" style={{ backgroundColor: '#22c55e' }} /> Strong</span>
               <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-full" style={{ backgroundColor: '#eab308' }} /> Fair</span>
               <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-full" style={{ backgroundColor: '#ef4444' }} /> Weak</span>
-            </div>
-          </Panel>
-
-          <Panel title="Objective Setup Quality">
-            <div className="flex items-end gap-3">
-              <span className="text-4xl font-bold tabular-nums" style={{ color: ratingColor(quality.quality / 10) }}>
-                {estimateText(qualityEstimate)}
-              </span>
-              <span className="pb-1 text-sm text-neutral-400">/ 100</span>
-            </div>
-            <div className="mt-1 text-xs text-neutral-400">
-              Engineer confidence:{' '}
-              <span className="font-medium text-neutral-200">{engineerConfidenceLabel(setupKnowledge)}</span>
-              {qualityEstimate.exact == null && (
-                <span className="text-neutral-500"> · estimate narrows with practice</span>
-              )}
-            </div>
-            <div className="mt-3 grid grid-cols-2 gap-2 text-xs">
-              <Effect label="Quali Ceiling" value={quality.effects.qualifyingPaceCeiling} goodHigh />
-              <Effect label="Race Ceiling" value={quality.effects.racePaceCeiling} goodHigh />
-              <Effect label="Tyre Wear" value={quality.effects.tyreWear} goodHigh={false} />
-              <Effect label="Reliability Risk" value={quality.effects.reliabilityRisk} goodHigh={false} />
-              <Effect label="Overheating Risk" value={quality.effects.overheatingRisk} goodHigh={false} />
-            </div>
-          </Panel>
-
-          <Panel title="Driver Setup Comfort">
-            <div className="flex items-end gap-3">
-              <span className="text-4xl font-bold tabular-nums" style={{ color: ratingColor(comfort.comfort / 10) }}>
-                {comfort.label === 'Unknown' ? '—' : comfort.comfort}
-              </span>
-              <span className="pb-1 text-sm font-medium text-neutral-300">{comfort.label}</span>
-            </div>
-            <div className="mt-3 space-y-1.5">
-              <MiniBar label="Familiarity" value={comfort.familiarity} />
-              <MiniBar label="Practice Relevance" value={comfort.relevance} />
-            </div>
-            <div className="mt-3 grid grid-cols-2 gap-2 text-xs">
-              <Effect label="Execution" value={comfort.effects.execution} goodHigh />
-              <Effect label="Consistency" value={comfort.effects.consistency} goodHigh />
-              <Effect label="Mistake Risk" value={comfort.effects.mistakeRisk} goodHigh={false} />
-              <Effect label="Lockup/Spin" value={comfort.effects.lockupSpinRisk} goodHigh={false} />
-              <Effect label="Tyre Mgmt" value={comfort.effects.tyreManagement} goodHigh />
             </div>
           </Panel>
 
@@ -346,6 +373,14 @@ export function SetupWorkshop({
                 <span className="text-neutral-500">Reliability warnings</span>
                 <span>{reliabilityWarningConfidence(reliabilityKnowledge)}</span>
               </div>
+              <div className="flex justify-between">
+                <span className="text-neutral-500">Setup change</span>
+                <span>{changeSeverityLabel(comfort.changeDelta)}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-neutral-500">Data relevance</span>
+                <span>{relevanceLabel(comfort.relevance)}</span>
+              </div>
             </div>
           </Panel>
 
@@ -360,6 +395,16 @@ export function SetupWorkshop({
               ))}
             </ul>
           </Panel>
+
+          {feedback.engineerFeedback.length > 0 && (
+            <Panel title="Engineer Feedback">
+              <ul className="space-y-1.5 text-xs text-neutral-300">
+                {feedback.engineerFeedback.map((f, i) => (
+                  <li key={i}>{f}</li>
+                ))}
+              </ul>
+            </Panel>
+          )}
 
           {quality.warnings.length > 0 && (
             <Panel title="Engineer Warnings">
@@ -449,7 +494,7 @@ function SetupRadar({ data }: { data: { label: string; value: number }[] }) {
 }
 
 function MiniBar({ label, value }: { label: string; value: number }) {
-  const pct = Math.round(Math.max(0, Math.min(1, value)) * 100);
+  const pct = Math.round(Math.max(0, Math.min(1, safeScore(value, 0))) * 100);
   return (
     <div>
       <div className="mb-0.5 flex justify-between text-[11px]">
