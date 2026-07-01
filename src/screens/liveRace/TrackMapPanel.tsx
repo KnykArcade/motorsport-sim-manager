@@ -9,17 +9,19 @@ export function TrackMapPanel({
   live,
   dots,
   rotation,
+  className = '',
 }: {
   live: LiveRaceState;
   dots: TrackDot[];
   rotation: number;
+  className?: string;
 }) {
   const wet = live.weather.wet;
   const sc = live.safetyCar.active;
   return (
-    <DashPanel title="Track Map" className="shrink-0" bodyClass="flex flex-col">
-      <div className="flex items-center justify-center px-2 pt-1">
-        <RaceTrack2D dots={dots} rotation={rotation} className="mx-auto h-[185px] w-auto max-w-full" />
+    <DashPanel title="Track Map" className={className} bodyClass="flex flex-col">
+      <div className="flex min-h-0 flex-1 items-center justify-center px-2 py-1">
+        <RaceTrack2D dots={dots} rotation={rotation} className="mx-auto h-full max-h-full w-auto max-w-full" />
       </div>
       {/* Weather / track-condition strip */}
       <div className="grid shrink-0 grid-cols-4 gap-px border-t border-slate-700/50 bg-slate-800/40 text-center">
