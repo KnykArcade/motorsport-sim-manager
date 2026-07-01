@@ -62,6 +62,7 @@ import { generateRegulationProposals, resolveRegulationVoting } from '../sim/pol
 import { refreshScoutingNetwork } from '../sim/scoutingEngine';
 import { createDriverDevelopmentCurve, developmentStep } from '../sim/developmentCurveEngine';
 import { finalizeSeasonHistory } from '../sim/universeHistoryEngine';
+import { buildAITeamState, rolloverAITeamStates } from '../sim/aiTeamEngine';
 import type { DriverDevelopmentCurve } from '../types/developmentCurveTypes';
 import type { Car, Driver, OffseasonSummary, Team } from '../types/gameTypes';
 import type { AcademyDecision, AcademyMember } from '../types/marketTypes';
@@ -523,12 +524,19 @@ export function advanceSeason(state: GameState): GameState {
       txns.push(makeTransaction(nextYear, 'Sponsorship', `${nextYear} sponsorship`, sponsorship));
     }
   }
+  // AI Team Management (Phase C): recompute every non-player team's management
+  // brain (archetype, budget, financial health, goal) for the new season and
+  // move their cash by the discretionary sponsor-income/spend flow.
+  const aiRollover = rolloverAITeamStates(state);
+
   const budgetDelta = txns.reduce((sum, t) => sum + t.amount, 0);
-  const teams = state.teams.map((t) =>
-    t.id === state.selectedTeamId
-      ? { ...t, budget: t.budget + budgetDelta, driverIds: rebuildRoster(t.driverIds) }
-      : t,
-  );
+  const teams = state.teams.map((t) => {
+    if (t.id === state.selectedTeamId) {
+      return { ...t, budget: t.budget + budgetDelta, driverIds: rebuildRoster(t.driverIds) };
+    }
+    const aiDelta = aiRollover.budgetDeltaByTeam[t.id] ?? 0;
+    return aiDelta ? { ...t, budget: t.budget + aiDelta } : t;
+  });
 
   // Owner-expectation review for the completed season → owner patience, then
   // fresh expectations for the upcoming season.
@@ -732,6 +740,7 @@ export function advanceSeason(state: GameState): GameState {
       ...relationshipNotes,
       ...voteResolution.notes,
       ...developmentNotes,
+      ...aiRollover.notes,
     ],
   };
 
@@ -790,6 +799,7 @@ export function advanceSeason(state: GameState): GameState {
       : state.scouting,
     developmentCurves: nextCurves,
     universeHistory: nextUniverseHistory,
+    aiTeamStates: aiRollover.states,
     carSetups,
     academy: nextAcademy,
     pendingSignings: [],
@@ -840,12 +850,23 @@ function applyPrincipalMove(state: GameState, newTeamId: string): GameState {
     ? { ...state.engine, currentDeal: state.engine.deals?.[newTeamId], pendingDeal: undefined }
     : state.engine;
 
+  // Keep the AI brains consistent with the new player team: the team the player
+  // just joined is now player-controlled (drop its brain), and the team they
+  // left rejoins the AI paddock (give it one).
+  const movedState: GameState = { ...state, selectedTeamId: newTeamId };
+  const aiTeamStates = { ...(state.aiTeamStates ?? {}) };
+  delete aiTeamStates[newTeamId];
+  const leftTeam = state.teams.find((t) => t.id === state.selectedTeamId);
+  if (leftTeam && !aiTeamStates[leftTeam.id]) {
+    aiTeamStates[leftTeam.id] = buildAITeamState(movedState, leftTeam);
+  }
+
   return {
-    ...state,
-    selectedTeamId: newTeamId,
+    ...movedState,
     carSetups,
     commercial,
     facilities,
     engine,
+    aiTeamStates,
   };
 }
