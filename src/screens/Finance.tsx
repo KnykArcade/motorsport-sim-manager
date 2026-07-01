@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import { useGame } from '../game/GameContext';
 import { driversForTeam, teamById } from '../game/careerState';
-import { getMarketBundle } from '../data';
+import { careerMarketBundle } from '../sim/careerMarketEngine';
 import { projectedAnnualCosts, summarize } from '../sim/financeEngine';
 import { totalStaffSalary } from '../sim/staffEngine';
 import { Panel } from '../components/Panel';
@@ -40,7 +40,7 @@ export function Finance() {
   const summary = summarize(transactions);
 
   const academyYearlyById: Record<string, number> = {};
-  for (const y of getMarketBundle(state.seasonYear, state.series)?.youth ?? []) {
+  for (const y of careerMarketBundle(state).youth) {
     academyYearlyById[y.id] = y.yearlyAcademyCost;
   }
   const projected = projectedAnnualCosts(
