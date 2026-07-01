@@ -55,6 +55,7 @@ import { createSeededRandom, deriveSeed } from '../sim/random';
 import type { AcademyDecision, FirstOptionDecision, SeatSigning } from '../types/marketTypes';
 import type { FinanceTransaction } from '../types/financeTypes';
 import type {
+  Car,
   DevelopmentProject,
   Driver,
   QualifyingResult,
@@ -165,9 +166,11 @@ function runPracticeSessionAction(
   const baseline = initialBaselineSetup(track, car);
   const driversById: Record<string, Driver> = {};
   const setupsById: Record<string, CarSetup> = {};
+  const carsByDriverId: Record<string, Car> = {};
   for (const d of players) {
     driversById[d.id] = d;
     setupsById[d.id] = state.carSetups?.[d.id] ?? baseline;
+    if (car) carsByDriverId[d.id] = car;
   }
   const validAssignments = assignments.filter((a) => driversById[a.driverId]);
 
@@ -193,6 +196,7 @@ function runPracticeSessionAction(
     seed: state.randomSeed,
     driversById,
     setupsById,
+    carsByDriverId,
     knowledge: wp.knowledge,
     raceWet,
   });

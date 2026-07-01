@@ -134,6 +134,10 @@ describe('financialHealth', () => {
     facilitySpend: 0,
     engineCost: 0,
     operatingCost: 0,
+    testingCost: 0,
+    academyCost: 0,
+    sponsorPenalty: 0,
+    otherInvestment: 0,
     totalExpenses: 0,
     netResult: 0,
     projectedCash: 0,
@@ -201,7 +205,8 @@ describe('estimateAIBudget', () => {
     const budget = estimateAIBudget(state, t, state.teamOrgRatings?.[t.id], 'AmbitiousBuilder', 5);
     expect(budget.totalExpenses).toBe(
       budget.driverSalaries + budget.staffSalaries + budget.engineCost + budget.operatingCost +
-        budget.developmentSpend + budget.facilitySpend,
+        budget.testingCost + budget.academyCost +
+        budget.developmentSpend + budget.facilitySpend + budget.otherInvestment,
     );
     expect(budget.netResult).toBe(budget.sponsorIncome + budget.prizeMoney - budget.totalExpenses);
     expect(budget.projectedCash).toBe(budget.startingCash + budget.netResult);
@@ -218,6 +223,57 @@ describe('estimateAIBudget', () => {
     expect(ARCHETYPE_SPECS.AggressiveSpender.devBias).toBeGreaterThan(
       ARCHETYPE_SPECS.SurvivalMode.devBias,
     );
+  });
+
+  it('spends down a large war-chest so budgets settle instead of ballooning', () => {
+    const state = newGame();
+    const t = state.teams.find((x) => x.id !== state.selectedTeamId)!;
+    const o = state.teamOrgRatings?.[t.id];
+    // A team hoarding far more cash than its reserve target should run a net
+    // LOSS as it deploys that war-chest, pulling the budget back toward an
+    // equilibrium rather than compounding upward forever.
+    const rich = estimateAIBudget(state, { ...t, budget: 800_000_000 }, o, 'AmbitiousBuilder', 5);
+    expect(rich.projectedCash).toBeLessThan(rich.startingCash);
+    // The more excess cash held, the more is spent down (bigger investment pool).
+    const modest = estimateAIBudget(state, { ...t, budget: 60_000_000 }, o, 'AmbitiousBuilder', 5);
+    const richInvest = rich.developmentSpend + rich.facilitySpend + rich.otherInvestment;
+    const modestInvest = modest.developmentSpend + modest.facilitySpend + modest.otherInvestment;
+    expect(richInvest).toBeGreaterThan(modestInvest);
+  });
+
+  it('an aggressive team deploys more of its war-chest than a conservative one', () => {
+    const state = newGame();
+    const t = { ...state.teams.find((x) => x.id !== state.selectedTeamId)!, budget: 500_000_000 };
+    const o = state.teamOrgRatings?.[t.id];
+    const aggressive = estimateAIBudget(state, t, o, 'AggressiveSpender', 5);
+    const conservative = estimateAIBudget(state, t, o, 'FinanciallyConservative', 5);
+    const aggInvest = aggressive.developmentSpend + aggressive.facilitySpend + aggressive.otherInvestment;
+    const conInvest = conservative.developmentSpend + conservative.facilitySpend + conservative.otherInvestment;
+    expect(aggInvest).toBeGreaterThan(conInvest);
+    // A conservative team also keeps a larger reserve.
+    expect(conservative.reserveTarget).toBeGreaterThan(aggressive.reserveTarget);
+  });
+
+  it('penalizes sponsor income when a team underperforms its reputation', () => {
+    const state = newGame();
+    const base = state.teams.find((x) => x.id !== state.selectedTeamId)!;
+    const t = { ...base, reputation: 85 };
+    const o = state.teamOrgRatings?.[t.id];
+    // A high-reputation team finishing near the back misses expectations.
+    const missed = estimateAIBudget(state, t, o, 'AmbitiousBuilder', state.teams.length);
+    const met = estimateAIBudget(state, t, o, 'AmbitiousBuilder', 1);
+    expect(missed.sponsorPenalty).toBeGreaterThan(0);
+    expect(met.sponsorPenalty).toBe(0);
+    expect(missed.sponsorIncome).toBeLessThan(met.sponsorIncome);
+  });
+
+  it('scales ongoing testing and academy costs with the org programme', () => {
+    const state = newGame();
+    const t = state.teams.find((x) => x.id !== state.selectedTeamId)!;
+    const small = estimateAIBudget(state, t, org({ research: 10, youthAcademy: 10 }), 'AmbitiousBuilder', 5);
+    const big = estimateAIBudget(state, t, org({ research: 90, youthAcademy: 90 }), 'AmbitiousBuilder', 5);
+    expect(big.testingCost).toBeGreaterThan(small.testingCost);
+    expect(big.academyCost).toBeGreaterThan(small.academyCost);
   });
 });
 

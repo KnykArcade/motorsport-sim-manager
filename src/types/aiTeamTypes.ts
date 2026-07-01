@@ -37,7 +37,7 @@ export type AITeamGoal =
 // rollover only sponsorIncome is added and the annual expenses are deducted.
 export type AITeamBudget = {
   startingCash: number; // Team.budget at the time of estimation
-  sponsorIncome: number; // annual, added at rollover
+  sponsorIncome: number; // annual (net of sponsor-expectation penalty)
   prizeMoney: number; // estimated annual (informational; banked per race)
   driverSalaries: number;
   staffSalaries: number;
@@ -45,8 +45,18 @@ export type AITeamBudget = {
   facilitySpend: number;
   engineCost: number;
   operatingCost: number;
+  // Ongoing costs that scale with the team's programmes and put long-run
+  // pressure on budgets so they cannot inflate endlessly.
+  testingCost: number;
+  academyCost: number;
+  // Reduced future sponsor income from missing on-track expectations.
+  sponsorPenalty: number;
+  // Discretionary spend beyond car dev/facilities (marketing, extra staff,
+  // war-chest deployment) — the mechanism that spends down excess cash so a
+  // healthy team settles around a stable budget instead of hoarding forever.
+  otherInvestment: number;
   totalExpenses: number;
-  netResult: number; // sponsorIncome - totalExpenses (the rollover cash delta)
+  netResult: number; // income - totalExpenses (the rollover cash delta)
   projectedCash: number; // startingCash + netResult
   reserveTarget: number; // minimum cash the team tries to keep
 };

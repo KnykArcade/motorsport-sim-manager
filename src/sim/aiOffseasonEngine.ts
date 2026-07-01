@@ -17,7 +17,7 @@ import type { AcademyMember, MarketDriver, YouthProspect } from '../types/market
 import type { AITeamState } from '../types/aiTeamTypes';
 import type { MarketBundle } from '../data/market';
 import { MILLION, toMoney } from './financeEngine';
-import { effectiveCarRatings } from './trackFitEngine';
+import { carPerformanceRating, effectiveCarRatings } from './trackFitEngine';
 import {
   academyMemberAge,
   academyMemberToDriver,
@@ -26,8 +26,19 @@ import {
   progressAcademyMember,
   signProspectToAcademy,
 } from './driverMarketEngine';
-import { aiFirstOptionDecision, isPromotionEligible } from './youthAcademyEngine';
+import {
+  aiFirstOptionDecision,
+  academyRightsExpired,
+  isPromotionEligible,
+  openFirstOptionWindow,
+} from './youthAcademyEngine';
 import { calculateAcademyCapacity } from './teamRatingsEngine';
+import {
+  applyOffseasonDecay,
+  catchUpMultiplier,
+  diminishingGainMultiplier,
+  nearCapFailureChance,
+} from './developmentEngine';
 import { ARCHETYPE_SPECS } from './aiTeamEngine';
 import { createSeededRandom, deriveSeed, type Rng } from './random';
 
@@ -48,6 +59,9 @@ export type AIOffseasonInput = {
   // poaches a name the player already controls.
   reservedNames: Set<string>;
   constructorStandings: StandingsEntry[];
+  // 0 (stable regulations) .. 1 (major regulation shakeup) for the upcoming
+  // season. Drives offseason car decay/reshuffle and carryover reduction.
+  regulationShakeup?: number;
 };
 
 export type AIOffseasonResult = {
@@ -132,6 +146,7 @@ function developCar(
   team: Team,
   ai: AITeamState,
   hadReliabilityProblem: boolean,
+  fieldTopRating: number,
   rng: Rng,
 ): { car: Car; note: string } | null {
   const spec = ARCHETYPE_SPECS[ai.archetype];
@@ -139,15 +154,45 @@ function developCar(
   if (budget < toMoney(1)) return null; // no real development this year
 
   const budgetM = budget / MILLION;
-  // Gain scales with spend and risk appetite; a chance of a smaller-than-hoped
-  // result keeps the AI imperfect.
+  // Raw gain scales with spend and risk appetite; a chance of a smaller-than-
+  // hoped result keeps the AI imperfect.
   const base = Math.min(0.9, 0.12 + budgetM * 0.012 + spec.risk * 0.25);
   const success = rng.chance(0.55 + spec.risk * 0.2);
-  const gain = clampGain((success ? base : base * 0.4) * (0.7 + rng.next() * 0.6));
-  if (gain < 0.05) return null;
+  let gain = (success ? base : base * 0.4) * (0.7 + rng.next() * 0.6);
 
   const target = developmentTarget(car, hadReliabilityProblem);
-  const ratings: CarRatings = { ...car.ratings, [target]: clamp10(car.ratings[target] + gain) };
+  const current = car.ratings[target];
+
+  // Diminishing returns: gains get progressively harder near the ceiling.
+  gain *= diminishingGainMultiplier(current);
+  // Catch-up efficiency: a car well below the front of the grid improves more
+  // readily than an already-dominant one.
+  gain *= catchUpMultiplier(fieldTopRating - carPerformanceRating(car));
+
+  // Near the cap even good projects often miss — deliver marginal consistency/
+  // reliability instead of raw pace, or a small setback.
+  const failChance = nearCapFailureChance(current);
+  if (failChance > 0 && rng.chance(failChance)) {
+    // Redirect a stalled top-end pace project into a small reliability gain if
+    // there is headroom, otherwise it's a wash (no note, no change).
+    if (car.ratings.reliability < 9 && target !== 'reliability') {
+      const reliGain = clampGain(0.05 + rng.next() * 0.1);
+      const ratings: CarRatings = {
+        ...car.ratings,
+        reliability: clamp10(car.ratings.reliability + reliGain),
+      };
+      return {
+        car: { ...car, ratings },
+        note: `${team.name}'s ${CAR_AREA_LABELS[target]} package stalls near the limit — gains come only in reliability.`,
+      };
+    }
+    return null;
+  }
+
+  gain = clampGain(gain);
+  if (gain < 0.05) return null;
+
+  const ratings: CarRatings = { ...car.ratings, [target]: clamp10(current + gain) };
   const scale = gain >= 0.4 ? 'a major' : gain >= 0.2 ? 'a' : 'a minor';
   const note = `${team.name} completes ${scale} ${CAR_AREA_LABELS[target]} development package.`;
   return { car: { ...car, ratings }, note };
@@ -281,15 +326,68 @@ export function runAIOffseason(input: AIOffseasonInput): AIOffseasonResult {
       return a.id.localeCompare(b.id);
     });
 
+  // The strongest car on the grid this offseason (for catch-up efficiency).
+  const fieldTopRating = Math.max(
+    5,
+    ...[...carByTeam.values()].map((c) => carPerformanceRating(c)),
+  );
+  const shakeup = Math.max(0, Math.min(1, input.regulationShakeup ?? 0));
+
   for (const team of aiTeams) {
     const ai = input.aiTeamStates[team.id];
     const spec = ARCHETYPE_SPECS[ai.archetype];
     const rng = createSeededRandom(deriveSeed(input.seed, 'ai-offseason', team.id, input.nextYear));
 
-    // 1) Development ---------------------------------------------------------
+    // 1) Maintenance decay + development -------------------------------------
     const car = carByTeam.get(team.id);
     if (car) {
-      const dev = developCar(car, team, ai, reliabilityProblem.has(team.id), rng);
+      // Ratings do not stay maxed forever: apply offseason maintenance decay
+      // (design ageing + regulation shakeup), softened by facilities/staff and
+      // budget health, before the team develops.
+      const org = orgRatings[team.id];
+      const facilityStaffQuality = org
+        ? (org.staffQuality + (org.research ?? org.staffQuality)) / 2
+        : 50;
+      const budgetHealth =
+        ai.financialHealth === 'Excellent'
+          ? 1
+          : ai.financialHealth === 'Stable'
+            ? 0.7
+            : ai.financialHealth === 'Tight'
+              ? 0.4
+              : ai.financialHealth === 'AtRisk'
+                ? 0.2
+                : 0;
+      // Regulation adaptation: in a shakeup year some teams nail the new concept
+      // and some miss it. Seeded per team+year with a mild bias toward strong
+      // technical departments, but with real variance so the order can reshuffle.
+      let regulationAdaptation = 0;
+      if (shakeup > 0) {
+        const roll = createSeededRandom(
+          deriveSeed(input.seed, 'reg-adapt', team.id, input.nextYear),
+        ).next();
+        const techBias = (facilityStaffQuality - 55) / 100; // ~-0.5..0.45
+        regulationAdaptation = Math.max(-1, Math.min(1, (roll - 0.5) * 2 + techBias));
+      }
+      const decayed: Car = {
+        ...car,
+        ratings: applyOffseasonDecay(car.ratings, {
+          regulationShakeup: shakeup,
+          facilityStaffQuality,
+          budgetHealth,
+          regulationAdaptation,
+        }),
+      };
+      carByTeam.set(team.id, decayed);
+
+      const dev = developCar(
+        decayed,
+        team,
+        ai,
+        reliabilityProblem.has(team.id),
+        fieldTopRating,
+        rng,
+      );
       if (dev) {
         // The development *spend* is already applied to the team's cash by the
         // Phase C rollover delta (sponsorIncome − dev − facility); here we only
@@ -414,12 +512,15 @@ function processAcademy(
   const kept: AcademyMember[] = [];
   const youthBoost = spec.youthBias * 0.3;
   for (const raw of existing) {
-    const member = progressAcademyMember(raw, youthBoost);
-    if (!isPromotionEligible(member, input.nextYear)) {
-      kept.push({ ...member, promotionEligible: false });
+    const progressed = progressAcademyMember(raw, youthBoost);
+    if (!isPromotionEligible(progressed, input.nextYear)) {
+      kept.push({ ...progressed, promotionEligible: false });
       continue;
     }
-    // First option on a promotion-eligible member.
+    // First option on a promotion-eligible member. Open the rights window (stamp
+    // firstOptionYear / deadline) and see whether the rights have now expired.
+    const member = openFirstOptionWindow(progressed, input.nextYear);
+    const expired = academyRightsExpired(member, input.nextYear);
     const seatDrivers = activeSeatDrivers(nextDrivers, team.id);
     const reserves = nextDrivers.filter((d) => d.teamId === team.id && isReserveTier(d));
     const weakestSeat = seatDrivers.reduce(
@@ -433,6 +534,7 @@ function processAcademy(
       hasReserve: reserves.length > 0,
       affordability,
       promotionBias: spec.youthBias,
+      rightsExpired: expired,
     });
     const applied = applyAcademyDecision(
       decision,
@@ -445,7 +547,18 @@ function processAcademy(
     );
     nextDrivers = applied.drivers;
     if (applied.note) notes.push(applied.note);
-    if (applied.keep) kept.push(applied.keep);
+    // A member kept under academy rights is only allowed while rights are valid.
+    // If they've expired (past deadline / age 21+), the driver is released to the
+    // adult market rather than lingering in academy-only status.
+    if (applied.keep) {
+      if (expired) {
+        notes.push(
+          `${team.name} lets first-option rights on ${member.name} (${academyMemberAge(member, input.nextYear)}) expire — released to the driver market.`,
+        );
+      } else {
+        kept.push(applied.keep);
+      }
+    }
   }
 
   // Sign at most one new youth prospect per offseason, gated by capacity,

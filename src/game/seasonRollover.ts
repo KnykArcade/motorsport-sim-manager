@@ -16,7 +16,7 @@ import {
   resolvePendingUpgrades,
 } from '../sim/facilityEngine';
 import { BALANCED_SETUP } from '../data/setup/setupComponents';
-import { calculateOffseasonCarryover } from '../sim/developmentEngine';
+import { applyOffseasonDecay, calculateOffseasonCarryover } from '../sim/developmentEngine';
 import {
   academyMemberAge,
   academyMemberToDriver,
@@ -25,8 +25,10 @@ import {
   progressAcademyMember,
 } from '../sim/driverMarketEngine';
 import {
+  academyRightsExpired,
   firstOptionStatusFor,
   isPromotionEligible,
+  openFirstOptionWindow,
 } from '../sim/youthAcademyEngine';
 import { resolveDriverBid } from '../sim/driverBiddingEngine';
 import { marketDriverOfferInterest } from '../sim/crossSeriesEngine';
@@ -67,7 +69,13 @@ import { runAIOffseason, makeRookieDriver } from '../sim/aiOffseasonEngine';
 import { createSeededRandom, deriveSeed } from '../sim/random';
 import { applyDriverRetirements } from '../sim/driverRetirementEngine';
 import type { DriverDevelopmentCurve } from '../types/developmentCurveTypes';
-import type { Car, Driver, OffseasonSummary, Team } from '../types/gameTypes';
+import type {
+  Car,
+  Driver,
+  OffseasonSummary,
+  RegulationChangeEvent,
+  Team,
+} from '../types/gameTypes';
 import type { AcademyDecision, AcademyMember } from '../types/marketTypes';
 import type { FinanceTransaction } from '../types/financeTypes';
 import type { CommercialState } from '../types/sponsorTypes';
@@ -132,11 +140,21 @@ function resolvePlayerFirstOptions(
   for (const a of academy) {
     if (!isPromotionEligible(a, nextYear)) continue;
     res.notes.push(`${a.name} turned ${academyMemberAge(a, nextYear)} and became promotion eligible.`);
+    const expired = academyRightsExpired(openFirstOptionWindow(a, nextYear), nextYear);
     const decision = decisionByAcademyId.get(a.id)?.decision;
     if (!decision) {
-      // No decision taken: keep first option open (development rights held).
-      res.retainedStatus.set(a.id, 'pending_team_decision');
-      res.notes.push(`Awaiting your promotion decision on academy driver ${a.name}.`);
+      if (expired) {
+        // First-option rights have run out (past deadline / age 21+): with no
+        // decision taken the driver is automatically released to the adult market.
+        res.consumedAcademyIds.add(a.id);
+        res.notes.push(
+          `First-option rights on academy driver ${a.name} expired — released to the driver market.`,
+        );
+      } else {
+        // No decision taken yet: keep first option open (development rights held).
+        res.retainedStatus.set(a.id, 'pending_team_decision');
+        res.notes.push(`Awaiting your promotion decision on academy driver ${a.name}.`);
+      }
       continue;
     }
     if (decision === 'race_seat') {
@@ -145,8 +163,15 @@ function resolvePlayerFirstOptions(
         ? state.drivers.find((d) => d.id === seatDriverId && d.teamId === state.selectedTeamId)
         : undefined;
       if (!seatDriver) {
-        // Seat no longer valid — hold rights rather than lose the driver.
-        res.retainedStatus.set(a.id, 'pending_team_decision');
+        // Seat no longer valid — hold rights (or release if they've expired).
+        if (expired) {
+          res.consumedAcademyIds.add(a.id);
+          res.notes.push(
+            `First-option rights on academy driver ${a.name} expired — released to the driver market.`,
+          );
+        } else {
+          res.retainedStatus.set(a.id, 'pending_team_decision');
+        }
         continue;
       }
       const seat = { teamId: seatDriver.teamId, number: seatDriver.number };
@@ -165,6 +190,12 @@ function resolvePlayerFirstOptions(
     } else if (decision === 'release') {
       res.consumedAcademyIds.add(a.id);
       res.notes.push(`Released academy driver ${a.name} to the open driver market.`);
+    } else if (expired) {
+      // 'extend' requested but rights have run out — can no longer hold; release.
+      res.consumedAcademyIds.add(a.id);
+      res.notes.push(
+        `Cannot extend rights on ${a.name} — first option expired; released to the driver market.`,
+      );
     } else {
       // 'extend': keep in the academy another year.
       res.retainedStatus.set(a.id, firstOptionStatusFor(decision));
@@ -420,10 +451,12 @@ export function advanceSeason(state: GameState): GameState {
       const progressed = progressAcademyMember(a, youthBoost);
       const retained = firstOption.retainedStatus.get(a.id);
       if (retained) {
-        return { ...progressed, promotionEligible: true, firstOptionStatus: retained };
+        // Stamp the first-option window so the deadline persists across seasons.
+        const windowed = openFirstOptionWindow({ ...progressed, promotionEligible: true }, nextYear);
+        return { ...windowed, promotionEligible: true, firstOptionStatus: retained };
       }
       return isPromotionEligible(progressed, nextYear)
-        ? progressed
+        ? openFirstOptionWindow(progressed, nextYear)
         : { ...progressed, promotionEligible: false };
     });
 
@@ -457,15 +490,44 @@ export function advanceSeason(state: GameState): GameState {
     ...voteResolution.regulationChanges,
   ];
 
+  // Regulation shakeup magnitude for the upcoming season (0 stable .. 1 major),
+  // taken from the most severe change coming into effect. Drives AI car decay,
+  // carryover reduction, and the reshuffle of the development order.
+  const severityToShakeup = (sev: RegulationChangeEvent['severity']): number =>
+    sev === 'Major' ? 1 : sev === 'Moderate' ? 0.6 : sev === 'Minor' ? 0.3 : 0;
+  const regulationShakeup = voteResolution.regulationChanges.reduce(
+    (max, ev) => Math.max(max, severityToShakeup(ev.severity)),
+    0,
+  );
+
   // Carry the player car's development into the new baseline; reset condition.
+  // The player car is subject to the same offseason maintenance decay as the AI
+  // grid: without continued development it ages and loses carried-over pace, so
+  // a strong car does not stay maxed forever if the player stops spending.
   const playerCar = carForTeam(state, state.selectedTeamId);
+  const playerOrg = state.teamOrgRatings?.[state.selectedTeamId];
+  const playerFacilityStaffQuality = playerOrg
+    ? (playerOrg.staffQuality + (playerOrg.research ?? playerOrg.staffQuality)) / 2
+    : 60;
+  const playerBudgetHealth = Math.max(
+    0,
+    Math.min(
+      1,
+      (state.teams.find((t) => t.id === state.selectedTeamId)?.budget ?? 0) / toMoney(60),
+    ),
+  );
   const carsRaw: Car[] = state.cars.map((c) => {
     if (playerCar && c.id === playerCar.id) {
-      const ratings = calculateOffseasonCarryover(
+      const carried = calculateOffseasonCarryover(
         c,
         state.completedDevelopmentProjects,
         regulationHistoryWithVotes,
       );
+      const ratings = applyOffseasonDecay(carried, {
+        regulationShakeup,
+        facilityStaffQuality: playerFacilityStaffQuality,
+        budgetHealth: playerBudgetHealth,
+      });
       return {
         ...c,
         seasonYear: nextYear,
@@ -827,6 +889,7 @@ export function advanceSeason(state: GameState): GameState {
     signedMarketIds: finalSignedMarketIds,
     reservedNames: aiReservedNames,
     constructorStandings: state.constructorStandings,
+    regulationShakeup,
   });
 
   const champion = state.driverStandings[0];

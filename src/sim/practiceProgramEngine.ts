@@ -6,7 +6,7 @@
 // reliability) and a driver-confidence nudge. Knowledge feeds setup confidence
 // and qualifying/race pace via the existing setup-derivation path.
 
-import type { Driver, Track } from '../types/gameTypes';
+import type { Car, Driver, Track } from '../types/gameTypes';
 import type { CarSetup } from '../types/setupTypes';
 import type { WeatherState } from '../types/liveTypes';
 import type {
@@ -22,7 +22,7 @@ import type {
   WeekendPractice,
 } from '../types/practiceTypes';
 import { createSeededRandom, deriveSeed, type Rng } from './random';
-import { calculateSetupFit, idealSetup } from './setupFitEngine';
+import { calculateSetupFit, evaluateSetupAgainstTrackAndCar } from './setupFitEngine';
 
 // How much each program contributes to each knowledge axis / confidence per run.
 type ProgramEmphasis = {
@@ -97,10 +97,16 @@ function r1(v: number): number {
 // Never exposes the ideal value — only the direction and feel.
 type Signal = { topic: FeedbackTopic; sentiment: FeedbackSentiment; message: string };
 
-function setupSignals(setup: CarSetup, track: Track, driver: Driver): Signal[] {
-  const fit = calculateSetupFit(setup, track, driver);
-  const e = fit.effects;
-  const ideal = idealSetup(track, driver);
+// Car-aware directional signals. Built from the SAME core model as Objective
+// Setup Quality — the current-car-shaped ideal setup plus the car's objective
+// effects (tyre wear, reliability/overheating risk, pace ceilings) — so the
+// feedback never contradicts the setup evaluation. On top of the setup-vs-ideal
+// gaps we surface the car package's own strengths and weaknesses: a weak
+// mechanical-grip car talks about traction and rear grip, a fragile car about
+// cooling, a strong-engine car tolerates more wing, and so on.
+function setupSignals(setup: CarSetup, track: Track, driver: Driver, car?: Car): Signal[] {
+  const { objective, ideal, traits } = evaluateSetupAgainstTrackAndCar(setup, track, car, driver);
+  const e = objective.effects;
   const out: Signal[] = [];
 
   const wing = (setup.frontWing + setup.rearWing) / 2;
@@ -109,52 +115,94 @@ function setupSignals(setup: CarSetup, track: Track, driver: Driver): Signal[] {
   else if (wing > wingIdeal + 1.2) out.push({ topic: 'Aero', sentiment: 'Concern', message: 'We are losing too much time on the straights.' });
   else out.push({ topic: 'Aero', sentiment: 'Positive', message: 'Aero balance is in a good window.' });
 
-  if (e.cornering >= 7) out.push({ topic: 'Balance', sentiment: 'Positive', message: 'The car is planted through the corners.' });
-  if (e.mistakeRisk >= 1.0) out.push({ topic: 'Balance', sentiment: 'Warning', message: 'The car feels nervous and snappy — hard to lean on.' });
-
-  if (track.attributes.surfaceGripBumpiness >= 6 && (setup.suspensionStiffness > ideal.suspensionStiffness + 1.2 || setup.rideHeight < ideal.rideHeight - 1.2)) {
-    out.push({ topic: 'RideHeight', sentiment: 'Warning', message: 'The car is bottoming out over the bumps.' });
+  // Car-package weaknesses colour the feel independently of the slider gaps.
+  if (traits.weakAero) {
+    out.push({ topic: 'Aero', sentiment: 'Concern', message: 'The car lacks aero load — unstable in the high-speed corners and hard to commit to.' });
+  }
+  if (traits.weakMechGrip) {
+    out.push({ topic: 'Balance', sentiment: 'Concern', message: 'Struggling for mechanical grip — poor traction and a loose rear out of the slow corners.' });
+  }
+  if (traits.strongEngine) {
+    out.push({ topic: 'Aero', sentiment: 'Positive', message: 'Strong engine lets us carry more wing and still defend on the straights.' });
+  } else if (traits.weakEngine) {
+    out.push({ topic: 'Aero', sentiment: 'Concern', message: 'Down on engine power — we need to trim drag to keep up on the straights.' });
   }
 
-  if (setup.brakeCooling < ideal.brakeCooling - 1.2 || Math.abs(setup.brakeBias - 5) >= 3) {
+  if (e.overheatingRisk >= 0.6 || Math.abs(setup.brakeBias - 5) >= 3) {
     out.push({ topic: 'Brakes', sentiment: 'Concern', message: 'Brake temperatures are climbing and the fronts are locking.' });
   } else {
     out.push({ topic: 'Brakes', sentiment: 'Neutral', message: 'Brakes are working in their window.' });
   }
 
-  if (e.reliabilityRisk >= 0.9 || setup.engineCooling < ideal.engineCooling - 1.2) {
-    out.push({ topic: 'Engine', sentiment: 'Warning', message: 'Engine temperatures are climbing on the long runs.' });
+  if (e.reliabilityRisk >= 0.9 || traits.weakReliability || setup.engineCooling < ideal.engineCooling - 1.2) {
+    out.push({ topic: 'Engine', sentiment: 'Warning', message: traits.weakReliability
+      ? 'Fragile package — engine temperatures spike and it needs conservative, well-cooled settings.'
+      : 'Engine temperatures are climbing on the long runs.' });
   } else {
     out.push({ topic: 'Reliability', sentiment: 'Positive', message: 'The car ran the program with no reliability scares.' });
   }
 
-  if (e.tyreWear >= 1.0 || setup.tyreUsage > ideal.tyreUsage + 1.2) {
+  if (e.tyreWear >= 1.0 || traits.tyreStress || setup.tyreUsage > ideal.tyreUsage + 1.2) {
     out.push({ topic: 'Tires', sentiment: 'Warning', message: 'Rear tyres are overheating on the long runs.' });
-    out.push({ topic: 'Degradation', sentiment: 'Concern', message: 'Tyre degradation is worse than expected.' });
+    out.push({ topic: 'Degradation', sentiment: 'Concern', message: traits.tyreStress
+      ? 'The car is hard on its tyres — degradation and stint length are a real concern.'
+      : 'Tyre degradation is worse than expected.' });
   } else {
     out.push({ topic: 'Tires', sentiment: 'Positive', message: 'Tyre temperatures are stable across a stint.' });
   }
 
-  if (e.racePace >= 0.6) out.push({ topic: 'LongRunPace', sentiment: 'Positive', message: 'Long-run pace looks strong.' });
+  if (e.racePaceCeiling >= 0.6) out.push({ topic: 'LongRunPace', sentiment: 'Positive', message: 'Long-run pace looks strong.' });
   out.push({ topic: 'Fuel', sentiment: 'Neutral', message: 'Fuel consumption is in line with our race estimate.' });
 
-  if (fit.confidence >= 72) out.push({ topic: 'Confidence', sentiment: 'Positive', message: 'Driver confidence is improving.' });
-  else if (fit.confidence < 48) out.push({ topic: 'Confidence', sentiment: 'Concern', message: 'The driver is not comfortable with the car yet.' });
+  if (objective.quality >= 74) out.push({ topic: 'Confidence', sentiment: 'Positive', message: 'The setup is landing in a strong window.' });
+  else if (objective.quality < 50) out.push({ topic: 'Confidence', sentiment: 'Concern', message: 'The setup is a long way from where it needs to be.' });
 
   return out;
 }
 
+// How confident the feedback is, given how much the team has learned. Low
+// knowledge yields broad, hedged feedback; high knowledge yields specific,
+// confident feedback. The relevant knowledge axis depends on the program.
+export type FeedbackConfidenceLevel = 'Low' | 'Medium' | 'High';
+
+export function calculatePracticeFeedbackConfidence(
+  program: PracticeProgram,
+  knowledge: { setup: number; tire: number; reliability: number },
+): FeedbackConfidenceLevel {
+  const meta = PROGRAM_META[program];
+  // Weight the knowledge axes by what the program actually investigates.
+  const wSum = meta.setup + meta.tire + meta.reliability || 1;
+  const relevant =
+    (knowledge.setup * meta.setup +
+      knowledge.tire * meta.tire +
+      knowledge.reliability * meta.reliability) /
+    wSum;
+  if (relevant >= 0.6) return 'High';
+  if (relevant >= 0.3) return 'Medium';
+  return 'Low';
+}
+
+export type FeedbackOptions = {
+  car?: Car;
+  // Prior weekend knowledge (0-1 per axis) — gates how specific the feedback is.
+  knowledge?: { setup: number; tire: number; reliability: number };
+};
+
 // Directional practice feedback for one driver running one program. Surfaces the
 // signals most relevant to the chosen program first; never reveals the ideal.
+// Feedback is car-aware (shares the Objective Setup Quality model) and gated by
+// practice knowledge: with little running the team only offers a broad, hedged
+// read; once knowledge builds the notes become specific and confident.
 export function generatePracticeFeedback(
   driver: Driver,
   setup: CarSetup,
   track: Track,
   program: PracticeProgram,
   rng: Rng,
+  opts: FeedbackOptions = {},
 ): PracticeFeedbackItem[] {
   const meta = PROGRAM_META[program];
-  const signals = setupSignals(setup, track, driver);
+  const signals = setupSignals(setup, track, driver, opts.car);
   const topicRank = (t: FeedbackTopic) => {
     const i = meta.topics.indexOf(t);
     return i === -1 ? meta.topics.length + 1 : i;
@@ -170,19 +218,36 @@ export function generatePracticeFeedback(
     picked.unshift(picked.splice(1, 1)[0]);
   }
 
-  return picked.map((s, i) => ({
+  const confidence = opts.knowledge
+    ? calculatePracticeFeedbackConfidence(program, opts.knowledge)
+    : 'Medium';
+
+  // Low knowledge: keep only the single leading signal and hedge it — the team
+  // is not yet sure of the detail. Medium: a couple of signals. High: the full
+  // specific picture.
+  const trimmed = confidence === 'Low' ? picked.slice(0, 1) : confidence === 'Medium' ? picked.slice(0, 3) : picked;
+
+  return trimmed.map((s, i) => ({
     id: `${driver.id}-${program}-${i}`,
     driverId: driver.id,
     topic: s.topic,
     sentiment: s.sentiment,
-    message: s.message,
+    message: confidence === 'Low' ? hedge(s.message) : s.message,
   }));
+}
+
+// Soften a specific note into a broad first-impression when the team has too
+// little running to be sure of the detail.
+function hedge(message: string): string {
+  return `Early read, limited data: ${message.charAt(0).toLowerCase()}${message.slice(1)}`;
 }
 
 export type DriverProgramContext = {
   driver: Driver;
   setup: CarSetup;
   track: Track;
+  // The driver's current car package — makes feedback car-aware.
+  car?: Car;
   priorSetupKnowledge: number;
   priorTireKnowledge: number;
   priorReliabilityKnowledge: number;
@@ -236,7 +301,14 @@ export function runDriverProgram(
     ),
   );
 
-  const feedback = generatePracticeFeedback(ctx.driver, ctx.setup, ctx.track, program, rng);
+  const feedback = generatePracticeFeedback(ctx.driver, ctx.setup, ctx.track, program, rng, {
+    car: ctx.car,
+    knowledge: {
+      setup: ctx.priorSetupKnowledge,
+      tire: ctx.priorTireKnowledge,
+      reliability: ctx.priorReliabilityKnowledge,
+    },
+  });
   if (wetPayoff > 0) {
     feedback.unshift({
       id: `${ctx.driver.id}-${program}-wet`,
@@ -276,6 +348,8 @@ export type SessionContext = {
   seed: string;
   driversById: Record<string, Driver>;
   setupsById: Record<string, CarSetup>;
+  // Each driver's current car package — makes practice feedback car-aware.
+  carsByDriverId?: Record<string, Car>;
   knowledge: WeekendKnowledge;
   // Whether the race is forecast wet (rewards Wet-Weather Preparation).
   raceWet?: boolean;
@@ -302,6 +376,7 @@ export function runPracticeSession(
           driver,
           setup,
           track: ctx.track,
+          car: ctx.carsByDriverId?.[a.driverId],
           priorSetupKnowledge: ctx.knowledge.setupKnowledge[a.driverId] ?? 0,
           priorTireKnowledge: ctx.knowledge.tireKnowledge[a.driverId] ?? 0,
           priorReliabilityKnowledge: ctx.knowledge.reliabilityKnowledge[a.driverId] ?? 0,
