@@ -25,6 +25,7 @@ import {
   registryList,
 } from '../data/registry/masterRegistry';
 import { getMarketBundle, youthSigningCost, youthYearlyAcademyCost, type MarketBundle } from '../data/market';
+import { crossSeriesCandidates } from './crossSeriesEngine';
 import type { GameState } from '../game/careerState';
 
 export const ROOKIE_AGE = 18;
@@ -68,8 +69,9 @@ export function isRetiredByAge(e: MasterDriverEntry, year: number): boolean {
 
 // A registry driver counts as an available adult free agent for (year, series)
 // when their market-entry year has arrived, they are of racing age, eligible for
-// the series, and not yet retired. Series eligibility is same-series for now;
-// cross-series interest is layered on in a later phase.
+// the series, and not yet retired. This is the same-series pool; drivers eligible
+// only for other series are surfaced separately as cross-series candidates
+// (see crossSeriesEngine).
 export function isAdultAvailable(e: MasterDriverEntry, year: number, series: Series): boolean {
   if (!e.eligibleSeries.includes(series)) return false;
   if (e.marketEntryYear > year) return false;
@@ -199,8 +201,17 @@ export function careerMarketBundle(state: GameState): MarketBundle {
     }
   }
 
+  // Foreign-series free agents open to switching into this series.
+  const takenDriverNames = new Set([
+    ...curatedDriverNames,
+    ...extraDrivers.map((d) => normalizeName(d.name)),
+  ]);
+  const crossSeries = crossSeriesCandidates(state).filter(
+    (d) => !takenDriverNames.has(normalizeName(d.name)),
+  );
+
   return {
-    drivers: [...(staticBundle?.drivers ?? []), ...extraDrivers],
+    drivers: [...(staticBundle?.drivers ?? []), ...extraDrivers, ...crossSeries],
     youth: [...(staticBundle?.youth ?? []), ...extraYouth],
   };
 }
