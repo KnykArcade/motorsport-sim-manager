@@ -7,6 +7,7 @@ import { NewCareer } from '../screens/NewCareer';
 import { TeamHQ } from '../screens/TeamHQ';
 import { Calendar } from '../screens/Calendar';
 import { Standings } from '../screens/Standings';
+import { TeamOverview } from '../screens/TeamOverview';
 import { Drivers } from '../screens/Drivers';
 import { DriverMarket } from '../screens/DriverMarket';
 import { Development } from '../screens/Development';
@@ -60,6 +61,7 @@ export default function App() {
           <Route path="/hq" element={<InGame><TeamHQ /></InGame>} />
           <Route path="/calendar" element={<InGame><Calendar /></InGame>} />
           <Route path="/standings" element={<InGame><Standings /></InGame>} />
+          <Route path="/teams" element={<InGame><TeamOverview /></InGame>} />
           <Route path="/drivers" element={<InGame><Drivers /></InGame>} />
           <Route path="/market" element={<InGame><DriverMarket /></InGame>} />
           <Route path="/development" element={<InGame><Development /></InGame>} />
