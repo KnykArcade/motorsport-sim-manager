@@ -19,15 +19,78 @@ import type {
 } from '../types/liveTypes';
 import { DIRTY_AIR_GAP } from './liveRacePace';
 
-// Laps an ignored recommendation kind is suppressed before it may re-raise
+// Default laps a recommendation kind is suppressed before it may re-raise
 // (urgent recommendations bypass this so a worsening situation is never hidden).
-export const REC_COOLDOWN = 8;
+export const REC_COOLDOWN = 5;
 // Laps a recommendation stays live if its trigger persists.
 const REC_TTL = 5;
 // Positions that pay championship points (approximate, for points-defence advice).
 const POINTS_POSITIONS = 10;
 
+// Per-kind dedup/re-raise cooldown (laps). See the lifecycle merge in the tick
+// engine. Situational kinds (safety car / pit window / weather) are short here
+// but are also cleared outright when the underlying situation changes.
+export const KIND_COOLDOWN: Record<string, number> = {
+  attack: 4,
+  defend: 4,
+  crash: 4,
+  reliability: 6,
+  component: 6,
+  damage: 6,
+  pointsHold: 6,
+  tyres: 5,
+  fuel: 5,
+  teammate: 5,
+  safetyCarPit: 6,
+  weatherTyres: 6,
+  pitWindow: 6,
+};
+
+export function cooldownFor(kind: string): number {
+  return KIND_COOLDOWN[kind] ?? REC_COOLDOWN;
+}
+
+// Default decision countdown (seconds) before an un-actioned high/urgent
+// recommendation auto-expires (treated as ignored — "no pit wall response").
+export const DECISION_COUNTDOWN_SECONDS = 10;
+
 const PRIORITY_RANK: Record<RecPriority, number> = { low: 1, medium: 2, high: 3, urgent: 4 };
+
+// Medium recommendations that still pause the race because they affect pit /
+// weather / safety-car timing (higher priorities always pause).
+const PAUSE_MEDIUM_KINDS = new Set(['safetyCarPit', 'pitWindow', 'weatherTyres', 'tyres']);
+
+// Whether a pending recommendation should pause playback and run the decision
+// countdown. Low priority (and non-timing medium) advice appears quietly.
+export function requiresDecision(rec: AnalyticsRecommendation): boolean {
+  if (rec.status !== 'pending') return false;
+  if (rec.priority === 'urgent' || rec.priority === 'high') return true;
+  if (rec.priority === 'medium' && PAUSE_MEDIUM_KINDS.has(rec.kind)) return true;
+  return false;
+}
+
+// A strategy-mode instruction (as opposed to a one-shot pit / stay-out / team
+// order). Only mode instructions with a parsed duration become `active`.
+export function isModeAction(a: RecAction): boolean {
+  return !!a.paceMode && !a.pitNow && !a.teamOrder;
+}
+
+// Parse a human duration ("3-5 laps", "5 laps", "rest of race") into a lap count.
+export function parseDurationLaps(
+  text: string | undefined,
+  lap: number,
+  totalLaps: number,
+): number | undefined {
+  if (!text) return undefined;
+  const t = text.toLowerCase();
+  if (t.includes('rest of race') || t.includes('flag')) return Math.max(1, totalLaps - lap);
+  const range = t.match(/(\d+)\s*[-–]\s*(\d+)/);
+  if (range) return Math.max(1, Math.floor((parseInt(range[1], 10) + parseInt(range[2], 10)) / 2));
+  const single = t.match(/(\d+)/);
+  if (single) return Math.max(1, parseInt(single[1], 10));
+  // Qualitative durations ("until the stop") → a sensible default stint length.
+  return 6;
+}
 
 // A candidate recommendation before it is stamped with id / driver / lap fields.
 type Candidate = {
@@ -317,29 +380,41 @@ function candidatesFor(
   return out;
 }
 
-// Pick the single best (highest-priority) candidate the driver is allowed to see
-// this lap, honouring the ignore cooldown (urgent bypasses it).
-function bestCandidate(
-  cands: Candidate[],
+// Stamp a candidate into a fresh pending recommendation for a driver.
+function toRec(
+  pick: Candidate,
   driverId: string,
-  ignored: LiveRaceState['ignoredRecs'],
   lap: number,
-): Candidate | null {
-  const allowed = cands.filter((c) => {
-    if (c.priority === 'urgent') return true;
-    const rec = ignored.find((i) => i.key === `${driverId}:${c.kind}`);
-    return !rec || lap - rec.lap >= REC_COOLDOWN;
-  });
-  if (allowed.length === 0) return null;
-  return allowed.reduce((best, c) =>
-    PRIORITY_RANK[c.priority] > PRIORITY_RANK[best.priority] ? c : best,
-  );
+  totalLaps: number,
+): AnalyticsRecommendation {
+  const suggestedDurationLaps = isModeAction(pick.action)
+    ? parseDurationLaps(pick.suggestedDuration, lap, totalLaps)
+    : undefined;
+  return {
+    id: `${driverId}:${pick.kind}`,
+    driverId,
+    kind: pick.kind,
+    priority: pick.priority,
+    issue: pick.issue,
+    recommendedAction: pick.recommendedAction,
+    suggestedDuration: pick.suggestedDuration,
+    suggestedDurationLaps,
+    expectedImpact: pick.expectedImpact,
+    confidence: pick.confidence,
+    createdLap: lap,
+    expiresLap: lap + REC_TTL,
+    action: pick.action,
+    alternatives: pick.alternatives,
+    status: 'pending',
+  };
 }
 
-// Generate the active recommendation list for all player drivers from the given
-// (already advanced) car list + state. Preserves an existing recommendation's
-// createdLap when its kind still applies so the card does not flicker each lap.
-export function generateRecommendations(
+// Generate the best pending candidate recommendation per player driver from the
+// given (already advanced) car list + state. This is the raw generation step: it
+// does NOT apply lifecycle (dedup vs active/pending, cooldowns, carry-forward) —
+// that is done by the merge in raceTickEngine so the same advice is not re-issued
+// while it is already pending, active or on cooldown.
+export function generateCandidates(
   cars: LiveCarState[],
   state: LiveRaceState,
   lap: number,
@@ -352,31 +427,21 @@ export function generateRecommendations(
     intervalBehind[c.driverId] = running[i + 1] ? running[i + 1].interval : 0;
   });
 
-  const prevById = new Map(state.recommendations.map((r) => [r.id, r]));
   const out: AnalyticsRecommendation[] = [];
 
   const playerRunning = running.filter((c) => c.isPlayer);
   for (const car of playerRunning) {
-    const cands = candidatesFor(car, state, intervalAhead[car.driverId] ?? 0, intervalBehind[car.driverId] ?? 0);
-    const pick = bestCandidate(cands, car.driverId, state.ignoredRecs, lap);
-    if (!pick) continue;
-    const id = `${car.driverId}:${pick.kind}`;
-    const prev = prevById.get(id);
-    out.push({
-      id,
-      driverId: car.driverId,
-      kind: pick.kind,
-      priority: pick.priority,
-      issue: pick.issue,
-      recommendedAction: pick.recommendedAction,
-      suggestedDuration: pick.suggestedDuration,
-      expectedImpact: pick.expectedImpact,
-      confidence: pick.confidence,
-      createdLap: prev ? prev.createdLap : lap,
-      expiresLap: lap + REC_TTL,
-      action: pick.action,
-      alternatives: pick.alternatives,
-    });
+    const cands = candidatesFor(
+      car,
+      state,
+      intervalAhead[car.driverId] ?? 0,
+      intervalBehind[car.driverId] ?? 0,
+    );
+    if (cands.length === 0) continue;
+    const pick = cands.reduce((best, c) =>
+      PRIORITY_RANK[c.priority] > PRIORITY_RANK[best.priority] ? c : best,
+    );
+    out.push(toRec(pick, car.driverId, lap, state.totalLaps));
   }
 
   // Teammate management: if two player cars are running nose-to-tail, advise the
@@ -389,24 +454,19 @@ export function generateRecommendations(
     const gap = intervalBehind[front.driverId] ?? 0;
     // The car behind is a faster teammate stuck in dirty air.
     if (gap > 0 && gap < DIRTY_AIR_GAP && back.baseRacePace > front.baseRacePace + 0.15) {
-      const id = `${front.driverId}:teammate`;
-      const prev = prevById.get(id);
       // Only add if we did not already pick a higher-priority rec for this car.
       if (!out.some((r) => r.driverId === front.driverId)) {
-        out.push({
-          id,
-          driverId: front.driverId,
+        const teammate: Candidate = {
           kind: 'teammate',
           priority: 'medium',
           issue: 'Your faster teammate is stuck behind and losing time.',
           recommendedAction: 'Let the teammate through to race the cars ahead.',
           expectedImpact: 'Maximises the team result; costs this car a place.',
           confidence: 64,
-          createdLap: prev ? prev.createdLap : lap,
-          expiresLap: lap + REC_TTL,
           action: A.letRace(),
           alternatives: [A.swap(), A.hold()],
-        });
+        };
+        out.push(toRec(teammate, front.driverId, lap, state.totalLaps));
       }
     }
   }

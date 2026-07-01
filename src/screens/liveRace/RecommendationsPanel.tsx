@@ -1,9 +1,12 @@
-// Grouped Data Analytics decision panel. Shows one row per player driver with
-// that driver's own recommendation (issue, recommended action, confidence,
-// expected impact) and independent Accept / Modify / Ignore controls. When more
-// than one driver is affected it groups them under a shared event header and
-// offers panel-level shortcuts — "Accept All", "Ignore All" and an optional
-// "Apply to both" (never the default) — while still allowing per-driver choices.
+// Grouped Data Analytics decision panel — the single decision interface for
+// normal in-race strategy calls. Shows one row per player driver with that
+// driver's own pending recommendation (issue, recommended action, confidence,
+// expected impact) and independent Accept / Modify / Ignore / Let Crew Decide
+// controls. When more than one driver has a pending decision they group under a
+// shared event header with optional shortcuts — "Accept All", "Ignore All" and
+// an optional "Apply to both" (never the default). A live countdown appears when
+// a high/urgent decision has paused the race; accepted duration-based
+// instructions are listed compactly with their laps remaining (no re-prompt).
 
 import { useState } from 'react';
 import type { AnalyticsRecommendation, RecAction } from '../../types/liveTypes';
@@ -36,20 +39,26 @@ const EVENT_LABEL: Record<string, string> = {
 
 export function RecommendationsPanel({
   recs,
+  currentLap,
+  decisionSecondsLeft = null,
   nameOf,
   onAccept,
   onModify,
   onIgnore,
+  onLetCrewDecide,
   onAcceptAll,
   onIgnoreAll,
   onApplyToBoth,
   className = '',
 }: {
   recs: AnalyticsRecommendation[];
+  currentLap: number;
+  decisionSecondsLeft?: number | null;
   nameOf: (driverId: string) => string;
   onAccept: (rec: AnalyticsRecommendation) => void;
   onModify: (rec: AnalyticsRecommendation, action: RecAction) => void;
   onIgnore: (rec: AnalyticsRecommendation) => void;
+  onLetCrewDecide: (rec: AnalyticsRecommendation) => void;
   onAcceptAll: () => void;
   onIgnoreAll: () => void;
   onApplyToBoth: (action: RecAction) => void;
@@ -58,13 +67,16 @@ export function RecommendationsPanel({
   const [applyMenu, setApplyMenu] = useState(false);
   if (recs.length === 0) return null;
 
-  const grouped = recs.length > 1;
-  const sameKind = grouped && recs.every((r) => r.kind === recs[0].kind);
-  const header = sameKind ? EVENT_LABEL[recs[0].kind] ?? 'Data Analytics' : 'Data Analytics';
+  const pending = recs.filter((r) => r.status === 'pending');
+  const active = recs.filter((r) => r.status === 'active');
 
-  // Union of distinct actions across all recs, for the "Apply to both" shortcut.
+  const grouped = pending.length > 1;
+  const sameKind = grouped && pending.every((r) => r.kind === pending[0].kind);
+  const header = sameKind ? EVENT_LABEL[pending[0].kind] ?? 'Data Analytics' : 'Data Analytics';
+
+  // Union of distinct actions across pending recs, for the "Apply to both" shortcut.
   const bothActions: RecAction[] = [];
-  for (const r of recs) {
+  for (const r of pending) {
     for (const a of [r.action, ...r.alternatives]) {
       if (!bothActions.some((x) => x.type === a.type)) bothActions.push(a);
     }
@@ -76,23 +88,35 @@ export function RecommendationsPanel({
         <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-300">
           ⬡ Data Analytics{grouped ? ` · ${header}` : ''}
         </span>
-        <span className="text-[10px] text-slate-500">
-          {recs.length} {recs.length === 1 ? 'alert' : 'alerts'}
-        </span>
+        {decisionSecondsLeft != null ? (
+          <span className="flex items-center gap-1 text-[10px] font-bold text-red-300">
+            <span className="inline-block h-1.5 w-1.5 animate-pulse rounded-full bg-red-400" />
+            Decision {decisionSecondsLeft}s
+          </span>
+        ) : (
+          <span className="text-[10px] text-slate-500">
+            {pending.length > 0
+              ? `${pending.length} ${pending.length === 1 ? 'alert' : 'alerts'}`
+              : `${active.length} active`}
+          </span>
+        )}
       </div>
 
-      <div className="space-y-1.5 p-2">
-        {recs.map((rec) => (
-          <DriverRow
-            key={rec.id}
-            rec={rec}
-            name={nameOf(rec.driverId)}
-            onAccept={() => onAccept(rec)}
-            onModify={(a) => onModify(rec, a)}
-            onIgnore={() => onIgnore(rec)}
-          />
-        ))}
-      </div>
+      {pending.length > 0 && (
+        <div className="space-y-1.5 p-2">
+          {pending.map((rec) => (
+            <DriverRow
+              key={rec.id}
+              rec={rec}
+              name={nameOf(rec.driverId)}
+              onAccept={() => onAccept(rec)}
+              onModify={(a) => onModify(rec, a)}
+              onIgnore={() => onIgnore(rec)}
+              onLetCrewDecide={() => onLetCrewDecide(rec)}
+            />
+          ))}
+        </div>
+      )}
 
       {grouped && (
         <div className="border-t border-slate-700/50 p-2">
@@ -134,6 +158,46 @@ export function RecommendationsPanel({
           )}
         </div>
       )}
+
+      {active.length > 0 && (
+        <div className="space-y-1 border-t border-slate-700/50 p-2">
+          <div className="text-[9px] uppercase tracking-wide text-slate-500">Active instructions</div>
+          {active.map((rec) => (
+            <ActiveRow key={rec.id} rec={rec} name={nameOf(rec.driverId)} currentLap={currentLap} />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// Compact status line for an accepted, duration-based instruction currently
+// being applied. Shows the laps remaining; the card is never re-prompted.
+function ActiveRow({
+  rec,
+  name,
+  currentLap,
+}: {
+  rec: AnalyticsRecommendation;
+  name: string;
+  currentLap: number;
+}) {
+  const label = rec.appliedAction?.label ?? rec.action.label;
+  const remaining = rec.appliedUntilLap != null ? Math.max(0, rec.appliedUntilLap - currentLap) : null;
+  const suffix =
+    remaining == null
+      ? ''
+      : rec.appliedUntilLap != null && remaining > 0
+        ? ` — ${remaining} lap${remaining === 1 ? '' : 's'} remaining`
+        : '';
+  return (
+    <div className="flex items-center justify-between rounded bg-slate-800/50 px-2 py-1">
+      <span className="text-[10px] font-semibold text-slate-200">
+        {name}: {label} active{suffix}
+      </span>
+      {rec.appliedUntilLap != null && (
+        <span className="text-[9px] text-slate-500">until L{rec.appliedUntilLap}</span>
+      )}
     </div>
   );
 }
@@ -144,12 +208,14 @@ function DriverRow({
   onAccept,
   onModify,
   onIgnore,
+  onLetCrewDecide,
 }: {
   rec: AnalyticsRecommendation;
   name: string;
   onAccept: () => void;
   onModify: (action: RecAction) => void;
   onIgnore: () => void;
+  onLetCrewDecide: () => void;
 }) {
   const [modifying, setModifying] = useState(false);
   return (
@@ -168,26 +234,34 @@ function DriverRow({
       <p className="mt-0.5 text-[10px] text-slate-400">Impact: {rec.expectedImpact}</p>
 
       {!modifying ? (
-        <div className="mt-1.5 grid grid-cols-3 gap-1">
+        <>
+          <div className="mt-1.5 grid grid-cols-3 gap-1">
+            <button
+              onClick={onAccept}
+              className="rounded bg-emerald-600 py-1 text-[10px] font-bold text-white hover:bg-emerald-500"
+            >
+              Accept
+            </button>
+            <button
+              onClick={() => setModifying(true)}
+              className="rounded bg-slate-700 py-1 text-[10px] font-bold text-slate-100 hover:bg-slate-600"
+            >
+              Modify
+            </button>
+            <button
+              onClick={onIgnore}
+              className="rounded bg-slate-800 py-1 text-[10px] font-bold text-slate-400 hover:bg-slate-700"
+            >
+              Ignore
+            </button>
+          </div>
           <button
-            onClick={onAccept}
-            className="rounded bg-emerald-600 py-1 text-[10px] font-bold text-white hover:bg-emerald-500"
+            onClick={onLetCrewDecide}
+            className="mt-1 w-full rounded border border-slate-700 py-0.5 text-[10px] font-semibold text-slate-300 hover:bg-slate-800"
           >
-            Accept
+            Let Crew Decide
           </button>
-          <button
-            onClick={() => setModifying(true)}
-            className="rounded bg-slate-700 py-1 text-[10px] font-bold text-slate-100 hover:bg-slate-600"
-          >
-            Modify
-          </button>
-          <button
-            onClick={onIgnore}
-            className="rounded bg-slate-800 py-1 text-[10px] font-bold text-slate-400 hover:bg-slate-700"
-          >
-            Ignore
-          </button>
-        </div>
+        </>
       ) : (
         <div className="mt-1.5 space-y-1">
           <div className="text-[9px] uppercase tracking-wide text-slate-500">Alternative actions</div>

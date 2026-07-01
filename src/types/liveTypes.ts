@@ -216,7 +216,27 @@ export type RecActionType =
   | 'FuelSave'
   | 'HoldPosition'
   | 'LetTeammateRace'
-  | 'SwapPositions';
+  | 'SwapPositions'
+  | 'LetCrewDecide';
+
+// Lifecycle of a recommendation. See the analytics/tick engines for transitions.
+// pending    — visible, awaiting the player's decision
+// accepted   — player accepted the recommended action (one-shot actions only)
+// modified   — player chose an alternate action (one-shot actions only)
+// ignored    — player actively dismissed it
+// expired    — the decision countdown elapsed with no response
+// active     — an accepted/modified duration instruction is being applied
+// completed  — an active instruction's duration has finished
+// superseded — a newer / more urgent recommendation replaced it
+export type RecStatus =
+  | 'pending'
+  | 'accepted'
+  | 'modified'
+  | 'ignored'
+  | 'expired'
+  | 'active'
+  | 'completed'
+  | 'superseded';
 
 export type RecAction = {
   type: RecActionType;
@@ -238,12 +258,20 @@ export type AnalyticsRecommendation = {
   issue: string; // what the analytics team detected
   recommendedAction: string; // human-readable recommended action
   suggestedDuration?: string; // e.g. "5-8 laps"
+  suggestedDurationLaps?: number; // parsed numeric duration for active instructions
   expectedImpact: string; // e.g. "Reliability Risk: Medium -> Low, Live Pace -0.3"
   confidence: number; // 0-100
   createdLap: number;
   expiresLap: number;
   action: RecAction; // applied on Accept
   alternatives: RecAction[]; // shown on Modify
+  // Lifecycle.
+  status: RecStatus;
+  appliedAction?: RecAction; // the action chosen on accept/modify (drives `active`)
+  appliedUntilLap?: number; // active instruction runs until (and excluding) this lap
+  // Reserved for grouped multi-driver recs (rows are still per-driver recs).
+  affectedDriverIds?: string[];
+  sourceEventId?: string;
 };
 
 // ---------------------------------------------------------------------------
@@ -337,9 +365,15 @@ export type LiveRaceState = {
   // driver), regenerated each lap from live state.
   recommendations: AnalyticsRecommendation[];
   // Ignored recommendations keyed by `${driverId}:${kind}` and the lap ignored,
-  // so the same warning is not re-raised immediately and a worsened ignored
-  // warning can be referenced in the event log.
-  ignoredRecs: { key: string; lap: number; issue: string; escalated: boolean }[];
+  // so the same warning is not re-raised immediately. `priority` captures the
+  // level when it was ignored so a later, higher-priority candidate (a worsened
+  // warning) can bypass the cooldown and re-raise.
+  ignoredRecs: { key: string; lap: number; issue: string; priority: RecPriority; escalated: boolean }[];
+  // Per-kind dedup cooldowns keyed by `${driverId}:${kind}` -> the lap after
+  // which that recommendation kind may be raised again. Written when a rec is
+  // ignored, resolved (one-shot accept/modify) or an active instruction
+  // completes, so the same advice is not re-issued every lap.
+  recCooldowns: Record<string, number>;
   // Retirements this race (for the race-info panel).
   retirements: number;
 };

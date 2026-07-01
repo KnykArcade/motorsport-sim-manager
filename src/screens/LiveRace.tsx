@@ -5,6 +5,7 @@ import { buildLiveRaceMeta, buildLiveRaceOptions, buildRaceContext } from '../ga
 import { createLiveRace, finalizeResults } from '../sim/liveRaceEngine';
 import {
   applyRecommendationAction,
+  expireRecommendation,
   ignoreRecommendation,
   requestPlayerPit,
   resolvePrompt,
@@ -13,6 +14,7 @@ import {
   stepLiveRace,
   stepLiveRaceToEnd,
 } from '../sim/raceTickEngine';
+import { requiresDecision, DECISION_COUNTDOWN_SECONDS } from '../sim/analyticsEngine';
 import { applyTeamOrderToLive, recordTeamOrder } from '../sim/relationshipEngine';
 import { Button } from '../components/Button';
 import type { TrackDot } from '../components/RaceTrack2D';
@@ -53,19 +55,55 @@ export function LiveRace() {
   const [playing, setPlaying] = useState(false);
   const [speed, setSpeed] = useState<Speed>(1);
   const [modal, setModal] = useState<'log' | 'strategy' | 'orders' | null>(null);
+  const [decisionSecondsLeft, setDecisionSecondsLeft] = useState<number | null>(null);
   const committed = useRef(false);
   // Team orders called during the race, resolved into relationships at the flag.
   const teamOrders = useRef<TeamOrderDecision[]>([]);
 
-  // Playback loop — steps a lap on an interval while playing, paused on prompts.
+  // Recommendations that pause the race and run a decision countdown.
+  const decisionRecs = live ? live.recommendations.filter((r) => requiresDecision(r)) : [];
+  const needsDecision = !!live && live.phase !== 'finished' && decisionRecs.length > 0;
+  // Stable key so the countdown resets only when the pending decision set changes.
+  const decisionKey = decisionRecs
+    .map((r) => r.id)
+    .sort()
+    .join(',');
+
+  // Playback loop — steps a lap on an interval while playing, paused on prompts
+  // or while a high/urgent recommendation is awaiting a decision.
   useEffect(() => {
     if (!engine || !live) return;
-    if (!playing || live.pendingPrompt || live.phase === 'finished') return;
+    if (!playing || live.pendingPrompt || live.phase === 'finished' || needsDecision) return;
     const id = setInterval(() => {
       setLive((s) => (s && !s.pendingPrompt && s.phase !== 'finished' ? stepLiveRace(s, engine.meta) : s));
     }, 950 / speed);
     return () => clearInterval(id);
-  }, [engine, live, playing, speed]);
+  }, [engine, live, playing, speed, needsDecision]);
+
+  // Decision countdown: while a high/urgent decision is pending, tick a ~10s
+  // clock and, on timeout, auto-expire (ignore) the outstanding recommendations
+  // so the race resumes. The deadline lives in a ref and every state write
+  // happens inside the interval callback (never synchronously in the effect).
+  useEffect(() => {
+    if (!decisionKey || !engine) return;
+    const deadline = Date.now() + DECISION_COUNTDOWN_SECONDS * 1000;
+    const tick = () => {
+      const left = Math.max(0, Math.ceil((deadline - Date.now()) / 1000));
+      if (left <= 0) {
+        setLive((s) =>
+          s
+            ? s.recommendations
+                .filter((r) => requiresDecision(r))
+                .reduce((acc, r) => expireRecommendation(acc, r.id, engine.meta), s)
+            : s,
+        );
+      } else {
+        setDecisionSecondsLeft(left);
+      }
+    };
+    const id = setInterval(tick, 250);
+    return () => clearInterval(id);
+  }, [decisionKey, engine]);
 
   if (!state || !engine || !live) {
     return (
@@ -133,18 +171,20 @@ export function LiveRace() {
     setLive((s) => (s ? resolveRec(s, rec, action, 'modified') : s));
   const onIgnore = (rec: AnalyticsRecommendation) =>
     setLive((s) => (s ? ignoreRecommendation(s, rec.id, engine.meta) : s));
+  // "Let Crew Decide" defers to the analytics call — apply the recommended action.
+  const onLetCrewDecide = (rec: AnalyticsRecommendation) =>
+    setLive((s) => (s ? resolveRec(s, rec, rec.action, 'accepted') : s));
 
+  const pendingRecs = (s: LiveRaceState) => s.recommendations.filter((r) => r.status === 'pending');
   // Group shortcuts: each driver keeps its own recommended action (Accept All) or
   // its recommendation dismissed (Ignore All); "Apply to both" pushes one chosen
-  // action onto every player driver's recommendation.
+  // action onto every player driver's pending recommendation.
   const onAcceptAll = () =>
-    setLive((s) => (s ? [...s.recommendations].reduce((acc, r) => resolveRec(acc, r, r.action, 'accepted'), s) : s));
+    setLive((s) => (s ? pendingRecs(s).reduce((acc, r) => resolveRec(acc, r, r.action, 'accepted'), s) : s));
   const onIgnoreAll = () =>
-    setLive((s) =>
-      s ? [...s.recommendations].reduce((acc, r) => ignoreRecommendation(acc, r.id, engine.meta), s) : s,
-    );
+    setLive((s) => (s ? pendingRecs(s).reduce((acc, r) => ignoreRecommendation(acc, r.id, engine.meta), s) : s));
   const onApplyToBoth = (action: RecAction) =>
-    setLive((s) => (s ? [...s.recommendations].reduce((acc, r) => resolveRec(acc, r, action, 'modified'), s) : s));
+    setLive((s) => (s ? pendingRecs(s).reduce((acc, r) => resolveRec(acc, r, action, 'modified'), s) : s));
 
   const finishRace = () => {
     if (committed.current) {
@@ -178,7 +218,7 @@ export function LiveRace() {
         <>
           <button
             onClick={() => setPlaying((p) => !p)}
-            disabled={!!live.pendingPrompt}
+            disabled={!!live.pendingPrompt || needsDecision}
             className={`rounded px-3 py-1 text-xs font-bold ${
               playing ? 'bg-slate-700 text-slate-100' : 'bg-emerald-600 text-white'
             } disabled:opacity-40`}
@@ -187,7 +227,7 @@ export function LiveRace() {
           </button>
           <button
             onClick={step}
-            disabled={playing || !!live.pendingPrompt}
+            disabled={playing || !!live.pendingPrompt || needsDecision}
             className="rounded bg-slate-800 px-2 py-1 text-xs font-semibold text-slate-200 hover:bg-slate-700 disabled:opacity-40"
           >
             +1
@@ -207,7 +247,7 @@ export function LiveRace() {
           </div>
           <button
             onClick={skipToEnd}
-            disabled={!!live.pendingPrompt}
+            disabled={!!live.pendingPrompt || needsDecision}
             className="rounded bg-slate-800 px-2 py-1 text-xs font-semibold text-slate-200 hover:bg-slate-700 disabled:opacity-40"
           >
             ⏩
@@ -265,10 +305,13 @@ export function LiveRace() {
           {activeRecs.length > 0 && (
             <RecommendationsPanel
               recs={activeRecs}
+              currentLap={live.currentLap}
+              decisionSecondsLeft={needsDecision ? decisionSecondsLeft ?? DECISION_COUNTDOWN_SECONDS : null}
               nameOf={driverName}
               onAccept={onAccept}
               onModify={onModify}
               onIgnore={onIgnore}
+              onLetCrewDecide={onLetCrewDecide}
               onAcceptAll={onAcceptAll}
               onIgnoreAll={onIgnoreAll}
               onApplyToBoth={onApplyToBoth}
