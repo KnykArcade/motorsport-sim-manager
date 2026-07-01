@@ -21,7 +21,7 @@ import {
 } from './trackFitEngine';
 import { calculateSetupFit } from './setupEngine';
 import { calculateCrashRisk, calculateMistakeRisk } from './mistakeEngine';
-import { PACE_SPREAD, PACE_WEIGHTS } from './raceEngine';
+import { PACE_SPREAD, PACE_WEIGHTS, WEEKEND_FORM_SPREAD, FORM_OPS_FACTOR } from './raceEngine';
 
 function clamp10(n: number): number {
   return Math.max(1, Math.min(10, n));
@@ -138,6 +138,8 @@ type Entry = {
   conserve: boolean;
   wetReady: boolean;
   teamRating: number;
+  // Per-team weekend form for this qualifying weekend (both cars share it).
+  weekendForm: number;
 };
 
 type LapOutcome = {
@@ -160,7 +162,7 @@ function simulateLap(
   const { driver, car, setup, runPlan } = entry;
   const { score, breakdown } = calculateQualifyingPace(driver, car, track, setup, runPlan, entry.teamRating);
 
-  let base = score + evolution;
+  let base = score + evolution + entry.weekendForm;
 
   // Weather: wet/changeable sessions reward adaptable, composed drivers and add
   // chaos. Drivers who banked wet running in practice cope better.
@@ -290,6 +292,9 @@ export function simulateQualifying(context: QualifyingContext): {
 
   const entries: Entry[] = context.entrants.map((e) => {
     const decision = context.decisions[e.driver.id];
+    const teamRating = context.teamRaceOps?.[e.driver.teamId] ?? 5;
+    const formRng = createSeededRandom(deriveSeed(context.seed, 'qualiform', e.driver.teamId));
+    const formSpread = (WEEKEND_FORM_SPREAD + Math.max(0, 5 - teamRating) * FORM_OPS_FACTOR) * 0.6;
     return {
       driver: e.driver,
       car: e.car,
@@ -298,7 +303,8 @@ export function simulateQualifying(context: QualifyingContext): {
       runs: clampRuns(decision.runs),
       conserve: decision.tyreApproach === 'Conserve',
       wetReady: wetReady.has(e.driver.id),
-      teamRating: (context.teamReputation?.[e.driver.teamId] ?? 50) / 10,
+      teamRating,
+      weekendForm: formRng.variance(formSpread),
     };
   });
 

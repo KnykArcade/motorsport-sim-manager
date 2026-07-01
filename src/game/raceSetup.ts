@@ -99,7 +99,11 @@ export function buildRaceContext(
 
   const pointsSystem = getPointsSystem(state.pointsSystemId);
   const teamReputation: Record<string, number> = {};
-  state.teams.forEach((t) => (teamReputation[t.id] = t.reputation));
+  const teamRaceOps: Record<string, number> = {};
+  state.teams.forEach((t) => {
+    teamReputation[t.id] = t.reputation;
+    teamRaceOps[t.id] = t.raceOperations ?? t.reputation / 10;
+  });
 
   const context: RaceContext = {
     track,
@@ -112,6 +116,7 @@ export function buildRaceContext(
     pointsByPosition: pointsSystem.pointsByPosition,
     seed: `${state.randomSeed}-r${race.round}`,
     teamReputation,
+    teamRaceOps,
   };
 
   return { context, track, raceId: race.id, totalLaps: race.laps };
@@ -126,13 +131,18 @@ export function buildLiveRaceOptions(
   const driverNames: Record<string, string> = {};
   context.entrants.forEach((e) => (driverNames[e.driver.id] = e.driver.name));
   const teamReputation: Record<string, number> = {};
-  state.teams.forEach((t) => (teamReputation[t.id] = t.reputation));
+  const teamRaceOps: Record<string, number> = {};
+  state.teams.forEach((t) => {
+    teamReputation[t.id] = t.reputation;
+    teamRaceOps[t.id] = t.raceOperations ?? t.reputation / 10;
+  });
   return {
     raceId,
     playerTeamId: state.selectedTeamId,
     totalLaps,
     driverNames,
     teamReputation,
+    teamRaceOps,
   };
 }
 

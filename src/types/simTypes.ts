@@ -62,9 +62,12 @@ export type QualifyingContext = {
   // Qualifying format. Knockout runs Q1/Q2/Q3 elimination segments; SingleLap is
   // one combined session. Defaults to SingleLap.
   format?: QualifyingFormat;
-  // Team reputation (0-100) by team id. Drives the team component of qualifying
-  // pace (reputation/10 on the 1-10 scale). Absent => treated as midfield (50).
+  // Team reputation (0-100) by team id. Used for AI personality / engine-deal
+  // context — NOT for pace (that now uses teamRaceOps).
   teamReputation?: Record<string, number>;
+  // Race Operations Rating (1-10) by team id. Drives the team component of
+  // qualifying pace. Absent => treated as midfield (5).
+  teamRaceOps?: Record<string, number>;
 };
 
 export type RaceContext = {
@@ -77,9 +80,12 @@ export type RaceContext = {
   instructions: Record<string, DriverInstruction>;
   pointsByPosition: Record<number, number>;
   seed: string;
-  // Team reputation (0-100) by team id. Drives the team component of race pace
-  // (reputation/10 on the 1-10 scale). Absent => treated as midfield (50).
+  // Team reputation (0-100) by team id. Used for AI personality / engine-deal
+  // context — NOT for pace (that now uses teamRaceOps).
   teamReputation?: Record<string, number>;
+  // Race Operations Rating (1-10) by team id. Drives the team component of race
+  // pace. Absent => treated as midfield (5).
+  teamRaceOps?: Record<string, number>;
 };
 
 // Debug breakdown surfaced in the developer panel so formulas can be tuned.
