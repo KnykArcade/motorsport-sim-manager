@@ -23,6 +23,8 @@ import {
   progressAcademyMember,
 } from '../sim/driverMarketEngine';
 import { resolveDriverBid } from '../sim/driverBiddingEngine';
+import { marketDriverOfferInterest } from '../sim/crossSeriesEngine';
+import { carPerformanceRating } from '../sim/trackFitEngine';
 import { driverSalary, makeTransaction, toMoney } from '../sim/financeEngine';
 import { thirdDriverAmbitions, THIRD_DRIVER_SALARY_FACTOR } from '../sim/contractEngine';
 import {
@@ -101,6 +103,8 @@ export function advanceSeason(state: GameState): GameState {
   // passes all agree.
   const playerTeamOverall =
     state.teamOrgRatings?.[state.selectedTeamId]?.overallTeamRating ?? 50;
+  const playerCarForBids = carForTeam(state, state.selectedTeamId);
+  const playerCarOverall = playerCarForBids ? carPerformanceRating(playerCarForBids) : 5;
   const marketBidWon = new Map<string, boolean>();
   const biddingNotes: string[] = [];
   for (const sign of signings) {
@@ -110,12 +114,23 @@ export function advanceSeason(state: GameState): GameState {
       marketBidWon.set(sign.sourceId, false);
       continue;
     }
-    const res = resolveDriverBid(sign.bid ?? m.buyoutCost, m, playerTeamOverall, state.randomSeed);
+    // Cross-series moves are weighted by the driver's interest in the offer;
+    // same-series signings pass no interest and are unchanged.
+    const interest = marketDriverOfferInterest(state, m, playerTeamOverall, playerCarOverall);
+    const res = resolveDriverBid(
+      sign.bid ?? m.buyoutCost,
+      m,
+      playerTeamOverall,
+      state.randomSeed,
+      interest,
+    );
     marketBidWon.set(sign.sourceId, res.won);
     if (!res.won) {
-      newSignedMarketIds.push(m.id); // signed with a rival — off the market
+      newSignedMarketIds.push(m.id); // signed with a rival (or refused) — off the market
       biddingNotes.push(
-        `Lost the bidding for ${m.name} — a rival outbid you (competing offer ~$${res.rivalBid}M).`,
+        res.refused
+          ? `${m.name} turned down a move to ${state.series} — not interested in switching series right now.`
+          : `Lost the bidding for ${m.name} — a rival outbid you (competing offer ~$${res.rivalBid}M).`,
       );
     }
   }

@@ -17,6 +17,14 @@ export function effectiveCarRatings(car: Car): CarRatings {
   };
 }
 
+// Overall car competitiveness (1-10): the mean of the effective ratings.
+export function carPerformanceRating(car: Car): number {
+  const c = effectiveCarRatings(car);
+  return (
+    (c.enginePower + c.aeroEfficiency + c.mechanicalGrip + c.reliability + c.pitCrewOperations) / 5
+  );
+}
+
 // A rating (1-10) weighted by a demand (1-10). Demand-weighted so a strong
 // engine matters more at high-power tracks. Returns roughly [-5, 5].
 function weighted(rating: number, demand: number): number {
