@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import { useGame } from '../game/GameContext';
 import { activeDriversForTeam, driversForTeam, teamById } from '../game/careerState';
-import { getMarketBundle } from '../data';
+import { careerMarketBundle } from '../sim/careerMarketEngine';
 import { isAcademyReady } from '../sim/driverMarketEngine';
 import { academyCapacityFor } from '../sim/teamRatingsEngine';
 import { toMoney } from '../sim/financeEngine';
@@ -28,7 +28,7 @@ export function DriverMarket() {
   const [tab, setTab] = useState<Tab>('senior');
 
   const bundle = useMemo(
-    () => (state ? getMarketBundle(state.seasonYear, state.series) : undefined),
+    () => (state ? careerMarketBundle(state) : undefined),
     [state],
   );
 

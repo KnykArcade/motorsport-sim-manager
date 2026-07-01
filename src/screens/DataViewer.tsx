@@ -4,6 +4,7 @@ import {
   availableSeasons,
   getSeasonBundle,
   getTrackById,
+  registryList,
   setupOptions,
   type SeasonBundle,
 } from '../data';
@@ -14,7 +15,16 @@ import { Button } from '../components/Button';
 import { RatingBadge } from '../components/RatingBadge';
 import type { Car, Driver, Series, Team, Track } from '../types/gameTypes';
 
-type Tab = 'calendar' | 'tracks' | 'teams' | 'drivers' | 'cars' | 'points' | 'setups' | 'development';
+type Tab =
+  | 'calendar'
+  | 'tracks'
+  | 'teams'
+  | 'drivers'
+  | 'cars'
+  | 'points'
+  | 'setups'
+  | 'development'
+  | 'registry';
 
 const TABS: { id: Tab; label: string }[] = [
   { id: 'calendar', label: 'Calendar' },
@@ -25,6 +35,7 @@ const TABS: { id: Tab; label: string }[] = [
   { id: 'points', label: 'Points' },
   { id: 'setups', label: 'Setup Options' },
   { id: 'development', label: 'Development' },
+  { id: 'registry', label: 'Master Registry' },
 ];
 
 const seasonKey = (year: number, series: Series) => `${year}-${series}`;
@@ -90,7 +101,9 @@ export function DataViewer() {
         </div>
 
         <div className="overflow-x-auto rounded-lg border border-neutral-800">
-          {!bundle ? (
+          {tab === 'registry' ? (
+            <RegistryTable />
+          ) : !bundle ? (
             <p className="p-6 text-sm text-neutral-400">No data for this season.</p>
           ) : (
             <>
@@ -283,6 +296,66 @@ function SetupsTable() {
         ))}
       </tbody>
     </table>
+  );
+}
+
+function RegistryTable() {
+  const all = useMemo(() => registryList(), []);
+  const [query, setQuery] = useState('');
+  const q = query.trim().toLowerCase();
+  const rows = useMemo(() => {
+    const filtered = q
+      ? all.filter(
+          (e) =>
+            e.canonicalName.includes(q) ||
+            e.driverId.includes(q) ||
+            (e.nationality ?? '').toLowerCase().includes(q),
+        )
+      : all;
+    return filtered.slice(0, 400);
+  }, [all, q]);
+
+  return (
+    <div>
+      <div className="flex flex-wrap items-center gap-3 border-b border-neutral-800 p-3">
+        <input
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder="Search name / id / nationality…"
+          className="w-64 rounded-md border border-neutral-700 bg-neutral-900 px-3 py-1.5 text-sm text-neutral-200"
+        />
+        <span className="text-xs text-neutral-500">
+          {all.length} canonical drivers · showing {rows.length}
+        </span>
+      </div>
+      <table className="w-full">
+        <thead className="bg-neutral-900/60">
+          <tr>
+            <Th>Driver</Th><Th>Nat</Th><Th>Born</Th><Th>Pref</Th><Th>Eligible</Th>
+            <Th>Status</Th><Th>Mkt Entry</Th><Th>Academy</Th><Th>Adult</Th>
+            <Th>OVR</Th><Th>Pot</Th><Th>Seasons</Th>
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map((e) => (
+            <tr key={e.driverId} className="border-t border-neutral-800/60">
+              <Td>{e.displayName}</Td>
+              <Td>{e.nationality ?? '—'}</Td>
+              <Td>{e.birthYear ?? '—'}</Td>
+              <Td>{e.preferredSeries}</Td>
+              <Td>{e.eligibleSeries.join(', ')}</Td>
+              <Td><span className="rounded bg-neutral-800 px-1.5 py-0.5 text-xs">{e.careerStatus}</span></Td>
+              <Td>{e.marketEntryYear}</Td>
+              <Td>{e.academyEligibleYear ?? '—'}</Td>
+              <Td>{e.adultEligibleYear ?? '—'}</Td>
+              <Td><RatingBadge value={e.baseRatings.overall} /></Td>
+              <Td>{e.potential.toFixed(1)}</Td>
+              <Td>{e.baseRatingsByYear.length}</Td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
   );
 }
 

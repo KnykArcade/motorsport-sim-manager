@@ -152,6 +152,13 @@ export {
   type MarketBundle,
 } from './market';
 export { staffPool1995 } from './staff/staffPool1995';
+export {
+  buildMasterRegistry,
+  getMasterRegistry,
+  registryList,
+  normalizeName,
+  slugifyName,
+} from './registry/masterRegistry';
 
 // A large, varied pool of hireable specialists is generated per season/series
 // (deterministic). Memoized so the same season returns a stable pool.

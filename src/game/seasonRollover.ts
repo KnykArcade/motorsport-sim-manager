@@ -4,7 +4,12 @@
 // season for a fresh championship. Only the player's seats change; the AI grid
 // is stable for now. Pure and deterministic.
 
-import { getMarketBundle, getSeasonBundle } from '../data';
+import { getSeasonBundle } from '../data';
+import {
+  careerMarketBundle,
+  marketRolloverChanges,
+  marketRolloverNotes,
+} from '../sim/careerMarketEngine';
 import {
   FACILITY_SPECS,
   facilityYouthDevelopmentBonus,
@@ -72,7 +77,11 @@ function sponsorshipIncome(team: Team | undefined, playerDrivers: Driver[]): num
 
 export function advanceSeason(state: GameState): GameState {
   const nextYear = state.seasonYear + 1;
-  const market = getMarketBundle(state.seasonYear, state.series);
+  // Living career market: the curated season file plus registry free agents /
+  // youth that have become available. Signings queued during the offseason are
+  // resolved against this same pool.
+  const market = careerMarketBundle(state);
+  const marketChanges = marketRolloverChanges(state, nextYear);
   const signings = state.pendingSignings ?? [];
   const academy = state.academy ?? [];
 
@@ -568,6 +577,7 @@ export function advanceSeason(state: GameState): GameState {
       }),
       ...biddingNotes,
       ...departureNotes,
+      ...marketRolloverNotes(marketChanges),
       ...(nextAcademy.length ? [`${nextAcademy.length} academy driver(s) progressed.`] : []),
       ...facilityNotes,
       ...engineNotes,

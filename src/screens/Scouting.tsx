@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import { useGame } from '../game/GameContext';
 import { teamById } from '../game/careerState';
-import { getMarketBundle } from '../data';
+import { careerMarketBundle } from '../sim/careerMarketEngine';
 import { Panel } from '../components/Panel';
 import { Button } from '../components/Button';
 import { fogView, scoutingCost, type FogView, type ScoutTarget } from '../sim/scoutingEngine';
@@ -22,7 +22,7 @@ export function Scouting() {
   const [tab, setTab] = useState<Tab>('senior');
 
   const bundle = useMemo(
-    () => (state ? getMarketBundle(state.seasonYear, state.series) : undefined),
+    () => (state ? careerMarketBundle(state) : undefined),
     [state],
   );
 

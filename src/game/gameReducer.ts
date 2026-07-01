@@ -24,7 +24,8 @@ import {
 import { buildRaceContext, playerTunedSetups } from './raceSetup';
 import { createNewGame, type NewGameOptions } from './initialCareer';
 import { advanceSeason } from './seasonRollover';
-import { getMarketBundle, getMaxQualifiers, getStaffPool } from '../data';
+import { getMaxQualifiers, getStaffPool } from '../data';
+import { careerMarketBundle } from '../sim/careerMarketEngine';
 import { marketDriverToDriver, signProspectToAcademy } from '../sim/driverMarketEngine';
 import { academyCapacityFor } from '../sim/teamRatingsEngine';
 import { makeTransaction, toMoney } from '../sim/financeEngine';
@@ -261,7 +262,7 @@ function signThirdDriver(state: GameState, marketId: string): GameState {
   if (roster.length >= MAX_RACE_DRIVERS + 1) return state; // already have a 3rd driver
   if (roster.some((d) => d.contractType === 'third')) return state;
 
-  const m = getMarketBundle(state.seasonYear, state.series)?.drivers.find((d) => d.id === marketId);
+  const m = careerMarketBundle(state).drivers.find((d) => d.id === marketId);
   if (!m || (state.signedMarketIds ?? []).includes(m.id)) return state;
 
   const racesRemaining = Math.max(1, state.calendar.length - state.currentRaceIndex);
@@ -511,7 +512,7 @@ function queueSigning(
   let name: string;
   let bid: number | undefined;
   if (source === 'market') {
-    const m = getMarketBundle(state.seasonYear, state.series)?.drivers.find(
+    const m = careerMarketBundle(state).drivers.find(
       (d) => d.id === sourceId,
     );
     if (!m || (state.signedMarketIds ?? []).includes(m.id)) return state;
@@ -586,8 +587,7 @@ function scoutTargetAction(
   entityType: ScoutedEntityType,
 ): GameState {
   if (!state.scouting) return state;
-  const bundle = getMarketBundle(state.seasonYear, state.series);
-  if (!bundle) return state;
+  const bundle = careerMarketBundle(state);
 
   let target: ScoutTarget | undefined;
   let targetName = 'target';
@@ -735,7 +735,7 @@ function signYouth(state: GameState, youthId: string): GameState {
   // drivers, based on its overall team rating. Block signings past the limit.
   const capacity = academyCapacityFor(state.teamOrgRatings, state.selectedTeamId);
   if (academy.length >= capacity) return state;
-  const prospect = getMarketBundle(state.seasonYear, state.series)?.youth.find(
+  const prospect = careerMarketBundle(state).youth.find(
     (y) => y.id === youthId,
   );
   if (!prospect) return state;
