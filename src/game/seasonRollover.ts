@@ -63,6 +63,7 @@ import { refreshScoutingNetwork } from '../sim/scoutingEngine';
 import { createDriverDevelopmentCurve, developmentStep } from '../sim/developmentCurveEngine';
 import { finalizeSeasonHistory } from '../sim/universeHistoryEngine';
 import { buildAITeamState, rolloverAITeamStates } from '../sim/aiTeamEngine';
+import { runAIOffseason } from '../sim/aiOffseasonEngine';
 import type { DriverDevelopmentCurve } from '../types/developmentCurveTypes';
 import type { Car, Driver, OffseasonSummary, Team } from '../types/gameTypes';
 import type { AcademyDecision, AcademyMember } from '../types/marketTypes';
@@ -716,6 +717,40 @@ export function advanceSeason(state: GameState): GameState {
     return driver;
   });
 
+  // AI offseason actions (Phase D): every non-player team now *acts* on its
+  // Phase-C brain — develops its car, works the driver market (fills/renews/
+  // signs), signs & promotes youth academy prospects, and makes light staff/
+  // sponsor moves. Runs on the assembled next-season entities so its moves land
+  // in the new season, and its notes feed the rollover summary + news feed.
+  const aiReservedNames = new Set<string>();
+  for (const d of developedDrivers) {
+    if (d.teamId === state.selectedTeamId) aiReservedNames.add(d.name.trim().toLowerCase());
+  }
+  for (const a of nextAcademy) aiReservedNames.add(a.name.trim().toLowerCase());
+  const aiMarket = careerMarketBundle({
+    ...state,
+    seasonYear: nextYear,
+    drivers: developedDrivers,
+    academy: nextAcademy,
+    signedMarketIds: finalSignedMarketIds,
+  });
+  const aiOffseason = runAIOffseason({
+    nextYear,
+    seed: state.randomSeed,
+    selectedTeamId: state.selectedTeamId,
+    teams,
+    drivers: developedDrivers,
+    cars,
+    engine: nextEngine,
+    aiTeamStates: aiRollover.states,
+    aiAcademies: state.aiAcademies ?? {},
+    orgRatings: state.teamOrgRatings ?? {},
+    market: aiMarket,
+    signedMarketIds: finalSignedMarketIds,
+    reservedNames: aiReservedNames,
+    constructorStandings: state.constructorStandings,
+  });
+
   const champion = state.driverStandings[0];
   const constructorChamp = state.constructorStandings[0];
   const summary: OffseasonSummary = {
@@ -741,6 +776,7 @@ export function advanceSeason(state: GameState): GameState {
       ...voteResolution.notes,
       ...developmentNotes,
       ...aiRollover.notes,
+      ...aiOffseason.notes,
     ],
   };
 
@@ -776,11 +812,13 @@ export function advanceSeason(state: GameState): GameState {
     calendar,
     pointsSystemId,
     regulationSetId,
-    drivers: developedDrivers,
-    cars,
-    teams,
+    drivers: aiOffseason.drivers,
+    cars: aiOffseason.cars,
+    teams: aiOffseason.teams,
+    teamOrgRatings: aiOffseason.orgRatings,
+    aiAcademies: aiOffseason.aiAcademies,
     facilities: nextFacilities,
-    engine: nextEngine,
+    engine: aiOffseason.engine ?? nextEngine,
     finance: [...(state.finance ?? []), ...txns],
     commercial: nextCommercial,
     teamExpectations: nextExpectations ?? state.teamExpectations,
@@ -804,7 +842,7 @@ export function advanceSeason(state: GameState): GameState {
     academy: nextAcademy,
     pendingSignings: [],
     academyDecisions: [],
-    signedMarketIds: finalSignedMarketIds,
+    signedMarketIds: aiOffseason.signedMarketIds,
     completedRaceResults: {},
     qualifyingResults: {},
     raceEvents: {},
@@ -823,6 +861,12 @@ export function advanceSeason(state: GameState): GameState {
             : 'A new championship begins.',
         timestamp: now,
       },
+      ...aiOffseason.news.slice(0, 12).map((n, i) => ({
+        id: `news-ai-${nextYear}-${i}`,
+        headline: n.headline,
+        body: n.body ?? n.headline,
+        timestamp: now,
+      })),
       ...state.news,
     ].slice(0, 50),
   };
