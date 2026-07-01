@@ -217,9 +217,9 @@ export function applyTeamOrderToLive(
       note = 'Drivers told they are free to race.';
       break;
     case 'HoldPosition':
-      setPace(leadCar.driverId, 'Conserve');
+      setPace(leadCar.driverId, 'Conservative');
       if (otherCar) {
-        setPace(otherCar.driverId, 'Conserve');
+        setPace(otherCar.driverId, 'Conservative');
         const trail = get(otherCar.driverId)!;
         trail.totalTime = Math.max(trail.totalTime, leadCar.totalTime + 0.4);
       }
@@ -236,7 +236,7 @@ export function applyTeamOrderToLive(
       break;
     case 'ProtectLeadDriver':
       if (favored && disadvantaged) {
-        setPace(disadvantaged.driverId, 'Conserve');
+        setPace(disadvantaged.driverId, 'Conservative');
         setPace(favored.driverId, 'Balanced');
         if (favored.totalTime > disadvantaged.totalTime) {
           const ft = favored.totalTime;
@@ -254,7 +254,7 @@ export function applyTeamOrderToLive(
       break;
     case 'SacrificeSecondDriver':
       if (favored && disadvantaged) {
-        setPace(disadvantaged.driverId, 'Nurse');
+        setPace(disadvantaged.driverId, 'ProtectEngine');
         favored.totalTime -= 0.6;
         note = `${nameOf(disadvantaged.driverId)} sacrificed to aid ${nameOf(favored.driverId)}.`;
       }

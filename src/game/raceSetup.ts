@@ -115,6 +115,7 @@ export function buildRaceContext(
     instructions: driverInstructionsById,
     pointsByPosition: pointsSystem.pointsByPosition,
     seed: `${state.randomSeed}-r${race.round}`,
+    year: state.seasonYear,
     teamReputation,
     teamRaceOps,
   };
@@ -143,6 +144,7 @@ export function buildLiveRaceOptions(
     driverNames,
     teamReputation,
     teamRaceOps,
+    year: state.seasonYear,
   };
 }
 
@@ -151,5 +153,5 @@ export function buildLiveRaceMeta(state: GameState, track: Track): LiveRaceMeta 
   state.drivers.forEach((d) => (driverNames[d.id] = d.name));
   const teamNames: Record<string, string> = {};
   state.teams.forEach((t) => (teamNames[t.id] = t.name));
-  return { track, driverNames, teamNames, playerTeamId: state.selectedTeamId };
+  return { track, driverNames, teamNames, playerTeamId: state.selectedTeamId, year: state.seasonYear };
 }

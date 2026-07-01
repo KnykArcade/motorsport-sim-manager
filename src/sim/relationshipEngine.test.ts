@@ -37,7 +37,9 @@ function car(driverId: string, isPlayer: boolean, totalTime: number): LiveCarSta
     status: 'Finished',
     retiredOnLap: null,
     paceRating: 50,
+    baseRacePace: 6,
     baseFailureRisk: 0,
+    baseCrashRisk: 0,
     baseMistakeRisk: 0,
     tireDegRate: 2,
     pitLossBase: 22,
@@ -46,6 +48,7 @@ function car(driverId: string, isPlayer: boolean, totalTime: number): LiveCarSta
     strategyId: 's',
     instructionId: 'Balanced',
     paceMode: 'Balanced',
+    liveRacePace: 6,
     tire: { compound: 'Dry', age: 5, wear: 30, stintTarget: 20 },
     pit: {
       plannedStops: 1,
@@ -58,7 +61,12 @@ function car(driverId: string, isPlayer: boolean, totalTime: number): LiveCarSta
     },
     reliabilityIssue: null,
     reliabilityRisk: 0,
+    crashRisk: 0,
     damaged: false,
+    reliabilityRiskLevel: 'Low',
+    crashRiskLevel: 'Low',
+    trafficStatus: 'Clear',
+    statusMessage: '',
   };
 }
 

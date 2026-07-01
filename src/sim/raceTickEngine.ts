@@ -12,8 +12,21 @@ import type {
   PaceMode,
   RaceDecisionPrompt,
 } from '../types/liveTypes';
-import { createSeededRandom, deriveSeed, type Rng } from './random';
+import { createSeededRandom, deriveSeed } from './random';
 import { REF_LAP, type LiveRaceMeta } from './liveRaceEngine';
+import {
+  computeLivePace,
+  modeSpec,
+  displayPace,
+  reliabilityRiskLevel,
+  crashRiskLevel,
+  trafficStatus,
+  statusMessage,
+  tyreMistakeRisk,
+  LIVE_PACE_K,
+  DIRTY_AIR_GAP,
+} from './liveRacePace';
+import { pickDnfCause, type DnfCauseContext } from './dnfModel';
 import { stepWeather } from './weatherEngine';
 import {
   stepSafetyCar,
@@ -37,51 +50,10 @@ import {
   applyDecisionEffects,
 } from './raceDecisionEngine';
 
-const PACE_K = 0.45;
 const PROMPT_COOLDOWN = 6;
 const MAX_RACE_EVENTS = 3;
-
-function paceTimeAdj(mode: PaceMode): number {
-  switch (mode) {
-    case 'Push':
-      return -0.3;
-    case 'Conserve':
-      return 0.4;
-    case 'Nurse':
-      return 1.1;
-    default:
-      return 0;
-  }
-}
-function paceWearMult(mode: PaceMode): number {
-  switch (mode) {
-    case 'Push':
-      return 1.35;
-    case 'Conserve':
-      return 0.7;
-    case 'Nurse':
-      return 0.5;
-    default:
-      return 1;
-  }
-}
-function paceRiskMult(mode: PaceMode): number {
-  switch (mode) {
-    case 'Push':
-      return 1.6;
-    case 'Conserve':
-      return 0.7;
-    case 'Nurse':
-      return 0.45;
-    default:
-      return 1;
-  }
-}
-
-function failureCause(rng: Rng, issueLabel?: string): string {
-  if (issueLabel) return `${issueLabel} — retired`;
-  return rng.pick(['Engine failure', 'Gearbox failure', 'Hydraulics failure', 'Electrical failure', 'Suspension failure']);
-}
+// Baseline "other" (fuel system, illness, debris, etc.) per-lap DNF probability.
+const OTHER_PER_LAP = 0.00015;
 
 type PromptCandidate = { prompt: RaceDecisionPrompt; priority: number };
 
@@ -109,6 +81,23 @@ export function stepLiveRace(state: LiveRaceState, meta: LiveRaceMeta): LiveRace
     nextLap,
     state.totalLaps,
   );
+
+  // Previous-lap running order, used for dirty-air / traffic and pressure. A
+  // car's `interval` is its gap to the car directly ahead; the next car's
+  // interval is therefore this car's gap to the car behind.
+  const prevRunning = state.cars
+    .filter((c) => c.running)
+    .sort((a, b) => (a.position ?? 99) - (b.position ?? 99));
+  const intervalAheadByDriver: Record<string, number> = {};
+  const intervalBehindByDriver: Record<string, number> = {};
+  prevRunning.forEach((c, i) => {
+    intervalAheadByDriver[c.driverId] = i === 0 ? 0 : c.interval;
+    const behind = prevRunning[i + 1];
+    intervalBehindByDriver[c.driverId] = behind ? behind.interval : 0;
+  });
+
+  // Transient per-car facts for post-order status messages.
+  const mistakeByDriver: Record<string, boolean> = {};
 
   const newCars: LiveCarState[] = state.cars.map((car) => {
     if (!car.running) return car; // already retired — carried unchanged
@@ -174,26 +163,19 @@ export function stepLiveRace(state: LiveRaceState, meta: LiveRaceMeta): LiveRace
       pittedThisLap.push(c);
     }
 
-    // --- Lap time ---
-    let lapTime = REF_LAP - c.paceRating * PACE_K;
-    lapTime += c.tire.wear * 0.04;
-    lapTime += paceTimeAdj(c.paceMode);
-    if (weather.wet && c.tire.compound === 'Dry') {
-      lapTime += weather.condition === 'HeavyRain' ? 12 : 6;
-    } else if (!weather.wet && c.tire.compound === 'Wet') {
-      lapTime += weather.condition === 'Drying' ? 1.5 : 4;
-    }
-    lapTime += rng.variance(0.3);
-    if (state.safetyCar.active) lapTime = REF_LAP + SAFETY_CAR_LAP_PENALTY; // neutralised
-    lapTime += pitLoss;
+    const spec = modeSpec(c.paceMode);
+    const intervalAhead = intervalAheadByDriver[c.driverId] ?? 0;
+    const intervalBehind = intervalBehindByDriver[c.driverId] ?? 0;
+    const fighting =
+      (intervalAhead > 0 && intervalAhead < 1.5) || (intervalBehind > 0 && intervalBehind < 1.5);
 
-    // --- Tyre wear ---
+    // --- Tyre wear (applied before pace so this lap reflects current rubber) ---
     if (!wantsPit) {
-      const wearAdd = c.tireDegRate * paceWearMult(c.paceMode) * (weather.wet ? 0.6 : 1);
+      const wearAdd = c.tireDegRate * spec.wearMult * (weather.wet ? 0.6 : 1);
       c.tire = { ...c.tire, age: c.tire.age + 1, wear: clamp(c.tire.wear + wearAdd, 0, 100) };
     }
 
-    const pushing = c.paceMode === 'Push';
+    const pushing = c.paceMode === 'Push' || c.paceMode === 'Attack';
 
     // --- Reliability issue onset (warning) ---
     if (!c.reliabilityIssue) {
@@ -205,35 +187,81 @@ export function stepLiveRace(state: LiveRaceState, meta: LiveRaceMeta): LiveRace
       }
     }
 
-    // --- Failure (DNF) ---
-    let failRisk = c.reliabilityRisk * paceRiskMult(c.paceMode);
-    if (c.reliabilityIssue && !c.reliabilityIssue.managed) failRisk += c.reliabilityIssue.failureRisk;
-    if (rng.chance(failRisk)) {
-      const cause = failureCause(rng, c.reliabilityIssue?.label);
-      c = retire(c, nextLap, cause);
-      lapEvents.push({ lap: nextLap, text: `${name(c.driverId)} retires — ${cause.toLowerCase()}.` });
+    // --- Live risk levels (reliability separate from crash/incident) ---
+    let relRisk = c.baseFailureRisk * spec.reliabilityMult;
+    if (c.reliabilityIssue && !c.reliabilityIssue.managed) relRisk += c.reliabilityIssue.failureRisk;
+    c.reliabilityRisk = relRisk;
+
+    const tyreRiskAdd = tyreMistakeRisk(c.tire.wear);
+    const crashRisk =
+      (c.baseCrashRisk * spec.crashMult + tyreRiskAdd * 0.15) *
+      (fighting ? 1.4 : 1) *
+      (weather.wet ? 1.5 : 1) *
+      (c.damaged ? 1.2 : 1);
+    c.crashRisk = crashRisk;
+
+    // --- Retirement (single roll; era profile decides the cause) ---
+    const pDnf = relRisk + crashRisk + OTHER_PER_LAP;
+    if (rng.chance(pDnf)) {
+      const causeCtx: DnfCauseContext = {
+        carReliability: 5, // per-car reliability is baked into relRisk already
+        aggression: aggressionForMode(c.paceMode),
+        composure: 5,
+        tyreWear: c.tire.wear,
+        wallProximity: track.attributes.riskWallProximity,
+        inTraffic: fighting,
+      };
+      // Bias the draw toward whatever risk dominated this car's retirement.
+      const { cause, label } = pickDnfCause(meta.year, causeCtx, rng);
+      const incident =
+        cause === 'Mechanical' && c.reliabilityIssue && !c.reliabilityIssue.managed
+          ? `${c.reliabilityIssue.label} — retired`
+          : label;
+      c = retire(c, nextLap, incident);
+      lapEvents.push({ lap: nextLap, text: `${name(c.driverId)} retires — ${incident.toLowerCase()}.` });
       incidentThisLap = true;
-      incidentSeverity = Math.max(incidentSeverity, 0.5);
+      incidentSeverity = Math.max(incidentSeverity, cause === 'Crash' ? 0.7 : 0.5);
       return c;
     }
 
-    // --- Mistake / crash ---
-    const mistakeRisk = c.baseMistakeRisk * paceRiskMult(c.paceMode);
+    // --- Non-terminal mistake (costs time, may cause damage) ---
+    let mistakeThisLap = false;
+    const mistakeRisk = (c.baseMistakeRisk + tyreRiskAdd) * spec.crashMult;
     if (rng.chance(mistakeRisk)) {
-      if (rng.chance(0.28)) {
-        c = retire(c, nextLap, 'Crashed out');
-        lapEvents.push({ lap: nextLap, text: `${name(c.driverId)} crashes out.` });
-        incidentThisLap = true;
-        incidentSeverity = Math.max(incidentSeverity, 0.65);
-        return c;
-      }
-      lapTime += rng.range(0.5, 2.5);
+      mistakeThisLap = true;
       if (!c.damaged && rng.chance(0.25)) {
         c.damaged = true;
         lapEvents.push({ lap: nextLap, text: `${name(c.driverId)} picks up front-wing damage.` });
         if (c.isPlayer) candidates.push({ prompt: damagePrompt(c, nextLap), priority: 2 });
       }
     }
+    mistakeByDriver[c.driverId] = mistakeThisLap;
+
+    // --- Live Race Pace (recomputed every lap) ---
+    const formSwing = rng.variance(0.28);
+    c.liveRacePace = computeLivePace({
+      car: c,
+      lap: nextLap,
+      totalLaps: state.totalLaps,
+      gripLevel: weather.gripLevel,
+      intervalAhead,
+      formSwing,
+      mistakeThisLap,
+    });
+
+    // --- Lap time (derived from Live Race Pace) ---
+    let lapTime = REF_LAP - c.liveRacePace * LIVE_PACE_K;
+    // Wrong tyres for the conditions cost time on top of the grip loss already
+    // folded into live pace.
+    if (weather.wet && c.tire.compound === 'Dry') {
+      lapTime += weather.condition === 'HeavyRain' ? 12 : 6;
+    } else if (!weather.wet && c.tire.compound === 'Wet') {
+      lapTime += weather.condition === 'Drying' ? 1.5 : 4;
+    }
+    lapTime += rng.variance(0.15);
+    if (mistakeThisLap) lapTime += rng.range(0.5, 2.5);
+    if (state.safetyCar.active) lapTime = REF_LAP + SAFETY_CAR_LAP_PENALTY; // neutralised
+    lapTime += pitLoss;
 
     c.lastLapTime = round1(lapTime);
     c.totalTime += lapTime;
@@ -396,6 +424,28 @@ export function stepLiveRace(state: LiveRaceState, meta: LiveRaceMeta): LiveRace
     c.interval = 0;
   });
 
+  // --- Live status (risk bands, traffic, readable message) for running cars ---
+  running.forEach((c, i) => {
+    const intervalAhead = i === 0 ? 0 : c.interval;
+    const behind = running[i + 1];
+    const intervalBehind = behind ? behind.interval : 0;
+    const underPressure = intervalBehind > 0 && intervalBehind < DIRTY_AIR_GAP;
+    const freshFromPit = c.pit.stopsMade > 0 && c.tire.age <= 2 && !c.pit.inPitThisLap;
+    c.reliabilityRiskLevel = reliabilityRiskLevel(c);
+    c.crashRiskLevel = crashRiskLevel(c);
+    c.trafficStatus = trafficStatus({ mode: c.paceMode, intervalAhead, underPressure });
+    c.statusMessage = statusMessage({
+      car: c,
+      intervalAhead,
+      intervalBehind,
+      underPressure,
+      mistakeThisLap: mistakeByDriver[c.driverId] ?? false,
+      pittedThisLap: c.pit.inPitThisLap,
+      freshFromPit,
+    });
+    c.liveRacePace = displayPace(c.liveRacePace);
+  });
+
   let orderedCars = [...running, ...retired];
 
   // --- Finish ---
@@ -466,6 +516,22 @@ export function requestPlayerPit(state: LiveRaceState, driverId: string): LiveRa
   return changed ? { ...state, cars } : state;
 }
 
+// Change a player car's strategy mode mid-race. Takes effect on the next lap.
+// No-op for AI cars (their mode is chosen each lap) or retired/finished cars.
+export function setPlayerPaceMode(
+  state: LiveRaceState,
+  driverId: string,
+  mode: PaceMode,
+): LiveRaceState {
+  let changed = false;
+  const cars = state.cars.map((c) => {
+    if (c.driverId !== driverId || !c.isPlayer || !c.running || c.paceMode === mode) return c;
+    changed = true;
+    return { ...c, paceMode: mode };
+  });
+  return changed ? { ...state, cars } : state;
+}
+
 // Resolve a pending prompt with its default (first) option — used by skip-to-end.
 export function resolvePromptDefault(state: LiveRaceState, meta: LiveRaceMeta): LiveRaceState {
   if (!state.pendingPrompt) return state;
@@ -483,6 +549,24 @@ export function stepLiveRaceToEnd(state: LiveRaceState, meta: LiveRaceMeta): Liv
     guard += 1;
   }
   return s;
+}
+
+// A crash-proneness proxy (1-10) from the current strategy mode, used to nudge
+// the DNF cause draw toward crashes for the more aggressive modes.
+function aggressionForMode(mode: PaceMode): number {
+  switch (mode) {
+    case 'Attack':
+      return 8;
+    case 'Push':
+      return 6.5;
+    case 'Defend':
+      return 6;
+    case 'Conservative':
+    case 'ProtectEngine':
+      return 4;
+    default:
+      return 5;
+  }
 }
 
 function retire(c: LiveCarState, lap: number, cause: string): LiveCarState {
