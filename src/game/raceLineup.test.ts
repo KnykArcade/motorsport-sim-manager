@@ -56,6 +56,40 @@ describe('race lineup (two cars per team)', () => {
     expect(reserveDriversForTeam(state, 't-team-penske').map((d) => d.id)).toContain(seat1Before);
   });
 
+  it('excludes third/reserve/test contracts from the race seats', () => {
+    const state = newGame(2026, 'IndyCar', 't-team-penske');
+    const roster = state.drivers.filter((d) => d.teamId === 't-team-penske');
+    // Force the first roster driver into a reserve tier; the race lineup should
+    // then skip them and field the next two race-seat drivers instead.
+    const firstId = state.teams.find((t) => t.id === 't-team-penske')!.driverIds[0];
+    const tweaked = {
+      ...state,
+      drivers: state.drivers.map((d) =>
+        d.id === firstId ? { ...d, contractType: 'reserve' as const } : d,
+      ),
+    };
+    const active = activeDriversForTeam(tweaked, 't-team-penske');
+    expect(active.map((d) => d.id)).not.toContain(firstId);
+    for (const d of active) expect(d.contractType).not.toBe('reserve');
+    expect(active.length).toBe(Math.min(2, roster.length - 1));
+  });
+
+  it('promotes a reserve into a race seat and flips contract tiers', () => {
+    let state = newGame(2026, 'IndyCar', 't-team-penske');
+    const reserve = reserveDriversForTeam(state, 't-team-penske')[0];
+    const seat1Before = activeDriversForTeam(state, 't-team-penske')[1].id;
+    state = gameReducer(state, {
+      type: 'SWAP_RACE_DRIVER',
+      seatIndex: 1,
+      reserveDriverId: reserve.id,
+    })!;
+    const promoted = state.drivers.find((d) => d.id === reserve.id)!;
+    const displaced = state.drivers.find((d) => d.id === seat1Before)!;
+    expect(promoted.contractType).toBe('seat');
+    expect(displaced.contractType).toBe('reserve');
+    expect(activeDriversForTeam(state, 't-team-penske').map((d) => d.id)).toContain(reserve.id);
+  });
+
   it('ignores swaps for drivers not on the player roster', () => {
     const state = newGame(2026, 'IndyCar', 't-team-penske');
     const foreign = state.drivers.find((d) => d.teamId !== 't-team-penske')!;

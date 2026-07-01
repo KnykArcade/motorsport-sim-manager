@@ -253,7 +253,16 @@ function swapRaceDriver(state: GameState, seatIndex: number, reserveDriverId: st
   }
 
   const teams = state.teams.map((t) => (t.id === teamId ? { ...t, driverIds: ids } : t));
-  return { ...state, teams };
+  // Promotion changes the contract tier: the reserve taking the seat becomes a
+  // full race-seat driver, and the driver they displace drops to a reserve deal.
+  // Without this the race-lineup filter would still treat the promoted driver as
+  // a reserve and leave the seat empty.
+  const drivers = state.drivers.map((d) => {
+    if (d.id === reserveDriverId) return { ...d, contractType: 'seat' as const };
+    if (d.id === seatDriverId) return { ...d, contractType: 'reserve' as const };
+    return d;
+  });
+  return { ...state, teams, drivers };
 }
 
 // Sign a free-agent market driver mid-season as the player team's 3rd driver.

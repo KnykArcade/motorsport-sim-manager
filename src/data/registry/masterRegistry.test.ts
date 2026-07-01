@@ -4,6 +4,7 @@ import type { MarketDriver, MarketSkillRatings, YouthProspect } from '../../type
 import {
   normalizeName,
   slugifyName,
+  sanitizeMarketName,
   careerPhaseForAge,
   importSeasonDrivers,
   importMarketDrivers,
@@ -220,5 +221,45 @@ describe('buildMasterRegistry (real seed data)', () => {
     expect(a).toBe(b);
     const fresh = buildMasterRegistry();
     expect(registryList(fresh).map((e) => e.driverId)).toEqual(list.map((e) => e.driverId));
+  });
+
+  it('has no duplicate canonical names or name-suffixed ids', () => {
+    const byName = new Map<string, number>();
+    for (const e of list) byName.set(e.canonicalName, (byName.get(e.canonicalName) ?? 0) + 1);
+    const dupNames = [...byName.entries()].filter(([, n]) => n > 1).map(([name]) => name);
+    expect(dupNames).toEqual([]);
+    // Age-recording noise used to split one driver across "-2"-suffixed ids.
+    const suffixed = list.filter((e) => /-\d+$/.test(e.driverId)).map((e) => e.driverId);
+    expect(suffixed).toEqual([]);
+  });
+
+  it('unifies drivers previously split by age-recording noise', () => {
+    // These real drivers were each recorded with slightly inconsistent ages
+    // across season files and used to appear twice in the registry.
+    for (const id of [
+      'nick-heidfeld',
+      'fernando-alonso',
+      'kimi-raikkonen',
+      'mark-webber',
+      'ralf-schumacher',
+      'jarno-trulli',
+      'juan-pablo-montoya',
+    ]) {
+      expect(list.filter((e) => e.driverId === id)).toHaveLength(1);
+    }
+  });
+});
+
+describe('sanitizeMarketName', () => {
+  it('strips trailing market tags from a driver name', () => {
+    expect(sanitizeMarketName('Jean Alesi Contract Watch')).toBe('Jean Alesi');
+    expect(sanitizeMarketName('Gerhard Berger Contract Watch')).toBe('Gerhard Berger');
+    expect(sanitizeMarketName('Damon Hill (Contract Watch)')).toBe('Damon Hill');
+    expect(sanitizeMarketName('Mika Häkkinen - Silly Season')).toBe('Mika Häkkinen');
+  });
+
+  it('leaves a clean name untouched and never empties a name', () => {
+    expect(sanitizeMarketName('Michael Schumacher')).toBe('Michael Schumacher');
+    expect(sanitizeMarketName('Contract Watch')).toBe('Contract Watch');
   });
 });

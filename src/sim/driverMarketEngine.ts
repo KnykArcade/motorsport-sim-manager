@@ -73,6 +73,7 @@ function buildDriver(
     contractYearsRemaining,
     salary,
     traits: [],
+    contractType: 'seat',
   };
 }
 

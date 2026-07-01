@@ -224,7 +224,11 @@ export function estimateAIBudget(
 
   const totalExpenses =
     fixedExpenses + developmentSpend + facilitySpend;
-  const netResult = sponsorIncome - totalExpenses;
+  // Full annual result: all income (sponsor + prize money) minus all expenses
+  // (salaries, staff, engine, operating, development, facilities). This is the
+  // real cash swing applied each offseason, so budgets track their true earnings
+  // instead of ballooning from sponsor income with the costs ignored.
+  const netResult = sponsorIncome + prizeMoney - totalExpenses;
   const projectedCash = startingCash + netResult;
 
   return {
@@ -249,11 +253,13 @@ export function estimateAIBudget(
 export function financialHealth(budget: AITeamBudget): AIFinancialHealth {
   const { projectedCash, reserveTarget, netResult, sponsorIncome } = budget;
   if (projectedCash <= 0) return 'Critical';
-  if (projectedCash < reserveTarget * 0.5 || netResult < -0.3 * Math.max(1, sponsorIncome)) {
-    return 'AtRisk';
-  }
+  if (projectedCash < reserveTarget * 0.5) return 'AtRisk';
   if (projectedCash < reserveTarget) return 'Tight';
-  if (projectedCash < reserveTarget * 3) return 'Stable';
+  // A heavy operating loss is a warning sign even with cash in the bank, but a
+  // team sitting on a comfortable reserve (>=3x) is not "At Risk" — that reserve
+  // is the clear reason the grade stays healthy despite the loss.
+  const heavyLoss = netResult < -0.3 * Math.max(1, sponsorIncome);
+  if (projectedCash < reserveTarget * 3) return heavyLoss ? 'Tight' : 'Stable';
   return 'Excellent';
 }
 
@@ -349,10 +355,11 @@ export function buildAllAITeamStates(state: GameState): Record<string, AITeamSta
 
 export type AIRolloverResult = {
   states: Record<string, AITeamState>;
-  // Cash delta (raw dollars) to apply to each AI team's Team.budget: sponsor
-  // income earned minus development/facility spend committed. Prize money and
-  // fixed salaries are handled elsewhere / banked during the season, so only the
-  // discretionary flows move here to avoid double counting.
+  // Cash delta (raw dollars) to apply to each AI team's Team.budget: the full
+  // annual net result (sponsor + prize income minus salaries, staff, engine,
+  // operating, development and facility costs). Applying the true net — not just
+  // the discretionary flows — keeps AI budgets realistic instead of ballooning
+  // over a long career, and keeps Team.budget in step with financial health.
   budgetDeltaByTeam: Record<string, number>;
   notes: string[];
 };
@@ -385,9 +392,9 @@ export function rolloverAITeamStates(state: GameState): AIRolloverResult {
     const archetype = evolveArchetype(archetype0, health, seasonsInTrouble, cashGrowthRatio);
     const goal = aiTeamGoal(archetype, position, state.teams.length, health);
 
-    // Discretionary cash flow applied to the team's cash for next year.
-    const delta = budget.sponsorIncome - budget.developmentSpend - budget.facilitySpend;
-    budgetDeltaByTeam[team.id] = delta;
+    // Full annual net result applied to the team's cash for next year, so
+    // budgets reflect real earnings and costs rather than ballooning.
+    budgetDeltaByTeam[team.id] = budget.netResult;
 
     states[team.id] = {
       teamId: team.id,

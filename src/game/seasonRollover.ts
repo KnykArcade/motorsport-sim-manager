@@ -64,6 +64,7 @@ import { createDriverDevelopmentCurve, developmentStep } from '../sim/developmen
 import { finalizeSeasonHistory } from '../sim/universeHistoryEngine';
 import { buildAITeamState, rolloverAITeamStates } from '../sim/aiTeamEngine';
 import { runAIOffseason } from '../sim/aiOffseasonEngine';
+import { applyDriverRetirements } from '../sim/driverRetirementEngine';
 import type { DriverDevelopmentCurve } from '../types/developmentCurveTypes';
 import type { Car, Driver, OffseasonSummary, Team } from '../types/gameTypes';
 import type { AcademyDecision, AcademyMember } from '../types/marketTypes';
@@ -717,20 +718,28 @@ export function advanceSeason(state: GameState): GameState {
     return driver;
   });
 
+  // Active-driver retirement (long-run stability): now that drivers have aged,
+  // review contracted race drivers for retirement so the grid doesn't accumulate
+  // veterans who never age out. Vacated seats are refilled downstream — AI teams
+  // by their offseason market pass, the player through the signing UI.
+  const retirement = applyDriverRetirements(developedDrivers, teams, state.randomSeed, nextYear);
+  const rosterDrivers = retirement.drivers;
+  const rosterTeams = retirement.teams;
+
   // AI offseason actions (Phase D): every non-player team now *acts* on its
   // Phase-C brain — develops its car, works the driver market (fills/renews/
   // signs), signs & promotes youth academy prospects, and makes light staff/
   // sponsor moves. Runs on the assembled next-season entities so its moves land
   // in the new season, and its notes feed the rollover summary + news feed.
   const aiReservedNames = new Set<string>();
-  for (const d of developedDrivers) {
+  for (const d of rosterDrivers) {
     if (d.teamId === state.selectedTeamId) aiReservedNames.add(d.name.trim().toLowerCase());
   }
   for (const a of nextAcademy) aiReservedNames.add(a.name.trim().toLowerCase());
   const aiMarket = careerMarketBundle({
     ...state,
     seasonYear: nextYear,
-    drivers: developedDrivers,
+    drivers: rosterDrivers,
     academy: nextAcademy,
     signedMarketIds: finalSignedMarketIds,
   });
@@ -738,8 +747,8 @@ export function advanceSeason(state: GameState): GameState {
     nextYear,
     seed: state.randomSeed,
     selectedTeamId: state.selectedTeamId,
-    teams,
-    drivers: developedDrivers,
+    teams: rosterTeams,
+    drivers: rosterDrivers,
     cars,
     engine: nextEngine,
     aiTeamStates: aiRollover.states,
@@ -775,6 +784,7 @@ export function advanceSeason(state: GameState): GameState {
       ...relationshipNotes,
       ...voteResolution.notes,
       ...developmentNotes,
+      ...retirement.notes,
       ...aiRollover.notes,
       ...aiOffseason.notes,
     ],
