@@ -63,6 +63,12 @@ function car(driverId: string, isPlayer: boolean, totalTime: number): LiveCarSta
     reliabilityRisk: 0,
     crashRisk: 0,
     damaged: false,
+    fuel: 60,
+    engineHealth: 100,
+    gearboxHealth: 100,
+    brakeHealth: 100,
+    lastSectors: null,
+    bestSectors: null,
     reliabilityRiskLevel: 'Low',
     crashRiskLevel: 'Low',
     trafficStatus: 'Clear',
@@ -85,6 +91,9 @@ function liveWith(cars: LiveCarState[]): LiveRaceState {
     pendingPrompt: null,
     promptCooldown: {},
     firedEventIds: [],
+    recommendations: [],
+    ignoredRecs: [],
+    retirements: 0,
   };
 }
 

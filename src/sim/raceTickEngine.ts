@@ -11,6 +11,7 @@ import type {
   LiveRaceState,
   PaceMode,
   RaceDecisionPrompt,
+  RecAction,
 } from '../types/liveTypes';
 import { createSeededRandom, deriveSeed } from './random';
 import { REF_LAP, type LiveRaceMeta } from './liveRaceEngine';
@@ -28,6 +29,10 @@ import {
   DIRTY_AIR_GAP,
 } from './liveRacePace';
 import { mechanicalLabel, crashLabel, tyreLabel, otherLabel } from './dnfModel';
+import { generateRecommendations, REC_COOLDOWN } from './analyticsEngine';
+import type { Track } from '../types/gameTypes';
+import type { StrategyModeSpec } from './liveRacePace';
+import type { Rng } from './random';
 import { stepWeather } from './weatherEngine';
 import {
   stepSafetyCar,
@@ -294,9 +299,16 @@ export function stepLiveRace(state: LiveRaceState, meta: LiveRaceMeta): LiveRace
     c.totalTime += lapTime;
     c.lapsCompleted = nextLap;
     // Track the fastest representative lap (ignore pit and safety-car laps).
-    if (!wantsPit && !state.safetyCar.active) {
-      c.bestLap = c.bestLap == null ? c.lastLapTime : Math.min(c.bestLap, c.lastLapTime);
+    const representative = !wantsPit && !state.safetyCar.active;
+    if (representative) {
+      const prevBest = c.bestLap;
+      c.bestLap = prevBest == null ? c.lastLapTime : Math.min(prevBest, c.lastLapTime);
+      c.lastSectors = splitSectors(c.lastLapTime, rng);
+      if (prevBest == null || c.lastLapTime <= prevBest) c.bestSectors = c.lastSectors;
     }
+
+    // --- Fuel burn-off + component health wear (drives the pit-wall gauges) ---
+    updateFuelAndComponents(c, track, spec, nextLap, state.totalLaps);
     return c;
   });
 
@@ -484,12 +496,29 @@ export function stepLiveRace(state: LiveRaceState, meta: LiveRaceMeta): LiveRace
     );
   }
 
+  // --- Data analytics recommendations for the player's drivers -------------
+  // Generated before prompt selection so a decision covered by an active
+  // recommendation card is not also asked again as a Decision pop-up.
+  const recEvents: RaceEvent[] = [];
+  const { recommendations, ignoredRecs } = refreshRecommendations(
+    orderedCars,
+    { ...state, currentLap: nextLap, weather, safetyCar: scResult.safetyCar },
+    nextLap,
+    name,
+    recEvents,
+  );
+  const driversWithRec = new Set(recommendations.map((r) => r.driverId));
+
   // --- Choose a single pending prompt (highest priority, off cooldown) ---
+  // The analytics card is the primary decision interface: skip any prompt for a
+  // driver who already has an active recommendation so the same question is not
+  // asked twice. Prompts still fire when no recommendation covers the situation.
   const cooldown = { ...state.promptCooldown };
   let pendingPrompt: RaceDecisionPrompt | null = null;
   if (!isFinalLap) {
     candidates.sort((p, q) => q.priority - p.priority);
     for (const cand of candidates) {
+      if (driversWithRec.has(cand.prompt.driverId)) continue;
       const until = cooldown[cand.prompt.driverId] ?? 0;
       if (nextLap >= until) {
         pendingPrompt = cand.prompt;
@@ -499,6 +528,8 @@ export function stepLiveRace(state: LiveRaceState, meta: LiveRaceMeta): LiveRace
     }
   }
 
+  const retirements = orderedCars.filter((c) => c.status === 'DNF').length;
+
   return {
     ...state,
     currentLap: nextLap,
@@ -506,10 +537,13 @@ export function stepLiveRace(state: LiveRaceState, meta: LiveRaceMeta): LiveRace
     weather,
     safetyCar: scResult.safetyCar,
     cars: orderedCars,
-    events: [...state.events, ...lapEvents],
+    events: [...state.events, ...lapEvents, ...recEvents],
     pendingPrompt,
     promptCooldown: cooldown,
     firedEventIds,
+    recommendations,
+    ignoredRecs,
+    retirements,
   };
 }
 
@@ -590,9 +624,197 @@ function retire(c: LiveCarState, lap: number, cause: string): LiveCarState {
   };
 }
 
+// Split a lap time into three sector times. No real track geometry is modelled,
+// so the split is a lightly-jittered ~34/33/33% partition summing to the lap.
+function splitSectors(lapTime: number, rng: Rng): [number, number, number] {
+  const p1 = 0.34 + rng.variance(0.008);
+  const p2 = 0.33 + rng.variance(0.008);
+  const s1 = round3(lapTime * p1);
+  const s2 = round3(lapTime * p2);
+  const s3 = round3(lapTime - s1 - s2);
+  return [s1, s2, s3];
+}
+
+// Burn fuel off across the distance and wear the mechanical components. Wear is
+// deterministic: worse cars (higher baseFailureRisk), aggressive modes, stress
+// tracks and active reliability issues all raise the per-lap drop, so the
+// pit-wall component gauges reflect the same mechanical stress the DNF model uses.
+function updateFuelAndComponents(
+  c: LiveCarState,
+  track: Track,
+  spec: StrategyModeSpec,
+  lap: number,
+  totalLaps: number,
+): void {
+  c.fuel = clamp(100 * (1 - lap / Math.max(1, totalLaps)), 0, 100);
+
+  const base = 0.12 + c.baseFailureRisk * 12;
+  const modeMult = spec.reliabilityMult;
+  let eng = base * modeMult * (0.85 + track.attributes.straights * 0.03);
+  let gear = base * modeMult * 0.85;
+  let brake = base * (0.6 + track.attributes.braking * 0.05);
+
+  const issue = c.reliabilityIssue;
+  if (issue) {
+    const extra = issue.managed ? 0.25 : 0.7;
+    if (issue.type === 'EngineOverheating' || issue.type === 'CoolingProblem') eng += extra;
+    else if (issue.type === 'GearboxWarning') gear += extra;
+    else if (issue.type === 'BrakeIssue') brake += extra;
+    else eng += extra * 0.4;
+  }
+
+  c.engineHealth = clamp(c.engineHealth - eng, 0, 100);
+  c.gearboxHealth = clamp(c.gearboxHealth - gear, 0, 100);
+  c.brakeHealth = clamp(c.brakeHealth - brake, 0, 100);
+}
+
+// Rebuild the player-driver recommendation list from the advanced state, prune
+// stale ignore records, and log when an ignored reliability warning has since
+// worsened into a High/Critical risk.
+function refreshRecommendations(
+  cars: LiveCarState[],
+  partial: LiveRaceState,
+  lap: number,
+  name: (id: string) => string,
+  events: RaceEvent[],
+): { recommendations: LiveRaceState['recommendations']; ignoredRecs: LiveRaceState['ignoredRecs'] } {
+  const recommendations = generateRecommendations(cars, partial, lap);
+
+  const ignoredRecs = partial.ignoredRecs
+    .filter((i) => lap - i.lap < REC_COOLDOWN * 3)
+    .map((i) => {
+      if (i.escalated) return i;
+      const [driverId, kind] = i.key.split(':');
+      if (kind !== 'reliability' && kind !== 'component') return i;
+      const car = cars.find((c) => c.driverId === driverId && c.running);
+      if (!car) return i;
+      if (car.reliabilityRiskLevel === 'High' || car.reliabilityRiskLevel === 'Critical') {
+        events.push({
+          lap,
+          text: `${name(driverId)} — earlier ignored warning worsens; reliability risk now ${car.reliabilityRiskLevel}.`,
+        });
+        return { ...i, escalated: true };
+      }
+      return i;
+    });
+
+  return { recommendations, ignoredRecs };
+}
+
+// ---------------------------------------------------------------------------
+// Data analytics recommendation actions (Accept / Modify / Ignore)
+// ---------------------------------------------------------------------------
+
+// Apply a recommendation's concrete on-track effect (mode switch and/or pit
+// call), remove it from the active list, and log the decision. Team-order
+// actions carry no mode/pit effect here — the UI applies the on-track order via
+// the relationship engine and still calls this to remove + log the decision.
+function applyRecAction(
+  state: LiveRaceState,
+  rec: LiveRaceState['recommendations'][number],
+  action: { paceMode?: PaceMode; pitNow?: boolean; label: string },
+  meta: LiveRaceMeta,
+  verb: 'accepted' | 'modified',
+): LiveRaceState {
+  let s = state;
+  if (action.paceMode) s = setPlayerPaceMode(s, rec.driverId, action.paceMode);
+  if (action.pitNow) s = requestPlayerPit(s, rec.driverId);
+  const recommendations = s.recommendations.filter((r) => r.id !== rec.id);
+  const name = meta.driverNames[rec.driverId] ?? rec.driverId;
+  const events = [
+    ...s.events,
+    { lap: s.currentLap, text: `Lap ${s.currentLap} — pit wall ${verb} analytics recommendation: ${name} — ${action.label}.` },
+  ];
+  return { ...s, recommendations, events };
+}
+
+// Accept a recommendation's recommended action.
+export function acceptRecommendation(state: LiveRaceState, recId: string, meta: LiveRaceMeta): LiveRaceState {
+  const rec = state.recommendations.find((r) => r.id === recId);
+  if (!rec) return state;
+  return applyRecAction(state, rec, rec.action, meta, 'accepted');
+}
+
+// Apply one of a recommendation's alternative (Modify) actions by type.
+export function modifyRecommendation(
+  state: LiveRaceState,
+  recId: string,
+  actionType: string,
+  meta: LiveRaceMeta,
+): LiveRaceState {
+  const rec = state.recommendations.find((r) => r.id === recId);
+  if (!rec) return state;
+  const action = [rec.action, ...rec.alternatives].find((a) => a.type === actionType);
+  if (!action) return state;
+  return applyRecAction(state, rec, action, meta, 'modified');
+}
+
+// Apply an arbitrary action to a recommendation (mode + pit effects), removing +
+// logging it. Unlike modifyRecommendation this does not require the action to be
+// one of the recommendation's own alternatives — used by "Apply to both drivers"
+// where the same action is pushed onto every player driver. Team-order actions
+// carry no effect here (the caller applies the on-track order separately).
+export function applyRecommendationAction(
+  state: LiveRaceState,
+  recId: string,
+  action: RecAction,
+  meta: LiveRaceMeta,
+  verb: 'accepted' | 'modified',
+): LiveRaceState {
+  const rec = state.recommendations.find((r) => r.id === recId);
+  if (!rec) return state;
+  return applyRecAction(state, rec, action, meta, verb);
+}
+
+// Dismiss a recommendation without acting on it. Medium+ priority ignores are
+// logged, and the kind is put on cooldown so it is not re-raised immediately (a
+// worsened reliability warning is later surfaced by refreshRecommendations).
+export function ignoreRecommendation(state: LiveRaceState, recId: string, meta?: LiveRaceMeta): LiveRaceState {
+  const rec = state.recommendations.find((r) => r.id === recId);
+  if (!rec) return state;
+  const recommendations = state.recommendations.filter((r) => r.id !== recId);
+  const ignoredRecs = [
+    ...state.ignoredRecs.filter((i) => i.key !== rec.id),
+    { key: rec.id, lap: state.currentLap, issue: rec.issue, escalated: false },
+  ];
+  const name = meta?.driverNames[rec.driverId] ?? rec.driverId;
+  const events =
+    rec.priority === 'low'
+      ? state.events
+      : [
+          ...state.events,
+          { lap: state.currentLap, text: `Lap ${state.currentLap} — ${name} ignored analytics recommendation: ${rec.recommendedAction}` },
+        ];
+  return { ...state, recommendations, ignoredRecs, events };
+}
+
+// Remove + log a recommendation whose on-track effect the caller applied itself
+// (used for team-order recommendations). Kept separate so the tick engine does
+// not depend on the relationship engine.
+export function resolveRecommendationExternally(
+  state: LiveRaceState,
+  recId: string,
+  label: string,
+  verb: 'accepted' | 'modified',
+  meta: LiveRaceMeta,
+): LiveRaceState {
+  const rec = state.recommendations.find((r) => r.id === recId);
+  if (!rec) return state;
+  const recommendations = state.recommendations.filter((r) => r.id !== recId);
+  const name = meta.driverNames[rec.driverId] ?? rec.driverId;
+  const events = [
+    ...state.events,
+    { lap: state.currentLap, text: `Lap ${state.currentLap} — pit wall ${verb} analytics recommendation: ${name} — ${label}.` },
+  ];
+  return { ...state, recommendations, events };
+}
+
 function clamp(v: number, lo: number, hi: number): number {
   return Math.max(lo, Math.min(hi, v));
 }
 function round1(n: number): number {
   return Math.round(n * 10) / 10;
+}
+function round3(n: number): number {
+  return Math.round(n * 1000) / 1000;
 }
