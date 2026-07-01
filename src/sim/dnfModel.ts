@@ -42,6 +42,26 @@ export function eraReliabilityScale(year: number): number {
   return 0.88;
 }
 
+// Live-race retirement calibration (Live only; the Quick Sim is untouched).
+//
+// The Live race rolls each retirement cause as an independent per-lap bucket and
+// labels the DNF by the bucket that fired. The *raw* per-car mechanical/crash
+// risks (shared with the Quick Sim) are naturally mechanical-heavy in every era,
+// so left alone the labelled split would skew mechanical — especially in modern
+// eras that should be crash-dominated. These multipliers scale the mechanical
+// and crash buckets per era so the aggregate labelled split (and total DNF rate)
+// lands on the era targets in `eraDnfProfile`. Tune here.
+export type LiveRiskCalibration = { mech: number; crash: number };
+export function liveRiskCalibration(year: number, series: string): LiveRiskCalibration {
+  if (series === 'IndyCar') return { mech: 0.5, crash: 1.35 };
+  if (year <= 1994) return { mech: 0.95, crash: 0.54 };
+  if (year <= 2000) return { mech: 0.82, crash: 0.82 };
+  if (year <= 2005) return { mech: 0.88, crash: 0.9 };
+  if (year <= 2010) return { mech: 0.82, crash: 0.95 };
+  if (year <= 2013) return { mech: 0.68, crash: 1.1 };
+  return { mech: 0.36, crash: 1.2 };
+}
+
 // Context that nudges the cause draw away from the flat era profile.
 export type DnfCauseContext = {
   // 1-10 car reliability (low = more mechanical).
@@ -102,6 +122,22 @@ export function pickDnfCause(
   roll -= crashW;
   if (roll < tyreW) return { cause: 'TyreDamage', label: rng.pick(TYRE_CAUSES) };
   return { cause: 'Other', label: rng.pick(OTHER_CAUSES) };
+}
+
+// Per-bucket label pickers. The live race rolls each retirement risk bucket
+// independently and labels the DNF by the bucket that actually fired, so the
+// reported cause always reflects the real trigger (no era-profile re-draw).
+export function mechanicalLabel(rng: Rng): string {
+  return rng.pick(MECHANICAL_CAUSES);
+}
+export function crashLabel(rng: Rng): string {
+  return rng.pick(CRASH_CAUSES);
+}
+export function tyreLabel(rng: Rng): string {
+  return rng.pick(TYRE_CAUSES);
+}
+export function otherLabel(rng: Rng): string {
+  return rng.pick(OTHER_CAUSES);
 }
 
 // Classify a DNF incident string back into a cause (for analysis / reporting).

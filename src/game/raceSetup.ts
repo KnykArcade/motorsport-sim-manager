@@ -145,6 +145,7 @@ export function buildLiveRaceOptions(
     teamReputation,
     teamRaceOps,
     year: state.seasonYear,
+    series: state.series,
   };
 }
 

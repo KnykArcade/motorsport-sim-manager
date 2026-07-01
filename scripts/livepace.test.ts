@@ -25,9 +25,6 @@ import { stepLiveRace, setPlayerPaceMode } from '../src/sim/raceTickEngine';
 import { classifyDnfCause, eraDnfProfile, eraReliabilityScale, type DnfCause } from '../src/sim/dnfModel';
 import type { PaceMode, LiveRaceState } from '../src/types/liveTypes';
 import type { Entrant, RaceContext, QualifyingContext } from '../src/types/simTypes';
-import type { RaceResult } from '../src/types/gameTypes';
-
-const CAUSES: DnfCause[] = ['Mechanical', 'Crash', 'TyreDamage', 'Other'];
 
 function buildEntrants(key: string): Entrant[] {
   const { teams, drivers, cars } = seasonBundles[key];
@@ -172,7 +169,7 @@ function liveOptions(key: string, ctx: RaceContext, totalLaps: number, playerTea
   const driverNames: Record<string, string> = {};
   ctx.entrants.forEach((e) => (driverNames[e.driver.id] = e.driver.name));
   const options: LiveRaceOptions = {
-    raceId: 'lp', playerTeamId, totalLaps, driverNames, teamReputation, teamRaceOps, year: season.year,
+    raceId: 'lp', playerTeamId, totalLaps, driverNames, teamReputation, teamRaceOps, year: season.year, series: season.series,
   };
   const meta: LiveRaceMeta = { track: ctx.track, driverNames, teamNames, playerTeamId, year: season.year };
   return { options, meta };

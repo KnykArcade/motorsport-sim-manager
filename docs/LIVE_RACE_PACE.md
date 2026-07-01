@@ -66,33 +66,61 @@ lap in `aiStrategyEngine.ts` by situation (reliability warning → ProtectEngine
 worn tyres → Conservative, stuck behind → Attack, defending late → Defend,
 chasing → Push, else Balanced).
 
-## Reliability vs crash risk (separated)
+## Live retirement: four independent risk buckets (`raceTickEngine.ts`)
 
-- `baseFailureRisk` — mechanical, scaled by `eraReliabilityScale(year)` at creation.
-- `baseCrashRisk` — incident, from driver aggression/composure + track wall proximity.
-- Per lap: `reliabilityRisk = baseFailureRisk × mode.reliabilityMult (+ active issue)`,
-  `crashRisk = (baseCrashRisk × mode.crashMult + tyreRisk) × fighting × wet × damage`.
+The live race does **not** roll one combined DNF chance and then draw a cause. It
+rolls four independent per-lap buckets and labels the retirement by whichever
+bucket fired, so the reported cause always reflects the real trigger:
+
+```
+mechRisk  = baseFailureRisk × mode.reliabilityMult (+ active-warning risk)
+crashRisk = (baseCrashRisk × mode.crashMult + tyreWear·0.05)
+            × fighting(1.25) × wet(1.4) × wallProximity × damaged(1.15)
+tyreFail  = tyreFailureRisk(wear, wet)   // rare; high-wear window only
+otherRisk = OTHER_PER_LAP                // fuel/illness/debris
+
+if chance(mechRisk)  → Mechanical label   (or "<warning> — failure")
+else if chance(crashRisk) → Crash label
+else if chance(tyreFail)  → Tyre label
+else if chance(otherRisk) → Other label
+```
+
+- `baseFailureRisk` — mechanical: `perLapFailureRisk(perRaceRel) × eraReliabilityScale(year) × cal.mech`.
+- `baseCrashRisk` — incident: `perLapFailureRisk(perRaceCrash) × cal.crash` (driver aggression/composure + track).
+- `cal = liveRiskCalibration(year, series)` — **Live-only** era/series scaling (Quick Sim untouched).
+- Reliability warnings add only a small extra risk and AI teams **auto-manage**
+  them, so an unmanaged warning no longer compounds into a near-certain retirement.
 - UI bands from `reliabilityRiskLevel()` / `crashRiskLevel()`.
 
-## DNF cause balancing per era (`src/sim/dnfModel.ts`)
+### Tyre wear degrades before it retires
 
-When a car retires, the cause is drawn from `eraDnfProfile(year)` (reliability /
-crash / tyre / other), nudged by context (car reliability, aggression, composure,
-tyre wear, wall proximity, traffic). Targets:
+Tyre wear expresses itself as **pace loss** (`tyrePaceModifier`), **mistakes**
+(`tyreMistakeRisk`) and a **forced tyre-cliff pit** (`wear > 92` in the tick
+engine) long before it can end a race. Terminal tyre failure
+(`tyreFailureRisk`) only bites in the brief high-wear window a car occupies
+before pitting, keeping tyre/damage a small share of all DNFs (~4–10% game-wide,
+well under the 10–12% cap).
+
+## DNF cause calibration per era (`src/sim/dnfModel.ts`)
+
+`liveRiskCalibration(year, series)` scales the mechanical/crash buckets so the
+aggregate labelled split lands on the era targets (the raw per-car risks are
+mechanical-heavy in every era; modern eras need crash-dominance). Targets:
 
 | Era | rel | crash | tyre | other |
 |---|---|---|---|---|
-| 1990–1994 | 70 | 20 | 7 | 3 |
-| 1995–2000 | 65 | 25 | 7 | 3 |
-| 2001–2005 | 60 | 30 | 7 | 3 |
-| 2006–2010 | 55 | 35 | 7 | 3 |
-| 2011–2013 | 50 | 40 | 7 | 3 |
-| Modern | 40 | 45 | 10 | 5 |
+| 1990–1994 | 65 | 25 | 7 | 3 |
+| 1995–2000 | 60 | 30 | 7 | 3 |
+| 2001–2005 | 55 | 35 | 7 | 3 |
+| 2006–2010 | 52 | 38 | 7 | 3 |
+| Modern F1 | 35 | 50 | 10 | 5 |
+| Modern IndyCar | 30 | 55 | 10 | 5 |
 
-`eraReliabilityScale(year)` cuts raw mechanical-failure probability (~0.78 for
-2006–2010, the strongest reduction per the brief; 0.82–0.92 elsewhere) to reduce
-reliability retirements ~15–25%. Both the live sim and the quick sim
-(`raceEngine.ts`, Option B) use this model, so live and instant results agree.
+`eraReliabilityScale(year)` additionally cuts raw mechanical-failure probability
+(~0.82–0.92) to reduce reliability retirements ~15–25%. The Quick Sim
+(`raceEngine.ts`) still draws its cause from `eraDnfProfile` and is not affected
+by `liveRiskCalibration`; the live totals are calibrated to match Quick over
+large samples (see `scripts/retirement-audit.test.ts`).
 
 ## Status messages & traffic
 
@@ -103,9 +131,9 @@ tyres", …). `trafficStatus()` → Clear / InTraffic / Attacking / Defending.
 ## Files changed
 
 - `src/sim/liveRacePace.ts` **(new)** — pace model, strategy specs, risk bands, status.
-- `src/sim/dnfModel.ts` **(new)** — era DNF profiles, reliability scaling, cause picker.
-- `src/sim/liveRaceEngine.ts` — init base pace, separate crash risk, era-scale reliability, `year`.
-- `src/sim/raceTickEngine.ts` — per-lap live pace, split risk, contextual DNF causes, status; `setPlayerPaceMode`.
+- `src/sim/dnfModel.ts` **(new)** — era DNF profiles, reliability scaling, per-bucket label pickers, `liveRiskCalibration`.
+- `src/sim/liveRaceEngine.ts` — init base pace, separate crash risk, era-scale + `liveRiskCalibration`, `year`/`series`.
+- `src/sim/raceTickEngine.ts` — per-lap live pace, four independent DNF risk buckets labelled by trigger, AI warning-management, status; `setPlayerPaceMode`.
 - `src/sim/raceEngine.ts` — fold fuel/traffic + era DNF model into the quick sim (Option B).
 - `src/sim/aiStrategyEngine.ts` — 6-mode situational selection.
 - `src/game/raceSetup.ts` — thread `year` into context/options/meta.
@@ -123,7 +151,10 @@ tyres", …). `trafficStatus()` → Clear / InTraffic / Attacking / Defending.
 | Dirty-air strength / range | `DIRTY_AIR_PENALTY`, `DIRTY_AIR_GAP` |
 | Tyre pace bands | `tyrePaceModifier()` |
 | Mode tradeoffs | `STRATEGY_MODES` |
-| DNF cause split | `eraDnfProfile()` |
+| Quick-sim DNF cause split | `eraDnfProfile()` |
+| Live DNF total + cause split | `liveRiskCalibration()` (per-era mech/crash scale) |
+| Terminal tyre-failure rate | `tyreFailureRisk()` |
+| Reliability-warning risk/onset | `rollReliabilityIssue()` (`reliabilityEngine.ts`) |
 | Reliability-DNF volume | `eraReliabilityScale()` |
 | AI mode choices | `aiStrategyEngine.ts` |
 | Risk band thresholds | `reliabilityRiskLevel()`, `crashRiskLevel()` |
