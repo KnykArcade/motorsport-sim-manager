@@ -100,6 +100,20 @@ describe('availability windows', () => {
     expect(isYouthAvailable(e, 2003, 'F1')).toBe(false); // aged into adult market
     expect(isAdultAvailable(e, 2003, 'F1')).toBe(true);
   });
+
+  it('hides under-12 prospects from the youth pool', () => {
+    // academy-eligible early but only 10/11 years old — not yet in any market.
+    const e = entry({
+      careerStatus: 'youth_pool',
+      academyEligibleYear: 1995,
+      adultEligibleYear: 2003,
+      birthYear: 1985,
+      marketEntryYear: 2003,
+    });
+    expect(isYouthAvailable(e, 1995, 'F1')).toBe(false); // age 10
+    expect(isYouthAvailable(e, 1996, 'F1')).toBe(false); // age 11
+    expect(isYouthAvailable(e, 1997, 'F1')).toBe(true); // age 12
+  });
 });
 
 describe('entry → market/youth shapes', () => {
@@ -122,9 +136,10 @@ describe('careerMarketBundle (real career state)', () => {
   it('keeps the curated season pool and adds registry free agents', () => {
     const staticBundle = getMarketBundle(1995, 'F1')!;
     const living = careerMarketBundle(state);
-    // Never fewer than the curated pool.
+    // The adult pool never shrinks below the curated drivers (youth are
+    // normalized by age, so under-12 curated youth are hidden).
     expect(living.drivers.length).toBeGreaterThanOrEqual(staticBundle.drivers.length);
-    expect(living.youth.length).toBeGreaterThanOrEqual(staticBundle.youth.length);
+    expect(living.youth.length).toBeGreaterThan(0);
     // Some registry-sourced entries were added.
     expect(living.drivers.some((d) => d.id.startsWith('reg-'))).toBe(true);
   });
@@ -141,6 +156,20 @@ describe('careerMarketBundle (real career state)', () => {
     const living = careerMarketBundle(state);
     const ids = living.drivers.map((d) => d.id);
     expect(new Set(ids).size).toBe(ids.length);
+  });
+
+  it('only lists youth aged 12–17 and never in both youth and adult pools', () => {
+    const living = careerMarketBundle(state);
+    for (const y of living.youth) {
+      const age = 1995 - y.birthYear;
+      expect(age).toBeGreaterThanOrEqual(12);
+      expect(age).toBeLessThanOrEqual(17);
+    }
+    // No prospect appears in both the youth and adult market simultaneously.
+    const youthNames = new Set(living.youth.map((y) => normalizeName(y.name)));
+    for (const d of living.drivers) {
+      expect(youthNames.has(normalizeName(d.name))).toBe(false);
+    }
   });
 });
 

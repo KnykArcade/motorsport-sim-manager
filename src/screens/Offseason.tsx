@@ -6,6 +6,9 @@ import { activeDriversForTeam } from '../game/careerState';
 import { thirdDriverAmbitions } from '../sim/contractEngine';
 import { marketRolloverChanges } from '../sim/careerMarketEngine';
 import { crossSeriesCandidates } from '../sim/crossSeriesEngine';
+import { academyMemberAge } from '../sim/driverMarketEngine';
+import { isPromotionEligible } from '../sim/youthAcademyEngine';
+import type { FirstOptionDecision } from '../types/marketTypes';
 import type { MasterDriverEntry } from '../types/registryTypes';
 
 export function Offseason() {
@@ -24,6 +27,12 @@ export function Offseason() {
   const seatDrivers = activeDriversForTeam(state, state.selectedTeamId);
   const reservePromotionFor = (thirdDriverId: string) =>
     signings.find((s) => s.source === 'reserve' && s.sourceId === thirdDriverId);
+
+  // Academy Rights / First Option: academy drivers who reach 18 next season.
+  const academyDecisions = state.academyDecisions ?? [];
+  const promotionEligible = academy.filter((a) => isPromotionEligible(a, nextYear));
+  const decisionFor = (academyId: string) =>
+    academyDecisions.find((d) => d.academyId === academyId);
 
   const advance = () => {
     dispatch({ type: 'ADVANCE_SEASON' });
@@ -84,25 +93,115 @@ export function Offseason() {
           </p>
         ) : (
           <ul className="space-y-1 text-sm">
-            {academy.map((a) => (
-              <li key={a.id} className="flex items-center justify-between text-neutral-300">
-                <span>
-                  {a.name}{' '}
-                  <span className="text-neutral-500">
-                    ({a.overall.toFixed(1)} → {a.potential.toFixed(1)} pot)
+            {academy.map((a) => {
+              const age = academyMemberAge(a, nextYear);
+              const eligible = isPromotionEligible(a, nextYear);
+              return (
+                <li key={a.id} className="flex items-center justify-between text-neutral-300">
+                  <span>
+                    {a.name}{' '}
+                    <span className="text-neutral-500">
+                      (age {age} · {a.overall.toFixed(1)} → {a.potential.toFixed(1)} pot)
+                    </span>
+                    {eligible && (
+                      <span className="ml-2 rounded bg-amber-500/15 px-1.5 py-0.5 text-[10px] text-amber-300">
+                        promotion eligible
+                      </span>
+                    )}
                   </span>
-                </span>
-                <span className="text-xs text-neutral-500">
-                  {a.yearsUntilF1Ready <= 0 ? 'F1-ready' : `~${a.yearsUntilF1Ready}y to F1`}
-                </span>
-              </li>
-            ))}
+                  <span className="text-xs text-neutral-500">
+                    {a.yearsUntilF1Ready <= 0 ? 'F1-ready' : `~${a.yearsUntilF1Ready}y to F1`}
+                  </span>
+                </li>
+              );
+            })}
           </ul>
         )}
         <p className="mt-3 text-xs text-neutral-500">
-          Academy drivers gain ratings when you advance the season.
+          Youth academy holds drivers aged 12–17; they gain ratings each season. At 18 they become
+          promotion eligible and your team gets first option before they can reach the open market.
         </p>
       </Panel>
+
+      {promotionEligible.length > 0 && (
+        <Panel title="Academy Rights — First Option">
+          <p className="mb-3 text-sm text-neutral-400">
+            These academy drivers turn 18 for {nextYear} and are now promotion eligible. Your team
+            holds first option: promote them, extend their development rights, or release them to the
+            open Driver Market. Undecided drivers stay under academy rights and are re-offered next
+            year.
+          </p>
+          <ul className="space-y-3 text-sm">
+            {promotionEligible.map((a) => {
+              const decision = decisionFor(a.id);
+              const clear = () =>
+                dispatch({ type: 'CLEAR_ACADEMY_DECISION', academyId: a.id });
+              const set = (d: FirstOptionDecision, seatDriverId?: string) =>
+                dispatch({ type: 'SET_ACADEMY_DECISION', academyId: a.id, decision: d, seatDriverId });
+              return (
+                <li
+                  key={a.id}
+                  className="rounded border border-neutral-800 bg-neutral-900/40 p-3"
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="font-semibold text-neutral-100">
+                      {a.name}{' '}
+                      <span className="text-xs font-normal text-neutral-500">
+                        (age {academyMemberAge(a, nextYear)} · {a.overall.toFixed(1)} ovr →{' '}
+                        {a.potential.toFixed(1)} pot ·{' '}
+                        {a.yearsUntilF1Ready <= 0 ? 'F1-ready' : `~${a.yearsUntilF1Ready}y to F1`})
+                      </span>
+                    </span>
+                  </div>
+                  {decision ? (
+                    <div className="mt-2 flex items-center justify-between text-xs">
+                      <span className="text-green-300">
+                        {decisionLabel(decision.decision)}
+                        {decision.seatDriverId && ` → replaces ${driverName(decision.seatDriverId)}`}
+                      </span>
+                      <button className="text-red-400 hover:text-red-300" onClick={clear}>
+                        Cancel
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="mt-2 flex flex-wrap gap-2">
+                      {seatDrivers.map((s) => (
+                        <Button
+                          key={s.id}
+                          variant="ghost"
+                          className="px-2 py-1 text-xs"
+                          onClick={() => set('race_seat', s.id)}
+                        >
+                          Race seat → #{s.number} {s.name}
+                        </Button>
+                      ))}
+                      <Button variant="ghost" className="px-2 py-1 text-xs" onClick={() => set('third')}>
+                        3rd driver
+                      </Button>
+                      <Button variant="ghost" className="px-2 py-1 text-xs" onClick={() => set('reserve')}>
+                        Reserve
+                      </Button>
+                      <Button variant="ghost" className="px-2 py-1 text-xs" onClick={() => set('test')}>
+                        Test driver
+                      </Button>
+                      <Button variant="ghost" className="px-2 py-1 text-xs" onClick={() => set('extend')}>
+                        Extend rights
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        className="px-2 py-1 text-xs text-red-400"
+                        onClick={() => set('release')}
+                      >
+                        Release to market
+                      </Button>
+                    </div>
+                  )}
+                </li>
+              );
+            })}
+          </ul>
+        </Panel>
+      )}
 
       {ambitions.length > 0 && (
         <Panel title="3rd Driver Contracts">
@@ -239,6 +338,24 @@ export function Offseason() {
       </Panel>
     </div>
   );
+}
+
+// Short label for a queued first-option decision.
+function decisionLabel(d: FirstOptionDecision): string {
+  switch (d) {
+    case 'race_seat':
+      return 'Promoting to a race seat';
+    case 'third':
+      return 'Signing as 3rd driver';
+    case 'reserve':
+      return 'Signing as reserve driver';
+    case 'test':
+      return 'Signing as test driver';
+    case 'extend':
+      return 'Extending development rights';
+    case 'release':
+      return 'Releasing to the driver market';
+  }
 }
 
 // One category of the Market Outlook: a labelled, capped list of registry

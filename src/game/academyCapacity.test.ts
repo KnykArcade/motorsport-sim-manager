@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { createNewGame } from './initialCareer';
 import { gameReducer } from './gameReducer';
 import { calculateAcademyCapacity } from '../sim/teamRatingsEngine';
-import { getMarketBundle } from '../data';
+import { careerMarketBundle } from '../sim/careerMarketEngine';
 import type { GameState } from './careerState';
 import type { TeamOrganizationRatings } from '../types/teamRatingsTypes';
 
@@ -52,7 +52,7 @@ describe('academy capacity enforcement', () => {
     let state = withCapacity(newGame(), 30);
     expect(calculateAcademyCapacity(state.teamOrgRatings![state.selectedTeamId])).toBe(1);
 
-    const youth = getMarketBundle(1995, 'F1')!.youth;
+    const youth = careerMarketBundle(state).youth;
     state = gameReducer(state, { type: 'SIGN_YOUTH', youthId: youth[0].id })!;
     expect((state.academy ?? []).length).toBe(1);
 
@@ -64,7 +64,7 @@ describe('academy capacity enforcement', () => {
   it('allows signing up to a larger capacity', () => {
     let state = withCapacity(newGame(), 85); // 4 slots
     expect(calculateAcademyCapacity(state.teamOrgRatings![state.selectedTeamId])).toBe(4);
-    const youth = getMarketBundle(1995, 'F1')!.youth;
+    const youth = careerMarketBundle(state).youth;
     for (let i = 0; i < 3; i++) {
       state = gameReducer(state, { type: 'SIGN_YOUTH', youthId: youth[i].id })!;
     }

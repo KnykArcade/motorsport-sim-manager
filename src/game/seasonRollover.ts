@@ -18,10 +18,16 @@ import {
 import { BALANCED_SETUP } from '../data/setup/setupComponents';
 import { calculateOffseasonCarryover } from '../sim/developmentEngine';
 import {
+  academyMemberAge,
   academyMemberToDriver,
+  academyMemberToReserveDriver,
   marketDriverToDriver,
   progressAcademyMember,
 } from '../sim/driverMarketEngine';
+import {
+  firstOptionStatusFor,
+  isPromotionEligible,
+} from '../sim/youthAcademyEngine';
 import { resolveDriverBid } from '../sim/driverBiddingEngine';
 import { marketDriverOfferInterest } from '../sim/crossSeriesEngine';
 import { carPerformanceRating } from '../sim/trackFitEngine';
@@ -58,7 +64,7 @@ import { createDriverDevelopmentCurve, developmentStep } from '../sim/developmen
 import { finalizeSeasonHistory } from '../sim/universeHistoryEngine';
 import type { DriverDevelopmentCurve } from '../types/developmentCurveTypes';
 import type { Car, Driver, OffseasonSummary, Team } from '../types/gameTypes';
-import type { AcademyMember } from '../types/marketTypes';
+import type { AcademyDecision, AcademyMember } from '../types/marketTypes';
 import type { FinanceTransaction } from '../types/financeTypes';
 import type { CommercialState } from '../types/sponsorTypes';
 import type { CarSetup } from '../types/setupTypes';
@@ -77,6 +83,93 @@ function sponsorshipIncome(team: Team | undefined, playerDrivers: Driver[]): num
   return base + fromDrivers;
 }
 
+// Result of applying the player's Academy Rights / First Option decisions on
+// promotion-eligible (18+) academy drivers at the rollover.
+type FirstOptionResolution = {
+  // seatDriverId -> the promoted academy driver taking that race seat.
+  seatReplacements: Map<string, Driver>;
+  // New non-racing (3rd/reserve/test) drivers joining the player roster.
+  reserveDrivers: Driver[];
+  // Academy members who leave the academy this rollover (promoted or released).
+  consumedAcademyIds: Set<string>;
+  // Academy members kept under academy rights (extend / undecided), by id →
+  // status stamp to apply after progression.
+  retainedStatus: Map<string, AcademyMember['firstOptionStatus']>;
+  notes: string[];
+};
+
+// Apply the player's first-option decisions for academy drivers who reach adult
+// age (18) in `nextYear`. Promotions produce race-seat replacements or reserve
+// drivers; releases send the driver to the open market; extend/undecided keep
+// academy rights. Academy members still in the 12–17 window are untouched.
+function resolvePlayerFirstOptions(
+  state: GameState,
+  academy: AcademyMember[],
+  decisions: AcademyDecision[],
+  nextYear: number,
+  reservedNumbers: Set<number>,
+): FirstOptionResolution {
+  const res: FirstOptionResolution = {
+    seatReplacements: new Map(),
+    reserveDrivers: [],
+    consumedAcademyIds: new Set(),
+    retainedStatus: new Map(),
+    notes: [],
+  };
+  const decisionByAcademyId = new Map(decisions.map((d) => [d.academyId, d]));
+  const usedNumbers = new Set(reservedNumbers);
+  const nextFreeNumber = (): number => {
+    let n = 1;
+    while (usedNumbers.has(n)) n += 1;
+    usedNumbers.add(n);
+    return n;
+  };
+
+  for (const a of academy) {
+    if (!isPromotionEligible(a, nextYear)) continue;
+    res.notes.push(`${a.name} turned ${academyMemberAge(a, nextYear)} and became promotion eligible.`);
+    const decision = decisionByAcademyId.get(a.id)?.decision;
+    if (!decision) {
+      // No decision taken: keep first option open (development rights held).
+      res.retainedStatus.set(a.id, 'pending_team_decision');
+      res.notes.push(`Awaiting your promotion decision on academy driver ${a.name}.`);
+      continue;
+    }
+    if (decision === 'race_seat') {
+      const seatDriverId = decisionByAcademyId.get(a.id)?.seatDriverId;
+      const seatDriver = seatDriverId
+        ? state.drivers.find((d) => d.id === seatDriverId && d.teamId === state.selectedTeamId)
+        : undefined;
+      if (!seatDriver) {
+        // Seat no longer valid — hold rights rather than lose the driver.
+        res.retainedStatus.set(a.id, 'pending_team_decision');
+        continue;
+      }
+      const seat = { teamId: seatDriver.teamId, number: seatDriver.number };
+      res.seatReplacements.set(seatDriver.id, academyMemberToDriver(a, seat));
+      res.consumedAcademyIds.add(a.id);
+      res.notes.push(`Promoted academy driver ${a.name} to a race seat for ${nextYear}.`);
+    } else if (decision === 'third' || decision === 'reserve' || decision === 'test') {
+      const number = nextFreeNumber();
+      res.reserveDrivers.push(
+        academyMemberToReserveDriver(a, state.selectedTeamId, decision, number),
+      );
+      res.consumedAcademyIds.add(a.id);
+      const roleLabel =
+        decision === 'third' ? '3rd driver' : decision === 'reserve' ? 'reserve driver' : 'test driver';
+      res.notes.push(`Signed academy driver ${a.name} as ${roleLabel} for ${nextYear}.`);
+    } else if (decision === 'release') {
+      res.consumedAcademyIds.add(a.id);
+      res.notes.push(`Released academy driver ${a.name} to the open driver market.`);
+    } else {
+      // 'extend': keep in the academy another year.
+      res.retainedStatus.set(a.id, firstOptionStatusFor(decision));
+      res.notes.push(`Extended academy/development rights for ${a.name}.`);
+    }
+  }
+  return res;
+}
+
 export function advanceSeason(state: GameState): GameState {
   const nextYear = state.seasonYear + 1;
   // Living career market: the curated season file plus registry free agents /
@@ -86,6 +179,18 @@ export function advanceSeason(state: GameState): GameState {
   const marketChanges = marketRolloverChanges(state, nextYear);
   const signings = state.pendingSignings ?? [];
   const academy = state.academy ?? [];
+
+  // Academy Rights / First Option: academy drivers who reach adult age (18) in
+  // the new season become promotion eligible; their team's queued decisions are
+  // applied now (promote to a seat / reserve, extend rights, or release).
+  const reservedNumbers = new Set(state.drivers.map((d) => d.number));
+  const firstOption = resolvePlayerFirstOptions(
+    state,
+    academy,
+    state.academyDecisions ?? [],
+    nextYear,
+    reservedNumbers,
+  );
 
   // Resolve each queued signing.
   //  - market/academy: a new driver replaces the seat's current driver.
@@ -164,6 +269,14 @@ export function advanceSeason(state: GameState): GameState {
     }
   }
 
+  // Fold in the Academy Rights / First Option outcomes: race-seat promotions
+  // replace a seat (unless already taken by a queued signing), and promoted or
+  // released academy members leave the academy.
+  for (const [seatDriverId, promoted] of firstOption.seatReplacements) {
+    if (!replacements.has(seatDriverId)) replacements.set(seatDriverId, promoted);
+  }
+  for (const id of firstOption.consumedAcademyIds) usedAcademyIds.add(id);
+
   // A 3rd driver who outperformed a seat driver but wasn't promoted leaves for a
   // race seat at another team next season.
   const promotedReserveIds = new Set(reservePromotions.map((p) => p.reserveId));
@@ -182,14 +295,19 @@ export function advanceSeason(state: GameState): GameState {
   // (dropping the displaced seat driver), then remove departures.
   const promotedSeatIds = new Set(reservePromotions.map((p) => p.seatDriverId));
   const upgradeById = new Map(reservePromotions.map((p) => [p.reserveId, p.upgraded]));
-  const drivers = state.drivers
-    .map((d) => replacements.get(d.id) ?? d)
-    .filter((d) => !promotedSeatIds.has(d.id))
-    .map((d) => upgradeById.get(d.id) ?? d)
-    .filter((d) => !departures.has(d.id));
+  const drivers = [
+    ...state.drivers
+      .map((d) => replacements.get(d.id) ?? d)
+      .filter((d) => !promotedSeatIds.has(d.id))
+      .map((d) => upgradeById.get(d.id) ?? d)
+      .filter((d) => !departures.has(d.id)),
+    // New reserve/test/3rd drivers promoted from the academy via first option.
+    ...firstOption.reserveDrivers,
+  ];
 
   // Keep team rosters (driverIds) consistent with the moves above.
   const remapId = (id: string): string => replacements.get(id)?.id ?? id;
+  const firstOptionReserveIds = firstOption.reserveDrivers.map((d) => d.id);
   const rebuildRoster = (ids: string[]): string[] => {
     let next = ids.map(remapId);
     for (const p of reservePromotions) {
@@ -197,7 +315,8 @@ export function advanceSeason(state: GameState): GameState {
       const pos = next.indexOf(p.seatDriverId);
       if (pos >= 0) next[pos] = p.reserveId; // reserve takes the seat
     }
-    return next.filter((id) => !departures.has(id));
+    // Append academy first-option reserve/test/3rd drivers behind the seats.
+    return [...next.filter((id) => !departures.has(id)), ...firstOptionReserveIds];
   };
 
   // Departing 3rd drivers (signed off the market) return to the market.
@@ -218,12 +337,23 @@ export function advanceSeason(state: GameState): GameState {
   }
   for (const id of departures) delete carSetups[id];
 
-  // Progress remaining academy members one offseason; promoted ones leave.
-  // A Driver Academy facility accelerates their growth.
+  // Progress remaining academy members one offseason; promoted/released ones
+  // leave. A Driver Academy facility accelerates their growth. Members retained
+  // under first option (extended rights / undecided) keep their promotion flag
+  // and status so the offseason UI re-prompts next year.
   const youthBoost = facilityYouthDevelopmentBonus(state.facilities);
   const nextAcademy: AcademyMember[] = academy
     .filter((a) => !usedAcademyIds.has(a.id))
-    .map((a) => progressAcademyMember(a, youthBoost));
+    .map((a) => {
+      const progressed = progressAcademyMember(a, youthBoost);
+      const retained = firstOption.retainedStatus.get(a.id);
+      if (retained) {
+        return { ...progressed, promotionEligible: true, firstOptionStatus: retained };
+      }
+      return isPromotionEligible(progressed, nextYear)
+        ? progressed
+        : { ...progressed, promotionEligible: false };
+    });
 
   // Resolve any facility upgrades ordered during the season (they take effect now).
   const facilityResolution = state.facilities
@@ -592,6 +722,7 @@ export function advanceSeason(state: GameState): GameState {
       }),
       ...biddingNotes,
       ...departureNotes,
+      ...firstOption.notes,
       ...marketRolloverNotes(marketChanges),
       ...(nextAcademy.length ? [`${nextAcademy.length} academy driver(s) progressed.`] : []),
       ...facilityNotes,
@@ -662,6 +793,7 @@ export function advanceSeason(state: GameState): GameState {
     carSetups,
     academy: nextAcademy,
     pendingSignings: [],
+    academyDecisions: [],
     signedMarketIds: finalSignedMarketIds,
     completedRaceResults: {},
     qualifyingResults: {},

@@ -95,19 +95,43 @@ export function academyMemberToDriver(a: AcademyMember, seat: Seat): Driver {
   return buildDriver(`d-${a.id}`, a.name, a.nationality, a.skills, a.overall, seat, 1, 3);
 }
 
+// Promote an academy member into a non-racing reserve tier (3rd/reserve/test).
+// They join the team roster behind the two race seats on a cheaper deal.
+export function academyMemberToReserveDriver(
+  a: AcademyMember,
+  teamId: string,
+  role: 'third' | 'reserve' | 'test',
+  number: number,
+): Driver {
+  const d = buildDriver(`d-${a.id}`, a.name, a.nationality, a.skills, a.overall, { teamId, number }, 0.5, 2);
+  return { ...d, contractType: role };
+}
+
+// Current age of an academy member in a given year.
+export function academyMemberAge(a: AcademyMember, year: number): number {
+  return year - a.birthYear;
+}
+
 // Sign an under-18 prospect into the academy, snapshotting live ratings.
-export function signProspectToAcademy(p: YouthProspect, year: number): AcademyMember {
+export function signProspectToAcademy(
+  p: YouthProspect,
+  year: number,
+  teamId: string,
+): AcademyMember {
   return {
     id: `aca-${p.id}`,
     prospectId: p.id,
     name: p.name,
     nationality: p.nationality,
+    birthYear: p.birthYear,
+    academyTeamId: teamId,
     skills: { ...p.skills },
     overall: p.overall,
     potential: p.potential,
     developmentRate: p.developmentRate,
     yearsUntilF1Ready: p.yearsUntilF1Ready,
     signedYear: year,
+    promotionEligible: false,
   };
 }
 
