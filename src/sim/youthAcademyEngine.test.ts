@@ -1,11 +1,17 @@
 import { describe, expect, it } from 'vitest';
 import {
+  ACADEMY_HARD_AGE_CAP,
+  FIRST_OPTION_MAX_AGE,
+  FIRST_OPTION_SEASONS,
+  academyRightsExpired,
   aiFirstOptionDecision,
+  firstOptionDeadlineYear,
   firstOptionStatusFor,
   isPromotionEligible,
   isYouthAge,
   marketStatusForAge,
   normalizeYouthDriverMarket,
+  openFirstOptionWindow,
   promotionEligibleMembers,
   retainsRights,
   type AiFirstOptionContext,
@@ -93,6 +99,51 @@ describe('normalizeYouthDriverMarket', () => {
   });
 });
 
+describe('first-option rights deadline & expiry (age cap)', () => {
+  it('opens the window at 18 and stamps a deadline no later than the 20-year-old season', () => {
+    // Turns 18 in 2025.
+    const eligible = member({ birthYear: 2007 });
+    const opened = openFirstOptionWindow(eligible, 2025);
+    expect(opened.firstOptionYear).toBe(2025);
+    // Two seasons of rights, but never past the season the driver is 20.
+    expect(opened.firstOptionDeadlineYear).toBe(
+      Math.min(2025 + FIRST_OPTION_SEASONS, 2007 + FIRST_OPTION_MAX_AGE),
+    );
+    expect(opened.firstOptionDeadlineYear).toBeLessThanOrEqual(2007 + FIRST_OPTION_MAX_AGE);
+  });
+
+  it('does not open a window for a 12–17 member', () => {
+    const youth = member({ birthYear: 2010 }); // 15 in 2025
+    expect(openFirstOptionWindow(youth, 2025)).toEqual(youth);
+  });
+
+  it('is idempotent once the window is stamped', () => {
+    const opened = openFirstOptionWindow(member({ birthYear: 2007 }), 2025);
+    expect(openFirstOptionWindow(opened, 2026)).toEqual(opened);
+  });
+
+  it('rights are still valid within the window and expire past the deadline', () => {
+    const m = openFirstOptionWindow(member({ birthYear: 2007 }), 2025);
+    const deadline = firstOptionDeadlineYear(m, 2025);
+    expect(academyRightsExpired(m, deadline)).toBe(false);
+    expect(academyRightsExpired(m, deadline + 1)).toBe(true);
+  });
+
+  it('always treats an academy-only driver at the hard age cap (21+) as expired', () => {
+    // Age 21 exactly at the cap → expired regardless of any window.
+    const capped = member({ birthYear: 2004 }); // 21 in 2025
+    expect(academyRightsExpired(capped, 2025)).toBe(true);
+    const older = member({ birthYear: 2000 }); // 25 in 2025
+    expect(academyRightsExpired(older, 2025)).toBe(true);
+    expect(ACADEMY_HARD_AGE_CAP).toBe(21);
+  });
+
+  it('a 12–17 member never has expired rights', () => {
+    const youth = member({ birthYear: 2011 }); // 14 in 2025
+    expect(academyRightsExpired(youth, 2025)).toBe(false);
+  });
+});
+
 describe('first-option status mapping', () => {
   it('maps each decision to its status and rights retention', () => {
     expect(firstOptionStatusFor('race_seat')).toBe('promoted_to_race_seat');
@@ -134,5 +185,22 @@ describe('aiFirstOptionDecision', () => {
   it('extends a high-potential prospect when the reserve slot is taken', () => {
     const dev = member({ yearsUntilF1Ready: 2, potential: 9 });
     expect(aiFirstOptionDecision(dev, { ...base, hasReserve: true })).toBe('extend');
+  });
+
+  it('never extends once rights have expired — commits to a senior role instead', () => {
+    // High-potential prospect, reserve taken: would normally extend, but with
+    // rights expired the team must commit (test driver) rather than hold on.
+    const dev = member({ yearsUntilF1Ready: 2, potential: 9 });
+    const decision = aiFirstOptionDecision(dev, { ...base, hasReserve: true, rightsExpired: true });
+    expect(decision).not.toBe('extend');
+    expect(decision).toBe('test');
+  });
+
+  it('releases a low-upside prospect to the market once rights have expired', () => {
+    // Low potential + expired rights → no extension is possible, so the driver
+    // enters the adult market rather than lingering as academy-only.
+    const lowUpside = member({ yearsUntilF1Ready: 2, potential: 5, overall: 5 });
+    expect(aiFirstOptionDecision(lowUpside, { ...base, rightsExpired: true })).toBe('release');
+    expect(retainsRights('release')).toBe(false);
   });
 });

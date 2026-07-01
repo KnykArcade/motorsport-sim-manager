@@ -101,8 +101,8 @@ export function SetupWorkshop({
     });
   }, [setup, driver, practice, setupKnowledge]);
   const feedback = useMemo(
-    () => (setup && driver ? generateSetupFeedback(setup, track, driver) : undefined),
-    [setup, track, driver],
+    () => (setup && driver ? generateSetupFeedback(setup, track, driver, car) : undefined),
+    [setup, track, driver, car],
   );
 
   if (!driver || !setup || !quality || !comfort || !feedback) return null;

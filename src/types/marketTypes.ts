@@ -125,6 +125,12 @@ export type AcademyMember = {
   promotionEligible?: boolean;
   // Lifecycle of the first-option window once promotion eligible.
   firstOptionStatus?: FirstOptionStatus;
+  // The season the first-option window opened (the year the member turned 18).
+  firstOptionYear?: number;
+  // The last season the academy team may still hold first option. Past this the
+  // rights expire: the team must promote/sign to a senior role or the driver is
+  // released to the adult market. Never later than the season the driver is 20.
+  firstOptionDeadlineYear?: number;
 };
 
 // A queued driver change for one of the player's seats, applied at the next

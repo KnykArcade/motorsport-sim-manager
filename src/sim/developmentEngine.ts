@@ -65,6 +65,102 @@ export function applyDevelopmentProgress(
   return { active: stillActive, completed, carRatingDeltas: deltas, messages };
 }
 
+// --- Diminishing returns + maintenance decay --------------------------------
+//
+// Development gains get progressively harder as a car rating approaches the 10
+// ceiling, and ratings do not stay maxed forever without continued spending:
+// each offseason the design ages and regulations erode some carried-over
+// performance, softened by facilities/staff/budget. Together these keep top cars
+// from saturating at 10.0 across multiple teams and give the midfield room to
+// close the gap over a long career.
+
+// Multiplier on a raw development gain given the CURRENT rating of the area
+// being developed. Cheap and large at the bottom, very small near the cap.
+//   1.0–4.9 : 1.30  (larger gains, cheaper improvement)
+//   5.0–6.9 : 1.00  (normal)
+//   7.0–8.4 : 0.60  (smaller gains, higher cost)
+//   8.5–9.2 : 0.32  (difficult gains)
+//   9.3–10  : 0.14  (very small gains, high failure risk)
+export function diminishingGainMultiplier(rating: number): number {
+  if (rating < 5) return 1.3;
+  if (rating < 7) return 1.0;
+  if (rating < 8.5) return 0.6;
+  if (rating < 9.3) return 0.32;
+  return 0.14;
+}
+
+// Extra chance a high-rated development project simply fails to deliver (no gain
+// or a minor setback). Near the ceiling even well-funded upgrades often miss.
+export function nearCapFailureChance(rating: number): number {
+  if (rating < 8.5) return 0;
+  if (rating < 9.3) return 0.25;
+  return 0.45;
+}
+
+// A midfield/back car improves more efficiently than a front-runner: a catch-up
+// multiplier that rewards teams sitting well below the front of the grid. `gap`
+// is (fieldTopRating - thisCarRating) on the 1-10 scale.
+export function catchUpMultiplier(gap: number): number {
+  return 1 + Math.max(0, Math.min(0.6, gap * 0.18));
+}
+
+export type OffseasonDecayOptions = {
+  // 0 (stable rules) .. 1 (major regulation shakeup): more shakeup, more decay
+  // and reshuffle of the development order.
+  regulationShakeup?: number;
+  // 1-100 org quality (facilities/technical staff): high quality resists decay.
+  facilityStaffQuality?: number;
+  // Budget health 0 (broke) .. 1 (rich): low budget increases decay.
+  budgetHealth?: number;
+  // How well this team adapted to a regulation shakeup this offseason:
+  // -1 = missed the concept (extra decay), +1 = nailed it (recovers/gains).
+  // Only meaningful when regulationShakeup > 0; it reshuffles the order so a
+  // dominant team is not guaranteed to stay ahead through a rules reset.
+  regulationAdaptation?: number;
+};
+
+// Apply offseason maintenance decay to a set of car ratings. Only performance
+// above a floor erodes, and only the amount above ~5.5 (a car does not rot to
+// nothing). Facilities/staff and budget reduce decay; regulation shakeups add to
+// it. Deterministic — no randomness so rollovers replay identically.
+export function applyOffseasonDecay(
+  ratings: CarRatings,
+  opts: OffseasonDecayOptions = {},
+): CarRatings {
+  const shakeup = Math.max(0, Math.min(1, opts.regulationShakeup ?? 0));
+  const quality = Math.max(1, Math.min(100, opts.facilityStaffQuality ?? 50));
+  const budget = Math.max(0, Math.min(1, opts.budgetHealth ?? 0.5));
+
+  // Base yearly decay grows with regulation shakeup; strong facilities/staff and
+  // a healthy budget damp it. Stable years erode only a little (maintenance),
+  // major shakeups reset far more of the carried-over performance.
+  const resist = 0.6 + (quality / 100) * 0.5 + budget * 0.3; // ~0.6..1.4
+  const stableBase = 0.05;
+  const shakeupBase = shakeup * 0.75; // stable 0, major ~0.75
+  const floor = 5.0;
+
+  // A team that nails a new regulation concept recovers much of the reset (and
+  // can even gain); one that misses it loses more. Scaled by shakeup magnitude
+  // so it only matters in rules-change years.
+  const adapt = Math.max(-1, Math.min(1, opts.regulationAdaptation ?? 0));
+
+  const out = {} as CarRatings;
+  for (const k of Object.keys(ratings) as (keyof CarRatings)[]) {
+    const v = ratings[k];
+    const above = Math.max(0, v - floor);
+    // Regulation shakeups bite the strongest cars hardest (their advantage came
+    // from a mature package that the rules reset), so the order reshuffles;
+    // stable-year maintenance decay is gentle and roughly flat.
+    const maintenance = stableBase * (0.5 + above / 8);
+    const reset = shakeupBase * (above / 4) * (1 - adapt * 0.9);
+    const decay = (maintenance + reset) / Math.max(0.5, resist);
+    // Nailing the concept can add a little raw performance on top (bounded).
+    const adaptGain = adapt > 0 ? shakeup * adapt * 0.4 : 0;
+    out[k] = round1(clamp(v - decay + adaptGain, 1, 10));
+  }
+  return out;
+}
+
 // Compute next season's starting car baseline from this season's work.
 export function calculateOffseasonCarryover(
   car: Car,

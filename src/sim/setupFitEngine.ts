@@ -292,11 +292,81 @@ function objectiveEffects(
   };
 }
 
+// A compact read of the current car package's strengths and weaknesses, on the
+// same effective-ratings basis Objective Setup Quality uses. Practice feedback
+// consumes this so its hints reflect the actual car — a weak-mechanical-grip car
+// talks about traction and rear grip, a fragile car about cooling, and so on —
+// instead of a track/driver-only picture that can contradict the setup model.
+export type CarSetupTraits = {
+  weakAero: boolean;
+  strongAero: boolean;
+  weakMechGrip: boolean;
+  weakReliability: boolean;
+  strongEngine: boolean;
+  weakEngine: boolean;
+  // Low mechanical grip stresses the rear tyres — degradation is a live concern.
+  tyreStress: boolean;
+};
+
+export function carSetupTraits(car?: Car): CarSetupTraits {
+  if (!car) {
+    return {
+      weakAero: false,
+      strongAero: false,
+      weakMechGrip: false,
+      weakReliability: false,
+      strongEngine: false,
+      weakEngine: false,
+      tyreStress: false,
+    };
+  }
+  const c = effectiveCarRatings(car);
+  return {
+    weakAero: c.aeroEfficiency < 4.5,
+    strongAero: c.aeroEfficiency >= 7,
+    weakMechGrip: c.mechanicalGrip < 4.5,
+    weakReliability: c.reliability < 4.5,
+    strongEngine: c.enginePower >= 6.75,
+    weakEngine: c.enginePower < 4.5,
+    tyreStress: c.mechanicalGrip < 5,
+  };
+}
+
+// The shared "core model" behind both the Car Setup Workshop's Objective Setup
+// Quality read-out and the practice feedback: one evaluation of a setup against
+// the track AND the current car package, plus the car's trait profile. Keeping
+// both surfaces on this single function is what stops practice feedback from
+// contradicting the objective setup evaluation.
+export type SetupTrackCarEvaluation = {
+  objective: ObjectiveSetupQuality;
+  ideal: CarSetup;
+  traits: CarSetupTraits;
+};
+
+export function evaluateSetupAgainstTrackAndCar(
+  setup: CarSetup,
+  track: Track,
+  car?: Car,
+  driver?: Driver,
+): SetupTrackCarEvaluation {
+  return {
+    objective: objectiveSetupQuality(setup, track, car),
+    ideal: idealSetup(track, driver, car),
+    traits: carSetupTraits(car),
+  };
+}
+
 // Practice feedback: directional hints from the signed gap to the ideal. Never
 // reveals the exact ideal — only nudges the player toward a better window.
-export function generateSetupFeedback(setup: CarSetup, track: Track, driver?: Driver): SetupFeedback {
-  const ideal = idealSetup(track, driver);
+export function generateSetupFeedback(
+  setup: CarSetup,
+  track: Track,
+  driver?: Driver,
+  car?: Car,
+): SetupFeedback {
+  const ideal = idealSetup(track, driver, car);
   const a = track.attributes;
+  const traits = carSetupTraits(car);
   const driverFeedback: string[] = [];
   const engineerFeedback: string[] = [];
 
@@ -337,6 +407,21 @@ export function generateSetupFeedback(setup: CarSetup, track: Track, driver?: Dr
 
   if (setup.tyreUsage > ideal.tyreUsage + 1.5) {
     driverFeedback.push('Rear tyres are overheating on the long runs.');
+  }
+
+  // Car-package weaknesses colour the engineer's read so it aligns with the
+  // Objective Setup Quality model rather than the track/driver picture alone.
+  if (traits.weakMechGrip) {
+    driverFeedback.push('The car is short on mechanical grip — traction and rear stability out of the slow corners are the limit.');
+  }
+  if (traits.weakAero) {
+    driverFeedback.push('It lacks aero load in the high-speed corners — hard to commit through the quick stuff.');
+  }
+  if (traits.weakReliability) {
+    engineerFeedback.push('This package runs hot — keep cooling and tyre usage conservative to protect it.');
+  }
+  if (traits.tyreStress) {
+    engineerFeedback.push('The car is hard on its rear tyres — degradation will drive the race strategy.');
   }
 
   const confidence = calculateOverallSetupConfidence(setup, track, driver);

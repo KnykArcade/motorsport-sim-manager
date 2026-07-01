@@ -191,7 +191,39 @@ function estimateOperatingCost(team: Team): number {
   return toMoney(7 + team.reputation * 0.05);
 }
 
+// Ongoing testing programme cost — grows with the team's technical ambition.
+function estimateTestingCost(org: TeamOrganizationRatings | undefined): number {
+  return toMoney(1 + (org?.research ?? 40) * 0.03);
+}
+
+// Ongoing youth-academy running cost — grows with academy investment.
+function estimateAcademyCost(org: TeamOrganizationRatings | undefined): number {
+  return toMoney((org?.youthAcademy ?? 30) * 0.03);
+}
+
+// Sponsor-expectation penalty: a shortfall between where the team finished and
+// where its reputation implies it should, scaled by how big its commercial
+// programme is (bigger deals carry bigger expectations). Reduces net sponsor
+// income so under-performing teams feel commercial pressure.
+function estimateSponsorPenalty(
+  team: Team,
+  constructorPosition: number,
+  teamCount: number,
+): number {
+  const expectedPos = Math.max(1, Math.round(teamCount * (1 - team.reputation / 100)));
+  const shortfall = Math.max(0, constructorPosition - expectedPos);
+  if (shortfall <= 0) return 0;
+  return toMoney(shortfall * (0.4 + team.reputation * 0.02));
+}
+
 // Build the simplified annual budget for one AI team.
+//
+// Long-run pressure comes from two design choices: (1) real ongoing costs
+// (salaries, staff, engine, ops, testing, academy, sponsor penalties), and (2)
+// discretionary investment that scales with the cash a team holds *above* its
+// reserve. Because a richer war-chest is spent down harder, every team settles
+// around a stable equilibrium budget instead of compounding upward forever —
+// while winners (big prize money) still bank more than the tail of the grid.
 export function estimateAIBudget(
   state: GameState,
   team: Team,
@@ -201,6 +233,7 @@ export function estimateAIBudget(
 ): AITeamBudget {
   const spec = ARCHETYPE_SPECS[archetype];
   const startingCash = team.budget;
+  const teamCount = state.teams.length;
 
   const raceDrivers = activeDriversForTeam(state, team.id);
   const driverSalaries = raceDrivers.reduce((sum, d) => sum + driverSalary(d), 0);
@@ -208,27 +241,43 @@ export function estimateAIBudget(
   const engineDeal = state.engine?.deals?.[team.id];
   const engineCost = engineDeal ? toMoney(engineDeal.annualCost) : toMoney(6);
   const operatingCost = estimateOperatingCost(team);
-  const sponsorIncome = estimateSponsorIncome(team, org);
-  const prizeMoney = estimatePrizeMoney(constructorPosition, state.teams.length);
+  const testingCost = estimateTestingCost(org);
+  const academyCost = estimateAcademyCost(org);
+  const sponsorPenalty = estimateSponsorPenalty(team, constructorPosition, teamCount);
 
-  const fixedExpenses = driverSalaries + staffSalaries + engineCost + operatingCost;
-  const reserveTarget = toMoney(5) + Math.round(spec.reserveFactor * (sponsorIncome + fixedExpenses));
+  const sponsorIncome = Math.max(0, estimateSponsorIncome(team, org) - sponsorPenalty);
+  const prizeMoney = estimatePrizeMoney(constructorPosition, teamCount);
 
-  // Discretionary spend is funded by any operating surplus plus a slice of the
-  // cash held above the reserve target. Aggressive teams tap more of it.
-  const surplus = Math.max(0, sponsorIncome - fixedExpenses);
-  const cashSlice = Math.max(0, startingCash - reserveTarget) * (0.05 + spec.risk * 0.1);
-  const discretionary = surplus + cashSlice;
-  const developmentSpend = Math.round(spec.devBias * discretionary);
-  const facilitySpend = Math.round(spec.facilityBias * discretionary);
+  const ongoingFixed =
+    driverSalaries + staffSalaries + engineCost + operatingCost + testingCost + academyCost;
+  const income = sponsorIncome + prizeMoney;
+  const reserveTarget = toMoney(5) + Math.round(spec.reserveFactor * (sponsorIncome + ongoingFixed));
+
+  // Personality-driven spend rates. Aggressive/low-reserve teams commit more of
+  // both their operating surplus and their war-chest; conservative teams hold
+  // back. The excess-cash term is what caps long-run inflation.
+  const operatingSurplus = income - ongoingFixed;
+  const excessCash = Math.max(0, startingCash - reserveTarget);
+  const surplusSpendRate = Math.min(0.95, 0.55 + spec.risk * 0.4);
+  const excessSpendRate = Math.max(
+    0.05,
+    Math.min(0.6, 0.12 + spec.risk * 0.35 - spec.reserveFactor * 0.15),
+  );
+  const investmentPool =
+    Math.max(0, operatingSurplus) * surplusSpendRate + excessCash * excessSpendRate;
+
+  const developmentSpend = Math.round(spec.devBias * investmentPool);
+  const facilitySpend = Math.round(spec.facilityBias * investmentPool);
+  const otherInvestment = Math.round(
+    Math.max(0, 1 - spec.devBias - spec.facilityBias) * investmentPool,
+  );
 
   const totalExpenses =
-    fixedExpenses + developmentSpend + facilitySpend;
-  // Full annual result: all income (sponsor + prize money) minus all expenses
-  // (salaries, staff, engine, operating, development, facilities). This is the
-  // real cash swing applied each offseason, so budgets track their true earnings
-  // instead of ballooning from sponsor income with the costs ignored.
-  const netResult = sponsorIncome + prizeMoney - totalExpenses;
+    ongoingFixed + developmentSpend + facilitySpend + otherInvestment;
+  // Full annual result: all income (sponsor + prize money) minus all expenses.
+  // This is the real cash swing applied each offseason, so budgets track their
+  // true earnings and settle at an equilibrium rather than ballooning.
+  const netResult = income - totalExpenses;
   const projectedCash = startingCash + netResult;
 
   return {
@@ -241,6 +290,10 @@ export function estimateAIBudget(
     facilitySpend,
     engineCost,
     operatingCost,
+    testingCost,
+    academyCost,
+    sponsorPenalty,
+    otherInvestment,
     totalExpenses,
     netResult,
     projectedCash,
