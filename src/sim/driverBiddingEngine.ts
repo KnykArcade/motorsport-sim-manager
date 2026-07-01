@@ -39,37 +39,67 @@ export function teamPreferenceMultiplier(playerTeamOverall: number): number {
   return 0.9 + norm * 0.4; // 0.9 .. 1.3
 }
 
-// The smallest bid ($M) that wins the driver given team prestige: the rival bid
-// discounted by the player's preference multiplier.
+// Below this interest (0-100) a driver refuses the move outright, no matter the
+// money — e.g. a star being courted by a weak team from a series they have no
+// interest in. Only applied when an interest value is supplied (cross-series).
+export const REFUSE_INTEREST = 22;
+
+// How a driver's interest in the offer (0-100) weights the player's bid. A keen
+// driver (interest 100) values the money at 1.3x; a lukewarm one (interest 50)
+// at par; a reluctant one demands a steep premium. Used only for cross-series
+// signings — same-series offers pass no interest and are unaffected.
+export function interestMultiplier(interest: number): number {
+  const norm = Math.max(0, Math.min(1, interest / 100));
+  return 0.55 + norm * 0.75; // 0.55 .. 1.30 (par at interest 60)
+}
+
+// Combined non-financial weighting on the player's bid: team prestige, plus the
+// driver's interest in the offer when one is supplied.
+function bidWeighting(playerTeamOverall: number, interest?: number): number {
+  const team = teamPreferenceMultiplier(playerTeamOverall);
+  return interest == null ? team : team * interestMultiplier(interest);
+}
+
+// The smallest bid ($M) that wins the driver given team prestige (and, for
+// cross-series moves, the driver's interest): the rival bid discounted by the
+// player's combined weighting.
 export function bidToWin(
   driver: MarketDriver,
   playerTeamOverall: number,
   seed: string,
+  interest?: number,
 ): number {
   const rival = competingBidFor(driver, seed);
-  const threshold = rival === 0 ? driver.buyoutCost : rival / teamPreferenceMultiplier(playerTeamOverall);
+  const threshold = rival === 0 ? driver.buyoutCost : rival / bidWeighting(playerTeamOverall, interest);
   return round2(Math.max(driver.buyoutCost, threshold));
 }
 
 export type BidResolution = {
   won: boolean;
   rivalBid: number; // $M
-  effectivePlayerBid: number; // $M, after prestige weighting
+  effectivePlayerBid: number; // $M, after prestige + interest weighting
+  refused: boolean; // driver rejected the move regardless of money
 };
 
-// Resolve a contested signing. The player wins when their prestige-weighted bid
-// at least matches the rival's competing bid.
+// Resolve a contested signing. The player wins when their weighted bid at least
+// matches the rival's competing bid. For cross-series moves an interest value
+// (0-100) is supplied: it weights the bid and, below REFUSE_INTEREST, the driver
+// refuses outright.
 export function resolveDriverBid(
   playerBid: number,
   driver: MarketDriver,
   playerTeamOverall: number,
   seed: string,
+  interest?: number,
 ): BidResolution {
   const rivalBid = competingBidFor(driver, seed);
-  const effectivePlayerBid = round2(playerBid * teamPreferenceMultiplier(playerTeamOverall));
+  const effectivePlayerBid = round2(playerBid * bidWeighting(playerTeamOverall, interest));
+  const refused = interest != null && interest < REFUSE_INTEREST;
   // Uncontested (rivalBid 0): a valid bid (>= buyout) always secures the driver.
-  const won = rivalBid === 0 ? playerBid >= driver.buyoutCost : effectivePlayerBid >= rivalBid;
-  return { won, rivalBid, effectivePlayerBid };
+  const won =
+    !refused &&
+    (rivalBid === 0 ? playerBid >= driver.buyoutCost : effectivePlayerBid >= rivalBid);
+  return { won, rivalBid, effectivePlayerBid, refused };
 }
 
 function round2(n: number): number {

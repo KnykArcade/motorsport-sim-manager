@@ -2,6 +2,8 @@ import { describe, expect, it } from 'vitest';
 import {
   bidToWin,
   competingBidFor,
+  interestMultiplier,
+  REFUSE_INTEREST,
   resolveDriverBid,
   teamPreferenceMultiplier,
 } from './driverBiddingEngine';
@@ -116,5 +118,52 @@ describe('driverBiddingEngine', () => {
       }
     }
     throw new Error('expected an uncontested driver');
+  });
+
+  // Cross-series interest weighting.
+  it('interestMultiplier rises with interest and sits at par (1.0) near interest 60', () => {
+    expect(interestMultiplier(100)).toBeGreaterThan(interestMultiplier(50));
+    expect(interestMultiplier(0)).toBeLessThan(interestMultiplier(50));
+    expect(interestMultiplier(60)).toBeCloseTo(1, 2);
+  });
+
+  it('passing no interest leaves bidding unchanged (same-series signings)', () => {
+    const d = driver(9, 10, 'no-interest');
+    const withUndefined = resolveDriverBid(20, d, 60, SEED);
+    const legacy = resolveDriverBid(20, d, 60, SEED, undefined);
+    expect(withUndefined).toEqual(legacy);
+    expect(withUndefined.refused).toBe(false);
+    expect(bidToWin(d, 60, SEED)).toBe(bidToWin(d, 60, SEED, undefined));
+  });
+
+  it('a reluctant driver needs a bigger bid to win than a keen one', () => {
+    for (let i = 0; i < 50; i++) {
+      const d = driver(9, 10, `xseries-${i}`);
+      if (competingBidFor(d, SEED) > 0) {
+        expect(bidToWin(d, 60, SEED, 30)).toBeGreaterThan(bidToWin(d, 60, SEED, 90));
+        return;
+      }
+    }
+    throw new Error('expected a contested driver');
+  });
+
+  it('a driver below the refusal floor rejects the move at any price', () => {
+    const d = driver(9, 10, 'refuser');
+    const res = resolveDriverBid(9999, d, 100, SEED, REFUSE_INTEREST - 1);
+    expect(res.refused).toBe(true);
+    expect(res.won).toBe(false);
+  });
+
+  it('higher interest can turn a losing bid into a winning one', () => {
+    for (let i = 0; i < 50; i++) {
+      const d = driver(9, 10, `flip-${i}`);
+      if (competingBidFor(d, SEED) > 0) {
+        const bid = bidToWin(d, 60, SEED, 55); // enough only for a fairly keen driver
+        expect(resolveDriverBid(bid, d, 60, SEED, 90).won).toBe(true);
+        expect(resolveDriverBid(bid, d, 60, SEED, 30).won).toBe(false);
+        return;
+      }
+    }
+    throw new Error('expected a contested driver');
   });
 });

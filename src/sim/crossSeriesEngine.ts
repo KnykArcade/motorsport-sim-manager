@@ -17,7 +17,7 @@
 import type { Series } from '../types/gameTypes';
 import type { MarketDriver } from '../types/marketTypes';
 import type { MasterDriverEntry } from '../types/registryTypes';
-import { careerPhaseForAge, registryList } from '../data/registry/masterRegistry';
+import { careerPhaseForAge, getMasterRegistry, registryList } from '../data/registry/masterRegistry';
 import {
   ageInYear,
   entryToMarketDriver,
@@ -145,6 +145,31 @@ export function willingToSign(
   threshold = 50,
 ): boolean {
   return crossSeriesInterest(e, year, hasSeat, offer) >= threshold;
+}
+
+// A market driver's interest (0-100) in signing for the player's team this year,
+// used to weight contested bids. Returns undefined for drivers who are already
+// eligible for the career's series (a same-series move carries no series-
+// preference penalty, so bidding is unchanged) and for non-registry curated
+// drivers. `playerTeamReputation` is 0-100; `playerCarOverall` is 0-10.
+export function marketDriverOfferInterest(
+  state: GameState,
+  md: MarketDriver,
+  playerTeamReputation: number,
+  playerCarOverall: number,
+): number | undefined {
+  if (!md.id.startsWith('reg-')) return undefined;
+  const e = getMasterRegistry().byId[md.id.slice(4)];
+  if (!e) return undefined;
+  if (e.eligibleSeries.includes(state.series)) return undefined; // same-series: unchanged
+  const offer: SeriesOffer = {
+    series: state.series,
+    teamReputation: playerTeamReputation,
+    carCompetitiveness: playerCarOverall,
+    salary: md.salary,
+    contractYears: 2,
+  };
+  return crossSeriesInterest(e, state.seasonYear, false, offer);
 }
 
 // Foreign-series free agents who are open to the career's current series. These
