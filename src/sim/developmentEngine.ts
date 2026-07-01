@@ -15,6 +15,13 @@ export type DevelopmentTickResult = {
   messages: string[];
 };
 
+// Race Operations (engineering consistency) shifts development project success
+// odds. Neutral at raceOps 5; a 9-ops team adds ~8 percentage points, a 3-ops
+// team loses ~4 (capped). Absent (old saves) => treated as neutral 5.
+export function raceOpsDevelopmentBonus(raceOps = 5): number {
+  return Math.max(-0.1, Math.min(0.1, (raceOps - 5) * 0.02));
+}
+
 // Advance all active projects by one race; resolve completed ones. An optional
 // successBonus (e.g. from a Technical Director) shifts each project's odds.
 export function applyDevelopmentProgress(

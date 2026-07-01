@@ -11,7 +11,7 @@ import type {
   Track,
 } from '../types/gameTypes';
 import type { RaceContext, RaceEvent, ScoreBreakdown } from '../types/simTypes';
-import { createSeededRandom, deriveSeed } from './random';
+import { createSeededRandom, deriveSeed, type Rng } from './random';
 import {
   calculateCarTrackFit,
   calculateDriverTrackFit,
@@ -45,6 +45,42 @@ export function weekendForm(seed: string, teamId: string, raceOps: number): numb
   const rng = createSeededRandom(deriveSeed(seed, 'weekendform', teamId));
   const spread = WEEKEND_FORM_SPREAD + Math.max(0, 5 - raceOps) * FORM_OPS_FACTOR;
   return rng.variance(spread);
+}
+
+// Per-car, per-weekend "operations execution" — how well the pit crew and
+// engineers execute for this car on the day. Zero-mean (peaks at 0), so it adds
+// race-to-race variation *without* shifting a car's average competitive order.
+// Every car gets a base swing; weaker Race Operations teams swing more. Drawn
+// per-car (not per-team) so a multi-car team's cars don't all swing together
+// into correlated blowout weekends. Consumed by pit stops, reliability and
+// strategy. Neutral (0) when raceOps is unknown.
+export const OPS_FORM_BASE = 0.35;
+export const OPS_FORM_WEAK = 0.14;
+
+export function operationsForm(
+  seed: string,
+  teamId: string,
+  driverId: string,
+  raceOps: number,
+): number {
+  const rng = createSeededRandom(deriveSeed(seed, 'opsform', teamId, driverId));
+  const spread = OPS_FORM_BASE + Math.max(0, 5 - raceOps) * OPS_FORM_WEAK;
+  return rng.variance(spread);
+}
+
+// Strategy-execution outcome for a finisher, driven by the weekend's operations
+// form (pit-wall calls). Zero-mean: a sharp day gains track position, a scrappy
+// one loses it and can tip into an outright blunder. Neutral at opsForm 0.
+export const STRATEGY_OPS_GAIN = 0.6;
+
+export function strategyExecution(opsForm: number, rng: Rng): { delta: number; note?: string } {
+  const delta = opsForm * STRATEGY_OPS_GAIN;
+  // A scrappy operations weekend risks an outright strategy blunder.
+  const blunderChance = Math.max(0, Math.min(0.14, -opsForm * 0.18));
+  if (opsForm < 0 && rng.chance(blunderChance)) {
+    return { delta: delta - rng.range(0.5, 2), note: 'Strategy error cost track position.' };
+  }
+  return { delta };
 }
 
 function clamp10(n: number): number {
@@ -169,9 +205,15 @@ export function computeRaceOutcome(context: RaceContext): RaceOutcome {
     const consistency = clamp10(e.driver.ratings.composure);
     const driverSwing = rng.variance(1.6 * (1 + (6 - consistency) * 0.06));
 
-    // Stress to reliability from aggressive choices.
+    // Per-car weekend operations execution (pit/reliability/strategy). Zero-mean
+    // so it adds consistency-driven variation, not average pace; weaker Race
+    // Operations teams swing more.
+    const opsForm = operationsForm(context.seed, e.driver.teamId, e.driver.id, teamRating);
+
+    // Stress to reliability from aggressive choices; the weekend's operations
+    // execution (reliability management) shifts the DNF risk up or down.
     const stress = Math.max(0, instruction.reliabilityStressModifier + setup.riskModifier * 0.2);
-    const relRisk = calculateReliabilityRisk(e.car, context.track, setup, stress);
+    const relRisk = calculateReliabilityRisk(e.car, context.track, setup, stress, opsForm);
     const mistakeRisk = calculateMistakeRisk(
       e.driver,
       context.track,
@@ -197,10 +239,15 @@ export function computeRaceOutcome(context: RaceContext): RaceOutcome {
       incidents.push(rng.pick(['Crashed out', 'Spun into the gravel', 'Collision damage, retired']));
       finalScore = -100 - grid;
     } else {
-      // Pit stop contribution for finishers.
-      const pit = calculatePitStopPerformance(e.car, strategy, rng);
+      // Pit stop contribution for finishers (pit-crew + weekend operations form).
+      const pit = calculatePitStopPerformance(e.car, strategy, rng, opsForm);
       finalScore += pit.scoreDelta;
       if (pit.note) incidents.push(pit.note);
+
+      // Strategy execution (pit-wall calls) driven by the weekend's operations form.
+      const strat = strategyExecution(opsForm, rng);
+      finalScore += strat.delta;
+      if (strat.note) incidents.push(strat.note);
 
       // A non-fatal mistake costs time.
       if (rng.chance(mistakeRisk)) {

@@ -41,6 +41,7 @@ function car(driverId: string, isPlayer: boolean, totalTime: number): LiveCarSta
     baseMistakeRisk: 0,
     tireDegRate: 2,
     pitLossBase: 22,
+    opsForm: 0,
     personality: 'Balanced',
     strategyId: 's',
     instructionId: 'Balanced',

@@ -202,6 +202,7 @@ export type LiveCarState = {
   baseMistakeRisk: number; // per-lap mistake probability baseline
   tireDegRate: number; // tyre wear points per lap at balanced pace
   pitLossBase: number; // green-flag pit-stop time loss (s)
+  opsForm: number; // per-weekend operations execution (0 neutral) — pit/strategy consistency
   personality: AIStrategyPersonality;
   strategyId: string;
   instructionId: string;

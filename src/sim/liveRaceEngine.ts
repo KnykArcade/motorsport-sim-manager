@@ -17,7 +17,7 @@ import type {
   PaceMode,
   TireCompound,
 } from '../types/liveTypes';
-import { calculateRacePace, weekendForm } from './raceEngine';
+import { calculateRacePace, weekendForm, operationsForm } from './raceEngine';
 import { calculateReliabilityRisk, perLapFailureRisk } from './reliabilityEngine';
 import { calculateMistakeRisk } from './mistakeEngine';
 import { assignPersonality } from './aiStrategyEngine';
@@ -84,10 +84,13 @@ export function createLiveRace(context: RaceContext, options: LiveRaceOptions): 
     const { score: paceScore } = calculateRacePace(e.driver, e.car, track, setup, strategy, instruction, teamRating);
     // Per-team weekend form so the live race shares the quick race's variation.
     const score = paceScore + weekendForm(context.seed, e.driver.teamId, teamRating);
+    // Per-car weekend operations execution (pit/reliability/strategy), zero-mean.
+    const opsForm = operationsForm(context.seed, e.driver.teamId, e.driver.id, teamRating);
 
     // Reliability: per-race risk amplified by quali incidents, spread per lap.
+    // The weekend's operations execution shifts the per-race risk up or down.
     const stress = Math.max(0, instruction.reliabilityStressModifier + setup.riskModifier * 0.2);
-    let perRaceRel = calculateReliabilityRisk(e.car, track, setup, stress);
+    let perRaceRel = calculateReliabilityRisk(e.car, track, setup, stress, opsForm);
     const qIncident = incidentByDriver[e.driver.id];
     if (qIncident === 'Crash') perRaceRel += 0.06;
     else if (qIncident === 'Mechanical Issue') perRaceRel += 0.04;
@@ -135,7 +138,8 @@ export function createLiveRace(context: RaceContext, options: LiveRaceOptions): 
       baseFailureRisk,
       baseMistakeRisk,
       tireDegRate,
-      pitLossBase: pitStopLoss(e.car, false, SAFETY_CAR_PIT_SAVING),
+      pitLossBase: pitStopLoss(e.car, false, SAFETY_CAR_PIT_SAVING, opsForm),
+      opsForm,
       personality,
       strategyId: strategy.id,
       instructionId: instruction.id,

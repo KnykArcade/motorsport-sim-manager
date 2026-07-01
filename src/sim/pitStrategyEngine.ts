@@ -70,11 +70,22 @@ export function buildPitPlan(strategy: RaceStrategy, totalLaps: number): PitPlan
   return { plannedStops, scheduledLaps: laps, stintTarget };
 }
 
+// How much the weekend's operations execution (`opsForm`, 0 = neutral) trims or
+// adds to a stop's time loss, on top of the car's own pit-crew rating.
+// Zero-mean, so it changes the swing, not the average.
+export const PIT_OPS_LOSS_SENS = 1.2;
+
 // Time lost for a single stop, accounting for crew quality and whether it is a
-// cheap stop under the safety car.
-export function pitStopLoss(car: Car, underSafetyCar: boolean, safetyCarSaving: number): number {
+// cheap stop under the safety car. `opsForm` (0 neutral) is the team's
+// operations execution on the weekend.
+export function pitStopLoss(
+  car: Car,
+  underSafetyCar: boolean,
+  safetyCarSaving: number,
+  opsForm = 0,
+): number {
   const ops = effectiveCarRatings(car).pitCrewOperations; // 1-10
-  const crewDelta = (5.5 - ops) * 0.4; // strong crews save ~1.8s, weak ones lose
+  const crewDelta = (5.5 - ops) * 0.4 - opsForm * PIT_OPS_LOSS_SENS; // sharp day saves time
   const loss = BASE_PIT_LOSS + crewDelta;
   return Math.max(8, underSafetyCar ? loss - safetyCarSaving : loss);
 }
