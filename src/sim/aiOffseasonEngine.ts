@@ -1,0 +1,644 @@
+// AI offseason actions — Career Mode Phase D.
+//
+// Consumes the AI management brain from Phase C (archetype, budget, financial
+// health, goal) and makes each non-player team actually *act* during the
+// offseason: run car development, work the driver market (fill/renew/release/
+// sign race + reserve drivers), sign & promote youth academy prospects (with
+// first option at 18), and make light staff/sponsor/engine adjustments — all
+// budget-limited and personality-driven. Every move is surfaced as a rollover
+// summary note + news item so the paddock visibly comes alive.
+//
+// Pure & deterministic: given the same inputs it produces the same moves.
+
+import type { Car, CarRatings, Driver, StandingsEntry, Team } from '../types/gameTypes';
+import type { EngineState } from '../types/engineTypes';
+import type { TeamOrganizationRatings } from '../types/teamRatingsTypes';
+import type { AcademyMember, MarketDriver, YouthProspect } from '../types/marketTypes';
+import type { AITeamState } from '../types/aiTeamTypes';
+import type { MarketBundle } from '../data/market';
+import { MILLION, toMoney } from './financeEngine';
+import { effectiveCarRatings } from './trackFitEngine';
+import {
+  academyMemberAge,
+  academyMemberToDriver,
+  academyMemberToReserveDriver,
+  marketDriverToDriver,
+  progressAcademyMember,
+  signProspectToAcademy,
+} from './driverMarketEngine';
+import { aiFirstOptionDecision, isPromotionEligible } from './youthAcademyEngine';
+import { calculateAcademyCapacity } from './teamRatingsEngine';
+import { ARCHETYPE_SPECS } from './aiTeamEngine';
+import { createSeededRandom, deriveSeed, type Rng } from './random';
+
+export type AIOffseasonInput = {
+  nextYear: number;
+  seed: string;
+  selectedTeamId: string;
+  teams: Team[];
+  drivers: Driver[];
+  cars: Car[];
+  engine?: EngineState;
+  aiTeamStates: Record<string, AITeamState>;
+  aiAcademies: Record<string, AcademyMember[]>;
+  orgRatings: Record<string, TeamOrganizationRatings>;
+  market: MarketBundle;
+  signedMarketIds: string[];
+  // Identities to leave alone (player grid + player academy) so the AI never
+  // poaches a name the player already controls.
+  reservedNames: Set<string>;
+  constructorStandings: StandingsEntry[];
+};
+
+export type AIOffseasonResult = {
+  teams: Team[];
+  drivers: Driver[];
+  cars: Car[];
+  engine?: EngineState;
+  aiAcademies: Record<string, AcademyMember[]>;
+  orgRatings: Record<string, TeamOrganizationRatings>;
+  signedMarketIds: string[];
+  notes: string[];
+  news: { headline: string; body?: string }[];
+};
+
+const clamp10 = (n: number) => Math.max(1, Math.min(10, Math.round(n * 10) / 10));
+const clamp100 = (n: number) => Math.max(1, Math.min(100, Math.round(n)));
+const norm = (name: string) => name.trim().toLowerCase();
+
+// The overall rating a team aspires to field, from its goal/archetype. Drives
+// how demanding it is in the driver market.
+function targetDriverOverall(ai: AITeamState): number {
+  switch (ai.goal) {
+    case 'TitleChallenge':
+      return 8.4;
+    case 'Podiums':
+      return 7.6;
+    case 'PointsFinish':
+      return 6.8;
+    case 'MidfieldImprovement':
+      return 6.0;
+    case 'YouthDevelopment':
+      return 6.2;
+    case 'Survival':
+      return 5.2;
+  }
+}
+
+// Cash a team is willing to commit this offseason above its reserve target.
+function spendableCash(team: Team, ai: AITeamState): number {
+  return Math.max(0, team.budget - ai.budget.reserveTarget);
+}
+
+// --- Development -------------------------------------------------------------
+
+const CAR_KEYS: (keyof CarRatings)[] = [
+  'enginePower',
+  'aeroEfficiency',
+  'mechanicalGrip',
+  'reliability',
+  'pitCrewOperations',
+];
+
+// Pick the development target: the car's weakest area, unless the team had a
+// reliability problem last season (many DNFs), in which case fix reliability.
+function developmentTarget(car: Car, hadReliabilityProblem: boolean): keyof CarRatings {
+  const eff = effectiveCarRatings(car);
+  if (hadReliabilityProblem && eff.reliability < 8.5) return 'reliability';
+  let worst: keyof CarRatings = 'aeroEfficiency';
+  let worstVal = Infinity;
+  for (const k of CAR_KEYS) {
+    if (eff[k] < worstVal) {
+      worstVal = eff[k];
+      worst = k;
+    }
+  }
+  return worst;
+}
+
+const CAR_AREA_LABELS: Record<keyof CarRatings, string> = {
+  enginePower: 'engine',
+  aeroEfficiency: 'aero',
+  mechanicalGrip: 'mechanical grip',
+  reliability: 'reliability',
+  pitCrewOperations: 'pit-crew',
+};
+
+// Run one AI team's offseason car development. Bigger budgets + aggressive
+// archetypes buy larger, riskier gains. Returns the updated car + a note, or
+// null when the team can't afford any meaningful development.
+function developCar(
+  car: Car,
+  team: Team,
+  ai: AITeamState,
+  hadReliabilityProblem: boolean,
+  rng: Rng,
+): { car: Car; note: string } | null {
+  const spec = ARCHETYPE_SPECS[ai.archetype];
+  const budget = ai.budget.developmentSpend;
+  if (budget < toMoney(1)) return null; // no real development this year
+
+  const budgetM = budget / MILLION;
+  // Gain scales with spend and risk appetite; a chance of a smaller-than-hoped
+  // result keeps the AI imperfect.
+  const base = Math.min(0.9, 0.12 + budgetM * 0.012 + spec.risk * 0.25);
+  const success = rng.chance(0.55 + spec.risk * 0.2);
+  const gain = clampGain((success ? base : base * 0.4) * (0.7 + rng.next() * 0.6));
+  if (gain < 0.05) return null;
+
+  const target = developmentTarget(car, hadReliabilityProblem);
+  const ratings: CarRatings = { ...car.ratings, [target]: clamp10(car.ratings[target] + gain) };
+  const scale = gain >= 0.4 ? 'a major' : gain >= 0.2 ? 'a' : 'a minor';
+  const note = `${team.name} completes ${scale} ${CAR_AREA_LABELS[target]} development package.`;
+  return { car: { ...car, ratings }, note };
+}
+
+function clampGain(g: number): number {
+  return Math.max(0, Math.min(0.8, Math.round(g * 100) / 100));
+}
+
+// --- Driver market -----------------------------------------------------------
+
+// Score a market driver for a team: rating-led, with a pay-driver team valuing
+// sponsor money and a youth-focused team valuing upside.
+function evaluateCandidate(m: MarketDriver, ai: AITeamState): number {
+  const spec = ARCHETYPE_SPECS[ai.archetype];
+  return (
+    m.overall +
+    spec.payDriverBias * (m.sponsorValue * 0.15) +
+    spec.youthBias * (m.potential - m.overall) * 0.3
+  );
+}
+
+// The effective cost of signing a market driver (buyout + first-year salary),
+// discounted by any sponsor money they bring for a pay-driver team.
+function signingCost(m: MarketDriver, ai: AITeamState): number {
+  const spec = ARCHETYPE_SPECS[ai.archetype];
+  const gross = toMoney(m.buyoutCost + m.salary);
+  const sponsorOffset = toMoney(m.sponsorValue) * spec.payDriverBias;
+  return Math.max(0, Math.round(gross - sponsorOffset));
+}
+
+type MarketCtx = {
+  available: MarketDriver[]; // mutable pool (drivers removed as signed)
+  taken: Set<string>; // market ids removed
+  takenNames: Set<string>; // identity names removed / reserved
+};
+
+// Best affordable candidate at or above a rating floor.
+function bestCandidate(
+  ctx: MarketCtx,
+  ai: AITeamState,
+  cash: number,
+  minOverall: number,
+): MarketDriver | undefined {
+  let best: MarketDriver | undefined;
+  let bestScore = -Infinity;
+  for (const m of ctx.available) {
+    if (ctx.taken.has(m.id) || ctx.takenNames.has(norm(m.name))) continue;
+    if (m.overall < minOverall) continue;
+    if (signingCost(m, ai) > cash) continue;
+    const score = evaluateCandidate(m, ai);
+    if (score > bestScore) {
+      bestScore = score;
+      best = m;
+    }
+  }
+  return best;
+}
+
+// --- Main entry --------------------------------------------------------------
+
+export function runAIOffseason(input: AIOffseasonInput): AIOffseasonResult {
+  const teams = input.teams.map((t) => ({ ...t }));
+  let drivers = input.drivers.map((d) => ({ ...d }));
+  const cars = input.cars.map((c) => ({ ...c }));
+  const carByTeam = new Map(cars.map((c) => [c.teamId, c]));
+  const aiAcademies: Record<string, AcademyMember[]> = {};
+  const orgRatings: Record<string, TeamOrganizationRatings> = { ...input.orgRatings };
+  const signedMarketIds = [...input.signedMarketIds];
+  const notes: string[] = [];
+  const news: { headline: string; body?: string }[] = [];
+
+  // Reliability problems from the finished season: teams with many DNFs.
+  const reliabilityProblem = new Set<string>();
+  for (const s of input.constructorStandings) {
+    if ((s.dnfs ?? 0) >= 6) reliabilityProblem.add(s.entityId);
+  }
+
+  // Market pool available to the AI, minus anything the player already took.
+  const ctx: MarketCtx = {
+    available: input.market.drivers.filter(
+      (m) => !signedMarketIds.includes(m.id) && !input.reservedNames.has(norm(m.name)),
+    ),
+    taken: new Set(),
+    takenNames: new Set([...input.reservedNames]),
+  };
+  // Youth pool available to the AI.
+  const youthPool: YouthProspect[] = input.market.youth.filter(
+    (y) => !input.reservedNames.has(norm(y.name)),
+  );
+  const takenYouthNames = new Set<string>([...input.reservedNames]);
+  // Names already on the grid must never be re-signed off the market.
+  for (const d of drivers) ctx.takenNames.add(norm(d.name));
+
+  // Numbers already in use across the whole grid (for new reserve numbers).
+  const usedNumbers = new Set(drivers.map((d) => d.number));
+  const nextFreeNumber = (): number => {
+    let n = 1;
+    while (usedNumbers.has(n)) n += 1;
+    usedNumbers.add(n);
+    return n;
+  };
+
+  // Process AI teams in a stable order (constructor standing, then id) so
+  // stronger teams get first pick of the market.
+  const orderIndex = new Map(input.constructorStandings.map((s, i) => [s.entityId, i]));
+  const aiTeams = teams
+    .filter((t) => t.id !== input.selectedTeamId && input.aiTeamStates[t.id])
+    .sort((a, b) => {
+      const ia = orderIndex.get(a.id) ?? Number.MAX_SAFE_INTEGER;
+      const ib = orderIndex.get(b.id) ?? Number.MAX_SAFE_INTEGER;
+      if (ia !== ib) return ia - ib;
+      if (a.reputation !== b.reputation) return b.reputation - a.reputation;
+      return a.id.localeCompare(b.id);
+    });
+
+  for (const team of aiTeams) {
+    const ai = input.aiTeamStates[team.id];
+    const spec = ARCHETYPE_SPECS[ai.archetype];
+    const rng = createSeededRandom(deriveSeed(input.seed, 'ai-offseason', team.id, input.nextYear));
+
+    // 1) Development ---------------------------------------------------------
+    const car = carByTeam.get(team.id);
+    if (car) {
+      const dev = developCar(car, team, ai, reliabilityProblem.has(team.id), rng);
+      if (dev) {
+        // The development *spend* is already applied to the team's cash by the
+        // Phase C rollover delta (sponsorIncome − dev − facility); here we only
+        // apply the on-track *result*, so cash isn't charged twice.
+        carByTeam.set(team.id, dev.car);
+        notes.push(dev.note);
+        news.push({ headline: dev.note });
+      }
+    }
+
+    // 2) Academy progression + first option ----------------------------------
+    const academyResult = processAcademy(team, ai, input, drivers, rng, {
+      youthPool,
+      takenYouthNames,
+      nextFreeNumber,
+    });
+    aiAcademies[team.id] = academyResult.academy;
+    drivers = academyResult.drivers;
+    for (const n of academyResult.notes) {
+      notes.push(n);
+      news.push({ headline: n });
+    }
+
+    // 3) Driver market: fill empty seats, then one considered upgrade ---------
+    const marketResult = processDriverMarket(team, ai, drivers, ctx, rng);
+    drivers = marketResult.drivers;
+    for (const id of marketResult.signedIds) signedMarketIds.push(id);
+    for (const n of marketResult.notes) {
+      notes.push(n);
+      news.push({ headline: n });
+    }
+    team.budget -= marketResult.spent;
+
+    // 4) Staff / sponsor / engine light adjustments --------------------------
+    const org = orgRatings[team.id];
+    if (org) {
+      const invest = ai.financialHealth === 'Excellent' || ai.financialHealth === 'Stable';
+      const retrench = ai.financialHealth === 'Critical' || ai.financialHealth === 'AtRisk';
+      const staffTargets: ('staffQuality' | 'operations' | 'research')[] = [
+        'staffQuality',
+        'operations',
+        'research',
+      ];
+      let updated = { ...org };
+      if (invest && spendableCash(team, ai) > toMoney(4) && rng.chance(0.35 + spec.risk * 0.3)) {
+        const dept = rng.pick(staffTargets);
+        updated = { ...updated, [dept]: clamp100(updated[dept] + 2 + Math.round(rng.next() * 3)) };
+        notes.push(`${team.name} strengthens its ${staffDeptLabel(dept)} department.`);
+        news.push({ headline: `${team.name} strengthens its ${staffDeptLabel(dept)} department.` });
+      } else if (retrench && rng.chance(0.4)) {
+        updated = { ...updated, staffQuality: clamp100(updated.staffQuality - 2) };
+      }
+      // Sponsor movement tracks financial health.
+      if (invest && rng.chance(0.3)) {
+        updated = { ...updated, sponsorAppeal: clamp100(updated.sponsorAppeal + 2) };
+        notes.push(`${team.name} secures a new sponsor.`);
+        news.push({ headline: `${team.name} secures a new sponsor.` });
+      }
+      orgRatings[team.id] = updated;
+    }
+  }
+
+  // Carry academies for AI teams we didn't touch this pass (none, but defensive)
+  // and drop the player's key if it ever leaked in.
+  for (const [id, a] of Object.entries(input.aiAcademies)) {
+    if (!(id in aiAcademies) && id !== input.selectedTeamId) aiAcademies[id] = a;
+  }
+
+  // Apply engine improvements to the car engineBonus where a team invested in
+  // engine development is out of scope; engine deal changes are left to the
+  // existing engineSupplierEngine. (No-op here keeps this deterministic.)
+  const engine = input.engine;
+
+  return {
+    teams,
+    drivers,
+    cars: [...carByTeam.values()],
+    engine,
+    aiAcademies,
+    orgRatings,
+    signedMarketIds,
+    notes,
+    news,
+  };
+}
+
+function staffDeptLabel(dept: keyof TeamOrganizationRatings): string {
+  switch (dept) {
+    case 'operations':
+      return 'race operations';
+    case 'research':
+      return 'research & development';
+    default:
+      return 'technical';
+  }
+}
+
+// --- Academy sub-process -----------------------------------------------------
+
+type AcademyEnv = {
+  youthPool: YouthProspect[];
+  takenYouthNames: Set<string>;
+  nextFreeNumber: () => number;
+};
+
+function processAcademy(
+  team: Team,
+  ai: AITeamState,
+  input: AIOffseasonInput,
+  drivers: Driver[],
+  rng: Rng,
+  env: AcademyEnv,
+): { academy: AcademyMember[]; drivers: Driver[]; notes: string[] } {
+  const spec = ARCHETYPE_SPECS[ai.archetype];
+  const notes: string[] = [];
+  let nextDrivers = drivers;
+  const org = input.orgRatings[team.id];
+  const capacity = org ? calculateAcademyCapacity(org) : 2;
+
+  // Progress existing members, then resolve first option on any who turned 18.
+  const existing = input.aiAcademies[team.id] ?? [];
+  const kept: AcademyMember[] = [];
+  const youthBoost = spec.youthBias * 0.3;
+  for (const raw of existing) {
+    const member = progressAcademyMember(raw, youthBoost);
+    if (!isPromotionEligible(member, input.nextYear)) {
+      kept.push({ ...member, promotionEligible: false });
+      continue;
+    }
+    // First option on a promotion-eligible member.
+    const seatDrivers = activeSeatDrivers(nextDrivers, team.id);
+    const reserves = nextDrivers.filter((d) => d.teamId === team.id && isReserveTier(d));
+    const weakestSeat = seatDrivers.reduce(
+      (min, d) => Math.min(min, d.ratings.overall),
+      Infinity,
+    );
+    const affordability = affordabilityFor(team, ai);
+    const decision = aiFirstOptionDecision(member, {
+      weakestSeatOverall: Number.isFinite(weakestSeat) ? weakestSeat : 5,
+      hasEmptySeat: seatDrivers.length < 2,
+      hasReserve: reserves.length > 0,
+      affordability,
+      promotionBias: spec.youthBias,
+    });
+    const applied = applyAcademyDecision(
+      decision,
+      member,
+      team,
+      seatDrivers,
+      nextDrivers,
+      env,
+      input.nextYear,
+    );
+    nextDrivers = applied.drivers;
+    if (applied.note) notes.push(applied.note);
+    if (applied.keep) kept.push(applied.keep);
+  }
+
+  // Sign at most one new youth prospect per offseason, gated by capacity,
+  // affordability and youth appetite.
+  const wantsYouth = kept.length < capacity && rng.chance(0.25 + spec.youthBias * 0.55);
+  if (wantsYouth) {
+    const prospect = pickYouthProspect(env.youthPool, env.takenYouthNames, team, ai, rng);
+    if (prospect && team.budget - toMoney(prospect.signingCost) > ai.budget.reserveTarget * 0.5) {
+      team.budget -= toMoney(prospect.signingCost);
+      env.takenYouthNames.add(norm(prospect.name));
+      const member = signProspectToAcademy(prospect, input.nextYear, team.id);
+      kept.push(member);
+      notes.push(`${team.name} signs youth prospect ${prospect.name} to its academy.`);
+    }
+  }
+
+  return { academy: kept, drivers: nextDrivers, notes };
+}
+
+function applyAcademyDecision(
+  decision: ReturnType<typeof aiFirstOptionDecision>,
+  member: AcademyMember,
+  team: Team,
+  seatDrivers: Driver[],
+  drivers: Driver[],
+  env: AcademyEnv,
+  nextYear: number,
+): { drivers: Driver[]; note?: string; keep?: AcademyMember } {
+  const age = academyMemberAge(member, nextYear);
+  if (decision === 'race_seat') {
+    // Replace the weakest seat driver with the promoted academy driver.
+    const target = [...seatDrivers].sort((a, b) => a.ratings.overall - b.ratings.overall)[0];
+    if (!target) {
+      return { drivers, keep: markPending(member) };
+    }
+    const promoted = academyMemberToDriver(member, { teamId: team.id, number: target.number });
+    const nextDrivers = drivers
+      .filter((d) => d.id !== target.id)
+      .concat(promoted);
+    team.driverIds = replaceInRoster(team.driverIds, target.id, promoted.id);
+    return {
+      drivers: nextDrivers,
+      note: `${team.name} promotes academy driver ${member.name} (${age}) to a race seat.`,
+    };
+  }
+  if (decision === 'third' || decision === 'reserve' || decision === 'test') {
+    const number = env.nextFreeNumber();
+    const reserve = academyMemberToReserveDriver(member, team.id, decision, number);
+    team.driverIds = [...team.driverIds, reserve.id];
+    const roleLabel =
+      decision === 'third' ? '3rd driver' : decision === 'reserve' ? 'reserve driver' : 'test driver';
+    return {
+      drivers: [...drivers, reserve],
+      note: `${team.name} signs academy driver ${member.name} (${age}) as ${roleLabel}.`,
+    };
+  }
+  if (decision === 'release') {
+    return {
+      drivers,
+      note: `${team.name} releases academy driver ${member.name} (${age}) to the driver market.`,
+    };
+  }
+  // extend
+  return {
+    drivers,
+    note: `${team.name} extends academy rights for ${member.name} (${age}).`,
+    keep: { ...member, promotionEligible: true, firstOptionStatus: 'extended_development_rights' },
+  };
+}
+
+function markPending(member: AcademyMember): AcademyMember {
+  return { ...member, promotionEligible: true, firstOptionStatus: 'pending_team_decision' };
+}
+
+function pickYouthProspect(
+  pool: YouthProspect[],
+  taken: Set<string>,
+  team: Team,
+  ai: AITeamState,
+  rng: Rng,
+): YouthProspect | undefined {
+  const spendable = spendableCash(team, ai);
+  const affordable = pool.filter(
+    (y) => !taken.has(norm(y.name)) && toMoney(y.signingCost) <= spendable,
+  );
+  if (affordable.length === 0) return undefined;
+  // Rich teams chase the highest-potential prospect; poorer teams pick a
+  // cheaper one. A little randomness keeps academies varied.
+  const spec = ARCHETYPE_SPECS[ai.archetype];
+  const ranked = [...affordable].sort((a, b) => b.potential - a.potential);
+  if (spec.risk >= 0.6 || ai.financialHealth === 'Excellent') {
+    return ranked[0];
+  }
+  const midStart = Math.floor(ranked.length / 2);
+  return ranked[midStart + Math.floor(rng.next() * (ranked.length - midStart))];
+}
+
+// --- Driver-market sub-process ----------------------------------------------
+
+function processDriverMarket(
+  team: Team,
+  ai: AITeamState,
+  drivers: Driver[],
+  ctx: MarketCtx,
+  rng: Rng,
+): { drivers: Driver[]; signedIds: string[]; spent: number; notes: string[] } {
+  const spec = ARCHETYPE_SPECS[ai.archetype];
+  const notes: string[] = [];
+  const signedIds: string[] = [];
+  let nextDrivers = drivers;
+  let spent = 0;
+  let cash = spendableCash(team, ai);
+
+  const usedNumbers = new Set(nextDrivers.map((d) => d.number));
+  const freeNumber = (): number => {
+    let n = 1;
+    while (usedNumbers.has(n)) n += 1;
+    usedNumbers.add(n);
+    return n;
+  };
+
+  // Fill empty race seats first (AI never starts a season a car short).
+  let seats = activeSeatDrivers(nextDrivers, team.id);
+  while (seats.length < 2) {
+    // Prefer promoting an existing reserve; otherwise sign from the market.
+    const reserve = nextDrivers.find((d) => d.teamId === team.id && isReserveTier(d));
+    if (reserve) {
+      nextDrivers = nextDrivers.map((d) =>
+        d.id === reserve.id ? { ...d, contractType: 'seat', contractYearsRemaining: 2 } : d,
+      );
+      team.driverIds = ensureInRoster(team.driverIds, reserve.id);
+      notes.push(`${team.name} promotes reserve driver ${reserve.name} to a race seat.`);
+    } else {
+      const pick = bestCandidate(ctx, ai, cash, 4);
+      if (!pick) break; // nothing affordable — leave the seat (rare)
+      const number = freeNumber();
+      const signed = marketDriverToDriver(pick, { teamId: team.id, number });
+      nextDrivers = [...nextDrivers, signed];
+      team.driverIds = ensureInRoster(team.driverIds, signed.id);
+      const cost = signingCost(pick, ai);
+      spent += cost;
+      cash -= cost;
+      ctx.taken.add(pick.id);
+      ctx.takenNames.add(norm(pick.name));
+      signedIds.push(pick.id);
+      notes.push(`${team.name} signs ${pick.name} to fill an empty race seat.`);
+    }
+    seats = activeSeatDrivers(nextDrivers, team.id);
+  }
+
+  // One considered upgrade: replace the weakest seat driver if a clearly better,
+  // affordable driver is available and the team is inclined to gamble.
+  const target = targetDriverOverall(ai);
+  const weakest = [...seats].sort((a, b) => a.ratings.overall - b.ratings.overall)[0];
+  const contractOpen =
+    weakest && (weakest.contractYearsRemaining == null || weakest.contractYearsRemaining <= 1);
+  const wantsUpgrade =
+    weakest &&
+    contractOpen &&
+    weakest.ratings.overall < target - 0.4 &&
+    rng.chance(0.3 + spec.risk * 0.4);
+  if (weakest && wantsUpgrade) {
+    const margin = ai.archetype === 'ChampionshipContender' ? 0.3 : 0.8;
+    const pick = bestCandidate(ctx, ai, cash, weakest.ratings.overall + margin);
+    if (pick) {
+      const signed = marketDriverToDriver(pick, { teamId: team.id, number: weakest.number });
+      nextDrivers = nextDrivers.filter((d) => d.id !== weakest.id).concat(signed);
+      team.driverIds = replaceInRoster(team.driverIds, weakest.id, signed.id);
+      spent += signingCost(pick, ai);
+      ctx.taken.add(pick.id);
+      ctx.takenNames.add(norm(pick.name));
+      signedIds.push(pick.id);
+      notes.push(
+        `${team.name} replaces ${weakest.name} with ${pick.name} (${pick.overall.toFixed(1)} overall).`,
+      );
+    }
+  }
+
+  return { drivers: nextDrivers, signedIds, spent, notes };
+}
+
+// --- Small helpers -----------------------------------------------------------
+
+function isReserveTier(d: Driver): boolean {
+  return d.contractType === 'third' || d.contractType === 'reserve' || d.contractType === 'test';
+}
+
+// The (up to two) race-seat drivers for a team: roster order first, then any
+// remaining non-reserve drivers on the team.
+function activeSeatDrivers(drivers: Driver[], teamId: string): Driver[] {
+  const team = drivers.filter((d) => d.teamId === teamId && !isReserveTier(d));
+  return team.slice(0, 2);
+}
+
+function affordabilityFor(team: Team, ai: AITeamState): number {
+  const spendable = spendableCash(team, ai);
+  if (spendable <= 0) return 0;
+  if (spendable > toMoney(10)) return 1;
+  return spendable / toMoney(10);
+}
+
+function replaceInRoster(roster: string[], oldId: string, newId: string): string[] {
+  const idx = roster.indexOf(oldId);
+  if (idx < 0) return [...roster.filter((id) => id !== newId), newId];
+  const next = [...roster];
+  next[idx] = newId;
+  return next;
+}
+
+function ensureInRoster(roster: string[], id: string): string[] {
+  return roster.includes(id) ? roster : [...roster, id];
+}
+

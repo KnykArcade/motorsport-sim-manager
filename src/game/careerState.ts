@@ -149,6 +149,11 @@ export type GameState = {
   // on pre-Phase-C saves; rebuilt lazily by the AI engine when needed.
   aiTeamStates?: Record<string, AITeamState>;
 
+  // AI youth academies (Phase D): prospects each non-player team has signed to
+  // its own academy, keyed by teamId. They progress and reach first-option age
+  // exactly like the player's academy. Absent on pre-Phase-D saves.
+  aiAcademies?: Record<string, AcademyMember[]>;
+
   randomSeed: string;
   seasonComplete: boolean;
 };
