@@ -166,6 +166,19 @@ export function tyreMistakeRisk(wear: number): number {
   return 0.05;
 }
 
+// Terminal tyre-failure (puncture / delamination) probability per lap. Kept
+// deliberately RARE: tyre wear should express itself as pace loss, mistakes and
+// forced pit stops (see the tyre-cliff stop in raceTickEngine) long before it
+// ever ends a race. Only bites in the high-wear window a car briefly occupies
+// before it pits, so tyre/damage stays a small share of all retirements.
+export function tyreFailureRisk(wear: number, wet: boolean): number {
+  let risk = 0;
+  if (wear >= 90) risk = 0.026;
+  else if (wear >= 82) risk = 0.015;
+  else if (wear >= 74) risk = 0.006;
+  return risk * (wet ? 1.4 : 1);
+}
+
 // Fuel/distance: cars run heavy early and get progressively faster as fuel
 // burns off across the race. Zero-mean around mid-distance so it does not shift
 // average pace, only the early-vs-late trend.

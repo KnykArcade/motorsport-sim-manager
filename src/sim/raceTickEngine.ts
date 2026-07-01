@@ -23,10 +23,11 @@ import {
   trafficStatus,
   statusMessage,
   tyreMistakeRisk,
+  tyreFailureRisk,
   LIVE_PACE_K,
   DIRTY_AIR_GAP,
 } from './liveRacePace';
-import { pickDnfCause, type DnfCauseContext } from './dnfModel';
+import { mechanicalLabel, crashLabel, tyreLabel, otherLabel } from './dnfModel';
 import { stepWeather } from './weatherEngine';
 import {
   stepSafetyCar,
@@ -185,42 +186,68 @@ export function stepLiveRace(state: LiveRaceState, meta: LiveRaceMeta): LiveRace
         lapEvents.push({ lap: nextLap, text: `${name(c.driverId)} reports ${issue.label.toLowerCase()}.` });
         if (c.isPlayer) candidates.push({ prompt: reliabilityPrompt(c, nextLap, issue.label), priority: 3 });
       }
+    } else if (!c.isPlayer && !c.reliabilityIssue.managed && c.reliabilityIssue.lap < nextLap) {
+      // AI teams react to a warning (turn the engine down, adjust) so it doesn't
+      // sit unmanaged and compound into a near-certain retirement. The player
+      // still owns the decision via the prompt.
+      if (rng.chance(0.7)) c.reliabilityIssue = { ...c.reliabilityIssue, managed: true };
     }
 
-    // --- Live risk levels (reliability separate from crash/incident) ---
-    let relRisk = c.baseFailureRisk * spec.reliabilityMult;
-    if (c.reliabilityIssue && !c.reliabilityIssue.managed) relRisk += c.reliabilityIssue.failureRisk;
-    c.reliabilityRisk = relRisk;
+    // --- Retirement risk, split into independent buckets ---------------------
+    // Each bucket is rolled separately and the DNF is labelled by whichever
+    // bucket actually fired, so the reported cause reflects the real trigger
+    // (no combined roll + era-profile re-draw). Base risks are the per-lap
+    // conversions of the same per-race reliability/crash risks the Quick Sim
+    // uses, so Live totals track Quick Sim over large samples.
 
+    // 1. Mechanical: car/engine reliability, mode, and any active warning.
+    let mechRisk = c.baseFailureRisk * spec.reliabilityMult;
+    if (c.reliabilityIssue) {
+      mechRisk += c.reliabilityIssue.managed
+        ? c.reliabilityIssue.failureRisk * 0.3
+        : c.reliabilityIssue.failureRisk;
+    }
+    c.reliabilityRisk = mechRisk;
+
+    // 2. Crash/contact: driver/track incident risk, amplified by mode, fighting,
+    //    wet weather, wall proximity and existing damage; tyre wear only nudges.
     const tyreRiskAdd = tyreMistakeRisk(c.tire.wear);
+    const wallFactor = 1 + (track.attributes.riskWallProximity - 5) * 0.03;
     const crashRisk =
-      (c.baseCrashRisk * spec.crashMult + tyreRiskAdd * 0.15) *
-      (fighting ? 1.4 : 1) *
-      (weather.wet ? 1.5 : 1) *
-      (c.damaged ? 1.2 : 1);
+      (c.baseCrashRisk * spec.crashMult + tyreRiskAdd * 0.05) *
+      (fighting ? 1.25 : 1) *
+      (weather.wet ? 1.4 : 1) *
+      wallFactor *
+      (c.damaged ? 1.15 : 1);
     c.crashRisk = crashRisk;
 
-    // --- Retirement (single roll; era profile decides the cause) ---
-    const pDnf = relRisk + crashRisk + OTHER_PER_LAP;
-    if (rng.chance(pDnf)) {
-      const causeCtx: DnfCauseContext = {
-        carReliability: 5, // per-car reliability is baked into relRisk already
-        aggression: aggressionForMode(c.paceMode),
-        composure: 5,
-        tyreWear: c.tire.wear,
-        wallProximity: track.attributes.riskWallProximity,
-        inTraffic: fighting,
-      };
-      // Bias the draw toward whatever risk dominated this car's retirement.
-      const { cause, label } = pickDnfCause(meta.year, causeCtx, rng);
-      const incident =
-        cause === 'Mechanical' && c.reliabilityIssue && !c.reliabilityIssue.managed
-          ? `${c.reliabilityIssue.label} — retired`
-          : label;
-      c = retire(c, nextLap, incident);
-      lapEvents.push({ lap: nextLap, text: `${name(c.driverId)} retires — ${incident.toLowerCase()}.` });
+    // 3. Tyre failure: rare, only in the high-wear window before a forced pit.
+    const tyreFailRisk = tyreFailureRisk(c.tire.wear, weather.wet);
+    // 4. Other: fuel system, illness, debris, etc.
+    const otherRisk = OTHER_PER_LAP;
+
+    // Independent rolls; the first bucket to fire ends the race and names itself.
+    let retired: { label: string; severity: number } | null = null;
+    if (rng.chance(mechRisk)) {
+      // Name the failure after an active warning, except tyre-vibration whose
+      // wording would misread as a tyre/damage retirement — use a generic one.
+      const label =
+        c.reliabilityIssue && !c.reliabilityIssue.managed && c.reliabilityIssue.type !== 'TireVibration'
+          ? `${c.reliabilityIssue.label} — failure`
+          : mechanicalLabel(rng);
+      retired = { label, severity: 0.5 };
+    } else if (rng.chance(crashRisk)) {
+      retired = { label: crashLabel(rng), severity: 0.7 };
+    } else if (rng.chance(tyreFailRisk)) {
+      retired = { label: tyreLabel(rng), severity: 0.6 };
+    } else if (rng.chance(otherRisk)) {
+      retired = { label: otherLabel(rng), severity: 0.4 };
+    }
+    if (retired) {
+      c = retire(c, nextLap, retired.label);
+      lapEvents.push({ lap: nextLap, text: `${name(c.driverId)} retires — ${retired.label.toLowerCase()}.` });
       incidentThisLap = true;
-      incidentSeverity = Math.max(incidentSeverity, cause === 'Crash' ? 0.7 : 0.5);
+      incidentSeverity = Math.max(incidentSeverity, retired.severity);
       return c;
     }
 
@@ -549,24 +576,6 @@ export function stepLiveRaceToEnd(state: LiveRaceState, meta: LiveRaceMeta): Liv
     guard += 1;
   }
   return s;
-}
-
-// A crash-proneness proxy (1-10) from the current strategy mode, used to nudge
-// the DNF cause draw toward crashes for the more aggressive modes.
-function aggressionForMode(mode: PaceMode): number {
-  switch (mode) {
-    case 'Attack':
-      return 8;
-    case 'Push':
-      return 6.5;
-    case 'Defend':
-      return 6;
-    case 'Conservative':
-    case 'ProtectEngine':
-      return 4;
-    default:
-      return 5;
-  }
 }
 
 function retire(c: LiveCarState, lap: number, cause: string): LiveCarState {

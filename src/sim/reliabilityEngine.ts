@@ -83,13 +83,16 @@ export function rollReliabilityIssue(
   lap: number,
   pushing: boolean,
 ): ReliabilityIssue | null {
-  const chance = perLapBaseRisk * (pushing ? 6 : 3.5);
+  const chance = perLapBaseRisk * (pushing ? 4 : 2.5);
   if (!rng.chance(chance)) return null;
 
   const type = rng.pick(ALL_ISSUE_TYPES);
   const severityRoll = rng.next();
   const severity = severityRoll > 0.85 ? 'Severe' : severityRoll > 0.5 ? 'Moderate' : 'Minor';
-  const severityRisk = severity === 'Severe' ? 0.05 : severity === 'Moderate' ? 0.025 : 0.012;
+  // Extra per-lap failure risk a warning adds until it is managed. Kept small so
+  // a warning is a manageable concern (pace/strategy pressure) rather than an
+  // near-certain retirement when it goes unmanaged over many laps.
+  const severityRisk = severity === 'Severe' ? 0.018 : severity === 'Moderate' ? 0.008 : 0.004;
 
   return {
     type,

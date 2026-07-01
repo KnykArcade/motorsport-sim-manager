@@ -99,6 +99,7 @@ function createRace(context: RaceContext, playerTeamId: string) {
     teamReputation,
     teamRaceOps,
     year: 1995,
+    series: 'F1',
   });
 }
 

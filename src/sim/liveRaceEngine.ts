@@ -20,7 +20,7 @@ import type {
 import { calculateRacePace, weekendForm, operationsForm, PACE_SPREAD } from './raceEngine';
 import { calculateReliabilityRisk, perLapFailureRisk } from './reliabilityEngine';
 import { calculateMistakeRisk, calculateCrashRisk } from './mistakeEngine';
-import { eraReliabilityScale } from './dnfModel';
+import { eraReliabilityScale, liveRiskCalibration } from './dnfModel';
 import { assignPersonality } from './aiStrategyEngine';
 import { buildPitPlan, pitStopLoss, pitWindowFor } from './pitStrategyEngine';
 import { initialWeather } from './weatherEngine';
@@ -38,6 +38,8 @@ export type LiveRaceOptions = {
   teamRaceOps: Record<string, number>;
   // Season year — drives era-specific DNF-cause balancing.
   year: number;
+  // Series (e.g. 'F1', 'IndyCar') — drives series-specific DNF calibration.
+  series: string;
 };
 
 // Metadata threaded through the tick engine for events and player prompts.
@@ -105,11 +107,15 @@ export function createLiveRace(context: RaceContext, options: LiveRaceOptions): 
     const qIncident = incidentByDriver[e.driver.id];
     if (qIncident === 'Crash') perRaceRel += 0.06;
     else if (qIncident === 'Mechanical Issue') perRaceRel += 0.04;
-    const baseFailureRisk = perLapFailureRisk(perRaceRel, totalLaps) * eraReliabilityScale(options.year);
+    // Live-only era/series calibration so the labelled bucket split (mechanical
+    // vs crash) lands on the era targets; the Quick Sim is unaffected.
+    const cal = liveRiskCalibration(options.year, options.series);
+    const baseFailureRisk =
+      perLapFailureRisk(perRaceRel, totalLaps) * eraReliabilityScale(options.year) * cal.mech;
 
     // Crash/incident risk, kept separate from mechanical failure.
     const perRaceCrash = calculateCrashRisk(e.driver, track, instruction.mistakeModifier);
-    const baseCrashRisk = perLapFailureRisk(perRaceCrash, totalLaps);
+    const baseCrashRisk = perLapFailureRisk(perRaceCrash, totalLaps) * cal.crash;
 
     const perRaceMistake = calculateMistakeRisk(
       e.driver,
