@@ -36,6 +36,7 @@ import type { HistoricalEventHook, FiredEvent } from '../types/eventHookTypes';
 import type { ScoutingState } from '../types/scoutingTypes';
 import type { DriverDevelopmentCurve } from '../types/developmentCurveTypes';
 import type { UniverseHistory } from '../types/universeTypes';
+import type { AITeamState } from '../types/aiTeamTypes';
 
 export type GameState = {
   id: string;
@@ -142,6 +143,11 @@ export type GameState = {
   developmentCurves?: Record<string, DriverDevelopmentCurve>;
   // 13. Universe records / history database.
   universeHistory?: UniverseHistory;
+
+  // AI Team Management (Phase C): the management brain for every non-player
+  // team — archetype, budget, financial health, goal — keyed by teamId. Absent
+  // on pre-Phase-C saves; rebuilt lazily by the AI engine when needed.
+  aiTeamStates?: Record<string, AITeamState>;
 
   randomSeed: string;
   seasonComplete: boolean;
