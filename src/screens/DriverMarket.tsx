@@ -296,7 +296,14 @@ function SeniorCard({
     <Panel>
       <div className="mb-1 flex items-start justify-between gap-2">
         <div>
-          <div className="font-bold text-neutral-100">{d.name}</div>
+          <div className="flex items-center gap-2">
+            <span className="font-bold text-neutral-100">{d.name}</span>
+            {d.marketPool === 'crossSeries' && (
+              <span className="rounded bg-sky-900/70 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-sky-300">
+                Crossover
+              </span>
+            )}
+          </div>
           <div className="text-xs text-neutral-500">
             {d.nationality} · {d.age} · {d.context}
           </div>
