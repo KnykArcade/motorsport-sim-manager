@@ -787,7 +787,11 @@ function runQualifying(state: GameState, playerDecisions: QualifyingDecision[]):
       : [];
 
   const teamReputation: Record<string, number> = {};
-  state.teams.forEach((t) => (teamReputation[t.id] = t.reputation));
+  const teamRaceOps: Record<string, number> = {};
+  state.teams.forEach((t) => {
+    teamReputation[t.id] = t.reputation;
+    teamRaceOps[t.id] = t.raceOperations ?? t.reputation / 10;
+  });
 
   const { results, breakdowns } = simulateQualifying({
     track,
@@ -801,6 +805,7 @@ function runQualifying(state: GameState, playerDecisions: QualifyingDecision[]):
     wetPreparedDriverIds,
     format: qualifyingFormatFor(state.seasonYear, state.series),
     teamReputation,
+    teamRaceOps,
   });
 
   lastBreakdowns.qualifying = breakdowns;

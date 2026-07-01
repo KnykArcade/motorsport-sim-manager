@@ -31,6 +31,22 @@ import { calculatePitStopPerformance } from './pitStopEngine';
 export const PACE_WEIGHTS = { car: 0.5, driver: 0.25, team: 0.15, other: 0.1 } as const;
 export const PACE_SPREAD = 4;
 
+// Weekend form: a per-team, per-weekend swing (a strong/weak weekend hits both of
+// a team's cars together). This is what lets closely-matched front-runners trade
+// wins across a season instead of the fastest car winning every race. Teams with
+// weaker Race Operations (strategy/pit/engineering consistency) swing more; the
+// gap to the midfield/backmarkers is far larger than the swing, so they only
+// profit from a top team's off weekend rather than beating it on pace.
+export const WEEKEND_FORM_SPREAD = 3.5;
+export const FORM_OPS_FACTOR = 0.22;
+
+// Per-team weekend form for a race weekend, shared by both of the team's cars.
+export function weekendForm(seed: string, teamId: string, raceOps: number): number {
+  const rng = createSeededRandom(deriveSeed(seed, 'weekendform', teamId));
+  const spread = WEEKEND_FORM_SPREAD + Math.max(0, 5 - raceOps) * FORM_OPS_FACTOR;
+  return rng.variance(spread);
+}
+
 function clamp10(n: number): number {
   return Math.max(1, Math.min(10, n));
 }
@@ -132,7 +148,7 @@ export function computeRaceOutcome(context: RaceContext): RaceOutcome {
     const instruction = context.instructions[decision.instructionId];
     const grid = gridByDriver[e.driver.id] ?? context.entrants.length;
 
-    const teamRating = (context.teamReputation?.[e.driver.teamId] ?? 50) / 10;
+    const teamRating = context.teamRaceOps?.[e.driver.teamId] ?? 5;
     const { score, breakdown } = calculateRacePace(
       e.driver,
       e.car,
@@ -145,6 +161,13 @@ export function computeRaceOutcome(context: RaceContext): RaceOutcome {
 
     // Grid position matters but the race can reorder things.
     const gridBonus = (context.entrants.length - grid) * 0.12;
+
+    // Per-team weekend form (both cars share it) — the main source of race-to-race
+    // variation that lets front-runners trade wins. Driver consistency (composure)
+    // damps the individual swing so reliable drivers are steadier.
+    const form = weekendForm(context.seed, e.driver.teamId, teamRating);
+    const consistency = clamp10(e.driver.ratings.composure);
+    const driverSwing = rng.variance(1.6 * (1 + (6 - consistency) * 0.06));
 
     // Stress to reliability from aggressive choices.
     const stress = Math.max(0, instruction.reliabilityStressModifier + setup.riskModifier * 0.2);
@@ -159,7 +182,7 @@ export function computeRaceOutcome(context: RaceContext): RaceOutcome {
     const incidents: string[] = [];
     let status: RaceResult['status'] = 'Finished';
     let lapsCompleted = totalLaps;
-    let finalScore = score + gridBonus + rng.variance(1.6);
+    let finalScore = score + gridBonus + form + driverSwing;
 
     // Reliability failure?
     if (rng.chance(relRisk)) {

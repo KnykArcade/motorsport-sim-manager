@@ -155,6 +155,12 @@ export type Team = {
   driverIds: string[];
   budget: number;
   reputation: number; // 0-100
+  // Race Operations Rating (1-10): strategy, pit-crew quality, setup execution,
+  // reliability management, engineering consistency and race-weekend execution.
+  // Distinct from reputation (prestige/commercial). Drives the team component of
+  // race & qualifying pace. Optional for backward-compatibility with old saves
+  // (falls back to a midfield 5 when absent).
+  raceOperations?: number; // 1-10
   morale: number; // 0-100
   expectedStanding?: number;
   difficulty?: 'Easy' | 'Medium' | 'Hard' | 'Very Hard';

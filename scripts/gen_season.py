@@ -1049,7 +1049,17 @@ def write_ts(y, src, header, tracks, teams, drivers, market, youth, budget_for,
             f.write(f"    carId: {ts_str('car-' + slug(t['name']) + f'-{y}')},\n")
             f.write(f"    driverIds: [{ids}],\n")
             f.write(f"    budget: {budget_for(t)},\n")
-            f.write(f"    reputation: {rep},\n    morale: 65,\n")
+            f.write(f"    reputation: {rep},\n")
+            cr = t.get("ratings") or {}
+            pit = cr.get("pitCrewOperations")
+            rel = cr.get("reliability")
+            if pit is not None and rel is not None:
+                ops = 0.55 * (rep / 10) + 0.45 * ((pit + rel) / 2)
+            else:
+                ops = rep / 10
+            ops = max(1.0, min(10.0, round(ops * 10) / 10))
+            ops_s = str(int(ops)) if ops == int(ops) else f"{ops:g}"
+            f.write(f"    raceOperations: {ops_s},\n    morale: 65,\n")
             f.write(f"    expectedStanding: {rank},\n")
             f.write(f"    difficulty: {ts_str(difficulty(rank))},\n")
             f.write(f"    color: {ts_str(color)},\n  }},\n")
