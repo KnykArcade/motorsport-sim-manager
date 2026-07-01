@@ -264,4 +264,57 @@ describe('player-controlled pit strategy', () => {
       expect(after.pit.pitRequested).toBe(false);
     }
   });
+
+  it('an early stop absorbs a planned stop so the car does not pit again in the window', () => {
+    const context = buildContext('early-stop-seed');
+    const playerTeam = context.entrants[0].driver.teamId;
+    const meta = buildMeta(context, playerTeam);
+    let state = createRace(context, playerTeam);
+    state = stepLiveRace(state, meta); // get racing (lap 1)
+
+    const target = state.cars.find((c) => c.isPlayer && c.running);
+    if (!target) return; // unlucky early DNF — nothing to assert
+    const lap = state.currentLap;
+
+    // Two planned stops in the future with the window opening later; then call an
+    // early stop (as under a safety car) well before the window opens. Clear any
+    // pending prompt/recs so the requested stop executes deterministically.
+    state = {
+      ...state,
+      pendingPrompt: null,
+      recommendations: [],
+      cars: state.cars.map((c) =>
+        c.driverId === target.driverId
+          ? {
+              ...c,
+              tire: { ...c.tire, wear: 40 },
+              pit: {
+                ...c.pit,
+                stopsMade: 0,
+                scheduledLaps: [lap + 12, lap + 24],
+                window: { open: lap + 10, ideal: lap + 12, close: lap + 14 },
+                planStatus: 'planned',
+                planCancelled: false,
+                pitRequested: false,
+              },
+            }
+          : c,
+      ),
+    };
+
+    state = requestPlayerPit(state, target.driverId);
+    state = { ...state, pendingPrompt: null };
+    state = stepLiveRace(state, meta);
+
+    const after = state.cars.find((c) => c.driverId === target.driverId)!;
+    if (!after.running) return;
+    // Exactly one stop made; lastPitLap recorded; the first planned stop is
+    // consumed (only the later one remains) and the plan is recalculated.
+    expect(after.pit.stopsMade).toBe(1);
+    expect(after.pit.lastPitLap).toBe(lap + 1);
+    expect(after.pit.scheduledLaps).toEqual([lap + 24]);
+    expect(after.pit.planStatus).toBe('recalculated');
+    // The advisory window advanced off the original (now-satisfied) lap-(+10) window.
+    expect(after.pit.window?.open).not.toBe(lap + 10);
+  });
 });

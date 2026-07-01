@@ -116,6 +116,7 @@ const A = {
   hold: (): RecAction => ({ type: 'HoldPosition', label: 'Hold Position', paceMode: 'Balanced' }),
   pitNow: (): RecAction => ({ type: 'PitNow', label: 'Pit Now', pitNow: true }),
   stayOut: (): RecAction => ({ type: 'StayOut', label: 'Stay Out', paceMode: 'Conservative' }),
+  cancelStop: (): RecAction => ({ type: 'CancelStop', label: 'Cancel Planned Stop' }),
   letRace: (): RecAction => ({ type: 'LetTeammateRace', label: 'Let Them Race', teamOrder: 'LetThemRace' }),
   swap: (): RecAction => ({ type: 'SwapPositions', label: 'Swap Positions', teamOrder: 'SwapPositions' }),
 };
@@ -228,23 +229,31 @@ function candidatesFor(
     });
   }
 
-  // 7. Pit window open.
+  // 7. Pit window open (prompt, never an automatic stop). The player can pit,
+  //    stay out, cancel the plan or let the crew decide. The final lap of the
+  //    window raises a stronger "last recommended lap" warning.
   if (
     car.pit.window &&
     state.currentLap >= car.pit.window.open &&
     state.currentLap <= car.pit.window.close &&
     stopsLeft > 0 &&
-    !car.pit.inPitThisLap
+    !car.pit.inPitThisLap &&
+    !car.pit.planCancelled
   ) {
+    const finalLap = state.currentLap >= car.pit.window.close;
     out.push({
       kind: 'pitWindow',
-      priority: 'high',
-      issue: `Pit window is open (ideal lap ${car.pit.window.ideal}).`,
-      recommendedAction: 'Box this lap to hit the strategy window.',
+      priority: finalLap ? 'urgent' : 'high',
+      issue: finalLap
+        ? `Final lap of the planned pit window (ideal lap ${car.pit.window.ideal}).`
+        : `Pit window is open (ideal lap ${car.pit.window.ideal}).`,
+      recommendedAction: finalLap
+        ? 'Box this lap or extend the stint — last recommended lap.'
+        : 'Box this lap to hit the strategy window.',
       expectedImpact: 'Optimal undercut / tyre-offset window.',
-      confidence: 76,
+      confidence: finalLap ? 82 : 76,
       action: A.pitNow(),
-      alternatives: [A.stayOut()],
+      alternatives: [A.stayOut(), A.cancelStop()],
     });
   }
 

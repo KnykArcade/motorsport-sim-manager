@@ -44,6 +44,12 @@ type Props = {
   onChangeParam: (driverId: string, key: SetupParamKey, value: number) => void;
   onApplySetup: (driverId: string, setup: CarSetup) => void;
   onCopy: (fromId: string, toId: string) => void;
+  // Reset the driver back to the setup family they actually ran in practice.
+  onResetDriver?: (driverId: string) => void;
+  // Fixed-action-bar navigation (rendered inside the workshop so the buttons are
+  // always visible without page scroll).
+  onBack?: () => void;
+  onConfirm?: () => void;
 };
 
 function fmtDelta(v: number): string {
@@ -70,8 +76,12 @@ export function SetupWorkshop({
   onChangeParam,
   onApplySetup,
   onCopy,
+  onResetDriver,
+  onBack,
+  onConfirm,
 }: Props) {
   const [activeId, setActiveId] = useState(drivers[0]?.id ?? '');
+  const [activeComp, setActiveComp] = useState(SETUP_COMPONENTS[0]?.key ?? '');
   const driver = drivers.find((d) => d.id === activeId) ?? drivers[0];
   const setup = driver ? setups[driver.id] : undefined;
   const other = drivers.find((d) => d.id !== driver?.id);
@@ -111,40 +121,45 @@ export function SetupWorkshop({
   const qualityEstimate = setupQualityEstimate(quality.quality, setupKnowledge);
   const revealComponents = canRevealComponentFit(setupKnowledge);
   const stint = stintWindowEstimate(24, tyreKnowledge);
+  const comp = SETUP_COMPONENTS.find((c) => c.key === activeComp) ?? SETUP_COMPONENTS[0];
+  const radar = SETUP_COMPONENTS.map((c) => ({ label: c.name, value: componentFit(c.key) }));
 
   return (
-    <div className="space-y-4">
-      <div>
-        <h2 className="text-lg font-semibold text-neutral-100">Car Setup Workshop</h2>
-        <p className="text-sm text-neutral-400">
-          Tune the engineering setup for each driver. <span className="text-neutral-300">Objective
-          Setup Quality</span> is how well the setup suits the track and this car; <span className="text-neutral-300">Driver
-          Comfort</span> is how well the driver knows and trusts it from practice. Practice narrows
-          the uncertainty — without it the numbers are only estimates.
-        </p>
+    <div className="flex h-full min-h-0 flex-col gap-3" data-testid="setup-workshop">
+      {/* Engineering-bay header + driver tabs (each car is tuned separately). */}
+      <div className="flex shrink-0 flex-wrap items-center justify-between gap-3 rounded-lg border border-sky-500/20 bg-gradient-to-r from-neutral-900/80 to-neutral-900/30 px-4 py-2">
+        <div className="flex items-center gap-3">
+          <span className="text-sky-400">⚙</span>
+          <div>
+            <h2 className="text-sm font-bold uppercase tracking-wider text-neutral-100">Engineering Bay · Car Setup</h2>
+            <p className="text-[11px] text-neutral-400">Tune the car against the circuit and each driver&apos;s feel.</p>
+          </div>
+        </div>
+        {drivers.length > 1 && (
+          <div className="flex gap-1 rounded-md bg-neutral-900/60 p-1" role="tablist">
+            {drivers.map((d) => (
+              <button
+                key={d.id}
+                role="tab"
+                aria-selected={d.id === driver.id}
+                onClick={() => setActiveId(d.id)}
+                className={`rounded px-3 py-1.5 text-sm font-semibold transition-colors ${
+                  d.id === driver.id
+                    ? 'bg-sky-500 text-neutral-950'
+                    : 'text-neutral-300 hover:bg-neutral-800'
+                }`}
+              >
+                {d.name}
+              </button>
+            ))}
+          </div>
+        )}
       </div>
 
-      {drivers.length > 1 && (
-        <div className="flex gap-2">
-          {drivers.map((d) => (
-            <button
-              key={d.id}
-              onClick={() => setActiveId(d.id)}
-              className={`rounded-md px-3 py-1.5 text-sm ${
-                d.id === driver.id
-                  ? 'bg-amber-500 font-semibold text-neutral-950'
-                  : 'bg-neutral-800 text-neutral-300 hover:bg-neutral-700'
-              }`}
-            >
-              {d.name}
-            </button>
-          ))}
-        </div>
-      )}
-
+      {/* Setup change warning banner (driver is drifting off their practised feel). */}
       {(comfort.stale || comfort.notes.length > 0) && (
         <div
-          className={`rounded-lg border px-3 py-2 text-xs ${
+          className={`shrink-0 rounded-lg border px-3 py-1.5 text-xs ${
             comfort.stale
               ? 'border-amber-600/50 bg-amber-900/20 text-amber-200'
               : 'border-neutral-800 bg-neutral-900/40 text-neutral-300'
@@ -156,110 +171,129 @@ export function SetupWorkshop({
         </div>
       )}
 
-      <div className="grid gap-4 lg:grid-cols-3">
-        {/* Left: controls */}
-        <div className="space-y-4 lg:col-span-2">
-          <Panel title="Quick-Start Presets">
-            <div className="flex flex-wrap gap-2">
-              {SETUP_PRESETS.map((p) => (
+      {/* Main dashboard: left controls (internal scroll) + right readout (internal scroll). */}
+      <div className="grid min-h-0 flex-1 gap-3 lg:grid-cols-3">
+        {/* Left/Middle: setup controls grouped into component tabs. */}
+        <div className="flex min-h-0 flex-col lg:col-span-2">
+          <div className="flex shrink-0 flex-wrap gap-1 rounded-t-lg border border-neutral-800 bg-neutral-900/40 p-1" role="tablist">
+            {SETUP_COMPONENTS.map((c) => {
+              const cf = componentFit(c.key);
+              return (
                 <button
-                  key={p.id}
-                  title={p.description}
-                  onClick={() => onApplySetup(driver.id, { ...p.setup })}
-                  className="rounded-md border border-neutral-700 bg-neutral-800/60 px-3 py-1.5 text-xs text-neutral-200 hover:bg-neutral-700"
+                  key={c.key}
+                  role="tab"
+                  aria-selected={c.key === comp.key}
+                  onClick={() => setActiveComp(c.key)}
+                  className={`flex items-center gap-1.5 rounded px-2.5 py-1.5 text-xs font-semibold transition-colors ${
+                    c.key === comp.key
+                      ? 'bg-sky-500/15 text-sky-300'
+                      : 'text-neutral-400 hover:bg-neutral-800/60 hover:text-neutral-100'
+                  }`}
                 >
-                  {p.name}
+                  {c.name}
+                  <span className="h-1.5 w-1.5 rounded-full" style={{ backgroundColor: fitBand(cf) }} />
                 </button>
-              ))}
-            </div>
-            {other && (
-              <div className="mt-3 border-t border-neutral-800 pt-3">
-                <Button
-                  variant="ghost"
-                  onClick={() => onCopy(driver.id, other.id)}
-                  className="text-xs"
-                >
-                  Copy {driver.name}&apos;s setup → {other.name}
-                </Button>
+              );
+            })}
+          </div>
+          <div className="min-h-0 flex-1 overflow-y-auto rounded-b-lg border border-t-0 border-neutral-800 bg-neutral-900/20 p-3">
+            <div className="mb-3 flex items-center justify-between gap-4">
+              <p className="text-xs text-neutral-400">{comp.description}</p>
+              <div className="flex shrink-0 items-center gap-2">
+                <span className="text-xs text-neutral-500">Fit</span>
+                {revealComponents ? (
+                  <span className="text-sm font-semibold tabular-nums" style={{ color: ratingColor(componentFit(comp.key) / 10) }}>
+                    {componentFit(comp.key)}
+                  </span>
+                ) : (
+                  <span
+                    className="text-sm font-semibold tabular-nums text-neutral-400"
+                    title="Run more practice to reveal exact component fit"
+                  >
+                    {componentFitEstimate(componentFit(comp.key), setupKnowledge).low}–
+                    {componentFitEstimate(componentFit(comp.key), setupKnowledge).high}
+                  </span>
+                )}
               </div>
-            )}
-          </Panel>
+            </div>
+            <div className="space-y-4">
+              {comp.params.map((key) => {
+                const meta = SETUP_PARAMS[key];
+                return (
+                  <div key={key}>
+                    <div className="mb-1 flex items-center justify-between text-xs">
+                      <span className="font-medium text-neutral-200">{meta.label}</span>
+                      <span className="tabular-nums text-neutral-400">{setup[key]}/10</span>
+                    </div>
+                    <input
+                      type="range"
+                      min={1}
+                      max={10}
+                      step={1}
+                      value={setup[key]}
+                      onChange={(e) => onChangeParam(driver.id, key, Number(e.target.value))}
+                      className="w-full accent-sky-500"
+                    />
+                    <div className="flex justify-between text-[10px] uppercase tracking-wide text-neutral-500">
+                      <span>{meta.lowLabel}</span>
+                      <span>{meta.highLabel}</span>
+                    </div>
+                    <p className="mt-1 text-[11px] text-neutral-500">{meta.description}</p>
+                  </div>
+                );
+              })}
+            </div>
 
-          {SETUP_COMPONENTS.map((comp) => {
-            const cf = componentFit(comp.key);
-            const est = componentFitEstimate(cf, setupKnowledge);
-            return (
-              <Panel key={comp.key} title={comp.name}>
-                <div className="mb-3 flex items-center justify-between gap-4">
-                  <p className="text-xs text-neutral-400">{comp.description}</p>
-                  <div className="flex shrink-0 items-center gap-2">
-                    <span className="text-xs text-neutral-500">Fit</span>
-                    {revealComponents ? (
-                      <span
-                        className="text-sm font-semibold tabular-nums"
-                        style={{ color: ratingColor(cf / 10) }}
+            {/* Presets — apply to this driver only, or both cars. */}
+            <div className="mt-4 border-t border-neutral-800 pt-3">
+              <div className="mb-1.5 text-[10px] uppercase tracking-wide text-neutral-500">Quick-start presets</div>
+              <div className="flex flex-wrap gap-1.5">
+                {SETUP_PRESETS.map((p) => (
+                  <div key={p.id} className="flex overflow-hidden rounded-md border border-neutral-700">
+                    <button
+                      title={`Apply ${p.name} to ${driver.name}`}
+                      onClick={() => onApplySetup(driver.id, { ...p.setup })}
+                      className="bg-neutral-800/60 px-2.5 py-1 text-xs text-neutral-200 hover:bg-neutral-700"
+                    >
+                      {p.name}
+                    </button>
+                    {drivers.length > 1 && (
+                      <button
+                        title={`Apply ${p.name} to both cars`}
+                        onClick={() => drivers.forEach((d) => onApplySetup(d.id, { ...p.setup }))}
+                        className="border-l border-neutral-700 bg-neutral-900/60 px-1.5 text-[10px] text-neutral-400 hover:bg-neutral-700 hover:text-neutral-100"
                       >
-                        {cf}
-                      </span>
-                    ) : (
-                      <span
-                        className="text-sm font-semibold tabular-nums text-neutral-400"
-                        title="Run more practice to reveal exact component fit"
-                      >
-                        {est.low}–{est.high}
-                      </span>
+                        ×2
+                      </button>
                     )}
                   </div>
-                </div>
-                <div className="space-y-4">
-                  {comp.params.map((key) => {
-                    const meta = SETUP_PARAMS[key];
-                    return (
-                      <div key={key}>
-                        <div className="mb-1 flex items-center justify-between text-xs">
-                          <span className="font-medium text-neutral-200">{meta.label}</span>
-                          <span className="tabular-nums text-neutral-400">{setup[key]}/10</span>
-                        </div>
-                        <input
-                          type="range"
-                          min={1}
-                          max={10}
-                          step={1}
-                          value={setup[key]}
-                          onChange={(e) => onChangeParam(driver.id, key, Number(e.target.value))}
-                          className="w-full accent-amber-500"
-                        />
-                        <div className="flex justify-between text-[10px] uppercase tracking-wide text-neutral-500">
-                          <span>{meta.lowLabel}</span>
-                          <span>{meta.highLabel}</span>
-                        </div>
-                        <p className="mt-1 text-[11px] text-neutral-500">{meta.description}</p>
-                      </div>
-                    );
-                  })}
-                </div>
-              </Panel>
-            );
-          })}
+                ))}
+              </div>
+            </div>
+          </div>
         </div>
 
-        {/* Right: readouts */}
-        <div className="space-y-4">
+        {/* Right: setup readout panel (internal scroll). */}
+        <div className="flex min-h-0 flex-col gap-3 overflow-y-auto">
+          <Panel title="Setup Profile">
+            <SetupRadar data={radar} />
+            <div className="mt-2 flex items-center justify-center gap-3 text-[10px] text-neutral-500">
+              <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-full" style={{ backgroundColor: '#22c55e' }} /> Strong</span>
+              <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-full" style={{ backgroundColor: '#eab308' }} /> Fair</span>
+              <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-full" style={{ backgroundColor: '#ef4444' }} /> Weak</span>
+            </div>
+          </Panel>
+
           <Panel title="Objective Setup Quality">
             <div className="flex items-end gap-3">
-              <span
-                className="text-4xl font-bold tabular-nums"
-                style={{ color: ratingColor(quality.quality / 10) }}
-              >
+              <span className="text-4xl font-bold tabular-nums" style={{ color: ratingColor(quality.quality / 10) }}>
                 {estimateText(qualityEstimate)}
               </span>
               <span className="pb-1 text-sm text-neutral-400">/ 100</span>
             </div>
             <div className="mt-1 text-xs text-neutral-400">
               Engineer confidence:{' '}
-              <span className="font-medium text-neutral-200">
-                {engineerConfidenceLabel(setupKnowledge)}
-              </span>
+              <span className="font-medium text-neutral-200">{engineerConfidenceLabel(setupKnowledge)}</span>
               {qualityEstimate.exact == null && (
                 <span className="text-neutral-500"> · estimate narrows with practice</span>
               )}
@@ -275,10 +309,7 @@ export function SetupWorkshop({
 
           <Panel title="Driver Setup Comfort">
             <div className="flex items-end gap-3">
-              <span
-                className="text-4xl font-bold tabular-nums"
-                style={{ color: ratingColor(comfort.comfort / 10) }}
-              >
+              <span className="text-4xl font-bold tabular-nums" style={{ color: ratingColor(comfort.comfort / 10) }}>
                 {comfort.label === 'Unknown' ? '—' : comfort.comfort}
               </span>
               <span className="pb-1 text-sm font-medium text-neutral-300">{comfort.label}</span>
@@ -331,7 +362,7 @@ export function SetupWorkshop({
           </Panel>
 
           {quality.warnings.length > 0 && (
-            <Panel title="Warnings">
+            <Panel title="Engineer Warnings">
               <ul className="space-y-1.5 text-xs text-amber-300">
                 {quality.warnings.map((w, i) => (
                   <li key={i}>⚠ {w}</li>
@@ -341,7 +372,79 @@ export function SetupWorkshop({
           )}
         </div>
       </div>
+
+      {/* Fixed action bar — always visible, no page scroll to confirm. */}
+      <div className="flex shrink-0 flex-wrap items-center justify-between gap-2 border-t border-neutral-800 pt-3">
+        <div className="flex items-center gap-2">
+          {onBack && (
+            <Button variant="ghost" onClick={onBack}>← Back to Practice</Button>
+          )}
+        </div>
+        <div className="flex flex-wrap items-center gap-2">
+          {other && (
+            <Button variant="ghost" onClick={() => onCopy(driver.id, other.id)} className="text-xs">
+              Copy → {other.name}
+            </Button>
+          )}
+          {onResetDriver && (
+            <Button variant="ghost" onClick={() => onResetDriver(driver.id)} className="text-xs">
+              Reset to practised
+            </Button>
+          )}
+          {onConfirm && (
+            <Button variant="primary" onClick={onConfirm}>Confirm Setup →</Button>
+          )}
+        </div>
+      </div>
     </div>
+  );
+}
+
+// A green/yellow/red band colour for a 0-10 component-fit value.
+function fitBand(fit: number): string {
+  if (fit >= 7) return '#22c55e';
+  if (fit >= 4.5) return '#eab308';
+  return '#ef4444';
+}
+
+// A compact SVG radar/spider chart of the per-component setup fit (0-10), with a
+// dashed "target" ring so the profile reads as tuning against a window, not a
+// single number.
+function SetupRadar({ data }: { data: { label: string; value: number }[] }) {
+  const n = data.length;
+  const size = 168;
+  const cx = size / 2;
+  const cy = size / 2;
+  const r = size / 2 - 26;
+  const target = 0.7; // 7/10 reference ring
+  const pointAt = (i: number, frac: number) => {
+    const ang = (Math.PI * 2 * i) / n - Math.PI / 2;
+    return [cx + Math.cos(ang) * r * frac, cy + Math.sin(ang) * r * frac] as const;
+  };
+  const poly = data.map((d, i) => pointAt(i, Math.max(0, Math.min(1, d.value / 10)))).map((p) => p.join(',')).join(' ');
+  const targetPoly = data.map((_, i) => pointAt(i, target)).map((p) => p.join(',')).join(' ');
+  return (
+    <svg viewBox={`0 0 ${size} ${size}`} className="mx-auto block h-44 w-44">
+      {[0.25, 0.5, 0.75, 1].map((f) => (
+        <polygon
+          key={f}
+          points={data.map((_, i) => pointAt(i, f)).map((p) => p.join(',')).join(' ')}
+          fill="none"
+          stroke="#404040"
+          strokeWidth={0.5}
+        />
+      ))}
+      <polygon points={targetPoly} fill="none" stroke="#38bdf8" strokeWidth={1} strokeDasharray="3 3" opacity={0.6} />
+      <polygon points={poly} fill="rgba(56,189,248,0.18)" stroke="#38bdf8" strokeWidth={1.5} />
+      {data.map((d, i) => {
+        const [x, y] = pointAt(i, 1.16);
+        return (
+          <text key={d.label} x={x} y={y} fill="#a3a3a3" fontSize={6.5} textAnchor="middle" dominantBaseline="middle">
+            {d.label.split(' ')[0]}
+          </text>
+        );
+      })}
+    </svg>
   );
 }
 

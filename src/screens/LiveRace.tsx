@@ -1,6 +1,7 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { useGame } from '../game/GameContext';
+import { activeDriversForTeam } from '../game/careerState';
 import { buildLiveRaceMeta, buildLiveRaceOptions, buildRaceContext } from '../game/raceSetup';
 import { createLiveRace, finalizeResults } from '../sim/liveRaceEngine';
 import {
@@ -15,6 +16,7 @@ import {
   stepLiveRaceToEnd,
 } from '../sim/raceTickEngine';
 import { requiresDecision, DECISION_COUNTDOWN_SECONDS } from '../sim/analyticsEngine';
+import { orderCardsBySeat } from '../sim/liveRaceCardOrder';
 import { applyTeamOrderToLive, recordTeamOrder } from '../sim/relationshipEngine';
 import { Button } from '../components/Button';
 import type { TrackDot } from '../components/RaceTrack2D';
@@ -59,6 +61,14 @@ export function LiveRace() {
   const committed = useRef(false);
   // Team orders called during the race, resolved into relationships at the flag.
   const teamOrders = useRef<TeamOrderDecision[]>([]);
+
+  // Fixed team-order for the player's drivers (seat #1 first, #2 second). The
+  // right-side pit-wall cards keep this order for the whole race so they do not
+  // jump around as track positions swap — only the numbers inside update.
+  const seatOrderIds = useMemo(
+    () => (state ? activeDriversForTeam(state, state.selectedTeamId).map((d) => d.id) : []),
+    [state],
+  );
 
   // Recommendations that pause the race and run a decision countdown.
   const decisionRecs = live ? live.recommendations.filter((r) => requiresDecision(r)) : [];
@@ -208,7 +218,11 @@ export function LiveRace() {
     rank: c.position ?? 99,
   }));
   const rotation = (live.currentLap / 5) % 1;
-  const playerCars = live.cars.filter((c) => c.isPlayer).sort((a, b) => (a.position ?? 99) - (b.position ?? 99));
+  // Locked to team seat order (not live position) so the cards never reorder.
+  const playerCars = orderCardsBySeat(
+    live.cars.filter((c) => c.isPlayer),
+    seatOrderIds,
+  );
   const forecast = buildForecast(live, engine.context.track);
   const activeRecs = finished ? [] : live.recommendations;
 
