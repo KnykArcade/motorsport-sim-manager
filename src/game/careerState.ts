@@ -19,7 +19,7 @@ import type {
 } from '../types/gameTypes';
 import type { RaceEvent } from '../types/simTypes';
 import type { CarSetup } from '../types/setupTypes';
-import type { AcademyMember, SeatSigning } from '../types/marketTypes';
+import type { AcademyDecision, AcademyMember, SeatSigning } from '../types/marketTypes';
 import type { FinanceTransaction } from '../types/financeTypes';
 import type { StaffMember } from '../types/staffTypes';
 import type { RaceArchiveEntry } from '../types/historyTypes';
@@ -72,6 +72,9 @@ export type GameState = {
   academy?: AcademyMember[];
   pendingSignings?: SeatSigning[];
   signedMarketIds?: string[];
+  // First-option decisions queued for promotion-eligible academy drivers (those
+  // who have turned 18). Applied and cleared at the next season rollover.
+  academyDecisions?: AcademyDecision[];
 
   // Finance ledger for the player's team (Phase D). Optional for save compat;
   // the running balance remains on Team.budget.
@@ -189,6 +192,12 @@ export function activeDriversForTeam(state: GameState, teamId: string): Driver[]
     }
   }
   return active;
+}
+
+// A non-racing contract tier: 3rd, reserve or test driver. Undefined/'seat' are
+// full race-seat contracts.
+export function isReserveContract(d: Driver): boolean {
+  return d.contractType === 'third' || d.contractType === 'reserve' || d.contractType === 'test';
 }
 
 export function reserveDriversForTeam(state: GameState, teamId: string): Driver[] {

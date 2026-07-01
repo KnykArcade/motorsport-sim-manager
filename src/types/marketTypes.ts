@@ -70,6 +70,38 @@ export type YouthProspect = {
   notes: string;
 };
 
+// Outcome of a team exercising (or declining) first option on an academy driver
+// who has turned 18 and become promotion eligible.
+export type FirstOptionStatus =
+  | 'pending_team_decision'
+  | 'promoted_to_race_seat'
+  | 'promoted_to_third_driver'
+  | 'promoted_to_reserve'
+  | 'promoted_to_test_driver'
+  | 'extended_development_rights'
+  | 'released_to_market'
+  | 'driver_rejected_offer'
+  | 'expired';
+
+// The decision a team (player or AI) can make on a promotion-eligible academy
+// driver during the offseason first-option window.
+export type FirstOptionDecision =
+  | 'race_seat' // promote into a full race seat (replaces a seat driver)
+  | 'third' // sign as 3rd driver
+  | 'reserve' // sign as reserve driver
+  | 'test' // sign as test/development driver
+  | 'extend' // extend academy/development rights another year
+  | 'release'; // release to the open adult driver market
+
+// A queued first-option decision for one of the player's promotion-eligible
+// academy drivers, applied at the next season rollover.
+export type AcademyDecision = {
+  academyId: string;
+  decision: FirstOptionDecision;
+  // For a race-seat promotion: which of the team's current seats to take.
+  seatDriverId?: string;
+};
+
 // A youth prospect signed into the team academy. Carries live (progressing)
 // ratings derived from the seed prospect; advances each offseason toward F1.
 export type AcademyMember = {
@@ -77,12 +109,22 @@ export type AcademyMember = {
   prospectId: string;
   name: string;
   nationality: string;
+  // Best-known birth year, so a member's age can be recomputed every season and
+  // the 12–17 youth / 18+ adult boundary applied at rollover.
+  birthYear: number;
+  // The team that holds academy rights (and therefore first option at 18).
+  academyTeamId: string;
   skills: MarketSkillRatings;
   overall: number;
   potential: number;
   developmentRate: number;
   yearsUntilF1Ready: number;
   signedYear: number;
+  // Set true once the member reaches adult age (18): the academy team gets first
+  // option before the driver can enter the open market.
+  promotionEligible?: boolean;
+  // Lifecycle of the first-option window once promotion eligible.
+  firstOptionStatus?: FirstOptionStatus;
 };
 
 // A queued driver change for one of the player's seats, applied at the next

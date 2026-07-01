@@ -52,7 +52,7 @@ import { buildRaceArchiveEntry } from '../sim/lapArchiveEngine';
 import { resolveTeamOrderConsequences } from '../sim/relationshipEngine';
 import type { TeamOrderDecision } from '../types/relationshipTypes';
 import { createSeededRandom, deriveSeed } from '../sim/random';
-import type { SeatSigning } from '../types/marketTypes';
+import type { AcademyDecision, FirstOptionDecision, SeatSigning } from '../types/marketTypes';
 import type { FinanceTransaction } from '../types/financeTypes';
 import type {
   DevelopmentProject,
@@ -113,6 +113,13 @@ export type GameAction =
   | { type: 'RELEASE_SIGNING'; seatDriverId: string }
   | { type: 'SIGN_YOUTH'; youthId: string }
   | { type: 'RELEASE_ACADEMY'; academyId: string }
+  | {
+      type: 'SET_ACADEMY_DECISION';
+      academyId: string;
+      decision: FirstOptionDecision;
+      seatDriverId?: string;
+    }
+  | { type: 'CLEAR_ACADEMY_DECISION'; academyId: string }
   | { type: 'HIRE_STAFF'; staffId: string }
   | { type: 'FIRE_STAFF'; staffId: string }
   | { type: 'UPGRADE_FACILITY'; facilityId: string }
@@ -385,6 +392,21 @@ export function gameReducer(state: GameState | null, action: GameAction): GameSt
         // Drop any pending promotion that referenced this academy member.
         pendingSignings: (state.pendingSignings ?? []).filter(
           (s) => !(s.source === 'academy' && s.sourceId === action.academyId),
+        ),
+      };
+    }
+
+    case 'SET_ACADEMY_DECISION': {
+      if (!state) return state;
+      return setAcademyDecision(state, action.academyId, action.decision, action.seatDriverId);
+    }
+
+    case 'CLEAR_ACADEMY_DECISION': {
+      if (!state) return state;
+      return {
+        ...state,
+        academyDecisions: (state.academyDecisions ?? []).filter(
+          (d) => d.academyId !== action.academyId,
         ),
       };
     }
@@ -741,12 +763,29 @@ function signYouth(state: GameState, youthId: string): GameState {
   if (!prospect) return state;
   const fee = toMoney(prospect.signingCost);
   if (fee > playerBudget(state)) return state;
-  const member = signProspectToAcademy(prospect, state.seasonYear);
+  const member = signProspectToAcademy(prospect, state.seasonYear, state.selectedTeamId);
   const charged = applyTransaction(
     state,
     makeTransaction(state.seasonYear, 'Academy', `Signed ${prospect.name} to academy`, -fee),
   );
   return { ...charged, academy: [...(charged.academy ?? []), member] };
+}
+
+// Queue (or replace) a first-option decision for a promotion-eligible academy
+// driver. Applied at the next season rollover. A race-seat promotion must name
+// which of the team's seats it takes.
+function setAcademyDecision(
+  state: GameState,
+  academyId: string,
+  decision: FirstOptionDecision,
+  seatDriverId?: string,
+): GameState {
+  const academy = state.academy ?? [];
+  if (!academy.some((a) => a.id === academyId)) return state;
+  if (decision === 'race_seat' && !seatDriverId) return state;
+  const next: AcademyDecision = { academyId, decision, seatDriverId };
+  const rest = (state.academyDecisions ?? []).filter((d) => d.academyId !== academyId);
+  return { ...state, academyDecisions: [...rest, next] };
 }
 
 // Drivers who ran the Wet-Weather Preparation program in any completed practice

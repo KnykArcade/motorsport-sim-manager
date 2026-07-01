@@ -28,7 +28,9 @@ import { getMarketBundle, youthSigningCost, youthYearlyAcademyCost, type MarketB
 import { crossSeriesCandidates } from './crossSeriesEngine';
 import type { GameState } from '../game/careerState';
 
-export const ROOKIE_AGE = 18;
+export const ROOKIE_AGE = 18; // adult driver market eligibility (18+)
+export const YOUTH_MIN_AGE = 12; // youth academy / scouting pool floor (12–17)
+export const YOUTH_MAX_AGE = 17;
 export const RETIRE_AGE = 40;
 // Grid drivers carry no birth year; assume a plausible active span from their
 // first appearance before they age out of the market.
@@ -90,7 +92,9 @@ export function isYouthAvailable(e: MasterDriverEntry, year: number, series: Ser
   const adultYear = e.adultEligibleYear ?? Infinity;
   if (year >= adultYear) return false;
   const age = ageInYear(e, year);
-  if (age != null && age >= ROOKIE_AGE) return false;
+  // Youth academy pool is 12–17: under-12 prospects are not yet in any market,
+  // 18+ have aged into the adult market.
+  if (age != null && (age < YOUTH_MIN_AGE || age >= ROOKIE_AGE)) return false;
   return true;
 }
 
@@ -120,6 +124,41 @@ export function entryToMarketDriver(e: MasterDriverEntry, year: number): MarketD
     negotiationDifficulty: 'medium',
     suggestedUse: 'race',
     notes: '',
+  };
+}
+
+// Current age of a curated youth prospect in a given year (from birth year).
+export function youthProspectAge(y: YouthProspect, year: number): number {
+  return year - y.birthYear;
+}
+
+// A curated youth prospect who has aged out of the 12–17 window into adulthood
+// (18+) becomes a normal adult-market free agent. Ratings carry across; salary
+// and buyout are synthesized from overall/potential the same way registry youth
+// entries would be, so they slot into the driver market cleanly.
+export function youthProspectToAdultMarketDriver(y: YouthProspect, year: number): MarketDriver {
+  return {
+    id: y.id,
+    name: y.name,
+    age: youthProspectAge(y, year),
+    nationality: y.nationality,
+    context: 'Rookie',
+    marketPool: 'adult',
+    marketStatus: 'adult_market_eligible',
+    primaryRole: 'race',
+    immediateF1Eligible: y.yearsUntilF1Ready <= 0,
+    skills: { ...y.skills },
+    overall: y.overall,
+    potential: y.potential,
+    potentialDelta: y.potentialDelta,
+    developmentRate: y.developmentRate,
+    f1Readiness: y.yearsUntilF1Ready <= 0 ? 100 : Math.max(0, 100 - y.yearsUntilF1Ready * 25),
+    salary: Math.max(0.3, y.overall * 0.4),
+    sponsorValue: 0,
+    buyoutCost: y.signingCost,
+    negotiationDifficulty: 'low',
+    suggestedUse: 'Rookie race or reserve driver',
+    notes: y.notes,
   };
 }
 
@@ -187,8 +226,21 @@ export function careerMarketBundle(state: GameState): MarketBundle {
   const staticBundle = getMarketBundle(year, series);
   const occupied = occupiedIdentities(state);
 
-  const curatedDriverNames = new Set((staticBundle?.drivers ?? []).map((d) => normalizeName(d.name)));
-  const curatedYouthNames = new Set((staticBundle?.youth ?? []).map((y) => normalizeName(y.name)));
+  // Normalize the curated youth pool by age: under-12 are hidden entirely
+  // (not yet in any market), 12–17 stay in the youth pool, and any who have
+  // aged to 18+ move to the adult driver market.
+  const curatedYouth: YouthProspect[] = [];
+  const curatedYouthToAdults: MarketDriver[] = [];
+  for (const y of staticBundle?.youth ?? []) {
+    const age = youthProspectAge(y, year);
+    if (age < YOUTH_MIN_AGE) continue; // not yet available
+    if (age > YOUTH_MAX_AGE) curatedYouthToAdults.push(youthProspectToAdultMarketDriver(y, year));
+    else curatedYouth.push(y);
+  }
+
+  const curatedDrivers = [...(staticBundle?.drivers ?? []), ...curatedYouthToAdults];
+  const curatedDriverNames = new Set(curatedDrivers.map((d) => normalizeName(d.name)));
+  const curatedYouthNames = new Set(curatedYouth.map((y) => normalizeName(y.name)));
 
   const extraDrivers: MarketDriver[] = [];
   const extraYouth: YouthProspect[] = [];
@@ -211,8 +263,8 @@ export function careerMarketBundle(state: GameState): MarketBundle {
   );
 
   return {
-    drivers: [...(staticBundle?.drivers ?? []), ...extraDrivers, ...crossSeries],
-    youth: [...(staticBundle?.youth ?? []), ...extraYouth],
+    drivers: [...curatedDrivers, ...extraDrivers, ...crossSeries],
+    youth: [...curatedYouth, ...extraYouth],
   };
 }
 

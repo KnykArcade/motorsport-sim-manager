@@ -5,7 +5,7 @@
 // losing them to the open market.
 
 import { toMoney } from './financeEngine';
-import type { GameState } from '../game/careerState';
+import { isReserveContract, type GameState } from '../game/careerState';
 import type { Driver, StandingsEntry } from '../types/gameTypes';
 
 // A 3rd-driver deal pays a fraction of an equivalent full seat salary.
@@ -48,8 +48,8 @@ function pointsFor(standings: StandingsEntry[], driverId: string): number {
 // driver wants a full seat next year.
 export function thirdDriverAmbitions(state: GameState): ThirdDriverAmbition[] {
   const playerDrivers = state.drivers.filter((d) => d.teamId === state.selectedTeamId);
-  const thirds = playerDrivers.filter((d) => d.contractType === 'third');
-  const seatDrivers = playerDrivers.filter((d) => d.contractType !== 'third');
+  const thirds = playerDrivers.filter((d) => isReserveContract(d));
+  const seatDrivers = playerDrivers.filter((d) => !isReserveContract(d));
   const standings = state.driverStandings;
 
   return thirds.map((d: Driver) => {
