@@ -32,8 +32,9 @@ export type LiveRaceOptions = {
   driverNames: Record<string, string>;
   // Team reputation (by team id) used to assign AI personalities.
   teamReputation: Record<string, number>;
-  // Race Operations Rating (1-10) by team id — drives the team pace component.
-  teamRaceOps?: Record<string, number>;
+  // Race Operations Rating (1-10) by team id — drives the team pace component
+  // and the per-weekend operations variance.
+  teamRaceOps: Record<string, number>;
 };
 
 // Metadata threaded through the tick engine for events and player prompts.
@@ -80,7 +81,7 @@ export function createLiveRace(context: RaceContext, options: LiveRaceOptions): 
     const instruction = context.instructions[decision.instructionId];
     const grid = gridByDriver[e.driver.id] ?? context.entrants.length;
 
-    const teamRating = options.teamRaceOps?.[e.driver.teamId] ?? 5;
+    const teamRating = options.teamRaceOps[e.driver.teamId];
     const { score: paceScore } = calculateRacePace(e.driver, e.car, track, setup, strategy, instruction, teamRating);
     // Per-team weekend form so the live race shares the quick race's variation.
     const score = paceScore + weekendForm(context.seed, e.driver.teamId, teamRating);

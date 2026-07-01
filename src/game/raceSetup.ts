@@ -102,7 +102,7 @@ export function buildRaceContext(
   const teamRaceOps: Record<string, number> = {};
   state.teams.forEach((t) => {
     teamReputation[t.id] = t.reputation;
-    teamRaceOps[t.id] = t.raceOperations ?? t.reputation / 10;
+    teamRaceOps[t.id] = t.raceOperations;
   });
 
   const context: RaceContext = {
@@ -134,7 +134,7 @@ export function buildLiveRaceOptions(
   const teamRaceOps: Record<string, number> = {};
   state.teams.forEach((t) => {
     teamReputation[t.id] = t.reputation;
-    teamRaceOps[t.id] = t.raceOperations ?? t.reputation / 10;
+    teamRaceOps[t.id] = t.raceOperations;
   });
   return {
     raceId,
