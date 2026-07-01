@@ -4,6 +4,9 @@ import { Panel } from '../components/Panel';
 import { Button } from '../components/Button';
 import { activeDriversForTeam } from '../game/careerState';
 import { thirdDriverAmbitions } from '../sim/contractEngine';
+import { marketRolloverChanges } from '../sim/careerMarketEngine';
+import { crossSeriesCandidates } from '../sim/crossSeriesEngine';
+import type { MasterDriverEntry } from '../types/registryTypes';
 
 export function Offseason() {
   const { state, dispatch } = useGame();
@@ -11,6 +14,8 @@ export function Offseason() {
   if (!state) return null;
 
   const nextYear = state.seasonYear + 1;
+  const rollover = marketRolloverChanges(state, nextYear);
+  const crossover = crossSeriesCandidates(state);
   const signings = state.pendingSignings ?? [];
   const academy = state.academy ?? [];
   const driverName = (id: string) => state.drivers.find((d) => d.id === id)?.name ?? id;
@@ -172,6 +177,43 @@ export function Offseason() {
         </Panel>
       )}
 
+      <Panel title={`Market Outlook for ${nextYear}`}>
+        <p className="mb-3 text-sm text-neutral-400">
+          How the living driver market changes when you advance — drawn from the Master Driver
+          Registry. Your current line-up and contracts are unaffected.
+        </p>
+        <div className="grid gap-3 sm:grid-cols-2">
+          <OutlookGroup
+            label="Newly available drivers"
+            accent="text-green-300"
+            entries={rollover.newAdults}
+          />
+          <OutlookGroup
+            label="New youth prospects"
+            accent="text-sky-300"
+            entries={rollover.newYouth}
+          />
+          <OutlookGroup
+            label="Youth aging into the senior market"
+            accent="text-amber-300"
+            entries={rollover.promotedYouth}
+          />
+          <OutlookGroup
+            label="Retirements"
+            accent="text-red-300"
+            entries={rollover.retirements}
+          />
+          <OutlookGroup
+            label="Cross-series drivers open to switching"
+            accent="text-cyan-300"
+            entries={crossover.map((c) => ({
+              driverId: c.id,
+              displayName: c.name,
+            }))}
+          />
+        </div>
+      </Panel>
+
       <Panel title="Advance the Season">
         <p className="text-sm text-neutral-300">
           Advancing rolls the team into {nextYear}: queued signings take their seats, academy drivers
@@ -195,6 +237,41 @@ export function Offseason() {
           activity arrive with the management systems (Phase D) and multi-year data (Phase E).
         </p>
       </Panel>
+    </div>
+  );
+}
+
+// One category of the Market Outlook: a labelled, capped list of registry
+// drivers (or an em-dash when the category is empty).
+function OutlookGroup({
+  label,
+  accent,
+  entries,
+  max = 6,
+}: {
+  label: string;
+  accent: string;
+  entries: Pick<MasterDriverEntry, 'driverId' | 'displayName'>[];
+  max?: number;
+}) {
+  const shown = entries.slice(0, max);
+  const rest = entries.length - shown.length;
+  return (
+    <div className="rounded border border-neutral-800 bg-neutral-900/40 p-3">
+      <div className="flex items-center justify-between">
+        <span className="text-xs font-semibold uppercase tracking-wide text-neutral-400">
+          {label}
+        </span>
+        <span className={`text-sm font-bold ${accent}`}>{entries.length}</span>
+      </div>
+      {entries.length === 0 ? (
+        <p className="mt-1 text-xs text-neutral-600">—</p>
+      ) : (
+        <p className="mt-1 text-xs text-neutral-400">
+          {shown.map((e) => e.displayName).join(', ')}
+          {rest > 0 && <span className="text-neutral-600"> +{rest} more</span>}
+        </p>
+      )}
     </div>
   );
 }

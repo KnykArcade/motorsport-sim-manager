@@ -21,7 +21,7 @@ import type {
 } from '../types/marketTypes';
 import type { Driver } from '../types/gameTypes';
 
-type Tab = 'senior' | 'youth';
+type Tab = 'senior' | 'youth' | 'crossover';
 
 export function DriverMarket() {
   const { state, dispatch } = useGame();
@@ -30,6 +30,17 @@ export function DriverMarket() {
   const bundle = useMemo(
     () => (state ? careerMarketBundle(state) : undefined),
     [state],
+  );
+
+  // Split the senior pool into same-series drivers and cross-series (foreign)
+  // candidates so each has its own tab.
+  const seniorDrivers = useMemo(
+    () => (bundle?.drivers ?? []).filter((d) => d.marketPool !== 'crossSeries'),
+    [bundle],
+  );
+  const crossoverDrivers = useMemo(
+    () => (bundle?.drivers ?? []).filter((d) => d.marketPool === 'crossSeries'),
+    [bundle],
   );
 
   if (!state) return null;
@@ -72,7 +83,10 @@ export function DriverMarket() {
         </div>
         <div className="flex gap-2">
           <TabButton active={tab === 'senior'} onClick={() => setTab('senior')}>
-            Senior Market{bundle ? ` (${bundle.drivers.length})` : ''}
+            Senior Market{bundle ? ` (${seniorDrivers.length})` : ''}
+          </TabButton>
+          <TabButton active={tab === 'crossover'} onClick={() => setTab('crossover')}>
+            Crossover{bundle ? ` (${crossoverDrivers.length})` : ''}
           </TabButton>
           <TabButton active={tab === 'youth'} onClick={() => setTab('youth')}>
             Youth Academy{bundle ? ` (${bundle.youth.length})` : ''}
@@ -128,9 +142,19 @@ export function DriverMarket() {
         </Panel>
       )}
 
-      {bundle && tab === 'senior' && (
+      {bundle && tab === 'crossover' && crossoverDrivers.length === 0 && (
+        <Panel>
+          <p className="text-sm text-neutral-400">
+            No drivers from other series are open to switching into {state.series} right now.
+            Seatless, younger, and veteran drivers are the most willing to cross over as the
+            universe grows.
+          </p>
+        </Panel>
+      )}
+
+      {bundle && (tab === 'senior' || tab === 'crossover') && (
         <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
-          {[...bundle.drivers]
+          {[...(tab === 'senior' ? seniorDrivers : crossoverDrivers)]
             .sort((a, b) => b.overall - a.overall)
             .map((d) => (
               <SeniorCard
