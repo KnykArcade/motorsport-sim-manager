@@ -24,7 +24,7 @@ function car(overrides: Partial<LiveCarState> = {}): LiveCarState {
     bestLap: 89,
     lapsCompleted: 20,
     running: true,
-    status: 'Running',
+    status: 'Finished',
     retiredOnLap: null,
     paceRating: 50,
     baseRacePace: 6,

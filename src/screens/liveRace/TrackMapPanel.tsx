@@ -17,9 +17,9 @@ export function TrackMapPanel({
   const wet = live.weather.wet;
   const sc = live.safetyCar.active;
   return (
-    <DashPanel title="Track Map" bodyClass="flex flex-col">
-      <div className="min-h-0 flex-1 px-2 pt-1">
-        <RaceTrack2D dots={dots} rotation={rotation} />
+    <DashPanel title="Track Map" className="shrink-0" bodyClass="flex flex-col">
+      <div className="flex items-center justify-center px-2 pt-1">
+        <RaceTrack2D dots={dots} rotation={rotation} className="mx-auto h-[185px] w-auto max-w-full" />
       </div>
       {/* Weather / track-condition strip */}
       <div className="grid shrink-0 grid-cols-4 gap-px border-t border-slate-700/50 bg-slate-800/40 text-center">

@@ -11,6 +11,7 @@ import type {
   LiveRaceState,
   PaceMode,
   RaceDecisionPrompt,
+  RecAction,
 } from '../types/liveTypes';
 import { createSeededRandom, deriveSeed } from './random';
 import { REF_LAP, type LiveRaceMeta } from './liveRaceEngine';
@@ -495,22 +496,9 @@ export function stepLiveRace(state: LiveRaceState, meta: LiveRaceMeta): LiveRace
     );
   }
 
-  // --- Choose a single pending prompt (highest priority, off cooldown) ---
-  const cooldown = { ...state.promptCooldown };
-  let pendingPrompt: RaceDecisionPrompt | null = null;
-  if (!isFinalLap) {
-    candidates.sort((p, q) => q.priority - p.priority);
-    for (const cand of candidates) {
-      const until = cooldown[cand.prompt.driverId] ?? 0;
-      if (nextLap >= until) {
-        pendingPrompt = cand.prompt;
-        cooldown[cand.prompt.driverId] = nextLap + PROMPT_COOLDOWN;
-        break;
-      }
-    }
-  }
-
   // --- Data analytics recommendations for the player's drivers -------------
+  // Generated before prompt selection so a decision covered by an active
+  // recommendation card is not also asked again as a Decision pop-up.
   const recEvents: RaceEvent[] = [];
   const { recommendations, ignoredRecs } = refreshRecommendations(
     orderedCars,
@@ -519,6 +507,26 @@ export function stepLiveRace(state: LiveRaceState, meta: LiveRaceMeta): LiveRace
     name,
     recEvents,
   );
+  const driversWithRec = new Set(recommendations.map((r) => r.driverId));
+
+  // --- Choose a single pending prompt (highest priority, off cooldown) ---
+  // The analytics card is the primary decision interface: skip any prompt for a
+  // driver who already has an active recommendation so the same question is not
+  // asked twice. Prompts still fire when no recommendation covers the situation.
+  const cooldown = { ...state.promptCooldown };
+  let pendingPrompt: RaceDecisionPrompt | null = null;
+  if (!isFinalLap) {
+    candidates.sort((p, q) => q.priority - p.priority);
+    for (const cand of candidates) {
+      if (driversWithRec.has(cand.prompt.driverId)) continue;
+      const until = cooldown[cand.prompt.driverId] ?? 0;
+      if (nextLap >= until) {
+        pendingPrompt = cand.prompt;
+        cooldown[cand.prompt.driverId] = nextLap + PROMPT_COOLDOWN;
+        break;
+      }
+    }
+  }
 
   const retirements = orderedCars.filter((c) => c.status === 'DNF').length;
 
@@ -741,10 +749,27 @@ export function modifyRecommendation(
   return applyRecAction(state, rec, action, meta, 'modified');
 }
 
+// Apply an arbitrary action to a recommendation (mode + pit effects), removing +
+// logging it. Unlike modifyRecommendation this does not require the action to be
+// one of the recommendation's own alternatives — used by "Apply to both drivers"
+// where the same action is pushed onto every player driver. Team-order actions
+// carry no effect here (the caller applies the on-track order separately).
+export function applyRecommendationAction(
+  state: LiveRaceState,
+  recId: string,
+  action: RecAction,
+  meta: LiveRaceMeta,
+  verb: 'accepted' | 'modified',
+): LiveRaceState {
+  const rec = state.recommendations.find((r) => r.id === recId);
+  if (!rec) return state;
+  return applyRecAction(state, rec, action, meta, verb);
+}
+
 // Dismiss a recommendation without acting on it. Medium+ priority ignores are
 // logged, and the kind is put on cooldown so it is not re-raised immediately (a
 // worsened reliability warning is later surfaced by refreshRecommendations).
-export function ignoreRecommendation(state: LiveRaceState, recId: string): LiveRaceState {
+export function ignoreRecommendation(state: LiveRaceState, recId: string, meta?: LiveRaceMeta): LiveRaceState {
   const rec = state.recommendations.find((r) => r.id === recId);
   if (!rec) return state;
   const recommendations = state.recommendations.filter((r) => r.id !== recId);
@@ -752,12 +777,13 @@ export function ignoreRecommendation(state: LiveRaceState, recId: string): LiveR
     ...state.ignoredRecs.filter((i) => i.key !== rec.id),
     { key: rec.id, lap: state.currentLap, issue: rec.issue, escalated: false },
   ];
+  const name = meta?.driverNames[rec.driverId] ?? rec.driverId;
   const events =
     rec.priority === 'low'
       ? state.events
       : [
           ...state.events,
-          { lap: state.currentLap, text: `Lap ${state.currentLap} — pit wall ignored analytics recommendation: ${rec.recommendedAction}` },
+          { lap: state.currentLap, text: `Lap ${state.currentLap} — ${name} ignored analytics recommendation: ${rec.recommendedAction}` },
         ];
   return { ...state, recommendations, ignoredRecs, events };
 }

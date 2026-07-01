@@ -24,13 +24,21 @@ function pointOnOval(t: number): { x: number; y: number } {
   return { x: CX + RX * Math.cos(angle), y: CY + RY * Math.sin(angle) };
 }
 
-export function RaceTrack2D({ dots, rotation }: { dots: TrackDot[]; rotation: number }) {
+export function RaceTrack2D({
+  dots,
+  rotation,
+  className = 'w-full',
+}: {
+  dots: TrackDot[];
+  rotation: number;
+  className?: string;
+}) {
   const running = dots.filter((d) => d.running && !d.inPit).sort((a, b) => a.rank - b.rank);
   const pitting = dots.filter((d) => d.running && d.inPit);
   const spacing = 1 / Math.max(running.length, 14);
 
   return (
-    <svg viewBox={`0 0 ${W} ${H}`} className="w-full" role="img" aria-label="Live track map">
+    <svg viewBox={`0 0 ${W} ${H}`} className={className} role="img" aria-label="Live track map">
       {/* Track ribbon */}
       <ellipse cx={CX} cy={CY} rx={RX} ry={RY} fill="none" stroke="#27272a" strokeWidth={22} />
       <ellipse cx={CX} cy={CY} rx={RX} ry={RY} fill="none" stroke="#3f3f46" strokeWidth={2} strokeDasharray="6 8" />

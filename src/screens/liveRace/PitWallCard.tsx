@@ -1,10 +1,9 @@
 // Right-side pit-wall card for a single player driver. Shows position, live
 // pace, large colour-coded reliability/crash risk chips, tyre + fuel + component
-// health, strategy-mode buttons, and — when the analytics engine has flagged an
-// issue — the Data Analytics Recommendation panel with Accept / Modify / Ignore.
+// health, and strategy-mode buttons. Data Analytics recommendations live in the
+// grouped RecommendationsPanel above the cards, not inside each card.
 
-import { useState } from 'react';
-import type { AnalyticsRecommendation, LiveCarState, PaceMode, RecAction } from '../../types/liveTypes';
+import type { LiveCarState, PaceMode } from '../../types/liveTypes';
 import { SELECTABLE_MODES, modeSpec } from '../../sim/liveRacePace';
 import { Gauge, RiskChip } from './dashboardUi';
 import { fmtLap, ordinal, tyreLetter } from './dashboardFormat';
@@ -18,35 +17,20 @@ const PACE_LABEL: Record<PaceMode, string> = {
   ProtectEngine: 'Protect',
 };
 
-const PRIORITY_STYLE: Record<AnalyticsRecommendation['priority'], string> = {
-  low: 'border-slate-600 bg-slate-800/40',
-  medium: 'border-amber-500/50 bg-amber-500/10',
-  high: 'border-orange-500/60 bg-orange-500/10',
-  urgent: 'border-red-500/70 bg-red-500/10',
-};
-
 export function PitWallCard({
   car,
   name,
   teamColor,
   finished,
-  rec,
   onMode,
   onPit,
-  onAccept,
-  onModify,
-  onIgnore,
 }: {
   car: LiveCarState;
   name: string;
   teamColor: string;
   finished: boolean;
-  rec?: AnalyticsRecommendation;
   onMode: (mode: PaceMode) => void;
   onPit: () => void;
-  onAccept: (rec: AnalyticsRecommendation) => void;
-  onModify: (rec: AnalyticsRecommendation, action: RecAction) => void;
-  onIgnore: (rec: AnalyticsRecommendation) => void;
 }) {
   const finishedRace = car.status === 'Finished';
   const dnf = !car.running && !finishedRace;
@@ -55,6 +39,11 @@ export function PitWallCard({
   const tyre = tyreLetter(car.tire.compound);
   const gridDelta = car.position != null ? car.grid - car.position : 0;
   const canPit = car.running && !car.pit.pitRequested && !finished;
+  const highRisk =
+    car.reliabilityRiskLevel === 'High' ||
+    car.reliabilityRiskLevel === 'Critical' ||
+    car.crashRiskLevel === 'High' ||
+    car.crashRiskLevel === 'Critical';
 
   if (dnf) {
     return (
@@ -73,7 +62,7 @@ export function PitWallCard({
   return (
     <div
       className={`rounded-lg border bg-[#111725] p-2.5 ${
-        rec && (rec.priority === 'high' || rec.priority === 'urgent')
+        highRisk
           ? 'border-orange-500/60 shadow-[0_0_0_1px_rgba(249,115,22,0.25)]'
           : 'border-slate-700/60'
       }`}
@@ -158,16 +147,6 @@ export function PitWallCard({
           </div>
         </div>
       )}
-
-      {/* Data analytics recommendation */}
-      {!finished && car.running && rec && (
-        <RecommendationPanel
-          rec={rec}
-          onAccept={() => onAccept(rec)}
-          onModify={(action) => onModify(rec, action)}
-          onIgnore={() => onIgnore(rec)}
-        />
-      )}
     </div>
   );
 }
@@ -177,81 +156,6 @@ function Metric({ label, value, accent }: { label: string; value: string; accent
     <div className="rounded bg-slate-800/50 px-1 py-1">
       <div className="truncate text-[9px] uppercase tracking-wide text-slate-500">{label}</div>
       <div className={`text-xs font-bold tabular-nums ${accent ? 'text-amber-300' : 'text-slate-100'}`}>{value}</div>
-    </div>
-  );
-}
-
-function RecommendationPanel({
-  rec,
-  onAccept,
-  onModify,
-  onIgnore,
-}: {
-  rec: AnalyticsRecommendation;
-  onAccept: () => void;
-  onModify: (action: RecAction) => void;
-  onIgnore: () => void;
-}) {
-  const [modifying, setModifying] = useState(false);
-  return (
-    <div className={`mt-2 rounded-md border p-2 ${PRIORITY_STYLE[rec.priority]}`}>
-      <div className="flex items-center justify-between">
-        <span className="text-[9px] font-bold uppercase tracking-wider text-slate-300">
-          ⬡ Data Analytics · {rec.priority}
-        </span>
-        <span className="text-[10px] font-bold tabular-nums text-slate-300">{rec.confidence}%</span>
-      </div>
-      <p className="mt-1 text-[11px] font-medium text-slate-100">{rec.issue}</p>
-      <p className="mt-0.5 text-[11px] text-slate-300">
-        ▸ {rec.recommendedAction}
-        {rec.suggestedDuration ? ` (${rec.suggestedDuration})` : ''}
-      </p>
-      <p className="mt-0.5 text-[10px] text-slate-400">Impact: {rec.expectedImpact}</p>
-
-      {!modifying ? (
-        <div className="mt-1.5 grid grid-cols-3 gap-1">
-          <button
-            onClick={onAccept}
-            className="rounded bg-emerald-600 py-1 text-[10px] font-bold text-white hover:bg-emerald-500"
-          >
-            Accept
-          </button>
-          <button
-            onClick={() => setModifying(true)}
-            className="rounded bg-slate-700 py-1 text-[10px] font-bold text-slate-100 hover:bg-slate-600"
-          >
-            Modify
-          </button>
-          <button
-            onClick={onIgnore}
-            className="rounded bg-slate-800 py-1 text-[10px] font-bold text-slate-400 hover:bg-slate-700"
-          >
-            Ignore
-          </button>
-        </div>
-      ) : (
-        <div className="mt-1.5 space-y-1">
-          <div className="text-[9px] uppercase tracking-wide text-slate-500">Alternative actions</div>
-          {[rec.action, ...rec.alternatives].map((a) => (
-            <button
-              key={a.type}
-              onClick={() => {
-                onModify(a);
-                setModifying(false);
-              }}
-              className="w-full rounded bg-slate-800 px-2 py-1 text-left text-[10px] font-semibold text-slate-200 hover:bg-slate-700"
-            >
-              {a.label}
-            </button>
-          ))}
-          <button
-            onClick={() => setModifying(false)}
-            className="w-full rounded py-0.5 text-[10px] text-slate-500 hover:text-slate-300"
-          >
-            Cancel
-          </button>
-        </div>
-      )}
     </div>
   );
 }

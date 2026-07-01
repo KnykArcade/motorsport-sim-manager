@@ -4,9 +4,8 @@ import { useGame } from '../game/GameContext';
 import { buildLiveRaceMeta, buildLiveRaceOptions, buildRaceContext } from '../game/raceSetup';
 import { createLiveRace, finalizeResults } from '../sim/liveRaceEngine';
 import {
-  acceptRecommendation,
+  applyRecommendationAction,
   ignoreRecommendation,
-  modifyRecommendation,
   requestPlayerPit,
   resolvePrompt,
   resolveRecommendationExternally,
@@ -25,6 +24,7 @@ import { TimingTower } from './liveRace/TimingTower';
 import { TrackMapPanel } from './liveRace/TrackMapPanel';
 import { EventLogPanel } from './liveRace/EventLogPanel';
 import { PitWallCard } from './liveRace/PitWallCard';
+import { RecommendationsPanel } from './liveRace/RecommendationsPanel';
 import { BottomRow } from './liveRace/BottomPanels';
 import { buildForecast } from './liveRace/forecast';
 import { FullEventLogModal, StrategyModal, TeamOrdersModal } from './liveRace/modals';
@@ -108,26 +108,43 @@ export function LiveRace() {
   const issueOrder = (order: TeamOrder, favoredDriverId?: string) =>
     setLive((s) => applyOrder(s, order, favoredDriverId));
 
-  // Apply a recommendation decision (Accept or Modify). Mode/pit actions run
+  // Resolve one recommendation with a concrete action. Mode/pit actions run
   // through the tick engine; team-order actions apply the on-track order via the
-  // relationship engine, then remove + log the recommendation.
-  const applyRec = (rec: AnalyticsRecommendation, action: RecAction, verb: 'accepted' | 'modified') =>
-    setLive((s) => {
-      if (!s) return s;
-      if (action.teamOrder) {
-        const order: TeamOrder = action.teamOrder === 'SwapPositions' ? 'SwapPositions' : 'LetThemRace';
-        const teammate = s.cars.find((c) => c.isPlayer && c.driverId !== rec.driverId && c.running)?.driverId;
-        const withOrder = applyOrder(s, order, teammate) ?? s;
-        return resolveRecommendationExternally(withOrder, rec.id, action.label, verb, engine.meta);
-      }
-      return verb === 'accepted'
-        ? acceptRecommendation(s, rec.id, engine.meta)
-        : modifyRecommendation(s, rec.id, action.type, engine.meta);
-    });
+  // relationship engine, then remove + log the recommendation. Pure over state so
+  // it can be folded across both player drivers for the group shortcuts.
+  const resolveRec = (
+    s: LiveRaceState,
+    rec: AnalyticsRecommendation,
+    action: RecAction,
+    verb: 'accepted' | 'modified',
+  ): LiveRaceState => {
+    if (action.teamOrder) {
+      const order: TeamOrder = action.teamOrder === 'SwapPositions' ? 'SwapPositions' : 'LetThemRace';
+      const teammate = s.cars.find((c) => c.isPlayer && c.driverId !== rec.driverId && c.running)?.driverId;
+      const withOrder = applyOrder(s, order, teammate) ?? s;
+      return resolveRecommendationExternally(withOrder, rec.id, action.label, verb, engine.meta);
+    }
+    return applyRecommendationAction(s, rec.id, action, engine.meta, verb);
+  };
 
-  const onAccept = (rec: AnalyticsRecommendation) => applyRec(rec, rec.action, 'accepted');
-  const onModify = (rec: AnalyticsRecommendation, action: RecAction) => applyRec(rec, action, 'modified');
-  const onIgnore = (rec: AnalyticsRecommendation) => setLive((s) => (s ? ignoreRecommendation(s, rec.id) : s));
+  const onAccept = (rec: AnalyticsRecommendation) =>
+    setLive((s) => (s ? resolveRec(s, rec, rec.action, 'accepted') : s));
+  const onModify = (rec: AnalyticsRecommendation, action: RecAction) =>
+    setLive((s) => (s ? resolveRec(s, rec, action, 'modified') : s));
+  const onIgnore = (rec: AnalyticsRecommendation) =>
+    setLive((s) => (s ? ignoreRecommendation(s, rec.id, engine.meta) : s));
+
+  // Group shortcuts: each driver keeps its own recommended action (Accept All) or
+  // its recommendation dismissed (Ignore All); "Apply to both" pushes one chosen
+  // action onto every player driver's recommendation.
+  const onAcceptAll = () =>
+    setLive((s) => (s ? [...s.recommendations].reduce((acc, r) => resolveRec(acc, r, r.action, 'accepted'), s) : s));
+  const onIgnoreAll = () =>
+    setLive((s) =>
+      s ? [...s.recommendations].reduce((acc, r) => ignoreRecommendation(acc, r.id, engine.meta), s) : s,
+    );
+  const onApplyToBoth = (action: RecAction) =>
+    setLive((s) => (s ? [...s.recommendations].reduce((acc, r) => resolveRec(acc, r, action, 'modified'), s) : s));
 
   const finishRace = () => {
     if (committed.current) {
@@ -153,7 +170,7 @@ export function LiveRace() {
   const rotation = (live.currentLap / 5) % 1;
   const playerCars = live.cars.filter((c) => c.isPlayer).sort((a, b) => (a.position ?? 99) - (b.position ?? 99));
   const forecast = buildForecast(live, engine.context.track);
-  const recFor = (driverId: string) => live.recommendations.find((r) => r.driverId === driverId);
+  const activeRecs = finished ? [] : live.recommendations;
 
   const controls = (
     <div className="flex items-center gap-1.5">
@@ -233,35 +250,46 @@ export function LiveRace() {
         {/* Left — timing tower */}
         <TimingTower cars={live.cars} nameOf={driverName} colorOf={teamColor} />
 
-        {/* Center — track map + event log */}
-        <div className="flex min-h-0 flex-col gap-2">
+        {/* Center — track map (fixed height) + event log (fills, scrolls) */}
+        <div className="flex min-h-0 flex-col gap-2 overflow-hidden">
           <TrackMapPanel live={live} dots={dots} rotation={rotation} />
-          <EventLogPanel events={live.events} onOpenFull={() => setModal('log')} />
+          <EventLogPanel events={live.events} onOpenFull={() => setModal('log')} className="min-h-0 flex-1" />
         </div>
 
-        {/* Right — pit wall player cards */}
-        <div className="flex min-h-0 flex-col gap-2 overflow-y-auto">
-          {playerCars.length === 0 ? (
-            <div className="rounded-lg border border-slate-700/60 bg-[#111725] p-4 text-sm text-slate-500">
-              No player cars in this race.
-            </div>
-          ) : (
-            playerCars.map((c) => (
-              <PitWallCard
-                key={c.driverId}
-                car={c}
-                name={driverName(c.driverId)}
-                teamColor={teamColor(c.teamId)}
-                finished={finished}
-                rec={recFor(c.driverId)}
-                onMode={(m) => setMode(c.driverId, m)}
-                onPit={() => pitNow(c.driverId)}
-                onAccept={onAccept}
-                onModify={onModify}
-                onIgnore={onIgnore}
-              />
-            ))
+        {/* Right — grouped analytics recommendations (fixed) + pit wall cards */}
+        <div className="flex min-h-0 flex-col gap-2">
+          {activeRecs.length > 0 && (
+            <RecommendationsPanel
+              recs={activeRecs}
+              nameOf={driverName}
+              onAccept={onAccept}
+              onModify={onModify}
+              onIgnore={onIgnore}
+              onAcceptAll={onAcceptAll}
+              onIgnoreAll={onIgnoreAll}
+              onApplyToBoth={onApplyToBoth}
+              className="shrink-0"
+            />
           )}
+          <div className="flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto">
+            {playerCars.length === 0 ? (
+              <div className="rounded-lg border border-slate-700/60 bg-[#111725] p-4 text-sm text-slate-500">
+                No player cars in this race.
+              </div>
+            ) : (
+              playerCars.map((c) => (
+                <PitWallCard
+                  key={c.driverId}
+                  car={c}
+                  name={driverName(c.driverId)}
+                  teamColor={teamColor(c.teamId)}
+                  finished={finished}
+                  onMode={(m) => setMode(c.driverId, m)}
+                  onPit={() => pitNow(c.driverId)}
+                />
+              ))
+            )}
+          </div>
         </div>
       </div>
 
