@@ -73,6 +73,32 @@ function pushiness(personality: AIStrategyPersonality): number {
   }
 }
 
+// The nearest teammate running ahead of this car, with the approximate gap (s)
+// between them. Used for double-stack avoidance and team-order awareness.
+function teammateAhead(
+  car: LiveCarState,
+  state: LiveRaceState,
+): { mate: LiveCarState; gap: number } | null {
+  if (car.position == null) return null;
+  let best: { mate: LiveCarState; gap: number } | null = null;
+  for (const o of state.cars) {
+    if (o.driverId === car.driverId || o.teamId !== car.teamId || !o.running) continue;
+    if (o.position == null || o.position >= car.position) continue;
+    const gap = Math.abs(car.gapToLeader - o.gapToLeader);
+    if (!best || gap < best.gap) best = { mate: o, gap };
+  }
+  return best;
+}
+
+// Whether a car looks committed to pitting on this lap (worn tyres or its next
+// scheduled stop has come due) — used to predict a teammate's stop so the car
+// behind can avoid stacking in the pit lane.
+function likelyToPit(mate: LiveCarState, lap: number): boolean {
+  if (mate.tire.wear > 78) return true;
+  const next = mate.pit.scheduledLaps[0];
+  return next != null && mate.pit.stopsMade < mate.pit.plannedStops && lap >= next - 1;
+}
+
 // Decide an AI car's action for the upcoming lap. Pure given (car, state, lap).
 export function aiLapDecision(
   car: LiveCarState,
@@ -136,6 +162,22 @@ export function aiLapDecision(
     }
     // Worn tyres force the stop regardless.
     if (lap >= target || car.tire.wear > 82) {
+      // Double-stack avoidance: if a teammate just ahead is also pitting this
+      // lap, the trailing car holds one more lap to avoid queuing behind its
+      // own crew — unless its tyres are already at the cliff, where the stop
+      // can't wait. Only the car behind defers, so the pair doesn't deadlock.
+      const mate = teammateAhead(car, state);
+      if (
+        car.tire.wear <= 80 &&
+        mate &&
+        mate.gap < 4 &&
+        likelyToPit(mate.mate, lap) &&
+        !state.safetyCar.active
+      ) {
+        action.paceMode = 'Push';
+        action.note = 'stays out a lap to avoid double-stacking';
+        return action;
+      }
       action.pitNow = true;
       action.switchCompound = state.weather.wet ? 'Wet' : 'Dry';
       action.note = 'makes a scheduled stop';
@@ -157,6 +199,21 @@ export function aiLapDecision(
     return action;
   }
 
+  // Proactive reliability: even without a flagged issue, a car with badly worn
+  // components nurses them home to reach the flag rather than risk a DNF.
+  const worstComponent = Math.min(car.engineHealth, car.gearboxHealth, car.brakeHealth);
+  if (worstComponent < 22) {
+    action.paceMode = worstComponent < 12 ? 'ProtectEngine' : 'Conservative';
+    return action;
+  }
+
+  // Damage: a damaged car backs off to protect itself and avoid a bigger
+  // failure, rather than pushing on into more trouble.
+  if (car.damaged) {
+    action.paceMode = 'Conservative';
+    return action;
+  }
+
   // Worn tyres → conserve (a pit will follow from the stop logic above).
   if (car.tire.wear > 70) {
     action.paceMode = 'Conservative';
@@ -169,6 +226,23 @@ export function aiLapDecision(
   const intervalBehind = behind ? behind.interval : Infinity;
   const late = lap > state.totalLaps * 0.65;
   const inPoints = car.position != null && car.position <= 10;
+
+  // Team orders: don't launch a risky attack on your own teammate — hold
+  // station behind them (especially late, when both are scoring) to avoid a
+  // costly double-DNF. A clearly faster car (much fresher tyres) is still let
+  // race. The car directly ahead is a teammate when the interval matches.
+  const carAhead = car.position != null && car.position > 1
+    ? state.cars.find((o) => o.running && o.position === (car.position ?? 0) - 1)
+    : undefined;
+  const teammateJustAhead =
+    carAhead != null && carAhead.teamId === car.teamId && intervalAhead < 1.2;
+  if (teammateJustAhead && inPoints) {
+    const clearlyFaster = car.tire.age + 6 < carAhead.tire.age && push > 0.4;
+    if (!clearlyFaster) {
+      action.paceMode = 'Balanced';
+      return action;
+    }
+  }
 
   // Stuck behind a car within striking range → Attack (aggressive personalities).
   if (intervalAhead < 1.2 && push > 0.2 && car.tire.wear < 65) {
