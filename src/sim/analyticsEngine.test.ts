@@ -99,6 +99,7 @@ function live(cars: LiveCarState[], overrides: Partial<LiveRaceState> = {}): Liv
     recommendations: [],
     ignoredRecs: [],
     recCooldowns: {},
+    battleTracker: {},
     retirements: 0,
     ...overrides,
   };

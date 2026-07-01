@@ -374,6 +374,12 @@ export type LiveRaceState = {
   // ignored, resolved (one-shot accept/modify) or an active instruction
   // completes, so the same advice is not re-issued every lap.
   recCooldowns: Record<string, number>;
+  // On-track battle tracker for the event log's Battles feed. Keyed by
+  // `${attackerId}>${defenderId}` -> consecutive laps the attacker has sat
+  // within striking distance directly behind that defender, so a sustained
+  // challenge can be logged once (a "defends"/"stuck behind" line) and a faded
+  // challenge can be closed out ("attack fades") without re-logging every lap.
+  battleTracker: Record<string, number>;
   // Retirements this race (for the race-info panel).
   retirements: number;
 };

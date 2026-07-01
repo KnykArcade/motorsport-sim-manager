@@ -52,6 +52,17 @@ const OTHER_PER_LAP = 0.00015;
 
 const PRIORITY_RANK: Record<RecPriority, number> = { low: 1, medium: 2, high: 3, urgent: 4 };
 
+// --- Battle / position-change event tuning -------------------------------
+// Gap (s) within which a car behind is "challenging" the car ahead.
+const BATTLE_GAP = 1.0;
+// Consecutive laps of sustained pressure before a defend / stuck-behind line.
+const BATTLE_DEFEND_LAPS = 3;
+// Max battle events logged per lap (player-involved always kept, then front-runners).
+const MAX_BATTLE_EVENTS = 4;
+// A position battle is "meaningful" (worth logging) if it involves a player
+// driver, teammates, the closing laps, or the points/podium positions.
+const BATTLE_POINTS_CUTOFF = 10;
+
 // Advance one lap. `meta` carries track + names + player team.
 export function stepLiveRace(state: LiveRaceState, meta: LiveRaceMeta): LiveRaceState {
   if (state.phase === 'finished') return state;
@@ -393,6 +404,17 @@ export function stepLiveRace(state: LiveRaceState, meta: LiveRaceMeta): LiveRace
     c.interval = 0;
   });
 
+  // --- Battle / position-change events for the log's Battles feed ---------
+  const { events: battleEvents, tracker: battleTracker } = detectBattleEvents(
+    state.cars,
+    running,
+    nextLap,
+    state.totalLaps,
+    state.battleTracker,
+    name,
+  );
+  lapEvents.push(...battleEvents);
+
   // --- Live status (risk bands, traffic, readable message) for running cars ---
   running.forEach((c, i) => {
     const intervalAhead = i === 0 ? 0 : c.interval;
@@ -455,6 +477,7 @@ export function stepLiveRace(state: LiveRaceState, meta: LiveRaceMeta): LiveRace
     recommendations,
     ignoredRecs,
     recCooldowns,
+    battleTracker,
     retirements,
   };
 }
@@ -860,6 +883,125 @@ export function resolveRecommendationExternally(
   const s = withCooldown(removeRec(state, rec.id), rec);
   const name = meta.driverNames[rec.driverId] ?? rec.driverId;
   return addEvent(s, `Lap ${s.currentLap} — pit wall ${verb} analytics recommendation: ${name} — ${label}.`);
+}
+
+// Detect meaningful on-track battles and pit-cycle position changes for the
+// event log's Battles feed. Compares the previous running order (prevCars) with
+// the freshly-ordered `running` field to spot completed passes, sustained
+// defends, faded attacks and stops that cost/gain places — without spamming the
+// log every lap. Only battles involving a player driver, teammates, the closing
+// laps or the points/podium places are kept, and at most MAX_BATTLE_EVENTS fire
+// per lap (player-involved prioritised, then front-runners).
+export function detectBattleEvents(
+  prevCars: LiveCarState[],
+  running: LiveCarState[],
+  lap: number,
+  totalLaps: number,
+  prevTracker: Record<string, number>,
+  name: (id: string) => string,
+): { events: RaceEvent[]; tracker: Record<string, number> } {
+  const finalLaps = lap > totalLaps - 10;
+  const prevPos: Record<string, number | null> = {};
+  for (const c of prevCars) prevPos[c.driverId] = c.position;
+  const runningById: Record<string, LiveCarState> = {};
+  for (const c of running) runningById[c.driverId] = c;
+
+  const candidates: { text: string; score: number }[] = [];
+  const tracker: Record<string, number> = {};
+  const passedPairs = new Set<string>();
+  const activeKeys = new Set<string>();
+
+  const significant = (posA: number, posB: number, players: boolean, sameTeam: boolean): boolean =>
+    players || sameTeam || finalLaps || Math.min(posA, posB) <= BATTLE_POINTS_CUTOFF;
+  const scoreOf = (posA: number, posB: number, players: boolean): number =>
+    (players ? 1000 : 0) + (100 - Math.min(posA, posB));
+
+  for (let i = 0; i < running.length - 1; i++) {
+    const a = running[i]; // now ahead (P{i+1})
+    const b = running[i + 1]; // now directly behind (P{i+2})
+    const pa = prevPos[a.driverId];
+    const pb = prevPos[b.driverId];
+    const posA = i + 1;
+    const posB = i + 2;
+    const players = a.isPlayer || b.isPlayer;
+    const sameTeam = a.teamId === b.teamId;
+
+    // Clean on-track pass: the pair swapped since last lap, neither pitted.
+    if (pa != null && pb != null && pa > pb && !a.pit.inPitThisLap && !b.pit.inPitThisLap) {
+      passedPairs.add(`${a.driverId}>${b.driverId}`);
+      passedPairs.add(`${b.driverId}>${a.driverId}`);
+      if (significant(posA, posB, players, sameTeam)) {
+        const suffix = sameTeam ? ' (teammates)' : '';
+        candidates.push({
+          text: `${name(a.driverId)} passes ${name(b.driverId)} for P${posA}${suffix}.`,
+          score: scoreOf(posA, posB, players) + 5,
+        });
+      }
+      continue;
+    }
+
+    // Sustained pressure: b sits within striking distance behind a.
+    const gap = b.interval; // b's gap to the car ahead (a)
+    if (gap > 0 && gap <= BATTLE_GAP && !a.pit.inPitThisLap && !b.pit.inPitThisLap) {
+      const key = `${b.driverId}>${a.driverId}`;
+      const streak = (prevTracker[key] ?? 0) + 1;
+      tracker[key] = streak;
+      activeKeys.add(key);
+      if (streak === BATTLE_DEFEND_LAPS && significant(posA, posB, players, sameTeam)) {
+        candidates.push({
+          text: `${name(a.driverId)} defends P${posA} from ${name(b.driverId)}.`,
+          score: scoreOf(posA, posB, players),
+        });
+      }
+    }
+  }
+
+  // Pit-cycle position changes: a car that pitted this lap and rejoined in a
+  // different place.
+  for (let i = 0; i < running.length; i++) {
+    const c = running[i];
+    if (!c.pit.inPitThisLap) continue;
+    const pc = prevPos[c.driverId];
+    if (pc == null) continue;
+    const posC = i + 1;
+    const delta = pc - posC;
+    if (delta === 0) continue;
+    const players = c.isPlayer;
+    const n = Math.abs(delta);
+    if (!players && n < 2) continue; // ignore minor AI shuffles
+    if (!significant(posC, pc, players, false)) continue;
+    candidates.push({
+      text:
+        delta > 0
+          ? `${name(c.driverId)} gains ${n} place${n === 1 ? '' : 's'} through the pit cycle to P${posC}.`
+          : `${name(c.driverId)} drops ${n} place${n === 1 ? '' : 's'} to P${posC} after the stop.`,
+      score: scoreOf(posC, pc, players) - 2,
+    });
+  }
+
+  // Faded challenges: a threshold-length pressure streak that is no longer live
+  // and did not end in a pass — log the failed attack once (both cars running).
+  for (const [key, streak] of Object.entries(prevTracker)) {
+    if (streak < BATTLE_DEFEND_LAPS) continue;
+    if (activeKeys.has(key) || passedPairs.has(key)) continue;
+    const [attackerId, defenderId] = key.split('>');
+    const attacker = runningById[attackerId];
+    const defender = runningById[defenderId];
+    if (!attacker || !defender) continue;
+    const players = attacker.isPlayer || defender.isPlayer;
+    if (!players && !finalLaps) continue;
+    candidates.push({
+      text: `${name(attackerId)}'s attack on ${name(defenderId)} fades.`,
+      score: players ? 1000 : 50,
+    });
+  }
+
+  const events = candidates
+    .sort((x, y) => y.score - x.score)
+    .slice(0, MAX_BATTLE_EVENTS)
+    .map<RaceEvent>((c) => ({ lap, text: c.text, category: 'battle' }));
+
+  return { events, tracker };
 }
 
 function clamp(v: number, lo: number, hi: number): number {

@@ -103,7 +103,19 @@ export type ScoreBreakdown = {
   finalScore: number;
 };
 
+// Broad category buckets used by the Race Event Log filter tabs and (later) the
+// post-race recap generator. Legacy events without a category are classified by
+// keyword at display time.
+export type RaceEventCategory =
+  | 'incident'
+  | 'strategy'
+  | 'status'
+  | 'battle'
+  | 'weather'
+  | 'race-control';
+
 export type RaceEvent = {
   lap: number;
   text: string;
+  category?: RaceEventCategory;
 };

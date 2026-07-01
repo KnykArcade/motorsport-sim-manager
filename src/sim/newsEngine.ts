@@ -2,6 +2,7 @@
 
 import type { NewsItem, QualifyingResult, RaceResult } from '../types/gameTypes';
 import { createSeededRandom, deriveSeed } from './random';
+import { biggestGainer, biggestLoser } from './positionDelta';
 
 export function generateRaceNews(
   round: number,
@@ -49,15 +50,26 @@ export function generateRaceNews(
     });
   }
 
-  // A big mover.
-  const mover = [...race]
-    .filter((r) => r.position !== null)
-    .sort((a, b) => (b.gridPosition - (b.position ?? 99)) - (a.gridPosition - (a.position ?? 99)))[0];
-  if (mover && mover.position !== null && mover.gridPosition - mover.position >= 4) {
+  // Biggest mover (positions gained from the grid).
+  const gainer = biggestGainer(race);
+  if (gainer && gainer.positionsGained >= 4) {
     items.push({
       id: `news-${round}-mover`,
       round,
-      headline: `${driverNames[mover.driverId]} charges from P${mover.gridPosition} to P${mover.position}`,
+      headline: `${driverNames[gainer.driverId]} charges from P${gainer.startingGridPosition} to P${gainer.currentPosition}`,
+      body: `One of the biggest movers of the day, climbing ${gainer.positionsGained} places.`,
+      timestamp: now,
+    });
+  }
+
+  // Biggest loser (positions dropped from the grid).
+  const loser = biggestLoser(race);
+  if (loser && loser.positionsLost >= 4) {
+    items.push({
+      id: `news-${round}-slider`,
+      round,
+      headline: `${driverNames[loser.driverId]} slips from P${loser.startingGridPosition} to P${loser.currentPosition}`,
+      body: `A day to forget after losing ${loser.positionsLost} places.`,
       timestamp: now,
     });
   }
