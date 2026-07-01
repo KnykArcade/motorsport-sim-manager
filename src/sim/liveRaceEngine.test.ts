@@ -69,6 +69,7 @@ function buildContext(seed = 'test|1995|r1'): RaceContext {
     instructions: driverInstructionsById,
     pointsByPosition: pointsSystems['pts-1995'].pointsByPosition,
     seed,
+    year: 1995,
     teamRaceOps,
   };
 }
@@ -80,7 +81,7 @@ function buildMeta(context: RaceContext, playerTeamId: string): LiveRaceMeta {
     driverNames[e.driver.id] = e.driver.name;
     teamNames[e.driver.teamId] = e.driver.teamId;
   });
-  return { track: TRACK, driverNames, teamNames, playerTeamId };
+  return { track: TRACK, driverNames, teamNames, playerTeamId, year: 1995 };
 }
 
 function createRace(context: RaceContext, playerTeamId: string) {
@@ -97,6 +98,7 @@ function createRace(context: RaceContext, playerTeamId: string) {
     driverNames,
     teamReputation,
     teamRaceOps,
+    year: 1995,
   });
 }
 

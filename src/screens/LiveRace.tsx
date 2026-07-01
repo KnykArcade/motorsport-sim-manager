@@ -10,9 +10,11 @@ import { createLiveRace, finalizeResults } from '../sim/liveRaceEngine';
 import {
   requestPlayerPit,
   resolvePrompt,
+  setPlayerPaceMode,
   stepLiveRace,
   stepLiveRaceToEnd,
 } from '../sim/raceTickEngine';
+import { SELECTABLE_MODES, modeSpec } from '../sim/liveRacePace';
 import { Panel } from '../components/Panel';
 import { Button } from '../components/Button';
 import { RaceTrack2D, type TrackDot } from '../components/RaceTrack2D';
@@ -21,7 +23,7 @@ import {
   recordTeamOrder,
   TEAM_ORDER_SPECS,
 } from '../sim/relationshipEngine';
-import type { LiveCarState, LiveRaceState, PaceMode } from '../types/liveTypes';
+import type { LiveCarState, LiveRaceState, PaceMode, RiskLevel } from '../types/liveTypes';
 import type { RaceDecision } from '../types/simTypes';
 import type { TeamOrder, TeamOrderDecision } from '../types/relationshipTypes';
 
@@ -85,6 +87,8 @@ export function LiveRace() {
     setLive((s) => (s ? resolvePrompt(s, optionId, engine.meta) : s));
   const pitNow = (driverId: string) =>
     setLive((s) => (s ? requestPlayerPit(s, driverId) : s));
+  const setMode = (driverId: string, mode: PaceMode) =>
+    setLive((s) => (s ? setPlayerPaceMode(s, driverId, mode) : s));
   const issueOrder = (order: TeamOrder, favoredDriverId?: string) =>
     setLive((s) => {
       if (!s) return s;
@@ -252,7 +256,13 @@ export function LiveRace() {
             <Panel title="Pit Wall — Telemetry">
               <div className="space-y-3">
                 {playerCars.map((c) => (
-                  <TelemetryCard key={c.driverId} car={c} name={driverName(c.driverId)} />
+                  <TelemetryCard
+                    key={c.driverId}
+                    car={c}
+                    name={driverName(c.driverId)}
+                    finished={finished}
+                    onMode={(m) => setMode(c.driverId, m)}
+                  />
                 ))}
               </div>
             </Panel>
@@ -299,7 +309,17 @@ function fmtLap(seconds: number): string {
   return `${m}:${s.toFixed(1).padStart(4, '0')}`;
 }
 
-function TelemetryCard({ car, name }: { car: LiveCarState; name: string }) {
+function TelemetryCard({
+  car,
+  name,
+  finished,
+  onMode,
+}: {
+  car: LiveCarState;
+  name: string;
+  finished: boolean;
+  onMode: (mode: PaceMode) => void;
+}) {
   const finishedRace = car.status === 'Finished';
   const dnf = !car.running && !finishedRace;
   const wear = Math.round(car.tire.wear);
@@ -307,7 +327,6 @@ function TelemetryCard({ car, name }: { car: LiveCarState; name: string }) {
   // Rough laps-to-cliff estimate from the per-lap degradation rate.
   const lapsLeft =
     car.tireDegRate > 0 ? Math.max(0, Math.round((90 - car.tire.wear) / car.tireDegRate)) : null;
-  const relPct = Math.round(Math.min(1, car.reliabilityRisk * (car.lapsCompleted || 1)) * 100);
   const gridDelta = car.position != null ? car.grid - car.position : 0;
 
   if (dnf) {
@@ -334,6 +353,13 @@ function TelemetryCard({ car, name }: { car: LiveCarState; name: string }) {
           )}
         </span>
       </div>
+      <div className="mt-1.5 flex items-baseline justify-between">
+        <span className="text-[10px] uppercase tracking-wide text-neutral-500">Live Pace</span>
+        <span className="text-lg font-bold tabular-nums text-amber-300">{car.liveRacePace.toFixed(1)}</span>
+      </div>
+      <div className="text-[11px] text-neutral-400">
+        Base {car.baseRacePace.toFixed(1)} · {car.statusMessage}
+      </div>
       <div className="mt-2 grid grid-cols-2 gap-x-4 gap-y-1 text-xs">
         <Telem label="Gap to leader" value={car.position === 1 ? 'Leader' : `+${car.gapToLeader.toFixed(1)}s`} />
         <Telem label="Interval" value={car.position === 1 ? '—' : `+${car.interval.toFixed(1)}s`} />
@@ -341,18 +367,35 @@ function TelemetryCard({ car, name }: { car: LiveCarState; name: string }) {
         <Telem label="Best lap" value={car.bestLap != null ? fmtLap(car.bestLap) : '—'} />
         <Telem label="Tyre" value={`${car.tire.compound} · ${wear}%`} valueClass={wearTone} />
         <Telem label="Est. laps left" value={lapsLeft != null ? `~${lapsLeft}` : '—'} />
-        <Telem label="Pace" value={PACE_LABEL[car.paceMode]} />
-        <Telem
-          label="Reliability risk"
-          value={`${relPct}%`}
-          valueClass={relPct > 50 ? 'text-red-300' : relPct > 25 ? 'text-amber-300' : 'text-green-300'}
-        />
+        <Telem label="Reliability risk" value={car.reliabilityRiskLevel} valueClass={RISK_TONE[car.reliabilityRiskLevel]} />
+        <Telem label="Crash risk" value={car.crashRiskLevel} valueClass={RISK_TONE[car.crashRiskLevel]} />
       </div>
       {car.reliabilityIssue && (
         <p className="mt-2 text-xs font-medium text-amber-300">⚠ {car.reliabilityIssue.label}</p>
       )}
       {car.damaged && !car.reliabilityIssue && (
         <p className="mt-2 text-xs font-medium text-amber-300">⚠ Car damaged</p>
+      )}
+      {!finished && car.running && (
+        <div className="mt-2.5">
+          <div className="mb-1 text-[10px] uppercase tracking-wide text-neutral-500">Strategy Mode</div>
+          <div className="flex flex-wrap gap-1">
+            {SELECTABLE_MODES.map((m) => (
+              <button
+                key={m}
+                onClick={() => onMode(m)}
+                title={modeSpec(m).blurb}
+                className={`rounded px-2 py-1 text-[11px] font-semibold ${
+                  car.paceMode === m
+                    ? 'bg-amber-500 text-neutral-950'
+                    : 'bg-neutral-800 text-neutral-300 hover:bg-neutral-700'
+                }`}
+              >
+                {PACE_LABEL[m]}
+              </button>
+            ))}
+          </div>
+        </div>
       )}
     </div>
   );
@@ -488,10 +531,20 @@ function Stat({ label, value, tone = 'normal' }: { label: string; value: string;
 }
 
 const PACE_LABEL: Record<PaceMode, string> = {
-  Push: 'Push',
+  Conservative: 'Conservative',
   Balanced: 'Balanced',
-  Conserve: 'Conserve',
-  Nurse: 'Nurse',
+  Push: 'Push',
+  Attack: 'Attack',
+  Defend: 'Defend',
+  ProtectEngine: 'Protect Engine',
+};
+
+const RISK_TONE: Record<RiskLevel, string> = {
+  Low: 'text-green-300',
+  Medium: 'text-amber-300',
+  Elevated: 'text-amber-300',
+  High: 'text-red-300',
+  Critical: 'text-red-400',
 };
 
 function RunningOrder({
@@ -512,7 +565,8 @@ function RunningOrder({
             <th className="px-2 py-1.5">Driver</th>
             <th className="px-2 py-1.5">Gap</th>
             <th className="px-2 py-1.5">Tyre</th>
-            <th className="px-2 py-1.5">Pace</th>
+            <th className="px-2 py-1.5">Mode</th>
+            <th className="px-2 py-1.5">Live</th>
             <th className="px-2 py-1.5">Pits</th>
             <th className="px-2 py-1.5">Status</th>
           </tr>
@@ -552,14 +606,26 @@ function RunningOrder({
                 <td className="px-2 py-1.5 text-xs text-neutral-400">
                   {finishedRace ? 'Finished' : c.running ? PACE_LABEL[c.paceMode] : '—'}
                 </td>
+                <td className="px-2 py-1.5 text-xs tabular-nums text-amber-300">
+                  {c.running ? c.liveRacePace.toFixed(1) : '—'}
+                </td>
                 <td className="px-2 py-1.5 tabular-nums text-neutral-400">{c.pit.stopsMade}</td>
                 <td className="px-2 py-1.5 text-xs">
                   {finishedRace && <span className="text-green-400">✓ Finished</span>}
-                  {c.reliabilityIssue && c.running && (
-                    <span className="text-amber-300" title={c.reliabilityIssue.label}>⚠ {c.reliabilityIssue.label}</span>
-                  )}
                   {dnf && <span className="text-red-400">{c.lastIncident ?? 'DNF'}</span>}
-                  {c.running && !c.reliabilityIssue && c.damaged && <span className="text-amber-300">Damaged</span>}
+                  {c.running && (
+                    <span
+                      className={
+                        c.reliabilityIssue
+                          ? 'text-amber-300'
+                          : c.damaged
+                          ? 'text-amber-300'
+                          : 'text-neutral-400'
+                      }
+                    >
+                      {c.statusMessage}
+                    </span>
+                  )}
                 </td>
               </tr>
             );

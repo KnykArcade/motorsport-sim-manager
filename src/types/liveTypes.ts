@@ -113,7 +113,29 @@ export type ReliabilityIssue = {
 // Pace / AI
 // ---------------------------------------------------------------------------
 
-export type PaceMode = 'Push' | 'Balanced' | 'Conserve' | 'Nurse';
+// Race strategy modes the player (and AI) can switch between during a race.
+// Each carries a distinct pace / tyre-wear / reliability / crash tradeoff (see
+// STRATEGY_MODES in src/sim/liveRacePace.ts).
+//   Conservative  — protect the car, save tyres, bring it home
+//   Balanced      — default racing mode
+//   Push          — more pace, more wear + reliability stress
+//   Attack        — maximise overtaking, highest incident risk
+//   Defend        — resist cars behind, slight pace cost
+//   ProtectEngine — minimise mechanical failure risk, least pace
+export type PaceMode =
+  | 'Conservative'
+  | 'Balanced'
+  | 'Push'
+  | 'Attack'
+  | 'Defend'
+  | 'ProtectEngine';
+
+// Coarse risk bands surfaced on the live-race UI.
+export type RiskLevel = 'Low' | 'Medium' | 'Elevated' | 'High' | 'Critical';
+
+// A car's relationship to the cars around it, which drives dirty-air pace loss
+// and overtaking/defending dynamics.
+export type TrafficStatus = 'Clear' | 'InTraffic' | 'Attacking' | 'Defending';
 
 export type AIStrategyPersonality =
   | 'Conservative'
@@ -197,9 +219,11 @@ export type LiveCarState = {
   lastIncident?: string;
 
   // Per-car simulation parameters (set at creation, mostly constant).
-  paceRating: number; // baseline pace score (higher = faster)
-  baseFailureRisk: number; // per-lap failure probability baseline
-  baseMistakeRisk: number; // per-lap mistake probability baseline
+  paceRating: number; // baseline pace score (higher = faster) — internal scale
+  baseRacePace: number; // Base Race Pace on the 1-10 scale (50/25/15/10 blend)
+  baseFailureRisk: number; // per-lap mechanical-failure probability baseline
+  baseCrashRisk: number; // per-lap crash/incident probability baseline
+  baseMistakeRisk: number; // per-lap (non-terminal) mistake probability baseline
   tireDegRate: number; // tyre wear points per lap at balanced pace
   pitLossBase: number; // green-flag pit-stop time loss (s)
   opsForm: number; // per-weekend operations execution (0 neutral) — pit/strategy consistency
@@ -209,11 +233,21 @@ export type LiveCarState = {
 
   // Mutable race state.
   paceMode: PaceMode;
+  // Current Live Race Pace (1-10), recomputed every lap from Base Race Pace and
+  // the live modifiers (tyre, fuel, form, mode, track fit, weather, traffic,
+  // damage, reliability concern, mistakes). Small boosts above the base allowed.
+  liveRacePace: number;
   tire: TireState;
   pit: PitStopState;
   reliabilityIssue: ReliabilityIssue | null;
-  reliabilityRisk: number; // current effective per-lap failure probability
+  reliabilityRisk: number; // current effective per-lap mechanical-failure probability
+  crashRisk: number; // current effective per-lap crash/incident probability
   damaged: boolean;
+  // UI-facing live status.
+  reliabilityRiskLevel: RiskLevel;
+  crashRiskLevel: RiskLevel;
+  trafficStatus: TrafficStatus;
+  statusMessage: string;
 };
 
 export type LiveRaceState = {

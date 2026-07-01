@@ -113,6 +113,7 @@ function runSeason(key: string, seed: string): { drivers: RaceResult[][]; teams:
       instructions: driverInstructionsById,
       pointsByPosition: pointsSystem.pointsByPosition,
       seed: `${seed}-r${race.round}`,
+      year: season.year,
       teamReputation,
       teamRaceOps,
     };

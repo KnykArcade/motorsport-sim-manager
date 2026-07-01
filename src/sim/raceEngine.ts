@@ -20,8 +20,9 @@ import {
 } from './trackFitEngine';
 import { calculateSetupFit } from './setupEngine';
 import { calculateReliabilityRisk } from './reliabilityEngine';
-import { calculateMistakeRisk } from './mistakeEngine';
+import { calculateMistakeRisk, calculateCrashRisk } from './mistakeEngine';
 import { calculatePitStopPerformance } from './pitStopEngine';
+import { eraReliabilityScale, pickDnfCause, type DnfCauseContext } from './dnfModel';
 
 // Pace is a weighted blend of four components, each on a ~1-10 scale:
 //   50% car, 25% driver, 15% team, 10% form/morale/setup/strategy.
@@ -195,8 +196,12 @@ export function computeRaceOutcome(context: RaceContext): RaceOutcome {
       teamRating,
     );
 
-    // Grid position matters but the race can reorder things.
-    const gridBonus = (context.entrants.length - grid) * 0.12;
+    // Grid position matters but the race can reorder things. Tracks that are
+    // hard to overtake at (low overtaking racecraft) make track position
+    // stickier — the aggregate of the live race's dirty-air/traffic model.
+    const overtaking = context.track.attributes.overtakingRacecraft ?? 5;
+    const trackPosFactor = 1 + (5 - overtaking) * 0.05;
+    const gridBonus = (context.entrants.length - grid) * 0.12 * trackPosFactor;
 
     // Per-team weekend form (both cars share it) — the main source of race-to-race
     // variation that lets front-runners trade wins. Driver consistency (composure)
@@ -213,7 +218,12 @@ export function computeRaceOutcome(context: RaceContext): RaceOutcome {
     // Stress to reliability from aggressive choices; the weekend's operations
     // execution (reliability management) shifts the DNF risk up or down.
     const stress = Math.max(0, instruction.reliabilityStressModifier + setup.riskModifier * 0.2);
-    const relRisk = calculateReliabilityRisk(e.car, context.track, setup, stress, opsForm);
+    // Mechanical-failure risk, era-scaled down to cut reliability retirements.
+    const relRisk =
+      calculateReliabilityRisk(e.car, context.track, setup, stress, opsForm) *
+      eraReliabilityScale(context.year);
+    // Crash/incident risk, separate from mechanical failure.
+    const crashRisk = calculateCrashRisk(e.driver, context.track, instruction.mistakeModifier);
     const mistakeRisk = calculateMistakeRisk(
       e.driver,
       context.track,
@@ -226,18 +236,26 @@ export function computeRaceOutcome(context: RaceContext): RaceOutcome {
     let lapsCompleted = totalLaps;
     let finalScore = score + gridBonus + form + driverSwing;
 
-    // Reliability failure?
-    if (rng.chance(relRisk)) {
+    // Total retirement probability, then the *cause* is drawn from the era
+    // profile (nudged by car/driver/track), so the season-wide DNF cause split
+    // matches the era target while individual retirements stay plausible.
+    const otherRisk = 0.004;
+    const pDnf = Math.min(0.7, relRisk + crashRisk + otherRisk);
+    if (rng.chance(pDnf)) {
+      const causeCtx: DnfCauseContext = {
+        carReliability: effectiveCarRatings(e.car).reliability,
+        aggression: e.driver.ratings.aggression + instruction.mistakeModifier * 3,
+        composure: e.driver.ratings.composure,
+        tyreWear: 55, // representative late-race wear for the quick sim
+        wallProximity: context.track.attributes.riskWallProximity,
+        inTraffic: grid > 6,
+      };
+      const { cause, label } = pickDnfCause(context.year, causeCtx, rng);
       status = 'DNF';
-      lapsCompleted = rng.int(3, totalLaps - 5);
-      incidents.push(rng.pick(['Engine failure', 'Gearbox failure', 'Hydraulics failure', 'Electrical issue']));
+      lapsCompleted =
+        cause === 'Crash' ? rng.int(1, totalLaps - 5) : rng.int(3, totalLaps - 5);
+      incidents.push(label);
       finalScore = -100 - grid; // sort to the back, keep grid order among DNFs
-    } else if (rng.chance(mistakeRisk * 0.5)) {
-      // A race-ending crash.
-      status = 'DNF';
-      lapsCompleted = rng.int(1, totalLaps - 5);
-      incidents.push(rng.pick(['Crashed out', 'Spun into the gravel', 'Collision damage, retired']));
-      finalScore = -100 - grid;
     } else {
       // Pit stop contribution for finishers (pit-crew + weekend operations form).
       const pit = calculatePitStopPerformance(e.car, strategy, rng, opsForm);

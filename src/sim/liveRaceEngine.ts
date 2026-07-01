@@ -17,9 +17,10 @@ import type {
   PaceMode,
   TireCompound,
 } from '../types/liveTypes';
-import { calculateRacePace, weekendForm, operationsForm } from './raceEngine';
+import { calculateRacePace, weekendForm, operationsForm, PACE_SPREAD } from './raceEngine';
 import { calculateReliabilityRisk, perLapFailureRisk } from './reliabilityEngine';
-import { calculateMistakeRisk } from './mistakeEngine';
+import { calculateMistakeRisk, calculateCrashRisk } from './mistakeEngine';
+import { eraReliabilityScale } from './dnfModel';
 import { assignPersonality } from './aiStrategyEngine';
 import { buildPitPlan, pitStopLoss, pitWindowFor } from './pitStrategyEngine';
 import { initialWeather } from './weatherEngine';
@@ -35,6 +36,8 @@ export type LiveRaceOptions = {
   // Race Operations Rating (1-10) by team id — drives the team pace component
   // and the per-weekend operations variance.
   teamRaceOps: Record<string, number>;
+  // Season year — drives era-specific DNF-cause balancing.
+  year: number;
 };
 
 // Metadata threaded through the tick engine for events and player prompts.
@@ -43,6 +46,8 @@ export type LiveRaceMeta = {
   driverNames: Record<string, string>;
   teamNames: Record<string, string>;
   playerTeamId: string;
+  // Season year — drives era-specific DNF-cause balancing during the race.
+  year: number;
 };
 
 const REF_LAP = 90; // reference lap time (s) — only relative deltas matter
@@ -51,12 +56,13 @@ function initialPaceMode(instructionId: string): PaceMode {
   switch (instructionId) {
     case 'Aggressive':
     case 'MaximumAttack':
-    case 'AttackTeammate':
       return 'Push';
+    case 'AttackTeammate':
+      return 'Attack';
     case 'Conservative':
     case 'ProtectCar':
     case 'SupportTeammate':
-      return 'Conserve';
+      return 'Conservative';
     default:
       return 'Balanced';
   }
@@ -85,17 +91,25 @@ export function createLiveRace(context: RaceContext, options: LiveRaceOptions): 
     const { score: paceScore } = calculateRacePace(e.driver, e.car, track, setup, strategy, instruction, teamRating);
     // Per-team weekend form so the live race shares the quick race's variation.
     const score = paceScore + weekendForm(context.seed, e.driver.teamId, teamRating);
+    // Base Race Pace on the 1-10 scale (the pace score divided back out of the
+    // internal PACE_SPREAD blow-up), which the live-pace model builds on.
+    const baseRacePace = clamp10(score / PACE_SPREAD);
     // Per-car weekend operations execution (pit/reliability/strategy), zero-mean.
     const opsForm = operationsForm(context.seed, e.driver.teamId, e.driver.id, teamRating);
 
     // Reliability: per-race risk amplified by quali incidents, spread per lap.
     // The weekend's operations execution shifts the per-race risk up or down.
+    // Era-scaled down to cut reliability retirements per the balance brief.
     const stress = Math.max(0, instruction.reliabilityStressModifier + setup.riskModifier * 0.2);
     let perRaceRel = calculateReliabilityRisk(e.car, track, setup, stress, opsForm);
     const qIncident = incidentByDriver[e.driver.id];
     if (qIncident === 'Crash') perRaceRel += 0.06;
     else if (qIncident === 'Mechanical Issue') perRaceRel += 0.04;
-    const baseFailureRisk = perLapFailureRisk(perRaceRel, totalLaps);
+    const baseFailureRisk = perLapFailureRisk(perRaceRel, totalLaps) * eraReliabilityScale(options.year);
+
+    // Crash/incident risk, kept separate from mechanical failure.
+    const perRaceCrash = calculateCrashRisk(e.driver, track, instruction.mistakeModifier);
+    const baseCrashRisk = perLapFailureRisk(perRaceCrash, totalLaps);
 
     const perRaceMistake = calculateMistakeRisk(
       e.driver,
@@ -136,7 +150,9 @@ export function createLiveRace(context: RaceContext, options: LiveRaceOptions): 
       retiredOnLap: null,
       lastIncident: qIncident === 'Crash' ? 'Carrying qualifying crash damage' : undefined,
       paceRating: score,
+      baseRacePace,
       baseFailureRisk,
+      baseCrashRisk,
       baseMistakeRisk,
       tireDegRate,
       pitLossBase: pitStopLoss(e.car, false, SAFETY_CAR_PIT_SAVING, opsForm),
@@ -145,6 +161,7 @@ export function createLiveRace(context: RaceContext, options: LiveRaceOptions): 
       strategyId: strategy.id,
       instructionId: instruction.id,
       paceMode: initialPaceMode(instruction.id),
+      liveRacePace: baseRacePace,
       tire: { compound, age: 0, wear: 0, stintTarget: pitPlan.stintTarget },
       pit: {
         plannedStops: pitPlan.plannedStops,
@@ -162,7 +179,12 @@ export function createLiveRace(context: RaceContext, options: LiveRaceOptions): 
       },
       reliabilityIssue: null,
       reliabilityRisk: baseFailureRisk,
+      crashRisk: baseCrashRisk,
       damaged: false,
+      reliabilityRiskLevel: 'Low',
+      crashRiskLevel: 'Low',
+      trafficStatus: 'Clear',
+      statusMessage: 'On the grid',
     };
   });
 
@@ -282,6 +304,9 @@ function ratingFor(finishPos: number, grid: number): number {
   return Math.max(1, Math.min(10, round1(base)));
 }
 
+function clamp10(n: number): number {
+  return Math.max(1, Math.min(10, n));
+}
 function round1(n: number): number {
   return Math.round(n * 10) / 10;
 }

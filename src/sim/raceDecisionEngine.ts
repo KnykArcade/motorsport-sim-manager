@@ -45,7 +45,7 @@ export function rivalPitPrompt(car: LiveCarState, lap: number, rivalName: string
         id: 'extend',
         label: 'Extend the stint',
         detail: 'Bank tyre life for a later, stronger stop. Slower for now.',
-        effects: { paceMode: 'Conserve', note: 'extends the stint to fight back later' },
+        effects: { paceMode: 'Conservative', note: 'extends the stint to fight back later' },
       },
     ],
   };
@@ -89,13 +89,13 @@ export function reliabilityPrompt(car: LiveCarState, lap: number, issueLabel: st
         id: 'nurse',
         label: 'Nurse the car',
         detail: 'Back off to protect the car. Lower failure risk, slower pace.',
-        effects: { paceMode: 'Nurse', resolveIssue: true, reliabilityRiskDelta: -0.03, note: 'nurses the car to manage the issue' },
+        effects: { paceMode: 'ProtectEngine', resolveIssue: true, reliabilityRiskDelta: -0.03, note: 'nurses the car to manage the issue' },
       },
       {
         id: 'manage',
         label: 'Manage it',
         detail: 'Ease off slightly and monitor. Balanced risk.',
-        effects: { paceMode: 'Conserve', resolveIssue: true, reliabilityRiskDelta: -0.015, note: 'manages the issue at reduced pace' },
+        effects: { paceMode: 'Conservative', resolveIssue: true, reliabilityRiskDelta: -0.015, note: 'manages the issue at reduced pace' },
       },
       {
         id: 'push',
@@ -126,7 +126,7 @@ export function rainPrompt(car: LiveCarState, lap: number, heavy: boolean): Race
         id: 'wait',
         label: 'Wait a lap',
         detail: 'See if it develops before committing.',
-        effects: { paceMode: 'Conserve', note: 'waits a lap before deciding on tyres' },
+        effects: { paceMode: 'Conservative', note: 'waits a lap before deciding on tyres' },
       },
       {
         id: 'gamble',
@@ -183,7 +183,7 @@ export function tyreWearPrompt(car: LiveCarState, lap: number): RaceDecisionProm
         id: 'manage',
         label: 'Manage the pace',
         detail: 'Nurse the tyres to the planned window.',
-        effects: { paceMode: 'Conserve', tireWearDelta: -8, note: 'manages tyre wear to extend the stint' },
+        effects: { paceMode: 'Conservative', tireWearDelta: -8, note: 'manages tyre wear to extend the stint' },
       },
     ],
   };
@@ -233,7 +233,7 @@ export function damagePrompt(car: LiveCarState, lap: number): RaceDecisionPrompt
         id: 'stay',
         label: 'Stay out',
         detail: 'Keep position with a compromised car. Slower and risky.',
-        effects: { paceMode: 'Conserve', reliabilityRiskDelta: 0.01, note: 'stays out with a damaged car' },
+        effects: { paceMode: 'Conservative', reliabilityRiskDelta: 0.01, note: 'stays out with a damaged car' },
       },
     ],
   };

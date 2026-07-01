@@ -143,27 +143,63 @@ export function aiLapDecision(
     }
   }
 
-  // 4. Pace mode: manage reliability and tyres, or push to recover positions.
+  // 4. Strategy mode: pick by situation, mirroring the player's options.
+  //    Priority: protect the car > manage tyres > fight for position > cruise.
+
+  // Reliability warning → Protect Engine (or Conservative for milder cases).
   if (car.reliabilityIssue && !car.reliabilityIssue.managed) {
-    const nurse = car.personality === 'ReliabilityProtective' || car.personality === 'RiskAverse' || car.personality === 'Conservative';
-    action.paceMode = nurse ? 'Nurse' : car.reliabilityIssue.severity === 'Severe' ? 'Conserve' : 'Balanced';
+    const protect =
+      car.personality === 'ReliabilityProtective' ||
+      car.personality === 'RiskAverse' ||
+      car.personality === 'Conservative' ||
+      car.reliabilityIssue.severity === 'Severe';
+    action.paceMode = protect ? 'ProtectEngine' : 'Conservative';
     return action;
   }
 
+  // Worn tyres → conserve (a pit will follow from the stop logic above).
   if (car.tire.wear > 70) {
-    action.paceMode = 'Conserve';
-  } else if (push > 0.4 && car.position != null && car.position > car.grid) {
-    action.paceMode = 'Push'; // recovering lost ground
-  } else if (push < -0.4) {
-    action.paceMode = 'Conserve';
-  } else {
-    action.paceMode = 'Balanced';
+    action.paceMode = 'Conservative';
+    return action;
   }
 
-  // Late-race push from aggressive personalities running in the points.
-  if (lap > state.totalLaps * 0.8 && push > 0.4 && car.tire.wear < 60) {
+  // Position fights: gaps to the cars immediately ahead and behind.
+  const intervalAhead = car.position != null && car.position > 1 ? car.interval : Infinity;
+  const behind = state.cars.find((o) => o.running && o.position === (car.position ?? 0) + 1);
+  const intervalBehind = behind ? behind.interval : Infinity;
+  const late = lap > state.totalLaps * 0.65;
+  const inPoints = car.position != null && car.position <= 10;
+
+  // Stuck behind a car within striking range → Attack (aggressive personalities).
+  if (intervalAhead < 1.2 && push > 0.2 && car.tire.wear < 65) {
+    action.paceMode = 'Attack';
+    return action;
+  }
+  // Defending a points position late under pressure from behind → Defend.
+  if (late && inPoints && intervalBehind < 1.2) {
+    action.paceMode = 'Defend';
+    return action;
+  }
+  // Leading comfortably late → back off and bring it home.
+  if (late && car.position === 1 && intervalBehind > 6) {
+    action.paceMode = push > 0.4 ? 'Balanced' : 'Conservative';
+    return action;
+  }
+  // Chasing (lost ground, or late in the points) → Push.
+  if (push > 0.4 && car.position != null && car.position > car.grid) {
     action.paceMode = 'Push';
+    return action;
+  }
+  if (late && push > 0.4 && car.tire.wear < 60) {
+    action.paceMode = 'Push';
+    return action;
+  }
+  // Cautious personalities cruise conservatively.
+  if (push < -0.4) {
+    action.paceMode = 'Conservative';
+    return action;
   }
 
+  action.paceMode = 'Balanced';
   return action;
 }

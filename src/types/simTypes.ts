@@ -80,6 +80,8 @@ export type RaceContext = {
   instructions: Record<string, DriverInstruction>;
   pointsByPosition: Record<number, number>;
   seed: string;
+  // Season year — drives era-specific DNF-cause balancing.
+  year: number;
   // Team reputation (0-100) by team id. Used for AI personality / engine-deal
   // context — NOT for pace (that now uses teamRaceOps).
   teamReputation?: Record<string, number>;
