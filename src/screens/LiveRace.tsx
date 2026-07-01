@@ -250,10 +250,14 @@ export function LiveRace() {
         {/* Left — timing tower */}
         <TimingTower cars={live.cars} nameOf={driverName} colorOf={teamColor} />
 
-        {/* Center — track map (fixed height) + event log (fills, scrolls) */}
+        {/* Center — large track map (fills) + compact event log (fixed height) */}
         <div className="flex min-h-0 flex-col gap-2 overflow-hidden">
-          <TrackMapPanel live={live} dots={dots} rotation={rotation} />
-          <EventLogPanel events={live.events} onOpenFull={() => setModal('log')} className="min-h-0 flex-1" />
+          <TrackMapPanel live={live} dots={dots} rotation={rotation} className="min-h-0 flex-1" />
+          <EventLogPanel
+            events={live.events}
+            onOpenFull={() => setModal('log')}
+            className="h-[172px] shrink-0"
+          />
         </div>
 
         {/* Right — grouped analytics recommendations (fixed) + pit wall cards */}
