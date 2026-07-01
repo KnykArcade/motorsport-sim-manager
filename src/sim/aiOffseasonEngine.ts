@@ -10,7 +10,7 @@
 //
 // Pure & deterministic: given the same inputs it produces the same moves.
 
-import type { Car, CarRatings, Driver, StandingsEntry, Team } from '../types/gameTypes';
+import type { Car, CarRatings, Driver, DriverRatings, StandingsEntry, Team } from '../types/gameTypes';
 import type { EngineState } from '../types/engineTypes';
 import type { TeamOrganizationRatings } from '../types/teamRatingsTypes';
 import type { AcademyMember, MarketDriver, YouthProspect } from '../types/marketTypes';
@@ -205,6 +205,23 @@ function bestCandidate(
     }
   }
   return best;
+}
+
+// The cheapest still-available candidate, ignoring the team's cash. Used as a
+// last resort to fill an empty race seat so no AI team ever starts a season a
+// car short — a broke team takes a cheap pay driver rather than run one car.
+function cheapestCandidate(ctx: MarketCtx, ai: AITeamState): MarketDriver | undefined {
+  let cheapest: MarketDriver | undefined;
+  let bestCost = Infinity;
+  for (const m of ctx.available) {
+    if (ctx.taken.has(m.id) || ctx.takenNames.has(norm(m.name))) continue;
+    const cost = signingCost(m, ai);
+    if (cost < bestCost) {
+      bestCost = cost;
+      cheapest = m;
+    }
+  }
+  return cheapest;
 }
 
 // --- Main entry --------------------------------------------------------------
@@ -562,9 +579,20 @@ function processDriverMarket(
       team.driverIds = ensureInRoster(team.driverIds, reserve.id);
       notes.push(`${team.name} promotes reserve driver ${reserve.name} to a race seat.`);
     } else {
-      const pick = bestCandidate(ctx, ai, cash, 4);
-      if (!pick) break; // nothing affordable — leave the seat (rare)
+      // A team must never start a season a car short: prefer the best affordable
+      // driver, but if nothing fits the budget take the cheapest available (a pay
+      // driver), and only generate a rookie if the market is genuinely empty.
+      const pick = bestCandidate(ctx, ai, cash, 4) ?? cheapestCandidate(ctx, ai);
       const number = freeNumber();
+      if (!pick) {
+        const rookie = makeRookieDriver(team.id, number, rng, ctx.takenNames);
+        nextDrivers = [...nextDrivers, rookie];
+        team.driverIds = ensureInRoster(team.driverIds, rookie.id);
+        ctx.takenNames.add(norm(rookie.name));
+        notes.push(`${team.name} promotes rookie ${rookie.name} into an empty race seat.`);
+        seats = activeSeatDrivers(nextDrivers, team.id);
+        continue;
+      }
       const signed = marketDriverToDriver(pick, { teamId: team.id, number });
       nextDrivers = [...nextDrivers, signed];
       team.driverIds = ensureInRoster(team.driverIds, signed.id);
@@ -618,6 +646,55 @@ function processDriverMarket(
 
 function isReserveTier(d: Driver): boolean {
   return d.contractType === 'third' || d.contractType === 'reserve' || d.contractType === 'test';
+}
+
+const ROOKIE_FIRST = [
+  'Alex', 'Danny', 'Marco', 'Luca', 'Nico', 'Paul', 'Erik', 'Bruno', 'Diego', 'Tomas',
+  'Rui', 'Sven', 'Jens', 'Karl', 'Remy', 'Theo', 'Enzo', 'Milan', 'Ivan', 'Petar',
+];
+const ROOKIE_LAST = [
+  'Vanterpool', 'Kessler', 'Brenner', 'Falk', 'Novak', 'Adler', 'Sorenson', 'Vasquez',
+  'Delgado', 'Fontana', 'Bergman', 'Larsen', 'Kovac', 'Petrov', 'Dumont', 'Nyberg',
+  'Halvorsen', 'Marchetti', 'Okafor', 'Renaud',
+];
+
+// Last-resort generated rookie so an AI team is never left a car short when the
+// market is genuinely empty. Deterministic (seeded rng) and de-duplicated
+// against names already in use.
+export function makeRookieDriver(
+  teamId: string,
+  number: number,
+  rng: Rng,
+  takenNames: Set<string>,
+): Driver {
+  let name = '';
+  for (let attempt = 0; attempt < 128 && !name; attempt++) {
+    const cand = `${rng.pick(ROOKIE_FIRST)} ${rng.pick(ROOKIE_LAST)}`;
+    if (!takenNames.has(norm(cand))) name = cand;
+  }
+  if (!name) name = `Rookie ${teamId}-${number}`;
+  const base = 4 + rng.range(0, 1.2);
+  const r = () => Math.round(Math.max(1, Math.min(10, base + rng.range(-0.5, 0.7))) * 10) / 10;
+  const ratings: DriverRatings = {
+    cornering: r(), braking: r(), straights: r(), tractionAcceleration: r(),
+    elevationBlindCorners: r(), technical: r(), overtakingRacecraft: r(),
+    surfaceGripBumpiness: r(), riskManagement: r(), enduranceConsistency: r(),
+    qualifying: r(), racePace: r(), adaptability: r(), aggression: r(),
+    composure: r(), overall: Math.round(base * 10) / 10,
+  };
+  return {
+    id: `d-rookie-${norm(name).replace(/\s+/g, '-')}-${number}`,
+    name,
+    number,
+    age: 20,
+    teamId,
+    ratings,
+    morale: 60,
+    confidence: 55,
+    contractYearsRemaining: 2,
+    contractType: 'seat',
+    traits: [],
+  };
 }
 
 // The (up to two) race-seat drivers for a team: roster order first, then any

@@ -5,6 +5,8 @@
 // accumulated "knowledge" that improves setup confidence, tyre/reliability
 // estimates and strategy accuracy — without ever revealing the perfect setup.
 
+import type { CarSetup } from './setupTypes';
+
 // The kinds of practice sessions a weekend can contain. The exact set depends on
 // the era/series (e.g. modern F1 has FP1-FP3; older eras add a warmup).
 export type PracticeSessionKind =
@@ -106,4 +108,11 @@ export type WeekendPractice = {
   knowledge: WeekendKnowledge;
   // Practice laps consumed so far this weekend (against the weekend lap budget).
   lapsUsed?: number;
+  // The setup family each driver actually ran in practice — the baseline the
+  // Car Setup Workshop compares the final setup against for driver comfort.
+  practicedSetupByDriver?: Record<string, CarSetup>;
+  // The full history of setups run per driver across the weekend's sessions.
+  practicedSetupHistory?: Record<string, CarSetup[]>;
+  // Practice laps banked per driver (for setup familiarity).
+  practiceLapsByDriver?: Record<string, number>;
 };

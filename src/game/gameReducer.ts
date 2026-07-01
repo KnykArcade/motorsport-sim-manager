@@ -78,7 +78,7 @@ import type {
   PracticeSessionKind,
   WeekendPractice,
 } from '../types/practiceTypes';
-import { BALANCED_SETUP } from '../data/setup/setupComponents';
+import { initialBaselineSetup } from '../sim/setupFitEngine';
 import {
   accumulateKnowledge,
   emptyKnowledge,
@@ -158,11 +158,16 @@ function runPracticeSessionAction(
   if (wp.sessions.some((s) => s.kind === kind && s.completed)) return state;
 
   const players = activeDriversForTeam(state, state.selectedTeamId);
+  const car = carForTeam(state, state.selectedTeamId);
+  // The engineer's baseline setup family for the weekend. Practice is run on
+  // this (or the player's carried-over setup) and the workshop compares the
+  // final tuned setup against it for driver comfort.
+  const baseline = initialBaselineSetup(track, car);
   const driversById: Record<string, Driver> = {};
   const setupsById: Record<string, CarSetup> = {};
   for (const d of players) {
     driversById[d.id] = d;
-    setupsById[d.id] = state.carSetups?.[d.id] ?? BALANCED_SETUP;
+    setupsById[d.id] = state.carSetups?.[d.id] ?? baseline;
   }
   const validAssignments = assignments.filter((a) => driversById[a.driverId]);
 
@@ -203,11 +208,33 @@ function runPracticeSessionAction(
       : d,
   );
 
+  // Record the setup family each driver actually ran, plus laps banked. This is
+  // the practised baseline the workshop compares the final tuned setup against.
+  const practicedSetupByDriver = { ...(wp.practicedSetupByDriver ?? {}) };
+  const practicedSetupHistory = { ...(wp.practicedSetupHistory ?? {}) };
+  const practiceLapsByDriver = { ...(wp.practiceLapsByDriver ?? {}) };
+  for (const r of results) {
+    const ranSetup = setupsById[r.driverId];
+    if (ranSetup) {
+      practicedSetupByDriver[r.driverId] = ranSetup;
+      practicedSetupHistory[r.driverId] = [...(practicedSetupHistory[r.driverId] ?? []), ranSetup];
+    }
+    practiceLapsByDriver[r.driverId] = (practiceLapsByDriver[r.driverId] ?? 0) + r.lapsCompleted;
+  }
+
   const sessions = [...wp.sessions.filter((s) => s.kind !== kind), session];
   return {
     ...state,
     drivers,
-    weekendPractice: { raceId, sessions, knowledge, lapsUsed: lapsUsed + cost },
+    weekendPractice: {
+      raceId,
+      sessions,
+      knowledge,
+      lapsUsed: lapsUsed + cost,
+      practicedSetupByDriver,
+      practicedSetupHistory,
+      practiceLapsByDriver,
+    },
   };
 }
 
