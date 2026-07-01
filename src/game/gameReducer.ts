@@ -790,7 +790,7 @@ function runQualifying(state: GameState, playerDecisions: QualifyingDecision[]):
   const teamRaceOps: Record<string, number> = {};
   state.teams.forEach((t) => {
     teamReputation[t.id] = t.reputation;
-    teamRaceOps[t.id] = t.raceOperations ?? t.reputation / 10;
+    teamRaceOps[t.id] = t.raceOperations;
   });
 
   const { results, breakdowns } = simulateQualifying({
@@ -984,7 +984,7 @@ function applyRaceResults(
       race.round,
       developmentSuccessBonus(state.staff ?? []) +
         facilityDevelopmentSuccessBonus(state.facilities) +
-        raceOpsDevelopmentBonus(playerTeamData?.raceOperations),
+        (playerTeamData ? raceOpsDevelopmentBonus(playerTeamData.raceOperations) : 0),
     );
     activeDevelopmentProjects = tick.active;
     completedDevelopmentProjects = [...completedDevelopmentProjects, ...tick.completed];

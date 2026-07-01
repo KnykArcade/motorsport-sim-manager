@@ -4,6 +4,7 @@ import {
   tracks1995,
   drivers1995,
   cars1995,
+  teams1995,
   setupOptionsById,
   qualifyingRunPlansById,
   raceStrategiesById,
@@ -30,6 +31,9 @@ import type {
 const TRACK = tracks1995[0];
 const TOTAL_LAPS = 40;
 
+const teamRaceOps: Record<string, number> = {};
+for (const t of teams1995) teamRaceOps[t.id] = t.raceOperations;
+
 function buildContext(seed = 'test|1995|r1'): RaceContext {
   const carByTeam = new Map(cars1995.map((c) => [c.teamId, c]));
   const entrants: Entrant[] = drivers1995.map((d) => {
@@ -49,6 +53,7 @@ function buildContext(seed = 'test|1995|r1'): RaceContext {
     setupOptions,
     runPlans: qualifyingRunPlansById,
     seed,
+    teamRaceOps,
   });
 
   const rDecisions: Record<string, RaceDecision> = {};
@@ -64,6 +69,7 @@ function buildContext(seed = 'test|1995|r1'): RaceContext {
     instructions: driverInstructionsById,
     pointsByPosition: pointsSystems['pts-1995'].pointsByPosition,
     seed,
+    teamRaceOps,
   };
 }
 
@@ -90,6 +96,7 @@ function createRace(context: RaceContext, playerTeamId: string) {
     totalLaps: TOTAL_LAPS,
     driverNames,
     teamReputation,
+    teamRaceOps,
   });
 }
 

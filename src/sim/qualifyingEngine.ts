@@ -292,7 +292,7 @@ export function simulateQualifying(context: QualifyingContext): {
 
   const entries: Entry[] = context.entrants.map((e) => {
     const decision = context.decisions[e.driver.id];
-    const teamRating = context.teamRaceOps?.[e.driver.teamId] ?? 5;
+    const teamRating = context.teamRaceOps[e.driver.teamId];
     const formRng = createSeededRandom(deriveSeed(context.seed, 'qualiform', e.driver.teamId));
     const formSpread = (WEEKEND_FORM_SPREAD + Math.max(0, 5 - teamRating) * FORM_OPS_FACTOR) * 0.6;
     return {

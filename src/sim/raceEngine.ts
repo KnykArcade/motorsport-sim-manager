@@ -184,7 +184,7 @@ export function computeRaceOutcome(context: RaceContext): RaceOutcome {
     const instruction = context.instructions[decision.instructionId];
     const grid = gridByDriver[e.driver.id] ?? context.entrants.length;
 
-    const teamRating = context.teamRaceOps?.[e.driver.teamId] ?? 5;
+    const teamRating = context.teamRaceOps[e.driver.teamId];
     const { score, breakdown } = calculateRacePace(
       e.driver,
       e.car,

@@ -73,7 +73,7 @@ function runSeason(key: string, seed: string): { drivers: RaceResult[][]; teams:
   const teamRaceOps: Record<string, number> = {};
   teams.forEach((t) => {
     teamReputation[t.id] = t.reputation;
-    teamRaceOps[t.id] = t.raceOperations ?? t.reputation / 10;
+    teamRaceOps[t.id] = t.raceOperations;
   });
   const pointsSystem = getPointsSystem(season.pointsSystemId);
   const maxQualifiers = getMaxQualifiers(season.series);

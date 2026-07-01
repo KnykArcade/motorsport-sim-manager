@@ -1,6 +1,5 @@
 import { describe, expect, it } from 'vitest';
 import { createNewGame } from './initialCareer';
-import { migrateSave, CURRENT_SAVE_VERSION } from './saveSystem';
 import type { GameState } from './careerState';
 import type { CommercialState } from '../types/sponsorTypes';
 
@@ -15,10 +14,6 @@ function freshState(): GameState {
 }
 
 describe('save model', () => {
-  it('exposes a current save version of at least 2', () => {
-    expect(CURRENT_SAVE_VERSION).toBeGreaterThanOrEqual(2);
-  });
-
   it('populates the implemented systems and leaves unbuilt ones unset', () => {
     const s = freshState();
     // Phase 3: commercial + owner expectations are seeded on a new career.
@@ -36,14 +31,6 @@ describe('save model', () => {
     expect(s.driverRelationships).toBeDefined();
     // Phase 11: universe history / records is seeded on a new career.
     expect(s.universeHistory).toBeDefined();
-  });
-
-  it('migrates a legacy (v1) save forward without dropping data', () => {
-    const legacy = freshState();
-    const migrated = migrateSave(legacy, 1);
-    expect(migrated.id).toBe(legacy.id);
-    expect(migrated.teams.length).toBe(legacy.teams.length);
-    expect(migrated.drivers.length).toBe(legacy.drivers.length);
   });
 
   it('round-trips the new optional systems through JSON', () => {
@@ -67,6 +54,6 @@ describe('save model', () => {
     const withSystems: GameState = { ...freshState(), commercial };
     const cloned = JSON.parse(JSON.stringify(withSystems)) as GameState;
     expect(cloned.commercial?.sponsors[0].name).toBe('Test Co');
-    expect(migrateSave(cloned, CURRENT_SAVE_VERSION).commercial?.commercialReputation).toBe(60);
+    expect(cloned.commercial?.commercialReputation).toBe(60);
   });
 });

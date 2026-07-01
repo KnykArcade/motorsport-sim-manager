@@ -17,8 +17,8 @@ export type DevelopmentTickResult = {
 
 // Race Operations (engineering consistency) shifts development project success
 // odds. Neutral at raceOps 5; a 9-ops team adds ~8 percentage points, a 3-ops
-// team loses ~4 (capped). Absent (old saves) => treated as neutral 5.
-export function raceOpsDevelopmentBonus(raceOps = 5): number {
+// team loses ~4 (capped).
+export function raceOpsDevelopmentBonus(raceOps: number): number {
   return Math.max(-0.1, Math.min(0.1, (raceOps - 5) * 0.02));
 }
 

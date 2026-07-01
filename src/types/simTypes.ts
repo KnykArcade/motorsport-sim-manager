@@ -66,8 +66,8 @@ export type QualifyingContext = {
   // context — NOT for pace (that now uses teamRaceOps).
   teamReputation?: Record<string, number>;
   // Race Operations Rating (1-10) by team id. Drives the team component of
-  // qualifying pace. Absent => treated as midfield (5).
-  teamRaceOps?: Record<string, number>;
+  // qualifying pace and the per-weekend operations variance.
+  teamRaceOps: Record<string, number>;
 };
 
 export type RaceContext = {
@@ -84,8 +84,8 @@ export type RaceContext = {
   // context — NOT for pace (that now uses teamRaceOps).
   teamReputation?: Record<string, number>;
   // Race Operations Rating (1-10) by team id. Drives the team component of race
-  // pace. Absent => treated as midfield (5).
-  teamRaceOps?: Record<string, number>;
+  // pace and the per-weekend operations variance.
+  teamRaceOps: Record<string, number>;
 };
 
 // Debug breakdown surfaced in the developer panel so formulas can be tuned.

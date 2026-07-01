@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { tracks1995, drivers1995, cars1995 } from '../data';
+import { tracks1995, drivers1995, cars1995, teams1995 } from '../data';
 import { setupOptionsById } from '../data/setupOptions/setupOptions';
 import { qualifyingRunPlansById } from '../data/decisions/qualifyingRunPlans';
 import { makeWeatherState } from './weatherEngine';
@@ -26,6 +26,8 @@ function buildContext(overrides: Partial<QualifyingContext> = {}): QualifyingCon
       runPlanId: 'StandardPush',
     };
   }
+  const teamRaceOps: Record<string, number> = {};
+  for (const t of teams1995) teamRaceOps[t.id] = t.raceOperations;
   return {
     track,
     entrants,
@@ -33,6 +35,7 @@ function buildContext(overrides: Partial<QualifyingContext> = {}): QualifyingCon
     setupOptions: setupOptionsById,
     runPlans: qualifyingRunPlansById,
     seed: 'quali-test',
+    teamRaceOps,
     ...overrides,
   };
 }
