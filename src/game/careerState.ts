@@ -183,20 +183,23 @@ export function activeDriversForTeam(state: GameState, teamId: string): Driver[]
   const team = teamById(state, teamId);
   const active: Driver[] = [];
   const seen = new Set<string>();
+  // Only full race-seat contracts (contractType undefined or 'seat') may fill a
+  // race seat. Third / reserve / test drivers are excluded until promoted.
   for (const id of team?.driverIds ?? []) {
     if (active.length >= MAX_RACE_DRIVERS) break;
     if (seen.has(id)) continue;
     const driver = state.drivers.find((d) => d.id === id && d.teamId === teamId);
-    if (driver) {
+    if (driver && !isReserveContract(driver)) {
       active.push(driver);
       seen.add(id);
     }
   }
-  // Fallback for rosters that don't fully specify driverIds: fill from the pool.
+  // Fallback for rosters that don't fully specify driverIds: fill from the pool
+  // with race-seat drivers only.
   if (active.length < MAX_RACE_DRIVERS) {
     for (const d of state.drivers) {
       if (active.length >= MAX_RACE_DRIVERS) break;
-      if (d.teamId === teamId && !seen.has(d.id)) {
+      if (d.teamId === teamId && !seen.has(d.id) && !isReserveContract(d)) {
         active.push(d);
         seen.add(d.id);
       }

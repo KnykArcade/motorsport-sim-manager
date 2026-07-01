@@ -43,6 +43,40 @@ export function slugifyName(name: string): string {
   return normalizeName(name).replace(/ /g, '-');
 }
 
+// Market-status / rumour tags that some curated market entries append to the
+// driver's name (e.g. "Jean Alesi Contract Watch"). These belong in the
+// marketPool / context / notes, never in the driver's name.
+const MARKET_NAME_TAGS = [
+  'contract watch',
+  'silly season',
+  'transfer target',
+  'contract target',
+  'watch list',
+  'rumour',
+  'rumor',
+];
+
+// Strip trailing market tags (bracketed or dash/colon/space-separated) from a
+// market driver's name so labels never become part of the identity. Falls back
+// to the original name if stripping would empty it.
+export function sanitizeMarketName(name: string): string {
+  let out = name.trim();
+  // Bracketed tag, e.g. "Jean Alesi (Contract Watch)".
+  out = out.replace(/\s*[([][^)\]]*[)\]]\s*$/, '').trim();
+  let changed = true;
+  while (changed) {
+    changed = false;
+    for (const tag of MARKET_NAME_TAGS) {
+      const re = new RegExp(`[\\s\\-–—:|]+${tag}\\s*$`, 'i');
+      if (re.test(out)) {
+        out = out.replace(re, '').trim();
+        changed = true;
+      }
+    }
+  }
+  return out || name.trim();
+}
+
 // --- Skill helpers ----------------------------------------------------------
 
 const SKILL_KEYS: (keyof MarketSkillRatings)[] = [
@@ -133,6 +167,13 @@ function emptyRegistry(): MasterDriverRegistry {
   return { byId: {}, order: [] };
 }
 
+// The same real driver's age is recorded slightly inconsistently across season
+// files (a driver listed as 24 in one year's grid and 26 two years later implies
+// birth years a year apart). Birth years within this tolerance are treated as
+// the same identity; only a larger gap indicates two genuinely different people
+// who happen to share a name.
+const BIRTH_YEAR_TOLERANCE = 2;
+
 // Find an existing entry for this identity: by canonical id first, else by
 // canonical name (+ birthYear when both sides know it).
 function findMatch(
@@ -146,8 +187,15 @@ function findMatch(
     // Match by canonical id or canonical name (the derived id is a slug of the
     // name, so name equality subsumes the id check for the common case).
     if (e.driverId !== driverId && e.canonicalName !== canonicalName) continue;
-    // Birth year disambiguates two distinct people who share a name.
-    if (birthYear != null && e.birthYear != null && e.birthYear !== birthYear) continue;
+    // Birth year disambiguates two distinct people who share a name, but must
+    // tolerate the age-recording noise that otherwise splits one driver in two.
+    if (
+      birthYear != null &&
+      e.birthYear != null &&
+      Math.abs(e.birthYear - birthYear) > BIRTH_YEAR_TOLERANCE
+    ) {
+      continue;
+    }
     return e;
   }
   return undefined;
@@ -301,7 +349,7 @@ export function importMarketDrivers(
     mergeOne(
       registry,
       {
-        displayName: m.name,
+        displayName: sanitizeMarketName(m.name),
         nationality: m.nationality,
         age: m.age,
         birthYear: year - m.age,
@@ -336,7 +384,7 @@ export function importYouthProspects(
     mergeOne(
       registry,
       {
-        displayName: y.name,
+        displayName: sanitizeMarketName(y.name),
         nationality: y.nationality,
         age: y.age,
         birthYear: y.birthYear || year - y.age,

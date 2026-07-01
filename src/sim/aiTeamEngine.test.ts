@@ -149,8 +149,17 @@ describe('financialHealth', () => {
     expect(financialHealth(b({ projectedCash: 40_000_000 }))).toBe('Excellent');
   });
 
-  it('flags a big operating loss as At Risk even with cash', () => {
-    expect(financialHealth(b({ projectedCash: 25_000_000, netResult: -12_000_000 }))).toBe('AtRisk');
+  it('downgrades a big operating loss to Tight when cash is only a modest reserve', () => {
+    // Between 1x and 3x the reserve, a heavy loss is a warning (Tight), not the
+    // full Stable it would otherwise earn.
+    expect(financialHealth(b({ projectedCash: 25_000_000, netResult: -12_000_000 }))).toBe('Tight');
+  });
+
+  it('does not flag a team sitting on a comfortable reserve as At Risk despite a loss', () => {
+    // A team with plenty of cash in the bank (>=3x reserve) stays Excellent even
+    // with an operating loss — the reserve is the clear reason it is healthy, so
+    // Team Overview never shows huge cash alongside an At Risk grade.
+    expect(financialHealth(b({ projectedCash: 40_000_000, netResult: -12_000_000 }))).toBe('Excellent');
   });
 });
 
@@ -194,7 +203,7 @@ describe('estimateAIBudget', () => {
       budget.driverSalaries + budget.staffSalaries + budget.engineCost + budget.operatingCost +
         budget.developmentSpend + budget.facilitySpend,
     );
-    expect(budget.netResult).toBe(budget.sponsorIncome - budget.totalExpenses);
+    expect(budget.netResult).toBe(budget.sponsorIncome + budget.prizeMoney - budget.totalExpenses);
     expect(budget.projectedCash).toBe(budget.startingCash + budget.netResult);
     expect(budget.reserveTarget).toBeGreaterThan(0);
   });

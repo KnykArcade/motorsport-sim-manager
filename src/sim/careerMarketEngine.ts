@@ -23,6 +23,7 @@ import {
   getMasterRegistry,
   normalizeName,
   registryList,
+  sanitizeMarketName,
 } from '../data/registry/masterRegistry';
 import { getMarketBundle, youthSigningCost, youthYearlyAcademyCost, type MarketBundle } from '../data/market';
 import { crossSeriesCandidates } from './crossSeriesEngine';
@@ -199,8 +200,13 @@ export function occupiedIdentities(state: GameState): {
   signedIds: Set<string>;
 } {
   const names = new Set<string>();
+  // Active drivers, reserves and third/test drivers all live in state.drivers.
   for (const d of state.drivers) names.add(normalizeName(d.name));
+  // The player's academy and every AI team's academy hold rights to their youth.
   for (const a of state.academy ?? []) names.add(normalizeName(a.name));
+  for (const members of Object.values(state.aiAcademies ?? {})) {
+    for (const a of members) names.add(normalizeName(a.name));
+  }
   const signedIds = new Set(state.signedMarketIds ?? []);
   return { names, signedIds };
 }
@@ -262,10 +268,31 @@ export function careerMarketBundle(state: GameState): MarketBundle {
     (d) => !takenDriverNames.has(normalizeName(d.name)),
   );
 
-  return {
-    drivers: [...curatedDrivers, ...extraDrivers, ...crossSeries],
-    youth: [...curatedYouth, ...extraYouth],
-  };
+  // Final safety net: sanitize every market name and enforce a single identity
+  // across the whole bundle. Names already occupied by the career universe (on
+  // the grid, in any academy) are pre-seeded so they can never reappear, and no
+  // driver may sit in both the adult market and the youth pool.
+  const seenDrivers = new Set<string>(occupied.names);
+  const drivers: MarketDriver[] = [];
+  for (const d of [...curatedDrivers, ...extraDrivers, ...crossSeries]) {
+    const clean = sanitizeMarketName(d.name);
+    const key = normalizeName(clean);
+    if (seenDrivers.has(key)) continue;
+    seenDrivers.add(key);
+    drivers.push(clean === d.name ? d : { ...d, name: clean });
+  }
+
+  const seenYouth = new Set<string>(occupied.names);
+  const youth: YouthProspect[] = [];
+  for (const y of [...curatedYouth, ...extraYouth]) {
+    const clean = sanitizeMarketName(y.name);
+    const key = normalizeName(clean);
+    if (seenYouth.has(key) || seenDrivers.has(key)) continue;
+    seenYouth.add(key);
+    youth.push(clean === y.name ? y : { ...y, name: clean });
+  }
+
+  return { drivers, youth };
 }
 
 // --- Rollover deltas (for the offseason summary) ----------------------------

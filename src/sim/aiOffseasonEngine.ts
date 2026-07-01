@@ -580,16 +580,20 @@ function processDriverMarket(
   }
 
   // One considered upgrade: replace the weakest seat driver if a clearly better,
-  // affordable driver is available and the team is inclined to gamble.
+  // affordable driver is available and the team is inclined to gamble. An old,
+  // declining driver is replaced far more readily — teams don't hang on to a
+  // fading veteran when a stronger prospect or free agent is there for the
+  // taking.
   const target = targetDriverOverall(ai);
   const weakest = [...seats].sort((a, b) => a.ratings.overall - b.ratings.overall)[0];
   const contractOpen =
     weakest && (weakest.contractYearsRemaining == null || weakest.contractYearsRemaining <= 1);
+  const oldDeclining = weakest != null && (weakest.age ?? 0) >= 37;
   const wantsUpgrade =
     weakest &&
     contractOpen &&
     weakest.ratings.overall < target - 0.4 &&
-    rng.chance(0.3 + spec.risk * 0.4);
+    (oldDeclining || rng.chance(0.3 + spec.risk * 0.4));
   if (weakest && wantsUpgrade) {
     const margin = ai.archetype === 'ChampionshipContender' ? 0.3 : 0.8;
     const pick = bestCandidate(ctx, ai, cash, weakest.ratings.overall + margin);
