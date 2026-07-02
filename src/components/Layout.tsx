@@ -8,8 +8,22 @@ const NAV = [
   { to: '/hq', label: 'Team HQ', icon: '◧' },
   { to: '/calendar', label: 'Calendar', icon: '▦' },
   { to: '/standings', label: 'Standings', icon: '▤' },
+  { to: '/teams', label: 'Team Overview', icon: '⊞' },
+  { to: '/history', label: 'Race History', icon: '⌚' },
+  { to: '/records', label: 'Universe History', icon: '★' },
   { to: '/drivers', label: 'Drivers', icon: '☷' },
+  { to: '/curves', label: 'Dev Curves', icon: '↗' },
+  { to: '/market', label: 'Driver Market', icon: '⇄' },
+  { to: '/scouting', label: 'Scouting', icon: '⚲' },
   { to: '/development', label: 'Development', icon: '⚙' },
+  { to: '/finance', label: 'Finance', icon: '$' },
+  { to: '/sponsors', label: 'Sponsors', icon: '✦' },
+  { to: '/staff', label: 'Staff', icon: '⚒' },
+  { to: '/facilities', label: 'Facilities', icon: '⌂' },
+  { to: '/engine', label: 'Engine', icon: '⛽' },
+  { to: '/principal', label: 'Principal', icon: '★' },
+  { to: '/relationships', label: 'Relationships', icon: '♥' },
+  { to: '/politics', label: 'Regulations', icon: '⚖' },
   { to: '/data', label: 'Data Viewer', icon: '⛁' },
   { to: '/settings', label: 'Settings', icon: '⚙' },
 ];
@@ -92,7 +106,7 @@ export function Layout({ children }: { children: ReactNode }) {
           </div>
         </header>
 
-        <main className="min-h-0 flex-1 overflow-auto p-6">{children}</main>
+        <main className="flex-1 overflow-auto p-6">{children}</main>
       </div>
     </div>
   );

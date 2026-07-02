@@ -21,22 +21,39 @@ Backend-less Vite + React SPA. No auth, no secrets, no external services. Everyt
   - Each race row's **Grid** column must equal that driver's qualifying position (proves state threads through).
   - DNFs sit at the bottom with `—` position, no points, `DNF (lap N)`, and a cause in the Race Event Log.
   - Constructor points == sum of its two drivers' points.
-- **Setup trim is automatic** (professional team prep): the player no longer picks a qualifying or race
-  setup. Practice reports per-driver Setup Confidence + one-lap / long-run pace. The player chooses the
-  qualifying run strategy, the pre-race strategy, and driver instructions (plus live decisions later).
-- **Separated decisions** are still a core requirement: the qualifying run strategy is chosen BEFORE
-  simulating qualifying; race strategy + instructions only become reachable AFTER. To test the gate, on
-  the Track Briefing step click a later stepper item like "5. Pre-Race Strategy" — it must NOT navigate.
+- **Separated decisions** are a core requirement: qualifying setup + run plan are chosen BEFORE simulating
+  qualifying; race setup + strategy + instructions only become reachable AFTER. To test the gate, on the
+  Track Briefing step click a later stepper item like "5. Race Setup" — it must NOT navigate.
 - Results aren't scripted to history (alternate history) — a pole-sitter retiring / a non-historical winner
   is expected, not a bug.
 
 ## UI path (Brazilian GP, Round 1)
 Main Menu → New Game → Single Season (default) → Continue → (Series & Year default 1995 F1) → Select Team →
-click a team card (e.g. Benetton) → Start Season → Team HQ. From HQ: "Go to Next Race" → 6-phase weekend:
-Track Briefing → Practice / Setup → Qualifying Run Strategy → **Simulate Qualifying** → Qualifying Review →
-Pre-Race Strategy → Driver Instructions → **Simulate Race** → Results.
+click a team card (e.g. Benetton) → Start Season → Team HQ. From HQ: "Go to Next Race" → 7-phase weekend:
+Track Briefing → Qualifying Setup → Qualifying Run Plan → **Simulate Qualifying** → Qualifying Review →
+Choose Race Strategy → Race Setup → Race Strategy → Driver Instructions → **Simulate Race** → Results.
 Results header shows the advanced round/budget; "Back to HQ" returns. Save persistence: reload page →
 "Continue" should be enabled and restore the post-race state.
+
+## Driver Relationships & Team Orders (Phase 7)
+- Pick a team whose lead driver seeds `numberOneExpectation` to test the #1 path. **Benetton (1995)** works:
+  Schumacher (overall 9.5) gets the amber "Expects #1 status" badge, Herbert (#2) does not. Seeding needs
+  overall ≥ ~8.3 on a credible team, so a midfield team may seed neither driver as #1.
+- **Relationships screen** (sidebar/HQ): each driver shows 5 bars (Morale, Team Loyalty, Engineer Chemistry,
+  Teammate Relationship, Frustration, 0–100) + a "Team-Order Log (this season)". Record the lead driver's
+  baseline numbers before the race so you can diff afterward.
+- **Issuing an order:** in the Live Race, the **Team Orders** pit-wall panel (right column, scroll down) has
+  7 order types. "Swap positions" / "Protect lead driver" etc. have a driver button each — clicking
+  "Swap → J. Herbert" favours Herbert and disadvantages the #1. Effect is **immediate**: running order flips
+  (Herbert P→1, Schumacher →2) and the event log adds "Positions swapped in favour of …". Swap buttons need
+  both cars running.
+- **Key gotcha:** the swap only adjusts on-track time at the moment issued — the race then plays out, so the
+  faster driver can recover positions by the flag. Don't assert on *final* finishing order; the consequence
+  engine keys off the **recorded order**, so the #1 still takes the fallout regardless of recovery.
+- **Post-race fallout** (Relationships screen after committing results): disadvantaged #1 driver's Morale,
+  Team Loyalty, Teammate Relationship drop and Frustration rises (≈2× hit for a #1); favoured driver's morale
+  rises slightly. A media headline appears in the Results "Headlines" panel ("… openly questions the team after
+  being told to give best position to …"). The Team-Order Log lists "Lap N · Swap positions · favouring X over Y".
 
 ## Recording tips
 - Maximize first: `sudo apt-get install -y wmctrl 2>/dev/null; wmctrl -r :ACTIVE: -b add,maximized_vert,maximized_horz`.

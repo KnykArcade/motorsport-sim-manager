@@ -2,7 +2,7 @@
 // These types are intentionally decoupled from React so the simulation and
 // data layers can evolve independently of the UI.
 
-export type Series = 'F1';
+export type Series = 'F1' | 'IndyCar';
 
 export type GameMode = 'SingleSeason' | 'Career';
 
@@ -104,6 +104,9 @@ export type Car = {
   condition: number; // 0-100
   // Accumulated development applied on top of base ratings.
   developmentLevel: CarRatings;
+  // Engine supplier deal contribution to enginePower / reliability (Phase 5).
+  // A delta on the 1-10 ratings scale; absent = no engine-deal modifier.
+  engineBonus?: { power: number; reliability: number };
 };
 
 export type DriverRatings = {
@@ -137,6 +140,10 @@ export type Driver = {
   confidence: number; // 0-100
   contractYearsRemaining?: number;
   salary?: number;
+  // Contract tier. 'third'/'reserve'/'test' mark cheaper non-racing deals (a
+  // 3rd/reserve/test driver sits behind the two race seats); undefined or 'seat'
+  // is a full race-seat contract.
+  contractType?: 'seat' | 'third' | 'reserve' | 'test';
   traits: string[];
 };
 
@@ -149,6 +156,11 @@ export type Team = {
   driverIds: string[];
   budget: number;
   reputation: number; // 0-100
+  // Race Operations Rating (1-10): strategy, pit-crew quality, setup execution,
+  // reliability management, engineering consistency and race-weekend execution.
+  // Distinct from reputation (prestige/commercial). Drives the team component of
+  // race & qualifying pace and the per-weekend operations variance.
+  raceOperations: number; // 1-10
   morale: number; // 0-100
   expectedStanding?: number;
   difficulty?: 'Easy' | 'Medium' | 'Hard' | 'Very Hard';
@@ -312,6 +324,27 @@ export type DevelopmentCategory =
   | 'Facilities'
   | 'Research';
 
+export type ProjectRiskLevel = 'Safe' | 'Standard' | 'Aggressive' | 'Experimental';
+
+export type ProjectSize = 'Small' | 'Medium' | 'Major' | 'Experimental';
+
+export type DevelopmentOutcome =
+  | 'GreatSuccess'
+  | 'FullSuccess'
+  | 'PartialSuccess'
+  | 'MinorSuccess'
+  | 'Failed'
+  | 'RareBackfire';
+
+export type DevelopmentOutcomeResult = {
+  outcome: DevelopmentOutcome;
+  expectedGain: Partial<CarRatings>;
+  actualGain: Partial<CarRatings>;
+  sideEffects?: Partial<CarRatings>;
+  label: string;
+  description: string;
+};
+
 export type DevelopmentProject = {
   id: string;
   name: string;
@@ -327,6 +360,13 @@ export type DevelopmentProject = {
   carryoverRate: number; // 0-1
   regulationSensitivity: number; // 0-1
   risk?: string;
+  riskLevel?: ProjectRiskLevel;
+  projectSize?: ProjectSize;
+  relevantFacilityTypes?: string[];
+  outcomeResult?: DevelopmentOutcomeResult;
+  rushed?: boolean;
+  facilityLevelAtStart?: number;
+  adjustedDurationRaces?: number;
 };
 
 // ---------------------------------------------------------------------------
@@ -363,6 +403,10 @@ export type QualifyingIncident = {
   raceImpact?: string;
 };
 
+// The qualifying segment a driver's final time was set in (knockout format).
+// 'Single' = a one-session (non-knockout) format.
+export type QualifyingSegment = 'Q1' | 'Q2' | 'Q3' | 'Single';
+
 export type QualifyingResult = {
   position: number;
   driverId: string;
@@ -373,6 +417,12 @@ export type QualifyingResult = {
   setupChoice: string;
   notes: string[];
   incident?: QualifyingIncident;
+  // True when the car finished outside the series' qualifying cap and is not
+  // allowed to start the race (DNQ — Did Not Qualify).
+  dnq?: boolean;
+  // Knockout segment this driver reached / was eliminated in. Optional for
+  // backward compatibility with saves made before knockout qualifying.
+  segment?: QualifyingSegment;
 };
 
 // ---------------------------------------------------------------------------

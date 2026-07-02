@@ -1,5 +1,9 @@
 // localStorage-based save/load. A single active save slot for the MVP, plus a
 // settings blob. Designed so a backend can replace this later.
+//
+// The persisted format is the bare GameState — there is no save-version envelope
+// or migration layer. This is a prototype build: the data model is authoritative
+// and saves written by an older build are not expected to load.
 
 import type { GameState } from './careerState';
 

@@ -1,35 +1,73 @@
 import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useGame } from '../game/GameContext';
-import { getSeasonBundle } from '../data';
+import { getSeasonBundle, availableSeasons, availableSeries } from '../data';
 import { effectiveCarRatings } from '../sim/trackFitEngine';
 import { Button } from '../components/Button';
 import { StatBar } from '../components/StatBar';
 import { formatMoney } from '../components/ui';
 import { hasSave } from '../game/saveSystem';
-import type { GameMode } from '../types/gameTypes';
+import { PrincipalCreator } from './PrincipalCreator';
+import {
+  ENGINE_DEAL_SPECS,
+  availableEngineOffers,
+  createInitialEngineState,
+  isManufacturerDeal,
+  type EngineOffer,
+} from '../sim/engineSupplierEngine';
+import { Panel } from '../components/Panel';
+import type { GameMode, Series, Team } from '../types/gameTypes';
+import type { TeamPrincipal } from '../types/principalTypes';
+import type { EngineDealType } from '../types/engineTypes';
 
-type Step = 'mode' | 'setup' | 'team';
+type Step = 'mode' | 'setup' | 'team' | 'principal' | 'engine';
+
+type EngineChoice = { supplierId: string; dealType: EngineDealType };
 
 export function NewCareer() {
   const navigate = useNavigate();
   const { dispatch } = useGame();
   const [step, setStep] = useState<Step>('mode');
   const [mode, setMode] = useState<GameMode>('SingleSeason');
-  const [year] = useState(1995);
-  const [series] = useState<'F1'>('F1');
+  const [year, setYear] = useState(1995);
+  const [series, setSeries] = useState<Series>('F1');
   const [selectedTeamId, setSelectedTeamId] = useState<string | null>(null);
+  const [principal, setPrincipal] = useState<TeamPrincipal | null>(null);
+  const [engineChoice, setEngineChoice] = useState<EngineChoice | null>(null);
+  // A stable seed so the engine offers shown here match the created save.
+  const [seed] = useState(() => `seed-${Date.now()}`);
+
+  const selectSeries = (next: Series) => {
+    setSeries(next);
+    const first = availableSeasons.find((s) => s.series === next);
+    if (first) setYear(first.year);
+    setSelectedTeamId(null);
+  };
 
   const bundle = useMemo(() => getSeasonBundle(year, series), [year, series]);
 
-  const startGame = () => {
+  const startGame = (teamPrincipal: TeamPrincipal, choice: EngineChoice | null) => {
     if (!selectedTeamId) return;
     if (hasSave() && !confirm('Starting a new game overwrites your existing save. Continue?')) {
       return;
     }
-    dispatch({ type: 'NEW_GAME', options: { gameMode: mode, seasonYear: year, series, teamId: selectedTeamId } });
+    dispatch({
+      type: 'NEW_GAME',
+      options: {
+        gameMode: mode,
+        seasonYear: year,
+        series,
+        teamId: selectedTeamId,
+        teamPrincipal,
+        seed,
+        initialEngineSupplierId: choice?.supplierId,
+        initialEngineDealType: choice?.dealType,
+      },
+    });
     navigate('/hq');
   };
+
+  const selectedTeam = bundle?.teams.find((t) => t.id === selectedTeamId);
 
   return (
     <div className="min-h-screen bg-[#0a0c10] px-6 py-10">
@@ -47,7 +85,7 @@ export function NewCareer() {
               blurb="Replay one historical season from start to finish. Best for quick historical what-if simulations."
               selected={mode === 'SingleSeason'}
               onClick={() => setMode('SingleSeason')}
-              bullets={['Full 1995 calendar', 'Race weekend decisions', 'In-season development', 'Season review at the end']}
+              bullets={['Full historical calendar', 'Race weekend decisions', 'In-season development', 'Season review at the end']}
             />
             <ModeCard
               title="Career Mode"
@@ -66,9 +104,50 @@ export function NewCareer() {
 
         {step === 'setup' && (
           <div className="space-y-4">
-            <div className="grid gap-4 sm:grid-cols-2">
-              <SelectCard label="Series" value="Formula 1" note="More series coming later" />
-              <SelectCard label="Starting Year" value="1995" note="Only fully-seeded season for the MVP" />
+            <div>
+              <p className="mb-2 text-sm font-medium text-neutral-300">Series</p>
+              <div className="grid gap-3 sm:grid-cols-2">
+                {availableSeries.map((s) => (
+                  <button
+                    key={s.id}
+                    onClick={() => selectSeries(s.id)}
+                    className={`rounded-xl border p-4 text-left transition ${
+                      series === s.id
+                        ? 'border-amber-500 bg-amber-500/10'
+                        : 'border-neutral-800 bg-neutral-900/40 hover:border-neutral-700'
+                    }`}
+                  >
+                    <div className="text-lg font-semibold text-neutral-100">{s.label}</div>
+                    <div className="text-xs text-neutral-400">
+                      {availableSeasons.filter((y) => y.series === s.id).length} season(s) available
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div>
+              <p className="mb-2 text-sm font-medium text-neutral-300">Starting Season</p>
+              <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                {availableSeasons
+                  .filter((s) => s.series === series)
+                  .map((s) => (
+                    <button
+                      key={s.year}
+                      onClick={() => {
+                        setYear(s.year);
+                        setSelectedTeamId(null);
+                      }}
+                      className={`rounded-xl border p-4 text-left transition ${
+                        year === s.year
+                          ? 'border-sky-500 bg-sky-500/10'
+                          : 'border-neutral-800 bg-neutral-900/40 hover:border-neutral-700'
+                      }`}
+                    >
+                      <div className="text-lg font-semibold text-neutral-100">{s.year}</div>
+                      <div className="text-xs text-neutral-400">{s.label}</div>
+                    </button>
+                  ))}
+              </div>
             </div>
             <div className="flex justify-between">
               <Button variant="ghost" onClick={() => setStep('mode')}>
@@ -132,20 +211,181 @@ export function NewCareer() {
               <Button variant="ghost" onClick={() => setStep('setup')}>
                 ← Back
               </Button>
-              <Button variant="primary" disabled={!selectedTeamId} onClick={startGame}>
-                Start {mode === 'Career' ? 'Career' : 'Season'} →
+              <Button variant="primary" disabled={!selectedTeamId} onClick={() => setStep('principal')}>
+                Create Principal →
               </Button>
             </div>
           </div>
+        )}
+
+        {step === 'principal' && selectedTeam && (
+          <PrincipalCreator
+            teamName={selectedTeam.name}
+            teamColor={selectedTeam.color}
+            confirmLabel="Choose Engine →"
+            onBack={() => setStep('team')}
+            onConfirm={(tp) => {
+              setPrincipal(tp);
+              setStep('engine');
+            }}
+          />
+        )}
+
+        {step === 'engine' && selectedTeam && bundle && (
+          <EngineSelectStep
+            teams={bundle.teams}
+            teamId={selectedTeam.id}
+            teamName={selectedTeam.name}
+            year={year}
+            series={series}
+            seed={seed}
+            value={engineChoice}
+            onChange={setEngineChoice}
+            confirmLabel={`Start ${mode === 'Career' ? 'Career' : 'Season'}`}
+            onBack={() => setStep('principal')}
+            onConfirm={(choice) => {
+              if (principal) startGame(principal, choice);
+            }}
+          />
         )}
       </div>
     </div>
   );
 }
 
+function EngineSelectStep({
+  teams,
+  teamId,
+  teamName,
+  year,
+  series,
+  seed,
+  value,
+  onChange,
+  confirmLabel,
+  onBack,
+  onConfirm,
+}: {
+  teams: Team[];
+  teamId: string;
+  teamName: string;
+  year: number;
+  series: Series;
+  seed: string;
+  value: EngineChoice | null;
+  onChange: (c: EngineChoice) => void;
+  confirmLabel: string;
+  onBack: () => void;
+  onConfirm: (c: EngineChoice) => void;
+}) {
+  const team = teams.find((t) => t.id === teamId)!;
+  const { offers, defaultChoice } = useMemo(() => {
+    const engine = createInitialEngineState(teams, teamId, year, series, seed);
+    const list = availableEngineOffers(engine, team);
+    const cur = engine.currentDeal;
+    const def: EngineChoice | null = cur
+      ? {
+          supplierId: list.find((o) => o.supplier.name === cur.supplierName && o.dealType === cur.dealType)?.supplier.id ??
+            list[0]?.supplier.id ?? '',
+          dealType: cur.dealType,
+        }
+      : list[0]
+      ? { supplierId: list[0].supplier.id, dealType: list[0].dealType }
+      : null;
+    return { offers: list, defaultChoice: def };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [teams, teamId, year, series, seed]);
+
+  const selected = value ?? defaultChoice;
+  const bySupplier = new Map<string, EngineOffer[]>();
+  for (const o of offers) {
+    const list = bySupplier.get(o.supplier.name) ?? [];
+    list.push(o);
+    bySupplier.set(o.supplier.name, list);
+  }
+  const isSelected = (o: EngineOffer) =>
+    selected?.supplierId === o.supplier.id && selected?.dealType === o.dealType;
+
+  return (
+    <div className="space-y-4">
+      <div>
+        <h2 className="text-xl font-bold text-neutral-100">Choose your engine — {teamName}</h2>
+        <p className="text-sm text-neutral-400">
+          Pick the supplier and deal tier you begin the season with. Works and factory deals start a
+          manufacturer relationship with a performance target. You can renegotiate later (for a buyout fee).
+        </p>
+      </div>
+      <Panel title="Available Engine Deals">
+        <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+          {[...bySupplier.entries()].map(([supplierName, list]) => (
+            <div key={supplierName} className="rounded-lg border border-neutral-800 bg-neutral-900/40 p-3">
+              <div className="mb-2 flex items-center justify-between">
+                <span className="font-bold text-neutral-100">{supplierName}</span>
+                <span className="text-[10px] uppercase tracking-wide text-neutral-500">
+                  Pwr {list[0].supplier.basePower} · Rel {list[0].supplier.baseReliability}
+                </span>
+              </div>
+              <div className="space-y-2">
+                {list.map((o) => {
+                  const sel = isSelected(o);
+                  return (
+                    <button
+                      key={o.dealType}
+                      type="button"
+                      onClick={() => onChange({ supplierId: o.supplier.id, dealType: o.dealType })}
+                      className={`w-full rounded-md border p-2 text-left transition ${
+                        sel
+                          ? 'border-amber-500 bg-amber-500/10'
+                          : 'border-neutral-800/80 hover:border-neutral-600'
+                      }`}
+                    >
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm font-semibold text-neutral-200">
+                          {ENGINE_DEAL_SPECS[o.dealType].label}
+                          {isManufacturerDeal(o.dealType) && (
+                            <span className="ml-1 text-[10px] uppercase text-amber-400">manufacturer</span>
+                          )}
+                        </span>
+                        <span className="text-xs font-semibold text-amber-300">${o.annualCost}M/yr</span>
+                      </div>
+                      <div className="mt-1 flex flex-wrap gap-1 text-[10px] text-neutral-300">
+                        <span className="rounded bg-neutral-800/60 px-1.5 py-0.5">
+                          Power {o.bonus.power >= 0 ? '+' : ''}{o.bonus.power.toFixed(2)}
+                        </span>
+                        <span className="rounded bg-neutral-800/60 px-1.5 py-0.5">
+                          Reliability {o.bonus.reliability >= 0 ? '+' : ''}{o.bonus.reliability.toFixed(2)}
+                        </span>
+                        <span className="rounded bg-neutral-800/60 px-1.5 py-0.5">{o.upgradeFrequency} upgrades/yr</span>
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          ))}
+        </div>
+      </Panel>
+      <div className="flex justify-between">
+        <Button variant="ghost" onClick={onBack}>
+          ← Back
+        </Button>
+        <Button variant="primary" disabled={!selected} onClick={() => selected && onConfirm(selected)}>
+          {confirmLabel}
+        </Button>
+      </div>
+    </div>
+  );
+}
+
 function Steps({ step }: { step: Step }) {
-  const order: Step[] = ['mode', 'setup', 'team'];
-  const labels: Record<Step, string> = { mode: 'Game Mode', setup: 'Series & Year', team: 'Team' };
+  const order: Step[] = ['mode', 'setup', 'team', 'principal', 'engine'];
+  const labels: Record<Step, string> = {
+    mode: 'Game Mode',
+    setup: 'Series & Year',
+    team: 'Team',
+    principal: 'Principal',
+    engine: 'Engine',
+  };
   return (
     <div className="mb-8 flex items-center gap-2 text-sm">
       {order.map((s, i) => (
@@ -199,12 +439,3 @@ function ModeCard({
   );
 }
 
-function SelectCard({ label, value, note }: { label: string; value: string; note: string }) {
-  return (
-    <div className="rounded-xl border border-amber-500/40 bg-amber-500/5 p-5">
-      <div className="text-xs uppercase tracking-wide text-neutral-500">{label}</div>
-      <div className="mt-1 text-2xl font-bold text-neutral-100">{value}</div>
-      <div className="mt-1 text-xs text-neutral-500">{note}</div>
-    </div>
-  );
-}

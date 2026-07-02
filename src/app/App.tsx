@@ -7,11 +7,26 @@ import { NewCareer } from '../screens/NewCareer';
 import { TeamHQ } from '../screens/TeamHQ';
 import { Calendar } from '../screens/Calendar';
 import { Standings } from '../screens/Standings';
+import { TeamOverview } from '../screens/TeamOverview';
 import { Drivers } from '../screens/Drivers';
+import { DriverMarket } from '../screens/DriverMarket';
 import { Development } from '../screens/Development';
+import { Finance } from '../screens/Finance';
+import { Sponsors } from '../screens/Sponsors';
+import { Staff } from '../screens/Staff';
+import { RaceHistory } from '../screens/RaceHistory';
 import { DataViewer } from '../screens/DataViewer';
+import { Facilities } from '../screens/Facilities';
+import { EngineSupplier } from '../screens/EngineSupplier';
+import { TeamPrincipal } from '../screens/TeamPrincipal';
+import { Relationships } from '../screens/Relationships';
+import { Politics } from '../screens/Politics';
+import { Scouting } from '../screens/Scouting';
+import { DriverCurves } from '../screens/DriverCurves';
+import { UniverseHistory } from '../screens/UniverseHistory';
 import { Settings } from '../screens/Settings';
 import { RaceWeekend } from '../screens/RaceWeekend';
+import { LiveRace } from '../screens/LiveRace';
 import { RaceResults } from '../screens/RaceResults';
 import { SeasonReview } from '../screens/SeasonReview';
 import { Offseason } from '../screens/Offseason';
@@ -22,6 +37,15 @@ function InGame({ children }: { children: ReactNode }) {
   const { state } = useGame();
   if (!state) return <Navigate to="/" replace />;
   return <Layout>{children}</Layout>;
+}
+
+// Full-screen in-game route (no app sidebar/header) — used by the Live Race
+// broadcast dashboard, which brings its own top status bar and must fill the
+// viewport so the whole race fits without vertical scrolling.
+function FullScreenGame({ children }: { children: ReactNode }) {
+  const { state } = useGame();
+  if (!state) return <Navigate to="/" replace />;
+  return <>{children}</>;
 }
 
 export default function App() {
@@ -37,9 +61,24 @@ export default function App() {
           <Route path="/hq" element={<InGame><TeamHQ /></InGame>} />
           <Route path="/calendar" element={<InGame><Calendar /></InGame>} />
           <Route path="/standings" element={<InGame><Standings /></InGame>} />
+          <Route path="/teams" element={<InGame><TeamOverview /></InGame>} />
           <Route path="/drivers" element={<InGame><Drivers /></InGame>} />
+          <Route path="/market" element={<InGame><DriverMarket /></InGame>} />
           <Route path="/development" element={<InGame><Development /></InGame>} />
+          <Route path="/finance" element={<InGame><Finance /></InGame>} />
+          <Route path="/sponsors" element={<InGame><Sponsors /></InGame>} />
+          <Route path="/staff" element={<InGame><Staff /></InGame>} />
+          <Route path="/facilities" element={<InGame><Facilities /></InGame>} />
+          <Route path="/engine" element={<InGame><EngineSupplier /></InGame>} />
+          <Route path="/principal" element={<InGame><TeamPrincipal /></InGame>} />
+          <Route path="/relationships" element={<InGame><Relationships /></InGame>} />
+          <Route path="/politics" element={<InGame><Politics /></InGame>} />
+          <Route path="/scouting" element={<InGame><Scouting /></InGame>} />
+          <Route path="/curves" element={<InGame><DriverCurves /></InGame>} />
+          <Route path="/records" element={<InGame><UniverseHistory /></InGame>} />
+          <Route path="/history" element={<InGame><RaceHistory /></InGame>} />
           <Route path="/weekend" element={<InGame><RaceWeekend /></InGame>} />
+          <Route path="/live-race/:raceId" element={<FullScreenGame><LiveRace /></FullScreenGame>} />
           <Route path="/results/:raceId" element={<InGame><RaceResults /></InGame>} />
           <Route path="/season-review" element={<InGame><SeasonReview /></InGame>} />
           <Route path="/offseason" element={<InGame><Offseason /></InGame>} />

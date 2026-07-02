@@ -1,0 +1,238 @@
+// Scouting / fog of war (Living Universe Phase 9).
+//
+// A driver's current form is observable from racing, but their true ceiling is
+// not: market drivers, youth prospects and (optionally) staff are seen through
+// fog. A target's *potential* is shown as a range and its skills may read
+// "Unknown" until you invest scouting effort. Accuracy rises with the effort you
+// spend on a target and with your Scouting Network facility, narrowing the range
+// and sharpening the skills toward the truth. Pure and deterministic.
+
+import type { FacilitiesState } from '../types/facilityTypes';
+import type { MarketSkillRatings } from '../types/marketTypes';
+import type {
+  ScoutedEntityType,
+  ScoutingReport,
+  ScoutingState,
+  VisibleRating,
+} from '../types/scoutingTypes';
+import { facilityEffect } from './facilityEngine';
+import { MILLION } from './financeEngine';
+import { createSeededRandom, deriveSeed } from './random';
+
+const SKILL_KEYS: (keyof MarketSkillRatings)[] = [
+  'cornering',
+  'braking',
+  'straights',
+  'tractionAcceleration',
+  'elevationBlindCorners',
+  'technical',
+  'overtakingRacecraft',
+  'surfaceGripBumpiness',
+  'riskManagement',
+  'enduranceConsistency',
+];
+
+// Effort added to a target each time you scout it (0-100 scale). A better
+// Scouting Network makes each trip more productive.
+const SCOUT_STEP = 25;
+// At/above this accuracy a target is considered fully revealed (exact values).
+const REVEAL_ACCURACY = 0.95;
+// Below this accuracy a skill is too uncertain to show a number at all.
+const UNKNOWN_ACCURACY = 0.25;
+
+function clamp01(n: number): number {
+  return Math.max(0, Math.min(1, n));
+}
+function clampRating(n: number): number {
+  return Math.max(1, Math.min(10, n));
+}
+function round1(n: number): number {
+  return Math.round(n * 10) / 10;
+}
+
+// Base accuracy conferred by the team's Scouting Network facility (0.15-0.65).
+export function scoutingNetworkAccuracy(facilities?: FacilitiesState): number {
+  return clamp01(0.15 + Math.min(0.5, facilityEffect(facilities, 'scouting')));
+}
+
+// How well a target is known: the network baseline (effort 0) interpolated up to
+// full certainty at maximum effort, so investing fully always reveals a target
+// while a stronger network gives a better starting picture.
+export function effectiveAccuracy(scoutingLevel: number, networkAccuracy: number): number {
+  const effort = clamp01(scoutingLevel / 100);
+  return clamp01(networkAccuracy + effort * (1 - networkAccuracy));
+}
+
+export function isRevealed(accuracy: number): boolean {
+  return accuracy >= REVEAL_ACCURACY;
+}
+
+// A stable per-(entity, key) bias in [-1, 1] so the fog is deterministic but
+// each rating is fogged differently (some over-, some under-estimated).
+function bias(seed: string, entityId: string, key: string): number {
+  return createSeededRandom(deriveSeed(seed, 'scout', entityId, key)).variance(1);
+}
+
+// The visible potential: an exact number once revealed, otherwise a range that
+// widens as accuracy falls and is recentred by a deterministic bias.
+export function visiblePotentialRange(
+  truePotential: number,
+  accuracy: number,
+  seed: string,
+  entityId: string,
+): [number, number] {
+  if (isRevealed(accuracy)) return [round1(truePotential), round1(truePotential)];
+  const spread = (1 - accuracy) * 2.5; // ±2.5 at acc 0 → 0 when revealed
+  const center = clampRating(truePotential + bias(seed, entityId, 'potential') * spread * 0.5);
+  return [round1(clampRating(center - spread)), round1(clampRating(center + spread))];
+}
+
+// The visible value of a single skill: 'Unknown' when too poorly scouted, an
+// exact value once revealed, otherwise a noisy estimate.
+export function visibleSkill(
+  trueValue: number,
+  accuracy: number,
+  seed: string,
+  entityId: string,
+  key: string,
+): VisibleRating {
+  if (accuracy < UNKNOWN_ACCURACY) return 'Unknown';
+  if (isRevealed(accuracy)) return round1(trueValue);
+  const noise = bias(seed, entityId, key) * (1 - accuracy) * 2;
+  return round1(clampRating(trueValue + noise));
+}
+
+export type ScoutTarget = {
+  id: string;
+  skills: MarketSkillRatings;
+  potential: number;
+};
+
+// Build (or rebuild) the scouting report for a target at a given effort level.
+export function buildScoutingReport(
+  target: ScoutTarget,
+  entityType: ScoutedEntityType,
+  scoutingLevel: number,
+  networkAccuracy: number,
+  seed: string,
+  now: string,
+): ScoutingReport {
+  const accuracy = effectiveAccuracy(scoutingLevel, networkAccuracy);
+  const visibleRatings: Record<string, VisibleRating> = {};
+  for (const key of SKILL_KEYS) {
+    visibleRatings[key] = visibleSkill(target.skills[key], accuracy, seed, target.id, key);
+  }
+  const notes: string[] = [];
+  if (isRevealed(accuracy)) {
+    notes.push('Fully scouted — ratings confirmed.');
+  } else if (accuracy >= UNKNOWN_ACCURACY) {
+    notes.push('Partially scouted — figures are estimates.');
+  } else {
+    notes.push('Barely known — invest scouting to learn more.');
+  }
+  return {
+    entityId: target.id,
+    entityType,
+    scoutingLevel,
+    accuracy: round1(accuracy * 100) / 100,
+    visibleRatings,
+    potentialRange: visiblePotentialRange(target.potential, accuracy, seed, target.id),
+    notes,
+    lastUpdated: now,
+  };
+}
+
+// Base cost ($M) of one scouting trip by target type — established senior
+// drivers cost more to scout than youth/staff.
+const SCOUT_BASE_COST_M: Record<ScoutedEntityType, number> = {
+  Driver: 0.6,
+  YouthProspect: 0.35,
+  Staff: 0.4,
+};
+
+// The cost (raw dollars) of the next scouting trip on a target. Refining a
+// target you already know is progressively more expensive (deeper intel), so
+// cost scales with the effort already invested.
+export function scoutingCost(entityType: ScoutedEntityType, currentScoutingLevel: number): number {
+  const baseM = SCOUT_BASE_COST_M[entityType];
+  const refinement = 1 + clamp01(currentScoutingLevel / 100) * 0.8;
+  return Math.round(baseM * refinement * MILLION);
+}
+
+export function createInitialScoutingState(
+  teamId: string,
+  facilities?: FacilitiesState,
+): ScoutingState {
+  return {
+    teamId,
+    networkAccuracy: scoutingNetworkAccuracy(facilities),
+    reports: {},
+  };
+}
+
+// Spend one round of scouting effort on a target: raise its effort level (faster
+// with a stronger network) and rebuild its report. Pure — returns new state.
+export function recordScouting(
+  state: ScoutingState,
+  target: ScoutTarget,
+  entityType: ScoutedEntityType,
+  facilities: FacilitiesState | undefined,
+  seed: string,
+  now: string,
+): ScoutingState {
+  const networkAccuracy = scoutingNetworkAccuracy(facilities);
+  const existing = state.reports[target.id];
+  const step = SCOUT_STEP + Math.min(25, Math.round(facilityEffect(facilities, 'scouting') * 50));
+  const scoutingLevel = Math.min(100, (existing?.scoutingLevel ?? 0) + step);
+  const report = buildScoutingReport(target, entityType, scoutingLevel, networkAccuracy, seed, now);
+  return {
+    ...state,
+    networkAccuracy,
+    reports: { ...state.reports, [target.id]: report },
+  };
+}
+
+export type FogView = {
+  accuracy: number;
+  revealed: boolean;
+  potential: { revealed: boolean; value?: number; range: [number, number] };
+  skills: Record<string, VisibleRating>;
+  notes: string[];
+};
+
+// The fogged view of a target for display: uses an existing report when present,
+// otherwise the network-only baseline (unscouted). Combines per-target effort
+// with the live network accuracy so facility upgrades sharpen old reports too.
+export function fogView(
+  target: ScoutTarget,
+  report: ScoutingReport | undefined,
+  networkAccuracy: number,
+  seed: string,
+): FogView {
+  const scoutingLevel = report?.scoutingLevel ?? 0;
+  const accuracy = effectiveAccuracy(scoutingLevel, networkAccuracy);
+  const revealed = isRevealed(accuracy);
+  const range = visiblePotentialRange(target.potential, accuracy, seed, target.id);
+  const skills: Record<string, VisibleRating> = {};
+  for (const key of SKILL_KEYS) {
+    skills[key] = visibleSkill(target.skills[key], accuracy, seed, target.id, key);
+  }
+  return {
+    accuracy,
+    revealed,
+    potential: { revealed, value: revealed ? range[0] : undefined, range },
+    skills,
+    notes: report?.notes ?? ['Unscouted — assign scouts to learn the true ceiling.'],
+  };
+}
+
+// Refresh stored reports against the current network accuracy (called at the
+// season rollover, when facility upgrades may have completed). Effort levels are
+// retained; only the derived figures are recomputed.
+export function refreshScoutingNetwork(
+  state: ScoutingState | undefined,
+  facilities: FacilitiesState | undefined,
+): ScoutingState | undefined {
+  if (!state) return state;
+  return { ...state, networkAccuracy: scoutingNetworkAccuracy(facilities) };
+}

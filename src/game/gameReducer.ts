@@ -2,48 +2,347 @@
 // Keeping this outside React keeps the simulation testable and deterministic.
 
 import { getTrackById } from '../data';
-import { getPointsSystem } from '../data/pointsSystems/pointsSystems';
 import { setupOptionsById } from '../data/setupOptions/setupOptions';
 import { autoSetupOptionsForTrack } from '../sim/autoSetup';
 import { qualifyingRunPlansById } from '../data/decisions/qualifyingRunPlans';
-import { raceStrategiesById } from '../data/decisions/raceStrategies';
-import { driverInstructionsById } from '../data/decisions/driverInstructions';
 import { developmentProjectsById } from '../data/development/developmentProjects';
-import { simulateQualifying } from '../sim/qualifyingEngine';
+import { qualifyingFormatFor, simulateQualifying } from '../sim/qualifyingEngine';
 import { simulateRace } from '../sim/raceEngine';
 import { buildConstructorStandings, buildDriverStandings } from '../sim/standingsEngine';
-import { applyDevelopmentProgress } from '../sim/developmentEngine';
+import { applyDevelopmentProgress, raceOpsDevelopmentBonus, computeAdjustedDuration, RUSH_COST_MULTIPLIER } from '../sim/developmentEngine';
 import { updateMorale } from '../sim/moraleEngine';
 import { generateRaceNews } from '../sim/newsEngine';
-import { aiQualifyingDecision, aiRaceDecision } from './ai';
-import { carForTeam, currentRace, type GameState } from './careerState';
+import { aiQualifyingDecision } from './ai';
+import {
+  activeDriversForTeam,
+  carForTeam,
+  currentRace,
+  driversForTeam,
+  MAX_RACE_DRIVERS,
+  type GameState,
+} from './careerState';
+import { buildRaceContext, playerTunedSetups } from './raceSetup';
 import { createNewGame, type NewGameOptions } from './initialCareer';
+import { advanceSeason } from './seasonRollover';
+import { getMaxQualifiers, getStaffPool } from '../data';
+import { careerMarketBundle } from '../sim/careerMarketEngine';
+import { marketDriverToDriver, signProspectToAcademy } from '../sim/driverMarketEngine';
+import { academyCapacityFor } from '../sim/teamRatingsEngine';
+import { makeTransaction, toMoney } from '../sim/financeEngine';
+import { thirdDriverMidSeasonFee, thirdDriverSalary } from '../sim/contractEngine';
+import {
+  generateSponsorOffers,
+  racePerformanceBonuses,
+  sponsorSlotCapacity,
+} from '../sim/commercialEngine';
+import { developmentSuccessBonus } from '../sim/staffEngine';
+import {
+  FACILITY_SPECS,
+  facilityDevelopmentSuccessBonus,
+  facilityRepairCostReduction,
+  orderUpgrade,
+  developmentSlots,
+  relevantFacilityLevel,
+} from '../sim/facilityEngine';
+import {
+  availableEngineOffers,
+  buildSignedDeal,
+  engineSwitchFee,
+} from '../sim/engineSupplierEngine';
+import { classifyCrashDamage, damageConditionHit, repairCost } from '../sim/repairEngine';
+import { buildRaceArchiveEntry } from '../sim/lapArchiveEngine';
+import { resolveTeamOrderConsequences } from '../sim/relationshipEngine';
+import type { TeamOrderDecision } from '../types/relationshipTypes';
+import { createSeededRandom, deriveSeed } from '../sim/random';
+import type { AcademyDecision, FirstOptionDecision, SeatSigning } from '../types/marketTypes';
+import type { FinanceTransaction } from '../types/financeTypes';
 import type {
+  Car,
   DevelopmentProject,
+  Driver,
   QualifyingResult,
+  RaceResult,
 } from '../types/gameTypes';
+import type { EngineDealType } from '../types/engineTypes';
+import type { RegulationVote } from '../types/politicsTypes';
+import type { ScoutedEntityType } from '../types/scoutingTypes';
+import { recordScouting, scoutingCost, type ScoutTarget } from '../sim/scoutingEngine';
 import type {
   Entrant,
   QualifyingDecision,
   RaceDecision,
+  RaceEvent,
   ScoreBreakdown,
 } from '../types/simTypes';
+import type { CarSetup } from '../types/setupTypes';
+import type {
+  PracticeAssignment,
+  PracticeSession,
+  PracticeSessionKind,
+  WeekendPractice,
+} from '../types/practiceTypes';
+import { initialBaselineSetup } from '../sim/setupFitEngine';
+import {
+  accumulateKnowledge,
+  emptyKnowledge,
+  practiceLapBudget,
+  runPracticeSession,
+  sessionLapCost,
+} from '../sim/practiceProgramEngine';
+import { weekendForecast } from '../sim/weatherEngine';
 
 export type GameAction =
   | { type: 'NEW_GAME'; options: NewGameOptions }
   | { type: 'LOAD_GAME'; state: GameState }
   | { type: 'RUN_QUALIFYING'; decisions: QualifyingDecision[] }
   | { type: 'RUN_RACE'; decisions: RaceDecision[] }
-  | { type: 'START_DEVELOPMENT'; projectId: string }
+  | {
+      type: 'COMMIT_LIVE_RACE';
+      results: RaceResult[];
+      events: RaceEvent[];
+      breakdowns: Record<string, ScoreBreakdown>;
+      teamOrders?: TeamOrderDecision[];
+    }
+  | { type: 'START_DEVELOPMENT'; projectId: string; rushed?: boolean }
+  | { type: 'RUSH_DEVELOPMENT'; projectId: string }
+  | { type: 'SET_CAR_SETUP'; driverId: string; setup: CarSetup }
+  | {
+      type: 'RUN_PRACTICE_SESSION';
+      raceId: string;
+      kind: PracticeSessionKind;
+      assignments: PracticeAssignment[];
+    }
+  | { type: 'SIGN_MARKET_DRIVER'; marketId: string; seatDriverId: string; bid?: number }
+  | { type: 'PROMOTE_ACADEMY'; academyId: string; seatDriverId: string }
+  | { type: 'RELEASE_SIGNING'; seatDriverId: string }
+  | { type: 'SIGN_YOUTH'; youthId: string }
+  | { type: 'RELEASE_ACADEMY'; academyId: string }
+  | {
+      type: 'SET_ACADEMY_DECISION';
+      academyId: string;
+      decision: FirstOptionDecision;
+      seatDriverId?: string;
+    }
+  | { type: 'CLEAR_ACADEMY_DECISION'; academyId: string }
+  | { type: 'HIRE_STAFF'; staffId: string }
+  | { type: 'FIRE_STAFF'; staffId: string }
+  | { type: 'UPGRADE_FACILITY'; facilityId: string }
+  | { type: 'SIGN_ENGINE_DEAL'; supplierId: string; dealType: EngineDealType }
+  | { type: 'SIGN_SPONSOR'; offerId: string }
+  | { type: 'DROP_SPONSOR'; sponsorId: string }
+  | { type: 'ACCEPT_JOB_OFFER'; offerId: string }
+  | { type: 'DECLINE_JOB_OFFER'; offerId: string }
+  | { type: 'SET_REGULATION_VOTE'; proposalId: string; vote: RegulationVote }
+  | { type: 'SCOUT_TARGET'; entityId: string; entityType: ScoutedEntityType }
+  | { type: 'SWAP_RACE_DRIVER'; seatIndex: number; reserveDriverId: string }
+  | { type: 'SIGN_THIRD_DRIVER'; marketId: string }
+  | { type: 'PROMOTE_THIRD_DRIVER'; seatDriverId: string; thirdDriverId: string }
+  | { type: 'ADVANCE_SEASON' }
   | { type: 'ADVANCE_RACE' };
+
+// Run one practice session for the player's drivers: simulate each assignment,
+// fold the results into the weekend knowledge, and apply the one-off confidence
+// nudges to the drivers. Each session kind runs at most once per weekend, and
+// the knowledge resets when a new race weekend begins.
+function runPracticeSessionAction(
+  state: GameState,
+  raceId: string,
+  kind: PracticeSessionKind,
+  assignments: PracticeAssignment[],
+): GameState {
+  const race = currentRace(state);
+  if (!race || race.id !== raceId) return state;
+  const track = getTrackById(race.trackId);
+  if (!track) return state;
+
+  let wp = state.weekendPractice;
+  if (!wp || wp.raceId !== raceId) {
+    wp = { raceId, sessions: [], knowledge: emptyKnowledge(raceId), lapsUsed: 0 };
+  }
+  if (wp.sessions.some((s) => s.kind === kind && s.completed)) return state;
+
+  const players = activeDriversForTeam(state, state.selectedTeamId);
+  const car = carForTeam(state, state.selectedTeamId);
+  // The engineer's baseline setup family for the weekend. Practice is run on
+  // this (or the player's carried-over setup) and the workshop compares the
+  // final tuned setup against it for driver comfort.
+  const baseline = initialBaselineSetup(track, car);
+  const driversById: Record<string, Driver> = {};
+  const setupsById: Record<string, CarSetup> = {};
+  const carsByDriverId: Record<string, Car> = {};
+  for (const d of players) {
+    driversById[d.id] = d;
+    setupsById[d.id] = state.carSetups?.[d.id] ?? baseline;
+    if (car) carsByDriverId[d.id] = car;
+  }
+  const validAssignments = assignments.filter((a) => driversById[a.driverId]);
+
+  // Enforce the weekend practice lap budget: a session can't be run if it would
+  // exceed the remaining laps.
+  const budget = practiceLapBudget(state.seasonYear, state.series, players.length);
+  const lapsUsed = wp.lapsUsed ?? 0;
+  const cost = sessionLapCost(validAssignments);
+  if (lapsUsed + cost > budget) return state;
+
+  const session: PracticeSession = {
+    id: `${raceId}-${kind}`,
+    raceId,
+    kind,
+    assignments: validAssignments,
+    completed: true,
+  };
+
+  const raceWet = weekendForecast(track, `${state.randomSeed}-r${race.round}`).Race.wet;
+  const results = runPracticeSession(session, {
+    raceId,
+    track,
+    seed: state.randomSeed,
+    driversById,
+    setupsById,
+    carsByDriverId,
+    knowledge: wp.knowledge,
+    raceWet,
+  });
+  session.results = results;
+
+  const knowledge = accumulateKnowledge(wp.knowledge, results);
+
+  const gainById: Record<string, number> = {};
+  for (const r of results) gainById[r.driverId] = (gainById[r.driverId] ?? 0) + r.confidenceGain;
+  const drivers = state.drivers.map((d) =>
+    gainById[d.id]
+      ? { ...d, confidence: Math.max(1, Math.min(100, Math.round(d.confidence + gainById[d.id]))) }
+      : d,
+  );
+
+  // Record the setup family each driver actually ran, plus laps banked. This is
+  // the practised baseline the workshop compares the final tuned setup against.
+  const practicedSetupByDriver = { ...(wp.practicedSetupByDriver ?? {}) };
+  const practicedSetupHistory = { ...(wp.practicedSetupHistory ?? {}) };
+  const practiceLapsByDriver = { ...(wp.practiceLapsByDriver ?? {}) };
+  for (const r of results) {
+    const ranSetup = setupsById[r.driverId];
+    if (ranSetup) {
+      practicedSetupByDriver[r.driverId] = ranSetup;
+      practicedSetupHistory[r.driverId] = [...(practicedSetupHistory[r.driverId] ?? []), ranSetup];
+    }
+    practiceLapsByDriver[r.driverId] = (practiceLapsByDriver[r.driverId] ?? 0) + r.lapsCompleted;
+  }
+
+  const sessions = [...wp.sessions.filter((s) => s.kind !== kind), session];
+  return {
+    ...state,
+    drivers,
+    weekendPractice: {
+      raceId,
+      sessions,
+      knowledge,
+      lapsUsed: lapsUsed + cost,
+      practicedSetupByDriver,
+      practicedSetupHistory,
+      practiceLapsByDriver,
+    },
+  };
+}
 
 function buildEntrants(state: GameState): Entrant[] {
   const entrants: Entrant[] = [];
-  for (const driver of state.drivers) {
-    const car = carForTeam(state, driver.teamId);
-    if (car) entrants.push({ driver, car });
+  for (const team of state.teams) {
+    const car = carForTeam(state, team.id);
+    if (!car) continue;
+    for (const driver of activeDriversForTeam(state, team.id)) {
+      entrants.push({ driver, car });
+    }
   }
   return entrants;
+}
+
+// Promote a reserve driver into one of the two race seats for the player team.
+// The roster order (`team.driverIds`) defines who races: the first two entries
+// are on track, the rest are reserves. Swapping reorders that list so the chosen
+// reserve takes the seat and the displaced driver becomes a reserve.
+function swapRaceDriver(state: GameState, seatIndex: number, reserveDriverId: string): GameState {
+  if (seatIndex !== 0 && seatIndex !== 1) return state;
+  const teamId = state.selectedTeamId;
+  const team = state.teams.find((t) => t.id === teamId);
+  if (!team) return state;
+
+  const active = activeDriversForTeam(state, teamId).map((d) => d.id);
+  if (active.includes(reserveDriverId)) return state;
+  const reserve = state.drivers.find((d) => d.id === reserveDriverId && d.teamId === teamId);
+  if (!reserve) return state;
+  const seatDriverId = active[seatIndex];
+  if (!seatDriverId) return state;
+
+  const ids = [...team.driverIds];
+  const seatPos = ids.indexOf(seatDriverId);
+  const reservePos = ids.indexOf(reserveDriverId);
+  if (seatPos === -1) return state;
+  if (reservePos === -1) {
+    ids[seatPos] = reserveDriverId;
+    ids.push(seatDriverId);
+  } else {
+    ids[seatPos] = reserveDriverId;
+    ids[reservePos] = seatDriverId;
+  }
+
+  const teams = state.teams.map((t) => (t.id === teamId ? { ...t, driverIds: ids } : t));
+  // Promotion changes the contract tier: the reserve taking the seat becomes a
+  // full race-seat driver, and the driver they displace drops to a reserve deal.
+  // Without this the race-lineup filter would still treat the promoted driver as
+  // a reserve and leave the seat empty.
+  const drivers = state.drivers.map((d) => {
+    if (d.id === reserveDriverId) return { ...d, contractType: 'seat' as const };
+    if (d.id === seatDriverId) return { ...d, contractType: 'reserve' as const };
+    return d;
+  });
+  return { ...state, teams, drivers };
+}
+
+// Sign a free-agent market driver mid-season as the player team's 3rd driver.
+// They join the reserve pool on a cheaper deal and can be swapped into a race
+// seat. One 3rd driver at a time; the prorated retainer is charged immediately.
+function signThirdDriver(state: GameState, marketId: string): GameState {
+  if (state.seasonComplete) return state; // mid-season signing only
+  const teamId = state.selectedTeamId;
+  const team = state.teams.find((t) => t.id === teamId);
+  if (!team) return state;
+
+  const roster = driversForTeam(state, teamId);
+  if (roster.length >= MAX_RACE_DRIVERS + 1) return state; // already have a 3rd driver
+  if (roster.some((d) => d.contractType === 'third')) return state;
+
+  const m = careerMarketBundle(state).drivers.find((d) => d.id === marketId);
+  if (!m || (state.signedMarketIds ?? []).includes(m.id)) return state;
+
+  const racesRemaining = Math.max(1, state.calendar.length - state.currentRaceIndex);
+  const fee = thirdDriverMidSeasonFee(m.salary, racesRemaining, state.calendar.length);
+  if (fee > playerBudget(state)) return state;
+
+  const used = new Set(state.drivers.map((d) => d.number));
+  let number = 1;
+  while (used.has(number)) number += 1;
+
+  const base = marketDriverToDriver(m, { teamId, number });
+  const driver: Driver = {
+    ...base,
+    salary: thirdDriverSalary(m.salary),
+    contractType: 'third',
+    contractYearsRemaining: 1,
+  };
+
+  const charged = applyTransaction(
+    state,
+    makeTransaction(state.seasonYear, 'Driver Signing', `3rd driver: ${m.name}`, -fee),
+  );
+  return {
+    ...charged,
+    drivers: [...charged.drivers, driver],
+    teams: charged.teams.map((t) =>
+      t.id === teamId ? { ...t, driverIds: [...t.driverIds, driver.id] } : t,
+    ),
+    signedMarketIds: [...(charged.signedMarketIds ?? []), m.id],
+  };
 }
 
 // Track the last debug breakdowns so the UI can show them (kept outside state
@@ -71,9 +370,176 @@ export function gameReducer(state: GameState | null, action: GameAction): GameSt
       return runRace(state, action.decisions);
     }
 
+    case 'COMMIT_LIVE_RACE': {
+      if (!state) return state;
+      const race = currentRace(state);
+      if (!race) return state;
+      return applyRaceResults(
+        state,
+        race,
+        action.results,
+        action.events,
+        action.breakdowns,
+        action.teamOrders ?? [],
+      );
+    }
+
     case 'START_DEVELOPMENT': {
       if (!state) return state;
-      return startDevelopment(state, action.projectId);
+      return startDevelopment(state, action.projectId, action.rushed ?? false);
+    }
+
+    case 'RUSH_DEVELOPMENT': {
+      if (!state) return state;
+      return rushDevelopment(state, action.projectId);
+    }
+
+    case 'SET_CAR_SETUP': {
+      if (!state) return state;
+      return {
+        ...state,
+        carSetups: { ...(state.carSetups ?? {}), [action.driverId]: action.setup },
+      };
+    }
+
+    case 'RUN_PRACTICE_SESSION': {
+      if (!state) return state;
+      return runPracticeSessionAction(state, action.raceId, action.kind, action.assignments);
+    }
+
+    case 'SIGN_MARKET_DRIVER': {
+      if (!state) return state;
+      return queueSigning(state, action.seatDriverId, 'market', action.marketId, action.bid);
+    }
+
+    case 'PROMOTE_ACADEMY': {
+      if (!state) return state;
+      return queueSigning(state, action.seatDriverId, 'academy', action.academyId);
+    }
+
+    case 'RELEASE_SIGNING': {
+      if (!state) return state;
+      return {
+        ...state,
+        pendingSignings: (state.pendingSignings ?? []).filter(
+          (s) => s.seatDriverId !== action.seatDriverId,
+        ),
+      };
+    }
+
+    case 'SIGN_YOUTH': {
+      if (!state) return state;
+      return signYouth(state, action.youthId);
+    }
+
+    case 'RELEASE_ACADEMY': {
+      if (!state) return state;
+      return {
+        ...state,
+        academy: (state.academy ?? []).filter((a) => a.id !== action.academyId),
+        // Drop any pending promotion that referenced this academy member.
+        pendingSignings: (state.pendingSignings ?? []).filter(
+          (s) => !(s.source === 'academy' && s.sourceId === action.academyId),
+        ),
+      };
+    }
+
+    case 'SET_ACADEMY_DECISION': {
+      if (!state) return state;
+      return setAcademyDecision(state, action.academyId, action.decision, action.seatDriverId);
+    }
+
+    case 'CLEAR_ACADEMY_DECISION': {
+      if (!state) return state;
+      return {
+        ...state,
+        academyDecisions: (state.academyDecisions ?? []).filter(
+          (d) => d.academyId !== action.academyId,
+        ),
+      };
+    }
+
+    case 'HIRE_STAFF': {
+      if (!state) return state;
+      return hireStaff(state, action.staffId);
+    }
+
+    case 'FIRE_STAFF': {
+      if (!state) return state;
+      return { ...state, staff: (state.staff ?? []).filter((s) => s.id !== action.staffId) };
+    }
+
+    case 'UPGRADE_FACILITY': {
+      if (!state) return state;
+      return upgradeFacility(state, action.facilityId);
+    }
+
+    case 'SIGN_SPONSOR': {
+      if (!state) return state;
+      return signSponsor(state, action.offerId);
+    }
+
+    case 'DROP_SPONSOR': {
+      if (!state) return state;
+      return dropSponsor(state, action.sponsorId);
+    }
+
+    case 'SIGN_ENGINE_DEAL': {
+      if (!state) return state;
+      return signEngineDeal(state, action.supplierId, action.dealType);
+    }
+
+    case 'ACCEPT_JOB_OFFER': {
+      if (!state) return state;
+      return acceptJobOffer(state, action.offerId);
+    }
+
+    case 'DECLINE_JOB_OFFER': {
+      if (!state) return state;
+      return {
+        ...state,
+        jobOffers: (state.jobOffers ?? []).filter((o) => o.id !== action.offerId),
+        acceptedJobOfferId:
+          state.acceptedJobOfferId === action.offerId ? undefined : state.acceptedJobOfferId,
+      };
+    }
+
+    case 'SET_REGULATION_VOTE': {
+      if (!state) return state;
+      return {
+        ...state,
+        regulationProposals: (state.regulationProposals ?? []).map((p) =>
+          p.id === action.proposalId
+            ? { ...p, playerVote: p.playerVote === action.vote ? undefined : action.vote }
+            : p,
+        ),
+      };
+    }
+
+    case 'SCOUT_TARGET': {
+      if (!state) return state;
+      return scoutTargetAction(state, action.entityId, action.entityType);
+    }
+
+    case 'SWAP_RACE_DRIVER': {
+      if (!state) return state;
+      return swapRaceDriver(state, action.seatIndex, action.reserveDriverId);
+    }
+
+    case 'SIGN_THIRD_DRIVER': {
+      if (!state) return state;
+      return signThirdDriver(state, action.marketId);
+    }
+
+    case 'PROMOTE_THIRD_DRIVER': {
+      if (!state) return state;
+      return queueSigning(state, action.seatDriverId, 'reserve', action.thirdDriverId);
+    }
+
+    case 'ADVANCE_SEASON': {
+      if (!state) return state;
+      if (!state.seasonComplete) return state;
+      return advanceSeason(state);
     }
 
     case 'ADVANCE_RACE': {
@@ -86,6 +552,303 @@ export function gameReducer(state: GameState | null, action: GameAction): GameSt
   }
 }
 
+// Apply a finance transaction to the player's team: adjust the team balance and
+// append the entry to the ledger.
+function applyTransaction(state: GameState, txn: FinanceTransaction): GameState {
+  const teams = state.teams.map((t) =>
+    t.id === state.selectedTeamId ? { ...t, budget: t.budget + txn.amount } : t,
+  );
+  return { ...state, teams, finance: [...(state.finance ?? []), txn] };
+}
+
+function playerBudget(state: GameState): number {
+  return state.teams.find((t) => t.id === state.selectedTeamId)?.budget ?? 0;
+}
+
+// Queue (or replace) a seat change for the player's seat held by seatDriverId.
+// Signings are only allowed during the offseason (season complete). The buyout
+// is charged at the season rollover; here we only check affordability.
+function queueSigning(
+  state: GameState,
+  seatDriverId: string,
+  source: SeatSigning['source'],
+  sourceId: string,
+  bidM?: number,
+): GameState {
+  if (!state.seasonComplete) return state;
+  const seat = state.drivers.find((d) => d.id === seatDriverId);
+  if (!seat || seat.teamId !== state.selectedTeamId) return state;
+
+  let name: string;
+  let bid: number | undefined;
+  if (source === 'market') {
+    const m = careerMarketBundle(state).drivers.find(
+      (d) => d.id === sourceId,
+    );
+    if (!m || (state.signedMarketIds ?? []).includes(m.id)) return state;
+    // The bid (defaulting to the buyout) must clear the buyout floor and be
+    // affordable now; it is charged at the rollover only if the bid wins.
+    bid = Math.max(m.buyoutCost, bidM ?? m.buyoutCost);
+    if (toMoney(bid) > playerBudget(state)) return state;
+    name = m.name;
+  } else if (source === 'reserve') {
+    // Promote the team's own 3rd driver into a seat — no buyout, no double-fill.
+    const r = state.drivers.find(
+      (d) => d.id === sourceId && d.teamId === state.selectedTeamId && d.contractType === 'third',
+    );
+    if (!r) return state;
+    name = r.name;
+  } else {
+    const a = (state.academy ?? []).find((x) => x.id === sourceId);
+    if (!a) return state;
+    name = a.name;
+  }
+
+  const others = (state.pendingSignings ?? []).filter(
+    (s) => s.seatDriverId !== seatDriverId && s.sourceId !== sourceId,
+  );
+  return {
+    ...state,
+    pendingSignings: [...others, { seatDriverId, source, sourceId, name, bid }],
+  };
+}
+
+// Hire a specialist: charge the one-off signing fee (must be affordable) and
+// add them to the roster. One member per role — a new hire replaces the old.
+function hireStaff(state: GameState, staffId: string): GameState {
+  const roster = state.staff ?? [];
+  if (roster.some((s) => s.id === staffId)) return state;
+  const recruit = getStaffPool(state.seasonYear, state.series).find((s) => s.id === staffId);
+  if (!recruit) return state;
+  const fee = toMoney(recruit.signingFee);
+  if (fee > playerBudget(state)) return state;
+  const charged = applyTransaction(
+    state,
+    makeTransaction(state.seasonYear, 'Staff', `Hired ${recruit.name} (${recruit.role})`, -fee),
+  );
+  const nextRoster = [...roster.filter((s) => s.role !== recruit.role), recruit];
+  return { ...charged, staff: nextRoster };
+}
+
+// Order a facility upgrade: charge the cost now (must be affordable); the level
+// gain resolves at the next season rollover. One pending upgrade per facility.
+function upgradeFacility(state: GameState, facilityId: string): GameState {
+  const facilities = state.facilities;
+  if (!facilities) return state;
+  const ordered = orderUpgrade(facilities, facilityId);
+  if (!ordered) return state;
+  const fee = toMoney(ordered.cost);
+  if (fee > playerBudget(state)) return state;
+  const facility = facilities.facilities.find((f) => f.id === facilityId);
+  const label = facility ? FACILITY_SPECS[facility.type].label : 'facility';
+  const charged = applyTransaction(
+    state,
+    makeTransaction(state.seasonYear, 'Facilities', `Upgrade ${label} to L${(facility?.level ?? 0) + 1}`, -fee),
+  );
+  return { ...charged, facilities: ordered.state };
+}
+
+// Spend one round of scouting effort on a market driver or youth prospect,
+// sharpening the fogged view of their true ratings. The target's true ratings
+// come from the current season's market bundle.
+function scoutTargetAction(
+  state: GameState,
+  entityId: string,
+  entityType: ScoutedEntityType,
+): GameState {
+  if (!state.scouting) return state;
+  const bundle = careerMarketBundle(state);
+
+  let target: ScoutTarget | undefined;
+  let targetName = 'target';
+  if (entityType === 'Driver') {
+    const d = bundle.drivers.find((x) => x.id === entityId);
+    if (d) {
+      target = { id: d.id, skills: d.skills, potential: d.potential };
+      targetName = d.name;
+    }
+  } else if (entityType === 'YouthProspect') {
+    const y = bundle.youth.find((x) => x.id === entityId);
+    if (y) {
+      target = { id: y.id, skills: y.skills, potential: y.potential };
+      targetName = y.name;
+    }
+  }
+  if (!target) return state;
+
+  // A scouting trip costs budget; refining a known target costs more. Block the
+  // trip if the team can't afford it.
+  const currentLevel = state.scouting.reports[target.id]?.scoutingLevel ?? 0;
+  const cost = scoutingCost(entityType, currentLevel);
+  if (cost > playerBudget(state)) return state;
+
+  const scouting = recordScouting(
+    state.scouting,
+    target,
+    entityType,
+    state.facilities,
+    state.randomSeed,
+    new Date().toISOString(),
+  );
+  const charged = applyTransaction(
+    state,
+    makeTransaction(state.seasonYear, 'Scouting', `Scouted ${targetName}`, -cost),
+  );
+  return { ...charged, scouting };
+}
+
+// Negotiate a new engine deal. It's queued as the pending deal and takes effect
+// (with its power/reliability modifier and annual cost) at the next season
+// rollover, so it behaves as offseason planning. Only valid offers are accepted.
+function signEngineDeal(state: GameState, supplierId: string, dealType: EngineDealType): GameState {
+  const engine = state.engine;
+  const team = state.teams.find((t) => t.id === state.selectedTeamId);
+  if (!engine || !team) return state;
+  const offer = availableEngineOffers(engine, team).find(
+    (o) => o.supplier.id === supplierId && o.dealType === dealType,
+  );
+  if (!offer) return state;
+
+  // A switch fee may already have been charged for a queued deal; canceling or
+  // re-negotiating refunds it.
+  const refundM = engine.pendingDealFee ?? 0;
+  const current = engine.currentDeal;
+
+  // Re-signing the deal you already run clears any pending change and refunds the
+  // fee paid for it.
+  if (current && current.supplierName === offer.supplier.name && current.dealType === dealType) {
+    let next = state;
+    if (refundM > 0) {
+      next = applyTransaction(
+        next,
+        makeTransaction(state.seasonYear, 'Engine', 'Refund: engine switch canceled', toMoney(refundM)),
+      );
+    }
+    return { ...next, engine: { ...next.engine!, pendingDeal: undefined, pendingDealFee: undefined } };
+  }
+
+  // A new switch: buy out the current contract. The fee is affordable against the
+  // budget after refunding any previously-queued fee.
+  const fee = engineSwitchFee(current, offer);
+  if (toMoney(fee) > playerBudget(state) + toMoney(refundM)) return state;
+
+  let next = state;
+  if (refundM > 0) {
+    next = applyTransaction(
+      next,
+      makeTransaction(state.seasonYear, 'Engine', 'Refund: engine deal re-negotiated', toMoney(refundM)),
+    );
+  }
+  if (fee > 0) {
+    next = applyTransaction(
+      next,
+      makeTransaction(state.seasonYear, 'Engine', `Engine switch fee: ${offer.supplier.name}`, -toMoney(fee)),
+    );
+  }
+  return {
+    ...next,
+    engine: { ...next.engine!, pendingDeal: buildSignedDeal(team, offer), pendingDealFee: fee },
+  };
+}
+
+// Sign a sponsor from the available offers into an open portfolio slot. Blocked
+// when the portfolio is at capacity (sized by commercial tier) or the deal is no
+// longer on offer. The deal's annual value feeds next season's income.
+function signSponsor(state: GameState, offerId: string): GameState {
+  const commercial = state.commercial;
+  const team = state.teams.find((t) => t.id === state.selectedTeamId);
+  if (!commercial || !team) return state;
+  if (commercial.sponsors.length >= sponsorSlotCapacity(team)) return state;
+  const offers = generateSponsorOffers(
+    team,
+    commercial,
+    state.randomSeed,
+    state.seasonYear,
+    state.series,
+  );
+  const offer = offers.find((o) => o.id === offerId);
+  if (!offer) return state;
+  if (commercial.sponsors.some((s) => s.id === offer.id)) return state;
+  return {
+    ...state,
+    commercial: { ...commercial, sponsors: [...commercial.sponsors, offer] },
+  };
+}
+
+// Drop a sponsor from the portfolio to free a slot (e.g. to take a bigger deal).
+function dropSponsor(state: GameState, sponsorId: string): GameState {
+  const commercial = state.commercial;
+  if (!commercial) return state;
+  const sponsors = commercial.sponsors.filter((s) => s.id !== sponsorId);
+  if (sponsors.length === commercial.sponsors.length) return state;
+  return { ...state, commercial: { ...commercial, sponsors } };
+}
+
+// Accept a firm job offer from a rival team. The move is queued and takes effect
+// at the next season rollover (where the player switches teams). Accepting the
+// same offer again cancels it; only firm offers (not rumors) can be accepted.
+function acceptJobOffer(state: GameState, offerId: string): GameState {
+  const offer = (state.jobOffers ?? []).find((o) => o.id === offerId);
+  if (!offer || offer.kind !== 'Offer') return state;
+  if (state.acceptedJobOfferId === offerId) {
+    return { ...state, acceptedJobOfferId: undefined };
+  }
+  return { ...state, acceptedJobOfferId: offerId };
+}
+
+// Sign a youth prospect into the academy. The one-off signing fee is charged
+// immediately; the player must be able to afford it.
+function signYouth(state: GameState, youthId: string): GameState {
+  const academy = state.academy ?? [];
+  if (academy.some((a) => a.prospectId === youthId)) return state;
+  // Academy capacity (Career Mode Phase 1): a team can only hold so many youth
+  // drivers, based on its overall team rating. Block signings past the limit.
+  const capacity = academyCapacityFor(state.teamOrgRatings, state.selectedTeamId);
+  if (academy.length >= capacity) return state;
+  const prospect = careerMarketBundle(state).youth.find(
+    (y) => y.id === youthId,
+  );
+  if (!prospect) return state;
+  const fee = toMoney(prospect.signingCost);
+  if (fee > playerBudget(state)) return state;
+  const member = signProspectToAcademy(prospect, state.seasonYear, state.selectedTeamId);
+  const charged = applyTransaction(
+    state,
+    makeTransaction(state.seasonYear, 'Academy', `Signed ${prospect.name} to academy`, -fee),
+  );
+  return { ...charged, academy: [...(charged.academy ?? []), member] };
+}
+
+// Queue (or replace) a first-option decision for a promotion-eligible academy
+// driver. Applied at the next season rollover. A race-seat promotion must name
+// which of the team's seats it takes.
+function setAcademyDecision(
+  state: GameState,
+  academyId: string,
+  decision: FirstOptionDecision,
+  seatDriverId?: string,
+): GameState {
+  const academy = state.academy ?? [];
+  if (!academy.some((a) => a.id === academyId)) return state;
+  if (decision === 'race_seat' && !seatDriverId) return state;
+  const next: AcademyDecision = { academyId, decision, seatDriverId };
+  const rest = (state.academyDecisions ?? []).filter((d) => d.academyId !== academyId);
+  return { ...state, academyDecisions: [...rest, next] };
+}
+
+// Drivers who ran the Wet-Weather Preparation program in any completed practice
+// session this weekend — they cope better if qualifying turns wet.
+function wetPreparedDrivers(wp: WeekendPractice): string[] {
+  const ids = new Set<string>();
+  for (const session of wp.sessions) {
+    if (!session.completed) continue;
+    for (const a of session.assignments) {
+      if (a.program === 'WetWeatherPreparation') ids.add(a.driverId);
+    }
+  }
+  return [...ids];
+}
+
 function runQualifying(state: GameState, playerDecisions: QualifyingDecision[]): GameState {
   const race = currentRace(state);
   if (!race) return state;
@@ -93,20 +856,43 @@ function runQualifying(state: GameState, playerDecisions: QualifyingDecision[]):
   if (!track) return state;
 
   const entrants = buildEntrants(state);
+  const tuned = playerTunedSetups(state, track, 'qualifying');
   const decisions: Record<string, QualifyingDecision> = {};
   const playerById = new Map(playerDecisions.map((d) => [d.driverId, d]));
   for (const e of entrants) {
-    decisions[e.driver.id] =
-      playerById.get(e.driver.id) ?? aiQualifyingDecision(e.driver.id, track);
+    const decision = playerById.get(e.driver.id) ?? aiQualifyingDecision(e.driver.id, track);
+    const tunedId = tuned.setupIdByDriver[e.driver.id];
+    decisions[e.driver.id] = tunedId ? { ...decision, setupId: tunedId } : decision;
   }
+
+  // Qualifying picks up the weekend forecast for its own session, the era's
+  // format (knockout vs single), and which drivers banked wet running in practice.
+  const forecast = weekendForecast(track, `${state.randomSeed}-r${race.round}`);
+  const wetPreparedDriverIds =
+    state.weekendPractice && state.weekendPractice.raceId === race.id
+      ? wetPreparedDrivers(state.weekendPractice)
+      : [];
+
+  const teamReputation: Record<string, number> = {};
+  const teamRaceOps: Record<string, number> = {};
+  state.teams.forEach((t) => {
+    teamReputation[t.id] = t.reputation;
+    teamRaceOps[t.id] = t.raceOperations;
+  });
 
   const { results, breakdowns } = simulateQualifying({
     track,
     entrants,
     decisions,
-    setupOptions: { ...setupOptionsById, ...autoSetupOptionsForTrack(track) },
+    setupOptions: { ...setupOptionsById, ...autoSetupOptionsForTrack(track), ...tuned.overlay },
     runPlans: qualifyingRunPlansById,
     seed: `${state.randomSeed}-r${race.round}`,
+    maxQualifiers: getMaxQualifiers(state.series),
+    weather: forecast.Qualifying,
+    wetPreparedDriverIds,
+    format: qualifyingFormatFor(state.seasonYear, state.series),
+    teamReputation,
+    teamRaceOps,
   });
 
   lastBreakdowns.qualifying = breakdowns;
@@ -130,32 +916,26 @@ function runQualifying(state: GameState, playerDecisions: QualifyingDecision[]):
 function runRace(state: GameState, playerDecisions: RaceDecision[]): GameState {
   const race = currentRace(state);
   if (!race) return state;
-  const track = getTrackById(race.trackId);
-  if (!track) return state;
 
-  const qualifying = state.qualifyingResults[race.id];
-  if (!qualifying) return state;
+  const built = buildRaceContext(state, playerDecisions);
+  if (!built) return state;
 
-  const entrants = buildEntrants(state);
-  const decisions: Record<string, RaceDecision> = {};
-  const playerById = new Map(playerDecisions.map((d) => [d.driverId, d]));
-  for (const e of entrants) {
-    decisions[e.driver.id] = playerById.get(e.driver.id) ?? aiRaceDecision(e.driver.id, track);
-  }
+  const { results, events, breakdowns } = simulateRace(built.context);
+  return applyRaceResults(state, race, results, events, breakdowns);
+}
 
-  const pointsSystem = getPointsSystem(state.pointsSystemId);
-
-  const { results, events, breakdowns } = simulateRace({
-    track,
-    entrants,
-    qualifyingResults: qualifying,
-    decisions,
-    setupOptions: { ...setupOptionsById, ...autoSetupOptionsForTrack(track) },
-    strategies: raceStrategiesById,
-    instructions: driverInstructionsById,
-    pointsByPosition: pointsSystem.pointsByPosition,
-    seed: `${state.randomSeed}-r${race.round}`,
-  });
+// Shared post-race handling: standings, morale, budget, development, news and
+// calendar advance. Used by both the quick race (RUN_RACE) and the live race
+// (COMMIT_LIVE_RACE), so both paths update the season identically.
+function applyRaceResults(
+  state: GameState,
+  race: NonNullable<ReturnType<typeof currentRace>>,
+  results: RaceResult[],
+  events: RaceEvent[],
+  breakdowns: Record<string, ScoreBreakdown>,
+  teamOrders: TeamOrderDecision[] = [],
+): GameState {
+  const qualifying = state.qualifyingResults[race.id] ?? [];
 
   lastBreakdowns.race = breakdowns;
 
@@ -186,25 +966,96 @@ function runRace(state: GameState, playerDecisions: RaceDecision[]): GameState {
     driverTeam,
   );
 
-  const drivers = state.drivers.map((d) => ({
+  let drivers = state.drivers.map((d) => ({
     ...d,
     confidence: morale.driverConfidence[d.id] ?? d.confidence,
     morale: morale.driverMorale[d.id] ?? d.morale,
   }));
 
-  // Budget: prize money for points + repair costs for DNFs/crashes.
+  // Team-order fallout (Living Universe Phase 7): resolve the orders called this
+  // race into the relationship map, nudge the affected drivers' morale, and keep
+  // the season's order log + any media reactions for the news.
+  let driverRelationships = state.driverRelationships;
+  let teamOrderHistory = state.teamOrderHistory ?? [];
+  const relationshipNews: string[] = [];
+  if (teamOrders.length > 0 && driverRelationships) {
+    const driverNameOf = (id: string) => state.drivers.find((d) => d.id === id)?.name ?? id;
+    const resolved = resolveTeamOrderConsequences(teamOrders, driverRelationships, driverNameOf);
+    driverRelationships = resolved.relationships;
+    teamOrderHistory = [...teamOrderHistory, ...teamOrders];
+    relationshipNews.push(...resolved.news);
+    const moraleDeltaById: Record<string, number> = {};
+    for (const c of resolved.consequences) {
+      moraleDeltaById[c.driverId] = (moraleDeltaById[c.driverId] ?? 0) + c.moraleDelta;
+    }
+    drivers = drivers.map((d) =>
+      moraleDeltaById[d.id]
+        ? { ...d, morale: Math.max(0, Math.min(100, Math.round(d.morale + moraleDeltaById[d.id]))) }
+        : d,
+    );
+  }
+
+  // Budget: prize money for points + crash repair costs scaled by damage.
   const teams = state.teams.map((t) => ({ ...t, morale: morale.teamMorale[t.id] ?? t.morale }));
   let cars = state.cars.map((c) => ({ ...c }));
+  const financeTxns: FinanceTransaction[] = [];
+  const damageMessages: string[] = [];
+  const conditionHitByTeam: Record<string, number> = {};
   for (const r of results) {
     const team = teams.find((t) => t.id === r.teamId);
     if (!team) continue;
-    team.budget += r.points * 250_000; // prize money per point
-    if (r.status === 'DNF' && r.incidents.some((i) => /crash|collision|spun/i.test(i))) {
-      team.budget -= 500_000; // crash repair
+    const prize = r.points * 250_000; // prize money per point
+    team.budget += prize;
+    const roll = createSeededRandom(deriveSeed(state.randomSeed, 'damage', race.round, r.driverId)).next();
+    const severity = classifyCrashDamage(r.status, r.incidents, roll);
+    const reduction = team.id === state.selectedTeamId ? facilityRepairCostReduction(state.facilities) : 0;
+    const repair = Math.round(repairCost(severity) * (1 - reduction));
+    if (repair > 0) {
+      team.budget -= repair;
+      conditionHitByTeam[team.id] = (conditionHitByTeam[team.id] ?? 0) + damageConditionHit(severity);
+    }
+    if (team.id === state.selectedTeamId) {
+      const driverName = state.drivers.find((d) => d.id === r.driverId)?.name ?? r.driverId;
+      if (prize > 0) {
+        financeTxns.push(
+          makeTransaction(state.seasonYear, 'Prize Money', `${race.gpName}: ${driverName}`, prize, race.round),
+        );
+      }
+      if (repair > 0) {
+        financeTxns.push(
+          makeTransaction(
+            state.seasonYear,
+            'Repairs',
+            `${race.gpName}: ${driverName} — ${severity.toLowerCase()} damage`,
+            -repair,
+            race.round,
+          ),
+        );
+        damageMessages.push(`${driverName} sustained ${severity.toLowerCase()} damage — repairs cost $${(repair / 1_000_000).toFixed(2)}M.`);
+      }
     }
   }
-  // Reset car condition for next round.
-  cars = cars.map((c) => ({ ...c, condition: Math.min(100, c.condition + 20) }));
+  // Sponsor performance bonuses for the player team's result this round.
+  const playerResults = results.filter((r) => r.teamId === state.selectedTeamId);
+  const playerQualy = qualifying.filter((q) => q.teamId === state.selectedTeamId);
+  const sponsorBonuses = racePerformanceBonuses(state.commercial, {
+    wins: playerResults.filter((r) => r.position === 1).length,
+    podiums: playerResults.filter((r) => r.position !== null && r.position <= 3).length,
+    poles: playerQualy.filter((q) => q.position === 1).length,
+  });
+  for (const b of sponsorBonuses) {
+    const team = teams.find((t) => t.id === state.selectedTeamId);
+    if (team) team.budget += b.amount;
+    financeTxns.push(
+      makeTransaction(state.seasonYear, 'Sponsorship', `${race.gpName}: ${b.label}`, b.amount, race.round),
+    );
+  }
+
+  // Apply crash damage, then the standard between-race recovery.
+  cars = cars.map((c) => ({
+    ...c,
+    condition: Math.min(100, Math.max(20, c.condition - (conditionHitByTeam[c.teamId] ?? 0) + 20)),
+  }));
 
   // Development progress (player team only, for MVP).
   const playerCar = carForTeam(state, state.selectedTeamId);
@@ -212,11 +1063,15 @@ function runRace(state: GameState, playerDecisions: RaceDecision[]): GameState {
   let completedDevelopmentProjects = state.completedDevelopmentProjects;
   const devMessages: string[] = [];
   if (playerCar && activeDevelopmentProjects.length > 0) {
+    const playerTeamData = state.teams.find((t) => t.id === state.selectedTeamId);
     const tick = applyDevelopmentProgress(
       activeDevelopmentProjects,
       playerCar,
       state.randomSeed,
       race.round,
+      developmentSuccessBonus(state.staff ?? []) +
+        facilityDevelopmentSuccessBonus(state.facilities) +
+        (playerTeamData ? raceOpsDevelopmentBonus(playerTeamData.raceOperations) : 0),
     );
     activeDevelopmentProjects = tick.active;
     completedDevelopmentProjects = [...completedDevelopmentProjects, ...tick.completed];
@@ -250,6 +1105,24 @@ function runRace(state: GameState, playerDecisions: RaceDecision[]): GameState {
   for (const m of devMessages) {
     news.unshift({ id: `news-dev-${race.round}-${m.slice(0, 8)}`, round: race.round, headline: m, timestamp: new Date().toISOString() });
   }
+  damageMessages.forEach((m, i) => {
+    news.unshift({ id: `news-damage-${race.round}-${i}`, round: race.round, headline: m, timestamp: new Date().toISOString() });
+  });
+  relationshipNews.forEach((m, i) => {
+    news.unshift({ id: `news-order-${race.round}-${i}`, round: race.round, headline: m, timestamp: new Date().toISOString() });
+  });
+
+  // Archive this race (results + deterministic lap-time archive).
+  const archiveEntry = buildRaceArchiveEntry(
+    race,
+    state.seasonYear,
+    results,
+    qualifying,
+    driverNames,
+    teamNames,
+    state.randomSeed,
+  );
+  const raceArchive = [...(state.raceArchive ?? []), archiveEntry];
 
   // Advance the calendar.
   const calendar = state.calendar.map((r) => (r.id === race.id ? { ...r, completed: true } : r));
@@ -268,32 +1141,108 @@ function runRace(state: GameState, playerDecisions: RaceDecision[]): GameState {
     constructorStandings,
     activeDevelopmentProjects,
     completedDevelopmentProjects,
+    finance: [...(state.finance ?? []), ...financeTxns],
+    raceArchive,
+    driverRelationships,
+    teamOrderHistory,
     news: [...news, ...state.news].slice(0, 50),
     currentRaceIndex: seasonComplete ? state.currentRaceIndex : nextIndex,
     seasonComplete,
   };
 }
 
-function startDevelopment(state: GameState, projectId: string): GameState {
+function startDevelopment(state: GameState, projectId: string, rushed: boolean): GameState {
   const template = developmentProjectsById[projectId];
   if (!template) return state;
   const team = state.teams.find((t) => t.id === state.selectedTeamId);
-  if (!team || team.budget < template.cost) return state;
+  if (!team) return state;
+
+  // Check development slots (facility-based).
+  const slots = developmentSlots(state.facilities);
+  if (state.activeDevelopmentProjects.length >= slots) return state;
+
+  // Compute facility level for this project category.
+  const facLevel = relevantFacilityLevel(state.facilities, template.category);
+
+  // Compute adjusted duration based on facility level, project size, and rush.
+  const projectSize = template.projectSize ?? 'Medium';
+  const adjustedDuration = computeAdjustedDuration(
+    template.durationRaces,
+    facLevel,
+    projectSize,
+    rushed,
+  );
+
+  // Compute cost (rush increases cost by 1.5x).
+  const cost = rushed ? Math.round(template.cost * RUSH_COST_MULTIPLIER()) : template.cost;
+  if (team.budget < cost) return state;
 
   const instance: DevelopmentProject = {
     ...template,
     id: `${template.id}-${Date.now()}`,
     progressRaces: 0,
+    rushed,
+    facilityLevelAtStart: facLevel,
+    adjustedDurationRaces: adjustedDuration,
   };
 
   const teams = state.teams.map((t) =>
-    t.id === team.id ? { ...t, budget: t.budget - template.cost } : t,
+    t.id === team.id ? { ...t, budget: t.budget - cost } : t,
   );
 
   return {
     ...state,
     teams,
+    finance: [
+      ...(state.finance ?? []),
+      makeTransaction(state.seasonYear, 'Development', `${template.name}${rushed ? ' (Rushed)' : ''}`, -cost),
+    ],
     activeDevelopmentProjects: [...state.activeDevelopmentProjects, instance],
+  };
+}
+
+function rushDevelopment(state: GameState, projectId: string): GameState {
+  const project = state.activeDevelopmentProjects.find((p) => p.id === projectId);
+  if (!project || project.rushed) return state;
+
+  const team = state.teams.find((t) => t.id === state.selectedTeamId);
+  if (!team) return state;
+
+  // Rush cost: 50% of original project cost.
+  const rushCost = Math.round(project.cost * 0.5);
+  if (team.budget < rushCost) return state;
+
+  const facLevel = project.facilityLevelAtStart ?? 3;
+  const projectSize = project.projectSize ?? 'Medium';
+  const newDuration = computeAdjustedDuration(
+    project.durationRaces,
+    facLevel,
+    projectSize,
+    true,
+  );
+
+  const teams = state.teams.map((t) =>
+    t.id === team.id ? { ...t, budget: t.budget - rushCost } : t,
+  );
+
+  const activeDevelopmentProjects = state.activeDevelopmentProjects.map((p) =>
+    p.id === projectId
+      ? {
+          ...p,
+          rushed: true,
+          adjustedDurationRaces: newDuration,
+        }
+      : p,
+  );
+
+  return {
+    ...state,
+    teams,
+    finance: [
+      ...(state.finance ?? []),
+      makeTransaction(state.seasonYear, 'Development', `${project.name} (Rush Fee)`, -rushCost),
+    ],
+    activeDevelopmentProjects,
   };
 }
 

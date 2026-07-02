@@ -2,6 +2,11 @@ import type { PointsSystem } from '../../types/gameTypes';
 
 // Points systems are configurable per-season so future years can differ.
 export const pointsSystems: Record<string, PointsSystem> = {
+  'pts-1990': {
+    id: 'pts-1990',
+    name: '1990 (9-6-4-3-2-1)',
+    pointsByPosition: { 1: 9, 2: 6, 3: 4, 4: 3, 5: 2, 6: 1 },
+  },
   'pts-1995': {
     id: 'pts-1995',
     name: '1995 (10-6-4-3-2-1)',
@@ -17,6 +22,16 @@ export const pointsSystems: Record<string, PointsSystem> = {
     name: 'Modern (25-18-15-...)',
     pointsByPosition: {
       1: 25, 2: 18, 3: 15, 4: 12, 5: 10, 6: 8, 7: 6, 8: 4, 9: 2, 10: 1,
+    },
+  },
+  'pts-indycar-2026': {
+    id: 'pts-indycar-2026',
+    name: 'IndyCar 2026 (50-40-35-...)',
+    pointsByPosition: {
+      1: 50, 2: 40, 3: 35, 4: 32, 5: 30, 6: 28, 7: 26, 8: 24, 9: 22, 10: 20,
+      11: 19, 12: 18, 13: 17, 14: 16, 15: 15, 16: 14, 17: 13, 18: 12, 19: 11,
+      20: 10, 21: 9, 22: 8, 23: 7, 24: 6, 25: 5, 26: 5, 27: 5, 28: 5, 29: 5,
+      30: 5, 31: 5, 32: 5, 33: 5,
     },
   },
 };

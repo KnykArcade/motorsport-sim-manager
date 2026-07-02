@@ -4,9 +4,18 @@ import type {
   Car,
   CarRatings,
   DevelopmentProject,
+  DevelopmentOutcome,
+  DevelopmentOutcomeResult,
+  ProjectRiskLevel,
+  ProjectSize,
   RegulationChangeEvent,
 } from '../types/gameTypes';
-import { createSeededRandom, deriveSeed } from './random';
+import { createSeededRandom, deriveSeed, type Rng } from './random';
+import {
+  facilityOutcomeChances,
+  facilityImpactMultiplier,
+  type OutcomeChances,
+} from './facilityEngine';
 
 export type DevelopmentTickResult = {
   active: DevelopmentProject[];
@@ -15,12 +24,119 @@ export type DevelopmentTickResult = {
   messages: string[];
 };
 
+// ---------------------------------------------------------------------------
+// Outcome labels and descriptions
+// ---------------------------------------------------------------------------
+
+export const OUTCOME_LABELS: Record<DevelopmentOutcome, string> = {
+  GreatSuccess: 'Great Success',
+  FullSuccess: 'Full Success',
+  PartialSuccess: 'Partial Success',
+  MinorSuccess: 'Minor Success',
+  Failed: 'Failed',
+  RareBackfire: 'Rare Backfire',
+};
+
+export const OUTCOME_DESCRIPTIONS: Record<DevelopmentOutcome, string> = {
+  GreatSuccess: 'The project delivered beyond expectations — a breakthrough result.',
+  FullSuccess: 'The project delivered exactly what was promised.',
+  PartialSuccess: 'The project delivered most of the planned gains.',
+  MinorSuccess: 'The project delivered a small fraction of the planned gains.',
+  Failed: 'The project failed to deliver any gains.',
+  RareBackfire: 'The project backfired — a small setback in the targeted area.',
+};
+
+// ---------------------------------------------------------------------------
+// Project size modifiers: gain scale, cost scale, risk shift, time scale
+// ---------------------------------------------------------------------------
+
+export type ProjectSizeMods = {
+  gainScale: number;
+  costScale: number;
+  timeScale: number;
+  riskShift: number; // added to archetype risk appetite
+};
+
+export const PROJECT_SIZE_MODS: Record<ProjectSize, ProjectSizeMods> = {
+  Small: { gainScale: 0.6, costScale: 0.5, timeScale: 0.6, riskShift: 0 },
+  Medium: { gainScale: 1.0, costScale: 1.0, timeScale: 1.0, riskShift: 0 },
+  Major: { gainScale: 1.6, costScale: 1.8, timeScale: 1.5, riskShift: 0.1 },
+  Experimental: { gainScale: 2.2, costScale: 2.5, timeScale: 1.8, riskShift: 0.3 },
+};
+
+// ---------------------------------------------------------------------------
+// Outcome gain multipliers: how much of the base effect each outcome delivers
+// ---------------------------------------------------------------------------
+
+export const OUTCOME_GAIN_MULTIPLIERS: Record<DevelopmentOutcome, number> = {
+  GreatSuccess: 1.4,
+  FullSuccess: 1.0,
+  PartialSuccess: 0.6,
+  MinorSuccess: 0.25,
+  Failed: 0,
+  RareBackfire: -0.3,
+};
+
+// ---------------------------------------------------------------------------
+// Roll a development outcome from the chance table
+// ---------------------------------------------------------------------------
+
+export function rollOutcome(rng: Rng, chances: OutcomeChances): DevelopmentOutcome {
+  const roll = rng.next();
+  let cumulative = 0;
+  const order: DevelopmentOutcome[] = [
+    'GreatSuccess',
+    'FullSuccess',
+    'PartialSuccess',
+    'MinorSuccess',
+    'Failed',
+    'RareBackfire',
+  ];
+  for (const outcome of order) {
+    cumulative += chances[outcome];
+    if (roll < cumulative) return outcome;
+  }
+  return 'Failed';
+}
+
+// Compute the adjusted duration for a project given facility level, size, and
+// rush status. Rushing reduces time by 30% but increases risk.
+export function computeAdjustedDuration(
+  baseDuration: number,
+  facilityLevel: number,
+  projectSize: ProjectSize = 'Medium',
+  rushed = false,
+): number {
+  // Level 1: x1.40, Level 2: x1.20, Level 3: x1.00, Level 4: x0.85, Level 5: x0.70
+  const timeTable = [1.4, 1.2, 1.0, 0.85, 0.7];
+  const idx = Math.max(0, Math.min(4, Math.round(facilityLevel) - 1));
+  const facilityTime = timeTable[idx];
+  const sizeTime = PROJECT_SIZE_MODS[projectSize].timeScale;
+  const rushMod = rushed ? 0.7 : 1.0;
+  return Math.max(1, Math.round(baseDuration * facilityTime * sizeTime * rushMod));
+}
+
+// Compute the rush cost multiplier (1.5x base cost).
+export function RUSH_COST_MULTIPLIER(): number {
+  return 1.5;
+}
+
+// Race Operations (engineering consistency) shifts development project success
+// odds. Neutral at raceOps 5; a 9-ops team adds ~8 percentage points, a 3-ops
+// team loses ~4 (capped).
+export function raceOpsDevelopmentBonus(raceOps: number): number {
+  return Math.max(-0.1, Math.min(0.1, (raceOps - 5) * 0.02));
+}
+
 // Advance all active projects by one race; resolve completed ones.
+// Uses the new facility-based outcome system: facility level, risk level,
+// project size, and staff bonus determine outcome chances and gain magnitude.
 export function applyDevelopmentProgress(
   active: DevelopmentProject[],
   car: Car,
   seed: string,
   round: number,
+  successBonus = 0,
 ): DevelopmentTickResult {
   const rng = createSeededRandom(deriveSeed(seed, 'dev', round));
   const stillActive: DevelopmentProject[] = [];
@@ -30,29 +146,174 @@ export function applyDevelopmentProgress(
 
   for (const project of active) {
     const progressed = { ...project, progressRaces: project.progressRaces + 1 };
-    if (progressed.progressRaces < progressed.durationRaces) {
+    const effectiveDuration = progressed.adjustedDurationRaces ?? progressed.durationRaces;
+    if (progressed.progressRaces < effectiveDuration) {
       stillActive.push(progressed);
       continue;
     }
 
-    // Resolve success/failure.
-    const success = rng.chance(progressed.successChance);
-    if (success && progressed.currentSeasonEffects) {
+    // Determine facility level for this project.
+    const facilityLevel = progressed.facilityLevelAtStart ?? 3;
+    const riskLevel: ProjectRiskLevel = progressed.riskLevel ?? 'Standard';
+    const projectSize: ProjectSize = progressed.projectSize ?? 'Medium';
+
+    // Calculate outcome chances from facility level + risk + staff bonus.
+    const chances = facilityOutcomeChances(facilityLevel, riskLevel, successBonus);
+    const outcome = rollOutcome(rng, chances);
+    const gainMultiplier = OUTCOME_GAIN_MULTIPLIERS[outcome];
+    const impactMult = facilityImpactMultiplier(facilityLevel);
+    const sizeMods = PROJECT_SIZE_MODS[projectSize];
+
+    // Compute expected gain (what FullSuccess would deliver).
+    const expectedGain: Partial<CarRatings> = {};
+    if (progressed.currentSeasonEffects) {
       for (const [k, v] of Object.entries(progressed.currentSeasonEffects)) {
+        const key = k as keyof CarRatings;
+        expectedGain[key] = round1((v ?? 0) * impactMult * sizeMods.gainScale);
+      }
+    }
+
+    // Compute actual gain based on outcome.
+    const actualGain: Partial<CarRatings> = {};
+    if (progressed.currentSeasonEffects) {
+      for (const [k, v] of Object.entries(progressed.currentSeasonEffects)) {
+        const key = k as keyof CarRatings;
+        const raw = (v ?? 0) * impactMult * sizeMods.gainScale * gainMultiplier;
+        actualGain[key] = round1(raw);
+      }
+    }
+
+    // Apply actual gains to deltas.
+    if (Object.keys(actualGain).length > 0) {
+      for (const [k, v] of Object.entries(actualGain)) {
         const key = k as keyof CarRatings;
         deltas[key] = (deltas[key] ?? 0) + (v ?? 0);
       }
-      messages.push(`Development complete: ${progressed.name} succeeded.`);
-    } else if (success) {
-      messages.push(`Development complete: ${progressed.name} delivered (research/facility).`);
-    } else {
-      messages.push(`Development setback: ${progressed.name} failed to deliver.`);
     }
-    completed.push(progressed);
+
+    // Build the outcome result attached to the completed project.
+    const outcomeResult: DevelopmentOutcomeResult = {
+      outcome,
+      expectedGain,
+      actualGain,
+      label: OUTCOME_LABELS[outcome],
+      description: OUTCOME_DESCRIPTIONS[outcome],
+    };
+
+    const completedProject = { ...progressed, outcomeResult };
+    completed.push(completedProject);
+
+    // Generate a descriptive message.
+    const gainSummary = Object.entries(actualGain)
+      .map(([k, v]) => `${v >= 0 ? '+' : ''}${v} ${k}`)
+      .join(', ');
+    if (outcome === 'Failed') {
+      messages.push(`Development complete: ${progressed.name} — ${OUTCOME_LABELS[outcome]}. No gains delivered.`);
+    } else if (outcome === 'RareBackfire') {
+      messages.push(`Development setback: ${progressed.name} — ${OUTCOME_LABELS[outcome]}. ${gainSummary}`);
+    } else {
+      messages.push(`Development complete: ${progressed.name} — ${OUTCOME_LABELS[outcome]}. ${gainSummary}`);
+    }
   }
 
   void car;
   return { active: stillActive, completed, carRatingDeltas: deltas, messages };
+}
+
+// --- Diminishing returns + maintenance decay --------------------------------
+//
+// Development gains get progressively harder as a car rating approaches the 10
+// ceiling, and ratings do not stay maxed forever without continued spending:
+// each offseason the design ages and regulations erode some carried-over
+// performance, softened by facilities/staff/budget. Together these keep top cars
+// from saturating at 10.0 across multiple teams and give the midfield room to
+// close the gap over a long career.
+
+// Multiplier on a raw development gain given the CURRENT rating of the area
+// being developed. Cheap and large at the bottom, very small near the cap.
+//   1.0–4.9 : 1.30  (larger gains, cheaper improvement)
+//   5.0–6.9 : 1.00  (normal)
+//   7.0–8.4 : 0.60  (smaller gains, higher cost)
+//   8.5–9.2 : 0.32  (difficult gains)
+//   9.3–10  : 0.14  (very small gains, high failure risk)
+export function diminishingGainMultiplier(rating: number): number {
+  if (rating < 5) return 1.3;
+  if (rating < 7) return 1.0;
+  if (rating < 8.5) return 0.6;
+  if (rating < 9.3) return 0.32;
+  return 0.14;
+}
+
+// Extra chance a high-rated development project simply fails to deliver (no gain
+// or a minor setback). Near the ceiling even well-funded upgrades often miss.
+export function nearCapFailureChance(rating: number): number {
+  if (rating < 8.5) return 0;
+  if (rating < 9.3) return 0.25;
+  return 0.45;
+}
+
+// A midfield/back car improves more efficiently than a front-runner: a catch-up
+// multiplier that rewards teams sitting well below the front of the grid. `gap`
+// is (fieldTopRating - thisCarRating) on the 1-10 scale.
+export function catchUpMultiplier(gap: number): number {
+  return 1 + Math.max(0, Math.min(0.6, gap * 0.18));
+}
+
+export type OffseasonDecayOptions = {
+  // 0 (stable rules) .. 1 (major regulation shakeup): more shakeup, more decay
+  // and reshuffle of the development order.
+  regulationShakeup?: number;
+  // 1-100 org quality (facilities/technical staff): high quality resists decay.
+  facilityStaffQuality?: number;
+  // Budget health 0 (broke) .. 1 (rich): low budget increases decay.
+  budgetHealth?: number;
+  // How well this team adapted to a regulation shakeup this offseason:
+  // -1 = missed the concept (extra decay), +1 = nailed it (recovers/gains).
+  // Only meaningful when regulationShakeup > 0; it reshuffles the order so a
+  // dominant team is not guaranteed to stay ahead through a rules reset.
+  regulationAdaptation?: number;
+};
+
+// Apply offseason maintenance decay to a set of car ratings. Only performance
+// above a floor erodes, and only the amount above ~5.5 (a car does not rot to
+// nothing). Facilities/staff and budget reduce decay; regulation shakeups add to
+// it. Deterministic — no randomness so rollovers replay identically.
+export function applyOffseasonDecay(
+  ratings: CarRatings,
+  opts: OffseasonDecayOptions = {},
+): CarRatings {
+  const shakeup = Math.max(0, Math.min(1, opts.regulationShakeup ?? 0));
+  const quality = Math.max(1, Math.min(100, opts.facilityStaffQuality ?? 50));
+  const budget = Math.max(0, Math.min(1, opts.budgetHealth ?? 0.5));
+
+  // Base yearly decay grows with regulation shakeup; strong facilities/staff and
+  // a healthy budget damp it. Stable years erode only a little (maintenance),
+  // major shakeups reset far more of the carried-over performance.
+  const resist = 0.6 + (quality / 100) * 0.5 + budget * 0.3; // ~0.6..1.4
+  const stableBase = 0.05;
+  const shakeupBase = shakeup * 0.75; // stable 0, major ~0.75
+  const floor = 5.0;
+
+  // A team that nails a new regulation concept recovers much of the reset (and
+  // can even gain); one that misses it loses more. Scaled by shakeup magnitude
+  // so it only matters in rules-change years.
+  const adapt = Math.max(-1, Math.min(1, opts.regulationAdaptation ?? 0));
+
+  const out = {} as CarRatings;
+  for (const k of Object.keys(ratings) as (keyof CarRatings)[]) {
+    const v = ratings[k];
+    const above = Math.max(0, v - floor);
+    // Regulation shakeups bite the strongest cars hardest (their advantage came
+    // from a mature package that the rules reset), so the order reshuffles;
+    // stable-year maintenance decay is gentle and roughly flat.
+    const maintenance = stableBase * (0.5 + above / 8);
+    const reset = shakeupBase * (above / 4) * (1 - adapt * 0.9);
+    const decay = (maintenance + reset) / Math.max(0.5, resist);
+    // Nailing the concept can add a little raw performance on top (bounded).
+    const adaptGain = adapt > 0 ? shakeup * adapt * 0.4 : 0;
+    out[k] = round1(clamp(v - decay + adaptGain, 1, 10));
+  }
+  return out;
 }
 
 // Compute next season's starting car baseline from this season's work.

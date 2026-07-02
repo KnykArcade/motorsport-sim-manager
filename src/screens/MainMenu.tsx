@@ -22,8 +22,8 @@ export function MainMenu() {
         <div className="text-sm font-semibold uppercase tracking-[0.3em] text-amber-500">Motorsport</div>
         <h1 className="mt-1 text-5xl font-black tracking-tight text-neutral-50">History Manager</h1>
         <p className="mt-3 max-w-md text-neutral-400">
-          A team principal simulation. Replay 1995 and build your own alternate history,
-          season after season.
+          A team principal simulation. Pick a season, replay it, and build your own
+          alternate history — season after season, series after series.
         </p>
       </div>
 
@@ -38,7 +38,7 @@ export function MainMenu() {
         <MenuButton onClick={() => navigate('/settings')}>Settings</MenuButton>
       </div>
 
-      <p className="mt-12 text-xs text-neutral-600">MVP · 1995 Formula 1 · Deterministic simulation</p>
+      <p className="mt-12 text-xs text-neutral-600">Multi-series motorsport management · Deterministic simulation</p>
     </div>
   );
 }
