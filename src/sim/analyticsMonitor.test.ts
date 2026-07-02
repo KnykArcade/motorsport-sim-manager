@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { buildAnalyticsMonitor, kindLabel, selectPanelMode } from './analyticsMonitor';
+import { buildAnalyticsMonitor, kindLabel, selectPanelMode, driverPanelCell } from './analyticsMonitor';
+import type { RecentDecision } from './analyticsMonitor';
 import type {
   AnalyticsRecommendation,
   LiveCarState,
@@ -8,6 +9,7 @@ import type {
   RecStatus,
   TireState,
 } from '../types/liveTypes';
+import { initialStint } from './strategyStint';
 
 type CarOverrides = Partial<Omit<LiveCarState, 'tire' | 'pit'>> & {
   tire?: Partial<TireState>;
@@ -61,6 +63,7 @@ function car(overrides: CarOverrides = {}): LiveCarState {
     strategyId: 's',
     instructionId: 'Balanced',
     paceMode: 'Balanced',
+    strategyStint: initialStint('Balanced'),
     liveRacePace: 6,
     tire: { compound: 'Dry', age: 15, wear: 30, stintTarget: 25 },
     pit: {
@@ -243,6 +246,67 @@ describe('selectPanelMode — permanent panel mode selection', () => {
 
   it('shows Cooldown when only a recent ignored decision remains', () => {
     expect(selectPanelMode([], 1)).toBe('cooldown');
+  });
+});
+
+describe('driverPanelCell — per-driver compact panel state', () => {
+  const recent = (driverId: string, cooldownLapsRemaining = 2): RecentDecision => ({
+    driverId,
+    kind: 'defend',
+    lap: 12,
+    issue: 'x',
+    cooldownLapsRemaining,
+  });
+
+  it('is Monitoring when a driver has no rec or cooldown', () => {
+    expect(driverPanelCell('d1', [], [], 20)).toEqual({ state: 'monitoring' });
+  });
+
+  it('is Decision when the driver has a pending recommendation', () => {
+    const cell = driverPanelCell('d1', [rec('pending')], [], 20);
+    expect(cell.state).toBe('decision');
+  });
+
+  it('is Active with laps remaining/total/review when a duration instruction runs', () => {
+    const active: AnalyticsRecommendation = {
+      ...rec('active'),
+      suggestedDurationLaps: 4,
+      appliedUntilLap: 26,
+      createdLap: 22,
+    };
+    const cell = driverPanelCell('d1', [active], [], 23);
+    expect(cell).toMatchObject({ state: 'active', remaining: 3, total: 4, reviewLap: 26 });
+  });
+
+  it('is Recent when the driver only has an ignored decision on cooldown', () => {
+    const cell = driverPanelCell('d1', [], [recent('d1')], 14);
+    expect(cell.state).toBe('recent');
+  });
+
+  it('prefers Decision over Active over Recent', () => {
+    const pending = rec('pending', 'd1:defend');
+    const active = { ...rec('active', 'd1:tyres'), appliedUntilLap: 30 };
+    const cell = driverPanelCell('d1', [active, pending], [recent('d1')], 20);
+    expect(cell.state).toBe('decision');
+  });
+
+  it("only reacts to the queried driver's recs (the other driver stays Monitoring)", () => {
+    const d2pending = { ...rec('pending', 'd2:defend'), driverId: 'd2' };
+    expect(driverPanelCell('d1', [d2pending], [], 20)).toEqual({ state: 'monitoring' });
+    expect(driverPanelCell('d2', [d2pending], [], 20).state).toBe('decision');
+  });
+});
+
+describe('buildAnalyticsMonitor — compact labels for both drivers', () => {
+  it('gives every driver a compact focus label and short next-trigger', () => {
+    const cars = [car({ driverId: 'd1' }), car({ driverId: 'd2', position: 8 })];
+    const m = buildAnalyticsMonitor(live(cars), ['d1', 'd2']);
+    expect(m.drivers).toHaveLength(2);
+    for (const d of m.drivers) {
+      expect(d.focusLabel).toBeTruthy();
+      expect(d.triggerShort).toBeTruthy();
+      expect(d.focusLabel).not.toContain('NaN');
+    }
   });
 });
 

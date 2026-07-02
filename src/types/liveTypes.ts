@@ -164,6 +164,31 @@ export type PaceMode =
   | 'Defend'
   | 'ProtectEngine';
 
+// What triggered the current strategy-mode change (drives the stint counter's
+// provenance; the counter itself is source-agnostic).
+export type StrategyModeSource =
+  | 'initial'
+  | 'manual'
+  | 'analytics'
+  | 'crew'
+  | 'auto'
+  | 'pit'
+  | 'safety_car'
+  | 'weather';
+
+// Consecutive-stint tracking for a car's strategy mode. `consecutiveLaps` counts
+// the laps the car has spent in `mode` *without interruption* — it resets to 1
+// whenever the mode changes (from any source) and is not a race-long total.
+export type StrategyStintState = {
+  mode: PaceMode;
+  previousMode: PaceMode | null;
+  startedLap: number; // lap on which the current mode began
+  consecutiveLaps: number; // laps in the current mode so far (>= 1)
+  source: StrategyModeSource;
+  lastChangedLap: number;
+  warned: boolean; // a long-stint analytics note has already been logged for this stint
+};
+
 // Coarse risk bands surfaced on the live-race UI.
 export type RiskLevel = 'Low' | 'Medium' | 'Elevated' | 'High' | 'Critical';
 
@@ -349,6 +374,8 @@ export type LiveCarState = {
 
   // Mutable race state.
   paceMode: PaceMode;
+  // Consecutive-lap counter for the current strategy mode (resets on any change).
+  strategyStint: StrategyStintState;
   // Current Live Race Pace (1-10), recomputed every lap from Base Race Pace and
   // the live modifiers (tyre, fuel, form, mode, track fit, weather, traffic,
   // damage, reliability concern, mistakes). Small boosts above the base allowed.

@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { detectBattleEvents } from './raceTickEngine';
 import type { LiveCarState } from '../types/liveTypes';
+import { initialStint } from './strategyStint';
 
 // Minimal running car; override the fields the battle detector reads
 // (driverId, teamId, isPlayer, grid, position, interval, pit.inPitThisLap).
@@ -32,6 +33,7 @@ function car(overrides: Partial<LiveCarState> = {}): LiveCarState {
     strategyId: 's',
     instructionId: 'Balanced',
     paceMode: 'Balanced',
+    strategyStint: initialStint('Balanced'),
     liveRacePace: 6,
     tire: { compound: 'Dry', age: 15, wear: 30, stintTarget: 25 },
     pit: {

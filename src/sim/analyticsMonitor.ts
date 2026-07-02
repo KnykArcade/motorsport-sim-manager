@@ -29,6 +29,48 @@ export function selectPanelMode(recs: AnalyticsRecommendation[], recentCount: nu
   return 'monitoring';
 }
 
+// Per-driver panel cell. The compact Data Analytics panel always shows a cell for
+// every running player driver; this picks what that driver's cell should display,
+// following the panel priority: a pending decision wins, then an active
+// instruction, then a recent (ignored) decision on cooldown, otherwise plain
+// monitoring. Kept pure so the panel component stays dumb and this is unit-tested.
+export type DriverPanelCell =
+  | { state: 'decision'; rec: AnalyticsRecommendation }
+  | {
+      state: 'active';
+      rec: AnalyticsRecommendation;
+      remaining: number | null; // laps left in the instruction
+      total: number | null; // total instruction duration in laps
+      reviewLap: number | null; // lap the instruction is next reviewed / ends
+    }
+  | { state: 'recent'; recent: RecentDecision }
+  | { state: 'monitoring' };
+
+export function driverPanelCell(
+  driverId: string,
+  recs: AnalyticsRecommendation[],
+  recent: RecentDecision[],
+  currentLap: number,
+): DriverPanelCell {
+  const pending = recs.find((r) => r.driverId === driverId && r.status === 'pending');
+  if (pending) return { state: 'decision', rec: pending };
+
+  const active = recs.find((r) => r.driverId === driverId && r.status === 'active');
+  if (active) {
+    const reviewLap = active.appliedUntilLap ?? null;
+    const remaining = reviewLap != null ? Math.max(0, reviewLap - currentLap) : null;
+    const total =
+      active.suggestedDurationLaps ??
+      (reviewLap != null ? Math.max(0, reviewLap - active.createdLap) : null);
+    return { state: 'active', rec: active, remaining, total, reviewLap };
+  }
+
+  const cool = recent.find((r) => r.driverId === driverId && r.cooldownLapsRemaining > 0);
+  if (cool) return { state: 'recent', recent: cool };
+
+  return { state: 'monitoring' };
+}
+
 // Status colours for monitoring tiles (see UI):
 //   green = safe/stable · yellow = watch · orange = warning · red = urgent
 //   blue = weather/track change · purple = strategy opportunity
@@ -45,8 +87,10 @@ export type DriverMonitor = {
   driverId: string;
   position: number | null;
   focus: string; // primary thing the analytics team is watching
+  focusLabel: string; // 1-3 word label of that focus (compact panel)
   strategyRead: string; // current plan read
   nextTrigger: string; // what would re-open a recommendation
+  triggerShort: string; // the single most relevant trigger clause (compact panel)
   tiles: MonitorTile[];
 };
 
@@ -243,6 +287,39 @@ function driverFocus(car: LiveCarState, state: LiveRaceState, behind: number): s
   return 'All systems stable. Current strategy remains on target.';
 }
 
+// A compact 1-3 word label of the driver's primary focus, mirroring the
+// priority order of `driverFocus` (used in the compact panel's monitoring cell).
+function driverFocusLabel(car: LiveCarState, state: LiveRaceState, behind: number): string {
+  const wear = num(car.tire.wear);
+  const stopsLeft = num(car.pit.plannedStops) - num(car.pit.stopsMade);
+  const ahead = num(car.interval);
+  if (state.safetyCar.active) return 'Safety car';
+  if (car.pit.window && stopsLeft > 0 && !car.pit.planCancelled) {
+    const lapsToOpen = car.pit.window.open - num(state.currentLap);
+    if (lapsToOpen > 0 && lapsToOpen <= 5) return 'Pit window';
+  }
+  if (wear >= 60 && stopsLeft > 0) return 'Tyre window';
+  if (num(car.fuel, 100) < 14) return 'Fuel margin';
+  if (car.reliabilityRiskLevel !== 'Low') return 'Reliability';
+  if (behind > 0 && behind < DIRTY_AIR_GAP) return 'Under pressure';
+  if ((car.position ?? 99) > 1 && ahead > 0 && ahead < DIRTY_AIR_GAP) return 'Gap ahead';
+  if (car.trafficStatus === 'InTraffic') return 'Traffic watch';
+  if (state.weather.changingSoon) return 'Weather watch';
+  return 'On plan';
+}
+
+// The single most relevant re-trigger clause (compact panel's "next trigger").
+function triggerShort(car: LiveCarState, behind: number): string {
+  const stopsLeft = num(car.pit.plannedStops) - num(car.pit.stopsMade);
+  const ahead = num(car.interval);
+  if ((behind > 0 && behind < DIRTY_AIR_GAP * 1.5) || ((car.position ?? 99) > 1 && ahead > 0 && ahead < DIRTY_AIR_GAP * 1.5))
+    return 'gap < 0.5s';
+  if (stopsLeft > 0) return 'tyre wear > 60%';
+  if (num(car.fuel, 100) < 25) return 'fuel below target';
+  if (car.reliabilityRiskLevel === 'Low') return 'reliability rises';
+  return 'conditions change';
+}
+
 function strategyRead(car: LiveCarState): string {
   const stopsLeft = num(car.pit.plannedStops) - num(car.pit.stopsMade);
   const plan = strategyTile(car).value;
@@ -288,8 +365,10 @@ export function buildAnalyticsMonitor(state: LiveRaceState, seatOrderIds: string
       driverId: car.driverId,
       position: car.position,
       focus: driverFocus(car, state, behind),
+      focusLabel: driverFocusLabel(car, state, behind),
       strategyRead: strategyRead(car),
       nextTrigger: nextTrigger(car, behind),
+      triggerShort: triggerShort(car, behind),
       tiles: [
         gapTile(car, behind),
         tyreTile(car),

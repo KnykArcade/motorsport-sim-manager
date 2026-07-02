@@ -13,6 +13,7 @@ import type {
   PaceMode,
   RecAction,
   RecPriority,
+  StrategyModeSource,
 } from '../types/liveTypes';
 import { createSeededRandom, deriveSeed } from './random';
 import { REF_LAP, type LiveRaceMeta } from './liveRaceEngine';
@@ -31,6 +32,7 @@ import {
 } from './liveRacePace';
 import { mechanicalLabel, crashLabel, tyreLabel, otherLabel } from './dnfModel';
 import { generateCandidates, cooldownFor, isModeAction, REC_COOLDOWN } from './analyticsEngine';
+import { advanceStint, startStint, longStintNote } from './strategyStint';
 import type { Track } from '../types/gameTypes';
 import type { StrategyModeSpec } from './liveRacePace';
 import type { Rng } from './random';
@@ -486,14 +488,34 @@ export function stepLiveRace(state: LiveRaceState, meta: LiveRaceMeta): LiveRace
 
   const retirements = orderedCars.filter((c) => c.status === 'DNF').length;
 
+  // --- Strategy-mode stint counters --------------------------------------
+  // Advance each running car's consecutive-lap counter for this completed lap.
+  // Mode changes made this lap by any path that did not itself reset the stint
+  // (an instruction completing back to Balanced, weather/safety-car effects, AI)
+  // are detected here and start a fresh stint. Retired/finished cars are skipped
+  // so their counter freezes. Long stints emit a single event-log note per stint.
+  const stintEvents: RaceEvent[] = [];
+  const carsWithStints = orderedCars.map((c) => {
+    if (!c.running) return c;
+    let stint = advanceStint(c.strategyStint, c.paceMode, nextLap);
+    if (c.isPlayer && !stint.warned) {
+      const note = longStintNote(stint.mode, stint.consecutiveLaps, name(c.driverId));
+      if (note) {
+        stintEvents.push({ lap: nextLap, text: note });
+        stint = { ...stint, warned: true };
+      }
+    }
+    return { ...c, strategyStint: stint };
+  });
+
   return {
     ...state,
     currentLap: nextLap,
     phase,
     weather,
     safetyCar: scResult.safetyCar,
-    cars: orderedCars,
-    events: [...state.events, ...lapEvents, ...recEvents],
+    cars: carsWithStints,
+    events: [...state.events, ...lapEvents, ...recEvents, ...stintEvents],
     pendingPrompt: null,
     promptCooldown: state.promptCooldown,
     firedEventIds,
@@ -561,16 +583,23 @@ export function cancelPlayerPitPlan(state: LiveRaceState, driverId: string): Liv
 
 // Change a player car's strategy mode mid-race. Takes effect on the next lap.
 // No-op for AI cars (their mode is chosen each lap) or retired/finished cars.
+// Resets the strategy-stint counter immediately so the card shows "1 lap" the
+// moment the new mode is selected (the counter then advances per completed lap).
 export function setPlayerPaceMode(
   state: LiveRaceState,
   driverId: string,
   mode: PaceMode,
+  source: StrategyModeSource = 'manual',
 ): LiveRaceState {
   let changed = false;
   const cars = state.cars.map((c) => {
     if (c.driverId !== driverId || !c.isPlayer || !c.running || c.paceMode === mode) return c;
     changed = true;
-    return { ...c, paceMode: mode };
+    return {
+      ...c,
+      paceMode: mode,
+      strategyStint: startStint(mode, c.paceMode, state.currentLap, source),
+    };
   });
   return changed ? { ...state, cars } : state;
 }
@@ -834,7 +863,8 @@ function applyRecAction(
 
   // --- Strategy-mode instruction ---
   if (eff.paceMode) {
-    let s = setPlayerPaceMode(state, rec.driverId, eff.paceMode);
+    const source: StrategyModeSource = action.type === 'LetCrewDecide' ? 'crew' : 'analytics';
+    let s = setPlayerPaceMode(state, rec.driverId, eff.paceMode, source);
     const duration = isModeAction(eff) ? rec.suggestedDurationLaps : undefined;
     if (duration && duration > 0) {
       // Becomes an active instruction for its approved duration.

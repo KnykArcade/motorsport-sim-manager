@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { aiLapDecision, assignPersonality } from './aiStrategyEngine';
 import type { LiveCarState, LiveRaceState } from '../types/liveTypes';
+import { initialStint } from './strategyStint';
 import type { Driver, Track } from '../types/gameTypes';
 
 function car(overrides: Partial<LiveCarState> = {}): LiveCarState {
@@ -31,6 +32,7 @@ function car(overrides: Partial<LiveCarState> = {}): LiveCarState {
     strategyId: 's',
     instructionId: 'Balanced',
     paceMode: 'Balanced',
+    strategyStint: initialStint('Balanced'),
     liveRacePace: 6,
     tire: { compound: 'Dry', age: 15, wear: 30, stintTarget: 25 },
     pit: {

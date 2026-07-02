@@ -5,8 +5,9 @@
 
 import type { LiveCarState, PaceMode } from '../../types/liveTypes';
 import { SELECTABLE_MODES, modeSpec } from '../../sim/liveRacePace';
-import { DeltaTag, Gauge, RiskChip } from './dashboardUi';
-import { fmtLap, ordinal, tyreLetter } from './dashboardFormat';
+import { DeltaTag, Gauge } from './dashboardUi';
+import { fmtLap, ordinal, tyreLetter, RISK_STYLE } from './dashboardFormat';
+import type { RiskLevel } from '../../types/liveTypes';
 
 const PACE_LABEL: Record<PaceMode, string> = {
   Conservative: 'Cons',
@@ -63,7 +64,7 @@ export function PitWallCard({
 
   return (
     <div
-      className={`rounded-lg border bg-[#111725] p-2.5 ${
+      className={`rounded-lg border bg-[#111725] p-2 ${
         highRisk
           ? 'border-orange-500/60 shadow-[0_0_0_1px_rgba(249,115,22,0.25)]'
           : 'border-slate-700/60'
@@ -71,13 +72,10 @@ export function PitWallCard({
       style={{ borderLeft: `3px solid ${teamColor}` }}
     >
       {/* Header */}
-      <div className="flex items-start justify-between">
-        <div className="min-w-0">
-          <div className="truncate text-sm font-bold text-slate-100">{name}</div>
-          <div className="text-[10px] text-slate-500">{car.statusMessage}</div>
-        </div>
-        <div className="text-right">
-          <span className="text-lg font-bold tabular-nums text-slate-100">
+      <div className="flex items-center justify-between gap-2">
+        <div className="min-w-0 truncate text-sm font-bold text-slate-100">{name}</div>
+        <div className="shrink-0 text-right">
+          <span className="text-base font-bold tabular-nums text-slate-100">
             {car.pit.inPitThisLap ? 'PIT' : ordinal(car.position)}
           </span>
           <DeltaTag grid={car.grid} position={car.position} className="ml-1 text-[11px]" />
@@ -85,21 +83,21 @@ export function PitWallCard({
       </div>
 
       {/* Key telemetry row */}
-      <div className="mt-2 grid grid-cols-4 gap-1 text-center">
+      <div className="mt-0.5 grid grid-cols-4 gap-1 text-center">
         <Metric label="Gap Ldr" value={car.position === 1 ? 'LEAD' : `+${car.gapToLeader.toFixed(1)}`} />
         <Metric label="Last Lap" value={car.lastLapTime > 0 ? fmtLap(car.lastLapTime) : '—'} />
         <Metric label="Pace" value={car.liveRacePace.toFixed(1)} accent />
         <Metric label={`Tyre ${tyre.letter}`} value={`${life}%`} />
       </div>
 
-      {/* Large risk chips */}
-      <div className="mt-2 grid grid-cols-2 gap-1.5">
-        <RiskChip kind="R" level={car.reliabilityRiskLevel} />
-        <RiskChip kind="C" level={car.crashRiskLevel} />
+      {/* Risk row (single-line compact chips) */}
+      <div className="mt-0.5 grid grid-cols-2 gap-1.5">
+        <RiskInline kind="R" level={car.reliabilityRiskLevel} />
+        <RiskInline kind="C" level={car.crashRiskLevel} />
       </div>
 
-      {/* Fuel + component health */}
-      <div className="mt-2 space-y-1">
+      {/* Fuel + component health (two columns to keep the card compact) */}
+      <div className="mt-0.5 grid grid-cols-2 gap-x-2 gap-y-0.5">
         <Gauge label="Fuel" value={car.fuel} tone="fuel" />
         <Gauge label="Engine" value={car.engineHealth} tone="health" />
         <Gauge label="Gearbox" value={car.gearboxHealth} tone="health" />
@@ -107,15 +105,15 @@ export function PitWallCard({
       </div>
 
       {(car.damaged || car.reliabilityIssue) && (
-        <p className="mt-1.5 text-[11px] font-medium text-amber-300">
+        <p className="mt-1 text-[11px] font-medium text-amber-300">
           ⚠ {car.reliabilityIssue ? car.reliabilityIssue.label : 'Car damaged'}
         </p>
       )}
 
       {/* Strategy mode buttons */}
       {!finished && car.running && (
-        <div className="mt-2">
-          <div className="mb-1 flex items-center justify-between">
+        <div className="mt-1.5">
+          <div className="mb-0.5 flex items-center justify-between">
             <span className="text-[9px] uppercase tracking-wide text-slate-500">Strategy Mode</span>
             <button
               onClick={onPit}
@@ -127,21 +125,34 @@ export function PitWallCard({
               {car.pit.pitRequested ? 'BOXING…' : '🔧 PIT'}
             </button>
           </div>
-          <div className="grid grid-cols-3 gap-1">
-            {SELECTABLE_MODES.map((m) => (
-              <button
-                key={m}
-                onClick={() => onMode(m)}
-                title={modeSpec(m).blurb}
-                className={`rounded px-1 py-1 text-[10px] font-semibold ${
-                  car.paceMode === m
-                    ? 'bg-amber-500 text-neutral-950'
-                    : 'bg-slate-800 text-slate-300 hover:bg-slate-700'
-                }`}
-              >
-                {PACE_LABEL[m]}
-              </button>
-            ))}
+          <div className="grid grid-cols-6 gap-1">
+            {SELECTABLE_MODES.map((m) => {
+              const active = car.paceMode === m;
+              const laps = car.strategyStint.consecutiveLaps;
+              return (
+                <button
+                  key={m}
+                  onClick={() => onMode(m)}
+                  title={
+                    active
+                      ? `${modeSpec(m).blurb} — ${laps} consecutive lap${laps === 1 ? '' : 's'} in this mode`
+                      : modeSpec(m).blurb
+                  }
+                  className={`flex items-center justify-center gap-1 rounded px-1 py-0.5 text-[10px] font-semibold ${
+                    active
+                      ? 'bg-amber-500 text-neutral-950'
+                      : 'bg-slate-800 text-slate-300 hover:bg-slate-700'
+                  }`}
+                >
+                  {PACE_LABEL[m]}
+                  {active && (
+                    <span className="rounded bg-neutral-950/25 px-1 text-[9px] font-bold tabular-nums">
+                      {laps}L
+                    </span>
+                  )}
+                </button>
+              );
+            })}
           </div>
         </div>
       )}
@@ -151,9 +162,22 @@ export function PitWallCard({
 
 function Metric({ label, value, accent }: { label: string; value: string; accent?: boolean }) {
   return (
-    <div className="rounded bg-slate-800/50 px-1 py-1">
+    <div className="rounded bg-slate-800/50 px-1 py-0.5">
       <div className="truncate text-[9px] uppercase tracking-wide text-slate-500">{label}</div>
       <div className={`text-xs font-bold tabular-nums ${accent ? 'text-amber-300' : 'text-slate-100'}`}>{value}</div>
+    </div>
+  );
+}
+
+// Single-line reliability/crash risk chip (keeps the pit-wall card compact).
+function RiskInline({ kind, level }: { kind: 'R' | 'C'; level: RiskLevel }) {
+  const s = RISK_STYLE[level];
+  return (
+    <div className={`flex items-center justify-between rounded-md border px-2 py-0.5 ${s.chip}`}>
+      <span className="text-[9px] font-semibold uppercase tracking-wide opacity-80">
+        {kind === 'R' ? 'Reliability' : 'Crash'}
+      </span>
+      <span className="text-[11px] font-bold uppercase tracking-wide">{s.label}</span>
     </div>
   );
 }

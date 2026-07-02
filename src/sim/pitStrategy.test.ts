@@ -9,6 +9,7 @@ import {
 import { orderCardsBySeat } from './liveRaceCardOrder';
 import type { LiveRaceMeta } from './liveRaceEngine';
 import type { LiveCarState, LiveRaceState } from '../types/liveTypes';
+import { initialStint } from './strategyStint';
 import type { Track } from '../types/gameTypes';
 
 // A running player car with sensible defaults; override the fields under test.
@@ -45,6 +46,7 @@ function car(overrides: CarOverrides = {}): LiveCarState {
     strategyId: 's',
     instructionId: 'Balanced',
     paceMode: 'Balanced',
+    strategyStint: initialStint('Balanced'),
     liveRacePace: 6,
     tire: { compound: 'Dry', age: 15, wear: 30, stintTarget: 25 },
     pit: {
