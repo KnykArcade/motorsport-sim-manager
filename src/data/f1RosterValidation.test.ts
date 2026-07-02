@@ -82,6 +82,21 @@ describe('F1 roster validation', () => {
         }
       });
 
+      it('every team.driverIds entry has a driver whose teamId matches that team', () => {
+        const driverById = new Map(bundle!.drivers.map((d) => [d.id, d]));
+        for (const team of bundle!.teams) {
+          for (const did of team.driverIds) {
+            const driver = driverById.get(did);
+            expect(driver, `${team.id} references unknown driver ${did}`).toBeDefined();
+            if (!driver) continue;
+            expect(
+              driver.teamId,
+              `${team.id} lists ${driver.name} (${did}) but driver.teamId is ${driver.teamId}`
+            ).toBe(team.id);
+          }
+        }
+      });
+
       it('no duplicate driver IDs within the season driver list', () => {
         const ids = bundle!.drivers.map((d) => d.id);
         const unique = new Set(ids);

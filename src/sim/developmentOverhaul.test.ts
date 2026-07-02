@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 
-import type { CarRatings, DevelopmentProject } from '../types/gameTypes';
+import type { Car, CarRatings, DevelopmentProject } from '../types/gameTypes';
 import {
   applyDevelopmentProgress,
   computeAdjustedDuration,
@@ -28,6 +28,16 @@ const flat = (v: number): CarRatings => ({
   mechanicalGrip: v,
   reliability: v,
   pitCrewOperations: v,
+});
+
+const makeCar = (overrides: Partial<Car> = {}): Car => ({
+  id: 'c1',
+  teamId: 't1',
+  seasonYear: 2024,
+  ratings: flat(5),
+  condition: 100,
+  developmentLevel: flat(0),
+  ...overrides,
 });
 
 const makeProject = (overrides: Partial<DevelopmentProject> = {}): DevelopmentProject => ({
@@ -247,7 +257,7 @@ describe('CATEGORY_FACILITY_MAP — every category has facility mappings', () =>
 describe('applyDevelopmentProgress — outcome-based resolution', () => {
   it('progresses incomplete projects without resolving them', () => {
     const project = makeProject({ progressRaces: 0, durationRaces: 3, adjustedDurationRaces: 3 });
-    const result = applyDevelopmentProgress([project], { id: 'c1', teamId: 't1', ratings: flat(5), developmentLevel: flat(0) } as any, 'seed', 1);
+    const result = applyDevelopmentProgress([project], makeCar(), 'seed', 1);
     expect(result.active).toHaveLength(1);
     expect(result.active[0].progressRaces).toBe(1);
     expect(result.completed).toHaveLength(0);
@@ -255,7 +265,7 @@ describe('applyDevelopmentProgress — outcome-based resolution', () => {
 
   it('resolves completed projects with an outcome result', () => {
     const project = makeProject({ progressRaces: 2, durationRaces: 3, adjustedDurationRaces: 3 });
-    const result = applyDevelopmentProgress([project], { id: 'c1', teamId: 't1', ratings: flat(5), developmentLevel: flat(0) } as any, 'seed', 1);
+    const result = applyDevelopmentProgress([project], makeCar(), 'seed', 1);
     expect(result.active).toHaveLength(0);
     expect(result.completed).toHaveLength(1);
     expect(result.completed[0].outcomeResult).toBeDefined();
@@ -264,7 +274,7 @@ describe('applyDevelopmentProgress — outcome-based resolution', () => {
 
   it('applies car rating deltas for successful outcomes', () => {
     const project = makeProject({ progressRaces: 2, durationRaces: 3, adjustedDurationRaces: 3, currentSeasonEffects: { enginePower: 1 } });
-    const result = applyDevelopmentProgress([project], { id: 'c1', teamId: 't1', ratings: flat(5), developmentLevel: flat(0) } as any, 'seed', 1);
+    const result = applyDevelopmentProgress([project], makeCar(), 'seed', 1);
     // The delta should be non-zero for any outcome except Failed
     if (result.completed[0].outcomeResult!.outcome !== 'Failed') {
       expect(Object.keys(result.carRatingDeltas).length).toBeGreaterThan(0);
@@ -273,14 +283,14 @@ describe('applyDevelopmentProgress — outcome-based resolution', () => {
 
   it('generates descriptive messages', () => {
     const project = makeProject({ progressRaces: 2, durationRaces: 3, adjustedDurationRaces: 3 });
-    const result = applyDevelopmentProgress([project], { id: 'c1', teamId: 't1', ratings: flat(5), developmentLevel: flat(0) } as any, 'seed', 1);
+    const result = applyDevelopmentProgress([project], makeCar(), 'seed', 1);
     expect(result.messages).toHaveLength(1);
     expect(result.messages[0]).toContain('Test Project');
   });
 
   it('uses adjustedDurationRaces when set', () => {
     const project = makeProject({ progressRaces: 1, durationRaces: 6, adjustedDurationRaces: 2 });
-    const result = applyDevelopmentProgress([project], { id: 'c1', teamId: 't1', ratings: flat(5), developmentLevel: flat(0) } as any, 'seed', 1);
+    const result = applyDevelopmentProgress([project], makeCar(), 'seed', 1);
     expect(result.active).toHaveLength(0);
     expect(result.completed).toHaveLength(1);
   });

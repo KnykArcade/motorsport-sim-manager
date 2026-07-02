@@ -312,6 +312,100 @@ describe('player race-seat signing', () => {
       expect(check.allowed).toBe(true);
     }
   });
+
+  it('validateRaceSeatSigning blocks when budget is insufficient', () => {
+    const bundle = getSeasonBundle(2016, 'F1')!;
+    const redbull = bundle.teams.find((t) => t.name.includes('Red Bull'));
+    if (!redbull) return;
+
+    let state = makeGameState(2016, redbull.id);
+    const active = activeDriversForTeam(state, redbull.id).length;
+    if (active >= 2) return;
+
+    // Drain the team budget to 0.
+    state = {
+      ...state,
+      teams: state.teams.map((t) =>
+        t.id === redbull.id ? { ...t, budget: 0 } : t,
+      ),
+    };
+
+    const market = careerMarketBundle(state);
+    const candidate = market.drivers.find((d) => d.buyoutCost > 0);
+    if (!candidate) return;
+
+    const result = validateRaceSeatSigning(state, candidate.id);
+    expect(result.valid).toBe(false);
+    expect(result.reason).toContain('Insufficient budget');
+  });
+
+  it('signRaceDriver deducts buyout cost from team budget', () => {
+    const bundle = getSeasonBundle(2016, 'F1')!;
+    const redbull = bundle.teams.find((t) => t.name.includes('Red Bull'));
+    if (!redbull) return;
+
+    let state = makeGameState(2016, redbull.id);
+    const active = activeDriversForTeam(state, redbull.id).length;
+    if (active >= 2) return;
+
+    const market = careerMarketBundle(state);
+    const candidate = market.drivers[0];
+    if (!candidate) return;
+
+    const budgetBefore = state.teams.find((t) => t.id === redbull.id)!.budget;
+    state = signRaceDriver(state, candidate.id);
+    const budgetAfter = state.teams.find((t) => t.id === redbull.id)!.budget;
+
+    // Budget should have decreased by the buyout cost (in raw dollars).
+    expect(budgetAfter).toBeLessThan(budgetBefore);
+  });
+
+  it('signRaceDriver records a finance transaction', () => {
+    const bundle = getSeasonBundle(2016, 'F1')!;
+    const redbull = bundle.teams.find((t) => t.name.includes('Red Bull'));
+    if (!redbull) return;
+
+    let state = makeGameState(2016, redbull.id);
+    const active = activeDriversForTeam(state, redbull.id).length;
+    if (active >= 2) return;
+
+    const market = careerMarketBundle(state);
+    const candidate = market.drivers[0];
+    if (!candidate) return;
+
+    const financeBefore = state.finance ?? [];
+    state = signRaceDriver(state, candidate.id);
+    const financeAfter = state.finance ?? [];
+
+    expect(financeAfter.length).toBeGreaterThan(financeBefore.length);
+
+    const txn = financeAfter[financeAfter.length - 1];
+    expect(txn.category).toBe('Driver Signing');
+    expect(txn.amount).toBeLessThan(0);
+    expect(txn.label).toContain(candidate.name);
+  });
+
+  it('signRaceDriver marks the driver unavailable (signedMarketIds)', () => {
+    const bundle = getSeasonBundle(2016, 'F1')!;
+    const redbull = bundle.teams.find((t) => t.name.includes('Red Bull'));
+    if (!redbull) return;
+
+    let state = makeGameState(2016, redbull.id);
+    const active = activeDriversForTeam(state, redbull.id).length;
+    if (active >= 2) return;
+
+    const market = careerMarketBundle(state);
+    const candidate = market.drivers[0];
+    if (!candidate) return;
+
+    state = signRaceDriver(state, candidate.id);
+    expect((state.signedMarketIds ?? []).includes(candidate.id)).toBe(true);
+
+    // Signing the same driver again should be rejected (either because
+    // the team now has 2 active drivers or because the driver is already signed).
+    const validation = validateRaceSeatSigning(state, candidate.id);
+    expect(validation.valid).toBe(false);
+  });
 });
 
 describe('IndyCar roster enforcement is not affected', () => {

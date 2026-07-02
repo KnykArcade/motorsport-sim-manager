@@ -50,6 +50,7 @@ const EMPTY_BY_CATEGORY = (): Record<FinanceCategory, number> => ({
   Development: 0,
   Scouting: 0,
   Repairs: 0,
+  Operations: 0,
 });
 
 export function summarize(transactions: FinanceTransaction[], season?: number): FinanceSummary {
