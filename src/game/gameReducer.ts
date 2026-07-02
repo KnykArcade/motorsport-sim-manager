@@ -9,7 +9,7 @@ import { developmentProjectsById } from '../data/development/developmentProjects
 import { qualifyingFormatFor, simulateQualifying } from '../sim/qualifyingEngine';
 import { simulateRace } from '../sim/raceEngine';
 import { buildConstructorStandings, buildDriverStandings } from '../sim/standingsEngine';
-import { applyDevelopmentProgress, raceOpsDevelopmentBonus } from '../sim/developmentEngine';
+import { applyDevelopmentProgress, raceOpsDevelopmentBonus, computeAdjustedDuration, RUSH_COST_MULTIPLIER } from '../sim/developmentEngine';
 import { updateMorale } from '../sim/moraleEngine';
 import { generateRaceNews } from '../sim/newsEngine';
 import { aiQualifyingDecision } from './ai';
@@ -41,6 +41,8 @@ import {
   facilityDevelopmentSuccessBonus,
   facilityRepairCostReduction,
   orderUpgrade,
+  developmentSlots,
+  relevantFacilityLevel,
 } from '../sim/facilityEngine';
 import {
   availableEngineOffers,
@@ -101,7 +103,8 @@ export type GameAction =
       breakdowns: Record<string, ScoreBreakdown>;
       teamOrders?: TeamOrderDecision[];
     }
-  | { type: 'START_DEVELOPMENT'; projectId: string }
+  | { type: 'START_DEVELOPMENT'; projectId: string; rushed?: boolean }
+  | { type: 'RUSH_DEVELOPMENT'; projectId: string }
   | { type: 'SET_CAR_SETUP'; driverId: string; setup: CarSetup }
   | {
       type: 'RUN_PRACTICE_SESSION';
@@ -383,7 +386,12 @@ export function gameReducer(state: GameState | null, action: GameAction): GameSt
 
     case 'START_DEVELOPMENT': {
       if (!state) return state;
-      return startDevelopment(state, action.projectId);
+      return startDevelopment(state, action.projectId, action.rushed ?? false);
+    }
+
+    case 'RUSH_DEVELOPMENT': {
+      if (!state) return state;
+      return rushDevelopment(state, action.projectId);
     }
 
     case 'SET_CAR_SETUP': {
@@ -1143,20 +1151,43 @@ function applyRaceResults(
   };
 }
 
-function startDevelopment(state: GameState, projectId: string): GameState {
+function startDevelopment(state: GameState, projectId: string, rushed: boolean): GameState {
   const template = developmentProjectsById[projectId];
   if (!template) return state;
   const team = state.teams.find((t) => t.id === state.selectedTeamId);
-  if (!team || team.budget < template.cost) return state;
+  if (!team) return state;
+
+  // Check development slots (facility-based).
+  const slots = developmentSlots(state.facilities);
+  if (state.activeDevelopmentProjects.length >= slots) return state;
+
+  // Compute facility level for this project category.
+  const facLevel = relevantFacilityLevel(state.facilities, template.category);
+
+  // Compute adjusted duration based on facility level, project size, and rush.
+  const projectSize = template.projectSize ?? 'Medium';
+  const adjustedDuration = computeAdjustedDuration(
+    template.durationRaces,
+    facLevel,
+    projectSize,
+    rushed,
+  );
+
+  // Compute cost (rush increases cost by 1.5x).
+  const cost = rushed ? Math.round(template.cost * RUSH_COST_MULTIPLIER()) : template.cost;
+  if (team.budget < cost) return state;
 
   const instance: DevelopmentProject = {
     ...template,
     id: `${template.id}-${Date.now()}`,
     progressRaces: 0,
+    rushed,
+    facilityLevelAtStart: facLevel,
+    adjustedDurationRaces: adjustedDuration,
   };
 
   const teams = state.teams.map((t) =>
-    t.id === team.id ? { ...t, budget: t.budget - template.cost } : t,
+    t.id === team.id ? { ...t, budget: t.budget - cost } : t,
   );
 
   return {
@@ -1164,9 +1195,54 @@ function startDevelopment(state: GameState, projectId: string): GameState {
     teams,
     finance: [
       ...(state.finance ?? []),
-      makeTransaction(state.seasonYear, 'Development', template.name, -template.cost),
+      makeTransaction(state.seasonYear, 'Development', `${template.name}${rushed ? ' (Rushed)' : ''}`, -cost),
     ],
     activeDevelopmentProjects: [...state.activeDevelopmentProjects, instance],
+  };
+}
+
+function rushDevelopment(state: GameState, projectId: string): GameState {
+  const project = state.activeDevelopmentProjects.find((p) => p.id === projectId);
+  if (!project || project.rushed) return state;
+
+  const team = state.teams.find((t) => t.id === state.selectedTeamId);
+  if (!team) return state;
+
+  // Rush cost: 50% of original project cost.
+  const rushCost = Math.round(project.cost * 0.5);
+  if (team.budget < rushCost) return state;
+
+  const facLevel = project.facilityLevelAtStart ?? 3;
+  const projectSize = project.projectSize ?? 'Medium';
+  const newDuration = computeAdjustedDuration(
+    project.durationRaces,
+    facLevel,
+    projectSize,
+    true,
+  );
+
+  const teams = state.teams.map((t) =>
+    t.id === team.id ? { ...t, budget: t.budget - rushCost } : t,
+  );
+
+  const activeDevelopmentProjects = state.activeDevelopmentProjects.map((p) =>
+    p.id === projectId
+      ? {
+          ...p,
+          rushed: true,
+          adjustedDurationRaces: newDuration,
+        }
+      : p,
+  );
+
+  return {
+    ...state,
+    teams,
+    finance: [
+      ...(state.finance ?? []),
+      makeTransaction(state.seasonYear, 'Development', `${project.name} (Rush Fee)`, -rushCost),
+    ],
+    activeDevelopmentProjects,
   };
 }
 
