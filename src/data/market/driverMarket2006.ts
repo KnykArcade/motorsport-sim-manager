@@ -98,7 +98,7 @@ export const driverMarket2006: MarketDriver[] = [
   },
   {
     id: 'mkt-2006-marc-gene',
-    name: 'Marc Gené',
+    name: 'Marc Gene',
     age: 32,
     nationality: 'ESP',
     context: 'F1 Test/Reserve',
@@ -397,7 +397,7 @@ export const driverMarket2006: MarketDriver[] = [
   },
   {
     id: 'mkt-2006-sebastien-bourdais',
-    name: 'Sébastien Bourdais',
+    name: 'Sebastien Bourdais',
     age: 27,
     nationality: 'FRA',
     context: 'Champ Car',

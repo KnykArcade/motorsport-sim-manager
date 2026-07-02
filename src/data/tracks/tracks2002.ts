@@ -270,7 +270,7 @@ export const tracks2002: Track[] = [
   },
   {
     id: 'nurburgring-2002',
-    name: 'Nürburgring',
+    name: 'Nurburgring',
     gpName: 'European Grand Prix',
     country: 'Germany',
     archetype: 'Technical mid-speed circuit with weather risk',
@@ -299,7 +299,7 @@ export const tracks2002: Track[] = [
       mechanicalDemand: 7.0,
       riskDemand: 5.0,
     },
-    ratingNotes: 'Nürburgring rewards balanced aero, traction, and race execution; safety car and weather uncertainty can alter strategy.',
+    ratingNotes: 'Nurburgring rewards balanced aero, traction, and race execution; safety car and weather uncertainty can alter strategy.',
   },
   {
     id: 'silverstone-2002',

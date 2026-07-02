@@ -282,7 +282,7 @@ export const youthProspects1990: YouthProspect[] = [
   },
   {
     id: 'yth-1990-sebastien-bourdais',
-    name: 'Sébastien Bourdais',
+    name: 'Sebastien Bourdais',
     age: 11,
     birthYear: 1979,
     nationality: 'France',
@@ -328,7 +328,7 @@ export const youthProspects1990: YouthProspect[] = [
   },
   {
     id: 'yth-1990-kimi-raikkonen',
-    name: 'Kimi Räikkönen',
+    name: 'Kimi Raikkonen',
     age: 10,
     birthYear: 1980,
     nationality: 'Finland',

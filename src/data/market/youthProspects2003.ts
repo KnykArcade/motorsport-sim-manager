@@ -29,7 +29,7 @@ export const youthProspects2003: YouthProspect[] = [
   },
   {
     id: 'yth-2003-nico-hulkenberg',
-    name: 'Nico Hülkenberg',
+    name: 'Nico Hulkenberg',
     age: 16,
     birthYear: 1987,
     nationality: 'GER',
@@ -52,7 +52,7 @@ export const youthProspects2003: YouthProspect[] = [
   },
   {
     id: 'yth-2003-sebastien-buemi',
-    name: 'Sébastien Buemi',
+    name: 'Sebastien Buemi',
     age: 15,
     birthYear: 1988,
     nationality: 'SUI',

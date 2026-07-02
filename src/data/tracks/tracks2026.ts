@@ -567,7 +567,7 @@ export const tracks2026: Track[] = [
   },
   {
     id: 'autodromo-hermanos-rodriguez-2026',
-    name: 'Autódromo Hermanos Rodríguez',
+    name: 'Autodromo Hermanos Rodriguez',
     gpName: 'Mexico City Grand Prix',
     country: 'Mexico',
     archetype: 'Altitude / power / traction',
@@ -601,7 +601,7 @@ export const tracks2026: Track[] = [
   {
     id: 'interlagos-2026',
     name: 'Interlagos',
-    gpName: 'São Paulo Grand Prix',
+    gpName: 'Sao Paulo Grand Prix',
     country: 'Brazil',
     archetype: 'Short mixed / elevation',
     attributes: {

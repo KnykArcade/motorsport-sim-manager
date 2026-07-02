@@ -35,7 +35,7 @@ export const drivers1998: Driver[] = [
   },
   {
     id: 'd-1998-mika-hakkinen',
-    name: 'Mika Häkkinen',
+    name: 'Mika Hakkinen',
     number: 2,
     nationality: 'Finland',
     age: 30,

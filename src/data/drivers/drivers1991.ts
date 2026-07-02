@@ -238,7 +238,7 @@ export const drivers1991: Driver[] = [
   },
   {
     id: 'd-1991-mika-hakkinen',
-    name: 'Mika Häkkinen',
+    name: 'Mika Hakkinen',
     number: 9,
     nationality: 'FIN',
     age: 23,
@@ -615,7 +615,7 @@ export const drivers1991: Driver[] = [
   },
   {
     id: 'd-1991-mauricio-gugelmin',
-    name: 'Maurício Gugelmin',
+    name: 'Mauricio Gugelmin',
     number: 22,
     nationality: 'BRA',
     age: 28,
@@ -702,7 +702,7 @@ export const drivers1991: Driver[] = [
   },
   {
     id: 'd-1991-erik-comas',
-    name: 'Érik Comas',
+    name: 'Erik Comas',
     number: 25,
     nationality: 'FRA',
     age: 28,

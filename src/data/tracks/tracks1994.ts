@@ -6,7 +6,7 @@ import type { Track } from '../../types/gameTypes';
 export const tracks1994: Track[] = [
   {
     id: 'autodromo-jose-carlos-pace-1994',
-    name: 'Autódromo José Carlos Pace',
+    name: 'Autodromo Jose Carlos Pace',
     gpName: 'Brazilian Grand Prix',
     country: 'Brazil',
     archetype: 'High-speed technical / bumpy',
@@ -402,7 +402,7 @@ export const tracks1994: Track[] = [
   },
   {
     id: 'autodromo-do-estoril-1994',
-    name: 'Autódromo do Estoril',
+    name: 'Autodromo do Estoril',
     gpName: 'Portuguese Grand Prix',
     country: 'Portugal',
     archetype: 'Aero rhythm circuit',

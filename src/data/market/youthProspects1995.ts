@@ -24,7 +24,7 @@ export const youthProspects1995: YouthProspect[] = [
     signingCost: 0.25,
     yearlyAcademyCost: 0.2,
     riskLevel: 'Medium',
-    suggestedPath: 'Formula Ford → German F3 → F3000',
+    suggestedPath: 'Formula Ford  German F3  F3000',
     notes: 'Advanced youth prospect; turns 18 during 1995.',
   },
   {
@@ -47,7 +47,7 @@ export const youthProspects1995: YouthProspect[] = [
     signingCost: 0.18,
     yearlyAcademyCost: 0.12,
     riskLevel: 'Medium',
-    suggestedPath: 'Karting → Formula Ford → F3',
+    suggestedPath: 'Karting  Formula Ford  F3',
     notes: 'Elite karting profile; long-term wonderkid.',
   },
   {
@@ -70,7 +70,7 @@ export const youthProspects1995: YouthProspect[] = [
     signingCost: 0.15,
     yearlyAcademyCost: 0.1,
     riskLevel: 'High',
-    suggestedPath: 'Karting → Formula Renault → F3/F3000',
+    suggestedPath: 'Karting  Formula Renault  F3/F3000',
     notes: 'Very raw, extremely high natural pace ceiling.',
   },
   {
@@ -93,7 +93,7 @@ export const youthProspects1995: YouthProspect[] = [
     signingCost: 0.12,
     yearlyAcademyCost: 0.08,
     riskLevel: 'Medium',
-    suggestedPath: 'Karting → Spanish juniors → F3000',
+    suggestedPath: 'Karting  Spanish juniors  F3000',
     notes: 'Elite long-term prospect, not near F1-ready.',
   },
   {
@@ -116,7 +116,7 @@ export const youthProspects1995: YouthProspect[] = [
     signingCost: 0.1,
     yearlyAcademyCost: 0.08,
     riskLevel: 'Medium',
-    suggestedPath: 'Karting → Formula Chevrolet → Europe',
+    suggestedPath: 'Karting  Formula Chevrolet  Europe',
     notes: 'High-upside Brazilian karting prospect.',
   },
   {
@@ -139,7 +139,7 @@ export const youthProspects1995: YouthProspect[] = [
     signingCost: 0.15,
     yearlyAcademyCost: 0.1,
     riskLevel: 'Medium',
-    suggestedPath: 'Karting → Formula Palmer/F3',
+    suggestedPath: 'Karting  Formula Palmer/F3',
     notes: 'Highly rated karting prospect; F1 ceiling uncertain.',
   },
   {
@@ -162,7 +162,7 @@ export const youthProspects1995: YouthProspect[] = [
     signingCost: 0.1,
     yearlyAcademyCost: 0.08,
     riskLevel: 'Medium',
-    suggestedPath: 'Karting → Formula Vauxhall/Renault',
+    suggestedPath: 'Karting  Formula Vauxhall/Renault',
     notes: 'Good long-term pace prospect.',
   },
   {
@@ -185,7 +185,7 @@ export const youthProspects1995: YouthProspect[] = [
     signingCost: 0.1,
     yearlyAcademyCost: 0.08,
     riskLevel: 'Medium',
-    suggestedPath: 'Karting → Italian juniors',
+    suggestedPath: 'Karting  Italian juniors',
     notes: 'Italian prospect with reserve-driver upside.',
   },
   {
@@ -208,7 +208,7 @@ export const youthProspects1995: YouthProspect[] = [
     signingCost: 0.1,
     yearlyAcademyCost: 0.08,
     riskLevel: 'Low',
-    suggestedPath: 'Karting → Formula Ford → Test Driver',
+    suggestedPath: 'Karting  Formula Ford  Test Driver',
     notes: 'Strong future test/reserve profile.',
   },
   {
@@ -231,7 +231,7 @@ export const youthProspects1995: YouthProspect[] = [
     signingCost: 0.1,
     yearlyAcademyCost: 0.08,
     riskLevel: 'Medium',
-    suggestedPath: 'Karting → Formula Vauxhall → F3000',
+    suggestedPath: 'Karting  Formula Vauxhall  F3000',
     notes: 'Tall driver profile; good long-term racecraft.',
   },
   {
@@ -254,7 +254,7 @@ export const youthProspects1995: YouthProspect[] = [
     signingCost: 0.12,
     yearlyAcademyCost: 0.08,
     riskLevel: 'Medium',
-    suggestedPath: 'Karting → French F3 → F3000',
+    suggestedPath: 'Karting  French F3  F3000',
     notes: 'High potential and strong future all-rounder.',
   },
   {
@@ -277,7 +277,7 @@ export const youthProspects1995: YouthProspect[] = [
     signingCost: 0.1,
     yearlyAcademyCost: 0.08,
     riskLevel: 'Medium',
-    suggestedPath: 'Karting → Formula Renault → F3',
+    suggestedPath: 'Karting  Formula Renault  F3',
     notes: 'Solid long-term Finnish prospect.',
   },
   {
@@ -300,7 +300,7 @@ export const youthProspects1995: YouthProspect[] = [
     signingCost: 0.1,
     yearlyAcademyCost: 0.08,
     riskLevel: 'Medium',
-    suggestedPath: 'Karting → German juniors → F3',
+    suggestedPath: 'Karting  German juniors  F3',
     notes: 'Excellent endurance/technical ceiling.',
   },
   {
@@ -323,7 +323,7 @@ export const youthProspects1995: YouthProspect[] = [
     signingCost: 0.1,
     yearlyAcademyCost: 0.07,
     riskLevel: 'Medium',
-    suggestedPath: 'Karting → German juniors',
+    suggestedPath: 'Karting  German juniors',
     notes: 'Long-term German prospect.',
   },
   {
@@ -346,7 +346,7 @@ export const youthProspects1995: YouthProspect[] = [
     signingCost: 0.05,
     yearlyAcademyCost: 0.04,
     riskLevel: 'High',
-    suggestedPath: 'Cadet karting → McLaren-style academy → junior formula',
+    suggestedPath: 'Cadet karting  McLaren-style academy  junior formula',
     notes: 'Ultra-young elite watchlist prospect; not full academy eligible yet.',
   },
   {
@@ -369,7 +369,7 @@ export const youthProspects1995: YouthProspect[] = [
     signingCost: 0.04,
     yearlyAcademyCost: 0.03,
     riskLevel: 'High',
-    suggestedPath: 'Karting → Italian juniors → F3',
+    suggestedPath: 'Karting  Italian juniors  F3',
     notes: 'Very young international karting watchlist.',
   },
   {
@@ -392,7 +392,7 @@ export const youthProspects1995: YouthProspect[] = [
     signingCost: 0.03,
     yearlyAcademyCost: 0.03,
     riskLevel: 'High',
-    suggestedPath: 'Karting → European junior formula',
+    suggestedPath: 'Karting  European junior formula',
     notes: 'Future star watchlist; too young for formal academy.',
   },
   {
@@ -415,7 +415,7 @@ export const youthProspects1995: YouthProspect[] = [
     signingCost: 0.03,
     yearlyAcademyCost: 0.03,
     riskLevel: 'High',
-    suggestedPath: 'Karting → South American/European juniors',
+    suggestedPath: 'Karting  South American/European juniors',
     notes: 'Name value and future feeder potential.',
   },
   {
@@ -438,7 +438,7 @@ export const youthProspects1995: YouthProspect[] = [
     signingCost: 0.02,
     yearlyAcademyCost: 0.02,
     riskLevel: 'High',
-    suggestedPath: 'Karting → Red Bull-style junior path → F3',
+    suggestedPath: 'Karting  Red Bull-style junior path  F3',
     notes: 'Extreme long-term watchlist prospect.',
   },
   {
@@ -461,7 +461,7 @@ export const youthProspects1995: YouthProspect[] = [
     signingCost: 0.02,
     yearlyAcademyCost: 0.02,
     riskLevel: 'High',
-    suggestedPath: 'Karting → German juniors',
+    suggestedPath: 'Karting  German juniors',
     notes: 'Very long-term youth watchlist.',
   },
 ];

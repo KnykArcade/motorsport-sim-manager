@@ -29,7 +29,7 @@ export const youthProspects2004: YouthProspect[] = [
   },
   {
     id: 'yth-2004-nico-hulkenberg',
-    name: 'Nico Hülkenberg',
+    name: 'Nico Hulkenberg',
     age: 17,
     birthYear: 1987,
     nationality: 'GER',
@@ -52,7 +52,7 @@ export const youthProspects2004: YouthProspect[] = [
   },
   {
     id: 'yth-2004-sebastien-buemi',
-    name: 'Sébastien Buemi',
+    name: 'Sebastien Buemi',
     age: 16,
     birthYear: 1988,
     nationality: 'SUI',
@@ -98,7 +98,7 @@ export const youthProspects2004: YouthProspect[] = [
   },
   {
     id: 'yth-2004-sergio-perez',
-    name: 'Sergio Pérez',
+    name: 'Sergio Perez',
     age: 14,
     birthYear: 1990,
     nationality: 'MEX',
@@ -236,7 +236,7 @@ export const youthProspects2004: YouthProspect[] = [
   },
   {
     id: 'yth-2004-jean-eric-vergne',
-    name: 'Jean-Éric Vergne',
+    name: 'Jean-Eric Vergne',
     age: 14,
     birthYear: 1990,
     nationality: 'FRA',
@@ -328,7 +328,7 @@ export const youthProspects2004: YouthProspect[] = [
   },
   {
     id: 'yth-2004-esteban-gutierrez',
-    name: 'Esteban Gutiérrez',
+    name: 'Esteban Gutierrez',
     age: 13,
     birthYear: 1991,
     nationality: 'MEX',

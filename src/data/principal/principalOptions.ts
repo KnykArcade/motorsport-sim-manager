@@ -43,7 +43,7 @@ export const BACKGROUNDS: PrincipalOption[] = [
   {
     id: 'former-driver',
     label: 'Former Driver',
-    description: 'A racer who moved to the pit wall — trusted in the garage.',
+    description: 'A racer who moved to the pit wall  trusted in the garage.',
     modifiers: { driverMorale: 0.08, driverDevelopment: 0.06, sponsorNegotiation: -0.04 },
   },
   {
@@ -67,7 +67,7 @@ export const BACKGROUNDS: PrincipalOption[] = [
   {
     id: 'team-founder',
     label: 'Team Founder',
-    description: 'Built the operation from nothing — a bit of everything.',
+    description: 'Built the operation from nothing  a bit of everything.',
     modifiers: { politicalInfluence: 0.06, budgetManagement: 0.04, driverMorale: 0.04, research: -0.03 },
   },
   {
@@ -165,7 +165,7 @@ export const MEDIA_PERSONALITIES: PrincipalOption[] = [
   { id: 'reserved', label: 'Reserved', description: 'Says little; keeps the team out of headlines.', modifiers: { mediaHandling: 0.04, marketing: -0.02 } },
   { id: 'diplomatic', label: 'Diplomatic', description: 'Smooth and measured with the press.', modifiers: { mediaHandling: 0.05, sponsorNegotiation: 0.02 } },
   { id: 'charismatic', label: 'Charismatic', description: 'A natural in front of a camera.', modifiers: { marketing: 0.05, commercialSkill: 0.03 } },
-  { id: 'outspoken', label: 'Outspoken', description: 'Generates attention — and the odd controversy.', modifiers: { marketing: 0.06, politicalInfluence: -0.03 } },
+  { id: 'outspoken', label: 'Outspoken', description: 'Generates attention  and the odd controversy.', modifiers: { marketing: 0.06, politicalInfluence: -0.03 } },
   { id: 'controversial', label: 'Controversial', description: 'Box-office, but a handful for the board.', modifiers: { marketing: 0.07, mediaHandling: -0.04 } },
 ];
 

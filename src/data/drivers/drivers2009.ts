@@ -122,7 +122,7 @@ export const drivers2009: Driver[] = [
   },
   {
     id: 'd-2009-kimi-raikkonen',
-    name: 'Kimi Räikkönen',
+    name: 'Kimi Raikkonen',
     number: 5,
     nationality: 'FIN',
     age: 29,
@@ -441,7 +441,7 @@ export const drivers2009: Driver[] = [
   },
   {
     id: 'd-2009-sebastien-buemi',
-    name: 'Sébastien Buemi',
+    name: 'Sebastien Buemi',
     number: 16,
     nationality: 'SUI',
     age: 20,
@@ -470,7 +470,7 @@ export const drivers2009: Driver[] = [
   },
   {
     id: 'd-2009-sebastien-bourdais',
-    name: 'Sébastien Bourdais',
+    name: 'Sebastien Bourdais',
     number: 17,
     nationality: 'FRA',
     age: 30,

@@ -270,7 +270,7 @@ export const tracks2013: Track[] = [
   },
   {
     id: 'nurburgring-gp-strecke-2013',
-    name: 'Nürburgring GP-Strecke',
+    name: 'Nurburgring GP-Strecke',
     gpName: 'German Grand Prix',
     country: 'Germany',
     archetype: 'Mixed Technical / Weather Risk',
@@ -600,7 +600,7 @@ export const tracks2013: Track[] = [
   },
   {
     id: 'autodromo-jose-carlos-pace-2013',
-    name: 'Autódromo José Carlos Pace',
+    name: 'Autodromo Jose Carlos Pace',
     gpName: 'Brazilian Grand Prix',
     country: 'Brazil',
     archetype: 'Short / Elevation / Weather',

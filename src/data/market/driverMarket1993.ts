@@ -282,7 +282,7 @@ export const driverMarket1993: MarketDriver[] = [
   },
   {
     id: 'mkt-1993-kenny-brack',
-    name: 'Kenny Bräck',
+    name: 'Kenny Brack',
     age: 27,
     nationality: 'SWE',
     context: 'Junior formula / Indy path',

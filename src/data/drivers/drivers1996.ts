@@ -118,7 +118,7 @@ export const drivers1996: Driver[] = [
   },
   {
     id: 'd-1996-mika-hakkinen',
-    name: 'Mika Häkkinen',
+    name: 'Mika Hakkinen',
     number: 5,
     nationality: 'FIN',
     teamId: 't-mclaren-mercedes',

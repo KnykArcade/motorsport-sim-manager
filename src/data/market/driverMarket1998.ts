@@ -259,7 +259,7 @@ export const driverMarket1998: MarketDriver[] = [
   },
   {
     id: 'mkt-1998-marc-gene',
-    name: 'Marc Gené',
+    name: 'Marc Gene',
     age: 24,
     nationality: 'Spain',
     context: 'F3000 / junior formula',
@@ -282,7 +282,7 @@ export const driverMarket1998: MarketDriver[] = [
   },
   {
     id: 'mkt-1998-stephane-sarrazin',
-    name: 'Stéphane Sarrazin',
+    name: 'Stephane Sarrazin',
     age: 23,
     nationality: 'France',
     context: 'F3000 / Prost orbit',
@@ -351,7 +351,7 @@ export const driverMarket1998: MarketDriver[] = [
   },
   {
     id: 'mkt-1998-jorg-muller',
-    name: 'Jörg Müller',
+    name: 'Jorg Muller',
     age: 29,
     nationality: 'Germany',
     context: 'F3000 / test driver',
@@ -466,7 +466,7 @@ export const driverMarket1998: MarketDriver[] = [
   },
   {
     id: 'mkt-1998-gaston-mazzacane',
-    name: 'Gastón Mazzacane',
+    name: 'Gaston Mazzacane',
     age: 23,
     nationality: 'Argentina',
     context: 'F3000',
@@ -489,7 +489,7 @@ export const driverMarket1998: MarketDriver[] = [
   },
   {
     id: 'mkt-1998-oriol-servia',
-    name: 'Oriol Servià',
+    name: 'Oriol Servia',
     age: 24,
     nationality: 'Spain',
     context: 'Indy Lights / junior formula',

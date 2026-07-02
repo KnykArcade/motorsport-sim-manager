@@ -39,7 +39,7 @@ export const tracks1993: Track[] = [
   },
   {
     id: 'autodromo-jose-carlos-pace-1993',
-    name: 'Autódromo José Carlos Pace',
+    name: 'Autodromo Jose Carlos Pace',
     gpName: 'Brazilian Grand Prix',
     country: 'Brazil',
     archetype: 'Rhythmic / Bumpy / Traction',
@@ -435,7 +435,7 @@ export const tracks1993: Track[] = [
   },
   {
     id: 'autodromo-do-estoril-1993',
-    name: 'Autódromo do Estoril',
+    name: 'Autodromo do Estoril',
     gpName: 'Portuguese Grand Prix',
     country: 'Portugal',
     archetype: 'Balanced / Flowing / Technical',

@@ -98,7 +98,7 @@ export const youthProspects2002: YouthProspect[] = [
   },
   {
     id: 'yth-2002-nico-hulkenberg',
-    name: 'Nico Hülkenberg',
+    name: 'Nico Hulkenberg',
     age: 15,
     birthYear: 1987,
     nationality: 'GER',
@@ -236,7 +236,7 @@ export const youthProspects2002: YouthProspect[] = [
   },
   {
     id: 'yth-2002-sergio-perez',
-    name: 'Sergio Pérez',
+    name: 'Sergio Perez',
     age: 12,
     birthYear: 1990,
     nationality: 'MEX',
@@ -443,7 +443,7 @@ export const youthProspects2002: YouthProspect[] = [
   },
   {
     id: 'yth-2002-esteban-gutierrez',
-    name: 'Esteban Gutiérrez',
+    name: 'Esteban Gutierrez',
     age: 11,
     birthYear: 1991,
     nationality: 'MEX',

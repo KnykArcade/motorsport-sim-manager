@@ -270,7 +270,7 @@ export const tracks2003: Track[] = [
   },
   {
     id: 'nurburgring-2003',
-    name: 'Nürburgring',
+    name: 'Nurburgring',
     gpName: 'European Grand Prix',
     country: 'Germany',
     archetype: 'Balanced technical European circuit',

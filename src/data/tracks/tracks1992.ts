@@ -39,7 +39,7 @@ export const tracks1992: Track[] = [
   },
   {
     id: 'autodromo-hermanos-rodriguez-1992',
-    name: 'Autódromo Hermanos Rodríguez',
+    name: 'Autodromo Hermanos Rodriguez',
     gpName: 'Mexican Grand Prix',
     country: 'Mexico',
     archetype: 'Bumpy / Technical / Traction',
@@ -72,7 +72,7 @@ export const tracks1992: Track[] = [
   },
   {
     id: 'autodromo-jose-carlos-pace-1992',
-    name: 'Autódromo José Carlos Pace',
+    name: 'Autodromo Jose Carlos Pace',
     gpName: 'Brazilian Grand Prix',
     country: 'Brazil',
     archetype: 'Rhythmic / Bumpy / Traction',
@@ -435,7 +435,7 @@ export const tracks1992: Track[] = [
   },
   {
     id: 'autodromo-do-estoril-1992',
-    name: 'Autódromo do Estoril',
+    name: 'Autodromo do Estoril',
     gpName: 'Portuguese Grand Prix',
     country: 'Portugal',
     archetype: 'Aero / Medium-High Speed / Tire Wear',

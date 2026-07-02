@@ -374,7 +374,7 @@ export const driverMarket1996: MarketDriver[] = [
   },
   {
     id: 'mkt-1996-marc-gene',
-    name: 'Marc Gené',
+    name: 'Marc Gene',
     age: 22,
     nationality: 'ESP',
     context: 'F3000 / junior ladder',

@@ -72,7 +72,7 @@ export const tracks1997: Track[] = [
   },
   {
     id: 'autodromo-oscar-alfredo-galvez-1997',
-    name: 'Autódromo Oscar Alfredo Gálvez',
+    name: 'Autodromo Oscar Alfredo Galvez',
     gpName: 'Argentine Grand Prix',
     country: 'Argentina',
     archetype: 'Balanced / Stop-Start',
@@ -468,7 +468,7 @@ export const tracks1997: Track[] = [
   },
   {
     id: 'nurburgring-1997',
-    name: 'Nürburgring',
+    name: 'Nurburgring',
     gpName: 'Luxembourg Grand Prix',
     country: 'Germany',
     archetype: 'Technical / Elevation / Balanced',
@@ -497,7 +497,7 @@ export const tracks1997: Track[] = [
       mechanicalDemand: 8.0,
       riskDemand: 6.0,
     },
-    ratingNotes: 'Held at Nürburgring under Luxembourg GP title.',
+    ratingNotes: 'Held at Nurburgring under Luxembourg GP title.',
   },
   {
     id: 'suzuka-1997',

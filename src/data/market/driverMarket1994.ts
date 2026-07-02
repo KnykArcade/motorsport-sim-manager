@@ -604,7 +604,7 @@ export const driverMarket1994: MarketDriver[] = [
   },
   {
     id: 'mkt-1994-patrick-lemarie',
-    name: 'Patrick Lemarié',
+    name: 'Patrick Lemarie',
     age: 26,
     nationality: 'France',
     context: 'F3000 / Test',

@@ -52,7 +52,7 @@ export const driverMarket2001: MarketDriver[] = [
   },
   {
     id: 'mkt-2001-marc-gene',
-    name: 'Marc Gené',
+    name: 'Marc Gene',
     age: 27,
     nationality: 'ESP',
     context: 'Williams test driver',
@@ -259,7 +259,7 @@ export const driverMarket2001: MarketDriver[] = [
   },
   {
     id: 'mkt-2001-sebastien-bourdais',
-    name: 'Sébastien Bourdais',
+    name: 'Sebastien Bourdais',
     age: 22,
     nationality: 'FRA',
     context: 'F3000 / junior formula',
@@ -351,7 +351,7 @@ export const driverMarket2001: MarketDriver[] = [
   },
   {
     id: 'mkt-2001-helio-castroneves',
-    name: 'Hélio Castroneves',
+    name: 'Helio Castroneves',
     age: 26,
     nationality: 'BRA',
     context: 'CART/Indy',
@@ -420,7 +420,7 @@ export const driverMarket2001: MarketDriver[] = [
   },
   {
     id: 'mkt-2001-andre-lotterer',
-    name: 'André Lotterer',
+    name: 'Andre Lotterer',
     age: 20,
     nationality: 'GER',
     context: 'Jaguar test/junior',
@@ -650,7 +650,7 @@ export const driverMarket2001: MarketDriver[] = [
   },
   {
     id: 'mkt-2001-stephane-sarrazin',
-    name: 'Stéphane Sarrazin',
+    name: 'Stephane Sarrazin',
     age: 26,
     nationality: 'FRA',
     context: 'Sports cars/testing',
@@ -673,7 +673,7 @@ export const driverMarket2001: MarketDriver[] = [
   },
   {
     id: 'mkt-2001-tomas-enge',
-    name: 'Tomáš Enge',
+    name: 'Tomas Enge',
     age: 25,
     nationality: 'CZE',
     context: 'F3000 / Prost reserve',

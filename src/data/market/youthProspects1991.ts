@@ -167,7 +167,7 @@ export const youthProspects1991: YouthProspect[] = [
   },
   {
     id: 'yth-1991-kimi-raikkonen',
-    name: 'Kimi Räikkönen',
+    name: 'Kimi Raikkonen',
     age: 12,
     birthYear: 1979,
     nationality: 'FIN',
