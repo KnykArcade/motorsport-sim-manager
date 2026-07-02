@@ -25,6 +25,7 @@ export function PitWallCard({
   finished,
   onMode,
   onPit,
+  className = '',
 }: {
   car: LiveCarState;
   name: string;
@@ -32,6 +33,7 @@ export function PitWallCard({
   finished: boolean;
   onMode: (mode: PaceMode) => void;
   onPit: () => void;
+  className?: string;
 }) {
   const finishedRace = car.status === 'Finished';
   const dnf = !car.running && !finishedRace;
@@ -47,7 +49,7 @@ export function PitWallCard({
 
   if (dnf) {
     return (
-      <div className="rounded-lg border border-red-500/40 bg-red-950/20 p-2.5">
+      <div className={`overflow-hidden rounded-lg border border-red-500/40 bg-red-950/20 p-2.5 ${className}`}>
         <div className="flex items-center justify-between">
           <span className="flex items-center gap-1.5 text-sm font-semibold text-slate-200">
             <span className="h-3 w-1 rounded-sm" style={{ backgroundColor: teamColor }} />
@@ -64,16 +66,26 @@ export function PitWallCard({
 
   return (
     <div
-      className={`rounded-lg border bg-[#111725] p-2 ${
+      className={`flex flex-col overflow-hidden rounded-lg border bg-[#111725] p-1.5 ${
         highRisk
           ? 'border-orange-500/60 shadow-[0_0_0_1px_rgba(249,115,22,0.25)]'
           : 'border-slate-700/60'
-      }`}
+      } ${className}`}
       style={{ borderLeft: `3px solid ${teamColor}` }}
     >
       {/* Header */}
       <div className="flex items-center justify-between gap-2">
-        <div className="min-w-0 truncate text-sm font-bold text-slate-100">{name}</div>
+        <div className="flex min-w-0 items-center gap-1.5">
+          <span className="shrink-0 truncate text-sm font-bold text-slate-100">{name}</span>
+          {(car.damaged || car.reliabilityIssue) && (
+            <span
+              title={car.reliabilityIssue ? car.reliabilityIssue.label : 'Car damaged'}
+              className="min-w-0 truncate rounded bg-amber-500/15 px-1 text-[9px] font-semibold text-amber-300"
+            >
+              ⚠ {car.reliabilityIssue ? car.reliabilityIssue.label : 'Damaged'}
+            </span>
+          )}
+        </div>
         <div className="shrink-0 text-right">
           <span className="text-base font-bold tabular-nums text-slate-100">
             {car.pit.inPitThisLap ? 'PIT' : ordinal(car.position)}
@@ -104,15 +116,9 @@ export function PitWallCard({
         <Gauge label="Brakes" value={car.brakeHealth} tone="health" />
       </div>
 
-      {(car.damaged || car.reliabilityIssue) && (
-        <p className="mt-1 text-[11px] font-medium text-amber-300">
-          ⚠ {car.reliabilityIssue ? car.reliabilityIssue.label : 'Car damaged'}
-        </p>
-      )}
-
       {/* Strategy mode buttons */}
       {!finished && car.running && (
-        <div className="mt-1.5">
+        <div className="mt-1">
           <div className="mb-0.5 flex items-center justify-between">
             <span className="text-[9px] uppercase tracking-wide text-slate-500">Strategy Mode</span>
             <button

@@ -99,7 +99,7 @@ export function RecommendationsPanel({
       {monitor.drivers.length === 0 ? (
         <p className="p-2 text-[10px] text-slate-500">No player cars running — monitoring paused.</p>
       ) : (
-        <div className="min-h-0 flex-1 space-y-1 overflow-y-auto p-1.5">
+        <div className="flex min-h-0 flex-1 flex-col gap-1 overflow-hidden p-1">
           {monitor.drivers.map((d) => (
             <DriverCell
               key={d.driverId}
@@ -115,16 +115,16 @@ export function RecommendationsPanel({
           ))}
 
           {grouped && (
-            <div className="grid grid-cols-2 gap-1 pt-0.5">
+            <div className="mt-auto grid shrink-0 grid-cols-2 gap-1 pt-0.5">
               <button
                 onClick={onAcceptAll}
-                className="rounded bg-emerald-600 py-1 text-[10px] font-bold text-white hover:bg-emerald-500"
+                className="rounded bg-emerald-600 py-0.5 text-[10px] font-bold text-white hover:bg-emerald-500"
               >
                 Accept All
               </button>
               <button
                 onClick={onIgnoreAll}
-                className="rounded bg-slate-800 py-1 text-[10px] font-bold text-slate-400 hover:bg-slate-700"
+                className="rounded bg-slate-800 py-0.5 text-[10px] font-bold text-slate-400 hover:bg-slate-700"
               >
                 Ignore All
               </button>
@@ -186,8 +186,44 @@ function DriverCell({
   const [modifying, setModifying] = useState(false);
   const rec = cell.state === 'decision' || cell.state === 'active' ? cell.rec : null;
 
+  // Double-decision: one ultra-compact block per driver (name + rec on a single
+  // line, then Accept / Ignore) so both fit the fixed panel with no scroll.
+  if (compact && cell.state === 'decision' && !modifying) {
+    return (
+      <div className={`rounded-md border p-1 ${CELL_BORDER.decision}`}>
+        <div className="flex items-baseline gap-1.5">
+          {driver.position != null && (
+            <span className="shrink-0 text-[10px] font-bold text-slate-400">P{driver.position}</span>
+          )}
+          <span className="shrink-0 text-[11px] font-bold text-slate-100">{name}</span>
+          <span className="min-w-0 flex-1 truncate text-[10px] text-slate-300">
+            — {cell.rec.recommendedAction}
+            {cell.rec.suggestedDuration ? ` ${cell.rec.suggestedDuration}` : ''}
+          </span>
+          <span className={`shrink-0 text-[9px] font-bold ${PRIORITY_TEXT[cell.rec.priority]}`}>
+            {cell.rec.confidence}%
+          </span>
+        </div>
+        <div className="mt-0.5 grid grid-cols-2 gap-1">
+          <button
+            onClick={() => onAccept(cell.rec)}
+            className="rounded bg-emerald-600 py-0.5 text-[10px] font-bold text-white hover:bg-emerald-500"
+          >
+            Accept
+          </button>
+          <button
+            onClick={() => onIgnore(cell.rec)}
+            className="rounded bg-slate-800 py-0.5 text-[10px] font-bold text-slate-400 hover:bg-slate-700"
+          >
+            Ignore
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className={`rounded-md border p-1.5 ${CELL_BORDER[cell.state]}`}>
+    <div className={`rounded-md border p-1 ${CELL_BORDER[cell.state]}`}>
       <div className="flex items-center justify-between gap-2">
         <span className="flex min-w-0 items-baseline gap-1.5">
           {driver.position != null && (
@@ -204,51 +240,45 @@ function DriverCell({
       </div>
 
       {cell.state === 'decision' && (
-        <div className="mt-1">
-          <p className={`text-[10px] leading-snug text-slate-300 ${compact ? 'line-clamp-1' : 'line-clamp-2'}`}>
-            {cell.rec.issue}
-          </p>
-          <p className="mt-0.5 text-[10px] font-medium text-slate-100">
+        <div className="mt-0.5">
+          {/* Dense one-line summary: recommendation + impact, clamped to a single
+              line in every state so the fixed-height panel never overflows. */}
+          <p className="text-[10px] font-medium text-slate-100 line-clamp-1">
             ▸ {cell.rec.recommendedAction}
             {cell.rec.suggestedDuration ? ` (${cell.rec.suggestedDuration})` : ''}
+            <span className="text-slate-400"> — {cell.rec.expectedImpact}</span>
           </p>
-          <p className="mt-0.5 text-[9px] text-slate-400 line-clamp-1">Impact: {cell.rec.expectedImpact}</p>
 
           {!modifying ? (
-            <>
-              <div className="mt-1.5 grid grid-cols-3 gap-1">
+            // Single-decision: all four controls on one compact row.
+            <div className="mt-1 grid grid-cols-4 gap-1">
                 <button
                   onClick={() => onAccept(cell.rec)}
-                  className="rounded bg-emerald-600 py-1 text-[10px] font-bold text-white hover:bg-emerald-500"
+                  className="rounded bg-emerald-600 py-0.5 text-[10px] font-bold text-white hover:bg-emerald-500"
                 >
                   Accept
                 </button>
                 <button
                   onClick={() => setModifying(true)}
-                  className="rounded bg-slate-700 py-1 text-[10px] font-bold text-slate-100 hover:bg-slate-600"
+                  className="rounded bg-slate-700 py-0.5 text-[10px] font-bold text-slate-100 hover:bg-slate-600"
                 >
                   Modify
                 </button>
                 <button
+                  onClick={() => onLetCrewDecide(cell.rec)}
+                  className="rounded border border-slate-700 py-0.5 text-[10px] font-semibold text-slate-300 hover:bg-slate-800"
+                >
+                  Crew
+                </button>
+                <button
                   onClick={() => onIgnore(cell.rec)}
-                  className="rounded bg-slate-800 py-1 text-[10px] font-bold text-slate-400 hover:bg-slate-700"
+                  className="rounded bg-slate-800 py-0.5 text-[10px] font-bold text-slate-400 hover:bg-slate-700"
                 >
                   Ignore
                 </button>
-              </div>
-              {/* In a double decision Accept All / Ignore All cover the crew shortcut. */}
-              {!compact && (
-                <button
-                  onClick={() => onLetCrewDecide(cell.rec)}
-                  className="mt-1 w-full rounded border border-slate-700 py-0.5 text-[10px] font-semibold text-slate-300 hover:bg-slate-800"
-                >
-                  Let Crew Decide
-                </button>
-              )}
-            </>
+            </div>
           ) : (
-            <div className="mt-1.5 space-y-1">
-              <div className="text-[8px] uppercase tracking-wide text-slate-500">Alternative actions</div>
+            <div className="mt-1 space-y-0.5">
               {[cell.rec.action, ...cell.rec.alternatives].map((a) => (
                 <button
                   key={a.type}
@@ -256,7 +286,7 @@ function DriverCell({
                     onModify(cell.rec, a);
                     setModifying(false);
                   }}
-                  className="w-full rounded bg-slate-800 px-2 py-1 text-left text-[10px] font-semibold text-slate-200 hover:bg-slate-700"
+                  className="w-full truncate rounded bg-slate-800 px-2 py-0.5 text-left text-[10px] font-semibold text-slate-200 hover:bg-slate-700"
                 >
                   {a.label}
                 </button>
@@ -273,8 +303,8 @@ function DriverCell({
       )}
 
       {cell.state === 'active' && (
-        <div className="mt-1 grid grid-cols-[1fr_auto] items-center gap-x-2 gap-y-0.5">
-          <p className="text-[10px] font-medium text-slate-100">
+        <div className="mt-0.5">
+          <p className="truncate text-[10px] font-medium text-slate-100">
             {cell.rec.appliedAction?.label ?? cell.rec.action.label}
             {cell.remaining != null && (
               <span className="text-emerald-300">
@@ -282,25 +312,20 @@ function DriverCell({
                 — {cell.remaining} lap{cell.remaining === 1 ? '' : 's'} left
               </span>
             )}
+            {cell.total != null && <span className="text-slate-500"> · {cell.total}L total</span>}
           </p>
-          {cell.total != null && (
-            <span className="text-[9px] text-slate-500">Duration {cell.total}L</span>
-          )}
-          {cell.reviewLap != null && (
-            <p className="text-[9px] text-slate-400">Next review Lap {cell.reviewLap}</p>
-          )}
-          <p className="col-span-2 truncate text-[9px] text-slate-500">Watching: {driver.focusLabel.toLowerCase()}</p>
+          <p className="truncate text-[9px] text-slate-500">
+            {cell.reviewLap != null && <>Review Lap {cell.reviewLap} · </>}
+            Watching: {driver.focusLabel.toLowerCase()}
+          </p>
         </div>
       )}
 
       {cell.state === 'recent' && (
-        <div className="mt-0.5 space-y-0.5">
-          <p className="text-[10px] text-slate-300">
-            Lap {cell.recent.lap} — {kindLabel(cell.recent.kind)} recommendation ignored.
-          </p>
-          <p className="text-[9px] text-slate-500">
-            Cooldown {cell.recent.cooldownLapsRemaining} lap
-            {cell.recent.cooldownLapsRemaining === 1 ? '' : 's'} · plan on target
+        <div className="mt-0.5">
+          <p className="truncate text-[10px] text-slate-300">
+            Lap {cell.recent.lap} — {kindLabel(cell.recent.kind)} ignored · cooldown{' '}
+            {cell.recent.cooldownLapsRemaining}L
           </p>
           <MonitorFootline driver={driver} />
         </div>

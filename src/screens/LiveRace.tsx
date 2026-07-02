@@ -313,10 +313,11 @@ export function LiveRace() {
           />
         </div>
 
-        {/* Right — fixed-height analytics panel (never grows with decision count)
-            over a driver-card stack anchored to the bottom so the cards line up
-            with the bottom dashboard row and never scroll off screen. */}
-        <div className="flex min-h-0 flex-col gap-2 overflow-hidden">
+        {/* Right — a fixed rail: a fixed-height Data Analytics slot on top of a
+            driver-card slot that fills the remaining space and splits it evenly
+            between the two cards. The analytics panel height never changes with
+            decision count, the cards never get pushed down, and nothing scrolls. */}
+        <div className="grid min-h-0 grid-rows-[auto_1fr] gap-2 overflow-hidden">
           {!finished && (
             <RecommendationsPanel
               recs={activeRecs}
@@ -330,10 +331,10 @@ export function LiveRace() {
               onLetCrewDecide={onLetCrewDecide}
               onAcceptAll={onAcceptAll}
               onIgnoreAll={onIgnoreAll}
-              className="h-[clamp(140px,24vh,172px)] shrink-0"
+              className="h-[clamp(150px,23vh,190px)]"
             />
           )}
-          <div className="flex min-h-0 flex-1 flex-col justify-end gap-2 overflow-hidden">
+          <div className="grid min-h-0 auto-rows-fr gap-2 overflow-hidden">
             {playerCars.length === 0 ? (
               <div className="rounded-lg border border-slate-700/60 bg-[#111725] p-4 text-sm text-slate-500">
                 No player cars in this race.
@@ -348,6 +349,7 @@ export function LiveRace() {
                   finished={finished}
                   onMode={(m) => setMode(c.driverId, m)}
                   onPit={() => pitNow(c.driverId)}
+                  className="min-h-0"
                 />
               ))
             )}
