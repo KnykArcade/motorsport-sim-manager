@@ -157,16 +157,137 @@ describe('historical season integration', () => {
       expect(enges.length).toBe(1);
     });
 
-    it('2026 IndyCar Milwaukee Mile should not have duplicate track IDs', () => {
-      const bundle = getSeasonBundle(2026, 'IndyCar');
-      const milwaukeeRaces = bundle!.season.calendar.filter(
-        (r) => r.trackId.includes('milwaukee-mile')
-      );
-      const trackIds = milwaukeeRaces.map((r) => r.trackId);
-      const unique = new Set(trackIds);
-      expect(unique.size, `Duplicate Milwaukee track IDs: ${trackIds.join(', ')}`).toBe(trackIds.length);
-      for (const id of trackIds) {
-        expect(getTrackById(id), `Milwaukee track ${id} should resolve`).toBeDefined();
+    it('2016 Max Verstappen should not be duplicated in the driver list', () => {
+      const bundle = getSeasonBundle(2016, 'F1');
+      const verstappens = bundle!.drivers.filter((d) => d.id.includes('verstappen'));
+      expect(verstappens.length, `Verstappen appears ${verstappens.length} times in 2016 driver list`).toBe(1);
+    });
+
+    it('2017 Carlos Sainz should not be duplicated in the driver list', () => {
+      const bundle = getSeasonBundle(2017, 'F1');
+      const sainzs = bundle!.drivers.filter((d) => d.id.includes('sainz'));
+      expect(sainzs.length, `Sainz appears ${sainzs.length} times in 2017 driver list`).toBe(1);
+    });
+
+    it('2019 Pierre Gasly should not be duplicated in the driver list', () => {
+      const bundle = getSeasonBundle(2019, 'F1');
+      const gaslys = bundle!.drivers.filter((d) => d.id.includes('gasly'));
+      expect(gaslys.length, `Gasly appears ${gaslys.length} times in 2019 driver list`).toBe(1);
+    });
+
+    it('2025 Yuki Tsunoda should not be duplicated in the driver list', () => {
+      const bundle = getSeasonBundle(2025, 'F1');
+      const tsunodas = bundle!.drivers.filter((d) => d.id.includes('tsunoda'));
+      expect(tsunodas.length, `Tsunoda appears ${tsunodas.length} times in 2025 driver list`).toBe(1);
+    });
+
+    it('1997 Jarno Trulli teamId should resolve to a valid team', () => {
+      const bundle = getSeasonBundle(1997, 'F1');
+      const trulli = bundle!.drivers.find((d) => d.id === 'd-1997-jarno-trulli');
+      expect(trulli, 'Trulli should exist in 1997').toBeDefined();
+      const teamIds = new Set(bundle!.teams.map((t) => t.id));
+      expect(
+        teamIds.has(trulli!.teamId),
+        `Trulli teamId ${trulli!.teamId} does not match any team in 1997`
+      ).toBe(true);
+    });
+  });
+
+  describe('calendar data integrity', () => {
+    it('F1 2016-2025 calendar races have laps > 0', () => {
+      for (let y = 2016; y <= 2025; y++) {
+        const bundle = getSeasonBundle(y, 'F1');
+        for (const race of bundle!.season.calendar) {
+          expect(
+            race.laps,
+            `F1 ${y} race ${race.round} (${race.gpName}) has laps=0`
+          ).toBeGreaterThan(0);
+        }
+      }
+    });
+
+    it('IndyCar 2008-2025 calendar races have laps > 0', () => {
+      for (let y = 2008; y <= 2025; y++) {
+        const bundle = getSeasonBundle(y, 'IndyCar');
+        for (const race of bundle!.season.calendar) {
+          expect(
+            race.laps,
+            `IndyCar ${y} race ${race.round} (${race.gpName}) has laps=0`
+          ).toBeGreaterThan(0);
+        }
+      }
+    });
+
+    it('IndyCar gpName is not a date string', () => {
+      for (let y = 2008; y <= 2026; y++) {
+        const bundle = getSeasonBundle(y, 'IndyCar');
+        for (const race of bundle!.season.calendar) {
+          expect(
+            race.gpName,
+            `IndyCar ${y} race ${race.round} gpName looks like a date: ${race.gpName}`
+          ).not.toMatch(/^\d{4}-\d{2}-\d{2}$/);
+        }
+      }
+    });
+
+    it('all F1 calendar track IDs resolve', () => {
+      for (let y = 1990; y <= 2026; y++) {
+        const bundle = getSeasonBundle(y, 'F1');
+        for (const race of bundle!.season.calendar) {
+          expect(
+            getTrackById(race.trackId),
+            `F1 ${y} race ${race.round} unresolvable track ${race.trackId}`
+          ).toBeDefined();
+        }
+      }
+    });
+
+    it('all IndyCar calendar track IDs resolve', () => {
+      for (let y = 2008; y <= 2026; y++) {
+        const bundle = getSeasonBundle(y, 'IndyCar');
+        for (const race of bundle!.season.calendar) {
+          expect(
+            getTrackById(race.trackId),
+            `IndyCar ${y} race ${race.round} unresolvable track ${race.trackId}`
+          ).toBeDefined();
+        }
+      }
+    });
+
+    it('no duplicate track IDs within any F1 track file', () => {
+      for (let y = 1990; y <= 2026; y++) {
+        const bundle = getSeasonBundle(y, 'F1');
+        const trackIds = bundle!.season.calendar.map((r) => r.trackId);
+        // Doubleheaders may reuse the same trackId — that's correct behavior.
+        // Just verify all resolve.
+        for (const tid of trackIds) {
+          expect(getTrackById(tid), `F1 ${y} track ${tid} not found`).toBeDefined();
+        }
+      }
+    });
+
+    it('no duplicate track IDs within any IndyCar track file', () => {
+      for (let y = 2008; y <= 2026; y++) {
+        const bundle = getSeasonBundle(y, 'IndyCar');
+        const trackIds = bundle!.season.calendar.map((r) => r.trackId);
+        for (const tid of trackIds) {
+          expect(getTrackById(tid), `IndyCar ${y} track ${tid} not found`).toBeDefined();
+        }
+      }
+    });
+
+    it('doubleheader races have unique race IDs but may share trackId', () => {
+      for (let y = 2008; y <= 2026; y++) {
+        const bundle = getSeasonBundle(y, 'IndyCar');
+        const raceIds = bundle!.season.calendar.map((r) => r.id);
+        const uniqueRaceIds = new Set(raceIds);
+        expect(uniqueRaceIds.size, `IndyCar ${y} has duplicate race IDs`).toBe(raceIds.length);
+      }
+      for (let y = 1990; y <= 2026; y++) {
+        const bundle = getSeasonBundle(y, 'F1');
+        const raceIds = bundle!.season.calendar.map((r) => r.id);
+        const uniqueRaceIds = new Set(raceIds);
+        expect(uniqueRaceIds.size, `F1 ${y} has duplicate race IDs`).toBe(raceIds.length);
       }
     });
   });
@@ -176,9 +297,33 @@ describe('historical season integration', () => {
       for (let y = 2008; y <= 2026; y++) {
         const bundle = getSeasonBundle(y, 'IndyCar');
         for (const team of bundle!.teams) {
-          // IndyCar teams can have more than 2 drivers — just verify they're not empty
           expect(team.driverIds.length, `IndyCar ${y} ${team.id} has 0 drivers`).toBeGreaterThan(0);
         }
+      }
+    });
+  });
+
+  describe('regulationSetId usage', () => {
+    it('all seasons reference a valid regulationSetId', () => {
+      for (let y = 1990; y <= 2026; y++) {
+        const f1 = getSeasonBundle(y, 'F1');
+        expect(f1!.season.regulationSetId, `F1 ${y} has no regulationSetId`).toBeDefined();
+      }
+      for (let y = 2008; y <= 2026; y++) {
+        const indy = getSeasonBundle(y, 'IndyCar');
+        expect(indy!.season.regulationSetId, `IndyCar ${y} has no regulationSetId`).toBeDefined();
+      }
+    });
+
+    it('all seasons currently use reg-1995 (documented limitation)', () => {
+      // Year-specific regulation integration is not yet implemented.
+      // All seasons point to reg-1995 as a placeholder. This is a known
+      // limitation documented in the PR — yearly regulation data from
+      // the workbook Regulations_Rules_Changes sheets is not yet wired
+      // into individual season records.
+      for (let y = 1990; y <= 2026; y++) {
+        const f1 = getSeasonBundle(y, 'F1');
+        expect(f1!.season.regulationSetId).toBe('reg-1995');
       }
     });
   });

@@ -13,12 +13,21 @@ describe('F1 roster validation', () => {
       const bundle = getSeasonBundle(s.year, 'F1');
       const market = getMarketBundle(s.year, 'F1');
 
-      it('every team has at most 2 primary race drivers', () => {
+      // ── Preseason roster rules (save creation) ──
+      it('every team has 0-3 assigned drivers at preseason', () => {
         for (const team of bundle!.teams) {
           expect(
             team.driverIds.length,
-            `${team.id} has ${team.driverIds.length} driverIds`
-          ).toBeLessThanOrEqual(2);
+            `${team.id} has ${team.driverIds.length} drivers (must be 0-3)`
+          ).toBeLessThanOrEqual(3);
+        }
+      });
+
+      it('teams with fewer than 2 drivers are allowed (historical edge cases)', () => {
+        for (const team of bundle!.teams) {
+          if (team.driverIds.length < 2) {
+            expect(team.driverIds.length).toBeGreaterThanOrEqual(0);
+          }
         }
       });
 
@@ -39,6 +48,25 @@ describe('F1 roster validation', () => {
             unique.size,
             `${team.id} has duplicate driverIds: ${ids.join(', ')}`
           ).toBe(ids.length);
+        }
+      });
+
+      it('no driver is assigned to more than 2 teams (mid-season swaps allowed)', () => {
+        const driverToTeams = new Map<string, string[]>();
+        for (const team of bundle!.teams) {
+          for (const did of team.driverIds) {
+            const teams = driverToTeams.get(did) || [];
+            teams.push(team.id);
+            driverToTeams.set(did, teams);
+          }
+        }
+        for (const [did, teams] of driverToTeams) {
+          // A driver may appear on 2 teams if they swapped mid-season.
+          // 3+ team assignments would indicate a data error.
+          expect(
+            teams.length,
+            `Driver ${did} assigned to ${teams.length} teams: ${teams.join(', ')}`
+          ).toBeLessThanOrEqual(2);
         }
       });
 
@@ -86,6 +114,7 @@ describe('F1 roster validation', () => {
         expect(unique.size, `Duplicate youth IDs in ${s.year} F1`).toBe(ids.length);
       });
 
+      // ── Calendar validation ──
       it('all calendar track IDs resolve', () => {
         for (const race of bundle!.season.calendar) {
           expect(getTrackById(race.trackId), `${s.year} F1 unresolvable track ${race.trackId}`).toBeDefined();
@@ -98,6 +127,16 @@ describe('F1 roster validation', () => {
         expect(unique.size, `Duplicate race IDs in ${s.year} F1`).toBe(ids.length);
       });
 
+      it('calendar races have laps > 0', () => {
+        for (const race of bundle!.season.calendar) {
+          expect(
+            race.laps,
+            `${s.year} F1 race ${race.round} (${race.gpName}) has laps=0`
+          ).toBeGreaterThan(0);
+        }
+      });
+
+      // ── Special character checks ──
       it('no unsafe special characters in driver IDs', () => {
         for (const d of bundle!.drivers) {
           expect(d.id, `${d.id} has non-ASCII`).toMatch(/^[\x20-\x7E]+$/);

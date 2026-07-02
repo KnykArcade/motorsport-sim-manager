@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import { useGame } from '../game/GameContext';
 import {
+  activeDriversForTeam,
   carForTeam,
   currentRace,
   driversForTeam,
@@ -41,6 +42,9 @@ export function TeamHQ() {
   const principal = state.teamPrincipal;
   const orgRatings = state.teamOrgRatings?.[state.selectedTeamId];
 
+  const activeDrivers = activeDriversForTeam(state, state.selectedTeamId);
+  const hasEnoughDrivers = activeDrivers.length >= 2;
+
   const driverName = (id: string) => state.drivers.find((d) => d.id === id)?.name ?? id;
   const teamName = (id: string) => state.teams.find((t) => t.id === id)?.name ?? id;
   const teamColor = (id: string) => state.teams.find((t) => t.id === id)?.color;
@@ -56,9 +60,13 @@ export function TeamHQ() {
           <Button variant="primary" onClick={() => navigate('/season-review')}>
             Season Review →
           </Button>
-        ) : (
+        ) : hasEnoughDrivers ? (
           <Button variant="primary" onClick={() => navigate('/weekend')}>
             Go to Next Race: {race?.gpName} →
+          </Button>
+        ) : (
+          <Button variant="primary" disabled title="You need at least 2 active race drivers to enter a race weekend.">
+            Sign 2 Drivers to Race
           </Button>
         )}
       </div>
@@ -76,8 +84,21 @@ export function TeamHQ() {
           {race && track && !state.seasonComplete && (
             <Panel
               title={`Next Race · Round ${race.round}`}
-              actions={<Button onClick={() => navigate('/weekend')}>Enter Weekend →</Button>}
+              actions={
+                hasEnoughDrivers ? (
+                  <Button onClick={() => navigate('/weekend')}>Enter Weekend →</Button>
+                ) : (
+                  <Button disabled title="Sign at least 2 race drivers first">
+                    Enter Weekend →
+                  </Button>
+                )
+              }
             >
+              {!hasEnoughDrivers && (
+                <div className="mb-3 rounded border border-amber-600/50 bg-amber-900/20 px-3 py-2 text-sm text-amber-300">
+                  ⚠ Your team has only {activeDrivers.length} active race driver{activeDrivers.length === 1 ? '' : 's'}. Sign at least 2 drivers before entering the race weekend.
+                </div>
+              )}
               <div className="grid gap-4 md:grid-cols-2">
                 <div>
                   <div className="text-lg font-bold text-neutral-100">{race.gpName}</div>

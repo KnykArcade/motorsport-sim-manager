@@ -493,14 +493,35 @@ def gen(year, series="F1"):
             "riskWallProximity": num(get(row, cal, "risk wall proximity", "risk wall", "risk management")) or 5,
             "enduranceConsistency": num(get(row, cal, *SKILL_ALIASES["enduranceConsistency"])) or 5,
         }
+        track_slug = f"{slug(name)}-{tag}"
+        # Deduplicate track IDs: if the same venue appears twice (doubleheader),
+        # reuse the same track object. Only create a new track entry for unique venues.
+        existing = next((t for t in tracks if t["id"] == track_slug), None)
+        laps_val = num(get(row, cal, "laps", "race laps", "scheduled laps"))
+        track_km = num(get(row, cal, "track length km", "track length", "length km", "circuit length km", "km"))
+        dist_km = None
+        if laps_val and track_km:
+            dist_km = r1(laps_val * track_km)
+        elif laps_val and existing and existing.get("km"):
+            dist_km = r1(laps_val * existing["km"])
+        if existing:
+            # Same venue — just update laps/distance for this round's calendar entry
+            existing.setdefault("rounds", []).append({
+                "round": int(rnd),
+                "gpName": str(get(row, cal, "gp name", "grand prix", "race name") or name).strip(),
+                "laps": laps_val,
+                "distanceKm": dist_km,
+            })
+            continue
         tracks.append({
-            "id": f"{slug(name)}-{tag}",
+            "id": track_slug,
             "name": str(name).strip(),
-            "gpName": str(get(row, cal, "gp name", "grand prix", "race") or name).strip(),
+            "gpName": str(get(row, cal, "gp name", "grand prix", "race name") or name).strip(),
             "country": (str(get(row, cal, "country", "location") or "").strip()),
             "round": int(rnd),
-            "km": num(get(row, cal, "track length km", "km", "track km")),
-            "laps": num(get(row, cal, "race laps", "laps")),
+            "km": track_km,
+            "laps": laps_val,
+            "distanceKm": dist_km,
             "archetype": str(get(row, cal, "track archetype") or "Balanced").strip(),
             "attrs": attrs,
             "setup": {
@@ -801,21 +822,51 @@ def gen_indycar(year=2026):
             "riskWallProximity": num(get(row, cal, "risk wall", "risk_wall")) or 5,
             "enduranceConsistency": num(get(row, cal, "endurance")) or 5,
         }
-        miles = num(get(row, cal, "track length mi", "track_length_mi"))
+        miles = num(get(row, cal, "track length mi", "track_length_mi", "track length miles", "length mi", "miles"))
         sp = setup_by_round.get(rnd)
 
         def sget(*a):
             return get(sp, setup, *a) if (sp and setup) else None
 
         ttype = str(get(row, cal, "track type", "track_type") or "").strip()
+        track_slug = f"{slug(name)}-{tag}"
+        # Deduplicate track IDs: if the same venue appears twice (doubleheader),
+        # reuse the same track object. Only create a new track entry for unique venues.
+        existing = next((t for t in tracks if t["id"] == track_slug), None)
+        track_km = r1(miles * MI_KM) if miles else None
+        laps_val = num(get(row, cal, "laps", "race laps", "scheduled laps", "laps sim default", "laps_sim_default"))
+        dist_km = None
+        if laps_val and track_km:
+            dist_km = r1(laps_val * track_km)
+        elif laps_val and existing and existing.get("km"):
+            dist_km = r1(laps_val * existing["km"])
+        # gpName priority: GP Name, Race Name, Event Name, Race — NOT Race Date
+        gp_name = get(row, cal, "gp name", "race name", "event name")
+        if gp_name is None:
+            # Only fall back to 'race' if it doesn't match 'race date'
+            race_col = cal.col("race")
+            race_date_col = cal.col("race date", "date")
+            if race_col is not None and race_col != race_date_col:
+                gp_name = row[race_col] if race_col < len(row) else None
+        if gp_name is None:
+            gp_name = name
+        if existing:
+            existing.setdefault("rounds", []).append({
+                "round": rnd,
+                "gpName": str(gp_name).strip(),
+                "laps": laps_val,
+                "distanceKm": dist_km,
+            })
+            continue
         tracks.append({
-            "id": f"{slug(name)}-{tag}",
+            "id": track_slug,
             "name": str(name).strip(),
-            "gpName": str(get(row, cal, "race") or name).strip(),
+            "gpName": str(gp_name).strip(),
             "country": str(get(row, cal, "location") or "United States").strip(),
             "round": rnd,
-            "km": r1(miles * MI_KM) if miles else None,
-            "laps": num(get(row, cal, "laps sim default", "laps_sim_default")),
+            "km": track_km,
+            "laps": laps_val,
+            "distanceKm": dist_km,
             "archetype": str(get(row, cal, "track archetype", "track_archetype") or ttype or "Balanced").strip(),
             "attrs": attrs,
             "setup": {
@@ -1057,15 +1108,29 @@ def write_ts(y, src, header, tracks, teams, drivers, market, youth, budget_for,
         f.write(f"import {{ tracks{tag} }} from '../tracks/tracks{tag}';\n\n")
         f.write(f"export const calendar{tag}: Race[] = [\n")
         for t in tracks:
-            dist = r1(t["km"] * t["laps"]) if (t["km"] and t["laps"]) else "undefined"
+            # Primary round entry
+            dist = t.get("distanceKm") or (r1(t["km"] * t["laps"]) if (t["km"] and t["laps"]) else None)
+            laps_val = int(t["laps"]) if t["laps"] else 0
             f.write("  {\n")
             f.write(f"    id: {ts_str(f'r-{y}-' + str(t['round']))},\n")
             f.write(f"    round: {t['round']},\n")
             f.write(f"    gpName: {ts_str(t['gpName'])},\n")
             f.write(f"    trackId: {ts_str(t['id'])},\n")
             f.write(f"    trackName: {ts_str(t['name'])},\n")
-            f.write(f"    laps: {int(t['laps']) if t['laps'] else 0},\n")
-            f.write(f"    distanceKm: {dist},\n    completed: false,\n  }},\n")
+            f.write(f"    laps: {laps_val},\n")
+            f.write(f"    distanceKm: {dist if dist is not None else 'undefined'},\n    completed: false,\n  }},\n")
+            # Additional rounds (doubleheaders at same venue)
+            for r in t.get("rounds", []):
+                r_dist = r.get("distanceKm") or (r1(t["km"] * r["laps"]) if (t["km"] and r.get("laps")) else None)
+                r_laps = int(r["laps"]) if r.get("laps") else 0
+                f.write("  {\n")
+                f.write(f"    id: {ts_str(f'r-{y}-' + str(r['round']))},\n")
+                f.write(f"    round: {r['round']},\n")
+                f.write(f"    gpName: {ts_str(r['gpName'])},\n")
+                f.write(f"    trackId: {ts_str(t['id'])},\n")
+                f.write(f"    trackName: {ts_str(t['name'])},\n")
+                f.write(f"    laps: {r_laps},\n")
+                f.write(f"    distanceKm: {r_dist if r_dist is not None else 'undefined'},\n    completed: false,\n  }},\n")
         f.write("];\n\n")
         f.write(f"void tracks{tag};\n\n")
         sid = f"s-{y}-{series.lower()}"
