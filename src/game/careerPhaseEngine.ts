@@ -17,6 +17,7 @@ import type {
 import type { RaceResult } from '../types/gameTypes';
 import type { FinanceTransaction } from '../types/financeTypes';
 import type { RacePrepFocusEffect } from '../types/simTypes';
+import { createSeededRandom, deriveSeed } from '../sim/random';
 
 export function defaultCareerPhaseState(): CareerPhaseState {
   return {
@@ -205,8 +206,24 @@ export function processAITeamActivity(state: GameState): GameState {
   const aiNews: typeof state.news = [];
   let cars = [...state.cars];
 
-  // Process 2-4 AI teams per paddock week with small real changes.
-  const teamsToProcess = aiTeams.slice(0, Math.min(4, aiTeams.length));
+  // Seeded RNG based on save seed, season year, round, and paddock week ID.
+  // This makes AI activity deterministic for the same save/week — reproducible
+  // and fair across sessions.
+  const weekId = phaseState.paddockWeekId ?? `pw-${phaseState.currentRound}`;
+  const rng = createSeededRandom(
+    deriveSeed(state.randomSeed ?? 'ai', state.seasonYear, phaseState.currentRound, weekId),
+  );
+
+  // Select a rotating subset of AI teams each paddock week.
+  // Use the round number as a rotation offset so different teams are processed
+  // each week. Select 2-4 teams.
+  const numToProcess = rng.int(2, Math.min(4, aiTeams.length));
+  const startIndex = phaseState.currentRound % aiTeams.length;
+  const teamsToProcess: typeof aiTeams = [];
+  for (let i = 0; i < numToProcess; i++) {
+    const idx = (startIndex + i) % aiTeams.length;
+    teamsToProcess.push(aiTeams[idx]);
+  }
 
   for (const aiTeam of teamsToProcess) {
     const aiState = aiStates[aiTeam.id];
@@ -223,8 +240,8 @@ export function processAITeamActivity(state: GameState): GameState {
 
     if (archetype === 'AggressiveSpender' || archetype === 'DevelopmentFocused') {
       // Aggressive teams push development: small car stat improvement.
-      const improvement = 0.1 + Math.random() * 0.3;
-      const stat = Math.random() < 0.5 ? 'enginePower' : 'aeroEfficiency';
+      const improvement = rng.range(0.1, 0.4);
+      const stat = rng.chance(0.5) ? 'enginePower' : 'aeroEfficiency';
       cars = cars.map((c) =>
         c.teamId === aiTeam.id
           ? {
@@ -239,9 +256,9 @@ export function processAITeamActivity(state: GameState): GameState {
       isRealChange = true;
       newsHeadline = `${aiTeam.name} brings upgrade to next race`;
       newsBody = `${aiTeam.name} has completed a development push. ${stat === 'enginePower' ? 'Engine power' : 'Aero efficiency'} improved by ${improvement.toFixed(2)}.`;
-    } else if (ratings.reliability < 5 && Math.random() < 0.4) {
+    } else if (ratings.reliability < 5 && rng.chance(0.4)) {
       // Struggling teams fix reliability: small reliability improvement.
-      const improvement = 0.1 + Math.random() * 0.3;
+      const improvement = rng.range(0.1, 0.4);
       cars = cars.map((c) =>
         c.teamId === aiTeam.id
           ? {
@@ -256,9 +273,9 @@ export function processAITeamActivity(state: GameState): GameState {
       isRealChange = true;
       newsHeadline = `${aiTeam.name} addresses reliability concerns`;
       newsBody = `${aiTeam.name} has worked on reliability. Rating improved by ${improvement.toFixed(2)} to ${(ratings.reliability + improvement).toFixed(1)}.`;
-    } else if (Math.random() < 0.15) {
+    } else if (rng.chance(0.15)) {
       // Rare reliability setback.
-      const setback = 0.1 + Math.random() * 0.2;
+      const setback = rng.range(0.1, 0.3);
       cars = cars.map((c) =>
         c.teamId === aiTeam.id
           ? {
@@ -273,7 +290,7 @@ export function processAITeamActivity(state: GameState): GameState {
       isRealChange = true;
       newsHeadline = `${aiTeam.name} suffers setback in testing`;
       newsBody = `${aiTeam.name} encountered reliability issues. Rating dropped by ${setback.toFixed(2)} to ${(ratings.reliability - setback).toFixed(1)}.`;
-    } else if (Math.random() < 0.2) {
+    } else if (rng.chance(0.2)) {
       // Minor form observation — no state change, just flavor news.
       const performance = (ratings.enginePower + ratings.aeroEfficiency + ratings.mechanicalGrip) / 3;
       if (performance > 7) {
@@ -286,7 +303,7 @@ export function processAITeamActivity(state: GameState): GameState {
         newsHeadline = `${aiTeam.name} steady in testing`;
         newsBody = `${aiTeam.name} completed a productive test session. Average rating: ${performance.toFixed(1)}/10.`;
       }
-    } else if (aiState && (aiState.financialHealth === 'Critical' || aiState.financialHealth === 'AtRisk') && Math.random() < 0.3) {
+    } else if (aiState && (aiState.financialHealth === 'Critical' || aiState.financialHealth === 'AtRisk') && rng.chance(0.3)) {
       // Financial trouble — no car change, but news.
       newsHeadline = `${aiTeam.name} facing financial difficulties`;
       newsBody = `${aiTeam.name} is in ${aiState.financialHealth} financial health. Budget cuts may affect their development program.`;
@@ -294,7 +311,7 @@ export function processAITeamActivity(state: GameState): GameState {
 
     if (newsHeadline) {
       aiNews.push({
-        id: `news-ai-${phaseState.paddockWeekId ?? 'pw'}-${aiTeam.id}`,
+        id: `news-ai-${weekId}-${aiTeam.id}`,
         headline: newsHeadline,
         body: isRealChange ? `[Confirmed] ${newsBody}` : newsBody,
         timestamp: new Date().toISOString(),
@@ -383,7 +400,10 @@ export function resolvePaddockEvent(
   }
 
   // --- Apply moraleChange to all active drivers and team ---
-  if (option.moraleChange) {
+  // Skip permanent effects for race prep focus events — those are temporary only.
+  const isRacePrepFocusEvent =
+    event.category === 'general_team' && event.title.startsWith('Select race preparation focus');
+  if (option.moraleChange && !isRacePrepFocusEvent) {
     const activeDriverIds = new Set(
       activeDriversForTeam(state, state.selectedTeamId).map((d) => d.id),
     );
@@ -401,7 +421,7 @@ export function resolvePaddockEvent(
   }
 
   // --- Apply reliabilityChange to player car ---
-  if (option.reliabilityChange) {
+  if (option.reliabilityChange && !isRacePrepFocusEvent) {
     const cars = updatedState.cars.map((c) =>
       c.teamId === updatedState.selectedTeamId
         ? {
@@ -417,7 +437,7 @@ export function resolvePaddockEvent(
   }
 
   // --- Apply carStatChange to player car ---
-  if (option.carStatChange) {
+  if (option.carStatChange && !isRacePrepFocusEvent) {
     const cars = updatedState.cars.map((c) =>
       c.teamId === updatedState.selectedTeamId
         ? {
@@ -821,20 +841,23 @@ export function generatePaddockWeekEvents(state: GameState): PaddockEvent[] {
     const focusOptions: PaddockEventOption[] = [
       {
         id: 'balanced',
-        label: 'Balanced Setup',
-        description: 'A balanced approach with no particular emphasis.',
+        label: 'Balanced Preparation',
+        description: 'A balanced approach with slight consistency and mistake-reduction bonus.',
       },
       {
         id: 'qualifying',
         label: 'Qualifying Focus',
         description: 'Prioritize one-lap pace. May sacrifice race pace slightly.',
-        moraleChange: 2,
       },
       {
         id: 'race',
         label: 'Race Pace Focus',
         description: 'Prioritize long-run pace and tire management.',
-        reliabilityChange: 1,
+      },
+      {
+        id: 'reliability',
+        label: 'Reliability Focus',
+        description: 'Focus on mechanical reliability. Lower DNF risk with a small pace tradeoff.',
       },
     ];
     if (track && track.setupProfile.powerDemand > 6) {

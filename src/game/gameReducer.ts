@@ -460,6 +460,7 @@ export function gameReducer(state: GameState | null, action: GameAction): GameSt
 
     case 'SET_CAR_SETUP': {
       if (!state) return state;
+      if (getCareerPhase(state) !== 'race_weekend') return state;
       return {
         ...state,
         carSetups: { ...(state.carSetups ?? {}), [action.driverId]: action.setup },
@@ -468,6 +469,7 @@ export function gameReducer(state: GameState | null, action: GameAction): GameSt
 
     case 'RUN_PRACTICE_SESSION': {
       if (!state) return state;
+      if (getCareerPhase(state) !== 'race_weekend') return state;
       return runPracticeSessionAction(state, action.raceId, action.kind, action.assignments);
     }
 
@@ -619,6 +621,7 @@ export function gameReducer(state: GameState | null, action: GameAction): GameSt
 
     case 'SELECT_RACE_WEEKEND_PACKAGE': {
       if (!state) return state;
+      if (getCareerPhase(state) !== 'race_weekend') return state;
       return selectRaceWeekendPackage(state, action.packageType);
     }
 
@@ -637,6 +640,9 @@ export function gameReducer(state: GameState | null, action: GameAction): GameSt
       if (phase !== 'paddock_week' && phase !== 'pre_season_setup') return state;
       if (phase === 'paddock_week' && hasUnresolvedRequiredDecisions(state)) return state;
       if (phase === 'pre_season_setup' && !isPreseasonChecklistComplete(state)) return state;
+      // Use enterPreRaceBriefingFromPreseason for the preseason path so that
+      // preseasonSetupComplete and preseasonDecisionsComplete are set.
+      if (phase === 'pre_season_setup') return enterPreRaceBriefingFromPreseason(state);
       return enterPreRaceBriefing(state);
     }
 
@@ -650,6 +656,7 @@ export function gameReducer(state: GameState | null, action: GameAction): GameSt
 
     case 'COMPLETE_PRESEASON_SETUP': {
       if (!state) return state;
+      if (getCareerPhase(state) !== 'pre_season_setup') return state;
       if (!isPreseasonChecklistComplete(state)) return state;
       return enterPreRaceBriefingFromPreseason(state);
     }

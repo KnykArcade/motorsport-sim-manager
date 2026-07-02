@@ -8,10 +8,34 @@ import {
 } from '../game/careerState';
 import { getTrackById } from '../data';
 import { effectiveCarRatings } from '../sim/trackFitEngine';
+import { getOrCreatePhaseState } from '../game/careerPhaseEngine';
 import { Panel } from '../components/Panel';
 import { Button } from '../components/Button';
 import { TrackDemandBars } from '../components/TrackDemandBars';
 import { formatMoney } from '../components/ui';
+
+const RACE_PREP_FOCUS_INFO: Record<string, { label: string; description: string }> = {
+  balanced: {
+    label: 'Balanced Preparation',
+    description: 'Slight consistency and mistake-reduction bonus for this race.',
+  },
+  qualifying: {
+    label: 'Qualifying Focus',
+    description: 'Improved one-lap pace. May slightly reduce race pace.',
+  },
+  race: {
+    label: 'Race Pace Focus',
+    description: 'Improved long-run pace and strategy. May slightly reduce qualifying performance.',
+  },
+  reliability: {
+    label: 'Reliability Focus',
+    description: 'Lower mechanical/DNF risk this race, with a small pace tradeoff.',
+  },
+  power: {
+    label: 'Engine Power Focus',
+    description: 'Improved straight-line speed. Higher reliability risk.',
+  },
+};
 
 export function PreRaceBriefing() {
   const { state, dispatch } = useGame();
@@ -26,6 +50,11 @@ export function PreRaceBriefing() {
   const carRatings = car ? effectiveCarRatings(car) : null;
 
   if (!race || !track) return null;
+
+  // Race prep focus display
+  const phaseState = getOrCreatePhaseState(state);
+  const prepFocusId = phaseState.racePrepFocus ?? 'balanced';
+  const prepFocusInfo = RACE_PREP_FOCUS_INFO[prepFocusId] ?? RACE_PREP_FOCUS_INFO['balanced'];
 
   const teamName = (id: string) => state.teams.find((t) => t.id === id)?.name ?? id;
 
@@ -107,6 +136,15 @@ export function PreRaceBriefing() {
                 <StatChip label="Reliability" value={carRatings.reliability.toFixed(1)} />
               </div>
             )}
+          </Panel>
+
+          {/* Race Preparation Focus */}
+          <Panel title="Race Preparation Focus">
+            <div className="space-y-2">
+              <div className="text-sm font-semibold text-neutral-100">{prepFocusInfo.label}</div>
+              <p className="text-sm text-neutral-300">{prepFocusInfo.description}</p>
+              <div className="text-xs text-neutral-500">Duration: Next race only.</div>
+            </div>
           </Panel>
 
           {/* Driver Status */}
