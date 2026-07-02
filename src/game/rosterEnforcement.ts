@@ -13,6 +13,7 @@
 import { careerMarketBundle } from '../sim/careerMarketEngine';
 import { marketDriverToDriver } from '../sim/driverMarketEngine';
 import { makeTransaction, toMoney } from '../sim/financeEngine';
+import { syncDriverRelationshipsForTeam } from '../sim/relationshipEngine';
 import {
   activeDriversForTeam,
   driversForTeam,
@@ -271,11 +272,13 @@ export function signRaceDriver(state: GameState, marketId: string): GameState {
       : t,
   );
 
-  return {
+  const updated = {
     ...state,
     drivers: [...state.drivers, newDriver],
     teams,
     finance: [...(state.finance ?? []), txn],
     signedMarketIds: [...(state.signedMarketIds ?? []), m.id],
   };
+  // Sync relationships after roster change.
+  return syncDriverRelationshipsForTeam(updated, state.selectedTeamId, state.randomSeed ?? 'sync');
 }

@@ -16,6 +16,8 @@ import type {
   TeamOrderDecision,
 } from '../types/relationshipTypes';
 import type { LiveCarState, LiveRaceState } from '../types/liveTypes';
+import type { GameState } from '../game/careerState';
+import { activeDriversForTeam, driversForTeam } from '../game/careerState';
 import { createSeededRandom, deriveSeed, type Rng } from './random';
 
 function clamp(n: number, lo = 0, hi = 100): number {
@@ -130,6 +132,101 @@ export function rolloverRelationships(
     }
   }
   return merged;
+}
+
+// Synchronize driver relationships for a specific team with its current roster.
+// Ensures every current team driver has a relationship record, preserves existing
+// values for retained drivers, and updates teammate links based on current lineup.
+export function syncDriverRelationshipsForTeam(
+  state: GameState,
+  teamId: string,
+  seed: string,
+): GameState {
+  const team = state.teams.find((t) => t.id === teamId);
+  if (!team) return state;
+
+  const teamDrivers = driversForTeam(state, teamId);
+  const activeDrivers = activeDriversForTeam(state, teamId);
+  const existingRels = state.driverRelationships ?? {};
+
+  // Identify current roster drivers.
+  const currentDriverIds = new Set(teamDrivers.map((d) => d.id));
+
+  // Preserve existing relationships for retained drivers.
+  const preservedRels: Record<string, DriverRelationship> = {};
+  for (const driverId of currentDriverIds) {
+    const existing = existingRels[driverId];
+    if (existing && existing.teamId === teamId) {
+      preservedRels[driverId] = existing;
+    }
+  }
+
+  // Create fresh relationships for new drivers.
+  const newRels: Record<string, DriverRelationship> = {};
+  for (const driver of teamDrivers) {
+    if (preservedRels[driver.id]) continue; // Already preserved.
+
+    // Determine teammate for this driver (only for active race drivers).
+    const isActive = activeDrivers.some((d) => d.id === driver.id);
+    const teammateId = isActive
+      ? activeDrivers.find((d) => d.id !== driver.id)?.id
+      : undefined;
+
+    // Seed a new relationship with neutral values.
+    const rng = createSeededRandom(deriveSeed(seed, 'relationship', driver.id));
+    const v = () => rng.variance(8);
+    const loyalty = clamp(Math.round(48 + (driver.contractYearsRemaining ?? 1) * 4 + v()));
+    const chemistry = clamp(Math.round(50 + (driver.ratings.adaptability - 5) * 2 + v()));
+
+    let teammateRel = 62 + rng.variance(8);
+    // Two highly-rated drivers in the same garage breed rivalry.
+    if (teammateId) {
+      const teammate = teamDrivers.find((d) => d.id === teammateId);
+      if (teammate && driver.ratings.overall >= 7 && teammate.ratings.overall >= 7) teammateRel -= 18;
+      if (driver.ratings.aggression >= 7) teammateRel -= 8;
+    }
+
+    newRels[driver.id] = {
+      driverId: driver.id,
+      teamId,
+      teammateId,
+      teamLoyalty: loyalty,
+      engineerChemistry: chemistry,
+      teammateRelationship: clamp(Math.round(teammateRel)),
+      morale: clamp(Math.round(driver.morale ?? 60)),
+      frustration: clamp(Math.round(18 + v())),
+      numberOneExpectation: false, // Set false for new drivers, updated by full seed if needed.
+    };
+  }
+
+  // Merge preserved and new relationships, remove drivers no longer on the team.
+  const mergedRels: Record<string, DriverRelationship> = {};
+  for (const driverId of currentDriverIds) {
+    mergedRels[driverId] = preservedRels[driverId] ?? newRels[driverId];
+  }
+
+  // Update teammate links for active drivers based on current lineup.
+  if (activeDrivers.length === 2) {
+    const [d1, d2] = activeDrivers;
+    if (mergedRels[d1.id]) mergedRels[d1.id].teammateId = d2.id;
+    if (mergedRels[d2.id]) mergedRels[d2.id].teammateId = d1.id;
+  }
+
+  // Remove relationships for drivers no longer on the team.
+  const finalRels: Record<string, DriverRelationship> = {};
+  for (const [driverId, rel] of Object.entries(existingRels)) {
+    if (currentDriverIds.has(driverId) || rel.teamId !== teamId) {
+      // Keep if still on team, or if belongs to a different team.
+      finalRels[driverId] = rel;
+    }
+  }
+
+  // Add merged team relationships.
+  for (const [driverId, rel] of Object.entries(mergedRels)) {
+    finalRels[driverId] = rel;
+  }
+
+  return { ...state, driverRelationships: finalRels };
 }
 
 // ---------------------------------------------------------------------------

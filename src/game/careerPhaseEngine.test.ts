@@ -10,8 +10,11 @@ import {
   togglePreseasonChecklistItem,
   computeRacePrepFocusEffect,
   processAITeamActivity,
+  getPreseasonApprovals,
+  approvePreseasonTab,
 } from './careerPhaseEngine';
-import { carForTeam } from './careerState';
+import { carForTeam, driversForTeam, activeDriversForTeam } from './careerState';
+import { syncDriverRelationshipsForTeam } from '../sim/relationshipEngine';
 import type { GameState } from './careerState';
 
 function newCareerState(): GameState {
@@ -39,14 +42,15 @@ function dispatch(state: GameState, action: GameAction): GameState {
 }
 
 function completeChecklist(state: GameState): GameState {
-  const phaseState = getOrCreatePhaseState(state);
-  const checklist = phaseState.preseasonChecklist ?? [];
+  // Use new tab approval system instead of old checklist
   let s = state;
-  for (const item of checklist) {
-    if (!item.completed) {
-      s = togglePreseasonChecklistItem(s, item.id);
-    }
-  }
+  s = approvePreseasonTab(s, 'teamOverview');
+  s = approvePreseasonTab(s, 'budget');
+  s = approvePreseasonTab(s, 'driverLineup');
+  s = approvePreseasonTab(s, 'carDevelopment');
+  s = approvePreseasonTab(s, 'sponsorsEngine');
+  s = approvePreseasonTab(s, 'seasonObjectives');
+  s = approvePreseasonTab(s, 'roundOnePreview');
   return s;
 }
 
@@ -518,8 +522,8 @@ describe('careerPhaseEngine', () => {
     const dps = defaultCareerPhaseState();
     expect(dps.announcedCompletedProjectIds).toEqual([]);
     expect(dps.preseasonChecklist).toBeDefined();
-    expect(dps.preseasonChecklist.length).toBe(5);
-    expect(dps.preseasonChecklist.every((item) => !item.completed)).toBe(true);
+    expect(dps.preseasonChecklist?.length).toBe(5);
+    expect(dps.preseasonChecklist?.every((item) => !item.completed)).toBe(true);
   });
 
   // --- Reducer-level phase guards (ISSUE 1) ---
@@ -1147,6 +1151,173 @@ describe('careerPhaseEngine', () => {
       state = completeChecklist(state);
       state = dispatch(state, { type: 'COMPLETE_PRESEASON_SETUP' });
       expect(getCareerPhase(state)).toBe('pre_race_briefing');
+    });
+  });
+
+  // --- Pre-Season Tab Approval Flow Tests ---
+
+  describe('Pre-Season Tab Approval Flow', () => {
+    it('preseason approvals start incomplete', () => {
+      const state = newCareerState();
+      const approvals = getPreseasonApprovals(state);
+      expect(approvals.teamOverview).toBe(false);
+      expect(approvals.budget).toBe(false);
+      expect(approvals.driverLineup).toBe(false);
+      expect(approvals.carDevelopment).toBe(false);
+      expect(approvals.sponsorsEngine).toBe(false);
+      expect(approvals.seasonObjectives).toBe(false);
+      expect(approvals.roundOnePreview).toBe(false);
+    });
+
+    it('approving a single tab updates only that tab', () => {
+      let state = newCareerState();
+      state = approvePreseasonTab(state, 'teamOverview');
+      const approvals = getPreseasonApprovals(state);
+      expect(approvals.teamOverview).toBe(true);
+      expect(approvals.budget).toBe(false);
+      expect(approvals.driverLineup).toBe(false);
+    });
+
+    it('approving multiple tabs works independently', () => {
+      let state = newCareerState();
+      state = approvePreseasonTab(state, 'teamOverview');
+      state = approvePreseasonTab(state, 'budget');
+      state = approvePreseasonTab(state, 'driverLineup');
+      const approvals = getPreseasonApprovals(state);
+      expect(approvals.teamOverview).toBe(true);
+      expect(approvals.budget).toBe(true);
+      expect(approvals.driverLineup).toBe(true);
+      expect(approvals.carDevelopment).toBe(false);
+    });
+
+    it('cannot advance to Pre-Race Briefing until all tabs are approved', () => {
+      let state = newCareerState();
+      state = approvePreseasonTab(state, 'teamOverview');
+      state = approvePreseasonTab(state, 'budget');
+      state = dispatch(state, { type: 'COMPLETE_PRESEASON_SETUP' });
+      expect(getCareerPhase(state)).toBe('pre_season_setup');
+    });
+
+    it('can advance to Pre-Race Briefing when all tabs are approved', () => {
+      let state = newCareerState();
+      state = approvePreseasonTab(state, 'teamOverview');
+      state = approvePreseasonTab(state, 'budget');
+      state = approvePreseasonTab(state, 'driverLineup');
+      state = approvePreseasonTab(state, 'carDevelopment');
+      state = approvePreseasonTab(state, 'sponsorsEngine');
+      state = approvePreseasonTab(state, 'seasonObjectives');
+      state = approvePreseasonTab(state, 'roundOnePreview');
+      state = dispatch(state, { type: 'COMPLETE_PRESEASON_SETUP' });
+      expect(getCareerPhase(state)).toBe('pre_race_briefing');
+    });
+
+    it('APPROVE_PRESEASON_TAB action only works from pre_season_setup phase', () => {
+      let state = newCareerState();
+      // Complete all tabs to allow advancing
+      state = approvePreseasonTab(state, 'teamOverview');
+      state = approvePreseasonTab(state, 'budget');
+      state = approvePreseasonTab(state, 'driverLineup');
+      state = approvePreseasonTab(state, 'carDevelopment');
+      state = approvePreseasonTab(state, 'sponsorsEngine');
+      state = approvePreseasonTab(state, 'seasonObjectives');
+      state = approvePreseasonTab(state, 'roundOnePreview');
+      state = dispatch(state, { type: 'COMPLETE_PRESEASON_SETUP' });
+      state = dispatch(state, { type: 'ADVANCE_TO_RACE_WEEKEND' });
+      const before = getPreseasonApprovals(state);
+      state = dispatch(state, { type: 'APPROVE_PRESEASON_TAB', tabId: 'teamOverview' });
+      const after = getPreseasonApprovals(state);
+      expect(after.teamOverview).toBe(before.teamOverview);
+    });
+
+    it('advancing from preseason sets completion flags', () => {
+      let state = newCareerState();
+      state = approvePreseasonTab(state, 'teamOverview');
+      state = approvePreseasonTab(state, 'budget');
+      state = approvePreseasonTab(state, 'driverLineup');
+      state = approvePreseasonTab(state, 'carDevelopment');
+      state = approvePreseasonTab(state, 'sponsorsEngine');
+      state = approvePreseasonTab(state, 'seasonObjectives');
+      state = approvePreseasonTab(state, 'roundOnePreview');
+      state = dispatch(state, { type: 'COMPLETE_PRESEASON_SETUP' });
+      const phaseState = getOrCreatePhaseState(state);
+      expect(phaseState.preseasonSetupComplete).toBe(true);
+      expect(phaseState.preseasonDecisionsComplete).toBe(true);
+    });
+  });
+
+  // --- Relationship Sync Tests ---
+
+  describe('Relationship Sync', () => {
+    it('syncDriverRelationshipsForTeam creates relationships for new drivers', () => {
+      let state = newCareerState();
+      const teamId = state.selectedTeamId;
+      const drivers = driversForTeam(state, teamId);
+      const driverId = drivers[0]?.id;
+      if (!driverId) return;
+
+      // Remove existing relationship
+      state = { ...state, driverRelationships: {} };
+      state = syncDriverRelationshipsForTeam(state, teamId, state.randomSeed ?? 'sync');
+      expect(state.driverRelationships?.[driverId]).toBeDefined();
+    });
+
+    it('syncDriverRelationshipsForTeam preserves existing relationship values', () => {
+      let state = newCareerState();
+      const teamId = state.selectedTeamId;
+      const drivers = driversForTeam(state, teamId);
+      const driverId = drivers[0]?.id;
+      if (!driverId) return;
+
+      const originalRel = state.driverRelationships?.[driverId];
+      if (!originalRel) return;
+
+      state = syncDriverRelationshipsForTeam(state, teamId, state.randomSeed ?? 'sync');
+      const syncedRel = state.driverRelationships?.[driverId];
+      expect(syncedRel?.teamLoyalty).toBe(originalRel.teamLoyalty);
+      expect(syncedRel?.engineerChemistry).toBe(originalRel.engineerChemistry);
+    });
+
+    it('syncDriverRelationshipsForTeam updates teammate links for active drivers', () => {
+      let state = newCareerState();
+      const teamId = state.selectedTeamId;
+      const activeDrivers = activeDriversForTeam(state, teamId);
+      if (activeDrivers.length < 2) return;
+
+      state = syncDriverRelationshipsForTeam(state, teamId, state.randomSeed ?? 'sync');
+      const rel1 = state.driverRelationships?.[activeDrivers[0].id];
+      const rel2 = state.driverRelationships?.[activeDrivers[1].id];
+      expect(rel1?.teammateId).toBe(activeDrivers[1].id);
+      expect(rel2?.teammateId).toBe(activeDrivers[0].id);
+    });
+
+    it('syncDriverRelationshipsForTeam removes relationships for drivers who left the team', () => {
+      let state = newCareerState();
+      const teamId = state.selectedTeamId;
+      const drivers = driversForTeam(state, teamId);
+      const driverId = drivers[0]?.id;
+      if (!driverId) return;
+
+      // Create a relationship for a driver not on the team
+      const fakeDriverId = 'fake-driver-id';
+      state = {
+        ...state,
+        driverRelationships: {
+          ...state.driverRelationships,
+          [fakeDriverId]: {
+            driverId: fakeDriverId,
+            teamId,
+            teamLoyalty: 50,
+            engineerChemistry: 50,
+            teammateRelationship: 50,
+            morale: 60,
+            frustration: 20,
+            numberOneExpectation: false,
+          },
+        },
+      };
+
+      state = syncDriverRelationshipsForTeam(state, teamId, state.randomSeed ?? 'sync');
+      expect(state.driverRelationships?.[fakeDriverId]).toBeUndefined();
     });
   });
 });

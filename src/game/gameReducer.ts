@@ -110,6 +110,7 @@ import {
 } from '../sim/raceWeekendPackageEngine';
 import { ARCHETYPE_SPECS } from '../sim/aiTeamEngine';
 import { effectiveCarRatings } from '../sim/trackFitEngine';
+import { syncDriverRelationshipsForTeam } from '../sim/relationshipEngine';
 import {
   enterPostRaceReview,
   enterPaddockWeek,
@@ -126,6 +127,7 @@ import {
   getOrCreatePhaseState,
   processAITeamActivity,
   computeRacePrepFocusEffect,
+  approvePreseasonTab,
 } from './careerPhaseEngine';
 
 export type GameAction =
@@ -184,7 +186,8 @@ export type GameAction =
   | { type: 'COMPLETE_PRESEASON_SETUP' }
   | { type: 'GENERATE_PADDOCK_EVENTS' }
   | { type: 'RESOLVE_PADDOCK_EVENT'; eventId: string; optionId: string }
-  | { type: 'TOGGLE_PRESEASON_CHECKLIST_ITEM'; itemId: string };
+  | { type: 'TOGGLE_PRESEASON_CHECKLIST_ITEM'; itemId: string }
+  | { type: 'APPROVE_PRESEASON_TAB'; tabId: 'teamOverview' | 'budget' | 'driverLineup' | 'carDevelopment' | 'sponsorsEngine' | 'seasonObjectives' | 'roundOnePreview' };
 
 // Run one practice session for the player's drivers: simulate each assignment,
 // fold the results into the weekend knowledge, and apply the one-off confidence
@@ -342,7 +345,9 @@ function swapRaceDriver(state: GameState, seatIndex: number, reserveDriverId: st
     if (d.id === seatDriverId) return { ...d, contractType: 'reserve' as const };
     return d;
   });
-  return { ...state, teams, drivers };
+  const updated = { ...state, teams, drivers };
+  // Sync relationships after roster change.
+  return syncDriverRelationshipsForTeam(updated, teamId, state.randomSeed ?? 'sync');
 }
 
 // Sign a free-agent market driver mid-season as the player team's 3rd driver.
@@ -381,7 +386,7 @@ function signThirdDriver(state: GameState, marketId: string): GameState {
     state,
     makeTransaction(state.seasonYear, 'Driver Signing', `3rd driver: ${m.name}`, -fee),
   );
-  return {
+  const updated = {
     ...charged,
     drivers: [...charged.drivers, driver],
     teams: charged.teams.map((t) =>
@@ -389,6 +394,8 @@ function signThirdDriver(state: GameState, marketId: string): GameState {
     ),
     signedMarketIds: [...(charged.signedMarketIds ?? []), m.id],
   };
+  // Sync relationships after roster change.
+  return syncDriverRelationshipsForTeam(updated, teamId, state.randomSeed ?? 'sync');
 }
 
 // Track the last debug breakdowns so the UI can show them (kept outside state
@@ -679,6 +686,12 @@ export function gameReducer(state: GameState | null, action: GameAction): GameSt
       if (!state) return state;
       if (getCareerPhase(state) !== 'pre_season_setup') return state;
       return togglePreseasonChecklistItem(state, action.itemId);
+    }
+
+    case 'APPROVE_PRESEASON_TAB': {
+      if (!state) return state;
+      if (getCareerPhase(state) !== 'pre_season_setup') return state;
+      return approvePreseasonTab(state, action.tabId);
     }
 
     default:
