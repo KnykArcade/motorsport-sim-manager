@@ -38,6 +38,7 @@ import type { DriverDevelopmentCurve } from '../types/developmentCurveTypes';
 import type { UniverseHistory } from '../types/universeTypes';
 import type { AITeamState } from '../types/aiTeamTypes';
 import type { RaceWeekendPackageSelection } from '../types/raceWeekendPackageTypes';
+import type { CareerPhaseState } from '../types/careerPhaseTypes';
 
 export type GameState = {
   id: string;
@@ -165,6 +166,10 @@ export type GameState = {
   raceWeekendPackageHistory?: RaceWeekendPackageSelection[];
   // AI team package selections for the current weekend, keyed by teamId.
   aiRaceWeekendPackages?: Record<string, RaceWeekendPackageSelection>;
+
+  // Career Phase system: tracks the between-race management flow.
+  // Optional for save compatibility; defaults to pre_season_setup for new games.
+  careerPhase?: CareerPhaseState;
 };
 
 export function teamById(state: GameState, id: string): Team | undefined {

@@ -109,6 +109,17 @@ import {
 } from '../sim/raceWeekendPackageEngine';
 import { ARCHETYPE_SPECS } from '../sim/aiTeamEngine';
 import { effectiveCarRatings } from '../sim/trackFitEngine';
+import {
+  enterPostRaceReview,
+  enterPaddockWeek,
+  enterPreRaceBriefing,
+  enterRaceWeekend,
+  enterPreSeasonSetup,
+  enterPreRaceBriefingFromPreseason,
+  generateAndStorePaddockEvents,
+  resolvePaddockEvent,
+  hasUnresolvedRequiredDecisions,
+} from './careerPhaseEngine';
 
 export type GameAction =
   | { type: 'NEW_GAME'; options: NewGameOptions }
@@ -159,7 +170,13 @@ export type GameAction =
   | { type: 'ADVANCE_SEASON' }
   | { type: 'ADVANCE_RACE' }
   | { type: 'SIGN_RACE_DRIVER'; marketId: string }
-  | { type: 'SELECT_RACE_WEEKEND_PACKAGE'; packageType: RaceWeekendPackageType };
+  | { type: 'SELECT_RACE_WEEKEND_PACKAGE'; packageType: RaceWeekendPackageType }
+  | { type: 'ADVANCE_TO_PADDOCK_WEEK' }
+  | { type: 'ADVANCE_TO_PRE_RACE_BRIEFING' }
+  | { type: 'ADVANCE_TO_RACE_WEEKEND' }
+  | { type: 'COMPLETE_PRESEASON_SETUP' }
+  | { type: 'GENERATE_PADDOCK_EVENTS' }
+  | { type: 'RESOLVE_PADDOCK_EVENT'; eventId: string; optionId: string };
 
 // Run one practice session for the player's drivers: simulate each assignment,
 // fold the results into the weekend knowledge, and apply the one-off confidence
@@ -376,7 +393,7 @@ export const lastBreakdowns: {
 export function gameReducer(state: GameState | null, action: GameAction): GameState | null {
   switch (action.type) {
     case 'NEW_GAME':
-      return createNewGame(action.options);
+      return enterPreSeasonSetup(createNewGame(action.options));
 
     case 'LOAD_GAME':
       return action.state;
@@ -399,14 +416,17 @@ export function gameReducer(state: GameState | null, action: GameAction): GameSt
       if (!state) return state;
       const entryCheck = canEnterRaceWeekend(state);
       if (!entryCheck.allowed) return state;
-      return runRace(state, action.decisions);
+      const race = currentRace(state);
+      if (!race) return state;
+      const raced = runRace(state, action.decisions);
+      return enterPostRaceReview(raced, race.id);
     }
 
     case 'COMMIT_LIVE_RACE': {
       if (!state) return state;
       const race = currentRace(state);
       if (!race) return state;
-      return applyRaceResults(
+      const applied = applyRaceResults(
         state,
         race,
         action.results,
@@ -414,6 +434,7 @@ export function gameReducer(state: GameState | null, action: GameAction): GameSt
         action.breakdowns,
         action.teamOrders ?? [],
       );
+      return enterPostRaceReview(applied, race.id);
     }
 
     case 'START_DEVELOPMENT': {
@@ -588,6 +609,39 @@ export function gameReducer(state: GameState | null, action: GameAction): GameSt
     case 'SELECT_RACE_WEEKEND_PACKAGE': {
       if (!state) return state;
       return selectRaceWeekendPackage(state, action.packageType);
+    }
+
+    case 'ADVANCE_TO_PADDOCK_WEEK': {
+      if (!state) return state;
+      return enterPaddockWeek(state);
+    }
+
+    case 'ADVANCE_TO_PRE_RACE_BRIEFING': {
+      if (!state) return state;
+      if (hasUnresolvedRequiredDecisions(state)) return state;
+      return enterPreRaceBriefing(state);
+    }
+
+    case 'ADVANCE_TO_RACE_WEEKEND': {
+      if (!state) return state;
+      const advanced = enterRaceWeekend(state);
+      // Clear the weekend package when entering a new race weekend.
+      return { ...advanced, raceWeekendPackage: undefined, aiRaceWeekendPackages: undefined };
+    }
+
+    case 'COMPLETE_PRESEASON_SETUP': {
+      if (!state) return state;
+      return enterPreRaceBriefingFromPreseason(state);
+    }
+
+    case 'GENERATE_PADDOCK_EVENTS': {
+      if (!state) return state;
+      return generateAndStorePaddockEvents(state);
+    }
+
+    case 'RESOLVE_PADDOCK_EVENT': {
+      if (!state) return state;
+      return resolvePaddockEvent(state, action.eventId, action.optionId);
     }
 
     default:

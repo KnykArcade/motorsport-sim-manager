@@ -5,6 +5,7 @@
 // is stable for now. Pure and deterministic.
 
 import { getSeasonBundle } from '../data';
+import { defaultCareerPhaseState } from './careerPhaseEngine';
 import {
   careerMarketBundle,
   marketRolloverChanges,
@@ -1019,6 +1020,7 @@ export function advanceSeason(state: GameState): GameState {
       })),
       ...state.news,
     ].slice(0, 50),
+    careerPhase: defaultCareerPhaseState(),
   };
 
   // If the principal switched teams, re-point the player-scoped systems
