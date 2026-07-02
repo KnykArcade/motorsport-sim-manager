@@ -130,7 +130,7 @@ export const teams2001: Team[] = [
     shortName: 'PRO',
     country: 'France',
     carId: 'car-prost-acer-2001',
-    driverIds: ['d-2001-heinz-harald-frentzen', 'd-2001-jean-alesi'],
+    driverIds: ['d-2001-jean-alesi'],
     budget: 42000000,
     reputation: 40,
     raceOperations: 4,

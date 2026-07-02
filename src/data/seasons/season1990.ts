@@ -12,7 +12,7 @@ export const calendar1990: Race[] = [
     trackId: 'phoenix-street-circuit-1990',
     trackName: 'Phoenix Street Circuit',
     laps: 72,
-    distanceKm: undefined,
+    distanceKm: 267.9,
     completed: false,
   },
   {
@@ -22,7 +22,7 @@ export const calendar1990: Race[] = [
     trackId: 'interlagos-1990',
     trackName: 'Interlagos',
     laps: 71,
-    distanceKm: undefined,
+    distanceKm: 305.9,
     completed: false,
   },
   {
@@ -32,7 +32,7 @@ export const calendar1990: Race[] = [
     trackId: 'imola-1990',
     trackName: 'Imola',
     laps: 61,
-    distanceKm: undefined,
+    distanceKm: 299.4,
     completed: false,
   },
   {
@@ -42,7 +42,7 @@ export const calendar1990: Race[] = [
     trackId: 'monte-carlo-1990',
     trackName: 'Monte Carlo',
     laps: 78,
-    distanceKm: undefined,
+    distanceKm: 260.3,
     completed: false,
   },
   {
@@ -52,7 +52,7 @@ export const calendar1990: Race[] = [
     trackId: 'circuit-gilles-villeneuve-1990',
     trackName: 'Circuit Gilles Villeneuve',
     laps: 70,
-    distanceKm: undefined,
+    distanceKm: 305.3,
     completed: false,
   },
   {
@@ -62,7 +62,7 @@ export const calendar1990: Race[] = [
     trackId: 'autodromo-hermanos-rodriguez-1990',
     trackName: 'Autodromo Hermanos Rodriguez',
     laps: 69,
-    distanceKm: undefined,
+    distanceKm: 297.0,
     completed: false,
   },
   {
@@ -72,7 +72,7 @@ export const calendar1990: Race[] = [
     trackId: 'paul-ricard-1990',
     trackName: 'Paul Ricard',
     laps: 80,
-    distanceKm: undefined,
+    distanceKm: 467.4,
     completed: false,
   },
   {
@@ -82,7 +82,7 @@ export const calendar1990: Race[] = [
     trackId: 'silverstone-1990',
     trackName: 'Silverstone',
     laps: 64,
-    distanceKm: undefined,
+    distanceKm: 334.5,
     completed: false,
   },
   {
@@ -92,7 +92,7 @@ export const calendar1990: Race[] = [
     trackId: 'hockenheimring-1990',
     trackName: 'Hockenheimring',
     laps: 45,
-    distanceKm: undefined,
+    distanceKm: 306.7,
     completed: false,
   },
   {
@@ -102,7 +102,7 @@ export const calendar1990: Race[] = [
     trackId: 'hungaroring-1990',
     trackName: 'Hungaroring',
     laps: 77,
-    distanceKm: undefined,
+    distanceKm: 337.3,
     completed: false,
   },
   {
@@ -112,7 +112,7 @@ export const calendar1990: Race[] = [
     trackId: 'spa-francorchamps-1990',
     trackName: 'Spa-Francorchamps',
     laps: 44,
-    distanceKm: undefined,
+    distanceKm: 305.4,
     completed: false,
   },
   {
@@ -122,7 +122,7 @@ export const calendar1990: Race[] = [
     trackId: 'monza-1990',
     trackName: 'Monza',
     laps: 53,
-    distanceKm: undefined,
+    distanceKm: 307.4,
     completed: false,
   },
   {
@@ -132,7 +132,7 @@ export const calendar1990: Race[] = [
     trackId: 'estoril-1990',
     trackName: 'Estoril',
     laps: 61,
-    distanceKm: undefined,
+    distanceKm: 265.3,
     completed: false,
   },
   {
@@ -142,7 +142,7 @@ export const calendar1990: Race[] = [
     trackId: 'jerez-1990',
     trackName: 'Jerez',
     laps: 73,
-    distanceKm: undefined,
+    distanceKm: 323.2,
     completed: false,
   },
   {
@@ -152,7 +152,7 @@ export const calendar1990: Race[] = [
     trackId: 'suzuka-1990',
     trackName: 'Suzuka',
     laps: 53,
-    distanceKm: undefined,
+    distanceKm: 307.8,
     completed: false,
   },
   {
@@ -162,7 +162,7 @@ export const calendar1990: Race[] = [
     trackId: 'adelaide-street-circuit-1990',
     trackName: 'Adelaide Street Circuit',
     laps: 81,
-    distanceKm: undefined,
+    distanceKm: 306.2,
     completed: false,
   },
 ];

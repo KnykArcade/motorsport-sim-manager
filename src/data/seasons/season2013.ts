@@ -12,7 +12,7 @@ export const calendar2013: Race[] = [
     trackId: 'albert-park-2013',
     trackName: 'Albert Park',
     laps: 58,
-    distanceKm: undefined,
+    distanceKm: 307.6,
     completed: false,
   },
   {
@@ -22,7 +22,7 @@ export const calendar2013: Race[] = [
     trackId: 'sepang-international-circuit-2013',
     trackName: 'Sepang International Circuit',
     laps: 56,
-    distanceKm: undefined,
+    distanceKm: 310.4,
     completed: false,
   },
   {
@@ -32,7 +32,7 @@ export const calendar2013: Race[] = [
     trackId: 'shanghai-international-circuit-2013',
     trackName: 'Shanghai International Circuit',
     laps: 56,
-    distanceKm: undefined,
+    distanceKm: 305.3,
     completed: false,
   },
   {
@@ -42,7 +42,7 @@ export const calendar2013: Race[] = [
     trackId: 'bahrain-international-circuit-2013',
     trackName: 'Bahrain International Circuit',
     laps: 57,
-    distanceKm: undefined,
+    distanceKm: 308.5,
     completed: false,
   },
   {
@@ -52,7 +52,7 @@ export const calendar2013: Race[] = [
     trackId: 'circuit-de-catalunya-2013',
     trackName: 'Circuit de Catalunya',
     laps: 66,
-    distanceKm: undefined,
+    distanceKm: 307.2,
     completed: false,
   },
   {
@@ -62,7 +62,7 @@ export const calendar2013: Race[] = [
     trackId: 'circuit-de-monaco-2013',
     trackName: 'Circuit de Monaco',
     laps: 78,
-    distanceKm: undefined,
+    distanceKm: 260.3,
     completed: false,
   },
   {
@@ -72,7 +72,7 @@ export const calendar2013: Race[] = [
     trackId: 'circuit-gilles-villeneuve-2013',
     trackName: 'Circuit Gilles Villeneuve',
     laps: 70,
-    distanceKm: undefined,
+    distanceKm: 305.3,
     completed: false,
   },
   {
@@ -82,7 +82,7 @@ export const calendar2013: Race[] = [
     trackId: 'silverstone-circuit-2013',
     trackName: 'Silverstone Circuit',
     laps: 52,
-    distanceKm: undefined,
+    distanceKm: 271.8,
     completed: false,
   },
   {
@@ -92,7 +92,7 @@ export const calendar2013: Race[] = [
     trackId: 'nurburgring-gp-strecke-2013',
     trackName: 'Nurburgring GP-Strecke',
     laps: 60,
-    distanceKm: undefined,
+    distanceKm: 308.9,
     completed: false,
   },
   {
@@ -102,7 +102,7 @@ export const calendar2013: Race[] = [
     trackId: 'hungaroring-2013',
     trackName: 'Hungaroring',
     laps: 70,
-    distanceKm: undefined,
+    distanceKm: 306.6,
     completed: false,
   },
   {
@@ -112,7 +112,7 @@ export const calendar2013: Race[] = [
     trackId: 'circuit-de-spa-francorchamps-2013',
     trackName: 'Circuit de Spa-Francorchamps',
     laps: 44,
-    distanceKm: undefined,
+    distanceKm: 308.2,
     completed: false,
   },
   {
@@ -122,7 +122,7 @@ export const calendar2013: Race[] = [
     trackId: 'autodromo-nazionale-monza-2013',
     trackName: 'Autodromo Nazionale Monza',
     laps: 53,
-    distanceKm: undefined,
+    distanceKm: 307.0,
     completed: false,
   },
   {
@@ -132,7 +132,7 @@ export const calendar2013: Race[] = [
     trackId: 'marina-bay-street-circuit-2013',
     trackName: 'Marina Bay Street Circuit',
     laps: 61,
-    distanceKm: undefined,
+    distanceKm: 309.1,
     completed: false,
   },
   {
@@ -142,7 +142,7 @@ export const calendar2013: Race[] = [
     trackId: 'korea-international-circuit-2013',
     trackName: 'Korea International Circuit',
     laps: 55,
-    distanceKm: undefined,
+    distanceKm: 308.8,
     completed: false,
   },
   {
@@ -152,7 +152,7 @@ export const calendar2013: Race[] = [
     trackId: 'suzuka-circuit-2013',
     trackName: 'Suzuka Circuit',
     laps: 53,
-    distanceKm: undefined,
+    distanceKm: 310.5,
     completed: false,
   },
   {
@@ -162,7 +162,7 @@ export const calendar2013: Race[] = [
     trackId: 'buddh-international-circuit-2013',
     trackName: 'Buddh International Circuit',
     laps: 60,
-    distanceKm: undefined,
+    distanceKm: 307.5,
     completed: false,
   },
   {
@@ -172,7 +172,7 @@ export const calendar2013: Race[] = [
     trackId: 'yas-marina-circuit-2013',
     trackName: 'Yas Marina Circuit',
     laps: 55,
-    distanceKm: undefined,
+    distanceKm: 290.5,
     completed: false,
   },
   {
@@ -182,7 +182,7 @@ export const calendar2013: Race[] = [
     trackId: 'circuit-of-the-americas-2013',
     trackName: 'Circuit of the Americas',
     laps: 56,
-    distanceKm: undefined,
+    distanceKm: 308.7,
     completed: false,
   },
   {
@@ -192,7 +192,7 @@ export const calendar2013: Race[] = [
     trackId: 'autodromo-jose-carlos-pace-2013',
     trackName: 'Autodromo Jose Carlos Pace',
     laps: 71,
-    distanceKm: undefined,
+    distanceKm: 305.9,
     completed: false,
   },
 ];

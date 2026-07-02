@@ -12,7 +12,7 @@ export const calendar2008: Race[] = [
     trackId: 'albert-park-2008',
     trackName: 'Albert Park',
     laps: 58,
-    distanceKm: undefined,
+    distanceKm: 307.6,
     completed: false,
   },
   {
@@ -22,7 +22,7 @@ export const calendar2008: Race[] = [
     trackId: 'sepang-international-circuit-2008',
     trackName: 'Sepang International Circuit',
     laps: 56,
-    distanceKm: undefined,
+    distanceKm: 310.4,
     completed: false,
   },
   {
@@ -32,7 +32,7 @@ export const calendar2008: Race[] = [
     trackId: 'bahrain-international-circuit-2008',
     trackName: 'Bahrain International Circuit',
     laps: 57,
-    distanceKm: undefined,
+    distanceKm: 308.5,
     completed: false,
   },
   {
@@ -42,7 +42,7 @@ export const calendar2008: Race[] = [
     trackId: 'circuit-de-catalunya-2008',
     trackName: 'Circuit de Catalunya',
     laps: 66,
-    distanceKm: undefined,
+    distanceKm: 307.2,
     completed: false,
   },
   {
@@ -52,7 +52,7 @@ export const calendar2008: Race[] = [
     trackId: 'istanbul-park-2008',
     trackName: 'Istanbul Park',
     laps: 58,
-    distanceKm: undefined,
+    distanceKm: 309.6,
     completed: false,
   },
   {
@@ -62,7 +62,7 @@ export const calendar2008: Race[] = [
     trackId: 'circuit-de-monaco-2008',
     trackName: 'Circuit de Monaco',
     laps: 76,
-    distanceKm: undefined,
+    distanceKm: 253.6,
     completed: false,
   },
   {
@@ -72,7 +72,7 @@ export const calendar2008: Race[] = [
     trackId: 'circuit-gilles-villeneuve-2008',
     trackName: 'Circuit Gilles Villeneuve',
     laps: 70,
-    distanceKm: undefined,
+    distanceKm: 305.3,
     completed: false,
   },
   {
@@ -82,7 +82,7 @@ export const calendar2008: Race[] = [
     trackId: 'circuit-de-nevers-magny-cours-2008',
     trackName: 'Circuit de Nevers Magny-Cours',
     laps: 70,
-    distanceKm: undefined,
+    distanceKm: 308.8,
     completed: false,
   },
   {
@@ -92,7 +92,7 @@ export const calendar2008: Race[] = [
     trackId: 'silverstone-2008',
     trackName: 'Silverstone',
     laps: 60,
-    distanceKm: undefined,
+    distanceKm: 313.6,
     completed: false,
   },
   {
@@ -102,7 +102,7 @@ export const calendar2008: Race[] = [
     trackId: 'hockenheimring-2008',
     trackName: 'Hockenheimring',
     laps: 67,
-    distanceKm: undefined,
+    distanceKm: 456.6,
     completed: false,
   },
   {
@@ -112,7 +112,7 @@ export const calendar2008: Race[] = [
     trackId: 'hungaroring-2008',
     trackName: 'Hungaroring',
     laps: 70,
-    distanceKm: undefined,
+    distanceKm: 306.6,
     completed: false,
   },
   {
@@ -122,7 +122,7 @@ export const calendar2008: Race[] = [
     trackId: 'valencia-street-circuit-2008',
     trackName: 'Valencia Street Circuit',
     laps: 57,
-    distanceKm: undefined,
+    distanceKm: 308.9,
     completed: false,
   },
   {
@@ -132,7 +132,7 @@ export const calendar2008: Race[] = [
     trackId: 'spa-francorchamps-2008',
     trackName: 'Spa-Francorchamps',
     laps: 44,
-    distanceKm: undefined,
+    distanceKm: 305.4,
     completed: false,
   },
   {
@@ -142,7 +142,7 @@ export const calendar2008: Race[] = [
     trackId: 'autodromo-nazionale-monza-2008',
     trackName: 'Autodromo Nazionale Monza',
     laps: 53,
-    distanceKm: undefined,
+    distanceKm: 307.0,
     completed: false,
   },
   {
@@ -152,7 +152,7 @@ export const calendar2008: Race[] = [
     trackId: 'marina-bay-street-circuit-2008',
     trackName: 'Marina Bay Street Circuit',
     laps: 61,
-    distanceKm: undefined,
+    distanceKm: 309.1,
     completed: false,
   },
   {
@@ -162,7 +162,7 @@ export const calendar2008: Race[] = [
     trackId: 'fuji-speedway-2008',
     trackName: 'Fuji Speedway',
     laps: 67,
-    distanceKm: undefined,
+    distanceKm: 305.7,
     completed: false,
   },
   {
@@ -172,7 +172,7 @@ export const calendar2008: Race[] = [
     trackId: 'shanghai-international-circuit-2008',
     trackName: 'Shanghai International Circuit',
     laps: 56,
-    distanceKm: undefined,
+    distanceKm: 305.3,
     completed: false,
   },
   {
@@ -182,7 +182,7 @@ export const calendar2008: Race[] = [
     trackId: 'interlagos-2008',
     trackName: 'Interlagos',
     laps: 71,
-    distanceKm: undefined,
+    distanceKm: 305.9,
     completed: false,
   },
 ];

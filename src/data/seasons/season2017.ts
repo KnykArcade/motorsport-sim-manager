@@ -12,7 +12,7 @@ export const calendar2017: Race[] = [
     trackId: 'albert-park-2017',
     trackName: 'Albert Park',
     laps: 58,
-    distanceKm: 307.6,
+    distanceKm: 306.2,
     completed: false,
   },
   {
@@ -22,7 +22,7 @@ export const calendar2017: Race[] = [
     trackId: 'shanghai-international-circuit-2017',
     trackName: 'Shanghai International Circuit',
     laps: 57,
-    distanceKm: 310.7,
+    distanceKm: 308.2,
     completed: false,
   },
   {
@@ -31,8 +31,8 @@ export const calendar2017: Race[] = [
     gpName: 'Bahrain Grand Prix',
     trackId: 'bahrain-international-circuit-2017',
     trackName: 'Bahrain International Circuit',
-    laps: 56,
-    distanceKm: 303.1,
+    laps: 57,
+    distanceKm: 308.5,
     completed: false,
   },
   {
@@ -41,8 +41,8 @@ export const calendar2017: Race[] = [
     gpName: 'Russian Grand Prix',
     trackId: 'sochi-autodrom-2017',
     trackName: 'Sochi Autodrom',
-    laps: 53,
-    distanceKm: 309.9,
+    laps: 52,
+    distanceKm: 306.3,
     completed: false,
   },
   {
@@ -52,7 +52,7 @@ export const calendar2017: Race[] = [
     trackId: 'circuit-de-barcelona-catalunya-2017',
     trackName: 'Circuit de Barcelona-Catalunya',
     laps: 66,
-    distanceKm: 307.2,
+    distanceKm: 307.1,
     completed: false,
   },
   {
@@ -82,7 +82,7 @@ export const calendar2017: Race[] = [
     trackId: 'baku-city-circuit-2017',
     trackName: 'Baku City Circuit',
     laps: 51,
-    distanceKm: 306.2,
+    distanceKm: 306.0,
     completed: false,
   },
   {
@@ -92,7 +92,7 @@ export const calendar2017: Race[] = [
     trackId: 'red-bull-ring-2017',
     trackName: 'Red Bull Ring',
     laps: 71,
-    distanceKm: 306.6,
+    distanceKm: 306.5,
     completed: false,
   },
   {
@@ -102,7 +102,7 @@ export const calendar2017: Race[] = [
     trackId: 'silverstone-circuit-2017',
     trackName: 'Silverstone Circuit',
     laps: 51,
-    distanceKm: 300.4,
+    distanceKm: 306.1,
     completed: false,
   },
   {
@@ -122,7 +122,7 @@ export const calendar2017: Race[] = [
     trackId: 'circuit-de-spa-francorchamps-2017',
     trackName: 'Circuit de Spa-Francorchamps',
     laps: 67,
-    distanceKm: 469.3,
+    distanceKm: 308.4,
     completed: false,
   },
   {
@@ -131,8 +131,8 @@ export const calendar2017: Race[] = [
     gpName: 'Italian Grand Prix',
     trackId: 'autodromo-nazionale-monza-2017',
     trackName: 'Autodromo Nazionale Monza',
-    laps: 44,
-    distanceKm: 254.9,
+    laps: 53,
+    distanceKm: 306.7,
     completed: false,
   },
   {
@@ -141,8 +141,8 @@ export const calendar2017: Race[] = [
     gpName: 'Singapore Grand Prix',
     trackId: 'marina-bay-street-circuit-2017',
     trackName: 'Marina Bay Street Circuit',
-    laps: 53,
-    distanceKm: 268.3,
+    laps: 58,
+    distanceKm: 308.4,
     completed: false,
   },
   {
@@ -151,8 +151,8 @@ export const calendar2017: Race[] = [
     gpName: 'Malaysian Grand Prix',
     trackId: 'sepang-international-circuit-2017',
     trackName: 'Sepang International Circuit',
-    laps: 58,
-    distanceKm: 321.5,
+    laps: 53,
+    distanceKm: 307.8,
     completed: false,
   },
   {
@@ -161,8 +161,8 @@ export const calendar2017: Race[] = [
     gpName: 'Japanese Grand Prix',
     trackId: 'suzuka-circuit-2017',
     trackName: 'Suzuka Circuit',
-    laps: 56,
-    distanceKm: 325.2,
+    laps: 53,
+    distanceKm: 307.5,
     completed: false,
   },
   {
@@ -171,8 +171,8 @@ export const calendar2017: Race[] = [
     gpName: 'United States Grand Prix',
     trackId: 'circuit-of-the-americas-2017',
     trackName: 'Circuit of The Americas',
-    laps: 53,
-    distanceKm: 292.2,
+    laps: 56,
+    distanceKm: 308.7,
     completed: false,
   },
   {
@@ -181,8 +181,8 @@ export const calendar2017: Race[] = [
     gpName: 'Mexican Grand Prix',
     trackId: 'autodromo-hermanos-rodriguez-2017',
     trackName: 'Autodromo Hermanos Rodriguez',
-    laps: 56,
-    distanceKm: 241.0,
+    laps: 71,
+    distanceKm: 305.4,
     completed: false,
   },
   {
@@ -201,8 +201,8 @@ export const calendar2017: Race[] = [
     gpName: 'Abu Dhabi Grand Prix',
     trackId: 'yas-marina-circuit-2017',
     trackName: 'Yas Marina Circuit',
-    laps: 71,
-    distanceKm: 375.0,
+    laps: 55,
+    distanceKm: 290.5,
     completed: false,
   },
 ];

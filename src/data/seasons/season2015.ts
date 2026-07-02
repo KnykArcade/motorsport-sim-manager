@@ -12,7 +12,7 @@ export const calendar2015: Race[] = [
     trackId: 'albert-park-2015',
     trackName: 'Albert Park',
     laps: 58,
-    distanceKm: undefined,
+    distanceKm: 307.6,
     completed: false,
   },
   {
@@ -22,7 +22,7 @@ export const calendar2015: Race[] = [
     trackId: 'sepang-international-circuit-2015',
     trackName: 'Sepang International Circuit',
     laps: 56,
-    distanceKm: undefined,
+    distanceKm: 310.4,
     completed: false,
   },
   {
@@ -32,7 +32,7 @@ export const calendar2015: Race[] = [
     trackId: 'shanghai-international-circuit-2015',
     trackName: 'Shanghai International Circuit',
     laps: 56,
-    distanceKm: undefined,
+    distanceKm: 305.3,
     completed: false,
   },
   {
@@ -42,7 +42,7 @@ export const calendar2015: Race[] = [
     trackId: 'bahrain-international-circuit-2015',
     trackName: 'Bahrain International Circuit',
     laps: 57,
-    distanceKm: undefined,
+    distanceKm: 308.5,
     completed: false,
   },
   {
@@ -52,7 +52,7 @@ export const calendar2015: Race[] = [
     trackId: 'circuit-de-catalunya-2015',
     trackName: 'Circuit de Catalunya',
     laps: 66,
-    distanceKm: undefined,
+    distanceKm: 307.2,
     completed: false,
   },
   {
@@ -62,7 +62,7 @@ export const calendar2015: Race[] = [
     trackId: 'circuit-de-monaco-2015',
     trackName: 'Circuit de Monaco',
     laps: 78,
-    distanceKm: undefined,
+    distanceKm: 260.3,
     completed: false,
   },
   {
@@ -72,7 +72,7 @@ export const calendar2015: Race[] = [
     trackId: 'circuit-gilles-villeneuve-2015',
     trackName: 'Circuit Gilles Villeneuve',
     laps: 70,
-    distanceKm: undefined,
+    distanceKm: 305.3,
     completed: false,
   },
   {
@@ -82,7 +82,7 @@ export const calendar2015: Race[] = [
     trackId: 'red-bull-ring-2015',
     trackName: 'Red Bull Ring',
     laps: 71,
-    distanceKm: undefined,
+    distanceKm: 306.6,
     completed: false,
   },
   {
@@ -92,7 +92,7 @@ export const calendar2015: Race[] = [
     trackId: 'silverstone-circuit-2015',
     trackName: 'Silverstone Circuit',
     laps: 52,
-    distanceKm: undefined,
+    distanceKm: 271.8,
     completed: false,
   },
   {
@@ -102,7 +102,7 @@ export const calendar2015: Race[] = [
     trackId: 'hungaroring-2015',
     trackName: 'Hungaroring',
     laps: 69,
-    distanceKm: undefined,
+    distanceKm: 302.2,
     completed: false,
   },
   {
@@ -112,7 +112,7 @@ export const calendar2015: Race[] = [
     trackId: 'circuit-de-spa-francorchamps-2015',
     trackName: 'Circuit de Spa-Francorchamps',
     laps: 43,
-    distanceKm: undefined,
+    distanceKm: 301.2,
     completed: false,
   },
   {
@@ -122,7 +122,7 @@ export const calendar2015: Race[] = [
     trackId: 'autodromo-nazionale-monza-2015',
     trackName: 'Autodromo Nazionale Monza',
     laps: 53,
-    distanceKm: undefined,
+    distanceKm: 307.0,
     completed: false,
   },
   {
@@ -132,7 +132,7 @@ export const calendar2015: Race[] = [
     trackId: 'marina-bay-street-circuit-2015',
     trackName: 'Marina Bay Street Circuit',
     laps: 61,
-    distanceKm: undefined,
+    distanceKm: 309.1,
     completed: false,
   },
   {
@@ -142,7 +142,7 @@ export const calendar2015: Race[] = [
     trackId: 'suzuka-circuit-2015',
     trackName: 'Suzuka Circuit',
     laps: 53,
-    distanceKm: undefined,
+    distanceKm: 310.5,
     completed: false,
   },
   {
@@ -152,7 +152,7 @@ export const calendar2015: Race[] = [
     trackId: 'sochi-autodrom-2015',
     trackName: 'Sochi Autodrom',
     laps: 53,
-    distanceKm: undefined,
+    distanceKm: 309.9,
     completed: false,
   },
   {
@@ -162,7 +162,7 @@ export const calendar2015: Race[] = [
     trackId: 'circuit-of-the-americas-2015',
     trackName: 'Circuit of the Americas',
     laps: 56,
-    distanceKm: undefined,
+    distanceKm: 308.7,
     completed: false,
   },
   {
@@ -172,7 +172,7 @@ export const calendar2015: Race[] = [
     trackId: 'autodromo-hermanos-rodriguez-2015',
     trackName: 'Autodromo Hermanos Rodriguez',
     laps: 71,
-    distanceKm: undefined,
+    distanceKm: 305.6,
     completed: false,
   },
   {
@@ -182,7 +182,7 @@ export const calendar2015: Race[] = [
     trackId: 'autodromo-jose-carlos-pace-2015',
     trackName: 'Autodromo Jose Carlos Pace',
     laps: 71,
-    distanceKm: undefined,
+    distanceKm: 305.9,
     completed: false,
   },
   {
@@ -192,7 +192,7 @@ export const calendar2015: Race[] = [
     trackId: 'yas-marina-circuit-2015',
     trackName: 'Yas Marina Circuit',
     laps: 55,
-    distanceKm: undefined,
+    distanceKm: 290.5,
     completed: false,
   },
 ];

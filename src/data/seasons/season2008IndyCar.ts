@@ -11,8 +11,8 @@ export const calendar2008IndyCar: Race[] = [
     gpName: 'XM Indy 300 at Homestead-Miami',
     trackId: 'homestead-miami-speedway-2008IndyCar',
     trackName: 'Homestead-Miami Speedway',
-    laps: 80,
-    distanceKm: 192.0,
+    laps: 200,
+    distanceKm: 482.8,
     completed: false,
   },
   {
@@ -21,8 +21,8 @@ export const calendar2008IndyCar: Race[] = [
     gpName: 'Honda IndyCar Grand Prix at St. Petersburg',
     trackId: 'streets-of-st-petersburg-2008IndyCar',
     trackName: 'Streets of St. Petersburg',
-    laps: 200,
-    distanceKm: 580.0,
+    laps: 100,
+    distanceKm: 289.7,
     completed: false,
   },
   {
@@ -31,8 +31,8 @@ export const calendar2008IndyCar: Race[] = [
     gpName: 'Indy Japan 300',
     trackId: 'twin-ring-motegi-2008IndyCar',
     trackName: 'Twin Ring Motegi',
-    laps: 228,
-    distanceKm: 547.2,
+    laps: 200,
+    distanceKm: 498.6,
     completed: false,
   },
   {
@@ -41,8 +41,8 @@ export const calendar2008IndyCar: Race[] = [
     gpName: 'Toyota Grand Prix of Long Beach',
     trackId: 'streets-of-long-beach-2008IndyCar',
     trackName: 'Streets of Long Beach',
-    laps: 100,
-    distanceKm: 320.0,
+    laps: 85,
+    distanceKm: 269.2,
     completed: false,
   },
   {
@@ -51,8 +51,8 @@ export const calendar2008IndyCar: Race[] = [
     gpName: 'RoadRunner Turbo Indy 300',
     trackId: 'kansas-speedway-2008IndyCar',
     trackName: 'Kansas Speedway',
-    laps: 83,
-    distanceKm: 199.2,
+    laps: 150,
+    distanceKm: 362.1,
     completed: false,
   },
   {
@@ -62,7 +62,7 @@ export const calendar2008IndyCar: Race[] = [
     trackId: 'indianapolis-motor-speedway-2008IndyCar',
     trackName: 'Indianapolis Motor Speedway',
     laps: 200,
-    distanceKm: 800.0,
+    distanceKm: 804.7,
     completed: false,
   },
   {
@@ -72,7 +72,7 @@ export const calendar2008IndyCar: Race[] = [
     trackId: 'the-milwaukee-mile-2008IndyCar',
     trackName: 'The Milwaukee Mile',
     laps: 225,
-    distanceKm: 360.0,
+    distanceKm: 367.5,
     completed: false,
   },
   {
@@ -82,7 +82,7 @@ export const calendar2008IndyCar: Race[] = [
     trackId: 'texas-motor-speedway-2008IndyCar',
     trackName: 'Texas Motor Speedway',
     laps: 228,
-    distanceKm: 547.2,
+    distanceKm: 533.9,
     completed: false,
   },
   {
@@ -92,7 +92,7 @@ export const calendar2008IndyCar: Race[] = [
     trackId: 'iowa-speedway-2008IndyCar',
     trackName: 'Iowa Speedway',
     laps: 250,
-    distanceKm: 350.0,
+    distanceKm: 352.0,
     completed: false,
   },
   {
@@ -102,7 +102,7 @@ export const calendar2008IndyCar: Race[] = [
     trackId: 'richmond-international-raceway-2008IndyCar',
     trackName: 'Richmond International Raceway',
     laps: 300,
-    distanceKm: 360.0,
+    distanceKm: 362.1,
     completed: false,
   },
   {
@@ -112,7 +112,7 @@ export const calendar2008IndyCar: Race[] = [
     trackId: 'watkins-glen-international-2008IndyCar',
     trackName: 'Watkins Glen International',
     laps: 60,
-    distanceKm: 330.0,
+    distanceKm: 325.4,
     completed: false,
   },
   {
@@ -122,7 +122,7 @@ export const calendar2008IndyCar: Race[] = [
     trackId: 'nashville-superspeedway-2008IndyCar',
     trackName: 'Nashville Superspeedway',
     laps: 200,
-    distanceKm: 420.0,
+    distanceKm: 428.1,
     completed: false,
   },
   {
@@ -132,7 +132,7 @@ export const calendar2008IndyCar: Race[] = [
     trackId: 'mid-ohio-sports-car-course-2008IndyCar',
     trackName: 'Mid-Ohio Sports Car Course',
     laps: 85,
-    distanceKm: 306.0,
+    distanceKm: 308.9,
     completed: false,
   },
   {
@@ -141,8 +141,8 @@ export const calendar2008IndyCar: Race[] = [
     gpName: 'Rexall Edmonton Indy',
     trackId: 'edmonton-city-centre-airport-2008IndyCar',
     trackName: 'Edmonton City Centre Airport',
-    laps: 65,
-    distanceKm: 208.0,
+    laps: 95,
+    distanceKm: 301.6,
     completed: false,
   },
   {
@@ -152,7 +152,7 @@ export const calendar2008IndyCar: Race[] = [
     trackId: 'kentucky-speedway-2008IndyCar',
     trackName: 'Kentucky Speedway',
     laps: 200,
-    distanceKm: 480.0,
+    distanceKm: 482.8,
     completed: false,
   },
   {
@@ -162,7 +162,7 @@ export const calendar2008IndyCar: Race[] = [
     trackId: 'infineon-raceway-2008IndyCar',
     trackName: 'Infineon Raceway',
     laps: 75,
-    distanceKm: 277.5,
+    distanceKm: 278.0,
     completed: false,
   },
   {
@@ -172,7 +172,7 @@ export const calendar2008IndyCar: Race[] = [
     trackId: 'the-raceway-on-belle-isle-2008IndyCar',
     trackName: 'The Raceway on Belle Isle',
     laps: 90,
-    distanceKm: 297.0,
+    distanceKm: 307.8,
     completed: false,
   },
   {
@@ -182,7 +182,7 @@ export const calendar2008IndyCar: Race[] = [
     trackId: 'chicagoland-speedway-2008IndyCar',
     trackName: 'Chicagoland Speedway',
     laps: 200,
-    distanceKm: 480.0,
+    distanceKm: 482.8,
     completed: false,
   },
 ];

@@ -12,7 +12,7 @@ export const calendar2010: Race[] = [
     trackId: 'bahrain-international-circuit-endurance-layout-2010',
     trackName: 'Bahrain International Circuit - Endurance Layout',
     laps: 49,
-    distanceKm: undefined,
+    distanceKm: 265.2,
     completed: false,
   },
   {
@@ -22,7 +22,7 @@ export const calendar2010: Race[] = [
     trackId: 'albert-park-2010',
     trackName: 'Albert Park',
     laps: 58,
-    distanceKm: undefined,
+    distanceKm: 307.6,
     completed: false,
   },
   {
@@ -32,7 +32,7 @@ export const calendar2010: Race[] = [
     trackId: 'sepang-international-circuit-2010',
     trackName: 'Sepang International Circuit',
     laps: 56,
-    distanceKm: undefined,
+    distanceKm: 310.4,
     completed: false,
   },
   {
@@ -42,7 +42,7 @@ export const calendar2010: Race[] = [
     trackId: 'shanghai-international-circuit-2010',
     trackName: 'Shanghai International Circuit',
     laps: 56,
-    distanceKm: undefined,
+    distanceKm: 305.3,
     completed: false,
   },
   {
@@ -52,7 +52,7 @@ export const calendar2010: Race[] = [
     trackId: 'circuit-de-catalunya-2010',
     trackName: 'Circuit de Catalunya',
     laps: 66,
-    distanceKm: undefined,
+    distanceKm: 307.2,
     completed: false,
   },
   {
@@ -62,7 +62,7 @@ export const calendar2010: Race[] = [
     trackId: 'circuit-de-monaco-2010',
     trackName: 'Circuit de Monaco',
     laps: 78,
-    distanceKm: undefined,
+    distanceKm: 260.3,
     completed: false,
   },
   {
@@ -72,7 +72,7 @@ export const calendar2010: Race[] = [
     trackId: 'istanbul-park-2010',
     trackName: 'Istanbul Park',
     laps: 58,
-    distanceKm: undefined,
+    distanceKm: 309.6,
     completed: false,
   },
   {
@@ -82,7 +82,7 @@ export const calendar2010: Race[] = [
     trackId: 'circuit-gilles-villeneuve-2010',
     trackName: 'Circuit Gilles Villeneuve',
     laps: 70,
-    distanceKm: undefined,
+    distanceKm: 305.3,
     completed: false,
   },
   {
@@ -92,7 +92,7 @@ export const calendar2010: Race[] = [
     trackId: 'valencia-street-circuit-2010',
     trackName: 'Valencia Street Circuit',
     laps: 57,
-    distanceKm: undefined,
+    distanceKm: 308.9,
     completed: false,
   },
   {
@@ -102,7 +102,7 @@ export const calendar2010: Race[] = [
     trackId: 'silverstone-arena-layout-2010',
     trackName: 'Silverstone - Arena Layout',
     laps: 52,
-    distanceKm: undefined,
+    distanceKm: 271.8,
     completed: false,
   },
   {
@@ -112,7 +112,7 @@ export const calendar2010: Race[] = [
     trackId: 'hockenheimring-2010',
     trackName: 'Hockenheimring',
     laps: 67,
-    distanceKm: undefined,
+    distanceKm: 456.6,
     completed: false,
   },
   {
@@ -122,7 +122,7 @@ export const calendar2010: Race[] = [
     trackId: 'hungaroring-2010',
     trackName: 'Hungaroring',
     laps: 70,
-    distanceKm: undefined,
+    distanceKm: 306.6,
     completed: false,
   },
   {
@@ -132,7 +132,7 @@ export const calendar2010: Race[] = [
     trackId: 'spa-francorchamps-2010',
     trackName: 'Spa-Francorchamps',
     laps: 44,
-    distanceKm: undefined,
+    distanceKm: 305.4,
     completed: false,
   },
   {
@@ -142,7 +142,7 @@ export const calendar2010: Race[] = [
     trackId: 'monza-2010',
     trackName: 'Monza',
     laps: 53,
-    distanceKm: undefined,
+    distanceKm: 307.4,
     completed: false,
   },
   {
@@ -152,7 +152,7 @@ export const calendar2010: Race[] = [
     trackId: 'marina-bay-street-circuit-2010',
     trackName: 'Marina Bay Street Circuit',
     laps: 61,
-    distanceKm: undefined,
+    distanceKm: 309.1,
     completed: false,
   },
   {
@@ -162,7 +162,7 @@ export const calendar2010: Race[] = [
     trackId: 'suzuka-2010',
     trackName: 'Suzuka',
     laps: 53,
-    distanceKm: undefined,
+    distanceKm: 307.8,
     completed: false,
   },
   {
@@ -172,7 +172,7 @@ export const calendar2010: Race[] = [
     trackId: 'korean-international-circuit-2010',
     trackName: 'Korean International Circuit',
     laps: 55,
-    distanceKm: undefined,
+    distanceKm: 308.8,
     completed: false,
   },
   {
@@ -182,7 +182,7 @@ export const calendar2010: Race[] = [
     trackId: 'interlagos-2010',
     trackName: 'Interlagos',
     laps: 71,
-    distanceKm: undefined,
+    distanceKm: 305.9,
     completed: false,
   },
   {
@@ -192,7 +192,7 @@ export const calendar2010: Race[] = [
     trackId: 'yas-marina-circuit-2010',
     trackName: 'Yas Marina Circuit',
     laps: 55,
-    distanceKm: undefined,
+    distanceKm: 290.5,
     completed: false,
   },
 ];

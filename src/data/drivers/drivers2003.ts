@@ -474,7 +474,7 @@ export const drivers2003: Driver[] = [
     number: 17,
     nationality: 'GBR',
     age: 25,
-    teamId: 't-jaguar-cosworth',
+    teamId: 't-minardi-cosworth',
     ratings: {
       cornering: 7.1,
       braking: 7.1,

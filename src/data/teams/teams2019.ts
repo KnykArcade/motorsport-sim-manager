@@ -69,7 +69,7 @@ export const teams2019: Team[] = [
     name: 'Scuderia Toro Rosso Honda',
     shortName: 'SCU',
     carId: 'car-scuderia-toro-rosso-honda-2019',
-    driverIds: ['d-2019-pierre-gasly', 'd-2019-daniil-kvyat'],
+    driverIds: ['d-2019-daniil-kvyat'],
     budget: 66000000,
     reputation: 72,
     raceOperations: 7.8,

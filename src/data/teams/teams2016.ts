@@ -25,7 +25,7 @@ export const teams2016: Team[] = [
     shortName: 'RBR',
     country: 'Austria',
     carId: 'car-red-bull-racing-tag-heuer-2016',
-    driverIds: ['d-2016-daniel-ricciardo', 'd-2016-max-verstappen'],
+    driverIds: ['d-2016-daniel-ricciardo'],
     budget: 84000000,
     reputation: 93,
     raceOperations: 9.3,
