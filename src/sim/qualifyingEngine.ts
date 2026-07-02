@@ -144,6 +144,8 @@ type Entry = {
   packagePaceBonus: number;
   // Race Weekend Package crash risk multiplier (1 = no effect).
   packageCrashRiskMultiplier: number;
+  // Race prep focus qualifying bonus (0 = no effect).
+  prepQualifyingBonus: number;
 };
 
 type LapOutcome = {
@@ -166,7 +168,7 @@ function simulateLap(
   const { driver, car, setup, runPlan } = entry;
   const { score, breakdown } = calculateQualifyingPace(driver, car, track, setup, runPlan, entry.teamRating);
 
-  let base = score + evolution + entry.weekendForm + entry.packagePaceBonus;
+  let base = score + evolution + entry.weekendForm + entry.packagePaceBonus + entry.prepQualifyingBonus;
 
   // Weather: wet/changeable sessions reward adaptable, composed drivers and add
   // chaos. Drivers who banked wet running in practice cope better.
@@ -312,6 +314,10 @@ export function simulateQualifying(context: QualifyingContext): {
       weekendForm: formRng.variance(formSpread),
       packagePaceBonus: pkgEffects?.paceModifier ?? 0,
       packageCrashRiskMultiplier: pkgEffects?.crashRiskMultiplier ?? 1,
+      prepQualifyingBonus:
+        context.racePrepFocusEffect && e.driver.teamId === context.playerTeamId
+          ? context.racePrepFocusEffect.qualifyingModifier
+          : 0,
     };
   });
 

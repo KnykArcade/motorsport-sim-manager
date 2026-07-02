@@ -1,7 +1,8 @@
-import { HashRouter, Navigate, Route, Routes } from 'react-router-dom';
+import { HashRouter, Navigate, Route, Routes, useParams } from 'react-router-dom';
 import type { ReactNode } from 'react';
 import { GameProvider, useGame } from '../game/GameContext';
 import { canEnterRaceWeekend } from '../game/rosterEnforcement';
+import { currentRace } from '../game/careerState';
 import { Layout } from '../components/Layout';
 import { MainMenu } from '../screens/MainMenu';
 import { NewCareer } from '../screens/NewCareer';
@@ -45,14 +46,28 @@ function InGame({ children }: { children: ReactNode }) {
   return <Layout>{children}</Layout>;
 }
 
-// Route guard for the live race broadcast: blocks direct navigation to
-// /live-race/:raceId when the player's F1 team has fewer than 2 active race
-// drivers. This prevents bypassing the race weekend entry flow.
+// Route guard for the live race broadcast: only accessible during race_weekend
+// phase, when roster checks pass, and when the requested raceId matches the
+// current race. Prevents direct URL access from bypassing the phase flow.
 function LiveRaceGuard({ children }: { children: ReactNode }) {
   const { state } = useGame();
+  const { raceId } = useParams();
   if (!state) return <Navigate to="/" replace />;
+  const phase = getCareerPhase(state);
+  if (phase !== 'race_weekend') {
+    if (phase === 'pre_season_setup') return <Navigate to="/preseason" replace />;
+    if (phase === 'paddock_week') return <Navigate to="/paddock" replace />;
+    if (phase === 'pre_race_briefing') return <Navigate to="/briefing" replace />;
+    if (phase === 'post_race_review') {
+      const lastRaceId = state.careerPhase?.lastCompletedRaceId;
+      if (lastRaceId) return <Navigate to={`/post-race/${lastRaceId}`} replace />;
+    }
+    return <Navigate to="/hq" replace />;
+  }
   const check = canEnterRaceWeekend(state);
-  if (!check.allowed) return <Navigate to="/hq" replace />;
+  if (!check.allowed) return <Navigate to="/market" replace />;
+  const race = currentRace(state);
+  if (!race || (raceId && race.id !== raceId)) return <Navigate to="/weekend" replace />;
   return <>{children}</>;
 }
 
@@ -70,6 +85,32 @@ function PhaseRedirect({ children }: { children: ReactNode }) {
   }
   if (phase === 'paddock_week') return <Navigate to="/paddock" replace />;
   if (phase === 'pre_race_briefing') return <Navigate to="/briefing" replace />;
+  return <Layout>{children}</Layout>;
+}
+
+// Post-race review guard: shows active review with advance button when raceId
+// matches lastCompletedRaceId and phase is post_race_review. Old races are
+// shown read-only. Wrong phase redirects to the correct phase screen.
+function PostRaceReviewGuard({ children }: { children: ReactNode }) {
+  const { state } = useGame();
+  const { raceId } = useParams();
+  if (!state) return <Navigate to="/" replace />;
+  if (!raceId) return <Navigate to="/hq" replace />;
+
+  // If the raceId has results, it's a valid historical race — allow viewing.
+  const hasResults = !!state.completedRaceResults[raceId];
+  if (!hasResults) {
+    // No results for this raceId — redirect to correct phase.
+    const phase = getCareerPhase(state);
+    if (phase === 'pre_season_setup') return <Navigate to="/preseason" replace />;
+    if (phase === 'paddock_week') return <Navigate to="/paddock" replace />;
+    if (phase === 'pre_race_briefing') return <Navigate to="/briefing" replace />;
+    if (phase === 'race_weekend') return <Navigate to="/weekend" replace />;
+    return <Navigate to="/hq" replace />;
+  }
+
+  // If we're in post_race_review and this is the active race, show with advance button.
+  // Otherwise (old race or wrong phase), show read-only.
   return <Layout>{children}</Layout>;
 }
 
@@ -163,7 +204,7 @@ export default function App() {
           <Route path="/preseason" element={<PreseasonGuard><PreSeasonSetup /></PreseasonGuard>} />
           <Route path="/paddock" element={<PaddockWeekGuard><PaddockWeek /></PaddockWeekGuard>} />
           <Route path="/briefing" element={<PreRaceBriefingGuard><PreRaceBriefing /></PreRaceBriefingGuard>} />
-          <Route path="/post-race/:raceId" element={<InGame><PostRaceReview /></InGame>} />
+          <Route path="/post-race/:raceId" element={<PostRaceReviewGuard><PostRaceReview /></PostRaceReviewGuard>} />
           <Route path="/calendar" element={<InGame><Calendar /></InGame>} />
           <Route path="/standings" element={<InGame><Standings /></InGame>} />
           <Route path="/teams" element={<InGame><TeamOverview /></InGame>} />

@@ -72,6 +72,10 @@ export type QualifyingContext = {
   // Race Weekend Package effects by team id. Applies pace, reliability, and
   // pit crew modifiers from the selected package.
   packageEffectsByTeam?: Record<string, RaceWeekendPackageEffects>;
+  // Race prep focus effect for the player's team (qualifying modifier only).
+  racePrepFocusEffect?: RacePrepFocusEffect;
+  // Player's team ID — used to apply race prep focus effects only to the player.
+  playerTeamId?: string;
 };
 
 export type RaceContext = {
@@ -95,6 +99,18 @@ export type RaceContext = {
   // Race Weekend Package effects by team id. Applies pace, reliability, and
   // pit crew modifiers from the selected package.
   packageEffectsByTeam?: Record<string, RaceWeekendPackageEffects>;
+  // Race prep focus effect for the player's team (from Paddock Week decision).
+  // Small modifiers applied to the next race only, consumed after the race.
+  racePrepFocusEffect?: RacePrepFocusEffect;
+  // Player's team ID — used to apply race prep focus effects only to the player.
+  playerTeamId?: string;
+};
+
+export type RacePrepFocusEffect = {
+  paceModifier: number;
+  reliabilityModifier: number;
+  qualifyingModifier: number;
+  mistakeRiskMultiplier: number;
 };
 
 // Debug breakdown surfaced in the developer panel so formulas can be tuned.

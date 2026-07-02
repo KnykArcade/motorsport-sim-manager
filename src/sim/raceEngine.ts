@@ -200,6 +200,13 @@ export function computeRaceOutcome(context: RaceContext): RaceOutcome {
     // Apply Race Weekend Package pace modifier.
     const packagePaceBonus = pkgEffects?.paceModifier ?? 0;
 
+    // Apply race prep focus effect for the player's team (small, one-race bonus).
+    const racePrepFocus = context.racePrepFocusEffect;
+    const isPlayerTeam = e.driver.teamId === context.playerTeamId;
+    const prepPaceBonus = racePrepFocus && isPlayerTeam ? racePrepFocus.paceModifier : 0;
+    const prepReliabilityMod = racePrepFocus && isPlayerTeam ? racePrepFocus.reliabilityModifier : 0;
+    const prepMistakeMultiplier = racePrepFocus && isPlayerTeam ? racePrepFocus.mistakeRiskMultiplier : 1;
+
     // Grid position matters but the race can reorder things. Tracks that are
     // hard to overtake at (low overtaking racecraft) make track position
     // stickier — the aggregate of the live race's dirty-air/traffic model.
@@ -226,7 +233,7 @@ export function computeRaceOutcome(context: RaceContext): RaceOutcome {
     // Mechanical-failure risk, era-scaled down to cut reliability retirements.
     // Package reliability prep is already folded into opsForm above.
     const relRisk =
-      calculateReliabilityRisk(e.car, context.track, setup, stress, opsForm) *
+      (calculateReliabilityRisk(e.car, context.track, setup, stress, opsForm) - prepReliabilityMod) *
       eraReliabilityScale(context.year);
     // Crash/incident risk, separate from mechanical failure. Package can reduce
     // crash risk (Conservative) or increase it (Budget).
@@ -237,12 +244,12 @@ export function computeRaceOutcome(context: RaceContext): RaceOutcome {
       context.track,
       instruction.mistakeModifier,
       grid <= 6 ? 0.5 : 0,
-    );
+    ) * prepMistakeMultiplier;
 
     const incidents: string[] = [];
     let status: RaceResult['status'] = 'Finished';
     let lapsCompleted = totalLaps;
-    let finalScore = score + gridBonus + form + driverSwing + packagePaceBonus;
+    let finalScore = score + gridBonus + form + driverSwing + packagePaceBonus + prepPaceBonus;
 
     // Total retirement probability, then the *cause* is drawn from the era
     // profile (nudged by car/driver/track), so the season-wide DNF cause split

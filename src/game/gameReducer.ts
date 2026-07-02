@@ -79,6 +79,7 @@ import type {
   QualifyingDecision,
   RaceDecision,
   RaceEvent,
+  RacePrepFocusEffect,
   ScoreBreakdown,
 } from '../types/simTypes';
 import type { CarSetup } from '../types/setupTypes';
@@ -121,6 +122,10 @@ import {
   hasUnresolvedRequiredDecisions,
   togglePreseasonChecklistItem,
   isPreseasonChecklistComplete,
+  getCareerPhase,
+  getOrCreatePhaseState,
+  processAITeamActivity,
+  computeRacePrepFocusEffect,
 } from './careerPhaseEngine';
 
 export type GameAction =
@@ -403,6 +408,7 @@ export function gameReducer(state: GameState | null, action: GameAction): GameSt
 
     case 'RUN_QUALIFYING': {
       if (!state) return state;
+      if (getCareerPhase(state) !== 'race_weekend') return state;
       // Pre-Race-1 F1 roster enforcement: block the player from running
       // qualifying if their team has fewer than 2 active race drivers.
       const entryCheck = canEnterRaceWeekend(state);
@@ -417,6 +423,7 @@ export function gameReducer(state: GameState | null, action: GameAction): GameSt
 
     case 'RUN_RACE': {
       if (!state) return state;
+      if (getCareerPhase(state) !== 'race_weekend') return state;
       const entryCheck = canEnterRaceWeekend(state);
       if (!entryCheck.allowed) return state;
       const race = currentRace(state);
@@ -427,6 +434,7 @@ export function gameReducer(state: GameState | null, action: GameAction): GameSt
 
     case 'COMMIT_LIVE_RACE': {
       if (!state) return state;
+      if (getCareerPhase(state) !== 'race_weekend') return state;
       const race = currentRace(state);
       if (!race) return state;
       const applied = applyRaceResults(
@@ -616,17 +624,25 @@ export function gameReducer(state: GameState | null, action: GameAction): GameSt
 
     case 'ADVANCE_TO_PADDOCK_WEEK': {
       if (!state) return state;
+      if (getCareerPhase(state) !== 'post_race_review') return state;
       return enterPaddockWeek(state);
     }
 
     case 'ADVANCE_TO_PRE_RACE_BRIEFING': {
       if (!state) return state;
-      if (hasUnresolvedRequiredDecisions(state)) return state;
+      const phase = getCareerPhase(state);
+      // Only allow from paddock_week (after resolving required decisions) or
+      // from pre_season_setup (if preseason checklist is complete — handled
+      // by COMPLETE_PRESEASON_SETUP instead, but guard anyway).
+      if (phase !== 'paddock_week' && phase !== 'pre_season_setup') return state;
+      if (phase === 'paddock_week' && hasUnresolvedRequiredDecisions(state)) return state;
+      if (phase === 'pre_season_setup' && !isPreseasonChecklistComplete(state)) return state;
       return enterPreRaceBriefing(state);
     }
 
     case 'ADVANCE_TO_RACE_WEEKEND': {
       if (!state) return state;
+      if (getCareerPhase(state) !== 'pre_race_briefing') return state;
       const advanced = enterRaceWeekend(state);
       // Clear the weekend package when entering a new race weekend.
       return { ...advanced, raceWeekendPackage: undefined, aiRaceWeekendPackages: undefined };
@@ -640,16 +656,21 @@ export function gameReducer(state: GameState | null, action: GameAction): GameSt
 
     case 'GENERATE_PADDOCK_EVENTS': {
       if (!state) return state;
+      if (getCareerPhase(state) !== 'paddock_week') return state;
+      // Process AI team activity once per paddock week (real state changes).
+      state = processAITeamActivity(state);
       return generateAndStorePaddockEvents(state);
     }
 
     case 'RESOLVE_PADDOCK_EVENT': {
       if (!state) return state;
+      if (getCareerPhase(state) !== 'paddock_week') return state;
       return resolvePaddockEvent(state, action.eventId, action.optionId);
     }
 
     case 'TOGGLE_PRESEASON_CHECKLIST_ITEM': {
       if (!state) return state;
+      if (getCareerPhase(state) !== 'pre_season_setup') return state;
       return togglePreseasonChecklistItem(state, action.itemId);
     }
 
@@ -1006,6 +1027,8 @@ function runQualifying(state: GameState, playerDecisions: QualifyingDecision[]):
     teamReputation,
     teamRaceOps,
     packageEffectsByTeam: pkgEffects,
+    racePrepFocusEffect: getRacePrepFocusEffectForQualifying(state),
+    playerTeamId: state.selectedTeamId,
   });
 
   lastBreakdowns.qualifying = breakdowns;
@@ -1024,6 +1047,12 @@ function runQualifying(state: GameState, playerDecisions: QualifyingDecision[]):
     cars,
     qualifyingResults: { ...state.qualifyingResults, [race.id]: results },
   };
+}
+
+function getRacePrepFocusEffectForQualifying(state: GameState): RacePrepFocusEffect | undefined {
+  const phaseState = getOrCreatePhaseState(state);
+  if (!phaseState.racePrepFocus || phaseState.racePrepFocusApplied) return undefined;
+  return computeRacePrepFocusEffect(phaseState.racePrepFocus);
 }
 
 function runRace(state: GameState, playerDecisions: RaceDecision[]): GameState {

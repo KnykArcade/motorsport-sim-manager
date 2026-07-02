@@ -94,9 +94,17 @@ export function createLiveRace(context: RaceContext, options: LiveRaceOptions): 
     const { score: paceScore } = calculateRacePace(e.driver, e.car, track, setup, strategy, instruction, teamRating);
     // Per-team weekend form so the live race shares the quick race's variation.
     const score = paceScore + weekendForm(context.seed, e.driver.teamId, teamRating);
+
+    // Apply race prep focus effect for the player's team (small, one-race bonus).
+    const racePrepFocus = context.racePrepFocusEffect;
+    const isPlayerTeam = e.driver.teamId === context.playerTeamId;
+    const prepPaceBonus = racePrepFocus && isPlayerTeam ? racePrepFocus.paceModifier : 0;
+    const prepReliabilityMod = racePrepFocus && isPlayerTeam ? racePrepFocus.reliabilityModifier : 0;
+    const prepMistakeMultiplier = racePrepFocus && isPlayerTeam ? racePrepFocus.mistakeRiskMultiplier : 1;
+
     // Base Race Pace on the 1-10 scale (the pace score divided back out of the
     // internal PACE_SPREAD blow-up), which the live-pace model builds on.
-    const baseRacePace = clamp10(score / PACE_SPREAD);
+    const baseRacePace = clamp10((score + prepPaceBonus) / PACE_SPREAD);
     // Per-car weekend operations execution (pit/reliability/strategy), zero-mean.
     const opsForm = operationsForm(context.seed, e.driver.teamId, e.driver.id, teamRating);
 
@@ -112,7 +120,7 @@ export function createLiveRace(context: RaceContext, options: LiveRaceOptions): 
     // vs crash) lands on the era targets; the Quick Sim is unaffected.
     const cal = liveRiskCalibration(options.year, options.series);
     const baseFailureRisk =
-      perLapFailureRisk(perRaceRel, totalLaps) * eraReliabilityScale(options.year) * cal.mech;
+      perLapFailureRisk(Math.max(0, perRaceRel - prepReliabilityMod), totalLaps) * eraReliabilityScale(options.year) * cal.mech;
 
     // Crash/incident risk, kept separate from mechanical failure.
     const perRaceCrash = calculateCrashRisk(e.driver, track, instruction.mistakeModifier);
@@ -123,7 +131,7 @@ export function createLiveRace(context: RaceContext, options: LiveRaceOptions): 
       track,
       instruction.mistakeModifier,
       grid <= 6 ? 0.5 : 0,
-    );
+    ) * prepMistakeMultiplier;
     const baseMistakeRisk = perLapFailureRisk(perRaceMistake * 0.7, totalLaps);
 
     const pitPlan = buildPitPlan(strategy, totalLaps);

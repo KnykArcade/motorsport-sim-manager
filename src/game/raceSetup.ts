@@ -29,10 +29,11 @@ import {
   type GameState,
 } from './careerState';
 import type { SetupOption, Track } from '../types/gameTypes';
-import type { Entrant, RaceContext, RaceDecision } from '../types/simTypes';
+import type { Entrant, RaceContext, RaceDecision, RacePrepFocusEffect } from '../types/simTypes';
 import type { RaceWeekendPackageEffects } from '../types/raceWeekendPackageTypes';
 import { packageEffects as getPackageEffects } from '../sim/raceWeekendPackageEngine';
 import type { LiveRaceMeta, LiveRaceOptions } from '../sim/liveRaceEngine';
+import { computeRacePrepFocusEffect, getOrCreatePhaseState } from './careerPhaseEngine';
 
 // Build the derived session setups for the player's tuned car setups, plus a
 // lookup from driverId to the setup id to use for the given session trim. Cars
@@ -164,6 +165,8 @@ export function buildRaceContext(
     teamReputation,
     teamRaceOps,
     packageEffectsByTeam: pkgEffects,
+    racePrepFocusEffect: getRacePrepFocusEffect(state),
+    playerTeamId: state.selectedTeamId,
   };
 
   return { context, track, raceId: race.id, totalLaps: race.laps };
@@ -201,4 +204,10 @@ export function buildLiveRaceMeta(state: GameState, track: Track): LiveRaceMeta 
   const teamNames: Record<string, string> = {};
   state.teams.forEach((t) => (teamNames[t.id] = t.name));
   return { track, driverNames, teamNames, playerTeamId: state.selectedTeamId, year: state.seasonYear };
+}
+
+function getRacePrepFocusEffect(state: GameState): RacePrepFocusEffect | undefined {
+  const phaseState = getOrCreatePhaseState(state);
+  if (!phaseState.racePrepFocus || phaseState.racePrepFocusApplied) return undefined;
+  return computeRacePrepFocusEffect(phaseState.racePrepFocus);
 }
