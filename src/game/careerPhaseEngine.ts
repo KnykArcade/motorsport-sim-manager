@@ -12,8 +12,10 @@ import type {
   PaddockEvent,
   PaddockEventCategory,
   PaddockEventOption,
+  PaddockEventOptionEffect,
 } from '../types/careerPhaseTypes';
 import type { RaceResult } from '../types/gameTypes';
+import type { FinanceTransaction } from '../types/financeTypes';
 
 export function defaultCareerPhaseState(): CareerPhaseState {
   return {
@@ -29,7 +31,19 @@ export function defaultCareerPhaseState(): CareerPhaseState {
     preseasonEventsGenerated: false,
     preseasonEffectsApplied: false,
     paddockEvents: [],
+    announcedCompletedProjectIds: [],
+    preseasonChecklist: defaultPreseasonChecklist(),
   };
+}
+
+function defaultPreseasonChecklist() {
+  return [
+    { id: 'team_overview', label: 'Review team overview', completed: false },
+    { id: 'budget', label: 'Review budget', completed: false },
+    { id: 'driver_lineup', label: 'Review driver lineup', completed: false },
+    { id: 'development_focus', label: 'Confirm development focus', completed: false },
+    { id: 'season_objective', label: 'Confirm season objective', completed: false },
+  ];
 }
 
 export function getCareerPhase(state: GameState): CareerPhase {
@@ -133,6 +147,28 @@ export function enterPreRaceBriefingFromPreseason(state: GameState): GameState {
   };
 }
 
+// --- Preseason checklist -----------------------------------------------------
+
+export function togglePreseasonChecklistItem(
+  state: GameState,
+  itemId: string,
+): GameState {
+  const phaseState = getOrCreatePhaseState(state);
+  const checklist = (phaseState.preseasonChecklist ?? []).map((item) =>
+    item.id === itemId ? { ...item, completed: !item.completed } : item,
+  );
+  return {
+    ...state,
+    careerPhase: { ...phaseState, preseasonChecklist: checklist },
+  };
+}
+
+export function isPreseasonChecklistComplete(state: GameState): boolean {
+  const phaseState = getOrCreatePhaseState(state);
+  const checklist = phaseState.preseasonChecklist ?? [];
+  return checklist.length > 0 && checklist.every((item) => item.completed);
+}
+
 // --- Required decisions ------------------------------------------------------
 
 export function hasUnresolvedRequiredDecisions(state: GameState): boolean {
@@ -151,15 +187,24 @@ export function resolvePaddockEvent(
   const event = phaseState.paddockEvents.find((e) => e.id === eventId);
   if (!event) return state;
 
+  // Guard: if effects already applied, just update the resolved option (no re-apply).
+  const alreadyApplied = event.effectsApplied;
+
+  const option = event.options?.find((o) => o.id === optionId);
+  if (!option && event.options && event.options.length > 0) return state;
+
+  // Mark event as resolved and effects applied.
   const updatedEvents = phaseState.paddockEvents.map((e) =>
-    e.id === eventId ? { ...e, resolvedOptionId: optionId } : e,
+    e.id === eventId
+      ? { ...e, resolvedOptionId: optionId, effectsApplied: true }
+      : e,
   );
 
   const allResolved = !updatedEvents.some(
     (e) => e.isRequiredDecision && !e.resolvedOptionId,
   );
 
-  return {
+  let updatedState: GameState = {
     ...state,
     careerPhase: {
       ...phaseState,
@@ -167,6 +212,189 @@ export function resolvePaddockEvent(
       requiredDecisionsComplete: allResolved,
     },
   };
+
+  // Apply effects only once.
+  if (alreadyApplied || !option) return updatedState;
+
+  // --- Apply budgetChange ---
+  if (option.budgetChange) {
+    const teams = updatedState.teams.map((t) =>
+      t.id === updatedState.selectedTeamId
+        ? { ...t, budget: t.budget + option.budgetChange! }
+        : t,
+    );
+    const txn: FinanceTransaction = {
+      id: `fin-paddock-${eventId}-${optionId}`,
+      season: state.seasonYear,
+      round: phaseState.currentRound,
+      category: 'Operations',
+      label: `${event.title}: ${option.label}`,
+      amount: option.budgetChange,
+    };
+    updatedState = {
+      ...updatedState,
+      teams,
+      finance: [...(updatedState.finance ?? []), txn],
+    };
+  }
+
+  // --- Apply moraleChange to all active drivers and team ---
+  if (option.moraleChange) {
+    const activeDriverIds = new Set(
+      activeDriversForTeam(state, state.selectedTeamId).map((d) => d.id),
+    );
+    const drivers = updatedState.drivers.map((d) =>
+      activeDriverIds.has(d.id)
+        ? { ...d, morale: Math.max(0, Math.min(100, d.morale + option.moraleChange!)) }
+        : d,
+    );
+    const teams = updatedState.teams.map((t) =>
+      t.id === updatedState.selectedTeamId
+        ? { ...t, morale: Math.max(0, Math.min(100, t.morale + option.moraleChange!)) }
+        : t,
+    );
+    updatedState = { ...updatedState, drivers, teams };
+  }
+
+  // --- Apply reliabilityChange to player car ---
+  if (option.reliabilityChange) {
+    const cars = updatedState.cars.map((c) =>
+      c.teamId === updatedState.selectedTeamId
+        ? {
+            ...c,
+            developmentLevel: {
+              ...c.developmentLevel,
+              reliability: Math.max(1, Math.min(10, c.developmentLevel.reliability + option.reliabilityChange!)),
+            },
+          }
+        : c,
+    );
+    updatedState = { ...updatedState, cars };
+  }
+
+  // --- Apply carStatChange to player car ---
+  if (option.carStatChange) {
+    const cars = updatedState.cars.map((c) =>
+      c.teamId === updatedState.selectedTeamId
+        ? {
+            ...c,
+            developmentLevel: {
+              enginePower: clamp10(c.developmentLevel.enginePower + (option.carStatChange!.enginePower ?? 0)),
+              aeroEfficiency: clamp10(c.developmentLevel.aeroEfficiency + (option.carStatChange!.aeroEfficiency ?? 0)),
+              mechanicalGrip: clamp10(c.developmentLevel.mechanicalGrip + (option.carStatChange!.mechanicalGrip ?? 0)),
+              reliability: clamp10(c.developmentLevel.reliability + (option.carStatChange!.reliability ?? 0)),
+              pitCrewOperations: clamp10(c.developmentLevel.pitCrewOperations + (option.carStatChange!.pitCrewOperations ?? 0)),
+            },
+          }
+        : c,
+    );
+    updatedState = { ...updatedState, cars };
+  }
+
+  // --- Apply structured effects ---
+  if (option.effects) {
+    for (const eff of option.effects) {
+      updatedState = applyStructuredEffect(updatedState, eff, eventId);
+    }
+  }
+
+  // --- Store race prep focus if this was the race prep decision ---
+  if (event.category === 'general_team' && event.title.startsWith('Select race preparation focus')) {
+    updatedState = {
+      ...updatedState,
+      careerPhase: {
+        ...updatedState.careerPhase!,
+        racePrepFocus: optionId,
+      },
+    };
+  }
+
+  return updatedState;
+}
+
+function clamp10(n: number): number {
+  return Math.max(1, Math.min(10, n));
+}
+
+function applyStructuredEffect(
+  state: GameState,
+  eff: PaddockEventOptionEffect,
+  eventId: string,
+): GameState {
+  switch (eff.type) {
+    case 'budget': {
+      const teams = state.teams.map((t) =>
+        t.id === state.selectedTeamId ? { ...t, budget: t.budget + eff.value } : t,
+      );
+      const txn: FinanceTransaction = {
+        id: `fin-paddock-${eventId}-eff-${eff.type}`,
+        season: state.seasonYear,
+        category: 'Operations',
+        label: eff.label ?? 'Paddock event',
+        amount: eff.value,
+      };
+      return { ...state, teams, finance: [...(state.finance ?? []), txn] };
+    }
+    case 'morale': {
+      const teams = state.teams.map((t) =>
+        t.id === state.selectedTeamId
+          ? { ...t, morale: Math.max(0, Math.min(100, t.morale + eff.value)) }
+          : t,
+      );
+      return { ...state, teams };
+    }
+    case 'reliability': {
+      const cars = state.cars.map((c) =>
+        c.teamId === state.selectedTeamId
+          ? {
+              ...c,
+              developmentLevel: {
+                ...c.developmentLevel,
+                reliability: clamp10(c.developmentLevel.reliability + eff.value),
+              },
+            }
+          : c,
+      );
+      return { ...state, cars };
+    }
+    case 'carStat': {
+      if (!eff.target) return state;
+      const cars = state.cars.map((c) =>
+        c.teamId === state.selectedTeamId
+          ? {
+              ...c,
+              developmentLevel: {
+                ...c.developmentLevel,
+                [eff.target!]: clamp10((c.developmentLevel as Record<string, number>)[eff.target!] + eff.value),
+              },
+            }
+          : c,
+      );
+      return { ...state, cars };
+    }
+    case 'sponsorConfidence': {
+      if (!state.commercial) return state;
+      const sponsors = state.commercial.sponsors.map((s) =>
+        eff.target && s.id === eff.target
+          ? { ...s, confidence: Math.max(0, Math.min(100, s.confidence + eff.value)) }
+          : !eff.target
+            ? { ...s, confidence: Math.max(0, Math.min(100, s.confidence + eff.value)) }
+            : s,
+      );
+      return { ...state, commercial: { ...state.commercial, sponsors } };
+    }
+    case 'news': {
+      const newsItem = {
+        id: `news-paddock-${eventId}-${eff.type}`,
+        headline: eff.label ?? 'Paddock event',
+        body: eff.label ?? 'Paddock event resolved.',
+        timestamp: new Date().toISOString(),
+      };
+      return { ...state, news: [newsItem, ...state.news].slice(0, 50) };
+    }
+    default:
+      return state;
+  }
 }
 
 // --- Paddock week event generation -------------------------------------------
@@ -175,33 +403,40 @@ function makeEventId(weekId: string, category: string, idx: number): string {
   return `pe-${weekId}-${category}-${idx}`;
 }
 
-function makeEvent(
-  weekId: string,
-  season: number,
-  series: string,
-  round: number,
-  category: PaddockEventCategory,
-  title: string,
-  description: string,
-  severity: PaddockEvent['severity'] = 'info',
-  isRequiredDecision = false,
-  options?: PaddockEventOption[],
-): PaddockEvent {
-  return {
-    id: makeEventId(weekId, category, 0),
-    weekId,
-    season,
-    series,
-    round,
-    category,
-    title,
-    description,
-    severity,
-    isRequiredDecision,
-    options,
-    effectsApplied: false,
-    createdAt: new Date().toISOString(),
-  };
+// Builder that tracks per-category indices to guarantee unique IDs.
+class EventBuilder {
+  private counters: Record<string, number> = {};
+
+  make(
+    weekId: string,
+    season: number,
+    series: string,
+    round: number,
+    category: PaddockEventCategory,
+    title: string,
+    description: string,
+    severity: PaddockEvent['severity'] = 'info',
+    isRequiredDecision = false,
+    options?: PaddockEventOption[],
+  ): PaddockEvent {
+    const idx = this.counters[category] ?? 0;
+    this.counters[category] = idx + 1;
+    return {
+      id: makeEventId(weekId, category, idx),
+      weekId,
+      season,
+      series,
+      round,
+      category,
+      title,
+      description,
+      severity,
+      isRequiredDecision,
+      options,
+      effectsApplied: false,
+      createdAt: new Date().toISOString(),
+    };
+  }
 }
 
 // Generate paddock week events based on current game state.
@@ -215,6 +450,7 @@ export function generatePaddockWeekEvents(state: GameState): PaddockEvent[] {
   const season = state.seasonYear;
   const series = state.series;
   const weekId = phaseState.paddockWeekId ?? `pw-${season}-${round}`;
+  const builder = new EventBuilder();
 
   const events: PaddockEvent[] = [];
   const team = state.teams.find((t) => t.id === state.selectedTeamId);
@@ -232,11 +468,8 @@ export function generatePaddockWeekEvents(state: GameState): PaddockEvent[] {
       ? `${track.name}: ${track.archetype}. Demands ${topDemand(track)}.`
       : nextRace.trackName;
     events.push(
-      makeEvent(
-        weekId,
-        season,
-        series,
-        round,
+      builder.make(
+        weekId, season, series, round,
         'next_race',
         `Next Race: ${nextRace.gpName}`,
         `Round ${nextRace.round} at ${trackDesc}. ${car ? `Car condition: ${Math.round(car.condition)}%.` : ''}`,
@@ -251,11 +484,8 @@ export function generatePaddockWeekEvents(state: GameState): PaddockEvent[] {
   if (activeProjects.length > 0) {
     const projectNames = activeProjects.map((p) => p.name).join(', ');
     events.push(
-      makeEvent(
-        weekId,
-        season,
-        series,
-        round,
+      builder.make(
+        weekId, season, series, round,
         'development',
         `${activeProjects.length}/${slots} development slots in use`,
         `Active projects: ${projectNames}. ${activeProjects.length < slots ? `${slots - activeProjects.length} slot(s) available.` : 'All slots occupied.'}`,
@@ -264,11 +494,8 @@ export function generatePaddockWeekEvents(state: GameState): PaddockEvent[] {
     );
   } else if (slots > 0) {
     events.push(
-      makeEvent(
-        weekId,
-        season,
-        series,
-        round,
+      builder.make(
+        weekId, season, series, round,
         'development',
         'Factory available',
         `No active development projects. ${slots} slot(s) available for new upgrades.`,
@@ -277,17 +504,15 @@ export function generatePaddockWeekEvents(state: GameState): PaddockEvent[] {
     );
   }
 
-  // Completed projects since last race.
+  // Completed projects — only announce those not yet announced.
+  const announced = new Set(phaseState.announcedCompletedProjectIds);
   const recentCompleted = state.completedDevelopmentProjects.filter(
-    (p) => !events.some((e) => e.title.includes(p.name)),
+    (p) => !announced.has(p.id),
   );
   for (const proj of recentCompleted.slice(-2)) {
     events.push(
-      makeEvent(
-        weekId,
-        season,
-        series,
-        round,
+      builder.make(
+        weekId, season, series, round,
         'development',
         `Upgrade completed: ${proj.name}`,
         `${proj.name} has been completed and applied to the car.`,
@@ -300,11 +525,8 @@ export function generatePaddockWeekEvents(state: GameState): PaddockEvent[] {
   for (const driver of activeDrivers) {
     if (driver.morale < 40) {
       events.push(
-        makeEvent(
-          weekId,
-          season,
-          series,
-          round,
+        builder.make(
+          weekId, season, series, round,
           'driver_morale',
           `${driver.name} is frustrated`,
           `Morale is at ${Math.round(driver.morale)}%. The driver is unhappy with recent results or team dynamics.`,
@@ -313,11 +535,8 @@ export function generatePaddockWeekEvents(state: GameState): PaddockEvent[] {
       );
     } else if (driver.morale > 80) {
       events.push(
-        makeEvent(
-          weekId,
-          season,
-          series,
-          round,
+        builder.make(
+          weekId, season, series, round,
           'driver_morale',
           `${driver.name} is highly motivated`,
           `Morale is at ${Math.round(driver.morale)}%. The driver is confident and pushing hard.`,
@@ -337,11 +556,8 @@ export function generatePaddockWeekEvents(state: GameState): PaddockEvent[] {
       if (!driver) continue;
       if (r.status === 'DNF' || r.status === 'DSQ') {
         events.push(
-          makeEvent(
-            weekId,
-            season,
-            series,
-            round,
+          builder.make(
+            weekId, season, series, round,
             'driver_morale',
             `${driver.name} disappointed after DNF`,
             `Retirement in the last race has affected ${driver.name}'s confidence.`,
@@ -350,11 +566,8 @@ export function generatePaddockWeekEvents(state: GameState): PaddockEvent[] {
         );
       } else if (r.position !== null && r.position <= 3) {
         events.push(
-          makeEvent(
-            weekId,
-            season,
-            series,
-            round,
+          builder.make(
+            weekId, season, series, round,
             'driver_morale',
             `${driver.name} boosted by podium`,
             `P${r.position} finish has lifted ${driver.name}'s spirits.`,
@@ -368,11 +581,8 @@ export function generatePaddockWeekEvents(state: GameState): PaddockEvent[] {
   // --- Sponsor / Finance ---
   if (team.budget < 5_000_000) {
     events.push(
-      makeEvent(
-        weekId,
-        season,
-        series,
-        round,
+      builder.make(
+        weekId, season, series, round,
         'finance',
         'Budget warning',
         `Team budget is critically low at ${formatBudget(team.budget)}. Careful spending is required.`,
@@ -387,11 +597,8 @@ export function generatePaddockWeekEvents(state: GameState): PaddockEvent[] {
     for (const s of sponsors) {
       if (s.confidence < 30) {
         events.push(
-          makeEvent(
-            weekId,
-            season,
-            series,
-            round,
+          builder.make(
+            weekId, season, series, round,
             'sponsor',
             `${s.name} is dissatisfied`,
             `Sponsor confidence is at ${Math.round(s.confidence)}%. Results need to improve to maintain the relationship.`,
@@ -406,11 +613,8 @@ export function generatePaddockWeekEvents(state: GameState): PaddockEvent[] {
   if (state.engine && carRatings) {
     if (carRatings.reliability < 5) {
       events.push(
-        makeEvent(
-          weekId,
-          season,
-          series,
-          round,
+        builder.make(
+          weekId, season, series, round,
           'engine',
           'Reliability concern',
           `Car reliability is rated ${carRatings.reliability.toFixed(1)}/10. The factory should prioritize reliability work.`,
@@ -426,11 +630,8 @@ export function generatePaddockWeekEvents(state: GameState): PaddockEvent[] {
     const avgLevel = facLevels.reduce((a, b) => a + b, 0) / Math.max(1, facLevels.length);
     if (avgLevel < 2) {
       events.push(
-        makeEvent(
-          weekId,
-          season,
-          series,
-          round,
+        builder.make(
+          weekId, season, series, round,
           'facility',
           'Facility limitations',
           `Average facility level is ${avgLevel.toFixed(1)}. Development capacity is restricted.`,
@@ -440,52 +641,15 @@ export function generatePaddockWeekEvents(state: GameState): PaddockEvent[] {
     }
   }
 
-  // --- AI Team News ---
-  const aiStates = state.aiTeamStates ?? {};
-  const aiTeams = state.teams.filter((t) => t.id !== state.selectedTeamId);
-  // Pick 1-2 AI teams to generate news for.
-  const newsTeams = aiTeams.slice(0, Math.min(2, aiTeams.length));
-  for (const aiTeam of newsTeams) {
-    const aiState = aiStates[aiTeam.id];
-    const aiCar = carForTeam(state, aiTeam.id);
-    const aiRatings = aiCar ? effectiveCarRatings(aiCar) : null;
-    if (aiRatings && aiRatings.reliability < 4) {
-      events.push(
-        makeEvent(
-          weekId,
-          season,
-          series,
-          round,
-          'ai_team',
-          `${aiTeam.name} struggling with reliability`,
-          `${aiTeam.name} has been dealing with reliability issues in recent rounds.`,
-          'info',
-        ),
-      );
-    } else if (aiState?.archetype === 'AggressiveSpender' || aiState?.archetype === 'DevelopmentFocused') {
-      events.push(
-        makeEvent(
-          weekId,
-          season,
-          series,
-          round,
-          'ai_team',
-          `${aiTeam.name} pushing development hard`,
-          `${aiTeam.name} is known for aggressive development and may bring upgrades soon.`,
-          'info',
-        ),
-      );
-    }
-  }
+  // --- AI Team News (real activity) ---
+  const aiNews = generateAITeamActivity(state, weekId, season, series, round, builder);
+  events.push(...aiNews);
 
   // --- Regulation ---
   if (round === 0 && state.regulationProposals && state.regulationProposals.length > 0) {
     events.push(
-      makeEvent(
-        weekId,
-        season,
-        series,
-        round,
+      builder.make(
+        weekId, season, series, round,
         'regulation',
         'Regulation proposals pending',
         `${state.regulationProposals.length} regulation proposals are up for vote this season.`,
@@ -497,11 +661,8 @@ export function generatePaddockWeekEvents(state: GameState): PaddockEvent[] {
   // --- Scouting (Career Mode only) ---
   if (state.gameMode === 'Career' && state.scouting) {
     events.push(
-      makeEvent(
-        weekId,
-        season,
-        series,
-        round,
+      builder.make(
+        weekId, season, series, round,
         'scouting',
         'Scouting report available',
         'The scouting department is monitoring young talent across the feeder series.',
@@ -541,11 +702,8 @@ export function generatePaddockWeekEvents(state: GameState): PaddockEvent[] {
       });
     }
     events.push(
-      makeEvent(
-        weekId,
-        season,
-        series,
-        round,
+      builder.make(
+        weekId, season, series, round,
         'general_team',
         'Select race preparation focus',
         `Choose the team's preparation focus for ${nextRace.gpName}.`,
@@ -565,6 +723,17 @@ export function generateAndStorePaddockEvents(state: GameState): GameState {
   if (phaseState.generatedEventsForCurrentWeek) return state;
 
   const events = generatePaddockWeekEvents(state);
+
+  // Track newly announced completed projects.
+  const announced = new Set(phaseState.announcedCompletedProjectIds);
+  for (const e of events) {
+    if (e.category === 'development' && e.title.startsWith('Upgrade completed: ')) {
+      const projName = e.title.replace('Upgrade completed: ', '');
+      const proj = state.completedDevelopmentProjects.find((p) => p.name === projName);
+      if (proj) announced.add(proj.id);
+    }
+  }
+
   return {
     ...state,
     careerPhase: {
@@ -572,8 +741,106 @@ export function generateAndStorePaddockEvents(state: GameState): GameState {
       paddockEvents: events,
       generatedEventsForCurrentWeek: true,
       requiredDecisionsComplete: !events.some((e) => e.isRequiredDecision),
+      announcedCompletedProjectIds: [...announced],
     },
   };
+}
+
+// --- AI team activity (real between-race processing) ------------------------
+
+// Generate AI team news based on actual car/team state. This reads real data
+// (car ratings, AI archetypes, development state) and produces news items that
+// reflect actual conditions rather than fabricated stories.
+function generateAITeamActivity(
+  state: GameState,
+  weekId: string,
+  season: number,
+  series: string,
+  round: number,
+  builder: EventBuilder,
+): PaddockEvent[] {
+  const events: PaddockEvent[] = [];
+  const aiStates = state.aiTeamStates ?? {};
+  const aiTeams = state.teams.filter((t) => t.id !== state.selectedTeamId);
+
+  // Pick 2-3 AI teams to generate news for, prioritizing those with notable state.
+  const newsTeams = aiTeams.slice(0, Math.min(3, aiTeams.length));
+
+  for (const aiTeam of newsTeams) {
+    const aiState = aiStates[aiTeam.id];
+    const aiCar = carForTeam(state, aiTeam.id);
+    const aiRatings = aiCar ? effectiveCarRatings(aiCar) : null;
+    if (!aiRatings) continue;
+
+    // Real reliability issue — only report if reliability is actually low.
+    if (aiRatings.reliability < 4) {
+      events.push(
+        builder.make(
+          weekId, season, series, round,
+          'ai_team',
+          `${aiTeam.name} struggling with reliability`,
+          `${aiTeam.name}'s car reliability is rated ${aiRatings.reliability.toFixed(1)}/10. The team is dealing with recurring issues.`,
+          'minor',
+        ),
+      );
+    }
+
+    // Real development push — only for aggressive archetypes with budget.
+    if (
+      aiState &&
+      (aiState.archetype === 'AggressiveSpender' || aiState.archetype === 'DevelopmentFocused') &&
+      aiTeam.budget > 10_000_000
+    ) {
+      events.push(
+        builder.make(
+          weekId, season, series, round,
+          'ai_team',
+          `${aiTeam.name} pushing development hard`,
+          `${aiTeam.name} is investing heavily in development. Budget: ${formatBudget(aiTeam.budget)}. An upgrade may arrive soon.`,
+          'info',
+        ),
+      );
+    }
+
+    // Real form change — compare car performance to average.
+    const aiPerformance = (aiRatings.enginePower + aiRatings.aeroEfficiency + aiRatings.mechanicalGrip) / 3;
+    if (aiPerformance > 7.5) {
+      events.push(
+        builder.make(
+          weekId, season, series, round,
+          'ai_team',
+          `${aiTeam.name} looking strong`,
+          `${aiTeam.name}'s car is performing well with an average rating of ${aiPerformance.toFixed(1)}/10 across power, aero, and grip.`,
+          'info',
+        ),
+      );
+    } else if (aiPerformance < 4.5) {
+      events.push(
+        builder.make(
+          weekId, season, series, round,
+          'ai_team',
+          `${aiTeam.name} off the pace`,
+          `${aiTeam.name}'s car is struggling with an average rating of ${aiPerformance.toFixed(1)}/10. The team needs to find performance.`,
+          'minor',
+        ),
+      );
+    }
+
+    // Financial trouble — only if AI state indicates it.
+    if (aiState && (aiState.financialHealth === 'Critical' || aiState.financialHealth === 'AtRisk')) {
+      events.push(
+        builder.make(
+          weekId, season, series, round,
+          'ai_team',
+          `${aiTeam.name} facing financial difficulties`,
+          `${aiTeam.name} is in ${aiState.financialHealth} financial health. Budget cuts may affect their development program.`,
+          'major',
+        ),
+      );
+    }
+  }
+
+  return events;
 }
 
 // --- Helpers -----------------------------------------------------------------

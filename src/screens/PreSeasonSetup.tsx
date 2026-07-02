@@ -14,6 +14,7 @@ import { Panel } from '../components/Panel';
 import { Button } from '../components/Button';
 import { TrackDemandBars } from '../components/TrackDemandBars';
 import { formatMoney } from '../components/ui';
+import { isPreseasonChecklistComplete } from '../game/careerPhaseEngine';
 
 export function PreSeasonSetup() {
   const { state, dispatch } = useGame();
@@ -32,7 +33,11 @@ export function PreSeasonSetup() {
   const isCareer = state.gameMode === 'Career';
   const isSingleSeason = state.gameMode === 'SingleSeason';
 
+  const checklist = state.careerPhase?.preseasonChecklist ?? [];
+  const checklistComplete = isPreseasonChecklistComplete(state);
+
   const advanceToBriefing = () => {
+    if (!checklistComplete) return;
     dispatch({ type: 'COMPLETE_PRESEASON_SETUP' });
     navigate('/briefing');
   };
@@ -56,10 +61,43 @@ export function PreSeasonSetup() {
             {isSingleSeason && ' · Historical replay — team setup is locked'}
           </p>
         </div>
-        <Button variant="primary" onClick={advanceToBriefing}>
-          Advance to Pre-Race Briefing →
+        <Button variant="primary" onClick={advanceToBriefing} disabled={!checklistComplete}>
+          {checklistComplete ? 'Advance to Pre-Race Briefing →' : 'Complete checklist to continue'}
         </Button>
       </div>
+
+      {/* Preseason Checklist */}
+      <Panel title="Pre-Season Checklist">
+        <p className="mb-3 text-sm text-neutral-400">
+          {isSingleSeason
+            ? 'Review the historical setup below, then confirm each item to proceed to Race 1.'
+            : 'Review each area below, then confirm to proceed to Race 1.'}
+        </p>
+        <div className="space-y-2">
+          {checklist.map((item) => (
+            <button
+              key={item.id}
+              onClick={() => dispatch({ type: 'TOGGLE_PRESEASON_CHECKLIST_ITEM', itemId: item.id })}
+              className={`flex w-full items-center gap-3 rounded-lg border p-3 text-left transition-colors ${
+                item.completed
+                  ? 'border-green-600/30 bg-green-500/5'
+                  : 'border-neutral-700 bg-neutral-900/40 hover:border-neutral-600'
+              }`}
+            >
+              <span
+                className={`flex h-5 w-5 items-center justify-center rounded-full text-xs font-bold ${
+                  item.completed ? 'bg-green-600 text-white' : 'bg-neutral-700 text-neutral-400'
+                }`}
+              >
+                {item.completed ? '✓' : '○'}
+              </span>
+              <span className={`text-sm ${item.completed ? 'text-neutral-300' : 'text-neutral-200'}`}>
+                {item.label}
+              </span>
+            </button>
+          ))}
+        </div>
+      </Panel>
 
       <div className="grid gap-6 lg:grid-cols-3">
         <div className="space-y-6 lg:col-span-2">
@@ -242,8 +280,8 @@ export function PreSeasonSetup() {
       </div>
 
       <div className="flex justify-end">
-        <Button variant="primary" onClick={advanceToBriefing}>
-          Advance to Pre-Race Briefing →
+        <Button variant="primary" onClick={advanceToBriefing} disabled={!checklistComplete}>
+          {checklistComplete ? 'Advance to Pre-Race Briefing →' : 'Complete checklist to continue'}
         </Button>
       </div>
     </div>

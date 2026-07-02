@@ -45,17 +45,6 @@ function InGame({ children }: { children: ReactNode }) {
   return <Layout>{children}</Layout>;
 }
 
-// Route guard for the race weekend: blocks direct navigation to /weekend when
-// the player's F1 team has fewer than 2 active race drivers, redirecting to
-// the driver market instead. This prevents bypassing the Team HQ button.
-function RaceWeekendGuard({ children }: { children: ReactNode }) {
-  const { state } = useGame();
-  if (!state) return <Navigate to="/" replace />;
-  const check = canEnterRaceWeekend(state);
-  if (!check.allowed) return <Navigate to="/market" replace />;
-  return <Layout>{children}</Layout>;
-}
-
 // Route guard for the live race broadcast: blocks direct navigation to
 // /live-race/:raceId when the player's F1 team has fewer than 2 active race
 // drivers. This prevents bypassing the race weekend entry flow.
@@ -84,6 +73,82 @@ function PhaseRedirect({ children }: { children: ReactNode }) {
   return <Layout>{children}</Layout>;
 }
 
+// Paddock week guard: also blocks if there are unresolved required decisions
+// and the player tries to navigate away to briefing/race weekend.
+function PaddockWeekGuard({ children }: { children: ReactNode }) {
+  const { state } = useGame();
+  if (!state) return <Navigate to="/" replace />;
+  const phase = getCareerPhase(state);
+  if (phase !== 'paddock_week') {
+    // Redirect to the correct phase screen.
+    if (phase === 'pre_season_setup') return <Navigate to="/preseason" replace />;
+    if (phase === 'pre_race_briefing') return <Navigate to="/briefing" replace />;
+    if (phase === 'race_weekend') return <Navigate to="/weekend" replace />;
+    if (phase === 'post_race_review') {
+      const lastRaceId = state.careerPhase?.lastCompletedRaceId;
+      if (lastRaceId) return <Navigate to={`/post-race/${lastRaceId}`} replace />;
+    }
+    return <Navigate to="/hq" replace />;
+  }
+  return <Layout>{children}</Layout>;
+}
+
+// Pre-race briefing guard: only accessible when in pre_race_briefing phase.
+function PreRaceBriefingGuard({ children }: { children: ReactNode }) {
+  const { state } = useGame();
+  if (!state) return <Navigate to="/" replace />;
+  const phase = getCareerPhase(state);
+  if (phase !== 'pre_race_briefing') {
+    if (phase === 'pre_season_setup') return <Navigate to="/preseason" replace />;
+    if (phase === 'paddock_week') return <Navigate to="/paddock" replace />;
+    if (phase === 'race_weekend') return <Navigate to="/weekend" replace />;
+    if (phase === 'post_race_review') {
+      const lastRaceId = state.careerPhase?.lastCompletedRaceId;
+      if (lastRaceId) return <Navigate to={`/post-race/${lastRaceId}`} replace />;
+    }
+    return <Navigate to="/hq" replace />;
+  }
+  return <Layout>{children}</Layout>;
+}
+
+// Preseason guard: only accessible when in pre_season_setup phase.
+function PreseasonGuard({ children }: { children: ReactNode }) {
+  const { state } = useGame();
+  if (!state) return <Navigate to="/" replace />;
+  const phase = getCareerPhase(state);
+  if (phase !== 'pre_season_setup') {
+    if (phase === 'paddock_week') return <Navigate to="/paddock" replace />;
+    if (phase === 'pre_race_briefing') return <Navigate to="/briefing" replace />;
+    if (phase === 'race_weekend') return <Navigate to="/weekend" replace />;
+    if (phase === 'post_race_review') {
+      const lastRaceId = state.careerPhase?.lastCompletedRaceId;
+      if (lastRaceId) return <Navigate to={`/post-race/${lastRaceId}`} replace />;
+    }
+    return <Navigate to="/hq" replace />;
+  }
+  return <Layout>{children}</Layout>;
+}
+
+// Race weekend guard with phase check: only accessible when in race_weekend phase.
+function RaceWeekendPhaseGuard({ children }: { children: ReactNode }) {
+  const { state } = useGame();
+  if (!state) return <Navigate to="/" replace />;
+  const phase = getCareerPhase(state);
+  if (phase !== 'race_weekend') {
+    if (phase === 'pre_season_setup') return <Navigate to="/preseason" replace />;
+    if (phase === 'paddock_week') return <Navigate to="/paddock" replace />;
+    if (phase === 'pre_race_briefing') return <Navigate to="/briefing" replace />;
+    if (phase === 'post_race_review') {
+      const lastRaceId = state.careerPhase?.lastCompletedRaceId;
+      if (lastRaceId) return <Navigate to={`/post-race/${lastRaceId}`} replace />;
+    }
+    return <Navigate to="/hq" replace />;
+  }
+  const check = canEnterRaceWeekend(state);
+  if (!check.allowed) return <Navigate to="/market" replace />;
+  return <Layout>{children}</Layout>;
+}
+
 export default function App() {
   return (
     <GameProvider>
@@ -95,9 +160,9 @@ export default function App() {
           <Route path="/settings" element={<Settings />} />
 
           <Route path="/hq" element={<PhaseRedirect><TeamHQ /></PhaseRedirect>} />
-          <Route path="/preseason" element={<InGame><PreSeasonSetup /></InGame>} />
-          <Route path="/paddock" element={<InGame><PaddockWeek /></InGame>} />
-          <Route path="/briefing" element={<InGame><PreRaceBriefing /></InGame>} />
+          <Route path="/preseason" element={<PreseasonGuard><PreSeasonSetup /></PreseasonGuard>} />
+          <Route path="/paddock" element={<PaddockWeekGuard><PaddockWeek /></PaddockWeekGuard>} />
+          <Route path="/briefing" element={<PreRaceBriefingGuard><PreRaceBriefing /></PreRaceBriefingGuard>} />
           <Route path="/post-race/:raceId" element={<InGame><PostRaceReview /></InGame>} />
           <Route path="/calendar" element={<InGame><Calendar /></InGame>} />
           <Route path="/standings" element={<InGame><Standings /></InGame>} />
@@ -117,7 +182,7 @@ export default function App() {
           <Route path="/curves" element={<InGame><DriverCurves /></InGame>} />
           <Route path="/records" element={<InGame><UniverseHistory /></InGame>} />
           <Route path="/history" element={<InGame><RaceHistory /></InGame>} />
-          <Route path="/weekend" element={<RaceWeekendGuard><RaceWeekend /></RaceWeekendGuard>} />
+          <Route path="/weekend" element={<RaceWeekendPhaseGuard><RaceWeekend /></RaceWeekendPhaseGuard>} />
           <Route path="/live-race/:raceId" element={<LiveRaceGuard><LiveRace /></LiveRaceGuard>} />
           <Route path="/results/:raceId" element={<InGame><RaceResults /></InGame>} />
           <Route path="/season-review" element={<InGame><SeasonReview /></InGame>} />

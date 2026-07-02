@@ -119,6 +119,8 @@ import {
   generateAndStorePaddockEvents,
   resolvePaddockEvent,
   hasUnresolvedRequiredDecisions,
+  togglePreseasonChecklistItem,
+  isPreseasonChecklistComplete,
 } from './careerPhaseEngine';
 
 export type GameAction =
@@ -176,7 +178,8 @@ export type GameAction =
   | { type: 'ADVANCE_TO_RACE_WEEKEND' }
   | { type: 'COMPLETE_PRESEASON_SETUP' }
   | { type: 'GENERATE_PADDOCK_EVENTS' }
-  | { type: 'RESOLVE_PADDOCK_EVENT'; eventId: string; optionId: string };
+  | { type: 'RESOLVE_PADDOCK_EVENT'; eventId: string; optionId: string }
+  | { type: 'TOGGLE_PRESEASON_CHECKLIST_ITEM'; itemId: string };
 
 // Run one practice session for the player's drivers: simulate each assignment,
 // fold the results into the weekend knowledge, and apply the one-off confidence
@@ -631,6 +634,7 @@ export function gameReducer(state: GameState | null, action: GameAction): GameSt
 
     case 'COMPLETE_PRESEASON_SETUP': {
       if (!state) return state;
+      if (!isPreseasonChecklistComplete(state)) return state;
       return enterPreRaceBriefingFromPreseason(state);
     }
 
@@ -642,6 +646,11 @@ export function gameReducer(state: GameState | null, action: GameAction): GameSt
     case 'RESOLVE_PADDOCK_EVENT': {
       if (!state) return state;
       return resolvePaddockEvent(state, action.eventId, action.optionId);
+    }
+
+    case 'TOGGLE_PRESEASON_CHECKLIST_ITEM': {
+      if (!state) return state;
+      return togglePreseasonChecklistItem(state, action.itemId);
     }
 
     default:

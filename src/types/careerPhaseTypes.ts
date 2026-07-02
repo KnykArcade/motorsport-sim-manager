@@ -23,6 +23,13 @@ export type PaddockEventCategory =
 
 export type PaddockEventSeverity = 'info' | 'minor' | 'major' | 'critical';
 
+export type PaddockEventOptionEffect = {
+  type: 'budget' | 'carStat' | 'morale' | 'reliability' | 'sponsorConfidence' | 'news';
+  target?: string;
+  value: number;
+  label?: string;
+};
+
 export type PaddockEventOption = {
   id: string;
   label: string;
@@ -32,6 +39,8 @@ export type PaddockEventOption = {
   moraleChange?: number;
   reliabilityChange?: number;
   risk?: number;
+  effects?: PaddockEventOptionEffect[];
+  requirement?: string;
 };
 
 export type PaddockEvent = {
@@ -51,6 +60,12 @@ export type PaddockEvent = {
   createdAt: string;
 };
 
+export type PreseasonChecklistItem = {
+  id: string;
+  label: string;
+  completed: boolean;
+};
+
 export type CareerPhaseState = {
   currentPhase: CareerPhase;
   currentRound: number;
@@ -67,4 +82,7 @@ export type CareerPhaseState = {
   preseasonEventsGenerated: boolean;
   preseasonEffectsApplied: boolean;
   paddockEvents: PaddockEvent[];
+  announcedCompletedProjectIds: string[];
+  racePrepFocus?: string;
+  preseasonChecklist: PreseasonChecklistItem[];
 };
