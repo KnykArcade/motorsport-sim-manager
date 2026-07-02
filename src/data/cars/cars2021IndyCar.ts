@@ -1,0 +1,133 @@
+// AUTO-GENERATED from IndyCar_2021_Season_Full_Update.xlsx by scripts/gen_season.py.
+// Edit ratings here directly; this file is the runtime source of truth.
+
+import type { Car } from '../../types/gameTypes';
+
+export const cars2021IndyCar: Car[] = [
+  {
+    id: 'car-chip-ganassi-racing-2021',
+    teamId: 't-chip-ganassi-racing',
+    seasonYear: 2021,
+    ratings: {
+      enginePower: 9.9,
+      aeroEfficiency: 9.9,
+      mechanicalGrip: 9.9,
+      reliability: 9.2,
+      pitCrewOperations: 9.2,
+    },
+    condition: 100,
+    developmentLevel: { enginePower: 0, aeroEfficiency: 0, mechanicalGrip: 0, reliability: 0, pitCrewOperations: 0 },
+  },
+  {
+    id: 'car-team-penske-2021',
+    teamId: 't-team-penske',
+    seasonYear: 2021,
+    ratings: {
+      enginePower: 9.6,
+      aeroEfficiency: 9.6,
+      mechanicalGrip: 9.8,
+      reliability: 9.2,
+      pitCrewOperations: 9.2,
+    },
+    condition: 100,
+    developmentLevel: { enginePower: 0, aeroEfficiency: 0, mechanicalGrip: 0, reliability: 0, pitCrewOperations: 0 },
+  },
+  {
+    id: 'car-arrow-mclaren-sp-2021',
+    teamId: 't-arrow-mclaren-sp',
+    seasonYear: 2021,
+    ratings: {
+      enginePower: 9.4,
+      aeroEfficiency: 9.4,
+      mechanicalGrip: 9.6,
+      reliability: 9.2,
+      pitCrewOperations: 8.6,
+    },
+    condition: 100,
+    developmentLevel: { enginePower: 0, aeroEfficiency: 0, mechanicalGrip: 0, reliability: 0, pitCrewOperations: 0 },
+  },
+  {
+    id: 'car-andretti-autosport-2021',
+    teamId: 't-andretti-autosport',
+    seasonYear: 2021,
+    ratings: {
+      enginePower: 9.3,
+      aeroEfficiency: 9.5,
+      mechanicalGrip: 9.3,
+      reliability: 8.8,
+      pitCrewOperations: 8.6,
+    },
+    condition: 100,
+    developmentLevel: { enginePower: 0, aeroEfficiency: 0, mechanicalGrip: 0, reliability: 0, pitCrewOperations: 0 },
+  },
+  {
+    id: 'car-rahal-letterman-lanigan-racing-2021',
+    teamId: 't-rahal-letterman-lanigan-racing',
+    seasonYear: 2021,
+    ratings: {
+      enginePower: 8.6,
+      aeroEfficiency: 8.6,
+      mechanicalGrip: 8.6,
+      reliability: 8.8,
+      pitCrewOperations: 8.6,
+    },
+    condition: 100,
+    developmentLevel: { enginePower: 0, aeroEfficiency: 0, mechanicalGrip: 0, reliability: 0, pitCrewOperations: 0 },
+  },
+  {
+    id: 'car-ed-carpenter-racing-2021',
+    teamId: 't-ed-carpenter-racing',
+    seasonYear: 2021,
+    ratings: {
+      enginePower: 8.1,
+      aeroEfficiency: 8.1,
+      mechanicalGrip: 8.1,
+      reliability: 8.2,
+      pitCrewOperations: 8.0,
+    },
+    condition: 100,
+    developmentLevel: { enginePower: 0, aeroEfficiency: 0, mechanicalGrip: 0, reliability: 0, pitCrewOperations: 0 },
+  },
+  {
+    id: 'car-meyer-shank-racing-2021',
+    teamId: 't-meyer-shank-racing',
+    seasonYear: 2021,
+    ratings: {
+      enginePower: 8.0,
+      aeroEfficiency: 8.0,
+      mechanicalGrip: 8.0,
+      reliability: 8.2,
+      pitCrewOperations: 8.0,
+    },
+    condition: 100,
+    developmentLevel: { enginePower: 0, aeroEfficiency: 0, mechanicalGrip: 0, reliability: 0, pitCrewOperations: 0 },
+  },
+  {
+    id: 'car-dale-coyne-racing-2021',
+    teamId: 't-dale-coyne-racing',
+    seasonYear: 2021,
+    ratings: {
+      enginePower: 7.6,
+      aeroEfficiency: 7.6,
+      mechanicalGrip: 7.6,
+      reliability: 8.2,
+      pitCrewOperations: 8.0,
+    },
+    condition: 100,
+    developmentLevel: { enginePower: 0, aeroEfficiency: 0, mechanicalGrip: 0, reliability: 0, pitCrewOperations: 0 },
+  },
+  {
+    id: 'car-a-j-foyt-enterprises-2021',
+    teamId: 't-a-j-foyt-enterprises',
+    seasonYear: 2021,
+    ratings: {
+      enginePower: 7.5,
+      aeroEfficiency: 7.5,
+      mechanicalGrip: 7.5,
+      reliability: 7.6,
+      pitCrewOperations: 8.0,
+    },
+    condition: 100,
+    developmentLevel: { enginePower: 0, aeroEfficiency: 0, mechanicalGrip: 0, reliability: 0, pitCrewOperations: 0 },
+  },
+];

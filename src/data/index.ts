@@ -193,6 +193,96 @@ import { tracks2026IndyCar } from './tracks/tracks2026IndyCar';
 import { teams2026IndyCar } from './teams/teams2026IndyCar';
 import { drivers2026IndyCar } from './drivers/drivers2026IndyCar';
 import { cars2026IndyCar } from './cars/cars2026IndyCar';
+import { season2008IndyCar } from './seasons/season2008IndyCar';
+import { tracks2008IndyCar } from './tracks/tracks2008IndyCar';
+import { teams2008IndyCar } from './teams/teams2008IndyCar';
+import { drivers2008IndyCar } from './drivers/drivers2008IndyCar';
+import { cars2008IndyCar } from './cars/cars2008IndyCar';
+import { season2009IndyCar } from './seasons/season2009IndyCar';
+import { tracks2009IndyCar } from './tracks/tracks2009IndyCar';
+import { teams2009IndyCar } from './teams/teams2009IndyCar';
+import { drivers2009IndyCar } from './drivers/drivers2009IndyCar';
+import { cars2009IndyCar } from './cars/cars2009IndyCar';
+import { season2010IndyCar } from './seasons/season2010IndyCar';
+import { tracks2010IndyCar } from './tracks/tracks2010IndyCar';
+import { teams2010IndyCar } from './teams/teams2010IndyCar';
+import { drivers2010IndyCar } from './drivers/drivers2010IndyCar';
+import { cars2010IndyCar } from './cars/cars2010IndyCar';
+import { season2011IndyCar } from './seasons/season2011IndyCar';
+import { tracks2011IndyCar } from './tracks/tracks2011IndyCar';
+import { teams2011IndyCar } from './teams/teams2011IndyCar';
+import { drivers2011IndyCar } from './drivers/drivers2011IndyCar';
+import { cars2011IndyCar } from './cars/cars2011IndyCar';
+import { season2012IndyCar } from './seasons/season2012IndyCar';
+import { tracks2012IndyCar } from './tracks/tracks2012IndyCar';
+import { teams2012IndyCar } from './teams/teams2012IndyCar';
+import { drivers2012IndyCar } from './drivers/drivers2012IndyCar';
+import { cars2012IndyCar } from './cars/cars2012IndyCar';
+import { season2013IndyCar } from './seasons/season2013IndyCar';
+import { tracks2013IndyCar } from './tracks/tracks2013IndyCar';
+import { teams2013IndyCar } from './teams/teams2013IndyCar';
+import { drivers2013IndyCar } from './drivers/drivers2013IndyCar';
+import { cars2013IndyCar } from './cars/cars2013IndyCar';
+import { season2014IndyCar } from './seasons/season2014IndyCar';
+import { tracks2014IndyCar } from './tracks/tracks2014IndyCar';
+import { teams2014IndyCar } from './teams/teams2014IndyCar';
+import { drivers2014IndyCar } from './drivers/drivers2014IndyCar';
+import { cars2014IndyCar } from './cars/cars2014IndyCar';
+import { season2015IndyCar } from './seasons/season2015IndyCar';
+import { tracks2015IndyCar } from './tracks/tracks2015IndyCar';
+import { teams2015IndyCar } from './teams/teams2015IndyCar';
+import { drivers2015IndyCar } from './drivers/drivers2015IndyCar';
+import { cars2015IndyCar } from './cars/cars2015IndyCar';
+import { season2016IndyCar } from './seasons/season2016IndyCar';
+import { tracks2016IndyCar } from './tracks/tracks2016IndyCar';
+import { teams2016IndyCar } from './teams/teams2016IndyCar';
+import { drivers2016IndyCar } from './drivers/drivers2016IndyCar';
+import { cars2016IndyCar } from './cars/cars2016IndyCar';
+import { season2017IndyCar } from './seasons/season2017IndyCar';
+import { tracks2017IndyCar } from './tracks/tracks2017IndyCar';
+import { teams2017IndyCar } from './teams/teams2017IndyCar';
+import { drivers2017IndyCar } from './drivers/drivers2017IndyCar';
+import { cars2017IndyCar } from './cars/cars2017IndyCar';
+import { season2018IndyCar } from './seasons/season2018IndyCar';
+import { tracks2018IndyCar } from './tracks/tracks2018IndyCar';
+import { teams2018IndyCar } from './teams/teams2018IndyCar';
+import { drivers2018IndyCar } from './drivers/drivers2018IndyCar';
+import { cars2018IndyCar } from './cars/cars2018IndyCar';
+import { season2019IndyCar } from './seasons/season2019IndyCar';
+import { tracks2019IndyCar } from './tracks/tracks2019IndyCar';
+import { teams2019IndyCar } from './teams/teams2019IndyCar';
+import { drivers2019IndyCar } from './drivers/drivers2019IndyCar';
+import { cars2019IndyCar } from './cars/cars2019IndyCar';
+import { season2020IndyCar } from './seasons/season2020IndyCar';
+import { tracks2020IndyCar } from './tracks/tracks2020IndyCar';
+import { teams2020IndyCar } from './teams/teams2020IndyCar';
+import { drivers2020IndyCar } from './drivers/drivers2020IndyCar';
+import { cars2020IndyCar } from './cars/cars2020IndyCar';
+import { season2021IndyCar } from './seasons/season2021IndyCar';
+import { tracks2021IndyCar } from './tracks/tracks2021IndyCar';
+import { teams2021IndyCar } from './teams/teams2021IndyCar';
+import { drivers2021IndyCar } from './drivers/drivers2021IndyCar';
+import { cars2021IndyCar } from './cars/cars2021IndyCar';
+import { season2022IndyCar } from './seasons/season2022IndyCar';
+import { tracks2022IndyCar } from './tracks/tracks2022IndyCar';
+import { teams2022IndyCar } from './teams/teams2022IndyCar';
+import { drivers2022IndyCar } from './drivers/drivers2022IndyCar';
+import { cars2022IndyCar } from './cars/cars2022IndyCar';
+import { season2023IndyCar } from './seasons/season2023IndyCar';
+import { tracks2023IndyCar } from './tracks/tracks2023IndyCar';
+import { teams2023IndyCar } from './teams/teams2023IndyCar';
+import { drivers2023IndyCar } from './drivers/drivers2023IndyCar';
+import { cars2023IndyCar } from './cars/cars2023IndyCar';
+import { season2024IndyCar } from './seasons/season2024IndyCar';
+import { tracks2024IndyCar } from './tracks/tracks2024IndyCar';
+import { teams2024IndyCar } from './teams/teams2024IndyCar';
+import { drivers2024IndyCar } from './drivers/drivers2024IndyCar';
+import { cars2024IndyCar } from './cars/cars2024IndyCar';
+import { season2025IndyCar } from './seasons/season2025IndyCar';
+import { tracks2025IndyCar } from './tracks/tracks2025IndyCar';
+import { teams2025IndyCar } from './teams/teams2025IndyCar';
+import { drivers2025IndyCar } from './drivers/drivers2025IndyCar';
+import { cars2025IndyCar } from './cars/cars2025IndyCar';
 import { generateStaffPool } from '../sim/staffGenerator';
 
 export { tracks1995 } from './tracks/tracks1995';
@@ -293,6 +383,24 @@ export const seasonBundles: Record<string, SeasonBundle> = {
   '2024-F1': { season: season2024, teams: teams2024, drivers: drivers2024, cars: cars2024 },
   '2025-F1': { season: season2025, teams: teams2025, drivers: drivers2025, cars: cars2025 },
   '2026-F1': { season: season2026, teams: teams2026, drivers: drivers2026, cars: cars2026 },
+  '2008-IndyCar': { season: season2008IndyCar, teams: teams2008IndyCar, drivers: drivers2008IndyCar, cars: cars2008IndyCar },
+  '2009-IndyCar': { season: season2009IndyCar, teams: teams2009IndyCar, drivers: drivers2009IndyCar, cars: cars2009IndyCar },
+  '2010-IndyCar': { season: season2010IndyCar, teams: teams2010IndyCar, drivers: drivers2010IndyCar, cars: cars2010IndyCar },
+  '2011-IndyCar': { season: season2011IndyCar, teams: teams2011IndyCar, drivers: drivers2011IndyCar, cars: cars2011IndyCar },
+  '2012-IndyCar': { season: season2012IndyCar, teams: teams2012IndyCar, drivers: drivers2012IndyCar, cars: cars2012IndyCar },
+  '2013-IndyCar': { season: season2013IndyCar, teams: teams2013IndyCar, drivers: drivers2013IndyCar, cars: cars2013IndyCar },
+  '2014-IndyCar': { season: season2014IndyCar, teams: teams2014IndyCar, drivers: drivers2014IndyCar, cars: cars2014IndyCar },
+  '2015-IndyCar': { season: season2015IndyCar, teams: teams2015IndyCar, drivers: drivers2015IndyCar, cars: cars2015IndyCar },
+  '2016-IndyCar': { season: season2016IndyCar, teams: teams2016IndyCar, drivers: drivers2016IndyCar, cars: cars2016IndyCar },
+  '2017-IndyCar': { season: season2017IndyCar, teams: teams2017IndyCar, drivers: drivers2017IndyCar, cars: cars2017IndyCar },
+  '2018-IndyCar': { season: season2018IndyCar, teams: teams2018IndyCar, drivers: drivers2018IndyCar, cars: cars2018IndyCar },
+  '2019-IndyCar': { season: season2019IndyCar, teams: teams2019IndyCar, drivers: drivers2019IndyCar, cars: cars2019IndyCar },
+  '2020-IndyCar': { season: season2020IndyCar, teams: teams2020IndyCar, drivers: drivers2020IndyCar, cars: cars2020IndyCar },
+  '2021-IndyCar': { season: season2021IndyCar, teams: teams2021IndyCar, drivers: drivers2021IndyCar, cars: cars2021IndyCar },
+  '2022-IndyCar': { season: season2022IndyCar, teams: teams2022IndyCar, drivers: drivers2022IndyCar, cars: cars2022IndyCar },
+  '2023-IndyCar': { season: season2023IndyCar, teams: teams2023IndyCar, drivers: drivers2023IndyCar, cars: cars2023IndyCar },
+  '2024-IndyCar': { season: season2024IndyCar, teams: teams2024IndyCar, drivers: drivers2024IndyCar, cars: cars2024IndyCar },
+  '2025-IndyCar': { season: season2025IndyCar, teams: teams2025IndyCar, drivers: drivers2025IndyCar, cars: cars2025IndyCar },
   '2026-IndyCar': { season: season2026IndyCar, teams: teams2026IndyCar, drivers: drivers2026IndyCar, cars: cars2026IndyCar },
 };
 
@@ -335,6 +443,24 @@ export const availableSeasons: { year: number; series: Series; label: string }[]
   { year: 2024, series: 'F1', label: '2024 Formula 1 World Championship' },
   { year: 2025, series: 'F1', label: '2025 Formula 1 World Championship' },
   { year: 2026, series: 'F1', label: '2026 Formula 1 World Championship' },
+  { year: 2008, series: 'IndyCar', label: '2008 IndyCar Series' },
+  { year: 2009, series: 'IndyCar', label: '2009 IndyCar Series' },
+  { year: 2010, series: 'IndyCar', label: '2010 IndyCar Series' },
+  { year: 2011, series: 'IndyCar', label: '2011 IndyCar Series' },
+  { year: 2012, series: 'IndyCar', label: '2012 IndyCar Series' },
+  { year: 2013, series: 'IndyCar', label: '2013 IndyCar Series' },
+  { year: 2014, series: 'IndyCar', label: '2014 IndyCar Series' },
+  { year: 2015, series: 'IndyCar', label: '2015 IndyCar Series' },
+  { year: 2016, series: 'IndyCar', label: '2016 IndyCar Series' },
+  { year: 2017, series: 'IndyCar', label: '2017 IndyCar Series' },
+  { year: 2018, series: 'IndyCar', label: '2018 IndyCar Series' },
+  { year: 2019, series: 'IndyCar', label: '2019 IndyCar Series' },
+  { year: 2020, series: 'IndyCar', label: '2020 IndyCar Series' },
+  { year: 2021, series: 'IndyCar', label: '2021 IndyCar Series' },
+  { year: 2022, series: 'IndyCar', label: '2022 IndyCar Series' },
+  { year: 2023, series: 'IndyCar', label: '2023 IndyCar Series' },
+  { year: 2024, series: 'IndyCar', label: '2024 IndyCar Series' },
+  { year: 2025, series: 'IndyCar', label: '2025 IndyCar Series' },
   { year: 2026, series: 'IndyCar', label: '2026 IndyCar Series' },
 ];
 
@@ -365,7 +491,12 @@ const allTracks: Track[] = [
   ...tracks2009, ...tracks2010, ...tracks2011, ...tracks2012, ...tracks2013,
   ...tracks2014, ...tracks2015, ...tracks2016, ...tracks2017, ...tracks2018,
   ...tracks2019, ...tracks2020, ...tracks2021, ...tracks2022, ...tracks2023,
-  ...tracks2024, ...tracks2025, ...tracks2026, ...tracks2026IndyCar,
+  ...tracks2024, ...tracks2025, ...tracks2026,
+  ...tracks2008IndyCar, ...tracks2009IndyCar, ...tracks2010IndyCar, ...tracks2011IndyCar,
+  ...tracks2012IndyCar, ...tracks2013IndyCar, ...tracks2014IndyCar, ...tracks2015IndyCar,
+  ...tracks2016IndyCar, ...tracks2017IndyCar, ...tracks2018IndyCar, ...tracks2019IndyCar,
+  ...tracks2020IndyCar, ...tracks2021IndyCar, ...tracks2022IndyCar, ...tracks2023IndyCar,
+  ...tracks2024IndyCar, ...tracks2025IndyCar, ...tracks2026IndyCar,
 ];
 export const tracksById = Object.fromEntries(allTracks.map((t) => [t.id, t]));
 
