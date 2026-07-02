@@ -187,15 +187,12 @@ export function LiveRace() {
     setLive((s) => (s ? resolveRec(s, rec, rec.action, 'accepted') : s));
 
   const pendingRecs = (s: LiveRaceState) => s.recommendations.filter((r) => r.status === 'pending');
-  // Group shortcuts: each driver keeps its own recommended action (Accept All) or
-  // its recommendation dismissed (Ignore All); "Apply to both" pushes one chosen
-  // action onto every player driver's pending recommendation.
+  // Group shortcuts for simultaneous decisions: each driver keeps its own
+  // recommended action (Accept All) or has its recommendation dismissed (Ignore All).
   const onAcceptAll = () =>
     setLive((s) => (s ? pendingRecs(s).reduce((acc, r) => resolveRec(acc, r, r.action, 'accepted'), s) : s));
   const onIgnoreAll = () =>
     setLive((s) => (s ? pendingRecs(s).reduce((acc, r) => ignoreRecommendation(acc, r.id, engine.meta), s) : s));
-  const onApplyToBoth = (action: RecAction) =>
-    setLive((s) => (s ? pendingRecs(s).reduce((acc, r) => resolveRec(acc, r, action, 'modified'), s) : s));
 
   const finishRace = () => {
     if (committed.current) {
@@ -331,7 +328,6 @@ export function LiveRace() {
               onLetCrewDecide={onLetCrewDecide}
               onAcceptAll={onAcceptAll}
               onIgnoreAll={onIgnoreAll}
-              onApplyToBoth={onApplyToBoth}
               className="shrink-0"
             />
           )}

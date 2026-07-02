@@ -63,7 +63,7 @@ export function PitWallCard({
 
   return (
     <div
-      className={`rounded-lg border bg-[#111725] p-2.5 ${
+      className={`rounded-lg border bg-[#111725] p-2 ${
         highRisk
           ? 'border-orange-500/60 shadow-[0_0_0_1px_rgba(249,115,22,0.25)]'
           : 'border-slate-700/60'
@@ -85,7 +85,7 @@ export function PitWallCard({
       </div>
 
       {/* Key telemetry row */}
-      <div className="mt-2 grid grid-cols-4 gap-1 text-center">
+      <div className="mt-1.5 grid grid-cols-4 gap-1 text-center">
         <Metric label="Gap Ldr" value={car.position === 1 ? 'LEAD' : `+${car.gapToLeader.toFixed(1)}`} />
         <Metric label="Last Lap" value={car.lastLapTime > 0 ? fmtLap(car.lastLapTime) : '—'} />
         <Metric label="Pace" value={car.liveRacePace.toFixed(1)} accent />
@@ -93,13 +93,13 @@ export function PitWallCard({
       </div>
 
       {/* Large risk chips */}
-      <div className="mt-2 grid grid-cols-2 gap-1.5">
+      <div className="mt-1.5 grid grid-cols-2 gap-1.5">
         <RiskChip kind="R" level={car.reliabilityRiskLevel} />
         <RiskChip kind="C" level={car.crashRiskLevel} />
       </div>
 
       {/* Fuel + component health */}
-      <div className="mt-2 space-y-1">
+      <div className="mt-1.5 space-y-0.5">
         <Gauge label="Fuel" value={car.fuel} tone="fuel" />
         <Gauge label="Engine" value={car.engineHealth} tone="health" />
         <Gauge label="Gearbox" value={car.gearboxHealth} tone="health" />
@@ -114,7 +114,7 @@ export function PitWallCard({
 
       {/* Strategy mode buttons */}
       {!finished && car.running && (
-        <div className="mt-2">
+        <div className="mt-1.5">
           <div className="mb-1 flex items-center justify-between">
             <span className="text-[9px] uppercase tracking-wide text-slate-500">Strategy Mode</span>
             <button
