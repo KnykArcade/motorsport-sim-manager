@@ -133,6 +133,31 @@ import { tracks2015 } from './tracks/tracks2015';
 import { teams2015 } from './teams/teams2015';
 import { drivers2015 } from './drivers/drivers2015';
 import { cars2015 } from './cars/cars2015';
+import { season2016 } from './seasons/season2016';
+import { tracks2016 } from './tracks/tracks2016';
+import { teams2016 } from './teams/teams2016';
+import { drivers2016 } from './drivers/drivers2016';
+import { cars2016 } from './cars/cars2016';
+import { season2017 } from './seasons/season2017';
+import { tracks2017 } from './tracks/tracks2017';
+import { teams2017 } from './teams/teams2017';
+import { drivers2017 } from './drivers/drivers2017';
+import { cars2017 } from './cars/cars2017';
+import { season2018 } from './seasons/season2018';
+import { tracks2018 } from './tracks/tracks2018';
+import { teams2018 } from './teams/teams2018';
+import { drivers2018 } from './drivers/drivers2018';
+import { cars2018 } from './cars/cars2018';
+import { season2019 } from './seasons/season2019';
+import { tracks2019 } from './tracks/tracks2019';
+import { teams2019 } from './teams/teams2019';
+import { drivers2019 } from './drivers/drivers2019';
+import { cars2019 } from './cars/cars2019';
+import { season2020 } from './seasons/season2020';
+import { tracks2020 } from './tracks/tracks2020';
+import { teams2020 } from './teams/teams2020';
+import { drivers2020 } from './drivers/drivers2020';
+import { cars2020 } from './cars/cars2020';
 import { season2026 } from './seasons/season2026';
 import { tracks2026 } from './tracks/tracks2026';
 import { teams2026 } from './teams/teams2026';
@@ -232,6 +257,11 @@ export const seasonBundles: Record<string, SeasonBundle> = {
   '2013-F1': { season: season2013, teams: teams2013, drivers: drivers2013, cars: cars2013 },
   '2014-F1': { season: season2014, teams: teams2014, drivers: drivers2014, cars: cars2014 },
   '2015-F1': { season: season2015, teams: teams2015, drivers: drivers2015, cars: cars2015 },
+  '2016-F1': { season: season2016, teams: teams2016, drivers: drivers2016, cars: cars2016 },
+  '2017-F1': { season: season2017, teams: teams2017, drivers: drivers2017, cars: cars2017 },
+  '2018-F1': { season: season2018, teams: teams2018, drivers: drivers2018, cars: cars2018 },
+  '2019-F1': { season: season2019, teams: teams2019, drivers: drivers2019, cars: cars2019 },
+  '2020-F1': { season: season2020, teams: teams2020, drivers: drivers2020, cars: cars2020 },
   '2026-F1': { season: season2026, teams: teams2026, drivers: drivers2026, cars: cars2026 },
   '2026-IndyCar': { season: season2026IndyCar, teams: teams2026IndyCar, drivers: drivers2026IndyCar, cars: cars2026IndyCar },
 };
@@ -264,6 +294,11 @@ export const availableSeasons: { year: number; series: Series; label: string }[]
   { year: 2013, series: 'F1', label: '2013 Formula 1 World Championship' },
   { year: 2014, series: 'F1', label: '2014 Formula 1 World Championship' },
   { year: 2015, series: 'F1', label: '2015 Formula 1 World Championship' },
+  { year: 2016, series: 'F1', label: '2016 Formula 1 World Championship' },
+  { year: 2017, series: 'F1', label: '2017 Formula 1 World Championship' },
+  { year: 2018, series: 'F1', label: '2018 Formula 1 World Championship' },
+  { year: 2019, series: 'F1', label: '2019 Formula 1 World Championship' },
+  { year: 2020, series: 'F1', label: '2020 Formula 1 World Championship' },
   { year: 2026, series: 'F1', label: '2026 Formula 1 World Championship' },
   { year: 2026, series: 'IndyCar', label: '2026 IndyCar Series' },
 ];
@@ -293,7 +328,8 @@ const allTracks: Track[] = [
   ...tracks1999, ...tracks2000, ...tracks2001, ...tracks2002, ...tracks2003,
   ...tracks2004, ...tracks2005, ...tracks2006, ...tracks2007, ...tracks2008,
   ...tracks2009, ...tracks2010, ...tracks2011, ...tracks2012, ...tracks2013,
-  ...tracks2014, ...tracks2015, ...tracks2026, ...tracks2026IndyCar,
+  ...tracks2014, ...tracks2015, ...tracks2016, ...tracks2017, ...tracks2018,
+  ...tracks2019, ...tracks2020, ...tracks2026, ...tracks2026IndyCar,
 ];
 export const tracksById = Object.fromEntries(allTracks.map((t) => [t.id, t]));
 
