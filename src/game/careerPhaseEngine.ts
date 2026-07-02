@@ -13,6 +13,8 @@ import type {
   PaddockEventCategory,
   PaddockEventOption,
   PaddockEventOptionEffect,
+  PreseasonApprovals,
+  PreseasonChecklistItem,
 } from '../types/careerPhaseTypes';
 import type { RaceResult } from '../types/gameTypes';
 import type { FinanceTransaction } from '../types/financeTypes';
@@ -36,6 +38,19 @@ export function defaultCareerPhaseState(): CareerPhaseState {
     announcedCompletedProjectIds: [],
     racePrepFocusApplied: false,
     preseasonChecklist: defaultPreseasonChecklist(),
+    preseasonApprovals: defaultPreseasonApprovals(),
+  };
+}
+
+function defaultPreseasonApprovals(): PreseasonApprovals {
+  return {
+    teamOverview: false,
+    budget: false,
+    driverLineup: false,
+    carDevelopment: false,
+    sponsorsEngine: false,
+    seasonObjectives: false,
+    roundOnePreview: false,
   };
 }
 
@@ -47,6 +62,23 @@ function defaultPreseasonChecklist() {
     { id: 'development_focus', label: 'Confirm development focus', completed: false },
     { id: 'season_objective', label: 'Confirm season objective', completed: false },
   ];
+}
+
+// Migrate old checklist to new tab-based approvals for backward compatibility.
+function migratePreseasonChecklistToApprovals(
+  checklist: PreseasonChecklistItem[],
+): PreseasonApprovals {
+  const approvals = defaultPreseasonApprovals();
+  for (const item of checklist) {
+    if (item.completed) {
+      if (item.id === 'team_overview') approvals.teamOverview = true;
+      if (item.id === 'budget') approvals.budget = true;
+      if (item.id === 'driver_lineup') approvals.driverLineup = true;
+      if (item.id === 'development_focus') approvals.carDevelopment = true;
+      if (item.id === 'season_objective') approvals.seasonObjectives = true;
+    }
+  }
+  return approvals;
 }
 
 export function getCareerPhase(state: GameState): CareerPhase {
@@ -171,10 +203,46 @@ export function togglePreseasonChecklistItem(
   };
 }
 
-export function isPreseasonChecklistComplete(state: GameState): boolean {
+// Get normalized preseason approvals, migrating old checklist if needed.
+export function getPreseasonApprovals(state: GameState): PreseasonApprovals {
   const phaseState = getOrCreatePhaseState(state);
+  // If approvals exist, use them.
+  if (phaseState.preseasonApprovals) {
+    return phaseState.preseasonApprovals;
+  }
+  // Otherwise, migrate from old checklist for backward compatibility.
   const checklist = phaseState.preseasonChecklist ?? [];
-  return checklist.length > 0 && checklist.every((item) => item.completed);
+  return migratePreseasonChecklistToApprovals(checklist);
+}
+
+// Approve a single preseason tab.
+export function approvePreseasonTab(
+  state: GameState,
+  tabId: 'teamOverview' | 'budget' | 'driverLineup' | 'carDevelopment' | 'sponsorsEngine' | 'seasonObjectives' | 'roundOnePreview',
+): GameState {
+  const phaseState = getOrCreatePhaseState(state);
+  const approvals = getPreseasonApprovals(state);
+  return {
+    ...state,
+    careerPhase: {
+      ...phaseState,
+      preseasonApprovals: { ...approvals, [tabId]: true },
+    },
+  };
+}
+
+// Check if all required preseason tabs are approved.
+export function isPreseasonChecklistComplete(state: GameState): boolean {
+  const approvals = getPreseasonApprovals(state);
+  return (
+    approvals.teamOverview &&
+    approvals.budget &&
+    approvals.driverLineup &&
+    approvals.carDevelopment &&
+    approvals.sponsorsEngine &&
+    approvals.seasonObjectives &&
+    approvals.roundOnePreview
+  );
 }
 
 // --- Race prep focus effect --------------------------------------------------

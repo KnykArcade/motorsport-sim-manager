@@ -66,6 +66,16 @@ export type PreseasonChecklistItem = {
   completed: boolean;
 };
 
+export type PreseasonApprovals = {
+  teamOverview: boolean;
+  budget: boolean;
+  driverLineup: boolean;
+  carDevelopment: boolean;
+  sponsorsEngine: boolean;
+  seasonObjectives: boolean;
+  roundOnePreview: boolean;
+};
+
 export type CareerPhaseState = {
   currentPhase: CareerPhase;
   currentRound: number;
@@ -85,5 +95,9 @@ export type CareerPhaseState = {
   announcedCompletedProjectIds: string[];
   racePrepFocus?: string;
   racePrepFocusApplied: boolean;
-  preseasonChecklist: PreseasonChecklistItem[];
+  // Legacy checklist for backward compatibility with old saves.
+  // Migrated to preseasonApprovals on load.
+  preseasonChecklist?: PreseasonChecklistItem[];
+  // New tab-based approval state.
+  preseasonApprovals?: PreseasonApprovals;
 };

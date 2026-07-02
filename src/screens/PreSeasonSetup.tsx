@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useGame } from '../game/GameContext';
 import {
@@ -14,11 +15,13 @@ import { Panel } from '../components/Panel';
 import { Button } from '../components/Button';
 import { TrackDemandBars } from '../components/TrackDemandBars';
 import { formatMoney } from '../components/ui';
-import { isPreseasonChecklistComplete } from '../game/careerPhaseEngine';
+import { isPreseasonChecklistComplete, getPreseasonApprovals } from '../game/careerPhaseEngine';
 
 export function PreSeasonSetup() {
   const { state, dispatch } = useGame();
   const navigate = useNavigate();
+  const [activeTab, setActiveTab] = useState('teamOverview' as string);
+
   if (!state) return null;
 
   const team = teamById(state, state.selectedTeamId);
@@ -33,13 +36,21 @@ export function PreSeasonSetup() {
   const isCareer = state.gameMode === 'Career';
   const isSingleSeason = state.gameMode === 'SingleSeason';
 
-  const checklist = state.careerPhase?.preseasonChecklist ?? [];
+  const approvals = getPreseasonApprovals(state);
   const checklistComplete = isPreseasonChecklistComplete(state);
+
+  // Calculate progress count.
+  const approvedCount = Object.values(approvals).filter(Boolean).length;
+  const totalTabs = 7;
 
   const advanceToBriefing = () => {
     if (!checklistComplete) return;
     dispatch({ type: 'COMPLETE_PRESEASON_SETUP' });
     navigate('/briefing');
+  };
+
+  const approveTab = (tabId: 'teamOverview' | 'budget' | 'driverLineup' | 'carDevelopment' | 'sponsorsEngine' | 'seasonObjectives' | 'roundOnePreview') => {
+    dispatch({ type: 'APPROVE_PRESEASON_TAB', tabId });
   };
 
   // Engine supplier info.
@@ -51,6 +62,20 @@ export function PreSeasonSetup() {
   // Season objectives (from team expectations).
   const expectation = state.teamExpectations?.[state.selectedTeamId];
 
+  // Tab definitions.
+  const tabs = [
+    { id: 'teamOverview', label: 'Team Overview' },
+    { id: 'budget', label: 'Budget / Finance' },
+    { id: 'driverLineup', label: 'Driver Lineup' },
+    { id: 'carDevelopment', label: 'Car & Development' },
+    { id: 'sponsorsEngine', label: 'Sponsors / Engine' },
+    { id: 'seasonObjectives', label: 'Season Objectives' },
+    { id: 'roundOnePreview', label: 'Round 1 Preview' },
+  ];
+
+  // Driver lineup validation: F1 requires 2 race drivers.
+  const hasValidLineup = activeDrivers.length >= 2;
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -61,47 +86,42 @@ export function PreSeasonSetup() {
             {isSingleSeason && ' · Historical replay — team setup is locked'}
           </p>
         </div>
-        <Button variant="primary" onClick={advanceToBriefing} disabled={!checklistComplete}>
-          {checklistComplete ? 'Advance to Pre-Race Briefing →' : 'Complete checklist to continue'}
-        </Button>
+        <div className="text-sm text-neutral-400">
+          Approval Progress: {approvedCount} / {totalTabs}
+        </div>
       </div>
 
-      {/* Preseason Checklist */}
-      <Panel title="Pre-Season Checklist">
-        <p className="mb-3 text-sm text-neutral-400">
-          {isSingleSeason
-            ? 'Review the historical setup below, then confirm each item to proceed to Race 1.'
-            : 'Review each area below, then confirm to proceed to Race 1.'}
-        </p>
-        <div className="space-y-2">
-          {checklist.map((item) => (
+      {/* Tab Navigation */}
+      <div className="flex gap-2 overflow-x-auto border-b border-neutral-800 pb-2">
+        {tabs.map((tab) => {
+          const isApproved = approvals[tab.id as keyof typeof approvals];
+          const isActive = activeTab === tab.id;
+          return (
             <button
-              key={item.id}
-              onClick={() => dispatch({ type: 'TOGGLE_PRESEASON_CHECKLIST_ITEM', itemId: item.id })}
-              className={`flex w-full items-center gap-3 rounded-lg border p-3 text-left transition-colors ${
-                item.completed
-                  ? 'border-green-600/30 bg-green-500/5'
-                  : 'border-neutral-700 bg-neutral-900/40 hover:border-neutral-600'
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              className={`flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
+                isActive
+                  ? 'bg-neutral-800 text-neutral-100'
+                  : 'text-neutral-400 hover:bg-neutral-900/50 hover:text-neutral-300'
               }`}
             >
               <span
-                className={`flex h-5 w-5 items-center justify-center rounded-full text-xs font-bold ${
-                  item.completed ? 'bg-green-600 text-white' : 'bg-neutral-700 text-neutral-400'
+                className={`flex h-4 w-4 items-center justify-center rounded-full text-[10px] font-bold ${
+                  isApproved ? 'bg-green-600 text-white' : 'bg-neutral-700 text-neutral-400'
                 }`}
               >
-                {item.completed ? '✓' : '○'}
+                {isApproved ? '✓' : '○'}
               </span>
-              <span className={`text-sm ${item.completed ? 'text-neutral-300' : 'text-neutral-200'}`}>
-                {item.label}
-              </span>
+              {tab.label}
             </button>
-          ))}
-        </div>
-      </Panel>
+          );
+        })}
+      </div>
 
-      <div className="grid gap-6 lg:grid-cols-3">
-        <div className="space-y-6 lg:col-span-2">
-          {/* Team Overview */}
+      {/* Tab Content */}
+      <div className="space-y-6">
+        {activeTab === 'teamOverview' && (
           <Panel title="Team Overview">
             <div className="grid gap-4 sm:grid-cols-2">
               <div>
@@ -121,9 +141,37 @@ export function PreSeasonSetup() {
                 <div className="text-sm text-neutral-200">{team ? formatMoney(team.budget) : '—'}</div>
               </div>
             </div>
+            <div className="mt-4 flex justify-end">
+              <Button
+                variant="primary"
+                onClick={() => approveTab('teamOverview')}
+                disabled={approvals.teamOverview}
+              >
+                {approvals.teamOverview ? 'Confirmed' : 'Confirm Team Overview'}
+              </Button>
+            </div>
           </Panel>
+        )}
 
-          {/* Driver Lineup */}
+        {activeTab === 'budget' && (
+          <Panel title="Budget / Financial Review">
+            <div className="text-sm text-neutral-200">{team ? formatMoney(team.budget) : '—'}</div>
+            <div className="mt-2 text-xs text-neutral-500">
+              Prize money per point: $250K. Budget is used for development, staff, facilities, and race packages.
+            </div>
+            <div className="mt-4 flex justify-end">
+              <Button
+                variant="primary"
+                onClick={() => approveTab('budget')}
+                disabled={approvals.budget}
+              >
+                {approvals.budget ? 'Approved' : 'Approve Budget Review'}
+              </Button>
+            </div>
+          </Panel>
+        )}
+
+        {activeTab === 'driverLineup' && (
           <Panel title="Driver Lineup Review">
             <ul className="space-y-2">
               {activeDrivers.map((d) => (
@@ -139,16 +187,34 @@ export function PreSeasonSetup() {
                   Reserve drivers: {drivers.slice(activeDrivers.length).map((d) => d.name).join(', ')}
                 </li>
               )}
-              {activeDrivers.length < 2 && (
-                <li className="text-sm text-orange-400">
-                  Only {activeDrivers.length} active driver(s). Visit the Driver Market to sign a second driver.
-                </li>
-              )}
             </ul>
+            {!hasValidLineup && (
+              <div className="mt-3 rounded-lg bg-orange-950/30 p-3 text-sm text-orange-300">
+                <p className="font-semibold">Incomplete Lineup</p>
+                <p className="text-xs">
+                  Your team requires 2 active race drivers. Visit the Driver Market to sign a second driver.
+                </p>
+              </div>
+            )}
+            <div className="mt-4 flex justify-end gap-2">
+              {!hasValidLineup && (
+                <Button variant="secondary" onClick={() => navigate('/market')}>
+                  Visit Driver Market
+                </Button>
+              )}
+              <Button
+                variant="primary"
+                onClick={() => approveTab('driverLineup')}
+                disabled={approvals.driverLineup || !hasValidLineup}
+              >
+                {approvals.driverLineup ? 'Confirmed' : 'Confirm Race Lineup'}
+              </Button>
+            </div>
           </Panel>
+        )}
 
-          {/* Car Performance */}
-          <Panel title="Car Performance Overview">
+        {activeTab === 'carDevelopment' && (
+          <Panel title="Car & Development Overview">
             {carRatings && (
               <div className="grid gap-3 sm:grid-cols-3 lg:grid-cols-5">
                 <StatChip label="Power" value={carRatings.enginePower.toFixed(1)} />
@@ -161,11 +227,7 @@ export function PreSeasonSetup() {
             <div className="mt-3 text-sm text-neutral-400">
               Car condition: {Math.round(car?.condition ?? 0)}%
             </div>
-          </Panel>
-
-          {/* Development Slots */}
-          <Panel title="Development Slot Overview">
-            <div className="text-sm text-neutral-300">
+            <div className="mt-4 text-sm text-neutral-300">
               <span className="text-neutral-200">{slots}</span> development slot(s) available.
               {state.activeDevelopmentProjects.length > 0 && (
                 <span className="text-neutral-500"> · {state.activeDevelopmentProjects.length} project(s) active.</span>
@@ -176,89 +238,73 @@ export function PreSeasonSetup() {
                 Visit the Development screen to assign projects to available slots.
               </div>
             )}
-          </Panel>
-
-          {/* Round 1 Preview */}
-          {race && track && (
-            <Panel title="Calendar / Round 1 Preview">
-              <div className="text-sm text-neutral-200">{race.gpName} — {race.trackName}</div>
-              <div className="text-xs text-neutral-500">{track.archetype} · Round {race.round}</div>
-              <div className="mt-3">
-                <TrackDemandBars track={track} />
-              </div>
-            </Panel>
-          )}
-        </div>
-
-        <div className="space-y-6">
-          {/* Budget / Financial Review */}
-          <Panel title="Budget / Financial Review">
-            <div className="text-sm text-neutral-200">{team ? formatMoney(team.budget) : '—'}</div>
-            <div className="mt-2 text-xs text-neutral-500">
-              Prize money per point: $250K. Budget is used for development, staff, facilities, and race packages.
+            <div className="mt-4 flex justify-end">
+              <Button
+                variant="primary"
+                onClick={() => approveTab('carDevelopment')}
+                disabled={approvals.carDevelopment}
+              >
+                {approvals.carDevelopment ? 'Confirmed' : 'Confirm Development Plan'}
+              </Button>
             </div>
           </Panel>
+        )}
 
-          {/* Sponsor Review */}
-          <Panel title="Sponsor Review">
-            {sponsors.length > 0 ? (
-              <ul className="space-y-2">
-                {sponsors.map((s) => (
-                  <li key={s.id} className="flex items-center justify-between text-sm">
-                    <span className="text-neutral-200">{s.name}</span>
-                    <span className="text-neutral-400">{Math.round(s.confidence)}%</span>
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <p className="text-sm text-neutral-500">No active sponsors.</p>
-            )}
-            {isCareer && (
-              <div className="mt-2 text-xs text-neutral-500">
-                Visit the Sponsors screen to manage commercial deals.
+        {activeTab === 'sponsorsEngine' && (
+          <Panel title="Sponsors / Engine Supplier">
+            <div className="space-y-4">
+              <div>
+                <div className="text-xs font-semibold uppercase text-neutral-500 mb-2">Sponsors</div>
+                {sponsors.length > 0 ? (
+                  <ul className="space-y-2">
+                    {sponsors.map((s) => (
+                      <li key={s.id} className="flex items-center justify-between text-sm">
+                        <span className="text-neutral-200">{s.name}</span>
+                        <span className="text-neutral-400">{Math.round(s.confidence)}%</span>
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p className="text-sm text-neutral-500">No active sponsors.</p>
+                )}
+                {isCareer && (
+                  <div className="mt-2 text-xs text-neutral-500">
+                    Visit the Sponsors screen to manage commercial deals.
+                  </div>
+                )}
               </div>
-            )}
-          </Panel>
-
-          {/* Engine Supplier */}
-          <Panel title="Engine Supplier / Manufacturer">
-            {engineDeal ? (
-              <div className="space-y-1 text-sm">
-                <div className="text-neutral-200">{engineDeal.supplierName}</div>
-                <div className="text-neutral-400">Deal type: {engineDeal.dealType}</div>
-                <div className="text-xs text-green-400">Power: {engineDeal.powerRating}/10 · Reliability: {engineDeal.reliabilityRating}/10</div>
-                <div className="text-xs text-neutral-500">{engineDeal.contractYearsRemaining} year(s) remaining</div>
+              <div>
+                <div className="text-xs font-semibold uppercase text-neutral-500 mb-2">Engine Supplier</div>
+                {engineDeal ? (
+                  <div className="space-y-1 text-sm">
+                    <div className="text-neutral-200">{engineDeal.supplierName}</div>
+                    <div className="text-neutral-400">Deal type: {engineDeal.dealType}</div>
+                    <div className="text-xs text-green-400">Power: {engineDeal.powerRating}/10 · Reliability: {engineDeal.reliabilityRating}/10</div>
+                    <div className="text-xs text-neutral-500">{engineDeal.contractYearsRemaining} year(s) remaining</div>
+                  </div>
+                ) : (
+                  <p className="text-sm text-neutral-500">Engine deal assigned by historical data.</p>
+                )}
+                {isCareer && (
+                  <div className="mt-2 text-xs text-neutral-500">
+                    Visit the Engine Supplier screen to review or change deals.
+                  </div>
+                )}
               </div>
-            ) : (
-              <p className="text-sm text-neutral-500">Engine deal assigned by historical data.</p>
-            )}
-            {isCareer && (
-              <div className="mt-2 text-xs text-neutral-500">
-                Visit the Engine Supplier screen to review or change deals.
-              </div>
-            )}
-          </Panel>
-
-          {/* Staff / Facilities */}
-          <Panel title="Staff / Facilities Review">
-            {state.facilities && (
-              <ul className="space-y-1 text-sm">
-                {state.facilities.facilities.slice(0, 4).map((f) => (
-                  <li key={f.id} className="flex justify-between text-neutral-400">
-                    <span>{f.type}</span>
-                    <span>Lv {f.level}/{f.maxLevel}</span>
-                  </li>
-                ))}
-              </ul>
-            )}
-            <div className="mt-2 text-xs text-neutral-500">
-              {state.staff && state.staff.length > 0
-                ? `${state.staff.length} staff member(s) hired.`
-                : 'No specialist staff hired.'}
+            </div>
+            <div className="mt-4 flex justify-end">
+              <Button
+                variant="primary"
+                onClick={() => approveTab('sponsorsEngine')}
+                disabled={approvals.sponsorsEngine}
+              >
+                {approvals.sponsorsEngine ? 'Confirmed' : 'Confirm Sponsor & Engine Setup'}
+              </Button>
             </div>
           </Panel>
+        )}
 
-          {/* Season Objectives */}
+        {activeTab === 'seasonObjectives' && (
           <Panel title="Season Objectives">
             {expectation ? (
               <div className="space-y-1 text-sm">
@@ -275,13 +321,48 @@ export function PreSeasonSetup() {
                 {isCareer ? 'Objectives will be set based on team reputation.' : 'Historical replay mode — no custom objectives.'}
               </p>
             )}
+            <div className="mt-4 flex justify-end">
+              <Button
+                variant="primary"
+                onClick={() => approveTab('seasonObjectives')}
+                disabled={approvals.seasonObjectives}
+              >
+                {approvals.seasonObjectives ? 'Confirmed' : 'Confirm Season Objective'}
+              </Button>
+            </div>
           </Panel>
-        </div>
+        )}
+
+        {activeTab === 'roundOnePreview' && (
+          <Panel title="Round 1 Preview">
+            {race && track ? (
+              <>
+                <div className="text-sm text-neutral-200">{race.gpName} — {race.trackName}</div>
+                <div className="text-xs text-neutral-500">{track.archetype} · Round {race.round}</div>
+                <div className="mt-3">
+                  <TrackDemandBars track={track} />
+                </div>
+              </>
+            ) : (
+              <p className="text-sm text-neutral-500">Race data not available.</p>
+            )}
+            <div className="mt-4 flex justify-end">
+              <Button
+                variant="primary"
+                onClick={() => approveTab('roundOnePreview')}
+                disabled={approvals.roundOnePreview}
+              >
+                {approvals.roundOnePreview ? 'Confirmed' : 'Confirm Round 1 Preview'}
+              </Button>
+            </div>
+          </Panel>
+        )}
       </div>
 
+      {/* Footer */}
       <div className="flex justify-end">
         <Button variant="primary" onClick={advanceToBriefing} disabled={!checklistComplete}>
-          {checklistComplete ? 'Advance to Pre-Race Briefing →' : 'Complete checklist to continue'}
+          {checklistComplete ? 'Advance to Pre-Race Briefing →' : `Complete all ${totalTabs} approvals to continue`}
         </Button>
       </div>
     </div>

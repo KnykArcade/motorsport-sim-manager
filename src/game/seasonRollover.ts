@@ -60,7 +60,7 @@ import {
 } from '../sim/principalEngine';
 import { buildInitialCommercial } from '../sim/commercialEngine';
 import { createInitialFacilities } from '../sim/facilityEngine';
-import { rolloverRelationships } from '../sim/relationshipEngine';
+import { rolloverRelationships, syncDriverRelationshipsForTeam } from '../sim/relationshipEngine';
 import { generateRegulationProposals, resolveRegulationVoting } from '../sim/politicsEngine';
 import { refreshScoutingNetwork } from '../sim/scoutingEngine';
 import { createDriverDevelopmentCurve, developmentStep } from '../sim/developmentCurveEngine';
@@ -803,6 +803,12 @@ export function advanceSeason(state: GameState): GameState {
     teamReputations,
     `${state.randomSeed}-rel-${nextYear}`,
   );
+  // Sync player team relationships to ensure roster changes are reflected.
+  const syncedRelationships = syncDriverRelationshipsForTeam(
+    { ...state, driverRelationships: nextRelationships },
+    state.selectedTeamId,
+    `${state.randomSeed}-sync-${nextYear}`,
+  ).driverRelationships ?? nextRelationships;
   const relationshipNotes: string[] = [];
   for (const d of drivers.filter((x) => x.teamId === state.selectedTeamId)) {
     const prev = state.driverRelationships?.[d.id];
@@ -978,7 +984,7 @@ export function advanceSeason(state: GameState): GameState {
     principal: nextPrincipal,
     jobOffers: nextJobOffers,
     acceptedJobOfferId: undefined,
-    driverRelationships: nextRelationships,
+    driverRelationships: syncedRelationships,
     teamOrderHistory: [],
     regulationHistory: regulationHistoryWithVotes,
     regulationProposals: nextProposals,

@@ -1,4 +1,5 @@
 import { useGame } from '../game/GameContext';
+import { activeDriversForTeam, driversForTeam } from '../game/careerState';
 import { Panel } from '../components/Panel';
 import { TEAM_ORDER_SPECS } from '../sim/relationshipEngine';
 import type { TeamOrder } from '../types/relationshipTypes';
@@ -24,7 +25,10 @@ export function Relationships() {
   }
 
   const driverName = (id: string) => state.drivers.find((d) => d.id === id)?.name ?? id;
-  const playerDrivers = state.drivers.filter((d) => d.teamId === state.selectedTeamId);
+  const teamId = state.selectedTeamId;
+  const teamDrivers = driversForTeam(state, teamId);
+  const activeDrivers = activeDriversForTeam(state, teamId);
+  const reserveDrivers = teamDrivers.filter((d) => !activeDrivers.some((ad) => ad.id === d.id));
   const orders = (state.teamOrderHistory ?? []).slice().reverse();
 
   return (
@@ -37,40 +41,106 @@ export function Relationships() {
         </p>
       </div>
 
-      <div className="grid gap-4 lg:grid-cols-2">
-        {playerDrivers.map((d) => {
-          const rel = rels[d.id];
-          if (!rel) return null;
-          return (
-            <Panel key={d.id} title={driverName(d.id)}>
-              <div className="mb-2 flex items-center gap-2">
-                {d.contractType === 'third' && (
-                  <span className="rounded bg-neutral-800 px-1.5 py-0.5 text-[10px] uppercase tracking-wide text-neutral-400">
-                    Reserve
+      {/* Race Drivers Section */}
+      <div>
+        <h2 className="mb-3 text-sm font-semibold uppercase text-neutral-500">Race Drivers</h2>
+        <div className="grid gap-4 lg:grid-cols-2">
+          {activeDrivers.map((d) => {
+            const rel = rels[d.id];
+            if (!rel) {
+              // Show driver with initializing state if relationship is missing.
+              return (
+                <Panel key={d.id} title={driverName(d.id)}>
+                  <div className="mb-2 flex items-center gap-2">
+                    <span className="rounded bg-blue-950/60 px-1.5 py-0.5 text-[10px] uppercase tracking-wide text-blue-300">
+                      Race Driver
+                    </span>
+                    <span className="text-[11px] text-neutral-500">Relationship data initializing...</span>
+                  </div>
+                </Panel>
+              );
+            }
+            return (
+              <Panel key={d.id} title={driverName(d.id)}>
+                <div className="mb-2 flex items-center gap-2">
+                  <span className="rounded bg-blue-950/60 px-1.5 py-0.5 text-[10px] uppercase tracking-wide text-blue-300">
+                    Race Driver
                   </span>
-                )}
-                {rel.numberOneExpectation && (
-                  <span className="rounded bg-amber-950/60 px-1.5 py-0.5 text-[10px] uppercase tracking-wide text-amber-300">
-                    Expects #1 status
-                  </span>
-                )}
-                {rel.teammateId && (
-                  <span className="text-[11px] text-neutral-500">
-                    Teammate: {driverName(rel.teammateId)}
-                  </span>
-                )}
-              </div>
-              <div className="space-y-2">
-                <Bar label="Morale" value={rel.morale} good />
-                <Bar label="Team Loyalty" value={rel.teamLoyalty} good />
-                <Bar label="Engineer Chemistry" value={rel.engineerChemistry} good />
-                <Bar label="Teammate Relationship" value={rel.teammateRelationship} good />
-                <Bar label="Frustration" value={rel.frustration} good={false} />
-              </div>
-            </Panel>
-          );
-        })}
+                  {rel.numberOneExpectation && (
+                    <span className="rounded bg-amber-950/60 px-1.5 py-0.5 text-[10px] uppercase tracking-wide text-amber-300">
+                      Expects #1 status
+                    </span>
+                  )}
+                  {rel.teammateId && (
+                    <span className="text-[11px] text-neutral-500">
+                      Teammate: {driverName(rel.teammateId)}
+                    </span>
+                  )}
+                </div>
+                <div className="space-y-2">
+                  <Bar label="Morale" value={rel.morale} good />
+                  <Bar label="Team Loyalty" value={rel.teamLoyalty} good />
+                  <Bar label="Engineer Chemistry" value={rel.engineerChemistry} good />
+                  <Bar label="Teammate Relationship" value={rel.teammateRelationship} good />
+                  <Bar label="Frustration" value={rel.frustration} good={false} />
+                </div>
+              </Panel>
+            );
+          })}
+        </div>
       </div>
+
+      {/* Reserve / Third Driver Section */}
+      {reserveDrivers.length > 0 && (
+        <div>
+          <h2 className="mb-3 text-sm font-semibold uppercase text-neutral-500">Reserve / Third Driver</h2>
+          <div className="grid gap-4 lg:grid-cols-2">
+            {reserveDrivers.map((d) => {
+              const rel = rels[d.id];
+              if (!rel) {
+                // Show driver with initializing state if relationship is missing.
+                return (
+                  <Panel key={d.id} title={driverName(d.id)}>
+                    <div className="mb-2 flex items-center gap-2">
+                      <span className="rounded bg-neutral-800 px-1.5 py-0.5 text-[10px] uppercase tracking-wide text-neutral-400">
+                        Reserve
+                      </span>
+                      <span className="text-[11px] text-neutral-500">Relationship data initializing...</span>
+                    </div>
+                  </Panel>
+                );
+              }
+              return (
+                <Panel key={d.id} title={driverName(d.id)}>
+                  <div className="mb-2 flex items-center gap-2">
+                    <span className="rounded bg-neutral-800 px-1.5 py-0.5 text-[10px] uppercase tracking-wide text-neutral-400">
+                      Reserve
+                    </span>
+                    {rel.numberOneExpectation && (
+                      <span className="rounded bg-amber-950/60 px-1.5 py-0.5 text-[10px] uppercase tracking-wide text-amber-300">
+                        Expects #1 status
+                      </span>
+                    )}
+                  </div>
+                  <div className="space-y-2">
+                    <Bar label="Morale" value={rel.morale} good />
+                    <Bar label="Team Loyalty" value={rel.teamLoyalty} good />
+                    <Bar label="Engineer Chemistry" value={rel.engineerChemistry} good />
+                    <Bar label="Frustration" value={rel.frustration} good={false} />
+                  </div>
+                </Panel>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* Empty state if no drivers */}
+      {teamDrivers.length === 0 && (
+        <Panel title="No Drivers">
+          <p className="text-sm text-neutral-400">Your team has no drivers signed.</p>
+        </Panel>
+      )}
 
       <Panel title="Team-Order Log (this season)">
         {orders.length === 0 ? (
