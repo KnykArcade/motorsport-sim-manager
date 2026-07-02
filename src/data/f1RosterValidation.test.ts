@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { availableSeasons, getSeasonBundle } from './index';
+import { availableSeasons, getSeasonBundle, getMarketBundle, getTrackById } from './index';
 
 const f1Seasons = availableSeasons.filter((s) => s.series === 'F1');
 
@@ -11,6 +11,7 @@ describe('F1 roster validation', () => {
   for (const s of f1Seasons) {
     describe(`${s.year} F1`, () => {
       const bundle = getSeasonBundle(s.year, 'F1');
+      const market = getMarketBundle(s.year, 'F1');
 
       it('every team has at most 2 primary race drivers', () => {
         for (const team of bundle!.teams) {
@@ -69,6 +70,32 @@ describe('F1 roster validation', () => {
         const ids = bundle!.cars.map((c) => c.id);
         const unique = new Set(ids);
         expect(unique.size, `Duplicate car IDs in ${s.year} F1`).toBe(ids.length);
+      });
+
+      it('no duplicate market driver IDs', () => {
+        if (!market) return;
+        const ids = market.drivers.map((d) => d.id);
+        const unique = new Set(ids);
+        expect(unique.size, `Duplicate market IDs in ${s.year} F1`).toBe(ids.length);
+      });
+
+      it('no duplicate youth prospect IDs', () => {
+        if (!market) return;
+        const ids = market.youth.map((y) => y.id);
+        const unique = new Set(ids);
+        expect(unique.size, `Duplicate youth IDs in ${s.year} F1`).toBe(ids.length);
+      });
+
+      it('all calendar track IDs resolve', () => {
+        for (const race of bundle!.season.calendar) {
+          expect(getTrackById(race.trackId), `${s.year} F1 unresolvable track ${race.trackId}`).toBeDefined();
+        }
+      });
+
+      it('no duplicate race IDs within the season', () => {
+        const ids = bundle!.season.calendar.map((r) => r.id);
+        const unique = new Set(ids);
+        expect(unique.size, `Duplicate race IDs in ${s.year} F1`).toBe(ids.length);
       });
 
       it('no unsafe special characters in driver IDs', () => {
