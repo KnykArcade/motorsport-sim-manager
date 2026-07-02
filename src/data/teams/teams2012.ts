@@ -1,4 +1,4 @@
-// AUTO-GENERATED from F1_2011_2015_Season_Full_Update.xlsx by scripts/gen_season.py.
+// AUTO-GENERATED from F1_2012_Season_Full_Update.xlsx by scripts/gen_season.py.
 // Edit ratings here directly; this file is the runtime source of truth.
 
 import type { Team } from '../../types/gameTypes';
@@ -165,7 +165,7 @@ export const teams2012: Team[] = [
     morale: 65,
     expectedStanding: 11,
     difficulty: 'Very Hard',
-    color: '#6ad63a',
+    color: '#3ad6c2',
   },
   {
     id: 't-hrt-cosworth',
@@ -179,6 +179,6 @@ export const teams2012: Team[] = [
     morale: 65,
     expectedStanding: 12,
     difficulty: 'Very Hard',
-    color: '#3a6ad6',
+    color: '#3ad6c2',
   },
 ];

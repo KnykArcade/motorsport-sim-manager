@@ -53,6 +53,16 @@ import { driverMarket2014 } from './driverMarket2014';
 import { youthProspects2014 } from './youthProspects2014';
 import { driverMarket2015 } from './driverMarket2015';
 import { youthProspects2015 } from './youthProspects2015';
+import { driverMarket2016 } from './driverMarket2016';
+import { youthProspects2016 } from './youthProspects2016';
+import { driverMarket2017 } from './driverMarket2017';
+import { youthProspects2017 } from './youthProspects2017';
+import { driverMarket2018 } from './driverMarket2018';
+import { youthProspects2018 } from './youthProspects2018';
+import { driverMarket2019 } from './driverMarket2019';
+import { youthProspects2019 } from './youthProspects2019';
+import { driverMarket2020 } from './driverMarket2020';
+import { youthProspects2020 } from './youthProspects2020';
 import { driverMarket2026 } from './driverMarket2026';
 import { youthProspects2026 } from './youthProspects2026';
 import { driverMarket2026IndyCar } from './driverMarket2026IndyCar';
@@ -121,6 +131,11 @@ const marketBundles: Record<string, MarketBundle> = {
   '2013-F1': bundle(driverMarket2013, youthProspects2013),
   '2014-F1': bundle(driverMarket2014, youthProspects2014),
   '2015-F1': bundle(driverMarket2015, youthProspects2015),
+  '2016-F1': bundle(driverMarket2016, youthProspects2016),
+  '2017-F1': bundle(driverMarket2017, youthProspects2017),
+  '2018-F1': bundle(driverMarket2018, youthProspects2018),
+  '2019-F1': bundle(driverMarket2019, youthProspects2019),
+  '2020-F1': bundle(driverMarket2020, youthProspects2020),
   '2026-F1': bundle(driverMarket2026, youthProspects2026),
   '2026-IndyCar': bundle(driverMarket2026IndyCar, youthProspects2026IndyCar),
 };

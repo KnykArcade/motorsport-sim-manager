@@ -1,4 +1,4 @@
-// AUTO-GENERATED from F1_2011_2015_Season_Full_Update.xlsx by scripts/gen_season.py.
+// AUTO-GENERATED from F1_2015_Season_Full_Update.xlsx by scripts/gen_season.py.
 // Edit ratings here directly; this file is the runtime source of truth.
 
 import type { Team } from '../../types/gameTypes';
@@ -106,7 +106,7 @@ export const teams2015: Team[] = [
     morale: 65,
     expectedStanding: 7,
     difficulty: 'Hard',
-    color: '#8a7ad6',
+    color: '#3a6ad6',
   },
   {
     id: 't-sauber-ferrari',

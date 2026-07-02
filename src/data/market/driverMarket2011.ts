@@ -1,4 +1,4 @@
-// AUTO-GENERATED from F1_2011_2015_Season_Full_Update.xlsx by scripts/gen_season.py.
+// AUTO-GENERATED from F1_2011_Season_Full_Update.xlsx by scripts/gen_season.py.
 // Edit ratings here directly; this file is the runtime source of truth.
 
 import type { MarketDriver } from '../../types/marketTypes';

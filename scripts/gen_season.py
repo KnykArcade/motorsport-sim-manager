@@ -174,7 +174,8 @@ def pick_sheet(wb, *keyword_groups, year=None):
     """Return the first sheet name whose lowercased name matches all keywords in
     any of the keyword_groups (groups tried in order). If *year* is given, only
     sheets whose name contains that year string are considered (for multi-year
-    workbooks)."""
+    workbooks). If no sheet matches with the year filter, falls back to
+    searching without it (for single-year workbooks whose tabs lack the year)."""
     for group in keyword_groups:
         kws, excl = group[0], group[1] if len(group) > 1 else []
         for sn in wb.sheetnames:
@@ -183,6 +184,14 @@ def pick_sheet(wb, *keyword_groups, year=None):
                 continue
             if all(k in low for k in kws) and not any(e in low for e in excl):
                 return sn
+    # Fallback: retry without year filter if year-specific search found nothing
+    if year:
+        for group in keyword_groups:
+            kws, excl = group[0], group[1] if len(group) > 1 else []
+            for sn in wb.sheetnames:
+                low = sn.lower()
+                if all(k in low for k in kws) and not any(e in low for e in excl):
+                    return sn
     return None
 
 
