@@ -1,0 +1,34 @@
+@import 'tailwindcss';
+
+:root {
+  color-scheme: dark;
+}
+
+html,
+body,
+#root {
+  height: 100vh;
+  width: 100vw;
+}
+
+body {
+  margin: 0;
+  background-color: #0a0c10;
+  color: #e5e7eb;
+  font-family: ui-sans-serif, system-ui, 'Segoe UI', Roboto, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Thin dashboard scrollbars */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #2a2f3a #0a0c10;
+}
+*::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+*::-webkit-scrollbar-thumb {
+  background-color: #2a2f3a;
+  border-radius: 6px;
+}
