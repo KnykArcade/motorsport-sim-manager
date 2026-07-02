@@ -533,7 +533,7 @@ export const tracks2026IndyCar: Track[] = [
     ratingNotes: 'Lap 1 qualifying sets Race 1 grid; tire and traffic lessons carry into Race 2.',
   },
   {
-    id: 'milwaukee-mile-2026IndyCar',
+    id: 'milwaukee-mile-2026IndyCar-r2',
     name: 'Milwaukee Mile',
     gpName: 'Snap-on Milwaukee Mile 250',
     country: 'West Allis, Wisconsin',

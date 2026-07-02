@@ -169,7 +169,7 @@ export const calendar2026IndyCar: Race[] = [
     id: 'r-2026-17',
     round: 17,
     gpName: 'Snap-on Milwaukee Mile 250',
-    trackId: 'milwaukee-mile-2026IndyCar',
+    trackId: 'milwaukee-mile-2026IndyCar-r2',
     trackName: 'Milwaukee Mile',
     laps: 250,
     distanceKm: 400.0,
