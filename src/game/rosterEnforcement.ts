@@ -12,6 +12,7 @@
 
 import { careerMarketBundle } from '../sim/careerMarketEngine';
 import { marketDriverToDriver } from '../sim/driverMarketEngine';
+import { makeTransaction, toMoney } from '../sim/financeEngine';
 import {
   activeDriversForTeam,
   driversForTeam,
@@ -220,6 +221,13 @@ export function validateRaceSeatSigning(
     return { valid: false, reason: 'Driver already signed.' };
   }
 
+  // Budget check: the buyout cost is charged as a one-off signing fee.
+  const buyoutCost = toMoney(m.buyoutCost);
+  const budget = team.budget;
+  if (buyoutCost > budget) {
+    return { valid: false, reason: `Insufficient budget. Signing ${m.name} costs ${buyoutCost.toLocaleString('en-US', { style: 'currency', currency: 'USD' })} but your team has only ${budget.toLocaleString('en-US', { style: 'currency', currency: 'USD' })}.` };
+  }
+
   // Check the driver is not already an active race driver for another team.
   const driverId = `d-${m.id}`;
   const existing = state.drivers.find((d) => d.id === driverId);
@@ -232,7 +240,8 @@ export function validateRaceSeatSigning(
 
 // Sign a market driver into an open race seat for the player's team.
 // This is an immediate signing (not a pending offseason queue) — the driver
-// joins the roster right away with a race-seat contract.
+// joins the roster right away with a race-seat contract. The buyout cost is
+// deducted from the team budget and a finance transaction is recorded.
 export function signRaceDriver(state: GameState, marketId: string): GameState {
   const validation = validateRaceSeatSigning(state, marketId);
   if (!validation.valid) return state;
@@ -247,14 +256,26 @@ export function signRaceDriver(state: GameState, marketId: string): GameState {
   newDriver.contractType = 'seat';
   newDriver.contractYearsRemaining = 2;
 
+  // Deduct buyout cost from team budget and record a finance transaction.
+  const buyoutCost = toMoney(m.buyoutCost);
+  const txn = makeTransaction(
+    state.seasonYear,
+    'Driver Signing',
+    `Preseason race-seat: ${m.name}`,
+    -buyoutCost,
+  );
+
+  const teams = state.teams.map((t) =>
+    t.id === state.selectedTeamId
+      ? { ...t, budget: t.budget - buyoutCost, driverIds: [...t.driverIds, newDriver.id] }
+      : t,
+  );
+
   return {
     ...state,
     drivers: [...state.drivers, newDriver],
-    teams: state.teams.map((t) =>
-      t.id === state.selectedTeamId
-        ? { ...t, driverIds: [...t.driverIds, newDriver.id] }
-        : t,
-    ),
+    teams,
+    finance: [...(state.finance ?? []), txn],
     signedMarketIds: [...(state.signedMarketIds ?? []), m.id],
   };
 }

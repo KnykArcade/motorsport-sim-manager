@@ -301,7 +301,7 @@ export function facilityOutcomeChances(
     5: { GreatSuccess: 0.20, FullSuccess: 0.40, PartialSuccess: 0.22, MinorSuccess: 0.10, Failed: 0.06, RareBackfire: 0.02 },
   };
 
-  let chances = { ...baseByLevel[lvl] };
+  const chances = { ...baseByLevel[lvl] };
 
   // Risk level shifts the distribution.
   const riskShifts: Record<ProjectRiskLevel, Partial<OutcomeChances>> = {

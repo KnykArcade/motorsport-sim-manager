@@ -242,7 +242,7 @@ export const drivers2020: Driver[] = [
     number: 9,
     nationality: 'GBR',
     age: 22,
-    teamId: 't-mercedes',
+    teamId: 't-williams-mercedes',
     ratings: {
       cornering: 8.6,
       braking: 8.5,

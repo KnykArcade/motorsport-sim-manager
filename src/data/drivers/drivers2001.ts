@@ -329,7 +329,7 @@ export const drivers2001: Driver[] = [
     number: 13,
     nationality: 'FRA',
     age: 37,
-    teamId: 't-jordan-honda',
+    teamId: 't-prost-acer',
     ratings: {
       cornering: 7.3,
       braking: 7.8,

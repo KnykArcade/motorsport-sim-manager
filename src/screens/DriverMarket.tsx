@@ -403,8 +403,14 @@ function SeniorCard({
         {signed ? (
           <span className="text-xs text-neutral-500">Already racing for you.</span>
         ) : canSignRaceDriver ? (
-          <Button variant="primary" className="w-full px-2 py-1 text-xs" onClick={onSignRaceDriver}>
-            Sign as Race Driver
+          <Button
+            variant="primary"
+            className="w-full px-2 py-1 text-xs"
+            disabled={!affordable}
+            title={affordable ? undefined : 'Insufficient budget for this signing'}
+            onClick={onSignRaceDriver}
+          >
+            Sign as Race Driver ({(d.buyoutCost).toFixed(1)}M)
           </Button>
         ) : pending ? (
           <div className="flex items-center justify-between text-xs">

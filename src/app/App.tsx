@@ -40,15 +40,6 @@ function InGame({ children }: { children: ReactNode }) {
   return <Layout>{children}</Layout>;
 }
 
-// Full-screen in-game route (no app sidebar/header) — used by the Live Race
-// broadcast dashboard, which brings its own top status bar and must fill the
-// viewport so the whole race fits without vertical scrolling.
-function FullScreenGame({ children }: { children: ReactNode }) {
-  const { state } = useGame();
-  if (!state) return <Navigate to="/" replace />;
-  return <>{children}</>;
-}
-
 // Route guard for the race weekend: blocks direct navigation to /weekend when
 // the player's F1 team has fewer than 2 active race drivers, redirecting to
 // the driver market instead. This prevents bypassing the Team HQ button.
@@ -58,6 +49,17 @@ function RaceWeekendGuard({ children }: { children: ReactNode }) {
   const check = canEnterRaceWeekend(state);
   if (!check.allowed) return <Navigate to="/market" replace />;
   return <Layout>{children}</Layout>;
+}
+
+// Route guard for the live race broadcast: blocks direct navigation to
+// /live-race/:raceId when the player's F1 team has fewer than 2 active race
+// drivers. This prevents bypassing the race weekend entry flow.
+function LiveRaceGuard({ children }: { children: ReactNode }) {
+  const { state } = useGame();
+  if (!state) return <Navigate to="/" replace />;
+  const check = canEnterRaceWeekend(state);
+  if (!check.allowed) return <Navigate to="/hq" replace />;
+  return <>{children}</>;
 }
 
 export default function App() {
@@ -90,7 +92,7 @@ export default function App() {
           <Route path="/records" element={<InGame><UniverseHistory /></InGame>} />
           <Route path="/history" element={<InGame><RaceHistory /></InGame>} />
           <Route path="/weekend" element={<RaceWeekendGuard><RaceWeekend /></RaceWeekendGuard>} />
-          <Route path="/live-race/:raceId" element={<FullScreenGame><LiveRace /></FullScreenGame>} />
+          <Route path="/live-race/:raceId" element={<LiveRaceGuard><LiveRace /></LiveRaceGuard>} />
           <Route path="/results/:raceId" element={<InGame><RaceResults /></InGame>} />
           <Route path="/season-review" element={<InGame><SeasonReview /></InGame>} />
           <Route path="/offseason" element={<InGame><Offseason /></InGame>} />

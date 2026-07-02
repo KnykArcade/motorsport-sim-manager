@@ -100,7 +100,7 @@ export const teams2024: Team[] = [
     shortName: 'HAA',
     country: 'United States',
     carId: 'car-haas-ferrari-2024',
-    driverIds: ['d-2024-nico-hulkenberg', 'd-2024-oliver-bearman'],
+    driverIds: ['d-2024-nico-hulkenberg'],
     budget: 54000000,
     reputation: 58,
     raceOperations: 6.6,
