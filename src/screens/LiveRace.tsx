@@ -16,6 +16,7 @@ import {
   stepLiveRaceToEnd,
 } from '../sim/raceTickEngine';
 import { requiresDecision, DECISION_COUNTDOWN_SECONDS } from '../sim/analyticsEngine';
+import { buildAnalyticsMonitor } from '../sim/analyticsMonitor';
 import { orderCardsBySeat } from '../sim/liveRaceCardOrder';
 import { applyTeamOrderToLive, recordTeamOrder } from '../sim/relationshipEngine';
 import { Button } from '../components/Button';
@@ -225,6 +226,7 @@ export function LiveRace() {
   );
   const forecast = buildForecast(live, engine.context.track);
   const activeRecs = finished ? [] : live.recommendations;
+  const monitor = buildAnalyticsMonitor(live, seatOrderIds);
 
   const controls = (
     <div className="flex items-center gap-1.5">
@@ -316,9 +318,10 @@ export function LiveRace() {
 
         {/* Right — grouped analytics recommendations (fixed) + pit wall cards */}
         <div className="flex min-h-0 flex-col gap-2">
-          {activeRecs.length > 0 && (
+          {!finished && (
             <RecommendationsPanel
               recs={activeRecs}
+              monitor={monitor}
               currentLap={live.currentLap}
               decisionSecondsLeft={needsDecision ? decisionSecondsLeft ?? DECISION_COUNTDOWN_SECONDS : null}
               nameOf={driverName}
