@@ -24,7 +24,7 @@ import unicodedata
 
 import openpyxl
 
-ATTACH = "/home/ubuntu/attachments"
+ATTACH = os.environ.get("ATTACH", "/home/ubuntu/attachments")
 OUT = os.environ.get("OUT", "/home/ubuntu/repos/motorsport-sim-manager/src/data")
 
 
@@ -142,22 +142,45 @@ def get(row, sheet, *aliases):
 
 def find_workbook(year, series):
     pat = f"{series}_{year}_Season_Full_Update"
+    series_pat = f"{series}_"
     best, best_mtime = None, -1
-    for f in glob.glob(os.path.join(ATTACH, "*", "*.xlsx")):
-        if pat in os.path.basename(f):
-            mt = os.path.getmtime(f)
-            if mt > best_mtime:
-                best, best_mtime = f, mt
+    patterns = [
+        os.path.join(ATTACH, "*", "*.xlsx"),
+        os.path.join(ATTACH, "*.xlsx"),
+    ]
+    for pattern in patterns:
+        for f in glob.glob(pattern):
+            base = os.path.basename(f)
+            if pat in base:
+                mt = os.path.getmtime(f)
+                if mt > best_mtime:
+                    best, best_mtime = f, mt
+            elif series_pat in base and "Season_Full_Update" in base:
+                years_in_name = re.findall(r'(\d{4})', base)
+                if str(year) in base:
+                    mt = os.path.getmtime(f)
+                    if mt > best_mtime:
+                        best, best_mtime = f, mt
+                elif len(years_in_name) >= 2:
+                    lo, hi = int(years_in_name[0]), int(years_in_name[1])
+                    if lo <= year <= hi:
+                        mt = os.path.getmtime(f)
+                        if mt > best_mtime:
+                            best, best_mtime = f, mt
     return best
 
 
-def pick_sheet(wb, *keyword_groups):
+def pick_sheet(wb, *keyword_groups, year=None):
     """Return the first sheet name whose lowercased name matches all keywords in
-    any of the keyword_groups (groups tried in order)."""
+    any of the keyword_groups (groups tried in order). If *year* is given, only
+    sheets whose name contains that year string are considered (for multi-year
+    workbooks)."""
     for group in keyword_groups:
         kws, excl = group[0], group[1] if len(group) > 1 else []
         for sn in wb.sheetnames:
             low = sn.lower()
+            if year and str(year) not in low:
+                continue
             if all(k in low for k in kws) and not any(e in low for e in excl):
                 return sn
     return None
@@ -424,15 +447,15 @@ def gen(year, series="F1"):
     tag = str(y) if series == "F1" else f"{y}{series}"
 
     cal_sn = pick_sheet(wb, (["calendar"],), (["track", "rating"],),
-                        (["ratings"], ["key", "driver", "car"]))
+                        (["ratings"], ["key", "driver", "car"]), year=y)
     car_sn = pick_sheet(wb, (["car", "performance"],), (["team", "car"],),
-                        (["carperformance"],), (["car"],))
+                        (["carperformance"],), (["car"],), year=y)
     drv_sn = pick_sheet(wb, (["driver", "rating"],), (["drivers"],),
                         (["current"], ["market", "youth"]),
-                        (["driver"], ["market"]))
-    mkt_sn = pick_sheet(wb, (["driver", "market"],), (["market"],))
-    yth_sn = pick_sheet(wb, (["youth"],), (["prospect"],))
-    pts_sn = pick_sheet(wb, (["points"],))
+                        (["driver"], ["market"]), year=y)
+    mkt_sn = pick_sheet(wb, (["driver", "market"],), (["market"],), year=y)
+    yth_sn = pick_sheet(wb, (["youth"],), (["prospect"],), year=y)
+    pts_sn = pick_sheet(wb, (["points"],), year=y)
 
     cal = Sheet(wb[cal_sn], ["round", "number"]) if cal_sn else None
     car = Sheet(wb[car_sn], ["team"]) if car_sn else None
