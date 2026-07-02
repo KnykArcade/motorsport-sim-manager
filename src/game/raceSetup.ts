@@ -30,6 +30,8 @@ import {
 } from './careerState';
 import type { SetupOption, Track } from '../types/gameTypes';
 import type { Entrant, RaceContext, RaceDecision } from '../types/simTypes';
+import type { RaceWeekendPackageEffects } from '../types/raceWeekendPackageTypes';
+import { packageEffects as getPackageEffects } from '../sim/raceWeekendPackageEngine';
 import type { LiveRaceMeta, LiveRaceOptions } from '../sim/liveRaceEngine';
 
 // Build the derived session setups for the player's tuned car setups, plus a
@@ -135,9 +137,17 @@ export function buildRaceContext(
   const pointsSystem = getPointsSystem(state.pointsSystemId);
   const teamReputation: Record<string, number> = {};
   const teamRaceOps: Record<string, number> = {};
+  const pkgEffects: Record<string, RaceWeekendPackageEffects> = {};
   state.teams.forEach((t) => {
     teamReputation[t.id] = t.reputation;
     teamRaceOps[t.id] = t.raceOperations;
+    // Player team uses their selected package; AI teams use Standard (no modifier)
+    // until AI package selection is wired in.
+    if (t.id === state.selectedTeamId && state.raceWeekendPackage) {
+      pkgEffects[t.id] = getPackageEffects(state.raceWeekendPackage.packageType);
+    } else if (state.aiRaceWeekendPackages?.[t.id]) {
+      pkgEffects[t.id] = getPackageEffects(state.aiRaceWeekendPackages[t.id].packageType);
+    }
   });
 
   const context: RaceContext = {
@@ -153,6 +163,7 @@ export function buildRaceContext(
     year: state.seasonYear,
     teamReputation,
     teamRaceOps,
+    packageEffectsByTeam: pkgEffects,
   };
 
   return { context, track, raceId: race.id, totalLaps: race.laps };

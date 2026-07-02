@@ -11,6 +11,7 @@ import type {
   Track,
 } from './gameTypes';
 import type { WeatherState } from './liveTypes';
+import type { RaceWeekendPackageEffects } from './raceWeekendPackageTypes';
 
 // How a driver manages tyres across their qualifying runs.
 export type QualifyingTyreApproach = 'Standard' | 'Conserve';
@@ -68,6 +69,9 @@ export type QualifyingContext = {
   // Race Operations Rating (1-10) by team id. Drives the team component of
   // qualifying pace and the per-weekend operations variance.
   teamRaceOps: Record<string, number>;
+  // Race Weekend Package effects by team id. Applies pace, reliability, and
+  // pit crew modifiers from the selected package.
+  packageEffectsByTeam?: Record<string, RaceWeekendPackageEffects>;
 };
 
 export type RaceContext = {
@@ -88,6 +92,9 @@ export type RaceContext = {
   // Race Operations Rating (1-10) by team id. Drives the team component of race
   // pace and the per-weekend operations variance.
   teamRaceOps: Record<string, number>;
+  // Race Weekend Package effects by team id. Applies pace, reliability, and
+  // pit crew modifiers from the selected package.
+  packageEffectsByTeam?: Record<string, RaceWeekendPackageEffects>;
 };
 
 // Debug breakdown surfaced in the developer panel so formulas can be tuned.
