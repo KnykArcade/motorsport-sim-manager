@@ -84,5 +84,6 @@ export type CareerPhaseState = {
   paddockEvents: PaddockEvent[];
   announcedCompletedProjectIds: string[];
   racePrepFocus?: string;
+  racePrepFocusApplied: boolean;
   preseasonChecklist: PreseasonChecklistItem[];
 };

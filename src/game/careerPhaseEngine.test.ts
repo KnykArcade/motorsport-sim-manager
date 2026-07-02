@@ -8,6 +8,8 @@ import {
   hasUnresolvedRequiredDecisions,
   isPreseasonChecklistComplete,
   togglePreseasonChecklistItem,
+  computeRacePrepFocusEffect,
+  processAITeamActivity,
 } from './careerPhaseEngine';
 import type { GameState } from './careerState';
 
@@ -459,6 +461,12 @@ describe('careerPhaseEngine', () => {
     expect(announceCount).toBe(1);
 
     // Now simulate a second paddock week — the project should NOT appear again.
+    // Resolve any required decisions before advancing.
+    const ps2 = getOrCreatePhaseState(state);
+    for (const ev of ps2.paddockEvents.filter((e) => e.isRequiredDecision)) {
+      const optionId = ev.options?.[0]?.id ?? 'balanced';
+      state = dispatch(state, { type: 'RESOLVE_PADDOCK_EVENT', eventId: ev.id, optionId });
+    }
     state = dispatch(state, { type: 'ADVANCE_TO_PRE_RACE_BRIEFING' });
     state = dispatch(state, { type: 'ADVANCE_TO_RACE_WEEKEND' });
     state = dispatch(state, { type: 'RUN_QUALIFYING', decisions: [] });
@@ -511,5 +519,264 @@ describe('careerPhaseEngine', () => {
     expect(dps.preseasonChecklist).toBeDefined();
     expect(dps.preseasonChecklist.length).toBe(5);
     expect(dps.preseasonChecklist.every((item) => !item.completed)).toBe(true);
+  });
+
+  // --- Reducer-level phase guards (ISSUE 1) ---
+
+  describe('reducer phase guards', () => {
+    it('RUN_QUALIFYING is blocked outside race_weekend', () => {
+      let state = newCareerState();
+      state = completeChecklist(state);
+      // Still in pre_season_setup — should not run qualifying.
+      state = dispatch(state, { type: 'RUN_QUALIFYING', decisions: [] });
+      expect(getCareerPhase(state)).toBe('pre_season_setup');
+    });
+
+    it('RUN_RACE is blocked outside race_weekend', () => {
+      let state = newCareerState();
+      state = completeChecklist(state);
+      state = dispatch(state, { type: 'COMPLETE_PRESEASON_SETUP' });
+      // In pre_race_briefing — should not run race.
+      state = dispatch(state, { type: 'RUN_RACE', decisions: [] });
+      expect(getCareerPhase(state)).toBe('pre_race_briefing');
+    });
+
+    it('ADVANCE_TO_PADDOCK_WEEK is blocked outside post_race_review', () => {
+      let state = newCareerState();
+      state = completeChecklist(state);
+      state = dispatch(state, { type: 'COMPLETE_PRESEASON_SETUP' });
+      // In pre_race_briefing — should not advance to paddock.
+      state = dispatch(state, { type: 'ADVANCE_TO_PADDOCK_WEEK' });
+      expect(getCareerPhase(state)).toBe('pre_race_briefing');
+    });
+
+    it('ADVANCE_TO_RACE_WEEKEND is blocked outside pre_race_briefing', () => {
+      let state = newCareerState();
+      state = completeChecklist(state);
+      // In pre_season_setup — should not advance to race weekend.
+      state = dispatch(state, { type: 'ADVANCE_TO_RACE_WEEKEND' });
+      expect(getCareerPhase(state)).toBe('pre_season_setup');
+    });
+
+    it('ADVANCE_TO_PRE_RACE_BRIEFING is blocked from wrong phase', () => {
+      let state = newCareerState();
+      state = completeChecklist(state);
+      state = dispatch(state, { type: 'COMPLETE_PRESEASON_SETUP' });
+      state = dispatch(state, { type: 'ADVANCE_TO_RACE_WEEKEND' });
+      // In race_weekend — should not advance to briefing.
+      state = dispatch(state, { type: 'ADVANCE_TO_PRE_RACE_BRIEFING' });
+      expect(getCareerPhase(state)).toBe('race_weekend');
+    });
+
+    it('RESOLVE_PADDOCK_EVENT is blocked outside paddock_week', () => {
+      let state = newCareerState();
+      // In pre_season_setup — should not resolve paddock events.
+      state = dispatch(state, { type: 'RESOLVE_PADDOCK_EVENT', eventId: 'fake', optionId: 'fake' });
+      expect(getCareerPhase(state)).toBe('pre_season_setup');
+    });
+
+    it('TOGGLE_PRESEASON_CHECKLIST_ITEM is blocked outside pre_season_setup', () => {
+      let state = newCareerState();
+      state = completeChecklist(state);
+      state = dispatch(state, { type: 'COMPLETE_PRESEASON_SETUP' });
+      // In pre_race_briefing — should not toggle checklist.
+      state = dispatch(state, { type: 'TOGGLE_PRESEASON_CHECKLIST_ITEM', itemId: 'team_overview' });
+      expect(getCareerPhase(state)).toBe('pre_race_briefing');
+    });
+
+    it('GENERATE_PADDOCK_EVENTS is blocked outside paddock_week', () => {
+      let state = newCareerState();
+      state = completeChecklist(state);
+      // In pre_season_setup — should not generate paddock events.
+      state = dispatch(state, { type: 'GENERATE_PADDOCK_EVENTS' });
+      expect(getOrCreatePhaseState(state).paddockEvents.length).toBe(0);
+    });
+  });
+
+  // --- AI team activity dedup (ISSUE 4) ---
+
+  describe('AI team activity', () => {
+    it('processAITeamActivity is idempotent (dedup flag)', () => {
+      let state = newCareerState();
+      state = completeChecklist(state);
+      state = dispatch(state, { type: 'COMPLETE_PRESEASON_SETUP' });
+      state = dispatch(state, { type: 'ADVANCE_TO_RACE_WEEKEND' });
+      state = dispatch(state, { type: 'RUN_QUALIFYING', decisions: [] });
+      state = dispatch(state, { type: 'RUN_RACE', decisions: [] });
+      state = dispatch(state, { type: 'ADVANCE_TO_PADDOCK_WEEK' });
+
+      // Process AI activity.
+      state = processAITeamActivity(state);
+      const newsAfterFirst = state.news.length;
+
+      // Process again — should be a no-op.
+      state = processAITeamActivity(state);
+      expect(state.news.length).toBe(newsAfterFirst);
+      expect(getOrCreatePhaseState(state).aiActionsProcessedForCurrentWeek).toBe(true);
+    });
+
+    it('GENERATE_PADDOCK_EVENTS processes AI activity once per week', () => {
+      let state = newCareerState();
+      state = completeChecklist(state);
+      state = dispatch(state, { type: 'COMPLETE_PRESEASON_SETUP' });
+      state = dispatch(state, { type: 'ADVANCE_TO_RACE_WEEKEND' });
+      state = dispatch(state, { type: 'RUN_QUALIFYING', decisions: [] });
+      state = dispatch(state, { type: 'RUN_RACE', decisions: [] });
+      state = dispatch(state, { type: 'ADVANCE_TO_PADDOCK_WEEK' });
+
+      state = dispatch(state, { type: 'GENERATE_PADDOCK_EVENTS' });
+      const newsAfterFirst = state.news.length;
+
+      // Generate again — should not add more AI news.
+      state = dispatch(state, { type: 'GENERATE_PADDOCK_EVENTS' });
+      expect(state.news.length).toBe(newsAfterFirst);
+    });
+  });
+
+  // --- Race prep focus effect (ISSUE 5) ---
+
+  describe('race prep focus effect', () => {
+    it('computeRacePrepFocusEffect returns correct modifiers for each focus', () => {
+      const balanced = computeRacePrepFocusEffect('balanced');
+      expect(balanced.paceModifier).toBeGreaterThan(0);
+      expect(balanced.mistakeRiskMultiplier).toBeLessThan(1);
+
+      const qualifying = computeRacePrepFocusEffect('qualifying');
+      expect(qualifying.qualifyingModifier).toBeGreaterThan(0);
+      expect(qualifying.paceModifier).toBeLessThanOrEqual(0);
+
+      const race = computeRacePrepFocusEffect('race');
+      expect(race.paceModifier).toBeGreaterThan(0);
+      expect(race.reliabilityModifier).toBeGreaterThan(0);
+
+      const reliability = computeRacePrepFocusEffect('reliability');
+      expect(reliability.reliabilityModifier).toBeGreaterThan(race.reliabilityModifier);
+      expect(reliability.paceModifier).toBeLessThan(0);
+
+      const power = computeRacePrepFocusEffect('power');
+      expect(power.paceModifier).toBeGreaterThan(0);
+      expect(power.reliabilityModifier).toBeLessThan(0);
+    });
+
+    it('racePrepFocusApplied is set to true after race completion', () => {
+      let state = newCareerState();
+      state = completeChecklist(state);
+      state = dispatch(state, { type: 'COMPLETE_PRESEASON_SETUP' });
+      state = dispatch(state, { type: 'ADVANCE_TO_RACE_WEEKEND' });
+      state = dispatch(state, { type: 'RUN_QUALIFYING', decisions: [] });
+      state = dispatch(state, { type: 'RUN_RACE', decisions: [] });
+      // After race, racePrepFocusApplied should be true.
+      expect(getOrCreatePhaseState(state).racePrepFocusApplied).toBe(true);
+    });
+
+    it('racePrepFocusApplied is reset when entering paddock week', () => {
+      let state = newCareerState();
+      state = completeChecklist(state);
+      state = dispatch(state, { type: 'COMPLETE_PRESEASON_SETUP' });
+      state = dispatch(state, { type: 'ADVANCE_TO_RACE_WEEKEND' });
+      state = dispatch(state, { type: 'RUN_QUALIFYING', decisions: [] });
+      state = dispatch(state, { type: 'RUN_RACE', decisions: [] });
+      state = dispatch(state, { type: 'ADVANCE_TO_PADDOCK_WEEK' });
+      // After entering paddock week, racePrepFocusApplied should be reset.
+      expect(getOrCreatePhaseState(state).racePrepFocusApplied).toBe(false);
+    });
+
+    it('defaultCareerPhaseState has racePrepFocusApplied false', () => {
+      const dps = defaultCareerPhaseState();
+      expect(dps.racePrepFocusApplied).toBe(false);
+    });
+  });
+
+  // --- Preseason checklist enforcement (ISSUE 6) ---
+
+  describe('preseason checklist enforcement', () => {
+    it('COMPLETE_PRESEASON_SETUP is blocked when checklist is incomplete', () => {
+      let state = newCareerState();
+      state = dispatch(state, { type: 'COMPLETE_PRESEASON_SETUP' });
+      expect(getCareerPhase(state)).toBe('pre_season_setup');
+    });
+
+    it('ADVANCE_TO_PRE_RACE_BRIEFING from pre_season_setup is blocked when checklist incomplete', () => {
+      let state = newCareerState();
+      state = dispatch(state, { type: 'ADVANCE_TO_PRE_RACE_BRIEFING' });
+      expect(getCareerPhase(state)).toBe('pre_season_setup');
+    });
+
+    it('ADVANCE_TO_PRE_RACE_BRIEFING from pre_season_setup works when checklist complete', () => {
+      let state = newCareerState();
+      state = completeChecklist(state);
+      state = dispatch(state, { type: 'ADVANCE_TO_PRE_RACE_BRIEFING' });
+      expect(getCareerPhase(state)).toBe('pre_race_briefing');
+    });
+  });
+
+  // --- Save/load duplicate safety (ISSUE 7) ---
+
+  describe('save/load duplicate safety', () => {
+    it('LOAD_GAME does not re-process paddock events or AI activity', () => {
+      let state = newCareerState();
+      state = completeChecklist(state);
+      state = dispatch(state, { type: 'COMPLETE_PRESEASON_SETUP' });
+      state = dispatch(state, { type: 'ADVANCE_TO_RACE_WEEKEND' });
+      state = dispatch(state, { type: 'RUN_QUALIFYING', decisions: [] });
+      state = dispatch(state, { type: 'RUN_RACE', decisions: [] });
+      state = dispatch(state, { type: 'ADVANCE_TO_PADDOCK_WEEK' });
+      state = dispatch(state, { type: 'GENERATE_PADDOCK_EVENTS' });
+
+      const eventsBefore = getOrCreatePhaseState(state).paddockEvents.length;
+      const newsBefore = state.news.length;
+      const aiFlagBefore = getOrCreatePhaseState(state).aiActionsProcessedForCurrentWeek;
+
+      // Simulate save/load by dispatching LOAD_GAME with the same state.
+      state = dispatch(state, { type: 'LOAD_GAME', state });
+      expect(getOrCreatePhaseState(state).paddockEvents.length).toBe(eventsBefore);
+      expect(state.news.length).toBe(newsBefore);
+      expect(getOrCreatePhaseState(state).aiActionsProcessedForCurrentWeek).toBe(aiFlagBefore);
+    });
+
+    it('re-dispatching GENERATE_PADDOCK_EVENTS after load is a no-op', () => {
+      let state = newCareerState();
+      state = completeChecklist(state);
+      state = dispatch(state, { type: 'COMPLETE_PRESEASON_SETUP' });
+      state = dispatch(state, { type: 'ADVANCE_TO_RACE_WEEKEND' });
+      state = dispatch(state, { type: 'RUN_QUALIFYING', decisions: [] });
+      state = dispatch(state, { type: 'RUN_RACE', decisions: [] });
+      state = dispatch(state, { type: 'ADVANCE_TO_PADDOCK_WEEK' });
+      state = dispatch(state, { type: 'GENERATE_PADDOCK_EVENTS' });
+
+      // Simulate save/load.
+      state = dispatch(state, { type: 'LOAD_GAME', state });
+
+      // Try to generate again — should be a no-op.
+      const eventsBefore = getOrCreatePhaseState(state).paddockEvents.length;
+      state = dispatch(state, { type: 'GENERATE_PADDOCK_EVENTS' });
+      expect(getOrCreatePhaseState(state).paddockEvents.length).toBe(eventsBefore);
+    });
+
+    it('paddock event effectsApplied flag survives save/load', () => {
+      let state = newCareerState();
+      state = completeChecklist(state);
+      state = dispatch(state, { type: 'COMPLETE_PRESEASON_SETUP' });
+      state = dispatch(state, { type: 'ADVANCE_TO_RACE_WEEKEND' });
+      state = dispatch(state, { type: 'RUN_QUALIFYING', decisions: [] });
+      state = dispatch(state, { type: 'RUN_RACE', decisions: [] });
+      state = dispatch(state, { type: 'ADVANCE_TO_PADDOCK_WEEK' });
+      state = dispatch(state, { type: 'GENERATE_PADDOCK_EVENTS' });
+
+      // Resolve a required event.
+      const phaseState = getOrCreatePhaseState(state);
+      const requiredEvent = phaseState.paddockEvents.find((e) => e.isRequiredDecision);
+      if (!requiredEvent) return;
+      const optionId = requiredEvent.options?.[0]?.id ?? 'balanced';
+      state = dispatch(state, { type: 'RESOLVE_PADDOCK_EVENT', eventId: requiredEvent.id, optionId });
+
+      // Save/load.
+      state = dispatch(state, { type: 'LOAD_GAME', state });
+
+      // Event should still be marked as effectsApplied.
+      const event = getOrCreatePhaseState(state).paddockEvents.find((e) => e.id === requiredEvent.id);
+      expect(event?.effectsApplied).toBe(true);
+      expect(event?.resolvedOptionId).toBe(optionId);
+    });
   });
 });

@@ -1,7 +1,7 @@
 import { useParams, useNavigate } from 'react-router-dom';
 import { useGame } from '../game/GameContext';
 import { getTrackById } from '../data';
-import { buildPostRaceSummary } from '../game/careerPhaseEngine';
+import { buildPostRaceSummary, getCareerPhase, getOrCreatePhaseState } from '../game/careerPhaseEngine';
 import { Panel } from '../components/Panel';
 import { Button } from '../components/Button';
 import { RaceResultTable } from '../components/RaceResultTable';
@@ -20,7 +20,15 @@ export function PostRaceReview() {
   const track = race ? getTrackById(race.trackId) : undefined;
   if (!race || !results) return null;
 
-  const summary = buildPostRaceSummary(state);
+  // Determine if this is the active post-race review (matches lastCompletedRaceId
+  // and current phase is post_race_review). Old races are read-only.
+  const phaseState = getOrCreatePhaseState(state);
+  const currentPhase = getCareerPhase(state);
+  const isActiveReview =
+    currentPhase === 'post_race_review' &&
+    phaseState.lastCompletedRaceId === raceId;
+
+  const summary = isActiveReview ? buildPostRaceSummary(state) : null;
 
   const driverName = (id: string) => state.drivers.find((d) => d.id === id)?.name ?? id;
   const teamName = (id: string) => state.teams.find((t) => t.id === id)?.name ?? id;
@@ -44,12 +52,17 @@ export function PostRaceReview() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-neutral-100">Post-Race Review</h1>
-          <p className="text-sm text-neutral-400">{race.gpName} · {race.trackName} · Round {race.round}</p>
+          <p className="text-sm text-neutral-400">
+            {race.gpName} · {race.trackName} · Round {race.round}
+            {!isActiveReview && <span className="ml-2 text-xs text-neutral-500">· Historical (read-only)</span>}
+          </p>
         </div>
-        {state.seasonComplete ? (
-          <Button variant="primary" onClick={() => navigate('/season-review')}>Season Review →</Button>
-        ) : (
-          <Button variant="primary" onClick={continueToPaddock}>Continue to Paddock Week →</Button>
+        {isActiveReview && (
+          state.seasonComplete ? (
+            <Button variant="primary" onClick={() => navigate('/season-review')}>Season Review →</Button>
+          ) : (
+            <Button variant="primary" onClick={continueToPaddock}>Continue to Paddock Week →</Button>
+          )
         )}
       </div>
 

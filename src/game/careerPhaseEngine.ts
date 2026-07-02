@@ -16,6 +16,7 @@ import type {
 } from '../types/careerPhaseTypes';
 import type { RaceResult } from '../types/gameTypes';
 import type { FinanceTransaction } from '../types/financeTypes';
+import type { RacePrepFocusEffect } from '../types/simTypes';
 
 export function defaultCareerPhaseState(): CareerPhaseState {
   return {
@@ -32,6 +33,7 @@ export function defaultCareerPhaseState(): CareerPhaseState {
     preseasonEffectsApplied: false,
     paddockEvents: [],
     announcedCompletedProjectIds: [],
+    racePrepFocusApplied: false,
     preseasonChecklist: defaultPreseasonChecklist(),
   };
 }
@@ -85,6 +87,8 @@ export function enterPostRaceReview(
       currentRound: round,
       lastCompletedRaceId: completedRaceId,
       nextRaceId: nextRace?.id,
+      // Consume the race prep focus effect after the race is completed.
+      racePrepFocusApplied: true,
       // Reset paddock week flags for the new week.
       generatedEventsForCurrentWeek: false,
       generatedNewsForCurrentWeek: false,
@@ -113,6 +117,9 @@ export function enterPaddockWeek(state: GameState): GameState {
       developmentUpdatesProcessedForCurrentWeek: false,
       requiredDecisionsComplete: false,
       paddockEvents: [],
+      // Reset race prep focus for the new paddock week — a new focus will be
+      // chosen from the paddock events and applied to the next race.
+      racePrepFocusApplied: false,
     },
   };
 }
@@ -167,6 +174,143 @@ export function isPreseasonChecklistComplete(state: GameState): boolean {
   const phaseState = getOrCreatePhaseState(state);
   const checklist = phaseState.preseasonChecklist ?? [];
   return checklist.length > 0 && checklist.every((item) => item.completed);
+}
+
+// --- Race prep focus effect --------------------------------------------------
+
+export function computeRacePrepFocusEffect(focus: string): RacePrepFocusEffect {
+  switch (focus) {
+    case 'qualifying':
+      return { paceModifier: -0.1, reliabilityModifier: 0, qualifyingModifier: 0.3, mistakeRiskMultiplier: 1.0 };
+    case 'race':
+      return { paceModifier: 0.2, reliabilityModifier: 0.05, qualifyingModifier: -0.1, mistakeRiskMultiplier: 0.95 };
+    case 'reliability':
+      return { paceModifier: -0.15, reliabilityModifier: 0.15, qualifyingModifier: -0.05, mistakeRiskMultiplier: 0.9 };
+    case 'power':
+      return { paceModifier: 0.15, reliabilityModifier: -0.1, qualifyingModifier: 0.1, mistakeRiskMultiplier: 1.1 };
+    case 'balanced':
+    default:
+      return { paceModifier: 0.05, reliabilityModifier: 0.02, qualifyingModifier: 0, mistakeRiskMultiplier: 0.98 };
+  }
+}
+
+// --- AI team activity (real between-race processing) -------------------------
+
+export function processAITeamActivity(state: GameState): GameState {
+  const phaseState = getOrCreatePhaseState(state);
+  if (phaseState.aiActionsProcessedForCurrentWeek) return state;
+
+  const aiStates = state.aiTeamStates ?? {};
+  const aiTeams = state.teams.filter((t) => t.id !== state.selectedTeamId);
+  const aiNews: typeof state.news = [];
+  let cars = [...state.cars];
+
+  // Process 2-4 AI teams per paddock week with small real changes.
+  const teamsToProcess = aiTeams.slice(0, Math.min(4, aiTeams.length));
+
+  for (const aiTeam of teamsToProcess) {
+    const aiState = aiStates[aiTeam.id];
+    const aiCar = cars.find((c) => c.teamId === aiTeam.id);
+    if (!aiCar) continue;
+
+    const ratings = effectiveCarRatings(aiCar);
+    const archetype = aiState?.archetype ?? 'Balanced';
+
+    // Determine action based on archetype and current state.
+    let newsHeadline = '';
+    let newsBody = '';
+    let isRealChange = false;
+
+    if (archetype === 'AggressiveSpender' || archetype === 'DevelopmentFocused') {
+      // Aggressive teams push development: small car stat improvement.
+      const improvement = 0.1 + Math.random() * 0.3;
+      const stat = Math.random() < 0.5 ? 'enginePower' : 'aeroEfficiency';
+      cars = cars.map((c) =>
+        c.teamId === aiTeam.id
+          ? {
+              ...c,
+              developmentLevel: {
+                ...c.developmentLevel,
+                [stat]: clamp10((c.developmentLevel as Record<string, number>)[stat] + improvement),
+              },
+            }
+          : c,
+      );
+      isRealChange = true;
+      newsHeadline = `${aiTeam.name} brings upgrade to next race`;
+      newsBody = `${aiTeam.name} has completed a development push. ${stat === 'enginePower' ? 'Engine power' : 'Aero efficiency'} improved by ${improvement.toFixed(2)}.`;
+    } else if (ratings.reliability < 5 && Math.random() < 0.4) {
+      // Struggling teams fix reliability: small reliability improvement.
+      const improvement = 0.1 + Math.random() * 0.3;
+      cars = cars.map((c) =>
+        c.teamId === aiTeam.id
+          ? {
+              ...c,
+              developmentLevel: {
+                ...c.developmentLevel,
+                reliability: clamp10(c.developmentLevel.reliability + improvement),
+              },
+            }
+          : c,
+      );
+      isRealChange = true;
+      newsHeadline = `${aiTeam.name} addresses reliability concerns`;
+      newsBody = `${aiTeam.name} has worked on reliability. Rating improved by ${improvement.toFixed(2)} to ${(ratings.reliability + improvement).toFixed(1)}.`;
+    } else if (Math.random() < 0.15) {
+      // Rare reliability setback.
+      const setback = 0.1 + Math.random() * 0.2;
+      cars = cars.map((c) =>
+        c.teamId === aiTeam.id
+          ? {
+              ...c,
+              developmentLevel: {
+                ...c.developmentLevel,
+                reliability: clamp10(c.developmentLevel.reliability - setback),
+              },
+            }
+          : c,
+      );
+      isRealChange = true;
+      newsHeadline = `${aiTeam.name} suffers setback in testing`;
+      newsBody = `${aiTeam.name} encountered reliability issues. Rating dropped by ${setback.toFixed(2)} to ${(ratings.reliability - setback).toFixed(1)}.`;
+    } else if (Math.random() < 0.2) {
+      // Minor form observation — no state change, just flavor news.
+      const performance = (ratings.enginePower + ratings.aeroEfficiency + ratings.mechanicalGrip) / 3;
+      if (performance > 7) {
+        newsHeadline = `${aiTeam.name} looking competitive`;
+        newsBody = `${aiTeam.name}'s car is performing well with an average rating of ${performance.toFixed(1)}/10.`;
+      } else if (performance < 4.5) {
+        newsHeadline = `${aiTeam.name} off the pace`;
+        newsBody = `${aiTeam.name}'s car is struggling with an average rating of ${performance.toFixed(1)}/10.`;
+      } else {
+        newsHeadline = `${aiTeam.name} steady in testing`;
+        newsBody = `${aiTeam.name} completed a productive test session. Average rating: ${performance.toFixed(1)}/10.`;
+      }
+    } else if (aiState && (aiState.financialHealth === 'Critical' || aiState.financialHealth === 'AtRisk') && Math.random() < 0.3) {
+      // Financial trouble — no car change, but news.
+      newsHeadline = `${aiTeam.name} facing financial difficulties`;
+      newsBody = `${aiTeam.name} is in ${aiState.financialHealth} financial health. Budget cuts may affect their development program.`;
+    }
+
+    if (newsHeadline) {
+      aiNews.push({
+        id: `news-ai-${phaseState.paddockWeekId ?? 'pw'}-${aiTeam.id}`,
+        headline: newsHeadline,
+        body: isRealChange ? `[Confirmed] ${newsBody}` : newsBody,
+        timestamp: new Date().toISOString(),
+      });
+    }
+  }
+
+  return {
+    ...state,
+    cars,
+    news: [...aiNews, ...state.news].slice(0, 50),
+    careerPhase: {
+      ...phaseState,
+      aiActionsProcessedForCurrentWeek: true,
+    },
+  };
 }
 
 // --- Required decisions ------------------------------------------------------
