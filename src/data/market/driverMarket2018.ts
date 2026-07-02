@@ -29,7 +29,7 @@ export const driverMarket2018: MarketDriver[] = [
   },
   {
     id: 'mkt-2018-kimi-raikkonen',
-    name: 'Kimi Räikkönen',
+    name: 'Kimi Raikkonen',
     age: 39,
     nationality: 'FIN',
     context: 'Ferrari',

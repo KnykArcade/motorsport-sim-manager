@@ -582,7 +582,7 @@ export const tracks2018: Track[] = [
   },
   {
     id: 'autodromo-hermanos-rodriguez-2018',
-    name: 'Autódromo Hermanos Rodríguez',
+    name: 'Autodromo Hermanos Rodriguez',
     gpName: 'Mexican Grand Prix',
     archetype: 'Balanced',
     attributes: {
@@ -614,7 +614,7 @@ export const tracks2018: Track[] = [
   },
   {
     id: 'autodromo-jose-carlos-pace-2018',
-    name: 'Autódromo José Carlos Pace',
+    name: 'Autodromo Jose Carlos Pace',
     gpName: 'Brazilian Grand Prix',
     archetype: 'Balanced',
     attributes: {
