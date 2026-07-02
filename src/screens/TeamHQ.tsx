@@ -61,7 +61,7 @@ export function TeamHQ() {
             Season Review →
           </Button>
         ) : hasEnoughDrivers ? (
-          <Button variant="primary" onClick={() => navigate('/weekend')}>
+          <Button variant="primary" onClick={() => navigate('/briefing')}>
             Go to Next Race: {race?.gpName} →
           </Button>
         ) : (

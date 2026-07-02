@@ -31,6 +31,11 @@ import { LiveRace } from '../screens/LiveRace';
 import { RaceResults } from '../screens/RaceResults';
 import { SeasonReview } from '../screens/SeasonReview';
 import { Offseason } from '../screens/Offseason';
+import { PostRaceReview } from '../screens/PostRaceReview';
+import { PaddockWeek } from '../screens/PaddockWeek';
+import { PreRaceBriefing } from '../screens/PreRaceBriefing';
+import { PreSeasonSetup } from '../screens/PreSeasonSetup';
+import { getCareerPhase } from '../game/careerPhaseEngine';
 
 // Wrap in-game screens with the dashboard layout and redirect to the menu when
 // there is no active game.
@@ -62,6 +67,23 @@ function LiveRaceGuard({ children }: { children: ReactNode }) {
   return <>{children}</>;
 }
 
+// Route guard that redirects to the correct career phase screen when the
+// player navigates to /hq. This ensures the player always lands on the right
+// phase after save/load.
+function PhaseRedirect({ children }: { children: ReactNode }) {
+  const { state } = useGame();
+  if (!state) return <Navigate to="/" replace />;
+  const phase = getCareerPhase(state);
+  if (phase === 'pre_season_setup') return <Navigate to="/preseason" replace />;
+  if (phase === 'post_race_review') {
+    const lastRaceId = state.careerPhase?.lastCompletedRaceId;
+    if (lastRaceId) return <Navigate to={`/post-race/${lastRaceId}`} replace />;
+  }
+  if (phase === 'paddock_week') return <Navigate to="/paddock" replace />;
+  if (phase === 'pre_race_briefing') return <Navigate to="/briefing" replace />;
+  return <Layout>{children}</Layout>;
+}
+
 export default function App() {
   return (
     <GameProvider>
@@ -72,7 +94,11 @@ export default function App() {
           <Route path="/data" element={<DataViewer />} />
           <Route path="/settings" element={<Settings />} />
 
-          <Route path="/hq" element={<InGame><TeamHQ /></InGame>} />
+          <Route path="/hq" element={<PhaseRedirect><TeamHQ /></PhaseRedirect>} />
+          <Route path="/preseason" element={<InGame><PreSeasonSetup /></InGame>} />
+          <Route path="/paddock" element={<InGame><PaddockWeek /></InGame>} />
+          <Route path="/briefing" element={<InGame><PreRaceBriefing /></InGame>} />
+          <Route path="/post-race/:raceId" element={<InGame><PostRaceReview /></InGame>} />
           <Route path="/calendar" element={<InGame><Calendar /></InGame>} />
           <Route path="/standings" element={<InGame><Standings /></InGame>} />
           <Route path="/teams" element={<InGame><TeamOverview /></InGame>} />

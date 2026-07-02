@@ -196,13 +196,13 @@ export function LiveRace() {
 
   const finishRace = () => {
     if (committed.current) {
-      navigate(`/results/${raceId}`);
+      navigate(`/post-race/${raceId}`);
       return;
     }
     const { results, events, breakdowns } = finalizeResults(live, engine.context);
     committed.current = true;
     dispatch({ type: 'COMMIT_LIVE_RACE', results, events, breakdowns, teamOrders: teamOrders.current });
-    navigate(`/results/${raceId}`);
+    navigate(`/post-race/${raceId}`);
   };
 
   const finished = live.phase === 'finished';
