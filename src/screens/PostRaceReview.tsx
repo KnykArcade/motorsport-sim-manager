@@ -47,6 +47,10 @@ export function PostRaceReview() {
     null as number | null,
   );
 
+  // For historical reviews, calculate points from stored results since
+  // buildPostRaceSummary is only available for the active review.
+  const historicalPoints = isActiveReview ? null : playerResults.reduce((sum, r) => sum + r.points, 0);
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -67,10 +71,14 @@ export function PostRaceReview() {
       </div>
 
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        <KpiCard label="Points Scored" value={String(summary?.pointsGained ?? 0)} />
+        <KpiCard label="Points Scored" value={String(isActiveReview ? (summary?.pointsGained ?? 0) : (historicalPoints ?? 0))} />
         <KpiCard label="Best Finish" value={bestFinish !== null ? `P${bestFinish}` : '—'} />
-        <KpiCard label="Budget Impact" value={formatMoney(summary?.budgetImpact ?? 0)} />
-        <KpiCard label="Car Condition" value={`${Math.round(summary?.carCondition ?? 0)}%`} />
+        {isActiveReview && (
+          <KpiCard label="Budget Impact" value={formatMoney(summary?.budgetImpact ?? 0)} />
+        )}
+        {isActiveReview && (
+          <KpiCard label="Car Condition" value={`${Math.round(summary?.carCondition ?? 0)}%`} />
+        )}
       </div>
 
       <div className="grid gap-6 lg:grid-cols-3">
@@ -148,7 +156,12 @@ export function PostRaceReview() {
 
           <Panel title="Championship Impact">
             <p className="text-sm text-neutral-300">
-              Constructors' position: <span className="font-semibold text-neutral-100">P{summary?.constructorPosition ?? '—'}</span> ({summary?.constructorPoints ?? 0} pts)
+              Constructors' position: <span className="font-semibold text-neutral-100">
+                {isActiveReview
+                  ? `P${summary?.constructorPosition ?? '—'}`
+                  : `P${state.constructorStandings.findIndex((s) => s.entityId === state.selectedTeamId) + 1 || '—'}`}
+              </span>
+              {' '}({isActiveReview ? (summary?.constructorPoints ?? 0) : (state.constructorStandings.find((s) => s.entityId === state.selectedTeamId)?.points ?? 0)} pts)
             </p>
           </Panel>
         </div>
