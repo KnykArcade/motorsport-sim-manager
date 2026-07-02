@@ -182,6 +182,9 @@ export function createLiveRace(context: RaceContext, options: LiveRaceOptions): 
           ? pitWindowFor(pitPlan.scheduledLaps[0], totalLaps)
           : null,
         pitRequested: false,
+        planStatus: pitPlan.scheduledLaps.length > 0 ? 'planned' : 'completed',
+        planCancelled: false,
+        lastWindowPromptLap: null,
       },
       reliabilityIssue: null,
       reliabilityRisk: baseFailureRisk,

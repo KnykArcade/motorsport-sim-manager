@@ -70,6 +70,30 @@ export type PitWindow = {
   close: number; // last lap before the stop is forced
 };
 
+// Lifecycle of a player driver's planned pit stop. Drives event-log clarity and
+// prevents a redundant second stop after an early (e.g. safety-car) pit.
+//   planned              — a stop is scheduled; window not yet open
+//   window_open          — the advisory window has opened; player is prompted
+//   accepted             — player accepted the stop (called the car in)
+//   delayed              — player chose to extend the stint past the window
+//   cancelled            — player cancelled the planned stop (monitoring only)
+//   completed            — the planned stop has been made; no more stops owed
+//   recalculated         — an early stop absorbed a planned window; plan reworked
+//   no_longer_needed     — the plan no longer requires the remaining stop
+//   urgent_due_to_tyre_deg — tyre wear now forces a re-recommended stop
+//   mandatory_due_to_rules — a rules/mandatory stop must still be served
+export type PitPlanStatus =
+  | 'planned'
+  | 'window_open'
+  | 'accepted'
+  | 'delayed'
+  | 'cancelled'
+  | 'completed'
+  | 'recalculated'
+  | 'no_longer_needed'
+  | 'urgent_due_to_tyre_deg'
+  | 'mandatory_due_to_rules';
+
 export type PitStopState = {
   plannedStops: number;
   stopsMade: number;
@@ -82,6 +106,16 @@ export type PitStopState = {
   // pit off their scheduledLaps as before.
   window: PitWindow | null;
   pitRequested: boolean;
+  // Lifecycle of the current planned stop (player cars). Lets an early stop
+  // recalculate/cancel the planned window instead of triggering a second stop,
+  // and keeps the event log's pit-strategy narrative accurate.
+  planStatus: PitPlanStatus;
+  // Set true when the player cancels the planned stop; the car then keeps
+  // running and is only re-prompted if tyres/rules/strategy force a stop.
+  planCancelled: boolean;
+  // Lap the current planned window was last recommended/prompted on, used to
+  // throttle repeat "pit window open" prompts so they are not raised every lap.
+  lastWindowPromptLap: number | null;
 };
 
 // ---------------------------------------------------------------------------
@@ -212,6 +246,7 @@ export type RecActionType =
   | 'ProtectEngine'
   | 'PitNow'
   | 'StayOut'
+  | 'CancelStop'
   | 'SaveTires'
   | 'FuelSave'
   | 'HoldPosition'

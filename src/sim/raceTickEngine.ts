@@ -127,35 +127,58 @@ export function stepLiveRace(state: LiveRaceState, meta: LiveRaceMeta): LiveRace
       // AI fallback: pit on the scheduled lap.
       if (!wantsPit && c.pit.scheduledLaps.length > 0 && nextLap >= c.pit.scheduledLaps[0]) wantsPit = true;
     } else {
-      // Player owns pit timing: only pit when the player has called the car in,
-      // or as a fallback once the advisory window has closed with a stop still
-      // owed (so the planned stop is never silently skipped).
+      // Player owns pit timing: the car only pits when the player has called it
+      // in (via the pit-wall / an accepted analytics recommendation). The planned
+      // window is *prompted*, never auto-executed (see analyticsEngine), so an
+      // unattended window no longer boxes the car — only the tyre-cliff net below
+      // forces a stop as a last resort.
       if (c.pit.pitRequested) wantsPit = true;
-      else if (
-        c.pit.window &&
-        nextLap >= c.pit.window.close &&
-        c.pit.stopsMade < c.pit.plannedStops
-      ) {
-        wantsPit = true;
-        lapEvents.push({ lap: nextLap, text: `${name(c.driverId)} boxes as the pit window closes.` });
-      }
     }
     // Tyre-cliff forced stop (both player and AI) — safety net.
-    if (!wantsPit && c.tire.wear > 92) wantsPit = true;
+    if (!wantsPit && c.tire.wear > 92) {
+      wantsPit = true;
+      if (c.isPlayer) {
+        lapEvents.push({ lap: nextLap, text: `${name(c.driverId)} is forced to box — tyres past the cliff.` });
+      }
+    }
 
     // --- Execute pit stop ---
     let pitLoss = 0;
     if (wantsPit) {
+      // A stop fulfils the nearest planned stop. Detect an *early* stop (one made
+      // before reaching the next scheduled lap, e.g. a cheap safety-car stop) so
+      // we can consume that planned stop too — otherwise the car would pit again
+      // in the original window for a redundant second stop.
+      const hadDueScheduled = c.pit.scheduledLaps.some((l) => l <= nextLap);
+      const nextPlanned = c.pit.scheduledLaps.find((l) => l > nextLap);
+      const earlyStop = !hadDueScheduled && nextPlanned != null;
+      const beforeWindow = c.isPlayer && c.pit.window != null && nextLap < c.pit.window.open;
+      const recalc = earlyStop && (beforeWindow || state.safetyCar.active);
+
       c.pit.scheduledLaps = c.pit.scheduledLaps.filter((l) => l > nextLap);
+      if (earlyStop && c.pit.scheduledLaps.length > 0) c.pit.scheduledLaps.shift();
       c.pit.stopsMade += 1;
       c.pit.lastPitLap = nextLap;
       c.pit.inPitThisLap = true;
       c.pit.pitRequested = false;
+      c.pit.planCancelled = false;
       // Advance the advisory window to the player's next planned stop (if any).
       c.pit.window =
         c.isPlayer && c.pit.scheduledLaps.length > 0
           ? pitWindowFor(c.pit.scheduledLaps[0], state.totalLaps)
           : null;
+      c.pit.lastWindowPromptLap = null;
+      c.pit.planStatus =
+        c.pit.scheduledLaps.length > 0 ? (recalc ? 'recalculated' : 'planned') : 'completed';
+      // Clarify the strategy narrative when an early stop absorbs a planned stop.
+      if (c.isPlayer && recalc) {
+        lapEvents.push({
+          lap: nextLap,
+          text: `Planned stop recalculated after ${name(c.driverId)}'s early ${
+            state.safetyCar.active ? 'Safety Car ' : ''
+          }pit.`,
+        });
+      }
       pitLoss = state.safetyCar.active
         ? Math.max(8, c.pitLossBase - SAFETY_CAR_PIT_SAVING)
         : c.pitLossBase;
@@ -512,6 +535,30 @@ export function requestPlayerPit(state: LiveRaceState, driverId: string): LiveRa
   return changed ? { ...state, cars } : state;
 }
 
+// Cancel a player car's planned pit stop. The car keeps running and is only
+// re-prompted if tyres/rules/strategy force a stop (the tyre analytics recs and
+// the tyre-cliff net still apply). Clears the advisory window so the pit-window
+// prompt is not re-raised. No-op for AI / retired / finished cars.
+export function cancelPlayerPitPlan(state: LiveRaceState, driverId: string): LiveRaceState {
+  let changed = false;
+  const cars = state.cars.map((c) => {
+    if (c.driverId !== driverId || !c.isPlayer || !c.running) return c;
+    changed = true;
+    return {
+      ...c,
+      pit: {
+        ...c.pit,
+        scheduledLaps: [],
+        window: null,
+        pitRequested: false,
+        planCancelled: true,
+        planStatus: 'cancelled' as const,
+      },
+    };
+  });
+  return changed ? { ...state, cars } : state;
+}
+
 // Change a player car's strategy mode mid-race. Takes effect on the next lap.
 // No-op for AI cars (their mode is chosen each lap) or retired/finished cars.
 export function setPlayerPaceMode(
@@ -755,6 +802,21 @@ function applyRecAction(
   const lap = state.currentLap;
   const name = meta.driverNames[rec.driverId] ?? rec.driverId;
   const eff = action.type === 'LetCrewDecide' ? rec.action : action;
+
+  // --- Cancel the planned stop: keep running, only re-prompt on tyre/rules ---
+  if (eff.type === 'CancelStop') {
+    let s = withCooldown(removeRec(state, rec.id), rec);
+    const car = state.cars.find((c) => c.driverId === rec.driverId);
+    if (!car || !car.running) return s;
+    const priorStop = car.pit.stopsMade > 0;
+    s = cancelPlayerPitPlan(s, rec.driverId);
+    return addEvent(
+      s,
+      `Lap ${lap} — pit wall cancels ${name}'s planned stop${
+        priorStop ? ' after the earlier stop' : ''
+      }; car stays out.`,
+    );
+  }
 
   // --- Pit call: schedule at most one stop, with duplicate protection ---
   if (eff.pitNow) {

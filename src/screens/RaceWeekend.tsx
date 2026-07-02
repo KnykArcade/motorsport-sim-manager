@@ -10,6 +10,7 @@ import { driverInstructions } from '../data/decisions/driverInstructions';
 import { autoSetupsForTrack } from '../sim/autoSetup';
 import { qualifyingFormatFor } from '../sim/qualifyingEngine';
 import { BALANCED_SETUP } from '../data/setup/setupComponents';
+import { sanitizeSetupProfile } from '../sim/setupSanitize';
 import {
   weekendSessionKinds,
   defaultAssignments,
@@ -28,6 +29,7 @@ import type {
   PracticeSession,
   PracticeSessionKind,
   PracticeAssignment,
+  PracticeRunResult,
   FeedbackSentiment,
 } from '../types/practiceTypes';
 import { weekendForecast, type WeekendForecast } from '../sim/weatherEngine';
@@ -96,10 +98,13 @@ export function RaceWeekend() {
   // Unsaved edits made in the Car Setup phase, layered over the committed setups
   // in game state. Resolved into a complete per-driver map for the children.
   const [setupDraft, setSetupDraft] = useState<Record<string, CarSetup>>({});
+  // Always resolve to a COMPLETE, numeric setup per driver so the workshop and
+  // its score maths never see undefined fields (which produced "NaN–NaN"). The
+  // baseline exists from career start / rollover; sanitize is a final guard.
   const resolvedSetups = useMemo(() => {
     const m: Record<string, CarSetup> = {};
     for (const d of playerDrivers) {
-      m[d.id] = setupDraft[d.id] ?? state?.carSetups?.[d.id] ?? { ...BALANCED_SETUP };
+      m[d.id] = sanitizeSetupProfile(setupDraft[d.id] ?? state?.carSetups?.[d.id] ?? BALANCED_SETUP);
     }
     return m;
   }, [playerDrivers, setupDraft, state]);
@@ -167,9 +172,14 @@ export function RaceWeekend() {
     });
   };
 
+  // Practice and Car Setup are laid out as full-height, no-page-scroll screens:
+  // the header/stepper/forecast stay pinned and only the phase's own internal
+  // panels scroll. Other phases flow normally inside the scroll wrapper.
+  const fullHeightPhase = phase === 'practice' || phase === 'setup';
+
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
+    <div className="flex h-full min-h-0 flex-col gap-4">
+      <div className="flex shrink-0 items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-neutral-100">{race.gpName}</h1>
           <p className="text-sm text-neutral-400">{race.trackName} · Round {race.round}</p>
@@ -177,21 +187,32 @@ export function RaceWeekend() {
         <Button variant="ghost" onClick={() => navigate('/hq')}>Exit to HQ</Button>
       </div>
 
-      <PhaseStepper phase={phase} hasQuali={!!qualifyingResults} />
+      <div className="shrink-0">
+        <PhaseStepper phase={phase} hasQuali={!!qualifyingResults} />
+      </div>
 
       {forecast && phase !== 'hub' && (
-        <ForecastBanner
-          forecast={forecast}
-          highlight={
-            phase === 'practice' || phase === 'setup'
-              ? 'Practice'
-              : phase === 'quali-run' || phase === 'quali-review'
-              ? 'Qualifying'
-              : 'Race'
-          }
-        />
+        <div className="shrink-0">
+          <ForecastBanner
+            forecast={forecast}
+            highlight={
+              phase === 'practice' || phase === 'setup'
+                ? 'Practice'
+                : phase === 'quali-run' || phase === 'quali-review'
+                ? 'Qualifying'
+                : 'Race'
+            }
+          />
+        </div>
       )}
 
+      <div
+        className={
+          fullHeightPhase
+            ? 'flex min-h-0 flex-1 flex-col'
+            : 'min-h-0 flex-1 space-y-6 overflow-y-auto'
+        }
+      >
       {phase === 'hub' && forecast && (
         <WeekendHub
           state={state}
@@ -218,32 +239,33 @@ export function RaceWeekend() {
       )}
 
       {phase === 'setup' && (
-        <div className="space-y-4">
-          <SetupWorkshop
-            track={track}
-            drivers={playerDrivers}
-            setups={resolvedSetups}
-            car={carForTeam(state, state.selectedTeamId)}
-            practice={workshopPractice}
-            onChangeParam={(driverId, key, value) =>
-              setSetupDraft((p) => ({ ...p, [driverId]: { ...p[driverId], [key]: value } }))
-            }
-            onApplySetup={(driverId, setup) =>
-              setSetupDraft((p) => ({ ...p, [driverId]: setup }))
-            }
-            onCopy={(fromId, toId) =>
-              setSetupDraft((p) => ({ ...p, [toId]: { ...p[fromId] } }))
-            }
-          />
-          <div className="flex justify-between">
-            <Button variant="ghost" onClick={() => { commitSetups(); setPhase('practice'); }}>
-              ← Back to Practice
-            </Button>
-            <Button variant="primary" onClick={() => { commitSetups(); setPhase('quali-run'); }}>
-              Confirm Setup →
-            </Button>
-          </div>
-        </div>
+        <SetupWorkshop
+          track={track}
+          drivers={playerDrivers}
+          setups={resolvedSetups}
+          car={carForTeam(state, state.selectedTeamId)}
+          practice={workshopPractice}
+          onChangeParam={(driverId, key, value) =>
+            // Spread over the COMPLETE resolved setup (not the possibly-undefined
+            // draft) so a single-slider edit keeps every other field valid.
+            setSetupDraft((p) => ({
+              ...p,
+              [driverId]: sanitizeSetupProfile({ ...resolvedSetups[driverId], [key]: value }),
+            }))
+          }
+          onApplySetup={(driverId, setup) =>
+            setSetupDraft((p) => ({ ...p, [driverId]: sanitizeSetupProfile(setup) }))
+          }
+          onCopy={(fromId, toId) =>
+            setSetupDraft((p) => ({ ...p, [toId]: sanitizeSetupProfile(resolvedSetups[fromId]) }))
+          }
+          onResetDriver={(driverId) => {
+            const practiced = workshopPractice?.practicedSetupByDriver?.[driverId];
+            if (practiced) setSetupDraft((p) => ({ ...p, [driverId]: sanitizeSetupProfile(practiced) }));
+          }}
+          onBack={() => { commitSetups(); setPhase('practice'); }}
+          onConfirm={() => { commitSetups(); setPhase('quali-run'); }}
+        />
       )}
 
       {phase === 'quali-run' && (
@@ -325,6 +347,7 @@ export function RaceWeekend() {
           nextLabel="Start Live Race →"
         />
       )}
+      </div>
     </div>
   );
 }
@@ -480,6 +503,10 @@ function PracticePhase({
   const setProgram = (kind: string, driverId: string, program: PracticeProgram) =>
     setAssignments((prev) => ({ ...prev, [kind]: { ...prev[kind], [driverId]: program } }));
 
+  // Which practice session tab is open. Sessions live in their own tab so the
+  // player never scrolls through a long stack of P1/P2/Warmup sections.
+  const [activeKind, setActiveKind] = useState<PracticeSessionKind>(kinds[0]);
+
   const runSession = (kind: PracticeSessionKind) => {
     const sel = assignments[kind] ?? {};
     const list: PracticeAssignment[] = players.map((d) => {
@@ -494,149 +521,167 @@ function PracticePhase({
 
   const allRun = kinds.every((k) => completedByKind[k]);
 
+  const k = wp?.knowledge;
+  const active = activeKind;
+  const activeDone = completedByKind[active];
+  const activeRec = recommendedPracticeProgram(active, track, weatherForKind(active), gaps);
+  const activeSel = assignments[active] ?? {};
+  const activeCost = sessionLapCost(
+    players.map((d) => ({
+      driverId: d.id,
+      program: activeSel[d.id] ?? 'SetupExploration',
+      lapsPlanned: PROGRAM_META[activeSel[d.id] ?? 'SetupExploration'].defaultLaps,
+    })),
+  );
+  const activeOverBudget = activeCost > lapsRemaining;
+
   return (
-    <div className="space-y-4">
-      <div>
-        <h2 className="text-lg font-semibold text-neutral-100">Practice</h2>
-        <p className="text-sm text-neutral-400">
-          Assign a program to each driver and run the session. Practice builds setup, tyre and
-          reliability knowledge plus driver confidence — it gives directional feedback, never the
-          perfect setup. Carry what you learn into the Car Setup workshop next.
-        </p>
-      </div>
-
-      <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-neutral-800 bg-neutral-900/40 px-3 py-2">
-        <div className="text-sm">
-          <span className="text-neutral-400">Practice laps remaining</span>{' '}
-          <span className={`font-semibold ${lapsRemaining <= 0 ? 'text-red-400' : 'text-neutral-100'}`}>
+    <div className="flex h-full min-h-0 flex-col gap-3" data-testid="practice-screen">
+      {/* Garage strip: session identity + lap-allocation (data-acquisition) meter. */}
+      <div className="flex shrink-0 flex-wrap items-center justify-between gap-3 rounded-lg border border-amber-500/20 bg-gradient-to-r from-neutral-900/80 to-neutral-900/30 px-4 py-2">
+        <div className="flex items-center gap-3">
+          <span className="text-amber-500">▦</span>
+          <div>
+            <h2 className="text-sm font-bold uppercase tracking-wider text-neutral-100">Garage · Practice Session</h2>
+            <p className="text-[11px] text-neutral-400">Gathering setup, tyre &amp; reliability data on track.</p>
+          </div>
+        </div>
+        <div className="flex items-center gap-2">
+          <span className="text-[10px] uppercase tracking-wide text-neutral-500">Lap allocation</span>
+          <div className="h-2 w-40 overflow-hidden rounded-full bg-neutral-800">
+            <div
+              className={`h-full ${lapsRemaining <= 0 ? 'bg-red-500' : 'bg-amber-500'}`}
+              style={{ width: `${lapBudget > 0 ? (lapsUsed / lapBudget) * 100 : 0}%` }}
+            />
+          </div>
+          <span className={`text-sm font-semibold ${lapsRemaining <= 0 ? 'text-red-400' : 'text-neutral-100'}`}>
             {lapsRemaining}
-          </span>{' '}
-          <span className="text-neutral-500">/ {lapBudget}</span>
-        </div>
-        <div className="h-2 w-40 overflow-hidden rounded-full bg-neutral-800">
-          <div
-            className="h-full bg-amber-500"
-            style={{ width: `${lapBudget > 0 ? (lapsUsed / lapBudget) * 100 : 0}%` }}
-          />
+          </span>
+          <span className="text-xs text-neutral-500">/ {lapBudget} laps</span>
         </div>
       </div>
-      {lapsRemaining <= 0 && (
-        <p className="text-xs text-red-400">
-          Practice budget spent — no laps left to run further sessions this weekend.
-        </p>
-      )}
 
-      {players.map((d) => {
-        const k = wp?.knowledge;
-        const conf = state.drivers.find((x) => x.id === d.id)?.confidence ?? d.confidence;
-        const delta = k?.confidenceDelta[d.id] ?? 0;
-        return (
-          <Panel key={d.id} title={`#${driverNumber(d.id)} ${driverName(d.id)} — Weekend Knowledge`}>
-            <div className="grid gap-3 sm:grid-cols-4">
-              <KnowledgeBar label="Setup" value={k?.setupKnowledge[d.id] ?? 0} />
-              <KnowledgeBar label="Tyres" value={k?.tireKnowledge[d.id] ?? 0} />
-              <KnowledgeBar label="Reliability" value={k?.reliabilityKnowledge[d.id] ?? 0} />
-              <div className="rounded-lg border border-neutral-800 bg-neutral-900/40 px-3 py-2">
-                <div className="text-[10px] uppercase tracking-wide text-neutral-500">Confidence</div>
-                <div className="font-semibold text-neutral-100">
-                  {conf}
+      {/* Weekend knowledge dashboard — both drivers, compact, always visible. */}
+      <div className="grid shrink-0 gap-2 sm:grid-cols-2">
+        {players.map((d) => {
+          const conf = state.drivers.find((x) => x.id === d.id)?.confidence ?? d.confidence;
+          const delta = k?.confidenceDelta[d.id] ?? 0;
+          return (
+            <div key={d.id} className="rounded-lg border border-neutral-800 bg-neutral-900/40 px-3 py-2">
+              <div className="mb-1.5 flex items-center justify-between">
+                <span className="text-xs font-semibold text-neutral-100">
+                  #{driverNumber(d.id)} {driverName(d.id)}
+                </span>
+                <span className="text-[10px] text-neutral-400">
+                  Conf {conf}
                   {delta ? (
                     <span className={delta > 0 ? 'text-emerald-400' : 'text-red-400'}>
                       {' '}({delta > 0 ? '+' : ''}{delta.toFixed(1)})
                     </span>
                   ) : null}
-                </div>
+                </span>
+              </div>
+              <div className="grid grid-cols-3 gap-1.5">
+                <MiniGauge label="Setup" value={k?.setupKnowledge[d.id] ?? 0} />
+                <MiniGauge label="Tyres" value={k?.tireKnowledge[d.id] ?? 0} />
+                <MiniGauge label="Reliab." value={k?.reliabilityKnowledge[d.id] ?? 0} />
               </div>
             </div>
-          </Panel>
-        );
-      })}
+          );
+        })}
+      </div>
 
-      {kinds.map((kind) => {
-        const done = completedByKind[kind];
-        const rec = recommendedPracticeProgram(kind, track, weatherForKind(kind), gaps);
-        const sel = assignments[kind] ?? {};
-        const cost = sessionLapCost(
-          players.map((d) => ({
-            driverId: d.id,
-            program: sel[d.id] ?? 'SetupExploration',
-            lapsPlanned: PROGRAM_META[sel[d.id] ?? 'SetupExploration'].defaultLaps,
-          })),
-        );
-        const overBudget = cost > lapsRemaining;
-        return (
-          <Panel key={kind} title={SESSION_LABELS[kind]}>
-            {done ? (
-              <div className="space-y-3">
-                {(done.results ?? []).map((r) => (
-                  <div key={r.driverId} className="rounded-lg border border-neutral-800 bg-neutral-900/40 p-3">
-                    <div className="mb-1 flex items-center justify-between text-sm">
-                      <span className="font-semibold text-neutral-100">
-                        #{driverNumber(r.driverId)} {driverName(r.driverId)}
-                      </span>
-                      <span className="text-xs text-neutral-400">
-                        {PROGRAM_LABELS[r.program]} · {r.lapsCompleted} laps
-                        {r.incident ? ' · incident' : ''}
-                      </span>
-                    </div>
-                    <ul className="space-y-0.5 text-sm">
-                      {r.feedback.map((f) => (
-                        <li key={f.id} className={SENTIMENT_STYLE[f.sentiment]}>
-                          • {f.message}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="space-y-3">
-                <div className="flex flex-wrap items-center justify-between gap-2 rounded-md border border-green-500/30 bg-green-500/10 px-3 py-1.5 text-xs text-green-300">
-                  <span>
-                    <span className="font-semibold">Engineer recommends {PROGRAM_LABELS[rec.program]}:</span>{' '}
-                    {rec.reason}
-                  </span>
-                  <button
-                    className="rounded border border-green-500/40 px-2 py-0.5 font-semibold text-green-200 hover:bg-green-500/20"
-                    onClick={() => players.forEach((d) => setProgram(kind, d.id, rec.program))}
-                  >
-                    Use for both cars
-                  </button>
-                </div>
-                {players.map((d) => (
-                  <div key={d.id} className="flex items-center justify-between gap-3">
-                    <span className="text-sm text-neutral-200">
-                      #{driverNumber(d.id)} {driverName(d.id)}
-                    </span>
-                    <select
-                      className="rounded border border-neutral-700 bg-neutral-900 px-2 py-1 text-sm text-neutral-100"
-                      value={assignments[kind]?.[d.id] ?? 'SetupExploration'}
-                      onChange={(e) => setProgram(kind, d.id, e.target.value as PracticeProgram)}
-                    >
-                      {ALL_PROGRAMS.map((p) => (
-                        <option key={p} value={p}>
-                          {PROGRAM_LABELS[p]}
-                          {p === rec.program ? ' (recommended)' : ''}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                ))}
-                <div className="flex items-center justify-end gap-3">
-                  <span className={`text-xs ${overBudget ? 'text-red-400' : 'text-neutral-500'}`}>
-                    {cost} laps {overBudget ? `· over budget (${lapsRemaining} left)` : `· ${lapsRemaining} left`}
-                  </span>
-                  <Button variant="primary" disabled={overBudget} onClick={() => runSession(kind)}>
-                    Run {SESSION_LABELS[kind]}
-                  </Button>
-                </div>
-              </div>
-            )}
-          </Panel>
-        );
-      })}
+      {/* Session tabs (P1/P2/Warmup) with status badges. */}
+      <div className="flex shrink-0 gap-1 rounded-lg border border-neutral-800 bg-neutral-900/40 p-1" role="tablist">
+        {kinds.map((kind) => {
+          const isActive = kind === active;
+          const status = completedByKind[kind] ? 'Complete' : 'Not Run';
+          return (
+            <button
+              key={kind}
+              role="tab"
+              aria-selected={isActive}
+              onClick={() => setActiveKind(kind)}
+              className={`flex flex-1 items-center justify-center gap-2 rounded-md px-3 py-2 text-sm font-semibold transition-colors ${
+                isActive
+                  ? 'bg-amber-500/15 text-amber-300'
+                  : 'text-neutral-400 hover:bg-neutral-800/60 hover:text-neutral-100'
+              }`}
+            >
+              {SESSION_LABELS[kind]}
+              <span
+                className={`rounded px-1.5 py-0.5 text-[9px] uppercase tracking-wide ${
+                  completedByKind[kind]
+                    ? 'bg-emerald-500/20 text-emerald-300'
+                    : 'bg-neutral-800 text-neutral-500'
+                }`}
+              >
+                {status}
+              </span>
+            </button>
+          );
+        })}
+      </div>
 
-      <div className="flex justify-between">
+      {/* Active session — the only scrolling region. */}
+      <div className="min-h-0 flex-1 overflow-y-auto rounded-lg border border-neutral-800 bg-neutral-900/20 p-3" role="tabpanel">
+        {activeDone ? (
+          <div className="space-y-2">
+            {(activeDone.results ?? []).map((r) => (
+              <PracticeResultCard
+                key={r.driverId}
+                r={r}
+                name={`#${driverNumber(r.driverId)} ${driverName(r.driverId)}`}
+              />
+            ))}
+          </div>
+        ) : (
+          <div className="space-y-3">
+            <div className="flex flex-wrap items-center justify-between gap-2 rounded-md border border-green-500/30 bg-green-500/10 px-3 py-1.5 text-xs text-green-300">
+              <span>
+                <span className="font-semibold">Engineer recommends {PROGRAM_LABELS[activeRec.program]}:</span>{' '}
+                {activeRec.reason}
+              </span>
+              <button
+                className="rounded border border-green-500/40 px-2 py-0.5 font-semibold text-green-200 hover:bg-green-500/20"
+                onClick={() => players.forEach((d) => setProgram(active, d.id, activeRec.program))}
+              >
+                Use for both cars
+              </button>
+            </div>
+            {players.map((d) => (
+              <div key={d.id} className="flex items-center justify-between gap-3 rounded-md border border-neutral-800 bg-neutral-900/40 px-3 py-2">
+                <span className="text-sm text-neutral-200">
+                  #{driverNumber(d.id)} {driverName(d.id)}
+                </span>
+                <select
+                  className="rounded border border-neutral-700 bg-neutral-900 px-2 py-1 text-sm text-neutral-100"
+                  value={activeSel[d.id] ?? 'SetupExploration'}
+                  onChange={(e) => setProgram(active, d.id, e.target.value as PracticeProgram)}
+                >
+                  {ALL_PROGRAMS.map((p) => (
+                    <option key={p} value={p}>
+                      {PROGRAM_LABELS[p]}
+                      {p === activeRec.program ? ' (recommended)' : ''}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            ))}
+            <div className="flex items-center justify-end gap-3">
+              <span className={`text-xs ${activeOverBudget ? 'text-red-400' : 'text-neutral-500'}`}>
+                {activeCost} laps {activeOverBudget ? `· over budget (${lapsRemaining} left)` : `· ${lapsRemaining} left`}
+              </span>
+              <Button variant="primary" disabled={activeOverBudget} onClick={() => runSession(active)}>
+                Run {SESSION_LABELS[active]}
+              </Button>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Fixed action bar — always visible, no page scroll needed. */}
+      <div className="flex shrink-0 justify-between border-t border-neutral-800 pt-3">
         <Button variant="ghost" onClick={onBack}>← Back</Button>
         <Button variant="primary" onClick={onNext}>
           {allRun ? 'Car Setup →' : 'Skip to Car Setup →'}
@@ -646,15 +691,58 @@ function PracticePhase({
   );
 }
 
-function KnowledgeBar({ label, value }: { label: string; value: number }) {
+// A compact, telemetry-style result card for one driver's practice run: the
+// knowledge gains, confidence change, feedback quotes and any incident warning.
+function PracticeResultCard({ r, name }: { r: PracticeRunResult; name: string }) {
+  const pct = (v: number) => `+${Math.round(v * 100)}%`;
+  return (
+    <div className="rounded-lg border border-neutral-800 bg-neutral-900/50 p-3">
+      <div className="mb-2 flex items-center justify-between text-sm">
+        <span className="font-semibold text-neutral-100">{name}</span>
+        <span className="text-xs text-neutral-400">
+          {PROGRAM_LABELS[r.program]} · {r.lapsCompleted} laps
+          {r.incident ? <span className="text-red-400"> · incident</span> : ''}
+        </span>
+      </div>
+      <div className="mb-2 grid grid-cols-4 gap-1.5 text-center">
+        <GainChip label="Setup" value={pct(r.setupKnowledgeGain)} on={r.setupKnowledgeGain > 0} />
+        <GainChip label="Tyres" value={pct(r.tireKnowledgeGain)} on={r.tireKnowledgeGain > 0} />
+        <GainChip label="Reliab." value={pct(r.reliabilityKnowledgeGain)} on={r.reliabilityKnowledgeGain > 0} />
+        <GainChip
+          label="Conf."
+          value={`${r.confidenceGain >= 0 ? '+' : ''}${r.confidenceGain.toFixed(1)}`}
+          on={r.confidenceGain > 0}
+        />
+      </div>
+      <ul className="space-y-0.5 text-sm">
+        {r.feedback.map((f) => (
+          <li key={f.id} className={SENTIMENT_STYLE[f.sentiment]}>
+            • {f.message}
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+function GainChip({ label, value, on }: { label: string; value: string; on: boolean }) {
+  return (
+    <div className={`rounded border px-1.5 py-1 ${on ? 'border-sky-500/30 bg-sky-500/10' : 'border-neutral-800 bg-neutral-900/40'}`}>
+      <div className="text-[9px] uppercase tracking-wide text-neutral-500">{label}</div>
+      <div className={`text-xs font-semibold ${on ? 'text-sky-300' : 'text-neutral-500'}`}>{value}</div>
+    </div>
+  );
+}
+
+function MiniGauge({ label, value }: { label: string; value: number }) {
   const pct = Math.round(value * 100);
   return (
-    <div className="rounded-lg border border-neutral-800 bg-neutral-900/40 px-3 py-2">
-      <div className="mb-1 flex items-center justify-between text-[10px] uppercase tracking-wide text-neutral-500">
+    <div className="rounded border border-neutral-800 bg-neutral-900/40 px-2 py-1">
+      <div className="mb-0.5 flex items-center justify-between text-[9px] uppercase tracking-wide text-neutral-500">
         <span>{label}</span>
         <span className="text-neutral-300">{pct}%</span>
       </div>
-      <div className="h-2 overflow-hidden rounded bg-neutral-800">
+      <div className="h-1.5 overflow-hidden rounded bg-neutral-800">
         <div className="h-full rounded bg-sky-500" style={{ width: `${pct}%` }} />
       </div>
     </div>

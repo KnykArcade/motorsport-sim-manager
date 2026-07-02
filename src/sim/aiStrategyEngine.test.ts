@@ -41,6 +41,9 @@ function car(overrides: Partial<LiveCarState> = {}): LiveCarState {
       inPitThisLap: false,
       window: null,
       pitRequested: false,
+      planStatus: 'planned',
+      planCancelled: false,
+      lastWindowPromptLap: null,
     },
     reliabilityIssue: null,
     reliabilityRisk: 0,
@@ -108,7 +111,7 @@ describe('aiLapDecision — core behaviours', () => {
   });
 
   it('makes its scheduled stop once the target lap arrives', () => {
-    const c = car({ pit: { plannedStops: 1, stopsMade: 0, scheduledLaps: [22], lastPitLap: null, inPitThisLap: false, window: null, pitRequested: false } });
+    const c = car({ pit: { plannedStops: 1, stopsMade: 0, scheduledLaps: [22], lastPitLap: null, inPitThisLap: false, window: null, pitRequested: false, planStatus: 'planned', planCancelled: false, lastWindowPromptLap: null } });
     const action = aiLapDecision(c, live([c]), TRACK, 22);
     expect(action.pitNow).toBe(true);
   });
@@ -149,7 +152,7 @@ describe('aiLapDecision — Phase E extensions', () => {
   });
 
   it('defers a scheduled stop to avoid double-stacking behind a pitting teammate', () => {
-    const pit = { plannedStops: 1, stopsMade: 0, scheduledLaps: [22], lastPitLap: null, inPitThisLap: false, window: null, pitRequested: false };
+    const pit: LiveCarState['pit'] = { plannedStops: 1, stopsMade: 0, scheduledLaps: [22], lastPitLap: null, inPitThisLap: false, window: null, pitRequested: false, planStatus: 'planned', planCancelled: false, lastWindowPromptLap: null };
     const mate = car({ driverId: 'd2', teamId: 't1', position: 4, gapToLeader: 9, tire: { compound: 'Dry', age: 22, wear: 85, stintTarget: 25 }, pit: { ...pit } });
     const c = car({ driverId: 'd1', teamId: 't1', position: 5, gapToLeader: 11, tire: { compound: 'Dry', age: 22, wear: 60, stintTarget: 25 }, pit: { ...pit } });
     const action = aiLapDecision(c, live([mate, c]), TRACK, 22);
@@ -158,7 +161,7 @@ describe('aiLapDecision — Phase E extensions', () => {
   });
 
   it('does not defer when its own tyres are at the cliff', () => {
-    const pit = { plannedStops: 1, stopsMade: 0, scheduledLaps: [22], lastPitLap: null, inPitThisLap: false, window: null, pitRequested: false };
+    const pit: LiveCarState['pit'] = { plannedStops: 1, stopsMade: 0, scheduledLaps: [22], lastPitLap: null, inPitThisLap: false, window: null, pitRequested: false, planStatus: 'planned', planCancelled: false, lastWindowPromptLap: null };
     const mate = car({ driverId: 'd2', teamId: 't1', position: 4, gapToLeader: 9, tire: { compound: 'Dry', age: 22, wear: 85, stintTarget: 25 }, pit: { ...pit } });
     const c = car({ driverId: 'd1', teamId: 't1', position: 5, gapToLeader: 11, tire: { compound: 'Dry', age: 26, wear: 90, stintTarget: 25 }, pit: { ...pit } });
     const action = aiLapDecision(c, live([mate, c]), TRACK, 22);
