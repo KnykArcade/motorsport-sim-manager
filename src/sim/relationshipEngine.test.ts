@@ -11,6 +11,7 @@ import {
 } from './relationshipEngine';
 import type { DriverRelationship, TeamOrderDecision } from '../types/relationshipTypes';
 import type { LiveCarState, LiveRaceState } from '../types/liveTypes';
+import { initialStint } from './strategyStint';
 
 const reps = buildTeamReputations(teams1995);
 const nameOf = (id: string) => drivers1995.find((d) => d.id === id)?.name ?? id;
@@ -48,6 +49,7 @@ function car(driverId: string, isPlayer: boolean, totalTime: number): LiveCarSta
     strategyId: 's',
     instructionId: 'Balanced',
     paceMode: 'Balanced',
+    strategyStint: initialStint('Balanced'),
     liveRacePace: 6,
     tire: { compound: 'Dry', age: 5, wear: 30, stintTarget: 20 },
     pit: {

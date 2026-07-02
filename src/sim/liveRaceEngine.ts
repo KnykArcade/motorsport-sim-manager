@@ -25,6 +25,7 @@ import { assignPersonality } from './aiStrategyEngine';
 import { buildPitPlan, pitStopLoss, pitWindowFor } from './pitStrategyEngine';
 import { initialWeather } from './weatherEngine';
 import { initialSafetyCar, SAFETY_CAR_PIT_SAVING } from './safetyCarEngine';
+import { initialStint } from './strategyStint';
 
 export type LiveRaceOptions = {
   raceId: string;
@@ -167,6 +168,7 @@ export function createLiveRace(context: RaceContext, options: LiveRaceOptions): 
       strategyId: strategy.id,
       instructionId: instruction.id,
       paceMode: initialPaceMode(instruction.id),
+      strategyStint: initialStint(initialPaceMode(instruction.id)),
       liveRacePace: baseRacePace,
       tire: { compound, age: 0, wear: 0, stintTarget: pitPlan.stintTarget },
       pit: {

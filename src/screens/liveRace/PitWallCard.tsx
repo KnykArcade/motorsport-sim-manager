@@ -128,20 +128,33 @@ export function PitWallCard({
             </button>
           </div>
           <div className="grid grid-cols-3 gap-1">
-            {SELECTABLE_MODES.map((m) => (
-              <button
-                key={m}
-                onClick={() => onMode(m)}
-                title={modeSpec(m).blurb}
-                className={`rounded px-1 py-1 text-[10px] font-semibold ${
-                  car.paceMode === m
-                    ? 'bg-amber-500 text-neutral-950'
-                    : 'bg-slate-800 text-slate-300 hover:bg-slate-700'
-                }`}
-              >
-                {PACE_LABEL[m]}
-              </button>
-            ))}
+            {SELECTABLE_MODES.map((m) => {
+              const active = car.paceMode === m;
+              const laps = car.strategyStint.consecutiveLaps;
+              return (
+                <button
+                  key={m}
+                  onClick={() => onMode(m)}
+                  title={
+                    active
+                      ? `${modeSpec(m).blurb} — ${laps} consecutive lap${laps === 1 ? '' : 's'} in this mode`
+                      : modeSpec(m).blurb
+                  }
+                  className={`flex items-center justify-center gap-1 rounded px-1 py-1 text-[10px] font-semibold ${
+                    active
+                      ? 'bg-amber-500 text-neutral-950'
+                      : 'bg-slate-800 text-slate-300 hover:bg-slate-700'
+                  }`}
+                >
+                  {PACE_LABEL[m]}
+                  {active && (
+                    <span className="rounded bg-neutral-950/25 px-1 text-[9px] font-bold tabular-nums">
+                      {laps}L
+                    </span>
+                  )}
+                </button>
+              );
+            })}
           </div>
         </div>
       )}

@@ -8,6 +8,7 @@ import type {
   RecStatus,
   TireState,
 } from '../types/liveTypes';
+import { initialStint } from './strategyStint';
 
 type CarOverrides = Partial<Omit<LiveCarState, 'tire' | 'pit'>> & {
   tire?: Partial<TireState>;
@@ -61,6 +62,7 @@ function car(overrides: CarOverrides = {}): LiveCarState {
     strategyId: 's',
     instructionId: 'Balanced',
     paceMode: 'Balanced',
+    strategyStint: initialStint('Balanced'),
     liveRacePace: 6,
     tire: { compound: 'Dry', age: 15, wear: 30, stintTarget: 25 },
     pit: {

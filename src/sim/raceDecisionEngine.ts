@@ -11,6 +11,7 @@ import type {
   RaceDecisionOption,
   RaceDecisionPrompt,
 } from '../types/liveTypes';
+import { startStint } from './strategyStint';
 
 let promptCounter = 0;
 function promptId(driverId: string, lap: number): string {
@@ -254,7 +255,14 @@ export function applyDecisionEffects(
 ): LiveCarState {
   let next: LiveCarState = { ...car };
 
-  if (effects.paceMode) next.paceMode = effects.paceMode;
+  if (effects.paceMode && effects.paceMode !== car.paceMode) {
+    next.paceMode = effects.paceMode;
+    // Reset the stint counter immediately so the card reflects the mode a
+    // race decision (weather / safety car / reliability / team order) just imposed.
+    next.strategyStint = startStint(effects.paceMode, car.paceMode, currentLap, 'auto');
+  } else if (effects.paceMode) {
+    next.paceMode = effects.paceMode;
+  }
 
   if (effects.tireWearDelta != null) {
     next.tire = { ...next.tire, wear: clamp(next.tire.wear + effects.tireWearDelta, 0, 100) };

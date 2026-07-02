@@ -15,6 +15,7 @@ import {
 } from './raceTickEngine';
 import type { LiveRaceMeta } from './liveRaceEngine';
 import type { LiveCarState, LiveRaceState } from '../types/liveTypes';
+import { initialStint } from './strategyStint';
 import type { RaceEvent } from '../types/simTypes';
 import type { Track } from '../types/gameTypes';
 
@@ -47,6 +48,7 @@ function car(overrides: Partial<LiveCarState> = {}): LiveCarState {
     strategyId: 's',
     instructionId: 'Balanced',
     paceMode: 'Balanced',
+    strategyStint: initialStint('Balanced'),
     liveRacePace: 6,
     tire: { compound: 'Dry', age: 15, wear: 30, stintTarget: 25 },
     pit: {
