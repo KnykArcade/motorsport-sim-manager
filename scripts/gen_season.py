@@ -586,6 +586,23 @@ def gen(year, series="F1"):
             "aggression": aggression, "composure": composure, "overall": overall,
         })
 
+    # Deduplicate by driver ID: a mid-season swap creates two rows for the
+    # same driver (one per team). Keep only the first occurrence so the
+    # driver is assigned to their opening-season team. The second team
+    # association is historical context, not a starting roster entry.
+    seen_ids = set()
+    deduped = []
+    for d in drivers:
+        if d["id"] not in seen_ids:
+            seen_ids.add(d["id"])
+            deduped.append(d)
+    drivers = deduped
+
+    # F1 roster rule: exactly 2 primary race drivers per team.
+    # A 3rd reserve/third driver is allowed only if historically prominent
+    # (not automatically added from race entrant data).
+    # Mid-season replacements, substitutes, and one-off drivers go to the
+    # driver market, not the starting team roster.
     # assign drivers to teams (best 2 by overall whose team matches)
     for t in teams:
         t["driver_ids"] = []
