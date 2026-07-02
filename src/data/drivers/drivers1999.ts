@@ -35,7 +35,7 @@ export const drivers1999: Driver[] = [
   },
   {
     id: 'd-1999-mika-hakkinen',
-    name: 'Mika Häkkinen',
+    name: 'Mika Hakkinen',
     number: 2,
     nationality: 'FIN',
     age: 30,
@@ -528,7 +528,7 @@ export const drivers1999: Driver[] = [
   },
   {
     id: 'd-1999-marc-gene',
-    name: 'Marc Gené',
+    name: 'Marc Gene',
     number: 19,
     nationality: 'ESP',
     age: 25,

@@ -72,7 +72,7 @@ export const tracks1998: Track[] = [
   },
   {
     id: 'autodromo-oscar-alfredo-galvez-1998',
-    name: 'Autódromo Oscar Alfredo Gálvez',
+    name: 'Autodromo Oscar Alfredo Galvez',
     gpName: 'Argentine Grand Prix',
     country: 'Argentina',
     archetype: 'Balanced / Technical Stop-Start',
@@ -200,7 +200,7 @@ export const tracks1998: Track[] = [
       mechanicalDemand: 10.0,
       riskDemand: 10.0,
     },
-    ratingNotes: 'Häkkinen win; Monaco strongly rewards precision and punishes wall contact.',
+    ratingNotes: 'Hakkinen win; Monaco strongly rewards precision and punishes wall contact.',
   },
   {
     id: 'circuit-gilles-villeneuve-1998',
@@ -468,7 +468,7 @@ export const tracks1998: Track[] = [
   },
   {
     id: 'nurburgring-1998',
-    name: 'Nürburgring',
+    name: 'Nurburgring',
     gpName: 'Luxembourg Grand Prix',
     country: 'Germany',
     archetype: 'Balanced Technical / Weather Variable',
@@ -530,6 +530,6 @@ export const tracks1998: Track[] = [
       mechanicalDemand: 8.0,
       riskDemand: 8.0,
     },
-    ratingNotes: 'Championship finale; Häkkinen title win. Suzuka should reward elite driver/car combinations.',
+    ratingNotes: 'Championship finale; Hakkinen title win. Suzuka should reward elite driver/car combinations.',
   },
 ];

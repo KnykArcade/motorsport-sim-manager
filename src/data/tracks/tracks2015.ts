@@ -534,7 +534,7 @@ export const tracks2015: Track[] = [
   },
   {
     id: 'autodromo-hermanos-rodriguez-2015',
-    name: 'Autódromo Hermanos Rodríguez',
+    name: 'Autodromo Hermanos Rodriguez',
     gpName: 'Mexican Grand Prix',
     country: 'Mexico',
     archetype: 'High Altitude / Power / Cooling',
@@ -567,7 +567,7 @@ export const tracks2015: Track[] = [
   },
   {
     id: 'autodromo-jose-carlos-pace-2015',
-    name: 'Autódromo José Carlos Pace',
+    name: 'Autodromo Jose Carlos Pace',
     gpName: 'Brazilian Grand Prix',
     country: 'Brazil',
     archetype: 'Short / Elevation / Weather',

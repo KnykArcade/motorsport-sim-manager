@@ -6,7 +6,7 @@ import type { MarketDriver } from '../../types/marketTypes';
 export const driverMarket2005: MarketDriver[] = [
   {
     id: 'mkt-2005-mika-hakkinen',
-    name: 'Mika Häkkinen',
+    name: 'Mika Hakkinen',
     age: 37,
     nationality: 'FIN',
     context: 'DTM / retired F1 champion',
@@ -98,7 +98,7 @@ export const driverMarket2005: MarketDriver[] = [
   },
   {
     id: 'mkt-2005-marc-gene',
-    name: 'Marc Gené',
+    name: 'Marc Gene',
     age: 31,
     nationality: 'ESP',
     context: 'Ferrari/Williams test',
@@ -282,7 +282,7 @@ export const driverMarket2005: MarketDriver[] = [
   },
   {
     id: 'mkt-2005-sebastien-bourdais',
-    name: 'Sébastien Bourdais',
+    name: 'Sebastien Bourdais',
     age: 26,
     nationality: 'FRA',
     context: 'Champ Car champion',
@@ -374,7 +374,7 @@ export const driverMarket2005: MarketDriver[] = [
   },
   {
     id: 'mkt-2005-jose-maria-lopez',
-    name: 'José María López',
+    name: 'Jose Maria Lopez',
     age: 22,
     nationality: 'ARG',
     context: 'GP2 / Renault development',

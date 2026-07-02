@@ -6,7 +6,7 @@ import type { MarketDriver } from '../../types/marketTypes';
 export const driverMarket2004: MarketDriver[] = [
   {
     id: 'mkt-2004-mika-hakkinen',
-    name: 'Mika Häkkinen',
+    name: 'Mika Hakkinen',
     age: 36,
     nationality: 'FIN',
     context: 'Retired / DTM-linked',
@@ -121,7 +121,7 @@ export const driverMarket2004: MarketDriver[] = [
   },
   {
     id: 'mkt-2004-bjorn-wirdheim',
-    name: 'Björn Wirdheim',
+    name: 'Bjorn Wirdheim',
     age: 24,
     nationality: 'SWE',
     context: 'Jaguar Friday driver',

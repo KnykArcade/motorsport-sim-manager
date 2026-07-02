@@ -567,7 +567,7 @@ export const tracks2014: Track[] = [
   },
   {
     id: 'autodromo-jose-carlos-pace-2014',
-    name: 'Autódromo José Carlos Pace',
+    name: 'Autodromo Jose Carlos Pace',
     gpName: 'Brazilian Grand Prix',
     country: 'Brazil',
     archetype: 'Short / Elevation / Weather',

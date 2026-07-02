@@ -303,7 +303,7 @@ export const tracks2007: Track[] = [
   },
   {
     id: 'nurburgring-2007',
-    name: 'Nürburgring',
+    name: 'Nurburgring',
     gpName: 'European Grand Prix',
     country: 'Germany',
     archetype: 'Mixed Technical / Weather-Risk Circuit',
@@ -534,7 +534,7 @@ export const tracks2007: Track[] = [
   },
   {
     id: 'autodromo-jose-carlos-pace-2007',
-    name: 'Autódromo José Carlos Pace',
+    name: 'Autodromo Jose Carlos Pace',
     gpName: 'Brazilian Grand Prix',
     country: 'Brazil',
     archetype: 'Short Technical / Elevation / Championship Finale',

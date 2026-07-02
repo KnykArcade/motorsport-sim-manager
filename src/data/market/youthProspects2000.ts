@@ -374,7 +374,7 @@ export const youthProspects2000: YouthProspect[] = [
   },
   {
     id: 'yth-2000-sebastien-buemi',
-    name: 'Sébastien Buemi',
+    name: 'Sebastien Buemi',
     age: 12,
     birthYear: 1988,
     nationality: 'SUI',
@@ -420,7 +420,7 @@ export const youthProspects2000: YouthProspect[] = [
   },
   {
     id: 'yth-2000-jose-maria-lopez',
-    name: 'José María López',
+    name: 'Jose Maria Lopez',
     age: 17,
     birthYear: 1983,
     nationality: 'ARG',

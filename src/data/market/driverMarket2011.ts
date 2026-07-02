@@ -6,7 +6,7 @@ import type { MarketDriver } from '../../types/marketTypes';
 export const driverMarket2011: MarketDriver[] = [
   {
     id: 'mkt-2011-kimi-raikkonen',
-    name: 'Kimi Räikkönen',
+    name: 'Kimi Raikkonen',
     age: 32,
     nationality: 'FIN',
     context: 'WRC / former Ferrari F1',

@@ -121,7 +121,7 @@ export const driverMarket2026IndyCar: MarketDriver[] = [
   },
   {
     id: 'mkt-2026IndyCar-theo-pourchaire',
-    name: 'Théo Pourchaire',
+    name: 'Theo Pourchaire',
     age: 23,
     nationality: 'France',
     context: 'Super Formula / Reserve',
@@ -305,7 +305,7 @@ export const driverMarket2026IndyCar: MarketDriver[] = [
   },
   {
     id: 'mkt-2026IndyCar-sebastien-bourdais',
-    name: 'Sébastien Bourdais',
+    name: 'Sebastien Bourdais',
     age: 47,
     nationality: 'France',
     context: 'Sports Cars',
@@ -462,6 +462,6 @@ export const driverMarket2026IndyCar: MarketDriver[] = [
     buyoutCost: 2.0,
     negotiationDifficulty: 'Hard',
     suggestedUse: '',
-    notes: 'High-level junior résumé; oval conversion needed',
+    notes: 'High-level junior resume; oval conversion needed',
   },
 ];

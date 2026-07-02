@@ -200,7 +200,7 @@ export const calendar2012: Race[] = [
     round: 20,
     gpName: 'Brazilian Grand Prix',
     trackId: 'autodromo-jose-carlos-pace-2012',
-    trackName: 'Autódromo José Carlos Pace',
+    trackName: 'Autodromo Jose Carlos Pace',
     laps: 71,
     distanceKm: undefined,
     completed: false,

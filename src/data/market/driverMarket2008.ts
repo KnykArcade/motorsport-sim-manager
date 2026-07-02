@@ -259,7 +259,7 @@ export const driverMarket2008: MarketDriver[] = [
   },
   {
     id: 'mkt-2008-sebastien-buemi',
-    name: 'Sébastien Buemi',
+    name: 'Sebastien Buemi',
     age: 19,
     nationality: 'SUI',
     context: 'GP2/Red Bull Junior',
@@ -305,7 +305,7 @@ export const driverMarket2008: MarketDriver[] = [
   },
   {
     id: 'mkt-2008-nico-hulkenberg',
-    name: 'Nico Hülkenberg',
+    name: 'Nico Hulkenberg',
     age: 20,
     nationality: 'GER',
     context: 'F3/GP2 Path',
@@ -439,7 +439,7 @@ export const driverMarket2008: MarketDriver[] = [
     buyoutCost: 4.8,
     negotiationDifficulty: 'Hard',
     suggestedUse: 'Prospect',
-    notes: 'Solid junior résumé',
+    notes: 'Solid junior resume',
   },
   {
     id: 'mkt-2008-davide-valsecchi',

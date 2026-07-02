@@ -328,7 +328,7 @@ export const youthProspects2026IndyCar: YouthProspect[] = [
   },
   {
     id: 'yth-2026IndyCar-tomas-herrera',
-    name: 'Tomás Herrera',
+    name: 'Tomas Herrera',
     age: 15,
     birthYear: 2011,
     nationality: 'Argentina',

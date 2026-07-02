@@ -98,7 +98,7 @@ export const youthProspects2007: YouthProspect[] = [
   },
   {
     id: 'yth-2007-jean-eric-vergne',
-    name: 'Jean-Éric Vergne',
+    name: 'Jean-Eric Vergne',
     age: 17,
     birthYear: 1990,
     nationality: 'FRA',
@@ -144,7 +144,7 @@ export const youthProspects2007: YouthProspect[] = [
   },
   {
     id: 'yth-2007-esteban-gutierrez',
-    name: 'Esteban Gutiérrez',
+    name: 'Esteban Gutierrez',
     age: 16,
     birthYear: 1991,
     nationality: 'MEX',
@@ -167,7 +167,7 @@ export const youthProspects2007: YouthProspect[] = [
   },
   {
     id: 'yth-2007-sergio-perez',
-    name: 'Sergio Pérez',
+    name: 'Sergio Perez',
     age: 17,
     birthYear: 1990,
     nationality: 'MEX',
@@ -305,7 +305,7 @@ export const youthProspects2007: YouthProspect[] = [
   },
   {
     id: 'yth-2007-antonio-felix-da-costa',
-    name: 'António Félix da Costa',
+    name: 'Antonio Felix da Costa',
     age: 16,
     birthYear: 1991,
     nationality: 'POR',

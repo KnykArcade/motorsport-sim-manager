@@ -38,7 +38,7 @@ export const tracks1996: Track[] = [
   },
   {
     id: 'autodromo-jose-carlos-pace-1996',
-    name: 'Autódromo José Carlos Pace',
+    name: 'Autodromo Jose Carlos Pace',
     gpName: 'Brazilian Grand Prix',
     archetype: 'High-speed technical',
     attributes: {
@@ -70,7 +70,7 @@ export const tracks1996: Track[] = [
   },
   {
     id: 'autodromo-oscar-alfredo-galvez-1996',
-    name: 'Autódromo Oscar Alfredo Gálvez',
+    name: 'Autodromo Oscar Alfredo Galvez',
     gpName: 'Argentine Grand Prix',
     archetype: 'Balanced mixed',
     attributes: {
@@ -102,7 +102,7 @@ export const tracks1996: Track[] = [
   },
   {
     id: 'nurburgring-1996',
-    name: 'Nürburgring',
+    name: 'Nurburgring',
     gpName: 'European Grand Prix',
     archetype: 'Technical balanced',
     attributes: {
@@ -130,7 +130,7 @@ export const tracks1996: Track[] = [
       mechanicalDemand: 6.2,
       riskDemand: 6.0,
     },
-    ratingNotes: 'Nürburgring GP is modeled as a medium-speed technical track with braking, traction, and setup balance all important.',
+    ratingNotes: 'Nurburgring GP is modeled as a medium-speed technical track with braking, traction, and setup balance all important.',
   },
   {
     id: 'autodromo-enzo-e-dino-ferrari-1996',
@@ -454,7 +454,7 @@ export const tracks1996: Track[] = [
   },
   {
     id: 'autodromo-do-estoril-1996',
-    name: 'Autódromo do Estoril',
+    name: 'Autodromo do Estoril',
     gpName: 'Portuguese Grand Prix',
     archetype: 'Balanced mixed',
     attributes: {

@@ -305,7 +305,7 @@ export const youthProspects2009: YouthProspect[] = [
   },
   {
     id: 'yth-2009-antonio-felix-da-costa',
-    name: 'António Félix da Costa',
+    name: 'Antonio Felix da Costa',
     age: 17,
     birthYear: 1991,
     nationality: 'POR',

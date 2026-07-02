@@ -180,7 +180,7 @@ export const drivers2015: Driver[] = [
   },
   {
     id: 'd-2015-kimi-raikkonen',
-    name: 'Kimi Räikkönen',
+    name: 'Kimi Raikkonen',
     number: 7,
     nationality: 'FIN',
     age: 36,

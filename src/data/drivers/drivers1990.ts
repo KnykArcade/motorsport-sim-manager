@@ -441,7 +441,7 @@ export const drivers1990: Driver[] = [
   },
   {
     id: 'd-1990-eric-bernard',
-    name: 'Éric Bernard',
+    name: 'Eric Bernard',
     number: 16,
     nationality: 'France',
     age: 26,

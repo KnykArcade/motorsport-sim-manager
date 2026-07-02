@@ -29,7 +29,7 @@ export const driverMarket1990: MarketDriver[] = [
   },
   {
     id: 'mkt-1990-rene-arnoux',
-    name: 'René Arnoux',
+    name: 'Rene Arnoux',
     age: 42,
     nationality: 'France',
     context: 'Former F1',
@@ -190,7 +190,7 @@ export const driverMarket1990: MarketDriver[] = [
   },
   {
     id: 'mkt-1990-mika-hakkinen',
-    name: 'Mika Häkkinen',
+    name: 'Mika Hakkinen',
     age: 22,
     nationality: 'Finland',
     context: 'British F3 / future F1',

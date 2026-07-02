@@ -60,7 +60,7 @@ export const calendar1990: Race[] = [
     round: 6,
     gpName: 'Mexican GP',
     trackId: 'autodromo-hermanos-rodriguez-1990',
-    trackName: 'Autódromo Hermanos Rodríguez',
+    trackName: 'Autodromo Hermanos Rodriguez',
     laps: 69,
     distanceKm: undefined,
     completed: false,
