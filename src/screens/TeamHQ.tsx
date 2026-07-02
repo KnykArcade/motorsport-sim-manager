@@ -65,8 +65,8 @@ export function TeamHQ() {
             Go to Next Race: {race?.gpName} →
           </Button>
         ) : (
-          <Button variant="primary" disabled title="You need at least 2 active race drivers to enter a race weekend.">
-            Sign 2 Drivers to Race
+          <Button variant="primary" onClick={() => navigate('/market')}>
+            Sign Race Drivers ({activeDrivers.length}/2) →
           </Button>
         )}
       </div>
@@ -88,9 +88,7 @@ export function TeamHQ() {
                 hasEnoughDrivers ? (
                   <Button onClick={() => navigate('/weekend')}>Enter Weekend →</Button>
                 ) : (
-                  <Button disabled title="Sign at least 2 race drivers first">
-                    Enter Weekend →
-                  </Button>
+                  <Button onClick={() => navigate('/market')}>Sign Drivers →</Button>
                 )
               }
             >

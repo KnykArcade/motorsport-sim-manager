@@ -1,6 +1,7 @@
 import { HashRouter, Navigate, Route, Routes } from 'react-router-dom';
 import type { ReactNode } from 'react';
 import { GameProvider, useGame } from '../game/GameContext';
+import { canEnterRaceWeekend } from '../game/rosterEnforcement';
 import { Layout } from '../components/Layout';
 import { MainMenu } from '../screens/MainMenu';
 import { NewCareer } from '../screens/NewCareer';
@@ -48,6 +49,17 @@ function FullScreenGame({ children }: { children: ReactNode }) {
   return <>{children}</>;
 }
 
+// Route guard for the race weekend: blocks direct navigation to /weekend when
+// the player's F1 team has fewer than 2 active race drivers, redirecting to
+// the driver market instead. This prevents bypassing the Team HQ button.
+function RaceWeekendGuard({ children }: { children: ReactNode }) {
+  const { state } = useGame();
+  if (!state) return <Navigate to="/" replace />;
+  const check = canEnterRaceWeekend(state);
+  if (!check.allowed) return <Navigate to="/market" replace />;
+  return <Layout>{children}</Layout>;
+}
+
 export default function App() {
   return (
     <GameProvider>
@@ -77,7 +89,7 @@ export default function App() {
           <Route path="/curves" element={<InGame><DriverCurves /></InGame>} />
           <Route path="/records" element={<InGame><UniverseHistory /></InGame>} />
           <Route path="/history" element={<InGame><RaceHistory /></InGame>} />
-          <Route path="/weekend" element={<InGame><RaceWeekend /></InGame>} />
+          <Route path="/weekend" element={<RaceWeekendGuard><RaceWeekend /></RaceWeekendGuard>} />
           <Route path="/live-race/:raceId" element={<FullScreenGame><LiveRace /></FullScreenGame>} />
           <Route path="/results/:raceId" element={<InGame><RaceResults /></InGame>} />
           <Route path="/season-review" element={<InGame><SeasonReview /></InGame>} />

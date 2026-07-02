@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 import { useGame } from '../game/GameContext';
-import { activeDriversForTeam, carForTeam, driversForTeam, teamById } from '../game/careerState';
+import { activeDriversForTeam, carForTeam, driversForTeam, teamById, MAX_RACE_DRIVERS } from '../game/careerState';
+import { isPreseason } from '../game/rosterEnforcement';
 import { careerMarketBundle } from '../sim/careerMarketEngine';
 import { marketDriverOfferInterest } from '../sim/crossSeriesEngine';
 import { carPerformanceRating } from '../sim/trackFitEngine';
@@ -48,14 +49,17 @@ export function DriverMarket() {
   if (!state) return null;
 
   const offseason = state.seasonComplete;
+  const preseason = isPreseason(state);
   const budget = teamById(state, state.selectedTeamId)?.budget ?? 0;
   const orgOverall = state.teamOrgRatings?.[state.selectedTeamId]?.overallTeamRating ?? 50;
   const playerCar = carForTeam(state, state.selectedTeamId);
   const carOverall = playerCar ? carPerformanceRating(playerCar) : 5;
   const seats = activeDriversForTeam(state, state.selectedTeamId);
   const roster = driversForTeam(state, state.selectedTeamId);
+  const openRaceSeats = MAX_RACE_DRIVERS - seats.length;
   const hasThirdDriver = roster.some((d) => d.contractType === 'third');
   const canSignThird = !offseason && !hasThirdDriver && roster.length < 3;
+  const canSignRaceDriver = preseason && openRaceSeats > 0 && roster.length < 3;
   const racesRemaining = Math.max(1, state.calendar.length - state.currentRaceIndex);
   const signings = state.pendingSignings ?? [];
   const academy = state.academy ?? [];
@@ -100,12 +104,16 @@ export function DriverMarket() {
 
       <div
         className={`rounded-md border px-4 py-2 text-sm ${
-          offseason
+          preseason && openRaceSeats > 0
+            ? 'border-amber-600/50 bg-amber-900/20 text-amber-300'
+            : offseason
             ? 'border-green-700/50 bg-green-500/10 text-green-300'
             : 'border-neutral-800 bg-neutral-900/40 text-neutral-400'
         }`}
       >
-        {offseason
+        {preseason && openRaceSeats > 0
+          ? `Preseason — your team has ${openRaceSeats} open race seat${openRaceSeats === 1 ? '' : 's'}. Sign ${openRaceSeats === 1 ? 'a race driver' : 'race drivers'} before Round 1.`
+          : offseason
           ? 'Offseason — you can sign drivers for next season. Confirm them in the Offseason screen.'
           : hasThirdDriver
             ? 'You have a 3rd driver. Seat signings open in the offseason; you can still add youth prospects now.'
@@ -173,6 +181,7 @@ export function DriverMarket() {
                 potLabel={potLabel(d.id, d.skills, d.potential)}
                 affordable={toMoney(d.buyoutCost) <= budget}
                 canSignThird={canSignThird}
+                canSignRaceDriver={canSignRaceDriver}
                 thirdFee={thirdDriverMidSeasonFee(d.salary, racesRemaining, state.calendar.length)}
                 budget={budget}
                 seatName={seatName}
@@ -185,6 +194,7 @@ export function DriverMarket() {
                   dispatch({ type: 'SIGN_MARKET_DRIVER', marketId: d.id, seatDriverId, bid })
                 }
                 onSignThird={() => dispatch({ type: 'SIGN_THIRD_DRIVER', marketId: d.id })}
+                onSignRaceDriver={() => dispatch({ type: 'SIGN_RACE_DRIVER', marketId: d.id })}
                 onRelease={(seatDriverId) =>
                   dispatch({ type: 'RELEASE_SIGNING', seatDriverId })
                 }
@@ -305,6 +315,7 @@ function SeniorCard({
   potLabel,
   affordable,
   canSignThird,
+  canSignRaceDriver,
   thirdFee,
   budget,
   seatName,
@@ -315,6 +326,7 @@ function SeniorCard({
   seed,
   onSign,
   onSignThird,
+  onSignRaceDriver,
   onRelease,
 }: {
   d: MarketDriver;
@@ -325,6 +337,7 @@ function SeniorCard({
   potLabel: string;
   affordable: boolean;
   canSignThird: boolean;
+  canSignRaceDriver: boolean;
   thirdFee: number;
   budget: number;
   seatName: (id: string) => string;
@@ -335,6 +348,7 @@ function SeniorCard({
   seed: string;
   onSign: (seatDriverId: string, bid: number) => void;
   onSignThird: () => void;
+  onSignRaceDriver: () => void;
   onRelease: (seatDriverId: string) => void;
 }) {
   const [bid, setBid] = useState<number>(round1(Math.max(d.buyoutCost, suggestedBid)));
@@ -388,6 +402,10 @@ function SeniorCard({
       <div className="mt-3 border-t border-neutral-800 pt-2">
         {signed ? (
           <span className="text-xs text-neutral-500">Already racing for you.</span>
+        ) : canSignRaceDriver ? (
+          <Button variant="primary" className="w-full px-2 py-1 text-xs" onClick={onSignRaceDriver}>
+            Sign as Race Driver
+          </Button>
         ) : pending ? (
           <div className="flex items-center justify-between text-xs">
             <span className="text-green-300">Queued → replaces {seatName(pending.seatDriverId)}</span>
