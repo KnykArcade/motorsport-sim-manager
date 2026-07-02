@@ -296,7 +296,7 @@ export const drivers2010: Driver[] = [
   },
   {
     id: 'd-2010-nico-hulkenberg',
-    name: 'Nico Hülkenberg',
+    name: 'Nico Hulkenberg',
     number: 11,
     nationality: 'GER',
     age: 22,
@@ -412,7 +412,7 @@ export const drivers2010: Driver[] = [
   },
   {
     id: 'd-2010-sebastien-buemi',
-    name: 'Sébastien Buemi',
+    name: 'Sebastien Buemi',
     number: 15,
     nationality: 'SUI',
     age: 21,

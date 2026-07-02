@@ -171,7 +171,7 @@ export const tracks1990: Track[] = [
   },
   {
     id: 'autodromo-hermanos-rodriguez-1990',
-    name: 'Autódromo Hermanos Rodríguez',
+    name: 'Autodromo Hermanos Rodriguez',
     gpName: 'Mexican GP',
     country: 'Mexico',
     archetype: 'Power / Bumpy / Altitude',

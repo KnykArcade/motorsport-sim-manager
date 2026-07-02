@@ -558,7 +558,7 @@ export const driverMarket2000: MarketDriver[] = [
   },
   {
     id: 'mkt-2000-sebastien-bourdais',
-    name: 'Sébastien Bourdais',
+    name: 'Sebastien Bourdais',
     age: 21,
     nationality: 'FRA',
     context: 'F3000/Junior',
@@ -604,7 +604,7 @@ export const driverMarket2000: MarketDriver[] = [
   },
   {
     id: 'mkt-2000-andre-lotterer',
-    name: 'André Lotterer',
+    name: 'Andre Lotterer',
     age: 18,
     nationality: 'GER',
     context: 'Junior Formula',

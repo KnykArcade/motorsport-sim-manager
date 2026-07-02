@@ -75,7 +75,7 @@ export const driverMarket2009: MarketDriver[] = [
   },
   {
     id: 'mkt-2009-marc-gene',
-    name: 'Marc Gené',
+    name: 'Marc Gene',
     age: 35,
     nationality: 'ESP',
     context: 'Ferrari test driver',
@@ -213,7 +213,7 @@ export const driverMarket2009: MarketDriver[] = [
   },
   {
     id: 'mkt-2009-nico-hulkenberg',
-    name: 'Nico Hülkenberg',
+    name: 'Nico Hulkenberg',
     age: 21,
     nationality: 'GER',
     context: 'GP2/Williams test',
@@ -259,7 +259,7 @@ export const driverMarket2009: MarketDriver[] = [
   },
   {
     id: 'mkt-2009-jerome-d-ambrosio',
-    name: 'Jérôme d\'Ambrosio',
+    name: 'Jerome d\'Ambrosio',
     age: 23,
     nationality: 'BEL',
     context: 'GP2',
@@ -397,7 +397,7 @@ export const driverMarket2009: MarketDriver[] = [
   },
   {
     id: 'mkt-2009-sebastien-loeb',
-    name: 'Sébastien Loeb',
+    name: 'Sebastien Loeb',
     age: 35,
     nationality: 'FRA',
     context: 'WRC champion/testing interest',

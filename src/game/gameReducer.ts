@@ -9,7 +9,7 @@ import { developmentProjectsById } from '../data/development/developmentProjects
 import { qualifyingFormatFor, simulateQualifying } from '../sim/qualifyingEngine';
 import { simulateRace } from '../sim/raceEngine';
 import { buildConstructorStandings, buildDriverStandings } from '../sim/standingsEngine';
-import { applyDevelopmentProgress, raceOpsDevelopmentBonus } from '../sim/developmentEngine';
+import { applyDevelopmentProgress, raceOpsDevelopmentBonus, computeAdjustedDuration, RUSH_COST_MULTIPLIER } from '../sim/developmentEngine';
 import { updateMorale } from '../sim/moraleEngine';
 import { generateRaceNews } from '../sim/newsEngine';
 import { aiQualifyingDecision } from './ai';
@@ -41,6 +41,8 @@ import {
   facilityDevelopmentSuccessBonus,
   facilityRepairCostReduction,
   orderUpgrade,
+  developmentSlots,
+  relevantFacilityLevel,
 } from '../sim/facilityEngine';
 import {
   availableEngineOffers,
@@ -60,6 +62,7 @@ import type {
   Driver,
   QualifyingResult,
   RaceResult,
+  Track,
 } from '../types/gameTypes';
 import type { EngineDealType } from '../types/engineTypes';
 import type { RegulationVote } from '../types/politicsTypes';
@@ -88,6 +91,18 @@ import {
   sessionLapCost,
 } from '../sim/practiceProgramEngine';
 import { weekendForecast } from '../sim/weatherEngine';
+import type { RaceWeekendPackageType, RaceWeekendPackageSelection, RaceWeekendPackageEffects } from '../types/raceWeekendPackageTypes';
+import type { AIPackageContext } from '../types/raceWeekendPackageTypes';
+import {
+  computeRaceWeekendPackageCost,
+  packageEffects,
+  availablePackagesForSeries,
+  aiSelectPackage,
+  trackCostClass,
+  RACE_WEEKEND_PACKAGES,
+} from '../sim/raceWeekendPackageEngine';
+import { ARCHETYPE_SPECS } from '../sim/aiTeamEngine';
+import { effectiveCarRatings } from '../sim/trackFitEngine';
 
 export type GameAction =
   | { type: 'NEW_GAME'; options: NewGameOptions }
@@ -101,7 +116,8 @@ export type GameAction =
       breakdowns: Record<string, ScoreBreakdown>;
       teamOrders?: TeamOrderDecision[];
     }
-  | { type: 'START_DEVELOPMENT'; projectId: string }
+  | { type: 'START_DEVELOPMENT'; projectId: string; rushed?: boolean }
+  | { type: 'RUSH_DEVELOPMENT'; projectId: string }
   | { type: 'SET_CAR_SETUP'; driverId: string; setup: CarSetup }
   | {
       type: 'RUN_PRACTICE_SESSION';
@@ -135,7 +151,8 @@ export type GameAction =
   | { type: 'SIGN_THIRD_DRIVER'; marketId: string }
   | { type: 'PROMOTE_THIRD_DRIVER'; seatDriverId: string; thirdDriverId: string }
   | { type: 'ADVANCE_SEASON' }
-  | { type: 'ADVANCE_RACE' };
+  | { type: 'ADVANCE_RACE' }
+  | { type: 'SELECT_RACE_WEEKEND_PACKAGE'; packageType: RaceWeekendPackageType };
 
 // Run one practice session for the player's drivers: simulate each assignment,
 // fold the results into the weekend knowledge, and apply the one-off confidence
@@ -383,7 +400,12 @@ export function gameReducer(state: GameState | null, action: GameAction): GameSt
 
     case 'START_DEVELOPMENT': {
       if (!state) return state;
-      return startDevelopment(state, action.projectId);
+      return startDevelopment(state, action.projectId, action.rushed ?? false);
+    }
+
+    case 'RUSH_DEVELOPMENT': {
+      if (!state) return state;
+      return rushDevelopment(state, action.projectId);
     }
 
     case 'SET_CAR_SETUP': {
@@ -536,7 +558,13 @@ export function gameReducer(state: GameState | null, action: GameAction): GameSt
 
     case 'ADVANCE_RACE': {
       if (!state) return state;
-      return state;
+      // Clear the weekend package when advancing to the next race.
+      return { ...state, raceWeekendPackage: undefined, aiRaceWeekendPackages: undefined };
+    }
+
+    case 'SELECT_RACE_WEEKEND_PACKAGE': {
+      if (!state) return state;
+      return selectRaceWeekendPackage(state, action.packageType);
     }
 
     default:
@@ -867,9 +895,15 @@ function runQualifying(state: GameState, playerDecisions: QualifyingDecision[]):
 
   const teamReputation: Record<string, number> = {};
   const teamRaceOps: Record<string, number> = {};
+  const pkgEffects: Record<string, RaceWeekendPackageEffects> = {};
   state.teams.forEach((t) => {
     teamReputation[t.id] = t.reputation;
     teamRaceOps[t.id] = t.raceOperations;
+    if (t.id === state.selectedTeamId && state.raceWeekendPackage) {
+      pkgEffects[t.id] = packageEffects(state.raceWeekendPackage.packageType);
+    } else if (state.aiRaceWeekendPackages?.[t.id]) {
+      pkgEffects[t.id] = packageEffects(state.aiRaceWeekendPackages[t.id].packageType);
+    }
   });
 
   const { results, breakdowns } = simulateQualifying({
@@ -885,6 +919,7 @@ function runQualifying(state: GameState, playerDecisions: QualifyingDecision[]):
     format: qualifyingFormatFor(state.seasonYear, state.series),
     teamReputation,
     teamRaceOps,
+    packageEffectsByTeam: pkgEffects,
   });
 
   lastBreakdowns.qualifying = breakdowns;
@@ -1143,20 +1178,43 @@ function applyRaceResults(
   };
 }
 
-function startDevelopment(state: GameState, projectId: string): GameState {
+function startDevelopment(state: GameState, projectId: string, rushed: boolean): GameState {
   const template = developmentProjectsById[projectId];
   if (!template) return state;
   const team = state.teams.find((t) => t.id === state.selectedTeamId);
-  if (!team || team.budget < template.cost) return state;
+  if (!team) return state;
+
+  // Check development slots (facility-based).
+  const slots = developmentSlots(state.facilities);
+  if (state.activeDevelopmentProjects.length >= slots) return state;
+
+  // Compute facility level for this project category.
+  const facLevel = relevantFacilityLevel(state.facilities, template.category);
+
+  // Compute adjusted duration based on facility level, project size, and rush.
+  const projectSize = template.projectSize ?? 'Medium';
+  const adjustedDuration = computeAdjustedDuration(
+    template.durationRaces,
+    facLevel,
+    projectSize,
+    rushed,
+  );
+
+  // Compute cost (rush increases cost by 1.5x).
+  const cost = rushed ? Math.round(template.cost * RUSH_COST_MULTIPLIER()) : template.cost;
+  if (team.budget < cost) return state;
 
   const instance: DevelopmentProject = {
     ...template,
     id: `${template.id}-${Date.now()}`,
     progressRaces: 0,
+    rushed,
+    facilityLevelAtStart: facLevel,
+    adjustedDurationRaces: adjustedDuration,
   };
 
   const teams = state.teams.map((t) =>
-    t.id === team.id ? { ...t, budget: t.budget - template.cost } : t,
+    t.id === team.id ? { ...t, budget: t.budget - cost } : t,
   );
 
   return {
@@ -1164,10 +1222,223 @@ function startDevelopment(state: GameState, projectId: string): GameState {
     teams,
     finance: [
       ...(state.finance ?? []),
-      makeTransaction(state.seasonYear, 'Development', template.name, -template.cost),
+      makeTransaction(state.seasonYear, 'Development', `${template.name}${rushed ? ' (Rushed)' : ''}`, -cost),
     ],
     activeDevelopmentProjects: [...state.activeDevelopmentProjects, instance],
   };
+}
+
+function rushDevelopment(state: GameState, projectId: string): GameState {
+  const project = state.activeDevelopmentProjects.find((p) => p.id === projectId);
+  if (!project || project.rushed) return state;
+
+  const team = state.teams.find((t) => t.id === state.selectedTeamId);
+  if (!team) return state;
+
+  // Rush cost: 50% of original project cost.
+  const rushCost = Math.round(project.cost * 0.5);
+  if (team.budget < rushCost) return state;
+
+  const facLevel = project.facilityLevelAtStart ?? 3;
+  const projectSize = project.projectSize ?? 'Medium';
+  const newDuration = computeAdjustedDuration(
+    project.durationRaces,
+    facLevel,
+    projectSize,
+    true,
+  );
+
+  const teams = state.teams.map((t) =>
+    t.id === team.id ? { ...t, budget: t.budget - rushCost } : t,
+  );
+
+  const activeDevelopmentProjects = state.activeDevelopmentProjects.map((p) =>
+    p.id === projectId
+      ? {
+          ...p,
+          rushed: true,
+          adjustedDurationRaces: newDuration,
+        }
+      : p,
+  );
+
+  return {
+    ...state,
+    teams,
+    finance: [
+      ...(state.finance ?? []),
+      makeTransaction(state.seasonYear, 'Development', `${project.name} (Rush Fee)`, -rushCost),
+    ],
+    activeDevelopmentProjects,
+  };
+}
+
+// Select a Race Weekend Package for the current race: deduct cost from budget,
+// store the selection, apply sponsor confidence and driver morale effects.
+function selectRaceWeekendPackage(
+  state: GameState,
+  packageType: RaceWeekendPackageType,
+): GameState {
+  const race = currentRace(state);
+  if (!race) return state;
+  const track = getTrackById(race.trackId);
+  if (!track) return state;
+  const team = state.teams.find((t) => t.id === state.selectedTeamId);
+  if (!team) return state;
+
+  // Validate package is available for this series.
+  if (!availablePackagesForSeries(state.series).includes(packageType)) return state;
+
+  // Compute cost.
+  const costResult = computeRaceWeekendPackageCost(state.series, team, track, packageType);
+  if (team.budget < costResult.cost) return state;
+
+  const selection: RaceWeekendPackageSelection = {
+    packageType,
+    raceId: race.id,
+    gpName: race.gpName,
+    cost: costResult.cost,
+    teamScale: costResult.teamScale,
+    trackModifier: costResult.trackModifier,
+    packageModifier: costResult.packageModifier,
+    damageReserve: costResult.damageReserve,
+  };
+
+  // Deduct cost from budget.
+  const teams = state.teams.map((t) =>
+    t.id === team.id ? { ...t, budget: t.budget - costResult.cost } : t,
+  );
+
+  // Apply sponsor confidence changes.
+  const effects = packageEffects(packageType);
+  let commercial = state.commercial;
+  if (commercial && effects.sponsorSatisfaction !== 0) {
+    commercial = {
+      ...commercial,
+      sponsors: commercial.sponsors.map((s) => ({
+        ...s,
+        confidence: Math.max(0, Math.min(100, Math.round(s.confidence + effects.sponsorSatisfaction))),
+      })),
+    };
+  }
+
+  // Apply driver morale changes.
+  let drivers = state.drivers;
+  if (effects.driverMorale !== 0) {
+    drivers = state.drivers.map((d) =>
+      d.teamId === state.selectedTeamId
+        ? { ...d, morale: Math.max(0, Math.min(100, Math.round(d.morale + effects.driverMorale))) }
+        : d,
+    );
+  }
+
+  // Apply team morale change (half of driver morale delta).
+  const teamMoraleDelta = Math.round(effects.driverMorale * 0.5);
+  const teamsWithMorale = teams.map((t) =>
+    t.id === team.id
+      ? { ...t, morale: Math.max(0, Math.min(100, Math.round(t.morale + teamMoraleDelta))) }
+      : t,
+  );
+
+  // Add finance transaction.
+  const financeTxns: FinanceTransaction[] = [
+    makeTransaction(
+      state.seasonYear,
+      'Operations',
+      `${race.gpName}: ${RACE_WEEKEND_PACKAGES[packageType].label}`,
+      -costResult.cost,
+      race.round,
+    ),
+  ];
+
+  // Add to history.
+  const history = [...(state.raceWeekendPackageHistory ?? []), selection];
+
+  // Generate AI team package selections for this weekend.
+  const aiPackages = generateAIPackages(state, race, track);
+
+  // Add news item for the package selection.
+  const packageNews = {
+    id: `news-pkg-${race.round}-${packageType}`,
+    round: race.round,
+    headline: `${team.name} opts for ${RACE_WEEKEND_PACKAGES[packageType].label} at ${race.gpName}.`,
+    timestamp: new Date().toISOString(),
+  };
+
+  return {
+    ...state,
+    teams: teamsWithMorale,
+    drivers,
+    commercial,
+    raceWeekendPackage: selection,
+    raceWeekendPackageHistory: history,
+    aiRaceWeekendPackages: aiPackages,
+    finance: [...(state.finance ?? []), ...financeTxns],
+    news: [packageNews, ...state.news].slice(0, 50),
+  };
+}
+
+// Generate Race Weekend Package selections for all AI teams based on their
+// financial state, archetype, championship position, and car reliability.
+function generateAIPackages(
+  state: GameState,
+  race: NonNullable<ReturnType<typeof currentRace>>,
+  track: Track,
+): Record<string, RaceWeekendPackageSelection> {
+  const result: Record<string, RaceWeekendPackageSelection> = {};
+  const constructorStandings = state.constructorStandings;
+  const teamCount = state.teams.length;
+  const isLateSeason = race.round > state.calendar.length * 0.7;
+
+  for (const team of state.teams) {
+    if (team.id === state.selectedTeamId) continue;
+
+    // Build AI context from available state.
+    const aiState = state.aiTeamStates?.[team.id];
+    const car = carForTeam(state, team.id);
+    const carReliability = car ? effectiveCarRatings(car).reliability : 5;
+    const constructorPosition =
+      constructorStandings.findIndex((s) => s.entityId === team.id) + 1 || teamCount;
+
+    // Determine financial health from AI state or estimate from budget.
+    const financialHealth = aiState?.financialHealth ?? 'Stable';
+    const archetype = aiState?.archetype ?? 'FinanciallyConservative';
+    const risk = aiState?.archetype
+      ? ARCHETYPE_SPECS[aiState.archetype]?.risk ?? 0.3
+      : 0.3;
+
+    const trackClass = trackCostClass(track);
+    const damageRiskTrack = trackClass === 'HighDamageRisk' || trackClass === 'Street';
+
+    const ctx: AIPackageContext = {
+      teamBudget: team.budget,
+      financialHealth,
+      archetype,
+      risk,
+      championshipPosition: constructorPosition,
+      teamCount,
+      carReliability,
+      raceImportance: 0.5, // default; could be enhanced with crown-jewel data
+      isLateSeason,
+      damageRiskTrack,
+    };
+
+    const pkgType = aiSelectPackage(ctx, state.series, state.randomSeed, team.id, race.round);
+    const costResult = computeRaceWeekendPackageCost(state.series, team, track, pkgType);
+
+    result[team.id] = {
+      packageType: pkgType,
+      raceId: race.id,
+      gpName: race.gpName,
+      cost: costResult.cost,
+      teamScale: costResult.teamScale,
+      trackModifier: costResult.trackModifier,
+      packageModifier: costResult.packageModifier,
+      damageReserve: costResult.damageReserve,
+    };
+  }
+
+  return result;
 }
 
 export type { QualifyingResult };

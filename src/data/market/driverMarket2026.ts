@@ -604,7 +604,7 @@ export const driverMarket2026: MarketDriver[] = [
   },
   {
     id: 'mkt-2026-pepe-marti',
-    name: 'Pepe Martí',
+    name: 'Pepe Marti',
     age: 21,
     nationality: 'Spain',
     context: 'F2/Junior',

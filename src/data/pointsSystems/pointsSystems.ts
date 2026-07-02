@@ -36,6 +36,21 @@ export const pointsSystems: Record<string, PointsSystem> = {
   },
 };
 
+// IndyCar 2008-2025: consistent 50-40-35-32-30-... points structure
+const _indycarPoints = {
+  1: 50, 2: 40, 3: 35, 4: 32, 5: 30, 6: 28, 7: 26, 8: 24, 9: 22, 10: 20,
+  11: 19, 12: 18, 13: 17, 14: 16, 15: 15, 16: 14, 17: 13, 18: 12, 19: 11,
+  20: 10, 21: 9, 22: 8, 23: 7, 24: 6, 25: 5, 26: 5, 27: 5, 28: 5, 29: 5,
+  30: 5, 31: 5, 32: 5, 33: 5,
+};
+for (let _y = 2008; _y <= 2025; _y++) {
+  pointsSystems[`pts-indycar-${_y}`] = {
+    id: `pts-indycar-${_y}`,
+    name: `IndyCar ${_y} (50-40-35-...)`,
+    pointsByPosition: _indycarPoints,
+  };
+}
+
 export function getPointsSystem(id: string): PointsSystem {
   return pointsSystems[id] ?? pointsSystems['pts-1995'];
 }

@@ -13,7 +13,8 @@ export type FinanceCategory =
   | 'Engine'
   | 'Development'
   | 'Scouting'
-  | 'Repairs';
+  | 'Repairs'
+  | 'Operations';
 
 export type FinanceTransaction = {
   id: string;

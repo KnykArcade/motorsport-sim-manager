@@ -6,7 +6,7 @@ import type { MarketDriver } from '../../types/marketTypes';
 export const driverMarket2010: MarketDriver[] = [
   {
     id: 'mkt-2010-kimi-raikkonen',
-    name: 'Kimi Räikkönen',
+    name: 'Kimi Raikkonen',
     age: 30,
     nationality: 'FIN',
     context: 'WRC / former Ferrari F1',
@@ -236,7 +236,7 @@ export const driverMarket2010: MarketDriver[] = [
   },
   {
     id: 'mkt-2010-jerome-d-ambrosio',
-    name: 'Jérôme d\'Ambrosio',
+    name: 'Jerome d\'Ambrosio',
     age: 24,
     nationality: 'BEL',
     context: 'GP2 / Renault tester',
@@ -282,7 +282,7 @@ export const driverMarket2010: MarketDriver[] = [
   },
   {
     id: 'mkt-2010-sergio-perez',
-    name: 'Sergio Pérez',
+    name: 'Sergio Perez',
     age: 20,
     nationality: 'MEX',
     context: 'GP2',
@@ -328,7 +328,7 @@ export const driverMarket2010: MarketDriver[] = [
   },
   {
     id: 'mkt-2010-jean-eric-vergne',
-    name: 'Jean-Éric Vergne',
+    name: 'Jean-Eric Vergne',
     age: 20,
     nationality: 'FRA',
     context: 'British F3/Red Bull junior',
@@ -397,7 +397,7 @@ export const driverMarket2010: MarketDriver[] = [
   },
   {
     id: 'mkt-2010-alvaro-parente',
-    name: 'Álvaro Parente',
+    name: 'Alvaro Parente',
     age: 25,
     nationality: 'POR',
     context: 'GP2/WSR',
@@ -443,7 +443,7 @@ export const driverMarket2010: MarketDriver[] = [
   },
   {
     id: 'mkt-2010-nico-hulkenberg',
-    name: 'Nico Hülkenberg',
+    name: 'Nico Hulkenberg',
     age: 22,
     nationality: 'GER',
     context: 'Williams F1 rookie',

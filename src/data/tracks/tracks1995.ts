@@ -6,7 +6,7 @@ import type { Track } from '../../types/gameTypes';
 export const tracks1995: Track[] = [
   {
     id: 'autodromo-jose-carlos-pace',
-    name: 'Autódromo José Carlos Pace',
+    name: 'Autodromo Jose Carlos Pace',
     gpName: 'Brazilian Grand Prix',
     archetype: 'High-speed technical',
     attributes: {
@@ -38,7 +38,7 @@ export const tracks1995: Track[] = [
   },
   {
     id: 'autodromo-oscar-alfredo-galvez',
-    name: 'Autódromo Oscar Alfredo Gálvez',
+    name: 'Autodromo Oscar Alfredo Galvez',
     gpName: 'Argentine Grand Prix',
     archetype: 'Balanced mixed',
     attributes: {
@@ -386,11 +386,11 @@ export const tracks1995: Track[] = [
       mechanicalDemand: 5.2,
       riskDemand: 5.8,
     },
-    ratingNotes: 'Monza is the calendar’s purest power/straight-line setup with heavy braking into chicanes.',
+    ratingNotes: 'Monza is the calendars purest power/straight-line setup with heavy braking into chicanes.',
   },
   {
     id: 'autodromo-do-estoril',
-    name: 'Autódromo do Estoril',
+    name: 'Autodromo do Estoril',
     gpName: 'Portuguese Grand Prix',
     archetype: 'Balanced mixed',
     attributes: {
@@ -422,7 +422,7 @@ export const tracks1995: Track[] = [
   },
   {
     id: 'nurburgring',
-    name: 'Nürburgring',
+    name: 'Nurburgring',
     gpName: 'European Grand Prix',
     archetype: 'Technical balanced',
     attributes: {
@@ -450,7 +450,7 @@ export const tracks1995: Track[] = [
       mechanicalDemand: 6.2,
       riskDemand: 6,
     },
-    ratingNotes: 'Nürburgring GP is modeled as a medium-speed technical track with braking, traction, and setup balance all important.',
+    ratingNotes: 'Nurburgring GP is modeled as a medium-speed technical track with braking, traction, and setup balance all important.',
   },
   {
     id: 'ti-circuit',

@@ -10,7 +10,7 @@
 //
 // Pure & deterministic: given the same inputs it produces the same moves.
 
-import type { Car, CarRatings, Driver, DriverRatings, StandingsEntry, Team } from '../types/gameTypes';
+import type { Car, CarRatings, Driver, DriverRatings, StandingsEntry, Team, ProjectRiskLevel } from '../types/gameTypes';
 import type { EngineState } from '../types/engineTypes';
 import type { TeamOrganizationRatings } from '../types/teamRatingsTypes';
 import type { AcademyMember, MarketDriver, YouthProspect } from '../types/marketTypes';
@@ -38,7 +38,10 @@ import {
   catchUpMultiplier,
   diminishingGainMultiplier,
   nearCapFailureChance,
+  rollOutcome,
+  OUTCOME_GAIN_MULTIPLIERS,
 } from './developmentEngine';
+import { aiFacilityLevel, facilityOutcomeChances, facilityImpactMultiplier } from './facilityEngine';
 import { ARCHETYPE_SPECS } from './aiTeamEngine';
 import { createSeededRandom, deriveSeed, type Rng } from './random';
 
@@ -138,9 +141,11 @@ const CAR_AREA_LABELS: Record<keyof CarRatings, string> = {
   pitCrewOperations: 'pit-crew',
 };
 
-// Run one AI team's offseason car development. Bigger budgets + aggressive
-// archetypes buy larger, riskier gains. Returns the updated car + a note, or
-// null when the team can't afford any meaningful development.
+// Run one AI team's offseason car development. Uses the new facility-based
+// outcome system: facility level (from org ratings) + archetype risk determine
+// outcome chances, and the outcome determines gain magnitude. Returns the
+// updated car + a note, or null when the team can't afford any meaningful
+// development.
 function developCar(
   car: Car,
   team: Team,
@@ -148,33 +153,48 @@ function developCar(
   hadReliabilityProblem: boolean,
   fieldTopRating: number,
   rng: Rng,
+  org: TeamOrganizationRatings | undefined,
 ): { car: Car; note: string } | null {
   const spec = ARCHETYPE_SPECS[ai.archetype];
   const budget = ai.budget.developmentSpend;
-  if (budget < toMoney(1)) return null; // no real development this year
+  if (budget < toMoney(1)) return null;
 
-  const budgetM = budget / MILLION;
-  // Raw gain scales with spend and risk appetite; a chance of a smaller-than-
-  // hoped result keeps the AI imperfect.
-  const base = Math.min(0.9, 0.12 + budgetM * 0.012 + spec.risk * 0.25);
-  const success = rng.chance(0.55 + spec.risk * 0.2);
-  let gain = (success ? base : base * 0.4) * (0.7 + rng.next() * 0.6);
+  // Determine facility level from org ratings.
+  const facLevel = aiFacilityLevel(
+    org?.staffQuality ?? 45,
+    org?.research ?? 45,
+  );
+
+  // Map archetype risk to ProjectRiskLevel.
+  const riskLevel: ProjectRiskLevel =
+    spec.risk >= 0.8 ? 'Experimental'
+    : spec.risk >= 0.55 ? 'Aggressive'
+    : spec.risk >= 0.3 ? 'Standard'
+    : 'Safe';
+
+  // Roll outcome using the facility-based chance table.
+  const chances = facilityOutcomeChances(facLevel, riskLevel);
+  const outcome = rollOutcome(rng, chances);
+  const gainMultiplier = OUTCOME_GAIN_MULTIPLIERS[outcome];
+  const impactMult = facilityImpactMultiplier(facLevel);
 
   const target = developmentTarget(car, hadReliabilityProblem);
   const current = car.ratings[target];
 
+  // Base gain scales with spend and risk appetite.
+  const budgetM = budget / MILLION;
+  const base = Math.min(0.9, 0.12 + budgetM * 0.012 + spec.risk * 0.25);
+
+  let gain = base * gainMultiplier * impactMult * (0.7 + rng.next() * 0.6);
+
   // Diminishing returns: gains get progressively harder near the ceiling.
   gain *= diminishingGainMultiplier(current);
-  // Catch-up efficiency: a car well below the front of the grid improves more
-  // readily than an already-dominant one.
+  // Catch-up efficiency: a car well below the front of the grid improves more.
   gain *= catchUpMultiplier(fieldTopRating - carPerformanceRating(car));
 
-  // Near the cap even good projects often miss — deliver marginal consistency/
-  // reliability instead of raw pace, or a small setback.
+  // Near the cap even good projects often miss.
   const failChance = nearCapFailureChance(current);
-  if (failChance > 0 && rng.chance(failChance)) {
-    // Redirect a stalled top-end pace project into a small reliability gain if
-    // there is headroom, otherwise it's a wash (no note, no change).
+  if (failChance > 0 && rng.chance(failChance) && outcome !== 'GreatSuccess') {
     if (car.ratings.reliability < 9 && target !== 'reliability') {
       const reliGain = clampGain(0.05 + rng.next() * 0.1);
       const ratings: CarRatings = {
@@ -190,11 +210,22 @@ function developCar(
   }
 
   gain = clampGain(gain);
-  if (gain < 0.05) return null;
+  if (gain < 0.05 && outcome !== 'RareBackfire') return null;
+
+  // RareBackfire: small setback in the targeted area.
+  if (outcome === 'RareBackfire') {
+    const penalty = clampGain(Math.min(0.3, Math.abs(gain)));
+    const ratings: CarRatings = { ...car.ratings, [target]: clamp10(current - penalty) };
+    return {
+      car: { ...car, ratings },
+      note: `${team.name}'s ${CAR_AREA_LABELS[target]} development backfires — a setback.`,
+    };
+  }
 
   const ratings: CarRatings = { ...car.ratings, [target]: clamp10(current + gain) };
   const scale = gain >= 0.4 ? 'a major' : gain >= 0.2 ? 'a' : 'a minor';
-  const note = `${team.name} completes ${scale} ${CAR_AREA_LABELS[target]} development package.`;
+  const outcomeTag = outcome === 'GreatSuccess' ? ' — breakthrough!' : outcome === 'Failed' ? ' — minimal gains.' : '';
+  const note = `${team.name} completes ${scale} ${CAR_AREA_LABELS[target]} development package${outcomeTag}`;
   return { car: { ...car, ratings }, note };
 }
 
@@ -387,6 +418,7 @@ export function runAIOffseason(input: AIOffseasonInput): AIOffseasonResult {
         reliabilityProblem.has(team.id),
         fieldTopRating,
         rng,
+        org,
       );
       if (dev) {
         // The development *spend* is already applied to the team's cash by the

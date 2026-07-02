@@ -14,7 +14,7 @@ export const SETUP_COMPONENTS: SetupComponentMeta[] = [
   {
     key: 'aero',
     name: 'Aerodynamics',
-    description: 'Wing levels set the downforce/drag compromise — grip in the corners versus speed on the straights.',
+    description: 'Wing levels set the downforce/drag compromise  grip in the corners versus speed on the straights.',
     params: ['frontWing', 'rearWing'],
   },
   {

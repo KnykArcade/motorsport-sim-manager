@@ -278,7 +278,7 @@ export const driverMarket1995: MarketDriver[] = [
     buyoutCost: 0.4,
     negotiationDifficulty: 'Medium',
     suggestedUse: 'Race Seat',
-    notes: 'Strong F3000 résumé; sensible low/midfield signing.',
+    notes: 'Strong F3000 resume; sensible low/midfield signing.',
   },
   {
     id: 'mkt-ricardo-rosset',
@@ -535,7 +535,7 @@ export const driverMarket1995: MarketDriver[] = [
   },
   {
     id: 'mkt-kenny-brack',
-    name: 'Kenny Bräck',
+    name: 'Kenny Brack',
     age: 29,
     nationality: 'Sweden',
     context: 'F3000 / Indy path',

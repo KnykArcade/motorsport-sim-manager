@@ -10,6 +10,11 @@ import type {
   FacilitiesState,
   FacilityUpgradeOrder,
 } from '../types/facilityTypes';
+import type {
+  DevelopmentCategory,
+  ProjectRiskLevel,
+  DevelopmentOutcome,
+} from '../types/gameTypes';
 
 // Canonical effect keys produced by facilities.
 export type FacilityEffectKey =
@@ -212,4 +217,129 @@ export function resolvePendingUpgrades(state: FacilitiesState): {
     return buildFacility(f.teamId, f.type, order.toLevel);
   });
   return { state: { ...state, facilities, pendingUpgrades: [] }, completed };
+}
+
+// ---------------------------------------------------------------------------
+// Development overhaul: facility-driven slots, time, outcomes
+// ---------------------------------------------------------------------------
+
+// Maps each development category to the facility types that influence it.
+export const CATEGORY_FACILITY_MAP: Record<DevelopmentCategory, FacilityType[]> = {
+  Engine: ['Factory', 'DataCenter'],
+  Aero: ['WindTunnel', 'DataCenter'],
+  Mechanical: ['Factory', 'Manufacturing'],
+  Reliability: ['ReliabilityLab', 'Manufacturing'],
+  PitCrew: ['PitCrewCenter'],
+  Strategy: ['Simulator', 'DataCenter'],
+  Driver: ['DriverAcademy', 'Simulator'],
+  Facilities: ['Factory'],
+  Research: ['WindTunnel', 'DataCenter', 'Simulator'],
+};
+
+// Average level of the facilities relevant to a development category (1-5).
+// Falls back to the overall average if no specific facilities are found.
+export function relevantFacilityLevel(
+  facilities: FacilitiesState | undefined,
+  category: DevelopmentCategory,
+): number {
+  if (!facilities) return 1;
+  const relevantTypes = CATEGORY_FACILITY_MAP[category] ?? [];
+  const relevant = facilities.facilities.filter((f) => relevantTypes.includes(f.type));
+  if (relevant.length === 0) {
+    const all = facilities.facilities;
+    return all.reduce((sum, f) => sum + f.level, 0) / all.length;
+  }
+  return relevant.reduce((sum, f) => sum + f.level, 0) / relevant.length;
+}
+
+// Development slots: 1 slot per facility level (1-5), based on the average
+// level of ALL facilities. This makes every facility upgrade matter for
+// project throughput.
+export function developmentSlots(facilities: FacilitiesState | undefined): number {
+  if (!facilities) return 1;
+  const avg =
+    facilities.facilities.reduce((sum, f) => sum + f.level, 0) /
+    facilities.facilities.length;
+  return Math.max(1, Math.round(avg));
+}
+
+// Time multiplier based on relevant facility level (1-5).
+// Level 1: x1.40, Level 2: x1.20, Level 3: x1.00, Level 4: x0.85, Level 5: x0.70
+export function facilityTimeMultiplier(facilityLevel: number): number {
+  const table = [1.4, 1.2, 1.0, 0.85, 0.7];
+  const idx = Math.max(0, Math.min(4, Math.round(facilityLevel) - 1));
+  return table[idx];
+}
+
+// Impact multiplier based on facility level (1-5).
+// Higher facilities amplify the magnitude of development gains.
+export function facilityImpactMultiplier(facilityLevel: number): number {
+  const table = [0.8, 0.9, 1.0, 1.1, 1.2];
+  const idx = Math.max(0, Math.min(4, Math.round(facilityLevel) - 1));
+  return table[idx];
+}
+
+// Outcome probability table by facility level (1-5) and risk level.
+// Returns probabilities for each DevelopmentOutcome.
+// The probabilities sum to 1.0.
+export type OutcomeChances = Record<DevelopmentOutcome, number>;
+
+export function facilityOutcomeChances(
+  facilityLevel: number,
+  riskLevel: ProjectRiskLevel,
+  staffBonus = 0,
+): OutcomeChances {
+  const lvl = Math.max(1, Math.min(5, Math.round(facilityLevel)));
+
+  // Base success distribution by facility level (1-5).
+  // Higher facilities shift probability from failure toward great success.
+  const baseByLevel: Record<number, OutcomeChances> = {
+    1: { GreatSuccess: 0.03, FullSuccess: 0.12, PartialSuccess: 0.25, MinorSuccess: 0.25, Failed: 0.33, RareBackfire: 0.02 },
+    2: { GreatSuccess: 0.06, FullSuccess: 0.20, PartialSuccess: 0.30, MinorSuccess: 0.24, Failed: 0.17, RareBackfire: 0.03 },
+    3: { GreatSuccess: 0.10, FullSuccess: 0.30, PartialSuccess: 0.30, MinorSuccess: 0.18, Failed: 0.10, RareBackfire: 0.02 },
+    4: { GreatSuccess: 0.15, FullSuccess: 0.35, PartialSuccess: 0.27, MinorSuccess: 0.13, Failed: 0.08, RareBackfire: 0.02 },
+    5: { GreatSuccess: 0.20, FullSuccess: 0.40, PartialSuccess: 0.22, MinorSuccess: 0.10, Failed: 0.06, RareBackfire: 0.02 },
+  };
+
+  let chances = { ...baseByLevel[lvl] };
+
+  // Risk level shifts the distribution.
+  const riskShifts: Record<ProjectRiskLevel, Partial<OutcomeChances>> = {
+    Safe: { GreatSuccess: -0.03, FullSuccess: 0.05, PartialSuccess: 0.05, MinorSuccess: 0.03, Failed: -0.09, RareBackfire: -0.01 },
+    Standard: {},
+    Aggressive: { GreatSuccess: 0.05, FullSuccess: -0.03, PartialSuccess: -0.05, MinorSuccess: -0.05, Failed: 0.05, RareBackfire: 0.03 },
+    Experimental: { GreatSuccess: 0.10, FullSuccess: -0.08, PartialSuccess: -0.08, MinorSuccess: -0.07, Failed: 0.08, RareBackfire: 0.05 },
+  };
+
+  const shift = riskShifts[riskLevel];
+  for (const key of Object.keys(chances) as DevelopmentOutcome[]) {
+    chances[key] = Math.max(0, chances[key] + (shift[key] ?? 0));
+  }
+
+  // Staff bonus shifts probability from Failed/MinorSuccess toward FullSuccess/GreatSuccess.
+  const bonus = Math.max(-0.15, Math.min(0.2, staffBonus));
+  chances.GreatSuccess = Math.max(0, chances.GreatSuccess + bonus * 0.3);
+  chances.FullSuccess = Math.max(0, chances.FullSuccess + bonus * 0.4);
+  chances.Failed = Math.max(0, chances.Failed - bonus * 0.5);
+  chances.MinorSuccess = Math.max(0, chances.MinorSuccess - bonus * 0.2);
+
+  // Normalize to sum 1.0.
+  const total = Object.values(chances).reduce((a, b) => a + b, 0);
+  if (total > 0) {
+    for (const key of Object.keys(chances) as DevelopmentOutcome[]) {
+      chances[key] = chances[key] / total;
+    }
+  }
+
+  return chances;
+}
+
+// Estimate an AI team's effective facility level (1-5) from its organization
+// ratings (0-100 scale). Used so AI teams follow the same development system.
+export function aiFacilityLevel(
+  staffQuality: number,
+  research: number,
+): number {
+  const avg = (staffQuality + research) / 2;
+  return Math.max(1, Math.min(5, Math.ceil(avg / 20)));
 }

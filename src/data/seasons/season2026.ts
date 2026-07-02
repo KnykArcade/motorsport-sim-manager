@@ -180,7 +180,7 @@ export const calendar2026: Race[] = [
     round: 18,
     gpName: 'Mexico City Grand Prix',
     trackId: 'autodromo-hermanos-rodriguez-2026',
-    trackName: 'Autódromo Hermanos Rodríguez',
+    trackName: 'Autodromo Hermanos Rodriguez',
     laps: 71,
     distanceKm: 305.6,
     completed: false,
@@ -188,7 +188,7 @@ export const calendar2026: Race[] = [
   {
     id: 'r-2026-19',
     round: 19,
-    gpName: 'São Paulo Grand Prix',
+    gpName: 'Sao Paulo Grand Prix',
     trackId: 'interlagos-2026',
     trackName: 'Interlagos',
     laps: 71,

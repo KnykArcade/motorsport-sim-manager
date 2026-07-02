@@ -30,18 +30,18 @@ describe('season rollover calendar', () => {
   it('keeps the current calendar when the next year has no data', () => {
     let state = createNewGame({
       gameMode: 'Career',
-      seasonYear: 2010,
+      seasonYear: 2026,
       series: 'F1',
       teamId: 't-ferrari',
-      seed: 'rollover-seed-2010',
+      seed: 'rollover-seed-2026',
     });
     const before = state.calendar.map((r) => r.trackId);
 
     state = { ...state, seasonComplete: true };
     state = advanceSeason(state);
 
-    expect(state.seasonYear).toBe(2011);
-    expect(getSeasonBundle(2011, 'F1')).toBeUndefined();
+    expect(state.seasonYear).toBe(2027);
+    expect(getSeasonBundle(2027, 'F1')).toBeUndefined();
     expect(state.calendar.map((r) => r.trackId)).toEqual(before);
   });
 });

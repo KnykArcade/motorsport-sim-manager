@@ -90,7 +90,7 @@ export const calendar2002: Race[] = [
     round: 9,
     gpName: 'European Grand Prix',
     trackId: 'nurburgring-2002',
-    trackName: 'Nürburgring',
+    trackName: 'Nurburgring',
     laps: 60,
     distanceKm: 273.4,
     completed: false,

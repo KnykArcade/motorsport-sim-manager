@@ -29,7 +29,7 @@ export const youthProspects1997: YouthProspect[] = [
   },
   {
     id: 'yth-1997-kimi-raikkonen',
-    name: 'Kimi Räikkönen',
+    name: 'Kimi Raikkonen',
     age: 17,
     birthYear: 1979,
     nationality: 'Finland',
@@ -236,7 +236,7 @@ export const youthProspects1997: YouthProspect[] = [
   },
   {
     id: 'yth-1997-antonio-pizzonia',
-    name: 'Antônio Pizzonia',
+    name: 'Antonio Pizzonia',
     age: 17,
     birthYear: 1980,
     nationality: 'Brazil',
@@ -351,7 +351,7 @@ export const youthProspects1997: YouthProspect[] = [
   },
   {
     id: 'yth-1997-nico-hulkenberg',
-    name: 'Nico Hülkenberg',
+    name: 'Nico Hulkenberg',
     age: 10,
     birthYear: 1987,
     nationality: 'Germany',

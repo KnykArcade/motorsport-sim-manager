@@ -24,7 +24,7 @@ import unicodedata
 
 import openpyxl
 
-ATTACH = "/home/ubuntu/attachments"
+ATTACH = os.environ.get("ATTACH", "/home/ubuntu/attachments")
 OUT = os.environ.get("OUT", "/home/ubuntu/repos/motorsport-sim-manager/src/data")
 
 
@@ -142,24 +142,56 @@ def get(row, sheet, *aliases):
 
 def find_workbook(year, series):
     pat = f"{series}_{year}_Season_Full_Update"
+    series_pat = f"{series}_"
     best, best_mtime = None, -1
-    for f in glob.glob(os.path.join(ATTACH, "*", "*.xlsx")):
-        if pat in os.path.basename(f):
-            mt = os.path.getmtime(f)
-            if mt > best_mtime:
-                best, best_mtime = f, mt
+    patterns = [
+        os.path.join(ATTACH, "*", "*.xlsx"),
+        os.path.join(ATTACH, "*.xlsx"),
+    ]
+    for pattern in patterns:
+        for f in glob.glob(pattern):
+            base = os.path.basename(f)
+            if pat in base:
+                mt = os.path.getmtime(f)
+                if mt > best_mtime:
+                    best, best_mtime = f, mt
+            elif series_pat in base and "Season_Full_Update" in base:
+                years_in_name = re.findall(r'(\d{4})', base)
+                if str(year) in base:
+                    mt = os.path.getmtime(f)
+                    if mt > best_mtime:
+                        best, best_mtime = f, mt
+                elif len(years_in_name) >= 2:
+                    lo, hi = int(years_in_name[0]), int(years_in_name[1])
+                    if lo <= year <= hi:
+                        mt = os.path.getmtime(f)
+                        if mt > best_mtime:
+                            best, best_mtime = f, mt
     return best
 
 
-def pick_sheet(wb, *keyword_groups):
+def pick_sheet(wb, *keyword_groups, year=None):
     """Return the first sheet name whose lowercased name matches all keywords in
-    any of the keyword_groups (groups tried in order)."""
+    any of the keyword_groups (groups tried in order). If *year* is given, only
+    sheets whose name contains that year string are considered (for multi-year
+    workbooks). If no sheet matches with the year filter, falls back to
+    searching without it (for single-year workbooks whose tabs lack the year)."""
     for group in keyword_groups:
         kws, excl = group[0], group[1] if len(group) > 1 else []
         for sn in wb.sheetnames:
             low = sn.lower()
+            if year and str(year) not in low:
+                continue
             if all(k in low for k in kws) and not any(e in low for e in excl):
                 return sn
+    # Fallback: retry without year filter if year-specific search found nothing
+    if year:
+        for group in keyword_groups:
+            kws, excl = group[0], group[1] if len(group) > 1 else []
+            for sn in wb.sheetnames:
+                low = sn.lower()
+                if all(k in low for k in kws) and not any(e in low for e in excl):
+                    return sn
     return None
 
 
@@ -424,15 +456,15 @@ def gen(year, series="F1"):
     tag = str(y) if series == "F1" else f"{y}{series}"
 
     cal_sn = pick_sheet(wb, (["calendar"],), (["track", "rating"],),
-                        (["ratings"], ["key", "driver", "car"]))
+                        (["ratings"], ["key", "driver", "car"]), year=y)
     car_sn = pick_sheet(wb, (["car", "performance"],), (["team", "car"],),
-                        (["carperformance"],), (["car"],))
+                        (["carperformance"],), (["car"],), year=y)
     drv_sn = pick_sheet(wb, (["driver", "rating"],), (["drivers"],),
                         (["current"], ["market", "youth"]),
-                        (["driver"], ["market"]))
-    mkt_sn = pick_sheet(wb, (["driver", "market"],), (["market"],))
-    yth_sn = pick_sheet(wb, (["youth"],), (["prospect"],))
-    pts_sn = pick_sheet(wb, (["points"],))
+                        (["driver"], ["market"]), year=y)
+    mkt_sn = pick_sheet(wb, (["driver", "market"],), (["market"],), year=y)
+    yth_sn = pick_sheet(wb, (["youth"],), (["prospect"],), year=y)
+    pts_sn = pick_sheet(wb, (["points"],), year=y)
 
     cal = Sheet(wb[cal_sn], ["round", "number"]) if cal_sn else None
     car = Sheet(wb[car_sn], ["team"]) if car_sn else None
@@ -554,6 +586,23 @@ def gen(year, series="F1"):
             "aggression": aggression, "composure": composure, "overall": overall,
         })
 
+    # Deduplicate by driver ID: a mid-season swap creates two rows for the
+    # same driver (one per team). Keep only the first occurrence so the
+    # driver is assigned to their opening-season team. The second team
+    # association is historical context, not a starting roster entry.
+    seen_ids = set()
+    deduped = []
+    for d in drivers:
+        if d["id"] not in seen_ids:
+            seen_ids.add(d["id"])
+            deduped.append(d)
+    drivers = deduped
+
+    # F1 roster rule: exactly 2 primary race drivers per team.
+    # A 3rd reserve/third driver is allowed only if historically prominent
+    # (not automatically added from race entrant data).
+    # Mid-season replacements, substitutes, and one-off drivers go to the
+    # driver market, not the starting team roster.
     # assign drivers to teams (best 2 by overall whose team matches)
     for t in teams:
         t["driver_ids"] = []
@@ -713,6 +762,7 @@ def gen_indycar(year=2026):
     header = HEADER_TMPL.format(src=src)
     wb = openpyxl.load_workbook(path, data_only=True, read_only=True)
     y, tag = year, f"{year}{series}"
+    age_col = f"age {y}"  # year-specific age column name
 
     cal = Sheet(wb[pick_sheet(wb, (["calendar"],))], ["round"])
     setup_sn = pick_sheet(wb, (["setup", "profile"],), (["track", "setup"],))
@@ -841,7 +891,7 @@ def gen_indycar(year=2026):
             "name": name,
             "team_slug": slug(team_raw),
             "team_raw": team_raw,
-            "age": num(get(row, drv, "age 2026", "age_2026", "age")),
+            "age": num(get(row, drv, age_col, age_col.replace(" ", "_"), "age")),
             "nationality": str(get(row, drv, "nationality") or "").strip(),
             "skills": sk,
             "qualifying": scale10(get(row, drv, "qualifying"), overall),
@@ -889,7 +939,7 @@ def gen_indycar(year=2026):
         context = str(get(row, mkt, "current status", "current_status") or "").strip()
         status = str(get(row, mkt, "market status", "market_status") or "Senior").strip()
         potential = scale10(get(row, mkt, "potential"), r1(min(10, overall + 0.4)))
-        age = int(num(get(row, mkt, "age 2026", "age_2026", "age")) or 0)
+        age = int(num(get(row, mkt, age_col, age_col.replace(" ", "_"), "age")) or 0)
         market.append({
             "id": f"mkt-{tag}-{slug(name)}",
             "name": name, "age": age,
@@ -928,7 +978,7 @@ def gen_indycar(year=2026):
         }
         overall = avg(oval, road, rawpace, racecraft)
         potential = scale10(get(row, yth, "potential"), r1(min(10, overall + 1)))
-        age = num(get(row, yth, "age 2026", "age_2026", "age"))
+        age = num(get(row, yth, age_col, age_col.replace(" ", "_"), "age"))
         youth.append({
             "id": f"yth-{tag}-{slug(name)}",
             "name": name, "age": int(age or 0),
@@ -950,7 +1000,7 @@ def gen_indycar(year=2026):
 
     wb.close()
     write_ts(y, src, header, tracks, teams, drivers, market, youth, budget_for,
-             difficulty, series=series, points_id="pts-indycar-2026")
+             difficulty, series=series, points_id=f"pts-indycar-{y}")
     print(f"OK {series} {y}: tracks={len(tracks)} teams={len(teams)} drivers={len(drivers)} market={len(market)} youth={len(youth)}")
     if unassigned:
         print(f"   (drivers not seated: {unassigned})")
@@ -1162,7 +1212,11 @@ def write_ts(y, src, header, tracks, teams, drivers, market, youth, budget_for,
 def main():
     args = [a.lower() for a in sys.argv[1:]]
     if "indycar" in args:
-        gen_indycar(2026)
+        years = [int(a) for a in sys.argv[1:] if a.isdigit()]
+        if not years:
+            years = [2026]
+        for y in years:
+            gen_indycar(y)
         return
     years = [int(a) for a in sys.argv[1:] if a.isdigit()]
     if not years and os.environ.get("YEAR"):

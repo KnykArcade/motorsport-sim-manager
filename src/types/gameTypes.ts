@@ -324,6 +324,27 @@ export type DevelopmentCategory =
   | 'Facilities'
   | 'Research';
 
+export type ProjectRiskLevel = 'Safe' | 'Standard' | 'Aggressive' | 'Experimental';
+
+export type ProjectSize = 'Small' | 'Medium' | 'Major' | 'Experimental';
+
+export type DevelopmentOutcome =
+  | 'GreatSuccess'
+  | 'FullSuccess'
+  | 'PartialSuccess'
+  | 'MinorSuccess'
+  | 'Failed'
+  | 'RareBackfire';
+
+export type DevelopmentOutcomeResult = {
+  outcome: DevelopmentOutcome;
+  expectedGain: Partial<CarRatings>;
+  actualGain: Partial<CarRatings>;
+  sideEffects?: Partial<CarRatings>;
+  label: string;
+  description: string;
+};
+
 export type DevelopmentProject = {
   id: string;
   name: string;
@@ -339,6 +360,13 @@ export type DevelopmentProject = {
   carryoverRate: number; // 0-1
   regulationSensitivity: number; // 0-1
   risk?: string;
+  riskLevel?: ProjectRiskLevel;
+  projectSize?: ProjectSize;
+  relevantFacilityTypes?: string[];
+  outcomeResult?: DevelopmentOutcomeResult;
+  rushed?: boolean;
+  facilityLevelAtStart?: number;
+  adjustedDurationRaces?: number;
 };
 
 // ---------------------------------------------------------------------------

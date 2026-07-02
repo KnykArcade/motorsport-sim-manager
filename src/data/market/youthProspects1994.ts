@@ -24,7 +24,7 @@ export const youthProspects1994: YouthProspect[] = [
     signingCost: 0.5,
     yearlyAcademyCost: 0.3,
     riskLevel: 'Medium',
-    suggestedPath: 'Formula Ford → German F3 → F3000',
+    suggestedPath: 'Formula Ford  German F3  F3000',
     notes: 'Advanced youth prospect; close to F1 pathway.',
   },
   {
@@ -47,12 +47,12 @@ export const youthProspects1994: YouthProspect[] = [
     signingCost: 0.5,
     yearlyAcademyCost: 0.3,
     riskLevel: 'Medium',
-    suggestedPath: 'Karting → Formula Ford → F3',
+    suggestedPath: 'Karting  Formula Ford  F3',
     notes: 'Elite long-term wonderkid.',
   },
   {
     id: 'yth-1994-kimi-raikkonen',
-    name: 'Kimi Räikkönen',
+    name: 'Kimi Raikkonen',
     age: 14,
     birthYear: 1979,
     nationality: 'Finland',
@@ -70,7 +70,7 @@ export const youthProspects1994: YouthProspect[] = [
     signingCost: 0.5,
     yearlyAcademyCost: 0.3,
     riskLevel: 'High',
-    suggestedPath: 'Karting → Formula Renault → F3',
+    suggestedPath: 'Karting  Formula Renault  F3',
     notes: 'Very raw but huge natural pace ceiling.',
   },
   {
@@ -93,7 +93,7 @@ export const youthProspects1994: YouthProspect[] = [
     signingCost: 0.5,
     yearlyAcademyCost: 0.3,
     riskLevel: 'High',
-    suggestedPath: 'Karting → Spanish junior formulas → F3000',
+    suggestedPath: 'Karting  Spanish junior formulas  F3000',
     notes: 'Elite racecraft/potential if developed patiently.',
   },
   {
@@ -116,7 +116,7 @@ export const youthProspects1994: YouthProspect[] = [
     signingCost: 0.5,
     yearlyAcademyCost: 0.3,
     riskLevel: 'High',
-    suggestedPath: 'Karting → Formula Chevrolet → F3',
+    suggestedPath: 'Karting  Formula Chevrolet  F3',
     notes: 'Fast Brazilian karting prospect.',
   },
   {
@@ -139,7 +139,7 @@ export const youthProspects1994: YouthProspect[] = [
     signingCost: 0.5,
     yearlyAcademyCost: 0.3,
     riskLevel: 'Medium',
-    suggestedPath: 'Formula Ford → British F3 → F3000',
+    suggestedPath: 'Formula Ford  British F3  F3000',
     notes: 'Tall, determined, good endurance profile.',
   },
   {
@@ -162,7 +162,7 @@ export const youthProspects1994: YouthProspect[] = [
     signingCost: 0.5,
     yearlyAcademyCost: 0.3,
     riskLevel: 'High',
-    suggestedPath: 'Karting → British junior formulas',
+    suggestedPath: 'Karting  British junior formulas',
     notes: 'Late/unique path; high aggression and sponsor upside.',
   },
   {
@@ -185,7 +185,7 @@ export const youthProspects1994: YouthProspect[] = [
     signingCost: 0.5,
     yearlyAcademyCost: 0.3,
     riskLevel: 'Medium',
-    suggestedPath: 'Karting → Formula Ford → F3',
+    suggestedPath: 'Karting  Formula Ford  F3',
     notes: 'Useful long-term test/development profile.',
   },
   {
@@ -208,12 +208,12 @@ export const youthProspects1994: YouthProspect[] = [
     signingCost: 0.5,
     yearlyAcademyCost: 0.3,
     riskLevel: 'Medium',
-    suggestedPath: 'Karting → Italian F3/F3000',
+    suggestedPath: 'Karting  Italian F3/F3000',
     notes: 'Highly rated karting/junior prospect.',
   },
   {
     id: 'yth-1994-sebastien-bourdais',
-    name: 'Sébastien Bourdais',
+    name: 'Sebastien Bourdais',
     age: 15,
     birthYear: 1979,
     nationality: 'France',
@@ -231,7 +231,7 @@ export const youthProspects1994: YouthProspect[] = [
     signingCost: 0.5,
     yearlyAcademyCost: 0.3,
     riskLevel: 'Medium',
-    suggestedPath: 'Karting → French junior formulas',
+    suggestedPath: 'Karting  French junior formulas',
     notes: 'Excellent long-term racecraft profile.',
   },
   {
@@ -254,7 +254,7 @@ export const youthProspects1994: YouthProspect[] = [
     signingCost: 0.5,
     yearlyAcademyCost: 0.3,
     riskLevel: 'High',
-    suggestedPath: 'Karting → Formula BMW → F3',
+    suggestedPath: 'Karting  Formula BMW  F3',
     notes: 'Very long-term German prospect.',
   },
   {
@@ -277,7 +277,7 @@ export const youthProspects1994: YouthProspect[] = [
     signingCost: 0.5,
     yearlyAcademyCost: 0.3,
     riskLevel: 'High',
-    suggestedPath: 'Karting → Formula Renault → F3',
+    suggestedPath: 'Karting  Formula Renault  F3',
     notes: 'Long-term Finnish prospect.',
   },
   {
@@ -300,7 +300,7 @@ export const youthProspects1994: YouthProspect[] = [
     signingCost: 0.5,
     yearlyAcademyCost: 0.3,
     riskLevel: 'High',
-    suggestedPath: 'Karting → Formula Renault → F3',
+    suggestedPath: 'Karting  Formula Renault  F3',
     notes: 'Ultra-long-term elite prospect; not near F1 ready.',
   },
   {
@@ -323,7 +323,7 @@ export const youthProspects1994: YouthProspect[] = [
     signingCost: 0.5,
     yearlyAcademyCost: 0.3,
     riskLevel: 'High',
-    suggestedPath: 'Karting → Formula BMW → F3',
+    suggestedPath: 'Karting  Formula BMW  F3',
     notes: 'Ultra-long-term elite family-name prospect.',
   },
   {
@@ -346,7 +346,7 @@ export const youthProspects1994: YouthProspect[] = [
     signingCost: 0.5,
     yearlyAcademyCost: 0.3,
     riskLevel: 'High',
-    suggestedPath: 'Karting → Italian junior formulas',
+    suggestedPath: 'Karting  Italian junior formulas',
     notes: 'Ultra-long-term high-upside prospect.',
   },
   {
@@ -369,7 +369,7 @@ export const youthProspects1994: YouthProspect[] = [
     signingCost: 0.5,
     yearlyAcademyCost: 0.3,
     riskLevel: 'Medium',
-    suggestedPath: 'Karting → Italian junior formulas',
+    suggestedPath: 'Karting  Italian junior formulas',
     notes: 'Good karting talent; needs careful path.',
   },
   {
@@ -392,7 +392,7 @@ export const youthProspects1994: YouthProspect[] = [
     signingCost: 0.5,
     yearlyAcademyCost: 0.3,
     riskLevel: 'Medium',
-    suggestedPath: 'Karting → Formula Ford → F3',
+    suggestedPath: 'Karting  Formula Ford  F3',
     notes: 'Solid Dutch prospect.',
   },
   {
@@ -415,7 +415,7 @@ export const youthProspects1994: YouthProspect[] = [
     signingCost: 0.5,
     yearlyAcademyCost: 0.3,
     riskLevel: 'Medium',
-    suggestedPath: 'Formula Ford → F3/F3000',
+    suggestedPath: 'Formula Ford  F3/F3000',
     notes: 'Portuguese sponsor/development option.',
   },
   {
@@ -438,7 +438,7 @@ export const youthProspects1994: YouthProspect[] = [
     signingCost: 0.5,
     yearlyAcademyCost: 0.3,
     riskLevel: 'Medium',
-    suggestedPath: 'Karting → junior formulas',
+    suggestedPath: 'Karting  junior formulas',
     notes: 'Useful academy depth.',
   },
   {
@@ -461,7 +461,7 @@ export const youthProspects1994: YouthProspect[] = [
     signingCost: 0.5,
     yearlyAcademyCost: 0.3,
     riskLevel: 'Medium',
-    suggestedPath: 'Formula Vauxhall → F3 → F3000',
+    suggestedPath: 'Formula Vauxhall  F3  F3000',
     notes: 'Tall British prospect with long-term potential.',
   },
 ];

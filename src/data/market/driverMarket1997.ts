@@ -190,7 +190,7 @@ export const driverMarket1997: MarketDriver[] = [
   },
   {
     id: 'mkt-1997-jorg-muller',
-    name: 'Jörg Müller',
+    name: 'Jorg Muller',
     age: 27,
     nationality: 'Germany',
     context: 'International F3000 / Test',
@@ -305,7 +305,7 @@ export const driverMarket1997: MarketDriver[] = [
   },
   {
     id: 'mkt-1997-stephane-sarrazin',
-    name: 'Stéphane Sarrazin',
+    name: 'Stephane Sarrazin',
     age: 22,
     nationality: 'France',
     context: 'F3000',
@@ -328,7 +328,7 @@ export const driverMarket1997: MarketDriver[] = [
   },
   {
     id: 'mkt-1997-gonzalo-rodriguez',
-    name: 'Gonzalo Rodríguez',
+    name: 'Gonzalo Rodriguez',
     age: 26,
     nationality: 'Uruguay',
     context: 'International F3000',
@@ -535,7 +535,7 @@ export const driverMarket1997: MarketDriver[] = [
   },
   {
     id: 'mkt-1997-marc-gene',
-    name: 'Marc Gené',
+    name: 'Marc Gene',
     age: 23,
     nationality: 'Spain',
     context: 'F3000 / Open Wheel',

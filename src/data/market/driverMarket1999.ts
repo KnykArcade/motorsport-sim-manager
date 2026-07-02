@@ -190,7 +190,7 @@ export const driverMarket1999: MarketDriver[] = [
   },
   {
     id: 'mkt-1999-stephane-sarrazin',
-    name: 'Stéphane Sarrazin',
+    name: 'Stephane Sarrazin',
     age: 23,
     nationality: 'FRA',
     context: 'F3000/Test',
@@ -581,7 +581,7 @@ export const driverMarket1999: MarketDriver[] = [
   },
   {
     id: 'mkt-1999-jorg-muller',
-    name: 'Jörg Müller',
+    name: 'Jorg Muller',
     age: 29,
     nationality: 'GER',
     context: 'Testing/Sports Cars',
@@ -650,7 +650,7 @@ export const driverMarket1999: MarketDriver[] = [
   },
   {
     id: 'mkt-1999-oriol-servia',
-    name: 'Oriol Servià',
+    name: 'Oriol Servia',
     age: 25,
     nationality: 'ESP',
     context: 'Indy Lights',

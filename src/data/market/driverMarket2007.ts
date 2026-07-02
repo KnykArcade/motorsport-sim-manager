@@ -259,7 +259,7 @@ export const driverMarket2007: MarketDriver[] = [
   },
   {
     id: 'mkt-2007-sebastien-bourdais',
-    name: 'Sébastien Bourdais',
+    name: 'Sebastien Bourdais',
     age: 28,
     nationality: 'FRA',
     context: 'Champ Car',
@@ -351,7 +351,7 @@ export const driverMarket2007: MarketDriver[] = [
   },
   {
     id: 'mkt-2007-nico-hulkenberg',
-    name: 'Nico Hülkenberg',
+    name: 'Nico Hulkenberg',
     age: 19,
     nationality: 'GER',
     context: 'F3/Junior',
@@ -374,7 +374,7 @@ export const driverMarket2007: MarketDriver[] = [
   },
   {
     id: 'mkt-2007-sebastien-buemi',
-    name: 'Sébastien Buemi',
+    name: 'Sebastien Buemi',
     age: 18,
     nationality: 'SUI',
     context: 'F3/Red Bull Junior',
