@@ -24,6 +24,12 @@ import {
 import { buildRaceContext, playerTunedSetups } from './raceSetup';
 import { createNewGame, type NewGameOptions } from './initialCareer';
 import { advanceSeason } from './seasonRollover';
+import {
+  canEnterRaceWeekend,
+  enforceF1Rosters,
+  isPreseason,
+  signRaceDriver,
+} from './rosterEnforcement';
 import { getMaxQualifiers, getStaffPool } from '../data';
 import { careerMarketBundle } from '../sim/careerMarketEngine';
 import { marketDriverToDriver, signProspectToAcademy } from '../sim/driverMarketEngine';
@@ -152,6 +158,7 @@ export type GameAction =
   | { type: 'PROMOTE_THIRD_DRIVER'; seatDriverId: string; thirdDriverId: string }
   | { type: 'ADVANCE_SEASON' }
   | { type: 'ADVANCE_RACE' }
+  | { type: 'SIGN_RACE_DRIVER'; marketId: string }
   | { type: 'SELECT_RACE_WEEKEND_PACKAGE'; packageType: RaceWeekendPackageType };
 
 // Run one practice session for the player's drivers: simulate each assignment,
@@ -376,11 +383,22 @@ export function gameReducer(state: GameState | null, action: GameAction): GameSt
 
     case 'RUN_QUALIFYING': {
       if (!state) return state;
+      // Pre-Race-1 F1 roster enforcement: block the player from running
+      // qualifying if their team has fewer than 2 active race drivers.
+      const entryCheck = canEnterRaceWeekend(state);
+      if (!entryCheck.allowed) return state;
+      // Auto-fill AI teams before the first race weekend.
+      if (isPreseason(state)) {
+        const enforcement = enforceF1Rosters(state);
+        state = enforcement.state;
+      }
       return runQualifying(state, action.decisions);
     }
 
     case 'RUN_RACE': {
       if (!state) return state;
+      const entryCheck = canEnterRaceWeekend(state);
+      if (!entryCheck.allowed) return state;
       return runRace(state, action.decisions);
     }
 
@@ -560,6 +578,11 @@ export function gameReducer(state: GameState | null, action: GameAction): GameSt
       if (!state) return state;
       // Clear the weekend package when advancing to the next race.
       return { ...state, raceWeekendPackage: undefined, aiRaceWeekendPackages: undefined };
+    }
+
+    case 'SIGN_RACE_DRIVER': {
+      if (!state) return state;
+      return signRaceDriver(state, action.marketId);
     }
 
     case 'SELECT_RACE_WEEKEND_PACKAGE': {

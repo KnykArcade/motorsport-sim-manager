@@ -51,7 +51,7 @@ describe('F1 roster validation', () => {
         }
       });
 
-      it('no driver is assigned to more than 2 teams (mid-season swaps allowed)', () => {
+      it('no driver is assigned as a starting race driver to more than 1 F1 team', () => {
         const driverToTeams = new Map<string, string[]>();
         for (const team of bundle!.teams) {
           for (const did of team.driverIds) {
@@ -61,12 +61,12 @@ describe('F1 roster validation', () => {
           }
         }
         for (const [did, teams] of driverToTeams) {
-          // A driver may appear on 2 teams if they swapped mid-season.
-          // 3+ team assignments would indicate a data error.
+          // A driver may only be on 1 starting team. Mid-season swaps belong
+          // in race entrant history / market context, not starting rosters.
           expect(
             teams.length,
-            `Driver ${did} assigned to ${teams.length} teams: ${teams.join(', ')}`
-          ).toBeLessThanOrEqual(2);
+            `Driver ${did} assigned to ${teams.length} starting teams: ${teams.join(', ')}`
+          ).toBeLessThanOrEqual(1);
         }
       });
 
