@@ -78,8 +78,10 @@ export function RecommendationsPanel({
   const grouped = pendingCount > 1;
 
   return (
-    <div className={`rounded-lg border border-t-2 border-slate-700/60 bg-[#111725] ${MODE_BORDER[mode]} ${className}`}>
-      <div className="flex items-center justify-between border-b border-slate-700/50 px-2.5 py-1.5">
+    <div
+      className={`flex flex-col overflow-hidden rounded-lg border border-t-2 border-slate-700/60 bg-[#111725] ${MODE_BORDER[mode]} ${className}`}
+    >
+      <div className="flex shrink-0 items-center justify-between border-b border-slate-700/50 px-2.5 py-1">
         <span className="truncate text-[11px] font-semibold uppercase tracking-wider text-slate-300">
           ⬡ Data Analytics — {MODE_LABEL[mode]}
         </span>
@@ -97,13 +99,14 @@ export function RecommendationsPanel({
       {monitor.drivers.length === 0 ? (
         <p className="p-2 text-[10px] text-slate-500">No player cars running — monitoring paused.</p>
       ) : (
-        <div className="space-y-1.5 p-2">
+        <div className="min-h-0 flex-1 space-y-1 overflow-y-auto p-1.5">
           {monitor.drivers.map((d) => (
             <DriverCell
               key={d.driverId}
               driver={d}
               name={nameOf(d.driverId)}
               cell={driverPanelCell(d.driverId, recs, monitor.recent, currentLap)}
+              compact={grouped}
               onAccept={onAccept}
               onModify={onModify}
               onIgnore={onIgnore}
@@ -165,6 +168,7 @@ function DriverCell({
   driver,
   name,
   cell,
+  compact = false,
   onAccept,
   onModify,
   onIgnore,
@@ -173,6 +177,7 @@ function DriverCell({
   driver: DriverMonitor;
   name: string;
   cell: DriverPanelCell;
+  compact?: boolean; // double-decision: drop the extra Let Crew Decide row / clamp copy
   onAccept: (rec: AnalyticsRecommendation) => void;
   onModify: (rec: AnalyticsRecommendation, action: RecAction) => void;
   onIgnore: (rec: AnalyticsRecommendation) => void;
@@ -182,7 +187,7 @@ function DriverCell({
   const rec = cell.state === 'decision' || cell.state === 'active' ? cell.rec : null;
 
   return (
-    <div className={`rounded-md border p-2 ${CELL_BORDER[cell.state]}`}>
+    <div className={`rounded-md border p-1.5 ${CELL_BORDER[cell.state]}`}>
       <div className="flex items-center justify-between gap-2">
         <span className="flex min-w-0 items-baseline gap-1.5">
           {driver.position != null && (
@@ -200,7 +205,9 @@ function DriverCell({
 
       {cell.state === 'decision' && (
         <div className="mt-1">
-          <p className="text-[10px] leading-snug text-slate-300 line-clamp-2">{cell.rec.issue}</p>
+          <p className={`text-[10px] leading-snug text-slate-300 ${compact ? 'line-clamp-1' : 'line-clamp-2'}`}>
+            {cell.rec.issue}
+          </p>
           <p className="mt-0.5 text-[10px] font-medium text-slate-100">
             ▸ {cell.rec.recommendedAction}
             {cell.rec.suggestedDuration ? ` (${cell.rec.suggestedDuration})` : ''}
@@ -229,12 +236,15 @@ function DriverCell({
                   Ignore
                 </button>
               </div>
-              <button
-                onClick={() => onLetCrewDecide(cell.rec)}
-                className="mt-1 w-full rounded border border-slate-700 py-0.5 text-[10px] font-semibold text-slate-300 hover:bg-slate-800"
-              >
-                Let Crew Decide
-              </button>
+              {/* In a double decision Accept All / Ignore All cover the crew shortcut. */}
+              {!compact && (
+                <button
+                  onClick={() => onLetCrewDecide(cell.rec)}
+                  className="mt-1 w-full rounded border border-slate-700 py-0.5 text-[10px] font-semibold text-slate-300 hover:bg-slate-800"
+                >
+                  Let Crew Decide
+                </button>
+              )}
             </>
           ) : (
             <div className="mt-1.5 space-y-1">
@@ -284,7 +294,7 @@ function DriverCell({
       )}
 
       {cell.state === 'recent' && (
-        <div className="mt-1 space-y-0.5">
+        <div className="mt-0.5 space-y-0.5">
           <p className="text-[10px] text-slate-300">
             Lap {cell.recent.lap} — {kindLabel(cell.recent.kind)} recommendation ignored.
           </p>
@@ -297,7 +307,7 @@ function DriverCell({
       )}
 
       {cell.state === 'monitoring' && (
-        <div className="mt-1 space-y-0.5">
+        <div className="mt-0.5">
           <p className="text-[10px] text-slate-300">No decision pending · plan on target</p>
           <MonitorFootline driver={driver} />
         </div>
