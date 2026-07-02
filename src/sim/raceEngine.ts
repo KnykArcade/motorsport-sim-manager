@@ -186,6 +186,7 @@ export function computeRaceOutcome(context: RaceContext): RaceOutcome {
     const grid = gridByDriver[e.driver.id] ?? context.entrants.length;
 
     const teamRating = context.teamRaceOps[e.driver.teamId];
+    const pkgEffects = context.packageEffectsByTeam?.[e.driver.teamId];
     const { score, breakdown } = calculateRacePace(
       e.driver,
       e.car,
@@ -195,6 +196,9 @@ export function computeRaceOutcome(context: RaceContext): RaceOutcome {
       instruction,
       teamRating,
     );
+
+    // Apply Race Weekend Package pace modifier.
+    const packagePaceBonus = pkgEffects?.paceModifier ?? 0;
 
     // Grid position matters but the race can reorder things. Tracks that are
     // hard to overtake at (low overtaking racecraft) make track position
@@ -213,17 +217,21 @@ export function computeRaceOutcome(context: RaceContext): RaceOutcome {
     // Per-car weekend operations execution (pit/reliability/strategy). Zero-mean
     // so it adds consistency-driven variation, not average pace; weaker Race
     // Operations teams swing more.
-    const opsForm = operationsForm(context.seed, e.driver.teamId, e.driver.id, teamRating);
+    const opsForm = operationsForm(context.seed, e.driver.teamId, e.driver.id, teamRating)
+      + (pkgEffects ? (pkgEffects.reliabilityPrep + pkgEffects.pitCrewPrep) / 2 : 0);
 
     // Stress to reliability from aggressive choices; the weekend's operations
     // execution (reliability management) shifts the DNF risk up or down.
     const stress = Math.max(0, instruction.reliabilityStressModifier + setup.riskModifier * 0.2);
     // Mechanical-failure risk, era-scaled down to cut reliability retirements.
+    // Package reliability prep is already folded into opsForm above.
     const relRisk =
       calculateReliabilityRisk(e.car, context.track, setup, stress, opsForm) *
       eraReliabilityScale(context.year);
-    // Crash/incident risk, separate from mechanical failure.
-    const crashRisk = calculateCrashRisk(e.driver, context.track, instruction.mistakeModifier);
+    // Crash/incident risk, separate from mechanical failure. Package can reduce
+    // crash risk (Conservative) or increase it (Budget).
+    const crashRiskBase = calculateCrashRisk(e.driver, context.track, instruction.mistakeModifier);
+    const crashRisk = crashRiskBase * (pkgEffects?.crashRiskMultiplier ?? 1);
     const mistakeRisk = calculateMistakeRisk(
       e.driver,
       context.track,
@@ -234,7 +242,7 @@ export function computeRaceOutcome(context: RaceContext): RaceOutcome {
     const incidents: string[] = [];
     let status: RaceResult['status'] = 'Finished';
     let lapsCompleted = totalLaps;
-    let finalScore = score + gridBonus + form + driverSwing;
+    let finalScore = score + gridBonus + form + driverSwing + packagePaceBonus;
 
     // Total retirement probability, then the *cause* is drawn from the era
     // profile (nudged by car/driver/track), so the season-wide DNF cause split

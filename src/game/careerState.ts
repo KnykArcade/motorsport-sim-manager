@@ -37,6 +37,7 @@ import type { ScoutingState } from '../types/scoutingTypes';
 import type { DriverDevelopmentCurve } from '../types/developmentCurveTypes';
 import type { UniverseHistory } from '../types/universeTypes';
 import type { AITeamState } from '../types/aiTeamTypes';
+import type { RaceWeekendPackageSelection } from '../types/raceWeekendPackageTypes';
 
 export type GameState = {
   id: string;
@@ -156,6 +157,14 @@ export type GameState = {
 
   randomSeed: string;
   seasonComplete: boolean;
+
+  // Race Weekend Package selection for the current weekend (player team).
+  // Optional for save compatibility; defaults to Standard when absent.
+  raceWeekendPackage?: RaceWeekendPackageSelection;
+  // History of package selections across the season.
+  raceWeekendPackageHistory?: RaceWeekendPackageSelection[];
+  // AI team package selections for the current weekend, keyed by teamId.
+  aiRaceWeekendPackages?: Record<string, RaceWeekendPackageSelection>;
 };
 
 export function teamById(state: GameState, id: string): Team | undefined {

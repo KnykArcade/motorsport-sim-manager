@@ -140,6 +140,10 @@ type Entry = {
   teamRating: number;
   // Per-team weekend form for this qualifying weekend (both cars share it).
   weekendForm: number;
+  // Race Weekend Package pace modifier (0 = no effect).
+  packagePaceBonus: number;
+  // Race Weekend Package crash risk multiplier (1 = no effect).
+  packageCrashRiskMultiplier: number;
 };
 
 type LapOutcome = {
@@ -162,7 +166,7 @@ function simulateLap(
   const { driver, car, setup, runPlan } = entry;
   const { score, breakdown } = calculateQualifyingPace(driver, car, track, setup, runPlan, entry.teamRating);
 
-  let base = score + evolution + entry.weekendForm;
+  let base = score + evolution + entry.weekendForm + entry.packagePaceBonus;
 
   // Weather: wet/changeable sessions reward adaptable, composed drivers and add
   // chaos. Drivers who banked wet running in practice cope better.
@@ -183,7 +187,7 @@ function simulateLap(
   const risk = calculateQualifyingRisk(driver, car, track, runPlan);
   const riskMult =
     (1 + (entry.runs - 1) * 0.18) * (entry.conserve ? 0.82 : 1) * (1 + wetness * 0.6);
-  let crash = risk.crash * riskMult;
+  let crash = risk.crash * riskMult * entry.packageCrashRiskMultiplier;
   let mistake = risk.mistake * riskMult;
   if (entry.wetReady) {
     crash *= 0.85;
@@ -295,6 +299,7 @@ export function simulateQualifying(context: QualifyingContext): {
     const teamRating = context.teamRaceOps[e.driver.teamId];
     const formRng = createSeededRandom(deriveSeed(context.seed, 'qualiform', e.driver.teamId));
     const formSpread = (WEEKEND_FORM_SPREAD + Math.max(0, 5 - teamRating) * FORM_OPS_FACTOR) * 0.6;
+    const pkgEffects = context.packageEffectsByTeam?.[e.driver.teamId];
     return {
       driver: e.driver,
       car: e.car,
@@ -305,6 +310,8 @@ export function simulateQualifying(context: QualifyingContext): {
       wetReady: wetReady.has(e.driver.id),
       teamRating,
       weekendForm: formRng.variance(formSpread),
+      packagePaceBonus: pkgEffects?.paceModifier ?? 0,
+      packageCrashRiskMultiplier: pkgEffects?.crashRiskMultiplier ?? 1,
     };
   });
 
