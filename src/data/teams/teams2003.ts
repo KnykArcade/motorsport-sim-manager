@@ -99,7 +99,7 @@ export const teams2003: Team[] = [
     shortName: 'JAG',
     country: 'United Kingdom',
     carId: 'car-jaguar-cosworth-2003',
-    driverIds: ['d-2003-mark-webber', 'd-2003-justin-wilson'],
+    driverIds: ['d-2003-mark-webber'],
     budget: 54000000,
     reputation: 50,
     raceOperations: 5.1,

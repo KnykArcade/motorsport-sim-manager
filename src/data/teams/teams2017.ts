@@ -84,7 +84,7 @@ export const teams2017: Team[] = [
     name: 'Renault',
     shortName: 'REN',
     carId: 'car-renault-2017',
-    driverIds: ['d-2017-nico-hulkenberg', 'd-2017-carlos-sainz'],
+    driverIds: ['d-2017-nico-hulkenberg'],
     budget: 60000000,
     reputation: 65,
     raceOperations: 7.3,

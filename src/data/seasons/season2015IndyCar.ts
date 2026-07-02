@@ -12,7 +12,7 @@ export const calendar2015IndyCar: Race[] = [
     trackId: 'streets-of-st-petersburg-2015IndyCar',
     trackName: 'Streets of St. Petersburg',
     laps: 100,
-    distanceKm: 290.0,
+    distanceKm: 289.7,
     completed: false,
   },
   {
@@ -21,8 +21,8 @@ export const calendar2015IndyCar: Race[] = [
     gpName: 'Indy Grand Prix of Louisiana',
     trackId: 'nola-motorsports-park-2015IndyCar',
     trackName: 'NOLA Motorsports Park',
-    laps: 200,
-    distanceKm: 880.0,
+    laps: 75,
+    distanceKm: 276.4,
     completed: false,
   },
   {
@@ -31,8 +31,8 @@ export const calendar2015IndyCar: Race[] = [
     gpName: 'Toyota Grand Prix of Long Beach',
     trackId: 'streets-of-long-beach-2015IndyCar',
     trackName: 'Streets of Long Beach',
-    laps: 50,
-    distanceKm: 160.0,
+    laps: 80,
+    distanceKm: 253.4,
     completed: false,
   },
   {
@@ -42,7 +42,7 @@ export const calendar2015IndyCar: Race[] = [
     trackId: 'barber-motorsports-park-2015IndyCar',
     trackName: 'Barber Motorsports Park',
     laps: 90,
-    distanceKm: 342.0,
+    distanceKm: 344.7,
     completed: false,
   },
   {
@@ -51,8 +51,8 @@ export const calendar2015IndyCar: Race[] = [
     gpName: 'Grand Prix of Indianapolis',
     trackId: 'indianapolis-motor-speedway-road-course-2015IndyCar',
     trackName: 'Indianapolis Motor Speedway Road Course',
-    laps: 85,
-    distanceKm: 331.5,
+    laps: 82,
+    distanceKm: 321.9,
     completed: false,
   },
   {
@@ -62,7 +62,7 @@ export const calendar2015IndyCar: Race[] = [
     trackId: 'indianapolis-motor-speedway-2015IndyCar',
     trackName: 'Indianapolis Motor Speedway',
     laps: 200,
-    distanceKm: 800.0,
+    distanceKm: 804.7,
     completed: false,
   },
   {
@@ -72,7 +72,7 @@ export const calendar2015IndyCar: Race[] = [
     trackId: 'raceway-at-belle-isle-park-2015IndyCar',
     trackName: 'Raceway at Belle Isle Park',
     laps: 70,
-    distanceKm: 266.0,
+    distanceKm: 239.4,
     completed: false,
   },
   {
@@ -81,8 +81,8 @@ export const calendar2015IndyCar: Race[] = [
     gpName: 'Detroit Grand Prix - Race 2',
     trackId: 'raceway-at-belle-isle-park-2015IndyCar',
     trackName: 'Raceway at Belle Isle Park',
-    laps: 55,
-    distanceKm: 209.0,
+    laps: 70,
+    distanceKm: 239.4,
     completed: false,
   },
   {
@@ -91,8 +91,8 @@ export const calendar2015IndyCar: Race[] = [
     gpName: 'Firestone 600',
     trackId: 'texas-motor-speedway-2015IndyCar',
     trackName: 'Texas Motor Speedway',
-    laps: 250,
-    distanceKm: 575.0,
+    laps: 248,
+    distanceKm: 580.7,
     completed: false,
   },
   {
@@ -101,8 +101,8 @@ export const calendar2015IndyCar: Race[] = [
     gpName: 'Honda Indy Toronto',
     trackId: 'streets-of-toronto-2015IndyCar',
     trackName: 'Streets of Toronto',
-    laps: 300,
-    distanceKm: 840.0,
+    laps: 85,
+    distanceKm: 240.1,
     completed: false,
   },
   {
@@ -111,8 +111,8 @@ export const calendar2015IndyCar: Race[] = [
     gpName: 'MAVTV 500',
     trackId: 'auto-club-speedway-2015IndyCar',
     trackName: 'Auto Club Speedway',
-    laps: 85,
-    distanceKm: 272.0,
+    laps: 250,
+    distanceKm: 804.7,
     completed: false,
   },
   {
@@ -121,8 +121,8 @@ export const calendar2015IndyCar: Race[] = [
     gpName: 'ABC Supply Wisconsin 250',
     trackId: 'milwaukee-mile-2015IndyCar',
     trackName: 'Milwaukee Mile',
-    laps: 90,
-    distanceKm: 144.0,
+    laps: 250,
+    distanceKm: 408.4,
     completed: false,
   },
   {
@@ -131,8 +131,8 @@ export const calendar2015IndyCar: Race[] = [
     gpName: 'Iowa Corn 300',
     trackId: 'iowa-speedway-2015IndyCar',
     trackName: 'Iowa Speedway',
-    laps: 55,
-    distanceKm: 77.0,
+    laps: 300,
+    distanceKm: 422.5,
     completed: false,
   },
   {
@@ -142,7 +142,7 @@ export const calendar2015IndyCar: Race[] = [
     trackId: 'mid-ohio-sports-car-course-2015IndyCar',
     trackName: 'Mid-Ohio Sports Car Course',
     laps: 85,
-    distanceKm: 306.0,
+    distanceKm: 308.9,
     completed: false,
   },
   {
@@ -152,7 +152,7 @@ export const calendar2015IndyCar: Race[] = [
     trackId: 'pocono-raceway-2015IndyCar',
     trackName: 'Pocono Raceway',
     laps: 200,
-    distanceKm: 800.0,
+    distanceKm: 804.7,
     completed: false,
   },
   {
@@ -161,8 +161,8 @@ export const calendar2015IndyCar: Race[] = [
     gpName: 'GoPro Grand Prix of Sonoma',
     trackId: 'sonoma-raceway-2015IndyCar',
     trackName: 'Sonoma Raceway',
-    laps: 55,
-    distanceKm: 209.0,
+    laps: 85,
+    distanceKm: 315.0,
     completed: false,
   },
 ];

@@ -112,11 +112,14 @@ class Sheet:
             na = norm(a)
             if na in self.idx:
                 return self.idx[na]
-        # substring fallback
+        # substring fallback: only match if alias is a full word in the
+        # column name (split on whitespace). This prevents false matches
+        # like "race" matching "race date".
         for a in aliases:
             na = norm(a)
             for k, v in self.idx.items():
-                if na == k or na in k.split():
+                kwords = k.split()
+                if na in kwords:
                     return v
         return None
 
@@ -1118,11 +1121,13 @@ def write_ts(y, src, header, tracks, teams, drivers, market, youth, budget_for,
             f.write(f"    trackId: {ts_str(t['id'])},\n")
             f.write(f"    trackName: {ts_str(t['name'])},\n")
             f.write(f"    laps: {laps_val},\n")
-            f.write(f"    distanceKm: {dist if dist is not None else 'undefined'},\n    completed: false,\n  }},\n")
+            dist_str = str(dist) if dist is not None else 'undefined'
+            f.write(f"    distanceKm: {dist_str},\n    completed: false,\n  }},\n")
             # Additional rounds (doubleheaders at same venue)
             for r in t.get("rounds", []):
                 r_dist = r.get("distanceKm") or (r1(t["km"] * r["laps"]) if (t["km"] and r.get("laps")) else None)
                 r_laps = int(r["laps"]) if r.get("laps") else 0
+                r_dist_str = str(r_dist) if r_dist is not None else 'undefined'
                 f.write("  {\n")
                 f.write(f"    id: {ts_str(f'r-{y}-' + str(r['round']))},\n")
                 f.write(f"    round: {r['round']},\n")
@@ -1130,7 +1135,7 @@ def write_ts(y, src, header, tracks, teams, drivers, market, youth, budget_for,
                 f.write(f"    trackId: {ts_str(t['id'])},\n")
                 f.write(f"    trackName: {ts_str(t['name'])},\n")
                 f.write(f"    laps: {r_laps},\n")
-                f.write(f"    distanceKm: {r_dist if r_dist is not None else 'undefined'},\n    completed: false,\n  }},\n")
+                f.write(f"    distanceKm: {r_dist_str},\n    completed: false,\n  }},\n")
         f.write("];\n\n")
         f.write(f"void tracks{tag};\n\n")
         sid = f"s-{y}-{series.lower()}"

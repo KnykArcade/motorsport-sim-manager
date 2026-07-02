@@ -358,7 +358,7 @@ export const drivers2025: Driver[] = [
     number: 13,
     nationality: 'JPN',
     age: 25,
-    teamId: 't-red-bull-racing',
+    teamId: 't-racing-bulls',
     ratings: {
       cornering: 8.1,
       braking: 8.1,

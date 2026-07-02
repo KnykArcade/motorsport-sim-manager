@@ -12,7 +12,7 @@ export const calendar2018: Race[] = [
     trackId: 'albert-park-2018',
     trackName: 'Albert Park',
     laps: 58,
-    distanceKm: 307.6,
+    distanceKm: 306.2,
     completed: false,
   },
   {
@@ -32,7 +32,7 @@ export const calendar2018: Race[] = [
     trackId: 'shanghai-international-circuit-2018',
     trackName: 'Shanghai International Circuit',
     laps: 56,
-    distanceKm: 305.3,
+    distanceKm: 310.4,
     completed: false,
   },
   {
@@ -41,8 +41,8 @@ export const calendar2018: Race[] = [
     gpName: 'Azerbaijan Grand Prix',
     trackId: 'baku-city-circuit-2018',
     trackName: 'Baku City Circuit',
-    laps: 53,
-    distanceKm: 318.2,
+    laps: 52,
+    distanceKm: 306.3,
     completed: false,
   },
   {
@@ -52,7 +52,7 @@ export const calendar2018: Race[] = [
     trackId: 'circuit-de-barcelona-catalunya-2018',
     trackName: 'Circuit de Barcelona-Catalunya',
     laps: 66,
-    distanceKm: 307.2,
+    distanceKm: 307.1,
     completed: false,
   },
   {
@@ -81,8 +81,8 @@ export const calendar2018: Race[] = [
     gpName: 'French Grand Prix',
     trackId: 'circuit-paul-ricard-2018',
     trackName: 'Circuit Paul Ricard',
-    laps: 51,
-    distanceKm: 297.9,
+    laps: 71,
+    distanceKm: 306.5,
     completed: false,
   },
   {
@@ -91,8 +91,8 @@ export const calendar2018: Race[] = [
     gpName: 'Austrian Grand Prix',
     trackId: 'red-bull-ring-2018',
     trackName: 'Red Bull Ring',
-    laps: 53,
-    distanceKm: 228.9,
+    laps: 71,
+    distanceKm: 306.5,
     completed: false,
   },
   {
@@ -111,8 +111,8 @@ export const calendar2018: Race[] = [
     gpName: 'German Grand Prix',
     trackId: 'hockenheimring-2018',
     trackName: 'Hockenheimring',
-    laps: 67,
-    distanceKm: 306.5,
+    laps: 70,
+    distanceKm: 306.7,
     completed: false,
   },
   {
@@ -121,8 +121,8 @@ export const calendar2018: Race[] = [
     gpName: 'Hungarian Grand Prix',
     trackId: 'hungaroring-2018',
     trackName: 'Hungaroring',
-    laps: 69,
-    distanceKm: 302.3,
+    laps: 70,
+    distanceKm: 306.7,
     completed: false,
   },
   {
@@ -142,7 +142,7 @@ export const calendar2018: Race[] = [
     trackId: 'autodromo-nazionale-monza-2018',
     trackName: 'Autodromo Nazionale Monza',
     laps: 53,
-    distanceKm: 307.0,
+    distanceKm: 306.7,
     completed: false,
   },
   {
@@ -152,7 +152,7 @@ export const calendar2018: Race[] = [
     trackId: 'marina-bay-street-circuit-2018',
     trackName: 'Marina Bay Street Circuit',
     laps: 58,
-    distanceKm: 293.7,
+    distanceKm: 308.4,
     completed: false,
   },
   {
@@ -162,7 +162,7 @@ export const calendar2018: Race[] = [
     trackId: 'sochi-autodrom-2018',
     trackName: 'Sochi Autodrom',
     laps: 53,
-    distanceKm: 309.9,
+    distanceKm: 307.8,
     completed: false,
   },
   {
@@ -172,7 +172,7 @@ export const calendar2018: Race[] = [
     trackId: 'suzuka-circuit-2018',
     trackName: 'Suzuka Circuit',
     laps: 53,
-    distanceKm: 307.8,
+    distanceKm: 307.5,
     completed: false,
   },
   {
@@ -192,7 +192,7 @@ export const calendar2018: Race[] = [
     trackId: 'autodromo-hermanos-rodriguez-2018',
     trackName: 'Autodromo Hermanos Rodriguez',
     laps: 71,
-    distanceKm: 305.6,
+    distanceKm: 305.4,
     completed: false,
   },
   {

@@ -12,7 +12,7 @@ export const calendar2006: Race[] = [
     trackId: 'bahrain-international-circuit-2006',
     trackName: 'Bahrain International Circuit',
     laps: 57,
-    distanceKm: undefined,
+    distanceKm: 308.5,
     completed: false,
   },
   {
@@ -22,7 +22,7 @@ export const calendar2006: Race[] = [
     trackId: 'sepang-international-circuit-2006',
     trackName: 'Sepang International Circuit',
     laps: 56,
-    distanceKm: undefined,
+    distanceKm: 310.4,
     completed: false,
   },
   {
@@ -32,7 +32,7 @@ export const calendar2006: Race[] = [
     trackId: 'albert-park-2006',
     trackName: 'Albert Park',
     laps: 57,
-    distanceKm: undefined,
+    distanceKm: 302.3,
     completed: false,
   },
   {
@@ -42,7 +42,7 @@ export const calendar2006: Race[] = [
     trackId: 'autodromo-enzo-e-dino-ferrari-2006',
     trackName: 'Autodromo Enzo e Dino Ferrari',
     laps: 62,
-    distanceKm: undefined,
+    distanceKm: 304.4,
     completed: false,
   },
   {
@@ -52,7 +52,7 @@ export const calendar2006: Race[] = [
     trackId: 'nurburgring-2006',
     trackName: 'Nurburgring',
     laps: 60,
-    distanceKm: undefined,
+    distanceKm: 308.9,
     completed: false,
   },
   {
@@ -62,7 +62,7 @@ export const calendar2006: Race[] = [
     trackId: 'circuit-de-catalunya-2006',
     trackName: 'Circuit de Catalunya',
     laps: 66,
-    distanceKm: undefined,
+    distanceKm: 307.2,
     completed: false,
   },
   {
@@ -72,7 +72,7 @@ export const calendar2006: Race[] = [
     trackId: 'monte-carlo-circuit-2006',
     trackName: 'Monte Carlo Circuit',
     laps: 78,
-    distanceKm: undefined,
+    distanceKm: 260.3,
     completed: false,
   },
   {
@@ -82,7 +82,7 @@ export const calendar2006: Race[] = [
     trackId: 'silverstone-circuit-2006',
     trackName: 'Silverstone Circuit',
     laps: 60,
-    distanceKm: undefined,
+    distanceKm: 313.6,
     completed: false,
   },
   {
@@ -92,7 +92,7 @@ export const calendar2006: Race[] = [
     trackId: 'circuit-gilles-villeneuve-2006',
     trackName: 'Circuit Gilles Villeneuve',
     laps: 70,
-    distanceKm: undefined,
+    distanceKm: 305.3,
     completed: false,
   },
   {
@@ -102,7 +102,7 @@ export const calendar2006: Race[] = [
     trackId: 'indianapolis-motor-speedway-2006',
     trackName: 'Indianapolis Motor Speedway',
     laps: 73,
-    distanceKm: undefined,
+    distanceKm: 306.0,
     completed: false,
   },
   {
@@ -112,7 +112,7 @@ export const calendar2006: Race[] = [
     trackId: 'circuit-de-nevers-magny-cours-2006',
     trackName: 'Circuit de Nevers Magny-Cours',
     laps: 70,
-    distanceKm: undefined,
+    distanceKm: 308.8,
     completed: false,
   },
   {
@@ -122,7 +122,7 @@ export const calendar2006: Race[] = [
     trackId: 'hockenheimring-2006',
     trackName: 'Hockenheimring',
     laps: 67,
-    distanceKm: undefined,
+    distanceKm: 456.6,
     completed: false,
   },
   {
@@ -132,7 +132,7 @@ export const calendar2006: Race[] = [
     trackId: 'hungaroring-2006',
     trackName: 'Hungaroring',
     laps: 70,
-    distanceKm: undefined,
+    distanceKm: 306.6,
     completed: false,
   },
   {
@@ -142,7 +142,7 @@ export const calendar2006: Race[] = [
     trackId: 'istanbul-park-2006',
     trackName: 'Istanbul Park',
     laps: 58,
-    distanceKm: undefined,
+    distanceKm: 309.6,
     completed: false,
   },
   {
@@ -152,7 +152,7 @@ export const calendar2006: Race[] = [
     trackId: 'autodromo-nazionale-di-monza-2006',
     trackName: 'Autodromo Nazionale di Monza',
     laps: 53,
-    distanceKm: undefined,
+    distanceKm: 307.4,
     completed: false,
   },
   {
@@ -162,7 +162,7 @@ export const calendar2006: Race[] = [
     trackId: 'shanghai-international-circuit-2006',
     trackName: 'Shanghai International Circuit',
     laps: 56,
-    distanceKm: undefined,
+    distanceKm: 305.3,
     completed: false,
   },
   {
@@ -172,7 +172,7 @@ export const calendar2006: Race[] = [
     trackId: 'suzuka-circuit-2006',
     trackName: 'Suzuka Circuit',
     laps: 53,
-    distanceKm: undefined,
+    distanceKm: 310.5,
     completed: false,
   },
   {
@@ -182,7 +182,7 @@ export const calendar2006: Race[] = [
     trackId: 'autodromo-jose-carlos-pace-2006',
     trackName: 'Autodromo Jose Carlos Pace',
     laps: 71,
-    distanceKm: undefined,
+    distanceKm: 305.9,
     completed: false,
   },
 ];

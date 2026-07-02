@@ -303,6 +303,160 @@ describe('historical season integration', () => {
     });
   });
 
+  describe('distanceKm completeness', () => {
+    it('no F1 race has distanceKm undefined', () => {
+      for (let y = 1990; y <= 2026; y++) {
+        const bundle = getSeasonBundle(y, 'F1');
+        for (const race of bundle!.season.calendar) {
+          expect(
+            race.distanceKm,
+            `F1 ${y} race ${race.round} (${race.gpName}) has distanceKm undefined`
+          ).toBeDefined();
+        }
+      }
+    });
+
+    it('no IndyCar race has distanceKm undefined', () => {
+      for (let y = 2008; y <= 2026; y++) {
+        const bundle = getSeasonBundle(y, 'IndyCar');
+        for (const race of bundle!.season.calendar) {
+          expect(
+            race.distanceKm,
+            `IndyCar ${y} race ${race.round} (${race.gpName}) has distanceKm undefined`
+          ).toBeDefined();
+        }
+      }
+    });
+  });
+
+  describe('IndyCar known lap regression values', () => {
+    it('2009 Watkins Glen has 60 laps', () => {
+      const bundle = getSeasonBundle(2009, 'IndyCar');
+      const race = bundle!.season.calendar.find((r) => r.round === 9);
+      expect(race).toBeDefined();
+      expect(race!.laps).toBe(60);
+    });
+
+    it('2012 Toronto has 85 laps', () => {
+      const bundle = getSeasonBundle(2012, 'IndyCar');
+      const race = bundle!.season.calendar.find((r) => r.round === 10);
+      expect(race).toBeDefined();
+      expect(race!.laps).toBe(85);
+    });
+
+    it('2013 Pocono has 160 laps', () => {
+      const bundle = getSeasonBundle(2013, 'IndyCar');
+      const race = bundle!.season.calendar.find((r) => r.round === 11);
+      expect(race).toBeDefined();
+      expect(race!.laps).toBe(160);
+    });
+
+    it('2014 Pocono has 200 laps', () => {
+      const bundle = getSeasonBundle(2014, 'IndyCar');
+      const race = bundle!.season.calendar.find((r) => r.round === 11);
+      expect(race).toBeDefined();
+      expect(race!.laps).toBe(200);
+    });
+  });
+
+  describe('F1 known lap regression values', () => {
+    it('2020 Bahrain has 57 laps', () => {
+      const bundle = getSeasonBundle(2020, 'F1');
+      const race = bundle!.season.calendar.find((r) => r.gpName.includes('Bahrain'));
+      expect(race).toBeDefined();
+      expect(race!.laps).toBe(57);
+    });
+
+    it('2025 Abu Dhabi has 58 laps', () => {
+      const bundle = getSeasonBundle(2025, 'F1');
+      const race = bundle!.season.calendar.find((r) => r.gpName.includes('Abu Dhabi'));
+      expect(race).toBeDefined();
+      expect(race!.laps).toBe(58);
+    });
+  });
+
+  describe('driver ID uniqueness across all seasons', () => {
+    it('no duplicate driver IDs within any F1 season', () => {
+      for (let y = 1990; y <= 2026; y++) {
+        const bundle = getSeasonBundle(y, 'F1');
+        const ids = bundle!.drivers.map((d) => d.id);
+        const unique = new Set(ids);
+        expect(
+          unique.size,
+          `F1 ${y} has ${ids.length - unique.size} duplicate driver IDs`
+        ).toBe(ids.length);
+      }
+    });
+
+    it('no duplicate driver IDs within any IndyCar season', () => {
+      for (let y = 2008; y <= 2026; y++) {
+        const bundle = getSeasonBundle(y, 'IndyCar');
+        const ids = bundle!.drivers.map((d) => d.id);
+        const unique = new Set(ids);
+        expect(
+          unique.size,
+          `IndyCar ${y} has ${ids.length - unique.size} duplicate driver IDs`
+        ).toBe(ids.length);
+      }
+    });
+  });
+
+  describe('driver teamId resolution', () => {
+    it('all F1 driver teamIds resolve to a team in the same season', () => {
+      for (let y = 1990; y <= 2026; y++) {
+        const bundle = getSeasonBundle(y, 'F1');
+        const teamIds = new Set(bundle!.teams.map((t) => t.id));
+        for (const d of bundle!.drivers) {
+          expect(
+            teamIds.has(d.teamId),
+            `F1 ${y} driver ${d.name} has teamId ${d.teamId} not in teams`
+          ).toBe(true);
+        }
+      }
+    });
+
+    it('all IndyCar driver teamIds resolve to a team in the same season', () => {
+      for (let y = 2008; y <= 2026; y++) {
+        const bundle = getSeasonBundle(y, 'IndyCar');
+        const teamIds = new Set(bundle!.teams.map((t) => t.id));
+        for (const d of bundle!.drivers) {
+          expect(
+            teamIds.has(d.teamId),
+            `IndyCar ${y} driver ${d.name} has teamId ${d.teamId} not in teams`
+          ).toBe(true);
+        }
+      }
+    });
+  });
+
+  describe('calendar round sequencing', () => {
+    it('F1 calendar rounds are sequential starting from 1', () => {
+      for (let y = 1990; y <= 2026; y++) {
+        const bundle = getSeasonBundle(y, 'F1');
+        const rounds = bundle!.season.calendar.map((r) => r.round);
+        for (let i = 0; i < rounds.length; i++) {
+          expect(
+            rounds[i],
+            `F1 ${y} round ${i + 1} expected but got ${rounds[i]}`
+          ).toBe(i + 1);
+        }
+      }
+    });
+
+    it('IndyCar calendar rounds are sequential starting from 1', () => {
+      for (let y = 2008; y <= 2026; y++) {
+        const bundle = getSeasonBundle(y, 'IndyCar');
+        const rounds = bundle!.season.calendar.map((r) => r.round);
+        for (let i = 0; i < rounds.length; i++) {
+          expect(
+            rounds[i],
+            `IndyCar ${y} round ${i + 1} expected but got ${rounds[i]}`
+          ).toBe(i + 1);
+        }
+      }
+    });
+  });
+
   describe('regulationSetId usage', () => {
     it('all seasons reference a valid regulationSetId', () => {
       for (let y = 1990; y <= 2026; y++) {

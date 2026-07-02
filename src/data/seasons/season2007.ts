@@ -12,7 +12,7 @@ export const calendar2007: Race[] = [
     trackId: 'albert-park-2007',
     trackName: 'Albert Park',
     laps: 58,
-    distanceKm: undefined,
+    distanceKm: 307.6,
     completed: false,
   },
   {
@@ -22,7 +22,7 @@ export const calendar2007: Race[] = [
     trackId: 'sepang-international-circuit-2007',
     trackName: 'Sepang International Circuit',
     laps: 56,
-    distanceKm: undefined,
+    distanceKm: 310.4,
     completed: false,
   },
   {
@@ -32,7 +32,7 @@ export const calendar2007: Race[] = [
     trackId: 'bahrain-international-circuit-2007',
     trackName: 'Bahrain International Circuit',
     laps: 57,
-    distanceKm: undefined,
+    distanceKm: 308.5,
     completed: false,
   },
   {
@@ -42,7 +42,7 @@ export const calendar2007: Race[] = [
     trackId: 'circuit-de-barcelona-catalunya-2007',
     trackName: 'Circuit de Barcelona-Catalunya',
     laps: 65,
-    distanceKm: undefined,
+    distanceKm: 302.7,
     completed: false,
   },
   {
@@ -52,7 +52,7 @@ export const calendar2007: Race[] = [
     trackId: 'circuit-de-monaco-2007',
     trackName: 'Circuit de Monaco',
     laps: 78,
-    distanceKm: undefined,
+    distanceKm: 260.3,
     completed: false,
   },
   {
@@ -62,7 +62,7 @@ export const calendar2007: Race[] = [
     trackId: 'circuit-gilles-villeneuve-2007',
     trackName: 'Circuit Gilles Villeneuve',
     laps: 70,
-    distanceKm: undefined,
+    distanceKm: 305.3,
     completed: false,
   },
   {
@@ -72,7 +72,7 @@ export const calendar2007: Race[] = [
     trackId: 'indianapolis-motor-speedway-road-course-2007',
     trackName: 'Indianapolis Motor Speedway Road Course',
     laps: 73,
-    distanceKm: undefined,
+    distanceKm: 306.0,
     completed: false,
   },
   {
@@ -82,7 +82,7 @@ export const calendar2007: Race[] = [
     trackId: 'circuit-de-nevers-magny-cours-2007',
     trackName: 'Circuit de Nevers Magny-Cours',
     laps: 70,
-    distanceKm: undefined,
+    distanceKm: 308.8,
     completed: false,
   },
   {
@@ -92,7 +92,7 @@ export const calendar2007: Race[] = [
     trackId: 'silverstone-circuit-2007',
     trackName: 'Silverstone Circuit',
     laps: 59,
-    distanceKm: undefined,
+    distanceKm: 308.3,
     completed: false,
   },
   {
@@ -102,7 +102,7 @@ export const calendar2007: Race[] = [
     trackId: 'nurburgring-2007',
     trackName: 'Nurburgring',
     laps: 60,
-    distanceKm: undefined,
+    distanceKm: 308.9,
     completed: false,
   },
   {
@@ -112,7 +112,7 @@ export const calendar2007: Race[] = [
     trackId: 'hungaroring-2007',
     trackName: 'Hungaroring',
     laps: 70,
-    distanceKm: undefined,
+    distanceKm: 306.6,
     completed: false,
   },
   {
@@ -122,7 +122,7 @@ export const calendar2007: Race[] = [
     trackId: 'istanbul-park-2007',
     trackName: 'Istanbul Park',
     laps: 58,
-    distanceKm: undefined,
+    distanceKm: 309.6,
     completed: false,
   },
   {
@@ -132,7 +132,7 @@ export const calendar2007: Race[] = [
     trackId: 'autodromo-nazionale-monza-2007',
     trackName: 'Autodromo Nazionale Monza',
     laps: 53,
-    distanceKm: undefined,
+    distanceKm: 307.0,
     completed: false,
   },
   {
@@ -142,7 +142,7 @@ export const calendar2007: Race[] = [
     trackId: 'circuit-de-spa-francorchamps-2007',
     trackName: 'Circuit de Spa-Francorchamps',
     laps: 44,
-    distanceKm: undefined,
+    distanceKm: 308.2,
     completed: false,
   },
   {
@@ -152,7 +152,7 @@ export const calendar2007: Race[] = [
     trackId: 'fuji-speedway-2007',
     trackName: 'Fuji Speedway',
     laps: 67,
-    distanceKm: undefined,
+    distanceKm: 305.7,
     completed: false,
   },
   {
@@ -162,7 +162,7 @@ export const calendar2007: Race[] = [
     trackId: 'shanghai-international-circuit-2007',
     trackName: 'Shanghai International Circuit',
     laps: 56,
-    distanceKm: undefined,
+    distanceKm: 305.3,
     completed: false,
   },
   {
@@ -172,7 +172,7 @@ export const calendar2007: Race[] = [
     trackId: 'autodromo-jose-carlos-pace-2007',
     trackName: 'Autodromo Jose Carlos Pace',
     laps: 71,
-    distanceKm: undefined,
+    distanceKm: 305.9,
     completed: false,
   },
 ];

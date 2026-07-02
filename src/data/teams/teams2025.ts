@@ -40,7 +40,7 @@ export const teams2025: Team[] = [
     shortName: 'RBR',
     country: 'Austria',
     carId: 'car-red-bull-racing-2025',
-    driverIds: ['d-2025-max-verstappen', 'd-2025-yuki-tsunoda'],
+    driverIds: ['d-2025-max-verstappen'],
     budget: 78000000,
     reputation: 86,
     raceOperations: 8.8,
