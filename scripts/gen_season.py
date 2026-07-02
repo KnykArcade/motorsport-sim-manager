@@ -745,6 +745,7 @@ def gen_indycar(year=2026):
     header = HEADER_TMPL.format(src=src)
     wb = openpyxl.load_workbook(path, data_only=True, read_only=True)
     y, tag = year, f"{year}{series}"
+    age_col = f"age {y}"  # year-specific age column name
 
     cal = Sheet(wb[pick_sheet(wb, (["calendar"],))], ["round"])
     setup_sn = pick_sheet(wb, (["setup", "profile"],), (["track", "setup"],))
@@ -873,7 +874,7 @@ def gen_indycar(year=2026):
             "name": name,
             "team_slug": slug(team_raw),
             "team_raw": team_raw,
-            "age": num(get(row, drv, "age 2026", "age_2026", "age")),
+            "age": num(get(row, drv, age_col, age_col.replace(" ", "_"), "age")),
             "nationality": str(get(row, drv, "nationality") or "").strip(),
             "skills": sk,
             "qualifying": scale10(get(row, drv, "qualifying"), overall),
@@ -921,7 +922,7 @@ def gen_indycar(year=2026):
         context = str(get(row, mkt, "current status", "current_status") or "").strip()
         status = str(get(row, mkt, "market status", "market_status") or "Senior").strip()
         potential = scale10(get(row, mkt, "potential"), r1(min(10, overall + 0.4)))
-        age = int(num(get(row, mkt, "age 2026", "age_2026", "age")) or 0)
+        age = int(num(get(row, mkt, age_col, age_col.replace(" ", "_"), "age")) or 0)
         market.append({
             "id": f"mkt-{tag}-{slug(name)}",
             "name": name, "age": age,
@@ -960,7 +961,7 @@ def gen_indycar(year=2026):
         }
         overall = avg(oval, road, rawpace, racecraft)
         potential = scale10(get(row, yth, "potential"), r1(min(10, overall + 1)))
-        age = num(get(row, yth, "age 2026", "age_2026", "age"))
+        age = num(get(row, yth, age_col, age_col.replace(" ", "_"), "age"))
         youth.append({
             "id": f"yth-{tag}-{slug(name)}",
             "name": name, "age": int(age or 0),
@@ -982,7 +983,7 @@ def gen_indycar(year=2026):
 
     wb.close()
     write_ts(y, src, header, tracks, teams, drivers, market, youth, budget_for,
-             difficulty, series=series, points_id="pts-indycar-2026")
+             difficulty, series=series, points_id=f"pts-indycar-{y}")
     print(f"OK {series} {y}: tracks={len(tracks)} teams={len(teams)} drivers={len(drivers)} market={len(market)} youth={len(youth)}")
     if unassigned:
         print(f"   (drivers not seated: {unassigned})")
@@ -1194,7 +1195,11 @@ def write_ts(y, src, header, tracks, teams, drivers, market, youth, budget_for,
 def main():
     args = [a.lower() for a in sys.argv[1:]]
     if "indycar" in args:
-        gen_indycar(2026)
+        years = [int(a) for a in sys.argv[1:] if a.isdigit()]
+        if not years:
+            years = [2026]
+        for y in years:
+            gen_indycar(y)
         return
     years = [int(a) for a in sys.argv[1:] if a.isdigit()]
     if not years and os.environ.get("YEAR"):

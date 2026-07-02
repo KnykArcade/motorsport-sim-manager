@@ -1,0 +1,133 @@
+// AUTO-GENERATED from IndyCar_2017_Season_Full_Update.xlsx by scripts/gen_season.py.
+// Edit ratings here directly; this file is the runtime source of truth.
+
+import type { Car } from '../../types/gameTypes';
+
+export const cars2017IndyCar: Car[] = [
+  {
+    id: 'car-team-penske-2017',
+    teamId: 't-team-penske',
+    seasonYear: 2017,
+    ratings: {
+      enginePower: 9.8,
+      aeroEfficiency: 9.5,
+      mechanicalGrip: 9.6,
+      reliability: 9.2,
+      pitCrewOperations: 9.3,
+    },
+    condition: 100,
+    developmentLevel: { enginePower: 0, aeroEfficiency: 0, mechanicalGrip: 0, reliability: 0, pitCrewOperations: 0 },
+  },
+  {
+    id: 'car-chip-ganassi-racing-2017',
+    teamId: 't-chip-ganassi-racing',
+    seasonYear: 2017,
+    ratings: {
+      enginePower: 9.4,
+      aeroEfficiency: 9.2,
+      mechanicalGrip: 9.2,
+      reliability: 9.2,
+      pitCrewOperations: 9.3,
+    },
+    condition: 100,
+    developmentLevel: { enginePower: 0, aeroEfficiency: 0, mechanicalGrip: 0, reliability: 0, pitCrewOperations: 0 },
+  },
+  {
+    id: 'car-andretti-autosport-2017',
+    teamId: 't-andretti-autosport',
+    seasonYear: 2017,
+    ratings: {
+      enginePower: 9.3,
+      aeroEfficiency: 9.2,
+      mechanicalGrip: 9.2,
+      reliability: 9.2,
+      pitCrewOperations: 9.2,
+    },
+    condition: 100,
+    developmentLevel: { enginePower: 0, aeroEfficiency: 0, mechanicalGrip: 0, reliability: 0, pitCrewOperations: 0 },
+  },
+  {
+    id: 'car-schmidt-peterson-motorsports-2017',
+    teamId: 't-schmidt-peterson-motorsports',
+    seasonYear: 2017,
+    ratings: {
+      enginePower: 9.2,
+      aeroEfficiency: 9.0,
+      mechanicalGrip: 9.1,
+      reliability: 9.1,
+      pitCrewOperations: 9.1,
+    },
+    condition: 100,
+    developmentLevel: { enginePower: 0, aeroEfficiency: 0, mechanicalGrip: 0, reliability: 0, pitCrewOperations: 0 },
+  },
+  {
+    id: 'car-a-j-foyt-enterprises-2017',
+    teamId: 't-a-j-foyt-enterprises',
+    seasonYear: 2017,
+    ratings: {
+      enginePower: 9.2,
+      aeroEfficiency: 9.0,
+      mechanicalGrip: 9.0,
+      reliability: 9.1,
+      pitCrewOperations: 9.1,
+    },
+    condition: 100,
+    developmentLevel: { enginePower: 0, aeroEfficiency: 0, mechanicalGrip: 0, reliability: 0, pitCrewOperations: 0 },
+  },
+  {
+    id: 'car-dale-coyne-racing-2017',
+    teamId: 't-dale-coyne-racing',
+    seasonYear: 2017,
+    ratings: {
+      enginePower: 9.2,
+      aeroEfficiency: 9.0,
+      mechanicalGrip: 9.0,
+      reliability: 9.0,
+      pitCrewOperations: 9.1,
+    },
+    condition: 100,
+    developmentLevel: { enginePower: 0, aeroEfficiency: 0, mechanicalGrip: 0, reliability: 0, pitCrewOperations: 0 },
+  },
+  {
+    id: 'car-rahal-letterman-lanigan-racing-2017',
+    teamId: 't-rahal-letterman-lanigan-racing',
+    seasonYear: 2017,
+    ratings: {
+      enginePower: 9.2,
+      aeroEfficiency: 9.0,
+      mechanicalGrip: 9.0,
+      reliability: 9.0,
+      pitCrewOperations: 9.1,
+    },
+    condition: 100,
+    developmentLevel: { enginePower: 0, aeroEfficiency: 0, mechanicalGrip: 0, reliability: 0, pitCrewOperations: 0 },
+  },
+  {
+    id: 'car-ed-carpenter-racing-2017',
+    teamId: 't-ed-carpenter-racing',
+    seasonYear: 2017,
+    ratings: {
+      enginePower: 9.1,
+      aeroEfficiency: 8.9,
+      mechanicalGrip: 8.9,
+      reliability: 9.0,
+      pitCrewOperations: 9.0,
+    },
+    condition: 100,
+    developmentLevel: { enginePower: 0, aeroEfficiency: 0, mechanicalGrip: 0, reliability: 0, pitCrewOperations: 0 },
+  },
+  {
+    id: 'car-andretti-herta-autosport-2017',
+    teamId: 't-andretti-herta-autosport',
+    seasonYear: 2017,
+    ratings: {
+      enginePower: 9.1,
+      aeroEfficiency: 8.9,
+      mechanicalGrip: 8.9,
+      reliability: 9.0,
+      pitCrewOperations: 9.0,
+    },
+    condition: 100,
+    developmentLevel: { enginePower: 0, aeroEfficiency: 0, mechanicalGrip: 0, reliability: 0, pitCrewOperations: 0 },
+  },
+];

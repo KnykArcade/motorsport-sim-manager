@@ -1,0 +1,133 @@
+// AUTO-GENERATED from IndyCar_2024_Season_Full_Update.xlsx by scripts/gen_season.py.
+// Edit ratings here directly; this file is the runtime source of truth.
+
+import type { Car } from '../../types/gameTypes';
+
+export const cars2024IndyCar: Car[] = [
+  {
+    id: 'car-chip-ganassi-racing-2024',
+    teamId: 't-chip-ganassi-racing',
+    seasonYear: 2024,
+    ratings: {
+      enginePower: 9.9,
+      aeroEfficiency: 9.9,
+      mechanicalGrip: 9.9,
+      reliability: 9.2,
+      pitCrewOperations: 9.2,
+    },
+    condition: 100,
+    developmentLevel: { enginePower: 0, aeroEfficiency: 0, mechanicalGrip: 0, reliability: 0, pitCrewOperations: 0 },
+  },
+  {
+    id: 'car-team-penske-2024',
+    teamId: 't-team-penske',
+    seasonYear: 2024,
+    ratings: {
+      enginePower: 9.9,
+      aeroEfficiency: 9.9,
+      mechanicalGrip: 9.9,
+      reliability: 9.2,
+      pitCrewOperations: 9.2,
+    },
+    condition: 100,
+    developmentLevel: { enginePower: 0, aeroEfficiency: 0, mechanicalGrip: 0, reliability: 0, pitCrewOperations: 0 },
+  },
+  {
+    id: 'car-andretti-global-2024',
+    teamId: 't-andretti-global',
+    seasonYear: 2024,
+    ratings: {
+      enginePower: 9.5,
+      aeroEfficiency: 9.7,
+      mechanicalGrip: 9.5,
+      reliability: 9.2,
+      pitCrewOperations: 8.6,
+    },
+    condition: 100,
+    developmentLevel: { enginePower: 0, aeroEfficiency: 0, mechanicalGrip: 0, reliability: 0, pitCrewOperations: 0 },
+  },
+  {
+    id: 'car-arrow-mclaren-2024',
+    teamId: 't-arrow-mclaren',
+    seasonYear: 2024,
+    ratings: {
+      enginePower: 9.3,
+      aeroEfficiency: 9.3,
+      mechanicalGrip: 9.5,
+      reliability: 8.8,
+      pitCrewOperations: 8.6,
+    },
+    condition: 100,
+    developmentLevel: { enginePower: 0, aeroEfficiency: 0, mechanicalGrip: 0, reliability: 0, pitCrewOperations: 0 },
+  },
+  {
+    id: 'car-a-j-foyt-enterprises-2024',
+    teamId: 't-a-j-foyt-enterprises',
+    seasonYear: 2024,
+    ratings: {
+      enginePower: 8.3,
+      aeroEfficiency: 8.3,
+      mechanicalGrip: 8.3,
+      reliability: 8.2,
+      pitCrewOperations: 8.6,
+    },
+    condition: 100,
+    developmentLevel: { enginePower: 0, aeroEfficiency: 0, mechanicalGrip: 0, reliability: 0, pitCrewOperations: 0 },
+  },
+  {
+    id: 'car-rahal-letterman-lanigan-racing-2024',
+    teamId: 't-rahal-letterman-lanigan-racing',
+    seasonYear: 2024,
+    ratings: {
+      enginePower: 8.1,
+      aeroEfficiency: 8.3,
+      mechanicalGrip: 8.1,
+      reliability: 8.2,
+      pitCrewOperations: 8.0,
+    },
+    condition: 100,
+    developmentLevel: { enginePower: 0, aeroEfficiency: 0, mechanicalGrip: 0, reliability: 0, pitCrewOperations: 0 },
+  },
+  {
+    id: 'car-meyer-shank-racing-2024',
+    teamId: 't-meyer-shank-racing',
+    seasonYear: 2024,
+    ratings: {
+      enginePower: 8.0,
+      aeroEfficiency: 8.0,
+      mechanicalGrip: 8.0,
+      reliability: 8.2,
+      pitCrewOperations: 8.0,
+    },
+    condition: 100,
+    developmentLevel: { enginePower: 0, aeroEfficiency: 0, mechanicalGrip: 0, reliability: 0, pitCrewOperations: 0 },
+  },
+  {
+    id: 'car-ed-carpenter-racing-2024',
+    teamId: 't-ed-carpenter-racing',
+    seasonYear: 2024,
+    ratings: {
+      enginePower: 7.9,
+      aeroEfficiency: 7.9,
+      mechanicalGrip: 7.9,
+      reliability: 8.2,
+      pitCrewOperations: 8.0,
+    },
+    condition: 100,
+    developmentLevel: { enginePower: 0, aeroEfficiency: 0, mechanicalGrip: 0, reliability: 0, pitCrewOperations: 0 },
+  },
+  {
+    id: 'car-juncos-hollinger-racing-2024',
+    teamId: 't-juncos-hollinger-racing',
+    seasonYear: 2024,
+    ratings: {
+      enginePower: 7.4,
+      aeroEfficiency: 7.4,
+      mechanicalGrip: 7.4,
+      reliability: 7.6,
+      pitCrewOperations: 8.0,
+    },
+    condition: 100,
+    developmentLevel: { enginePower: 0, aeroEfficiency: 0, mechanicalGrip: 0, reliability: 0, pitCrewOperations: 0 },
+  },
+];

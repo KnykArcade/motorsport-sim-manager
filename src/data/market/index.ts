@@ -77,6 +77,42 @@ import { driverMarket2026 } from './driverMarket2026';
 import { youthProspects2026 } from './youthProspects2026';
 import { driverMarket2026IndyCar } from './driverMarket2026IndyCar';
 import { youthProspects2026IndyCar } from './youthProspects2026IndyCar';
+import { driverMarket2008IndyCar } from './driverMarket2008IndyCar';
+import { youthProspects2008IndyCar } from './youthProspects2008IndyCar';
+import { driverMarket2009IndyCar } from './driverMarket2009IndyCar';
+import { youthProspects2009IndyCar } from './youthProspects2009IndyCar';
+import { driverMarket2010IndyCar } from './driverMarket2010IndyCar';
+import { youthProspects2010IndyCar } from './youthProspects2010IndyCar';
+import { driverMarket2011IndyCar } from './driverMarket2011IndyCar';
+import { youthProspects2011IndyCar } from './youthProspects2011IndyCar';
+import { driverMarket2012IndyCar } from './driverMarket2012IndyCar';
+import { youthProspects2012IndyCar } from './youthProspects2012IndyCar';
+import { driverMarket2013IndyCar } from './driverMarket2013IndyCar';
+import { youthProspects2013IndyCar } from './youthProspects2013IndyCar';
+import { driverMarket2014IndyCar } from './driverMarket2014IndyCar';
+import { youthProspects2014IndyCar } from './youthProspects2014IndyCar';
+import { driverMarket2015IndyCar } from './driverMarket2015IndyCar';
+import { youthProspects2015IndyCar } from './youthProspects2015IndyCar';
+import { driverMarket2016IndyCar } from './driverMarket2016IndyCar';
+import { youthProspects2016IndyCar } from './youthProspects2016IndyCar';
+import { driverMarket2017IndyCar } from './driverMarket2017IndyCar';
+import { youthProspects2017IndyCar } from './youthProspects2017IndyCar';
+import { driverMarket2018IndyCar } from './driverMarket2018IndyCar';
+import { youthProspects2018IndyCar } from './youthProspects2018IndyCar';
+import { driverMarket2019IndyCar } from './driverMarket2019IndyCar';
+import { youthProspects2019IndyCar } from './youthProspects2019IndyCar';
+import { driverMarket2020IndyCar } from './driverMarket2020IndyCar';
+import { youthProspects2020IndyCar } from './youthProspects2020IndyCar';
+import { driverMarket2021IndyCar } from './driverMarket2021IndyCar';
+import { youthProspects2021IndyCar } from './youthProspects2021IndyCar';
+import { driverMarket2022IndyCar } from './driverMarket2022IndyCar';
+import { youthProspects2022IndyCar } from './youthProspects2022IndyCar';
+import { driverMarket2023IndyCar } from './driverMarket2023IndyCar';
+import { youthProspects2023IndyCar } from './youthProspects2023IndyCar';
+import { driverMarket2024IndyCar } from './driverMarket2024IndyCar';
+import { youthProspects2024IndyCar } from './youthProspects2024IndyCar';
+import { driverMarket2025IndyCar } from './driverMarket2025IndyCar';
+import { youthProspects2025IndyCar } from './youthProspects2025IndyCar';
 
 export { driverMarket1995 } from './driverMarket1995';
 export { youthProspects1995 } from './youthProspects1995';
@@ -153,6 +189,24 @@ const marketBundles: Record<string, MarketBundle> = {
   '2025-F1': bundle(driverMarket2025, youthProspects2025),
   '2026-F1': bundle(driverMarket2026, youthProspects2026),
   '2026-IndyCar': bundle(driverMarket2026IndyCar, youthProspects2026IndyCar),
+  '2008-IndyCar': bundle(driverMarket2008IndyCar, youthProspects2008IndyCar),
+  '2009-IndyCar': bundle(driverMarket2009IndyCar, youthProspects2009IndyCar),
+  '2010-IndyCar': bundle(driverMarket2010IndyCar, youthProspects2010IndyCar),
+  '2011-IndyCar': bundle(driverMarket2011IndyCar, youthProspects2011IndyCar),
+  '2012-IndyCar': bundle(driverMarket2012IndyCar, youthProspects2012IndyCar),
+  '2013-IndyCar': bundle(driverMarket2013IndyCar, youthProspects2013IndyCar),
+  '2014-IndyCar': bundle(driverMarket2014IndyCar, youthProspects2014IndyCar),
+  '2015-IndyCar': bundle(driverMarket2015IndyCar, youthProspects2015IndyCar),
+  '2016-IndyCar': bundle(driverMarket2016IndyCar, youthProspects2016IndyCar),
+  '2017-IndyCar': bundle(driverMarket2017IndyCar, youthProspects2017IndyCar),
+  '2018-IndyCar': bundle(driverMarket2018IndyCar, youthProspects2018IndyCar),
+  '2019-IndyCar': bundle(driverMarket2019IndyCar, youthProspects2019IndyCar),
+  '2020-IndyCar': bundle(driverMarket2020IndyCar, youthProspects2020IndyCar),
+  '2021-IndyCar': bundle(driverMarket2021IndyCar, youthProspects2021IndyCar),
+  '2022-IndyCar': bundle(driverMarket2022IndyCar, youthProspects2022IndyCar),
+  '2023-IndyCar': bundle(driverMarket2023IndyCar, youthProspects2023IndyCar),
+  '2024-IndyCar': bundle(driverMarket2024IndyCar, youthProspects2024IndyCar),
+  '2025-IndyCar': bundle(driverMarket2025IndyCar, youthProspects2025IndyCar),
 };
 
 export function getMarketBundle(year: number, series = 'F1'): MarketBundle | undefined {

@@ -351,8 +351,8 @@ export function importMarketDrivers(
       {
         displayName: sanitizeMarketName(m.name),
         nationality: m.nationality,
-        age: m.age,
-        birthYear: year - m.age,
+        age: m.age || undefined,
+        birthYear: m.age > 0 ? year - m.age : undefined,
         overall: m.overall,
         potential: m.potential,
         skills: m.skills,
