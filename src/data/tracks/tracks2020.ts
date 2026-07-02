@@ -326,7 +326,7 @@ export const tracks2020: Track[] = [
   },
   {
     id: 'nurburgring-gp-strecke-2020',
-    name: 'Nürburgring GP-Strecke',
+    name: 'Nurburgring GP-Strecke',
     gpName: 'Eifel Grand Prix',
     archetype: 'Balanced',
     attributes: {
@@ -358,7 +358,7 @@ export const tracks2020: Track[] = [
   },
   {
     id: 'autodromo-internacional-do-algarve-2020',
-    name: 'Autódromo Internacional do Algarve',
+    name: 'Autodromo Internacional do Algarve',
     gpName: 'Portuguese Grand Prix',
     archetype: 'Balanced',
     attributes: {
