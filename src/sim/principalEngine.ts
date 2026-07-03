@@ -93,6 +93,8 @@ export function createPrincipalProfile(
       constructorTitles: 0,
       teamsManaged: [team.id],
     },
+    xp: 0,
+    level: 1,
   };
 }
 
@@ -128,6 +130,57 @@ function growAttributes(
   };
 }
 
+// XP required to advance from the given level to the next.
+export function xpForLevel(level: number): number {
+  return 100 + (level - 1) * 50;
+}
+
+// XP earned from a season's results.
+export function xpFromSeasonOutcome(outcome: PrincipalSeasonOutcome, reviewScore: number): number {
+  let xp = 50; // base participation
+  xp += outcome.wins * 15;
+  xp += outcome.podiums * 8;
+  xp += (outcome.driverTitle ? 40 : 0);
+  xp += (outcome.constructorTitle ? 40 : 0);
+  // Bonus for exceeding expectations (positive review score).
+  if (reviewScore > 0) xp += Math.round(reviewScore * 0.5);
+  // Penalty for poor performance (but never below 20).
+  if (reviewScore < 0) xp = Math.max(20, xp + Math.round(reviewScore * 0.3));
+  return xp;
+}
+
+// Apply XP gain, level up if enough XP, and grow attributes on level up.
+// Returns the updated profile and any level-up notes.
+function applyXpAndLevel(
+  profile: TeamPrincipalProfile,
+  xpGain: number,
+): { profile: TeamPrincipalProfile; levelUps: number } {
+  let xp = profile.xp + xpGain;
+  let level = profile.level;
+  let attrs = { ...profile.attributes };
+  let levelUps = 0;
+
+  while (xp >= xpForLevel(level)) {
+    xp -= xpForLevel(level);
+    level++;
+    levelUps++;
+    // Each level grants +2 to two random-ish attributes (deterministic by level).
+    const bonusKeys: (keyof PrincipalAttributes)[] = [
+      'mediaImage', 'boardConfidence', 'financialDiscipline',
+      'driverManagement', 'development', 'strategy',
+    ];
+    const idx1 = level % bonusKeys.length;
+    const idx2 = (level + 3) % bonusKeys.length;
+    attrs[bonusKeys[idx1]] = clamp(attrs[bonusKeys[idx1]] + 2);
+    attrs[bonusKeys[idx2]] = clamp(attrs[bonusKeys[idx2]] + 2);
+  }
+
+  return {
+    profile: { ...profile, xp, level, attributes: attrs },
+    levelUps,
+  };
+}
+
 // Apply the owner's end-of-season review to the principal: move job security and
 // reputation, grow attributes, bank the season's record, then decide whether the
 // principal is retained, renewed, or sacked.
@@ -154,9 +207,22 @@ export function reviewPrincipal(
 
   const attributes = growAttributes(profile.attributes, review, outcome, jobSecurity);
 
+  // XP and leveling.
+  const xpGain = xpFromSeasonOutcome(outcome, review.score);
+  const xpResult = applyXpAndLevel(
+    { ...profile, attributes, careerStats, reputation, jobSecurity, contractYearsRemaining },
+    xpGain,
+  );
+
   const notes: string[] = [];
   let status: PrincipalStatus;
   let nextContractYears = contractYearsRemaining;
+
+  if (xpResult.levelUps > 0) {
+    notes.push(`Gained ${xpGain} XP and reached Level ${xpResult.profile.level}.`);
+  } else {
+    notes.push(`Gained ${xpGain} XP.`);
+  }
 
   if (jobSecurity < SACK_THRESHOLD) {
     status = 'sacked';
@@ -175,12 +241,8 @@ export function reviewPrincipal(
   }
 
   const updated: TeamPrincipalProfile = {
-    ...profile,
-    reputation,
-    jobSecurity,
+    ...xpResult.profile,
     contractYearsRemaining: nextContractYears,
-    attributes,
-    careerStats,
   };
 
   return { profile: updated, status, notes };

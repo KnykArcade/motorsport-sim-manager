@@ -9,6 +9,8 @@ import {
   createPrincipalProfile,
   generateJobOffers,
   reviewPrincipal,
+  xpForLevel,
+  xpFromSeasonOutcome,
   type PrincipalSeasonOutcome,
 } from './principalEngine';
 import type { ExpectationReview } from '../types/expectationTypes';
@@ -125,5 +127,41 @@ describe('principalEngine', () => {
 
   it('labels a budget tier for every team', () => {
     for (const t of teams1995) expect(budgetTierOf(t).length).toBeGreaterThan(0);
+  });
+
+  it('initializes xp and level on a new profile', () => {
+    const p = createPrincipalProfile(topTeam, reps, 1995, 'test');
+    expect(p.xp).toBe(0);
+    expect(p.level).toBe(1);
+  });
+
+  it('xpForLevel scales with level', () => {
+    expect(xpForLevel(1)).toBe(100);
+    expect(xpForLevel(2)).toBe(150);
+    expect(xpForLevel(3)).toBe(200);
+  });
+
+  it('xpFromSeasonOutcome rewards wins, podiums, and titles', () => {
+    const base = xpFromSeasonOutcome({ wins: 0, podiums: 0, driverTitle: false, constructorTitle: false }, 0);
+    expect(base).toBe(50);
+    const champ = xpFromSeasonOutcome({ wins: 10, podiums: 15, driverTitle: true, constructorTitle: true }, 20);
+    expect(champ).toBeGreaterThan(300);
+  });
+
+  it('gains XP and levels up through season reviews', () => {
+    const p = createPrincipalProfile(topTeam, reps, 1995, 'test');
+    const outcome: PrincipalSeasonOutcome = { wins: 5, podiums: 10, driverTitle: false, constructorTitle: false };
+    const result = reviewPrincipal(p, review(15, true), outcome);
+    expect(result.profile.xp).toBeGreaterThanOrEqual(0);
+    expect(result.profile.level).toBeGreaterThanOrEqual(1);
+    expect(result.notes.some((n) => n.includes('XP'))).toBe(true);
+  });
+
+  it('levels up after enough XP from strong seasons', () => {
+    let p = createPrincipalProfile(topTeam, reps, 1995, 'test');
+    const strongOutcome: PrincipalSeasonOutcome = { wins: 8, podiums: 12, driverTitle: true, constructorTitle: true };
+    // A championship-winning season should give enough XP to level up at least once.
+    const result = reviewPrincipal(p, review(30, true), strongOutcome);
+    expect(result.profile.level).toBeGreaterThan(1);
   });
 });
