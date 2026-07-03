@@ -36,6 +36,10 @@ const RACE_PREP_FOCUS_INFO: Record<string, { label: string; description: string 
     label: 'Engine Power Focus',
     description: 'Improved straight-line speed. Higher reliability risk.',
   },
+  budget: {
+    label: 'Budget Preparation',
+    description: 'Reduced weekend operational costs (−20%). Significant pace, reliability, and mistake-risk penalties.',
+  },
 };
 
 export function PreRaceBriefing() {

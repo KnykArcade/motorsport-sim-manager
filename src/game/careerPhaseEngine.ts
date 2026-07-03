@@ -267,6 +267,8 @@ export function computeRacePrepFocusEffect(focus: string): RacePrepFocusEffect {
       return { paceModifier: -0.15, reliabilityModifier: 0.15, qualifyingModifier: -0.05, mistakeRiskMultiplier: 0.9 };
     case 'power':
       return { paceModifier: 0.15, reliabilityModifier: -0.1, qualifyingModifier: 0.1, mistakeRiskMultiplier: 1.1 };
+    case 'budget':
+      return { paceModifier: -0.2, reliabilityModifier: -0.1, qualifyingModifier: -0.15, mistakeRiskMultiplier: 1.15, costSavingMultiplier: 0.8 };
     case 'balanced':
     default:
       return { paceModifier: 0.05, reliabilityModifier: 0.02, qualifyingModifier: 0, mistakeRiskMultiplier: 0.98 };
@@ -943,6 +945,16 @@ export function generatePaddockWeekEvents(state: GameState): PaddockEvent[] {
         id: 'power',
         label: 'Engine Power Focus',
         description: ` ${track.name} demands power. Focus on straight-line speed.`,
+        risk: 1,
+      });
+    }
+    // Budget focus: available when the team is financially stretched.
+    const playerTeam = state.teams.find((t) => t.id === state.selectedTeamId);
+    if (playerTeam && playerTeam.budget < 5) {
+      focusOptions.push({
+        id: 'budget',
+        label: 'Budget Preparation',
+        description: 'Reduce weekend operational costs by 20%. Significant pace, reliability, and mistake-risk penalties.',
         risk: 1,
       });
     }

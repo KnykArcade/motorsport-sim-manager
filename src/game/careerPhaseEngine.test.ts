@@ -660,6 +660,14 @@ describe('careerPhaseEngine', () => {
       const power = computeRacePrepFocusEffect('power');
       expect(power.paceModifier).toBeGreaterThan(0);
       expect(power.reliabilityModifier).toBeLessThan(0);
+
+      const budget = computeRacePrepFocusEffect('budget');
+      expect(budget.paceModifier).toBeLessThan(0);
+      expect(budget.reliabilityModifier).toBeLessThan(0);
+      expect(budget.qualifyingModifier).toBeLessThan(0);
+      expect(budget.mistakeRiskMultiplier).toBeGreaterThan(1);
+      expect(budget.costSavingMultiplier).toBeDefined();
+      expect(budget.costSavingMultiplier!).toBeLessThan(1);
     });
 
     it('racePrepFocusApplied is set to true after race completion', () => {
