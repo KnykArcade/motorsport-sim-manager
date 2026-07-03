@@ -19,6 +19,8 @@ import {
   generatePaddockNews as generateCareerPaddockNews,
   generateYouthAcademyNews as generateCareerYouthAcademyNews,
   deduplicateNews,
+  mergeNewsWithSpamControl,
+  capNewsPerRound,
   sortNewsByPriority,
   type CareerNewsContext,
 } from '../sim/careerNewsEngine';
@@ -714,7 +716,7 @@ export function gameReducer(state: GameState | null, action: GameAction): GameSt
       const preseasonNews = generateCareerPreseasonNews(preseasonCtx);
       const youthNews = generateCareerYouthAcademyNews(preseasonCtx);
       const allPreseasonNews = deduplicateNews(state.news, [...preseasonNews, ...youthNews]);
-      const withNews = { ...state, news: [...allPreseasonNews, ...state.news].slice(0, 50) };
+      const withNews = { ...state, news: [...allPreseasonNews, ...state.news].slice(0, 80) };
       return enterPreRaceBriefingFromPreseason(withNews);
     }
 
@@ -734,7 +736,7 @@ export function gameReducer(state: GameState | null, action: GameAction): GameSt
       };
       const paddockNews = generateCareerPaddockNews(paddockCtx);
       const dedupedPaddockNews = deduplicateNews(state.news, paddockNews);
-      state = { ...state, news: [...dedupedPaddockNews, ...state.news].slice(0, 50) };
+      state = { ...state, news: [...dedupedPaddockNews, ...state.news].slice(0, 80) };
       return generateAndStorePaddockEvents(state);
     }
 
@@ -908,7 +910,7 @@ function hireStaff(state: GameState, staffId: string): GameState {
     careerPhase: getCareerPhase(charged),
     teamId: hireTeam?.id,
   };
-  return { ...charged, staff: nextRoster, news: [staffNews, ...charged.news].slice(0, 50) };
+  return { ...charged, staff: nextRoster, news: [staffNews, ...charged.news].slice(0, 80) };
 }
 
 // Order a facility upgrade: charge the cost now (must be affordable); the level
@@ -937,7 +939,7 @@ function upgradeFacility(state: GameState, facilityId: string): GameState {
     careerPhase: getCareerPhase(charged),
     teamId: facTeam?.id,
   };
-  return { ...charged, facilities: ordered.state, news: [facilityNews, ...charged.news].slice(0, 50) };
+  return { ...charged, facilities: ordered.state, news: [facilityNews, ...charged.news].slice(0, 80) };
 }
 
 // Spend one round of scouting effort on a market driver or youth prospect,
@@ -1074,7 +1076,7 @@ function signSponsor(state: GameState, offerId: string): GameState {
   return {
     ...state,
     commercial: { ...commercial, sponsors: [...commercial.sponsors, offer] },
-    news: [sponsorNews, ...state.news].slice(0, 50),
+    news: [sponsorNews, ...state.news].slice(0, 80),
   };
 }
 
@@ -1246,7 +1248,7 @@ function runQualifying(state: GameState, playerDecisions: QualifyingDecision[]):
     ...state,
     cars,
     qualifyingResults: { ...state.qualifyingResults, [race.id]: results },
-    news: [...dedupedQualNews, ...state.news].slice(0, 50),
+    news: [...dedupedQualNews, ...state.news].slice(0, 80),
   };
 }
 
@@ -1572,8 +1574,11 @@ function applyRaceResults(
     seed: state.randomSeed,
   };
   const careerRaceNews = generateCareerRaceNews(careerCtx, qualifying, results, driverNames, teamNames);
-  const dedupedCareerNews = deduplicateNews(news, careerRaceNews);
-  news.push(...dedupedCareerNews);
+  // Merge race news + career race news with headline dedup (removes duplicates
+  // like "X wins the GP" appearing from both newsEngine and careerNewsEngine).
+  const mergedRaceNews = mergeNewsWithSpamControl(state.news, news, careerRaceNews);
+  news.length = 0;
+  news.push(...mergedRaceNews);
 
   // Generate driver drama news from confidence, trust, ego, morale, promise,
   // and teammate rivalry events.
@@ -1647,7 +1652,7 @@ function applyRaceResults(
     driverRelationships,
     driverPromises,
     teamOrderHistory,
-    news: sortNewsByPriority([...news, ...state.news].slice(0, 50)),
+    news: sortNewsByPriority(capNewsPerRound([...news, ...state.news]).slice(0, 80)),
     currentRaceIndex: seasonComplete ? state.currentRaceIndex : nextIndex,
     seasonComplete,
   };
@@ -1897,7 +1902,7 @@ function selectRaceWeekendPackage(
     aiRaceWeekendPackages: aiPackages.packages,
     finance: [...(state.finance ?? []), ...financeTxns],
     financialDistress: { ...aiPackages.financialDistress, [team.id]: playerDistress },
-    news: [...allNews, ...aiPackages.news, ...state.news].slice(0, 50),
+    news: [...allNews, ...aiPackages.news, ...state.news].slice(0, 80),
   };
 }
 

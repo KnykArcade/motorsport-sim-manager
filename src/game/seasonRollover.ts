@@ -1317,7 +1317,7 @@ export function advanceSeason(state: GameState, nextBundle?: SeasonBundle): Game
       ...principalLevelUpNews,
       ...teamLockPressureNews,
       ...state.news,
-    ].slice(0, 50),
+    ].slice(0, 80),
     careerPhase: defaultCareerPhaseState(),
   };
 
