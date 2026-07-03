@@ -96,6 +96,7 @@ export function calculateRacePace(
   strategy: RaceStrategy,
   instruction: DriverInstruction,
   teamRating = 5,
+  confidenceModifier = 0,
 ): { score: number; breakdown: ScoreBreakdown } {
   // Car component: raw car strength plus how well the car suits the circuit.
   const carComp = clamp10(avgCar(car) + calculateCarTrackFit(car, track));
@@ -107,7 +108,7 @@ export function calculateRacePace(
   const teamComp = clamp10(teamRating);
   // Everything else: setup, strategy, driver instruction and morale.
   const setupFit = calculateSetupFit(setup, track) + setup.racePaceBoost;
-  const moraleFactor = (driver.morale - 65) / 15;
+  const moraleFactor = (driver.morale - 65) / 15 + confidenceModifier;
   const otherComp = clamp10(
     5.5 + setupFit * 0.5 + strategy.paceModifier + instruction.paceModifier + moraleFactor,
   );
@@ -195,6 +196,7 @@ export function computeRaceOutcome(context: RaceContext): RaceOutcome {
       strategy,
       instruction,
       teamRating,
+      context.confidenceModifierByDriver?.[e.driver.id] ?? 0,
     );
 
     // Apply Race Weekend Package pace modifier.

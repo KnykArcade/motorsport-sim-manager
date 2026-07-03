@@ -6,9 +6,38 @@
 // and saves written by an older build are not expected to load.
 
 import type { GameState } from './careerState';
+import type { DriverRelationship } from '../types/relationshipTypes';
 
 const SAVE_KEY = 'msm:save:v1';
 const SETTINGS_KEY = 'msm:settings:v1';
+
+function migrateRelationships(rels: Record<string, DriverRelationship>): Record<string, DriverRelationship> {
+  const migrated: Record<string, DriverRelationship> = {};
+  for (const [id, rel] of Object.entries(rels)) {
+    migrated[id] = {
+      ...rel,
+      selfConfidence: rel.selfConfidence ?? 50,
+      trustInCar: rel.trustInCar ?? 50,
+      trustInTeam: rel.trustInTeam ?? 50,
+      trustInPrincipal: rel.trustInPrincipal ?? 50,
+      ego: rel.ego ?? 50,
+      personalityTraits: rel.personalityTraits ?? [],
+      wants: rel.wants ?? [],
+    };
+  }
+  return migrated;
+}
+
+function migrateGameState(state: GameState): GameState {
+  const patched: Partial<GameState> = { ...state };
+  if (patched.driverRelationships) {
+    patched.driverRelationships = migrateRelationships(patched.driverRelationships);
+  }
+  if (!patched.driverPromises) {
+    patched.driverPromises = [];
+  }
+  return patched as GameState;
+}
 
 export type GameSettings = {
   debugMode: boolean;
@@ -31,7 +60,8 @@ export function loadGame(): GameState | null {
   try {
     const raw = localStorage.getItem(SAVE_KEY);
     if (!raw) return null;
-    return JSON.parse(raw) as GameState;
+    const parsed = JSON.parse(raw) as GameState;
+    return migrateGameState(parsed);
   } catch (err) {
     console.error('Failed to load game', err);
     return null;

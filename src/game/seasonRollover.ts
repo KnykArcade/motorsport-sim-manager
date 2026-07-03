@@ -61,7 +61,7 @@ import {
 import { buildInitialCommercial } from '../sim/commercialEngine';
 import { createInitialFacilities } from '../sim/facilityEngine';
 import { rolloverRelationships, syncDriverRelationshipsForTeam } from '../sim/relationshipEngine';
-import { rolloverConfidence, checkExpiredPromises, applyPromiseResolution, computeConfidenceState } from '../sim/driverConfidenceEngine';
+import { rolloverConfidence, checkExpiredPromises, applyPromiseResolution, computeConfidenceState, evaluatePromisesAtSeasonEnd, resolvePromise, contractLoyaltyModifier, evaluateWants } from '../sim/driverConfidenceEngine';
 import { generateRegulationProposals, resolveRegulationVoting } from '../sim/politicsEngine';
 import { refreshScoutingNetwork } from '../sim/scoutingEngine';
 import { createDriverDevelopmentCurve, developmentStep } from '../sim/developmentCurveEngine';
@@ -869,6 +869,31 @@ export function advanceSeason(state: GameState): GameState {
     confidenceRolled[id] = rolloverConfidence(rel);
   }
 
+  // Evaluate driver wants — unfulfilled wants erode morale and trust.
+  const wantTeam = teams.find((t) => t.id === state.selectedTeamId);
+  const wantCar = cars.find((c) => c.teamId === state.selectedTeamId);
+  for (const d of drivers.filter((x) => x.teamId === state.selectedTeamId)) {
+    const rel = confidenceRolled[d.id];
+    if (!rel || rel.wants.length === 0) continue;
+    const wantResult = evaluateWants(rel, {
+      teamReputation: wantTeam?.reputation ?? 50,
+      contractYearsRemaining: d.contractYearsRemaining ?? 0,
+      isNumberOne: rel.numberOneExpectation,
+      carReliability: wantCar?.ratings.reliability ?? 50,
+      teamStability: wantTeam?.morale ?? 50,
+    });
+    if (wantResult.unfulfilled.length > 0) {
+      const penalty = wantResult.unfulfilled.length * 2;
+      confidenceRolled[d.id] = {
+        ...rel,
+        morale: Math.max(0, rel.morale - penalty),
+        trustInTeam: Math.max(0, rel.trustInTeam - penalty),
+        trustInPrincipal: Math.max(0, rel.trustInPrincipal - Math.floor(penalty / 2)),
+        frustration: Math.min(100, rel.frustration + penalty),
+      };
+    }
+  }
+
   // Check expired promises and apply trust/morale impact.
   const { promises: checkedPromises, expired } = checkExpiredPromises(
     state.driverPromises ?? [],
@@ -878,6 +903,29 @@ export function advanceSeason(state: GameState): GameState {
   let finalRelationships = confidenceRolled;
   for (const exp of expired) {
     finalRelationships = applyPromiseResolution(finalRelationships, exp);
+  }
+
+  // Evaluate season-end promises (contract renewal, promotion, etc.).
+  const playerTeamDrivers = drivers.filter((x) => x.teamId === state.selectedTeamId);
+  let seasonEndPromises = checkedPromises;
+  for (const d of playerTeamDrivers) {
+    const wasReplaced = !drivers.some((x) => x.id === d.id && x.teamId === state.selectedTeamId);
+    const contractRenewed = (d.contractYearsRemaining ?? 0) > 0;
+    const wasPromoted = d.contractType !== 'reserve' && d.contractType !== 'third' && d.contractType !== 'test';
+    const gotPracticeTime = true; // simplified — if the driver was on the team, they got practice
+    const resolutions = evaluatePromisesAtSeasonEnd(seasonEndPromises, d.id, {
+      contractRenewed,
+      wasReplaced,
+      wasPromoted,
+      gotPracticeTime,
+    });
+    for (const res of resolutions) {
+      const resolved = resolvePromise(res.promise, res.fulfilled);
+      seasonEndPromises = seasonEndPromises.map((p) =>
+        p.id === resolved.id ? resolved : p,
+      );
+      finalRelationships = applyPromiseResolution(finalRelationships, resolved);
+    }
   }
 
   const relationshipNotes: string[] = [];
@@ -892,6 +940,13 @@ export function advanceSeason(state: GameState): GameState {
       const confState = computeConfidenceState(rolled);
       if (confState === 'Frustrated' || confState === 'Disillusioned' || confState === 'Checked Out') {
         relationshipNotes.push(`${d.name} is ${confState.toLowerCase()} and may need attention.`);
+      }
+      // Contract loyalty risk — drivers with very negative modifiers may leave.
+      const loyaltyMod = contractLoyaltyModifier(rolled);
+      if (loyaltyMod <= -8) {
+        relationshipNotes.push(`${d.name} is disillusioned and will leave at the first opportunity.`);
+      } else if (loyaltyMod <= -4) {
+        relationshipNotes.push(`${d.name} is unhappy and actively looking for a way out.`);
       }
     }
   }
@@ -1188,7 +1243,7 @@ export function advanceSeason(state: GameState): GameState {
     jobOffers: nextJobOffers,
     acceptedJobOfferId: undefined,
     driverRelationships: finalRelationships,
-    driverPromises: checkedPromises,
+    driverPromises: seasonEndPromises,
     teamOrderHistory: [],
     regulationHistory: regulationHistoryWithVotes,
     regulationProposals: nextProposals,
