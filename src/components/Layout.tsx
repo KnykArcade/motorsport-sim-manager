@@ -3,7 +3,7 @@ import { NavLink, useNavigate } from 'react-router-dom';
 import { useGame } from '../game/GameContext';
 import { teamById, currentRace } from '../game/careerState';
 import { formatMoney } from './ui';
-import { getHiddenNavRoutes } from '../game/modeRestrictions';
+import { getHiddenNavRoutes, getGameModeLabel } from '../game/modeRestrictions';
 
 const NAV = [
   { to: '/hq', label: 'Team HQ', icon: '◧' },
@@ -89,7 +89,7 @@ export function Layout({ children }: { children: ReactNode }) {
                 <span className="h-5 w-1.5 rounded-sm" style={{ backgroundColor: team.color }} />
                 <span className="font-semibold text-neutral-100">{team.name}</span>
                 <span className="rounded bg-neutral-800 px-2 py-0.5 text-xs text-neutral-400">
-                  {state?.gameMode === 'Career' ? 'Career' : 'Single Season'}
+                  {getGameModeLabel(state?.gameMode)}
                 </span>
               </div>
             )}

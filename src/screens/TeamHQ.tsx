@@ -8,6 +8,7 @@ import {
   teamById,
 } from '../game/careerState';
 import { effectiveCarRatings } from '../sim/trackFitEngine';
+import { getGameModeLabel } from '../game/modeRestrictions';
 import { getTrackById } from '../data';
 import { Panel } from '../components/Panel';
 import { Button } from '../components/Button';
@@ -55,7 +56,7 @@ export function TeamHQ() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-neutral-100">{team?.name} — Team HQ</h1>
-          <p className="text-sm text-neutral-400">{state.seasonYear} {state.series} · {state.gameMode === 'Career' ? 'Career Mode' : 'Single Season'}</p>
+          <p className="text-sm text-neutral-400">{state.seasonYear} {state.series} · {getGameModeLabel(state.gameMode)}</p>
         </div>
         {state.seasonComplete ? (
           <Button variant="primary" onClick={() => navigate('/season-review')}>
