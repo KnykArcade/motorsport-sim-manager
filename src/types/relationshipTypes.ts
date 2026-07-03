@@ -55,7 +55,7 @@ export type DriverWant =
   | 'practice_time'
   | 'team_stability';
 
-export type PromiseStatus = 'active' | 'kept' | 'broken' | 'expired';
+export type PromiseStatus = 'active' | 'kept' | 'broken' | 'expired' | 'cancelled';
 
 export type PromiseType =
   | 'equal_treatment'

@@ -186,5 +186,5 @@ export const season2022IndyCar: Season = {
   series: 'IndyCar',
   calendar: calendar2022IndyCar,
   pointsSystemId: 'pts-indycar-2022',
-  regulationSetId: 'reg-1995',
+  regulationSetId: 'reg-indycar-2018-2023',
 };

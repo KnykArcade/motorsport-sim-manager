@@ -186,5 +186,5 @@ export const season2019IndyCar: Season = {
   series: 'IndyCar',
   calendar: calendar2019IndyCar,
   pointsSystemId: 'pts-indycar-2019',
-  regulationSetId: 'reg-1995',
+  regulationSetId: 'reg-indycar-2018-2023',
 };

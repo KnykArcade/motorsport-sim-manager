@@ -132,6 +132,7 @@ export type GameState = {
   // 8. Driver relationships + team-order decisions taken this season.
   driverRelationships?: Record<string, DriverRelationship>;
   driverPromises?: DriverPromise[];
+  promiseCounter?: number;
   teamOrderHistory?: TeamOrderDecision[];
   // 9. Regulation voting / political system (career mode offseason): proposals
   //    up for the next season's vote, plus the historical record of outcomes.

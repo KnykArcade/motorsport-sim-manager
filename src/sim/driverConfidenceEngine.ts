@@ -309,6 +309,31 @@ export function applyConfidenceUpdates(
 // Promise management
 // ---------------------------------------------------------------------------
 
+// Centralized promise ID generation using a monotonic counter from game state.
+// This prevents ID collisions when the same driver receives the same promise
+// type in the same season/round.
+export function createPromiseId(
+  driverId: string,
+  promiseType: PromiseType,
+  season: number,
+  round: number,
+  counter: number,
+): string {
+  return `promise-${driverId}-${promiseType}-${season}-${round}-${counter}`;
+}
+
+// Check if a driver already has an active promise of the same type.
+// Duplicate active promises of the same type for the same driver are blocked.
+export function hasActivePromiseOfType(
+  promises: DriverPromise[],
+  driverId: string,
+  promiseType: PromiseType,
+): boolean {
+  return promises.some(
+    (p) => p.driverId === driverId && p.promiseType === promiseType && p.status === 'active',
+  );
+}
+
 export function makePromise(
   driverId: string,
   promiseType: PromiseType,
@@ -316,9 +341,10 @@ export function makePromise(
   round: number,
   dueSeason?: number,
   dueRound?: number,
+  counter: number = 0,
 ): DriverPromise {
   return {
-    id: `promise-${driverId}-${promiseType}-${season}-${round}`,
+    id: createPromiseId(driverId, promiseType, season, round, counter),
     driverId,
     promiseType,
     madeRound: round,
@@ -358,13 +384,17 @@ export function applyPromiseResolution(
 ): Record<string, DriverRelationship> {
   const rel = relationships[promise.driverId];
   if (!rel) return relationships;
+  const isPositive = promise.trustImpact > 0;
   return {
     ...relationships,
     [promise.driverId]: {
       ...rel,
       trustInPrincipal: clamp(rel.trustInPrincipal + promise.trustImpact),
+      trustInTeam: clamp(rel.trustInTeam + Math.round(promise.trustImpact * 0.6)),
       morale: clamp(rel.morale + promise.moraleImpact),
+      teamLoyalty: clamp(rel.teamLoyalty + Math.round(promise.trustImpact * 0.4)),
       frustration: clamp(rel.frustration - Math.round(promise.moraleImpact / 2)),
+      selfConfidence: clamp(rel.selfConfidence + (isPositive ? Math.round(promise.trustImpact * 0.3) : -Math.round(promise.trustImpact * 0.2))),
     },
   };
 }
@@ -381,8 +411,30 @@ export function checkExpiredPromises(
       result.push(p);
       continue;
     }
+    // Case 1: Both dueSeason and dueRound are set — expire when past that round.
     if (p.dueSeason !== undefined && p.dueRound !== undefined) {
       if (currentSeason > p.dueSeason || (currentSeason === p.dueSeason && currentRound > p.dueRound)) {
+        const expiredPromise = expirePromise(p);
+        expired.push(expiredPromise);
+        result.push(expiredPromise);
+        continue;
+      }
+    }
+    // Case 2: Only dueSeason is set (no dueRound) — expire when past that season.
+    // This handles promises due by end of a specific season.
+    if (p.dueSeason !== undefined && p.dueRound === undefined) {
+      if (currentSeason > p.dueSeason) {
+        const expiredPromise = expirePromise(p);
+        expired.push(expiredPromise);
+        result.push(expiredPromise);
+        continue;
+      }
+    }
+    // Case 3: No dueSeason and no dueRound — default to expiring at end of
+    // the current season (when currentRound is 0 and we've moved to a new
+    // season, or when the season rollover triggers with nextYear > madeSeason).
+    if (p.dueSeason === undefined && p.dueRound === undefined) {
+      if (currentSeason > p.madeSeason) {
         const expiredPromise = expirePromise(p);
         expired.push(expiredPromise);
         result.push(expiredPromise);
@@ -565,6 +617,9 @@ export function evaluatePromisesAtSeasonEnd(
     wasReplaced: boolean;
     wasPromoted: boolean;
     gotPracticeTime: boolean;
+    carImproved?: boolean;
+    reliabilityImproved?: boolean;
+    developmentPriorityGiven?: boolean;
   },
 ): PromiseResolution[] {
   const results: PromiseResolution[] = [];
@@ -609,6 +664,36 @@ export function evaluatePromisesAtSeasonEnd(
           reason: context.gotPracticeTime
             ? 'Practice time provided — promise fulfilled.'
             : 'Practice time not provided — promise broken.',
+        });
+        break;
+      }
+      case 'development_priority': {
+        results.push({
+          promise: p,
+          fulfilled: context.developmentPriorityGiven ?? false,
+          reason: context.developmentPriorityGiven
+            ? 'Development priority was given — promise fulfilled.'
+            : 'Development priority was not given — promise broken.',
+        });
+        break;
+      }
+      case 'priority_upgrades': {
+        results.push({
+          promise: p,
+          fulfilled: context.developmentPriorityGiven ?? false,
+          reason: context.developmentPriorityGiven
+            ? 'Priority upgrades were allocated — promise fulfilled.'
+            : 'Priority upgrades were not allocated — promise broken.',
+        });
+        break;
+      }
+      case 'improved_reliability': {
+        results.push({
+          promise: p,
+          fulfilled: context.reliabilityImproved ?? false,
+          reason: context.reliabilityImproved
+            ? 'Reliability improved over the season — promise fulfilled.'
+            : 'Reliability did not improve — promise broken.',
         });
         break;
       }

@@ -216,5 +216,5 @@ export const season2017: Season = {
   series: 'F1',
   calendar: calendar2017,
   pointsSystemId: 'pts-modern',
-  regulationSetId: 'reg-1995',
+  regulationSetId: 'reg-f1-2014-2020',
 };
