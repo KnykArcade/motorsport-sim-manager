@@ -177,6 +177,9 @@ export function TeamOverview() {
                     {row.archetypeLabel && (
                       <div className="text-[11px] text-neutral-500">{row.archetypeLabel}</div>
                     )}
+                    {row.philosophyLabel && (
+                      <div className="text-[10px] text-neutral-600">{row.philosophyLabel}</div>
+                    )}
                   </td>
                   <td className="px-2 py-2">
                     <span
@@ -283,7 +286,7 @@ function TeamDetail({
             )}
           </div>
 
-          {(row.archetypeLabel || row.goalLabel) && (
+          {(row.archetypeLabel || row.goalLabel || row.philosophyLabel) && (
             <div className="text-sm text-neutral-400">
               {row.archetypeLabel && (
                 <span>
@@ -293,6 +296,11 @@ function TeamDetail({
               {row.goalLabel && (
                 <span className="ml-3">
                   Goal: <span className="text-neutral-200">{row.goalLabel}</span>
+                </span>
+              )}
+              {row.philosophyLabel && (
+                <span className="ml-3">
+                  Identity: <span className="text-neutral-200">{row.philosophyLabel}</span>
                 </span>
               )}
             </div>

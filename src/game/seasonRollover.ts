@@ -35,6 +35,12 @@ import { resolveDriverBid } from '../sim/driverBiddingEngine';
 import { marketDriverOfferInterest } from '../sim/crossSeriesEngine';
 import { carPerformanceRating } from '../sim/trackFitEngine';
 import { driverSalary, makeTransaction, toMoney } from '../sim/financeEngine';
+import {
+  driverSignedNews,
+  driverBiddingLostNews,
+  driverRefusedNews,
+  generateMarketDramaNews,
+} from '../sim/marketDramaEngine';
 import { thirdDriverAmbitions, THIRD_DRIVER_SALARY_FACTOR } from '../sim/contractEngine';
 import {
   evaluateSeasonObjectives,
@@ -961,6 +967,7 @@ export function advanceSeason(state: GameState): GameState {
     `${state.randomSeed}-reg-${nextYear}`,
     3,
     state.series,
+    aiRollover.states,
   );
 
   // Driver aging & development (Living Universe Phase 10): every driver ages a
@@ -1096,6 +1103,27 @@ export function advanceSeason(state: GameState): GameState {
 
   // --- Financial distress consequences & principal pressure evaluation ---
   const rolloverNews: typeof state.news = [];
+  rolloverNews.push(...voteResolution.news);
+
+  // Driver market drama news: signings, bidding losses, refusals.
+  const playerTeamName = playerTeam?.name ?? 'Your team';
+  for (const sign of signings) {
+    if (sign.source !== 'market') continue;
+    const m = market?.drivers.find((d) => d.id === sign.sourceId);
+    if (!m) continue;
+    if (marketBidWon.get(sign.sourceId) === false) {
+      const res = resolveDriverBid(sign.bid ?? m.buyoutCost, m, playerTeamOverall, state.randomSeed);
+      if (res.refused) {
+        rolloverNews.push(driverRefusedNews(m.name, state.series, nextYear, m.id));
+      } else {
+        rolloverNews.push(driverBiddingLostNews(m.name, playerTeamName, res.rivalBid, nextYear, m.id));
+      }
+    } else {
+      rolloverNews.push(driverSignedNews(m.name, playerTeamName, state.selectedTeamId, m.id, nextYear, m.overall >= 8));
+    }
+  }
+  // Random paddock market drama.
+  rolloverNews.push(...generateMarketDramaNews(state.randomSeed, nextYear, 2));
   let teamsAfterDistress = gridFilled.teams;
   const financialDistress = { ...state.financialDistress };
   const closureHooks = [...(state.closureHooks ?? [])];

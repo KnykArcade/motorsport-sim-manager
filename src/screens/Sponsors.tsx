@@ -9,6 +9,7 @@ import {
   sponsorSlotCapacity,
 } from '../sim/commercialEngine';
 import type { Sponsor } from '../types/sponsorTypes';
+import { OWNER_PERSONALITY_LABELS, OWNER_PERSONALITY_DESCRIPTIONS } from '../types/expectationTypes';
 
 const TYPE_LABEL: Record<Sponsor['type'], string> = {
   Title: 'Title',
@@ -181,6 +182,15 @@ export function Sponsors() {
       {expectation && (
         <Panel title="Owner Expectations">
           <div className="space-y-2 text-sm">
+            {reputation?.ownerPersonality && (
+              <div className="mb-2 rounded bg-neutral-800/50 px-3 py-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-neutral-300">Owner type</span>
+                  <span className="font-semibold text-neutral-100">{OWNER_PERSONALITY_LABELS[reputation.ownerPersonality]}</span>
+                </div>
+                <div className="mt-1 text-xs text-neutral-500">{OWNER_PERSONALITY_DESCRIPTIONS[reputation.ownerPersonality]}</div>
+              </div>
+            )}
             <div className="flex items-center justify-between">
               <span className="text-neutral-300">Primary objective</span>
               <span className="font-semibold text-neutral-100">{expectation.primaryObjective}</span>

@@ -13,6 +13,8 @@ import type {
   AITeamBudget,
   AITeamGoal,
   AITeamState,
+  TeamPhilosophy,
+  TeamPhilosophyTrait,
 } from '../types/aiTeamTypes';
 import { MILLION, driverSalary, toMoney } from './financeEngine';
 import { carPerformanceRating } from './trackFitEngine';
@@ -129,6 +131,65 @@ export const GOAL_LABELS: Record<AITeamGoal, string> = {
   Survival: 'Survive the Season',
   YouthDevelopment: 'Develop Young Talent',
 };
+
+// --- Philosophy (persistent identity) ----------------------------------------
+
+export const TRAIT_LABELS: Record<TeamPhilosophyTrait, string> = {
+  TechnicalInnovator: 'Technical Innovator',
+  Traditionalist: 'Traditionalist',
+  RiskTaker: 'Risk Taker',
+  PeopleFirst: 'People First',
+  DataDriven: 'Data Driven',
+  Maverick: 'Maverick',
+  Disciplined: 'Disciplined',
+  StarMaker: 'Star Maker',
+};
+
+// Archetype-to-trait affinities: each archetype naturally gravitates toward
+// certain traits. Philosophy generation picks from these first, then adds a
+// random trait for variety.
+const ARCHETYPE_TRAIT_AFFINITIES: Record<AITeamArchetype, TeamPhilosophyTrait[]> = {
+  ChampionshipContender: ['RiskTaker', 'DataDriven', 'Disciplined'],
+  AmbitiousBuilder: ['TechnicalInnovator', 'RiskTaker', 'Disciplined'],
+  DevelopmentFocused: ['StarMaker', 'DataDriven', 'PeopleFirst'],
+  FinanciallyConservative: ['Disciplined', 'Traditionalist', 'DataDriven'],
+  PayDriverReliant: ['Maverick', 'Traditionalist'],
+  AggressiveSpender: ['RiskTaker', 'Maverick', 'TechnicalInnovator'],
+  YouthFocused: ['StarMaker', 'PeopleFirst', 'TechnicalInnovator'],
+  SurvivalMode: ['Traditionalist', 'Disciplined'],
+};
+
+function generatePhilosophy(
+  team: Team,
+  archetype: AITeamArchetype,
+  seed: string,
+): TeamPhilosophy {
+  const rng = createSeededRandom(deriveSeed(seed, 'philosophy', team.id));
+  const affinities = ARCHETYPE_TRAIT_AFFINITIES[archetype];
+  const traits: TeamPhilosophyTrait[] = [];
+
+  // Pick 2 affinity traits (deterministic).
+  const shuffled = [...affinities].sort(() => rng.next() - 0.5);
+  traits.push(shuffled[0]);
+
+  // 50% chance to add a second affinity trait, otherwise add a random one for variety.
+  if (rng.next() < 0.5 && shuffled.length > 1) {
+    traits.push(shuffled[1]);
+  } else {
+    const allTraits: TeamPhilosophyTrait[] = [
+      'TechnicalInnovator', 'Traditionalist', 'RiskTaker', 'PeopleFirst',
+      'DataDriven', 'Maverick', 'Disciplined', 'StarMaker',
+    ];
+    const remaining = allTraits.filter((t) => !traits.includes(t));
+    const idx = Math.floor(rng.next() * remaining.length);
+    traits.push(remaining[idx]);
+  }
+
+  const traitLabels = traits.map((t) => TRAIT_LABELS[t]);
+  const description = `${team.name} is known as a ${traitLabels.join(' & ')} team.`;
+
+  return { traits, description };
+}
 
 // --- Archetype assignment ----------------------------------------------------
 
@@ -383,12 +444,14 @@ export function buildAITeamState(state: GameState, team: Team): AITeamState {
   const budget = estimateAIBudget(state, team, org, archetype, position);
   const health = financialHealth(budget);
   const goal = aiTeamGoal(archetype, position, state.teams.length, health);
+  const philosophy = generatePhilosophy(team, archetype, state.randomSeed);
   return {
     teamId: team.id,
     archetype,
     financialHealth: health,
     goal,
     budget,
+    philosophy,
     seasonsInTrouble: health === 'AtRisk' || health === 'Critical' ? 1 : 0,
     lastConstructorPosition: state.constructorStandings.length ? position : undefined,
   };
@@ -449,12 +512,19 @@ export function rolloverAITeamStates(state: GameState): AIRolloverResult {
     // budgets reflect real earnings and costs rather than ballooning.
     budgetDeltaByTeam[team.id] = budget.netResult;
 
+    // Philosophy persists across seasons unless the archetype changed — then
+    // regenerate to reflect the team's new identity direction.
+    const philosophy = archetype !== archetype0
+      ? generatePhilosophy(team, archetype, `${state.randomSeed}-${state.seasonYear}`)
+      : prevState?.philosophy ?? generatePhilosophy(team, archetype, state.randomSeed);
+
     states[team.id] = {
       teamId: team.id,
       archetype,
       financialHealth: health,
       goal,
       budget,
+      philosophy,
       seasonsInTrouble,
       lastConstructorPosition: position,
     };
@@ -467,6 +537,9 @@ export function rolloverAITeamStates(state: GameState): AIRolloverResult {
         notes.push(`${team.name} stabilizes its finances and steadies the ship.`);
       } else if (archetype === 'AggressiveSpender' || archetype === 'AmbitiousBuilder') {
         notes.push(`${team.name} shifts to ${ARCHETYPE_SPECS[archetype].label} after fresh investment.`);
+      }
+      if (philosophy) {
+        notes.push(`${team.name}'s identity: ${philosophy.description}`);
       }
     }
   }

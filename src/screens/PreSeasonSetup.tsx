@@ -17,6 +17,7 @@ import { TrackDemandBars } from '../components/TrackDemandBars';
 import { NewsPanel } from '../components/NewsPanel';
 import { formatMoney } from '../components/ui';
 import { isPreseasonChecklistComplete, getPreseasonApprovals } from '../game/careerPhaseEngine';
+import { OWNER_PERSONALITY_LABELS, OWNER_PERSONALITY_DESCRIPTIONS } from '../types/expectationTypes';
 
 export function PreSeasonSetup() {
   const { state, dispatch } = useGame();
@@ -327,6 +328,15 @@ export function PreSeasonSetup() {
           <Panel title="Season Objectives">
             {expectation ? (
               <div className="space-y-1 text-sm">
+                {state.teamReputations?.[state.selectedTeamId]?.ownerPersonality && (
+                  <div className="mb-2 rounded bg-neutral-800/50 px-3 py-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-neutral-300">Owner type</span>
+                      <span className="font-semibold text-neutral-100">{OWNER_PERSONALITY_LABELS[state.teamReputations[state.selectedTeamId].ownerPersonality!]}</span>
+                    </div>
+                    <div className="mt-1 text-xs text-neutral-500">{OWNER_PERSONALITY_DESCRIPTIONS[state.teamReputations[state.selectedTeamId].ownerPersonality!]}</div>
+                  </div>
+                )}
                 <div className="text-neutral-200">{expectation.primaryObjective}</div>
                 {expectation.secondaryObjectives.length > 0 && (
                   <div className="text-neutral-400">{expectation.secondaryObjectives.join(', ')}</div>

@@ -3,6 +3,7 @@ import { teamById } from '../game/careerState';
 import { toMoney } from '../sim/financeEngine';
 import {
   FACILITY_SPECS,
+  SPECIALIZATION_FACILITIES,
   canUpgrade,
   facilityDevelopmentSuccessBonus,
   facilityRepairCostReduction,
@@ -13,7 +14,11 @@ import {
 import { Panel } from '../components/Panel';
 import { Button } from '../components/Button';
 import { formatMoney } from '../components/ui';
-import type { Facility } from '../types/facilityTypes';
+import type { Facility, FacilitySpecialization } from '../types/facilityTypes';
+import {
+  FACILITY_SPECIALIZATION_LABELS,
+  FACILITY_SPECIALIZATION_DESCRIPTIONS,
+} from '../types/facilityTypes';
 
 const EFFECT_LABELS: Record<string, string> = {
   developmentSuccess: 'Dev success',
@@ -57,6 +62,47 @@ export function Facilities() {
         <Kpi label="Repair Savings" value={`${Math.round(facilityRepairCostReduction(fs) * 100)}%`} />
         <Kpi label="Youth Growth" value={`+${Math.round(facilityYouthDevelopmentBonus(fs) * 100)}%`} />
       </div>
+
+      {fs && (
+        <Panel title="Facility Specialization">
+          <p className="mb-3 text-sm text-neutral-400">
+            Declare your team's infrastructure focus for the season. Boosted facilities gain +25% effect.
+          </p>
+          <div className="grid gap-2 sm:grid-cols-3 lg:grid-cols-5">
+            {(Object.keys(FACILITY_SPECIALIZATION_LABELS) as FacilitySpecialization[]).map((spec) => {
+              const active = fs.specialization === spec;
+              const boosted = SPECIALIZATION_FACILITIES[spec];
+              return (
+                <button
+                  key={spec}
+                  onClick={() => dispatch({ type: 'SET_FACILITY_SPECIALIZATION', specialization: spec })}
+                  className={`rounded-lg border p-3 text-left transition-colors ${
+                    active
+                      ? 'border-amber-500 bg-amber-900/20'
+                      : 'border-neutral-800 bg-neutral-900/40 hover:border-neutral-700'
+                  }`}
+                >
+                  <div className={`text-sm font-semibold ${active ? 'text-amber-300' : 'text-neutral-200'}`}>
+                    {FACILITY_SPECIALIZATION_LABELS[spec]}
+                  </div>
+                  <div className="mt-1 text-[11px] text-neutral-500">
+                    {FACILITY_SPECIALIZATION_DESCRIPTIONS[spec]}
+                  </div>
+                  {boosted.length > 0 && (
+                    <div className="mt-1.5 flex flex-wrap gap-1">
+                      {boosted.map((ft) => (
+                        <span key={ft} className="rounded bg-neutral-800/60 px-1.5 py-0.5 text-[10px] text-neutral-400">
+                          {FACILITY_SPECS[ft].label}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                </button>
+              );
+            })}
+          </div>
+        </Panel>
+      )}
 
       {!fs ? (
         <Panel title="Facilities">
