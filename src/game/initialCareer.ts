@@ -122,6 +122,7 @@ export function createNewGame(options: NewGameOptions): GameState {
     bundle.drivers,
     teamReputations,
     seed,
+    bundle.cars,
   );
 
   // Regulation voting / politics (Living Universe Phase 8): proposals up for a

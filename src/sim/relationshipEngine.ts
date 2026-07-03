@@ -70,6 +70,7 @@ function generateWants(
   team: Team,
   isNumberOne: boolean,
   traits: DriverPersonalityTrait[],
+  car: { reliability: number } | undefined,
 ): DriverWant[] {
   const wants: DriverWant[] = [];
   if (isNumberOne) wants.push('number_one_status');
@@ -79,7 +80,9 @@ function generateWants(
   if ((driver.contractYearsRemaining ?? 1) <= 1) wants.push('contract_renewal');
   if (traits.includes('Ambitious') && team.reputation < 60) wants.push('development_priority');
   if (traits.includes('Money Motivated')) wants.push('better_salary');
-  // Cap at 3.
+  if (car && car.reliability < 60) wants.push('better_reliability');
+  if (team.morale < 45) wants.push('team_stability');
+  // Cap at 3, preserving priority order: role > car > contract > traits.
   return wants.slice(0, 3);
 }
 
@@ -89,6 +92,7 @@ function seedRelationship(
   team: Team,
   isNumberOne: boolean,
   rng: Rng,
+  car: { reliability: number } | undefined,
 ): DriverRelationship {
   const v = () => rng.variance(8);
   const loyalty = clamp(Math.round(48 + (driver.contractYearsRemaining ?? 1) * 4 + v()));
@@ -100,7 +104,7 @@ function seedRelationship(
   if (driver.ratings.aggression >= 7) teammateRel -= 8;
 
   const personalityTraits = generatePersonalityTraits(driver, isNumberOne, rng);
-  const wants = generateWants(driver, team, isNumberOne, personalityTraits);
+  const wants = generateWants(driver, team, isNumberOne, personalityTraits, car);
   const ego = clamp(Math.round(
     (isNumberOne ? 65 : 45) +
     (driver.ratings.overall - 6) * 5 +
@@ -136,6 +140,7 @@ export function createDriverRelationships(
   drivers: Driver[],
   reputations: Record<string, TeamReputation> | undefined,
   seed: string,
+  cars?: { teamId: string; ratings: { reliability: number } }[],
 ): Record<string, DriverRelationship> {
   const byTeam = new Map<string, Driver[]>();
   for (const d of drivers) {
@@ -155,12 +160,13 @@ export function createDriverRelationships(
     );
     const gap = active.length === 2 ? Math.abs(active[0].ratings.overall - active[1].ratings.overall) : 1;
 
+    const teamCar = cars?.find((c) => c.teamId === team.id);
     roster.forEach((d, i) => {
       const teammate = i === 0 ? active[1] : i === 1 ? active[0] : undefined;
       const isNumberOne =
         i < 2 && !!lead && d.id === lead.id && prestige >= 40 && (gap >= 0.5 || d.ratings.overall >= 8.3);
       const rng = createSeededRandom(deriveSeed(seed, 'relationship', d.id));
-      rels[d.id] = seedRelationship(d, teammate, team, isNumberOne, rng);
+      rels[d.id] = seedRelationship(d, teammate, team, isNumberOne, rng, teamCar ? { reliability: teamCar.ratings.reliability } : undefined);
     });
   }
   return rels;
@@ -175,8 +181,9 @@ export function rolloverRelationships(
   drivers: Driver[],
   reputations: Record<string, TeamReputation> | undefined,
   seed: string,
+  cars?: { teamId: string; ratings: { reliability: number } }[],
 ): Record<string, DriverRelationship> {
-  const reseeded = createDriverRelationships(teams, drivers, reputations, seed);
+  const reseeded = createDriverRelationships(teams, drivers, reputations, seed, cars);
   const merged: Record<string, DriverRelationship> = {};
   for (const d of drivers) {
     const fresh = reseeded[d.id];
@@ -184,6 +191,9 @@ export function rolloverRelationships(
     if (before && before.teamId === d.teamId) {
       merged[d.id] = {
         ...fresh,
+        // Preserve personality traits from the previous season — a driver's
+        // personality should not randomly change each year.
+        personalityTraits: before.personalityTraits,
         teamLoyalty: clamp(Math.round(before.teamLoyalty * 0.85 + 50 * 0.15)),
         engineerChemistry: clamp(before.engineerChemistry + 4),
         morale: clamp(Math.round(before.morale * 0.5 + 60 * 0.5)),
@@ -264,7 +274,7 @@ export function syncDriverRelationshipsForTeam(
       trustInPrincipal: clamp(Math.round(58 + v())),
       ego: clamp(Math.round(45 + (driver.ratings.overall - 6) * 5 + v())),
       personalityTraits: generatePersonalityTraits(driver, false, rng),
-      wants: generateWants(driver, team, false, generatePersonalityTraits(driver, false, rng)),
+      wants: generateWants(driver, team, false, generatePersonalityTraits(driver, false, rng), undefined),
     };
   }
 

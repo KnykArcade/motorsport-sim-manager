@@ -278,6 +278,78 @@ describe('driverConfidenceEngine — wants evaluation', () => {
     expect(unfulfilled).toContain('podium_capable_car');
     expect(satisfied).toContain('contract_renewal');
   });
+
+  it('evaluates development_priority as satisfied when team reputation is low', () => {
+    const rel = baseRel({ wants: ['development_priority'] });
+    const { satisfied } = evaluateWants(rel, {
+      teamReputation: 40,
+      contractYearsRemaining: 2,
+      isNumberOne: true,
+      carReliability: 60,
+      teamStability: 70,
+    });
+    expect(satisfied).toContain('development_priority');
+  });
+
+  it('evaluates development_priority as unfulfilled when team reputation is high', () => {
+    const rel = baseRel({ wants: ['development_priority'] });
+    const { unfulfilled } = evaluateWants(rel, {
+      teamReputation: 70,
+      contractYearsRemaining: 2,
+      isNumberOne: true,
+      carReliability: 60,
+      teamStability: 70,
+    });
+    expect(unfulfilled).toContain('development_priority');
+  });
+
+  it('evaluates better_salary as satisfied with long contract', () => {
+    const rel = baseRel({ wants: ['better_salary'] });
+    const { satisfied } = evaluateWants(rel, {
+      teamReputation: 50,
+      contractYearsRemaining: 3,
+      isNumberOne: true,
+      carReliability: 60,
+      teamStability: 70,
+    });
+    expect(satisfied).toContain('better_salary');
+  });
+
+  it('evaluates better_salary as unfulfilled with short contract', () => {
+    const rel = baseRel({ wants: ['better_salary'] });
+    const { unfulfilled } = evaluateWants(rel, {
+      teamReputation: 50,
+      contractYearsRemaining: 1,
+      isNumberOne: true,
+      carReliability: 60,
+      teamStability: 70,
+    });
+    expect(unfulfilled).toContain('better_salary');
+  });
+
+  it('evaluates better_reliability as unfulfilled when car reliability is low', () => {
+    const rel = baseRel({ wants: ['better_reliability'] });
+    const { unfulfilled } = evaluateWants(rel, {
+      teamReputation: 50,
+      contractYearsRemaining: 2,
+      isNumberOne: true,
+      carReliability: 50,
+      teamStability: 70,
+    });
+    expect(unfulfilled).toContain('better_reliability');
+  });
+
+  it('evaluates team_stability as unfulfilled when team stability is low', () => {
+    const rel = baseRel({ wants: ['team_stability'] });
+    const { unfulfilled } = evaluateWants(rel, {
+      teamReputation: 50,
+      contractYearsRemaining: 2,
+      isNumberOne: true,
+      carReliability: 60,
+      teamStability: 40,
+    });
+    expect(unfulfilled).toContain('team_stability');
+  });
 });
 
 describe('driverConfidenceEngine — contract loyalty', () => {

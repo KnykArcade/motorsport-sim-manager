@@ -880,6 +880,7 @@ export function advanceSeason(state: GameState, nextBundle?: SeasonBundle): Game
     drivers,
     teamReputations,
     `${state.randomSeed}-rel-${nextYear}`,
+    cars,
   );
   // Sync player team relationships to ensure roster changes are reflected.
   const syncedRelationships = syncDriverRelationshipsForTeam(

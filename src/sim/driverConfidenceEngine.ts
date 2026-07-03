@@ -509,6 +509,15 @@ export function evaluateWants(
         if (context.teamStability >= 60) satisfied.push(want);
         else unfulfilled.push(want);
         break;
+      case 'development_priority':
+        if (context.teamReputation < 60) satisfied.push(want);
+        else unfulfilled.push(want);
+        break;
+      case 'better_salary':
+        // A driver with a long contract is satisfied on salary; short = unfulfilled.
+        if (context.contractYearsRemaining >= 2) satisfied.push(want);
+        else unfulfilled.push(want);
+        break;
       default:
         satisfied.push(want);
         break;
