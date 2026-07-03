@@ -200,7 +200,7 @@ export type GameAction =
   | { type: 'SWAP_RACE_DRIVER'; seatIndex: number; reserveDriverId: string }
   | { type: 'SIGN_THIRD_DRIVER'; marketId: string }
   | { type: 'PROMOTE_THIRD_DRIVER'; seatDriverId: string; thirdDriverId: string }
-  | { type: 'ADVANCE_SEASON' }
+  | { type: 'ADVANCE_SEASON'; nextBundle?: import('../data/seasonCatalog').SeasonBundle }
   | { type: 'ADVANCE_RACE' }
   | { type: 'SIGN_RACE_DRIVER'; marketId: string }
   | { type: 'SELECT_RACE_WEEKEND_PACKAGE'; packageType: RaceWeekendPackageType }
@@ -650,7 +650,7 @@ export function gameReducer(state: GameState | null, action: GameAction): GameSt
     case 'ADVANCE_SEASON': {
       if (!state) return state;
       if (!state.seasonComplete) return state;
-      return advanceSeason(state);
+      return advanceSeason(state, action.nextBundle);
     }
 
     case 'ADVANCE_RACE': {

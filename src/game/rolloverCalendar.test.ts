@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { createNewGame } from './initialCareer';
 import { advanceSeason } from './seasonRollover';
-import { getSeasonBundle } from '../data';
+import { getSeasonBundle } from '../data/seasonData';
 
 describe('season rollover calendar', () => {
   it('loads the next year schedule and points system when advancing', () => {

@@ -4,7 +4,8 @@
 // season for a fresh championship. Only the player's seats change; the AI grid
 // is stable for now. Pure and deterministic.
 
-import { getSeasonBundle } from '../data';
+import { getCachedBundle } from '../data/seasonLoader';
+import type { SeasonBundle } from '../data/seasonCatalog';
 import { defaultCareerPhaseState } from './careerPhaseEngine';
 import {
   careerMarketBundle,
@@ -290,7 +291,7 @@ function fillEmptyRaceSeats(
   return { drivers: nextDrivers, teams: nextTeams };
 }
 
-export function advanceSeason(state: GameState): GameState {
+export function advanceSeason(state: GameState, nextBundle?: SeasonBundle): GameState {
   const nextYear = state.seasonYear + 1;
   const mobilityMode: CareerMobilityMode = state.careerMobilityMode ?? 'StandardCareer';
   // Living career market: the curated season file plus registry free agents /
@@ -842,8 +843,8 @@ export function advanceSeason(state: GameState): GameState {
   // we have data for it; otherwise reuse the current calendar. The career's
   // teams/drivers carry over as alternate history — only the schedule follows
   // the new season.
-  const nextBundle = getSeasonBundle(nextYear, state.series);
-  const nextSeason = nextBundle?.season;
+  const resolvedBundle = nextBundle ?? getCachedBundle(nextYear, state.series);
+  const nextSeason = resolvedBundle?.season;
   const calendar = (nextSeason?.calendar ?? state.calendar).map((r) => ({
     ...r,
     completed: false,

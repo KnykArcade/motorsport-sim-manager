@@ -9,11 +9,15 @@ describe('lazySeasonData', () => {
     it('returns true for 2000 F1', () => {
       expect(hasLazyLoader(2000, 'F1')).toBe(true);
     });
-    it('returns false for seasons without lazy loaders', () => {
-      expect(hasLazyLoader(2026, 'F1')).toBe(false);
+    it('returns true for 2026 F1', () => {
+      expect(hasLazyLoader(2026, 'F1')).toBe(true);
     });
-    it('returns false for IndyCar seasons', () => {
-      expect(hasLazyLoader(2024, 'IndyCar')).toBe(false);
+    it('returns true for 2024 IndyCar', () => {
+      expect(hasLazyLoader(2024, 'IndyCar')).toBe(true);
+    });
+    it('returns false for seasons outside the range', () => {
+      expect(hasLazyLoader(1989, 'F1')).toBe(false);
+      expect(hasLazyLoader(2027, 'F1')).toBe(false);
     });
   });
 
@@ -28,7 +32,7 @@ describe('lazySeasonData', () => {
     });
 
     it('returns undefined for seasons without loaders', async () => {
-      const bundle = await lazyGetSeasonBundle(2026, 'F1');
+      const bundle = await lazyGetSeasonBundle(1989, 'F1');
       expect(bundle).toBeUndefined();
     });
 
@@ -46,7 +50,7 @@ describe('lazySeasonData', () => {
       await lazyGetSeasonBundle(1991, 'F1');
     });
     it('does not throw for seasons without loaders', () => {
-      expect(() => preloadSeasonBundle(2026, 'IndyCar')).not.toThrow();
+      expect(() => preloadSeasonBundle(1989, 'F1')).not.toThrow();
     });
   });
 });

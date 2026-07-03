@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { regulationSets, getRegulationSet } from './regulations';
-import { seasonBundles, getSeasonBundle } from '../index';
+import { seasonBundles, getSeasonBundle } from '../seasonData';
 import { createNewGame } from '../../game/initialCareer';
 
 describe('Regulation Sets', () => {

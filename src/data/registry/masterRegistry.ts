@@ -22,7 +22,7 @@ import type {
   RegistryMergeResult,
   RegistryDriverStatus,
 } from '../../types/registryTypes';
-import { seasonBundles } from '../index';
+import type { SeasonBundle } from '../seasonCatalog';
 import { getMarketBundle } from '../market';
 
 // --- Canonical aliases ------------------------------------------------------
@@ -456,14 +456,15 @@ export function parseBundleKey(key: string): { year: number; series: Series } {
 // appearance sets firstSeenYear / marketEntryYear.
 export function buildMasterRegistry(): MasterDriverRegistry {
   const registry = emptyRegistry();
-  const keys = Object.keys(seasonBundles).sort((a, b) => {
+  const bundles = _seasonBundles ?? {};
+  const keys = Object.keys(bundles).sort((a, b) => {
     const pa = parseBundleKey(a);
     const pb = parseBundleKey(b);
     return pa.year - pb.year || pa.series.localeCompare(pb.series);
   });
   for (const key of keys) {
     const { year, series } = parseBundleKey(key);
-    const bundle = seasonBundles[key];
+    const bundle = bundles[key];
     importSeasonDrivers(registry, bundle.drivers, year, series);
     const market = getMarketBundle(year, series);
     if (market) {
@@ -490,10 +491,26 @@ export function buildMasterRegistry(): MasterDriverRegistry {
   return registry;
 }
 
+// Provider pattern: season bundles are injected by seasonData.ts (tests)
+// or dynamically imported at game start (production). This avoids pulling
+// all 56 season bundles into the initial bundle via the import chain
+// gameReducer → seasonRollover → careerMarketEngine → masterRegistry.
+let _seasonBundles: Record<string, SeasonBundle> | null = null;
+
+export function setSeasonBundles(bundles: Record<string, SeasonBundle>): void {
+  _seasonBundles = bundles;
+  cached = undefined; // invalidate memoized registry
+}
+
 // Memoized singleton — the registry is derived purely from static seed data.
 let cached: MasterDriverRegistry | undefined;
 export function getMasterRegistry(): MasterDriverRegistry {
-  if (!cached) cached = buildMasterRegistry();
+  if (!cached) {
+    if (!_seasonBundles) {
+      throw new Error('Season bundles not initialized — call setSeasonBundles first');
+    }
+    cached = buildMasterRegistry();
+  }
   return cached;
 }
 

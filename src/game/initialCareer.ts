@@ -1,6 +1,7 @@
 // Build a fresh GameState from a season bundle and the player's chosen team.
 
-import { getSeasonBundle } from '../data';
+import { getCachedBundle } from '../data/seasonLoader';
+import type { SeasonBundle } from '../data/seasonCatalog';
 import { BALANCED_SETUP } from '../data/setup/setupComponents';
 import type { GameMode, Series } from '../types/gameTypes';
 import type { CarSetup } from '../types/setupTypes';
@@ -43,10 +44,12 @@ export type NewGameOptions = {
   // the auto-assigned one from createInitialEngineState.
   initialEngineSupplierId?: string;
   initialEngineDealType?: EngineDealType;
+  // Pre-loaded season bundle (from async loader). If absent, falls back to cache.
+  bundle?: SeasonBundle;
 };
 
 export function createNewGame(options: NewGameOptions): GameState {
-  const bundle = getSeasonBundle(options.seasonYear, options.series);
+  const bundle = options.bundle ?? getCachedBundle(options.seasonYear, options.series);
   if (!bundle) {
     throw new Error(`No season data for ${options.seasonYear} ${options.series}`);
   }

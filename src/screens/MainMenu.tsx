@@ -8,9 +8,11 @@ export function MainMenu() {
   const { dispatch } = useGame();
   const saveExists = hasSave();
 
-  const onContinue = () => {
+  const onContinue = async () => {
     const saved = loadSavedGame();
     if (saved) {
+      // Load full season data for the master registry (career market engine).
+      await import('../data/seasonData');
       dispatch({ type: 'LOAD_GAME', state: saved });
       navigate('/hq');
     }
