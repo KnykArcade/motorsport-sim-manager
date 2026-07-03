@@ -4,6 +4,7 @@ import {
   buildInitialCommercial,
   commercialTier,
   sponsorAnnualIncome,
+  sponsorInstallmentPayment,
   racePerformanceBonuses,
   evaluateSeasonObjectives,
   rollSponsorRenewals,
@@ -137,5 +138,22 @@ describe('commercialEngine', () => {
     const c = buildInitialCommercial(williams, williamsDrivers, 's', 'Formula 1');
     const expected = c.sponsors.reduce((sum, s) => sum + toMoney(s.annualValue), 0);
     expect(sponsorAnnualIncome(c)).toBe(expected);
+  });
+
+  it('installment payment splits annual income across races', () => {
+    const c = buildInitialCommercial(williams, williamsDrivers, 's', 'Formula 1');
+    const annual = sponsorAnnualIncome(c);
+    const installments = sponsorInstallmentPayment(c, 16);
+    expect(installments).toHaveLength(1);
+    const perRace = installments[0].amount;
+    // 16 races * perRace should approximate 75% of annual (the installment portion).
+    expect(perRace * 16).toBeGreaterThan(annual * 0.7);
+    expect(perRace * 16).toBeLessThanOrEqual(annual);
+  });
+
+  it('installment payment returns empty for undefined commercial or zero races', () => {
+    expect(sponsorInstallmentPayment(undefined, 16)).toEqual([]);
+    const c = buildInitialCommercial(williams, williamsDrivers, 's', 'Formula 1');
+    expect(sponsorInstallmentPayment(c, 0)).toEqual([]);
   });
 });

@@ -659,7 +659,10 @@ export function advanceSeason(state: GameState): GameState {
 
     const annual = sponsorAnnualIncome(nextCommercial);
     if (annual > 0) {
-      txns.push(makeTransaction(nextYear, 'Sponsorship', `${nextYear} sponsorship income`, annual));
+      // 25% upfront at season start; the remaining 75% is paid in per-race
+      // installments during applyRaceResults for a realistic cashflow.
+      const upfront = Math.round(annual * 0.25);
+      txns.push(makeTransaction(nextYear, 'Sponsorship', `${nextYear} sponsorship signing bonus`, upfront));
     }
   } else {
     const sponsorship = sponsorshipIncome(playerTeam, playerDrivers);

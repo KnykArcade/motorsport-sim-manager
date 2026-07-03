@@ -49,6 +49,7 @@ import { thirdDriverMidSeasonFee, thirdDriverSalary } from '../sim/contractEngin
 import {
   generateSponsorOffers,
   racePerformanceBonuses,
+  sponsorInstallmentPayment,
   sponsorSlotCapacity,
 } from '../sim/commercialEngine';
 import { developmentSuccessBonus } from '../sim/staffEngine';
@@ -1319,6 +1320,18 @@ function applyRaceResults(
     if (team) team.budget += b.amount;
     financeTxns.push(
       makeTransaction(state.seasonYear, 'Sponsorship', `${race.gpName}: ${b.label}`, b.amount, race.round),
+    );
+  }
+
+  // Per-race sponsor installment: 75% of annual sponsorship paid across the
+  // season's races for a realistic cashflow (25% was paid upfront at rollover).
+  const totalRaces = state.calendar.length;
+  const installments = sponsorInstallmentPayment(state.commercial, totalRaces);
+  for (const inst of installments) {
+    const team = teams.find((t) => t.id === state.selectedTeamId);
+    if (team) team.budget += inst.amount;
+    financeTxns.push(
+      makeTransaction(state.seasonYear, 'Sponsorship', `${race.gpName}: ${inst.label}`, inst.amount, race.round),
     );
   }
 
