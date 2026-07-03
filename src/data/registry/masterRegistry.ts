@@ -36,6 +36,7 @@ const CANONICAL_ALIASES: Record<string, string> = {
   'j herbert': 'johnny herbert',
   'm salo': 'mika salo',
   'u katayama': 'ukyo katayama',
+  'd hill': 'damon hill',
 };
 
 // Resolve an abbreviated name to its canonical full form, if known.

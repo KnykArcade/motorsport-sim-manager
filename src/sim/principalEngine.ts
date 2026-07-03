@@ -157,7 +157,7 @@ function applyXpAndLevel(
 ): { profile: TeamPrincipalProfile; levelUps: number } {
   let xp = profile.xp + xpGain;
   let level = profile.level;
-  let attrs = { ...profile.attributes };
+  const attrs = { ...profile.attributes };
   let levelUps = 0;
 
   while (xp >= xpForLevel(level)) {

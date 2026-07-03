@@ -158,7 +158,7 @@ describe('principalEngine', () => {
   });
 
   it('levels up after enough XP from strong seasons', () => {
-    let p = createPrincipalProfile(topTeam, reps, 1995, 'test');
+    const p = createPrincipalProfile(topTeam, reps, 1995, 'test');
     const strongOutcome: PrincipalSeasonOutcome = { wins: 8, podiums: 12, driverTitle: true, constructorTitle: true };
     // A championship-winning season should give enough XP to level up at least once.
     const result = reviewPrincipal(p, review(30, true), strongOutcome);

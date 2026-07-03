@@ -271,6 +271,10 @@ describe('canonical aliases', () => {
     expect(canonicalNameOf('J. Herbert')).toBe('johnny herbert');
     expect(canonicalNameOf('M. Salo')).toBe('mika salo');
     expect(canonicalNameOf('U. Katayama')).toBe('ukyo katayama');
+    expect(canonicalNameOf('D Hill')).toBe('damon hill');
+    expect(canonicalNameOf('D. Hill')).toBe('damon hill');
+    expect(canonicalNameOf('d hill')).toBe('damon hill');
+    expect(canonicalNameOf('d. hill')).toBe('damon hill');
   });
 
   it('leaves unabbreviated names unchanged', () => {
@@ -302,5 +306,17 @@ describe('canonical aliases', () => {
     expect(list.filter((e) => e.driverId === 'mika-salo')).toHaveLength(1);
     // U. Katayama (1995) should merge with Ukyo Katayama.
     expect(list.filter((e) => e.driverId === 'ukyo-katayama')).toHaveLength(1);
+    // D Hill / D. Hill should merge with Damon Hill.
+    expect(list.filter((e) => e.driverId === 'damon-hill')).toHaveLength(1);
+  });
+
+  it('merges D Hill and Damon Hill into one registry identity', () => {
+    const reg = empty();
+    importSeasonDrivers(reg, [gridDriver('d-1994-dh', 'Damon Hill', 8, { age: 33 })], 1994, 'F1');
+    importSeasonDrivers(reg, [gridDriver('d-1997-dh', 'D Hill', 7, { age: 36 })], 1997, 'F1');
+    const list = registryList(reg);
+    expect(list).toHaveLength(1);
+    expect(list[0].driverId).toBe('damon-hill');
+    expect(list[0].sourceIds).toEqual(['d-1994-dh', 'd-1997-dh']);
   });
 });

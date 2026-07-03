@@ -753,7 +753,8 @@ export function advanceSeason(state: GameState): GameState {
     principalNotes.push(...reviewed.notes);
 
     // Generate news for principal level-up.
-    if (reviewed.profile.level > state.principal?.level) {
+    const currentPrincipalLevel = state.principal?.level ?? 1;
+    if (reviewed.profile.level > currentPrincipalLevel) {
       principalLevelUpNews.push({
         id: `news-principal-levelup-${state.seasonYear}`,
         headline: `${nextPrincipal.name} reaches Level ${reviewed.profile.level}`,
