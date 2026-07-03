@@ -7,6 +7,8 @@ import {
   priorityColor,
   categoryLabel,
   generatePreseasonNews,
+  mergeNewsWithSpamControl,
+  capNewsPerRound,
   type CareerNewsContext,
 } from './careerNewsEngine';
 import type { NewsItem } from '../types/gameTypes';
@@ -176,6 +178,93 @@ describe('careerNewsEngine', () => {
       const lineup = news.find((n) => n.category === 'driver_market');
       expect(lineup).toBeDefined();
       expect(lineup!.headline).toContain('2-driver lineup');
+    });
+  });
+
+  describe('mergeNewsWithSpamControl', () => {
+    it('deduplicates by ID', () => {
+      const existing: NewsItem[] = [{ id: 'a', headline: 'A', timestamp: '' }];
+      const batch: NewsItem[] = [{ id: 'a', headline: 'A', timestamp: '' }];
+      const result = mergeNewsWithSpamControl(existing, batch);
+      expect(result).toHaveLength(0);
+    });
+
+    it('deduplicates by headline similarity (case-insensitive)', () => {
+      const batch1: NewsItem[] = [
+        { id: 'a', headline: 'Driver Wins Race', timestamp: '', priority: 'high' },
+      ];
+      const batch2: NewsItem[] = [
+        { id: 'b', headline: 'driver wins race', timestamp: '', priority: 'normal' },
+      ];
+      const result = mergeNewsWithSpamControl([], batch1, batch2);
+      expect(result).toHaveLength(1);
+      expect(result[0].id).toBe('a');
+    });
+
+    it('keeps highest-priority item when headlines match', () => {
+      const batch1: NewsItem[] = [
+        { id: 'low', headline: 'Big Crash', timestamp: '', priority: 'low' },
+      ];
+      const batch2: NewsItem[] = [
+        { id: 'high', headline: 'Big Crash', timestamp: '', priority: 'high' },
+      ];
+      const result = mergeNewsWithSpamControl([], batch1, batch2);
+      expect(result).toHaveLength(1);
+      expect(result[0].id).toBe('high');
+    });
+
+    it('preserves items with different headlines', () => {
+      const batch: NewsItem[] = [
+        { id: 'a', headline: 'Driver A wins', timestamp: '', priority: 'high' },
+        { id: 'b', headline: 'Driver B retires', timestamp: '', priority: 'normal' },
+      ];
+      const result = mergeNewsWithSpamControl([], batch);
+      expect(result).toHaveLength(2);
+    });
+  });
+
+  describe('capNewsPerRound', () => {
+    it('caps items per round, keeping highest priority', () => {
+      const items: NewsItem[] = [];
+      for (let i = 0; i < 15; i++) {
+        items.push({
+          id: `item-${i}`,
+          headline: `Item ${i}`,
+          timestamp: '',
+          round: 5,
+          priority: i < 5 ? 'critical' : i < 10 ? 'normal' : 'low',
+        });
+      }
+      const result = capNewsPerRound(items, 10);
+      const round5 = result.filter((n) => n.round === 5);
+      expect(round5).toHaveLength(10);
+      expect(round5.every((n) => n.priority === 'critical' || n.priority === 'normal')).toBe(true);
+    });
+
+    it('always keeps items without a round', () => {
+      const items: NewsItem[] = [
+        { id: 'no-round', headline: 'No round', timestamp: '' },
+      ];
+      for (let i = 0; i < 15; i++) {
+        items.push({
+          id: `item-${i}`,
+          headline: `Item ${i}`,
+          timestamp: '',
+          round: 3,
+          priority: 'normal',
+        });
+      }
+      const result = capNewsPerRound(items, 10);
+      expect(result.some((n) => n.id === 'no-round')).toBe(true);
+    });
+
+    it('does not cap when under the limit', () => {
+      const items: NewsItem[] = [
+        { id: 'a', headline: 'A', timestamp: '', round: 1, priority: 'normal' },
+        { id: 'b', headline: 'B', timestamp: '', round: 1, priority: 'normal' },
+      ];
+      const result = capNewsPerRound(items, 10);
+      expect(result).toHaveLength(2);
     });
   });
 });

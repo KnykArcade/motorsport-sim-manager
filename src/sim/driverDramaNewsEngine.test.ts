@@ -339,5 +339,91 @@ describe('driverDramaNewsEngine', () => {
 
       expect(news.every((n) => n.category === 'paddock')).toBe(true);
     });
+
+    it('caps at 2 items per driver', () => {
+      // Create a relationship that triggers many hooks simultaneously.
+      const prev = makeRel({
+        selfConfidence: 50,
+        morale: 50,
+        trustInCar: 50,
+        trustInTeam: 50,
+        trustInPrincipal: 50,
+        frustration: 30,
+        ego: 50,
+        teamLoyalty: 20,
+      });
+      const rel = makeRel({
+        selfConfidence: 30,
+        morale: 30,
+        trustInCar: 25,
+        trustInTeam: 25,
+        trustInPrincipal: 25,
+        frustration: 75,
+        ego: 85,
+        teamLoyalty: 15,
+      });
+      const updates: ConfidenceUpdate[] = [
+        { driverId: 'd1', selfConfidenceDelta: -10, moraleDelta: -8, frustrationDelta: 10 },
+      ];
+      const raceCtx = makeRaceCtx();
+
+      const news = generateDriverDramaNews(ctx, {
+        relationships: { d1: rel },
+        prevRelationships: { d1: prev },
+        confidenceUpdates: { d1: updates },
+        raceContexts: { d1: raceCtx },
+        promiseResolutions: {},
+        expiredPromises: [],
+        allPromises: [],
+        teamOrderConsequences: [],
+        teamOrders: [],
+      });
+
+      expect(news.length).toBeLessThanOrEqual(2);
+    });
+
+    it('caps total drama news at 8 per round', () => {
+      const relationships: Record<string, DriverRelationship> = {};
+      const prevRelationships: Record<string, DriverRelationship> = {};
+      const confidenceUpdates: Record<string, ConfidenceUpdate[]> = {};
+      const raceContexts: Record<string, RaceEventContext> = {};
+
+      // Create 10 drivers all with major confidence collapse.
+      for (let i = 0; i < 10; i++) {
+        const id = `d${i}`;
+        relationships[id] = makeRel({
+          driverId: id,
+          selfConfidence: 25,
+          morale: 25,
+          frustration: 75,
+          teamLoyalty: 15,
+        });
+        prevRelationships[id] = makeRel({
+          driverId: id,
+          selfConfidence: 50,
+          morale: 50,
+          frustration: 30,
+          teamLoyalty: 20,
+        });
+        confidenceUpdates[id] = [
+          { driverId: id, selfConfidenceDelta: -10, moraleDelta: -8, frustrationDelta: 10 },
+        ];
+        raceContexts[id] = makeRaceCtx();
+      }
+
+      const news = generateDriverDramaNews(ctx, {
+        relationships,
+        prevRelationships,
+        confidenceUpdates,
+        raceContexts,
+        promiseResolutions: {},
+        expiredPromises: [],
+        allPromises: [],
+        teamOrderConsequences: [],
+        teamOrders: [],
+      });
+
+      expect(news.length).toBeLessThanOrEqual(8);
+    });
   });
 });

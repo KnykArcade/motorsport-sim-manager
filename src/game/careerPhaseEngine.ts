@@ -377,19 +377,6 @@ export function processAITeamActivity(state: GameState): GameState {
       isRealChange = true;
       newsHeadline = `${aiTeam.name} suffers setback in testing`;
       newsBody = `${aiTeam.name} encountered reliability issues. Rating dropped by ${setback.toFixed(2)} to ${(ratings.reliability - setback).toFixed(1)}.`;
-    } else if (rng.chance(0.2)) {
-      // Minor form observation — no state change, just flavor news.
-      const performance = (ratings.enginePower + ratings.aeroEfficiency + ratings.mechanicalGrip) / 3;
-      if (performance > 7) {
-        newsHeadline = `${aiTeam.name} looking competitive`;
-        newsBody = `${aiTeam.name}'s car is performing well with an average rating of ${performance.toFixed(1)}/10.`;
-      } else if (performance < 4.5) {
-        newsHeadline = `${aiTeam.name} off the pace`;
-        newsBody = `${aiTeam.name}'s car is struggling with an average rating of ${performance.toFixed(1)}/10.`;
-      } else {
-        newsHeadline = `${aiTeam.name} steady in testing`;
-        newsBody = `${aiTeam.name} completed a productive test session. Average rating: ${performance.toFixed(1)}/10.`;
-      }
     } else if (aiState && (aiState.financialHealth === 'Critical' || aiState.financialHealth === 'AtRisk') && rng.chance(0.3)) {
       // Financial trouble — no car change, but news.
       newsHeadline = `${aiTeam.name} facing financial difficulties`;
@@ -402,6 +389,10 @@ export function processAITeamActivity(state: GameState): GameState {
         headline: newsHeadline,
         body: isRealChange ? `[Confirmed] ${newsBody}` : newsBody,
         timestamp: new Date().toISOString(),
+        category: 'ai_team',
+        priority: isRealChange ? 'normal' : 'low',
+        careerPhase: 'paddock_week',
+        teamId: aiTeam.id,
       });
     }
   }
@@ -409,7 +400,7 @@ export function processAITeamActivity(state: GameState): GameState {
   return {
     ...state,
     cars,
-    news: [...aiNews, ...state.news].slice(0, 50),
+    news: [...aiNews, ...state.news].slice(0, 80),
     careerPhase: {
       ...phaseState,
       aiActionsProcessedForCurrentWeek: true,
@@ -611,7 +602,7 @@ export function resolvePaddockEvent(
       category: 'financial',
       priority: isBudget ? 'high' : 'normal',
     };
-    updatedState = { ...updatedState, news: [newsItem, ...updatedState.news].slice(0, 50) };
+    updatedState = { ...updatedState, news: [newsItem, ...updatedState.news].slice(0, 80) };
   }
 
   return updatedState;
@@ -695,7 +686,7 @@ function applyStructuredEffect(
         body: eff.label ?? 'Paddock event resolved.',
         timestamp: new Date().toISOString(),
       };
-      return { ...state, news: [newsItem, ...state.news].slice(0, 50) };
+      return { ...state, news: [newsItem, ...state.news].slice(0, 80) };
     }
     default:
       return state;

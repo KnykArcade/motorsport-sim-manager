@@ -65,6 +65,84 @@ export function deduplicateNews(existing: NewsItem[], newItems: NewsItem[]): New
 }
 
 // ---------------------------------------------------------------------------
+// Spam control — merge news batches, deduplicate by headline similarity,
+// and cap the number of items per round so the feed doesn't get overwhelmed.
+// ---------------------------------------------------------------------------
+
+const priorityRank: Record<NewsPriority, number> = {
+  critical: 0,
+  high: 1,
+  normal: 2,
+  low: 3,
+};
+
+// Maximum number of news items per round (per race weekend).
+const MAX_NEWS_PER_ROUND = 10;
+
+// Normalize a headline for similarity comparison: lowercase, trim, collapse spaces.
+function normalizeHeadline(h: string): string {
+  return h.toLowerCase().trim().replace(/\s+/g, ' ');
+}
+
+// Merge multiple news batches, deduplicating by ID and by headline similarity.
+// Items with the same normalized headline are considered duplicates — only the
+// first (highest-priority) one is kept.
+export function mergeNewsWithSpamControl(
+  existing: NewsItem[],
+  ...batches: NewsItem[][]
+): NewsItem[] {
+  const seenIds = new Set(existing.map((n) => n.id));
+  const seenHeadlines = new Set(existing.map((n) => normalizeHeadline(n.headline)));
+  const merged: NewsItem[] = [];
+
+  // Flatten all batches and sort by priority so highest-priority items are
+  // added first (and thus win headline dedup).
+  const allNew = batches.flat().sort(
+    (a, b) => (priorityRank[a.priority ?? 'normal'] ?? 2) - (priorityRank[b.priority ?? 'normal'] ?? 2),
+  );
+
+  for (const item of allNew) {
+    if (seenIds.has(item.id)) continue;
+    const norm = normalizeHeadline(item.headline);
+    if (seenHeadlines.has(norm)) continue;
+    seenIds.add(item.id);
+    seenHeadlines.add(norm);
+    merged.push(item);
+  }
+
+  return merged;
+}
+
+// Cap the number of items per round, keeping the highest-priority ones.
+// Items without a round are always kept.
+export function capNewsPerRound(items: NewsItem[], max: number = MAX_NEWS_PER_ROUND): NewsItem[] {
+  const byRound = new Map<number, NewsItem[]>();
+  const noRound: NewsItem[] = [];
+
+  for (const item of items) {
+    if (item.round == null) {
+      noRound.push(item);
+    } else {
+      const arr = byRound.get(item.round) ?? [];
+      arr.push(item);
+      byRound.set(item.round, arr);
+    }
+  }
+
+  const capped: NewsItem[] = [...noRound];
+  for (const [, arr] of byRound) {
+    if (arr.length <= max) {
+      capped.push(...arr);
+    } else {
+      arr.sort((a, b) => (priorityRank[a.priority ?? 'normal'] ?? 2) - (priorityRank[b.priority ?? 'normal'] ?? 2));
+      capped.push(...arr.slice(0, max));
+    }
+  }
+
+  return capped;
+}
+
+// ---------------------------------------------------------------------------
 // Preseason news
 // ---------------------------------------------------------------------------
 

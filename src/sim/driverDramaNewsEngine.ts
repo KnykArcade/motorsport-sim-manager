@@ -543,6 +543,7 @@ export function generateDriverDramaNews(
 ): NewsItem[] {
   const allItems: NewsItem[] = [];
   const seenKeys = new Set<string>();
+  const priorityRank: Record<NewsPriority, number> = { critical: 0, high: 1, normal: 2, low: 3 };
 
   for (const driverId of Object.keys(params.relationships)) {
     const rel = params.relationships[driverId];
@@ -573,13 +574,24 @@ export function generateDriverDramaNews(
       params.expiredPromises,
     );
 
-    // Deduplicate by news ID key (round+driver+type), keeping only first.
+    // Collect and deduplicate by news ID key (round+driver+type).
+    const driverItems: NewsItem[] = [];
     for (const item of [...confNews, ...carNews, ...teamNews, ...egoNews, ...rivalNews, ...contractNews, ...promiseNews]) {
       if (!seenKeys.has(item.id)) {
         seenKeys.add(item.id);
-        allItems.push(item);
+        driverItems.push(item);
       }
     }
+
+    // Spam control: keep only the top 2 highest-priority items per driver.
+    driverItems.sort((a, b) => (priorityRank[a.priority ?? 'normal'] ?? 2) - (priorityRank[b.priority ?? 'normal'] ?? 2));
+    allItems.push(...driverItems.slice(0, 2));
+  }
+
+  // Spam control: cap total drama news to 8 per round, keeping highest priority.
+  if (allItems.length > 8) {
+    allItems.sort((a, b) => (priorityRank[a.priority ?? 'normal'] ?? 2) - (priorityRank[b.priority ?? 'normal'] ?? 2));
+    allItems.length = 8;
   }
 
   return allItems;
