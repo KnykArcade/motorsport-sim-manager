@@ -1,9 +1,15 @@
-import { describe, expect, it } from 'vitest';
-import { availableSeasons, getTrackById, getMarketBundle } from './index';
+import { describe, expect, it, beforeAll } from 'vitest';
+import { availableSeasons, getTrackById, getMarketBundle, preloadMarketBundle } from './index';
 import { getSeasonBundle } from './seasonData';
 import { pointsSystems } from './pointsSystems/pointsSystems';
 
 describe('season bundles', () => {
+  beforeAll(async () => {
+    await Promise.all(
+      availableSeasons.map((s) => preloadMarketBundle(s.year, s.series))
+    );
+  });
+
   it('exposes more than one startable season', () => {
     expect(availableSeasons.length).toBeGreaterThan(1);
   });

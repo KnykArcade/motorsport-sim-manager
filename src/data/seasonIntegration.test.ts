@@ -1,12 +1,19 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, beforeAll } from 'vitest';
 import {
   availableSeasons,
   getMarketBundle,
   getTrackById,
+  preloadMarketBundle,
 } from './index';
 import { getSeasonBundle, seasonBundles } from './seasonData';
 
 describe('historical season integration', () => {
+  beforeAll(async () => {
+    await Promise.all(
+      availableSeasons.map((s) => preloadMarketBundle(s.year, s.series))
+    );
+  });
+
   describe('season registration', () => {
     it('F1 1990-2026 all resolve', () => {
       for (let y = 1990; y <= 2026; y++) {

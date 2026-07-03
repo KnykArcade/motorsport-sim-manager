@@ -13,6 +13,81 @@ import type { NewsItem, NewsCategory, NewsPriority, QualifyingResult, RaceResult
 import type { GameState } from '../game/careerState';
 import type { CareerPhase } from '../types/careerPhaseTypes';
 import { biggestGainer, biggestLoser } from './positionDelta';
+import { createSeededRandom, deriveSeed } from './random';
+
+// ---------------------------------------------------------------------------
+// Template variety — multiple body variants for each news type, picked
+// deterministically via seeded RNG so the same race always produces the same
+// article, but different races get different phrasing.
+// ---------------------------------------------------------------------------
+
+function pickVariant<T>(variants: readonly T[], seed: string): T {
+  const rng = createSeededRandom(seed);
+  return variants[Math.floor(rng.next() * variants.length)];
+}
+
+// Race win body templates. {team} and {driver} are replaced at call site.
+const WIN_BODIES = [
+  '{team} takes victory after a strong weekend.',
+  'A commanding drive from {driver} delivers {team} the top step of the podium.',
+  '{team}\'s strategy pays off as {driver} crosses the line first to claim the win.',
+  'Lights-to-flag perfection from {driver} gives {team} a well-earned victory.',
+  'A flawless performance sees {driver} lead home the field for {team}.',
+] as const;
+
+// Player DNF body templates.
+const DNF_BODIES = [
+  'A difficult race ends early for {team}.',
+  'Heartbreak for {driver} as a mechanical issue forces retirement.',
+  'The weekend promised much but delivered heartbreak for {team}.',
+  '{driver} is left stranded on the sidelines as the race slips away.',
+  'Reliability woes strike again — {team} will want to forget this one quickly.',
+] as const;
+
+// Podium body templates.
+const PODIUM_BODIES = [
+  'Podium finish for {team}.',
+  'A strong result for {driver} caps off a fine weekend for {team}.',
+  '{team} celebrates a podium as {driver} delivers when it mattered.',
+  'The champagne flows for {driver} and {team} after a hard-fought podium.',
+  'Important points for {team} as {driver} stands on the podium.',
+] as const;
+
+const POLE_BODIES = [
+  '{team} driver secures the front of the grid.',
+  'A stunning lap puts {driver} on pole position.',
+  '{team} locks out the front row with a blistering qualifying performance.',
+  'The perfect start for {driver} — pole position at the {gp}.',
+] as const;
+
+const QUAL_TOP3_BODIES = [
+  'Strong qualifying performance from {team}.',
+  '{driver} nails the lap when it mattered to secure a top-3 start.',
+  'A great qualifying effort puts {team} in the mix for tomorrow.',
+  'The setup changes paid off — {driver} is pleased with the car.',
+] as const;
+
+const QUAL_DNQ_BODIES = [
+  'The car was outside the top 24 and will not start the race.',
+  'A disastrous qualifying session leaves {driver} on the sidelines.',
+  'Heartbreak for {team} as {driver} fails to make the grid.',
+] as const;
+
+// Biggest mover body templates.
+const MOVER_BODIES = [
+  'One of the biggest movers of the day, climbing {n} places.',
+  'A brilliant drive through the field saw {n} positions gained.',
+  'Charging through the pack — a {n}-place climb that turned heads.',
+  'From the back to the points: a stunning {n}-place recovery drive.',
+] as const;
+
+// Biggest loser body templates.
+const LOSER_BODIES = [
+  'A day to forget after losing {n} places.',
+  'Nothing went right for {driver} as the race unravelled in costly fashion.',
+  'A weekend to forget — {n} positions lost and no answers in the debrief.',
+  'The less said about this one the better for {driver}.',
+] as const;
 
 // ---------------------------------------------------------------------------
 // Career News Context — the data the engine needs to generate phase-appropriate news
@@ -207,14 +282,17 @@ export function generateQualifyingNews(
   driverNames: Record<string, string>,
   teamNames: Record<string, string>,
 ): NewsItem[] {
-  const { round, gpName, state } = ctx;
-  void teamNames;
+  const { round, gpName, state, seed } = ctx;
   const items: NewsItem[] = [];
   const team = state.teams.find((t) => t.id === state.selectedTeamId);
 
   const pole = qualifying.find((q) => q.position === 1 && !q.dnq);
   if (pole) {
     const isPlayerDriver = team?.driverIds.includes(pole.driverId);
+    const poleBody = pickVariant(POLE_BODIES, deriveSeed(seed, 'pole', `${round}`))
+      .replace('{team}', teamNames[pole.teamId] ?? pole.teamId)
+      .replace('{driver}', driverNames[pole.driverId] ?? pole.driverId)
+      .replace('{gp}', gpName);
     items.push(makeNews(
       `news-qual-${round}-pole`,
       round,
@@ -222,7 +300,7 @@ export function generateQualifyingNews(
       'qualifying',
       isPlayerDriver ? 'high' : 'normal',
       'race_weekend',
-      `${teamNames[pole.teamId]} driver secures the front of the grid.`,
+      poleBody,
       pole.teamId,
       pole.driverId,
     ));
@@ -233,6 +311,9 @@ export function generateQualifyingNews(
     const playerResults = qualifying.filter((q) => team.driverIds.includes(q.driverId));
     for (const result of playerResults) {
       if (result.dnq) {
+        const dnqBody = pickVariant(QUAL_DNQ_BODIES, deriveSeed(seed, 'qual-dnq', `${round}-${result.driverId}`))
+          .replace('{team}', team.name)
+          .replace('{driver}', driverNames[result.driverId] ?? result.driverId);
         items.push(makeNews(
           `news-qual-${round}-dnq-${result.driverId}`,
           round,
@@ -240,11 +321,14 @@ export function generateQualifyingNews(
           'qualifying',
           'high',
           'race_weekend',
-          `The car was outside the top 24 and will not start the race.`,
+          dnqBody,
           team.id,
           result.driverId,
         ));
       } else if (result.position <= 3) {
+        const top3Body = pickVariant(QUAL_TOP3_BODIES, deriveSeed(seed, 'qual-top3', `${round}-${result.driverId}`))
+          .replace('{team}', team.name)
+          .replace('{driver}', driverNames[result.driverId] ?? result.driverId);
         items.push(makeNews(
           `news-qual-${round}-top3-${result.driverId}`,
           round,
@@ -252,7 +336,7 @@ export function generateQualifyingNews(
           'qualifying',
           'high',
           'race_weekend',
-          `Strong qualifying performance from ${team.name}.`,
+          top3Body,
           team.id,
           result.driverId,
         ));
@@ -281,6 +365,9 @@ export function generateCareerRaceNews(
   const winner = race.find((r) => r.position === 1);
   if (winner) {
     const isPlayerDriver = team?.driverIds.includes(winner.driverId);
+    const winBody = pickVariant(WIN_BODIES, deriveSeed(ctx.seed, 'win', `${ctx.round}`))
+      .replace('{team}', teamNames[winner.teamId] ?? winner.teamId)
+      .replace('{driver}', driverNames[winner.driverId] ?? winner.driverId);
     items.push(makeNews(
       `news-race-${round}-win`,
       round,
@@ -288,7 +375,7 @@ export function generateCareerRaceNews(
       'race_result',
       isPlayerDriver ? 'critical' : 'high',
       'post_race_review',
-      `${teamNames[winner.teamId]} takes victory after a strong weekend.`,
+      winBody,
       winner.teamId,
       winner.driverId,
     ));
@@ -299,6 +386,9 @@ export function generateCareerRaceNews(
     const playerResults = race.filter((r) => team.driverIds.includes(r.driverId));
     for (const result of playerResults) {
       if (result.status === 'DNF') {
+        const dnfBody = pickVariant(DNF_BODIES, deriveSeed(ctx.seed, 'dnf', `${ctx.round}-${result.driverId}`))
+          .replace('{team}', team.name)
+          .replace('{driver}', driverNames[result.driverId] ?? result.driverId);
         items.push(makeNews(
           `news-race-${round}-dnf-${result.driverId}`,
           round,
@@ -306,11 +396,14 @@ export function generateCareerRaceNews(
           'race_result',
           'high',
           'post_race_review',
-          result.incidents[0] ?? `A difficult race ends early for ${team.name}.`,
+          result.incidents[0] ?? dnfBody,
           team.id,
           result.driverId,
         ));
       } else if (result.position != null && result.position <= 3 && result.position > 1) {
+        const podiumBody = pickVariant(PODIUM_BODIES, deriveSeed(ctx.seed, 'podium', `${ctx.round}-${result.driverId}`))
+          .replace('{team}', team.name)
+          .replace('{driver}', driverNames[result.driverId] ?? result.driverId);
         items.push(makeNews(
           `news-race-${round}-podium-${result.driverId}`,
           round,
@@ -318,7 +411,7 @@ export function generateCareerRaceNews(
           'race_result',
           'high',
           'post_race_review',
-          `Podium finish for ${team.name}.`,
+          podiumBody,
           team.id,
           result.driverId,
         ));
@@ -329,6 +422,8 @@ export function generateCareerRaceNews(
   // Biggest mover.
   const gainer = biggestGainer(race);
   if (gainer && gainer.positionsGained >= 4) {
+    const moverBody = pickVariant(MOVER_BODIES, deriveSeed(ctx.seed, 'mover', `${ctx.round}`))
+      .replace('{n}', String(gainer.positionsGained));
     items.push(makeNews(
       `news-race-${round}-mover`,
       round,
@@ -336,7 +431,7 @@ export function generateCareerRaceNews(
       'race_result',
       'normal',
       'post_race_review',
-      `One of the biggest movers of the day, climbing ${gainer.positionsGained} places.`,
+      moverBody,
       undefined,
       gainer.driverId,
     ));
@@ -345,6 +440,9 @@ export function generateCareerRaceNews(
   // Biggest loser.
   const loser = biggestLoser(race);
   if (loser && loser.positionsLost >= 4) {
+    const loserBody = pickVariant(LOSER_BODIES, deriveSeed(ctx.seed, 'loser', `${ctx.round}`))
+      .replace('{n}', String(loser.positionsLost))
+      .replace('{driver}', driverNames[loser.driverId] ?? loser.driverId);
     items.push(makeNews(
       `news-race-${round}-slider`,
       round,
@@ -352,7 +450,7 @@ export function generateCareerRaceNews(
       'race_result',
       'normal',
       'post_race_review',
-      `A day to forget after losing ${loser.positionsLost} places.`,
+      loserBody,
       undefined,
       loser.driverId,
     ));

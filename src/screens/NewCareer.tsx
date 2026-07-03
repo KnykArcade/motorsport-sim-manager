@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useReducer, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useGame } from '../game/GameContext';
-import { availableSeasons, availableSeries, loadSeasonBundle, getCachedBundle, type SeasonBundle } from '../data';
+import { availableSeasons, availableSeries, loadSeasonBundle, getCachedBundle, preloadMarketBundle, type SeasonBundle } from '../data';
 import { effectiveCarRatings } from '../sim/trackFitEngine';
 import { Button } from '../components/Button';
 import { StatBar } from '../components/StatBar';
@@ -62,8 +62,11 @@ export function NewCareer() {
     }
     let cancelled = false;
     dispatchAsync({ type: 'start' });
-    loadSeasonBundle(year, series)
-      .then((b) => {
+    Promise.all([
+      loadSeasonBundle(year, series),
+      preloadMarketBundle(year, series),
+    ])
+      .then(([b]) => {
         if (cancelled) return;
         dispatchAsync({ type: 'loaded', bundle: b });
       })
