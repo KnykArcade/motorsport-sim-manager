@@ -62,6 +62,8 @@ export {
   driverMarket1995,
   youthProspects1995,
   getMarketBundle,
+  preloadMarketBundle,
+  isMarketBundleReady,
   type MarketBundle,
 } from './market';
 export { staffPool1995 } from './staff/staffPool1995';

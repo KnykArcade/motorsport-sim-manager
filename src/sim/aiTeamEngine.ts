@@ -193,7 +193,70 @@ function generatePhilosophy(
   return { traits, description };
 }
 
-// --- Archetype assignment ----------------------------------------------------
+// Gradual philosophy trait evolution: each offseason, a team's traits may drift
+// by at most one swap, influenced by its performance trend and archetype.
+// Declining teams tend to shed conservative traits for aggressive ones;
+// improving teams consolidate toward stability; stagnant teams shake things up.
+export function evolvePhilosophy(
+  team: Team,
+  prev: TeamPhilosophy,
+  archetype: AITeamArchetype,
+  memory: TeamMemoryEntry | undefined,
+  seed: string,
+): TeamPhilosophy {
+  if (!memory || memory.seasonsTracked < 2) return prev;
+
+  const rng = createSeededRandom(deriveSeed(seed, 'philosophy-evolution', team.id));
+  const roll = rng.next();
+
+  // Base chance of a trait swap this offseason.
+  let swapChance = 0.2;
+  if (memory.trendDirection === 'declining') swapChance = 0.35;
+  if (memory.trendDirection === 'improving') swapChance = 0.15;
+  // Long stagnation in midfield → more likely to shake things up.
+  if (memory.trendDirection === 'stable' && memory.seasonsTracked >= 3) swapChance = 0.3;
+
+  if (roll > swapChance) return prev;
+
+  const traits = [...prev.traits];
+  const affinities = ARCHETYPE_TRAIT_AFFINITIES[archetype];
+
+  // Traits that signal conservatism vs aggression vs development.
+  const conservativeTraits: TeamPhilosophyTrait[] = ['Disciplined', 'Traditionalist'];
+  const aggressiveTraits: TeamPhilosophyTrait[] = ['RiskTaker', 'Maverick', 'TechnicalInnovator'];
+
+  let traitToReplace: TeamPhilosophyTrait | undefined;
+  let candidatePool: TeamPhilosophyTrait[];
+
+  if (memory.trendDirection === 'declining') {
+    // Drop a conservative trait, pick up an aggressive or affinity trait.
+    traitToReplace = traits.find((t) => conservativeTraits.includes(t));
+    if (!traitToReplace) traitToReplace = traits[0];
+    candidatePool = [...aggressiveTraits, ...affinities];
+  } else if (memory.trendDirection === 'improving') {
+    // Drop an aggressive trait, pick up a stability or affinity trait.
+    traitToReplace = traits.find((t) => aggressiveTraits.includes(t));
+    if (!traitToReplace) return prev; // Already stable, no change needed.
+    candidatePool = ['Disciplined', 'DataDriven', ...affinities];
+  } else {
+    // Stable: swap a non-affinity trait for an affinity trait not already held.
+    traitToReplace = traits.find((t) => !affinities.includes(t)) ?? traits[0];
+    candidatePool = affinities;
+  }
+
+  // Filter out traits already held.
+  const candidates = candidatePool.filter((t) => !traits.includes(t) && t !== traitToReplace);
+  if (candidates.length === 0) return prev;
+
+  const replacement = candidates[Math.floor(rng.next() * candidates.length)];
+  const idx = traits.indexOf(traitToReplace);
+  traits[idx] = replacement;
+
+  const traitLabels = traits.map((t) => TRAIT_LABELS[t]);
+  const description = `${team.name} is known as a ${traitLabels.join(' & ')} team.`;
+
+  return { traits, description };
+}
 
 // Deterministically pick a starting archetype from a team's profile. Reputation
 // and car strength dominate; budget and the org youth/sponsor/research ratings
@@ -522,10 +585,22 @@ export function rolloverAITeamStates(
     budgetDeltaByTeam[team.id] = budget.netResult;
 
     // Philosophy persists across seasons unless the archetype changed — then
-    // regenerate to reflect the team's new identity direction.
-    const philosophy = archetype !== archetype0
-      ? generatePhilosophy(team, archetype, `${state.randomSeed}-${state.seasonYear}`)
-      : prevState?.philosophy ?? generatePhilosophy(team, archetype, state.randomSeed);
+    // regenerate to reflect the team's new identity direction. When the archetype
+    // is unchanged, gradually evolve traits based on multi-season performance.
+    let philosophy: TeamPhilosophy;
+    if (archetype !== archetype0) {
+      philosophy = generatePhilosophy(team, archetype, `${state.randomSeed}-${state.seasonYear}`);
+    } else if (prevState?.philosophy) {
+      philosophy = evolvePhilosophy(
+        team,
+        prevState.philosophy,
+        archetype,
+        teamMemory?.[team.id],
+        `${state.randomSeed}-${state.seasonYear}`,
+      );
+    } else {
+      philosophy = generatePhilosophy(team, archetype, state.randomSeed);
+    }
 
     states[team.id] = {
       teamId: team.id,
@@ -550,6 +625,8 @@ export function rolloverAITeamStates(
       if (philosophy) {
         notes.push(`${team.name}'s identity: ${philosophy.description}`);
       }
+    } else if (prevState?.philosophy && philosophy.traits !== prevState.philosophy.traits) {
+      notes.push(`${team.name}'s identity evolves: ${philosophy.description}`);
     }
   }
 

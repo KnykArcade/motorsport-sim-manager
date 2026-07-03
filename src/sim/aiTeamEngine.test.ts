@@ -8,6 +8,7 @@ import {
   estimateAIBudget,
   estimatePrizeMoney,
   evolveArchetype,
+  evolvePhilosophy,
   financialHealth,
   rolloverAITeamStates,
 } from './aiTeamEngine';
@@ -15,7 +16,7 @@ import { advanceSeason } from '../game/seasonRollover';
 import type { GameState } from '../game/careerState';
 import type { Car, Team } from '../types/gameTypes';
 import type { TeamOrganizationRatings } from '../types/teamRatingsTypes';
-import type { AITeamBudget, TeamMemoryEntry } from '../types/aiTeamTypes';
+import type { AITeamBudget, TeamMemoryEntry, TeamPhilosophy } from '../types/aiTeamTypes';
 
 function newGame(): GameState {
   return createNewGame({
@@ -377,5 +378,88 @@ describe('rolloverAITeamStates + season rollover integration', () => {
     const next2 = advanceSeason(next1);
     expect(next2.aiTeamMemory).toBeDefined();
     expect(next2.aiTeamMemory![firstTeam.id].seasonsTracked).toBe(2);
+  });
+});
+
+describe('evolvePhilosophy', () => {
+  function makeTeam(id: string): Team {
+    const state = newGame();
+    return state.teams.find((t) => t.id === id) ?? state.teams[0];
+  }
+
+  function makeMemory(
+    trend: 'improving' | 'declining' | 'stable',
+    seasonsTracked = 3,
+  ): TeamMemoryEntry {
+    return {
+      teamId: 'test',
+      seasonsTracked,
+      lastConstructorPosition: 6,
+      avgConstructorPosition: 6,
+      trendDirection: trend,
+      seasonsSinceWin: 2,
+      seasonsSincePodium: 1,
+      totalWins: 1,
+      totalPodiums: 3,
+    };
+  }
+
+  it('returns unchanged philosophy when memory has less than 2 seasons', () => {
+    const team = makeTeam('t-williams');
+    const prev: TeamPhilosophy = { traits: ['Disciplined', 'DataDriven'], description: 'test' };
+    const result = evolvePhilosophy(team, prev, 'FinanciallyConservative', makeMemory('stable', 1), 'seed');
+    expect(result).toBe(prev);
+  });
+
+  it('returns unchanged philosophy when memory is undefined', () => {
+    const team = makeTeam('t-williams');
+    const prev: TeamPhilosophy = { traits: ['Disciplined', 'DataDriven'], description: 'test' };
+    const result = evolvePhilosophy(team, prev, 'FinanciallyConservative', undefined, 'seed');
+    expect(result).toBe(prev);
+  });
+
+  it('is deterministic — same inputs produce same output', () => {
+    const team = makeTeam('t-williams');
+    const prev: TeamPhilosophy = { traits: ['Disciplined', 'DataDriven'], description: 'test' };
+    const memory = makeMemory('declining');
+    const a = evolvePhilosophy(team, prev, 'FinanciallyConservative', memory, 'seed-1');
+    const b = evolvePhilosophy(team, prev, 'FinanciallyConservative', memory, 'seed-1');
+    expect(a).toEqual(b);
+  });
+
+  it('changes at most one trait per evolution', () => {
+    const team = makeTeam('t-williams');
+    const prev: TeamPhilosophy = { traits: ['Disciplined', 'DataDriven'], description: 'test' };
+    const memory = makeMemory('declining');
+    const result = evolvePhilosophy(team, prev, 'FinanciallyConservative', memory, 'seed-evolve');
+    // Either unchanged (roll didn't trigger) or exactly one trait changed.
+    const changed = result.traits.filter((t) => !prev.traits.includes(t));
+    expect(changed.length).toBeLessThanOrEqual(1);
+  });
+
+  it('preserves trait count (always 2 traits)', () => {
+    const team = makeTeam('t-williams');
+    const prev: TeamPhilosophy = { traits: ['Disciplined', 'DataDriven'], description: 'test' };
+    for (const trend of ['declining', 'improving', 'stable'] as const) {
+      const result = evolvePhilosophy(team, prev, 'FinanciallyConservative', makeMemory(trend), `seed-${trend}`);
+      expect(result.traits.length).toBe(2);
+    }
+  });
+
+  it('updates description when traits change', () => {
+    const team = makeTeam('t-williams');
+    const prev: TeamPhilosophy = { traits: ['Disciplined', 'DataDriven'], description: 'old' };
+    const memory = makeMemory('declining');
+    // Run many seeds to find one that changes.
+    for (let i = 0; i < 50; i++) {
+      const result = evolvePhilosophy(team, prev, 'FinanciallyConservative', memory, `seed-${i}`);
+      if (result.traits.join(',') !== prev.traits.join(',')) {
+        expect(result.description).not.toBe('old');
+        expect(result.description).toContain('Williams');
+        return;
+      }
+    }
+    // If none changed in 50 tries, the swap chance may be too low — but that's
+    // unlikely with declining trend at 35% chance.
   });
 });

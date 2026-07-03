@@ -1,7 +1,18 @@
-import { describe, it, expect } from 'vitest';
-import { getMarketBundle, youthSigningCost, youthYearlyAcademyCost } from './index';
+import { describe, it, expect, beforeAll } from 'vitest';
+import { getMarketBundle, youthSigningCost, youthYearlyAcademyCost, preloadMarketBundle } from './index';
 
 describe('youth market costs', () => {
+  beforeAll(async () => {
+    await Promise.all([
+      preloadMarketBundle(1994, 'F1'),
+      preloadMarketBundle(1996, 'F1'),
+      preloadMarketBundle(1998, 'F1'),
+      preloadMarketBundle(2000, 'F1'),
+      preloadMarketBundle(2026, 'F1'),
+      preloadMarketBundle(2026, 'IndyCar'),
+    ]);
+  });
+
   it('normalizes youth costs to a low, consistent $M scale across all seasons', () => {
     for (const [year, series] of [
       [1994, 'F1'],

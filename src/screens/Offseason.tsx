@@ -9,7 +9,7 @@ import { marketRolloverChanges } from '../sim/careerMarketEngine';
 import { crossSeriesCandidates } from '../sim/crossSeriesEngine';
 import { academyMemberAge } from '../sim/driverMarketEngine';
 import { isPromotionEligible } from '../sim/youthAcademyEngine';
-import { loadSeasonBundle } from '../data';
+import { loadSeasonBundle, preloadMarketBundle } from '../data';
 import type { FirstOptionDecision } from '../types/marketTypes';
 import type { MasterDriverEntry } from '../types/registryTypes';
 
@@ -39,8 +39,11 @@ export function Offseason() {
 
   const advance = () => {
     setAdvancing(true);
-    loadSeasonBundle(nextYear, state.series)
-      .then((nextBundle) => {
+    Promise.all([
+      loadSeasonBundle(nextYear, state.series),
+      preloadMarketBundle(nextYear, state.series),
+    ])
+      .then(([nextBundle]) => {
         dispatch({ type: 'ADVANCE_SEASON', nextBundle });
         navigate('/hq');
       })

@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, beforeAll } from 'vitest';
 import { createNewGame } from './initialCareer';
 import { gameReducer } from './gameReducer';
 import { advanceSeason } from './seasonRollover';
@@ -9,7 +9,7 @@ import {
   teamById,
   type GameState,
 } from './careerState';
-import { getMarketBundle } from '../data';
+import { getMarketBundle, preloadMarketBundle } from '../data';
 import { thirdDriverSalary, thirdDriverAmbitions } from '../sim/contractEngine';
 import type { StandingsEntry } from '../types/gameTypes';
 
@@ -37,6 +37,10 @@ function entry(entityId: string, points: number): StandingsEntry {
 }
 
 describe('third-driver contracts', () => {
+  beforeAll(async () => {
+    await preloadMarketBundle(1994, 'F1');
+  });
+
   it('discounts the 3rd-driver salary', () => {
     expect(thirdDriverSalary(10)).toBe(5);
     expect(thirdDriverSalary(0)).toBe(0.2); // floor
