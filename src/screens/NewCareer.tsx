@@ -16,6 +16,7 @@ import {
   type EngineOffer,
 } from '../sim/engineSupplierEngine';
 import { Panel } from '../components/Panel';
+import { SINGLE_SEASON_LOCKED_FEATURES, isSingleSeasonMode } from '../game/modeRestrictions';
 import type { GameMode, Series, Team } from '../types/gameTypes';
 import type { TeamPrincipal } from '../types/principalTypes';
 import type { EngineDealType } from '../types/engineTypes';
@@ -134,29 +135,50 @@ export function NewCareer() {
         <Steps step={step} mode={mode} />
 
         {step === 'mode' && (
-          <div className="grid gap-4 md:grid-cols-2">
-            <ModeCard
-              title="Single Season Mode"
-              blurb="Replay one historical season. Engine and sponsors are locked to history — focus on race strategy and in-season management."
-              selected={mode === 'SingleSeason'}
-              onClick={() => setMode('SingleSeason')}
-              bullets={['Full historical calendar', 'Race weekend decisions', 'In-season development', 'Locked engine & sponsors', 'No offseason or multi-year systems']}
-            />
-            <ModeCard
-              title="Career Mode"
-              blurb="Start in a historical year and continue across multiple seasons with offseason, regulations, and long-term development."
-              selected={mode === 'Career'}
-              onClick={() => setMode('Career')}
-              bullets={['Multi-year progression', 'Offseason & budget allocation', 'Regulation changes', 'Development carryover']}
-            />
-            <ModeCard
-              title="Sandbox Mode"
-              blurb="Flexible play mode with access to all systems. No restrictions — experiment with any season, any team, any combination."
-              selected={mode === 'Sandbox'}
-              onClick={() => setMode('Sandbox')}
-              bullets={['All systems unlocked', 'No mode restrictions', 'Full career features', 'Experiment freely']}
-            />
-            <div className="md:col-span-2 flex justify-end">
+          <div className="space-y-4">
+            <div className="grid gap-4 md:grid-cols-2">
+              <ModeCard
+                title="Single Season Mode"
+                blurb="Replay one historical season. Engine and sponsors are locked to history — focus on race strategy and in-season management."
+                selected={mode === 'SingleSeason'}
+                onClick={() => setMode('SingleSeason')}
+                bullets={['Full historical calendar', 'Race weekend decisions', 'In-season development', 'Locked engine & sponsors', 'No offseason or multi-year systems']}
+              />
+              <ModeCard
+                title="Career Mode"
+                blurb="Start in a historical year and continue across multiple seasons with offseason, regulations, and long-term development."
+                selected={mode === 'Career'}
+                onClick={() => setMode('Career')}
+                bullets={['Multi-year progression', 'Offseason & budget allocation', 'Regulation changes', 'Development carryover']}
+              />
+              <ModeCard
+                title="Sandbox Mode"
+                blurb="Flexible play mode with access to all systems. No restrictions — experiment with any season, any team, any combination."
+                selected={mode === 'Sandbox'}
+                onClick={() => setMode('Sandbox')}
+                bullets={['All systems unlocked', 'No mode restrictions', 'Full career features', 'Experiment freely']}
+              />
+            </div>
+            {isSingleSeasonMode(mode) && (
+              <div className="rounded-lg border border-amber-800/40 bg-amber-900/10 p-4">
+                <div className="flex items-center gap-2">
+                  <span className="text-lg text-amber-400">🔒</span>
+                  <span className="text-sm font-semibold text-amber-300">What's locked in Single Season Mode</span>
+                </div>
+                <div className="mt-3 grid gap-2 sm:grid-cols-2">
+                  {SINGLE_SEASON_LOCKED_FEATURES.map((f) => (
+                    <div key={f.label} className="text-xs">
+                      <span className="font-medium text-neutral-300">{f.label}</span>
+                      <span className="text-neutral-500"> — {f.description}</span>
+                    </div>
+                  ))}
+                </div>
+                <div className="mt-3 text-xs text-sky-400">
+                  You still control: race strategy, qualifying plans, in-season car development, driver morale, and staff management.
+                </div>
+              </div>
+            )}
+            <div className="flex justify-end">
               <Button variant="primary" onClick={() => setStep('setup')}>
                 Continue →
               </Button>

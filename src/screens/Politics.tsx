@@ -1,7 +1,9 @@
 import { useGame } from '../game/GameContext';
 import { teamById } from '../game/careerState';
+import { getRegulationSet } from '../data';
 import { Panel } from '../components/Panel';
 import { Button } from '../components/Button';
+import { RegulationPanel } from '../components/RegulationPanel';
 import {
   computePoliticalInfluence,
   influenceByTeam,
@@ -50,6 +52,12 @@ export function Politics() {
           the {effectiveYear} regulations.
         </p>
       </div>
+
+      {(() => {
+        const regSet = getRegulationSet(state.regulationSetId);
+        if (!regSet) return null;
+        return <RegulationPanel regulationSet={regSet} seasonYear={state.seasonYear} />;
+      })()}
 
       <Panel title="Your Political Influence">
         <div className="flex flex-wrap items-center justify-between gap-4">
