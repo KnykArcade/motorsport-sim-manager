@@ -32,3 +32,312 @@ body {
   background-color: #2a2f3a;
   border-radius: 6px;
 }
+
+.f1-1990s-hub {
+  font-family: "Arial Narrow", "Roboto Condensed", "Segoe UI", sans-serif;
+  background:
+    linear-gradient(180deg, rgba(7, 8, 9, 0.98), rgba(10, 12, 14, 0.96)),
+    repeating-linear-gradient(90deg, rgba(234, 179, 8, 0.03) 0 1px, transparent 1px 64px);
+}
+
+.f1-1990s-header-block,
+.f1-1990s-panel {
+  border: 1px solid rgba(148, 163, 184, 0.32);
+  border-radius: 8px;
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0.74), rgba(9, 13, 16, 0.68));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06), 0 10px 34px rgba(0, 0, 0, 0.28);
+}
+
+.f1-1990s-header-block,
+.f1-1990s-panel {
+  padding: 0.75rem;
+}
+
+.f1-1990s-panel-title {
+  margin-bottom: 0.7rem;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.2);
+  padding-bottom: 0.45rem;
+  color: #d6d3d1;
+  font-size: 0.76rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.f1-1990s-primary-button,
+.f1-1990s-secondary-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  min-height: 2.35rem;
+  border-radius: 6px;
+  padding: 0.5rem 0.85rem;
+  font-size: 0.78rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  transition: border-color 150ms ease, background-color 150ms ease, color 150ms ease, transform 150ms ease;
+}
+
+.f1-1990s-primary-button {
+  border: 1px solid rgba(250, 204, 21, 0.9);
+  background: linear-gradient(180deg, #facc15, #d99a02);
+  color: #111827;
+}
+
+.f1-1990s-secondary-button {
+  border: 1px solid rgba(148, 163, 184, 0.36);
+  background: rgba(15, 23, 42, 0.58);
+  color: #d6d3d1;
+}
+
+.f1-1990s-primary-button:hover,
+.f1-1990s-secondary-button:hover {
+  transform: translateY(-1px);
+}
+
+.f1-1990s-primary-button:focus-visible,
+.f1-1990s-secondary-button:focus-visible {
+  outline: 2px solid #facc15;
+  outline-offset: 2px;
+}
+
+.f1-1990s-primary-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.f1-1990s-garage-scene {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid rgba(148, 163, 184, 0.34);
+  border-radius: 8px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.07) 0 2px, transparent 2px 72px),
+    radial-gradient(circle at 50% 20%, rgba(255, 255, 255, 0.1), transparent 28%),
+    linear-gradient(180deg, #1b1a16 0%, #111315 42%, #090b0c 100%);
+  box-shadow: inset 0 0 120px rgba(0, 0, 0, 0.72);
+}
+
+.f1-1990s-garage-scene::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(90deg, rgba(0, 0, 0, 0.72), transparent 24%, transparent 72%, rgba(0, 0, 0, 0.68)),
+    repeating-linear-gradient(90deg, transparent 0 90px, rgba(255, 255, 255, 0.04) 90px 92px),
+    linear-gradient(180deg, transparent 0 64%, rgba(0, 0, 0, 0.38) 64% 100%);
+  pointer-events: none;
+}
+
+.f1-1990s-garage-scene::after {
+  content: "";
+  position: absolute;
+  left: 18%;
+  right: 18%;
+  top: 2rem;
+  height: 0.6rem;
+  border-radius: 999px;
+  background: rgba(250, 250, 210, 0.72);
+  box-shadow: 0 0 35px rgba(250, 250, 210, 0.28);
+  pointer-events: none;
+}
+
+.f1-1990s-garage-door {
+  position: absolute;
+  left: 36%;
+  top: 12%;
+  width: 28%;
+  height: 34%;
+  border: 1px solid rgba(226, 232, 240, 0.18);
+  background:
+    linear-gradient(180deg, rgba(125, 125, 110, 0.3), rgba(36, 36, 32, 0.58)),
+    repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.05) 0 2px, transparent 2px 28px);
+}
+
+.f1-1990s-monitor-wall {
+  position: absolute;
+  left: 4%;
+  top: 25%;
+  width: 24%;
+  height: 28%;
+  border: 1px solid rgba(20, 184, 166, 0.3);
+  border-radius: 4px;
+  background:
+    repeating-linear-gradient(90deg, rgba(20, 184, 166, 0.22) 0 2px, transparent 2px 34px),
+    repeating-linear-gradient(0deg, rgba(132, 204, 22, 0.18) 0 1px, transparent 1px 18px),
+    #071012;
+  box-shadow: 0 0 24px rgba(20, 184, 166, 0.13);
+}
+
+.f1-1990s-toolbox {
+  position: absolute;
+  right: 5%;
+  top: 42%;
+  width: 20%;
+  height: 24%;
+  border: 1px solid rgba(59, 130, 246, 0.24);
+  border-radius: 4px;
+  background:
+    repeating-linear-gradient(0deg, rgba(148, 163, 184, 0.16) 0 2px, transparent 2px 31px),
+    linear-gradient(180deg, #0b2744, #071827);
+}
+
+.f1-1990s-workbench {
+  position: absolute;
+  right: 8%;
+  bottom: 5%;
+  width: 34%;
+  height: 18%;
+  transform: skewX(-10deg);
+  border: 1px solid rgba(120, 53, 15, 0.7);
+  border-radius: 5px;
+  background:
+    linear-gradient(90deg, rgba(120, 53, 15, 0.45), rgba(78, 36, 12, 0.84)),
+    repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.04) 0 1px, transparent 1px 42px);
+}
+
+.f1-1990s-car-shape {
+  position: absolute;
+  left: 28%;
+  bottom: 13%;
+  width: 36%;
+  height: 33%;
+  transform: perspective(700px) rotateX(52deg) rotateZ(-9deg);
+  border: 2px solid rgba(250, 204, 21, 0.34);
+  border-radius: 52% 52% 18% 18%;
+  background:
+    linear-gradient(90deg, rgba(30, 64, 175, 0.88), rgba(250, 204, 21, 0.74) 42%, rgba(30, 64, 175, 0.94)),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.22), transparent);
+  box-shadow: 0 24px 44px rgba(0, 0, 0, 0.55);
+}
+
+.f1-1990s-car-nose {
+  position: absolute;
+  left: 42%;
+  bottom: -34%;
+  width: 16%;
+  height: 62%;
+  border-radius: 0 0 45% 45%;
+  background: #1d4ed8;
+}
+
+.f1-1990s-car-cockpit {
+  position: absolute;
+  left: 44%;
+  top: 18%;
+  width: 12%;
+  height: 20%;
+  border-radius: 50%;
+  background: #0f172a;
+  box-shadow: 0 0 0 3px rgba(250, 204, 21, 0.22);
+}
+
+.f1-1990s-car-wheel {
+  position: absolute;
+  width: 20%;
+  height: 32%;
+  border-radius: 50%;
+  background: #050505;
+  box-shadow: inset 0 0 0 4px #1f2937;
+}
+
+.f1-1990s-car-wheel-left {
+  left: -10%;
+  top: 48%;
+}
+
+.f1-1990s-car-wheel-right {
+  right: -10%;
+  top: 48%;
+}
+
+.f1-1990s-hotspot {
+  position: absolute;
+  z-index: 5;
+  display: flex;
+  align-items: flex-start;
+  gap: 0.45rem;
+  max-width: 14rem;
+  transform: translate(-18px, -18px);
+  border: 0;
+  background: transparent;
+  color: inherit;
+  text-align: left;
+}
+
+.f1-1990s-hotspot-marker {
+  position: relative;
+  width: 2rem;
+  height: 2rem;
+  flex: 0 0 auto;
+  border: 2px solid #facc15;
+  border-radius: 50%;
+  background: rgba(250, 204, 21, 0.22);
+  box-shadow: 0 0 0 6px rgba(250, 204, 21, 0.13), 0 0 28px rgba(250, 204, 21, 0.35);
+}
+
+.f1-1990s-hotspot-marker::after {
+  content: "";
+  position: absolute;
+  inset: 0.45rem;
+  border-radius: 50%;
+  background: #facc15;
+}
+
+.f1-1990s-hotspot-label {
+  display: block;
+  min-width: 8.5rem;
+  border: 1px solid rgba(250, 204, 21, 0.64);
+  border-radius: 5px;
+  background: rgba(0, 0, 0, 0.72);
+  padding: 0.45rem 0.55rem;
+  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.42);
+}
+
+.f1-1990s-hotspot:hover .f1-1990s-hotspot-label,
+.f1-1990s-hotspot:focus-visible .f1-1990s-hotspot-label {
+  border-color: #fde047;
+  background: rgba(25, 20, 5, 0.92);
+}
+
+.f1-1990s-hotspot:focus-visible {
+  outline: 2px solid #facc15;
+  outline-offset: 5px;
+  border-radius: 8px;
+}
+
+.f1-1990s-hotspot-locked .f1-1990s-hotspot-marker {
+  border-color: #71717a;
+  background: rgba(113, 113, 122, 0.18);
+  box-shadow: 0 0 0 6px rgba(113, 113, 122, 0.08);
+}
+
+.f1-1990s-hotspot-locked .f1-1990s-hotspot-marker::after {
+  background: #71717a;
+}
+
+.f1-1990s-hotspot-locked .f1-1990s-hotspot-label {
+  border-color: rgba(113, 113, 122, 0.58);
+}
+
+.f1-1990s-track-outline {
+  height: 4.8rem;
+  border: 1px solid rgba(250, 204, 21, 0.32);
+  border-radius: 48% 18% 58% 24%;
+  background:
+    radial-gradient(circle at 62% 22%, transparent 0 17%, rgba(250, 204, 21, 0.48) 18% 20%, transparent 21%),
+    linear-gradient(130deg, transparent 20%, rgba(250, 204, 21, 0.74) 21% 23%, transparent 24% 46%, rgba(250, 204, 21, 0.74) 47% 49%, transparent 50%);
+  transform: rotate(-18deg);
+}
+
+@media (max-width: 900px) {
+  .f1-1990s-hotspot {
+    max-width: 11rem;
+  }
+
+  .f1-1990s-hotspot-label {
+    min-width: 7rem;
+    padding: 0.35rem 0.45rem;
+  }
+}

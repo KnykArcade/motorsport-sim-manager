@@ -42,6 +42,8 @@ import { Panel } from '../components/Panel';
 import { Button } from '../components/Button';
 import { TrackDemandBars } from '../components/TrackDemandBars';
 import { SetupWorkshop, type WorkshopPractice } from '../components/SetupWorkshop';
+import { F11990sRaceWeekendHub } from '../components/raceWeekend/eraThemes/F11990sRaceWeekendHub';
+import { shouldUseF11990sRaceWeekendHub } from '../components/raceWeekend/eraThemes/getRaceWeekendEraTheme';
 import type { Driver, Track, StandingsEntry } from '../types/gameTypes';
 import type { WeatherState } from '../types/liveTypes';
 import type { CarSetup } from '../types/setupTypes';
@@ -176,6 +178,22 @@ export function RaceWeekend() {
       state: { decisions: playerDrivers.map((d) => raceFor(d.id)) },
     });
   };
+
+  if (phase === 'hub' && forecast && shouldUseF11990sRaceWeekendHub(state.series, state.seasonYear)) {
+    return (
+      <F11990sRaceWeekendHub
+        state={state}
+        race={race}
+        track={track}
+        forecast={forecast}
+        isMinPackage={isMinPackage}
+        hasQualifyingResults={!!qualifyingResults}
+        onPhase={setPhase}
+        onRoute={(to) => navigate(to)}
+        onExit={() => navigate('/hq')}
+      />
+    );
+  }
 
   // Practice and Car Setup are laid out as full-height, no-page-scroll screens:
   // the header/stepper/forecast stay pinned and only the phase's own internal
