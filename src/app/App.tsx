@@ -1,4 +1,5 @@
 import { HashRouter, Navigate, Route, Routes, useParams } from 'react-router-dom';
+import { lazy, Suspense } from 'react';
 import type { ReactNode } from 'react';
 import { GameProvider, useGame } from '../game/GameContext';
 import { canEnterRaceWeekend } from '../game/rosterEnforcement';
@@ -6,39 +7,42 @@ import { currentRace } from '../game/careerState';
 import { Layout } from '../components/Layout';
 import { MainMenu } from '../screens/MainMenu';
 import { NewCareer } from '../screens/NewCareer';
-import { TeamHQ } from '../screens/TeamHQ';
-import { Calendar } from '../screens/Calendar';
-import { Standings } from '../screens/Standings';
-import { TeamOverview } from '../screens/TeamOverview';
-import { Drivers } from '../screens/Drivers';
-import { DriverMarket } from '../screens/DriverMarket';
-import { Development } from '../screens/Development';
-import { Finance } from '../screens/Finance';
-import { Sponsors } from '../screens/Sponsors';
-import { Staff } from '../screens/Staff';
-import { RaceHistory } from '../screens/RaceHistory';
-import { DataViewer } from '../screens/DataViewer';
-import { Facilities } from '../screens/Facilities';
-import { EngineSupplier } from '../screens/EngineSupplier';
-import { TeamPrincipal } from '../screens/TeamPrincipal';
-import { Relationships } from '../screens/Relationships';
-import { Politics } from '../screens/Politics';
-import { Scouting } from '../screens/Scouting';
-import { DriverCurves } from '../screens/DriverCurves';
-import { UniverseHistory } from '../screens/UniverseHistory';
-import { Settings } from '../screens/Settings';
-import { RaceWeekend } from '../screens/RaceWeekend';
-import { LiveRace } from '../screens/LiveRace';
-import { RaceResults } from '../screens/RaceResults';
-import { SeasonReview } from '../screens/SeasonReview';
-import { Offseason } from '../screens/Offseason';
-import { PostRaceReview } from '../screens/PostRaceReview';
-import { PaddockWeek } from '../screens/PaddockWeek';
-import { PreRaceBriefing } from '../screens/PreRaceBriefing';
-import { PreSeasonSetup } from '../screens/PreSeasonSetup';
-import { NewsCenter } from '../screens/NewsCenter';
 import { getCareerPhase } from '../game/careerPhaseEngine';
-import { isRouteRestricted } from '../game/modeRestrictions';
+import { getRouteRestrictionReason } from '../game/modeRestrictions';
+
+// Code-split in-game screens — each screen loads on demand to reduce the
+// initial bundle. MainMenu and NewCareer stay eager for first-paint.
+const TeamHQ = lazy(() => import('../screens/TeamHQ').then((m) => ({ default: m.TeamHQ })));
+const Calendar = lazy(() => import('../screens/Calendar').then((m) => ({ default: m.Calendar })));
+const Standings = lazy(() => import('../screens/Standings').then((m) => ({ default: m.Standings })));
+const TeamOverview = lazy(() => import('../screens/TeamOverview').then((m) => ({ default: m.TeamOverview })));
+const Drivers = lazy(() => import('../screens/Drivers').then((m) => ({ default: m.Drivers })));
+const DriverMarket = lazy(() => import('../screens/DriverMarket').then((m) => ({ default: m.DriverMarket })));
+const Development = lazy(() => import('../screens/Development').then((m) => ({ default: m.Development })));
+const Finance = lazy(() => import('../screens/Finance').then((m) => ({ default: m.Finance })));
+const Sponsors = lazy(() => import('../screens/Sponsors').then((m) => ({ default: m.Sponsors })));
+const Staff = lazy(() => import('../screens/Staff').then((m) => ({ default: m.Staff })));
+const RaceHistory = lazy(() => import('../screens/RaceHistory').then((m) => ({ default: m.RaceHistory })));
+const DataViewer = lazy(() => import('../screens/DataViewer').then((m) => ({ default: m.DataViewer })));
+const Facilities = lazy(() => import('../screens/Facilities').then((m) => ({ default: m.Facilities })));
+const EngineSupplier = lazy(() => import('../screens/EngineSupplier').then((m) => ({ default: m.EngineSupplier })));
+const TeamPrincipal = lazy(() => import('../screens/TeamPrincipal').then((m) => ({ default: m.TeamPrincipal })));
+const Relationships = lazy(() => import('../screens/Relationships').then((m) => ({ default: m.Relationships })));
+const Politics = lazy(() => import('../screens/Politics').then((m) => ({ default: m.Politics })));
+const Scouting = lazy(() => import('../screens/Scouting').then((m) => ({ default: m.Scouting })));
+const DriverCurves = lazy(() => import('../screens/DriverCurves').then((m) => ({ default: m.DriverCurves })));
+const UniverseHistory = lazy(() => import('../screens/UniverseHistory').then((m) => ({ default: m.UniverseHistory })));
+const Settings = lazy(() => import('../screens/Settings').then((m) => ({ default: m.Settings })));
+const RaceWeekend = lazy(() => import('../screens/RaceWeekend').then((m) => ({ default: m.RaceWeekend })));
+const LiveRace = lazy(() => import('../screens/LiveRace').then((m) => ({ default: m.LiveRace })));
+const RaceResults = lazy(() => import('../screens/RaceResults').then((m) => ({ default: m.RaceResults })));
+const SeasonReview = lazy(() => import('../screens/SeasonReview').then((m) => ({ default: m.SeasonReview })));
+const Offseason = lazy(() => import('../screens/Offseason').then((m) => ({ default: m.Offseason })));
+const PostRaceReview = lazy(() => import('../screens/PostRaceReview').then((m) => ({ default: m.PostRaceReview })));
+const PaddockWeek = lazy(() => import('../screens/PaddockWeek').then((m) => ({ default: m.PaddockWeek })));
+const PreRaceBriefing = lazy(() => import('../screens/PreRaceBriefing').then((m) => ({ default: m.PreRaceBriefing })));
+const PreSeasonSetup = lazy(() => import('../screens/PreSeasonSetup').then((m) => ({ default: m.PreSeasonSetup })));
+const NewsCenter = lazy(() => import('../screens/NewsCenter').then((m) => ({ default: m.NewsCenter })));
 
 // Wrap in-game screens with the dashboard layout and redirect to the menu when
 // there is no active game.
@@ -53,16 +57,13 @@ function InGame({ children }: { children: ReactNode }) {
 function ModeGuard({ route, children }: { route: string; children: ReactNode }) {
   const { state } = useGame();
   if (!state) return <Navigate to="/" replace />;
-  if (isRouteRestricted(route, state.gameMode)) {
+  const reason = getRouteRestrictionReason(route, state.gameMode);
+  if (reason) {
     return (
       <Layout>
         <div className="space-y-4">
           <h1 className="text-2xl font-bold text-neutral-100">Screen Locked</h1>
-          <p className="text-sm text-neutral-400">
-            This screen is not available in Single Season mode. Single Season is a
-            historical replay of one season — long-term career systems like scouting,
-            development curves, regulation politics, and offseason planning are disabled.
-          </p>
+          <p className="text-sm text-neutral-400">{reason}</p>
           <p className="text-sm text-neutral-500">
             Use the sidebar to navigate to available screens like Team HQ, Calendar,
             Standings, Race Weekend, and Development.
@@ -222,6 +223,11 @@ export default function App() {
   return (
     <GameProvider>
       <HashRouter>
+        <Suspense fallback={
+          <div className="flex h-screen items-center justify-center bg-neutral-950 text-neutral-500">
+            <div className="text-sm">Loading…</div>
+          </div>
+        }>
         <Routes>
           <Route path="/" element={<MainMenu />} />
           <Route path="/new" element={<NewCareer />} />
@@ -260,6 +266,7 @@ export default function App() {
 
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
+        </Suspense>
       </HashRouter>
     </GameProvider>
   );

@@ -17,7 +17,7 @@ import type { AcademyMember, MarketDriver, YouthProspect } from '../types/market
 import type { AITeamState } from '../types/aiTeamTypes';
 import type { MarketBundle } from '../data/market';
 import { MILLION, toMoney } from './financeEngine';
-import { carPerformanceRating, effectiveCarRatings } from './trackFitEngine';
+import { carPerformanceRating } from './trackFitEngine';
 import {
   academyMemberAge,
   academyMemberToDriver,
@@ -43,6 +43,7 @@ import {
 } from './developmentEngine';
 import { aiFacilityLevel, facilityOutcomeChances, facilityImpactMultiplier } from './facilityEngine';
 import { ARCHETYPE_SPECS } from './aiTeamEngine';
+import { weightedDevTarget, effectiveRisk, marketMod } from './teamIdentityEngine';
 import { createSeededRandom, deriveSeed, type Rng } from './random';
 import { getStaffPool } from '../data';
 import type { StaffRole } from '../types/staffTypes';
@@ -112,30 +113,6 @@ function spendableCash(team: Team, ai: AITeamState): number {
 
 // --- Development -------------------------------------------------------------
 
-const CAR_KEYS: (keyof CarRatings)[] = [
-  'enginePower',
-  'aeroEfficiency',
-  'mechanicalGrip',
-  'reliability',
-  'pitCrewOperations',
-];
-
-// Pick the development target: the car's weakest area, unless the team had a
-// reliability problem last season (many DNFs), in which case fix reliability.
-function developmentTarget(car: Car, hadReliabilityProblem: boolean): keyof CarRatings {
-  const eff = effectiveCarRatings(car);
-  if (hadReliabilityProblem && eff.reliability < 8.5) return 'reliability';
-  let worst: keyof CarRatings = 'aeroEfficiency';
-  let worstVal = Infinity;
-  for (const k of CAR_KEYS) {
-    if (eff[k] < worstVal) {
-      worstVal = eff[k];
-      worst = k;
-    }
-  }
-  return worst;
-}
-
 const CAR_AREA_LABELS: Record<keyof CarRatings, string> = {
   enginePower: 'engine',
   aeroEfficiency: 'aero',
@@ -168,11 +145,12 @@ function developCar(
     org?.research ?? 45,
   );
 
-  // Map archetype risk to ProjectRiskLevel.
+  // Map archetype risk to ProjectRiskLevel, adjusted by philosophy traits.
+  const traitRisk = effectiveRisk(ai.philosophy?.traits, spec.risk);
   const riskLevel: ProjectRiskLevel =
-    spec.risk >= 0.8 ? 'Experimental'
-    : spec.risk >= 0.55 ? 'Aggressive'
-    : spec.risk >= 0.3 ? 'Standard'
+    traitRisk >= 0.8 ? 'Experimental'
+    : traitRisk >= 0.55 ? 'Aggressive'
+    : traitRisk >= 0.3 ? 'Standard'
     : 'Safe';
 
   // Roll outcome using the facility-based chance table.
@@ -181,12 +159,12 @@ function developCar(
   const gainMultiplier = OUTCOME_GAIN_MULTIPLIERS[outcome];
   const impactMult = facilityImpactMultiplier(facLevel);
 
-  const target = developmentTarget(car, hadReliabilityProblem);
+  const target = weightedDevTarget(car, hadReliabilityProblem, ai.philosophy?.traits);
   const current = car.ratings[target];
 
   // Base gain scales with spend and risk appetite.
   const budgetM = budget / MILLION;
-  const base = Math.min(0.9, 0.12 + budgetM * 0.012 + spec.risk * 0.25);
+  const base = Math.min(0.9, 0.12 + budgetM * 0.012 + traitRisk * 0.25);
 
   let gain = base * gainMultiplier * impactMult * (0.7 + rng.next() * 0.6);
 
@@ -242,10 +220,13 @@ function clampGain(g: number): number {
 // sponsor money and a youth-focused team valuing upside.
 function evaluateCandidate(m: MarketDriver, ai: AITeamState): number {
   const spec = ARCHETYPE_SPECS[ai.archetype];
+  const traitMod = marketMod(ai.philosophy?.traits);
   return (
     m.overall +
-    spec.payDriverBias * (m.sponsorValue * 0.15) +
-    spec.youthBias * (m.potential - m.overall) * 0.3
+    (spec.payDriverBias + traitMod.payDriverBias) * (m.sponsorValue * 0.15) +
+    (spec.youthBias + traitMod.youthBias) * (m.potential - m.overall) * 0.3 +
+    traitMod.potentialBias * (m.potential - m.overall) * 0.2 +
+    traitMod.overallBias * m.overall * 0.05
   );
 }
 

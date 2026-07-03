@@ -115,6 +115,13 @@ export function NewCareer() {
               onClick={() => setMode('Career')}
               bullets={['Multi-year progression', 'Offseason & budget allocation', 'Regulation changes', 'Development carryover']}
             />
+            <ModeCard
+              title="Sandbox Mode"
+              blurb="Flexible play mode with access to all systems. No restrictions — experiment with any season, any team, any combination."
+              selected={mode === 'Sandbox'}
+              onClick={() => setMode('Sandbox')}
+              bullets={['All systems unlocked', 'No mode restrictions', 'Full career features', 'Experiment freely']}
+            />
             <div className="md:col-span-2 flex justify-end">
               <Button variant="primary" onClick={() => setStep('setup')}>
                 Continue →
@@ -266,7 +273,7 @@ export function NewCareer() {
             seed={seed}
             value={engineChoice}
             onChange={setEngineChoice}
-            confirmLabel={`Start ${mode === 'Career' ? 'Career' : 'Season'}`}
+            confirmLabel={`Start ${mode === 'Career' ? 'Career' : mode === 'Sandbox' ? 'Sandbox' : 'Season'}`}
             onBack={() => setStep('principal')}
             onConfirm={(choice) => {
               if (principal) startGame(principal, choice);
