@@ -14,7 +14,7 @@ import type { GameState } from '../game/careerState';
 import { activeDriversForTeam } from '../game/careerState';
 import { effectiveCarRatings, carPerformanceRating } from './trackFitEngine';
 import { buildTeamOrganizationRatings } from './teamRatingsEngine';
-import { ARCHETYPE_SPECS, GOAL_LABELS } from './aiTeamEngine';
+import { ARCHETYPE_SPECS, GOAL_LABELS, TRAIT_LABELS } from './aiTeamEngine';
 
 export type TeamTrend =
   | 'TitlePush'
@@ -75,6 +75,7 @@ export type TeamOverviewRow = {
   overallRating: number; // headline 1-10
   archetypeLabel?: string; // AI only
   goalLabel?: string; // AI only
+  philosophyLabel?: string; // AI only
   trend: TeamTrend;
 };
 
@@ -218,6 +219,7 @@ export function buildTeamOverviewRow(state: GameState, team: Team): TeamOverview
     overallRating: round1(overallRating),
     archetypeLabel: ai ? ARCHETYPE_SPECS[ai.archetype].label : undefined,
     goalLabel: ai ? GOAL_LABELS[ai.goal] : undefined,
+    philosophyLabel: ai?.philosophy ? ai.philosophy.traits.map((t) => TRAIT_LABELS[t]).join(', ') : undefined,
     trend: trendForTeam(state, team, health, position),
   };
 }

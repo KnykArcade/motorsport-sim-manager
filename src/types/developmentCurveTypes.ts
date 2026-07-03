@@ -4,6 +4,40 @@
 // inputs (experience, testing, morale, injuries, academy, team quality,
 // mentorship, traits) drives per-offseason rating changes over a long career.
 
+// Youth development traits: each prospect carries 0-2 traits that modify their
+// development curve, giving youngsters personality beyond just raw numbers.
+export type YouthTrait =
+  | 'LateBloomer'    // slow start, higher ceiling, peaks later
+  | 'Prodigy'        // fast start, lower ceiling, peaks earlier
+  | 'Consistent'     // steady growth, low variance
+  | 'Erratic'        // high variance — big jumps or slumps
+  | 'Resilient'      // bounces back from setbacks faster
+  | 'Fragile'        // higher injury risk, slower recovery
+  | 'Workhorse'      // extra academy boost from hard work
+  | 'NaturalTalent'; // raw talent, needs less academy investment
+
+export const YOUTH_TRAIT_LABELS: Record<YouthTrait, string> = {
+  LateBloomer: 'Late Bloomer',
+  Prodigy: 'Prodigy',
+  Consistent: 'Consistent',
+  Erratic: 'Erratic',
+  Resilient: 'Resilient',
+  Fragile: 'Fragile',
+  Workhorse: 'Workhorse',
+  NaturalTalent: 'Natural Talent',
+};
+
+export const YOUTH_TRAIT_DESCRIPTIONS: Record<YouthTrait, string> = {
+  LateBloomer: 'Slow to develop but reaches a higher ceiling. Peaks later than average.',
+  Prodigy: 'Fast early development but lower ceiling. Peaks earlier than average.',
+  Consistent: 'Steady, predictable growth with minimal variance season to season.',
+  Erratic: 'Wild development swings — can jump or slump dramatically between seasons.',
+  Resilient: 'Recovers quickly from setbacks and injuries. Morale has a bigger effect.',
+  Fragile: 'Higher injury risk and slower recovery. Development can stall.',
+  Workhorse: 'Responds especially well to academy investment and facilities.',
+  NaturalTalent: 'Raw ability — needs less academy support to reach potential.',
+};
+
 export type DriverDevelopmentCurve = {
   driverId: string;
   peakAgeStart: number;
@@ -13,6 +47,7 @@ export type DriverDevelopmentCurve = {
   consistencyGrowth: number; // how fast consistency/composure matures
   aggressionChange: number; // signed drift in aggression with age
   potentialCeiling: number; // max overall the driver can reach (0-100 scale)
+  traits?: YouthTrait[]; // optional youth traits that modify development
 };
 
 // A snapshot of inputs that modulate a development step, kept for transparency.

@@ -946,6 +946,101 @@ export function generatePaddockWeekEvents(state: GameState): PaddockEvent[] {
     }
   }
 
+  // --- Driver Confidence & Promises ---
+  const relationships = state.driverRelationships ?? {};
+  const promises = state.driverPromises ?? [];
+  for (const driver of activeDrivers) {
+    const rel = relationships[driver.id];
+    if (!rel) continue;
+
+    // Low trust in principal — frustration building.
+    if (rel.trustInPrincipal < 35) {
+      events.push(
+        builder.make(
+          weekId, season, series, round,
+          'driver_morale',
+          `${driver.name} losing faith in the principal`,
+          `Trust in the team principal is at ${Math.round(rel.trustInPrincipal)}%. ${driver.name} is growing frustrated with leadership.`,
+          'major',
+        ),
+      );
+    }
+
+    // Low self-confidence — needs encouragement.
+    if (rel.selfConfidence < 35) {
+      events.push(
+        builder.make(
+          weekId, season, series, round,
+          'driver_morale',
+          `${driver.name} short on confidence`,
+          `Self-confidence is at ${Math.round(rel.selfConfidence)}%. The driver may benefit from reassurance and support.`,
+          'minor',
+        ),
+      );
+    }
+
+    // High frustration — warning sign.
+    if (rel.frustration > 65) {
+      events.push(
+        builder.make(
+          weekId, season, series, round,
+          'driver_morale',
+          `${driver.name} is deeply frustrated`,
+          `Frustration levels are at ${Math.round(rel.frustration)}%. Without intervention, this could escalate into a contract dispute.`,
+          'major',
+        ),
+      );
+    }
+
+    // Driver wants — surface unmet desires as paddock buzz.
+    if (rel.wants.length > 0) {
+      const wantLabels: Record<string, string> = {
+        number_one_status: 'number-one driver status',
+        equal_treatment: 'equal treatment with teammate',
+        better_reliability: 'a more reliable car',
+        development_priority: 'priority in development feedback',
+        contract_renewal: 'contract renewal discussions',
+      };
+      const topWant = rel.wants[0];
+      events.push(
+        builder.make(
+          weekId, season, series, round,
+          'driver_morale',
+          `${driver.name} wants ${wantLabels[topWant] ?? topWant}`,
+          `The driver is reportedly seeking ${wantLabels[topWant] ?? topWant}. Addressing this could improve the relationship.`,
+          'minor',
+        ),
+      );
+    }
+  }
+
+  // Active promise reminders — surface deadlines approaching.
+  const activePromises = promises.filter((p) => p.status === 'active');
+  for (const promise of activePromises) {
+    const driver = state.drivers.find((d) => d.id === promise.driverId);
+    if (!driver || driver.teamId !== state.selectedTeamId) continue;
+    const promiseLabels: Record<string, string> = {
+      equal_treatment: 'equal treatment',
+      number_one_status: 'number-one status',
+      improved_reliability: 'improved reliability',
+      contract_renewal: 'contract renewal',
+      development_priority: 'development priority',
+    };
+    const label = promiseLabels[promise.promiseType] ?? promise.promiseType;
+    const deadline = promise.dueSeason != null
+      ? ` (due: season ${promise.dueSeason}${promise.dueRound != null ? `, round ${promise.dueRound}` : ''})`
+      : '';
+    events.push(
+      builder.make(
+        weekId, season, series, round,
+        'driver_morale',
+        `Promise to ${driver.name}: ${label}${deadline}`,
+        `You promised ${driver.name} ${label}. Keeping this promise will strengthen trust; breaking it will have consequences.${deadline}`,
+        'info',
+      ),
+    );
+  }
+
   // --- AI Team News (real activity) ---
   const aiNews = generateAITeamActivity(state, weekId, season, series, round, builder);
   events.push(...aiNews);

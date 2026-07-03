@@ -32,6 +32,26 @@ export type AITeamGoal =
   | 'Survival'
   | 'YouthDevelopment';
 
+// Persistent identity traits that define a team's character beyond its current
+// archetype. These are assigned at initialization and drift slowly, giving each
+// team a recognizable personality across seasons even as archetypes evolve.
+export type TeamPhilosophyTrait =
+  | 'TechnicalInnovator'    // pushes boundaries, experimental approach
+  | 'Traditionalist'        // values experience and proven methods
+  | 'RiskTaker'             // bold strategic calls, aggressive development
+  | 'PeopleFirst'           // invests in staff and driver relationships
+  | 'DataDriven'            // analytics-heavy, systematic approach
+  | 'Maverick'              // unconventional, unpredictable decisions
+  | 'Disciplined'           // methodical, process-oriented
+  | 'StarMaker';            // known for developing young talent
+
+export type TeamPhilosophy = {
+  // 2-3 persistent traits that define the team's character.
+  traits: TeamPhilosophyTrait[];
+  // A short, human-readable description of the team's identity.
+  description: string;
+};
+
 // A simplified annual budget for an AI team, all values in raw dollars.
 // Prize money is banked per-race into Team.budget during the season, so at
 // rollover only sponsorIncome is added and the annual expenses are deducted.
@@ -68,6 +88,8 @@ export type AITeamState = {
   financialHealth: AIFinancialHealth;
   goal: AITeamGoal;
   budget: AITeamBudget;
+  // Persistent team identity — traits and description that survive across seasons.
+  philosophy?: TeamPhilosophy;
   // Consecutive seasons the team has been AtRisk/Critical — drives the drift
   // toward Survival Mode (and recovery back out of it).
   seasonsInTrouble: number;

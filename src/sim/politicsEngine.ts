@@ -8,7 +8,7 @@
 // RegulationChangeEvents that feed next year's car carryover, and every outcome
 // is recorded for the universe history. Pure and deterministic.
 
-import type { CarRatings, RegulationChangeEvent, Series, Team } from '../types/gameTypes';
+import type { CarRatings, RegulationChangeEvent, Series, Team, NewsItem, NewsCategory, NewsPriority } from '../types/gameTypes';
 import type { TeamReputation } from '../types/expectationTypes';
 import type { EngineState } from '../types/engineTypes';
 import type {
@@ -18,6 +18,7 @@ import type {
   RegulationVote,
   RegulationVoteResult,
 } from '../types/politicsTypes';
+import type { TeamPhilosophyTrait } from '../types/aiTeamTypes';
 import { createSeededRandom, deriveSeed, type Rng } from './random';
 
 function clamp(n: number, lo = 0, hi = 100): number {
@@ -212,10 +213,41 @@ const TEMPLATES: ProposalTemplate[] = [
   },
 ];
 
-function teamStance(template: ProposalTemplate, team: Team, prestige: number, engine: EngineState | undefined, rng: Rng): number {
+// Philosophy-trait stance modifiers: each trait shifts a team's position on
+// certain regulation categories, giving AI teams identity-driven voting patterns
+// beyond just prestige and engine deals.
+const TRAIT_STANCE_MOD: Partial<Record<TeamPhilosophyTrait, Partial<Record<RegulationCategory, number>>>> = {
+  TechnicalInnovator: { Engine: 15, Aero: 10, Testing: -10, Budget: -15 },
+  Traditionalist: { Qualifying: -15, Calendar: -10, Budget: 5, Safety: 10 },
+  RiskTaker: { Engine: 10, Aero: 10, Budget: -20, Testing: -10 },
+  PeopleFirst: { Safety: 15, Budget: 5, Testing: 5 },
+  DataDriven: { Aero: 5, Engine: 5, Budget: 10, Testing: -5 },
+  Maverick: { Qualifying: 15, Calendar: 10, Engine: 5, Budget: -10 },
+  Disciplined: { Budget: 15, Testing: 10, Safety: 5, Engine: -5 },
+  StarMaker: { Testing: 10, Safety: 5, Budget: -5 },
+};
+
+function philosophyStanceMod(traits: TeamPhilosophyTrait[] | undefined, category: RegulationCategory): number {
+  if (!traits) return 0;
+  let mod = 0;
+  for (const trait of traits) {
+    mod += TRAIT_STANCE_MOD[trait]?.[category] ?? 0;
+  }
+  return mod;
+}
+
+function teamStance(
+  template: ProposalTemplate,
+  team: Team,
+  prestige: number,
+  engine: EngineState | undefined,
+  rng: Rng,
+  philosophyTraits?: TeamPhilosophyTrait[],
+): number {
   const bigness = (prestige - 50) / 50; // -1..1
   let stance = template.baseStance + template.bignessBias * bigness * 100;
   if (template.worksBias) stance += template.worksBias * worksFactor(team.id, engine);
+  stance += philosophyStanceMod(philosophyTraits, template.category);
   stance += rng.variance(14);
   return Math.round(clampStance(stance));
 }
@@ -230,6 +262,7 @@ export function generateRegulationProposals(
   seed: string,
   count = 3,
   series?: Series,
+  aiTeamStates?: Record<string, import('../types/aiTeamTypes').AITeamState>,
 ): RegulationProposal[] {
   const eligible = TEMPLATES.filter(
     (t) =>
@@ -249,7 +282,8 @@ export function generateRegulationProposals(
     const rng = createSeededRandom(deriveSeed(seed, 'regstance', seasonYearEffective, template.key));
     const supportByTeam: Record<string, number> = {};
     for (const team of teams) {
-      supportByTeam[team.id] = teamStance(template, team, teamPrestige(team, reputations), engine, rng);
+      const traits = aiTeamStates?.[team.id]?.philosophy?.traits;
+      supportByTeam[team.id] = teamStance(template, team, teamPrestige(team, reputations), engine, rng, traits);
     }
     return {
       id: `reg-${seasonYearEffective}-${template.key}`,
@@ -353,7 +387,25 @@ export type RegulationVotingResolution = {
   results: RegulationVoteResult[];
   regulationChanges: RegulationChangeEvent[];
   notes: string[];
+  news: NewsItem[];
 };
+
+function makeRegNews(
+  id: string,
+  headline: string,
+  priority: NewsPriority,
+  body: string,
+): NewsItem {
+  return {
+    id,
+    headline,
+    body,
+    timestamp: new Date().toISOString(),
+    category: 'regulation' as NewsCategory,
+    priority,
+    careerPhase: 'offseason',
+  };
+}
 
 // Resolve every proposal effective for the upcoming season: tally the votes,
 // turn passed proposals into car-affecting regulation changes, and produce a
@@ -369,6 +421,7 @@ export function resolveRegulationVoting(
   const results: RegulationVoteResult[] = [];
   const regulationChanges: RegulationChangeEvent[] = [];
   const notes: string[] = [];
+  const news: NewsItem[] = [];
 
   for (const proposal of proposals) {
     const result = resolveProposal(proposal, influence, playerTeamId);
@@ -382,11 +435,24 @@ export function resolveRegulationVoting(
     }
     notes.push(note);
 
+    const priority: NewsPriority = result.passed ? 'high' : 'normal';
+    const newsBody = result.passed
+      ? `The proposal "${proposal.title}" has been approved for ${proposal.seasonYearEffective}. Support: ${result.supportWeight}, Opposition: ${result.opposeWeight}.`
+      : `The proposal "${proposal.title}" was rejected. Support: ${result.supportWeight}, Opposition: ${result.opposeWeight}.`;
+    news.push(makeRegNews(
+      `news-reg-${proposal.id}`,
+      result.passed
+        ? `Regulation passed: ${proposal.title}`
+        : `Regulation rejected: ${proposal.title}`,
+      priority,
+      newsBody,
+    ));
+
     if (result.passed) {
       const change = proposalToRegulationChange(proposal);
       if (change) regulationChanges.push(change);
     }
   }
 
-  return { results, regulationChanges, notes };
+  return { results, regulationChanges, notes, news };
 }

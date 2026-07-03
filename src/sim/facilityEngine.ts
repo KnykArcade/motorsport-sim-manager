@@ -9,6 +9,7 @@ import type {
   FacilityType,
   FacilitiesState,
   FacilityUpgradeOrder,
+  FacilitySpecialization,
 } from '../types/facilityTypes';
 import type {
   DevelopmentCategory,
@@ -114,6 +115,40 @@ export const FACILITY_SPECS: Record<FacilityType, FacilitySpec> = {
 
 const FACILITY_TYPES = Object.keys(FACILITY_SPECS) as FacilityType[];
 
+// Which facility types each specialization boosts.
+export const SPECIALIZATION_FACILITIES: Record<FacilitySpecialization, FacilityType[]> = {
+  AeroFocused: ['WindTunnel', 'DataCenter'],
+  ReliabilityFocused: ['ReliabilityLab', 'Manufacturing'],
+  YouthFocused: ['DriverAcademy', 'Simulator'],
+  ProductionFocused: ['Factory', 'Manufacturing'],
+  Balanced: [],
+};
+
+const SPECIALIZATION_BONUS = 0.25; // +25% effect for boosted facilities
+
+// Apply specialization bonus to a single facility's effects.
+function applySpecializationBonus(
+  facility: Facility,
+  specialization: FacilitySpecialization | undefined,
+): Record<string, number> {
+  if (!specialization || specialization === 'Balanced') return facility.effects;
+  const boosted = SPECIALIZATION_FACILITIES[specialization];
+  if (!boosted.includes(facility.type)) return facility.effects;
+  const out: Record<string, number> = {};
+  for (const [key, value] of Object.entries(facility.effects)) {
+    out[key] = Math.round(value * (1 + SPECIALIZATION_BONUS) * 1000) / 1000;
+  }
+  return out;
+}
+
+// Compute effective facility effects accounting for specialization.
+export function effectiveFacilityEffects(
+  facility: Facility,
+  state: FacilitiesState | undefined,
+): Record<string, number> {
+  return applySpecializationBonus(facility, state?.specialization);
+}
+
 function effectsAtLevel(type: FacilityType, level: number): Record<string, number> {
   const spec = FACILITY_SPECS[type];
   const out: Record<string, number> = {};
@@ -160,13 +195,17 @@ export function createInitialFacilities(teamId: string, reputation = 0): Facilit
   };
 }
 
-// Aggregate a single named effect across all of a team's facilities.
+// Aggregate a single named effect across all of a team's facilities, applying
+// specialization bonuses where applicable.
 export function facilityEffect(
   facilities: FacilitiesState | undefined,
   key: FacilityEffectKey,
 ): number {
   if (!facilities) return 0;
-  return facilities.facilities.reduce((sum, f) => sum + (f.effects[key] ?? 0), 0);
+  return facilities.facilities.reduce(
+    (sum, f) => sum + (applySpecializationBonus(f, facilities.specialization)[key] ?? 0),
+    0,
+  );
 }
 
 export function facilityDevelopmentSuccessBonus(f?: FacilitiesState): number {

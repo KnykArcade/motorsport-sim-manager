@@ -61,6 +61,7 @@ import {
   developmentSlots,
   relevantFacilityLevel,
 } from '../sim/facilityEngine';
+import type { FacilitySpecialization } from '../types/facilityTypes';
 import {
   availableEngineOffers,
   buildSignedDeal,
@@ -212,7 +213,8 @@ export type GameAction =
   | { type: 'SET_CAREER_MOBILITY'; mode: 'StandardCareer' | 'TeamLock' | 'Sandbox' }
   | { type: 'ALLOCATE_SKILL_POINT'; attribute: 'mediaImage' | 'boardConfidence' | 'financialDiscipline' | 'driverManagement' | 'development' | 'strategy'; points?: number }
   | { type: 'MAKE_PROMISE'; driverId: string; promiseType: PromiseType; dueSeason?: number; dueRound?: number }
-  | { type: 'RESOLVE_PROMISE'; promiseId: string; fulfilled: boolean };
+  | { type: 'RESOLVE_PROMISE'; promiseId: string; fulfilled: boolean }
+  | { type: 'SET_FACILITY_SPECIALIZATION'; specialization: FacilitySpecialization };
 
 // Run one practice session for the player's drivers: simulate each assignment,
 // fold the results into the weekend knowledge, and apply the one-off confidence
@@ -792,6 +794,14 @@ export function gameReducer(state: GameState | null, action: GameAction): GameSt
         ? applyPromiseResolution(state.driverRelationships, resolved)
         : state.driverRelationships;
       return { ...state, driverPromises: promises, driverRelationships: relationships };
+    }
+
+    case 'SET_FACILITY_SPECIALIZATION': {
+      if (!state || !state.facilities) return state;
+      return {
+        ...state,
+        facilities: { ...state.facilities, specialization: action.specialization },
+      };
     }
 
     default:
