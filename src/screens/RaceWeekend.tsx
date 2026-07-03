@@ -162,6 +162,8 @@ export function RaceWeekend() {
 
   if (!state || !race || !track || !autoSetups) return null;
 
+  const isMinPackage = state.raceWeekendPackage?.packageType === 'MandatoryMinimum';
+
   const qualifyingResults = state.qualifyingResults[race.id];
 
   const runQualifying = () => {
@@ -191,7 +193,7 @@ export function RaceWeekend() {
       </div>
 
       <div className="shrink-0">
-        <PhaseStepper phase={phase} hasQuali={!!qualifyingResults} />
+        <PhaseStepper phase={phase} hasQuali={!!qualifyingResults} isMinPackage={isMinPackage} />
       </div>
 
       {forecast && phase !== 'hub' && (
@@ -233,10 +235,10 @@ export function RaceWeekend() {
       )}
 
       {phase === 'briefing' && (
-        <Briefing track={track} race={race} onNext={() => setPhase('practice')} />
+        <Briefing track={track} race={race} isMinPackage={isMinPackage} onNext={() => setPhase(isMinPackage ? 'quali-run' : 'practice')} />
       )}
 
-      {phase === 'practice' && (
+      {phase === 'practice' && !isMinPackage && (
         <PracticePhase
           state={state}
           dispatch={dispatch}
@@ -247,7 +249,7 @@ export function RaceWeekend() {
         />
       )}
 
-      {phase === 'setup' && (
+      {phase === 'setup' && !isMinPackage && (
         <SetupWorkshop
           track={track}
           drivers={playerDrivers}
@@ -306,7 +308,7 @@ export function RaceWeekend() {
               }
             />
           )}
-          onBack={() => setPhase('setup')}
+          onBack={() => setPhase(isMinPackage ? 'briefing' : 'setup')}
           onNext={runQualifying}
           nextLabel="Simulate Qualifying →"
         />
@@ -361,11 +363,14 @@ export function RaceWeekend() {
   );
 }
 
-function PhaseStepper({ phase, hasQuali }: { phase: Phase; hasQuali: boolean }) {
-  const currentIdx = PHASE_ORDER.findIndex((p) => p.id === phase);
+function PhaseStepper({ phase, hasQuali, isMinPackage }: { phase: Phase; hasQuali: boolean; isMinPackage: boolean }) {
+  const visiblePhases = isMinPackage
+    ? PHASE_ORDER.filter((p) => p.id !== 'practice' && p.id !== 'setup')
+    : PHASE_ORDER;
+  const currentIdx = visiblePhases.findIndex((p) => p.id === phase);
   return (
     <div className="flex flex-wrap items-center gap-1.5 text-xs">
-      {PHASE_ORDER.map((p, i) => {
+      {visiblePhases.map((p, i) => {
         const done = i < currentIdx || (p.id === 'quali-review' && hasQuali && phase !== 'quali-review');
         const active = p.id === phase;
         return (
@@ -377,7 +382,7 @@ function PhaseStepper({ phase, hasQuali }: { phase: Phase; hasQuali: boolean }) 
             >
               {i + 1}. {p.label}
             </span>
-            {i < PHASE_ORDER.length - 1 && <span className="text-neutral-700">›</span>}
+            {i < visiblePhases.length - 1 && <span className="text-neutral-700">›</span>}
           </div>
         );
       })}
@@ -385,12 +390,17 @@ function PhaseStepper({ phase, hasQuali }: { phase: Phase; hasQuali: boolean }) 
   );
 }
 
-function Briefing({ track, race, onNext }: { track: Track; race: { laps: number; distanceKm?: number; gpName: string }; onNext: () => void }) {
+function Briefing({ track, race, isMinPackage, onNext }: { track: Track; race: { laps: number; distanceKm?: number; gpName: string }; isMinPackage: boolean; onNext: () => void }) {
   return (
     <Panel
       title="Track Briefing"
       actions={<Button variant="primary" onClick={onNext}>Begin Qualifying Prep →</Button>}
     >
+      {isMinPackage && (
+        <div className="mb-4 rounded-lg border border-red-500/40 bg-red-500/10 px-4 py-3 text-sm text-red-300">
+          <span className="font-bold">Minimum Operations Package:</span> Practice sessions and car setup changes are disabled. The team will run with the baseline setup and no practice data.
+        </div>
+      )}
       <div className="grid gap-6 md:grid-cols-2">
         <div>
           <div className="text-xl font-bold text-neutral-100">{race.gpName}</div>

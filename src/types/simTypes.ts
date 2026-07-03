@@ -104,6 +104,12 @@ export type RaceContext = {
   racePrepFocusEffect?: RacePrepFocusEffect;
   // Player's team ID — used to apply race prep focus effects only to the player.
   playerTeamId?: string;
+  // Staff bonuses for the player's team: pit crew chief and strategist effects
+  // applied to pit stop performance and strategy execution.
+  playerStaffBonus?: {
+    pitCrew: number;
+    strategy: number;
+  };
 };
 
 export type RacePrepFocusEffect = {

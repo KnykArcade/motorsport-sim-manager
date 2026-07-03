@@ -284,6 +284,7 @@ function fillEmptyRaceSeats(
 
 export function advanceSeason(state: GameState): GameState {
   const nextYear = state.seasonYear + 1;
+  const mobilityMode: CareerMobilityMode = state.careerMobilityMode ?? 'StandardCareer';
   // Living career market: the curated season file plus registry free agents /
   // youth that have become available. Signings queued during the offseason are
   // resolved against this same pool.
@@ -754,7 +755,7 @@ export function advanceSeason(state: GameState): GameState {
       moveTeamId = accepted.teamId;
       const dest = state.teams.find((t) => t.id === accepted.teamId);
       principalNotes.push(`You accepted the job at ${dest?.name ?? 'a new team'} for ${nextYear}.`);
-    } else if (reviewed.status === 'sacked') {
+    } else if (reviewed.status === 'sacked' && mobilityMode !== 'TeamLock' && mobilityMode !== 'Sandbox') {
       const rehire = bestRehireOffer(state.jobOffers ?? []);
       if (rehire) {
         moveTeamId = rehire.teamId;
@@ -765,6 +766,12 @@ export function advanceSeason(state: GameState): GameState {
         nextPrincipal = { ...nextPrincipal, jobSecurity: 35, contractYearsRemaining: 1 };
         principalNotes.push('No rival team came calling — the board grants you one final year on probation.');
       }
+    } else if (reviewed.status === 'sacked' && (mobilityMode === 'TeamLock' || mobilityMode === 'Sandbox')) {
+      // Team Lock / Sandbox prevents forced firing. The owner is unhappy but
+      // cannot remove the principal. Reset job security to a probation level
+      // and generate a pressure warning instead.
+      nextPrincipal = { ...nextPrincipal, jobSecurity: Math.max(30, nextPrincipal.jobSecurity), contractYearsRemaining: Math.max(1, nextPrincipal.contractYearsRemaining) };
+      principalNotes.push('The owner is deeply unhappy with the season\'s results but cannot remove you under Team Lock terms. Pressure remains high.');
     }
 
     // Move the principal's record/contract to the destination team.
@@ -968,7 +975,6 @@ export function advanceSeason(state: GameState): GameState {
   );
 
   // --- Financial distress consequences & principal pressure evaluation ---
-  const mobilityMode: CareerMobilityMode = state.careerMobilityMode ?? 'StandardCareer';
   const rolloverNews: typeof state.news = [];
   let teamsAfterDistress = gridFilled.teams;
   const financialDistress = { ...state.financialDistress };
@@ -1078,6 +1084,19 @@ export function advanceSeason(state: GameState): GameState {
     }
   }
 
+  // Sync team.raceOperations (1-10) from the updated org ratings (0-100) so
+  // AI offseason staff/operations investments flow through to the race engine.
+  const updatedOrgRatings = aiOffseason.orgRatings;
+  const teamsWithOpsSync = teamsAfterDistress.map((t) => {
+    const org = updatedOrgRatings[t.id];
+    if (!org) return t;
+    // org.operations is 0-100; map to 1-10 scale.
+    const opsFromOrg = Math.max(1, Math.min(10, org.operations / 10));
+    // Blend: 70% org-derived, 30% existing — gradual drift rather than snap.
+    const newOps = t.raceOperations * 0.3 + opsFromOrg * 0.7;
+    return { ...t, raceOperations: Math.max(1, Math.min(10, Math.round(newOps * 10) / 10)) };
+  });
+
   const now = new Date().toISOString();
   const nextState: GameState = {
     ...state,
@@ -1090,8 +1109,8 @@ export function advanceSeason(state: GameState): GameState {
     regulationSetId,
     drivers: gridFilled.drivers,
     cars: aiOffseason.cars,
-    teams: teamsAfterDistress,
-    teamOrgRatings: aiOffseason.orgRatings,
+    teams: teamsWithOpsSync,
+    teamOrgRatings: updatedOrgRatings,
     aiAcademies: aiOffseason.aiAcademies,
     facilities: nextFacilities,
     engine: aiOffseason.engine ?? nextEngine,

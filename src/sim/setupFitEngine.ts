@@ -242,16 +242,36 @@ export function calculateSetupFit(setup: CarSetup, track: Track, driver?: Driver
 // driver's adaptability (that is a comfort concern), so use a neutral window.
 const OBJECTIVE_TOLERANCE = 2.2;
 
+// Compute an adjusted tolerance based on team capability, staff, and practice.
+// Better teams/staff and more practice tighten the window (easier to nail the
+// setup). Worse teams or no practice widen it (harder to get close to ideal).
+export function adjustedSetupTolerance(
+  baseTolerance: number,
+  teamRaceOps: number,
+  staffSetupBonus: number,
+  practiceSetupKnowledge: number,
+): number {
+  // teamRaceOps: 1-10, pivot at 5. Each point above 5 tightens by 0.1.
+  const opsFactor = (5 - teamRaceOps) * 0.1;
+  // Staff setup bonus (from Race Engineer): -6 to +10, scaled down.
+  const staffFactor = -staffSetupBonus * 0.03;
+  // Practice setup knowledge: 0-1. No practice widens tolerance significantly.
+  const practiceFactor = (1 - practiceSetupKnowledge) * 0.8;
+  return Math.max(1.4, Math.min(3.5, baseTolerance + opsFactor + staffFactor + practiceFactor));
+}
+
 export function objectiveSetupQuality(
   setup: CarSetup,
   track: Track,
   car?: Car,
+  tolerance?: number,
 ): ObjectiveSetupQuality {
   const ideal = idealSetup(track, undefined, car);
+  const tol = tolerance ?? OBJECTIVE_TOLERANCE;
   const weights = componentWeights(track);
   const components: ComponentFit[] = SETUP_COMPONENTS.map((c) => ({
     component: c.key,
-    fit: Math.round(componentFit(c.key, setup, ideal, OBJECTIVE_TOLERANCE)),
+    fit: Math.round(componentFit(c.key, setup, ideal, tol)),
   }));
   let weighted = 0;
   let total = 0;
