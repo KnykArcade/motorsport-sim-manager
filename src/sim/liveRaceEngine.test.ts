@@ -318,3 +318,66 @@ describe('player-controlled pit strategy', () => {
     expect(after.pit.window?.open).not.toBe(lap + 10);
   });
 });
+
+describe('live race confidence modifier', () => {
+  it('positive confidence modifier produces better pace than no modifier', () => {
+    const baseContext = buildContext('conf-test');
+    const firstDriver = baseContext.entrants[0].driver;
+
+    // No modifier.
+    const ctxNone = { ...baseContext, confidenceModifierByDriver: {} };
+    const raceNone = createRace(ctxNone, firstDriver.teamId);
+    const carNone = raceNone.cars.find((c) => c.driverId === firstDriver.id)!;
+
+    // Positive modifier (Inspired = +0.08).
+    const ctxPos = { ...baseContext, confidenceModifierByDriver: { [firstDriver.id]: 0.08 } };
+    const racePos = createRace(ctxPos, firstDriver.teamId);
+    const carPos = racePos.cars.find((c) => c.driverId === firstDriver.id)!;
+
+    expect(carPos.paceRating).toBeGreaterThan(carNone.paceRating);
+  });
+
+  it('negative confidence modifier produces worse pace than no modifier', () => {
+    const baseContext = buildContext('conf-test');
+    const firstDriver = baseContext.entrants[0].driver;
+
+    // No modifier.
+    const ctxNone = { ...baseContext, confidenceModifierByDriver: {} };
+    const raceNone = createRace(ctxNone, firstDriver.teamId);
+    const carNone = raceNone.cars.find((c) => c.driverId === firstDriver.id)!;
+
+    // Negative modifier (Checked Out = -0.15).
+    const ctxNeg = { ...baseContext, confidenceModifierByDriver: { [firstDriver.id]: -0.15 } };
+    const raceNeg = createRace(ctxNeg, firstDriver.teamId);
+    const carNeg = raceNeg.cars.find((c) => c.driverId === firstDriver.id)!;
+
+    expect(carNeg.paceRating).toBeLessThan(carNone.paceRating);
+  });
+
+  it('missing confidence modifier data defaults safely to 0 (no crash)', () => {
+    const context = buildContext('conf-missing');
+    // No confidenceModifierByDriver field at all.
+    const race = createRace(context, context.entrants[0].driver.teamId);
+    expect(race.cars.length).toBe(context.entrants.length);
+    // Every car should have a valid paceRating.
+    expect(race.cars.every((c) => c.paceRating > 0)).toBe(true);
+  });
+
+  it('live race remains deterministic with same seed and confidence modifiers', () => {
+    const seed = 'conf-determinism';
+    const ctxA = buildContext(seed);
+    const ctxB = buildContext(seed);
+    const firstDriver = ctxA.entrants[0].driver;
+    const mod = { [firstDriver.id]: 0.08 };
+
+    const ctxAMod = { ...ctxA, confidenceModifierByDriver: mod };
+    const ctxBMod = { ...ctxB, confidenceModifierByDriver: mod };
+    const metaA = buildMeta(ctxAMod, firstDriver.teamId);
+    const metaB = buildMeta(ctxBMod, firstDriver.teamId);
+
+    const ra = finalizeResults(stepLiveRaceToEnd(createRace(ctxAMod, firstDriver.teamId), metaA), ctxAMod);
+    const rb = finalizeResults(stepLiveRaceToEnd(createRace(ctxBMod, firstDriver.teamId), metaB), ctxBMod);
+
+    expect(ra.results.map((r) => r.driverId)).toEqual(rb.results.map((r) => r.driverId));
+  });
+});

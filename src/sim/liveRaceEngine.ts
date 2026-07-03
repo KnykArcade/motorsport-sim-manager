@@ -92,7 +92,8 @@ export function createLiveRace(context: RaceContext, options: LiveRaceOptions): 
 
     const teamRating = options.teamRaceOps[e.driver.teamId];
     const pkgEffects = context.packageEffectsByTeam?.[e.driver.teamId];
-    const { score: paceScore } = calculateRacePace(e.driver, e.car, track, setup, strategy, instruction, teamRating);
+    const confidenceModifier = context.confidenceModifierByDriver?.[e.driver.id] ?? 0;
+    const { score: paceScore } = calculateRacePace(e.driver, e.car, track, setup, strategy, instruction, teamRating, confidenceModifier);
     // Per-team weekend form so the live race shares the quick race's variation.
     const score = paceScore + weekendForm(context.seed, e.driver.teamId, teamRating);
 

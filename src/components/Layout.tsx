@@ -3,6 +3,7 @@ import { NavLink, useNavigate } from 'react-router-dom';
 import { useGame } from '../game/GameContext';
 import { teamById, currentRace } from '../game/careerState';
 import { formatMoney } from './ui';
+import { getHiddenNavRoutes } from '../game/modeRestrictions';
 
 const NAV = [
   { to: '/hq', label: 'Team HQ', icon: '◧' },
@@ -34,6 +35,7 @@ export function Layout({ children }: { children: ReactNode }) {
   const navigate = useNavigate();
   const team = state ? teamById(state, state.selectedTeamId) : undefined;
   const race = state ? currentRace(state) : undefined;
+  const hiddenRoutes = getHiddenNavRoutes(state?.gameMode);
 
   return (
     <div className="flex h-full min-h-screen w-full bg-[#0a0c10] text-neutral-200">
@@ -44,7 +46,7 @@ export function Layout({ children }: { children: ReactNode }) {
           <div className="text-sm font-bold text-neutral-100">History Manager</div>
         </div>
         <nav className="flex-1 space-y-0.5 p-2">
-          {NAV.map((item) => (
+          {NAV.filter((item) => !hiddenRoutes.has(item.to)).map((item) => (
             <NavLink
               key={item.to}
               to={item.to}

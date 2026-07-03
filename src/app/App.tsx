@@ -38,12 +38,39 @@ import { PreRaceBriefing } from '../screens/PreRaceBriefing';
 import { PreSeasonSetup } from '../screens/PreSeasonSetup';
 import { NewsCenter } from '../screens/NewsCenter';
 import { getCareerPhase } from '../game/careerPhaseEngine';
+import { isRouteRestricted } from '../game/modeRestrictions';
 
 // Wrap in-game screens with the dashboard layout and redirect to the menu when
 // there is no active game.
 function InGame({ children }: { children: ReactNode }) {
   const { state } = useGame();
   if (!state) return <Navigate to="/" replace />;
+  return <Layout>{children}</Layout>;
+}
+
+// Guard for routes restricted in Single Season mode. Redirects to HQ with a
+// locked message if the route is restricted for the current game mode.
+function ModeGuard({ route, children }: { route: string; children: ReactNode }) {
+  const { state } = useGame();
+  if (!state) return <Navigate to="/" replace />;
+  if (isRouteRestricted(route, state.gameMode)) {
+    return (
+      <Layout>
+        <div className="space-y-4">
+          <h1 className="text-2xl font-bold text-neutral-100">Screen Locked</h1>
+          <p className="text-sm text-neutral-400">
+            This screen is not available in Single Season mode. Single Season is a
+            historical replay of one season — long-term career systems like scouting,
+            development curves, regulation politics, and offseason planning are disabled.
+          </p>
+          <p className="text-sm text-neutral-500">
+            Use the sidebar to navigate to available screens like Team HQ, Calendar,
+            Standings, Race Weekend, and Development.
+          </p>
+        </div>
+      </Layout>
+    );
+  }
   return <Layout>{children}</Layout>;
 }
 
@@ -213,22 +240,22 @@ export default function App() {
           <Route path="/market" element={<InGame><DriverMarket /></InGame>} />
           <Route path="/development" element={<InGame><Development /></InGame>} />
           <Route path="/finance" element={<InGame><Finance /></InGame>} />
-          <Route path="/sponsors" element={<InGame><Sponsors /></InGame>} />
+          <Route path="/sponsors" element={<ModeGuard route="/sponsors"><Sponsors /></ModeGuard>} />
           <Route path="/staff" element={<InGame><Staff /></InGame>} />
           <Route path="/facilities" element={<InGame><Facilities /></InGame>} />
-          <Route path="/engine" element={<InGame><EngineSupplier /></InGame>} />
+          <Route path="/engine" element={<ModeGuard route="/engine"><EngineSupplier /></ModeGuard>} />
           <Route path="/principal" element={<InGame><TeamPrincipal /></InGame>} />
           <Route path="/relationships" element={<InGame><Relationships /></InGame>} />
-          <Route path="/politics" element={<InGame><Politics /></InGame>} />
-          <Route path="/scouting" element={<InGame><Scouting /></InGame>} />
-          <Route path="/curves" element={<InGame><DriverCurves /></InGame>} />
+          <Route path="/politics" element={<ModeGuard route="/politics"><Politics /></ModeGuard>} />
+          <Route path="/scouting" element={<ModeGuard route="/scouting"><Scouting /></ModeGuard>} />
+          <Route path="/curves" element={<ModeGuard route="/curves"><DriverCurves /></ModeGuard>} />
           <Route path="/records" element={<InGame><UniverseHistory /></InGame>} />
           <Route path="/history" element={<InGame><RaceHistory /></InGame>} />
           <Route path="/weekend" element={<RaceWeekendPhaseGuard><RaceWeekend /></RaceWeekendPhaseGuard>} />
           <Route path="/live-race/:raceId" element={<LiveRaceGuard><LiveRace /></LiveRaceGuard>} />
           <Route path="/results/:raceId" element={<InGame><RaceResults /></InGame>} />
           <Route path="/season-review" element={<InGame><SeasonReview /></InGame>} />
-          <Route path="/offseason" element={<InGame><Offseason /></InGame>} />
+          <Route path="/offseason" element={<ModeGuard route="/offseason"><Offseason /></ModeGuard>} />
       <Route path="/news" element={<InGame><NewsCenter /></InGame>} />
 
           <Route path="*" element={<Navigate to="/" replace />} />

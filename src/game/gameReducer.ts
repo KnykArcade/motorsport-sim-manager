@@ -150,6 +150,7 @@ import {
   computeRacePrepFocusEffect,
   approvePreseasonTab,
 } from './careerPhaseEngine';
+import { isActionBlocked } from './modeRestrictions';
 
 export type GameAction =
   | { type: 'NEW_GAME'; options: NewGameOptions }
@@ -433,6 +434,10 @@ export const lastBreakdowns: {
 } = { qualifying: {}, race: {} };
 
 export function gameReducer(state: GameState | null, action: GameAction): GameState | null {
+  // Block restricted actions in Single Season mode.
+  if (state && isActionBlocked(action.type, state.gameMode)) {
+    return state;
+  }
   switch (action.type) {
     case 'NEW_GAME':
       return enterPreSeasonSetup(createNewGame(action.options));
