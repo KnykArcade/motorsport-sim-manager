@@ -1,5 +1,5 @@
 import { useGame } from '../game/GameContext';
-import { getTrackById } from '../data';
+import { getTrackById, getRegulationSet } from '../data';
 import { Panel } from '../components/Panel';
 import { RatingBadge } from '../components/RatingBadge';
 
@@ -9,9 +9,18 @@ export function Calendar() {
 
   const driverName = (id: string) => state.drivers.find((d) => d.id === id)?.name ?? id;
 
+  const regSet = getRegulationSet(state.regulationSetId);
+
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold text-neutral-100">{state.seasonYear} Calendar</h1>
+      <div className="flex items-center justify-between">
+        <h1 className="text-2xl font-bold text-neutral-100">{state.seasonYear} Calendar</h1>
+        {regSet && (
+          <span className="rounded-md bg-neutral-800 px-3 py-1 text-xs font-medium text-neutral-300">
+            {regSet.eraLabel}
+          </span>
+        )}
+      </div>
       <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
         {state.calendar.map((race, idx) => {
           const track = getTrackById(race.trackId);

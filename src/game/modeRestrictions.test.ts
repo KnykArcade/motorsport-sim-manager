@@ -10,6 +10,7 @@ import {
   isFeatureAllowedForMode,
   getModeRestrictions,
   getRouteRestrictionReason,
+  getRouteRestrictionInfo,
   getGameModeLabel,
 } from './modeRestrictions';
 
@@ -193,6 +194,36 @@ describe('modeRestrictions', () => {
     });
     it('returns undefined for Sandbox mode', () => {
       expect(getRouteRestrictionReason('/scouting', 'Sandbox')).toBeUndefined();
+    });
+  });
+
+  describe('getRouteRestrictionInfo', () => {
+    it('returns structured info for restricted routes in Single Season', () => {
+      const info = getRouteRestrictionInfo('/scouting', 'SingleSeason');
+      expect(info).toBeDefined();
+      expect(info!.title).toBe('Scouting Locked');
+      expect(info!.reason).toContain('Scouting');
+      expect(info!.focus).toBeTruthy();
+    });
+    it('returns structured info for each restricted route', () => {
+      const routes = ['/scouting', '/curves', '/politics', '/offseason', '/engine', '/sponsors'];
+      for (const route of routes) {
+        const info = getRouteRestrictionInfo(route, 'SingleSeason');
+        expect(info).toBeDefined();
+        expect(info!.title).toBeTruthy();
+        expect(info!.reason).toBeTruthy();
+        expect(info!.focus).toBeTruthy();
+      }
+    });
+    it('returns undefined for allowed routes', () => {
+      expect(getRouteRestrictionInfo('/hq', 'SingleSeason')).toBeUndefined();
+      expect(getRouteRestrictionInfo('/calendar', 'SingleSeason')).toBeUndefined();
+    });
+    it('returns undefined for Career mode', () => {
+      expect(getRouteRestrictionInfo('/scouting', 'Career')).toBeUndefined();
+    });
+    it('returns undefined for Sandbox mode', () => {
+      expect(getRouteRestrictionInfo('/scouting', 'Sandbox')).toBeUndefined();
     });
   });
 

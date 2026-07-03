@@ -14,6 +14,7 @@
 // that persist and evolve across seasons.
 
 import type { TeamPhilosophyTrait, AITeamArchetype, TeamMemoryEntry } from '../types/aiTeamTypes';
+export type { TeamMemoryEntry };
 
 // ---------------------------------------------------------------------------
 // Trait-based modifier tables

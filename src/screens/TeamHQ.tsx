@@ -60,19 +60,26 @@ export function TeamHQ() {
           <h1 className="text-2xl font-bold text-neutral-100">{team?.name} — Team HQ</h1>
           <p className="text-sm text-neutral-400">{state.seasonYear} {state.series} · {getGameModeLabel(state.gameMode)}</p>
         </div>
-        {state.seasonComplete ? (
-          <Button variant="primary" onClick={() => navigate('/season-review')}>
-            Season Review →
-          </Button>
-        ) : hasEnoughDrivers ? (
-          <Button variant="primary" onClick={() => navigate('/briefing')}>
-            Go to Next Race: {race?.gpName} →
-          </Button>
-        ) : (
-          <Button variant="primary" onClick={() => navigate('/market')}>
-            Sign Race Drivers ({activeDrivers.length}/2) →
-          </Button>
-        )}
+        <div className="flex flex-col items-end gap-1">
+          {state.seasonComplete ? (
+            <Button variant="primary" onClick={() => navigate('/season-review')}>
+              Season Review →
+            </Button>
+          ) : hasEnoughDrivers ? (
+            <Button variant="primary" onClick={() => navigate('/briefing')}>
+              Go to Next Race: {race?.gpName} →
+            </Button>
+          ) : (
+            <Button variant="primary" onClick={() => navigate('/market')}>
+              Sign Race Drivers ({activeDrivers.length}/2) →
+            </Button>
+          )}
+          {race && !state.seasonComplete && (
+            <span className="text-xs text-amber-400">
+              Round {race.round} of {state.calendar.length} · {state.calendar.length - state.currentRaceIndex} races remaining
+            </span>
+          )}
+        </div>
       </div>
 
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
@@ -154,7 +161,10 @@ export function TeamHQ() {
               {drivers.map((d) => (
                 <div key={d.id} className="rounded-lg border border-neutral-800 bg-neutral-900/40 p-3">
                   <div className="flex items-center justify-between">
-                    <span className="font-semibold text-neutral-100">#{d.number} {d.name}</span>
+                    <div className="flex items-center gap-2">
+                      <MoraleDot morale={d.morale} />
+                      <span className="font-semibold text-neutral-100">#{d.number} {d.name}</span>
+                    </div>
                     <span className="text-xs text-neutral-500">OVR {d.ratings.overall.toFixed(1)}</span>
                   </div>
                   <div className="mt-2 space-y-1">
@@ -234,6 +244,25 @@ function KpiCard({ label, value }: { label: string; value: string }) {
       <div className="text-xs uppercase tracking-wide text-neutral-500">{label}</div>
       <div className="mt-1 text-2xl font-bold text-neutral-100">{value}</div>
     </div>
+  );
+}
+
+function MoraleDot({ morale }: { morale: number }) {
+  const color =
+    morale >= 75 ? 'bg-green-500' :
+    morale >= 50 ? 'bg-yellow-500' :
+    morale >= 30 ? 'bg-orange-500' :
+    'bg-red-500';
+  const label =
+    morale >= 75 ? 'High morale' :
+    morale >= 50 ? 'Stable' :
+    morale >= 30 ? 'Low morale' :
+    'Critical';
+  return (
+    <span
+      className={`inline-block h-2.5 w-2.5 rounded-full ${color}`}
+      title={label}
+    />
   );
 }
 
