@@ -25,6 +25,29 @@ import type {
 import { seasonBundles } from '../index';
 import { getMarketBundle } from '../market';
 
+// --- Canonical aliases ------------------------------------------------------
+
+// Some season files (notably 1995) use abbreviated driver names (e.g. "M. Schumacher"
+// instead of "Michael Schumacher"). This map resolves those abbreviations to the
+// canonical full name so the registry merges them into a single identity.
+// Keys are normalized (lowercase, no diacritics) abbreviated forms.
+const CANONICAL_ALIASES: Record<string, string> = {
+  'm schumacher': 'michael schumacher',
+  'j herbert': 'johnny herbert',
+  'm salo': 'mika salo',
+  'u katayama': 'ukyo katayama',
+};
+
+// Resolve an abbreviated name to its canonical full form, if known.
+export function resolveAlias(normalized: string): string {
+  return CANONICAL_ALIASES[normalized] ?? normalized;
+}
+
+// Full canonical name resolution: normalize then resolve aliases.
+export function canonicalNameOf(name: string): string {
+  return resolveAlias(normalizeName(name));
+}
+
 // --- Name normalization -----------------------------------------------------
 
 // Strip diacritics, punctuation and case so "Kimi Räikkönen" and
@@ -214,8 +237,9 @@ function mergeOne(
   },
   result: { created: string[]; merged: string[] },
 ): void {
-  const canonicalName = normalizeName(fields.displayName);
-  const derivedId = slugifyName(fields.displayName);
+  const rawName = normalizeName(fields.displayName);
+  const canonicalName = resolveAlias(rawName);
+  const derivedId = slugifyName(canonicalName === rawName ? fields.displayName : canonicalName);
   const existing = findMatch(reg, derivedId, canonicalName, fields.birthYear);
 
   const snapshot = {

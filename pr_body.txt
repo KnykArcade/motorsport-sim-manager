@@ -1,0 +1,106 @@
+## Summary
+
+This PR is a focused cleanup of the F1 roster enforcement update (PR #85). It fixes 6 specific issues found during review.
+
+## 1. TypeScript typecheck/build fix
+
+`src/sim/financeEngine.ts` — Added missing `Operations: 0` to `EMPTY_BY_CATEGORY()`. The `FinanceCategory` type includes `'Operations'` but the default record was missing it, causing a type error. The `Operations` finance category is preserved.
+
+- `npm run typecheck` now passes
+- `npm run build` now passes
+
+## 2. Lint fixes
+
+- `src/sim/developmentOverhaul.test.ts`: Replaced 5 `as any` casts with a proper `makeCar()` helper that returns a complete `Car` object. The `Car` type is now imported and used correctly.
+- `src/sim/facilityEngine.ts`: Changed `let chances` to `const chances` — the variable is never reassigned, only mutated.
+
+- `npm run lint` now passes with 0 errors
+
+## 3. F1 teamId/driverIds data fixes
+
+A static review found cases where a team's `driverIds` list includes a driver, but that driver's `teamId` points to a different team. This means `activeDriversForTeam()` would not treat the driver as active for the listing team.
+
+### Known corrected cases:
+
+- **2001 Prost / Jean Alesi**: Alesi's `teamId` was `t-jordan-honda` but Prost listed him in `driverIds`. Fixed: `teamId` changed to `t-prost-acer`. Jordan does not list Alesi.
+- **2020 Williams / George Russell**: Russell's `teamId` was `t-mercedes` but Williams listed him in `driverIds`. Fixed: `teamId` changed to `t-williams-mercedes`. Mercedes does not list Russell.
+- **2024 Haas / Oliver Bearman**: Bearman's `teamId` was `t-ferrari` but Haas listed him in `driverIds`. Bearman was a Ferrari substitute, not a Haas starting driver. Fixed: removed Bearman from Haas `driverIds`. Haas now starts with 1 driver (Hulkenberg) — an allowed incomplete preseason team. Bearman remains in the data with `teamId: 't-ferrari'`.
+
+### Full audit:
+
+After fixing the 3 known cases, a new validation test runs across all F1 seasons (2001–2026) confirming:
+- Every `team.driverIds` entry resolves to an existing driver
+- For every `team.driverIds` entry, the driver's `teamId` matches the team's `id`
+- No driver is assigned as a starting driver to more than 1 F1 team
+
+All 667 tests in `f1RosterValidation.test.ts` pass.
+
+## 4. New validation tests
+
+Added to `src/data/f1RosterValidation.test.ts`:
+
+- **"every team.driverIds entry has a driver whose teamId matches that team"** — runs for all F1 seasons. Catches mismatches like Williams listing Russell while Russell's `teamId` is Mercedes.
+
+Added to `src/game/rosterEnforcement.test.ts`:
+
+- **"validateRaceSeatSigning blocks when budget is insufficient"** — drains team budget to 0, confirms signing is blocked
+- **"signRaceDriver deducts buyout cost from team budget"** — confirms budget decreases after signing
+- **"signRaceDriver records a finance transaction"** — confirms a `Driver Signing` transaction is added to the ledger
+- **"signRaceDriver marks the driver unavailable (signedMarketIds)"** — confirms the driver is in `signedMarketIds` after signing and cannot be signed again
+
+## 5. Race-seat signing cost/budget behavior
+
+**Option A — Costed signing** (implemented):
+
+- `validateRaceSeatSigning()` now checks the team budget against the market driver's `buyoutCost` before allowing the signing. If the team cannot afford it, the signing is blocked with a clear message: `"Insufficient budget. Signing [name] costs [amount] but your team has only [amount]."`
+- `signRaceDriver()` deducts the `buyoutCost` (converted from $M to raw dollars via `toMoney()`) from the team budget.
+- A `FinanceTransaction` is recorded in the ledger with category `'Driver Signing'` and label `"Preseason race-seat: [driver name]"`.
+- The driver is added to `signedMarketIds`, preventing other teams (and the player) from signing the same driver.
+- The `DriverMarket.tsx` UI shows the buyout cost on the "Sign as Race Driver" button (e.g., `"Sign as Race Driver (5.2M)"`) and disables the button if the team cannot afford it.
+
+## 6. /live-race route guard
+
+Added `LiveRaceGuard` component in `src/app/App.tsx`:
+
+- Wraps the `/live-race/:raceId` route
+- If the player is in an F1 season, is before Race 1, and has fewer than 2 active race drivers, redirects to `/hq` (Team HQ)
+- Does not affect non-F1 series, completed seasons, or teams with 2+ drivers
+- Reducer-level enforcement (`RUN_QUALIFYING`/`RUN_RACE` checks) remains in place
+- `/weekend` route protection (`RaceWeekendGuard`) is unchanged and still works
+
+## 7. Calendar/track data not changed
+
+No season files, track files, or calendar data were modified in this PR.
+
+## 8. IndyCar roster logic not changed
+
+`canEnterRaceWeekend()`, `enforceF1Rosters()`, and `validateRaceSeatSigning()` all return early/no-op for non-F1 series. IndyCar tests confirm `enforceF1Rosters` is a no-op.
+
+## 9. Commands run and results
+
+| Command | Result |
+|---------|--------|
+| `npx tsc --noEmit` | **Passed** (0 errors) |
+| `npx vitest run` | **Passed** (1677 tests, 5 skipped, 0 failed) |
+| `npx eslint src/` | **Passed** (0 errors) |
+| `npm run build` | **Passed** (built in 861ms, pre-existing chunk size warning only) |
+
+## 10. Known limitations / future work
+
+- The buyout cost is charged as a one-off signing fee. Recurring salary costs are not deducted during preseason — they begin at the season rollover via existing salary logic.
+- `regulationSetId` remains `'reg-1995'` for all seasons (out of scope).
+- Pre-existing vite chunk size warning is unrelated to this PR.
+
+## 11. Full changed files list
+
+- `src/sim/financeEngine.ts` — Added `Operations: 0` to `EMPTY_BY_CATEGORY`
+- `src/sim/facilityEngine.ts` — `let chances` → `const chances`
+- `src/sim/developmentOverhaul.test.ts` — Replaced `as any` with `makeCar()` helper
+- `src/data/drivers/drivers2001.ts` — Fixed Jean Alesi `teamId` to `t-prost-acer`
+- `src/data/drivers/drivers2020.ts` — Fixed George Russell `teamId` to `t-williams-mercedes`
+- `src/data/teams/teams2024.ts` — Removed Oliver Bearman from Haas `driverIds`
+- `src/data/f1RosterValidation.test.ts` — Added teamId/driverIds consistency test
+- `src/game/rosterEnforcement.ts` — Added budget validation, cost deduction, finance transaction
+- `src/game/rosterEnforcement.test.ts` — Added 4 new budget/cost tests
+- `src/screens/DriverMarket.tsx` — Show buyout cost on Sign as Race Driver button, disable if unaffordable
+- `src/app/App.tsx` — Added `LiveRaceGuard`, removed unused `FullScreenGame`

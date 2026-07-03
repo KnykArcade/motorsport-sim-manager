@@ -6,6 +6,7 @@ import {
   slugifyName,
   sanitizeMarketName,
   careerPhaseForAge,
+  canonicalNameOf,
   importSeasonDrivers,
   importMarketDrivers,
   importYouthProspects,
@@ -261,5 +262,45 @@ describe('sanitizeMarketName', () => {
   it('leaves a clean name untouched and never empties a name', () => {
     expect(sanitizeMarketName('Michael Schumacher')).toBe('Michael Schumacher');
     expect(sanitizeMarketName('Contract Watch')).toBe('Contract Watch');
+  });
+});
+
+describe('canonical aliases', () => {
+  it('resolves abbreviated names to their canonical full form', () => {
+    expect(canonicalNameOf('M. Schumacher')).toBe('michael schumacher');
+    expect(canonicalNameOf('J. Herbert')).toBe('johnny herbert');
+    expect(canonicalNameOf('M. Salo')).toBe('mika salo');
+    expect(canonicalNameOf('U. Katayama')).toBe('ukyo katayama');
+  });
+
+  it('leaves unabbreviated names unchanged', () => {
+    expect(canonicalNameOf('Michael Schumacher')).toBe('michael schumacher');
+    expect(canonicalNameOf('Johnny Herbert')).toBe('johnny herbert');
+  });
+
+  it('merges abbreviated and full-name entries into one registry identity', () => {
+    const reg = empty();
+    importSeasonDrivers(reg, [gridDriver('d-1994-ms', 'Michael Schumacher', 8, { age: 25 })], 1994, 'F1');
+    importSeasonDrivers(reg, [gridDriver('d-1995-ms', 'M. Schumacher', 9, { age: 26 })], 1995, 'F1');
+    const list = registryList(reg);
+    expect(list).toHaveLength(1);
+    expect(list[0].driverId).toBe('michael-schumacher');
+    expect(list[0].sourceIds).toEqual(['d-1994-ms', 'd-1995-ms']);
+    expect(list[0].baseRatingsByYear.map((s) => s.year)).toEqual([1994, 1995]);
+  });
+
+  it('real registry has no duplicate entries for aliased drivers', () => {
+    const reg = buildMasterRegistry();
+    const list = registryList(reg);
+    // M. Schumacher (1995) should merge with Michael Schumacher.
+    expect(list.filter((e) => e.driverId === 'michael-schumacher')).toHaveLength(1);
+    const schumi = list.find((e) => e.driverId === 'michael-schumacher')!;
+    expect(schumi.baseRatingsByYear.length).toBeGreaterThan(3);
+    // J. Herbert (1995) should merge with Johnny Herbert.
+    expect(list.filter((e) => e.driverId === 'johnny-herbert')).toHaveLength(1);
+    // M. Salo (1995) should merge with Mika Salo.
+    expect(list.filter((e) => e.driverId === 'mika-salo')).toHaveLength(1);
+    // U. Katayama (1995) should merge with Ukyo Katayama.
+    expect(list.filter((e) => e.driverId === 'ukyo-katayama')).toHaveLength(1);
   });
 });

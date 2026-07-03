@@ -722,6 +722,7 @@ export function advanceSeason(state: GameState): GameState {
   let nextJobOffers = state.jobOffers;
   let moveTeamId: string | undefined;
   const principalNotes: string[] = [];
+  const teamLockPressureNews: typeof state.news = [];
   if (nextPrincipal && playerTeam && playerReview) {
     const champDriver = state.driverStandings[0];
     const champDriverTeam = champDriver
@@ -772,6 +773,16 @@ export function advanceSeason(state: GameState): GameState {
       // and generate a pressure warning instead.
       nextPrincipal = { ...nextPrincipal, jobSecurity: Math.max(30, nextPrincipal.jobSecurity), contractYearsRemaining: Math.max(1, nextPrincipal.contractYearsRemaining) };
       principalNotes.push('The owner is deeply unhappy with the season\'s results but cannot remove you under Team Lock terms. Pressure remains high.');
+      teamLockPressureNews.push({
+        id: `news-teamlock-pressure-${state.seasonYear}-${playerTeam.id}`,
+        headline: `Owner fury at ${playerTeam.name} — but Team Lock holds firm`,
+        body: `The ${playerTeam.name} owner is furious with the season's results and would have sacked the principal, but Team Lock terms prevent any forced removal. Pressure remains dangerously high — results must improve.`,
+        timestamp: new Date().toISOString(),
+        category: 'career_event',
+        priority: 'high',
+        careerPhase: 'paddock_week',
+        teamId: playerTeam.id,
+      });
     }
 
     // Move the principal's record/contract to the destination team.
@@ -1164,6 +1175,7 @@ export function advanceSeason(state: GameState): GameState {
         timestamp: now,
       })),
       ...rolloverNews,
+      ...teamLockPressureNews,
       ...state.news,
     ].slice(0, 50),
     careerPhase: defaultCareerPhaseState(),
@@ -1171,7 +1183,18 @@ export function advanceSeason(state: GameState): GameState {
 
   // If the principal switched teams, re-point the player-scoped systems
   // (selected team, setups, commercial, facilities, engine deal) at the new team.
-  return moveTeamId ? applyPrincipalMove(nextState, moveTeamId) : nextState;
+  // Defensive guard: under Team Lock, only allow voluntary moves (accepted job
+  // offers). Block any forced move as a last-resort safety net.
+  if (moveTeamId) {
+    const isVoluntary = !!state.acceptedJobOfferId
+      && (state.jobOffers ?? []).some(
+        (o) => o.id === state.acceptedJobOfferId && o.kind === 'Offer' && o.teamId === moveTeamId,
+      );
+    if (isVoluntary || (mobilityMode !== 'TeamLock' && mobilityMode !== 'Sandbox')) {
+      return applyPrincipalMove(nextState, moveTeamId);
+    }
+  }
+  return nextState;
 }
 
 // Switch the player to a new team after a principal move: rebuild the
