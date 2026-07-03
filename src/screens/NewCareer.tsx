@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useReducer, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useGame } from '../game/GameContext';
-import { availableSeasons, availableSeries, loadSeasonBundle, getCachedBundle, preloadMarketBundle, type SeasonBundle } from '../data';
+import { availableSeasons, availableSeries, loadSeasonBundle, getCachedBundle, initializeMasterRegistry, preloadMarketBundle, type SeasonBundle } from '../data';
 import { effectiveCarRatings } from '../sim/trackFitEngine';
 import { Button } from '../components/Button';
 import { StatBar } from '../components/StatBar';
@@ -86,10 +86,8 @@ export function NewCareer() {
     if (hasSave() && !confirm('Starting a new game overwrites your existing save. Continue?')) {
       return;
     }
-    // Dynamically import full season data to populate the master registry
-    // (needed for career market / cross-series engine). This is code-split
-    // so it doesn't bloat the initial bundle.
-    await import('../data/seasonData');
+    // Populate the master registry from lazily loaded season data.
+    await initializeMasterRegistry(year, series);
     dispatch({
       type: 'NEW_GAME',
       options: {
@@ -113,7 +111,7 @@ export function NewCareer() {
     if (hasSave() && !confirm('Starting a new game overwrites your existing save. Continue?')) {
       return;
     }
-    await import('../data/seasonData');
+    await initializeMasterRegistry(year, series);
     dispatch({
       type: 'NEW_GAME',
       options: {

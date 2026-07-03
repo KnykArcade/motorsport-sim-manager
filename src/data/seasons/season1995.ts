@@ -2,7 +2,6 @@
 // Edit ratings here directly; this file is the runtime source of truth.
 
 import type { Race, Season } from '../../types/gameTypes';
-import { tracks1995 } from '../tracks/tracks1995';
 
 export const calendar1995: Race[] = [
   {
@@ -176,8 +175,6 @@ export const calendar1995: Race[] = [
     completed: false,
   },
 ];
-
-void tracks1995;
 
 export const season1995: Season = {
   id: 's-1995-f1',

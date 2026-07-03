@@ -31,6 +31,8 @@ import { season1995 } from './seasons/season1995';
 import { teams1995 } from './teams/teams1995';
 import { drivers1995 } from './drivers/drivers1995';
 import { cars1995 } from './cars/cars1995';
+import { driverMarket1995 } from './market/driverMarket1995';
+import { youthProspects1995 } from './market/youthProspects1995';
 import { season1996 } from './seasons/season1996';
 import { teams1996 } from './teams/teams1996';
 import { drivers1996 } from './drivers/drivers1996';
@@ -294,6 +296,7 @@ import { tracks2026IndyCar } from './tracks/tracks2026IndyCar';
 
 import { registerTracks, seedBundleCache } from './seasonLoader';
 import { setSeasonBundles } from './registry/masterRegistry';
+import { seedMarketBundleCache } from './market';
 
 // Register all tracks so getTrackById works in tests
 registerTracks([
@@ -378,6 +381,7 @@ export function getSeasonBundle(year: number, series: Series = 'F1'): SeasonBund
 // Seed the async loader's cache so getCachedBundle works in tests that
 // import this module (e.g. createNewGame uses getCachedBundle as fallback).
 seedBundleCache(seasonBundles);
+seedMarketBundleCache({ '1995-F1': { drivers: driverMarket1995, youth: youthProspects1995 } });
 
 // Inject bundles into the master registry provider.
 setSeasonBundles(seasonBundles);

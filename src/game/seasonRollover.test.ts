@@ -1,12 +1,16 @@
-import { describe, expect, it } from 'vitest';
+import {
+  describe,
+  expect,
+  it } from 'vitest';
 import { createNewGame } from './initialCareer';
 import { advanceSeason } from './seasonRollover';
 import {
   progressAcademyMember,
   signProspectToAcademy,
   synthesizeDriverRatings,
-} from '../sim/driverMarketEngine';
-import { driverMarket1995, youthProspects1995 } from '../data';
+  } from '../sim/driverMarketEngine';
+import { driverMarket1995 } from '../data/market/driverMarket1995';
+import { youthProspects1995 } from '../data/market/youthProspects1995';
 import { bidToWin, competingBidFor } from '../sim/driverBiddingEngine';
 import { activeDriversForTeam, isReserveContract, type GameState } from './careerState';
 import type { AcademyMember } from '../types/marketTypes';

@@ -2,15 +2,12 @@
 // Heavy historical season data (teams, drivers, cars, tracks for all 56 seasons)
 // is NO LONGER imported here. It is loaded on demand via seasonLoader.ts.
 //
-// Only 1995-specific data is still imported here for test compatibility and
-// legacy screens that reference it directly. All other season data must be
-// loaded through loadSeasonBundle() or getCachedBundle().
+// Season data must be loaded through loadSeasonBundle() or getCachedBundle().
 
 import type { Track } from '../types/gameTypes';
 import type { StaffMember } from '../types/staffTypes';
-import { tracks1995 } from './tracks/tracks1995';
 import { generateStaffPool } from '../sim/staffGenerator';
-import { getTrackFromRegistry, registerTracks } from './seasonLoader';
+import { getTrackFromRegistry } from './seasonLoader';
 
 // Re-export lightweight season catalog (no heavy data)
 export {
@@ -29,13 +26,6 @@ export {
   getLoaderKeys,
   seedBundleCache,
 } from './seasonLoader';
-
-// 1995-specific data (used by tests and some legacy screens)
-export { tracks1995 } from './tracks/tracks1995';
-export { teams1995 } from './teams/teams1995';
-export { drivers1995 } from './drivers/drivers1995';
-export { cars1995 } from './cars/cars1995';
-export { season1995, calendar1995 } from './seasons/season1995';
 
 // Lightweight game data (not season-specific)
 export { setupOptions, setupOptionsById } from './setupOptions/setupOptions';
@@ -59,8 +49,6 @@ export {
   developmentProjectsById,
 } from './development/developmentProjects';
 export {
-  driverMarket1995,
-  youthProspects1995,
   getMarketBundle,
   preloadMarketBundle,
   isMarketBundleReady,
@@ -75,6 +63,7 @@ export {
   slugifyName,
   setSeasonBundles,
 } from './registry/masterRegistry';
+export { initializeMasterRegistry } from './registry/initializeMasterRegistry';
 
 // A large, varied pool of hireable specialists is generated per season/series
 // (deterministic). Memoized so the same season returns a stable pool.
@@ -102,5 +91,3 @@ export function getTrackById(id: string): Track | undefined {
   return getTrackFromRegistry(id);
 }
 
-// Register 1995 tracks eagerly so they're available for tests and legacy screens.
-registerTracks(tracks1995);
