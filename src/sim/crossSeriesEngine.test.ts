@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { createNewGame } from '../game/initialCareer';
-import { normalizeName, getMasterRegistry, getSeasonBundle } from '../data';
+import { normalizeName, getMasterRegistry } from '../data';
+import { getSeasonBundle } from '../data/seasonData';
 import type { MasterDriverEntry, RegistryBaseRatings } from '../types/registryTypes';
 import type { Series } from '../types/gameTypes';
 import {

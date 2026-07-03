@@ -1,8 +1,9 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   availableSeasons,
-  getSeasonBundle,
+  loadSeasonBundle,
+  getCachedBundle,
   getTrackById,
   registryList,
   setupOptions,
@@ -45,10 +46,13 @@ export function DataViewer() {
   const navigate = useNavigate();
   const { state } = useGame();
 
+  // Ensure the master registry is initialized (needed for the Registry tab).
+  useEffect(() => { void import('../data/seasonData'); }, []);
+
   // Default to the current game's season if one is loaded and has data;
   // otherwise fall back to the first available season.
   const defaultKey = useMemo(() => {
-    if (state && getSeasonBundle(state.seasonYear, state.series)) {
+    if (state && getCachedBundle(state.seasonYear, state.series)) {
       return seasonKey(state.seasonYear, state.series);
     }
     const first = availableSeasons[0];
@@ -58,7 +62,32 @@ export function DataViewer() {
   const [selected, setSelected] = useState<string>(defaultKey);
   const choice =
     availableSeasons.find((s) => seasonKey(s.year, s.series) === selected) ?? availableSeasons[0];
-  const bundle = getSeasonBundle(choice.year, choice.series);
+
+  const [bundle, setBundle] = useState<SeasonBundle | undefined>(getCachedBundle(choice.year, choice.series));
+  const [loadingBundle, setLoadingBundle] = useState(false);
+
+  useEffect(() => {
+    const cached = getCachedBundle(choice.year, choice.series);
+    if (cached) {
+      setBundle(cached);
+      setLoadingBundle(false);
+      return;
+    }
+    let cancelled = false;
+    setLoadingBundle(true);
+    loadSeasonBundle(choice.year, choice.series)
+      .then((b) => {
+        if (cancelled) return;
+        setBundle(b);
+        setLoadingBundle(false);
+      })
+      .catch(() => {
+        if (cancelled) return;
+        setBundle(undefined);
+        setLoadingBundle(false);
+      });
+    return () => { cancelled = true; };
+  }, [choice.year, choice.series]);
 
   return (
     <div className="min-h-screen bg-[#0a0c10] p-6">
@@ -103,6 +132,8 @@ export function DataViewer() {
         <div className="overflow-x-auto rounded-lg border border-neutral-800">
           {tab === 'registry' ? (
             <RegistryTable />
+          ) : loadingBundle ? (
+            <p className="p-6 text-sm text-neutral-400">Loading season data…</p>
           ) : !bundle ? (
             <p className="p-6 text-sm text-neutral-400">No data for this season.</p>
           ) : (

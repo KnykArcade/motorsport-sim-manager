@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { availableSeasons, getSeasonBundle, getMarketBundle, getTrackById } from './index';
+import { availableSeasons, getMarketBundle, getTrackById } from './index';
+import { getSeasonBundle } from './seasonData';
 
 const f1Seasons = availableSeasons.filter((s) => s.series === 'F1');
 

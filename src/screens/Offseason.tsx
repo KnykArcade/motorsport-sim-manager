@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useGame } from '../game/GameContext';
 import { Panel } from '../components/Panel';
@@ -8,6 +9,7 @@ import { marketRolloverChanges } from '../sim/careerMarketEngine';
 import { crossSeriesCandidates } from '../sim/crossSeriesEngine';
 import { academyMemberAge } from '../sim/driverMarketEngine';
 import { isPromotionEligible } from '../sim/youthAcademyEngine';
+import { loadSeasonBundle } from '../data';
 import type { FirstOptionDecision } from '../types/marketTypes';
 import type { MasterDriverEntry } from '../types/registryTypes';
 
@@ -34,9 +36,19 @@ export function Offseason() {
   const decisionFor = (academyId: string) =>
     academyDecisions.find((d) => d.academyId === academyId);
 
+  const [advancing, setAdvancing] = useState(false);
+
   const advance = () => {
-    dispatch({ type: 'ADVANCE_SEASON' });
-    navigate('/hq');
+    setAdvancing(true);
+    loadSeasonBundle(nextYear, state.series)
+      .then((nextBundle) => {
+        dispatch({ type: 'ADVANCE_SEASON', nextBundle });
+        navigate('/hq');
+      })
+      .catch(() => {
+        dispatch({ type: 'ADVANCE_SEASON' });
+        navigate('/hq');
+      });
   };
 
   return (
@@ -319,8 +331,8 @@ export function Offseason() {
           develop, your car's progress carries over, and a fresh championship begins.
         </p>
         <div className="mt-4 flex flex-wrap gap-3">
-          <Button variant="primary" onClick={advance} disabled={!state.seasonComplete}>
-            Advance to {nextYear} Season →
+          <Button variant="primary" onClick={advance} disabled={!state.seasonComplete || advancing}>
+            {advancing ? 'Loading…' : `Advance to ${nextYear} Season →`}
           </Button>
           {!state.seasonComplete && (
             <span className="self-center text-xs text-neutral-500">

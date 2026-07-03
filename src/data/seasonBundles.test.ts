@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { availableSeasons, getSeasonBundle, getTrackById, getMarketBundle } from './index';
+import { availableSeasons, getTrackById, getMarketBundle } from './index';
+import { getSeasonBundle } from './seasonData';
 import { pointsSystems } from './pointsSystems/pointsSystems';
 
 describe('season bundles', () => {

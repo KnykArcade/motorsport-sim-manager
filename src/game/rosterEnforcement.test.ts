@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { getSeasonBundle, availableSeasons } from '../data';
+import { availableSeasons } from '../data';
+import { getSeasonBundle } from '../data/seasonData';
 import { createNewGame } from './initialCareer';
 import { activeDriversForTeam, MAX_RACE_DRIVERS } from './careerState';
 import {

@@ -1,11 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import {
   availableSeasons,
-  getSeasonBundle,
   getMarketBundle,
   getTrackById,
-  seasonBundles,
 } from './index';
+import { getSeasonBundle, seasonBundles } from './seasonData';
 
 describe('historical season integration', () => {
   describe('season registration', () => {

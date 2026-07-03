@@ -1,7 +1,7 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useGame } from '../game/GameContext';
-import { getSeasonBundle, availableSeasons, availableSeries } from '../data';
+import { availableSeasons, availableSeries, loadSeasonBundle, getCachedBundle, type SeasonBundle } from '../data';
 import { effectiveCarRatings } from '../sim/trackFitEngine';
 import { Button } from '../components/Button';
 import { StatBar } from '../components/StatBar';
@@ -44,13 +44,44 @@ export function NewCareer() {
     setSelectedTeamId(null);
   };
 
-  const bundle = useMemo(() => getSeasonBundle(year, series), [year, series]);
+  const [bundle, setBundle] = useState<SeasonBundle | undefined>(getCachedBundle(year, series));
+  const [loadingBundle, setLoadingBundle] = useState(false);
+  const [bundleError, setBundleError] = useState<string | null>(null);
 
-  const startGame = (teamPrincipal: TeamPrincipal, choice: EngineChoice | null) => {
+  useEffect(() => {
+    const cached = getCachedBundle(year, series);
+    if (cached) {
+      setBundle(cached);
+      setBundleError(null);
+      return;
+    }
+    let cancelled = false;
+    setLoadingBundle(true);
+    setBundleError(null);
+    loadSeasonBundle(year, series)
+      .then((b) => {
+        if (cancelled) return;
+        setBundle(b);
+        setLoadingBundle(false);
+      })
+      .catch(() => {
+        if (cancelled) return;
+        setBundle(undefined);
+        setLoadingBundle(false);
+        setBundleError('Failed to load season data. Please try again.');
+      });
+    return () => { cancelled = true; };
+  }, [year, series]);
+
+  const startGame = async (teamPrincipal: TeamPrincipal, choice: EngineChoice | null) => {
     if (!selectedTeamId) return;
     if (hasSave() && !confirm('Starting a new game overwrites your existing save. Continue?')) {
       return;
     }
+    // Dynamically import full season data to populate the master registry
+    // (needed for career market / cross-series engine). This is code-split
+    // so it doesn't bloat the initial bundle.
+    await import('../data/seasonData');
     dispatch({
       type: 'NEW_GAME',
       options: {
@@ -62,17 +93,19 @@ export function NewCareer() {
         seed,
         initialEngineSupplierId: choice?.supplierId,
         initialEngineDealType: choice?.dealType,
+        bundle,
       },
     });
     navigate('/hq');
   };
 
   // For Single Season mode, skip engine selection and auto-assign the historical deal.
-  const startSingleSeason = (teamPrincipal: TeamPrincipal) => {
+  const startSingleSeason = async (teamPrincipal: TeamPrincipal) => {
     if (!selectedTeamId) return;
     if (hasSave() && !confirm('Starting a new game overwrites your existing save. Continue?')) {
       return;
     }
+    await import('../data/seasonData');
     dispatch({
       type: 'NEW_GAME',
       options: {
@@ -82,6 +115,7 @@ export function NewCareer() {
         teamId: selectedTeamId,
         teamPrincipal,
         seed,
+        bundle,
         // No engine choice — createNewGame auto-assigns the historical deal.
       },
     });
@@ -185,6 +219,21 @@ export function NewCareer() {
                 Select Team →
               </Button>
             </div>
+          </div>
+        )}
+
+        {step === 'team' && loadingBundle && (
+          <div className="space-y-4">
+            <p className="text-sm text-neutral-400">Loading season data…</p>
+          </div>
+        )}
+
+        {step === 'team' && bundleError && (
+          <div className="space-y-4">
+            <div className="rounded-lg border border-red-800 bg-red-900/20 p-3 text-sm text-red-300">
+              {bundleError}
+            </div>
+            <Button variant="ghost" onClick={() => setStep('setup')}>← Back</Button>
           </div>
         )}
 
