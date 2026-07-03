@@ -275,6 +275,11 @@ export function PreSeasonSetup() {
             <div className="space-y-4">
               <div>
                 <div className="text-xs font-semibold uppercase text-neutral-500 mb-2">Sponsors</div>
+                {isSingleSeason && (
+                  <div className="mb-2 rounded-md bg-amber-950/30 px-3 py-2 text-xs text-amber-300">
+                    Sponsors are locked to historical data for Single Season mode.
+                  </div>
+                )}
                 {sponsors.length > 0 ? (
                   <ul className="space-y-2">
                     {sponsors.map((s) => (
@@ -295,6 +300,11 @@ export function PreSeasonSetup() {
               </div>
               <div>
                 <div className="text-xs font-semibold uppercase text-neutral-500 mb-2">Engine Supplier</div>
+                {isSingleSeason && (
+                  <div className="mb-2 rounded-md bg-amber-950/30 px-3 py-2 text-xs text-amber-300">
+                    Engine supplier is locked to historical data for Single Season mode.
+                  </div>
+                )}
                 {engineDeal ? (
                   <div className="space-y-1 text-sm">
                     <div className="text-neutral-200">{engineDeal.supplierName}</div>

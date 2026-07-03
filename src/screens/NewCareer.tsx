@@ -20,7 +20,7 @@ import type { GameMode, Series, Team } from '../types/gameTypes';
 import type { TeamPrincipal } from '../types/principalTypes';
 import type { EngineDealType } from '../types/engineTypes';
 
-type Step = 'mode' | 'setup' | 'team' | 'principal' | 'engine';
+type Step = 'mode' | 'setup' | 'team' | 'principal' | 'engine' | 'lockedEngine';
 
 type EngineChoice = { supplierId: string; dealType: EngineDealType };
 
@@ -67,6 +67,27 @@ export function NewCareer() {
     navigate('/hq');
   };
 
+  // For Single Season mode, skip engine selection and auto-assign the historical deal.
+  const startSingleSeason = (teamPrincipal: TeamPrincipal) => {
+    if (!selectedTeamId) return;
+    if (hasSave() && !confirm('Starting a new game overwrites your existing save. Continue?')) {
+      return;
+    }
+    dispatch({
+      type: 'NEW_GAME',
+      options: {
+        gameMode: 'SingleSeason',
+        seasonYear: year,
+        series,
+        teamId: selectedTeamId,
+        teamPrincipal,
+        seed,
+        // No engine choice — createNewGame auto-assigns the historical deal.
+      },
+    });
+    navigate('/hq');
+  };
+
   const selectedTeam = bundle?.teams.find((t) => t.id === selectedTeamId);
 
   return (
@@ -76,16 +97,16 @@ export function NewCareer() {
           ← Main Menu
         </button>
 
-        <Steps step={step} />
+        <Steps step={step} mode={mode} />
 
         {step === 'mode' && (
           <div className="grid gap-4 md:grid-cols-2">
             <ModeCard
               title="Single Season Mode"
-              blurb="Replay one historical season from start to finish. Best for quick historical what-if simulations."
+              blurb="Replay one historical season. Engine and sponsors are locked to history — focus on race strategy and in-season management."
               selected={mode === 'SingleSeason'}
               onClick={() => setMode('SingleSeason')}
-              bullets={['Full historical calendar', 'Race weekend decisions', 'In-season development', 'Season review at the end']}
+              bullets={['Full historical calendar', 'Race weekend decisions', 'In-season development', 'Locked engine & sponsors', 'No offseason or multi-year systems']}
             />
             <ModeCard
               title="Career Mode"
@@ -222,11 +243,15 @@ export function NewCareer() {
           <PrincipalCreator
             teamName={selectedTeam.name}
             teamColor={selectedTeam.color}
-            confirmLabel="Choose Engine →"
+            confirmLabel={mode === 'SingleSeason' ? 'Start Season →' : 'Choose Engine →'}
             onBack={() => setStep('team')}
             onConfirm={(tp) => {
               setPrincipal(tp);
-              setStep('engine');
+              if (mode === 'SingleSeason') {
+                startSingleSeason(tp);
+              } else {
+                setStep('engine');
+              }
             }}
           />
         )}
@@ -377,14 +402,17 @@ function EngineSelectStep({
   );
 }
 
-function Steps({ step }: { step: Step }) {
-  const order: Step[] = ['mode', 'setup', 'team', 'principal', 'engine'];
+function Steps({ step, mode }: { step: Step; mode: GameMode }) {
+  const order: Step[] = mode === 'SingleSeason'
+    ? ['mode', 'setup', 'team', 'principal']
+    : ['mode', 'setup', 'team', 'principal', 'engine'];
   const labels: Record<Step, string> = {
     mode: 'Game Mode',
     setup: 'Series & Year',
     team: 'Team',
     principal: 'Principal',
     engine: 'Engine',
+    lockedEngine: 'Engine',
   };
   return (
     <div className="mb-8 flex items-center gap-2 text-sm">
