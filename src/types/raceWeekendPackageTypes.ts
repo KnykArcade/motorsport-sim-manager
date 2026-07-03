@@ -12,7 +12,8 @@ export type RaceWeekendPackageType =
   | 'Budget'
   | 'DevelopmentTest'
   | 'StartAndPark'
-  | 'SkipRace';
+  | 'SkipRace'
+  | 'MandatoryMinimum';
 
 // The performance and operational effects a package applies to the weekend.
 export type RaceWeekendPackageEffects = {
@@ -69,3 +70,23 @@ export type AIPackageContext = {
   isLateSeason: boolean;
   damageRiskTrack: boolean;
 };
+
+// Financial distress levels for teams.
+export type FinancialDistressLevel =
+  | 'Stable'
+  | 'Tight'
+  | 'AtRisk'
+  | 'Critical'
+  | 'Administration'
+  | 'ClosureRisk';
+
+// Lightweight financial distress tracking per team.
+export type FinancialDistressState = {
+  level: FinancialDistressLevel;
+  consecutiveNegativeCashRaces: number;
+  racesUsingEmergencyPackage: number;
+  ownerPressure: number; // 0-100
+};
+
+// Map of teamId -> financial distress state.
+export type FinancialDistressMap = Record<string, FinancialDistressState>;

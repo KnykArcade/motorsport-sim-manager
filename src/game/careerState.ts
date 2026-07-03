@@ -37,7 +37,7 @@ import type { ScoutingState } from '../types/scoutingTypes';
 import type { DriverDevelopmentCurve } from '../types/developmentCurveTypes';
 import type { UniverseHistory } from '../types/universeTypes';
 import type { AITeamState } from '../types/aiTeamTypes';
-import type { RaceWeekendPackageSelection } from '../types/raceWeekendPackageTypes';
+import type { RaceWeekendPackageSelection, FinancialDistressMap } from '../types/raceWeekendPackageTypes';
 import type { CareerPhaseState } from '../types/careerPhaseTypes';
 
 export type GameState = {
@@ -170,6 +170,10 @@ export type GameState = {
   // Career Phase system: tracks the between-race management flow.
   // Optional for save compatibility; defaults to pre_season_setup for new games.
   careerPhase?: CareerPhaseState;
+
+  // Financial distress tracking for all teams, keyed by teamId.
+  // Optional for save compatibility; defaults to Stable for all teams.
+  financialDistress?: FinancialDistressMap;
 };
 
 export function teamById(state: GameState, id: string): Team | undefined {

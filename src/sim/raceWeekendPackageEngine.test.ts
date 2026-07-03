@@ -18,6 +18,12 @@ import {
   damageReserve,
   aiSelectPackage,
   formatPackageCost,
+  canAffordAnyNormalPackage,
+  computeMandatoryMinimumCost,
+  defaultFinancialDistress,
+  distressLevelFromConsecutiveNegative,
+  updateFinancialDistress,
+  distressNewsHeadline,
 } from './raceWeekendPackageEngine';
 import { MILLION } from './financeEngine';
 
@@ -463,5 +469,115 @@ describe('Race Weekend Package — formatting', () => {
     expect(formatPackageCost(2.5 * MILLION)).toBe('$2.50M');
     expect(formatPackageCost(0)).toBe('$0.00M');
     expect(formatPackageCost(1_250_000)).toBe('$1.25M');
+  });
+});
+
+// --- MandatoryMinimum / Emergency Package tests ---
+
+describe('MandatoryMinimum package', () => {
+  it('is defined in RACE_WEEKEND_PACKAGES', () => {
+    expect(RACE_WEEKEND_PACKAGES.MandatoryMinimum).toBeDefined();
+    expect(RACE_WEEKEND_PACKAGES.MandatoryMinimum.type).toBe('MandatoryMinimum');
+  });
+
+  it('has zero cost modifier', () => {
+    expect(RACE_WEEKEND_PACKAGES.MandatoryMinimum.costModifier).toBe(0.0);
+  });
+
+  it('has severe negative effects', () => {
+    const e = RACE_WEEKEND_PACKAGES.MandatoryMinimum.effects;
+    expect(e.paceModifier).toBeLessThan(0);
+    expect(e.reliabilityPrep).toBeLessThan(0);
+    expect(e.sponsorSatisfaction).toBeLessThan(0);
+    expect(e.driverMorale).toBeLessThan(0);
+    expect(e.operationalRiskMultiplier).toBeGreaterThan(1);
+  });
+
+  it('is NOT in the normal available packages for any series', () => {
+    expect(availablePackagesForSeries('F1')).not.toContain('MandatoryMinimum');
+    expect(availablePackagesForSeries('IndyCar')).not.toContain('MandatoryMinimum');
+  });
+
+  it('computeMandatoryMinimumCost returns zero cost', () => {
+    const cost = computeMandatoryMinimumCost();
+    expect(cost.cost).toBe(0);
+    expect(cost.damageReserve).toBe(0);
+  });
+});
+
+describe('canAffordAnyNormalPackage', () => {
+  it('returns true when team can afford the cheapest package', () => {
+    expect(canAffordAnyNormalPackage('F1', eliteTeam, normalTrack)).toBe(true);
+  });
+
+  it('returns false when team budget is zero', () => {
+    const brokeTeam = { ...eliteTeam, budget: 0 };
+    expect(canAffordAnyNormalPackage('F1', brokeTeam, normalTrack)).toBe(false);
+  });
+
+  it('returns false when team budget is very low', () => {
+    const brokeTeam = { ...eliteTeam, budget: 100 };
+    expect(canAffordAnyNormalPackage('F1', brokeTeam, normalTrack)).toBe(false);
+  });
+});
+
+// --- Financial distress tests ---
+
+describe('financial distress tracking', () => {
+  it('defaultFinancialDistress returns Stable', () => {
+    const d = defaultFinancialDistress();
+    expect(d.level).toBe('Stable');
+    expect(d.consecutiveNegativeCashRaces).toBe(0);
+    expect(d.racesUsingEmergencyPackage).toBe(0);
+    expect(d.ownerPressure).toBe(0);
+  });
+
+  it('distressLevelFromConsecutiveNegative maps correctly', () => {
+    expect(distressLevelFromConsecutiveNegative(0)).toBe('Stable');
+    expect(distressLevelFromConsecutiveNegative(1)).toBe('Tight');
+    expect(distressLevelFromConsecutiveNegative(3)).toBe('AtRisk');
+    expect(distressLevelFromConsecutiveNegative(5)).toBe('Critical');
+    expect(distressLevelFromConsecutiveNegative(7)).toBe('Administration');
+    expect(distressLevelFromConsecutiveNegative(10)).toBe('ClosureRisk');
+  });
+
+  it('updateFinancialDistress increments on negative budget', () => {
+    const prev = defaultFinancialDistress();
+    const updated = updateFinancialDistress(prev, -1_000_000, false);
+    expect(updated.consecutiveNegativeCashRaces).toBe(1);
+    expect(updated.level).toBe('Tight');
+  });
+
+  it('updateFinancialDistress resets on positive budget', () => {
+    const prev = {
+      level: 'AtRisk' as const,
+      consecutiveNegativeCashRaces: 3,
+      racesUsingEmergencyPackage: 2,
+      ownerPressure: 30,
+    };
+    const updated = updateFinancialDistress(prev, 5_000_000, false);
+    expect(updated.consecutiveNegativeCashRaces).toBe(0);
+    expect(updated.level).toBe('Stable');
+  });
+
+  it('updateFinancialDistress tracks emergency package usage', () => {
+    const prev = defaultFinancialDistress();
+    const updated = updateFinancialDistress(prev, 0, true);
+    expect(updated.racesUsingEmergencyPackage).toBe(1);
+    expect(updated.ownerPressure).toBeGreaterThan(0);
+  });
+
+  it('distressNewsHeadline returns null for Stable', () => {
+    expect(distressNewsHeadline('Test Team', defaultFinancialDistress())).toBeNull();
+  });
+
+  it('distressNewsHeadline returns headline for non-Stable levels', () => {
+    const tight = { ...defaultFinancialDistress(), level: 'Tight' as const, consecutiveNegativeCashRaces: 1 };
+    expect(distressNewsHeadline('Test Team', tight)).not.toBeNull();
+
+    const critical = { ...defaultFinancialDistress(), level: 'Critical' as const, consecutiveNegativeCashRaces: 5 };
+    const news = distressNewsHeadline('Test Team', critical);
+    expect(news).not.toBeNull();
+    expect(news!.headline).toContain('critical');
   });
 });

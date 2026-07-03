@@ -27,6 +27,7 @@ import {
 } from '../data/registry/masterRegistry';
 import { getMarketBundle, youthSigningCost, youthYearlyAcademyCost, type MarketBundle } from '../data/market';
 import { crossSeriesCandidates } from './crossSeriesEngine';
+import { ensureMinimumYouthProspects } from './youthGenerationEngine';
 import type { GameState } from '../game/careerState';
 
 export const ROOKIE_AGE = 18; // adult driver market eligibility (18+)
@@ -292,7 +293,20 @@ export function careerMarketBundle(state: GameState): MarketBundle {
     youth.push(clean === y.name ? y : { ...y, name: clean });
   }
 
-  return { drivers, youth };
+  // Ensure the youth pool always has at least MIN_YOUTH_PROSPECTS (12) prospects.
+  // Generate deterministic fictional prospects to fill the gap when curated data
+  // is insufficient (e.g., modern F1 seasons where all prospects are 18+).
+  // Pass occupied names to avoid collisions with existing drivers.
+  const allOccupiedNames = new Set<string>([...seenYouth, ...seenDrivers]);
+  const filledYouth = ensureMinimumYouthProspects(
+    youth,
+    state.randomSeed,
+    state.series,
+    year,
+    allOccupiedNames,
+  );
+
+  return { drivers, youth: filledYouth };
 }
 
 // --- Rollover deltas (for the offseason summary) ----------------------------

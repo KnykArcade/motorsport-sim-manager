@@ -457,4 +457,26 @@ export type NewsItem = {
   headline: string;
   body?: string;
   timestamp: string;
+  // Structured career event fields (optional for backward compatibility).
+  category?: NewsCategory;
+  priority?: NewsPriority;
+  careerPhase?: string;
+  teamId?: string;
+  driverId?: string;
 };
+
+export type NewsCategory =
+  | 'race_result'
+  | 'qualifying'
+  | 'preseason'
+  | 'paddock'
+  | 'financial'
+  | 'driver_market'
+  | 'youth_academy'
+  | 'development'
+  | 'sponsor'
+  | 'ai_team'
+  | 'career_event'
+  | 'general';
+
+export type NewsPriority = 'low' | 'normal' | 'high' | 'critical';

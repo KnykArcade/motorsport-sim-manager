@@ -13,6 +13,7 @@ import {
   PACKAGE_BORDER_COLORS,
   teamScaleTier,
   trackCostClass,
+  canAffordAnyNormalPackage,
 } from '../sim/raceWeekendPackageEngine';
 import type { RaceWeekendPackageType } from '../types/raceWeekendPackageTypes';
 
@@ -40,6 +41,11 @@ export function RaceWeekendPackageSelection({ onConfirm }: Props) {
     return computeAllPackageCosts(state.series, team, track);
   }, [state, team, track]);
 
+  const canAffordNormal = useMemo(
+    () => (state && team && track ? canAffordAnyNormalPackage(state.series, team, track) : true),
+    [state, team, track],
+  );
+
   if (!state || !race || !track || !team || !allCosts) {
     return (
       <Panel title="Race Weekend Package">
@@ -51,8 +57,8 @@ export function RaceWeekendPackageSelection({ onConfirm }: Props) {
   const tier = teamScaleTier(team);
   const trackClass = trackCostClass(track);
   const selectedDef = selected ? RACE_WEEKEND_PACKAGES[selected] : null;
-  const selectedCost = selected ? allCosts[selected] : null;
-  const canAfford = selectedCost ? team.budget >= selectedCost.cost : false;
+  const selectedCost = selected ? (selected === 'MandatoryMinimum' ? { cost: 0, baseCost: 0, teamScale: 1, trackModifier: 1, packageModifier: 0, damageReserve: 0 } : allCosts[selected]) : null;
+  const canAfford = selectedCost ? selected === 'MandatoryMinimum' || team.budget >= selectedCost.cost : false;
   const alreadySelected = state.raceWeekendPackage?.packageType === selected;
 
   const handleConfirm = () => {
@@ -136,6 +142,45 @@ export function RaceWeekendPackageSelection({ onConfirm }: Props) {
             );
           })}
         </div>
+
+        {!canAffordNormal && (
+          <div className="mt-4 rounded-lg border border-rose-600/50 bg-rose-950/20 p-4">
+            <div className="mb-2 flex items-center gap-2">
+              <span className="text-sm font-semibold text-rose-400">
+                {RACE_WEEKEND_PACKAGES.MandatoryMinimum.shortLabel}
+              </span>
+              <span className="text-xs text-rose-500/80">Emergency Fallback</span>
+            </div>
+            <p className="mb-2 text-xs text-neutral-400">
+              {RACE_WEEKEND_PACKAGES.MandatoryMinimum.description}
+            </p>
+            <p className="mb-3 text-xs text-amber-500/80">
+              Your team cannot afford a standard race package. Minimum Operations will get the cars
+              to the grid, but performance, reliability, morale, and sponsor confidence may suffer.
+            </p>
+            <button
+              onClick={() => setSelected('MandatoryMinimum')}
+              disabled={state.raceWeekendPackage?.packageType === 'MandatoryMinimum'}
+              className={`w-full rounded-lg border p-3 text-left transition-all ${
+                selected === 'MandatoryMinimum'
+                  ? 'border-rose-600/50 bg-neutral-900/80 ring-1 ring-amber-500/30'
+                  : state.raceWeekendPackage?.packageType === 'MandatoryMinimum'
+                    ? 'border-neutral-700 bg-neutral-900/40 opacity-60'
+                    : 'border-rose-700/40 bg-rose-950/20 hover:border-rose-600/50'
+              }`}
+            >
+              <div className="flex items-center justify-between">
+                <span className="text-xs text-neutral-300">Cost: Free (Emergency)</span>
+                <span className="text-xs text-rose-400">
+                  Pace -0.5 · Reliability -0.35 · Sponsors -20 · Morale -12
+                </span>
+              </div>
+              {RACE_WEEKEND_PACKAGES.MandatoryMinimum.warnings.map((w, i) => (
+                <p key={i} className="mt-1 text-xs text-amber-500/70">⚠ {w}</p>
+              ))}
+            </button>
+          </div>
+        )}
       </Panel>
 
       {selectedDef && selectedCost && (
