@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { createNewGame } from './initialCareer';
 import { gameReducer } from './gameReducer';
 import { getMaxQualifiers } from '../data';
-import { getOrCreatePhaseState, togglePreseasonChecklistItem } from './careerPhaseEngine';
+import { approvePreseasonTab } from './careerPhaseEngine';
 import type { GameState } from './careerState';
 
 function newGame(seasonYear: number, series: 'F1' | 'IndyCar', teamId: string) {
@@ -10,11 +10,14 @@ function newGame(seasonYear: number, series: 'F1' | 'IndyCar', teamId: string) {
 }
 
 function advanceToRaceWeekend(state: GameState): GameState {
-  const phaseState = getOrCreatePhaseState(state);
   let s = state;
-  for (const item of phaseState.preseasonChecklist ?? []) {
-    if (!item.completed) s = togglePreseasonChecklistItem(s, item.id);
-  }
+  s = approvePreseasonTab(s, 'teamOverview');
+  s = approvePreseasonTab(s, 'budget');
+  s = approvePreseasonTab(s, 'driverLineup');
+  s = approvePreseasonTab(s, 'carDevelopment');
+  s = approvePreseasonTab(s, 'sponsorsEngine');
+  s = approvePreseasonTab(s, 'seasonObjectives');
+  s = approvePreseasonTab(s, 'roundOnePreview');
   s = gameReducer(s, { type: 'COMPLETE_PRESEASON_SETUP' })!;
   s = gameReducer(s, { type: 'ADVANCE_TO_RACE_WEEKEND' })!;
   return s as GameState;

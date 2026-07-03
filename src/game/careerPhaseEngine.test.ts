@@ -7,7 +7,6 @@ import {
   getOrCreatePhaseState,
   hasUnresolvedRequiredDecisions,
   isPreseasonChecklistComplete,
-  togglePreseasonChecklistItem,
   computeRacePrepFocusEffect,
   processAITeamActivity,
   getPreseasonApprovals,

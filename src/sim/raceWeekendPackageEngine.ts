@@ -162,6 +162,30 @@ export const RACE_WEEKEND_PACKAGES: Record<RaceWeekendPackageType, PackageDefini
     },
     warnings: ['No points scored. Major sponsor, driver morale, and reputation penalties. Series-restricted.'],
   },
+  MandatoryMinimum: {
+    type: 'MandatoryMinimum',
+    label: 'Mandatory Minimum Operations',
+    shortLabel: 'Minimum Ops',
+    description: 'Emergency operations package for teams that cannot afford standard race operations. Gets the cars to the grid, but performance, reliability, morale, and sponsor confidence suffer significantly.',
+    costModifier: 0.0,
+    effects: {
+      paceModifier: -0.5,
+      reliabilityPrep: -0.35,
+      pitCrewPrep: -0.3,
+      sponsorSatisfaction: -20,
+      driverMorale: -12,
+      tyrePreservation: 0,
+      developmentDataGain: 0.5,
+      operationalRiskMultiplier: 1.6,
+      crashRiskMultiplier: 1.15,
+    },
+    warnings: [
+      'Severe pace and reliability penalties.',
+      'Sponsor confidence and driver morale will drop.',
+      'Repeated use escalates financial distress and owner pressure.',
+      'Only available when the team cannot afford any normal package.',
+    ],
+  },
 };
 
 // ---------------------------------------------------------------------------
@@ -482,6 +506,7 @@ export const PACKAGE_LABELS: Record<RaceWeekendPackageType, string> = {
   DevelopmentTest: 'Development / Test Package',
   StartAndPark: 'Minimal / Start-and-Park Package',
   SkipRace: 'Skip Race',
+  MandatoryMinimum: 'Mandatory Minimum Operations',
 };
 
 export const PACKAGE_COLORS: Record<RaceWeekendPackageType, string> = {
@@ -492,6 +517,7 @@ export const PACKAGE_COLORS: Record<RaceWeekendPackageType, string> = {
   DevelopmentTest: 'text-purple-400',
   StartAndPark: 'text-neutral-500',
   SkipRace: 'text-neutral-600',
+  MandatoryMinimum: 'text-rose-400',
 };
 
 export const PACKAGE_BORDER_COLORS: Record<RaceWeekendPackageType, string> = {
@@ -502,8 +528,123 @@ export const PACKAGE_BORDER_COLORS: Record<RaceWeekendPackageType, string> = {
   DevelopmentTest: 'border-purple-500/50',
   StartAndPark: 'border-neutral-600/50',
   SkipRace: 'border-neutral-700/50',
+  MandatoryMinimum: 'border-rose-600/50',
 };
 
 export function formatPackageCost(cost: number): string {
   return `$${(cost / MILLION).toFixed(2)}M`;
+}
+
+// ---------------------------------------------------------------------------
+// Emergency / Mandatory Minimum Operations helpers
+// ---------------------------------------------------------------------------
+
+// Check if a team can afford any normal (non-emergency) package.
+export function canAffordAnyNormalPackage(
+  series: Series,
+  team: Team,
+  track: Track,
+): boolean {
+  const normalPackages = availablePackagesForSeries(series);
+  for (const pkg of normalPackages) {
+    const cost = computeRaceWeekendPackageCost(series, team, track, pkg);
+    if (team.budget >= cost.cost) return true;
+  }
+  return false;
+}
+
+// Compute the MandatoryMinimum package cost (always 0 — emergency operations).
+export function computeMandatoryMinimumCost(): { cost: number; baseCost: number; teamScale: number; trackModifier: number; packageModifier: number; damageReserve: number } {
+  return {
+    cost: 0,
+    baseCost: 0,
+    teamScale: 1,
+    trackModifier: 1,
+    packageModifier: 0,
+    damageReserve: 0,
+  };
+}
+
+// ---------------------------------------------------------------------------
+// Financial distress helpers
+// ---------------------------------------------------------------------------
+
+import type { FinancialDistressState, FinancialDistressLevel } from '../types/raceWeekendPackageTypes';
+
+export function defaultFinancialDistress(): FinancialDistressState {
+  return {
+    level: 'Stable',
+    consecutiveNegativeCashRaces: 0,
+    racesUsingEmergencyPackage: 0,
+    ownerPressure: 0,
+  };
+}
+
+export function distressLevelFromConsecutiveNegative(negativeRaces: number): FinancialDistressLevel {
+  if (negativeRaces <= 0) return 'Stable';
+  if (negativeRaces === 1) return 'Tight';
+  if (negativeRaces <= 3) return 'AtRisk';
+  if (negativeRaces <= 5) return 'Critical';
+  if (negativeRaces <= 7) return 'Administration';
+  return 'ClosureRisk';
+}
+
+export function updateFinancialDistress(
+  current: FinancialDistressState | undefined,
+  teamBudget: number,
+  usedEmergencyPackage: boolean,
+): FinancialDistressState {
+  const prev = current ?? defaultFinancialDistress();
+  const isNegative = teamBudget < 0;
+  const consecutiveNegativeCashRaces = isNegative
+    ? prev.consecutiveNegativeCashRaces + 1
+    : 0;
+  const racesUsingEmergencyPackage = usedEmergencyPackage
+    ? prev.racesUsingEmergencyPackage + 1
+    : prev.racesUsingEmergencyPackage;
+  const level = distressLevelFromConsecutiveNegative(consecutiveNegativeCashRaces);
+  const ownerPressure = Math.min(100, Math.max(0,
+    prev.ownerPressure + (usedEmergencyPackage ? 10 : 0) + (isNegative ? 5 : 0) - (level === 'Stable' ? 5 : 0),
+  ));
+  return {
+    level,
+    consecutiveNegativeCashRaces,
+    racesUsingEmergencyPackage,
+    ownerPressure,
+  };
+}
+
+export function distressNewsHeadline(
+  teamName: string,
+  distress: FinancialDistressState,
+): { headline: string; body: string } | null {
+  switch (distress.level) {
+    case 'Tight':
+      return {
+        headline: `${teamName} finances tighten as budget runs thin`,
+        body: `${teamName} is operating with a negative budget. The team will need to manage costs carefully.`,
+      };
+    case 'AtRisk':
+      return {
+        headline: `Financial pressure mounts at ${teamName}`,
+        body: `${teamName} has now operated at a loss for ${distress.consecutiveNegativeCashRaces} consecutive races. Owner pressure is rising.`,
+      };
+    case 'Critical':
+      return {
+        headline: `${teamName} in critical financial state`,
+        body: `Prolonged financial distress at ${teamName} has reached critical levels. Repeated use of emergency operations is drawing scrutiny from team owners.`,
+      };
+    case 'Administration':
+      return {
+        headline: `Owner intervention looms at ${teamName}`,
+        body: `${teamName} has been financially distressed for ${distress.consecutiveNegativeCashRaces} races. The team faces potential administration if the situation does not improve.`,
+      };
+    case 'ClosureRisk':
+      return {
+        headline: `${teamName} at risk of closure`,
+        body: `Severe and prolonged financial distress at ${teamName} has put the team's future in jeopardy. Without a dramatic turnaround, the team may not survive the offseason.`,
+      };
+    default:
+      return null;
+  }
 }
