@@ -485,6 +485,8 @@ export function gameReducer(state: GameState | null, action: GameAction): GameSt
     case 'SET_CAR_SETUP': {
       if (!state) return state;
       if (getCareerPhase(state) !== 'race_weekend') return state;
+      // Minimum Package: no setup changes allowed — team runs the locked baseline.
+      if (state.raceWeekendPackage?.packageType === 'MandatoryMinimum') return state;
       return {
         ...state,
         carSetups: { ...(state.carSetups ?? {}), [action.driverId]: action.setup },
@@ -494,6 +496,8 @@ export function gameReducer(state: GameState | null, action: GameAction): GameSt
     case 'RUN_PRACTICE_SESSION': {
       if (!state) return state;
       if (getCareerPhase(state) !== 'race_weekend') return state;
+      // Minimum Package: no practice sessions — bare-minimum operations only.
+      if (state.raceWeekendPackage?.packageType === 'MandatoryMinimum') return state;
       return runPracticeSessionAction(state, action.raceId, action.kind, action.assignments);
     }
 
@@ -820,7 +824,18 @@ function hireStaff(state: GameState, staffId: string): GameState {
     makeTransaction(state.seasonYear, 'Staff', `Hired ${recruit.name} (${recruit.role})`, -fee),
   );
   const nextRoster = [...roster.filter((s) => s.role !== recruit.role), recruit];
-  return { ...charged, staff: nextRoster };
+  const hireTeam = state.teams.find((t) => t.id === state.selectedTeamId);
+  const staffNews: NewsItem = {
+    id: `news-staff-hire-${recruit.id}-${state.seasonYear}`,
+    headline: `${hireTeam?.name ?? 'The team'} appoints ${recruit.name} as ${recruit.role}`,
+    body: `The team strengthens its technical department with a new ${recruit.role}.`,
+    timestamp: new Date().toISOString(),
+    category: 'development',
+    priority: 'normal',
+    careerPhase: getCareerPhase(charged),
+    teamId: hireTeam?.id,
+  };
+  return { ...charged, staff: nextRoster, news: [staffNews, ...charged.news].slice(0, 50) };
 }
 
 // Order a facility upgrade: charge the cost now (must be affordable); the level
@@ -838,7 +853,18 @@ function upgradeFacility(state: GameState, facilityId: string): GameState {
     state,
     makeTransaction(state.seasonYear, 'Facilities', `Upgrade ${label} to L${(facility?.level ?? 0) + 1}`, -fee),
   );
-  return { ...charged, facilities: ordered.state };
+  const facTeam = state.teams.find((t) => t.id === state.selectedTeamId);
+  const facilityNews: NewsItem = {
+    id: `news-facility-${facilityId}-${state.seasonYear}`,
+    headline: `${facTeam?.name ?? 'The team'} upgrades ${label} facility`,
+    body: `The team invests in its ${label} infrastructure, set to take effect next season.`,
+    timestamp: new Date().toISOString(),
+    category: 'development',
+    priority: 'normal',
+    careerPhase: getCareerPhase(charged),
+    teamId: facTeam?.id,
+  };
+  return { ...charged, facilities: ordered.state, news: [facilityNews, ...charged.news].slice(0, 50) };
 }
 
 // Spend one round of scouting effort on a market driver or youth prospect,
@@ -962,9 +988,20 @@ function signSponsor(state: GameState, offerId: string): GameState {
   const offer = offers.find((o) => o.id === offerId);
   if (!offer) return state;
   if (commercial.sponsors.some((s) => s.id === offer.id)) return state;
+  const sponsorNews: NewsItem = {
+    id: `news-sponsor-${offer.id}-${state.seasonYear}`,
+    headline: `${team.name} signs new sponsor: ${offer.name}`,
+    body: `A new commercial partnership strengthens the team's financial position.`,
+    timestamp: new Date().toISOString(),
+    category: 'sponsor',
+    priority: 'normal',
+    careerPhase: getCareerPhase(state),
+    teamId: team.id,
+  };
   return {
     ...state,
     commercial: { ...commercial, sponsors: [...commercial.sponsors, offer] },
+    news: [sponsorNews, ...state.news].slice(0, 50),
   };
 }
 
@@ -1220,15 +1257,25 @@ function applyRaceResults(
   }
 
   // Budget: prize money for points + crash repair costs scaled by damage.
+  // A per-race transport/logistics stipend helps offset the weekend package cost.
   const teams = state.teams.map((t) => ({ ...t, morale: morale.teamMorale[t.id] ?? t.morale }));
   let cars = state.cars.map((c) => ({ ...c }));
   const financeTxns: FinanceTransaction[] = [];
   const damageMessages: string[] = [];
   const conditionHitByTeam: Record<string, number> = {};
+  const stipend = toMoney(0.8); // $800K per race per team (transport/logistics)
+  for (const team of teams) {
+    team.budget += stipend;
+    if (team.id === state.selectedTeamId) {
+      financeTxns.push(
+        makeTransaction(state.seasonYear, 'Sponsorship', `${race.gpName}: Transport & logistics stipend`, stipend, race.round),
+      );
+    }
+  }
   for (const r of results) {
     const team = teams.find((t) => t.id === r.teamId);
     if (!team) continue;
-    const prize = r.points * 250_000; // prize money per point
+    const prize = r.points * 500_000; // prize money per point
     team.budget += prize;
     const roll = createSeededRandom(deriveSeed(state.randomSeed, 'damage', race.round, r.driverId)).next();
     const severity = classifyCrashDamage(r.status, r.incidents, roll);

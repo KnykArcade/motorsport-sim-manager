@@ -91,9 +91,13 @@ export function createLiveRace(context: RaceContext, options: LiveRaceOptions): 
     const grid = gridByDriver[e.driver.id] ?? context.entrants.length;
 
     const teamRating = options.teamRaceOps[e.driver.teamId];
+    const pkgEffects = context.packageEffectsByTeam?.[e.driver.teamId];
     const { score: paceScore } = calculateRacePace(e.driver, e.car, track, setup, strategy, instruction, teamRating);
     // Per-team weekend form so the live race shares the quick race's variation.
     const score = paceScore + weekendForm(context.seed, e.driver.teamId, teamRating);
+
+    // Apply Race Weekend Package pace modifier.
+    const packagePaceBonus = pkgEffects?.paceModifier ?? 0;
 
     // Apply race prep focus effect for the player's team (small, one-race bonus).
     const racePrepFocus = context.racePrepFocusEffect;
@@ -104,9 +108,11 @@ export function createLiveRace(context: RaceContext, options: LiveRaceOptions): 
 
     // Base Race Pace on the 1-10 scale (the pace score divided back out of the
     // internal PACE_SPREAD blow-up), which the live-pace model builds on.
-    const baseRacePace = clamp10((score + prepPaceBonus) / PACE_SPREAD);
+    const baseRacePace = clamp10((score + packagePaceBonus + prepPaceBonus) / PACE_SPREAD);
     // Per-car weekend operations execution (pit/reliability/strategy), zero-mean.
-    const opsForm = operationsForm(context.seed, e.driver.teamId, e.driver.id, teamRating);
+    // Package reliability/pit prep shifts the operations form up or down.
+    const opsForm = operationsForm(context.seed, e.driver.teamId, e.driver.id, teamRating)
+      + (pkgEffects ? (pkgEffects.reliabilityPrep + pkgEffects.pitCrewPrep) / 2 : 0);
 
     // Reliability: per-race risk amplified by quali incidents, spread per lap.
     // The weekend's operations execution shifts the per-race risk up or down.
@@ -123,7 +129,9 @@ export function createLiveRace(context: RaceContext, options: LiveRaceOptions): 
       perLapFailureRisk(Math.max(0, perRaceRel - prepReliabilityMod), totalLaps) * eraReliabilityScale(options.year) * cal.mech;
 
     // Crash/incident risk, kept separate from mechanical failure.
-    const perRaceCrash = calculateCrashRisk(e.driver, track, instruction.mistakeModifier);
+    // Package crash risk multiplier scales the base crash risk.
+    const perRaceCrash = calculateCrashRisk(e.driver, track, instruction.mistakeModifier)
+      * (pkgEffects?.crashRiskMultiplier ?? 1);
     const baseCrashRisk = perLapFailureRisk(perRaceCrash, totalLaps) * cal.crash;
 
     const perRaceMistake = calculateMistakeRisk(
@@ -131,11 +139,17 @@ export function createLiveRace(context: RaceContext, options: LiveRaceOptions): 
       track,
       instruction.mistakeModifier,
       grid <= 6 ? 0.5 : 0,
-    ) * prepMistakeMultiplier;
+    ) * prepMistakeMultiplier * (pkgEffects?.operationalRiskMultiplier ?? 1);
     const baseMistakeRisk = perLapFailureRisk(perRaceMistake * 0.7, totalLaps);
 
     const pitPlan = buildPitPlan(strategy, totalLaps);
-    const tireDegRate = computeDegRate(setup.tirePreservation, instruction.tireWearModifier, strategy.tireDegModifier, pitPlan.stintTarget);
+    const pkgTyrePres = pkgEffects?.tyrePreservation ?? 0;
+    const tireDegRate = computeDegRate(
+      setup.tirePreservation + pkgTyrePres * 5,
+      instruction.tireWearModifier,
+      strategy.tireDegModifier,
+      pitPlan.stintTarget,
+    );
 
     const isPlayer = e.driver.teamId === options.playerTeamId;
     const personality: AIStrategyPersonality = isPlayer
@@ -170,7 +184,7 @@ export function createLiveRace(context: RaceContext, options: LiveRaceOptions): 
       baseCrashRisk,
       baseMistakeRisk,
       tireDegRate,
-      pitLossBase: pitStopLoss(e.car, false, SAFETY_CAR_PIT_SAVING, opsForm),
+      pitLossBase: pitStopLoss(e.car, false, SAFETY_CAR_PIT_SAVING, opsForm + (isPlayer ? (context.playerStaffBonus?.pitCrew ?? 0) : 0)),
       opsForm,
       personality,
       strategyId: strategy.id,

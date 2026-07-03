@@ -273,12 +273,16 @@ export function computeRaceOutcome(context: RaceContext): RaceOutcome {
       finalScore = -100 - grid; // sort to the back, keep grid order among DNFs
     } else {
       // Pit stop contribution for finishers (pit-crew + weekend operations form).
-      const pit = calculatePitStopPerformance(e.car, strategy, rng, opsForm);
+      // Player's Pit Crew Chief adds a direct bonus on top of ops form.
+      const staffPitBonus = isPlayerTeam ? (context.playerStaffBonus?.pitCrew ?? 0) : 0;
+      const pit = calculatePitStopPerformance(e.car, strategy, rng, opsForm + staffPitBonus);
       finalScore += pit.scoreDelta;
       if (pit.note) incidents.push(pit.note);
 
       // Strategy execution (pit-wall calls) driven by the weekend's operations form.
-      const strat = strategyExecution(opsForm, rng);
+      // Player's Strategist adds a direct bonus on top of ops form.
+      const staffStratBonus = isPlayerTeam ? (context.playerStaffBonus?.strategy ?? 0) : 0;
+      const strat = strategyExecution(opsForm + staffStratBonus, rng);
       finalScore += strat.delta;
       if (strat.note) incidents.push(strat.note);
 
