@@ -73,7 +73,9 @@ import { generateRegulationProposals, resolveRegulationVoting } from '../sim/pol
 import { refreshScoutingNetwork } from '../sim/scoutingEngine';
 import { createDriverDevelopmentCurve, developmentStep } from '../sim/developmentCurveEngine';
 import { finalizeSeasonHistory } from '../sim/universeHistoryEngine';
-import { buildAITeamState, rolloverAITeamStates } from '../sim/aiTeamEngine';
+import { buildAITeamState, rolloverAITeamStates, constructorPositionOf } from '../sim/aiTeamEngine';
+import { updateTeamMemory } from '../sim/teamIdentityEngine';
+import type { TeamMemoryEntry } from '../types/aiTeamTypes';
 import { runAIOffseason, makeRookieDriver } from '../sim/aiOffseasonEngine';
 import { createSeededRandom, deriveSeed } from '../sim/random';
 import { applyDriverRetirements } from '../sim/driverRetirementEngine';
@@ -682,7 +684,23 @@ export function advanceSeason(state: GameState, nextBundle?: SeasonBundle): Game
   // AI Team Management (Phase C): recompute every non-player team's management
   // brain (archetype, budget, financial health, goal) for the new season and
   // move their cash by the discretionary sponsor-income/spend flow.
-  const aiRollover = rolloverAITeamStates(state);
+  // First, update multi-season memory for all teams from the just-completed
+  // season's constructor standings, then feed it into the rollover so
+  // memoryArchetypeNudge can influence archetype evolution.
+  const prevMemory = state.aiTeamMemory ?? {};
+  const updatedMemory: Record<string, TeamMemoryEntry> = {};
+  for (const team of state.teams) {
+    const pos = constructorPositionOf(state, team.id);
+    const standing = state.constructorStandings.find((s) => s.entityId === team.id);
+    updatedMemory[team.id] = updateTeamMemory(
+      prevMemory[team.id],
+      team.id,
+      pos,
+      standing?.wins ?? 0,
+      standing?.podiums ?? 0,
+    );
+  }
+  const aiRollover = rolloverAITeamStates(state, updatedMemory);
 
   const budgetDelta = txns.reduce((sum, t) => sum + t.amount, 0);
   const teams = state.teams.map((t) => {
@@ -1283,6 +1301,7 @@ export function advanceSeason(state: GameState, nextBundle?: SeasonBundle): Game
     developmentCurves: nextCurves,
     universeHistory: nextUniverseHistory,
     aiTeamStates: aiRollover.states,
+    aiTeamMemory: updatedMemory,
     carSetups,
     academy: nextAcademy,
     pendingSignings: [],

@@ -15,10 +15,12 @@ import type {
   AITeamState,
   TeamPhilosophy,
   TeamPhilosophyTrait,
+  TeamMemoryEntry,
 } from '../types/aiTeamTypes';
 import { MILLION, driverSalary, toMoney } from './financeEngine';
 import { carPerformanceRating } from './trackFitEngine';
 import { createSeededRandom, deriveSeed } from './random';
+import { memoryArchetypeNudge } from './teamIdentityEngine';
 import { activeDriversForTeam, type GameState } from '../game/careerState';
 
 // --- Archetype specifications ------------------------------------------------
@@ -484,7 +486,10 @@ export type AIRolloverResult = {
 // season just finished, grade financial health, evolve personality and set next
 // season's goal. Produces per-team cash deltas + a few headline notes for the
 // rollover summary.
-export function rolloverAITeamStates(state: GameState): AIRolloverResult {
+export function rolloverAITeamStates(
+  state: GameState,
+  teamMemory?: Record<string, TeamMemoryEntry>,
+): AIRolloverResult {
   const prev = state.aiTeamStates ?? {};
   const states: Record<string, AITeamState> = {};
   const budgetDeltaByTeam: Record<string, number> = {};
@@ -505,7 +510,11 @@ export function rolloverAITeamStates(state: GameState): AIRolloverResult {
     const seasonsInTrouble = wasTrouble ? (prevState?.seasonsInTrouble ?? 0) + 1 : 0;
     const cashGrowthRatio =
       budget.projectedCash / Math.max(1, prevState?.budget.startingCash ?? budget.startingCash);
-    const archetype = evolveArchetype(archetype0, health, seasonsInTrouble, cashGrowthRatio);
+    const evolved = evolveArchetype(archetype0, health, seasonsInTrouble, cashGrowthRatio);
+    // Apply multi-season memory nudge on top of financial-health-driven evolution.
+    const archetype = teamMemory
+      ? memoryArchetypeNudge(teamMemory[team.id], evolved)
+      : evolved;
     const goal = aiTeamGoal(archetype, position, state.teams.length, health);
 
     // Full annual net result applied to the team's cash for next year, so
