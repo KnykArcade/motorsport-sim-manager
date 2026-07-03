@@ -13,8 +13,7 @@
 // identity compounds with its archetype to produce unique behavior patterns
 // that persist and evolve across seasons.
 
-import type { TeamPhilosophyTrait } from '../types/aiTeamTypes';
-import type { AITeamArchetype } from '../types/aiTeamTypes';
+import type { TeamPhilosophyTrait, AITeamArchetype, TeamMemoryEntry } from '../types/aiTeamTypes';
 
 // ---------------------------------------------------------------------------
 // Trait-based modifier tables
@@ -212,19 +211,7 @@ export function effectiveRisk(
 
 // Multi-season memory: track a team's historical performance to influence
 // future decisions. This is stored per team and updated at each offseason.
-export type TeamMemoryEntry = {
-  teamId: string;
-  seasonsTracked: number;
-  lastConstructorPosition?: number;
-  bestConstructorPosition?: number;
-  worstConstructorPosition?: number;
-  avgConstructorPosition?: number;
-  trendDirection: 'improving' | 'declining' | 'stable';
-  seasonsSincePodium: number;
-  seasonsSinceWin: number;
-  totalWins: number;
-  totalPodiums: number;
-};
+// The type is defined in aiTeamTypes.ts and imported above.
 
 // Update team memory after a season. Pure & deterministic.
 export function updateTeamMemory(

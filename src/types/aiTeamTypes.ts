@@ -96,3 +96,19 @@ export type AITeamState = {
   // Last final constructor position, used for the Team Overview trend + goals.
   lastConstructorPosition?: number;
 };
+
+// Multi-season memory: track a team's historical performance to influence
+// future decisions. Stored per team and updated at each offseason.
+export type TeamMemoryEntry = {
+  teamId: string;
+  seasonsTracked: number;
+  lastConstructorPosition?: number;
+  bestConstructorPosition?: number;
+  worstConstructorPosition?: number;
+  avgConstructorPosition?: number;
+  trendDirection: 'improving' | 'declining' | 'stable';
+  seasonsSincePodium: number;
+  seasonsSinceWin: number;
+  totalWins: number;
+  totalPodiums: number;
+};

@@ -36,7 +36,7 @@ import type { HistoricalEventHook, FiredEvent } from '../types/eventHookTypes';
 import type { ScoutingState } from '../types/scoutingTypes';
 import type { DriverDevelopmentCurve } from '../types/developmentCurveTypes';
 import type { UniverseHistory } from '../types/universeTypes';
-import type { AITeamState } from '../types/aiTeamTypes';
+import type { AITeamState, TeamMemoryEntry } from '../types/aiTeamTypes';
 import type { RaceWeekendPackageSelection, FinancialDistressMap } from '../types/raceWeekendPackageTypes';
 import type { CareerPhaseState } from '../types/careerPhaseTypes';
 
@@ -152,6 +152,11 @@ export type GameState = {
   // team — archetype, budget, financial health, goal — keyed by teamId. Absent
   // on pre-Phase-C saves; rebuilt lazily by the AI engine when needed.
   aiTeamStates?: Record<string, AITeamState>;
+
+  // AI team memory: multi-season performance history (constructor positions,
+  // wins, podiums, trends) that influences archetype evolution. Updated at each
+  // offseason rollover. Absent on pre-fix saves; built lazily.
+  aiTeamMemory?: Record<string, TeamMemoryEntry>;
 
   // AI youth academies (Phase D): prospects each non-player team has signed to
   // its own academy, keyed by teamId. They progress and reach first-option age
