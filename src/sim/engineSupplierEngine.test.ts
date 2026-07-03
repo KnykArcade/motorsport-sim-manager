@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { teams1995, cars1995 } from '../data';
+import { teams1995 } from '../data/teams/teams1995';
+import { cars1995 } from '../data/cars/cars1995';
 import {
   ENGINE_DEAL_SPECS,
   applyEngineBonuses,

@@ -1,4 +1,7 @@
-import { describe, it, expect } from 'vitest';
+import {
+  describe,
+  it,
+  expect } from 'vitest';
 
 import {
   clampSetupValue,
@@ -9,11 +12,12 @@ import {
   safeScore,
   sanitizeSetupProfile,
   sanitizeSetupValue,
-} from './setupSanitize';
+  } from './setupSanitize';
 import { objectiveSetupQuality } from './setupFitEngine';
 import { setupQualityEstimate } from './setupUncertaintyEngine';
 import { driverSetupComfort } from './driverComfortEngine';
-import { tracks1995, drivers1995 } from '../data';
+import { tracks1995 } from '../data/tracks/tracks1995';
+import { drivers1995 } from '../data/drivers/drivers1995';
 import { BALANCED_SETUP } from '../data/setup/setupComponents';
 import type { CarSetup } from '../types/setupTypes';
 

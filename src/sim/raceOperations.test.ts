@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 
-import { cars1995, tracks1995 } from '../data';
+import { cars1995 } from '../data/cars/cars1995';
+import { tracks1995 } from '../data/tracks/tracks1995';
 import { autoSetupOptionsForTrack } from './autoSetup';
 import { createSeededRandom } from './random';
 import { operationsForm, strategyExecution } from './raceEngine';

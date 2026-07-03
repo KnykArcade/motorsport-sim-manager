@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { tracks1995 } from '../data';
+import { tracks1995 } from '../data/tracks/tracks1995';
 import { initialWeather, weekendForecast } from './weatherEngine';
 import {
   recommendedQualiRunPlan,

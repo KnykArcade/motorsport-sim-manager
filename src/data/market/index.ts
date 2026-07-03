@@ -1,16 +1,8 @@
 // Driver market & academy seed data, keyed by season.
-// Only 1995 data is imported eagerly (for test compatibility). All other
-// seasons use dynamic import() so Vite code-splits each season's market data.
+// All seasons use dynamic import() so Vite code-splits each season's market data.
 
 import type { MarketDriver, YouthProspect } from '../../types/marketTypes';
 import type { Series } from '../../types/gameTypes';
-
-// 1995 data is eagerly imported for tests and legacy callers.
-import { driverMarket1995 } from './driverMarket1995';
-import { youthProspects1995 } from './youthProspects1995';
-
-export { driverMarket1995 } from './driverMarket1995';
-export { youthProspects1995 } from './youthProspects1995';
 
 export type MarketBundle = {
   drivers: MarketDriver[];
@@ -49,9 +41,6 @@ function bundle(drivers: MarketDriver[], youth: YouthProspect[]): MarketBundle {
 
 const bundleCache = new Map<string, MarketBundle>();
 
-// Eagerly cache 1995 data.
-bundleCache.set('1995-F1', bundle(driverMarket1995, youthProspects1995));
-
 // Dynamic import factories for each season. Vite code-splits each into its own chunk.
 const marketLoaders: Record<string, () => Promise<{ drivers: MarketDriver[]; youth: YouthProspect[] }>> = {};
 
@@ -68,9 +57,8 @@ function makeMarketLoader(year: number, series: Series) {
   };
 }
 
-// F1 seasons 1990–2026 (skip 1995, already cached)
+// F1 seasons 1990–2026
 for (let year = 1990; year <= 2026; year++) {
-  if (year === 1995) continue;
   marketLoaders[`${year}-F1`] = makeMarketLoader(year, 'F1');
 }
 
@@ -83,6 +71,14 @@ for (let year = 2008; year <= 2026; year++) {
 export function getMarketBundle(year: number, series: Series = 'F1'): MarketBundle | undefined {
   const key = `${year}-${series}`;
   return bundleCache.get(key);
+}
+
+export function seedMarketBundleCache(
+  bundles: Record<string, { drivers: MarketDriver[]; youth: YouthProspect[] }>,
+): void {
+  for (const [key, marketBundle] of Object.entries(bundles)) {
+    bundleCache.set(key, bundle(marketBundle.drivers, marketBundle.youth));
+  }
 }
 
 // Asynchronously load and cache a market bundle. Call this when a season starts

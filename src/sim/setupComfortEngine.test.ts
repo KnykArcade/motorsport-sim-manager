@@ -1,6 +1,8 @@
 import { describe, it, expect } from 'vitest';
 
-import { tracks1995, drivers1995, cars1995 } from '../data';
+import { tracks1995 } from '../data/tracks/tracks1995';
+import { drivers1995 } from '../data/drivers/drivers1995';
+import { cars1995 } from '../data/cars/cars1995';
 import { BALANCED_SETUP } from '../data/setup/setupComponents';
 import { qualifyingRunPlansById } from '../data/decisions/qualifyingRunPlans';
 import type { Car, Driver } from '../types/gameTypes';

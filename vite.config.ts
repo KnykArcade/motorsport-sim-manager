@@ -14,7 +14,19 @@ export default defineConfig({
             if (id.includes('react-dom') || id.includes('/react/')) return 'vendor-react';
           }
           if (id.includes('/src/data/market/')) {
-            return 'market-data';
+            const match = id.match(/\/src\/data\/market\/(?:driverMarket|youthProspects)(\d{4})(IndyCar)?\.ts$/);
+            if (!match) return 'market-core';
+            const year = Number(match[1]);
+            if (match[2]) {
+              if (year <= 2011) return 'market-indycar-2008-2011';
+              if (year <= 2017) return 'market-indycar-2012-2017';
+              if (year <= 2023) return 'market-indycar-2018-2023';
+              return 'market-indycar-modern';
+            }
+            if (year < 2000) return 'market-f1-1990s';
+            if (year < 2010) return 'market-f1-2000s';
+            if (year < 2020) return 'market-f1-2010s';
+            return 'market-f1-2020s';
           }
           // seasonData.ts and the heavy season files it imports (tracks/, teams/,
           // drivers/, cars/, seasons/) are dynamically imported — let Rollup

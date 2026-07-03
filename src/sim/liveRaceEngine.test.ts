@@ -1,16 +1,19 @@
-import { describe, it, expect } from 'vitest';
+import {
+  describe,
+  it,
+  expect } from 'vitest';
 
 import {
-  tracks1995,
-  drivers1995,
-  cars1995,
-  teams1995,
   setupOptionsById,
   qualifyingRunPlansById,
   raceStrategiesById,
   driverInstructionsById,
   pointsSystems,
 } from '../data';
+import { tracks1995 } from '../data/tracks/tracks1995';
+import { drivers1995 } from '../data/drivers/drivers1995';
+import { cars1995 } from '../data/cars/cars1995';
+import { teams1995 } from '../data/teams/teams1995';
 import { autoSetupOptionsForTrack } from './autoSetup';
 import { aiQualifyingDecision, aiRaceDecision } from '../game/ai';
 import { simulateQualifying } from './qualifyingEngine';

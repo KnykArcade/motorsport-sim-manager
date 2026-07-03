@@ -2,7 +2,7 @@ import { useNavigate } from 'react-router-dom';
 import { useGame } from '../game/GameContext';
 import { loadSavedGame } from '../game/GameContext';
 import { hasSave } from '../game/saveSystem';
-import { preloadMarketBundle } from '../data';
+import { initializeMasterRegistry } from '../data';
 
 export function MainMenu() {
   const navigate = useNavigate();
@@ -13,8 +13,7 @@ export function MainMenu() {
     const saved = loadSavedGame();
     if (saved) {
       // Load full season data for the master registry (career market engine).
-      await import('../data/seasonData');
-      await preloadMarketBundle(saved.seasonYear, saved.series);
+      await initializeMasterRegistry(saved.seasonYear, saved.series);
       dispatch({ type: 'LOAD_GAME', state: saved });
       navigate('/hq');
     }

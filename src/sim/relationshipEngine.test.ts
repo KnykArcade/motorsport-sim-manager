@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { teams1995, drivers1995 } from '../data';
+import { teams1995 } from '../data/teams/teams1995';
+import { drivers1995 } from '../data/drivers/drivers1995';
 import { buildTeamReputations } from './expectationEngine';
 import {
   TEAM_ORDER_SPECS,

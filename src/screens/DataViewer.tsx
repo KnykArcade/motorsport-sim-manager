@@ -2,6 +2,7 @@ import { useEffect, useMemo, useReducer, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   availableSeasons,
+  initializeMasterRegistry,
   loadSeasonBundle,
   getCachedBundle,
   getTrackById,
@@ -45,9 +46,20 @@ export function DataViewer() {
   const [tab, setTab] = useState<Tab>('calendar');
   const navigate = useNavigate();
   const { state } = useGame();
+  const [registryReady, setRegistryReady] = useState(false);
 
   // Ensure the master registry is initialized (needed for the Registry tab).
-  useEffect(() => { void import('../data/seasonData'); }, []);
+  useEffect(() => {
+    let cancelled = false;
+    initializeMasterRegistry()
+      .then(() => {
+        if (!cancelled) setRegistryReady(true);
+      })
+      .catch(() => {
+        if (!cancelled) setRegistryReady(false);
+      });
+    return () => { cancelled = true; };
+  }, []);
 
   // Default to the current game's season if one is loaded and has data;
   // otherwise fall back to the first available season.
@@ -136,7 +148,7 @@ export function DataViewer() {
 
         <div className="overflow-x-auto rounded-lg border border-neutral-800">
           {tab === 'registry' ? (
-            <RegistryTable />
+            registryReady ? <RegistryTable /> : <p className="p-6 text-sm text-neutral-400">Loading registry data...</p>
           ) : loadingBundle ? (
             <p className="p-6 text-sm text-neutral-400">Loading season data…</p>
           ) : !activeBundle ? (

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { teams1995 } from '../data';
+import { teams1995 } from '../data/teams/teams1995';
 import { buildTeamReputations } from './expectationEngine';
 import {
   RENEW_THRESHOLD,
