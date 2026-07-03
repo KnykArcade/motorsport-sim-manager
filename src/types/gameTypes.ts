@@ -200,6 +200,13 @@ export type RegulationSet = {
     reliability: number;
     pitCrewOperations: number;
   };
+  // Era-specific rule metadata.
+  refuelingAllowed: boolean;
+  drsEnabled: boolean;
+  sprintSupport: boolean;
+  pushToPass: boolean;
+  tireChangeRules: string;
+  eraLabel: string;
   notes: string[];
 };
 

@@ -116,7 +116,7 @@ function wantDescription(want: DriverWant): string {
 }
 
 function promiseDueText(p: DriverPromise): string {
-  if (p.dueSeason === undefined && p.dueRound === undefined) return 'No deadline set';
+  if (p.dueSeason === undefined && p.dueRound === undefined) return `Due: end of season ${p.madeSeason}`;
   const parts: string[] = [];
   if (p.dueSeason !== undefined) parts.push(`Season ${p.dueSeason}`);
   if (p.dueRound !== undefined) parts.push(`Round ${p.dueRound}`);
@@ -557,7 +557,11 @@ function PromiseMaker({
   const [selectedType, setSelectedType] = useState<PromiseType>('equal_treatment');
   const [dueRound, setDueRound] = useState<string>('');
 
+  const activeTypes = new Set(activePromises.map((p) => p.promiseType));
+  const isDuplicate = activeTypes.has(selectedType);
+
   const handleSubmit = () => {
+    if (isDuplicate) return;
     const round = dueRound ? parseInt(dueRound, 10) : undefined;
     onMakePromise(driverId, selectedType, undefined, round);
     setShowForm(false);
@@ -583,8 +587,8 @@ function PromiseMaker({
             onChange={(e) => setSelectedType(e.target.value as PromiseType)}
           >
             {PROMISE_OPTIONS.map((pt) => (
-              <option key={pt} value={pt}>
-                {PROMISE_TYPE_LABELS[pt]}
+              <option key={pt} value={pt} disabled={activeTypes.has(pt)}>
+                {PROMISE_TYPE_LABELS[pt]}{activeTypes.has(pt) ? ' (active)' : ''}
               </option>
             ))}
           </select>
@@ -596,13 +600,18 @@ function PromiseMaker({
               value={dueRound}
               onChange={(e) => setDueRound(e.target.value)}
             />
-            <Button variant="primary" className="px-3 py-1 text-xs" onClick={handleSubmit}>
+            <Button variant="primary" className="px-3 py-1 text-xs" onClick={handleSubmit} disabled={isDuplicate}>
               Make Promise
             </Button>
             <Button variant="ghost" className="px-3 py-1 text-xs" onClick={() => setShowForm(false)}>
               Cancel
             </Button>
           </div>
+          {isDuplicate && (
+            <p className="text-[10px] text-amber-400">
+              An active promise of this type already exists for this driver. Resolve it first.
+            </p>
+          )}
           <p className="text-[10px] text-neutral-600">
             Making a promise boosts trust immediately. Breaking or expiring it costs double.
           </p>

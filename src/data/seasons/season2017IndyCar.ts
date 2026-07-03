@@ -186,5 +186,5 @@ export const season2017IndyCar: Season = {
   series: 'IndyCar',
   calendar: calendar2017IndyCar,
   pointsSystemId: 'pts-indycar-2017',
-  regulationSetId: 'reg-1995',
+  regulationSetId: 'reg-indycar-2012-2017',
 };

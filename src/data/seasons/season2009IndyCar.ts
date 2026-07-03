@@ -186,5 +186,5 @@ export const season2009IndyCar: Season = {
   series: 'IndyCar',
   calendar: calendar2009IndyCar,
   pointsSystemId: 'pts-indycar-2009',
-  regulationSetId: 'reg-1995',
+  regulationSetId: 'reg-indycar-2008-2011',
 };

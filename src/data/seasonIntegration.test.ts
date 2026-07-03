@@ -469,15 +469,14 @@ describe('historical season integration', () => {
       }
     });
 
-    it('all seasons currently use reg-1995 (documented limitation)', () => {
-      // Year-specific regulation integration is not yet implemented.
-      // All seasons point to reg-1995 as a placeholder. This is a known
-      // limitation documented in the PR — yearly regulation data from
-      // the workbook Regulations_Rules_Changes sheets is not yet wired
-      // into individual season records.
+    it('no season uses the old reg-1995 placeholder', () => {
       for (let y = 1990; y <= 2026; y++) {
         const f1 = getSeasonBundle(y, 'F1');
-        expect(f1!.season.regulationSetId).toBe('reg-1995');
+        expect(f1!.season.regulationSetId, `F1 ${y} still uses reg-1995`).not.toBe('reg-1995');
+      }
+      for (let y = 2008; y <= 2026; y++) {
+        const indy = getSeasonBundle(y, 'IndyCar');
+        expect(indy!.season.regulationSetId, `IndyCar ${y} still uses reg-1995`).not.toBe('reg-1995');
       }
     });
   });

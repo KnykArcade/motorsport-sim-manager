@@ -380,4 +380,28 @@ describe('live race confidence modifier', () => {
 
     expect(ra.results.map((r) => r.driverId)).toEqual(rb.results.map((r) => r.driverId));
   });
+
+  it('confidence modifier uses same formula source as qualifying (calculateRacePace)', () => {
+    // The live race engine passes confidenceModifierByDriver to calculateRacePace,
+    // the same function used by qualifyingEngine. Verify the modifier is applied
+    // consistently by checking that a positive modifier improves paceRating
+    // and a negative one worsens it, relative to zero.
+    const baseContext = buildContext('conf-source');
+    const firstDriver = baseContext.entrants[0].driver;
+
+    const ctxZero = { ...baseContext, confidenceModifierByDriver: { [firstDriver.id]: 0 } };
+    const ctxPos = { ...baseContext, confidenceModifierByDriver: { [firstDriver.id]: 0.08 } };
+    const ctxNeg = { ...baseContext, confidenceModifierByDriver: { [firstDriver.id]: -0.15 } };
+
+    const raceZero = createRace(ctxZero, firstDriver.teamId);
+    const racePos = createRace(ctxPos, firstDriver.teamId);
+    const raceNeg = createRace(ctxNeg, firstDriver.teamId);
+
+    const carZero = raceZero.cars.find((c) => c.driverId === firstDriver.id)!;
+    const carPos = racePos.cars.find((c) => c.driverId === firstDriver.id)!;
+    const carNeg = raceNeg.cars.find((c) => c.driverId === firstDriver.id)!;
+
+    expect(carPos.paceRating).toBeGreaterThan(carZero.paceRating);
+    expect(carNeg.paceRating).toBeLessThan(carZero.paceRating);
+  });
 });

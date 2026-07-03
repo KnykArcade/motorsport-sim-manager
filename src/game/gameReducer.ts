@@ -70,7 +70,7 @@ import {
 import { classifyCrashDamage, damageConditionHit, repairCost } from '../sim/repairEngine';
 import { buildRaceArchiveEntry } from '../sim/lapArchiveEngine';
 import { resolveTeamOrderConsequences } from '../sim/relationshipEngine';
-import { reactToRaceResult, applyConfidenceUpdates, makePromise, resolvePromise, applyPromiseResolution, evaluatePromisesAfterRace, checkExpiredPromises, confidencePerformanceModifier, type ConfidenceUpdate, type RaceEventContext } from '../sim/driverConfidenceEngine';
+import { reactToRaceResult, applyConfidenceUpdates, makePromise, resolvePromise, applyPromiseResolution, evaluatePromisesAfterRace, checkExpiredPromises, hasActivePromiseOfType, confidencePerformanceModifier, type ConfidenceUpdate, type RaceEventContext } from '../sim/driverConfidenceEngine';
 import { allocateSkillPoint } from '../sim/principalEngine';
 import type { TeamOrderDecision, PromiseType } from '../types/relationshipTypes';
 import { createSeededRandom, deriveSeed } from '../sim/random';
@@ -772,8 +772,14 @@ export function gameReducer(state: GameState | null, action: GameAction): GameSt
       if (!state || !state.driverRelationships) return state;
       const rel = state.driverRelationships[action.driverId];
       if (!rel) return state;
+      // Block duplicate active promises of the same type for the same driver.
+      const existingPromises = state.driverPromises ?? [];
+      if (hasActivePromiseOfType(existingPromises, action.driverId, action.promiseType)) {
+        return state;
+      }
       const race = currentRace(state);
       const round = race?.round ?? 0;
+      const counter = state.promiseCounter ?? 0;
       const promise = makePromise(
         action.driverId,
         action.promiseType,
@@ -781,10 +787,11 @@ export function gameReducer(state: GameState | null, action: GameAction): GameSt
         round,
         action.dueSeason,
         action.dueRound,
+        counter,
       );
-      const promises = [...(state.driverPromises ?? []), promise];
+      const promises = [...existingPromises, promise];
       const relationships = applyPromiseResolution(state.driverRelationships, promise);
-      return { ...state, driverPromises: promises, driverRelationships: relationships };
+      return { ...state, driverPromises: promises, driverRelationships: relationships, promiseCounter: counter + 1 };
     }
 
     case 'RESOLVE_PROMISE': {
