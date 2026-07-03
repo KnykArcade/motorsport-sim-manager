@@ -37,6 +37,7 @@ export function defaultCareerPhaseState(): CareerPhaseState {
     paddockEvents: [],
     announcedCompletedProjectIds: [],
     racePrepFocusApplied: false,
+    budgetFocusBonusApplied: false,
     preseasonChecklist: defaultPreseasonChecklist(),
     preseasonApprovals: defaultPreseasonApprovals(),
   };
@@ -86,7 +87,12 @@ export function getCareerPhase(state: GameState): CareerPhase {
 }
 
 export function getOrCreatePhaseState(state: GameState): CareerPhaseState {
-  return state.careerPhase ?? defaultCareerPhaseState();
+  const phase = state.careerPhase ?? defaultCareerPhaseState();
+  // Backward-compat: old saves may not have budgetFocusBonusApplied.
+  if (phase.budgetFocusBonusApplied === undefined) {
+    return { ...phase, budgetFocusBonusApplied: false };
+  }
+  return phase;
 }
 
 // --- Phase transitions -------------------------------------------------------
@@ -153,6 +159,7 @@ export function enterPaddockWeek(state: GameState): GameState {
       // Reset race prep focus for the new paddock week — a new focus will be
       // chosen from the paddock events and applied to the next race.
       racePrepFocusApplied: false,
+      budgetFocusBonusApplied: false,
     },
   };
 }
@@ -268,7 +275,7 @@ export function computeRacePrepFocusEffect(focus: string): RacePrepFocusEffect {
     case 'power':
       return { paceModifier: 0.15, reliabilityModifier: -0.1, qualifyingModifier: 0.1, mistakeRiskMultiplier: 1.1 };
     case 'budget':
-      return { paceModifier: -0.2, reliabilityModifier: -0.1, qualifyingModifier: -0.15, mistakeRiskMultiplier: 1.15, costSavingMultiplier: 0.8 };
+      return { paceModifier: -0.15, reliabilityModifier: -0.08, qualifyingModifier: -0.12, mistakeRiskMultiplier: 1.1, setupConfidencePenalty: 8, pitStopPenalty: 0.05, strategyPenalty: 0.05 };
     case 'balanced':
     default:
       return { paceModifier: 0.05, reliabilityModifier: 0.02, qualifyingModifier: 0, mistakeRiskMultiplier: 0.98 };
@@ -558,18 +565,47 @@ export function resolvePaddockEvent(
       race: 'Race Pace Focus',
       reliability: 'Reliability Focus',
       power: 'Engine Power Focus',
-      budget: 'Budget Preparation',
+      budget: 'Budget Focus',
     };
     const focusLabel = focusLabels[optionId] ?? optionId;
     const team = updatedState.teams.find((t) => t.id === updatedState.selectedTeamId);
     const isBudget = optionId === 'budget';
+
+    // Budget Focus: immediately add +$500K to team budget (one-time per race).
+    if (isBudget && updatedState.careerPhase && !updatedState.careerPhase.budgetFocusBonusApplied) {
+      const BUDGET_FOCUS_BONUS = 500_000;
+      updatedState = {
+        ...updatedState,
+        teams: updatedState.teams.map((t) =>
+          t.id === updatedState.selectedTeamId
+            ? { ...t, budget: t.budget + BUDGET_FOCUS_BONUS }
+            : t,
+        ),
+        finance: [
+          ...(updatedState.finance ?? []),
+          {
+            id: `txn-budget-focus-${updatedState.seasonYear}-${updatedState.currentRaceIndex}`,
+            season: updatedState.seasonYear,
+            category: 'Operations',
+            label: 'Budget Focus: cost-saving preparation',
+            amount: BUDGET_FOCUS_BONUS,
+            round: updatedState.currentRaceIndex,
+          } as FinanceTransaction,
+        ],
+        careerPhase: {
+          ...updatedState.careerPhase!,
+          budgetFocusBonusApplied: true,
+        },
+      };
+    }
+
     const newsItem: { id: string; headline: string; body: string; timestamp: string; category: 'financial'; priority: 'high' | 'normal' } = {
       id: `news-race-prep-focus-${updatedState.seasonYear}-${updatedState.currentRaceIndex}`,
       headline: isBudget
-        ? `${team?.name ?? 'The team'} opts for budget preparation to cut costs`
+        ? `${team?.name ?? 'The team'} opts for Budget Focus to protect cashflow`
         : `${team?.name ?? 'The team'} selects ${focusLabel} for the upcoming race`,
       body: isBudget
-        ? `With finances tight, the team will run a stripped-down weekend operation to save 20% on costs, accepting significant performance penalties.`
+        ? `The team cuts back preparation this week to protect cashflow. $500K added to the budget, but the team will suffer reduced qualifying pace, race pace, reliability prep, setup confidence, pit stop readiness, and strategy preparation for the next race.`
         : `The team has chosen ${focusLabel} as their approach for the next race weekend.`,
       timestamp: new Date().toISOString(),
       category: 'financial',
@@ -975,11 +1011,11 @@ export function generatePaddockWeekEvents(state: GameState): PaddockEvent[] {
     }
     // Budget focus: available when the team is financially stretched.
     const playerTeam = state.teams.find((t) => t.id === state.selectedTeamId);
-    if (playerTeam && playerTeam.budget < 5) {
+    if (playerTeam && playerTeam.budget < 5_000_000) {
       focusOptions.push({
         id: 'budget',
-        label: 'Budget Preparation',
-        description: 'Reduce weekend operational costs by 20%. Significant pace, reliability, and mistake-risk penalties.',
+        label: 'Budget Focus',
+        description: 'Cut back preparation to protect cashflow. Gain $500K now, but suffer reduced qualifying pace, race pace, reliability, setup confidence, pit stop readiness, and strategy preparation for the next race.',
         risk: 1,
       });
     }

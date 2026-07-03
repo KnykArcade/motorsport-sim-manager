@@ -1569,15 +1569,9 @@ function selectRaceWeekendPackage(
     ? computeMandatoryMinimumCost()
     : computeRaceWeekendPackageCost(state.series, team, track, packageType);
 
-  // Apply budget race prep focus cost saving (20% reduction when budget focus is active).
-  const phaseState = getOrCreatePhaseState(state);
-  let adjustedCost = costResult.cost;
-  if (!isEmergency && phaseState.racePrepFocus && !phaseState.racePrepFocusApplied) {
-    const focusEffect = computeRacePrepFocusEffect(phaseState.racePrepFocus);
-    if (focusEffect.costSavingMultiplier && focusEffect.costSavingMultiplier < 1) {
-      adjustedCost = Math.round(costResult.cost * focusEffect.costSavingMultiplier);
-    }
-  }
+  // Budget Focus no longer reduces race weekend cost — it gives +$500K upfront
+  // (handled in resolvePaddockEvent) and applies next-race performance penalties.
+  const adjustedCost = costResult.cost;
 
   if (!isEmergency && team.budget < adjustedCost) return state;
 
