@@ -551,6 +551,31 @@ export function resolvePaddockEvent(
         racePrepFocus: optionId,
       },
     };
+    // Generate a news item for the focus selection.
+    const focusLabels: Record<string, string> = {
+      balanced: 'Balanced Preparation',
+      qualifying: 'Qualifying Focus',
+      race: 'Race Pace Focus',
+      reliability: 'Reliability Focus',
+      power: 'Engine Power Focus',
+      budget: 'Budget Preparation',
+    };
+    const focusLabel = focusLabels[optionId] ?? optionId;
+    const team = updatedState.teams.find((t) => t.id === updatedState.selectedTeamId);
+    const isBudget = optionId === 'budget';
+    const newsItem: { id: string; headline: string; body: string; timestamp: string; category: 'financial'; priority: 'high' | 'normal' } = {
+      id: `news-race-prep-focus-${updatedState.seasonYear}-${updatedState.currentRaceIndex}`,
+      headline: isBudget
+        ? `${team?.name ?? 'The team'} opts for budget preparation to cut costs`
+        : `${team?.name ?? 'The team'} selects ${focusLabel} for the upcoming race`,
+      body: isBudget
+        ? `With finances tight, the team will run a stripped-down weekend operation to save 20% on costs, accepting significant performance penalties.`
+        : `The team has chosen ${focusLabel} as their approach for the next race weekend.`,
+      timestamp: new Date().toISOString(),
+      category: 'financial',
+      priority: isBudget ? 'high' : 'normal',
+    };
+    updatedState = { ...updatedState, news: [newsItem, ...updatedState.news].slice(0, 50) };
   }
 
   return updatedState;

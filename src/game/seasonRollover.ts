@@ -725,6 +725,7 @@ export function advanceSeason(state: GameState): GameState {
   let nextJobOffers = state.jobOffers;
   let moveTeamId: string | undefined;
   const principalNotes: string[] = [];
+  const principalLevelUpNews: typeof state.news = [];
   const teamLockPressureNews: typeof state.news = [];
   if (nextPrincipal && playerTeam && playerReview) {
     const champDriver = state.driverStandings[0];
@@ -750,6 +751,18 @@ export function advanceSeason(state: GameState): GameState {
     const reviewed = reviewPrincipal(nextPrincipal, playerReview, outcome);
     nextPrincipal = reviewed.profile;
     principalNotes.push(...reviewed.notes);
+
+    // Generate news for principal level-up.
+    if (reviewed.profile.level > state.principal?.level) {
+      principalLevelUpNews.push({
+        id: `news-principal-levelup-${state.seasonYear}`,
+        headline: `${nextPrincipal.name} reaches Level ${reviewed.profile.level}`,
+        body: `After a season of ${outcome.wins} wins and ${outcome.podiums} podiums, ${nextPrincipal.name} has gained enough experience to reach Level ${reviewed.profile.level}. Attributes improved across the board.`,
+        timestamp: new Date().toISOString(),
+        category: 'career_event',
+        priority: 'high',
+      });
+    }
 
     // Decide whether the principal changes teams next season.
     const accepted = state.acceptedJobOfferId
@@ -1179,6 +1192,7 @@ export function advanceSeason(state: GameState): GameState {
         timestamp: now,
       })),
       ...rolloverNews,
+      ...principalLevelUpNews,
       ...teamLockPressureNews,
       ...state.news,
     ].slice(0, 50),
