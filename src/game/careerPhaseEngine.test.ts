@@ -1460,6 +1460,13 @@ describe('careerPhaseEngine', () => {
             morale: 60,
             frustration: 20,
             numberOneExpectation: false,
+            selfConfidence: 55,
+            trustInCar: 50,
+            trustInTeam: 55,
+            trustInPrincipal: 58,
+            ego: 45,
+            personalityTraits: [],
+            wants: [],
           },
         },
       };

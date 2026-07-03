@@ -69,6 +69,7 @@ import {
 import { classifyCrashDamage, damageConditionHit, repairCost } from '../sim/repairEngine';
 import { buildRaceArchiveEntry } from '../sim/lapArchiveEngine';
 import { resolveTeamOrderConsequences } from '../sim/relationshipEngine';
+import { reactToRaceResult, applyConfidenceUpdates, type ConfidenceUpdate, type RaceEventContext } from '../sim/driverConfidenceEngine';
 import type { TeamOrderDecision } from '../types/relationshipTypes';
 import { createSeededRandom, deriveSeed } from '../sim/random';
 import type { AcademyDecision, FirstOptionDecision, SeatSigning } from '../types/marketTypes';
@@ -1257,7 +1258,40 @@ function applyRaceResults(
     );
   }
 
-  // Budget: prize money for points + crash repair costs scaled by damage.
+  // Driver Confidence / Trust / Ego updates from race results.
+  if (driverRelationships) {
+    const allUpdates: ConfidenceUpdate[] = [];
+    for (const r of results) {
+      const rel = driverRelationships[r.driverId];
+      if (!rel) continue;
+      const teammateId = rel.teammateId;
+      const teammateResult = teammateId ? results.find((x) => x.driverId === teammateId) : undefined;
+      const qualEntry = qualifying.find((q) => q.driverId === r.driverId);
+      const wasFavored = teamOrders.some((o) => o.favoredDriverId === r.driverId);
+      const wasDisadvantaged = teamOrders.some((o) => o.disadvantagedDriverId === r.driverId);
+      const isDNF = r.status !== 'Finished' && r.position === null;
+      const hasCrashIncident = r.incidents.some((i) => i.toLowerCase().includes('crash') || i.toLowerCase().includes('collision'));
+      const ctx: RaceEventContext = {
+        driverId: r.driverId,
+        finishingPosition: r.position ?? 99,
+        totalDrivers: results.length,
+        qualifiedPosition: qualEntry?.position ?? 0,
+        dnf: isDNF,
+        teammateFinishingPosition: teammateResult?.position ?? undefined,
+        teammateDNF: teammateResult ? teammateResult.status !== 'Finished' : undefined,
+        teamOrderIssued: teamOrders.length > 0,
+        wasFavoredInOrders: wasFavored,
+        wasDisadvantagedInOrders: wasDisadvantaged,
+        carReliabilityDNF: isDNF && !hasCrashIncident,
+        strategyRiskLevel: 'balanced',
+        pointsScored: r.points,
+        podium: r.position !== null && r.position <= 3,
+        win: r.position === 1,
+      };
+      allUpdates.push(...reactToRaceResult(rel, ctx));
+    }
+    driverRelationships = applyConfidenceUpdates(driverRelationships, allUpdates);
+  }
   // A per-race transport/logistics stipend helps offset the weekend package cost.
   const teams = state.teams.map((t) => ({ ...t, morale: morale.teamMorale[t.id] ?? t.morale }));
   let cars = state.cars.map((c) => ({ ...c }));
