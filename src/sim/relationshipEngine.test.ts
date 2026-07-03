@@ -9,7 +9,7 @@ import {
   resolveTeamOrderConsequences,
   rolloverRelationships,
 } from './relationshipEngine';
-import type { DriverRelationship, TeamOrderDecision } from '../types/relationshipTypes';
+import type { DriverRelationship, DriverPersonalityTrait, DriverWant, TeamOrderDecision } from '../types/relationshipTypes';
 import type { LiveCarState, LiveRaceState } from '../types/liveTypes';
 import { initialStint } from './strategyStint';
 
@@ -172,9 +172,10 @@ describe('relationshipEngine — team orders on the live race', () => {
 
 describe('relationshipEngine — consequences', () => {
   function pair(): Record<string, DriverRelationship> {
+    const base = { teamId: 't', teamLoyalty: 60, engineerChemistry: 60, teammateRelationship: 60, morale: 60, frustration: 20, numberOneExpectation: false, selfConfidence: 60, trustInCar: 55, trustInTeam: 55, trustInPrincipal: 58, ego: 50, personalityTraits: [] as DriverPersonalityTrait[], wants: [] as DriverWant[] };
     return {
-      fav: { driverId: 'fav', teamId: 't', teammateId: 'dis', teamLoyalty: 60, engineerChemistry: 60, teammateRelationship: 60, morale: 60, frustration: 20, numberOneExpectation: false },
-      dis: { driverId: 'dis', teamId: 't', teammateId: 'fav', teamLoyalty: 60, engineerChemistry: 60, teammateRelationship: 60, morale: 60, frustration: 20, numberOneExpectation: false },
+      fav: { driverId: 'fav', teammateId: 'dis', ...base },
+      dis: { driverId: 'dis', teammateId: 'fav', ...base },
     };
   }
 

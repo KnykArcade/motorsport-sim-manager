@@ -515,6 +515,145 @@ describe('careerPhaseEngine', () => {
     expect(getOrCreatePhaseState(state).racePrepFocus).toBe('qualifying');
   });
 
+  it('budget focus adds $500K to team budget and records finance transaction', () => {
+    let state = newCareerState();
+    state = completeChecklist(state);
+    state = dispatch(state, { type: 'COMPLETE_PRESEASON_SETUP' });
+    state = dispatch(state, { type: 'ADVANCE_TO_RACE_WEEKEND' });
+    state = dispatch(state, { type: 'RUN_QUALIFYING', decisions: [] });
+    state = dispatch(state, { type: 'RUN_RACE', decisions: [] });
+    state = dispatch(state, { type: 'ADVANCE_TO_PADDOCK_WEEK' });
+
+    // Make team budget low enough to trigger budget focus option.
+    state = {
+      ...state,
+      teams: state.teams.map((t) =>
+        t.id === state.selectedTeamId ? { ...t, budget: 3_000_000 } : t,
+      ),
+    };
+
+    state = dispatch(state, { type: 'GENERATE_PADDOCK_EVENTS' });
+
+    const phaseState = getOrCreatePhaseState(state);
+    const racePrepEvent = phaseState.paddockEvents.find(
+      (e) => e.category === 'general_team' && e.title.startsWith('Select race preparation focus'),
+    );
+    expect(racePrepEvent).toBeDefined();
+
+    const budgetOption = racePrepEvent!.options?.find((o) => o.id === 'budget');
+    expect(budgetOption).toBeDefined();
+
+    state = dispatch(state, {
+      type: 'RESOLVE_PADDOCK_EVENT',
+      eventId: racePrepEvent!.id,
+      optionId: 'budget',
+    });
+
+    const teamAfter = state.teams.find((t) => t.id === state.selectedTeamId)!;
+    expect(teamAfter.budget).toBe(3_000_000 + 500_000);
+    expect(getOrCreatePhaseState(state).racePrepFocus).toBe('budget');
+    expect(getOrCreatePhaseState(state).budgetFocusBonusApplied).toBe(true);
+
+    // Finance transaction should be recorded.
+    const budgetTxn = (state.finance ?? []).find(
+      (f) => f.id.startsWith('txn-budget-focus-'),
+    );
+    expect(budgetTxn).toBeDefined();
+    expect(budgetTxn!.amount).toBe(500_000);
+  });
+
+  it('budget focus does not stack $500K on repeated selection', () => {
+    let state = newCareerState();
+    state = completeChecklist(state);
+    state = dispatch(state, { type: 'COMPLETE_PRESEASON_SETUP' });
+    state = dispatch(state, { type: 'ADVANCE_TO_RACE_WEEKEND' });
+    state = dispatch(state, { type: 'RUN_QUALIFYING', decisions: [] });
+    state = dispatch(state, { type: 'RUN_RACE', decisions: [] });
+    state = dispatch(state, { type: 'ADVANCE_TO_PADDOCK_WEEK' });
+
+    state = {
+      ...state,
+      teams: state.teams.map((t) =>
+        t.id === state.selectedTeamId ? { ...t, budget: 3_000_000 } : t,
+      ),
+    };
+
+    state = dispatch(state, { type: 'GENERATE_PADDOCK_EVENTS' });
+
+    const phaseState = getOrCreatePhaseState(state);
+    const racePrepEvent = phaseState.paddockEvents.find(
+      (e) => e.category === 'general_team' && e.title.startsWith('Select race preparation focus'),
+    );
+    expect(racePrepEvent).toBeDefined();
+
+    // First selection.
+    state = dispatch(state, {
+      type: 'RESOLVE_PADDOCK_EVENT',
+      eventId: racePrepEvent!.id,
+      optionId: 'budget',
+    });
+
+    const teamAfterFirst = state.teams.find((t) => t.id === state.selectedTeamId)!;
+    expect(teamAfterFirst.budget).toBe(3_500_000);
+
+    // Re-resolve the same event — should NOT add another $500K.
+    state = dispatch(state, {
+      type: 'RESOLVE_PADDOCK_EVENT',
+      eventId: racePrepEvent!.id,
+      optionId: 'budget',
+    });
+
+    const teamAfterSecond = state.teams.find((t) => t.id === state.selectedTeamId)!;
+    expect(teamAfterSecond.budget).toBe(3_500_000);
+  });
+
+  it('budget focus effects clear after race completion', () => {
+    let state = newCareerState();
+    state = completeChecklist(state);
+    state = dispatch(state, { type: 'COMPLETE_PRESEASON_SETUP' });
+    state = dispatch(state, { type: 'ADVANCE_TO_RACE_WEEKEND' });
+    state = dispatch(state, { type: 'RUN_QUALIFYING', decisions: [] });
+    state = dispatch(state, { type: 'RUN_RACE', decisions: [] });
+    state = dispatch(state, { type: 'ADVANCE_TO_PADDOCK_WEEK' });
+
+    state = {
+      ...state,
+      teams: state.teams.map((t) =>
+        t.id === state.selectedTeamId ? { ...t, budget: 3_000_000 } : t,
+      ),
+    };
+
+    state = dispatch(state, { type: 'GENERATE_PADDOCK_EVENTS' });
+
+    const phaseState = getOrCreatePhaseState(state);
+    const racePrepEvent = phaseState.paddockEvents.find(
+      (e) => e.category === 'general_team' && e.title.startsWith('Select race preparation focus'),
+    );
+    expect(racePrepEvent).toBeDefined();
+
+    state = dispatch(state, {
+      type: 'RESOLVE_PADDOCK_EVENT',
+      eventId: racePrepEvent!.id,
+      optionId: 'budget',
+    });
+
+    expect(getOrCreatePhaseState(state).budgetFocusBonusApplied).toBe(true);
+
+    // Advance to next race: paddock → pre-race briefing → race weekend.
+    state = dispatch(state, { type: 'ADVANCE_TO_PRE_RACE_BRIEFING' });
+    state = dispatch(state, { type: 'ADVANCE_TO_RACE_WEEKEND' });
+    state = dispatch(state, { type: 'RUN_QUALIFYING', decisions: [] });
+    state = dispatch(state, { type: 'RUN_RACE', decisions: [] });
+
+    // After race, focus should be consumed.
+    expect(getOrCreatePhaseState(state).racePrepFocusApplied).toBe(true);
+
+    // Enter paddock week for next race — bonus should reset.
+    state = dispatch(state, { type: 'ADVANCE_TO_PADDOCK_WEEK' });
+    expect(getOrCreatePhaseState(state).racePrepFocusApplied).toBe(false);
+    expect(getOrCreatePhaseState(state).budgetFocusBonusApplied).toBe(false);
+  });
+
   // --- Default career phase state ---
 
   it('defaultCareerPhaseState has announcedCompletedProjectIds and preseasonChecklist', () => {
@@ -666,8 +805,10 @@ describe('careerPhaseEngine', () => {
       expect(budget.reliabilityModifier).toBeLessThan(0);
       expect(budget.qualifyingModifier).toBeLessThan(0);
       expect(budget.mistakeRiskMultiplier).toBeGreaterThan(1);
-      expect(budget.costSavingMultiplier).toBeDefined();
-      expect(budget.costSavingMultiplier!).toBeLessThan(1);
+      expect(budget.setupConfidencePenalty).toBeGreaterThan(0);
+      expect(budget.pitStopPenalty).toBeGreaterThan(0);
+      expect(budget.strategyPenalty).toBeGreaterThan(0);
+      expect(budget.costSavingMultiplier).toBeUndefined();
     });
 
     it('racePrepFocusApplied is set to true after race completion', () => {
@@ -1319,6 +1460,13 @@ describe('careerPhaseEngine', () => {
             morale: 60,
             frustration: 20,
             numberOneExpectation: false,
+            selfConfidence: 55,
+            trustInCar: 50,
+            trustInTeam: 55,
+            trustInPrincipal: 58,
+            ego: 45,
+            personalityTraits: [],
+            wants: [],
           },
         },
       };

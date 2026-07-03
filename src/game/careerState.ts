@@ -30,7 +30,7 @@ import type { TeamReputation, TeamExpectation, ExpectationReview } from '../type
 import type { TeamPrincipalProfile, JobOffer, TeamPrincipal } from '../types/principalTypes';
 import type { TeamOrganizationRatings } from '../types/teamRatingsTypes';
 import type { FacilitiesState } from '../types/facilityTypes';
-import type { DriverRelationship, TeamOrderDecision } from '../types/relationshipTypes';
+import type { DriverRelationship, DriverPromise, TeamOrderDecision } from '../types/relationshipTypes';
 import type { RegulationProposal, RegulationVoteResult } from '../types/politicsTypes';
 import type { HistoricalEventHook, FiredEvent } from '../types/eventHookTypes';
 import type { ScoutingState } from '../types/scoutingTypes';
@@ -131,6 +131,7 @@ export type GameState = {
   //    top-level field is required yet — forecasts live with the live race.
   // 8. Driver relationships + team-order decisions taken this season.
   driverRelationships?: Record<string, DriverRelationship>;
+  driverPromises?: DriverPromise[];
   teamOrderHistory?: TeamOrderDecision[];
   // 9. Regulation voting / political system (career mode offseason): proposals
   //    up for the next season's vote, plus the historical record of outcomes.

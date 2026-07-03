@@ -69,6 +69,8 @@ import {
 import { classifyCrashDamage, damageConditionHit, repairCost } from '../sim/repairEngine';
 import { buildRaceArchiveEntry } from '../sim/lapArchiveEngine';
 import { resolveTeamOrderConsequences } from '../sim/relationshipEngine';
+import { reactToRaceResult, applyConfidenceUpdates, type ConfidenceUpdate, type RaceEventContext } from '../sim/driverConfidenceEngine';
+import { allocateSkillPoint } from '../sim/principalEngine';
 import type { TeamOrderDecision } from '../types/relationshipTypes';
 import { createSeededRandom, deriveSeed } from '../sim/random';
 import type { AcademyDecision, FirstOptionDecision, SeatSigning } from '../types/marketTypes';
@@ -205,7 +207,8 @@ export type GameAction =
   | { type: 'RESOLVE_PADDOCK_EVENT'; eventId: string; optionId: string }
   | { type: 'TOGGLE_PRESEASON_CHECKLIST_ITEM'; itemId: string }
   | { type: 'APPROVE_PRESEASON_TAB'; tabId: 'teamOverview' | 'budget' | 'driverLineup' | 'carDevelopment' | 'sponsorsEngine' | 'seasonObjectives' | 'roundOnePreview' }
-  | { type: 'SET_CAREER_MOBILITY'; mode: 'StandardCareer' | 'TeamLock' | 'Sandbox' };
+  | { type: 'SET_CAREER_MOBILITY'; mode: 'StandardCareer' | 'TeamLock' | 'Sandbox' }
+  | { type: 'ALLOCATE_SKILL_POINT'; attribute: 'mediaImage' | 'boardConfidence' | 'financialDiscipline' | 'driverManagement' | 'development' | 'strategy'; points?: number };
 
 // Run one practice session for the player's drivers: simulate each assignment,
 // fold the results into the weekend knowledge, and apply the one-off confidence
@@ -745,6 +748,14 @@ export function gameReducer(state: GameState | null, action: GameAction): GameSt
       return { ...state, careerMobilityMode: action.mode };
     }
 
+    case 'ALLOCATE_SKILL_POINT': {
+      if (!state || !state.principal) return state;
+      const points = action.points ?? 1;
+      if (state.principal.skillPoints < points) return state;
+      const updated = allocateSkillPoint(state.principal, action.attribute, points);
+      return { ...state, principal: updated };
+    }
+
     default:
       return state;
   }
@@ -1257,7 +1268,40 @@ function applyRaceResults(
     );
   }
 
-  // Budget: prize money for points + crash repair costs scaled by damage.
+  // Driver Confidence / Trust / Ego updates from race results.
+  if (driverRelationships) {
+    const allUpdates: ConfidenceUpdate[] = [];
+    for (const r of results) {
+      const rel = driverRelationships[r.driverId];
+      if (!rel) continue;
+      const teammateId = rel.teammateId;
+      const teammateResult = teammateId ? results.find((x) => x.driverId === teammateId) : undefined;
+      const qualEntry = qualifying.find((q) => q.driverId === r.driverId);
+      const wasFavored = teamOrders.some((o) => o.favoredDriverId === r.driverId);
+      const wasDisadvantaged = teamOrders.some((o) => o.disadvantagedDriverId === r.driverId);
+      const isDNF = r.status !== 'Finished' && r.position === null;
+      const hasCrashIncident = r.incidents.some((i) => i.toLowerCase().includes('crash') || i.toLowerCase().includes('collision'));
+      const ctx: RaceEventContext = {
+        driverId: r.driverId,
+        finishingPosition: r.position ?? 99,
+        totalDrivers: results.length,
+        qualifiedPosition: qualEntry?.position ?? 0,
+        dnf: isDNF,
+        teammateFinishingPosition: teammateResult?.position ?? undefined,
+        teammateDNF: teammateResult ? teammateResult.status !== 'Finished' : undefined,
+        teamOrderIssued: teamOrders.length > 0,
+        wasFavoredInOrders: wasFavored,
+        wasDisadvantagedInOrders: wasDisadvantaged,
+        carReliabilityDNF: isDNF && !hasCrashIncident,
+        strategyRiskLevel: 'balanced',
+        pointsScored: r.points,
+        podium: r.position !== null && r.position <= 3,
+        win: r.position === 1,
+      };
+      allUpdates.push(...reactToRaceResult(rel, ctx));
+    }
+    driverRelationships = applyConfidenceUpdates(driverRelationships, allUpdates);
+  }
   // A per-race transport/logistics stipend helps offset the weekend package cost.
   const teams = state.teams.map((t) => ({ ...t, morale: morale.teamMorale[t.id] ?? t.morale }));
   let cars = state.cars.map((c) => ({ ...c }));
@@ -1569,15 +1613,9 @@ function selectRaceWeekendPackage(
     ? computeMandatoryMinimumCost()
     : computeRaceWeekendPackageCost(state.series, team, track, packageType);
 
-  // Apply budget race prep focus cost saving (20% reduction when budget focus is active).
-  const phaseState = getOrCreatePhaseState(state);
-  let adjustedCost = costResult.cost;
-  if (!isEmergency && phaseState.racePrepFocus && !phaseState.racePrepFocusApplied) {
-    const focusEffect = computeRacePrepFocusEffect(phaseState.racePrepFocus);
-    if (focusEffect.costSavingMultiplier && focusEffect.costSavingMultiplier < 1) {
-      adjustedCost = Math.round(costResult.cost * focusEffect.costSavingMultiplier);
-    }
-  }
+  // Budget Focus no longer reduces race weekend cost — it gives +$500K upfront
+  // (handled in resolvePaddockEvent) and applies next-race performance penalties.
+  const adjustedCost = costResult.cost;
 
   if (!isEmergency && team.budget < adjustedCost) return state;
 

@@ -8,9 +8,15 @@ import {
   budgetTierOf,
   createPrincipalProfile,
   generateJobOffers,
+  generateJobOffersWithCredentials,
   reviewPrincipal,
   xpForLevel,
   xpFromSeasonOutcome,
+  getCredentialTier,
+  getNextCredentialTier,
+  credentialUpgradeProgress,
+  allocateSkillPoint,
+  jobInterestModifier,
   type PrincipalSeasonOutcome,
 } from './principalEngine';
 import type { ExpectationReview } from '../types/expectationTypes';
@@ -158,10 +164,140 @@ describe('principalEngine', () => {
   });
 
   it('levels up after enough XP from strong seasons', () => {
-    let p = createPrincipalProfile(topTeam, reps, 1995, 'test');
+    const p = createPrincipalProfile(topTeam, reps, 1995, 'test');
     const strongOutcome: PrincipalSeasonOutcome = { wins: 8, podiums: 12, driverTitle: true, constructorTitle: true };
     // A championship-winning season should give enough XP to level up at least once.
     const result = reviewPrincipal(p, review(30, true), strongOutcome);
     expect(result.profile.level).toBeGreaterThan(1);
+  });
+
+  it('level-up grants skill points', () => {
+    const p = createPrincipalProfile(topTeam, reps, 1995, 'test');
+    expect(p.skillPoints).toBe(0);
+    const strongOutcome: PrincipalSeasonOutcome = { wins: 8, podiums: 12, driverTitle: true, constructorTitle: true };
+    const result = reviewPrincipal(p, review(30, true), strongOutcome);
+    expect(result.profile.level).toBeGreaterThan(1);
+    expect(result.profile.skillPoints).toBeGreaterThan(0);
+  });
+});
+
+describe('principalEngine — credential tiers', () => {
+  it('new principal is Rookie tier', () => {
+    const p = createPrincipalProfile(topTeam, reps, 1995, 'test');
+    expect(getCredentialTier(p).tier).toBe('Rookie');
+  });
+
+  it('high-level principal reaches higher tiers', () => {
+    const p = createPrincipalProfile(topTeam, reps, 1995, 'test');
+    const advanced = { ...p, level: 8, reputation: 55 };
+    expect(getCredentialTier(advanced).tier).toBe('Respected');
+  });
+
+  it('Legendary tier requires high level and reputation', () => {
+    const p = createPrincipalProfile(topTeam, reps, 1995, 'test');
+    const legendary = { ...p, level: 15, reputation: 90 };
+    expect(getCredentialTier(legendary).tier).toBe('Legendary');
+  });
+
+  it('level alone without reputation does not upgrade tier', () => {
+    const p = createPrincipalProfile(topTeam, reps, 1995, 'test');
+    const highLevelLowRep = { ...p, level: 10, reputation: 20 };
+    // Reputation 20 < 30 required for Established, so stays Rookie.
+    expect(getCredentialTier(highLevelLowRep).tier).toBe('Rookie');
+  });
+
+  it('getNextCredentialTier returns the next tier for non-Legendary', () => {
+    const p = createPrincipalProfile(topTeam, reps, 1995, 'test');
+    const next = getNextCredentialTier(p);
+    expect(next).toBeDefined();
+    expect(next!.tier).toBe('Established');
+  });
+
+  it('getNextCredentialTier returns undefined for Legendary', () => {
+    const p = createPrincipalProfile(topTeam, reps, 1995, 'test');
+    const legendary = { ...p, level: 15, reputation: 90 };
+    expect(getNextCredentialTier(legendary)).toBeUndefined();
+  });
+
+  it('credentialUpgradeProgress tracks progress toward next tier', () => {
+    const p = createPrincipalProfile(topTeam, reps, 1995, 'test');
+    const progress = credentialUpgradeProgress(p);
+    expect(progress.levelProgress).toBeGreaterThanOrEqual(0);
+    expect(progress.levelProgress).toBeLessThanOrEqual(1);
+    expect(progress.reputationProgress).toBeGreaterThanOrEqual(0);
+    expect(progress.reputationProgress).toBeLessThanOrEqual(1);
+    expect(progress.ready).toBe(false);
+  });
+
+  it('credentialUpgradeProgress ready when both thresholds met for next tier', () => {
+    const p = createPrincipalProfile(topTeam, reps, 1995, 'test');
+    // Level 5 + reputation 35: qualifies for Established (4/30), next is Respected (7/50).
+    // Not yet ready for Respected.
+    const almost = { ...p, level: 5, reputation: 35 };
+    const progress = credentialUpgradeProgress(almost);
+    expect(progress.ready).toBe(false);
+    // Level 7 + reputation 50: qualifies for Respected, next is Renowned (10/70).
+    // Not yet ready for Renowned.
+    const respected = { ...p, level: 7, reputation: 50 };
+    const progress2 = credentialUpgradeProgress(respected);
+    expect(progress2.ready).toBe(false);
+  });
+});
+
+describe('principalEngine — skill-point allocation', () => {
+  it('allocating a skill point increases the attribute', () => {
+    const p = createPrincipalProfile(topTeam, reps, 1995, 'test');
+    const withPoints = { ...p, skillPoints: 5 };
+    const before = withPoints.attributes.development;
+    const allocated = allocateSkillPoint(withPoints, 'development', 1);
+    expect(allocated.attributes.development).toBe(before + 3);
+    expect(allocated.skillPoints).toBe(4);
+    expect(allocated.spentSkillPoints.development).toBe(1);
+  });
+
+  it('cannot allocate more points than available', () => {
+    const p = createPrincipalProfile(topTeam, reps, 1995, 'test');
+    const withPoints = { ...p, skillPoints: 1 };
+    const allocated = allocateSkillPoint(withPoints, 'strategy', 2);
+    // Should return unchanged profile.
+    expect(allocated).toBe(withPoints);
+  });
+
+  it('multiple allocations stack correctly', () => {
+    const p = createPrincipalProfile(topTeam, reps, 1995, 'test');
+    let profile = { ...p, skillPoints: 6 };
+    const before = profile.attributes.mediaImage;
+    profile = allocateSkillPoint(profile, 'mediaImage', 2);
+    profile = allocateSkillPoint(profile, 'mediaImage', 1);
+    expect(profile.attributes.mediaImage).toBe(before + 9);
+    expect(profile.skillPoints).toBe(3);
+    expect(profile.spentSkillPoints.mediaImage).toBe(3);
+  });
+});
+
+describe('principalEngine — job interest effects', () => {
+  it('Rookie tier has no job interest modifier', () => {
+    const p = createPrincipalProfile(topTeam, reps, 1995, 'test');
+    expect(jobInterestModifier(p)).toBe(0);
+  });
+
+  it('Respected tier has higher job interest modifier', () => {
+    const p = createPrincipalProfile(topTeam, reps, 1995, 'test');
+    const respected = { ...p, level: 7, reputation: 50 };
+    expect(jobInterestModifier(respected)).toBe(10);
+  });
+
+  it('Legendary tier has the highest job interest modifier', () => {
+    const p = createPrincipalProfile(topTeam, reps, 1995, 'test');
+    const legendary = { ...p, level: 15, reputation: 90 };
+    expect(jobInterestModifier(legendary)).toBe(20);
+  });
+
+  it('generateJobOffersWithCredentials produces at least as many offers as base', () => {
+    const p = createPrincipalProfile(topTeam, reps, 1995, 'test');
+    const respected = { ...p, level: 7, reputation: 50 };
+    const baseOffers = generateJobOffers(respected, teams1995, reps, 1996, 'seed');
+    const credOffers = generateJobOffersWithCredentials(respected, teams1995, reps, 1996, 'seed');
+    expect(credOffers.length).toBeGreaterThanOrEqual(baseOffers.length);
   });
 });

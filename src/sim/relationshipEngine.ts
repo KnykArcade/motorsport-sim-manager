@@ -11,6 +11,8 @@ import type { Driver, Team } from '../types/gameTypes';
 import type { TeamReputation } from '../types/expectationTypes';
 import type {
   DriverRelationship,
+  DriverPersonalityTrait,
+  DriverWant,
   RelationshipConsequence,
   TeamOrder,
   TeamOrderDecision,
@@ -37,6 +39,50 @@ function orderRoster(team: Team, teamDrivers: Driver[]): Driver[] {
   return [...teamDrivers].sort((x, y) => (order.get(x.id) ?? 99) - (order.get(y.id) ?? 99));
 }
 
+function generatePersonalityTraits(
+  driver: Driver,
+  isNumberOne: boolean,
+  rng: Rng,
+): DriverPersonalityTrait[] {
+  const traits: DriverPersonalityTrait[] = [];
+  if (isNumberOne) traits.push('Team Leader');
+  if (driver.ratings.aggression >= 7) traits.push('Risk Taker');
+  if (driver.ratings.aggression <= 3) traits.push('Calm Under Pressure');
+  if (driver.ratings.adaptability >= 7) traits.push('Setup Focused');
+  if (driver.ratings.enduranceConsistency >= 7) traits.push('Resilient');
+  if ((driver.age ?? 25) <= 21) traits.push('Youthful');
+  if ((driver.age ?? 25) >= 35) traits.push('Veteran Professional');
+  // Random trait from ego-based pool.
+  if (rng.chance(0.3)) traits.push('Ambitious');
+  if (rng.chance(0.2)) traits.push('High Ego');
+  if (rng.chance(0.25)) traits.push('Loyal');
+  if (rng.chance(0.15)) traits.push('Mentor');
+  if (rng.chance(0.15)) traits.push('Rivalry Prone');
+  if (rng.chance(0.1)) traits.push('Pressure Sensitive');
+  if (rng.chance(0.1)) traits.push('Confidence Driven');
+  if (rng.chance(0.1)) traits.push('Money Motivated');
+  // Deduplicate and cap at 4.
+  return [...new Set(traits)].slice(0, 4);
+}
+
+function generateWants(
+  driver: Driver,
+  team: Team,
+  isNumberOne: boolean,
+  traits: DriverPersonalityTrait[],
+): DriverWant[] {
+  const wants: DriverWant[] = [];
+  if (isNumberOne) wants.push('number_one_status');
+  else wants.push('equal_treatment');
+  if (team.reputation < 50) wants.push('podium_capable_car');
+  if (team.reputation < 30) wants.push('title_contending_car');
+  if ((driver.contractYearsRemaining ?? 1) <= 1) wants.push('contract_renewal');
+  if (traits.includes('Ambitious') && team.reputation < 60) wants.push('development_priority');
+  if (traits.includes('Money Motivated')) wants.push('better_salary');
+  // Cap at 3.
+  return wants.slice(0, 3);
+}
+
 function seedRelationship(
   driver: Driver,
   teammate: Driver | undefined,
@@ -53,6 +99,15 @@ function seedRelationship(
   if (teammate && driver.ratings.overall >= 7 && teammate.ratings.overall >= 7) teammateRel -= 18;
   if (driver.ratings.aggression >= 7) teammateRel -= 8;
 
+  const personalityTraits = generatePersonalityTraits(driver, isNumberOne, rng);
+  const wants = generateWants(driver, team, isNumberOne, personalityTraits);
+  const ego = clamp(Math.round(
+    (isNumberOne ? 65 : 45) +
+    (driver.ratings.overall - 6) * 5 +
+    (personalityTraits.includes('High Ego') ? 15 : 0) +
+    v(),
+  ));
+
   return {
     driverId: driver.id,
     teamId: team.id,
@@ -63,6 +118,13 @@ function seedRelationship(
     morale: clamp(Math.round(driver.morale ?? 60)),
     frustration: clamp(Math.round(18 + v())),
     numberOneExpectation: isNumberOne,
+    selfConfidence: clamp(Math.round(55 + (driver.ratings.overall - 6) * 4 + v())),
+    trustInCar: clamp(Math.round(50 + (team.reputation - 50) * 0.3 + v())),
+    trustInTeam: clamp(Math.round(55 + v())),
+    trustInPrincipal: clamp(Math.round(58 + v())),
+    ego,
+    personalityTraits,
+    wants,
   };
 }
 
@@ -196,6 +258,13 @@ export function syncDriverRelationshipsForTeam(
       morale: clamp(Math.round(driver.morale ?? 60)),
       frustration: clamp(Math.round(18 + v())),
       numberOneExpectation: false, // Set false for new drivers, updated by full seed if needed.
+      selfConfidence: clamp(Math.round(55 + (driver.ratings.overall - 6) * 4 + v())),
+      trustInCar: clamp(Math.round(50 + v())),
+      trustInTeam: clamp(Math.round(55 + v())),
+      trustInPrincipal: clamp(Math.round(58 + v())),
+      ego: clamp(Math.round(45 + (driver.ratings.overall - 6) * 5 + v())),
+      personalityTraits: generatePersonalityTraits(driver, false, rng),
+      wants: generateWants(driver, team, false, generatePersonalityTraits(driver, false, rng)),
     };
   }
 

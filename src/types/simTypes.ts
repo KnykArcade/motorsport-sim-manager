@@ -118,6 +118,9 @@ export type RacePrepFocusEffect = {
   qualifyingModifier: number;
   mistakeRiskMultiplier: number;
   costSavingMultiplier?: number;
+  setupConfidencePenalty?: number;
+  pitStopPenalty?: number;
+  strategyPenalty?: number;
 };
 
 // Debug breakdown surfaced in the developer panel so formulas can be tuned.

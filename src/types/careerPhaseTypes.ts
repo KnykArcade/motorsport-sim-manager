@@ -95,6 +95,7 @@ export type CareerPhaseState = {
   announcedCompletedProjectIds: string[];
   racePrepFocus?: string;
   racePrepFocusApplied: boolean;
+  budgetFocusBonusApplied: boolean;
   // Legacy checklist for backward compatibility with old saves.
   // Migrated to preseasonApprovals on load.
   preseasonChecklist?: PreseasonChecklistItem[];

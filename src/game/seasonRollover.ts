@@ -54,13 +54,14 @@ import {
 } from '../sim/engineSupplierEngine';
 import {
   bestRehireOffer,
-  generateJobOffers,
+  generateJobOffersWithCredentials,
   reviewPrincipal,
   type PrincipalSeasonOutcome,
 } from '../sim/principalEngine';
 import { buildInitialCommercial } from '../sim/commercialEngine';
 import { createInitialFacilities } from '../sim/facilityEngine';
 import { rolloverRelationships, syncDriverRelationshipsForTeam } from '../sim/relationshipEngine';
+import { rolloverConfidence, checkExpiredPromises, applyPromiseResolution, computeConfidenceState } from '../sim/driverConfidenceEngine';
 import { generateRegulationProposals, resolveRegulationVoting } from '../sim/politicsEngine';
 import { refreshScoutingNetwork } from '../sim/scoutingEngine';
 import { createDriverDevelopmentCurve, developmentStep } from '../sim/developmentCurveEngine';
@@ -90,6 +91,7 @@ import type { FinanceTransaction } from '../types/financeTypes';
 import type { CommercialState } from '../types/sponsorTypes';
 import type { CarSetup } from '../types/setupTypes';
 import type { ExpectationReview, TeamExpectation, TeamReputation } from '../types/expectationTypes';
+import type { DriverRelationship } from '../types/relationshipTypes';
 import { carForTeam, type GameState } from './careerState';
 
 // Annual sponsorship the player's team earns, driven by reputation and the
@@ -722,6 +724,14 @@ export function advanceSeason(state: GameState): GameState {
   // offer (or were sacked but another team still wants you) you change teams for
   // the new season. Fresh approaches are generated for next year.
   let nextPrincipal = state.principal;
+  // Backward-compat: old saves may not have skillPoints/spentSkillPoints.
+  if (nextPrincipal && nextPrincipal.skillPoints === undefined) {
+    nextPrincipal = {
+      ...nextPrincipal,
+      skillPoints: 0,
+      spentSkillPoints: {},
+    };
+  }
   let nextJobOffers = state.jobOffers;
   let moveTeamId: string | undefined;
   const principalNotes: string[] = [];
@@ -753,7 +763,8 @@ export function advanceSeason(state: GameState): GameState {
     principalNotes.push(...reviewed.notes);
 
     // Generate news for principal level-up.
-    if (reviewed.profile.level > state.principal?.level) {
+    const currentPrincipalLevel = state.principal?.level ?? 1;
+    if (reviewed.profile.level > currentPrincipalLevel) {
       principalLevelUpNews.push({
         id: `news-principal-levelup-${state.seasonYear}`,
         headline: `${nextPrincipal.name} reaches Level ${reviewed.profile.level}`,
@@ -818,7 +829,7 @@ export function advanceSeason(state: GameState): GameState {
     }
 
     // Generate next season's approaches from the principal's new standing.
-    nextJobOffers = generateJobOffers(nextPrincipal, teams, teamReputations, nextYear, state.randomSeed);
+    nextJobOffers = generateJobOffersWithCredentials(nextPrincipal, teams, teamReputations, nextYear, state.randomSeed);
   }
 
   // Load next year's real schedule (and its points system / regulations) when
@@ -851,11 +862,37 @@ export function advanceSeason(state: GameState): GameState {
     state.selectedTeamId,
     `${state.randomSeed}-sync-${nextYear}`,
   ).driverRelationships ?? nextRelationships;
+
+  // Roll over confidence/trust/ego values (drift toward neutral).
+  const confidenceRolled: Record<string, DriverRelationship> = {};
+  for (const [id, rel] of Object.entries(syncedRelationships)) {
+    confidenceRolled[id] = rolloverConfidence(rel);
+  }
+
+  // Check expired promises and apply trust/morale impact.
+  const { promises: checkedPromises, expired } = checkExpiredPromises(
+    state.driverPromises ?? [],
+    nextYear,
+    0,
+  );
+  let finalRelationships = confidenceRolled;
+  for (const exp of expired) {
+    finalRelationships = applyPromiseResolution(finalRelationships, exp);
+  }
+
   const relationshipNotes: string[] = [];
   for (const d of drivers.filter((x) => x.teamId === state.selectedTeamId)) {
     const prev = state.driverRelationships?.[d.id];
     if (prev && (prev.morale < 30 || prev.teamLoyalty < 25)) {
       relationshipNotes.push(`${d.name} is unhappy at the team and may look elsewhere.`);
+    }
+    // Flag low-confidence drivers.
+    const rolled = finalRelationships[d.id];
+    if (rolled) {
+      const confState = computeConfidenceState(rolled);
+      if (confState === 'Frustrated' || confState === 'Disillusioned' || confState === 'Checked Out') {
+        relationshipNotes.push(`${d.name} is ${confState.toLowerCase()} and may need attention.`);
+      }
     }
   }
 
@@ -1150,7 +1187,8 @@ export function advanceSeason(state: GameState): GameState {
     principal: nextPrincipal,
     jobOffers: nextJobOffers,
     acceptedJobOfferId: undefined,
-    driverRelationships: syncedRelationships,
+    driverRelationships: finalRelationships,
+    driverPromises: checkedPromises,
     teamOrderHistory: [],
     regulationHistory: regulationHistoryWithVotes,
     regulationProposals: nextProposals,

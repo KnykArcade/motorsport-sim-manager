@@ -12,7 +12,9 @@ import type {
   JobOffer,
   PrincipalAttributes,
   TeamPrincipalProfile,
+  CredentialTierInfo,
 } from '../types/principalTypes';
+import { CREDENTIAL_TIERS } from '../types/principalTypes';
 import type { ExpectationReview } from '../types/expectationTypes';
 import { createSeededRandom, deriveSeed } from './random';
 
@@ -95,6 +97,8 @@ export function createPrincipalProfile(
     },
     xp: 0,
     level: 1,
+    skillPoints: 0,
+    spentSkillPoints: {},
   };
 }
 
@@ -157,13 +161,15 @@ function applyXpAndLevel(
 ): { profile: TeamPrincipalProfile; levelUps: number } {
   let xp = profile.xp + xpGain;
   let level = profile.level;
-  let attrs = { ...profile.attributes };
+  const attrs = { ...profile.attributes };
   let levelUps = 0;
+  let skillPoints = profile.skillPoints;
 
   while (xp >= xpForLevel(level)) {
     xp -= xpForLevel(level);
     level++;
     levelUps++;
+    skillPoints += 2; // 2 skill points per level
     // Each level grants +2 to two random-ish attributes (deterministic by level).
     const bonusKeys: (keyof PrincipalAttributes)[] = [
       'mediaImage', 'boardConfidence', 'financialDiscipline',
@@ -176,7 +182,7 @@ function applyXpAndLevel(
   }
 
   return {
-    profile: { ...profile, xp, level, attributes: attrs },
+    profile: { ...profile, xp, level, attributes: attrs, skillPoints },
     levelUps,
   };
 }
@@ -298,4 +304,117 @@ export function bestRehireOffer(offers: JobOffer[]): JobOffer | undefined {
   const firm = offers.filter((o) => o.kind === 'Offer');
   if (firm.length === 0) return undefined;
   return [...firm].sort((a, b) => b.prestige - a.prestige)[0];
+}
+
+// ---------------------------------------------------------------------------
+// Credential Tiers — milestone-based progression labels.
+// ---------------------------------------------------------------------------
+
+export function getCredentialTier(profile: TeamPrincipalProfile): CredentialTierInfo {
+  let current: CredentialTierInfo = CREDENTIAL_TIERS[0];
+  for (const tier of CREDENTIAL_TIERS) {
+    if (profile.level >= tier.minLevel && profile.reputation >= tier.minReputation) {
+      current = tier;
+    }
+  }
+  return current;
+}
+
+export function getNextCredentialTier(profile: TeamPrincipalProfile): CredentialTierInfo | undefined {
+  const current = getCredentialTier(profile);
+  const idx = CREDENTIAL_TIERS.findIndex((t) => t.tier === current.tier);
+  return idx >= 0 && idx < CREDENTIAL_TIERS.length - 1 ? CREDENTIAL_TIERS[idx + 1] : undefined;
+}
+
+export function credentialUpgradeProgress(profile: TeamPrincipalProfile): { levelProgress: number; reputationProgress: number; ready: boolean } {
+  const next = getNextCredentialTier(profile);
+  if (!next) return { levelProgress: 1, reputationProgress: 1, ready: false };
+  const current = getCredentialTier(profile);
+  const levelRange = next.minLevel - current.minLevel;
+  const repRange = next.minReputation - current.minReputation;
+  return {
+    levelProgress: levelRange > 0 ? Math.min(1, (profile.level - current.minLevel) / levelRange) : 1,
+    reputationProgress: repRange > 0 ? Math.min(1, (profile.reputation - current.minReputation) / repRange) : 1,
+    ready: profile.level >= next.minLevel && profile.reputation >= next.minReputation,
+  };
+}
+
+// ---------------------------------------------------------------------------
+// Skill-point allocation — player chooses where to invest.
+// ---------------------------------------------------------------------------
+
+export function allocateSkillPoint(
+  profile: TeamPrincipalProfile,
+  attribute: keyof PrincipalAttributes,
+  points: number = 1,
+): TeamPrincipalProfile {
+  if (profile.skillPoints < points) return profile;
+  const spent = { ...profile.spentSkillPoints };
+  spent[attribute] = (spent[attribute] ?? 0) + points;
+  return {
+    ...profile,
+    attributes: {
+      ...profile.attributes,
+      [attribute]: clamp(profile.attributes[attribute] + points * 3),
+    },
+    skillPoints: profile.skillPoints - points,
+    spentSkillPoints: spent,
+  };
+}
+
+// ---------------------------------------------------------------------------
+// Job interest effects — credential tier modifies offer quality.
+// ---------------------------------------------------------------------------
+
+export function jobInterestModifier(profile: TeamPrincipalProfile): number {
+  const tier = getCredentialTier(profile);
+  switch (tier.tier) {
+    case 'Rookie': return 0;
+    case 'Established': return 5;
+    case 'Respected': return 10;
+    case 'Renowned': return 15;
+    case 'Legendary': return 20;
+  }
+}
+
+export function generateJobOffersWithCredentials(
+  profile: TeamPrincipalProfile,
+  teams: Team[],
+  reputations: Record<string, TeamReputation> | undefined,
+  year: number,
+  seed: string,
+  max = 5,
+): JobOffer[] {
+  const baseOffers = generateJobOffers(profile, teams, reputations, year, seed, max);
+  const interestBoost = jobInterestModifier(profile);
+  if (interestBoost <= 0) return baseOffers;
+  // Credential tier widens the pool: lower the gap threshold so more teams approach.
+  const rng = createSeededRandom(deriveSeed(seed, 'joboffers-cred', profile.id, year));
+  const standing = profile.reputation * 0.7 + profile.jobSecurity * 0.3 + interestBoost;
+  const extraCandidates: { team: Team; prestige: number; gap: number }[] = [];
+  for (const team of teams) {
+    if (team.id === profile.currentTeamId) continue;
+    if (baseOffers.some((o) => o.teamId === team.id)) continue;
+    const prestige = teamPrestige(team, reputations);
+    const gap = standing - prestige;
+    if (gap >= -15 - interestBoost * 0.5) {
+      extraCandidates.push({ team, prestige, gap });
+    }
+  }
+  extraCandidates.sort((a, b) => b.prestige - a.prestige);
+  const extra = extraCandidates.slice(0, max - baseOffers.length).map((c) => {
+    const firm = c.gap >= 0;
+    return {
+      id: `joboffer-cred-${c.team.id}-${year}`,
+      teamId: c.team.id,
+      seasonYear: year,
+      contractYears: firm ? rng.int(2, 3) : 2,
+      objective: objectiveForPrestige(c.prestige),
+      prestige: Math.round(c.prestige),
+      budgetTier: budgetTierOf(c.team),
+      kind: firm ? 'Offer' : 'Rumor',
+      expiresSeasonYear: year + 1,
+    } as JobOffer;
+  });
+  return [...baseOffers, ...extra];
 }

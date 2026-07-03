@@ -34,6 +34,9 @@ export type TeamPrincipalProfile = {
   careerStats: PrincipalCareerStats;
   xp: number;
   level: number;
+  // Skill progression system.
+  skillPoints: number; // unspent points available for allocation
+  spentSkillPoints: Partial<Record<keyof PrincipalAttributes, number>>;
 };
 
 // ---------------------------------------------------------------------------
@@ -105,3 +108,30 @@ export type JobOffer = {
   kind: 'Offer' | 'Rumor';
   expiresSeasonYear: number;
 };
+
+// ---------------------------------------------------------------------------
+// Credential Tiers — milestone-based progression labels.
+// ---------------------------------------------------------------------------
+
+export type CredentialTier =
+  | 'Rookie'
+  | 'Established'
+  | 'Respected'
+  | 'Renowned'
+  | 'Legendary';
+
+export type CredentialTierInfo = {
+  tier: CredentialTier;
+  minLevel: number;
+  minReputation: number;
+  label: string;
+  description: string;
+};
+
+export const CREDENTIAL_TIERS: CredentialTierInfo[] = [
+  { tier: 'Rookie', minLevel: 1, minReputation: 0, label: 'Rookie', description: 'A new face in the paddock, earning their stripes.' },
+  { tier: 'Established', minLevel: 4, minReputation: 30, label: 'Established', description: 'A proven manager with a track record.' },
+  { tier: 'Respected', minLevel: 7, minReputation: 50, label: 'Respected', description: 'A well-regarded principal with real pull.' },
+  { tier: 'Renowned', minLevel: 10, minReputation: 70, label: 'Renowned', description: 'A paddock heavyweight courted by top teams.' },
+  { tier: 'Legendary', minLevel: 14, minReputation: 85, label: 'Legendary', description: 'One of the greats — a household name in motorsport.' },
+];

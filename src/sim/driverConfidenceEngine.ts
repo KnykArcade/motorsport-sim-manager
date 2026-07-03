@@ -1,0 +1,478 @@
+// Driver Confidence / Trust / Ego system (Living Universe Phase 7 extension).
+//
+// Event-driven updates to driver self-confidence, trust in car/team/principal,
+// ego satisfaction, and overall confidence state. Includes promise management
+// and performance impact calculations. Pure and deterministic.
+
+import type { DriverRelationship, ConfidenceState, DriverPromise, PromiseType } from '../types/relationshipTypes';
+
+function clamp(n: number, lo = 0, hi = 100): number {
+  return Math.max(lo, Math.min(hi, n));
+}
+
+// ---------------------------------------------------------------------------
+// Confidence State computation
+// ---------------------------------------------------------------------------
+
+export function computeConfidenceState(rel: DriverRelationship): ConfidenceState {
+  const score = overallConfidenceScore(rel);
+  if (score >= 85) return 'Inspired';
+  if (score >= 70) return 'Confident';
+  if (score >= 58) return 'Settled';
+  if (score >= 45) return 'Neutral';
+  if (score >= 30) return 'Concerned';
+  if (score >= 18) return 'Frustrated';
+  if (score >= 8) return 'Disillusioned';
+  return 'Checked Out';
+}
+
+export function overallConfidenceScore(rel: DriverRelationship): number {
+  return Math.round(
+    rel.selfConfidence * 0.30 +
+    rel.trustInCar * 0.20 +
+    rel.trustInTeam * 0.15 +
+    rel.trustInPrincipal * 0.15 +
+    rel.morale * 0.15 +
+    (100 - rel.frustration) * 0.05,
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Performance impact
+// ---------------------------------------------------------------------------
+
+export function confidencePerformanceModifier(rel: DriverRelationship): number {
+  const state = computeConfidenceState(rel);
+  switch (state) {
+    case 'Inspired': return 0.08;
+    case 'Confident': return 0.04;
+    case 'Settled': return 0.02;
+    case 'Neutral': return 0;
+    case 'Concerned': return -0.03;
+    case 'Frustrated': return -0.06;
+    case 'Disillusioned': return -0.10;
+    case 'Checked Out': return -0.15;
+  }
+}
+
+export function egoSatisfaction(rel: DriverRelationship, isFavored: boolean): number {
+  const expected = rel.ego / 100;
+  const actual = isFavored ? 1 : 0.3;
+  return Math.round((actual - expected) * 100);
+}
+
+// ---------------------------------------------------------------------------
+// Event Reactions
+// ---------------------------------------------------------------------------
+
+export type ConfidenceUpdate = {
+  driverId: string;
+  selfConfidenceDelta?: number;
+  trustInCarDelta?: number;
+  trustInTeamDelta?: number;
+  trustInPrincipalDelta?: number;
+  moraleDelta?: number;
+  frustrationDelta?: number;
+  egoDelta?: number;
+  reason?: string;
+};
+
+export type RaceEventContext = {
+  driverId: string;
+  finishingPosition: number;
+  totalDrivers: number;
+  qualifiedPosition: number;
+  dnf: boolean;
+  teammateFinishingPosition?: number;
+  teammateDNF?: boolean;
+  teamOrderIssued: boolean;
+  wasFavoredInOrders: boolean;
+  wasDisadvantagedInOrders: boolean;
+  carReliabilityDNF: boolean;
+  strategyRiskLevel: 'conservative' | 'balanced' | 'aggressive';
+  pointsScored: number;
+  podium: boolean;
+  win: boolean;
+};
+
+export function reactToRaceResult(
+  rel: DriverRelationship,
+  ctx: RaceEventContext,
+): ConfidenceUpdate[] {
+  const updates: ConfidenceUpdate[] = [];
+  const traits = rel.personalityTraits;
+
+  // --- Race finish ---
+  if (ctx.dnf) {
+    const carBlame = ctx.carReliabilityDNF;
+    updates.push({
+      driverId: ctx.driverId,
+      selfConfidenceDelta: carBlame ? -2 : -5,
+      trustInCarDelta: carBlame ? -8 : -2,
+      frustrationDelta: carBlame ? 6 : 3,
+      moraleDelta: -4,
+      reason: carBlame ? 'DNF from car failure' : 'DNF from incident',
+    });
+  } else {
+    // Position-based confidence.
+    const posRatio = ctx.finishingPosition / Math.max(ctx.totalDrivers, 1);
+    if (ctx.win) {
+      updates.push({
+        driverId: ctx.driverId,
+        selfConfidenceDelta: 8,
+        moraleDelta: 6,
+        frustrationDelta: -5,
+        reason: 'Race win',
+      });
+    } else if (ctx.podium) {
+      updates.push({
+        driverId: ctx.driverId,
+        selfConfidenceDelta: 5,
+        moraleDelta: 4,
+        frustrationDelta: -3,
+        reason: 'Podium finish',
+      });
+    } else if (posRatio <= 0.5) {
+      updates.push({
+        driverId: ctx.driverId,
+        selfConfidenceDelta: 2,
+        moraleDelta: 1,
+        frustrationDelta: -1,
+        reason: 'Top-half finish',
+      });
+    } else if (posRatio > 0.75) {
+      updates.push({
+        driverId: ctx.driverId,
+        selfConfidenceDelta: -2,
+        frustrationDelta: 2,
+        moraleDelta: -1,
+        reason: 'Poor finish',
+      });
+    }
+  }
+
+  // --- Qualifying vs race delta ---
+  if (!ctx.dnf && ctx.qualifiedPosition > 0) {
+    const qualDelta = ctx.qualifiedPosition - ctx.finishingPosition;
+    if (qualDelta >= 3) {
+      updates.push({
+        driverId: ctx.driverId,
+        selfConfidenceDelta: 3,
+        trustInCarDelta: 2,
+        reason: 'Gained positions in race',
+      });
+    } else if (qualDelta <= -3) {
+      updates.push({
+        driverId: ctx.driverId,
+        selfConfidenceDelta: -2,
+        frustrationDelta: 2,
+        reason: 'Lost positions in race',
+      });
+    }
+  }
+
+  // --- Teammate comparison ---
+  if (!ctx.dnf && ctx.teammateFinishingPosition !== undefined && !ctx.teammateDNF) {
+    const beatTeammate = ctx.finishingPosition < ctx.teammateFinishingPosition;
+    if (beatTeammate) {
+      const egoBoost = traits.includes('High Ego') ? 4 : 2;
+      updates.push({
+        driverId: ctx.driverId,
+        selfConfidenceDelta: egoBoost,
+        moraleDelta: 2,
+        reason: 'Beat teammate',
+      });
+    } else {
+      const egoHit = traits.includes('High Ego') ? -5 : -2;
+      updates.push({
+        driverId: ctx.driverId,
+        selfConfidenceDelta: egoHit,
+        frustrationDelta: traits.includes('Rivalry Prone') ? 4 : 2,
+        reason: 'Finished behind teammate',
+      });
+    }
+  }
+
+  // --- Team orders ---
+  if (ctx.teamOrderIssued) {
+    if (ctx.wasFavoredInOrders) {
+      updates.push({
+        driverId: ctx.driverId,
+        trustInPrincipalDelta: 3,
+        moraleDelta: 2,
+        egoDelta: traits.includes('High Ego') ? 3 : 1,
+        reason: 'Favored by team orders',
+      });
+    } else if (ctx.wasDisadvantagedInOrders) {
+      const egoHit = rel.numberOneExpectation ? -8 : -4;
+      updates.push({
+        driverId: ctx.driverId,
+        trustInPrincipalDelta: -5,
+        moraleDelta: -3,
+        frustrationDelta: 4,
+        egoDelta: egoHit,
+        reason: 'Disadvantaged by team orders',
+      });
+    }
+  }
+
+  // --- Strategy ---
+  if (ctx.strategyRiskLevel === 'aggressive' && !ctx.dnf) {
+    updates.push({
+      driverId: ctx.driverId,
+      trustInTeamDelta: ctx.finishingPosition <= 3 ? 3 : -2,
+      trustInPrincipalDelta: ctx.finishingPosition <= 3 ? 2 : -1,
+      reason: 'Aggressive strategy',
+    });
+  } else if (ctx.strategyRiskLevel === 'conservative' && traits.includes('Ambitious')) {
+    updates.push({
+      driverId: ctx.driverId,
+      frustrationDelta: 2,
+      trustInPrincipalDelta: -1,
+      reason: 'Conservative strategy frustrated ambitious driver',
+    });
+  }
+
+  // --- Points ---
+  if (ctx.pointsScored > 0 && !ctx.win && !ctx.podium) {
+    updates.push({
+      driverId: ctx.driverId,
+      selfConfidenceDelta: 1,
+      moraleDelta: 1,
+      reason: 'Scored points',
+    });
+  }
+
+  // --- Trait-based reactions ---
+  if (traits.includes('Pressure Sensitive') && ctx.finishingPosition > 10 && !ctx.dnf) {
+    updates.push({
+      driverId: ctx.driverId,
+      selfConfidenceDelta: -3,
+      frustrationDelta: 3,
+      reason: 'Pressure-sensitive driver struggled',
+    });
+  }
+  if (traits.includes('Resilient') && ctx.dnf) {
+    updates.push({
+      driverId: ctx.driverId,
+      selfConfidenceDelta: 2,
+      frustrationDelta: -2,
+      reason: 'Resilient driver bounced back mentally',
+    });
+  }
+  if (traits.includes('Confidence Driven')) {
+    if (ctx.win || ctx.podium) {
+      updates.push({
+        driverId: ctx.driverId,
+        selfConfidenceDelta: 3,
+        reason: 'Confidence-driven driver boosted by strong result',
+      });
+    } else if (ctx.finishingPosition > 12) {
+      updates.push({
+        driverId: ctx.driverId,
+        selfConfidenceDelta: -3,
+        reason: 'Confidence-driven driver deflated by poor result',
+      });
+    }
+  }
+
+  return updates;
+}
+
+// ---------------------------------------------------------------------------
+// Apply updates to relationships
+// ---------------------------------------------------------------------------
+
+export function applyConfidenceUpdates(
+  relationships: Record<string, DriverRelationship>,
+  updates: ConfidenceUpdate[],
+): Record<string, DriverRelationship> {
+  const result = { ...relationships };
+  for (const u of updates) {
+    const rel = result[u.driverId];
+    if (!rel) continue;
+    result[u.driverId] = {
+      ...rel,
+      selfConfidence: clamp(rel.selfConfidence + (u.selfConfidenceDelta ?? 0)),
+      trustInCar: clamp(rel.trustInCar + (u.trustInCarDelta ?? 0)),
+      trustInTeam: clamp(rel.trustInTeam + (u.trustInTeamDelta ?? 0)),
+      trustInPrincipal: clamp(rel.trustInPrincipal + (u.trustInPrincipalDelta ?? 0)),
+      morale: clamp(rel.morale + (u.moraleDelta ?? 0)),
+      frustration: clamp(rel.frustration + (u.frustrationDelta ?? 0)),
+      ego: clamp(rel.ego + (u.egoDelta ?? 0)),
+    };
+  }
+  return result;
+}
+
+// ---------------------------------------------------------------------------
+// Promise management
+// ---------------------------------------------------------------------------
+
+export function makePromise(
+  driverId: string,
+  promiseType: PromiseType,
+  season: number,
+  round: number,
+  dueSeason?: number,
+  dueRound?: number,
+): DriverPromise {
+  return {
+    id: `promise-${driverId}-${promiseType}-${season}-${round}`,
+    driverId,
+    promiseType,
+    madeRound: round,
+    madeSeason: season,
+    dueRound,
+    dueSeason,
+    status: 'active',
+    trustImpact: 8,
+    moraleImpact: 5,
+  };
+}
+
+export function resolvePromise(
+  promise: DriverPromise,
+  fulfilled: boolean,
+): DriverPromise {
+  return {
+    ...promise,
+    status: fulfilled ? 'kept' : 'broken',
+    trustImpact: fulfilled ? promise.trustImpact : -promise.trustImpact * 2,
+    moraleImpact: fulfilled ? promise.moraleImpact : -promise.moraleImpact * 2,
+  };
+}
+
+export function expirePromise(promise: DriverPromise): DriverPromise {
+  return {
+    ...promise,
+    status: 'expired',
+    trustImpact: -promise.trustImpact,
+    moraleImpact: -promise.moraleImpact,
+  };
+}
+
+export function applyPromiseResolution(
+  relationships: Record<string, DriverRelationship>,
+  promise: DriverPromise,
+): Record<string, DriverRelationship> {
+  const rel = relationships[promise.driverId];
+  if (!rel) return relationships;
+  return {
+    ...relationships,
+    [promise.driverId]: {
+      ...rel,
+      trustInPrincipal: clamp(rel.trustInPrincipal + promise.trustImpact),
+      morale: clamp(rel.morale + promise.moraleImpact),
+      frustration: clamp(rel.frustration - Math.round(promise.moraleImpact / 2)),
+    },
+  };
+}
+
+export function checkExpiredPromises(
+  promises: DriverPromise[],
+  currentSeason: number,
+  currentRound: number,
+): { promises: DriverPromise[]; expired: DriverPromise[] } {
+  const result: DriverPromise[] = [];
+  const expired: DriverPromise[] = [];
+  for (const p of promises) {
+    if (p.status !== 'active') {
+      result.push(p);
+      continue;
+    }
+    if (p.dueSeason !== undefined && p.dueRound !== undefined) {
+      if (currentSeason > p.dueSeason || (currentSeason === p.dueSeason && currentRound > p.dueRound)) {
+        const expiredPromise = expirePromise(p);
+        expired.push(expiredPromise);
+        result.push(expiredPromise);
+        continue;
+      }
+    }
+    result.push(p);
+  }
+  return { promises: result, expired };
+}
+
+// ---------------------------------------------------------------------------
+// Season rollover: confidence/trust drift
+// ---------------------------------------------------------------------------
+
+export function rolloverConfidence(
+  rel: DriverRelationship,
+): DriverRelationship {
+  return {
+    ...rel,
+    selfConfidence: clamp(Math.round(rel.selfConfidence * 0.7 + 55 * 0.3)),
+    trustInCar: clamp(Math.round(rel.trustInCar * 0.8 + 50 * 0.2)),
+    trustInTeam: clamp(Math.round(rel.trustInTeam * 0.85 + 55 * 0.15)),
+    trustInPrincipal: clamp(Math.round(rel.trustInPrincipal * 0.8 + 58 * 0.2)),
+    ego: clamp(Math.round(rel.ego * 0.9 + 50 * 0.1)),
+  };
+}
+
+// ---------------------------------------------------------------------------
+// Want satisfaction check
+// ---------------------------------------------------------------------------
+
+export function evaluateWants(
+  rel: DriverRelationship,
+  context: {
+    teamReputation: number;
+    contractYearsRemaining: number;
+    isNumberOne: boolean;
+    carReliability: number;
+    teamStability: number;
+  },
+): { satisfied: string[]; unfulfilled: string[] } {
+  const satisfied: string[] = [];
+  const unfulfilled: string[] = [];
+  for (const want of rel.wants) {
+    switch (want) {
+      case 'number_one_status':
+        if (context.isNumberOne) satisfied.push(want);
+        else unfulfilled.push(want);
+        break;
+      case 'equal_treatment':
+        if (!context.isNumberOne) satisfied.push(want);
+        else unfulfilled.push(want);
+        break;
+      case 'podium_capable_car':
+        if (context.teamReputation >= 50) satisfied.push(want);
+        else unfulfilled.push(want);
+        break;
+      case 'title_contending_car':
+        if (context.teamReputation >= 70) satisfied.push(want);
+        else unfulfilled.push(want);
+        break;
+      case 'contract_renewal':
+        if (context.contractYearsRemaining > 1) satisfied.push(want);
+        else unfulfilled.push(want);
+        break;
+      case 'better_reliability':
+        if (context.carReliability >= 70) satisfied.push(want);
+        else unfulfilled.push(want);
+        break;
+      case 'team_stability':
+        if (context.teamStability >= 60) satisfied.push(want);
+        else unfulfilled.push(want);
+        break;
+      default:
+        satisfied.push(want);
+        break;
+    }
+  }
+  return { satisfied, unfulfilled };
+}
+
+// ---------------------------------------------------------------------------
+// Contract loyalty effect
+// ---------------------------------------------------------------------------
+
+export function contractLoyaltyModifier(rel: DriverRelationship): number {
+  const trustAvg = (rel.trustInTeam + rel.trustInPrincipal) / 2;
+  const moraleFactor = (rel.morale - 50) / 50;
+  const frustrationFactor = -(rel.frustration - 30) / 30;
+  const egoFactor = rel.ego > 70 ? -0.1 : 0;
+  return Math.round((trustAvg - 50) * 0.1 + moraleFactor * 5 + frustrationFactor * 3 + egoFactor * 10);
+}
