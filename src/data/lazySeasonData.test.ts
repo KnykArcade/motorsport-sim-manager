@@ -40,8 +40,10 @@ describe('lazySeasonData', () => {
   });
 
   describe('preloadSeasonBundle', () => {
-    it('does not throw for valid seasons', () => {
-      expect(() => preloadSeasonBundle(1991, 'F1')).not.toThrow();
+    it('does not throw for valid seasons', async () => {
+      preloadSeasonBundle(1991, 'F1');
+      // Await the preload to complete so it doesn't resolve after teardown
+      await lazyGetSeasonBundle(1991, 'F1');
     });
     it('does not throw for seasons without loaders', () => {
       expect(() => preloadSeasonBundle(2026, 'IndyCar')).not.toThrow();

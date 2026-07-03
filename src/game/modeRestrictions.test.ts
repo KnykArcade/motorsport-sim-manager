@@ -10,6 +10,7 @@ import {
   isFeatureAllowedForMode,
   getModeRestrictions,
   getRouteRestrictionReason,
+  getGameModeLabel,
 } from './modeRestrictions';
 
 describe('modeRestrictions', () => {
@@ -231,6 +232,48 @@ describe('modeRestrictions', () => {
       expect(isActionBlocked('SIGN_ENGINE_DEAL', 'Sandbox')).toBe(false);
       expect(isActionBlocked('ADVANCE_SEASON', 'Sandbox')).toBe(false);
       expect(isActionBlocked('SIGN_SPONSOR', 'Sandbox')).toBe(false);
+    });
+    it('blocks PROMOTE_ACADEMY in Single Season', () => {
+      expect(isActionBlocked('PROMOTE_ACADEMY', 'SingleSeason')).toBe(true);
+    });
+    it('blocks RELEASE_ACADEMY in Single Season', () => {
+      expect(isActionBlocked('RELEASE_ACADEMY', 'SingleSeason')).toBe(true);
+    });
+    it('blocks SET_ACADEMY_DECISION in Single Season', () => {
+      expect(isActionBlocked('SET_ACADEMY_DECISION', 'SingleSeason')).toBe(true);
+    });
+    it('blocks CLEAR_ACADEMY_DECISION in Single Season', () => {
+      expect(isActionBlocked('CLEAR_ACADEMY_DECISION', 'SingleSeason')).toBe(true);
+    });
+    it('does not block academy actions in Career', () => {
+      expect(isActionBlocked('PROMOTE_ACADEMY', 'Career')).toBe(false);
+      expect(isActionBlocked('RELEASE_ACADEMY', 'Career')).toBe(false);
+      expect(isActionBlocked('SET_ACADEMY_DECISION', 'Career')).toBe(false);
+      expect(isActionBlocked('CLEAR_ACADEMY_DECISION', 'Career')).toBe(false);
+    });
+    it('does not block academy actions in Sandbox', () => {
+      expect(isActionBlocked('PROMOTE_ACADEMY', 'Sandbox')).toBe(false);
+      expect(isActionBlocked('RELEASE_ACADEMY', 'Sandbox')).toBe(false);
+      expect(isActionBlocked('SET_ACADEMY_DECISION', 'Sandbox')).toBe(false);
+      expect(isActionBlocked('CLEAR_ACADEMY_DECISION', 'Sandbox')).toBe(false);
+    });
+  });
+
+  describe('getGameModeLabel', () => {
+    it('returns Career Mode for Career', () => {
+      expect(getGameModeLabel('Career')).toBe('Career Mode');
+    });
+    it('returns Single Season for SingleSeason', () => {
+      expect(getGameModeLabel('SingleSeason')).toBe('Single Season');
+    });
+    it('returns Sandbox Mode for Sandbox', () => {
+      expect(getGameModeLabel('Sandbox')).toBe('Sandbox Mode');
+    });
+    it('does not return Single Season for Sandbox', () => {
+      expect(getGameModeLabel('Sandbox')).not.toBe('Single Season');
+    });
+    it('returns Single Season for undefined', () => {
+      expect(getGameModeLabel(undefined)).toBe('Single Season');
     });
   });
 });

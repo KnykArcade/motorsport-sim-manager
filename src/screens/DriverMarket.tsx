@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react';
 import { useGame } from '../game/GameContext';
 import { activeDriversForTeam, carForTeam, driversForTeam, teamById, MAX_RACE_DRIVERS } from '../game/careerState';
 import { isPreseason } from '../game/rosterEnforcement';
+import { isSingleSeasonMode } from '../game/modeRestrictions';
 import { careerMarketBundle } from '../sim/careerMarketEngine';
 import { marketDriverOfferInterest } from '../sim/crossSeriesEngine';
 import { carPerformanceRating } from '../sim/trackFitEngine';
@@ -48,6 +49,7 @@ export function DriverMarket() {
 
   if (!state) return null;
 
+  const singleSeason = isSingleSeasonMode(state.gameMode);
   const offseason = state.seasonComplete;
   const preseason = isPreseason(state);
   const budget = teamById(state, state.selectedTeamId)?.budget ?? 0;
@@ -85,7 +87,9 @@ export function DriverMarket() {
         <div>
           <h1 className="text-2xl font-bold text-neutral-100">Driver Market</h1>
           <p className="text-sm text-neutral-400">
-            Scout senior drivers for {state.seasonYear + 1} and grow under-18 talent in your academy.
+            {singleSeason
+              ? `Current-season driver management for ${state.seasonYear}.`
+              : `Scout senior drivers for ${state.seasonYear + 1} and grow under-18 talent in your academy.`}
             {' '}Budget: <span className="font-semibold text-neutral-200">{formatMoney(budget)}</span>
           </p>
         </div>
@@ -96,9 +100,11 @@ export function DriverMarket() {
           <TabButton active={tab === 'crossover'} onClick={() => setTab('crossover')}>
             Crossover{bundle ? ` (${crossoverDrivers.length})` : ''}
           </TabButton>
-          <TabButton active={tab === 'youth'} onClick={() => setTab('youth')}>
-            Youth Academy{bundle ? ` (${bundle.youth.length})` : ''}
-          </TabButton>
+          {!singleSeason && (
+            <TabButton active={tab === 'youth'} onClick={() => setTab('youth')}>
+              Youth Academy{bundle ? ` (${bundle.youth.length})` : ''}
+            </TabButton>
+          )}
         </div>
       </div>
 
@@ -116,7 +122,9 @@ export function DriverMarket() {
           : offseason
           ? 'Offseason — you can sign drivers for next season. Confirm them in the Offseason screen.'
           : hasThirdDriver
-            ? 'You have a 3rd driver. Seat signings open in the offseason; you can still add youth prospects now.'
+            ? singleSeason
+              ? 'You have a 3rd driver. Seat signings open in the offseason.'
+              : 'You have a 3rd driver. Seat signings open in the offseason; you can still add youth prospects now.'
             : 'Seat signings open in the offseason, but you can sign one free agent now as a cheaper 3rd driver (a reserve you can swap into a race seat).'}
       </div>
 
@@ -204,7 +212,7 @@ export function DriverMarket() {
         </div>
       )}
 
-      {bundle && tab === 'youth' && (
+      {bundle && tab === 'youth' && !singleSeason && (
         <YouthTab
           prospects={bundle.youth}
           academy={academy}

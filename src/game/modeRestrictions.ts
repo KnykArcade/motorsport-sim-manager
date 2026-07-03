@@ -112,6 +112,10 @@ const SINGLE_SEASON_BLOCKED_ACTIONS = new Set([
   'SIGN_SPONSOR',
   'DROP_SPONSOR',
   'SIGN_YOUTH',
+  'PROMOTE_ACADEMY',
+  'RELEASE_ACADEMY',
+  'SET_ACADEMY_DECISION',
+  'CLEAR_ACADEMY_DECISION',
   'SIGN_FUTURE_CONTRACT',
   'ADVANCE_SEASON',
   'ACCEPT_JOB_OFFER',
@@ -129,4 +133,14 @@ export function isActionBlocked(actionType: string, mode: GameMode | undefined):
 export function getRouteRestrictionReason(route: string, mode: GameMode | undefined): string | undefined {
   if (!isRouteRestricted(route, mode)) return undefined;
   return 'Single Season Mode is a historical replay of the selected year. Long-term systems like Youth Academy, future contracts, and next-year development are disabled.';
+}
+
+// Human-readable label for a game mode.
+export function getGameModeLabel(mode: GameMode | undefined): string {
+  switch (mode) {
+    case 'Career': return 'Career Mode';
+    case 'SingleSeason': return 'Single Season';
+    case 'Sandbox': return 'Sandbox Mode';
+    default: return 'Single Season';
+  }
 }

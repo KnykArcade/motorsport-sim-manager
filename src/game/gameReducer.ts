@@ -151,7 +151,7 @@ import {
   computeRacePrepFocusEffect,
   approvePreseasonTab,
 } from './careerPhaseEngine';
-import { isActionBlocked } from './modeRestrictions';
+import { isActionBlocked, isSingleSeasonMode } from './modeRestrictions';
 
 export type GameAction =
   | { type: 'NEW_GAME'; options: NewGameOptions }
@@ -1658,6 +1658,13 @@ function startDevelopment(state: GameState, projectId: string, rushed: boolean):
   if (!template) return state;
   const team = state.teams.find((t) => t.id === state.selectedTeamId);
   if (!team) return state;
+
+  // In Single Season mode, block projects that only have next-season effects
+  // (no current-season effects). Projects with current-season effects are allowed.
+  if (isSingleSeasonMode(state.gameMode)) {
+    const hasCurrentEffects = template.currentSeasonEffects && Object.keys(template.currentSeasonEffects).length > 0;
+    if (!hasCurrentEffects) return state;
+  }
 
   // Check development slots (facility-based).
   const slots = developmentSlots(state.facilities);

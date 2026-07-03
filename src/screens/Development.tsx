@@ -1,5 +1,6 @@
 import { useGame } from '../game/GameContext';
 import { teamById } from '../game/careerState';
+import { isSingleSeasonMode } from '../game/modeRestrictions';
 import { developmentProjectCatalog } from '../data/development/developmentProjects';
 import { Panel } from '../components/Panel';
 import { Button } from '../components/Button';
@@ -47,6 +48,7 @@ export function Development() {
   if (!state) return null;
   const team = teamById(state, state.selectedTeamId);
   const budget = team?.budget ?? 0;
+  const singleSeason = isSingleSeasonMode(state.gameMode);
 
   const slots = developmentSlots(state.facilities);
   const usedSlots = state.activeDevelopmentProjects.length;
@@ -57,7 +59,9 @@ export function Development() {
   const effectSummary = (p: DevelopmentProject) => {
     const parts: string[] = [];
     for (const [k, v] of Object.entries(p.currentSeasonEffects ?? {})) parts.push(`+${v} ${k}`);
-    for (const [k, v] of Object.entries(p.nextSeasonEffects ?? {})) parts.push(`+${v} ${k} (next yr)`);
+    if (!singleSeason) {
+      for (const [k, v] of Object.entries(p.nextSeasonEffects ?? {})) parts.push(`+${v} ${k} (next yr)`);
+    }
     return parts.join(', ') || 'Infrastructure / research';
   };
 
@@ -81,6 +85,12 @@ export function Development() {
           </div>
         </div>
       </div>
+
+      {singleSeason && (
+        <div className="rounded-lg border border-blue-800 bg-blue-900/20 p-3 text-sm text-blue-300">
+          Single Season Mode only allows development that affects the selected historical season. Next-year development is disabled.
+        </div>
+      )}
 
       {usedSlots >= slots && (
         <div className="rounded-lg border border-orange-800 bg-orange-900/20 p-3 text-sm text-orange-300">
@@ -208,7 +218,7 @@ export function Development() {
                 </div>
                 <div className="mt-2 text-xs text-neutral-400">{effectSummary(p)}</div>
                 <div className="mt-1 text-xs text-neutral-500">
-                  {adjustedDuration} races (base {p.durationRaces}) · Facility L{Math.round(facLevel)} · Impact x{impactMult.toFixed(1)} · {Math.round(p.carryoverRate * 100)}% carryover
+                  {adjustedDuration} races (base {p.durationRaces}) · Facility L{Math.round(facLevel)} · Impact x{impactMult.toFixed(1)}{!singleSeason ? ` · ${Math.round(p.carryoverRate * 100)}% carryover` : ''}
                 </div>
                 <div className="mt-1.5 text-xs text-neutral-400">
                   <span className="text-neutral-500">Outcomes: </span>
