@@ -1,6 +1,6 @@
 # Known Limitations
 
-Last updated: 2025-07-03 (Priority 2 polish pass)
+Last updated: 2025-07-03 (Final Stability Cleanup Pass)
 
 ## Regulation Sets
 
@@ -42,9 +42,9 @@ development focus, driver market preferences, academy investment, spending prior
 and risk appetite. Philosophy traits evolve over seasons and influence regulation
 voting.
 
-**Remaining limitation:** AI team identity exists in the simulation engine but may
-still need deeper visible UI integration so players can easily see rival team
-philosophies and identity-driven decisions.
+**Remaining limitation:** AI team identity exists in the simulation engine with
+philosophy traits that persist across seasons. Gradual trait evolution is not yet
+implemented; traits regenerate only when a team's archetype changes.
 
 ## Historical Data
 
@@ -54,7 +54,7 @@ season bundles for informational screens.
 
 **Remaining limitation:** Historical sponsor and engine details may use fictionalized
 or gameplay-safe equivalents where exact data is unavailable. The lazy-loading system
-covers 1990–2000 F1 seasons; remaining seasons are still eagerly loaded.
+supports all registered seasons; seasons are loaded on demand when selected.
 
 ## Race Engine
 

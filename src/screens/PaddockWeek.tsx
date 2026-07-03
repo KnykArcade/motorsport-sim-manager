@@ -11,6 +11,7 @@ import {
   teamById,
 } from '../game/careerState';
 import { developmentSlots } from '../sim/facilityEngine';
+import { getGameModeLabel } from '../game/modeRestrictions';
 import { Panel } from '../components/Panel';
 import { Button } from '../components/Button';
 import { NewsPanel } from '../components/NewsPanel';
@@ -108,7 +109,7 @@ export function PaddockWeek() {
           <h1 className="text-2xl font-bold text-neutral-100">Paddock Week</h1>
           <p className="text-sm text-neutral-400">
             {state.seasonYear} {state.series} · Between Rounds {phaseState.currentRound} & {phaseState.currentRound + 1}
-            {state.gameMode === 'SingleSeason' ? ' · Single Season' : ' · Career Mode'}
+            {' · ' + getGameModeLabel(state.gameMode)}
           </p>
         </div>
         <div className="flex items-center gap-3">

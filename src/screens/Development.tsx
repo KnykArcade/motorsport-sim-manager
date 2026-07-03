@@ -1,6 +1,6 @@
 import { useGame } from '../game/GameContext';
 import { teamById } from '../game/careerState';
-import { isSingleSeasonMode } from '../game/modeRestrictions';
+import { isSingleSeasonMode, isDevelopmentProjectAllowedForMode } from '../game/modeRestrictions';
 import { developmentProjectCatalog } from '../data/development/developmentProjects';
 import { Panel } from '../components/Panel';
 import { Button } from '../components/Button';
@@ -195,8 +195,9 @@ export function Development() {
             const affordable = budget >= p.cost;
             const rushAffordable = budget >= rushCost;
             const slotAvailable = usedSlots < slots;
-            const canStart = affordable && slotAvailable;
-            const canRush = rushAffordable && slotAvailable;
+            const modeAllowed = isDevelopmentProjectAllowedForMode(p, state.gameMode);
+            const canStart = affordable && slotAvailable && modeAllowed;
+            const canRush = rushAffordable && slotAvailable && modeAllowed;
 
             return (
               <div key={p.id} className="rounded-lg border border-neutral-800 bg-neutral-900/40 p-4">
@@ -225,7 +226,10 @@ export function Development() {
                   {formatOutcomeChances(chances).join(' · ')}
                 </div>
                 {p.risk && <div className="mt-1 text-xs text-orange-400/80">⚠ {p.risk}</div>}
-                {!slotAvailable && (
+                {!modeAllowed && (
+                  <div className="mt-1 text-xs text-amber-400">Disabled in Single Season: this project only affects future seasons.</div>
+                )}
+                {!slotAvailable && modeAllowed && (
                   <div className="mt-1 text-xs text-red-400">No slots available — upgrade facilities.</div>
                 )}
                 <div className="mt-3 flex gap-2">
@@ -235,7 +239,7 @@ export function Development() {
                     disabled={!canStart}
                     onClick={() => dispatch({ type: 'START_DEVELOPMENT', projectId: p.id })}
                   >
-                    {affordable ? (slotAvailable ? 'Start' : 'No Slots') : 'Insufficient Budget'}
+                    {!modeAllowed ? 'Future-Only' : affordable ? (slotAvailable ? 'Start' : 'No Slots') : 'Insufficient Budget'}
                   </Button>
                   <Button
                     className="flex-1"
@@ -243,7 +247,7 @@ export function Development() {
                     disabled={!canRush}
                     onClick={() => dispatch({ type: 'START_DEVELOPMENT', projectId: p.id, rushed: true })}
                   >
-                    {rushAffordable ? (slotAvailable ? `Rush (${formatMoney(rushCost)})` : 'No Slots') : 'Cannot Rush'}
+                    {!modeAllowed ? 'Future-Only' : rushAffordable ? (slotAvailable ? `Rush (${formatMoney(rushCost)})` : 'No Slots') : 'Cannot Rush'}
                   </Button>
                 </div>
               </div>

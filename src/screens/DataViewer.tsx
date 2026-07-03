@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useReducer, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   availableSeasons,
@@ -63,31 +63,36 @@ export function DataViewer() {
   const choice =
     availableSeasons.find((s) => seasonKey(s.year, s.series) === selected) ?? availableSeasons[0];
 
-  const [bundle, setBundle] = useState<SeasonBundle | undefined>(getCachedBundle(choice.year, choice.series));
-  const [loadingBundle, setLoadingBundle] = useState(false);
+  const cachedBundle = useMemo(() => getCachedBundle(choice.year, choice.series), [choice.year, choice.series]);
+
+  const [asyncState, dispatchAsync] = useReducer(
+    (_state: { bundle?: SeasonBundle; loading: boolean }, action: { type: 'loaded'; bundle?: SeasonBundle } | { type: 'start' }) => {
+      if (action.type === 'start') return { loading: true };
+      return { bundle: action.bundle, loading: false };
+    },
+    { loading: !getCachedBundle(choice.year, choice.series) }
+  );
 
   useEffect(() => {
-    const cached = getCachedBundle(choice.year, choice.series);
-    if (cached) {
-      setBundle(cached);
-      setLoadingBundle(false);
+    if (cachedBundle) {
       return;
     }
     let cancelled = false;
-    setLoadingBundle(true);
+    dispatchAsync({ type: 'start' });
     loadSeasonBundle(choice.year, choice.series)
       .then((b) => {
         if (cancelled) return;
-        setBundle(b);
-        setLoadingBundle(false);
+        dispatchAsync({ type: 'loaded', bundle: b });
       })
       .catch(() => {
         if (cancelled) return;
-        setBundle(undefined);
-        setLoadingBundle(false);
+        dispatchAsync({ type: 'loaded' });
       });
     return () => { cancelled = true; };
-  }, [choice.year, choice.series]);
+  }, [choice.year, choice.series, cachedBundle]);
+
+  const loadingBundle = !cachedBundle && asyncState.loading;
+  const activeBundle = cachedBundle ?? asyncState.bundle;
 
   return (
     <div className="min-h-screen bg-[#0a0c10] p-6">
@@ -134,16 +139,16 @@ export function DataViewer() {
             <RegistryTable />
           ) : loadingBundle ? (
             <p className="p-6 text-sm text-neutral-400">Loading season data…</p>
-          ) : !bundle ? (
+          ) : !activeBundle ? (
             <p className="p-6 text-sm text-neutral-400">No data for this season.</p>
           ) : (
             <>
-              {tab === 'calendar' && <CalendarTable bundle={bundle} />}
-              {tab === 'tracks' && <TracksTable bundle={bundle} />}
-              {tab === 'teams' && <TeamsTable bundle={bundle} />}
-              {tab === 'drivers' && <DriversTable bundle={bundle} />}
-              {tab === 'cars' && <CarsTable bundle={bundle} />}
-              {tab === 'points' && <PointsTable bundle={bundle} />}
+              {tab === 'calendar' && <CalendarTable bundle={activeBundle} />}
+              {tab === 'tracks' && <TracksTable bundle={activeBundle} />}
+              {tab === 'teams' && <TeamsTable bundle={activeBundle} />}
+              {tab === 'drivers' && <DriversTable bundle={activeBundle} />}
+              {tab === 'cars' && <CarsTable bundle={activeBundle} />}
+              {tab === 'points' && <PointsTable bundle={activeBundle} />}
               {tab === 'setups' && <SetupsTable />}
               {tab === 'development' && <DevTable />}
             </>

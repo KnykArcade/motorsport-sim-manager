@@ -16,6 +16,7 @@ import type { MasterDriverEntry } from '../types/registryTypes';
 export function Offseason() {
   const { state, dispatch } = useGame();
   const navigate = useNavigate();
+  const [advancing, setAdvancing] = useState(false);
   if (!state) return null;
 
   const nextYear = state.seasonYear + 1;
@@ -35,8 +36,6 @@ export function Offseason() {
   const promotionEligible = academy.filter((a) => isPromotionEligible(a, nextYear));
   const decisionFor = (academyId: string) =>
     academyDecisions.find((d) => d.academyId === academyId);
-
-  const [advancing, setAdvancing] = useState(false);
 
   const advance = () => {
     setAdvancing(true);

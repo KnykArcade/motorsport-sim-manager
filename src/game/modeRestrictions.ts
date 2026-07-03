@@ -203,3 +203,16 @@ export function getGameModeLabel(mode: GameMode | undefined): string {
     default: return 'Single Season';
   }
 }
+
+// Check whether a development project is allowed in the given game mode.
+// In Single Season mode, projects with only next-season effects (no current-season
+// effects) are not allowed. Mixed projects (both current and next) are allowed
+// but only their current-season effects apply.
+export function isDevelopmentProjectAllowedForMode(
+  project: { currentSeasonEffects?: Record<string, number> },
+  mode: GameMode | undefined,
+): boolean {
+  if (!isSingleSeasonMode(mode)) return true;
+  const hasCurrentEffects = project.currentSeasonEffects && Object.keys(project.currentSeasonEffects).length > 0;
+  return !!hasCurrentEffects;
+}
