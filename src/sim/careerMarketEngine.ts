@@ -20,8 +20,8 @@ import type { MarketDriver, MarketSkillRatings, YouthProspect } from '../types/m
 import type { MasterDriverEntry } from '../types/registryTypes';
 import type { Series } from '../types/gameTypes';
 import {
+  canonicalNameOf,
   getMasterRegistry,
-  normalizeName,
   registryList,
   sanitizeMarketName,
 } from '../data/registry/masterRegistry';
@@ -202,11 +202,13 @@ export function occupiedIdentities(state: GameState): {
 } {
   const names = new Set<string>();
   // Active drivers, reserves and third/test drivers all live in state.drivers.
-  for (const d of state.drivers) names.add(normalizeName(d.name));
+  // Use canonicalNameOf so abbreviated names (e.g. "M. Schumacher") match
+  // their full-form identity in the registry.
+  for (const d of state.drivers) names.add(canonicalNameOf(d.name));
   // The player's academy and every AI team's academy hold rights to their youth.
-  for (const a of state.academy ?? []) names.add(normalizeName(a.name));
+  for (const a of state.academy ?? []) names.add(canonicalNameOf(a.name));
   for (const members of Object.values(state.aiAcademies ?? {})) {
-    for (const a of members) names.add(normalizeName(a.name));
+    for (const a of members) names.add(canonicalNameOf(a.name));
   }
   const signedIds = new Set(state.signedMarketIds ?? []);
   return { names, signedIds };
@@ -246,8 +248,8 @@ export function careerMarketBundle(state: GameState): MarketBundle {
   }
 
   const curatedDrivers = [...(staticBundle?.drivers ?? []), ...curatedYouthToAdults];
-  const curatedDriverNames = new Set(curatedDrivers.map((d) => normalizeName(d.name)));
-  const curatedYouthNames = new Set(curatedYouth.map((y) => normalizeName(y.name)));
+  const curatedDriverNames = new Set(curatedDrivers.map((d) => canonicalNameOf(d.name)));
+  const curatedYouthNames = new Set(curatedYouth.map((y) => canonicalNameOf(y.name)));
 
   const extraDrivers: MarketDriver[] = [];
   const extraYouth: YouthProspect[] = [];
@@ -263,10 +265,10 @@ export function careerMarketBundle(state: GameState): MarketBundle {
   // Foreign-series free agents open to switching into this series.
   const takenDriverNames = new Set([
     ...curatedDriverNames,
-    ...extraDrivers.map((d) => normalizeName(d.name)),
+    ...extraDrivers.map((d) => canonicalNameOf(d.name)),
   ]);
   const crossSeries = crossSeriesCandidates(state).filter(
-    (d) => !takenDriverNames.has(normalizeName(d.name)),
+    (d) => !takenDriverNames.has(canonicalNameOf(d.name)),
   );
 
   // Final safety net: sanitize every market name and enforce a single identity
@@ -277,7 +279,7 @@ export function careerMarketBundle(state: GameState): MarketBundle {
   const drivers: MarketDriver[] = [];
   for (const d of [...curatedDrivers, ...extraDrivers, ...crossSeries]) {
     const clean = sanitizeMarketName(d.name);
-    const key = normalizeName(clean);
+    const key = canonicalNameOf(clean);
     if (seenDrivers.has(key)) continue;
     seenDrivers.add(key);
     drivers.push(clean === d.name ? d : { ...d, name: clean });
@@ -287,7 +289,7 @@ export function careerMarketBundle(state: GameState): MarketBundle {
   const youth: YouthProspect[] = [];
   for (const y of [...curatedYouth, ...extraYouth]) {
     const clean = sanitizeMarketName(y.name);
-    const key = normalizeName(clean);
+    const key = canonicalNameOf(clean);
     if (seenYouth.has(key) || seenDrivers.has(key)) continue;
     seenYouth.add(key);
     youth.push(clean === y.name ? y : { ...y, name: clean });

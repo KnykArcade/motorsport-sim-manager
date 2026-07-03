@@ -11,7 +11,7 @@ import { advanceSeason } from '../src/game/seasonRollover';
 import { activeDriversForTeam } from '../src/game/careerState';
 import type { GameState } from '../src/game/careerState';
 import { careerMarketBundle, youthProspectAge, YOUTH_MAX_AGE } from '../src/sim/careerMarketEngine';
-import { normalizeName } from '../src/data/registry/masterRegistry';
+import { canonicalNameOf } from '../src/data/registry/masterRegistry';
 
 const MARKET_TAGS = [
   'contract watch',
@@ -25,7 +25,7 @@ const MARKET_TAGS = [
 ];
 
 function hasMarketTag(name: string): boolean {
-  const n = normalizeName(name);
+  const n = canonicalNameOf(name);
   return MARKET_TAGS.some((t) => n.includes(t));
 }
 
@@ -37,7 +37,7 @@ describe('Career long-run — F1 1990, 20 seasons of rollover', () => {
   // Build one 20-season career deterministically and assert invariants each year.
   const seasons: GameState[] = [];
   let state = createNewGame({
-    gameMode: 'career',
+    gameMode: 'Career',
     seasonYear: 1990,
     series: 'F1',
     teamId: 't-mclaren',
@@ -46,7 +46,7 @@ describe('Career long-run — F1 1990, 20 seasons of rollover', () => {
   // t-mclaren may not exist in the 1990 bundle; fall back to the first team.
   if (!state.teams.some((t) => t.id === state.selectedTeamId)) {
     state = createNewGame({
-      gameMode: 'career',
+      gameMode: 'Career',
       seasonYear: 1990,
       series: 'F1',
       teamId: state.teams[0].id,
@@ -66,7 +66,7 @@ describe('Career long-run — F1 1990, 20 seasons of rollover', () => {
 
   it('has no duplicate canonical driver names on the grid in any season', () => {
     for (const s of seasons) {
-      const names = s.drivers.map((d) => normalizeName(d.name));
+      const names = s.drivers.map((d) => canonicalNameOf(d.name));
       const dup = names.filter((n, idx) => names.indexOf(n) !== idx);
       expect({ year: s.seasonYear, dup }).toEqual({ year: s.seasonYear, dup: [] });
     }

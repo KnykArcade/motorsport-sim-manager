@@ -267,6 +267,8 @@ export function computeRacePrepFocusEffect(focus: string): RacePrepFocusEffect {
       return { paceModifier: -0.15, reliabilityModifier: 0.15, qualifyingModifier: -0.05, mistakeRiskMultiplier: 0.9 };
     case 'power':
       return { paceModifier: 0.15, reliabilityModifier: -0.1, qualifyingModifier: 0.1, mistakeRiskMultiplier: 1.1 };
+    case 'budget':
+      return { paceModifier: -0.2, reliabilityModifier: -0.1, qualifyingModifier: -0.15, mistakeRiskMultiplier: 1.15, costSavingMultiplier: 0.8 };
     case 'balanced':
     default:
       return { paceModifier: 0.05, reliabilityModifier: 0.02, qualifyingModifier: 0, mistakeRiskMultiplier: 0.98 };
@@ -549,6 +551,31 @@ export function resolvePaddockEvent(
         racePrepFocus: optionId,
       },
     };
+    // Generate a news item for the focus selection.
+    const focusLabels: Record<string, string> = {
+      balanced: 'Balanced Preparation',
+      qualifying: 'Qualifying Focus',
+      race: 'Race Pace Focus',
+      reliability: 'Reliability Focus',
+      power: 'Engine Power Focus',
+      budget: 'Budget Preparation',
+    };
+    const focusLabel = focusLabels[optionId] ?? optionId;
+    const team = updatedState.teams.find((t) => t.id === updatedState.selectedTeamId);
+    const isBudget = optionId === 'budget';
+    const newsItem: { id: string; headline: string; body: string; timestamp: string; category: 'financial'; priority: 'high' | 'normal' } = {
+      id: `news-race-prep-focus-${updatedState.seasonYear}-${updatedState.currentRaceIndex}`,
+      headline: isBudget
+        ? `${team?.name ?? 'The team'} opts for budget preparation to cut costs`
+        : `${team?.name ?? 'The team'} selects ${focusLabel} for the upcoming race`,
+      body: isBudget
+        ? `With finances tight, the team will run a stripped-down weekend operation to save 20% on costs, accepting significant performance penalties.`
+        : `The team has chosen ${focusLabel} as their approach for the next race weekend.`,
+      timestamp: new Date().toISOString(),
+      category: 'financial',
+      priority: isBudget ? 'high' : 'normal',
+    };
+    updatedState = { ...updatedState, news: [newsItem, ...updatedState.news].slice(0, 50) };
   }
 
   return updatedState;
@@ -943,6 +970,16 @@ export function generatePaddockWeekEvents(state: GameState): PaddockEvent[] {
         id: 'power',
         label: 'Engine Power Focus',
         description: ` ${track.name} demands power. Focus on straight-line speed.`,
+        risk: 1,
+      });
+    }
+    // Budget focus: available when the team is financially stretched.
+    const playerTeam = state.teams.find((t) => t.id === state.selectedTeamId);
+    if (playerTeam && playerTeam.budget < 5) {
+      focusOptions.push({
+        id: 'budget',
+        label: 'Budget Preparation',
+        description: 'Reduce weekend operational costs by 20%. Significant pace, reliability, and mistake-risk penalties.',
         risk: 1,
       });
     }

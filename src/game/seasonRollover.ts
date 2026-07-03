@@ -659,7 +659,10 @@ export function advanceSeason(state: GameState): GameState {
 
     const annual = sponsorAnnualIncome(nextCommercial);
     if (annual > 0) {
-      txns.push(makeTransaction(nextYear, 'Sponsorship', `${nextYear} sponsorship income`, annual));
+      // 25% upfront at season start; the remaining 75% is paid in per-race
+      // installments during applyRaceResults for a realistic cashflow.
+      const upfront = Math.round(annual * 0.25);
+      txns.push(makeTransaction(nextYear, 'Sponsorship', `${nextYear} sponsorship signing bonus`, upfront));
     }
   } else {
     const sponsorship = sponsorshipIncome(playerTeam, playerDrivers);
@@ -722,6 +725,8 @@ export function advanceSeason(state: GameState): GameState {
   let nextJobOffers = state.jobOffers;
   let moveTeamId: string | undefined;
   const principalNotes: string[] = [];
+  const principalLevelUpNews: typeof state.news = [];
+  const teamLockPressureNews: typeof state.news = [];
   if (nextPrincipal && playerTeam && playerReview) {
     const champDriver = state.driverStandings[0];
     const champDriverTeam = champDriver
@@ -746,6 +751,18 @@ export function advanceSeason(state: GameState): GameState {
     const reviewed = reviewPrincipal(nextPrincipal, playerReview, outcome);
     nextPrincipal = reviewed.profile;
     principalNotes.push(...reviewed.notes);
+
+    // Generate news for principal level-up.
+    if (reviewed.profile.level > state.principal?.level) {
+      principalLevelUpNews.push({
+        id: `news-principal-levelup-${state.seasonYear}`,
+        headline: `${nextPrincipal.name} reaches Level ${reviewed.profile.level}`,
+        body: `After a season of ${outcome.wins} wins and ${outcome.podiums} podiums, ${nextPrincipal.name} has gained enough experience to reach Level ${reviewed.profile.level}. Attributes improved across the board.`,
+        timestamp: new Date().toISOString(),
+        category: 'career_event',
+        priority: 'high',
+      });
+    }
 
     // Decide whether the principal changes teams next season.
     const accepted = state.acceptedJobOfferId
@@ -772,6 +789,16 @@ export function advanceSeason(state: GameState): GameState {
       // and generate a pressure warning instead.
       nextPrincipal = { ...nextPrincipal, jobSecurity: Math.max(30, nextPrincipal.jobSecurity), contractYearsRemaining: Math.max(1, nextPrincipal.contractYearsRemaining) };
       principalNotes.push('The owner is deeply unhappy with the season\'s results but cannot remove you under Team Lock terms. Pressure remains high.');
+      teamLockPressureNews.push({
+        id: `news-teamlock-pressure-${state.seasonYear}-${playerTeam.id}`,
+        headline: `Owner fury at ${playerTeam.name} — but Team Lock holds firm`,
+        body: `The ${playerTeam.name} owner is furious with the season's results and would have sacked the principal, but Team Lock terms prevent any forced removal. Pressure remains dangerously high — results must improve.`,
+        timestamp: new Date().toISOString(),
+        category: 'career_event',
+        priority: 'high',
+        careerPhase: 'paddock_week',
+        teamId: playerTeam.id,
+      });
     }
 
     // Move the principal's record/contract to the destination team.
@@ -912,6 +939,7 @@ export function advanceSeason(state: GameState): GameState {
     reservedNames: aiReservedNames,
     constructorStandings: state.constructorStandings,
     regulationShakeup,
+    series: state.series,
   });
 
   const champion = state.driverStandings[0];
@@ -1164,6 +1192,8 @@ export function advanceSeason(state: GameState): GameState {
         timestamp: now,
       })),
       ...rolloverNews,
+      ...principalLevelUpNews,
+      ...teamLockPressureNews,
       ...state.news,
     ].slice(0, 50),
     careerPhase: defaultCareerPhaseState(),
@@ -1171,7 +1201,18 @@ export function advanceSeason(state: GameState): GameState {
 
   // If the principal switched teams, re-point the player-scoped systems
   // (selected team, setups, commercial, facilities, engine deal) at the new team.
-  return moveTeamId ? applyPrincipalMove(nextState, moveTeamId) : nextState;
+  // Defensive guard: under Team Lock, only allow voluntary moves (accepted job
+  // offers). Block any forced move as a last-resort safety net.
+  if (moveTeamId) {
+    const isVoluntary = !!state.acceptedJobOfferId
+      && (state.jobOffers ?? []).some(
+        (o) => o.id === state.acceptedJobOfferId && o.kind === 'Offer' && o.teamId === moveTeamId,
+      );
+    if (isVoluntary || (mobilityMode !== 'TeamLock' && mobilityMode !== 'Sandbox')) {
+      return applyPrincipalMove(nextState, moveTeamId);
+    }
+  }
+  return nextState;
 }
 
 // Switch the player to a new team after a principal move: rebuild the

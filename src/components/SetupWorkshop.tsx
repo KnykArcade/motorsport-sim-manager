@@ -146,9 +146,25 @@ export function SetupWorkshop({
   const componentFit = (key: string) => quality.components.find((c) => c.component === key)?.fit ?? 0;
   const qualityEstimate = setupQualityEstimate(quality.quality, setupKnowledge);
   const revealComponents = canRevealComponentFit(setupKnowledge);
+  const revealEffects = setupKnowledge >= 0.33;
+  const revealWarnings = setupKnowledge >= 0.2;
   const stint = stintWindowEstimate(24, tyreKnowledge);
   const comp = SETUP_COMPONENTS.find((c) => c.key === activeComp) ?? SETUP_COMPONENTS[0];
-  const radar = SETUP_COMPONENTS.map((c) => ({ label: c.name, value: componentFit(c.key) }));
+  // Radar uses estimated values when components are not yet revealed, so the
+  // shape is approximate rather than leaking exact fit per component.
+  const radar = SETUP_COMPONENTS.map((c) => {
+    const fit = componentFit(c.key);
+    if (revealComponents) return { label: c.name, value: fit };
+    const est = componentFitEstimate(fit, setupKnowledge);
+    return { label: c.name, value: (est.low + est.high) / 2 };
+  });
+  // Tab dots use the same gated value so they don't leak exact fit colour.
+  const tabDotFit = (key: string): number => {
+    const fit = componentFit(key);
+    if (revealComponents) return fit;
+    const est = componentFitEstimate(fit, setupKnowledge);
+    return (est.low + est.high) / 2;
+  };
 
   return (
     <div className="flex h-full min-h-0 flex-col gap-3" data-testid="setup-workshop">
@@ -203,7 +219,6 @@ export function SetupWorkshop({
         <div className="flex min-h-0 flex-col lg:col-span-2">
           <div className="flex shrink-0 flex-wrap gap-1 rounded-t-lg border border-neutral-800 bg-neutral-900/40 p-1" role="tablist">
             {SETUP_COMPONENTS.map((c) => {
-              const cf = componentFit(c.key);
               return (
                 <button
                   key={c.key}
@@ -217,7 +232,7 @@ export function SetupWorkshop({
                   }`}
                 >
                   {c.name}
-                  <span className="h-1.5 w-1.5 rounded-full" style={{ backgroundColor: fitBand(cf) }} />
+                  <span className="h-1.5 w-1.5 rounded-full" style={{ backgroundColor: fitBand(tabDotFit(c.key)) }} />
                 </button>
               );
             })}
@@ -311,13 +326,19 @@ export function SetupWorkshop({
                 </span>
                 <span className="pb-0.5 text-[11px] text-neutral-500">/ 100</span>
               </div>
-              <div className="mt-2 grid grid-cols-2 gap-1 text-[11px]">
-                <Effect label="Quali Ceiling" value={quality.effects.qualifyingPaceCeiling} goodHigh />
-                <Effect label="Race Ceiling" value={quality.effects.racePaceCeiling} goodHigh />
-                <Effect label="Tyre Wear" value={quality.effects.tyreWear} goodHigh={false} />
-                <Effect label="Reliability" value={quality.effects.reliabilityRisk} goodHigh={false} />
-                <Effect label="Overheating" value={quality.effects.overheatingRisk} goodHigh={false} />
-              </div>
+              {revealEffects ? (
+                <div className="mt-2 grid grid-cols-2 gap-1 text-[11px]">
+                  <Effect label="Quali Ceiling" value={quality.effects.qualifyingPaceCeiling} goodHigh />
+                  <Effect label="Race Ceiling" value={quality.effects.racePaceCeiling} goodHigh />
+                  <Effect label="Tyre Wear" value={quality.effects.tyreWear} goodHigh={false} />
+                  <Effect label="Reliability" value={quality.effects.reliabilityRisk} goodHigh={false} />
+                  <Effect label="Overheating" value={quality.effects.overheatingRisk} goodHigh={false} />
+                </div>
+              ) : (
+                <div className="mt-2 text-[11px] text-neutral-500">
+                  Run practice to unlock setup effect breakdown.
+                </div>
+              )}
             </div>
 
             <div className="rounded-lg border border-neutral-800 bg-neutral-900/50 p-2.5">
@@ -406,7 +427,7 @@ export function SetupWorkshop({
             </Panel>
           )}
 
-          {quality.warnings.length > 0 && (
+          {revealWarnings && quality.warnings.length > 0 && (
             <Panel title="Engineer Warnings">
               <ul className="space-y-1.5 text-xs text-amber-300">
                 {quality.warnings.map((w, i) => (

@@ -237,17 +237,37 @@ export function sponsorAnnualIncome(commercial: CommercialState | undefined): nu
   return commercial.sponsors.reduce((sum, s) => sum + toMoney(s.annualValue), 0);
 }
 
-export type RaceCommercialContext = {
-  wins: number; // player-team race wins this round (0-2)
-  podiums: number; // player-team podiums this round
-  poles: number; // player-team poles this round
-};
-
 export type CommercialPayout = {
   sponsorId: string;
   sponsorName: string;
   label: string;
   amount: number; // raw dollars
+};
+
+// Per-race sponsor installment: annual income divided across the season's races,
+// paid each round to create a realistic cashflow instead of a lump sum at year start.
+export function sponsorInstallmentPayment(
+  commercial: CommercialState | undefined,
+  totalRaces: number,
+): CommercialPayout[] {
+  if (!commercial || totalRaces <= 0) return [];
+  const perRace = commercial.sponsors.reduce(
+    (sum, s) => sum + toMoney(s.annualValue) / totalRaces,
+    0,
+  );
+  if (perRace <= 0) return [];
+  return [{
+    sponsorId: 'installment',
+    sponsorName: 'Sponsor Installments',
+    label: 'Sponsor installment payment',
+    amount: Math.round(perRace),
+  }];
+}
+
+export type RaceCommercialContext = {
+  wins: number; // player-team race wins this round (0-2)
+  podiums: number; // player-team podiums this round
+  poles: number; // player-team poles this round
 };
 
 // Performance bonuses earned in a single race weekend, in raw dollars.

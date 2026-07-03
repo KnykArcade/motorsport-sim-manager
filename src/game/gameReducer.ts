@@ -49,6 +49,7 @@ import { thirdDriverMidSeasonFee, thirdDriverSalary } from '../sim/contractEngin
 import {
   generateSponsorOffers,
   racePerformanceBonuses,
+  sponsorInstallmentPayment,
   sponsorSlotCapacity,
 } from '../sim/commercialEngine';
 import { developmentSuccessBonus } from '../sim/staffEngine';
@@ -1322,6 +1323,18 @@ function applyRaceResults(
     );
   }
 
+  // Per-race sponsor installment: 75% of annual sponsorship paid across the
+  // season's races for a realistic cashflow (25% was paid upfront at rollover).
+  const totalRaces = state.calendar.length;
+  const installments = sponsorInstallmentPayment(state.commercial, totalRaces);
+  for (const inst of installments) {
+    const team = teams.find((t) => t.id === state.selectedTeamId);
+    if (team) team.budget += inst.amount;
+    financeTxns.push(
+      makeTransaction(state.seasonYear, 'Sponsorship', `${race.gpName}: ${inst.label}`, inst.amount, race.round),
+    );
+  }
+
   // Apply crash damage, then the standard between-race recovery.
   cars = cars.map((c) => ({
     ...c,
@@ -1555,13 +1568,24 @@ function selectRaceWeekendPackage(
   const costResult = isEmergency
     ? computeMandatoryMinimumCost()
     : computeRaceWeekendPackageCost(state.series, team, track, packageType);
-  if (!isEmergency && team.budget < costResult.cost) return state;
+
+  // Apply budget race prep focus cost saving (20% reduction when budget focus is active).
+  const phaseState = getOrCreatePhaseState(state);
+  let adjustedCost = costResult.cost;
+  if (!isEmergency && phaseState.racePrepFocus && !phaseState.racePrepFocusApplied) {
+    const focusEffect = computeRacePrepFocusEffect(phaseState.racePrepFocus);
+    if (focusEffect.costSavingMultiplier && focusEffect.costSavingMultiplier < 1) {
+      adjustedCost = Math.round(costResult.cost * focusEffect.costSavingMultiplier);
+    }
+  }
+
+  if (!isEmergency && team.budget < adjustedCost) return state;
 
   const selection: RaceWeekendPackageSelection = {
     packageType,
     raceId: race.id,
     gpName: race.gpName,
-    cost: costResult.cost,
+    cost: adjustedCost,
     teamScale: costResult.teamScale,
     trackModifier: costResult.trackModifier,
     packageModifier: costResult.packageModifier,
@@ -1570,7 +1594,7 @@ function selectRaceWeekendPackage(
 
   // Deduct cost from budget.
   const teams = state.teams.map((t) =>
-    t.id === team.id ? { ...t, budget: t.budget - costResult.cost } : t,
+    t.id === team.id ? { ...t, budget: t.budget - adjustedCost } : t,
   );
 
   // Apply sponsor confidence changes.

@@ -32,6 +32,8 @@ export type TeamPrincipalProfile = {
   jobSecurity: number; // 0-100
   attributes: PrincipalAttributes;
   careerStats: PrincipalCareerStats;
+  xp: number;
+  level: number;
 };
 
 // ---------------------------------------------------------------------------
