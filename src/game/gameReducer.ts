@@ -70,6 +70,7 @@ import { classifyCrashDamage, damageConditionHit, repairCost } from '../sim/repa
 import { buildRaceArchiveEntry } from '../sim/lapArchiveEngine';
 import { resolveTeamOrderConsequences } from '../sim/relationshipEngine';
 import { reactToRaceResult, applyConfidenceUpdates, type ConfidenceUpdate, type RaceEventContext } from '../sim/driverConfidenceEngine';
+import { allocateSkillPoint } from '../sim/principalEngine';
 import type { TeamOrderDecision } from '../types/relationshipTypes';
 import { createSeededRandom, deriveSeed } from '../sim/random';
 import type { AcademyDecision, FirstOptionDecision, SeatSigning } from '../types/marketTypes';
@@ -206,7 +207,8 @@ export type GameAction =
   | { type: 'RESOLVE_PADDOCK_EVENT'; eventId: string; optionId: string }
   | { type: 'TOGGLE_PRESEASON_CHECKLIST_ITEM'; itemId: string }
   | { type: 'APPROVE_PRESEASON_TAB'; tabId: 'teamOverview' | 'budget' | 'driverLineup' | 'carDevelopment' | 'sponsorsEngine' | 'seasonObjectives' | 'roundOnePreview' }
-  | { type: 'SET_CAREER_MOBILITY'; mode: 'StandardCareer' | 'TeamLock' | 'Sandbox' };
+  | { type: 'SET_CAREER_MOBILITY'; mode: 'StandardCareer' | 'TeamLock' | 'Sandbox' }
+  | { type: 'ALLOCATE_SKILL_POINT'; attribute: 'mediaImage' | 'boardConfidence' | 'financialDiscipline' | 'driverManagement' | 'development' | 'strategy'; points?: number };
 
 // Run one practice session for the player's drivers: simulate each assignment,
 // fold the results into the weekend knowledge, and apply the one-off confidence
@@ -744,6 +746,14 @@ export function gameReducer(state: GameState | null, action: GameAction): GameSt
     case 'SET_CAREER_MOBILITY': {
       if (!state) return state;
       return { ...state, careerMobilityMode: action.mode };
+    }
+
+    case 'ALLOCATE_SKILL_POINT': {
+      if (!state || !state.principal) return state;
+      const points = action.points ?? 1;
+      if (state.principal.skillPoints < points) return state;
+      const updated = allocateSkillPoint(state.principal, action.attribute, points);
+      return { ...state, principal: updated };
     }
 
     default:

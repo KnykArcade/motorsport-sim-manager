@@ -54,7 +54,7 @@ import {
 } from '../sim/engineSupplierEngine';
 import {
   bestRehireOffer,
-  generateJobOffers,
+  generateJobOffersWithCredentials,
   reviewPrincipal,
   type PrincipalSeasonOutcome,
 } from '../sim/principalEngine';
@@ -724,6 +724,14 @@ export function advanceSeason(state: GameState): GameState {
   // offer (or were sacked but another team still wants you) you change teams for
   // the new season. Fresh approaches are generated for next year.
   let nextPrincipal = state.principal;
+  // Backward-compat: old saves may not have skillPoints/spentSkillPoints.
+  if (nextPrincipal && nextPrincipal.skillPoints === undefined) {
+    nextPrincipal = {
+      ...nextPrincipal,
+      skillPoints: 0,
+      spentSkillPoints: {},
+    };
+  }
   let nextJobOffers = state.jobOffers;
   let moveTeamId: string | undefined;
   const principalNotes: string[] = [];
@@ -821,7 +829,7 @@ export function advanceSeason(state: GameState): GameState {
     }
 
     // Generate next season's approaches from the principal's new standing.
-    nextJobOffers = generateJobOffers(nextPrincipal, teams, teamReputations, nextYear, state.randomSeed);
+    nextJobOffers = generateJobOffersWithCredentials(nextPrincipal, teams, teamReputations, nextYear, state.randomSeed);
   }
 
   // Load next year's real schedule (and its points system / regulations) when
