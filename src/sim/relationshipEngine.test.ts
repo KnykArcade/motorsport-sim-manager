@@ -132,6 +132,42 @@ describe('relationshipEngine — seeding', () => {
       }
     }
   });
+
+  it('preserves personality traits across season rollover for same-team drivers', () => {
+    const rels = build('trait-persist');
+    const driverId = drivers1995[0].id;
+    const originalTraits = rels[driverId].personalityTraits;
+    expect(originalTraits.length).toBeGreaterThan(0);
+
+    const rolled = rolloverRelationships(rels, teams1995, drivers1995, reps, 'trait-persist-v2');
+    expect(rolled[driverId].personalityTraits).toEqual(originalTraits);
+  });
+
+  it('generates better_reliability want when car reliability is low', () => {
+    const cars = [{ teamId: teams1995[0].id, ratings: { reliability: 40 } }];
+    const rels = createDriverRelationships(teams1995, drivers1995, reps, 'rel-test', cars);
+    const teamDrivers = drivers1995.filter((d) => d.teamId === teams1995[0].id);
+    for (const d of teamDrivers) {
+      // With low reliability, at least one driver should have better_reliability
+      // (unless capped at 3 by higher-priority wants).
+      const rel = rels[d.id];
+      if (rel.wants.length < 3) {
+        expect(rel.wants).toContain('better_reliability');
+      }
+    }
+  });
+
+  it('generates team_stability want when team morale is low', () => {
+    const lowMoraleTeams = teams1995.map((t) => ({ ...t, morale: 30 }));
+    const rels = createDriverRelationships(lowMoraleTeams, drivers1995, reps, 'morale-test');
+    const teamDrivers = drivers1995.filter((d) => d.teamId === teams1995[0].id);
+    for (const d of teamDrivers) {
+      const rel = rels[d.id];
+      if (rel.wants.length < 3) {
+        expect(rel.wants).toContain('team_stability');
+      }
+    }
+  });
 });
 
 describe('relationshipEngine — team orders on the live race', () => {
