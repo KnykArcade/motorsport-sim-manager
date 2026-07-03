@@ -468,8 +468,10 @@ export type NewsItem = {
 export type NewsCategory =
   | 'race_result'
   | 'qualifying'
+  | 'practice'
   | 'preseason'
   | 'paddock'
+  | 'post_race'
   | 'financial'
   | 'driver_market'
   | 'youth_academy'
@@ -477,6 +479,8 @@ export type NewsCategory =
   | 'sponsor'
   | 'ai_team'
   | 'career_event'
+  | 'championship'
+  | 'regulation'
   | 'general';
 
 export type NewsPriority = 'low' | 'normal' | 'high' | 'critical';

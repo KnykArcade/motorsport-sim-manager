@@ -14,6 +14,7 @@ import { Button } from '../components/Button';
 import { StatBar } from '../components/StatBar';
 import { StandingsTable } from '../components/StandingsTable';
 import { NewsFeed } from '../components/NewsFeed';
+import { NewsPanel } from '../components/NewsPanel';
 import { TrackDemandBars } from '../components/TrackDemandBars';
 import { formatMoney } from '../components/ui';
 import {
@@ -176,9 +177,17 @@ export function TeamHQ() {
             </div>
           </Panel>
 
-          <Panel title="News Feed">
+          <Panel title="Top Stories">
             <NewsFeed items={state.news} limit={6} />
           </Panel>
+
+          <NewsPanel
+            news={state.news}
+            title="My Team News"
+            maxItems={4}
+            teamId={state.selectedTeamId}
+            emptyMessage="No team-specific news yet."
+          />
         </div>
       </div>
 

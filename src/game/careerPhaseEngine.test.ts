@@ -1319,4 +1319,123 @@ describe('careerPhaseEngine', () => {
       expect(state.driverRelationships?.[fakeDriverId]).toBeUndefined();
     });
   });
+
+  // --- Preseason driver lineup guard (PART 6) ---
+
+  describe('preseason driver lineup guard', () => {
+    it('approvePreseasonTab rejects driverLineup when team has fewer than 2 active race drivers', () => {
+      let state = newCareerState();
+      const teamId = state.selectedTeamId;
+
+      // Change one active driver's contract to reserve to have only 1 race driver.
+      const raceDrivers = activeDriversForTeam(state, teamId);
+      if (raceDrivers.length >= 2) {
+        const toDemote = raceDrivers[0];
+        state = {
+          ...state,
+          drivers: state.drivers.map((d) =>
+            d.id === toDemote.id
+              ? { ...d, contractType: 'reserve' as const }
+              : d,
+          ),
+        };
+      }
+
+      const activeCount = activeDriversForTeam(state, teamId).length;
+      expect(activeCount).toBeLessThan(2);
+
+      const approvalsBefore = getPreseasonApprovals(state);
+      state = approvePreseasonTab(state, 'driverLineup');
+      const approvalsAfter = getPreseasonApprovals(state);
+
+      // Approval should NOT be granted.
+      expect(approvalsAfter.driverLineup).toBe(approvalsBefore.driverLineup);
+      expect(approvalsAfter.driverLineup).toBeFalsy();
+    });
+
+    it('approvePreseasonTab allows driverLineup when team has 2+ active race drivers', () => {
+      const state = newCareerState();
+      const teamId = state.selectedTeamId;
+      const activeCount = activeDriversForTeam(state, teamId).length;
+      expect(activeCount).toBeGreaterThanOrEqual(2);
+
+      const updated = approvePreseasonTab(state, 'driverLineup');
+      const approvals = getPreseasonApprovals(updated);
+      expect(approvals.driverLineup).toBe(true);
+    });
+
+    it('approvePreseasonTab still allows other tabs regardless of driver count', () => {
+      let state = newCareerState();
+      const teamId = state.selectedTeamId;
+
+      // Change all race drivers to reserve contracts.
+      const raceDrivers = activeDriversForTeam(state, teamId);
+      const raceDriverIds = new Set(raceDrivers.map((d) => d.id));
+      state = {
+        ...state,
+        drivers: state.drivers.map((d) =>
+          d.teamId === teamId && raceDriverIds.has(d.id)
+            ? { ...d, contractType: 'reserve' as const }
+            : d,
+        ),
+      };
+
+      // Other tabs should still be approvable.
+      state = approvePreseasonTab(state, 'teamOverview');
+      expect(getPreseasonApprovals(state).teamOverview).toBe(true);
+
+      state = approvePreseasonTab(state, 'budget');
+      expect(getPreseasonApprovals(state).budget).toBe(true);
+    });
+
+    it('checklist cannot be completed without driverLineup approval', () => {
+      let state = newCareerState();
+      const teamId = state.selectedTeamId;
+
+      // Change one active driver's contract to reserve.
+      const raceDrivers = activeDriversForTeam(state, teamId);
+      if (raceDrivers.length >= 2) {
+        const toDemote = raceDrivers[0];
+        state = {
+          ...state,
+          drivers: state.drivers.map((d) =>
+            d.id === toDemote.id
+              ? { ...d, contractType: 'reserve' as const }
+              : d,
+          ),
+        };
+      }
+
+      // Approve all tabs except driverLineup (which should fail).
+      state = approvePreseasonTab(state, 'teamOverview');
+      state = approvePreseasonTab(state, 'budget');
+      state = approvePreseasonTab(state, 'driverLineup'); // Should fail.
+      state = approvePreseasonTab(state, 'carDevelopment');
+      state = approvePreseasonTab(state, 'sponsorsEngine');
+      state = approvePreseasonTab(state, 'seasonObjectives');
+      state = approvePreseasonTab(state, 'roundOnePreview');
+
+      expect(isPreseasonChecklistComplete(state)).toBe(false);
+    });
+  });
+
+  // --- Career mobility setting (PART 8) ---
+
+  describe('career mobility mode', () => {
+    it('SET_CAREER_MOBILITY updates careerMobilityMode', () => {
+      let state = newCareerState();
+      expect(state.careerMobilityMode).toBe('StandardCareer');
+
+      state = dispatch(state, { type: 'SET_CAREER_MOBILITY', mode: 'TeamLock' });
+      expect(state.careerMobilityMode).toBe('TeamLock');
+
+      state = dispatch(state, { type: 'SET_CAREER_MOBILITY', mode: 'Sandbox' });
+      expect(state.careerMobilityMode).toBe('Sandbox');
+    });
+
+    it('SET_CAREER_MOBILITY defaults to StandardCareer on new game', () => {
+      const state = newCareerState();
+      expect(state.careerMobilityMode).toBe('StandardCareer');
+    });
+  });
 });

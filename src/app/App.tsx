@@ -36,6 +36,7 @@ import { PostRaceReview } from '../screens/PostRaceReview';
 import { PaddockWeek } from '../screens/PaddockWeek';
 import { PreRaceBriefing } from '../screens/PreRaceBriefing';
 import { PreSeasonSetup } from '../screens/PreSeasonSetup';
+import { NewsCenter } from '../screens/NewsCenter';
 import { getCareerPhase } from '../game/careerPhaseEngine';
 
 // Wrap in-game screens with the dashboard layout and redirect to the menu when
@@ -228,6 +229,7 @@ export default function App() {
           <Route path="/results/:raceId" element={<InGame><RaceResults /></InGame>} />
           <Route path="/season-review" element={<InGame><SeasonReview /></InGame>} />
           <Route path="/offseason" element={<InGame><Offseason /></InGame>} />
+      <Route path="/news" element={<InGame><NewsCenter /></InGame>} />
 
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>

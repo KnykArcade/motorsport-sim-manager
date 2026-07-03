@@ -222,6 +222,16 @@ export function approvePreseasonTab(
 ): GameState {
   const phaseState = getOrCreatePhaseState(state);
   const approvals = getPreseasonApprovals(state);
+
+  // Guard: driverLineup tab requires valid race-seat count.
+  if (tabId === 'driverLineup') {
+    const activeDrivers = activeDriversForTeam(state, state.selectedTeamId);
+    if (activeDrivers.length < 2) {
+      // Reject approval — return state unchanged.
+      return state;
+    }
+  }
+
   return {
     ...state,
     careerPhase: {

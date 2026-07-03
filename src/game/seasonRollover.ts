@@ -69,6 +69,14 @@ import { buildAITeamState, rolloverAITeamStates } from '../sim/aiTeamEngine';
 import { runAIOffseason, makeRookieDriver } from '../sim/aiOffseasonEngine';
 import { createSeededRandom, deriveSeed } from '../sim/random';
 import { applyDriverRetirements } from '../sim/driverRetirementEngine';
+import { applyDistressConsequences } from '../sim/financialDistressEngine';
+import {
+  evaluatePrincipalPressure,
+  generateReplacementPrincipalName,
+  principalHiredNews,
+  type CareerMobilityMode,
+} from '../sim/principalPressureEngine';
+import { archiveMajorStories } from '../sim/careerNewsEngine';
 import type { DriverDevelopmentCurve } from '../types/developmentCurveTypes';
 import type {
   Car,
@@ -959,6 +967,117 @@ export function advanceSeason(state: GameState): GameState {
     nextYear,
   );
 
+  // --- Financial distress consequences & principal pressure evaluation ---
+  const mobilityMode: CareerMobilityMode = state.careerMobilityMode ?? 'StandardCareer';
+  const rolloverNews: typeof state.news = [];
+  let teamsAfterDistress = gridFilled.teams;
+  const financialDistress = { ...state.financialDistress };
+  const closureHooks = [...(state.closureHooks ?? [])];
+  const aiPrincipals = { ...(state.aiPrincipals ?? {}) };
+
+  for (const team of state.teams) {
+    const distress = financialDistress[team.id];
+    if (!distress) continue;
+
+    // Apply distress consequences on escalation or at severe levels.
+    const consequence = applyDistressConsequences(
+      team.id,
+      team.name,
+      distress,
+      distress, // prev = same; we check escalation via level transitions at rollover
+      state.seasonYear,
+      undefined,
+    );
+
+    if (consequence.news.length > 0) {
+      rolloverNews.push(...consequence.news);
+    }
+    if (consequence.teamMoraleDelta !== 0) {
+      teamsAfterDistress = teamsAfterDistress.map((t) =>
+        t.id === team.id
+          ? { ...t, morale: Math.max(0, Math.min(100, (t.morale ?? 50) + consequence.teamMoraleDelta)) }
+          : t,
+      );
+    }
+    if (consequence.closureHook) {
+      // Store closure hook for future expansion (don't duplicate).
+      const existing = closureHooks.find((h) => h.teamId === team.id && h.seasonYear === state.seasonYear);
+      if (!existing) {
+        closureHooks.push({ teamId: team.id, seasonYear: state.seasonYear, level: distress.level });
+      }
+    }
+
+    // Principal pressure evaluation for both player and AI.
+    const isPlayer = team.id === state.selectedTeamId;
+    const constructorPosition =
+      state.constructorStandings.findIndex((s) => s.entityId === team.id) + 1 || state.teams.length;
+    const expectedPosition = state.teamExpectations?.[team.id]?.minimumConstructorPosition ?? Math.ceil(state.teams.length / 2);
+
+    if (isPlayer) {
+      // Player principal pressure.
+      const playerPrincipal = state.principal;
+      const principalName = playerPrincipal?.name ?? 'The Principal';
+      const currentPressure = playerPrincipal?.jobSecurity != null
+        ? 100 - playerPrincipal.jobSecurity
+        : 0;
+      const evaluation = evaluatePrincipalPressure(
+        principalName,
+        team.id,
+        team.name,
+        currentPressure,
+        distress,
+        constructorPosition,
+        expectedPosition,
+        state.seasonYear,
+        true,
+        mobilityMode,
+      );
+      rolloverNews.push(...evaluation.news);
+    } else {
+      // AI principal pressure.
+      const aiPrincipal = aiPrincipals[team.id];
+      const principalName = aiPrincipal?.name ?? `${team.name} Principal`;
+      const currentPressure = aiPrincipal?.pressure ?? 0;
+      const evaluation = evaluatePrincipalPressure(
+        principalName,
+        team.id,
+        team.name,
+        currentPressure,
+        distress,
+        constructorPosition,
+        expectedPosition,
+        state.seasonYear,
+        false,
+        'StandardCareer', // AI always uses standard rules
+      );
+      rolloverNews.push(...evaluation.news);
+
+      if (evaluation.shouldFire) {
+        // Replace AI principal with a new one.
+        const newPrincipalName = generateReplacementPrincipalName(`${state.randomSeed}-${team.id}-${nextYear}`);
+        aiPrincipals[team.id] = {
+          principalId: `principal-${team.id}-${nextYear}`,
+          name: newPrincipalName,
+          pressure: 20,
+          contractYearsRemaining: 2,
+          seasonsAtTeam: 0,
+          fired: false,
+        };
+        rolloverNews.push(principalHiredNews(newPrincipalName, team.id, team.name, state.seasonYear));
+      } else {
+        // Update AI principal pressure.
+        aiPrincipals[team.id] = {
+          principalId: aiPrincipal?.principalId ?? `principal-${team.id}`,
+          name: principalName,
+          pressure: evaluation.newPressure,
+          contractYearsRemaining: Math.max(0, (aiPrincipal?.contractYearsRemaining ?? 2) - 1),
+          seasonsAtTeam: (aiPrincipal?.seasonsAtTeam ?? 0) + 1,
+          fired: false,
+        };
+      }
+    }
+  }
+
   const now = new Date().toISOString();
   const nextState: GameState = {
     ...state,
@@ -971,7 +1090,7 @@ export function advanceSeason(state: GameState): GameState {
     regulationSetId,
     drivers: gridFilled.drivers,
     cars: aiOffseason.cars,
-    teams: gridFilled.teams,
+    teams: teamsAfterDistress,
     teamOrgRatings: aiOffseason.orgRatings,
     aiAcademies: aiOffseason.aiAcademies,
     facilities: nextFacilities,
@@ -1008,6 +1127,7 @@ export function advanceSeason(state: GameState): GameState {
     activeDevelopmentProjects: [],
     completedDevelopmentProjects: [],
     offseasonHistory: [...state.offseasonHistory, summary],
+    newsArchive: archiveMajorStories(state.news, state.newsArchive),
     news: [
       {
         id: `news-season-${nextYear}`,
@@ -1024,6 +1144,7 @@ export function advanceSeason(state: GameState): GameState {
         body: n.body ?? n.headline,
         timestamp: now,
       })),
+      ...rolloverNews,
       ...state.news,
     ].slice(0, 50),
     careerPhase: defaultCareerPhaseState(),

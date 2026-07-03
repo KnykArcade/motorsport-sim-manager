@@ -76,8 +76,10 @@ import type {
   Car,
   DevelopmentProject,
   Driver,
+  NewsItem,
   QualifyingResult,
   RaceResult,
+  Team,
   Track,
 } from '../types/gameTypes';
 import type { EngineDealType } from '../types/engineTypes';
@@ -108,7 +110,7 @@ import {
   sessionLapCost,
 } from '../sim/practiceProgramEngine';
 import { weekendForecast } from '../sim/weatherEngine';
-import type { RaceWeekendPackageType, RaceWeekendPackageSelection, RaceWeekendPackageEffects } from '../types/raceWeekendPackageTypes';
+import type { RaceWeekendPackageType, RaceWeekendPackageSelection, RaceWeekendPackageEffects, FinancialDistressMap } from '../types/raceWeekendPackageTypes';
 import type { AIPackageContext } from '../types/raceWeekendPackageTypes';
 import {
   computeRaceWeekendPackageCost,
@@ -201,7 +203,8 @@ export type GameAction =
   | { type: 'GENERATE_PADDOCK_EVENTS' }
   | { type: 'RESOLVE_PADDOCK_EVENT'; eventId: string; optionId: string }
   | { type: 'TOGGLE_PRESEASON_CHECKLIST_ITEM'; itemId: string }
-  | { type: 'APPROVE_PRESEASON_TAB'; tabId: 'teamOverview' | 'budget' | 'driverLineup' | 'carDevelopment' | 'sponsorsEngine' | 'seasonObjectives' | 'roundOnePreview' };
+  | { type: 'APPROVE_PRESEASON_TAB'; tabId: 'teamOverview' | 'budget' | 'driverLineup' | 'carDevelopment' | 'sponsorsEngine' | 'seasonObjectives' | 'roundOnePreview' }
+  | { type: 'SET_CAREER_MOBILITY'; mode: 'StandardCareer' | 'TeamLock' | 'Sandbox' };
 
 // Run one practice session for the player's drivers: simulate each assignment,
 // fold the results into the weekend knowledge, and apply the one-off confidence
@@ -730,6 +733,11 @@ export function gameReducer(state: GameState | null, action: GameAction): GameSt
       if (!state) return state;
       if (getCareerPhase(state) !== 'pre_season_setup') return state;
       return approvePreseasonTab(state, action.tabId);
+    }
+
+    case 'SET_CAREER_MOBILITY': {
+      if (!state) return state;
+      return { ...state, careerMobilityMode: action.mode };
     }
 
     default:
@@ -1585,10 +1593,6 @@ function selectRaceWeekendPackage(
     teamsWithMorale.find((t) => t.id === team.id)!.budget,
     isEmergency,
   );
-  const financialDistress = {
-    ...state.financialDistress,
-    [team.id]: playerDistress,
-  };
 
   // Generate distress news if level has escalated.
   const distressNews = distressNewsHeadline(team.name, playerDistress);
@@ -1605,29 +1609,36 @@ function selectRaceWeekendPackage(
 
   return {
     ...state,
-    teams: teamsWithMorale,
+    teams: aiPackages.teams.map((t) =>
+      t.id === team.id ? teamsWithMorale.find((tw) => tw.id === team.id)! : t,
+    ),
     drivers,
     commercial,
     raceWeekendPackage: selection,
     raceWeekendPackageHistory: history,
-    aiRaceWeekendPackages: aiPackages,
+    aiRaceWeekendPackages: aiPackages.packages,
     finance: [...(state.finance ?? []), ...financeTxns],
-    financialDistress,
-    news: [...allNews, ...state.news].slice(0, 50),
+    financialDistress: { ...aiPackages.financialDistress, [team.id]: playerDistress },
+    news: [...allNews, ...aiPackages.news, ...state.news].slice(0, 50),
   };
 }
 
 // Generate Race Weekend Package selections for all AI teams based on their
 // financial state, archetype, championship position, and car reliability.
+// Also deducts package costs from AI budgets, updates financial distress,
+// and generates news for AI emergency package usage.
 function generateAIPackages(
   state: GameState,
   race: NonNullable<ReturnType<typeof currentRace>>,
   track: Track,
-): Record<string, RaceWeekendPackageSelection> {
+): { packages: Record<string, RaceWeekendPackageSelection>; teams: Team[]; financialDistress: FinancialDistressMap; news: NewsItem[] } {
   const result: Record<string, RaceWeekendPackageSelection> = {};
   const constructorStandings = state.constructorStandings;
   const teamCount = state.teams.length;
   const isLateSeason = race.round > state.calendar.length * 0.7;
+  const aiNews: NewsItem[] = [];
+  let teams = [...state.teams];
+  let financialDistress = { ...state.financialDistress };
 
   for (const team of state.teams) {
     if (team.id === state.selectedTeamId) continue;
@@ -1657,7 +1668,7 @@ function generateAIPackages(
       championshipPosition: constructorPosition,
       teamCount,
       carReliability,
-      raceImportance: 0.5, // default; could be enhanced with crown-jewel data
+      raceImportance: 0.5,
       isLateSeason,
       damageRiskTrack,
     };
@@ -1665,34 +1676,74 @@ function generateAIPackages(
     const pkgType = aiSelectPackage(ctx, state.series, state.randomSeed, team.id, race.round);
     const costResult = computeRaceWeekendPackageCost(state.series, team, track, pkgType);
 
+    let selectedType: RaceWeekendPackageType = pkgType;
+    let selectedCost = costResult;
+
     // If AI team cannot afford the selected package, fall back to MandatoryMinimum.
     if (team.budget < costResult.cost) {
-      const emergencyCost = computeMandatoryMinimumCost();
-      result[team.id] = {
-        packageType: 'MandatoryMinimum',
-        raceId: race.id,
-        gpName: race.gpName,
-        cost: emergencyCost.cost,
-        teamScale: emergencyCost.teamScale,
-        trackModifier: emergencyCost.trackModifier,
-        packageModifier: emergencyCost.packageModifier,
-        damageReserve: emergencyCost.damageReserve,
-      };
-    } else {
-      result[team.id] = {
-        packageType: pkgType,
-        raceId: race.id,
-        gpName: race.gpName,
-        cost: costResult.cost,
-        teamScale: costResult.teamScale,
-        trackModifier: costResult.trackModifier,
-        packageModifier: costResult.packageModifier,
-        damageReserve: costResult.damageReserve,
-      };
+      selectedType = 'MandatoryMinimum';
+      selectedCost = computeMandatoryMinimumCost();
+    }
+
+    result[team.id] = {
+      packageType: selectedType,
+      raceId: race.id,
+      gpName: race.gpName,
+      cost: selectedCost.cost,
+      teamScale: selectedCost.teamScale,
+      trackModifier: selectedCost.trackModifier,
+      packageModifier: selectedCost.packageModifier,
+      damageReserve: selectedCost.damageReserve,
+    };
+
+    // Deduct package cost from AI team budget.
+    teams = teams.map((t) =>
+      t.id === team.id ? { ...t, budget: t.budget - selectedCost.cost } : t,
+    );
+
+    // Update AI financial distress.
+    const isEmergency = selectedType === 'MandatoryMinimum';
+    const updatedBudget = teams.find((t) => t.id === team.id)!.budget;
+    const aiDistress = updateFinancialDistress(
+      financialDistress[team.id],
+      updatedBudget,
+      isEmergency,
+    );
+    financialDistress = { ...financialDistress, [team.id]: aiDistress };
+
+    // Generate news for AI emergency package usage.
+    if (isEmergency) {
+      aiNews.push({
+        id: `news-ai-emergency-${race.round}-${team.id}`,
+        round: race.round,
+        headline: `${team.name} forced into Minimum Operations at ${race.gpName}`,
+        body: 'Financial constraints force the team to run emergency operations.',
+        timestamp: new Date().toISOString(),
+        category: 'ai_team',
+        priority: 'high',
+        careerPhase: 'pre_race_briefing',
+        teamId: team.id,
+      });
+    }
+
+    // Generate AI distress escalation news.
+    const distressNews = distressNewsHeadline(team.name, aiDistress);
+    if (distressNews) {
+      aiNews.push({
+        id: `news-ai-distress-${race.round}-${team.id}`,
+        round: race.round,
+        headline: distressNews.headline,
+        body: distressNews.body,
+        timestamp: new Date().toISOString(),
+        category: 'financial',
+        priority: aiDistress.level === 'ClosureRisk' || aiDistress.level === 'Administration' ? 'critical' : 'high',
+        careerPhase: 'pre_race_briefing',
+        teamId: team.id,
+      });
     }
   }
 
-  return result;
+  return { packages: result, teams, financialDistress, news: aiNews };
 }
 
 export type { QualifyingResult };
