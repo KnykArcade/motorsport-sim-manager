@@ -44,6 +44,8 @@ import {
 import { aiFacilityLevel, facilityOutcomeChances, facilityImpactMultiplier } from './facilityEngine';
 import { ARCHETYPE_SPECS } from './aiTeamEngine';
 import { createSeededRandom, deriveSeed, type Rng } from './random';
+import { getStaffPool } from '../data';
+import type { StaffRole } from '../types/staffTypes';
 
 export type AIOffseasonInput = {
   nextYear: number;
@@ -65,6 +67,7 @@ export type AIOffseasonInput = {
   // 0 (stable regulations) .. 1 (major regulation shakeup) for the upcoming
   // season. Drives offseason car decay/reshuffle and carryover reduction.
   regulationShakeup?: number;
+  series?: string;
 };
 
 export type AIOffseasonResult = {
@@ -464,6 +467,29 @@ export function runAIOffseason(input: AIOffseasonInput): AIOffseasonResult {
         'research',
       ];
       let updated = { ...org };
+
+      // AI named staff hiring: pick a specialist from the pool when investing.
+      if (invest && spendableCash(team, ai) > toMoney(4) && rng.chance(0.4 + spec.risk * 0.2)) {
+        const pool = getStaffPool(input.nextYear, input.series ?? 'F1');
+        const roleMap: Record<StaffRole, 'staffQuality' | 'operations' | 'research'> = {
+          'Technical Director': 'research',
+          'Race Engineer': 'staffQuality',
+          'Pit Crew Chief': 'operations',
+          Strategist: 'operations',
+        };
+        const affordable = pool.filter((s) => toMoney(s.signingFee) <= spendableCash(team, ai));
+        if (affordable.length > 0) {
+          const best = affordable.sort((a, b) => b.rating - a.rating).slice(0, 5);
+          const hire = rng.pick(best);
+          const dept = roleMap[hire.role];
+          const boost = Math.round((hire.rating - 5) * 0.8);
+          updated = { ...updated, [dept]: clamp100(updated[dept] + Math.max(1, boost)) };
+          team.budget -= toMoney(hire.signingFee);
+          notes.push(`${team.name} hires ${hire.name} as ${hire.role}.`);
+          news.push({ headline: `${team.name} hires ${hire.name} as ${hire.role}.` });
+        }
+      }
+
       if (invest && spendableCash(team, ai) > toMoney(4) && rng.chance(0.35 + spec.risk * 0.3)) {
         const dept = rng.pick(staffTargets);
         updated = { ...updated, [dept]: clamp100(updated[dept] + 2 + Math.round(rng.next() * 3)) };

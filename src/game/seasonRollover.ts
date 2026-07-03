@@ -926,6 +926,7 @@ export function advanceSeason(state: GameState): GameState {
     reservedNames: aiReservedNames,
     constructorStandings: state.constructorStandings,
     regulationShakeup,
+    series: state.series,
   });
 
   const champion = state.driverStandings[0];
