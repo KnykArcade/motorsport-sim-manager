@@ -153,5 +153,95 @@ describe('youthGenerationEngine', () => {
       const b = ensureMinimumYouthProspects([], 'test-seed', 'F1', 2024);
       expect(a).toEqual(b);
     });
+
+    it('does not replace curated eligible youth drivers', () => {
+      const curated: YouthProspect[] = Array.from({ length: 3 }, (_, i) => ({
+        id: `curated-${i}`,
+        name: `Curated Driver ${i}`,
+        age: 14 + i,
+        birthYear: 2024 - (14 + i),
+        nationality: 'GBR',
+        currentLevel: 'Karting',
+        marketPool: 'Youth' as const,
+        marketStatus: 'Prospect' as const,
+        academyEligibleNow: true,
+        earliestFullAcademyYear: 2024,
+        skills: {
+          cornering: 5, braking: 5, straights: 5, tractionAcceleration: 5,
+          elevationBlindCorners: 5, technical: 5, overtakingRacecraft: 5,
+          surfaceGripBumpiness: 5, riskManagement: 5, enduranceConsistency: 5,
+        },
+        overall: 5,
+        potential: 7,
+        potentialDelta: 2,
+        developmentRate: 0.5,
+        yearsUntilF1Ready: 3,
+        signingCost: 0.1,
+        yearlyAcademyCost: 0.1,
+        riskLevel: 'Low' as const,
+        suggestedPath: 'Academy',
+        notes: 'Curated prospect',
+      }));
+      const result = ensureMinimumYouthProspects(curated, 'test-seed', 'F1', 2024);
+      // Curated drivers should be at the start, unchanged.
+      expect(result.slice(0, 3)).toEqual(curated);
+      // Total should be at least minimum.
+      expect(result.length).toBeGreaterThanOrEqual(MIN_YOUTH_PROSPECTS);
+    });
+
+    it('does not duplicate existing driver names', () => {
+      const existing: YouthProspect[] = [{
+        id: 'existing-0',
+        name: 'John Smith',
+        age: 15,
+        birthYear: 2009,
+        nationality: 'GBR',
+        currentLevel: 'Karting',
+        marketPool: 'Youth' as const,
+        marketStatus: 'Prospect' as const,
+        academyEligibleNow: true,
+        earliestFullAcademyYear: 2024,
+        skills: {
+          cornering: 5, braking: 5, straights: 5, tractionAcceleration: 5,
+          elevationBlindCorners: 5, technical: 5, overtakingRacecraft: 5,
+          surfaceGripBumpiness: 5, riskManagement: 5, enduranceConsistency: 5,
+        },
+        overall: 5,
+        potential: 7,
+        potentialDelta: 2,
+        developmentRate: 0.5,
+        yearsUntilF1Ready: 3,
+        signingCost: 0.1,
+        yearlyAcademyCost: 0.1,
+        riskLevel: 'Low' as const,
+        suggestedPath: 'Academy',
+        notes: 'Existing prospect',
+      }];
+      const result = ensureMinimumYouthProspects(existing, 'test-seed', 'F1', 2024);
+      const names = result.map((p) => p.name.toLowerCase().trim());
+      const uniqueNames = new Set(names);
+      expect(uniqueNames.size).toBe(names.length);
+    });
+
+    it('season rollover re-checks and refills if needed', () => {
+      // Simulate a season rollover: year changes, pool may shrink.
+      const year1 = ensureMinimumYouthProspects([], 'test-seed', 'F1', 2024);
+      expect(year1.length).toBeGreaterThanOrEqual(MIN_YOUTH_PROSPECTS);
+
+      // Simulate some prospects aging out (e.g., only 5 remain).
+      const remaining = year1.slice(0, 5);
+      const year2 = ensureMinimumYouthProspects(remaining, 'test-seed', 'F1', 2025);
+      expect(year2.length).toBeGreaterThanOrEqual(MIN_YOUTH_PROSPECTS);
+      // Original 5 should be preserved.
+      expect(year2.slice(0, 5)).toEqual(remaining);
+    });
+
+    it('respects occupiedNames to avoid collisions with senior drivers', () => {
+      const occupiedNames = new Set<string>(['john smith', 'jane doe']);
+      const result = ensureMinimumYouthProspects([], 'test-seed', 'F1', 2024, occupiedNames);
+      const names = result.map((p) => p.name.toLowerCase().trim());
+      expect(names).not.toContain('john smith');
+      expect(names).not.toContain('jane doe');
+    });
   });
 });

@@ -174,6 +174,30 @@ export type GameState = {
   // Financial distress tracking for all teams, keyed by teamId.
   // Optional for save compatibility; defaults to Stable for all teams.
   financialDistress?: FinancialDistressMap;
+
+  // News archive — permanent store of major career stories that survive beyond
+  // the 50-item rolling news feed. Optional for save compatibility.
+  newsArchive?: NewsItem[];
+
+  // Player career mobility setting. Controls whether the player can be fired.
+  // Defaults to StandardCareer for existing saves.
+  careerMobilityMode?: 'StandardCareer' | 'TeamLock' | 'Sandbox';
+
+  // AI Team Principal states, keyed by teamId. Tracks pressure, contract, and
+  // firing status for AI principals. Optional for save compatibility.
+  aiPrincipals?: Record<string, {
+    principalId: string;
+    name: string;
+    pressure: number;
+    contractYearsRemaining: number;
+    seasonsAtTeam: number;
+    fired: boolean;
+  }>;
+
+  // Closure/replacement hooks stored for future expansion when a team reaches
+  // ClosureRisk. Each entry records the team and season for potential future
+  // team sale, merger, or replacement processing.
+  closureHooks?: { teamId: string; seasonYear: number; level: string }[];
 };
 
 export function teamById(state: GameState, id: string): Team | undefined {

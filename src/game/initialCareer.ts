@@ -203,6 +203,7 @@ export function createNewGame(options: NewGameOptions): GameState {
     universeHistory: createInitialUniverseHistory(),
     randomSeed: seed,
     seasonComplete: false,
+    careerMobilityMode: 'StandardCareer',
   };
 
   // AI Team Management (Phase C): give every non-player team its management

@@ -13,6 +13,7 @@ import {
 import { developmentSlots } from '../sim/facilityEngine';
 import { Panel } from '../components/Panel';
 import { Button } from '../components/Button';
+import { NewsPanel } from '../components/NewsPanel';
 import { formatMoney } from '../components/ui';
 import type { PaddockEvent, PaddockEventCategory } from '../types/careerPhaseTypes';
 
@@ -134,6 +135,25 @@ export function PaddockWeek() {
         <KpiCard label="Car Condition" value={`${Math.round(car?.condition ?? 0)}%`} />
         <KpiCard label="Dev Slots" value={`${state.activeDevelopmentProjects.length}/${slots}`} />
         <KpiCard label="Active Drivers" value={`${activeDrivers.length}/2`} />
+      </div>
+
+      {/* Paddock News */}
+      <div className="grid gap-4 lg:grid-cols-2">
+        <NewsPanel
+          news={state.news}
+          title="Paddock Headlines"
+          maxItems={5}
+          categoryFilter={['paddock', 'development', 'ai_team']}
+          emptyMessage="No paddock news this week."
+        />
+        <NewsPanel
+          news={state.news}
+          title="My Team & Finance"
+          maxItems={4}
+          teamId={state.selectedTeamId}
+          categoryFilter={['financial', 'sponsor', 'career_event']}
+          emptyMessage="No team news this week."
+        />
       </div>
 
       {/* Required Decisions */}

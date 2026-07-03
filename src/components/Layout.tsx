@@ -8,6 +8,7 @@ const NAV = [
   { to: '/hq', label: 'Team HQ', icon: '◧' },
   { to: '/calendar', label: 'Calendar', icon: '▦' },
   { to: '/standings', label: 'Standings', icon: '▤' },
+  { to: '/news', label: 'News Center', icon: '✉' },
   { to: '/teams', label: 'Team Overview', icon: '⊞' },
   { to: '/history', label: 'Race History', icon: '⌚' },
   { to: '/records', label: 'Universe History', icon: '★' },

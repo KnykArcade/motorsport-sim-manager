@@ -446,8 +446,10 @@ export function categoryLabel(category: NewsCategory | undefined): string {
   switch (category) {
     case 'race_result': return 'Race Result';
     case 'qualifying': return 'Qualifying';
+    case 'practice': return 'Practice';
     case 'preseason': return 'Pre-Season';
     case 'paddock': return 'Paddock';
+    case 'post_race': return 'Post-Race';
     case 'financial': return 'Financial';
     case 'driver_market': return 'Driver Market';
     case 'youth_academy': return 'Youth Academy';
@@ -455,7 +457,72 @@ export function categoryLabel(category: NewsCategory | undefined): string {
     case 'sponsor': return 'Sponsor';
     case 'ai_team': return 'AI Team';
     case 'career_event': return 'Career Event';
+    case 'championship': return 'Championship';
+    case 'regulation': return 'Regulation';
     case 'general': return 'General';
     default: return 'General';
   }
+}
+
+// ---------------------------------------------------------------------------
+// News archive — major stories that should persist beyond the 50-item feed
+// ---------------------------------------------------------------------------
+
+// Categories that are always considered "major" and should be archived.
+const MAJOR_CATEGORIES: NewsCategory[] = [
+  'race_result',
+  'career_event',
+  'financial',
+  'championship',
+  'regulation',
+];
+
+// Priorities that are always considered "major".
+const MAJOR_PRIORITIES: NewsPriority[] = ['critical'];
+
+// Determine if a news item is "major" and should be archived.
+export function isMajorStory(item: NewsItem): boolean {
+  if (item.priority && MAJOR_PRIORITIES.includes(item.priority)) return true;
+  if (item.category && MAJOR_CATEGORIES.includes(item.category)) return true;
+  // Race wins are always major.
+  if (item.headline.includes(' wins ')) return true;
+  if (item.headline.includes('champion')) return true;
+  if (item.headline.includes('closure') || item.headline.includes('closure risk')) return true;
+  if (item.headline.includes('fired') || item.headline.includes('sacks')) return true;
+  if (item.headline.includes('appointed') || item.headline.includes('hires')) return true;
+  return false;
+}
+
+// Archive major stories from the current feed before it gets trimmed.
+// Returns the combined archive (existing + new major stories, deduplicated).
+export function archiveMajorStories(
+  currentNews: NewsItem[],
+  existingArchive?: NewsItem[],
+): NewsItem[] {
+  const archive = existingArchive ?? [];
+  const archiveIds = new Set(archive.map((n) => n.id));
+  const newMajor = currentNews.filter((n) => isMajorStory(n) && !archiveIds.has(n.id));
+  return [...archive, ...newMajor];
+}
+
+// Filter news by team (player team or all).
+export function filterNewsByTeam(items: NewsItem[], teamId: string | undefined): NewsItem[] {
+  if (!teamId) return items;
+  return items.filter((n) => n.teamId === teamId || !n.teamId);
+}
+
+// Filter news by season (based on timestamp year).
+export function filterNewsBySeason(items: NewsItem[], seasonYear: number): NewsItem[] {
+  return items.filter((n) => {
+    try {
+      return new Date(n.timestamp).getFullYear() === seasonYear;
+    } catch {
+      return false;
+    }
+  });
+}
+
+// Filter news by priority.
+export function filterNewsByPriority(items: NewsItem[], priority: NewsPriority): NewsItem[] {
+  return items.filter((n) => (n.priority ?? 'normal') === priority);
 }

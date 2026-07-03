@@ -12,6 +12,7 @@ import { getOrCreatePhaseState } from '../game/careerPhaseEngine';
 import { Panel } from '../components/Panel';
 import { Button } from '../components/Button';
 import { TrackDemandBars } from '../components/TrackDemandBars';
+import { NewsPanel } from '../components/NewsPanel';
 import { formatMoney } from '../components/ui';
 
 const RACE_PREP_FOCUS_INFO: Record<string, { label: string; description: string }> = {
@@ -101,6 +102,24 @@ export function PreRaceBriefing() {
 
       <div className="grid gap-6 lg:grid-cols-3">
         <div className="space-y-6 lg:col-span-2">
+
+          {/* Race Preview News */}
+          <div className="grid gap-4 sm:grid-cols-2">
+            <NewsPanel
+              news={state.news}
+              title="Race Preview"
+              maxItems={3}
+              categoryFilter={['preseason', 'ai_team', 'championship']}
+              emptyMessage="No race preview stories."
+            />
+            <NewsPanel
+              news={state.news}
+              title="Paddock Watch"
+              maxItems={3}
+              categoryFilter={['development', 'ai_team', 'financial']}
+              emptyMessage="No paddock news."
+            />
+          </div>
           {/* Race Details */}
           <Panel title="Race Details">
             <div className="grid gap-4 sm:grid-cols-2">

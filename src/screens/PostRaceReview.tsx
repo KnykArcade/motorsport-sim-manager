@@ -6,6 +6,7 @@ import { Panel } from '../components/Panel';
 import { Button } from '../components/Button';
 import { RaceResultTable } from '../components/RaceResultTable';
 import { StandingsTable } from '../components/StandingsTable';
+import { NewsPanel } from '../components/NewsPanel';
 import { formatMoney } from '../components/ui';
 
 export function PostRaceReview() {
@@ -165,6 +166,24 @@ export function PostRaceReview() {
             </p>
           </Panel>
         </div>
+      </div>
+
+      {/* Race Reaction News */}
+      <div className="grid gap-4 lg:grid-cols-2">
+        <NewsPanel
+          news={state.news}
+          title="Race Reaction"
+          maxItems={5}
+          categoryFilter={['race_result', 'post_race']}
+          emptyMessage="No race reaction stories yet."
+        />
+        <NewsPanel
+          news={state.news}
+          title="Championship & Paddock"
+          maxItems={4}
+          categoryFilter={['championship', 'financial', 'ai_team']}
+          emptyMessage="No championship news."
+        />
       </div>
 
       <div className="grid gap-6 lg:grid-cols-2">

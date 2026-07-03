@@ -14,6 +14,7 @@ import { developmentSlots } from '../sim/facilityEngine';
 import { Panel } from '../components/Panel';
 import { Button } from '../components/Button';
 import { TrackDemandBars } from '../components/TrackDemandBars';
+import { NewsPanel } from '../components/NewsPanel';
 import { formatMoney } from '../components/ui';
 import { isPreseasonChecklistComplete, getPreseasonApprovals } from '../game/careerPhaseEngine';
 
@@ -121,6 +122,24 @@ export function PreSeasonSetup() {
 
       {/* Tab Content */}
       <div className="space-y-6">
+
+        {/* Season Preview News */}
+        <div className="grid gap-4 lg:grid-cols-2">
+          <NewsPanel
+            news={state.news}
+            title="Season Preview"
+            maxItems={4}
+            categoryFilter={['preseason', 'driver_market', 'financial']}
+            emptyMessage="Season preview stories will appear here."
+          />
+          <NewsPanel
+            news={state.news}
+            title="Youth Academy Watch"
+            maxItems={3}
+            categoryFilter={['youth_academy']}
+            emptyMessage="No youth academy news this season."
+          />
+        </div>
         {activeTab === 'teamOverview' && (
           <Panel title="Team Overview">
             <div className="grid gap-4 sm:grid-cols-2">
