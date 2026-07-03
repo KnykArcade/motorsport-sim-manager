@@ -4,7 +4,7 @@
 
 export type Series = 'F1' | 'IndyCar';
 
-export type GameMode = 'SingleSeason' | 'Career';
+export type GameMode = 'SingleSeason' | 'Career' | 'Sandbox';
 
 // ---------------------------------------------------------------------------
 // Track / season

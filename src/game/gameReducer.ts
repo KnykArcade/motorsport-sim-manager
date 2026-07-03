@@ -22,6 +22,7 @@ import {
   sortNewsByPriority,
   type CareerNewsContext,
 } from '../sim/careerNewsEngine';
+import { generateDriverDramaNews, type DramaNewsContext } from '../sim/driverDramaNewsEngine';
 import { aiQualifyingDecision } from './ai';
 import {
   activeDriversForTeam,
@@ -70,7 +71,7 @@ import {
 import { classifyCrashDamage, damageConditionHit, repairCost } from '../sim/repairEngine';
 import { buildRaceArchiveEntry } from '../sim/lapArchiveEngine';
 import { resolveTeamOrderConsequences } from '../sim/relationshipEngine';
-import { reactToRaceResult, applyConfidenceUpdates, makePromise, resolvePromise, applyPromiseResolution, evaluatePromisesAfterRace, checkExpiredPromises, hasActivePromiseOfType, confidencePerformanceModifier, type ConfidenceUpdate, type RaceEventContext } from '../sim/driverConfidenceEngine';
+import { reactToRaceResult, applyConfidenceUpdates, makePromise, resolvePromise, applyPromiseResolution, evaluatePromisesAfterRace, checkExpiredPromises, hasActivePromiseOfType, confidencePerformanceModifier, type ConfidenceUpdate, type RaceEventContext, type PromiseResolution } from '../sim/driverConfidenceEngine';
 import { allocateSkillPoint } from '../sim/principalEngine';
 import type { TeamOrderDecision, PromiseType } from '../types/relationshipTypes';
 import { createSeededRandom, deriveSeed } from '../sim/random';
@@ -1337,6 +1338,7 @@ function applyRaceResults(
   // race into the relationship map, nudge the affected drivers' morale, and keep
   // the season's order log + any media reactions for the news.
   let driverRelationships = state.driverRelationships;
+  const prevDriverRelationships = state.driverRelationships ? { ...state.driverRelationships } : undefined;
   let driverPromises = state.driverPromises;
   let teamOrderHistory = state.teamOrderHistory ?? [];
   const relationshipNews: string[] = [];
@@ -1375,6 +1377,9 @@ function applyRaceResults(
   }
 
   // Driver Confidence / Trust / Ego updates from race results.
+  const perDriverConfidenceUpdates: Record<string, ConfidenceUpdate[]> = {};
+  const perDriverRaceCtx: Record<string, RaceEventContext> = {};
+  const perDriverPromiseResolutions: Record<string, PromiseResolution[]> = {};
   if (driverRelationships) {
     const allUpdates: ConfidenceUpdate[] = [];
     for (const r of results) {
@@ -1404,12 +1409,18 @@ function applyRaceResults(
         podium: r.position !== null && r.position <= 3,
         win: r.position === 1,
       };
-      allUpdates.push(...reactToRaceResult(rel, ctx));
+      perDriverRaceCtx[r.driverId] = ctx;
+      const driverUpdates = reactToRaceResult(rel, ctx);
+      allUpdates.push(...driverUpdates);
+      perDriverConfidenceUpdates[r.driverId] = driverUpdates;
 
       // Auto-resolve promises based on race events.
       const currentPromises = driverPromises ?? [];
       if (currentPromises.length > 0) {
         const resolutions = evaluatePromisesAfterRace(currentPromises, r.driverId, ctx);
+        if (resolutions.length > 0) {
+          perDriverPromiseResolutions[r.driverId] = resolutions;
+        }
         for (const res of resolutions) {
           const resolved = resolvePromise(res.promise, res.fulfilled);
           driverPromises = (driverPromises ?? currentPromises).map((p) =>
@@ -1563,6 +1574,35 @@ function applyRaceResults(
   const careerRaceNews = generateCareerRaceNews(careerCtx, qualifying, results, driverNames, teamNames);
   const dedupedCareerNews = deduplicateNews(news, careerRaceNews);
   news.push(...dedupedCareerNews);
+
+  // Generate driver drama news from confidence, trust, ego, morale, promise,
+  // and teammate rivalry events.
+  if (driverRelationships && prevDriverRelationships) {
+    const dramaCtx: DramaNewsContext = {
+      season: state.seasonYear,
+      round: race.round,
+      gpName: race.gpName,
+      driverNames,
+      teamNames,
+    };
+    const expiredPromises = (driverPromises ?? []).filter((p) => p.status === 'expired');
+    const dramaNews = generateDriverDramaNews(dramaCtx, {
+      relationships: driverRelationships,
+      prevRelationships: prevDriverRelationships,
+      confidenceUpdates: perDriverConfidenceUpdates,
+      raceContexts: perDriverRaceCtx,
+      promiseResolutions: perDriverPromiseResolutions,
+      expiredPromises,
+      allPromises: driverPromises ?? [],
+      teamOrderConsequences: teamOrders.length > 0
+        ? resolveTeamOrderConsequences(teamOrders, driverRelationships, (id) => driverNames[id] ?? id).consequences
+        : [],
+      teamOrders,
+    });
+    const dedupedDramaNews = deduplicateNews(news, dramaNews);
+    news.push(...dedupedDramaNews);
+  }
+
   for (const m of devMessages) {
     news.unshift({ id: `news-dev-${race.round}-${m.slice(0, 8)}`, round: race.round, headline: m, timestamp: new Date().toISOString() });
   }
