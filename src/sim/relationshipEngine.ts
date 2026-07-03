@@ -224,12 +224,12 @@ export function syncDriverRelationshipsForTeam(
   // Identify current roster drivers.
   const currentDriverIds = new Set(teamDrivers.map((d) => d.id));
 
-  // Preserve existing relationships for retained drivers.
+  // Preserve existing relationships for retained drivers (clone to avoid mutation).
   const preservedRels: Record<string, DriverRelationship> = {};
   for (const driverId of currentDriverIds) {
     const existing = existingRels[driverId];
     if (existing && existing.teamId === teamId) {
-      preservedRels[driverId] = existing;
+      preservedRels[driverId] = { ...existing };
     }
   }
 
@@ -258,6 +258,10 @@ export function syncDriverRelationshipsForTeam(
       if (driver.ratings.aggression >= 7) teammateRel -= 8;
     }
 
+    // Generate personality traits once and pass the same traits to generateWants.
+    const personalityTraits = generatePersonalityTraits(driver, false, rng);
+    const wants = generateWants(driver, team, false, personalityTraits, undefined);
+
     newRels[driver.id] = {
       driverId: driver.id,
       teamId,
@@ -273,8 +277,8 @@ export function syncDriverRelationshipsForTeam(
       trustInTeam: clamp(Math.round(55 + v())),
       trustInPrincipal: clamp(Math.round(58 + v())),
       ego: clamp(Math.round(45 + (driver.ratings.overall - 6) * 5 + v())),
-      personalityTraits: generatePersonalityTraits(driver, false, rng),
-      wants: generateWants(driver, team, false, generatePersonalityTraits(driver, false, rng), undefined),
+      personalityTraits,
+      wants,
     };
   }
 
@@ -284,11 +288,15 @@ export function syncDriverRelationshipsForTeam(
     mergedRels[driverId] = preservedRels[driverId] ?? newRels[driverId];
   }
 
-  // Update teammate links for active drivers based on current lineup.
+  // Update teammate links for active drivers based on current lineup (immutable).
   if (activeDrivers.length === 2) {
     const [d1, d2] = activeDrivers;
-    if (mergedRels[d1.id]) mergedRels[d1.id].teammateId = d2.id;
-    if (mergedRels[d2.id]) mergedRels[d2.id].teammateId = d1.id;
+    if (mergedRels[d1.id]) {
+      mergedRels[d1.id] = { ...mergedRels[d1.id], teammateId: d2.id };
+    }
+    if (mergedRels[d2.id]) {
+      mergedRels[d2.id] = { ...mergedRels[d2.id], teammateId: d1.id };
+    }
   }
 
   // Remove relationships for drivers no longer on the team.

@@ -12,6 +12,7 @@ import {
   getRouteRestrictionReason,
   getRouteRestrictionInfo,
   getGameModeLabel,
+  isDevelopmentProjectAllowedForMode,
 } from './modeRestrictions';
 
 describe('modeRestrictions', () => {
@@ -305,6 +306,32 @@ describe('modeRestrictions', () => {
     });
     it('returns Single Season for undefined', () => {
       expect(getGameModeLabel(undefined)).toBe('Single Season');
+    });
+  });
+
+  describe('isDevelopmentProjectAllowedForMode', () => {
+    const currentSeasonProject = { currentSeasonEffects: { enginePower: 1 } };
+    const nextSeasonOnlyProject = { currentSeasonEffects: undefined };
+    const mixedProject = { currentSeasonEffects: { aeroEfficiency: 1 }, nextSeasonEffects: { aeroEfficiency: 0.4 } };
+
+    it('allows current-season projects in Single Season', () => {
+      expect(isDevelopmentProjectAllowedForMode(currentSeasonProject, 'SingleSeason')).toBe(true);
+    });
+    it('blocks next-season-only projects in Single Season', () => {
+      expect(isDevelopmentProjectAllowedForMode(nextSeasonOnlyProject, 'SingleSeason')).toBe(false);
+    });
+    it('allows mixed projects in Single Season (current effects apply)', () => {
+      expect(isDevelopmentProjectAllowedForMode(mixedProject, 'SingleSeason')).toBe(true);
+    });
+    it('allows all projects in Career mode', () => {
+      expect(isDevelopmentProjectAllowedForMode(currentSeasonProject, 'Career')).toBe(true);
+      expect(isDevelopmentProjectAllowedForMode(nextSeasonOnlyProject, 'Career')).toBe(true);
+      expect(isDevelopmentProjectAllowedForMode(mixedProject, 'Career')).toBe(true);
+    });
+    it('allows all projects in Sandbox mode', () => {
+      expect(isDevelopmentProjectAllowedForMode(currentSeasonProject, 'Sandbox')).toBe(true);
+      expect(isDevelopmentProjectAllowedForMode(nextSeasonOnlyProject, 'Sandbox')).toBe(true);
+      expect(isDevelopmentProjectAllowedForMode(mixedProject, 'Sandbox')).toBe(true);
     });
   });
 });

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useReducer, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useGame } from '../game/GameContext';
 import { availableSeasons, availableSeries, loadSeasonBundle, getCachedBundle, type SeasonBundle } from '../data';
@@ -45,34 +45,38 @@ export function NewCareer() {
     setSelectedTeamId(null);
   };
 
-  const [bundle, setBundle] = useState<SeasonBundle | undefined>(getCachedBundle(year, series));
-  const [loadingBundle, setLoadingBundle] = useState(false);
-  const [bundleError, setBundleError] = useState<string | null>(null);
+  const cachedBundle = useMemo(() => getCachedBundle(year, series), [year, series]);
+
+  const [asyncState, dispatchAsync] = useReducer(
+    (_state: { bundle?: SeasonBundle; loading: boolean; error: string | null }, action: { type: 'loaded'; bundle?: SeasonBundle } | { type: 'error' } | { type: 'start' }) => {
+      if (action.type === 'start') return { loading: true, error: null };
+      if (action.type === 'error') return { loading: false, error: 'Failed to load season data. Please try again.' };
+      return { bundle: action.bundle, loading: false, error: null };
+    },
+    { loading: !getCachedBundle(year, series), error: null }
+  );
 
   useEffect(() => {
-    const cached = getCachedBundle(year, series);
-    if (cached) {
-      setBundle(cached);
-      setBundleError(null);
+    if (cachedBundle) {
       return;
     }
     let cancelled = false;
-    setLoadingBundle(true);
-    setBundleError(null);
+    dispatchAsync({ type: 'start' });
     loadSeasonBundle(year, series)
       .then((b) => {
         if (cancelled) return;
-        setBundle(b);
-        setLoadingBundle(false);
+        dispatchAsync({ type: 'loaded', bundle: b });
       })
       .catch(() => {
         if (cancelled) return;
-        setBundle(undefined);
-        setLoadingBundle(false);
-        setBundleError('Failed to load season data. Please try again.');
+        dispatchAsync({ type: 'error' });
       });
     return () => { cancelled = true; };
-  }, [year, series]);
+  }, [year, series, cachedBundle]);
+
+  const loadingBundle = !cachedBundle && asyncState.loading;
+  const bundleError = !cachedBundle ? asyncState.error : null;
+  const activeBundle = cachedBundle ?? asyncState.bundle;
 
   const startGame = async (teamPrincipal: TeamPrincipal, choice: EngineChoice | null) => {
     if (!selectedTeamId) return;
@@ -94,7 +98,7 @@ export function NewCareer() {
         seed,
         initialEngineSupplierId: choice?.supplierId,
         initialEngineDealType: choice?.dealType,
-        bundle,
+        bundle: activeBundle,
       },
     });
     navigate('/hq');
@@ -116,14 +120,14 @@ export function NewCareer() {
         teamId: selectedTeamId,
         teamPrincipal,
         seed,
-        bundle,
+        bundle: activeBundle,
         // No engine choice — createNewGame auto-assigns the historical deal.
       },
     });
     navigate('/hq');
   };
 
-  const selectedTeam = bundle?.teams.find((t) => t.id === selectedTeamId);
+  const selectedTeam = activeBundle?.teams.find((t) => t.id === selectedTeamId);
 
   return (
     <div className="min-h-screen bg-[#0a0c10] px-6 py-10">
@@ -259,12 +263,12 @@ export function NewCareer() {
           </div>
         )}
 
-        {step === 'team' && bundle && (
+        {step === 'team' && activeBundle && (
           <div className="space-y-4">
             <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
-              {bundle.teams.map((team) => {
-                const car = bundle.cars.find((c) => c.id === team.carId);
-                const drivers = bundle.drivers.filter((d) => d.teamId === team.id);
+              {activeBundle.teams.map((team) => {
+                const car = activeBundle.cars.find((c) => c.id === team.carId);
+                const drivers = activeBundle.drivers.filter((d) => d.teamId === team.id);
                 const ratings = car ? effectiveCarRatings(car) : null;
                 const selected = selectedTeamId === team.id;
                 return (
@@ -334,9 +338,9 @@ export function NewCareer() {
           />
         )}
 
-        {step === 'engine' && selectedTeam && bundle && (
+        {step === 'engine' && selectedTeam && activeBundle && (
           <EngineSelectStep
-            teams={bundle.teams}
+            teams={activeBundle.teams}
             teamId={selectedTeam.id}
             teamName={selectedTeam.name}
             year={year}

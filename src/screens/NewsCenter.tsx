@@ -44,6 +44,7 @@ export function NewsCenter() {
   const [majorOnly, setMajorOnly] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [roundFilter, setRoundFilter] = useState<number | 'all'>('all');
+  const [displayLimit, setDisplayLimit] = useState(50);
 
   const allNews = useMemo(() => {
     const current = state?.news ?? [];
@@ -285,9 +286,19 @@ export function NewsCenter() {
             No news stories match the current filters.
           </div>
         )}
-        {filteredNews.map((item) => (
+        {filteredNews.slice(0, displayLimit).map((item) => (
           <NewsCard key={item.id} item={item} />
         ))}
+        {filteredNews.length > displayLimit && (
+          <div className="py-3 text-center">
+            <button
+              className="rounded-lg border border-neutral-700 bg-neutral-800/50 px-4 py-2 text-sm text-neutral-300 hover:bg-neutral-800"
+              onClick={() => setDisplayLimit((d) => d + 50)}
+            >
+              Show {Math.min(50, filteredNews.length - displayLimit)} more ({filteredNews.length - displayLimit} remaining)
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );

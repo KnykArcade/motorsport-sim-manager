@@ -8,7 +8,10 @@ import {
   recordTeamOrder,
   resolveTeamOrderConsequences,
   rolloverRelationships,
+  syncDriverRelationshipsForTeam,
 } from './relationshipEngine';
+import { createNewGame } from '../game/initialCareer';
+import type { GameState } from '../game/careerState';
 import type { DriverRelationship, DriverPersonalityTrait, DriverWant, TeamOrderDecision } from '../types/relationshipTypes';
 import type { LiveCarState, LiveRaceState } from '../types/liveTypes';
 import { initialStint } from './strategyStint';
@@ -253,5 +256,141 @@ describe('relationshipEngine — rollover', () => {
     const next = rolloverRelationships(prev, teams1995, drivers1995, reps, 'roll');
     expect(next[id].morale).toBeGreaterThan(10);
     expect(next[id].frustration).toBeLessThan(90);
+  });
+});
+
+describe('relationshipEngine — syncDriverRelationshipsForTeam', () => {
+  function makeState(seed = 'sync-test'): GameState {
+    return createNewGame({
+      gameMode: 'Career',
+      seasonYear: 1995,
+      series: 'F1',
+      teamId: 't-benetton',
+      seed,
+    });
+  }
+
+  it('generates traits once and wants are based on those same traits', () => {
+    const state = makeState();
+    const teamId = 't-benetton';
+    const teamDrivers = state.drivers.filter((d) => d.teamId === teamId);
+    // Wipe existing relationships so sync creates fresh ones.
+    const emptyState = { ...state, driverRelationships: {} };
+    const synced = syncDriverRelationshipsForTeam(emptyState, teamId, 'sync-seed');
+    const syncedRels = synced.driverRelationships ?? {};
+
+    for (const driver of teamDrivers) {
+      const rel = syncedRels[driver.id];
+      expect(rel).toBeDefined();
+      // Traits should be non-empty (drivers always get at least one trait from ratings).
+      expect(rel.personalityTraits.length).toBeGreaterThan(0);
+      // Wants should be consistent with traits — e.g., if 'Money Motivated' is a trait,
+      // 'better_salary' should be in wants (unless capped at 3 by higher-priority wants).
+      if (rel.personalityTraits.includes('Money Motivated') && rel.wants.length < 3) {
+        expect(rel.wants).toContain('better_salary');
+      }
+      if (rel.personalityTraits.includes('Ambitious') && rel.wants.length < 3) {
+        const team = state.teams.find((t) => t.id === teamId)!;
+        if (team.reputation < 60) {
+          expect(rel.wants).toContain('development_priority');
+        }
+      }
+    }
+  });
+
+  it('is deterministic for the same seed', () => {
+    const state1 = makeState('det-a');
+    const state2 = makeState('det-a');
+    const empty1 = { ...state1, driverRelationships: {} };
+    const empty2 = { ...state2, driverRelationships: {} };
+    const synced1 = syncDriverRelationshipsForTeam(empty1, 't-benetton', 'det-seed');
+    const synced2 = syncDriverRelationshipsForTeam(empty2, 't-benetton', 'det-seed');
+    expect(synced1.driverRelationships).toEqual(synced2.driverRelationships);
+  });
+
+  it('does not mutate the original relationship object', () => {
+    const state = makeState();
+    const teamId = 't-benetton';
+    const teamDrivers = state.drivers.filter((d) => d.teamId === teamId);
+    // Set up existing relationships with a known teammateId.
+    const existingRels: Record<string, DriverRelationship> = {};
+    for (const driver of teamDrivers) {
+      existingRels[driver.id] = {
+        driverId: driver.id,
+        teamId,
+        teammateId: 'old-teammate',
+        teamLoyalty: 50,
+        engineerChemistry: 50,
+        teammateRelationship: 50,
+        morale: 50,
+        frustration: 20,
+        numberOneExpectation: false,
+        selfConfidence: 50,
+        trustInCar: 50,
+        trustInTeam: 50,
+        trustInPrincipal: 50,
+        ego: 50,
+        personalityTraits: ['Loyal'],
+        wants: ['equal_treatment'],
+      };
+    }
+    const stateWithRels = { ...state, driverRelationships: { ...existingRels } };
+    // Snapshot the original relationships.
+    const originalRels = JSON.parse(JSON.stringify(existingRels));
+
+    const synced = syncDriverRelationshipsForTeam(stateWithRels, teamId, 'mut-test');
+    const syncedRels = synced.driverRelationships ?? {};
+
+    // Original state's relationships should be unchanged.
+    expect(stateWithRels.driverRelationships).toEqual(originalRels);
+    // Synced state should have updated teammate IDs (immutable, not mutated).
+    const activeDrivers = teamDrivers.filter((d) => d.contractType === 'seat' || d.contractType === undefined);
+    if (activeDrivers.length === 2) {
+      const [d1, d2] = activeDrivers;
+      expect(syncedRels[d1.id].teammateId).toBe(d2.id);
+      expect(syncedRels[d2.id].teammateId).toBe(d1.id);
+    }
+  });
+
+  it('preserves existing relationship data for retained drivers', () => {
+    const state = makeState();
+    const teamId = 't-benetton';
+    const teamDrivers = state.drivers.filter((d) => d.teamId === teamId);
+    // Create existing relationships with distinctive values.
+    const existingRels: Record<string, DriverRelationship> = {};
+    for (const driver of teamDrivers) {
+      existingRels[driver.id] = {
+        driverId: driver.id,
+        teamId,
+        teammateId: undefined,
+        teamLoyalty: 77,
+        engineerChemistry: 88,
+        teammateRelationship: 66,
+        morale: 55,
+        frustration: 11,
+        numberOneExpectation: true,
+        selfConfidence: 72,
+        trustInCar: 68,
+        trustInTeam: 71,
+        trustInPrincipal: 74,
+        ego: 80,
+        personalityTraits: ['High Ego', 'Ambitious'],
+        wants: ['number_one_status', 'better_salary'],
+      };
+    }
+    const stateWithRels = { ...state, driverRelationships: { ...existingRels } };
+
+    const synced = syncDriverRelationshipsForTeam(stateWithRels, teamId, 'preserve-test');
+    const syncedRels = synced.driverRelationships ?? {};
+
+    for (const driver of teamDrivers) {
+      const rel = syncedRels[driver.id];
+      // Core values should be preserved.
+      expect(rel.teamLoyalty).toBe(77);
+      expect(rel.engineerChemistry).toBe(88);
+      expect(rel.personalityTraits).toEqual(['High Ego', 'Ambitious']);
+      expect(rel.wants).toEqual(['number_one_status', 'better_salary']);
+      expect(rel.numberOneExpectation).toBe(true);
+    }
   });
 });

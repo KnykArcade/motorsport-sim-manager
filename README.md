@@ -65,7 +65,7 @@ scripts/
 - **No real-time simulation** — races are resolved turn-by-turn, not live lap-by-lap (though a live race view shows progressive updates).
 - **Historical data accuracy** — ratings are estimates from available sources; some seasons may have approximate values for lesser-known drivers/teams.
 - **No driver retirements in Single Season** — driver aging and retirement only apply in Career/Sandbox mode.
-- **Sandbox mode** — functionally identical to Career mode in terms of available systems; the distinction is the absence of mode-based restrictions (all routes and actions unlocked).
-- **AI team philosophy drift** — philosophy traits persist across seasons but only regenerate when a team's archetype changes; gradual trait evolution is not yet implemented.
+- **Sandbox mode** — all systems unlocked with no mode-based restrictions. Functionally similar to Career mode but without any route or action gating.
+- **AI team philosophy drift** — philosophy traits persist across seasons and influence regulation voting, driver market, and development. Gradual trait evolution is not yet implemented; traits regenerate only when a team's archetype changes.
 - **No custom team creation** — you pick from historical teams only.
 - **No mod support** — data is code-level only; no external file loading.

@@ -18,6 +18,7 @@ import { TrackDemandBars } from '../components/TrackDemandBars';
 import { NewsPanel } from '../components/NewsPanel';
 import { formatMoney } from '../components/ui';
 import { isPreseasonChecklistComplete, getPreseasonApprovals } from '../game/careerPhaseEngine';
+import { getGameModeLabel } from '../game/modeRestrictions';
 import { OWNER_PERSONALITY_LABELS, OWNER_PERSONALITY_DESCRIPTIONS } from '../types/expectationTypes';
 
 export function PreSeasonSetup() {
@@ -85,7 +86,7 @@ export function PreSeasonSetup() {
         <div>
           <h1 className="text-2xl font-bold text-neutral-100">Pre-Season Setup</h1>
           <p className="text-sm text-neutral-400">
-            {state.seasonYear} {state.series} · {isCareer ? 'Career Mode' : 'Single Season'}
+            {state.seasonYear} {state.series} · {getGameModeLabel(state.gameMode)}
             {isSingleSeason && ' · Historical replay — team setup is locked'}
           </p>
         </div>
@@ -367,7 +368,7 @@ export function PreSeasonSetup() {
               </div>
             ) : (
               <p className="text-sm text-neutral-500">
-                {isCareer ? 'Objectives will be set based on team reputation.' : 'Historical replay mode — no custom objectives.'}
+                {isSingleSeason ? 'Historical replay mode — no custom objectives.' : 'Objectives will be set based on team reputation.'}
               </p>
             )}
             <div className="mt-4 flex justify-end">
