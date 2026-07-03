@@ -8,10 +8,11 @@ import {
   teamById,
 } from '../game/careerState';
 import { effectiveCarRatings } from '../sim/trackFitEngine';
-import { getGameModeLabel } from '../game/modeRestrictions';
-import { getTrackById } from '../data';
+import { getGameModeLabel, isRouteRestricted, isSingleSeasonMode } from '../game/modeRestrictions';
+import { getTrackById, getRegulationSet } from '../data';
 import { Panel } from '../components/Panel';
 import { Button } from '../components/Button';
+import { RegulationPanel } from '../components/RegulationPanel';
 import { StatBar } from '../components/StatBar';
 import { StandingsTable } from '../components/StandingsTable';
 import { NewsFeed } from '../components/NewsFeed';
@@ -27,6 +28,7 @@ import {
 } from '../data/principal/principalOptions';
 import { calculateAcademyCapacity } from '../sim/teamRatingsEngine';
 import type { TeamOrganizationRatings } from '../types/teamRatingsTypes';
+import type { GameMode } from '../types/gameTypes';
 import type { TeamPrincipal } from '../types/principalTypes';
 
 export function TeamHQ() {
@@ -129,6 +131,20 @@ export function TeamHQ() {
             </Panel>
           )}
 
+          {/* Season regulations */}
+          {(() => {
+            const regSet = getRegulationSet(state.regulationSetId);
+            if (!regSet) return null;
+            return (
+              <RegulationPanel
+                regulationSet={regSet}
+                seasonYear={state.seasonYear}
+                locked={isSingleSeasonMode(state.gameMode)}
+                compact
+              />
+            );
+          })()}
+
           {/* Team organization ratings */}
           {orgRatings && <TeamRatingsPanel ratings={orgRatings} academyUsed={(state.academy ?? []).length} />}
 
@@ -166,12 +182,12 @@ export function TeamHQ() {
               <Button onClick={() => navigate('/finance')}>Finance</Button>
               <Button onClick={() => navigate('/staff')}>Staff</Button>
               <Button onClick={() => navigate('/facilities')}>Facilities</Button>
-              <Button onClick={() => navigate('/engine')}>Engine</Button>
+              <QuickActionButton label="Engine" route="/engine" navigate={navigate} mode={state.gameMode} />
               <Button onClick={() => navigate('/principal')}>Principal</Button>
               <Button onClick={() => navigate('/relationships')}>Relationships</Button>
-              <Button onClick={() => navigate('/politics')}>Regulations</Button>
-              <Button onClick={() => navigate('/scouting')}>Scouting</Button>
-              <Button onClick={() => navigate('/curves')}>Dev Curves</Button>
+              <QuickActionButton label="Regulations" route="/politics" navigate={navigate} mode={state.gameMode} />
+              <QuickActionButton label="Scouting" route="/scouting" navigate={navigate} mode={state.gameMode} />
+              <QuickActionButton label="Dev Curves" route="/curves" navigate={navigate} mode={state.gameMode} />
               <Button onClick={() => navigate('/records')}>Universe History</Button>
               <Button onClick={() => navigate('/data')}>Team Data</Button>
               <Button onClick={() => navigate('/settings')}>Settings</Button>
@@ -333,5 +349,25 @@ function MiniStat({ label, value }: { label: string; value: number }) {
       <div className="text-sm font-bold text-neutral-100">{value}</div>
       <div className="text-[9px] uppercase tracking-wide text-neutral-500">{label}</div>
     </div>
+  );
+}
+
+function QuickActionButton({
+  label,
+  route,
+  navigate,
+  mode,
+}: {
+  label: string;
+  route: string;
+  navigate: (path: string) => void;
+  mode: GameMode | undefined;
+}) {
+  const locked = isRouteRestricted(route, mode);
+  return (
+    <Button onClick={() => navigate(route)}>
+      {locked && <span className="mr-1 text-amber-500">🔒</span>}
+      {label}
+    </Button>
   );
 }

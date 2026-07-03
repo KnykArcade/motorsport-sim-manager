@@ -13,6 +13,7 @@ import { effectiveCarRatings } from '../sim/trackFitEngine';
 import { developmentSlots } from '../sim/facilityEngine';
 import { Panel } from '../components/Panel';
 import { Button } from '../components/Button';
+import { RegulationPanel } from '../components/RegulationPanel';
 import { TrackDemandBars } from '../components/TrackDemandBars';
 import { NewsPanel } from '../components/NewsPanel';
 import { formatMoney } from '../components/ui';
@@ -165,20 +166,8 @@ export function PreSeasonSetup() {
               const regSet = getRegulationSet(state.regulationSetId);
               if (!regSet) return null;
               return (
-                <div className="mt-4 rounded-lg bg-neutral-800/40 p-4 space-y-2">
-                  <div className="text-xs font-semibold uppercase text-neutral-500">Season Regulations</div>
-                  <div className="text-sm text-neutral-200">{regSet.eraLabel}</div>
-                  <div className="grid gap-2 sm:grid-cols-2 text-xs text-neutral-400">
-                    <div>Qualifying: {regSet.qualifyingFormat}</div>
-                    <div>Refueling: {regSet.refuelingAllowed ? 'Allowed' : 'Banned'}</div>
-                    <div>DRS: {regSet.drsEnabled ? 'Enabled' : 'Not in use'}</div>
-                    <div>Sprint: {regSet.sprintSupport ? 'Supported' : 'Not in use'}</div>
-                    {regSet.pushToPass && <div>Push-to-Pass: Available</div>}
-                    {regSet.budgetCap && <div>Budget Cap: ${regSet.budgetCap}M</div>}
-                  </div>
-                  {isSingleSeason && (
-                    <div className="text-xs text-amber-300">Regulations are locked to the historical {state.seasonYear} season.</div>
-                  )}
+                <div className="mt-4">
+                  <RegulationPanel regulationSet={regSet} seasonYear={state.seasonYear} locked={isSingleSeason} compact />
                 </div>
               );
             })()}

@@ -6,9 +6,10 @@ import {
   currentRace,
   teamById,
 } from '../game/careerState';
-import { getTrackById } from '../data';
+import { getTrackById, getRegulationSet } from '../data';
 import { effectiveCarRatings } from '../sim/trackFitEngine';
 import { getOrCreatePhaseState } from '../game/careerPhaseEngine';
+import { ARCHETYPE_SPECS } from '../sim/aiTeamEngine';
 import { Panel } from '../components/Panel';
 import { Button } from '../components/Button';
 import { TrackDemandBars } from '../components/TrackDemandBars';
@@ -147,6 +148,30 @@ export function PreRaceBriefing() {
             <div className="mt-4">
               <TrackDemandBars track={track} />
             </div>
+            {(() => {
+              const regSet = getRegulationSet(state.regulationSetId);
+              if (!regSet) return null;
+              return (
+                <div className="mt-4 grid gap-2 sm:grid-cols-3 text-xs">
+                  <div className="rounded bg-neutral-800/50 px-2 py-1">
+                    <span className="text-neutral-500">Qualifying: </span>
+                    <span className="text-neutral-300">{regSet.qualifyingFormat}</span>
+                  </div>
+                  <div className="rounded bg-neutral-800/50 px-2 py-1">
+                    <span className="text-neutral-500">Refueling: </span>
+                    <span className={regSet.refuelingAllowed ? 'text-green-400' : 'text-red-400'}>
+                      {regSet.refuelingAllowed ? 'Allowed' : 'Banned'}
+                    </span>
+                  </div>
+                  <div className="rounded bg-neutral-800/50 px-2 py-1">
+                    <span className="text-neutral-500">DRS: </span>
+                    <span className={regSet.drsEnabled ? 'text-green-400' : 'text-neutral-400'}>
+                      {regSet.drsEnabled ? 'Enabled' : 'Not in use'}
+                    </span>
+                  </div>
+                </div>
+              );
+            })()}
           </Panel>
 
           {/* Strategy Focus */}
@@ -231,12 +256,23 @@ export function PreRaceBriefing() {
           {/* Key Rivals */}
           <Panel title="Key Rivals">
             <ul className="space-y-2">
-              {rivals.map((r, i) => (
-                <li key={r.entityId} className="flex items-center justify-between text-sm">
-                  <span className="text-neutral-200">P{i + 1 + (i === 0 && r.entityId !== state.selectedTeamId ? 0 : 0)} {teamName(r.entityId)}</span>
-                  <span className="text-neutral-400">{r.points} pts</span>
-                </li>
-              ))}
+              {rivals.map((r, i) => {
+                const ai = state.aiTeamStates?.[r.entityId];
+                const spec = ai ? ARCHETYPE_SPECS[ai.archetype] : undefined;
+                return (
+                  <li key={r.entityId} className="text-sm">
+                    <div className="flex items-center justify-between">
+                      <span className="text-neutral-200">P{i + 1 + (i === 0 && r.entityId !== state.selectedTeamId ? 0 : 0)} {teamName(r.entityId)}</span>
+                      <span className="text-neutral-400">{r.points} pts</span>
+                    </div>
+                    {spec && (
+                      <div className="text-[11px] text-neutral-500">
+                        {spec.label} · {spec.description.split(';')[0]}.
+                      </div>
+                    )}
+                  </li>
+                );
+              })}
               {rivals.length === 0 && (
                 <li className="text-sm text-neutral-500">No rival data available.</li>
               )}

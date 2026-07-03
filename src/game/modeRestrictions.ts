@@ -129,11 +129,70 @@ export function isActionBlocked(actionType: string, mode: GameMode | undefined):
   return SINGLE_SEASON_BLOCKED_ACTIONS.has(actionType);
 }
 
+// Per-route restriction explanations for Single Season mode. Each gives the
+// player a clear, specific reason for the lock and what they should focus on
+// instead.
+const SINGLE_SEASON_ROUTE_REASONS: Record<string, { title: string; reason: string; focus: string }> = {
+  '/scouting': {
+    title: 'Scouting Locked',
+    reason: 'Scouting and Youth Academy are long-term development systems that span multiple seasons. In Single Season Mode, driver lineups are set to historical data.',
+    focus: 'Focus on race strategy, in-season development, and driver morale management.',
+  },
+  '/curves': {
+    title: 'Development Curves Locked',
+    reason: 'Driver development curves track multi-year progression. In Single Season Mode, drivers only develop within the single historical season.',
+    focus: 'Use the Development screen for in-season car upgrades that affect this season.',
+  },
+  '/politics': {
+    title: 'Regulation Voting Locked',
+    reason: 'Regulation voting shapes next season\'s rules. Single Season Mode replays one historical year with fixed regulations.',
+    focus: 'View the current season\'s regulations in the Pre-Season Setup or Team HQ.',
+  },
+  '/offseason': {
+    title: 'Offseason Locked',
+    reason: 'The offseason is a multi-year transition system (budget allocation, driver contracts, development carryover). Single Season Mode covers one year only.',
+    focus: 'When the season ends, visit Season Review to see final results or replay.',
+  },
+  '/engine': {
+    title: 'Engine Supplier Locked',
+    reason: 'Engine supplier deals are locked to historical data in Single Season Mode. Each team uses the engine they historically ran that year.',
+    focus: 'Engine performance is still reflected in your car stats and development.',
+  },
+  '/sponsors': {
+    title: 'Sponsors Locked',
+    reason: 'Sponsor deals are locked to historical data in Single Season Mode. Commercial income is pre-set for each team.',
+    focus: 'Sponsor confidence still changes with your on-track performance.',
+  },
+};
+
 // Human-readable explanation for why a route is restricted.
 export function getRouteRestrictionReason(route: string, mode: GameMode | undefined): string | undefined {
   if (!isRouteRestricted(route, mode)) return undefined;
+  const info = SINGLE_SEASON_ROUTE_REASONS[route];
+  if (info) return `${info.reason} ${info.focus}`;
   return 'Single Season Mode is a historical replay of the selected year. Long-term systems like Youth Academy, future contracts, and next-year development are disabled.';
 }
+
+// Structured restriction info for a route (title, reason, focus suggestion).
+export function getRouteRestrictionInfo(route: string, mode: GameMode | undefined): { title: string; reason: string; focus: string } | undefined {
+  if (!isRouteRestricted(route, mode)) return undefined;
+  return SINGLE_SEASON_ROUTE_REASONS[route] ?? {
+    title: 'Screen Locked',
+    reason: 'Single Season Mode is a historical replay of the selected year. Long-term systems are disabled.',
+    focus: 'Focus on race strategy, in-season development, and driver management.',
+  };
+}
+
+// List of features locked in Single Season mode with user-facing labels and
+// descriptions. Used by the setup flow and HQ info panels.
+export const SINGLE_SEASON_LOCKED_FEATURES: { label: string; description: string }[] = [
+  { label: 'Youth Academy & Scouting', description: 'No scouting or academy prospects — driver lineups are historical.' },
+  { label: 'Engine Supplier Choice', description: 'Engine deals are auto-assigned to match the historical season.' },
+  { label: 'Sponsor Management', description: 'Sponsors are pre-set; commercial income is locked to history.' },
+  { label: 'Regulation Voting', description: 'Regulations are fixed to the selected year — no political influence.' },
+  { label: 'Offseason & Multi-Year', description: 'No offseason budget allocation, development carryover, or season advance.' },
+  { label: 'Future Contracts', description: 'No signing drivers for next year — all contracts are single-season.' },
+];
 
 // Human-readable label for a game mode.
 export function getGameModeLabel(mode: GameMode | undefined): string {

@@ -1,4 +1,4 @@
-import { HashRouter, Navigate, Route, Routes, useParams } from 'react-router-dom';
+import { HashRouter, Navigate, Route, Routes, useParams, useNavigate } from 'react-router-dom';
 import { lazy, Suspense } from 'react';
 import type { ReactNode } from 'react';
 import { GameProvider, useGame } from '../game/GameContext';
@@ -8,7 +8,7 @@ import { Layout } from '../components/Layout';
 import { MainMenu } from '../screens/MainMenu';
 import { NewCareer } from '../screens/NewCareer';
 import { getCareerPhase } from '../game/careerPhaseEngine';
-import { getRouteRestrictionReason } from '../game/modeRestrictions';
+import { getRouteRestrictionInfo } from '../game/modeRestrictions';
 
 // Code-split in-game screens — each screen loads on demand to reduce the
 // initial bundle. MainMenu and NewCareer stay eager for first-paint.
@@ -56,18 +56,30 @@ function InGame({ children }: { children: ReactNode }) {
 // locked message if the route is restricted for the current game mode.
 function ModeGuard({ route, children }: { route: string; children: ReactNode }) {
   const { state } = useGame();
+  const navigate = useNavigate();
   if (!state) return <Navigate to="/" replace />;
-  const reason = getRouteRestrictionReason(route, state.gameMode);
-  if (reason) {
+  const lockInfo = getRouteRestrictionInfo(route, state.gameMode);
+  if (lockInfo) {
     return (
       <Layout>
-        <div className="space-y-4">
-          <h1 className="text-2xl font-bold text-neutral-100">Screen Locked</h1>
-          <p className="text-sm text-neutral-400">{reason}</p>
-          <p className="text-sm text-neutral-500">
-            Use the sidebar to navigate to available screens like Team HQ, Calendar,
-            Standings, Race Weekend, and Development.
-          </p>
+        <div className="mx-auto max-w-2xl space-y-4">
+          <div className="flex items-center gap-3">
+            <span className="flex h-10 w-10 items-center justify-center rounded-full border border-amber-600/40 bg-amber-900/20 text-xl text-amber-400">🔒</span>
+            <h1 className="text-2xl font-bold text-neutral-100">{lockInfo.title}</h1>
+          </div>
+          <div className="rounded-lg border border-neutral-800 bg-neutral-900/40 p-4">
+            <p className="text-sm text-neutral-300">{lockInfo.reason}</p>
+          </div>
+          <div className="rounded-lg border border-sky-800/50 bg-sky-900/20 p-4">
+            <div className="text-xs font-semibold uppercase tracking-wide text-sky-400">What to focus on</div>
+            <p className="mt-1 text-sm text-sky-200">{lockInfo.focus}</p>
+          </div>
+          <div className="flex flex-wrap gap-2 pt-2">
+            <button onClick={() => navigate('/hq')} className="rounded-lg bg-neutral-800 px-4 py-2 text-sm text-neutral-200 hover:bg-neutral-700">← Back to Team HQ</button>
+            <button onClick={() => navigate('/calendar')} className="rounded-lg bg-neutral-800 px-4 py-2 text-sm text-neutral-200 hover:bg-neutral-700">Calendar</button>
+            <button onClick={() => navigate('/development')} className="rounded-lg bg-neutral-800 px-4 py-2 text-sm text-neutral-200 hover:bg-neutral-700">Development</button>
+            <button onClick={() => navigate('/standings')} className="rounded-lg bg-neutral-800 px-4 py-2 text-sm text-neutral-200 hover:bg-neutral-700">Standings</button>
+          </div>
         </div>
       </Layout>
     );

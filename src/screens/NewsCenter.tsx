@@ -8,6 +8,7 @@ import {
   filterNewsByPriority,
   filterNewsByTeam,
   filterNewsBySeason,
+  isMajorStory,
 } from '../sim/careerNewsEngine';
 import { useGame } from '../game/GameContext';
 
@@ -40,6 +41,9 @@ export function NewsCenter() {
   const [teamFilter, setTeamFilter] = useState<'all' | 'myTeam'>('all');
   const [seasonFilter, setSeasonFilter] = useState<number | 'all'>('all');
   const [showArchive, setShowArchive] = useState(false);
+  const [majorOnly, setMajorOnly] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [roundFilter, setRoundFilter] = useState<number | 'all'>('all');
 
   const allNews = useMemo(() => {
     const current = state?.news ?? [];
@@ -61,8 +65,22 @@ export function NewsCenter() {
     if (seasonFilter !== 'all') {
       items = filterNewsBySeason(items, seasonFilter);
     }
+    if (majorOnly) {
+      items = items.filter(isMajorStory);
+    }
+    if (roundFilter !== 'all') {
+      items = items.filter((n) => n.round === roundFilter);
+    }
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase().trim();
+      items = items.filter(
+        (n) =>
+          n.headline.toLowerCase().includes(q) ||
+          (n.body?.toLowerCase().includes(q) ?? false),
+      );
+    }
     return sortNewsByPriority(items);
-  }, [allNews, categoryFilter, priorityFilter, teamFilter, seasonFilter, state?.selectedTeamId]);
+  }, [allNews, categoryFilter, priorityFilter, teamFilter, seasonFilter, majorOnly, roundFilter, searchQuery, state?.selectedTeamId]);
 
   const availableSeasons = useMemo(() => {
     const seasons = new Set<number>();
@@ -74,7 +92,34 @@ export function NewsCenter() {
     return Array.from(seasons).sort((a, b) => b - a);
   }, [state?.news, state?.newsArchive]);
 
+  const availableRounds = useMemo(() => {
+    const rounds = new Set<number>();
+    for (const n of allNews) {
+      if (n.round != null) rounds.add(n.round);
+    }
+    return Array.from(rounds).sort((a, b) => a - b);
+  }, [allNews]);
+
   const archiveCount = state?.newsArchive?.length ?? 0;
+
+  const hasActiveFilters =
+    categoryFilter !== 'all' ||
+    priorityFilter !== 'all' ||
+    teamFilter !== 'all' ||
+    seasonFilter !== 'all' ||
+    majorOnly ||
+    roundFilter !== 'all' ||
+    searchQuery.trim() !== '';
+
+  const clearAllFilters = () => {
+    setCategoryFilter('all');
+    setPriorityFilter('all');
+    setTeamFilter('all');
+    setSeasonFilter('all');
+    setMajorOnly(false);
+    setRoundFilter('all');
+    setSearchQuery('');
+  };
 
   return (
     <div className="space-y-4">
@@ -94,6 +139,34 @@ export function NewsCenter() {
 
       {/* Filter Controls */}
       <div className="space-y-3 rounded-lg border border-neutral-800 bg-neutral-900/50 p-3">
+        {/* Search + Quick Toggles */}
+        <div className="flex flex-wrap items-center gap-2">
+          <input
+            type="text"
+            placeholder="Search headlines..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="flex-1 min-w-[180px] rounded bg-neutral-800 px-3 py-1 text-sm text-neutral-200 placeholder:text-neutral-600"
+          />
+          <label className="flex items-center gap-1 text-xs text-neutral-400">
+            <input
+              type="checkbox"
+              checked={majorOnly}
+              onChange={(e) => setMajorOnly(e.target.checked)}
+              className="accent-amber-600"
+            />
+            Major stories only
+          </label>
+          {hasActiveFilters && (
+            <button
+              onClick={clearAllFilters}
+              className="rounded bg-neutral-800 px-2 py-1 text-xs text-neutral-400 hover:bg-neutral-700 hover:text-neutral-200"
+            >
+              ✕ Clear filters
+            </button>
+          )}
+        </div>
+
         {/* Category Filter */}
         <div>
           <label className="mb-1 block text-xs font-medium text-neutral-400">Category</label>
@@ -114,7 +187,7 @@ export function NewsCenter() {
           </div>
         </div>
 
-        {/* Priority + Team + Season Filters */}
+        {/* Priority + Team + Season + Round Filters */}
         <div className="flex flex-wrap gap-4">
           <div>
             <label className="mb-1 block text-xs font-medium text-neutral-400">Priority</label>
@@ -174,6 +247,22 @@ export function NewsCenter() {
               ))}
             </select>
           </div>
+
+          {availableRounds.length > 0 && (
+            <div>
+              <label className="mb-1 block text-xs font-medium text-neutral-400">Round</label>
+              <select
+                value={roundFilter}
+                onChange={(e) => setRoundFilter(e.target.value === 'all' ? 'all' : Number(e.target.value))}
+                className="rounded bg-neutral-800 px-2 py-0.5 text-xs text-neutral-200"
+              >
+                <option value="all">All Rounds</option>
+                {availableRounds.map((r) => (
+                  <option key={r} value={r}>Round {r}</option>
+                ))}
+              </select>
+            </div>
+          )}
 
           <div className="flex items-end">
             <label className="flex items-center gap-1 text-xs text-neutral-400">

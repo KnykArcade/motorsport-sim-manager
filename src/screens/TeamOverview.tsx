@@ -13,6 +13,7 @@ import {
   type TeamTrend,
 } from '../sim/teamOverviewEngine';
 import type { AIFinancialHealth } from '../types/aiTeamTypes';
+import { ARCHETYPE_SPECS, TRAIT_LABELS } from '../sim/aiTeamEngine';
 
 type SortKey =
   | 'championshipPosition'
@@ -253,6 +254,7 @@ function TeamDetail({
   detail: NonNullable<ReturnType<typeof buildTeamOverviewDetail>>;
   onClose: () => void;
 }) {
+  const { state } = useGame();
   const { row } = detail;
   return (
     <div className="grid gap-6 lg:grid-cols-2">
@@ -287,22 +289,58 @@ function TeamDetail({
           </div>
 
           {(row.archetypeLabel || row.goalLabel || row.philosophyLabel) && (
-            <div className="text-sm text-neutral-400">
-              {row.archetypeLabel && (
-                <span>
-                  Management: <span className="text-neutral-200">{row.archetypeLabel}</span>
-                </span>
-              )}
-              {row.goalLabel && (
-                <span className="ml-3">
-                  Goal: <span className="text-neutral-200">{row.goalLabel}</span>
-                </span>
-              )}
-              {row.philosophyLabel && (
-                <span className="ml-3">
-                  Identity: <span className="text-neutral-200">{row.philosophyLabel}</span>
-                </span>
-              )}
+            <div className="space-y-3">
+              <div className="text-sm text-neutral-400">
+                {row.archetypeLabel && (
+                  <span>
+                    Management: <span className="text-neutral-200">{row.archetypeLabel}</span>
+                  </span>
+                )}
+                {row.goalLabel && (
+                  <span className="ml-3">
+                    Goal: <span className="text-neutral-200">{row.goalLabel}</span>
+                  </span>
+                )}
+                {row.philosophyLabel && (
+                  <span className="ml-3">
+                    Identity: <span className="text-neutral-200">{row.philosophyLabel}</span>
+                  </span>
+                )}
+              </div>
+              {(() => {
+                const ai = state?.aiTeamStates?.[row.teamId];
+                if (!ai) return null;
+                const spec = ARCHETYPE_SPECS[ai.archetype];
+                return (
+                  <div className="rounded-lg border border-neutral-800 bg-neutral-900/40 p-3 space-y-2">
+                    {spec && (
+                      <div className="text-xs text-neutral-400">
+                        <span className="font-semibold text-neutral-300">{spec.label}</span> — {spec.description}
+                      </div>
+                    )}
+                    {ai.philosophy && (
+                      <div className="space-y-1">
+                        <div className="text-[10px] font-semibold uppercase tracking-wide text-neutral-500">Team Philosophy</div>
+                        <div className="text-xs text-neutral-400">{ai.philosophy.description}</div>
+                        {ai.philosophy.traits.length > 0 && (
+                          <div className="flex flex-wrap gap-1 pt-1">
+                            {ai.philosophy.traits.map((trait) => (
+                              <span key={trait} className="rounded bg-neutral-800 px-1.5 py-0.5 text-[10px] text-neutral-300">
+                                {TRAIT_LABELS[trait]}
+                              </span>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    )}
+                    {ai.seasonsInTrouble > 0 && (
+                      <div className="text-[11px] text-red-400">
+                        ⚠ {ai.seasonsInTrouble} season{ai.seasonsInTrouble === 1 ? '' : 's'} in financial trouble
+                      </div>
+                    )}
+                  </div>
+                );
+              })()}
             </div>
           )}
 
