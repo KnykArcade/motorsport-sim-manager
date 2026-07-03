@@ -69,9 +69,9 @@ import {
 import { classifyCrashDamage, damageConditionHit, repairCost } from '../sim/repairEngine';
 import { buildRaceArchiveEntry } from '../sim/lapArchiveEngine';
 import { resolveTeamOrderConsequences } from '../sim/relationshipEngine';
-import { reactToRaceResult, applyConfidenceUpdates, type ConfidenceUpdate, type RaceEventContext } from '../sim/driverConfidenceEngine';
+import { reactToRaceResult, applyConfidenceUpdates, makePromise, resolvePromise, applyPromiseResolution, evaluatePromisesAfterRace, checkExpiredPromises, confidencePerformanceModifier, type ConfidenceUpdate, type RaceEventContext } from '../sim/driverConfidenceEngine';
 import { allocateSkillPoint } from '../sim/principalEngine';
-import type { TeamOrderDecision } from '../types/relationshipTypes';
+import type { TeamOrderDecision, PromiseType } from '../types/relationshipTypes';
 import { createSeededRandom, deriveSeed } from '../sim/random';
 import type { AcademyDecision, FirstOptionDecision, SeatSigning } from '../types/marketTypes';
 import type { FinanceTransaction } from '../types/financeTypes';
@@ -82,6 +82,7 @@ import type {
   NewsItem,
   QualifyingResult,
   RaceResult,
+  RaceStrategyId,
   Team,
   Track,
 } from '../types/gameTypes';
@@ -160,6 +161,7 @@ export type GameAction =
       events: RaceEvent[];
       breakdowns: Record<string, ScoreBreakdown>;
       teamOrders?: TeamOrderDecision[];
+      strategyRiskByDriver?: Record<string, 'conservative' | 'balanced' | 'aggressive'>;
     }
   | { type: 'START_DEVELOPMENT'; projectId: string; rushed?: boolean }
   | { type: 'RUSH_DEVELOPMENT'; projectId: string }
@@ -208,7 +210,9 @@ export type GameAction =
   | { type: 'TOGGLE_PRESEASON_CHECKLIST_ITEM'; itemId: string }
   | { type: 'APPROVE_PRESEASON_TAB'; tabId: 'teamOverview' | 'budget' | 'driverLineup' | 'carDevelopment' | 'sponsorsEngine' | 'seasonObjectives' | 'roundOnePreview' }
   | { type: 'SET_CAREER_MOBILITY'; mode: 'StandardCareer' | 'TeamLock' | 'Sandbox' }
-  | { type: 'ALLOCATE_SKILL_POINT'; attribute: 'mediaImage' | 'boardConfidence' | 'financialDiscipline' | 'driverManagement' | 'development' | 'strategy'; points?: number };
+  | { type: 'ALLOCATE_SKILL_POINT'; attribute: 'mediaImage' | 'boardConfidence' | 'financialDiscipline' | 'driverManagement' | 'development' | 'strategy'; points?: number }
+  | { type: 'MAKE_PROMISE'; driverId: string; promiseType: PromiseType; dueSeason?: number; dueRound?: number }
+  | { type: 'RESOLVE_PROMISE'; promiseId: string; fulfilled: boolean };
 
 // Run one practice session for the player's drivers: simulate each assignment,
 // fold the results into the weekend knowledge, and apply the one-off confidence
@@ -472,6 +476,7 @@ export function gameReducer(state: GameState | null, action: GameAction): GameSt
         action.events,
         action.breakdowns,
         action.teamOrders ?? [],
+        action.strategyRiskByDriver,
       );
       return enterPostRaceReview(applied, race.id);
     }
@@ -754,6 +759,39 @@ export function gameReducer(state: GameState | null, action: GameAction): GameSt
       if (state.principal.skillPoints < points) return state;
       const updated = allocateSkillPoint(state.principal, action.attribute, points);
       return { ...state, principal: updated };
+    }
+
+    case 'MAKE_PROMISE': {
+      if (!state || !state.driverRelationships) return state;
+      const rel = state.driverRelationships[action.driverId];
+      if (!rel) return state;
+      const race = currentRace(state);
+      const round = race?.round ?? 0;
+      const promise = makePromise(
+        action.driverId,
+        action.promiseType,
+        state.seasonYear,
+        round,
+        action.dueSeason,
+        action.dueRound,
+      );
+      const promises = [...(state.driverPromises ?? []), promise];
+      const relationships = applyPromiseResolution(state.driverRelationships, promise);
+      return { ...state, driverPromises: promises, driverRelationships: relationships };
+    }
+
+    case 'RESOLVE_PROMISE': {
+      if (!state || !state.driverPromises) return state;
+      const existing = state.driverPromises.find((p) => p.id === action.promiseId);
+      if (!existing || existing.status !== 'active') return state;
+      const resolved = resolvePromise(existing, action.fulfilled);
+      const promises = state.driverPromises.map((p) =>
+        p.id === action.promiseId ? resolved : p,
+      );
+      const relationships = state.driverRelationships
+        ? applyPromiseResolution(state.driverRelationships, resolved)
+        : state.driverRelationships;
+      return { ...state, driverPromises: promises, driverRelationships: relationships };
     }
 
     default:
@@ -1128,6 +1166,14 @@ function runQualifying(state: GameState, playerDecisions: QualifyingDecision[]):
     }
   });
 
+  // Build confidence modifier map from driver relationships.
+  const confidenceModifierByDriver: Record<string, number> = {};
+  if (state.driverRelationships) {
+    for (const [id, rel] of Object.entries(state.driverRelationships)) {
+      confidenceModifierByDriver[id] = confidencePerformanceModifier(rel);
+    }
+  }
+
   const { results, breakdowns } = simulateQualifying({
     track,
     entrants,
@@ -1144,6 +1190,7 @@ function runQualifying(state: GameState, playerDecisions: QualifyingDecision[]):
     packageEffectsByTeam: pkgEffects,
     racePrepFocusEffect: getRacePrepFocusEffectForQualifying(state),
     playerTeamId: state.selectedTeamId,
+    confidenceModifierByDriver,
   });
 
   lastBreakdowns.qualifying = breakdowns;
@@ -1194,7 +1241,25 @@ function runRace(state: GameState, playerDecisions: RaceDecision[]): GameState {
   if (!built) return state;
 
   const { results, events, breakdowns } = simulateRace(built.context);
-  return applyRaceResults(state, race, results, events, breakdowns);
+  const strategyRiskByDriver: Record<string, 'conservative' | 'balanced' | 'aggressive'> = {};
+  for (const d of playerDecisions) {
+    strategyRiskByDriver[d.driverId] = strategyRiskFromId(d.strategyId);
+  }
+  return applyRaceResults(state, race, results, events, breakdowns, [], strategyRiskByDriver);
+}
+
+function strategyRiskFromId(id: RaceStrategyId): 'conservative' | 'balanced' | 'aggressive' {
+  switch (id) {
+    case 'ConservativeOneStop':
+    case 'SafetyFirstPoints':
+    case 'TrackPositionFocus':
+      return 'conservative';
+    case 'AggressiveTwoStop':
+    case 'UndercutFocused':
+      return 'aggressive';
+    default:
+      return 'balanced';
+  }
 }
 
 // Shared post-race handling: standings, morale, budget, development, news and
@@ -1207,6 +1272,7 @@ function applyRaceResults(
   events: RaceEvent[],
   breakdowns: Record<string, ScoreBreakdown>,
   teamOrders: TeamOrderDecision[] = [],
+  strategyRiskByDriver?: Record<string, 'conservative' | 'balanced' | 'aggressive'>,
 ): GameState {
   const qualifying = state.qualifyingResults[race.id] ?? [];
 
@@ -1249,8 +1315,26 @@ function applyRaceResults(
   // race into the relationship map, nudge the affected drivers' morale, and keep
   // the season's order log + any media reactions for the news.
   let driverRelationships = state.driverRelationships;
+  let driverPromises = state.driverPromises;
   let teamOrderHistory = state.teamOrderHistory ?? [];
   const relationshipNews: string[] = [];
+
+  // Check for expired promises at the start of race processing.
+  if (driverPromises && driverPromises.length > 0) {
+    const race = currentRace(state);
+    const round = race?.round ?? 0;
+    const { promises: checkedPromises, expired } = checkExpiredPromises(
+      driverPromises,
+      state.seasonYear,
+      round,
+    );
+    if (expired.length > 0 && driverRelationships) {
+      for (const exp of expired) {
+        driverRelationships = applyPromiseResolution(driverRelationships, exp);
+      }
+    }
+    driverPromises = checkedPromises;
+  }
   if (teamOrders.length > 0 && driverRelationships) {
     const driverNameOf = (id: string) => state.drivers.find((d) => d.id === id)?.name ?? id;
     const resolved = resolveTeamOrderConsequences(teamOrders, driverRelationships, driverNameOf);
@@ -1293,12 +1377,27 @@ function applyRaceResults(
         wasFavoredInOrders: wasFavored,
         wasDisadvantagedInOrders: wasDisadvantaged,
         carReliabilityDNF: isDNF && !hasCrashIncident,
-        strategyRiskLevel: 'balanced',
+        strategyRiskLevel: strategyRiskByDriver?.[r.driverId] ?? 'balanced',
         pointsScored: r.points,
         podium: r.position !== null && r.position <= 3,
         win: r.position === 1,
       };
       allUpdates.push(...reactToRaceResult(rel, ctx));
+
+      // Auto-resolve promises based on race events.
+      const currentPromises = driverPromises ?? [];
+      if (currentPromises.length > 0) {
+        const resolutions = evaluatePromisesAfterRace(currentPromises, r.driverId, ctx);
+        for (const res of resolutions) {
+          const resolved = resolvePromise(res.promise, res.fulfilled);
+          driverPromises = (driverPromises ?? currentPromises).map((p) =>
+            p.id === resolved.id ? resolved : p,
+          );
+          if (driverRelationships) {
+            driverRelationships = applyPromiseResolution(driverRelationships, resolved);
+          }
+        }
+      }
     }
     driverRelationships = applyConfidenceUpdates(driverRelationships, allUpdates);
   }
@@ -1484,6 +1583,7 @@ function applyRaceResults(
     finance: [...(state.finance ?? []), ...financeTxns],
     raceArchive,
     driverRelationships,
+    driverPromises,
     teamOrderHistory,
     news: sortNewsByPriority([...news, ...state.news].slice(0, 50)),
     currentRaceIndex: seasonComplete ? state.currentRaceIndex : nextIndex,

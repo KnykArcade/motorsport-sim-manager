@@ -32,6 +32,7 @@ import type { SetupOption, Track } from '../types/gameTypes';
 import type { Entrant, RaceContext, RaceDecision, RacePrepFocusEffect } from '../types/simTypes';
 import type { RaceWeekendPackageEffects } from '../types/raceWeekendPackageTypes';
 import { packageEffects as getPackageEffects } from '../sim/raceWeekendPackageEngine';
+import { confidencePerformanceModifier } from '../sim/driverConfidenceEngine';
 import type { LiveRaceMeta, LiveRaceOptions } from '../sim/liveRaceEngine';
 import { computeRacePrepFocusEffect, getOrCreatePhaseState } from './careerPhaseEngine';
 
@@ -162,6 +163,14 @@ export function buildRaceContext(
     }
   });
 
+  // Build confidence modifier map from driver relationships.
+  const confidenceModifierByDriver: Record<string, number> = {};
+  if (state.driverRelationships) {
+    for (const [id, rel] of Object.entries(state.driverRelationships)) {
+      confidenceModifierByDriver[id] = confidencePerformanceModifier(rel);
+    }
+  }
+
   const context: RaceContext = {
     track,
     entrants,
@@ -182,6 +191,7 @@ export function buildRaceContext(
       pitCrew: pitCrewBonus(state.staff ?? []),
       strategy: strategyBonus(state.staff ?? []),
     },
+    confidenceModifierByDriver,
   };
 
   return { context, track, raceId: race.id, totalLaps: race.laps };

@@ -68,9 +68,11 @@ export function bidToWin(
   playerTeamOverall: number,
   seed: string,
   interest?: number,
+  loyaltyModifier = 0,
 ): number {
   const rival = competingBidFor(driver, seed);
-  const threshold = rival === 0 ? driver.buyoutCost : rival / bidWeighting(playerTeamOverall, interest);
+  const loyaltyWeight = 1 + Math.max(-0.3, Math.min(0.3, loyaltyModifier * 0.03));
+  const threshold = rival === 0 ? driver.buyoutCost : rival / (bidWeighting(playerTeamOverall, interest) * loyaltyWeight);
   return round2(Math.max(driver.buyoutCost, threshold));
 }
 
@@ -91,9 +93,11 @@ export function resolveDriverBid(
   playerTeamOverall: number,
   seed: string,
   interest?: number,
+  loyaltyModifier = 0,
 ): BidResolution {
   const rivalBid = competingBidFor(driver, seed);
-  const effectivePlayerBid = round2(playerBid * bidWeighting(playerTeamOverall, interest));
+  const loyaltyWeight = 1 + Math.max(-0.3, Math.min(0.3, loyaltyModifier * 0.03));
+  const effectivePlayerBid = round2(playerBid * bidWeighting(playerTeamOverall, interest) * loyaltyWeight);
   const refused = interest != null && interest < REFUSE_INTEREST;
   // Uncontested (rivalBid 0): a valid bid (>= buyout) always secures the driver.
   const won =

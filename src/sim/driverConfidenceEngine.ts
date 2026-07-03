@@ -476,3 +476,145 @@ export function contractLoyaltyModifier(rel: DriverRelationship): number {
   const egoFactor = rel.ego > 70 ? -0.1 : 0;
   return Math.round((trustAvg - 50) * 0.1 + moraleFactor * 5 + frustrationFactor * 3 + egoFactor * 10);
 }
+
+// ---------------------------------------------------------------------------
+// Auto-resolve promises after a race based on what actually happened
+// ---------------------------------------------------------------------------
+
+export type PromiseResolution = {
+  promise: DriverPromise;
+  fulfilled: boolean;
+  reason: string;
+};
+
+export function evaluatePromisesAfterRace(
+  promises: DriverPromise[],
+  driverId: string,
+  ctx: RaceEventContext,
+): PromiseResolution[] {
+  const results: PromiseResolution[] = [];
+  for (const p of promises) {
+    if (p.status !== 'active' || p.driverId !== driverId) continue;
+
+    switch (p.promiseType) {
+      case 'equal_treatment': {
+        if (ctx.teamOrderIssued && ctx.wasDisadvantagedInOrders) {
+          results.push({ promise: p, fulfilled: false, reason: 'Team orders disadvantaged this driver — equal treatment promise broken.' });
+        }
+        break;
+      }
+      case 'number_one_status': {
+        if (ctx.teamOrderIssued && ctx.wasDisadvantagedInOrders) {
+          results.push({ promise: p, fulfilled: false, reason: 'Driver was disadvantaged by team orders despite number-one promise.' });
+        } else if (ctx.teamOrderIssued && ctx.wasFavoredInOrders) {
+          results.push({ promise: p, fulfilled: true, reason: 'Driver was favoured by team orders — number-one status upheld.' });
+        }
+        break;
+      }
+      case 'fight_teammate': {
+        if (!ctx.dnf && ctx.teammateFinishingPosition !== undefined && !ctx.teammateDNF) {
+          if (ctx.finishingPosition < ctx.teammateFinishingPosition) {
+            results.push({ promise: p, fulfilled: true, reason: 'Driver beat teammate — fight promise fulfilled.' });
+          } else {
+            results.push({ promise: p, fulfilled: false, reason: 'Driver finished behind teammate — fight promise broken.' });
+          }
+        }
+        break;
+      }
+      case 'better_strategy_support': {
+        if (!ctx.dnf && ctx.strategyRiskLevel === 'aggressive') {
+          if (ctx.finishingPosition <= 3) {
+            results.push({ promise: p, fulfilled: true, reason: 'Aggressive strategy paid off — strategy support promise fulfilled.' });
+          }
+        }
+        break;
+      }
+      case 'calmer_risk_approach': {
+        if (!ctx.dnf && ctx.strategyRiskLevel === 'aggressive') {
+          results.push({ promise: p, fulfilled: false, reason: 'Aggressive strategy used despite calmer approach promise.' });
+        }
+        break;
+      }
+      case 'improved_reliability': {
+        if (ctx.dnf && ctx.carReliabilityDNF) {
+          results.push({ promise: p, fulfilled: false, reason: 'Car failure DNF — reliability promise broken.' });
+        } else if (!ctx.dnf) {
+          // Don't auto-fulfill on a single finish — needs sustained reliability.
+          // Only fulfill if the promise has survived past its due round.
+        }
+        break;
+      }
+      case 'no_midseason_replacement': {
+        // This is evaluated at season rollover, not per-race.
+        break;
+      }
+      default:
+        // Other promise types (contract_renewal, promotion, etc.) are
+        // evaluated at season rollover, not per-race.
+        break;
+    }
+  }
+  return results;
+}
+
+export function evaluatePromisesAtSeasonEnd(
+  promises: DriverPromise[],
+  driverId: string,
+  context: {
+    contractRenewed: boolean;
+    wasReplaced: boolean;
+    wasPromoted: boolean;
+    gotPracticeTime: boolean;
+  },
+): PromiseResolution[] {
+  const results: PromiseResolution[] = [];
+  for (const p of promises) {
+    if (p.status !== 'active' || p.driverId !== driverId) continue;
+
+    switch (p.promiseType) {
+      case 'contract_renewal': {
+        results.push({
+          promise: p,
+          fulfilled: context.contractRenewed,
+          reason: context.contractRenewed
+            ? 'Contract renewed — promise fulfilled.'
+            : 'Contract was not renewed — promise broken.',
+        });
+        break;
+      }
+      case 'no_midseason_replacement': {
+        results.push({
+          promise: p,
+          fulfilled: !context.wasReplaced,
+          reason: context.wasReplaced
+            ? 'Driver was replaced midseason — promise broken.'
+            : 'Driver kept their seat all season — promise fulfilled.',
+        });
+        break;
+      }
+      case 'promotion': {
+        results.push({
+          promise: p,
+          fulfilled: context.wasPromoted,
+          reason: context.wasPromoted
+            ? 'Driver promoted to race seat — promise fulfilled.'
+            : 'Driver was not promoted — promise broken.',
+        });
+        break;
+      }
+      case 'reserve_practice_time': {
+        results.push({
+          promise: p,
+          fulfilled: context.gotPracticeTime,
+          reason: context.gotPracticeTime
+            ? 'Practice time provided — promise fulfilled.'
+            : 'Practice time not provided — promise broken.',
+        });
+        break;
+      }
+      default:
+        break;
+    }
+  }
+  return results;
+}

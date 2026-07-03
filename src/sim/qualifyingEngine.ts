@@ -62,6 +62,7 @@ export function calculateQualifyingPace(
   setup: SetupOption,
   runPlan: QualifyingRunPlan,
   teamRating = 5,
+  confidenceModifier = 0,
 ): { score: number; breakdown: ScoreBreakdown } {
   // Same 50/25/15/10 car/driver/team/other weighting as race pace, so the car
   // is the dominant factor in qualifying too.
@@ -71,7 +72,7 @@ export function calculateQualifyingPace(
   );
   const teamComp = clamp10(teamRating);
   const setupFit = calculateQualifyingSetupFit(driver, car, track, setup);
-  const confidenceFactor = (driver.confidence - 65) / 15;
+  const confidenceFactor = (driver.confidence - 65) / 15 + confidenceModifier;
   const otherComp = clamp10(5.5 + setupFit * 0.5 + runPlan.paceModifier + confidenceFactor);
 
   const score =
@@ -146,6 +147,8 @@ type Entry = {
   packageCrashRiskMultiplier: number;
   // Race prep focus qualifying bonus (0 = no effect).
   prepQualifyingBonus: number;
+  // Confidence performance modifier from driver relationship (0 = no effect).
+  confidenceModifier: number;
 };
 
 type LapOutcome = {
@@ -166,7 +169,7 @@ function simulateLap(
   rng: Rng,
 ): LapOutcome {
   const { driver, car, setup, runPlan } = entry;
-  const { score, breakdown } = calculateQualifyingPace(driver, car, track, setup, runPlan, entry.teamRating);
+  const { score, breakdown } = calculateQualifyingPace(driver, car, track, setup, runPlan, entry.teamRating, entry.confidenceModifier);
 
   let base = score + evolution + entry.weekendForm + entry.packagePaceBonus + entry.prepQualifyingBonus;
 
@@ -318,6 +321,7 @@ export function simulateQualifying(context: QualifyingContext): {
         context.racePrepFocusEffect && e.driver.teamId === context.playerTeamId
           ? context.racePrepFocusEffect.qualifyingModifier
           : 0,
+      confidenceModifier: context.confidenceModifierByDriver?.[e.driver.id] ?? 0,
     };
   });
 

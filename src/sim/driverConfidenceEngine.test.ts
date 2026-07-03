@@ -15,6 +15,8 @@ import {
   rolloverConfidence,
   evaluateWants,
   contractLoyaltyModifier,
+  evaluatePromisesAfterRace,
+  evaluatePromisesAtSeasonEnd,
   type RaceEventContext,
 } from './driverConfidenceEngine';
 
@@ -287,5 +289,160 @@ describe('driverConfidenceEngine — contract loyalty', () => {
   it('low trust and high frustration give negative loyalty modifier', () => {
     const rel = baseRel({ trustInTeam: 30, trustInPrincipal: 30, morale: 30, frustration: 70, ego: 80 });
     expect(contractLoyaltyModifier(rel)).toBeLessThan(0);
+  });
+});
+
+describe('driverConfidenceEngine — evaluatePromisesAfterRace', () => {
+  it('breaks equal_treatment promise when driver disadvantaged by team orders', () => {
+    const p = makePromise('d1', 'equal_treatment', 1995, 3);
+    const resolutions = evaluatePromisesAfterRace([p], 'd1', baseCtx({
+      teamOrderIssued: true,
+      wasDisadvantagedInOrders: true,
+    }));
+    expect(resolutions).toHaveLength(1);
+    expect(resolutions[0].fulfilled).toBe(false);
+  });
+
+  it('fulfills number_one_status promise when driver favored by team orders', () => {
+    const p = makePromise('d1', 'number_one_status', 1995, 3);
+    const resolutions = evaluatePromisesAfterRace([p], 'd1', baseCtx({
+      teamOrderIssued: true,
+      wasFavoredInOrders: true,
+    }));
+    expect(resolutions).toHaveLength(1);
+    expect(resolutions[0].fulfilled).toBe(true);
+  });
+
+  it('fulfills fight_teammate promise when driver beats teammate', () => {
+    const p = makePromise('d1', 'fight_teammate', 1995, 3);
+    const resolutions = evaluatePromisesAfterRace([p], 'd1', baseCtx({
+      finishingPosition: 3,
+      teammateFinishingPosition: 7,
+      teammateDNF: false,
+    }));
+    expect(resolutions).toHaveLength(1);
+    expect(resolutions[0].fulfilled).toBe(true);
+  });
+
+  it('breaks fight_teammate promise when driver loses to teammate', () => {
+    const p = makePromise('d1', 'fight_teammate', 1995, 3);
+    const resolutions = evaluatePromisesAfterRace([p], 'd1', baseCtx({
+      finishingPosition: 8,
+      teammateFinishingPosition: 3,
+      teammateDNF: false,
+    }));
+    expect(resolutions).toHaveLength(1);
+    expect(resolutions[0].fulfilled).toBe(false);
+  });
+
+  it('breaks calmer_risk_approach promise when aggressive strategy used', () => {
+    const p = makePromise('d1', 'calmer_risk_approach', 1995, 3);
+    const resolutions = evaluatePromisesAfterRace([p], 'd1', baseCtx({
+      strategyRiskLevel: 'aggressive',
+    }));
+    expect(resolutions).toHaveLength(1);
+    expect(resolutions[0].fulfilled).toBe(false);
+  });
+
+  it('breaks improved_reliability promise on car reliability DNF', () => {
+    const p = makePromise('d1', 'improved_reliability', 1995, 3);
+    const resolutions = evaluatePromisesAfterRace([p], 'd1', baseCtx({
+      dnf: true,
+      carReliabilityDNF: true,
+    }));
+    expect(resolutions).toHaveLength(1);
+    expect(resolutions[0].fulfilled).toBe(false);
+  });
+
+  it('skips non-active promises', () => {
+    const p = resolvePromise(makePromise('d1', 'equal_treatment', 1995, 3), true);
+    const resolutions = evaluatePromisesAfterRace([p], 'd1', baseCtx({
+      teamOrderIssued: true,
+      wasDisadvantagedInOrders: true,
+    }));
+    expect(resolutions).toHaveLength(0);
+  });
+
+  it('skips promises for other drivers', () => {
+    const p = makePromise('d2', 'equal_treatment', 1995, 3);
+    const resolutions = evaluatePromisesAfterRace([p], 'd1', baseCtx({
+      teamOrderIssued: true,
+      wasDisadvantagedInOrders: true,
+    }));
+    expect(resolutions).toHaveLength(0);
+  });
+});
+
+describe('driverConfidenceEngine — evaluatePromisesAtSeasonEnd', () => {
+  it('fulfills contract_renewal when contract renewed', () => {
+    const p = makePromise('d1', 'contract_renewal', 1995, 3);
+    const resolutions = evaluatePromisesAtSeasonEnd([p], 'd1', {
+      contractRenewed: true,
+      wasReplaced: false,
+      wasPromoted: false,
+      gotPracticeTime: false,
+    });
+    expect(resolutions).toHaveLength(1);
+    expect(resolutions[0].fulfilled).toBe(true);
+  });
+
+  it('breaks contract_renewal when not renewed', () => {
+    const p = makePromise('d1', 'contract_renewal', 1995, 3);
+    const resolutions = evaluatePromisesAtSeasonEnd([p], 'd1', {
+      contractRenewed: false,
+      wasReplaced: false,
+      wasPromoted: false,
+      gotPracticeTime: false,
+    });
+    expect(resolutions).toHaveLength(1);
+    expect(resolutions[0].fulfilled).toBe(false);
+  });
+
+  it('fulfills no_midseason_replacement when not replaced', () => {
+    const p = makePromise('d1', 'no_midseason_replacement', 1995, 3);
+    const resolutions = evaluatePromisesAtSeasonEnd([p], 'd1', {
+      contractRenewed: false,
+      wasReplaced: false,
+      wasPromoted: false,
+      gotPracticeTime: false,
+    });
+    expect(resolutions).toHaveLength(1);
+    expect(resolutions[0].fulfilled).toBe(true);
+  });
+
+  it('breaks no_midseason_replacement when replaced', () => {
+    const p = makePromise('d1', 'no_midseason_replacement', 1995, 3);
+    const resolutions = evaluatePromisesAtSeasonEnd([p], 'd1', {
+      contractRenewed: false,
+      wasReplaced: true,
+      wasPromoted: false,
+      gotPracticeTime: false,
+    });
+    expect(resolutions).toHaveLength(1);
+    expect(resolutions[0].fulfilled).toBe(false);
+  });
+
+  it('fulfills promotion when driver promoted', () => {
+    const p = makePromise('d1', 'promotion', 1995, 3);
+    const resolutions = evaluatePromisesAtSeasonEnd([p], 'd1', {
+      contractRenewed: false,
+      wasReplaced: false,
+      wasPromoted: true,
+      gotPracticeTime: false,
+    });
+    expect(resolutions).toHaveLength(1);
+    expect(resolutions[0].fulfilled).toBe(true);
+  });
+
+  it('fulfills reserve_practice_time when practice time given', () => {
+    const p = makePromise('d1', 'reserve_practice_time', 1995, 3);
+    const resolutions = evaluatePromisesAtSeasonEnd([p], 'd1', {
+      contractRenewed: false,
+      wasReplaced: false,
+      wasPromoted: false,
+      gotPracticeTime: true,
+    });
+    expect(resolutions).toHaveLength(1);
+    expect(resolutions[0].fulfilled).toBe(true);
   });
 });

@@ -76,6 +76,9 @@ export type QualifyingContext = {
   racePrepFocusEffect?: RacePrepFocusEffect;
   // Player's team ID — used to apply race prep focus effects only to the player.
   playerTeamId?: string;
+  // Confidence performance modifier by driver ID (from driverConfidenceEngine).
+  // Applied as a percentage multiplier to the driver's pace component.
+  confidenceModifierByDriver?: Record<string, number>;
 };
 
 export type RaceContext = {
@@ -110,6 +113,8 @@ export type RaceContext = {
     pitCrew: number;
     strategy: number;
   };
+  // Confidence performance modifier by driver ID (from driverConfidenceEngine).
+  confidenceModifierByDriver?: Record<string, number>;
 };
 
 export type RacePrepFocusEffect = {
