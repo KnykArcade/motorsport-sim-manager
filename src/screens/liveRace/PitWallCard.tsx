@@ -40,7 +40,7 @@ export function PitWallCard({
   const wear = Math.round(car.tire.wear);
   const life = Math.max(0, 100 - wear);
   const tyre = tyreLetter(car.tire.compound);
-  const canPit = car.running && !car.pit.pitRequested && !finished;
+  const canPit = car.running && !car.pit.inPitThisLap && !finished;
   const highRisk =
     car.reliabilityRiskLevel === 'High' ||
     car.reliabilityRiskLevel === 'Critical' ||
@@ -125,10 +125,10 @@ export function PitWallCard({
               onClick={onPit}
               disabled={!canPit}
               className={`rounded px-2 py-0.5 text-[10px] font-bold ${
-                canPit ? 'bg-sky-600 text-white hover:bg-sky-500' : 'bg-slate-800 text-slate-600'
+                canPit ? (car.pit.pitRequested ? 'bg-amber-600 text-white hover:bg-amber-500' : 'bg-sky-600 text-white hover:bg-sky-500') : 'bg-slate-800 text-slate-600'
               }`}
             >
-              {car.pit.pitRequested ? 'BOXING…' : '🔧 PIT'}
+              {car.pit.pitRequested ? 'Cancel Pit' : 'Pit'}
             </button>
           </div>
           <div className="grid grid-cols-6 gap-1">
@@ -187,3 +187,4 @@ function RiskInline({ kind, level }: { kind: 'R' | 'C'; level: RiskLevel }) {
     </div>
   );
 }
+

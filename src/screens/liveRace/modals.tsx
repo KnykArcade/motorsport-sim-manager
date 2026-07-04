@@ -68,7 +68,7 @@ export function StrategyModal({
           const w = c.pit.window;
           const stopsLeft = c.pit.plannedStops - c.pit.stopsMade;
           const open = !!w && currentLap >= w.open && currentLap <= w.close;
-          const canPit = c.running && !c.pit.pitRequested && !finished;
+          const canPit = c.running && !c.pit.inPitThisLap && !finished;
           let status: string;
           if (!c.running) status = 'Out of the race';
           else if (c.pit.pitRequested) status = 'Box, box! Pitting this lap';
@@ -89,10 +89,10 @@ export function StrategyModal({
                 onClick={() => onPit(c.driverId)}
                 disabled={!canPit}
                 className={`mt-2 w-full rounded py-1.5 text-sm font-bold ${
-                  canPit ? 'bg-sky-600 text-white hover:bg-sky-500' : 'bg-slate-800 text-slate-600'
+                  canPit ? (c.pit.pitRequested ? 'bg-amber-600 text-white hover:bg-amber-500' : 'bg-sky-600 text-white hover:bg-sky-500') : 'bg-slate-800 text-slate-600'
                 }`}
               >
-                {c.pit.pitRequested ? 'Boxing…' : '🔧 Pit Now'}
+                {c.pit.pitRequested ? 'Cancel Pit Request' : 'Pit Now'}
               </button>
             </div>
           );
@@ -160,3 +160,4 @@ export function TeamOrdersModal({
     </Modal>
   );
 }
+

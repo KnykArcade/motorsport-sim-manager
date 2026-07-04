@@ -6,6 +6,7 @@ import { buildLiveRaceMeta, buildLiveRaceOptions, buildRaceContext } from '../ga
 import { createLiveRace, finalizeResults } from '../sim/liveRaceEngine';
 import {
   applyRecommendationAction,
+  cancelPlayerPitRequest,
   expireRecommendation,
   ignoreRecommendation,
   requestPlayerPit,
@@ -36,7 +37,7 @@ import { FullEventLogModal, StrategyModal, TeamOrdersModal } from './liveRace/mo
 import { F11990sLiveRaceScreen } from './liveRace/eraThemes/F11990sLiveRaceScreen';
 import { shouldUseF11990sLiveRaceScreen } from './liveRace/eraThemes/getLiveRaceEraTheme';
 
-type Speed = 1 | 2 | 4 | 8 | 16;
+type Speed = 1 | 10 | 30 | 60;
 
 export function LiveRace() {
   const { raceId } = useParams();
@@ -112,7 +113,7 @@ export function LiveRace() {
   useEffect(() => {
     if (!live || !shouldUseF11990sLiveRaceScreen(state?.series, state?.seasonYear)) return;
     if (!playing || live.pendingPrompt || live.phase === 'finished' || needsDecision) return;
-    const id = setInterval(() => setTrackAnimationTick((tick) => tick + 1), Math.max(450, 2200 / speed));
+    const id = setInterval(() => setTrackAnimationTick((tick) => tick + 1), Math.max(160, 2200 / speed));
     return () => clearInterval(id);
   }, [live, needsDecision, playing, speed, state?.series, state?.seasonYear]);
 
@@ -165,7 +166,12 @@ export function LiveRace() {
   };
   const chooseOption = (optionId: string) =>
     setLive((s) => (s ? resolvePrompt(s, optionId, engine.meta) : s));
-  const pitNow = (driverId: string) => setLive((s) => (s ? requestPlayerPit(s, driverId) : s));
+  const pitNow = (driverId: string) =>
+    setLive((s) => {
+      if (!s) return s;
+      const car = s.cars.find((c) => c.driverId === driverId);
+      return car?.pit.pitRequested ? cancelPlayerPitRequest(s, driverId) : requestPlayerPit(s, driverId);
+    });
   const setMode = (driverId: string, mode: PaceMode) =>
     setLive((s) => (s ? setPlayerPaceMode(s, driverId, mode) : s));
 
@@ -288,7 +294,7 @@ export function LiveRace() {
             +1
           </button>
           <div className="flex items-center gap-0.5">
-            {([1, 2, 4, 8, 16] as Speed[]).map((s) => (
+            {([1, 10, 30, 60] as Speed[]).map((s) => (
               <button
                 key={s}
                 onClick={() => setSpeed(s)}

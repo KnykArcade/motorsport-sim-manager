@@ -557,6 +557,18 @@ export function requestPlayerPit(state: LiveRaceState, driverId: string): LiveRa
   return changed ? { ...state, cars } : state;
 }
 
+// Cancel only a pending "box this lap" request before the stop is executed.
+// Keeps the planned strategy/window intact.
+export function cancelPlayerPitRequest(state: LiveRaceState, driverId: string): LiveRaceState {
+  let changed = false;
+  const cars = state.cars.map((c) => {
+    if (c.driverId !== driverId || !c.isPlayer || !c.running || !c.pit.pitRequested || c.pit.inPitThisLap) return c;
+    changed = true;
+    return { ...c, pit: { ...c.pit, pitRequested: false } };
+  });
+  return changed ? { ...state, cars } : state;
+}
+
 // Cancel a player car's planned pit stop. The car keeps running and is only
 // re-prompted if tyres/rules/strategy force a stop (the tyre analytics recs and
 // the tyre-cliff net still apply). Clears the advisory window so the pit-window

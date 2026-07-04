@@ -10,7 +10,7 @@ import { fmtLap, tyreLetter } from '../dashboardFormat';
 import { RecommendationsPanel } from '../RecommendationsPanel';
 import type { ForecastEntry } from '../forecast';
 
-type Speed = 1 | 2 | 4 | 8 | 16;
+type Speed = 1 | 10 | 30 | 60;
 
 type Props = {
   state: GameState;
@@ -485,14 +485,14 @@ function PlaybackPanel({
           </button>
         ) : (
           <>
-            <div className="grid grid-cols-8 gap-1">
+            <div className="grid grid-cols-7 gap-1">
               <button onClick={onTogglePlay} disabled={!canAdvance} className="rounded border border-zinc-700 bg-zinc-900 px-2 py-1.5 text-base font-bold hover:border-amber-400 disabled:opacity-40">
                 {playing ? 'II' : '>'}
               </button>
               <button onClick={onStep} disabled={!canAdvance || playing} className="rounded border border-zinc-700 bg-zinc-900 px-2 py-1.5 text-xs font-bold hover:border-amber-400 disabled:opacity-40">
                 +1
               </button>
-              {([1, 2, 4, 8, 16] as Speed[]).map((s) => (
+              {([1, 10, 30, 60] as Speed[]).map((s) => (
                 <button
                   key={s}
                   onClick={() => onSpeed(s)}
@@ -575,7 +575,7 @@ function DriverFocus({
   className?: string;
 }) {
   const tyre = tyreLetter(car.tire.compound);
-  const canPit = car.running && !car.pit.pitRequested && !finished;
+  const canPit = car.running && !car.pit.inPitThisLap && !finished;
   return (
     <RetroPanel title={`Driver Focus ${car.isPlayer ? '- Player' : ''}`} className={`h-full min-h-0 ${className}`}>
       <div className="h-[calc(100%-37px)] overflow-y-auto p-2">
@@ -610,7 +610,7 @@ function DriverFocus({
                 disabled={!canPit}
                 className="rounded border border-amber-500/50 px-1.5 py-0.5 text-[9px] font-bold uppercase text-amber-300 hover:bg-amber-500/10 disabled:border-zinc-800 disabled:text-zinc-600"
               >
-                {car.pit.pitRequested ? 'Boxing' : 'Pit'}
+                {car.pit.pitRequested ? 'Cancel Pit' : 'Pit'}
               </button>
             </div>
             <div className="grid grid-cols-6 gap-0.5">
