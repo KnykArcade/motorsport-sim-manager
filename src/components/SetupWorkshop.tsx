@@ -243,9 +243,9 @@ export function SetupWorkshop({
       )}
 
       {/* Main dashboard: left controls (internal scroll) + right readout (internal scroll). */}
-      <div className="grid min-h-0 flex-1 gap-3 lg:grid-cols-3">
+      <div className="grid min-h-0 flex-1 gap-3 lg:grid-cols-[minmax(0,2fr)_minmax(320px,0.9fr)]">
         {/* Left/Middle: setup controls grouped into component tabs. */}
-        <div className="flex min-h-0 flex-col lg:col-span-2">
+        <div className="flex min-h-0 flex-col">
           <div className="flex shrink-0 flex-wrap gap-1 rounded-t-lg border border-neutral-800 bg-neutral-900/40 p-1" role="tablist">
             {SETUP_COMPONENTS.map((c) => {
               return (
@@ -266,7 +266,7 @@ export function SetupWorkshop({
               );
             })}
           </div>
-          <div className="min-h-0 flex-1 overflow-y-auto border border-t-0 border-neutral-800 bg-neutral-900/20 p-3">
+          <div className="max-h-[28rem] overflow-y-auto border border-t-0 border-neutral-800 bg-neutral-900/20 p-3">
             <div className="mb-3 flex items-center justify-between gap-4">
               <p className="text-xs text-neutral-400">{comp.description}</p>
               <div className="flex shrink-0 items-center gap-2">
@@ -314,8 +314,8 @@ export function SetupWorkshop({
             </div>
           </div>
 
-          {/* Presets — below the sliders (shrink-0), apply to this driver or both. */}
-          <div className="mt-4 grid gap-2 rounded-lg border border-sky-500/20 bg-neutral-950/35 p-3 sm:grid-cols-2">
+          {/* Setup feedback directly below the sliders. */}
+          <div className="grid shrink-0 gap-2 rounded-b-lg border border-t-0 border-sky-500/20 bg-neutral-950/35 p-3 sm:grid-cols-2">
             <div className="rounded-lg border border-neutral-800 bg-neutral-900/50 p-2.5">
               <div className="mb-1 flex items-center justify-between">
                 <span className="text-[10px] font-semibold uppercase tracking-wide text-neutral-400">Objective Setup Quality</span>
@@ -362,6 +362,38 @@ export function SetupWorkshop({
                 <Effect label="Consistency" value={comfort.effects.consistency} goodHigh />
               </div>
             </div>
+          </div>
+
+          <div className="grid shrink-0 gap-2 border-x border-sky-500/20 bg-neutral-950/35 px-3 pb-3 md:grid-cols-2">
+            <section className="rounded-lg border border-amber-500/40 bg-neutral-950/70">
+              <header className="border-b border-amber-500/30 bg-amber-950/25 px-3 py-2">
+                <h3 className="text-xs font-bold uppercase tracking-wide text-amber-400">Driver Feedback</h3>
+              </header>
+              <div className="p-3">
+                <ul className="space-y-1.5 text-xs text-neutral-300">
+                  {feedback.driverFeedback.map((f, i) => (
+                    <li key={i}>&ldquo;{f}&rdquo;</li>
+                  ))}
+                </ul>
+              </div>
+            </section>
+
+            <section className="rounded-lg border border-amber-500/40 bg-neutral-950/70">
+              <header className="border-b border-amber-500/30 bg-amber-950/25 px-3 py-2">
+                <h3 className="text-xs font-bold uppercase tracking-wide text-amber-400">Engineer Feedback</h3>
+              </header>
+              <div className="p-3">
+                {feedback.engineerFeedback.length > 0 ? (
+                  <ul className="space-y-1.5 text-xs text-neutral-300">
+                    {feedback.engineerFeedback.map((f, i) => (
+                      <li key={i}>{f}</li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p className="text-xs text-neutral-500">No major setup concerns from engineering.</p>
+                )}
+              </div>
+            </section>
           </div>
 
           <div className="shrink-0 border border-t-0 border-neutral-800 bg-neutral-900/40 px-3 py-2">
@@ -486,7 +518,7 @@ export function SetupWorkshop({
             <TrackDemandBars track={track} />
           </Panel>
 
-          <Panel title="Driver Feedback">
+          <Panel title="Driver Feedback" className="hidden">
             <ul className="space-y-1.5 text-xs text-neutral-300">
               {feedback.driverFeedback.map((f, i) => (
                 <li key={i}>“{f}”</li>
@@ -495,7 +527,7 @@ export function SetupWorkshop({
           </Panel>
 
           {feedback.engineerFeedback.length > 0 && (
-            <Panel title="Engineer Feedback">
+            <Panel title="Engineer Feedback" className="hidden">
               <ul className="space-y-1.5 text-xs text-neutral-300">
                 {feedback.engineerFeedback.map((f, i) => (
                   <li key={i}>{f}</li>

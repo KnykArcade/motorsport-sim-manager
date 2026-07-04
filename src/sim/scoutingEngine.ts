@@ -82,9 +82,11 @@ export function visiblePotentialRange(
   accuracy: number,
   seed: string,
   entityId: string,
+  entityType: ScoutedEntityType = 'Driver',
 ): [number, number] {
-  const spread = (1 - accuracy) * 2.5; // ±2.5 at acc 0 → 0 when revealed
-  const adjustedSpread = Math.max(0.4, spread * 1.28);
+  const youth = entityType === 'YouthProspect';
+  const spread = (1 - accuracy) * (youth ? 4.0 : 2.5);
+  const adjustedSpread = Math.max(youth ? 1.1 : 0.4, spread * (youth ? 1.15 : 1.28));
   const center = clampRating(truePotential + bias(seed, entityId, 'potential') * adjustedSpread * 0.5);
   return [round1(clampRating(center - adjustedSpread)), round1(clampRating(center + adjustedSpread))];
 }
@@ -97,9 +99,11 @@ export function visibleSkill(
   seed: string,
   entityId: string,
   key: string,
+  entityType: ScoutedEntityType = 'Driver',
 ): VisibleRating {
   if (accuracy < UNKNOWN_ACCURACY) return 'Unknown';
-  const spread = Math.max(0.3, (1 - accuracy) * 2.8);
+  const youth = entityType === 'YouthProspect';
+  const spread = Math.max(youth ? 0.8 : 0.3, (1 - accuracy) * (youth ? 3.8 : 2.8));
   const center = clampRating(trueValue + bias(seed, entityId, key) * spread * 0.5);
   return [round1(clampRating(center - spread)), round1(clampRating(center + spread))];
 }
@@ -145,7 +149,7 @@ export function buildScoutingReport(
   const accuracy = effectiveAccuracy(scoutingLevel, networkAccuracy);
   const visibleRatings: Record<string, VisibleRating> = {};
   for (const key of SKILL_KEYS) {
-    visibleRatings[key] = visibleSkill(target.skills[key], accuracy, seed, target.id, key);
+    visibleRatings[key] = visibleSkill(target.skills[key], accuracy, seed, target.id, key, entityType);
   }
   const notes: string[] = [];
   if (isRevealed(accuracy)) {
@@ -162,7 +166,7 @@ export function buildScoutingReport(
     scoutingLevel,
     accuracy: round1(accuracy * 100) / 100,
     visibleRatings,
-    potentialRange: visiblePotentialRange(target.potential, accuracy, seed, target.id),
+    potentialRange: visiblePotentialRange(target.potential, accuracy, seed, target.id, entityType),
     notes,
     lastUpdated: now,
   };
@@ -235,14 +239,15 @@ export function fogView(
   report: ScoutingReport | undefined,
   networkAccuracy: number,
   seed: string,
+  entityType: ScoutedEntityType = report?.entityType ?? 'Driver',
 ): FogView {
   const scoutingLevel = report?.scoutingLevel ?? 0;
   const accuracy = effectiveAccuracy(scoutingLevel, networkAccuracy);
   const revealed = isRevealed(accuracy);
-  const range = visiblePotentialRange(target.potential, accuracy, seed, target.id);
+  const range = visiblePotentialRange(target.potential, accuracy, seed, target.id, entityType);
   const skills: Record<string, VisibleRating> = {};
   for (const key of SKILL_KEYS) {
-    skills[key] = visibleSkill(target.skills[key], accuracy, seed, target.id, key);
+    skills[key] = visibleSkill(target.skills[key], accuracy, seed, target.id, key, entityType);
   }
   return {
     accuracy,

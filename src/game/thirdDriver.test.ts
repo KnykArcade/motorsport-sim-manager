@@ -10,7 +10,7 @@ import {
   type GameState,
 } from './careerState';
 import { getMarketBundle, preloadMarketBundle } from '../data';
-import { thirdDriverSalary, thirdDriverAmbitions } from '../sim/contractEngine';
+import { driverExtensionSigningFee, thirdDriverSalary, thirdDriverAmbitions } from '../sim/contractEngine';
 import type { StandingsEntry } from '../types/gameTypes';
 
 const TEAM = 't-williams';
@@ -44,6 +44,86 @@ describe('third-driver contracts', () => {
   it('discounts the 3rd-driver salary', () => {
     expect(thirdDriverSalary(10)).toBe(5);
     expect(thirdDriverSalary(0)).toBe(0.2); // floor
+  });
+
+  it('calculates an affordable in-season extension fee from salary and years', () => {
+    const state = newGame();
+    const driver = activeDriversForTeam(state, TEAM)[0];
+    const oneYear = driverExtensionSigningFee(driver, 1, state.calendar.length, state.calendar.length);
+    const twoYear = driverExtensionSigningFee(driver, 2, state.calendar.length, state.calendar.length);
+    expect(oneYear).toBeGreaterThan(0);
+    expect(twoYear).toBeGreaterThan(oneYear);
+  });
+
+  it('extends a current driver contract only when the driver accepts the offer', () => {
+    let state = newGame();
+    const driver = activeDriversForTeam(state, TEAM)[0];
+    const beforeBudget = teamById(state, TEAM)!.budget;
+    const beforeYears = driver.contractYearsRemaining ?? 1;
+    state = {
+      ...state,
+      driverRelationships: {
+        ...state.driverRelationships,
+        [driver.id]: {
+          ...state.driverRelationships![driver.id],
+          morale: 88,
+          teamLoyalty: 86,
+          trustInPrincipal: 84,
+          frustration: 8,
+        },
+      },
+    };
+
+    state = gameReducer(state, { type: 'EXTEND_DRIVER_CONTRACT', driverId: driver.id, years: 1, offerMultiplier: 1.35 })!;
+
+    const extended = state.drivers.find((d) => d.id === driver.id)!;
+    expect(extended.contractYearsRemaining).toBe(beforeYears + 1);
+    expect(teamById(state, TEAM)!.budget).toBeLessThan(beforeBudget);
+    expect(state.finance?.some((t) => t.category === 'Driver Signing' && t.label.includes(driver.name))).toBe(true);
+    expect(state.news[0].headline).toContain('agrees');
+  });
+
+  it('lets an unhappy driver refuse a standard extension offer', () => {
+    let state = newGame();
+    const driver = activeDriversForTeam(state, TEAM)[0];
+    const beforeBudget = teamById(state, TEAM)!.budget;
+    const beforeYears = driver.contractYearsRemaining ?? 1;
+    state = {
+      ...state,
+      driverRelationships: {
+        ...state.driverRelationships,
+        [driver.id]: {
+          ...state.driverRelationships![driver.id],
+          morale: 18,
+          teamLoyalty: 12,
+          trustInPrincipal: 10,
+          frustration: 92,
+        },
+      },
+    };
+
+    state = gameReducer(state, { type: 'EXTEND_DRIVER_CONTRACT', driverId: driver.id, years: 1 })!;
+
+    const unchanged = state.drivers.find((d) => d.id === driver.id)!;
+    expect(unchanged.contractYearsRemaining ?? 1).toBe(beforeYears);
+    expect(teamById(state, TEAM)!.budget).toBe(beforeBudget);
+    expect(state.news[0].headline).toContain('turns down');
+  });
+
+  it('blocks driver extensions in single-season mode', () => {
+    let state = createNewGame({
+      gameMode: 'SingleSeason',
+      seasonYear: 1994,
+      series: 'F1',
+      teamId: TEAM,
+      seed: 'single-season-contract',
+    });
+    const driver = activeDriversForTeam(state, TEAM)[0];
+    const beforeYears = driver.contractYearsRemaining ?? 1;
+
+    state = gameReducer(state, { type: 'EXTEND_DRIVER_CONTRACT', driverId: driver.id, years: 1 })!;
+
+    expect(state.drivers.find((d) => d.id === driver.id)!.contractYearsRemaining ?? 1).toBe(beforeYears);
   });
 
   it('signs a free agent mid-season as a 3rd driver (reserve)', () => {

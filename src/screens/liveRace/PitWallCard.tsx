@@ -3,9 +3,9 @@
 // health, and strategy-mode buttons. Data Analytics recommendations live in the
 // grouped RecommendationsPanel above the cards, not inside each card.
 
-import type { LiveCarState, PaceMode } from '../../types/liveTypes';
+import type { LiveCarState, PaceMode, ReliabilityIssueType } from '../../types/liveTypes';
 import { SELECTABLE_MODES, modeSpec } from '../../sim/liveRacePace';
-import { DeltaTag, Gauge } from './dashboardUi';
+import { DeltaTag } from './dashboardUi';
 import { fmtLap, ordinal, tyreLetter, RISK_STYLE } from './dashboardFormat';
 import type { RiskLevel } from '../../types/liveTypes';
 
@@ -47,7 +47,6 @@ export function PitWallCard({
     car.crashRiskLevel === 'High' ||
     car.crashRiskLevel === 'Critical';
   const pitWindow = pitWindowText(car);
-  const aeroHealth = car.aeroHealth ?? (car.damaged ? 72 : 100);
 
   if (dnf) {
     return (
@@ -106,7 +105,7 @@ export function PitWallCard({
 
       <div className="mt-0.5 grid grid-cols-2 gap-1 text-center">
         <Metric label="Next Stop" value={nextStopText(car)} />
-        <Metric label="Last Stop" value={car.pit.lastPitStopTime != null ? `${car.pit.lastPitStopTime.toFixed(1)}s` : car.pit.lastPitLap != null ? `L${car.pit.lastPitLap}` : 'none'} />
+        <Metric label="Last Stop" value={lastStopText(car)} />
       </div>
       <div className="mt-0.5 rounded bg-slate-800/45 px-2 py-1 text-[10px] text-slate-300">
         <span className="text-slate-500">Estimated Pit Window: </span>
@@ -166,12 +165,12 @@ export function PitWallCard({
           <div className="mt-1 rounded border border-slate-700/50 bg-slate-950/35 p-1">
             <div className="mb-0.5 text-[9px] uppercase tracking-wide text-slate-500">Car Reliability</div>
             <div className="grid grid-cols-2 gap-x-2 gap-y-0.5">
-              <Gauge label="Engine" value={car.engineHealth} tone="health" />
-              <Gauge label="Brakes" value={car.brakeHealth} tone="health" />
-              <Gauge label="Gearbox" value={car.gearboxHealth} tone="health" />
-              <Gauge label="Aero" value={aeroHealth} tone="health" />
-              <Gauge label="Fuel" value={car.fuel} tone="fuel" />
-              <Gauge label="Overall" value={overallHealth(car)} tone="health" />
+              <ConditionChip label="Engine" level={componentCondition(car, 'Engine')} />
+              <ConditionChip label="Brakes" level={componentCondition(car, 'Brakes')} />
+              <ConditionChip label="Gearbox" level={componentCondition(car, 'Gearbox')} />
+              <ConditionChip label="Aero" level={componentCondition(car, 'Aero')} />
+              <ConditionChip label="Overall" level={overallCondition(car)} />
+              <ConditionChip label="Risk" level={riskCondition(car.reliabilityRiskLevel)} />
             </div>
           </div>
         </div>
@@ -197,6 +196,13 @@ function nextStopText(car: LiveCarState): string {
   return next != null ? `L${next}` : 'TBD';
 }
 
+function lastStopText(car: LiveCarState): string {
+  if (car.pit.lastPitLap != null && car.pit.lastPitStopTime != null) return `L${car.pit.lastPitLap} - ${car.pit.lastPitStopTime.toFixed(1)}s`;
+  if (car.pit.lastPitLap != null) return `L${car.pit.lastPitLap}`;
+  if (car.pit.lastPitStopTime != null) return `${car.pit.lastPitStopTime.toFixed(1)}s`;
+  return 'none';
+}
+
 function pitWindowText(car: LiveCarState): string {
   const stopsLeft = car.pit.plannedStops - car.pit.stopsMade;
   if (stopsLeft <= 0) return 'No planned stops';
@@ -210,10 +216,6 @@ function pitWindowText(car: LiveCarState): string {
   return next != null ? `Around L${next}` : 'TBD';
 }
 
-function overallHealth(car: LiveCarState): number {
-  return Math.min(car.engineHealth, car.brakeHealth, car.gearboxHealth, car.aeroHealth ?? (car.damaged ? 72 : 100));
-}
-
 // Single-line reliability/crash risk chip (keeps the pit-wall card compact).
 function RiskInline({ kind, level }: { kind: 'R' | 'C'; level: RiskLevel }) {
   const s = RISK_STYLE[level];
@@ -225,5 +227,76 @@ function RiskInline({ kind, level }: { kind: 'R' | 'C'; level: RiskLevel }) {
       <span className="text-[11px] font-bold uppercase tracking-wide">{s.label}</span>
     </div>
   );
+}
+
+type ConditionLevel = 'None' | 'Low' | 'Medium' | 'Critical';
+type ComponentKey = 'Engine' | 'Brakes' | 'Gearbox' | 'Aero';
+
+const CONDITION_STYLE: Record<ConditionLevel, { chip: string; label: string }> = {
+  None: { chip: 'border-emerald-500/40 bg-emerald-500/15 text-emerald-300', label: 'NONE' },
+  Low: { chip: 'border-sky-500/45 bg-sky-500/15 text-sky-300', label: 'LOW' },
+  Medium: { chip: 'border-orange-500/50 bg-orange-500/15 text-orange-300', label: 'MEDIUM' },
+  Critical: { chip: 'border-red-500/60 bg-red-600/20 text-red-200', label: 'CRITICAL' },
+};
+
+function ConditionChip({ label, level }: { label: string; level: ConditionLevel }) {
+  const style = CONDITION_STYLE[level];
+  return (
+    <div className={`flex items-center justify-between rounded border px-1.5 py-0.5 ${style.chip}`}>
+      <span className="text-[9px] font-semibold uppercase tracking-wide opacity-80">{label}</span>
+      <span className="text-[10px] font-bold uppercase tracking-wide">{style.label}</span>
+    </div>
+  );
+}
+
+function componentCondition(car: LiveCarState, component: ComponentKey): ConditionLevel {
+  const health =
+    component === 'Engine'
+      ? car.engineHealth
+      : component === 'Brakes'
+        ? car.brakeHealth
+        : component === 'Gearbox'
+          ? car.gearboxHealth
+          : car.aeroHealth ?? (car.damaged ? 72 : 100);
+  return worseCondition(conditionFromHealth(health), conditionFromIssue(car.reliabilityIssue?.type, component, car.reliabilityIssue?.severity));
+}
+
+function overallCondition(car: LiveCarState): ConditionLevel {
+  return (['Engine', 'Brakes', 'Gearbox', 'Aero'] as const)
+    .map((component) => componentCondition(car, component))
+    .reduce(worseCondition, 'None' as ConditionLevel);
+}
+
+function conditionFromHealth(health: number): ConditionLevel {
+  if (health < 55) return 'Critical';
+  if (health < 76) return 'Medium';
+  if (health < 90) return 'Low';
+  return 'None';
+}
+
+function conditionFromIssue(type: ReliabilityIssueType | undefined, component: ComponentKey, severity?: 'Minor' | 'Moderate' | 'Severe'): ConditionLevel {
+  if (!type || !severity || !issueTouchesComponent(type, component)) return 'None';
+  if (severity === 'Severe') return 'Critical';
+  if (severity === 'Moderate') return 'Medium';
+  return 'Low';
+}
+
+function issueTouchesComponent(type: ReliabilityIssueType, component: ComponentKey): boolean {
+  if (component === 'Engine') return type === 'EngineOverheating' || type === 'CoolingProblem' || type === 'ElectricalGlitch';
+  if (component === 'Brakes') return type === 'BrakeIssue' || type === 'HydraulicLeak';
+  if (component === 'Gearbox') return type === 'GearboxWarning' || type === 'HydraulicLeak';
+  return type === 'SuspensionConcern' || type === 'TireVibration';
+}
+
+function riskCondition(level: RiskLevel): ConditionLevel {
+  if (level === 'Critical' || level === 'High') return 'Critical';
+  if (level === 'Medium' || level === 'Elevated') return 'Medium';
+  if (level === 'Low') return 'Low';
+  return 'None';
+}
+
+function worseCondition(a: ConditionLevel, b: ConditionLevel): ConditionLevel {
+  const rank: Record<ConditionLevel, number> = { None: 0, Low: 1, Medium: 2, Critical: 3 };
+  return rank[b] > rank[a] ? b : a;
 }
 

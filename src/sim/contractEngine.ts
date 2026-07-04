@@ -4,7 +4,7 @@
 // season they push for a proper seat in the offseason — promote them or risk
 // losing them to the open market.
 
-import { toMoney } from './financeEngine';
+import { driverSalary, toMoney, MILLION } from './financeEngine';
 import { isReserveContract, type GameState } from '../game/careerState';
 import type { Driver, StandingsEntry } from '../types/gameTypes';
 
@@ -26,6 +26,29 @@ export function thirdDriverMidSeasonFee(
 ): number {
   const fraction = totalRaces > 0 ? Math.max(0.1, racesRemaining / totalRaces) : 1;
   return toMoney(thirdDriverSalary(marketSalary) * fraction);
+}
+
+// In-season contract extensions charge an immediate signing/loyalty bonus,
+// then update the driver's remaining years. The annual salary itself is paid in
+// the normal season rollover budget model, so the up-front fee is intentionally
+// a fraction of the annual deal rather than the full contract value.
+export function driverExtensionSigningFee(
+  driver: Driver,
+  addedYears: number,
+  racesRemaining: number,
+  totalRaces: number,
+): number {
+  const years = Math.max(1, Math.min(3, Math.round(addedYears)));
+  const annual = driverSalary(driver);
+  const seasonFraction = totalRaces > 0 ? Math.max(0.2, racesRemaining / totalRaces) : 1;
+  const securityPremium = 0.18 + years * 0.04;
+  return Math.round(annual * years * securityPremium * seasonFraction);
+}
+
+export function extendedDriverSalaryMillions(driver: Driver, addedYears: number): number {
+  const currentM = driverSalary(driver) / MILLION;
+  const years = Math.max(1, Math.min(3, Math.round(addedYears)));
+  return Math.round(currentM * (1 + years * 0.035) * 10) / 10;
 }
 
 export type ThirdDriverAmbition = {

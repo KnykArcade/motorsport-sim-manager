@@ -3,7 +3,7 @@ import type { TrackDot } from '../../../components/RaceTrack2D';
 import { TrackMapAssetPanel } from '../../../components/TrackMapAssetPanel';
 import { SELECTABLE_MODES, modeSpec } from '../../../sim/liveRacePace';
 import type { AnalyticsMonitor } from '../../../sim/analyticsMonitor';
-import type { AnalyticsRecommendation, LiveCarState, LiveRaceState, PaceMode, RecAction } from '../../../types/liveTypes';
+import type { AnalyticsRecommendation, LiveCarState, LiveRaceState, PaceMode, RecAction, ReliabilityIssueType } from '../../../types/liveTypes';
 import type { Race } from '../../../types/gameTypes';
 import type { GameState } from '../../../game/careerState';
 import { fmtLap, tyreLetter } from '../dashboardFormat';
@@ -23,6 +23,8 @@ type Props = {
   monitor: AnalyticsMonitor;
   activeRecs: AnalyticsRecommendation[];
   needsDecision: boolean;
+  pausedByDnf?: boolean;
+  aiDnfFlash?: { lap: number; entries: Array<{ driverId: string; cause: string }> } | null;
   decisionSecondsLeft: number | null;
   playing: boolean;
   speed: Speed;
@@ -59,6 +61,8 @@ export function F11990sLiveRaceScreen({
   monitor,
   activeRecs,
   needsDecision,
+  pausedByDnf = false,
+  aiDnfFlash,
   decisionSecondsLeft,
   playing,
   speed,
@@ -89,12 +93,13 @@ export function F11990sLiveRaceScreen({
   const raceTime = formatElapsed(leader?.totalTime ?? 0);
   const airTemp = forecast[0]?.temp ?? (live.weather.wet ? 18 : 22);
   const trackTemp = airTemp + (live.weather.wet ? 2 : 6);
-  const canAdvance = !live.pendingPrompt && !needsDecision && !finished;
+  const canAdvance = !live.pendingPrompt && !needsDecision && !pausedByDnf && !finished;
   const fuelWindow = playerCars[0]
     ? `Lap ${Math.max(1, live.currentLap)} - Lap ${Math.min(live.totalLaps, Math.ceil((playerCars[0].fuel / 100) * live.totalLaps))}`
     : 'N/A';
   const alert = raceAlert(live, forecast);
-  const alertStyle = alertClass(alert);
+  const alertStyle = aiDnfFlash ? dnfFlashClass() : alertClass(alert);
+  const commentaryTitle = aiDnfFlash ? 'DNF Alert' : alert ? 'Track Alert' : 'Commentary';
 
   return (
     <div
@@ -178,14 +183,27 @@ export function F11990sLiveRaceScreen({
       </main>
 
       <footer className="relative grid shrink-0 gap-2 px-2 pb-2 lg:grid-cols-[1.05fr_1fr_0.9fr_0.9fr]">
-        <RetroPanel title={alert ? 'Track Alert' : 'Commentary'} className={alertStyle.panel}>
+        <RetroPanel title={commentaryTitle} className={alertStyle.panel}>
           <div className={`space-y-1 p-2 text-[12px] ${alertStyle.body}`}>
-            {alert && <p className="text-lg leading-tight">{alert}</p>}
-            {commentaryLines(live, nameOf).map((line, index) => (
-              <p key={index} className={line.tone === 'retirement' ? 'font-black text-red-300' : ''}>
-                {line.text}
-              </p>
-            ))}
+            {aiDnfFlash ? (
+              <>
+                <p className="text-lg leading-tight">Lap {aiDnfFlash.lap} - AI retirement</p>
+                {aiDnfFlash.entries.map((entry) => (
+                  <p key={entry.driverId}>
+                    {shortName(nameOf(entry.driverId)).toUpperCase()} - {entry.cause}
+                  </p>
+                ))}
+              </>
+            ) : (
+              <>
+                {alert && <p className="text-lg leading-tight">{alert}</p>}
+                {commentaryLines(live, nameOf).map((line, index) => (
+                  <p key={index} className={line.tone === 'retirement' ? 'font-black text-red-300' : ''}>
+                    {line.text}
+                  </p>
+                ))}
+              </>
+            )}
           </div>
         </RetroPanel>
         <RetroPanel title="Team Radio">
@@ -673,10 +691,12 @@ function DriverFocus({
               ))}
             </div>
             <div className="mt-1 grid grid-cols-2 gap-x-2 gap-y-0.5 border-t border-zinc-800 pt-1">
-              <ReliabilityLine label="Engine" value={car.engineHealth} />
-              <ReliabilityLine label="Brakes" value={car.brakeHealth} />
-              <ReliabilityLine label="Gearbox" value={car.gearboxHealth} />
-              <ReliabilityLine label="Aero" value={car.aeroHealth ?? (car.damaged ? 72 : 100)} />
+              <ConditionLine label="Engine" level={componentCondition(car, 'Engine')} />
+              <ConditionLine label="Brakes" level={componentCondition(car, 'Brakes')} />
+              <ConditionLine label="Gearbox" level={componentCondition(car, 'Gearbox')} />
+              <ConditionLine label="Aero" level={componentCondition(car, 'Aero')} />
+              <ConditionLine label="Overall" level={overallCondition(car)} />
+              <ConditionLine label="Risk" level={riskCondition(car.reliabilityRiskLevel)} />
             </div>
           </div>
         )}
@@ -732,6 +752,10 @@ function alertClass(alert: string | null): { panel: string; body: string } {
   }
   if (alert) return { panel: 'animate-pulse border-yellow-300 bg-yellow-300 text-black', body: 'font-black uppercase text-black' };
   return { panel: '', body: 'text-zinc-200' };
+}
+
+function dnfFlashClass(): { panel: string; body: string } {
+  return { panel: 'animate-pulse border-red-700 bg-red-500 text-black', body: 'font-black uppercase text-black' };
 }
 
 function raceAlert(live: LiveRaceState, forecast: ForecastEntry[]): string | null {
@@ -823,23 +847,91 @@ function pitWindowStatus(car: LiveCarState): string {
 }
 
 function lastStopText(car: LiveCarState): string {
-  if (car.pit.lastPitStopTime != null) return `Last ${car.pit.lastPitStopTime.toFixed(1)}s`;
+  if (car.pit.lastPitLap != null && car.pit.lastPitStopTime != null) return `Last L${car.pit.lastPitLap} - ${car.pit.lastPitStopTime.toFixed(1)}s`;
   if (car.pit.lastPitLap != null) return `Last L${car.pit.lastPitLap}`;
+  if (car.pit.lastPitStopTime != null) return `Last ${car.pit.lastPitStopTime.toFixed(1)}s`;
   return 'No stop yet';
 }
 
-function ReliabilityLine({ label, value }: { label: string; value: number }) {
-  const pct = Math.max(0, Math.min(100, value));
-  const color = pct < 45 ? 'bg-red-500' : pct < 65 ? 'bg-orange-500' : pct < 82 ? 'bg-amber-400' : 'bg-emerald-400';
+type ConditionLevel = 'None' | 'Low' | 'Medium' | 'Critical';
+type ComponentKey = 'Engine' | 'Brakes' | 'Gearbox' | 'Aero';
+
+const CONDITION_STYLE: Record<ConditionLevel, { bar: string; text: string; label: string }> = {
+  None: { bar: 'bg-emerald-400', text: 'text-emerald-300', label: 'None' },
+  Low: { bar: 'bg-sky-400', text: 'text-sky-300', label: 'Low' },
+  Medium: { bar: 'bg-orange-400', text: 'text-orange-300', label: 'Medium' },
+  Critical: { bar: 'bg-red-500', text: 'text-red-300', label: 'Critical' },
+};
+
+function ConditionLine({ label, level }: { label: string; level: ConditionLevel }) {
+  const style = CONDITION_STYLE[level];
   return (
     <div className="flex items-center gap-1 text-[9px]">
       <span className="w-10 uppercase text-zinc-500">{label}</span>
       <span className="h-1 flex-1 overflow-hidden rounded bg-zinc-800">
-        <span className={`block h-full ${color}`} style={{ width: `${pct}%` }} />
+        <span className={`block h-full ${style.bar}`} style={{ width: conditionWidth(level) }} />
       </span>
-      <span className="w-7 text-right tabular-nums text-zinc-300">{Math.round(pct)}%</span>
+      <span className={`w-12 text-right font-bold uppercase tabular-nums ${style.text}`}>{style.label}</span>
     </div>
   );
+}
+
+function conditionWidth(level: ConditionLevel): string {
+  if (level === 'Critical') return '100%';
+  if (level === 'Medium') return '68%';
+  if (level === 'Low') return '42%';
+  return '18%';
+}
+
+function componentCondition(car: LiveCarState, component: ComponentKey): ConditionLevel {
+  const health =
+    component === 'Engine'
+      ? car.engineHealth
+      : component === 'Brakes'
+        ? car.brakeHealth
+        : component === 'Gearbox'
+          ? car.gearboxHealth
+          : car.aeroHealth ?? (car.damaged ? 72 : 100);
+  return worseCondition(conditionFromHealth(health), conditionFromIssue(car.reliabilityIssue?.type, component, car.reliabilityIssue?.severity));
+}
+
+function overallCondition(car: LiveCarState): ConditionLevel {
+  return (['Engine', 'Brakes', 'Gearbox', 'Aero'] as const)
+    .map((component) => componentCondition(car, component))
+    .reduce(worseCondition, 'None' as ConditionLevel);
+}
+
+function conditionFromHealth(health: number): ConditionLevel {
+  if (health < 55) return 'Critical';
+  if (health < 76) return 'Medium';
+  if (health < 90) return 'Low';
+  return 'None';
+}
+
+function conditionFromIssue(type: ReliabilityIssueType | undefined, component: ComponentKey, severity?: 'Minor' | 'Moderate' | 'Severe'): ConditionLevel {
+  if (!type || !severity || !issueTouchesComponent(type, component)) return 'None';
+  if (severity === 'Severe') return 'Critical';
+  if (severity === 'Moderate') return 'Medium';
+  return 'Low';
+}
+
+function issueTouchesComponent(type: ReliabilityIssueType, component: ComponentKey): boolean {
+  if (component === 'Engine') return type === 'EngineOverheating' || type === 'CoolingProblem' || type === 'ElectricalGlitch';
+  if (component === 'Brakes') return type === 'BrakeIssue' || type === 'HydraulicLeak';
+  if (component === 'Gearbox') return type === 'GearboxWarning' || type === 'HydraulicLeak';
+  return type === 'SuspensionConcern' || type === 'TireVibration';
+}
+
+function riskCondition(level: LiveCarState['reliabilityRiskLevel']): ConditionLevel {
+  if (level === 'Critical' || level === 'High') return 'Critical';
+  if (level === 'Medium' || level === 'Elevated') return 'Medium';
+  if (level === 'Low') return 'Low';
+  return 'None';
+}
+
+function worseCondition(a: ConditionLevel, b: ConditionLevel): ConditionLevel {
+  const rank: Record<ConditionLevel, number> = { None: 0, Low: 1, Medium: 2, Critical: 3 };
+  return rank[b] > rank[a] ? b : a;
 }
 
 function shortName(name: string): string {
