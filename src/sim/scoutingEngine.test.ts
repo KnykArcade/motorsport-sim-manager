@@ -109,7 +109,7 @@ describe('scoutingEngine — fogView', () => {
     const revealed = fogView(target, scouting.reports[target.id], scouting.networkAccuracy, SEED);
     expect(revealed.revealed).toBe(true);
     expect(revealed.maxed).toBe(true);
-    expect(revealed.potential.value).toBe(revealed.potential.range[0]);
+    expect(revealed.potential.value).toBeUndefined();
     expect(revealed.potential.range[1]).toBeGreaterThan(revealed.potential.range[0]);
     expect(revealed.skills.overtakingRacecraft).toEqual([8.6, 9.2]);
   });

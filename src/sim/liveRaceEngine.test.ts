@@ -357,6 +357,27 @@ describe('live race confidence modifier', () => {
     expect(carNeg.paceRating).toBeLessThan(carNone.paceRating);
   });
 
+  it('low trust makes attack mode slower and riskier during the live race', () => {
+    const baseContext = buildContext('conf-hesitation');
+    const firstDriver = baseContext.entrants[0].driver;
+    const meta = buildMeta(baseContext, firstDriver.teamId);
+    const race = createRace(baseContext, firstDriver.teamId);
+    const setTrust = (confidenceModifier: number) => ({
+      ...race,
+      cars: race.cars.map((c) =>
+        c.driverId === firstDriver.id
+          ? { ...c, confidenceModifier, paceMode: 'Attack' as const }
+          : c,
+      ),
+    });
+
+    const trusted = stepLiveRace(setTrust(0), meta).cars.find((c) => c.driverId === firstDriver.id)!;
+    const nervous = stepLiveRace(setTrust(-0.15), meta).cars.find((c) => c.driverId === firstDriver.id)!;
+
+    expect(nervous.liveRacePace).toBeLessThan(trusted.liveRacePace);
+    expect(nervous.crashRisk).toBeGreaterThan(trusted.crashRisk);
+  });
+
   it('missing confidence modifier data defaults safely to 0 (no crash)', () => {
     const context = buildContext('conf-missing');
     // No confidenceModifierByDriver field at all.

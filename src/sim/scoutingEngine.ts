@@ -8,6 +8,7 @@
 // and sharpening the skills toward the truth. Pure and deterministic.
 
 import type { FacilitiesState } from '../types/facilityTypes';
+import type { Driver, DriverRatings } from '../types/gameTypes';
 import type { MarketSkillRatings } from '../types/marketTypes';
 import type {
   ScoutedEntityType,
@@ -35,7 +36,8 @@ const SKILL_KEYS: (keyof MarketSkillRatings)[] = [
 // Effort added to a target each time you scout it (0-100 scale). A better
 // Scouting Network makes each trip more productive.
 const SCOUT_STEP = 25;
-// At/above this accuracy a target is considered fully revealed (exact values).
+// At/above this accuracy a target has the best available report. It still shows
+// a narrow range, not confirmed truth.
 const REVEAL_ACCURACY = 0.9;
 // Below this accuracy a skill is too uncertain to show a number at all.
 const UNKNOWN_ACCURACY = 0.25;
@@ -56,7 +58,7 @@ export function scoutingNetworkAccuracy(facilities?: FacilitiesState): number {
 }
 
 // How well a target is known: the network baseline (effort 0) interpolated up to
-// full certainty at maximum effort, so investing fully always reveals a target
+// best-report certainty at maximum effort, so investing fully narrows a target
 // while a stronger network gives a better starting picture.
 export function effectiveAccuracy(scoutingLevel: number, networkAccuracy: number): number {
   const effort = clamp01(scoutingLevel / 100);
@@ -73,8 +75,8 @@ function bias(seed: string, entityId: string, key: string): number {
   return createSeededRandom(deriveSeed(seed, 'scout', entityId, key)).variance(1);
 }
 
-// The visible potential: an exact number once revealed, otherwise a range that
-// widens as accuracy falls and is recentred by a deterministic bias.
+// The visible potential: always a range that widens as accuracy falls and is
+// recentred by a deterministic bias.
 export function visiblePotentialRange(
   truePotential: number,
   accuracy: number,
@@ -87,8 +89,8 @@ export function visiblePotentialRange(
   return [round1(clampRating(center - adjustedSpread)), round1(clampRating(center + adjustedSpread))];
 }
 
-// The visible value of a single skill: 'Unknown' when too poorly scouted, an
-// exact value once revealed, otherwise a noisy estimate.
+// The visible value of a single skill: 'Unknown' when too poorly scouted,
+// otherwise a noisy range. Even the best report never confirms the true value.
 export function visibleSkill(
   trueValue: number,
   accuracy: number,
@@ -107,6 +109,29 @@ export type ScoutTarget = {
   skills: MarketSkillRatings;
   potential: number;
 };
+
+export function driverScoutTarget(driver: Pick<Driver, 'id' | 'ratings'>): ScoutTarget {
+  return {
+    id: driver.id,
+    skills: driverRatingsToMarketSkills(driver.ratings),
+    potential: driver.ratings.overall,
+  };
+}
+
+function driverRatingsToMarketSkills(ratings: DriverRatings): MarketSkillRatings {
+  return {
+    cornering: ratings.cornering,
+    braking: ratings.braking,
+    straights: ratings.straights,
+    tractionAcceleration: ratings.tractionAcceleration,
+    elevationBlindCorners: ratings.elevationBlindCorners,
+    technical: ratings.technical,
+    overtakingRacecraft: ratings.overtakingRacecraft,
+    surfaceGripBumpiness: ratings.surfaceGripBumpiness,
+    riskManagement: ratings.riskManagement,
+    enduranceConsistency: ratings.enduranceConsistency,
+  };
+}
 
 // Build (or rebuild) the scouting report for a target at a given effort level.
 export function buildScoutingReport(
@@ -130,6 +155,7 @@ export function buildScoutingReport(
   } else {
     notes.push('Barely known — invest scouting to learn more.');
   }
+  if (isRevealed(accuracy)) notes[0] = 'Best available report - ratings remain projected ranges.';
   return {
     entityId: target.id,
     entityType,
@@ -222,7 +248,7 @@ export function fogView(
     accuracy,
     revealed,
     maxed: scoutingLevel >= 100,
-    potential: { revealed, value: revealed ? range[0] : undefined, range },
+    potential: { revealed, value: undefined, range },
     skills,
     notes: report?.notes ?? ['Unscouted — assign scouts to learn the true ceiling.'],
   };

@@ -1,7 +1,6 @@
 import { useMemo } from 'react';
 import type { NewsItem, NewsCategory } from '../types/gameTypes';
 import {
-  sortNewsByPriority,
   categoryLabel,
   priorityColor,
   filterNewsByTeam,
@@ -41,7 +40,7 @@ export function NewsPanel({
     if (teamId) {
       items = filterNewsByTeam(items, teamId);
     }
-    return sortNewsByPriority(items).slice(0, maxItems);
+    return sortNewsNewestFirst(items).slice(0, maxItems);
   }, [news, categoryFilter, teamId, maxItems]);
 
   if (filtered.length === 0) {
@@ -73,6 +72,16 @@ export function NewsPanel({
       </div>
     </div>
   );
+}
+
+function sortNewsNewestFirst(items: NewsItem[]): NewsItem[] {
+  return [...items].sort((a, b) => {
+    const timeA = Date.parse(a.timestamp);
+    const timeB = Date.parse(b.timestamp);
+    if (Number.isFinite(timeA) && Number.isFinite(timeB) && timeA !== timeB) return timeB - timeA;
+    if ((b.round ?? -1) !== (a.round ?? -1)) return (b.round ?? -1) - (a.round ?? -1);
+    return b.id.localeCompare(a.id);
+  });
 }
 
 function CompactNewsItem({ item }: { item: NewsItem }) {

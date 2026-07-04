@@ -7,8 +7,8 @@ import type { LiveCarState } from '../../types/liveTypes';
 import { DeltaTag, RiskDot } from './dashboardUi';
 import { fmtLap, fmtSector, tyreLetter } from './dashboardFormat';
 
-type Tab = 'Overview' | 'Gaps' | 'Tyres' | 'Stops' | 'Sectors';
-const TABS: Tab[] = ['Overview', 'Gaps', 'Tyres', 'Stops', 'Sectors'];
+type Tab = 'Overview' | 'Gaps' | 'Tyres' | 'Pit Stops' | 'Sectors';
+const TABS: Tab[] = ['Overview', 'Gaps', 'Tyres', 'Pit Stops', 'Sectors'];
 
 export function TimingTower({
   cars,
@@ -21,7 +21,7 @@ export function TimingTower({
 }) {
   const [tab, setTab] = useState<Tab>('Overview');
   return (
-    <div className="flex min-h-0 flex-col overflow-hidden rounded-lg border border-slate-700/60 bg-[#111725]">
+    <div className="flex h-full min-h-[360px] min-w-0 flex-col overflow-hidden rounded-lg border border-slate-700/60 bg-[#111725]">
       <div className="flex shrink-0 items-center justify-between border-b border-slate-700/50 px-3 py-1.5">
         <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-400">Timing Tower</span>
         <span className="text-[10px] text-slate-500">{cars.filter((c) => c.running).length} running</span>
@@ -39,7 +39,7 @@ export function TimingTower({
           </button>
         ))}
       </div>
-      <div className="min-h-0 flex-1 overflow-y-auto pb-3">
+      <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain pb-6 pr-1">
         <table className="w-full text-[11px]">
           <tbody>
             {cars.map((c) => (
@@ -73,8 +73,15 @@ function Row({ car, tab, name, color }: { car: LiveCarState; tab: Tab; name: str
       <td className="py-1 pl-1">
         <span className="flex items-center gap-1.5">
           <span className="h-3 w-1 shrink-0 rounded-sm" style={{ backgroundColor: color }} />
-          <span className={`truncate ${car.isPlayer ? 'font-semibold text-amber-200' : 'text-slate-200'}`}>
-            {shortName(name)}
+          <span className="min-w-0">
+            <span className={`block truncate ${car.isPlayer ? 'font-semibold text-amber-200' : 'text-slate-200'}`}>
+              {shortName(name)}
+            </span>
+            {dnf && (
+              <span className="block truncate text-[9px] uppercase text-red-300">
+                Retired - {car.lastIncident ?? 'DNF'}
+              </span>
+            )}
           </span>
         </span>
       </td>
@@ -116,10 +123,10 @@ function Row({ car, tab, name, color }: { car: LiveCarState; tab: Tab; name: str
           <td className="py-1 pr-2 text-right tabular-nums text-slate-500">{car.tire.age}L</td>
         </>
       )}
-      {tab === 'Stops' && (
+      {tab === 'Pit Stops' && (
         <>
           <td className="py-1 pr-1 text-right tabular-nums text-slate-300">
-            {car.pit.stopsMade}/{car.pit.plannedStops}
+            {car.isPlayer ? `${car.pit.stopsMade}/${car.pit.plannedStops}` : car.pit.stopsMade}
           </td>
           <td className="py-1 pr-1 text-right tabular-nums text-slate-400">
             {nextPitText(car)}
@@ -161,6 +168,7 @@ function gapText(car: LiveCarState, classified: boolean): string {
 }
 
 function nextPitText(car: LiveCarState): string {
+  if (!car.isPlayer) return 'Unknown';
   const stopsLeft = car.pit.plannedStops - car.pit.stopsMade;
   if (stopsLeft <= 0) return 'Done';
   if (car.pit.window) return `L${car.pit.window.open}-${car.pit.window.close}`;

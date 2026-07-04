@@ -82,8 +82,8 @@ export function PostRaceReview() {
         )}
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-3">
-        <div className="space-y-6 lg:col-span-2">
+      <div className="grid gap-6 xl:grid-cols-5">
+        <div className="space-y-6 xl:col-span-3">
           <Panel title="Race Classification">
             <RaceResultTable
               results={results}
@@ -138,17 +138,24 @@ export function PostRaceReview() {
           )}
         </div>
 
-        <div className="space-y-6">
+        <div className="space-y-4 xl:col-span-2">
           <Panel title="Driver Performance">
             <ul className="space-y-2">
               {playerResults.map((r) => {
                 const driver = state.drivers.find((d) => d.id === r.driverId);
+                const rating = raceRatingText(r, results.length);
                 return (
-                  <li key={r.driverId} className="flex items-center justify-between text-sm">
-                    <span className="text-neutral-200">{driver?.name ?? r.driverId}</span>
-                    <span className={r.status === 'DNF' || r.status === 'DSQ' ? 'text-red-400' : 'text-neutral-300'}>
-                      {r.status === 'DNF' || r.status === 'DSQ' ? r.status : `P${r.position}`} · {r.points} pts
-                    </span>
+                  <li key={r.driverId} className="text-sm">
+                    <div className="flex items-center justify-between">
+                      <span className="text-neutral-200">{driver?.name ?? r.driverId}</span>
+                      <span className={r.status === 'DNF' || r.status === 'DSQ' ? 'text-red-400' : 'text-neutral-300'}>
+                        {r.status === 'DNF' || r.status === 'DSQ' ? r.status : `P${r.position}`} · {r.points} pts
+                      </span>
+                    </div>
+                    <div className="mt-1 flex items-center justify-between rounded border border-neutral-800 bg-neutral-900/35 px-2 py-1 text-xs">
+                      <span className="text-neutral-500">Race rating</span>
+                      <span className="font-semibold tabular-nums text-amber-300">{rating}/10</span>
+                    </div>
                   </li>
                 );
               })}
@@ -165,42 +172,41 @@ export function PostRaceReview() {
               {' '}({isActiveReview ? (summary?.constructorPoints ?? 0) : (state.constructorStandings.find((s) => s.entityId === state.selectedTeamId)?.points ?? 0)} pts)
             </p>
           </Panel>
+
+          <div className="grid gap-4 lg:grid-cols-2 xl:grid-cols-1 2xl:grid-cols-2">
+            <NewsPanel
+              news={state.news}
+              title="Race Reaction"
+              maxItems={4}
+              categoryFilter={['race_result', 'post_race']}
+              emptyMessage="No race reaction stories yet."
+            />
+            <NewsPanel
+              news={state.news}
+              title="Championship & Paddock"
+              maxItems={4}
+              categoryFilter={['championship', 'paddock', 'financial', 'ai_team', 'development', 'driver_market', 'youth_academy']}
+              emptyMessage="No paddock or championship stories yet."
+            />
+          </div>
+
+          <div className="grid gap-4 lg:grid-cols-2 xl:grid-cols-1 2xl:grid-cols-2">
+            <StandingsTable
+              title="Drivers' Championship"
+              entries={state.driverStandings.slice(0, 8)}
+              nameOf={driverName}
+              subtitleOf={teamOfDriver}
+              highlightId={playerDriverIds[0]}
+            />
+            <StandingsTable
+              title="Constructors' Championship"
+              entries={state.constructorStandings.slice(0, 8)}
+              nameOf={teamName}
+              colorOf={teamColor}
+              highlightId={state.selectedTeamId}
+            />
+          </div>
         </div>
-      </div>
-
-      {/* Race Reaction News */}
-      <div className="grid gap-4 lg:grid-cols-2">
-        <NewsPanel
-          news={state.news}
-          title="Race Reaction"
-          maxItems={5}
-          categoryFilter={['race_result', 'post_race']}
-          emptyMessage="No race reaction stories yet."
-        />
-        <NewsPanel
-          news={state.news}
-          title="Championship & Paddock"
-          maxItems={4}
-          categoryFilter={['championship', 'financial', 'ai_team']}
-          emptyMessage="No championship news."
-        />
-      </div>
-
-      <div className="grid gap-6 lg:grid-cols-2">
-        <StandingsTable
-          title="Drivers' Championship"
-          entries={state.driverStandings.slice(0, 10)}
-          nameOf={driverName}
-          subtitleOf={teamOfDriver}
-          highlightId={playerDriverIds[0]}
-        />
-        <StandingsTable
-          title="Constructors' Championship"
-          entries={state.constructorStandings.slice(0, 10)}
-          nameOf={teamName}
-          colorOf={teamColor}
-          highlightId={state.selectedTeamId}
-        />
       </div>
     </div>
   );
@@ -223,4 +229,16 @@ function topDemand(track: NonNullable<ReturnType<typeof getTrackById>>): string 
   ];
   demands.sort((a, b) => b[1] - a[1]);
   return `${demands[0][0]} and ${demands[1][0]}`;
+}
+
+function raceRatingText(
+  result: { rating?: number; position: number | null; gridPosition: number; status: string },
+  fieldSize: number,
+): string {
+  if (typeof result.rating === 'number') return result.rating.toFixed(1);
+  if (result.status === 'DNF' || result.status === 'DSQ') return '4.0';
+  const finish = result.position ?? fieldSize;
+  const movement = result.gridPosition - finish;
+  const base = 6.4 + movement * 0.18 + (fieldSize - finish) * 0.08;
+  return Math.max(1, Math.min(10, base)).toFixed(1);
 }

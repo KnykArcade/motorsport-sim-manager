@@ -1,7 +1,6 @@
 import { useMemo, useState } from 'react';
 import type { NewsItem, NewsCategory, NewsPriority } from '../types/gameTypes';
 import {
-  sortNewsByPriority,
   categoryLabel,
   priorityColor,
   filterNewsByCategory,
@@ -80,7 +79,7 @@ export function NewsCenter() {
           (n.body?.toLowerCase().includes(q) ?? false),
       );
     }
-    return sortNewsByPriority(items);
+    return sortNewsNewestFirst(items);
   }, [allNews, categoryFilter, priorityFilter, teamFilter, seasonFilter, majorOnly, roundFilter, searchQuery, state?.selectedTeamId]);
 
   const availableSeasons = useMemo(() => {
@@ -302,6 +301,16 @@ export function NewsCenter() {
       </div>
     </div>
   );
+}
+
+function sortNewsNewestFirst(items: NewsItem[]): NewsItem[] {
+  return [...items].sort((a, b) => {
+    const timeA = Date.parse(a.timestamp);
+    const timeB = Date.parse(b.timestamp);
+    if (Number.isFinite(timeA) && Number.isFinite(timeB) && timeA !== timeB) return timeB - timeA;
+    if ((b.round ?? -1) !== (a.round ?? -1)) return (b.round ?? -1) - (a.round ?? -1);
+    return b.id.localeCompare(a.id);
+  });
 }
 
 function NewsCard({ item }: { item: NewsItem }) {

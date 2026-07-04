@@ -94,6 +94,7 @@ export function F11990sLiveRaceScreen({
     ? `Lap ${Math.max(1, live.currentLap)} - Lap ${Math.min(live.totalLaps, Math.ceil((playerCars[0].fuel / 100) * live.totalLaps))}`
     : 'N/A';
   const alert = raceAlert(live, forecast);
+  const alertStyle = alertClass(alert);
 
   return (
     <div
@@ -177,19 +178,26 @@ export function F11990sLiveRaceScreen({
       </main>
 
       <footer className="relative grid shrink-0 gap-2 px-2 pb-2 lg:grid-cols-[1.05fr_1fr_0.9fr_0.9fr]">
-        <RetroPanel title={alert ? 'Track Alert' : 'Commentary'} className={alert ? 'animate-pulse border-yellow-300 bg-yellow-300 text-black' : ''}>
-          <div className={`space-y-1 p-2 text-[12px] ${alert ? 'font-black uppercase text-black' : 'text-zinc-200'}`}>
+        <RetroPanel title={alert ? 'Track Alert' : 'Commentary'} className={alertStyle.panel}>
+          <div className={`space-y-1 p-2 text-[12px] ${alertStyle.body}`}>
             {alert && <p className="text-lg leading-tight">{alert}</p>}
-            <p>{commentaryLine(live, nameOf)}</p>
-            <p>{live.safetyCar.active ? `Safety car is out: ${live.safetyCar.reason ?? 'race control incident'}.` : 'Race control reports green running conditions.'}</p>
+            {commentaryLines(live, nameOf).map((line, index) => (
+              <p key={index} className={line.tone === 'retirement' ? 'font-black text-red-300' : ''}>
+                {line.text}
+              </p>
+            ))}
           </div>
         </RetroPanel>
         <RetroPanel title="Team Radio">
           <div className="space-y-1 p-2 text-[12px]">
             {playerCars.slice(0, 2).map((car) => (
-              <div key={car.driverId}>
-                <span className="text-amber-300">{shortName(nameOf(car.driverId)).toUpperCase()}:</span>{' '}
-                <span className="text-zinc-200">"{radioLine(car)}"</span>
+              <div key={car.driverId} className="space-y-0.5">
+                {radioLines(car, live, state, nameOf).map((line, index) => (
+                  <div key={`${car.driverId}-${index}`}>
+                    <span className="text-amber-300">{shortName(nameOf(car.driverId)).toUpperCase()}:</span>{' '}
+                    <span className="text-zinc-200">"{line}"</span>
+                  </div>
+                ))}
               </div>
             ))}
           </div>
@@ -199,12 +207,15 @@ export function F11990sLiveRaceScreen({
             <div className="font-bold uppercase text-emerald-400">Monitoring</div>
             <div className="mt-1 space-y-1 text-zinc-200">
               {playerCars.map((car) => (
-                <div key={car.driverId} className="flex items-center justify-between gap-2">
-                  <span className="truncate">{shortName(nameOf(car.driverId)).toUpperCase()}</span>
-                  <span className="shrink-0 tabular-nums">
-                    Stops: {car.pit.stopsMade}/{car.pit.plannedStops}
-                    {car.pit.lastPitLap != null ? ` (L${car.pit.lastPitLap})` : ''}
-                  </span>
+                <div key={car.driverId} className="rounded border border-zinc-800/70 bg-zinc-950/35 px-1.5 py-1">
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="truncate">{shortName(nameOf(car.driverId)).toUpperCase()}</span>
+                    <span className="shrink-0 tabular-nums text-amber-300">{pitWindowText(car)}</span>
+                  </div>
+                  <div className="mt-0.5 flex items-center justify-between gap-2 text-[10px] text-zinc-500">
+                    <span>{pitWindowStatus(car)}</span>
+                    <span className="tabular-nums">{lastStopText(car)}</span>
+                  </div>
                 </div>
               ))}
               {playerCars.length === 0 && <div>No planned stop</div>}
@@ -215,7 +226,7 @@ export function F11990sLiveRaceScreen({
           </div>
         </RetroPanel>
         <RetroPanel title="Fuel Window">
-          <div className="grid h-full grid-cols-2 gap-2 p-2 text-[12px] text-zinc-200">
+          <div className="grid h-full grid-cols-[1fr_112px] items-start gap-2 p-2 text-[12px] text-zinc-200">
             <div className="min-w-0">
               <div>{fuelWindow}</div>
               <div className="mt-2 text-[10px] uppercase text-zinc-500">{live.weather.wet ? 'Wet pace fuel map' : 'Dry pace fuel map'}</div>
@@ -226,7 +237,7 @@ export function F11990sLiveRaceScreen({
             <button
               onClick={onOpenOrders}
               disabled={!playerCars.some((car) => car.running)}
-              className="flex min-h-[56px] items-center justify-center rounded border border-amber-500/55 bg-amber-500/10 px-2 py-2 text-center text-[11px] font-black uppercase text-amber-300 hover:bg-amber-500/20 disabled:border-zinc-800 disabled:bg-zinc-950 disabled:text-zinc-600"
+              className="mt-0 flex min-h-[56px] w-full items-center justify-center rounded border border-amber-500/55 bg-amber-500/10 px-2 py-2 text-center text-[11px] font-black uppercase text-amber-300 hover:bg-amber-500/20 disabled:border-zinc-800 disabled:bg-zinc-950 disabled:text-zinc-600"
             >
               Team Orders
             </button>
@@ -318,39 +329,70 @@ function RetroTimingTower({
   nameOf: (driverId: string) => string;
   colorOf: (teamId: string) => string;
 }) {
+  const [tab, setTab] = useState<'Running Order' | 'Pit Stops'>('Running Order');
   return (
-    <RetroPanel title="Live Timing" className="min-h-0">
-      <div className="grid grid-cols-[26px_1fr_50px_28px_52px] border-b border-zinc-800 px-2 py-0.5 text-[9px] font-bold uppercase text-amber-300">
+    <RetroPanel title="Live Timing" className="flex h-full min-h-0 flex-col">
+      <div className="flex shrink-0 gap-1 border-b border-zinc-800 px-2 py-1">
+        {(['Running Order', 'Pit Stops'] as const).map((item) => (
+          <button
+            key={item}
+            onClick={() => setTab(item)}
+            className={`rounded px-1.5 py-0.5 text-[9px] font-bold uppercase ${
+              tab === item ? 'bg-amber-400 text-black' : 'bg-zinc-900 text-zinc-400 hover:text-zinc-100'
+            }`}
+          >
+            {item}
+          </button>
+        ))}
+      </div>
+      <div className="grid shrink-0 grid-cols-[26px_1fr_58px_36px_58px] border-b border-zinc-800 px-2 py-0.5 text-[9px] font-bold uppercase text-amber-300">
         <span>Pos</span>
         <span>Driver</span>
-        <span className="text-right">Gap</span>
+        <span className="text-right">{tab === 'Pit Stops' ? 'Last' : 'Gap'}</span>
         <span className="text-right">Pits</span>
-        <span className="text-right">Tyre</span>
+        <span className="text-right">{tab === 'Pit Stops' ? 'Next' : 'Tyre'}</span>
       </div>
-      <div className="max-h-full overflow-y-auto pb-1">
+      <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain pb-8">
         {cars.map((car) => {
           const tyre = tyreLetter(car.tire.compound);
           const life = Math.max(0, 100 - Math.round(car.tire.wear));
+          const retired = !car.running && car.status !== 'Finished';
+          const retiredNote = retired ? `Retired - ${car.lastIncident ?? 'DNF'}` : '';
           return (
             <div
               key={car.driverId}
-              className={`grid grid-cols-[26px_1fr_50px_28px_52px] items-center px-2 py-[2px] text-[10px] leading-tight ${
+              className={`grid grid-cols-[26px_1fr_58px_36px_58px] items-center px-2 py-[2px] text-[10px] leading-tight ${
                 car.isPlayer ? 'bg-amber-500/22 text-amber-200' : 'text-zinc-100'
-              } ${!car.running && car.status !== 'Finished' ? 'opacity-45' : ''}`}
+              } ${retired ? 'opacity-60' : ''}`}
             >
               <span className="tabular-nums">{car.position ?? '-'}</span>
               <span className="flex min-w-0 items-center gap-1.5">
                 <span className="h-2.5 w-1 shrink-0 rounded-sm" style={{ backgroundColor: colorOf(car.teamId) }} />
-                <span className="truncate">{shortName(nameOf(car.driverId)).toUpperCase()}</span>
+                <span className="min-w-0">
+                  <span className="block truncate">{shortName(nameOf(car.driverId)).toUpperCase()}</span>
+                  {retiredNote && <span className="block truncate text-[8px] uppercase text-red-300">{retiredNote}</span>}
+                </span>
               </span>
-              <span className="text-right tabular-nums text-zinc-300">{car.position === 1 ? 'LEADER' : `+${car.gapToLeader.toFixed(1)}`}</span>
-              <span className="text-right tabular-nums">{car.pit.stopsMade}</span>
-              <span className="text-right font-bold tabular-nums text-amber-300">{tyre.letter} {life}%</span>
+              {tab === 'Pit Stops' ? (
+                <>
+                  <span className="text-right tabular-nums text-zinc-300">
+                    {car.pit.lastPitStopTime != null ? `${car.pit.lastPitStopTime.toFixed(1)}s` : car.pit.lastPitLap != null ? `L${car.pit.lastPitLap}` : '-'}
+                  </span>
+                  <span className="text-right tabular-nums">{car.isPlayer ? `${car.pit.stopsMade}/${car.pit.plannedStops}` : car.pit.stopsMade}</span>
+                  <span className="text-right tabular-nums text-zinc-300">{car.isPlayer ? pitWindowText(car).replace('Window ', '') : 'Unknown'}</span>
+                </>
+              ) : (
+                <>
+                  <span className="text-right tabular-nums text-zinc-300">{car.position === 1 ? 'LEADER' : retired ? '-' : `+${car.gapToLeader.toFixed(1)}`}</span>
+                  <span className="text-right tabular-nums">{car.pit.stopsMade}</span>
+                  <span className="text-right font-bold tabular-nums text-amber-300">{tyre.letter} {life}%</span>
+                </>
+              )}
             </div>
           );
         })}
       </div>
-      <div className="border-t border-zinc-800 px-3 py-1 text-[10px] uppercase text-zinc-300">
+      <div className="shrink-0 border-t border-zinc-800 px-3 py-1 text-[10px] uppercase text-zinc-300">
         D = Dry&nbsp;&nbsp;&nbsp; W = Wet&nbsp;&nbsp;&nbsp; % = Tyre life
       </div>
     </RetroPanel>
@@ -360,7 +402,7 @@ function RetroTimingTower({
 function RetroEventLog({ events, onOpenFull }: { events: LiveRaceState['events']; onOpenFull: () => void }) {
   type EventTab = 'Race Events' | 'Incidents' | 'Battles' | 'Status';
   const [tab, setTab] = useState<EventTab>('Race Events');
-  const filtered = (tab === 'Race Events' ? events : events.filter((event) => retroEventBucket(event) === tab)).slice(-40);
+  const filtered = tab === 'Race Events' ? events : events.filter((event) => retroEventBucket(event) === tab);
   return (
     <RetroPanel title="Race Events" className="h-full min-h-0">
       <div className="flex border-b border-zinc-800 px-2 py-1">
@@ -630,6 +672,12 @@ function DriverFocus({
                 </button>
               ))}
             </div>
+            <div className="mt-1 grid grid-cols-2 gap-x-2 gap-y-0.5 border-t border-zinc-800 pt-1">
+              <ReliabilityLine label="Engine" value={car.engineHealth} />
+              <ReliabilityLine label="Brakes" value={car.brakeHealth} />
+              <ReliabilityLine label="Gearbox" value={car.gearboxHealth} />
+              <ReliabilityLine label="Aero" value={car.aeroHealth ?? (car.damaged ? 72 : 100)} />
+            </div>
           </div>
         )}
       </div>
@@ -655,12 +703,35 @@ function FocusLine({ label, value }: { label: string; value: string }) {
   );
 }
 
-function commentaryLine(live: LiveRaceState, nameOf: (driverId: string) => string): string {
+function commentaryLines(
+  live: LiveRaceState,
+  nameOf: (driverId: string) => string,
+): Array<{ text: string; tone?: 'retirement' | 'normal' }> {
+  const recentEvents = live.events.slice(-5).reverse();
+  const lines: Array<{ text: string; tone?: 'retirement' | 'normal' }> = [];
+  for (const event of recentEvents) {
+    const text = event.text;
+    const retirement = /(retir|dnf|failure|crash|accident|collision|out of the race)/i.test(text);
+    lines.push({ text: `Lap ${event.lap}: ${text}`, tone: retirement ? 'retirement' : 'normal' });
+    if (lines.length >= 3) break;
+  }
   const leader = live.cars.find((c) => c.position === 1);
   const second = live.cars.find((c) => c.position === 2);
-  if (!leader) return 'The field is forming up for the start.';
-  if (!second) return `${shortName(nameOf(leader.driverId))} leads the field.`;
-  return `${shortName(nameOf(leader.driverId))} leads ${shortName(nameOf(second.driverId))} by ${second.gapToLeader.toFixed(1)} seconds.`;
+  if (!leader) lines.push({ text: 'The field is forming up for the start.' });
+  else if (!second) lines.push({ text: `${shortName(nameOf(leader.driverId))} leads the field.` });
+  else lines.push({ text: `${shortName(nameOf(leader.driverId))} leads ${shortName(nameOf(second.driverId))} by ${second.gapToLeader.toFixed(1)} seconds.` });
+  if (live.safetyCar.active) {
+    lines.push({ text: `Safety car is out: ${live.safetyCar.reason ?? 'race control incident'}. Green expected in ${live.safetyCar.lapsRemaining}-${live.safetyCar.lapsRemaining + 1} laps.` });
+  }
+  return lines.slice(0, 4);
+}
+
+function alertClass(alert: string | null): { panel: string; body: string } {
+  if (alert === 'Rain Approaching') {
+    return { panel: 'animate-pulse border-blue-300 bg-blue-500/95 text-red-950', body: 'font-black uppercase text-red-950' };
+  }
+  if (alert) return { panel: 'animate-pulse border-yellow-300 bg-yellow-300 text-black', body: 'font-black uppercase text-black' };
+  return { panel: '', body: 'text-zinc-200' };
 }
 
 function raceAlert(live: LiveRaceState, forecast: ForecastEntry[]): string | null {
@@ -672,12 +743,103 @@ function raceAlert(live: LiveRaceState, forecast: ForecastEntry[]): string | nul
   return null;
 }
 
-function radioLine(car: LiveCarState): string {
-  if (!car.running && car.status !== 'Finished') return car.lastIncident ?? 'We are out of the race.';
-  if (car.reliabilityIssue) return `${car.reliabilityIssue.label} warning. Manage the car.`;
-  if (car.pit.window && car.pit.window.open <= car.lapsCompleted + 1) return 'Box this lap if traffic allows.';
-  if (car.tire.wear > 65) return 'Rear tyres are starting to fade.';
-  return 'Car is good. Balance is stable.';
+function radioLines(
+  car: LiveCarState,
+  live: LiveRaceState,
+  state: GameState,
+  nameOf: (driverId: string) => string,
+): string[] {
+  if (!car.running && car.status !== 'Finished') return [car.lastIncident ?? 'We are out of the race.'];
+
+  const driver = state.drivers?.find((d) => d.id === car.driverId);
+  const rel = state.driverRelationships?.[car.driverId];
+  const messages: string[] = [];
+  const pos = car.position ?? 99;
+  const gained = car.grid - pos;
+  const teammate = live.cars.find((c) => c.isPlayer && c.driverId !== car.driverId);
+
+  if (live.safetyCar.active) {
+    messages.push(`Safety Car pace confirmed. Holding Conserve until green, likely ${live.safetyCar.lapsRemaining}-${live.safetyCar.lapsRemaining + 1} laps.`);
+  }
+  if (car.pit.window && car.pit.stopsMade < car.pit.plannedStops) {
+    if (live.currentLap < car.pit.window.open) messages.push(`Next stop target is L${car.pit.window.ideal}. Window opens L${car.pit.window.open}.`);
+    else if (live.currentLap <= car.pit.window.close) messages.push(`Pit window is open now. Ideal stop is L${car.pit.window.ideal}.`);
+    else messages.push(`We are late on the stop. Original ideal was L${car.pit.window.ideal}.`);
+  }
+  if (car.reliabilityIssue) messages.push(`${car.reliabilityIssue.label} warning. I can manage it if we stay calm.`);
+  if ((car.aeroHealth ?? 100) < 82) messages.push('Aero balance is compromised. High-speed entries feel nervous.');
+  if (car.brakeHealth < 70) messages.push('Brake pedal is getting longer. Need margin into heavy braking zones.');
+  if (car.engineHealth < 70) messages.push('Engine temps are not comfortable. Less push on the straights would help.');
+  if (car.tire.wear > 68) messages.push('Rear tyres are fading. Traction is getting messy on exits.');
+  else if (car.tire.wear > 48) messages.push('Tyres are past their best but still manageable.');
+  if (car.fuel < 18) messages.push('Fuel number is tight. Lift and coast if we need it.');
+  if (gained >= 3) messages.push(`Good progress from the grid. Up ${gained} places and rhythm is strong.`);
+  if (gained <= -3) messages.push(`We have lost ${Math.abs(gained)} places. Need a strategy reset.`);
+  if (car.liveRacePace >= car.baseRacePace + 0.35) messages.push('Pace feels better than expected. Car is responding.');
+  if (car.liveRacePace <= car.baseRacePace - 0.45) messages.push('I am struggling for pace compared with our target.');
+  if (teammate && teammate.running && car.interval > 0 && car.interval < 1.2) {
+    messages.push(`Close to ${shortName(nameOf(teammate.driverId))}. Confirm if we are racing or holding station.`);
+  }
+  if (driver && driver.confidence < 42) messages.push('Confidence is not high in the car right now. Talk me through the next call.');
+  if (driver && driver.morale < 42) messages.push('This is not an easy stint. I need clear calls from the pit wall.');
+  if (rel && rel.teammateRelationship < 35) messages.push('Traffic with the other car is tense. I want clear priority if we meet.');
+  if (rel && rel.trustInCar < 40) messages.push('I still do not fully trust the car balance over a stint.');
+  if (driver?.traits.includes('Risk Taker') && car.paceMode === 'Conservative' && !live.safetyCar.active) {
+    messages.push('There is more pace here if you let me attack.');
+  }
+  if (driver?.traits.includes('Setup Focused') && car.statusMessage) messages.push(car.statusMessage);
+
+  const fallback = [
+    'Car balance is stable for now.',
+    `Current mode ${modeLabel(car.paceMode)} is understood.`,
+    car.gapToLeader > 0 ? `Gap ahead is ${car.interval.toFixed(1)} seconds.` : 'Clean air at the front.',
+    car.tire.wear > 35 ? 'Tyre temperatures are moving, but still in range.' : 'Tyre temperatures look controlled.',
+  ];
+  while (messages.length < 2) {
+    messages.push(fallback[Math.abs((live.currentLap + car.driverId.length + messages.length + pos) % fallback.length)]);
+  }
+  return messages.slice(0, 2);
+}
+
+function pitWindowText(car: LiveCarState): string {
+  const stopsLeft = car.pit.plannedStops - car.pit.stopsMade;
+  if (stopsLeft <= 0) return 'No planned stops';
+  const w = car.pit.window;
+  if (!w) return 'Window TBD';
+  if (car.lapsCompleted < w.open) return `Window L${w.open}-${w.close}`;
+  if (car.lapsCompleted <= w.close) return `OPEN to L${w.close}`;
+  return `Late - was L${w.ideal}`;
+}
+
+function pitWindowStatus(car: LiveCarState): string {
+  const stopsLeft = car.pit.plannedStops - car.pit.stopsMade;
+  if (stopsLeft <= 0) return 'Plan complete';
+  if (car.pit.pitRequested) return 'Box call accepted';
+  const w = car.pit.window;
+  if (!w) return 'Awaiting strategist window';
+  if (car.lapsCompleted < w.open) return `Next planned stop: L${w.ideal}`;
+  if (car.lapsCompleted <= w.close) return `Window open: ideal L${w.ideal}`;
+  return `Late stop risk: ${Math.max(1, car.lapsCompleted - w.ideal)}L past ideal`;
+}
+
+function lastStopText(car: LiveCarState): string {
+  if (car.pit.lastPitStopTime != null) return `Last ${car.pit.lastPitStopTime.toFixed(1)}s`;
+  if (car.pit.lastPitLap != null) return `Last L${car.pit.lastPitLap}`;
+  return 'No stop yet';
+}
+
+function ReliabilityLine({ label, value }: { label: string; value: number }) {
+  const pct = Math.max(0, Math.min(100, value));
+  const color = pct < 45 ? 'bg-red-500' : pct < 65 ? 'bg-orange-500' : pct < 82 ? 'bg-amber-400' : 'bg-emerald-400';
+  return (
+    <div className="flex items-center gap-1 text-[9px]">
+      <span className="w-10 uppercase text-zinc-500">{label}</span>
+      <span className="h-1 flex-1 overflow-hidden rounded bg-zinc-800">
+        <span className={`block h-full ${color}`} style={{ width: `${pct}%` }} />
+      </span>
+      <span className="w-7 text-right tabular-nums text-zinc-300">{Math.round(pct)}%</span>
+    </div>
+  );
 }
 
 function shortName(name: string): string {

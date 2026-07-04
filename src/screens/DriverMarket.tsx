@@ -10,12 +10,17 @@ import { isAcademyReady } from '../sim/driverMarketEngine';
 import { academyCapacityFor } from '../sim/teamRatingsEngine';
 import { toMoney } from '../sim/financeEngine';
 import { thirdDriverMidSeasonFee } from '../sim/contractEngine';
-import { fogView } from '../sim/scoutingEngine';
 import { competingBidFor, bidToWin, resolveDriverBid } from '../sim/driverBiddingEngine';
 import { Panel } from '../components/Panel';
 import { StatBar } from '../components/StatBar';
 import { Button } from '../components/Button';
 import { DriverDossierButton } from '../components/driverCards/DriverDossier';
+import { ScoutingWidget } from '../components/scouting/ScoutingWidget';
+import {
+  readoutForMarketOverall,
+  readoutForMarketSkill,
+  readoutForPotential,
+} from '../components/scouting/ratingDisplay';
 import { formatMoney } from '../components/ui';
 import type {
   AcademyMember,
@@ -71,15 +76,9 @@ export function DriverMarket() {
   const signingBySource = new Map(signings.map((s) => [s.sourceId, s]));
   const seatName = (id: string) => state.drivers.find((d) => d.id === id)?.name ?? id;
 
-  // Fogged potential label: scouted targets show an exact ceiling, the rest a
-  // range you can narrow on the Scouting screen.
-  const scouting = state.scouting;
-  const potLabel = (id: string, skills: MarketSkillRatings, potential: number): string => {
-    if (!scouting) return potential.toFixed(1);
-    const v = fogView({ id, skills, potential }, scouting.reports[id], scouting.networkAccuracy, state.randomSeed);
-    const [lo, hi] = v.potential.range;
-    return `${lo.toFixed(1)}-${hi.toFixed(1)}`;
-  };
+  // Fogged potential label: scouting narrows the range without confirming truth.
+  const potLabel = (id: string, skills: MarketSkillRatings, potential: number): string =>
+    readoutForPotential(state, id, skills, potential).label;
 
   return (
     <div className="era-feature-screen era-driver-market space-y-6">
@@ -175,7 +174,11 @@ export function DriverMarket() {
       {bundle && (tab === 'senior' || tab === 'crossover') && (
         <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
           {[...(tab === 'senior' ? seniorDrivers : crossoverDrivers)]
-            .sort((a, b) => b.overall - a.overall)
+            .sort(
+              (a, b) =>
+                (readoutForMarketOverall(state, b.id, b.skills, b.potential, b.overall).value ?? 0) -
+                (readoutForMarketOverall(state, a.id, a.skills, a.potential, a.overall).value ?? 0),
+            )
             .map((d) => {
               const interest = marketDriverOfferInterest(state, d, orgOverall, carOverall);
               return (
@@ -262,13 +265,27 @@ function TabButton({
   );
 }
 
-function TopSkills({ skills }: { skills: MarketSkillRatings }) {
+function TopSkills({
+  state,
+  id,
+  skills,
+  potential,
+  exact = false,
+}: {
+  state: NonNullable<ReturnType<typeof useGame>['state']>;
+  id: string;
+  skills: MarketSkillRatings;
+  potential: number;
+  exact?: boolean;
+}) {
+  const readout = (key: keyof MarketSkillRatings) =>
+    exact ? { value: skills[key], label: skills[key].toFixed(1) } : readoutForMarketSkill(state, id, skills, potential, key);
   return (
     <div className="grid grid-cols-1 gap-1">
-      <StatBar label="Cornering" value={skills.cornering} />
-      <StatBar label="Braking" value={skills.braking} />
-      <StatBar label="Overtaking" value={skills.overtakingRacecraft} />
-      <StatBar label="Consistency" value={skills.enduranceConsistency} />
+      <StatBar label="Cornering" value={readout('cornering').value ?? 0} valueLabel={readout('cornering').label} />
+      <StatBar label="Braking" value={readout('braking').value ?? 0} valueLabel={readout('braking').label} />
+      <StatBar label="Overtaking" value={readout('overtakingRacecraft').value ?? 0} valueLabel={readout('overtakingRacecraft').label} />
+      <StatBar label="Consistency" value={readout('enduranceConsistency').value ?? 0} valueLabel={readout('enduranceConsistency').label} />
     </div>
   );
 }
@@ -366,6 +383,7 @@ function SeniorCard({
   const [bid, setBid] = useState<number>(round1(Math.max(d.buyoutCost, suggestedBid)));
   const resolution = resolveDriverBid(bid, d, teamOverall, seed, interest);
   const affordableBid = toMoney(bid) <= budget;
+  const overallReadout = readoutForMarketOverall(state, d.id, d.skills, d.potential, d.overall);
   return (
     <Panel>
       <div className="mb-1 flex items-start justify-between gap-2">
@@ -384,7 +402,7 @@ function SeniorCard({
         </div>
         <div className="text-right">
           <span className="rounded bg-neutral-800 px-2 py-0.5 text-xs font-semibold text-amber-300">
-            {d.overall.toFixed(1)}
+            {overallReadout.label}
           </span>
           <div className="mt-0.5 text-[10px] text-neutral-500">POT {potLabel}</div>
         </div>
@@ -398,6 +416,9 @@ function SeniorCard({
           focus="market"
         />
       </div>
+      <div className="mb-2">
+        <ScoutingWidget target={{ id: d.id, skills: d.skills, potential: d.potential }} entityType="Driver" compact />
+      </div>
 
       <div className="mb-2 flex flex-wrap gap-1 text-[10px]">
         <Tag>{d.marketStatus}</Tag>
@@ -406,7 +427,7 @@ function SeniorCard({
         <Tag tone="warn">{d.negotiationDifficulty} difficulty</Tag>
       </div>
 
-      <TopSkills skills={d.skills} />
+      <TopSkills state={state} id={d.id} skills={d.skills} potential={d.potential} />
 
       <div className="mt-3 grid grid-cols-3 gap-2 text-xs">
         <Stat label="Salary/yr">
@@ -543,7 +564,7 @@ function YouthTab({
   const academyByProspect = new Set(academy.map((a) => a.prospectId));
   const available = [...prospects]
     .filter((p) => !academyByProspect.has(p.id))
-    .sort((a, b) => b.potential - a.potential);
+    .sort((a, b) => (readoutForPotential(state, b.id, b.skills, b.potential).value ?? 0) - (readoutForPotential(state, a.id, a.skills, a.potential).value ?? 0));
   const academyFull = academy.length >= academyCapacity;
 
   return (
@@ -606,7 +627,7 @@ function YouthTab({
                         focus="development"
                       />
                     </div>
-                    <TopSkills skills={a.skills} />
+                    <TopSkills state={state} id={a.id} skills={a.skills} potential={a.potential} exact />
                     <div className="mt-3 border-t border-neutral-800 pt-2">
                       {pending ? (
                         <div className="flex items-center justify-between text-xs">
@@ -665,7 +686,9 @@ function YouthTab({
                   <span className="rounded bg-neutral-800 px-2 py-0.5 text-xs font-semibold text-sky-300">
                     POT {potLabel(y.id, y.skills, y.potential)}
                   </span>
-                  <div className="mt-0.5 text-[10px] text-neutral-500">now {y.overall.toFixed(1)}</div>
+                  <div className="mt-0.5 text-[10px] text-neutral-500">
+                    now {readoutForMarketOverall(state, y.id, y.skills, y.potential, y.overall).label}
+                  </div>
                 </div>
               </div>
               <div className="mb-2 flex flex-wrap gap-1 text-[10px]">
@@ -681,7 +704,10 @@ function YouthTab({
                   focus="development"
                 />
               </div>
-              <TopSkills skills={y.skills} />
+              <div className="mb-2">
+                <ScoutingWidget target={{ id: y.id, skills: y.skills, potential: y.potential }} entityType="YouthProspect" compact />
+              </div>
+              <TopSkills state={state} id={y.id} skills={y.skills} potential={y.potential} />
               <div className="mt-3 grid grid-cols-2 gap-2 text-xs">
                 <Stat label="Signing">
                   <Money m={y.signingCost} />

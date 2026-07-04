@@ -18,7 +18,6 @@ const NAV = [
   { to: '/drivers', label: 'Drivers', icon: 'DR' },
   { to: '/curves', label: 'Dev Curves', icon: 'DC' },
   { to: '/market', label: 'Driver Market', icon: 'MK' },
-  { to: '/scouting', label: 'Scouting', icon: 'SC' },
   { to: '/development', label: 'Development', icon: 'RD' },
   { to: '/finance', label: 'Finance', icon: '$' },
   { to: '/sponsors', label: 'Sponsors', icon: 'SP' },

@@ -13,7 +13,6 @@ import { BALANCED_SETUP } from '../data/setup/setupComponents';
 import { sanitizeSetupProfile } from '../sim/setupSanitize';
 import {
   weekendSessionKinds,
-  defaultAssignments,
   PROGRAM_LABELS,
   SESSION_LABELS,
   ALL_PROGRAMS,
@@ -166,7 +165,7 @@ export function RaceWeekend() {
 
   const isMinPackage = state.raceWeekendPackage?.packageType === 'MandatoryMinimum';
   const eraTheme = getRaceWeekendEraTheme(state.series, state.seasonYear);
-  const isF11990sWeekend = shouldUseF11990sRaceWeekendHub(state.series, state.seasonYear);
+  const usesF1WeekendHub = shouldUseF11990sRaceWeekendHub(state.series, state.seasonYear);
 
   const qualifyingResults = state.qualifyingResults[race.id];
 
@@ -181,7 +180,156 @@ export function RaceWeekend() {
     });
   };
 
-  if (phase === 'hub' && forecast && isF11990sWeekend) {
+  // Practice and Car Setup are laid out as full-height, no-page-scroll screens:
+  // the header/stepper/forecast stay pinned and only the phase's own internal
+  // panels scroll. Other phases flow normally inside the scroll wrapper.
+  const fullHeightPhase = phase === 'practice' || phase === 'setup';
+  const phaseTitle = PHASE_ORDER.find((p) => p.id === phase)?.label ?? 'Weekend Hub';
+  const phaseContent = (
+    <>
+      {phase === 'hub' && forecast && (
+        <WeekendHub
+          state={state}
+          race={race}
+          track={track}
+          forecast={forecast}
+          onNext={() => setPhase('package')}
+        />
+      )}
+
+      {phase === 'package' && (
+        <RaceWeekendPackageSelection
+          eraTheme={usesF1WeekendHub ? eraTheme : undefined}
+          onConfirm={() => setPhase('briefing')}
+        />
+      )}
+
+      {phase === 'briefing' && (
+        <Briefing track={track} race={race} isMinPackage={isMinPackage} onNext={() => setPhase(isMinPackage ? 'quali-run' : 'practice')} />
+      )}
+
+      {phase === 'practice' && !isMinPackage && (
+        <PracticePhase
+          state={state}
+          dispatch={dispatch}
+          track={track}
+          forecast={forecast}
+          onBack={() => setPhase('briefing')}
+          onNext={() => setPhase('setup')}
+        />
+      )}
+
+      {phase === 'setup' && !isMinPackage && (
+        <SetupWorkshop
+          track={track}
+          drivers={playerDrivers}
+          setups={resolvedSetups}
+          car={carForTeam(state, state.selectedTeamId)}
+          practice={workshopPractice}
+          onChangeParam={(driverId, key, value) =>
+            setSetupDraft((p) => ({
+              ...p,
+              [driverId]: sanitizeSetupProfile({ ...resolvedSetups[driverId], [key]: value }),
+            }))
+          }
+          onApplySetup={(driverId, setup) =>
+            setSetupDraft((p) => ({ ...p, [driverId]: sanitizeSetupProfile(setup) }))
+          }
+          onCopy={(fromId, toId) =>
+            setSetupDraft((p) => ({ ...p, [toId]: sanitizeSetupProfile(resolvedSetups[fromId]) }))
+          }
+          onResetDriver={(driverId) => {
+            const practiced = workshopPractice?.practicedSetupByDriver?.[driverId];
+            if (practiced) setSetupDraft((p) => ({ ...p, [driverId]: sanitizeSetupProfile(practiced) }));
+          }}
+          onBack={() => { commitSetups(); setPhase(qualifyingResults ? 'quali-review' : 'practice'); }}
+          onConfirm={() => { commitSetups(); setPhase(qualifyingResults ? 'race-strategy' : 'quali-run'); }}
+        />
+      )}
+
+      {phase === 'quali-run' && (
+        <DecisionPhase
+          title="Qualifying Run Plan"
+          subtitle="How should each driver approach the session? Aggression here does NOT carry into the race."
+          drivers={playerDrivers}
+          options={qualifyingRunPlans.map((p) => ({ id: p.id, name: p.name, description: p.description }))}
+          valueFor={(id) => qualiFor(id).runPlanId}
+          onSelect={(driverId, optId) =>
+            setQualiOverrides((p) => ({ ...p, [driverId]: { ...p[driverId], runPlanId: optId as QualifyingDecision['runPlanId'] } }))
+          }
+          recommendedId={recommendedQualiRunPlan(track, forecast?.Qualifying).optionId}
+          recommendedReason={recommendedQualiRunPlan(track, forecast?.Qualifying).reason}
+          headerExtra={
+            <QualifyingSessionInfo
+              format={qualifyingFormatFor(state.seasonYear, state.series)}
+              weather={forecast?.Qualifying}
+            />
+          }
+          extraControls={(driverId) => (
+            <QualifyingRunControls
+              decision={qualiFor(driverId)}
+              onRuns={(runs) =>
+                setQualiOverrides((p) => ({ ...p, [driverId]: { ...p[driverId], runs } }))
+              }
+              onTyre={(tyreApproach) =>
+                setQualiOverrides((p) => ({ ...p, [driverId]: { ...p[driverId], tyreApproach } }))
+              }
+            />
+          )}
+          onBack={() => setPhase(isMinPackage ? 'briefing' : 'setup')}
+          onNext={runQualifying}
+          nextLabel="Simulate Qualifying ->"
+        />
+      )}
+
+      {phase === 'quali-review' && qualifyingResults && (
+        <QualifyingReview
+          state={state}
+          raceId={race.id}
+          debug={settings.debugMode}
+          weather={forecast?.Qualifying}
+          onNext={() => setPhase(isMinPackage ? 'race-strategy' : 'setup')}
+        />
+      )}
+
+      {phase === 'race-strategy' && (
+        <DecisionPhase
+          title="Pre-Race Strategy Selection"
+          subtitle="The grid is set. Pick a pit/tyre strategy for each driver - you can still adapt live during the race."
+          drivers={playerDrivers}
+          options={raceStrategies.map((s) => ({ id: s.id, name: s.name, description: s.description }))}
+          valueFor={(id) => raceFor(id).strategyId}
+          onSelect={(driverId, optId) =>
+            setRaceOverrides((p) => ({ ...p, [driverId]: { ...p[driverId], strategyId: optId as RaceDecision['strategyId'] } }))
+          }
+          recommendedId={recommendedRaceStrategy(track, forecast?.Race).optionId}
+          recommendedReason={recommendedRaceStrategy(track, forecast?.Race).reason}
+          onBack={() => setPhase('quali-review')}
+          onNext={() => setPhase('race-instructions')}
+        />
+      )}
+
+      {phase === 'race-instructions' && (
+        <DecisionPhase
+          title="Driver Race Instructions"
+          subtitle="Set how hard each driver pushes during the race."
+          drivers={playerDrivers}
+          options={driverInstructions.map((s) => ({ id: s.id, name: s.name, description: s.description }))}
+          valueFor={(id) => raceFor(id).instructionId}
+          onSelect={(driverId, optId) =>
+            setRaceOverrides((p) => ({ ...p, [driverId]: { ...p[driverId], instructionId: optId as RaceDecision['instructionId'] } }))
+          }
+          recommendedId={recommendedInstruction(track, forecast?.Race).optionId}
+          recommendedReason={recommendedInstruction(track, forecast?.Race).reason}
+          onBack={() => setPhase('race-strategy')}
+          onNext={startLiveRace}
+          nextLabel="Start Live Race ->"
+        />
+      )}
+    </>
+  );
+
+  if (usesF1WeekendHub && forecast) {
     return (
       <F11990sRaceWeekendHub
         state={state}
@@ -190,6 +338,25 @@ export function RaceWeekend() {
         forecast={forecast}
         isMinPackage={isMinPackage}
         hasQualifyingResults={!!qualifyingResults}
+        activePhase={phase}
+        moduleTitle={phaseTitle}
+        moduleContent={
+          phase === 'hub' ? undefined : (
+            <div className={fullHeightPhase ? 'flex min-h-[460px] flex-col gap-3' : 'space-y-4'}>
+              <ForecastBanner
+                forecast={forecast}
+                highlight={
+                  phase === 'practice' || phase === 'setup'
+                    ? 'Practice'
+                    : phase === 'quali-run' || phase === 'quali-review'
+                    ? 'Qualifying'
+                    : 'Race'
+                }
+              />
+              {phaseContent}
+            </div>
+          )
+        }
         onPhase={setPhase}
         onRoute={(to) => navigate(to)}
         onExit={() => navigate('/hq')}
@@ -197,23 +364,18 @@ export function RaceWeekend() {
     );
   }
 
-  // Practice and Car Setup are laid out as full-height, no-page-scroll screens:
-  // the header/stepper/forecast stay pinned and only the phase's own internal
-  // panels scroll. Other phases flow normally inside the scroll wrapper.
-  const fullHeightPhase = phase === 'practice' || phase === 'setup';
-
   return (
     <div
       className={`era-race-weekend flex h-full min-h-0 flex-col gap-4 ${
-        isF11990sWeekend
+        usesF1WeekendHub
           ? 'rounded-lg border border-amber-500/25 bg-[radial-gradient(circle_at_50%_0%,rgba(245,158,11,0.10),transparent_34%),linear-gradient(180deg,rgba(10,10,10,0.96),rgba(5,5,5,0.99))] p-3 font-mono shadow-[inset_0_0_80px_rgba(0,0,0,0.45)]'
           : ''
       }`}
       data-era={eraTheme}
     >
-      <div className={`flex shrink-0 items-center justify-between ${isF11990sWeekend ? 'border-b border-amber-500/25 pb-3' : ''}`}>
+      <div className={`flex shrink-0 items-center justify-between ${usesF1WeekendHub ? 'border-b border-amber-500/25 pb-3' : ''}`}>
         <div>
-          {isF11990sWeekend && <div className="text-xs font-bold uppercase tracking-wide text-amber-400">1990s Era Weekend Control</div>}
+          {usesF1WeekendHub && <div className="text-xs font-bold uppercase tracking-wide text-amber-400">F1 Era Weekend Control</div>}
           <h1 className="text-2xl font-bold text-neutral-100">{race.gpName}</h1>
           <p className="text-sm text-neutral-400">{race.trackName} · Round {race.round}</p>
         </div>
@@ -258,7 +420,7 @@ export function RaceWeekend() {
 
       {phase === 'package' && (
         <RaceWeekendPackageSelection
-          eraTheme={isF11990sWeekend ? 'f1-1990s' : undefined}
+          eraTheme={usesF1WeekendHub ? eraTheme : undefined}
           onConfirm={() => setPhase('briefing')}
         />
       )}
@@ -303,8 +465,8 @@ export function RaceWeekend() {
             const practiced = workshopPractice?.practicedSetupByDriver?.[driverId];
             if (practiced) setSetupDraft((p) => ({ ...p, [driverId]: sanitizeSetupProfile(practiced) }));
           }}
-          onBack={() => { commitSetups(); setPhase('practice'); }}
-          onConfirm={() => { commitSetups(); setPhase('quali-run'); }}
+          onBack={() => { commitSetups(); setPhase(qualifyingResults ? 'quali-review' : 'practice'); }}
+          onConfirm={() => { commitSetups(); setPhase(qualifyingResults ? 'race-strategy' : 'quali-run'); }}
         />
       )}
 
@@ -349,7 +511,7 @@ export function RaceWeekend() {
           raceId={race.id}
           debug={settings.debugMode}
           weather={forecast?.Qualifying}
-          onNext={() => setPhase('race-strategy')}
+          onNext={() => setPhase(isMinPackage ? 'race-strategy' : 'setup')}
         />
       )}
 
@@ -539,10 +701,9 @@ function PracticePhase({
     () => {
       const init: Record<string, Record<string, PracticeProgram>> = {};
       for (const k of kinds) {
+        const rec = recommendedPracticeProgram(k, track, weatherForKind(k), gaps);
         init[k] = {};
-        for (const a of defaultAssignments(players.map((d) => d.id), k)) {
-          init[k][a.driverId] = a.program;
-        }
+        for (const d of players) init[k][d.id] = rec.program;
       }
       return init;
     },
@@ -550,6 +711,19 @@ function PracticePhase({
 
   const setProgram = (kind: string, driverId: string, program: PracticeProgram) =>
     setAssignments((prev) => ({ ...prev, [kind]: { ...prev[kind], [driverId]: program } }));
+
+  const applyEngineerPlanToRemaining = () => {
+    setAssignments((prev) => {
+      const next = { ...prev };
+      for (const kind of kinds) {
+        if (completedByKind[kind]) continue;
+        const rec = recommendedPracticeProgram(kind, track, weatherForKind(kind), gaps);
+        next[kind] = { ...(next[kind] ?? {}) };
+        for (const d of players) next[kind][d.id] = rec.program;
+      }
+      return next;
+    });
+  };
 
   // Which practice session tab is open. Sessions live in their own tab so the
   // player never scrolls through a long stack of P1/P2/Warmup sections.
@@ -701,9 +875,9 @@ function PracticePhase({
               </span>
               <button
                 className="rounded border border-green-500/40 px-2 py-0.5 font-semibold text-green-200 hover:bg-green-500/20"
-                onClick={() => players.forEach((d) => setProgram(active, d.id, activeRec.program))}
+                onClick={applyEngineerPlanToRemaining}
               >
-                Use for both cars
+                Use for all remaining practices
               </button>
             </div>
             {players.map((d) => (

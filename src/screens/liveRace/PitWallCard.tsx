@@ -46,6 +46,8 @@ export function PitWallCard({
     car.reliabilityRiskLevel === 'Critical' ||
     car.crashRiskLevel === 'High' ||
     car.crashRiskLevel === 'Critical';
+  const pitWindow = pitWindowText(car);
+  const aeroHealth = car.aeroHealth ?? (car.damaged ? 72 : 100);
 
   if (dnf) {
     return (
@@ -106,19 +108,15 @@ export function PitWallCard({
         <Metric label="Next Stop" value={nextStopText(car)} />
         <Metric label="Last Stop" value={car.pit.lastPitStopTime != null ? `${car.pit.lastPitStopTime.toFixed(1)}s` : car.pit.lastPitLap != null ? `L${car.pit.lastPitLap}` : 'none'} />
       </div>
+      <div className="mt-0.5 rounded bg-slate-800/45 px-2 py-1 text-[10px] text-slate-300">
+        <span className="text-slate-500">Estimated Pit Window: </span>
+        <span className="font-semibold tabular-nums text-amber-300">{pitWindow}</span>
+      </div>
 
       {/* Risk row (single-line compact chips) */}
       <div className="mt-0.5 grid grid-cols-2 gap-1.5">
         <RiskInline kind="R" level={car.reliabilityRiskLevel} />
         <RiskInline kind="C" level={car.crashRiskLevel} />
-      </div>
-
-      {/* Fuel + component health (two columns to keep the card compact) */}
-      <div className="mt-0.5 grid grid-cols-2 gap-x-2 gap-y-0.5">
-        <Gauge label="Fuel" value={car.fuel} tone="fuel" />
-        <Gauge label="Engine" value={car.engineHealth} tone="health" />
-        <Gauge label="Gearbox" value={car.gearboxHealth} tone="health" />
-        <Gauge label="Brakes" value={car.brakeHealth} tone="health" />
       </div>
 
       {/* Strategy mode buttons */}
@@ -165,6 +163,17 @@ export function PitWallCard({
               );
             })}
           </div>
+          <div className="mt-1 rounded border border-slate-700/50 bg-slate-950/35 p-1">
+            <div className="mb-0.5 text-[9px] uppercase tracking-wide text-slate-500">Car Reliability</div>
+            <div className="grid grid-cols-2 gap-x-2 gap-y-0.5">
+              <Gauge label="Engine" value={car.engineHealth} tone="health" />
+              <Gauge label="Brakes" value={car.brakeHealth} tone="health" />
+              <Gauge label="Gearbox" value={car.gearboxHealth} tone="health" />
+              <Gauge label="Aero" value={aeroHealth} tone="health" />
+              <Gauge label="Fuel" value={car.fuel} tone="fuel" />
+              <Gauge label="Overall" value={overallHealth(car)} tone="health" />
+            </div>
+          </div>
         </div>
       )}
     </div>
@@ -186,6 +195,23 @@ function nextStopText(car: LiveCarState): string {
   if (car.pit.window) return `L${car.pit.window.open}-${car.pit.window.close}`;
   const next = car.pit.scheduledLaps.find((lap) => lap > car.lapsCompleted);
   return next != null ? `L${next}` : 'TBD';
+}
+
+function pitWindowText(car: LiveCarState): string {
+  const stopsLeft = car.pit.plannedStops - car.pit.stopsMade;
+  if (stopsLeft <= 0) return 'No planned stops';
+  const w = car.pit.window;
+  if (w) {
+    if (car.lapsCompleted < w.open) return `L${w.open}-${w.close} (ideal L${w.ideal})`;
+    if (car.lapsCompleted <= w.close) return `OPEN to L${w.close}`;
+    return `Late - ideal was L${w.ideal}`;
+  }
+  const next = car.pit.scheduledLaps.find((lap) => lap > car.lapsCompleted);
+  return next != null ? `Around L${next}` : 'TBD';
+}
+
+function overallHealth(car: LiveCarState): number {
+  return Math.min(car.engineHealth, car.brakeHealth, car.gearboxHealth, car.aeroHealth ?? (car.damaged ? 72 : 100));
 }
 
 // Single-line reliability/crash risk chip (keeps the pit-wall card compact).

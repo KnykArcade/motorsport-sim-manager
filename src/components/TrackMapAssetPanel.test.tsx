@@ -59,10 +59,12 @@ describe('TrackMapAssetPanel', () => {
 
     expect(html).toContain('data-testid="track-map-asset-panel"');
     expect(html).toContain('AUTODROMO JOSE CARLOS PACE');
-    expect(html).toContain('S/F');
     expect(html).toContain('PIT');
     expect(html).toContain('29');
     expect(html).toContain('P2 car 29, 1.4s behind leader');
+    expect(html).not.toContain('S/F');
+    expect(html).not.toContain('S1');
+    expect(html).not.toContain('S2');
     expect(html).not.toContain('DRS');
   });
 

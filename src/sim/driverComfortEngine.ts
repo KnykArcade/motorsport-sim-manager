@@ -101,9 +101,9 @@ function styleMatch(setup: CarSetup, prefs: SetupPreferences): number {
 }
 
 // Beyond this normalised change the practised feedback is considered stale.
-export const STALE_CHANGE_THRESHOLD = 0.3;
+export const STALE_CHANGE_THRESHOLD = 0.22;
 // Practice laps on the family that bank "full" familiarity.
-const FAMILIARITY_LAPS = 22;
+const FAMILIARITY_LAPS = 30;
 
 export type ComfortInput = {
   driver: Driver;
@@ -158,7 +158,7 @@ export function driverSetupComfort(input: ComfortInput): DriverComfort {
   if (input.ranQualiSim) comfort += 4;
   if (input.ranRacePace) comfort += 4;
   if (input.ranWetPrep && input.raceWet) comfort += 5;
-  if (stale) comfort -= 12 * clamp01(changeDelta / 0.6);
+  if (stale) comfort -= 16 * clamp01(changeDelta / 0.55);
   if (input.hadIncident) comfort -= 6;
   comfort = clamp(Math.round(comfort), 0, 100);
 

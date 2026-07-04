@@ -48,8 +48,9 @@ export function EventLogPanel({
   const scrollRef = useRef<HTMLUListElement>(null);
   const [atBottom, setAtBottom] = useState(true);
 
-  // Chronological (oldest first, newest last), capped to keep the DOM light.
-  const filtered = events.filter((e) => filter === 'All' || bucket(e) === filter).slice(-80);
+  // Chronological (oldest first, newest last). Keep the full race scrollback so
+  // the player can review the entire match, not just the last few laps.
+  const filtered = events.filter((e) => filter === 'All' || bucket(e) === filter);
 
   // Auto-scroll to the newest event while the player is following the feed.
   useLayoutEffect(() => {

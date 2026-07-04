@@ -107,12 +107,22 @@ export function reactToRaceResult(
     const carBlame = ctx.carReliabilityDNF;
     updates.push({
       driverId: ctx.driverId,
-      selfConfidenceDelta: carBlame ? -2 : -5,
-      trustInCarDelta: carBlame ? -8 : -2,
-      frustrationDelta: carBlame ? 6 : 3,
+      selfConfidenceDelta: carBlame ? -2 : -8,
+      trustInCarDelta: carBlame ? -10 : -6,
+      frustrationDelta: carBlame ? 7 : 6,
       moraleDelta: -4,
       reason: carBlame ? 'DNF from car failure' : 'DNF from incident',
     });
+    if (!carBlame && ctx.strategyRiskLevel === 'aggressive') {
+      updates.push({
+        driverId: ctx.driverId,
+        selfConfidenceDelta: -3,
+        trustInCarDelta: -5,
+        trustInPrincipalDelta: -2,
+        frustrationDelta: 4,
+        reason: 'Aggressive stint ended in incident',
+      });
+    }
   } else {
     // Position-based confidence.
     const posRatio = ctx.finishingPosition / Math.max(ctx.totalDrivers, 1);
@@ -150,6 +160,14 @@ export function reactToRaceResult(
         frustrationDelta: rel.frustration >= 45 ? 5 : 2,
         moraleDelta: -1,
         reason: rel.frustration >= 45 ? 'Poor finish revived prior frustration' : 'Poor finish',
+      });
+    }
+    if (ctx.finishingPosition <= Math.ceil(ctx.totalDrivers * 0.6)) {
+      updates.push({
+        driverId: ctx.driverId,
+        trustInCarDelta: ctx.podium || ctx.win ? 3 : 2,
+        frustrationDelta: rel.trustInCar < 45 ? -2 : -1,
+        reason: 'Clean finish rebuilt trust in car',
       });
     }
   }
@@ -221,11 +239,14 @@ export function reactToRaceResult(
 
   // --- Strategy ---
   if (ctx.strategyRiskLevel === 'aggressive' && !ctx.dnf) {
+    const nervousInCar = rel.trustInCar < 45 || rel.selfConfidence < 45;
     updates.push({
       driverId: ctx.driverId,
       trustInTeamDelta: ctx.finishingPosition <= 3 ? 3 : -2,
-      trustInPrincipalDelta: ctx.finishingPosition <= 3 ? 2 : -1,
-      reason: 'Aggressive strategy',
+      trustInPrincipalDelta: ctx.finishingPosition <= 3 ? 2 : (nervousInCar ? -3 : -1),
+      trustInCarDelta: nervousInCar && ctx.finishingPosition > 6 ? -2 : 0,
+      frustrationDelta: nervousInCar && ctx.finishingPosition > 6 ? 3 : 0,
+      reason: nervousInCar ? 'Aggressive strategy in low-trust car' : 'Aggressive strategy',
     });
   } else if (ctx.strategyRiskLevel === 'conservative' && traits.includes('Ambitious')) {
     updates.push({
