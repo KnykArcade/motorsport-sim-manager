@@ -92,7 +92,10 @@ export function buildRaceWeekendSchedule(
   const completedPractice = completedPracticeKinds(state, race.id);
   const practiceKinds = weekendSessionKinds(state.seasonYear, state.series);
   const openPractice = practiceKinds.find((kind) => !completedPractice.has(kind));
-  const currentId = !isMinPackage && openPractice
+  const weekendWorkStarted = completedPractice.size > 0 || hasQualifyingResults || race.completed;
+  const currentId = !weekendWorkStarted
+    ? 'pre-race'
+    : !isMinPackage && openPractice
     ? openPractice
     : !hasQualifyingResults
     ? 'qualifying'
@@ -106,7 +109,7 @@ export function buildRaceWeekendSchedule(
       day: 'Thursday',
       label: 'Pre-Race Brief',
       time: 'Ready',
-      status: 'completed',
+      status: itemStatus(weekendWorkStarted, currentId, 'pre-race'),
       action: { type: 'phase', phase: 'briefing' },
     },
   ];
@@ -165,6 +168,16 @@ export function buildNextSessionAction(
   const completedPractice = completedPracticeKinds(state, race.id);
   const practiceKinds = weekendSessionKinds(state.seasonYear, state.series);
   const openPractice = practiceKinds.find((kind) => !completedPractice.has(kind));
+  const weekendWorkStarted = completedPractice.size > 0 || hasQualifyingResults || race.completed;
+
+  if (!weekendWorkStarted) {
+    return {
+      sessionName: 'Pre-Race Brief',
+      detail: 'Review track demands, weather, package and race notes',
+      primaryLabel: 'OPEN BRIEF',
+      action: { type: 'phase', phase: 'briefing' },
+    };
+  }
 
   if (!isMinPackage && openPractice) {
     return {

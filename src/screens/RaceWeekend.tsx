@@ -565,10 +565,13 @@ function PhaseStepper({ phase, hasQuali, isMinPackage }: { phase: Phase; hasQual
 }
 
 function Briefing({ track, race, isMinPackage, onNext }: { track: Track; race: { laps: number; distanceKm?: number; gpName: string }; isMinPackage: boolean; onNext: () => void }) {
+  const strategicNotes = briefingStrategicNotes(track);
+  const ratingNotes = briefingRatingNotes(track);
+  const nextLabel = isMinPackage ? 'Begin Qualifying Prep ->' : 'Begin Practice Prep ->';
   return (
     <Panel
       title="Track Briefing"
-      actions={<Button variant="primary" onClick={onNext}>Begin Qualifying Prep →</Button>}
+      actions={<Button variant="primary" onClick={onNext}>{nextLabel}</Button>}
     >
       {isMinPackage && (
         <div className="mb-4 rounded-lg border border-red-500/40 bg-red-500/10 px-4 py-3 text-sm text-red-300">
@@ -604,11 +607,39 @@ function Briefing({ track, race, isMinPackage, onNext }: { track: Track; race: {
       </div>
 
       <div className="mt-4 grid gap-3 md:grid-cols-2">
-        <InfoBox label="Strategic Notes" text={track.setupProfile.strategyNotes} />
-        <InfoBox label="Rating Notes" text={track.ratingNotes} />
+        <InfoBox label="Strategic Notes" text={strategicNotes} />
+        <InfoBox label="Rating Notes" text={ratingNotes} />
       </div>
     </Panel>
   );
+}
+
+function briefingStrategicNotes(track: Track): string {
+  if (track.setupProfile.strategyNotes?.trim()) return track.setupProfile.strategyNotes;
+
+  const demands = track.setupProfile;
+  const tyrePressure = demands.riskDemand >= 7
+    ? 'High incident risk makes clean air and conservative stint timing valuable.'
+    : 'Risk is manageable, so strategy can lean into pace if the tyres stay stable.';
+  const aeroRead = demands.aeroDemand >= demands.powerDemand
+    ? 'Aero balance and braking stability should drive the setup plan.'
+    : 'Straight-line efficiency and power delivery should drive the setup plan.';
+
+  return `${aeroRead} ${tyrePressure}`;
+}
+
+function briefingRatingNotes(track: Track): string {
+  if (track.ratingNotes?.trim()) return track.ratingNotes;
+
+  const demands = track.setupProfile;
+  const strongest = [
+    ['Aero', demands.aeroDemand],
+    ['Power', demands.powerDemand],
+    ['Mechanical', demands.mechanicalDemand],
+    ['Risk', demands.riskDemand],
+  ].sort((a, b) => Number(b[1]) - Number(a[1]))[0]?.[0] ?? 'Balance';
+
+  return `${strongest} demand is the main performance read here. Expect driver confidence, car balance and reliability preparation to matter more as practice data improves.`;
 }
 
 function InfoBox({ label, text }: { label: string; text: string }) {

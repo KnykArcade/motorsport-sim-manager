@@ -151,15 +151,15 @@ describe('F1 1990s race weekend schedule and primary action', () => {
     const state = makeState(1994);
     const race = currentRace(state)!;
     const schedule = buildRaceWeekendSchedule(state, race, false, false);
-    expect(schedule.find((item) => item.id === 'pre-race')?.status).toBe('completed');
-    expect(schedule.find((item) => item.id === 'Practice1')?.status).toBe('current');
+    expect(schedule.find((item) => item.id === 'pre-race')?.status).toBe('current');
+    expect(schedule.find((item) => item.id === 'Practice1')?.status).toBe('upcoming');
   });
 
   it('drives the next-session action from real weekend state', () => {
     const state = withWeekendPackage(makeState(1994));
     const action = buildNextSessionAction(state, currentRace(state)!, false, false);
-    expect(action.primaryLabel).toBe('START PRACTICE');
-    expect(action.action).toEqual({ type: 'phase', phase: 'practice' });
+    expect(action.primaryLabel).toBe('OPEN BRIEF');
+    expect(action.action).toEqual({ type: 'phase', phase: 'briefing' });
   });
 
   it('turns schedule rows into hub module actions', () => {
