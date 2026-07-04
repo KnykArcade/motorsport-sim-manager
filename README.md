@@ -26,15 +26,28 @@ Vite · React · TypeScript (strict) · React Router · Tailwind CSS.
 
 ## Getting started
 
+To run the game locally:
+
 ```bash
-nvm install
-nvm use
 npm install
-npm run dev        # start the dev server
-npm run build      # typecheck + production build
-npm run typecheck  # tsc --noEmit
-npm run lint       # eslint
-npm run test       # vitest run
+npm run dev
+```
+
+Then open the local browser link printed by the dev server, usually:
+
+```text
+http://localhost:5173/
+```
+
+The project is pinned to Node 22 in `.nvmrc`. If your terminal ever shows an unsupported Node warning, switch back to Node 22 and rerun the two commands above.
+
+Optional developer checks:
+
+```bash
+npm run build
+npm run typecheck
+npm run lint
+npm run test
 ```
 
 ## Project layout
