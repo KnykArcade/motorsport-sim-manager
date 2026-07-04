@@ -7,7 +7,7 @@ import { BALANCED_SETUP } from '../data/setup/setupComponents';
 import { qualifyingRunPlansById } from '../data/decisions/qualifyingRunPlans';
 import type { Car, Driver } from '../types/gameTypes';
 import type { CarSetup, DriverComfort, ObjectiveSetupQuality } from '../types/setupTypes';
-import { idealSetup, objectiveSetupQuality } from './setupFitEngine';
+import { adjustedSetupTolerance, idealSetup, objectiveSetupQuality } from './setupFitEngine';
 import {
   driverSetupComfort,
   inferSetupPreferences,
@@ -169,7 +169,7 @@ describe('Practice knowledge controls certainty', () => {
   it('narrows the setup quality estimate range as knowledge rises', () => {
     const wide = setupQualityEstimate(80, 0);
     const medium = setupQualityEstimate(80, 0.6);
-    const exact = setupQualityEstimate(80, 0.95);
+    const exact = setupQualityEstimate(80, 0.99);
     expect(rangeWidth(wide)).toBeGreaterThan(rangeWidth(medium));
     expect(exact.exact).toBe(80);
   });
@@ -178,7 +178,14 @@ describe('Practice knowledge controls certainty', () => {
     expect(canRevealComponentFit(0.2)).toBe(false);
     expect(canRevealComponentFit(0.9)).toBe(true);
     expect(setupQualityEstimate(80, 0.2).exact).toBeUndefined();
-    expect(setupQualityEstimate(80, 0.95).exact).toBe(80);
+    expect(setupQualityEstimate(80, 0.95).exact).toBeUndefined();
+    expect(setupQualityEstimate(80, 0.99).exact).toBe(80);
+  });
+
+  it('makes setup tolerance harder with poor prep and easier with stronger ops/practice', () => {
+    const poorPrep = adjustedSetupTolerance(2.2, 3, 0, 0);
+    const strongPrep = adjustedSetupTolerance(2.2, 8, 6, 0.9);
+    expect(strongPrep).toBeGreaterThan(poorPrep);
   });
 
   it('tyre knowledge tightens the predicted stint (pit) window', () => {
