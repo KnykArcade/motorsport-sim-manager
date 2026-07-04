@@ -9,6 +9,7 @@ import type { GameState } from '../../game/careerState';
 import type { Driver, DriverRatings } from '../../types/gameTypes';
 import type { AcademyMember, MarketDriver, YouthProspect } from '../../types/marketTypes';
 import type { DriverRelationship, DriverWant } from '../../types/relationshipTypes';
+import { getEraTheme, getEraThemeConfig, type MotorsportEraTheme } from '../../theme/eraTheme';
 
 type DriverSubject =
   | { type: 'driver'; driver: Driver }
@@ -44,8 +45,12 @@ const WANT_LABELS: Record<DriverWant, string> = {
   team_stability: 'Team stability',
 };
 
-function isF11990s(state: GameState): boolean {
-  return state.series === 'F1' && state.seasonYear >= 1990 && state.seasonYear <= 1999;
+function dossierClassFor(theme: MotorsportEraTheme): string {
+  if (theme === 'f1-1990s') return 'driver-dossier-90s';
+  if (theme === 'f1-2000s') return 'driver-dossier-2000s';
+  if (theme === 'f1-2010s') return 'driver-dossier-2010s';
+  if (theme === 'f1-2020s') return 'driver-dossier-2020s';
+  return 'driver-dossier-generic';
 }
 
 function initials(name: string): string {
@@ -208,24 +213,26 @@ function DriverDossierModal({
   onClose: () => void;
 }) {
   const navigate = useNavigate();
-  const nineties = isF11990s(state);
   const rel = profile.rel as DriverRelationship | undefined;
   const confidence = rel ? computeConfidenceState(rel) : undefined;
   const confidenceScore = rel ? overallConfidenceScore(rel) : undefined;
   const activePromises = profile.promises.filter((p) => p.status === 'active').length;
-  const shellClass = nineties ? 'driver-dossier driver-dossier-90s' : 'driver-dossier driver-dossier-generic';
+  const eraTheme = getEraTheme(state.series, state.seasonYear);
+  const eraConfig = getEraThemeConfig(eraTheme);
+  const nineties = eraTheme === 'f1-1990s';
+  const shellClass = `driver-dossier ${dossierClassFor(eraTheme)}`;
 
   return (
     <div className="driver-dossier-overlay" role="dialog" aria-modal="true" aria-label={`${profile.name} driver card`}>
-      <div className={shellClass}>
+      <div className={shellClass} data-era={eraTheme}>
         <div className="driver-dossier-topbar">
           <div>
-            <div className="driver-dossier-kicker">{nineties ? 'Personnel file' : 'Driver profile'}</div>
+            <div className="driver-dossier-kicker">{nineties ? 'Personnel file' : 'Driver intelligence file'}</div>
             <h2>{profile.name}</h2>
             <p>{context ?? profile.role}</p>
           </div>
           <div className="driver-dossier-actions">
-            <span className="driver-dossier-era">{nineties ? '1990s dossier' : 'Generic card'}</span>
+            <span className="driver-dossier-era">{eraConfig.label}</span>
             <button onClick={onClose} aria-label="Close driver card">Close</button>
           </div>
         </div>

@@ -55,7 +55,7 @@ export function TeamHQ() {
   const teamColor = (id: string) => state.teams.find((t) => t.id === id)?.color;
 
   return (
-    <div className="space-y-6">
+    <div className="era-feature-screen era-team-hq space-y-6">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-neutral-100">{team?.name} — Team HQ</h1>

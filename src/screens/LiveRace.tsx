@@ -35,7 +35,7 @@ import { BottomRow } from './liveRace/BottomPanels';
 import { buildForecast } from './liveRace/forecast';
 import { FullEventLogModal, StrategyModal, TeamOrdersModal } from './liveRace/modals';
 import { F11990sLiveRaceScreen } from './liveRace/eraThemes/F11990sLiveRaceScreen';
-import { shouldUseF11990sLiveRaceScreen } from './liveRace/eraThemes/getLiveRaceEraTheme';
+import { getLiveRaceEraTheme, shouldUseF11990sLiveRaceScreen } from './liveRace/eraThemes/getLiveRaceEraTheme';
 
 type Speed = 1 | 10 | 30 | 60;
 
@@ -272,6 +272,7 @@ export function LiveRace() {
   const activeRecs = finished ? [] : live.recommendations;
   const monitor = buildAnalyticsMonitor(live, seatOrderIds);
   const useF11990sLiveRace = shouldUseF11990sLiveRaceScreen(state.series, state.seasonYear);
+  const eraTheme = getLiveRaceEraTheme(state.series, state.seasonYear);
 
   const controls = (
     <div className="flex items-center gap-1.5">
@@ -404,7 +405,7 @@ export function LiveRace() {
   }
 
   return (
-    <div className="flex h-screen w-screen flex-col overflow-hidden bg-[#0a0e17] text-slate-200">
+    <div className="era-app era-live-race flex h-screen w-screen flex-col overflow-hidden bg-[#0a0e17] text-slate-200" data-era={eraTheme}>
       <TopStatusBar
         raceName={race?.gpName ?? 'Live Race'}
         trackName={race?.trackName ?? ''}

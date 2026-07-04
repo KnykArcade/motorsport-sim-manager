@@ -43,7 +43,7 @@ import { Button } from '../components/Button';
 import { TrackDemandBars } from '../components/TrackDemandBars';
 import { SetupWorkshop, type WorkshopPractice } from '../components/SetupWorkshop';
 import { F11990sRaceWeekendHub } from '../components/raceWeekend/eraThemes/F11990sRaceWeekendHub';
-import { shouldUseF11990sRaceWeekendHub } from '../components/raceWeekend/eraThemes/getRaceWeekendEraTheme';
+import { getRaceWeekendEraTheme, shouldUseF11990sRaceWeekendHub } from '../components/raceWeekend/eraThemes/getRaceWeekendEraTheme';
 import type { Driver, Track, StandingsEntry } from '../types/gameTypes';
 import type { WeatherState } from '../types/liveTypes';
 import type { CarSetup } from '../types/setupTypes';
@@ -165,6 +165,7 @@ export function RaceWeekend() {
   if (!state || !race || !track || !autoSetups) return null;
 
   const isMinPackage = state.raceWeekendPackage?.packageType === 'MandatoryMinimum';
+  const eraTheme = getRaceWeekendEraTheme(state.series, state.seasonYear);
   const isF11990sWeekend = shouldUseF11990sRaceWeekendHub(state.series, state.seasonYear);
 
   const qualifyingResults = state.qualifyingResults[race.id];
@@ -203,11 +204,12 @@ export function RaceWeekend() {
 
   return (
     <div
-      className={`flex h-full min-h-0 flex-col gap-4 ${
+      className={`era-race-weekend flex h-full min-h-0 flex-col gap-4 ${
         isF11990sWeekend
           ? 'rounded-lg border border-amber-500/25 bg-[radial-gradient(circle_at_50%_0%,rgba(245,158,11,0.10),transparent_34%),linear-gradient(180deg,rgba(10,10,10,0.96),rgba(5,5,5,0.99))] p-3 font-mono shadow-[inset_0_0_80px_rgba(0,0,0,0.45)]'
           : ''
       }`}
+      data-era={eraTheme}
     >
       <div className={`flex shrink-0 items-center justify-between ${isF11990sWeekend ? 'border-b border-amber-500/25 pb-3' : ''}`}>
         <div>
