@@ -53,6 +53,7 @@ const MAX_RACE_EVENTS = 3;
 const OTHER_PER_LAP = 0.00015;
 
 const PRIORITY_RANK: Record<RecPriority, number> = { low: 1, medium: 2, high: 3, urgent: 4 };
+const STRATEGY_MODE_LOCK_LAPS = 2;
 
 // --- Battle / position-change event tuning -------------------------------
 // Gap (s) within which a car behind is "challenging" the car ahead.
@@ -684,7 +685,11 @@ export function setPlayerPaceMode(
         },
       ]
     : state.events;
-  return { ...state, cars, recommendations, events };
+  const recCooldowns = {
+    ...state.recCooldowns,
+    [strategyModeLockKey(driverId)]: state.currentLap + STRATEGY_MODE_LOCK_LAPS,
+  };
+  return { ...state, cars, recommendations, events, recCooldowns };
 }
 
 // Resolve a pending prompt with its default (first) option — used by skip-to-end.
@@ -854,6 +859,11 @@ export function refreshRecommendations(
 
   const result: AnalyticsRecommendation[] = [];
   const liveIds = new Set<string>();
+  const activeModeDrivers = new Set(
+    prev
+      .filter((r) => r.status === 'active' && r.appliedAction && isModeAction(r.appliedAction))
+      .map((r) => r.driverId),
+  );
 
   // 1. Advance existing recommendations: carry active instructions, complete them
   //    when their duration ends, keep still-valid pending recs.
@@ -898,6 +908,7 @@ export function refreshRecommendations(
   // 2. Raise genuinely new pending recommendations (dedup vs live recs + cooldown).
   for (const cand of candidates) {
     if (liveIds.has(cand.id)) continue;
+    if (shouldSuppressModeCandidate(cand, recCooldowns, activeModeDrivers, lap)) continue;
     const cd = recCooldowns[cand.id];
     if (cand.priority !== 'urgent' && cd != null && lap < cd) continue;
     result.push(cand);
@@ -910,6 +921,23 @@ export function refreshRecommendations(
   }
 
   return { recommendations: result, ignoredRecs, recCooldowns };
+}
+
+function strategyModeLockKey(driverId: string): string {
+  return `${driverId}:strategyModeLock`;
+}
+
+function shouldSuppressModeCandidate(
+  cand: AnalyticsRecommendation,
+  recCooldowns: Record<string, number>,
+  activeModeDrivers: Set<string>,
+  lap: number,
+): boolean {
+  if (!isModeAction(cand.action)) return false;
+  if (cand.priority === 'high' || cand.priority === 'urgent') return false;
+  if (activeModeDrivers.has(cand.driverId)) return true;
+  const lockUntil = recCooldowns[strategyModeLockKey(cand.driverId)];
+  return lockUntil != null && lap < lockUntil;
 }
 
 // ---------------------------------------------------------------------------

@@ -12,6 +12,7 @@ import {
   modifyRecommendation,
   expireRecommendation,
   refreshRecommendations,
+  setPlayerPaceMode,
 } from './raceTickEngine';
 import type { LiveRaceMeta } from './liveRaceEngine';
 import type { LiveCarState, LiveRaceState } from '../types/liveTypes';
@@ -316,6 +317,22 @@ describe('recommendation lifecycle — duration, dedup, cooldown', () => {
     // Completed kind is on cooldown, so it does not immediately re-raise.
     const s25 = merge(s, 25);
     expect(s25.recommendations.some((r) => r.kind === 'attack')).toBe(false);
+  });
+
+  it('manual strategy mode changes suppress medium strategy prompts for two laps', () => {
+    const d1 = car({ driverId: 'd1', position: 5, interval: 3 });
+    const behind = car({ driverId: 'd3', isPlayer: false, position: 6, interval: 0.6 });
+    let s = setPlayerPaceMode(live([d1, behind]), 'd1', 'Attack');
+    s = merge(s, 21);
+    expect(s.recommendations.some((r) => r.kind === 'defend')).toBe(false);
+    s = merge(s, 22);
+    expect(s.recommendations.some((r) => r.kind === 'defend')).toBe(true);
+  });
+
+  it('strategy lockout still allows major safety and reliability calls through', () => {
+    let s = setPlayerPaceMode(live([car({ reliabilityRiskLevel: 'High' })]), 'd1', 'Attack');
+    s = merge(s, 21);
+    expect(s.recommendations.some((r) => r.kind === 'reliability')).toBe(true);
   });
 
   it('an ignored rec is suppressed during cooldown and can re-raise afterwards', () => {

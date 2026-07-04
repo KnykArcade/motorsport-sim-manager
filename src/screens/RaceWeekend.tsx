@@ -760,6 +760,14 @@ function PracticePhase({
     })),
   );
   const activeOverBudget = activeCost > lapsRemaining;
+  const averageKnowledge = (source?: Record<string, number>) => {
+    if (players.length === 0) return 0;
+    const total = players.reduce((sum, d) => sum + (source?.[d.id] ?? 0), 0);
+    return Math.round((total / players.length) * 100);
+  };
+  const setupKnowledgePct = averageKnowledge(k?.setupKnowledge);
+  const tyreKnowledgePct = averageKnowledge(k?.tireKnowledge);
+  const reliabilityKnowledgePct = averageKnowledge(k?.reliabilityKnowledge);
 
   return (
     <div className="flex h-full min-h-0 flex-col gap-3" data-testid="practice-screen">
@@ -773,6 +781,11 @@ function PracticePhase({
           </div>
         </div>
         <div className="flex flex-wrap items-center gap-3">
+          <div className="flex flex-wrap gap-1.5">
+            <PracticeKnowledgeChip label="Setup" value={setupKnowledgePct} />
+            <PracticeKnowledgeChip label="Tyres" value={tyreKnowledgePct} />
+            <PracticeKnowledgeChip label="Reliability" value={reliabilityKnowledgePct} />
+          </div>
           <div className="flex items-center gap-2">
             <span className="text-[10px] uppercase tracking-wide text-neutral-500">Lap allocation</span>
             <div className="h-2 w-40 overflow-hidden rounded-full bg-neutral-800">
@@ -793,7 +806,7 @@ function PracticePhase({
       </div>
 
       {/* Weekend knowledge dashboard — both drivers, compact, always visible. */}
-      <div className="grid shrink-0 gap-2 sm:grid-cols-2">
+      <div className="hidden shrink-0 gap-2 sm:grid-cols-2">
         {players.map((d) => {
           const conf = state.drivers.find((x) => x.id === d.id)?.confidence ?? d.confidence;
           const delta = k?.confidenceDelta[d.id] ?? 0;
@@ -900,7 +913,7 @@ function PracticePhase({
               </div>
             ))}
             {recentKind && completedByKind[recentKind] && recentKind !== active && (
-              <div className="rounded-md border border-amber-500/25 bg-amber-500/10 p-2">
+              <div className="hidden rounded-md border border-amber-500/25 bg-amber-500/10 p-2">
                 <div className="mb-1 text-[10px] font-semibold uppercase tracking-wide text-amber-300">
                   {SESSION_LABELS[recentKind]} feedback carried forward
                 </div>
@@ -993,6 +1006,15 @@ function MiniGauge({ label, value }: { label: string; value: number }) {
       <div className="h-1.5 overflow-hidden rounded bg-neutral-800">
         <div className="h-full rounded bg-sky-500" style={{ width: `${pct}%` }} />
       </div>
+    </div>
+  );
+}
+
+function PracticeKnowledgeChip({ label, value }: { label: string; value: number }) {
+  return (
+    <div className="rounded border border-neutral-700 bg-neutral-950/50 px-2 py-1">
+      <div className="text-[9px] uppercase tracking-wide text-neutral-500">{label}</div>
+      <div className="text-xs font-semibold tabular-nums text-amber-300">{value}%</div>
     </div>
   );
 }

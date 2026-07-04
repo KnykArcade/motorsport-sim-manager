@@ -118,6 +118,26 @@ describe('aiLapDecision — core behaviours', () => {
     expect(action.pitNow).toBe(true);
   });
 
+  it('varies pit timing by strategy personality', () => {
+    const pit: LiveCarState['pit'] = {
+      plannedStops: 1,
+      stopsMade: 0,
+      scheduledLaps: [24],
+      lastPitLap: null,
+      inPitThisLap: false,
+      window: null,
+      pitRequested: false,
+      planStatus: 'planned',
+      planCancelled: false,
+      lastWindowPromptLap: null,
+    };
+    const undercut = car({ personality: 'UndercutFocused', pit, tire: { compound: 'Dry', age: 18, wear: 50, stintTarget: 25 } });
+    const overcut = car({ personality: 'OvercutFocused', pit, tire: { compound: 'Dry', age: 18, wear: 50, stintTarget: 25 } });
+
+    expect(aiLapDecision(undercut, live([undercut]), TRACK, 22).pitNow).toBe(true);
+    expect(aiLapDecision(overcut, live([overcut]), TRACK, 22).pitNow).toBe(false);
+  });
+
   it('protects the engine when a severe reliability issue is unmanaged', () => {
     const c = car({ reliabilityIssue: { severity: 'Severe', managed: false } as LiveCarState['reliabilityIssue'] });
     const action = aiLapDecision(c, live([c]), TRACK, 21);
