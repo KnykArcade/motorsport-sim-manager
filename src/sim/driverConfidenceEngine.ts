@@ -120,16 +120,18 @@ export function reactToRaceResult(
       updates.push({
         driverId: ctx.driverId,
         selfConfidenceDelta: 8,
-        moraleDelta: 6,
-        frustrationDelta: -5,
+        trustInPrincipalDelta: 2,
+        moraleDelta: 8,
+        frustrationDelta: rel.frustration >= 45 ? -12 : -7,
         reason: 'Race win',
       });
     } else if (ctx.podium) {
       updates.push({
         driverId: ctx.driverId,
         selfConfidenceDelta: 5,
-        moraleDelta: 4,
-        frustrationDelta: -3,
+        trustInPrincipalDelta: 1,
+        moraleDelta: 5,
+        frustrationDelta: rel.frustration >= 45 ? -8 : -4,
         reason: 'Podium finish',
       });
     } else if (posRatio <= 0.5) {
@@ -144,9 +146,10 @@ export function reactToRaceResult(
       updates.push({
         driverId: ctx.driverId,
         selfConfidenceDelta: -2,
-        frustrationDelta: 2,
+        trustInPrincipalDelta: rel.frustration >= 45 ? -2 : -1,
+        frustrationDelta: rel.frustration >= 45 ? 5 : 2,
         moraleDelta: -1,
-        reason: 'Poor finish',
+        reason: rel.frustration >= 45 ? 'Poor finish revived prior frustration' : 'Poor finish',
       });
     }
   }

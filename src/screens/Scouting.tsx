@@ -102,7 +102,6 @@ export function Scouting() {
                 key={d.id}
                 title={d.name}
                 subtitle={`${d.nationality} · ${d.age} · ${d.context}`}
-                overall={d.overall}
                 view={view({ id: d.id, skills: d.skills, potential: d.potential })}
                 cost={costOf(d.id, 'Driver')}
                 budget={budget}
@@ -121,7 +120,6 @@ export function Scouting() {
                 key={y.id}
                 title={y.name}
                 subtitle={`${y.nationality} · age ${y.age} · ${y.currentLevel}`}
-                overall={y.overall}
                 view={view({ id: y.id, skills: y.skills, potential: y.potential })}
                 cost={costOf(y.id, 'YouthProspect')}
                 budget={budget}
@@ -135,7 +133,6 @@ export function Scouting() {
 }
 
 function potentialText(view: FogView): string {
-  if (view.potential.revealed) return view.potential.value!.toFixed(1);
   const [lo, hi] = view.potential.range;
   return `${lo.toFixed(1)}–${hi.toFixed(1)}`;
 }
@@ -143,7 +140,6 @@ function potentialText(view: FogView): string {
 function ScoutCard({
   title,
   subtitle,
-  overall,
   view,
   cost,
   budget,
@@ -151,7 +147,6 @@ function ScoutCard({
 }: {
   title: string;
   subtitle: string;
-  overall: number;
   view: FogView;
   cost: number;
   budget: number;
@@ -168,7 +163,7 @@ function ScoutCard({
         </div>
         <div className="text-right">
           <span className="rounded bg-neutral-800 px-2 py-0.5 text-xs font-semibold text-amber-300">
-            {overall.toFixed(1)}
+            {overallText(view)}
           </span>
           <div className="mt-0.5 text-[10px] text-neutral-500">
             POT <span className="text-sky-300">{potentialText(view)}</span>
@@ -183,7 +178,7 @@ function ScoutCard({
         </div>
         <div className="h-1.5 w-full overflow-hidden rounded-full bg-neutral-800">
           <div
-            className={`h-full ${view.revealed ? 'bg-green-500' : 'bg-sky-500'}`}
+            className={`h-full ${view.maxed ? 'bg-green-500' : 'bg-sky-500'}`}
             style={{ width: `${accPct}%` }}
           />
         </div>
@@ -195,11 +190,13 @@ function ScoutCard({
         ))}
       </div>
 
-      <p className="mt-2 text-[11px] italic text-neutral-500">{view.notes[0]}</p>
+      <p className="mt-2 text-[11px] italic text-neutral-500">
+        {view.maxed ? 'Best available report - ratings remain projected ranges.' : view.notes[0]}
+      </p>
 
       <div className="mt-3 border-t border-neutral-800 pt-2">
-        {view.revealed ? (
-          <span className="text-xs text-green-400">Fully scouted.</span>
+        {view.maxed ? (
+          <span className="text-xs text-green-400">Best available report. Track performance still matters.</span>
         ) : (
           <>
             <Button
@@ -222,18 +219,28 @@ function ScoutCard({
 
 function SkillRow({ label, value }: { label: string; value: VisibleRating }) {
   const known = value !== 'Unknown';
-  const pct = known ? (value / 10) * 100 : 0;
+  const [lo, hi] = Array.isArray(value) ? value : typeof value === 'number' ? [value, value] : [0, 0];
+  const pct = known ? ((lo + hi) / 2 / 10) * 100 : 0;
   return (
     <div className="flex items-center gap-2 text-xs">
       <span className="w-24 text-neutral-400">{label}</span>
       <div className="h-2 flex-1 overflow-hidden rounded-full bg-neutral-800">
         {known && <div className="h-full bg-neutral-500" style={{ width: `${pct}%` }} />}
       </div>
-      <span className={`w-10 text-right tabular-nums ${known ? 'text-neutral-200' : 'text-neutral-600'}`}>
-        {known ? value.toFixed(1) : '??'}
+      <span className={`w-20 text-right tabular-nums ${known ? 'text-neutral-200' : 'text-neutral-600'}`}>
+        {known ? `${lo.toFixed(1)}-${hi.toFixed(1)}` : '??'}
       </span>
     </div>
   );
+}
+
+function overallText(view: FogView): string {
+  const values = Object.values(view.skills).filter((v): v is number | [number, number] => v !== 'Unknown');
+  if (values.length === 0) return 'OVR ??';
+  const mids = values.map((v) => (Array.isArray(v) ? (v[0] + v[1]) / 2 : v));
+  const avg = mids.reduce((sum, v) => sum + v, 0) / mids.length;
+  const uncertainty = Math.max(0.4, (1 - view.accuracy) * 2.2);
+  return `${Math.max(1, avg - uncertainty).toFixed(1)}-${Math.min(10, avg + uncertainty).toFixed(1)}`;
 }
 
 function TabButton({

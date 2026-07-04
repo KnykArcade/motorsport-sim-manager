@@ -100,6 +100,7 @@ export type PitStopState = {
   // Remaining scheduled pit laps (may be mutated by reactive decisions).
   scheduledLaps: number[];
   lastPitLap: number | null;
+  lastPitStopTime?: number | null;
   inPitThisLap: boolean;
   // Player-controlled pitting: the next stop's advisory window, and a flag set
   // when the player has called the car in. AI cars leave these null/false and

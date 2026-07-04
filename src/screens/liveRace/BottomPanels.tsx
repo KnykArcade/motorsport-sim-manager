@@ -81,6 +81,7 @@ function PitStrategyPanel({
                 : live.currentLap <= w.close
                 ? `OPEN → L${w.close}`
                 : 'overdue';
+            const nextPlanned = nextPitPlan(c, live.currentLap);
             const lo = Math.max(1, (c.position ?? fieldSize) - 1);
             const hi = Math.min(fieldSize, (c.position ?? 1) + 2);
             return (
@@ -94,6 +95,17 @@ function PitStrategyPanel({
                 <div className="mt-0.5 flex items-center justify-between text-[10px] text-slate-400">
                   <span>
                     Window: <span className="font-semibold text-slate-300">{nextWindow}</span>
+                  </span>
+                  <span>
+                    Next: <span className="font-semibold text-slate-300">{nextPlanned}</span>
+                  </span>
+                </div>
+                <div className="mt-0.5 flex items-center justify-between text-[10px] text-slate-500">
+                  <span>
+                    Last stop:{' '}
+                    <span className="font-semibold text-slate-300">
+                      {c.pit.lastPitStopTime != null ? `${c.pit.lastPitStopTime.toFixed(1)}s` : c.pit.lastPitLap != null ? `L${c.pit.lastPitLap}` : 'none'}
+                    </span>
                   </span>
                   <span>
                     Proj: <span className="font-semibold text-slate-300">P{lo}-P{hi}</span>
@@ -172,10 +184,27 @@ function RaceInfoPanel({ live, distanceKm }: { live: LiveRaceState; distanceKm?:
         <Info label="Elapsed" value={fmtElapsed(elapsed)} />
         <Info label="Avg Speed" value={avgSpeed ? `${avgSpeed} km/h` : '—'} />
         <Info label="Safety Cars" value={String(live.safetyCar.deployments)} />
+        {live.safetyCar.active && (
+          <Info label="Green Est." value={greenEstimate(live.currentLap, live.safetyCar.lapsRemaining, live.totalLaps)} tone="warn" />
+        )}
         <Info label="Retirements" value={String(live.retirements)} tone={live.retirements > 0 ? 'warn' : 'normal'} />
       </div>
     </DashPanel>
   );
+}
+
+function nextPitPlan(car: LiveCarState, currentLap: number): string {
+  const stopsLeft = car.pit.plannedStops - car.pit.stopsMade;
+  if (stopsLeft <= 0) return 'none';
+  if (car.pit.window) return `ideal L${car.pit.window.ideal}`;
+  const next = car.pit.scheduledLaps.find((lap) => lap > currentLap);
+  return next != null ? `L${next}` : 'TBD';
+}
+
+function greenEstimate(currentLap: number, lapsRemaining: number, totalLaps: number): string {
+  const min = Math.min(totalLaps, currentLap + Math.max(1, lapsRemaining));
+  const max = Math.min(totalLaps, min + 1);
+  return max === min ? `L${min}` : `L${min}-${max}`;
 }
 
 function Info({ label, value, tone = 'normal' }: { label: string; value: string; tone?: 'normal' | 'warn' }) {

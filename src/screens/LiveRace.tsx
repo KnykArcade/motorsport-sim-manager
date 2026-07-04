@@ -19,7 +19,7 @@ import {
 import { requiresDecision, DECISION_COUNTDOWN_SECONDS } from '../sim/analyticsEngine';
 import { buildAnalyticsMonitor } from '../sim/analyticsMonitor';
 import { orderCardsBySeat } from '../sim/liveRaceCardOrder';
-import { applyTeamOrderToLive, recordTeamOrder } from '../sim/relationshipEngine';
+import { applyTeamOrderToLive, recordTeamOrder, TEAM_ORDER_SPECS } from '../sim/relationshipEngine';
 import { Button } from '../components/Button';
 import type { TrackDot } from '../components/RaceTrack2D';
 import type { AnalyticsRecommendation, LiveRaceState, PaceMode, RecAction } from '../types/liveTypes';
@@ -178,11 +178,37 @@ export function LiveRace() {
   // Apply a team order to the live state and record it for post-race resolution.
   const applyOrder = (s: LiveRaceState | null, order: TeamOrder, favoredDriverId?: string): LiveRaceState | null => {
     if (!s) return s;
+    const label = teamOrderLabel(order);
+    const favoredName = favoredDriverId ? driverName(favoredDriverId) : undefined;
+    const receivedEvent = {
+      lap: s.currentLap,
+      text: `Team order received: ${label}${favoredName ? ` for ${favoredName}` : ''}.`,
+    };
     const applied = applyTeamOrderToLive(s, order, favoredDriverId, driverName);
-    if (!applied) return s;
+    if (!applied) {
+      return {
+        ...s,
+        events: [
+          ...s.events,
+          receivedEvent,
+          {
+            lap: s.currentLap,
+            text: `Team order not carried out: ${label} unavailable with the current cars/order.`,
+          },
+        ],
+      };
+    }
     const activeIds = s.cars.filter((c) => c.isPlayer).map((c) => c.driverId);
     teamOrders.current.push(recordTeamOrder(s.raceId, order, favoredDriverId, activeIds, s.currentLap));
-    return applied.state;
+    return {
+      ...applied.state,
+      events: [
+        ...s.events,
+        receivedEvent,
+        ...applied.state.events.slice(s.events.length),
+        { lap: s.currentLap, text: `Team order completed: ${applied.note}` },
+      ],
+    };
   };
 
   const issueOrder = (order: TeamOrder, favoredDriverId?: string) =>
@@ -527,6 +553,10 @@ export function LiveRace() {
 
 function normalizeTrackProgress(value: number): number {
   return ((value % 1) + 1) % 1;
+}
+
+function teamOrderLabel(order: TeamOrder): string {
+  return TEAM_ORDER_SPECS.find((spec) => spec.order === order)?.label ?? order;
 }
 
 function PromptOverlay({

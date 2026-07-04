@@ -199,6 +199,7 @@ export function createLiveRace(context: RaceContext, options: LiveRaceOptions): 
         stopsMade: 0,
         scheduledLaps: pitPlan.scheduledLaps,
         lastPitLap: null,
+        lastPitStopTime: null,
         inPitThisLap: false,
         // The player owns pit timing: show an advisory window for the first
         // stop and wait for the player to call the car in. AI cars pit off

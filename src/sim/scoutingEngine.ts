@@ -36,7 +36,7 @@ const SKILL_KEYS: (keyof MarketSkillRatings)[] = [
 // Scouting Network makes each trip more productive.
 const SCOUT_STEP = 25;
 // At/above this accuracy a target is considered fully revealed (exact values).
-const REVEAL_ACCURACY = 0.95;
+const REVEAL_ACCURACY = 0.9;
 // Below this accuracy a skill is too uncertain to show a number at all.
 const UNKNOWN_ACCURACY = 0.25;
 
@@ -60,7 +60,7 @@ export function scoutingNetworkAccuracy(facilities?: FacilitiesState): number {
 // while a stronger network gives a better starting picture.
 export function effectiveAccuracy(scoutingLevel: number, networkAccuracy: number): number {
   const effort = clamp01(scoutingLevel / 100);
-  return clamp01(networkAccuracy + effort * (1 - networkAccuracy));
+  return Math.min(0.9, clamp01(networkAccuracy + effort * (1 - networkAccuracy)));
 }
 
 export function isRevealed(accuracy: number): boolean {
@@ -81,10 +81,10 @@ export function visiblePotentialRange(
   seed: string,
   entityId: string,
 ): [number, number] {
-  if (isRevealed(accuracy)) return [round1(truePotential), round1(truePotential)];
   const spread = (1 - accuracy) * 2.5; // ±2.5 at acc 0 → 0 when revealed
-  const center = clampRating(truePotential + bias(seed, entityId, 'potential') * spread * 0.5);
-  return [round1(clampRating(center - spread)), round1(clampRating(center + spread))];
+  const adjustedSpread = Math.max(0.4, spread * 1.28);
+  const center = clampRating(truePotential + bias(seed, entityId, 'potential') * adjustedSpread * 0.5);
+  return [round1(clampRating(center - adjustedSpread)), round1(clampRating(center + adjustedSpread))];
 }
 
 // The visible value of a single skill: 'Unknown' when too poorly scouted, an
@@ -97,9 +97,9 @@ export function visibleSkill(
   key: string,
 ): VisibleRating {
   if (accuracy < UNKNOWN_ACCURACY) return 'Unknown';
-  if (isRevealed(accuracy)) return round1(trueValue);
-  const noise = bias(seed, entityId, key) * (1 - accuracy) * 2;
-  return round1(clampRating(trueValue + noise));
+  const spread = Math.max(0.3, (1 - accuracy) * 2.8);
+  const center = clampRating(trueValue + bias(seed, entityId, key) * spread * 0.5);
+  return [round1(clampRating(center - spread)), round1(clampRating(center + spread))];
 }
 
 export type ScoutTarget = {
@@ -195,6 +195,7 @@ export function recordScouting(
 export type FogView = {
   accuracy: number;
   revealed: boolean;
+  maxed: boolean;
   potential: { revealed: boolean; value?: number; range: [number, number] };
   skills: Record<string, VisibleRating>;
   notes: string[];
@@ -220,6 +221,7 @@ export function fogView(
   return {
     accuracy,
     revealed,
+    maxed: scoutingLevel >= 100,
     potential: { revealed, value: revealed ? range[0] : undefined, range },
     skills,
     notes: report?.notes ?? ['Unscouted — assign scouts to learn the true ceiling.'],

@@ -8,7 +8,7 @@ export type ScoutedEntityType = 'Driver' | 'YouthProspect' | 'Staff';
 
 // A rating value as seen through fog of war: either a (possibly noisy) number or
 // explicitly unknown until enough scouting has been done.
-export type VisibleRating = number | 'Unknown';
+export type VisibleRating = number | [number, number] | 'Unknown';
 
 export type ScoutingReport = {
   entityId: string;

@@ -102,6 +102,11 @@ export function PitWallCard({
         <Metric label={`Tyre ${tyre.letter}`} value={`${life}%`} />
       </div>
 
+      <div className="mt-0.5 grid grid-cols-2 gap-1 text-center">
+        <Metric label="Next Stop" value={nextStopText(car)} />
+        <Metric label="Last Stop" value={car.pit.lastPitStopTime != null ? `${car.pit.lastPitStopTime.toFixed(1)}s` : car.pit.lastPitLap != null ? `L${car.pit.lastPitLap}` : 'none'} />
+      </div>
+
       {/* Risk row (single-line compact chips) */}
       <div className="mt-0.5 grid grid-cols-2 gap-1.5">
         <RiskInline kind="R" level={car.reliabilityRiskLevel} />
@@ -173,6 +178,14 @@ function Metric({ label, value, accent }: { label: string; value: string; accent
       <div className={`text-xs font-bold tabular-nums ${accent ? 'text-amber-300' : 'text-slate-100'}`}>{value}</div>
     </div>
   );
+}
+
+function nextStopText(car: LiveCarState): string {
+  const stopsLeft = car.pit.plannedStops - car.pit.stopsMade;
+  if (stopsLeft <= 0) return 'none';
+  if (car.pit.window) return `L${car.pit.window.open}-${car.pit.window.close}`;
+  const next = car.pit.scheduledLaps.find((lap) => lap > car.lapsCompleted);
+  return next != null ? `L${next}` : 'TBD';
 }
 
 // Single-line reliability/crash risk chip (keeps the pit-wall card compact).

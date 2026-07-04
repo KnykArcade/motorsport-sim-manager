@@ -39,7 +39,7 @@ export function TimingTower({
           </button>
         ))}
       </div>
-      <div className="min-h-0 flex-1 overflow-y-auto">
+      <div className="min-h-0 flex-1 overflow-y-auto pb-3">
         <table className="w-full text-[11px]">
           <tbody>
             {cars.map((c) => (
@@ -121,8 +121,11 @@ function Row({ car, tab, name, color }: { car: LiveCarState; tab: Tab; name: str
           <td className="py-1 pr-1 text-right tabular-nums text-slate-300">
             {car.pit.stopsMade}/{car.pit.plannedStops}
           </td>
+          <td className="py-1 pr-1 text-right tabular-nums text-slate-400">
+            {nextPitText(car)}
+          </td>
           <td className="py-1 pr-2 text-right tabular-nums text-slate-500">
-            {car.pit.lastPitLap != null ? `L${car.pit.lastPitLap}` : '—'}
+            {car.pit.lastPitStopTime != null ? `${car.pit.lastPitStopTime.toFixed(1)}s` : car.pit.lastPitLap != null ? `L${car.pit.lastPitLap}` : '—'}
           </td>
         </>
       )}
@@ -155,6 +158,14 @@ function gapText(car: LiveCarState, classified: boolean): string {
   if (!classified) return '—';
   if (car.position === 1) return 'LEAD';
   return `+${car.gapToLeader.toFixed(1)}`;
+}
+
+function nextPitText(car: LiveCarState): string {
+  const stopsLeft = car.pit.plannedStops - car.pit.stopsMade;
+  if (stopsLeft <= 0) return 'Done';
+  if (car.pit.window) return `L${car.pit.window.open}-${car.pit.window.close}`;
+  const next = car.pit.scheduledLaps.find((lap) => lap > car.lapsCompleted);
+  return next != null ? `L${next}` : 'TBD';
 }
 
 // Compact "F. Surname" so long names fit the tower.

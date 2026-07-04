@@ -184,6 +184,7 @@ export function stepLiveRace(state: LiveRaceState, meta: LiveRaceMeta): LiveRace
       pitLoss = state.safetyCar.active
         ? Math.max(8, c.pitLossBase - SAFETY_CAR_PIT_SAVING)
         : c.pitLossBase;
+      c.pit.lastPitStopTime = pitStopTimeFromLoss(c.pitLossBase, c.opsForm, state.safetyCar.active);
       c.tire = {
         compound: weather.wet ? 'Wet' : 'Dry',
         age: 0,
@@ -402,7 +403,12 @@ export function stepLiveRace(state: LiveRaceState, meta: LiveRaceMeta): LiveRace
     state.totalLaps,
   );
   if (scResult.justDeployed) {
-    lapEvents.push({ lap: nextLap, text: `Safety car deployed — ${scResult.safetyCar.reason}.` });
+    const minGreen = nextLap + scResult.safetyCar.lapsRemaining;
+    const maxGreen = Math.min(state.totalLaps, minGreen + 1);
+    lapEvents.push({
+      lap: nextLap,
+      text: `Safety car deployed — ${scResult.safetyCar.reason}. Green expected in ${scResult.safetyCar.lapsRemaining}-${scResult.safetyCar.lapsRemaining + 1} laps (around L${minGreen}${maxGreen !== minGreen ? `-${maxGreen}` : ''}).`,
+    });
   }
   if (scResult.justEnded) lapEvents.push({ lap: nextLap, text: 'Safety car in this lap — racing resumes.' });
 
@@ -604,6 +610,7 @@ export function setPlayerPaceMode(
   source: StrategyModeSource = 'manual',
 ): LiveRaceState {
   let changed = false;
+  let cancelledInstruction: string | null = null;
   const cars = state.cars.map((c) => {
     if (c.driverId !== driverId || !c.isPlayer || !c.running || c.paceMode === mode) return c;
     changed = true;
@@ -613,7 +620,23 @@ export function setPlayerPaceMode(
       strategyStint: startStint(mode, c.paceMode, state.currentLap, source),
     };
   });
-  return changed ? { ...state, cars } : state;
+  if (!changed) return state;
+  const recommendations = state.recommendations.map((r) => {
+    if (r.driverId !== driverId || r.status !== 'active') return r;
+    cancelledInstruction = r.appliedAction?.label ?? r.action.label;
+    return { ...r, status: 'superseded' as const };
+  }).filter((r) => r.status !== 'superseded');
+  const name = state.cars.find((c) => c.driverId === driverId)?.driverId ?? driverId;
+  const events = cancelledInstruction
+    ? [
+        ...state.events,
+        {
+          lap: state.currentLap,
+          text: `Lap ${state.currentLap} — active ${cancelledInstruction} instruction cancelled by new ${mode} command for ${name}.`,
+        },
+      ]
+    : state.events;
+  return { ...state, cars, recommendations, events };
 }
 
 // Resolve a pending prompt with its default (first) option — used by skip-to-end.
@@ -1110,6 +1133,12 @@ export function detectBattleEvents(
 
 function clamp(v: number, lo: number, hi: number): number {
   return Math.max(lo, Math.min(hi, v));
+}
+function pitStopTimeFromLoss(pitLossBase: number, opsForm: number, safetyCarActive: boolean): number {
+  const eraBaseline = pitLossBase >= 30 ? 9.5 : pitLossBase >= 25 ? 7.2 : pitLossBase >= 20 ? 5.2 : 3.4;
+  const execution = opsForm * 0.35;
+  const safetyCarDelta = safetyCarActive ? 0.2 : 0;
+  return round1(clamp(eraBaseline - execution + safetyCarDelta, 2.0, 14.0));
 }
 function round1(n: number): number {
   return Math.round(n * 10) / 10;
