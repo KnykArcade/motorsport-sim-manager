@@ -1,5 +1,6 @@
 import type { Dispatch, ReactNode, SetStateAction } from 'react';
-import { RaceTrack2D, type TrackDot } from '../../../components/RaceTrack2D';
+import type { TrackDot } from '../../../components/RaceTrack2D';
+import { TrackMapAssetPanel } from '../../../components/TrackMapAssetPanel';
 import { SELECTABLE_MODES, modeSpec } from '../../../sim/liveRacePace';
 import type { AnalyticsMonitor } from '../../../sim/analyticsMonitor';
 import type { AnalyticsRecommendation, LiveCarState, LiveRaceState, PaceMode, RecAction } from '../../../types/liveTypes';
@@ -119,7 +120,14 @@ export function F11990sLiveRaceScreen({
 
         <section className="relative min-h-[360px] overflow-hidden rounded-md border border-amber-500/35 bg-[#10140f] shadow-[inset_0_0_60px_rgba(0,0,0,0.8)]">
           <ScenicTrack cars={live.cars} colorOf={colorOf} />
-          <RetroTrackMap dots={dots} rotation={rotation} />
+          <RetroTrackMap
+            series={state.series}
+            year={state.seasonYear}
+            trackId={race?.trackId ?? live.trackId}
+            trackName={race?.trackName ?? live.trackId}
+            dots={dots}
+            rotation={rotation}
+          />
           <div className="absolute inset-x-0 bottom-0 grid gap-2 p-2 lg:grid-cols-[1fr_1.12fr_0.86fr]">
             <CameraControls />
             <PlaybackPanel
@@ -546,13 +554,36 @@ function TyreCondition({ cars, nameOf }: { cars: LiveCarState[]; nameOf: (driver
   );
 }
 
-function RetroTrackMap({ dots, rotation }: { dots: TrackDot[]; rotation: number }) {
+function RetroTrackMap({
+  series,
+  year,
+  trackId,
+  trackName,
+  dots,
+  rotation,
+}: {
+  series?: string;
+  year?: number;
+  trackId?: string;
+  trackName?: string;
+  dots: TrackDot[];
+  rotation: number;
+}) {
   return (
-    <div className="absolute left-2 top-2 z-10 h-[188px] w-[282px] max-xl:h-[166px] max-xl:w-[238px] max-lg:hidden">
+    <div className="absolute left-2 top-2 z-10 h-[230px] w-[360px] max-xl:h-[208px] max-xl:w-[326px] max-lg:hidden">
       <RetroPanel title="Track Map" className="h-full bg-black/78 backdrop-blur-[1px]">
         <div className="flex h-[calc(100%-37px)] flex-col">
-          <div className="min-h-0 flex-1 px-2 py-1">
-            <RaceTrack2D dots={dots} rotation={rotation} className="h-full w-full" />
+          <div className="min-h-0 flex-1 px-1.5 py-1">
+            <TrackMapAssetPanel
+              series={series}
+              year={year}
+              trackId={trackId}
+              trackName={trackName}
+              dots={dots}
+              rotation={rotation}
+              eraTheme="f1-1990s"
+              className="h-full w-full"
+            />
           </div>
           <div className="grid grid-cols-3 border-t border-zinc-700/60 text-center text-[9px]">
             <LegendDot color="bg-yellow-400" label="Speed trap" />
