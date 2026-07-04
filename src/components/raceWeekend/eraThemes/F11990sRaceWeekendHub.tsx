@@ -82,7 +82,10 @@ export function F11990sRaceWeekendHub({
 
       <div className="grid gap-3 p-3 xl:grid-cols-[280px_minmax(520px,1fr)]">
         <aside className="space-y-3">
-          <RaceWeekendScheduleCard items={schedule} />
+          <RaceWeekendScheduleCard
+            items={schedule}
+            onOpenItem={(item) => executeRaceWeekendHubAction(item.action, callbacks)}
+          />
           <TrackInfoCard
             race={race}
             track={track}
@@ -110,37 +113,45 @@ export function F11990sRaceWeekendHub({
         </aside>
 
         <main className="space-y-3">
-          {showingModule ? (
-            <section className="f1-1990s-panel min-h-[520px] overflow-hidden" aria-label={moduleTitle ?? 'Garage module'}>
-              <header className="flex items-center justify-between gap-3 border-b border-amber-500/20 px-3 py-2">
-                <div>
-                  <div className="f1-1990s-panel-title border-0 p-0">{moduleTitle ?? 'Garage Module'}</div>
-                  <div className="text-[10px] uppercase text-neutral-500">Race Weekend Hub remains active</div>
+          <section className="f1-1990s-garage-scene min-h-[520px]" aria-label="Interactive 1990s Formula 1 garage">
+            <div className="f1-1990s-garage-door" aria-hidden="true" />
+            <div className="f1-1990s-monitor-wall" aria-hidden="true" />
+            <div className="f1-1990s-toolbox" aria-hidden="true" />
+            <div className="f1-1990s-workbench" aria-hidden="true" />
+            <div className="f1-1990s-car-shape" aria-hidden="true">
+              <span className="f1-1990s-car-nose" />
+              <span className="f1-1990s-car-cockpit" />
+              <span className="f1-1990s-car-wheel f1-1990s-car-wheel-left" />
+              <span className="f1-1990s-car-wheel f1-1990s-car-wheel-right" />
+            </div>
+            {hotspots.map((hotspot) => (
+              <F11990sGarageHotspot key={hotspot.id} hotspot={hotspot} callbacks={callbacks} />
+            ))}
+            {showingModule && (
+              <div className="f1-1990s-module-signal" aria-hidden="true">
+                <span>{moduleTitle ?? 'Garage Module'} open</span>
+              </div>
+            )}
+          </section>
+
+          {showingModule && (
+            <div className="f1-1990s-module-overlay" role="dialog" aria-modal="true" aria-label={moduleTitle ?? 'Garage module'}>
+              <div className="f1-1990s-module-backdrop" onClick={() => onPhase('hub')} aria-hidden="true" />
+              <section className="f1-1990s-module-window">
+                <header className="flex items-center justify-between gap-3 border-b border-amber-500/25 px-4 py-3">
+                  <div>
+                    <div className="text-lg font-black uppercase text-amber-300">{moduleTitle ?? 'Garage Module'}</div>
+                    <div className="text-[10px] uppercase text-neutral-500">1990-94 garage overlay - Hub remains active behind this task</div>
+                  </div>
+                  <button type="button" className="f1-1990s-secondary-button" onClick={() => onPhase('hub')}>
+                    Garage Overview
+                  </button>
+                </header>
+                <div className="f1-1990s-module-content">
+                  {moduleContent}
                 </div>
-                <button type="button" className="f1-1990s-secondary-button" onClick={() => onPhase('hub')}>
-                  Garage Overview
-                </button>
-              </header>
-              <div className="max-h-[calc(100vh-230px)] min-h-[460px] overflow-y-auto p-3">
-                {moduleContent}
-              </div>
-            </section>
-          ) : (
-            <section className="f1-1990s-garage-scene min-h-[520px]" aria-label="Interactive 1990s Formula 1 garage">
-              <div className="f1-1990s-garage-door" aria-hidden="true" />
-              <div className="f1-1990s-monitor-wall" aria-hidden="true" />
-              <div className="f1-1990s-toolbox" aria-hidden="true" />
-              <div className="f1-1990s-workbench" aria-hidden="true" />
-              <div className="f1-1990s-car-shape" aria-hidden="true">
-                <span className="f1-1990s-car-nose" />
-                <span className="f1-1990s-car-cockpit" />
-                <span className="f1-1990s-car-wheel f1-1990s-car-wheel-left" />
-                <span className="f1-1990s-car-wheel f1-1990s-car-wheel-right" />
-              </div>
-              {hotspots.map((hotspot) => (
-                <F11990sGarageHotspot key={hotspot.id} hotspot={hotspot} callbacks={callbacks} />
-              ))}
-            </section>
+              </section>
+            </div>
           )}
 
           <div className="grid gap-3 md:grid-cols-2 2xl:grid-cols-5">

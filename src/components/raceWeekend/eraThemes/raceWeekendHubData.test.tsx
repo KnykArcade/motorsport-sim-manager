@@ -107,6 +107,33 @@ describe('F1 1990s race weekend hub rendering', () => {
     expect(buildCarStatus(state).map((row) => row.label)).toEqual(['Engine', 'Gearbox', 'Chassis', 'Reliability']);
   });
 
+  it('keeps the garage visible while an active module opens as an overlay', () => {
+    const state = withWeekendPackage(makeState(1994));
+    const race = currentRace(state)!;
+    const track = getTrackById(race.trackId)!;
+    const forecast = weekendForecast(track, `${state.randomSeed}-r${race.round}`);
+    const html = renderToStaticMarkup(
+      <F11990sRaceWeekendHub
+        state={state}
+        race={race}
+        track={track}
+        forecast={forecast}
+        isMinPackage={false}
+        hasQualifyingResults={false}
+        activePhase="setup"
+        moduleTitle="Car Setup"
+        moduleContent={<div>Setup module content</div>}
+        onPhase={() => undefined}
+        onRoute={() => undefined}
+        onExit={() => undefined}
+      />,
+    );
+    expect(html).toContain('Interactive 1990s Formula 1 garage');
+    expect(html).toContain('f1-1990s-module-overlay');
+    expect(html).toContain('Setup module content');
+    expect(html).toContain('Garage Overview');
+  });
+
   it('renders track info without crashing when optional distance is missing', () => {
     const state = makeState(1994);
     const race = { ...currentRace(state)!, distanceKm: undefined };
@@ -132,6 +159,14 @@ describe('F1 1990s race weekend schedule and primary action', () => {
     const action = buildNextSessionAction(state, currentRace(state)!, false, false);
     expect(action.primaryLabel).toBe('START PRACTICE');
     expect(action.action).toEqual({ type: 'phase', phase: 'practice' });
+  });
+
+  it('turns schedule rows into hub module actions', () => {
+    const state = withWeekendPackage(makeState(1994));
+    const schedule = buildRaceWeekendSchedule(state, currentRace(state)!, false, false);
+    expect(schedule.find((item) => item.id === 'Practice1')?.action).toEqual({ type: 'phase', phase: 'practice' });
+    expect(schedule.find((item) => item.id === 'qualifying')?.action).toEqual({ type: 'phase', phase: 'quali-run' });
+    expect(schedule.find((item) => item.id === 'race')?.lockedReason).toBe('Race strategy opens after qualifying is complete.');
   });
 
   it('includes warmup only when the active session model supports it', () => {

@@ -46,6 +46,7 @@ export type WeekendScheduleItem = {
   label: string;
   time: string;
   status: WeekendScheduleStatus;
+  action?: RaceWeekendHubAction;
   lockedReason?: string;
 };
 

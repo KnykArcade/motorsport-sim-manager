@@ -110,6 +110,7 @@ export function buildRaceWeekendSchedule(
       label: 'Pre-Race Brief',
       time: 'Ready',
       status: itemStatus(packageSelected, currentId, 'pre-race'),
+      action: { type: 'phase', phase: packageSelected ? 'briefing' : 'package' },
     },
   ];
 
@@ -122,6 +123,7 @@ export function buildRaceWeekendSchedule(
       label: SESSION_LABELS[kind],
       time: PRACTICE_TIMES[kind] ?? 'TBA',
       status: itemStatus(completedPractice.has(kind), currentId, kind, lockedReason),
+      action: { type: 'phase', phase: 'practice' },
       lockedReason,
     });
   }
@@ -132,13 +134,17 @@ export function buildRaceWeekendSchedule(
     label: 'Qualifying',
     time: '13:00',
     status: itemStatus(hasQualifyingResults, currentId, 'qualifying'),
+    action: { type: 'phase', phase: hasQualifyingResults ? 'quali-review' : 'quali-run' },
   });
+  const raceLockedReason = hasQualifyingResults ? undefined : 'Race strategy opens after qualifying is complete.';
   items.push({
     id: 'race',
     day: 'Sunday',
     label: 'Race',
     time: '14:00',
-    status: itemStatus(race.completed, currentId, 'race'),
+    status: itemStatus(race.completed, currentId, 'race', raceLockedReason),
+    action: { type: 'phase', phase: 'race-strategy' },
+    lockedReason: raceLockedReason,
   });
 
   return items;

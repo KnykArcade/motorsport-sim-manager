@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { getRaceWeekendEraTheme } from './getRaceWeekendEraTheme';
+import { getRaceWeekendEraTheme, shouldUseF11990sRaceWeekendHub } from './getRaceWeekendEraTheme';
 
 describe('getRaceWeekendEraTheme', () => {
   it('routes F1 1990 to the 1990s F1 theme', () => {
@@ -30,5 +30,13 @@ describe('getRaceWeekendEraTheme', () => {
     expect(getRaceWeekendEraTheme('F1', undefined)).toBe('fallback');
     expect(getRaceWeekendEraTheme(undefined, 1995)).toBe('fallback');
     expect(getRaceWeekendEraTheme('F1', 1989)).toBe('fallback');
+  });
+
+  it('uses the 1990-1994 race weekend hub model only for the neutral early-90s pass', () => {
+    expect(shouldUseF11990sRaceWeekendHub('F1', 1990)).toBe(true);
+    expect(shouldUseF11990sRaceWeekendHub('F1', 1994)).toBe(true);
+    expect(shouldUseF11990sRaceWeekendHub('F1', 1995)).toBe(false);
+    expect(shouldUseF11990sRaceWeekendHub('F1', 2000)).toBe(false);
+    expect(shouldUseF11990sRaceWeekendHub('IndyCar', 1994)).toBe(false);
   });
 });

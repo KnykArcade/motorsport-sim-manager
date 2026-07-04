@@ -803,6 +803,65 @@ body {
   border-color: rgba(113, 113, 122, 0.58);
 }
 
+.f1-1990s-module-signal {
+  position: absolute;
+  right: 1rem;
+  top: 1rem;
+  z-index: 6;
+  border: 1px solid rgba(250, 204, 21, 0.55);
+  border-radius: 4px;
+  background: rgba(0, 0, 0, 0.76);
+  padding: 0.45rem 0.65rem;
+  color: #fde68a;
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.f1-1990s-module-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 70;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.25rem;
+}
+
+.f1-1990s-module-backdrop {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(circle at 50% 14%, rgba(250, 204, 21, 0.12), transparent 32%),
+    rgba(0, 0, 0, 0.76);
+  backdrop-filter: blur(2px);
+}
+
+.f1-1990s-module-window {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  width: min(1320px, calc(100vw - 2.5rem));
+  max-height: calc(100vh - 2.5rem);
+  min-height: min(760px, calc(100vh - 2.5rem));
+  flex-direction: column;
+  overflow: hidden;
+  border: 1px solid rgba(250, 204, 21, 0.42);
+  border-radius: 7px;
+  background:
+    linear-gradient(180deg, rgba(31, 28, 18, 0.96), rgba(7, 8, 9, 0.98)),
+    #050505;
+  box-shadow: 0 30px 90px rgba(0, 0, 0, 0.72), inset 0 0 0 1px rgba(255, 255, 255, 0.04);
+}
+
+.f1-1990s-module-content {
+  min-height: 0;
+  flex: 1;
+  overflow: auto;
+  padding: 0.85rem;
+}
+
 .f1-1990s-track-outline {
   height: 4.8rem;
   border: 1px solid rgba(250, 204, 21, 0.32);
