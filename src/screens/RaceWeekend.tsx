@@ -165,6 +165,7 @@ export function RaceWeekend() {
   if (!state || !race || !track || !autoSetups) return null;
 
   const isMinPackage = state.raceWeekendPackage?.packageType === 'MandatoryMinimum';
+  const isF11990sWeekend = shouldUseF11990sRaceWeekendHub(state.series, state.seasonYear);
 
   const qualifyingResults = state.qualifyingResults[race.id];
 
@@ -179,7 +180,7 @@ export function RaceWeekend() {
     });
   };
 
-  if (phase === 'hub' && forecast && shouldUseF11990sRaceWeekendHub(state.series, state.seasonYear)) {
+  if (phase === 'hub' && forecast && isF11990sWeekend) {
     return (
       <F11990sRaceWeekendHub
         state={state}
@@ -201,9 +202,16 @@ export function RaceWeekend() {
   const fullHeightPhase = phase === 'practice' || phase === 'setup';
 
   return (
-    <div className="flex h-full min-h-0 flex-col gap-4">
-      <div className="flex shrink-0 items-center justify-between">
+    <div
+      className={`flex h-full min-h-0 flex-col gap-4 ${
+        isF11990sWeekend
+          ? 'rounded-lg border border-amber-500/25 bg-[radial-gradient(circle_at_50%_0%,rgba(245,158,11,0.10),transparent_34%),linear-gradient(180deg,rgba(10,10,10,0.96),rgba(5,5,5,0.99))] p-3 font-mono shadow-[inset_0_0_80px_rgba(0,0,0,0.45)]'
+          : ''
+      }`}
+    >
+      <div className={`flex shrink-0 items-center justify-between ${isF11990sWeekend ? 'border-b border-amber-500/25 pb-3' : ''}`}>
         <div>
+          {isF11990sWeekend && <div className="text-xs font-bold uppercase tracking-wide text-amber-400">1990s Era Weekend Control</div>}
           <h1 className="text-2xl font-bold text-neutral-100">{race.gpName}</h1>
           <p className="text-sm text-neutral-400">{race.trackName} · Round {race.round}</p>
         </div>
@@ -248,6 +256,7 @@ export function RaceWeekend() {
 
       {phase === 'package' && (
         <RaceWeekendPackageSelection
+          eraTheme={isF11990sWeekend ? 'f1-1990s' : undefined}
           onConfirm={() => setPhase('briefing')}
         />
       )}
@@ -543,6 +552,7 @@ function PracticePhase({
   // Which practice session tab is open. Sessions live in their own tab so the
   // player never scrolls through a long stack of P1/P2/Warmup sections.
   const [activeKind, setActiveKind] = useState<PracticeSessionKind>(kinds[0]);
+  const [recentKind, setRecentKind] = useState<PracticeSessionKind | null>(null);
 
   const runSession = (kind: PracticeSessionKind) => {
     const sel = assignments[kind] ?? {};
@@ -551,6 +561,9 @@ function PracticePhase({
       return { driverId: d.id, program, lapsPlanned: PROGRAM_META[program].defaultLaps };
     });
     dispatch({ type: 'RUN_PRACTICE_SESSION', raceId: race.id, kind, assignments: list });
+    setRecentKind(kind);
+    const nextKind = kinds.slice(kinds.indexOf(kind) + 1).find((k) => !completedByKind[k]);
+    if (nextKind) setActiveKind(nextKind);
   };
 
   const driverName = (id: string) => state.drivers.find((d) => d.id === id)?.name ?? id;
@@ -583,18 +596,23 @@ function PracticePhase({
             <p className="text-[11px] text-neutral-400">Gathering setup, tyre &amp; reliability data on track.</p>
           </div>
         </div>
-        <div className="flex items-center gap-2">
-          <span className="text-[10px] uppercase tracking-wide text-neutral-500">Lap allocation</span>
-          <div className="h-2 w-40 overflow-hidden rounded-full bg-neutral-800">
-            <div
-              className={`h-full ${lapsRemaining <= 0 ? 'bg-red-500' : 'bg-amber-500'}`}
-              style={{ width: `${lapBudget > 0 ? (lapsUsed / lapBudget) * 100 : 0}%` }}
-            />
+        <div className="flex flex-wrap items-center gap-3">
+          <div className="flex items-center gap-2">
+            <span className="text-[10px] uppercase tracking-wide text-neutral-500">Lap allocation</span>
+            <div className="h-2 w-40 overflow-hidden rounded-full bg-neutral-800">
+              <div
+                className={`h-full ${lapsRemaining <= 0 ? 'bg-red-500' : 'bg-amber-500'}`}
+                style={{ width: `${lapBudget > 0 ? (lapsUsed / lapBudget) * 100 : 0}%` }}
+              />
+            </div>
+            <span className={`text-sm font-semibold ${lapsRemaining <= 0 ? 'text-red-400' : 'text-neutral-100'}`}>
+              {lapsRemaining}
+            </span>
+            <span className="text-xs text-neutral-500">/ {lapBudget} laps</span>
           </div>
-          <span className={`text-sm font-semibold ${lapsRemaining <= 0 ? 'text-red-400' : 'text-neutral-100'}`}>
-            {lapsRemaining}
-          </span>
-          <span className="text-xs text-neutral-500">/ {lapBudget} laps</span>
+          <Button variant="primary" onClick={onNext} className="px-3 py-1.5 text-xs">
+            Car Setup
+          </Button>
         </div>
       </div>
 
@@ -705,6 +723,23 @@ function PracticePhase({
                 </select>
               </div>
             ))}
+            {recentKind && completedByKind[recentKind] && recentKind !== active && (
+              <div className="rounded-md border border-amber-500/25 bg-amber-500/10 p-2">
+                <div className="mb-1 text-[10px] font-semibold uppercase tracking-wide text-amber-300">
+                  {SESSION_LABELS[recentKind]} feedback carried forward
+                </div>
+                <div className="space-y-1">
+                  {(completedByKind[recentKind].results ?? []).map((r) => (
+                    <PracticeResultCard
+                      key={r.driverId}
+                      r={r}
+                      name={`#${driverNumber(r.driverId)} ${driverName(r.driverId)}`}
+                      compact
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
             <div className="flex items-center justify-end gap-3">
               <span className={`text-xs ${activeOverBudget ? 'text-red-400' : 'text-neutral-500'}`}>
                 {activeCost} laps {activeOverBudget ? `· over budget (${lapsRemaining} left)` : `· ${lapsRemaining} left`}
@@ -730,18 +765,18 @@ function PracticePhase({
 
 // A compact, telemetry-style result card for one driver's practice run: the
 // knowledge gains, confidence change, feedback quotes and any incident warning.
-function PracticeResultCard({ r, name }: { r: PracticeRunResult; name: string }) {
+function PracticeResultCard({ r, name, compact = false }: { r: PracticeRunResult; name: string; compact?: boolean }) {
   const pct = (v: number) => `+${Math.round(v * 100)}%`;
   return (
-    <div className="rounded-lg border border-neutral-800 bg-neutral-900/50 p-3">
-      <div className="mb-2 flex items-center justify-between text-sm">
+    <div className={`rounded-lg border border-neutral-800 bg-neutral-900/50 ${compact ? 'p-2' : 'p-3'}`}>
+      <div className={`${compact ? 'mb-1 text-xs' : 'mb-2 text-sm'} flex items-center justify-between`}>
         <span className="font-semibold text-neutral-100">{name}</span>
         <span className="text-xs text-neutral-400">
           {PROGRAM_LABELS[r.program]} · {r.lapsCompleted} laps
           {r.incident ? <span className="text-red-400"> · incident</span> : ''}
         </span>
       </div>
-      <div className="mb-2 grid grid-cols-4 gap-1.5 text-center">
+      <div className={`${compact ? 'mb-1 gap-1' : 'mb-2 gap-1.5'} grid grid-cols-4 text-center`}>
         <GainChip label="Setup" value={pct(r.setupKnowledgeGain)} on={r.setupKnowledgeGain > 0} />
         <GainChip label="Tyres" value={pct(r.tireKnowledgeGain)} on={r.tireKnowledgeGain > 0} />
         <GainChip label="Reliab." value={pct(r.reliabilityKnowledgeGain)} on={r.reliabilityKnowledgeGain > 0} />
@@ -751,8 +786,8 @@ function PracticeResultCard({ r, name }: { r: PracticeRunResult; name: string })
           on={r.confidenceGain > 0}
         />
       </div>
-      <ul className="space-y-0.5 text-sm">
-        {r.feedback.map((f) => (
+      <ul className={`space-y-0.5 ${compact ? 'text-xs' : 'text-sm'}`}>
+        {r.feedback.slice(0, compact ? 2 : undefined).map((f) => (
           <li key={f.id} className={SENTIMENT_STYLE[f.sentiment]}>
             • {f.message}
           </li>
@@ -820,15 +855,21 @@ function DecisionPhase({
   const recommendedName = options.find((o) => o.id === recommendedId)?.name;
   return (
     <div className="space-y-4">
-      <div>
-        <h2 className="text-lg font-semibold text-neutral-100">{title}</h2>
-        <p className="text-sm text-neutral-400">{subtitle}</p>
+      <div className="flex flex-wrap items-start justify-between gap-3 rounded-lg border border-neutral-800 bg-neutral-900/35 p-3">
+        <div className="min-w-0">
+          <h2 className="text-lg font-semibold text-neutral-100">{title}</h2>
+          <p className="text-sm text-neutral-400">{subtitle}</p>
+        </div>
+        <div className="flex shrink-0 gap-2">
+          <Button variant="ghost" onClick={onBack} className="px-3 py-1.5 text-xs">Back</Button>
+          <Button variant="primary" onClick={onNext} className="px-3 py-1.5 text-xs">{nextLabel}</Button>
+        </div>
         {recommendedName && recommendedReason && (
-          <p className="mt-2 rounded-md border border-green-500/30 bg-green-500/10 px-3 py-1.5 text-xs text-green-300">
+          <p className="basis-full rounded-md border border-green-500/30 bg-green-500/10 px-3 py-1.5 text-xs text-green-300">
             <span className="font-semibold">Engineer recommends {recommendedName}:</span> {recommendedReason}
           </p>
         )}
-        {headerExtra}
+        {headerExtra && <div className="basis-full">{headerExtra}</div>}
       </div>
       <div className="grid gap-4 md:grid-cols-2">
         {drivers.map((d) => (
@@ -1146,7 +1187,7 @@ function QualifyingReview({
 
   return (
     <div className="space-y-4">
-      <div>
+      <div className="rounded-lg border border-neutral-800 bg-neutral-900/35 p-3">
         <div className="flex flex-wrap items-center gap-2">
           <h2 className="text-lg font-semibold text-neutral-100">Qualifying Review</h2>
           {knockout && (
@@ -1156,7 +1197,10 @@ function QualifyingReview({
           )}
           {weather && <WeatherChip weather={weather} />}
         </div>
-        <p className="text-sm text-neutral-400">Review the grid, then choose your race strategy in response.</p>
+        <div className="mt-2 flex flex-wrap items-center justify-between gap-2">
+          <p className="text-sm text-neutral-400">Review the grid, then choose your race strategy in response.</p>
+          <Button variant="primary" onClick={onNext} className="px-3 py-1.5 text-xs">Choose Race Strategy</Button>
+        </div>
         {dnqCount > 0 && (
           <p className="mt-1 text-sm text-red-400">
             {dnqCount} car{dnqCount > 1 ? 's' : ''} did not qualify — only the fastest{' '}
@@ -1243,3 +1287,4 @@ function QualifyingReview({
     </div>
   );
 }
+

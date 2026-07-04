@@ -55,6 +55,9 @@ export function PreSeasonSetup() {
 
   const approveTab = (tabId: 'teamOverview' | 'budget' | 'driverLineup' | 'carDevelopment' | 'sponsorsEngine' | 'seasonObjectives' | 'roundOnePreview') => {
     dispatch({ type: 'APPROVE_PRESEASON_TAB', tabId });
+    const currentIndex = tabs.findIndex((tab) => tab.id === tabId);
+    const nextTab = tabs[currentIndex + 1];
+    if (nextTab) setActiveTab(nextTab.id);
   };
 
   // Engine supplier info.

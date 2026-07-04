@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useGame } from '../game/GameContext';
 import { activeDriversForTeam, driversForTeam } from '../game/careerState';
+import type { GameState } from '../game/careerState';
 import { Panel } from '../components/Panel';
 import { Button } from '../components/Button';
 import { TEAM_ORDER_SPECS } from '../sim/relationshipEngine';
@@ -10,6 +11,7 @@ import {
   confidencePerformanceModifier,
   contractLoyaltyModifier,
 } from '../sim/driverConfidenceEngine';
+import { promiseProgress } from './relationships/promiseProgress';
 import type {
   TeamOrder,
   DriverRelationship,
@@ -115,14 +117,6 @@ function wantDescription(want: DriverWant): string {
   }
 }
 
-function promiseDueText(p: DriverPromise): string {
-  if (p.dueSeason === undefined && p.dueRound === undefined) return `Due: end of season ${p.madeSeason}`;
-  const parts: string[] = [];
-  if (p.dueSeason !== undefined) parts.push(`Season ${p.dueSeason}`);
-  if (p.dueRound !== undefined) parts.push(`Round ${p.dueRound}`);
-  return `Due: ${parts.join(', ')}`;
-}
-
 function loyaltyRiskText(modifier: number): string {
   if (modifier >= 8) return 'Very loyal — unlikely to leave even for a better offer.';
   if (modifier >= 4) return 'Loyal — would need a strong reason to leave.';
@@ -161,9 +155,6 @@ export function Relationships() {
   const handleMakePromise = (driverId: string, promiseType: PromiseType, dueSeason?: number, dueRound?: number) => {
     dispatch({ type: 'MAKE_PROMISE', driverId, promiseType, dueSeason, dueRound });
   };
-  const handleResolvePromise = (promiseId: string, fulfilled: boolean) => {
-    dispatch({ type: 'RESOLVE_PROMISE', promiseId, fulfilled });
-  };
 
   return (
     <div className="space-y-6">
@@ -200,9 +191,9 @@ export function Relationships() {
                 driverName={driverName}
                 promises={allPromises.filter((p) => p.driverId === d.id)}
                 contractYears={driverContractYears(d.id)}
+                state={state}
                 isRaceDriver
                 onMakePromise={handleMakePromise}
-                onResolvePromise={handleResolvePromise}
               />
             );
           })}
@@ -235,8 +226,8 @@ export function Relationships() {
                   driverName={driverName}
                   promises={allPromises.filter((p) => p.driverId === d.id)}
                   contractYears={driverContractYears(d.id)}
+                  state={state}
                   onMakePromise={handleMakePromise}
-                  onResolvePromise={handleResolvePromise}
                 />
               );
             })}
@@ -309,9 +300,9 @@ type DriverCardProps = {
   driverName: (id: string) => string;
   promises: DriverPromise[];
   contractYears: number;
+  state: GameState;
   isRaceDriver?: boolean;
   onMakePromise?: (driverId: string, promiseType: PromiseType, dueSeason?: number, dueRound?: number) => void;
-  onResolvePromise?: (promiseId: string, fulfilled: boolean) => void;
 };
 
 function DriverCard({
@@ -319,9 +310,9 @@ function DriverCard({
   driverName,
   promises,
   contractYears,
+  state,
   isRaceDriver = false,
   onMakePromise,
-  onResolvePromise,
 }: DriverCardProps) {
   const confidenceState = computeConfidenceState(rel);
   const confidenceScore = overallConfidenceScore(rel);
@@ -442,11 +433,8 @@ function DriverCard({
               <p className="mb-1 text-[11px] font-medium text-neutral-400">Active</p>
               <ul className="space-y-1">
                 {activePromises.map((p) => (
-                  <li key={p.id} className="flex flex-wrap items-center gap-2 text-[11px]">
-                    <span className="rounded bg-blue-950/60 px-1.5 py-0.5 text-blue-300">
-                      {PROMISE_TYPE_LABELS[p.promiseType]}
-                    </span>
-                    <span className="text-neutral-500">{promiseDueText(p)}</span>
+                  <li key={p.id}>
+                    <PromiseProgress promise={p} state={state} driverName={driverName} />
                   </li>
                 ))}
               </ul>
@@ -520,7 +508,6 @@ function DriverCard({
           driverId={rel.driverId}
           activePromises={activePromises}
           onMakePromise={onMakePromise}
-          onResolvePromise={onResolvePromise}
         />
       )}
     </Panel>
@@ -546,12 +533,10 @@ function PromiseMaker({
   driverId,
   activePromises,
   onMakePromise,
-  onResolvePromise,
 }: {
   driverId: string;
   activePromises: DriverPromise[];
   onMakePromise: (driverId: string, promiseType: PromiseType, dueSeason?: number, dueRound?: number) => void;
-  onResolvePromise?: (promiseId: string, fulfilled: boolean) => void;
 }) {
   const [showForm, setShowForm] = useState(false);
   const [selectedType, setSelectedType] = useState<PromiseType>('equal_treatment');
@@ -613,38 +598,55 @@ function PromiseMaker({
             </p>
           )}
           <p className="text-[10px] text-neutral-600">
-            Making a promise boosts trust immediately. Breaking or expiring it costs double.
+            Making a promise boosts trust immediately. The game will judge fulfillment from race results, team orders, contracts, development, and season progress.
           </p>
         </div>
       )}
+    </div>
+  );
+}
 
-      {/* Resolve active promises */}
-      {activePromises.length > 0 && onResolvePromise && (
-        <div className="mt-2 space-y-1">
-          {activePromises.map((p) => (
-            <div key={p.id} className="flex items-center gap-2 text-[11px]">
-              <span className="rounded bg-blue-950/60 px-1.5 py-0.5 text-blue-300">
-                {PROMISE_TYPE_LABELS[p.promiseType]}
-              </span>
-              <span className="text-neutral-500">{promiseDueText(p)}</span>
-              <Button
-                variant="ghost"
-                className="px-1.5 py-0.5 text-[10px] text-green-400"
-                onClick={() => onResolvePromise(p.id, true)}
-              >
-                Fulfilled
-              </Button>
-              <Button
-                variant="ghost"
-                className="px-1.5 py-0.5 text-[10px] text-red-400"
-                onClick={() => onResolvePromise(p.id, false)}
-              >
-                Broken
-              </Button>
-            </div>
-          ))}
+function PromiseProgress({
+  promise,
+  state,
+  driverName,
+}: {
+  promise: DriverPromise;
+  state: GameState;
+  driverName: (id: string) => string;
+}) {
+  const progress = promiseProgress(promise, state);
+  const toneClass = {
+    good: 'bg-green-500',
+    watch: 'bg-amber-400',
+    bad: 'bg-red-500',
+    neutral: 'bg-blue-400',
+  }[progress.tone];
+  const statusClass = {
+    good: 'text-green-300',
+    watch: 'text-amber-300',
+    bad: 'text-red-300',
+    neutral: 'text-blue-300',
+  }[progress.tone];
+
+  return (
+    <div className="rounded-lg border border-neutral-800 bg-neutral-900/35 p-2">
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="rounded bg-blue-950/60 px-1.5 py-0.5 text-blue-300">
+            {PROMISE_TYPE_LABELS[promise.promiseType]}
+          </span>
+          <span className={`text-[11px] font-semibold ${statusClass}`}>{progress.status}</span>
         </div>
-      )}
+        <span className="text-[10px] text-neutral-500">{progress.deadline}</span>
+      </div>
+      <div className="mt-2 h-2 overflow-hidden rounded-full bg-neutral-800" aria-label={`${PROMISE_TYPE_LABELS[promise.promiseType]} promise progress for ${driverName(promise.driverId)}`}>
+        <div className={`h-full ${toneClass}`} style={{ width: `${progress.percent}%` }} />
+      </div>
+      <div className="mt-1 flex items-start justify-between gap-3">
+        <p className="text-[11px] text-neutral-500">{progress.detail}</p>
+        <span className="shrink-0 text-[11px] tabular-nums text-neutral-400">{progress.percent}%</span>
+      </div>
     </div>
   );
 }

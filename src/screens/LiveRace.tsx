@@ -33,6 +33,8 @@ import { RecommendationsPanel } from './liveRace/RecommendationsPanel';
 import { BottomRow } from './liveRace/BottomPanels';
 import { buildForecast } from './liveRace/forecast';
 import { FullEventLogModal, StrategyModal, TeamOrdersModal } from './liveRace/modals';
+import { F11990sLiveRaceScreen } from './liveRace/eraThemes/F11990sLiveRaceScreen';
+import { shouldUseF11990sLiveRaceScreen } from './liveRace/eraThemes/getLiveRaceEraTheme';
 
 type Speed = 1 | 2 | 4;
 
@@ -224,6 +226,7 @@ export function LiveRace() {
   const forecast = buildForecast(live, engine.context.track);
   const activeRecs = finished ? [] : live.recommendations;
   const monitor = buildAnalyticsMonitor(live, seatOrderIds);
+  const useF11990sLiveRace = shouldUseF11990sLiveRaceScreen(state.series, state.seasonYear);
 
   const controls = (
     <div className="flex items-center gap-1.5">
@@ -283,6 +286,77 @@ export function LiveRace() {
       )}
     </div>
   );
+
+  if (useF11990sLiveRace) {
+    return (
+      <>
+        <F11990sLiveRaceScreen
+          state={state}
+          race={race}
+          live={live}
+          dots={dots}
+          rotation={rotation}
+          playerCars={playerCars}
+          forecast={forecast}
+          monitor={monitor}
+          activeRecs={activeRecs}
+          needsDecision={needsDecision}
+          decisionSecondsLeft={needsDecision ? decisionSecondsLeft ?? DECISION_COUNTDOWN_SECONDS : null}
+          playing={playing}
+          speed={speed}
+          nameOf={driverName}
+          teamNameOf={(teamId) => state.teams.find((t) => t.id === teamId)?.name ?? teamId}
+          colorOf={teamColor}
+          onTogglePlay={() => setPlaying((p) => !p)}
+          onStep={step}
+          onSpeed={setSpeed}
+          onSkipToEnd={skipToEnd}
+          onOpenOrders={() => setModal('orders')}
+          onOpenStrategy={() => setModal('strategy')}
+          onOpenLog={() => setModal('log')}
+          onExit={() => navigate('/hq')}
+          onFinishRace={finishRace}
+          onPit={pitNow}
+          onMode={setMode}
+          onAccept={onAccept}
+          onModify={onModify}
+          onIgnore={onIgnore}
+          onLetCrewDecide={onLetCrewDecide}
+          onAcceptAll={onAcceptAll}
+          onIgnoreAll={onIgnoreAll}
+        />
+
+        {live.pendingPrompt && (
+          <PromptOverlay
+            title={live.pendingPrompt.title}
+            driver={driverName(live.pendingPrompt.driverId)}
+            description={live.pendingPrompt.description}
+            options={live.pendingPrompt.options.map((o) => ({ id: o.id, label: o.label, detail: o.detail }))}
+            onChoose={chooseOption}
+          />
+        )}
+        {modal === 'log' && <FullEventLogModal events={live.events} onClose={() => setModal(null)} />}
+        {modal === 'strategy' && (
+          <StrategyModal
+            playerCars={playerCars}
+            currentLap={live.currentLap}
+            finished={finished}
+            nameOf={driverName}
+            onPit={pitNow}
+            onClose={() => setModal(null)}
+          />
+        )}
+        {modal === 'orders' && (
+          <TeamOrdersModal
+            playerCars={playerCars}
+            nameOf={driverName}
+            onOrder={issueOrder}
+            onClose={() => setModal(null)}
+          />
+        )}
+      </>
+    );
+  }
 
   return (
     <div className="flex h-screen w-screen flex-col overflow-hidden bg-[#0a0e17] text-slate-200">

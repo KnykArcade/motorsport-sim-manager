@@ -17,9 +17,9 @@ function round(v: number): number {
 }
 
 // Knowledge at/above which an exact value is revealed instead of a range.
-export const EXACT_KNOWLEDGE_THRESHOLD = 0.9;
+export const EXACT_KNOWLEDGE_THRESHOLD = 0.98;
 // Knowledge below which per-component exact fit values are hidden entirely.
-export const COMPONENT_REVEAL_THRESHOLD = 0.5;
+export const COMPONENT_REVEAL_THRESHOLD = 0.72;
 
 // Build a knowledge-gated estimate around a value. `maxSpread` is the half-width
 // of the range at zero knowledge; it shrinks linearly to zero as knowledge rises
@@ -48,7 +48,7 @@ export function estimateFromKnowledge(
 // The Objective Setup Quality range shown in the workshop. Setup knowledge from
 // practice narrows a ~±13 band (very wide) down toward the exact value.
 export function setupQualityEstimate(quality: number, setupKnowledge: number): Estimate {
-  return estimateFromKnowledge(quality, setupKnowledge, 13, { lo: 0, hi: 100 });
+  return estimateFromKnowledge(quality, setupKnowledge, 20, { lo: 0, hi: 100 });
 }
 
 // Whether a per-component exact fit value may be shown. Below the reveal
@@ -58,7 +58,7 @@ export function canRevealComponentFit(setupKnowledge: number): boolean {
 }
 
 export function componentFitEstimate(fit: number, setupKnowledge: number): Estimate {
-  return estimateFromKnowledge(fit, setupKnowledge, 20, { lo: 0, hi: 100 });
+  return estimateFromKnowledge(fit, setupKnowledge, 28, { lo: 0, hi: 100 });
 }
 
 // Predicted stint (pit) window. Tyre knowledge narrows the half-width from ~6

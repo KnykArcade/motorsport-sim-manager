@@ -251,13 +251,13 @@ export function adjustedSetupTolerance(
   staffSetupBonus: number,
   practiceSetupKnowledge: number,
 ): number {
-  // teamRaceOps: 1-10, pivot at 5. Each point above 5 tightens by 0.1.
-  const opsFactor = (5 - teamRaceOps) * 0.1;
-  // Staff setup bonus (from Race Engineer): -6 to +10, scaled down.
-  const staffFactor = -staffSetupBonus * 0.03;
-  // Practice setup knowledge: 0-1. No practice widens tolerance significantly.
-  const practiceFactor = (1 - practiceSetupKnowledge) * 0.8;
-  return Math.max(1.4, Math.min(3.5, baseTolerance + opsFactor + staffFactor + practiceFactor));
+  // Wider tolerance means the team can land inside the useful setup window more
+  // easily. Better race ops, better engineers, and more practice should help;
+  // weak preparation should make the window unforgiving.
+  const opsFactor = (teamRaceOps - 5) * 0.12;
+  const staffFactor = staffSetupBonus * 0.035;
+  const practiceFactor = (practiceSetupKnowledge - 0.5) * 0.9;
+  return Math.max(1.2, Math.min(3.4, baseTolerance + opsFactor + staffFactor + practiceFactor));
 }
 
 export function objectiveSetupQuality(

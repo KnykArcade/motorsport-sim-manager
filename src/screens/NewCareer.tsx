@@ -8,22 +8,12 @@ import { StatBar } from '../components/StatBar';
 import { formatMoney } from '../components/ui';
 import { hasSave } from '../game/saveSystem';
 import { PrincipalCreator } from './PrincipalCreator';
-import {
-  ENGINE_DEAL_SPECS,
-  availableEngineOffers,
-  createInitialEngineState,
-  isManufacturerDeal,
-  type EngineOffer,
-} from '../sim/engineSupplierEngine';
-import { Panel } from '../components/Panel';
 import { SINGLE_SEASON_LOCKED_FEATURES, isSingleSeasonMode } from '../game/modeRestrictions';
-import type { GameMode, Series, Team } from '../types/gameTypes';
+import type { GameMode, Series } from '../types/gameTypes';
 import type { TeamPrincipal } from '../types/principalTypes';
-import type { EngineDealType } from '../types/engineTypes';
 
-type Step = 'mode' | 'setup' | 'team' | 'principal' | 'engine' | 'lockedEngine';
+type Step = 'mode' | 'setup' | 'team' | 'principal';
 
-type EngineChoice = { supplierId: string; dealType: EngineDealType };
 
 export function NewCareer() {
   const navigate = useNavigate();
@@ -33,8 +23,8 @@ export function NewCareer() {
   const [year, setYear] = useState(1995);
   const [series, setSeries] = useState<Series>('F1');
   const [selectedTeamId, setSelectedTeamId] = useState<string | null>(null);
-  const [principal, setPrincipal] = useState<TeamPrincipal | null>(null);
-  const [engineChoice, setEngineChoice] = useState<EngineChoice | null>(null);
+  const [, setPrincipal] = useState<TeamPrincipal | null>(null);
+  const [selectedDecade, setSelectedDecade] = useState<number | null>(1990);
   // A stable seed so the engine offers shown here match the created save.
   const [seed] = useState(() => `seed-${Date.now()}`);
 
@@ -42,6 +32,7 @@ export function NewCareer() {
     setSeries(next);
     const first = availableSeasons.find((s) => s.series === next);
     if (first) setYear(first.year);
+    setSelectedDecade(null);
     setSelectedTeamId(null);
   };
 
@@ -81,7 +72,7 @@ export function NewCareer() {
   const bundleError = !cachedBundle ? asyncState.error : null;
   const activeBundle = cachedBundle ?? asyncState.bundle;
 
-  const startGame = async (teamPrincipal: TeamPrincipal, choice: EngineChoice | null) => {
+  const startGame = async (teamPrincipal: TeamPrincipal) => {
     if (!selectedTeamId) return;
     if (hasSave() && !confirm('Starting a new game overwrites your existing save. Continue?')) {
       return;
@@ -97,8 +88,6 @@ export function NewCareer() {
         teamId: selectedTeamId,
         teamPrincipal,
         seed,
-        initialEngineSupplierId: choice?.supplierId,
-        initialEngineDealType: choice?.dealType,
         bundle: activeBundle,
       },
     });
@@ -129,6 +118,19 @@ export function NewCareer() {
   };
 
   const selectedTeam = activeBundle?.teams.find((t) => t.id === selectedTeamId);
+  const seriesSeasons = availableSeasons.filter((s) => s.series === series);
+  const decadeOptions = Array.from(new Set(seriesSeasons.map((s) => Math.floor(s.year / 10) * 10))).sort((a, b) => a - b);
+  const visibleSeasonOptions = selectedDecade == null
+    ? []
+    : seriesSeasons.filter((s) => Math.floor(s.year / 10) * 10 === selectedDecade);
+  const chooseDecade = (decade: number) => {
+    setSelectedDecade(decade);
+    const first = seriesSeasons.find((s) => Math.floor(s.year / 10) * 10 === decade);
+    if (first) {
+      setYear(first.year);
+      setSelectedTeamId(null);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-[#0a0c10] px-6 py-10">
@@ -137,7 +139,7 @@ export function NewCareer() {
           ← Main Menu
         </button>
 
-        <Steps step={step} mode={mode} />
+        <Steps step={step} />
 
         {step === 'mode' && (
           <div className="space-y-4">
@@ -193,6 +195,13 @@ export function NewCareer() {
 
         {step === 'setup' && (
           <div className="space-y-4">
+            <div className="flex items-center justify-between gap-3">
+              <div>
+                <h2 className="text-xl font-bold text-neutral-100">Choose Series & Season</h2>
+                <p className="text-sm text-neutral-400">Pick a series, then choose a decade before selecting a specific season.</p>
+              </div>
+              <Button variant="primary" onClick={() => setStep('team')}>`n                Select Team`n              </Button>
+            </div>
             <div>
               <p className="mb-2 text-sm font-medium text-neutral-300">Series</p>
               <div className="grid gap-3 sm:grid-cols-2">
@@ -215,11 +224,32 @@ export function NewCareer() {
               </div>
             </div>
             <div>
-              <p className="mb-2 text-sm font-medium text-neutral-300">Starting Season</p>
-              <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                {availableSeasons
-                  .filter((s) => s.series === series)
-                  .map((s) => (
+              <p className="mb-2 text-sm font-medium text-neutral-300">Era</p>
+              <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                {decadeOptions.map((decade) => {
+                  const count = seriesSeasons.filter((s) => Math.floor(s.year / 10) * 10 === decade).length;
+                  return (
+                    <button
+                      key={decade}
+                      onClick={() => chooseDecade(decade)}
+                      className={`rounded-xl border p-4 text-left transition ${
+                        selectedDecade === decade
+                          ? 'border-amber-500 bg-amber-500/10'
+                          : 'border-neutral-800 bg-neutral-900/40 hover:border-neutral-700'
+                      }`}
+                    >
+                      <div className="text-lg font-semibold text-neutral-100">{decade}s</div>
+                      <div className="text-xs text-neutral-400">{count} season{count === 1 ? '' : 's'}</div>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+            {selectedDecade != null && (
+              <div>
+                <p className="mb-2 text-sm font-medium text-neutral-300">Starting Season</p>
+                <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                  {visibleSeasonOptions.map((s) => (
                     <button
                       key={s.year}
                       onClick={() => {
@@ -236,14 +266,15 @@ export function NewCareer() {
                       <div className="text-xs text-neutral-400">{s.label}</div>
                     </button>
                   ))}
+                </div>
               </div>
-            </div>
+            )}
             <div className="flex justify-between">
               <Button variant="ghost" onClick={() => setStep('mode')}>
                 ← Back
               </Button>
               <Button variant="primary" onClick={() => setStep('team')}>
-                Select Team →
+                Select Team
               </Button>
             </div>
           </div>
@@ -266,6 +297,15 @@ export function NewCareer() {
 
         {step === 'team' && activeBundle && (
           <div className="space-y-4">
+            <div className="flex items-center justify-between gap-3">
+              <div>
+                <h2 className="text-xl font-bold text-neutral-100">Select Team</h2>
+                <p className="text-sm text-neutral-400">{year} {series}</p>
+              </div>
+              <Button variant="primary" disabled={!selectedTeamId} onClick={() => setStep('principal')}>
+                Create Principal
+              </Button>
+            </div>
             <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
               {activeBundle.teams.map((team) => {
                 const car = activeBundle.cars.find((c) => c.id === team.carId);
@@ -316,8 +356,7 @@ export function NewCareer() {
                 ← Back
               </Button>
               <Button variant="primary" disabled={!selectedTeamId} onClick={() => setStep('principal')}>
-                Create Principal →
-              </Button>
+                Create Principal`n              </Button>
             </div>
           </div>
         )}
@@ -326,176 +365,30 @@ export function NewCareer() {
           <PrincipalCreator
             teamName={selectedTeam.name}
             teamColor={selectedTeam.color}
-            confirmLabel={mode === 'SingleSeason' ? 'Start Season →' : 'Choose Engine →'}
+            confirmLabel={`Start ${mode === 'Career' ? 'Career' : mode === 'Sandbox' ? 'Sandbox' : 'Season'}`}
             onBack={() => setStep('team')}
             onConfirm={(tp) => {
               setPrincipal(tp);
               if (mode === 'SingleSeason') {
                 startSingleSeason(tp);
               } else {
-                setStep('engine');
+                startGame(tp);
               }
             }}
           />
         )}
-
-        {step === 'engine' && selectedTeam && activeBundle && (
-          <EngineSelectStep
-            teams={activeBundle.teams}
-            teamId={selectedTeam.id}
-            teamName={selectedTeam.name}
-            year={year}
-            series={series}
-            seed={seed}
-            value={engineChoice}
-            onChange={setEngineChoice}
-            confirmLabel={`Start ${mode === 'Career' ? 'Career' : mode === 'Sandbox' ? 'Sandbox' : 'Season'}`}
-            onBack={() => setStep('principal')}
-            onConfirm={(choice) => {
-              if (principal) startGame(principal, choice);
-            }}
-          />
-        )}
       </div>
     </div>
   );
 }
 
-function EngineSelectStep({
-  teams,
-  teamId,
-  teamName,
-  year,
-  series,
-  seed,
-  value,
-  onChange,
-  confirmLabel,
-  onBack,
-  onConfirm,
-}: {
-  teams: Team[];
-  teamId: string;
-  teamName: string;
-  year: number;
-  series: Series;
-  seed: string;
-  value: EngineChoice | null;
-  onChange: (c: EngineChoice) => void;
-  confirmLabel: string;
-  onBack: () => void;
-  onConfirm: (c: EngineChoice) => void;
-}) {
-  const team = teams.find((t) => t.id === teamId)!;
-  const { offers, defaultChoice } = useMemo(() => {
-    const engine = createInitialEngineState(teams, teamId, year, series, seed);
-    const list = availableEngineOffers(engine, team);
-    const cur = engine.currentDeal;
-    const def: EngineChoice | null = cur
-      ? {
-          supplierId: list.find((o) => o.supplier.name === cur.supplierName && o.dealType === cur.dealType)?.supplier.id ??
-            list[0]?.supplier.id ?? '',
-          dealType: cur.dealType,
-        }
-      : list[0]
-      ? { supplierId: list[0].supplier.id, dealType: list[0].dealType }
-      : null;
-    return { offers: list, defaultChoice: def };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [teams, teamId, year, series, seed]);
-
-  const selected = value ?? defaultChoice;
-  const bySupplier = new Map<string, EngineOffer[]>();
-  for (const o of offers) {
-    const list = bySupplier.get(o.supplier.name) ?? [];
-    list.push(o);
-    bySupplier.set(o.supplier.name, list);
-  }
-  const isSelected = (o: EngineOffer) =>
-    selected?.supplierId === o.supplier.id && selected?.dealType === o.dealType;
-
-  return (
-    <div className="space-y-4">
-      <div>
-        <h2 className="text-xl font-bold text-neutral-100">Choose your engine — {teamName}</h2>
-        <p className="text-sm text-neutral-400">
-          Pick the supplier and deal tier you begin the season with. Works and factory deals start a
-          manufacturer relationship with a performance target. You can renegotiate later (for a buyout fee).
-        </p>
-      </div>
-      <Panel title="Available Engine Deals">
-        <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
-          {[...bySupplier.entries()].map(([supplierName, list]) => (
-            <div key={supplierName} className="rounded-lg border border-neutral-800 bg-neutral-900/40 p-3">
-              <div className="mb-2 flex items-center justify-between">
-                <span className="font-bold text-neutral-100">{supplierName}</span>
-                <span className="text-[10px] uppercase tracking-wide text-neutral-500">
-                  Pwr {list[0].supplier.basePower} · Rel {list[0].supplier.baseReliability}
-                </span>
-              </div>
-              <div className="space-y-2">
-                {list.map((o) => {
-                  const sel = isSelected(o);
-                  return (
-                    <button
-                      key={o.dealType}
-                      type="button"
-                      onClick={() => onChange({ supplierId: o.supplier.id, dealType: o.dealType })}
-                      className={`w-full rounded-md border p-2 text-left transition ${
-                        sel
-                          ? 'border-amber-500 bg-amber-500/10'
-                          : 'border-neutral-800/80 hover:border-neutral-600'
-                      }`}
-                    >
-                      <div className="flex items-center justify-between">
-                        <span className="text-sm font-semibold text-neutral-200">
-                          {ENGINE_DEAL_SPECS[o.dealType].label}
-                          {isManufacturerDeal(o.dealType) && (
-                            <span className="ml-1 text-[10px] uppercase text-amber-400">manufacturer</span>
-                          )}
-                        </span>
-                        <span className="text-xs font-semibold text-amber-300">${o.annualCost}M/yr</span>
-                      </div>
-                      <div className="mt-1 flex flex-wrap gap-1 text-[10px] text-neutral-300">
-                        <span className="rounded bg-neutral-800/60 px-1.5 py-0.5">
-                          Power {o.bonus.power >= 0 ? '+' : ''}{o.bonus.power.toFixed(2)}
-                        </span>
-                        <span className="rounded bg-neutral-800/60 px-1.5 py-0.5">
-                          Reliability {o.bonus.reliability >= 0 ? '+' : ''}{o.bonus.reliability.toFixed(2)}
-                        </span>
-                        <span className="rounded bg-neutral-800/60 px-1.5 py-0.5">{o.upgradeFrequency} upgrades/yr</span>
-                      </div>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-          ))}
-        </div>
-      </Panel>
-      <div className="flex justify-between">
-        <Button variant="ghost" onClick={onBack}>
-          ← Back
-        </Button>
-        <Button variant="primary" disabled={!selected} onClick={() => selected && onConfirm(selected)}>
-          {confirmLabel}
-        </Button>
-      </div>
-    </div>
-  );
-}
-
-function Steps({ step, mode }: { step: Step; mode: GameMode }) {
-  const order: Step[] = mode === 'SingleSeason'
-    ? ['mode', 'setup', 'team', 'principal']
-    : ['mode', 'setup', 'team', 'principal', 'engine'];
+function Steps({ step }: { step: Step }) {
+  const order: Step[] = ['mode', 'setup', 'team', 'principal'];
   const labels: Record<Step, string> = {
     mode: 'Game Mode',
     setup: 'Series & Year',
     team: 'Team',
     principal: 'Principal',
-    engine: 'Engine',
-    lockedEngine: 'Engine',
   };
   return (
     <div className="mb-8 flex items-center gap-2 text-sm">
@@ -549,4 +442,7 @@ function ModeCard({
     </button>
   );
 }
+
+
+
 

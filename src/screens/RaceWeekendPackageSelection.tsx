@@ -19,9 +19,10 @@ import type { RaceWeekendPackageType } from '../types/raceWeekendPackageTypes';
 
 type Props = {
   onConfirm: () => void;
+  eraTheme?: 'f1-1990s';
 };
 
-export function RaceWeekendPackageSelection({ onConfirm }: Props) {
+export function RaceWeekendPackageSelection({ onConfirm, eraTheme }: Props) {
   const { state, dispatch } = useGame();
   const [selected, setSelected] = useState<RaceWeekendPackageType | null>(
     state?.raceWeekendPackage?.packageType ?? null,
@@ -67,9 +68,24 @@ export function RaceWeekendPackageSelection({ onConfirm }: Props) {
     onConfirm();
   };
 
+  const confirmButton = selectedDef && selectedCost ? (
+    <Button
+      variant="primary"
+      disabled={!canAfford || alreadySelected}
+      onClick={handleConfirm}
+      className="px-3 py-1.5 text-xs"
+    >
+      {alreadySelected ? 'Already Selected' : 'Confirm Package'}
+    </Button>
+  ) : null;
+
   return (
-    <div className="space-y-4">
-      <Panel title="Race Weekend Package Selection">
+    <div className={`space-y-4 ${eraTheme === 'f1-1990s' ? 'text-neutral-100' : ''}`}>
+      <Panel
+        title={eraTheme === 'f1-1990s' ? '1990s Garage Package Desk' : 'Race Weekend Package Selection'}
+        actions={confirmButton}
+        className={eraTheme === 'f1-1990s' ? 'border-amber-500/30 bg-black/55' : ''}
+      >
         <div className="mb-4 space-y-1 text-sm text-neutral-400">
           <p>
             <span className="text-neutral-500">Race:</span>{' '}
@@ -184,7 +200,11 @@ export function RaceWeekendPackageSelection({ onConfirm }: Props) {
       </Panel>
 
       {selectedDef && selectedCost && (
-        <Panel title="Package Details">
+        <Panel
+          title="Package Details"
+          actions={confirmButton}
+          className={eraTheme === 'f1-1990s' ? 'border-amber-500/30 bg-black/55' : ''}
+        >
           <div className="grid gap-4 sm:grid-cols-2">
             <div>
               <h3 className={`mb-2 text-sm font-semibold ${PACKAGE_COLORS[selected!]}`}>
