@@ -33,6 +33,8 @@ export function Drivers() {
     Math.round(driverExtensionSigningFee(driver, years, racesRemaining, state.calendar.length) * offerMultiplier);
   const extendDriver = (driverId: string, years: number, offerMultiplier: number) =>
     dispatch({ type: 'EXTEND_DRIVER_CONTRACT', driverId, years, offerMultiplier });
+  const contractOfferNews = state.news.filter((item) => item.id.startsWith('news-contract-offer-'));
+  const latestContractOffer = (driverId: string) => contractOfferNews.find((item) => item.driverId === driverId);
 
   return (
     <div className="space-y-6">
@@ -77,6 +79,7 @@ export function Drivers() {
                         budget={teamBudget}
                         canNegotiate={canNegotiateContracts}
                         extensionCost={extensionCost}
+                        latestOffer={latestContractOffer(driver.id)}
                         onExtend={extendDriver}
                       />
                     </>
@@ -87,6 +90,22 @@ export function Drivers() {
               );
             })}
           </div>
+
+          {contractOfferNews.length > 0 && (
+            <div className="mt-4 rounded border border-neutral-800 bg-neutral-950/45 p-3">
+              <div className="mb-2 text-xs font-semibold uppercase tracking-wide text-neutral-400">Recent Contract Responses</div>
+              <div className="space-y-1.5">
+                {contractOfferNews.slice(0, 3).map((item) => (
+                  <div key={item.id} className="flex items-start justify-between gap-3 text-xs">
+                    <span className={item.id.includes('-accepted-') ? 'font-semibold text-green-300' : 'font-semibold text-red-300'}>
+                      {item.headline}
+                    </span>
+                    <span className="shrink-0 text-neutral-500">News Center</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
 
           <div className="mt-4">
             <div className="mb-2 text-sm font-semibold text-neutral-300">
@@ -138,6 +157,7 @@ export function Drivers() {
                       budget={teamBudget}
                       canNegotiate={canNegotiateContracts}
                       extensionCost={extensionCost}
+                      latestOffer={latestContractOffer(r.id)}
                       onExtend={extendDriver}
                     />
                   </div>
@@ -201,12 +221,14 @@ function ContractExtensionControls({
   budget,
   canNegotiate,
   extensionCost,
+  latestOffer,
   onExtend,
 }: {
   driver: NonNullable<ReturnType<typeof useGame>['state']>['drivers'][number];
   budget: number;
   canNegotiate: boolean;
   extensionCost: (driver: NonNullable<ReturnType<typeof useGame>['state']>['drivers'][number], years: number, offerMultiplier?: number) => number;
+  latestOffer?: NonNullable<ReturnType<typeof useGame>['state']>['news'][number];
   onExtend: (driverId: string, years: number, offerMultiplier: number) => void;
 }) {
   const yearsLeft = driver.contractYearsRemaining ?? 1;
@@ -221,46 +243,55 @@ function ContractExtensionControls({
   const oneYearCost = extensionCost(driver, 1);
   const strongOneYearCost = extensionCost(driver, 1, 1.35);
   const twoYearCost = extensionCost(driver, 2, 1.2);
+  const accepted = latestOffer?.id.includes('-accepted-') ?? false;
   return (
-    <div className="mt-2 flex flex-wrap items-center gap-1.5 border-t border-neutral-800 pt-2 text-[11px]">
-      <span className="mr-auto text-neutral-500">
-        Contract: <span className="text-neutral-300">{yearsLeft} yr{yearsLeft === 1 ? '' : 's'} left</span>
-        <span className="ml-1 text-neutral-600">offer required</span>
-      </span>
-      {maxed ? (
-        <span className="rounded bg-neutral-800 px-2 py-1 text-neutral-400">Max term</span>
-      ) : (
-        <>
-          <Button
-            variant="ghost"
-            className="px-2 py-1 text-[11px]"
-            disabled={oneYearCost > budget}
-            title={oneYearCost > budget ? 'Insufficient budget' : `Offer ${formatMoney(oneYearCost)}; driver may accept or refuse`}
-            onClick={() => onExtend(driver.id, 1, 1)}
-          >
-            Offer +1 ({formatMoney(oneYearCost)})
-          </Button>
-          <Button
-            variant="ghost"
-            className="px-2 py-1 text-[11px]"
-            disabled={strongOneYearCost > budget}
-            title={strongOneYearCost > budget ? 'Insufficient budget' : `Improved offer ${formatMoney(strongOneYearCost)}`}
-            onClick={() => onExtend(driver.id, 1, 1.35)}
-          >
-            Better +1 ({formatMoney(strongOneYearCost)})
-          </Button>
-          {yearsLeft <= 3 && (
+    <div className="mt-2 border-t border-neutral-800 pt-2 text-[11px]">
+      <div className="flex flex-wrap items-center gap-1.5">
+        <span className="mr-auto text-neutral-500">
+          Contract: <span className="text-neutral-300">{yearsLeft} yr{yearsLeft === 1 ? '' : 's'} left</span>
+          <span className="ml-1 text-neutral-600">offer required</span>
+        </span>
+        {maxed ? (
+          <span className="rounded bg-neutral-800 px-2 py-1 text-neutral-400">Max term</span>
+        ) : (
+          <>
+            {yearsLeft <= 3 && (
+              <Button
+                variant="ghost"
+                className="px-2 py-1 text-[11px]"
+                disabled={twoYearCost > budget}
+                title={twoYearCost > budget ? 'Insufficient budget' : `Preferred multi-year offer ${formatMoney(twoYearCost)}`}
+                onClick={() => onExtend(driver.id, 2, 1.2)}
+              >
+                Preferred +2 ({formatMoney(twoYearCost)})
+              </Button>
+            )}
             <Button
               variant="ghost"
               className="px-2 py-1 text-[11px]"
-              disabled={twoYearCost > budget}
-              title={twoYearCost > budget ? 'Insufficient budget' : `Two-year offer ${formatMoney(twoYearCost)}`}
-              onClick={() => onExtend(driver.id, 2, 1.2)}
+              disabled={strongOneYearCost > budget}
+              title={strongOneYearCost > budget ? 'Insufficient budget' : `Improved short-term offer ${formatMoney(strongOneYearCost)}`}
+              onClick={() => onExtend(driver.id, 1, 1.35)}
             >
-              Offer +2 ({formatMoney(twoYearCost)})
+              Better +1 ({formatMoney(strongOneYearCost)})
             </Button>
-          )}
-        </>
+            <Button
+              variant="ghost"
+              className="px-2 py-1 text-[11px]"
+              disabled={oneYearCost > budget}
+              title={oneYearCost > budget ? 'Insufficient budget' : `Short-term offer ${formatMoney(oneYearCost)}; secure drivers may push for more years`}
+              onClick={() => onExtend(driver.id, 1, 1)}
+            >
+              Offer +1 ({formatMoney(oneYearCost)})
+            </Button>
+          </>
+        )}
+      </div>
+      {latestOffer && (
+        <div className={`mt-2 rounded border px-2 py-1 ${accepted ? 'border-green-500/35 bg-green-500/10 text-green-300' : 'border-red-500/35 bg-red-500/10 text-red-300'}`}>
+          <div className="font-semibold">{accepted ? 'Accepted' : 'Refused'}: {latestOffer.headline}</div>
+          {latestOffer.body && <div className="mt-0.5 text-neutral-400">{latestOffer.body}</div>}
+        </div>
       )}
     </div>
   );

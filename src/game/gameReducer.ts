@@ -924,9 +924,19 @@ function evaluateExtensionOffer(
   const driverMood = driver.morale * 0.12 + driver.confidence * 0.08;
   const teamPull = Math.max(-8, Math.min(8, (((team as Team | undefined)?.reputation ?? 50) - 50) / 5));
   const ambitionPenalty = Math.max(0, driver.ratings.overall - 8) * 7;
-  const securityBoost = appliedYears * 3 + (offerMultiplier - 1) * 44;
+  const seatInsecure =
+    driver.contractType === 'third' ||
+    driver.contractType === 'reserve' ||
+    driver.contractType === 'test' ||
+    driver.confidence < 40 ||
+    driver.morale < 40 ||
+    (rel?.frustration ?? 0) >= 70;
+  const shortTermPenalty = appliedYears === 1 && !seatInsecure
+    ? Math.max(5, Math.round((driver.ratings.overall - 5) * 3 + ((rel?.ego ?? 50) - 50) / 8))
+    : 0;
+  const securityBoost = (appliedYears >= 2 ? 9 + appliedYears * 7 : seatInsecure ? 5 : 1) + (offerMultiplier - 1) * 44;
   const expiringBoost = (driver.contractYearsRemaining ?? 1) <= 1 ? 4 : 0;
-  const score = Math.round(22 + relationshipScore + driverMood + teamPull + securityBoost + expiringBoost - ambitionPenalty);
+  const score = Math.round(22 + relationshipScore + driverMood + teamPull + securityBoost + expiringBoost - ambitionPenalty - shortTermPenalty);
   return { accepted: score >= 58, score };
 }
 

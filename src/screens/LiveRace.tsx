@@ -42,7 +42,7 @@ type Speed = 1 | 10 | 30 | 60;
 
 type DnfAlert = {
   lap: number;
-  entries: Array<{ driverId: string; cause: string }>;
+  entries: Array<{ driverId: string; cause: string; isPlayer?: boolean }>;
 };
 
 export function LiveRace() {
@@ -70,6 +70,7 @@ export function LiveRace() {
   const [modal, setModal] = useState<'log' | 'strategy' | 'orders' | null>(null);
   const [podium, setPodium] = useState<PodiumSnapshot | null>(null);
   const [dnfAlert, setDnfAlert] = useState<DnfAlert | null>(null);
+  const [aiDnfFlash, setAiDnfFlash] = useState<DnfAlert | null>(null);
   const [decisionSecondsLeft, setDecisionSecondsLeft] = useState<number | null>(null);
   const committed = useRef(false);
   // Team orders called during the race, resolved into relationships at the flag.
@@ -96,8 +97,15 @@ export function LiveRace() {
     const next = stepLiveRace(s, engine!.meta);
     const alert = dnfAlertFromTransition(s, next);
     if (alert) {
-      setPlaying(false);
-      setDnfAlert(alert);
+      const playerEntries = alert.entries.filter((entry) => entry.isPlayer);
+      const aiEntries = alert.entries.filter((entry) => !entry.isPlayer);
+      if (playerEntries.length > 0) {
+        setPlaying(false);
+        setDnfAlert({ lap: alert.lap, entries: playerEntries });
+      }
+      if (aiEntries.length > 0) {
+        setAiDnfFlash({ lap: alert.lap, entries: aiEntries });
+      }
     }
     return next;
   }
@@ -135,6 +143,12 @@ export function LiveRace() {
     const id = setInterval(() => setTrackAnimationTick((tick) => tick + 1), Math.max(160, 2200 / speed));
     return () => clearInterval(id);
   }, [live, needsDecision, playing, speed, state?.series, state?.seasonYear]);
+
+  useEffect(() => {
+    if (!aiDnfFlash) return;
+    const id = setTimeout(() => setAiDnfFlash(null), 8000);
+    return () => clearTimeout(id);
+  }, [aiDnfFlash]);
 
   // Decision countdown: while a high/urgent decision is pending, tick a ~10s
   // clock and, on timeout, auto-expire (ignore) the outstanding recommendations
@@ -403,6 +417,7 @@ export function LiveRace() {
           activeRecs={activeRecs}
           needsDecision={needsDecision}
           pausedByDnf={!!dnfAlert}
+          aiDnfFlash={aiDnfFlash}
           decisionSecondsLeft={needsDecision ? decisionSecondsLeft ?? DECISION_COUNTDOWN_SECONDS : null}
           playing={playing}
           speed={speed}
@@ -594,7 +609,7 @@ function dnfAlertFromTransition(previous: LiveRaceState, next: LiveRaceState): D
   const previousRunning = new Map(previous.cars.map((car) => [car.driverId, car.running]));
   const entries = next.cars
     .filter((car) => previousRunning.get(car.driverId) && !car.running && car.status === 'DNF')
-    .map((car) => ({ driverId: car.driverId, cause: car.lastIncident ?? 'Retired' }));
+    .map((car) => ({ driverId: car.driverId, cause: car.lastIncident ?? 'Retired', isPlayer: car.isPlayer }));
   if (entries.length === 0) return null;
   return { lap: next.currentLap, entries };
 }

@@ -24,6 +24,7 @@ type Props = {
   activeRecs: AnalyticsRecommendation[];
   needsDecision: boolean;
   pausedByDnf?: boolean;
+  aiDnfFlash?: { lap: number; entries: Array<{ driverId: string; cause: string }> } | null;
   decisionSecondsLeft: number | null;
   playing: boolean;
   speed: Speed;
@@ -61,6 +62,7 @@ export function F11990sLiveRaceScreen({
   activeRecs,
   needsDecision,
   pausedByDnf = false,
+  aiDnfFlash,
   decisionSecondsLeft,
   playing,
   speed,
@@ -96,7 +98,8 @@ export function F11990sLiveRaceScreen({
     ? `Lap ${Math.max(1, live.currentLap)} - Lap ${Math.min(live.totalLaps, Math.ceil((playerCars[0].fuel / 100) * live.totalLaps))}`
     : 'N/A';
   const alert = raceAlert(live, forecast);
-  const alertStyle = alertClass(alert);
+  const alertStyle = aiDnfFlash ? dnfFlashClass() : alertClass(alert);
+  const commentaryTitle = aiDnfFlash ? 'DNF Alert' : alert ? 'Track Alert' : 'Commentary';
 
   return (
     <div
@@ -180,14 +183,27 @@ export function F11990sLiveRaceScreen({
       </main>
 
       <footer className="relative grid shrink-0 gap-2 px-2 pb-2 lg:grid-cols-[1.05fr_1fr_0.9fr_0.9fr]">
-        <RetroPanel title={alert ? 'Track Alert' : 'Commentary'} className={alertStyle.panel}>
+        <RetroPanel title={commentaryTitle} className={alertStyle.panel}>
           <div className={`space-y-1 p-2 text-[12px] ${alertStyle.body}`}>
-            {alert && <p className="text-lg leading-tight">{alert}</p>}
-            {commentaryLines(live, nameOf).map((line, index) => (
-              <p key={index} className={line.tone === 'retirement' ? 'font-black text-red-300' : ''}>
-                {line.text}
-              </p>
-            ))}
+            {aiDnfFlash ? (
+              <>
+                <p className="text-lg leading-tight">Lap {aiDnfFlash.lap} - AI retirement</p>
+                {aiDnfFlash.entries.map((entry) => (
+                  <p key={entry.driverId}>
+                    {shortName(nameOf(entry.driverId)).toUpperCase()} - {entry.cause}
+                  </p>
+                ))}
+              </>
+            ) : (
+              <>
+                {alert && <p className="text-lg leading-tight">{alert}</p>}
+                {commentaryLines(live, nameOf).map((line, index) => (
+                  <p key={index} className={line.tone === 'retirement' ? 'font-black text-red-300' : ''}>
+                    {line.text}
+                  </p>
+                ))}
+              </>
+            )}
           </div>
         </RetroPanel>
         <RetroPanel title="Team Radio">
@@ -734,6 +750,10 @@ function alertClass(alert: string | null): { panel: string; body: string } {
   }
   if (alert) return { panel: 'animate-pulse border-yellow-300 bg-yellow-300 text-black', body: 'font-black uppercase text-black' };
   return { panel: '', body: 'text-zinc-200' };
+}
+
+function dnfFlashClass(): { panel: string; body: string } {
+  return { panel: 'animate-pulse border-red-700 bg-red-500 text-black', body: 'font-black uppercase text-black' };
 }
 
 function raceAlert(live: LiveRaceState, forecast: ForecastEntry[]): string | null {
