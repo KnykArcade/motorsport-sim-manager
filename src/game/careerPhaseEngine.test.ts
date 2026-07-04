@@ -121,6 +121,7 @@ describe('careerPhaseEngine', () => {
     }
 
     expect(hasUnresolvedRequiredDecisions(state)).toBe(false);
+    state = dispatch(state, { type: 'SELECT_RACE_WEEKEND_PACKAGE', packageType: 'Standard' });
     state = dispatch(state, { type: 'ADVANCE_TO_PRE_RACE_BRIEFING' });
     expect(getCareerPhase(state)).toBe('pre_race_briefing');
   });
@@ -161,6 +162,7 @@ describe('careerPhaseEngine', () => {
       state = dispatch(state, { type: 'RESOLVE_PADDOCK_EVENT', eventId: ev.id, optionId });
     }
 
+    state = dispatch(state, { type: 'SELECT_RACE_WEEKEND_PACKAGE', packageType: 'Standard' });
     state = dispatch(state, { type: 'ADVANCE_TO_PRE_RACE_BRIEFING' });
     expect(getCareerPhase(state)).toBe('pre_race_briefing');
   });
@@ -370,6 +372,7 @@ describe('careerPhaseEngine', () => {
       }
 
       // Advance to pre-race briefing for the next race.
+      state = dispatch(state, { type: 'SELECT_RACE_WEEKEND_PACKAGE', packageType: 'Standard' });
       state = dispatch(state, { type: 'ADVANCE_TO_PRE_RACE_BRIEFING' });
       expect(getCareerPhase(state)).toBe('pre_race_briefing');
 
@@ -471,6 +474,7 @@ describe('careerPhaseEngine', () => {
       const optionId = ev.options?.[0]?.id ?? 'balanced';
       state = dispatch(state, { type: 'RESOLVE_PADDOCK_EVENT', eventId: ev.id, optionId });
     }
+    state = dispatch(state, { type: 'SELECT_RACE_WEEKEND_PACKAGE', packageType: 'Standard' });
     state = dispatch(state, { type: 'ADVANCE_TO_PRE_RACE_BRIEFING' });
     state = dispatch(state, { type: 'ADVANCE_TO_RACE_WEEKEND' });
     state = dispatch(state, { type: 'RUN_QUALIFYING', decisions: [] });
@@ -640,6 +644,7 @@ describe('careerPhaseEngine', () => {
     expect(getOrCreatePhaseState(state).budgetFocusBonusApplied).toBe(true);
 
     // Advance to next race: paddock → pre-race briefing → race weekend.
+    state = dispatch(state, { type: 'SELECT_RACE_WEEKEND_PACKAGE', packageType: 'Standard' });
     state = dispatch(state, { type: 'ADVANCE_TO_PRE_RACE_BRIEFING' });
     state = dispatch(state, { type: 'ADVANCE_TO_RACE_WEEKEND' });
     state = dispatch(state, { type: 'RUN_QUALIFYING', decisions: [] });
@@ -977,6 +982,7 @@ describe('careerPhaseEngine', () => {
       }
 
       // Second race cycle.
+      state = dispatch(state, { type: 'SELECT_RACE_WEEKEND_PACKAGE', packageType: 'Standard' });
       state = dispatch(state, { type: 'ADVANCE_TO_PRE_RACE_BRIEFING' });
       state = dispatch(state, { type: 'ADVANCE_TO_RACE_WEEKEND' });
       state = dispatch(state, { type: 'RUN_QUALIFYING', decisions: [] });
@@ -1086,6 +1092,7 @@ describe('careerPhaseEngine', () => {
       const setupCompleteBefore = flagsBefore.preseasonSetupComplete;
       const decisionsCompleteBefore = flagsBefore.preseasonDecisionsComplete;
 
+      state = dispatch(state, { type: 'SELECT_RACE_WEEKEND_PACKAGE', packageType: 'Standard' });
       state = dispatch(state, { type: 'ADVANCE_TO_PRE_RACE_BRIEFING' });
       const flagsAfter = getOrCreatePhaseState(state);
       expect(flagsAfter.preseasonSetupComplete).toBe(setupCompleteBefore);
@@ -1125,6 +1132,7 @@ describe('careerPhaseEngine', () => {
         const optionId = ev.options?.[0]?.id ?? 'balanced';
         state2 = dispatch(state2, { type: 'RESOLVE_PADDOCK_EVENT', eventId: ev.id, optionId });
       }
+      state2 = dispatch(state2, { type: 'SELECT_RACE_WEEKEND_PACKAGE', packageType: 'Standard' });
       state2 = dispatch(state2, { type: 'ADVANCE_TO_PRE_RACE_BRIEFING' });
       state2 = dispatch(state2, { type: 'ADVANCE_TO_RACE_WEEKEND' });
       state2 = dispatch(state2, { type: 'RUN_QUALIFYING', decisions: [] });
@@ -1194,13 +1202,42 @@ describe('careerPhaseEngine', () => {
       expect(state.carSetups).toEqual(setupsBefore);
     });
 
-    it('SELECT_RACE_WEEKEND_PACKAGE does not mutate outside race_weekend', () => {
+    it('SELECT_RACE_WEEKEND_PACKAGE does not mutate before preseason or paddock package selection windows', () => {
       let state = newCareerState();
       state = completeChecklist(state);
       // In pre_season_setup.
       const pkgBefore = state.raceWeekendPackage;
-      state = dispatch(state, { type: 'SELECT_RACE_WEEKEND_PACKAGE', packageType: 'standard' as never });
-      expect(state.raceWeekendPackage).toEqual(pkgBefore);
+      state = dispatch(state, { type: 'SELECT_RACE_WEEKEND_PACKAGE', packageType: 'Standard' });
+      expect(state.raceWeekendPackage).not.toEqual(pkgBefore);
+
+      state = dispatch(state, { type: 'COMPLETE_PRESEASON_SETUP' });
+      const preRacePkg = state.raceWeekendPackage;
+      state = dispatch(state, { type: 'SELECT_RACE_WEEKEND_PACKAGE', packageType: 'Budget' });
+      expect(state.raceWeekendPackage).toEqual(preRacePkg);
+    });
+
+    it('Paddock Week requires a race package before advancing to pre-race briefing', () => {
+      let state = newCareerState();
+      state = completeChecklist(state);
+      state = dispatch(state, { type: 'COMPLETE_PRESEASON_SETUP' });
+      state = dispatch(state, { type: 'ADVANCE_TO_RACE_WEEKEND' });
+      state = dispatch(state, { type: 'RUN_QUALIFYING', decisions: [] });
+      state = dispatch(state, { type: 'RUN_RACE', decisions: [] });
+      state = dispatch(state, { type: 'ADVANCE_TO_PADDOCK_WEEK' });
+      state = dispatch(state, { type: 'GENERATE_PADDOCK_EVENTS' });
+
+      const phaseState = getOrCreatePhaseState(state);
+      for (const ev of phaseState.paddockEvents.filter((e) => e.isRequiredDecision)) {
+        const optionId = ev.options?.[0]?.id ?? 'balanced';
+        state = dispatch(state, { type: 'RESOLVE_PADDOCK_EVENT', eventId: ev.id, optionId });
+      }
+
+      state = dispatch(state, { type: 'ADVANCE_TO_PRE_RACE_BRIEFING' });
+      expect(getCareerPhase(state)).toBe('paddock_week');
+
+      state = dispatch(state, { type: 'SELECT_RACE_WEEKEND_PACKAGE', packageType: 'Standard' });
+      state = dispatch(state, { type: 'ADVANCE_TO_PRE_RACE_BRIEFING' });
+      expect(getCareerPhase(state)).toBe('pre_race_briefing');
     });
 
     it('RUN_PRACTICE_SESSION does not mutate outside race_weekend', () => {
@@ -1252,6 +1289,7 @@ describe('careerPhaseEngine', () => {
       }
 
       // Advance to next race and complete it.
+      state = dispatch(state, { type: 'SELECT_RACE_WEEKEND_PACKAGE', packageType: 'Standard' });
       state = dispatch(state, { type: 'ADVANCE_TO_PRE_RACE_BRIEFING' });
       state = dispatch(state, { type: 'ADVANCE_TO_RACE_WEEKEND' });
       state = dispatch(state, { type: 'RUN_QUALIFYING', decisions: [] });
@@ -1289,6 +1327,7 @@ describe('careerPhaseEngine', () => {
         const optionId = ev.options?.[0]?.id ?? 'balanced';
         state = dispatch(state, { type: 'RESOLVE_PADDOCK_EVENT', eventId: ev.id, optionId });
       }
+      state = dispatch(state, { type: 'SELECT_RACE_WEEKEND_PACKAGE', packageType: 'Standard' });
       state = dispatch(state, { type: 'ADVANCE_TO_PRE_RACE_BRIEFING' });
       expect(getCareerPhase(state)).toBe('pre_race_briefing');
     });

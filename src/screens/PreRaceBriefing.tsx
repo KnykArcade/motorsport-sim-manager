@@ -10,6 +10,7 @@ import { getTrackById, getRegulationSet } from '../data';
 import { effectiveCarRatings } from '../sim/trackFitEngine';
 import { getOrCreatePhaseState } from '../game/careerPhaseEngine';
 import { ARCHETYPE_SPECS } from '../sim/aiTeamEngine';
+import { RACE_WEEKEND_PACKAGES } from '../sim/raceWeekendPackageEngine';
 import { Panel } from '../components/Panel';
 import { Button } from '../components/Button';
 import { TrackDemandBars } from '../components/TrackDemandBars';
@@ -61,6 +62,8 @@ export function PreRaceBriefing() {
   const phaseState = getOrCreatePhaseState(state);
   const prepFocusId = phaseState.racePrepFocus ?? 'balanced';
   const prepFocusInfo = RACE_PREP_FOCUS_INFO[prepFocusId] ?? RACE_PREP_FOCUS_INFO['balanced'];
+  const selectedPackage = state.raceWeekendPackage?.raceId === race.id ? state.raceWeekendPackage : undefined;
+  const selectedPackageDef = selectedPackage ? RACE_WEEKEND_PACKAGES[selectedPackage.packageType] : undefined;
 
   const teamName = (id: string) => state.teams.find((t) => t.id === id)?.name ?? id;
 
@@ -102,7 +105,14 @@ export function PreRaceBriefing() {
           <h1 className="text-2xl font-bold text-neutral-100">Pre-Race Briefing</h1>
           <p className="text-sm text-neutral-400">{race.gpName} · {race.trackName} · Round {race.round}</p>
         </div>
-        <Button variant="primary" onClick={enterRaceWeekend}>Enter Race Weekend →</Button>
+        <Button
+          variant="primary"
+          onClick={enterRaceWeekend}
+          disabled={!selectedPackage}
+          title={selectedPackage ? 'Enter Race Weekend' : 'Select a race package before the pre-race briefing'}
+        >
+          Enter Race Weekend →
+        </Button>
       </div>
 
       <div className="grid gap-6 lg:grid-cols-3">
@@ -193,6 +203,33 @@ export function PreRaceBriefing() {
               <p className="text-sm text-neutral-300">{prepFocusInfo.description}</p>
               <div className="text-xs text-neutral-500">Duration: Next race only.</div>
             </div>
+          </Panel>
+
+          {/* Race Operations Package */}
+          <Panel title="Race Operations Package">
+            {selectedPackage && selectedPackageDef ? (
+              <div className="space-y-2">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <div className="text-sm font-semibold text-neutral-100">{selectedPackageDef.label}</div>
+                  <div className="text-sm text-neutral-300">{formatMoney(selectedPackage.cost)}</div>
+                </div>
+                <p className="text-sm text-neutral-300">{selectedPackageDef.description}</p>
+                <div className="grid gap-2 text-xs sm:grid-cols-3">
+                  <span className="rounded bg-neutral-800/50 px-2 py-1 text-neutral-300">
+                    Pace {selectedPackageDef.effects.paceModifier > 0 ? '+' : ''}{selectedPackageDef.effects.paceModifier.toFixed(1)}
+                  </span>
+                  <span className="rounded bg-neutral-800/50 px-2 py-1 text-neutral-300">
+                    Reliability {selectedPackageDef.effects.reliabilityPrep > 0 ? '+' : ''}{selectedPackageDef.effects.reliabilityPrep.toFixed(2)}
+                  </span>
+                  <span className="rounded bg-neutral-800/50 px-2 py-1 text-neutral-300">
+                    Pit crew {selectedPackageDef.effects.pitCrewPrep > 0 ? '+' : ''}{selectedPackageDef.effects.pitCrewPrep.toFixed(2)}
+                  </span>
+                </div>
+                <div className="text-xs text-neutral-500">Selected before the race weekend. Applies through qualifying and race day.</div>
+              </div>
+            ) : (
+              <p className="text-sm text-orange-300">No race package selected. Return to Paddock Week before entering the weekend.</p>
+            )}
           </Panel>
 
           {/* Driver Status */}

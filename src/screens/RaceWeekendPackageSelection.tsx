@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useGame } from '../game/GameContext';
 import { currentRace } from '../game/careerState';
 import { getTrackById } from '../data';
@@ -25,13 +25,20 @@ type Props = {
 
 export function RaceWeekendPackageSelection({ onConfirm, eraTheme }: Props) {
   const { state, dispatch } = useGame();
-  const [selected, setSelected] = useState<RaceWeekendPackageType | null>(
-    state?.raceWeekendPackage?.packageType ?? null,
-  );
-
   const race = state ? currentRace(state) : undefined;
   const track = race ? getTrackById(race.trackId) : undefined;
   const team = state?.teams.find((t) => t.id === state.selectedTeamId);
+  const currentPackage =
+    state?.raceWeekendPackage && race && state.raceWeekendPackage.raceId === race.id
+      ? state.raceWeekendPackage
+      : undefined;
+  const [selected, setSelected] = useState<RaceWeekendPackageType | null>(
+    currentPackage?.packageType ?? null,
+  );
+
+  useEffect(() => {
+    setSelected(currentPackage?.packageType ?? null);
+  }, [currentPackage?.packageType, race?.id]);
 
   const availablePackages = useMemo(
     () => (state ? availablePackagesForSeries(state.series) : []),
@@ -61,7 +68,7 @@ export function RaceWeekendPackageSelection({ onConfirm, eraTheme }: Props) {
   const selectedDef = selected ? RACE_WEEKEND_PACKAGES[selected] : null;
   const selectedCost = selected ? (selected === 'MandatoryMinimum' ? { cost: 0, baseCost: 0, teamScale: 1, trackModifier: 1, packageModifier: 0, damageReserve: 0 } : allCosts[selected]) : null;
   const canAfford = selectedCost ? selected === 'MandatoryMinimum' || team.budget >= selectedCost.cost : false;
-  const alreadySelected = state.raceWeekendPackage?.packageType === selected;
+  const alreadySelected = currentPackage?.packageType === selected;
 
   const handleConfirm = () => {
     if (!selected || !canAfford || alreadySelected) return;
@@ -113,7 +120,7 @@ export function RaceWeekendPackageSelection({ onConfirm, eraTheme }: Props) {
             const cost = allCosts[pkgType];
             const affordable = team.budget >= cost.cost;
             const isSelected = selected === pkgType;
-            const isCurrent = state.raceWeekendPackage?.packageType === pkgType;
+            const isCurrent = currentPackage?.packageType === pkgType;
 
             return (
               <button
@@ -177,11 +184,11 @@ export function RaceWeekendPackageSelection({ onConfirm, eraTheme }: Props) {
             </p>
             <button
               onClick={() => setSelected('MandatoryMinimum')}
-              disabled={state.raceWeekendPackage?.packageType === 'MandatoryMinimum'}
+              disabled={currentPackage?.packageType === 'MandatoryMinimum'}
               className={`w-full rounded-lg border p-3 text-left transition-all ${
                 selected === 'MandatoryMinimum'
                   ? 'border-rose-600/50 bg-neutral-900/80 ring-1 ring-amber-500/30'
-                  : state.raceWeekendPackage?.packageType === 'MandatoryMinimum'
+                  : currentPackage?.packageType === 'MandatoryMinimum'
                     ? 'border-neutral-700 bg-neutral-900/40 opacity-60'
                     : 'border-rose-700/40 bg-rose-950/20 hover:border-rose-600/50'
               }`}

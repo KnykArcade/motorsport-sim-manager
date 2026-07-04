@@ -47,11 +47,9 @@ import type { Driver, Track, StandingsEntry } from '../types/gameTypes';
 import type { WeatherState } from '../types/liveTypes';
 import type { CarSetup } from '../types/setupTypes';
 import type { QualifyingDecision, QualifyingFormat, RaceDecision } from '../types/simTypes';
-import { RaceWeekendPackageSelection } from './RaceWeekendPackageSelection';
 
 type Phase =
   | 'hub'
-  | 'package'
   | 'briefing'
   | 'practice'
   | 'setup'
@@ -62,8 +60,7 @@ type Phase =
 
 const PHASE_ORDER: { id: Phase; label: string }[] = [
   { id: 'hub', label: 'Weekend Hub' },
-  { id: 'package', label: 'Race Package' },
-  { id: 'briefing', label: 'Track Briefing' },
+  { id: 'briefing', label: 'Pre-Race Brief' },
   { id: 'practice', label: 'Practice' },
   { id: 'setup', label: 'Car Setup' },
   { id: 'quali-run', label: 'Qualifying Run Strategy' },
@@ -193,14 +190,7 @@ export function RaceWeekend() {
           race={race}
           track={track}
           forecast={forecast}
-          onNext={() => setPhase('package')}
-        />
-      )}
-
-      {phase === 'package' && (
-        <RaceWeekendPackageSelection
-          eraTheme={usesF1WeekendHub ? eraTheme : undefined}
-          onConfirm={() => setPhase('briefing')}
+          onNext={() => setPhase('briefing')}
         />
       )}
 
@@ -414,14 +404,7 @@ export function RaceWeekend() {
           race={race}
           track={track}
           forecast={forecast}
-          onNext={() => setPhase('package')}
-        />
-      )}
-
-      {phase === 'package' && (
-        <RaceWeekendPackageSelection
-          eraTheme={usesF1WeekendHub ? eraTheme : undefined}
-          onConfirm={() => setPhase('briefing')}
+          onNext={() => setPhase('briefing')}
         />
       )}
 

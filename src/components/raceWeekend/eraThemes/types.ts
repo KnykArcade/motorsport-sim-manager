@@ -4,7 +4,6 @@ import type { Race, Track } from '../../../types/gameTypes';
 import type { WeekendForecast } from '../../../sim/weatherEngine';
 
 export type RaceWeekendHubPhase =
-  | 'package'
   | 'briefing'
   | 'practice'
   | 'setup'

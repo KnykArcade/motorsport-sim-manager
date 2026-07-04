@@ -90,12 +90,9 @@ export function buildRaceWeekendSchedule(
   hasQualifyingResults: boolean,
 ): WeekendScheduleItem[] {
   const completedPractice = completedPracticeKinds(state, race.id);
-  const packageSelected = !!state.raceWeekendPackage && state.raceWeekendPackage.raceId === race.id;
   const practiceKinds = weekendSessionKinds(state.seasonYear, state.series);
   const openPractice = practiceKinds.find((kind) => !completedPractice.has(kind));
-  const currentId = !packageSelected
-    ? 'pre-race'
-    : !isMinPackage && openPractice
+  const currentId = !isMinPackage && openPractice
     ? openPractice
     : !hasQualifyingResults
     ? 'qualifying'
@@ -109,8 +106,8 @@ export function buildRaceWeekendSchedule(
       day: 'Thursday',
       label: 'Pre-Race Brief',
       time: 'Ready',
-      status: itemStatus(packageSelected, currentId, 'pre-race'),
-      action: { type: 'phase', phase: packageSelected ? 'briefing' : 'package' },
+      status: 'completed',
+      action: { type: 'phase', phase: 'briefing' },
     },
   ];
 
@@ -156,22 +153,12 @@ export function buildNextSessionAction(
   isMinPackage: boolean,
   hasQualifyingResults: boolean,
 ): NextSessionAction {
-  const packageSelected = !!state.raceWeekendPackage && state.raceWeekendPackage.raceId === race.id;
   if (race.completed) {
     return {
       sessionName: 'Race Complete',
       detail: 'Awaiting post-race review',
       primaryLabel: 'COMPLETED',
       disabledReason: 'This race has already been completed.',
-    };
-  }
-
-  if (!packageSelected) {
-    return {
-      sessionName: 'Weekend Operations',
-      detail: 'Select the package before opening the garage program',
-      primaryLabel: 'SET PACKAGE',
-      action: { type: 'phase', phase: 'package' },
     };
   }
 
@@ -230,10 +217,7 @@ export function buildF11990sGarageHotspots(args: {
   hasQualifyingResults: boolean;
 }): GarageHotspot[] {
   const { state, race, isMinPackage, hasQualifyingResults } = args;
-  const packageSelected = !!state.raceWeekendPackage && state.raceWeekendPackage.raceId === race.id;
-  const setupLocked = !packageSelected
-    ? 'Choose the weekend package before setup work opens.'
-    : isMinPackage
+  const setupLocked = isMinPackage
     ? 'Minimum Operations locks setup and extra mechanical work.'
     : undefined;
   const next = buildNextSessionAction(state, race, isMinPackage, hasQualifyingResults);
@@ -263,7 +247,7 @@ export function buildF11990sGarageHotspots(args: {
       description: 'Weather, track status and live timing',
       x: 60,
       y: 36,
-      action: { type: 'phase', phase: packageSelected ? 'briefing' : 'package' },
+      action: { type: 'phase', phase: 'briefing' },
     },
     {
       id: 'chief-mechanic',
@@ -280,7 +264,7 @@ export function buildF11990sGarageHotspots(args: {
       description: 'Practice, qualifying and race readiness',
       x: 38,
       y: 64,
-      action: next.action ?? { type: 'phase', phase: 'package' },
+      action: next.action ?? { type: 'phase', phase: 'briefing' },
       lockedReason: next.disabledReason,
     },
     {

@@ -151,7 +151,8 @@ describe('F1 1990s race weekend schedule and primary action', () => {
     const state = makeState(1994);
     const race = currentRace(state)!;
     const schedule = buildRaceWeekendSchedule(state, race, false, false);
-    expect(schedule.find((item) => item.id === 'pre-race')?.status).toBe('current');
+    expect(schedule.find((item) => item.id === 'pre-race')?.status).toBe('completed');
+    expect(schedule.find((item) => item.id === 'Practice1')?.status).toBe('current');
   });
 
   it('drives the next-session action from real weekend state', () => {
@@ -230,8 +231,8 @@ describe('F1 1990s garage hotspots', () => {
     }).find((item) => item.id === 'engineering-desk')!;
     const callbacks: RaceWeekendHubCallbacks = { onPhase: vi.fn(), onRoute: vi.fn(), onExit: vi.fn() };
     const html = renderToStaticMarkup(<F11990sGarageHotspot hotspot={hotspot} callbacks={callbacks} />);
-    expect(html).toContain('aria-label="Engineering Desk: Car stats, telemetry and engineer feedback. Locked.');
-    expect(html).toContain('aria-disabled="true"');
+    expect(html).toContain('aria-label="Engineering Desk: Car stats, telemetry and engineer feedback"');
+    expect(html).toContain('aria-disabled="false"');
     expect(html).toContain('<button');
     expect(html).not.toContain('disabled=""');
   });

@@ -156,7 +156,7 @@ export function buildRaceContext(
     teamRaceOps[t.id] = t.raceOperations;
     // Player team uses their selected package; AI teams use Standard (no modifier)
     // until AI package selection is wired in.
-    if (t.id === state.selectedTeamId && state.raceWeekendPackage) {
+    if (t.id === state.selectedTeamId && state.raceWeekendPackage?.raceId === race.id) {
       pkgEffects[t.id] = getPackageEffects(state.raceWeekendPackage.packageType);
     } else if (state.aiRaceWeekendPackages?.[t.id]) {
       pkgEffects[t.id] = getPackageEffects(state.aiRaceWeekendPackages[t.id].packageType);
