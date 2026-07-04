@@ -44,8 +44,10 @@ describe('scoutingEngine — accuracy', () => {
 });
 
 describe('scoutingEngine — potential fog', () => {
-  it('returns the exact value once revealed and stays within 1-10', () => {
-    expect(visiblePotentialRange(8.5, 1, SEED, target.id)).toEqual([8.5, 8.5]);
+  it('keeps a range even at maximum confidence and stays within 1-10', () => {
+    const maxConfidence = visiblePotentialRange(8.5, 1, SEED, target.id);
+    expect(maxConfidence[0]).toBeLessThan(8.5);
+    expect(maxConfidence[1]).toBeGreaterThan(8.5);
     const [lo, hi] = visiblePotentialRange(8.5, 0, SEED, target.id);
     expect(lo).toBeGreaterThanOrEqual(1);
     expect(hi).toBeLessThanOrEqual(10);
@@ -60,16 +62,16 @@ describe('scoutingEngine — potential fog', () => {
 });
 
 describe('scoutingEngine — skill fog', () => {
-  it('hides skills when barely scouted and reveals them when fully scouted', () => {
+  it('hides skills when barely scouted and narrows them to ranges when fully scouted', () => {
     expect(visibleSkill(8, 0.1, SEED, target.id, 'cornering')).toBe('Unknown');
-    expect(visibleSkill(8, 1, SEED, target.id, 'cornering')).toBe(8);
+    expect(visibleSkill(8, 1, SEED, target.id, 'cornering')).toEqual([7.8, 8.4]);
   });
 });
 
 describe('scoutingEngine — recordScouting', () => {
   const facilities = createInitialFacilities('t', 50);
 
-  it('raises effort and eventually fully reveals a target', () => {
+  it('raises effort and eventually reaches the best available report', () => {
     let scouting = createInitialScoutingState('t', facilities);
     expect(scouting.reports[target.id]).toBeUndefined();
     for (let i = 0; i < 6; i++) {
@@ -78,8 +80,9 @@ describe('scoutingEngine — recordScouting', () => {
     const report = scouting.reports[target.id];
     expect(report.scoutingLevel).toBe(100);
     expect(isRevealed(report.accuracy)).toBe(true);
-    expect(report.potentialRange).toEqual([8.5, 8.5]);
-    expect(report.visibleRatings.cornering).toBe(8);
+    expect(report.potentialRange![0]).toBeLessThan(8.5);
+    expect(report.potentialRange![1]).toBeGreaterThan(8.5);
+    expect(report.visibleRatings.cornering).toEqual([7.8, 8.4]);
   });
 
   it('is deterministic for the same inputs', () => {
@@ -92,7 +95,7 @@ describe('scoutingEngine — recordScouting', () => {
 describe('scoutingEngine — fogView', () => {
   const facilities = createInitialFacilities('t', 50);
 
-  it('is fogged when unscouted and exact once fully scouted', () => {
+  it('is fogged when unscouted and range-based once fully scouted', () => {
     const base = createInitialScoutingState('t', facilities);
     const unscouted = fogView(target, base.reports[target.id], base.networkAccuracy, SEED);
     expect(unscouted.revealed).toBe(false);
@@ -105,8 +108,10 @@ describe('scoutingEngine — fogView', () => {
     }
     const revealed = fogView(target, scouting.reports[target.id], scouting.networkAccuracy, SEED);
     expect(revealed.revealed).toBe(true);
-    expect(revealed.potential.value).toBe(8.5);
-    expect(revealed.skills.overtakingRacecraft).toBe(9);
+    expect(revealed.maxed).toBe(true);
+    expect(revealed.potential.value).toBe(revealed.potential.range[0]);
+    expect(revealed.potential.range[1]).toBeGreaterThan(revealed.potential.range[0]);
+    expect(revealed.skills.overtakingRacecraft).toEqual([8.6, 9.2]);
   });
 });
 

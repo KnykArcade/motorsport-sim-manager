@@ -6,7 +6,7 @@ import { driverSalary, toMoney } from '../../sim/financeEngine';
 import { synthesizeDriverRatings } from '../../sim/driverMarketEngine';
 import { computeConfidenceState, overallConfidenceScore } from '../../sim/driverConfidenceEngine';
 import type { GameState } from '../../game/careerState';
-import type { Driver, DriverRatings } from '../../types/gameTypes';
+import type { Driver, DriverRatings, RaceResult } from '../../types/gameTypes';
 import type { AcademyMember, MarketDriver, YouthProspect } from '../../types/marketTypes';
 import type { DriverRelationship, DriverWant } from '../../types/relationshipTypes';
 import { getEraTheme, getEraThemeConfig, type MotorsportEraTheme } from '../../theme/eraTheme';
@@ -17,6 +17,17 @@ type DriverSubject =
   | { type: 'academy'; driver: AcademyMember | YouthProspect };
 
 type DossierFocus = 'identity' | 'relationship' | 'development' | 'market' | 'career';
+
+type DriverSeasonStats = {
+  starts: number;
+  wins: number;
+  podiums: number;
+  top10s: number;
+  dnfs: number;
+  points: number;
+  averageFinish: number | null;
+  recent: Array<{ round: number; name: string; result: RaceResult }>;
+};
 
 type Props = {
   state: GameState;
@@ -91,6 +102,7 @@ function getSubjectProfile(state: GameState, subject: DriverSubject) {
     const curve = state.developmentCurves?.[driver.id];
     const promises = (state.driverPromises ?? []).filter((p) => p.driverId === driver.id);
     const teammate = rel?.teammateId ? state.drivers.find((d) => d.id === rel.teammateId) : undefined;
+    const seasonStats = buildDriverSeasonStats(state, driver.id);
     return {
       name: driver.name,
       number: driver.number,
@@ -111,6 +123,7 @@ function getSubjectProfile(state: GameState, subject: DriverSubject) {
       developmentLine: curve
         ? `Peak ${curve.peakAgeStart}-${curve.peakAgeEnd}, ceiling ${curve.potentialCeiling.toFixed(1)}`
         : 'Development curve not scouted',
+      seasonStats,
     };
   }
 
@@ -135,6 +148,7 @@ function getSubjectProfile(state: GameState, subject: DriverSubject) {
       marketLine: `${formatMoney(toMoney(driver.buyoutCost))} buyout, ${formatMoney(toMoney(driver.sponsorValue))}/yr sponsor pull`,
       developmentLine: `Potential ${driver.potential.toFixed(1)}, F1 readiness ${driver.f1Readiness}/100`,
       notes: driver.notes,
+      seasonStats: null,
     };
   }
 
@@ -164,6 +178,46 @@ function getSubjectProfile(state: GameState, subject: DriverSubject) {
       : `${formatMoney(toMoney(driver.signingCost))} signing, ${formatMoney(toMoney(driver.yearlyAcademyCost))}/yr academy`,
     developmentLine: `Potential ${driver.potential.toFixed(1)}, current ${driver.overall.toFixed(1)}`,
     notes: isMember ? undefined : driver.notes,
+    seasonStats: null,
+  };
+}
+
+function buildDriverSeasonStats(state: GameState, driverId: string): DriverSeasonStats {
+  const recent: DriverSeasonStats['recent'] = [];
+  let starts = 0;
+  let wins = 0;
+  let podiums = 0;
+  let top10s = 0;
+  let dnfs = 0;
+  let points = 0;
+  let finishSum = 0;
+  let classifiedFinishes = 0;
+
+  for (const race of state.calendar) {
+    const result = state.completedRaceResults[race.id]?.find((r) => r.driverId === driverId);
+    if (!result) continue;
+    starts += 1;
+    points += result.points;
+    if (result.status !== 'Finished') dnfs += 1;
+    if (result.position != null) {
+      finishSum += result.position;
+      classifiedFinishes += 1;
+      if (result.position === 1) wins += 1;
+      if (result.position <= 3) podiums += 1;
+      if (result.position <= 10) top10s += 1;
+    }
+    recent.push({ round: race.round, name: race.gpName, result });
+  }
+
+  return {
+    starts,
+    wins,
+    podiums,
+    top10s,
+    dnfs,
+    points,
+    averageFinish: classifiedFinishes > 0 ? finishSum / classifiedFinishes : null,
+    recent,
   };
 }
 
@@ -316,9 +370,13 @@ function DriverDossierModal({
               </DossierPanel>
 
               <DossierPanel title="Career Notes" emphasis={focus === 'career'}>
-                <p className="driver-dossier-note">
-                  {profile.notes ?? 'Career history and detailed rivalries can plug into this panel as the record book grows.'}
-                </p>
+                {profile.seasonStats ? (
+                  <SeasonStats stats={profile.seasonStats} />
+                ) : (
+                  <p className="driver-dossier-note">
+                    {profile.notes ?? 'Season race history appears once this driver starts races in the save.'}
+                  </p>
+                )}
               </DossierPanel>
             </div>
           </section>
@@ -374,5 +432,37 @@ function MetricPill({ label, value, tone }: { label: string; value: ReactNode; t
       <span>{label}</span>
       <strong>{value}</strong>
     </div>
+  );
+}
+
+function SeasonStats({ stats }: { stats: DriverSeasonStats }) {
+  if (stats.starts === 0) {
+    return <p className="driver-dossier-note">No race starts recorded yet this season.</p>;
+  }
+
+  return (
+    <>
+      <div className="driver-dossier-tags">
+        <span>{stats.starts} starts</span>
+        <span>{stats.wins} wins</span>
+        <span>{stats.podiums} podiums</span>
+        <span>{stats.top10s} top 10s</span>
+        <span>{stats.dnfs} DNFs</span>
+      </div>
+      <MetricPill label="Points" value={stats.points} tone="good" />
+      <MetricPill
+        label="Avg finish"
+        value={stats.averageFinish != null ? stats.averageFinish.toFixed(1) : 'n/a'}
+        tone="watch"
+      />
+      <ul className="driver-dossier-list">
+        {stats.recent.slice(-5).map(({ round, name, result }) => (
+          <li key={`${round}-${name}`}>
+            R{round} {name}: {result.position != null ? `P${result.position}` : result.status}
+            {result.points > 0 ? `, ${result.points} pts` : ''}
+          </li>
+        ))}
+      </ul>
+    </>
   );
 }

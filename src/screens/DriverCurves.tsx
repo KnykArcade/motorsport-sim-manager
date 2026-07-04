@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 import { useGame } from '../game/GameContext';
 import { Panel } from '../components/Panel';
+import { DriverDossierButton } from '../components/driverCards/DriverDossier';
 import {
   createDriverDevelopmentCurve,
   developmentPhase,
@@ -80,6 +81,7 @@ function CurveCard({
   const overall = driver.ratings.overall;
   const trajectory = projectTrajectory(curve, age, overall, 5);
   const maxOverall = Math.max(10, ...trajectory.map((p) => p.overall));
+  const { state } = useGame();
 
   return (
     <Panel>
@@ -90,9 +92,22 @@ function CurveCard({
             Age {age} · peak {curve.peakAgeStart}–{curve.peakAgeEnd}
           </div>
         </div>
-        <span className={`rounded px-1.5 py-0.5 text-[10px] font-semibold ${PHASE_TONE[phase]}`}>
-          {phase}
-        </span>
+        <div className="flex shrink-0 items-center gap-1">
+          <span className={`rounded px-1.5 py-0.5 text-[10px] font-semibold ${PHASE_TONE[phase]}`}>
+            {phase}
+          </span>
+          {state && (
+            <DriverDossierButton
+              state={state}
+              subject={{ type: 'driver', driver }}
+              context="Development curve"
+              focus="development"
+              className="px-1.5 py-0.5"
+            >
+              Card
+            </DriverDossierButton>
+          )}
+        </div>
       </div>
 
       <div className="mb-3 grid grid-cols-2 gap-2 text-xs">

@@ -77,9 +77,8 @@ export function DriverMarket() {
   const potLabel = (id: string, skills: MarketSkillRatings, potential: number): string => {
     if (!scouting) return potential.toFixed(1);
     const v = fogView({ id, skills, potential }, scouting.reports[id], scouting.networkAccuracy, state.randomSeed);
-    return v.potential.revealed
-      ? v.potential.value!.toFixed(1)
-      : `${v.potential.range[0].toFixed(1)}–${v.potential.range[1].toFixed(1)}`;
+    const [lo, hi] = v.potential.range;
+    return `${lo.toFixed(1)}-${hi.toFixed(1)}`;
   };
 
   return (

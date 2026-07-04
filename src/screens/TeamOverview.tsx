@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { Fragment, useMemo, useState } from 'react';
 import { useGame } from '../game/GameContext';
 import { Panel } from '../components/Panel';
 import { RatingBadge } from '../components/RatingBadge';
@@ -156,71 +156,77 @@ export function TeamOverview() {
             </thead>
             <tbody>
               {sorted.map((row, i) => (
-                <tr
-                  key={row.teamId}
-                  onClick={() => setSelectedId(row.teamId)}
-                  className={`cursor-pointer border-b border-neutral-900 transition-colors hover:bg-neutral-800/40 ${
-                    row.isPlayer ? 'bg-amber-500/5' : ''
-                  } ${selectedId === row.teamId ? 'bg-neutral-800/60' : ''}`}
-                >
-                  <td className="px-2 py-2 tabular-nums text-neutral-500">
-                    {row.championshipPosition ?? i + 1}
-                  </td>
-                  <td className="px-2 py-2">
-                    <div className="flex items-center gap-2">
-                      <span className="h-4 w-1.5 rounded-sm" style={{ backgroundColor: row.color }} />
-                      <span className="font-medium text-neutral-100">{row.name}</span>
-                      {row.isPlayer && (
-                        <span className="rounded bg-amber-500/20 px-1.5 py-0.5 text-[10px] font-semibold text-amber-300">
-                          YOU
-                        </span>
-                      )}
-                    </div>
-                    {row.archetypeLabel && (
-                      <div className="text-[11px] text-neutral-500">{row.archetypeLabel}</div>
-                    )}
-                    {row.philosophyLabel && (
-                      <div className="text-[10px] text-neutral-600">{row.philosophyLabel}</div>
-                    )}
-                  </td>
-                  <td className="px-2 py-2">
-                    <span
-                      className="rounded px-1.5 py-0.5 text-xs font-semibold"
-                      style={{
-                        color: HEALTH_COLOR[row.financialHealth],
-                        backgroundColor: `${HEALTH_COLOR[row.financialHealth]}22`,
-                      }}
-                    >
-                      {HEALTH_LABELS[row.financialHealth]}
-                    </span>
-                  </td>
-                  <td className="px-2 py-2 text-right tabular-nums text-neutral-300">
-                    {formatMoney(row.budget)}
-                  </td>
-                  <td className="px-2 py-2 text-right tabular-nums text-neutral-400">
-                    {formatMoney(row.sponsorIncome)}
-                  </td>
-                  {RATING_COLUMNS.map((c) => (
-                    <td key={c.key} className="px-2 py-2 text-center">
-                      <RatingBadge value={row[c.field] as number} />
+                <Fragment key={row.teamId}>
+                  <tr
+                    onClick={() => setSelectedId(selectedId === row.teamId ? null : row.teamId)}
+                    className={`cursor-pointer border-b border-neutral-900 transition-colors hover:bg-neutral-800/40 ${
+                      row.isPlayer ? 'bg-amber-500/5' : ''
+                    } ${selectedId === row.teamId ? 'bg-neutral-800/60' : ''}`}
+                  >
+                    <td className="px-2 py-2 tabular-nums text-neutral-500">
+                      {row.championshipPosition ?? i + 1}
                     </td>
-                  ))}
-                  <td className="px-2 py-2">
-                    <span
-                      className="inline-flex items-center gap-1 text-xs font-medium"
-                      style={{ color: TREND_STYLE[row.trend].color }}
-                    >
-                      {TREND_STYLE[row.trend].icon} {TREND_LABELS[row.trend]}
-                    </span>
-                  </td>
-                </tr>
+                    <td className="px-2 py-2">
+                      <div className="flex items-center gap-2">
+                        <span className="h-4 w-1.5 rounded-sm" style={{ backgroundColor: row.color }} />
+                        <span className="font-medium text-neutral-100">{row.name}</span>
+                        {row.isPlayer && (
+                          <span className="rounded bg-amber-500/20 px-1.5 py-0.5 text-[10px] font-semibold text-amber-300">
+                            YOU
+                          </span>
+                        )}
+                      </div>
+                      {row.archetypeLabel && (
+                        <div className="text-[11px] text-neutral-500">{row.archetypeLabel}</div>
+                      )}
+                      {row.philosophyLabel && (
+                        <div className="text-[10px] text-neutral-600">{row.philosophyLabel}</div>
+                      )}
+                    </td>
+                    <td className="px-2 py-2">
+                      <span
+                        className="rounded px-1.5 py-0.5 text-xs font-semibold"
+                        style={{
+                          color: HEALTH_COLOR[row.financialHealth],
+                          backgroundColor: `${HEALTH_COLOR[row.financialHealth]}22`,
+                        }}
+                      >
+                        {HEALTH_LABELS[row.financialHealth]}
+                      </span>
+                    </td>
+                    <td className="px-2 py-2 text-right tabular-nums text-neutral-300">
+                      {formatMoney(row.budget)}
+                    </td>
+                    <td className="px-2 py-2 text-right tabular-nums text-neutral-400">
+                      {formatMoney(row.sponsorIncome)}
+                    </td>
+                    {RATING_COLUMNS.map((c) => (
+                      <td key={c.key} className="px-2 py-2 text-center">
+                        <RatingBadge value={row[c.field] as number} />
+                      </td>
+                    ))}
+                    <td className="px-2 py-2">
+                      <span
+                        className="inline-flex items-center gap-1 text-xs font-medium"
+                        style={{ color: TREND_STYLE[row.trend].color }}
+                      >
+                        {TREND_STYLE[row.trend].icon} {TREND_LABELS[row.trend]}
+                      </span>
+                    </td>
+                  </tr>
+                  {selectedId === row.teamId && detail && (
+                    <tr className="border-b border-neutral-800 bg-neutral-950/50">
+                      <td colSpan={18} className="px-3 py-4">
+                        <TeamDetail detail={detail} onClose={() => setSelectedId(null)} />
+                      </td>
+                    </tr>
+                  )}
+                </Fragment>
               ))}
             </tbody>
           </table>
         </div>
       </Panel>
-
-      {detail && <TeamDetail detail={detail} onClose={() => setSelectedId(null)} />}
     </div>
   );
 }
