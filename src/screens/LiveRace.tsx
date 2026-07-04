@@ -40,6 +40,11 @@ import { getLiveRaceEraTheme, shouldUseF11990sLiveRaceScreen } from './liveRace/
 
 type Speed = 1 | 10 | 30 | 60;
 
+type DnfAlert = {
+  lap: number;
+  entries: Array<{ driverId: string; cause: string }>;
+};
+
 export function LiveRace() {
   const { raceId } = useParams();
   const { state, dispatch } = useGame();
@@ -64,6 +69,7 @@ export function LiveRace() {
   const [trackAnimationTick, setTrackAnimationTick] = useState(0);
   const [modal, setModal] = useState<'log' | 'strategy' | 'orders' | null>(null);
   const [podium, setPodium] = useState<PodiumSnapshot | null>(null);
+  const [dnfAlert, setDnfAlert] = useState<DnfAlert | null>(null);
   const [decisionSecondsLeft, setDecisionSecondsLeft] = useState<number | null>(null);
   const committed = useRef(false);
   // Team orders called during the race, resolved into relationships at the flag.
@@ -86,11 +92,21 @@ export function LiveRace() {
     .sort()
     .join(',');
 
+  function advanceLiveLap(s: LiveRaceState): LiveRaceState {
+    const next = stepLiveRace(s, engine!.meta);
+    const alert = dnfAlertFromTransition(s, next);
+    if (alert) {
+      setPlaying(false);
+      setDnfAlert(alert);
+    }
+    return next;
+  }
+
   // Playback loop — steps a lap on an interval while playing, paused on prompts
   // or while a high/urgent recommendation is awaiting a decision.
   useEffect(() => {
     if (!engine || !live) return;
-    if (!playing || live.pendingPrompt || live.phase === 'finished' || needsDecision) return;
+    if (!playing || dnfAlert || live.pendingPrompt || live.phase === 'finished' || needsDecision) return;
     const useRealLapPacing = shouldUseF11990sLiveRaceScreen(state?.series, state?.seasonYear);
     const leaderForPacing = live.cars.find((c) => c.position === 1 && c.running);
     const liveLapTime =
@@ -103,10 +119,10 @@ export function LiveRace() {
       ? Math.max(15_000, Math.min(120_000, liveLapTime * 1000)) / speed
       : 950 / speed;
     const id = setInterval(() => {
-      setLive((s) => (s && !s.pendingPrompt && s.phase !== 'finished' ? stepLiveRace(s, engine.meta) : s));
+      setLive((s) => (s && !s.pendingPrompt && s.phase !== 'finished' ? advanceLiveLap(s) : s));
     }, intervalMs);
     return () => clearInterval(id);
-  }, [engine, live, playing, speed, needsDecision, state?.series, state?.seasonYear]);
+  }, [engine, live, playing, speed, needsDecision, dnfAlert, state?.series, state?.seasonYear]);
 
   useEffect(() => {
     const id = setTimeout(() => setTrackAnimationTick(0), 0);
@@ -162,7 +178,7 @@ export function LiveRace() {
   const driverNumber = (id: string) => state.drivers.find((d) => d.id === id)?.number ?? '';
   const teamColor = (id: string) => state.teams.find((t) => t.id === id)?.color ?? '#888';
 
-  const step = () => setLive((s) => (s ? stepLiveRace(s, engine.meta) : s));
+  const step = () => setLive((s) => (s ? advanceLiveLap(s) : s));
   const skipToEnd = () => {
     setPlaying(false);
     setLive((s) => (s ? stepLiveRaceToEnd(s, engine.meta) : s));
@@ -319,7 +335,7 @@ export function LiveRace() {
         <>
           <button
             onClick={() => setPlaying((p) => !p)}
-            disabled={!!live.pendingPrompt || needsDecision}
+            disabled={!!live.pendingPrompt || needsDecision || !!dnfAlert}
             className={`rounded px-3 py-1 text-xs font-bold ${
               playing ? 'bg-slate-700 text-slate-100' : 'bg-emerald-600 text-white'
             } disabled:opacity-40`}
@@ -328,7 +344,7 @@ export function LiveRace() {
           </button>
           <button
             onClick={step}
-            disabled={playing || !!live.pendingPrompt || needsDecision}
+            disabled={playing || !!live.pendingPrompt || needsDecision || !!dnfAlert}
             className="rounded bg-slate-800 px-2 py-1 text-xs font-semibold text-slate-200 hover:bg-slate-700 disabled:opacity-40"
           >
             +1
@@ -348,7 +364,7 @@ export function LiveRace() {
           </div>
           <button
             onClick={skipToEnd}
-            disabled={!!live.pendingPrompt || needsDecision}
+            disabled={!!live.pendingPrompt || needsDecision || !!dnfAlert}
             className="rounded bg-slate-800 px-2 py-1 text-xs font-semibold text-slate-200 hover:bg-slate-700 disabled:opacity-40"
           >
             ⏩
@@ -386,6 +402,7 @@ export function LiveRace() {
           monitor={monitor}
           activeRecs={activeRecs}
           needsDecision={needsDecision}
+          pausedByDnf={!!dnfAlert}
           decisionSecondsLeft={needsDecision ? decisionSecondsLeft ?? DECISION_COUNTDOWN_SECONDS : null}
           playing={playing}
           speed={speed}
@@ -420,6 +437,7 @@ export function LiveRace() {
             onChoose={chooseOption}
           />
         )}
+        {dnfAlert && <DnfOverlay alert={dnfAlert} nameOf={driverName} onClose={() => setDnfAlert(null)} />}
         {modal === 'log' && <FullEventLogModal events={live.events} onClose={() => setModal(null)} />}
         {modal === 'strategy' && (
           <StrategyModal
@@ -540,6 +558,7 @@ export function LiveRace() {
           onChoose={chooseOption}
         />
       )}
+      {dnfAlert && <DnfOverlay alert={dnfAlert} nameOf={driverName} onClose={() => setDnfAlert(null)} />}
 
       {/* Modals */}
       {modal === 'log' && <FullEventLogModal events={live.events} onClose={() => setModal(null)} />}
@@ -570,6 +589,15 @@ type PodiumSnapshot = {
   hasPlayerDriver: boolean;
   podium: Array<{ position: number; driver: string; teamColor: string; isPlayer: boolean }>;
 };
+
+function dnfAlertFromTransition(previous: LiveRaceState, next: LiveRaceState): DnfAlert | null {
+  const previousRunning = new Map(previous.cars.map((car) => [car.driverId, car.running]));
+  const entries = next.cars
+    .filter((car) => previousRunning.get(car.driverId) && !car.running && car.status === 'DNF')
+    .map((car) => ({ driverId: car.driverId, cause: car.lastIncident ?? 'Retired' }));
+  if (entries.length === 0) return null;
+  return { lap: next.currentLap, entries };
+}
 
 function buildPodiumSnapshot(
   results: RaceResult[],
@@ -617,6 +645,38 @@ function PodiumOverlay({ podium, onContinue }: { podium: PodiumSnapshot; onConti
         <div className="flex justify-end border-t border-neutral-800 px-5 py-4">
           <button onClick={onContinue} className="rounded bg-amber-500 px-4 py-2 text-sm font-bold uppercase text-neutral-950 hover:bg-amber-400">
             Post-Race Report
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function DnfOverlay({
+  alert,
+  nameOf,
+  onClose,
+}: {
+  alert: DnfAlert;
+  nameOf: (driverId: string) => string;
+  onClose: () => void;
+}) {
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/72 p-4 backdrop-blur-sm">
+      <div className="w-full max-w-xl rounded-xl border-2 border-red-500/70 bg-[#141018] p-5 shadow-2xl">
+        <div className="text-xs font-black uppercase tracking-wide text-red-300">Race Paused - DNF</div>
+        <h3 className="mt-1 text-xl font-black text-slate-100">Driver Retired on Lap {alert.lap}</h3>
+        <div className="mt-4 space-y-2">
+          {alert.entries.map((entry) => (
+            <div key={entry.driverId} className="rounded-lg border border-red-500/35 bg-red-950/30 px-3 py-2">
+              <div className="font-bold text-slate-100">{nameOf(entry.driverId)}</div>
+              <div className="text-sm text-red-200">{entry.cause}</div>
+            </div>
+          ))}
+        </div>
+        <div className="mt-5 flex justify-end">
+          <button onClick={onClose} className="rounded bg-red-500 px-4 py-2 text-sm font-bold uppercase text-white hover:bg-red-400">
+            Acknowledge
           </button>
         </div>
       </div>

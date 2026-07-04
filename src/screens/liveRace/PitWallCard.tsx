@@ -106,7 +106,7 @@ export function PitWallCard({
 
       <div className="mt-0.5 grid grid-cols-2 gap-1 text-center">
         <Metric label="Next Stop" value={nextStopText(car)} />
-        <Metric label="Last Stop" value={car.pit.lastPitStopTime != null ? `${car.pit.lastPitStopTime.toFixed(1)}s` : car.pit.lastPitLap != null ? `L${car.pit.lastPitLap}` : 'none'} />
+        <Metric label="Last Stop" value={lastStopText(car)} />
       </div>
       <div className="mt-0.5 rounded bg-slate-800/45 px-2 py-1 text-[10px] text-slate-300">
         <span className="text-slate-500">Estimated Pit Window: </span>
@@ -195,6 +195,13 @@ function nextStopText(car: LiveCarState): string {
   if (car.pit.window) return `L${car.pit.window.open}-${car.pit.window.close}`;
   const next = car.pit.scheduledLaps.find((lap) => lap > car.lapsCompleted);
   return next != null ? `L${next}` : 'TBD';
+}
+
+function lastStopText(car: LiveCarState): string {
+  if (car.pit.lastPitLap != null && car.pit.lastPitStopTime != null) return `L${car.pit.lastPitLap} - ${car.pit.lastPitStopTime.toFixed(1)}s`;
+  if (car.pit.lastPitLap != null) return `L${car.pit.lastPitLap}`;
+  if (car.pit.lastPitStopTime != null) return `${car.pit.lastPitStopTime.toFixed(1)}s`;
+  return 'none';
 }
 
 function pitWindowText(car: LiveCarState): string {

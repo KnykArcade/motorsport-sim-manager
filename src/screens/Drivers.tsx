@@ -21,9 +21,7 @@ export function Drivers() {
   const teamName = (id: string) => state.teams.find((t) => t.id === id)?.name ?? id;
   const teamColor = (id: string) => state.teams.find((t) => t.id === id)?.color ?? '#666';
 
-  const ordered = [...state.drivers].sort(
-    (a, b) => (readoutForDriverRating(state, b, 'overall').value ?? 0) - (readoutForDriverRating(state, a, 'overall').value ?? 0),
-  );
+  const ordered = state.drivers;
 
   const playerTeam = teamById(state, state.selectedTeamId);
   const raceSeats = activeDriversForTeam(state, state.selectedTeamId);
@@ -31,10 +29,10 @@ export function Drivers() {
   const racesRemaining = Math.max(1, state.calendar.length - state.currentRaceIndex);
   const teamBudget = playerTeam?.budget ?? 0;
   const canNegotiateContracts = state.gameMode !== 'SingleSeason' && !state.seasonComplete;
-  const extensionCost = (driver: typeof state.drivers[number], years: number) =>
-    driverExtensionSigningFee(driver, years, racesRemaining, state.calendar.length);
-  const extendDriver = (driverId: string, years: number) =>
-    dispatch({ type: 'EXTEND_DRIVER_CONTRACT', driverId, years });
+  const extensionCost = (driver: typeof state.drivers[number], years: number, offerMultiplier = 1) =>
+    Math.round(driverExtensionSigningFee(driver, years, racesRemaining, state.calendar.length) * offerMultiplier);
+  const extendDriver = (driverId: string, years: number, offerMultiplier: number) =>
+    dispatch({ type: 'EXTEND_DRIVER_CONTRACT', driverId, years, offerMultiplier });
 
   return (
     <div className="space-y-6">
@@ -208,8 +206,8 @@ function ContractExtensionControls({
   driver: NonNullable<ReturnType<typeof useGame>['state']>['drivers'][number];
   budget: number;
   canNegotiate: boolean;
-  extensionCost: (driver: NonNullable<ReturnType<typeof useGame>['state']>['drivers'][number], years: number) => number;
-  onExtend: (driverId: string, years: number) => void;
+  extensionCost: (driver: NonNullable<ReturnType<typeof useGame>['state']>['drivers'][number], years: number, offerMultiplier?: number) => number;
+  onExtend: (driverId: string, years: number, offerMultiplier: number) => void;
 }) {
   const yearsLeft = driver.contractYearsRemaining ?? 1;
   const maxed = yearsLeft >= 5;
@@ -221,11 +219,13 @@ function ContractExtensionControls({
     );
   }
   const oneYearCost = extensionCost(driver, 1);
-  const twoYearCost = extensionCost(driver, 2);
+  const strongOneYearCost = extensionCost(driver, 1, 1.35);
+  const twoYearCost = extensionCost(driver, 2, 1.2);
   return (
     <div className="mt-2 flex flex-wrap items-center gap-1.5 border-t border-neutral-800 pt-2 text-[11px]">
       <span className="mr-auto text-neutral-500">
         Contract: <span className="text-neutral-300">{yearsLeft} yr{yearsLeft === 1 ? '' : 's'} left</span>
+        <span className="ml-1 text-neutral-600">offer required</span>
       </span>
       {maxed ? (
         <span className="rounded bg-neutral-800 px-2 py-1 text-neutral-400">Max term</span>
@@ -235,20 +235,29 @@ function ContractExtensionControls({
             variant="ghost"
             className="px-2 py-1 text-[11px]"
             disabled={oneYearCost > budget}
-            title={oneYearCost > budget ? 'Insufficient budget' : `Costs ${formatMoney(oneYearCost)}`}
-            onClick={() => onExtend(driver.id, 1)}
+            title={oneYearCost > budget ? 'Insufficient budget' : `Offer ${formatMoney(oneYearCost)}; driver may accept or refuse`}
+            onClick={() => onExtend(driver.id, 1, 1)}
           >
-            Extend +1 ({formatMoney(oneYearCost)})
+            Offer +1 ({formatMoney(oneYearCost)})
+          </Button>
+          <Button
+            variant="ghost"
+            className="px-2 py-1 text-[11px]"
+            disabled={strongOneYearCost > budget}
+            title={strongOneYearCost > budget ? 'Insufficient budget' : `Improved offer ${formatMoney(strongOneYearCost)}`}
+            onClick={() => onExtend(driver.id, 1, 1.35)}
+          >
+            Better +1 ({formatMoney(strongOneYearCost)})
           </Button>
           {yearsLeft <= 3 && (
             <Button
               variant="ghost"
               className="px-2 py-1 text-[11px]"
               disabled={twoYearCost > budget}
-              title={twoYearCost > budget ? 'Insufficient budget' : `Costs ${formatMoney(twoYearCost)}`}
-              onClick={() => onExtend(driver.id, 2)}
+              title={twoYearCost > budget ? 'Insufficient budget' : `Two-year offer ${formatMoney(twoYearCost)}`}
+              onClick={() => onExtend(driver.id, 2, 1.2)}
             >
-              +2 ({formatMoney(twoYearCost)})
+              Offer +2 ({formatMoney(twoYearCost)})
             </Button>
           )}
         </>

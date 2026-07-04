@@ -23,6 +23,7 @@ type Props = {
   monitor: AnalyticsMonitor;
   activeRecs: AnalyticsRecommendation[];
   needsDecision: boolean;
+  pausedByDnf?: boolean;
   decisionSecondsLeft: number | null;
   playing: boolean;
   speed: Speed;
@@ -59,6 +60,7 @@ export function F11990sLiveRaceScreen({
   monitor,
   activeRecs,
   needsDecision,
+  pausedByDnf = false,
   decisionSecondsLeft,
   playing,
   speed,
@@ -89,7 +91,7 @@ export function F11990sLiveRaceScreen({
   const raceTime = formatElapsed(leader?.totalTime ?? 0);
   const airTemp = forecast[0]?.temp ?? (live.weather.wet ? 18 : 22);
   const trackTemp = airTemp + (live.weather.wet ? 2 : 6);
-  const canAdvance = !live.pendingPrompt && !needsDecision && !finished;
+  const canAdvance = !live.pendingPrompt && !needsDecision && !pausedByDnf && !finished;
   const fuelWindow = playerCars[0]
     ? `Lap ${Math.max(1, live.currentLap)} - Lap ${Math.min(live.totalLaps, Math.ceil((playerCars[0].fuel / 100) * live.totalLaps))}`
     : 'N/A';
@@ -823,8 +825,9 @@ function pitWindowStatus(car: LiveCarState): string {
 }
 
 function lastStopText(car: LiveCarState): string {
-  if (car.pit.lastPitStopTime != null) return `Last ${car.pit.lastPitStopTime.toFixed(1)}s`;
+  if (car.pit.lastPitLap != null && car.pit.lastPitStopTime != null) return `Last L${car.pit.lastPitLap} - ${car.pit.lastPitStopTime.toFixed(1)}s`;
   if (car.pit.lastPitLap != null) return `Last L${car.pit.lastPitLap}`;
+  if (car.pit.lastPitStopTime != null) return `Last ${car.pit.lastPitStopTime.toFixed(1)}s`;
   return 'No stop yet';
 }
 

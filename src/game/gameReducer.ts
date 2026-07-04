@@ -202,7 +202,7 @@ export type GameAction =
   | { type: 'SWAP_RACE_DRIVER'; seatIndex: number; reserveDriverId: string }
   | { type: 'SIGN_THIRD_DRIVER'; marketId: string }
   | { type: 'PROMOTE_THIRD_DRIVER'; seatDriverId: string; thirdDriverId: string }
-  | { type: 'EXTEND_DRIVER_CONTRACT'; driverId: string; years: number }
+  | { type: 'EXTEND_DRIVER_CONTRACT'; driverId: string; years: number; offerMultiplier?: number }
   | { type: 'ADVANCE_SEASON'; nextBundle?: import('../data/seasonCatalog').SeasonBundle }
   | { type: 'ADVANCE_RACE' }
   | { type: 'SIGN_RACE_DRIVER'; marketId: string }
@@ -652,7 +652,7 @@ export function gameReducer(state: GameState | null, action: GameAction): GameSt
 
     case 'EXTEND_DRIVER_CONTRACT': {
       if (!state) return state;
-      return extendDriverContract(state, action.driverId, action.years);
+      return extendDriverContract(state, action.driverId, action.years, action.offerMultiplier ?? 1);
     }
 
     case 'ADVANCE_SEASON': {
@@ -847,7 +847,7 @@ function clamp100(n: number): number {
   return Math.max(0, Math.min(100, Math.round(n)));
 }
 
-function extendDriverContract(state: GameState, driverId: string, years: number): GameState {
+function extendDriverContract(state: GameState, driverId: string, years: number, offerMultiplier: number): GameState {
   if (state.seasonComplete) return state;
   const driver = state.drivers.find((d) => d.id === driverId && d.teamId === state.selectedTeamId);
   if (!driver) return state;
@@ -856,12 +856,32 @@ function extendDriverContract(state: GameState, driverId: string, years: number)
   if (currentYears >= 5) return state;
   const appliedYears = Math.min(addYears, 5 - currentYears);
   const racesRemaining = Math.max(1, state.calendar.length - state.currentRaceIndex);
-  const fee = driverExtensionSigningFee(driver, appliedYears, racesRemaining, state.calendar.length);
+  const multiplier = Math.max(1, Math.min(2.5, offerMultiplier));
+  const fee = Math.round(driverExtensionSigningFee(driver, appliedYears, racesRemaining, state.calendar.length) * multiplier);
   if (fee > playerBudget(state)) return state;
+
+  const offer = evaluateExtensionOffer(state, driver, appliedYears, multiplier);
+  if (!offer.accepted) {
+    const rel = state.driverRelationships?.[driverId];
+    const driverRelationships =
+      state.driverRelationships && rel
+        ? {
+            ...state.driverRelationships,
+            [driverId]: {
+              ...rel,
+              frustration: clamp100(rel.frustration + 4),
+              morale: clamp100(rel.morale - 2),
+              trustInPrincipal: clamp100(rel.trustInPrincipal - 2),
+            },
+          }
+        : state.driverRelationships;
+    const refusalNews = contractOfferNews(state, driver, appliedYears, fee, false, offer.score);
+    return { ...state, driverRelationships, news: [refusalNews, ...state.news].slice(0, 80) };
+  }
 
   const charged = applyTransaction(
     state,
-    makeTransaction(state.seasonYear, 'Driver Signing', `Extended ${driver.name} +${appliedYears} yr`, -fee),
+    makeTransaction(state.seasonYear, 'Driver Signing', `Extension accepted: ${driver.name} +${appliedYears} yr`, -fee),
   );
   const drivers = charged.drivers.map((d) =>
     d.id === driverId
@@ -884,9 +904,58 @@ function extendDriverContract(state: GameState, driverId: string, years: number)
             morale: clamp100(rel.morale + 3 * appliedYears),
             frustration: clamp100(rel.frustration - 4 * appliedYears),
           },
-        }
+      }
       : charged.driverRelationships;
-  return { ...charged, drivers, driverRelationships };
+  const acceptedNews = contractOfferNews(charged, driver, appliedYears, fee, true, offer.score);
+  return { ...charged, drivers, driverRelationships, news: [acceptedNews, ...charged.news].slice(0, 80) };
+}
+
+function evaluateExtensionOffer(
+  state: GameState,
+  driver: Driver,
+  appliedYears: number,
+  offerMultiplier: number,
+): { accepted: boolean; score: number } {
+  const rel = state.driverRelationships?.[driver.id];
+  const team = state.teams.find((t) => t.id === state.selectedTeamId);
+  const relationshipScore = rel
+    ? rel.morale * 0.16 + rel.teamLoyalty * 0.16 + rel.trustInPrincipal * 0.14 - rel.frustration * 0.18
+    : driver.morale * 0.18 + driver.confidence * 0.12;
+  const driverMood = driver.morale * 0.12 + driver.confidence * 0.08;
+  const teamPull = Math.max(-8, Math.min(8, (((team as Team | undefined)?.reputation ?? 50) - 50) / 5));
+  const ambitionPenalty = Math.max(0, driver.ratings.overall - 8) * 7;
+  const securityBoost = appliedYears * 3 + (offerMultiplier - 1) * 44;
+  const expiringBoost = (driver.contractYearsRemaining ?? 1) <= 1 ? 4 : 0;
+  const score = Math.round(22 + relationshipScore + driverMood + teamPull + securityBoost + expiringBoost - ambitionPenalty);
+  return { accepted: score >= 58, score };
+}
+
+function contractOfferNews(
+  state: GameState,
+  driver: Driver,
+  appliedYears: number,
+  fee: number,
+  accepted: boolean,
+  score: number,
+): NewsItem {
+  const team = state.teams.find((t) => t.id === state.selectedTeamId);
+  const suffix = `${state.seasonYear}-${state.currentRaceIndex}-${driver.id}-${appliedYears}-${fee}-${state.news.length}`;
+  return {
+    id: `news-contract-offer-${accepted ? 'accepted' : 'refused'}-${suffix}`,
+    round: currentRace(state)?.round,
+    headline: accepted
+      ? `${driver.name} agrees to ${appliedYears}-year extension`
+      : `${driver.name} turns down extension offer`,
+    body: accepted
+      ? `${team?.name ?? 'The team'} secured the deal after the driver accepted the extension package.`
+      : `${driver.name} is not ready to commit on those terms and may need a stronger offer or a happier team situation. Interest score: ${score}.`,
+    timestamp: new Date().toISOString(),
+    category: 'driver_market',
+    priority: accepted ? 'normal' : 'high',
+    careerPhase: getCareerPhase(state),
+    teamId: state.selectedTeamId,
+    driverId: driver.id,
+  };
 }
 
 // Queue (or replace) a seat change for the player's seat held by seatDriverId.

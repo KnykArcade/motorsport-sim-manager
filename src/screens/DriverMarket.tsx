@@ -174,12 +174,7 @@ export function DriverMarket() {
 
       {bundle && (tab === 'senior' || tab === 'crossover') && (
         <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
-          {[...(tab === 'senior' ? seniorDrivers : crossoverDrivers)]
-            .sort(
-              (a, b) =>
-                (readoutForMarketOverall(state, b.id, b.skills, b.potential, b.overall).value ?? 0) -
-                (readoutForMarketOverall(state, a.id, a.skills, a.potential, a.overall).value ?? 0),
-            )
+          {(tab === 'senior' ? seniorDrivers : crossoverDrivers)
             .map((d) => {
               const interest = marketDriverOfferInterest(state, d, orgOverall, carOverall);
               return (
@@ -565,9 +560,7 @@ function YouthTab({
   onReleaseSigning: (seatDriverId: string) => void;
 }) {
   const academyByProspect = new Set(academy.map((a) => a.prospectId));
-  const available = [...prospects]
-    .filter((p) => !academyByProspect.has(p.id))
-    .sort((a, b) => (readoutForPotential(state, b.id, b.skills, b.potential, 'YouthProspect').value ?? 0) - (readoutForPotential(state, a.id, a.skills, a.potential, 'YouthProspect').value ?? 0));
+  const available = prospects.filter((p) => !academyByProspect.has(p.id));
   const academyFull = academy.length >= academyCapacity;
 
   return (

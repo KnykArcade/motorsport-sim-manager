@@ -132,7 +132,7 @@ function Row({ car, tab, name, color }: { car: LiveCarState; tab: Tab; name: str
             {nextPitText(car)}
           </td>
           <td className="py-1 pr-2 text-right tabular-nums text-slate-500">
-            {car.pit.lastPitStopTime != null ? `${car.pit.lastPitStopTime.toFixed(1)}s` : car.pit.lastPitLap != null ? `L${car.pit.lastPitLap}` : '—'}
+            {lastPitText(car)}
           </td>
         </>
       )}
@@ -174,6 +174,13 @@ function nextPitText(car: LiveCarState): string {
   if (car.pit.window) return `L${car.pit.window.open}-${car.pit.window.close}`;
   const next = car.pit.scheduledLaps.find((lap) => lap > car.lapsCompleted);
   return next != null ? `L${next}` : 'TBD';
+}
+
+function lastPitText(car: LiveCarState): string {
+  if (car.pit.lastPitLap != null && car.pit.lastPitStopTime != null) return `L${car.pit.lastPitLap} - ${car.pit.lastPitStopTime.toFixed(1)}s`;
+  if (car.pit.lastPitLap != null) return `L${car.pit.lastPitLap}`;
+  if (car.pit.lastPitStopTime != null) return `${car.pit.lastPitStopTime.toFixed(1)}s`;
+  return '—';
 }
 
 // Compact "F. Surname" so long names fit the tower.
