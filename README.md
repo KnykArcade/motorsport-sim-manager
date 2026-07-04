@@ -27,6 +27,8 @@ Vite · React · TypeScript (strict) · React Router · Tailwind CSS.
 ## Getting started
 
 ```bash
+nvm install
+nvm use
 npm install
 npm run dev        # start the dev server
 npm run build      # typecheck + production build
