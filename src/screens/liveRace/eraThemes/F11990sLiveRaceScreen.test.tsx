@@ -132,7 +132,7 @@ describe('F11990sLiveRaceScreen', () => {
     const live = liveState();
     const html = renderToStaticMarkup(
       <F11990sLiveRaceScreen
-        state={{ seasonYear: 1995 } as GameState}
+        state={{ series: 'F1', seasonYear: 1995 } as GameState}
         race={{
           id: 'r-belgium-1995',
           gpName: 'Belgian Grand Prix',
@@ -185,6 +185,7 @@ describe('F11990sLiveRaceScreen', () => {
     expect(html).toContain('A. Senna');
     expect(html).toContain('M. Schumacher');
     expect(html).toContain('Live Timing');
+    expect(html).toContain('data-testid="track-map-asset-panel"');
     expect((html.match(/Driver Focus/g) ?? []).length).toBeGreaterThanOrEqual(2);
     expect(html).toContain('Driver Focus');
     expect(html).toContain('Team Radio');
@@ -205,7 +206,7 @@ describe('F11990sLiveRaceScreen', () => {
 
     const html = renderToStaticMarkup(
       <F11990sLiveRaceScreen
-        state={{ seasonYear: 1995 } as GameState}
+        state={{ series: 'F1', seasonYear: 1995 } as GameState}
         race={{
           id: 'r-belgium-1995',
           gpName: 'Belgian Grand Prix',
