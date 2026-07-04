@@ -110,6 +110,15 @@ export function createNewGame(options: NewGameOptions): GameState {
   // Seed the job-market profile's starting reputation from the created identity.
   if (principal && teamPrincipal) {
     principal.reputation = Math.round((principal.reputation + teamPrincipal.reputation) / 2);
+    if (teamPrincipal.startingLevel === 'veteran') {
+      principal.level = Math.max(principal.level, 4);
+      principal.skillPoints = Math.max(principal.skillPoints, 4);
+      principal.jobSecurity = Math.max(principal.jobSecurity, 58);
+    } else if (teamPrincipal.startingLevel === 'superstar') {
+      principal.level = Math.max(principal.level, 7);
+      principal.skillPoints = Math.max(principal.skillPoints, 8);
+      principal.jobSecurity = Math.max(principal.jobSecurity, 70);
+    }
   }
   const jobOffers = principal
     ? generateJobOffers(principal, bundle.teams, teamReputations, options.seasonYear, seed)

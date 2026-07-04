@@ -36,6 +36,7 @@ export function EngineSupplier() {
   const current = engine.currentDeal;
   const pending = engine.pendingDeal;
   const budget = team.budget;
+  const inPreseasonSetup = state.careerPhase?.currentPhase === 'pre_season_setup';
   const offers = availableEngineOffers(engine, team);
   const bySupplier = new Map<string, EngineOffer[]>();
   for (const o of offers) {
@@ -87,7 +88,7 @@ export function EngineSupplier() {
                 {list.map((o) => {
                   const cur = isCurrent(o);
                   const pend = isPending(o);
-                  const fee = engineSwitchFee(current, o);
+                  const fee = inPreseasonSetup ? 0 : engineSwitchFee(current, o);
                   const affordable = toMoney(fee) <= budget + toMoney(engine.pendingDealFee ?? 0);
                   return (
                     <div key={o.dealType} className="rounded-md border border-neutral-800/80 p-2">
@@ -118,7 +119,7 @@ export function EngineSupplier() {
                                 dispatch({ type: 'SIGN_ENGINE_DEAL', supplierId: o.supplier.id, dealType: o.dealType })
                               }
                             >
-                              {fee > 0 ? `Sign — $${fee}M buyout` : 'Sign for next season'}
+                              {fee > 0 ? `Sign - $${fee}M buyout` : 'Select for season'}
                             </Button>
                             {!affordable && (
                               <div className="mt-1 text-center text-[10px] text-red-400">Insufficient budget</div>
@@ -230,3 +231,4 @@ function ManufacturerPanel({ engine }: { engine: EngineState }) {
     </Panel>
   );
 }
+

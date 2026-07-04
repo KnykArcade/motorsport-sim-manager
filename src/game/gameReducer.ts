@@ -1023,7 +1023,8 @@ function signEngineDeal(state: GameState, supplierId: string, dealType: EngineDe
 
   // A new switch: buy out the current contract. The fee is affordable against the
   // budget after refunding any previously-queued fee.
-  const fee = engineSwitchFee(current, offer);
+  const inPreseasonSetup = state.careerPhase?.currentPhase === 'pre_season_setup';
+  const fee = inPreseasonSetup ? 0 : engineSwitchFee(current, offer);
   if (toMoney(fee) > playerBudget(state) + toMoney(refundM)) return state;
 
   let next = state;

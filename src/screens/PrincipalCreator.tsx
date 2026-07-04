@@ -22,7 +22,13 @@ import {
 } from '../sim/principalCreator';
 import type { PrincipalModifierKey, TeamPrincipal } from '../types/principalTypes';
 
-const TRAIT_POINTS_TOTAL = 400;
+const STARTING_LEVELS = [
+  { id: 'rookie', label: 'Rookie', badge: 'NAT B', points: 300, reputation: -4, level: 1 },
+  { id: 'veteran', label: 'Veteran', badge: 'INT B', points: 400, reputation: 4, level: 4 },
+  { id: 'superstar', label: 'Superstar', badge: 'INT A', points: 520, reputation: 12, level: 7 },
+] as const;
+
+type StartingLevelId = (typeof STARTING_LEVELS)[number]['id'];
 
 export function PrincipalCreator({
   teamName,
@@ -38,10 +44,12 @@ export function PrincipalCreator({
   confirmLabel: string;
 }) {
   const [draft, setDraft] = useState<PrincipalDraft>(defaultPrincipalDraft);
+  const [startingLevel, setStartingLevel] = useState<StartingLevelId>('rookie');
   const set = <K extends keyof PrincipalDraft>(key: K, value: PrincipalDraft[K]) =>
     setDraft((d) => ({ ...d, [key]: value }));
 
   const principal = useMemo(() => buildTeamPrincipal(draft), [draft]);
+  const levelSpec = STARTING_LEVELS.find((level) => level.id === startingLevel) ?? STARTING_LEVELS[0];
   const [traitPoints, setTraitPoints] = useState({
     driverManagement: principal.driverManagement,
     developmentFocus: principal.developmentFocus,
@@ -51,8 +59,17 @@ export function PrincipalCreator({
     riskTolerance: principal.riskTolerance,
   });
   const spentPoints = Object.values(traitPoints).reduce((sum, value) => sum + value, 0);
-  const pointsRemaining = TRAIT_POINTS_TOTAL - spentPoints;
-  const adjustedPrincipal = useMemo<TeamPrincipal>(() => ({ ...principal, ...traitPoints }), [principal, traitPoints]);
+  const pointsRemaining = levelSpec.points - spentPoints;
+  const adjustedPrincipal = useMemo<TeamPrincipal>(
+    () => ({
+      ...principal,
+      ...traitPoints,
+      startingLevel,
+      traitPointBudget: levelSpec.points,
+      reputation: Math.max(0, Math.min(100, principal.reputation + levelSpec.reputation)),
+    }),
+    [levelSpec.points, levelSpec.reputation, principal, startingLevel, traitPoints],
+  );
   const modifiers = useMemo(() => computePrincipalModifiers(principal), [principal]);
 
   const initials =
@@ -67,12 +84,17 @@ export function PrincipalCreator({
 
   const label = (list: PrincipalOption[], id: string) => optionById(list, id)?.label ?? '—';
   const credential = credentialBadge(adjustedPrincipal.reputation, spentPoints);
-  const confirmDisabled = !draft.name.trim();
+  const confirmDisabled = !draft.name.trim() || pointsRemaining !== 0;
+  const applyStartingLevel = (id: StartingLevelId) => {
+    const spec = STARTING_LEVELS.find((level) => level.id === id) ?? STARTING_LEVELS[0];
+    setStartingLevel(id);
+    setTraitPoints((current) => fitTraitBudget(current, spec.points));
+  };
   const setTrait = (key: keyof typeof traitPoints, value: number) => {
     setTraitPoints((current) => {
       const next = { ...current, [key]: value };
       const total = Object.values(next).reduce((sum, v) => sum + v, 0);
-      return total > TRAIT_POINTS_TOTAL ? current : next;
+      return total > levelSpec.points ? current : next;
     });
   };
 
@@ -90,7 +112,7 @@ export function PrincipalCreator({
           </p>
         </div>
         <Button variant="primary" disabled={confirmDisabled} onClick={() => onConfirm(adjustedPrincipal)}>
-          {draft.name.trim() ? confirmLabel : 'Name your principal'}
+          {!draft.name.trim() ? 'Name your principal' : pointsRemaining !== 0 ? 'Allocate all preset points' : confirmLabel}
         </Button>
       </div>
 
@@ -227,7 +249,24 @@ export function PrincipalCreator({
 
           <Section title="Trait Profile">
             <div className={`mb-3 rounded border px-2 py-1 text-xs ${pointsRemaining === 0 ? 'border-green-500/30 bg-green-500/10 text-green-300' : 'border-amber-500/30 bg-amber-500/10 text-amber-300'}`}>
-              {credential.label} · {pointsRemaining} point{pointsRemaining === 1 ? '' : 's'} remaining
+              {credential.label} · {levelSpec.label} preset · {pointsRemaining} point{pointsRemaining === 1 ? '' : 's'} remaining
+            </div>
+            <div className="mb-3 grid grid-cols-3 gap-2">
+              {STARTING_LEVELS.map((level) => (
+                <button
+                  key={level.id}
+                  type="button"
+                  onClick={() => applyStartingLevel(level.id)}
+                  className={`rounded-lg border px-2 py-2 text-left text-xs transition ${
+                    startingLevel === level.id
+                      ? 'border-amber-500 bg-amber-500/10 text-neutral-100'
+                      : 'border-neutral-800 bg-neutral-900/40 text-neutral-300 hover:border-neutral-600'
+                  }`}
+                >
+                  <div className="font-bold">{level.label}</div>
+                  <div className="mt-0.5 text-[10px] text-neutral-500">{level.points} pts · {level.badge}</div>
+                </button>
+              ))}
             </div>
             <div className="grid grid-cols-2 gap-2">
               <TraitAdjust label="Driver Mgmt" value={traitPoints.driverManagement} onChange={(v) => setTrait('driverManagement', v)} />
@@ -282,11 +321,38 @@ export function PrincipalCreator({
           <Button variant="ghost" onClick={onBack}>
             ← Back
           </Button>
-          <Button variant="primary" disabled={confirmDisabled} onClick={() => onConfirm(adjustedPrincipal)}>`n            {draft.name.trim() ? confirmLabel : 'Name your principal'}`n          </Button>
+          <Button variant="primary" disabled={confirmDisabled} onClick={() => onConfirm(adjustedPrincipal)}>
+            {!draft.name.trim() ? 'Name your principal' : pointsRemaining !== 0 ? 'Allocate all preset points' : confirmLabel}
+          </Button>
         </div>
       </Section>
     </div>
   );
+}
+
+function fitTraitBudget<T extends Record<string, number>>(current: T, target: number): T {
+  const entries = Object.entries(current) as [keyof T, number][];
+  const total = entries.reduce((sum, [, value]) => sum + value, 0);
+  if (total === target) return current;
+  const scaled = Object.fromEntries(
+    entries.map(([key, value]) => [key, Math.max(0, Math.min(100, Math.round((value / Math.max(1, total)) * target)))]),
+  ) as T;
+  let diff = target - Object.values(scaled).reduce((sum, value) => sum + Number(value), 0);
+  const keys = entries.map(([key]) => key);
+  let cursor = 0;
+  while (diff !== 0 && keys.length > 0 && cursor < 1000) {
+    const key = keys[cursor % keys.length];
+    const value = Number(scaled[key]);
+    if (diff > 0 && value < 100) {
+      scaled[key] = (value + 1) as T[keyof T];
+      diff--;
+    } else if (diff < 0 && value > 0) {
+      scaled[key] = (value - 1) as T[keyof T];
+      diff++;
+    }
+    cursor++;
+  }
+  return scaled;
 }
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {

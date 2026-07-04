@@ -50,6 +50,8 @@ export type TeamPrincipalProfile = {
 export type TeamPrincipal = {
   id: string;
   name: string;
+  startingLevel?: 'rookie' | 'veteran' | 'superstar';
+  traitPointBudget?: number;
   nationality?: string;
   age?: number;
   background: string;
