@@ -1,16 +1,8 @@
 import { getRaceWeekendEraTheme } from '../../../components/raceWeekend/eraThemes/getRaceWeekendEraTheme';
 import type { Series } from '../../../types/gameTypes';
+import type { MotorsportEraTheme } from '../../../theme/eraTheme';
 
-export type LiveRaceEraTheme =
-  | 'f1-1990s'
-  | 'f1-2000s'
-  | 'f1-2010s'
-  | 'f1-2020s'
-  | 'indycar-2008-2011'
-  | 'indycar-2012-2017'
-  | 'indycar-2018-2023'
-  | 'indycar-modern'
-  | 'fallback';
+export type LiveRaceEraTheme = MotorsportEraTheme;
 
 export function getLiveRaceEraTheme(
   series: Series | string | undefined | null,

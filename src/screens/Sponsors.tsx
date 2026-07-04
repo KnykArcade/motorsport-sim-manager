@@ -50,7 +50,7 @@ export function Sponsors() {
   const slotsFull = used >= capacity;
 
   return (
-    <div className="space-y-6">
+    <div className="era-feature-screen era-sponsors-screen space-y-6">
       <div>
         <h1 className="text-2xl font-bold text-neutral-100">Sponsors &amp; Commercial</h1>
         <p className="text-sm text-neutral-400">{team?.name} · portfolio, objectives &amp; owner expectations</p>
