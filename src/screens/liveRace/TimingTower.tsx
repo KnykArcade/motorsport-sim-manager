@@ -21,7 +21,7 @@ export function TimingTower({
 }) {
   const [tab, setTab] = useState<Tab>('Overview');
   return (
-    <div className="flex min-h-0 flex-col overflow-hidden rounded-lg border border-slate-700/60 bg-[#111725]">
+    <div className="flex h-full min-h-[360px] min-w-0 flex-col overflow-hidden rounded-lg border border-slate-700/60 bg-[#111725]">
       <div className="flex shrink-0 items-center justify-between border-b border-slate-700/50 px-3 py-1.5">
         <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-400">Timing Tower</span>
         <span className="text-[10px] text-slate-500">{cars.filter((c) => c.running).length} running</span>
@@ -39,7 +39,7 @@ export function TimingTower({
           </button>
         ))}
       </div>
-      <div className="min-h-0 flex-1 overflow-y-auto pb-3">
+      <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain pb-6 pr-1">
         <table className="w-full text-[11px]">
           <tbody>
             {cars.map((c) => (

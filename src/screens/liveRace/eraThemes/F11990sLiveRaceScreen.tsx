@@ -189,7 +189,7 @@ export function F11990sLiveRaceScreen({
             {playerCars.slice(0, 2).map((car) => (
               <div key={car.driverId}>
                 <span className="text-amber-300">{shortName(nameOf(car.driverId)).toUpperCase()}:</span>{' '}
-                <span className="text-zinc-200">"{radioLine(car)}"</span>
+                <span className="text-zinc-200">"{radioLine(car, live.currentLap)}"</span>
               </div>
             ))}
           </div>
@@ -201,10 +201,7 @@ export function F11990sLiveRaceScreen({
               {playerCars.map((car) => (
                 <div key={car.driverId} className="flex items-center justify-between gap-2">
                   <span className="truncate">{shortName(nameOf(car.driverId)).toUpperCase()}</span>
-                  <span className="shrink-0 tabular-nums">
-                    Stops: {car.pit.stopsMade}/{car.pit.plannedStops}
-                    {car.pit.lastPitLap != null ? ` (L${car.pit.lastPitLap})` : ''}
-                  </span>
+                  <span className="shrink-0 tabular-nums">{pitWindowText(car)}</span>
                 </div>
               ))}
               {playerCars.length === 0 && <div>No planned stop</div>}
@@ -630,6 +627,12 @@ function DriverFocus({
                 </button>
               ))}
             </div>
+            <div className="mt-1 grid grid-cols-2 gap-x-2 gap-y-0.5 border-t border-zinc-800 pt-1">
+              <ReliabilityLine label="Engine" value={car.engineHealth} />
+              <ReliabilityLine label="Brakes" value={car.brakeHealth} />
+              <ReliabilityLine label="Gearbox" value={car.gearboxHealth} />
+              <ReliabilityLine label="Aero" value={car.aeroHealth ?? (car.damaged ? 72 : 100)} />
+            </div>
           </div>
         )}
       </div>
@@ -672,12 +675,44 @@ function raceAlert(live: LiveRaceState, forecast: ForecastEntry[]): string | nul
   return null;
 }
 
-function radioLine(car: LiveCarState): string {
+function radioLine(car: LiveCarState, lap: number): string {
   if (!car.running && car.status !== 'Finished') return car.lastIncident ?? 'We are out of the race.';
   if (car.reliabilityIssue) return `${car.reliabilityIssue.label} warning. Manage the car.`;
-  if (car.pit.window && car.pit.window.open <= car.lapsCompleted + 1) return 'Box this lap if traffic allows.';
+  if (car.pit.window && car.pit.window.open <= car.lapsCompleted + 1 && car.pit.stopsMade < car.pit.plannedStops) return 'Box this lap if traffic allows.';
   if (car.tire.wear > 65) return 'Rear tyres are starting to fade.';
-  return 'Car is good. Balance is stable.';
+  if (car.fuel < 18) return 'Fuel number is tight. Lift and coast if we need it.';
+  if (car.aeroHealth != null && car.aeroHealth < 75) return 'Aero balance is compromised. Watch the high speed entries.';
+  const lines = [
+    'Car is good. Balance is stable.',
+    `Current mode ${modeLabel(car.paceMode)} is understood.`,
+    car.gapToLeader > 0 ? `Gap ahead is ${car.interval.toFixed(1)} seconds.` : 'Clean air at the front.',
+    car.tire.wear > 45 ? 'Tyres are moving now, manage exits.' : 'Tyre temperatures look controlled.',
+  ];
+  return lines[Math.abs((lap + car.driverId.length + (car.position ?? 0)) % lines.length)];
+}
+
+function pitWindowText(car: LiveCarState): string {
+  const stopsLeft = car.pit.plannedStops - car.pit.stopsMade;
+  if (stopsLeft <= 0) return 'No planned stops';
+  const w = car.pit.window;
+  if (!w) return 'Window TBD';
+  if (car.lapsCompleted < w.open) return `Window L${w.open}-${w.close}`;
+  if (car.lapsCompleted <= w.close) return `OPEN to L${w.close}`;
+  return `Late - was L${w.ideal}`;
+}
+
+function ReliabilityLine({ label, value }: { label: string; value: number }) {
+  const pct = Math.max(0, Math.min(100, value));
+  const color = pct < 45 ? 'bg-red-500' : pct < 65 ? 'bg-orange-500' : pct < 82 ? 'bg-amber-400' : 'bg-emerald-400';
+  return (
+    <div className="flex items-center gap-1 text-[9px]">
+      <span className="w-10 uppercase text-zinc-500">{label}</span>
+      <span className="h-1 flex-1 overflow-hidden rounded bg-zinc-800">
+        <span className={`block h-full ${color}`} style={{ width: `${pct}%` }} />
+      </span>
+      <span className="w-7 text-right tabular-nums text-zinc-300">{Math.round(pct)}%</span>
+    </div>
+  );
 }
 
 function shortName(name: string): string {

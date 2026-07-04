@@ -93,7 +93,7 @@ import type {
 import type { EngineDealType } from '../types/engineTypes';
 import type { RegulationVote } from '../types/politicsTypes';
 import type { ScoutedEntityType } from '../types/scoutingTypes';
-import { recordScouting, scoutingCost, type ScoutTarget } from '../sim/scoutingEngine';
+import { driverScoutTarget, recordScouting, scoutingCost, type ScoutTarget } from '../sim/scoutingEngine';
 import type {
   Entrant,
   QualifyingDecision,
@@ -960,6 +960,12 @@ function scoutTargetAction(
     if (d) {
       target = { id: d.id, skills: d.skills, potential: d.potential };
       targetName = d.name;
+    } else {
+      const currentDriver = state.drivers.find((x) => x.id === entityId);
+      if (currentDriver) {
+        target = driverScoutTarget(currentDriver);
+        targetName = currentDriver.name;
+      }
     }
   } else if (entityType === 'YouthProspect') {
     const y = bundle.youth.find((x) => x.id === entityId);

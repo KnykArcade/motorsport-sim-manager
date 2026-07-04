@@ -16,6 +16,7 @@ import { Panel } from '../components/Panel';
 import { StatBar } from '../components/StatBar';
 import { Button } from '../components/Button';
 import { DriverDossierButton } from '../components/driverCards/DriverDossier';
+import { ScoutingWidget } from '../components/scouting/ScoutingWidget';
 import { formatMoney } from '../components/ui';
 import type {
   AcademyMember,
@@ -398,6 +399,9 @@ function SeniorCard({
           focus="market"
         />
       </div>
+      <div className="mb-2">
+        <ScoutingWidget target={{ id: d.id, skills: d.skills, potential: d.potential }} entityType="Driver" compact />
+      </div>
 
       <div className="mb-2 flex flex-wrap gap-1 text-[10px]">
         <Tag>{d.marketStatus}</Tag>
@@ -680,6 +684,9 @@ function YouthTab({
                   context={`${y.currentLevel} - youth prospect`}
                   focus="development"
                 />
+              </div>
+              <div className="mb-2">
+                <ScoutingWidget target={{ id: y.id, skills: y.skills, potential: y.potential }} entityType="YouthProspect" compact />
               </div>
               <TopSkills skills={y.skills} />
               <div className="mt-3 grid grid-cols-2 gap-2 text-xs">

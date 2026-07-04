@@ -16,10 +16,11 @@ import {
   canAffordAnyNormalPackage,
 } from '../sim/raceWeekendPackageEngine';
 import type { RaceWeekendPackageType } from '../types/raceWeekendPackageTypes';
+import type { MotorsportEraTheme } from '../theme/eraTheme';
 
 type Props = {
   onConfirm: () => void;
-  eraTheme?: 'f1-1990s';
+  eraTheme?: MotorsportEraTheme;
 };
 
 export function RaceWeekendPackageSelection({ onConfirm, eraTheme }: Props) {

@@ -79,7 +79,6 @@ function AssetTrackMap({
   const running = dots.filter((dot) => dot.running && !dot.inPit && !dot.pitRequested).sort((a, b) => a.rank - b.rank);
   const pitting = dots.filter((dot) => dot.running && (dot.inPit || dot.pitRequested));
   const spacing = 1 / Math.max(running.length, 14);
-  const markerStyle = eraTheme === 'f1-1990s' ? retroMarkerStyle : defaultMarkerStyle;
 
   return (
     <>
@@ -97,11 +96,6 @@ function AssetTrackMap({
       <path d={pathD} fill="none" stroke="#111719" strokeWidth="48" strokeLinecap="round" strokeLinejoin="round" />
       <path d={pathD} fill="none" stroke={eraTheme === 'f1-1990s' ? '#e7e2d0' : '#cbd5e1'} strokeWidth="15" strokeLinecap="round" strokeLinejoin="round" opacity="0.98" />
       <path d={pathD} fill="none" stroke={eraTheme === 'f1-1990s' ? '#222a2d' : '#334155'} strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" strokeDasharray="18 22" />
-
-      <TrackMarker point={pointAt(fitted, 0.01)} label="S/F" color={markerStyle.start} />
-      <TrackMarker point={pointAt(fitted, 0.33)} label="S1" color={markerStyle.split} />
-      <TrackMarker point={pointAt(fitted, 0.66)} label="S2" color={markerStyle.split} />
-      <TrackMarker point={pointAt(fitted, 0.82)} label="PIT" color={markerStyle.pit} />
 
       {running.map((dot, index) => {
         const progress = dot.trackProgress ?? (rotation + index * spacing) % 1;
@@ -151,18 +145,6 @@ function normalizeProgress(value: number): number {
   return ((value % 1) + 1) % 1;
 }
 
-function TrackMarker({ point, label, color }: { point: TrackMapPoint; label: string; color: string }) {
-  return (
-    <g transform={`translate(${point[0]} ${point[1]})`}>
-      <circle r="12" fill="#050606" stroke={color} strokeWidth="4" />
-      <circle r="5" fill={color} />
-      <text x="15" y="5" fill={color} fontSize="15" fontWeight="800">
-        {label}
-      </text>
-    </g>
-  );
-}
-
 function MapDot({ point, dot, compact = false }: { point: TrackMapPoint; dot: TrackDot; compact?: boolean }) {
   const radius = compact ? 12 : dot.isPlayer ? 28 : 24;
   const fontSize = compact ? 12 : dot.label.length > 2 ? 17 : 21;
@@ -197,14 +179,3 @@ function round(value: number): number {
   return Number(value.toFixed(2));
 }
 
-const retroMarkerStyle = {
-  start: '#facc15',
-  split: '#38bdf8',
-  pit: '#f59e0b',
-};
-
-const defaultMarkerStyle = {
-  start: '#facc15',
-  split: '#38bdf8',
-  pit: '#f97316',
-};

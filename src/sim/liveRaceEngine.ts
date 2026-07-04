@@ -220,6 +220,7 @@ export function createLiveRace(context: RaceContext, options: LiveRaceOptions): 
       engineHealth: 100,
       gearboxHealth: 100,
       brakeHealth: 100,
+      aeroHealth: qIncident === 'Crash' ? 82 : 100,
       lastSectors: null,
       bestSectors: null,
       reliabilityRiskLevel: 'Low',

@@ -115,6 +115,7 @@ export function stepLiveRace(state: LiveRaceState, meta: LiveRaceMeta): LiveRace
       tire: { ...car.tire },
       pit: { ...car.pit, inPitThisLap: false, scheduledLaps: [...car.pit.scheduledLaps] },
       reliabilityIssue: car.reliabilityIssue ? { ...car.reliabilityIssue } : null,
+      aeroHealth: car.aeroHealth ?? 100,
     };
 
     // --- AI decision (player pace/pits come from player decisions) ---
@@ -287,6 +288,7 @@ export function stepLiveRace(state: LiveRaceState, meta: LiveRaceMeta): LiveRace
       mistakeThisLap = true;
       if (!c.damaged && rng.chance(0.25)) {
         c.damaged = true;
+        c.aeroHealth = clamp((c.aeroHealth ?? 100) - (12 + rng.next() * 18), 35, 100);
         lapEvents.push({ lap: nextLap, text: `${name(c.driverId)} picks up front-wing damage.` });
       }
     }
@@ -712,6 +714,7 @@ function updateFuelAndComponents(
   c.engineHealth = clamp(c.engineHealth - eng, 0, 100);
   c.gearboxHealth = clamp(c.gearboxHealth - gear, 0, 100);
   c.brakeHealth = clamp(c.brakeHealth - brake, 0, 100);
+  c.aeroHealth = clamp((c.aeroHealth ?? 100) - (c.damaged ? 0.16 : 0.03), 0, 100);
 }
 
 // Advance the recommendation lifecycle for the player's drivers each lap:

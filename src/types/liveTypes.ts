@@ -396,6 +396,7 @@ export type LiveCarState = {
   engineHealth: number;
   gearboxHealth: number;
   brakeHealth: number;
+  aeroHealth?: number;
   // Split of the last representative lap into three sector times (s). Empty
   // until a clean lap is set.
   lastSectors: [number, number, number] | null;

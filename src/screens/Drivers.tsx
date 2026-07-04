@@ -3,6 +3,8 @@ import { Panel } from '../components/Panel';
 import { StatBar } from '../components/StatBar';
 import { Button } from '../components/Button';
 import { DriverDossierButton } from '../components/driverCards/DriverDossier';
+import { ScoutingWidget } from '../components/scouting/ScoutingWidget';
+import { driverScoutTarget } from '../sim/scoutingEngine';
 import {
   activeDriversForTeam,
   reserveDriversForTeam,
@@ -143,6 +145,9 @@ export function Drivers() {
                 </div>
               </div>
               <div className="mb-2 text-xs text-neutral-500">{teamName(d.teamId)}</div>
+              <div className="mb-2">
+                <ScoutingWidget target={driverScoutTarget(d)} entityType="Driver" compact />
+              </div>
               <div className="grid grid-cols-1 gap-1">
                 <StatBar label="Qualifying" value={d.ratings.qualifying} />
                 <StatBar label="Race Pace" value={d.ratings.racePace} />

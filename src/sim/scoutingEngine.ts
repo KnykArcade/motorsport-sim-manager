@@ -8,6 +8,7 @@
 // and sharpening the skills toward the truth. Pure and deterministic.
 
 import type { FacilitiesState } from '../types/facilityTypes';
+import type { Driver, DriverRatings } from '../types/gameTypes';
 import type { MarketSkillRatings } from '../types/marketTypes';
 import type {
   ScoutedEntityType,
@@ -107,6 +108,29 @@ export type ScoutTarget = {
   skills: MarketSkillRatings;
   potential: number;
 };
+
+export function driverScoutTarget(driver: Pick<Driver, 'id' | 'ratings'>): ScoutTarget {
+  return {
+    id: driver.id,
+    skills: driverRatingsToMarketSkills(driver.ratings),
+    potential: driver.ratings.overall,
+  };
+}
+
+function driverRatingsToMarketSkills(ratings: DriverRatings): MarketSkillRatings {
+  return {
+    cornering: ratings.cornering,
+    braking: ratings.braking,
+    straights: ratings.straights,
+    tractionAcceleration: ratings.tractionAcceleration,
+    elevationBlindCorners: ratings.elevationBlindCorners,
+    technical: ratings.technical,
+    overtakingRacecraft: ratings.overtakingRacecraft,
+    surfaceGripBumpiness: ratings.surfaceGripBumpiness,
+    riskManagement: ratings.riskManagement,
+    enduranceConsistency: ratings.enduranceConsistency,
+  };
+}
 
 // Build (or rebuild) the scouting report for a target at a given effort level.
 export function buildScoutingReport(
