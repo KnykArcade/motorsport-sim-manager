@@ -10,6 +10,9 @@ export type TrackDot = {
   running: boolean;
   inPit: boolean;
   rank: number; // 1 = leader
+  trackProgress?: number; // 0..1, approximate lap position derived from live timing gaps
+  gapToLeader?: number;
+  interval?: number;
 };
 
 const W = 460;
@@ -52,7 +55,7 @@ export function RaceTrack2D({
 
       {/* Running cars on the oval */}
       {running.map((d, i) => {
-        const t = (rotation + i * spacing) % 1;
+        const t = d.trackProgress ?? (rotation + i * spacing) % 1;
         const p = pointOnOval(t);
         return <Dot key={d.driverId} x={p.x} y={p.y} dot={d} />;
       })}

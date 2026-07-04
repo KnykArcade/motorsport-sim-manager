@@ -84,9 +84,9 @@ function AssetTrackMap({
       </defs>
 
       <rect x="0" y="0" width={W} height={H} rx="12" fill={eraTheme === 'f1-1990s' ? '#050606' : '#0f172a'} />
-      <path d={pathD} fill="none" stroke="#15191b" strokeWidth="40" strokeLinecap="round" strokeLinejoin="round" />
-      <path d={pathD} fill="none" stroke={eraTheme === 'f1-1990s' ? '#e7e2d0' : '#cbd5e1'} strokeWidth="11" strokeLinecap="round" strokeLinejoin="round" opacity="0.96" />
-      <path d={pathD} fill="none" stroke={eraTheme === 'f1-1990s' ? '#222a2d' : '#334155'} strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" strokeDasharray="18 22" />
+      <path d={pathD} fill="none" stroke="#111719" strokeWidth="48" strokeLinecap="round" strokeLinejoin="round" />
+      <path d={pathD} fill="none" stroke={eraTheme === 'f1-1990s' ? '#e7e2d0' : '#cbd5e1'} strokeWidth="15" strokeLinecap="round" strokeLinejoin="round" opacity="0.98" />
+      <path d={pathD} fill="none" stroke={eraTheme === 'f1-1990s' ? '#222a2d' : '#334155'} strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" strokeDasharray="18 22" />
 
       <TrackMarker point={pointAt(fitted, 0.01)} label="S/F" color={markerStyle.start} />
       <TrackMarker point={pointAt(fitted, 0.33)} label="S1" color={markerStyle.split} />
@@ -94,7 +94,8 @@ function AssetTrackMap({
       <TrackMarker point={pointAt(fitted, 0.82)} label="PIT" color={markerStyle.pit} />
 
       {running.map((dot, index) => {
-        const point = pointAt(fitted, (rotation + index * spacing) % 1);
+        const progress = dot.trackProgress ?? (rotation + index * spacing) % 1;
+        const point = pointAtWithOffset(fitted, progress, laneOffset(dot, index));
         return <MapDot key={dot.driverId} point={point} dot={dot} />;
       })}
 
@@ -129,8 +130,33 @@ function toPath(points: readonly TrackMapPoint[]): string {
 
 function pointAt(points: readonly TrackMapPoint[], t: number): TrackMapPoint {
   if (points.length === 0) return [W / 2, H / 2];
-  const index = Math.min(points.length - 1, Math.max(0, Math.floor(t * points.length)));
+  const progress = normalizeProgress(t);
+  const index = Math.min(points.length - 1, Math.max(0, Math.floor(progress * points.length)));
   return points[index];
+}
+
+function pointAtWithOffset(points: readonly TrackMapPoint[], t: number, offset: number): TrackMapPoint {
+  if (points.length === 0) return [W / 2, H / 2];
+  const progress = normalizeProgress(t);
+  const index = Math.min(points.length - 1, Math.max(0, Math.floor(progress * points.length)));
+  const point = points[index];
+  if (offset === 0 || points.length < 3) return point;
+  const prev = points[(index - 1 + points.length) % points.length];
+  const next = points[(index + 1) % points.length];
+  const dx = next[0] - prev[0];
+  const dy = next[1] - prev[1];
+  const len = Math.hypot(dx, dy) || 1;
+  return [round(point[0] + (-dy / len) * offset), round(point[1] + (dx / len) * offset)];
+}
+
+function normalizeProgress(value: number): number {
+  return ((value % 1) + 1) % 1;
+}
+
+function laneOffset(dot: TrackDot, index: number): number {
+  if ((dot.interval ?? 99) >= 1.5) return 0;
+  const offsets = [0, 24, -24, 42, -42];
+  return offsets[index % offsets.length];
 }
 
 function TrackMarker({ point, label, color }: { point: TrackMapPoint; label: string; color: string }) {
@@ -146,21 +172,25 @@ function TrackMarker({ point, label, color }: { point: TrackMapPoint; label: str
 }
 
 function MapDot({ point, dot, compact = false }: { point: TrackMapPoint; dot: TrackDot; compact?: boolean }) {
-  const radius = compact ? 8 : dot.isPlayer ? 13 : 10;
+  const radius = compact ? 10 : dot.isPlayer ? 20 : 17;
   return (
     <g transform={`translate(${point[0]} ${point[1]})`}>
-      <circle r={radius + 4} fill="#050606" opacity="0.8" />
+      <title>{`P${dot.rank} car ${dot.label}${dot.gapToLeader ? `, ${dot.gapToLeader.toFixed(1)}s behind leader` : ''}`}</title>
+      <circle r={radius + 7} fill="#050606" opacity="0.92" />
       <circle
         r={radius}
         fill={dot.color}
-        stroke={dot.isPlayer ? '#fef3c7' : '#050606'}
+        stroke={dot.isPlayer ? '#fef3c7' : '#ffffff'}
         strokeWidth={dot.isPlayer ? 5 : 3}
       />
       <text
-        y={compact ? 4 : 5}
+        y={compact ? 4 : 6}
         textAnchor="middle"
-        fill="#050606"
-        fontSize={compact ? 10 : 12}
+        fill="#ffffff"
+        stroke="#050606"
+        strokeWidth={compact ? 2 : 3}
+        paintOrder="stroke"
+        fontSize={compact ? 11 : 16}
         fontWeight="900"
       >
         {dot.label}

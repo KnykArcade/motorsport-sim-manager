@@ -208,6 +208,16 @@ export function LiveRace() {
   };
 
   const finished = live.phase === 'finished';
+  const leader = live.cars.find((c) => c.position === 1 && c.running);
+  const representativeLapTime =
+    leader?.lastLapTime && leader.lastLapTime > 0
+      ? leader.lastLapTime
+      : leader?.bestLap && leader.bestLap > 0
+        ? leader.bestLap
+        : live.cars
+              .filter((c) => c.running && c.lastLapTime > 0)
+              .reduce((sum, c, _, cars) => sum + c.lastLapTime / cars.length, 0) || 85;
+  const rotation = (live.currentLap / 5) % 1;
   const dots: TrackDot[] = live.cars.map((c) => ({
     driverId: c.driverId,
     label: String(driverNumber(c.driverId) || ''),
@@ -216,8 +226,10 @@ export function LiveRace() {
     running: c.running,
     inPit: c.pit.inPitThisLap,
     rank: c.position ?? 99,
+    trackProgress: c.running ? normalizeTrackProgress(rotation - c.gapToLeader / representativeLapTime) : undefined,
+    gapToLeader: c.gapToLeader,
+    interval: c.interval,
   }));
-  const rotation = (live.currentLap / 5) % 1;
   // Locked to team seat order (not live position) so the cards never reorder.
   const playerCars = orderCardsBySeat(
     live.cars.filter((c) => c.isPlayer),
@@ -477,6 +489,10 @@ export function LiveRace() {
       )}
     </div>
   );
+}
+
+function normalizeTrackProgress(value: number): number {
+  return ((value % 1) + 1) % 1;
 }
 
 function PromptOverlay({
