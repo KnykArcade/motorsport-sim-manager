@@ -5,10 +5,11 @@ type Props = {
   value: number; // 0-max
   max?: number;
   showValue?: boolean;
+  valueLabel?: string;
 };
 
 // A horizontal labelled rating bar.
-export function StatBar({ label, value, max = 10, showValue = true }: Props) {
+export function StatBar({ label, value, max = 10, showValue = true, valueLabel }: Props) {
   const pct = Math.max(0, Math.min(100, (value / max) * 100));
   const color = ratingColor((value / max) * 10);
   return (
@@ -18,8 +19,8 @@ export function StatBar({ label, value, max = 10, showValue = true }: Props) {
         <div className="h-full rounded-full" style={{ width: `${pct}%`, backgroundColor: color }} />
       </div>
       {showValue && (
-        <span className="w-8 shrink-0 text-right text-xs font-semibold tabular-nums" style={{ color }}>
-          {value.toFixed(1)}
+        <span className="w-16 shrink-0 text-right text-xs font-semibold tabular-nums" style={{ color }}>
+          {valueLabel ?? value.toFixed(1)}
         </span>
       )}
     </div>

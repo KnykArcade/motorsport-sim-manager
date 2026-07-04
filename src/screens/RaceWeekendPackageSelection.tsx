@@ -203,7 +203,6 @@ export function RaceWeekendPackageSelection({ onConfirm, eraTheme }: Props) {
       {selectedDef && selectedCost && (
         <Panel
           title="Package Details"
-          actions={confirmButton}
           className={eraTheme === 'f1-1990s' ? 'border-amber-500/30 bg-black/55' : ''}
         >
           <div className="grid gap-4 sm:grid-cols-2">
@@ -266,13 +265,15 @@ export function RaceWeekendPackageSelection({ onConfirm, eraTheme }: Props) {
                 <span className="text-red-400">Insufficient budget for this package.</span>
               )}
             </div>
-            <Button
-              variant="primary"
-              disabled={!canAfford || alreadySelected}
-              onClick={handleConfirm}
-            >
-              {alreadySelected ? 'Already Selected' : 'Confirm Package'}
-            </Button>
+            {eraTheme !== 'f1-1990s' && (
+              <Button
+                variant="primary"
+                disabled={!canAfford || alreadySelected}
+                onClick={handleConfirm}
+              >
+                {alreadySelected ? 'Already Selected' : 'Confirm Package'}
+              </Button>
+            )}
           </div>
         </Panel>
       )}

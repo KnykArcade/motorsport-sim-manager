@@ -369,12 +369,16 @@ export type LiveCarState = {
   tireDegRate: number; // tyre wear points per lap at balanced pace
   pitLossBase: number; // green-flag pit-stop time loss (s)
   opsForm: number; // per-weekend operations execution (0 neutral) — pit/strategy consistency
+  confidenceModifier?: number; // relationship confidence/trust modifier used for live hesitation and risk
   personality: AIStrategyPersonality;
   strategyId: string;
   instructionId: string;
 
   // Mutable race state.
   paceMode: PaceMode;
+  // When the Safety Car forces Conserve, remember the driver's/team's intended
+  // green-flag mode so it can resume when racing restarts.
+  safetyCarModeBefore?: PaceMode | null;
   // Consecutive-lap counter for the current strategy mode (resets on any change).
   strategyStint: StrategyStintState;
   // Current Live Race Pace (1-10), recomputed every lap from Base Race Pace and

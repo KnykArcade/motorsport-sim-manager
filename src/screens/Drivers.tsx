@@ -4,6 +4,7 @@ import { StatBar } from '../components/StatBar';
 import { Button } from '../components/Button';
 import { DriverDossierButton } from '../components/driverCards/DriverDossier';
 import { ScoutingWidget } from '../components/scouting/ScoutingWidget';
+import { readoutForDriverRating } from '../components/scouting/ratingDisplay';
 import { driverScoutTarget } from '../sim/scoutingEngine';
 import {
   activeDriversForTeam,
@@ -18,7 +19,9 @@ export function Drivers() {
   const teamName = (id: string) => state.teams.find((t) => t.id === id)?.name ?? id;
   const teamColor = (id: string) => state.teams.find((t) => t.id === id)?.color ?? '#666';
 
-  const ordered = [...state.drivers].sort((a, b) => b.ratings.overall - a.ratings.overall);
+  const ordered = [...state.drivers].sort(
+    (a, b) => (readoutForDriverRating(state, b, 'overall').value ?? 0) - (readoutForDriverRating(state, a, 'overall').value ?? 0),
+  );
 
   const playerTeam = teamById(state, state.selectedTeamId);
   const raceSeats = activeDriversForTeam(state, state.selectedTeamId);
@@ -125,6 +128,8 @@ export function Drivers() {
       <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
         {ordered.map((d) => {
           const isPlayer = d.teamId === state.selectedTeamId;
+          const overall = readoutForDriverRating(state, d, 'overall');
+          const stat = (key: keyof typeof d.ratings) => readoutForDriverRating(state, d, key);
           return (
             <Panel key={d.id} className={isPlayer ? 'ring-1 ring-amber-500/60' : ''}>
               <div className="mb-2 flex items-center justify-between">
@@ -134,7 +139,7 @@ export function Drivers() {
                 </div>
                 <div className="flex items-center gap-2">
                   <span className="rounded bg-neutral-800 px-2 py-0.5 text-xs font-semibold text-amber-300">
-                    {d.ratings.overall.toFixed(1)}
+                    {overall.label}
                   </span>
                   <DriverDossierButton
                     state={state}
@@ -145,16 +150,18 @@ export function Drivers() {
                 </div>
               </div>
               <div className="mb-2 text-xs text-neutral-500">{teamName(d.teamId)}</div>
-              <div className="mb-2">
-                <ScoutingWidget target={driverScoutTarget(d)} entityType="Driver" compact />
-              </div>
+              {!isPlayer && (
+                <div className="mb-2">
+                  <ScoutingWidget target={driverScoutTarget(d)} entityType="Driver" compact />
+                </div>
+              )}
               <div className="grid grid-cols-1 gap-1">
-                <StatBar label="Qualifying" value={d.ratings.qualifying} />
-                <StatBar label="Race Pace" value={d.ratings.racePace} />
-                <StatBar label="Cornering" value={d.ratings.cornering} />
-                <StatBar label="Overtaking" value={d.ratings.overtakingRacecraft} />
-                <StatBar label="Composure" value={d.ratings.composure} />
-                <StatBar label="Aggression" value={d.ratings.aggression} />
+                <StatBar label="Qualifying" value={stat('qualifying').value ?? 0} valueLabel={stat('qualifying').label} />
+                <StatBar label="Race Pace" value={stat('racePace').value ?? 0} valueLabel={stat('racePace').label} />
+                <StatBar label="Cornering" value={stat('cornering').value ?? 0} valueLabel={stat('cornering').label} />
+                <StatBar label="Overtaking" value={stat('overtakingRacecraft').value ?? 0} valueLabel={stat('overtakingRacecraft').label} />
+                <StatBar label="Composure" value={stat('composure').value ?? 0} valueLabel={stat('composure').label} />
+                <StatBar label="Aggression" value={stat('aggression').value ?? 0} valueLabel={stat('aggression').label} />
                 <StatBar label="Morale" value={d.morale / 10} />
                 <StatBar label="Confidence" value={d.confidence / 10} />
               </div>

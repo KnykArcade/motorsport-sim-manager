@@ -185,8 +185,8 @@ export function PostRaceReview() {
               news={state.news}
               title="Championship & Paddock"
               maxItems={4}
-              categoryFilter={['championship', 'financial', 'ai_team']}
-              emptyMessage="No championship news."
+              categoryFilter={['championship', 'paddock', 'financial', 'ai_team', 'development', 'driver_market', 'youth_academy']}
+              emptyMessage="No paddock or championship stories yet."
             />
           </div>
 

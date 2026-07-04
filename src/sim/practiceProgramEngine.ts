@@ -558,7 +558,7 @@ export function practiceLapBudgetPerCar(year: number, series: string): number {
 
 // Total lap budget for the weekend across the player's cars.
 export function practiceLapBudget(year: number, series: string, carCount: number): number {
-  return practiceLapBudgetPerCar(year, series) * Math.max(1, carCount);
+  return practiceLapBudgetPerCar(year, series) * weekendSessionKinds(year, series).length * Math.max(1, carCount);
 }
 
 // A per-driver summary of what was actually run in practice this weekend, used

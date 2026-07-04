@@ -187,7 +187,7 @@ function DriverCell({
   const rec = cell.state === 'decision' || cell.state === 'active' ? cell.rec : null;
 
   // Double-decision: one ultra-compact block per driver (name + rec on a single
-  // line, then Accept / Ignore) so both fit the fixed panel with no scroll.
+  // line, then the same four controls as a single decision) so both fit the fixed panel.
   if (compact && cell.state === 'decision' && !modifying) {
     return (
       <div className={`rounded-md border p-1 ${CELL_BORDER.decision}`}>
@@ -204,12 +204,24 @@ function DriverCell({
             {cell.rec.confidence}%
           </span>
         </div>
-        <div className="mt-0.5 grid grid-cols-2 gap-1">
+        <div className="mt-0.5 grid grid-cols-4 gap-1">
           <button
             onClick={() => onAccept(cell.rec)}
             className="rounded bg-emerald-600 py-0.5 text-[10px] font-bold text-white hover:bg-emerald-500"
           >
             Accept
+          </button>
+          <button
+            onClick={() => setModifying(true)}
+            className="rounded bg-slate-700 py-0.5 text-[10px] font-bold text-slate-100 hover:bg-slate-600"
+          >
+            Modify
+          </button>
+          <button
+            onClick={() => onLetCrewDecide(cell.rec)}
+            className="rounded border border-slate-700 py-0.5 text-[10px] font-semibold text-slate-300 hover:bg-slate-800"
+          >
+            Crew
           </button>
           <button
             onClick={() => onIgnore(cell.rec)}

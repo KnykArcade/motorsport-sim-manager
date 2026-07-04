@@ -97,12 +97,13 @@ function applyCarShaping(base: CarSetup, track: Track, car: Car): CarSetup {
 // More adaptable drivers tolerate a wider setup window before losing confidence.
 function tolerance(driver?: Driver): number {
   const adapt = driver ? (driver.ratings.adaptability - 5) / 5 : 0;
-  return 2.0 + adapt * 1.0;
+  return 1.45 + adapt * 0.65;
 }
 
 function paramFit(value: number, ideal: number, tol: number): number {
   const gap = Math.abs(value - ideal);
-  return Math.max(0, Math.min(100, 100 - (gap / tol) * 35));
+  const penalty = Math.pow(gap / tol, 1.25) * 44;
+  return Math.max(0, Math.min(100, 100 - penalty));
 }
 
 function componentFit(
@@ -240,7 +241,7 @@ export function calculateSetupFit(setup: CarSetup, track: Track, driver?: Driver
 
 // A fixed engineering tolerance: the objective quality does not widen with a
 // driver's adaptability (that is a comfort concern), so use a neutral window.
-const OBJECTIVE_TOLERANCE = 2.2;
+const OBJECTIVE_TOLERANCE = 1.55;
 
 // Compute an adjusted tolerance based on team capability, staff, and practice.
 // Better teams/staff and more practice tighten the window (easier to nail the
@@ -257,7 +258,7 @@ export function adjustedSetupTolerance(
   const opsFactor = (teamRaceOps - 5) * 0.12;
   const staffFactor = staffSetupBonus * 0.035;
   const practiceFactor = (practiceSetupKnowledge - 0.5) * 0.9;
-  return Math.max(1.2, Math.min(3.4, baseTolerance + opsFactor + staffFactor + practiceFactor));
+  return Math.max(0.95, Math.min(2.6, baseTolerance + opsFactor + staffFactor + practiceFactor));
 }
 
 export function objectiveSetupQuality(

@@ -96,7 +96,11 @@ export function Scouting() {
       {bundle && tab === 'senior' && (
         <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
           {[...bundle.drivers]
-            .sort((a, b) => b.overall - a.overall)
+            .sort(
+              (a, b) =>
+                viewMidpoint(view({ id: b.id, skills: b.skills, potential: b.potential })) -
+                viewMidpoint(view({ id: a.id, skills: a.skills, potential: a.potential })),
+            )
             .map((d) => (
               <ScoutCard
                 key={d.id}
@@ -114,7 +118,11 @@ export function Scouting() {
       {bundle && tab === 'youth' && (
         <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
           {[...bundle.youth]
-            .sort((a, b) => b.potential - a.potential)
+            .sort(
+              (a, b) =>
+                viewMidpoint(view({ id: b.id, skills: b.skills, potential: b.potential })) -
+                viewMidpoint(view({ id: a.id, skills: a.skills, potential: a.potential })),
+            )
             .map((y) => (
               <ScoutCard
                 key={y.id}
@@ -241,6 +249,16 @@ function overallText(view: FogView): string {
   const avg = mids.reduce((sum, v) => sum + v, 0) / mids.length;
   const uncertainty = Math.max(0.4, (1 - view.accuracy) * 2.2);
   return `${Math.max(1, avg - uncertainty).toFixed(1)}-${Math.min(10, avg + uncertainty).toFixed(1)}`;
+}
+
+function viewMidpoint(view: FogView): number {
+  const values = Object.values(view.skills).filter((v): v is number | [number, number] => v !== 'Unknown');
+  if (values.length > 0) {
+    const mids = values.map((v) => (Array.isArray(v) ? (v[0] + v[1]) / 2 : v));
+    return mids.reduce((sum, v) => sum + v, 0) / mids.length;
+  }
+  const [lo, hi] = view.potential.range;
+  return (lo + hi) / 2;
 }
 
 function TabButton({

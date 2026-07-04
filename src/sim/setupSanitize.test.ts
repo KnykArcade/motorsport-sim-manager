@@ -36,7 +36,8 @@ describe('numeric guards', () => {
   it('clampSetupValue clamps to 1-10 and rounds', () => {
     expect(clampSetupValue(0)).toBe(1);
     expect(clampSetupValue(99)).toBe(10);
-    expect(clampSetupValue(5.6)).toBe(6);
+    expect(clampSetupValue(5.6)).toBe(5.5);
+    expect(clampSetupValue(5.76)).toBe(6);
   });
 
   it('sanitizeSetupValue falls back for invalid values', () => {

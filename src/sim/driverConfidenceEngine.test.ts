@@ -137,6 +137,29 @@ describe('driverConfidenceEngine — race result reactions', () => {
     expect(crashApplied.d1.selfConfidence).toBeLessThan(carApplied.d1.selfConfidence);
   });
 
+  it('aggressive crash creates a larger trust-in-car penalty', () => {
+    const rel = baseRel({ trustInCar: 55, trustInPrincipal: 58 });
+    const balancedUpdates = reactToRaceResult(rel, baseCtx({ dnf: true, carReliabilityDNF: false, finishingPosition: 99 }));
+    const aggressiveUpdates = reactToRaceResult(rel, baseCtx({
+      dnf: true,
+      carReliabilityDNF: false,
+      finishingPosition: 99,
+      strategyRiskLevel: 'aggressive',
+    }));
+    const balancedApplied = applyConfidenceUpdates({ d1: rel }, balancedUpdates);
+    const aggressiveApplied = applyConfidenceUpdates({ d1: rel }, aggressiveUpdates);
+    expect(aggressiveApplied.d1.trustInCar).toBeLessThan(balancedApplied.d1.trustInCar);
+    expect(aggressiveApplied.d1.trustInPrincipal).toBeLessThan(balancedApplied.d1.trustInPrincipal);
+  });
+
+  it('clean finishes rebuild trust in the car over time', () => {
+    const rel = baseRel({ trustInCar: 35, frustration: 45 });
+    const updates = reactToRaceResult(rel, baseCtx({ finishingPosition: 7, totalDrivers: 20, pointsScored: 0 }));
+    const applied = applyConfidenceUpdates({ d1: rel }, updates);
+    expect(applied.d1.trustInCar).toBeGreaterThan(35);
+    expect(applied.d1.frustration).toBeLessThan(45);
+  });
+
   it('beating teammate boosts confidence', () => {
     const rel = baseRel();
     const updates = reactToRaceResult(rel, baseCtx({ finishingPosition: 3, teammateFinishingPosition: 7 }));

@@ -5,6 +5,13 @@ import { formatMoney } from '../ui';
 import { driverSalary, toMoney } from '../../sim/financeEngine';
 import { synthesizeDriverRatings } from '../../sim/driverMarketEngine';
 import { computeConfidenceState, overallConfidenceScore } from '../../sim/driverConfidenceEngine';
+import {
+  readoutForDriverRating,
+  readoutForMarketOverall,
+  readoutForMarketSkill,
+  readoutForPotential,
+  type RatingReadout,
+} from '../scouting/ratingDisplay';
 import type { GameState } from '../../game/careerState';
 import type { Driver, DriverRatings, RaceResult } from '../../types/gameTypes';
 import type { AcademyMember, MarketDriver, YouthProspect } from '../../types/marketTypes';
@@ -77,17 +84,6 @@ function roleLabel(driver: Driver): string {
   return 'Race Driver';
 }
 
-function ratingRows(ratings: DriverRatings): Array<[string, number]> {
-  return [
-    ['Overall', ratings.overall],
-    ['Race Pace', ratings.racePace],
-    ['Qualifying', ratings.qualifying],
-    ['Racecraft', ratings.overtakingRacecraft],
-    ['Composure', ratings.composure],
-    ['Risk Mgmt.', ratings.riskManagement],
-  ];
-}
-
 function scoreTone(value: number): 'good' | 'watch' | 'risk' {
   if (value >= 75) return 'good';
   if (value >= 55) return 'watch';
@@ -121,7 +117,9 @@ function getSubjectProfile(state: GameState, subject: DriverSubject) {
       teammateName: teammate?.name,
       marketLine: `${formatMoney(driverSalary(driver))} salary estimate`,
       developmentLine: curve
-        ? `Peak ${curve.peakAgeStart}-${curve.peakAgeEnd}, ceiling ${curve.potentialCeiling.toFixed(1)}`
+        ? driver.teamId === state.selectedTeamId
+          ? `Peak ${curve.peakAgeStart}-${curve.peakAgeEnd}, ceiling ${curve.potentialCeiling.toFixed(1)}`
+          : 'Development curve requires deeper scouting'
         : 'Development curve not scouted',
       seasonStats,
     };
@@ -129,6 +127,8 @@ function getSubjectProfile(state: GameState, subject: DriverSubject) {
 
   if (subject.type === 'market') {
     const driver = subject.driver;
+    const current = readoutForMarketOverall(state, driver.id, driver.skills, driver.potential, driver.overall).label;
+    const potential = readoutForPotential(state, driver.id, driver.skills, driver.potential).label;
     return {
       name: driver.name,
       number: undefined,
@@ -146,7 +146,7 @@ function getSubjectProfile(state: GameState, subject: DriverSubject) {
       promises: [],
       teammateName: undefined,
       marketLine: `${formatMoney(toMoney(driver.buyoutCost))} buyout, ${formatMoney(toMoney(driver.sponsorValue))}/yr sponsor pull`,
-      developmentLine: `Potential ${driver.potential.toFixed(1)}, F1 readiness ${driver.f1Readiness}/100`,
+      developmentLine: `Potential ${potential}, current ${current}, F1 readiness ${driver.f1Readiness}/100`,
       notes: driver.notes,
       seasonStats: null,
     };
@@ -154,6 +154,12 @@ function getSubjectProfile(state: GameState, subject: DriverSubject) {
 
   const driver = subject.driver;
   const isMember = 'signedYear' in driver;
+  const current = isMember
+    ? driver.overall.toFixed(1)
+    : readoutForMarketOverall(state, driver.id, driver.skills, driver.potential, driver.overall).label;
+  const potential = isMember
+    ? driver.potential.toFixed(1)
+    : readoutForPotential(state, driver.id, driver.skills, driver.potential).label;
   return {
     name: driver.name,
     number: undefined,
@@ -176,7 +182,7 @@ function getSubjectProfile(state: GameState, subject: DriverSubject) {
     marketLine: isMember
       ? `Signed ${driver.signedYear}, academy rights held`
       : `${formatMoney(toMoney(driver.signingCost))} signing, ${formatMoney(toMoney(driver.yearlyAcademyCost))}/yr academy`,
-    developmentLine: `Potential ${driver.potential.toFixed(1)}, current ${driver.overall.toFixed(1)}`,
+    developmentLine: `Potential ${potential}, current ${current}`,
     notes: isMember ? undefined : driver.notes,
     seasonStats: null,
   };
@@ -275,6 +281,7 @@ function DriverDossierModal({
   const eraConfig = getEraThemeConfig(eraTheme);
   const nineties = eraTheme === 'f1-1990s';
   const shellClass = `driver-dossier ${dossierClassFor(eraTheme)}`;
+  const coreRatings = dossierRatingRows(state, subject, profile.ratings);
 
   return (
     <div className="driver-dossier-overlay" role="dialog" aria-modal="true" aria-label={`${profile.name} driver card`}>
@@ -324,8 +331,8 @@ function DriverDossierModal({
 
             <div className="driver-dossier-grid">
               <DossierPanel title="Core Ratings" emphasis={focus === 'identity'}>
-                {ratingRows(profile.ratings).map(([label, value]) => (
-                  <RatingLine key={label} label={label} value={value} />
+                {coreRatings.map(([label, readout]) => (
+                  <RatingLine key={label} label={label} readout={readout} />
                 ))}
               </DossierPanel>
 
@@ -359,8 +366,8 @@ function DriverDossierModal({
 
               <DossierPanel title="Development Sheet" emphasis={focus === 'development'}>
                 <p className="driver-dossier-note">{profile.developmentLine}</p>
-                <MetricPill label="Potential" value={subject.type === 'driver' ? (profile.curve?.potentialCeiling.toFixed(1) ?? 'Unscouted') : profile.ratings.overall.toFixed(1)} tone="watch" />
-                <MetricPill label="Best fit" value={profile.ratings.racePace >= profile.ratings.qualifying ? 'Race pace' : 'Qualifying'} tone="good" />
+                <MetricPill label="Potential" value={potentialReadout(state, subject, profile).label} tone="watch" />
+                <MetricPill label="Best fit" value={bestFitReadout(coreRatings)} tone="good" />
               </DossierPanel>
 
               <DossierPanel title="Market / Contract Folder" emphasis={focus === 'market'}>
@@ -415,15 +422,80 @@ function DossierPanel({ title, emphasis, children }: { title: string; emphasis?:
   );
 }
 
-function RatingLine({ label, value }: { label: string; value: number }) {
-  const pct = Math.max(0, Math.min(100, value * 10));
+function RatingLine({ label, readout }: { label: string; readout: RatingReadout }) {
+  const pct = Math.max(0, Math.min(100, (readout.value ?? 0) * 10));
   return (
     <div className="driver-dossier-rating">
       <span>{label}</span>
       <div><i style={{ width: `${pct}%` }} /></div>
-      <strong>{value.toFixed(1)}</strong>
+      <strong>{readout.label}</strong>
     </div>
   );
+}
+
+function dossierRatingRows(
+  state: GameState,
+  subject: DriverSubject,
+  ratings: DriverRatings,
+): Array<[string, RatingReadout]> {
+  if (subject.type === 'driver') {
+    const driver = subject.driver;
+    return [
+      ['Overall', readoutForDriverRating(state, driver, 'overall')],
+      ['Race Pace', readoutForDriverRating(state, driver, 'racePace')],
+      ['Qualifying', readoutForDriverRating(state, driver, 'qualifying')],
+      ['Racecraft', readoutForDriverRating(state, driver, 'overtakingRacecraft')],
+      ['Composure', readoutForDriverRating(state, driver, 'composure')],
+      ['Risk Mgmt.', readoutForDriverRating(state, driver, 'riskManagement')],
+    ];
+  }
+
+  if (subject.type === 'market') {
+    const driver = subject.driver;
+    return [
+      ['Overall', readoutForMarketOverall(state, driver.id, driver.skills, driver.potential, driver.overall)],
+      ['Race Pace', readoutForMarketSkill(state, driver.id, driver.skills, driver.potential, 'enduranceConsistency')],
+      ['Qualifying', readoutForMarketSkill(state, driver.id, driver.skills, driver.potential, 'technical')],
+      ['Racecraft', readoutForMarketSkill(state, driver.id, driver.skills, driver.potential, 'overtakingRacecraft')],
+      ['Composure', readoutForMarketSkill(state, driver.id, driver.skills, driver.potential, 'riskManagement')],
+      ['Risk Mgmt.', readoutForMarketSkill(state, driver.id, driver.skills, driver.potential, 'riskManagement')],
+    ];
+  }
+
+  const driver = subject.driver;
+  const ownedAcademy = 'signedYear' in driver;
+  const exact = (value: number): RatingReadout => ({ label: value.toFixed(1), value, exact: true });
+  return [
+    ['Overall', ownedAcademy ? exact(driver.overall) : readoutForMarketOverall(state, driver.id, driver.skills, driver.potential, driver.overall)],
+    ['Race Pace', ownedAcademy ? exact(ratings.racePace) : readoutForMarketSkill(state, driver.id, driver.skills, driver.potential, 'enduranceConsistency')],
+    ['Qualifying', ownedAcademy ? exact(ratings.qualifying) : readoutForMarketSkill(state, driver.id, driver.skills, driver.potential, 'technical')],
+    ['Racecraft', ownedAcademy ? exact(driver.skills.overtakingRacecraft) : readoutForMarketSkill(state, driver.id, driver.skills, driver.potential, 'overtakingRacecraft')],
+    ['Composure', ownedAcademy ? exact(ratings.composure) : readoutForMarketSkill(state, driver.id, driver.skills, driver.potential, 'riskManagement')],
+    ['Risk Mgmt.', ownedAcademy ? exact(driver.skills.riskManagement) : readoutForMarketSkill(state, driver.id, driver.skills, driver.potential, 'riskManagement')],
+  ];
+}
+
+function potentialReadout(
+  state: GameState,
+  subject: DriverSubject,
+  profile: ReturnType<typeof getSubjectProfile>,
+): RatingReadout {
+  if (subject.type === 'driver') {
+    if (subject.driver.teamId === state.selectedTeamId && profile.curve) {
+      return { label: profile.curve.potentialCeiling.toFixed(1), value: profile.curve.potentialCeiling, exact: true };
+    }
+    return { label: 'Scouting range', value: null, exact: false };
+  }
+  if (subject.type === 'market') return readoutForPotential(state, subject.driver.id, subject.driver.skills, subject.driver.potential);
+  if ('signedYear' in subject.driver) return { label: subject.driver.potential.toFixed(1), value: subject.driver.potential, exact: true };
+  return readoutForPotential(state, subject.driver.id, subject.driver.skills, subject.driver.potential);
+}
+
+function bestFitReadout(rows: Array<[string, RatingReadout]>): string {
+  const race = rows.find(([label]) => label === 'Race Pace')?.[1].value ?? 0;
+  const quali = rows.find(([label]) => label === 'Qualifying')?.[1].value ?? 0;
+  if (race === 0 && quali === 0) return 'Unknown';
+  return race >= quali ? 'Race pace' : 'Qualifying';
 }
 
 function MetricPill({ label, value, tone }: { label: string; value: ReactNode; tone: 'good' | 'watch' | 'risk' }) {

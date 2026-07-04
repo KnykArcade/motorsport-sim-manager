@@ -17,9 +17,9 @@ export function isValidSetupValue(value: unknown): value is number {
   return typeof value === 'number' && Number.isFinite(value);
 }
 
-// Clamp a value into the valid 1-10 slider range (rounded to a whole step).
+// Clamp a value into the valid 1-10 slider range (rounded to half-step tuning).
 export function clampSetupValue(value: number, min = SETUP_MIN, max = SETUP_MAX): number {
-  return Math.max(min, Math.min(max, Math.round(value)));
+  return Math.max(min, Math.min(max, Math.round(value * 2) / 2));
 }
 
 // A valid, clamped slider value or the fallback when the input is missing/NaN.

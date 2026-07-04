@@ -1,4 +1,4 @@
-import type { Dispatch, SetStateAction } from 'react';
+import type { Dispatch, ReactNode, SetStateAction } from 'react';
 import type { GameState } from '../../../game/careerState';
 import type { Race, Track } from '../../../types/gameTypes';
 import type { WeekendForecast } from '../../../sim/weatherEngine';
@@ -30,6 +30,9 @@ export type RaceWeekendHubProps = {
   forecast: WeekendForecast;
   isMinPackage: boolean;
   hasQualifyingResults: boolean;
+  activePhase?: RaceWeekendHubPhase | 'hub';
+  moduleTitle?: string;
+  moduleContent?: ReactNode;
   onPhase: Dispatch<SetStateAction<RaceWeekendHubPhase | 'hub'>>;
   onRoute: (to: string) => void;
   onExit: () => void;
