@@ -12,6 +12,9 @@ const dots: TrackDot[] = [
     running: true,
     inPit: false,
     rank: 1,
+    trackProgress: 0.2,
+    gapToLeader: 0,
+    interval: 0,
   },
   {
     driverId: 'driver-2',
@@ -21,6 +24,9 @@ const dots: TrackDot[] = [
     running: true,
     inPit: false,
     rank: 2,
+    trackProgress: 0.18,
+    gapToLeader: 1.4,
+    interval: 1.4,
   },
   {
     driverId: 'driver-3',
@@ -30,6 +36,9 @@ const dots: TrackDot[] = [
     running: true,
     inPit: true,
     rank: 3,
+    trackProgress: 0.12,
+    gapToLeader: 28.2,
+    interval: 26.8,
   },
 ];
 
@@ -53,6 +62,7 @@ describe('TrackMapAssetPanel', () => {
     expect(html).toContain('S/F');
     expect(html).toContain('PIT');
     expect(html).toContain('29');
+    expect(html).toContain('P2 car 29, 1.4s behind leader');
     expect(html).not.toContain('DRS');
   });
 
