@@ -10,7 +10,7 @@ import { fmtLap, tyreLetter } from '../dashboardFormat';
 import { RecommendationsPanel } from '../RecommendationsPanel';
 import type { ForecastEntry } from '../forecast';
 
-type Speed = 1 | 2 | 4;
+type Speed = 1 | 2 | 4 | 8 | 16;
 
 type Props = {
   state: GameState;
@@ -113,7 +113,7 @@ export function F11990sLiveRaceScreen({
       />
 
       <main className="relative grid min-h-0 flex-1 grid-cols-1 gap-2 p-2 lg:grid-cols-[minmax(285px,0.84fr)_minmax(420px,1.8fr)_minmax(280px,0.82fr)]">
-        <aside className="grid min-h-0 grid-rows-[minmax(0,1fr)_auto_128px] gap-2">
+        <aside className="grid min-h-0 grid-rows-[minmax(0,1fr)_auto_142px] gap-2">
           <RetroTimingTower cars={live.cars} nameOf={nameOf} colorOf={colorOf} />
           <div className="grid gap-2">
             <PlaybackPanel
@@ -126,7 +126,6 @@ export function F11990sLiveRaceScreen({
               onSpeed={onSpeed}
               onSkipToEnd={onSkipToEnd}
               onFinishRace={onFinishRace}
-              onOpenOrders={onOpenOrders}
             />
             <CameraControls />
           </div>
@@ -145,7 +144,7 @@ export function F11990sLiveRaceScreen({
           />
         </section>
 
-        <aside className="grid min-h-0 grid-rows-[minmax(220px,260px)_minmax(104px,0.72fr)_minmax(104px,0.72fr)] gap-2 overflow-hidden">
+        <aside className="grid min-h-0 grid-rows-[minmax(150px,210px)_minmax(212px,1fr)_minmax(212px,1fr)] gap-2 overflow-hidden">
           {!finished && (
             <RecommendationsPanel
               recs={activeRecs}
@@ -177,7 +176,7 @@ export function F11990sLiveRaceScreen({
         </aside>
       </main>
 
-      <footer className="relative grid shrink-0 gap-2 px-2 pb-2 lg:grid-cols-[1.15fr_1fr_0.82fr_0.82fr]">
+      <footer className="relative grid shrink-0 gap-2 px-2 pb-2 lg:grid-cols-[1.05fr_1fr_0.9fr_0.9fr]">
         <RetroPanel title={alert ? 'Track Alert' : 'Commentary'} className={alert ? 'animate-pulse border-yellow-300 bg-yellow-300 text-black' : ''}>
           <div className={`space-y-1 p-2 text-[12px] ${alert ? 'font-black uppercase text-black' : 'text-zinc-200'}`}>
             {alert && <p className="text-lg leading-tight">{alert}</p>}
@@ -216,11 +215,20 @@ export function F11990sLiveRaceScreen({
           </div>
         </RetroPanel>
         <RetroPanel title="Fuel Window">
-          <div className="p-2 text-[12px] text-zinc-200">
-            <div>{fuelWindow}</div>
-            <div className="mt-2 text-[10px] uppercase text-zinc-500">{live.weather.wet ? 'Wet pace fuel map' : 'Dry pace fuel map'}</div>
-            <button onClick={onExit} className="mt-2 rounded border border-zinc-600 px-2 py-1 text-[10px] text-zinc-300 hover:bg-zinc-800">
-              Exit Race
+          <div className="grid h-full grid-cols-2 gap-2 p-2 text-[12px] text-zinc-200">
+            <div className="min-w-0">
+              <div>{fuelWindow}</div>
+              <div className="mt-2 text-[10px] uppercase text-zinc-500">{live.weather.wet ? 'Wet pace fuel map' : 'Dry pace fuel map'}</div>
+              <button onClick={onExit} className="mt-2 rounded border border-zinc-600 px-2 py-1 text-[10px] text-zinc-300 hover:bg-zinc-800">
+                Exit Race
+              </button>
+            </div>
+            <button
+              onClick={onOpenOrders}
+              disabled={!playerCars.some((car) => car.running)}
+              className="flex min-h-[56px] items-center justify-center rounded border border-amber-500/55 bg-amber-500/10 px-2 py-2 text-center text-[11px] font-black uppercase text-amber-300 hover:bg-amber-500/20 disabled:border-zinc-800 disabled:bg-zinc-950 disabled:text-zinc-600"
+            >
+              Team Orders
             </button>
           </div>
         </RetroPanel>
@@ -350,12 +358,13 @@ function RetroTimingTower({
 }
 
 function RetroEventLog({ events, onOpenFull }: { events: LiveRaceState['events']; onOpenFull: () => void }) {
-  const [tab, setTab] = useState<'Incidents' | 'Battles' | 'Status'>('Incidents');
-  const filtered = events.filter((event) => retroEventBucket(event) === tab).slice(-4);
+  type EventTab = 'Race Events' | 'Incidents' | 'Battles' | 'Status';
+  const [tab, setTab] = useState<EventTab>('Race Events');
+  const filtered = (tab === 'Race Events' ? events : events.filter((event) => retroEventBucket(event) === tab)).slice(-40);
   return (
     <RetroPanel title="Race Events" className="h-full min-h-0">
       <div className="flex border-b border-zinc-800 px-2 py-1">
-        {(['Incidents', 'Battles', 'Status'] as const).map((item) => (
+        {(['Race Events', 'Incidents', 'Battles', 'Status'] as const).map((item) => (
           <button
             key={item}
             onClick={() => setTab(item)}
@@ -367,7 +376,7 @@ function RetroEventLog({ events, onOpenFull }: { events: LiveRaceState['events']
           </button>
         ))}
       </div>
-      <div className="space-y-0.5 p-2 text-[10px]">
+      <div className="h-[calc(100%-31px)] space-y-0.5 overflow-y-auto p-2 text-[10px]">
         {filtered.slice().reverse().map((event, index) => (
           <div key={`${event.lap}-${index}`} className="flex gap-2">
             <span className="shrink-0 text-zinc-400">Lap {event.lap}</span>
@@ -456,7 +465,6 @@ function PlaybackPanel({
   onSpeed,
   onSkipToEnd,
   onFinishRace,
-  onOpenOrders,
 }: {
   playing: boolean;
   speed: Speed;
@@ -467,7 +475,6 @@ function PlaybackPanel({
   onSpeed: Dispatch<SetStateAction<Speed>>;
   onSkipToEnd: () => void;
   onFinishRace: () => void;
-  onOpenOrders: () => void;
 }) {
   return (
     <RetroPanel title="Real-Time Mode">
@@ -478,14 +485,14 @@ function PlaybackPanel({
           </button>
         ) : (
           <>
-            <div className="grid grid-cols-6 gap-1">
+            <div className="grid grid-cols-8 gap-1">
               <button onClick={onTogglePlay} disabled={!canAdvance} className="rounded border border-zinc-700 bg-zinc-900 px-2 py-1.5 text-base font-bold hover:border-amber-400 disabled:opacity-40">
                 {playing ? 'II' : '>'}
               </button>
               <button onClick={onStep} disabled={!canAdvance || playing} className="rounded border border-zinc-700 bg-zinc-900 px-2 py-1.5 text-xs font-bold hover:border-amber-400 disabled:opacity-40">
                 +1
               </button>
-              {([1, 2, 4] as Speed[]).map((s) => (
+              {([1, 2, 4, 8, 16] as Speed[]).map((s) => (
                 <button
                   key={s}
                   onClick={() => onSpeed(s)}
@@ -500,7 +507,7 @@ function PlaybackPanel({
             </div>
             <div className="mt-2 flex items-center justify-between text-[11px] text-zinc-400">
               <span>1x = lap time pacing</span>
-              <button onClick={onOpenOrders} className="text-amber-300 hover:text-amber-200">Team orders</button>
+              <span className="text-amber-300">+1 advances one lap</span>
             </div>
           </>
         )}
@@ -525,7 +532,7 @@ function RetroTrackMap({
   rotation: number;
 }) {
   return (
-    <div className="absolute left-2 top-2 z-10 h-[330px] w-[520px] max-xl:h-[292px] max-xl:w-[462px] max-lg:hidden">
+    <div className="absolute left-2 top-2 z-10 h-[300px] w-[470px] max-xl:h-[270px] max-xl:w-[426px] max-lg:hidden">
       <RetroPanel title="Track Map" className="h-full bg-black/78 backdrop-blur-[1px]">
         <div className="flex h-[calc(100%-37px)] flex-col">
           <div className="min-h-0 flex-1 px-2 py-1.5">
@@ -537,25 +544,15 @@ function RetroTrackMap({
               dots={dots}
               rotation={rotation}
               eraTheme="f1-1990s"
+              hideFooterLabel
               className="h-full w-full"
             />
           </div>
-          <div className="grid grid-cols-3 border-t border-zinc-700/60 text-center text-[9px]">
-            <LegendDot color="bg-yellow-400" label="Speed trap" />
-            <LegendDot color="bg-sky-400" label="Split timing" />
-            <LegendDot color="bg-red-500" label="Yellow zone" />
+          <div className="border-t border-zinc-700/60 px-3 py-1 text-[9px] uppercase text-zinc-400">
+            Pit board: cars called in or currently servicing appear in the pit holder.
           </div>
         </div>
       </RetroPanel>
-    </div>
-  );
-}
-
-function LegendDot({ color, label }: { color: string; label: string }) {
-  return (
-    <div className="flex items-center justify-center gap-1 px-1 py-1 uppercase text-zinc-400">
-      <span className={`h-2 w-2 rounded-full ${color}`} />
-      <span>{label}</span>
     </div>
   );
 }
@@ -580,8 +577,8 @@ function DriverFocus({
   const tyre = tyreLetter(car.tire.compound);
   const canPit = car.running && !car.pit.pitRequested && !finished;
   return (
-    <RetroPanel title={`Driver Focus ${car.isPlayer ? '- Player' : ''}`} className={`h-full overflow-hidden ${className}`}>
-      <div className="p-2">
+    <RetroPanel title={`Driver Focus ${car.isPlayer ? '- Player' : ''}`} className={`h-full min-h-0 ${className}`}>
+      <div className="h-[calc(100%-37px)] overflow-y-auto p-2">
         <div className="flex items-start justify-between gap-2">
           <div>
             <div className="flex items-center gap-2">

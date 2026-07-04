@@ -398,6 +398,18 @@ describe('pit decision protection', () => {
     expect(s.cars[0].pit.stopsMade).toBe(0); // still just one pending stop
     expect(s.events.some((e) => /duplicate stop avoided/.test(e.text))).toBe(true);
   });
+
+  it('does not re-raise pit advice while a requested stop is armed', () => {
+    const base = car();
+    const requested = car({ pit: { ...base.pit, pitRequested: true } });
+    const s = withCandidates(
+      live([requested], {
+        safetyCar: { active: true, lapsRemaining: 3, deployedOnLap: 20, reason: 'incident', deployments: 1 },
+      }),
+    );
+
+    expect(s.recommendations.some((r) => r.kind === 'safetyCarPit')).toBe(false);
+  });
 });
 
 describe('timeout / expiry', () => {

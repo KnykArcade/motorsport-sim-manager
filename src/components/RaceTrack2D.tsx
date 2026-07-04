@@ -9,6 +9,7 @@ export type TrackDot = {
   isPlayer: boolean;
   running: boolean;
   inPit: boolean;
+  pitRequested?: boolean;
   rank: number; // 1 = leader
   trackProgress?: number; // 0..1, approximate lap position derived from live timing gaps
   gapToLeader?: number;
@@ -36,8 +37,8 @@ export function RaceTrack2D({
   rotation: number;
   className?: string;
 }) {
-  const running = dots.filter((d) => d.running && !d.inPit).sort((a, b) => a.rank - b.rank);
-  const pitting = dots.filter((d) => d.running && d.inPit);
+  const running = dots.filter((d) => d.running && !d.inPit && !d.pitRequested).sort((a, b) => a.rank - b.rank);
+  const pitting = dots.filter((d) => d.running && (d.inPit || d.pitRequested));
   const spacing = 1 / Math.max(running.length, 14);
 
   return (
