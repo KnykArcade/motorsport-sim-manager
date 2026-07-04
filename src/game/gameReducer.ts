@@ -48,7 +48,7 @@ import { careerMarketBundle } from '../sim/careerMarketEngine';
 import { marketDriverToDriver, signProspectToAcademy } from '../sim/driverMarketEngine';
 import { academyCapacityFor } from '../sim/teamRatingsEngine';
 import { makeTransaction, toMoney } from '../sim/financeEngine';
-import { thirdDriverMidSeasonFee, thirdDriverSalary } from '../sim/contractEngine';
+import { driverExtensionSigningFee, extendedDriverSalaryMillions, thirdDriverMidSeasonFee, thirdDriverSalary } from '../sim/contractEngine';
 import {
   generateSponsorOffers,
   racePerformanceBonuses,
@@ -202,6 +202,7 @@ export type GameAction =
   | { type: 'SWAP_RACE_DRIVER'; seatIndex: number; reserveDriverId: string }
   | { type: 'SIGN_THIRD_DRIVER'; marketId: string }
   | { type: 'PROMOTE_THIRD_DRIVER'; seatDriverId: string; thirdDriverId: string }
+  | { type: 'EXTEND_DRIVER_CONTRACT'; driverId: string; years: number }
   | { type: 'ADVANCE_SEASON'; nextBundle?: import('../data/seasonCatalog').SeasonBundle }
   | { type: 'ADVANCE_RACE' }
   | { type: 'SIGN_RACE_DRIVER'; marketId: string }
@@ -649,6 +650,11 @@ export function gameReducer(state: GameState | null, action: GameAction): GameSt
       return queueSigning(state, action.seatDriverId, 'reserve', action.thirdDriverId);
     }
 
+    case 'EXTEND_DRIVER_CONTRACT': {
+      if (!state) return state;
+      return extendDriverContract(state, action.driverId, action.years);
+    }
+
     case 'ADVANCE_SEASON': {
       if (!state) return state;
       if (!state.seasonComplete) return state;
@@ -835,6 +841,52 @@ function applyTransaction(state: GameState, txn: FinanceTransaction): GameState 
 
 function playerBudget(state: GameState): number {
   return state.teams.find((t) => t.id === state.selectedTeamId)?.budget ?? 0;
+}
+
+function clamp100(n: number): number {
+  return Math.max(0, Math.min(100, Math.round(n)));
+}
+
+function extendDriverContract(state: GameState, driverId: string, years: number): GameState {
+  if (state.seasonComplete) return state;
+  const driver = state.drivers.find((d) => d.id === driverId && d.teamId === state.selectedTeamId);
+  if (!driver) return state;
+  const addYears = Math.max(1, Math.min(3, Math.round(years)));
+  const currentYears = driver.contractYearsRemaining ?? 1;
+  if (currentYears >= 5) return state;
+  const appliedYears = Math.min(addYears, 5 - currentYears);
+  const racesRemaining = Math.max(1, state.calendar.length - state.currentRaceIndex);
+  const fee = driverExtensionSigningFee(driver, appliedYears, racesRemaining, state.calendar.length);
+  if (fee > playerBudget(state)) return state;
+
+  const charged = applyTransaction(
+    state,
+    makeTransaction(state.seasonYear, 'Driver Signing', `Extended ${driver.name} +${appliedYears} yr`, -fee),
+  );
+  const drivers = charged.drivers.map((d) =>
+    d.id === driverId
+      ? {
+          ...d,
+          contractYearsRemaining: currentYears + appliedYears,
+          salary: Math.max(d.salary ?? 0, extendedDriverSalaryMillions(d, appliedYears)),
+        }
+      : d,
+  );
+  const rel = charged.driverRelationships?.[driverId];
+  const driverRelationships =
+    charged.driverRelationships && rel
+      ? {
+          ...charged.driverRelationships,
+          [driverId]: {
+            ...rel,
+            teamLoyalty: clamp100(rel.teamLoyalty + 4 * appliedYears),
+            trustInPrincipal: clamp100(rel.trustInPrincipal + 5 * appliedYears),
+            morale: clamp100(rel.morale + 3 * appliedYears),
+            frustration: clamp100(rel.frustration - 4 * appliedYears),
+          },
+        }
+      : charged.driverRelationships;
+  return { ...charged, drivers, driverRelationships };
 }
 
 // Queue (or replace) a seat change for the player's seat held by seatDriverId.

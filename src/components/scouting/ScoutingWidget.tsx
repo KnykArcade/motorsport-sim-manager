@@ -24,7 +24,7 @@ export function ScoutingWidget({
   if (!state?.scouting) return null;
 
   const report = state.scouting.reports[target.id];
-  const view = fogView(target, report, state.scouting.networkAccuracy, state.randomSeed);
+  const view = fogView(target, report, state.scouting.networkAccuracy, state.randomSeed, entityType);
   const cost = scoutingCost(entityType, report?.scoutingLevel ?? 0);
   const budget = state.teams.find((t) => t.id === state.selectedTeamId)?.budget ?? 0;
   const affordable = cost <= budget;

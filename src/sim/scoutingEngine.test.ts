@@ -59,12 +59,29 @@ describe('scoutingEngine — potential fog', () => {
     const narrow = visiblePotentialRange(8.5, 0.8, SEED, target.id);
     expect(wide[1] - wide[0]).toBeGreaterThan(narrow[1] - narrow[0]);
   });
+
+  it('keeps youth prospects much wider even at maximum scouting', () => {
+    const senior = visiblePotentialRange(8.5, 1, SEED, target.id, 'Driver');
+    const youth = visiblePotentialRange(8.5, 1, SEED, target.id, 'YouthProspect');
+    expect(youth[1] - youth[0]).toBeGreaterThan(senior[1] - senior[0]);
+    expect(youth[1] - youth[0]).toBeGreaterThanOrEqual(2);
+  });
 });
 
 describe('scoutingEngine — skill fog', () => {
   it('hides skills when barely scouted and narrows them to ranges when fully scouted', () => {
     expect(visibleSkill(8, 0.1, SEED, target.id, 'cornering')).toBe('Unknown');
     expect(visibleSkill(8, 1, SEED, target.id, 'cornering')).toEqual([7.8, 8.4]);
+  });
+
+  it('keeps youth skill reports wider than senior skill reports', () => {
+    const senior = visibleSkill(8, 1, SEED, target.id, 'cornering', 'Driver');
+    const youth = visibleSkill(8, 1, SEED, target.id, 'cornering', 'YouthProspect');
+    expect(Array.isArray(senior)).toBe(true);
+    expect(Array.isArray(youth)).toBe(true);
+    const seniorRange = senior as [number, number];
+    const youthRange = youth as [number, number];
+    expect(youthRange[1] - youthRange[0]).toBeGreaterThan(seniorRange[1] - seniorRange[0]);
   });
 });
 

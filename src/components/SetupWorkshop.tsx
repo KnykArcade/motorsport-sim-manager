@@ -314,8 +314,8 @@ export function SetupWorkshop({
             </div>
           </div>
 
-          {/* Presets — below the sliders (shrink-0), apply to this driver or both. */}
-          <div className="mt-4 grid gap-2 rounded-lg border border-sky-500/20 bg-neutral-950/35 p-3 sm:grid-cols-2">
+          {/* Setup feedback directly below the sliders. */}
+          <div className="grid shrink-0 gap-2 rounded-b-lg border border-t-0 border-sky-500/20 bg-neutral-950/35 p-3 sm:grid-cols-2">
             <div className="rounded-lg border border-neutral-800 bg-neutral-900/50 p-2.5">
               <div className="mb-1 flex items-center justify-between">
                 <span className="text-[10px] font-semibold uppercase tracking-wide text-neutral-400">Objective Setup Quality</span>

@@ -156,10 +156,10 @@ function getSubjectProfile(state: GameState, subject: DriverSubject) {
   const isMember = 'signedYear' in driver;
   const current = isMember
     ? driver.overall.toFixed(1)
-    : readoutForMarketOverall(state, driver.id, driver.skills, driver.potential, driver.overall).label;
+    : readoutForMarketOverall(state, driver.id, driver.skills, driver.potential, driver.overall, 'YouthProspect').label;
   const potential = isMember
     ? driver.potential.toFixed(1)
-    : readoutForPotential(state, driver.id, driver.skills, driver.potential).label;
+    : readoutForPotential(state, driver.id, driver.skills, driver.potential, 'YouthProspect').label;
   return {
     name: driver.name,
     number: undefined,
@@ -466,12 +466,12 @@ function dossierRatingRows(
   const ownedAcademy = 'signedYear' in driver;
   const exact = (value: number): RatingReadout => ({ label: value.toFixed(1), value, exact: true });
   return [
-    ['Overall', ownedAcademy ? exact(driver.overall) : readoutForMarketOverall(state, driver.id, driver.skills, driver.potential, driver.overall)],
-    ['Race Pace', ownedAcademy ? exact(ratings.racePace) : readoutForMarketSkill(state, driver.id, driver.skills, driver.potential, 'enduranceConsistency')],
-    ['Qualifying', ownedAcademy ? exact(ratings.qualifying) : readoutForMarketSkill(state, driver.id, driver.skills, driver.potential, 'technical')],
-    ['Racecraft', ownedAcademy ? exact(driver.skills.overtakingRacecraft) : readoutForMarketSkill(state, driver.id, driver.skills, driver.potential, 'overtakingRacecraft')],
-    ['Composure', ownedAcademy ? exact(ratings.composure) : readoutForMarketSkill(state, driver.id, driver.skills, driver.potential, 'riskManagement')],
-    ['Risk Mgmt.', ownedAcademy ? exact(driver.skills.riskManagement) : readoutForMarketSkill(state, driver.id, driver.skills, driver.potential, 'riskManagement')],
+    ['Overall', ownedAcademy ? exact(driver.overall) : readoutForMarketOverall(state, driver.id, driver.skills, driver.potential, driver.overall, 'YouthProspect')],
+    ['Race Pace', ownedAcademy ? exact(ratings.racePace) : readoutForMarketSkill(state, driver.id, driver.skills, driver.potential, 'enduranceConsistency', 'YouthProspect')],
+    ['Qualifying', ownedAcademy ? exact(ratings.qualifying) : readoutForMarketSkill(state, driver.id, driver.skills, driver.potential, 'technical', 'YouthProspect')],
+    ['Racecraft', ownedAcademy ? exact(driver.skills.overtakingRacecraft) : readoutForMarketSkill(state, driver.id, driver.skills, driver.potential, 'overtakingRacecraft', 'YouthProspect')],
+    ['Composure', ownedAcademy ? exact(ratings.composure) : readoutForMarketSkill(state, driver.id, driver.skills, driver.potential, 'riskManagement', 'YouthProspect')],
+    ['Risk Mgmt.', ownedAcademy ? exact(driver.skills.riskManagement) : readoutForMarketSkill(state, driver.id, driver.skills, driver.potential, 'riskManagement', 'YouthProspect')],
   ];
 }
 
@@ -488,7 +488,7 @@ function potentialReadout(
   }
   if (subject.type === 'market') return readoutForPotential(state, subject.driver.id, subject.driver.skills, subject.driver.potential);
   if ('signedYear' in subject.driver) return { label: subject.driver.potential.toFixed(1), value: subject.driver.potential, exact: true };
-  return readoutForPotential(state, subject.driver.id, subject.driver.skills, subject.driver.potential);
+  return readoutForPotential(state, subject.driver.id, subject.driver.skills, subject.driver.potential, 'YouthProspect');
 }
 
 function bestFitReadout(rows: Array<[string, RatingReadout]>): string {

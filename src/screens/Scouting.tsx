@@ -43,8 +43,8 @@ export function Scouting() {
   const networkPct = Math.round(scouting.networkAccuracy * 100);
   const budget = teamById(state, state.selectedTeamId)?.budget ?? 0;
 
-  const view = (target: ScoutTarget): FogView =>
-    fogView(target, scouting.reports[target.id], scouting.networkAccuracy, state.randomSeed);
+  const view = (target: ScoutTarget, entityType: ScoutedEntityType = 'Driver'): FogView =>
+    fogView(target, scouting.reports[target.id], scouting.networkAccuracy, state.randomSeed, entityType);
 
   const costOf = (entityId: string, entityType: ScoutedEntityType): number =>
     scoutingCost(entityType, scouting.reports[entityId]?.scoutingLevel ?? 0);
@@ -98,15 +98,15 @@ export function Scouting() {
           {[...bundle.drivers]
             .sort(
               (a, b) =>
-                viewMidpoint(view({ id: b.id, skills: b.skills, potential: b.potential })) -
-                viewMidpoint(view({ id: a.id, skills: a.skills, potential: a.potential })),
+                viewMidpoint(view({ id: b.id, skills: b.skills, potential: b.potential }, 'Driver')) -
+                viewMidpoint(view({ id: a.id, skills: a.skills, potential: a.potential }, 'Driver')),
             )
             .map((d) => (
               <ScoutCard
                 key={d.id}
                 title={d.name}
                 subtitle={`${d.nationality} · ${d.age} · ${d.context}`}
-                view={view({ id: d.id, skills: d.skills, potential: d.potential })}
+                view={view({ id: d.id, skills: d.skills, potential: d.potential }, 'Driver')}
                 cost={costOf(d.id, 'Driver')}
                 budget={budget}
                 onScout={() => dispatch({ type: 'SCOUT_TARGET', entityId: d.id, entityType: 'Driver' as ScoutedEntityType })}
@@ -120,15 +120,15 @@ export function Scouting() {
           {[...bundle.youth]
             .sort(
               (a, b) =>
-                viewMidpoint(view({ id: b.id, skills: b.skills, potential: b.potential })) -
-                viewMidpoint(view({ id: a.id, skills: a.skills, potential: a.potential })),
+                viewMidpoint(view({ id: b.id, skills: b.skills, potential: b.potential }, 'YouthProspect')) -
+                viewMidpoint(view({ id: a.id, skills: a.skills, potential: a.potential }, 'YouthProspect')),
             )
             .map((y) => (
               <ScoutCard
                 key={y.id}
                 title={y.name}
                 subtitle={`${y.nationality} · age ${y.age} · ${y.currentLevel}`}
-                view={view({ id: y.id, skills: y.skills, potential: y.potential })}
+                view={view({ id: y.id, skills: y.skills, potential: y.potential }, 'YouthProspect')}
                 cost={costOf(y.id, 'YouthProspect')}
                 budget={budget}
                 onScout={() => dispatch({ type: 'SCOUT_TARGET', entityId: y.id, entityType: 'YouthProspect' as ScoutedEntityType })}

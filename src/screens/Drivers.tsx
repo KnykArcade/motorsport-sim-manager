@@ -4,7 +4,9 @@ import { StatBar } from '../components/StatBar';
 import { Button } from '../components/Button';
 import { DriverDossierButton } from '../components/driverCards/DriverDossier';
 import { ScoutingWidget } from '../components/scouting/ScoutingWidget';
+import { formatMoney } from '../components/ui';
 import { readoutForDriverRating } from '../components/scouting/ratingDisplay';
+import { driverExtensionSigningFee } from '../sim/contractEngine';
 import { driverScoutTarget } from '../sim/scoutingEngine';
 import {
   activeDriversForTeam,
@@ -26,6 +28,13 @@ export function Drivers() {
   const playerTeam = teamById(state, state.selectedTeamId);
   const raceSeats = activeDriversForTeam(state, state.selectedTeamId);
   const reserves = reserveDriversForTeam(state, state.selectedTeamId);
+  const racesRemaining = Math.max(1, state.calendar.length - state.currentRaceIndex);
+  const teamBudget = playerTeam?.budget ?? 0;
+  const canNegotiateContracts = state.gameMode !== 'SingleSeason' && !state.seasonComplete;
+  const extensionCost = (driver: typeof state.drivers[number], years: number) =>
+    driverExtensionSigningFee(driver, years, racesRemaining, state.calendar.length);
+  const extendDriver = (driverId: string, years: number) =>
+    dispatch({ type: 'EXTEND_DRIVER_CONTRACT', driverId, years });
 
   return (
     <div className="space-y-6">
@@ -48,22 +57,31 @@ export function Drivers() {
                     Car {seat + 1}
                   </div>
                   {driver ? (
-                    <div className="mt-1 flex flex-wrap items-center justify-between gap-2">
-                      <div>
-                        <span className="font-bold text-neutral-100">
-                          #{driver.number} {driver.name}
-                        </span>
-                        <span className="ml-2 rounded bg-neutral-800 px-2 py-0.5 text-xs font-semibold text-amber-300">
-                          {driver.ratings.overall.toFixed(1)}
-                        </span>
+                    <>
+                      <div className="mt-1 flex flex-wrap items-center justify-between gap-2">
+                        <div>
+                          <span className="font-bold text-neutral-100">
+                            #{driver.number} {driver.name}
+                          </span>
+                          <span className="ml-2 rounded bg-neutral-800 px-2 py-0.5 text-xs font-semibold text-amber-300">
+                            {driver.ratings.overall.toFixed(1)}
+                          </span>
+                        </div>
+                        <DriverDossierButton
+                          state={state}
+                          subject={{ type: 'driver', driver }}
+                          context={`Car ${seat + 1} - ${playerTeam.name}`}
+                          focus="relationship"
+                        />
                       </div>
-                      <DriverDossierButton
-                        state={state}
-                        subject={{ type: 'driver', driver }}
-                        context={`Car ${seat + 1} - ${playerTeam.name}`}
-                        focus="relationship"
+                      <ContractExtensionControls
+                        driver={driver}
+                        budget={teamBudget}
+                        canNegotiate={canNegotiateContracts}
+                        extensionCost={extensionCost}
+                        onExtend={extendDriver}
                       />
-                    </div>
+                    </>
                   ) : (
                     <div className="mt-1 text-sm text-neutral-500">Empty seat</div>
                   )}
@@ -117,6 +135,13 @@ export function Drivers() {
                         </Button>
                       ))}
                     </div>
+                    <ContractExtensionControls
+                      driver={r}
+                      budget={teamBudget}
+                      canNegotiate={canNegotiateContracts}
+                      extensionCost={extensionCost}
+                      onExtend={extendDriver}
+                    />
                   </div>
                 ))}
               </div>
@@ -169,6 +194,65 @@ export function Drivers() {
           );
         })}
       </div>
+    </div>
+  );
+}
+
+function ContractExtensionControls({
+  driver,
+  budget,
+  canNegotiate,
+  extensionCost,
+  onExtend,
+}: {
+  driver: NonNullable<ReturnType<typeof useGame>['state']>['drivers'][number];
+  budget: number;
+  canNegotiate: boolean;
+  extensionCost: (driver: NonNullable<ReturnType<typeof useGame>['state']>['drivers'][number], years: number) => number;
+  onExtend: (driverId: string, years: number) => void;
+}) {
+  const yearsLeft = driver.contractYearsRemaining ?? 1;
+  const maxed = yearsLeft >= 5;
+  if (!canNegotiate) {
+    return (
+      <div className="mt-2 text-[11px] text-neutral-500">
+        Contract: {yearsLeft} yr{yearsLeft === 1 ? '' : 's'} remaining
+      </div>
+    );
+  }
+  const oneYearCost = extensionCost(driver, 1);
+  const twoYearCost = extensionCost(driver, 2);
+  return (
+    <div className="mt-2 flex flex-wrap items-center gap-1.5 border-t border-neutral-800 pt-2 text-[11px]">
+      <span className="mr-auto text-neutral-500">
+        Contract: <span className="text-neutral-300">{yearsLeft} yr{yearsLeft === 1 ? '' : 's'} left</span>
+      </span>
+      {maxed ? (
+        <span className="rounded bg-neutral-800 px-2 py-1 text-neutral-400">Max term</span>
+      ) : (
+        <>
+          <Button
+            variant="ghost"
+            className="px-2 py-1 text-[11px]"
+            disabled={oneYearCost > budget}
+            title={oneYearCost > budget ? 'Insufficient budget' : `Costs ${formatMoney(oneYearCost)}`}
+            onClick={() => onExtend(driver.id, 1)}
+          >
+            Extend +1 ({formatMoney(oneYearCost)})
+          </Button>
+          {yearsLeft <= 3 && (
+            <Button
+              variant="ghost"
+              className="px-2 py-1 text-[11px]"
+              disabled={twoYearCost > budget}
+              title={twoYearCost > budget ? 'Insufficient budget' : `Costs ${formatMoney(twoYearCost)}`}
+              onClick={() => onExtend(driver.id, 2)}
+            >
+              +2 ({formatMoney(twoYearCost)})
+            </Button>
+          )}
+        </>
+      )}
     </div>
   );
 }

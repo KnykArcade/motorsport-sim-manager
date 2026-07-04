@@ -22,6 +22,7 @@ import {
   readoutForPotential,
 } from '../components/scouting/ratingDisplay';
 import { formatMoney } from '../components/ui';
+import type { ScoutedEntityType } from '../types/scoutingTypes';
 import type {
   AcademyMember,
   MarketDriver,
@@ -77,8 +78,8 @@ export function DriverMarket() {
   const seatName = (id: string) => state.drivers.find((d) => d.id === id)?.name ?? id;
 
   // Fogged potential label: scouting narrows the range without confirming truth.
-  const potLabel = (id: string, skills: MarketSkillRatings, potential: number): string =>
-    readoutForPotential(state, id, skills, potential).label;
+  const potLabel = (id: string, skills: MarketSkillRatings, potential: number, entityType: ScoutedEntityType = 'Driver'): string =>
+    readoutForPotential(state, id, skills, potential, entityType).label;
 
   return (
     <div className="era-feature-screen era-driver-market space-y-6">
@@ -271,15 +272,17 @@ function TopSkills({
   skills,
   potential,
   exact = false,
+  entityType = 'Driver',
 }: {
   state: NonNullable<ReturnType<typeof useGame>['state']>;
   id: string;
   skills: MarketSkillRatings;
   potential: number;
   exact?: boolean;
+  entityType?: ScoutedEntityType;
 }) {
   const readout = (key: keyof MarketSkillRatings) =>
-    exact ? { value: skills[key], label: skills[key].toFixed(1) } : readoutForMarketSkill(state, id, skills, potential, key);
+    exact ? { value: skills[key], label: skills[key].toFixed(1) } : readoutForMarketSkill(state, id, skills, potential, key, entityType);
   return (
     <div className="grid grid-cols-1 gap-1">
       <StatBar label="Cornering" value={readout('cornering').value ?? 0} valueLabel={readout('cornering').label} />
@@ -555,7 +558,7 @@ function YouthTab({
   budget: number;
   signingBySource: Map<string, SeatSigning>;
   seatName: (id: string) => string;
-  potLabel: (id: string, skills: MarketSkillRatings, potential: number) => string;
+  potLabel: (id: string, skills: MarketSkillRatings, potential: number, entityType?: ScoutedEntityType) => string;
   onSignYouth: (youthId: string) => void;
   onReleaseAcademy: (academyId: string) => void;
   onPromote: (academyId: string, seatDriverId: string) => void;
@@ -564,7 +567,7 @@ function YouthTab({
   const academyByProspect = new Set(academy.map((a) => a.prospectId));
   const available = [...prospects]
     .filter((p) => !academyByProspect.has(p.id))
-    .sort((a, b) => (readoutForPotential(state, b.id, b.skills, b.potential).value ?? 0) - (readoutForPotential(state, a.id, a.skills, a.potential).value ?? 0));
+    .sort((a, b) => (readoutForPotential(state, b.id, b.skills, b.potential, 'YouthProspect').value ?? 0) - (readoutForPotential(state, a.id, a.skills, a.potential, 'YouthProspect').value ?? 0));
   const academyFull = academy.length >= academyCapacity;
 
   return (
@@ -684,10 +687,10 @@ function YouthTab({
                 </div>
                 <div className="text-right">
                   <span className="rounded bg-neutral-800 px-2 py-0.5 text-xs font-semibold text-sky-300">
-                    POT {potLabel(y.id, y.skills, y.potential)}
+                    POT {potLabel(y.id, y.skills, y.potential, 'YouthProspect')}
                   </span>
                   <div className="mt-0.5 text-[10px] text-neutral-500">
-                    now {readoutForMarketOverall(state, y.id, y.skills, y.potential, y.overall).label}
+                    now {readoutForMarketOverall(state, y.id, y.skills, y.potential, y.overall, 'YouthProspect').label}
                   </div>
                 </div>
               </div>
@@ -707,7 +710,7 @@ function YouthTab({
               <div className="mb-2">
                 <ScoutingWidget target={{ id: y.id, skills: y.skills, potential: y.potential }} entityType="YouthProspect" compact />
               </div>
-              <TopSkills state={state} id={y.id} skills={y.skills} potential={y.potential} />
+              <TopSkills state={state} id={y.id} skills={y.skills} potential={y.potential} entityType="YouthProspect" />
               <div className="mt-3 grid grid-cols-2 gap-2 text-xs">
                 <Stat label="Signing">
                   <Money m={y.signingCost} />

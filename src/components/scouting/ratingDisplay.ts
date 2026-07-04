@@ -1,7 +1,7 @@
 import type { GameState } from '../../game/careerState';
 import type { Driver } from '../../types/gameTypes';
 import type { MarketSkillRatings } from '../../types/marketTypes';
-import type { VisibleRating } from '../../types/scoutingTypes';
+import type { ScoutedEntityType, VisibleRating } from '../../types/scoutingTypes';
 import { driverScoutTarget, fogView, type FogView, type ScoutTarget } from '../../sim/scoutingEngine';
 
 export type RatingReadout = {
@@ -31,10 +31,10 @@ export function isPlayerSignedDriver(state: GameState, driver: Driver): boolean 
   return driver.teamId === state.selectedTeamId;
 }
 
-export function fogForTarget(state: GameState, target: ScoutTarget): FogView | null {
+export function fogForTarget(state: GameState, target: ScoutTarget, entityType: ScoutedEntityType = 'Driver'): FogView | null {
   const scouting = state.scouting;
   if (!scouting) return null;
-  return fogView(target, scouting.reports[target.id], scouting.networkAccuracy, state.randomSeed);
+  return fogView(target, scouting.reports[target.id], scouting.networkAccuracy, state.randomSeed, entityType);
 }
 
 export function readoutForDriverRating(
@@ -59,8 +59,9 @@ export function readoutForMarketSkill(
   skills: MarketSkillRatings,
   potential: number,
   key: keyof MarketSkillRatings,
+  entityType: ScoutedEntityType = 'Driver',
 ): RatingReadout {
-  const view = fogForTarget(state, { id, skills, potential });
+  const view = fogForTarget(state, { id, skills, potential }, entityType);
   if (!view) return broadReadout(skills[key]);
   return visibleReadout(view.skills[key]);
 }
@@ -71,8 +72,9 @@ export function readoutForMarketOverall(
   skills: MarketSkillRatings,
   potential: number,
   fallbackOverall: number,
+  entityType: ScoutedEntityType = 'Driver',
 ): RatingReadout {
-  const view = fogForTarget(state, { id, skills, potential });
+  const view = fogForTarget(state, { id, skills, potential }, entityType);
   if (!view) return broadReadout(fallbackOverall);
   const known = Object.values(view.skills).map(visibleRatingMidpoint).filter((v): v is number => v != null);
   if (known.length === 0) return { label: '??', value: null, exact: false };
@@ -87,8 +89,9 @@ export function readoutForPotential(
   id: string,
   skills: MarketSkillRatings,
   potential: number,
+  entityType: ScoutedEntityType = 'Driver',
 ): RatingReadout {
-  const view = fogForTarget(state, { id, skills, potential });
+  const view = fogForTarget(state, { id, skills, potential }, entityType);
   if (!view) return broadReadout(potential);
   return { label: rangeLabel(view.potential.range), value: midpoint(view.potential.range), range: view.potential.range, exact: false };
 }
