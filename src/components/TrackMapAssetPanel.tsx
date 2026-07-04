@@ -15,8 +15,8 @@ type Props = {
 
 const W = 1000;
 const H = 500;
-const PAD = 18;
-const BOTTOM_BAND = 26;
+const PAD = 54;
+const BOTTOM_BAND = 36;
 
 export function TrackMapAssetPanel({
   series,
@@ -95,7 +95,7 @@ function AssetTrackMap({
 
       {running.map((dot, index) => {
         const progress = dot.trackProgress ?? (rotation + index * spacing) % 1;
-        const point = pointAtWithOffset(fitted, progress, laneOffset(dot, index));
+        const point = pointAt(fitted, progress);
         return <MapDot key={dot.driverId} point={point} dot={dot} />;
       })}
 
@@ -135,28 +135,8 @@ function pointAt(points: readonly TrackMapPoint[], t: number): TrackMapPoint {
   return points[index];
 }
 
-function pointAtWithOffset(points: readonly TrackMapPoint[], t: number, offset: number): TrackMapPoint {
-  if (points.length === 0) return [W / 2, H / 2];
-  const progress = normalizeProgress(t);
-  const index = Math.min(points.length - 1, Math.max(0, Math.floor(progress * points.length)));
-  const point = points[index];
-  if (offset === 0 || points.length < 3) return point;
-  const prev = points[(index - 1 + points.length) % points.length];
-  const next = points[(index + 1) % points.length];
-  const dx = next[0] - prev[0];
-  const dy = next[1] - prev[1];
-  const len = Math.hypot(dx, dy) || 1;
-  return [round(point[0] + (-dy / len) * offset), round(point[1] + (dx / len) * offset)];
-}
-
 function normalizeProgress(value: number): number {
   return ((value % 1) + 1) % 1;
-}
-
-function laneOffset(dot: TrackDot, index: number): number {
-  if ((dot.interval ?? 99) >= 1.5) return 0;
-  const offsets = [0, 24, -24, 42, -42];
-  return offsets[index % offsets.length];
 }
 
 function TrackMarker({ point, label, color }: { point: TrackMapPoint; label: string; color: string }) {
@@ -172,25 +152,27 @@ function TrackMarker({ point, label, color }: { point: TrackMapPoint; label: str
 }
 
 function MapDot({ point, dot, compact = false }: { point: TrackMapPoint; dot: TrackDot; compact?: boolean }) {
-  const radius = compact ? 10 : dot.isPlayer ? 20 : 17;
+  const radius = compact ? 12 : dot.isPlayer ? 28 : 24;
+  const fontSize = compact ? 12 : dot.label.length > 2 ? 17 : 21;
   return (
     <g transform={`translate(${point[0]} ${point[1]})`}>
       <title>{`P${dot.rank} car ${dot.label}${dot.gapToLeader ? `, ${dot.gapToLeader.toFixed(1)}s behind leader` : ''}`}</title>
-      <circle r={radius + 7} fill="#050606" opacity="0.92" />
+      <circle r={radius + 8} fill="#050606" opacity="0.92" />
       <circle
         r={radius}
         fill={dot.color}
         stroke={dot.isPlayer ? '#fef3c7' : '#ffffff'}
-        strokeWidth={dot.isPlayer ? 5 : 3}
+        strokeWidth={dot.isPlayer ? 6 : 4}
       />
+      <circle r={Math.max(4, radius - 8)} fill="none" stroke="#050606" strokeWidth="2" opacity="0.45" />
       <text
-        y={compact ? 4 : 6}
+        y={compact ? 4 : 7}
         textAnchor="middle"
         fill="#ffffff"
         stroke="#050606"
-        strokeWidth={compact ? 2 : 3}
+        strokeWidth={compact ? 2 : 4}
         paintOrder="stroke"
-        fontSize={compact ? 11 : 16}
+        fontSize={fontSize}
         fontWeight="900"
       >
         {dot.label}

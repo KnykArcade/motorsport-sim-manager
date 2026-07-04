@@ -570,10 +570,10 @@ function RetroTrackMap({
   rotation: number;
 }) {
   return (
-    <div className="absolute left-2 top-2 z-10 h-[230px] w-[360px] max-xl:h-[208px] max-xl:w-[326px] max-lg:hidden">
+    <div className="absolute left-2 top-2 z-10 h-[330px] w-[520px] max-xl:h-[292px] max-xl:w-[462px] max-lg:hidden">
       <RetroPanel title="Track Map" className="h-full bg-black/78 backdrop-blur-[1px]">
         <div className="flex h-[calc(100%-37px)] flex-col">
-          <div className="min-h-0 flex-1 px-1.5 py-1">
+          <div className="min-h-0 flex-1 px-2 py-1.5">
             <TrackMapAssetPanel
               series={series}
               year={year}
