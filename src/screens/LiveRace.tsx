@@ -87,11 +87,22 @@ export function LiveRace() {
   useEffect(() => {
     if (!engine || !live) return;
     if (!playing || live.pendingPrompt || live.phase === 'finished' || needsDecision) return;
+    const useRealLapPacing = shouldUseF11990sLiveRaceScreen(state?.series, state?.seasonYear);
+    const leaderForPacing = live.cars.find((c) => c.position === 1 && c.running);
+    const liveLapTime =
+      leaderForPacing?.lastLapTime && leaderForPacing.lastLapTime > 0
+        ? leaderForPacing.lastLapTime
+        : leaderForPacing?.bestLap && leaderForPacing.bestLap > 0
+          ? leaderForPacing.bestLap
+          : 85;
+    const intervalMs = useRealLapPacing
+      ? Math.max(15_000, Math.min(120_000, liveLapTime * 1000)) / speed
+      : 950 / speed;
     const id = setInterval(() => {
       setLive((s) => (s && !s.pendingPrompt && s.phase !== 'finished' ? stepLiveRace(s, engine.meta) : s));
-    }, 950 / speed);
+    }, intervalMs);
     return () => clearInterval(id);
-  }, [engine, live, playing, speed, needsDecision]);
+  }, [engine, live, playing, speed, needsDecision, state?.series, state?.seasonYear]);
 
   // Decision countdown: while a high/urgent decision is pending, tick a ~10s
   // clock and, on timeout, auto-expire (ignore) the outstanding recommendations

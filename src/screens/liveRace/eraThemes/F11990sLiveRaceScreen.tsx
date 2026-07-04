@@ -1,4 +1,4 @@
-import type { Dispatch, ReactNode, SetStateAction } from 'react';
+import { useState, type Dispatch, type ReactNode, type SetStateAction } from 'react';
 import type { TrackDot } from '../../../components/RaceTrack2D';
 import { TrackMapAssetPanel } from '../../../components/TrackMapAssetPanel';
 import { SELECTABLE_MODES, modeSpec } from '../../../sim/liveRacePace';
@@ -90,10 +90,10 @@ export function F11990sLiveRaceScreen({
   const airTemp = forecast[0]?.temp ?? (live.weather.wet ? 18 : 22);
   const trackTemp = airTemp + (live.weather.wet ? 2 : 6);
   const canAdvance = !live.pendingPrompt && !needsDecision && !finished;
-  const pitWindow = playerCars.map((c) => c.pit.window).find(Boolean);
   const fuelWindow = playerCars[0]
     ? `Lap ${Math.max(1, live.currentLap)} - Lap ${Math.min(live.totalLaps, Math.ceil((playerCars[0].fuel / 100) * live.totalLaps))}`
     : 'N/A';
+  const alert = raceAlert(live, forecast);
 
   return (
     <div
@@ -112,9 +112,24 @@ export function F11990sLiveRaceScreen({
         weather={live.weather.label}
       />
 
-      <main className="relative grid min-h-0 flex-1 grid-cols-1 gap-2 p-2 lg:grid-cols-[minmax(270px,0.78fr)_minmax(420px,1.82fr)_minmax(280px,0.82fr)]">
-        <aside className="grid min-h-0 grid-rows-[minmax(0,1fr)_92px] gap-2">
+      <main className="relative grid min-h-0 flex-1 grid-cols-1 gap-2 p-2 lg:grid-cols-[minmax(285px,0.84fr)_minmax(420px,1.8fr)_minmax(280px,0.82fr)]">
+        <aside className="grid min-h-0 grid-rows-[minmax(0,1fr)_auto_128px] gap-2">
           <RetroTimingTower cars={live.cars} nameOf={nameOf} colorOf={colorOf} />
+          <div className="grid gap-2">
+            <PlaybackPanel
+              playing={playing}
+              speed={speed}
+              canAdvance={canAdvance}
+              finished={finished}
+              onTogglePlay={onTogglePlay}
+              onStep={onStep}
+              onSpeed={onSpeed}
+              onSkipToEnd={onSkipToEnd}
+              onFinishRace={onFinishRace}
+              onOpenOrders={onOpenOrders}
+            />
+            <CameraControls />
+          </div>
           <RetroEventLog events={live.events} onOpenFull={onOpenLog} />
         </aside>
 
@@ -128,22 +143,6 @@ export function F11990sLiveRaceScreen({
             dots={dots}
             rotation={rotation}
           />
-          <div className="absolute inset-x-0 bottom-0 grid gap-2 p-2 lg:grid-cols-[1fr_1.12fr_0.86fr]">
-            <CameraControls />
-            <PlaybackPanel
-              playing={playing}
-              speed={speed}
-              canAdvance={canAdvance}
-              finished={finished}
-              onTogglePlay={onTogglePlay}
-              onStep={onStep}
-              onSpeed={onSpeed}
-              onSkipToEnd={onSkipToEnd}
-              onFinishRace={onFinishRace}
-              onOpenOrders={onOpenOrders}
-            />
-            <TyreCondition cars={live.cars.slice(0, 5)} nameOf={nameOf} />
-          </div>
         </section>
 
         <aside className="grid min-h-0 grid-rows-[minmax(220px,260px)_minmax(104px,0.72fr)_minmax(104px,0.72fr)] gap-2 overflow-hidden">
@@ -170,14 +169,18 @@ export function F11990sLiveRaceScreen({
               name={nameOf(car.driverId)}
               team={teamNameOf(car.teamId)}
               className="min-h-0"
+              finished={finished}
+              onPit={() => onPit(car.driverId)}
+              onMode={(mode) => onMode(car.driverId, mode)}
             />
           ))}
         </aside>
       </main>
 
       <footer className="relative grid shrink-0 gap-2 px-2 pb-2 lg:grid-cols-[1.15fr_1fr_0.82fr_0.82fr]">
-        <RetroPanel title="Commentary">
-          <div className="space-y-1 p-2 text-[12px] text-zinc-200">
+        <RetroPanel title={alert ? 'Track Alert' : 'Commentary'} className={alert ? 'animate-pulse border-yellow-300 bg-yellow-300 text-black' : ''}>
+          <div className={`space-y-1 p-2 text-[12px] ${alert ? 'font-black uppercase text-black' : 'text-zinc-200'}`}>
+            {alert && <p className="text-lg leading-tight">{alert}</p>}
             <p>{commentaryLine(live, nameOf)}</p>
             <p>{live.safetyCar.active ? `Safety car is out: ${live.safetyCar.reason ?? 'race control incident'}.` : 'Race control reports green running conditions.'}</p>
           </div>
@@ -190,27 +193,22 @@ export function F11990sLiveRaceScreen({
                 <span className="text-zinc-200">"{radioLine(car)}"</span>
               </div>
             ))}
-            <div className="mt-2 grid gap-1">
-              {playerCars.slice(0, 2).map((car) => (
-                <DriverCommandLine
-                  key={car.driverId}
-                  car={car}
-                  name={nameOf(car.driverId)}
-                  finished={finished}
-                  onPit={() => onPit(car.driverId)}
-                  onMode={(mode) => onMode(car.driverId, mode)}
-                />
-              ))}
-            </div>
           </div>
         </RetroPanel>
         <RetroPanel title="Pit Window">
           <div className="p-2 text-[12px]">
-            <div className="font-bold uppercase text-emerald-400">
-              {pitWindow && live.currentLap >= pitWindow.open && live.currentLap <= pitWindow.close ? 'Open' : 'Monitoring'}
-            </div>
-            <div className="mt-1 text-zinc-200">
-              {pitWindow ? `Lap ${pitWindow.open} - Lap ${pitWindow.close}` : 'No planned stop'}
+            <div className="font-bold uppercase text-emerald-400">Monitoring</div>
+            <div className="mt-1 space-y-1 text-zinc-200">
+              {playerCars.map((car) => (
+                <div key={car.driverId} className="flex items-center justify-between gap-2">
+                  <span className="truncate">{shortName(nameOf(car.driverId)).toUpperCase()}</span>
+                  <span className="shrink-0 tabular-nums">
+                    Stops: {car.pit.stopsMade}/{car.pit.plannedStops}
+                    {car.pit.lastPitLap != null ? ` (L${car.pit.lastPitLap})` : ''}
+                  </span>
+                </div>
+              ))}
+              {playerCars.length === 0 && <div>No planned stop</div>}
             </div>
             <button onClick={onOpenStrategy} className="mt-2 rounded border border-amber-500/50 px-2 py-1 text-[10px] text-amber-300 hover:bg-amber-500/10">
               Strategy Desk
@@ -303,53 +301,6 @@ function RetroPanel({
   );
 }
 
-function DriverCommandLine({
-  car,
-  name,
-  finished,
-  onPit,
-  onMode,
-}: {
-  car: LiveCarState;
-  name: string;
-  finished: boolean;
-  onPit: () => void;
-  onMode: (mode: PaceMode) => void;
-}) {
-  const canPit = car.running && !car.pit.pitRequested && !finished;
-  return (
-    <div className="rounded border border-zinc-800 bg-zinc-950/55 p-1">
-      <div className="mb-1 flex items-center justify-between gap-2">
-        <span className="truncate text-[10px] font-bold uppercase text-zinc-300">{shortName(name)}</span>
-        <button
-          onClick={onPit}
-          disabled={!canPit}
-          className="rounded border border-amber-500/50 px-1.5 py-0.5 text-[9px] font-bold uppercase text-amber-300 hover:bg-amber-500/10 disabled:border-zinc-800 disabled:text-zinc-600"
-        >
-          {car.pit.pitRequested ? 'Boxing' : 'Pit'}
-        </button>
-      </div>
-      <div className="grid grid-cols-6 gap-0.5">
-        {SELECTABLE_MODES.map((mode) => (
-          <button
-            key={mode}
-            onClick={() => onMode(mode)}
-            disabled={finished || !car.running}
-            title={modeSpec(mode).blurb}
-            className={`truncate rounded px-1 py-0.5 text-[8px] font-bold uppercase ${
-              car.paceMode === mode
-                ? 'bg-amber-400 text-black'
-                : 'bg-zinc-900 text-zinc-400 hover:bg-zinc-800 hover:text-zinc-200'
-            } disabled:opacity-40`}
-          >
-            {modeLabel(mode)}
-          </button>
-        ))}
-      </div>
-    </div>
-  );
-}
-
 function RetroTimingTower({
   cars,
   nameOf,
@@ -361,7 +312,7 @@ function RetroTimingTower({
 }) {
   return (
     <RetroPanel title="Live Timing" className="min-h-0">
-      <div className="grid grid-cols-[26px_1fr_50px_28px_28px] border-b border-zinc-800 px-2 py-0.5 text-[9px] font-bold uppercase text-amber-300">
+      <div className="grid grid-cols-[26px_1fr_50px_28px_52px] border-b border-zinc-800 px-2 py-0.5 text-[9px] font-bold uppercase text-amber-300">
         <span>Pos</span>
         <span>Driver</span>
         <span className="text-right">Gap</span>
@@ -371,10 +322,11 @@ function RetroTimingTower({
       <div className="max-h-full overflow-y-auto pb-1">
         {cars.map((car) => {
           const tyre = tyreLetter(car.tire.compound);
+          const life = Math.max(0, 100 - Math.round(car.tire.wear));
           return (
             <div
               key={car.driverId}
-              className={`grid grid-cols-[26px_1fr_50px_28px_28px] items-center px-2 py-[2px] text-[10px] leading-tight ${
+              className={`grid grid-cols-[26px_1fr_50px_28px_52px] items-center px-2 py-[2px] text-[10px] leading-tight ${
                 car.isPlayer ? 'bg-amber-500/22 text-amber-200' : 'text-zinc-100'
               } ${!car.running && car.status !== 'Finished' ? 'opacity-45' : ''}`}
             >
@@ -385,35 +337,60 @@ function RetroTimingTower({
               </span>
               <span className="text-right tabular-nums text-zinc-300">{car.position === 1 ? 'LEADER' : `+${car.gapToLeader.toFixed(1)}`}</span>
               <span className="text-right tabular-nums">{car.pit.stopsMade}</span>
-              <span className="text-right font-bold text-amber-300">{tyre.letter}</span>
+              <span className="text-right font-bold tabular-nums text-amber-300">{tyre.letter} {life}%</span>
             </div>
           );
         })}
       </div>
       <div className="border-t border-zinc-800 px-3 py-1 text-[10px] uppercase text-zinc-300">
-        D = Dry&nbsp;&nbsp;&nbsp; W = Wet
+        D = Dry&nbsp;&nbsp;&nbsp; W = Wet&nbsp;&nbsp;&nbsp; % = Tyre life
       </div>
     </RetroPanel>
   );
 }
 
 function RetroEventLog({ events, onOpenFull }: { events: LiveRaceState['events']; onOpenFull: () => void }) {
+  const [tab, setTab] = useState<'Incidents' | 'Battles' | 'Status'>('Incidents');
+  const filtered = events.filter((event) => retroEventBucket(event) === tab).slice(-4);
   return (
     <RetroPanel title="Race Events" className="h-full min-h-0">
+      <div className="flex border-b border-zinc-800 px-2 py-1">
+        {(['Incidents', 'Battles', 'Status'] as const).map((item) => (
+          <button
+            key={item}
+            onClick={() => setTab(item)}
+            className={`mr-1 rounded px-1.5 py-0.5 text-[9px] font-bold uppercase ${
+              tab === item ? 'bg-amber-400 text-black' : 'bg-zinc-900 text-zinc-400 hover:text-zinc-100'
+            }`}
+          >
+            {item}
+          </button>
+        ))}
+      </div>
       <div className="space-y-0.5 p-2 text-[10px]">
-        {events.slice(-3).reverse().map((event, index) => (
+        {filtered.slice().reverse().map((event, index) => (
           <div key={`${event.lap}-${index}`} className="flex gap-2">
             <span className="shrink-0 text-zinc-400">Lap {event.lap}</span>
             <span className="line-clamp-1 text-zinc-200">{event.text}</span>
           </div>
         ))}
-        {events.length === 0 && <div className="text-zinc-500">Awaiting race start.</div>}
+        {filtered.length === 0 && <div className="text-zinc-500">No {tab.toLowerCase()} updates yet.</div>}
         <button onClick={onOpenFull} className="text-[10px] uppercase text-amber-300 hover:text-amber-200">
           Full event log
         </button>
       </div>
     </RetroPanel>
   );
+}
+
+function retroEventBucket(event: LiveRaceState['events'][number]): 'Incidents' | 'Battles' | 'Status' {
+  if (event.category === 'incident') return 'Incidents';
+  if (event.category === 'battle') return 'Battles';
+  if (event.category === 'status' || event.category === 'weather' || event.category === 'race-control') return 'Status';
+  const text = event.text.toLowerCase();
+  if (/(retir|crash|contact|accident|puncture|damage|spin|collision|failure|dnf|safety car)/.test(text)) return 'Incidents';
+  if (/(passes|overtak|defends|clears|battle|holds off|position)/.test(text)) return 'Battles';
+  return 'Status';
 }
 
 function ScenicTrack({ cars, colorOf }: { cars: LiveCarState[]; colorOf: (teamId: string) => string }) {
@@ -447,10 +424,10 @@ function ScenicTrack({ cars, colorOf }: { cars: LiveCarState[]; colorOf: (teamId
 function CameraControls() {
   return (
     <RetroPanel title="Camera Controls">
-      <div className="grid grid-cols-[0.8fr_1fr] gap-3 p-3 text-[11px] text-zinc-300">
+      <div className="grid grid-cols-[74px_1fr] gap-2 p-2 text-[10px] text-zinc-300">
         <div className="grid grid-cols-3 gap-1">
           {['', '^', '', '<', 'o', '>', '', 'v', ''].map((label, i) => (
-            <span key={i} className="flex h-5 items-center justify-center rounded border border-zinc-700 bg-zinc-900/80 text-zinc-400">
+            <span key={i} className="flex h-4 items-center justify-center rounded border border-zinc-700 bg-zinc-900/80 text-zinc-400">
               {label}
             </span>
           ))}
@@ -493,8 +470,8 @@ function PlaybackPanel({
   onOpenOrders: () => void;
 }) {
   return (
-    <RetroPanel title="Real-Time Mode: On">
-      <div className="p-3">
+    <RetroPanel title="Real-Time Mode">
+      <div className="p-2">
         {finished ? (
           <button onClick={onFinishRace} className="w-full rounded border border-amber-500 bg-amber-400 px-4 py-2 font-black uppercase text-black hover:bg-amber-300">
             Post-Race Report
@@ -502,53 +479,31 @@ function PlaybackPanel({
         ) : (
           <>
             <div className="grid grid-cols-6 gap-1">
-              <button onClick={onTogglePlay} disabled={!canAdvance} className="rounded border border-zinc-700 bg-zinc-900 px-3 py-2 text-lg font-bold hover:border-amber-400 disabled:opacity-40">
+              <button onClick={onTogglePlay} disabled={!canAdvance} className="rounded border border-zinc-700 bg-zinc-900 px-2 py-1.5 text-base font-bold hover:border-amber-400 disabled:opacity-40">
                 {playing ? 'II' : '>'}
               </button>
-              <button onClick={onStep} disabled={!canAdvance || playing} className="rounded border border-zinc-700 bg-zinc-900 px-2 py-2 text-xs font-bold hover:border-amber-400 disabled:opacity-40">
+              <button onClick={onStep} disabled={!canAdvance || playing} className="rounded border border-zinc-700 bg-zinc-900 px-2 py-1.5 text-xs font-bold hover:border-amber-400 disabled:opacity-40">
                 +1
               </button>
               {([1, 2, 4] as Speed[]).map((s) => (
                 <button
                   key={s}
                   onClick={() => onSpeed(s)}
-                  className={`rounded border px-2 py-2 text-sm font-bold ${speed === s ? 'border-amber-400 bg-amber-400/20 text-amber-200' : 'border-zinc-700 bg-zinc-900 text-zinc-300 hover:border-amber-400'}`}
+                  className={`rounded border px-2 py-1.5 text-xs font-bold ${speed === s ? 'border-amber-400 bg-amber-400/20 text-amber-200' : 'border-zinc-700 bg-zinc-900 text-zinc-300 hover:border-amber-400'}`}
                 >
                   {s}x
                 </button>
               ))}
-              <button onClick={onSkipToEnd} disabled={!canAdvance} className="rounded border border-zinc-700 bg-zinc-900 px-2 py-2 text-xs font-bold hover:border-amber-400 disabled:opacity-40">
+              <button onClick={onSkipToEnd} disabled={!canAdvance} className="rounded border border-zinc-700 bg-zinc-900 px-2 py-1.5 text-xs font-bold hover:border-amber-400 disabled:opacity-40">
                 End
               </button>
             </div>
             <div className="mt-2 flex items-center justify-between text-[11px] text-zinc-400">
-              <span>1x = real time lap advance</span>
+              <span>1x = lap time pacing</span>
               <button onClick={onOpenOrders} className="text-amber-300 hover:text-amber-200">Team orders</button>
             </div>
           </>
         )}
-      </div>
-    </RetroPanel>
-  );
-}
-
-function TyreCondition({ cars, nameOf }: { cars: LiveCarState[]; nameOf: (driverId: string) => string }) {
-  return (
-    <RetroPanel title="Tyre Condition">
-      <div className="space-y-1.5 p-3">
-        {cars.map((car) => {
-          const life = Math.max(0, 100 - Math.round(car.tire.wear));
-          return (
-            <div key={car.driverId} className="grid grid-cols-[1fr_100px] items-center gap-2 text-[12px]">
-              <span className={car.isPlayer ? 'font-bold text-amber-300' : 'text-zinc-200'}>{shortName(nameOf(car.driverId)).toUpperCase()}</span>
-              <div className="grid grid-cols-8 gap-1">
-                {Array.from({ length: 8 }).map((_, i) => (
-                  <span key={i} className={`h-2 rounded-sm ${i < Math.ceil(life / 12.5) ? 'bg-amber-400' : 'bg-zinc-700'}`} />
-                ))}
-              </div>
-            </div>
-          );
-        })}
       </div>
     </RetroPanel>
   );
@@ -609,14 +564,21 @@ function DriverFocus({
   car,
   name,
   team,
+  finished,
+  onPit,
+  onMode,
   className = '',
 }: {
   car: LiveCarState;
   name: string;
   team: string;
+  finished: boolean;
+  onPit: () => void;
+  onMode: (mode: PaceMode) => void;
   className?: string;
 }) {
   const tyre = tyreLetter(car.tire.compound);
+  const canPit = car.running && !car.pit.pitRequested && !finished;
   return (
     <RetroPanel title={`Driver Focus ${car.isPlayer ? '- Player' : ''}`} className={`h-full overflow-hidden ${className}`}>
       <div className="p-2">
@@ -642,6 +604,37 @@ function DriverFocus({
           <FocusLine label="Fuel left" value={`${Math.round(car.fuel)}%`} />
           <FocusLine label="Tyre" value={`${tyre.letter} ${Math.max(0, 100 - Math.round(car.tire.wear))}%`} />
         </div>
+        {!finished && car.running && (
+          <div className="mt-2 rounded border border-zinc-800 bg-zinc-950/55 p-1">
+            <div className="mb-1 flex items-center justify-between gap-2">
+              <span className="text-[9px] font-bold uppercase tracking-wide text-zinc-500">Strategy Mode</span>
+              <button
+                onClick={onPit}
+                disabled={!canPit}
+                className="rounded border border-amber-500/50 px-1.5 py-0.5 text-[9px] font-bold uppercase text-amber-300 hover:bg-amber-500/10 disabled:border-zinc-800 disabled:text-zinc-600"
+              >
+                {car.pit.pitRequested ? 'Boxing' : 'Pit'}
+              </button>
+            </div>
+            <div className="grid grid-cols-6 gap-0.5">
+              {SELECTABLE_MODES.map((mode) => (
+                <button
+                  key={mode}
+                  onClick={() => onMode(mode)}
+                  disabled={finished || !car.running}
+                  title={modeSpec(mode).blurb}
+                  className={`truncate rounded px-1 py-0.5 text-[8px] font-bold uppercase ${
+                    car.paceMode === mode
+                      ? 'bg-amber-400 text-black'
+                      : 'bg-zinc-900 text-zinc-400 hover:bg-zinc-800 hover:text-zinc-200'
+                  } disabled:opacity-40`}
+                >
+                  {modeLabel(mode)}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
     </RetroPanel>
   );
@@ -671,6 +664,15 @@ function commentaryLine(live: LiveRaceState, nameOf: (driverId: string) => strin
   if (!leader) return 'The field is forming up for the start.';
   if (!second) return `${shortName(nameOf(leader.driverId))} leads the field.`;
   return `${shortName(nameOf(leader.driverId))} leads ${shortName(nameOf(second.driverId))} by ${second.gapToLeader.toFixed(1)} seconds.`;
+}
+
+function raceAlert(live: LiveRaceState, forecast: ForecastEntry[]): string | null {
+  if (live.safetyCar.active) return 'Safety Car';
+  if (live.weather.wet) return live.weather.condition === 'HeavyRain' ? 'Heavy Rain' : 'Wet Track';
+  if (live.weather.changingSoon || forecast.slice(0, 3).some((entry) => entry.wet)) return 'Rain Approaching';
+  const urgent = live.recommendations.find((rec) => rec.status === 'pending' && rec.priority === 'urgent');
+  if (urgent) return 'Pit Wall Alert';
+  return null;
 }
 
 function radioLine(car: LiveCarState): string {

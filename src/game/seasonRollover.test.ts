@@ -139,6 +139,42 @@ describe('advanceSeason', () => {
     expect((next.finance ?? []).some((t) => t.label.includes(incoming.name))).toBe(true);
   });
 
+  it('evaluates unmet wants for AI-team drivers at rollover', () => {
+    const base = newOffseasonState();
+    const aiDriver = base.drivers.find((d) => d.teamId !== base.selectedTeamId)!;
+    const aiTeamId = aiDriver.teamId;
+    const relationships = base.driverRelationships ?? {};
+    const rel = relationships[aiDriver.id];
+    expect(rel).toBeDefined();
+    const state: GameState = {
+      ...base,
+      cars: base.cars.map((car) =>
+        car.teamId === aiTeamId
+          ? { ...car, ratings: { ...car.ratings, reliability: 4 } }
+          : car,
+      ),
+      driverRelationships: {
+        ...relationships,
+        [aiDriver.id]: {
+          ...rel,
+          morale: 70,
+          trustInTeam: 70,
+          trustInPrincipal: 70,
+          frustration: 0,
+          wants: ['better_reliability'],
+        },
+      },
+    };
+
+    const next = advanceSeason(state);
+    const nextRel = next.driverRelationships?.[aiDriver.id];
+
+    expect(nextRel).toBeDefined();
+    expect(nextRel!.morale).toBeLessThan(70);
+    expect(nextRel!.trustInTeam).toBeLessThan(70);
+    expect(nextRel!.frustration).toBeGreaterThan(0);
+  });
+
   it('progresses academy members across the rollover', () => {
     const base = newOffseasonState();
     const member = signProspectToAcademy(youthProspects1995[0], 1995, base?.selectedTeamId ?? 't-williams');

@@ -895,12 +895,13 @@ export function advanceSeason(state: GameState, nextBundle?: SeasonBundle): Game
     confidenceRolled[id] = rolloverConfidence(rel);
   }
 
-  // Evaluate driver wants — unfulfilled wants erode morale and trust.
-  const wantTeam = teams.find((t) => t.id === state.selectedTeamId);
-  const wantCar = cars.find((c) => c.teamId === state.selectedTeamId);
-  for (const d of drivers.filter((x) => x.teamId === state.selectedTeamId)) {
+  // Evaluate driver wants - unfulfilled wants erode morale and trust for every
+  // garage, so rival drivers have real needs instead of player-only concerns.
+  for (const d of drivers) {
     const rel = confidenceRolled[d.id];
     if (!rel || rel.wants.length === 0) continue;
+    const wantTeam = teams.find((t) => t.id === d.teamId);
+    const wantCar = cars.find((c) => c.teamId === d.teamId);
     const wantResult = evaluateWants(rel, {
       teamReputation: wantTeam?.reputation ?? 50,
       contractYearsRemaining: d.contractYearsRemaining ?? 0,
