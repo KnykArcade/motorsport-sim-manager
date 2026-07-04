@@ -4,6 +4,7 @@ import { activeDriversForTeam, driversForTeam } from '../game/careerState';
 import type { GameState } from '../game/careerState';
 import { Panel } from '../components/Panel';
 import { Button } from '../components/Button';
+import { DriverDossierButton } from '../components/driverCards/DriverDossier';
 import { TEAM_ORDER_SPECS } from '../sim/relationshipEngine';
 import {
   computeConfidenceState,
@@ -322,9 +323,20 @@ function DriverCard({
   const keptPromises = promises.filter((p) => p.status === 'kept');
   const brokenPromises = promises.filter((p) => p.status === 'broken');
   const expiredPromises = promises.filter((p) => p.status === 'expired');
+  const driver = state.drivers.find((d) => d.id === rel.driverId);
 
   return (
-    <Panel title={driverName(rel.driverId)}>
+    <Panel
+      title={driverName(rel.driverId)}
+      actions={driver && (
+        <DriverDossierButton
+          state={state}
+          subject={{ type: 'driver', driver }}
+          context={isRaceDriver ? 'Race Driver - relationship file' : 'Reserve - relationship file'}
+          focus="relationship"
+        />
+      )}
+    >
       {/* Header badges */}
       <div className="mb-3 flex flex-wrap items-center gap-2">
         <span className={`rounded px-1.5 py-0.5 text-[10px] uppercase tracking-wide ${isRaceDriver ? 'bg-blue-950/60 text-blue-300' : 'bg-neutral-800 text-neutral-400'}`}>
