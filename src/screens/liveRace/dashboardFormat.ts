@@ -8,9 +8,9 @@ export type RiskStyle = { chip: string; dot: string; text: string; label: string
 
 export const RISK_STYLE: Record<RiskLevel, RiskStyle> = {
   Low: {
-    chip: 'bg-emerald-500/15 text-emerald-300 border-emerald-500/40',
-    dot: 'bg-emerald-400',
-    text: 'text-emerald-300',
+    chip: 'bg-sky-500/15 text-sky-300 border-sky-500/40',
+    dot: 'bg-sky-400',
+    text: 'text-sky-300',
     label: 'LOW',
   },
   Medium: {
@@ -26,9 +26,9 @@ export const RISK_STYLE: Record<RiskLevel, RiskStyle> = {
     label: 'ELEVATED',
   },
   High: {
-    chip: 'bg-orange-600/25 text-orange-200 border-orange-500/60',
-    dot: 'bg-orange-500',
-    text: 'text-orange-300',
+    chip: 'bg-red-600/20 text-red-200 border-red-500/55',
+    dot: 'bg-red-500',
+    text: 'text-red-300',
     label: 'HIGH',
   },
   Critical: {
