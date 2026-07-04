@@ -69,6 +69,27 @@ function estimateText(e: Estimate): string {
   return formatSetupRange(e.low, e.high);
 }
 
+function qualityReadout(e: Estimate, setupKnowledge: number): { label: string; detail: string } {
+  if (e.exact != null) return { label: formatSetupRange(e.exact, e.exact), detail: '/ 100' };
+  const center = (e.low + e.high) / 2;
+  const band =
+    center >= 82 ? 'Promising window' :
+    center >= 68 ? 'Workable window' :
+    center >= 54 ? 'Unsettled window' :
+    'Poor read';
+  if (setupKnowledge < 0.5) return { label: band, detail: 'Low certainty' };
+  if (setupKnowledge < 0.75) return { label: `${band} (${Math.round(e.low / 10) * 10}s)`, detail: 'Medium certainty' };
+  return { label: estimateText(e), detail: 'High certainty' };
+}
+
+function fitReadout(e: Estimate, setupKnowledge: number): string {
+  if (e.exact != null) return formatSetupRange(e.exact, e.exact);
+  const center = (e.low + e.high) / 2;
+  if (setupKnowledge < 0.5) return center >= 76 ? 'Promising' : center >= 58 ? 'Mixed' : 'Poor';
+  if (setupKnowledge < 0.75) return center >= 76 ? 'Likely strong' : center >= 58 ? 'Needs work' : 'Likely weak';
+  return formatSetupRange(e.low, e.high);
+}
+
 // How far the current setup has drifted from the practised baseline (0-1).
 function changeSeverityLabel(changeDelta: number): string {
   const d = safeScore(changeDelta, 0);
@@ -145,6 +166,7 @@ export function SetupWorkshop({
 
   const componentFit = (key: string) => quality.components.find((c) => c.component === key)?.fit ?? 0;
   const qualityEstimate = setupQualityEstimate(quality.quality, setupKnowledge);
+  const qualityDisplay = qualityReadout(qualityEstimate, setupKnowledge);
   const revealComponents = canRevealComponentFit(setupKnowledge);
   const revealEffects = setupKnowledge >= 0.33;
   const revealWarnings = setupKnowledge >= 0.2;
@@ -251,8 +273,7 @@ export function SetupWorkshop({
                     className="text-sm font-semibold tabular-nums text-neutral-400"
                     title="Run more practice to reveal exact component fit"
                   >
-                    {componentFitEstimate(componentFit(comp.key), setupKnowledge).low}–
-                    {componentFitEstimate(componentFit(comp.key), setupKnowledge).high}
+                    {fitReadout(componentFitEstimate(componentFit(comp.key), setupKnowledge), setupKnowledge)}
                   </span>
                 )}
               </div>
@@ -322,9 +343,9 @@ export function SetupWorkshop({
               </div>
               <div className="flex items-end gap-1.5">
                 <span className="text-2xl font-bold tabular-nums" style={{ color: ratingColor(safeScore(quality.quality) / 10) }}>
-                  {estimateText(qualityEstimate)}
+                  {qualityDisplay.label}
                 </span>
-                <span className="pb-0.5 text-[11px] text-neutral-500">/ 100</span>
+                <span className="pb-0.5 text-[11px] text-neutral-500">{qualityDisplay.detail}</span>
               </div>
               {revealEffects ? (
                 <div className="mt-2 grid grid-cols-2 gap-1 text-[11px]">
@@ -350,7 +371,7 @@ export function SetupWorkshop({
                 <span className="text-2xl font-bold tabular-nums" style={{ color: ratingColor(safeScore(comfort.comfort) / 10) }}>
                   {comfort.label === 'Unknown' ? '—' : formatSetupScore(comfort.comfort)}
                 </span>
-                <span className="pb-0.5 text-[11px] text-neutral-500">/ 100</span>
+                <span className="pb-0.5 text-[11px] text-neutral-500">{qualityDisplay.detail}</span>
               </div>
               <div className="mt-1.5 space-y-1">
                 <MiniBar label="Familiarity" value={comfort.familiarity} />
@@ -542,3 +563,4 @@ function Effect({ label, value, goodHigh }: { label: string; value: number; good
     </div>
   );
 }
+

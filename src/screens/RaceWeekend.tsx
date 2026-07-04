@@ -611,7 +611,7 @@ function PracticePhase({
             <span className="text-xs text-neutral-500">/ {lapBudget} laps</span>
           </div>
           <Button variant="primary" onClick={onNext} className="px-3 py-1.5 text-xs">
-            {allRun ? 'Car Setup â†’' : 'Skip to Car Setup â†’'}
+            Car Setup
           </Button>
         </div>
       </div>

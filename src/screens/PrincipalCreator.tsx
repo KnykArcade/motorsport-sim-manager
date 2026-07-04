@@ -22,6 +22,8 @@ import {
 } from '../sim/principalCreator';
 import type { PrincipalModifierKey, TeamPrincipal } from '../types/principalTypes';
 
+const TRAIT_POINTS_TOTAL = 400;
+
 export function PrincipalCreator({
   teamName,
   teamColor,
@@ -40,6 +42,17 @@ export function PrincipalCreator({
     setDraft((d) => ({ ...d, [key]: value }));
 
   const principal = useMemo(() => buildTeamPrincipal(draft), [draft]);
+  const [traitPoints, setTraitPoints] = useState({
+    driverManagement: principal.driverManagement,
+    developmentFocus: principal.developmentFocus,
+    raceStrategy: principal.raceStrategy,
+    commercialSkill: principal.commercialSkill,
+    politicalSkill: principal.politicalSkill,
+    riskTolerance: principal.riskTolerance,
+  });
+  const spentPoints = Object.values(traitPoints).reduce((sum, value) => sum + value, 0);
+  const pointsRemaining = TRAIT_POINTS_TOTAL - spentPoints;
+  const adjustedPrincipal = useMemo<TeamPrincipal>(() => ({ ...principal, ...traitPoints }), [principal, traitPoints]);
   const modifiers = useMemo(() => computePrincipalModifiers(principal), [principal]);
 
   const initials =
@@ -53,18 +66,32 @@ export function PrincipalCreator({
       .toUpperCase() || '??';
 
   const label = (list: PrincipalOption[], id: string) => optionById(list, id)?.label ?? '—';
+  const credential = credentialBadge(adjustedPrincipal.reputation, spentPoints);
+  const confirmDisabled = !draft.name.trim();
+  const setTrait = (key: keyof typeof traitPoints, value: number) => {
+    setTraitPoints((current) => {
+      const next = { ...current, [key]: value };
+      const total = Object.values(next).reduce((sum, v) => sum + v, 0);
+      return total > TRAIT_POINTS_TOTAL ? current : next;
+    });
+  };
 
   return (
     <div className="space-y-4">
-      <div>
-        <div className="text-xs font-semibold uppercase tracking-[0.3em] text-amber-500">
-          Paddock Credentials
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <div className="text-xs font-semibold uppercase tracking-[0.3em] text-amber-500">
+            Paddock Credentials
+          </div>
+          <h2 className="mt-1 text-xl font-bold text-neutral-100">Register your Team Principal</h2>
+          <p className="text-sm text-neutral-400">
+            Your dossier for <span className="text-neutral-200">{teamName}</span>. Your background and
+            style shape how the team performs.
+          </p>
         </div>
-        <h2 className="mt-1 text-xl font-bold text-neutral-100">Register your Team Principal</h2>
-        <p className="text-sm text-neutral-400">
-          Your dossier for <span className="text-neutral-200">{teamName}</span>. Your background and
-          style shape how the team performs.
-        </p>
+        <Button variant="primary" disabled={confirmDisabled} onClick={() => onConfirm(adjustedPrincipal)}>
+          {draft.name.trim() ? confirmLabel : 'Name your principal'}
+        </Button>
       </div>
 
       <div className="grid gap-4 lg:grid-cols-12">
@@ -100,9 +127,9 @@ export function PrincipalCreator({
               <CardRow label="Media" value={label(MEDIA_PERSONALITIES, draft.mediaPersonality)} />
             </dl>
             <div className="grid grid-cols-3 gap-px border-t border-neutral-800 bg-neutral-800 text-center">
-              <Pip label="Rep" value={principal.reputation} />
-              <Pip label="Strat" value={principal.raceStrategy} />
-              <Pip label="Risk" value={principal.riskTolerance} />
+              <Pip label="Rep" value={adjustedPrincipal.reputation} />
+              <Pip label="Badge" value={credential.short} />
+              <Pip label="Risk" value={adjustedPrincipal.riskTolerance} />
             </div>
           </div>
         </div>
@@ -199,13 +226,16 @@ export function PrincipalCreator({
           </Section>
 
           <Section title="Trait Profile">
+            <div className={`mb-3 rounded border px-2 py-1 text-xs ${pointsRemaining === 0 ? 'border-green-500/30 bg-green-500/10 text-green-300' : 'border-amber-500/30 bg-amber-500/10 text-amber-300'}`}>
+              {credential.label} · {pointsRemaining} point{pointsRemaining === 1 ? '' : 's'} remaining
+            </div>
             <div className="grid grid-cols-2 gap-2">
-              <Trait label="Driver Mgmt" value={principal.driverManagement} />
-              <Trait label="Development" value={principal.developmentFocus} />
-              <Trait label="Race Strategy" value={principal.raceStrategy} />
-              <Trait label="Commercial" value={principal.commercialSkill} />
-              <Trait label="Political" value={principal.politicalSkill} />
-              <Trait label="Risk" value={principal.riskTolerance} />
+              <TraitAdjust label="Driver Mgmt" value={traitPoints.driverManagement} onChange={(v) => setTrait('driverManagement', v)} />
+              <TraitAdjust label="Development" value={traitPoints.developmentFocus} onChange={(v) => setTrait('developmentFocus', v)} />
+              <TraitAdjust label="Race Strategy" value={traitPoints.raceStrategy} onChange={(v) => setTrait('raceStrategy', v)} />
+              <TraitAdjust label="Commercial" value={traitPoints.commercialSkill} onChange={(v) => setTrait('commercialSkill', v)} />
+              <TraitAdjust label="Political" value={traitPoints.politicalSkill} onChange={(v) => setTrait('politicalSkill', v)} />
+              <TraitAdjust label="Risk" value={traitPoints.riskTolerance} onChange={(v) => setTrait('riskTolerance', v)} />
             </div>
           </Section>
         </div>
@@ -252,9 +282,7 @@ export function PrincipalCreator({
           <Button variant="ghost" onClick={onBack}>
             ← Back
           </Button>
-          <Button variant="primary" disabled={!draft.name.trim()} onClick={() => onConfirm(principal)}>
-            {draft.name.trim() ? `${confirmLabel} →` : 'Name your principal'}
-          </Button>
+          <Button variant="primary" disabled={confirmDisabled} onClick={() => onConfirm(adjustedPrincipal)}>`n            {draft.name.trim() ? confirmLabel : 'Name your principal'}`n          </Button>
         </div>
       </Section>
     </div>
@@ -367,7 +395,7 @@ function CardRow({ label, value, tone }: { label: string; value: string; tone?: 
   );
 }
 
-function Pip({ label, value }: { label: string; value: number }) {
+function Pip({ label, value }: { label: string; value: number | string }) {
   return (
     <div className="bg-neutral-950 py-2">
       <div className="text-sm font-bold text-neutral-100">{value}</div>
@@ -376,16 +404,30 @@ function Pip({ label, value }: { label: string; value: number }) {
   );
 }
 
-function Trait({ label, value }: { label: string; value: number }) {
+function credentialBadge(reputation: number, spentPoints: number): { label: string; short: string } {
+  if (reputation >= 70 || spentPoints >= 410) return { label: 'International A Credential', short: 'INT A' };
+  if (reputation >= 58 || spentPoints >= 390) return { label: 'International B Credential', short: 'INT B' };
+  if (reputation >= 48 || spentPoints >= 370) return { label: 'National A Credential', short: 'NAT A' };
+  return { label: 'National B Credential', short: 'NAT B' };
+}
+
+function TraitAdjust({ label, value, onChange }: { label: string; value: number; onChange: (value: number) => void }) {
   return (
-    <div className="rounded-md border border-neutral-800 bg-neutral-900/40 px-2 py-1.5">
+    <label className="rounded-md border border-neutral-800 bg-neutral-900/40 px-2 py-1.5">
       <div className="flex items-center justify-between">
         <span className="text-[11px] text-neutral-400">{label}</span>
         <span className="text-xs font-bold text-neutral-100">{value}</span>
       </div>
-      <div className="mt-1 h-1 w-full overflow-hidden rounded-full bg-neutral-800">
-        <div className="h-full bg-amber-500" style={{ width: `${value}%` }} />
-      </div>
-    </div>
+      <input
+        type="range"
+        min={0}
+        max={100}
+        value={value}
+        onChange={(e) => onChange(Number(e.target.value))}
+        className="mt-1 w-full accent-amber-500"
+      />
+    </label>
   );
 }
+
+
