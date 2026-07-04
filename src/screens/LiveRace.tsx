@@ -36,7 +36,7 @@ import { FullEventLogModal, StrategyModal, TeamOrdersModal } from './liveRace/mo
 import { F11990sLiveRaceScreen } from './liveRace/eraThemes/F11990sLiveRaceScreen';
 import { shouldUseF11990sLiveRaceScreen } from './liveRace/eraThemes/getLiveRaceEraTheme';
 
-type Speed = 1 | 2 | 4;
+type Speed = 1 | 2 | 4 | 8 | 16;
 
 export function LiveRace() {
   const { raceId } = useParams();
@@ -59,6 +59,7 @@ export function LiveRace() {
   const [live, setLive] = useState<LiveRaceState | null>(() => engine?.initial ?? null);
   const [playing, setPlaying] = useState(false);
   const [speed, setSpeed] = useState<Speed>(1);
+  const [trackAnimationTick, setTrackAnimationTick] = useState(0);
   const [modal, setModal] = useState<'log' | 'strategy' | 'orders' | null>(null);
   const [decisionSecondsLeft, setDecisionSecondsLeft] = useState<number | null>(null);
   const committed = useRef(false);
@@ -103,6 +104,17 @@ export function LiveRace() {
     }, intervalMs);
     return () => clearInterval(id);
   }, [engine, live, playing, speed, needsDecision, state?.series, state?.seasonYear]);
+
+  useEffect(() => {
+    setTrackAnimationTick(0);
+  }, [live?.currentLap]);
+
+  useEffect(() => {
+    if (!live || !shouldUseF11990sLiveRaceScreen(state?.series, state?.seasonYear)) return;
+    if (!playing || live.pendingPrompt || live.phase === 'finished' || needsDecision) return;
+    const id = setInterval(() => setTrackAnimationTick((tick) => tick + 1), Math.max(450, 2200 / speed));
+    return () => clearInterval(id);
+  }, [live, needsDecision, playing, speed, state?.series, state?.seasonYear]);
 
   // Decision countdown: while a high/urgent decision is pending, tick a ~10s
   // clock and, on timeout, auto-expire (ignore) the outstanding recommendations
@@ -228,7 +240,10 @@ export function LiveRace() {
         : live.cars
               .filter((c) => c.running && c.lastLapTime > 0)
               .reduce((sum, c, _, cars) => sum + c.lastLapTime / cars.length, 0) || 85;
-  const rotation = (live.currentLap / 5) % 1;
+  const smoothLapProgress = shouldUseF11990sLiveRaceScreen(state.series, state.seasonYear)
+    ? (trackAnimationTick % 36) / 36
+    : 0;
+  const rotation = ((live.currentLap + smoothLapProgress) / 5) % 1;
   const dots: TrackDot[] = live.cars.map((c) => ({
     driverId: c.driverId,
     label: String(driverNumber(c.driverId) || ''),
@@ -236,6 +251,7 @@ export function LiveRace() {
     isPlayer: c.isPlayer,
     running: c.running,
     inPit: c.pit.inPitThisLap,
+    pitRequested: c.pit.pitRequested,
     rank: c.position ?? 99,
     trackProgress: c.running ? normalizeTrackProgress(rotation - c.gapToLeader / representativeLapTime) : undefined,
     gapToLeader: c.gapToLeader,
@@ -272,7 +288,7 @@ export function LiveRace() {
             +1
           </button>
           <div className="flex items-center gap-0.5">
-            {([1, 2, 4] as Speed[]).map((s) => (
+            {([1, 2, 4, 8, 16] as Speed[]).map((s) => (
               <button
                 key={s}
                 onClick={() => setSpeed(s)}

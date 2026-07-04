@@ -132,12 +132,13 @@ function candidatesFor(
   const wear = car.tire.wear;
   const minHealth = Math.min(car.engineHealth, car.gearboxHealth, car.brakeHealth);
   const stopsLeft = car.pit.plannedStops - car.pit.stopsMade;
+  const pitCallArmed = car.pit.pitRequested || car.pit.inPitThisLap;
   const lateRace = state.currentLap > state.totalLaps * 0.8;
   const finalLaps = state.currentLap >= state.totalLaps - 1;
   const pushing = car.paceMode === 'Push' || car.paceMode === 'Attack';
 
   // 1. Wrong tyres for wet conditions — change immediately.
-  if (state.weather.wet && car.tire.compound === 'Dry') {
+  if (state.weather.wet && car.tire.compound === 'Dry' && !pitCallArmed) {
     out.push({
       kind: 'weatherTyres',
       priority: 'urgent',
@@ -185,7 +186,7 @@ function candidatesFor(
   }
 
   // 4. Safety car out — cheap stop available.
-  if (state.safetyCar.active && stopsLeft > 0 && !car.pit.inPitThisLap) {
+  if (state.safetyCar.active && stopsLeft > 0 && !pitCallArmed) {
     out.push({
       kind: 'safetyCarPit',
       priority: 'high',
@@ -199,7 +200,7 @@ function candidatesFor(
   }
 
   // 5. Tyres critically worn.
-  if (wear >= 82 && stopsLeft > 0 && !car.pit.inPitThisLap) {
+  if (wear >= 82 && stopsLeft > 0 && !pitCallArmed) {
     out.push({
       kind: 'tyres',
       priority: 'high',

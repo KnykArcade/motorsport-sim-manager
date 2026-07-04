@@ -10,6 +10,7 @@ type Props = {
   dots: TrackDot[];
   rotation: number;
   eraTheme?: 'f1-1990s' | 'default';
+  hideFooterLabel?: boolean;
   className?: string;
 };
 
@@ -26,6 +27,7 @@ export function TrackMapAssetPanel({
   dots,
   rotation,
   eraTheme = 'default',
+  hideFooterLabel = false,
   className = 'w-full',
 }: Props) {
   const match = getTrackMapAsset({ series, year, trackId, trackName });
@@ -48,7 +50,13 @@ export function TrackMapAssetPanel({
       data-track-map-match={match.matchType}
       preserveAspectRatio="none"
     >
-      <AssetTrackMap geometry={match.geometry} dots={dots} rotation={rotation} eraTheme={eraTheme} />
+      <AssetTrackMap
+        geometry={match.geometry}
+        dots={dots}
+        rotation={rotation}
+        eraTheme={eraTheme}
+        hideFooterLabel={hideFooterLabel}
+      />
     </svg>
   );
 }
@@ -58,16 +66,18 @@ function AssetTrackMap({
   dots,
   rotation,
   eraTheme,
+  hideFooterLabel,
 }: {
   geometry: TrackMapGeometry;
   dots: TrackDot[];
   rotation: number;
   eraTheme: 'f1-1990s' | 'default';
+  hideFooterLabel: boolean;
 }) {
   const fitted = fitPoints(geometry);
   const pathD = toPath(fitted);
-  const running = dots.filter((dot) => dot.running && !dot.inPit).sort((a, b) => a.rank - b.rank);
-  const pitting = dots.filter((dot) => dot.running && dot.inPit);
+  const running = dots.filter((dot) => dot.running && !dot.inPit && !dot.pitRequested).sort((a, b) => a.rank - b.rank);
+  const pitting = dots.filter((dot) => dot.running && (dot.inPit || dot.pitRequested));
   const spacing = 1 / Math.max(running.length, 14);
   const markerStyle = eraTheme === 'f1-1990s' ? retroMarkerStyle : defaultMarkerStyle;
 
@@ -109,9 +119,11 @@ function AssetTrackMap({
         ))}
       </g>
 
-      <text x={W - PAD} y={H - 13} textAnchor="end" fill="#71717a" fontSize="12" fontWeight="700">
-        {geometry.name.toUpperCase()} {geometry.year}
-      </text>
+      {!hideFooterLabel && (
+        <text x={W - PAD} y={H - 13} textAnchor="end" fill="#71717a" fontSize="12" fontWeight="700">
+          {geometry.name.toUpperCase()} {geometry.year}
+        </text>
+      )}
     </>
   );
 }
