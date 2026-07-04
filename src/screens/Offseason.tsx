@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useGame } from '../game/GameContext';
 import { Panel } from '../components/Panel';
 import { Button } from '../components/Button';
+import { DriverDossierButton } from '../components/driverCards/DriverDossier';
 import { activeDriversForTeam } from '../game/careerState';
 import { thirdDriverAmbitions } from '../sim/contractEngine';
 import { marketRolloverChanges } from '../sim/careerMarketEngine';
@@ -111,7 +112,7 @@ export function Offseason() {
               const age = academyMemberAge(a, nextYear);
               const eligible = isPromotionEligible(a, nextYear);
               return (
-                <li key={a.id} className="flex items-center justify-between text-neutral-300">
+                <li key={a.id} className="flex items-center justify-between gap-3 text-neutral-300">
                   <span>
                     {a.name}{' '}
                     <span className="text-neutral-500">
@@ -124,7 +125,13 @@ export function Offseason() {
                     )}
                   </span>
                   <span className="text-xs text-neutral-500">
-                    {a.yearsUntilF1Ready <= 0 ? 'F1-ready' : `~${a.yearsUntilF1Ready}y to F1`}
+                    <span className="mr-2">{a.yearsUntilF1Ready <= 0 ? 'F1-ready' : `~${a.yearsUntilF1Ready}y to F1`}</span>
+                    <DriverDossierButton
+                      state={state}
+                      subject={{ type: 'academy', driver: a }}
+                      context={`Academy - ${nextYear} decision`}
+                      focus="development"
+                    />
                   </span>
                 </li>
               );
@@ -166,6 +173,12 @@ export function Offseason() {
                         {a.yearsUntilF1Ready <= 0 ? 'F1-ready' : `~${a.yearsUntilF1Ready}y to F1`})
                       </span>
                     </span>
+                    <DriverDossierButton
+                      state={state}
+                      subject={{ type: 'academy', driver: a }}
+                      context="First-option decision"
+                      focus="development"
+                    />
                   </div>
                   {decision ? (
                     <div className="mt-2 flex items-center justify-between text-xs">

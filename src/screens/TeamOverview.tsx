@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react';
 import { useGame } from '../game/GameContext';
 import { Panel } from '../components/Panel';
 import { RatingBadge } from '../components/RatingBadge';
+import { DriverDossierButton } from '../components/driverCards/DriverDossier';
 import { formatMoney, ratingColor } from '../components/ui';
 import {
   buildTeamOverview,
@@ -402,9 +403,19 @@ function TeamDetail({
               <div className="text-xs uppercase tracking-wide text-neutral-500">Race drivers</div>
               {detail.raceDrivers.length ? (
                 detail.raceDrivers.map((d) => (
-                  <div key={d.id} className="flex justify-between">
+                  <div key={d.id} className="flex items-center justify-between gap-2">
                     <span className="text-neutral-200">{d.name}</span>
-                    <span className="tabular-nums text-neutral-400">{d.ratings.overall.toFixed(1)}</span>
+                    <span className="flex items-center gap-2">
+                      <span className="tabular-nums text-neutral-400">{d.ratings.overall.toFixed(1)}</span>
+                      {state && (
+                        <DriverDossierButton
+                          state={state}
+                          subject={{ type: 'driver', driver: d }}
+                          context={`${row.name} - race driver`}
+                          focus={row.isPlayer ? 'relationship' : 'identity'}
+                        />
+                      )}
+                    </span>
                   </div>
                 ))
               ) : (
@@ -415,14 +426,24 @@ function TeamDetail({
               <div>
                 <div className="text-xs uppercase tracking-wide text-neutral-500">Reserve / test</div>
                 {detail.reserveDrivers.map((d) => (
-                  <div key={d.id} className="flex justify-between">
+                  <div key={d.id} className="flex items-center justify-between gap-2">
                     <span className="text-neutral-300">
                       {d.name}
                       {d.contractType && d.contractType !== 'seat' && (
                         <span className="ml-1 text-[10px] uppercase text-neutral-500">{d.contractType}</span>
                       )}
                     </span>
-                    <span className="tabular-nums text-neutral-500">{d.ratings.overall.toFixed(1)}</span>
+                    <span className="flex items-center gap-2">
+                      <span className="tabular-nums text-neutral-500">{d.ratings.overall.toFixed(1)}</span>
+                      {state && (
+                        <DriverDossierButton
+                          state={state}
+                          subject={{ type: 'driver', driver: d }}
+                          context={`${row.name} - reserve driver`}
+                          focus="development"
+                        />
+                      )}
+                    </span>
                   </div>
                 ))}
               </div>

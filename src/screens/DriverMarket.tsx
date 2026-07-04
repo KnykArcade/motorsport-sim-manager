@@ -15,6 +15,7 @@ import { competingBidFor, bidToWin, resolveDriverBid } from '../sim/driverBiddin
 import { Panel } from '../components/Panel';
 import { StatBar } from '../components/StatBar';
 import { Button } from '../components/Button';
+import { DriverDossierButton } from '../components/driverCards/DriverDossier';
 import { formatMoney } from '../components/ui';
 import type {
   AcademyMember,
@@ -181,6 +182,7 @@ export function DriverMarket() {
               return (
               <SeniorCard
                 key={d.id}
+                state={state}
                 d={d}
                 offseason={offseason}
                 seats={seats}
@@ -216,6 +218,7 @@ export function DriverMarket() {
         <YouthTab
           prospects={bundle.youth}
           academy={academy}
+          state={state}
           academyCapacity={academyCapacity}
           offseason={offseason}
           seats={seats}
@@ -315,6 +318,7 @@ function SeatButtons({
 }
 
 function SeniorCard({
+  state,
   d,
   offseason,
   seats,
@@ -337,6 +341,7 @@ function SeniorCard({
   onSignRaceDriver,
   onRelease,
 }: {
+  state: NonNullable<ReturnType<typeof useGame>['state']>;
   d: MarketDriver;
   offseason: boolean;
   seats: Driver[];
@@ -384,6 +389,15 @@ function SeniorCard({
           </span>
           <div className="mt-0.5 text-[10px] text-neutral-500">POT {potLabel}</div>
         </div>
+      </div>
+
+      <div className="mb-2">
+        <DriverDossierButton
+          state={state}
+          subject={{ type: 'market', driver: d }}
+          context={`${d.context} - ${d.marketStatus}`}
+          focus="market"
+        />
       </div>
 
       <div className="mb-2 flex flex-wrap gap-1 text-[10px]">
@@ -499,6 +513,7 @@ function SeniorCard({
 function YouthTab({
   prospects,
   academy,
+  state,
   academyCapacity,
   offseason,
   seats,
@@ -513,6 +528,7 @@ function YouthTab({
 }: {
   prospects: YouthProspect[];
   academy: AcademyMember[];
+  state: NonNullable<ReturnType<typeof useGame>['state']>;
   academyCapacity: number;
   offseason: boolean;
   seats: Driver[];
@@ -583,6 +599,14 @@ function YouthTab({
                         <Tag>~{a.yearsUntilF1Ready}y to F1</Tag>
                       )}
                     </div>
+                    <div className="mb-2">
+                      <DriverDossierButton
+                        state={state}
+                        subject={{ type: 'academy', driver: a }}
+                        context="Your Academy"
+                        focus="development"
+                      />
+                    </div>
                     <TopSkills skills={a.skills} />
                     <div className="mt-3 border-t border-neutral-800 pt-2">
                       {pending ? (
@@ -649,6 +673,14 @@ function YouthTab({
                 {y.academyEligibleNow && <Tag tone="good">Eligible now</Tag>}
                 <Tag>{y.riskLevel} risk</Tag>
                 <Tag>~{y.yearsUntilF1Ready}y to F1</Tag>
+              </div>
+              <div className="mb-2">
+                <DriverDossierButton
+                  state={state}
+                  subject={{ type: 'academy', driver: y }}
+                  context={`${y.currentLevel} - youth prospect`}
+                  focus="development"
+                />
               </div>
               <TopSkills skills={y.skills} />
               <div className="mt-3 grid grid-cols-2 gap-2 text-xs">

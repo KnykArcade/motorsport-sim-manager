@@ -2,6 +2,7 @@ import { useGame } from '../game/GameContext';
 import { Panel } from '../components/Panel';
 import { StatBar } from '../components/StatBar';
 import { Button } from '../components/Button';
+import { DriverDossierButton } from '../components/driverCards/DriverDossier';
 import {
   activeDriversForTeam,
   reserveDriversForTeam,
@@ -42,13 +43,21 @@ export function Drivers() {
                     Car {seat + 1}
                   </div>
                   {driver ? (
-                    <div className="mt-1 flex items-center justify-between">
-                      <span className="font-bold text-neutral-100">
-                        #{driver.number} {driver.name}
-                      </span>
-                      <span className="rounded bg-neutral-800 px-2 py-0.5 text-xs font-semibold text-amber-300">
-                        {driver.ratings.overall.toFixed(1)}
-                      </span>
+                    <div className="mt-1 flex flex-wrap items-center justify-between gap-2">
+                      <div>
+                        <span className="font-bold text-neutral-100">
+                          #{driver.number} {driver.name}
+                        </span>
+                        <span className="ml-2 rounded bg-neutral-800 px-2 py-0.5 text-xs font-semibold text-amber-300">
+                          {driver.ratings.overall.toFixed(1)}
+                        </span>
+                      </div>
+                      <DriverDossierButton
+                        state={state}
+                        subject={{ type: 'driver', driver }}
+                        context={`Car ${seat + 1} - ${playerTeam.name}`}
+                        focus="relationship"
+                      />
                     </div>
                   ) : (
                     <div className="mt-1 text-sm text-neutral-500">Empty seat</div>
@@ -81,6 +90,12 @@ export function Drivers() {
                       )}
                     </span>
                     <div className="flex gap-2">
+                      <DriverDossierButton
+                        state={state}
+                        subject={{ type: 'driver', driver: r }}
+                        context={`Reserve - ${playerTeam.name}`}
+                        focus="development"
+                      />
                       {[0, 1].map((seat) => (
                         <Button
                           key={seat}
@@ -115,9 +130,17 @@ export function Drivers() {
                   <span className="h-5 w-1.5 rounded-sm" style={{ backgroundColor: teamColor(d.teamId) }} />
                   <span className="font-bold text-neutral-100">#{d.number} {d.name}</span>
                 </div>
-                <span className="rounded bg-neutral-800 px-2 py-0.5 text-xs font-semibold text-amber-300">
-                  {d.ratings.overall.toFixed(1)}
-                </span>
+                <div className="flex items-center gap-2">
+                  <span className="rounded bg-neutral-800 px-2 py-0.5 text-xs font-semibold text-amber-300">
+                    {d.ratings.overall.toFixed(1)}
+                  </span>
+                  <DriverDossierButton
+                    state={state}
+                    subject={{ type: 'driver', driver: d }}
+                    context={teamName(d.teamId)}
+                    focus={isPlayer ? 'relationship' : 'identity'}
+                  />
+                </div>
               </div>
               <div className="mb-2 text-xs text-neutral-500">{teamName(d.teamId)}</div>
               <div className="grid grid-cols-1 gap-1">

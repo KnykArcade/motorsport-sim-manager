@@ -18,6 +18,7 @@ import { StandingsTable } from '../components/StandingsTable';
 import { NewsFeed } from '../components/NewsFeed';
 import { NewsPanel } from '../components/NewsPanel';
 import { TrackDemandBars } from '../components/TrackDemandBars';
+import { DriverDossierButton } from '../components/driverCards/DriverDossier';
 import { formatMoney } from '../components/ui';
 import {
   BACKGROUNDS,
@@ -160,12 +161,20 @@ export function TeamHQ() {
             <div className="grid gap-3 sm:grid-cols-2">
               {drivers.map((d) => (
                 <div key={d.id} className="rounded-lg border border-neutral-800 bg-neutral-900/40 p-3">
-                  <div className="flex items-center justify-between">
+                  <div className="flex items-center justify-between gap-2">
                     <div className="flex items-center gap-2">
                       <MoraleDot morale={d.morale} />
                       <span className="font-semibold text-neutral-100">#{d.number} {d.name}</span>
                     </div>
-                    <span className="text-xs text-neutral-500">OVR {d.ratings.overall.toFixed(1)}</span>
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs text-neutral-500">OVR {d.ratings.overall.toFixed(1)}</span>
+                      <DriverDossierButton
+                        state={state}
+                        subject={{ type: 'driver', driver: d }}
+                        context="Team HQ"
+                        focus="relationship"
+                      />
+                    </div>
                   </div>
                   <div className="mt-2 space-y-1">
                     <StatBar label="Morale" value={d.morale / 10} />

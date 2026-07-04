@@ -1,0 +1,723 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>1990s Driver Card Dossier Mockup</title>
+  <style>
+    :root {
+      --desk: #101417;
+      --ink: #111512;
+      --blue: #173657;
+      --blue-dark: #0b1d31;
+      --paper: #eee5d1;
+      --paper-2: #d8ceb8;
+      --note: #f5d36c;
+      --green: #2f7c43;
+      --red: #a83c2f;
+      --amber: #c68b20;
+      --line: rgba(24, 32, 34, 0.28);
+      --shadow: 0 24px 70px rgba(0, 0, 0, 0.48);
+      font-family: "Arial Narrow", "Roboto Condensed", "Segoe UI", Arial, sans-serif;
+      color: var(--ink);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background:
+        radial-gradient(circle at 20% 5%, rgba(255, 255, 255, 0.08), transparent 26%),
+        linear-gradient(135deg, #151b1d, #080a0b 56%, #17120c);
+      color: var(--ink);
+      padding: 22px;
+    }
+
+    .desk {
+      max-width: 1600px;
+      min-height: calc(100vh - 44px);
+      margin: 0 auto;
+      background:
+        linear-gradient(90deg, rgba(255, 255, 255, 0.025) 1px, transparent 1px) 0 0 / 42px 42px,
+        linear-gradient(0deg, rgba(255, 255, 255, 0.018) 1px, transparent 1px) 0 0 / 42px 42px,
+        #11181a;
+      border: 1px solid rgba(231, 186, 64, 0.35);
+      box-shadow: var(--shadow);
+      padding: 18px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .header {
+      display: grid;
+      grid-template-columns: 230px 1fr 300px;
+      gap: 16px;
+      align-items: stretch;
+      margin-bottom: 18px;
+    }
+
+    .brand,
+    .index,
+    .title-strip {
+      border: 1px solid rgba(255, 214, 79, 0.42);
+      background: rgba(5, 8, 9, 0.82);
+      color: #f8f1d7;
+      box-shadow: 0 10px 24px rgba(0, 0, 0, 0.34);
+    }
+
+    .brand {
+      padding: 16px 18px;
+      transform: rotate(-0.6deg);
+    }
+
+    .brand .mark {
+      font-size: 25px;
+      font-weight: 900;
+      letter-spacing: 0.03em;
+      color: #f4c400;
+    }
+
+    .brand .sub {
+      font-family: "Comic Sans MS", "Bradley Hand ITC", cursive;
+      color: #e9d8b6;
+      font-size: 18px;
+      margin-top: 4px;
+    }
+
+    .title-strip {
+      padding: 16px 24px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    h1 {
+      margin: 0;
+      color: #f3eee2;
+      letter-spacing: 0.05em;
+      font-size: clamp(32px, 4vw, 58px);
+      line-height: 0.95;
+      text-transform: uppercase;
+      font-style: italic;
+    }
+
+    .subtitle {
+      color: #f4c400;
+      font-family: "Comic Sans MS", "Bradley Hand ITC", cursive;
+      font-size: 21px;
+      margin-top: 8px;
+    }
+
+    .index {
+      padding: 16px 18px;
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .index strong {
+      color: #f4c400;
+      font-size: 16px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    .tabs {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      margin-top: 8px;
+      grid-column: 1 / -1;
+    }
+
+    .tab {
+      border: 1px solid rgba(255, 214, 79, 0.36);
+      background: rgba(244, 196, 0, 0.14);
+      color: #f3e4a5;
+      padding: 6px 10px;
+      font-size: 12px;
+      text-transform: uppercase;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: minmax(270px, 0.66fr) minmax(520px, 1.35fr) minmax(300px, 0.75fr);
+      gap: 18px;
+      align-items: start;
+    }
+
+    .nav {
+      background: #d8c8a4;
+      border: 2px solid #241c12;
+      box-shadow: 8px 8px 0 rgba(0, 0, 0, 0.35);
+      padding: 14px;
+      transform: rotate(0.35deg);
+    }
+
+    .nav h2,
+    .paper h2,
+    .panel-title {
+      margin: 0 0 10px;
+      font-size: 22px;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+      border-bottom: 2px solid rgba(128, 48, 34, 0.7);
+      padding-bottom: 5px;
+    }
+
+    .source-row {
+      display: grid;
+      grid-template-columns: 38px 1fr auto;
+      gap: 9px;
+      align-items: center;
+      padding: 9px 8px;
+      border-bottom: 1px solid rgba(0, 0, 0, 0.18);
+      font-size: 16px;
+    }
+
+    .source-row.active {
+      background: rgba(245, 211, 108, 0.54);
+      outline: 2px solid rgba(37, 31, 18, 0.65);
+    }
+
+    .source-row small {
+      color: #26405b;
+      display: block;
+      font-size: 12px;
+      margin-top: 2px;
+      text-transform: uppercase;
+    }
+
+    .stamp {
+      display: inline-block;
+      border: 2px solid currentColor;
+      padding: 3px 7px;
+      color: var(--red);
+      font-weight: 900;
+      transform: rotate(-4deg);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    .card {
+      background:
+        linear-gradient(rgba(24, 32, 34, 0.09) 1px, transparent 1px) 0 0 / 100% 28px,
+        linear-gradient(90deg, rgba(24, 32, 34, 0.07) 1px, transparent 1px) 0 0 / 42px 42px,
+        var(--paper);
+      border: 8px solid #17212a;
+      border-radius: 18px;
+      box-shadow: var(--shadow);
+      padding: 18px;
+      position: relative;
+    }
+
+    .card::before {
+      content: "";
+      position: absolute;
+      top: 12px;
+      left: 50%;
+      width: 120px;
+      height: 24px;
+      transform: translateX(-50%);
+      border-radius: 0 0 16px 16px;
+      background: #0f1415;
+      box-shadow: inset 0 2px 6px rgba(255, 255, 255, 0.14);
+    }
+
+    .card-top {
+      display: grid;
+      grid-template-columns: 190px 1fr 130px;
+      gap: 18px;
+      margin-top: 24px;
+      align-items: start;
+    }
+
+    .portrait {
+      min-height: 230px;
+      border: 4px solid #f3efe4;
+      background:
+        radial-gradient(circle at 52% 32%, #d5c1a5 0 10%, transparent 10%),
+        radial-gradient(circle at 50% 26%, #1c1a16 0 12%, transparent 12%),
+        linear-gradient(#3d4c50 0 52%, #1b2d40 52% 100%);
+      box-shadow: 4px 6px 0 rgba(0, 0, 0, 0.25);
+      position: relative;
+    }
+
+    .portrait::after {
+      content: "TEAM PHOTO";
+      position: absolute;
+      bottom: 10px;
+      left: 10px;
+      right: 10px;
+      text-align: center;
+      color: #f6e7bf;
+      background: rgba(0, 0, 0, 0.48);
+      padding: 5px;
+      letter-spacing: 0.08em;
+      font-size: 12px;
+    }
+
+    .driver-name {
+      margin: 2px 0 8px;
+      font-size: clamp(34px, 4.4vw, 62px);
+      line-height: 0.92;
+      text-transform: uppercase;
+    }
+
+    .driver-meta {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 5px 18px;
+      font-size: 16px;
+    }
+
+    .label {
+      color: #66583f;
+      font-weight: 900;
+      text-transform: uppercase;
+      font-size: 12px;
+      letter-spacing: 0.05em;
+    }
+
+    .big-number {
+      border-left: 3px solid rgba(0, 0, 0, 0.25);
+      padding-left: 18px;
+      text-align: center;
+    }
+
+    .big-number .num {
+      font-size: 72px;
+      font-weight: 900;
+      line-height: 0.9;
+    }
+
+    .big-number .team {
+      color: #173657;
+      font-weight: 900;
+      text-transform: uppercase;
+      margin-top: 8px;
+    }
+
+    .section-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+      margin-top: 16px;
+    }
+
+    .paper {
+      background: rgba(255, 250, 235, 0.54);
+      border: 1px solid var(--line);
+      padding: 13px;
+      box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.24);
+    }
+
+    .wide {
+      grid-column: 1 / -1;
+    }
+
+    .ratings {
+      display: grid;
+      gap: 8px;
+    }
+
+    .rating {
+      display: grid;
+      grid-template-columns: 130px 1fr 32px;
+      gap: 10px;
+      align-items: center;
+      font-size: 15px;
+    }
+
+    .bar {
+      height: 12px;
+      background: rgba(0, 0, 0, 0.13);
+      border: 1px solid rgba(0, 0, 0, 0.18);
+      position: relative;
+    }
+
+    .bar span {
+      display: block;
+      height: 100%;
+      background: linear-gradient(90deg, #193d65, #5e83a5);
+    }
+
+    .bar.green span {
+      background: linear-gradient(90deg, #316a38, #88a24f);
+    }
+
+    .bar.red span {
+      background: linear-gradient(90deg, #8a302d, #d16b43);
+    }
+
+    .note {
+      background: var(--note);
+      box-shadow: 7px 8px 0 rgba(0, 0, 0, 0.24);
+      padding: 16px;
+      transform: rotate(-1.5deg);
+      border: 1px solid rgba(94, 64, 16, 0.35);
+      font-family: "Comic Sans MS", "Bradley Hand ITC", cursive;
+      font-size: 17px;
+      line-height: 1.35;
+    }
+
+    .note strong {
+      display: block;
+      font-family: "Arial Narrow", "Segoe UI", sans-serif;
+      text-transform: uppercase;
+      color: #7a2c22;
+      font-size: 18px;
+      margin-bottom: 8px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 15px;
+    }
+
+    th,
+    td {
+      border-bottom: 1px solid rgba(0, 0, 0, 0.18);
+      padding: 6px 4px;
+      text-align: left;
+    }
+
+    th {
+      color: #173657;
+      text-transform: uppercase;
+      font-size: 12px;
+      letter-spacing: 0.04em;
+    }
+
+    .side-stack {
+      display: grid;
+      gap: 16px;
+    }
+
+    .clipboard,
+    .polaroid,
+    .folder {
+      background: var(--paper);
+      border: 2px solid rgba(31, 26, 18, 0.78);
+      box-shadow: var(--shadow);
+      padding: 15px;
+    }
+
+    .clipboard {
+      transform: rotate(-0.4deg);
+    }
+
+    .folder {
+      background: #c9b074;
+      transform: rotate(0.7deg);
+    }
+
+    .polaroid {
+      background: #f5f0e3;
+      transform: rotate(1.3deg);
+    }
+
+    .photo-strip {
+      min-height: 118px;
+      background:
+        linear-gradient(120deg, rgba(255, 255, 255, 0.1), transparent 45%),
+        linear-gradient(140deg, #7a1d18 0 30%, #f7e8d0 30% 45%, #1d3e62 45% 100%);
+      border: 1px solid rgba(0, 0, 0, 0.35);
+      margin-bottom: 10px;
+    }
+
+    .pill-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .pill {
+      background: rgba(24, 54, 87, 0.12);
+      border: 1px solid rgba(24, 54, 87, 0.45);
+      padding: 5px 8px;
+      font-size: 13px;
+      text-transform: uppercase;
+      font-weight: 900;
+    }
+
+    .card-footer {
+      margin-top: 16px;
+      display: grid;
+      grid-template-columns: 1fr auto;
+      align-items: end;
+      gap: 14px;
+      border-top: 2px solid rgba(0, 0, 0, 0.22);
+      padding-top: 10px;
+    }
+
+    .barcode {
+      height: 38px;
+      width: 210px;
+      background: repeating-linear-gradient(90deg, #111 0 3px, transparent 3px 7px, #111 7px 10px, transparent 10px 14px);
+    }
+
+    .signature {
+      font-family: "Comic Sans MS", "Bradley Hand ITC", cursive;
+      font-size: 32px;
+      transform: rotate(-4deg);
+      color: #7a2c22;
+    }
+
+    .screen-map {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-top: 12px;
+    }
+
+    .screen-card {
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      background: rgba(10, 17, 21, 0.85);
+      color: #f5ecd1;
+      padding: 10px;
+      min-height: 96px;
+    }
+
+    .screen-card strong {
+      display: block;
+      color: #f4c400;
+      margin-bottom: 5px;
+      text-transform: uppercase;
+      font-size: 14px;
+    }
+
+    @media (max-width: 1180px) {
+      .header,
+      .layout {
+        grid-template-columns: 1fr;
+      }
+
+      .card-top,
+      .section-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .wide {
+        grid-column: auto;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="desk">
+    <header class="header">
+      <div class="brand">
+        <div class="mark">MOTORSPORT SIM MANAGER</div>
+        <div class="sub">1994 season personnel file</div>
+      </div>
+      <div class="title-strip">
+        <h1>Driver Card Dossier</h1>
+        <div class="subtitle">One shared card for market, team, development, academy and relationships</div>
+      </div>
+      <div class="index">
+        <strong>Card Index</strong>
+        <span>03 / 24</span>
+        <div class="tabs">
+          <span class="tab">Identity</span>
+          <span class="tab">Relationship</span>
+          <span class="tab">Development</span>
+          <span class="tab">Market</span>
+          <span class="tab">Career</span>
+        </div>
+      </div>
+    </header>
+
+    <section class="layout">
+      <aside class="nav">
+        <h2>Where This Card Opens</h2>
+        <div class="source-row active">
+          <strong>1</strong>
+          <span>Current Team Drivers<small>Relationships + promises + role</small></span>
+          <span class="stamp">Live</span>
+        </div>
+        <div class="source-row">
+          <strong>2</strong>
+          <span>Drivers Market<small>Cost, interest, agent notes</small></span>
+          <span>View</span>
+        </div>
+        <div class="source-row">
+          <strong>3</strong>
+          <span>Youth Academy<small>Potential, path, first option</small></span>
+          <span>View</span>
+        </div>
+        <div class="source-row">
+          <strong>4</strong>
+          <span>Driver Development<small>Training focus + curve</small></span>
+          <span>View</span>
+        </div>
+        <div class="source-row">
+          <strong>5</strong>
+          <span>Race Weekend<small>Confidence, form, setup notes</small></span>
+          <span>View</span>
+        </div>
+
+        <div class="note" style="margin-top: 18px;">
+          <strong>Design intent</strong>
+          Clicking any driver name opens the same dossier. Each screen highlights the section that matters there.
+        </div>
+      </aside>
+
+      <article class="card" aria-label="Driver dossier card mockup">
+        <div class="card-top">
+          <div class="portrait"></div>
+          <div>
+            <div class="label">Williams Renault - Lead Driver</div>
+            <h2 class="driver-name">Damon<br />Hill</h2>
+            <div class="driver-meta">
+              <span><span class="label">Nationality</span><br />Great Britain</span>
+              <span><span class="label">Age</span><br />34</span>
+              <span><span class="label">Contract</span><br />1 year remaining</span>
+              <span><span class="label">Salary</span><br />$3.2m / year</span>
+              <span><span class="label">Morale</span><br />Good - 78</span>
+              <span><span class="label">Confidence</span><br />Confident - 81</span>
+            </div>
+          </div>
+          <div class="big-number">
+            <div class="label">Driver ID</div>
+            <div class="num">0</div>
+            <div class="team">No. 1 Seat</div>
+            <p class="stamp" style="margin-top: 20px;">Title Hope</p>
+          </div>
+        </div>
+
+        <div class="section-grid">
+          <section class="paper">
+            <h2>Core Ratings</h2>
+            <div class="ratings">
+              <div class="rating"><span>Race Pace</span><div class="bar"><span style="width: 89%"></span></div><strong>89</strong></div>
+              <div class="rating"><span>Qualifying</span><div class="bar"><span style="width: 86%"></span></div><strong>86</strong></div>
+              <div class="rating"><span>Racecraft</span><div class="bar"><span style="width: 83%"></span></div><strong>83</strong></div>
+              <div class="rating"><span>Composure</span><div class="bar"><span style="width: 87%"></span></div><strong>87</strong></div>
+              <div class="rating"><span>Risk Mgmt.</span><div class="bar"><span style="width: 78%"></span></div><strong>78</strong></div>
+            </div>
+          </section>
+
+          <section class="paper">
+            <h2>Relationship File</h2>
+            <div class="ratings">
+              <div class="rating"><span>Team Loyalty</span><div class="bar green"><span style="width: 74%"></span></div><strong>74</strong></div>
+              <div class="rating"><span>Trust in Car</span><div class="bar green"><span style="width: 69%"></span></div><strong>69</strong></div>
+              <div class="rating"><span>Trust in Team</span><div class="bar green"><span style="width: 82%"></span></div><strong>82</strong></div>
+              <div class="rating"><span>Teammate</span><div class="bar red"><span style="width: 47%"></span></div><strong>47</strong></div>
+              <div class="rating"><span>Frustration</span><div class="bar red"><span style="width: 31%"></span></div><strong>31</strong></div>
+            </div>
+          </section>
+
+          <section class="paper">
+            <h2>Personality & Wants</h2>
+            <div class="pill-list">
+              <span class="pill">Team Leader</span>
+              <span class="pill">Pressure Sensitive</span>
+              <span class="pill">Setup Focused</span>
+              <span class="pill">Ambitious</span>
+            </div>
+            <table style="margin-top: 10px;">
+              <tr><th>Current Want</th><th>Status</th></tr>
+              <tr><td>Podium-capable car</td><td>Mostly met</td></tr>
+              <tr><td>Development priority</td><td>At risk</td></tr>
+              <tr><td>Equal treatment</td><td>Monitor</td></tr>
+            </table>
+          </section>
+
+          <section class="paper">
+            <h2>Development Sheet</h2>
+            <table>
+              <tr><th>Item</th><th>Value</th></tr>
+              <tr><td>Potential Ceiling</td><td>88</td></tr>
+              <tr><td>Career Phase</td><td>Peak</td></tr>
+              <tr><td>Best Training Fit</td><td>Composure + tire care</td></tr>
+              <tr><td>Mentor Value</td><td>High</td></tr>
+              <tr><td>Risk</td><td>Confidence dips after errors</td></tr>
+            </table>
+          </section>
+
+          <section class="paper wide">
+            <h2>Market / Contract Folder</h2>
+            <table>
+              <tr>
+                <th>Market Value</th>
+                <th>Expected Salary</th>
+                <th>Negotiation</th>
+                <th>Interested Teams</th>
+                <th>Manager Note</th>
+              </tr>
+              <tr>
+                <td>$4.8m</td>
+                <td>$3.2m - $4.1m</td>
+                <td>Medium</td>
+                <td>Williams, McLaren</td>
+                <td>Needs evidence the car remains a front-runner.</td>
+              </tr>
+            </table>
+          </section>
+
+          <section class="paper wide">
+            <h2>Career Record</h2>
+            <table>
+              <tr><th>Starts</th><th>Wins</th><th>Podiums</th><th>Poles</th><th>DNFs</th><th>Best Finish</th><th>Recent Form</th></tr>
+              <tr><td>72</td><td>5</td><td>18</td><td>6</td><td>9</td><td>Champion contender</td><td>2nd, 1st, 4th, DNF, 2nd</td></tr>
+            </table>
+          </section>
+        </div>
+
+        <div class="card-footer">
+          <div>
+            <div class="barcode"></div>
+            <small>WILLIAMS RENAULT DRIVER ID SYSTEM - 1994 SEASON</small>
+          </div>
+          <div class="signature">D. Hill</div>
+        </div>
+      </article>
+
+      <aside class="side-stack">
+        <div class="note">
+          <strong>What the player learns</strong>
+          Is this driver happy? What does he want? Is development still helping? Is the contract secure? Could another team steal him? Is the teammate relationship turning ugly?
+        </div>
+
+        <section class="clipboard">
+          <h2 class="panel-title">Pulled From Game Systems</h2>
+          <table>
+            <tr><td>Driver profile</td><td>name, age, number, nationality, traits</td></tr>
+            <tr><td>Ratings</td><td>overall plus key skill groups</td></tr>
+            <tr><td>Contract</td><td>role, years, salary, market value</td></tr>
+            <tr><td>Relationships</td><td>loyalty, trust, ego, wants, frustration</td></tr>
+            <tr><td>Promises</td><td>active, kept, broken, due date</td></tr>
+            <tr><td>Development</td><td>phase, ceiling, training fit, youth traits</td></tr>
+            <tr><td>Performance</td><td>starts, wins, form, rivals, DNFs</td></tr>
+          </table>
+        </section>
+
+        <section class="polaroid">
+          <div class="photo-strip"></div>
+          <strong>Context-sensitive card</strong>
+          <p>On Driver Market, the market folder opens first. On current team screens, the relationship file opens first. On Youth Academy, the development sheet opens first.</p>
+        </section>
+
+        <section class="folder">
+          <h2 class="panel-title">Screen Connections</h2>
+          <div class="screen-map">
+            <div class="screen-card"><strong>Team</strong> Relationship, promises, role, morale.</div>
+            <div class="screen-card"><strong>Market</strong> Value, interest, contract demand.</div>
+            <div class="screen-card"><strong>Academy</strong> Potential, path, readiness, rights.</div>
+            <div class="screen-card"><strong>Development</strong> Training, curve, gains, ceiling.</div>
+            <div class="screen-card"><strong>Weekend</strong> Confidence, setup feedback, form.</div>
+            <div class="screen-card"><strong>News</strong> Rivalries, rumors, wants, pressure.</div>
+          </div>
+        </section>
+      </aside>
+    </section>
+  </main>
+</body>
+</html>
