@@ -280,11 +280,28 @@ describe('F1 1990s garage hotspots', () => {
       'Team Principal',
       'Track Monitors',
       'Chief Mechanic',
+      'Pre-Race Brief',
       'Car',
       'Race Strategist',
       'Tyre Rack',
       'Data Laptop',
     ]);
+  });
+
+  it('anchors the pre-race brief click target to the front set-up sheet', () => {
+    const state = withWeekendPackage(makeState(1994));
+    const setupSheet = buildF11990sGarageHotspots({
+      state,
+      race: currentRace(state)!,
+      isMinPackage: false,
+      hasQualifyingResults: false,
+    }).find((item) => item.id === 'setup-sheet')!;
+
+    expect(setupSheet.label).toBe('Pre-Race Brief');
+    expect(setupSheet.description).toBe('Set-up sheet with track, weather and race notes');
+    expect(setupSheet.action).toEqual({ type: 'phase', phase: 'briefing' });
+    expect(setupSheet.x).toBe(20);
+    expect(setupSheet.y).toBe(82);
   });
 
   it('gives hotspots accessible labels and keeps locked hotspots focusable', () => {
