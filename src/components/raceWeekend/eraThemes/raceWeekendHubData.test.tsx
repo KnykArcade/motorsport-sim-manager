@@ -145,6 +145,16 @@ describe('F1 1990s race weekend hub rendering', () => {
     expect(html).toContain('Race Orders');
   });
 
+  it('renders the Phase 3 status deck below the garage workspace', () => {
+    const state = withWeekendPackage(makeState(1994));
+    const html = renderHub(state);
+    expect(html).toContain('aria-label="Garage status deck"');
+    expect(html.indexOf('aria-label="Garage status deck"')).toBeGreaterThan(
+      html.indexOf('Interactive 1990s Formula 1 garage'),
+    );
+    expect(html.indexOf('1990s F1 Era Mode')).toBeGreaterThan(html.indexOf('aria-label="Garage status deck"'));
+  });
+
   it('renders track info without crashing when optional distance is missing', () => {
     const state = makeState(1994);
     const race = { ...currentRace(state)!, distanceKm: undefined };

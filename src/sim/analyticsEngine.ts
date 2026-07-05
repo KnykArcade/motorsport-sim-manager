@@ -46,6 +46,10 @@ export const KIND_COOLDOWN: Record<string, number> = {
   pitWindow: 6,
 };
 
+// Safety-car stops are powerful, but an opening-stint SC should not immediately
+// produce unrealistic pit calls. Let the race settle before the pit wall asks.
+export const SAFETY_CAR_PIT_RECOMMENDATION_MIN_LAP = 16;
+
 export function cooldownFor(kind: string): number {
   return KIND_COOLDOWN[kind] ?? REC_COOLDOWN;
 }
@@ -186,7 +190,12 @@ function candidatesFor(
   }
 
   // 4. Safety car out — cheap stop available.
-  if (state.safetyCar.active && stopsLeft > 0 && !pitCallArmed) {
+  if (
+    state.safetyCar.active &&
+    state.currentLap >= SAFETY_CAR_PIT_RECOMMENDATION_MIN_LAP &&
+    stopsLeft > 0 &&
+    !pitCallArmed
+  ) {
     out.push({
       kind: 'safetyCarPit',
       priority: 'high',

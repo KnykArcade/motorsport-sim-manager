@@ -83,7 +83,7 @@ export function F11990sRaceWeekendHub({
         </div>
       </header>
 
-      <div className="grid gap-3 p-3 xl:grid-cols-[280px_minmax(520px,1fr)]">
+      <div className="grid gap-3 p-3 xl:grid-cols-[280px_minmax(620px,1fr)]">
         <aside className="space-y-3">
           <RaceWeekendScheduleCard
             items={schedule}
@@ -115,8 +115,8 @@ export function F11990sRaceWeekendHub({
           </section>
         </aside>
 
-        <main className="space-y-3">
-          <section className="f1-1990s-garage-scene min-h-[520px]" aria-label="Interactive 1990s Formula 1 garage">
+        <main>
+          <section className="f1-1990s-garage-scene min-h-[660px]" aria-label="Interactive 1990s Formula 1 garage">
             <div className="f1-1990s-garage-door" aria-hidden="true" />
             <div className="f1-1990s-monitor-wall" aria-hidden="true" />
             <div className="f1-1990s-toolbox" aria-hidden="true" />
@@ -163,19 +163,20 @@ export function F11990sRaceWeekendHub({
             </div>
           )}
 
-          <div className="grid gap-3 md:grid-cols-2 2xl:grid-cols-5">
-            <TeamMessagesCard messages={buildTeamMessages(state, race)} onOpenMessages={() => onRoute('/news')} />
-            <CarStatusCard
-              rows={buildCarStatus(state)}
-              setupConfidence={setupConfidenceLabel(state, race)}
-              onOpenCarStats={() => onPhase(isMinPackage ? 'quali-run' : 'setup')}
-            />
-            <WeatherForecastCard forecast={forecast} onOpenForecast={() => onPhase('briefing')} />
-            <StandingsCard rows={standingsRows} onOpenStandings={() => onRoute('/standings')} />
-            <QuickActionsCard actions={quickActions} callbacks={callbacks} />
-          </div>
         </main>
       </div>
+
+      <section className="f1-1990s-status-deck mx-3 mb-3" aria-label="Garage status deck">
+        <TeamMessagesCard messages={buildTeamMessages(state, race)} onOpenMessages={() => onRoute('/news')} />
+        <CarStatusCard
+          rows={buildCarStatus(state)}
+          setupConfidence={setupConfidenceLabel(state, race)}
+          onOpenCarStats={() => onPhase(isMinPackage ? 'quali-run' : 'setup')}
+        />
+        <WeatherForecastCard forecast={forecast} onOpenForecast={() => onPhase('briefing')} />
+        <StandingsCard rows={standingsRows} onOpenStandings={() => onRoute('/standings')} />
+        <QuickActionsCard actions={quickActions} callbacks={callbacks} />
+      </section>
 
       <footer className="mx-3 mb-3 grid gap-3 rounded border border-neutral-700/70 bg-black/50 px-4 py-3 text-sm text-neutral-300 lg:grid-cols-[260px_1fr_auto]">
         <div>
