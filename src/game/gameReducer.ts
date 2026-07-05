@@ -674,14 +674,15 @@ export function gameReducer(state: GameState | null, action: GameAction): GameSt
 
     case 'SELECT_RACE_WEEKEND_PACKAGE': {
       if (!state) return state;
-      if (getCareerPhase(state) !== 'race_weekend') return state;
+      const phase = getCareerPhase(state);
+      if (phase !== 'paddock_week' && phase !== 'race_weekend' && phase !== 'pre_season_setup') return state;
       return selectRaceWeekendPackage(state, action.packageType);
     }
 
     case 'ADVANCE_TO_PADDOCK_WEEK': {
       if (!state) return state;
       if (getCareerPhase(state) !== 'post_race_review') return state;
-      return enterPaddockWeek(state);
+      return { ...enterPaddockWeek(state), raceWeekendPackage: undefined, aiRaceWeekendPackages: undefined };
     }
 
     case 'ADVANCE_TO_PRE_RACE_BRIEFING': {
@@ -692,19 +693,19 @@ export function gameReducer(state: GameState | null, action: GameAction): GameSt
       // by COMPLETE_PRESEASON_SETUP instead, but guard anyway).
       if (phase !== 'paddock_week' && phase !== 'pre_season_setup') return state;
       if (phase === 'paddock_week' && hasUnresolvedRequiredDecisions(state)) return state;
+      if (phase === 'paddock_week' && !hasPackageForCurrentRace(state)) return state;
       if (phase === 'pre_season_setup' && !isPreseasonChecklistComplete(state)) return state;
       // Use enterPreRaceBriefingFromPreseason for the preseason path so that
       // preseasonSetupComplete and preseasonDecisionsComplete are set.
-      if (phase === 'pre_season_setup') return enterPreRaceBriefingFromPreseason(state);
+      if (phase === 'pre_season_setup') return enterPreRaceBriefingFromPreseason(ensureDefaultRaceWeekendPackage(state));
       return enterPreRaceBriefing(state);
     }
 
     case 'ADVANCE_TO_RACE_WEEKEND': {
       if (!state) return state;
       if (getCareerPhase(state) !== 'pre_race_briefing') return state;
-      const advanced = enterRaceWeekend(state);
-      // Clear the weekend package when entering a new race weekend.
-      return { ...advanced, raceWeekendPackage: undefined, aiRaceWeekendPackages: undefined };
+      if (!hasPackageForCurrentRace(state)) return state;
+      return enterRaceWeekend(state);
     }
 
     case 'COMPLETE_PRESEASON_SETUP': {
@@ -723,7 +724,7 @@ export function gameReducer(state: GameState | null, action: GameAction): GameSt
       const youthNews = generateCareerYouthAcademyNews(preseasonCtx);
       const allPreseasonNews = deduplicateNews(state.news, [...preseasonNews, ...youthNews]);
       const withNews = { ...state, news: [...allPreseasonNews, ...state.news].slice(0, 80) };
-      return enterPreRaceBriefingFromPreseason(withNews);
+      return enterPreRaceBriefingFromPreseason(ensureDefaultRaceWeekendPackage(withNews));
     }
 
     case 'GENERATE_PADDOCK_EVENTS': {
@@ -1322,7 +1323,7 @@ function runQualifying(state: GameState, playerDecisions: QualifyingDecision[]):
   state.teams.forEach((t) => {
     teamReputation[t.id] = t.reputation;
     teamRaceOps[t.id] = t.raceOperations;
-    if (t.id === state.selectedTeamId && state.raceWeekendPackage) {
+    if (t.id === state.selectedTeamId && state.raceWeekendPackage?.raceId === race.id) {
       pkgEffects[t.id] = packageEffects(state.raceWeekendPackage.packageType);
     } else if (state.aiRaceWeekendPackages?.[t.id]) {
       pkgEffects[t.id] = packageEffects(state.aiRaceWeekendPackages[t.id].packageType);
@@ -1898,6 +1899,39 @@ function rushDevelopment(state: GameState, projectId: string): GameState {
   };
 }
 
+function hasPackageForCurrentRace(state: GameState): boolean {
+  const race = currentRace(state);
+  return !!race && state.raceWeekendPackage?.raceId === race.id;
+}
+
+function chooseDefaultRaceWeekendPackage(state: GameState): RaceWeekendPackageType {
+  const race = currentRace(state);
+  const track = race ? getTrackById(race.trackId) : undefined;
+  const team = state.teams.find((t) => t.id === state.selectedTeamId);
+  if (!race || !track || !team) return 'Standard';
+
+  const available = availablePackagesForSeries(state.series);
+  if (available.includes('Standard')) {
+    const standard = computeRaceWeekendPackageCost(state.series, team, track, 'Standard');
+    if (team.budget >= standard.cost) return 'Standard';
+  }
+
+  const affordable = available
+    .map((packageType) => ({
+      packageType,
+      cost: computeRaceWeekendPackageCost(state.series, team, track, packageType).cost,
+    }))
+    .filter((candidate) => team.budget >= candidate.cost)
+    .sort((a, b) => a.cost - b.cost);
+
+  return affordable[0]?.packageType ?? 'MandatoryMinimum';
+}
+
+function ensureDefaultRaceWeekendPackage(state: GameState): GameState {
+  if (hasPackageForCurrentRace(state)) return state;
+  return selectRaceWeekendPackage(state, chooseDefaultRaceWeekendPackage(state));
+}
+
 // Select a Race Weekend Package for the current race: deduct cost from budget,
 // store the selection, apply sponsor confidence and driver morale effects.
 function selectRaceWeekendPackage(
@@ -1906,6 +1940,7 @@ function selectRaceWeekendPackage(
 ): GameState {
   const race = currentRace(state);
   if (!race) return state;
+  if (state.raceWeekendPackage?.raceId === race.id) return state;
   const track = getTrackById(race.trackId);
   if (!track) return state;
   const team = state.teams.find((t) => t.id === state.selectedTeamId);

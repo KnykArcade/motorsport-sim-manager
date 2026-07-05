@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { createNewGame } from './initialCareer';
 import { gameReducer } from './gameReducer';
 import { getMaxQualifiers } from '../data';
-import { approvePreseasonTab } from './careerPhaseEngine';
+import { approvePreseasonTab, getCareerPhase } from './careerPhaseEngine';
 import type { GameState } from './careerState';
 
 function newGame(seasonYear: number, series: 'F1' | 'IndyCar', teamId: string) {
@@ -18,8 +18,10 @@ function advanceToRaceWeekend(state: GameState): GameState {
   s = approvePreseasonTab(s, 'sponsorsEngine');
   s = approvePreseasonTab(s, 'seasonObjectives');
   s = approvePreseasonTab(s, 'roundOnePreview');
+  s = gameReducer(s, { type: 'SELECT_RACE_WEEKEND_PACKAGE', packageType: 'Standard' })!;
   s = gameReducer(s, { type: 'COMPLETE_PRESEASON_SETUP' })!;
   s = gameReducer(s, { type: 'ADVANCE_TO_RACE_WEEKEND' })!;
+  expect(getCareerPhase(s)).toBe('race_weekend');
   return s as GameState;
 }
 

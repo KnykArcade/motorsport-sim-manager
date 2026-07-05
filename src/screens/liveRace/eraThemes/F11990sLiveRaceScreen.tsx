@@ -119,7 +119,7 @@ export function F11990sLiveRaceScreen({
       />
 
       <main className="relative grid min-h-0 flex-1 grid-cols-1 gap-2 p-2 lg:grid-cols-[minmax(285px,0.84fr)_minmax(420px,1.8fr)_minmax(280px,0.82fr)]">
-        <aside className="grid min-h-0 grid-rows-[minmax(0,1fr)_auto_142px] gap-2">
+        <aside className="grid min-h-0 grid-rows-[minmax(0,1fr)_auto_126px] gap-2">
           <RetroTimingTower cars={live.cars} nameOf={nameOf} colorOf={colorOf} />
           <div className="grid gap-2">
             <PlaybackPanel
@@ -138,7 +138,7 @@ export function F11990sLiveRaceScreen({
           <RetroEventLog events={live.events} onOpenFull={onOpenLog} />
         </aside>
 
-        <section className="relative min-h-[360px] overflow-hidden rounded-md border border-amber-500/35 bg-[#10140f] shadow-[inset_0_0_60px_rgba(0,0,0,0.8)]">
+        <section className="relative min-h-[360px] overflow-hidden rounded-md border border-amber-500/35 bg-[#050605] shadow-[inset_0_0_60px_rgba(0,0,0,0.8)]">
           <ScenicTrack cars={live.cars} colorOf={colorOf} />
           <RetroTrackMap
             series={state.series}
@@ -150,7 +150,7 @@ export function F11990sLiveRaceScreen({
           />
         </section>
 
-        <aside className="grid min-h-0 grid-rows-[minmax(150px,210px)_minmax(212px,1fr)_minmax(212px,1fr)] gap-2 overflow-hidden">
+        <aside className="grid min-h-0 grid-rows-[minmax(132px,178px)_minmax(232px,1fr)_minmax(232px,1fr)] gap-2 overflow-hidden">
           {!finished && (
             <RecommendationsPanel
               recs={activeRecs}
@@ -182,9 +182,9 @@ export function F11990sLiveRaceScreen({
         </aside>
       </main>
 
-      <footer className="relative grid shrink-0 gap-2 px-2 pb-2 lg:grid-cols-[1.05fr_1fr_0.9fr_0.9fr]">
-        <RetroPanel title={commentaryTitle} className={alertStyle.panel}>
-          <div className={`space-y-1 p-2 text-[12px] ${alertStyle.body}`}>
+      <footer className="relative grid h-[168px] shrink-0 gap-2 px-2 pb-2 lg:grid-cols-[1.05fr_1fr_0.9fr_0.9fr]">
+        <RetroPanel title={commentaryTitle} className={`${alertStyle.panel} min-h-0`}>
+          <div className={`h-[calc(100%-37px)] space-y-1 overflow-y-auto p-2 text-[12px] ${alertStyle.body}`}>
             {aiDnfFlash ? (
               <>
                 <p className="text-lg leading-tight">Lap {aiDnfFlash.lap} - AI retirement</p>
@@ -206,8 +206,8 @@ export function F11990sLiveRaceScreen({
             )}
           </div>
         </RetroPanel>
-        <RetroPanel title="Team Radio">
-          <div className="space-y-1 p-2 text-[12px]">
+        <RetroPanel title="Team Radio" className="min-h-0">
+          <div className="h-[calc(100%-37px)] space-y-1 overflow-y-auto p-2 text-[12px]">
             {playerCars.slice(0, 2).map((car) => (
               <div key={car.driverId} className="space-y-0.5">
                 {radioLines(car, live, state, nameOf).map((line, index) => (
@@ -220,8 +220,8 @@ export function F11990sLiveRaceScreen({
             ))}
           </div>
         </RetroPanel>
-        <RetroPanel title="Pit Window">
-          <div className="p-2 text-[12px]">
+        <RetroPanel title="Pit Window" className="min-h-0">
+          <div className="h-[calc(100%-37px)] overflow-y-auto p-2 text-[12px]">
             <div className="font-bold uppercase text-emerald-400">Monitoring</div>
             <div className="mt-1 space-y-1 text-zinc-200">
               {playerCars.map((car) => (
@@ -238,13 +238,10 @@ export function F11990sLiveRaceScreen({
               ))}
               {playerCars.length === 0 && <div>No planned stop</div>}
             </div>
-            <button onClick={onOpenStrategy} className="mt-2 rounded border border-amber-500/50 px-2 py-1 text-[10px] text-amber-300 hover:bg-amber-500/10">
-              Strategy Desk
-            </button>
           </div>
         </RetroPanel>
-        <RetroPanel title="Fuel Window">
-          <div className="grid h-full grid-cols-[1fr_112px] items-start gap-2 p-2 text-[12px] text-zinc-200">
+        <RetroPanel title="Fuel Window" className="min-h-0">
+          <div className="grid h-[calc(100%-37px)] grid-cols-[1fr_128px_128px] items-start gap-2 p-2 text-[12px] text-zinc-200">
             <div className="min-w-0">
               <div>{fuelWindow}</div>
               <div className="mt-2 text-[10px] uppercase text-zinc-500">{live.weather.wet ? 'Wet pace fuel map' : 'Dry pace fuel map'}</div>
@@ -252,6 +249,12 @@ export function F11990sLiveRaceScreen({
                 Exit Race
               </button>
             </div>
+            <button
+              onClick={onOpenStrategy}
+              className="mt-0 flex min-h-[56px] w-full items-center justify-center rounded border border-amber-500/55 bg-amber-500/10 px-2 py-2 text-center text-[11px] font-black uppercase text-amber-300 hover:bg-amber-500/20"
+            >
+              Strategy Desk
+            </button>
             <button
               onClick={onOpenOrders}
               disabled={!playerCars.some((car) => car.running)}
@@ -592,10 +595,10 @@ function RetroTrackMap({
   rotation: number;
 }) {
   return (
-    <div className="absolute left-2 top-2 z-10 h-[300px] w-[470px] max-xl:h-[270px] max-xl:w-[426px] max-lg:hidden">
+    <div className="absolute inset-2 z-10 max-lg:hidden">
       <RetroPanel title="Track Map" className="h-full bg-black/78 backdrop-blur-[1px]">
         <div className="flex h-[calc(100%-37px)] flex-col">
-          <div className="min-h-0 flex-1 px-2 py-1.5">
+          <div className="min-h-0 flex-1 px-3 py-2">
             <TrackMapAssetPanel
               series={series}
               year={year}
@@ -609,7 +612,7 @@ function RetroTrackMap({
             />
           </div>
           <div className="border-t border-zinc-700/60 px-3 py-1 text-[9px] uppercase text-zinc-400">
-            Pit board: cars called in or currently servicing appear in the pit holder.
+            Temporary 2D circuit display. Full 3D track view will replace this space later.
           </div>
         </div>
       </RetroPanel>

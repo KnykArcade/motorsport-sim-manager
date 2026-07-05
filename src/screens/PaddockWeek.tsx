@@ -8,6 +8,7 @@ import {
 import {
   activeDriversForTeam,
   carForTeam,
+  currentRace,
   teamById,
 } from '../game/careerState';
 import { developmentSlots } from '../sim/facilityEngine';
@@ -17,6 +18,7 @@ import { Button } from '../components/Button';
 import { NewsPanel } from '../components/NewsPanel';
 import { formatMoney } from '../components/ui';
 import type { PaddockEvent, PaddockEventCategory } from '../types/careerPhaseTypes';
+import { RaceWeekendPackageSelection } from './RaceWeekendPackageSelection';
 
 const CATEGORY_LABELS: Record<PaddockEventCategory, string> = {
   development: 'Development / Factory',
@@ -88,14 +90,17 @@ export function PaddockWeek() {
 
   const team = teamById(state, state.selectedTeamId);
   const car = carForTeam(state, state.selectedTeamId);
+  const race = currentRace(state);
   const activeDrivers = activeDriversForTeam(state, state.selectedTeamId);
   const slots = developmentSlots(state.facilities);
+  const packageSelected = !!race && state.raceWeekendPackage?.raceId === race.id;
 
   const unresolvedCount = phaseState.paddockEvents.filter(
     (e) => e.isRequiredDecision && !e.resolvedOptionId,
   ).length;
+  const pendingCount = unresolvedCount + (packageSelected ? 0 : 1);
 
-  const canAdvance = !hasUnresolvedRequiredDecisions(state);
+  const canAdvance = !hasUnresolvedRequiredDecisions(state) && packageSelected;
 
   const advanceToBriefing = () => {
     dispatch({ type: 'ADVANCE_TO_PRE_RACE_BRIEFING' });
@@ -113,16 +118,16 @@ export function PaddockWeek() {
           </p>
         </div>
         <div className="flex items-center gap-3">
-          {unresolvedCount > 0 && (
+          {pendingCount > 0 && (
             <span className="text-sm text-orange-400">
-              {unresolvedCount} required decision{unresolvedCount > 1 ? 's' : ''} pending
+              {pendingCount} required decision{pendingCount > 1 ? 's' : ''} pending
             </span>
           )}
           <Button
             variant="primary"
             onClick={advanceToBriefing}
             disabled={!canAdvance}
-            title={canAdvance ? 'Advance to Pre-Race Briefing' : 'Resolve all required decisions first'}
+            title={canAdvance ? 'Advance to Pre-Race Briefing' : 'Resolve required decisions and select a race package first'}
           >
             Advance to Pre-Race Briefing →
           </Button>
@@ -158,9 +163,18 @@ export function PaddockWeek() {
       </div>
 
       {/* Required Decisions */}
-      {unresolvedCount > 0 && (
+      {(unresolvedCount > 0 || !packageSelected) && (
         <Panel title="Required Decisions" className="border-amber-600/30">
           <div className="space-y-4">
+            {!packageSelected && (
+              <div>
+                <div className="mb-2 text-sm font-semibold text-amber-300">Select race operations package</div>
+                <p className="mb-3 text-sm text-neutral-300">
+                  Choose the package the team will bring to {race?.gpName ?? 'the next race'} before the pre-race briefing.
+                </p>
+                <RaceWeekendPackageSelection onConfirm={() => undefined} />
+              </div>
+            )}
             {phaseState.paddockEvents
               .filter((e) => e.isRequiredDecision && !e.resolvedOptionId)
               .map((event) => (

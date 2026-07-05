@@ -14,5 +14,5 @@ export function shouldUseF11990sRaceWeekendHub(
   series: Series | string | undefined | null,
   year: number | undefined | null,
 ): boolean {
-  return getRaceWeekendEraTheme(series, year).startsWith('f1-');
+  return series === 'F1' && typeof year === 'number' && year >= 1990 && year <= 1994;
 }

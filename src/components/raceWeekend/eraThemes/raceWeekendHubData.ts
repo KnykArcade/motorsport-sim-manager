@@ -7,6 +7,7 @@ import { formatMoney } from '../../ui';
 import type { Race, RegulationSet, StandingsEntry } from '../../../types/gameTypes';
 import type { WeekendForecast } from '../../../sim/weatherEngine';
 import type {
+  GarageTaskBoardItem,
   GarageHotspot,
   NextSessionAction,
   QuickAction,
@@ -90,10 +91,10 @@ export function buildRaceWeekendSchedule(
   hasQualifyingResults: boolean,
 ): WeekendScheduleItem[] {
   const completedPractice = completedPracticeKinds(state, race.id);
-  const packageSelected = !!state.raceWeekendPackage && state.raceWeekendPackage.raceId === race.id;
   const practiceKinds = weekendSessionKinds(state.seasonYear, state.series);
   const openPractice = practiceKinds.find((kind) => !completedPractice.has(kind));
-  const currentId = !packageSelected
+  const weekendWorkStarted = completedPractice.size > 0 || hasQualifyingResults || race.completed;
+  const currentId = !weekendWorkStarted
     ? 'pre-race'
     : !isMinPackage && openPractice
     ? openPractice
@@ -109,7 +110,8 @@ export function buildRaceWeekendSchedule(
       day: 'Thursday',
       label: 'Pre-Race Brief',
       time: 'Ready',
-      status: itemStatus(packageSelected, currentId, 'pre-race'),
+      status: itemStatus(weekendWorkStarted, currentId, 'pre-race'),
+      action: { type: 'phase', phase: 'briefing' },
     },
   ];
 
@@ -122,6 +124,7 @@ export function buildRaceWeekendSchedule(
       label: SESSION_LABELS[kind],
       time: PRACTICE_TIMES[kind] ?? 'TBA',
       status: itemStatus(completedPractice.has(kind), currentId, kind, lockedReason),
+      action: { type: 'phase', phase: 'practice' },
       lockedReason,
     });
   }
@@ -132,13 +135,17 @@ export function buildRaceWeekendSchedule(
     label: 'Qualifying',
     time: '13:00',
     status: itemStatus(hasQualifyingResults, currentId, 'qualifying'),
+    action: { type: 'phase', phase: hasQualifyingResults ? 'quali-review' : 'quali-run' },
   });
+  const raceLockedReason = hasQualifyingResults ? undefined : 'Race strategy opens after qualifying is complete.';
   items.push({
     id: 'race',
     day: 'Sunday',
     label: 'Race',
     time: '14:00',
-    status: itemStatus(race.completed, currentId, 'race'),
+    status: itemStatus(race.completed, currentId, 'race', raceLockedReason),
+    action: { type: 'phase', phase: 'race-strategy' },
+    lockedReason: raceLockedReason,
   });
 
   return items;
@@ -150,7 +157,6 @@ export function buildNextSessionAction(
   isMinPackage: boolean,
   hasQualifyingResults: boolean,
 ): NextSessionAction {
-  const packageSelected = !!state.raceWeekendPackage && state.raceWeekendPackage.raceId === race.id;
   if (race.completed) {
     return {
       sessionName: 'Race Complete',
@@ -160,18 +166,19 @@ export function buildNextSessionAction(
     };
   }
 
-  if (!packageSelected) {
-    return {
-      sessionName: 'Weekend Operations',
-      detail: 'Select the package before opening the garage program',
-      primaryLabel: 'SET PACKAGE',
-      action: { type: 'phase', phase: 'package' },
-    };
-  }
-
   const completedPractice = completedPracticeKinds(state, race.id);
   const practiceKinds = weekendSessionKinds(state.seasonYear, state.series);
   const openPractice = practiceKinds.find((kind) => !completedPractice.has(kind));
+  const weekendWorkStarted = completedPractice.size > 0 || hasQualifyingResults || race.completed;
+
+  if (!weekendWorkStarted) {
+    return {
+      sessionName: 'Pre-Race Brief',
+      detail: 'Review track demands, weather, package and race notes',
+      primaryLabel: 'OPEN BRIEF',
+      action: { type: 'phase', phase: 'briefing' },
+    };
+  }
 
   if (!isMinPackage && openPractice) {
     return {
@@ -199,6 +206,98 @@ export function buildNextSessionAction(
   };
 }
 
+export function buildGarageTaskBoard(
+  state: GameState,
+  race: Race,
+  isMinPackage: boolean,
+  hasQualifyingResults: boolean,
+): GarageTaskBoardItem[] {
+  const completedPractice = completedPracticeKinds(state, race.id);
+  const practiceKinds = weekendSessionKinds(state.seasonYear, state.series);
+  const allPracticeComplete = practiceKinds.length > 0 && practiceKinds.every((kind) => completedPractice.has(kind));
+  const anyPracticeComplete = completedPractice.size > 0;
+  const weekendWorkStarted = anyPracticeComplete || hasQualifyingResults || race.completed;
+  const briefingStatus = weekendWorkStarted ? 'completed' : 'current';
+  const practiceStatus: GarageTaskBoardItem['status'] = isMinPackage
+    ? 'locked'
+    : allPracticeComplete
+    ? 'completed'
+    : briefingStatus === 'current'
+    ? 'upcoming'
+    : 'current';
+  const setupStatus: GarageTaskBoardItem['status'] = isMinPackage
+    ? 'locked'
+    : hasQualifyingResults
+    ? 'completed'
+    : allPracticeComplete
+    ? 'current'
+    : 'upcoming';
+  const qualifyingStatus: GarageTaskBoardItem['status'] = hasQualifyingResults
+    ? 'completed'
+    : isMinPackage || setupStatus === 'completed'
+    ? 'current'
+    : 'upcoming';
+  const strategyStatus: GarageTaskBoardItem['status'] = hasQualifyingResults
+    ? race.completed
+      ? 'completed'
+      : 'current'
+    : 'locked';
+  const instructionsStatus: GarageTaskBoardItem['status'] = hasQualifyingResults
+    ? race.completed
+      ? 'completed'
+      : 'upcoming'
+    : 'locked';
+
+  return [
+    {
+      id: 'briefing',
+      label: 'Pre-Race Brief',
+      detail: 'Track, weather and race package readout',
+      status: briefingStatus,
+      action: { type: 'phase', phase: 'briefing' },
+    },
+    {
+      id: 'practice',
+      label: 'Practice',
+      detail: isMinPackage ? 'Disabled by Minimum Operations' : `${completedPractice.size}/${practiceKinds.length} sessions complete`,
+      status: practiceStatus,
+      action: isMinPackage ? undefined : { type: 'phase', phase: 'practice' },
+      lockedReason: isMinPackage ? 'Disabled by Minimum Operations package.' : undefined,
+    },
+    {
+      id: 'setup',
+      label: 'Car Setup',
+      detail: isMinPackage ? 'Baseline setup only' : allPracticeComplete ? 'Ready for final tune' : 'Opens after practice data',
+      status: setupStatus,
+      action: isMinPackage ? undefined : { type: 'phase', phase: 'setup' },
+      lockedReason: isMinPackage ? 'Minimum Operations locks setup changes.' : undefined,
+    },
+    {
+      id: 'quali-run',
+      label: 'Qualifying',
+      detail: hasQualifyingResults ? 'Grid review available' : 'Run plan and qualifying simulation',
+      status: qualifyingStatus,
+      action: { type: 'phase', phase: hasQualifyingResults ? 'quali-review' : 'quali-run' },
+    },
+    {
+      id: 'race-strategy',
+      label: 'Strategy',
+      detail: hasQualifyingResults ? 'Pit, fuel and tyre plan' : 'Locked until qualifying is complete',
+      status: strategyStatus,
+      action: hasQualifyingResults ? { type: 'phase', phase: 'race-strategy' } : undefined,
+      lockedReason: hasQualifyingResults ? undefined : 'Race strategy opens after qualifying is complete.',
+    },
+    {
+      id: 'race-instructions',
+      label: 'Race Orders',
+      detail: hasQualifyingResults ? 'Driver instructions before lights out' : 'Locked until qualifying is complete',
+      status: instructionsStatus,
+      action: hasQualifyingResults ? { type: 'phase', phase: 'race-instructions' } : undefined,
+      lockedReason: hasQualifyingResults ? undefined : 'Driver instructions open after qualifying is complete.',
+    },
+  ];
+}
+
 export function executeRaceWeekendHubAction(
   action: RaceWeekendHubAction | undefined,
   callbacks: RaceWeekendHubCallbacks,
@@ -224,10 +323,7 @@ export function buildF11990sGarageHotspots(args: {
   hasQualifyingResults: boolean;
 }): GarageHotspot[] {
   const { state, race, isMinPackage, hasQualifyingResults } = args;
-  const packageSelected = !!state.raceWeekendPackage && state.raceWeekendPackage.raceId === race.id;
-  const setupLocked = !packageSelected
-    ? 'Choose the weekend package before setup work opens.'
-    : isMinPackage
+  const setupLocked = isMinPackage
     ? 'Minimum Operations locks setup and extra mechanical work.'
     : undefined;
   const next = buildNextSessionAction(state, race, isMinPackage, hasQualifyingResults);
@@ -257,7 +353,7 @@ export function buildF11990sGarageHotspots(args: {
       description: 'Weather, track status and live timing',
       x: 60,
       y: 36,
-      action: { type: 'phase', phase: packageSelected ? 'briefing' : 'package' },
+      action: { type: 'phase', phase: 'briefing' },
     },
     {
       id: 'chief-mechanic',
@@ -274,7 +370,7 @@ export function buildF11990sGarageHotspots(args: {
       description: 'Practice, qualifying and race readiness',
       x: 38,
       y: 64,
-      action: next.action ?? { type: 'phase', phase: 'package' },
+      action: next.action ?? { type: 'phase', phase: 'briefing' },
       lockedReason: next.disabledReason,
     },
     {

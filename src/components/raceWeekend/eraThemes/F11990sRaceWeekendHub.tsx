@@ -7,6 +7,7 @@ import { WeatherForecastCard } from './WeatherForecastCard';
 import {
   buildCarStatus,
   buildF11990sGarageHotspots,
+  buildGarageTaskBoard,
   buildNextSessionAction,
   buildQuickActions,
   buildRaceWeekendSchedule,
@@ -21,6 +22,7 @@ import {
   topBarMetrics,
 } from './raceWeekendHubData';
 import type { QuickAction, RaceWeekendHubCallbacks, RaceWeekendHubProps } from './types';
+import type { GarageTaskBoardItem } from './types';
 
 export function F11990sRaceWeekendHub({
   state,
@@ -42,6 +44,7 @@ export function F11990sRaceWeekendHub({
   const next = buildNextSessionAction(state, race, isMinPackage, hasQualifyingResults);
   const callbacks: RaceWeekendHubCallbacks = { onPhase, onRoute, onExit };
   const hotspots = buildF11990sGarageHotspots({ state, race, isMinPackage, hasQualifyingResults });
+  const taskBoard = buildGarageTaskBoard(state, race, isMinPackage, hasQualifyingResults);
   const quickActions = buildQuickActions(state);
   const standingsRows = buildStandingsRows(state);
   const metrics = topBarMetrics(state, race);
@@ -80,9 +83,12 @@ export function F11990sRaceWeekendHub({
         </div>
       </header>
 
-      <div className="grid gap-3 p-3 xl:grid-cols-[280px_minmax(520px,1fr)]">
+      <div className="grid gap-3 p-3 xl:grid-cols-[280px_minmax(620px,1fr)]">
         <aside className="space-y-3">
-          <RaceWeekendScheduleCard items={schedule} />
+          <RaceWeekendScheduleCard
+            items={schedule}
+            onOpenItem={(item) => executeRaceWeekendHubAction(item.action, callbacks)}
+          />
           <TrackInfoCard
             race={race}
             track={track}
@@ -109,53 +115,68 @@ export function F11990sRaceWeekendHub({
           </section>
         </aside>
 
-        <main className="space-y-3">
-          {showingModule ? (
-            <section className="f1-1990s-panel min-h-[520px] overflow-hidden" aria-label={moduleTitle ?? 'Garage module'}>
-              <header className="flex items-center justify-between gap-3 border-b border-amber-500/20 px-3 py-2">
-                <div>
-                  <div className="f1-1990s-panel-title border-0 p-0">{moduleTitle ?? 'Garage Module'}</div>
-                  <div className="text-[10px] uppercase text-neutral-500">Race Weekend Hub remains active</div>
+        <main>
+          <section className="f1-1990s-garage-scene min-h-[660px]" aria-label="Interactive 1990s Formula 1 garage">
+            <div className="f1-1990s-garage-door" aria-hidden="true" />
+            <div className="f1-1990s-monitor-wall" aria-hidden="true" />
+            <div className="f1-1990s-toolbox" aria-hidden="true" />
+            <div className="f1-1990s-workbench" aria-hidden="true" />
+            <div className="f1-1990s-car-shape" aria-hidden="true">
+              <span className="f1-1990s-car-nose" />
+              <span className="f1-1990s-car-cockpit" />
+              <span className="f1-1990s-car-wheel f1-1990s-car-wheel-left" />
+              <span className="f1-1990s-car-wheel f1-1990s-car-wheel-right" />
+            </div>
+            {hotspots.map((hotspot) => (
+              <F11990sGarageHotspot key={hotspot.id} hotspot={hotspot} callbacks={callbacks} />
+            ))}
+            <GarageTaskBoard
+              tasks={taskBoard}
+              activePhase={activePhase}
+              callbacks={callbacks}
+            />
+            {showingModule && (
+              <div className="f1-1990s-module-signal" aria-hidden="true">
+                <span>{moduleTitle ?? 'Garage Module'} open</span>
+              </div>
+            )}
+          </section>
+
+          {showingModule && (
+            <div className="f1-1990s-module-overlay" role="dialog" aria-modal="true" aria-label={moduleTitle ?? 'Garage module'}>
+              <div className="f1-1990s-module-backdrop" onClick={() => onPhase('hub')} aria-hidden="true" />
+              <section className="f1-1990s-module-window">
+                <header className="flex items-center justify-between gap-3 border-b border-amber-500/25 px-4 py-3">
+                  <div>
+                    <div className="text-lg font-black uppercase text-amber-300">{moduleTitle ?? 'Garage Module'}</div>
+                    <div className="text-[10px] uppercase text-neutral-500">1990-94 garage overlay - Hub remains active behind this task</div>
+                  </div>
+                  <button type="button" className="f1-1990s-secondary-button" onClick={() => onPhase('hub')}>
+                    Garage Overview
+                  </button>
+                </header>
+                <GarageTaskRail tasks={taskBoard} activePhase={activePhase} callbacks={callbacks} />
+                <div className="f1-1990s-module-content">
+                  {moduleContent}
                 </div>
-                <button type="button" className="f1-1990s-secondary-button" onClick={() => onPhase('hub')}>
-                  Garage Overview
-                </button>
-              </header>
-              <div className="max-h-[calc(100vh-230px)] min-h-[460px] overflow-y-auto p-3">
-                {moduleContent}
-              </div>
-            </section>
-          ) : (
-            <section className="f1-1990s-garage-scene min-h-[520px]" aria-label="Interactive 1990s Formula 1 garage">
-              <div className="f1-1990s-garage-door" aria-hidden="true" />
-              <div className="f1-1990s-monitor-wall" aria-hidden="true" />
-              <div className="f1-1990s-toolbox" aria-hidden="true" />
-              <div className="f1-1990s-workbench" aria-hidden="true" />
-              <div className="f1-1990s-car-shape" aria-hidden="true">
-                <span className="f1-1990s-car-nose" />
-                <span className="f1-1990s-car-cockpit" />
-                <span className="f1-1990s-car-wheel f1-1990s-car-wheel-left" />
-                <span className="f1-1990s-car-wheel f1-1990s-car-wheel-right" />
-              </div>
-              {hotspots.map((hotspot) => (
-                <F11990sGarageHotspot key={hotspot.id} hotspot={hotspot} callbacks={callbacks} />
-              ))}
-            </section>
+              </section>
+            </div>
           )}
 
-          <div className="grid gap-3 md:grid-cols-2 2xl:grid-cols-5">
-            <TeamMessagesCard messages={buildTeamMessages(state, race)} onOpenMessages={() => onRoute('/news')} />
-            <CarStatusCard
-              rows={buildCarStatus(state)}
-              setupConfidence={setupConfidenceLabel(state, race)}
-              onOpenCarStats={() => onPhase(isMinPackage ? 'quali-run' : 'setup')}
-            />
-            <WeatherForecastCard forecast={forecast} onOpenForecast={() => onPhase('briefing')} />
-            <StandingsCard rows={standingsRows} onOpenStandings={() => onRoute('/standings')} />
-            <QuickActionsCard actions={quickActions} callbacks={callbacks} />
-          </div>
         </main>
       </div>
+
+      <section className="f1-1990s-status-deck mx-3 mb-3" aria-label="Garage status deck">
+        <TeamMessagesCard messages={buildTeamMessages(state, race)} onOpenMessages={() => onRoute('/news')} />
+        <CarStatusCard
+          rows={buildCarStatus(state)}
+          setupConfidence={setupConfidenceLabel(state, race)}
+          onOpenCarStats={() => onPhase(isMinPackage ? 'quali-run' : 'setup')}
+        />
+        <WeatherForecastCard forecast={forecast} onOpenForecast={() => onPhase('briefing')} />
+        <StandingsCard rows={standingsRows} onOpenStandings={() => onRoute('/standings')} />
+        <QuickActionsCard actions={quickActions} callbacks={callbacks} />
+      </section>
 
       <footer className="mx-3 mb-3 grid gap-3 rounded border border-neutral-700/70 bg-black/50 px-4 py-3 text-sm text-neutral-300 lg:grid-cols-[260px_1fr_auto]">
         <div>
@@ -170,6 +191,109 @@ export function F11990sRaceWeekendHub({
         </button>
       </footer>
     </div>
+  );
+}
+
+function GarageTaskBoard({
+  tasks,
+  activePhase,
+  callbacks,
+}: {
+  tasks: GarageTaskBoardItem[];
+  activePhase: RaceWeekendHubProps['activePhase'];
+  callbacks: RaceWeekendHubCallbacks;
+}) {
+  return (
+    <section className="f1-1990s-garage-task-board" aria-label="Garage command board">
+      <header className="mb-2 flex items-center justify-between gap-3">
+        <div>
+          <div className="text-[10px] font-black uppercase tracking-wide text-amber-300">Garage Command Board</div>
+          <div className="text-[9px] uppercase text-neutral-500">Phase 2 task routing</div>
+        </div>
+        <span className="rounded border border-amber-400/35 px-1.5 py-0.5 text-[9px] uppercase text-amber-200">
+          90-94 model
+        </span>
+      </header>
+      <div className="grid gap-1.5 md:grid-cols-2">
+        {tasks.map((task) => (
+          <GarageTaskButton
+            key={task.id}
+            task={task}
+            active={activePhase === task.id}
+            compact={false}
+            callbacks={callbacks}
+          />
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function GarageTaskRail({
+  tasks,
+  activePhase,
+  callbacks,
+}: {
+  tasks: GarageTaskBoardItem[];
+  activePhase: RaceWeekendHubProps['activePhase'];
+  callbacks: RaceWeekendHubCallbacks;
+}) {
+  return (
+    <nav className="f1-1990s-task-rail" aria-label="Task switchboard">
+      <div className="mr-1 shrink-0 text-[10px] font-black uppercase tracking-wide text-amber-300">Task Switchboard</div>
+      <div className="flex min-w-0 flex-1 flex-wrap gap-1.5">
+        {tasks.map((task) => (
+          <GarageTaskButton
+            key={task.id}
+            task={task}
+            active={activePhase === task.id}
+            compact
+            callbacks={callbacks}
+          />
+        ))}
+      </div>
+    </nav>
+  );
+}
+
+function GarageTaskButton({
+  task,
+  active,
+  compact,
+  callbacks,
+}: {
+  task: GarageTaskBoardItem;
+  active: boolean;
+  compact: boolean;
+  callbacks: RaceWeekendHubCallbacks;
+}) {
+  const disabled = !task.action || task.status === 'locked';
+  const statusClass =
+    task.status === 'completed'
+      ? 'border-lime-500/30 bg-lime-500/10 text-lime-100'
+    : task.status === 'current'
+      ? 'border-amber-400/70 bg-amber-500/20 text-amber-100'
+      : task.status === 'locked'
+      ? 'border-neutral-800 bg-black/30 text-neutral-500'
+      : 'border-neutral-700/70 bg-black/42 text-neutral-300';
+  const activeClass = active ? 'ring-1 ring-amber-300/80' : '';
+
+  return (
+    <button
+      type="button"
+      disabled={disabled}
+      title={task.lockedReason ?? task.detail}
+      onClick={() => executeRaceWeekendHubAction(task.action, callbacks)}
+      className={`min-w-0 rounded border text-left transition hover:border-amber-300 hover:bg-amber-500/12 focus:outline-none focus:ring-2 focus:ring-amber-300 disabled:hover:border-neutral-800 disabled:hover:bg-black/30 ${
+        compact ? 'px-2 py-1' : 'px-2.5 py-2'
+      } ${statusClass} ${activeClass}`}
+    >
+      <span className="flex items-center justify-between gap-2">
+        <span className={`truncate font-bold uppercase ${compact ? 'text-[10px]' : 'text-[11px]'}`}>{task.label}</span>
+        <span className="shrink-0 text-[9px] uppercase text-neutral-500">{task.status}</span>
+      </span>
+      {!compact && <span className="mt-1 block truncate text-[10px] text-neutral-400">{task.detail}</span>}
+    </button>
   );
 }
 

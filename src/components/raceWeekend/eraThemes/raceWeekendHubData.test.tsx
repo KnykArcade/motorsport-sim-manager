@@ -13,6 +13,7 @@ import {
   activateGarageHotspot,
   buildCarStatus,
   buildF11990sGarageHotspots,
+  buildGarageTaskBoard,
   buildNextSessionAction,
   buildQuickActions,
   buildRaceWeekendSchedule,
@@ -107,6 +108,53 @@ describe('F1 1990s race weekend hub rendering', () => {
     expect(buildCarStatus(state).map((row) => row.label)).toEqual(['Engine', 'Gearbox', 'Chassis', 'Reliability']);
   });
 
+  it('keeps the garage visible while an active module opens as an overlay', () => {
+    const state = withWeekendPackage(makeState(1994));
+    const race = currentRace(state)!;
+    const track = getTrackById(race.trackId)!;
+    const forecast = weekendForecast(track, `${state.randomSeed}-r${race.round}`);
+    const html = renderToStaticMarkup(
+      <F11990sRaceWeekendHub
+        state={state}
+        race={race}
+        track={track}
+        forecast={forecast}
+        isMinPackage={false}
+        hasQualifyingResults={false}
+        activePhase="setup"
+        moduleTitle="Car Setup"
+        moduleContent={<div>Setup module content</div>}
+        onPhase={() => undefined}
+        onRoute={() => undefined}
+        onExit={() => undefined}
+      />,
+    );
+    expect(html).toContain('Interactive 1990s Formula 1 garage');
+    expect(html).toContain('f1-1990s-module-overlay');
+    expect(html).toContain('Setup module content');
+    expect(html).toContain('Garage Overview');
+    expect(html).toContain('Task Switchboard');
+  });
+
+  it('renders the Phase 2 garage task board as clickable weekend routing', () => {
+    const state = withWeekendPackage(makeState(1994));
+    const html = renderHub(state);
+    expect(html).toContain('Garage Command Board');
+    expect(html).toContain('Phase 2 task routing');
+    expect(html).toContain('Pre-Race Brief');
+    expect(html).toContain('Race Orders');
+  });
+
+  it('renders the Phase 3 status deck below the garage workspace', () => {
+    const state = withWeekendPackage(makeState(1994));
+    const html = renderHub(state);
+    expect(html).toContain('aria-label="Garage status deck"');
+    expect(html.indexOf('aria-label="Garage status deck"')).toBeGreaterThan(
+      html.indexOf('Interactive 1990s Formula 1 garage'),
+    );
+    expect(html.indexOf('1990s F1 Era Mode')).toBeGreaterThan(html.indexOf('aria-label="Garage status deck"'));
+  });
+
   it('renders track info without crashing when optional distance is missing', () => {
     const state = makeState(1994);
     const race = { ...currentRace(state)!, distanceKm: undefined };
@@ -125,13 +173,39 @@ describe('F1 1990s race weekend schedule and primary action', () => {
     const race = currentRace(state)!;
     const schedule = buildRaceWeekendSchedule(state, race, false, false);
     expect(schedule.find((item) => item.id === 'pre-race')?.status).toBe('current');
+    expect(schedule.find((item) => item.id === 'Practice1')?.status).toBe('upcoming');
   });
 
   it('drives the next-session action from real weekend state', () => {
     const state = withWeekendPackage(makeState(1994));
     const action = buildNextSessionAction(state, currentRace(state)!, false, false);
-    expect(action.primaryLabel).toBe('START PRACTICE');
-    expect(action.action).toEqual({ type: 'phase', phase: 'practice' });
+    expect(action.primaryLabel).toBe('OPEN BRIEF');
+    expect(action.action).toEqual({ type: 'phase', phase: 'briefing' });
+  });
+
+  it('builds the Phase 2 garage task board from real weekend state', () => {
+    const state = withWeekendPackage(makeState(1994));
+    const race = currentRace(state)!;
+    const board = buildGarageTaskBoard(state, race, false, false);
+    expect(board.map((item) => item.label)).toEqual([
+      'Pre-Race Brief',
+      'Practice',
+      'Car Setup',
+      'Qualifying',
+      'Strategy',
+      'Race Orders',
+    ]);
+    expect(board.find((item) => item.id === 'briefing')?.status).toBe('current');
+    expect(board.find((item) => item.id === 'practice')?.status).toBe('upcoming');
+    expect(board.find((item) => item.id === 'race-strategy')?.status).toBe('locked');
+  });
+
+  it('turns schedule rows into hub module actions', () => {
+    const state = withWeekendPackage(makeState(1994));
+    const schedule = buildRaceWeekendSchedule(state, currentRace(state)!, false, false);
+    expect(schedule.find((item) => item.id === 'Practice1')?.action).toEqual({ type: 'phase', phase: 'practice' });
+    expect(schedule.find((item) => item.id === 'qualifying')?.action).toEqual({ type: 'phase', phase: 'quali-run' });
+    expect(schedule.find((item) => item.id === 'race')?.lockedReason).toBe('Race strategy opens after qualifying is complete.');
   });
 
   it('includes warmup only when the active session model supports it', () => {
@@ -195,8 +269,8 @@ describe('F1 1990s garage hotspots', () => {
     }).find((item) => item.id === 'engineering-desk')!;
     const callbacks: RaceWeekendHubCallbacks = { onPhase: vi.fn(), onRoute: vi.fn(), onExit: vi.fn() };
     const html = renderToStaticMarkup(<F11990sGarageHotspot hotspot={hotspot} callbacks={callbacks} />);
-    expect(html).toContain('aria-label="Engineering Desk: Car stats, telemetry and engineer feedback. Locked.');
-    expect(html).toContain('aria-disabled="true"');
+    expect(html).toContain('aria-label="Engineering Desk: Car stats, telemetry and engineer feedback"');
+    expect(html).toContain('aria-disabled="false"');
     expect(html).toContain('<button');
     expect(html).not.toContain('disabled=""');
   });

@@ -5,6 +5,7 @@ import {
   requiresDecision,
   cooldownFor,
   REC_COOLDOWN,
+  SAFETY_CAR_PIT_RECOMMENDATION_MIN_LAP,
 } from './analyticsEngine';
 import {
   acceptRecommendation,
@@ -426,6 +427,40 @@ describe('pit decision protection', () => {
     );
 
     expect(s.recommendations.some((r) => r.kind === 'safetyCarPit')).toBe(false);
+  });
+
+  it('blocks safety-car pit advice during the opening stint', () => {
+    const s = withCandidates(
+      live([car()], {
+        currentLap: SAFETY_CAR_PIT_RECOMMENDATION_MIN_LAP - 1,
+        safetyCar: {
+          active: true,
+          lapsRemaining: 3,
+          deployedOnLap: SAFETY_CAR_PIT_RECOMMENDATION_MIN_LAP - 1,
+          reason: 'early incident',
+          deployments: 1,
+        },
+      }),
+    );
+
+    expect(s.recommendations.some((r) => r.kind === 'safetyCarPit')).toBe(false);
+  });
+
+  it('allows safety-car pit advice after the opening-stint block has passed', () => {
+    const s = withCandidates(
+      live([car()], {
+        currentLap: SAFETY_CAR_PIT_RECOMMENDATION_MIN_LAP,
+        safetyCar: {
+          active: true,
+          lapsRemaining: 3,
+          deployedOnLap: SAFETY_CAR_PIT_RECOMMENDATION_MIN_LAP,
+          reason: 'mid-race incident',
+          deployments: 1,
+        },
+      }),
+    );
+
+    expect(s.recommendations.some((r) => r.kind === 'safetyCarPit')).toBe(true);
   });
 });
 

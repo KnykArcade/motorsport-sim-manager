@@ -4,7 +4,6 @@ import type { Race, Track } from '../../../types/gameTypes';
 import type { WeekendForecast } from '../../../sim/weatherEngine';
 
 export type RaceWeekendHubPhase =
-  | 'package'
   | 'briefing'
   | 'practice'
   | 'setup'
@@ -46,6 +45,7 @@ export type WeekendScheduleItem = {
   label: string;
   time: string;
   status: WeekendScheduleStatus;
+  action?: RaceWeekendHubAction;
   lockedReason?: string;
 };
 
@@ -72,4 +72,13 @@ export type NextSessionAction = {
   primaryLabel: string;
   action?: RaceWeekendHubAction;
   disabledReason?: string;
+};
+
+export type GarageTaskBoardItem = {
+  id: RaceWeekendHubPhase;
+  label: string;
+  detail: string;
+  status: WeekendScheduleStatus;
+  action?: RaceWeekendHubAction;
+  lockedReason?: string;
 };
