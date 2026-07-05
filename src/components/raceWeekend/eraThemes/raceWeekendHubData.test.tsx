@@ -145,6 +145,16 @@ describe('F1 1990s race weekend hub rendering', () => {
     expect(html).toContain('Race Orders');
   });
 
+  it('renders recognizable 1990s garage scene pieces', () => {
+    const state = withWeekendPackage(makeState(1994));
+    const html = renderHub(state);
+    expect(html).toContain('Pit Wall Telemetry');
+    expect(html).toContain('Timing Stand');
+    expect(html).toContain('Parts Rack');
+    expect(html).toContain('Engineering Bench');
+    expect(html).toContain('f1-1990s-car-front-wing');
+  });
+
   it('renders the Phase 3 status deck below the garage workspace', () => {
     const state = withWeekendPackage(makeState(1994));
     const html = renderHub(state);

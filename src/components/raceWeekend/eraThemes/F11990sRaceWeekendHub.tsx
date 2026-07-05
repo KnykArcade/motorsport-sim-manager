@@ -118,12 +118,32 @@ export function F11990sRaceWeekendHub({
         <main>
           <section className="f1-1990s-garage-scene min-h-[660px]" aria-label="Interactive 1990s Formula 1 garage">
             <div className="f1-1990s-garage-door" aria-hidden="true" />
-            <div className="f1-1990s-monitor-wall" aria-hidden="true" />
-            <div className="f1-1990s-toolbox" aria-hidden="true" />
-            <div className="f1-1990s-workbench" aria-hidden="true" />
+            <div className="f1-1990s-garage-floor" aria-hidden="true" />
+            <div className="f1-1990s-monitor-wall" aria-hidden="true">
+              <span className="f1-1990s-monitor-title">Pit Wall Telemetry</span>
+              <span className="f1-1990s-monitor-screen f1-1990s-monitor-screen-a" />
+              <span className="f1-1990s-monitor-screen f1-1990s-monitor-screen-b" />
+              <span className="f1-1990s-monitor-screen f1-1990s-monitor-screen-c" />
+            </div>
+            <div className="f1-1990s-pit-wall" aria-hidden="true">
+              <span className="f1-1990s-pit-wall-label">Timing Stand</span>
+              <span className="f1-1990s-pit-wall-row" />
+              <span className="f1-1990s-pit-wall-row" />
+              <span className="f1-1990s-pit-wall-row" />
+            </div>
+            <div className="f1-1990s-toolbox" aria-hidden="true">
+              <span>Parts Rack</span>
+            </div>
+            <div className="f1-1990s-workbench" aria-hidden="true">
+              <span>Engineering Bench</span>
+            </div>
             <div className="f1-1990s-car-shape" aria-hidden="true">
+              <span className="f1-1990s-car-rear-wing" />
+              <span className="f1-1990s-car-front-wing" />
               <span className="f1-1990s-car-nose" />
               <span className="f1-1990s-car-cockpit" />
+              <span className="f1-1990s-car-sidepod f1-1990s-car-sidepod-left" />
+              <span className="f1-1990s-car-sidepod f1-1990s-car-sidepod-right" />
               <span className="f1-1990s-car-wheel f1-1990s-car-wheel-left" />
               <span className="f1-1990s-car-wheel f1-1990s-car-wheel-right" />
             </div>
