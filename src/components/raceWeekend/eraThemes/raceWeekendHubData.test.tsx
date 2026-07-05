@@ -5,6 +5,7 @@ import { getRegulationSet } from '../../../data/regulations/regulations';
 import { createNewGame } from '../../../game/initialCareer';
 import { currentRace, activeDriversForTeam, type GameState } from '../../../game/careerState';
 import { getSeasonBundle } from '../../../data/seasonData';
+import { garageThemeForTeamEra } from '../../../data/teamGarageThemes';
 import { weekendForecast } from '../../../sim/weatherEngine';
 import { F11990sGarageHotspot } from './F11990sGarageHotspot';
 import { F11990sRaceWeekendHub } from './F11990sRaceWeekendHub';
@@ -136,13 +137,46 @@ describe('F1 1990s race weekend hub rendering', () => {
     expect(html).toContain('Task Switchboard');
   });
 
-  it('renders the Phase 2 garage task board as clickable weekend routing', () => {
+  it('renders neutral garage hotspot routing without covering the car', () => {
     const state = withWeekendPackage(makeState(1994));
     const html = renderHub(state);
-    expect(html).toContain('Garage Command Board');
-    expect(html).toContain('Phase 2 task routing');
-    expect(html).toContain('Pre-Race Brief');
-    expect(html).toContain('Race Orders');
+    expect(html).toContain('Interactive 1990s Formula 1 garage');
+    expect(html).toContain('--garage-scene-image:url(/assets/f1-1990s-garage-neutral.png)');
+    expect(html).not.toContain('f1-1990s-car-livery');
+    expect(html).toContain('Engineering Desk: Car stats, telemetry and engineer feedback');
+    expect(html).toContain('Car: Practice, qualifying and race readiness');
+    expect(html).not.toContain('Garage Command Board');
+  });
+
+  it('renders recognizable 1990s garage scene pieces', () => {
+    const state = withWeekendPackage(makeState(1994));
+    const html = renderHub(state);
+    expect(html).toContain('Pit Wall Telemetry');
+    expect(html).toContain('Timing Stand');
+    expect(html).toContain('Parts Rack');
+    expect(html).toContain('Engineering Bench');
+    expect(html).toContain('f1-1990s-car-front-wing');
+  });
+
+  it('uses an era-specific garage template with the selected team palette', () => {
+    const state = withWeekendPackage({ ...makeState(1994), selectedTeamId: 't-ferrari' });
+    const team = state.teams.find((item) => item.id === state.selectedTeamId)!;
+    const theme = garageThemeForTeamEra('f1-1990-1994', team);
+    const html = renderHub(state);
+    expect(theme).toEqual({
+      eraModel: 'f1-1990-1994',
+      teamId: 't-ferrari',
+      teamName: 'Ferrari',
+      templateImage: '/assets/f1-1990s-garage-neutral.png',
+      primary: '#c40000',
+      secondary: '#ffd21f',
+      trim: '#050505',
+    });
+    expect(html).toContain('--garage-scene-image:url(/assets/f1-1990s-garage-neutral.png)');
+    expect(html).toContain('--garage-primary:#c40000');
+    expect(html).toContain('--garage-secondary:#ffd21f');
+    expect(html).toContain('f1-1990s-template-palette-primary');
+    expect(html).not.toContain('f1-1990s-car-livery');
   });
 
   it('renders the Phase 3 status deck below the garage workspace', () => {
@@ -252,11 +286,28 @@ describe('F1 1990s garage hotspots', () => {
       'Team Principal',
       'Track Monitors',
       'Chief Mechanic',
+      'Pre-Race Brief',
       'Car',
       'Race Strategist',
       'Tyre Rack',
       'Data Laptop',
     ]);
+  });
+
+  it('anchors the pre-race brief click target to the front set-up sheet', () => {
+    const state = withWeekendPackage(makeState(1994));
+    const setupSheet = buildF11990sGarageHotspots({
+      state,
+      race: currentRace(state)!,
+      isMinPackage: false,
+      hasQualifyingResults: false,
+    }).find((item) => item.id === 'setup-sheet')!;
+
+    expect(setupSheet.label).toBe('Pre-Race Brief');
+    expect(setupSheet.description).toBe('Set-up sheet with track, weather and race notes');
+    expect(setupSheet.action).toEqual({ type: 'phase', phase: 'briefing' });
+    expect(setupSheet.x).toBe(20);
+    expect(setupSheet.y).toBe(82);
   });
 
   it('gives hotspots accessible labels and keeps locked hotspots focusable', () => {

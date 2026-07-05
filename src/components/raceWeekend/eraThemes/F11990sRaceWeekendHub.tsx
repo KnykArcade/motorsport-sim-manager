@@ -1,3 +1,5 @@
+import type { CSSProperties } from 'react';
+import { garageThemeForTeamEra } from '../../../data/teamGarageThemes';
 import { F11990sGarageHotspot } from './F11990sGarageHotspot';
 import { RaceWeekendScheduleCard } from './RaceWeekendScheduleCard';
 import { TrackInfoCard } from './TrackInfoCard';
@@ -49,6 +51,14 @@ export function F11990sRaceWeekendHub({
   const standingsRows = buildStandingsRows(state);
   const metrics = topBarMetrics(state, race);
   const showingModule = activePhase !== 'hub' && !!moduleContent;
+  const garageTheme = garageThemeForTeamEra('f1-1990-1994', team);
+  const garageSceneImage = garageTheme.sceneImageOverride ?? garageTheme.templateImage;
+  const garageThemeStyle = {
+    '--garage-scene-image': `url(${garageSceneImage})`,
+    '--garage-primary': garageTheme.primary,
+    '--garage-secondary': garageTheme.secondary,
+    '--garage-trim': garageTheme.trim,
+  } as CSSProperties;
 
   return (
     <div
@@ -116,25 +126,49 @@ export function F11990sRaceWeekendHub({
         </aside>
 
         <main>
-          <section className="f1-1990s-garage-scene min-h-[660px]" aria-label="Interactive 1990s Formula 1 garage">
+          <section
+            className="f1-1990s-garage-scene min-h-[660px]"
+            style={garageThemeStyle}
+            aria-label="Interactive 1990s Formula 1 garage"
+          >
             <div className="f1-1990s-garage-door" aria-hidden="true" />
-            <div className="f1-1990s-monitor-wall" aria-hidden="true" />
-            <div className="f1-1990s-toolbox" aria-hidden="true" />
-            <div className="f1-1990s-workbench" aria-hidden="true" />
+            <div className="f1-1990s-garage-floor" aria-hidden="true" />
+            <div className="f1-1990s-monitor-wall" aria-hidden="true">
+              <span className="f1-1990s-monitor-title">Pit Wall Telemetry</span>
+              <span className="f1-1990s-monitor-screen f1-1990s-monitor-screen-a" />
+              <span className="f1-1990s-monitor-screen f1-1990s-monitor-screen-b" />
+              <span className="f1-1990s-monitor-screen f1-1990s-monitor-screen-c" />
+            </div>
+            <div className="f1-1990s-pit-wall" aria-hidden="true">
+              <span className="f1-1990s-pit-wall-label">Timing Stand</span>
+              <span className="f1-1990s-pit-wall-row" />
+              <span className="f1-1990s-pit-wall-row" />
+              <span className="f1-1990s-pit-wall-row" />
+            </div>
+            <div className="f1-1990s-toolbox" aria-hidden="true">
+              <span>Parts Rack</span>
+            </div>
+            <div className="f1-1990s-workbench" aria-hidden="true">
+              <span>Engineering Bench</span>
+            </div>
             <div className="f1-1990s-car-shape" aria-hidden="true">
+              <span className="f1-1990s-car-rear-wing" />
+              <span className="f1-1990s-car-front-wing" />
               <span className="f1-1990s-car-nose" />
               <span className="f1-1990s-car-cockpit" />
+              <span className="f1-1990s-car-sidepod f1-1990s-car-sidepod-left" />
+              <span className="f1-1990s-car-sidepod f1-1990s-car-sidepod-right" />
               <span className="f1-1990s-car-wheel f1-1990s-car-wheel-left" />
               <span className="f1-1990s-car-wheel f1-1990s-car-wheel-right" />
+            </div>
+            <div className="f1-1990s-template-palette" aria-hidden="true">
+              <span className="f1-1990s-template-palette-primary" />
+              <span className="f1-1990s-template-palette-secondary" />
+              <span className="f1-1990s-template-palette-trim" />
             </div>
             {hotspots.map((hotspot) => (
               <F11990sGarageHotspot key={hotspot.id} hotspot={hotspot} callbacks={callbacks} />
             ))}
-            <GarageTaskBoard
-              tasks={taskBoard}
-              activePhase={activePhase}
-              callbacks={callbacks}
-            />
             {showingModule && (
               <div className="f1-1990s-module-signal" aria-hidden="true">
                 <span>{moduleTitle ?? 'Garage Module'} open</span>
@@ -191,41 +225,6 @@ export function F11990sRaceWeekendHub({
         </button>
       </footer>
     </div>
-  );
-}
-
-function GarageTaskBoard({
-  tasks,
-  activePhase,
-  callbacks,
-}: {
-  tasks: GarageTaskBoardItem[];
-  activePhase: RaceWeekendHubProps['activePhase'];
-  callbacks: RaceWeekendHubCallbacks;
-}) {
-  return (
-    <section className="f1-1990s-garage-task-board" aria-label="Garage command board">
-      <header className="mb-2 flex items-center justify-between gap-3">
-        <div>
-          <div className="text-[10px] font-black uppercase tracking-wide text-amber-300">Garage Command Board</div>
-          <div className="text-[9px] uppercase text-neutral-500">Phase 2 task routing</div>
-        </div>
-        <span className="rounded border border-amber-400/35 px-1.5 py-0.5 text-[9px] uppercase text-amber-200">
-          90-94 model
-        </span>
-      </header>
-      <div className="grid gap-1.5 md:grid-cols-2">
-        {tasks.map((task) => (
-          <GarageTaskButton
-            key={task.id}
-            task={task}
-            active={activePhase === task.id}
-            compact={false}
-            callbacks={callbacks}
-          />
-        ))}
-      </div>
-    </section>
   );
 }
 
