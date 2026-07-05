@@ -1,12 +1,14 @@
 export type TeamGarageTheme = {
   teamId?: string;
   teamName?: string;
+  garageImage: string;
   primary: string;
   secondary: string;
   trim: string;
 };
 
 export const DEFAULT_GARAGE_THEME: TeamGarageTheme = {
+  garageImage: '/assets/f1-1990s-garage-neutral.png',
   primary: '#767676',
   secondary: '#b8b8b8',
   trim: '#111111',
@@ -16,6 +18,7 @@ export const TEAM_GARAGE_THEMES: TeamGarageTheme[] = [
   {
     teamId: 't-ferrari',
     teamName: 'Ferrari',
+    garageImage: '/assets/f1-1990s-garage-ferrari.png',
     primary: '#c40000',
     secondary: '#ffd21f',
     trim: '#050505',

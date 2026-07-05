@@ -141,7 +141,8 @@ describe('F1 1990s race weekend hub rendering', () => {
     const state = withWeekendPackage(makeState(1994));
     const html = renderHub(state);
     expect(html).toContain('Interactive 1990s Formula 1 garage');
-    expect(html).toContain('f1-1990s-car-livery-primary');
+    expect(html).toContain('--garage-scene-image:url(/assets/f1-1990s-garage-neutral.png)');
+    expect(html).not.toContain('f1-1990s-car-livery');
     expect(html).toContain('Engineering Desk: Car stats, telemetry and engineer feedback');
     expect(html).toContain('Car: Practice, qualifying and race readiness');
     expect(html).not.toContain('Garage Command Board');
@@ -157,20 +158,20 @@ describe('F1 1990s race weekend hub rendering', () => {
     expect(html).toContain('f1-1990s-car-front-wing');
   });
 
-  it('uses selected team garage colors for the neutral 1990s mock scene', () => {
+  it('uses selected team garage image assets instead of CSS recolor overlays', () => {
     const state = withWeekendPackage({ ...makeState(1994), selectedTeamId: 't-ferrari' });
     const theme = garageThemeForTeam(state.teams.find((team) => team.id === state.selectedTeamId));
     const html = renderHub(state);
     expect(theme).toEqual({
       teamId: 't-ferrari',
       teamName: 'Ferrari',
+      garageImage: '/assets/f1-1990s-garage-ferrari.png',
       primary: '#c40000',
       secondary: '#ffd21f',
       trim: '#050505',
     });
-    expect(html).toContain('--garage-primary:#c40000');
-    expect(html).toContain('--garage-secondary:#ffd21f');
-    expect(html).toContain('--garage-trim:#050505');
+    expect(html).toContain('--garage-scene-image:url(/assets/f1-1990s-garage-ferrari.png)');
+    expect(html).not.toContain('f1-1990s-car-livery');
   });
 
   it('renders the Phase 3 status deck below the garage workspace', () => {

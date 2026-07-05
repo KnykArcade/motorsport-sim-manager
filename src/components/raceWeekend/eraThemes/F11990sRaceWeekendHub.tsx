@@ -53,6 +53,7 @@ export function F11990sRaceWeekendHub({
   const showingModule = activePhase !== 'hub' && !!moduleContent;
   const garageTheme = garageThemeForTeam(team);
   const garageThemeStyle = {
+    '--garage-scene-image': `url(${garageTheme.garageImage})`,
     '--garage-primary': garageTheme.primary,
     '--garage-secondary': garageTheme.secondary,
     '--garage-trim': garageTheme.trim,
@@ -158,15 +159,6 @@ export function F11990sRaceWeekendHub({
               <span className="f1-1990s-car-sidepod f1-1990s-car-sidepod-right" />
               <span className="f1-1990s-car-wheel f1-1990s-car-wheel-left" />
               <span className="f1-1990s-car-wheel f1-1990s-car-wheel-right" />
-            </div>
-            <div className="f1-1990s-car-livery" aria-hidden="true">
-              <span className="f1-1990s-car-livery-primary" />
-              <span className="f1-1990s-car-livery-secondary" />
-              <span className="f1-1990s-car-livery-nose" />
-              <span className="f1-1990s-car-livery-front-wing" />
-              <span className="f1-1990s-car-livery-rear-wing" />
-              <span className="f1-1990s-car-livery-trim f1-1990s-car-livery-trim-left" />
-              <span className="f1-1990s-car-livery-trim f1-1990s-car-livery-trim-right" />
             </div>
             {hotspots.map((hotspot) => (
               <F11990sGarageHotspot key={hotspot.id} hotspot={hotspot} callbacks={callbacks} />

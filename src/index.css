@@ -596,7 +596,7 @@ body {
   border-radius: 8px;
   background:
     linear-gradient(90deg, rgba(0, 0, 0, 0.28), transparent 18%, transparent 74%, rgba(0, 0, 0, 0.24)),
-    url("/assets/f1-1990s-garage-neutral.png") center / cover no-repeat,
+    var(--garage-scene-image, url("/assets/f1-1990s-garage-neutral.png")) center / cover no-repeat,
     linear-gradient(180deg, #111315, #07090a);
   box-shadow: inset 0 0 120px rgba(0, 0, 0, 0.72);
 }
@@ -623,98 +623,6 @@ body {
 .f1-1990s-garage-scene .f1-1990s-workbench,
 .f1-1990s-garage-scene .f1-1990s-car-shape {
   display: none;
-}
-
-.f1-1990s-car-livery {
-  position: absolute;
-  inset: 0;
-  z-index: 3;
-  pointer-events: none;
-  isolation: isolate;
-}
-
-.f1-1990s-car-livery span {
-  position: absolute;
-  display: block;
-  mix-blend-mode: color;
-  opacity: 0.62;
-  filter: saturate(1.35) contrast(0.92) blur(1.1px);
-}
-
-.f1-1990s-car-livery-primary {
-  left: 45.7%;
-  top: 48%;
-  width: 15.8%;
-  height: 10.6%;
-  border-radius: 48% 48% 34% 34%;
-  clip-path: polygon(7% 48%, 26% 16%, 70% 9%, 96% 45%, 82% 82%, 19% 90%);
-  background: var(--garage-primary, #767676);
-  opacity: 0.74;
-}
-
-.f1-1990s-car-livery-secondary {
-  left: 47.5%;
-  top: 51.8%;
-  width: 11.8%;
-  height: 3.4%;
-  border-radius: 50%;
-  clip-path: polygon(3% 44%, 74% 8%, 99% 55%, 66% 94%, 0 76%);
-  background: var(--garage-secondary, #b8b8b8);
-  opacity: 0.7;
-}
-
-.f1-1990s-car-livery-nose {
-  left: 51.6%;
-  top: 58.5%;
-  width: 4.4%;
-  height: 24.8%;
-  border-radius: 42% 42% 48% 48%;
-  clip-path: polygon(48% 0, 66% 18%, 74% 72%, 51% 100%, 27% 72%, 34% 18%);
-  background: var(--garage-primary, #767676);
-  opacity: 0.7;
-}
-
-.f1-1990s-car-livery-front-wing {
-  left: 41.7%;
-  top: 76.2%;
-  width: 24.7%;
-  height: 5.4%;
-  border-radius: 40%;
-  clip-path: polygon(5% 44%, 50% 4%, 95% 44%, 90% 76%, 50% 100%, 10% 76%);
-  background: var(--garage-trim, #111111);
-  mix-blend-mode: multiply;
-  opacity: 0.36;
-}
-
-.f1-1990s-car-livery-rear-wing {
-  left: 38.4%;
-  top: 42.4%;
-  width: 28.6%;
-  height: 4.8%;
-  border-radius: 34%;
-  clip-path: polygon(3% 30%, 97% 18%, 100% 58%, 50% 90%, 0 58%);
-  background: var(--garage-trim, #111111);
-  mix-blend-mode: multiply;
-  opacity: 0.34;
-}
-
-.f1-1990s-car-livery-trim {
-  top: 57.8%;
-  width: 4.8%;
-  height: 9%;
-  background: var(--garage-primary, #767676);
-  opacity: 0.5;
-  border-radius: 34%;
-}
-
-.f1-1990s-car-livery-trim-left {
-  left: 44.1%;
-  clip-path: polygon(100% 6%, 68% 100%, 0 82%, 18% 24%);
-}
-
-.f1-1990s-car-livery-trim-right {
-  left: 58.7%;
-  clip-path: polygon(0 6%, 32% 100%, 100% 82%, 82% 24%);
 }
 
 .f1-1990s-garage-door {
