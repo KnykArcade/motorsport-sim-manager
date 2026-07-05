@@ -5,6 +5,7 @@ import { getRegulationSet } from '../../../data/regulations/regulations';
 import { createNewGame } from '../../../game/initialCareer';
 import { currentRace, activeDriversForTeam, type GameState } from '../../../game/careerState';
 import { getSeasonBundle } from '../../../data/seasonData';
+import { garageThemeForTeam } from '../../../data/teamGarageThemes';
 import { weekendForecast } from '../../../sim/weatherEngine';
 import { F11990sGarageHotspot } from './F11990sGarageHotspot';
 import { F11990sRaceWeekendHub } from './F11990sRaceWeekendHub';
@@ -136,13 +137,14 @@ describe('F1 1990s race weekend hub rendering', () => {
     expect(html).toContain('Task Switchboard');
   });
 
-  it('renders the Phase 2 garage task board as clickable weekend routing', () => {
+  it('renders neutral garage hotspot routing without covering the car', () => {
     const state = withWeekendPackage(makeState(1994));
     const html = renderHub(state);
-    expect(html).toContain('Garage Command Board');
-    expect(html).toContain('Phase 2 task routing');
-    expect(html).toContain('Pre-Race Brief');
-    expect(html).toContain('Race Orders');
+    expect(html).toContain('Interactive 1990s Formula 1 garage');
+    expect(html).toContain('f1-1990s-car-livery-primary');
+    expect(html).toContain('Engineering Desk: Car stats, telemetry and engineer feedback');
+    expect(html).toContain('Car: Practice, qualifying and race readiness');
+    expect(html).not.toContain('Garage Command Board');
   });
 
   it('renders recognizable 1990s garage scene pieces', () => {
@@ -153,6 +155,22 @@ describe('F1 1990s race weekend hub rendering', () => {
     expect(html).toContain('Parts Rack');
     expect(html).toContain('Engineering Bench');
     expect(html).toContain('f1-1990s-car-front-wing');
+  });
+
+  it('uses selected team garage colors for the neutral 1990s mock scene', () => {
+    const state = withWeekendPackage({ ...makeState(1994), selectedTeamId: 't-ferrari' });
+    const theme = garageThemeForTeam(state.teams.find((team) => team.id === state.selectedTeamId));
+    const html = renderHub(state);
+    expect(theme).toEqual({
+      teamId: 't-ferrari',
+      teamName: 'Ferrari',
+      primary: '#c40000',
+      secondary: '#ffd21f',
+      trim: '#050505',
+    });
+    expect(html).toContain('--garage-primary:#c40000');
+    expect(html).toContain('--garage-secondary:#ffd21f');
+    expect(html).toContain('--garage-trim:#050505');
   });
 
   it('renders the Phase 3 status deck below the garage workspace', () => {
