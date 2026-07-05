@@ -1,5 +1,5 @@
 import type { CSSProperties } from 'react';
-import { garageThemeForTeam } from '../../../data/teamGarageThemes';
+import { garageThemeForTeamEra } from '../../../data/teamGarageThemes';
 import { F11990sGarageHotspot } from './F11990sGarageHotspot';
 import { RaceWeekendScheduleCard } from './RaceWeekendScheduleCard';
 import { TrackInfoCard } from './TrackInfoCard';
@@ -51,9 +51,10 @@ export function F11990sRaceWeekendHub({
   const standingsRows = buildStandingsRows(state);
   const metrics = topBarMetrics(state, race);
   const showingModule = activePhase !== 'hub' && !!moduleContent;
-  const garageTheme = garageThemeForTeam(team);
+  const garageTheme = garageThemeForTeamEra('f1-1990-1994', team);
+  const garageSceneImage = garageTheme.sceneImageOverride ?? garageTheme.templateImage;
   const garageThemeStyle = {
-    '--garage-scene-image': `url(${garageTheme.garageImage})`,
+    '--garage-scene-image': `url(${garageSceneImage})`,
     '--garage-primary': garageTheme.primary,
     '--garage-secondary': garageTheme.secondary,
     '--garage-trim': garageTheme.trim,
@@ -159,6 +160,11 @@ export function F11990sRaceWeekendHub({
               <span className="f1-1990s-car-sidepod f1-1990s-car-sidepod-right" />
               <span className="f1-1990s-car-wheel f1-1990s-car-wheel-left" />
               <span className="f1-1990s-car-wheel f1-1990s-car-wheel-right" />
+            </div>
+            <div className="f1-1990s-template-palette" aria-hidden="true">
+              <span className="f1-1990s-template-palette-primary" />
+              <span className="f1-1990s-template-palette-secondary" />
+              <span className="f1-1990s-template-palette-trim" />
             </div>
             {hotspots.map((hotspot) => (
               <F11990sGarageHotspot key={hotspot.id} hotspot={hotspot} callbacks={callbacks} />

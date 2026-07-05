@@ -5,7 +5,7 @@ import { getRegulationSet } from '../../../data/regulations/regulations';
 import { createNewGame } from '../../../game/initialCareer';
 import { currentRace, activeDriversForTeam, type GameState } from '../../../game/careerState';
 import { getSeasonBundle } from '../../../data/seasonData';
-import { garageThemeForTeam } from '../../../data/teamGarageThemes';
+import { garageThemeForTeamEra } from '../../../data/teamGarageThemes';
 import { weekendForecast } from '../../../sim/weatherEngine';
 import { F11990sGarageHotspot } from './F11990sGarageHotspot';
 import { F11990sRaceWeekendHub } from './F11990sRaceWeekendHub';
@@ -158,19 +158,24 @@ describe('F1 1990s race weekend hub rendering', () => {
     expect(html).toContain('f1-1990s-car-front-wing');
   });
 
-  it('uses selected team garage image assets instead of CSS recolor overlays', () => {
+  it('uses an era-specific garage template with the selected team palette', () => {
     const state = withWeekendPackage({ ...makeState(1994), selectedTeamId: 't-ferrari' });
-    const theme = garageThemeForTeam(state.teams.find((team) => team.id === state.selectedTeamId));
+    const team = state.teams.find((item) => item.id === state.selectedTeamId)!;
+    const theme = garageThemeForTeamEra('f1-1990-1994', team);
     const html = renderHub(state);
     expect(theme).toEqual({
+      eraModel: 'f1-1990-1994',
       teamId: 't-ferrari',
       teamName: 'Ferrari',
-      garageImage: '/assets/f1-1990s-garage-ferrari.png',
+      templateImage: '/assets/f1-1990s-garage-neutral.png',
       primary: '#c40000',
       secondary: '#ffd21f',
       trim: '#050505',
     });
-    expect(html).toContain('--garage-scene-image:url(/assets/f1-1990s-garage-ferrari.png)');
+    expect(html).toContain('--garage-scene-image:url(/assets/f1-1990s-garage-neutral.png)');
+    expect(html).toContain('--garage-primary:#c40000');
+    expect(html).toContain('--garage-secondary:#ffd21f');
+    expect(html).toContain('f1-1990s-template-palette-primary');
     expect(html).not.toContain('f1-1990s-car-livery');
   });
 

@@ -625,6 +625,56 @@ body {
   display: none;
 }
 
+.f1-1990s-template-palette {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  pointer-events: none;
+  isolation: isolate;
+}
+
+.f1-1990s-template-palette span {
+  position: absolute;
+  inset: 0;
+  display: block;
+  opacity: 0;
+  mix-blend-mode: color;
+}
+
+.f1-1990s-template-palette-primary {
+  background: var(--garage-primary, #767676);
+  opacity: 0.62;
+  mask-image:
+    radial-gradient(ellipse 18% 24% at 55% 60%, #000 0 42%, transparent 63%),
+    radial-gradient(ellipse 7% 21% at 54% 76%, #000 0 40%, transparent 67%),
+    radial-gradient(ellipse 10% 13% at 24% 30%, #000 0 46%, transparent 70%),
+    radial-gradient(ellipse 8% 9% at 65% 29%, #000 0 45%, transparent 72%),
+    radial-gradient(ellipse 11% 18% at 79% 59%, #000 0 42%, transparent 70%);
+  mask-repeat: no-repeat;
+}
+
+.f1-1990s-template-palette-secondary {
+  background: var(--garage-secondary, #b8b8b8);
+  opacity: 0.5;
+  mask-image:
+    radial-gradient(ellipse 11% 4% at 55% 56%, #000 0 46%, transparent 70%),
+    radial-gradient(ellipse 5% 10% at 48% 64%, #000 0 38%, transparent 70%),
+    radial-gradient(ellipse 5% 10% at 63% 63%, #000 0 38%, transparent 70%),
+    radial-gradient(ellipse 12% 8% at 68% 22%, #000 0 42%, transparent 74%);
+  mask-repeat: no-repeat;
+}
+
+.f1-1990s-template-palette-trim {
+  background: var(--garage-trim, #111111);
+  opacity: 0.28;
+  mix-blend-mode: multiply;
+  mask-image:
+    radial-gradient(ellipse 18% 4% at 52% 49%, #000 0 50%, transparent 74%),
+    radial-gradient(ellipse 18% 4% at 55% 82%, #000 0 50%, transparent 74%),
+    radial-gradient(ellipse 12% 7% at 50% 70%, #000 0 44%, transparent 75%);
+  mask-repeat: no-repeat;
+}
+
 .f1-1990s-garage-door {
   position: absolute;
   left: 33%;
