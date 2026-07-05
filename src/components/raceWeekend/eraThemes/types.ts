@@ -73,3 +73,12 @@ export type NextSessionAction = {
   action?: RaceWeekendHubAction;
   disabledReason?: string;
 };
+
+export type GarageTaskBoardItem = {
+  id: RaceWeekendHubPhase;
+  label: string;
+  detail: string;
+  status: WeekendScheduleStatus;
+  action?: RaceWeekendHubAction;
+  lockedReason?: string;
+};

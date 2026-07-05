@@ -7,6 +7,7 @@ import { formatMoney } from '../../ui';
 import type { Race, RegulationSet, StandingsEntry } from '../../../types/gameTypes';
 import type { WeekendForecast } from '../../../sim/weatherEngine';
 import type {
+  GarageTaskBoardItem,
   GarageHotspot,
   NextSessionAction,
   QuickAction,
@@ -203,6 +204,98 @@ export function buildNextSessionAction(
     primaryLabel: 'OPEN STRATEGY',
     action: { type: 'phase', phase: 'race-strategy' },
   };
+}
+
+export function buildGarageTaskBoard(
+  state: GameState,
+  race: Race,
+  isMinPackage: boolean,
+  hasQualifyingResults: boolean,
+): GarageTaskBoardItem[] {
+  const completedPractice = completedPracticeKinds(state, race.id);
+  const practiceKinds = weekendSessionKinds(state.seasonYear, state.series);
+  const allPracticeComplete = practiceKinds.length > 0 && practiceKinds.every((kind) => completedPractice.has(kind));
+  const anyPracticeComplete = completedPractice.size > 0;
+  const weekendWorkStarted = anyPracticeComplete || hasQualifyingResults || race.completed;
+  const briefingStatus = weekendWorkStarted ? 'completed' : 'current';
+  const practiceStatus: GarageTaskBoardItem['status'] = isMinPackage
+    ? 'locked'
+    : allPracticeComplete
+    ? 'completed'
+    : briefingStatus === 'current'
+    ? 'upcoming'
+    : 'current';
+  const setupStatus: GarageTaskBoardItem['status'] = isMinPackage
+    ? 'locked'
+    : hasQualifyingResults
+    ? 'completed'
+    : allPracticeComplete
+    ? 'current'
+    : 'upcoming';
+  const qualifyingStatus: GarageTaskBoardItem['status'] = hasQualifyingResults
+    ? 'completed'
+    : isMinPackage || setupStatus === 'completed'
+    ? 'current'
+    : 'upcoming';
+  const strategyStatus: GarageTaskBoardItem['status'] = hasQualifyingResults
+    ? race.completed
+      ? 'completed'
+      : 'current'
+    : 'locked';
+  const instructionsStatus: GarageTaskBoardItem['status'] = hasQualifyingResults
+    ? race.completed
+      ? 'completed'
+      : 'upcoming'
+    : 'locked';
+
+  return [
+    {
+      id: 'briefing',
+      label: 'Pre-Race Brief',
+      detail: 'Track, weather and race package readout',
+      status: briefingStatus,
+      action: { type: 'phase', phase: 'briefing' },
+    },
+    {
+      id: 'practice',
+      label: 'Practice',
+      detail: isMinPackage ? 'Disabled by Minimum Operations' : `${completedPractice.size}/${practiceKinds.length} sessions complete`,
+      status: practiceStatus,
+      action: isMinPackage ? undefined : { type: 'phase', phase: 'practice' },
+      lockedReason: isMinPackage ? 'Disabled by Minimum Operations package.' : undefined,
+    },
+    {
+      id: 'setup',
+      label: 'Car Setup',
+      detail: isMinPackage ? 'Baseline setup only' : allPracticeComplete ? 'Ready for final tune' : 'Opens after practice data',
+      status: setupStatus,
+      action: isMinPackage ? undefined : { type: 'phase', phase: 'setup' },
+      lockedReason: isMinPackage ? 'Minimum Operations locks setup changes.' : undefined,
+    },
+    {
+      id: 'quali-run',
+      label: 'Qualifying',
+      detail: hasQualifyingResults ? 'Grid review available' : 'Run plan and qualifying simulation',
+      status: qualifyingStatus,
+      action: { type: 'phase', phase: hasQualifyingResults ? 'quali-review' : 'quali-run' },
+    },
+    {
+      id: 'race-strategy',
+      label: 'Strategy',
+      detail: hasQualifyingResults ? 'Pit, fuel and tyre plan' : 'Locked until qualifying is complete',
+      status: strategyStatus,
+      action: hasQualifyingResults ? { type: 'phase', phase: 'race-strategy' } : undefined,
+      lockedReason: hasQualifyingResults ? undefined : 'Race strategy opens after qualifying is complete.',
+    },
+    {
+      id: 'race-instructions',
+      label: 'Race Orders',
+      detail: hasQualifyingResults ? 'Driver instructions before lights out' : 'Locked until qualifying is complete',
+      status: instructionsStatus,
+      action: hasQualifyingResults ? { type: 'phase', phase: 'race-instructions' } : undefined,
+      lockedReason: hasQualifyingResults ? undefined : 'Driver instructions open after qualifying is complete.',
+    },
+  ];
 }
 
 export function executeRaceWeekendHubAction(

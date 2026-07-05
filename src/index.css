@@ -819,6 +819,31 @@ body {
   text-transform: uppercase;
 }
 
+.f1-1990s-garage-task-board {
+  position: absolute;
+  left: 1rem;
+  right: 1rem;
+  bottom: 1rem;
+  z-index: 7;
+  max-width: 44rem;
+  border: 1px solid rgba(250, 204, 21, 0.42);
+  border-radius: 6px;
+  background:
+    linear-gradient(180deg, rgba(18, 16, 10, 0.91), rgba(0, 0, 0, 0.86)),
+    #050505;
+  padding: 0.75rem;
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.48);
+}
+
+.f1-1990s-task-rail {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  border-bottom: 1px solid rgba(250, 204, 21, 0.24);
+  background: rgba(0, 0, 0, 0.36);
+  padding: 0.55rem 0.85rem;
+}
+
 .f1-1990s-module-overlay {
   position: fixed;
   inset: 0;
@@ -880,6 +905,19 @@ body {
   .f1-1990s-hotspot-label {
     min-width: 7rem;
     padding: 0.35rem 0.45rem;
+  }
+
+  .f1-1990s-garage-task-board {
+    position: relative;
+    left: auto;
+    right: auto;
+    bottom: auto;
+    margin: 1rem;
+  }
+
+  .f1-1990s-task-rail {
+    align-items: flex-start;
+    flex-direction: column;
   }
 }
 
