@@ -218,6 +218,7 @@ export function F11990sLiveRaceScreen({
             <DriverFocus
               key={`${car.driverId}-${index}`}
               car={car}
+              allCars={live.cars}
               name={nameOf(car.driverId)}
               team={teamNameOf(car.teamId)}
               number={state.drivers?.find((d) => d.id === car.driverId)?.number ?? null}
@@ -691,6 +692,7 @@ function RetroTrackMap({
 
 function DriverFocus({
   car,
+  allCars,
   name,
   team,
   number,
@@ -713,6 +715,7 @@ function DriverFocus({
   className = '',
 }: {
   car: LiveCarState;
+  allCars: LiveCarState[];
   name: string;
   team: string;
   number: number | null;
@@ -818,26 +821,87 @@ function DriverFocus({
               <ConditionLine label="Overall" level={overallCondition(car)} />
               <ConditionLine label="Risk" level={riskCondition(car.reliabilityRiskLevel)} />
             </div>
-            {rec ? (
-              <DriverAlertCard
-                rec={rec}
-                bothDrivers={bothDrivers}
-                decisionSecondsLeft={decisionSecondsLeft}
-                onAccept={onAccept}
-                onModify={onModify}
-                onIgnore={onIgnore}
-                onLetCrewDecide={onLetCrewDecide}
-              />
-            ) : outcome ? (
-              <div className="mt-auto rounded border-2 border-amber-500/70 bg-black/90 px-1.5 py-1 shadow-[0_0_14px_rgba(245,158,11,0.3)]">
-                <span className="text-[10px] font-black uppercase tracking-wide text-amber-300">Pit Wall</span>{' '}
-                <span className="text-[10px] leading-tight text-zinc-200">{outcome}</span>
+            <div className="relative mt-auto min-h-0">
+              <div className="space-y-0.5">
+                {outcome ? (
+                  <div className="rounded border-2 border-amber-500/70 bg-black/90 px-1.5 py-1 shadow-[0_0_14px_rgba(245,158,11,0.3)]">
+                    <span className="text-[10px] font-black uppercase tracking-wide text-amber-300">Pit Wall</span>{' '}
+                    <span className="text-[10px] leading-tight text-zinc-200">{outcome}</span>
+                  </div>
+                ) : null}
+                <RivalStrategyTracker car={car} allCars={allCars} nameOf={nameOf} />
               </div>
-            ) : null}
+              {rec ? (
+                <div className="absolute inset-x-0 bottom-0 z-20 px-0.5 pb-0.5">
+                  <DriverAlertCard
+                    rec={rec}
+                    bothDrivers={bothDrivers}
+                    decisionSecondsLeft={decisionSecondsLeft}
+                    onAccept={onAccept}
+                    onModify={onModify}
+                    onIgnore={onIgnore}
+                    onLetCrewDecide={onLetCrewDecide}
+                  />
+                </div>
+              ) : null}
+            </div>
           </div>
         )}
       </div>
     </RetroPanel>
+  );
+}
+
+function RivalStrategyTracker({
+  car,
+  allCars,
+  nameOf,
+}: {
+  car: LiveCarState;
+  allCars: LiveCarState[];
+  nameOf: (driverId: string) => string;
+}) {
+  const running = allCars
+    .filter((entry) => entry.running && entry.position != null)
+    .sort((a, b) => (a.position ?? 99) - (b.position ?? 99) || a.grid - b.grid || a.driverId.localeCompare(b.driverId));
+  const index = running.findIndex((entry) => entry.driverId === car.driverId);
+  const rivals =
+    index >= 0
+      ? running
+          .slice(Math.max(0, index - 2), index)
+          .concat(running.slice(index + 1, index + 3))
+          .filter((entry, i, arr) => arr.findIndex((candidate) => candidate.driverId === entry.driverId) === i)
+      : [];
+
+  return (
+    <div className="min-h-0 rounded border border-zinc-800 bg-zinc-950/55 p-1">
+      <div className="mb-0.5 flex items-center justify-between gap-2">
+        <span className="text-[9px] font-bold uppercase tracking-wide text-zinc-500">Rival Strategy</span>
+        <span className="text-[8px] uppercase tracking-wide text-zinc-600">Nearest cars</span>
+      </div>
+      <div className="space-y-0.5 text-[9px] leading-tight tabular-nums">
+        {rivals.length > 0 ? (
+          rivals.map((rival) => (
+            <div key={rival.driverId} className="grid grid-cols-[2.2rem_minmax(0,1fr)_4.2rem_minmax(0,1.1fr)] gap-1">
+              <span className="text-zinc-500">{rival.position ? ordinalText(rival.position) : '-'}</span>
+              <span className="truncate text-zinc-200">{shortName(nameOf(rival.driverId)).toUpperCase()}</span>
+              <span className="text-zinc-300">
+                {tyreLetter(rival.tire.compound).letter} {Math.max(0, 100 - Math.round(rival.tire.wear))}%
+              </span>
+              <span className={`truncate text-right ${rival.pit.inPitThisLap ? 'text-amber-300' : 'text-zinc-300'}`}>
+                {rival.pit.inPitThisLap
+                  ? 'IN PIT'
+                  : rival.pit.stopsMade <= 0
+                    ? 'No stops'
+                    : `${rival.pit.stopsMade} stop${rival.pit.stopsMade > 1 ? 's' : ''}${rival.pit.lastPitLap != null ? ` · L${rival.pit.lastPitLap}` : ''}`}
+              </span>
+            </div>
+          ))
+        ) : (
+          <div className="text-zinc-600">No nearby rivals</div>
+        )}
+      </div>
+    </div>
   );
 }
 
@@ -1270,9 +1334,15 @@ function SectorTable({ car, other, name }: { car: LiveCarState; other: LiveCarSt
   const sectors = car.lastSectors ?? [];
   const otherSectors = other?.lastSectors ?? [];
   return (
-    <div className="rounded border border-zinc-800 bg-zinc-950/55 px-1 py-0.5">
-      <div className="truncate text-[9px] font-bold uppercase text-amber-300">{name}</div>
-      <table className="w-full text-[9px] leading-tight tabular-nums">
+    <div className="flex h-full flex-col rounded border border-zinc-800 bg-zinc-950/55 px-1 py-0.5">
+      <table className="h-full w-full text-[9px] leading-tight tabular-nums">
+        <thead>
+          <tr>
+            <th className="truncate text-left text-[9px] font-bold uppercase text-amber-300">{name}</th>
+            <th className="text-right text-[8px] font-semibold uppercase tracking-wide text-zinc-500">Sector</th>
+            <th className="text-right text-[8px] font-semibold uppercase tracking-wide text-zinc-500">Delta</th>
+          </tr>
+        </thead>
         <tbody>
           {[0, 1, 2].map((i) => {
             const time = sectors[i];
