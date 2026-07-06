@@ -105,7 +105,10 @@ export function F11990sLiveRaceScreen({
     onModify(rec, action);
   };
   const handleIgnore = (rec: AnalyticsRecommendation) => {
-    recordOutcome(rec, 'Request denied \u2014 no change');
+    recordOutcome(
+      rec,
+      `Request denied \u2014 ${rec.action.label}${rec.suggestedDuration ? ` (${rec.suggestedDuration})` : ''} refused; no change`,
+    );
     onIgnore(rec);
   };
   const handleCrew = (rec: AnalyticsRecommendation) => {
@@ -133,7 +136,7 @@ export function F11990sLiveRaceScreen({
         onExit={onExit}
       />
 
-      <main className="relative grid min-h-0 flex-1 grid-cols-1 gap-2 p-2 lg:grid-cols-[minmax(285px,0.9fr)_minmax(420px,1.5fr)_minmax(300px,0.98fr)]">
+      <main className="relative grid min-h-0 flex-1 grid-cols-1 gap-2 p-2 lg:grid-cols-[minmax(235px,0.7fr)_minmax(460px,1.7fr)_minmax(300px,0.98fr)]">
         <aside className="grid min-h-0 grid-rows-[minmax(0,1.6fr)_auto_minmax(0,1fr)] gap-2">
           <RetroTimingTower cars={live.cars} nameOf={nameOf} colorOf={colorOf} />
           <PlaybackPanel
@@ -211,7 +214,7 @@ export function F11990sLiveRaceScreen({
           </div>
         </section>
 
-        <aside className="grid min-h-0 grid-rows-[minmax(0,1fr)_minmax(0,1fr)_minmax(0,0.86fr)] gap-2 overflow-hidden">
+        <aside className="grid min-h-0 grid-rows-[minmax(0,1.3fr)_minmax(0,1.3fr)_minmax(0,0.4fr)] gap-2 overflow-hidden">
           {focusCars.map((car, index) => (
             <DriverFocus
               key={`${car.driverId}-${index}`}
@@ -221,6 +224,8 @@ export function F11990sLiveRaceScreen({
               number={state.drivers?.find((d) => d.id === car.driverId)?.number ?? null}
               teammate={focusCars.find((other) => other.driverId !== car.driverId) ?? null}
               nameOf={nameOf}
+              lapTimes={lapHistory[car.driverId] ?? []}
+              trendColor={TREND_COLORS[index % TREND_COLORS.length]}
               className="min-h-0"
               finished={finished}
               rec={decisionRecs.find((r) => r.driverId === car.driverId) ?? null}
@@ -236,7 +241,7 @@ export function F11990sLiveRaceScreen({
               onLetCrewDecide={handleCrew}
             />
           ))}
-          <TelemetrySectorTimes cars={focusCars} nameOf={nameOf} lapHistory={lapHistory} />
+          <TelemetrySectorTimes cars={focusCars} nameOf={nameOf} />
         </aside>
       </main>
 
@@ -373,7 +378,7 @@ function RetroTimingTower({
         <span>Driver</span>
         <span className="text-right">{tab === 'Pit Stops' ? 'Last' : 'Gap'}</span>
         <span className="text-right">Pits</span>
-        <span className="text-right">{tab === 'Pit Stops' ? 'Next' : 'Tyre'}</span>
+        <span className="text-right">{tab === 'Pit Stops' ? 'Lap' : 'Tyre'}</span>
       </div>
       <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain pb-8">
         {cars.map((car) => {
@@ -405,7 +410,9 @@ function RetroTimingTower({
                     {car.pit.lastPitStopTime != null ? `${car.pit.lastPitStopTime.toFixed(1)}s` : car.pit.lastPitLap != null ? `L${car.pit.lastPitLap}` : '-'}
                   </span>
                   <span className="text-right tabular-nums">{car.isPlayer ? `${car.pit.stopsMade}/${car.pit.plannedStops}` : car.pit.stopsMade}</span>
-                  <span className="text-right tabular-nums text-zinc-300">{car.isPlayer ? pitWindowText(car).replace('Window ', '') : 'Unknown'}</span>
+                  <span className="text-right tabular-nums text-zinc-300">
+                    {car.pit.lastPitLap != null ? `L${car.pit.lastPitLap}` : '-'}
+                  </span>
                 </>
               ) : (
                 <>
@@ -672,6 +679,8 @@ function DriverFocus({
   number,
   teammate,
   nameOf,
+  lapTimes,
+  trendColor,
   finished,
   rec,
   bothDrivers,
@@ -692,6 +701,8 @@ function DriverFocus({
   number: number | null;
   teammate: LiveCarState | null;
   nameOf: (driverId: string) => string;
+  lapTimes: number[];
+  trendColor: string;
   finished: boolean;
   rec: AnalyticsRecommendation | null;
   bothDrivers: boolean;
@@ -726,7 +737,7 @@ function DriverFocus({
         ) : undefined
       }
     >
-      <div className="relative h-[calc(100%-37px)] overflow-y-auto p-2">
+      <div className="relative flex h-[calc(100%-37px)] flex-col overflow-y-auto px-2 py-1.5">
         <div className="flex items-center gap-2">
           <span className="rounded border border-zinc-600 px-1.5 py-0.5 text-sm font-bold">{number ?? car.position ?? '-'}</span>
           <div className="min-w-0 flex-1">
@@ -743,33 +754,30 @@ function DriverFocus({
             </button>
           )}
         </div>
-        <div className="mt-1.5 grid grid-cols-2 gap-x-2 gap-y-0.5 text-[10px] leading-tight">
-          <FocusLine label="Position" value={car.position ? ordinalText(car.position) : 'Out'} />
-          <FocusLine label="Last lap" value={car.lastLapTime > 0 ? fmtLap(car.lastLapTime) : 'N/A'} />
-          <FocusLine label="Gap to leader" value={car.position === 1 ? 'Leader' : `+${car.gapToLeader.toFixed(1)}`} />
-          <FocusLine
-            label={teammate ? `Gap to ${shortName(nameOf(teammate.driverId)).split(' ').pop()}` : 'Best lap'}
-            value={
-              teammate
-                ? gapToTeammate != null
-                  ? `${gapToTeammate >= 0 ? '+' : '-'}${Math.abs(gapToTeammate).toFixed(1)}`
-                  : 'N/A'
-                : car.bestLap
-                  ? fmtLap(car.bestLap)
-                  : 'N/A'
-            }
-          />
-          <FocusLine label="Fuel left" value={`${Math.round(car.fuel)}%`} />
-          <FocusLine label="Tyre life" value={`${tyre.letter} ${Math.max(0, 100 - Math.round(car.tire.wear))}%`} />
-        </div>
-        {!rec && outcome && (
-          <div className="absolute left-1/2 top-14 z-10 w-40 -translate-x-1/2 rounded border border-amber-500/60 bg-black/95 p-1.5 shadow-[0_0_12px_rgba(245,158,11,0.25)]">
-            <div className="text-[8px] font-black uppercase tracking-wide text-amber-300">Pit Wall</div>
-            <div className="mt-0.5 text-[9px] leading-tight text-zinc-200">{outcome}</div>
+        <div className="mt-1 flex items-stretch gap-2">
+          <div className="grid min-w-0 flex-1 grid-cols-2 gap-x-2 gap-y-0.5 self-start text-[10px] leading-tight">
+            <FocusLine label="Position" value={car.position ? ordinalText(car.position) : 'Out'} />
+            <FocusLine label="Last lap" value={car.lastLapTime > 0 ? fmtLap(car.lastLapTime) : 'N/A'} />
+            <FocusLine label="Gap to leader" value={car.position === 1 ? 'Leader' : `+${car.gapToLeader.toFixed(1)}`} />
+            <FocusLine
+              label={teammate ? `Gap to ${shortName(nameOf(teammate.driverId)).split(' ').pop()}` : 'Best lap'}
+              value={
+                teammate
+                  ? gapToTeammate != null
+                    ? `${gapToTeammate >= 0 ? '+' : '-'}${Math.abs(gapToTeammate).toFixed(1)}`
+                    : 'N/A'
+                  : car.bestLap
+                    ? fmtLap(car.bestLap)
+                    : 'N/A'
+              }
+            />
+            <FocusLine label="Fuel left" value={`${Math.round(car.fuel)}%`} />
+            <FocusLine label="Tyre life" value={`${tyre.letter} ${Math.max(0, 100 - Math.round(car.tire.wear))}%`} />
           </div>
-        )}
+          <DriverPaceTrend values={lapTimes} color={trendColor} name={shortName(name).split(' ').pop()?.toUpperCase() ?? ''} />
+        </div>
         {!finished && car.running && (
-          <div className="relative mt-2 rounded border border-zinc-800 bg-zinc-950/55 p-1">
+          <div className="relative mt-1 flex min-h-0 flex-1 flex-col rounded border border-zinc-800 bg-zinc-950/55 p-1">
             <div className="mb-1 flex items-center justify-between gap-2">
               <span className="text-[9px] font-bold uppercase tracking-wide text-zinc-500">Strategy Mode</span>
             </div>
@@ -790,7 +798,7 @@ function DriverFocus({
                 </button>
               ))}
             </div>
-            <div className="mt-1 grid grid-cols-2 gap-x-2 gap-y-0.5 border-t border-zinc-800 pt-1">
+            <div className="mt-0.5 grid grid-cols-2 gap-x-3 gap-y-0.5 border-t border-zinc-800 pt-0.5">
               <ConditionLine label="Engine" level={componentCondition(car, 'Engine')} />
               <ConditionLine label="Brakes" level={componentCondition(car, 'Brakes')} />
               <ConditionLine label="Gearbox" level={componentCondition(car, 'Gearbox')} />
@@ -798,7 +806,7 @@ function DriverFocus({
               <ConditionLine label="Overall" level={overallCondition(car)} />
               <ConditionLine label="Risk" level={riskCondition(car.reliabilityRiskLevel)} />
             </div>
-            {rec && (
+            {rec ? (
               <DriverAlertCard
                 rec={rec}
                 bothDrivers={bothDrivers}
@@ -808,7 +816,12 @@ function DriverFocus({
                 onIgnore={onIgnore}
                 onLetCrewDecide={onLetCrewDecide}
               />
-            )}
+            ) : outcome ? (
+              <div className="mt-auto rounded border-2 border-amber-500/70 bg-black/90 px-1.5 py-1 shadow-[0_0_14px_rgba(245,158,11,0.3)]">
+                <span className="text-[10px] font-black uppercase tracking-wide text-amber-300">Pit Wall</span>{' '}
+                <span className="text-[10px] leading-tight text-zinc-200">{outcome}</span>
+              </div>
+            ) : null}
           </div>
         )}
       </div>
@@ -836,13 +849,13 @@ function DriverAlertCard({
   const [modifying, setModifying] = useState(false);
   const pitCall = /pit/i.test(rec.action.label);
   return (
-    <div className="absolute inset-0 z-10 overflow-hidden rounded border-2 border-amber-400 bg-black/95 p-1 shadow-[0_0_20px_rgba(245,158,11,0.35)]">
-      <div className="flex items-center gap-1 text-[9px] font-black uppercase tracking-wide text-amber-300">
+    <div className="z-10 mt-auto overflow-hidden rounded border-2 border-amber-400 bg-black/95 px-1.5 py-1 shadow-[0_0_20px_rgba(245,158,11,0.35)]">
+      <div className="flex items-center gap-1 text-[10px] font-black uppercase tracking-wide text-amber-300">
         <span aria-hidden="true">{'\u26A0'}</span>
         <span className="truncate">{kindLabel(rec.kind)}{bothDrivers ? ' - Both Drivers' : ''}</span>
       </div>
-      <p className="line-clamp-1 text-[9px] leading-tight text-zinc-300">{rec.issue}</p>
-      <p className="line-clamp-1 text-[9px] font-semibold leading-tight text-amber-200">
+      <p className="line-clamp-1 text-[10px] leading-tight text-zinc-300">{rec.issue}</p>
+      <p className="line-clamp-1 text-[10px] font-semibold leading-tight text-amber-200">
         {rec.recommendedAction}
         {rec.suggestedDuration ? ` (${rec.suggestedDuration})` : ''}
       </p>
@@ -872,25 +885,25 @@ function DriverAlertCard({
         <div className="mt-0.5 grid grid-cols-4 gap-1">
           <button
             onClick={() => onAccept(rec)}
-            className="rounded-sm bg-amber-400 py-0.5 text-[8px] font-black uppercase text-black hover:bg-amber-300"
+            className="rounded-sm bg-amber-400 py-0.5 text-[9px] font-black uppercase text-black hover:bg-amber-300"
           >
             {pitCall ? 'Pit Now' : 'Accept'}
           </button>
           <button
             onClick={() => setModifying(true)}
-            className="rounded-sm border border-amber-500/60 py-0.5 text-[8px] font-bold uppercase text-amber-200 hover:bg-amber-500/15"
+            className="rounded-sm border border-amber-500/60 py-0.5 text-[9px] font-bold uppercase text-amber-200 hover:bg-amber-500/15"
           >
             Modify
           </button>
           <button
             onClick={() => onLetCrewDecide(rec)}
-            className="rounded-sm border border-amber-500/60 py-0.5 text-[8px] font-bold uppercase text-amber-200 hover:bg-amber-500/15"
+            className="rounded-sm border border-amber-500/60 py-0.5 text-[9px] font-bold uppercase text-amber-200 hover:bg-amber-500/15"
           >
             Crew
           </button>
           <button
             onClick={() => onIgnore(rec)}
-            className="rounded-sm border border-amber-500/60 py-0.5 text-[8px] font-bold uppercase text-amber-200 hover:bg-amber-500/15"
+            className="rounded-sm border border-amber-500/60 py-0.5 text-[9px] font-bold uppercase text-amber-200 hover:bg-amber-500/15"
           >
             {pitCall ? 'Stay Out' : 'Ignore'}
           </button>
@@ -1144,7 +1157,7 @@ function useDecisionOutcomes(
 } {
   const [notes, setNotes] = useState<Record<string, { text: string; lap: number }>>({});
   const [handledIds, setHandledIds] = useState<ReadonlySet<string>>(new Set());
-  const [prevPending, setPrevPending] = useState<Array<{ id: string; driverId: string }>>([]);
+  const [prevPending, setPrevPending] = useState<Array<{ id: string; driverId: string; label: string }>>([]);
 
   const pending = recs.filter((r) => r.status === 'pending' && r.priority !== 'low');
   const pendingKey = pending.map((r) => r.id).join('|');
@@ -1155,11 +1168,11 @@ function useDecisionOutcomes(
     if (expired.length > 0) {
       setNotes((n) => {
         const next = { ...n };
-        for (const e of expired) next[e.driverId] = { text: 'No response \u2014 request expired', lap: currentLap };
+        for (const e of expired) next[e.driverId] = { text: `No response \u2014 ${e.label} request expired; no change`, lap: currentLap };
         return next;
       });
     }
-    setPrevPending(pending.map((r) => ({ id: r.id, driverId: r.driverId })));
+    setPrevPending(pending.map((r) => ({ id: r.id, driverId: r.driverId, label: r.action.label })));
   }
 
   const recordOutcome = (rec: AnalyticsRecommendation, text: string) => {
@@ -1200,11 +1213,9 @@ const TREND_COLORS = ['#00d078', '#ff4040'];
 function TelemetrySectorTimes({
   cars,
   nameOf,
-  lapHistory,
 }: {
   cars: LiveCarState[];
   nameOf: (driverId: string) => string;
-  lapHistory: Record<string, number[]>;
 }) {
   return (
     <RetroPanel title="Telemetry / Sector Times" className="h-full min-h-0">
@@ -1219,42 +1230,24 @@ function TelemetrySectorTimes({
             />
           ))}
         </div>
-        <PaceTrend cars={cars} nameOf={nameOf} lapHistory={lapHistory} />
       </div>
     </RetroPanel>
   );
 }
 
-function PaceTrend({
-  cars,
-  nameOf,
-  lapHistory,
-}: {
-  cars: LiveCarState[];
-  nameOf: (driverId: string) => string;
-  lapHistory: Record<string, number[]>;
-}) {
-  const all = cars.flatMap((car) => lapHistory[car.driverId] ?? []);
-  const spread = all.length >= 2 ? Math.max(0.5, (Math.max(...all) - Math.min(...all)) / 2) : 1;
+function DriverPaceTrend({ values, color, name }: { values: number[]; color: string; name: string }) {
+  const spread = values.length >= 2 ? Math.max(0.5, (Math.max(...values) - Math.min(...values)) / 2) : 0.5;
   return (
-    <div className="mt-1.5 rounded border border-zinc-800 bg-zinc-950/55 p-1.5">
-      <div className="text-[9px] font-bold uppercase tracking-wide text-amber-300">Pace Trend (Last 5 Laps)</div>
-      <div className="mt-1 flex items-stretch gap-2">
-        <div className="min-w-0 flex-1 space-y-1.5">
-          {cars.map((car, index) => (
-            <div key={car.driverId} className="flex items-center gap-2">
-              <span className="w-16 shrink-0 truncate uppercase text-zinc-300">
-                {shortName(nameOf(car.driverId)).split(' ').pop()?.toUpperCase()}
-              </span>
-              <Sparkline
-                values={lapHistory[car.driverId] ?? []}
-                color={TREND_COLORS[index % TREND_COLORS.length]}
-                className="h-7"
-              />
-            </div>
-          ))}
+    <div className="w-[46%] shrink-0 rounded border border-zinc-800 bg-zinc-950/55 p-1">
+      <div className="truncate text-[8px] font-bold uppercase tracking-wide text-amber-300">Pace Trend (Last 5 Laps)</div>
+      <div className="mt-0.5 flex items-stretch gap-1">
+        <div className="min-w-0 flex-1">
+          <div className="truncate text-[8px] uppercase text-zinc-400">{name}</div>
+          <div className="pr-3">
+            <Sparkline values={values} color={color} className="h-8 w-full" />
+          </div>
         </div>
-        <div className="flex shrink-0 flex-col justify-between border-l border-dashed border-zinc-600 py-0.5 pl-1.5 text-right text-[9px] tabular-nums text-zinc-300">
+        <div className="flex shrink-0 flex-col justify-between border-l border-dashed border-zinc-600 py-0.5 pl-1 text-right text-[8px] tabular-nums text-zinc-300">
           <span>+{spread.toFixed(1)}s</span>
           <span>+{(spread / 2).toFixed(1)}s</span>
           <span>-{spread.toFixed(1)}s</span>
