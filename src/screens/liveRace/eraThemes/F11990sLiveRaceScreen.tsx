@@ -740,7 +740,7 @@ function DriverFocus({
     teammate && teammate.running && car.running ? car.gapToLeader - teammate.gapToLeader : null;
   return (
     <RetroPanel
-      title={`${number ?? car.position ?? '-'}  ${shortName(name)}  ${team}`}
+      title={`${number ?? car.position ?? '-'} ${shortName(name)} - ${team}`}
       className={`h-full min-h-0 ${className}`}
       headerRight={
         car.isPlayer ? (
@@ -767,7 +767,7 @@ function DriverFocus({
           </div>
         )}
         <div className="mt-1 flex items-stretch gap-2">
-          <div className="grid min-w-0 flex-1 grid-cols-2 gap-x-2 gap-y-0.5 self-start text-[10px] leading-tight">
+          <div className="grid min-w-0 flex-[0_0_38%] grid-cols-[repeat(2,max-content)] gap-x-2 gap-y-0.5 self-start justify-start text-[10px] leading-tight">
             <FocusLine label="Position" value={car.position ? ordinalText(car.position) : 'Out'} />
             <FocusLine label="Last lap" value={car.lastLapTime > 0 ? fmtLap(car.lastLapTime) : 'N/A'} />
             <FocusLine label="Gap to leader" value={car.position === 1 ? 'Leader' : `+${car.gapToLeader.toFixed(1)}`} />
@@ -1250,7 +1250,7 @@ function TelemetrySectorTimes({
 function DriverPaceTrend({ values, color }: { values: number[]; color: string }) {
   const spread = values.length >= 2 ? Math.max(0.5, (Math.max(...values) - Math.min(...values)) / 2) : 0.5;
   return (
-    <div className="w-[46%] shrink-0 rounded border border-zinc-800 bg-zinc-950/55 p-1">
+    <div className="w-[55%] shrink-0 rounded border border-zinc-800 bg-zinc-950/55 p-1">
       <div className="truncate text-[8px] font-bold uppercase tracking-wide text-amber-300">Pace Trend (Last 5 Laps)</div>
       <div className="mt-0.5 flex items-stretch gap-1">
         <div className="min-w-0 flex-1">
