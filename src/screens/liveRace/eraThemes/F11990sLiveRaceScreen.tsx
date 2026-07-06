@@ -1254,9 +1254,7 @@ function DriverPaceTrend({ values, color }: { values: number[]; color: string })
       <div className="truncate text-[8px] font-bold uppercase tracking-wide text-amber-300">Pace Trend (Last 5 Laps)</div>
       <div className="mt-0.5 flex items-stretch gap-1">
         <div className="min-w-0 flex-1">
-          <div className="pr-3">
-            <Sparkline values={values} color={color} className="h-8 w-full" />
-          </div>
+          <Sparkline values={values} color={color} className="h-8 w-full" />
         </div>
         <div className="flex shrink-0 flex-col justify-between border-l border-dashed border-zinc-600 py-0.5 pl-1 text-right text-[8px] tabular-nums text-zinc-300">
           <span>+{spread.toFixed(1)}s</span>
