@@ -1250,7 +1250,7 @@ function TelemetrySectorTimes({
 function DriverPaceTrend({ values, color }: { values: number[]; color: string }) {
   const spread = values.length >= 2 ? Math.max(0.5, (Math.max(...values) - Math.min(...values)) / 2) : 0.5;
   return (
-    <div className="w-[55%] shrink-0 rounded border border-zinc-800 bg-zinc-950/55 p-1">
+    <div className="min-w-0 flex-1 rounded border border-zinc-800 bg-zinc-950/55 p-1">
       <div className="truncate text-[8px] font-bold uppercase tracking-wide text-amber-300">Pace Trend (Last 5 Laps)</div>
       <div className="mt-0.5 flex items-stretch gap-1">
         <div className="min-w-0 flex-1">
