@@ -68,6 +68,7 @@ export function LiveRace() {
   const [speed, setSpeed] = useState<Speed>(1);
   const [trackAnimationTick, setTrackAnimationTick] = useState(0);
   const [modal, setModal] = useState<'log' | 'strategy' | 'orders' | null>(null);
+  const [ordersFocusDriverId, setOrdersFocusDriverId] = useState<string | null>(null);
   const [podium, setPodium] = useState<PodiumSnapshot | null>(null);
   const [dnfAlert, setDnfAlert] = useState<DnfAlert | null>(null);
   const [aiDnfFlash, setAiDnfFlash] = useState<DnfAlert | null>(null);
@@ -428,7 +429,10 @@ export function LiveRace() {
           onStep={step}
           onSpeed={setSpeed}
           onSkipToEnd={skipToEnd}
-          onOpenOrders={() => setModal('orders')}
+          onOpenOrders={(driverId) => {
+            setOrdersFocusDriverId(driverId ?? null);
+            setModal('orders');
+          }}
           onOpenStrategy={() => setModal('strategy')}
           onOpenLog={() => setModal('log')}
           onExit={() => navigate('/hq')}
@@ -467,9 +471,13 @@ export function LiveRace() {
         {modal === 'orders' && (
           <TeamOrdersModal
             playerCars={playerCars}
+            focusDriverId={ordersFocusDriverId ?? undefined}
             nameOf={driverName}
             onOrder={issueOrder}
-            onClose={() => setModal(null)}
+            onClose={() => {
+              setOrdersFocusDriverId(null);
+              setModal(null);
+            }}
           />
         )}
         {podium && <PodiumOverlay podium={podium} onContinue={finishRace} />}
