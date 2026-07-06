@@ -116,8 +116,8 @@ export const STRATEGY_MODES: Record<PaceMode, StrategyModeSpec> = {
   },
   ProtectEngine: {
     mode: 'ProtectEngine',
-    label: 'Protect Engine',
-    blurb: 'Minimise mechanical failure risk. Least pace.',
+    label: 'Reliability Mode',
+    blurb: 'Reduce mechanical risk. Lowest pace, safest car.',
     paceDelta: -0.5,
     trafficPaceBonus: 0,
     wearMult: 0.7,
@@ -266,7 +266,7 @@ export function statusMessage(inp: StatusInputs): string {
     return `Reliability warning: ${car.reliabilityIssue.label.toLowerCase()}`;
   }
   if (car.damaged) return 'Managing car damage';
-  if (car.paceMode === 'ProtectEngine') return 'Protecting the engine';
+  if (car.paceMode === 'ProtectEngine') return 'Reliability mode — protecting the car';
   if (car.paceMode === 'Conservative') return 'Conserving tyres and the car';
 
   const wear = car.tire.wear;

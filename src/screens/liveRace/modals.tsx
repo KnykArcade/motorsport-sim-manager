@@ -104,19 +104,23 @@ export function StrategyModal({
 
 export function TeamOrdersModal({
   playerCars,
+  focusDriverId,
   nameOf,
   onOrder,
   onClose,
 }: {
   playerCars: LiveCarState[];
+  focusDriverId?: string;
   nameOf: (id: string) => string;
   onOrder: (order: TeamOrder, favoredDriverId?: string) => void;
   onClose: () => void;
 }) {
   const running = playerCars.filter((c) => c.running);
   const twoCars = running.length >= 2;
+  const favoredOptions = focusDriverId ? running.filter((c) => c.driverId === focusDriverId) : running;
+  const title = focusDriverId ? `Team Orders — ${nameOf(focusDriverId)}` : 'Team Orders';
   return (
-    <Modal title="Team Orders" onClose={onClose}>
+    <Modal title={title} onClose={onClose}>
       <p className="mb-3 text-xs text-slate-400">
         Call the pit wall. Orders take effect on track immediately and shape morale, loyalty and the teammate
         relationship after the race.
@@ -132,7 +136,7 @@ export function TeamOrdersModal({
               <p className="mt-0.5 text-[11px] text-slate-500">{spec.description}</p>
               <div className="mt-2 flex flex-wrap gap-2">
                 {spec.needsFavored ? (
-                  running.map((c) => (
+                  favoredOptions.map((c) => (
                     <button
                       key={c.driverId}
                       onClick={() => onOrder(spec.order, c.driverId)}
