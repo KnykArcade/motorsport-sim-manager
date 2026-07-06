@@ -173,6 +173,10 @@ export type GameState = {
   raceWeekendPackageHistory?: RaceWeekendPackageSelection[];
   // AI team package selections for the current weekend, keyed by teamId.
   aiRaceWeekendPackages?: Record<string, RaceWeekendPackageSelection>;
+  // Per-race attempt seed metadata. The nonce is regenerated when a fresh
+  // attempt starts and re-used if the same attempt is resumed from save.
+  raceAttemptCounters?: Record<string, number>;
+  raceAttemptNonces?: Record<string, string>;
 
   // Career Phase system: tracks the between-race management flow.
   // Optional for save compatibility; defaults to pre_season_setup for new games.

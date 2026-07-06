@@ -99,12 +99,15 @@ export type PitStopState = {
   stopsMade: number;
   // Remaining scheduled pit laps (may be mutated by reactive decisions).
   scheduledLaps: number[];
+  // AI-only pit planning metadata; player cars leave these unset.
+  strategyRole?: 'primary' | 'secondary' | null;
+  strategyTargetLap?: number | null;
   lastPitLap: number | null;
   lastPitStopTime?: number | null;
   inPitThisLap: boolean;
   // Player-controlled pitting: the next stop's advisory window, and a flag set
-  // when the player has called the car in. AI cars leave these null/false and
-  // pit off their scheduledLaps as before.
+  // when the player has called the car in. AI cars may also carry the window
+  // as plan metadata, but still pit off their scheduledLaps.
   window: PitWindow | null;
   pitRequested: boolean;
   // Lifecycle of the current planned stop (player cars). Lets an early stop
@@ -448,6 +451,10 @@ export type LiveRaceState = {
   // challenge can be logged once (a "defends"/"stuck behind" line) and a faded
   // challenge can be closed out ("attack fades") without re-logging every lap.
   battleTracker: Record<string, number>;
+  // AI team pit-strategy hysteresis: per-team tracking of which driver is
+  // currently carrying the primary plan and how long the order has been
+  // reversed relative to the current running order.
+  aiTeamStrategyState?: Record<string, { leaderDriverId: string; reversedLaps: number; lastSwapLap: number | null }>;
   // Retirements this race (for the race-info panel).
   retirements: number;
 };

@@ -1232,7 +1232,7 @@ function TelemetrySectorTimes({
   return (
     <RetroPanel title="Telemetry / Sector Times" className="h-full min-h-0" compactHeader>
       <div className="h-[calc(100%-21px)] overflow-y-auto px-1.5 py-0.5 text-[10px] leading-tight">
-        <div className="grid grid-cols-2 gap-1.5">
+        <div className="grid h-full auto-rows-fr grid-cols-2 gap-1.5">
           {cars.map((car) => (
             <SectorTable
               key={car.driverId}

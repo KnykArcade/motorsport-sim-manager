@@ -35,6 +35,7 @@ import { packageEffects as getPackageEffects } from '../sim/raceWeekendPackageEn
 import { confidencePerformanceModifier } from '../sim/driverConfidenceEngine';
 import type { LiveRaceMeta, LiveRaceOptions } from '../sim/liveRaceEngine';
 import { computeRacePrepFocusEffect, getOrCreatePhaseState } from './careerPhaseEngine';
+import { deriveSeed } from '../sim/random';
 
 // Build the derived session setups for the player's tuned car setups, plus a
 // lookup from driverId to the setup id to use for the given session trim. Cars
@@ -180,7 +181,7 @@ export function buildRaceContext(
     strategies: raceStrategiesById,
     instructions: driverInstructionsById,
     pointsByPosition: pointsSystem.pointsByPosition,
-    seed: `${state.randomSeed}-r${race.round}`,
+    seed: deriveSeed(state.randomSeed, 'race', race.round, state.raceAttemptNonces?.[race.id] ?? 'initial'),
     year: state.seasonYear,
     teamReputation,
     teamRaceOps,

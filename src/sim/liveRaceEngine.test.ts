@@ -24,15 +24,24 @@ import {
   resolvePrompt,
   requestPlayerPit,
 } from './raceTickEngine';
+import { pitWindowFor } from './pitStrategyEngine';
 import type {
   Entrant,
   QualifyingDecision,
   RaceContext,
   RaceDecision,
 } from '../types/simTypes';
+import type { LiveRaceState } from '../types/liveTypes';
 
 const TRACK = tracks1995[0];
 const TOTAL_LAPS = 40;
+const DRY_WEATHER: LiveRaceState['weather'] = {
+  condition: 'Dry',
+  gripLevel: 1,
+  wet: false,
+  changingSoon: false,
+  label: 'Dry',
+};
 
 const teamRaceOps: Record<string, number> = {};
 for (const t of teams1995) teamRaceOps[t.id] = t.raceOperations;
@@ -106,6 +115,89 @@ function createRace(context: RaceContext, playerTeamId: string) {
   });
 }
 
+function createMiniRace(context: RaceContext) {
+  const driverNames: Record<string, string> = {};
+  const teamReputation: Record<string, number> = {};
+  context.entrants.forEach((e) => {
+    driverNames[e.driver.id] = e.driver.name;
+    teamReputation[e.driver.teamId] = 50;
+  });
+  return createLiveRace(context, {
+    raceId: 'r-mini',
+    playerTeamId: 'no-player-team',
+    totalLaps: TOTAL_LAPS,
+    driverNames,
+    teamReputation,
+    teamRaceOps,
+    year: 1995,
+    series: 'F1',
+  });
+}
+
+function buildTwoCarContext(seed: string): RaceContext {
+  const setupOptions = { ...setupOptionsById, ...autoSetupOptionsForTrack(TRACK) };
+  const strongDriver = { ...drivers1995[0], id: 'strong-driver', teamId: 'team-strong' };
+  const weakDriver = { ...drivers1995[1], id: 'weak-driver', teamId: 'team-weak' };
+  const strongCar = {
+    ...cars1995[0],
+    id: 'strong-car',
+    teamId: 'team-strong',
+    ratings: { enginePower: 9, aeroEfficiency: 9, mechanicalGrip: 9, reliability: 9, pitCrewOperations: 9 },
+    developmentLevel: { enginePower: 2, aeroEfficiency: 2, mechanicalGrip: 2, reliability: 2, pitCrewOperations: 2 },
+  };
+  const weakCar = {
+    ...cars1995[1],
+    id: 'weak-car',
+    teamId: 'team-weak',
+    ratings: { enginePower: 4, aeroEfficiency: 4, mechanicalGrip: 4, reliability: 4, pitCrewOperations: 4 },
+    developmentLevel: { enginePower: 0, aeroEfficiency: 0, mechanicalGrip: 0, reliability: 0, pitCrewOperations: 0 },
+  };
+  const entrants: Entrant[] = [
+    { driver: strongDriver, car: strongCar },
+    { driver: weakDriver, car: weakCar },
+  ];
+  const qualifyingResults = entrants.map((e, index) => ({
+    driverId: e.driver.id,
+    position: index + 1,
+    teamId: e.driver.teamId,
+    qualifyingScore: 90 - index,
+    gapText: index === 0 ? 'P1' : '+0.5',
+    runPlan: 'StandardPush',
+    setupChoice: 'Race',
+    notes: [],
+    incident: { type: 'None' as const, severity: 'Minor' as const },
+  }));
+  const decisions: Record<string, RaceDecision> = {};
+  for (const entrant of entrants) {
+    decisions[entrant.driver.id] = aiRaceDecision(entrant.driver.id, TRACK);
+  }
+  return {
+    track: TRACK,
+    entrants,
+    qualifyingResults,
+    decisions,
+    setupOptions,
+    strategies: raceStrategiesById,
+    instructions: driverInstructionsById,
+    pointsByPosition: pointsSystems['pts-1995'].pointsByPosition,
+    seed,
+    year: 1995,
+    teamRaceOps: { 'team-strong': 7, 'team-weak': 4 },
+  };
+}
+
+function aiTeamCars(state: ReturnType<typeof createRace>) {
+  const teamEntries = Object.entries(
+    state.cars.filter((c) => !c.isPlayer).reduce<Record<string, typeof state.cars>>((acc, car) => {
+      (acc[car.teamId] ??= []).push(car);
+      return acc;
+    }, {}),
+  ).find(([, cars]) => cars.length >= 2);
+  if (!teamEntries) throw new Error('expected an AI team with two cars');
+  const [, cars] = teamEntries;
+  return [...cars].sort((a, b) => (a.position ?? 99) - (b.position ?? 99));
+}
+
 describe('live race engine', () => {
   it('initialises a formation grid with every entrant', () => {
     const context = buildContext();
@@ -166,6 +258,22 @@ describe('live race engine', () => {
     expect(ra.results.map((r) => r.driverId)).toEqual(rb.results.map((r) => r.driverId));
   });
 
+  it('changes the race outcome when the seed changes', () => {
+    const a = buildContext('attempt-nonce-a');
+    const b = buildContext('attempt-nonce-b');
+    const metaA = buildMeta(a, a.entrants[0].driver.teamId);
+    const metaB = buildMeta(b, b.entrants[0].driver.teamId);
+
+    const ra = createRace(a, a.entrants[0].driver.teamId);
+    const rb = createRace(b, b.entrants[0].driver.teamId);
+
+    expect(ra.seed).not.toBe(rb.seed);
+    expect(ra.cars.map((c) => c.personality)).not.toEqual(rb.cars.map((c) => c.personality));
+    expect(stepLiveRace(ra, metaA).cars.map((c) => c.lastLapTime)).not.toEqual(
+      stepLiveRace(rb, metaB).cars.map((c) => c.lastLapTime),
+    );
+  });
+
   it('advances one lap at a time and updates the running order', () => {
     const context = buildContext();
     const meta = buildMeta(context, context.entrants[0].driver.teamId);
@@ -200,6 +308,258 @@ describe('live race engine', () => {
     // Not strictly guaranteed, but with this seed/field a prompt should occur.
     void sawPrompt;
   });
+
+  it('silently restores the pre-safety-car mode when the SC ends', () => {
+    const context = buildContext('sc-end-seed');
+    const playerTeam = context.entrants[0].driver.teamId;
+    const meta = buildMeta(context, playerTeam);
+    const state = createRace(context, playerTeam);
+    const player = state.cars.find((c) => c.isPlayer)!;
+    const scState = {
+      ...state,
+      currentLap: 12,
+      safetyCar: { active: true, lapsRemaining: 1, deployedOnLap: 11, reason: 'Incident', deployments: 1 },
+      cars: state.cars.map((c) =>
+        c.driverId === player.driverId
+          ? { ...c, paceMode: 'Conservative' as const, safetyCarModeBefore: 'Attack' as const }
+          : c,
+      ),
+    };
+
+    const after = stepLiveRace({ ...scState, safetyCar: { ...scState.safetyCar, active: false } }, meta);
+    const resumed = after.cars.find((c) => c.driverId === player.driverId)!;
+    expect(resumed.paceMode).toBe('Attack');
+    expect(resumed.safetyCarModeBefore).toBeNull();
+    expect(after.recommendations.some((r) => r.kind === 'safetyCarRestart')).toBe(false);
+  });
+
+  it('assigns different AI pit targets to teammates', () => {
+    const context = buildContext('ai-team-pit-plan');
+    const state = createRace(context, context.entrants[0].driver.teamId);
+    const teamCars = aiTeamCars(state);
+    const [a, b] = teamCars;
+    expect(a.pit.strategyRole).not.toBe(b.pit.strategyRole);
+    expect(a.pit.strategyTargetLap).not.toBe(b.pit.strategyTargetLap);
+    expect(Math.abs((a.pit.strategyTargetLap ?? 0) - (b.pit.strategyTargetLap ?? 0))).toBeGreaterThanOrEqual(3);
+    expect(a.pit.window?.ideal).not.toBe(b.pit.window?.ideal);
+  });
+
+  it('adds a stack penalty only to the second same-team stop', () => {
+    const context = buildContext('stack-penalty-seed');
+    const playerTeam = context.entrants[0].driver.teamId;
+    const solo = createRace(context, playerTeam);
+    const stacked = createRace(context, playerTeam);
+    const playerCarsSolo = solo.cars.filter((c) => c.isPlayer).sort((a, b) => (a.position ?? 99) - (b.position ?? 99));
+    const playerCarsStacked = stacked.cars.filter((c) => c.isPlayer).sort((a, b) => (a.position ?? 99) - (b.position ?? 99));
+    const leaderSolo = playerCarsSolo[0];
+    const followerSolo = playerCarsSolo[1];
+    const leaderStacked = playerCarsStacked[0];
+    const followerStacked = playerCarsStacked[1];
+    if (!leaderSolo || !followerSolo || !leaderStacked || !followerStacked) throw new Error('expected two player cars');
+
+    const soloState = requestPlayerPit(
+      {
+        ...solo,
+        currentLap: 0,
+        weather: DRY_WEATHER,
+        safetyCar: { ...solo.safetyCar, active: false, lapsRemaining: 0, reason: null, deployedOnLap: null },
+      },
+      followerSolo.driverId,
+    );
+    const stackedState = requestPlayerPit(
+      requestPlayerPit(
+        {
+          ...stacked,
+          currentLap: 0,
+          weather: DRY_WEATHER,
+          safetyCar: { ...stacked.safetyCar, active: false, lapsRemaining: 0, reason: null, deployedOnLap: null },
+        },
+        leaderStacked.driverId,
+      ),
+      followerStacked.driverId,
+    );
+
+    const soloAfter = stepLiveRace(soloState, buildMeta(context, playerTeam));
+    const stackedAfter = stepLiveRace(stackedState, buildMeta(context, playerTeam));
+    const soloFollower = soloAfter.cars.find((c) => c.driverId === followerSolo.driverId)!;
+    const stackedFollower = stackedAfter.cars.find((c) => c.driverId === followerStacked.driverId)!;
+    expect(stackedFollower.pit.lastPitStopTime!).toBeGreaterThan(soloFollower.pit.lastPitStopTime! + 2.5);
+  });
+
+  it('swaps AI strategy roles after a sustained order reversal', () => {
+    const context = buildContext('role-swap-seed');
+    const playerTeam = context.entrants[0].driver.teamId;
+    let state = createRace(context, playerTeam);
+    const [ahead, behind] = aiTeamCars(state);
+    state = {
+      ...state,
+      currentLap: 20,
+      weather: DRY_WEATHER,
+      safetyCar: { ...state.safetyCar, active: false, lapsRemaining: 0, reason: null, deployedOnLap: null },
+      cars: state.cars.map((c) =>
+        c.driverId === ahead.driverId
+          ? {
+              ...c,
+              position: behind.position,
+              totalTime: behind.totalTime - 1,
+              pit: {
+                ...c.pit,
+                strategyRole: 'secondary',
+                strategyTargetLap: 30,
+                scheduledLaps: [30],
+                window: pitWindowFor(30, TOTAL_LAPS),
+                stopsMade: 0,
+                lastPitLap: 12,
+              },
+            }
+          : c.driverId === behind.driverId
+            ? {
+                ...c,
+                position: ahead.position,
+                totalTime: ahead.totalTime + 1,
+                pit: {
+                  ...c.pit,
+                  strategyRole: 'primary',
+                  strategyTargetLap: 30,
+                  scheduledLaps: [30],
+                  window: pitWindowFor(30, TOTAL_LAPS),
+                  stopsMade: 0,
+                  lastPitLap: 11,
+                },
+              }
+            : c,
+      ),
+      aiTeamStrategyState: {
+        ...state.aiTeamStrategyState,
+        [ahead.teamId]: { leaderDriverId: behind.driverId, reversedLaps: 2, lastSwapLap: null },
+      },
+    };
+
+    const after = stepLiveRace(state, buildMeta(context, playerTeam));
+    const swappedAhead = after.cars.find((c) => c.driverId === ahead.driverId)!;
+    const swappedBehind = after.cars.find((c) => c.driverId === behind.driverId)!;
+    expect(swappedAhead.pit.strategyRole).toBe('primary');
+    expect(swappedBehind.pit.strategyRole).toBe('secondary');
+    expect(swappedAhead.pit.stopsMade).toBe(0);
+    expect(swappedBehind.pit.stopsMade).toBe(0);
+    expect(swappedAhead.pit.lastPitLap).toBe(12);
+    expect(swappedBehind.pit.lastPitLap).toBe(11);
+    expect(after.aiTeamStrategyState?.[ahead.teamId]?.leaderDriverId).toBe(ahead.driverId);
+  });
+
+  it('does not swap roles within the guard windows', () => {
+    const context = buildContext('role-swap-guard-seed');
+    const playerTeam = context.entrants[0].driver.teamId;
+    let state = createRace(context, playerTeam);
+    const [ahead, behind] = aiTeamCars(state);
+    state = {
+      ...state,
+      currentLap: 37,
+      totalLaps: 40,
+      weather: DRY_WEATHER,
+      safetyCar: { ...state.safetyCar, active: false, lapsRemaining: 0, reason: null, deployedOnLap: null },
+      cars: state.cars.map((c) =>
+        c.driverId === ahead.driverId
+          ? {
+              ...c,
+              position: behind.position,
+              totalTime: behind.totalTime - 1,
+              pit: { ...c.pit, strategyRole: 'secondary', strategyTargetLap: 38, scheduledLaps: [38], window: pitWindowFor(38, 40) },
+            }
+          : c.driverId === behind.driverId
+            ? {
+                ...c,
+                position: ahead.position,
+                totalTime: ahead.totalTime + 1,
+                pit: { ...c.pit, strategyRole: 'primary', strategyTargetLap: 38, scheduledLaps: [38], window: pitWindowFor(38, 40) },
+              }
+            : c,
+      ),
+      aiTeamStrategyState: {
+        ...state.aiTeamStrategyState,
+        [ahead.teamId]: { leaderDriverId: behind.driverId, reversedLaps: 2, lastSwapLap: null },
+      },
+    };
+
+    const after = stepLiveRace(state, buildMeta(context, playerTeam));
+    expect(after.cars.find((c) => c.driverId === ahead.driverId)!.pit.strategyRole).toBe('secondary');
+    expect(after.cars.find((c) => c.driverId === behind.driverId)!.pit.strategyRole).toBe('primary');
+    expect(after.aiTeamStrategyState?.[ahead.teamId]?.leaderDriverId).toBe(behind.driverId);
+  });
+
+  it('does not swap roles when the teammates are at different stop stages', () => {
+    const context = buildContext('role-swap-stage-guard-seed');
+    const playerTeam = context.entrants[0].driver.teamId;
+    let state = createRace(context, playerTeam);
+    const [ahead, behind] = aiTeamCars(state);
+    state = {
+      ...state,
+      currentLap: 20,
+      weather: DRY_WEATHER,
+      safetyCar: { ...state.safetyCar, active: false, lapsRemaining: 0, reason: null, deployedOnLap: null },
+      cars: state.cars.map((c) =>
+        c.driverId === ahead.driverId
+          ? {
+              ...c,
+              position: behind.position,
+              totalTime: behind.totalTime - 1,
+              pit: {
+                ...c.pit,
+                strategyRole: 'secondary',
+                strategyTargetLap: 30,
+                scheduledLaps: [30],
+                window: pitWindowFor(30, TOTAL_LAPS),
+                stopsMade: 1,
+                lastPitLap: 16,
+              },
+            }
+          : c.driverId === behind.driverId
+            ? {
+                ...c,
+                position: ahead.position,
+                totalTime: ahead.totalTime + 1,
+                pit: {
+                  ...c.pit,
+                  strategyRole: 'primary',
+                  strategyTargetLap: 30,
+                  scheduledLaps: [30],
+                  window: pitWindowFor(30, TOTAL_LAPS),
+                  stopsMade: 0,
+                  lastPitLap: null,
+                },
+              }
+            : c,
+      ),
+      aiTeamStrategyState: {
+        ...state.aiTeamStrategyState,
+        [ahead.teamId]: { leaderDriverId: behind.driverId, reversedLaps: 2, lastSwapLap: null },
+      },
+    };
+
+    const after = stepLiveRace(state, buildMeta(context, playerTeam));
+    expect(after.cars.find((c) => c.driverId === ahead.driverId)!.pit.strategyRole).toBe('secondary');
+    expect(after.cars.find((c) => c.driverId === behind.driverId)!.pit.strategyRole).toBe('primary');
+    expect(after.cars.find((c) => c.driverId === ahead.driverId)!.pit.stopsMade).toBe(1);
+    expect(after.cars.find((c) => c.driverId === behind.driverId)!.pit.stopsMade).toBe(0);
+    expect(after.aiTeamStrategyState?.[ahead.teamId]?.leaderDriverId).toBe(behind.driverId);
+  });
+
+  it('gives a stronger car and driver a lower tyre-deg rate on the same track', () => {
+    const context = buildTwoCarContext('tire-deg-strong-vs-weak');
+    const state = createMiniRace(context);
+    const strong = state.cars.find((c) => c.driverId === 'strong-driver')!;
+    const weak = state.cars.find((c) => c.driverId === 'weak-driver')!;
+    expect(strong.tireDegRate).toBeLessThan(weak.tireDegRate);
+  });
+
+  it('moves the ideal pit lap earlier for the higher-deg car', () => {
+    const context = buildTwoCarContext('tire-deg-lap-shift');
+    const state = createMiniRace(context);
+    const strong = state.cars.find((c) => c.driverId === 'strong-driver')!;
+    const weak = state.cars.find((c) => c.driverId === 'weak-driver')!;
+    expect(weak.tireDegRate).toBeGreaterThan(strong.tireDegRate);
+    expect((weak.pit.strategyTargetLap ?? 0)).toBeLessThan((strong.pit.strategyTargetLap ?? 0));
+  });
 });
 
 describe('player-controlled pit strategy', () => {
@@ -218,7 +578,7 @@ describe('player-controlled pit strategy', () => {
       expect(w.ideal).toBeLessThanOrEqual(w.close);
       expect(c.pit.pitRequested).toBe(false);
     }
-    expect(aiCars.every((c) => c.pit.window === null)).toBe(true);
+    expect(aiCars.every((c) => c.pit.pitRequested === false)).toBe(true);
   });
 
   it('does not pit a player car before its window opens without a request', () => {

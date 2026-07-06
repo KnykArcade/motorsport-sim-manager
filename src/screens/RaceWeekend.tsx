@@ -172,6 +172,7 @@ export function RaceWeekend() {
   };
 
   const startLiveRace = () => {
+    dispatch({ type: 'BEGIN_RACE_ATTEMPT', raceId: race.id });
     navigate(`/live-race/${race.id}`, {
       state: { decisions: playerDrivers.map((d) => raceFor(d.id)) },
     });
@@ -1499,4 +1500,3 @@ function QualifyingReview({
     </div>
   );
 }
-

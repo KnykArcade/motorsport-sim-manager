@@ -82,10 +82,11 @@ export function pitStopLoss(
   car: Car,
   underSafetyCar: boolean,
   safetyCarSaving: number,
+  stackPenalty = 0,
   opsForm = 0,
 ): number {
   const ops = effectiveCarRatings(car).pitCrewOperations; // 1-10
   const crewDelta = (5.5 - ops) * 0.4 - opsForm * PIT_OPS_LOSS_SENS; // sharp day saves time
-  const loss = BASE_PIT_LOSS + crewDelta;
+  const loss = BASE_PIT_LOSS + crewDelta + stackPenalty;
   return Math.max(8, underSafetyCar ? loss - safetyCarSaving : loss);
 }

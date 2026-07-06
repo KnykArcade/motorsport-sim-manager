@@ -186,8 +186,8 @@ describe('F11990sLiveRaceScreen', () => {
     expect(html).toContain('M. Schumacher');
     expect(html).toContain('Live Timing');
     expect(html).toContain('data-testid="track-map-asset-panel"');
-    expect((html.match(/Driver Focus/g) ?? []).length).toBeGreaterThanOrEqual(2);
-    expect(html).toContain('Driver Focus');
+    expect(html).toContain('A. Senna - McLaren Ford');
+    expect(html).toContain('M. Schumacher - Benetton Renault');
     expect(html).toContain('Team Radio');
     expect(html).toContain('Pit Window');
   });

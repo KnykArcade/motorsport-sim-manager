@@ -5,6 +5,7 @@ import {
   requiresDecision,
   cooldownFor,
   REC_COOLDOWN,
+  OPENING_PHASE_LAPS,
   SAFETY_CAR_PIT_RECOMMENDATION_MIN_LAP,
 } from './analyticsEngine';
 import {
@@ -200,6 +201,30 @@ describe('analyticsEngine — candidate generation', () => {
     expect(byDriver.d1.kind).toBe('attack');
     expect(byDriver.d2.kind).toBe('reliability');
   });
+
+  it('suppresses routine strategy recommendations during the opening phase', () => {
+    const lead = car({ driverId: 'd5', isPlayer: false, position: 3, interval: 4 });
+    const front = car({ driverId: 'd1', position: 4, interval: 0.4, baseRacePace: 5.7 });
+    const back = car({ driverId: 'd2', position: 5, interval: 0.3, baseRacePace: 6.2 });
+    const tyres = car({ driverId: 'd3', position: 7, interval: 15, tire: { compound: 'Dry', age: 24, wear: 68, stintTarget: 25 } });
+    const windowCar = car({
+      driverId: 'd4',
+      position: 9,
+      interval: 25,
+      fuel: 8,
+      pit: { ...car().pit, window: { open: 4, ideal: 6, close: 8 }, plannedStops: 1, stopsMade: 0 },
+    });
+    const state = live([lead, front, back, tyres, windowCar], { currentLap: OPENING_PHASE_LAPS - 5 });
+
+    expect(generateCandidates(state.cars, state, state.currentLap)).toHaveLength(0);
+  });
+
+  it('still allows major opening-phase recommendations through', () => {
+    const s = live([car({ reliabilityRiskLevel: 'High' })], { currentLap: 5 });
+    const recs = generateCandidates(s.cars, s, s.currentLap);
+    expect(recs).toHaveLength(1);
+    expect(recs[0].kind).toBe('reliability');
+  });
 });
 
 describe('parseDurationLaps', () => {
@@ -267,6 +292,7 @@ describe('Accept / Modify / Ignore', () => {
     expect(after.recCooldowns[rec.id]).toBe(after.currentLap + cooldownFor('reliability'));
     expect(after.events.some((e) => /ignored analytics recommendation/.test(e.text))).toBe(true);
   });
+
 });
 
 describe('recommendation lifecycle — duration, dedup, cooldown', () => {
