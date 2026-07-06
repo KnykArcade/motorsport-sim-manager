@@ -8,7 +8,7 @@ import { kindLabel } from '../../../sim/analyticsMonitor';
 import type { AnalyticsRecommendation, LiveCarState, LiveRaceState, PaceMode, RecAction, ReliabilityIssueType } from '../../../types/liveTypes';
 import type { Race } from '../../../types/gameTypes';
 import type { GameState } from '../../../game/careerState';
-import { fmtLap, tyreLetter } from '../dashboardFormat';
+import { fmtLap, fmtSector, tyreLetter } from '../dashboardFormat';
 import type { ForecastEntry } from '../forecast';
 
 type Speed = 1 | 10 | 30 | 60;
@@ -136,7 +136,7 @@ export function F11990sLiveRaceScreen({
         onExit={onExit}
       />
 
-      <main className="relative grid min-h-0 flex-1 grid-cols-1 gap-2 p-2 lg:grid-cols-[minmax(235px,0.7fr)_minmax(460px,1.7fr)_minmax(300px,0.98fr)]">
+      <main className="relative grid min-h-0 flex-1 grid-cols-1 gap-2 p-2 lg:grid-cols-[minmax(235px,0.68fr)_minmax(440px,1.58fr)_minmax(320px,1.02fr)]">
         <aside className="grid min-h-0 grid-rows-[minmax(0,1.6fr)_auto_minmax(0,1fr)] gap-2">
           <RetroTimingTower cars={live.cars} nameOf={nameOf} colorOf={colorOf} />
           <PlaybackPanel
@@ -153,7 +153,7 @@ export function F11990sLiveRaceScreen({
           <RetroEventLog events={live.events} onOpenFull={onOpenLog} alert={alert} aiDnfFlash={aiDnfFlash ?? null} nameOf={nameOf} />
         </aside>
 
-        <section className="grid min-h-0 grid-rows-[minmax(0,1fr)_minmax(148px,0.28fr)] gap-2">
+        <section className="grid min-h-0 grid-rows-[minmax(0,1fr)_minmax(126px,0.22fr)] gap-2">
           <div className="relative min-h-[300px] overflow-hidden rounded-md border border-amber-500/35 bg-[#050605] shadow-[inset_0_0_60px_rgba(0,0,0,0.8)]">
             <ScenicTrack cars={live.cars} colorOf={colorOf} />
             <RetroTrackMap
@@ -165,7 +165,7 @@ export function F11990sLiveRaceScreen({
               rotation={rotation}
             />
           </div>
-          <div className="grid min-h-0 gap-2 lg:grid-cols-[1.05fr_1fr]">
+          <div className="grid min-h-0 gap-2 lg:grid-cols-[0.95fr_0.88fr]">
             <RetroPanel title="Team Radio" className="min-h-0">
               <div className="h-[calc(100%-37px)] space-y-1 overflow-y-auto p-2 text-[12px]">
                 {playerCars.slice(0, 2).map((car) => (
@@ -193,8 +193,7 @@ export function F11990sLiveRaceScreen({
               }
             >
               <div className="h-[calc(100%-37px)] overflow-y-auto p-2 text-[12px]">
-                <div className="font-bold uppercase text-emerald-400">Monitoring</div>
-                <div className="mt-1.5 space-y-3 text-zinc-200">
+                <div className="space-y-3 text-zinc-200">
                   {playerCars.map((car) => (
                     <div key={car.driverId} className="rounded border border-zinc-800/70 bg-zinc-950/35 px-1.5 py-1">
                       <div className="flex items-center justify-between gap-2">
@@ -331,17 +330,23 @@ function RetroPanel({
   headerRight,
   children,
   className = '',
+  compactHeader = false,
 }: {
   title: string;
   headerRight?: ReactNode;
   children: ReactNode;
   className?: string;
+  compactHeader?: boolean;
 }) {
   return (
     <section className={`overflow-hidden rounded-md border border-amber-500/30 bg-black/72 shadow-[0_0_18px_rgba(0,0,0,0.38)] ${className}`}>
-      <div className="flex items-center justify-between gap-2 border-b border-zinc-700/70 px-3 py-2 text-sm font-bold uppercase tracking-wide text-amber-300">
-        <span className="truncate">{title}</span>
-        {headerRight}
+      <div
+        className={`flex items-center justify-between gap-2 border-b border-zinc-700/70 font-bold uppercase tracking-wide text-amber-300 ${
+          compactHeader ? 'px-2 py-0.5 text-[10px]' : 'px-3 py-2 text-sm'
+        }`}
+      >
+        <span className="min-w-0 flex-1 truncate">{title}</span>
+        <div className="shrink-0">{headerRight}</div>
       </div>
       {children}
     </section>
@@ -357,11 +362,11 @@ function RetroTimingTower({
   nameOf: (driverId: string) => string;
   colorOf: (teamId: string) => string;
 }) {
-  const [tab, setTab] = useState<'Running Order' | 'Pit Stops'>('Running Order');
+  const [tab, setTab] = useState<'Running Order' | 'Pit Stops' | 'Sectors'>('Running Order');
   return (
     <RetroPanel title="Live Timing" className="flex h-full min-h-0 flex-col">
       <div className="flex shrink-0 gap-1 border-b border-zinc-800 px-2 py-1">
-        {(['Running Order', 'Pit Stops'] as const).map((item) => (
+        {(['Running Order', 'Pit Stops', 'Sectors'] as const).map((item) => (
           <button
             key={item}
             onClick={() => setTab(item)}
@@ -373,12 +378,17 @@ function RetroTimingTower({
           </button>
         ))}
       </div>
-      <div className="grid shrink-0 grid-cols-[26px_1fr_58px_36px_58px] border-b border-zinc-800 px-2 py-0.5 text-[9px] font-bold uppercase text-amber-300">
+      <div
+        className={`grid shrink-0 border-b border-zinc-800 px-2 py-0.5 text-[9px] font-bold uppercase text-amber-300 ${
+          tab === 'Sectors' ? 'grid-cols-[26px_1fr_54px_54px_54px_70px]' : 'grid-cols-[26px_1fr_58px_36px_58px]'
+        }`}
+      >
         <span>Pos</span>
         <span>Driver</span>
-        <span className="text-right">{tab === 'Pit Stops' ? 'Last' : 'Gap'}</span>
-        <span className="text-right">Pits</span>
-        <span className="text-right">{tab === 'Pit Stops' ? 'Lap' : 'Tyre'}</span>
+        {tab === 'Pit Stops' ? <span className="text-right">Last</span> : tab === 'Sectors' ? <span className="text-right">S1</span> : <span className="text-right">Gap</span>}
+        {tab === 'Sectors' ? <span className="text-right">S2</span> : <span className="text-right">Pits</span>}
+        {tab === 'Sectors' ? <span className="text-right">S3</span> : <span className="text-right">{tab === 'Pit Stops' ? 'Lap' : 'Tyre'}</span>}
+        {tab === 'Sectors' && <span className="text-right">Lap</span>}
       </div>
       <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain pb-8">
         {cars.map((car) => {
@@ -389,9 +399,9 @@ function RetroTimingTower({
           return (
             <div
               key={car.driverId}
-              className={`grid grid-cols-[26px_1fr_58px_36px_58px] items-center px-2 py-[2px] text-[10px] leading-tight ${
-                car.isPlayer ? 'bg-amber-500/22 text-amber-200' : 'text-zinc-100'
-              } ${retired ? 'opacity-60' : ''}`}
+              className={`grid items-center px-2 py-[2px] text-[10px] leading-tight ${
+                tab === 'Sectors' ? 'grid-cols-[26px_1fr_54px_54px_54px_70px]' : 'grid-cols-[26px_1fr_58px_36px_58px]'
+              } ${car.isPlayer ? 'bg-amber-500/22 text-amber-200' : 'text-zinc-100'} ${retired ? 'opacity-60' : ''}`}
             >
               <span className="tabular-nums">{car.position ?? '-'}</span>
               <span className="flex min-w-0 items-center gap-1.5">
@@ -413,6 +423,13 @@ function RetroTimingTower({
                   <span className="text-right tabular-nums text-zinc-300">
                     {car.pit.lastPitLap != null ? `L${car.pit.lastPitLap}` : '-'}
                   </span>
+                </>
+              ) : tab === 'Sectors' ? (
+                <>
+                  <span className="text-right tabular-nums text-zinc-300">{fmtSector(car.lastSectors?.[0])}</span>
+                  <span className="text-right tabular-nums text-zinc-300">{fmtSector(car.lastSectors?.[1])}</span>
+                  <span className="text-right tabular-nums text-zinc-300">{fmtSector(car.lastSectors?.[2])}</span>
+                  <span className="text-right tabular-nums text-zinc-300">{car.lastLapTime > 0 ? fmtLap(car.lastLapTime) : '—'}</span>
                 </>
               ) : (
                 <>
@@ -723,7 +740,7 @@ function DriverFocus({
     teammate && teammate.running && car.running ? car.gapToLeader - teammate.gapToLeader : null;
   return (
     <RetroPanel
-      title={`Driver Focus ${car.isPlayer ? '- Player' : ''}`}
+      title={`${number ?? car.position ?? '-'}  ${shortName(name)}  ${team}`}
       className={`h-full min-h-0 ${className}`}
       headerRight={
         car.isPlayer ? (
@@ -738,13 +755,8 @@ function DriverFocus({
       }
     >
       <div className="relative flex h-[calc(100%-37px)] flex-col overflow-y-auto px-2 py-1.5">
-        <div className="flex items-center gap-2">
-          <span className="rounded border border-zinc-600 px-1.5 py-0.5 text-sm font-bold">{number ?? car.position ?? '-'}</span>
-          <div className="min-w-0 flex-1">
-            <div className="truncate text-[12px] font-bold uppercase leading-tight">{shortName(name)}</div>
-            <div className="truncate text-[10px] uppercase leading-tight text-zinc-400">{team}</div>
-          </div>
-          {!finished && car.running && (
+        {!finished && car.running && (
+          <div className="flex items-center justify-end">
             <button
               onClick={onPit}
               disabled={!canPit}
@@ -752,8 +764,8 @@ function DriverFocus({
             >
               {car.pit.pitRequested ? 'Cancel Pit' : 'Pit'}
             </button>
-          )}
-        </div>
+          </div>
+        )}
         <div className="mt-1 flex items-stretch gap-2">
           <div className="grid min-w-0 flex-1 grid-cols-2 gap-x-2 gap-y-0.5 self-start text-[10px] leading-tight">
             <FocusLine label="Position" value={car.position ? ordinalText(car.position) : 'Out'} />
@@ -774,7 +786,7 @@ function DriverFocus({
             <FocusLine label="Fuel left" value={`${Math.round(car.fuel)}%`} />
             <FocusLine label="Tyre life" value={`${tyre.letter} ${Math.max(0, 100 - Math.round(car.tire.wear))}%`} />
           </div>
-          <DriverPaceTrend values={lapTimes} color={trendColor} name={shortName(name).split(' ').pop()?.toUpperCase() ?? ''} />
+          <DriverPaceTrend values={lapTimes} color={trendColor} />
         </div>
         {!finished && car.running && (
           <div className="relative mt-1 flex min-h-0 flex-1 flex-col rounded border border-zinc-800 bg-zinc-950/55 p-1">
@@ -1218,9 +1230,9 @@ function TelemetrySectorTimes({
   nameOf: (driverId: string) => string;
 }) {
   return (
-    <RetroPanel title="Telemetry / Sector Times" className="h-full min-h-0">
-      <div className="h-[calc(100%-37px)] overflow-y-auto p-2 text-[10px]">
-        <div className="grid grid-cols-2 gap-2">
+    <RetroPanel title="Telemetry / Sector Times" className="h-full min-h-0" compactHeader>
+      <div className="h-[calc(100%-21px)] overflow-y-auto px-1.5 py-0.5 text-[10px] leading-tight">
+        <div className="grid grid-cols-2 gap-1.5">
           {cars.map((car) => (
             <SectorTable
               key={car.driverId}
@@ -1235,14 +1247,13 @@ function TelemetrySectorTimes({
   );
 }
 
-function DriverPaceTrend({ values, color, name }: { values: number[]; color: string; name: string }) {
+function DriverPaceTrend({ values, color }: { values: number[]; color: string }) {
   const spread = values.length >= 2 ? Math.max(0.5, (Math.max(...values) - Math.min(...values)) / 2) : 0.5;
   return (
     <div className="w-[46%] shrink-0 rounded border border-zinc-800 bg-zinc-950/55 p-1">
       <div className="truncate text-[8px] font-bold uppercase tracking-wide text-amber-300">Pace Trend (Last 5 Laps)</div>
       <div className="mt-0.5 flex items-stretch gap-1">
         <div className="min-w-0 flex-1">
-          <div className="truncate text-[8px] uppercase text-zinc-400">{name}</div>
           <div className="pr-3">
             <Sparkline values={values} color={color} className="h-8 w-full" />
           </div>
@@ -1261,9 +1272,9 @@ function SectorTable({ car, other, name }: { car: LiveCarState; other: LiveCarSt
   const sectors = car.lastSectors ?? [];
   const otherSectors = other?.lastSectors ?? [];
   return (
-    <div className="rounded border border-zinc-800 bg-zinc-950/55 p-1">
-      <div className="truncate font-bold text-amber-300">{name}</div>
-      <table className="mt-0.5 w-full text-[9px] tabular-nums">
+    <div className="rounded border border-zinc-800 bg-zinc-950/55 px-1 py-0.5">
+      <div className="truncate text-[9px] font-bold uppercase text-amber-300">{name}</div>
+      <table className="w-full text-[9px] leading-tight tabular-nums">
         <tbody>
           {[0, 1, 2].map((i) => {
             const time = sectors[i];
@@ -1296,6 +1307,9 @@ function Sparkline({ values, color, className = 'h-5' }: { values: number[]; col
   const width = 220;
   const height = 24;
   let points: string;
+  const verticals = values.map((_, i) => ({
+    x: values.length < 2 ? width / 2 : (i / (values.length - 1)) * width,
+  }));
   if (values.length < 2) {
     points = `0,${height / 2} ${width},${height / 2}`;
   } else {
@@ -1308,6 +1322,9 @@ function Sparkline({ values, color, className = 'h-5' }: { values: number[]; col
   }
   return (
     <svg className={`min-w-0 flex-1 ${className}`} viewBox={`0 0 ${width} ${height}`} preserveAspectRatio="none" aria-hidden="true">
+      {verticals.map(({ x }, index) => (
+        <line key={index} x1={x} y1={4} x2={x} y2={height - 4} stroke="rgba(255,255,255,0.15)" strokeWidth="1" />
+      ))}
       <polyline points={points} fill="none" stroke={color} strokeWidth="2" />
     </svg>
   );
@@ -1335,5 +1352,3 @@ function CountdownBar({
     </div>
   );
 }
-
-
