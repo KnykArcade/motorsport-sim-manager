@@ -23,6 +23,8 @@ import { calculateMistakeRisk, calculateCrashRisk } from './mistakeEngine';
 import { eraReliabilityScale, liveRiskCalibration } from './dnfModel';
 import { assignPersonality } from './aiStrategyEngine';
 import { buildPitPlan, pitStopLoss, pitWindowFor } from './pitStrategyEngine';
+import { effectiveCarRatings } from './trackFitEngine';
+import { createSeededRandom, deriveSeed } from './random';
 import { initialWeather } from './weatherEngine';
 import { initialSafetyCar, SAFETY_CAR_PIT_SAVING } from './safetyCarEngine';
 import { initialStint } from './strategyStint';
@@ -150,6 +152,14 @@ export function createLiveRace(context: RaceContext, options: LiveRaceOptions): 
       instruction.tireWearModifier,
       strategy.tireDegModifier,
       pitPlan.stintTarget,
+      {
+        mechanicalGrip: effectiveCarRatings(e.car).mechanicalGrip,
+        enduranceConsistency: e.driver.ratings.enduranceConsistency,
+        composure: e.driver.ratings.composure,
+        aggression: e.driver.ratings.aggression,
+        trackWearDemand:
+          (track.attributes.surfaceGripBumpiness + track.attributes.technical + track.attributes.enduranceConsistency) / 3,
+      },
     );
 
     const isPlayer = e.driver.teamId === options.playerTeamId;
@@ -185,7 +195,13 @@ export function createLiveRace(context: RaceContext, options: LiveRaceOptions): 
       baseCrashRisk,
       baseMistakeRisk,
       tireDegRate,
-      pitLossBase: pitStopLoss(e.car, false, SAFETY_CAR_PIT_SAVING, opsForm + (isPlayer ? (context.playerStaffBonus?.pitCrew ?? 0) : 0)),
+      pitLossBase: pitStopLoss(
+        e.car,
+        false,
+        SAFETY_CAR_PIT_SAVING,
+        0,
+        opsForm + (isPlayer ? (context.playerStaffBonus?.pitCrew ?? 0) : 0),
+      ),
       opsForm,
       confidenceModifier,
       personality,
@@ -236,6 +252,33 @@ export function createLiveRace(context: RaceContext, options: LiveRaceOptions): 
   cars.sort((a, b) => a.grid - b.grid);
   cars.forEach((c, i) => (c.position = i + 1));
 
+  const aiPitPlans = buildAiPitPlans(cars, track, totalLaps, context.seed);
+  for (const c of cars) {
+    if (c.isPlayer) continue;
+    const plan = aiPitPlans.get(c.driverId);
+    if (!plan) continue;
+    c.pit = {
+      ...c.pit,
+      plannedStops: plan.plannedStops,
+      scheduledLaps: [...plan.scheduledLaps],
+      strategyRole: plan.strategyRole,
+      strategyTargetLap: plan.strategyTargetLap,
+      window: plan.window,
+      planStatus: 'planned',
+    };
+    c.tire = { ...c.tire, stintTarget: plan.stintTarget };
+  }
+
+  const aiTeamStrategyState: NonNullable<LiveRaceState['aiTeamStrategyState']> = {};
+  for (const c of cars) {
+    if (c.isPlayer) continue;
+    if (aiTeamStrategyState[c.teamId]) continue;
+    const primary = cars.find((car) => !car.isPlayer && car.teamId === c.teamId && car.pit.strategyRole === 'primary');
+    if (primary) {
+      aiTeamStrategyState[c.teamId] = { leaderDriverId: primary.driverId, reversedLaps: 0, lastSwapLap: null };
+    }
+  }
+
   const events: RaceEvent[] = [];
   for (const c of cars) {
     if (c.lastIncident) {
@@ -262,6 +305,7 @@ export function createLiveRace(context: RaceContext, options: LiveRaceOptions): 
     ignoredRecs: [],
     recCooldowns: {},
     battleTracker: {},
+    aiTeamStrategyState,
     retirements: 0,
   };
 }
@@ -271,10 +315,148 @@ function computeDegRate(
   tireWearModifier: number,
   tireDegModifier: number,
   stintTarget: number,
+  wearModifiers: {
+    mechanicalGrip: number;
+    enduranceConsistency: number;
+    composure: number;
+    aggression: number;
+    trackWearDemand: number;
+  },
 ): number {
-  let deg = 100 / Math.max(10, stintTarget + 8);
-  deg *= 1 + tireWearModifier * 0.3 + tireDegModifier * 0.3 - (tirePreservation - 5) * 0.04;
-  return Math.max(0.4, deg);
+  const base = 100 / Math.max(10, stintTarget + 8);
+  const setupMult = 1 + tireWearModifier * 0.3 + tireDegModifier * 0.3 - (tirePreservation - 5) * 0.04;
+  const clamp10 = (n: number): number => Math.max(1, Math.min(10, n));
+  const ratingMult = Math.max(
+    0.85,
+    Math.min(
+      1.15,
+      1
+        - (clamp10(wearModifiers.mechanicalGrip) - 5.5) * 0.025
+        - (((clamp10(wearModifiers.enduranceConsistency) + clamp10(wearModifiers.composure)) / 2) - 5.5) * 0.025
+        + (clamp10(wearModifiers.aggression) - 5.5) * 0.015
+        + (clamp10(wearModifiers.trackWearDemand) - 5.5) * 0.01,
+    ),
+  );
+  return Math.max(0.4, base * setupMult * ratingMult);
+}
+
+type AiPitPlan = {
+  plannedStops: 1 | 2;
+  scheduledLaps: number[];
+  stintTarget: number;
+  strategyRole: 'primary' | 'secondary';
+  strategyTargetLap: number;
+  window: { open: number; ideal: number; close: number };
+};
+
+const AI_TARGET_WEAR = 75;
+const AI_MIN_STINT_LAPS = 8;
+const AI_ROLE_GAP_LAPS = 3;
+
+function clampInt(n: number, min: number, max: number): number {
+  return Math.max(min, Math.min(max, Math.round(n)));
+}
+
+function normalizeAiSchedule(schedule: number[], totalLaps: number): number[] {
+  const out: number[] = [];
+  for (let i = 0; i < schedule.length; i++) {
+    const min = i === 0 ? AI_MIN_STINT_LAPS : out[i - 1] + AI_MIN_STINT_LAPS;
+    const max = totalLaps - AI_MIN_STINT_LAPS * (schedule.length - i - 1) - 1;
+    out.push(clampInt(schedule[i], min, max));
+  }
+  return out;
+}
+
+function aiScheduleForWearLap(wearLap: number, totalLaps: number): { plannedStops: 1 | 2; scheduledLaps: number[] } {
+  const halfRace = Math.max(2, Math.round(totalLaps / 2));
+  const plannedStops: 1 | 2 = wearLap < halfRace - 2 ? 2 : 1;
+  if (plannedStops === 1) {
+    return { plannedStops, scheduledLaps: [clampInt(wearLap, AI_MIN_STINT_LAPS, totalLaps - 1)] };
+  }
+  const first = clampInt(wearLap, AI_MIN_STINT_LAPS, totalLaps - AI_MIN_STINT_LAPS * 2);
+  const second = clampInt(first + wearLap, first + AI_MIN_STINT_LAPS, totalLaps - AI_MIN_STINT_LAPS);
+  return { plannedStops, scheduledLaps: normalizeAiSchedule([first, second], totalLaps) };
+}
+
+function buildAiPitPlans(cars: LiveCarState[], track: Track, totalLaps: number, seed: string): Map<string, AiPitPlan> {
+  const byTeam = new Map<string, LiveCarState[]>();
+  for (const car of cars) {
+    if (car.isPlayer) continue;
+    const list = byTeam.get(car.teamId) ?? [];
+    list.push(car);
+    byTeam.set(car.teamId, list);
+  }
+
+  const trackWearDemand =
+    (track.attributes.surfaceGripBumpiness + track.attributes.technical + track.attributes.enduranceConsistency) / 3;
+  const plans = new Map<string, AiPitPlan>();
+
+  for (const teamCars of byTeam.values()) {
+    const ordered = [...teamCars].sort(
+      (a, b) =>
+        (a.grid - b.grid) ||
+        (b.paceRating - a.paceRating) ||
+        (b.baseRacePace - a.baseRacePace) ||
+        a.driverId.localeCompare(b.driverId),
+    );
+    const primary = ordered[0];
+    if (!primary) continue;
+
+    const wearTarget = AI_TARGET_WEAR - (trackWearDemand - 5.5) * 2;
+    const wearLap = clampInt(wearTarget / Math.max(0.4, primary.tireDegRate), AI_MIN_STINT_LAPS, totalLaps - 1);
+    const primaryPlan = aiScheduleForWearLap(wearLap, totalLaps);
+    const primaryIdeal = primaryPlan.scheduledLaps[0];
+    plans.set(primary.driverId, {
+      plannedStops: primaryPlan.plannedStops,
+      scheduledLaps: primaryPlan.scheduledLaps,
+      stintTarget: primaryIdeal,
+      strategyRole: 'primary',
+      strategyTargetLap: primaryIdeal,
+      window: pitWindowFor(primaryIdeal, totalLaps),
+    });
+
+    const secondary = ordered[1];
+    if (!secondary) continue;
+
+    const rng = createSeededRandom(deriveSeed(seed, 'ai-pit-plan', primary.teamId, secondary.driverId, totalLaps));
+    const direction = rng.chance(0.5) ? -1 : 1;
+    const shift = direction * (2 + Math.floor(rng.next() * 2));
+    const preferredShift =
+      (direction < 0 && primaryIdeal <= AI_MIN_STINT_LAPS + AI_ROLE_GAP_LAPS)
+        ? Math.abs(shift)
+        : (direction > 0 && primaryIdeal >= totalLaps - AI_MIN_STINT_LAPS - AI_ROLE_GAP_LAPS)
+          ? -Math.abs(shift)
+          : shift;
+    const secondarySchedule = normalizeAiSchedule(
+      primaryPlan.scheduledLaps.map((lap) => lap + preferredShift),
+      totalLaps,
+    );
+    let adjustedSecondary = secondarySchedule;
+    let attempts = 0;
+    while (
+      Math.abs(adjustedSecondary[0] - primaryIdeal) < AI_ROLE_GAP_LAPS &&
+      attempts < 3
+    ) {
+      const extraShift = preferredShift >= 0 ? preferredShift + 1 + attempts : preferredShift - 1 - attempts;
+      adjustedSecondary = normalizeAiSchedule(
+        primaryPlan.scheduledLaps.map((lap) => lap + extraShift),
+        totalLaps,
+      );
+      attempts += 1;
+    }
+
+    const secondaryIdeal = adjustedSecondary[0];
+    plans.set(secondary.driverId, {
+      plannedStops: primaryPlan.plannedStops,
+      scheduledLaps: adjustedSecondary,
+      stintTarget: secondaryIdeal,
+      strategyRole: 'secondary',
+      strategyTargetLap: secondaryIdeal,
+      window: pitWindowFor(secondaryIdeal, totalLaps),
+    });
+  }
+
+  return plans;
 }
 
 // ---------------------------------------------------------------------------

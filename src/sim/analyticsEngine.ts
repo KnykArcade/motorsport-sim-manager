@@ -22,6 +22,7 @@ import { DIRTY_AIR_GAP } from './liveRacePace';
 // Default laps a recommendation kind is suppressed before it may re-raise
 // (urgent recommendations bypass this so a worsening situation is never hidden).
 export const REC_COOLDOWN = 5;
+export const OPENING_PHASE_LAPS = 10;
 // Laps a recommendation stays live if its trigger persists.
 const REC_TTL = 5;
 // Positions that pay championship points (approximate, for points-defence advice).
@@ -49,6 +50,15 @@ export const KIND_COOLDOWN: Record<string, number> = {
 // Safety-car stops are powerful, but an opening-stint SC should not immediately
 // produce unrealistic pit calls. Let the race settle before the pit wall asks.
 export const SAFETY_CAR_PIT_RECOMMENDATION_MIN_LAP = 16;
+
+const OPENING_PHASE_ALLOWED_KINDS = new Set([
+  'weatherTyres',
+  'reliability',
+  'component',
+  'damage',
+  'crash',
+  'safetyCarPit',
+]);
 
 export function cooldownFor(kind: string): number {
   return KIND_COOLDOWN[kind] ?? REC_COOLDOWN;
@@ -192,7 +202,7 @@ function candidatesFor(
   // 4. Safety car out — cheap stop available.
   if (
     state.safetyCar.active &&
-    state.currentLap >= SAFETY_CAR_PIT_RECOMMENDATION_MIN_LAP &&
+    (state.currentLap >= SAFETY_CAR_PIT_RECOMMENDATION_MIN_LAP || car.damaged) &&
     stopsLeft > 0 &&
     !pitCallArmed
   ) {
@@ -392,6 +402,10 @@ function candidatesFor(
       action: A.fuelSave(),
       alternatives: [A.balanced()],
     });
+  }
+
+  if (state.currentLap <= OPENING_PHASE_LAPS) {
+    return out.filter((candidate) => candidate.priority === 'urgent' || OPENING_PHASE_ALLOWED_KINDS.has(candidate.kind));
   }
 
   return out;

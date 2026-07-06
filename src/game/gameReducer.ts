@@ -160,6 +160,7 @@ export type GameAction =
   | { type: 'LOAD_GAME'; state: GameState }
   | { type: 'RUN_QUALIFYING'; decisions: QualifyingDecision[] }
   | { type: 'RUN_RACE'; decisions: RaceDecision[] }
+  | { type: 'BEGIN_RACE_ATTEMPT'; raceId?: string }
   | {
       type: 'COMMIT_LIVE_RACE';
       results: RaceResult[];
@@ -471,8 +472,16 @@ export function gameReducer(state: GameState | null, action: GameAction): GameSt
       if (!entryCheck.allowed) return state;
       const race = currentRace(state);
       if (!race) return state;
-      const raced = runRace(state, action.decisions);
+      const attempted = beginRaceAttempt(state, race.id);
+      const raced = runRace(attempted, action.decisions);
       return enterPostRaceReview(raced, race.id);
+    }
+
+    case 'BEGIN_RACE_ATTEMPT': {
+      if (!state) return state;
+      const race = action.raceId ? state.calendar.find((r) => r.id === action.raceId) : currentRace(state);
+      if (!race) return state;
+      return beginRaceAttempt(state, race.id);
     }
 
     case 'COMMIT_LIVE_RACE': {
@@ -1410,6 +1419,19 @@ function runRace(state: GameState, playerDecisions: RaceDecision[]): GameState {
     strategyRiskByDriver[d.driverId] = strategyRiskFromId(d.strategyId);
   }
   return applyRaceResults(state, race, results, events, breakdowns, [], strategyRiskByDriver);
+}
+
+function beginRaceAttempt(state: GameState, raceId: string): GameState {
+  const race = state.calendar.find((r) => r.id === raceId);
+  if (!race) return state;
+  const attemptCount = (state.raceAttemptCounters?.[raceId] ?? 0) + 1;
+  const attemptRng = createSeededRandom(deriveSeed(state.randomSeed, 'race-attempt', raceId, attemptCount));
+  const nonce = deriveSeed(state.randomSeed, 'race-attempt', raceId, attemptCount, Math.floor(attemptRng.next() * 1_000_000_000));
+  return {
+    ...state,
+    raceAttemptCounters: { ...(state.raceAttemptCounters ?? {}), [raceId]: attemptCount },
+    raceAttemptNonces: { ...(state.raceAttemptNonces ?? {}), [raceId]: nonce },
+  };
 }
 
 function strategyRiskFromId(id: RaceStrategyId): 'conservative' | 'balanced' | 'aggressive' {

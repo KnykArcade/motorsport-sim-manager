@@ -186,9 +186,10 @@ export function stepLiveRace(state: LiveRaceState, meta: LiveRaceMeta): LiveRace
       c.pit.planCancelled = false;
       // Advance the advisory window to the player's next planned stop (if any).
       c.pit.window =
-        c.isPlayer && c.pit.scheduledLaps.length > 0
+        c.pit.scheduledLaps.length > 0
           ? pitWindowFor(c.pit.scheduledLaps[0], state.totalLaps)
           : null;
+      c.pit.strategyTargetLap = c.pit.scheduledLaps[0] ?? null;
       c.pit.lastWindowPromptLap = null;
       c.pit.planStatus =
         c.pit.scheduledLaps.length > 0 ? (recalc ? 'recalculated' : 'planned') : 'completed';
@@ -201,10 +202,11 @@ export function stepLiveRace(state: LiveRaceState, meta: LiveRaceMeta): LiveRace
           }pit.`,
         });
       }
+      const stackPenalty = pittedThisLap.some((pitCar) => pitCar.teamId === c.teamId) ? 3.5 : 0;
       pitLoss = state.safetyCar.active
-        ? Math.max(8, c.pitLossBase - SAFETY_CAR_PIT_SAVING)
-        : c.pitLossBase;
-      const pitStop = pitStopTimeFromLoss(c.pitLossBase, c.opsForm, state.safetyCar.active, rng);
+        ? Math.max(8, c.pitLossBase - SAFETY_CAR_PIT_SAVING + stackPenalty)
+        : c.pitLossBase + stackPenalty;
+      const pitStop = pitStopTimeFromLoss(c.pitLossBase, c.opsForm, state.safetyCar.active, rng, stackPenalty);
       c.pit.lastPitStopTime = pitStop.time;
       if (pitStop.slow) {
         lapEvents.push({ lap: nextLap, text: `${name(c.driverId)} loses time with a slow ${pitStop.time.toFixed(1)}s pit stop.` });
@@ -501,6 +503,8 @@ export function stepLiveRace(state: LiveRaceState, meta: LiveRaceMeta): LiveRace
   });
 
   let orderedCars = [...running, ...retired];
+  const aiStrategyUpdate = updateAiTeamStrategyState(orderedCars, state.aiTeamStrategyState, nextLap, state.totalLaps);
+  orderedCars = aiStrategyUpdate.cars;
 
   // --- Finish ---
   let phase: LiveRaceState['phase'] = state.phase === 'formation' ? 'racing' : state.phase;
@@ -523,14 +527,7 @@ export function stepLiveRace(state: LiveRaceState, meta: LiveRaceMeta): LiveRace
     name,
     recEvents,
   );
-  const recommendations = scResult.justEnded
-    ? [
-        ...refreshedRecommendations,
-        ...safetyCarRestartRecommendations(orderedCars, nextLap, name).filter(
-          (rec) => !refreshedRecommendations.some((existing) => existing.id === rec.id),
-        ),
-      ]
-    : refreshedRecommendations;
+  const recommendations = refreshedRecommendations;
 
   const retirements = orderedCars.filter((c) => c.status === 'DNF').length;
 
@@ -569,6 +566,7 @@ export function stepLiveRace(state: LiveRaceState, meta: LiveRaceMeta): LiveRace
     ignoredRecs,
     recCooldowns,
     battleTracker,
+    aiTeamStrategyState: aiStrategyUpdate.aiTeamStrategyState,
     retirements,
   };
 }
@@ -721,42 +719,6 @@ function retire(c: LiveCarState, lap: number, cause: string): LiveCarState {
     lapsCompleted: lap,
     lastIncident: cause,
   };
-}
-
-function safetyCarRestartRecommendations(
-  cars: LiveCarState[],
-  lap: number,
-  name: (driverId: string) => string,
-): AnalyticsRecommendation[] {
-  return cars
-    .filter((c) => c.isPlayer && c.running && c.safetyCarModeBefore)
-    .map((c) => {
-      const resumeMode = c.safetyCarModeBefore ?? 'Balanced';
-      return {
-        id: `${c.driverId}:safetyCarRestart:${lap}`,
-        driverId: c.driverId,
-        kind: 'safetyCarRestart',
-        priority: 'high' as const,
-        issue: 'Safety Car ending - choose restart mode.',
-        recommendedAction: resumeMode === 'Conservative' ? 'Stay in Conservative mode' : `Resume ${resumeMode} mode`,
-        suggestedDuration: 'restart choice',
-        expectedImpact: `${name(c.driverId)} can resume the pre-Safety Car plan or stay conservative for the restart.`,
-        confidence: 88,
-        createdLap: lap,
-        expiresLap: lap + 1,
-        action: {
-          type: resumeMode,
-          label: resumeMode === 'Conservative' ? 'Stay Conservative' : `Resume ${resumeMode}`,
-          paceMode: resumeMode,
-        },
-        alternatives: [
-          { type: 'Conservative', label: 'Stay Conservative', paceMode: 'Conservative' },
-          { type: 'Balanced', label: 'Balanced Restart', paceMode: 'Balanced' },
-          { type: 'Push', label: 'Push Restart', paceMode: 'Push' },
-        ],
-        status: 'pending' as const,
-      };
-    });
 }
 
 // Split a lap time into three sector times. No real track geometry is modelled,
@@ -1084,14 +1046,6 @@ export function ignoreRecommendation(state: LiveRaceState, recId: string, meta?:
     { key: rec.id, lap, issue: rec.issue, priority: rec.priority, escalated: false },
   ];
   let s = withCooldown(removeRec(state, rec.id), rec);
-  if (rec.kind === 'safetyCarRestart') {
-    s = {
-      ...s,
-      cars: s.cars.map((c) =>
-        c.driverId === rec.driverId ? { ...c, paceMode: 'Conservative', safetyCarModeBefore: null } : c,
-      ),
-    };
-  }
   s = { ...s, ignoredRecs };
   const name = meta?.driverNames[rec.driverId] ?? rec.driverId;
   return rec.priority === 'low'
@@ -1267,7 +1221,105 @@ function trustRiskMultiplier(confidenceModifier: number, mode: PaceMode): number
   const modeWeight = mode === 'Attack' ? 3.6 : 2.2;
   return 1 + lowTrust * modeWeight;
 }
-function pitStopTimeFromLoss(pitLossBase: number, opsForm: number, safetyCarActive: boolean, rng: Rng): { time: number; slow: boolean } {
+
+type TeamStrategyTracker = NonNullable<LiveRaceState['aiTeamStrategyState']>[string];
+
+function updateAiTeamStrategyState(
+  orderedCars: LiveCarState[],
+  previousState: LiveRaceState['aiTeamStrategyState'],
+  lap: number,
+  totalLaps: number,
+): { cars: LiveCarState[]; aiTeamStrategyState: NonNullable<LiveRaceState['aiTeamStrategyState']> } {
+  const nextState: NonNullable<LiveRaceState['aiTeamStrategyState']> = { ...(previousState ?? {}) };
+  const cars = orderedCars.map((car) => ({
+    ...car,
+    pit: { ...car.pit, scheduledLaps: [...car.pit.scheduledLaps] },
+    tire: { ...car.tire },
+  }));
+  const byTeam = new Map<string, LiveCarState[]>();
+  for (const car of cars) {
+    if (!car.running || car.isPlayer) continue;
+    const list = byTeam.get(car.teamId) ?? [];
+    list.push(car);
+    byTeam.set(car.teamId, list);
+  }
+
+  for (const teamCars of byTeam.values()) {
+    if (teamCars.length < 2) continue;
+    const [leader, trailer] = [...teamCars].sort(
+      (a, b) =>
+        (a.position ?? 99) - (b.position ?? 99) ||
+        a.grid - b.grid ||
+        b.paceRating - a.paceRating ||
+        b.baseRacePace - a.baseRacePace ||
+        a.driverId.localeCompare(b.driverId),
+    );
+    const currentPrimary = teamCars.find((car) => car.pit.strategyRole === 'primary') ?? leader;
+    const tracker: TeamStrategyTracker = nextState[leader.teamId] ?? {
+      leaderDriverId: currentPrimary.driverId,
+      reversedLaps: 0,
+      lastSwapLap: null,
+    };
+    const orderReversed = leader.driverId !== tracker.leaderDriverId;
+    const reversedLaps = orderReversed ? tracker.reversedLaps + 1 : 0;
+    const canSwap =
+      orderReversed &&
+      reversedLaps >= 3 &&
+      lap <= totalLaps - 5 &&
+      (tracker.lastSwapLap == null || lap - tracker.lastSwapLap >= 3) &&
+      leader.pit.stopsMade === trailer.pit.stopsMade &&
+      !teamCars.some((car) => strategySwapBlocked(car, lap));
+
+    if (canSwap) {
+      const leaderPlan = cloneStrategyFields(leader.pit);
+      const trailerPlan = cloneStrategyFields(trailer.pit);
+      leader.pit = { ...leader.pit, ...trailerPlan };
+      trailer.pit = { ...trailer.pit, ...leaderPlan };
+      nextState[leader.teamId] = {
+        leaderDriverId: leader.driverId,
+        reversedLaps: 0,
+        lastSwapLap: lap,
+      };
+    } else {
+      nextState[leader.teamId] = {
+        leaderDriverId: orderReversed ? tracker.leaderDriverId : leader.driverId,
+        reversedLaps,
+        lastSwapLap: tracker.lastSwapLap,
+      };
+    }
+  }
+
+  return { cars, aiTeamStrategyState: nextState };
+}
+
+function strategySwapBlocked(car: LiveCarState, lap: number): boolean {
+  if (!car.running || car.isPlayer) return false;
+  if (car.pit.pitRequested || car.pit.inPitThisLap) return true;
+  if (car.pit.scheduledLaps.length === 0) return true;
+  const target = car.pit.strategyTargetLap ?? car.pit.scheduledLaps[0];
+  return target != null && Math.abs(target - lap) <= 2;
+}
+
+function cloneStrategyFields(pit: LiveCarState['pit']): Pick<
+  LiveCarState['pit'],
+  'plannedStops' | 'scheduledLaps' | 'strategyRole' | 'strategyTargetLap' | 'window'
+> {
+  return {
+    plannedStops: pit.plannedStops,
+    scheduledLaps: [...pit.scheduledLaps],
+    strategyRole: pit.strategyRole ?? null,
+    strategyTargetLap: pit.strategyTargetLap ?? null,
+    window: pit.window ? { ...pit.window } : null,
+  };
+}
+
+function pitStopTimeFromLoss(
+  pitLossBase: number,
+  opsForm: number,
+  safetyCarActive: boolean,
+  rng: Rng,
+  stackPenalty = 0,
+): { time: number; slow: boolean } {
   const eraBaseline = pitLossBase >= 30 ? 9.5 : pitLossBase >= 25 ? 7.2 : pitLossBase >= 20 ? 5.2 : 3.4;
   const execution = opsForm * 0.35;
   const safetyCarDelta = safetyCarActive ? 0.2 : 0;
@@ -1275,7 +1327,10 @@ function pitStopTimeFromLoss(pitLossBase: number, opsForm: number, safetyCarActi
   const slow = rng.chance(mistakeChance);
   const delay = slow ? rng.range(1.1, 4.6) : 0;
   const variation = rng.variance(0.22);
-  return { time: round1(clamp(eraBaseline - execution + safetyCarDelta + variation + delay, 2.0, 14.0)), slow };
+  return {
+    time: round1(clamp(eraBaseline - execution + safetyCarDelta + stackPenalty + variation + delay, 2.0, 14.0)),
+    slow,
+  };
 }
 function round1(n: number): number {
   return Math.round(n * 10) / 10;

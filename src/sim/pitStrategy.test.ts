@@ -205,6 +205,23 @@ describe('cancel planned pit stop', () => {
     const next = generateCandidates(after.cars, { ...after, currentLap: 21 }, 21);
     expect(next.find((r) => r.kind === 'pitWindow')).toBeUndefined();
   });
+
+  it('allows a damaged car to pit under an early safety car', () => {
+    const s = withCandidates(
+      live([car({ damaged: true })], {
+        currentLap: 10,
+        safetyCar: {
+          active: true,
+          lapsRemaining: 3,
+          deployedOnLap: 10,
+          reason: 'damage',
+          deployments: 1,
+        },
+      }),
+    );
+
+    expect(s.recommendations.some((r) => r.kind === 'safetyCarPit')).toBe(true);
+  });
 });
 
 describe('tyre-degradation re-prompt after skipping the stop', () => {

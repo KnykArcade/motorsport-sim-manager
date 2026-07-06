@@ -99,6 +99,20 @@ function likelyToPit(mate: LiveCarState, lap: number): boolean {
   return next != null && mate.pit.stopsMade < mate.pit.plannedStops && lap >= next - 1;
 }
 
+function clamp01(n: number): number {
+  return Math.max(0, Math.min(1, n));
+}
+
+function stopUrgency(car: LiveCarState, lap: number): number {
+  const target = car.pit.strategyTargetLap ?? car.pit.scheduledLaps[0];
+  const lapsToTarget = target == null ? 4 : target - lap;
+  const targetNeed = clamp01((4 - lapsToTarget) / 4);
+  const wearNeed = clamp01((car.tire.wear - 58) / 24);
+  const cliffNeed = car.tire.wear > 82 ? 1 : 0;
+  const dueNeed = target != null && lap >= target - 1 ? 0.18 : 0;
+  return Math.max(wearNeed, targetNeed) + cliffNeed + dueNeed;
+}
+
 // Decide an AI car's action for the upcoming lap. Pure given (car, state, lap).
 export function aiLapDecision(
   car: LiveCarState,
@@ -133,14 +147,27 @@ export function aiLapDecision(
   //    they still have a scheduled stop to make. Sharper race operations react
   //    to the safety car more reliably; weaker operations miss the window more.
   if (state.safetyCar.active && car.pit.stopsMade < car.pit.plannedStops && car.tire.age >= 5) {
-    const baseGrab =
-      car.personality === 'Opportunistic' || car.personality === 'UndercutFocused'
-        ? 0.85
-        : car.personality === 'TrackPositionFocused' || car.personality === 'OvercutFocused'
-          ? 0.25
-          : 0.55;
-    const grabChance = Math.max(0.1, Math.min(0.97, baseGrab + car.opsForm * 0.4));
-    if (rng.chance(grabChance)) {
+    const teammate = state.cars.find(
+      (o) => o.running && o.teamId === car.teamId && o.driverId !== car.driverId,
+    );
+    const need = stopUrgency(car, lap);
+    const teammateNeed = teammate ? stopUrgency(teammate, lap) : null;
+    if (teammate && teammateNeed != null) {
+      const teammateAhead =
+        teammate.position != null &&
+        car.position != null &&
+        teammate.position < car.position;
+      const teammateTakesIt =
+        teammateNeed > need + 0.02 ||
+        (Math.abs(teammateNeed - need) <= 0.02 && teammateAhead);
+      if (teammateTakesIt && car.tire.wear < 83) {
+        action.note = 'defers a lap to avoid stacking under the safety car';
+        return action;
+      }
+    }
+    const stagger = rng.range(-0.18, 0.18);
+    const grabThreshold = car.tire.wear > 82 ? 0.35 : 0.72;
+    if (need + stagger >= grabThreshold) {
       action.pitNow = true;
       action.switchCompound = state.weather.wet ? 'Wet' : 'Dry';
       action.note = 'takes the safety-car pit stop';
@@ -150,7 +177,7 @@ export function aiLapDecision(
 
   // 3. Scheduled stop (with personality-driven undercut/overcut bias).
   const lowOvertaking = track.attributes.overtakingRacecraft <= 4;
-  const nextStop = car.pit.scheduledLaps[0];
+  const nextStop = car.pit.strategyTargetLap ?? car.pit.scheduledLaps[0];
   if (nextStop != null) {
     let target = nextStop;
     if (car.personality === 'UndercutFocused') target -= 2;
@@ -160,24 +187,51 @@ export function aiLapDecision(
     if (lowOvertaking && (car.personality === 'TrackPositionFocused' || car.personality === 'OvercutFocused')) {
       target += 1;
     }
+    const rivalAheadPit =
+      car.position != null &&
+      car.position > 1 &&
+      car.interval <= Math.max(4.5, car.pitLossBase * 0.25) &&
+      (() => {
+        const ahead = state.cars.find((o) => o.running && o.position === (car.position ?? 0) - 1);
+        return !!ahead && ahead.teamId !== car.teamId && (ahead.pit.inPitThisLap || ahead.pit.lastPitLap === lap - 1);
+      })();
     // Worn tyres force the stop regardless.
-    if (lap >= target || car.tire.wear > 82) {
-      // Double-stack avoidance: if a teammate just ahead is also pitting this
-      // lap, the trailing car holds one more lap to avoid queuing behind its
-      // own crew — unless its tyres are already at the cliff, where the stop
-      // can't wait. Only the car behind defers, so the pair doesn't deadlock.
-      const mate = teammateAhead(car, state);
-      if (
-        car.tire.wear <= 80 &&
-        mate &&
-        mate.gap < 4 &&
-        likelyToPit(mate.mate, lap) &&
-        !state.safetyCar.active
-      ) {
+    const comfortableTyres = car.tire.wear < 72;
+    const mate = teammateAhead(car, state);
+    const matePitting =
+      mate &&
+      mate.gap < 4 &&
+      likelyToPit(mate.mate, lap) &&
+      !state.safetyCar.active;
+    if (matePitting && car.tire.wear <= 80) {
+      action.paceMode = 'Push';
+      action.note = 'stays out a lap to avoid double-stacking';
+      return action;
+    }
+    if (rivalAheadPit && lap >= target - 3 && car.tire.wear >= 28 && car.tire.wear <= 80) {
+      if (car.personality === 'OvercutFocused' || car.personality === 'TrackPositionFocused') {
         action.paceMode = 'Push';
-        action.note = 'stays out a lap to avoid double-stacking';
+        action.note = 'extends the stint to try the overcut';
         return action;
       }
+      if (
+        car.personality === 'UndercutFocused' ||
+        car.personality === 'Opportunistic' ||
+        (car.personality === 'Aggressive' && car.tire.wear >= 45)
+      ) {
+        action.pitNow = true;
+        action.switchCompound = state.weather.wet ? 'Wet' : 'Dry';
+        action.note = 'covers with an undercut';
+        return action;
+      }
+    }
+    const canStretch = comfortableTyres && lap >= target && lap < target + 2;
+    if (canStretch) {
+      action.note = 'extends the stint on comfortable tyres';
+      action.paceMode = car.personality === 'OvercutFocused' ? 'Push' : action.paceMode;
+      return action;
+    }
+    if (lap >= target || car.tire.wear > 82) {
       action.pitNow = true;
       action.switchCompound = state.weather.wet ? 'Wet' : 'Dry';
       action.note = 'makes a scheduled stop';

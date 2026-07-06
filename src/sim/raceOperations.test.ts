@@ -19,7 +19,7 @@ describe('race operations wiring — variance-centered', () => {
   it('is neutral at the default (unknown race-ops) so old saves are unaffected', () => {
     // opsForm 0 => no reliability multiplier, no pit-loss shift, no strategy delta.
     expect(operationsRiskMultiplier(0)).toBe(1);
-    expect(pitStopLoss(CAR, false, 0, 0)).toBe(pitStopLoss(CAR, false, 0));
+    expect(pitStopLoss(CAR, false, 0, 0, 0)).toBe(pitStopLoss(CAR, false, 0));
     const strat = strategyExecution(0, createSeededRandom('x'));
     expect(strat.delta).toBe(0);
     expect(strat.note).toBeUndefined();
@@ -67,7 +67,7 @@ describe('race operations wiring — variance-centered', () => {
   });
 
   it('a sharp operations day trims pit-stop time loss (and the reverse)', () => {
-    expect(pitStopLoss(CAR, false, 0, 0.3)).toBeLessThan(pitStopLoss(CAR, false, 0, 0));
-    expect(pitStopLoss(CAR, false, 0, -0.3)).toBeGreaterThan(pitStopLoss(CAR, false, 0, 0));
+    expect(pitStopLoss(CAR, false, 0, 0, 0.3)).toBeLessThan(pitStopLoss(CAR, false, 0, 0));
+    expect(pitStopLoss(CAR, false, 0, 0, -0.3)).toBeGreaterThan(pitStopLoss(CAR, false, 0, 0));
   });
 });

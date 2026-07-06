@@ -112,9 +112,44 @@ describe('aiLapDecision — core behaviours', () => {
     expect(action.switchCompound).toBe('Wet');
   });
 
-  it('makes its scheduled stop once the target lap arrives', () => {
-    const c = car({ pit: { plannedStops: 1, stopsMade: 0, scheduledLaps: [22], lastPitLap: null, inPitThisLap: false, window: null, pitRequested: false, planStatus: 'planned', planCancelled: false, lastWindowPromptLap: null } });
+  it('extends a scheduled stop by a lap when tyres are still comfortable', () => {
+    const c = car({
+      pit: {
+        plannedStops: 1,
+        stopsMade: 0,
+        scheduledLaps: [22],
+        strategyTargetLap: 22,
+        lastPitLap: null,
+        inPitThisLap: false,
+        window: null,
+        pitRequested: false,
+        planStatus: 'planned',
+        planCancelled: false,
+        lastWindowPromptLap: null,
+      },
+    });
     const action = aiLapDecision(c, live([c]), TRACK, 22);
+    expect(action.pitNow).toBe(false);
+    expect(action.note).toMatch(/extends the stint/);
+  });
+
+  it('still makes the stop once the stretch window closes', () => {
+    const c = car({
+      pit: {
+        plannedStops: 1,
+        stopsMade: 0,
+        scheduledLaps: [22],
+        strategyTargetLap: 22,
+        lastPitLap: null,
+        inPitThisLap: false,
+        window: null,
+        pitRequested: false,
+        planStatus: 'planned',
+        planCancelled: false,
+        lastWindowPromptLap: null,
+      },
+    });
+    const action = aiLapDecision(c, live([c]), TRACK, 24);
     expect(action.pitNow).toBe(true);
   });
 
@@ -131,8 +166,8 @@ describe('aiLapDecision — core behaviours', () => {
       planCancelled: false,
       lastWindowPromptLap: null,
     };
-    const undercut = car({ personality: 'UndercutFocused', pit, tire: { compound: 'Dry', age: 18, wear: 50, stintTarget: 25 } });
-    const overcut = car({ personality: 'OvercutFocused', pit, tire: { compound: 'Dry', age: 18, wear: 50, stintTarget: 25 } });
+    const undercut = car({ personality: 'UndercutFocused', pit, tire: { compound: 'Dry', age: 18, wear: 76, stintTarget: 25 } });
+    const overcut = car({ personality: 'OvercutFocused', pit, tire: { compound: 'Dry', age: 18, wear: 76, stintTarget: 25 } });
 
     expect(aiLapDecision(undercut, live([undercut]), TRACK, 22).pitNow).toBe(true);
     expect(aiLapDecision(overcut, live([overcut]), TRACK, 22).pitNow).toBe(false);
@@ -182,12 +217,33 @@ describe('aiLapDecision — Phase E extensions', () => {
     expect(action.note).toMatch(/double-stack/);
   });
 
+  it('lets only the car in greater need take the safety-car stop', () => {
+    const pit: LiveCarState['pit'] = { plannedStops: 1, stopsMade: 0, scheduledLaps: [22], lastPitLap: null, inPitThisLap: false, window: null, pitRequested: false, planStatus: 'planned', planCancelled: false, lastWindowPromptLap: null };
+    const urgentMate = car({ driverId: 'd2', teamId: 't1', position: 4, gapToLeader: 9, tire: { compound: 'Dry', age: 22, wear: 78, stintTarget: 25 }, pit: { ...pit } });
+    const cautiousCar = car({ driverId: 'd1', teamId: 't1', position: 5, gapToLeader: 11, tire: { compound: 'Dry', age: 22, wear: 58, stintTarget: 25 }, pit: { ...pit } });
+    const state = live([urgentMate, cautiousCar], { safetyCar: { active: true, lapsRemaining: 2, deployedOnLap: 21, reason: 'Incident', deployments: 1 } });
+    expect(aiLapDecision(urgentMate, state, TRACK, 22).pitNow).toBe(true);
+    const cautiousAction = aiLapDecision(cautiousCar, state, TRACK, 22);
+    expect(cautiousAction.pitNow).toBe(false);
+    expect(cautiousAction.note).toMatch(/stacking under the safety car/);
+  });
+
   it('does not defer when its own tyres are at the cliff', () => {
     const pit: LiveCarState['pit'] = { plannedStops: 1, stopsMade: 0, scheduledLaps: [22], lastPitLap: null, inPitThisLap: false, window: null, pitRequested: false, planStatus: 'planned', planCancelled: false, lastWindowPromptLap: null };
     const mate = car({ driverId: 'd2', teamId: 't1', position: 4, gapToLeader: 9, tire: { compound: 'Dry', age: 22, wear: 85, stintTarget: 25 }, pit: { ...pit } });
     const c = car({ driverId: 'd1', teamId: 't1', position: 5, gapToLeader: 11, tire: { compound: 'Dry', age: 26, wear: 90, stintTarget: 25 }, pit: { ...pit } });
     const action = aiLapDecision(c, live([mate, c]), TRACK, 22);
     expect(action.pitNow).toBe(true);
+  });
+
+  it('reacts to an opponent pit only near its window and with reasonable tyres', () => {
+    const pit: LiveCarState['pit'] = { plannedStops: 1, stopsMade: 0, scheduledLaps: [24], lastPitLap: null, inPitThisLap: false, window: null, pitRequested: false, planStatus: 'planned', planCancelled: false, lastWindowPromptLap: null };
+    const rival = car({ driverId: 'd2', teamId: 't2', position: 4, gapToLeader: 9, pit: { ...pit, inPitThisLap: true }, tire: { compound: 'Dry', age: 18, wear: 55, stintTarget: 25 } });
+    const undercut = car({ driverId: 'd1', teamId: 't1', personality: 'UndercutFocused', position: 5, interval: 0.9, gapToLeader: 9.9, pit: { ...pit }, tire: { compound: 'Dry', age: 18, wear: 68, stintTarget: 25 } });
+    const freshTyres = car({ driverId: 'd3', teamId: 't3', personality: 'UndercutFocused', position: 5, interval: 0.9, gapToLeader: 9.9, pit: { ...pit }, tire: { compound: 'Dry', age: 6, wear: 20, stintTarget: 25 } });
+    const state = live([rival, undercut, freshTyres]);
+    expect(aiLapDecision(undercut, state, TRACK, 22).pitNow).toBe(true);
+    expect(aiLapDecision(freshTyres, state, TRACK, 22).pitNow).toBe(false);
   });
 
   it('is deterministic across repeated calls', () => {
