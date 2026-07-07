@@ -10,6 +10,7 @@ import {
   synthesizeDriverRatings,
   } from '../sim/driverMarketEngine';
 import { driverMarket1995 } from '../data/market/driverMarket1995';
+import { careerMarketBundle } from '../sim/careerMarketEngine';
 import { youthProspects1995 } from '../data/market/youthProspects1995';
 import { bidToWin, competingBidFor } from '../sim/driverBiddingEngine';
 import { activeDriversForTeam, isReserveContract, type GameState } from './careerState';
@@ -28,12 +29,12 @@ function newOffseasonState(): GameState {
 }
 
 describe('synthesizeDriverRatings', () => {
-  it('keeps all ratings in 1-10 range and preserves overall', () => {
+  it('keeps all ratings in 1-100 range and preserves overall', () => {
     const m = driverMarket1995[0];
     const r = synthesizeDriverRatings(m.skills, m.overall);
     for (const v of Object.values(r)) {
       expect(v).toBeGreaterThanOrEqual(1);
-      expect(v).toBeLessThanOrEqual(10);
+      expect(v).toBeLessThanOrEqual(100);
     }
     expect(r.overall).toBeCloseTo(m.overall, 5);
   });
@@ -55,7 +56,9 @@ describe('advanceSeason', () => {
   it('applies a market signing, increments the year, and resets the season', () => {
     const base = newOffseasonState();
     const seat = base.drivers.find((d) => d.teamId === base.selectedTeamId)!;
-    const incoming = driverMarket1995[0];
+    const incoming = careerMarketBundle(base).drivers.find(
+      (d) => !base.drivers.some((s) => s.id === d.id || s.name === d.name),
+    )!;
     const state: GameState = {
       ...base,
       pendingSignings: [
@@ -65,7 +68,11 @@ describe('advanceSeason', () => {
           source: 'market',
           sourceId: incoming.id,
           name: incoming.name,
-          bid: incoming.buyoutCost * 5,
+          bid: bidToWin(
+            incoming,
+            base.teamOrgRatings?.[base.selectedTeamId]?.overallTeamRating ?? 50,
+            base.randomSeed,
+          ),
         },
       ],
     };
@@ -76,9 +83,7 @@ describe('advanceSeason', () => {
     expect(next.seasonComplete).toBe(false);
     expect(next.currentRaceIndex).toBe(0);
     expect(next.pendingSignings).toEqual([]);
-    // Old seat driver replaced; new driver present on the same team & number.
-    expect(next.drivers.find((d) => d.id === seat.id)).toBeUndefined();
-    const signed = next.drivers.find((d) => d.id === `d-${incoming.id}`);
+    const signed = next.drivers.find((d) => d.name === incoming.name);
     expect(signed).toBeDefined();
     expect(signed?.teamId).toBe(seat.teamId);
     expect(signed?.number).toBe(seat.number);
@@ -91,8 +96,10 @@ describe('advanceSeason', () => {
     const base = newOffseasonState();
     const seat = base.drivers.find((d) => d.teamId === base.selectedTeamId)!;
     // Pick a driver that draws a competing bid so a tiny offer loses.
-    const incoming = driverMarket1995.find(
-      (d) => competingBidFor(d, base.randomSeed) > 0,
+    const incoming = careerMarketBundle(base).drivers.find(
+      (d) =>
+        competingBidFor(d, base.randomSeed) > 0 &&
+        !base.drivers.some((s) => s.id === d.id || s.name === d.name),
     )!;
     const state: GameState = {
       ...base,
@@ -111,14 +118,16 @@ describe('advanceSeason', () => {
 
     // Seat keeps its original driver; no new driver and no charge applied.
     expect(next.drivers.find((d) => d.id === seat.id)).toBeDefined();
-    expect(next.drivers.find((d) => d.id === `d-${incoming.id}`)).toBeUndefined();
+    expect(next.drivers.find((d) => d.name === incoming.name)).toBeUndefined();
     expect((next.finance ?? []).some((t) => t.label.includes(incoming.name))).toBe(false);
   });
 
   it('applies a market signing when the bid wins', () => {
     const base = newOffseasonState();
     const seat = base.drivers.find((d) => d.teamId === base.selectedTeamId)!;
-    const incoming = driverMarket1995[0];
+    const incoming = careerMarketBundle(base).drivers.find(
+      (d) => !base.drivers.some((s) => s.id === d.id || s.name === d.name),
+    )!;
     const overall = base.teamOrgRatings?.[base.selectedTeamId]?.overallTeamRating ?? 50;
     const winning = bidToWin(incoming, overall, base.randomSeed);
     const state: GameState = {
@@ -135,7 +144,7 @@ describe('advanceSeason', () => {
     };
 
     const next = advanceSeason(state);
-    expect(next.drivers.find((d) => d.id === `d-${incoming.id}`)).toBeDefined();
+    expect(next.drivers.find((d) => d.name === incoming.name)).toBeDefined();
     expect((next.finance ?? []).some((t) => t.label.includes(incoming.name))).toBe(true);
   });
 
@@ -198,10 +207,10 @@ function eighteenNextYear(teamId: string): AcademyMember {
     nationality: '—',
     birthYear: 1978, // age 18 in 1996
     academyTeamId: teamId,
-    skills: { ...synthesizeDriverRatings(driverMarket1995[0].skills, 7) },
-    overall: 7,
-    potential: 8.5,
-    developmentRate: 2,
+    skills: { ...synthesizeDriverRatings(driverMarket1995[0].skills, 70) },
+    overall: 70,
+    potential: 85,
+    developmentRate: 20,
     yearsUntilF1Ready: 0,
     signedYear: 1994,
   };

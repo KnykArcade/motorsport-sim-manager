@@ -64,15 +64,15 @@ export function liveRiskCalibration(year: number, series: string): LiveRiskCalib
 
 // Context that nudges the cause draw away from the flat era profile.
 export type DnfCauseContext = {
-  // 1-10 car reliability (low = more mechanical).
+  // 1-100 car reliability (low = more mechanical).
   carReliability: number;
-  // 1-10 driver aggression (high = more crashes).
+  // 1-100 driver aggression (high = more crashes).
   aggression: number;
-  // 1-10 driver composure (high = fewer crashes).
+  // 1-100 driver composure (high = fewer crashes).
   composure: number;
   // Tyre wear 0-100 at the moment of retirement (high = more tyre failures).
   tyreWear: number;
-  // Track wall proximity 1-10 (high = more crashes).
+  // Track wall proximity 1-100 (high = more crashes).
   wallProximity: number;
   // Whether the car was fighting/among traffic (raises crash share).
   inTraffic: boolean;
@@ -106,10 +106,10 @@ export function pickDnfCause(
   const p = eraDnfProfile(year);
 
   // Context multipliers (kept mild so the era profile dominates the aggregate).
-  const relW = p.reliability * (1 + (5 - ctx.carReliability) * 0.06);
+  const relW = p.reliability * (1 + (50 - ctx.carReliability) * 0.006);
   const crashW =
     p.crash *
-    (1 + (ctx.aggression - 5) * 0.06 + (5 - ctx.composure) * 0.05 + (ctx.wallProximity - 5) * 0.04) *
+    (1 + (ctx.aggression - 50) * 0.006 + (50 - ctx.composure) * 0.005 + (ctx.wallProximity - 50) * 0.004) *
     (ctx.inTraffic ? 1.3 : 1);
   const tyreW = p.tyre * (1 + Math.max(0, ctx.tyreWear - 60) * 0.03);
   const otherW = p.other;

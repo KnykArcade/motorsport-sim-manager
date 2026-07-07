@@ -94,22 +94,22 @@ function org(over: Partial<TeamOrganizationRatings> = {}): TeamOrganizationRatin
 describe('assignArchetype', () => {
   it('a strong, rich, high-rep team with a fast car is a Championship Contender', () => {
     const t = team({ reputation: 88, budget: 90_000_000 });
-    expect(assignArchetype(t, org({ carPerformance: 90 }), car(8.5), 's')).toBe('ChampionshipContender');
+    expect(assignArchetype(t, org({ carPerformance: 90 }), car(85), 's')).toBe('ChampionshipContender');
   });
 
   it('a poor, low-rep team is in Survival Mode', () => {
     const t = team({ reputation: 30, budget: 20_000_000 });
-    expect(assignArchetype(t, org(), car(3), 's')).toBe('SurvivalMode');
+    expect(assignArchetype(t, org(), car(30), 's')).toBe('SurvivalMode');
   });
 
   it('a low-rep team with strong commercial appeal leans Pay Driver Reliant', () => {
     const t = team({ reputation: 38, budget: 40_000_000 });
-    expect(assignArchetype(t, org({ sponsorAppeal: 70 }), car(4), 's')).toBe('PayDriverReliant');
+    expect(assignArchetype(t, org({ sponsorAppeal: 70 }), car(40), 's')).toBe('PayDriverReliant');
   });
 
   it('a strong youth academy produces a youth-oriented archetype', () => {
     const t = team({ reputation: 55, budget: 50_000_000 });
-    expect(assignArchetype(t, org({ youthAcademy: 80 }), car(5), 's')).toBe('YouthFocused');
+    expect(assignArchetype(t, org({ youthAcademy: 80 }), car(50), 's')).toBe('YouthFocused');
   });
 });
 

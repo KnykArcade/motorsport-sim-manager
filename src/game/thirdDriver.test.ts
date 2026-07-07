@@ -9,7 +9,8 @@ import {
   teamById,
   type GameState,
 } from './careerState';
-import { getMarketBundle, preloadMarketBundle } from '../data';
+import { preloadMarketBundle } from '../data';
+import { careerMarketBundle } from '../sim/careerMarketEngine';
 import { driverExtensionSigningFee, thirdDriverSalary, thirdDriverAmbitions } from '../sim/contractEngine';
 import type { StandingsEntry } from '../types/gameTypes';
 
@@ -27,7 +28,9 @@ function newGame(): GameState {
 
 function freeAgentId(state: GameState): string {
   const signed = new Set(state.signedMarketIds ?? []);
-  const m = getMarketBundle(1994, 'F1')!.drivers.find((d) => !signed.has(d.id));
+  const m = careerMarketBundle(state).drivers.find(
+    (d) => !signed.has(d.id) && !state.drivers.some((x) => x.id === d.id || x.name === d.name),
+  );
   if (!m) throw new Error('no free agent');
   return m.id;
 }

@@ -24,6 +24,7 @@ import { seedDevelopmentCurves } from '../sim/developmentCurveEngine';
 import { createInitialUniverseHistory } from '../sim/universeHistoryEngine';
 import { buildAllTeamOrganizationRatings } from '../sim/teamRatingsEngine';
 import { buildAllAITeamStates } from '../sim/aiTeamEngine';
+import { enforceRosters } from './rosterEnforcement';
 import type { TeamPrincipal } from '../types/principalTypes';
 
 // Deep clone via structuredClone (available in modern browsers / Node 18+).
@@ -219,7 +220,9 @@ export function createNewGame(options: NewGameOptions): GameState {
     careerMobilityMode: 'StandardCareer',
   };
 
+  const normalizedState = enforceRosters(baseState).state;
+
   // AI Team Management (Phase C): give every non-player team its management
   // brain (archetype, budget, financial health, goal).
-  return { ...baseState, aiTeamStates: buildAllAITeamStates(baseState) };
+  return { ...normalizedState, aiTeamStates: buildAllAITeamStates(normalizedState) };
 }

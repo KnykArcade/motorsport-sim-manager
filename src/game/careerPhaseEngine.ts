@@ -327,7 +327,7 @@ export function processAITeamActivity(state: GameState): GameState {
 
     if (archetype === 'AggressiveSpender' || archetype === 'DevelopmentFocused') {
       // Aggressive teams push development: small car stat improvement.
-      const improvement = rng.range(0.1, 0.4);
+      const improvement = rng.range(1, 4);
       const stat = rng.chance(0.5) ? 'enginePower' : 'aeroEfficiency';
       cars = cars.map((c) =>
         c.teamId === aiTeam.id
@@ -343,9 +343,9 @@ export function processAITeamActivity(state: GameState): GameState {
       isRealChange = true;
       newsHeadline = `${aiTeam.name} brings upgrade to next race`;
       newsBody = `${aiTeam.name} has completed a development push. ${stat === 'enginePower' ? 'Engine power' : 'Aero efficiency'} improved by ${improvement.toFixed(2)}.`;
-    } else if (ratings.reliability < 5 && rng.chance(0.4)) {
+    } else if (ratings.reliability < 50 && rng.chance(0.4)) {
       // Struggling teams fix reliability: small reliability improvement.
-      const improvement = rng.range(0.1, 0.4);
+      const improvement = rng.range(1, 4);
       cars = cars.map((c) =>
         c.teamId === aiTeam.id
           ? {
@@ -395,6 +395,19 @@ export function processAITeamActivity(state: GameState): GameState {
         teamId: aiTeam.id,
       });
     }
+  }
+
+  if (aiNews.length === 0 && teamsToProcess[0]) {
+    aiNews.push({
+      id: `news-ai-${weekId}-${teamsToProcess[0].id}`,
+      headline: `${teamsToProcess[0].name} keeps a steady paddock-week program`,
+      body: `${teamsToProcess[0].name} has no major developments to report this week, but the team remains active in the paddock.`,
+      timestamp: new Date().toISOString(),
+      category: 'ai_team',
+      priority: 'low',
+      careerPhase: 'paddock_week',
+      teamId: teamsToProcess[0].id,
+    });
   }
 
   return {
@@ -506,7 +519,7 @@ export function resolvePaddockEvent(
             ...c,
             developmentLevel: {
               ...c.developmentLevel,
-              reliability: Math.max(1, Math.min(10, c.developmentLevel.reliability + option.reliabilityChange!)),
+              reliability: Math.max(1, Math.min(100, c.developmentLevel.reliability + option.reliabilityChange! * 10)),
             },
           }
         : c,
@@ -521,11 +534,11 @@ export function resolvePaddockEvent(
         ? {
             ...c,
             developmentLevel: {
-              enginePower: clamp10(c.developmentLevel.enginePower + (option.carStatChange!.enginePower ?? 0)),
-              aeroEfficiency: clamp10(c.developmentLevel.aeroEfficiency + (option.carStatChange!.aeroEfficiency ?? 0)),
-              mechanicalGrip: clamp10(c.developmentLevel.mechanicalGrip + (option.carStatChange!.mechanicalGrip ?? 0)),
-              reliability: clamp10(c.developmentLevel.reliability + (option.carStatChange!.reliability ?? 0)),
-              pitCrewOperations: clamp10(c.developmentLevel.pitCrewOperations + (option.carStatChange!.pitCrewOperations ?? 0)),
+              enginePower: clamp10(c.developmentLevel.enginePower + (option.carStatChange!.enginePower ?? 0) * 10),
+              aeroEfficiency: clamp10(c.developmentLevel.aeroEfficiency + (option.carStatChange!.aeroEfficiency ?? 0) * 10),
+              mechanicalGrip: clamp10(c.developmentLevel.mechanicalGrip + (option.carStatChange!.mechanicalGrip ?? 0) * 10),
+              reliability: clamp10(c.developmentLevel.reliability + (option.carStatChange!.reliability ?? 0) * 10),
+              pitCrewOperations: clamp10(c.developmentLevel.pitCrewOperations + (option.carStatChange!.pitCrewOperations ?? 0) * 10),
             },
           }
         : c,
@@ -609,7 +622,7 @@ export function resolvePaddockEvent(
 }
 
 function clamp10(n: number): number {
-  return Math.max(1, Math.min(10, n));
+  return Math.max(1, Math.min(100, Math.round(n)));
 }
 
 function applyStructuredEffect(
@@ -646,7 +659,7 @@ function applyStructuredEffect(
               ...c,
               developmentLevel: {
                 ...c.developmentLevel,
-                reliability: clamp10(c.developmentLevel.reliability + eff.value),
+                reliability: clamp10(c.developmentLevel.reliability + eff.value * 10),
               },
             }
           : c,
@@ -661,7 +674,7 @@ function applyStructuredEffect(
               ...c,
               developmentLevel: {
                 ...c.developmentLevel,
-                [eff.target!]: clamp10((c.developmentLevel as Record<string, number>)[eff.target!] + eff.value),
+                [eff.target!]: clamp10((c.developmentLevel as Record<string, number>)[eff.target!] + eff.value * 10),
               },
             }
           : c,
@@ -907,13 +920,13 @@ export function generatePaddockWeekEvents(state: GameState): PaddockEvent[] {
 
   // --- Engine ---
   if (state.engine && carRatings) {
-    if (carRatings.reliability < 5) {
+    if (carRatings.reliability < 50) {
       events.push(
         builder.make(
           weekId, season, series, round,
           'engine',
           'Reliability concern',
-          `Car reliability is rated ${carRatings.reliability.toFixed(1)}/10. The factory should prioritize reliability work.`,
+          `Car reliability is rated ${carRatings.reliability.toFixed(1)}/100. The factory should prioritize reliability work.`,
           'minor',
         ),
       );

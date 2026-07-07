@@ -180,6 +180,7 @@ export function buildRaceContext(
     strategies: raceStrategiesById,
     instructions: driverInstructionsById,
     pointsByPosition: pointsSystem.pointsByPosition,
+    pointsMultiplier: race.pointsMultiplier ?? 1,
     seed: `${state.randomSeed}-r${race.round}`,
     year: state.seasonYear,
     teamReputation,

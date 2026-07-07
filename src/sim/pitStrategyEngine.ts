@@ -7,6 +7,7 @@
 import type { Car, RaceStrategy } from '../types/gameTypes';
 import type { PitWindow } from '../types/liveTypes';
 import { effectiveCarRatings } from './trackFitEngine';
+import { toLegacyRating } from './ratingScale';
 
 // Laps either side of the strategist's ideal stop lap that make up the window.
 const WINDOW_BEFORE = 3;
@@ -84,8 +85,8 @@ export function pitStopLoss(
   safetyCarSaving: number,
   opsForm = 0,
 ): number {
-  const ops = effectiveCarRatings(car).pitCrewOperations; // 1-10
-  const crewDelta = (5.5 - ops) * 0.4 - opsForm * PIT_OPS_LOSS_SENS; // sharp day saves time
+  const ops = effectiveCarRatings(car).pitCrewOperations; // 1-100
+  const crewDelta = (5.5 - toLegacyRating(ops)) * 0.4 - opsForm * PIT_OPS_LOSS_SENS; // sharp day saves time
   const loss = BASE_PIT_LOSS + crewDelta;
   return Math.max(8, underSafetyCar ? loss - safetyCarSaving : loss);
 }

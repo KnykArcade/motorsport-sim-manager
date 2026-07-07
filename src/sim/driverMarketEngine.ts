@@ -10,8 +10,9 @@ import type {
   MarketSkillRatings,
   YouthProspect,
 } from '../types/marketTypes';
+import { toLegacyRating } from './ratingScale';
 
-const clamp = (v: number, lo = 1, hi = 10) => Math.max(lo, Math.min(hi, v));
+const clamp = (v: number, lo = 1, hi = 100) => Math.max(lo, Math.min(hi, Math.round(v)));
 const r1 = (n: number) => Math.round(n * 10) / 10;
 const avg = (...xs: number[]) => xs.reduce((a, b) => a + b, 0) / xs.length;
 
@@ -22,13 +23,17 @@ export function synthesizeDriverRatings(
   skills: MarketSkillRatings,
   overall: number,
 ): DriverRatings {
-  const qualifying = r1(avg(skills.cornering, skills.braking, skills.technical));
+  const qualifying = r1(avg(toLegacyRating(skills.cornering), toLegacyRating(skills.braking), toLegacyRating(skills.technical)) * 10);
   const racePace = r1(
-    avg(skills.enduranceConsistency, skills.tractionAcceleration, skills.overtakingRacecraft),
+    avg(
+      toLegacyRating(skills.enduranceConsistency),
+      toLegacyRating(skills.tractionAcceleration),
+      toLegacyRating(skills.overtakingRacecraft),
+    ) * 10,
   );
-  const adaptability = r1(avg(skills.technical, skills.surfaceGripBumpiness));
-  const aggression = r1(clamp(avg(skills.overtakingRacecraft, 11 - skills.riskManagement)));
-  const composure = r1(avg(skills.enduranceConsistency, skills.riskManagement));
+  const adaptability = r1(avg(toLegacyRating(skills.technical), toLegacyRating(skills.surfaceGripBumpiness)) * 10);
+  const aggression = r1(clamp(avg(toLegacyRating(skills.overtakingRacecraft), 11 - toLegacyRating(skills.riskManagement)) * 10));
+  const composure = r1(avg(toLegacyRating(skills.enduranceConsistency), toLegacyRating(skills.riskManagement)) * 10);
   return {
     cornering: skills.cornering,
     braking: skills.braking,

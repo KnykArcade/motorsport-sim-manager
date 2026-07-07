@@ -1,6 +1,6 @@
 // Backward-compatible re-exports from seasonLoader.ts.
 // The old lazySeasonData.ts had its own loader map; it has been superseded by
-// the comprehensive seasonLoader.ts which covers all 56 seasons.
+// the comprehensive seasonLoader.ts which covers all 86 seasons.
 
 import type { Series } from '../types/gameTypes';
 import type { SeasonBundle } from './seasonCatalog';

@@ -23,8 +23,9 @@ import { calculateReliabilityRisk } from './reliabilityEngine';
 import { calculateMistakeRisk, calculateCrashRisk } from './mistakeEngine';
 import { calculatePitStopPerformance } from './pitStopEngine';
 import { eraReliabilityScale, pickDnfCause, type DnfCauseContext } from './dnfModel';
+import { toLegacyRating } from './ratingScale';
 
-// Pace is a weighted blend of four components, each on a ~1-10 scale:
+// Pace is a weighted blend of four components, each on a ~1-100 scale:
 //   50% car, 25% driver, 15% team, 10% form/morale/setup/strategy.
 // Car strength is deliberately the dominant factor. PACE_SPREAD scales the
 // blend up so the deterministic spread between cars dominates the stochastic
@@ -95,17 +96,17 @@ export function calculateRacePace(
   setup: SetupOption,
   strategy: RaceStrategy,
   instruction: DriverInstruction,
-  teamRating = 5,
+  teamRating = 50,
   confidenceModifier = 0,
 ): { score: number; breakdown: ScoreBreakdown } {
   // Car component: raw car strength plus how well the car suits the circuit.
-  const carComp = clamp10(avgCar(car) + calculateCarTrackFit(car, track));
+  const carComp = clamp10(toLegacyRating(avgCar(car)) + calculateCarTrackFit(car, track));
   // Driver component: race pace / overall plus the driver's track fit.
   const driverComp = clamp10(
-    (driver.ratings.racePace + driver.ratings.overall) / 2 + calculateDriverTrackFit(driver, track),
+    (toLegacyRating(driver.ratings.racePace) + toLegacyRating(driver.ratings.overall)) / 2 + calculateDriverTrackFit(driver, track),
   );
   // Team component: organisation strength (reputation/10).
-  const teamComp = clamp10(teamRating);
+  const teamComp = clamp10(toLegacyRating(teamRating));
   // Everything else: setup, strategy, driver instruction and morale.
   const setupFit = calculateSetupFit(setup, track) + setup.racePaceBoost;
   const moraleFactor = (driver.morale - 65) / 15 + confidenceModifier;
@@ -220,7 +221,7 @@ export function computeRaceOutcome(context: RaceContext): RaceOutcome {
     // variation that lets front-runners trade wins. Driver consistency (composure)
     // damps the individual swing so reliable drivers are steadier.
     const form = weekendForm(context.seed, e.driver.teamId, teamRating);
-    const consistency = clamp10(e.driver.ratings.composure);
+    const consistency = clamp10(toLegacyRating(e.driver.ratings.composure));
     const driverSwing = rng.variance(1.6 * (1 + (6 - consistency) * 0.06));
 
     // Per-car weekend operations execution (pit/reliability/strategy). Zero-mean
@@ -261,7 +262,7 @@ export function computeRaceOutcome(context: RaceContext): RaceOutcome {
     if (rng.chance(pDnf)) {
       const causeCtx: DnfCauseContext = {
         carReliability: effectiveCarRatings(e.car).reliability,
-        aggression: e.driver.ratings.aggression + instruction.mistakeModifier * 3,
+        aggression: e.driver.ratings.aggression + instruction.mistakeModifier * 30,
         composure: e.driver.ratings.composure,
         tyreWear: 55, // representative late-race wear for the quick sim
         wallProximity: context.track.attributes.riskWallProximity,
@@ -312,7 +313,7 @@ export function computeRaceOutcome(context: RaceContext): RaceOutcome {
   const results: RaceResult[] = [];
 
   finishers.forEach((row, i) => {
-    const points = context.pointsByPosition[i + 1] ?? 0;
+    const points = Math.round((context.pointsByPosition[i + 1] ?? 0) * (context.pointsMultiplier ?? 1));
     const gap = i === 0 ? 'WIN' : `+${round1((winnerScore - row.score) * 2.4)}s`;
     results.push({
       position: i + 1,

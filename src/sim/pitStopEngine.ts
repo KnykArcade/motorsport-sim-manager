@@ -3,6 +3,7 @@
 import type { Car, RaceStrategy } from '../types/gameTypes';
 import type { Rng } from './random';
 import { effectiveCarRatings } from './trackFitEngine';
+import { toLegacyRating } from './ratingScale';
 
 export type PitStopOutcome = {
   // Net contribution to race score (positive = time gained).
@@ -24,15 +25,15 @@ export function calculatePitStopPerformance(
   // Weekend operations-form (0 neutral): pit-crew execution on the day.
   opsForm = 0,
 ): PitStopOutcome {
-  const ops = effectiveCarRatings(car).pitCrewOperations; // 1-10
+  const ops = effectiveCarRatings(car).pitCrewOperations; // 1-100
 
   // Strong pit crews gain time; the day's operations swing adds or removes some.
-  const base = (ops - 5.5) * 0.15 + opsForm * PIT_OPS_GAIN;
+  const base = (toLegacyRating(ops) - 5.5) * 0.15 + opsForm * PIT_OPS_GAIN;
 
   // More stops means more exposure to pit risk; a sharp day fumbles less.
   const riskExposure = strategy.pitRiskModifier;
   const fumbleChance = clamp(
-    0.06 + riskExposure * 0.08 - (ops - 5) * 0.01 - opsForm * PIT_OPS_FUMBLE_SENS,
+    0.06 + riskExposure * 0.08 - (toLegacyRating(ops) - 5) * 0.01 - opsForm * PIT_OPS_FUMBLE_SENS,
     0.01,
     0.3,
   );
@@ -45,7 +46,7 @@ export function calculatePitStopPerformance(
     };
   }
 
-  if (ops >= 8 && rng.chance(0.2)) {
+  if (ops >= 80 && rng.chance(0.2)) {
     return { scoreDelta: base + 0.4, note: 'Lightning-fast pit stop.' };
   }
 

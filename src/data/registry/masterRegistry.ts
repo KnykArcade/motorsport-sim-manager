@@ -23,7 +23,6 @@ import type {
   RegistryDriverStatus,
 } from '../../types/registryTypes';
 import type { SeasonBundle } from '../seasonCatalog';
-import { getMarketBundle } from '../market';
 
 // --- Canonical aliases ------------------------------------------------------
 
@@ -466,11 +465,6 @@ export function buildMasterRegistry(): MasterDriverRegistry {
     const { year, series } = parseBundleKey(key);
     const bundle = bundles[key];
     importSeasonDrivers(registry, bundle.drivers, year, series);
-    const market = getMarketBundle(year, series);
-    if (market) {
-      importMarketDrivers(registry, market.drivers, year, series);
-      importYouthProspects(registry, market.youth, year, series);
-    }
   }
   // Set series-specific ratings + secondary interest once all sources merged.
   for (const id of registry.order) {

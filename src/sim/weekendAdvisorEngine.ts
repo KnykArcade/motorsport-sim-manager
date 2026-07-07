@@ -29,7 +29,7 @@ export function recommendedQualiRunPlan(track: Track, weather?: WeatherState): W
   if (isUncertain(weather)) {
     return { optionId: 'BankerLapFirst', reason: 'Changeable skies — set a banker lap before conditions shift.' };
   }
-  if (track.archetype === 'Street Circuit' || track.attributes.surfaceGripBumpiness >= 7) {
+  if (track.archetype === 'Street Circuit' || track.attributes.surfaceGripBumpiness >= 70) {
     return { optionId: 'LateTrackEvolution', reason: 'Grip builds through the session here — run late.' };
   }
   return { optionId: 'StandardPush', reason: 'Dry and stable — a standard push lap maximises the result.' };
@@ -42,10 +42,10 @@ export function recommendedRaceStrategy(track: Track, weather?: WeatherState): W
   if (isUncertain(weather)) {
     return { optionId: 'ReactiveStrategy', reason: 'Forecast is unstable — keep your options open.' };
   }
-  if (track.archetype === 'Street Circuit' || track.attributes.overtakingRacecraft <= 3) {
+  if (track.archetype === 'Street Circuit' || track.attributes.overtakingRacecraft <= 30) {
     return { optionId: 'TrackPositionFocus', reason: 'Overtaking is hard here — protect track position.' };
   }
-  if (track.attributes.enduranceConsistency >= 7 || track.attributes.tractionAcceleration >= 8) {
+  if (track.attributes.enduranceConsistency >= 70 || track.attributes.tractionAcceleration >= 80) {
     return { optionId: 'AggressiveTwoStop', reason: 'High tyre wear rewards an extra stop.' };
   }
   return { optionId: 'BalancedOneStop', reason: 'A balanced one-stop fits this circuit.' };
@@ -55,10 +55,10 @@ export function recommendedInstruction(track: Track, weather?: WeatherState): We
   if (isWet(weather)) {
     return { optionId: 'ProtectCar', reason: 'Wet and risky — protect the car and bring it home.' };
   }
-  if (track.archetype === 'High-Risk Circuit' || track.attributes.riskWallProximity >= 7) {
+  if (track.archetype === 'High-Risk Circuit' || track.attributes.riskWallProximity >= 70) {
     return { optionId: 'Conservative', reason: 'Walls are close — a mistake is costly.' };
   }
-  if (track.attributes.enduranceConsistency >= 7) {
+  if (track.attributes.enduranceConsistency >= 70) {
     return { optionId: 'ProtectCar', reason: 'Hard on the car — manage it to the finish.' };
   }
   return { optionId: 'Balanced', reason: 'Balanced pace suits these conditions.' };

@@ -20,12 +20,12 @@ describe('race lineup (two cars per team)', () => {
     }
   });
 
-  it('exposes the third IndyCar driver as a reserve', () => {
+  it('keeps fresh IndyCar rosters at two race drivers with no reserve slot', () => {
     const state = newGame(2026, 'IndyCar', 't-team-penske');
     const roster = state.drivers.filter((d) => d.teamId === 't-team-penske');
-    expect(roster.length).toBe(3);
+    expect(roster.length).toBe(2);
     expect(activeDriversForTeam(state, 't-team-penske').length).toBe(2);
-    expect(reserveDriversForTeam(state, 't-team-penske').length).toBe(1);
+    expect(reserveDriversForTeam(state, 't-team-penske').length).toBe(0);
   });
 
   it('1994 grid has no duplicated driver and exactly two per team', () => {
@@ -41,8 +41,21 @@ describe('race lineup (two cars per team)', () => {
 
   it('swaps a reserve into a race seat and demotes the displaced driver', () => {
     let state = newGame(2026, 'IndyCar', 't-team-penske');
-    const reserve = reserveDriversForTeam(state, 't-team-penske')[0];
-    const seat1Before = activeDriversForTeam(state, 't-team-penske')[1].id;
+    const teamId = 't-team-penske';
+    const displaced = activeDriversForTeam(state, teamId)[1];
+    const reserve = {
+      ...displaced,
+      id: `${displaced.id}-reserve`,
+      contractType: 'reserve' as const,
+    };
+    state = {
+      ...state,
+      drivers: [...state.drivers, reserve],
+      teams: state.teams.map((t) =>
+        t.id === teamId ? { ...t, driverIds: [...t.driverIds, reserve.id] } : t,
+      ),
+    };
+    const seat1Before = displaced.id;
 
     state = gameReducer(state, {
       type: 'SWAP_RACE_DRIVER',
@@ -76,17 +89,30 @@ describe('race lineup (two cars per team)', () => {
 
   it('promotes a reserve into a race seat and flips contract tiers', () => {
     let state = newGame(2026, 'IndyCar', 't-team-penske');
-    const reserve = reserveDriversForTeam(state, 't-team-penske')[0];
-    const seat1Before = activeDriversForTeam(state, 't-team-penske')[1].id;
+    const teamId = 't-team-penske';
+    const displaced = activeDriversForTeam(state, teamId)[1];
+    const reserve = {
+      ...displaced,
+      id: `${displaced.id}-reserve`,
+      contractType: 'reserve' as const,
+    };
+    state = {
+      ...state,
+      drivers: [...state.drivers, reserve],
+      teams: state.teams.map((t) =>
+        t.id === teamId ? { ...t, driverIds: [...t.driverIds, reserve.id] } : t,
+      ),
+    };
+    const seat1Before = displaced.id;
     state = gameReducer(state, {
       type: 'SWAP_RACE_DRIVER',
       seatIndex: 1,
       reserveDriverId: reserve.id,
     })!;
     const promoted = state.drivers.find((d) => d.id === reserve.id)!;
-    const displaced = state.drivers.find((d) => d.id === seat1Before)!;
+    const displacedDriver = state.drivers.find((d) => d.id === seat1Before)!;
     expect(promoted.contractType).toBe('seat');
-    expect(displaced.contractType).toBe('reserve');
+    expect(displacedDriver.contractType).toBe('reserve');
     expect(activeDriversForTeam(state, 't-team-penske').map((d) => d.id)).toContain(reserve.id);
   });
 

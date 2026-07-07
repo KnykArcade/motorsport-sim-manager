@@ -6,7 +6,7 @@
 // `Driver` type — a market driver is only converted into a full `Driver` when
 // signed to a race seat.
 
-// The ten core driving skills shared by every talent record (1-10 scale).
+// The ten core driving skills shared by every talent record (1-100 scale).
 export type MarketSkillRatings = {
   cornering: number;
   braking: number;

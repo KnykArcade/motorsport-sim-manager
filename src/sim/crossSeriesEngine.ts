@@ -33,6 +33,8 @@ import type { GameState } from '../game/careerState';
 export const SERIES_PRESTIGE: Record<Series, number> = {
   F1: 100,
   IndyCar: 72,
+  CART: 70,
+  'Champ Car': 70,
 };
 
 export function seriesPrestige(series: Series): number {
@@ -51,7 +53,7 @@ const clamp01 = (v: number) => clamp(0, 1, v);
 export type SeriesOffer = {
   series: Series;
   teamReputation: number; // 0-100
-  carCompetitiveness: number; // 0-10 (car overall)
+  carCompetitiveness: number; // 0-100 (car overall)
   salary: number; // $M/yr offered
   contractYears: number;
 };
@@ -71,9 +73,9 @@ export function refinedWillingness(
   return clamp0100(w);
 }
 
-// How standing (talent) a driver is, 0..1 (overall 6→0, 10→1).
+// How standing (talent) a driver is, 0..1 (overall 60→0, 100→1).
 function standingOf(e: MasterDriverEntry): number {
-  return clamp01((e.baseRatings.overall - 6) / 4);
+  return clamp01((e.baseRatings.overall - 60) / 40);
 }
 
 // Series-preference component (0-100): a driver most wants their preferred
@@ -93,7 +95,7 @@ function seriesPreferenceScore(
 
 // Chance-to-win component (0-100): team reputation + car competitiveness.
 function competitivenessScore(offer: SeriesOffer): number {
-  return clamp0100(0.5 * offer.teamReputation + 0.5 * offer.carCompetitiveness * 10);
+  return clamp0100(0.5 * offer.teamReputation + 0.5 * offer.carCompetitiveness);
 }
 
 // Salary component (0-100): meeting the driver's demand scores 50, doubling it
@@ -151,7 +153,7 @@ export function willingToSign(
 // used to weight contested bids. Returns undefined for drivers who are already
 // eligible for the career's series (a same-series move carries no series-
 // preference penalty, so bidding is unchanged) and for non-registry curated
-// drivers. `playerTeamReputation` is 0-100; `playerCarOverall` is 0-10.
+// drivers. `playerTeamReputation` is 0-100; `playerCarOverall` is 0-100.
 export function marketDriverOfferInterest(
   state: GameState,
   md: MarketDriver,

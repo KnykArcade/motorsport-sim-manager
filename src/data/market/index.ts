@@ -2,6 +2,7 @@
 // All seasons use dynamic import() so Vite code-splits each season's market data.
 
 import type { MarketDriver, YouthProspect } from '../../types/marketTypes';
+import { buildStaticMarketBundleMap } from './marketSeed';
 import type { Series } from '../../types/gameTypes';
 
 export type MarketBundle = {
@@ -19,10 +20,10 @@ function round2(n: number): number {
   return Math.round(n * 100) / 100;
 }
 export function youthSigningCost(potential: number): number {
-  return round2(0.02 + (Math.max(0, Math.min(10, potential)) / 10) * 0.13);
+  return round2(0.02 + (Math.max(0, Math.min(100, potential)) / 100) * 0.13);
 }
 export function youthYearlyAcademyCost(potential: number): number {
-  return round2(0.01 + (Math.max(0, Math.min(10, potential)) / 10) * 0.09);
+  return round2(0.01 + (Math.max(0, Math.min(100, potential)) / 100) * 0.09);
 }
 
 function normalizeYouth(youth: YouthProspect[]): YouthProspect[] {
@@ -37,6 +38,33 @@ function bundle(drivers: MarketDriver[], youth: YouthProspect[]): MarketBundle {
   return { drivers, youth: normalizeYouth(youth) };
 }
 
+const releasedMarketDrivers = new Map<string, MarketDriver[]>();
+
+function seasonKey(year: number, series: Series): string {
+  return `${year}-${series}`;
+}
+
+function dedupeMarketDrivers(drivers: MarketDriver[]): MarketDriver[] {
+  const seen = new Set<string>();
+  const deduped: MarketDriver[] = [];
+  for (const driver of drivers) {
+    if (seen.has(driver.id)) continue;
+    seen.add(driver.id);
+    deduped.push(driver);
+  }
+  return deduped;
+}
+
+export function seedReleasedMarketDrivers(year: number, series: Series, drivers: MarketDriver[]): void {
+  const key = seasonKey(year, series);
+  const merged = [...(releasedMarketDrivers.get(key) ?? []), ...drivers];
+  releasedMarketDrivers.set(key, dedupeMarketDrivers(merged));
+}
+
+export function getReleasedMarketDrivers(year: number, series: Series): MarketDriver[] {
+  return releasedMarketDrivers.get(seasonKey(year, series)) ?? [];
+}
+
 // --- Lazy loader infrastructure ---
 
 const bundleCache = new Map<string, MarketBundle>();
@@ -45,7 +73,7 @@ const bundleCache = new Map<string, MarketBundle>();
 const marketLoaders: Record<string, () => Promise<{ drivers: MarketDriver[]; youth: YouthProspect[] }>> = {};
 
 function makeMarketLoader(year: number, series: Series) {
-  const suffix = series === 'IndyCar' ? 'IndyCar' : '';
+  const suffix = series === 'F1' ? '' : series === 'Champ Car' ? 'CART' : series;
   return async () => {
     const [driversMod, youthMod] = await Promise.all([
       import(`./driverMarket${year}${suffix}.ts`),
@@ -62,10 +90,107 @@ for (let year = 1990; year <= 2026; year++) {
   marketLoaders[`${year}-F1`] = makeMarketLoader(year, 'F1');
 }
 
+// IndyCar seasons 1996–2007 and 2008–2026
+for (let year = 1996; year <= 2007; year++) {
+  marketLoaders[`${year}-IndyCar`] = makeMarketLoader(year, 'IndyCar');
+}
+
+// IndyCar seasons 1996–2007 and 2008–2026
+for (let year = 1996; year <= 2007; year++) {
+  marketLoaders[`${year}-IndyCar`] = makeMarketLoader(year, 'IndyCar');
+}
+
+// IndyCar seasons 1996–2007 and 2008–2026
+for (let year = 1996; year <= 2007; year++) {
+  marketLoaders[`${year}-IndyCar`] = makeMarketLoader(year, 'IndyCar');
+}
+
+// IndyCar seasons 1996–2007 and 2008–2026
+for (let year = 1996; year <= 2007; year++) {
+  marketLoaders[`${year}-IndyCar`] = makeMarketLoader(year, 'IndyCar');
+}
+
+// IndyCar seasons 1996–2007 and 2008–2026
+for (let year = 1996; year <= 2007; year++) {
+  marketLoaders[`${year}-IndyCar`] = makeMarketLoader(year, 'IndyCar');
+}
+
+// IndyCar seasons 1996–2007 and 2008–2026
+for (let year = 1996; year <= 2007; year++) {
+  marketLoaders[`${year}-IndyCar`] = makeMarketLoader(year, 'IndyCar');
+}
+
+// IndyCar seasons 1996–2007 and 2008–2026
+for (let year = 1996; year <= 2007; year++) {
+  marketLoaders[`${year}-IndyCar`] = makeMarketLoader(year, 'IndyCar');
+}
+
+// IndyCar seasons 1996–2007 and 2008–2026
+for (let year = 1996; year <= 2007; year++) {
+  marketLoaders[`${year}-IndyCar`] = makeMarketLoader(year, 'IndyCar');
+}
+
+// IndyCar seasons 1996–2007 and 2008–2026
+for (let year = 1996; year <= 2007; year++) {
+  marketLoaders[`${year}-IndyCar`] = makeMarketLoader(year, 'IndyCar');
+}
+
+// IndyCar seasons 1996–2007 and 2008–2026
+for (let year = 1996; year <= 2007; year++) {
+  marketLoaders[`${year}-IndyCar`] = makeMarketLoader(year, 'IndyCar');
+}
+
+// IndyCar seasons 1996–2007 and 2008–2026
+for (let year = 1996; year <= 2007; year++) {
+  marketLoaders[`${year}-IndyCar`] = makeMarketLoader(year, 'IndyCar');
+}
+
+// IndyCar seasons 1996–2007 and 2008–2026
+for (let year = 1996; year <= 2007; year++) {
+  marketLoaders[`${year}-IndyCar`] = makeMarketLoader(year, 'IndyCar');
+}
+
+// IndyCar seasons 1996–2007 and 2008–2026
+for (let year = 1996; year <= 2007; year++) {
+  marketLoaders[`${year}-IndyCar`] = makeMarketLoader(year, 'IndyCar');
+}
+
+// IndyCar seasons 1996–2007 and 2008–2026
+for (let year = 1996; year <= 2007; year++) {
+  marketLoaders[`${year}-IndyCar`] = makeMarketLoader(year, 'IndyCar');
+}
+
+// IndyCar seasons 1996–2007 and 2008–2026
+for (let year = 1996; year <= 2007; year++) {
+  marketLoaders[`${year}-IndyCar`] = makeMarketLoader(year, 'IndyCar');
+}
+
+// IndyCar seasons 1996–2007 and 2008–2026
+for (let year = 1996; year <= 2007; year++) {
+  marketLoaders[`${year}-IndyCar`] = makeMarketLoader(year, 'IndyCar');
+}
+
+// IndyCar seasons 1996–2007 and 2008–2026
+for (let year = 1996; year <= 2007; year++) {
+  marketLoaders[`${year}-IndyCar`] = makeMarketLoader(year, 'IndyCar');
+}
+
 // IndyCar seasons 2008–2026
 for (let year = 2008; year <= 2026; year++) {
   marketLoaders[`${year}-IndyCar`] = makeMarketLoader(year, 'IndyCar');
 }
+
+// CART seasons 1990–2003
+for (let year = 1990; year <= 2003; year++) {
+  marketLoaders[`${year}-CART`] = makeMarketLoader(year, 'CART');
+}
+
+// Champ Car seasons 2004–2007
+for (let year = 2004; year <= 2007; year++) {
+  marketLoaders[`${year}-Champ Car`] = makeMarketLoader(year, 'Champ Car');
+}
+
+seedMarketBundleCache(buildStaticMarketBundleMap());
 
 // Synchronous lookup — returns cached bundle or undefined if not yet loaded.
 export function getMarketBundle(year: number, series: Series = 'F1'): MarketBundle | undefined {

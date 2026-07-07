@@ -19,16 +19,16 @@ import {
 import type { AcademyMember, MarketSkillRatings } from '../types/marketTypes';
 
 const skills: MarketSkillRatings = {
-  cornering: 6,
-  braking: 6,
-  straights: 6,
-  tractionAcceleration: 6,
-  elevationBlindCorners: 6,
-  technical: 6,
-  overtakingRacecraft: 6,
-  surfaceGripBumpiness: 6,
-  riskManagement: 6,
-  enduranceConsistency: 6,
+  cornering: 60,
+  braking: 60,
+  straights: 60,
+  tractionAcceleration: 60,
+  elevationBlindCorners: 60,
+  technical: 60,
+  overtakingRacecraft: 60,
+  surfaceGripBumpiness: 60,
+  riskManagement: 60,
+  enduranceConsistency: 60,
 };
 
 function member(overrides: Partial<AcademyMember> = {}): AcademyMember {
@@ -40,9 +40,9 @@ function member(overrides: Partial<AcademyMember> = {}): AcademyMember {
     birthYear: 2008,
     academyTeamId: 't-1',
     skills,
-    overall: 6,
-    potential: 8,
-    developmentRate: 2,
+    overall: 60,
+    potential: 80,
+    developmentRate: 20,
     yearsUntilF1Ready: 2,
     signedYear: 2022,
     ...overrides,
@@ -168,29 +168,29 @@ describe('aiFirstOptionDecision', () => {
   });
 
   it('promotes a race-ready prospect who beats the weakest seat driver', () => {
-    const ready = member({ yearsUntilF1Ready: 0, overall: 8 });
+    const ready = member({ yearsUntilF1Ready: 0, overall: 80 });
     expect(aiFirstOptionDecision(ready, base)).toBe('race_seat');
   });
 
   it('promotes a race-ready prospect into an empty seat even if weaker', () => {
-    const ready = member({ yearsUntilF1Ready: 0, overall: 4 });
+    const ready = member({ yearsUntilF1Ready: 0, overall: 40 });
     expect(aiFirstOptionDecision(ready, { ...base, hasEmptySeat: true })).toBe('race_seat');
   });
 
   it('keeps a high-potential but not-ready prospect as a reserve/test driver', () => {
-    const dev = member({ yearsUntilF1Ready: 2, potential: 9, overall: 5 });
+    const dev = member({ yearsUntilF1Ready: 2, potential: 90, overall: 50 });
     expect(aiFirstOptionDecision(dev, base)).toBe('test');
   });
 
   it('extends a high-potential prospect when the reserve slot is taken', () => {
-    const dev = member({ yearsUntilF1Ready: 2, potential: 9 });
+    const dev = member({ yearsUntilF1Ready: 2, potential: 90 });
     expect(aiFirstOptionDecision(dev, { ...base, hasReserve: true })).toBe('extend');
   });
 
   it('never extends once rights have expired — commits to a senior role instead', () => {
     // High-potential prospect, reserve taken: would normally extend, but with
     // rights expired the team must commit (test driver) rather than hold on.
-    const dev = member({ yearsUntilF1Ready: 2, potential: 9 });
+    const dev = member({ yearsUntilF1Ready: 2, potential: 90 });
     const decision = aiFirstOptionDecision(dev, { ...base, hasReserve: true, rightsExpired: true });
     expect(decision).not.toBe('extend');
     expect(decision).toBe('test');
@@ -199,7 +199,7 @@ describe('aiFirstOptionDecision', () => {
   it('releases a low-upside prospect to the market once rights have expired', () => {
     // Low potential + expired rights → no extension is possible, so the driver
     // enters the adult market rather than lingering as academy-only.
-    const lowUpside = member({ yearsUntilF1Ready: 2, potential: 5, overall: 5 });
+    const lowUpside = member({ yearsUntilF1Ready: 2, potential: 50, overall: 50 });
     expect(aiFirstOptionDecision(lowUpside, { ...base, rightsExpired: true })).toBe('release');
     expect(retainsRights('release')).toBe(false);
   });

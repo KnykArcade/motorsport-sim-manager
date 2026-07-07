@@ -2,22 +2,22 @@
 // Output is centered around ~0 (neutral). Positive = good fit.
 
 import type { Car, CarRatings, Driver, Track } from '../types/gameTypes';
+import { clampRating100, toLegacyRating } from './ratingScale';
 
 export function effectiveCarRatings(car: Car): CarRatings {
   const d = car.developmentLevel;
   const r = car.ratings;
   const eng = car.engineBonus;
-  const clamp10 = (n: number) => Math.max(1, Math.min(10, n));
   return {
-    enginePower: clamp10(r.enginePower + d.enginePower + (eng?.power ?? 0)),
-    aeroEfficiency: r.aeroEfficiency + d.aeroEfficiency,
-    mechanicalGrip: r.mechanicalGrip + d.mechanicalGrip,
-    reliability: clamp10(r.reliability + d.reliability + (eng?.reliability ?? 0)),
-    pitCrewOperations: r.pitCrewOperations + d.pitCrewOperations,
+    enginePower: clampRating100(r.enginePower + d.enginePower + (eng?.power ?? 0)),
+    aeroEfficiency: clampRating100(r.aeroEfficiency + d.aeroEfficiency),
+    mechanicalGrip: clampRating100(r.mechanicalGrip + d.mechanicalGrip),
+    reliability: clampRating100(r.reliability + d.reliability + (eng?.reliability ?? 0)),
+    pitCrewOperations: clampRating100(r.pitCrewOperations + d.pitCrewOperations),
   };
 }
 
-// Overall car competitiveness (1-10): the mean of the effective ratings.
+// Overall car competitiveness (1-100): the mean of the effective ratings.
 export function carPerformanceRating(car: Car): number {
   const c = effectiveCarRatings(car);
   return (
@@ -25,12 +25,11 @@ export function carPerformanceRating(car: Car): number {
   );
 }
 
-// A rating (1-10) weighted by a demand (1-10). Demand-weighted so a strong
+// A rating (1-100) weighted by a demand (1-100). Demand-weighted so a strong
 // engine matters more at high-power tracks. Returns roughly [-5, 5].
 function weighted(rating: number, demand: number): number {
-  // (rating - 5.5) shifts the 1-10 scale so an average car is neutral.
-  // demand/10 scales the contribution by how much the track asks for it.
-  return (rating - 5.5) * (demand / 10);
+  // Convert the 1-100 scale back to the legacy 1-10 behaviour.
+  return (toLegacyRating(rating) - 5.5) * (toLegacyRating(demand) / 10);
 }
 
 export function calculateDriverTrackFit(driver: Driver, track: Track): number {

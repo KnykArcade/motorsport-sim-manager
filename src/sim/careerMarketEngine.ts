@@ -26,6 +26,7 @@ import {
   sanitizeMarketName,
 } from '../data/registry/masterRegistry';
 import { getMarketBundle, youthSigningCost, youthYearlyAcademyCost, type MarketBundle } from '../data/market';
+import { getReleasedMarketDrivers } from '../data/market';
 import { crossSeriesCandidates } from './crossSeriesEngine';
 import { ensureMinimumYouthProspects } from './youthGenerationEngine';
 import type { GameState } from '../game/careerState';
@@ -233,6 +234,7 @@ export function careerMarketBundle(state: GameState): MarketBundle {
   const { seasonYear: year, series } = state;
   const reg = getMasterRegistry();
   const staticBundle = getMarketBundle(year, series);
+  const releasedDrivers = getReleasedMarketDrivers(year, series);
   const occupied = occupiedIdentities(state);
 
   // Normalize the curated youth pool by age: under-12 are hidden entirely
@@ -247,7 +249,7 @@ export function careerMarketBundle(state: GameState): MarketBundle {
     else curatedYouth.push(y);
   }
 
-  const curatedDrivers = [...(staticBundle?.drivers ?? []), ...curatedYouthToAdults];
+  const curatedDrivers = [...releasedDrivers, ...curatedYouthToAdults];
   const curatedDriverNames = new Set(curatedDrivers.map((d) => canonicalNameOf(d.name)));
   const curatedYouthNames = new Set(curatedYouth.map((y) => canonicalNameOf(y.name)));
 
@@ -277,20 +279,21 @@ export function careerMarketBundle(state: GameState): MarketBundle {
   // driver may sit in both the adult market and the youth pool.
   const seenDrivers = new Set<string>(occupied.names);
   const drivers: MarketDriver[] = [];
-  for (const d of [...curatedDrivers, ...extraDrivers, ...crossSeries]) {
+  for (const d of [...curatedDrivers, ...extraDrivers, ...(staticBundle?.drivers ?? []), ...crossSeries]) {
     const clean = sanitizeMarketName(d.name);
     const key = canonicalNameOf(clean);
     if (seenDrivers.has(key)) continue;
     seenDrivers.add(key);
     drivers.push(clean === d.name ? d : { ...d, name: clean });
   }
+  const cappedDrivers = drivers.slice(0, 100);
 
   const seenYouth = new Set<string>(occupied.names);
   const youth: YouthProspect[] = [];
   for (const y of [...curatedYouth, ...extraYouth]) {
     const clean = sanitizeMarketName(y.name);
     const key = canonicalNameOf(clean);
-    if (seenYouth.has(key) || seenDrivers.has(key)) continue;
+    if (seenYouth.has(key) || cappedDrivers.some((d) => canonicalNameOf(d.name) === key)) continue;
     seenYouth.add(key);
     youth.push(clean === y.name ? y : { ...y, name: clean });
   }
@@ -299,7 +302,7 @@ export function careerMarketBundle(state: GameState): MarketBundle {
   // Generate deterministic fictional prospects to fill the gap when curated data
   // is insufficient (e.g., modern F1 seasons where all prospects are 18+).
   // Pass occupied names to avoid collisions with existing drivers.
-  const allOccupiedNames = new Set<string>([...seenYouth, ...seenDrivers]);
+  const allOccupiedNames = new Set<string>([...seenYouth, ...cappedDrivers.map((d) => canonicalNameOf(d.name))]);
   const filledYouth = ensureMinimumYouthProspects(
     youth,
     state.randomSeed,
@@ -308,7 +311,7 @@ export function careerMarketBundle(state: GameState): MarketBundle {
     allOccupiedNames,
   );
 
-  return { drivers, youth: filledYouth };
+  return { drivers: cappedDrivers, youth: filledYouth };
 }
 
 // --- Rollover deltas (for the offseason summary) ----------------------------

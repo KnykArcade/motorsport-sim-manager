@@ -11,8 +11,8 @@ export const calendar2016: Race[] = [
     gpName: 'Australian Grand Prix',
     trackId: 'albert-park-2016',
     trackName: 'Albert Park',
-    laps: 57,
-    distanceKm: 308.2,
+    laps: 58,
+    distanceKm: 307.574,
     completed: false,
   },
   {
@@ -21,8 +21,8 @@ export const calendar2016: Race[] = [
     gpName: 'Bahrain Grand Prix',
     trackId: 'bahrain-international-circuit-2016',
     trackName: 'Bahrain International Circuit',
-    laps: 56,
-    distanceKm: 310.4,
+    laps: 57,
+    distanceKm: 308.238,
     completed: false,
   },
   {
@@ -31,8 +31,8 @@ export const calendar2016: Race[] = [
     gpName: 'Chinese Grand Prix',
     trackId: 'shanghai-international-circuit-2016',
     trackName: 'Shanghai International Circuit',
-    laps: 57,
-    distanceKm: 307.1,
+    laps: 56,
+    distanceKm: 305.066,
     completed: false,
   },
   {
@@ -42,7 +42,7 @@ export const calendar2016: Race[] = [
     trackId: 'sochi-autodrom-2016',
     trackName: 'Sochi Autodrom',
     laps: 53,
-    distanceKm: 307.8,
+    distanceKm: 309.745,
     completed: false,
   },
   {
@@ -52,7 +52,7 @@ export const calendar2016: Race[] = [
     trackId: 'circuit-de-barcelona-catalunya-2016',
     trackName: 'Circuit de Barcelona-Catalunya',
     laps: 66,
-    distanceKm: 307.1,
+    distanceKm: 307.104,
     completed: false,
   },
   {
@@ -62,7 +62,7 @@ export const calendar2016: Race[] = [
     trackId: 'circuit-de-monaco-2016',
     trackName: 'Circuit de Monaco',
     laps: 78,
-    distanceKm: 260.3,
+    distanceKm: 260.286,
     completed: false,
   },
   {
@@ -71,8 +71,8 @@ export const calendar2016: Race[] = [
     gpName: 'Canadian Grand Prix',
     trackId: 'circuit-gilles-villeneuve-2016',
     trackName: 'Circuit Gilles Villeneuve',
-    laps: 71,
-    distanceKm: 306.5,
+    laps: 70,
+    distanceKm: 305.27,
     completed: false,
   },
   {
@@ -81,8 +81,8 @@ export const calendar2016: Race[] = [
     gpName: 'European Grand Prix',
     trackId: 'baku-city-circuit-2016',
     trackName: 'Baku City Circuit',
-    laps: 71,
-    distanceKm: 291.8,
+    laps: 51,
+    distanceKm: 306.049,
     completed: false,
   },
   {
@@ -92,7 +92,7 @@ export const calendar2016: Race[] = [
     trackId: 'red-bull-ring-2016',
     trackName: 'Red Bull Ring',
     laps: 71,
-    distanceKm: 306.5,
+    distanceKm: 307.018,
     completed: false,
   },
   {
@@ -102,7 +102,7 @@ export const calendar2016: Race[] = [
     trackId: 'silverstone-circuit-2016',
     trackName: 'Silverstone Circuit',
     laps: 52,
-    distanceKm: 306.3,
+    distanceKm: 306.198,
     completed: false,
   },
   {
@@ -112,7 +112,7 @@ export const calendar2016: Race[] = [
     trackId: 'hungaroring-2016',
     trackName: 'Hungaroring',
     laps: 70,
-    distanceKm: 306.7,
+    distanceKm: 306.63,
     completed: false,
   },
   {
@@ -121,8 +121,8 @@ export const calendar2016: Race[] = [
     gpName: 'German Grand Prix',
     trackId: 'hockenheimring-2016',
     trackName: 'Hockenheimring',
-    laps: 44,
-    distanceKm: 308.2,
+    laps: 67,
+    distanceKm: 306.458,
     completed: false,
   },
   {
@@ -131,8 +131,8 @@ export const calendar2016: Race[] = [
     gpName: 'Belgian Grand Prix',
     trackId: 'circuit-de-spa-francorchamps-2016',
     trackName: 'Circuit de Spa-Francorchamps',
-    laps: 53,
-    distanceKm: 306.7,
+    laps: 44,
+    distanceKm: 308.052,
     completed: false,
   },
   {
@@ -142,7 +142,7 @@ export const calendar2016: Race[] = [
     trackId: 'autodromo-nazionale-monza-2016',
     trackName: 'Autodromo Nazionale Monza',
     laps: 53,
-    distanceKm: 306.7,
+    distanceKm: 306.72,
     completed: false,
   },
   {
@@ -151,8 +151,8 @@ export const calendar2016: Race[] = [
     gpName: 'Singapore Grand Prix',
     trackId: 'marina-bay-street-circuit-2016',
     trackName: 'Marina Bay Street Circuit',
-    laps: 53,
-    distanceKm: 307.8,
+    laps: 61,
+    distanceKm: 308.706,
     completed: false,
   },
   {
@@ -161,8 +161,8 @@ export const calendar2016: Race[] = [
     gpName: 'Malaysian Grand Prix',
     trackId: 'sepang-international-circuit-2016',
     trackName: 'Sepang International Circuit',
-    laps: 53,
-    distanceKm: 307.8,
+    laps: 56,
+    distanceKm: 310.408,
     completed: false,
   },
   {
@@ -172,7 +172,7 @@ export const calendar2016: Race[] = [
     trackId: 'suzuka-circuit-2016',
     trackName: 'Suzuka Circuit',
     laps: 53,
-    distanceKm: 307.5,
+    distanceKm: 307.471,
     completed: false,
   },
   {
@@ -181,8 +181,8 @@ export const calendar2016: Race[] = [
     gpName: 'United States Grand Prix',
     trackId: 'circuit-of-the-americas-2016',
     trackName: 'Circuit of The Americas',
-    laps: 71,
-    distanceKm: 305.6,
+    laps: 56,
+    distanceKm: 308.405,
     completed: false,
   },
   {
@@ -192,7 +192,7 @@ export const calendar2016: Race[] = [
     trackId: 'autodromo-hermanos-rodriguez-2016',
     trackName: 'Autodromo Hermanos Rodriguez',
     laps: 71,
-    distanceKm: 305.4,
+    distanceKm: 305.354,
     completed: false,
   },
   {
@@ -202,7 +202,7 @@ export const calendar2016: Race[] = [
     trackId: 'autodromo-jose-carlos-pace-2016',
     trackName: 'Autodromo Jose Carlos Pace',
     laps: 71,
-    distanceKm: 305.9,
+    distanceKm: 305.879,
     completed: false,
   },
   {
@@ -212,7 +212,7 @@ export const calendar2016: Race[] = [
     trackId: 'yas-marina-circuit-2016',
     trackName: 'Yas Marina Circuit',
     laps: 55,
-    distanceKm: 290.5,
+    distanceKm: 305.355,
     completed: false,
   },
 ];

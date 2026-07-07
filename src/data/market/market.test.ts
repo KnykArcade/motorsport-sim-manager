@@ -8,6 +8,7 @@ describe('youth market costs', () => {
       preloadMarketBundle(1996, 'F1'),
       preloadMarketBundle(1998, 'F1'),
       preloadMarketBundle(2000, 'F1'),
+      preloadMarketBundle(2005, 'Champ Car'),
       preloadMarketBundle(2026, 'F1'),
       preloadMarketBundle(2026, 'IndyCar'),
     ]);
@@ -35,8 +36,21 @@ describe('youth market costs', () => {
     }
   });
 
+  it('keeps each loaded market bundle at the locked 100-entry target', () => {
+    for (const [year, series] of [
+      [1994, 'F1'],
+      [2005, 'Champ Car'],
+      [2026, 'IndyCar'],
+    ] as const) {
+      const bundle = getMarketBundle(year, series);
+      expect(bundle).toBeDefined();
+      expect(bundle!.drivers).toHaveLength(100);
+      expect(bundle!.youth).toHaveLength(100);
+    }
+  });
+
   it('scales cost with potential', () => {
-    expect(youthSigningCost(9)).toBeGreaterThan(youthSigningCost(5));
-    expect(youthYearlyAcademyCost(9)).toBeGreaterThan(youthYearlyAcademyCost(5));
+    expect(youthSigningCost(90)).toBeGreaterThan(youthSigningCost(50));
+    expect(youthYearlyAcademyCost(90)).toBeGreaterThan(youthYearlyAcademyCost(50));
   });
 });

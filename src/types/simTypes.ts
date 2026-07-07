@@ -90,6 +90,7 @@ export type RaceContext = {
   strategies: Record<string, RaceStrategy>;
   instructions: Record<string, DriverInstruction>;
   pointsByPosition: Record<number, number>;
+  pointsMultiplier?: number;
   seed: string;
   // Season year — drives era-specific DNF-cause balancing.
   year: number;

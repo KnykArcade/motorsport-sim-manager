@@ -53,6 +53,7 @@ export const calendar2014IndyCar: Race[] = [
     trackName: 'Indianapolis Motor Speedway',
     laps: 200,
     distanceKm: 804.7,
+    pointsMultiplier: 2,
     completed: false,
   },
   {
@@ -183,6 +184,8 @@ export const calendar2014IndyCar: Race[] = [
     trackName: 'Auto Club Speedway',
     laps: 250,
     distanceKm: 804.7,
+
+    pointsMultiplier: 2,
     completed: false,
   },
 ];

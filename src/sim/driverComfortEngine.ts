@@ -33,9 +33,9 @@ function clamp(v: number, lo: number, hi: number): number {
 function r1(v: number): number {
   return Math.round(v * 10) / 10;
 }
-// Normalise a 1-10 rating/param to -1..1 around the mid point.
+// Normalise a 1-100 rating/param to -1..1 around the mid point.
 function n(v: number): number {
-  return (v - 5) / 5;
+  return (v - 50) / 50;
 }
 
 // Infer a driver's setup-feel preferences from their ratings. Aggressive drivers

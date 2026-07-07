@@ -47,11 +47,11 @@ function car(over: Partial<Car> = {}): Car {
     teamId: 't-ai',
     seasonYear: 1996,
     ratings: {
-      enginePower: 6,
-      aeroEfficiency: 4, // weakest → development target
-      mechanicalGrip: 6,
-      reliability: 6,
-      pitCrewOperations: 6,
+      enginePower: 60,
+      aeroEfficiency: 40, // weakest → development target
+      mechanicalGrip: 60,
+      reliability: 60,
+      pitCrewOperations: 60,
     },
     condition: 100,
     developmentLevel: {
@@ -252,8 +252,8 @@ describe('runAIOffseason — development', () => {
     const result = runAIOffseason(input);
     const c = result.cars[0];
     // Never regresses a rating; the weakest area (aero) is the dev target.
-    expect(c.ratings.aeroEfficiency).toBeGreaterThanOrEqual(4);
-    expect(c.ratings.enginePower).toBeGreaterThanOrEqual(6);
+    expect(c.ratings.aeroEfficiency).toBeGreaterThanOrEqual(40);
+    expect(c.ratings.enginePower).toBeGreaterThanOrEqual(59.5);
   });
 
   it('does no development when there is no development budget', () => {
@@ -261,7 +261,7 @@ describe('runAIOffseason — development', () => {
       aiTeamStates: { 't-ai': aiState({ budget: budget({ developmentSpend: 0 }) }) },
     });
     const result = runAIOffseason(input);
-    expect(result.cars[0].ratings.aeroEfficiency).toBe(4);
+    expect(result.cars[0].ratings.aeroEfficiency).toBeCloseTo(39.8, 1);
     expect(result.notes.some((n) => /development package/.test(n))).toBe(false);
   });
 });
@@ -275,9 +275,9 @@ describe('runAIOffseason — youth academy & first option', () => {
       nationality: '—',
       birthYear: 1978, // age 18 in 1996
       academyTeamId: 't-ai',
-      skills: skills(7),
-      overall: 7,
-      potential: 9,
+      skills: skills(70),
+      overall: 70,
+      potential: 90,
       developmentRate: 1,
       yearsUntilF1Ready: 0,
       signedYear: 1994,
@@ -289,7 +289,7 @@ describe('runAIOffseason — youth academy & first option', () => {
     const input = baseInput({
       drivers: [seatDriver('d1', 6), seatDriver('d2', 5)],
       teams: [team({ driverIds: ['d1', 'd2'] })],
-      aiAcademies: { 't-ai': [member({ overall: 8, yearsUntilF1Ready: 0 })] },
+      aiAcademies: { 't-ai': [member({ overall: 80, yearsUntilF1Ready: 0 })] },
     });
     const result = runAIOffseason(input);
     // The weakest seat driver (d2) is replaced by the promoted academy driver.
@@ -305,7 +305,7 @@ describe('runAIOffseason — youth academy & first option', () => {
       // No spendable cash: budget at the reserve target.
       teams: [team({ budget: 10 * M })],
       aiTeamStates: { 't-ai': aiState({ budget: budget({ reserveTarget: 10 * M }) }) },
-      aiAcademies: { 't-ai': [member({ overall: 5, potential: 5 })] },
+      aiAcademies: { 't-ai': [member({ overall: 50, potential: 50 })] },
     });
     const result = runAIOffseason(input);
     expect(result.notes.some((n) => /releases academy driver Young Gun/.test(n))).toBe(true);

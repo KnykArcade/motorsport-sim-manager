@@ -1,4 +1,5 @@
 import type { PointsSystem } from '../../types/gameTypes';
+import { aowPointsSystems } from './aowPointsSystems';
 
 // Points systems are configurable per-season so future years can differ.
 export const pointsSystems: Record<string, PointsSystem> = {
@@ -50,6 +51,8 @@ for (let _y = 2008; _y <= 2025; _y++) {
     pointsByPosition: _indycarPoints,
   };
 }
+
+Object.assign(pointsSystems, aowPointsSystems);
 
 export function getPointsSystem(id: string): PointsSystem {
   return pointsSystems[id] ?? pointsSystems['pts-1995'];

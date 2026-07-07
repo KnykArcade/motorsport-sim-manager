@@ -22,3 +22,7 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Weather fetch caches (reproducible via scripts/gen_historical_weather.py; do not commit)
+.cache/
+src/data/weather/cache/

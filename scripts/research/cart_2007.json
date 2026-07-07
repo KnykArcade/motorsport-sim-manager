@@ -1,0 +1,91 @@
+{
+  "_meta": {
+    "series": "CART",
+    "year": 2007,
+    "label": "2007 Champ Car World Series",
+    "spec_formula": "Panoz DP01 chassis + Cosworth XFE 2.65L turbo V8 + Bridgestone tyres (single spec). Engine/aero ratings are intentionally uniform across teams; competitive spread comes from driver talent, team operations, mechanical setup and reliability.",
+    "points_system_id": "pts-cart-2002-2007",
+    "regulation_set_id": "reg-cart-2002-2007",
+    "sources": [
+      "Wikipedia: 2007 Champ Car World Series (entries, driver changes, final points standings)",
+      "PASS24 master workbook: calendar + track demand ratings (streets/road, 14 rounds)"
+    ],
+    "authoring_notes": [
+      "Grid modelled as the 9 full-season two-car entries; mid-season substitutes (Mario Dominguez, David Martinez, Matt Halliday, Roberto Moreno) omitted from the base grid and noted in the gap report.",
+      "Driver `overall` anchored to final championship position/points; sub-ratings set from each driver's contemporary reputation (e.g. Power qualifying, Tracy aggression, Bourdais all-round).",
+      "Car numbers are best-effort from 2007 entry lists."
+    ]
+  },
+  "teams": [
+    {"id": "newman-haas-lanigan-racing", "name": "Newman/Haas/Lanigan Racing", "shortName": "NHL", "country": "United States", "color": "#d21f26", "reputation": 90, "raceOperations": 8.6, "expectedStanding": 1, "difficulty": "Easy", "budget": 42000000,
+     "car": {"enginePower": 7.0, "aeroEfficiency": 7.0, "mechanicalGrip": 8.1, "reliability": 8.3, "pitCrewOperations": 8.6}},
+    {"id": "rsports-racing", "name": "RSPORTS (RuSPORT/Rocketsports)", "shortName": "RUS", "country": "United States", "color": "#1f6fd6", "reputation": 78, "raceOperations": 7.9, "expectedStanding": 2, "difficulty": "Medium", "budget": 30000000,
+     "car": {"enginePower": 7.0, "aeroEfficiency": 7.0, "mechanicalGrip": 7.6, "reliability": 7.8, "pitCrewOperations": 7.9}},
+    {"id": "minardi-team-usa", "name": "Minardi Team USA", "shortName": "HVM", "country": "United States", "color": "#111827", "reputation": 74, "raceOperations": 7.6, "expectedStanding": 3, "difficulty": "Medium", "budget": 27000000,
+     "car": {"enginePower": 7.0, "aeroEfficiency": 7.0, "mechanicalGrip": 7.5, "reliability": 7.6, "pitCrewOperations": 7.6}},
+    {"id": "team-australia", "name": "Team Australia (Walker Racing)", "shortName": "AUS", "country": "Australia", "color": "#0b7a3b", "reputation": 74, "raceOperations": 7.5, "expectedStanding": 4, "difficulty": "Medium", "budget": 27000000,
+     "car": {"enginePower": 7.0, "aeroEfficiency": 7.0, "mechanicalGrip": 7.5, "reliability": 7.4, "pitCrewOperations": 7.5}},
+    {"id": "forsythe-championship-racing", "name": "Forsythe Championship Racing", "shortName": "FOR", "country": "Canada", "color": "#e30613", "reputation": 80, "raceOperations": 7.7, "expectedStanding": 5, "difficulty": "Medium", "budget": 31000000,
+     "car": {"enginePower": 7.0, "aeroEfficiency": 7.0, "mechanicalGrip": 7.6, "reliability": 7.5, "pitCrewOperations": 7.7}},
+    {"id": "dale-coyne-racing", "name": "Dale Coyne Racing", "shortName": "DCR", "country": "United States", "color": "#f59e0b", "reputation": 60, "raceOperations": 7.0, "expectedStanding": 6, "difficulty": "Hard", "budget": 18000000,
+     "car": {"enginePower": 7.0, "aeroEfficiency": 7.0, "mechanicalGrip": 7.0, "reliability": 7.0, "pitCrewOperations": 7.0}},
+    {"id": "pkv-racing", "name": "PKV Racing", "shortName": "PKV", "country": "United States", "color": "#7c3aed", "reputation": 62, "raceOperations": 7.1, "expectedStanding": 7, "difficulty": "Hard", "budget": 19000000,
+     "car": {"enginePower": 7.0, "aeroEfficiency": 7.0, "mechanicalGrip": 7.1, "reliability": 7.0, "pitCrewOperations": 7.1}},
+    {"id": "pacific-coast-motorsports", "name": "Pacific Coast Motorsports", "shortName": "PCM", "country": "United States", "color": "#0891b2", "reputation": 52, "raceOperations": 6.6, "expectedStanding": 8, "difficulty": "Very Hard", "budget": 14000000,
+     "car": {"enginePower": 7.0, "aeroEfficiency": 7.0, "mechanicalGrip": 6.6, "reliability": 6.6, "pitCrewOperations": 6.6}},
+    {"id": "conquest-racing", "name": "Conquest Racing", "shortName": "CON", "country": "United States", "color": "#64748b", "reputation": 54, "raceOperations": 6.7, "expectedStanding": 9, "difficulty": "Very Hard", "budget": 14000000,
+     "car": {"enginePower": 7.0, "aeroEfficiency": 7.0, "mechanicalGrip": 6.7, "reliability": 6.7, "pitCrewOperations": 6.7}}
+  ],
+  "drivers": [
+    {"name": "Sébastien Bourdais", "number": 1, "team": "newman-haas-lanigan-racing", "nationality": "France", "age": 28, "championshipPos": 1, "points": 364,
+     "r": {"cornering": 9.3, "braking": 9.2, "straights": 9.0, "tractionAcceleration": 9.1, "elevationBlindCorners": 8.8, "technical": 9.2, "overtakingRacecraft": 8.6, "surfaceGripBumpiness": 9.0, "riskManagement": 9.0, "enduranceConsistency": 9.3, "qualifying": 9.5, "racePace": 9.5, "adaptability": 9.0, "aggression": 8.5, "composure": 9.3, "overall": 9.4}},
+    {"name": "Graham Rahal", "number": 2, "team": "newman-haas-lanigan-racing", "nationality": "United States", "age": 18, "championshipPos": 5, "points": 243,
+     "r": {"cornering": 8.0, "braking": 8.0, "straights": 7.9, "tractionAcceleration": 8.0, "elevationBlindCorners": 7.8, "technical": 7.8, "overtakingRacecraft": 7.9, "surfaceGripBumpiness": 7.9, "riskManagement": 7.7, "enduranceConsistency": 8.0, "qualifying": 7.9, "racePace": 8.1, "adaptability": 8.0, "aggression": 8.0, "composure": 7.8, "overall": 8.0}},
+    {"name": "Justin Wilson", "number": 9, "team": "rsports-racing", "nationality": "United Kingdom", "age": 28, "championshipPos": 2, "points": 281,
+     "r": {"cornering": 8.7, "braking": 8.6, "straights": 8.5, "tractionAcceleration": 8.5, "elevationBlindCorners": 8.3, "technical": 8.8, "overtakingRacecraft": 8.7, "surfaceGripBumpiness": 8.5, "riskManagement": 8.8, "enduranceConsistency": 8.9, "qualifying": 8.5, "racePace": 8.9, "adaptability": 8.6, "aggression": 8.0, "composure": 9.0, "overall": 8.7}},
+    {"name": "Alex Tagliani", "number": 8, "team": "rsports-racing", "nationality": "Canada", "age": 33, "championshipPos": 10, "points": 205,
+     "r": {"cornering": 7.9, "braking": 7.9, "straights": 7.9, "tractionAcceleration": 7.8, "elevationBlindCorners": 7.7, "technical": 7.9, "overtakingRacecraft": 7.9, "surfaceGripBumpiness": 7.8, "riskManagement": 7.5, "enduranceConsistency": 7.7, "qualifying": 8.1, "racePace": 7.8, "adaptability": 7.8, "aggression": 8.0, "composure": 7.6, "overall": 7.9}},
+    {"name": "Robert Doornbos", "number": 14, "team": "minardi-team-usa", "nationality": "Netherlands", "age": 25, "championshipPos": 3, "points": 268,
+     "r": {"cornering": 8.4, "braking": 8.4, "straights": 8.4, "tractionAcceleration": 8.3, "elevationBlindCorners": 8.1, "technical": 8.2, "overtakingRacecraft": 8.5, "surfaceGripBumpiness": 8.2, "riskManagement": 7.8, "enduranceConsistency": 8.0, "qualifying": 8.5, "racePace": 8.4, "adaptability": 8.3, "aggression": 8.5, "composure": 8.2, "overall": 8.4}},
+    {"name": "Dan Clarke", "number": 31, "team": "minardi-team-usa", "nationality": "United Kingdom", "age": 22, "championshipPos": 13, "points": 129,
+     "r": {"cornering": 7.2, "braking": 7.2, "straights": 7.2, "tractionAcceleration": 7.1, "elevationBlindCorners": 7.0, "technical": 7.1, "overtakingRacecraft": 7.3, "surfaceGripBumpiness": 7.1, "riskManagement": 6.9, "enduranceConsistency": 7.0, "qualifying": 7.3, "racePace": 7.1, "adaptability": 7.1, "aggression": 7.4, "composure": 6.9, "overall": 7.2}},
+    {"name": "Will Power", "number": 5, "team": "team-australia", "nationality": "Australia", "age": 26, "championshipPos": 4, "points": 262,
+     "r": {"cornering": 8.6, "braking": 8.5, "straights": 8.4, "tractionAcceleration": 8.5, "elevationBlindCorners": 8.2, "technical": 8.2, "overtakingRacecraft": 8.6, "surfaceGripBumpiness": 8.3, "riskManagement": 7.8, "enduranceConsistency": 8.2, "qualifying": 9.2, "racePace": 8.4, "adaptability": 8.3, "aggression": 8.8, "composure": 8.0, "overall": 8.5}},
+    {"name": "Simon Pagenaud", "number": 7, "team": "team-australia", "nationality": "France", "age": 23, "championshipPos": 8, "points": 232,
+     "r": {"cornering": 8.0, "braking": 7.9, "straights": 7.8, "tractionAcceleration": 7.9, "elevationBlindCorners": 7.8, "technical": 8.0, "overtakingRacecraft": 7.7, "surfaceGripBumpiness": 7.9, "riskManagement": 8.0, "enduranceConsistency": 8.1, "qualifying": 7.7, "racePace": 8.0, "adaptability": 8.0, "aggression": 7.6, "composure": 8.2, "overall": 7.9}},
+    {"name": "Paul Tracy", "number": 3, "team": "forsythe-championship-racing", "nationality": "Canada", "age": 38, "championshipPos": 11, "points": 171,
+     "r": {"cornering": 8.2, "braking": 8.3, "straights": 8.2, "tractionAcceleration": 8.2, "elevationBlindCorners": 8.0, "technical": 8.0, "overtakingRacecraft": 8.8, "surfaceGripBumpiness": 8.0, "riskManagement": 6.8, "enduranceConsistency": 7.8, "qualifying": 8.3, "racePace": 8.3, "adaptability": 8.0, "aggression": 9.0, "composure": 7.3, "overall": 8.2}},
+    {"name": "Oriol Servià", "number": 6, "team": "forsythe-championship-racing", "nationality": "Spain", "age": 33, "championshipPos": 6, "points": 237,
+     "r": {"cornering": 8.0, "braking": 8.0, "straights": 7.9, "tractionAcceleration": 8.0, "elevationBlindCorners": 7.9, "technical": 8.0, "overtakingRacecraft": 7.8, "surfaceGripBumpiness": 8.0, "riskManagement": 8.4, "enduranceConsistency": 8.3, "qualifying": 7.8, "racePace": 8.1, "adaptability": 8.0, "aggression": 7.5, "composure": 8.4, "overall": 8.0}},
+    {"name": "Bruno Junqueira", "number": 19, "team": "dale-coyne-racing", "nationality": "Brazil", "age": 30, "championshipPos": 7, "points": 233,
+     "r": {"cornering": 8.0, "braking": 7.9, "straights": 8.0, "tractionAcceleration": 7.9, "elevationBlindCorners": 7.8, "technical": 7.9, "overtakingRacecraft": 7.9, "surfaceGripBumpiness": 7.9, "riskManagement": 7.9, "enduranceConsistency": 8.0, "qualifying": 8.0, "racePace": 8.0, "adaptability": 7.9, "aggression": 7.8, "composure": 8.0, "overall": 8.0}},
+    {"name": "Katherine Legge", "number": 20, "team": "dale-coyne-racing", "nationality": "United Kingdom", "age": 26, "championshipPos": 15, "points": 108,
+     "r": {"cornering": 6.8, "braking": 6.8, "straights": 6.8, "tractionAcceleration": 6.7, "elevationBlindCorners": 6.6, "technical": 6.8, "overtakingRacecraft": 6.7, "surfaceGripBumpiness": 6.7, "riskManagement": 6.7, "enduranceConsistency": 6.9, "qualifying": 6.8, "racePace": 6.8, "adaptability": 6.8, "aggression": 6.7, "composure": 6.8, "overall": 6.8}},
+    {"name": "Neel Jani", "number": 21, "team": "pkv-racing", "nationality": "Switzerland", "age": 23, "championshipPos": 9, "points": 231,
+     "r": {"cornering": 7.8, "braking": 7.7, "straights": 7.7, "tractionAcceleration": 7.7, "elevationBlindCorners": 7.6, "technical": 7.7, "overtakingRacecraft": 7.7, "surfaceGripBumpiness": 7.6, "riskManagement": 7.4, "enduranceConsistency": 7.6, "qualifying": 8.0, "racePace": 7.7, "adaptability": 7.7, "aggression": 7.9, "composure": 7.5, "overall": 7.8}},
+    {"name": "Tristan Gommendy", "number": 22, "team": "pkv-racing", "nationality": "France", "age": 27, "championshipPos": 12, "points": 140,
+     "r": {"cornering": 7.3, "braking": 7.2, "straights": 7.2, "tractionAcceleration": 7.2, "elevationBlindCorners": 7.1, "technical": 7.2, "overtakingRacecraft": 7.2, "surfaceGripBumpiness": 7.1, "riskManagement": 7.1, "enduranceConsistency": 7.2, "qualifying": 7.4, "racePace": 7.2, "adaptability": 7.2, "aggression": 7.2, "composure": 7.0, "overall": 7.3}},
+    {"name": "Alex Figge", "number": 77, "team": "pacific-coast-motorsports", "nationality": "United States", "age": 24, "championshipPos": 17, "points": 95,
+     "r": {"cornering": 6.5, "braking": 6.5, "straights": 6.5, "tractionAcceleration": 6.4, "elevationBlindCorners": 6.3, "technical": 6.5, "overtakingRacecraft": 6.4, "surfaceGripBumpiness": 6.4, "riskManagement": 6.4, "enduranceConsistency": 6.5, "qualifying": 6.5, "racePace": 6.5, "adaptability": 6.5, "aggression": 6.5, "composure": 6.4, "overall": 6.5}},
+    {"name": "Ryan Dalziel", "number": 27, "team": "pacific-coast-motorsports", "nationality": "United Kingdom", "age": 24, "championshipPos": 14, "points": 116,
+     "r": {"cornering": 7.0, "braking": 7.0, "straights": 7.0, "tractionAcceleration": 6.9, "elevationBlindCorners": 6.8, "technical": 7.0, "overtakingRacecraft": 6.9, "surfaceGripBumpiness": 6.9, "riskManagement": 6.9, "enduranceConsistency": 7.0, "qualifying": 7.0, "racePace": 7.0, "adaptability": 7.0, "aggression": 7.0, "composure": 6.9, "overall": 7.0}},
+    {"name": "Jan Heylen", "number": 34, "team": "conquest-racing", "nationality": "Belgium", "age": 27, "championshipPos": 16, "points": 104,
+     "r": {"cornering": 6.8, "braking": 6.8, "straights": 6.8, "tractionAcceleration": 6.7, "elevationBlindCorners": 6.6, "technical": 6.8, "overtakingRacecraft": 6.7, "surfaceGripBumpiness": 6.7, "riskManagement": 6.7, "enduranceConsistency": 6.8, "qualifying": 6.8, "racePace": 6.8, "adaptability": 6.8, "aggression": 6.7, "composure": 6.8, "overall": 6.8}},
+    {"name": "Nelson Philippe", "number": 36, "team": "conquest-racing", "nationality": "France", "age": 20, "championshipPos": 19, "points": 28,
+     "r": {"cornering": 6.5, "braking": 6.5, "straights": 6.5, "tractionAcceleration": 6.4, "elevationBlindCorners": 6.3, "technical": 6.5, "overtakingRacecraft": 6.5, "surfaceGripBumpiness": 6.4, "riskManagement": 6.3, "enduranceConsistency": 6.4, "qualifying": 6.6, "racePace": 6.5, "adaptability": 6.5, "aggression": 6.7, "composure": 6.3, "overall": 6.5}}
+  ],
+  "market": [
+    {"name": "Mario Domínguez", "age": 32, "nationality": "Mexico", "context": "Champ Car (multi-team substitute)", "overall": 7.2, "potential": 7.3, "role": "Veteran stand-in"},
+    {"name": "Roberto Moreno", "age": 48, "nationality": "Brazil", "context": "Champ Car (substitute)", "overall": 6.9, "potential": 6.9, "role": "Veteran reserve"},
+    {"name": "David Martínez", "age": 24, "nationality": "Mexico", "context": "Champ Car (Forsythe substitute)", "overall": 6.6, "potential": 7.0, "role": "Pay-driver stand-in"},
+    {"name": "Matt Halliday", "age": 27, "nationality": "New Zealand", "context": "Champ Car (Conquest one-off)", "overall": 6.4, "potential": 6.6, "role": "Reserve"}
+  ],
+  "youth": [
+    {"name": "Robert Wickens", "age": 18, "nationality": "Canada", "level": "Atlantic Championship", "potential": 8.6, "overall": 7.0},
+    {"name": "James Hinchcliffe", "age": 20, "nationality": "Canada", "level": "Atlantic Championship", "potential": 8.3, "overall": 7.0},
+    {"name": "J.R. Hildebrand", "age": 19, "nationality": "United States", "level": "Atlantic Championship", "potential": 8.0, "overall": 6.8},
+    {"name": "Raphael Matos", "age": 25, "nationality": "Brazil", "level": "Atlantic Championship (champion)", "potential": 8.4, "overall": 7.3},
+    {"name": "Franck Perera", "age": 23, "nationality": "France", "level": "Atlantic Championship", "potential": 7.8, "overall": 6.9},
+    {"name": "Jonathan Bomarito", "age": 20, "nationality": "United States", "level": "Atlantic Championship", "potential": 7.5, "overall": 6.7}
+  ]
+}

@@ -19,7 +19,7 @@ export const REVIEW_AGE = 39;
 // past the veteran age.
 function isEliteVeteran(driver: Driver): boolean {
   const morale = driver.morale ?? 60;
-  return driver.ratings.overall >= 8 && morale >= 55;
+  return driver.ratings.overall >= 80 && morale >= 55;
 }
 
 // Decide whether a driver retires at the end of the season. Pure/deterministic.

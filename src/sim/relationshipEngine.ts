@@ -21,6 +21,7 @@ import type { LiveCarState, LiveRaceState } from '../types/liveTypes';
 import type { GameState } from '../game/careerState';
 import { activeDriversForTeam, driversForTeam } from '../game/careerState';
 import { createSeededRandom, deriveSeed, type Rng } from './random';
+import { toLegacyRating } from './ratingScale';
 
 function clamp(n: number, lo = 0, hi = 100): number {
   return Math.max(lo, Math.min(hi, n));
@@ -46,10 +47,10 @@ function generatePersonalityTraits(
 ): DriverPersonalityTrait[] {
   const traits: DriverPersonalityTrait[] = [];
   if (isNumberOne) traits.push('Team Leader');
-  if (driver.ratings.aggression >= 7) traits.push('Risk Taker');
-  if (driver.ratings.aggression <= 3) traits.push('Calm Under Pressure');
-  if (driver.ratings.adaptability >= 7) traits.push('Setup Focused');
-  if (driver.ratings.enduranceConsistency >= 7) traits.push('Resilient');
+  if (driver.ratings.aggression >= 70) traits.push('Risk Taker');
+  if (driver.ratings.aggression <= 30) traits.push('Calm Under Pressure');
+  if (driver.ratings.adaptability >= 70) traits.push('Setup Focused');
+  if (driver.ratings.enduranceConsistency >= 70) traits.push('Resilient');
   if ((driver.age ?? 25) <= 21) traits.push('Youthful');
   if ((driver.age ?? 25) >= 35) traits.push('Veteran Professional');
   // Random trait from ego-based pool.
@@ -96,18 +97,18 @@ function seedRelationship(
 ): DriverRelationship {
   const v = () => rng.variance(8);
   const loyalty = clamp(Math.round(48 + (driver.contractYearsRemaining ?? 1) * 4 + v()));
-  const chemistry = clamp(Math.round(50 + (driver.ratings.adaptability - 5) * 2 + v()));
+  const chemistry = clamp(Math.round(50 + (toLegacyRating(driver.ratings.adaptability) - 5) * 2 + v()));
 
   let teammateRel = 62 + rng.variance(8);
   // Two highly-rated drivers in the same garage breed rivalry.
-  if (teammate && driver.ratings.overall >= 7 && teammate.ratings.overall >= 7) teammateRel -= 18;
-  if (driver.ratings.aggression >= 7) teammateRel -= 8;
+  if (teammate && driver.ratings.overall >= 70 && teammate.ratings.overall >= 70) teammateRel -= 18;
+  if (driver.ratings.aggression >= 70) teammateRel -= 8;
 
   const personalityTraits = generatePersonalityTraits(driver, isNumberOne, rng);
   const wants = generateWants(driver, team, isNumberOne, personalityTraits, car);
   const ego = clamp(Math.round(
     (isNumberOne ? 65 : 45) +
-    (driver.ratings.overall - 6) * 5 +
+    (toLegacyRating(driver.ratings.overall) - 6) * 5 +
     (personalityTraits.includes('High Ego') ? 15 : 0) +
     v(),
   ));
@@ -122,7 +123,7 @@ function seedRelationship(
     morale: clamp(Math.round(driver.morale ?? 60)),
     frustration: clamp(Math.round(18 + v())),
     numberOneExpectation: isNumberOne,
-    selfConfidence: clamp(Math.round(55 + (driver.ratings.overall - 6) * 4 + v())),
+    selfConfidence: clamp(Math.round(55 + (toLegacyRating(driver.ratings.overall) - 6) * 4 + v())),
     trustInCar: clamp(Math.round(50 + (team.reputation - 50) * 0.3 + v())),
     trustInTeam: clamp(Math.round(55 + v())),
     trustInPrincipal: clamp(Math.round(58 + v())),
@@ -164,7 +165,7 @@ export function createDriverRelationships(
     roster.forEach((d, i) => {
       const teammate = i === 0 ? active[1] : i === 1 ? active[0] : undefined;
       const isNumberOne =
-        i < 2 && !!lead && d.id === lead.id && prestige >= 40 && (gap >= 0.5 || d.ratings.overall >= 8.3);
+        i < 2 && !!lead && d.id === lead.id && prestige >= 40 && (gap >= 0.5 || d.ratings.overall >= 83);
       const rng = createSeededRandom(deriveSeed(seed, 'relationship', d.id));
       rels[d.id] = seedRelationship(d, teammate, team, isNumberOne, rng, teamCar ? { reliability: teamCar.ratings.reliability } : undefined);
     });
@@ -254,8 +255,8 @@ export function syncDriverRelationshipsForTeam(
     // Two highly-rated drivers in the same garage breed rivalry.
     if (teammateId) {
       const teammate = teamDrivers.find((d) => d.id === teammateId);
-      if (teammate && driver.ratings.overall >= 7 && teammate.ratings.overall >= 7) teammateRel -= 18;
-      if (driver.ratings.aggression >= 7) teammateRel -= 8;
+      if (teammate && driver.ratings.overall >= 70 && teammate.ratings.overall >= 70) teammateRel -= 18;
+      if (driver.ratings.aggression >= 70) teammateRel -= 8;
     }
 
     // Generate personality traits once and pass the same traits to generateWants.

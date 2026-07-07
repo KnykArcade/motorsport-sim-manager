@@ -62,7 +62,7 @@ export function DriverMarket() {
   const budget = teamById(state, state.selectedTeamId)?.budget ?? 0;
   const orgOverall = state.teamOrgRatings?.[state.selectedTeamId]?.overallTeamRating ?? 50;
   const playerCar = carForTeam(state, state.selectedTeamId);
-  const carOverall = playerCar ? carPerformanceRating(playerCar) : 5;
+  const carOverall = playerCar ? carPerformanceRating(playerCar) : 50;
   const seats = activeDriversForTeam(state, state.selectedTeamId);
   const roster = driversForTeam(state, state.selectedTeamId);
   const openRaceSeats = MAX_RACE_DRIVERS - seats.length;

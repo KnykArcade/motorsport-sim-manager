@@ -12,8 +12,10 @@ import {
 } from './rosterEnforcement';
 import { careerMarketBundle } from '../sim/careerMarketEngine';
 import type { GameState } from './careerState';
+import { getReleasedMarketDrivers } from '../data/market';
 
 const f1Seasons = availableSeasons.filter((s) => s.series === 'F1');
+const aowSeasons = availableSeasons.filter((s) => s.series === 'IndyCar' || s.series === 'CART' || s.series === 'Champ Car');
 
 // Helper: create a game state for a given year/team, picking the first team.
 function makeGameState(year: number, teamId?: string): GameState {
@@ -69,11 +71,11 @@ describe('F1 preseason roster rules', () => {
     }
   });
 
-  it('no F1 team starts with more than 3 total assigned drivers', () => {
+  it('no F1 team starts with more than 2 race drivers', () => {
     for (const s of f1Seasons) {
       const bundle = getSeasonBundle(s.year, 'F1')!;
       for (const team of bundle.teams) {
-        expect(team.driverIds.length).toBeLessThanOrEqual(3);
+        expect(team.driverIds.length).toBeLessThanOrEqual(MAX_RACE_DRIVERS);
       }
     }
   });
@@ -409,8 +411,8 @@ describe('player race-seat signing', () => {
   });
 });
 
-describe('IndyCar roster enforcement is not affected', () => {
-  it('enforceF1Rosters is a no-op for IndyCar', () => {
+describe('IndyCar roster enforcement', () => {
+  it('enforceRosters normalizes IndyCar AI teams without changing the player team', () => {
     const bundle = getSeasonBundle(2024, 'IndyCar');
     if (!bundle) return;
     const state = createNewGame({
@@ -421,9 +423,65 @@ describe('IndyCar roster enforcement is not affected', () => {
       seed: 'test-indycar-enforce',
     });
     const result = enforceF1Rosters(state);
-    expect(result.autoFilled.length).toBe(0);
     expect(result.violations.length).toBe(0);
-    // State should be unchanged
-    expect(result.state.drivers.length).toBe(state.drivers.length);
+
+    for (const team of result.state.teams) {
+      const active = activeDriversForTeam(result.state, team.id);
+      expect(active.length).toBeLessThanOrEqual(MAX_RACE_DRIVERS);
+      if (team.id !== state.selectedTeamId) {
+        expect(active.length).toBe(MAX_RACE_DRIVERS);
+      }
+    }
+  });
+});
+
+describe('universe roster normalization', () => {
+  it('caps every loaded series to two race drivers per team and keeps driver ids unique within the series', () => {
+    for (const season of aowSeasons) {
+      const bundle = getSeasonBundle(season.year, season.series)!;
+      const driverTeams = new Map<string, string[]>();
+
+      for (const team of bundle.teams) {
+        expect(team.driverIds.length).toBeLessThanOrEqual(MAX_RACE_DRIVERS);
+        expect(new Set(team.driverIds).size).toBe(team.driverIds.length);
+
+        for (const driverId of team.driverIds) {
+          const teams = driverTeams.get(driverId) ?? [];
+          teams.push(team.id);
+          driverTeams.set(driverId, teams);
+        }
+      }
+
+      for (const [driverId, teams] of driverTeams) {
+        expect(teams.length, `${season.year} ${season.series} driver ${driverId} appears on multiple teams`).toBeLessThanOrEqual(1);
+      }
+    }
+  });
+
+  it('moves released CART roster drivers into the market pool', () => {
+    const state = createNewGame({
+      gameMode: 'SingleSeason',
+      seasonYear: 1992,
+      series: 'CART',
+      teamId: getSeasonBundle(1992, 'CART')!.teams[0].id,
+      seed: 'test-cart-market-release',
+    });
+    const market = careerMarketBundle(state);
+    const names = new Set(market.drivers.map((d) => d.name));
+    const released = getReleasedMarketDrivers(1992, 'CART');
+
+    expect(released.length).toBeGreaterThan(0);
+    expect(names.has(released[0].name)).toBe(true);
+  });
+
+  it('shares one canonical driver record across CART and IndyCar when the same person appears in both series', () => {
+    const cart = getSeasonBundle(1997, 'CART')!;
+    const indy = getSeasonBundle(1997, 'IndyCar')!;
+    const cartDriver = cart.drivers.find((d) => d.name === 'Robby Gordon');
+    const indyDriver = indy.drivers.find((d) => d.name === 'Robby Gordon');
+
+    expect(cartDriver).toBeDefined();
+    expect(indyDriver).toBeDefined();
+    expect(cartDriver!.id).toBe(indyDriver!.id);
   });
 });

@@ -50,8 +50,8 @@ function hasMarketTag(name: string): boolean {
 }
 
 // The car-rating band above which a package is treated as "saturated" — a proxy
-// for the 10.0 ceiling the balance pass is trying to keep clear.
-const SATURATION_RATING = 9.8;
+// for the 100.0 ceiling the balance pass is trying to keep clear.
+const SATURATION_RATING = 98;
 
 export type SeasonAudit = {
   year: number;
@@ -60,7 +60,7 @@ export type SeasonAudit = {
   driverChampion: { driverId: string; name: string; points: number } | undefined;
   // Car competitiveness spread across the grid this year.
   carRating: { min: number; avg: number; max: number };
-  // How many cars are pinned at/near the 10.0 ceiling.
+  // How many cars are pinned at/near the 100.0 ceiling.
   saturatedCars: number;
   // AI budgets (player team excluded) in raw dollars.
   budget: { min: number; avg: number; max: number };

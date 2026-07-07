@@ -924,7 +924,7 @@ function evaluateExtensionOffer(
     : driver.morale * 0.18 + driver.confidence * 0.12;
   const driverMood = driver.morale * 0.12 + driver.confidence * 0.08;
   const teamPull = Math.max(-8, Math.min(8, (((team as Team | undefined)?.reputation ?? 50) - 50) / 5));
-  const ambitionPenalty = Math.max(0, driver.ratings.overall - 8) * 7;
+  const ambitionPenalty = Math.max(0, driver.ratings.overall - 80) * 0.7;
   const seatInsecure =
     driver.contractType === 'third' ||
     driver.contractType === 'reserve' ||
@@ -933,7 +933,7 @@ function evaluateExtensionOffer(
     driver.morale < 40 ||
     (rel?.frustration ?? 0) >= 70;
   const shortTermPenalty = appliedYears === 1 && !seatInsecure
-    ? Math.max(5, Math.round((driver.ratings.overall - 5) * 3 + ((rel?.ego ?? 50) - 50) / 8))
+    ? Math.max(5, Math.round((driver.ratings.overall - 50) * 0.3 + ((rel?.ego ?? 50) - 50) / 8))
     : 0;
   const securityBoost = (appliedYears >= 2 ? 9 + appliedYears * 7 : seatInsecure ? 5 : 1) + (offerMultiplier - 1) * 44;
   const expiringBoost = (driver.contractYearsRemaining ?? 1) <= 1 ? 4 : 0;
@@ -2102,7 +2102,7 @@ function generateAIPackages(
     // Build AI context from available state.
     const aiState = state.aiTeamStates?.[team.id];
     const car = carForTeam(state, team.id);
-    const carReliability = car ? effectiveCarRatings(car).reliability : 5;
+    const carReliability = car ? effectiveCarRatings(car).reliability : 50;
     const constructorPosition =
       constructorStandings.findIndex((s) => s.entityId === team.id) + 1 || teamCount;
 

@@ -1,5 +1,5 @@
 // Central access point for lightweight seed data and re-exports.
-// Heavy historical season data (teams, drivers, cars, tracks for all 56 seasons)
+// Heavy historical season data (teams, drivers, cars, tracks for all 86 seasons)
 // is NO LONGER imported here. It is loaded on demand via seasonLoader.ts.
 //
 // Season data must be loaded through loadSeasonBundle() or getCachedBundle().
@@ -13,8 +13,10 @@ import { getTrackFromRegistry } from './seasonLoader';
 export {
   availableSeasons,
   availableSeries,
+  seriesGroups,
   hasSeason,
   type SeasonBundle,
+  type SeriesGroup,
 } from './seasonCatalog';
 
 // Re-export season loader API
@@ -64,6 +66,12 @@ export {
   setSeasonBundles,
 } from './registry/masterRegistry';
 export { initializeMasterRegistry } from './registry/initializeMasterRegistry';
+export {
+  getHistoricalWeatherRaceMeta,
+  getHistoricalWeatherTimeline,
+  getCachedHistoricalWeatherTimeline,
+  preloadHistoricalWeatherSeason,
+} from './weather';
 
 // A large, varied pool of hireable specialists is generated per season/series
 // (deterministic). Memoized so the same season returns a stable pool.
@@ -90,4 +98,3 @@ export function getMaxQualifiers(series: string): number | undefined {
 export function getTrackById(id: string): Track | undefined {
   return getTrackFromRegistry(id);
 }
-

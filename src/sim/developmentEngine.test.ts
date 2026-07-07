@@ -18,11 +18,11 @@ const flat = (v: number): CarRatings => ({
 
 describe('diminishingGainMultiplier — development gains diminish near the cap', () => {
   it('is largest at low ratings and shrinks monotonically toward the ceiling', () => {
-    const low = diminishingGainMultiplier(3);
-    const mid = diminishingGainMultiplier(6);
-    const high = diminishingGainMultiplier(8);
-    const veryHigh = diminishingGainMultiplier(9);
-    const nearCap = diminishingGainMultiplier(9.8);
+    const low = diminishingGainMultiplier(30);
+    const mid = diminishingGainMultiplier(60);
+    const high = diminishingGainMultiplier(80);
+    const veryHigh = diminishingGainMultiplier(90);
+    const nearCap = diminishingGainMultiplier(98);
     expect(low).toBeGreaterThan(mid);
     expect(mid).toBeGreaterThan(high);
     expect(high).toBeGreaterThan(veryHigh);
@@ -31,8 +31,8 @@ describe('diminishingGainMultiplier — development gains diminish near the cap'
 
   it('makes a top car improve far more slowly than a midfield car for the same raw gain', () => {
     const rawGain = 0.5;
-    const midfieldEffective = rawGain * diminishingGainMultiplier(6);
-    const topEffective = rawGain * diminishingGainMultiplier(9.5);
+    const midfieldEffective = rawGain * diminishingGainMultiplier(60);
+    const topEffective = rawGain * diminishingGainMultiplier(95);
     // A near-cap car should get less than a third of a midfield car's gain.
     expect(topEffective).toBeLessThan(midfieldEffective * 0.35);
   });
@@ -40,9 +40,9 @@ describe('diminishingGainMultiplier — development gains diminish near the cap'
 
 describe('nearCapFailureChance — high-rated projects fail more often', () => {
   it('is zero below the difficulty bands and rises toward the cap', () => {
-    expect(nearCapFailureChance(7)).toBe(0);
-    expect(nearCapFailureChance(9)).toBeGreaterThan(0);
-    expect(nearCapFailureChance(9.5)).toBeGreaterThan(nearCapFailureChance(9));
+    expect(nearCapFailureChance(70)).toBe(0);
+    expect(nearCapFailureChance(90)).toBeGreaterThan(0);
+    expect(nearCapFailureChance(95)).toBeGreaterThan(nearCapFailureChance(90));
   });
 });
 
@@ -59,28 +59,28 @@ describe('catchUpMultiplier — midfield catch-up efficiency', () => {
 
 describe('applyOffseasonDecay — ratings do not stay maxed forever', () => {
   it('erodes a maxed car in a stable year (maintenance decay), never below the floor', () => {
-    const decayed = applyOffseasonDecay(flat(10), { regulationShakeup: 0 });
-    expect(decayed.aeroEfficiency).toBeLessThan(10);
-    expect(decayed.aeroEfficiency).toBeGreaterThan(5);
+    const decayed = applyOffseasonDecay(flat(100), { regulationShakeup: 0 });
+    expect(decayed.aeroEfficiency).toBeLessThan(100);
+    expect(decayed.aeroEfficiency).toBeGreaterThan(50);
   });
 
   it('barely touches an average car (only performance above the floor erodes)', () => {
-    const decayed = applyOffseasonDecay(flat(5), { regulationShakeup: 0 });
-    // A 5.0 car sits at/under the floor, so maintenance decay is negligible.
-    expect(decayed.aeroEfficiency).toBeGreaterThanOrEqual(4.9);
+    const decayed = applyOffseasonDecay(flat(50), { regulationShakeup: 0 });
+    // A 50.0 car sits at/under the floor, so maintenance decay is negligible.
+    expect(decayed.aeroEfficiency).toBeGreaterThanOrEqual(49);
   });
 
   it('a major regulation shakeup resets a strong car far more than a stable year', () => {
-    const stable = applyOffseasonDecay(flat(9.5), { regulationShakeup: 0 });
-    const major = applyOffseasonDecay(flat(9.5), { regulationShakeup: 1 });
+    const stable = applyOffseasonDecay(flat(95), { regulationShakeup: 0 });
+    const major = applyOffseasonDecay(flat(95), { regulationShakeup: 1 });
     expect(major.aeroEfficiency).toBeLessThan(stable.aeroEfficiency);
     // The shakeup should bite the strong car by a meaningful margin.
     expect(stable.aeroEfficiency - major.aeroEfficiency).toBeGreaterThan(0.3);
   });
 
   it('reshuffles the order: a shakeup hits a dominant car harder than a midfield one', () => {
-    const topBefore = 9.5;
-    const midBefore = 7.0;
+    const topBefore = 95;
+    const midBefore = 70;
     const top = applyOffseasonDecay(flat(topBefore), { regulationShakeup: 1 });
     const mid = applyOffseasonDecay(flat(midBefore), { regulationShakeup: 1 });
     const topLoss = topBefore - top.aeroEfficiency;
@@ -89,18 +89,18 @@ describe('applyOffseasonDecay — ratings do not stay maxed forever', () => {
   });
 
   it('a team that nails the new regulation concept adapts better than one that misses it', () => {
-    const nailed = applyOffseasonDecay(flat(9), { regulationShakeup: 1, regulationAdaptation: 1 });
-    const missed = applyOffseasonDecay(flat(9), { regulationShakeup: 1, regulationAdaptation: -1 });
+    const nailed = applyOffseasonDecay(flat(90), { regulationShakeup: 1, regulationAdaptation: 1 });
+    const missed = applyOffseasonDecay(flat(90), { regulationShakeup: 1, regulationAdaptation: -1 });
     expect(nailed.aeroEfficiency).toBeGreaterThan(missed.aeroEfficiency);
   });
 
   it('strong facilities/staff and a healthy budget resist decay', () => {
-    const poor = applyOffseasonDecay(flat(9), {
+    const poor = applyOffseasonDecay(flat(90), {
       regulationShakeup: 0.6,
       facilityStaffQuality: 20,
       budgetHealth: 0.1,
     });
-    const rich = applyOffseasonDecay(flat(9), {
+    const rich = applyOffseasonDecay(flat(90), {
       regulationShakeup: 0.6,
       facilityStaffQuality: 95,
       budgetHealth: 0.95,

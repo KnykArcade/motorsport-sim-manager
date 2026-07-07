@@ -12,7 +12,7 @@ export const calendar2019: Race[] = [
     trackId: 'albert-park-2019',
     trackName: 'Albert Park',
     laps: 58,
-    distanceKm: 306.2,
+    distanceKm: 307.574,
     completed: false,
   },
   {
@@ -22,7 +22,7 @@ export const calendar2019: Race[] = [
     trackId: 'bahrain-international-circuit-2019',
     trackName: 'Bahrain International Circuit',
     laps: 57,
-    distanceKm: 308.5,
+    distanceKm: 308.238,
     completed: false,
   },
   {
@@ -32,7 +32,7 @@ export const calendar2019: Race[] = [
     trackId: 'shanghai-international-circuit-2019',
     trackName: 'Shanghai International Circuit',
     laps: 56,
-    distanceKm: 310.4,
+    distanceKm: 305.066,
     completed: false,
   },
   {
@@ -42,7 +42,7 @@ export const calendar2019: Race[] = [
     trackId: 'baku-city-circuit-2019',
     trackName: 'Baku City Circuit',
     laps: 51,
-    distanceKm: 306.0,
+    distanceKm: 306.049,
     completed: false,
   },
   {
@@ -52,7 +52,7 @@ export const calendar2019: Race[] = [
     trackId: 'circuit-de-barcelona-catalunya-2019',
     trackName: 'Circuit de Barcelona-Catalunya',
     laps: 66,
-    distanceKm: 307.1,
+    distanceKm: 307.104,
     completed: false,
   },
   {
@@ -62,7 +62,7 @@ export const calendar2019: Race[] = [
     trackId: 'circuit-de-monaco-2019',
     trackName: 'Circuit de Monaco',
     laps: 78,
-    distanceKm: 260.3,
+    distanceKm: 260.286,
     completed: false,
   },
   {
@@ -72,7 +72,7 @@ export const calendar2019: Race[] = [
     trackId: 'circuit-gilles-villeneuve-2019',
     trackName: 'Circuit Gilles Villeneuve',
     laps: 70,
-    distanceKm: 305.3,
+    distanceKm: 305.27,
     completed: false,
   },
   {
@@ -82,7 +82,7 @@ export const calendar2019: Race[] = [
     trackId: 'circuit-paul-ricard-2019',
     trackName: 'Circuit Paul Ricard',
     laps: 53,
-    distanceKm: 309.7,
+    distanceKm: 309.626,
     completed: false,
   },
   {
@@ -92,7 +92,7 @@ export const calendar2019: Race[] = [
     trackId: 'red-bull-ring-2019',
     trackName: 'Red Bull Ring',
     laps: 71,
-    distanceKm: 306.5,
+    distanceKm: 307.018,
     completed: false,
   },
   {
@@ -101,8 +101,8 @@ export const calendar2019: Race[] = [
     gpName: 'British Grand Prix',
     trackId: 'silverstone-circuit-2019',
     trackName: 'Silverstone Circuit',
-    laps: 51,
-    distanceKm: 306.1,
+    laps: 52,
+    distanceKm: 306.198,
     completed: false,
   },
   {
@@ -111,8 +111,8 @@ export const calendar2019: Race[] = [
     gpName: 'German Grand Prix',
     trackId: 'hockenheimring-2019',
     trackName: 'Hockenheimring',
-    laps: 70,
-    distanceKm: 306.7,
+    laps: 67,
+    distanceKm: 306.458,
     completed: false,
   },
   {
@@ -122,7 +122,7 @@ export const calendar2019: Race[] = [
     trackId: 'hungaroring-2019',
     trackName: 'Hungaroring',
     laps: 70,
-    distanceKm: 306.7,
+    distanceKm: 306.63,
     completed: false,
   },
   {
@@ -132,7 +132,7 @@ export const calendar2019: Race[] = [
     trackId: 'circuit-de-spa-francorchamps-2019',
     trackName: 'Circuit de Spa-Francorchamps',
     laps: 44,
-    distanceKm: 308.2,
+    distanceKm: 308.052,
     completed: false,
   },
   {
@@ -142,7 +142,7 @@ export const calendar2019: Race[] = [
     trackId: 'autodromo-nazionale-monza-2019',
     trackName: 'Autodromo Nazionale Monza',
     laps: 53,
-    distanceKm: 306.7,
+    distanceKm: 306.72,
     completed: false,
   },
   {
@@ -151,8 +151,8 @@ export const calendar2019: Race[] = [
     gpName: 'Singapore Grand Prix',
     trackId: 'marina-bay-street-circuit-2019',
     trackName: 'Marina Bay Street Circuit',
-    laps: 58,
-    distanceKm: 308.4,
+    laps: 61,
+    distanceKm: 308.706,
     completed: false,
   },
   {
@@ -162,7 +162,7 @@ export const calendar2019: Race[] = [
     trackId: 'sochi-autodrom-2019',
     trackName: 'Sochi Autodrom',
     laps: 53,
-    distanceKm: 307.8,
+    distanceKm: 309.745,
     completed: false,
   },
   {
@@ -172,7 +172,7 @@ export const calendar2019: Race[] = [
     trackId: 'suzuka-circuit-2019',
     trackName: 'Suzuka Circuit',
     laps: 53,
-    distanceKm: 307.5,
+    distanceKm: 307.471,
     completed: false,
   },
   {
@@ -182,7 +182,7 @@ export const calendar2019: Race[] = [
     trackId: 'autodromo-hermanos-rodriguez-2019',
     trackName: 'Autodromo Hermanos Rodriguez',
     laps: 71,
-    distanceKm: 306.5,
+    distanceKm: 305.354,
     completed: false,
   },
   {
@@ -191,8 +191,8 @@ export const calendar2019: Race[] = [
     gpName: 'United States Grand Prix',
     trackId: 'circuit-of-the-americas-2019',
     trackName: 'Circuit of The Americas',
-    laps: 71,
-    distanceKm: 305.9,
+    laps: 56,
+    distanceKm: 308.405,
     completed: false,
   },
   {
@@ -202,7 +202,7 @@ export const calendar2019: Race[] = [
     trackId: 'autodromo-jose-carlos-pace-2019',
     trackName: 'Autodromo Jose Carlos Pace',
     laps: 71,
-    distanceKm: 305.9,
+    distanceKm: 305.879,
     completed: false,
   },
   {
@@ -212,7 +212,7 @@ export const calendar2019: Race[] = [
     trackId: 'yas-marina-circuit-2019',
     trackName: 'Yas Marina Circuit',
     laps: 55,
-    distanceKm: 290.5,
+    distanceKm: 305.355,
     completed: false,
   },
 ];

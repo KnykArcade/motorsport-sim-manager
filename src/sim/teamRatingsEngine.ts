@@ -65,12 +65,12 @@ export function calculateAcademyCapacity(r: TeamOrganizationRatings): number {
   return Math.max(1, Math.min(4, capacity));
 }
 
-// Car ratings are on a 1-10 scale; the org ratings are 0-100.
+// Car ratings are on a 1-100 scale; the org ratings are 0-100.
 function carPerformanceScore(car: Car | undefined): number {
   if (!car) return 50;
   const r = effectiveCarRatings(car);
   const avg = (r.enginePower + r.aeroEfficiency + r.mechanicalGrip + r.reliability + r.pitCrewOperations) / 5;
-  return clamp(avg * 10);
+  return clamp(avg);
 }
 
 // Budget ($M) mapped to a 0-100 financial-strength score.
@@ -115,8 +115,8 @@ export function buildTeamOrganizationRatings(
     driverAppeal: cat(rep * 0.55 + carScore * 0.3 + 8),
     sponsorAppeal: cat(rep * 0.6 + money * 0.2 + 8),
     operations: cat(rep * 0.5 + carScore * 0.3 + 12),
-    reliabilityDepartment: cat((car ? effectiveCarRatings(car).reliability * 10 : 55) * 0.7 + rep * 0.3),
-    pitCrew: cat((car ? effectiveCarRatings(car).pitCrewOperations * 10 : 55) * 0.7 + rep * 0.3),
+    reliabilityDepartment: cat((car ? effectiveCarRatings(car).reliability : 55) * 0.7 + rep * 0.3),
+    pitCrew: cat((car ? effectiveCarRatings(car).pitCrewOperations : 55) * 0.7 + rep * 0.3),
     youthAcademy: cat(rep * 0.5 + 18),
     overallTeamRating: 0,
   };

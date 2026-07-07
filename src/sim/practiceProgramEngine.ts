@@ -526,8 +526,8 @@ export function recommendedPracticeProgram(
 
   // Otherwise address the biggest knowledge gap, weighted by the circuit's
   // demands (high-deg tracks prize tyre data; endurance tracks prize reliability).
-  const highDeg = track.attributes.enduranceConsistency >= 7 || track.attributes.tractionAcceleration >= 8;
-  const enduranceRisk = track.attributes.enduranceConsistency >= 7 || track.attributes.riskWallProximity >= 7;
+  const highDeg = track.attributes.enduranceConsistency >= 70 || track.attributes.tractionAcceleration >= 80;
+  const enduranceRisk = track.attributes.enduranceConsistency >= 70 || track.attributes.riskWallProximity >= 70;
   const setupNeed = (1 - gaps.setup) * 1.1;
   const tireNeed = (1 - gaps.tire) * (highDeg ? 1.35 : 1);
   const relNeed = (1 - gaps.reliability) * (enduranceRisk ? 1.3 : 0.85);

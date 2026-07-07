@@ -46,7 +46,7 @@ function clamp01(n: number): number {
   return Math.max(0, Math.min(1, n));
 }
 function clampRating(n: number): number {
-  return Math.max(1, Math.min(10, n));
+  return Math.max(1, Math.min(100, Math.round(n)));
 }
 function round1(n: number): number {
   return Math.round(n * 10) / 10;
@@ -85,8 +85,8 @@ export function visiblePotentialRange(
   entityType: ScoutedEntityType = 'Driver',
 ): [number, number] {
   const youth = entityType === 'YouthProspect';
-  const spread = (1 - accuracy) * (youth ? 4.0 : 2.5);
-  const adjustedSpread = Math.max(youth ? 1.1 : 0.4, spread * (youth ? 1.15 : 1.28));
+  const spread = (1 - accuracy) * (youth ? 40 : 25);
+  const adjustedSpread = Math.max(youth ? 11 : 4, spread * (youth ? 1.15 : 1.28));
   const center = clampRating(truePotential + bias(seed, entityId, 'potential') * adjustedSpread * 0.5);
   return [round1(clampRating(center - adjustedSpread)), round1(clampRating(center + adjustedSpread))];
 }
@@ -103,7 +103,7 @@ export function visibleSkill(
 ): VisibleRating {
   if (accuracy < UNKNOWN_ACCURACY) return 'Unknown';
   const youth = entityType === 'YouthProspect';
-  const spread = Math.max(youth ? 0.8 : 0.3, (1 - accuracy) * (youth ? 3.8 : 2.8));
+  const spread = Math.max(youth ? 8 : 3, (1 - accuracy) * (youth ? 38 : 28));
   const center = clampRating(trueValue + bias(seed, entityId, key) * spread * 0.5);
   return [round1(clampRating(center - spread)), round1(clampRating(center + spread))];
 }

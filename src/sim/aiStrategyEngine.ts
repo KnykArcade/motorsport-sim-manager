@@ -35,14 +35,14 @@ export function assignPersonality(
   seed: string,
 ): AIStrategyPersonality {
   const rng = createSeededRandom(deriveSeed(seed, 'ai-personality', team.id, driver.id));
-  const aggression = driver.ratings.aggression; // 1-10
-  const risk = driver.ratings.riskManagement; // 1-10 (high = cautious)
+  const aggression = driver.ratings.aggression; // 1-100
+  const risk = driver.ratings.riskManagement; // 1-100 (high = cautious)
 
   // Bias the draw by character, then fall back to a seeded pick.
-  if (aggression >= 8 && rng.chance(0.6)) return 'Aggressive';
-  if (risk >= 8 && rng.chance(0.5)) return 'RiskAverse';
+  if (aggression >= 80 && rng.chance(0.6)) return 'Aggressive';
+  if (risk >= 80 && rng.chance(0.5)) return 'RiskAverse';
   if (team.reputation >= 75 && rng.chance(0.4)) return 'TrackPositionFocused';
-  if (aggression >= 7 && rng.chance(0.4)) return 'UndercutFocused';
+  if (aggression >= 70 && rng.chance(0.4)) return 'UndercutFocused';
   return rng.pick(PERSONALITIES);
 }
 
@@ -149,7 +149,7 @@ export function aiLapDecision(
   }
 
   // 3. Scheduled stop (with personality-driven undercut/overcut bias).
-  const lowOvertaking = track.attributes.overtakingRacecraft <= 4;
+  const lowOvertaking = track.attributes.overtakingRacecraft <= 40;
   const nextStop = car.pit.scheduledLaps[0];
   if (nextStop != null) {
     let target = nextStop;
