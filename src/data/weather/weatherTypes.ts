@@ -14,7 +14,9 @@ export type HistoricalWeatherRaceMeta = {
   latitude: number;
   longitude: number;
   coordinateSource: 'workbook' | 'embedded' | 'geocoded' | 'assumed';
-  startTimeSource: 'series-default';
+  startTimeSource: 'series-default' | 'workbook-estimate';
+  startTimeConfidence?: 'High' | 'Medium' | 'Low';
+  startTimeMethod?: string;
   assumptions: string[];
 };
 

@@ -10,90 +10,25 @@ export const season2016F1Weather = {
       "year": 2016,
       "series": "F1",
       "date": "2016-03-20",
-      "localStartTime": "14:00",
+      "localStartTime": "15:00",
       "timezone": "auto",
       "latitude": -37.8136,
       "longitude": 144.9631,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "Medium",
+      "startTimeMethod": "F1 Australia daytime pattern"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using F1 default 14:00"
+      "Workbook start time estimate (Medium): 15:00",
+      "Start time method: F1 Australia daytime pattern"
     ],
     "samples": [
       {
-        "time": "2016-03-20T14:00",
-        "weatherCode": 2,
-        "condition": "Cloudy",
-        "state": {
-          "condition": "Cloudy",
-          "gripLevel": 0.97,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Cloudy"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 58,
-        "temperature2m": 14.1,
-        "windSpeed10m": 6.4
-      },
-      {
-        "time": "2016-03-20T14:15",
-        "weatherCode": 2,
-        "condition": "Cloudy",
-        "state": {
-          "condition": "Cloudy",
-          "gripLevel": 0.97,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Cloudy"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 58,
-        "temperature2m": 14.1,
-        "windSpeed10m": 6.4
-      },
-      {
-        "time": "2016-03-20T14:30",
-        "weatherCode": 2,
-        "condition": "Cloudy",
-        "state": {
-          "condition": "Cloudy",
-          "gripLevel": 0.97,
-          "wet": false,
-          "changingSoon": true,
-          "label": "Cloudy"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 58,
-        "temperature2m": 14.1,
-        "windSpeed10m": 6.4
-      },
-      {
-        "time": "2016-03-20T14:45",
-        "weatherCode": 2,
-        "condition": "Cloudy",
-        "state": {
-          "condition": "Cloudy",
-          "gripLevel": 0.97,
-          "wet": false,
-          "changingSoon": true,
-          "label": "Cloudy"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 58,
-        "temperature2m": 14.1,
-        "windSpeed10m": 6.4
-      },
-      {
         "time": "2016-03-20T15:00",
-        "weatherCode": 1,
+        "weatherCode": 2,
         "condition": "Cloudy",
         "state": {
           "condition": "Cloudy",
@@ -104,13 +39,13 @@ export const season2016F1Weather = {
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 40,
-        "temperature2m": 13.2,
-        "windSpeed10m": 7.1
+        "cloudCover": 58,
+        "temperature2m": 14.1,
+        "windSpeed10m": 6.4
       },
       {
         "time": "2016-03-20T15:15",
-        "weatherCode": 1,
+        "weatherCode": 2,
         "condition": "Cloudy",
         "state": {
           "condition": "Cloudy",
@@ -121,13 +56,13 @@ export const season2016F1Weather = {
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 40,
-        "temperature2m": 13.2,
-        "windSpeed10m": 7.1
+        "cloudCover": 58,
+        "temperature2m": 14.1,
+        "windSpeed10m": 6.4
       },
       {
         "time": "2016-03-20T15:30",
-        "weatherCode": 1,
+        "weatherCode": 2,
         "condition": "Cloudy",
         "state": {
           "condition": "Cloudy",
@@ -138,12 +73,63 @@ export const season2016F1Weather = {
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 40,
-        "temperature2m": 13.2,
-        "windSpeed10m": 7.1
+        "cloudCover": 58,
+        "temperature2m": 14.1,
+        "windSpeed10m": 6.4
       },
       {
         "time": "2016-03-20T15:45",
+        "weatherCode": 2,
+        "condition": "Cloudy",
+        "state": {
+          "condition": "Cloudy",
+          "gripLevel": 0.97,
+          "wet": false,
+          "changingSoon": true,
+          "label": "Cloudy"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 58,
+        "temperature2m": 14.1,
+        "windSpeed10m": 6.4
+      },
+      {
+        "time": "2016-03-20T16:00",
+        "weatherCode": 1,
+        "condition": "Cloudy",
+        "state": {
+          "condition": "Cloudy",
+          "gripLevel": 0.97,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Cloudy"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 40,
+        "temperature2m": 13.2,
+        "windSpeed10m": 7.1
+      },
+      {
+        "time": "2016-03-20T16:15",
+        "weatherCode": 1,
+        "condition": "Cloudy",
+        "state": {
+          "condition": "Cloudy",
+          "gripLevel": 0.97,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Cloudy"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 40,
+        "temperature2m": 13.2,
+        "windSpeed10m": 7.1
+      },
+      {
+        "time": "2016-03-20T16:30",
         "weatherCode": 1,
         "condition": "Cloudy",
         "state": {
@@ -160,58 +146,75 @@ export const season2016F1Weather = {
         "windSpeed10m": 7.1
       },
       {
-        "time": "2016-03-20T16:00",
-        "weatherCode": 0,
-        "condition": "Dry",
-        "state": {
-          "condition": "Dry",
-          "gripLevel": 1,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Dry"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 11,
-        "temperature2m": 12.7,
-        "windSpeed10m": 6.8
-      },
-      {
-        "time": "2016-03-20T16:15",
-        "weatherCode": 0,
-        "condition": "Dry",
-        "state": {
-          "condition": "Dry",
-          "gripLevel": 1,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Dry"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 11,
-        "temperature2m": 12.7,
-        "windSpeed10m": 6.8
-      },
-      {
-        "time": "2016-03-20T16:30",
-        "weatherCode": 0,
-        "condition": "Dry",
-        "state": {
-          "condition": "Dry",
-          "gripLevel": 1,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Dry"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 11,
-        "temperature2m": 12.7,
-        "windSpeed10m": 6.8
-      },
-      {
         "time": "2016-03-20T16:45",
+        "weatherCode": 1,
+        "condition": "Cloudy",
+        "state": {
+          "condition": "Cloudy",
+          "gripLevel": 0.97,
+          "wet": false,
+          "changingSoon": true,
+          "label": "Cloudy"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 40,
+        "temperature2m": 13.2,
+        "windSpeed10m": 7.1
+      },
+      {
+        "time": "2016-03-20T17:00",
+        "weatherCode": 0,
+        "condition": "Dry",
+        "state": {
+          "condition": "Dry",
+          "gripLevel": 1,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Dry"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 11,
+        "temperature2m": 12.7,
+        "windSpeed10m": 6.8
+      },
+      {
+        "time": "2016-03-20T17:15",
+        "weatherCode": 0,
+        "condition": "Dry",
+        "state": {
+          "condition": "Dry",
+          "gripLevel": 1,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Dry"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 11,
+        "temperature2m": 12.7,
+        "windSpeed10m": 6.8
+      },
+      {
+        "time": "2016-03-20T17:30",
+        "weatherCode": 0,
+        "condition": "Dry",
+        "state": {
+          "condition": "Dry",
+          "gripLevel": 1,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Dry"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 11,
+        "temperature2m": 12.7,
+        "windSpeed10m": 6.8
+      },
+      {
+        "time": "2016-03-20T17:45",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -238,21 +241,24 @@ export const season2016F1Weather = {
       "year": 2016,
       "series": "F1",
       "date": "2016-04-03",
-      "localStartTime": "14:00",
+      "localStartTime": "18:00",
       "timezone": "auto",
       "latitude": 26.0325,
       "longitude": 50.5106,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "High",
+      "startTimeMethod": "Known F1 night-race pattern"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using F1 default 14:00"
+      "Workbook start time estimate (High): 18:00",
+      "Start time method: Known F1 night-race pattern"
     ],
     "samples": [
       {
-        "time": "2016-04-03T14:00",
+        "time": "2016-04-03T18:00",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -269,7 +275,7 @@ export const season2016F1Weather = {
         "windSpeed10m": 8.6
       },
       {
-        "time": "2016-04-03T14:15",
+        "time": "2016-04-03T18:15",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -286,7 +292,7 @@ export const season2016F1Weather = {
         "windSpeed10m": 8.6
       },
       {
-        "time": "2016-04-03T14:30",
+        "time": "2016-04-03T18:30",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -303,7 +309,7 @@ export const season2016F1Weather = {
         "windSpeed10m": 8.6
       },
       {
-        "time": "2016-04-03T14:45",
+        "time": "2016-04-03T18:45",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -320,7 +326,7 @@ export const season2016F1Weather = {
         "windSpeed10m": 8.6
       },
       {
-        "time": "2016-04-03T15:00",
+        "time": "2016-04-03T19:00",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -337,7 +343,7 @@ export const season2016F1Weather = {
         "windSpeed10m": 10.4
       },
       {
-        "time": "2016-04-03T15:15",
+        "time": "2016-04-03T19:15",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -354,7 +360,7 @@ export const season2016F1Weather = {
         "windSpeed10m": 10.4
       },
       {
-        "time": "2016-04-03T15:30",
+        "time": "2016-04-03T19:30",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -371,7 +377,7 @@ export const season2016F1Weather = {
         "windSpeed10m": 10.4
       },
       {
-        "time": "2016-04-03T15:45",
+        "time": "2016-04-03T19:45",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -388,7 +394,7 @@ export const season2016F1Weather = {
         "windSpeed10m": 10.4
       },
       {
-        "time": "2016-04-03T16:00",
+        "time": "2016-04-03T20:00",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -405,7 +411,7 @@ export const season2016F1Weather = {
         "windSpeed10m": 11.5
       },
       {
-        "time": "2016-04-03T16:15",
+        "time": "2016-04-03T20:15",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -422,7 +428,7 @@ export const season2016F1Weather = {
         "windSpeed10m": 11.5
       },
       {
-        "time": "2016-04-03T16:30",
+        "time": "2016-04-03T20:30",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -439,7 +445,7 @@ export const season2016F1Weather = {
         "windSpeed10m": 11.5
       },
       {
-        "time": "2016-04-03T16:45",
+        "time": "2016-04-03T20:45",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -466,140 +472,126 @@ export const season2016F1Weather = {
       "year": 2016,
       "series": "F1",
       "date": "2016-04-17",
-      "localStartTime": "14:00",
+      "localStartTime": "15:00",
       "timezone": "auto",
       "latitude": 31.2304,
       "longitude": 121.4737,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "Medium",
+      "startTimeMethod": "F1 Asia daytime pattern"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using F1 default 14:00"
+      "Workbook start time estimate (Medium): 15:00",
+      "Start time method: F1 Asia daytime pattern"
     ],
     "samples": [
       {
-        "time": "2016-04-17T14:00",
-        "weatherCode": 0,
-        "condition": "Dry",
-        "state": {
-          "condition": "Dry",
-          "gripLevel": 1,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Dry"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 19,
-        "temperature2m": 14.4,
-        "windSpeed10m": 21.5
-      },
-      {
-        "time": "2016-04-17T14:15",
-        "weatherCode": 0,
-        "condition": "Dry",
-        "state": {
-          "condition": "Dry",
-          "gripLevel": 1,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Dry"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 19,
-        "temperature2m": 14.4,
-        "windSpeed10m": 21.5
-      },
-      {
-        "time": "2016-04-17T14:30",
-        "weatherCode": 0,
-        "condition": "Dry",
-        "state": {
-          "condition": "Dry",
-          "gripLevel": 1,
-          "wet": false,
-          "changingSoon": true,
-          "label": "Dry"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 19,
-        "temperature2m": 14.4,
-        "windSpeed10m": 21.5
-      },
-      {
-        "time": "2016-04-17T14:45",
-        "weatherCode": 0,
-        "condition": "Dry",
-        "state": {
-          "condition": "Dry",
-          "gripLevel": 1,
-          "wet": false,
-          "changingSoon": true,
-          "label": "Dry"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 19,
-        "temperature2m": 14.4,
-        "windSpeed10m": 21.5
-      },
-      {
         "time": "2016-04-17T15:00",
-        "weatherCode": 1,
-        "condition": "Cloudy",
+        "weatherCode": 0,
+        "condition": "Dry",
         "state": {
-          "condition": "Cloudy",
-          "gripLevel": 0.97,
+          "condition": "Dry",
+          "gripLevel": 1,
           "wet": false,
           "changingSoon": false,
-          "label": "Cloudy"
+          "label": "Dry"
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 30,
-        "temperature2m": 14.2,
-        "windSpeed10m": 20.4
+        "cloudCover": 19,
+        "temperature2m": 14.4,
+        "windSpeed10m": 21.5
       },
       {
         "time": "2016-04-17T15:15",
-        "weatherCode": 1,
-        "condition": "Cloudy",
+        "weatherCode": 0,
+        "condition": "Dry",
         "state": {
-          "condition": "Cloudy",
-          "gripLevel": 0.97,
+          "condition": "Dry",
+          "gripLevel": 1,
           "wet": false,
           "changingSoon": false,
-          "label": "Cloudy"
+          "label": "Dry"
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 30,
-        "temperature2m": 14.2,
-        "windSpeed10m": 20.4
+        "cloudCover": 19,
+        "temperature2m": 14.4,
+        "windSpeed10m": 21.5
       },
       {
         "time": "2016-04-17T15:30",
-        "weatherCode": 1,
-        "condition": "Cloudy",
+        "weatherCode": 0,
+        "condition": "Dry",
         "state": {
-          "condition": "Cloudy",
-          "gripLevel": 0.97,
+          "condition": "Dry",
+          "gripLevel": 1,
           "wet": false,
           "changingSoon": true,
-          "label": "Cloudy"
+          "label": "Dry"
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 30,
-        "temperature2m": 14.2,
-        "windSpeed10m": 20.4
+        "cloudCover": 19,
+        "temperature2m": 14.4,
+        "windSpeed10m": 21.5
       },
       {
         "time": "2016-04-17T15:45",
+        "weatherCode": 0,
+        "condition": "Dry",
+        "state": {
+          "condition": "Dry",
+          "gripLevel": 1,
+          "wet": false,
+          "changingSoon": true,
+          "label": "Dry"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 19,
+        "temperature2m": 14.4,
+        "windSpeed10m": 21.5
+      },
+      {
+        "time": "2016-04-17T16:00",
+        "weatherCode": 1,
+        "condition": "Cloudy",
+        "state": {
+          "condition": "Cloudy",
+          "gripLevel": 0.97,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Cloudy"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 30,
+        "temperature2m": 14.2,
+        "windSpeed10m": 20.4
+      },
+      {
+        "time": "2016-04-17T16:15",
+        "weatherCode": 1,
+        "condition": "Cloudy",
+        "state": {
+          "condition": "Cloudy",
+          "gripLevel": 0.97,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Cloudy"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 30,
+        "temperature2m": 14.2,
+        "windSpeed10m": 20.4
+      },
+      {
+        "time": "2016-04-17T16:30",
         "weatherCode": 1,
         "condition": "Cloudy",
         "state": {
@@ -616,7 +608,24 @@ export const season2016F1Weather = {
         "windSpeed10m": 20.4
       },
       {
-        "time": "2016-04-17T16:00",
+        "time": "2016-04-17T16:45",
+        "weatherCode": 1,
+        "condition": "Cloudy",
+        "state": {
+          "condition": "Cloudy",
+          "gripLevel": 0.97,
+          "wet": false,
+          "changingSoon": true,
+          "label": "Cloudy"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 30,
+        "temperature2m": 14.2,
+        "windSpeed10m": 20.4
+      },
+      {
+        "time": "2016-04-17T17:00",
         "weatherCode": 2,
         "condition": "Cloudy",
         "state": {
@@ -633,7 +642,7 @@ export const season2016F1Weather = {
         "windSpeed10m": 17.8
       },
       {
-        "time": "2016-04-17T16:15",
+        "time": "2016-04-17T17:15",
         "weatherCode": 2,
         "condition": "Cloudy",
         "state": {
@@ -650,7 +659,7 @@ export const season2016F1Weather = {
         "windSpeed10m": 17.8
       },
       {
-        "time": "2016-04-17T16:30",
+        "time": "2016-04-17T17:30",
         "weatherCode": 2,
         "condition": "Cloudy",
         "state": {
@@ -667,7 +676,7 @@ export const season2016F1Weather = {
         "windSpeed10m": 17.8
       },
       {
-        "time": "2016-04-17T16:45",
+        "time": "2016-04-17T17:45",
         "weatherCode": 2,
         "condition": "Cloudy",
         "state": {
@@ -694,90 +703,25 @@ export const season2016F1Weather = {
       "year": 2016,
       "series": "F1",
       "date": "2016-05-01",
-      "localStartTime": "14:00",
+      "localStartTime": "15:00",
       "timezone": "auto",
       "latitude": 43.6028,
       "longitude": 39.7342,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "Medium",
+      "startTimeMethod": "F1 Europe/Asia daytime pattern"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using F1 default 14:00"
+      "Workbook start time estimate (Medium): 15:00",
+      "Start time method: F1 Europe/Asia daytime pattern"
     ],
     "samples": [
       {
-        "time": "2016-05-01T14:00",
-        "weatherCode": 1,
-        "condition": "Cloudy",
-        "state": {
-          "condition": "Cloudy",
-          "gripLevel": 0.97,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Cloudy"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 39,
-        "temperature2m": 11.7,
-        "windSpeed10m": 5.4
-      },
-      {
-        "time": "2016-05-01T14:15",
-        "weatherCode": 1,
-        "condition": "Cloudy",
-        "state": {
-          "condition": "Cloudy",
-          "gripLevel": 0.97,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Cloudy"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 39,
-        "temperature2m": 11.7,
-        "windSpeed10m": 5.4
-      },
-      {
-        "time": "2016-05-01T14:30",
-        "weatherCode": 1,
-        "condition": "Cloudy",
-        "state": {
-          "condition": "Cloudy",
-          "gripLevel": 0.97,
-          "wet": false,
-          "changingSoon": true,
-          "label": "Cloudy"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 39,
-        "temperature2m": 11.7,
-        "windSpeed10m": 5.4
-      },
-      {
-        "time": "2016-05-01T14:45",
-        "weatherCode": 1,
-        "condition": "Cloudy",
-        "state": {
-          "condition": "Cloudy",
-          "gripLevel": 0.97,
-          "wet": false,
-          "changingSoon": true,
-          "label": "Cloudy"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 39,
-        "temperature2m": 11.7,
-        "windSpeed10m": 5.4
-      },
-      {
         "time": "2016-05-01T15:00",
-        "weatherCode": 3,
+        "weatherCode": 1,
         "condition": "Cloudy",
         "state": {
           "condition": "Cloudy",
@@ -788,13 +732,13 @@ export const season2016F1Weather = {
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 96,
-        "temperature2m": 11.6,
-        "windSpeed10m": 5.2
+        "cloudCover": 39,
+        "temperature2m": 11.7,
+        "windSpeed10m": 5.4
       },
       {
         "time": "2016-05-01T15:15",
-        "weatherCode": 3,
+        "weatherCode": 1,
         "condition": "Cloudy",
         "state": {
           "condition": "Cloudy",
@@ -805,43 +749,43 @@ export const season2016F1Weather = {
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 96,
-        "temperature2m": 11.6,
-        "windSpeed10m": 5.2
+        "cloudCover": 39,
+        "temperature2m": 11.7,
+        "windSpeed10m": 5.4
       },
       {
         "time": "2016-05-01T15:30",
-        "weatherCode": 3,
+        "weatherCode": 1,
         "condition": "Cloudy",
         "state": {
           "condition": "Cloudy",
           "gripLevel": 0.97,
           "wet": false,
-          "changingSoon": false,
+          "changingSoon": true,
           "label": "Cloudy"
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 96,
-        "temperature2m": 11.6,
-        "windSpeed10m": 5.2
+        "cloudCover": 39,
+        "temperature2m": 11.7,
+        "windSpeed10m": 5.4
       },
       {
         "time": "2016-05-01T15:45",
-        "weatherCode": 3,
+        "weatherCode": 1,
         "condition": "Cloudy",
         "state": {
           "condition": "Cloudy",
           "gripLevel": 0.97,
           "wet": false,
-          "changingSoon": false,
+          "changingSoon": true,
           "label": "Cloudy"
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 96,
-        "temperature2m": 11.6,
-        "windSpeed10m": 5.2
+        "cloudCover": 39,
+        "temperature2m": 11.7,
+        "windSpeed10m": 5.4
       },
       {
         "time": "2016-05-01T16:00",
@@ -857,8 +801,8 @@ export const season2016F1Weather = {
         "precipitationMm": 0.0,
         "rainMm": 0.0,
         "cloudCover": 96,
-        "temperature2m": 11.5,
-        "windSpeed10m": 4.8
+        "temperature2m": 11.6,
+        "windSpeed10m": 5.2
       },
       {
         "time": "2016-05-01T16:15",
@@ -874,11 +818,45 @@ export const season2016F1Weather = {
         "precipitationMm": 0.0,
         "rainMm": 0.0,
         "cloudCover": 96,
-        "temperature2m": 11.5,
-        "windSpeed10m": 4.8
+        "temperature2m": 11.6,
+        "windSpeed10m": 5.2
       },
       {
         "time": "2016-05-01T16:30",
+        "weatherCode": 3,
+        "condition": "Cloudy",
+        "state": {
+          "condition": "Cloudy",
+          "gripLevel": 0.97,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Cloudy"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 96,
+        "temperature2m": 11.6,
+        "windSpeed10m": 5.2
+      },
+      {
+        "time": "2016-05-01T16:45",
+        "weatherCode": 3,
+        "condition": "Cloudy",
+        "state": {
+          "condition": "Cloudy",
+          "gripLevel": 0.97,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Cloudy"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 96,
+        "temperature2m": 11.6,
+        "windSpeed10m": 5.2
+      },
+      {
+        "time": "2016-05-01T17:00",
         "weatherCode": 3,
         "condition": "Cloudy",
         "state": {
@@ -895,7 +873,41 @@ export const season2016F1Weather = {
         "windSpeed10m": 4.8
       },
       {
-        "time": "2016-05-01T16:45",
+        "time": "2016-05-01T17:15",
+        "weatherCode": 3,
+        "condition": "Cloudy",
+        "state": {
+          "condition": "Cloudy",
+          "gripLevel": 0.97,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Cloudy"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 96,
+        "temperature2m": 11.5,
+        "windSpeed10m": 4.8
+      },
+      {
+        "time": "2016-05-01T17:30",
+        "weatherCode": 3,
+        "condition": "Cloudy",
+        "state": {
+          "condition": "Cloudy",
+          "gripLevel": 0.97,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Cloudy"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 96,
+        "temperature2m": 11.5,
+        "windSpeed10m": 4.8
+      },
+      {
+        "time": "2016-05-01T17:45",
         "weatherCode": 3,
         "condition": "Cloudy",
         "state": {
@@ -927,12 +939,15 @@ export const season2016F1Weather = {
       "latitude": 41.55,
       "longitude": 2.25,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "Medium",
+      "startTimeMethod": "Historical F1 European/default pattern"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using F1 default 14:00"
+      "Workbook start time estimate (Medium): 14:00",
+      "Start time method: Historical F1 European/default pattern"
     ],
     "samples": [
       {
@@ -1155,12 +1170,15 @@ export const season2016F1Weather = {
       "latitude": 43.7384,
       "longitude": 7.4246,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "Medium",
+      "startTimeMethod": "Historical F1 European/default pattern"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using F1 default 14:00"
+      "Workbook start time estimate (Medium): 14:00",
+      "Start time method: Historical F1 European/default pattern"
     ],
     "samples": [
       {
@@ -1383,12 +1401,15 @@ export const season2016F1Weather = {
       "latitude": 45.5017,
       "longitude": -73.5673,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "Medium",
+      "startTimeMethod": "F1 North America daytime pattern"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using F1 default 14:00"
+      "Workbook start time estimate (Medium): 14:00",
+      "Start time method: F1 North America daytime pattern"
     ],
     "samples": [
       {
@@ -1606,87 +1627,22 @@ export const season2016F1Weather = {
       "year": 2016,
       "series": "F1",
       "date": "2016-06-19",
-      "localStartTime": "14:00",
+      "localStartTime": "15:00",
       "timezone": "auto",
       "latitude": 40.4093,
       "longitude": 49.8671,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "Medium",
+      "startTimeMethod": "F1 Asia/Europe daytime pattern"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using F1 default 14:00"
+      "Workbook start time estimate (Medium): 15:00",
+      "Start time method: F1 Asia/Europe daytime pattern"
     ],
     "samples": [
-      {
-        "time": "2016-06-19T14:00",
-        "weatherCode": 3,
-        "condition": "Cloudy",
-        "state": {
-          "condition": "Cloudy",
-          "gripLevel": 0.97,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Cloudy"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 94,
-        "temperature2m": 24.1,
-        "windSpeed10m": 27.9
-      },
-      {
-        "time": "2016-06-19T14:15",
-        "weatherCode": 3,
-        "condition": "Cloudy",
-        "state": {
-          "condition": "Cloudy",
-          "gripLevel": 0.97,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Cloudy"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 94,
-        "temperature2m": 24.1,
-        "windSpeed10m": 27.9
-      },
-      {
-        "time": "2016-06-19T14:30",
-        "weatherCode": 3,
-        "condition": "Cloudy",
-        "state": {
-          "condition": "Cloudy",
-          "gripLevel": 0.97,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Cloudy"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 94,
-        "temperature2m": 24.1,
-        "windSpeed10m": 27.9
-      },
-      {
-        "time": "2016-06-19T14:45",
-        "weatherCode": 3,
-        "condition": "Cloudy",
-        "state": {
-          "condition": "Cloudy",
-          "gripLevel": 0.97,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Cloudy"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 94,
-        "temperature2m": 24.1,
-        "windSpeed10m": 27.9
-      },
       {
         "time": "2016-06-19T15:00",
         "weatherCode": 3,
@@ -1700,9 +1656,9 @@ export const season2016F1Weather = {
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 95,
-        "temperature2m": 24.2,
-        "windSpeed10m": 27.8
+        "cloudCover": 94,
+        "temperature2m": 24.1,
+        "windSpeed10m": 27.9
       },
       {
         "time": "2016-06-19T15:15",
@@ -1717,9 +1673,9 @@ export const season2016F1Weather = {
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 95,
-        "temperature2m": 24.2,
-        "windSpeed10m": 27.8
+        "cloudCover": 94,
+        "temperature2m": 24.1,
+        "windSpeed10m": 27.9
       },
       {
         "time": "2016-06-19T15:30",
@@ -1734,9 +1690,9 @@ export const season2016F1Weather = {
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 95,
-        "temperature2m": 24.2,
-        "windSpeed10m": 27.8
+        "cloudCover": 94,
+        "temperature2m": 24.1,
+        "windSpeed10m": 27.9
       },
       {
         "time": "2016-06-19T15:45",
@@ -1751,9 +1707,9 @@ export const season2016F1Weather = {
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 95,
-        "temperature2m": 24.2,
-        "windSpeed10m": 27.8
+        "cloudCover": 94,
+        "temperature2m": 24.1,
+        "windSpeed10m": 27.9
       },
       {
         "time": "2016-06-19T16:00",
@@ -1768,9 +1724,9 @@ export const season2016F1Weather = {
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 99,
-        "temperature2m": 24.1,
-        "windSpeed10m": 27.4
+        "cloudCover": 95,
+        "temperature2m": 24.2,
+        "windSpeed10m": 27.8
       },
       {
         "time": "2016-06-19T16:15",
@@ -1785,12 +1741,46 @@ export const season2016F1Weather = {
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 99,
-        "temperature2m": 24.1,
-        "windSpeed10m": 27.4
+        "cloudCover": 95,
+        "temperature2m": 24.2,
+        "windSpeed10m": 27.8
       },
       {
         "time": "2016-06-19T16:30",
+        "weatherCode": 3,
+        "condition": "Cloudy",
+        "state": {
+          "condition": "Cloudy",
+          "gripLevel": 0.97,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Cloudy"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 95,
+        "temperature2m": 24.2,
+        "windSpeed10m": 27.8
+      },
+      {
+        "time": "2016-06-19T16:45",
+        "weatherCode": 3,
+        "condition": "Cloudy",
+        "state": {
+          "condition": "Cloudy",
+          "gripLevel": 0.97,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Cloudy"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 95,
+        "temperature2m": 24.2,
+        "windSpeed10m": 27.8
+      },
+      {
+        "time": "2016-06-19T17:00",
         "weatherCode": 3,
         "condition": "Cloudy",
         "state": {
@@ -1807,7 +1797,41 @@ export const season2016F1Weather = {
         "windSpeed10m": 27.4
       },
       {
-        "time": "2016-06-19T16:45",
+        "time": "2016-06-19T17:15",
+        "weatherCode": 3,
+        "condition": "Cloudy",
+        "state": {
+          "condition": "Cloudy",
+          "gripLevel": 0.97,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Cloudy"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 99,
+        "temperature2m": 24.1,
+        "windSpeed10m": 27.4
+      },
+      {
+        "time": "2016-06-19T17:30",
+        "weatherCode": 3,
+        "condition": "Cloudy",
+        "state": {
+          "condition": "Cloudy",
+          "gripLevel": 0.97,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Cloudy"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 99,
+        "temperature2m": 24.1,
+        "windSpeed10m": 27.4
+      },
+      {
+        "time": "2016-06-19T17:45",
         "weatherCode": 3,
         "condition": "Cloudy",
         "state": {
@@ -1839,12 +1863,15 @@ export const season2016F1Weather = {
       "latitude": 47.2197,
       "longitude": 14.7647,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "Medium",
+      "startTimeMethod": "Historical F1 European/default pattern"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using F1 default 14:00"
+      "Workbook start time estimate (Medium): 14:00",
+      "Start time method: Historical F1 European/default pattern"
     ],
     "samples": [
       {
@@ -2067,12 +2094,15 @@ export const season2016F1Weather = {
       "latitude": 52.0786,
       "longitude": -1.0169,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "Medium",
+      "startTimeMethod": "Historical F1 European/default pattern"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using F1 default 14:00"
+      "Workbook start time estimate (Medium): 14:00",
+      "Start time method: Historical F1 European/default pattern"
     ],
     "samples": [
       {
@@ -2295,12 +2325,15 @@ export const season2016F1Weather = {
       "latitude": 47.5983,
       "longitude": 19.2478,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "Medium",
+      "startTimeMethod": "Historical F1 European/default pattern"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using F1 default 14:00"
+      "Workbook start time estimate (Medium): 14:00",
+      "Start time method: Historical F1 European/default pattern"
     ],
     "samples": [
       {
@@ -2523,12 +2556,15 @@ export const season2016F1Weather = {
       "latitude": 49.32,
       "longitude": 8.549,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "Medium",
+      "startTimeMethod": "Historical F1 European/default pattern"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using F1 default 14:00"
+      "Workbook start time estimate (Medium): 14:00",
+      "Start time method: Historical F1 European/default pattern"
     ],
     "samples": [
       {
@@ -2751,12 +2787,15 @@ export const season2016F1Weather = {
       "latitude": 50.395,
       "longitude": 5.93,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "Medium",
+      "startTimeMethod": "Historical F1 European/default pattern"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using F1 default 14:00"
+      "Workbook start time estimate (Medium): 14:00",
+      "Start time method: Historical F1 European/default pattern"
     ],
     "samples": [
       {
@@ -2979,12 +3018,15 @@ export const season2016F1Weather = {
       "latitude": 45.5845,
       "longitude": 9.2744,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "Medium",
+      "startTimeMethod": "Historical F1 European/default pattern"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using F1 default 14:00"
+      "Workbook start time estimate (Medium): 14:00",
+      "Start time method: Historical F1 European/default pattern"
     ],
     "samples": [
       {
@@ -3202,21 +3244,24 @@ export const season2016F1Weather = {
       "year": 2016,
       "series": "F1",
       "date": "2016-09-18",
-      "localStartTime": "14:00",
+      "localStartTime": "20:00",
       "timezone": "auto",
       "latitude": 1.3521,
       "longitude": 103.8198,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "High",
+      "startTimeMethod": "Known F1 night-race pattern"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using F1 default 14:00"
+      "Workbook start time estimate (High): 20:00",
+      "Start time method: Known F1 night-race pattern"
     ],
     "samples": [
       {
-        "time": "2016-09-18T14:00",
+        "time": "2016-09-18T20:00",
         "weatherCode": 3,
         "condition": "Cloudy",
         "state": {
@@ -3233,7 +3278,7 @@ export const season2016F1Weather = {
         "windSpeed10m": 1.3
       },
       {
-        "time": "2016-09-18T14:15",
+        "time": "2016-09-18T20:15",
         "weatherCode": 3,
         "condition": "Cloudy",
         "state": {
@@ -3250,7 +3295,7 @@ export const season2016F1Weather = {
         "windSpeed10m": 1.3
       },
       {
-        "time": "2016-09-18T14:30",
+        "time": "2016-09-18T20:30",
         "weatherCode": 3,
         "condition": "Cloudy",
         "state": {
@@ -3267,7 +3312,7 @@ export const season2016F1Weather = {
         "windSpeed10m": 1.3
       },
       {
-        "time": "2016-09-18T14:45",
+        "time": "2016-09-18T20:45",
         "weatherCode": 3,
         "condition": "Cloudy",
         "state": {
@@ -3284,7 +3329,7 @@ export const season2016F1Weather = {
         "windSpeed10m": 1.3
       },
       {
-        "time": "2016-09-18T15:00",
+        "time": "2016-09-18T21:00",
         "weatherCode": 3,
         "condition": "Cloudy",
         "state": {
@@ -3301,7 +3346,7 @@ export const season2016F1Weather = {
         "windSpeed10m": 2.3
       },
       {
-        "time": "2016-09-18T15:15",
+        "time": "2016-09-18T21:15",
         "weatherCode": 3,
         "condition": "Cloudy",
         "state": {
@@ -3318,7 +3363,7 @@ export const season2016F1Weather = {
         "windSpeed10m": 2.3
       },
       {
-        "time": "2016-09-18T15:30",
+        "time": "2016-09-18T21:30",
         "weatherCode": 3,
         "condition": "Cloudy",
         "state": {
@@ -3335,7 +3380,7 @@ export const season2016F1Weather = {
         "windSpeed10m": 2.3
       },
       {
-        "time": "2016-09-18T15:45",
+        "time": "2016-09-18T21:45",
         "weatherCode": 3,
         "condition": "Cloudy",
         "state": {
@@ -3352,7 +3397,7 @@ export const season2016F1Weather = {
         "windSpeed10m": 2.3
       },
       {
-        "time": "2016-09-18T16:00",
+        "time": "2016-09-18T22:00",
         "weatherCode": 3,
         "condition": "Cloudy",
         "state": {
@@ -3369,7 +3414,7 @@ export const season2016F1Weather = {
         "windSpeed10m": 3.0
       },
       {
-        "time": "2016-09-18T16:15",
+        "time": "2016-09-18T22:15",
         "weatherCode": 3,
         "condition": "Cloudy",
         "state": {
@@ -3386,7 +3431,7 @@ export const season2016F1Weather = {
         "windSpeed10m": 3.0
       },
       {
-        "time": "2016-09-18T16:30",
+        "time": "2016-09-18T22:30",
         "weatherCode": 3,
         "condition": "Cloudy",
         "state": {
@@ -3403,7 +3448,7 @@ export const season2016F1Weather = {
         "windSpeed10m": 3.0
       },
       {
-        "time": "2016-09-18T16:45",
+        "time": "2016-09-18T22:45",
         "weatherCode": 3,
         "condition": "Cloudy",
         "state": {
@@ -3430,87 +3475,22 @@ export const season2016F1Weather = {
       "year": 2016,
       "series": "F1",
       "date": "2016-10-02",
-      "localStartTime": "14:00",
+      "localStartTime": "15:00",
       "timezone": "auto",
       "latitude": 2.6931,
       "longitude": 101.7505,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "Medium",
+      "startTimeMethod": "F1 Asia daytime pattern"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using F1 default 14:00"
+      "Workbook start time estimate (Medium): 15:00",
+      "Start time method: F1 Asia daytime pattern"
     ],
     "samples": [
-      {
-        "time": "2016-10-02T14:00",
-        "weatherCode": 3,
-        "condition": "Cloudy",
-        "state": {
-          "condition": "Cloudy",
-          "gripLevel": 0.97,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Cloudy"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 100,
-        "temperature2m": 26.9,
-        "windSpeed10m": 9.8
-      },
-      {
-        "time": "2016-10-02T14:15",
-        "weatherCode": 3,
-        "condition": "Cloudy",
-        "state": {
-          "condition": "Cloudy",
-          "gripLevel": 0.97,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Cloudy"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 100,
-        "temperature2m": 26.9,
-        "windSpeed10m": 9.8
-      },
-      {
-        "time": "2016-10-02T14:30",
-        "weatherCode": 3,
-        "condition": "Cloudy",
-        "state": {
-          "condition": "Cloudy",
-          "gripLevel": 0.97,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Cloudy"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 100,
-        "temperature2m": 26.9,
-        "windSpeed10m": 9.8
-      },
-      {
-        "time": "2016-10-02T14:45",
-        "weatherCode": 3,
-        "condition": "Cloudy",
-        "state": {
-          "condition": "Cloudy",
-          "gripLevel": 0.97,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Cloudy"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 100,
-        "temperature2m": 26.9,
-        "windSpeed10m": 9.8
-      },
       {
         "time": "2016-10-02T15:00",
         "weatherCode": 3,
@@ -3524,9 +3504,9 @@ export const season2016F1Weather = {
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 99,
-        "temperature2m": 26.5,
-        "windSpeed10m": 9.5
+        "cloudCover": 100,
+        "temperature2m": 26.9,
+        "windSpeed10m": 9.8
       },
       {
         "time": "2016-10-02T15:15",
@@ -3541,9 +3521,9 @@ export const season2016F1Weather = {
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 99,
-        "temperature2m": 26.5,
-        "windSpeed10m": 9.5
+        "cloudCover": 100,
+        "temperature2m": 26.9,
+        "windSpeed10m": 9.8
       },
       {
         "time": "2016-10-02T15:30",
@@ -3558,9 +3538,9 @@ export const season2016F1Weather = {
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 99,
-        "temperature2m": 26.5,
-        "windSpeed10m": 9.5
+        "cloudCover": 100,
+        "temperature2m": 26.9,
+        "windSpeed10m": 9.8
       },
       {
         "time": "2016-10-02T15:45",
@@ -3575,9 +3555,9 @@ export const season2016F1Weather = {
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 99,
-        "temperature2m": 26.5,
-        "windSpeed10m": 9.5
+        "cloudCover": 100,
+        "temperature2m": 26.9,
+        "windSpeed10m": 9.8
       },
       {
         "time": "2016-10-02T16:00",
@@ -3592,9 +3572,9 @@ export const season2016F1Weather = {
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 94,
-        "temperature2m": 26.4,
-        "windSpeed10m": 10.2
+        "cloudCover": 99,
+        "temperature2m": 26.5,
+        "windSpeed10m": 9.5
       },
       {
         "time": "2016-10-02T16:15",
@@ -3609,12 +3589,46 @@ export const season2016F1Weather = {
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 94,
-        "temperature2m": 26.4,
-        "windSpeed10m": 10.2
+        "cloudCover": 99,
+        "temperature2m": 26.5,
+        "windSpeed10m": 9.5
       },
       {
         "time": "2016-10-02T16:30",
+        "weatherCode": 3,
+        "condition": "Cloudy",
+        "state": {
+          "condition": "Cloudy",
+          "gripLevel": 0.97,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Cloudy"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 99,
+        "temperature2m": 26.5,
+        "windSpeed10m": 9.5
+      },
+      {
+        "time": "2016-10-02T16:45",
+        "weatherCode": 3,
+        "condition": "Cloudy",
+        "state": {
+          "condition": "Cloudy",
+          "gripLevel": 0.97,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Cloudy"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 99,
+        "temperature2m": 26.5,
+        "windSpeed10m": 9.5
+      },
+      {
+        "time": "2016-10-02T17:00",
         "weatherCode": 3,
         "condition": "Cloudy",
         "state": {
@@ -3631,7 +3645,41 @@ export const season2016F1Weather = {
         "windSpeed10m": 10.2
       },
       {
-        "time": "2016-10-02T16:45",
+        "time": "2016-10-02T17:15",
+        "weatherCode": 3,
+        "condition": "Cloudy",
+        "state": {
+          "condition": "Cloudy",
+          "gripLevel": 0.97,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Cloudy"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 94,
+        "temperature2m": 26.4,
+        "windSpeed10m": 10.2
+      },
+      {
+        "time": "2016-10-02T17:30",
+        "weatherCode": 3,
+        "condition": "Cloudy",
+        "state": {
+          "condition": "Cloudy",
+          "gripLevel": 0.97,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Cloudy"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 94,
+        "temperature2m": 26.4,
+        "windSpeed10m": 10.2
+      },
+      {
+        "time": "2016-10-02T17:45",
         "weatherCode": 3,
         "condition": "Cloudy",
         "state": {
@@ -3663,12 +3711,15 @@ export const season2016F1Weather = {
       "latitude": 34.8819,
       "longitude": 136.5842,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "Medium",
+      "startTimeMethod": "F1 Asia daytime pattern"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using F1 default 14:00"
+      "Workbook start time estimate (Medium): 14:00",
+      "Start time method: F1 Asia daytime pattern"
     ],
     "samples": [
       {
@@ -3891,12 +3942,15 @@ export const season2016F1Weather = {
       "latitude": 30.2672,
       "longitude": -97.7431,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "Medium",
+      "startTimeMethod": "F1 U.S. daytime pattern"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using F1 default 14:00"
+      "Workbook start time estimate (Medium): 14:00",
+      "Start time method: F1 U.S. daytime pattern"
     ],
     "samples": [
       {
@@ -4119,12 +4173,15 @@ export const season2016F1Weather = {
       "latitude": 19.4326,
       "longitude": -99.1332,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "Medium",
+      "startTimeMethod": "F1 Americas daytime pattern"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using F1 default 14:00"
+      "Workbook start time estimate (Medium): 14:00",
+      "Start time method: F1 Americas daytime pattern"
     ],
     "samples": [
       {
@@ -4347,12 +4404,15 @@ export const season2016F1Weather = {
       "latitude": -23.5505,
       "longitude": -46.6333,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "Medium",
+      "startTimeMethod": "F1 Americas daytime pattern"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using F1 default 14:00"
+      "Workbook start time estimate (Medium): 14:00",
+      "Start time method: F1 Americas daytime pattern"
     ],
     "samples": [
       {
@@ -4570,21 +4630,24 @@ export const season2016F1Weather = {
       "year": 2016,
       "series": "F1",
       "date": "2016-11-27",
-      "localStartTime": "14:00",
+      "localStartTime": "17:00",
       "timezone": "auto",
       "latitude": 24.4958,
       "longitude": 54.604,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "High",
+      "startTimeMethod": "Known F1 twilight-race pattern"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using F1 default 14:00"
+      "Workbook start time estimate (High): 17:00",
+      "Start time method: Known F1 twilight-race pattern"
     ],
     "samples": [
       {
-        "time": "2016-11-27T14:00",
+        "time": "2016-11-27T17:00",
         "weatherCode": 1,
         "condition": "Cloudy",
         "state": {
@@ -4601,7 +4664,7 @@ export const season2016F1Weather = {
         "windSpeed10m": 15.1
       },
       {
-        "time": "2016-11-27T14:15",
+        "time": "2016-11-27T17:15",
         "weatherCode": 1,
         "condition": "Cloudy",
         "state": {
@@ -4618,7 +4681,7 @@ export const season2016F1Weather = {
         "windSpeed10m": 15.1
       },
       {
-        "time": "2016-11-27T14:30",
+        "time": "2016-11-27T17:30",
         "weatherCode": 1,
         "condition": "Cloudy",
         "state": {
@@ -4635,7 +4698,7 @@ export const season2016F1Weather = {
         "windSpeed10m": 15.1
       },
       {
-        "time": "2016-11-27T14:45",
+        "time": "2016-11-27T17:45",
         "weatherCode": 1,
         "condition": "Cloudy",
         "state": {
@@ -4652,7 +4715,7 @@ export const season2016F1Weather = {
         "windSpeed10m": 15.1
       },
       {
-        "time": "2016-11-27T15:00",
+        "time": "2016-11-27T18:00",
         "weatherCode": 1,
         "condition": "Cloudy",
         "state": {
@@ -4669,7 +4732,7 @@ export const season2016F1Weather = {
         "windSpeed10m": 15.1
       },
       {
-        "time": "2016-11-27T15:15",
+        "time": "2016-11-27T18:15",
         "weatherCode": 1,
         "condition": "Cloudy",
         "state": {
@@ -4686,7 +4749,7 @@ export const season2016F1Weather = {
         "windSpeed10m": 15.1
       },
       {
-        "time": "2016-11-27T15:30",
+        "time": "2016-11-27T18:30",
         "weatherCode": 1,
         "condition": "Cloudy",
         "state": {
@@ -4703,7 +4766,7 @@ export const season2016F1Weather = {
         "windSpeed10m": 15.1
       },
       {
-        "time": "2016-11-27T15:45",
+        "time": "2016-11-27T18:45",
         "weatherCode": 1,
         "condition": "Cloudy",
         "state": {
@@ -4720,7 +4783,7 @@ export const season2016F1Weather = {
         "windSpeed10m": 15.1
       },
       {
-        "time": "2016-11-27T16:00",
+        "time": "2016-11-27T19:00",
         "weatherCode": 1,
         "condition": "Cloudy",
         "state": {
@@ -4737,7 +4800,7 @@ export const season2016F1Weather = {
         "windSpeed10m": 13.5
       },
       {
-        "time": "2016-11-27T16:15",
+        "time": "2016-11-27T19:15",
         "weatherCode": 1,
         "condition": "Cloudy",
         "state": {
@@ -4754,7 +4817,7 @@ export const season2016F1Weather = {
         "windSpeed10m": 13.5
       },
       {
-        "time": "2016-11-27T16:30",
+        "time": "2016-11-27T19:30",
         "weatherCode": 1,
         "condition": "Cloudy",
         "state": {
@@ -4771,7 +4834,7 @@ export const season2016F1Weather = {
         "windSpeed10m": 13.5
       },
       {
-        "time": "2016-11-27T16:45",
+        "time": "2016-11-27T19:45",
         "weatherCode": 1,
         "condition": "Cloudy",
         "state": {

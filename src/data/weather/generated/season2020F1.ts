@@ -10,21 +10,24 @@ export const season2020F1Weather = {
       "year": 2020,
       "series": "F1",
       "date": "2020-07-05",
-      "localStartTime": "14:00",
+      "localStartTime": "14:10",
       "timezone": "auto",
       "latitude": 47.2197,
       "longitude": 14.7647,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "Medium",
+      "startTimeMethod": "Historical F1 European/default pattern"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using F1 default 14:00"
+      "Workbook start time estimate (Medium): 14:10",
+      "Start time method: Historical F1 European/default pattern"
     ],
     "samples": [
       {
-        "time": "2020-07-05T14:00",
+        "time": "2020-07-05T14:10",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -41,7 +44,7 @@ export const season2020F1Weather = {
         "windSpeed10m": 1.1
       },
       {
-        "time": "2020-07-05T14:15",
+        "time": "2020-07-05T14:25",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -58,7 +61,7 @@ export const season2020F1Weather = {
         "windSpeed10m": 1.1
       },
       {
-        "time": "2020-07-05T14:30",
+        "time": "2020-07-05T14:40",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -75,7 +78,7 @@ export const season2020F1Weather = {
         "windSpeed10m": 1.1
       },
       {
-        "time": "2020-07-05T14:45",
+        "time": "2020-07-05T14:55",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -92,7 +95,7 @@ export const season2020F1Weather = {
         "windSpeed10m": 1.1
       },
       {
-        "time": "2020-07-05T15:00",
+        "time": "2020-07-05T15:10",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -109,7 +112,7 @@ export const season2020F1Weather = {
         "windSpeed10m": 2.5
       },
       {
-        "time": "2020-07-05T15:15",
+        "time": "2020-07-05T15:25",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -126,7 +129,7 @@ export const season2020F1Weather = {
         "windSpeed10m": 2.5
       },
       {
-        "time": "2020-07-05T15:30",
+        "time": "2020-07-05T15:40",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -143,7 +146,7 @@ export const season2020F1Weather = {
         "windSpeed10m": 2.5
       },
       {
-        "time": "2020-07-05T15:45",
+        "time": "2020-07-05T15:55",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -160,7 +163,7 @@ export const season2020F1Weather = {
         "windSpeed10m": 2.5
       },
       {
-        "time": "2020-07-05T16:00",
+        "time": "2020-07-05T16:10",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -177,7 +180,7 @@ export const season2020F1Weather = {
         "windSpeed10m": 4.4
       },
       {
-        "time": "2020-07-05T16:15",
+        "time": "2020-07-05T16:25",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -194,7 +197,7 @@ export const season2020F1Weather = {
         "windSpeed10m": 4.4
       },
       {
-        "time": "2020-07-05T16:30",
+        "time": "2020-07-05T16:40",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -211,7 +214,7 @@ export const season2020F1Weather = {
         "windSpeed10m": 4.4
       },
       {
-        "time": "2020-07-05T16:45",
+        "time": "2020-07-05T16:55",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -238,21 +241,24 @@ export const season2020F1Weather = {
       "year": 2020,
       "series": "F1",
       "date": "2020-07-12",
-      "localStartTime": "14:00",
+      "localStartTime": "14:10",
       "timezone": "auto",
       "latitude": 47.2197,
       "longitude": 14.7647,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "Medium",
+      "startTimeMethod": "Historical F1 European/default pattern"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using F1 default 14:00"
+      "Workbook start time estimate (Medium): 14:10",
+      "Start time method: Historical F1 European/default pattern"
     ],
     "samples": [
       {
-        "time": "2020-07-12T14:00",
+        "time": "2020-07-12T14:10",
         "weatherCode": 3,
         "condition": "Cloudy",
         "state": {
@@ -269,7 +275,7 @@ export const season2020F1Weather = {
         "windSpeed10m": 1.5
       },
       {
-        "time": "2020-07-12T14:15",
+        "time": "2020-07-12T14:25",
         "weatherCode": 3,
         "condition": "Cloudy",
         "state": {
@@ -286,7 +292,7 @@ export const season2020F1Weather = {
         "windSpeed10m": 1.5
       },
       {
-        "time": "2020-07-12T14:30",
+        "time": "2020-07-12T14:40",
         "weatherCode": 3,
         "condition": "Cloudy",
         "state": {
@@ -303,7 +309,7 @@ export const season2020F1Weather = {
         "windSpeed10m": 1.5
       },
       {
-        "time": "2020-07-12T14:45",
+        "time": "2020-07-12T14:55",
         "weatherCode": 3,
         "condition": "Cloudy",
         "state": {
@@ -320,7 +326,7 @@ export const season2020F1Weather = {
         "windSpeed10m": 1.5
       },
       {
-        "time": "2020-07-12T15:00",
+        "time": "2020-07-12T15:10",
         "weatherCode": 2,
         "condition": "Cloudy",
         "state": {
@@ -337,7 +343,7 @@ export const season2020F1Weather = {
         "windSpeed10m": 2.7
       },
       {
-        "time": "2020-07-12T15:15",
+        "time": "2020-07-12T15:25",
         "weatherCode": 2,
         "condition": "Cloudy",
         "state": {
@@ -354,7 +360,7 @@ export const season2020F1Weather = {
         "windSpeed10m": 2.7
       },
       {
-        "time": "2020-07-12T15:30",
+        "time": "2020-07-12T15:40",
         "weatherCode": 2,
         "condition": "Cloudy",
         "state": {
@@ -371,7 +377,7 @@ export const season2020F1Weather = {
         "windSpeed10m": 2.7
       },
       {
-        "time": "2020-07-12T15:45",
+        "time": "2020-07-12T15:55",
         "weatherCode": 2,
         "condition": "Cloudy",
         "state": {
@@ -388,7 +394,7 @@ export const season2020F1Weather = {
         "windSpeed10m": 2.7
       },
       {
-        "time": "2020-07-12T16:00",
+        "time": "2020-07-12T16:10",
         "weatherCode": 1,
         "condition": "Cloudy",
         "state": {
@@ -405,7 +411,7 @@ export const season2020F1Weather = {
         "windSpeed10m": 3.2
       },
       {
-        "time": "2020-07-12T16:15",
+        "time": "2020-07-12T16:25",
         "weatherCode": 1,
         "condition": "Cloudy",
         "state": {
@@ -422,7 +428,7 @@ export const season2020F1Weather = {
         "windSpeed10m": 3.2
       },
       {
-        "time": "2020-07-12T16:30",
+        "time": "2020-07-12T16:40",
         "weatherCode": 1,
         "condition": "Cloudy",
         "state": {
@@ -439,7 +445,7 @@ export const season2020F1Weather = {
         "windSpeed10m": 3.2
       },
       {
-        "time": "2020-07-12T16:45",
+        "time": "2020-07-12T16:55",
         "weatherCode": 1,
         "condition": "Cloudy",
         "state": {
@@ -466,21 +472,24 @@ export const season2020F1Weather = {
       "year": 2020,
       "series": "F1",
       "date": "2020-07-19",
-      "localStartTime": "14:00",
+      "localStartTime": "14:10",
       "timezone": "auto",
       "latitude": 47.5983,
       "longitude": 19.2478,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "Medium",
+      "startTimeMethod": "Historical F1 European/default pattern"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using F1 default 14:00"
+      "Workbook start time estimate (Medium): 14:10",
+      "Start time method: Historical F1 European/default pattern"
     ],
     "samples": [
       {
-        "time": "2020-07-19T14:00",
+        "time": "2020-07-19T14:10",
         "weatherCode": 3,
         "condition": "Cloudy",
         "state": {
@@ -497,7 +506,7 @@ export const season2020F1Weather = {
         "windSpeed10m": 4.6
       },
       {
-        "time": "2020-07-19T14:15",
+        "time": "2020-07-19T14:25",
         "weatherCode": 3,
         "condition": "Cloudy",
         "state": {
@@ -514,7 +523,7 @@ export const season2020F1Weather = {
         "windSpeed10m": 4.6
       },
       {
-        "time": "2020-07-19T14:30",
+        "time": "2020-07-19T14:40",
         "weatherCode": 3,
         "condition": "Cloudy",
         "state": {
@@ -531,7 +540,7 @@ export const season2020F1Weather = {
         "windSpeed10m": 4.6
       },
       {
-        "time": "2020-07-19T14:45",
+        "time": "2020-07-19T14:55",
         "weatherCode": 3,
         "condition": "Cloudy",
         "state": {
@@ -548,7 +557,7 @@ export const season2020F1Weather = {
         "windSpeed10m": 4.6
       },
       {
-        "time": "2020-07-19T15:00",
+        "time": "2020-07-19T15:10",
         "weatherCode": 3,
         "condition": "Cloudy",
         "state": {
@@ -565,7 +574,7 @@ export const season2020F1Weather = {
         "windSpeed10m": 3.9
       },
       {
-        "time": "2020-07-19T15:15",
+        "time": "2020-07-19T15:25",
         "weatherCode": 3,
         "condition": "Cloudy",
         "state": {
@@ -582,7 +591,7 @@ export const season2020F1Weather = {
         "windSpeed10m": 3.9
       },
       {
-        "time": "2020-07-19T15:30",
+        "time": "2020-07-19T15:40",
         "weatherCode": 3,
         "condition": "Cloudy",
         "state": {
@@ -599,7 +608,7 @@ export const season2020F1Weather = {
         "windSpeed10m": 3.9
       },
       {
-        "time": "2020-07-19T15:45",
+        "time": "2020-07-19T15:55",
         "weatherCode": 3,
         "condition": "Cloudy",
         "state": {
@@ -616,7 +625,7 @@ export const season2020F1Weather = {
         "windSpeed10m": 3.9
       },
       {
-        "time": "2020-07-19T16:00",
+        "time": "2020-07-19T16:10",
         "weatherCode": 51,
         "condition": "LightRain",
         "state": {
@@ -633,7 +642,7 @@ export const season2020F1Weather = {
         "windSpeed10m": 5.3
       },
       {
-        "time": "2020-07-19T16:15",
+        "time": "2020-07-19T16:25",
         "weatherCode": 51,
         "condition": "LightRain",
         "state": {
@@ -650,7 +659,7 @@ export const season2020F1Weather = {
         "windSpeed10m": 5.3
       },
       {
-        "time": "2020-07-19T16:30",
+        "time": "2020-07-19T16:40",
         "weatherCode": 51,
         "condition": "LightRain",
         "state": {
@@ -667,7 +676,7 @@ export const season2020F1Weather = {
         "windSpeed10m": 5.3
       },
       {
-        "time": "2020-07-19T16:45",
+        "time": "2020-07-19T16:55",
         "weatherCode": 51,
         "condition": "LightRain",
         "state": {
@@ -694,21 +703,24 @@ export const season2020F1Weather = {
       "year": 2020,
       "series": "F1",
       "date": "2020-08-02",
-      "localStartTime": "14:00",
+      "localStartTime": "14:10",
       "timezone": "auto",
       "latitude": 52.0786,
       "longitude": -1.0169,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "Medium",
+      "startTimeMethod": "Historical F1 European/default pattern"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using F1 default 14:00"
+      "Workbook start time estimate (Medium): 14:10",
+      "Start time method: Historical F1 European/default pattern"
     ],
     "samples": [
       {
-        "time": "2020-08-02T14:00",
+        "time": "2020-08-02T14:10",
         "weatherCode": 1,
         "condition": "Cloudy",
         "state": {
@@ -725,7 +737,7 @@ export const season2020F1Weather = {
         "windSpeed10m": 12.2
       },
       {
-        "time": "2020-08-02T14:15",
+        "time": "2020-08-02T14:25",
         "weatherCode": 1,
         "condition": "Cloudy",
         "state": {
@@ -742,7 +754,7 @@ export const season2020F1Weather = {
         "windSpeed10m": 12.2
       },
       {
-        "time": "2020-08-02T14:30",
+        "time": "2020-08-02T14:40",
         "weatherCode": 1,
         "condition": "Cloudy",
         "state": {
@@ -759,7 +771,7 @@ export const season2020F1Weather = {
         "windSpeed10m": 12.2
       },
       {
-        "time": "2020-08-02T14:45",
+        "time": "2020-08-02T14:55",
         "weatherCode": 1,
         "condition": "Cloudy",
         "state": {
@@ -776,7 +788,7 @@ export const season2020F1Weather = {
         "windSpeed10m": 12.2
       },
       {
-        "time": "2020-08-02T15:00",
+        "time": "2020-08-02T15:10",
         "weatherCode": 1,
         "condition": "Cloudy",
         "state": {
@@ -793,7 +805,7 @@ export const season2020F1Weather = {
         "windSpeed10m": 14.5
       },
       {
-        "time": "2020-08-02T15:15",
+        "time": "2020-08-02T15:25",
         "weatherCode": 1,
         "condition": "Cloudy",
         "state": {
@@ -810,7 +822,7 @@ export const season2020F1Weather = {
         "windSpeed10m": 14.5
       },
       {
-        "time": "2020-08-02T15:30",
+        "time": "2020-08-02T15:40",
         "weatherCode": 1,
         "condition": "Cloudy",
         "state": {
@@ -827,7 +839,7 @@ export const season2020F1Weather = {
         "windSpeed10m": 14.5
       },
       {
-        "time": "2020-08-02T15:45",
+        "time": "2020-08-02T15:55",
         "weatherCode": 1,
         "condition": "Cloudy",
         "state": {
@@ -844,7 +856,7 @@ export const season2020F1Weather = {
         "windSpeed10m": 14.5
       },
       {
-        "time": "2020-08-02T16:00",
+        "time": "2020-08-02T16:10",
         "weatherCode": 1,
         "condition": "Cloudy",
         "state": {
@@ -861,7 +873,7 @@ export const season2020F1Weather = {
         "windSpeed10m": 15.0
       },
       {
-        "time": "2020-08-02T16:15",
+        "time": "2020-08-02T16:25",
         "weatherCode": 1,
         "condition": "Cloudy",
         "state": {
@@ -878,7 +890,7 @@ export const season2020F1Weather = {
         "windSpeed10m": 15.0
       },
       {
-        "time": "2020-08-02T16:30",
+        "time": "2020-08-02T16:40",
         "weatherCode": 1,
         "condition": "Cloudy",
         "state": {
@@ -895,7 +907,7 @@ export const season2020F1Weather = {
         "windSpeed10m": 15.0
       },
       {
-        "time": "2020-08-02T16:45",
+        "time": "2020-08-02T16:55",
         "weatherCode": 1,
         "condition": "Cloudy",
         "state": {
@@ -922,21 +934,24 @@ export const season2020F1Weather = {
       "year": 2020,
       "series": "F1",
       "date": "2020-08-09",
-      "localStartTime": "14:00",
+      "localStartTime": "14:10",
       "timezone": "auto",
       "latitude": 52.0786,
       "longitude": -1.0169,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "Medium",
+      "startTimeMethod": "Historical F1 European/default pattern"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using F1 default 14:00"
+      "Workbook start time estimate (Medium): 14:10",
+      "Start time method: Historical F1 European/default pattern"
     ],
     "samples": [
       {
-        "time": "2020-08-09T14:00",
+        "time": "2020-08-09T14:10",
         "weatherCode": 1,
         "condition": "Cloudy",
         "state": {
@@ -953,7 +968,7 @@ export const season2020F1Weather = {
         "windSpeed10m": 18.9
       },
       {
-        "time": "2020-08-09T14:15",
+        "time": "2020-08-09T14:25",
         "weatherCode": 1,
         "condition": "Cloudy",
         "state": {
@@ -970,7 +985,7 @@ export const season2020F1Weather = {
         "windSpeed10m": 18.9
       },
       {
-        "time": "2020-08-09T14:30",
+        "time": "2020-08-09T14:40",
         "weatherCode": 1,
         "condition": "Cloudy",
         "state": {
@@ -987,7 +1002,7 @@ export const season2020F1Weather = {
         "windSpeed10m": 18.9
       },
       {
-        "time": "2020-08-09T14:45",
+        "time": "2020-08-09T14:55",
         "weatherCode": 1,
         "condition": "Cloudy",
         "state": {
@@ -1004,7 +1019,7 @@ export const season2020F1Weather = {
         "windSpeed10m": 18.9
       },
       {
-        "time": "2020-08-09T15:00",
+        "time": "2020-08-09T15:10",
         "weatherCode": 1,
         "condition": "Cloudy",
         "state": {
@@ -1021,7 +1036,7 @@ export const season2020F1Weather = {
         "windSpeed10m": 17.0
       },
       {
-        "time": "2020-08-09T15:15",
+        "time": "2020-08-09T15:25",
         "weatherCode": 1,
         "condition": "Cloudy",
         "state": {
@@ -1038,7 +1053,7 @@ export const season2020F1Weather = {
         "windSpeed10m": 17.0
       },
       {
-        "time": "2020-08-09T15:30",
+        "time": "2020-08-09T15:40",
         "weatherCode": 1,
         "condition": "Cloudy",
         "state": {
@@ -1055,7 +1070,7 @@ export const season2020F1Weather = {
         "windSpeed10m": 17.0
       },
       {
-        "time": "2020-08-09T15:45",
+        "time": "2020-08-09T15:55",
         "weatherCode": 1,
         "condition": "Cloudy",
         "state": {
@@ -1072,7 +1087,7 @@ export const season2020F1Weather = {
         "windSpeed10m": 17.0
       },
       {
-        "time": "2020-08-09T16:00",
+        "time": "2020-08-09T16:10",
         "weatherCode": 2,
         "condition": "Cloudy",
         "state": {
@@ -1089,7 +1104,7 @@ export const season2020F1Weather = {
         "windSpeed10m": 17.6
       },
       {
-        "time": "2020-08-09T16:15",
+        "time": "2020-08-09T16:25",
         "weatherCode": 2,
         "condition": "Cloudy",
         "state": {
@@ -1106,7 +1121,7 @@ export const season2020F1Weather = {
         "windSpeed10m": 17.6
       },
       {
-        "time": "2020-08-09T16:30",
+        "time": "2020-08-09T16:40",
         "weatherCode": 2,
         "condition": "Cloudy",
         "state": {
@@ -1123,7 +1138,7 @@ export const season2020F1Weather = {
         "windSpeed10m": 17.6
       },
       {
-        "time": "2020-08-09T16:45",
+        "time": "2020-08-09T16:55",
         "weatherCode": 2,
         "condition": "Cloudy",
         "state": {
@@ -1150,21 +1165,24 @@ export const season2020F1Weather = {
       "year": 2020,
       "series": "F1",
       "date": "2020-08-16",
-      "localStartTime": "14:00",
+      "localStartTime": "14:10",
       "timezone": "auto",
       "latitude": 41.55,
       "longitude": 2.25,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "Medium",
+      "startTimeMethod": "Historical F1 European/default pattern"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using F1 default 14:00"
+      "Workbook start time estimate (Medium): 14:10",
+      "Start time method: Historical F1 European/default pattern"
     ],
     "samples": [
       {
-        "time": "2020-08-16T14:00",
+        "time": "2020-08-16T14:10",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -1181,7 +1199,7 @@ export const season2020F1Weather = {
         "windSpeed10m": 3.9
       },
       {
-        "time": "2020-08-16T14:15",
+        "time": "2020-08-16T14:25",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -1198,7 +1216,7 @@ export const season2020F1Weather = {
         "windSpeed10m": 3.9
       },
       {
-        "time": "2020-08-16T14:30",
+        "time": "2020-08-16T14:40",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -1215,7 +1233,7 @@ export const season2020F1Weather = {
         "windSpeed10m": 3.9
       },
       {
-        "time": "2020-08-16T14:45",
+        "time": "2020-08-16T14:55",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -1232,7 +1250,7 @@ export const season2020F1Weather = {
         "windSpeed10m": 3.9
       },
       {
-        "time": "2020-08-16T15:00",
+        "time": "2020-08-16T15:10",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -1249,7 +1267,7 @@ export const season2020F1Weather = {
         "windSpeed10m": 5.0
       },
       {
-        "time": "2020-08-16T15:15",
+        "time": "2020-08-16T15:25",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -1266,7 +1284,7 @@ export const season2020F1Weather = {
         "windSpeed10m": 5.0
       },
       {
-        "time": "2020-08-16T15:30",
+        "time": "2020-08-16T15:40",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -1283,7 +1301,7 @@ export const season2020F1Weather = {
         "windSpeed10m": 5.0
       },
       {
-        "time": "2020-08-16T15:45",
+        "time": "2020-08-16T15:55",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -1300,7 +1318,7 @@ export const season2020F1Weather = {
         "windSpeed10m": 5.0
       },
       {
-        "time": "2020-08-16T16:00",
+        "time": "2020-08-16T16:10",
         "weatherCode": 1,
         "condition": "Cloudy",
         "state": {
@@ -1317,7 +1335,7 @@ export const season2020F1Weather = {
         "windSpeed10m": 4.4
       },
       {
-        "time": "2020-08-16T16:15",
+        "time": "2020-08-16T16:25",
         "weatherCode": 1,
         "condition": "Cloudy",
         "state": {
@@ -1334,7 +1352,7 @@ export const season2020F1Weather = {
         "windSpeed10m": 4.4
       },
       {
-        "time": "2020-08-16T16:30",
+        "time": "2020-08-16T16:40",
         "weatherCode": 1,
         "condition": "Cloudy",
         "state": {
@@ -1351,7 +1369,7 @@ export const season2020F1Weather = {
         "windSpeed10m": 4.4
       },
       {
-        "time": "2020-08-16T16:45",
+        "time": "2020-08-16T16:55",
         "weatherCode": 1,
         "condition": "Cloudy",
         "state": {
@@ -1378,21 +1396,24 @@ export const season2020F1Weather = {
       "year": 2020,
       "series": "F1",
       "date": "2020-08-30",
-      "localStartTime": "14:00",
+      "localStartTime": "14:10",
       "timezone": "auto",
       "latitude": 50.395,
       "longitude": 5.93,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "Medium",
+      "startTimeMethod": "Historical F1 European/default pattern"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using F1 default 14:00"
+      "Workbook start time estimate (Medium): 14:10",
+      "Start time method: Historical F1 European/default pattern"
     ],
     "samples": [
       {
-        "time": "2020-08-30T14:00",
+        "time": "2020-08-30T14:10",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -1409,7 +1430,7 @@ export const season2020F1Weather = {
         "windSpeed10m": 5.0
       },
       {
-        "time": "2020-08-30T14:15",
+        "time": "2020-08-30T14:25",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -1426,7 +1447,7 @@ export const season2020F1Weather = {
         "windSpeed10m": 5.0
       },
       {
-        "time": "2020-08-30T14:30",
+        "time": "2020-08-30T14:40",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -1443,7 +1464,7 @@ export const season2020F1Weather = {
         "windSpeed10m": 5.0
       },
       {
-        "time": "2020-08-30T14:45",
+        "time": "2020-08-30T14:55",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -1460,7 +1481,7 @@ export const season2020F1Weather = {
         "windSpeed10m": 5.0
       },
       {
-        "time": "2020-08-30T15:00",
+        "time": "2020-08-30T15:10",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -1477,7 +1498,7 @@ export const season2020F1Weather = {
         "windSpeed10m": 7.3
       },
       {
-        "time": "2020-08-30T15:15",
+        "time": "2020-08-30T15:25",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -1494,7 +1515,7 @@ export const season2020F1Weather = {
         "windSpeed10m": 7.3
       },
       {
-        "time": "2020-08-30T15:30",
+        "time": "2020-08-30T15:40",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -1511,7 +1532,7 @@ export const season2020F1Weather = {
         "windSpeed10m": 7.3
       },
       {
-        "time": "2020-08-30T15:45",
+        "time": "2020-08-30T15:55",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -1528,7 +1549,7 @@ export const season2020F1Weather = {
         "windSpeed10m": 7.3
       },
       {
-        "time": "2020-08-30T16:00",
+        "time": "2020-08-30T16:10",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -1545,7 +1566,7 @@ export const season2020F1Weather = {
         "windSpeed10m": 4.0
       },
       {
-        "time": "2020-08-30T16:15",
+        "time": "2020-08-30T16:25",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -1562,7 +1583,7 @@ export const season2020F1Weather = {
         "windSpeed10m": 4.0
       },
       {
-        "time": "2020-08-30T16:30",
+        "time": "2020-08-30T16:40",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -1579,7 +1600,7 @@ export const season2020F1Weather = {
         "windSpeed10m": 4.0
       },
       {
-        "time": "2020-08-30T16:45",
+        "time": "2020-08-30T16:55",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -1606,21 +1627,24 @@ export const season2020F1Weather = {
       "year": 2020,
       "series": "F1",
       "date": "2020-09-06",
-      "localStartTime": "14:00",
+      "localStartTime": "14:10",
       "timezone": "auto",
       "latitude": 45.5845,
       "longitude": 9.2744,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "Medium",
+      "startTimeMethod": "Historical F1 European/default pattern"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using F1 default 14:00"
+      "Workbook start time estimate (Medium): 14:10",
+      "Start time method: Historical F1 European/default pattern"
     ],
     "samples": [
       {
-        "time": "2020-09-06T14:00",
+        "time": "2020-09-06T14:10",
         "weatherCode": 1,
         "condition": "Cloudy",
         "state": {
@@ -1637,7 +1661,7 @@ export const season2020F1Weather = {
         "windSpeed10m": 6.7
       },
       {
-        "time": "2020-09-06T14:15",
+        "time": "2020-09-06T14:25",
         "weatherCode": 1,
         "condition": "Cloudy",
         "state": {
@@ -1654,7 +1678,7 @@ export const season2020F1Weather = {
         "windSpeed10m": 6.7
       },
       {
-        "time": "2020-09-06T14:30",
+        "time": "2020-09-06T14:40",
         "weatherCode": 1,
         "condition": "Cloudy",
         "state": {
@@ -1671,7 +1695,7 @@ export const season2020F1Weather = {
         "windSpeed10m": 6.7
       },
       {
-        "time": "2020-09-06T14:45",
+        "time": "2020-09-06T14:55",
         "weatherCode": 1,
         "condition": "Cloudy",
         "state": {
@@ -1688,7 +1712,7 @@ export const season2020F1Weather = {
         "windSpeed10m": 6.7
       },
       {
-        "time": "2020-09-06T15:00",
+        "time": "2020-09-06T15:10",
         "weatherCode": 1,
         "condition": "Cloudy",
         "state": {
@@ -1705,7 +1729,7 @@ export const season2020F1Weather = {
         "windSpeed10m": 7.9
       },
       {
-        "time": "2020-09-06T15:15",
+        "time": "2020-09-06T15:25",
         "weatherCode": 1,
         "condition": "Cloudy",
         "state": {
@@ -1722,7 +1746,7 @@ export const season2020F1Weather = {
         "windSpeed10m": 7.9
       },
       {
-        "time": "2020-09-06T15:30",
+        "time": "2020-09-06T15:40",
         "weatherCode": 1,
         "condition": "Cloudy",
         "state": {
@@ -1739,7 +1763,7 @@ export const season2020F1Weather = {
         "windSpeed10m": 7.9
       },
       {
-        "time": "2020-09-06T15:45",
+        "time": "2020-09-06T15:55",
         "weatherCode": 1,
         "condition": "Cloudy",
         "state": {
@@ -1756,7 +1780,7 @@ export const season2020F1Weather = {
         "windSpeed10m": 7.9
       },
       {
-        "time": "2020-09-06T16:00",
+        "time": "2020-09-06T16:10",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -1773,7 +1797,7 @@ export const season2020F1Weather = {
         "windSpeed10m": 5.9
       },
       {
-        "time": "2020-09-06T16:15",
+        "time": "2020-09-06T16:25",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -1790,7 +1814,7 @@ export const season2020F1Weather = {
         "windSpeed10m": 5.9
       },
       {
-        "time": "2020-09-06T16:30",
+        "time": "2020-09-06T16:40",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -1807,7 +1831,7 @@ export const season2020F1Weather = {
         "windSpeed10m": 5.9
       },
       {
-        "time": "2020-09-06T16:45",
+        "time": "2020-09-06T16:55",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -1834,21 +1858,24 @@ export const season2020F1Weather = {
       "year": 2020,
       "series": "F1",
       "date": "2020-09-13",
-      "localStartTime": "14:00",
+      "localStartTime": "14:10",
       "timezone": "auto",
       "latitude": 43.9931,
       "longitude": 11.354,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "Medium",
+      "startTimeMethod": "Historical F1 European/default pattern"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using F1 default 14:00"
+      "Workbook start time estimate (Medium): 14:10",
+      "Start time method: Historical F1 European/default pattern"
     ],
     "samples": [
       {
-        "time": "2020-09-13T14:00",
+        "time": "2020-09-13T14:10",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -1865,7 +1892,7 @@ export const season2020F1Weather = {
         "windSpeed10m": 10.6
       },
       {
-        "time": "2020-09-13T14:15",
+        "time": "2020-09-13T14:25",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -1882,7 +1909,7 @@ export const season2020F1Weather = {
         "windSpeed10m": 10.6
       },
       {
-        "time": "2020-09-13T14:30",
+        "time": "2020-09-13T14:40",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -1899,7 +1926,7 @@ export const season2020F1Weather = {
         "windSpeed10m": 10.6
       },
       {
-        "time": "2020-09-13T14:45",
+        "time": "2020-09-13T14:55",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -1916,7 +1943,7 @@ export const season2020F1Weather = {
         "windSpeed10m": 10.6
       },
       {
-        "time": "2020-09-13T15:00",
+        "time": "2020-09-13T15:10",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -1933,7 +1960,7 @@ export const season2020F1Weather = {
         "windSpeed10m": 10.9
       },
       {
-        "time": "2020-09-13T15:15",
+        "time": "2020-09-13T15:25",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -1950,7 +1977,7 @@ export const season2020F1Weather = {
         "windSpeed10m": 10.9
       },
       {
-        "time": "2020-09-13T15:30",
+        "time": "2020-09-13T15:40",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -1967,7 +1994,7 @@ export const season2020F1Weather = {
         "windSpeed10m": 10.9
       },
       {
-        "time": "2020-09-13T15:45",
+        "time": "2020-09-13T15:55",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -1984,7 +2011,7 @@ export const season2020F1Weather = {
         "windSpeed10m": 10.9
       },
       {
-        "time": "2020-09-13T16:00",
+        "time": "2020-09-13T16:10",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -2001,7 +2028,7 @@ export const season2020F1Weather = {
         "windSpeed10m": 10.5
       },
       {
-        "time": "2020-09-13T16:15",
+        "time": "2020-09-13T16:25",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -2018,7 +2045,7 @@ export const season2020F1Weather = {
         "windSpeed10m": 10.5
       },
       {
-        "time": "2020-09-13T16:30",
+        "time": "2020-09-13T16:40",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -2035,7 +2062,7 @@ export const season2020F1Weather = {
         "windSpeed10m": 10.5
       },
       {
-        "time": "2020-09-13T16:45",
+        "time": "2020-09-13T16:55",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -2062,21 +2089,24 @@ export const season2020F1Weather = {
       "year": 2020,
       "series": "F1",
       "date": "2020-09-27",
-      "localStartTime": "14:00",
+      "localStartTime": "15:10",
       "timezone": "auto",
       "latitude": 43.6028,
       "longitude": 39.7342,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "Medium",
+      "startTimeMethod": "F1 Europe/Asia daytime pattern"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using F1 default 14:00"
+      "Workbook start time estimate (Medium): 15:10",
+      "Start time method: F1 Europe/Asia daytime pattern"
     ],
     "samples": [
       {
-        "time": "2020-09-27T14:00",
+        "time": "2020-09-27T15:10",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -2093,7 +2123,7 @@ export const season2020F1Weather = {
         "windSpeed10m": 7.0
       },
       {
-        "time": "2020-09-27T14:15",
+        "time": "2020-09-27T15:25",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -2110,7 +2140,7 @@ export const season2020F1Weather = {
         "windSpeed10m": 7.0
       },
       {
-        "time": "2020-09-27T14:30",
+        "time": "2020-09-27T15:40",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -2127,7 +2157,7 @@ export const season2020F1Weather = {
         "windSpeed10m": 7.0
       },
       {
-        "time": "2020-09-27T14:45",
+        "time": "2020-09-27T15:55",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -2144,7 +2174,7 @@ export const season2020F1Weather = {
         "windSpeed10m": 7.0
       },
       {
-        "time": "2020-09-27T15:00",
+        "time": "2020-09-27T16:10",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -2161,7 +2191,7 @@ export const season2020F1Weather = {
         "windSpeed10m": 6.1
       },
       {
-        "time": "2020-09-27T15:15",
+        "time": "2020-09-27T16:25",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -2178,7 +2208,7 @@ export const season2020F1Weather = {
         "windSpeed10m": 6.1
       },
       {
-        "time": "2020-09-27T15:30",
+        "time": "2020-09-27T16:40",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -2195,7 +2225,7 @@ export const season2020F1Weather = {
         "windSpeed10m": 6.1
       },
       {
-        "time": "2020-09-27T15:45",
+        "time": "2020-09-27T16:55",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -2212,7 +2242,7 @@ export const season2020F1Weather = {
         "windSpeed10m": 6.1
       },
       {
-        "time": "2020-09-27T16:00",
+        "time": "2020-09-27T17:10",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -2229,7 +2259,7 @@ export const season2020F1Weather = {
         "windSpeed10m": 6.3
       },
       {
-        "time": "2020-09-27T16:15",
+        "time": "2020-09-27T17:25",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -2246,7 +2276,7 @@ export const season2020F1Weather = {
         "windSpeed10m": 6.3
       },
       {
-        "time": "2020-09-27T16:30",
+        "time": "2020-09-27T17:40",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -2263,7 +2293,7 @@ export const season2020F1Weather = {
         "windSpeed10m": 6.3
       },
       {
-        "time": "2020-09-27T16:45",
+        "time": "2020-09-27T17:55",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -2290,21 +2320,24 @@ export const season2020F1Weather = {
       "year": 2020,
       "series": "F1",
       "date": "2020-10-11",
-      "localStartTime": "14:00",
+      "localStartTime": "14:10",
       "timezone": "auto",
       "latitude": 50.3419,
       "longitude": 6.954,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "Medium",
+      "startTimeMethod": "Historical F1 European/default pattern"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using F1 default 14:00"
+      "Workbook start time estimate (Medium): 14:10",
+      "Start time method: Historical F1 European/default pattern"
     ],
     "samples": [
       {
-        "time": "2020-10-11T14:00",
+        "time": "2020-10-11T14:10",
         "weatherCode": 3,
         "condition": "Cloudy",
         "state": {
@@ -2321,7 +2354,7 @@ export const season2020F1Weather = {
         "windSpeed10m": 18.3
       },
       {
-        "time": "2020-10-11T14:15",
+        "time": "2020-10-11T14:25",
         "weatherCode": 3,
         "condition": "Cloudy",
         "state": {
@@ -2338,7 +2371,7 @@ export const season2020F1Weather = {
         "windSpeed10m": 18.3
       },
       {
-        "time": "2020-10-11T14:30",
+        "time": "2020-10-11T14:40",
         "weatherCode": 3,
         "condition": "Cloudy",
         "state": {
@@ -2355,7 +2388,7 @@ export const season2020F1Weather = {
         "windSpeed10m": 18.3
       },
       {
-        "time": "2020-10-11T14:45",
+        "time": "2020-10-11T14:55",
         "weatherCode": 3,
         "condition": "Cloudy",
         "state": {
@@ -2372,7 +2405,7 @@ export const season2020F1Weather = {
         "windSpeed10m": 18.3
       },
       {
-        "time": "2020-10-11T15:00",
+        "time": "2020-10-11T15:10",
         "weatherCode": 3,
         "condition": "Cloudy",
         "state": {
@@ -2389,7 +2422,7 @@ export const season2020F1Weather = {
         "windSpeed10m": 16.2
       },
       {
-        "time": "2020-10-11T15:15",
+        "time": "2020-10-11T15:25",
         "weatherCode": 3,
         "condition": "Cloudy",
         "state": {
@@ -2406,7 +2439,7 @@ export const season2020F1Weather = {
         "windSpeed10m": 16.2
       },
       {
-        "time": "2020-10-11T15:30",
+        "time": "2020-10-11T15:40",
         "weatherCode": 3,
         "condition": "Cloudy",
         "state": {
@@ -2423,7 +2456,7 @@ export const season2020F1Weather = {
         "windSpeed10m": 16.2
       },
       {
-        "time": "2020-10-11T15:45",
+        "time": "2020-10-11T15:55",
         "weatherCode": 3,
         "condition": "Cloudy",
         "state": {
@@ -2440,7 +2473,7 @@ export const season2020F1Weather = {
         "windSpeed10m": 16.2
       },
       {
-        "time": "2020-10-11T16:00",
+        "time": "2020-10-11T16:10",
         "weatherCode": 3,
         "condition": "Cloudy",
         "state": {
@@ -2457,7 +2490,7 @@ export const season2020F1Weather = {
         "windSpeed10m": 14.2
       },
       {
-        "time": "2020-10-11T16:15",
+        "time": "2020-10-11T16:25",
         "weatherCode": 3,
         "condition": "Cloudy",
         "state": {
@@ -2474,7 +2507,7 @@ export const season2020F1Weather = {
         "windSpeed10m": 14.2
       },
       {
-        "time": "2020-10-11T16:30",
+        "time": "2020-10-11T16:40",
         "weatherCode": 3,
         "condition": "Cloudy",
         "state": {
@@ -2491,7 +2524,7 @@ export const season2020F1Weather = {
         "windSpeed10m": 14.2
       },
       {
-        "time": "2020-10-11T16:45",
+        "time": "2020-10-11T16:55",
         "weatherCode": 3,
         "condition": "Cloudy",
         "state": {
@@ -2518,21 +2551,24 @@ export const season2020F1Weather = {
       "year": 2020,
       "series": "F1",
       "date": "2020-10-25",
-      "localStartTime": "14:00",
+      "localStartTime": "14:10",
       "timezone": "auto",
       "latitude": 37.1366,
       "longitude": -8.5377,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "Medium",
+      "startTimeMethod": "Historical F1 European/default pattern"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using F1 default 14:00"
+      "Workbook start time estimate (Medium): 14:10",
+      "Start time method: Historical F1 European/default pattern"
     ],
     "samples": [
       {
-        "time": "2020-10-25T14:00",
+        "time": "2020-10-25T14:10",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -2549,7 +2585,7 @@ export const season2020F1Weather = {
         "windSpeed10m": 6.4
       },
       {
-        "time": "2020-10-25T14:15",
+        "time": "2020-10-25T14:25",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -2566,7 +2602,7 @@ export const season2020F1Weather = {
         "windSpeed10m": 6.4
       },
       {
-        "time": "2020-10-25T14:30",
+        "time": "2020-10-25T14:40",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -2583,7 +2619,7 @@ export const season2020F1Weather = {
         "windSpeed10m": 6.4
       },
       {
-        "time": "2020-10-25T14:45",
+        "time": "2020-10-25T14:55",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -2600,7 +2636,7 @@ export const season2020F1Weather = {
         "windSpeed10m": 6.4
       },
       {
-        "time": "2020-10-25T15:00",
+        "time": "2020-10-25T15:10",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -2617,7 +2653,7 @@ export const season2020F1Weather = {
         "windSpeed10m": 5.7
       },
       {
-        "time": "2020-10-25T15:15",
+        "time": "2020-10-25T15:25",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -2634,7 +2670,7 @@ export const season2020F1Weather = {
         "windSpeed10m": 5.7
       },
       {
-        "time": "2020-10-25T15:30",
+        "time": "2020-10-25T15:40",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -2651,7 +2687,7 @@ export const season2020F1Weather = {
         "windSpeed10m": 5.7
       },
       {
-        "time": "2020-10-25T15:45",
+        "time": "2020-10-25T15:55",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -2668,7 +2704,7 @@ export const season2020F1Weather = {
         "windSpeed10m": 5.7
       },
       {
-        "time": "2020-10-25T16:00",
+        "time": "2020-10-25T16:10",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -2685,7 +2721,7 @@ export const season2020F1Weather = {
         "windSpeed10m": 8.3
       },
       {
-        "time": "2020-10-25T16:15",
+        "time": "2020-10-25T16:25",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -2702,7 +2738,7 @@ export const season2020F1Weather = {
         "windSpeed10m": 8.3
       },
       {
-        "time": "2020-10-25T16:30",
+        "time": "2020-10-25T16:40",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -2719,7 +2755,7 @@ export const season2020F1Weather = {
         "windSpeed10m": 8.3
       },
       {
-        "time": "2020-10-25T16:45",
+        "time": "2020-10-25T16:55",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -2746,21 +2782,24 @@ export const season2020F1Weather = {
       "year": 2020,
       "series": "F1",
       "date": "2020-11-01",
-      "localStartTime": "14:00",
+      "localStartTime": "14:10",
       "timezone": "auto",
       "latitude": 44.3559,
       "longitude": 11.7161,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "Medium",
+      "startTimeMethod": "Historical F1 European/default pattern"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using F1 default 14:00"
+      "Workbook start time estimate (Medium): 14:10",
+      "Start time method: Historical F1 European/default pattern"
     ],
     "samples": [
       {
-        "time": "2020-11-01T14:00",
+        "time": "2020-11-01T14:10",
         "weatherCode": 3,
         "condition": "Cloudy",
         "state": {
@@ -2777,7 +2816,7 @@ export const season2020F1Weather = {
         "windSpeed10m": 6.2
       },
       {
-        "time": "2020-11-01T14:15",
+        "time": "2020-11-01T14:25",
         "weatherCode": 3,
         "condition": "Cloudy",
         "state": {
@@ -2794,7 +2833,7 @@ export const season2020F1Weather = {
         "windSpeed10m": 6.2
       },
       {
-        "time": "2020-11-01T14:30",
+        "time": "2020-11-01T14:40",
         "weatherCode": 3,
         "condition": "Cloudy",
         "state": {
@@ -2811,7 +2850,7 @@ export const season2020F1Weather = {
         "windSpeed10m": 6.2
       },
       {
-        "time": "2020-11-01T14:45",
+        "time": "2020-11-01T14:55",
         "weatherCode": 3,
         "condition": "Cloudy",
         "state": {
@@ -2828,7 +2867,7 @@ export const season2020F1Weather = {
         "windSpeed10m": 6.2
       },
       {
-        "time": "2020-11-01T15:00",
+        "time": "2020-11-01T15:10",
         "weatherCode": 3,
         "condition": "Cloudy",
         "state": {
@@ -2845,7 +2884,7 @@ export const season2020F1Weather = {
         "windSpeed10m": 6.8
       },
       {
-        "time": "2020-11-01T15:15",
+        "time": "2020-11-01T15:25",
         "weatherCode": 3,
         "condition": "Cloudy",
         "state": {
@@ -2862,7 +2901,7 @@ export const season2020F1Weather = {
         "windSpeed10m": 6.8
       },
       {
-        "time": "2020-11-01T15:30",
+        "time": "2020-11-01T15:40",
         "weatherCode": 3,
         "condition": "Cloudy",
         "state": {
@@ -2879,7 +2918,7 @@ export const season2020F1Weather = {
         "windSpeed10m": 6.8
       },
       {
-        "time": "2020-11-01T15:45",
+        "time": "2020-11-01T15:55",
         "weatherCode": 3,
         "condition": "Cloudy",
         "state": {
@@ -2896,7 +2935,7 @@ export const season2020F1Weather = {
         "windSpeed10m": 6.8
       },
       {
-        "time": "2020-11-01T16:00",
+        "time": "2020-11-01T16:10",
         "weatherCode": 3,
         "condition": "Cloudy",
         "state": {
@@ -2913,7 +2952,7 @@ export const season2020F1Weather = {
         "windSpeed10m": 9.3
       },
       {
-        "time": "2020-11-01T16:15",
+        "time": "2020-11-01T16:25",
         "weatherCode": 3,
         "condition": "Cloudy",
         "state": {
@@ -2930,7 +2969,7 @@ export const season2020F1Weather = {
         "windSpeed10m": 9.3
       },
       {
-        "time": "2020-11-01T16:30",
+        "time": "2020-11-01T16:40",
         "weatherCode": 3,
         "condition": "Cloudy",
         "state": {
@@ -2947,7 +2986,7 @@ export const season2020F1Weather = {
         "windSpeed10m": 9.3
       },
       {
-        "time": "2020-11-01T16:45",
+        "time": "2020-11-01T16:55",
         "weatherCode": 3,
         "condition": "Cloudy",
         "state": {
@@ -2974,21 +3013,24 @@ export const season2020F1Weather = {
       "year": 2020,
       "series": "F1",
       "date": "2020-11-15",
-      "localStartTime": "14:00",
+      "localStartTime": "15:10",
       "timezone": "auto",
       "latitude": 41.0082,
       "longitude": 28.9784,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "Medium",
+      "startTimeMethod": "F1 Europe/Asia daytime pattern"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using F1 default 14:00"
+      "Workbook start time estimate (Medium): 15:10",
+      "Start time method: F1 Europe/Asia daytime pattern"
     ],
     "samples": [
       {
-        "time": "2020-11-15T14:00",
+        "time": "2020-11-15T15:10",
         "weatherCode": 1,
         "condition": "Cloudy",
         "state": {
@@ -3005,7 +3047,7 @@ export const season2020F1Weather = {
         "windSpeed10m": 11.8
       },
       {
-        "time": "2020-11-15T14:15",
+        "time": "2020-11-15T15:25",
         "weatherCode": 1,
         "condition": "Cloudy",
         "state": {
@@ -3022,7 +3064,7 @@ export const season2020F1Weather = {
         "windSpeed10m": 11.8
       },
       {
-        "time": "2020-11-15T14:30",
+        "time": "2020-11-15T15:40",
         "weatherCode": 1,
         "condition": "Cloudy",
         "state": {
@@ -3039,7 +3081,7 @@ export const season2020F1Weather = {
         "windSpeed10m": 11.8
       },
       {
-        "time": "2020-11-15T14:45",
+        "time": "2020-11-15T15:55",
         "weatherCode": 1,
         "condition": "Cloudy",
         "state": {
@@ -3056,7 +3098,7 @@ export const season2020F1Weather = {
         "windSpeed10m": 11.8
       },
       {
-        "time": "2020-11-15T15:00",
+        "time": "2020-11-15T16:10",
         "weatherCode": 1,
         "condition": "Cloudy",
         "state": {
@@ -3073,7 +3115,7 @@ export const season2020F1Weather = {
         "windSpeed10m": 9.5
       },
       {
-        "time": "2020-11-15T15:15",
+        "time": "2020-11-15T16:25",
         "weatherCode": 1,
         "condition": "Cloudy",
         "state": {
@@ -3090,7 +3132,7 @@ export const season2020F1Weather = {
         "windSpeed10m": 9.5
       },
       {
-        "time": "2020-11-15T15:30",
+        "time": "2020-11-15T16:40",
         "weatherCode": 1,
         "condition": "Cloudy",
         "state": {
@@ -3107,7 +3149,7 @@ export const season2020F1Weather = {
         "windSpeed10m": 9.5
       },
       {
-        "time": "2020-11-15T15:45",
+        "time": "2020-11-15T16:55",
         "weatherCode": 1,
         "condition": "Cloudy",
         "state": {
@@ -3124,7 +3166,7 @@ export const season2020F1Weather = {
         "windSpeed10m": 9.5
       },
       {
-        "time": "2020-11-15T16:00",
+        "time": "2020-11-15T17:10",
         "weatherCode": 1,
         "condition": "Cloudy",
         "state": {
@@ -3141,7 +3183,7 @@ export const season2020F1Weather = {
         "windSpeed10m": 9.4
       },
       {
-        "time": "2020-11-15T16:15",
+        "time": "2020-11-15T17:25",
         "weatherCode": 1,
         "condition": "Cloudy",
         "state": {
@@ -3158,7 +3200,7 @@ export const season2020F1Weather = {
         "windSpeed10m": 9.4
       },
       {
-        "time": "2020-11-15T16:30",
+        "time": "2020-11-15T17:40",
         "weatherCode": 1,
         "condition": "Cloudy",
         "state": {
@@ -3175,7 +3217,7 @@ export const season2020F1Weather = {
         "windSpeed10m": 9.4
       },
       {
-        "time": "2020-11-15T16:45",
+        "time": "2020-11-15T17:55",
         "weatherCode": 1,
         "condition": "Cloudy",
         "state": {
@@ -3202,21 +3244,24 @@ export const season2020F1Weather = {
       "year": 2020,
       "series": "F1",
       "date": "2020-11-29",
-      "localStartTime": "14:00",
+      "localStartTime": "18:10",
       "timezone": "auto",
       "latitude": 26.0325,
       "longitude": 50.5106,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "High",
+      "startTimeMethod": "Known F1 night-race pattern"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using F1 default 14:00"
+      "Workbook start time estimate (High): 18:10",
+      "Start time method: Known F1 night-race pattern"
     ],
     "samples": [
       {
-        "time": "2020-11-29T14:00",
+        "time": "2020-11-29T18:10",
         "weatherCode": 1,
         "condition": "Cloudy",
         "state": {
@@ -3233,7 +3278,7 @@ export const season2020F1Weather = {
         "windSpeed10m": 9.4
       },
       {
-        "time": "2020-11-29T14:15",
+        "time": "2020-11-29T18:25",
         "weatherCode": 1,
         "condition": "Cloudy",
         "state": {
@@ -3250,7 +3295,7 @@ export const season2020F1Weather = {
         "windSpeed10m": 9.4
       },
       {
-        "time": "2020-11-29T14:30",
+        "time": "2020-11-29T18:40",
         "weatherCode": 1,
         "condition": "Cloudy",
         "state": {
@@ -3267,7 +3312,7 @@ export const season2020F1Weather = {
         "windSpeed10m": 9.4
       },
       {
-        "time": "2020-11-29T14:45",
+        "time": "2020-11-29T18:55",
         "weatherCode": 1,
         "condition": "Cloudy",
         "state": {
@@ -3284,7 +3329,7 @@ export const season2020F1Weather = {
         "windSpeed10m": 9.4
       },
       {
-        "time": "2020-11-29T15:00",
+        "time": "2020-11-29T19:10",
         "weatherCode": 2,
         "condition": "Cloudy",
         "state": {
@@ -3301,7 +3346,7 @@ export const season2020F1Weather = {
         "windSpeed10m": 11.4
       },
       {
-        "time": "2020-11-29T15:15",
+        "time": "2020-11-29T19:25",
         "weatherCode": 2,
         "condition": "Cloudy",
         "state": {
@@ -3318,7 +3363,7 @@ export const season2020F1Weather = {
         "windSpeed10m": 11.4
       },
       {
-        "time": "2020-11-29T15:30",
+        "time": "2020-11-29T19:40",
         "weatherCode": 2,
         "condition": "Cloudy",
         "state": {
@@ -3335,7 +3380,7 @@ export const season2020F1Weather = {
         "windSpeed10m": 11.4
       },
       {
-        "time": "2020-11-29T15:45",
+        "time": "2020-11-29T19:55",
         "weatherCode": 2,
         "condition": "Cloudy",
         "state": {
@@ -3352,7 +3397,7 @@ export const season2020F1Weather = {
         "windSpeed10m": 11.4
       },
       {
-        "time": "2020-11-29T16:00",
+        "time": "2020-11-29T20:10",
         "weatherCode": 51,
         "condition": "LightRain",
         "state": {
@@ -3369,7 +3414,7 @@ export const season2020F1Weather = {
         "windSpeed10m": 15.3
       },
       {
-        "time": "2020-11-29T16:15",
+        "time": "2020-11-29T20:25",
         "weatherCode": 51,
         "condition": "LightRain",
         "state": {
@@ -3386,7 +3431,7 @@ export const season2020F1Weather = {
         "windSpeed10m": 15.3
       },
       {
-        "time": "2020-11-29T16:30",
+        "time": "2020-11-29T20:40",
         "weatherCode": 51,
         "condition": "LightRain",
         "state": {
@@ -3403,7 +3448,7 @@ export const season2020F1Weather = {
         "windSpeed10m": 15.3
       },
       {
-        "time": "2020-11-29T16:45",
+        "time": "2020-11-29T20:55",
         "weatherCode": 51,
         "condition": "LightRain",
         "state": {
@@ -3430,21 +3475,24 @@ export const season2020F1Weather = {
       "year": 2020,
       "series": "F1",
       "date": "2020-12-06",
-      "localStartTime": "14:00",
+      "localStartTime": "14:10",
       "timezone": "auto",
       "latitude": 26.0325,
       "longitude": 50.5106,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "Medium",
+      "startTimeMethod": "Historical F1 European/default pattern"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using F1 default 14:00"
+      "Workbook start time estimate (Medium): 14:10",
+      "Start time method: Historical F1 European/default pattern"
     ],
     "samples": [
       {
-        "time": "2020-12-06T14:00",
+        "time": "2020-12-06T14:10",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -3461,7 +3509,7 @@ export const season2020F1Weather = {
         "windSpeed10m": 10.9
       },
       {
-        "time": "2020-12-06T14:15",
+        "time": "2020-12-06T14:25",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -3478,7 +3526,7 @@ export const season2020F1Weather = {
         "windSpeed10m": 10.9
       },
       {
-        "time": "2020-12-06T14:30",
+        "time": "2020-12-06T14:40",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -3495,7 +3543,7 @@ export const season2020F1Weather = {
         "windSpeed10m": 10.9
       },
       {
-        "time": "2020-12-06T14:45",
+        "time": "2020-12-06T14:55",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -3512,7 +3560,7 @@ export const season2020F1Weather = {
         "windSpeed10m": 10.9
       },
       {
-        "time": "2020-12-06T15:00",
+        "time": "2020-12-06T15:10",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -3529,7 +3577,7 @@ export const season2020F1Weather = {
         "windSpeed10m": 13.2
       },
       {
-        "time": "2020-12-06T15:15",
+        "time": "2020-12-06T15:25",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -3546,7 +3594,7 @@ export const season2020F1Weather = {
         "windSpeed10m": 13.2
       },
       {
-        "time": "2020-12-06T15:30",
+        "time": "2020-12-06T15:40",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -3563,7 +3611,7 @@ export const season2020F1Weather = {
         "windSpeed10m": 13.2
       },
       {
-        "time": "2020-12-06T15:45",
+        "time": "2020-12-06T15:55",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -3580,7 +3628,7 @@ export const season2020F1Weather = {
         "windSpeed10m": 13.2
       },
       {
-        "time": "2020-12-06T16:00",
+        "time": "2020-12-06T16:10",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -3597,7 +3645,7 @@ export const season2020F1Weather = {
         "windSpeed10m": 15.3
       },
       {
-        "time": "2020-12-06T16:15",
+        "time": "2020-12-06T16:25",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -3614,7 +3662,7 @@ export const season2020F1Weather = {
         "windSpeed10m": 15.3
       },
       {
-        "time": "2020-12-06T16:30",
+        "time": "2020-12-06T16:40",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -3631,7 +3679,7 @@ export const season2020F1Weather = {
         "windSpeed10m": 15.3
       },
       {
-        "time": "2020-12-06T16:45",
+        "time": "2020-12-06T16:55",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -3658,21 +3706,24 @@ export const season2020F1Weather = {
       "year": 2020,
       "series": "F1",
       "date": "2020-12-13",
-      "localStartTime": "14:00",
+      "localStartTime": "17:10",
       "timezone": "auto",
       "latitude": 24.4958,
       "longitude": 54.604,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "High",
+      "startTimeMethod": "Known F1 twilight-race pattern"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using F1 default 14:00"
+      "Workbook start time estimate (High): 17:10",
+      "Start time method: Known F1 twilight-race pattern"
     ],
     "samples": [
       {
-        "time": "2020-12-13T14:00",
+        "time": "2020-12-13T17:10",
         "weatherCode": 1,
         "condition": "Cloudy",
         "state": {
@@ -3689,7 +3740,7 @@ export const season2020F1Weather = {
         "windSpeed10m": 8.6
       },
       {
-        "time": "2020-12-13T14:15",
+        "time": "2020-12-13T17:25",
         "weatherCode": 1,
         "condition": "Cloudy",
         "state": {
@@ -3706,7 +3757,7 @@ export const season2020F1Weather = {
         "windSpeed10m": 8.6
       },
       {
-        "time": "2020-12-13T14:30",
+        "time": "2020-12-13T17:40",
         "weatherCode": 1,
         "condition": "Cloudy",
         "state": {
@@ -3723,7 +3774,7 @@ export const season2020F1Weather = {
         "windSpeed10m": 8.6
       },
       {
-        "time": "2020-12-13T14:45",
+        "time": "2020-12-13T17:55",
         "weatherCode": 1,
         "condition": "Cloudy",
         "state": {
@@ -3740,7 +3791,7 @@ export const season2020F1Weather = {
         "windSpeed10m": 8.6
       },
       {
-        "time": "2020-12-13T15:00",
+        "time": "2020-12-13T18:10",
         "weatherCode": 1,
         "condition": "Cloudy",
         "state": {
@@ -3757,7 +3808,7 @@ export const season2020F1Weather = {
         "windSpeed10m": 9.9
       },
       {
-        "time": "2020-12-13T15:15",
+        "time": "2020-12-13T18:25",
         "weatherCode": 1,
         "condition": "Cloudy",
         "state": {
@@ -3774,7 +3825,7 @@ export const season2020F1Weather = {
         "windSpeed10m": 9.9
       },
       {
-        "time": "2020-12-13T15:30",
+        "time": "2020-12-13T18:40",
         "weatherCode": 1,
         "condition": "Cloudy",
         "state": {
@@ -3791,7 +3842,7 @@ export const season2020F1Weather = {
         "windSpeed10m": 9.9
       },
       {
-        "time": "2020-12-13T15:45",
+        "time": "2020-12-13T18:55",
         "weatherCode": 1,
         "condition": "Cloudy",
         "state": {
@@ -3808,7 +3859,7 @@ export const season2020F1Weather = {
         "windSpeed10m": 9.9
       },
       {
-        "time": "2020-12-13T16:00",
+        "time": "2020-12-13T19:10",
         "weatherCode": 2,
         "condition": "Cloudy",
         "state": {
@@ -3825,7 +3876,7 @@ export const season2020F1Weather = {
         "windSpeed10m": 14.7
       },
       {
-        "time": "2020-12-13T16:15",
+        "time": "2020-12-13T19:25",
         "weatherCode": 2,
         "condition": "Cloudy",
         "state": {
@@ -3842,7 +3893,7 @@ export const season2020F1Weather = {
         "windSpeed10m": 14.7
       },
       {
-        "time": "2020-12-13T16:30",
+        "time": "2020-12-13T19:40",
         "weatherCode": 2,
         "condition": "Cloudy",
         "state": {
@@ -3859,7 +3910,7 @@ export const season2020F1Weather = {
         "windSpeed10m": 14.7
       },
       {
-        "time": "2020-12-13T16:45",
+        "time": "2020-12-13T19:55",
         "weatherCode": 2,
         "condition": "Cloudy",
         "state": {

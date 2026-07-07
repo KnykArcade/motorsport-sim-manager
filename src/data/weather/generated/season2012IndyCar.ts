@@ -10,21 +10,24 @@ export const season2012IndyCarWeather = {
       "year": 2012,
       "series": "IndyCar",
       "date": "2012-03-25",
-      "localStartTime": "13:30",
+      "localStartTime": "12:30",
       "timezone": "auto",
       "latitude": 27.7676,
       "longitude": -82.6403,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "Medium",
+      "startTimeMethod": "Street race midday estimate"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using IndyCar default 13:30"
+      "Workbook start time estimate (Medium): 12:30",
+      "Start time method: Street race midday estimate"
     ],
     "samples": [
       {
-        "time": "2012-03-25T13:30",
+        "time": "2012-03-25T12:30",
         "weatherCode": 51,
         "condition": "LightRain",
         "state": {
@@ -39,10 +42,78 @@ export const season2012IndyCarWeather = {
         "cloudCover": 99,
         "temperature2m": 22.1,
         "windSpeed10m": 16.7
+      },
+      {
+        "time": "2012-03-25T12:45",
+        "weatherCode": 51,
+        "condition": "LightRain",
+        "state": {
+          "condition": "LightRain",
+          "gripLevel": 0.72,
+          "wet": true,
+          "changingSoon": false,
+          "label": "Light Rain"
+        },
+        "precipitationMm": 0.4,
+        "rainMm": 0.4,
+        "cloudCover": 99,
+        "temperature2m": 22.1,
+        "windSpeed10m": 16.7
+      },
+      {
+        "time": "2012-03-25T13:00",
+        "weatherCode": 51,
+        "condition": "LightRain",
+        "state": {
+          "condition": "LightRain",
+          "gripLevel": 0.72,
+          "wet": true,
+          "changingSoon": true,
+          "label": "Light Rain"
+        },
+        "precipitationMm": 0.4,
+        "rainMm": 0.4,
+        "cloudCover": 99,
+        "temperature2m": 22.1,
+        "windSpeed10m": 16.7
+      },
+      {
+        "time": "2012-03-25T13:15",
+        "weatherCode": 51,
+        "condition": "LightRain",
+        "state": {
+          "condition": "LightRain",
+          "gripLevel": 0.72,
+          "wet": true,
+          "changingSoon": true,
+          "label": "Light Rain"
+        },
+        "precipitationMm": 0.4,
+        "rainMm": 0.4,
+        "cloudCover": 99,
+        "temperature2m": 22.1,
+        "windSpeed10m": 16.7
+      },
+      {
+        "time": "2012-03-25T13:30",
+        "weatherCode": 53,
+        "condition": "LightRain",
+        "state": {
+          "condition": "LightRain",
+          "gripLevel": 0.72,
+          "wet": true,
+          "changingSoon": false,
+          "label": "Light Rain"
+        },
+        "precipitationMm": 0.8,
+        "rainMm": 0.8,
+        "cloudCover": 99,
+        "temperature2m": 21.4,
+        "windSpeed10m": 15.8
       },
       {
         "time": "2012-03-25T13:45",
-        "weatherCode": 51,
+        "weatherCode": 53,
         "condition": "LightRain",
         "state": {
           "condition": "LightRain",
@@ -51,15 +122,15 @@ export const season2012IndyCarWeather = {
           "changingSoon": false,
           "label": "Light Rain"
         },
-        "precipitationMm": 0.4,
-        "rainMm": 0.4,
+        "precipitationMm": 0.8,
+        "rainMm": 0.8,
         "cloudCover": 99,
-        "temperature2m": 22.1,
-        "windSpeed10m": 16.7
+        "temperature2m": 21.4,
+        "windSpeed10m": 15.8
       },
       {
         "time": "2012-03-25T14:00",
-        "weatherCode": 51,
+        "weatherCode": 53,
         "condition": "LightRain",
         "state": {
           "condition": "LightRain",
@@ -68,15 +139,15 @@ export const season2012IndyCarWeather = {
           "changingSoon": true,
           "label": "Light Rain"
         },
-        "precipitationMm": 0.4,
-        "rainMm": 0.4,
+        "precipitationMm": 0.8,
+        "rainMm": 0.8,
         "cloudCover": 99,
-        "temperature2m": 22.1,
-        "windSpeed10m": 16.7
+        "temperature2m": 21.4,
+        "windSpeed10m": 15.8
       },
       {
         "time": "2012-03-25T14:15",
-        "weatherCode": 51,
+        "weatherCode": 53,
         "condition": "LightRain",
         "state": {
           "condition": "LightRain",
@@ -85,15 +156,15 @@ export const season2012IndyCarWeather = {
           "changingSoon": true,
           "label": "Light Rain"
         },
-        "precipitationMm": 0.4,
-        "rainMm": 0.4,
+        "precipitationMm": 0.8,
+        "rainMm": 0.8,
         "cloudCover": 99,
-        "temperature2m": 22.1,
-        "windSpeed10m": 16.7
+        "temperature2m": 21.4,
+        "windSpeed10m": 15.8
       },
       {
         "time": "2012-03-25T14:30",
-        "weatherCode": 53,
+        "weatherCode": 51,
         "condition": "LightRain",
         "state": {
           "condition": "LightRain",
@@ -102,15 +173,15 @@ export const season2012IndyCarWeather = {
           "changingSoon": false,
           "label": "Light Rain"
         },
-        "precipitationMm": 0.8,
-        "rainMm": 0.8,
-        "cloudCover": 99,
-        "temperature2m": 21.4,
-        "windSpeed10m": 15.8
+        "precipitationMm": 0.4,
+        "rainMm": 0.4,
+        "cloudCover": 100,
+        "temperature2m": 21.1,
+        "windSpeed10m": 14.7
       },
       {
         "time": "2012-03-25T14:45",
-        "weatherCode": 53,
+        "weatherCode": 51,
         "condition": "LightRain",
         "state": {
           "condition": "LightRain",
@@ -119,15 +190,15 @@ export const season2012IndyCarWeather = {
           "changingSoon": false,
           "label": "Light Rain"
         },
-        "precipitationMm": 0.8,
-        "rainMm": 0.8,
-        "cloudCover": 99,
-        "temperature2m": 21.4,
-        "windSpeed10m": 15.8
+        "precipitationMm": 0.4,
+        "rainMm": 0.4,
+        "cloudCover": 100,
+        "temperature2m": 21.1,
+        "windSpeed10m": 14.7
       },
       {
         "time": "2012-03-25T15:00",
-        "weatherCode": 53,
+        "weatherCode": 51,
         "condition": "LightRain",
         "state": {
           "condition": "LightRain",
@@ -136,82 +207,14 @@ export const season2012IndyCarWeather = {
           "changingSoon": true,
           "label": "Light Rain"
         },
-        "precipitationMm": 0.8,
-        "rainMm": 0.8,
-        "cloudCover": 99,
-        "temperature2m": 21.4,
-        "windSpeed10m": 15.8
+        "precipitationMm": 0.4,
+        "rainMm": 0.4,
+        "cloudCover": 100,
+        "temperature2m": 21.1,
+        "windSpeed10m": 14.7
       },
       {
         "time": "2012-03-25T15:15",
-        "weatherCode": 53,
-        "condition": "LightRain",
-        "state": {
-          "condition": "LightRain",
-          "gripLevel": 0.72,
-          "wet": true,
-          "changingSoon": true,
-          "label": "Light Rain"
-        },
-        "precipitationMm": 0.8,
-        "rainMm": 0.8,
-        "cloudCover": 99,
-        "temperature2m": 21.4,
-        "windSpeed10m": 15.8
-      },
-      {
-        "time": "2012-03-25T15:30",
-        "weatherCode": 51,
-        "condition": "LightRain",
-        "state": {
-          "condition": "LightRain",
-          "gripLevel": 0.72,
-          "wet": true,
-          "changingSoon": false,
-          "label": "Light Rain"
-        },
-        "precipitationMm": 0.4,
-        "rainMm": 0.4,
-        "cloudCover": 100,
-        "temperature2m": 21.1,
-        "windSpeed10m": 14.7
-      },
-      {
-        "time": "2012-03-25T15:45",
-        "weatherCode": 51,
-        "condition": "LightRain",
-        "state": {
-          "condition": "LightRain",
-          "gripLevel": 0.72,
-          "wet": true,
-          "changingSoon": false,
-          "label": "Light Rain"
-        },
-        "precipitationMm": 0.4,
-        "rainMm": 0.4,
-        "cloudCover": 100,
-        "temperature2m": 21.1,
-        "windSpeed10m": 14.7
-      },
-      {
-        "time": "2012-03-25T16:00",
-        "weatherCode": 51,
-        "condition": "LightRain",
-        "state": {
-          "condition": "LightRain",
-          "gripLevel": 0.72,
-          "wet": true,
-          "changingSoon": true,
-          "label": "Light Rain"
-        },
-        "precipitationMm": 0.4,
-        "rainMm": 0.4,
-        "cloudCover": 100,
-        "temperature2m": 21.1,
-        "windSpeed10m": 14.7
-      },
-      {
-        "time": "2012-03-25T16:15",
         "weatherCode": 51,
         "condition": "LightRain",
         "state": {
@@ -238,19 +241,56 @@ export const season2012IndyCarWeather = {
       "year": 2012,
       "series": "IndyCar",
       "date": "2012-04-01",
-      "localStartTime": "13:30",
+      "localStartTime": "13:00",
       "timezone": "auto",
       "latitude": 33.5207,
       "longitude": -86.8025,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "Low",
+      "startTimeMethod": "Series/track-type heuristic"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using IndyCar default 13:30"
+      "Workbook start time estimate (Low): 13:00",
+      "Start time method: Series/track-type heuristic"
     ],
     "samples": [
+      {
+        "time": "2012-04-01T13:00",
+        "weatherCode": 1,
+        "condition": "Cloudy",
+        "state": {
+          "condition": "Cloudy",
+          "gripLevel": 0.97,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Cloudy"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 43,
+        "temperature2m": 16.6,
+        "windSpeed10m": 4.2
+      },
+      {
+        "time": "2012-04-01T13:15",
+        "weatherCode": 1,
+        "condition": "Cloudy",
+        "state": {
+          "condition": "Cloudy",
+          "gripLevel": 0.97,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Cloudy"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 43,
+        "temperature2m": 16.6,
+        "windSpeed10m": 4.2
+      },
       {
         "time": "2012-04-01T13:30",
         "weatherCode": 1,
@@ -259,7 +299,7 @@ export const season2012IndyCarWeather = {
           "condition": "Cloudy",
           "gripLevel": 0.97,
           "wet": false,
-          "changingSoon": false,
+          "changingSoon": true,
           "label": "Cloudy"
         },
         "precipitationMm": 0.0,
@@ -276,7 +316,7 @@ export const season2012IndyCarWeather = {
           "condition": "Cloudy",
           "gripLevel": 0.97,
           "wet": false,
-          "changingSoon": false,
+          "changingSoon": true,
           "label": "Cloudy"
         },
         "precipitationMm": 0.0,
@@ -287,37 +327,37 @@ export const season2012IndyCarWeather = {
       },
       {
         "time": "2012-04-01T14:00",
-        "weatherCode": 1,
+        "weatherCode": 3,
         "condition": "Cloudy",
         "state": {
           "condition": "Cloudy",
           "gripLevel": 0.97,
           "wet": false,
-          "changingSoon": true,
+          "changingSoon": false,
           "label": "Cloudy"
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 43,
-        "temperature2m": 16.6,
-        "windSpeed10m": 4.2
+        "cloudCover": 100,
+        "temperature2m": 15.2,
+        "windSpeed10m": 5.0
       },
       {
         "time": "2012-04-01T14:15",
-        "weatherCode": 1,
+        "weatherCode": 3,
         "condition": "Cloudy",
         "state": {
           "condition": "Cloudy",
           "gripLevel": 0.97,
           "wet": false,
-          "changingSoon": true,
+          "changingSoon": false,
           "label": "Cloudy"
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 43,
-        "temperature2m": 16.6,
-        "windSpeed10m": 4.2
+        "cloudCover": 100,
+        "temperature2m": 15.2,
+        "windSpeed10m": 5.0
       },
       {
         "time": "2012-04-01T14:30",
@@ -367,7 +407,7 @@ export const season2012IndyCarWeather = {
         "precipitationMm": 0.0,
         "rainMm": 0.0,
         "cloudCover": 100,
-        "temperature2m": 15.2,
+        "temperature2m": 15.4,
         "windSpeed10m": 5.0
       },
       {
@@ -384,7 +424,7 @@ export const season2012IndyCarWeather = {
         "precipitationMm": 0.0,
         "rainMm": 0.0,
         "cloudCover": 100,
-        "temperature2m": 15.2,
+        "temperature2m": 15.4,
         "windSpeed10m": 5.0
       },
       {
@@ -420,40 +460,6 @@ export const season2012IndyCarWeather = {
         "cloudCover": 100,
         "temperature2m": 15.4,
         "windSpeed10m": 5.0
-      },
-      {
-        "time": "2012-04-01T16:00",
-        "weatherCode": 3,
-        "condition": "Cloudy",
-        "state": {
-          "condition": "Cloudy",
-          "gripLevel": 0.97,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Cloudy"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 100,
-        "temperature2m": 15.4,
-        "windSpeed10m": 5.0
-      },
-      {
-        "time": "2012-04-01T16:15",
-        "weatherCode": 3,
-        "condition": "Cloudy",
-        "state": {
-          "condition": "Cloudy",
-          "gripLevel": 0.97,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Cloudy"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 100,
-        "temperature2m": 15.4,
-        "windSpeed10m": 5.0
       }
     ]
   },
@@ -466,21 +472,24 @@ export const season2012IndyCarWeather = {
       "year": 2012,
       "series": "IndyCar",
       "date": "2012-04-15",
-      "localStartTime": "13:30",
+      "localStartTime": "12:30",
       "timezone": "auto",
       "latitude": 33.7701,
       "longitude": -118.1937,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "Medium",
+      "startTimeMethod": "Long Beach street-race pattern"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using IndyCar default 13:30"
+      "Workbook start time estimate (Medium): 12:30",
+      "Start time method: Long Beach street-race pattern"
     ],
     "samples": [
       {
-        "time": "2012-04-15T13:30",
+        "time": "2012-04-15T12:30",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -495,6 +504,74 @@ export const season2012IndyCarWeather = {
         "cloudCover": 0,
         "temperature2m": 9.7,
         "windSpeed10m": 8.2
+      },
+      {
+        "time": "2012-04-15T12:45",
+        "weatherCode": 0,
+        "condition": "Dry",
+        "state": {
+          "condition": "Dry",
+          "gripLevel": 1,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Dry"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 0,
+        "temperature2m": 9.7,
+        "windSpeed10m": 8.2
+      },
+      {
+        "time": "2012-04-15T13:00",
+        "weatherCode": 0,
+        "condition": "Dry",
+        "state": {
+          "condition": "Dry",
+          "gripLevel": 1,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Dry"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 0,
+        "temperature2m": 9.7,
+        "windSpeed10m": 8.2
+      },
+      {
+        "time": "2012-04-15T13:15",
+        "weatherCode": 0,
+        "condition": "Dry",
+        "state": {
+          "condition": "Dry",
+          "gripLevel": 1,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Dry"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 0,
+        "temperature2m": 9.7,
+        "windSpeed10m": 8.2
+      },
+      {
+        "time": "2012-04-15T13:30",
+        "weatherCode": 0,
+        "condition": "Dry",
+        "state": {
+          "condition": "Dry",
+          "gripLevel": 1,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Dry"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 0,
+        "temperature2m": 9.2,
+        "windSpeed10m": 8.4
       },
       {
         "time": "2012-04-15T13:45",
@@ -510,8 +587,8 @@ export const season2012IndyCarWeather = {
         "precipitationMm": 0.0,
         "rainMm": 0.0,
         "cloudCover": 0,
-        "temperature2m": 9.7,
-        "windSpeed10m": 8.2
+        "temperature2m": 9.2,
+        "windSpeed10m": 8.4
       },
       {
         "time": "2012-04-15T14:00",
@@ -527,8 +604,8 @@ export const season2012IndyCarWeather = {
         "precipitationMm": 0.0,
         "rainMm": 0.0,
         "cloudCover": 0,
-        "temperature2m": 9.7,
-        "windSpeed10m": 8.2
+        "temperature2m": 9.2,
+        "windSpeed10m": 8.4
       },
       {
         "time": "2012-04-15T14:15",
@@ -544,8 +621,8 @@ export const season2012IndyCarWeather = {
         "precipitationMm": 0.0,
         "rainMm": 0.0,
         "cloudCover": 0,
-        "temperature2m": 9.7,
-        "windSpeed10m": 8.2
+        "temperature2m": 9.2,
+        "windSpeed10m": 8.4
       },
       {
         "time": "2012-04-15T14:30",
@@ -562,7 +639,7 @@ export const season2012IndyCarWeather = {
         "rainMm": 0.0,
         "cloudCover": 0,
         "temperature2m": 9.2,
-        "windSpeed10m": 8.4
+        "windSpeed10m": 7.2
       },
       {
         "time": "2012-04-15T14:45",
@@ -579,7 +656,7 @@ export const season2012IndyCarWeather = {
         "rainMm": 0.0,
         "cloudCover": 0,
         "temperature2m": 9.2,
-        "windSpeed10m": 8.4
+        "windSpeed10m": 7.2
       },
       {
         "time": "2012-04-15T15:00",
@@ -596,78 +673,10 @@ export const season2012IndyCarWeather = {
         "rainMm": 0.0,
         "cloudCover": 0,
         "temperature2m": 9.2,
-        "windSpeed10m": 8.4
+        "windSpeed10m": 7.2
       },
       {
         "time": "2012-04-15T15:15",
-        "weatherCode": 0,
-        "condition": "Dry",
-        "state": {
-          "condition": "Dry",
-          "gripLevel": 1,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Dry"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 0,
-        "temperature2m": 9.2,
-        "windSpeed10m": 8.4
-      },
-      {
-        "time": "2012-04-15T15:30",
-        "weatherCode": 0,
-        "condition": "Dry",
-        "state": {
-          "condition": "Dry",
-          "gripLevel": 1,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Dry"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 0,
-        "temperature2m": 9.2,
-        "windSpeed10m": 7.2
-      },
-      {
-        "time": "2012-04-15T15:45",
-        "weatherCode": 0,
-        "condition": "Dry",
-        "state": {
-          "condition": "Dry",
-          "gripLevel": 1,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Dry"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 0,
-        "temperature2m": 9.2,
-        "windSpeed10m": 7.2
-      },
-      {
-        "time": "2012-04-15T16:00",
-        "weatherCode": 0,
-        "condition": "Dry",
-        "state": {
-          "condition": "Dry",
-          "gripLevel": 1,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Dry"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 0,
-        "temperature2m": 9.2,
-        "windSpeed10m": 7.2
-      },
-      {
-        "time": "2012-04-15T16:15",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -694,19 +703,56 @@ export const season2012IndyCarWeather = {
       "year": 2012,
       "series": "IndyCar",
       "date": "2012-04-29",
-      "localStartTime": "13:30",
+      "localStartTime": "13:00",
       "timezone": "auto",
       "latitude": -23.5505,
       "longitude": -46.6333,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "Low",
+      "startTimeMethod": "Series/track-type heuristic"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using IndyCar default 13:30"
+      "Workbook start time estimate (Low): 13:00",
+      "Start time method: Series/track-type heuristic"
     ],
     "samples": [
+      {
+        "time": "2012-04-29T13:00",
+        "weatherCode": 3,
+        "condition": "Cloudy",
+        "state": {
+          "condition": "Cloudy",
+          "gripLevel": 0.97,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Cloudy"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 99,
+        "temperature2m": 17.4,
+        "windSpeed10m": 6.9
+      },
+      {
+        "time": "2012-04-29T13:15",
+        "weatherCode": 3,
+        "condition": "Cloudy",
+        "state": {
+          "condition": "Cloudy",
+          "gripLevel": 0.97,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Cloudy"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 99,
+        "temperature2m": 17.4,
+        "windSpeed10m": 6.9
+      },
       {
         "time": "2012-04-29T13:30",
         "weatherCode": 3,
@@ -754,9 +800,9 @@ export const season2012IndyCarWeather = {
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 99,
+        "cloudCover": 98,
         "temperature2m": 17.4,
-        "windSpeed10m": 6.9
+        "windSpeed10m": 6.1
       },
       {
         "time": "2012-04-29T14:15",
@@ -771,9 +817,9 @@ export const season2012IndyCarWeather = {
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 99,
+        "cloudCover": 98,
         "temperature2m": 17.4,
-        "windSpeed10m": 6.9
+        "windSpeed10m": 6.1
       },
       {
         "time": "2012-04-29T14:30",
@@ -822,9 +868,9 @@ export const season2012IndyCarWeather = {
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 98,
-        "temperature2m": 17.4,
-        "windSpeed10m": 6.1
+        "cloudCover": 100,
+        "temperature2m": 17.8,
+        "windSpeed10m": 8.3
       },
       {
         "time": "2012-04-29T15:15",
@@ -839,9 +885,9 @@ export const season2012IndyCarWeather = {
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 98,
-        "temperature2m": 17.4,
-        "windSpeed10m": 6.1
+        "cloudCover": 100,
+        "temperature2m": 17.8,
+        "windSpeed10m": 8.3
       },
       {
         "time": "2012-04-29T15:30",
@@ -876,40 +922,6 @@ export const season2012IndyCarWeather = {
         "cloudCover": 100,
         "temperature2m": 17.8,
         "windSpeed10m": 8.3
-      },
-      {
-        "time": "2012-04-29T16:00",
-        "weatherCode": 3,
-        "condition": "Cloudy",
-        "state": {
-          "condition": "Cloudy",
-          "gripLevel": 0.97,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Cloudy"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 100,
-        "temperature2m": 17.8,
-        "windSpeed10m": 8.3
-      },
-      {
-        "time": "2012-04-29T16:15",
-        "weatherCode": 3,
-        "condition": "Cloudy",
-        "state": {
-          "condition": "Cloudy",
-          "gripLevel": 0.97,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Cloudy"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 100,
-        "temperature2m": 17.8,
-        "windSpeed10m": 8.3
       }
     ]
   },
@@ -922,19 +934,73 @@ export const season2012IndyCarWeather = {
       "year": 2012,
       "series": "IndyCar",
       "date": "2012-05-27",
-      "localStartTime": "13:30",
+      "localStartTime": "12:45",
       "timezone": "auto",
       "latitude": 39.8023,
       "longitude": -86.2672,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "High",
+      "startTimeMethod": "Known Indy 500 start-window estimate"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using IndyCar default 13:30"
+      "Workbook start time estimate (High): 12:45",
+      "Start time method: Known Indy 500 start-window estimate"
     ],
     "samples": [
+      {
+        "time": "2012-05-27T12:45",
+        "weatherCode": 0,
+        "condition": "Dry",
+        "state": {
+          "condition": "Dry",
+          "gripLevel": 1,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Dry"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 1,
+        "temperature2m": 26.9,
+        "windSpeed10m": 9.2
+      },
+      {
+        "time": "2012-05-27T13:00",
+        "weatherCode": 0,
+        "condition": "Dry",
+        "state": {
+          "condition": "Dry",
+          "gripLevel": 1,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Dry"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 1,
+        "temperature2m": 26.9,
+        "windSpeed10m": 9.2
+      },
+      {
+        "time": "2012-05-27T13:15",
+        "weatherCode": 0,
+        "condition": "Dry",
+        "state": {
+          "condition": "Dry",
+          "gripLevel": 1,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Dry"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 1,
+        "temperature2m": 26.9,
+        "windSpeed10m": 9.2
+      },
       {
         "time": "2012-05-27T13:30",
         "weatherCode": 0,
@@ -966,8 +1032,8 @@ export const season2012IndyCarWeather = {
         "precipitationMm": 0.0,
         "rainMm": 0.0,
         "cloudCover": 1,
-        "temperature2m": 26.9,
-        "windSpeed10m": 9.2
+        "temperature2m": 26.1,
+        "windSpeed10m": 11.3
       },
       {
         "time": "2012-05-27T14:00",
@@ -983,8 +1049,8 @@ export const season2012IndyCarWeather = {
         "precipitationMm": 0.0,
         "rainMm": 0.0,
         "cloudCover": 1,
-        "temperature2m": 26.9,
-        "windSpeed10m": 9.2
+        "temperature2m": 26.1,
+        "windSpeed10m": 11.3
       },
       {
         "time": "2012-05-27T14:15",
@@ -1000,8 +1066,8 @@ export const season2012IndyCarWeather = {
         "precipitationMm": 0.0,
         "rainMm": 0.0,
         "cloudCover": 1,
-        "temperature2m": 26.9,
-        "windSpeed10m": 9.2
+        "temperature2m": 26.1,
+        "windSpeed10m": 11.3
       },
       {
         "time": "2012-05-27T14:30",
@@ -1033,9 +1099,9 @@ export const season2012IndyCarWeather = {
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 1,
-        "temperature2m": 26.1,
-        "windSpeed10m": 11.3
+        "cloudCover": 10,
+        "temperature2m": 25.5,
+        "windSpeed10m": 11.5
       },
       {
         "time": "2012-05-27T15:00",
@@ -1050,9 +1116,9 @@ export const season2012IndyCarWeather = {
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 1,
-        "temperature2m": 26.1,
-        "windSpeed10m": 11.3
+        "cloudCover": 10,
+        "temperature2m": 25.5,
+        "windSpeed10m": 11.5
       },
       {
         "time": "2012-05-27T15:15",
@@ -1067,63 +1133,12 @@ export const season2012IndyCarWeather = {
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 1,
-        "temperature2m": 26.1,
-        "windSpeed10m": 11.3
+        "cloudCover": 10,
+        "temperature2m": 25.5,
+        "windSpeed10m": 11.5
       },
       {
         "time": "2012-05-27T15:30",
-        "weatherCode": 0,
-        "condition": "Dry",
-        "state": {
-          "condition": "Dry",
-          "gripLevel": 1,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Dry"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 10,
-        "temperature2m": 25.5,
-        "windSpeed10m": 11.5
-      },
-      {
-        "time": "2012-05-27T15:45",
-        "weatherCode": 0,
-        "condition": "Dry",
-        "state": {
-          "condition": "Dry",
-          "gripLevel": 1,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Dry"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 10,
-        "temperature2m": 25.5,
-        "windSpeed10m": 11.5
-      },
-      {
-        "time": "2012-05-27T16:00",
-        "weatherCode": 0,
-        "condition": "Dry",
-        "state": {
-          "condition": "Dry",
-          "gripLevel": 1,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Dry"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 10,
-        "temperature2m": 25.5,
-        "windSpeed10m": 11.5
-      },
-      {
-        "time": "2012-05-27T16:15",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -1150,19 +1165,56 @@ export const season2012IndyCarWeather = {
       "year": 2012,
       "series": "IndyCar",
       "date": "2012-06-03",
-      "localStartTime": "13:30",
+      "localStartTime": "13:00",
       "timezone": "auto",
       "latitude": 42.3314,
       "longitude": -83.0458,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "Low",
+      "startTimeMethod": "Series/track-type heuristic"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using IndyCar default 13:30"
+      "Workbook start time estimate (Low): 13:00",
+      "Start time method: Series/track-type heuristic"
     ],
     "samples": [
+      {
+        "time": "2012-06-03T13:00",
+        "weatherCode": 3,
+        "condition": "Cloudy",
+        "state": {
+          "condition": "Cloudy",
+          "gripLevel": 0.97,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Cloudy"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 99,
+        "temperature2m": 17.2,
+        "windSpeed10m": 19.5
+      },
+      {
+        "time": "2012-06-03T13:15",
+        "weatherCode": 3,
+        "condition": "Cloudy",
+        "state": {
+          "condition": "Cloudy",
+          "gripLevel": 0.97,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Cloudy"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 99,
+        "temperature2m": 17.2,
+        "windSpeed10m": 19.5
+      },
       {
         "time": "2012-06-03T13:30",
         "weatherCode": 3,
@@ -1210,9 +1262,9 @@ export const season2012IndyCarWeather = {
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 99,
-        "temperature2m": 17.2,
-        "windSpeed10m": 19.5
+        "cloudCover": 97,
+        "temperature2m": 16.6,
+        "windSpeed10m": 21.4
       },
       {
         "time": "2012-06-03T14:15",
@@ -1227,9 +1279,9 @@ export const season2012IndyCarWeather = {
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 99,
-        "temperature2m": 17.2,
-        "windSpeed10m": 19.5
+        "cloudCover": 97,
+        "temperature2m": 16.6,
+        "windSpeed10m": 21.4
       },
       {
         "time": "2012-06-03T14:30",
@@ -1278,9 +1330,9 @@ export const season2012IndyCarWeather = {
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 97,
-        "temperature2m": 16.6,
-        "windSpeed10m": 21.4
+        "cloudCover": 88,
+        "temperature2m": 16.2,
+        "windSpeed10m": 23.4
       },
       {
         "time": "2012-06-03T15:15",
@@ -1295,9 +1347,9 @@ export const season2012IndyCarWeather = {
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 97,
-        "temperature2m": 16.6,
-        "windSpeed10m": 21.4
+        "cloudCover": 88,
+        "temperature2m": 16.2,
+        "windSpeed10m": 23.4
       },
       {
         "time": "2012-06-03T15:30",
@@ -1332,40 +1384,6 @@ export const season2012IndyCarWeather = {
         "cloudCover": 88,
         "temperature2m": 16.2,
         "windSpeed10m": 23.4
-      },
-      {
-        "time": "2012-06-03T16:00",
-        "weatherCode": 3,
-        "condition": "Cloudy",
-        "state": {
-          "condition": "Cloudy",
-          "gripLevel": 0.97,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Cloudy"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 88,
-        "temperature2m": 16.2,
-        "windSpeed10m": 23.4
-      },
-      {
-        "time": "2012-06-03T16:15",
-        "weatherCode": 3,
-        "condition": "Cloudy",
-        "state": {
-          "condition": "Cloudy",
-          "gripLevel": 0.97,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Cloudy"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 88,
-        "temperature2m": 16.2,
-        "windSpeed10m": 23.4
       }
     ]
   },
@@ -1378,21 +1396,24 @@ export const season2012IndyCarWeather = {
       "year": 2012,
       "series": "IndyCar",
       "date": "2012-06-09",
-      "localStartTime": "13:30",
+      "localStartTime": "20:00",
       "timezone": "auto",
       "latitude": 32.7555,
       "longitude": -97.3308,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "High",
+      "startTimeMethod": "Known Texas night oval pattern"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using IndyCar default 13:30"
+      "Workbook start time estimate (High): 20:00",
+      "Start time method: Known Texas night oval pattern"
     ],
     "samples": [
       {
-        "time": "2012-06-09T13:30",
+        "time": "2012-06-09T20:00",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -1409,7 +1430,7 @@ export const season2012IndyCarWeather = {
         "windSpeed10m": 9.5
       },
       {
-        "time": "2012-06-09T13:45",
+        "time": "2012-06-09T20:15",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -1426,7 +1447,7 @@ export const season2012IndyCarWeather = {
         "windSpeed10m": 9.5
       },
       {
-        "time": "2012-06-09T14:00",
+        "time": "2012-06-09T20:30",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -1443,7 +1464,7 @@ export const season2012IndyCarWeather = {
         "windSpeed10m": 9.5
       },
       {
-        "time": "2012-06-09T14:15",
+        "time": "2012-06-09T20:45",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -1460,7 +1481,7 @@ export const season2012IndyCarWeather = {
         "windSpeed10m": 9.5
       },
       {
-        "time": "2012-06-09T14:30",
+        "time": "2012-06-09T21:00",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -1477,7 +1498,7 @@ export const season2012IndyCarWeather = {
         "windSpeed10m": 8.2
       },
       {
-        "time": "2012-06-09T14:45",
+        "time": "2012-06-09T21:15",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -1494,7 +1515,7 @@ export const season2012IndyCarWeather = {
         "windSpeed10m": 8.2
       },
       {
-        "time": "2012-06-09T15:00",
+        "time": "2012-06-09T21:30",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -1511,7 +1532,7 @@ export const season2012IndyCarWeather = {
         "windSpeed10m": 8.2
       },
       {
-        "time": "2012-06-09T15:15",
+        "time": "2012-06-09T21:45",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -1528,7 +1549,7 @@ export const season2012IndyCarWeather = {
         "windSpeed10m": 8.2
       },
       {
-        "time": "2012-06-09T15:30",
+        "time": "2012-06-09T22:00",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -1545,7 +1566,7 @@ export const season2012IndyCarWeather = {
         "windSpeed10m": 3.2
       },
       {
-        "time": "2012-06-09T15:45",
+        "time": "2012-06-09T22:15",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -1562,7 +1583,7 @@ export const season2012IndyCarWeather = {
         "windSpeed10m": 3.2
       },
       {
-        "time": "2012-06-09T16:00",
+        "time": "2012-06-09T22:30",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -1579,7 +1600,7 @@ export const season2012IndyCarWeather = {
         "windSpeed10m": 3.2
       },
       {
-        "time": "2012-06-09T16:15",
+        "time": "2012-06-09T22:45",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -1606,19 +1627,56 @@ export const season2012IndyCarWeather = {
       "year": 2012,
       "series": "IndyCar",
       "date": "2012-06-16",
-      "localStartTime": "13:30",
+      "localStartTime": "13:00",
       "timezone": "auto",
       "latitude": 43.0167,
       "longitude": -88.007,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "Medium",
+      "startTimeMethod": "Oval daytime estimate"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using IndyCar default 13:30"
+      "Workbook start time estimate (Medium): 13:00",
+      "Start time method: Oval daytime estimate"
     ],
     "samples": [
+      {
+        "time": "2012-06-16T13:00",
+        "weatherCode": 3,
+        "condition": "Cloudy",
+        "state": {
+          "condition": "Cloudy",
+          "gripLevel": 0.97,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Cloudy"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 83,
+        "temperature2m": 23.5,
+        "windSpeed10m": 18.8
+      },
+      {
+        "time": "2012-06-16T13:15",
+        "weatherCode": 3,
+        "condition": "Cloudy",
+        "state": {
+          "condition": "Cloudy",
+          "gripLevel": 0.97,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Cloudy"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 83,
+        "temperature2m": 23.5,
+        "windSpeed10m": 18.8
+      },
       {
         "time": "2012-06-16T13:30",
         "weatherCode": 3,
@@ -1666,9 +1724,9 @@ export const season2012IndyCarWeather = {
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 83,
-        "temperature2m": 23.5,
-        "windSpeed10m": 18.8
+        "cloudCover": 94,
+        "temperature2m": 23.6,
+        "windSpeed10m": 18.4
       },
       {
         "time": "2012-06-16T14:15",
@@ -1683,9 +1741,9 @@ export const season2012IndyCarWeather = {
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 83,
-        "temperature2m": 23.5,
-        "windSpeed10m": 18.8
+        "cloudCover": 94,
+        "temperature2m": 23.6,
+        "windSpeed10m": 18.4
       },
       {
         "time": "2012-06-16T14:30",
@@ -1734,9 +1792,9 @@ export const season2012IndyCarWeather = {
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 94,
-        "temperature2m": 23.6,
-        "windSpeed10m": 18.4
+        "cloudCover": 98,
+        "temperature2m": 23.0,
+        "windSpeed10m": 16.7
       },
       {
         "time": "2012-06-16T15:15",
@@ -1751,9 +1809,9 @@ export const season2012IndyCarWeather = {
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 94,
-        "temperature2m": 23.6,
-        "windSpeed10m": 18.4
+        "cloudCover": 98,
+        "temperature2m": 23.0,
+        "windSpeed10m": 16.7
       },
       {
         "time": "2012-06-16T15:30",
@@ -1788,40 +1846,6 @@ export const season2012IndyCarWeather = {
         "cloudCover": 98,
         "temperature2m": 23.0,
         "windSpeed10m": 16.7
-      },
-      {
-        "time": "2012-06-16T16:00",
-        "weatherCode": 3,
-        "condition": "Cloudy",
-        "state": {
-          "condition": "Cloudy",
-          "gripLevel": 0.97,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Cloudy"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 98,
-        "temperature2m": 23.0,
-        "windSpeed10m": 16.7
-      },
-      {
-        "time": "2012-06-16T16:15",
-        "weatherCode": 3,
-        "condition": "Cloudy",
-        "state": {
-          "condition": "Cloudy",
-          "gripLevel": 0.97,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Cloudy"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 98,
-        "temperature2m": 23.0,
-        "windSpeed10m": 16.7
       }
     ]
   },
@@ -1834,21 +1858,24 @@ export const season2012IndyCarWeather = {
       "year": 2012,
       "series": "IndyCar",
       "date": "2012-06-23",
-      "localStartTime": "13:30",
+      "localStartTime": "20:00",
       "timezone": "auto",
       "latitude": 41.6997,
       "longitude": -93.0479,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "Medium",
+      "startTimeMethod": "Iowa night-race estimate"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using IndyCar default 13:30"
+      "Workbook start time estimate (Medium): 20:00",
+      "Start time method: Iowa night-race estimate"
     ],
     "samples": [
       {
-        "time": "2012-06-23T13:30",
+        "time": "2012-06-23T20:00",
         "weatherCode": 1,
         "condition": "Cloudy",
         "state": {
@@ -1865,7 +1892,7 @@ export const season2012IndyCarWeather = {
         "windSpeed10m": 8.3
       },
       {
-        "time": "2012-06-23T13:45",
+        "time": "2012-06-23T20:15",
         "weatherCode": 1,
         "condition": "Cloudy",
         "state": {
@@ -1882,24 +1909,7 @@ export const season2012IndyCarWeather = {
         "windSpeed10m": 8.3
       },
       {
-        "time": "2012-06-23T14:00",
-        "weatherCode": 1,
-        "condition": "Cloudy",
-        "state": {
-          "condition": "Cloudy",
-          "gripLevel": 0.97,
-          "wet": false,
-          "changingSoon": true,
-          "label": "Cloudy"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 46,
-        "temperature2m": 20.2,
-        "windSpeed10m": 8.3
-      },
-      {
-        "time": "2012-06-23T14:15",
+        "time": "2012-06-23T20:30",
         "weatherCode": 1,
         "condition": "Cloudy",
         "state": {
@@ -1916,7 +1926,24 @@ export const season2012IndyCarWeather = {
         "windSpeed10m": 8.3
       },
       {
-        "time": "2012-06-23T14:30",
+        "time": "2012-06-23T20:45",
+        "weatherCode": 1,
+        "condition": "Cloudy",
+        "state": {
+          "condition": "Cloudy",
+          "gripLevel": 0.97,
+          "wet": false,
+          "changingSoon": true,
+          "label": "Cloudy"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 46,
+        "temperature2m": 20.2,
+        "windSpeed10m": 8.3
+      },
+      {
+        "time": "2012-06-23T21:00",
         "weatherCode": 3,
         "condition": "Cloudy",
         "state": {
@@ -1933,7 +1960,7 @@ export const season2012IndyCarWeather = {
         "windSpeed10m": 9.4
       },
       {
-        "time": "2012-06-23T14:45",
+        "time": "2012-06-23T21:15",
         "weatherCode": 3,
         "condition": "Cloudy",
         "state": {
@@ -1950,7 +1977,7 @@ export const season2012IndyCarWeather = {
         "windSpeed10m": 9.4
       },
       {
-        "time": "2012-06-23T15:00",
+        "time": "2012-06-23T21:30",
         "weatherCode": 3,
         "condition": "Cloudy",
         "state": {
@@ -1967,7 +1994,7 @@ export const season2012IndyCarWeather = {
         "windSpeed10m": 9.4
       },
       {
-        "time": "2012-06-23T15:15",
+        "time": "2012-06-23T21:45",
         "weatherCode": 3,
         "condition": "Cloudy",
         "state": {
@@ -1984,7 +2011,7 @@ export const season2012IndyCarWeather = {
         "windSpeed10m": 9.4
       },
       {
-        "time": "2012-06-23T15:30",
+        "time": "2012-06-23T22:00",
         "weatherCode": 3,
         "condition": "Cloudy",
         "state": {
@@ -2001,7 +2028,7 @@ export const season2012IndyCarWeather = {
         "windSpeed10m": 9.5
       },
       {
-        "time": "2012-06-23T15:45",
+        "time": "2012-06-23T22:15",
         "weatherCode": 3,
         "condition": "Cloudy",
         "state": {
@@ -2018,7 +2045,7 @@ export const season2012IndyCarWeather = {
         "windSpeed10m": 9.5
       },
       {
-        "time": "2012-06-23T16:00",
+        "time": "2012-06-23T22:30",
         "weatherCode": 3,
         "condition": "Cloudy",
         "state": {
@@ -2035,7 +2062,7 @@ export const season2012IndyCarWeather = {
         "windSpeed10m": 9.5
       },
       {
-        "time": "2012-06-23T16:15",
+        "time": "2012-06-23T22:45",
         "weatherCode": 3,
         "condition": "Cloudy",
         "state": {
@@ -2062,19 +2089,56 @@ export const season2012IndyCarWeather = {
       "year": 2012,
       "series": "IndyCar",
       "date": "2012-07-08",
-      "localStartTime": "13:30",
+      "localStartTime": "13:00",
       "timezone": "auto",
       "latitude": 43.6532,
       "longitude": -79.3832,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "Medium",
+      "startTimeMethod": "Street race afternoon estimate"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using IndyCar default 13:30"
+      "Workbook start time estimate (Medium): 13:00",
+      "Start time method: Street race afternoon estimate"
     ],
     "samples": [
+      {
+        "time": "2012-07-08T13:00",
+        "weatherCode": 0,
+        "condition": "Dry",
+        "state": {
+          "condition": "Dry",
+          "gripLevel": 1,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Dry"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 0,
+        "temperature2m": 22.3,
+        "windSpeed10m": 13.0
+      },
+      {
+        "time": "2012-07-08T13:15",
+        "weatherCode": 0,
+        "condition": "Dry",
+        "state": {
+          "condition": "Dry",
+          "gripLevel": 1,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Dry"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 0,
+        "temperature2m": 22.3,
+        "windSpeed10m": 13.0
+      },
       {
         "time": "2012-07-08T13:30",
         "weatherCode": 0,
@@ -2122,9 +2186,9 @@ export const season2012IndyCarWeather = {
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 0,
-        "temperature2m": 22.3,
-        "windSpeed10m": 13.0
+        "cloudCover": 7,
+        "temperature2m": 21.9,
+        "windSpeed10m": 13.2
       },
       {
         "time": "2012-07-08T14:15",
@@ -2139,9 +2203,9 @@ export const season2012IndyCarWeather = {
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 0,
-        "temperature2m": 22.3,
-        "windSpeed10m": 13.0
+        "cloudCover": 7,
+        "temperature2m": 21.9,
+        "windSpeed10m": 13.2
       },
       {
         "time": "2012-07-08T14:30",
@@ -2190,9 +2254,9 @@ export const season2012IndyCarWeather = {
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 7,
-        "temperature2m": 21.9,
-        "windSpeed10m": 13.2
+        "cloudCover": 11,
+        "temperature2m": 21.5,
+        "windSpeed10m": 14.5
       },
       {
         "time": "2012-07-08T15:15",
@@ -2207,46 +2271,12 @@ export const season2012IndyCarWeather = {
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 7,
-        "temperature2m": 21.9,
-        "windSpeed10m": 13.2
+        "cloudCover": 11,
+        "temperature2m": 21.5,
+        "windSpeed10m": 14.5
       },
       {
         "time": "2012-07-08T15:30",
-        "weatherCode": 0,
-        "condition": "Dry",
-        "state": {
-          "condition": "Dry",
-          "gripLevel": 1,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Dry"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 11,
-        "temperature2m": 21.5,
-        "windSpeed10m": 14.5
-      },
-      {
-        "time": "2012-07-08T15:45",
-        "weatherCode": 0,
-        "condition": "Dry",
-        "state": {
-          "condition": "Dry",
-          "gripLevel": 1,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Dry"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 11,
-        "temperature2m": 21.5,
-        "windSpeed10m": 14.5
-      },
-      {
-        "time": "2012-07-08T16:00",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -2263,7 +2293,7 @@ export const season2012IndyCarWeather = {
         "windSpeed10m": 14.5
       },
       {
-        "time": "2012-07-08T16:15",
+        "time": "2012-07-08T15:45",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -2290,19 +2320,56 @@ export const season2012IndyCarWeather = {
       "year": 2012,
       "series": "IndyCar",
       "date": "2012-07-22",
-      "localStartTime": "13:30",
+      "localStartTime": "13:00",
       "timezone": "auto",
       "latitude": 53.5461,
       "longitude": -113.4938,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "Low",
+      "startTimeMethod": "Series/track-type heuristic"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using IndyCar default 13:30"
+      "Workbook start time estimate (Low): 13:00",
+      "Start time method: Series/track-type heuristic"
     ],
     "samples": [
+      {
+        "time": "2012-07-22T13:00",
+        "weatherCode": 1,
+        "condition": "Cloudy",
+        "state": {
+          "condition": "Cloudy",
+          "gripLevel": 0.97,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Cloudy"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 24,
+        "temperature2m": 16.5,
+        "windSpeed10m": 12.0
+      },
+      {
+        "time": "2012-07-22T13:15",
+        "weatherCode": 1,
+        "condition": "Cloudy",
+        "state": {
+          "condition": "Cloudy",
+          "gripLevel": 0.97,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Cloudy"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 24,
+        "temperature2m": 16.5,
+        "windSpeed10m": 12.0
+      },
       {
         "time": "2012-07-22T13:30",
         "weatherCode": 1,
@@ -2311,7 +2378,7 @@ export const season2012IndyCarWeather = {
           "condition": "Cloudy",
           "gripLevel": 0.97,
           "wet": false,
-          "changingSoon": false,
+          "changingSoon": true,
           "label": "Cloudy"
         },
         "precipitationMm": 0.0,
@@ -2328,7 +2395,7 @@ export const season2012IndyCarWeather = {
           "condition": "Cloudy",
           "gripLevel": 0.97,
           "wet": false,
-          "changingSoon": false,
+          "changingSoon": true,
           "label": "Cloudy"
         },
         "precipitationMm": 0.0,
@@ -2339,37 +2406,37 @@ export const season2012IndyCarWeather = {
       },
       {
         "time": "2012-07-22T14:00",
-        "weatherCode": 1,
-        "condition": "Cloudy",
+        "weatherCode": 0,
+        "condition": "Dry",
         "state": {
-          "condition": "Cloudy",
-          "gripLevel": 0.97,
+          "condition": "Dry",
+          "gripLevel": 1,
           "wet": false,
-          "changingSoon": true,
-          "label": "Cloudy"
+          "changingSoon": false,
+          "label": "Dry"
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 24,
-        "temperature2m": 16.5,
-        "windSpeed10m": 12.0
+        "cloudCover": 2,
+        "temperature2m": 15.9,
+        "windSpeed10m": 10.5
       },
       {
         "time": "2012-07-22T14:15",
-        "weatherCode": 1,
-        "condition": "Cloudy",
+        "weatherCode": 0,
+        "condition": "Dry",
         "state": {
-          "condition": "Cloudy",
-          "gripLevel": 0.97,
+          "condition": "Dry",
+          "gripLevel": 1,
           "wet": false,
-          "changingSoon": true,
-          "label": "Cloudy"
+          "changingSoon": false,
+          "label": "Dry"
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 24,
-        "temperature2m": 16.5,
-        "windSpeed10m": 12.0
+        "cloudCover": 2,
+        "temperature2m": 15.9,
+        "windSpeed10m": 10.5
       },
       {
         "time": "2012-07-22T14:30",
@@ -2419,8 +2486,8 @@ export const season2012IndyCarWeather = {
         "precipitationMm": 0.0,
         "rainMm": 0.0,
         "cloudCover": 2,
-        "temperature2m": 15.9,
-        "windSpeed10m": 10.5
+        "temperature2m": 15.5,
+        "windSpeed10m": 10.3
       },
       {
         "time": "2012-07-22T15:15",
@@ -2436,8 +2503,8 @@ export const season2012IndyCarWeather = {
         "precipitationMm": 0.0,
         "rainMm": 0.0,
         "cloudCover": 2,
-        "temperature2m": 15.9,
-        "windSpeed10m": 10.5
+        "temperature2m": 15.5,
+        "windSpeed10m": 10.3
       },
       {
         "time": "2012-07-22T15:30",
@@ -2472,40 +2539,6 @@ export const season2012IndyCarWeather = {
         "cloudCover": 2,
         "temperature2m": 15.5,
         "windSpeed10m": 10.3
-      },
-      {
-        "time": "2012-07-22T16:00",
-        "weatherCode": 0,
-        "condition": "Dry",
-        "state": {
-          "condition": "Dry",
-          "gripLevel": 1,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Dry"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 2,
-        "temperature2m": 15.5,
-        "windSpeed10m": 10.3
-      },
-      {
-        "time": "2012-07-22T16:15",
-        "weatherCode": 0,
-        "condition": "Dry",
-        "state": {
-          "condition": "Dry",
-          "gripLevel": 1,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Dry"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 2,
-        "temperature2m": 15.5,
-        "windSpeed10m": 10.3
       }
     ]
   },
@@ -2523,12 +2556,15 @@ export const season2012IndyCarWeather = {
       "latitude": 40.6787,
       "longitude": -82.5824,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "Medium",
+      "startTimeMethod": "Road-course afternoon estimate"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using IndyCar default 13:30"
+      "Workbook start time estimate (Medium): 13:30",
+      "Start time method: Road-course afternoon estimate"
     ],
     "samples": [
       {
@@ -2746,21 +2782,24 @@ export const season2012IndyCarWeather = {
       "year": 2012,
       "series": "IndyCar",
       "date": "2012-08-26",
-      "localStartTime": "13:30",
+      "localStartTime": "12:30",
       "timezone": "auto",
       "latitude": 38.2919,
       "longitude": -122.458,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "Medium",
+      "startTimeMethod": "West Coast road/street TV-window estimate"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using IndyCar default 13:30"
+      "Workbook start time estimate (Medium): 12:30",
+      "Start time method: West Coast road/street TV-window estimate"
     ],
     "samples": [
       {
-        "time": "2012-08-26T13:30",
+        "time": "2012-08-26T12:30",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -2774,62 +2813,130 @@ export const season2012IndyCarWeather = {
         "rainMm": 0.0,
         "cloudCover": 7,
         "temperature2m": 13.8,
+        "windSpeed10m": 7.6
+      },
+      {
+        "time": "2012-08-26T12:45",
+        "weatherCode": 0,
+        "condition": "Dry",
+        "state": {
+          "condition": "Dry",
+          "gripLevel": 1,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Dry"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 7,
+        "temperature2m": 13.8,
+        "windSpeed10m": 7.6
+      },
+      {
+        "time": "2012-08-26T13:00",
+        "weatherCode": 0,
+        "condition": "Dry",
+        "state": {
+          "condition": "Dry",
+          "gripLevel": 1,
+          "wet": false,
+          "changingSoon": true,
+          "label": "Dry"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 7,
+        "temperature2m": 13.8,
+        "windSpeed10m": 7.6
+      },
+      {
+        "time": "2012-08-26T13:15",
+        "weatherCode": 0,
+        "condition": "Dry",
+        "state": {
+          "condition": "Dry",
+          "gripLevel": 1,
+          "wet": false,
+          "changingSoon": true,
+          "label": "Dry"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 7,
+        "temperature2m": 13.8,
+        "windSpeed10m": 7.6
+      },
+      {
+        "time": "2012-08-26T13:30",
+        "weatherCode": 1,
+        "condition": "Cloudy",
+        "state": {
+          "condition": "Cloudy",
+          "gripLevel": 0.97,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Cloudy"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 22,
+        "temperature2m": 13.3,
         "windSpeed10m": 7.6
       },
       {
         "time": "2012-08-26T13:45",
-        "weatherCode": 0,
-        "condition": "Dry",
+        "weatherCode": 1,
+        "condition": "Cloudy",
         "state": {
-          "condition": "Dry",
-          "gripLevel": 1,
+          "condition": "Cloudy",
+          "gripLevel": 0.97,
           "wet": false,
           "changingSoon": false,
-          "label": "Dry"
+          "label": "Cloudy"
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 7,
-        "temperature2m": 13.8,
+        "cloudCover": 22,
+        "temperature2m": 13.3,
         "windSpeed10m": 7.6
       },
       {
         "time": "2012-08-26T14:00",
-        "weatherCode": 0,
-        "condition": "Dry",
+        "weatherCode": 1,
+        "condition": "Cloudy",
         "state": {
-          "condition": "Dry",
-          "gripLevel": 1,
+          "condition": "Cloudy",
+          "gripLevel": 0.97,
           "wet": false,
           "changingSoon": true,
-          "label": "Dry"
+          "label": "Cloudy"
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 7,
-        "temperature2m": 13.8,
+        "cloudCover": 22,
+        "temperature2m": 13.3,
         "windSpeed10m": 7.6
       },
       {
         "time": "2012-08-26T14:15",
-        "weatherCode": 0,
-        "condition": "Dry",
+        "weatherCode": 1,
+        "condition": "Cloudy",
         "state": {
-          "condition": "Dry",
-          "gripLevel": 1,
+          "condition": "Cloudy",
+          "gripLevel": 0.97,
           "wet": false,
           "changingSoon": true,
-          "label": "Dry"
+          "label": "Cloudy"
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 7,
-        "temperature2m": 13.8,
+        "cloudCover": 22,
+        "temperature2m": 13.3,
         "windSpeed10m": 7.6
       },
       {
         "time": "2012-08-26T14:30",
-        "weatherCode": 1,
+        "weatherCode": 2,
         "condition": "Cloudy",
         "state": {
           "condition": "Cloudy",
@@ -2840,13 +2947,13 @@ export const season2012IndyCarWeather = {
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 22,
-        "temperature2m": 13.3,
+        "cloudCover": 53,
+        "temperature2m": 13.0,
         "windSpeed10m": 7.6
       },
       {
         "time": "2012-08-26T14:45",
-        "weatherCode": 1,
+        "weatherCode": 2,
         "condition": "Cloudy",
         "state": {
           "condition": "Cloudy",
@@ -2857,97 +2964,29 @@ export const season2012IndyCarWeather = {
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 22,
-        "temperature2m": 13.3,
+        "cloudCover": 53,
+        "temperature2m": 13.0,
         "windSpeed10m": 7.6
       },
       {
         "time": "2012-08-26T15:00",
-        "weatherCode": 1,
+        "weatherCode": 2,
         "condition": "Cloudy",
         "state": {
           "condition": "Cloudy",
           "gripLevel": 0.97,
           "wet": false,
-          "changingSoon": true,
+          "changingSoon": false,
           "label": "Cloudy"
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 22,
-        "temperature2m": 13.3,
+        "cloudCover": 53,
+        "temperature2m": 13.0,
         "windSpeed10m": 7.6
       },
       {
         "time": "2012-08-26T15:15",
-        "weatherCode": 1,
-        "condition": "Cloudy",
-        "state": {
-          "condition": "Cloudy",
-          "gripLevel": 0.97,
-          "wet": false,
-          "changingSoon": true,
-          "label": "Cloudy"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 22,
-        "temperature2m": 13.3,
-        "windSpeed10m": 7.6
-      },
-      {
-        "time": "2012-08-26T15:30",
-        "weatherCode": 2,
-        "condition": "Cloudy",
-        "state": {
-          "condition": "Cloudy",
-          "gripLevel": 0.97,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Cloudy"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 53,
-        "temperature2m": 13.0,
-        "windSpeed10m": 7.6
-      },
-      {
-        "time": "2012-08-26T15:45",
-        "weatherCode": 2,
-        "condition": "Cloudy",
-        "state": {
-          "condition": "Cloudy",
-          "gripLevel": 0.97,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Cloudy"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 53,
-        "temperature2m": 13.0,
-        "windSpeed10m": 7.6
-      },
-      {
-        "time": "2012-08-26T16:00",
-        "weatherCode": 2,
-        "condition": "Cloudy",
-        "state": {
-          "condition": "Cloudy",
-          "gripLevel": 0.97,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Cloudy"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 53,
-        "temperature2m": 13.0,
-        "windSpeed10m": 7.6
-      },
-      {
-        "time": "2012-08-26T16:15",
         "weatherCode": 2,
         "condition": "Cloudy",
         "state": {
@@ -2974,19 +3013,56 @@ export const season2012IndyCarWeather = {
       "year": 2012,
       "series": "IndyCar",
       "date": "2012-09-02",
-      "localStartTime": "13:30",
+      "localStartTime": "13:00",
       "timezone": "auto",
       "latitude": 39.2904,
       "longitude": -76.6122,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "Low",
+      "startTimeMethod": "Series/track-type heuristic"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using IndyCar default 13:30"
+      "Workbook start time estimate (Low): 13:00",
+      "Start time method: Series/track-type heuristic"
     ],
     "samples": [
+      {
+        "time": "2012-09-02T13:00",
+        "weatherCode": 3,
+        "condition": "Cloudy",
+        "state": {
+          "condition": "Cloudy",
+          "gripLevel": 0.97,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Cloudy"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 100,
+        "temperature2m": 24.2,
+        "windSpeed10m": 6.1
+      },
+      {
+        "time": "2012-09-02T13:15",
+        "weatherCode": 3,
+        "condition": "Cloudy",
+        "state": {
+          "condition": "Cloudy",
+          "gripLevel": 0.97,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Cloudy"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 100,
+        "temperature2m": 24.2,
+        "windSpeed10m": 6.1
+      },
       {
         "time": "2012-09-02T13:30",
         "weatherCode": 3,
@@ -3035,8 +3111,8 @@ export const season2012IndyCarWeather = {
         "precipitationMm": 0.0,
         "rainMm": 0.0,
         "cloudCover": 100,
-        "temperature2m": 24.2,
-        "windSpeed10m": 6.1
+        "temperature2m": 23.9,
+        "windSpeed10m": 5.8
       },
       {
         "time": "2012-09-02T14:15",
@@ -3052,8 +3128,8 @@ export const season2012IndyCarWeather = {
         "precipitationMm": 0.0,
         "rainMm": 0.0,
         "cloudCover": 100,
-        "temperature2m": 24.2,
-        "windSpeed10m": 6.1
+        "temperature2m": 23.9,
+        "windSpeed10m": 5.8
       },
       {
         "time": "2012-09-02T14:30",
@@ -3103,8 +3179,8 @@ export const season2012IndyCarWeather = {
         "precipitationMm": 0.0,
         "rainMm": 0.0,
         "cloudCover": 100,
-        "temperature2m": 23.9,
-        "windSpeed10m": 5.8
+        "temperature2m": 23.7,
+        "windSpeed10m": 5.2
       },
       {
         "time": "2012-09-02T15:15",
@@ -3120,8 +3196,8 @@ export const season2012IndyCarWeather = {
         "precipitationMm": 0.0,
         "rainMm": 0.0,
         "cloudCover": 100,
-        "temperature2m": 23.9,
-        "windSpeed10m": 5.8
+        "temperature2m": 23.7,
+        "windSpeed10m": 5.2
       },
       {
         "time": "2012-09-02T15:30",
@@ -3156,40 +3232,6 @@ export const season2012IndyCarWeather = {
         "cloudCover": 100,
         "temperature2m": 23.7,
         "windSpeed10m": 5.2
-      },
-      {
-        "time": "2012-09-02T16:00",
-        "weatherCode": 3,
-        "condition": "Cloudy",
-        "state": {
-          "condition": "Cloudy",
-          "gripLevel": 0.97,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Cloudy"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 100,
-        "temperature2m": 23.7,
-        "windSpeed10m": 5.2
-      },
-      {
-        "time": "2012-09-02T16:15",
-        "weatherCode": 3,
-        "condition": "Cloudy",
-        "state": {
-          "condition": "Cloudy",
-          "gripLevel": 0.97,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Cloudy"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 100,
-        "temperature2m": 23.7,
-        "windSpeed10m": 5.2
       }
     ]
   },
@@ -3202,21 +3244,24 @@ export const season2012IndyCarWeather = {
       "year": 2012,
       "series": "IndyCar",
       "date": "2012-09-15",
-      "localStartTime": "13:30",
+      "localStartTime": "12:30",
       "timezone": "auto",
       "latitude": 34.0922,
       "longitude": -117.435,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "Medium",
+      "startTimeMethod": "West Coast oval TV-window estimate"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using IndyCar default 13:30"
+      "Workbook start time estimate (Medium): 12:30",
+      "Start time method: West Coast oval TV-window estimate"
     ],
     "samples": [
       {
-        "time": "2012-09-15T13:30",
+        "time": "2012-09-15T12:30",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -3231,6 +3276,74 @@ export const season2012IndyCarWeather = {
         "cloudCover": 0,
         "temperature2m": 25.1,
         "windSpeed10m": 4.4
+      },
+      {
+        "time": "2012-09-15T12:45",
+        "weatherCode": 0,
+        "condition": "Dry",
+        "state": {
+          "condition": "Dry",
+          "gripLevel": 1,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Dry"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 0,
+        "temperature2m": 25.1,
+        "windSpeed10m": 4.4
+      },
+      {
+        "time": "2012-09-15T13:00",
+        "weatherCode": 0,
+        "condition": "Dry",
+        "state": {
+          "condition": "Dry",
+          "gripLevel": 1,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Dry"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 0,
+        "temperature2m": 25.1,
+        "windSpeed10m": 4.4
+      },
+      {
+        "time": "2012-09-15T13:15",
+        "weatherCode": 0,
+        "condition": "Dry",
+        "state": {
+          "condition": "Dry",
+          "gripLevel": 1,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Dry"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 0,
+        "temperature2m": 25.1,
+        "windSpeed10m": 4.4
+      },
+      {
+        "time": "2012-09-15T13:30",
+        "weatherCode": 0,
+        "condition": "Dry",
+        "state": {
+          "condition": "Dry",
+          "gripLevel": 1,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Dry"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 0,
+        "temperature2m": 23.0,
+        "windSpeed10m": 4.1
       },
       {
         "time": "2012-09-15T13:45",
@@ -3246,8 +3359,8 @@ export const season2012IndyCarWeather = {
         "precipitationMm": 0.0,
         "rainMm": 0.0,
         "cloudCover": 0,
-        "temperature2m": 25.1,
-        "windSpeed10m": 4.4
+        "temperature2m": 23.0,
+        "windSpeed10m": 4.1
       },
       {
         "time": "2012-09-15T14:00",
@@ -3263,8 +3376,8 @@ export const season2012IndyCarWeather = {
         "precipitationMm": 0.0,
         "rainMm": 0.0,
         "cloudCover": 0,
-        "temperature2m": 25.1,
-        "windSpeed10m": 4.4
+        "temperature2m": 23.0,
+        "windSpeed10m": 4.1
       },
       {
         "time": "2012-09-15T14:15",
@@ -3280,8 +3393,8 @@ export const season2012IndyCarWeather = {
         "precipitationMm": 0.0,
         "rainMm": 0.0,
         "cloudCover": 0,
-        "temperature2m": 25.1,
-        "windSpeed10m": 4.4
+        "temperature2m": 23.0,
+        "windSpeed10m": 4.1
       },
       {
         "time": "2012-09-15T14:30",
@@ -3297,7 +3410,7 @@ export const season2012IndyCarWeather = {
         "precipitationMm": 0.0,
         "rainMm": 0.0,
         "cloudCover": 0,
-        "temperature2m": 23.0,
+        "temperature2m": 21.2,
         "windSpeed10m": 4.1
       },
       {
@@ -3314,7 +3427,7 @@ export const season2012IndyCarWeather = {
         "precipitationMm": 0.0,
         "rainMm": 0.0,
         "cloudCover": 0,
-        "temperature2m": 23.0,
+        "temperature2m": 21.2,
         "windSpeed10m": 4.1
       },
       {
@@ -3331,79 +3444,11 @@ export const season2012IndyCarWeather = {
         "precipitationMm": 0.0,
         "rainMm": 0.0,
         "cloudCover": 0,
-        "temperature2m": 23.0,
+        "temperature2m": 21.2,
         "windSpeed10m": 4.1
       },
       {
         "time": "2012-09-15T15:15",
-        "weatherCode": 0,
-        "condition": "Dry",
-        "state": {
-          "condition": "Dry",
-          "gripLevel": 1,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Dry"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 0,
-        "temperature2m": 23.0,
-        "windSpeed10m": 4.1
-      },
-      {
-        "time": "2012-09-15T15:30",
-        "weatherCode": 0,
-        "condition": "Dry",
-        "state": {
-          "condition": "Dry",
-          "gripLevel": 1,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Dry"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 0,
-        "temperature2m": 21.2,
-        "windSpeed10m": 4.1
-      },
-      {
-        "time": "2012-09-15T15:45",
-        "weatherCode": 0,
-        "condition": "Dry",
-        "state": {
-          "condition": "Dry",
-          "gripLevel": 1,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Dry"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 0,
-        "temperature2m": 21.2,
-        "windSpeed10m": 4.1
-      },
-      {
-        "time": "2012-09-15T16:00",
-        "weatherCode": 0,
-        "condition": "Dry",
-        "state": {
-          "condition": "Dry",
-          "gripLevel": 1,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Dry"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 0,
-        "temperature2m": 21.2,
-        "windSpeed10m": 4.1
-      },
-      {
-        "time": "2012-09-15T16:15",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {

@@ -15,12 +15,15 @@ export const season1997CARTWeather = {
       "latitude": 25.4687,
       "longitude": -80.4776,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "Medium",
+      "startTimeMethod": "Oval daytime estimate"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using CART default 13:00"
+      "Workbook start time estimate (Medium): 13:00",
+      "Start time method: Oval daytime estimate"
     ],
     "samples": [
       {
@@ -238,87 +241,22 @@ export const season1997CARTWeather = {
       "year": 1997,
       "series": "CART",
       "date": "1997-04-06",
-      "localStartTime": "13:00",
+      "localStartTime": "14:00",
       "timezone": "auto",
       "latitude": -28.0027,
       "longitude": 153.4297,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "Medium",
+      "startTimeMethod": "Australia street-race estimate"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using CART default 13:00"
+      "Workbook start time estimate (Medium): 14:00",
+      "Start time method: Australia street-race estimate"
     ],
     "samples": [
-      {
-        "time": "1997-04-06T13:00",
-        "weatherCode": 0,
-        "condition": "Dry",
-        "state": {
-          "condition": "Dry",
-          "gripLevel": 1,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Dry"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 14,
-        "temperature2m": 21.9,
-        "windSpeed10m": 7.7
-      },
-      {
-        "time": "1997-04-06T13:15",
-        "weatherCode": 0,
-        "condition": "Dry",
-        "state": {
-          "condition": "Dry",
-          "gripLevel": 1,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Dry"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 14,
-        "temperature2m": 21.9,
-        "windSpeed10m": 7.7
-      },
-      {
-        "time": "1997-04-06T13:30",
-        "weatherCode": 0,
-        "condition": "Dry",
-        "state": {
-          "condition": "Dry",
-          "gripLevel": 1,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Dry"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 14,
-        "temperature2m": 21.9,
-        "windSpeed10m": 7.7
-      },
-      {
-        "time": "1997-04-06T13:45",
-        "weatherCode": 0,
-        "condition": "Dry",
-        "state": {
-          "condition": "Dry",
-          "gripLevel": 1,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Dry"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 14,
-        "temperature2m": 21.9,
-        "windSpeed10m": 7.7
-      },
       {
         "time": "1997-04-06T14:00",
         "weatherCode": 0,
@@ -332,9 +270,9 @@ export const season1997CARTWeather = {
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 12,
-        "temperature2m": 21.7,
-        "windSpeed10m": 7.1
+        "cloudCover": 14,
+        "temperature2m": 21.9,
+        "windSpeed10m": 7.7
       },
       {
         "time": "1997-04-06T14:15",
@@ -349,9 +287,9 @@ export const season1997CARTWeather = {
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 12,
-        "temperature2m": 21.7,
-        "windSpeed10m": 7.1
+        "cloudCover": 14,
+        "temperature2m": 21.9,
+        "windSpeed10m": 7.7
       },
       {
         "time": "1997-04-06T14:30",
@@ -366,9 +304,9 @@ export const season1997CARTWeather = {
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 12,
-        "temperature2m": 21.7,
-        "windSpeed10m": 7.1
+        "cloudCover": 14,
+        "temperature2m": 21.9,
+        "windSpeed10m": 7.7
       },
       {
         "time": "1997-04-06T14:45",
@@ -383,9 +321,9 @@ export const season1997CARTWeather = {
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 12,
-        "temperature2m": 21.7,
-        "windSpeed10m": 7.1
+        "cloudCover": 14,
+        "temperature2m": 21.9,
+        "windSpeed10m": 7.7
       },
       {
         "time": "1997-04-06T15:00",
@@ -400,9 +338,9 @@ export const season1997CARTWeather = {
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 11,
-        "temperature2m": 21.4,
-        "windSpeed10m": 6.9
+        "cloudCover": 12,
+        "temperature2m": 21.7,
+        "windSpeed10m": 7.1
       },
       {
         "time": "1997-04-06T15:15",
@@ -417,12 +355,46 @@ export const season1997CARTWeather = {
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 11,
-        "temperature2m": 21.4,
-        "windSpeed10m": 6.9
+        "cloudCover": 12,
+        "temperature2m": 21.7,
+        "windSpeed10m": 7.1
       },
       {
         "time": "1997-04-06T15:30",
+        "weatherCode": 0,
+        "condition": "Dry",
+        "state": {
+          "condition": "Dry",
+          "gripLevel": 1,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Dry"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 12,
+        "temperature2m": 21.7,
+        "windSpeed10m": 7.1
+      },
+      {
+        "time": "1997-04-06T15:45",
+        "weatherCode": 0,
+        "condition": "Dry",
+        "state": {
+          "condition": "Dry",
+          "gripLevel": 1,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Dry"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 12,
+        "temperature2m": 21.7,
+        "windSpeed10m": 7.1
+      },
+      {
+        "time": "1997-04-06T16:00",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -439,7 +411,41 @@ export const season1997CARTWeather = {
         "windSpeed10m": 6.9
       },
       {
-        "time": "1997-04-06T15:45",
+        "time": "1997-04-06T16:15",
+        "weatherCode": 0,
+        "condition": "Dry",
+        "state": {
+          "condition": "Dry",
+          "gripLevel": 1,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Dry"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 11,
+        "temperature2m": 21.4,
+        "windSpeed10m": 6.9
+      },
+      {
+        "time": "1997-04-06T16:30",
+        "weatherCode": 0,
+        "condition": "Dry",
+        "state": {
+          "condition": "Dry",
+          "gripLevel": 1,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Dry"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 11,
+        "temperature2m": 21.4,
+        "windSpeed10m": 6.9
+      },
+      {
+        "time": "1997-04-06T16:45",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -466,19 +472,56 @@ export const season1997CARTWeather = {
       "year": 1997,
       "series": "CART",
       "date": "1997-04-13",
-      "localStartTime": "13:00",
+      "localStartTime": "12:30",
       "timezone": "auto",
       "latitude": 33.7701,
       "longitude": -118.1937,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "Medium",
+      "startTimeMethod": "Long Beach street-race pattern"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using CART default 13:00"
+      "Workbook start time estimate (Medium): 12:30",
+      "Start time method: Long Beach street-race pattern"
     ],
     "samples": [
+      {
+        "time": "1997-04-13T12:30",
+        "weatherCode": 0,
+        "condition": "Dry",
+        "state": {
+          "condition": "Dry",
+          "gripLevel": 1,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Dry"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 0,
+        "temperature2m": 13.5,
+        "windSpeed10m": 4.0
+      },
+      {
+        "time": "1997-04-13T12:45",
+        "weatherCode": 0,
+        "condition": "Dry",
+        "state": {
+          "condition": "Dry",
+          "gripLevel": 1,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Dry"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 0,
+        "temperature2m": 13.5,
+        "windSpeed10m": 4.0
+      },
       {
         "time": "1997-04-13T13:00",
         "weatherCode": 0,
@@ -527,8 +570,8 @@ export const season1997CARTWeather = {
         "precipitationMm": 0.0,
         "rainMm": 0.0,
         "cloudCover": 0,
-        "temperature2m": 13.5,
-        "windSpeed10m": 4.0
+        "temperature2m": 12.8,
+        "windSpeed10m": 7.2
       },
       {
         "time": "1997-04-13T13:45",
@@ -544,8 +587,8 @@ export const season1997CARTWeather = {
         "precipitationMm": 0.0,
         "rainMm": 0.0,
         "cloudCover": 0,
-        "temperature2m": 13.5,
-        "windSpeed10m": 4.0
+        "temperature2m": 12.8,
+        "windSpeed10m": 7.2
       },
       {
         "time": "1997-04-13T14:00",
@@ -595,8 +638,8 @@ export const season1997CARTWeather = {
         "precipitationMm": 0.0,
         "rainMm": 0.0,
         "cloudCover": 0,
-        "temperature2m": 12.8,
-        "windSpeed10m": 7.2
+        "temperature2m": 12.4,
+        "windSpeed10m": 6.5
       },
       {
         "time": "1997-04-13T14:45",
@@ -612,8 +655,8 @@ export const season1997CARTWeather = {
         "precipitationMm": 0.0,
         "rainMm": 0.0,
         "cloudCover": 0,
-        "temperature2m": 12.8,
-        "windSpeed10m": 7.2
+        "temperature2m": 12.4,
+        "windSpeed10m": 6.5
       },
       {
         "time": "1997-04-13T15:00",
@@ -648,40 +691,6 @@ export const season1997CARTWeather = {
         "cloudCover": 0,
         "temperature2m": 12.4,
         "windSpeed10m": 6.5
-      },
-      {
-        "time": "1997-04-13T15:30",
-        "weatherCode": 0,
-        "condition": "Dry",
-        "state": {
-          "condition": "Dry",
-          "gripLevel": 1,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Dry"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 0,
-        "temperature2m": 12.4,
-        "windSpeed10m": 6.5
-      },
-      {
-        "time": "1997-04-13T15:45",
-        "weatherCode": 0,
-        "condition": "Dry",
-        "state": {
-          "condition": "Dry",
-          "gripLevel": 1,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Dry"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 0,
-        "temperature2m": 12.4,
-        "windSpeed10m": 6.5
       }
     ]
   },
@@ -699,12 +708,15 @@ export const season1997CARTWeather = {
       "latitude": 40.7404,
       "longitude": -75.3096,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "Low",
+      "startTimeMethod": "Oval daytime heuristic"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using CART default 13:00"
+      "Workbook start time estimate (Low): 13:00",
+      "Start time method: Oval daytime heuristic"
     ],
     "samples": [
       {
@@ -927,12 +939,15 @@ export const season1997CARTWeather = {
       "latitude": -22.9068,
       "longitude": -43.1729,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "Low",
+      "startTimeMethod": "Series/track-type heuristic"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using CART default 13:00"
+      "Workbook start time estimate (Low): 13:00",
+      "Start time method: Series/track-type heuristic"
     ],
     "samples": [
       {
@@ -1150,21 +1165,24 @@ export const season1997CARTWeather = {
       "year": 1997,
       "series": "CART",
       "date": "1997-05-24",
-      "localStartTime": "13:00",
+      "localStartTime": "19:30",
       "timezone": "auto",
       "latitude": 38.6826,
       "longitude": -90.1571,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "Medium",
+      "startTimeMethod": "Gateway oval evening estimate"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using CART default 13:00"
+      "Workbook start time estimate (Medium): 19:30",
+      "Start time method: Gateway oval evening estimate"
     ],
     "samples": [
       {
-        "time": "1997-05-24T13:00",
+        "time": "1997-05-24T19:30",
         "weatherCode": 3,
         "condition": "Cloudy",
         "state": {
@@ -1181,7 +1199,7 @@ export const season1997CARTWeather = {
         "windSpeed10m": 11.3
       },
       {
-        "time": "1997-05-24T13:15",
+        "time": "1997-05-24T19:45",
         "weatherCode": 3,
         "condition": "Cloudy",
         "state": {
@@ -1198,7 +1216,7 @@ export const season1997CARTWeather = {
         "windSpeed10m": 11.3
       },
       {
-        "time": "1997-05-24T13:30",
+        "time": "1997-05-24T20:00",
         "weatherCode": 3,
         "condition": "Cloudy",
         "state": {
@@ -1215,7 +1233,7 @@ export const season1997CARTWeather = {
         "windSpeed10m": 11.3
       },
       {
-        "time": "1997-05-24T13:45",
+        "time": "1997-05-24T20:15",
         "weatherCode": 3,
         "condition": "Cloudy",
         "state": {
@@ -1232,7 +1250,7 @@ export const season1997CARTWeather = {
         "windSpeed10m": 11.3
       },
       {
-        "time": "1997-05-24T14:00",
+        "time": "1997-05-24T20:30",
         "weatherCode": 3,
         "condition": "Cloudy",
         "state": {
@@ -1249,7 +1267,7 @@ export const season1997CARTWeather = {
         "windSpeed10m": 10.1
       },
       {
-        "time": "1997-05-24T14:15",
+        "time": "1997-05-24T20:45",
         "weatherCode": 3,
         "condition": "Cloudy",
         "state": {
@@ -1266,7 +1284,7 @@ export const season1997CARTWeather = {
         "windSpeed10m": 10.1
       },
       {
-        "time": "1997-05-24T14:30",
+        "time": "1997-05-24T21:00",
         "weatherCode": 3,
         "condition": "Cloudy",
         "state": {
@@ -1283,7 +1301,7 @@ export const season1997CARTWeather = {
         "windSpeed10m": 10.1
       },
       {
-        "time": "1997-05-24T14:45",
+        "time": "1997-05-24T21:15",
         "weatherCode": 3,
         "condition": "Cloudy",
         "state": {
@@ -1300,7 +1318,7 @@ export const season1997CARTWeather = {
         "windSpeed10m": 10.1
       },
       {
-        "time": "1997-05-24T15:00",
+        "time": "1997-05-24T21:30",
         "weatherCode": 3,
         "condition": "Cloudy",
         "state": {
@@ -1317,7 +1335,7 @@ export const season1997CARTWeather = {
         "windSpeed10m": 10.0
       },
       {
-        "time": "1997-05-24T15:15",
+        "time": "1997-05-24T21:45",
         "weatherCode": 3,
         "condition": "Cloudy",
         "state": {
@@ -1334,7 +1352,7 @@ export const season1997CARTWeather = {
         "windSpeed10m": 10.0
       },
       {
-        "time": "1997-05-24T15:30",
+        "time": "1997-05-24T22:00",
         "weatherCode": 3,
         "condition": "Cloudy",
         "state": {
@@ -1351,7 +1369,7 @@ export const season1997CARTWeather = {
         "windSpeed10m": 10.0
       },
       {
-        "time": "1997-05-24T15:45",
+        "time": "1997-05-24T22:15",
         "weatherCode": 3,
         "condition": "Cloudy",
         "state": {
@@ -1383,12 +1401,15 @@ export const season1997CARTWeather = {
       "latitude": 43.0167,
       "longitude": -88.007,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "Medium",
+      "startTimeMethod": "Oval daytime estimate"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using CART default 13:00"
+      "Workbook start time estimate (Medium): 13:00",
+      "Start time method: Oval daytime estimate"
     ],
     "samples": [
       {
@@ -1606,158 +1627,25 @@ export const season1997CARTWeather = {
       "year": 1997,
       "series": "CART",
       "date": "1997-06-08",
-      "localStartTime": "13:00",
+      "localStartTime": "15:00",
       "timezone": "auto",
       "latitude": 42.3314,
       "longitude": -83.0458,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "Medium",
+      "startTimeMethod": "Street race afternoon estimate"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using CART default 13:00"
+      "Workbook start time estimate (Medium): 15:00",
+      "Start time method: Street race afternoon estimate"
     ],
     "samples": [
       {
-        "time": "1997-06-08T13:00",
-        "weatherCode": 2,
-        "condition": "Cloudy",
-        "state": {
-          "condition": "Cloudy",
-          "gripLevel": 0.97,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Cloudy"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 70,
-        "temperature2m": 14.7,
-        "windSpeed10m": 20.2
-      },
-      {
-        "time": "1997-06-08T13:15",
-        "weatherCode": 2,
-        "condition": "Cloudy",
-        "state": {
-          "condition": "Cloudy",
-          "gripLevel": 0.97,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Cloudy"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 70,
-        "temperature2m": 14.7,
-        "windSpeed10m": 20.2
-      },
-      {
-        "time": "1997-06-08T13:30",
-        "weatherCode": 2,
-        "condition": "Cloudy",
-        "state": {
-          "condition": "Cloudy",
-          "gripLevel": 0.97,
-          "wet": false,
-          "changingSoon": true,
-          "label": "Cloudy"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 70,
-        "temperature2m": 14.7,
-        "windSpeed10m": 20.2
-      },
-      {
-        "time": "1997-06-08T13:45",
-        "weatherCode": 2,
-        "condition": "Cloudy",
-        "state": {
-          "condition": "Cloudy",
-          "gripLevel": 0.97,
-          "wet": false,
-          "changingSoon": true,
-          "label": "Cloudy"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 70,
-        "temperature2m": 14.7,
-        "windSpeed10m": 20.2
-      },
-      {
-        "time": "1997-06-08T14:00",
-        "weatherCode": 3,
-        "condition": "Cloudy",
-        "state": {
-          "condition": "Cloudy",
-          "gripLevel": 0.97,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Cloudy"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 83,
-        "temperature2m": 14.7,
-        "windSpeed10m": 20.2
-      },
-      {
-        "time": "1997-06-08T14:15",
-        "weatherCode": 3,
-        "condition": "Cloudy",
-        "state": {
-          "condition": "Cloudy",
-          "gripLevel": 0.97,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Cloudy"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 83,
-        "temperature2m": 14.7,
-        "windSpeed10m": 20.2
-      },
-      {
-        "time": "1997-06-08T14:30",
-        "weatherCode": 3,
-        "condition": "Cloudy",
-        "state": {
-          "condition": "Cloudy",
-          "gripLevel": 0.97,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Cloudy"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 83,
-        "temperature2m": 14.7,
-        "windSpeed10m": 20.2
-      },
-      {
-        "time": "1997-06-08T14:45",
-        "weatherCode": 3,
-        "condition": "Cloudy",
-        "state": {
-          "condition": "Cloudy",
-          "gripLevel": 0.97,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Cloudy"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 83,
-        "temperature2m": 14.7,
-        "windSpeed10m": 20.2
-      },
-      {
         "time": "1997-06-08T15:00",
-        "weatherCode": 3,
+        "weatherCode": 2,
         "condition": "Cloudy",
         "state": {
           "condition": "Cloudy",
@@ -1768,12 +1656,131 @@ export const season1997CARTWeather = {
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 91,
+        "cloudCover": 70,
         "temperature2m": 14.7,
-        "windSpeed10m": 19.1
+        "windSpeed10m": 20.2
       },
       {
         "time": "1997-06-08T15:15",
+        "weatherCode": 2,
+        "condition": "Cloudy",
+        "state": {
+          "condition": "Cloudy",
+          "gripLevel": 0.97,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Cloudy"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 70,
+        "temperature2m": 14.7,
+        "windSpeed10m": 20.2
+      },
+      {
+        "time": "1997-06-08T15:30",
+        "weatherCode": 2,
+        "condition": "Cloudy",
+        "state": {
+          "condition": "Cloudy",
+          "gripLevel": 0.97,
+          "wet": false,
+          "changingSoon": true,
+          "label": "Cloudy"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 70,
+        "temperature2m": 14.7,
+        "windSpeed10m": 20.2
+      },
+      {
+        "time": "1997-06-08T15:45",
+        "weatherCode": 2,
+        "condition": "Cloudy",
+        "state": {
+          "condition": "Cloudy",
+          "gripLevel": 0.97,
+          "wet": false,
+          "changingSoon": true,
+          "label": "Cloudy"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 70,
+        "temperature2m": 14.7,
+        "windSpeed10m": 20.2
+      },
+      {
+        "time": "1997-06-08T16:00",
+        "weatherCode": 3,
+        "condition": "Cloudy",
+        "state": {
+          "condition": "Cloudy",
+          "gripLevel": 0.97,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Cloudy"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 83,
+        "temperature2m": 14.7,
+        "windSpeed10m": 20.2
+      },
+      {
+        "time": "1997-06-08T16:15",
+        "weatherCode": 3,
+        "condition": "Cloudy",
+        "state": {
+          "condition": "Cloudy",
+          "gripLevel": 0.97,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Cloudy"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 83,
+        "temperature2m": 14.7,
+        "windSpeed10m": 20.2
+      },
+      {
+        "time": "1997-06-08T16:30",
+        "weatherCode": 3,
+        "condition": "Cloudy",
+        "state": {
+          "condition": "Cloudy",
+          "gripLevel": 0.97,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Cloudy"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 83,
+        "temperature2m": 14.7,
+        "windSpeed10m": 20.2
+      },
+      {
+        "time": "1997-06-08T16:45",
+        "weatherCode": 3,
+        "condition": "Cloudy",
+        "state": {
+          "condition": "Cloudy",
+          "gripLevel": 0.97,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Cloudy"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 83,
+        "temperature2m": 14.7,
+        "windSpeed10m": 20.2
+      },
+      {
+        "time": "1997-06-08T17:00",
         "weatherCode": 3,
         "condition": "Cloudy",
         "state": {
@@ -1790,7 +1797,24 @@ export const season1997CARTWeather = {
         "windSpeed10m": 19.1
       },
       {
-        "time": "1997-06-08T15:30",
+        "time": "1997-06-08T17:15",
+        "weatherCode": 3,
+        "condition": "Cloudy",
+        "state": {
+          "condition": "Cloudy",
+          "gripLevel": 0.97,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Cloudy"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 91,
+        "temperature2m": 14.7,
+        "windSpeed10m": 19.1
+      },
+      {
+        "time": "1997-06-08T17:30",
         "weatherCode": 3,
         "condition": "Cloudy",
         "state": {
@@ -1807,7 +1831,7 @@ export const season1997CARTWeather = {
         "windSpeed10m": 19.1
       },
       {
-        "time": "1997-06-08T15:45",
+        "time": "1997-06-08T17:45",
         "weatherCode": 3,
         "condition": "Cloudy",
         "state": {
@@ -1834,19 +1858,56 @@ export const season1997CARTWeather = {
       "year": 1997,
       "series": "CART",
       "date": "1997-06-22",
-      "localStartTime": "13:00",
+      "localStartTime": "12:30",
       "timezone": "auto",
       "latitude": 45.5152,
       "longitude": -122.6784,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "Medium",
+      "startTimeMethod": "West Coast road/street TV-window estimate"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using CART default 13:00"
+      "Workbook start time estimate (Medium): 12:30",
+      "Start time method: West Coast road/street TV-window estimate"
     ],
     "samples": [
+      {
+        "time": "1997-06-22T12:30",
+        "weatherCode": 2,
+        "condition": "Cloudy",
+        "state": {
+          "condition": "Cloudy",
+          "gripLevel": 0.97,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Cloudy"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 56,
+        "temperature2m": 11.7,
+        "windSpeed10m": 9.7
+      },
+      {
+        "time": "1997-06-22T12:45",
+        "weatherCode": 2,
+        "condition": "Cloudy",
+        "state": {
+          "condition": "Cloudy",
+          "gripLevel": 0.97,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Cloudy"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 56,
+        "temperature2m": 11.7,
+        "windSpeed10m": 9.7
+      },
       {
         "time": "1997-06-22T13:00",
         "weatherCode": 2,
@@ -1894,8 +1955,8 @@ export const season1997CARTWeather = {
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 56,
-        "temperature2m": 11.7,
+        "cloudCover": 50,
+        "temperature2m": 11.3,
         "windSpeed10m": 9.7
       },
       {
@@ -1911,8 +1972,8 @@ export const season1997CARTWeather = {
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 56,
-        "temperature2m": 11.7,
+        "cloudCover": 50,
+        "temperature2m": 11.3,
         "windSpeed10m": 9.7
       },
       {
@@ -1923,7 +1984,7 @@ export const season1997CARTWeather = {
           "condition": "Cloudy",
           "gripLevel": 0.97,
           "wet": false,
-          "changingSoon": false,
+          "changingSoon": true,
           "label": "Cloudy"
         },
         "precipitationMm": 0.0,
@@ -1940,7 +2001,7 @@ export const season1997CARTWeather = {
           "condition": "Cloudy",
           "gripLevel": 0.97,
           "wet": false,
-          "changingSoon": false,
+          "changingSoon": true,
           "label": "Cloudy"
         },
         "precipitationMm": 0.0,
@@ -1951,37 +2012,37 @@ export const season1997CARTWeather = {
       },
       {
         "time": "1997-06-22T14:30",
-        "weatherCode": 2,
+        "weatherCode": 1,
         "condition": "Cloudy",
         "state": {
           "condition": "Cloudy",
           "gripLevel": 0.97,
           "wet": false,
-          "changingSoon": true,
+          "changingSoon": false,
           "label": "Cloudy"
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 50,
-        "temperature2m": 11.3,
-        "windSpeed10m": 9.7
+        "cloudCover": 46,
+        "temperature2m": 10.8,
+        "windSpeed10m": 9.4
       },
       {
         "time": "1997-06-22T14:45",
-        "weatherCode": 2,
+        "weatherCode": 1,
         "condition": "Cloudy",
         "state": {
           "condition": "Cloudy",
           "gripLevel": 0.97,
           "wet": false,
-          "changingSoon": true,
+          "changingSoon": false,
           "label": "Cloudy"
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 50,
-        "temperature2m": 11.3,
-        "windSpeed10m": 9.7
+        "cloudCover": 46,
+        "temperature2m": 10.8,
+        "windSpeed10m": 9.4
       },
       {
         "time": "1997-06-22T15:00",
@@ -1991,7 +2052,7 @@ export const season1997CARTWeather = {
           "condition": "Cloudy",
           "gripLevel": 0.97,
           "wet": false,
-          "changingSoon": false,
+          "changingSoon": true,
           "label": "Cloudy"
         },
         "precipitationMm": 0.0,
@@ -2002,40 +2063,6 @@ export const season1997CARTWeather = {
       },
       {
         "time": "1997-06-22T15:15",
-        "weatherCode": 1,
-        "condition": "Cloudy",
-        "state": {
-          "condition": "Cloudy",
-          "gripLevel": 0.97,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Cloudy"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 46,
-        "temperature2m": 10.8,
-        "windSpeed10m": 9.4
-      },
-      {
-        "time": "1997-06-22T15:30",
-        "weatherCode": 1,
-        "condition": "Cloudy",
-        "state": {
-          "condition": "Cloudy",
-          "gripLevel": 0.97,
-          "wet": false,
-          "changingSoon": true,
-          "label": "Cloudy"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 46,
-        "temperature2m": 10.8,
-        "windSpeed10m": 9.4
-      },
-      {
-        "time": "1997-06-22T15:45",
         "weatherCode": 1,
         "condition": "Cloudy",
         "state": {
@@ -2067,12 +2094,15 @@ export const season1997CARTWeather = {
       "latitude": 41.4993,
       "longitude": -81.6944,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "Low",
+      "startTimeMethod": "Series/track-type heuristic"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using CART default 13:00"
+      "Workbook start time estimate (Low): 13:00",
+      "Start time method: Series/track-type heuristic"
     ],
     "samples": [
       {
@@ -2295,12 +2325,15 @@ export const season1997CARTWeather = {
       "latitude": 43.6532,
       "longitude": -79.3832,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "Medium",
+      "startTimeMethod": "Street race afternoon estimate"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using CART default 13:00"
+      "Workbook start time estimate (Medium): 13:00",
+      "Start time method: Street race afternoon estimate"
     ],
     "samples": [
       {
@@ -2523,12 +2556,15 @@ export const season1997CARTWeather = {
       "latitude": 42.1059,
       "longitude": -84.2483,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "Low",
+      "startTimeMethod": "Oval daytime heuristic"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using CART default 13:00"
+      "Workbook start time estimate (Low): 13:00",
+      "Start time method: Oval daytime heuristic"
     ],
     "samples": [
       {
@@ -2746,53 +2782,22 @@ export const season1997CARTWeather = {
       "year": 1997,
       "series": "CART",
       "date": "1997-08-10",
-      "localStartTime": "13:00",
+      "localStartTime": "13:30",
       "timezone": "auto",
       "latitude": 40.6787,
       "longitude": -82.5824,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "Medium",
+      "startTimeMethod": "Road-course afternoon estimate"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using CART default 13:00"
+      "Workbook start time estimate (Medium): 13:30",
+      "Start time method: Road-course afternoon estimate"
     ],
     "samples": [
-      {
-        "time": "1997-08-10T13:00",
-        "weatherCode": 1,
-        "condition": "Cloudy",
-        "state": {
-          "condition": "Cloudy",
-          "gripLevel": 0.97,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Cloudy"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 42,
-        "temperature2m": 20.2,
-        "windSpeed10m": 7.5
-      },
-      {
-        "time": "1997-08-10T13:15",
-        "weatherCode": 1,
-        "condition": "Cloudy",
-        "state": {
-          "condition": "Cloudy",
-          "gripLevel": 0.97,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Cloudy"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 42,
-        "temperature2m": 20.2,
-        "windSpeed10m": 7.5
-      },
       {
         "time": "1997-08-10T13:30",
         "weatherCode": 1,
@@ -2801,7 +2806,7 @@ export const season1997CARTWeather = {
           "condition": "Cloudy",
           "gripLevel": 0.97,
           "wet": false,
-          "changingSoon": true,
+          "changingSoon": false,
           "label": "Cloudy"
         },
         "precipitationMm": 0.0,
@@ -2818,7 +2823,7 @@ export const season1997CARTWeather = {
           "condition": "Cloudy",
           "gripLevel": 0.97,
           "wet": false,
-          "changingSoon": true,
+          "changingSoon": false,
           "label": "Cloudy"
         },
         "precipitationMm": 0.0,
@@ -2829,37 +2834,37 @@ export const season1997CARTWeather = {
       },
       {
         "time": "1997-08-10T14:00",
-        "weatherCode": 2,
+        "weatherCode": 1,
         "condition": "Cloudy",
         "state": {
           "condition": "Cloudy",
           "gripLevel": 0.97,
           "wet": false,
-          "changingSoon": false,
+          "changingSoon": true,
           "label": "Cloudy"
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 54,
-        "temperature2m": 19.8,
-        "windSpeed10m": 8.0
+        "cloudCover": 42,
+        "temperature2m": 20.2,
+        "windSpeed10m": 7.5
       },
       {
         "time": "1997-08-10T14:15",
-        "weatherCode": 2,
+        "weatherCode": 1,
         "condition": "Cloudy",
         "state": {
           "condition": "Cloudy",
           "gripLevel": 0.97,
           "wet": false,
-          "changingSoon": false,
+          "changingSoon": true,
           "label": "Cloudy"
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 54,
-        "temperature2m": 19.8,
-        "windSpeed10m": 8.0
+        "cloudCover": 42,
+        "temperature2m": 20.2,
+        "windSpeed10m": 7.5
       },
       {
         "time": "1997-08-10T14:30",
@@ -2869,7 +2874,7 @@ export const season1997CARTWeather = {
           "condition": "Cloudy",
           "gripLevel": 0.97,
           "wet": false,
-          "changingSoon": true,
+          "changingSoon": false,
           "label": "Cloudy"
         },
         "precipitationMm": 0.0,
@@ -2886,7 +2891,7 @@ export const season1997CARTWeather = {
           "condition": "Cloudy",
           "gripLevel": 0.97,
           "wet": false,
-          "changingSoon": true,
+          "changingSoon": false,
           "label": "Cloudy"
         },
         "precipitationMm": 0.0,
@@ -2897,23 +2902,40 @@ export const season1997CARTWeather = {
       },
       {
         "time": "1997-08-10T15:00",
-        "weatherCode": 51,
-        "condition": "LightRain",
+        "weatherCode": 2,
+        "condition": "Cloudy",
         "state": {
-          "condition": "LightRain",
-          "gripLevel": 0.72,
-          "wet": true,
-          "changingSoon": false,
-          "label": "Light Rain"
+          "condition": "Cloudy",
+          "gripLevel": 0.97,
+          "wet": false,
+          "changingSoon": true,
+          "label": "Cloudy"
         },
-        "precipitationMm": 0.2,
-        "rainMm": 0.2,
-        "cloudCover": 48,
-        "temperature2m": 19.5,
-        "windSpeed10m": 9.2
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 54,
+        "temperature2m": 19.8,
+        "windSpeed10m": 8.0
       },
       {
         "time": "1997-08-10T15:15",
+        "weatherCode": 2,
+        "condition": "Cloudy",
+        "state": {
+          "condition": "Cloudy",
+          "gripLevel": 0.97,
+          "wet": false,
+          "changingSoon": true,
+          "label": "Cloudy"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 54,
+        "temperature2m": 19.8,
+        "windSpeed10m": 8.0
+      },
+      {
+        "time": "1997-08-10T15:30",
         "weatherCode": 51,
         "condition": "LightRain",
         "state": {
@@ -2930,7 +2952,24 @@ export const season1997CARTWeather = {
         "windSpeed10m": 9.2
       },
       {
-        "time": "1997-08-10T15:30",
+        "time": "1997-08-10T15:45",
+        "weatherCode": 51,
+        "condition": "LightRain",
+        "state": {
+          "condition": "LightRain",
+          "gripLevel": 0.72,
+          "wet": true,
+          "changingSoon": false,
+          "label": "Light Rain"
+        },
+        "precipitationMm": 0.2,
+        "rainMm": 0.2,
+        "cloudCover": 48,
+        "temperature2m": 19.5,
+        "windSpeed10m": 9.2
+      },
+      {
+        "time": "1997-08-10T16:00",
         "weatherCode": 51,
         "condition": "LightRain",
         "state": {
@@ -2947,7 +2986,7 @@ export const season1997CARTWeather = {
         "windSpeed10m": 9.2
       },
       {
-        "time": "1997-08-10T15:45",
+        "time": "1997-08-10T16:15",
         "weatherCode": 51,
         "condition": "LightRain",
         "state": {
@@ -2974,19 +3013,56 @@ export const season1997CARTWeather = {
       "year": 1997,
       "series": "CART",
       "date": "1997-08-17",
-      "localStartTime": "13:00",
+      "localStartTime": "12:30",
       "timezone": "auto",
       "latitude": 43.8333,
       "longitude": -88.017,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "Medium",
+      "startTimeMethod": "Road-course midday estimate"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using CART default 13:00"
+      "Workbook start time estimate (Medium): 12:30",
+      "Start time method: Road-course midday estimate"
     ],
     "samples": [
+      {
+        "time": "1997-08-17T12:30",
+        "weatherCode": 3,
+        "condition": "Cloudy",
+        "state": {
+          "condition": "Cloudy",
+          "gripLevel": 0.97,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Cloudy"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 100,
+        "temperature2m": 19.3,
+        "windSpeed10m": 16.1
+      },
+      {
+        "time": "1997-08-17T12:45",
+        "weatherCode": 3,
+        "condition": "Cloudy",
+        "state": {
+          "condition": "Cloudy",
+          "gripLevel": 0.97,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Cloudy"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 100,
+        "temperature2m": 19.3,
+        "windSpeed10m": 16.1
+      },
       {
         "time": "1997-08-17T13:00",
         "weatherCode": 3,
@@ -3035,8 +3111,8 @@ export const season1997CARTWeather = {
         "precipitationMm": 0.0,
         "rainMm": 0.0,
         "cloudCover": 100,
-        "temperature2m": 19.3,
-        "windSpeed10m": 16.1
+        "temperature2m": 18.8,
+        "windSpeed10m": 17.4
       },
       {
         "time": "1997-08-17T13:45",
@@ -3052,8 +3128,8 @@ export const season1997CARTWeather = {
         "precipitationMm": 0.0,
         "rainMm": 0.0,
         "cloudCover": 100,
-        "temperature2m": 19.3,
-        "windSpeed10m": 16.1
+        "temperature2m": 18.8,
+        "windSpeed10m": 17.4
       },
       {
         "time": "1997-08-17T14:00",
@@ -3102,9 +3178,9 @@ export const season1997CARTWeather = {
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 100,
-        "temperature2m": 18.8,
-        "windSpeed10m": 17.4
+        "cloudCover": 99,
+        "temperature2m": 18.3,
+        "windSpeed10m": 17.1
       },
       {
         "time": "1997-08-17T14:45",
@@ -3119,9 +3195,9 @@ export const season1997CARTWeather = {
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 100,
-        "temperature2m": 18.8,
-        "windSpeed10m": 17.4
+        "cloudCover": 99,
+        "temperature2m": 18.3,
+        "windSpeed10m": 17.1
       },
       {
         "time": "1997-08-17T15:00",
@@ -3156,40 +3232,6 @@ export const season1997CARTWeather = {
         "cloudCover": 99,
         "temperature2m": 18.3,
         "windSpeed10m": 17.1
-      },
-      {
-        "time": "1997-08-17T15:30",
-        "weatherCode": 3,
-        "condition": "Cloudy",
-        "state": {
-          "condition": "Cloudy",
-          "gripLevel": 0.97,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Cloudy"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 99,
-        "temperature2m": 18.3,
-        "windSpeed10m": 17.1
-      },
-      {
-        "time": "1997-08-17T15:45",
-        "weatherCode": 3,
-        "condition": "Cloudy",
-        "state": {
-          "condition": "Cloudy",
-          "gripLevel": 0.97,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Cloudy"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 99,
-        "temperature2m": 18.3,
-        "windSpeed10m": 17.1
       }
     ]
   },
@@ -3207,12 +3249,15 @@ export const season1997CARTWeather = {
       "latitude": 49.2827,
       "longitude": -123.1207,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "Low",
+      "startTimeMethod": "Series/track-type heuristic"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using CART default 13:00"
+      "Workbook start time estimate (Low): 13:00",
+      "Start time method: Series/track-type heuristic"
     ],
     "samples": [
       {
@@ -3430,19 +3475,56 @@ export const season1997CARTWeather = {
       "year": 1997,
       "series": "CART",
       "date": "1997-09-07",
-      "localStartTime": "13:00",
+      "localStartTime": "12:30",
       "timezone": "auto",
       "latitude": 36.6002,
       "longitude": -121.8947,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "Medium",
+      "startTimeMethod": "West Coast road/street TV-window estimate"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using CART default 13:00"
+      "Workbook start time estimate (Medium): 12:30",
+      "Start time method: West Coast road/street TV-window estimate"
     ],
     "samples": [
+      {
+        "time": "1997-09-07T12:30",
+        "weatherCode": 3,
+        "condition": "Cloudy",
+        "state": {
+          "condition": "Cloudy",
+          "gripLevel": 0.97,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Cloudy"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 99,
+        "temperature2m": 15.5,
+        "windSpeed10m": 5.4
+      },
+      {
+        "time": "1997-09-07T12:45",
+        "weatherCode": 3,
+        "condition": "Cloudy",
+        "state": {
+          "condition": "Cloudy",
+          "gripLevel": 0.97,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Cloudy"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 99,
+        "temperature2m": 15.5,
+        "windSpeed10m": 5.4
+      },
       {
         "time": "1997-09-07T13:00",
         "weatherCode": 3,
@@ -3490,9 +3572,9 @@ export const season1997CARTWeather = {
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 99,
-        "temperature2m": 15.5,
-        "windSpeed10m": 5.4
+        "cloudCover": 95,
+        "temperature2m": 15.4,
+        "windSpeed10m": 4.4
       },
       {
         "time": "1997-09-07T13:45",
@@ -3507,9 +3589,9 @@ export const season1997CARTWeather = {
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 99,
-        "temperature2m": 15.5,
-        "windSpeed10m": 5.4
+        "cloudCover": 95,
+        "temperature2m": 15.4,
+        "windSpeed10m": 4.4
       },
       {
         "time": "1997-09-07T14:00",
@@ -3558,9 +3640,9 @@ export const season1997CARTWeather = {
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 95,
-        "temperature2m": 15.4,
-        "windSpeed10m": 4.4
+        "cloudCover": 99,
+        "temperature2m": 15.3,
+        "windSpeed10m": 3.6
       },
       {
         "time": "1997-09-07T14:45",
@@ -3575,9 +3657,9 @@ export const season1997CARTWeather = {
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 95,
-        "temperature2m": 15.4,
-        "windSpeed10m": 4.4
+        "cloudCover": 99,
+        "temperature2m": 15.3,
+        "windSpeed10m": 3.6
       },
       {
         "time": "1997-09-07T15:00",
@@ -3612,40 +3694,6 @@ export const season1997CARTWeather = {
         "cloudCover": 99,
         "temperature2m": 15.3,
         "windSpeed10m": 3.6
-      },
-      {
-        "time": "1997-09-07T15:30",
-        "weatherCode": 3,
-        "condition": "Cloudy",
-        "state": {
-          "condition": "Cloudy",
-          "gripLevel": 0.97,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Cloudy"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 99,
-        "temperature2m": 15.3,
-        "windSpeed10m": 3.6
-      },
-      {
-        "time": "1997-09-07T15:45",
-        "weatherCode": 3,
-        "condition": "Cloudy",
-        "state": {
-          "condition": "Cloudy",
-          "gripLevel": 0.97,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Cloudy"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 99,
-        "temperature2m": 15.3,
-        "windSpeed10m": 3.6
       }
     ]
   },
@@ -3658,19 +3706,56 @@ export const season1997CARTWeather = {
       "year": 1997,
       "series": "CART",
       "date": "1997-09-28",
-      "localStartTime": "13:00",
+      "localStartTime": "12:30",
       "timezone": "auto",
       "latitude": 34.0922,
       "longitude": -117.435,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "Medium",
+      "startTimeMethod": "West Coast oval TV-window estimate"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using CART default 13:00"
+      "Workbook start time estimate (Medium): 12:30",
+      "Start time method: West Coast oval TV-window estimate"
     ],
     "samples": [
+      {
+        "time": "1997-09-28T12:30",
+        "weatherCode": 0,
+        "condition": "Dry",
+        "state": {
+          "condition": "Dry",
+          "gripLevel": 1,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Dry"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 0,
+        "temperature2m": 19.3,
+        "windSpeed10m": 3.6
+      },
+      {
+        "time": "1997-09-28T12:45",
+        "weatherCode": 0,
+        "condition": "Dry",
+        "state": {
+          "condition": "Dry",
+          "gripLevel": 1,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Dry"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 0,
+        "temperature2m": 19.3,
+        "windSpeed10m": 3.6
+      },
       {
         "time": "1997-09-28T13:00",
         "weatherCode": 0,
@@ -3719,8 +3804,8 @@ export const season1997CARTWeather = {
         "precipitationMm": 0.0,
         "rainMm": 0.0,
         "cloudCover": 0,
-        "temperature2m": 19.3,
-        "windSpeed10m": 3.6
+        "temperature2m": 18.8,
+        "windSpeed10m": 4.6
       },
       {
         "time": "1997-09-28T13:45",
@@ -3736,8 +3821,8 @@ export const season1997CARTWeather = {
         "precipitationMm": 0.0,
         "rainMm": 0.0,
         "cloudCover": 0,
-        "temperature2m": 19.3,
-        "windSpeed10m": 3.6
+        "temperature2m": 18.8,
+        "windSpeed10m": 4.6
       },
       {
         "time": "1997-09-28T14:00",
@@ -3787,8 +3872,8 @@ export const season1997CARTWeather = {
         "precipitationMm": 0.0,
         "rainMm": 0.0,
         "cloudCover": 0,
-        "temperature2m": 18.8,
-        "windSpeed10m": 4.6
+        "temperature2m": 18.3,
+        "windSpeed10m": 5.1
       },
       {
         "time": "1997-09-28T14:45",
@@ -3804,8 +3889,8 @@ export const season1997CARTWeather = {
         "precipitationMm": 0.0,
         "rainMm": 0.0,
         "cloudCover": 0,
-        "temperature2m": 18.8,
-        "windSpeed10m": 4.6
+        "temperature2m": 18.3,
+        "windSpeed10m": 5.1
       },
       {
         "time": "1997-09-28T15:00",
@@ -3826,40 +3911,6 @@ export const season1997CARTWeather = {
       },
       {
         "time": "1997-09-28T15:15",
-        "weatherCode": 0,
-        "condition": "Dry",
-        "state": {
-          "condition": "Dry",
-          "gripLevel": 1,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Dry"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 0,
-        "temperature2m": 18.3,
-        "windSpeed10m": 5.1
-      },
-      {
-        "time": "1997-09-28T15:30",
-        "weatherCode": 0,
-        "condition": "Dry",
-        "state": {
-          "condition": "Dry",
-          "gripLevel": 1,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Dry"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 0,
-        "temperature2m": 18.3,
-        "windSpeed10m": 5.1
-      },
-      {
-        "time": "1997-09-28T15:45",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {

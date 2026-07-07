@@ -15,12 +15,15 @@ export const season2000IndyCarWeather = {
       "latitude": 28.3772,
       "longitude": -81.5707,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "Low",
+      "startTimeMethod": "Oval daytime heuristic"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using IndyCar default 13:00"
+      "Workbook start time estimate (Low): 13:00",
+      "Start time method: Oval daytime heuristic"
     ],
     "samples": [
       {
@@ -243,12 +246,15 @@ export const season2000IndyCarWeather = {
       "latitude": 33.4484,
       "longitude": -112.074,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "Medium",
+      "startTimeMethod": "Oval daytime estimate"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using IndyCar default 13:00"
+      "Workbook start time estimate (Medium): 13:00",
+      "Start time method: Oval daytime estimate"
     ],
     "samples": [
       {
@@ -466,21 +472,24 @@ export const season2000IndyCarWeather = {
       "year": 2000,
       "series": "IndyCar",
       "date": "2000-04-22",
-      "localStartTime": "13:00",
+      "localStartTime": "19:30",
       "timezone": "auto",
       "latitude": 36.1699,
       "longitude": -115.1398,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "Low",
+      "startTimeMethod": "Saturday oval evening heuristic"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using IndyCar default 13:00"
+      "Workbook start time estimate (Low): 19:30",
+      "Start time method: Saturday oval evening heuristic"
     ],
     "samples": [
       {
-        "time": "2000-04-22T13:00",
+        "time": "2000-04-22T19:30",
         "weatherCode": 3,
         "condition": "Cloudy",
         "state": {
@@ -497,7 +506,7 @@ export const season2000IndyCarWeather = {
         "windSpeed10m": 7.4
       },
       {
-        "time": "2000-04-22T13:15",
+        "time": "2000-04-22T19:45",
         "weatherCode": 3,
         "condition": "Cloudy",
         "state": {
@@ -514,7 +523,7 @@ export const season2000IndyCarWeather = {
         "windSpeed10m": 7.4
       },
       {
-        "time": "2000-04-22T13:30",
+        "time": "2000-04-22T20:00",
         "weatherCode": 3,
         "condition": "Cloudy",
         "state": {
@@ -531,7 +540,7 @@ export const season2000IndyCarWeather = {
         "windSpeed10m": 7.4
       },
       {
-        "time": "2000-04-22T13:45",
+        "time": "2000-04-22T20:15",
         "weatherCode": 3,
         "condition": "Cloudy",
         "state": {
@@ -548,7 +557,7 @@ export const season2000IndyCarWeather = {
         "windSpeed10m": 7.4
       },
       {
-        "time": "2000-04-22T14:00",
+        "time": "2000-04-22T20:30",
         "weatherCode": 2,
         "condition": "Cloudy",
         "state": {
@@ -565,7 +574,7 @@ export const season2000IndyCarWeather = {
         "windSpeed10m": 8.0
       },
       {
-        "time": "2000-04-22T14:15",
+        "time": "2000-04-22T20:45",
         "weatherCode": 2,
         "condition": "Cloudy",
         "state": {
@@ -582,7 +591,7 @@ export const season2000IndyCarWeather = {
         "windSpeed10m": 8.0
       },
       {
-        "time": "2000-04-22T14:30",
+        "time": "2000-04-22T21:00",
         "weatherCode": 2,
         "condition": "Cloudy",
         "state": {
@@ -599,7 +608,7 @@ export const season2000IndyCarWeather = {
         "windSpeed10m": 8.0
       },
       {
-        "time": "2000-04-22T14:45",
+        "time": "2000-04-22T21:15",
         "weatherCode": 2,
         "condition": "Cloudy",
         "state": {
@@ -616,7 +625,7 @@ export const season2000IndyCarWeather = {
         "windSpeed10m": 8.0
       },
       {
-        "time": "2000-04-22T15:00",
+        "time": "2000-04-22T21:30",
         "weatherCode": 1,
         "condition": "Cloudy",
         "state": {
@@ -633,7 +642,7 @@ export const season2000IndyCarWeather = {
         "windSpeed10m": 8.6
       },
       {
-        "time": "2000-04-22T15:15",
+        "time": "2000-04-22T21:45",
         "weatherCode": 1,
         "condition": "Cloudy",
         "state": {
@@ -650,7 +659,7 @@ export const season2000IndyCarWeather = {
         "windSpeed10m": 8.6
       },
       {
-        "time": "2000-04-22T15:30",
+        "time": "2000-04-22T22:00",
         "weatherCode": 1,
         "condition": "Cloudy",
         "state": {
@@ -667,7 +676,7 @@ export const season2000IndyCarWeather = {
         "windSpeed10m": 8.6
       },
       {
-        "time": "2000-04-22T15:45",
+        "time": "2000-04-22T22:15",
         "weatherCode": 1,
         "condition": "Cloudy",
         "state": {
@@ -694,19 +703,39 @@ export const season2000IndyCarWeather = {
       "year": 2000,
       "series": "IndyCar",
       "date": "2000-05-28",
-      "localStartTime": "13:00",
+      "localStartTime": "12:45",
       "timezone": "auto",
       "latitude": 39.8023,
       "longitude": -86.2672,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "High",
+      "startTimeMethod": "Known Indy 500 start-window estimate"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using IndyCar default 13:00"
+      "Workbook start time estimate (High): 12:45",
+      "Start time method: Known Indy 500 start-window estimate"
     ],
     "samples": [
+      {
+        "time": "2000-05-28T12:45",
+        "weatherCode": 55,
+        "condition": "LightRain",
+        "state": {
+          "condition": "LightRain",
+          "gripLevel": 0.72,
+          "wet": true,
+          "changingSoon": false,
+          "label": "Light Rain"
+        },
+        "precipitationMm": 1.0,
+        "rainMm": 1.0,
+        "cloudCover": 100,
+        "temperature2m": 18.9,
+        "windSpeed10m": 8.5
+      },
       {
         "time": "2000-05-28T13:00",
         "weatherCode": 55,
@@ -732,7 +761,7 @@ export const season2000IndyCarWeather = {
           "condition": "LightRain",
           "gripLevel": 0.72,
           "wet": true,
-          "changingSoon": false,
+          "changingSoon": true,
           "label": "Light Rain"
         },
         "precipitationMm": 1.0,
@@ -760,20 +789,20 @@ export const season2000IndyCarWeather = {
       },
       {
         "time": "2000-05-28T13:45",
-        "weatherCode": 55,
+        "weatherCode": 51,
         "condition": "LightRain",
         "state": {
           "condition": "LightRain",
           "gripLevel": 0.72,
           "wet": true,
-          "changingSoon": true,
+          "changingSoon": false,
           "label": "Light Rain"
         },
-        "precipitationMm": 1.0,
-        "rainMm": 1.0,
+        "precipitationMm": 0.4,
+        "rainMm": 0.4,
         "cloudCover": 100,
         "temperature2m": 18.9,
-        "windSpeed10m": 8.5
+        "windSpeed10m": 8.4
       },
       {
         "time": "2000-05-28T14:00",
@@ -837,11 +866,11 @@ export const season2000IndyCarWeather = {
           "changingSoon": false,
           "label": "Light Rain"
         },
-        "precipitationMm": 0.4,
-        "rainMm": 0.4,
+        "precipitationMm": 0.1,
+        "rainMm": 0.1,
         "cloudCover": 100,
-        "temperature2m": 18.9,
-        "windSpeed10m": 8.4
+        "temperature2m": 18.8,
+        "windSpeed10m": 9.7
       },
       {
         "time": "2000-05-28T15:00",
@@ -868,23 +897,6 @@ export const season2000IndyCarWeather = {
           "condition": "LightRain",
           "gripLevel": 0.72,
           "wet": true,
-          "changingSoon": false,
-          "label": "Light Rain"
-        },
-        "precipitationMm": 0.1,
-        "rainMm": 0.1,
-        "cloudCover": 100,
-        "temperature2m": 18.8,
-        "windSpeed10m": 9.7
-      },
-      {
-        "time": "2000-05-28T15:30",
-        "weatherCode": 51,
-        "condition": "LightRain",
-        "state": {
-          "condition": "LightRain",
-          "gripLevel": 0.72,
-          "wet": true,
           "changingSoon": true,
           "label": "Light Rain"
         },
@@ -895,7 +907,7 @@ export const season2000IndyCarWeather = {
         "windSpeed10m": 9.7
       },
       {
-        "time": "2000-05-28T15:45",
+        "time": "2000-05-28T15:30",
         "weatherCode": 51,
         "condition": "LightRain",
         "state": {
@@ -922,21 +934,24 @@ export const season2000IndyCarWeather = {
       "year": 2000,
       "series": "IndyCar",
       "date": "2000-06-11",
-      "localStartTime": "13:00",
+      "localStartTime": "20:00",
       "timezone": "auto",
       "latitude": 32.7555,
       "longitude": -97.3308,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "High",
+      "startTimeMethod": "Known Texas night oval pattern"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using IndyCar default 13:00"
+      "Workbook start time estimate (High): 20:00",
+      "Start time method: Known Texas night oval pattern"
     ],
     "samples": [
       {
-        "time": "2000-06-11T13:00",
+        "time": "2000-06-11T20:00",
         "weatherCode": 2,
         "condition": "Cloudy",
         "state": {
@@ -953,7 +968,7 @@ export const season2000IndyCarWeather = {
         "windSpeed10m": 15.1
       },
       {
-        "time": "2000-06-11T13:15",
+        "time": "2000-06-11T20:15",
         "weatherCode": 2,
         "condition": "Cloudy",
         "state": {
@@ -970,7 +985,7 @@ export const season2000IndyCarWeather = {
         "windSpeed10m": 15.1
       },
       {
-        "time": "2000-06-11T13:30",
+        "time": "2000-06-11T20:30",
         "weatherCode": 2,
         "condition": "Cloudy",
         "state": {
@@ -987,7 +1002,7 @@ export const season2000IndyCarWeather = {
         "windSpeed10m": 15.1
       },
       {
-        "time": "2000-06-11T13:45",
+        "time": "2000-06-11T20:45",
         "weatherCode": 2,
         "condition": "Cloudy",
         "state": {
@@ -1004,7 +1019,7 @@ export const season2000IndyCarWeather = {
         "windSpeed10m": 15.1
       },
       {
-        "time": "2000-06-11T14:00",
+        "time": "2000-06-11T21:00",
         "weatherCode": 2,
         "condition": "Cloudy",
         "state": {
@@ -1021,7 +1036,7 @@ export const season2000IndyCarWeather = {
         "windSpeed10m": 15.3
       },
       {
-        "time": "2000-06-11T14:15",
+        "time": "2000-06-11T21:15",
         "weatherCode": 2,
         "condition": "Cloudy",
         "state": {
@@ -1038,7 +1053,7 @@ export const season2000IndyCarWeather = {
         "windSpeed10m": 15.3
       },
       {
-        "time": "2000-06-11T14:30",
+        "time": "2000-06-11T21:30",
         "weatherCode": 2,
         "condition": "Cloudy",
         "state": {
@@ -1055,7 +1070,7 @@ export const season2000IndyCarWeather = {
         "windSpeed10m": 15.3
       },
       {
-        "time": "2000-06-11T14:45",
+        "time": "2000-06-11T21:45",
         "weatherCode": 2,
         "condition": "Cloudy",
         "state": {
@@ -1072,7 +1087,7 @@ export const season2000IndyCarWeather = {
         "windSpeed10m": 15.3
       },
       {
-        "time": "2000-06-11T15:00",
+        "time": "2000-06-11T22:00",
         "weatherCode": 1,
         "condition": "Cloudy",
         "state": {
@@ -1089,7 +1104,7 @@ export const season2000IndyCarWeather = {
         "windSpeed10m": 15.6
       },
       {
-        "time": "2000-06-11T15:15",
+        "time": "2000-06-11T22:15",
         "weatherCode": 1,
         "condition": "Cloudy",
         "state": {
@@ -1106,7 +1121,7 @@ export const season2000IndyCarWeather = {
         "windSpeed10m": 15.6
       },
       {
-        "time": "2000-06-11T15:30",
+        "time": "2000-06-11T22:30",
         "weatherCode": 1,
         "condition": "Cloudy",
         "state": {
@@ -1123,7 +1138,7 @@ export const season2000IndyCarWeather = {
         "windSpeed10m": 15.6
       },
       {
-        "time": "2000-06-11T15:45",
+        "time": "2000-06-11T22:45",
         "weatherCode": 1,
         "condition": "Cloudy",
         "state": {
@@ -1155,12 +1170,15 @@ export const season2000IndyCarWeather = {
       "latitude": 38.6822,
       "longitude": -104.7008,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "Low",
+      "startTimeMethod": "Oval daytime heuristic"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using IndyCar default 13:00"
+      "Workbook start time estimate (Low): 13:00",
+      "Start time method: Oval daytime heuristic"
     ],
     "samples": [
       {
@@ -1378,21 +1396,24 @@ export const season2000IndyCarWeather = {
       "year": 2000,
       "series": "IndyCar",
       "date": "2000-07-15",
-      "localStartTime": "13:00",
+      "localStartTime": "19:30",
       "timezone": "auto",
       "latitude": 33.3871,
       "longitude": -84.2824,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "Low",
+      "startTimeMethod": "Saturday oval evening heuristic"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using IndyCar default 13:00"
+      "Workbook start time estimate (Low): 19:30",
+      "Start time method: Saturday oval evening heuristic"
     ],
     "samples": [
       {
-        "time": "2000-07-15T13:00",
+        "time": "2000-07-15T19:30",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -1409,7 +1430,7 @@ export const season2000IndyCarWeather = {
         "windSpeed10m": 5.5
       },
       {
-        "time": "2000-07-15T13:15",
+        "time": "2000-07-15T19:45",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -1426,7 +1447,7 @@ export const season2000IndyCarWeather = {
         "windSpeed10m": 5.5
       },
       {
-        "time": "2000-07-15T13:30",
+        "time": "2000-07-15T20:00",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -1443,7 +1464,7 @@ export const season2000IndyCarWeather = {
         "windSpeed10m": 5.5
       },
       {
-        "time": "2000-07-15T13:45",
+        "time": "2000-07-15T20:15",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -1460,7 +1481,7 @@ export const season2000IndyCarWeather = {
         "windSpeed10m": 5.5
       },
       {
-        "time": "2000-07-15T14:00",
+        "time": "2000-07-15T20:30",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -1477,7 +1498,7 @@ export const season2000IndyCarWeather = {
         "windSpeed10m": 5.7
       },
       {
-        "time": "2000-07-15T14:15",
+        "time": "2000-07-15T20:45",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -1494,7 +1515,7 @@ export const season2000IndyCarWeather = {
         "windSpeed10m": 5.7
       },
       {
-        "time": "2000-07-15T14:30",
+        "time": "2000-07-15T21:00",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -1511,7 +1532,7 @@ export const season2000IndyCarWeather = {
         "windSpeed10m": 5.7
       },
       {
-        "time": "2000-07-15T14:45",
+        "time": "2000-07-15T21:15",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -1528,7 +1549,7 @@ export const season2000IndyCarWeather = {
         "windSpeed10m": 5.7
       },
       {
-        "time": "2000-07-15T15:00",
+        "time": "2000-07-15T21:30",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -1545,7 +1566,7 @@ export const season2000IndyCarWeather = {
         "windSpeed10m": 7.1
       },
       {
-        "time": "2000-07-15T15:15",
+        "time": "2000-07-15T21:45",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -1562,7 +1583,7 @@ export const season2000IndyCarWeather = {
         "windSpeed10m": 7.1
       },
       {
-        "time": "2000-07-15T15:30",
+        "time": "2000-07-15T22:00",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -1579,7 +1600,7 @@ export const season2000IndyCarWeather = {
         "windSpeed10m": 7.1
       },
       {
-        "time": "2000-07-15T15:45",
+        "time": "2000-07-15T22:15",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -1611,12 +1632,15 @@ export const season2000IndyCarWeather = {
       "latitude": 38.6851,
       "longitude": -84.9052,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "Low",
+      "startTimeMethod": "Oval daytime heuristic"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using IndyCar default 13:00"
+      "Workbook start time estimate (Low): 13:00",
+      "Start time method: Oval daytime heuristic"
     ],
     "samples": [
       {
@@ -1839,12 +1863,15 @@ export const season2000IndyCarWeather = {
       "latitude": 32.7555,
       "longitude": -97.3308,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "Medium",
+      "startTimeMethod": "Texas oval daytime fallback"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using IndyCar default 13:00"
+      "Workbook start time estimate (Medium): 13:00",
+      "Start time method: Texas oval daytime fallback"
     ],
     "samples": [
       {

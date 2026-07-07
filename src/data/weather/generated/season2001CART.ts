@@ -15,12 +15,15 @@ export const season2001CARTWeather = {
       "latitude": 25.6866,
       "longitude": -100.3161,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "Low",
+      "startTimeMethod": "Series/track-type heuristic"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using CART default 13:00"
+      "Workbook start time estimate (Low): 13:00",
+      "Start time method: Series/track-type heuristic"
     ],
     "samples": [
       {
@@ -238,19 +241,56 @@ export const season2001CARTWeather = {
       "year": 2001,
       "series": "CART",
       "date": "2001-04-08",
-      "localStartTime": "13:00",
+      "localStartTime": "12:30",
       "timezone": "auto",
       "latitude": 33.7701,
       "longitude": -118.1937,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "Medium",
+      "startTimeMethod": "Long Beach street-race pattern"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using CART default 13:00"
+      "Workbook start time estimate (Medium): 12:30",
+      "Start time method: Long Beach street-race pattern"
     ],
     "samples": [
+      {
+        "time": "2001-04-08T12:30",
+        "weatherCode": 0,
+        "condition": "Dry",
+        "state": {
+          "condition": "Dry",
+          "gripLevel": 1,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Dry"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 2,
+        "temperature2m": 9.2,
+        "windSpeed10m": 20.4
+      },
+      {
+        "time": "2001-04-08T12:45",
+        "weatherCode": 0,
+        "condition": "Dry",
+        "state": {
+          "condition": "Dry",
+          "gripLevel": 1,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Dry"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 2,
+        "temperature2m": 9.2,
+        "windSpeed10m": 20.4
+      },
       {
         "time": "2001-04-08T13:00",
         "weatherCode": 0,
@@ -298,9 +338,9 @@ export const season2001CARTWeather = {
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 2,
-        "temperature2m": 9.2,
-        "windSpeed10m": 20.4
+        "cloudCover": 0,
+        "temperature2m": 8.7,
+        "windSpeed10m": 19.2
       },
       {
         "time": "2001-04-08T13:45",
@@ -315,9 +355,9 @@ export const season2001CARTWeather = {
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 2,
-        "temperature2m": 9.2,
-        "windSpeed10m": 20.4
+        "cloudCover": 0,
+        "temperature2m": 8.7,
+        "windSpeed10m": 19.2
       },
       {
         "time": "2001-04-08T14:00",
@@ -367,8 +407,8 @@ export const season2001CARTWeather = {
         "precipitationMm": 0.0,
         "rainMm": 0.0,
         "cloudCover": 0,
-        "temperature2m": 8.7,
-        "windSpeed10m": 19.2
+        "temperature2m": 8.4,
+        "windSpeed10m": 17.4
       },
       {
         "time": "2001-04-08T14:45",
@@ -384,8 +424,8 @@ export const season2001CARTWeather = {
         "precipitationMm": 0.0,
         "rainMm": 0.0,
         "cloudCover": 0,
-        "temperature2m": 8.7,
-        "windSpeed10m": 19.2
+        "temperature2m": 8.4,
+        "windSpeed10m": 17.4
       },
       {
         "time": "2001-04-08T15:00",
@@ -420,40 +460,6 @@ export const season2001CARTWeather = {
         "cloudCover": 0,
         "temperature2m": 8.4,
         "windSpeed10m": 17.4
-      },
-      {
-        "time": "2001-04-08T15:30",
-        "weatherCode": 0,
-        "condition": "Dry",
-        "state": {
-          "condition": "Dry",
-          "gripLevel": 1,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Dry"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 0,
-        "temperature2m": 8.4,
-        "windSpeed10m": 17.4
-      },
-      {
-        "time": "2001-04-08T15:45",
-        "weatherCode": 0,
-        "condition": "Dry",
-        "state": {
-          "condition": "Dry",
-          "gripLevel": 1,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Dry"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 0,
-        "temperature2m": 8.4,
-        "windSpeed10m": 17.4
       }
     ]
   },
@@ -471,12 +477,15 @@ export const season2001CARTWeather = {
       "latitude": 32.7555,
       "longitude": -97.3308,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "Medium",
+      "startTimeMethod": "Texas oval daytime fallback"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using CART default 13:00"
+      "Workbook start time estimate (Medium): 13:00",
+      "Start time method: Texas oval daytime fallback"
     ],
     "samples": [
       {
@@ -699,12 +708,15 @@ export const season2001CARTWeather = {
       "latitude": 40.7404,
       "longitude": -75.3096,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "Low",
+      "startTimeMethod": "Oval daytime heuristic"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using CART default 13:00"
+      "Workbook start time estimate (Low): 13:00",
+      "Start time method: Oval daytime heuristic"
     ],
     "samples": [
       {
@@ -927,12 +939,15 @@ export const season2001CARTWeather = {
       "latitude": 36.5325,
       "longitude": 140.2286,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "Medium",
+      "startTimeMethod": "Japan daytime estimate"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using CART default 13:00"
+      "Workbook start time estimate (Medium): 13:00",
+      "Start time method: Japan daytime estimate"
     ],
     "samples": [
       {
@@ -1155,12 +1170,15 @@ export const season2001CARTWeather = {
       "latitude": 43.0167,
       "longitude": -88.007,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "Medium",
+      "startTimeMethod": "Oval daytime estimate"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using CART default 13:00"
+      "Workbook start time estimate (Medium): 13:00",
+      "Start time method: Oval daytime estimate"
     ],
     "samples": [
       {
@@ -1378,155 +1396,22 @@ export const season2001CARTWeather = {
       "year": 2001,
       "series": "CART",
       "date": "2001-06-17",
-      "localStartTime": "13:00",
+      "localStartTime": "15:00",
       "timezone": "auto",
       "latitude": 42.3314,
       "longitude": -83.0458,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "Medium",
+      "startTimeMethod": "Street race afternoon estimate"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using CART default 13:00"
+      "Workbook start time estimate (Medium): 15:00",
+      "Start time method: Street race afternoon estimate"
     ],
     "samples": [
-      {
-        "time": "2001-06-17T13:00",
-        "weatherCode": 51,
-        "condition": "LightRain",
-        "state": {
-          "condition": "LightRain",
-          "gripLevel": 0.72,
-          "wet": true,
-          "changingSoon": false,
-          "label": "Light Rain"
-        },
-        "precipitationMm": 0.3,
-        "rainMm": 0.3,
-        "cloudCover": 36,
-        "temperature2m": 22.5,
-        "windSpeed10m": 16.9
-      },
-      {
-        "time": "2001-06-17T13:15",
-        "weatherCode": 51,
-        "condition": "LightRain",
-        "state": {
-          "condition": "LightRain",
-          "gripLevel": 0.72,
-          "wet": true,
-          "changingSoon": false,
-          "label": "Light Rain"
-        },
-        "precipitationMm": 0.3,
-        "rainMm": 0.3,
-        "cloudCover": 36,
-        "temperature2m": 22.5,
-        "windSpeed10m": 16.9
-      },
-      {
-        "time": "2001-06-17T13:30",
-        "weatherCode": 51,
-        "condition": "LightRain",
-        "state": {
-          "condition": "LightRain",
-          "gripLevel": 0.72,
-          "wet": true,
-          "changingSoon": true,
-          "label": "Light Rain"
-        },
-        "precipitationMm": 0.3,
-        "rainMm": 0.3,
-        "cloudCover": 36,
-        "temperature2m": 22.5,
-        "windSpeed10m": 16.9
-      },
-      {
-        "time": "2001-06-17T13:45",
-        "weatherCode": 51,
-        "condition": "LightRain",
-        "state": {
-          "condition": "LightRain",
-          "gripLevel": 0.72,
-          "wet": true,
-          "changingSoon": true,
-          "label": "Light Rain"
-        },
-        "precipitationMm": 0.3,
-        "rainMm": 0.3,
-        "cloudCover": 36,
-        "temperature2m": 22.5,
-        "windSpeed10m": 16.9
-      },
-      {
-        "time": "2001-06-17T14:00",
-        "weatherCode": 2,
-        "condition": "Cloudy",
-        "state": {
-          "condition": "Cloudy",
-          "gripLevel": 0.97,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Cloudy"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 52,
-        "temperature2m": 22.1,
-        "windSpeed10m": 17.9
-      },
-      {
-        "time": "2001-06-17T14:15",
-        "weatherCode": 2,
-        "condition": "Cloudy",
-        "state": {
-          "condition": "Cloudy",
-          "gripLevel": 0.97,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Cloudy"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 52,
-        "temperature2m": 22.1,
-        "windSpeed10m": 17.9
-      },
-      {
-        "time": "2001-06-17T14:30",
-        "weatherCode": 2,
-        "condition": "Cloudy",
-        "state": {
-          "condition": "Cloudy",
-          "gripLevel": 0.97,
-          "wet": false,
-          "changingSoon": true,
-          "label": "Cloudy"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 52,
-        "temperature2m": 22.1,
-        "windSpeed10m": 17.9
-      },
-      {
-        "time": "2001-06-17T14:45",
-        "weatherCode": 2,
-        "condition": "Cloudy",
-        "state": {
-          "condition": "Cloudy",
-          "gripLevel": 0.97,
-          "wet": false,
-          "changingSoon": true,
-          "label": "Cloudy"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 52,
-        "temperature2m": 22.1,
-        "windSpeed10m": 17.9
-      },
       {
         "time": "2001-06-17T15:00",
         "weatherCode": 51,
@@ -1538,11 +1423,11 @@ export const season2001CARTWeather = {
           "changingSoon": false,
           "label": "Light Rain"
         },
-        "precipitationMm": 0.2,
-        "rainMm": 0.2,
-        "cloudCover": 47,
-        "temperature2m": 21.0,
-        "windSpeed10m": 15.6
+        "precipitationMm": 0.3,
+        "rainMm": 0.3,
+        "cloudCover": 36,
+        "temperature2m": 22.5,
+        "windSpeed10m": 16.9
       },
       {
         "time": "2001-06-17T15:15",
@@ -1555,6 +1440,125 @@ export const season2001CARTWeather = {
           "changingSoon": false,
           "label": "Light Rain"
         },
+        "precipitationMm": 0.3,
+        "rainMm": 0.3,
+        "cloudCover": 36,
+        "temperature2m": 22.5,
+        "windSpeed10m": 16.9
+      },
+      {
+        "time": "2001-06-17T15:30",
+        "weatherCode": 51,
+        "condition": "LightRain",
+        "state": {
+          "condition": "LightRain",
+          "gripLevel": 0.72,
+          "wet": true,
+          "changingSoon": true,
+          "label": "Light Rain"
+        },
+        "precipitationMm": 0.3,
+        "rainMm": 0.3,
+        "cloudCover": 36,
+        "temperature2m": 22.5,
+        "windSpeed10m": 16.9
+      },
+      {
+        "time": "2001-06-17T15:45",
+        "weatherCode": 51,
+        "condition": "LightRain",
+        "state": {
+          "condition": "LightRain",
+          "gripLevel": 0.72,
+          "wet": true,
+          "changingSoon": true,
+          "label": "Light Rain"
+        },
+        "precipitationMm": 0.3,
+        "rainMm": 0.3,
+        "cloudCover": 36,
+        "temperature2m": 22.5,
+        "windSpeed10m": 16.9
+      },
+      {
+        "time": "2001-06-17T16:00",
+        "weatherCode": 2,
+        "condition": "Cloudy",
+        "state": {
+          "condition": "Cloudy",
+          "gripLevel": 0.97,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Cloudy"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 52,
+        "temperature2m": 22.1,
+        "windSpeed10m": 17.9
+      },
+      {
+        "time": "2001-06-17T16:15",
+        "weatherCode": 2,
+        "condition": "Cloudy",
+        "state": {
+          "condition": "Cloudy",
+          "gripLevel": 0.97,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Cloudy"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 52,
+        "temperature2m": 22.1,
+        "windSpeed10m": 17.9
+      },
+      {
+        "time": "2001-06-17T16:30",
+        "weatherCode": 2,
+        "condition": "Cloudy",
+        "state": {
+          "condition": "Cloudy",
+          "gripLevel": 0.97,
+          "wet": false,
+          "changingSoon": true,
+          "label": "Cloudy"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 52,
+        "temperature2m": 22.1,
+        "windSpeed10m": 17.9
+      },
+      {
+        "time": "2001-06-17T16:45",
+        "weatherCode": 2,
+        "condition": "Cloudy",
+        "state": {
+          "condition": "Cloudy",
+          "gripLevel": 0.97,
+          "wet": false,
+          "changingSoon": true,
+          "label": "Cloudy"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 52,
+        "temperature2m": 22.1,
+        "windSpeed10m": 17.9
+      },
+      {
+        "time": "2001-06-17T17:00",
+        "weatherCode": 51,
+        "condition": "LightRain",
+        "state": {
+          "condition": "LightRain",
+          "gripLevel": 0.72,
+          "wet": true,
+          "changingSoon": false,
+          "label": "Light Rain"
+        },
         "precipitationMm": 0.2,
         "rainMm": 0.2,
         "cloudCover": 47,
@@ -1562,7 +1566,24 @@ export const season2001CARTWeather = {
         "windSpeed10m": 15.6
       },
       {
-        "time": "2001-06-17T15:30",
+        "time": "2001-06-17T17:15",
+        "weatherCode": 51,
+        "condition": "LightRain",
+        "state": {
+          "condition": "LightRain",
+          "gripLevel": 0.72,
+          "wet": true,
+          "changingSoon": false,
+          "label": "Light Rain"
+        },
+        "precipitationMm": 0.2,
+        "rainMm": 0.2,
+        "cloudCover": 47,
+        "temperature2m": 21.0,
+        "windSpeed10m": 15.6
+      },
+      {
+        "time": "2001-06-17T17:30",
         "weatherCode": 51,
         "condition": "LightRain",
         "state": {
@@ -1579,7 +1600,7 @@ export const season2001CARTWeather = {
         "windSpeed10m": 15.6
       },
       {
-        "time": "2001-06-17T15:45",
+        "time": "2001-06-17T17:45",
         "weatherCode": 51,
         "condition": "LightRain",
         "state": {
@@ -1606,19 +1627,56 @@ export const season2001CARTWeather = {
       "year": 2001,
       "series": "CART",
       "date": "2001-06-24",
-      "localStartTime": "13:00",
+      "localStartTime": "12:30",
       "timezone": "auto",
       "latitude": 45.5152,
       "longitude": -122.6784,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "Medium",
+      "startTimeMethod": "West Coast road/street TV-window estimate"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using CART default 13:00"
+      "Workbook start time estimate (Medium): 12:30",
+      "Start time method: West Coast road/street TV-window estimate"
     ],
     "samples": [
+      {
+        "time": "2001-06-24T12:30",
+        "weatherCode": 2,
+        "condition": "Cloudy",
+        "state": {
+          "condition": "Cloudy",
+          "gripLevel": 0.97,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Cloudy"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 72,
+        "temperature2m": 12.3,
+        "windSpeed10m": 5.0
+      },
+      {
+        "time": "2001-06-24T12:45",
+        "weatherCode": 2,
+        "condition": "Cloudy",
+        "state": {
+          "condition": "Cloudy",
+          "gripLevel": 0.97,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Cloudy"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 72,
+        "temperature2m": 12.3,
+        "windSpeed10m": 5.0
+      },
       {
         "time": "2001-06-24T13:00",
         "weatherCode": 2,
@@ -1627,7 +1685,7 @@ export const season2001CARTWeather = {
           "condition": "Cloudy",
           "gripLevel": 0.97,
           "wet": false,
-          "changingSoon": false,
+          "changingSoon": true,
           "label": "Cloudy"
         },
         "precipitationMm": 0.0,
@@ -1644,7 +1702,7 @@ export const season2001CARTWeather = {
           "condition": "Cloudy",
           "gripLevel": 0.97,
           "wet": false,
-          "changingSoon": false,
+          "changingSoon": true,
           "label": "Cloudy"
         },
         "precipitationMm": 0.0,
@@ -1655,37 +1713,37 @@ export const season2001CARTWeather = {
       },
       {
         "time": "2001-06-24T13:30",
-        "weatherCode": 2,
+        "weatherCode": 3,
         "condition": "Cloudy",
         "state": {
           "condition": "Cloudy",
           "gripLevel": 0.97,
           "wet": false,
-          "changingSoon": true,
+          "changingSoon": false,
           "label": "Cloudy"
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 72,
-        "temperature2m": 12.3,
-        "windSpeed10m": 5.0
+        "cloudCover": 87,
+        "temperature2m": 11.2,
+        "windSpeed10m": 4.6
       },
       {
         "time": "2001-06-24T13:45",
-        "weatherCode": 2,
+        "weatherCode": 3,
         "condition": "Cloudy",
         "state": {
           "condition": "Cloudy",
           "gripLevel": 0.97,
           "wet": false,
-          "changingSoon": true,
+          "changingSoon": false,
           "label": "Cloudy"
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 72,
-        "temperature2m": 12.3,
-        "windSpeed10m": 5.0
+        "cloudCover": 87,
+        "temperature2m": 11.2,
+        "windSpeed10m": 4.6
       },
       {
         "time": "2001-06-24T14:00",
@@ -1734,8 +1792,8 @@ export const season2001CARTWeather = {
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 87,
-        "temperature2m": 11.2,
+        "cloudCover": 100,
+        "temperature2m": 10.7,
         "windSpeed10m": 4.6
       },
       {
@@ -1751,8 +1809,8 @@ export const season2001CARTWeather = {
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 87,
-        "temperature2m": 11.2,
+        "cloudCover": 100,
+        "temperature2m": 10.7,
         "windSpeed10m": 4.6
       },
       {
@@ -1788,40 +1846,6 @@ export const season2001CARTWeather = {
         "cloudCover": 100,
         "temperature2m": 10.7,
         "windSpeed10m": 4.6
-      },
-      {
-        "time": "2001-06-24T15:30",
-        "weatherCode": 3,
-        "condition": "Cloudy",
-        "state": {
-          "condition": "Cloudy",
-          "gripLevel": 0.97,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Cloudy"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 100,
-        "temperature2m": 10.7,
-        "windSpeed10m": 4.6
-      },
-      {
-        "time": "2001-06-24T15:45",
-        "weatherCode": 3,
-        "condition": "Cloudy",
-        "state": {
-          "condition": "Cloudy",
-          "gripLevel": 0.97,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Cloudy"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 100,
-        "temperature2m": 10.7,
-        "windSpeed10m": 4.6
       }
     ]
   },
@@ -1839,12 +1863,15 @@ export const season2001CARTWeather = {
       "latitude": 41.4993,
       "longitude": -81.6944,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "Low",
+      "startTimeMethod": "Series/track-type heuristic"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using CART default 13:00"
+      "Workbook start time estimate (Low): 13:00",
+      "Start time method: Series/track-type heuristic"
     ],
     "samples": [
       {
@@ -2067,12 +2094,15 @@ export const season2001CARTWeather = {
       "latitude": 43.6532,
       "longitude": -79.3832,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "Low",
+      "startTimeMethod": "Series/track-type heuristic"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using CART default 13:00"
+      "Workbook start time estimate (Low): 13:00",
+      "Start time method: Series/track-type heuristic"
     ],
     "samples": [
       {
@@ -2295,12 +2325,15 @@ export const season2001CARTWeather = {
       "latitude": 42.1059,
       "longitude": -84.2483,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "Low",
+      "startTimeMethod": "Oval daytime heuristic"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using CART default 13:00"
+      "Workbook start time estimate (Low): 13:00",
+      "Start time method: Oval daytime heuristic"
     ],
     "samples": [
       {
@@ -2523,12 +2556,15 @@ export const season2001CARTWeather = {
       "latitude": 41.8456,
       "longitude": -87.7539,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "Low",
+      "startTimeMethod": "Oval daytime heuristic"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using CART default 13:00"
+      "Workbook start time estimate (Low): 13:00",
+      "Start time method: Oval daytime heuristic"
     ],
     "samples": [
       {
@@ -2746,53 +2782,22 @@ export const season2001CARTWeather = {
       "year": 2001,
       "series": "CART",
       "date": "2001-08-12",
-      "localStartTime": "13:00",
+      "localStartTime": "13:30",
       "timezone": "auto",
       "latitude": 40.6787,
       "longitude": -82.5824,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "Medium",
+      "startTimeMethod": "Road-course afternoon estimate"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using CART default 13:00"
+      "Workbook start time estimate (Medium): 13:30",
+      "Start time method: Road-course afternoon estimate"
     ],
     "samples": [
-      {
-        "time": "2001-08-12T13:00",
-        "weatherCode": 2,
-        "condition": "Cloudy",
-        "state": {
-          "condition": "Cloudy",
-          "gripLevel": 0.97,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Cloudy"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 64,
-        "temperature2m": 21.0,
-        "windSpeed10m": 10.9
-      },
-      {
-        "time": "2001-08-12T13:15",
-        "weatherCode": 2,
-        "condition": "Cloudy",
-        "state": {
-          "condition": "Cloudy",
-          "gripLevel": 0.97,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Cloudy"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 64,
-        "temperature2m": 21.0,
-        "windSpeed10m": 10.9
-      },
       {
         "time": "2001-08-12T13:30",
         "weatherCode": 2,
@@ -2840,9 +2845,9 @@ export const season2001CARTWeather = {
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 65,
-        "temperature2m": 20.7,
-        "windSpeed10m": 10.1
+        "cloudCover": 64,
+        "temperature2m": 21.0,
+        "windSpeed10m": 10.9
       },
       {
         "time": "2001-08-12T14:15",
@@ -2857,9 +2862,9 @@ export const season2001CARTWeather = {
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 65,
-        "temperature2m": 20.7,
-        "windSpeed10m": 10.1
+        "cloudCover": 64,
+        "temperature2m": 21.0,
+        "windSpeed10m": 10.9
       },
       {
         "time": "2001-08-12T14:30",
@@ -2908,9 +2913,9 @@ export const season2001CARTWeather = {
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 74,
-        "temperature2m": 20.4,
-        "windSpeed10m": 8.3
+        "cloudCover": 65,
+        "temperature2m": 20.7,
+        "windSpeed10m": 10.1
       },
       {
         "time": "2001-08-12T15:15",
@@ -2925,9 +2930,9 @@ export const season2001CARTWeather = {
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 74,
-        "temperature2m": 20.4,
-        "windSpeed10m": 8.3
+        "cloudCover": 65,
+        "temperature2m": 20.7,
+        "windSpeed10m": 10.1
       },
       {
         "time": "2001-08-12T15:30",
@@ -2962,6 +2967,40 @@ export const season2001CARTWeather = {
         "cloudCover": 74,
         "temperature2m": 20.4,
         "windSpeed10m": 8.3
+      },
+      {
+        "time": "2001-08-12T16:00",
+        "weatherCode": 2,
+        "condition": "Cloudy",
+        "state": {
+          "condition": "Cloudy",
+          "gripLevel": 0.97,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Cloudy"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 74,
+        "temperature2m": 20.4,
+        "windSpeed10m": 8.3
+      },
+      {
+        "time": "2001-08-12T16:15",
+        "weatherCode": 2,
+        "condition": "Cloudy",
+        "state": {
+          "condition": "Cloudy",
+          "gripLevel": 0.97,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Cloudy"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 74,
+        "temperature2m": 20.4,
+        "windSpeed10m": 8.3
       }
     ]
   },
@@ -2974,19 +3013,56 @@ export const season2001CARTWeather = {
       "year": 2001,
       "series": "CART",
       "date": "2001-08-19",
-      "localStartTime": "13:00",
+      "localStartTime": "12:30",
       "timezone": "auto",
       "latitude": 43.8333,
       "longitude": -88.017,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "Medium",
+      "startTimeMethod": "Road-course midday estimate"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using CART default 13:00"
+      "Workbook start time estimate (Medium): 12:30",
+      "Start time method: Road-course midday estimate"
     ],
     "samples": [
+      {
+        "time": "2001-08-19T12:30",
+        "weatherCode": 51,
+        "condition": "LightRain",
+        "state": {
+          "condition": "LightRain",
+          "gripLevel": 0.72,
+          "wet": true,
+          "changingSoon": false,
+          "label": "Light Rain"
+        },
+        "precipitationMm": 0.2,
+        "rainMm": 0.2,
+        "cloudCover": 100,
+        "temperature2m": 17.2,
+        "windSpeed10m": 16.3
+      },
+      {
+        "time": "2001-08-19T12:45",
+        "weatherCode": 51,
+        "condition": "LightRain",
+        "state": {
+          "condition": "LightRain",
+          "gripLevel": 0.72,
+          "wet": true,
+          "changingSoon": false,
+          "label": "Light Rain"
+        },
+        "precipitationMm": 0.2,
+        "rainMm": 0.2,
+        "cloudCover": 100,
+        "temperature2m": 17.2,
+        "windSpeed10m": 16.3
+      },
       {
         "time": "2001-08-19T13:00",
         "weatherCode": 51,
@@ -2995,7 +3071,7 @@ export const season2001CARTWeather = {
           "condition": "LightRain",
           "gripLevel": 0.72,
           "wet": true,
-          "changingSoon": false,
+          "changingSoon": true,
           "label": "Light Rain"
         },
         "precipitationMm": 0.2,
@@ -3012,7 +3088,7 @@ export const season2001CARTWeather = {
           "condition": "LightRain",
           "gripLevel": 0.72,
           "wet": true,
-          "changingSoon": false,
+          "changingSoon": true,
           "label": "Light Rain"
         },
         "precipitationMm": 0.2,
@@ -3023,37 +3099,37 @@ export const season2001CARTWeather = {
       },
       {
         "time": "2001-08-19T13:30",
-        "weatherCode": 51,
+        "weatherCode": 53,
         "condition": "LightRain",
         "state": {
           "condition": "LightRain",
           "gripLevel": 0.72,
           "wet": true,
-          "changingSoon": true,
+          "changingSoon": false,
           "label": "Light Rain"
         },
-        "precipitationMm": 0.2,
-        "rainMm": 0.2,
+        "precipitationMm": 0.9,
+        "rainMm": 0.9,
         "cloudCover": 100,
-        "temperature2m": 17.2,
-        "windSpeed10m": 16.3
+        "temperature2m": 17.3,
+        "windSpeed10m": 18.4
       },
       {
         "time": "2001-08-19T13:45",
-        "weatherCode": 51,
+        "weatherCode": 53,
         "condition": "LightRain",
         "state": {
           "condition": "LightRain",
           "gripLevel": 0.72,
           "wet": true,
-          "changingSoon": true,
+          "changingSoon": false,
           "label": "Light Rain"
         },
-        "precipitationMm": 0.2,
-        "rainMm": 0.2,
+        "precipitationMm": 0.9,
+        "rainMm": 0.9,
         "cloudCover": 100,
-        "temperature2m": 17.2,
-        "windSpeed10m": 16.3
+        "temperature2m": 17.3,
+        "windSpeed10m": 18.4
       },
       {
         "time": "2001-08-19T14:00",
@@ -3100,11 +3176,11 @@ export const season2001CARTWeather = {
           "changingSoon": false,
           "label": "Light Rain"
         },
-        "precipitationMm": 0.9,
-        "rainMm": 0.9,
+        "precipitationMm": 0.7,
+        "rainMm": 0.7,
         "cloudCover": 100,
-        "temperature2m": 17.3,
-        "windSpeed10m": 18.4
+        "temperature2m": 16.9,
+        "windSpeed10m": 17.6
       },
       {
         "time": "2001-08-19T14:45",
@@ -3117,11 +3193,11 @@ export const season2001CARTWeather = {
           "changingSoon": false,
           "label": "Light Rain"
         },
-        "precipitationMm": 0.9,
-        "rainMm": 0.9,
+        "precipitationMm": 0.7,
+        "rainMm": 0.7,
         "cloudCover": 100,
-        "temperature2m": 17.3,
-        "windSpeed10m": 18.4
+        "temperature2m": 16.9,
+        "windSpeed10m": 17.6
       },
       {
         "time": "2001-08-19T15:00",
@@ -3156,40 +3232,6 @@ export const season2001CARTWeather = {
         "cloudCover": 100,
         "temperature2m": 16.9,
         "windSpeed10m": 17.6
-      },
-      {
-        "time": "2001-08-19T15:30",
-        "weatherCode": 53,
-        "condition": "LightRain",
-        "state": {
-          "condition": "LightRain",
-          "gripLevel": 0.72,
-          "wet": true,
-          "changingSoon": false,
-          "label": "Light Rain"
-        },
-        "precipitationMm": 0.7,
-        "rainMm": 0.7,
-        "cloudCover": 100,
-        "temperature2m": 16.9,
-        "windSpeed10m": 17.6
-      },
-      {
-        "time": "2001-08-19T15:45",
-        "weatherCode": 53,
-        "condition": "LightRain",
-        "state": {
-          "condition": "LightRain",
-          "gripLevel": 0.72,
-          "wet": true,
-          "changingSoon": false,
-          "label": "Light Rain"
-        },
-        "precipitationMm": 0.7,
-        "rainMm": 0.7,
-        "cloudCover": 100,
-        "temperature2m": 16.9,
-        "windSpeed10m": 17.6
       }
     ]
   },
@@ -3207,12 +3249,15 @@ export const season2001CARTWeather = {
       "latitude": 49.2827,
       "longitude": -123.1207,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "Low",
+      "startTimeMethod": "Series/track-type heuristic"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using CART default 13:00"
+      "Workbook start time estimate (Low): 13:00",
+      "Start time method: Series/track-type heuristic"
     ],
     "samples": [
       {
@@ -3435,12 +3480,15 @@ export const season2001CARTWeather = {
       "latitude": 51.5448,
       "longitude": 13.8868,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "Low",
+      "startTimeMethod": "Series/track-type heuristic"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using CART default 13:00"
+      "Workbook start time estimate (Low): 13:00",
+      "Start time method: Series/track-type heuristic"
     ],
     "samples": [
       {
@@ -3658,21 +3706,24 @@ export const season2001CARTWeather = {
       "year": 2001,
       "series": "CART",
       "date": "2001-09-22",
-      "localStartTime": "13:00",
+      "localStartTime": "19:30",
       "timezone": "auto",
       "latitude": 52.454,
       "longitude": -0.5546,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "Low",
+      "startTimeMethod": "Saturday oval evening heuristic"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using CART default 13:00"
+      "Workbook start time estimate (Low): 19:30",
+      "Start time method: Saturday oval evening heuristic"
     ],
     "samples": [
       {
-        "time": "2001-09-22T13:00",
+        "time": "2001-09-22T19:30",
         "weatherCode": 1,
         "condition": "Cloudy",
         "state": {
@@ -3689,7 +3740,7 @@ export const season2001CARTWeather = {
         "windSpeed10m": 5.3
       },
       {
-        "time": "2001-09-22T13:15",
+        "time": "2001-09-22T19:45",
         "weatherCode": 1,
         "condition": "Cloudy",
         "state": {
@@ -3706,7 +3757,7 @@ export const season2001CARTWeather = {
         "windSpeed10m": 5.3
       },
       {
-        "time": "2001-09-22T13:30",
+        "time": "2001-09-22T20:00",
         "weatherCode": 1,
         "condition": "Cloudy",
         "state": {
@@ -3723,7 +3774,7 @@ export const season2001CARTWeather = {
         "windSpeed10m": 5.3
       },
       {
-        "time": "2001-09-22T13:45",
+        "time": "2001-09-22T20:15",
         "weatherCode": 1,
         "condition": "Cloudy",
         "state": {
@@ -3740,7 +3791,7 @@ export const season2001CARTWeather = {
         "windSpeed10m": 5.3
       },
       {
-        "time": "2001-09-22T14:00",
+        "time": "2001-09-22T20:30",
         "weatherCode": 1,
         "condition": "Cloudy",
         "state": {
@@ -3757,7 +3808,7 @@ export const season2001CARTWeather = {
         "windSpeed10m": 5.4
       },
       {
-        "time": "2001-09-22T14:15",
+        "time": "2001-09-22T20:45",
         "weatherCode": 1,
         "condition": "Cloudy",
         "state": {
@@ -3774,7 +3825,7 @@ export const season2001CARTWeather = {
         "windSpeed10m": 5.4
       },
       {
-        "time": "2001-09-22T14:30",
+        "time": "2001-09-22T21:00",
         "weatherCode": 1,
         "condition": "Cloudy",
         "state": {
@@ -3791,7 +3842,7 @@ export const season2001CARTWeather = {
         "windSpeed10m": 5.4
       },
       {
-        "time": "2001-09-22T14:45",
+        "time": "2001-09-22T21:15",
         "weatherCode": 1,
         "condition": "Cloudy",
         "state": {
@@ -3808,7 +3859,7 @@ export const season2001CARTWeather = {
         "windSpeed10m": 5.4
       },
       {
-        "time": "2001-09-22T15:00",
+        "time": "2001-09-22T21:30",
         "weatherCode": 1,
         "condition": "Cloudy",
         "state": {
@@ -3825,7 +3876,7 @@ export const season2001CARTWeather = {
         "windSpeed10m": 4.3
       },
       {
-        "time": "2001-09-22T15:15",
+        "time": "2001-09-22T21:45",
         "weatherCode": 1,
         "condition": "Cloudy",
         "state": {
@@ -3842,7 +3893,7 @@ export const season2001CARTWeather = {
         "windSpeed10m": 4.3
       },
       {
-        "time": "2001-09-22T15:30",
+        "time": "2001-09-22T22:00",
         "weatherCode": 1,
         "condition": "Cloudy",
         "state": {
@@ -3859,7 +3910,7 @@ export const season2001CARTWeather = {
         "windSpeed10m": 4.3
       },
       {
-        "time": "2001-09-22T15:45",
+        "time": "2001-09-22T22:15",
         "weatherCode": 1,
         "condition": "Cloudy",
         "state": {
@@ -3891,12 +3942,15 @@ export const season2001CARTWeather = {
       "latitude": 29.7604,
       "longitude": -95.3698,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "Low",
+      "startTimeMethod": "Series/track-type heuristic"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using CART default 13:00"
+      "Workbook start time estimate (Low): 13:00",
+      "Start time method: Series/track-type heuristic"
     ],
     "samples": [
       {
@@ -4114,19 +4168,56 @@ export const season2001CARTWeather = {
       "year": 2001,
       "series": "CART",
       "date": "2001-10-14",
-      "localStartTime": "13:00",
+      "localStartTime": "12:30",
       "timezone": "auto",
       "latitude": 36.6002,
       "longitude": -121.8947,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "Medium",
+      "startTimeMethod": "West Coast road/street TV-window estimate"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using CART default 13:00"
+      "Workbook start time estimate (Medium): 12:30",
+      "Start time method: West Coast road/street TV-window estimate"
     ],
     "samples": [
+      {
+        "time": "2001-10-14T12:30",
+        "weatherCode": 1,
+        "condition": "Cloudy",
+        "state": {
+          "condition": "Cloudy",
+          "gripLevel": 0.97,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Cloudy"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 27,
+        "temperature2m": 15.5,
+        "windSpeed10m": 4.2
+      },
+      {
+        "time": "2001-10-14T12:45",
+        "weatherCode": 1,
+        "condition": "Cloudy",
+        "state": {
+          "condition": "Cloudy",
+          "gripLevel": 0.97,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Cloudy"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 27,
+        "temperature2m": 15.5,
+        "windSpeed10m": 4.2
+      },
       {
         "time": "2001-10-14T13:00",
         "weatherCode": 1,
@@ -4135,7 +4226,7 @@ export const season2001CARTWeather = {
           "condition": "Cloudy",
           "gripLevel": 0.97,
           "wet": false,
-          "changingSoon": false,
+          "changingSoon": true,
           "label": "Cloudy"
         },
         "precipitationMm": 0.0,
@@ -4152,7 +4243,7 @@ export const season2001CARTWeather = {
           "condition": "Cloudy",
           "gripLevel": 0.97,
           "wet": false,
-          "changingSoon": false,
+          "changingSoon": true,
           "label": "Cloudy"
         },
         "precipitationMm": 0.0,
@@ -4163,37 +4254,37 @@ export const season2001CARTWeather = {
       },
       {
         "time": "2001-10-14T13:30",
-        "weatherCode": 1,
+        "weatherCode": 2,
         "condition": "Cloudy",
         "state": {
           "condition": "Cloudy",
           "gripLevel": 0.97,
           "wet": false,
-          "changingSoon": true,
+          "changingSoon": false,
           "label": "Cloudy"
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 27,
-        "temperature2m": 15.5,
-        "windSpeed10m": 4.2
+        "cloudCover": 76,
+        "temperature2m": 14.0,
+        "windSpeed10m": 4.8
       },
       {
         "time": "2001-10-14T13:45",
-        "weatherCode": 1,
+        "weatherCode": 2,
         "condition": "Cloudy",
         "state": {
           "condition": "Cloudy",
           "gripLevel": 0.97,
           "wet": false,
-          "changingSoon": true,
+          "changingSoon": false,
           "label": "Cloudy"
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 27,
-        "temperature2m": 15.5,
-        "windSpeed10m": 4.2
+        "cloudCover": 76,
+        "temperature2m": 14.0,
+        "windSpeed10m": 4.8
       },
       {
         "time": "2001-10-14T14:00",
@@ -4203,7 +4294,7 @@ export const season2001CARTWeather = {
           "condition": "Cloudy",
           "gripLevel": 0.97,
           "wet": false,
-          "changingSoon": false,
+          "changingSoon": true,
           "label": "Cloudy"
         },
         "precipitationMm": 0.0,
@@ -4220,7 +4311,7 @@ export const season2001CARTWeather = {
           "condition": "Cloudy",
           "gripLevel": 0.97,
           "wet": false,
-          "changingSoon": false,
+          "changingSoon": true,
           "label": "Cloudy"
         },
         "precipitationMm": 0.0,
@@ -4231,37 +4322,37 @@ export const season2001CARTWeather = {
       },
       {
         "time": "2001-10-14T14:30",
-        "weatherCode": 2,
+        "weatherCode": 3,
         "condition": "Cloudy",
         "state": {
           "condition": "Cloudy",
           "gripLevel": 0.97,
           "wet": false,
-          "changingSoon": true,
+          "changingSoon": false,
           "label": "Cloudy"
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 76,
-        "temperature2m": 14.0,
-        "windSpeed10m": 4.8
+        "cloudCover": 93,
+        "temperature2m": 14.1,
+        "windSpeed10m": 5.5
       },
       {
         "time": "2001-10-14T14:45",
-        "weatherCode": 2,
+        "weatherCode": 3,
         "condition": "Cloudy",
         "state": {
           "condition": "Cloudy",
           "gripLevel": 0.97,
           "wet": false,
-          "changingSoon": true,
+          "changingSoon": false,
           "label": "Cloudy"
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 76,
-        "temperature2m": 14.0,
-        "windSpeed10m": 4.8
+        "cloudCover": 93,
+        "temperature2m": 14.1,
+        "windSpeed10m": 5.5
       },
       {
         "time": "2001-10-14T15:00",
@@ -4296,40 +4387,6 @@ export const season2001CARTWeather = {
         "cloudCover": 93,
         "temperature2m": 14.1,
         "windSpeed10m": 5.5
-      },
-      {
-        "time": "2001-10-14T15:30",
-        "weatherCode": 3,
-        "condition": "Cloudy",
-        "state": {
-          "condition": "Cloudy",
-          "gripLevel": 0.97,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Cloudy"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 93,
-        "temperature2m": 14.1,
-        "windSpeed10m": 5.5
-      },
-      {
-        "time": "2001-10-14T15:45",
-        "weatherCode": 3,
-        "condition": "Cloudy",
-        "state": {
-          "condition": "Cloudy",
-          "gripLevel": 0.97,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Cloudy"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 93,
-        "temperature2m": 14.1,
-        "windSpeed10m": 5.5
       }
     ]
   },
@@ -4342,87 +4399,22 @@ export const season2001CARTWeather = {
       "year": 2001,
       "series": "CART",
       "date": "2001-10-28",
-      "localStartTime": "13:00",
+      "localStartTime": "14:00",
       "timezone": "auto",
       "latitude": -28.0027,
       "longitude": 153.4297,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "Medium",
+      "startTimeMethod": "Australia street-race estimate"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using CART default 13:00"
+      "Workbook start time estimate (Medium): 14:00",
+      "Start time method: Australia street-race estimate"
     ],
     "samples": [
-      {
-        "time": "2001-10-28T13:00",
-        "weatherCode": 0,
-        "condition": "Dry",
-        "state": {
-          "condition": "Dry",
-          "gripLevel": 1,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Dry"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 0,
-        "temperature2m": 19.5,
-        "windSpeed10m": 8.5
-      },
-      {
-        "time": "2001-10-28T13:15",
-        "weatherCode": 0,
-        "condition": "Dry",
-        "state": {
-          "condition": "Dry",
-          "gripLevel": 1,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Dry"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 0,
-        "temperature2m": 19.5,
-        "windSpeed10m": 8.5
-      },
-      {
-        "time": "2001-10-28T13:30",
-        "weatherCode": 0,
-        "condition": "Dry",
-        "state": {
-          "condition": "Dry",
-          "gripLevel": 1,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Dry"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 0,
-        "temperature2m": 19.5,
-        "windSpeed10m": 8.5
-      },
-      {
-        "time": "2001-10-28T13:45",
-        "weatherCode": 0,
-        "condition": "Dry",
-        "state": {
-          "condition": "Dry",
-          "gripLevel": 1,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Dry"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 0,
-        "temperature2m": 19.5,
-        "windSpeed10m": 8.5
-      },
       {
         "time": "2001-10-28T14:00",
         "weatherCode": 0,
@@ -4437,8 +4429,8 @@ export const season2001CARTWeather = {
         "precipitationMm": 0.0,
         "rainMm": 0.0,
         "cloudCover": 0,
-        "temperature2m": 18.9,
-        "windSpeed10m": 8.0
+        "temperature2m": 19.5,
+        "windSpeed10m": 8.5
       },
       {
         "time": "2001-10-28T14:15",
@@ -4454,8 +4446,8 @@ export const season2001CARTWeather = {
         "precipitationMm": 0.0,
         "rainMm": 0.0,
         "cloudCover": 0,
-        "temperature2m": 18.9,
-        "windSpeed10m": 8.0
+        "temperature2m": 19.5,
+        "windSpeed10m": 8.5
       },
       {
         "time": "2001-10-28T14:30",
@@ -4471,8 +4463,8 @@ export const season2001CARTWeather = {
         "precipitationMm": 0.0,
         "rainMm": 0.0,
         "cloudCover": 0,
-        "temperature2m": 18.9,
-        "windSpeed10m": 8.0
+        "temperature2m": 19.5,
+        "windSpeed10m": 8.5
       },
       {
         "time": "2001-10-28T14:45",
@@ -4488,8 +4480,8 @@ export const season2001CARTWeather = {
         "precipitationMm": 0.0,
         "rainMm": 0.0,
         "cloudCover": 0,
-        "temperature2m": 18.9,
-        "windSpeed10m": 8.0
+        "temperature2m": 19.5,
+        "windSpeed10m": 8.5
       },
       {
         "time": "2001-10-28T15:00",
@@ -4505,8 +4497,8 @@ export const season2001CARTWeather = {
         "precipitationMm": 0.0,
         "rainMm": 0.0,
         "cloudCover": 0,
-        "temperature2m": 18.4,
-        "windSpeed10m": 7.2
+        "temperature2m": 18.9,
+        "windSpeed10m": 8.0
       },
       {
         "time": "2001-10-28T15:15",
@@ -4522,11 +4514,45 @@ export const season2001CARTWeather = {
         "precipitationMm": 0.0,
         "rainMm": 0.0,
         "cloudCover": 0,
-        "temperature2m": 18.4,
-        "windSpeed10m": 7.2
+        "temperature2m": 18.9,
+        "windSpeed10m": 8.0
       },
       {
         "time": "2001-10-28T15:30",
+        "weatherCode": 0,
+        "condition": "Dry",
+        "state": {
+          "condition": "Dry",
+          "gripLevel": 1,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Dry"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 0,
+        "temperature2m": 18.9,
+        "windSpeed10m": 8.0
+      },
+      {
+        "time": "2001-10-28T15:45",
+        "weatherCode": 0,
+        "condition": "Dry",
+        "state": {
+          "condition": "Dry",
+          "gripLevel": 1,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Dry"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 0,
+        "temperature2m": 18.9,
+        "windSpeed10m": 8.0
+      },
+      {
+        "time": "2001-10-28T16:00",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -4543,7 +4569,41 @@ export const season2001CARTWeather = {
         "windSpeed10m": 7.2
       },
       {
-        "time": "2001-10-28T15:45",
+        "time": "2001-10-28T16:15",
+        "weatherCode": 0,
+        "condition": "Dry",
+        "state": {
+          "condition": "Dry",
+          "gripLevel": 1,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Dry"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 0,
+        "temperature2m": 18.4,
+        "windSpeed10m": 7.2
+      },
+      {
+        "time": "2001-10-28T16:30",
+        "weatherCode": 0,
+        "condition": "Dry",
+        "state": {
+          "condition": "Dry",
+          "gripLevel": 1,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Dry"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 0,
+        "temperature2m": 18.4,
+        "windSpeed10m": 7.2
+      },
+      {
+        "time": "2001-10-28T16:45",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -4570,19 +4630,56 @@ export const season2001CARTWeather = {
       "year": 2001,
       "series": "CART",
       "date": "2001-11-04",
-      "localStartTime": "13:00",
+      "localStartTime": "12:30",
       "timezone": "auto",
       "latitude": 34.0922,
       "longitude": -117.435,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "Medium",
+      "startTimeMethod": "West Coast oval TV-window estimate"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using CART default 13:00"
+      "Workbook start time estimate (Medium): 12:30",
+      "Start time method: West Coast oval TV-window estimate"
     ],
     "samples": [
+      {
+        "time": "2001-11-04T12:30",
+        "weatherCode": 3,
+        "condition": "Cloudy",
+        "state": {
+          "condition": "Cloudy",
+          "gripLevel": 0.97,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Cloudy"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 95,
+        "temperature2m": 18.2,
+        "windSpeed10m": 1.1
+      },
+      {
+        "time": "2001-11-04T12:45",
+        "weatherCode": 3,
+        "condition": "Cloudy",
+        "state": {
+          "condition": "Cloudy",
+          "gripLevel": 0.97,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Cloudy"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 95,
+        "temperature2m": 18.2,
+        "windSpeed10m": 1.1
+      },
       {
         "time": "2001-11-04T13:00",
         "weatherCode": 3,
@@ -4630,9 +4727,9 @@ export const season2001CARTWeather = {
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 95,
-        "temperature2m": 18.2,
-        "windSpeed10m": 1.1
+        "cloudCover": 100,
+        "temperature2m": 17.2,
+        "windSpeed10m": 2.0
       },
       {
         "time": "2001-11-04T13:45",
@@ -4647,9 +4744,9 @@ export const season2001CARTWeather = {
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 95,
-        "temperature2m": 18.2,
-        "windSpeed10m": 1.1
+        "cloudCover": 100,
+        "temperature2m": 17.2,
+        "windSpeed10m": 2.0
       },
       {
         "time": "2001-11-04T14:00",
@@ -4698,9 +4795,9 @@ export const season2001CARTWeather = {
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 100,
-        "temperature2m": 17.2,
-        "windSpeed10m": 2.0
+        "cloudCover": 97,
+        "temperature2m": 16.6,
+        "windSpeed10m": 5.6
       },
       {
         "time": "2001-11-04T14:45",
@@ -4715,9 +4812,9 @@ export const season2001CARTWeather = {
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 100,
-        "temperature2m": 17.2,
-        "windSpeed10m": 2.0
+        "cloudCover": 97,
+        "temperature2m": 16.6,
+        "windSpeed10m": 5.6
       },
       {
         "time": "2001-11-04T15:00",
@@ -4738,40 +4835,6 @@ export const season2001CARTWeather = {
       },
       {
         "time": "2001-11-04T15:15",
-        "weatherCode": 3,
-        "condition": "Cloudy",
-        "state": {
-          "condition": "Cloudy",
-          "gripLevel": 0.97,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Cloudy"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 97,
-        "temperature2m": 16.6,
-        "windSpeed10m": 5.6
-      },
-      {
-        "time": "2001-11-04T15:30",
-        "weatherCode": 3,
-        "condition": "Cloudy",
-        "state": {
-          "condition": "Cloudy",
-          "gripLevel": 0.97,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Cloudy"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 97,
-        "temperature2m": 16.6,
-        "windSpeed10m": 5.6
-      },
-      {
-        "time": "2001-11-04T15:45",
         "weatherCode": 3,
         "condition": "Cloudy",
         "state": {

@@ -10,21 +10,24 @@ export const season2020IndyCarWeather = {
       "year": 2020,
       "series": "IndyCar",
       "date": "2020-06-06",
-      "localStartTime": "13:30",
+      "localStartTime": "20:00",
       "timezone": "auto",
       "latitude": 32.7555,
       "longitude": -97.3308,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "High",
+      "startTimeMethod": "Known Texas night oval pattern"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using IndyCar default 13:30"
+      "Workbook start time estimate (High): 20:00",
+      "Start time method: Known Texas night oval pattern"
     ],
     "samples": [
       {
-        "time": "2020-06-06T13:30",
+        "time": "2020-06-06T20:00",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -41,7 +44,7 @@ export const season2020IndyCarWeather = {
         "windSpeed10m": 12.3
       },
       {
-        "time": "2020-06-06T13:45",
+        "time": "2020-06-06T20:15",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -58,7 +61,7 @@ export const season2020IndyCarWeather = {
         "windSpeed10m": 12.3
       },
       {
-        "time": "2020-06-06T14:00",
+        "time": "2020-06-06T20:30",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -75,7 +78,7 @@ export const season2020IndyCarWeather = {
         "windSpeed10m": 12.3
       },
       {
-        "time": "2020-06-06T14:15",
+        "time": "2020-06-06T20:45",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -92,7 +95,7 @@ export const season2020IndyCarWeather = {
         "windSpeed10m": 12.3
       },
       {
-        "time": "2020-06-06T14:30",
+        "time": "2020-06-06T21:00",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -109,7 +112,7 @@ export const season2020IndyCarWeather = {
         "windSpeed10m": 11.9
       },
       {
-        "time": "2020-06-06T14:45",
+        "time": "2020-06-06T21:15",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -126,7 +129,7 @@ export const season2020IndyCarWeather = {
         "windSpeed10m": 11.9
       },
       {
-        "time": "2020-06-06T15:00",
+        "time": "2020-06-06T21:30",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -143,7 +146,7 @@ export const season2020IndyCarWeather = {
         "windSpeed10m": 11.9
       },
       {
-        "time": "2020-06-06T15:15",
+        "time": "2020-06-06T21:45",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -160,7 +163,7 @@ export const season2020IndyCarWeather = {
         "windSpeed10m": 11.9
       },
       {
-        "time": "2020-06-06T15:30",
+        "time": "2020-06-06T22:00",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -177,7 +180,7 @@ export const season2020IndyCarWeather = {
         "windSpeed10m": 10.8
       },
       {
-        "time": "2020-06-06T15:45",
+        "time": "2020-06-06T22:15",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -194,7 +197,7 @@ export const season2020IndyCarWeather = {
         "windSpeed10m": 10.8
       },
       {
-        "time": "2020-06-06T16:00",
+        "time": "2020-06-06T22:30",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -211,7 +214,7 @@ export const season2020IndyCarWeather = {
         "windSpeed10m": 10.8
       },
       {
-        "time": "2020-06-06T16:15",
+        "time": "2020-06-06T22:45",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -238,21 +241,24 @@ export const season2020IndyCarWeather = {
       "year": 2020,
       "series": "IndyCar",
       "date": "2020-07-04",
-      "localStartTime": "13:30",
+      "localStartTime": "19:30",
       "timezone": "auto",
       "latitude": 39.8023,
       "longitude": -86.2672,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "Low",
+      "startTimeMethod": "Saturday oval evening heuristic"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using IndyCar default 13:30"
+      "Workbook start time estimate (Low): 19:30",
+      "Start time method: Saturday oval evening heuristic"
     ],
     "samples": [
       {
-        "time": "2020-07-04T13:30",
+        "time": "2020-07-04T19:30",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -269,7 +275,7 @@ export const season2020IndyCarWeather = {
         "windSpeed10m": 9.1
       },
       {
-        "time": "2020-07-04T13:45",
+        "time": "2020-07-04T19:45",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -286,24 +292,7 @@ export const season2020IndyCarWeather = {
         "windSpeed10m": 9.1
       },
       {
-        "time": "2020-07-04T14:00",
-        "weatherCode": 0,
-        "condition": "Dry",
-        "state": {
-          "condition": "Dry",
-          "gripLevel": 1,
-          "wet": false,
-          "changingSoon": true,
-          "label": "Dry"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 10,
-        "temperature2m": 24.6,
-        "windSpeed10m": 9.1
-      },
-      {
-        "time": "2020-07-04T14:15",
+        "time": "2020-07-04T20:00",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -320,7 +309,24 @@ export const season2020IndyCarWeather = {
         "windSpeed10m": 9.1
       },
       {
-        "time": "2020-07-04T14:30",
+        "time": "2020-07-04T20:15",
+        "weatherCode": 0,
+        "condition": "Dry",
+        "state": {
+          "condition": "Dry",
+          "gripLevel": 1,
+          "wet": false,
+          "changingSoon": true,
+          "label": "Dry"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 10,
+        "temperature2m": 24.6,
+        "windSpeed10m": 9.1
+      },
+      {
+        "time": "2020-07-04T20:30",
         "weatherCode": 1,
         "condition": "Cloudy",
         "state": {
@@ -337,7 +343,7 @@ export const season2020IndyCarWeather = {
         "windSpeed10m": 10.8
       },
       {
-        "time": "2020-07-04T14:45",
+        "time": "2020-07-04T20:45",
         "weatherCode": 1,
         "condition": "Cloudy",
         "state": {
@@ -354,7 +360,7 @@ export const season2020IndyCarWeather = {
         "windSpeed10m": 10.8
       },
       {
-        "time": "2020-07-04T15:00",
+        "time": "2020-07-04T21:00",
         "weatherCode": 1,
         "condition": "Cloudy",
         "state": {
@@ -371,7 +377,7 @@ export const season2020IndyCarWeather = {
         "windSpeed10m": 10.8
       },
       {
-        "time": "2020-07-04T15:15",
+        "time": "2020-07-04T21:15",
         "weatherCode": 1,
         "condition": "Cloudy",
         "state": {
@@ -388,7 +394,7 @@ export const season2020IndyCarWeather = {
         "windSpeed10m": 10.8
       },
       {
-        "time": "2020-07-04T15:30",
+        "time": "2020-07-04T21:30",
         "weatherCode": 1,
         "condition": "Cloudy",
         "state": {
@@ -405,7 +411,7 @@ export const season2020IndyCarWeather = {
         "windSpeed10m": 10.8
       },
       {
-        "time": "2020-07-04T15:45",
+        "time": "2020-07-04T21:45",
         "weatherCode": 1,
         "condition": "Cloudy",
         "state": {
@@ -422,7 +428,7 @@ export const season2020IndyCarWeather = {
         "windSpeed10m": 10.8
       },
       {
-        "time": "2020-07-04T16:00",
+        "time": "2020-07-04T22:00",
         "weatherCode": 1,
         "condition": "Cloudy",
         "state": {
@@ -439,7 +445,7 @@ export const season2020IndyCarWeather = {
         "windSpeed10m": 10.8
       },
       {
-        "time": "2020-07-04T16:15",
+        "time": "2020-07-04T22:15",
         "weatherCode": 1,
         "condition": "Cloudy",
         "state": {
@@ -466,21 +472,24 @@ export const season2020IndyCarWeather = {
       "year": 2020,
       "series": "IndyCar",
       "date": "2020-07-11",
-      "localStartTime": "13:30",
+      "localStartTime": "12:30",
       "timezone": "auto",
       "latitude": 43.8333,
       "longitude": -88.017,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "Medium",
+      "startTimeMethod": "Road-course midday estimate"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using IndyCar default 13:30"
+      "Workbook start time estimate (Medium): 12:30",
+      "Start time method: Road-course midday estimate"
     ],
     "samples": [
       {
-        "time": "2020-07-11T13:30",
+        "time": "2020-07-11T12:30",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -495,6 +504,74 @@ export const season2020IndyCarWeather = {
         "cloudCover": 0,
         "temperature2m": 22.0,
         "windSpeed10m": 14.1
+      },
+      {
+        "time": "2020-07-11T12:45",
+        "weatherCode": 0,
+        "condition": "Dry",
+        "state": {
+          "condition": "Dry",
+          "gripLevel": 1,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Dry"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 0,
+        "temperature2m": 22.0,
+        "windSpeed10m": 14.1
+      },
+      {
+        "time": "2020-07-11T13:00",
+        "weatherCode": 0,
+        "condition": "Dry",
+        "state": {
+          "condition": "Dry",
+          "gripLevel": 1,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Dry"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 0,
+        "temperature2m": 22.0,
+        "windSpeed10m": 14.1
+      },
+      {
+        "time": "2020-07-11T13:15",
+        "weatherCode": 0,
+        "condition": "Dry",
+        "state": {
+          "condition": "Dry",
+          "gripLevel": 1,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Dry"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 0,
+        "temperature2m": 22.0,
+        "windSpeed10m": 14.1
+      },
+      {
+        "time": "2020-07-11T13:30",
+        "weatherCode": 0,
+        "condition": "Dry",
+        "state": {
+          "condition": "Dry",
+          "gripLevel": 1,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Dry"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 5,
+        "temperature2m": 21.3,
+        "windSpeed10m": 13.5
       },
       {
         "time": "2020-07-11T13:45",
@@ -509,9 +586,9 @@ export const season2020IndyCarWeather = {
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 0,
-        "temperature2m": 22.0,
-        "windSpeed10m": 14.1
+        "cloudCover": 5,
+        "temperature2m": 21.3,
+        "windSpeed10m": 13.5
       },
       {
         "time": "2020-07-11T14:00",
@@ -526,9 +603,9 @@ export const season2020IndyCarWeather = {
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 0,
-        "temperature2m": 22.0,
-        "windSpeed10m": 14.1
+        "cloudCover": 5,
+        "temperature2m": 21.3,
+        "windSpeed10m": 13.5
       },
       {
         "time": "2020-07-11T14:15",
@@ -543,9 +620,9 @@ export const season2020IndyCarWeather = {
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 0,
-        "temperature2m": 22.0,
-        "windSpeed10m": 14.1
+        "cloudCover": 5,
+        "temperature2m": 21.3,
+        "windSpeed10m": 13.5
       },
       {
         "time": "2020-07-11T14:30",
@@ -560,9 +637,9 @@ export const season2020IndyCarWeather = {
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 5,
-        "temperature2m": 21.3,
-        "windSpeed10m": 13.5
+        "cloudCover": 11,
+        "temperature2m": 20.7,
+        "windSpeed10m": 11.8
       },
       {
         "time": "2020-07-11T14:45",
@@ -577,9 +654,9 @@ export const season2020IndyCarWeather = {
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 5,
-        "temperature2m": 21.3,
-        "windSpeed10m": 13.5
+        "cloudCover": 11,
+        "temperature2m": 20.7,
+        "windSpeed10m": 11.8
       },
       {
         "time": "2020-07-11T15:00",
@@ -594,80 +671,12 @@ export const season2020IndyCarWeather = {
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 5,
-        "temperature2m": 21.3,
-        "windSpeed10m": 13.5
+        "cloudCover": 11,
+        "temperature2m": 20.7,
+        "windSpeed10m": 11.8
       },
       {
         "time": "2020-07-11T15:15",
-        "weatherCode": 0,
-        "condition": "Dry",
-        "state": {
-          "condition": "Dry",
-          "gripLevel": 1,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Dry"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 5,
-        "temperature2m": 21.3,
-        "windSpeed10m": 13.5
-      },
-      {
-        "time": "2020-07-11T15:30",
-        "weatherCode": 0,
-        "condition": "Dry",
-        "state": {
-          "condition": "Dry",
-          "gripLevel": 1,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Dry"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 11,
-        "temperature2m": 20.7,
-        "windSpeed10m": 11.8
-      },
-      {
-        "time": "2020-07-11T15:45",
-        "weatherCode": 0,
-        "condition": "Dry",
-        "state": {
-          "condition": "Dry",
-          "gripLevel": 1,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Dry"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 11,
-        "temperature2m": 20.7,
-        "windSpeed10m": 11.8
-      },
-      {
-        "time": "2020-07-11T16:00",
-        "weatherCode": 0,
-        "condition": "Dry",
-        "state": {
-          "condition": "Dry",
-          "gripLevel": 1,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Dry"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 11,
-        "temperature2m": 20.7,
-        "windSpeed10m": 11.8
-      },
-      {
-        "time": "2020-07-11T16:15",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -694,21 +703,24 @@ export const season2020IndyCarWeather = {
       "year": 2020,
       "series": "IndyCar",
       "date": "2020-07-12",
-      "localStartTime": "13:30",
+      "localStartTime": "12:30",
       "timezone": "auto",
       "latitude": 43.8333,
       "longitude": -88.017,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "Medium",
+      "startTimeMethod": "Road-course midday estimate"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using IndyCar default 13:30"
+      "Workbook start time estimate (Medium): 12:30",
+      "Start time method: Road-course midday estimate"
     ],
     "samples": [
       {
-        "time": "2020-07-12T13:30",
+        "time": "2020-07-12T12:30",
         "weatherCode": 1,
         "condition": "Cloudy",
         "state": {
@@ -723,10 +735,78 @@ export const season2020IndyCarWeather = {
         "cloudCover": 37,
         "temperature2m": 20.2,
         "windSpeed10m": 4.2
+      },
+      {
+        "time": "2020-07-12T12:45",
+        "weatherCode": 1,
+        "condition": "Cloudy",
+        "state": {
+          "condition": "Cloudy",
+          "gripLevel": 0.97,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Cloudy"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 37,
+        "temperature2m": 20.2,
+        "windSpeed10m": 4.2
+      },
+      {
+        "time": "2020-07-12T13:00",
+        "weatherCode": 1,
+        "condition": "Cloudy",
+        "state": {
+          "condition": "Cloudy",
+          "gripLevel": 0.97,
+          "wet": false,
+          "changingSoon": true,
+          "label": "Cloudy"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 37,
+        "temperature2m": 20.2,
+        "windSpeed10m": 4.2
+      },
+      {
+        "time": "2020-07-12T13:15",
+        "weatherCode": 1,
+        "condition": "Cloudy",
+        "state": {
+          "condition": "Cloudy",
+          "gripLevel": 0.97,
+          "wet": false,
+          "changingSoon": true,
+          "label": "Cloudy"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 37,
+        "temperature2m": 20.2,
+        "windSpeed10m": 4.2
+      },
+      {
+        "time": "2020-07-12T13:30",
+        "weatherCode": 2,
+        "condition": "Cloudy",
+        "state": {
+          "condition": "Cloudy",
+          "gripLevel": 0.97,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Cloudy"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 77,
+        "temperature2m": 20.0,
+        "windSpeed10m": 15.1
       },
       {
         "time": "2020-07-12T13:45",
-        "weatherCode": 1,
+        "weatherCode": 2,
         "condition": "Cloudy",
         "state": {
           "condition": "Cloudy",
@@ -737,13 +817,13 @@ export const season2020IndyCarWeather = {
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 37,
-        "temperature2m": 20.2,
-        "windSpeed10m": 4.2
+        "cloudCover": 77,
+        "temperature2m": 20.0,
+        "windSpeed10m": 15.1
       },
       {
         "time": "2020-07-12T14:00",
-        "weatherCode": 1,
+        "weatherCode": 2,
         "condition": "Cloudy",
         "state": {
           "condition": "Cloudy",
@@ -754,13 +834,13 @@ export const season2020IndyCarWeather = {
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 37,
-        "temperature2m": 20.2,
-        "windSpeed10m": 4.2
+        "cloudCover": 77,
+        "temperature2m": 20.0,
+        "windSpeed10m": 15.1
       },
       {
         "time": "2020-07-12T14:15",
-        "weatherCode": 1,
+        "weatherCode": 2,
         "condition": "Cloudy",
         "state": {
           "condition": "Cloudy",
@@ -771,13 +851,13 @@ export const season2020IndyCarWeather = {
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 37,
-        "temperature2m": 20.2,
-        "windSpeed10m": 4.2
+        "cloudCover": 77,
+        "temperature2m": 20.0,
+        "windSpeed10m": 15.1
       },
       {
         "time": "2020-07-12T14:30",
-        "weatherCode": 2,
+        "weatherCode": 3,
         "condition": "Cloudy",
         "state": {
           "condition": "Cloudy",
@@ -788,13 +868,13 @@ export const season2020IndyCarWeather = {
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 77,
-        "temperature2m": 20.0,
-        "windSpeed10m": 15.1
+        "cloudCover": 95,
+        "temperature2m": 19.9,
+        "windSpeed10m": 12.5
       },
       {
         "time": "2020-07-12T14:45",
-        "weatherCode": 2,
+        "weatherCode": 3,
         "condition": "Cloudy",
         "state": {
           "condition": "Cloudy",
@@ -805,97 +885,29 @@ export const season2020IndyCarWeather = {
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 77,
-        "temperature2m": 20.0,
-        "windSpeed10m": 15.1
+        "cloudCover": 95,
+        "temperature2m": 19.9,
+        "windSpeed10m": 12.5
       },
       {
         "time": "2020-07-12T15:00",
-        "weatherCode": 2,
+        "weatherCode": 3,
         "condition": "Cloudy",
         "state": {
           "condition": "Cloudy",
           "gripLevel": 0.97,
           "wet": false,
-          "changingSoon": true,
+          "changingSoon": false,
           "label": "Cloudy"
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 77,
-        "temperature2m": 20.0,
-        "windSpeed10m": 15.1
+        "cloudCover": 95,
+        "temperature2m": 19.9,
+        "windSpeed10m": 12.5
       },
       {
         "time": "2020-07-12T15:15",
-        "weatherCode": 2,
-        "condition": "Cloudy",
-        "state": {
-          "condition": "Cloudy",
-          "gripLevel": 0.97,
-          "wet": false,
-          "changingSoon": true,
-          "label": "Cloudy"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 77,
-        "temperature2m": 20.0,
-        "windSpeed10m": 15.1
-      },
-      {
-        "time": "2020-07-12T15:30",
-        "weatherCode": 3,
-        "condition": "Cloudy",
-        "state": {
-          "condition": "Cloudy",
-          "gripLevel": 0.97,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Cloudy"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 95,
-        "temperature2m": 19.9,
-        "windSpeed10m": 12.5
-      },
-      {
-        "time": "2020-07-12T15:45",
-        "weatherCode": 3,
-        "condition": "Cloudy",
-        "state": {
-          "condition": "Cloudy",
-          "gripLevel": 0.97,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Cloudy"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 95,
-        "temperature2m": 19.9,
-        "windSpeed10m": 12.5
-      },
-      {
-        "time": "2020-07-12T16:00",
-        "weatherCode": 3,
-        "condition": "Cloudy",
-        "state": {
-          "condition": "Cloudy",
-          "gripLevel": 0.97,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Cloudy"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 95,
-        "temperature2m": 19.9,
-        "windSpeed10m": 12.5
-      },
-      {
-        "time": "2020-07-12T16:15",
         "weatherCode": 3,
         "condition": "Cloudy",
         "state": {
@@ -922,19 +934,56 @@ export const season2020IndyCarWeather = {
       "year": 2020,
       "series": "IndyCar",
       "date": "2020-07-17",
-      "localStartTime": "13:30",
+      "localStartTime": "13:00",
       "timezone": "auto",
       "latitude": 41.6997,
       "longitude": -93.0479,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "Low",
+      "startTimeMethod": "Oval daytime heuristic"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using IndyCar default 13:30"
+      "Workbook start time estimate (Low): 13:00",
+      "Start time method: Oval daytime heuristic"
     ],
     "samples": [
+      {
+        "time": "2020-07-17T13:00",
+        "weatherCode": 0,
+        "condition": "Dry",
+        "state": {
+          "condition": "Dry",
+          "gripLevel": 1,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Dry"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 2,
+        "temperature2m": 22.0,
+        "windSpeed10m": 12.6
+      },
+      {
+        "time": "2020-07-17T13:15",
+        "weatherCode": 0,
+        "condition": "Dry",
+        "state": {
+          "condition": "Dry",
+          "gripLevel": 1,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Dry"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 2,
+        "temperature2m": 22.0,
+        "windSpeed10m": 12.6
+      },
       {
         "time": "2020-07-17T13:30",
         "weatherCode": 0,
@@ -982,9 +1031,9 @@ export const season2020IndyCarWeather = {
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 2,
-        "temperature2m": 22.0,
-        "windSpeed10m": 12.6
+        "cloudCover": 1,
+        "temperature2m": 21.4,
+        "windSpeed10m": 10.2
       },
       {
         "time": "2020-07-17T14:15",
@@ -999,9 +1048,9 @@ export const season2020IndyCarWeather = {
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 2,
-        "temperature2m": 22.0,
-        "windSpeed10m": 12.6
+        "cloudCover": 1,
+        "temperature2m": 21.4,
+        "windSpeed10m": 10.2
       },
       {
         "time": "2020-07-17T14:30",
@@ -1051,8 +1100,8 @@ export const season2020IndyCarWeather = {
         "precipitationMm": 0.0,
         "rainMm": 0.0,
         "cloudCover": 1,
-        "temperature2m": 21.4,
-        "windSpeed10m": 10.2
+        "temperature2m": 20.9,
+        "windSpeed10m": 7.9
       },
       {
         "time": "2020-07-17T15:15",
@@ -1068,8 +1117,8 @@ export const season2020IndyCarWeather = {
         "precipitationMm": 0.0,
         "rainMm": 0.0,
         "cloudCover": 1,
-        "temperature2m": 21.4,
-        "windSpeed10m": 10.2
+        "temperature2m": 20.9,
+        "windSpeed10m": 7.9
       },
       {
         "time": "2020-07-17T15:30",
@@ -1104,40 +1153,6 @@ export const season2020IndyCarWeather = {
         "cloudCover": 1,
         "temperature2m": 20.9,
         "windSpeed10m": 7.9
-      },
-      {
-        "time": "2020-07-17T16:00",
-        "weatherCode": 0,
-        "condition": "Dry",
-        "state": {
-          "condition": "Dry",
-          "gripLevel": 1,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Dry"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 1,
-        "temperature2m": 20.9,
-        "windSpeed10m": 7.9
-      },
-      {
-        "time": "2020-07-17T16:15",
-        "weatherCode": 0,
-        "condition": "Dry",
-        "state": {
-          "condition": "Dry",
-          "gripLevel": 1,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Dry"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 1,
-        "temperature2m": 20.9,
-        "windSpeed10m": 7.9
       }
     ]
   },
@@ -1150,21 +1165,24 @@ export const season2020IndyCarWeather = {
       "year": 2020,
       "series": "IndyCar",
       "date": "2020-07-18",
-      "localStartTime": "13:30",
+      "localStartTime": "20:00",
       "timezone": "auto",
       "latitude": 41.6997,
       "longitude": -93.0479,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "Medium",
+      "startTimeMethod": "Iowa night-race estimate"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using IndyCar default 13:30"
+      "Workbook start time estimate (Medium): 20:00",
+      "Start time method: Iowa night-race estimate"
     ],
     "samples": [
       {
-        "time": "2020-07-18T13:30",
+        "time": "2020-07-18T20:00",
         "weatherCode": 1,
         "condition": "Cloudy",
         "state": {
@@ -1181,7 +1199,7 @@ export const season2020IndyCarWeather = {
         "windSpeed10m": 17.6
       },
       {
-        "time": "2020-07-18T13:45",
+        "time": "2020-07-18T20:15",
         "weatherCode": 1,
         "condition": "Cloudy",
         "state": {
@@ -1198,7 +1216,7 @@ export const season2020IndyCarWeather = {
         "windSpeed10m": 17.6
       },
       {
-        "time": "2020-07-18T14:00",
+        "time": "2020-07-18T20:30",
         "weatherCode": 1,
         "condition": "Cloudy",
         "state": {
@@ -1215,7 +1233,7 @@ export const season2020IndyCarWeather = {
         "windSpeed10m": 17.6
       },
       {
-        "time": "2020-07-18T14:15",
+        "time": "2020-07-18T20:45",
         "weatherCode": 1,
         "condition": "Cloudy",
         "state": {
@@ -1232,7 +1250,7 @@ export const season2020IndyCarWeather = {
         "windSpeed10m": 17.6
       },
       {
-        "time": "2020-07-18T14:30",
+        "time": "2020-07-18T21:00",
         "weatherCode": 1,
         "condition": "Cloudy",
         "state": {
@@ -1249,7 +1267,7 @@ export const season2020IndyCarWeather = {
         "windSpeed10m": 15.9
       },
       {
-        "time": "2020-07-18T14:45",
+        "time": "2020-07-18T21:15",
         "weatherCode": 1,
         "condition": "Cloudy",
         "state": {
@@ -1266,7 +1284,7 @@ export const season2020IndyCarWeather = {
         "windSpeed10m": 15.9
       },
       {
-        "time": "2020-07-18T15:00",
+        "time": "2020-07-18T21:30",
         "weatherCode": 1,
         "condition": "Cloudy",
         "state": {
@@ -1283,7 +1301,7 @@ export const season2020IndyCarWeather = {
         "windSpeed10m": 15.9
       },
       {
-        "time": "2020-07-18T15:15",
+        "time": "2020-07-18T21:45",
         "weatherCode": 1,
         "condition": "Cloudy",
         "state": {
@@ -1300,7 +1318,7 @@ export const season2020IndyCarWeather = {
         "windSpeed10m": 15.9
       },
       {
-        "time": "2020-07-18T15:30",
+        "time": "2020-07-18T22:00",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -1317,7 +1335,7 @@ export const season2020IndyCarWeather = {
         "windSpeed10m": 14.8
       },
       {
-        "time": "2020-07-18T15:45",
+        "time": "2020-07-18T22:15",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -1334,7 +1352,7 @@ export const season2020IndyCarWeather = {
         "windSpeed10m": 14.8
       },
       {
-        "time": "2020-07-18T16:00",
+        "time": "2020-07-18T22:30",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -1351,7 +1369,7 @@ export const season2020IndyCarWeather = {
         "windSpeed10m": 14.8
       },
       {
-        "time": "2020-07-18T16:15",
+        "time": "2020-07-18T22:45",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -1378,19 +1396,73 @@ export const season2020IndyCarWeather = {
       "year": 2020,
       "series": "IndyCar",
       "date": "2020-08-23",
-      "localStartTime": "13:30",
+      "localStartTime": "12:45",
       "timezone": "auto",
       "latitude": 39.8023,
       "longitude": -86.2672,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "High",
+      "startTimeMethod": "Known Indy 500 start-window estimate"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using IndyCar default 13:30"
+      "Workbook start time estimate (High): 12:45",
+      "Start time method: Known Indy 500 start-window estimate"
     ],
     "samples": [
+      {
+        "time": "2020-08-23T12:45",
+        "weatherCode": 1,
+        "condition": "Cloudy",
+        "state": {
+          "condition": "Cloudy",
+          "gripLevel": 0.97,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Cloudy"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 21,
+        "temperature2m": 21.8,
+        "windSpeed10m": 7.8
+      },
+      {
+        "time": "2020-08-23T13:00",
+        "weatherCode": 1,
+        "condition": "Cloudy",
+        "state": {
+          "condition": "Cloudy",
+          "gripLevel": 0.97,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Cloudy"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 21,
+        "temperature2m": 21.8,
+        "windSpeed10m": 7.8
+      },
+      {
+        "time": "2020-08-23T13:15",
+        "weatherCode": 1,
+        "condition": "Cloudy",
+        "state": {
+          "condition": "Cloudy",
+          "gripLevel": 0.97,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Cloudy"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 21,
+        "temperature2m": 21.8,
+        "windSpeed10m": 7.8
+      },
       {
         "time": "2020-08-23T13:30",
         "weatherCode": 1,
@@ -1421,9 +1493,9 @@ export const season2020IndyCarWeather = {
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 21,
-        "temperature2m": 21.8,
-        "windSpeed10m": 7.8
+        "cloudCover": 30,
+        "temperature2m": 21.0,
+        "windSpeed10m": 4.4
       },
       {
         "time": "2020-08-23T14:00",
@@ -1438,9 +1510,9 @@ export const season2020IndyCarWeather = {
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 21,
-        "temperature2m": 21.8,
-        "windSpeed10m": 7.8
+        "cloudCover": 30,
+        "temperature2m": 21.0,
+        "windSpeed10m": 4.4
       },
       {
         "time": "2020-08-23T14:15",
@@ -1450,14 +1522,14 @@ export const season2020IndyCarWeather = {
           "condition": "Cloudy",
           "gripLevel": 0.97,
           "wet": false,
-          "changingSoon": false,
+          "changingSoon": true,
           "label": "Cloudy"
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 21,
-        "temperature2m": 21.8,
-        "windSpeed10m": 7.8
+        "cloudCover": 30,
+        "temperature2m": 21.0,
+        "windSpeed10m": 4.4
       },
       {
         "time": "2020-08-23T14:30",
@@ -1467,7 +1539,7 @@ export const season2020IndyCarWeather = {
           "condition": "Cloudy",
           "gripLevel": 0.97,
           "wet": false,
-          "changingSoon": false,
+          "changingSoon": true,
           "label": "Cloudy"
         },
         "precipitationMm": 0.0,
@@ -1478,108 +1550,57 @@ export const season2020IndyCarWeather = {
       },
       {
         "time": "2020-08-23T14:45",
-        "weatherCode": 1,
-        "condition": "Cloudy",
+        "weatherCode": 0,
+        "condition": "Dry",
         "state": {
-          "condition": "Cloudy",
-          "gripLevel": 0.97,
+          "condition": "Dry",
+          "gripLevel": 1,
           "wet": false,
           "changingSoon": false,
-          "label": "Cloudy"
+          "label": "Dry"
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 30,
-        "temperature2m": 21.0,
-        "windSpeed10m": 4.4
+        "cloudCover": 0,
+        "temperature2m": 20.5,
+        "windSpeed10m": 5.6
       },
       {
         "time": "2020-08-23T15:00",
-        "weatherCode": 1,
-        "condition": "Cloudy",
+        "weatherCode": 0,
+        "condition": "Dry",
         "state": {
-          "condition": "Cloudy",
-          "gripLevel": 0.97,
+          "condition": "Dry",
+          "gripLevel": 1,
           "wet": false,
-          "changingSoon": true,
-          "label": "Cloudy"
+          "changingSoon": false,
+          "label": "Dry"
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 30,
-        "temperature2m": 21.0,
-        "windSpeed10m": 4.4
+        "cloudCover": 0,
+        "temperature2m": 20.5,
+        "windSpeed10m": 5.6
       },
       {
         "time": "2020-08-23T15:15",
-        "weatherCode": 1,
-        "condition": "Cloudy",
+        "weatherCode": 0,
+        "condition": "Dry",
         "state": {
-          "condition": "Cloudy",
-          "gripLevel": 0.97,
+          "condition": "Dry",
+          "gripLevel": 1,
           "wet": false,
-          "changingSoon": true,
-          "label": "Cloudy"
+          "changingSoon": false,
+          "label": "Dry"
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 30,
-        "temperature2m": 21.0,
-        "windSpeed10m": 4.4
+        "cloudCover": 0,
+        "temperature2m": 20.5,
+        "windSpeed10m": 5.6
       },
       {
         "time": "2020-08-23T15:30",
-        "weatherCode": 0,
-        "condition": "Dry",
-        "state": {
-          "condition": "Dry",
-          "gripLevel": 1,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Dry"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 0,
-        "temperature2m": 20.5,
-        "windSpeed10m": 5.6
-      },
-      {
-        "time": "2020-08-23T15:45",
-        "weatherCode": 0,
-        "condition": "Dry",
-        "state": {
-          "condition": "Dry",
-          "gripLevel": 1,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Dry"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 0,
-        "temperature2m": 20.5,
-        "windSpeed10m": 5.6
-      },
-      {
-        "time": "2020-08-23T16:00",
-        "weatherCode": 0,
-        "condition": "Dry",
-        "state": {
-          "condition": "Dry",
-          "gripLevel": 1,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Dry"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 0,
-        "temperature2m": 20.5,
-        "windSpeed10m": 5.6
-      },
-      {
-        "time": "2020-08-23T16:15",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -1606,21 +1627,24 @@ export const season2020IndyCarWeather = {
       "year": 2020,
       "series": "IndyCar",
       "date": "2020-08-29",
-      "localStartTime": "13:30",
+      "localStartTime": "19:30",
       "timezone": "auto",
       "latitude": 38.6826,
       "longitude": -90.1571,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "Medium",
+      "startTimeMethod": "Gateway oval evening estimate"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using IndyCar default 13:30"
+      "Workbook start time estimate (Medium): 19:30",
+      "Start time method: Gateway oval evening estimate"
     ],
     "samples": [
       {
-        "time": "2020-08-29T13:30",
+        "time": "2020-08-29T19:30",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -1637,7 +1661,7 @@ export const season2020IndyCarWeather = {
         "windSpeed10m": 7.9
       },
       {
-        "time": "2020-08-29T13:45",
+        "time": "2020-08-29T19:45",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -1654,7 +1678,7 @@ export const season2020IndyCarWeather = {
         "windSpeed10m": 7.9
       },
       {
-        "time": "2020-08-29T14:00",
+        "time": "2020-08-29T20:00",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -1671,7 +1695,7 @@ export const season2020IndyCarWeather = {
         "windSpeed10m": 7.9
       },
       {
-        "time": "2020-08-29T14:15",
+        "time": "2020-08-29T20:15",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -1688,7 +1712,7 @@ export const season2020IndyCarWeather = {
         "windSpeed10m": 7.9
       },
       {
-        "time": "2020-08-29T14:30",
+        "time": "2020-08-29T20:30",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -1705,7 +1729,7 @@ export const season2020IndyCarWeather = {
         "windSpeed10m": 10.0
       },
       {
-        "time": "2020-08-29T14:45",
+        "time": "2020-08-29T20:45",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -1722,7 +1746,7 @@ export const season2020IndyCarWeather = {
         "windSpeed10m": 10.0
       },
       {
-        "time": "2020-08-29T15:00",
+        "time": "2020-08-29T21:00",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -1739,7 +1763,7 @@ export const season2020IndyCarWeather = {
         "windSpeed10m": 10.0
       },
       {
-        "time": "2020-08-29T15:15",
+        "time": "2020-08-29T21:15",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -1756,7 +1780,7 @@ export const season2020IndyCarWeather = {
         "windSpeed10m": 10.0
       },
       {
-        "time": "2020-08-29T15:30",
+        "time": "2020-08-29T21:30",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -1773,7 +1797,7 @@ export const season2020IndyCarWeather = {
         "windSpeed10m": 10.8
       },
       {
-        "time": "2020-08-29T15:45",
+        "time": "2020-08-29T21:45",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -1790,7 +1814,7 @@ export const season2020IndyCarWeather = {
         "windSpeed10m": 10.8
       },
       {
-        "time": "2020-08-29T16:00",
+        "time": "2020-08-29T22:00",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -1807,7 +1831,7 @@ export const season2020IndyCarWeather = {
         "windSpeed10m": 10.8
       },
       {
-        "time": "2020-08-29T16:15",
+        "time": "2020-08-29T22:15",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -1834,21 +1858,24 @@ export const season2020IndyCarWeather = {
       "year": 2020,
       "series": "IndyCar",
       "date": "2020-08-30",
-      "localStartTime": "13:30",
+      "localStartTime": "19:30",
       "timezone": "auto",
       "latitude": 38.6826,
       "longitude": -90.1571,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "Medium",
+      "startTimeMethod": "Gateway oval evening estimate"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using IndyCar default 13:30"
+      "Workbook start time estimate (Medium): 19:30",
+      "Start time method: Gateway oval evening estimate"
     ],
     "samples": [
       {
-        "time": "2020-08-30T13:30",
+        "time": "2020-08-30T19:30",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -1865,7 +1892,7 @@ export const season2020IndyCarWeather = {
         "windSpeed10m": 6.6
       },
       {
-        "time": "2020-08-30T13:45",
+        "time": "2020-08-30T19:45",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -1882,7 +1909,7 @@ export const season2020IndyCarWeather = {
         "windSpeed10m": 6.6
       },
       {
-        "time": "2020-08-30T14:00",
+        "time": "2020-08-30T20:00",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -1899,7 +1926,7 @@ export const season2020IndyCarWeather = {
         "windSpeed10m": 6.6
       },
       {
-        "time": "2020-08-30T14:15",
+        "time": "2020-08-30T20:15",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -1916,7 +1943,7 @@ export const season2020IndyCarWeather = {
         "windSpeed10m": 6.6
       },
       {
-        "time": "2020-08-30T14:30",
+        "time": "2020-08-30T20:30",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -1933,7 +1960,7 @@ export const season2020IndyCarWeather = {
         "windSpeed10m": 6.0
       },
       {
-        "time": "2020-08-30T14:45",
+        "time": "2020-08-30T20:45",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -1950,7 +1977,7 @@ export const season2020IndyCarWeather = {
         "windSpeed10m": 6.0
       },
       {
-        "time": "2020-08-30T15:00",
+        "time": "2020-08-30T21:00",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -1967,7 +1994,7 @@ export const season2020IndyCarWeather = {
         "windSpeed10m": 6.0
       },
       {
-        "time": "2020-08-30T15:15",
+        "time": "2020-08-30T21:15",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -1984,7 +2011,7 @@ export const season2020IndyCarWeather = {
         "windSpeed10m": 6.0
       },
       {
-        "time": "2020-08-30T15:30",
+        "time": "2020-08-30T21:30",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -2001,7 +2028,7 @@ export const season2020IndyCarWeather = {
         "windSpeed10m": 7.7
       },
       {
-        "time": "2020-08-30T15:45",
+        "time": "2020-08-30T21:45",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -2018,7 +2045,7 @@ export const season2020IndyCarWeather = {
         "windSpeed10m": 7.7
       },
       {
-        "time": "2020-08-30T16:00",
+        "time": "2020-08-30T22:00",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -2035,7 +2062,7 @@ export const season2020IndyCarWeather = {
         "windSpeed10m": 7.7
       },
       {
-        "time": "2020-08-30T16:15",
+        "time": "2020-08-30T22:15",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -2067,12 +2094,15 @@ export const season2020IndyCarWeather = {
       "latitude": 40.6787,
       "longitude": -82.5824,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "Medium",
+      "startTimeMethod": "Road-course afternoon estimate"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using IndyCar default 13:30"
+      "Workbook start time estimate (Medium): 13:30",
+      "Start time method: Road-course afternoon estimate"
     ],
     "samples": [
       {
@@ -2295,12 +2325,15 @@ export const season2020IndyCarWeather = {
       "latitude": 40.6787,
       "longitude": -82.5824,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "Medium",
+      "startTimeMethod": "Road-course afternoon estimate"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using IndyCar default 13:30"
+      "Workbook start time estimate (Medium): 13:30",
+      "Start time method: Road-course afternoon estimate"
     ],
     "samples": [
       {
@@ -2518,19 +2551,56 @@ export const season2020IndyCarWeather = {
       "year": 2020,
       "series": "IndyCar",
       "date": "2020-10-02",
-      "localStartTime": "13:30",
+      "localStartTime": "13:00",
       "timezone": "auto",
       "latitude": 39.8023,
       "longitude": -86.2672,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "Low",
+      "startTimeMethod": "Oval daytime heuristic"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using IndyCar default 13:30"
+      "Workbook start time estimate (Low): 13:00",
+      "Start time method: Oval daytime heuristic"
     ],
     "samples": [
+      {
+        "time": "2020-10-02T13:00",
+        "weatherCode": 0,
+        "condition": "Dry",
+        "state": {
+          "condition": "Dry",
+          "gripLevel": 1,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Dry"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 0,
+        "temperature2m": 8.6,
+        "windSpeed10m": 9.9
+      },
+      {
+        "time": "2020-10-02T13:15",
+        "weatherCode": 0,
+        "condition": "Dry",
+        "state": {
+          "condition": "Dry",
+          "gripLevel": 1,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Dry"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 0,
+        "temperature2m": 8.6,
+        "windSpeed10m": 9.9
+      },
       {
         "time": "2020-10-02T13:30",
         "weatherCode": 0,
@@ -2579,8 +2649,8 @@ export const season2020IndyCarWeather = {
         "precipitationMm": 0.0,
         "rainMm": 0.0,
         "cloudCover": 0,
-        "temperature2m": 8.6,
-        "windSpeed10m": 9.9
+        "temperature2m": 8.2,
+        "windSpeed10m": 10.1
       },
       {
         "time": "2020-10-02T14:15",
@@ -2596,8 +2666,8 @@ export const season2020IndyCarWeather = {
         "precipitationMm": 0.0,
         "rainMm": 0.0,
         "cloudCover": 0,
-        "temperature2m": 8.6,
-        "windSpeed10m": 9.9
+        "temperature2m": 8.2,
+        "windSpeed10m": 10.1
       },
       {
         "time": "2020-10-02T14:30",
@@ -2647,8 +2717,8 @@ export const season2020IndyCarWeather = {
         "precipitationMm": 0.0,
         "rainMm": 0.0,
         "cloudCover": 0,
-        "temperature2m": 8.2,
-        "windSpeed10m": 10.1
+        "temperature2m": 7.9,
+        "windSpeed10m": 10.0
       },
       {
         "time": "2020-10-02T15:15",
@@ -2664,8 +2734,8 @@ export const season2020IndyCarWeather = {
         "precipitationMm": 0.0,
         "rainMm": 0.0,
         "cloudCover": 0,
-        "temperature2m": 8.2,
-        "windSpeed10m": 10.1
+        "temperature2m": 7.9,
+        "windSpeed10m": 10.0
       },
       {
         "time": "2020-10-02T15:30",
@@ -2700,40 +2770,6 @@ export const season2020IndyCarWeather = {
         "cloudCover": 0,
         "temperature2m": 7.9,
         "windSpeed10m": 10.0
-      },
-      {
-        "time": "2020-10-02T16:00",
-        "weatherCode": 0,
-        "condition": "Dry",
-        "state": {
-          "condition": "Dry",
-          "gripLevel": 1,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Dry"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 0,
-        "temperature2m": 7.9,
-        "windSpeed10m": 10.0
-      },
-      {
-        "time": "2020-10-02T16:15",
-        "weatherCode": 0,
-        "condition": "Dry",
-        "state": {
-          "condition": "Dry",
-          "gripLevel": 1,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Dry"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 0,
-        "temperature2m": 7.9,
-        "windSpeed10m": 10.0
       }
     ]
   },
@@ -2746,21 +2782,24 @@ export const season2020IndyCarWeather = {
       "year": 2020,
       "series": "IndyCar",
       "date": "2020-10-03",
-      "localStartTime": "13:30",
+      "localStartTime": "19:30",
       "timezone": "auto",
       "latitude": 39.8023,
       "longitude": -86.2672,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "Low",
+      "startTimeMethod": "Saturday oval evening heuristic"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using IndyCar default 13:30"
+      "Workbook start time estimate (Low): 19:30",
+      "Start time method: Saturday oval evening heuristic"
     ],
     "samples": [
       {
-        "time": "2020-10-03T13:30",
+        "time": "2020-10-03T19:30",
         "weatherCode": 3,
         "condition": "Cloudy",
         "state": {
@@ -2777,7 +2816,7 @@ export const season2020IndyCarWeather = {
         "windSpeed10m": 11.0
       },
       {
-        "time": "2020-10-03T13:45",
+        "time": "2020-10-03T19:45",
         "weatherCode": 3,
         "condition": "Cloudy",
         "state": {
@@ -2794,7 +2833,7 @@ export const season2020IndyCarWeather = {
         "windSpeed10m": 11.0
       },
       {
-        "time": "2020-10-03T14:00",
+        "time": "2020-10-03T20:00",
         "weatherCode": 3,
         "condition": "Cloudy",
         "state": {
@@ -2811,7 +2850,7 @@ export const season2020IndyCarWeather = {
         "windSpeed10m": 11.0
       },
       {
-        "time": "2020-10-03T14:15",
+        "time": "2020-10-03T20:15",
         "weatherCode": 3,
         "condition": "Cloudy",
         "state": {
@@ -2828,7 +2867,7 @@ export const season2020IndyCarWeather = {
         "windSpeed10m": 11.0
       },
       {
-        "time": "2020-10-03T14:30",
+        "time": "2020-10-03T20:30",
         "weatherCode": 3,
         "condition": "Cloudy",
         "state": {
@@ -2845,7 +2884,7 @@ export const season2020IndyCarWeather = {
         "windSpeed10m": 10.5
       },
       {
-        "time": "2020-10-03T14:45",
+        "time": "2020-10-03T20:45",
         "weatherCode": 3,
         "condition": "Cloudy",
         "state": {
@@ -2862,7 +2901,7 @@ export const season2020IndyCarWeather = {
         "windSpeed10m": 10.5
       },
       {
-        "time": "2020-10-03T15:00",
+        "time": "2020-10-03T21:00",
         "weatherCode": 3,
         "condition": "Cloudy",
         "state": {
@@ -2879,7 +2918,7 @@ export const season2020IndyCarWeather = {
         "windSpeed10m": 10.5
       },
       {
-        "time": "2020-10-03T15:15",
+        "time": "2020-10-03T21:15",
         "weatherCode": 3,
         "condition": "Cloudy",
         "state": {
@@ -2896,7 +2935,7 @@ export const season2020IndyCarWeather = {
         "windSpeed10m": 10.5
       },
       {
-        "time": "2020-10-03T15:30",
+        "time": "2020-10-03T21:30",
         "weatherCode": 2,
         "condition": "Cloudy",
         "state": {
@@ -2913,7 +2952,7 @@ export const season2020IndyCarWeather = {
         "windSpeed10m": 8.2
       },
       {
-        "time": "2020-10-03T15:45",
+        "time": "2020-10-03T21:45",
         "weatherCode": 2,
         "condition": "Cloudy",
         "state": {
@@ -2930,7 +2969,7 @@ export const season2020IndyCarWeather = {
         "windSpeed10m": 8.2
       },
       {
-        "time": "2020-10-03T16:00",
+        "time": "2020-10-03T22:00",
         "weatherCode": 2,
         "condition": "Cloudy",
         "state": {
@@ -2947,7 +2986,7 @@ export const season2020IndyCarWeather = {
         "windSpeed10m": 8.2
       },
       {
-        "time": "2020-10-03T16:15",
+        "time": "2020-10-03T22:15",
         "weatherCode": 2,
         "condition": "Cloudy",
         "state": {
@@ -2974,21 +3013,24 @@ export const season2020IndyCarWeather = {
       "year": 2020,
       "series": "IndyCar",
       "date": "2020-10-25",
-      "localStartTime": "13:30",
+      "localStartTime": "12:30",
       "timezone": "auto",
       "latitude": 27.7676,
       "longitude": -82.6403,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "Medium",
+      "startTimeMethod": "Street race midday estimate"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using IndyCar default 13:30"
+      "Workbook start time estimate (Medium): 12:30",
+      "Start time method: Street race midday estimate"
     ],
     "samples": [
       {
-        "time": "2020-10-25T13:30",
+        "time": "2020-10-25T12:30",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -3003,61 +3045,129 @@ export const season2020IndyCarWeather = {
         "cloudCover": 4,
         "temperature2m": 25.2,
         "windSpeed10m": 14.7
+      },
+      {
+        "time": "2020-10-25T12:45",
+        "weatherCode": 0,
+        "condition": "Dry",
+        "state": {
+          "condition": "Dry",
+          "gripLevel": 1,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Dry"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 4,
+        "temperature2m": 25.2,
+        "windSpeed10m": 14.7
+      },
+      {
+        "time": "2020-10-25T13:00",
+        "weatherCode": 0,
+        "condition": "Dry",
+        "state": {
+          "condition": "Dry",
+          "gripLevel": 1,
+          "wet": false,
+          "changingSoon": true,
+          "label": "Dry"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 4,
+        "temperature2m": 25.2,
+        "windSpeed10m": 14.7
+      },
+      {
+        "time": "2020-10-25T13:15",
+        "weatherCode": 0,
+        "condition": "Dry",
+        "state": {
+          "condition": "Dry",
+          "gripLevel": 1,
+          "wet": false,
+          "changingSoon": true,
+          "label": "Dry"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 4,
+        "temperature2m": 25.2,
+        "windSpeed10m": 14.7
+      },
+      {
+        "time": "2020-10-25T13:30",
+        "weatherCode": 1,
+        "condition": "Cloudy",
+        "state": {
+          "condition": "Cloudy",
+          "gripLevel": 0.97,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Cloudy"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 31,
+        "temperature2m": 24.6,
+        "windSpeed10m": 9.4
       },
       {
         "time": "2020-10-25T13:45",
-        "weatherCode": 0,
-        "condition": "Dry",
+        "weatherCode": 1,
+        "condition": "Cloudy",
         "state": {
-          "condition": "Dry",
-          "gripLevel": 1,
+          "condition": "Cloudy",
+          "gripLevel": 0.97,
           "wet": false,
           "changingSoon": false,
-          "label": "Dry"
+          "label": "Cloudy"
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 4,
-        "temperature2m": 25.2,
-        "windSpeed10m": 14.7
+        "cloudCover": 31,
+        "temperature2m": 24.6,
+        "windSpeed10m": 9.4
       },
       {
         "time": "2020-10-25T14:00",
-        "weatherCode": 0,
-        "condition": "Dry",
+        "weatherCode": 1,
+        "condition": "Cloudy",
         "state": {
-          "condition": "Dry",
-          "gripLevel": 1,
+          "condition": "Cloudy",
+          "gripLevel": 0.97,
           "wet": false,
           "changingSoon": true,
-          "label": "Dry"
+          "label": "Cloudy"
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 4,
-        "temperature2m": 25.2,
-        "windSpeed10m": 14.7
+        "cloudCover": 31,
+        "temperature2m": 24.6,
+        "windSpeed10m": 9.4
       },
       {
         "time": "2020-10-25T14:15",
-        "weatherCode": 0,
-        "condition": "Dry",
+        "weatherCode": 1,
+        "condition": "Cloudy",
         "state": {
-          "condition": "Dry",
-          "gripLevel": 1,
+          "condition": "Cloudy",
+          "gripLevel": 0.97,
           "wet": false,
           "changingSoon": true,
-          "label": "Dry"
+          "label": "Cloudy"
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 4,
-        "temperature2m": 25.2,
-        "windSpeed10m": 14.7
+        "cloudCover": 31,
+        "temperature2m": 24.6,
+        "windSpeed10m": 9.4
       },
       {
         "time": "2020-10-25T14:30",
-        "weatherCode": 1,
+        "weatherCode": 2,
         "condition": "Cloudy",
         "state": {
           "condition": "Cloudy",
@@ -3068,13 +3178,13 @@ export const season2020IndyCarWeather = {
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 31,
-        "temperature2m": 24.6,
-        "windSpeed10m": 9.4
+        "cloudCover": 54,
+        "temperature2m": 24.2,
+        "windSpeed10m": 7.9
       },
       {
         "time": "2020-10-25T14:45",
-        "weatherCode": 1,
+        "weatherCode": 2,
         "condition": "Cloudy",
         "state": {
           "condition": "Cloudy",
@@ -3085,97 +3195,29 @@ export const season2020IndyCarWeather = {
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 31,
-        "temperature2m": 24.6,
-        "windSpeed10m": 9.4
+        "cloudCover": 54,
+        "temperature2m": 24.2,
+        "windSpeed10m": 7.9
       },
       {
         "time": "2020-10-25T15:00",
-        "weatherCode": 1,
+        "weatherCode": 2,
         "condition": "Cloudy",
         "state": {
           "condition": "Cloudy",
           "gripLevel": 0.97,
           "wet": false,
-          "changingSoon": true,
+          "changingSoon": false,
           "label": "Cloudy"
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 31,
-        "temperature2m": 24.6,
-        "windSpeed10m": 9.4
+        "cloudCover": 54,
+        "temperature2m": 24.2,
+        "windSpeed10m": 7.9
       },
       {
         "time": "2020-10-25T15:15",
-        "weatherCode": 1,
-        "condition": "Cloudy",
-        "state": {
-          "condition": "Cloudy",
-          "gripLevel": 0.97,
-          "wet": false,
-          "changingSoon": true,
-          "label": "Cloudy"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 31,
-        "temperature2m": 24.6,
-        "windSpeed10m": 9.4
-      },
-      {
-        "time": "2020-10-25T15:30",
-        "weatherCode": 2,
-        "condition": "Cloudy",
-        "state": {
-          "condition": "Cloudy",
-          "gripLevel": 0.97,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Cloudy"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 54,
-        "temperature2m": 24.2,
-        "windSpeed10m": 7.9
-      },
-      {
-        "time": "2020-10-25T15:45",
-        "weatherCode": 2,
-        "condition": "Cloudy",
-        "state": {
-          "condition": "Cloudy",
-          "gripLevel": 0.97,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Cloudy"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 54,
-        "temperature2m": 24.2,
-        "windSpeed10m": 7.9
-      },
-      {
-        "time": "2020-10-25T16:00",
-        "weatherCode": 2,
-        "condition": "Cloudy",
-        "state": {
-          "condition": "Cloudy",
-          "gripLevel": 0.97,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Cloudy"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 54,
-        "temperature2m": 24.2,
-        "windSpeed10m": 7.9
-      },
-      {
-        "time": "2020-10-25T16:15",
         "weatherCode": 2,
         "condition": "Cloudy",
         "state": {

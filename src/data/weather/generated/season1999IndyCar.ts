@@ -15,12 +15,15 @@ export const season1999IndyCarWeather = {
       "latitude": 28.3772,
       "longitude": -81.5707,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "Low",
+      "startTimeMethod": "Oval daytime heuristic"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using IndyCar default 13:00"
+      "Workbook start time estimate (Low): 13:00",
+      "Start time method: Oval daytime heuristic"
     ],
     "samples": [
       {
@@ -243,12 +246,15 @@ export const season1999IndyCarWeather = {
       "latitude": 33.4484,
       "longitude": -112.074,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "Medium",
+      "startTimeMethod": "Oval daytime estimate"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using IndyCar default 13:00"
+      "Workbook start time estimate (Medium): 13:00",
+      "Start time method: Oval daytime estimate"
     ],
     "samples": [
       {
@@ -466,21 +472,24 @@ export const season1999IndyCarWeather = {
       "year": 1999,
       "series": "IndyCar",
       "date": "1999-05-01",
-      "localStartTime": "13:00",
+      "localStartTime": "19:30",
       "timezone": "auto",
       "latitude": 35.4088,
       "longitude": -80.5795,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "Low",
+      "startTimeMethod": "Saturday oval evening heuristic"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using IndyCar default 13:00"
+      "Workbook start time estimate (Low): 19:30",
+      "Start time method: Saturday oval evening heuristic"
     ],
     "samples": [
       {
-        "time": "1999-05-01T13:00",
+        "time": "1999-05-01T19:30",
         "weatherCode": 3,
         "condition": "Cloudy",
         "state": {
@@ -497,7 +506,7 @@ export const season1999IndyCarWeather = {
         "windSpeed10m": 20.1
       },
       {
-        "time": "1999-05-01T13:15",
+        "time": "1999-05-01T19:45",
         "weatherCode": 3,
         "condition": "Cloudy",
         "state": {
@@ -514,7 +523,7 @@ export const season1999IndyCarWeather = {
         "windSpeed10m": 20.1
       },
       {
-        "time": "1999-05-01T13:30",
+        "time": "1999-05-01T20:00",
         "weatherCode": 3,
         "condition": "Cloudy",
         "state": {
@@ -531,7 +540,7 @@ export const season1999IndyCarWeather = {
         "windSpeed10m": 20.1
       },
       {
-        "time": "1999-05-01T13:45",
+        "time": "1999-05-01T20:15",
         "weatherCode": 3,
         "condition": "Cloudy",
         "state": {
@@ -548,7 +557,7 @@ export const season1999IndyCarWeather = {
         "windSpeed10m": 20.1
       },
       {
-        "time": "1999-05-01T14:00",
+        "time": "1999-05-01T20:30",
         "weatherCode": 3,
         "condition": "Cloudy",
         "state": {
@@ -565,7 +574,7 @@ export const season1999IndyCarWeather = {
         "windSpeed10m": 20.2
       },
       {
-        "time": "1999-05-01T14:15",
+        "time": "1999-05-01T20:45",
         "weatherCode": 3,
         "condition": "Cloudy",
         "state": {
@@ -582,7 +591,7 @@ export const season1999IndyCarWeather = {
         "windSpeed10m": 20.2
       },
       {
-        "time": "1999-05-01T14:30",
+        "time": "1999-05-01T21:00",
         "weatherCode": 3,
         "condition": "Cloudy",
         "state": {
@@ -599,7 +608,7 @@ export const season1999IndyCarWeather = {
         "windSpeed10m": 20.2
       },
       {
-        "time": "1999-05-01T14:45",
+        "time": "1999-05-01T21:15",
         "weatherCode": 3,
         "condition": "Cloudy",
         "state": {
@@ -616,7 +625,7 @@ export const season1999IndyCarWeather = {
         "windSpeed10m": 20.2
       },
       {
-        "time": "1999-05-01T15:00",
+        "time": "1999-05-01T21:30",
         "weatherCode": 3,
         "condition": "Cloudy",
         "state": {
@@ -633,7 +642,7 @@ export const season1999IndyCarWeather = {
         "windSpeed10m": 19.1
       },
       {
-        "time": "1999-05-01T15:15",
+        "time": "1999-05-01T21:45",
         "weatherCode": 3,
         "condition": "Cloudy",
         "state": {
@@ -650,7 +659,7 @@ export const season1999IndyCarWeather = {
         "windSpeed10m": 19.1
       },
       {
-        "time": "1999-05-01T15:30",
+        "time": "1999-05-01T22:00",
         "weatherCode": 3,
         "condition": "Cloudy",
         "state": {
@@ -667,7 +676,7 @@ export const season1999IndyCarWeather = {
         "windSpeed10m": 19.1
       },
       {
-        "time": "1999-05-01T15:45",
+        "time": "1999-05-01T22:15",
         "weatherCode": 3,
         "condition": "Cloudy",
         "state": {
@@ -694,19 +703,39 @@ export const season1999IndyCarWeather = {
       "year": 1999,
       "series": "IndyCar",
       "date": "1999-05-30",
-      "localStartTime": "13:00",
+      "localStartTime": "12:45",
       "timezone": "auto",
       "latitude": 39.8023,
       "longitude": -86.2672,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "High",
+      "startTimeMethod": "Known Indy 500 start-window estimate"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using IndyCar default 13:00"
+      "Workbook start time estimate (High): 12:45",
+      "Start time method: Known Indy 500 start-window estimate"
     ],
     "samples": [
+      {
+        "time": "1999-05-30T12:45",
+        "weatherCode": 0,
+        "condition": "Dry",
+        "state": {
+          "condition": "Dry",
+          "gripLevel": 1,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Dry"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 0,
+        "temperature2m": 18.8,
+        "windSpeed10m": 8.7
+      },
       {
         "time": "1999-05-30T13:00",
         "weatherCode": 0,
@@ -772,8 +801,8 @@ export const season1999IndyCarWeather = {
         "precipitationMm": 0.0,
         "rainMm": 0.0,
         "cloudCover": 0,
-        "temperature2m": 18.8,
-        "windSpeed10m": 8.7
+        "temperature2m": 17.7,
+        "windSpeed10m": 9.0
       },
       {
         "time": "1999-05-30T14:00",
@@ -840,8 +869,8 @@ export const season1999IndyCarWeather = {
         "precipitationMm": 0.0,
         "rainMm": 0.0,
         "cloudCover": 0,
-        "temperature2m": 17.7,
-        "windSpeed10m": 9.0
+        "temperature2m": 16.9,
+        "windSpeed10m": 7.2
       },
       {
         "time": "1999-05-30T15:00",
@@ -893,23 +922,6 @@ export const season1999IndyCarWeather = {
         "cloudCover": 0,
         "temperature2m": 16.9,
         "windSpeed10m": 7.2
-      },
-      {
-        "time": "1999-05-30T15:45",
-        "weatherCode": 0,
-        "condition": "Dry",
-        "state": {
-          "condition": "Dry",
-          "gripLevel": 1,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Dry"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 0,
-        "temperature2m": 16.9,
-        "windSpeed10m": 7.2
       }
     ]
   },
@@ -922,21 +934,24 @@ export const season1999IndyCarWeather = {
       "year": 1999,
       "series": "IndyCar",
       "date": "1999-06-12",
-      "localStartTime": "13:00",
+      "localStartTime": "20:00",
       "timezone": "auto",
       "latitude": 32.7555,
       "longitude": -97.3308,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "High",
+      "startTimeMethod": "Known Texas night oval pattern"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using IndyCar default 13:00"
+      "Workbook start time estimate (High): 20:00",
+      "Start time method: Known Texas night oval pattern"
     ],
     "samples": [
       {
-        "time": "1999-06-12T13:00",
+        "time": "1999-06-12T20:00",
         "weatherCode": 3,
         "condition": "Cloudy",
         "state": {
@@ -953,7 +968,7 @@ export const season1999IndyCarWeather = {
         "windSpeed10m": 9.5
       },
       {
-        "time": "1999-06-12T13:15",
+        "time": "1999-06-12T20:15",
         "weatherCode": 3,
         "condition": "Cloudy",
         "state": {
@@ -970,7 +985,7 @@ export const season1999IndyCarWeather = {
         "windSpeed10m": 9.5
       },
       {
-        "time": "1999-06-12T13:30",
+        "time": "1999-06-12T20:30",
         "weatherCode": 3,
         "condition": "Cloudy",
         "state": {
@@ -987,7 +1002,7 @@ export const season1999IndyCarWeather = {
         "windSpeed10m": 9.5
       },
       {
-        "time": "1999-06-12T13:45",
+        "time": "1999-06-12T20:45",
         "weatherCode": 3,
         "condition": "Cloudy",
         "state": {
@@ -1004,7 +1019,7 @@ export const season1999IndyCarWeather = {
         "windSpeed10m": 9.5
       },
       {
-        "time": "1999-06-12T14:00",
+        "time": "1999-06-12T21:00",
         "weatherCode": 3,
         "condition": "Cloudy",
         "state": {
@@ -1021,7 +1036,7 @@ export const season1999IndyCarWeather = {
         "windSpeed10m": 9.1
       },
       {
-        "time": "1999-06-12T14:15",
+        "time": "1999-06-12T21:15",
         "weatherCode": 3,
         "condition": "Cloudy",
         "state": {
@@ -1038,7 +1053,7 @@ export const season1999IndyCarWeather = {
         "windSpeed10m": 9.1
       },
       {
-        "time": "1999-06-12T14:30",
+        "time": "1999-06-12T21:30",
         "weatherCode": 3,
         "condition": "Cloudy",
         "state": {
@@ -1055,7 +1070,7 @@ export const season1999IndyCarWeather = {
         "windSpeed10m": 9.1
       },
       {
-        "time": "1999-06-12T14:45",
+        "time": "1999-06-12T21:45",
         "weatherCode": 3,
         "condition": "Cloudy",
         "state": {
@@ -1072,7 +1087,7 @@ export const season1999IndyCarWeather = {
         "windSpeed10m": 9.1
       },
       {
-        "time": "1999-06-12T15:00",
+        "time": "1999-06-12T22:00",
         "weatherCode": 3,
         "condition": "Cloudy",
         "state": {
@@ -1089,7 +1104,7 @@ export const season1999IndyCarWeather = {
         "windSpeed10m": 8.1
       },
       {
-        "time": "1999-06-12T15:15",
+        "time": "1999-06-12T22:15",
         "weatherCode": 3,
         "condition": "Cloudy",
         "state": {
@@ -1106,7 +1121,7 @@ export const season1999IndyCarWeather = {
         "windSpeed10m": 8.1
       },
       {
-        "time": "1999-06-12T15:30",
+        "time": "1999-06-12T22:30",
         "weatherCode": 3,
         "condition": "Cloudy",
         "state": {
@@ -1123,7 +1138,7 @@ export const season1999IndyCarWeather = {
         "windSpeed10m": 8.1
       },
       {
-        "time": "1999-06-12T15:45",
+        "time": "1999-06-12T22:45",
         "weatherCode": 3,
         "condition": "Cloudy",
         "state": {
@@ -1150,21 +1165,24 @@ export const season1999IndyCarWeather = {
       "year": 1999,
       "series": "IndyCar",
       "date": "1999-07-17",
-      "localStartTime": "13:00",
+      "localStartTime": "19:30",
       "timezone": "auto",
       "latitude": 33.3871,
       "longitude": -84.2824,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "Low",
+      "startTimeMethod": "Saturday oval evening heuristic"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using IndyCar default 13:00"
+      "Workbook start time estimate (Low): 19:30",
+      "Start time method: Saturday oval evening heuristic"
     ],
     "samples": [
       {
-        "time": "1999-07-17T13:00",
+        "time": "1999-07-17T19:30",
         "weatherCode": 3,
         "condition": "Cloudy",
         "state": {
@@ -1181,7 +1199,7 @@ export const season1999IndyCarWeather = {
         "windSpeed10m": 4.5
       },
       {
-        "time": "1999-07-17T13:15",
+        "time": "1999-07-17T19:45",
         "weatherCode": 3,
         "condition": "Cloudy",
         "state": {
@@ -1198,7 +1216,7 @@ export const season1999IndyCarWeather = {
         "windSpeed10m": 4.5
       },
       {
-        "time": "1999-07-17T13:30",
+        "time": "1999-07-17T20:00",
         "weatherCode": 3,
         "condition": "Cloudy",
         "state": {
@@ -1215,7 +1233,7 @@ export const season1999IndyCarWeather = {
         "windSpeed10m": 4.5
       },
       {
-        "time": "1999-07-17T13:45",
+        "time": "1999-07-17T20:15",
         "weatherCode": 3,
         "condition": "Cloudy",
         "state": {
@@ -1232,7 +1250,7 @@ export const season1999IndyCarWeather = {
         "windSpeed10m": 4.5
       },
       {
-        "time": "1999-07-17T14:00",
+        "time": "1999-07-17T20:30",
         "weatherCode": 3,
         "condition": "Cloudy",
         "state": {
@@ -1249,7 +1267,7 @@ export const season1999IndyCarWeather = {
         "windSpeed10m": 4.3
       },
       {
-        "time": "1999-07-17T14:15",
+        "time": "1999-07-17T20:45",
         "weatherCode": 3,
         "condition": "Cloudy",
         "state": {
@@ -1266,7 +1284,7 @@ export const season1999IndyCarWeather = {
         "windSpeed10m": 4.3
       },
       {
-        "time": "1999-07-17T14:30",
+        "time": "1999-07-17T21:00",
         "weatherCode": 3,
         "condition": "Cloudy",
         "state": {
@@ -1283,7 +1301,7 @@ export const season1999IndyCarWeather = {
         "windSpeed10m": 4.3
       },
       {
-        "time": "1999-07-17T14:45",
+        "time": "1999-07-17T21:15",
         "weatherCode": 3,
         "condition": "Cloudy",
         "state": {
@@ -1300,7 +1318,7 @@ export const season1999IndyCarWeather = {
         "windSpeed10m": 4.3
       },
       {
-        "time": "1999-07-17T15:00",
+        "time": "1999-07-17T21:30",
         "weatherCode": 3,
         "condition": "Cloudy",
         "state": {
@@ -1317,7 +1335,7 @@ export const season1999IndyCarWeather = {
         "windSpeed10m": 4.4
       },
       {
-        "time": "1999-07-17T15:15",
+        "time": "1999-07-17T21:45",
         "weatherCode": 3,
         "condition": "Cloudy",
         "state": {
@@ -1334,7 +1352,7 @@ export const season1999IndyCarWeather = {
         "windSpeed10m": 4.4
       },
       {
-        "time": "1999-07-17T15:30",
+        "time": "1999-07-17T22:00",
         "weatherCode": 3,
         "condition": "Cloudy",
         "state": {
@@ -1351,7 +1369,7 @@ export const season1999IndyCarWeather = {
         "windSpeed10m": 4.4
       },
       {
-        "time": "1999-07-17T15:45",
+        "time": "1999-07-17T22:15",
         "weatherCode": 3,
         "condition": "Cloudy",
         "state": {
@@ -1383,12 +1401,15 @@ export const season1999IndyCarWeather = {
       "latitude": 39.1582,
       "longitude": -75.5244,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "Low",
+      "startTimeMethod": "Oval daytime heuristic"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using IndyCar default 13:00"
+      "Workbook start time estimate (Low): 13:00",
+      "Start time method: Oval daytime heuristic"
     ],
     "samples": [
       {
@@ -1611,12 +1632,15 @@ export const season1999IndyCarWeather = {
       "latitude": 38.6822,
       "longitude": -104.7008,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "Low",
+      "startTimeMethod": "Oval daytime heuristic"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using IndyCar default 13:00"
+      "Workbook start time estimate (Low): 13:00",
+      "Start time method: Oval daytime heuristic"
     ],
     "samples": [
       {
@@ -1834,21 +1858,24 @@ export const season1999IndyCarWeather = {
       "year": 1999,
       "series": "IndyCar",
       "date": "1999-09-25",
-      "localStartTime": "13:00",
+      "localStartTime": "19:30",
       "timezone": "auto",
       "latitude": 36.1699,
       "longitude": -115.1398,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "Low",
+      "startTimeMethod": "Saturday oval evening heuristic"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using IndyCar default 13:00"
+      "Workbook start time estimate (Low): 19:30",
+      "Start time method: Saturday oval evening heuristic"
     ],
     "samples": [
       {
-        "time": "1999-09-25T13:00",
+        "time": "1999-09-25T19:30",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -1865,7 +1892,7 @@ export const season1999IndyCarWeather = {
         "windSpeed10m": 7.4
       },
       {
-        "time": "1999-09-25T13:15",
+        "time": "1999-09-25T19:45",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -1882,7 +1909,7 @@ export const season1999IndyCarWeather = {
         "windSpeed10m": 7.4
       },
       {
-        "time": "1999-09-25T13:30",
+        "time": "1999-09-25T20:00",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -1899,7 +1926,7 @@ export const season1999IndyCarWeather = {
         "windSpeed10m": 7.4
       },
       {
-        "time": "1999-09-25T13:45",
+        "time": "1999-09-25T20:15",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -1916,7 +1943,7 @@ export const season1999IndyCarWeather = {
         "windSpeed10m": 7.4
       },
       {
-        "time": "1999-09-25T14:00",
+        "time": "1999-09-25T20:30",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -1933,7 +1960,7 @@ export const season1999IndyCarWeather = {
         "windSpeed10m": 7.8
       },
       {
-        "time": "1999-09-25T14:15",
+        "time": "1999-09-25T20:45",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -1950,7 +1977,7 @@ export const season1999IndyCarWeather = {
         "windSpeed10m": 7.8
       },
       {
-        "time": "1999-09-25T14:30",
+        "time": "1999-09-25T21:00",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -1967,7 +1994,7 @@ export const season1999IndyCarWeather = {
         "windSpeed10m": 7.8
       },
       {
-        "time": "1999-09-25T14:45",
+        "time": "1999-09-25T21:15",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -1984,7 +2011,7 @@ export const season1999IndyCarWeather = {
         "windSpeed10m": 7.8
       },
       {
-        "time": "1999-09-25T15:00",
+        "time": "1999-09-25T21:30",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -2001,7 +2028,7 @@ export const season1999IndyCarWeather = {
         "windSpeed10m": 8.2
       },
       {
-        "time": "1999-09-25T15:15",
+        "time": "1999-09-25T21:45",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -2018,7 +2045,7 @@ export const season1999IndyCarWeather = {
         "windSpeed10m": 8.2
       },
       {
-        "time": "1999-09-25T15:30",
+        "time": "1999-09-25T22:00",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -2035,7 +2062,7 @@ export const season1999IndyCarWeather = {
         "windSpeed10m": 8.2
       },
       {
-        "time": "1999-09-25T15:45",
+        "time": "1999-09-25T22:15",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -2067,12 +2094,15 @@ export const season1999IndyCarWeather = {
       "latitude": 32.7555,
       "longitude": -97.3308,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "Medium",
+      "startTimeMethod": "Texas oval daytime fallback"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using IndyCar default 13:00"
+      "Workbook start time estimate (Medium): 13:00",
+      "Start time method: Texas oval daytime fallback"
     ],
     "samples": [
       {

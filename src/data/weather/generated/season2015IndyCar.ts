@@ -10,19 +10,90 @@ export const season2015IndyCarWeather = {
       "year": 2015,
       "series": "IndyCar",
       "date": "2015-03-29",
-      "localStartTime": "13:30",
+      "localStartTime": "12:30",
       "timezone": "auto",
       "latitude": 27.7676,
       "longitude": -82.6403,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "Medium",
+      "startTimeMethod": "Street race midday estimate"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using IndyCar default 13:30"
+      "Workbook start time estimate (Medium): 12:30",
+      "Start time method: Street race midday estimate"
     ],
     "samples": [
+      {
+        "time": "2015-03-29T12:30",
+        "weatherCode": 0,
+        "condition": "Dry",
+        "state": {
+          "condition": "Dry",
+          "gripLevel": 1,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Dry"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 0,
+        "temperature2m": 14.6,
+        "windSpeed10m": 8.0
+      },
+      {
+        "time": "2015-03-29T12:45",
+        "weatherCode": 0,
+        "condition": "Dry",
+        "state": {
+          "condition": "Dry",
+          "gripLevel": 1,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Dry"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 0,
+        "temperature2m": 14.6,
+        "windSpeed10m": 8.0
+      },
+      {
+        "time": "2015-03-29T13:00",
+        "weatherCode": 0,
+        "condition": "Dry",
+        "state": {
+          "condition": "Dry",
+          "gripLevel": 1,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Dry"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 0,
+        "temperature2m": 14.6,
+        "windSpeed10m": 8.0
+      },
+      {
+        "time": "2015-03-29T13:15",
+        "weatherCode": 0,
+        "condition": "Dry",
+        "state": {
+          "condition": "Dry",
+          "gripLevel": 1,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Dry"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 0,
+        "temperature2m": 14.6,
+        "windSpeed10m": 8.0
+      },
       {
         "time": "2015-03-29T13:30",
         "weatherCode": 0,
@@ -37,7 +108,7 @@ export const season2015IndyCarWeather = {
         "precipitationMm": 0.0,
         "rainMm": 0.0,
         "cloudCover": 0,
-        "temperature2m": 14.6,
+        "temperature2m": 14.4,
         "windSpeed10m": 8.0
       },
       {
@@ -54,7 +125,7 @@ export const season2015IndyCarWeather = {
         "precipitationMm": 0.0,
         "rainMm": 0.0,
         "cloudCover": 0,
-        "temperature2m": 14.6,
+        "temperature2m": 14.4,
         "windSpeed10m": 8.0
       },
       {
@@ -71,7 +142,7 @@ export const season2015IndyCarWeather = {
         "precipitationMm": 0.0,
         "rainMm": 0.0,
         "cloudCover": 0,
-        "temperature2m": 14.6,
+        "temperature2m": 14.4,
         "windSpeed10m": 8.0
       },
       {
@@ -88,7 +159,7 @@ export const season2015IndyCarWeather = {
         "precipitationMm": 0.0,
         "rainMm": 0.0,
         "cloudCover": 0,
-        "temperature2m": 14.6,
+        "temperature2m": 14.4,
         "windSpeed10m": 8.0
       },
       {
@@ -105,8 +176,8 @@ export const season2015IndyCarWeather = {
         "precipitationMm": 0.0,
         "rainMm": 0.0,
         "cloudCover": 0,
-        "temperature2m": 14.4,
-        "windSpeed10m": 8.0
+        "temperature2m": 14.0,
+        "windSpeed10m": 7.9
       },
       {
         "time": "2015-03-29T14:45",
@@ -122,8 +193,8 @@ export const season2015IndyCarWeather = {
         "precipitationMm": 0.0,
         "rainMm": 0.0,
         "cloudCover": 0,
-        "temperature2m": 14.4,
-        "windSpeed10m": 8.0
+        "temperature2m": 14.0,
+        "windSpeed10m": 7.9
       },
       {
         "time": "2015-03-29T15:00",
@@ -139,79 +210,11 @@ export const season2015IndyCarWeather = {
         "precipitationMm": 0.0,
         "rainMm": 0.0,
         "cloudCover": 0,
-        "temperature2m": 14.4,
-        "windSpeed10m": 8.0
+        "temperature2m": 14.0,
+        "windSpeed10m": 7.9
       },
       {
         "time": "2015-03-29T15:15",
-        "weatherCode": 0,
-        "condition": "Dry",
-        "state": {
-          "condition": "Dry",
-          "gripLevel": 1,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Dry"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 0,
-        "temperature2m": 14.4,
-        "windSpeed10m": 8.0
-      },
-      {
-        "time": "2015-03-29T15:30",
-        "weatherCode": 0,
-        "condition": "Dry",
-        "state": {
-          "condition": "Dry",
-          "gripLevel": 1,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Dry"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 0,
-        "temperature2m": 14.0,
-        "windSpeed10m": 7.9
-      },
-      {
-        "time": "2015-03-29T15:45",
-        "weatherCode": 0,
-        "condition": "Dry",
-        "state": {
-          "condition": "Dry",
-          "gripLevel": 1,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Dry"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 0,
-        "temperature2m": 14.0,
-        "windSpeed10m": 7.9
-      },
-      {
-        "time": "2015-03-29T16:00",
-        "weatherCode": 0,
-        "condition": "Dry",
-        "state": {
-          "condition": "Dry",
-          "gripLevel": 1,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Dry"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 0,
-        "temperature2m": 14.0,
-        "windSpeed10m": 7.9
-      },
-      {
-        "time": "2015-03-29T16:15",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -238,19 +241,56 @@ export const season2015IndyCarWeather = {
       "year": 2015,
       "series": "IndyCar",
       "date": "2015-04-12",
-      "localStartTime": "13:30",
+      "localStartTime": "13:00",
       "timezone": "auto",
       "latitude": 29.9124,
       "longitude": -90.2037,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "Low",
+      "startTimeMethod": "Series/track-type heuristic"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using IndyCar default 13:30"
+      "Workbook start time estimate (Low): 13:00",
+      "Start time method: Series/track-type heuristic"
     ],
     "samples": [
+      {
+        "time": "2015-04-12T13:00",
+        "weatherCode": 53,
+        "condition": "LightRain",
+        "state": {
+          "condition": "LightRain",
+          "gripLevel": 0.72,
+          "wet": true,
+          "changingSoon": false,
+          "label": "Light Rain"
+        },
+        "precipitationMm": 0.8,
+        "rainMm": 0.8,
+        "cloudCover": 100,
+        "temperature2m": 20.8,
+        "windSpeed10m": 8.5
+      },
+      {
+        "time": "2015-04-12T13:15",
+        "weatherCode": 53,
+        "condition": "LightRain",
+        "state": {
+          "condition": "LightRain",
+          "gripLevel": 0.72,
+          "wet": true,
+          "changingSoon": false,
+          "label": "Light Rain"
+        },
+        "precipitationMm": 0.8,
+        "rainMm": 0.8,
+        "cloudCover": 100,
+        "temperature2m": 20.8,
+        "windSpeed10m": 8.5
+      },
       {
         "time": "2015-04-12T13:30",
         "weatherCode": 53,
@@ -259,7 +299,7 @@ export const season2015IndyCarWeather = {
           "condition": "LightRain",
           "gripLevel": 0.72,
           "wet": true,
-          "changingSoon": false,
+          "changingSoon": true,
           "label": "Light Rain"
         },
         "precipitationMm": 0.8,
@@ -276,7 +316,7 @@ export const season2015IndyCarWeather = {
           "condition": "LightRain",
           "gripLevel": 0.72,
           "wet": true,
-          "changingSoon": false,
+          "changingSoon": true,
           "label": "Light Rain"
         },
         "precipitationMm": 0.8,
@@ -287,37 +327,37 @@ export const season2015IndyCarWeather = {
       },
       {
         "time": "2015-04-12T14:00",
-        "weatherCode": 53,
+        "weatherCode": 55,
         "condition": "LightRain",
         "state": {
           "condition": "LightRain",
           "gripLevel": 0.72,
           "wet": true,
-          "changingSoon": true,
+          "changingSoon": false,
           "label": "Light Rain"
         },
-        "precipitationMm": 0.8,
-        "rainMm": 0.8,
+        "precipitationMm": 1.1,
+        "rainMm": 1.1,
         "cloudCover": 100,
         "temperature2m": 20.8,
-        "windSpeed10m": 8.5
+        "windSpeed10m": 9.2
       },
       {
         "time": "2015-04-12T14:15",
-        "weatherCode": 53,
+        "weatherCode": 55,
         "condition": "LightRain",
         "state": {
           "condition": "LightRain",
           "gripLevel": 0.72,
           "wet": true,
-          "changingSoon": true,
+          "changingSoon": false,
           "label": "Light Rain"
         },
-        "precipitationMm": 0.8,
-        "rainMm": 0.8,
+        "precipitationMm": 1.1,
+        "rainMm": 1.1,
         "cloudCover": 100,
         "temperature2m": 20.8,
-        "windSpeed10m": 8.5
+        "windSpeed10m": 9.2
       },
       {
         "time": "2015-04-12T14:30",
@@ -327,7 +367,7 @@ export const season2015IndyCarWeather = {
           "condition": "LightRain",
           "gripLevel": 0.72,
           "wet": true,
-          "changingSoon": false,
+          "changingSoon": true,
           "label": "Light Rain"
         },
         "precipitationMm": 1.1,
@@ -344,7 +384,7 @@ export const season2015IndyCarWeather = {
           "condition": "LightRain",
           "gripLevel": 0.72,
           "wet": true,
-          "changingSoon": false,
+          "changingSoon": true,
           "label": "Light Rain"
         },
         "precipitationMm": 1.1,
@@ -355,37 +395,37 @@ export const season2015IndyCarWeather = {
       },
       {
         "time": "2015-04-12T15:00",
-        "weatherCode": 55,
+        "weatherCode": 53,
         "condition": "LightRain",
         "state": {
           "condition": "LightRain",
           "gripLevel": 0.72,
           "wet": true,
-          "changingSoon": true,
+          "changingSoon": false,
           "label": "Light Rain"
         },
-        "precipitationMm": 1.1,
-        "rainMm": 1.1,
+        "precipitationMm": 0.6,
+        "rainMm": 0.6,
         "cloudCover": 100,
-        "temperature2m": 20.8,
-        "windSpeed10m": 9.2
+        "temperature2m": 20.6,
+        "windSpeed10m": 11.4
       },
       {
         "time": "2015-04-12T15:15",
-        "weatherCode": 55,
+        "weatherCode": 53,
         "condition": "LightRain",
         "state": {
           "condition": "LightRain",
           "gripLevel": 0.72,
           "wet": true,
-          "changingSoon": true,
+          "changingSoon": false,
           "label": "Light Rain"
         },
-        "precipitationMm": 1.1,
-        "rainMm": 1.1,
+        "precipitationMm": 0.6,
+        "rainMm": 0.6,
         "cloudCover": 100,
-        "temperature2m": 20.8,
-        "windSpeed10m": 9.2
+        "temperature2m": 20.6,
+        "windSpeed10m": 11.4
       },
       {
         "time": "2015-04-12T15:30",
@@ -420,40 +460,6 @@ export const season2015IndyCarWeather = {
         "cloudCover": 100,
         "temperature2m": 20.6,
         "windSpeed10m": 11.4
-      },
-      {
-        "time": "2015-04-12T16:00",
-        "weatherCode": 53,
-        "condition": "LightRain",
-        "state": {
-          "condition": "LightRain",
-          "gripLevel": 0.72,
-          "wet": true,
-          "changingSoon": false,
-          "label": "Light Rain"
-        },
-        "precipitationMm": 0.6,
-        "rainMm": 0.6,
-        "cloudCover": 100,
-        "temperature2m": 20.6,
-        "windSpeed10m": 11.4
-      },
-      {
-        "time": "2015-04-12T16:15",
-        "weatherCode": 53,
-        "condition": "LightRain",
-        "state": {
-          "condition": "LightRain",
-          "gripLevel": 0.72,
-          "wet": true,
-          "changingSoon": false,
-          "label": "Light Rain"
-        },
-        "precipitationMm": 0.6,
-        "rainMm": 0.6,
-        "cloudCover": 100,
-        "temperature2m": 20.6,
-        "windSpeed10m": 11.4
       }
     ]
   },
@@ -466,21 +472,24 @@ export const season2015IndyCarWeather = {
       "year": 2015,
       "series": "IndyCar",
       "date": "2015-04-19",
-      "localStartTime": "13:30",
+      "localStartTime": "12:30",
       "timezone": "auto",
       "latitude": 33.7701,
       "longitude": -118.1937,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "Medium",
+      "startTimeMethod": "Long Beach street-race pattern"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using IndyCar default 13:30"
+      "Workbook start time estimate (Medium): 12:30",
+      "Start time method: Long Beach street-race pattern"
     ],
     "samples": [
       {
-        "time": "2015-04-19T13:30",
+        "time": "2015-04-19T12:30",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -495,6 +504,74 @@ export const season2015IndyCarWeather = {
         "cloudCover": 0,
         "temperature2m": 14.9,
         "windSpeed10m": 7.7
+      },
+      {
+        "time": "2015-04-19T12:45",
+        "weatherCode": 0,
+        "condition": "Dry",
+        "state": {
+          "condition": "Dry",
+          "gripLevel": 1,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Dry"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 0,
+        "temperature2m": 14.9,
+        "windSpeed10m": 7.7
+      },
+      {
+        "time": "2015-04-19T13:00",
+        "weatherCode": 0,
+        "condition": "Dry",
+        "state": {
+          "condition": "Dry",
+          "gripLevel": 1,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Dry"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 0,
+        "temperature2m": 14.9,
+        "windSpeed10m": 7.7
+      },
+      {
+        "time": "2015-04-19T13:15",
+        "weatherCode": 0,
+        "condition": "Dry",
+        "state": {
+          "condition": "Dry",
+          "gripLevel": 1,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Dry"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 0,
+        "temperature2m": 14.9,
+        "windSpeed10m": 7.7
+      },
+      {
+        "time": "2015-04-19T13:30",
+        "weatherCode": 0,
+        "condition": "Dry",
+        "state": {
+          "condition": "Dry",
+          "gripLevel": 1,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Dry"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 0,
+        "temperature2m": 14.1,
+        "windSpeed10m": 6.3
       },
       {
         "time": "2015-04-19T13:45",
@@ -510,8 +587,8 @@ export const season2015IndyCarWeather = {
         "precipitationMm": 0.0,
         "rainMm": 0.0,
         "cloudCover": 0,
-        "temperature2m": 14.9,
-        "windSpeed10m": 7.7
+        "temperature2m": 14.1,
+        "windSpeed10m": 6.3
       },
       {
         "time": "2015-04-19T14:00",
@@ -527,8 +604,8 @@ export const season2015IndyCarWeather = {
         "precipitationMm": 0.0,
         "rainMm": 0.0,
         "cloudCover": 0,
-        "temperature2m": 14.9,
-        "windSpeed10m": 7.7
+        "temperature2m": 14.1,
+        "windSpeed10m": 6.3
       },
       {
         "time": "2015-04-19T14:15",
@@ -544,8 +621,8 @@ export const season2015IndyCarWeather = {
         "precipitationMm": 0.0,
         "rainMm": 0.0,
         "cloudCover": 0,
-        "temperature2m": 14.9,
-        "windSpeed10m": 7.7
+        "temperature2m": 14.1,
+        "windSpeed10m": 6.3
       },
       {
         "time": "2015-04-19T14:30",
@@ -561,8 +638,8 @@ export const season2015IndyCarWeather = {
         "precipitationMm": 0.0,
         "rainMm": 0.0,
         "cloudCover": 0,
-        "temperature2m": 14.1,
-        "windSpeed10m": 6.3
+        "temperature2m": 13.7,
+        "windSpeed10m": 5.8
       },
       {
         "time": "2015-04-19T14:45",
@@ -578,8 +655,8 @@ export const season2015IndyCarWeather = {
         "precipitationMm": 0.0,
         "rainMm": 0.0,
         "cloudCover": 0,
-        "temperature2m": 14.1,
-        "windSpeed10m": 6.3
+        "temperature2m": 13.7,
+        "windSpeed10m": 5.8
       },
       {
         "time": "2015-04-19T15:00",
@@ -595,79 +672,11 @@ export const season2015IndyCarWeather = {
         "precipitationMm": 0.0,
         "rainMm": 0.0,
         "cloudCover": 0,
-        "temperature2m": 14.1,
-        "windSpeed10m": 6.3
+        "temperature2m": 13.7,
+        "windSpeed10m": 5.8
       },
       {
         "time": "2015-04-19T15:15",
-        "weatherCode": 0,
-        "condition": "Dry",
-        "state": {
-          "condition": "Dry",
-          "gripLevel": 1,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Dry"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 0,
-        "temperature2m": 14.1,
-        "windSpeed10m": 6.3
-      },
-      {
-        "time": "2015-04-19T15:30",
-        "weatherCode": 0,
-        "condition": "Dry",
-        "state": {
-          "condition": "Dry",
-          "gripLevel": 1,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Dry"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 0,
-        "temperature2m": 13.7,
-        "windSpeed10m": 5.8
-      },
-      {
-        "time": "2015-04-19T15:45",
-        "weatherCode": 0,
-        "condition": "Dry",
-        "state": {
-          "condition": "Dry",
-          "gripLevel": 1,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Dry"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 0,
-        "temperature2m": 13.7,
-        "windSpeed10m": 5.8
-      },
-      {
-        "time": "2015-04-19T16:00",
-        "weatherCode": 0,
-        "condition": "Dry",
-        "state": {
-          "condition": "Dry",
-          "gripLevel": 1,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Dry"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 0,
-        "temperature2m": 13.7,
-        "windSpeed10m": 5.8
-      },
-      {
-        "time": "2015-04-19T16:15",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -694,19 +703,56 @@ export const season2015IndyCarWeather = {
       "year": 2015,
       "series": "IndyCar",
       "date": "2015-04-26",
-      "localStartTime": "13:30",
+      "localStartTime": "13:00",
       "timezone": "auto",
       "latitude": 33.5207,
       "longitude": -86.8025,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "Low",
+      "startTimeMethod": "Series/track-type heuristic"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using IndyCar default 13:30"
+      "Workbook start time estimate (Low): 13:00",
+      "Start time method: Series/track-type heuristic"
     ],
     "samples": [
+      {
+        "time": "2015-04-26T13:00",
+        "weatherCode": 0,
+        "condition": "Dry",
+        "state": {
+          "condition": "Dry",
+          "gripLevel": 1,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Dry"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 2,
+        "temperature2m": 19.0,
+        "windSpeed10m": 12.5
+      },
+      {
+        "time": "2015-04-26T13:15",
+        "weatherCode": 0,
+        "condition": "Dry",
+        "state": {
+          "condition": "Dry",
+          "gripLevel": 1,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Dry"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 2,
+        "temperature2m": 19.0,
+        "windSpeed10m": 12.5
+      },
       {
         "time": "2015-04-26T13:30",
         "weatherCode": 0,
@@ -755,8 +801,8 @@ export const season2015IndyCarWeather = {
         "precipitationMm": 0.0,
         "rainMm": 0.0,
         "cloudCover": 2,
-        "temperature2m": 19.0,
-        "windSpeed10m": 12.5
+        "temperature2m": 18.4,
+        "windSpeed10m": 12.0
       },
       {
         "time": "2015-04-26T14:15",
@@ -772,8 +818,8 @@ export const season2015IndyCarWeather = {
         "precipitationMm": 0.0,
         "rainMm": 0.0,
         "cloudCover": 2,
-        "temperature2m": 19.0,
-        "windSpeed10m": 12.5
+        "temperature2m": 18.4,
+        "windSpeed10m": 12.0
       },
       {
         "time": "2015-04-26T14:30",
@@ -822,9 +868,9 @@ export const season2015IndyCarWeather = {
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 2,
-        "temperature2m": 18.4,
-        "windSpeed10m": 12.0
+        "cloudCover": 0,
+        "temperature2m": 17.7,
+        "windSpeed10m": 13.0
       },
       {
         "time": "2015-04-26T15:15",
@@ -839,9 +885,9 @@ export const season2015IndyCarWeather = {
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 2,
-        "temperature2m": 18.4,
-        "windSpeed10m": 12.0
+        "cloudCover": 0,
+        "temperature2m": 17.7,
+        "windSpeed10m": 13.0
       },
       {
         "time": "2015-04-26T15:30",
@@ -876,40 +922,6 @@ export const season2015IndyCarWeather = {
         "cloudCover": 0,
         "temperature2m": 17.7,
         "windSpeed10m": 13.0
-      },
-      {
-        "time": "2015-04-26T16:00",
-        "weatherCode": 0,
-        "condition": "Dry",
-        "state": {
-          "condition": "Dry",
-          "gripLevel": 1,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Dry"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 0,
-        "temperature2m": 17.7,
-        "windSpeed10m": 13.0
-      },
-      {
-        "time": "2015-04-26T16:15",
-        "weatherCode": 0,
-        "condition": "Dry",
-        "state": {
-          "condition": "Dry",
-          "gripLevel": 1,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Dry"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 0,
-        "temperature2m": 17.7,
-        "windSpeed10m": 13.0
       }
     ]
   },
@@ -922,19 +934,73 @@ export const season2015IndyCarWeather = {
       "year": 2015,
       "series": "IndyCar",
       "date": "2015-05-09",
-      "localStartTime": "13:30",
+      "localStartTime": "12:45",
       "timezone": "auto",
       "latitude": 39.8023,
       "longitude": -86.2672,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "High",
+      "startTimeMethod": "Known Indy 500 start-window estimate"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using IndyCar default 13:30"
+      "Workbook start time estimate (High): 12:45",
+      "Start time method: Known Indy 500 start-window estimate"
     ],
     "samples": [
+      {
+        "time": "2015-05-09T12:45",
+        "weatherCode": 3,
+        "condition": "Cloudy",
+        "state": {
+          "condition": "Cloudy",
+          "gripLevel": 0.97,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Cloudy"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 85,
+        "temperature2m": 20.8,
+        "windSpeed10m": 6.0
+      },
+      {
+        "time": "2015-05-09T13:00",
+        "weatherCode": 3,
+        "condition": "Cloudy",
+        "state": {
+          "condition": "Cloudy",
+          "gripLevel": 0.97,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Cloudy"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 85,
+        "temperature2m": 20.8,
+        "windSpeed10m": 6.0
+      },
+      {
+        "time": "2015-05-09T13:15",
+        "weatherCode": 3,
+        "condition": "Cloudy",
+        "state": {
+          "condition": "Cloudy",
+          "gripLevel": 0.97,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Cloudy"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 85,
+        "temperature2m": 20.8,
+        "windSpeed10m": 6.0
+      },
       {
         "time": "2015-05-09T13:30",
         "weatherCode": 3,
@@ -965,9 +1031,9 @@ export const season2015IndyCarWeather = {
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 85,
-        "temperature2m": 20.8,
-        "windSpeed10m": 6.0
+        "cloudCover": 99,
+        "temperature2m": 20.4,
+        "windSpeed10m": 5.1
       },
       {
         "time": "2015-05-09T14:00",
@@ -982,9 +1048,9 @@ export const season2015IndyCarWeather = {
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 85,
-        "temperature2m": 20.8,
-        "windSpeed10m": 6.0
+        "cloudCover": 99,
+        "temperature2m": 20.4,
+        "windSpeed10m": 5.1
       },
       {
         "time": "2015-05-09T14:15",
@@ -999,9 +1065,9 @@ export const season2015IndyCarWeather = {
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 85,
-        "temperature2m": 20.8,
-        "windSpeed10m": 6.0
+        "cloudCover": 99,
+        "temperature2m": 20.4,
+        "windSpeed10m": 5.1
       },
       {
         "time": "2015-05-09T14:30",
@@ -1033,9 +1099,9 @@ export const season2015IndyCarWeather = {
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 99,
-        "temperature2m": 20.4,
-        "windSpeed10m": 5.1
+        "cloudCover": 97,
+        "temperature2m": 20.2,
+        "windSpeed10m": 7.6
       },
       {
         "time": "2015-05-09T15:00",
@@ -1050,63 +1116,12 @@ export const season2015IndyCarWeather = {
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 99,
-        "temperature2m": 20.4,
-        "windSpeed10m": 5.1
+        "cloudCover": 97,
+        "temperature2m": 20.2,
+        "windSpeed10m": 7.6
       },
       {
         "time": "2015-05-09T15:15",
-        "weatherCode": 3,
-        "condition": "Cloudy",
-        "state": {
-          "condition": "Cloudy",
-          "gripLevel": 0.97,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Cloudy"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 99,
-        "temperature2m": 20.4,
-        "windSpeed10m": 5.1
-      },
-      {
-        "time": "2015-05-09T15:30",
-        "weatherCode": 3,
-        "condition": "Cloudy",
-        "state": {
-          "condition": "Cloudy",
-          "gripLevel": 0.97,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Cloudy"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 97,
-        "temperature2m": 20.2,
-        "windSpeed10m": 7.6
-      },
-      {
-        "time": "2015-05-09T15:45",
-        "weatherCode": 3,
-        "condition": "Cloudy",
-        "state": {
-          "condition": "Cloudy",
-          "gripLevel": 0.97,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Cloudy"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 97,
-        "temperature2m": 20.2,
-        "windSpeed10m": 7.6
-      },
-      {
-        "time": "2015-05-09T16:00",
         "weatherCode": 3,
         "condition": "Cloudy",
         "state": {
@@ -1123,7 +1138,7 @@ export const season2015IndyCarWeather = {
         "windSpeed10m": 7.6
       },
       {
-        "time": "2015-05-09T16:15",
+        "time": "2015-05-09T15:30",
         "weatherCode": 3,
         "condition": "Cloudy",
         "state": {
@@ -1150,19 +1165,73 @@ export const season2015IndyCarWeather = {
       "year": 2015,
       "series": "IndyCar",
       "date": "2015-05-24",
-      "localStartTime": "13:30",
+      "localStartTime": "12:45",
       "timezone": "auto",
       "latitude": 39.8023,
       "longitude": -86.2672,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "High",
+      "startTimeMethod": "Known Indy 500 start-window estimate"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using IndyCar default 13:30"
+      "Workbook start time estimate (High): 12:45",
+      "Start time method: Known Indy 500 start-window estimate"
     ],
     "samples": [
+      {
+        "time": "2015-05-24T12:45",
+        "weatherCode": 1,
+        "condition": "Cloudy",
+        "state": {
+          "condition": "Cloudy",
+          "gripLevel": 0.97,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Cloudy"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 36,
+        "temperature2m": 16.1,
+        "windSpeed10m": 7.7
+      },
+      {
+        "time": "2015-05-24T13:00",
+        "weatherCode": 1,
+        "condition": "Cloudy",
+        "state": {
+          "condition": "Cloudy",
+          "gripLevel": 0.97,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Cloudy"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 36,
+        "temperature2m": 16.1,
+        "windSpeed10m": 7.7
+      },
+      {
+        "time": "2015-05-24T13:15",
+        "weatherCode": 1,
+        "condition": "Cloudy",
+        "state": {
+          "condition": "Cloudy",
+          "gripLevel": 0.97,
+          "wet": false,
+          "changingSoon": true,
+          "label": "Cloudy"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 36,
+        "temperature2m": 16.1,
+        "windSpeed10m": 7.7
+      },
       {
         "time": "2015-05-24T13:30",
         "weatherCode": 1,
@@ -1171,7 +1240,7 @@ export const season2015IndyCarWeather = {
           "condition": "Cloudy",
           "gripLevel": 0.97,
           "wet": false,
-          "changingSoon": false,
+          "changingSoon": true,
           "label": "Cloudy"
         },
         "precipitationMm": 0.0,
@@ -1182,7 +1251,7 @@ export const season2015IndyCarWeather = {
       },
       {
         "time": "2015-05-24T13:45",
-        "weatherCode": 1,
+        "weatherCode": 3,
         "condition": "Cloudy",
         "state": {
           "condition": "Cloudy",
@@ -1193,30 +1262,30 @@ export const season2015IndyCarWeather = {
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 36,
-        "temperature2m": 16.1,
-        "windSpeed10m": 7.7
+        "cloudCover": 100,
+        "temperature2m": 15.3,
+        "windSpeed10m": 8.4
       },
       {
         "time": "2015-05-24T14:00",
-        "weatherCode": 1,
+        "weatherCode": 3,
         "condition": "Cloudy",
         "state": {
           "condition": "Cloudy",
           "gripLevel": 0.97,
           "wet": false,
-          "changingSoon": true,
+          "changingSoon": false,
           "label": "Cloudy"
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 36,
-        "temperature2m": 16.1,
-        "windSpeed10m": 7.7
+        "cloudCover": 100,
+        "temperature2m": 15.3,
+        "windSpeed10m": 8.4
       },
       {
         "time": "2015-05-24T14:15",
-        "weatherCode": 1,
+        "weatherCode": 3,
         "condition": "Cloudy",
         "state": {
           "condition": "Cloudy",
@@ -1227,9 +1296,9 @@ export const season2015IndyCarWeather = {
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 36,
-        "temperature2m": 16.1,
-        "windSpeed10m": 7.7
+        "cloudCover": 100,
+        "temperature2m": 15.3,
+        "windSpeed10m": 8.4
       },
       {
         "time": "2015-05-24T14:30",
@@ -1239,7 +1308,7 @@ export const season2015IndyCarWeather = {
           "condition": "Cloudy",
           "gripLevel": 0.97,
           "wet": false,
-          "changingSoon": false,
+          "changingSoon": true,
           "label": "Cloudy"
         },
         "precipitationMm": 0.0,
@@ -1250,7 +1319,7 @@ export const season2015IndyCarWeather = {
       },
       {
         "time": "2015-05-24T14:45",
-        "weatherCode": 3,
+        "weatherCode": 2,
         "condition": "Cloudy",
         "state": {
           "condition": "Cloudy",
@@ -1261,30 +1330,30 @@ export const season2015IndyCarWeather = {
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 100,
-        "temperature2m": 15.3,
-        "windSpeed10m": 8.4
+        "cloudCover": 60,
+        "temperature2m": 14.9,
+        "windSpeed10m": 8.5
       },
       {
         "time": "2015-05-24T15:00",
-        "weatherCode": 3,
+        "weatherCode": 2,
         "condition": "Cloudy",
         "state": {
           "condition": "Cloudy",
           "gripLevel": 0.97,
           "wet": false,
-          "changingSoon": true,
+          "changingSoon": false,
           "label": "Cloudy"
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 100,
-        "temperature2m": 15.3,
-        "windSpeed10m": 8.4
+        "cloudCover": 60,
+        "temperature2m": 14.9,
+        "windSpeed10m": 8.5
       },
       {
         "time": "2015-05-24T15:15",
-        "weatherCode": 3,
+        "weatherCode": 2,
         "condition": "Cloudy",
         "state": {
           "condition": "Cloudy",
@@ -1295,63 +1364,12 @@ export const season2015IndyCarWeather = {
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 100,
-        "temperature2m": 15.3,
-        "windSpeed10m": 8.4
+        "cloudCover": 60,
+        "temperature2m": 14.9,
+        "windSpeed10m": 8.5
       },
       {
         "time": "2015-05-24T15:30",
-        "weatherCode": 2,
-        "condition": "Cloudy",
-        "state": {
-          "condition": "Cloudy",
-          "gripLevel": 0.97,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Cloudy"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 60,
-        "temperature2m": 14.9,
-        "windSpeed10m": 8.5
-      },
-      {
-        "time": "2015-05-24T15:45",
-        "weatherCode": 2,
-        "condition": "Cloudy",
-        "state": {
-          "condition": "Cloudy",
-          "gripLevel": 0.97,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Cloudy"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 60,
-        "temperature2m": 14.9,
-        "windSpeed10m": 8.5
-      },
-      {
-        "time": "2015-05-24T16:00",
-        "weatherCode": 2,
-        "condition": "Cloudy",
-        "state": {
-          "condition": "Cloudy",
-          "gripLevel": 0.97,
-          "wet": false,
-          "changingSoon": true,
-          "label": "Cloudy"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 60,
-        "temperature2m": 14.9,
-        "windSpeed10m": 8.5
-      },
-      {
-        "time": "2015-05-24T16:15",
         "weatherCode": 2,
         "condition": "Cloudy",
         "state": {
@@ -1378,19 +1396,56 @@ export const season2015IndyCarWeather = {
       "year": 2015,
       "series": "IndyCar",
       "date": "2015-05-30",
-      "localStartTime": "13:30",
+      "localStartTime": "13:00",
       "timezone": "auto",
       "latitude": 42.3314,
       "longitude": -83.0458,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "Low",
+      "startTimeMethod": "Series/track-type heuristic"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using IndyCar default 13:30"
+      "Workbook start time estimate (Low): 13:00",
+      "Start time method: Series/track-type heuristic"
     ],
     "samples": [
+      {
+        "time": "2015-05-30T13:00",
+        "weatherCode": 3,
+        "condition": "Cloudy",
+        "state": {
+          "condition": "Cloudy",
+          "gripLevel": 0.97,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Cloudy"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 98,
+        "temperature2m": 22.0,
+        "windSpeed10m": 21.6
+      },
+      {
+        "time": "2015-05-30T13:15",
+        "weatherCode": 3,
+        "condition": "Cloudy",
+        "state": {
+          "condition": "Cloudy",
+          "gripLevel": 0.97,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Cloudy"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 98,
+        "temperature2m": 22.0,
+        "windSpeed10m": 21.6
+      },
       {
         "time": "2015-05-30T13:30",
         "weatherCode": 3,
@@ -1438,8 +1493,8 @@ export const season2015IndyCarWeather = {
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 98,
-        "temperature2m": 22.0,
+        "cloudCover": 96,
+        "temperature2m": 21.7,
         "windSpeed10m": 21.6
       },
       {
@@ -1455,8 +1510,8 @@ export const season2015IndyCarWeather = {
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 98,
-        "temperature2m": 22.0,
+        "cloudCover": 96,
+        "temperature2m": 21.7,
         "windSpeed10m": 21.6
       },
       {
@@ -1507,8 +1562,8 @@ export const season2015IndyCarWeather = {
         "precipitationMm": 0.0,
         "rainMm": 0.0,
         "cloudCover": 96,
-        "temperature2m": 21.7,
-        "windSpeed10m": 21.6
+        "temperature2m": 21.3,
+        "windSpeed10m": 22.0
       },
       {
         "time": "2015-05-30T15:15",
@@ -1524,8 +1579,8 @@ export const season2015IndyCarWeather = {
         "precipitationMm": 0.0,
         "rainMm": 0.0,
         "cloudCover": 96,
-        "temperature2m": 21.7,
-        "windSpeed10m": 21.6
+        "temperature2m": 21.3,
+        "windSpeed10m": 22.0
       },
       {
         "time": "2015-05-30T15:30",
@@ -1560,40 +1615,6 @@ export const season2015IndyCarWeather = {
         "cloudCover": 96,
         "temperature2m": 21.3,
         "windSpeed10m": 22.0
-      },
-      {
-        "time": "2015-05-30T16:00",
-        "weatherCode": 3,
-        "condition": "Cloudy",
-        "state": {
-          "condition": "Cloudy",
-          "gripLevel": 0.97,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Cloudy"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 96,
-        "temperature2m": 21.3,
-        "windSpeed10m": 22.0
-      },
-      {
-        "time": "2015-05-30T16:15",
-        "weatherCode": 3,
-        "condition": "Cloudy",
-        "state": {
-          "condition": "Cloudy",
-          "gripLevel": 0.97,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Cloudy"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 96,
-        "temperature2m": 21.3,
-        "windSpeed10m": 22.0
       }
     ]
   },
@@ -1606,19 +1627,56 @@ export const season2015IndyCarWeather = {
       "year": 2015,
       "series": "IndyCar",
       "date": "2015-05-31",
-      "localStartTime": "13:30",
+      "localStartTime": "13:00",
       "timezone": "auto",
       "latitude": 42.3314,
       "longitude": -83.0458,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "Low",
+      "startTimeMethod": "Series/track-type heuristic"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using IndyCar default 13:30"
+      "Workbook start time estimate (Low): 13:00",
+      "Start time method: Series/track-type heuristic"
     ],
     "samples": [
+      {
+        "time": "2015-05-31T13:00",
+        "weatherCode": 55,
+        "condition": "LightRain",
+        "state": {
+          "condition": "LightRain",
+          "gripLevel": 0.72,
+          "wet": true,
+          "changingSoon": false,
+          "label": "Light Rain"
+        },
+        "precipitationMm": 1.1,
+        "rainMm": 1.1,
+        "cloudCover": 100,
+        "temperature2m": 12.2,
+        "windSpeed10m": 29.8
+      },
+      {
+        "time": "2015-05-31T13:15",
+        "weatherCode": 55,
+        "condition": "LightRain",
+        "state": {
+          "condition": "LightRain",
+          "gripLevel": 0.72,
+          "wet": true,
+          "changingSoon": false,
+          "label": "Light Rain"
+        },
+        "precipitationMm": 1.1,
+        "rainMm": 1.1,
+        "cloudCover": 100,
+        "temperature2m": 12.2,
+        "windSpeed10m": 29.8
+      },
       {
         "time": "2015-05-31T13:30",
         "weatherCode": 55,
@@ -1627,7 +1685,7 @@ export const season2015IndyCarWeather = {
           "condition": "LightRain",
           "gripLevel": 0.72,
           "wet": true,
-          "changingSoon": false,
+          "changingSoon": true,
           "label": "Light Rain"
         },
         "precipitationMm": 1.1,
@@ -1644,7 +1702,7 @@ export const season2015IndyCarWeather = {
           "condition": "LightRain",
           "gripLevel": 0.72,
           "wet": true,
-          "changingSoon": false,
+          "changingSoon": true,
           "label": "Light Rain"
         },
         "precipitationMm": 1.1,
@@ -1655,37 +1713,37 @@ export const season2015IndyCarWeather = {
       },
       {
         "time": "2015-05-31T14:00",
-        "weatherCode": 55,
+        "weatherCode": 53,
         "condition": "LightRain",
         "state": {
           "condition": "LightRain",
           "gripLevel": 0.72,
           "wet": true,
-          "changingSoon": true,
+          "changingSoon": false,
           "label": "Light Rain"
         },
-        "precipitationMm": 1.1,
-        "rainMm": 1.1,
+        "precipitationMm": 0.5,
+        "rainMm": 0.5,
         "cloudCover": 100,
-        "temperature2m": 12.2,
-        "windSpeed10m": 29.8
+        "temperature2m": 12.1,
+        "windSpeed10m": 28.0
       },
       {
         "time": "2015-05-31T14:15",
-        "weatherCode": 55,
+        "weatherCode": 53,
         "condition": "LightRain",
         "state": {
           "condition": "LightRain",
           "gripLevel": 0.72,
           "wet": true,
-          "changingSoon": true,
+          "changingSoon": false,
           "label": "Light Rain"
         },
-        "precipitationMm": 1.1,
-        "rainMm": 1.1,
+        "precipitationMm": 0.5,
+        "rainMm": 0.5,
         "cloudCover": 100,
-        "temperature2m": 12.2,
-        "windSpeed10m": 29.8
+        "temperature2m": 12.1,
+        "windSpeed10m": 28.0
       },
       {
         "time": "2015-05-31T14:30",
@@ -1695,7 +1753,7 @@ export const season2015IndyCarWeather = {
           "condition": "LightRain",
           "gripLevel": 0.72,
           "wet": true,
-          "changingSoon": false,
+          "changingSoon": true,
           "label": "Light Rain"
         },
         "precipitationMm": 0.5,
@@ -1712,7 +1770,7 @@ export const season2015IndyCarWeather = {
           "condition": "LightRain",
           "gripLevel": 0.72,
           "wet": true,
-          "changingSoon": false,
+          "changingSoon": true,
           "label": "Light Rain"
         },
         "precipitationMm": 0.5,
@@ -1723,37 +1781,37 @@ export const season2015IndyCarWeather = {
       },
       {
         "time": "2015-05-31T15:00",
-        "weatherCode": 53,
+        "weatherCode": 51,
         "condition": "LightRain",
         "state": {
           "condition": "LightRain",
           "gripLevel": 0.72,
           "wet": true,
-          "changingSoon": true,
+          "changingSoon": false,
           "label": "Light Rain"
         },
-        "precipitationMm": 0.5,
-        "rainMm": 0.5,
+        "precipitationMm": 0.2,
+        "rainMm": 0.2,
         "cloudCover": 100,
-        "temperature2m": 12.1,
-        "windSpeed10m": 28.0
+        "temperature2m": 12.0,
+        "windSpeed10m": 27.9
       },
       {
         "time": "2015-05-31T15:15",
-        "weatherCode": 53,
+        "weatherCode": 51,
         "condition": "LightRain",
         "state": {
           "condition": "LightRain",
           "gripLevel": 0.72,
           "wet": true,
-          "changingSoon": true,
+          "changingSoon": false,
           "label": "Light Rain"
         },
-        "precipitationMm": 0.5,
-        "rainMm": 0.5,
+        "precipitationMm": 0.2,
+        "rainMm": 0.2,
         "cloudCover": 100,
-        "temperature2m": 12.1,
-        "windSpeed10m": 28.0
+        "temperature2m": 12.0,
+        "windSpeed10m": 27.9
       },
       {
         "time": "2015-05-31T15:30",
@@ -1763,7 +1821,7 @@ export const season2015IndyCarWeather = {
           "condition": "LightRain",
           "gripLevel": 0.72,
           "wet": true,
-          "changingSoon": false,
+          "changingSoon": true,
           "label": "Light Rain"
         },
         "precipitationMm": 0.2,
@@ -1774,40 +1832,6 @@ export const season2015IndyCarWeather = {
       },
       {
         "time": "2015-05-31T15:45",
-        "weatherCode": 51,
-        "condition": "LightRain",
-        "state": {
-          "condition": "LightRain",
-          "gripLevel": 0.72,
-          "wet": true,
-          "changingSoon": false,
-          "label": "Light Rain"
-        },
-        "precipitationMm": 0.2,
-        "rainMm": 0.2,
-        "cloudCover": 100,
-        "temperature2m": 12.0,
-        "windSpeed10m": 27.9
-      },
-      {
-        "time": "2015-05-31T16:00",
-        "weatherCode": 51,
-        "condition": "LightRain",
-        "state": {
-          "condition": "LightRain",
-          "gripLevel": 0.72,
-          "wet": true,
-          "changingSoon": true,
-          "label": "Light Rain"
-        },
-        "precipitationMm": 0.2,
-        "rainMm": 0.2,
-        "cloudCover": 100,
-        "temperature2m": 12.0,
-        "windSpeed10m": 27.9
-      },
-      {
-        "time": "2015-05-31T16:15",
         "weatherCode": 51,
         "condition": "LightRain",
         "state": {
@@ -1834,21 +1858,24 @@ export const season2015IndyCarWeather = {
       "year": 2015,
       "series": "IndyCar",
       "date": "2015-06-06",
-      "localStartTime": "13:30",
+      "localStartTime": "20:00",
       "timezone": "auto",
       "latitude": 32.7555,
       "longitude": -97.3308,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "High",
+      "startTimeMethod": "Known Texas night oval pattern"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using IndyCar default 13:30"
+      "Workbook start time estimate (High): 20:00",
+      "Start time method: Known Texas night oval pattern"
     ],
     "samples": [
       {
-        "time": "2015-06-06T13:30",
+        "time": "2015-06-06T20:00",
         "weatherCode": 1,
         "condition": "Cloudy",
         "state": {
@@ -1865,7 +1892,7 @@ export const season2015IndyCarWeather = {
         "windSpeed10m": 7.1
       },
       {
-        "time": "2015-06-06T13:45",
+        "time": "2015-06-06T20:15",
         "weatherCode": 1,
         "condition": "Cloudy",
         "state": {
@@ -1882,7 +1909,7 @@ export const season2015IndyCarWeather = {
         "windSpeed10m": 7.1
       },
       {
-        "time": "2015-06-06T14:00",
+        "time": "2015-06-06T20:30",
         "weatherCode": 1,
         "condition": "Cloudy",
         "state": {
@@ -1899,7 +1926,7 @@ export const season2015IndyCarWeather = {
         "windSpeed10m": 7.1
       },
       {
-        "time": "2015-06-06T14:15",
+        "time": "2015-06-06T20:45",
         "weatherCode": 1,
         "condition": "Cloudy",
         "state": {
@@ -1916,7 +1943,7 @@ export const season2015IndyCarWeather = {
         "windSpeed10m": 7.1
       },
       {
-        "time": "2015-06-06T14:30",
+        "time": "2015-06-06T21:00",
         "weatherCode": 1,
         "condition": "Cloudy",
         "state": {
@@ -1933,7 +1960,7 @@ export const season2015IndyCarWeather = {
         "windSpeed10m": 6.6
       },
       {
-        "time": "2015-06-06T14:45",
+        "time": "2015-06-06T21:15",
         "weatherCode": 1,
         "condition": "Cloudy",
         "state": {
@@ -1950,7 +1977,7 @@ export const season2015IndyCarWeather = {
         "windSpeed10m": 6.6
       },
       {
-        "time": "2015-06-06T15:00",
+        "time": "2015-06-06T21:30",
         "weatherCode": 1,
         "condition": "Cloudy",
         "state": {
@@ -1967,7 +1994,7 @@ export const season2015IndyCarWeather = {
         "windSpeed10m": 6.6
       },
       {
-        "time": "2015-06-06T15:15",
+        "time": "2015-06-06T21:45",
         "weatherCode": 1,
         "condition": "Cloudy",
         "state": {
@@ -1984,7 +2011,7 @@ export const season2015IndyCarWeather = {
         "windSpeed10m": 6.6
       },
       {
-        "time": "2015-06-06T15:30",
+        "time": "2015-06-06T22:00",
         "weatherCode": 2,
         "condition": "Cloudy",
         "state": {
@@ -2001,7 +2028,7 @@ export const season2015IndyCarWeather = {
         "windSpeed10m": 6.3
       },
       {
-        "time": "2015-06-06T15:45",
+        "time": "2015-06-06T22:15",
         "weatherCode": 2,
         "condition": "Cloudy",
         "state": {
@@ -2018,7 +2045,7 @@ export const season2015IndyCarWeather = {
         "windSpeed10m": 6.3
       },
       {
-        "time": "2015-06-06T16:00",
+        "time": "2015-06-06T22:30",
         "weatherCode": 2,
         "condition": "Cloudy",
         "state": {
@@ -2035,7 +2062,7 @@ export const season2015IndyCarWeather = {
         "windSpeed10m": 6.3
       },
       {
-        "time": "2015-06-06T16:15",
+        "time": "2015-06-06T22:45",
         "weatherCode": 2,
         "condition": "Cloudy",
         "state": {
@@ -2062,19 +2089,56 @@ export const season2015IndyCarWeather = {
       "year": 2015,
       "series": "IndyCar",
       "date": "2015-06-14",
-      "localStartTime": "13:30",
+      "localStartTime": "13:00",
       "timezone": "auto",
       "latitude": 43.6532,
       "longitude": -79.3832,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "Medium",
+      "startTimeMethod": "Street race afternoon estimate"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using IndyCar default 13:30"
+      "Workbook start time estimate (Medium): 13:00",
+      "Start time method: Street race afternoon estimate"
     ],
     "samples": [
+      {
+        "time": "2015-06-14T13:00",
+        "weatherCode": 3,
+        "condition": "Cloudy",
+        "state": {
+          "condition": "Cloudy",
+          "gripLevel": 0.97,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Cloudy"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 86,
+        "temperature2m": 14.9,
+        "windSpeed10m": 3.3
+      },
+      {
+        "time": "2015-06-14T13:15",
+        "weatherCode": 3,
+        "condition": "Cloudy",
+        "state": {
+          "condition": "Cloudy",
+          "gripLevel": 0.97,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Cloudy"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 86,
+        "temperature2m": 14.9,
+        "windSpeed10m": 3.3
+      },
       {
         "time": "2015-06-14T13:30",
         "weatherCode": 3,
@@ -2122,9 +2186,9 @@ export const season2015IndyCarWeather = {
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 86,
-        "temperature2m": 14.9,
-        "windSpeed10m": 3.3
+        "cloudCover": 99,
+        "temperature2m": 14.7,
+        "windSpeed10m": 4.3
       },
       {
         "time": "2015-06-14T14:15",
@@ -2139,9 +2203,9 @@ export const season2015IndyCarWeather = {
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 86,
-        "temperature2m": 14.9,
-        "windSpeed10m": 3.3
+        "cloudCover": 99,
+        "temperature2m": 14.7,
+        "windSpeed10m": 4.3
       },
       {
         "time": "2015-06-14T14:30",
@@ -2191,8 +2255,8 @@ export const season2015IndyCarWeather = {
         "precipitationMm": 0.0,
         "rainMm": 0.0,
         "cloudCover": 99,
-        "temperature2m": 14.7,
-        "windSpeed10m": 4.3
+        "temperature2m": 15.1,
+        "windSpeed10m": 3.1
       },
       {
         "time": "2015-06-14T15:15",
@@ -2208,8 +2272,8 @@ export const season2015IndyCarWeather = {
         "precipitationMm": 0.0,
         "rainMm": 0.0,
         "cloudCover": 99,
-        "temperature2m": 14.7,
-        "windSpeed10m": 4.3
+        "temperature2m": 15.1,
+        "windSpeed10m": 3.1
       },
       {
         "time": "2015-06-14T15:30",
@@ -2244,40 +2308,6 @@ export const season2015IndyCarWeather = {
         "cloudCover": 99,
         "temperature2m": 15.1,
         "windSpeed10m": 3.1
-      },
-      {
-        "time": "2015-06-14T16:00",
-        "weatherCode": 3,
-        "condition": "Cloudy",
-        "state": {
-          "condition": "Cloudy",
-          "gripLevel": 0.97,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Cloudy"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 99,
-        "temperature2m": 15.1,
-        "windSpeed10m": 3.1
-      },
-      {
-        "time": "2015-06-14T16:15",
-        "weatherCode": 3,
-        "condition": "Cloudy",
-        "state": {
-          "condition": "Cloudy",
-          "gripLevel": 0.97,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Cloudy"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 99,
-        "temperature2m": 15.1,
-        "windSpeed10m": 3.1
       }
     ]
   },
@@ -2290,21 +2320,24 @@ export const season2015IndyCarWeather = {
       "year": 2015,
       "series": "IndyCar",
       "date": "2015-06-27",
-      "localStartTime": "13:30",
+      "localStartTime": "12:30",
       "timezone": "auto",
       "latitude": 34.0922,
       "longitude": -117.435,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "Medium",
+      "startTimeMethod": "West Coast oval TV-window estimate"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using IndyCar default 13:30"
+      "Workbook start time estimate (Medium): 12:30",
+      "Start time method: West Coast oval TV-window estimate"
     ],
     "samples": [
       {
-        "time": "2015-06-27T13:30",
+        "time": "2015-06-27T12:30",
         "weatherCode": 2,
         "condition": "Cloudy",
         "state": {
@@ -2319,10 +2352,78 @@ export const season2015IndyCarWeather = {
         "cloudCover": 73,
         "temperature2m": 23.6,
         "windSpeed10m": 3.7
+      },
+      {
+        "time": "2015-06-27T12:45",
+        "weatherCode": 2,
+        "condition": "Cloudy",
+        "state": {
+          "condition": "Cloudy",
+          "gripLevel": 0.97,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Cloudy"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 73,
+        "temperature2m": 23.6,
+        "windSpeed10m": 3.7
+      },
+      {
+        "time": "2015-06-27T13:00",
+        "weatherCode": 2,
+        "condition": "Cloudy",
+        "state": {
+          "condition": "Cloudy",
+          "gripLevel": 0.97,
+          "wet": false,
+          "changingSoon": true,
+          "label": "Cloudy"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 73,
+        "temperature2m": 23.6,
+        "windSpeed10m": 3.7
+      },
+      {
+        "time": "2015-06-27T13:15",
+        "weatherCode": 2,
+        "condition": "Cloudy",
+        "state": {
+          "condition": "Cloudy",
+          "gripLevel": 0.97,
+          "wet": false,
+          "changingSoon": true,
+          "label": "Cloudy"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 73,
+        "temperature2m": 23.6,
+        "windSpeed10m": 3.7
+      },
+      {
+        "time": "2015-06-27T13:30",
+        "weatherCode": 1,
+        "condition": "Cloudy",
+        "state": {
+          "condition": "Cloudy",
+          "gripLevel": 0.97,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Cloudy"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 36,
+        "temperature2m": 22.8,
+        "windSpeed10m": 2.5
       },
       {
         "time": "2015-06-27T13:45",
-        "weatherCode": 2,
+        "weatherCode": 1,
         "condition": "Cloudy",
         "state": {
           "condition": "Cloudy",
@@ -2333,13 +2434,13 @@ export const season2015IndyCarWeather = {
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 73,
-        "temperature2m": 23.6,
-        "windSpeed10m": 3.7
+        "cloudCover": 36,
+        "temperature2m": 22.8,
+        "windSpeed10m": 2.5
       },
       {
         "time": "2015-06-27T14:00",
-        "weatherCode": 2,
+        "weatherCode": 1,
         "condition": "Cloudy",
         "state": {
           "condition": "Cloudy",
@@ -2350,13 +2451,13 @@ export const season2015IndyCarWeather = {
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 73,
-        "temperature2m": 23.6,
-        "windSpeed10m": 3.7
+        "cloudCover": 36,
+        "temperature2m": 22.8,
+        "windSpeed10m": 2.5
       },
       {
         "time": "2015-06-27T14:15",
-        "weatherCode": 2,
+        "weatherCode": 1,
         "condition": "Cloudy",
         "state": {
           "condition": "Cloudy",
@@ -2367,131 +2468,63 @@ export const season2015IndyCarWeather = {
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 73,
-        "temperature2m": 23.6,
-        "windSpeed10m": 3.7
+        "cloudCover": 36,
+        "temperature2m": 22.8,
+        "windSpeed10m": 2.5
       },
       {
         "time": "2015-06-27T14:30",
-        "weatherCode": 1,
-        "condition": "Cloudy",
+        "weatherCode": 0,
+        "condition": "Dry",
         "state": {
-          "condition": "Cloudy",
-          "gripLevel": 0.97,
+          "condition": "Dry",
+          "gripLevel": 1,
           "wet": false,
           "changingSoon": false,
-          "label": "Cloudy"
+          "label": "Dry"
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 36,
-        "temperature2m": 22.8,
-        "windSpeed10m": 2.5
+        "cloudCover": 15,
+        "temperature2m": 22.1,
+        "windSpeed10m": 2.2
       },
       {
         "time": "2015-06-27T14:45",
-        "weatherCode": 1,
-        "condition": "Cloudy",
+        "weatherCode": 0,
+        "condition": "Dry",
         "state": {
-          "condition": "Cloudy",
-          "gripLevel": 0.97,
+          "condition": "Dry",
+          "gripLevel": 1,
           "wet": false,
           "changingSoon": false,
-          "label": "Cloudy"
+          "label": "Dry"
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 36,
-        "temperature2m": 22.8,
-        "windSpeed10m": 2.5
+        "cloudCover": 15,
+        "temperature2m": 22.1,
+        "windSpeed10m": 2.2
       },
       {
         "time": "2015-06-27T15:00",
-        "weatherCode": 1,
-        "condition": "Cloudy",
+        "weatherCode": 0,
+        "condition": "Dry",
         "state": {
-          "condition": "Cloudy",
-          "gripLevel": 0.97,
+          "condition": "Dry",
+          "gripLevel": 1,
           "wet": false,
           "changingSoon": true,
-          "label": "Cloudy"
+          "label": "Dry"
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 36,
-        "temperature2m": 22.8,
-        "windSpeed10m": 2.5
+        "cloudCover": 15,
+        "temperature2m": 22.1,
+        "windSpeed10m": 2.2
       },
       {
         "time": "2015-06-27T15:15",
-        "weatherCode": 1,
-        "condition": "Cloudy",
-        "state": {
-          "condition": "Cloudy",
-          "gripLevel": 0.97,
-          "wet": false,
-          "changingSoon": true,
-          "label": "Cloudy"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 36,
-        "temperature2m": 22.8,
-        "windSpeed10m": 2.5
-      },
-      {
-        "time": "2015-06-27T15:30",
-        "weatherCode": 0,
-        "condition": "Dry",
-        "state": {
-          "condition": "Dry",
-          "gripLevel": 1,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Dry"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 15,
-        "temperature2m": 22.1,
-        "windSpeed10m": 2.2
-      },
-      {
-        "time": "2015-06-27T15:45",
-        "weatherCode": 0,
-        "condition": "Dry",
-        "state": {
-          "condition": "Dry",
-          "gripLevel": 1,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Dry"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 15,
-        "temperature2m": 22.1,
-        "windSpeed10m": 2.2
-      },
-      {
-        "time": "2015-06-27T16:00",
-        "weatherCode": 0,
-        "condition": "Dry",
-        "state": {
-          "condition": "Dry",
-          "gripLevel": 1,
-          "wet": false,
-          "changingSoon": true,
-          "label": "Dry"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 15,
-        "temperature2m": 22.1,
-        "windSpeed10m": 2.2
-      },
-      {
-        "time": "2015-06-27T16:15",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -2518,19 +2551,56 @@ export const season2015IndyCarWeather = {
       "year": 2015,
       "series": "IndyCar",
       "date": "2015-07-12",
-      "localStartTime": "13:30",
+      "localStartTime": "13:00",
       "timezone": "auto",
       "latitude": 43.0167,
       "longitude": -88.007,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "Medium",
+      "startTimeMethod": "Oval daytime estimate"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using IndyCar default 13:30"
+      "Workbook start time estimate (Medium): 13:00",
+      "Start time method: Oval daytime estimate"
     ],
     "samples": [
+      {
+        "time": "2015-07-12T13:00",
+        "weatherCode": 1,
+        "condition": "Cloudy",
+        "state": {
+          "condition": "Cloudy",
+          "gripLevel": 0.97,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Cloudy"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 23,
+        "temperature2m": 18.1,
+        "windSpeed10m": 9.2
+      },
+      {
+        "time": "2015-07-12T13:15",
+        "weatherCode": 1,
+        "condition": "Cloudy",
+        "state": {
+          "condition": "Cloudy",
+          "gripLevel": 0.97,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Cloudy"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 23,
+        "temperature2m": 18.1,
+        "windSpeed10m": 9.2
+      },
       {
         "time": "2015-07-12T13:30",
         "weatherCode": 1,
@@ -2578,9 +2648,9 @@ export const season2015IndyCarWeather = {
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 23,
-        "temperature2m": 18.1,
-        "windSpeed10m": 9.2
+        "cloudCover": 28,
+        "temperature2m": 17.9,
+        "windSpeed10m": 9.5
       },
       {
         "time": "2015-07-12T14:15",
@@ -2595,9 +2665,9 @@ export const season2015IndyCarWeather = {
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 23,
-        "temperature2m": 18.1,
-        "windSpeed10m": 9.2
+        "cloudCover": 28,
+        "temperature2m": 17.9,
+        "windSpeed10m": 9.5
       },
       {
         "time": "2015-07-12T14:30",
@@ -2607,7 +2677,7 @@ export const season2015IndyCarWeather = {
           "condition": "Cloudy",
           "gripLevel": 0.97,
           "wet": false,
-          "changingSoon": false,
+          "changingSoon": true,
           "label": "Cloudy"
         },
         "precipitationMm": 0.0,
@@ -2624,7 +2694,7 @@ export const season2015IndyCarWeather = {
           "condition": "Cloudy",
           "gripLevel": 0.97,
           "wet": false,
-          "changingSoon": false,
+          "changingSoon": true,
           "label": "Cloudy"
         },
         "precipitationMm": 0.0,
@@ -2635,37 +2705,37 @@ export const season2015IndyCarWeather = {
       },
       {
         "time": "2015-07-12T15:00",
-        "weatherCode": 1,
-        "condition": "Cloudy",
+        "weatherCode": 0,
+        "condition": "Dry",
         "state": {
-          "condition": "Cloudy",
-          "gripLevel": 0.97,
+          "condition": "Dry",
+          "gripLevel": 1,
           "wet": false,
-          "changingSoon": true,
-          "label": "Cloudy"
+          "changingSoon": false,
+          "label": "Dry"
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 28,
-        "temperature2m": 17.9,
-        "windSpeed10m": 9.5
+        "cloudCover": 16,
+        "temperature2m": 17.5,
+        "windSpeed10m": 8.0
       },
       {
         "time": "2015-07-12T15:15",
-        "weatherCode": 1,
-        "condition": "Cloudy",
+        "weatherCode": 0,
+        "condition": "Dry",
         "state": {
-          "condition": "Cloudy",
-          "gripLevel": 0.97,
+          "condition": "Dry",
+          "gripLevel": 1,
           "wet": false,
-          "changingSoon": true,
-          "label": "Cloudy"
+          "changingSoon": false,
+          "label": "Dry"
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 28,
-        "temperature2m": 17.9,
-        "windSpeed10m": 9.5
+        "cloudCover": 16,
+        "temperature2m": 17.5,
+        "windSpeed10m": 8.0
       },
       {
         "time": "2015-07-12T15:30",
@@ -2700,40 +2770,6 @@ export const season2015IndyCarWeather = {
         "cloudCover": 16,
         "temperature2m": 17.5,
         "windSpeed10m": 8.0
-      },
-      {
-        "time": "2015-07-12T16:00",
-        "weatherCode": 0,
-        "condition": "Dry",
-        "state": {
-          "condition": "Dry",
-          "gripLevel": 1,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Dry"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 16,
-        "temperature2m": 17.5,
-        "windSpeed10m": 8.0
-      },
-      {
-        "time": "2015-07-12T16:15",
-        "weatherCode": 0,
-        "condition": "Dry",
-        "state": {
-          "condition": "Dry",
-          "gripLevel": 1,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Dry"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 16,
-        "temperature2m": 17.5,
-        "windSpeed10m": 8.0
       }
     ]
   },
@@ -2746,21 +2782,24 @@ export const season2015IndyCarWeather = {
       "year": 2015,
       "series": "IndyCar",
       "date": "2015-07-18",
-      "localStartTime": "13:30",
+      "localStartTime": "20:00",
       "timezone": "auto",
       "latitude": 41.6997,
       "longitude": -93.0479,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "Medium",
+      "startTimeMethod": "Iowa night-race estimate"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using IndyCar default 13:30"
+      "Workbook start time estimate (Medium): 20:00",
+      "Start time method: Iowa night-race estimate"
     ],
     "samples": [
       {
-        "time": "2015-07-18T13:30",
+        "time": "2015-07-18T20:00",
         "weatherCode": 1,
         "condition": "Cloudy",
         "state": {
@@ -2777,7 +2816,7 @@ export const season2015IndyCarWeather = {
         "windSpeed10m": 16.7
       },
       {
-        "time": "2015-07-18T13:45",
+        "time": "2015-07-18T20:15",
         "weatherCode": 1,
         "condition": "Cloudy",
         "state": {
@@ -2794,24 +2833,7 @@ export const season2015IndyCarWeather = {
         "windSpeed10m": 16.7
       },
       {
-        "time": "2015-07-18T14:00",
-        "weatherCode": 1,
-        "condition": "Cloudy",
-        "state": {
-          "condition": "Cloudy",
-          "gripLevel": 0.97,
-          "wet": false,
-          "changingSoon": true,
-          "label": "Cloudy"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 22,
-        "temperature2m": 26.9,
-        "windSpeed10m": 16.7
-      },
-      {
-        "time": "2015-07-18T14:15",
+        "time": "2015-07-18T20:30",
         "weatherCode": 1,
         "condition": "Cloudy",
         "state": {
@@ -2828,7 +2850,24 @@ export const season2015IndyCarWeather = {
         "windSpeed10m": 16.7
       },
       {
-        "time": "2015-07-18T14:30",
+        "time": "2015-07-18T20:45",
+        "weatherCode": 1,
+        "condition": "Cloudy",
+        "state": {
+          "condition": "Cloudy",
+          "gripLevel": 0.97,
+          "wet": false,
+          "changingSoon": true,
+          "label": "Cloudy"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 22,
+        "temperature2m": 26.9,
+        "windSpeed10m": 16.7
+      },
+      {
+        "time": "2015-07-18T21:00",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -2845,7 +2884,7 @@ export const season2015IndyCarWeather = {
         "windSpeed10m": 19.2
       },
       {
-        "time": "2015-07-18T14:45",
+        "time": "2015-07-18T21:15",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -2862,7 +2901,7 @@ export const season2015IndyCarWeather = {
         "windSpeed10m": 19.2
       },
       {
-        "time": "2015-07-18T15:00",
+        "time": "2015-07-18T21:30",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -2879,7 +2918,7 @@ export const season2015IndyCarWeather = {
         "windSpeed10m": 19.2
       },
       {
-        "time": "2015-07-18T15:15",
+        "time": "2015-07-18T21:45",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -2896,7 +2935,7 @@ export const season2015IndyCarWeather = {
         "windSpeed10m": 19.2
       },
       {
-        "time": "2015-07-18T15:30",
+        "time": "2015-07-18T22:00",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -2913,7 +2952,7 @@ export const season2015IndyCarWeather = {
         "windSpeed10m": 17.7
       },
       {
-        "time": "2015-07-18T15:45",
+        "time": "2015-07-18T22:15",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -2930,7 +2969,7 @@ export const season2015IndyCarWeather = {
         "windSpeed10m": 17.7
       },
       {
-        "time": "2015-07-18T16:00",
+        "time": "2015-07-18T22:30",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -2947,7 +2986,7 @@ export const season2015IndyCarWeather = {
         "windSpeed10m": 17.7
       },
       {
-        "time": "2015-07-18T16:15",
+        "time": "2015-07-18T22:45",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -2979,12 +3018,15 @@ export const season2015IndyCarWeather = {
       "latitude": 40.6787,
       "longitude": -82.5824,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "Medium",
+      "startTimeMethod": "Road-course afternoon estimate"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using IndyCar default 13:30"
+      "Workbook start time estimate (Medium): 13:30",
+      "Start time method: Road-course afternoon estimate"
     ],
     "samples": [
       {
@@ -3202,19 +3244,56 @@ export const season2015IndyCarWeather = {
       "year": 2015,
       "series": "IndyCar",
       "date": "2015-08-23",
-      "localStartTime": "13:30",
+      "localStartTime": "13:00",
       "timezone": "auto",
       "latitude": 41.054,
       "longitude": -75.5027,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "Low",
+      "startTimeMethod": "Oval daytime heuristic"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using IndyCar default 13:30"
+      "Workbook start time estimate (Low): 13:00",
+      "Start time method: Oval daytime heuristic"
     ],
     "samples": [
+      {
+        "time": "2015-08-23T13:00",
+        "weatherCode": 0,
+        "condition": "Dry",
+        "state": {
+          "condition": "Dry",
+          "gripLevel": 1,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Dry"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 0,
+        "temperature2m": 15.5,
+        "windSpeed10m": 7.6
+      },
+      {
+        "time": "2015-08-23T13:15",
+        "weatherCode": 0,
+        "condition": "Dry",
+        "state": {
+          "condition": "Dry",
+          "gripLevel": 1,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Dry"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 0,
+        "temperature2m": 15.5,
+        "windSpeed10m": 7.6
+      },
       {
         "time": "2015-08-23T13:30",
         "weatherCode": 0,
@@ -3263,8 +3342,8 @@ export const season2015IndyCarWeather = {
         "precipitationMm": 0.0,
         "rainMm": 0.0,
         "cloudCover": 0,
-        "temperature2m": 15.5,
-        "windSpeed10m": 7.6
+        "temperature2m": 14.9,
+        "windSpeed10m": 8.0
       },
       {
         "time": "2015-08-23T14:15",
@@ -3280,8 +3359,8 @@ export const season2015IndyCarWeather = {
         "precipitationMm": 0.0,
         "rainMm": 0.0,
         "cloudCover": 0,
-        "temperature2m": 15.5,
-        "windSpeed10m": 7.6
+        "temperature2m": 14.9,
+        "windSpeed10m": 8.0
       },
       {
         "time": "2015-08-23T14:30",
@@ -3330,9 +3409,9 @@ export const season2015IndyCarWeather = {
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 0,
-        "temperature2m": 14.9,
-        "windSpeed10m": 8.0
+        "cloudCover": 1,
+        "temperature2m": 14.4,
+        "windSpeed10m": 8.3
       },
       {
         "time": "2015-08-23T15:15",
@@ -3347,9 +3426,9 @@ export const season2015IndyCarWeather = {
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 0,
-        "temperature2m": 14.9,
-        "windSpeed10m": 8.0
+        "cloudCover": 1,
+        "temperature2m": 14.4,
+        "windSpeed10m": 8.3
       },
       {
         "time": "2015-08-23T15:30",
@@ -3384,40 +3463,6 @@ export const season2015IndyCarWeather = {
         "cloudCover": 1,
         "temperature2m": 14.4,
         "windSpeed10m": 8.3
-      },
-      {
-        "time": "2015-08-23T16:00",
-        "weatherCode": 0,
-        "condition": "Dry",
-        "state": {
-          "condition": "Dry",
-          "gripLevel": 1,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Dry"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 1,
-        "temperature2m": 14.4,
-        "windSpeed10m": 8.3
-      },
-      {
-        "time": "2015-08-23T16:15",
-        "weatherCode": 0,
-        "condition": "Dry",
-        "state": {
-          "condition": "Dry",
-          "gripLevel": 1,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Dry"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 1,
-        "temperature2m": 14.4,
-        "windSpeed10m": 8.3
       }
     ]
   },
@@ -3430,21 +3475,24 @@ export const season2015IndyCarWeather = {
       "year": 2015,
       "series": "IndyCar",
       "date": "2015-08-30",
-      "localStartTime": "13:30",
+      "localStartTime": "12:30",
       "timezone": "auto",
       "latitude": 38.2919,
       "longitude": -122.458,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "Medium",
+      "startTimeMethod": "West Coast road/street TV-window estimate"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using IndyCar default 13:30"
+      "Workbook start time estimate (Medium): 12:30",
+      "Start time method: West Coast road/street TV-window estimate"
     ],
     "samples": [
       {
-        "time": "2015-08-30T13:30",
+        "time": "2015-08-30T12:30",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -3459,57 +3507,125 @@ export const season2015IndyCarWeather = {
         "cloudCover": 2,
         "temperature2m": 17.7,
         "windSpeed10m": 9.0
+      },
+      {
+        "time": "2015-08-30T12:45",
+        "weatherCode": 0,
+        "condition": "Dry",
+        "state": {
+          "condition": "Dry",
+          "gripLevel": 1,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Dry"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 2,
+        "temperature2m": 17.7,
+        "windSpeed10m": 9.0
+      },
+      {
+        "time": "2015-08-30T13:00",
+        "weatherCode": 0,
+        "condition": "Dry",
+        "state": {
+          "condition": "Dry",
+          "gripLevel": 1,
+          "wet": false,
+          "changingSoon": true,
+          "label": "Dry"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 2,
+        "temperature2m": 17.7,
+        "windSpeed10m": 9.0
+      },
+      {
+        "time": "2015-08-30T13:15",
+        "weatherCode": 0,
+        "condition": "Dry",
+        "state": {
+          "condition": "Dry",
+          "gripLevel": 1,
+          "wet": false,
+          "changingSoon": true,
+          "label": "Dry"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 2,
+        "temperature2m": 17.7,
+        "windSpeed10m": 9.0
+      },
+      {
+        "time": "2015-08-30T13:30",
+        "weatherCode": 1,
+        "condition": "Cloudy",
+        "state": {
+          "condition": "Cloudy",
+          "gripLevel": 0.97,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Cloudy"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 22,
+        "temperature2m": 17.3,
+        "windSpeed10m": 9.1
       },
       {
         "time": "2015-08-30T13:45",
-        "weatherCode": 0,
-        "condition": "Dry",
+        "weatherCode": 1,
+        "condition": "Cloudy",
         "state": {
-          "condition": "Dry",
-          "gripLevel": 1,
+          "condition": "Cloudy",
+          "gripLevel": 0.97,
           "wet": false,
           "changingSoon": false,
-          "label": "Dry"
+          "label": "Cloudy"
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 2,
-        "temperature2m": 17.7,
-        "windSpeed10m": 9.0
+        "cloudCover": 22,
+        "temperature2m": 17.3,
+        "windSpeed10m": 9.1
       },
       {
         "time": "2015-08-30T14:00",
-        "weatherCode": 0,
-        "condition": "Dry",
+        "weatherCode": 1,
+        "condition": "Cloudy",
         "state": {
-          "condition": "Dry",
-          "gripLevel": 1,
+          "condition": "Cloudy",
+          "gripLevel": 0.97,
           "wet": false,
-          "changingSoon": true,
-          "label": "Dry"
+          "changingSoon": false,
+          "label": "Cloudy"
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 2,
-        "temperature2m": 17.7,
-        "windSpeed10m": 9.0
+        "cloudCover": 22,
+        "temperature2m": 17.3,
+        "windSpeed10m": 9.1
       },
       {
         "time": "2015-08-30T14:15",
-        "weatherCode": 0,
-        "condition": "Dry",
+        "weatherCode": 1,
+        "condition": "Cloudy",
         "state": {
-          "condition": "Dry",
-          "gripLevel": 1,
+          "condition": "Cloudy",
+          "gripLevel": 0.97,
           "wet": false,
-          "changingSoon": true,
-          "label": "Dry"
+          "changingSoon": false,
+          "label": "Cloudy"
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 2,
-        "temperature2m": 17.7,
-        "windSpeed10m": 9.0
+        "cloudCover": 22,
+        "temperature2m": 17.3,
+        "windSpeed10m": 9.1
       },
       {
         "time": "2015-08-30T14:30",
@@ -3524,9 +3640,9 @@ export const season2015IndyCarWeather = {
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 22,
-        "temperature2m": 17.3,
-        "windSpeed10m": 9.1
+        "cloudCover": 46,
+        "temperature2m": 16.9,
+        "windSpeed10m": 8.4
       },
       {
         "time": "2015-08-30T14:45",
@@ -3541,80 +3657,12 @@ export const season2015IndyCarWeather = {
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 22,
-        "temperature2m": 17.3,
-        "windSpeed10m": 9.1
+        "cloudCover": 46,
+        "temperature2m": 16.9,
+        "windSpeed10m": 8.4
       },
       {
         "time": "2015-08-30T15:00",
-        "weatherCode": 1,
-        "condition": "Cloudy",
-        "state": {
-          "condition": "Cloudy",
-          "gripLevel": 0.97,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Cloudy"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 22,
-        "temperature2m": 17.3,
-        "windSpeed10m": 9.1
-      },
-      {
-        "time": "2015-08-30T15:15",
-        "weatherCode": 1,
-        "condition": "Cloudy",
-        "state": {
-          "condition": "Cloudy",
-          "gripLevel": 0.97,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Cloudy"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 22,
-        "temperature2m": 17.3,
-        "windSpeed10m": 9.1
-      },
-      {
-        "time": "2015-08-30T15:30",
-        "weatherCode": 1,
-        "condition": "Cloudy",
-        "state": {
-          "condition": "Cloudy",
-          "gripLevel": 0.97,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Cloudy"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 46,
-        "temperature2m": 16.9,
-        "windSpeed10m": 8.4
-      },
-      {
-        "time": "2015-08-30T15:45",
-        "weatherCode": 1,
-        "condition": "Cloudy",
-        "state": {
-          "condition": "Cloudy",
-          "gripLevel": 0.97,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Cloudy"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 46,
-        "temperature2m": 16.9,
-        "windSpeed10m": 8.4
-      },
-      {
-        "time": "2015-08-30T16:00",
         "weatherCode": 1,
         "condition": "Cloudy",
         "state": {
@@ -3631,7 +3679,7 @@ export const season2015IndyCarWeather = {
         "windSpeed10m": 8.4
       },
       {
-        "time": "2015-08-30T16:15",
+        "time": "2015-08-30T15:15",
         "weatherCode": 1,
         "condition": "Cloudy",
         "state": {

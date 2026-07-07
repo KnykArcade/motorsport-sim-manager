@@ -10,21 +10,24 @@ export const season1996IndyCarWeather = {
       "year": 1996,
       "series": "IndyCar",
       "date": "1996-01-27",
-      "localStartTime": "13:00",
+      "localStartTime": "19:30",
       "timezone": "auto",
       "latitude": 28.3772,
       "longitude": -81.5707,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "Low",
+      "startTimeMethod": "Saturday oval evening heuristic"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using IndyCar default 13:00"
+      "Workbook start time estimate (Low): 19:30",
+      "Start time method: Saturday oval evening heuristic"
     ],
     "samples": [
       {
-        "time": "1996-01-27T13:00",
+        "time": "1996-01-27T19:30",
         "weatherCode": 1,
         "condition": "Cloudy",
         "state": {
@@ -41,7 +44,7 @@ export const season1996IndyCarWeather = {
         "windSpeed10m": 15.5
       },
       {
-        "time": "1996-01-27T13:15",
+        "time": "1996-01-27T19:45",
         "weatherCode": 1,
         "condition": "Cloudy",
         "state": {
@@ -58,7 +61,7 @@ export const season1996IndyCarWeather = {
         "windSpeed10m": 15.5
       },
       {
-        "time": "1996-01-27T13:30",
+        "time": "1996-01-27T20:00",
         "weatherCode": 1,
         "condition": "Cloudy",
         "state": {
@@ -75,7 +78,7 @@ export const season1996IndyCarWeather = {
         "windSpeed10m": 15.5
       },
       {
-        "time": "1996-01-27T13:45",
+        "time": "1996-01-27T20:15",
         "weatherCode": 1,
         "condition": "Cloudy",
         "state": {
@@ -92,7 +95,7 @@ export const season1996IndyCarWeather = {
         "windSpeed10m": 15.5
       },
       {
-        "time": "1996-01-27T14:00",
+        "time": "1996-01-27T20:30",
         "weatherCode": 1,
         "condition": "Cloudy",
         "state": {
@@ -109,7 +112,7 @@ export const season1996IndyCarWeather = {
         "windSpeed10m": 13.3
       },
       {
-        "time": "1996-01-27T14:15",
+        "time": "1996-01-27T20:45",
         "weatherCode": 1,
         "condition": "Cloudy",
         "state": {
@@ -126,7 +129,7 @@ export const season1996IndyCarWeather = {
         "windSpeed10m": 13.3
       },
       {
-        "time": "1996-01-27T14:30",
+        "time": "1996-01-27T21:00",
         "weatherCode": 1,
         "condition": "Cloudy",
         "state": {
@@ -143,7 +146,7 @@ export const season1996IndyCarWeather = {
         "windSpeed10m": 13.3
       },
       {
-        "time": "1996-01-27T14:45",
+        "time": "1996-01-27T21:15",
         "weatherCode": 1,
         "condition": "Cloudy",
         "state": {
@@ -160,7 +163,7 @@ export const season1996IndyCarWeather = {
         "windSpeed10m": 13.3
       },
       {
-        "time": "1996-01-27T15:00",
+        "time": "1996-01-27T21:30",
         "weatherCode": 1,
         "condition": "Cloudy",
         "state": {
@@ -177,7 +180,7 @@ export const season1996IndyCarWeather = {
         "windSpeed10m": 11.8
       },
       {
-        "time": "1996-01-27T15:15",
+        "time": "1996-01-27T21:45",
         "weatherCode": 1,
         "condition": "Cloudy",
         "state": {
@@ -194,7 +197,7 @@ export const season1996IndyCarWeather = {
         "windSpeed10m": 11.8
       },
       {
-        "time": "1996-01-27T15:30",
+        "time": "1996-01-27T22:00",
         "weatherCode": 1,
         "condition": "Cloudy",
         "state": {
@@ -211,7 +214,7 @@ export const season1996IndyCarWeather = {
         "windSpeed10m": 11.8
       },
       {
-        "time": "1996-01-27T15:45",
+        "time": "1996-01-27T22:15",
         "weatherCode": 1,
         "condition": "Cloudy",
         "state": {
@@ -243,12 +246,15 @@ export const season1996IndyCarWeather = {
       "latitude": 33.4484,
       "longitude": -112.074,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "Medium",
+      "startTimeMethod": "Oval daytime estimate"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using IndyCar default 13:00"
+      "Workbook start time estimate (Medium): 13:00",
+      "Start time method: Oval daytime estimate"
     ],
     "samples": [
       {
@@ -466,19 +472,39 @@ export const season1996IndyCarWeather = {
       "year": 1996,
       "series": "IndyCar",
       "date": "1996-05-26",
-      "localStartTime": "13:00",
+      "localStartTime": "12:45",
       "timezone": "auto",
       "latitude": 39.8023,
       "longitude": -86.2672,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "High",
+      "startTimeMethod": "Known Indy 500 start-window estimate"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using IndyCar default 13:00"
+      "Workbook start time estimate (High): 12:45",
+      "Start time method: Known Indy 500 start-window estimate"
     ],
     "samples": [
+      {
+        "time": "1996-05-26T12:45",
+        "weatherCode": 3,
+        "condition": "Cloudy",
+        "state": {
+          "condition": "Cloudy",
+          "gripLevel": 0.97,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Cloudy"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 100,
+        "temperature2m": 16.8,
+        "windSpeed10m": 13.7
+      },
       {
         "time": "1996-05-26T13:00",
         "weatherCode": 3,
@@ -544,8 +570,8 @@ export const season1996IndyCarWeather = {
         "precipitationMm": 0.0,
         "rainMm": 0.0,
         "cloudCover": 100,
-        "temperature2m": 16.8,
-        "windSpeed10m": 13.7
+        "temperature2m": 16.5,
+        "windSpeed10m": 14.1
       },
       {
         "time": "1996-05-26T14:00",
@@ -611,9 +637,9 @@ export const season1996IndyCarWeather = {
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 100,
-        "temperature2m": 16.5,
-        "windSpeed10m": 14.1
+        "cloudCover": 99,
+        "temperature2m": 16.4,
+        "windSpeed10m": 13.6
       },
       {
         "time": "1996-05-26T15:00",
@@ -640,23 +666,6 @@ export const season1996IndyCarWeather = {
           "condition": "Cloudy",
           "gripLevel": 0.97,
           "wet": false,
-          "changingSoon": false,
-          "label": "Cloudy"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 99,
-        "temperature2m": 16.4,
-        "windSpeed10m": 13.6
-      },
-      {
-        "time": "1996-05-26T15:30",
-        "weatherCode": 3,
-        "condition": "Cloudy",
-        "state": {
-          "condition": "Cloudy",
-          "gripLevel": 0.97,
-          "wet": false,
           "changingSoon": true,
           "label": "Cloudy"
         },
@@ -667,7 +676,7 @@ export const season1996IndyCarWeather = {
         "windSpeed10m": 13.6
       },
       {
-        "time": "1996-05-26T15:45",
+        "time": "1996-05-26T15:30",
         "weatherCode": 3,
         "condition": "Cloudy",
         "state": {

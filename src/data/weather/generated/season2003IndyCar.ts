@@ -15,12 +15,15 @@ export const season2003IndyCarWeather = {
       "latitude": 25.4687,
       "longitude": -80.4776,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "Medium",
+      "startTimeMethod": "Oval daytime estimate"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using IndyCar default 13:00"
+      "Workbook start time estimate (Medium): 13:00",
+      "Start time method: Oval daytime estimate"
     ],
     "samples": [
       {
@@ -243,12 +246,15 @@ export const season2003IndyCarWeather = {
       "latitude": 33.4484,
       "longitude": -112.074,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "Medium",
+      "startTimeMethod": "Oval daytime estimate"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using IndyCar default 13:00"
+      "Workbook start time estimate (Medium): 13:00",
+      "Start time method: Oval daytime estimate"
     ],
     "samples": [
       {
@@ -471,12 +477,15 @@ export const season2003IndyCarWeather = {
       "latitude": 36.5325,
       "longitude": 140.2286,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "Medium",
+      "startTimeMethod": "Japan daytime estimate"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using IndyCar default 13:00"
+      "Workbook start time estimate (Medium): 13:00",
+      "Start time method: Japan daytime estimate"
     ],
     "samples": [
       {
@@ -694,19 +703,39 @@ export const season2003IndyCarWeather = {
       "year": 2003,
       "series": "IndyCar",
       "date": "2003-05-25",
-      "localStartTime": "13:00",
+      "localStartTime": "12:45",
       "timezone": "auto",
       "latitude": 39.8023,
       "longitude": -86.2672,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "High",
+      "startTimeMethod": "Known Indy 500 start-window estimate"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using IndyCar default 13:00"
+      "Workbook start time estimate (High): 12:45",
+      "Start time method: Known Indy 500 start-window estimate"
     ],
     "samples": [
+      {
+        "time": "2003-05-25T12:45",
+        "weatherCode": 2,
+        "condition": "Cloudy",
+        "state": {
+          "condition": "Cloudy",
+          "gripLevel": 0.97,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Cloudy"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 50,
+        "temperature2m": 13.2,
+        "windSpeed10m": 6.8
+      },
       {
         "time": "2003-05-25T13:00",
         "weatherCode": 2,
@@ -732,7 +761,7 @@ export const season2003IndyCarWeather = {
           "condition": "Cloudy",
           "gripLevel": 0.97,
           "wet": false,
-          "changingSoon": false,
+          "changingSoon": true,
           "label": "Cloudy"
         },
         "precipitationMm": 0.0,
@@ -760,20 +789,20 @@ export const season2003IndyCarWeather = {
       },
       {
         "time": "2003-05-25T13:45",
-        "weatherCode": 2,
-        "condition": "Cloudy",
+        "weatherCode": 51,
+        "condition": "LightRain",
         "state": {
-          "condition": "Cloudy",
-          "gripLevel": 0.97,
-          "wet": false,
-          "changingSoon": true,
-          "label": "Cloudy"
+          "condition": "LightRain",
+          "gripLevel": 0.72,
+          "wet": true,
+          "changingSoon": false,
+          "label": "Light Rain"
         },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 50,
-        "temperature2m": 13.2,
-        "windSpeed10m": 6.8
+        "precipitationMm": 0.1,
+        "rainMm": 0.1,
+        "cloudCover": 93,
+        "temperature2m": 12.6,
+        "windSpeed10m": 6.0
       },
       {
         "time": "2003-05-25T14:00",
@@ -800,7 +829,7 @@ export const season2003IndyCarWeather = {
           "condition": "LightRain",
           "gripLevel": 0.72,
           "wet": true,
-          "changingSoon": false,
+          "changingSoon": true,
           "label": "Light Rain"
         },
         "precipitationMm": 0.1,
@@ -828,20 +857,20 @@ export const season2003IndyCarWeather = {
       },
       {
         "time": "2003-05-25T14:45",
-        "weatherCode": 51,
-        "condition": "LightRain",
+        "weatherCode": 3,
+        "condition": "Cloudy",
         "state": {
-          "condition": "LightRain",
-          "gripLevel": 0.72,
-          "wet": true,
-          "changingSoon": true,
-          "label": "Light Rain"
+          "condition": "Cloudy",
+          "gripLevel": 0.97,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Cloudy"
         },
-        "precipitationMm": 0.1,
-        "rainMm": 0.1,
-        "cloudCover": 93,
-        "temperature2m": 12.6,
-        "windSpeed10m": 6.0
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 97,
+        "temperature2m": 12.0,
+        "windSpeed10m": 6.4
       },
       {
         "time": "2003-05-25T15:00",
@@ -893,23 +922,6 @@ export const season2003IndyCarWeather = {
         "cloudCover": 97,
         "temperature2m": 12.0,
         "windSpeed10m": 6.4
-      },
-      {
-        "time": "2003-05-25T15:45",
-        "weatherCode": 3,
-        "condition": "Cloudy",
-        "state": {
-          "condition": "Cloudy",
-          "gripLevel": 0.97,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Cloudy"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 97,
-        "temperature2m": 12.0,
-        "windSpeed10m": 6.4
       }
     ]
   },
@@ -922,21 +934,24 @@ export const season2003IndyCarWeather = {
       "year": 2003,
       "series": "IndyCar",
       "date": "2003-06-07",
-      "localStartTime": "13:00",
+      "localStartTime": "20:00",
       "timezone": "auto",
       "latitude": 32.7555,
       "longitude": -97.3308,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "High",
+      "startTimeMethod": "Known Texas night oval pattern"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using IndyCar default 13:00"
+      "Workbook start time estimate (High): 20:00",
+      "Start time method: Known Texas night oval pattern"
     ],
     "samples": [
       {
-        "time": "2003-06-07T13:00",
+        "time": "2003-06-07T20:00",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -953,7 +968,7 @@ export const season2003IndyCarWeather = {
         "windSpeed10m": 2.7
       },
       {
-        "time": "2003-06-07T13:15",
+        "time": "2003-06-07T20:15",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -970,7 +985,7 @@ export const season2003IndyCarWeather = {
         "windSpeed10m": 2.7
       },
       {
-        "time": "2003-06-07T13:30",
+        "time": "2003-06-07T20:30",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -987,7 +1002,7 @@ export const season2003IndyCarWeather = {
         "windSpeed10m": 2.7
       },
       {
-        "time": "2003-06-07T13:45",
+        "time": "2003-06-07T20:45",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -1004,7 +1019,7 @@ export const season2003IndyCarWeather = {
         "windSpeed10m": 2.7
       },
       {
-        "time": "2003-06-07T14:00",
+        "time": "2003-06-07T21:00",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -1021,7 +1036,7 @@ export const season2003IndyCarWeather = {
         "windSpeed10m": 1.5
       },
       {
-        "time": "2003-06-07T14:15",
+        "time": "2003-06-07T21:15",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -1038,7 +1053,7 @@ export const season2003IndyCarWeather = {
         "windSpeed10m": 1.5
       },
       {
-        "time": "2003-06-07T14:30",
+        "time": "2003-06-07T21:30",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -1055,7 +1070,7 @@ export const season2003IndyCarWeather = {
         "windSpeed10m": 1.5
       },
       {
-        "time": "2003-06-07T14:45",
+        "time": "2003-06-07T21:45",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -1072,7 +1087,7 @@ export const season2003IndyCarWeather = {
         "windSpeed10m": 1.5
       },
       {
-        "time": "2003-06-07T15:00",
+        "time": "2003-06-07T22:00",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -1089,7 +1104,7 @@ export const season2003IndyCarWeather = {
         "windSpeed10m": 4.3
       },
       {
-        "time": "2003-06-07T15:15",
+        "time": "2003-06-07T22:15",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -1106,7 +1121,7 @@ export const season2003IndyCarWeather = {
         "windSpeed10m": 4.3
       },
       {
-        "time": "2003-06-07T15:30",
+        "time": "2003-06-07T22:30",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -1123,7 +1138,7 @@ export const season2003IndyCarWeather = {
         "windSpeed10m": 4.3
       },
       {
-        "time": "2003-06-07T15:45",
+        "time": "2003-06-07T22:45",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -1155,12 +1170,15 @@ export const season2003IndyCarWeather = {
       "latitude": 38.6822,
       "longitude": -104.7008,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "Low",
+      "startTimeMethod": "Oval daytime heuristic"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using IndyCar default 13:00"
+      "Workbook start time estimate (Low): 13:00",
+      "Start time method: Oval daytime heuristic"
     ],
     "samples": [
       {
@@ -1378,21 +1396,24 @@ export const season2003IndyCarWeather = {
       "year": 2003,
       "series": "IndyCar",
       "date": "2003-06-28",
-      "localStartTime": "13:00",
+      "localStartTime": "20:00",
       "timezone": "auto",
       "latitude": 37.5407,
       "longitude": -77.436,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "High",
+      "startTimeMethod": "Known short-oval night pattern"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using IndyCar default 13:00"
+      "Workbook start time estimate (High): 20:00",
+      "Start time method: Known short-oval night pattern"
     ],
     "samples": [
       {
-        "time": "2003-06-28T13:00",
+        "time": "2003-06-28T20:00",
         "weatherCode": 3,
         "condition": "Cloudy",
         "state": {
@@ -1409,7 +1430,7 @@ export const season2003IndyCarWeather = {
         "windSpeed10m": 10.9
       },
       {
-        "time": "2003-06-28T13:15",
+        "time": "2003-06-28T20:15",
         "weatherCode": 3,
         "condition": "Cloudy",
         "state": {
@@ -1426,7 +1447,7 @@ export const season2003IndyCarWeather = {
         "windSpeed10m": 10.9
       },
       {
-        "time": "2003-06-28T13:30",
+        "time": "2003-06-28T20:30",
         "weatherCode": 3,
         "condition": "Cloudy",
         "state": {
@@ -1443,7 +1464,7 @@ export const season2003IndyCarWeather = {
         "windSpeed10m": 10.9
       },
       {
-        "time": "2003-06-28T13:45",
+        "time": "2003-06-28T20:45",
         "weatherCode": 3,
         "condition": "Cloudy",
         "state": {
@@ -1460,7 +1481,7 @@ export const season2003IndyCarWeather = {
         "windSpeed10m": 10.9
       },
       {
-        "time": "2003-06-28T14:00",
+        "time": "2003-06-28T21:00",
         "weatherCode": 3,
         "condition": "Cloudy",
         "state": {
@@ -1477,7 +1498,7 @@ export const season2003IndyCarWeather = {
         "windSpeed10m": 10.5
       },
       {
-        "time": "2003-06-28T14:15",
+        "time": "2003-06-28T21:15",
         "weatherCode": 3,
         "condition": "Cloudy",
         "state": {
@@ -1494,7 +1515,7 @@ export const season2003IndyCarWeather = {
         "windSpeed10m": 10.5
       },
       {
-        "time": "2003-06-28T14:30",
+        "time": "2003-06-28T21:30",
         "weatherCode": 3,
         "condition": "Cloudy",
         "state": {
@@ -1511,7 +1532,7 @@ export const season2003IndyCarWeather = {
         "windSpeed10m": 10.5
       },
       {
-        "time": "2003-06-28T14:45",
+        "time": "2003-06-28T21:45",
         "weatherCode": 3,
         "condition": "Cloudy",
         "state": {
@@ -1528,7 +1549,7 @@ export const season2003IndyCarWeather = {
         "windSpeed10m": 10.5
       },
       {
-        "time": "2003-06-28T15:00",
+        "time": "2003-06-28T22:00",
         "weatherCode": 3,
         "condition": "Cloudy",
         "state": {
@@ -1545,7 +1566,7 @@ export const season2003IndyCarWeather = {
         "windSpeed10m": 10.1
       },
       {
-        "time": "2003-06-28T15:15",
+        "time": "2003-06-28T22:15",
         "weatherCode": 3,
         "condition": "Cloudy",
         "state": {
@@ -1562,7 +1583,7 @@ export const season2003IndyCarWeather = {
         "windSpeed10m": 10.1
       },
       {
-        "time": "2003-06-28T15:30",
+        "time": "2003-06-28T22:30",
         "weatherCode": 3,
         "condition": "Cloudy",
         "state": {
@@ -1579,7 +1600,7 @@ export const season2003IndyCarWeather = {
         "windSpeed10m": 10.1
       },
       {
-        "time": "2003-06-28T15:45",
+        "time": "2003-06-28T22:45",
         "weatherCode": 3,
         "condition": "Cloudy",
         "state": {
@@ -1611,12 +1632,15 @@ export const season2003IndyCarWeather = {
       "latitude": 39.1141,
       "longitude": -94.6275,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "Low",
+      "startTimeMethod": "Series/track-type heuristic"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using IndyCar default 13:00"
+      "Workbook start time estimate (Low): 13:00",
+      "Start time method: Series/track-type heuristic"
     ],
     "samples": [
       {
@@ -1834,21 +1858,24 @@ export const season2003IndyCarWeather = {
       "year": 2003,
       "series": "IndyCar",
       "date": "2003-07-19",
-      "localStartTime": "13:00",
+      "localStartTime": "19:30",
       "timezone": "auto",
       "latitude": 36.2081,
       "longitude": -86.2911,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "High",
+      "startTimeMethod": "Known Saturday night oval pattern"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using IndyCar default 13:00"
+      "Workbook start time estimate (High): 19:30",
+      "Start time method: Known Saturday night oval pattern"
     ],
     "samples": [
       {
-        "time": "2003-07-19T13:00",
+        "time": "2003-07-19T19:30",
         "weatherCode": 51,
         "condition": "LightRain",
         "state": {
@@ -1865,7 +1892,7 @@ export const season2003IndyCarWeather = {
         "windSpeed10m": 1.9
       },
       {
-        "time": "2003-07-19T13:15",
+        "time": "2003-07-19T19:45",
         "weatherCode": 51,
         "condition": "LightRain",
         "state": {
@@ -1882,7 +1909,7 @@ export const season2003IndyCarWeather = {
         "windSpeed10m": 1.9
       },
       {
-        "time": "2003-07-19T13:30",
+        "time": "2003-07-19T20:00",
         "weatherCode": 51,
         "condition": "LightRain",
         "state": {
@@ -1899,7 +1926,7 @@ export const season2003IndyCarWeather = {
         "windSpeed10m": 1.9
       },
       {
-        "time": "2003-07-19T13:45",
+        "time": "2003-07-19T20:15",
         "weatherCode": 51,
         "condition": "LightRain",
         "state": {
@@ -1916,7 +1943,7 @@ export const season2003IndyCarWeather = {
         "windSpeed10m": 1.9
       },
       {
-        "time": "2003-07-19T14:00",
+        "time": "2003-07-19T20:30",
         "weatherCode": 53,
         "condition": "LightRain",
         "state": {
@@ -1933,7 +1960,7 @@ export const season2003IndyCarWeather = {
         "windSpeed10m": 4.0
       },
       {
-        "time": "2003-07-19T14:15",
+        "time": "2003-07-19T20:45",
         "weatherCode": 53,
         "condition": "LightRain",
         "state": {
@@ -1950,7 +1977,7 @@ export const season2003IndyCarWeather = {
         "windSpeed10m": 4.0
       },
       {
-        "time": "2003-07-19T14:30",
+        "time": "2003-07-19T21:00",
         "weatherCode": 53,
         "condition": "LightRain",
         "state": {
@@ -1967,7 +1994,7 @@ export const season2003IndyCarWeather = {
         "windSpeed10m": 4.0
       },
       {
-        "time": "2003-07-19T14:45",
+        "time": "2003-07-19T21:15",
         "weatherCode": 53,
         "condition": "LightRain",
         "state": {
@@ -1984,7 +2011,7 @@ export const season2003IndyCarWeather = {
         "windSpeed10m": 4.0
       },
       {
-        "time": "2003-07-19T15:00",
+        "time": "2003-07-19T21:30",
         "weatherCode": 3,
         "condition": "Cloudy",
         "state": {
@@ -2001,7 +2028,7 @@ export const season2003IndyCarWeather = {
         "windSpeed10m": 5.9
       },
       {
-        "time": "2003-07-19T15:15",
+        "time": "2003-07-19T21:45",
         "weatherCode": 3,
         "condition": "Cloudy",
         "state": {
@@ -2018,7 +2045,7 @@ export const season2003IndyCarWeather = {
         "windSpeed10m": 5.9
       },
       {
-        "time": "2003-07-19T15:30",
+        "time": "2003-07-19T22:00",
         "weatherCode": 3,
         "condition": "Cloudy",
         "state": {
@@ -2035,7 +2062,7 @@ export const season2003IndyCarWeather = {
         "windSpeed10m": 5.9
       },
       {
-        "time": "2003-07-19T15:45",
+        "time": "2003-07-19T22:15",
         "weatherCode": 3,
         "condition": "Cloudy",
         "state": {
@@ -2067,12 +2094,15 @@ export const season2003IndyCarWeather = {
       "latitude": 42.1059,
       "longitude": -84.2483,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "Low",
+      "startTimeMethod": "Oval daytime heuristic"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using IndyCar default 13:00"
+      "Workbook start time estimate (Low): 13:00",
+      "Start time method: Oval daytime heuristic"
     ],
     "samples": [
       {
@@ -2290,21 +2320,24 @@ export const season2003IndyCarWeather = {
       "year": 2003,
       "series": "IndyCar",
       "date": "2003-08-10",
-      "localStartTime": "13:00",
+      "localStartTime": "19:30",
       "timezone": "auto",
       "latitude": 38.6826,
       "longitude": -90.1571,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "Medium",
+      "startTimeMethod": "Gateway oval evening estimate"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using IndyCar default 13:00"
+      "Workbook start time estimate (Medium): 19:30",
+      "Start time method: Gateway oval evening estimate"
     ],
     "samples": [
       {
-        "time": "2003-08-10T13:00",
+        "time": "2003-08-10T19:30",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -2321,7 +2354,7 @@ export const season2003IndyCarWeather = {
         "windSpeed10m": 7.3
       },
       {
-        "time": "2003-08-10T13:15",
+        "time": "2003-08-10T19:45",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -2338,7 +2371,7 @@ export const season2003IndyCarWeather = {
         "windSpeed10m": 7.3
       },
       {
-        "time": "2003-08-10T13:30",
+        "time": "2003-08-10T20:00",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -2355,7 +2388,7 @@ export const season2003IndyCarWeather = {
         "windSpeed10m": 7.3
       },
       {
-        "time": "2003-08-10T13:45",
+        "time": "2003-08-10T20:15",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -2372,7 +2405,7 @@ export const season2003IndyCarWeather = {
         "windSpeed10m": 7.3
       },
       {
-        "time": "2003-08-10T14:00",
+        "time": "2003-08-10T20:30",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -2389,7 +2422,7 @@ export const season2003IndyCarWeather = {
         "windSpeed10m": 6.8
       },
       {
-        "time": "2003-08-10T14:15",
+        "time": "2003-08-10T20:45",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -2406,7 +2439,7 @@ export const season2003IndyCarWeather = {
         "windSpeed10m": 6.8
       },
       {
-        "time": "2003-08-10T14:30",
+        "time": "2003-08-10T21:00",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -2423,7 +2456,7 @@ export const season2003IndyCarWeather = {
         "windSpeed10m": 6.8
       },
       {
-        "time": "2003-08-10T14:45",
+        "time": "2003-08-10T21:15",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -2440,7 +2473,7 @@ export const season2003IndyCarWeather = {
         "windSpeed10m": 6.8
       },
       {
-        "time": "2003-08-10T15:00",
+        "time": "2003-08-10T21:30",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -2457,7 +2490,7 @@ export const season2003IndyCarWeather = {
         "windSpeed10m": 5.6
       },
       {
-        "time": "2003-08-10T15:15",
+        "time": "2003-08-10T21:45",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -2474,7 +2507,7 @@ export const season2003IndyCarWeather = {
         "windSpeed10m": 5.6
       },
       {
-        "time": "2003-08-10T15:30",
+        "time": "2003-08-10T22:00",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -2491,7 +2524,7 @@ export const season2003IndyCarWeather = {
         "windSpeed10m": 5.6
       },
       {
-        "time": "2003-08-10T15:45",
+        "time": "2003-08-10T22:15",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -2523,12 +2556,15 @@ export const season2003IndyCarWeather = {
       "latitude": 38.6851,
       "longitude": -84.9052,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "Low",
+      "startTimeMethod": "Oval daytime heuristic"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using IndyCar default 13:00"
+      "Workbook start time estimate (Low): 13:00",
+      "Start time method: Oval daytime heuristic"
     ],
     "samples": [
       {
@@ -2751,12 +2787,15 @@ export const season2003IndyCarWeather = {
       "latitude": 40.7404,
       "longitude": -75.3096,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "Low",
+      "startTimeMethod": "Oval daytime heuristic"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using IndyCar default 13:00"
+      "Workbook start time estimate (Low): 13:00",
+      "Start time method: Oval daytime heuristic"
     ],
     "samples": [
       {
@@ -2979,12 +3018,15 @@ export const season2003IndyCarWeather = {
       "latitude": 41.525,
       "longitude": -88.0817,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "Low",
+      "startTimeMethod": "Oval daytime heuristic"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using IndyCar default 13:00"
+      "Workbook start time estimate (Low): 13:00",
+      "Start time method: Oval daytime heuristic"
     ],
     "samples": [
       {
@@ -3202,19 +3244,56 @@ export const season2003IndyCarWeather = {
       "year": 2003,
       "series": "IndyCar",
       "date": "2003-09-21",
-      "localStartTime": "13:00",
+      "localStartTime": "12:30",
       "timezone": "auto",
       "latitude": 34.0922,
       "longitude": -117.435,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "Medium",
+      "startTimeMethod": "West Coast oval TV-window estimate"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using IndyCar default 13:00"
+      "Workbook start time estimate (Medium): 12:30",
+      "Start time method: West Coast oval TV-window estimate"
     ],
     "samples": [
+      {
+        "time": "2003-09-21T12:30",
+        "weatherCode": 0,
+        "condition": "Dry",
+        "state": {
+          "condition": "Dry",
+          "gripLevel": 1,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Dry"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 0,
+        "temperature2m": 22.6,
+        "windSpeed10m": 1.5
+      },
+      {
+        "time": "2003-09-21T12:45",
+        "weatherCode": 0,
+        "condition": "Dry",
+        "state": {
+          "condition": "Dry",
+          "gripLevel": 1,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Dry"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 0,
+        "temperature2m": 22.6,
+        "windSpeed10m": 1.5
+      },
       {
         "time": "2003-09-21T13:00",
         "weatherCode": 0,
@@ -3263,8 +3342,8 @@ export const season2003IndyCarWeather = {
         "precipitationMm": 0.0,
         "rainMm": 0.0,
         "cloudCover": 0,
-        "temperature2m": 22.6,
-        "windSpeed10m": 1.5
+        "temperature2m": 20.9,
+        "windSpeed10m": 1.9
       },
       {
         "time": "2003-09-21T13:45",
@@ -3280,8 +3359,8 @@ export const season2003IndyCarWeather = {
         "precipitationMm": 0.0,
         "rainMm": 0.0,
         "cloudCover": 0,
-        "temperature2m": 22.6,
-        "windSpeed10m": 1.5
+        "temperature2m": 20.9,
+        "windSpeed10m": 1.9
       },
       {
         "time": "2003-09-21T14:00",
@@ -3331,8 +3410,8 @@ export const season2003IndyCarWeather = {
         "precipitationMm": 0.0,
         "rainMm": 0.0,
         "cloudCover": 0,
-        "temperature2m": 20.9,
-        "windSpeed10m": 1.9
+        "temperature2m": 19.5,
+        "windSpeed10m": 2.3
       },
       {
         "time": "2003-09-21T14:45",
@@ -3348,8 +3427,8 @@ export const season2003IndyCarWeather = {
         "precipitationMm": 0.0,
         "rainMm": 0.0,
         "cloudCover": 0,
-        "temperature2m": 20.9,
-        "windSpeed10m": 1.9
+        "temperature2m": 19.5,
+        "windSpeed10m": 2.3
       },
       {
         "time": "2003-09-21T15:00",
@@ -3384,40 +3463,6 @@ export const season2003IndyCarWeather = {
         "cloudCover": 0,
         "temperature2m": 19.5,
         "windSpeed10m": 2.3
-      },
-      {
-        "time": "2003-09-21T15:30",
-        "weatherCode": 0,
-        "condition": "Dry",
-        "state": {
-          "condition": "Dry",
-          "gripLevel": 1,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Dry"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 0,
-        "temperature2m": 19.5,
-        "windSpeed10m": 2.3
-      },
-      {
-        "time": "2003-09-21T15:45",
-        "weatherCode": 0,
-        "condition": "Dry",
-        "state": {
-          "condition": "Dry",
-          "gripLevel": 1,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Dry"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 0,
-        "temperature2m": 19.5,
-        "windSpeed10m": 2.3
       }
     ]
   },
@@ -3435,12 +3480,15 @@ export const season2003IndyCarWeather = {
       "latitude": 32.7555,
       "longitude": -97.3308,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "Medium",
+      "startTimeMethod": "Texas oval daytime fallback"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using IndyCar default 13:00"
+      "Workbook start time estimate (Medium): 13:00",
+      "Start time method: Texas oval daytime fallback"
     ],
     "samples": [
       {

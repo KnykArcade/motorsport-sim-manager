@@ -10,21 +10,24 @@ export const season2011IndyCarWeather = {
       "year": 2011,
       "series": "IndyCar",
       "date": "2011-03-27",
-      "localStartTime": "13:30",
+      "localStartTime": "12:30",
       "timezone": "auto",
       "latitude": 27.7676,
       "longitude": -82.6403,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "Medium",
+      "startTimeMethod": "Street race midday estimate"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using IndyCar default 13:30"
+      "Workbook start time estimate (Medium): 12:30",
+      "Start time method: Street race midday estimate"
     ],
     "samples": [
       {
-        "time": "2011-03-27T13:30",
+        "time": "2011-03-27T12:30",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -39,6 +42,74 @@ export const season2011IndyCarWeather = {
         "cloudCover": 1,
         "temperature2m": 21.1,
         "windSpeed10m": 11.1
+      },
+      {
+        "time": "2011-03-27T12:45",
+        "weatherCode": 0,
+        "condition": "Dry",
+        "state": {
+          "condition": "Dry",
+          "gripLevel": 1,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Dry"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 1,
+        "temperature2m": 21.1,
+        "windSpeed10m": 11.1
+      },
+      {
+        "time": "2011-03-27T13:00",
+        "weatherCode": 0,
+        "condition": "Dry",
+        "state": {
+          "condition": "Dry",
+          "gripLevel": 1,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Dry"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 1,
+        "temperature2m": 21.1,
+        "windSpeed10m": 11.1
+      },
+      {
+        "time": "2011-03-27T13:15",
+        "weatherCode": 0,
+        "condition": "Dry",
+        "state": {
+          "condition": "Dry",
+          "gripLevel": 1,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Dry"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 1,
+        "temperature2m": 21.1,
+        "windSpeed10m": 11.1
+      },
+      {
+        "time": "2011-03-27T13:30",
+        "weatherCode": 0,
+        "condition": "Dry",
+        "state": {
+          "condition": "Dry",
+          "gripLevel": 1,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Dry"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 0,
+        "temperature2m": 20.8,
+        "windSpeed10m": 11.0
       },
       {
         "time": "2011-03-27T13:45",
@@ -53,9 +124,9 @@ export const season2011IndyCarWeather = {
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 1,
-        "temperature2m": 21.1,
-        "windSpeed10m": 11.1
+        "cloudCover": 0,
+        "temperature2m": 20.8,
+        "windSpeed10m": 11.0
       },
       {
         "time": "2011-03-27T14:00",
@@ -70,9 +141,9 @@ export const season2011IndyCarWeather = {
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 1,
-        "temperature2m": 21.1,
-        "windSpeed10m": 11.1
+        "cloudCover": 0,
+        "temperature2m": 20.8,
+        "windSpeed10m": 11.0
       },
       {
         "time": "2011-03-27T14:15",
@@ -87,9 +158,9 @@ export const season2011IndyCarWeather = {
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 1,
-        "temperature2m": 21.1,
-        "windSpeed10m": 11.1
+        "cloudCover": 0,
+        "temperature2m": 20.8,
+        "windSpeed10m": 11.0
       },
       {
         "time": "2011-03-27T14:30",
@@ -105,8 +176,8 @@ export const season2011IndyCarWeather = {
         "precipitationMm": 0.0,
         "rainMm": 0.0,
         "cloudCover": 0,
-        "temperature2m": 20.8,
-        "windSpeed10m": 11.0
+        "temperature2m": 20.6,
+        "windSpeed10m": 11.4
       },
       {
         "time": "2011-03-27T14:45",
@@ -122,8 +193,8 @@ export const season2011IndyCarWeather = {
         "precipitationMm": 0.0,
         "rainMm": 0.0,
         "cloudCover": 0,
-        "temperature2m": 20.8,
-        "windSpeed10m": 11.0
+        "temperature2m": 20.6,
+        "windSpeed10m": 11.4
       },
       {
         "time": "2011-03-27T15:00",
@@ -139,79 +210,11 @@ export const season2011IndyCarWeather = {
         "precipitationMm": 0.0,
         "rainMm": 0.0,
         "cloudCover": 0,
-        "temperature2m": 20.8,
-        "windSpeed10m": 11.0
+        "temperature2m": 20.6,
+        "windSpeed10m": 11.4
       },
       {
         "time": "2011-03-27T15:15",
-        "weatherCode": 0,
-        "condition": "Dry",
-        "state": {
-          "condition": "Dry",
-          "gripLevel": 1,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Dry"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 0,
-        "temperature2m": 20.8,
-        "windSpeed10m": 11.0
-      },
-      {
-        "time": "2011-03-27T15:30",
-        "weatherCode": 0,
-        "condition": "Dry",
-        "state": {
-          "condition": "Dry",
-          "gripLevel": 1,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Dry"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 0,
-        "temperature2m": 20.6,
-        "windSpeed10m": 11.4
-      },
-      {
-        "time": "2011-03-27T15:45",
-        "weatherCode": 0,
-        "condition": "Dry",
-        "state": {
-          "condition": "Dry",
-          "gripLevel": 1,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Dry"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 0,
-        "temperature2m": 20.6,
-        "windSpeed10m": 11.4
-      },
-      {
-        "time": "2011-03-27T16:00",
-        "weatherCode": 0,
-        "condition": "Dry",
-        "state": {
-          "condition": "Dry",
-          "gripLevel": 1,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Dry"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 0,
-        "temperature2m": 20.6,
-        "windSpeed10m": 11.4
-      },
-      {
-        "time": "2011-03-27T16:15",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -238,19 +241,56 @@ export const season2011IndyCarWeather = {
       "year": 2011,
       "series": "IndyCar",
       "date": "2011-04-10",
-      "localStartTime": "13:30",
+      "localStartTime": "13:00",
       "timezone": "auto",
       "latitude": 33.5207,
       "longitude": -86.8025,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "Low",
+      "startTimeMethod": "Series/track-type heuristic"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using IndyCar default 13:30"
+      "Workbook start time estimate (Low): 13:00",
+      "Start time method: Series/track-type heuristic"
     ],
     "samples": [
+      {
+        "time": "2011-04-10T13:00",
+        "weatherCode": 2,
+        "condition": "Cloudy",
+        "state": {
+          "condition": "Cloudy",
+          "gripLevel": 0.97,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Cloudy"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 70,
+        "temperature2m": 20.5,
+        "windSpeed10m": 13.2
+      },
+      {
+        "time": "2011-04-10T13:15",
+        "weatherCode": 2,
+        "condition": "Cloudy",
+        "state": {
+          "condition": "Cloudy",
+          "gripLevel": 0.97,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Cloudy"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 70,
+        "temperature2m": 20.5,
+        "windSpeed10m": 13.2
+      },
       {
         "time": "2011-04-10T13:30",
         "weatherCode": 2,
@@ -259,7 +299,7 @@ export const season2011IndyCarWeather = {
           "condition": "Cloudy",
           "gripLevel": 0.97,
           "wet": false,
-          "changingSoon": false,
+          "changingSoon": true,
           "label": "Cloudy"
         },
         "precipitationMm": 0.0,
@@ -276,7 +316,7 @@ export const season2011IndyCarWeather = {
           "condition": "Cloudy",
           "gripLevel": 0.97,
           "wet": false,
-          "changingSoon": false,
+          "changingSoon": true,
           "label": "Cloudy"
         },
         "precipitationMm": 0.0,
@@ -287,37 +327,37 @@ export const season2011IndyCarWeather = {
       },
       {
         "time": "2011-04-10T14:00",
-        "weatherCode": 2,
-        "condition": "Cloudy",
+        "weatherCode": 0,
+        "condition": "Dry",
         "state": {
-          "condition": "Cloudy",
-          "gripLevel": 0.97,
+          "condition": "Dry",
+          "gripLevel": 1,
           "wet": false,
-          "changingSoon": true,
-          "label": "Cloudy"
+          "changingSoon": false,
+          "label": "Dry"
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 70,
-        "temperature2m": 20.5,
-        "windSpeed10m": 13.2
+        "cloudCover": 11,
+        "temperature2m": 19.8,
+        "windSpeed10m": 12.6
       },
       {
         "time": "2011-04-10T14:15",
-        "weatherCode": 2,
-        "condition": "Cloudy",
+        "weatherCode": 0,
+        "condition": "Dry",
         "state": {
-          "condition": "Cloudy",
-          "gripLevel": 0.97,
+          "condition": "Dry",
+          "gripLevel": 1,
           "wet": false,
-          "changingSoon": true,
-          "label": "Cloudy"
+          "changingSoon": false,
+          "label": "Dry"
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 70,
-        "temperature2m": 20.5,
-        "windSpeed10m": 13.2
+        "cloudCover": 11,
+        "temperature2m": 19.8,
+        "windSpeed10m": 12.6
       },
       {
         "time": "2011-04-10T14:30",
@@ -366,9 +406,9 @@ export const season2011IndyCarWeather = {
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 11,
-        "temperature2m": 19.8,
-        "windSpeed10m": 12.6
+        "cloudCover": 0,
+        "temperature2m": 19.3,
+        "windSpeed10m": 11.0
       },
       {
         "time": "2011-04-10T15:15",
@@ -383,9 +423,9 @@ export const season2011IndyCarWeather = {
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 11,
-        "temperature2m": 19.8,
-        "windSpeed10m": 12.6
+        "cloudCover": 0,
+        "temperature2m": 19.3,
+        "windSpeed10m": 11.0
       },
       {
         "time": "2011-04-10T15:30",
@@ -420,40 +460,6 @@ export const season2011IndyCarWeather = {
         "cloudCover": 0,
         "temperature2m": 19.3,
         "windSpeed10m": 11.0
-      },
-      {
-        "time": "2011-04-10T16:00",
-        "weatherCode": 0,
-        "condition": "Dry",
-        "state": {
-          "condition": "Dry",
-          "gripLevel": 1,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Dry"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 0,
-        "temperature2m": 19.3,
-        "windSpeed10m": 11.0
-      },
-      {
-        "time": "2011-04-10T16:15",
-        "weatherCode": 0,
-        "condition": "Dry",
-        "state": {
-          "condition": "Dry",
-          "gripLevel": 1,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Dry"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 0,
-        "temperature2m": 19.3,
-        "windSpeed10m": 11.0
       }
     ]
   },
@@ -466,21 +472,24 @@ export const season2011IndyCarWeather = {
       "year": 2011,
       "series": "IndyCar",
       "date": "2011-04-17",
-      "localStartTime": "13:30",
+      "localStartTime": "12:30",
       "timezone": "auto",
       "latitude": 33.7701,
       "longitude": -118.1937,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "Medium",
+      "startTimeMethod": "Long Beach street-race pattern"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using IndyCar default 13:30"
+      "Workbook start time estimate (Medium): 12:30",
+      "Start time method: Long Beach street-race pattern"
     ],
     "samples": [
       {
-        "time": "2011-04-17T13:30",
+        "time": "2011-04-17T12:30",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -495,6 +504,74 @@ export const season2011IndyCarWeather = {
         "cloudCover": 6,
         "temperature2m": 16.8,
         "windSpeed10m": 9.5
+      },
+      {
+        "time": "2011-04-17T12:45",
+        "weatherCode": 0,
+        "condition": "Dry",
+        "state": {
+          "condition": "Dry",
+          "gripLevel": 1,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Dry"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 6,
+        "temperature2m": 16.8,
+        "windSpeed10m": 9.5
+      },
+      {
+        "time": "2011-04-17T13:00",
+        "weatherCode": 0,
+        "condition": "Dry",
+        "state": {
+          "condition": "Dry",
+          "gripLevel": 1,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Dry"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 6,
+        "temperature2m": 16.8,
+        "windSpeed10m": 9.5
+      },
+      {
+        "time": "2011-04-17T13:15",
+        "weatherCode": 0,
+        "condition": "Dry",
+        "state": {
+          "condition": "Dry",
+          "gripLevel": 1,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Dry"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 6,
+        "temperature2m": 16.8,
+        "windSpeed10m": 9.5
+      },
+      {
+        "time": "2011-04-17T13:30",
+        "weatherCode": 0,
+        "condition": "Dry",
+        "state": {
+          "condition": "Dry",
+          "gripLevel": 1,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Dry"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 3,
+        "temperature2m": 16.0,
+        "windSpeed10m": 8.7
       },
       {
         "time": "2011-04-17T13:45",
@@ -509,9 +586,9 @@ export const season2011IndyCarWeather = {
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 6,
-        "temperature2m": 16.8,
-        "windSpeed10m": 9.5
+        "cloudCover": 3,
+        "temperature2m": 16.0,
+        "windSpeed10m": 8.7
       },
       {
         "time": "2011-04-17T14:00",
@@ -526,9 +603,9 @@ export const season2011IndyCarWeather = {
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 6,
-        "temperature2m": 16.8,
-        "windSpeed10m": 9.5
+        "cloudCover": 3,
+        "temperature2m": 16.0,
+        "windSpeed10m": 8.7
       },
       {
         "time": "2011-04-17T14:15",
@@ -543,9 +620,9 @@ export const season2011IndyCarWeather = {
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 6,
-        "temperature2m": 16.8,
-        "windSpeed10m": 9.5
+        "cloudCover": 3,
+        "temperature2m": 16.0,
+        "windSpeed10m": 8.7
       },
       {
         "time": "2011-04-17T14:30",
@@ -560,9 +637,9 @@ export const season2011IndyCarWeather = {
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 3,
-        "temperature2m": 16.0,
-        "windSpeed10m": 8.7
+        "cloudCover": 2,
+        "temperature2m": 15.3,
+        "windSpeed10m": 8.2
       },
       {
         "time": "2011-04-17T14:45",
@@ -577,9 +654,9 @@ export const season2011IndyCarWeather = {
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 3,
-        "temperature2m": 16.0,
-        "windSpeed10m": 8.7
+        "cloudCover": 2,
+        "temperature2m": 15.3,
+        "windSpeed10m": 8.2
       },
       {
         "time": "2011-04-17T15:00",
@@ -594,80 +671,12 @@ export const season2011IndyCarWeather = {
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 3,
-        "temperature2m": 16.0,
-        "windSpeed10m": 8.7
+        "cloudCover": 2,
+        "temperature2m": 15.3,
+        "windSpeed10m": 8.2
       },
       {
         "time": "2011-04-17T15:15",
-        "weatherCode": 0,
-        "condition": "Dry",
-        "state": {
-          "condition": "Dry",
-          "gripLevel": 1,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Dry"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 3,
-        "temperature2m": 16.0,
-        "windSpeed10m": 8.7
-      },
-      {
-        "time": "2011-04-17T15:30",
-        "weatherCode": 0,
-        "condition": "Dry",
-        "state": {
-          "condition": "Dry",
-          "gripLevel": 1,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Dry"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 2,
-        "temperature2m": 15.3,
-        "windSpeed10m": 8.2
-      },
-      {
-        "time": "2011-04-17T15:45",
-        "weatherCode": 0,
-        "condition": "Dry",
-        "state": {
-          "condition": "Dry",
-          "gripLevel": 1,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Dry"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 2,
-        "temperature2m": 15.3,
-        "windSpeed10m": 8.2
-      },
-      {
-        "time": "2011-04-17T16:00",
-        "weatherCode": 0,
-        "condition": "Dry",
-        "state": {
-          "condition": "Dry",
-          "gripLevel": 1,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Dry"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 2,
-        "temperature2m": 15.3,
-        "windSpeed10m": 8.2
-      },
-      {
-        "time": "2011-04-17T16:15",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -694,19 +703,56 @@ export const season2011IndyCarWeather = {
       "year": 2011,
       "series": "IndyCar",
       "date": "2011-05-02",
-      "localStartTime": "13:30",
+      "localStartTime": "13:00",
       "timezone": "auto",
       "latitude": -23.5505,
       "longitude": -46.6333,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "Low",
+      "startTimeMethod": "Series/track-type heuristic"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using IndyCar default 13:30"
+      "Workbook start time estimate (Low): 13:00",
+      "Start time method: Series/track-type heuristic"
     ],
     "samples": [
+      {
+        "time": "2011-05-02T13:00",
+        "weatherCode": 2,
+        "condition": "Cloudy",
+        "state": {
+          "condition": "Cloudy",
+          "gripLevel": 0.97,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Cloudy"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 57,
+        "temperature2m": 18.3,
+        "windSpeed10m": 15.5
+      },
+      {
+        "time": "2011-05-02T13:15",
+        "weatherCode": 2,
+        "condition": "Cloudy",
+        "state": {
+          "condition": "Cloudy",
+          "gripLevel": 0.97,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Cloudy"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 57,
+        "temperature2m": 18.3,
+        "windSpeed10m": 15.5
+      },
       {
         "time": "2011-05-02T13:30",
         "weatherCode": 2,
@@ -754,9 +800,9 @@ export const season2011IndyCarWeather = {
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 57,
-        "temperature2m": 18.3,
-        "windSpeed10m": 15.5
+        "cloudCover": 72,
+        "temperature2m": 18.4,
+        "windSpeed10m": 16.2
       },
       {
         "time": "2011-05-02T14:15",
@@ -771,9 +817,9 @@ export const season2011IndyCarWeather = {
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 57,
-        "temperature2m": 18.3,
-        "windSpeed10m": 15.5
+        "cloudCover": 72,
+        "temperature2m": 18.4,
+        "windSpeed10m": 16.2
       },
       {
         "time": "2011-05-02T14:30",
@@ -783,7 +829,7 @@ export const season2011IndyCarWeather = {
           "condition": "Cloudy",
           "gripLevel": 0.97,
           "wet": false,
-          "changingSoon": false,
+          "changingSoon": true,
           "label": "Cloudy"
         },
         "precipitationMm": 0.0,
@@ -800,7 +846,7 @@ export const season2011IndyCarWeather = {
           "condition": "Cloudy",
           "gripLevel": 0.97,
           "wet": false,
-          "changingSoon": false,
+          "changingSoon": true,
           "label": "Cloudy"
         },
         "precipitationMm": 0.0,
@@ -811,37 +857,37 @@ export const season2011IndyCarWeather = {
       },
       {
         "time": "2011-05-02T15:00",
-        "weatherCode": 2,
+        "weatherCode": 3,
         "condition": "Cloudy",
         "state": {
           "condition": "Cloudy",
           "gripLevel": 0.97,
           "wet": false,
-          "changingSoon": true,
+          "changingSoon": false,
           "label": "Cloudy"
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 72,
+        "cloudCover": 89,
         "temperature2m": 18.4,
-        "windSpeed10m": 16.2
+        "windSpeed10m": 16.3
       },
       {
         "time": "2011-05-02T15:15",
-        "weatherCode": 2,
+        "weatherCode": 3,
         "condition": "Cloudy",
         "state": {
           "condition": "Cloudy",
           "gripLevel": 0.97,
           "wet": false,
-          "changingSoon": true,
+          "changingSoon": false,
           "label": "Cloudy"
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 72,
+        "cloudCover": 89,
         "temperature2m": 18.4,
-        "windSpeed10m": 16.2
+        "windSpeed10m": 16.3
       },
       {
         "time": "2011-05-02T15:30",
@@ -876,40 +922,6 @@ export const season2011IndyCarWeather = {
         "cloudCover": 89,
         "temperature2m": 18.4,
         "windSpeed10m": 16.3
-      },
-      {
-        "time": "2011-05-02T16:00",
-        "weatherCode": 3,
-        "condition": "Cloudy",
-        "state": {
-          "condition": "Cloudy",
-          "gripLevel": 0.97,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Cloudy"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 89,
-        "temperature2m": 18.4,
-        "windSpeed10m": 16.3
-      },
-      {
-        "time": "2011-05-02T16:15",
-        "weatherCode": 3,
-        "condition": "Cloudy",
-        "state": {
-          "condition": "Cloudy",
-          "gripLevel": 0.97,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Cloudy"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 89,
-        "temperature2m": 18.4,
-        "windSpeed10m": 16.3
       }
     ]
   },
@@ -922,19 +934,73 @@ export const season2011IndyCarWeather = {
       "year": 2011,
       "series": "IndyCar",
       "date": "2011-05-29",
-      "localStartTime": "13:30",
+      "localStartTime": "12:45",
       "timezone": "auto",
       "latitude": 39.8023,
       "longitude": -86.2672,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "High",
+      "startTimeMethod": "Known Indy 500 start-window estimate"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using IndyCar default 13:30"
+      "Workbook start time estimate (High): 12:45",
+      "Start time method: Known Indy 500 start-window estimate"
     ],
     "samples": [
+      {
+        "time": "2011-05-29T12:45",
+        "weatherCode": 51,
+        "condition": "LightRain",
+        "state": {
+          "condition": "LightRain",
+          "gripLevel": 0.72,
+          "wet": true,
+          "changingSoon": false,
+          "label": "Light Rain"
+        },
+        "precipitationMm": 0.4,
+        "rainMm": 0.4,
+        "cloudCover": 31,
+        "temperature2m": 19.8,
+        "windSpeed10m": 15.0
+      },
+      {
+        "time": "2011-05-29T13:00",
+        "weatherCode": 51,
+        "condition": "LightRain",
+        "state": {
+          "condition": "LightRain",
+          "gripLevel": 0.72,
+          "wet": true,
+          "changingSoon": false,
+          "label": "Light Rain"
+        },
+        "precipitationMm": 0.4,
+        "rainMm": 0.4,
+        "cloudCover": 31,
+        "temperature2m": 19.8,
+        "windSpeed10m": 15.0
+      },
+      {
+        "time": "2011-05-29T13:15",
+        "weatherCode": 51,
+        "condition": "LightRain",
+        "state": {
+          "condition": "LightRain",
+          "gripLevel": 0.72,
+          "wet": true,
+          "changingSoon": false,
+          "label": "Light Rain"
+        },
+        "precipitationMm": 0.4,
+        "rainMm": 0.4,
+        "cloudCover": 31,
+        "temperature2m": 19.8,
+        "windSpeed10m": 15.0
+      },
       {
         "time": "2011-05-29T13:30",
         "weatherCode": 51,
@@ -963,11 +1029,11 @@ export const season2011IndyCarWeather = {
           "changingSoon": false,
           "label": "Light Rain"
         },
-        "precipitationMm": 0.4,
-        "rainMm": 0.4,
-        "cloudCover": 31,
-        "temperature2m": 19.8,
-        "windSpeed10m": 15.0
+        "precipitationMm": 0.2,
+        "rainMm": 0.2,
+        "cloudCover": 41,
+        "temperature2m": 19.7,
+        "windSpeed10m": 16.6
       },
       {
         "time": "2011-05-29T14:00",
@@ -980,11 +1046,11 @@ export const season2011IndyCarWeather = {
           "changingSoon": false,
           "label": "Light Rain"
         },
-        "precipitationMm": 0.4,
-        "rainMm": 0.4,
-        "cloudCover": 31,
-        "temperature2m": 19.8,
-        "windSpeed10m": 15.0
+        "precipitationMm": 0.2,
+        "rainMm": 0.2,
+        "cloudCover": 41,
+        "temperature2m": 19.7,
+        "windSpeed10m": 16.6
       },
       {
         "time": "2011-05-29T14:15",
@@ -994,14 +1060,14 @@ export const season2011IndyCarWeather = {
           "condition": "LightRain",
           "gripLevel": 0.72,
           "wet": true,
-          "changingSoon": false,
+          "changingSoon": true,
           "label": "Light Rain"
         },
-        "precipitationMm": 0.4,
-        "rainMm": 0.4,
-        "cloudCover": 31,
-        "temperature2m": 19.8,
-        "windSpeed10m": 15.0
+        "precipitationMm": 0.2,
+        "rainMm": 0.2,
+        "cloudCover": 41,
+        "temperature2m": 19.7,
+        "windSpeed10m": 16.6
       },
       {
         "time": "2011-05-29T14:30",
@@ -1011,7 +1077,7 @@ export const season2011IndyCarWeather = {
           "condition": "LightRain",
           "gripLevel": 0.72,
           "wet": true,
-          "changingSoon": false,
+          "changingSoon": true,
           "label": "Light Rain"
         },
         "precipitationMm": 0.2,
@@ -1022,108 +1088,57 @@ export const season2011IndyCarWeather = {
       },
       {
         "time": "2011-05-29T14:45",
-        "weatherCode": 51,
-        "condition": "LightRain",
+        "weatherCode": 2,
+        "condition": "Cloudy",
         "state": {
-          "condition": "LightRain",
-          "gripLevel": 0.72,
-          "wet": true,
+          "condition": "Cloudy",
+          "gripLevel": 0.97,
+          "wet": false,
           "changingSoon": false,
-          "label": "Light Rain"
+          "label": "Cloudy"
         },
-        "precipitationMm": 0.2,
-        "rainMm": 0.2,
-        "cloudCover": 41,
-        "temperature2m": 19.7,
-        "windSpeed10m": 16.6
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 53,
+        "temperature2m": 19.5,
+        "windSpeed10m": 17.1
       },
       {
         "time": "2011-05-29T15:00",
-        "weatherCode": 51,
-        "condition": "LightRain",
+        "weatherCode": 2,
+        "condition": "Cloudy",
         "state": {
-          "condition": "LightRain",
-          "gripLevel": 0.72,
-          "wet": true,
-          "changingSoon": true,
-          "label": "Light Rain"
+          "condition": "Cloudy",
+          "gripLevel": 0.97,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Cloudy"
         },
-        "precipitationMm": 0.2,
-        "rainMm": 0.2,
-        "cloudCover": 41,
-        "temperature2m": 19.7,
-        "windSpeed10m": 16.6
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 53,
+        "temperature2m": 19.5,
+        "windSpeed10m": 17.1
       },
       {
         "time": "2011-05-29T15:15",
-        "weatherCode": 51,
-        "condition": "LightRain",
+        "weatherCode": 2,
+        "condition": "Cloudy",
         "state": {
-          "condition": "LightRain",
-          "gripLevel": 0.72,
-          "wet": true,
-          "changingSoon": true,
-          "label": "Light Rain"
+          "condition": "Cloudy",
+          "gripLevel": 0.97,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Cloudy"
         },
-        "precipitationMm": 0.2,
-        "rainMm": 0.2,
-        "cloudCover": 41,
-        "temperature2m": 19.7,
-        "windSpeed10m": 16.6
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 53,
+        "temperature2m": 19.5,
+        "windSpeed10m": 17.1
       },
       {
         "time": "2011-05-29T15:30",
-        "weatherCode": 2,
-        "condition": "Cloudy",
-        "state": {
-          "condition": "Cloudy",
-          "gripLevel": 0.97,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Cloudy"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 53,
-        "temperature2m": 19.5,
-        "windSpeed10m": 17.1
-      },
-      {
-        "time": "2011-05-29T15:45",
-        "weatherCode": 2,
-        "condition": "Cloudy",
-        "state": {
-          "condition": "Cloudy",
-          "gripLevel": 0.97,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Cloudy"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 53,
-        "temperature2m": 19.5,
-        "windSpeed10m": 17.1
-      },
-      {
-        "time": "2011-05-29T16:00",
-        "weatherCode": 2,
-        "condition": "Cloudy",
-        "state": {
-          "condition": "Cloudy",
-          "gripLevel": 0.97,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Cloudy"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 53,
-        "temperature2m": 19.5,
-        "windSpeed10m": 17.1
-      },
-      {
-        "time": "2011-05-29T16:15",
         "weatherCode": 2,
         "condition": "Cloudy",
         "state": {
@@ -1150,21 +1165,24 @@ export const season2011IndyCarWeather = {
       "year": 2011,
       "series": "IndyCar",
       "date": "2011-06-11",
-      "localStartTime": "13:30",
+      "localStartTime": "20:00",
       "timezone": "auto",
       "latitude": 32.7555,
       "longitude": -97.3308,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "High",
+      "startTimeMethod": "Known Texas night oval pattern"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using IndyCar default 13:30"
+      "Workbook start time estimate (High): 20:00",
+      "Start time method: Known Texas night oval pattern"
     ],
     "samples": [
       {
-        "time": "2011-06-11T13:30",
+        "time": "2011-06-11T20:00",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -1181,7 +1199,7 @@ export const season2011IndyCarWeather = {
         "windSpeed10m": 8.7
       },
       {
-        "time": "2011-06-11T13:45",
+        "time": "2011-06-11T20:15",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -1198,7 +1216,7 @@ export const season2011IndyCarWeather = {
         "windSpeed10m": 8.7
       },
       {
-        "time": "2011-06-11T14:00",
+        "time": "2011-06-11T20:30",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -1215,7 +1233,7 @@ export const season2011IndyCarWeather = {
         "windSpeed10m": 8.7
       },
       {
-        "time": "2011-06-11T14:15",
+        "time": "2011-06-11T20:45",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -1232,7 +1250,7 @@ export const season2011IndyCarWeather = {
         "windSpeed10m": 8.7
       },
       {
-        "time": "2011-06-11T14:30",
+        "time": "2011-06-11T21:00",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -1249,7 +1267,7 @@ export const season2011IndyCarWeather = {
         "windSpeed10m": 9.4
       },
       {
-        "time": "2011-06-11T14:45",
+        "time": "2011-06-11T21:15",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -1266,7 +1284,7 @@ export const season2011IndyCarWeather = {
         "windSpeed10m": 9.4
       },
       {
-        "time": "2011-06-11T15:00",
+        "time": "2011-06-11T21:30",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -1283,7 +1301,7 @@ export const season2011IndyCarWeather = {
         "windSpeed10m": 9.4
       },
       {
-        "time": "2011-06-11T15:15",
+        "time": "2011-06-11T21:45",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -1300,7 +1318,7 @@ export const season2011IndyCarWeather = {
         "windSpeed10m": 9.4
       },
       {
-        "time": "2011-06-11T15:30",
+        "time": "2011-06-11T22:00",
         "weatherCode": 1,
         "condition": "Cloudy",
         "state": {
@@ -1317,7 +1335,7 @@ export const season2011IndyCarWeather = {
         "windSpeed10m": 12.1
       },
       {
-        "time": "2011-06-11T15:45",
+        "time": "2011-06-11T22:15",
         "weatherCode": 1,
         "condition": "Cloudy",
         "state": {
@@ -1334,7 +1352,7 @@ export const season2011IndyCarWeather = {
         "windSpeed10m": 12.1
       },
       {
-        "time": "2011-06-11T16:00",
+        "time": "2011-06-11T22:30",
         "weatherCode": 1,
         "condition": "Cloudy",
         "state": {
@@ -1351,7 +1369,7 @@ export const season2011IndyCarWeather = {
         "windSpeed10m": 12.1
       },
       {
-        "time": "2011-06-11T16:15",
+        "time": "2011-06-11T22:45",
         "weatherCode": 1,
         "condition": "Cloudy",
         "state": {
@@ -1378,21 +1396,24 @@ export const season2011IndyCarWeather = {
       "year": 2011,
       "series": "IndyCar",
       "date": "2011-06-11",
-      "localStartTime": "13:30",
+      "localStartTime": "20:00",
       "timezone": "auto",
       "latitude": 32.7555,
       "longitude": -97.3308,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "High",
+      "startTimeMethod": "Known Texas night oval pattern"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using IndyCar default 13:30"
+      "Workbook start time estimate (High): 20:00",
+      "Start time method: Known Texas night oval pattern"
     ],
     "samples": [
       {
-        "time": "2011-06-11T13:30",
+        "time": "2011-06-11T20:00",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -1409,7 +1430,7 @@ export const season2011IndyCarWeather = {
         "windSpeed10m": 8.7
       },
       {
-        "time": "2011-06-11T13:45",
+        "time": "2011-06-11T20:15",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -1426,7 +1447,7 @@ export const season2011IndyCarWeather = {
         "windSpeed10m": 8.7
       },
       {
-        "time": "2011-06-11T14:00",
+        "time": "2011-06-11T20:30",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -1443,7 +1464,7 @@ export const season2011IndyCarWeather = {
         "windSpeed10m": 8.7
       },
       {
-        "time": "2011-06-11T14:15",
+        "time": "2011-06-11T20:45",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -1460,7 +1481,7 @@ export const season2011IndyCarWeather = {
         "windSpeed10m": 8.7
       },
       {
-        "time": "2011-06-11T14:30",
+        "time": "2011-06-11T21:00",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -1477,7 +1498,7 @@ export const season2011IndyCarWeather = {
         "windSpeed10m": 9.4
       },
       {
-        "time": "2011-06-11T14:45",
+        "time": "2011-06-11T21:15",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -1494,7 +1515,7 @@ export const season2011IndyCarWeather = {
         "windSpeed10m": 9.4
       },
       {
-        "time": "2011-06-11T15:00",
+        "time": "2011-06-11T21:30",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -1511,7 +1532,7 @@ export const season2011IndyCarWeather = {
         "windSpeed10m": 9.4
       },
       {
-        "time": "2011-06-11T15:15",
+        "time": "2011-06-11T21:45",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -1528,7 +1549,7 @@ export const season2011IndyCarWeather = {
         "windSpeed10m": 9.4
       },
       {
-        "time": "2011-06-11T15:30",
+        "time": "2011-06-11T22:00",
         "weatherCode": 1,
         "condition": "Cloudy",
         "state": {
@@ -1545,7 +1566,7 @@ export const season2011IndyCarWeather = {
         "windSpeed10m": 12.1
       },
       {
-        "time": "2011-06-11T15:45",
+        "time": "2011-06-11T22:15",
         "weatherCode": 1,
         "condition": "Cloudy",
         "state": {
@@ -1562,7 +1583,7 @@ export const season2011IndyCarWeather = {
         "windSpeed10m": 12.1
       },
       {
-        "time": "2011-06-11T16:00",
+        "time": "2011-06-11T22:30",
         "weatherCode": 1,
         "condition": "Cloudy",
         "state": {
@@ -1579,7 +1600,7 @@ export const season2011IndyCarWeather = {
         "windSpeed10m": 12.1
       },
       {
-        "time": "2011-06-11T16:15",
+        "time": "2011-06-11T22:45",
         "weatherCode": 1,
         "condition": "Cloudy",
         "state": {
@@ -1606,19 +1627,56 @@ export const season2011IndyCarWeather = {
       "year": 2011,
       "series": "IndyCar",
       "date": "2011-06-19",
-      "localStartTime": "13:30",
+      "localStartTime": "13:00",
       "timezone": "auto",
       "latitude": 43.0167,
       "longitude": -88.007,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "Medium",
+      "startTimeMethod": "Oval daytime estimate"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using IndyCar default 13:30"
+      "Workbook start time estimate (Medium): 13:00",
+      "Start time method: Oval daytime estimate"
     ],
     "samples": [
+      {
+        "time": "2011-06-19T13:00",
+        "weatherCode": 2,
+        "condition": "Cloudy",
+        "state": {
+          "condition": "Cloudy",
+          "gripLevel": 0.97,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Cloudy"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 64,
+        "temperature2m": 17.9,
+        "windSpeed10m": 13.9
+      },
+      {
+        "time": "2011-06-19T13:15",
+        "weatherCode": 2,
+        "condition": "Cloudy",
+        "state": {
+          "condition": "Cloudy",
+          "gripLevel": 0.97,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Cloudy"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 64,
+        "temperature2m": 17.9,
+        "windSpeed10m": 13.9
+      },
       {
         "time": "2011-06-19T13:30",
         "weatherCode": 2,
@@ -1666,9 +1724,9 @@ export const season2011IndyCarWeather = {
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 64,
-        "temperature2m": 17.9,
-        "windSpeed10m": 13.9
+        "cloudCover": 68,
+        "temperature2m": 17.8,
+        "windSpeed10m": 12.2
       },
       {
         "time": "2011-06-19T14:15",
@@ -1683,9 +1741,9 @@ export const season2011IndyCarWeather = {
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 64,
-        "temperature2m": 17.9,
-        "windSpeed10m": 13.9
+        "cloudCover": 68,
+        "temperature2m": 17.8,
+        "windSpeed10m": 12.2
       },
       {
         "time": "2011-06-19T14:30",
@@ -1734,9 +1792,9 @@ export const season2011IndyCarWeather = {
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 68,
-        "temperature2m": 17.8,
-        "windSpeed10m": 12.2
+        "cloudCover": 67,
+        "temperature2m": 17.9,
+        "windSpeed10m": 11.5
       },
       {
         "time": "2011-06-19T15:15",
@@ -1751,46 +1809,12 @@ export const season2011IndyCarWeather = {
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 68,
-        "temperature2m": 17.8,
-        "windSpeed10m": 12.2
+        "cloudCover": 67,
+        "temperature2m": 17.9,
+        "windSpeed10m": 11.5
       },
       {
         "time": "2011-06-19T15:30",
-        "weatherCode": 2,
-        "condition": "Cloudy",
-        "state": {
-          "condition": "Cloudy",
-          "gripLevel": 0.97,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Cloudy"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 67,
-        "temperature2m": 17.9,
-        "windSpeed10m": 11.5
-      },
-      {
-        "time": "2011-06-19T15:45",
-        "weatherCode": 2,
-        "condition": "Cloudy",
-        "state": {
-          "condition": "Cloudy",
-          "gripLevel": 0.97,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Cloudy"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 67,
-        "temperature2m": 17.9,
-        "windSpeed10m": 11.5
-      },
-      {
-        "time": "2011-06-19T16:00",
         "weatherCode": 2,
         "condition": "Cloudy",
         "state": {
@@ -1807,7 +1831,7 @@ export const season2011IndyCarWeather = {
         "windSpeed10m": 11.5
       },
       {
-        "time": "2011-06-19T16:15",
+        "time": "2011-06-19T15:45",
         "weatherCode": 2,
         "condition": "Cloudy",
         "state": {
@@ -1834,21 +1858,24 @@ export const season2011IndyCarWeather = {
       "year": 2011,
       "series": "IndyCar",
       "date": "2011-06-25",
-      "localStartTime": "13:30",
+      "localStartTime": "20:00",
       "timezone": "auto",
       "latitude": 41.6997,
       "longitude": -93.0479,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "Medium",
+      "startTimeMethod": "Iowa night-race estimate"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using IndyCar default 13:30"
+      "Workbook start time estimate (Medium): 20:00",
+      "Start time method: Iowa night-race estimate"
     ],
     "samples": [
       {
-        "time": "2011-06-25T13:30",
+        "time": "2011-06-25T20:00",
         "weatherCode": 2,
         "condition": "Cloudy",
         "state": {
@@ -1865,7 +1892,7 @@ export const season2011IndyCarWeather = {
         "windSpeed10m": 7.1
       },
       {
-        "time": "2011-06-25T13:45",
+        "time": "2011-06-25T20:15",
         "weatherCode": 2,
         "condition": "Cloudy",
         "state": {
@@ -1882,24 +1909,7 @@ export const season2011IndyCarWeather = {
         "windSpeed10m": 7.1
       },
       {
-        "time": "2011-06-25T14:00",
-        "weatherCode": 2,
-        "condition": "Cloudy",
-        "state": {
-          "condition": "Cloudy",
-          "gripLevel": 0.97,
-          "wet": false,
-          "changingSoon": true,
-          "label": "Cloudy"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 77,
-        "temperature2m": 16.2,
-        "windSpeed10m": 7.1
-      },
-      {
-        "time": "2011-06-25T14:15",
+        "time": "2011-06-25T20:30",
         "weatherCode": 2,
         "condition": "Cloudy",
         "state": {
@@ -1916,7 +1926,24 @@ export const season2011IndyCarWeather = {
         "windSpeed10m": 7.1
       },
       {
-        "time": "2011-06-25T14:30",
+        "time": "2011-06-25T20:45",
+        "weatherCode": 2,
+        "condition": "Cloudy",
+        "state": {
+          "condition": "Cloudy",
+          "gripLevel": 0.97,
+          "wet": false,
+          "changingSoon": true,
+          "label": "Cloudy"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 77,
+        "temperature2m": 16.2,
+        "windSpeed10m": 7.1
+      },
+      {
+        "time": "2011-06-25T21:00",
         "weatherCode": 3,
         "condition": "Cloudy",
         "state": {
@@ -1933,7 +1960,7 @@ export const season2011IndyCarWeather = {
         "windSpeed10m": 7.4
       },
       {
-        "time": "2011-06-25T14:45",
+        "time": "2011-06-25T21:15",
         "weatherCode": 3,
         "condition": "Cloudy",
         "state": {
@@ -1950,7 +1977,7 @@ export const season2011IndyCarWeather = {
         "windSpeed10m": 7.4
       },
       {
-        "time": "2011-06-25T15:00",
+        "time": "2011-06-25T21:30",
         "weatherCode": 3,
         "condition": "Cloudy",
         "state": {
@@ -1967,7 +1994,7 @@ export const season2011IndyCarWeather = {
         "windSpeed10m": 7.4
       },
       {
-        "time": "2011-06-25T15:15",
+        "time": "2011-06-25T21:45",
         "weatherCode": 3,
         "condition": "Cloudy",
         "state": {
@@ -1984,7 +2011,7 @@ export const season2011IndyCarWeather = {
         "windSpeed10m": 7.4
       },
       {
-        "time": "2011-06-25T15:30",
+        "time": "2011-06-25T22:00",
         "weatherCode": 3,
         "condition": "Cloudy",
         "state": {
@@ -2001,7 +2028,7 @@ export const season2011IndyCarWeather = {
         "windSpeed10m": 8.3
       },
       {
-        "time": "2011-06-25T15:45",
+        "time": "2011-06-25T22:15",
         "weatherCode": 3,
         "condition": "Cloudy",
         "state": {
@@ -2018,7 +2045,7 @@ export const season2011IndyCarWeather = {
         "windSpeed10m": 8.3
       },
       {
-        "time": "2011-06-25T16:00",
+        "time": "2011-06-25T22:30",
         "weatherCode": 3,
         "condition": "Cloudy",
         "state": {
@@ -2035,7 +2062,7 @@ export const season2011IndyCarWeather = {
         "windSpeed10m": 8.3
       },
       {
-        "time": "2011-06-25T16:15",
+        "time": "2011-06-25T22:45",
         "weatherCode": 3,
         "condition": "Cloudy",
         "state": {
@@ -2062,19 +2089,56 @@ export const season2011IndyCarWeather = {
       "year": 2011,
       "series": "IndyCar",
       "date": "2011-07-10",
-      "localStartTime": "13:30",
+      "localStartTime": "13:00",
       "timezone": "auto",
       "latitude": 43.6532,
       "longitude": -79.3832,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "Medium",
+      "startTimeMethod": "Street race afternoon estimate"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using IndyCar default 13:30"
+      "Workbook start time estimate (Medium): 13:00",
+      "Start time method: Street race afternoon estimate"
     ],
     "samples": [
+      {
+        "time": "2011-07-10T13:00",
+        "weatherCode": 2,
+        "condition": "Cloudy",
+        "state": {
+          "condition": "Cloudy",
+          "gripLevel": 0.97,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Cloudy"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 71,
+        "temperature2m": 20.8,
+        "windSpeed10m": 5.9
+      },
+      {
+        "time": "2011-07-10T13:15",
+        "weatherCode": 2,
+        "condition": "Cloudy",
+        "state": {
+          "condition": "Cloudy",
+          "gripLevel": 0.97,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Cloudy"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 71,
+        "temperature2m": 20.8,
+        "windSpeed10m": 5.9
+      },
       {
         "time": "2011-07-10T13:30",
         "weatherCode": 2,
@@ -2122,9 +2186,9 @@ export const season2011IndyCarWeather = {
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 71,
-        "temperature2m": 20.8,
-        "windSpeed10m": 5.9
+        "cloudCover": 62,
+        "temperature2m": 20.2,
+        "windSpeed10m": 6.2
       },
       {
         "time": "2011-07-10T14:15",
@@ -2139,9 +2203,9 @@ export const season2011IndyCarWeather = {
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 71,
-        "temperature2m": 20.8,
-        "windSpeed10m": 5.9
+        "cloudCover": 62,
+        "temperature2m": 20.2,
+        "windSpeed10m": 6.2
       },
       {
         "time": "2011-07-10T14:30",
@@ -2151,7 +2215,7 @@ export const season2011IndyCarWeather = {
           "condition": "Cloudy",
           "gripLevel": 0.97,
           "wet": false,
-          "changingSoon": false,
+          "changingSoon": true,
           "label": "Cloudy"
         },
         "precipitationMm": 0.0,
@@ -2168,7 +2232,7 @@ export const season2011IndyCarWeather = {
           "condition": "Cloudy",
           "gripLevel": 0.97,
           "wet": false,
-          "changingSoon": false,
+          "changingSoon": true,
           "label": "Cloudy"
         },
         "precipitationMm": 0.0,
@@ -2179,37 +2243,37 @@ export const season2011IndyCarWeather = {
       },
       {
         "time": "2011-07-10T15:00",
-        "weatherCode": 2,
+        "weatherCode": 1,
         "condition": "Cloudy",
         "state": {
           "condition": "Cloudy",
           "gripLevel": 0.97,
           "wet": false,
-          "changingSoon": true,
+          "changingSoon": false,
           "label": "Cloudy"
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 62,
-        "temperature2m": 20.2,
-        "windSpeed10m": 6.2
+        "cloudCover": 46,
+        "temperature2m": 19.7,
+        "windSpeed10m": 8.0
       },
       {
         "time": "2011-07-10T15:15",
-        "weatherCode": 2,
+        "weatherCode": 1,
         "condition": "Cloudy",
         "state": {
           "condition": "Cloudy",
           "gripLevel": 0.97,
           "wet": false,
-          "changingSoon": true,
+          "changingSoon": false,
           "label": "Cloudy"
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 62,
-        "temperature2m": 20.2,
-        "windSpeed10m": 6.2
+        "cloudCover": 46,
+        "temperature2m": 19.7,
+        "windSpeed10m": 8.0
       },
       {
         "time": "2011-07-10T15:30",
@@ -2244,40 +2308,6 @@ export const season2011IndyCarWeather = {
         "cloudCover": 46,
         "temperature2m": 19.7,
         "windSpeed10m": 8.0
-      },
-      {
-        "time": "2011-07-10T16:00",
-        "weatherCode": 1,
-        "condition": "Cloudy",
-        "state": {
-          "condition": "Cloudy",
-          "gripLevel": 0.97,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Cloudy"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 46,
-        "temperature2m": 19.7,
-        "windSpeed10m": 8.0
-      },
-      {
-        "time": "2011-07-10T16:15",
-        "weatherCode": 1,
-        "condition": "Cloudy",
-        "state": {
-          "condition": "Cloudy",
-          "gripLevel": 0.97,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Cloudy"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 46,
-        "temperature2m": 19.7,
-        "windSpeed10m": 8.0
       }
     ]
   },
@@ -2290,19 +2320,56 @@ export const season2011IndyCarWeather = {
       "year": 2011,
       "series": "IndyCar",
       "date": "2011-07-24",
-      "localStartTime": "13:30",
+      "localStartTime": "13:00",
       "timezone": "auto",
       "latitude": 53.5461,
       "longitude": -113.4938,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "Low",
+      "startTimeMethod": "Series/track-type heuristic"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using IndyCar default 13:30"
+      "Workbook start time estimate (Low): 13:00",
+      "Start time method: Series/track-type heuristic"
     ],
     "samples": [
+      {
+        "time": "2011-07-24T13:00",
+        "weatherCode": 0,
+        "condition": "Dry",
+        "state": {
+          "condition": "Dry",
+          "gripLevel": 1,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Dry"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 14,
+        "temperature2m": 12.1,
+        "windSpeed10m": 13.8
+      },
+      {
+        "time": "2011-07-24T13:15",
+        "weatherCode": 0,
+        "condition": "Dry",
+        "state": {
+          "condition": "Dry",
+          "gripLevel": 1,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Dry"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 14,
+        "temperature2m": 12.1,
+        "windSpeed10m": 13.8
+      },
       {
         "time": "2011-07-24T13:30",
         "weatherCode": 0,
@@ -2350,9 +2417,9 @@ export const season2011IndyCarWeather = {
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 14,
+        "cloudCover": 13,
         "temperature2m": 12.1,
-        "windSpeed10m": 13.8
+        "windSpeed10m": 12.7
       },
       {
         "time": "2011-07-24T14:15",
@@ -2367,9 +2434,9 @@ export const season2011IndyCarWeather = {
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 14,
+        "cloudCover": 13,
         "temperature2m": 12.1,
-        "windSpeed10m": 13.8
+        "windSpeed10m": 12.7
       },
       {
         "time": "2011-07-24T14:30",
@@ -2379,7 +2446,7 @@ export const season2011IndyCarWeather = {
           "condition": "Dry",
           "gripLevel": 1,
           "wet": false,
-          "changingSoon": false,
+          "changingSoon": true,
           "label": "Dry"
         },
         "precipitationMm": 0.0,
@@ -2396,7 +2463,7 @@ export const season2011IndyCarWeather = {
           "condition": "Dry",
           "gripLevel": 1,
           "wet": false,
-          "changingSoon": false,
+          "changingSoon": true,
           "label": "Dry"
         },
         "precipitationMm": 0.0,
@@ -2407,37 +2474,37 @@ export const season2011IndyCarWeather = {
       },
       {
         "time": "2011-07-24T15:00",
-        "weatherCode": 0,
-        "condition": "Dry",
+        "weatherCode": 2,
+        "condition": "Cloudy",
         "state": {
-          "condition": "Dry",
-          "gripLevel": 1,
+          "condition": "Cloudy",
+          "gripLevel": 0.97,
           "wet": false,
-          "changingSoon": true,
-          "label": "Dry"
+          "changingSoon": false,
+          "label": "Cloudy"
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 13,
-        "temperature2m": 12.1,
-        "windSpeed10m": 12.7
+        "cloudCover": 55,
+        "temperature2m": 11.8,
+        "windSpeed10m": 11.8
       },
       {
         "time": "2011-07-24T15:15",
-        "weatherCode": 0,
-        "condition": "Dry",
+        "weatherCode": 2,
+        "condition": "Cloudy",
         "state": {
-          "condition": "Dry",
-          "gripLevel": 1,
+          "condition": "Cloudy",
+          "gripLevel": 0.97,
           "wet": false,
-          "changingSoon": true,
-          "label": "Dry"
+          "changingSoon": false,
+          "label": "Cloudy"
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 13,
-        "temperature2m": 12.1,
-        "windSpeed10m": 12.7
+        "cloudCover": 55,
+        "temperature2m": 11.8,
+        "windSpeed10m": 11.8
       },
       {
         "time": "2011-07-24T15:30",
@@ -2447,7 +2514,7 @@ export const season2011IndyCarWeather = {
           "condition": "Cloudy",
           "gripLevel": 0.97,
           "wet": false,
-          "changingSoon": false,
+          "changingSoon": true,
           "label": "Cloudy"
         },
         "precipitationMm": 0.0,
@@ -2458,40 +2525,6 @@ export const season2011IndyCarWeather = {
       },
       {
         "time": "2011-07-24T15:45",
-        "weatherCode": 2,
-        "condition": "Cloudy",
-        "state": {
-          "condition": "Cloudy",
-          "gripLevel": 0.97,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Cloudy"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 55,
-        "temperature2m": 11.8,
-        "windSpeed10m": 11.8
-      },
-      {
-        "time": "2011-07-24T16:00",
-        "weatherCode": 2,
-        "condition": "Cloudy",
-        "state": {
-          "condition": "Cloudy",
-          "gripLevel": 0.97,
-          "wet": false,
-          "changingSoon": true,
-          "label": "Cloudy"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 55,
-        "temperature2m": 11.8,
-        "windSpeed10m": 11.8
-      },
-      {
-        "time": "2011-07-24T16:15",
         "weatherCode": 2,
         "condition": "Cloudy",
         "state": {
@@ -2523,12 +2556,15 @@ export const season2011IndyCarWeather = {
       "latitude": 40.6787,
       "longitude": -82.5824,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "Medium",
+      "startTimeMethod": "Road-course afternoon estimate"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using IndyCar default 13:30"
+      "Workbook start time estimate (Medium): 13:30",
+      "Start time method: Road-course afternoon estimate"
     ],
     "samples": [
       {
@@ -2746,19 +2782,56 @@ export const season2011IndyCarWeather = {
       "year": 2011,
       "series": "IndyCar",
       "date": "2011-08-14",
-      "localStartTime": "13:30",
+      "localStartTime": "13:00",
       "timezone": "auto",
       "latitude": 43.2856,
       "longitude": -71.4676,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "Low",
+      "startTimeMethod": "Oval daytime heuristic"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using IndyCar default 13:30"
+      "Workbook start time estimate (Low): 13:00",
+      "Start time method: Oval daytime heuristic"
     ],
     "samples": [
+      {
+        "time": "2011-08-14T13:00",
+        "weatherCode": 0,
+        "condition": "Dry",
+        "state": {
+          "condition": "Dry",
+          "gripLevel": 1,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Dry"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 18,
+        "temperature2m": 19.3,
+        "windSpeed10m": 7.2
+      },
+      {
+        "time": "2011-08-14T13:15",
+        "weatherCode": 0,
+        "condition": "Dry",
+        "state": {
+          "condition": "Dry",
+          "gripLevel": 1,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Dry"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 18,
+        "temperature2m": 19.3,
+        "windSpeed10m": 7.2
+      },
       {
         "time": "2011-08-14T13:30",
         "weatherCode": 0,
@@ -2807,8 +2880,8 @@ export const season2011IndyCarWeather = {
         "precipitationMm": 0.0,
         "rainMm": 0.0,
         "cloudCover": 18,
-        "temperature2m": 19.3,
-        "windSpeed10m": 7.2
+        "temperature2m": 18.9,
+        "windSpeed10m": 6.6
       },
       {
         "time": "2011-08-14T14:15",
@@ -2824,8 +2897,8 @@ export const season2011IndyCarWeather = {
         "precipitationMm": 0.0,
         "rainMm": 0.0,
         "cloudCover": 18,
-        "temperature2m": 19.3,
-        "windSpeed10m": 7.2
+        "temperature2m": 18.9,
+        "windSpeed10m": 6.6
       },
       {
         "time": "2011-08-14T14:30",
@@ -2835,7 +2908,7 @@ export const season2011IndyCarWeather = {
           "condition": "Dry",
           "gripLevel": 1,
           "wet": false,
-          "changingSoon": false,
+          "changingSoon": true,
           "label": "Dry"
         },
         "precipitationMm": 0.0,
@@ -2852,7 +2925,7 @@ export const season2011IndyCarWeather = {
           "condition": "Dry",
           "gripLevel": 1,
           "wet": false,
-          "changingSoon": false,
+          "changingSoon": true,
           "label": "Dry"
         },
         "precipitationMm": 0.0,
@@ -2863,37 +2936,37 @@ export const season2011IndyCarWeather = {
       },
       {
         "time": "2011-08-14T15:00",
-        "weatherCode": 0,
-        "condition": "Dry",
+        "weatherCode": 1,
+        "condition": "Cloudy",
         "state": {
-          "condition": "Dry",
-          "gripLevel": 1,
+          "condition": "Cloudy",
+          "gripLevel": 0.97,
           "wet": false,
-          "changingSoon": true,
-          "label": "Dry"
+          "changingSoon": false,
+          "label": "Cloudy"
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 18,
-        "temperature2m": 18.9,
-        "windSpeed10m": 6.6
+        "cloudCover": 42,
+        "temperature2m": 18.6,
+        "windSpeed10m": 7.9
       },
       {
         "time": "2011-08-14T15:15",
-        "weatherCode": 0,
-        "condition": "Dry",
+        "weatherCode": 1,
+        "condition": "Cloudy",
         "state": {
-          "condition": "Dry",
-          "gripLevel": 1,
+          "condition": "Cloudy",
+          "gripLevel": 0.97,
           "wet": false,
-          "changingSoon": true,
-          "label": "Dry"
+          "changingSoon": false,
+          "label": "Cloudy"
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 18,
-        "temperature2m": 18.9,
-        "windSpeed10m": 6.6
+        "cloudCover": 42,
+        "temperature2m": 18.6,
+        "windSpeed10m": 7.9
       },
       {
         "time": "2011-08-14T15:30",
@@ -2903,7 +2976,7 @@ export const season2011IndyCarWeather = {
           "condition": "Cloudy",
           "gripLevel": 0.97,
           "wet": false,
-          "changingSoon": false,
+          "changingSoon": true,
           "label": "Cloudy"
         },
         "precipitationMm": 0.0,
@@ -2914,40 +2987,6 @@ export const season2011IndyCarWeather = {
       },
       {
         "time": "2011-08-14T15:45",
-        "weatherCode": 1,
-        "condition": "Cloudy",
-        "state": {
-          "condition": "Cloudy",
-          "gripLevel": 0.97,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Cloudy"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 42,
-        "temperature2m": 18.6,
-        "windSpeed10m": 7.9
-      },
-      {
-        "time": "2011-08-14T16:00",
-        "weatherCode": 1,
-        "condition": "Cloudy",
-        "state": {
-          "condition": "Cloudy",
-          "gripLevel": 0.97,
-          "wet": false,
-          "changingSoon": true,
-          "label": "Cloudy"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 42,
-        "temperature2m": 18.6,
-        "windSpeed10m": 7.9
-      },
-      {
-        "time": "2011-08-14T16:15",
         "weatherCode": 1,
         "condition": "Cloudy",
         "state": {
@@ -2974,21 +3013,24 @@ export const season2011IndyCarWeather = {
       "year": 2011,
       "series": "IndyCar",
       "date": "2011-08-28",
-      "localStartTime": "13:30",
+      "localStartTime": "12:30",
       "timezone": "auto",
       "latitude": 38.2919,
       "longitude": -122.458,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "Medium",
+      "startTimeMethod": "West Coast road/street TV-window estimate"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using IndyCar default 13:30"
+      "Workbook start time estimate (Medium): 12:30",
+      "Start time method: West Coast road/street TV-window estimate"
     ],
     "samples": [
       {
-        "time": "2011-08-28T13:30",
+        "time": "2011-08-28T12:30",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -3003,57 +3045,125 @@ export const season2011IndyCarWeather = {
         "cloudCover": 15,
         "temperature2m": 16.1,
         "windSpeed10m": 4.9
+      },
+      {
+        "time": "2011-08-28T12:45",
+        "weatherCode": 0,
+        "condition": "Dry",
+        "state": {
+          "condition": "Dry",
+          "gripLevel": 1,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Dry"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 15,
+        "temperature2m": 16.1,
+        "windSpeed10m": 4.9
+      },
+      {
+        "time": "2011-08-28T13:00",
+        "weatherCode": 0,
+        "condition": "Dry",
+        "state": {
+          "condition": "Dry",
+          "gripLevel": 1,
+          "wet": false,
+          "changingSoon": true,
+          "label": "Dry"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 15,
+        "temperature2m": 16.1,
+        "windSpeed10m": 4.9
+      },
+      {
+        "time": "2011-08-28T13:15",
+        "weatherCode": 0,
+        "condition": "Dry",
+        "state": {
+          "condition": "Dry",
+          "gripLevel": 1,
+          "wet": false,
+          "changingSoon": true,
+          "label": "Dry"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 15,
+        "temperature2m": 16.1,
+        "windSpeed10m": 4.9
+      },
+      {
+        "time": "2011-08-28T13:30",
+        "weatherCode": 1,
+        "condition": "Cloudy",
+        "state": {
+          "condition": "Cloudy",
+          "gripLevel": 0.97,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Cloudy"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 40,
+        "temperature2m": 15.3,
+        "windSpeed10m": 4.8
       },
       {
         "time": "2011-08-28T13:45",
-        "weatherCode": 0,
-        "condition": "Dry",
+        "weatherCode": 1,
+        "condition": "Cloudy",
         "state": {
-          "condition": "Dry",
-          "gripLevel": 1,
+          "condition": "Cloudy",
+          "gripLevel": 0.97,
           "wet": false,
           "changingSoon": false,
-          "label": "Dry"
+          "label": "Cloudy"
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 15,
-        "temperature2m": 16.1,
-        "windSpeed10m": 4.9
+        "cloudCover": 40,
+        "temperature2m": 15.3,
+        "windSpeed10m": 4.8
       },
       {
         "time": "2011-08-28T14:00",
-        "weatherCode": 0,
-        "condition": "Dry",
+        "weatherCode": 1,
+        "condition": "Cloudy",
         "state": {
-          "condition": "Dry",
-          "gripLevel": 1,
+          "condition": "Cloudy",
+          "gripLevel": 0.97,
           "wet": false,
-          "changingSoon": true,
-          "label": "Dry"
+          "changingSoon": false,
+          "label": "Cloudy"
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 15,
-        "temperature2m": 16.1,
-        "windSpeed10m": 4.9
+        "cloudCover": 40,
+        "temperature2m": 15.3,
+        "windSpeed10m": 4.8
       },
       {
         "time": "2011-08-28T14:15",
-        "weatherCode": 0,
-        "condition": "Dry",
+        "weatherCode": 1,
+        "condition": "Cloudy",
         "state": {
-          "condition": "Dry",
-          "gripLevel": 1,
+          "condition": "Cloudy",
+          "gripLevel": 0.97,
           "wet": false,
-          "changingSoon": true,
-          "label": "Dry"
+          "changingSoon": false,
+          "label": "Cloudy"
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 15,
-        "temperature2m": 16.1,
-        "windSpeed10m": 4.9
+        "cloudCover": 40,
+        "temperature2m": 15.3,
+        "windSpeed10m": 4.8
       },
       {
         "time": "2011-08-28T14:30",
@@ -3068,9 +3178,9 @@ export const season2011IndyCarWeather = {
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 40,
-        "temperature2m": 15.3,
-        "windSpeed10m": 4.8
+        "cloudCover": 48,
+        "temperature2m": 14.4,
+        "windSpeed10m": 4.6
       },
       {
         "time": "2011-08-28T14:45",
@@ -3085,80 +3195,12 @@ export const season2011IndyCarWeather = {
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 40,
-        "temperature2m": 15.3,
-        "windSpeed10m": 4.8
+        "cloudCover": 48,
+        "temperature2m": 14.4,
+        "windSpeed10m": 4.6
       },
       {
         "time": "2011-08-28T15:00",
-        "weatherCode": 1,
-        "condition": "Cloudy",
-        "state": {
-          "condition": "Cloudy",
-          "gripLevel": 0.97,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Cloudy"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 40,
-        "temperature2m": 15.3,
-        "windSpeed10m": 4.8
-      },
-      {
-        "time": "2011-08-28T15:15",
-        "weatherCode": 1,
-        "condition": "Cloudy",
-        "state": {
-          "condition": "Cloudy",
-          "gripLevel": 0.97,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Cloudy"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 40,
-        "temperature2m": 15.3,
-        "windSpeed10m": 4.8
-      },
-      {
-        "time": "2011-08-28T15:30",
-        "weatherCode": 1,
-        "condition": "Cloudy",
-        "state": {
-          "condition": "Cloudy",
-          "gripLevel": 0.97,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Cloudy"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 48,
-        "temperature2m": 14.4,
-        "windSpeed10m": 4.6
-      },
-      {
-        "time": "2011-08-28T15:45",
-        "weatherCode": 1,
-        "condition": "Cloudy",
-        "state": {
-          "condition": "Cloudy",
-          "gripLevel": 0.97,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Cloudy"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 48,
-        "temperature2m": 14.4,
-        "windSpeed10m": 4.6
-      },
-      {
-        "time": "2011-08-28T16:00",
         "weatherCode": 1,
         "condition": "Cloudy",
         "state": {
@@ -3175,7 +3217,7 @@ export const season2011IndyCarWeather = {
         "windSpeed10m": 4.6
       },
       {
-        "time": "2011-08-28T16:15",
+        "time": "2011-08-28T15:15",
         "weatherCode": 1,
         "condition": "Cloudy",
         "state": {
@@ -3202,19 +3244,56 @@ export const season2011IndyCarWeather = {
       "year": 2011,
       "series": "IndyCar",
       "date": "2011-09-04",
-      "localStartTime": "13:30",
+      "localStartTime": "13:00",
       "timezone": "auto",
       "latitude": 39.2904,
       "longitude": -76.6122,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "Low",
+      "startTimeMethod": "Series/track-type heuristic"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using IndyCar default 13:30"
+      "Workbook start time estimate (Low): 13:00",
+      "Start time method: Series/track-type heuristic"
     ],
     "samples": [
+      {
+        "time": "2011-09-04T13:00",
+        "weatherCode": 3,
+        "condition": "Cloudy",
+        "state": {
+          "condition": "Cloudy",
+          "gripLevel": 0.97,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Cloudy"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 84,
+        "temperature2m": 22.1,
+        "windSpeed10m": 11.7
+      },
+      {
+        "time": "2011-09-04T13:15",
+        "weatherCode": 3,
+        "condition": "Cloudy",
+        "state": {
+          "condition": "Cloudy",
+          "gripLevel": 0.97,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Cloudy"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 84,
+        "temperature2m": 22.1,
+        "windSpeed10m": 11.7
+      },
       {
         "time": "2011-09-04T13:30",
         "weatherCode": 3,
@@ -3223,7 +3302,7 @@ export const season2011IndyCarWeather = {
           "condition": "Cloudy",
           "gripLevel": 0.97,
           "wet": false,
-          "changingSoon": false,
+          "changingSoon": true,
           "label": "Cloudy"
         },
         "precipitationMm": 0.0,
@@ -3240,7 +3319,7 @@ export const season2011IndyCarWeather = {
           "condition": "Cloudy",
           "gripLevel": 0.97,
           "wet": false,
-          "changingSoon": false,
+          "changingSoon": true,
           "label": "Cloudy"
         },
         "precipitationMm": 0.0,
@@ -3251,37 +3330,37 @@ export const season2011IndyCarWeather = {
       },
       {
         "time": "2011-09-04T14:00",
-        "weatherCode": 3,
+        "weatherCode": 2,
         "condition": "Cloudy",
         "state": {
           "condition": "Cloudy",
           "gripLevel": 0.97,
           "wet": false,
-          "changingSoon": true,
+          "changingSoon": false,
           "label": "Cloudy"
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 84,
-        "temperature2m": 22.1,
-        "windSpeed10m": 11.7
+        "cloudCover": 79,
+        "temperature2m": 21.8,
+        "windSpeed10m": 11.5
       },
       {
         "time": "2011-09-04T14:15",
-        "weatherCode": 3,
+        "weatherCode": 2,
         "condition": "Cloudy",
         "state": {
           "condition": "Cloudy",
           "gripLevel": 0.97,
           "wet": false,
-          "changingSoon": true,
+          "changingSoon": false,
           "label": "Cloudy"
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 84,
-        "temperature2m": 22.1,
-        "windSpeed10m": 11.7
+        "cloudCover": 79,
+        "temperature2m": 21.8,
+        "windSpeed10m": 11.5
       },
       {
         "time": "2011-09-04T14:30",
@@ -3291,7 +3370,7 @@ export const season2011IndyCarWeather = {
           "condition": "Cloudy",
           "gripLevel": 0.97,
           "wet": false,
-          "changingSoon": false,
+          "changingSoon": true,
           "label": "Cloudy"
         },
         "precipitationMm": 0.0,
@@ -3308,7 +3387,7 @@ export const season2011IndyCarWeather = {
           "condition": "Cloudy",
           "gripLevel": 0.97,
           "wet": false,
-          "changingSoon": false,
+          "changingSoon": true,
           "label": "Cloudy"
         },
         "precipitationMm": 0.0,
@@ -3319,37 +3398,37 @@ export const season2011IndyCarWeather = {
       },
       {
         "time": "2011-09-04T15:00",
-        "weatherCode": 2,
+        "weatherCode": 3,
         "condition": "Cloudy",
         "state": {
           "condition": "Cloudy",
           "gripLevel": 0.97,
           "wet": false,
-          "changingSoon": true,
+          "changingSoon": false,
           "label": "Cloudy"
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 79,
-        "temperature2m": 21.8,
-        "windSpeed10m": 11.5
+        "cloudCover": 81,
+        "temperature2m": 21.6,
+        "windSpeed10m": 12.6
       },
       {
         "time": "2011-09-04T15:15",
-        "weatherCode": 2,
+        "weatherCode": 3,
         "condition": "Cloudy",
         "state": {
           "condition": "Cloudy",
           "gripLevel": 0.97,
           "wet": false,
-          "changingSoon": true,
+          "changingSoon": false,
           "label": "Cloudy"
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 79,
-        "temperature2m": 21.8,
-        "windSpeed10m": 11.5
+        "cloudCover": 81,
+        "temperature2m": 21.6,
+        "windSpeed10m": 12.6
       },
       {
         "time": "2011-09-04T15:30",
@@ -3384,40 +3463,6 @@ export const season2011IndyCarWeather = {
         "cloudCover": 81,
         "temperature2m": 21.6,
         "windSpeed10m": 12.6
-      },
-      {
-        "time": "2011-09-04T16:00",
-        "weatherCode": 3,
-        "condition": "Cloudy",
-        "state": {
-          "condition": "Cloudy",
-          "gripLevel": 0.97,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Cloudy"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 81,
-        "temperature2m": 21.6,
-        "windSpeed10m": 12.6
-      },
-      {
-        "time": "2011-09-04T16:15",
-        "weatherCode": 3,
-        "condition": "Cloudy",
-        "state": {
-          "condition": "Cloudy",
-          "gripLevel": 0.97,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Cloudy"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 81,
-        "temperature2m": 21.6,
-        "windSpeed10m": 12.6
       }
     ]
   },
@@ -3430,19 +3475,56 @@ export const season2011IndyCarWeather = {
       "year": 2011,
       "series": "IndyCar",
       "date": "2011-09-18",
-      "localStartTime": "13:30",
+      "localStartTime": "13:00",
       "timezone": "auto",
       "latitude": 36.5325,
       "longitude": 140.2286,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "Medium",
+      "startTimeMethod": "Japan daytime estimate"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using IndyCar default 13:30"
+      "Workbook start time estimate (Medium): 13:00",
+      "Start time method: Japan daytime estimate"
     ],
     "samples": [
+      {
+        "time": "2011-09-18T13:00",
+        "weatherCode": 3,
+        "condition": "Cloudy",
+        "state": {
+          "condition": "Cloudy",
+          "gripLevel": 0.97,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Cloudy"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 97,
+        "temperature2m": 24.0,
+        "windSpeed10m": 9.9
+      },
+      {
+        "time": "2011-09-18T13:15",
+        "weatherCode": 3,
+        "condition": "Cloudy",
+        "state": {
+          "condition": "Cloudy",
+          "gripLevel": 0.97,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Cloudy"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 97,
+        "temperature2m": 24.0,
+        "windSpeed10m": 9.9
+      },
       {
         "time": "2011-09-18T13:30",
         "weatherCode": 3,
@@ -3490,9 +3572,9 @@ export const season2011IndyCarWeather = {
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 97,
-        "temperature2m": 24.0,
-        "windSpeed10m": 9.9
+        "cloudCover": 98,
+        "temperature2m": 23.8,
+        "windSpeed10m": 9.0
       },
       {
         "time": "2011-09-18T14:15",
@@ -3507,9 +3589,9 @@ export const season2011IndyCarWeather = {
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 97,
-        "temperature2m": 24.0,
-        "windSpeed10m": 9.9
+        "cloudCover": 98,
+        "temperature2m": 23.8,
+        "windSpeed10m": 9.0
       },
       {
         "time": "2011-09-18T14:30",
@@ -3558,9 +3640,9 @@ export const season2011IndyCarWeather = {
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 98,
-        "temperature2m": 23.8,
-        "windSpeed10m": 9.0
+        "cloudCover": 93,
+        "temperature2m": 23.5,
+        "windSpeed10m": 9.7
       },
       {
         "time": "2011-09-18T15:15",
@@ -3575,9 +3657,9 @@ export const season2011IndyCarWeather = {
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 98,
-        "temperature2m": 23.8,
-        "windSpeed10m": 9.0
+        "cloudCover": 93,
+        "temperature2m": 23.5,
+        "windSpeed10m": 9.7
       },
       {
         "time": "2011-09-18T15:30",
@@ -3612,40 +3694,6 @@ export const season2011IndyCarWeather = {
         "cloudCover": 93,
         "temperature2m": 23.5,
         "windSpeed10m": 9.7
-      },
-      {
-        "time": "2011-09-18T16:00",
-        "weatherCode": 3,
-        "condition": "Cloudy",
-        "state": {
-          "condition": "Cloudy",
-          "gripLevel": 0.97,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Cloudy"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 93,
-        "temperature2m": 23.5,
-        "windSpeed10m": 9.7
-      },
-      {
-        "time": "2011-09-18T16:15",
-        "weatherCode": 3,
-        "condition": "Cloudy",
-        "state": {
-          "condition": "Cloudy",
-          "gripLevel": 0.97,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Cloudy"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 93,
-        "temperature2m": 23.5,
-        "windSpeed10m": 9.7
       }
     ]
   },
@@ -3658,19 +3706,56 @@ export const season2011IndyCarWeather = {
       "year": 2011,
       "series": "IndyCar",
       "date": "2011-10-02",
-      "localStartTime": "13:30",
+      "localStartTime": "13:00",
       "timezone": "auto",
       "latitude": 38.6851,
       "longitude": -84.9052,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "Low",
+      "startTimeMethod": "Oval daytime heuristic"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using IndyCar default 13:30"
+      "Workbook start time estimate (Low): 13:00",
+      "Start time method: Oval daytime heuristic"
     ],
     "samples": [
+      {
+        "time": "2011-10-02T13:00",
+        "weatherCode": 3,
+        "condition": "Cloudy",
+        "state": {
+          "condition": "Cloudy",
+          "gripLevel": 0.97,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Cloudy"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 88,
+        "temperature2m": 9.6,
+        "windSpeed10m": 8.0
+      },
+      {
+        "time": "2011-10-02T13:15",
+        "weatherCode": 3,
+        "condition": "Cloudy",
+        "state": {
+          "condition": "Cloudy",
+          "gripLevel": 0.97,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Cloudy"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 88,
+        "temperature2m": 9.6,
+        "windSpeed10m": 8.0
+      },
       {
         "time": "2011-10-02T13:30",
         "weatherCode": 3,
@@ -3718,9 +3803,9 @@ export const season2011IndyCarWeather = {
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 88,
-        "temperature2m": 9.6,
-        "windSpeed10m": 8.0
+        "cloudCover": 91,
+        "temperature2m": 9.1,
+        "windSpeed10m": 8.8
       },
       {
         "time": "2011-10-02T14:15",
@@ -3735,9 +3820,9 @@ export const season2011IndyCarWeather = {
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 88,
-        "temperature2m": 9.6,
-        "windSpeed10m": 8.0
+        "cloudCover": 91,
+        "temperature2m": 9.1,
+        "windSpeed10m": 8.8
       },
       {
         "time": "2011-10-02T14:30",
@@ -3747,7 +3832,7 @@ export const season2011IndyCarWeather = {
           "condition": "Cloudy",
           "gripLevel": 0.97,
           "wet": false,
-          "changingSoon": false,
+          "changingSoon": true,
           "label": "Cloudy"
         },
         "precipitationMm": 0.0,
@@ -3764,7 +3849,7 @@ export const season2011IndyCarWeather = {
           "condition": "Cloudy",
           "gripLevel": 0.97,
           "wet": false,
-          "changingSoon": false,
+          "changingSoon": true,
           "label": "Cloudy"
         },
         "precipitationMm": 0.0,
@@ -3775,37 +3860,37 @@ export const season2011IndyCarWeather = {
       },
       {
         "time": "2011-10-02T15:00",
-        "weatherCode": 3,
+        "weatherCode": 2,
         "condition": "Cloudy",
         "state": {
           "condition": "Cloudy",
           "gripLevel": 0.97,
           "wet": false,
-          "changingSoon": true,
+          "changingSoon": false,
           "label": "Cloudy"
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 91,
-        "temperature2m": 9.1,
-        "windSpeed10m": 8.8
+        "cloudCover": 77,
+        "temperature2m": 8.6,
+        "windSpeed10m": 9.7
       },
       {
         "time": "2011-10-02T15:15",
-        "weatherCode": 3,
+        "weatherCode": 2,
         "condition": "Cloudy",
         "state": {
           "condition": "Cloudy",
           "gripLevel": 0.97,
           "wet": false,
-          "changingSoon": true,
+          "changingSoon": false,
           "label": "Cloudy"
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 91,
-        "temperature2m": 9.1,
-        "windSpeed10m": 8.8
+        "cloudCover": 77,
+        "temperature2m": 8.6,
+        "windSpeed10m": 9.7
       },
       {
         "time": "2011-10-02T15:30",
@@ -3826,40 +3911,6 @@ export const season2011IndyCarWeather = {
       },
       {
         "time": "2011-10-02T15:45",
-        "weatherCode": 2,
-        "condition": "Cloudy",
-        "state": {
-          "condition": "Cloudy",
-          "gripLevel": 0.97,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Cloudy"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 77,
-        "temperature2m": 8.6,
-        "windSpeed10m": 9.7
-      },
-      {
-        "time": "2011-10-02T16:00",
-        "weatherCode": 2,
-        "condition": "Cloudy",
-        "state": {
-          "condition": "Cloudy",
-          "gripLevel": 0.97,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Cloudy"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 77,
-        "temperature2m": 8.6,
-        "windSpeed10m": 9.7
-      },
-      {
-        "time": "2011-10-02T16:15",
         "weatherCode": 2,
         "condition": "Cloudy",
         "state": {

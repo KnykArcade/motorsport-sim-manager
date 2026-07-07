@@ -15,12 +15,15 @@ export const season2007IndyCarWeather = {
       "latitude": 25.4687,
       "longitude": -80.4776,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "Medium",
+      "startTimeMethod": "Oval daytime estimate"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using IndyCar default 13:00"
+      "Workbook start time estimate (Medium): 13:00",
+      "Start time method: Oval daytime estimate"
     ],
     "samples": [
       {
@@ -238,19 +241,56 @@ export const season2007IndyCarWeather = {
       "year": 2007,
       "series": "IndyCar",
       "date": "2007-04-01",
-      "localStartTime": "13:00",
+      "localStartTime": "12:30",
       "timezone": "auto",
       "latitude": 27.7676,
       "longitude": -82.6403,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "Medium",
+      "startTimeMethod": "Street race midday estimate"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using IndyCar default 13:00"
+      "Workbook start time estimate (Medium): 12:30",
+      "Start time method: Street race midday estimate"
     ],
     "samples": [
+      {
+        "time": "2007-04-01T12:30",
+        "weatherCode": 3,
+        "condition": "Cloudy",
+        "state": {
+          "condition": "Cloudy",
+          "gripLevel": 0.97,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Cloudy"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 94,
+        "temperature2m": 21.5,
+        "windSpeed10m": 11.7
+      },
+      {
+        "time": "2007-04-01T12:45",
+        "weatherCode": 3,
+        "condition": "Cloudy",
+        "state": {
+          "condition": "Cloudy",
+          "gripLevel": 0.97,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Cloudy"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 94,
+        "temperature2m": 21.5,
+        "windSpeed10m": 11.7
+      },
       {
         "time": "2007-04-01T13:00",
         "weatherCode": 3,
@@ -298,9 +338,9 @@ export const season2007IndyCarWeather = {
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 94,
-        "temperature2m": 21.5,
-        "windSpeed10m": 11.7
+        "cloudCover": 93,
+        "temperature2m": 21.1,
+        "windSpeed10m": 15.0
       },
       {
         "time": "2007-04-01T13:45",
@@ -315,9 +355,9 @@ export const season2007IndyCarWeather = {
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 94,
-        "temperature2m": 21.5,
-        "windSpeed10m": 11.7
+        "cloudCover": 93,
+        "temperature2m": 21.1,
+        "windSpeed10m": 15.0
       },
       {
         "time": "2007-04-01T14:00",
@@ -366,9 +406,9 @@ export const season2007IndyCarWeather = {
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 93,
-        "temperature2m": 21.1,
-        "windSpeed10m": 15.0
+        "cloudCover": 89,
+        "temperature2m": 20.5,
+        "windSpeed10m": 16.1
       },
       {
         "time": "2007-04-01T14:45",
@@ -383,9 +423,9 @@ export const season2007IndyCarWeather = {
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 93,
-        "temperature2m": 21.1,
-        "windSpeed10m": 15.0
+        "cloudCover": 89,
+        "temperature2m": 20.5,
+        "windSpeed10m": 16.1
       },
       {
         "time": "2007-04-01T15:00",
@@ -420,40 +460,6 @@ export const season2007IndyCarWeather = {
         "cloudCover": 89,
         "temperature2m": 20.5,
         "windSpeed10m": 16.1
-      },
-      {
-        "time": "2007-04-01T15:30",
-        "weatherCode": 3,
-        "condition": "Cloudy",
-        "state": {
-          "condition": "Cloudy",
-          "gripLevel": 0.97,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Cloudy"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 89,
-        "temperature2m": 20.5,
-        "windSpeed10m": 16.1
-      },
-      {
-        "time": "2007-04-01T15:45",
-        "weatherCode": 3,
-        "condition": "Cloudy",
-        "state": {
-          "condition": "Cloudy",
-          "gripLevel": 0.97,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Cloudy"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 89,
-        "temperature2m": 20.5,
-        "windSpeed10m": 16.1
       }
     ]
   },
@@ -471,12 +477,15 @@ export const season2007IndyCarWeather = {
       "latitude": 36.5325,
       "longitude": 140.2286,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "Medium",
+      "startTimeMethod": "Japan daytime estimate"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using IndyCar default 13:00"
+      "Workbook start time estimate (Medium): 13:00",
+      "Start time method: Japan daytime estimate"
     ],
     "samples": [
       {
@@ -699,12 +708,15 @@ export const season2007IndyCarWeather = {
       "latitude": 39.1141,
       "longitude": -94.6275,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "Low",
+      "startTimeMethod": "Series/track-type heuristic"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using IndyCar default 13:00"
+      "Workbook start time estimate (Low): 13:00",
+      "Start time method: Series/track-type heuristic"
     ],
     "samples": [
       {
@@ -922,19 +934,39 @@ export const season2007IndyCarWeather = {
       "year": 2007,
       "series": "IndyCar",
       "date": "2007-05-27",
-      "localStartTime": "13:00",
+      "localStartTime": "12:45",
       "timezone": "auto",
       "latitude": 39.8023,
       "longitude": -86.2672,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "High",
+      "startTimeMethod": "Known Indy 500 start-window estimate"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using IndyCar default 13:00"
+      "Workbook start time estimate (High): 12:45",
+      "Start time method: Known Indy 500 start-window estimate"
     ],
     "samples": [
+      {
+        "time": "2007-05-27T12:45",
+        "weatherCode": 3,
+        "condition": "Cloudy",
+        "state": {
+          "condition": "Cloudy",
+          "gripLevel": 0.97,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Cloudy"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 97,
+        "temperature2m": 20.8,
+        "windSpeed10m": 6.3
+      },
       {
         "time": "2007-05-27T13:00",
         "weatherCode": 3,
@@ -999,9 +1031,9 @@ export const season2007IndyCarWeather = {
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 97,
-        "temperature2m": 20.8,
-        "windSpeed10m": 6.3
+        "cloudCover": 94,
+        "temperature2m": 20.6,
+        "windSpeed10m": 7.9
       },
       {
         "time": "2007-05-27T14:00",
@@ -1068,8 +1100,8 @@ export const season2007IndyCarWeather = {
         "precipitationMm": 0.0,
         "rainMm": 0.0,
         "cloudCover": 94,
-        "temperature2m": 20.6,
-        "windSpeed10m": 7.9
+        "temperature2m": 20.4,
+        "windSpeed10m": 6.4
       },
       {
         "time": "2007-05-27T15:00",
@@ -1121,23 +1153,6 @@ export const season2007IndyCarWeather = {
         "cloudCover": 94,
         "temperature2m": 20.4,
         "windSpeed10m": 6.4
-      },
-      {
-        "time": "2007-05-27T15:45",
-        "weatherCode": 3,
-        "condition": "Cloudy",
-        "state": {
-          "condition": "Cloudy",
-          "gripLevel": 0.97,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Cloudy"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 94,
-        "temperature2m": 20.4,
-        "windSpeed10m": 6.4
       }
     ]
   },
@@ -1155,12 +1170,15 @@ export const season2007IndyCarWeather = {
       "latitude": 43.0167,
       "longitude": -88.007,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "Medium",
+      "startTimeMethod": "Oval daytime estimate"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using IndyCar default 13:00"
+      "Workbook start time estimate (Medium): 13:00",
+      "Start time method: Oval daytime estimate"
     ],
     "samples": [
       {
@@ -1378,21 +1396,24 @@ export const season2007IndyCarWeather = {
       "year": 2007,
       "series": "IndyCar",
       "date": "2007-06-09",
-      "localStartTime": "13:00",
+      "localStartTime": "20:00",
       "timezone": "auto",
       "latitude": 32.7555,
       "longitude": -97.3308,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "High",
+      "startTimeMethod": "Known Texas night oval pattern"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using IndyCar default 13:00"
+      "Workbook start time estimate (High): 20:00",
+      "Start time method: Known Texas night oval pattern"
     ],
     "samples": [
       {
-        "time": "2007-06-09T13:00",
+        "time": "2007-06-09T20:00",
         "weatherCode": 1,
         "condition": "Cloudy",
         "state": {
@@ -1409,7 +1430,7 @@ export const season2007IndyCarWeather = {
         "windSpeed10m": 6.9
       },
       {
-        "time": "2007-06-09T13:15",
+        "time": "2007-06-09T20:15",
         "weatherCode": 1,
         "condition": "Cloudy",
         "state": {
@@ -1426,7 +1447,7 @@ export const season2007IndyCarWeather = {
         "windSpeed10m": 6.9
       },
       {
-        "time": "2007-06-09T13:30",
+        "time": "2007-06-09T20:30",
         "weatherCode": 1,
         "condition": "Cloudy",
         "state": {
@@ -1443,7 +1464,7 @@ export const season2007IndyCarWeather = {
         "windSpeed10m": 6.9
       },
       {
-        "time": "2007-06-09T13:45",
+        "time": "2007-06-09T20:45",
         "weatherCode": 1,
         "condition": "Cloudy",
         "state": {
@@ -1460,7 +1481,7 @@ export const season2007IndyCarWeather = {
         "windSpeed10m": 6.9
       },
       {
-        "time": "2007-06-09T14:00",
+        "time": "2007-06-09T21:00",
         "weatherCode": 1,
         "condition": "Cloudy",
         "state": {
@@ -1477,7 +1498,7 @@ export const season2007IndyCarWeather = {
         "windSpeed10m": 7.1
       },
       {
-        "time": "2007-06-09T14:15",
+        "time": "2007-06-09T21:15",
         "weatherCode": 1,
         "condition": "Cloudy",
         "state": {
@@ -1494,7 +1515,7 @@ export const season2007IndyCarWeather = {
         "windSpeed10m": 7.1
       },
       {
-        "time": "2007-06-09T14:30",
+        "time": "2007-06-09T21:30",
         "weatherCode": 1,
         "condition": "Cloudy",
         "state": {
@@ -1511,7 +1532,7 @@ export const season2007IndyCarWeather = {
         "windSpeed10m": 7.1
       },
       {
-        "time": "2007-06-09T14:45",
+        "time": "2007-06-09T21:45",
         "weatherCode": 1,
         "condition": "Cloudy",
         "state": {
@@ -1528,7 +1549,7 @@ export const season2007IndyCarWeather = {
         "windSpeed10m": 7.1
       },
       {
-        "time": "2007-06-09T15:00",
+        "time": "2007-06-09T22:00",
         "weatherCode": 2,
         "condition": "Cloudy",
         "state": {
@@ -1545,7 +1566,7 @@ export const season2007IndyCarWeather = {
         "windSpeed10m": 8.1
       },
       {
-        "time": "2007-06-09T15:15",
+        "time": "2007-06-09T22:15",
         "weatherCode": 2,
         "condition": "Cloudy",
         "state": {
@@ -1562,7 +1583,7 @@ export const season2007IndyCarWeather = {
         "windSpeed10m": 8.1
       },
       {
-        "time": "2007-06-09T15:30",
+        "time": "2007-06-09T22:30",
         "weatherCode": 2,
         "condition": "Cloudy",
         "state": {
@@ -1579,7 +1600,7 @@ export const season2007IndyCarWeather = {
         "windSpeed10m": 8.1
       },
       {
-        "time": "2007-06-09T15:45",
+        "time": "2007-06-09T22:45",
         "weatherCode": 2,
         "condition": "Cloudy",
         "state": {
@@ -1611,12 +1632,15 @@ export const season2007IndyCarWeather = {
       "latitude": 41.6997,
       "longitude": -93.0479,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "Low",
+      "startTimeMethod": "Oval daytime heuristic"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using IndyCar default 13:00"
+      "Workbook start time estimate (Low): 13:00",
+      "Start time method: Oval daytime heuristic"
     ],
     "samples": [
       {
@@ -1834,21 +1858,24 @@ export const season2007IndyCarWeather = {
       "year": 2007,
       "series": "IndyCar",
       "date": "2007-06-30",
-      "localStartTime": "13:00",
+      "localStartTime": "20:00",
       "timezone": "auto",
       "latitude": 37.5407,
       "longitude": -77.436,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "High",
+      "startTimeMethod": "Known short-oval night pattern"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using IndyCar default 13:00"
+      "Workbook start time estimate (High): 20:00",
+      "Start time method: Known short-oval night pattern"
     ],
     "samples": [
       {
-        "time": "2007-06-30T13:00",
+        "time": "2007-06-30T20:00",
         "weatherCode": 63,
         "condition": "LightRain",
         "state": {
@@ -1865,7 +1892,7 @@ export const season2007IndyCarWeather = {
         "windSpeed10m": 3.7
       },
       {
-        "time": "2007-06-30T13:15",
+        "time": "2007-06-30T20:15",
         "weatherCode": 63,
         "condition": "LightRain",
         "state": {
@@ -1882,7 +1909,7 @@ export const season2007IndyCarWeather = {
         "windSpeed10m": 3.7
       },
       {
-        "time": "2007-06-30T13:30",
+        "time": "2007-06-30T20:30",
         "weatherCode": 63,
         "condition": "LightRain",
         "state": {
@@ -1899,7 +1926,7 @@ export const season2007IndyCarWeather = {
         "windSpeed10m": 3.7
       },
       {
-        "time": "2007-06-30T13:45",
+        "time": "2007-06-30T20:45",
         "weatherCode": 63,
         "condition": "LightRain",
         "state": {
@@ -1916,7 +1943,7 @@ export const season2007IndyCarWeather = {
         "windSpeed10m": 3.7
       },
       {
-        "time": "2007-06-30T14:00",
+        "time": "2007-06-30T21:00",
         "weatherCode": 63,
         "condition": "LightRain",
         "state": {
@@ -1933,7 +1960,7 @@ export const season2007IndyCarWeather = {
         "windSpeed10m": 5.1
       },
       {
-        "time": "2007-06-30T14:15",
+        "time": "2007-06-30T21:15",
         "weatherCode": 63,
         "condition": "LightRain",
         "state": {
@@ -1950,7 +1977,7 @@ export const season2007IndyCarWeather = {
         "windSpeed10m": 5.1
       },
       {
-        "time": "2007-06-30T14:30",
+        "time": "2007-06-30T21:30",
         "weatherCode": 63,
         "condition": "LightRain",
         "state": {
@@ -1967,7 +1994,7 @@ export const season2007IndyCarWeather = {
         "windSpeed10m": 5.1
       },
       {
-        "time": "2007-06-30T14:45",
+        "time": "2007-06-30T21:45",
         "weatherCode": 63,
         "condition": "LightRain",
         "state": {
@@ -1984,7 +2011,7 @@ export const season2007IndyCarWeather = {
         "windSpeed10m": 5.1
       },
       {
-        "time": "2007-06-30T15:00",
+        "time": "2007-06-30T22:00",
         "weatherCode": 53,
         "condition": "LightRain",
         "state": {
@@ -2001,7 +2028,7 @@ export const season2007IndyCarWeather = {
         "windSpeed10m": 5.0
       },
       {
-        "time": "2007-06-30T15:15",
+        "time": "2007-06-30T22:15",
         "weatherCode": 53,
         "condition": "LightRain",
         "state": {
@@ -2018,7 +2045,7 @@ export const season2007IndyCarWeather = {
         "windSpeed10m": 5.0
       },
       {
-        "time": "2007-06-30T15:30",
+        "time": "2007-06-30T22:30",
         "weatherCode": 53,
         "condition": "LightRain",
         "state": {
@@ -2035,7 +2062,7 @@ export const season2007IndyCarWeather = {
         "windSpeed10m": 5.0
       },
       {
-        "time": "2007-06-30T15:45",
+        "time": "2007-06-30T22:45",
         "weatherCode": 53,
         "condition": "LightRain",
         "state": {
@@ -2067,12 +2094,15 @@ export const season2007IndyCarWeather = {
       "latitude": 42.3806,
       "longitude": -76.8733,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "Low",
+      "startTimeMethod": "Series/track-type heuristic"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using IndyCar default 13:00"
+      "Workbook start time estimate (Low): 13:00",
+      "Start time method: Series/track-type heuristic"
     ],
     "samples": [
       {
@@ -2295,12 +2325,15 @@ export const season2007IndyCarWeather = {
       "latitude": 36.2081,
       "longitude": -86.2911,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "Low",
+      "startTimeMethod": "Oval daytime heuristic"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using IndyCar default 13:00"
+      "Workbook start time estimate (Low): 13:00",
+      "Start time method: Oval daytime heuristic"
     ],
     "samples": [
       {
@@ -2518,53 +2551,22 @@ export const season2007IndyCarWeather = {
       "year": 2007,
       "series": "IndyCar",
       "date": "2007-07-22",
-      "localStartTime": "13:00",
+      "localStartTime": "13:30",
       "timezone": "auto",
       "latitude": 40.6787,
       "longitude": -82.5824,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "Medium",
+      "startTimeMethod": "Road-course afternoon estimate"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using IndyCar default 13:00"
+      "Workbook start time estimate (Medium): 13:30",
+      "Start time method: Road-course afternoon estimate"
     ],
     "samples": [
-      {
-        "time": "2007-07-22T13:00",
-        "weatherCode": 0,
-        "condition": "Dry",
-        "state": {
-          "condition": "Dry",
-          "gripLevel": 1,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Dry"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 0,
-        "temperature2m": 16.0,
-        "windSpeed10m": 9.7
-      },
-      {
-        "time": "2007-07-22T13:15",
-        "weatherCode": 0,
-        "condition": "Dry",
-        "state": {
-          "condition": "Dry",
-          "gripLevel": 1,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Dry"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 0,
-        "temperature2m": 16.0,
-        "windSpeed10m": 9.7
-      },
       {
         "time": "2007-07-22T13:30",
         "weatherCode": 0,
@@ -2612,9 +2614,9 @@ export const season2007IndyCarWeather = {
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 2,
-        "temperature2m": 15.5,
-        "windSpeed10m": 9.2
+        "cloudCover": 0,
+        "temperature2m": 16.0,
+        "windSpeed10m": 9.7
       },
       {
         "time": "2007-07-22T14:15",
@@ -2629,9 +2631,9 @@ export const season2007IndyCarWeather = {
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 2,
-        "temperature2m": 15.5,
-        "windSpeed10m": 9.2
+        "cloudCover": 0,
+        "temperature2m": 16.0,
+        "windSpeed10m": 9.7
       },
       {
         "time": "2007-07-22T14:30",
@@ -2680,8 +2682,8 @@ export const season2007IndyCarWeather = {
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 3,
-        "temperature2m": 15.2,
+        "cloudCover": 2,
+        "temperature2m": 15.5,
         "windSpeed10m": 9.2
       },
       {
@@ -2697,8 +2699,8 @@ export const season2007IndyCarWeather = {
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 3,
-        "temperature2m": 15.2,
+        "cloudCover": 2,
+        "temperature2m": 15.5,
         "windSpeed10m": 9.2
       },
       {
@@ -2734,6 +2736,40 @@ export const season2007IndyCarWeather = {
         "cloudCover": 3,
         "temperature2m": 15.2,
         "windSpeed10m": 9.2
+      },
+      {
+        "time": "2007-07-22T16:00",
+        "weatherCode": 0,
+        "condition": "Dry",
+        "state": {
+          "condition": "Dry",
+          "gripLevel": 1,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Dry"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 3,
+        "temperature2m": 15.2,
+        "windSpeed10m": 9.2
+      },
+      {
+        "time": "2007-07-22T16:15",
+        "weatherCode": 0,
+        "condition": "Dry",
+        "state": {
+          "condition": "Dry",
+          "gripLevel": 1,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Dry"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 3,
+        "temperature2m": 15.2,
+        "windSpeed10m": 9.2
       }
     ]
   },
@@ -2751,12 +2787,15 @@ export const season2007IndyCarWeather = {
       "latitude": 42.1059,
       "longitude": -84.2483,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "Low",
+      "startTimeMethod": "Oval daytime heuristic"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using IndyCar default 13:00"
+      "Workbook start time estimate (Low): 13:00",
+      "Start time method: Oval daytime heuristic"
     ],
     "samples": [
       {
@@ -2974,21 +3013,24 @@ export const season2007IndyCarWeather = {
       "year": 2007,
       "series": "IndyCar",
       "date": "2007-08-11",
-      "localStartTime": "13:00",
+      "localStartTime": "19:30",
       "timezone": "auto",
       "latitude": 38.6851,
       "longitude": -84.9052,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "Low",
+      "startTimeMethod": "Saturday oval evening heuristic"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using IndyCar default 13:00"
+      "Workbook start time estimate (Low): 19:30",
+      "Start time method: Saturday oval evening heuristic"
     ],
     "samples": [
       {
-        "time": "2007-08-11T13:00",
+        "time": "2007-08-11T19:30",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -3005,7 +3047,7 @@ export const season2007IndyCarWeather = {
         "windSpeed10m": 9.9
       },
       {
-        "time": "2007-08-11T13:15",
+        "time": "2007-08-11T19:45",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -3022,7 +3064,7 @@ export const season2007IndyCarWeather = {
         "windSpeed10m": 9.9
       },
       {
-        "time": "2007-08-11T13:30",
+        "time": "2007-08-11T20:00",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -3039,7 +3081,7 @@ export const season2007IndyCarWeather = {
         "windSpeed10m": 9.9
       },
       {
-        "time": "2007-08-11T13:45",
+        "time": "2007-08-11T20:15",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -3056,7 +3098,7 @@ export const season2007IndyCarWeather = {
         "windSpeed10m": 9.9
       },
       {
-        "time": "2007-08-11T14:00",
+        "time": "2007-08-11T20:30",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -3073,7 +3115,7 @@ export const season2007IndyCarWeather = {
         "windSpeed10m": 9.7
       },
       {
-        "time": "2007-08-11T14:15",
+        "time": "2007-08-11T20:45",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -3090,7 +3132,7 @@ export const season2007IndyCarWeather = {
         "windSpeed10m": 9.7
       },
       {
-        "time": "2007-08-11T14:30",
+        "time": "2007-08-11T21:00",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -3107,7 +3149,7 @@ export const season2007IndyCarWeather = {
         "windSpeed10m": 9.7
       },
       {
-        "time": "2007-08-11T14:45",
+        "time": "2007-08-11T21:15",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -3124,7 +3166,7 @@ export const season2007IndyCarWeather = {
         "windSpeed10m": 9.7
       },
       {
-        "time": "2007-08-11T15:00",
+        "time": "2007-08-11T21:30",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -3141,7 +3183,7 @@ export const season2007IndyCarWeather = {
         "windSpeed10m": 9.7
       },
       {
-        "time": "2007-08-11T15:15",
+        "time": "2007-08-11T21:45",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -3158,7 +3200,7 @@ export const season2007IndyCarWeather = {
         "windSpeed10m": 9.7
       },
       {
-        "time": "2007-08-11T15:30",
+        "time": "2007-08-11T22:00",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -3175,7 +3217,7 @@ export const season2007IndyCarWeather = {
         "windSpeed10m": 9.7
       },
       {
-        "time": "2007-08-11T15:45",
+        "time": "2007-08-11T22:15",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -3202,19 +3244,56 @@ export const season2007IndyCarWeather = {
       "year": 2007,
       "series": "IndyCar",
       "date": "2007-08-26",
-      "localStartTime": "13:00",
+      "localStartTime": "12:30",
       "timezone": "auto",
       "latitude": 38.2919,
       "longitude": -122.458,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "Medium",
+      "startTimeMethod": "West Coast road/street TV-window estimate"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using IndyCar default 13:00"
+      "Workbook start time estimate (Medium): 12:30",
+      "Start time method: West Coast road/street TV-window estimate"
     ],
     "samples": [
+      {
+        "time": "2007-08-26T12:30",
+        "weatherCode": 1,
+        "condition": "Cloudy",
+        "state": {
+          "condition": "Cloudy",
+          "gripLevel": 0.97,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Cloudy"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 20,
+        "temperature2m": 14.2,
+        "windSpeed10m": 7.3
+      },
+      {
+        "time": "2007-08-26T12:45",
+        "weatherCode": 1,
+        "condition": "Cloudy",
+        "state": {
+          "condition": "Cloudy",
+          "gripLevel": 0.97,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Cloudy"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 20,
+        "temperature2m": 14.2,
+        "windSpeed10m": 7.3
+      },
       {
         "time": "2007-08-26T13:00",
         "weatherCode": 1,
@@ -3262,9 +3341,9 @@ export const season2007IndyCarWeather = {
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 20,
-        "temperature2m": 14.2,
-        "windSpeed10m": 7.3
+        "cloudCover": 21,
+        "temperature2m": 13.7,
+        "windSpeed10m": 6.7
       },
       {
         "time": "2007-08-26T13:45",
@@ -3279,9 +3358,9 @@ export const season2007IndyCarWeather = {
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 20,
-        "temperature2m": 14.2,
-        "windSpeed10m": 7.3
+        "cloudCover": 21,
+        "temperature2m": 13.7,
+        "windSpeed10m": 6.7
       },
       {
         "time": "2007-08-26T14:00",
@@ -3330,9 +3409,9 @@ export const season2007IndyCarWeather = {
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 21,
-        "temperature2m": 13.7,
-        "windSpeed10m": 6.7
+        "cloudCover": 27,
+        "temperature2m": 13.4,
+        "windSpeed10m": 5.8
       },
       {
         "time": "2007-08-26T14:45",
@@ -3347,46 +3426,12 @@ export const season2007IndyCarWeather = {
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 21,
-        "temperature2m": 13.7,
-        "windSpeed10m": 6.7
+        "cloudCover": 27,
+        "temperature2m": 13.4,
+        "windSpeed10m": 5.8
       },
       {
         "time": "2007-08-26T15:00",
-        "weatherCode": 1,
-        "condition": "Cloudy",
-        "state": {
-          "condition": "Cloudy",
-          "gripLevel": 0.97,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Cloudy"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 27,
-        "temperature2m": 13.4,
-        "windSpeed10m": 5.8
-      },
-      {
-        "time": "2007-08-26T15:15",
-        "weatherCode": 1,
-        "condition": "Cloudy",
-        "state": {
-          "condition": "Cloudy",
-          "gripLevel": 0.97,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Cloudy"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 27,
-        "temperature2m": 13.4,
-        "windSpeed10m": 5.8
-      },
-      {
-        "time": "2007-08-26T15:30",
         "weatherCode": 1,
         "condition": "Cloudy",
         "state": {
@@ -3403,7 +3448,7 @@ export const season2007IndyCarWeather = {
         "windSpeed10m": 5.8
       },
       {
-        "time": "2007-08-26T15:45",
+        "time": "2007-08-26T15:15",
         "weatherCode": 1,
         "condition": "Cloudy",
         "state": {
@@ -3430,155 +3475,22 @@ export const season2007IndyCarWeather = {
       "year": 2007,
       "series": "IndyCar",
       "date": "2007-09-02",
-      "localStartTime": "13:00",
+      "localStartTime": "15:00",
       "timezone": "auto",
       "latitude": 42.3314,
       "longitude": -83.0458,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "Medium",
+      "startTimeMethod": "Street race afternoon estimate"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using IndyCar default 13:00"
+      "Workbook start time estimate (Medium): 15:00",
+      "Start time method: Street race afternoon estimate"
     ],
     "samples": [
-      {
-        "time": "2007-09-02T13:00",
-        "weatherCode": 0,
-        "condition": "Dry",
-        "state": {
-          "condition": "Dry",
-          "gripLevel": 1,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Dry"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 0,
-        "temperature2m": 18.9,
-        "windSpeed10m": 8.6
-      },
-      {
-        "time": "2007-09-02T13:15",
-        "weatherCode": 0,
-        "condition": "Dry",
-        "state": {
-          "condition": "Dry",
-          "gripLevel": 1,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Dry"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 0,
-        "temperature2m": 18.9,
-        "windSpeed10m": 8.6
-      },
-      {
-        "time": "2007-09-02T13:30",
-        "weatherCode": 0,
-        "condition": "Dry",
-        "state": {
-          "condition": "Dry",
-          "gripLevel": 1,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Dry"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 0,
-        "temperature2m": 18.9,
-        "windSpeed10m": 8.6
-      },
-      {
-        "time": "2007-09-02T13:45",
-        "weatherCode": 0,
-        "condition": "Dry",
-        "state": {
-          "condition": "Dry",
-          "gripLevel": 1,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Dry"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 0,
-        "temperature2m": 18.9,
-        "windSpeed10m": 8.6
-      },
-      {
-        "time": "2007-09-02T14:00",
-        "weatherCode": 0,
-        "condition": "Dry",
-        "state": {
-          "condition": "Dry",
-          "gripLevel": 1,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Dry"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 0,
-        "temperature2m": 18.7,
-        "windSpeed10m": 9.0
-      },
-      {
-        "time": "2007-09-02T14:15",
-        "weatherCode": 0,
-        "condition": "Dry",
-        "state": {
-          "condition": "Dry",
-          "gripLevel": 1,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Dry"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 0,
-        "temperature2m": 18.7,
-        "windSpeed10m": 9.0
-      },
-      {
-        "time": "2007-09-02T14:30",
-        "weatherCode": 0,
-        "condition": "Dry",
-        "state": {
-          "condition": "Dry",
-          "gripLevel": 1,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Dry"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 0,
-        "temperature2m": 18.7,
-        "windSpeed10m": 9.0
-      },
-      {
-        "time": "2007-09-02T14:45",
-        "weatherCode": 0,
-        "condition": "Dry",
-        "state": {
-          "condition": "Dry",
-          "gripLevel": 1,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Dry"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 0,
-        "temperature2m": 18.7,
-        "windSpeed10m": 9.0
-      },
       {
         "time": "2007-09-02T15:00",
         "weatherCode": 0,
@@ -3593,8 +3505,8 @@ export const season2007IndyCarWeather = {
         "precipitationMm": 0.0,
         "rainMm": 0.0,
         "cloudCover": 0,
-        "temperature2m": 18.6,
-        "windSpeed10m": 9.5
+        "temperature2m": 18.9,
+        "windSpeed10m": 8.6
       },
       {
         "time": "2007-09-02T15:15",
@@ -3610,11 +3522,113 @@ export const season2007IndyCarWeather = {
         "precipitationMm": 0.0,
         "rainMm": 0.0,
         "cloudCover": 0,
-        "temperature2m": 18.6,
-        "windSpeed10m": 9.5
+        "temperature2m": 18.9,
+        "windSpeed10m": 8.6
       },
       {
         "time": "2007-09-02T15:30",
+        "weatherCode": 0,
+        "condition": "Dry",
+        "state": {
+          "condition": "Dry",
+          "gripLevel": 1,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Dry"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 0,
+        "temperature2m": 18.9,
+        "windSpeed10m": 8.6
+      },
+      {
+        "time": "2007-09-02T15:45",
+        "weatherCode": 0,
+        "condition": "Dry",
+        "state": {
+          "condition": "Dry",
+          "gripLevel": 1,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Dry"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 0,
+        "temperature2m": 18.9,
+        "windSpeed10m": 8.6
+      },
+      {
+        "time": "2007-09-02T16:00",
+        "weatherCode": 0,
+        "condition": "Dry",
+        "state": {
+          "condition": "Dry",
+          "gripLevel": 1,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Dry"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 0,
+        "temperature2m": 18.7,
+        "windSpeed10m": 9.0
+      },
+      {
+        "time": "2007-09-02T16:15",
+        "weatherCode": 0,
+        "condition": "Dry",
+        "state": {
+          "condition": "Dry",
+          "gripLevel": 1,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Dry"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 0,
+        "temperature2m": 18.7,
+        "windSpeed10m": 9.0
+      },
+      {
+        "time": "2007-09-02T16:30",
+        "weatherCode": 0,
+        "condition": "Dry",
+        "state": {
+          "condition": "Dry",
+          "gripLevel": 1,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Dry"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 0,
+        "temperature2m": 18.7,
+        "windSpeed10m": 9.0
+      },
+      {
+        "time": "2007-09-02T16:45",
+        "weatherCode": 0,
+        "condition": "Dry",
+        "state": {
+          "condition": "Dry",
+          "gripLevel": 1,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Dry"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 0,
+        "temperature2m": 18.7,
+        "windSpeed10m": 9.0
+      },
+      {
+        "time": "2007-09-02T17:00",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -3631,7 +3645,41 @@ export const season2007IndyCarWeather = {
         "windSpeed10m": 9.5
       },
       {
-        "time": "2007-09-02T15:45",
+        "time": "2007-09-02T17:15",
+        "weatherCode": 0,
+        "condition": "Dry",
+        "state": {
+          "condition": "Dry",
+          "gripLevel": 1,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Dry"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 0,
+        "temperature2m": 18.6,
+        "windSpeed10m": 9.5
+      },
+      {
+        "time": "2007-09-02T17:30",
+        "weatherCode": 0,
+        "condition": "Dry",
+        "state": {
+          "condition": "Dry",
+          "gripLevel": 1,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Dry"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 0,
+        "temperature2m": 18.6,
+        "windSpeed10m": 9.5
+      },
+      {
+        "time": "2007-09-02T17:45",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -3663,12 +3711,15 @@ export const season2007IndyCarWeather = {
       "latitude": 41.525,
       "longitude": -88.0817,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "Low",
+      "startTimeMethod": "Oval daytime heuristic"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using IndyCar default 13:00"
+      "Workbook start time estimate (Low): 13:00",
+      "Start time method: Oval daytime heuristic"
     ],
     "samples": [
       {

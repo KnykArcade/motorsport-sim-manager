@@ -15,12 +15,15 @@ export const season2001IndyCarWeather = {
       "latitude": 33.4484,
       "longitude": -112.074,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "Medium",
+      "startTimeMethod": "Oval daytime estimate"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using IndyCar default 13:00"
+      "Workbook start time estimate (Medium): 13:00",
+      "Start time method: Oval daytime estimate"
     ],
     "samples": [
       {
@@ -243,12 +246,15 @@ export const season2001IndyCarWeather = {
       "latitude": 25.4687,
       "longitude": -80.4776,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "Medium",
+      "startTimeMethod": "Oval daytime estimate"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using IndyCar default 13:00"
+      "Workbook start time estimate (Medium): 13:00",
+      "Start time method: Oval daytime estimate"
     ],
     "samples": [
       {
@@ -466,21 +472,24 @@ export const season2001IndyCarWeather = {
       "year": 2001,
       "series": "IndyCar",
       "date": "2001-04-28",
-      "localStartTime": "13:00",
+      "localStartTime": "19:30",
       "timezone": "auto",
       "latitude": 33.3871,
       "longitude": -84.2824,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "Low",
+      "startTimeMethod": "Saturday oval evening heuristic"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using IndyCar default 13:00"
+      "Workbook start time estimate (Low): 19:30",
+      "Start time method: Saturday oval evening heuristic"
     ],
     "samples": [
       {
-        "time": "2001-04-28T13:00",
+        "time": "2001-04-28T19:30",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -497,7 +506,7 @@ export const season2001IndyCarWeather = {
         "windSpeed10m": 7.6
       },
       {
-        "time": "2001-04-28T13:15",
+        "time": "2001-04-28T19:45",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -514,7 +523,7 @@ export const season2001IndyCarWeather = {
         "windSpeed10m": 7.6
       },
       {
-        "time": "2001-04-28T13:30",
+        "time": "2001-04-28T20:00",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -531,7 +540,7 @@ export const season2001IndyCarWeather = {
         "windSpeed10m": 7.6
       },
       {
-        "time": "2001-04-28T13:45",
+        "time": "2001-04-28T20:15",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -548,7 +557,7 @@ export const season2001IndyCarWeather = {
         "windSpeed10m": 7.6
       },
       {
-        "time": "2001-04-28T14:00",
+        "time": "2001-04-28T20:30",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -565,7 +574,7 @@ export const season2001IndyCarWeather = {
         "windSpeed10m": 8.7
       },
       {
-        "time": "2001-04-28T14:15",
+        "time": "2001-04-28T20:45",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -582,7 +591,7 @@ export const season2001IndyCarWeather = {
         "windSpeed10m": 8.7
       },
       {
-        "time": "2001-04-28T14:30",
+        "time": "2001-04-28T21:00",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -599,7 +608,7 @@ export const season2001IndyCarWeather = {
         "windSpeed10m": 8.7
       },
       {
-        "time": "2001-04-28T14:45",
+        "time": "2001-04-28T21:15",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -616,7 +625,7 @@ export const season2001IndyCarWeather = {
         "windSpeed10m": 8.7
       },
       {
-        "time": "2001-04-28T15:00",
+        "time": "2001-04-28T21:30",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -633,7 +642,7 @@ export const season2001IndyCarWeather = {
         "windSpeed10m": 7.2
       },
       {
-        "time": "2001-04-28T15:15",
+        "time": "2001-04-28T21:45",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -650,7 +659,7 @@ export const season2001IndyCarWeather = {
         "windSpeed10m": 7.2
       },
       {
-        "time": "2001-04-28T15:30",
+        "time": "2001-04-28T22:00",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -667,7 +676,7 @@ export const season2001IndyCarWeather = {
         "windSpeed10m": 7.2
       },
       {
-        "time": "2001-04-28T15:45",
+        "time": "2001-04-28T22:15",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -694,19 +703,39 @@ export const season2001IndyCarWeather = {
       "year": 2001,
       "series": "IndyCar",
       "date": "2001-05-27",
-      "localStartTime": "13:00",
+      "localStartTime": "12:45",
       "timezone": "auto",
       "latitude": 39.8023,
       "longitude": -86.2672,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "High",
+      "startTimeMethod": "Known Indy 500 start-window estimate"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using IndyCar default 13:00"
+      "Workbook start time estimate (High): 12:45",
+      "Start time method: Known Indy 500 start-window estimate"
     ],
     "samples": [
+      {
+        "time": "2001-05-27T12:45",
+        "weatherCode": 51,
+        "condition": "LightRain",
+        "state": {
+          "condition": "LightRain",
+          "gripLevel": 0.72,
+          "wet": true,
+          "changingSoon": false,
+          "label": "Light Rain"
+        },
+        "precipitationMm": 0.2,
+        "rainMm": 0.2,
+        "cloudCover": 62,
+        "temperature2m": 11.6,
+        "windSpeed10m": 22.6
+      },
       {
         "time": "2001-05-27T13:00",
         "weatherCode": 51,
@@ -732,7 +761,7 @@ export const season2001IndyCarWeather = {
           "condition": "LightRain",
           "gripLevel": 0.72,
           "wet": true,
-          "changingSoon": false,
+          "changingSoon": true,
           "label": "Light Rain"
         },
         "precipitationMm": 0.2,
@@ -760,19 +789,19 @@ export const season2001IndyCarWeather = {
       },
       {
         "time": "2001-05-27T13:45",
-        "weatherCode": 51,
-        "condition": "LightRain",
+        "weatherCode": 3,
+        "condition": "Cloudy",
         "state": {
-          "condition": "LightRain",
-          "gripLevel": 0.72,
-          "wet": true,
-          "changingSoon": true,
-          "label": "Light Rain"
+          "condition": "Cloudy",
+          "gripLevel": 0.97,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Cloudy"
         },
-        "precipitationMm": 0.2,
-        "rainMm": 0.2,
-        "cloudCover": 62,
-        "temperature2m": 11.6,
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 83,
+        "temperature2m": 11.0,
         "windSpeed10m": 22.6
       },
       {
@@ -839,9 +868,9 @@ export const season2001IndyCarWeather = {
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 83,
-        "temperature2m": 11.0,
-        "windSpeed10m": 22.6
+        "cloudCover": 97,
+        "temperature2m": 10.4,
+        "windSpeed10m": 21.5
       },
       {
         "time": "2001-05-27T15:00",
@@ -893,23 +922,6 @@ export const season2001IndyCarWeather = {
         "cloudCover": 97,
         "temperature2m": 10.4,
         "windSpeed10m": 21.5
-      },
-      {
-        "time": "2001-05-27T15:45",
-        "weatherCode": 3,
-        "condition": "Cloudy",
-        "state": {
-          "condition": "Cloudy",
-          "gripLevel": 0.97,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Cloudy"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 97,
-        "temperature2m": 10.4,
-        "windSpeed10m": 21.5
       }
     ]
   },
@@ -922,21 +934,24 @@ export const season2001IndyCarWeather = {
       "year": 2001,
       "series": "IndyCar",
       "date": "2001-06-09",
-      "localStartTime": "13:00",
+      "localStartTime": "20:00",
       "timezone": "auto",
       "latitude": 32.7555,
       "longitude": -97.3308,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "High",
+      "startTimeMethod": "Known Texas night oval pattern"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using IndyCar default 13:00"
+      "Workbook start time estimate (High): 20:00",
+      "Start time method: Known Texas night oval pattern"
     ],
     "samples": [
       {
-        "time": "2001-06-09T13:00",
+        "time": "2001-06-09T20:00",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -953,7 +968,7 @@ export const season2001IndyCarWeather = {
         "windSpeed10m": 7.6
       },
       {
-        "time": "2001-06-09T13:15",
+        "time": "2001-06-09T20:15",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -970,7 +985,7 @@ export const season2001IndyCarWeather = {
         "windSpeed10m": 7.6
       },
       {
-        "time": "2001-06-09T13:30",
+        "time": "2001-06-09T20:30",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -987,7 +1002,7 @@ export const season2001IndyCarWeather = {
         "windSpeed10m": 7.6
       },
       {
-        "time": "2001-06-09T13:45",
+        "time": "2001-06-09T20:45",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -1004,7 +1019,7 @@ export const season2001IndyCarWeather = {
         "windSpeed10m": 7.6
       },
       {
-        "time": "2001-06-09T14:00",
+        "time": "2001-06-09T21:00",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -1021,7 +1036,7 @@ export const season2001IndyCarWeather = {
         "windSpeed10m": 7.1
       },
       {
-        "time": "2001-06-09T14:15",
+        "time": "2001-06-09T21:15",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -1038,7 +1053,7 @@ export const season2001IndyCarWeather = {
         "windSpeed10m": 7.1
       },
       {
-        "time": "2001-06-09T14:30",
+        "time": "2001-06-09T21:30",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -1055,7 +1070,7 @@ export const season2001IndyCarWeather = {
         "windSpeed10m": 7.1
       },
       {
-        "time": "2001-06-09T14:45",
+        "time": "2001-06-09T21:45",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -1072,7 +1087,7 @@ export const season2001IndyCarWeather = {
         "windSpeed10m": 7.1
       },
       {
-        "time": "2001-06-09T15:00",
+        "time": "2001-06-09T22:00",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -1089,7 +1104,7 @@ export const season2001IndyCarWeather = {
         "windSpeed10m": 6.6
       },
       {
-        "time": "2001-06-09T15:15",
+        "time": "2001-06-09T22:15",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -1106,7 +1121,7 @@ export const season2001IndyCarWeather = {
         "windSpeed10m": 6.6
       },
       {
-        "time": "2001-06-09T15:30",
+        "time": "2001-06-09T22:30",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -1123,7 +1138,7 @@ export const season2001IndyCarWeather = {
         "windSpeed10m": 6.6
       },
       {
-        "time": "2001-06-09T15:45",
+        "time": "2001-06-09T22:45",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -1155,12 +1170,15 @@ export const season2001IndyCarWeather = {
       "latitude": 38.6822,
       "longitude": -104.7008,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "Low",
+      "startTimeMethod": "Oval daytime heuristic"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using IndyCar default 13:00"
+      "Workbook start time estimate (Low): 13:00",
+      "Start time method: Oval daytime heuristic"
     ],
     "samples": [
       {
@@ -1378,21 +1396,24 @@ export const season2001IndyCarWeather = {
       "year": 2001,
       "series": "IndyCar",
       "date": "2001-06-30",
-      "localStartTime": "13:00",
+      "localStartTime": "20:00",
       "timezone": "auto",
       "latitude": 37.5407,
       "longitude": -77.436,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "High",
+      "startTimeMethod": "Known short-oval night pattern"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using IndyCar default 13:00"
+      "Workbook start time estimate (High): 20:00",
+      "Start time method: Known short-oval night pattern"
     ],
     "samples": [
       {
-        "time": "2001-06-30T13:00",
+        "time": "2001-06-30T20:00",
         "weatherCode": 1,
         "condition": "Cloudy",
         "state": {
@@ -1409,7 +1430,7 @@ export const season2001IndyCarWeather = {
         "windSpeed10m": 9.7
       },
       {
-        "time": "2001-06-30T13:15",
+        "time": "2001-06-30T20:15",
         "weatherCode": 1,
         "condition": "Cloudy",
         "state": {
@@ -1426,24 +1447,7 @@ export const season2001IndyCarWeather = {
         "windSpeed10m": 9.7
       },
       {
-        "time": "2001-06-30T13:30",
-        "weatherCode": 1,
-        "condition": "Cloudy",
-        "state": {
-          "condition": "Cloudy",
-          "gripLevel": 0.97,
-          "wet": false,
-          "changingSoon": true,
-          "label": "Cloudy"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 47,
-        "temperature2m": 25.0,
-        "windSpeed10m": 9.7
-      },
-      {
-        "time": "2001-06-30T13:45",
+        "time": "2001-06-30T20:30",
         "weatherCode": 1,
         "condition": "Cloudy",
         "state": {
@@ -1460,7 +1464,24 @@ export const season2001IndyCarWeather = {
         "windSpeed10m": 9.7
       },
       {
-        "time": "2001-06-30T14:00",
+        "time": "2001-06-30T20:45",
+        "weatherCode": 1,
+        "condition": "Cloudy",
+        "state": {
+          "condition": "Cloudy",
+          "gripLevel": 0.97,
+          "wet": false,
+          "changingSoon": true,
+          "label": "Cloudy"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 47,
+        "temperature2m": 25.0,
+        "windSpeed10m": 9.7
+      },
+      {
+        "time": "2001-06-30T21:00",
         "weatherCode": 2,
         "condition": "Cloudy",
         "state": {
@@ -1477,7 +1498,7 @@ export const season2001IndyCarWeather = {
         "windSpeed10m": 9.4
       },
       {
-        "time": "2001-06-30T14:15",
+        "time": "2001-06-30T21:15",
         "weatherCode": 2,
         "condition": "Cloudy",
         "state": {
@@ -1494,7 +1515,7 @@ export const season2001IndyCarWeather = {
         "windSpeed10m": 9.4
       },
       {
-        "time": "2001-06-30T14:30",
+        "time": "2001-06-30T21:30",
         "weatherCode": 2,
         "condition": "Cloudy",
         "state": {
@@ -1511,7 +1532,7 @@ export const season2001IndyCarWeather = {
         "windSpeed10m": 9.4
       },
       {
-        "time": "2001-06-30T14:45",
+        "time": "2001-06-30T21:45",
         "weatherCode": 2,
         "condition": "Cloudy",
         "state": {
@@ -1528,7 +1549,7 @@ export const season2001IndyCarWeather = {
         "windSpeed10m": 9.4
       },
       {
-        "time": "2001-06-30T15:00",
+        "time": "2001-06-30T22:00",
         "weatherCode": 2,
         "condition": "Cloudy",
         "state": {
@@ -1545,7 +1566,7 @@ export const season2001IndyCarWeather = {
         "windSpeed10m": 9.9
       },
       {
-        "time": "2001-06-30T15:15",
+        "time": "2001-06-30T22:15",
         "weatherCode": 2,
         "condition": "Cloudy",
         "state": {
@@ -1562,7 +1583,7 @@ export const season2001IndyCarWeather = {
         "windSpeed10m": 9.9
       },
       {
-        "time": "2001-06-30T15:30",
+        "time": "2001-06-30T22:30",
         "weatherCode": 2,
         "condition": "Cloudy",
         "state": {
@@ -1579,7 +1600,7 @@ export const season2001IndyCarWeather = {
         "windSpeed10m": 9.9
       },
       {
-        "time": "2001-06-30T15:45",
+        "time": "2001-06-30T22:45",
         "weatherCode": 2,
         "condition": "Cloudy",
         "state": {
@@ -1611,12 +1632,15 @@ export const season2001IndyCarWeather = {
       "latitude": 39.1141,
       "longitude": -94.6275,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "Low",
+      "startTimeMethod": "Oval daytime heuristic"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using IndyCar default 13:00"
+      "Workbook start time estimate (Low): 13:00",
+      "Start time method: Oval daytime heuristic"
     ],
     "samples": [
       {
@@ -1834,21 +1858,24 @@ export const season2001IndyCarWeather = {
       "year": 2001,
       "series": "IndyCar",
       "date": "2001-07-21",
-      "localStartTime": "13:00",
+      "localStartTime": "19:30",
       "timezone": "auto",
       "latitude": 36.2081,
       "longitude": -86.2911,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "High",
+      "startTimeMethod": "Known Saturday night oval pattern"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using IndyCar default 13:00"
+      "Workbook start time estimate (High): 19:30",
+      "Start time method: Known Saturday night oval pattern"
     ],
     "samples": [
       {
-        "time": "2001-07-21T13:00",
+        "time": "2001-07-21T19:30",
         "weatherCode": 2,
         "condition": "Cloudy",
         "state": {
@@ -1865,7 +1892,7 @@ export const season2001IndyCarWeather = {
         "windSpeed10m": 7.3
       },
       {
-        "time": "2001-07-21T13:15",
+        "time": "2001-07-21T19:45",
         "weatherCode": 2,
         "condition": "Cloudy",
         "state": {
@@ -1882,7 +1909,7 @@ export const season2001IndyCarWeather = {
         "windSpeed10m": 7.3
       },
       {
-        "time": "2001-07-21T13:30",
+        "time": "2001-07-21T20:00",
         "weatherCode": 2,
         "condition": "Cloudy",
         "state": {
@@ -1899,7 +1926,7 @@ export const season2001IndyCarWeather = {
         "windSpeed10m": 7.3
       },
       {
-        "time": "2001-07-21T13:45",
+        "time": "2001-07-21T20:15",
         "weatherCode": 2,
         "condition": "Cloudy",
         "state": {
@@ -1916,7 +1943,7 @@ export const season2001IndyCarWeather = {
         "windSpeed10m": 7.3
       },
       {
-        "time": "2001-07-21T14:00",
+        "time": "2001-07-21T20:30",
         "weatherCode": 2,
         "condition": "Cloudy",
         "state": {
@@ -1933,7 +1960,7 @@ export const season2001IndyCarWeather = {
         "windSpeed10m": 7.4
       },
       {
-        "time": "2001-07-21T14:15",
+        "time": "2001-07-21T20:45",
         "weatherCode": 2,
         "condition": "Cloudy",
         "state": {
@@ -1950,7 +1977,7 @@ export const season2001IndyCarWeather = {
         "windSpeed10m": 7.4
       },
       {
-        "time": "2001-07-21T14:30",
+        "time": "2001-07-21T21:00",
         "weatherCode": 2,
         "condition": "Cloudy",
         "state": {
@@ -1967,7 +1994,7 @@ export const season2001IndyCarWeather = {
         "windSpeed10m": 7.4
       },
       {
-        "time": "2001-07-21T14:45",
+        "time": "2001-07-21T21:15",
         "weatherCode": 2,
         "condition": "Cloudy",
         "state": {
@@ -1984,7 +2011,7 @@ export const season2001IndyCarWeather = {
         "windSpeed10m": 7.4
       },
       {
-        "time": "2001-07-21T15:00",
+        "time": "2001-07-21T21:30",
         "weatherCode": 1,
         "condition": "Cloudy",
         "state": {
@@ -2001,7 +2028,7 @@ export const season2001IndyCarWeather = {
         "windSpeed10m": 7.4
       },
       {
-        "time": "2001-07-21T15:15",
+        "time": "2001-07-21T21:45",
         "weatherCode": 1,
         "condition": "Cloudy",
         "state": {
@@ -2018,7 +2045,7 @@ export const season2001IndyCarWeather = {
         "windSpeed10m": 7.4
       },
       {
-        "time": "2001-07-21T15:30",
+        "time": "2001-07-21T22:00",
         "weatherCode": 1,
         "condition": "Cloudy",
         "state": {
@@ -2035,7 +2062,7 @@ export const season2001IndyCarWeather = {
         "windSpeed10m": 7.4
       },
       {
-        "time": "2001-07-21T15:45",
+        "time": "2001-07-21T22:15",
         "weatherCode": 1,
         "condition": "Cloudy",
         "state": {
@@ -2067,12 +2094,15 @@ export const season2001IndyCarWeather = {
       "latitude": 38.6851,
       "longitude": -84.9052,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "Low",
+      "startTimeMethod": "Oval daytime heuristic"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using IndyCar default 13:00"
+      "Workbook start time estimate (Low): 13:00",
+      "Start time method: Oval daytime heuristic"
     ],
     "samples": [
       {
@@ -2290,21 +2320,24 @@ export const season2001IndyCarWeather = {
       "year": 2001,
       "series": "IndyCar",
       "date": "2001-08-26",
-      "localStartTime": "13:00",
+      "localStartTime": "19:30",
       "timezone": "auto",
       "latitude": 38.6826,
       "longitude": -90.1571,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "Medium",
+      "startTimeMethod": "Gateway oval evening estimate"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using IndyCar default 13:00"
+      "Workbook start time estimate (Medium): 19:30",
+      "Start time method: Gateway oval evening estimate"
     ],
     "samples": [
       {
-        "time": "2001-08-26T13:00",
+        "time": "2001-08-26T19:30",
         "weatherCode": 51,
         "condition": "LightRain",
         "state": {
@@ -2321,7 +2354,7 @@ export const season2001IndyCarWeather = {
         "windSpeed10m": 9.2
       },
       {
-        "time": "2001-08-26T13:15",
+        "time": "2001-08-26T19:45",
         "weatherCode": 51,
         "condition": "LightRain",
         "state": {
@@ -2338,7 +2371,7 @@ export const season2001IndyCarWeather = {
         "windSpeed10m": 9.2
       },
       {
-        "time": "2001-08-26T13:30",
+        "time": "2001-08-26T20:00",
         "weatherCode": 51,
         "condition": "LightRain",
         "state": {
@@ -2355,7 +2388,7 @@ export const season2001IndyCarWeather = {
         "windSpeed10m": 9.2
       },
       {
-        "time": "2001-08-26T13:45",
+        "time": "2001-08-26T20:15",
         "weatherCode": 51,
         "condition": "LightRain",
         "state": {
@@ -2372,7 +2405,7 @@ export const season2001IndyCarWeather = {
         "windSpeed10m": 9.2
       },
       {
-        "time": "2001-08-26T14:00",
+        "time": "2001-08-26T20:30",
         "weatherCode": 3,
         "condition": "Cloudy",
         "state": {
@@ -2389,7 +2422,7 @@ export const season2001IndyCarWeather = {
         "windSpeed10m": 10.6
       },
       {
-        "time": "2001-08-26T14:15",
+        "time": "2001-08-26T20:45",
         "weatherCode": 3,
         "condition": "Cloudy",
         "state": {
@@ -2406,7 +2439,7 @@ export const season2001IndyCarWeather = {
         "windSpeed10m": 10.6
       },
       {
-        "time": "2001-08-26T14:30",
+        "time": "2001-08-26T21:00",
         "weatherCode": 3,
         "condition": "Cloudy",
         "state": {
@@ -2423,7 +2456,7 @@ export const season2001IndyCarWeather = {
         "windSpeed10m": 10.6
       },
       {
-        "time": "2001-08-26T14:45",
+        "time": "2001-08-26T21:15",
         "weatherCode": 3,
         "condition": "Cloudy",
         "state": {
@@ -2440,7 +2473,7 @@ export const season2001IndyCarWeather = {
         "windSpeed10m": 10.6
       },
       {
-        "time": "2001-08-26T15:00",
+        "time": "2001-08-26T21:30",
         "weatherCode": 51,
         "condition": "LightRain",
         "state": {
@@ -2457,7 +2490,7 @@ export const season2001IndyCarWeather = {
         "windSpeed10m": 9.2
       },
       {
-        "time": "2001-08-26T15:15",
+        "time": "2001-08-26T21:45",
         "weatherCode": 51,
         "condition": "LightRain",
         "state": {
@@ -2474,7 +2507,7 @@ export const season2001IndyCarWeather = {
         "windSpeed10m": 9.2
       },
       {
-        "time": "2001-08-26T15:30",
+        "time": "2001-08-26T22:00",
         "weatherCode": 51,
         "condition": "LightRain",
         "state": {
@@ -2491,7 +2524,7 @@ export const season2001IndyCarWeather = {
         "windSpeed10m": 9.2
       },
       {
-        "time": "2001-08-26T15:45",
+        "time": "2001-08-26T22:15",
         "weatherCode": 51,
         "condition": "LightRain",
         "state": {
@@ -2523,12 +2556,15 @@ export const season2001IndyCarWeather = {
       "latitude": 41.525,
       "longitude": -88.0817,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "Low",
+      "startTimeMethod": "Oval daytime heuristic"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using IndyCar default 13:00"
+      "Workbook start time estimate (Low): 13:00",
+      "Start time method: Oval daytime heuristic"
     ],
     "samples": [
       {
@@ -2746,21 +2782,24 @@ export const season2001IndyCarWeather = {
       "year": 2001,
       "series": "IndyCar",
       "date": "2001-10-06",
-      "localStartTime": "13:00",
+      "localStartTime": "20:00",
       "timezone": "auto",
       "latitude": 32.7555,
       "longitude": -97.3308,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "High",
+      "startTimeMethod": "Known Texas night oval pattern"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using IndyCar default 13:00"
+      "Workbook start time estimate (High): 20:00",
+      "Start time method: Known Texas night oval pattern"
     ],
     "samples": [
       {
-        "time": "2001-10-06T13:00",
+        "time": "2001-10-06T20:00",
         "weatherCode": 2,
         "condition": "Cloudy",
         "state": {
@@ -2777,7 +2816,7 @@ export const season2001IndyCarWeather = {
         "windSpeed10m": 19.6
       },
       {
-        "time": "2001-10-06T13:15",
+        "time": "2001-10-06T20:15",
         "weatherCode": 2,
         "condition": "Cloudy",
         "state": {
@@ -2794,7 +2833,7 @@ export const season2001IndyCarWeather = {
         "windSpeed10m": 19.6
       },
       {
-        "time": "2001-10-06T13:30",
+        "time": "2001-10-06T20:30",
         "weatherCode": 2,
         "condition": "Cloudy",
         "state": {
@@ -2811,7 +2850,7 @@ export const season2001IndyCarWeather = {
         "windSpeed10m": 19.6
       },
       {
-        "time": "2001-10-06T13:45",
+        "time": "2001-10-06T20:45",
         "weatherCode": 2,
         "condition": "Cloudy",
         "state": {
@@ -2828,7 +2867,7 @@ export const season2001IndyCarWeather = {
         "windSpeed10m": 19.6
       },
       {
-        "time": "2001-10-06T14:00",
+        "time": "2001-10-06T21:00",
         "weatherCode": 1,
         "condition": "Cloudy",
         "state": {
@@ -2845,7 +2884,7 @@ export const season2001IndyCarWeather = {
         "windSpeed10m": 18.9
       },
       {
-        "time": "2001-10-06T14:15",
+        "time": "2001-10-06T21:15",
         "weatherCode": 1,
         "condition": "Cloudy",
         "state": {
@@ -2862,7 +2901,7 @@ export const season2001IndyCarWeather = {
         "windSpeed10m": 18.9
       },
       {
-        "time": "2001-10-06T14:30",
+        "time": "2001-10-06T21:30",
         "weatherCode": 1,
         "condition": "Cloudy",
         "state": {
@@ -2879,7 +2918,7 @@ export const season2001IndyCarWeather = {
         "windSpeed10m": 18.9
       },
       {
-        "time": "2001-10-06T14:45",
+        "time": "2001-10-06T21:45",
         "weatherCode": 1,
         "condition": "Cloudy",
         "state": {
@@ -2896,7 +2935,7 @@ export const season2001IndyCarWeather = {
         "windSpeed10m": 18.9
       },
       {
-        "time": "2001-10-06T15:00",
+        "time": "2001-10-06T22:00",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -2913,7 +2952,7 @@ export const season2001IndyCarWeather = {
         "windSpeed10m": 18.2
       },
       {
-        "time": "2001-10-06T15:15",
+        "time": "2001-10-06T22:15",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -2930,7 +2969,7 @@ export const season2001IndyCarWeather = {
         "windSpeed10m": 18.2
       },
       {
-        "time": "2001-10-06T15:30",
+        "time": "2001-10-06T22:30",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -2947,7 +2986,7 @@ export const season2001IndyCarWeather = {
         "windSpeed10m": 18.2
       },
       {
-        "time": "2001-10-06T15:45",
+        "time": "2001-10-06T22:45",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {

@@ -10,21 +10,24 @@ export const season2018IndyCarWeather = {
       "year": 2018,
       "series": "IndyCar",
       "date": "2018-03-11",
-      "localStartTime": "13:30",
+      "localStartTime": "12:30",
       "timezone": "auto",
       "latitude": 27.7676,
       "longitude": -82.6403,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "Medium",
+      "startTimeMethod": "Street race midday estimate"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using IndyCar default 13:30"
+      "Workbook start time estimate (Medium): 12:30",
+      "Start time method: Street race midday estimate"
     ],
     "samples": [
       {
-        "time": "2018-03-11T13:30",
+        "time": "2018-03-11T12:30",
         "weatherCode": 3,
         "condition": "Cloudy",
         "state": {
@@ -39,10 +42,78 @@ export const season2018IndyCarWeather = {
         "cloudCover": 93,
         "temperature2m": 16.9,
         "windSpeed10m": 9.3
+      },
+      {
+        "time": "2018-03-11T12:45",
+        "weatherCode": 3,
+        "condition": "Cloudy",
+        "state": {
+          "condition": "Cloudy",
+          "gripLevel": 0.97,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Cloudy"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 93,
+        "temperature2m": 16.9,
+        "windSpeed10m": 9.3
+      },
+      {
+        "time": "2018-03-11T13:00",
+        "weatherCode": 3,
+        "condition": "Cloudy",
+        "state": {
+          "condition": "Cloudy",
+          "gripLevel": 0.97,
+          "wet": false,
+          "changingSoon": true,
+          "label": "Cloudy"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 93,
+        "temperature2m": 16.9,
+        "windSpeed10m": 9.3
+      },
+      {
+        "time": "2018-03-11T13:15",
+        "weatherCode": 3,
+        "condition": "Cloudy",
+        "state": {
+          "condition": "Cloudy",
+          "gripLevel": 0.97,
+          "wet": false,
+          "changingSoon": true,
+          "label": "Cloudy"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 93,
+        "temperature2m": 16.9,
+        "windSpeed10m": 9.3
+      },
+      {
+        "time": "2018-03-11T13:30",
+        "weatherCode": 1,
+        "condition": "Cloudy",
+        "state": {
+          "condition": "Cloudy",
+          "gripLevel": 0.97,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Cloudy"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 39,
+        "temperature2m": 16.9,
+        "windSpeed10m": 8.8
       },
       {
         "time": "2018-03-11T13:45",
-        "weatherCode": 3,
+        "weatherCode": 1,
         "condition": "Cloudy",
         "state": {
           "condition": "Cloudy",
@@ -53,13 +124,13 @@ export const season2018IndyCarWeather = {
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 93,
+        "cloudCover": 39,
         "temperature2m": 16.9,
-        "windSpeed10m": 9.3
+        "windSpeed10m": 8.8
       },
       {
         "time": "2018-03-11T14:00",
-        "weatherCode": 3,
+        "weatherCode": 1,
         "condition": "Cloudy",
         "state": {
           "condition": "Cloudy",
@@ -70,13 +141,13 @@ export const season2018IndyCarWeather = {
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 93,
+        "cloudCover": 39,
         "temperature2m": 16.9,
-        "windSpeed10m": 9.3
+        "windSpeed10m": 8.8
       },
       {
         "time": "2018-03-11T14:15",
-        "weatherCode": 3,
+        "weatherCode": 1,
         "condition": "Cloudy",
         "state": {
           "condition": "Cloudy",
@@ -87,131 +158,63 @@ export const season2018IndyCarWeather = {
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 93,
+        "cloudCover": 39,
         "temperature2m": 16.9,
-        "windSpeed10m": 9.3
+        "windSpeed10m": 8.8
       },
       {
         "time": "2018-03-11T14:30",
-        "weatherCode": 1,
-        "condition": "Cloudy",
+        "weatherCode": 0,
+        "condition": "Dry",
         "state": {
-          "condition": "Cloudy",
-          "gripLevel": 0.97,
+          "condition": "Dry",
+          "gripLevel": 1,
           "wet": false,
           "changingSoon": false,
-          "label": "Cloudy"
+          "label": "Dry"
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 39,
-        "temperature2m": 16.9,
-        "windSpeed10m": 8.8
+        "cloudCover": 2,
+        "temperature2m": 16.7,
+        "windSpeed10m": 9.1
       },
       {
         "time": "2018-03-11T14:45",
-        "weatherCode": 1,
-        "condition": "Cloudy",
+        "weatherCode": 0,
+        "condition": "Dry",
         "state": {
-          "condition": "Cloudy",
-          "gripLevel": 0.97,
+          "condition": "Dry",
+          "gripLevel": 1,
           "wet": false,
           "changingSoon": false,
-          "label": "Cloudy"
+          "label": "Dry"
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 39,
-        "temperature2m": 16.9,
-        "windSpeed10m": 8.8
+        "cloudCover": 2,
+        "temperature2m": 16.7,
+        "windSpeed10m": 9.1
       },
       {
         "time": "2018-03-11T15:00",
-        "weatherCode": 1,
-        "condition": "Cloudy",
+        "weatherCode": 0,
+        "condition": "Dry",
         "state": {
-          "condition": "Cloudy",
-          "gripLevel": 0.97,
+          "condition": "Dry",
+          "gripLevel": 1,
           "wet": false,
-          "changingSoon": true,
-          "label": "Cloudy"
+          "changingSoon": false,
+          "label": "Dry"
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 39,
-        "temperature2m": 16.9,
-        "windSpeed10m": 8.8
+        "cloudCover": 2,
+        "temperature2m": 16.7,
+        "windSpeed10m": 9.1
       },
       {
         "time": "2018-03-11T15:15",
-        "weatherCode": 1,
-        "condition": "Cloudy",
-        "state": {
-          "condition": "Cloudy",
-          "gripLevel": 0.97,
-          "wet": false,
-          "changingSoon": true,
-          "label": "Cloudy"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 39,
-        "temperature2m": 16.9,
-        "windSpeed10m": 8.8
-      },
-      {
-        "time": "2018-03-11T15:30",
-        "weatherCode": 0,
-        "condition": "Dry",
-        "state": {
-          "condition": "Dry",
-          "gripLevel": 1,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Dry"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 2,
-        "temperature2m": 16.7,
-        "windSpeed10m": 9.1
-      },
-      {
-        "time": "2018-03-11T15:45",
-        "weatherCode": 0,
-        "condition": "Dry",
-        "state": {
-          "condition": "Dry",
-          "gripLevel": 1,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Dry"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 2,
-        "temperature2m": 16.7,
-        "windSpeed10m": 9.1
-      },
-      {
-        "time": "2018-03-11T16:00",
-        "weatherCode": 0,
-        "condition": "Dry",
-        "state": {
-          "condition": "Dry",
-          "gripLevel": 1,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Dry"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 2,
-        "temperature2m": 16.7,
-        "windSpeed10m": 9.1
-      },
-      {
-        "time": "2018-03-11T16:15",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -238,19 +241,56 @@ export const season2018IndyCarWeather = {
       "year": 2018,
       "series": "IndyCar",
       "date": "2018-04-07",
-      "localStartTime": "13:30",
+      "localStartTime": "13:00",
       "timezone": "auto",
       "latitude": 33.4484,
       "longitude": -112.074,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "Medium",
+      "startTimeMethod": "Oval daytime estimate"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using IndyCar default 13:30"
+      "Workbook start time estimate (Medium): 13:00",
+      "Start time method: Oval daytime estimate"
     ],
     "samples": [
+      {
+        "time": "2018-04-07T13:00",
+        "weatherCode": 3,
+        "condition": "Cloudy",
+        "state": {
+          "condition": "Cloudy",
+          "gripLevel": 0.97,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Cloudy"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 98,
+        "temperature2m": 25.8,
+        "windSpeed10m": 11.7
+      },
+      {
+        "time": "2018-04-07T13:15",
+        "weatherCode": 3,
+        "condition": "Cloudy",
+        "state": {
+          "condition": "Cloudy",
+          "gripLevel": 0.97,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Cloudy"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 98,
+        "temperature2m": 25.8,
+        "windSpeed10m": 11.7
+      },
       {
         "time": "2018-04-07T13:30",
         "weatherCode": 3,
@@ -298,9 +338,9 @@ export const season2018IndyCarWeather = {
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 98,
-        "temperature2m": 25.8,
-        "windSpeed10m": 11.7
+        "cloudCover": 100,
+        "temperature2m": 25.3,
+        "windSpeed10m": 13.7
       },
       {
         "time": "2018-04-07T14:15",
@@ -315,9 +355,9 @@ export const season2018IndyCarWeather = {
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 98,
-        "temperature2m": 25.8,
-        "windSpeed10m": 11.7
+        "cloudCover": 100,
+        "temperature2m": 25.3,
+        "windSpeed10m": 13.7
       },
       {
         "time": "2018-04-07T14:30",
@@ -367,8 +407,8 @@ export const season2018IndyCarWeather = {
         "precipitationMm": 0.0,
         "rainMm": 0.0,
         "cloudCover": 100,
-        "temperature2m": 25.3,
-        "windSpeed10m": 13.7
+        "temperature2m": 24.5,
+        "windSpeed10m": 12.3
       },
       {
         "time": "2018-04-07T15:15",
@@ -384,8 +424,8 @@ export const season2018IndyCarWeather = {
         "precipitationMm": 0.0,
         "rainMm": 0.0,
         "cloudCover": 100,
-        "temperature2m": 25.3,
-        "windSpeed10m": 13.7
+        "temperature2m": 24.5,
+        "windSpeed10m": 12.3
       },
       {
         "time": "2018-04-07T15:30",
@@ -420,40 +460,6 @@ export const season2018IndyCarWeather = {
         "cloudCover": 100,
         "temperature2m": 24.5,
         "windSpeed10m": 12.3
-      },
-      {
-        "time": "2018-04-07T16:00",
-        "weatherCode": 3,
-        "condition": "Cloudy",
-        "state": {
-          "condition": "Cloudy",
-          "gripLevel": 0.97,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Cloudy"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 100,
-        "temperature2m": 24.5,
-        "windSpeed10m": 12.3
-      },
-      {
-        "time": "2018-04-07T16:15",
-        "weatherCode": 3,
-        "condition": "Cloudy",
-        "state": {
-          "condition": "Cloudy",
-          "gripLevel": 0.97,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Cloudy"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 100,
-        "temperature2m": 24.5,
-        "windSpeed10m": 12.3
       }
     ]
   },
@@ -466,21 +472,24 @@ export const season2018IndyCarWeather = {
       "year": 2018,
       "series": "IndyCar",
       "date": "2018-04-15",
-      "localStartTime": "13:30",
+      "localStartTime": "12:30",
       "timezone": "auto",
       "latitude": 33.7701,
       "longitude": -118.1937,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "Medium",
+      "startTimeMethod": "Long Beach street-race pattern"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using IndyCar default 13:30"
+      "Workbook start time estimate (Medium): 12:30",
+      "Start time method: Long Beach street-race pattern"
     ],
     "samples": [
       {
-        "time": "2018-04-15T13:30",
+        "time": "2018-04-15T12:30",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -495,6 +504,74 @@ export const season2018IndyCarWeather = {
         "cloudCover": 1,
         "temperature2m": 14.9,
         "windSpeed10m": 4.8
+      },
+      {
+        "time": "2018-04-15T12:45",
+        "weatherCode": 0,
+        "condition": "Dry",
+        "state": {
+          "condition": "Dry",
+          "gripLevel": 1,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Dry"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 1,
+        "temperature2m": 14.9,
+        "windSpeed10m": 4.8
+      },
+      {
+        "time": "2018-04-15T13:00",
+        "weatherCode": 0,
+        "condition": "Dry",
+        "state": {
+          "condition": "Dry",
+          "gripLevel": 1,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Dry"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 1,
+        "temperature2m": 14.9,
+        "windSpeed10m": 4.8
+      },
+      {
+        "time": "2018-04-15T13:15",
+        "weatherCode": 0,
+        "condition": "Dry",
+        "state": {
+          "condition": "Dry",
+          "gripLevel": 1,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Dry"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 1,
+        "temperature2m": 14.9,
+        "windSpeed10m": 4.8
+      },
+      {
+        "time": "2018-04-15T13:30",
+        "weatherCode": 0,
+        "condition": "Dry",
+        "state": {
+          "condition": "Dry",
+          "gripLevel": 1,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Dry"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 16,
+        "temperature2m": 15.7,
+        "windSpeed10m": 2.3
       },
       {
         "time": "2018-04-15T13:45",
@@ -509,9 +586,9 @@ export const season2018IndyCarWeather = {
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 1,
-        "temperature2m": 14.9,
-        "windSpeed10m": 4.8
+        "cloudCover": 16,
+        "temperature2m": 15.7,
+        "windSpeed10m": 2.3
       },
       {
         "time": "2018-04-15T14:00",
@@ -521,14 +598,14 @@ export const season2018IndyCarWeather = {
           "condition": "Dry",
           "gripLevel": 1,
           "wet": false,
-          "changingSoon": false,
+          "changingSoon": true,
           "label": "Dry"
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 1,
-        "temperature2m": 14.9,
-        "windSpeed10m": 4.8
+        "cloudCover": 16,
+        "temperature2m": 15.7,
+        "windSpeed10m": 2.3
       },
       {
         "time": "2018-04-15T14:15",
@@ -538,136 +615,68 @@ export const season2018IndyCarWeather = {
           "condition": "Dry",
           "gripLevel": 1,
           "wet": false,
-          "changingSoon": false,
+          "changingSoon": true,
           "label": "Dry"
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 1,
-        "temperature2m": 14.9,
-        "windSpeed10m": 4.8
+        "cloudCover": 16,
+        "temperature2m": 15.7,
+        "windSpeed10m": 2.3
       },
       {
         "time": "2018-04-15T14:30",
-        "weatherCode": 0,
-        "condition": "Dry",
+        "weatherCode": 3,
+        "condition": "Cloudy",
         "state": {
-          "condition": "Dry",
-          "gripLevel": 1,
+          "condition": "Cloudy",
+          "gripLevel": 0.97,
           "wet": false,
           "changingSoon": false,
-          "label": "Dry"
+          "label": "Cloudy"
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 16,
-        "temperature2m": 15.7,
-        "windSpeed10m": 2.3
+        "cloudCover": 97,
+        "temperature2m": 15.3,
+        "windSpeed10m": 2.2
       },
       {
         "time": "2018-04-15T14:45",
-        "weatherCode": 0,
-        "condition": "Dry",
+        "weatherCode": 3,
+        "condition": "Cloudy",
         "state": {
-          "condition": "Dry",
-          "gripLevel": 1,
+          "condition": "Cloudy",
+          "gripLevel": 0.97,
           "wet": false,
           "changingSoon": false,
-          "label": "Dry"
+          "label": "Cloudy"
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 16,
-        "temperature2m": 15.7,
-        "windSpeed10m": 2.3
+        "cloudCover": 97,
+        "temperature2m": 15.3,
+        "windSpeed10m": 2.2
       },
       {
         "time": "2018-04-15T15:00",
-        "weatherCode": 0,
-        "condition": "Dry",
+        "weatherCode": 3,
+        "condition": "Cloudy",
         "state": {
-          "condition": "Dry",
-          "gripLevel": 1,
+          "condition": "Cloudy",
+          "gripLevel": 0.97,
           "wet": false,
           "changingSoon": true,
-          "label": "Dry"
+          "label": "Cloudy"
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 16,
-        "temperature2m": 15.7,
-        "windSpeed10m": 2.3
+        "cloudCover": 97,
+        "temperature2m": 15.3,
+        "windSpeed10m": 2.2
       },
       {
         "time": "2018-04-15T15:15",
-        "weatherCode": 0,
-        "condition": "Dry",
-        "state": {
-          "condition": "Dry",
-          "gripLevel": 1,
-          "wet": false,
-          "changingSoon": true,
-          "label": "Dry"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 16,
-        "temperature2m": 15.7,
-        "windSpeed10m": 2.3
-      },
-      {
-        "time": "2018-04-15T15:30",
-        "weatherCode": 3,
-        "condition": "Cloudy",
-        "state": {
-          "condition": "Cloudy",
-          "gripLevel": 0.97,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Cloudy"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 97,
-        "temperature2m": 15.3,
-        "windSpeed10m": 2.2
-      },
-      {
-        "time": "2018-04-15T15:45",
-        "weatherCode": 3,
-        "condition": "Cloudy",
-        "state": {
-          "condition": "Cloudy",
-          "gripLevel": 0.97,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Cloudy"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 97,
-        "temperature2m": 15.3,
-        "windSpeed10m": 2.2
-      },
-      {
-        "time": "2018-04-15T16:00",
-        "weatherCode": 3,
-        "condition": "Cloudy",
-        "state": {
-          "condition": "Cloudy",
-          "gripLevel": 0.97,
-          "wet": false,
-          "changingSoon": true,
-          "label": "Cloudy"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 97,
-        "temperature2m": 15.3,
-        "windSpeed10m": 2.2
-      },
-      {
-        "time": "2018-04-15T16:15",
         "weatherCode": 3,
         "condition": "Cloudy",
         "state": {
@@ -694,19 +703,56 @@ export const season2018IndyCarWeather = {
       "year": 2018,
       "series": "IndyCar",
       "date": "2018-04-23",
-      "localStartTime": "13:30",
+      "localStartTime": "13:00",
       "timezone": "auto",
       "latitude": 33.5207,
       "longitude": -86.8025,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "Low",
+      "startTimeMethod": "Series/track-type heuristic"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using IndyCar default 13:30"
+      "Workbook start time estimate (Low): 13:00",
+      "Start time method: Series/track-type heuristic"
     ],
     "samples": [
+      {
+        "time": "2018-04-23T13:00",
+        "weatherCode": 51,
+        "condition": "LightRain",
+        "state": {
+          "condition": "LightRain",
+          "gripLevel": 0.72,
+          "wet": true,
+          "changingSoon": false,
+          "label": "Light Rain"
+        },
+        "precipitationMm": 0.4,
+        "rainMm": 0.4,
+        "cloudCover": 94,
+        "temperature2m": 15.5,
+        "windSpeed10m": 17.8
+      },
+      {
+        "time": "2018-04-23T13:15",
+        "weatherCode": 51,
+        "condition": "LightRain",
+        "state": {
+          "condition": "LightRain",
+          "gripLevel": 0.72,
+          "wet": true,
+          "changingSoon": false,
+          "label": "Light Rain"
+        },
+        "precipitationMm": 0.4,
+        "rainMm": 0.4,
+        "cloudCover": 94,
+        "temperature2m": 15.5,
+        "windSpeed10m": 17.8
+      },
       {
         "time": "2018-04-23T13:30",
         "weatherCode": 51,
@@ -715,7 +761,7 @@ export const season2018IndyCarWeather = {
           "condition": "LightRain",
           "gripLevel": 0.72,
           "wet": true,
-          "changingSoon": false,
+          "changingSoon": true,
           "label": "Light Rain"
         },
         "precipitationMm": 0.4,
@@ -732,7 +778,7 @@ export const season2018IndyCarWeather = {
           "condition": "LightRain",
           "gripLevel": 0.72,
           "wet": true,
-          "changingSoon": false,
+          "changingSoon": true,
           "label": "Light Rain"
         },
         "precipitationMm": 0.4,
@@ -743,37 +789,37 @@ export const season2018IndyCarWeather = {
       },
       {
         "time": "2018-04-23T14:00",
-        "weatherCode": 51,
-        "condition": "LightRain",
+        "weatherCode": 3,
+        "condition": "Cloudy",
         "state": {
-          "condition": "LightRain",
-          "gripLevel": 0.72,
-          "wet": true,
-          "changingSoon": true,
-          "label": "Light Rain"
+          "condition": "Cloudy",
+          "gripLevel": 0.97,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Cloudy"
         },
-        "precipitationMm": 0.4,
-        "rainMm": 0.4,
-        "cloudCover": 94,
-        "temperature2m": 15.5,
-        "windSpeed10m": 17.8
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 100,
+        "temperature2m": 15.2,
+        "windSpeed10m": 14.6
       },
       {
         "time": "2018-04-23T14:15",
-        "weatherCode": 51,
-        "condition": "LightRain",
+        "weatherCode": 3,
+        "condition": "Cloudy",
         "state": {
-          "condition": "LightRain",
-          "gripLevel": 0.72,
-          "wet": true,
-          "changingSoon": true,
-          "label": "Light Rain"
+          "condition": "Cloudy",
+          "gripLevel": 0.97,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Cloudy"
         },
-        "precipitationMm": 0.4,
-        "rainMm": 0.4,
-        "cloudCover": 94,
-        "temperature2m": 15.5,
-        "windSpeed10m": 17.8
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 100,
+        "temperature2m": 15.2,
+        "windSpeed10m": 14.6
       },
       {
         "time": "2018-04-23T14:30",
@@ -822,9 +868,9 @@ export const season2018IndyCarWeather = {
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 100,
-        "temperature2m": 15.2,
-        "windSpeed10m": 14.6
+        "cloudCover": 95,
+        "temperature2m": 14.9,
+        "windSpeed10m": 13.3
       },
       {
         "time": "2018-04-23T15:15",
@@ -839,9 +885,9 @@ export const season2018IndyCarWeather = {
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 100,
-        "temperature2m": 15.2,
-        "windSpeed10m": 14.6
+        "cloudCover": 95,
+        "temperature2m": 14.9,
+        "windSpeed10m": 13.3
       },
       {
         "time": "2018-04-23T15:30",
@@ -876,40 +922,6 @@ export const season2018IndyCarWeather = {
         "cloudCover": 95,
         "temperature2m": 14.9,
         "windSpeed10m": 13.3
-      },
-      {
-        "time": "2018-04-23T16:00",
-        "weatherCode": 3,
-        "condition": "Cloudy",
-        "state": {
-          "condition": "Cloudy",
-          "gripLevel": 0.97,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Cloudy"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 95,
-        "temperature2m": 14.9,
-        "windSpeed10m": 13.3
-      },
-      {
-        "time": "2018-04-23T16:15",
-        "weatherCode": 3,
-        "condition": "Cloudy",
-        "state": {
-          "condition": "Cloudy",
-          "gripLevel": 0.97,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Cloudy"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 95,
-        "temperature2m": 14.9,
-        "windSpeed10m": 13.3
       }
     ]
   },
@@ -922,19 +934,73 @@ export const season2018IndyCarWeather = {
       "year": 2018,
       "series": "IndyCar",
       "date": "2018-05-12",
-      "localStartTime": "13:30",
+      "localStartTime": "12:45",
       "timezone": "auto",
       "latitude": 39.8023,
       "longitude": -86.2672,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "High",
+      "startTimeMethod": "Known Indy 500 start-window estimate"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using IndyCar default 13:30"
+      "Workbook start time estimate (High): 12:45",
+      "Start time method: Known Indy 500 start-window estimate"
     ],
     "samples": [
+      {
+        "time": "2018-05-12T12:45",
+        "weatherCode": 1,
+        "condition": "Cloudy",
+        "state": {
+          "condition": "Cloudy",
+          "gripLevel": 0.97,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Cloudy"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 41,
+        "temperature2m": 21.0,
+        "windSpeed10m": 13.1
+      },
+      {
+        "time": "2018-05-12T13:00",
+        "weatherCode": 1,
+        "condition": "Cloudy",
+        "state": {
+          "condition": "Cloudy",
+          "gripLevel": 0.97,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Cloudy"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 41,
+        "temperature2m": 21.0,
+        "windSpeed10m": 13.1
+      },
+      {
+        "time": "2018-05-12T13:15",
+        "weatherCode": 1,
+        "condition": "Cloudy",
+        "state": {
+          "condition": "Cloudy",
+          "gripLevel": 0.97,
+          "wet": false,
+          "changingSoon": true,
+          "label": "Cloudy"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 41,
+        "temperature2m": 21.0,
+        "windSpeed10m": 13.1
+      },
       {
         "time": "2018-05-12T13:30",
         "weatherCode": 1,
@@ -943,7 +1009,7 @@ export const season2018IndyCarWeather = {
           "condition": "Cloudy",
           "gripLevel": 0.97,
           "wet": false,
-          "changingSoon": false,
+          "changingSoon": true,
           "label": "Cloudy"
         },
         "precipitationMm": 0.0,
@@ -954,7 +1020,7 @@ export const season2018IndyCarWeather = {
       },
       {
         "time": "2018-05-12T13:45",
-        "weatherCode": 1,
+        "weatherCode": 2,
         "condition": "Cloudy",
         "state": {
           "condition": "Cloudy",
@@ -965,43 +1031,43 @@ export const season2018IndyCarWeather = {
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 41,
-        "temperature2m": 21.0,
-        "windSpeed10m": 13.1
+        "cloudCover": 73,
+        "temperature2m": 21.7,
+        "windSpeed10m": 18.5
       },
       {
         "time": "2018-05-12T14:00",
-        "weatherCode": 1,
+        "weatherCode": 2,
         "condition": "Cloudy",
         "state": {
           "condition": "Cloudy",
           "gripLevel": 0.97,
           "wet": false,
-          "changingSoon": true,
+          "changingSoon": false,
           "label": "Cloudy"
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 41,
-        "temperature2m": 21.0,
-        "windSpeed10m": 13.1
+        "cloudCover": 73,
+        "temperature2m": 21.7,
+        "windSpeed10m": 18.5
       },
       {
         "time": "2018-05-12T14:15",
-        "weatherCode": 1,
+        "weatherCode": 2,
         "condition": "Cloudy",
         "state": {
           "condition": "Cloudy",
           "gripLevel": 0.97,
           "wet": false,
-          "changingSoon": true,
+          "changingSoon": false,
           "label": "Cloudy"
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 41,
-        "temperature2m": 21.0,
-        "windSpeed10m": 13.1
+        "cloudCover": 73,
+        "temperature2m": 21.7,
+        "windSpeed10m": 18.5
       },
       {
         "time": "2018-05-12T14:30",
@@ -1033,9 +1099,9 @@ export const season2018IndyCarWeather = {
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 73,
-        "temperature2m": 21.7,
-        "windSpeed10m": 18.5
+        "cloudCover": 69,
+        "temperature2m": 21.3,
+        "windSpeed10m": 19.0
       },
       {
         "time": "2018-05-12T15:00",
@@ -1050,63 +1116,12 @@ export const season2018IndyCarWeather = {
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 73,
-        "temperature2m": 21.7,
-        "windSpeed10m": 18.5
+        "cloudCover": 69,
+        "temperature2m": 21.3,
+        "windSpeed10m": 19.0
       },
       {
         "time": "2018-05-12T15:15",
-        "weatherCode": 2,
-        "condition": "Cloudy",
-        "state": {
-          "condition": "Cloudy",
-          "gripLevel": 0.97,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Cloudy"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 73,
-        "temperature2m": 21.7,
-        "windSpeed10m": 18.5
-      },
-      {
-        "time": "2018-05-12T15:30",
-        "weatherCode": 2,
-        "condition": "Cloudy",
-        "state": {
-          "condition": "Cloudy",
-          "gripLevel": 0.97,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Cloudy"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 69,
-        "temperature2m": 21.3,
-        "windSpeed10m": 19.0
-      },
-      {
-        "time": "2018-05-12T15:45",
-        "weatherCode": 2,
-        "condition": "Cloudy",
-        "state": {
-          "condition": "Cloudy",
-          "gripLevel": 0.97,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Cloudy"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 69,
-        "temperature2m": 21.3,
-        "windSpeed10m": 19.0
-      },
-      {
-        "time": "2018-05-12T16:00",
         "weatherCode": 2,
         "condition": "Cloudy",
         "state": {
@@ -1123,7 +1138,7 @@ export const season2018IndyCarWeather = {
         "windSpeed10m": 19.0
       },
       {
-        "time": "2018-05-12T16:15",
+        "time": "2018-05-12T15:30",
         "weatherCode": 2,
         "condition": "Cloudy",
         "state": {
@@ -1150,19 +1165,73 @@ export const season2018IndyCarWeather = {
       "year": 2018,
       "series": "IndyCar",
       "date": "2018-05-27",
-      "localStartTime": "13:30",
+      "localStartTime": "12:45",
       "timezone": "auto",
       "latitude": 39.8023,
       "longitude": -86.2672,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "High",
+      "startTimeMethod": "Known Indy 500 start-window estimate"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using IndyCar default 13:30"
+      "Workbook start time estimate (High): 12:45",
+      "Start time method: Known Indy 500 start-window estimate"
     ],
     "samples": [
+      {
+        "time": "2018-05-27T12:45",
+        "weatherCode": 2,
+        "condition": "Cloudy",
+        "state": {
+          "condition": "Cloudy",
+          "gripLevel": 0.97,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Cloudy"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 64,
+        "temperature2m": 21.5,
+        "windSpeed10m": 5.9
+      },
+      {
+        "time": "2018-05-27T13:00",
+        "weatherCode": 2,
+        "condition": "Cloudy",
+        "state": {
+          "condition": "Cloudy",
+          "gripLevel": 0.97,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Cloudy"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 64,
+        "temperature2m": 21.5,
+        "windSpeed10m": 5.9
+      },
+      {
+        "time": "2018-05-27T13:15",
+        "weatherCode": 2,
+        "condition": "Cloudy",
+        "state": {
+          "condition": "Cloudy",
+          "gripLevel": 0.97,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Cloudy"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 64,
+        "temperature2m": 21.5,
+        "windSpeed10m": 5.9
+      },
       {
         "time": "2018-05-27T13:30",
         "weatherCode": 2,
@@ -1193,9 +1262,9 @@ export const season2018IndyCarWeather = {
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 64,
-        "temperature2m": 21.5,
-        "windSpeed10m": 5.9
+        "cloudCover": 51,
+        "temperature2m": 21.0,
+        "windSpeed10m": 6.0
       },
       {
         "time": "2018-05-27T14:00",
@@ -1210,9 +1279,9 @@ export const season2018IndyCarWeather = {
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 64,
-        "temperature2m": 21.5,
-        "windSpeed10m": 5.9
+        "cloudCover": 51,
+        "temperature2m": 21.0,
+        "windSpeed10m": 6.0
       },
       {
         "time": "2018-05-27T14:15",
@@ -1222,14 +1291,14 @@ export const season2018IndyCarWeather = {
           "condition": "Cloudy",
           "gripLevel": 0.97,
           "wet": false,
-          "changingSoon": false,
+          "changingSoon": true,
           "label": "Cloudy"
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 64,
-        "temperature2m": 21.5,
-        "windSpeed10m": 5.9
+        "cloudCover": 51,
+        "temperature2m": 21.0,
+        "windSpeed10m": 6.0
       },
       {
         "time": "2018-05-27T14:30",
@@ -1239,7 +1308,7 @@ export const season2018IndyCarWeather = {
           "condition": "Cloudy",
           "gripLevel": 0.97,
           "wet": false,
-          "changingSoon": false,
+          "changingSoon": true,
           "label": "Cloudy"
         },
         "precipitationMm": 0.0,
@@ -1250,7 +1319,7 @@ export const season2018IndyCarWeather = {
       },
       {
         "time": "2018-05-27T14:45",
-        "weatherCode": 2,
+        "weatherCode": 1,
         "condition": "Cloudy",
         "state": {
           "condition": "Cloudy",
@@ -1261,30 +1330,30 @@ export const season2018IndyCarWeather = {
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 51,
-        "temperature2m": 21.0,
-        "windSpeed10m": 6.0
+        "cloudCover": 21,
+        "temperature2m": 20.2,
+        "windSpeed10m": 5.6
       },
       {
         "time": "2018-05-27T15:00",
-        "weatherCode": 2,
+        "weatherCode": 1,
         "condition": "Cloudy",
         "state": {
           "condition": "Cloudy",
           "gripLevel": 0.97,
           "wet": false,
-          "changingSoon": true,
+          "changingSoon": false,
           "label": "Cloudy"
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 51,
-        "temperature2m": 21.0,
-        "windSpeed10m": 6.0
+        "cloudCover": 21,
+        "temperature2m": 20.2,
+        "windSpeed10m": 5.6
       },
       {
         "time": "2018-05-27T15:15",
-        "weatherCode": 2,
+        "weatherCode": 1,
         "condition": "Cloudy",
         "state": {
           "condition": "Cloudy",
@@ -1295,63 +1364,12 @@ export const season2018IndyCarWeather = {
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 51,
-        "temperature2m": 21.0,
-        "windSpeed10m": 6.0
+        "cloudCover": 21,
+        "temperature2m": 20.2,
+        "windSpeed10m": 5.6
       },
       {
         "time": "2018-05-27T15:30",
-        "weatherCode": 1,
-        "condition": "Cloudy",
-        "state": {
-          "condition": "Cloudy",
-          "gripLevel": 0.97,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Cloudy"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 21,
-        "temperature2m": 20.2,
-        "windSpeed10m": 5.6
-      },
-      {
-        "time": "2018-05-27T15:45",
-        "weatherCode": 1,
-        "condition": "Cloudy",
-        "state": {
-          "condition": "Cloudy",
-          "gripLevel": 0.97,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Cloudy"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 21,
-        "temperature2m": 20.2,
-        "windSpeed10m": 5.6
-      },
-      {
-        "time": "2018-05-27T16:00",
-        "weatherCode": 1,
-        "condition": "Cloudy",
-        "state": {
-          "condition": "Cloudy",
-          "gripLevel": 0.97,
-          "wet": false,
-          "changingSoon": true,
-          "label": "Cloudy"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 21,
-        "temperature2m": 20.2,
-        "windSpeed10m": 5.6
-      },
-      {
-        "time": "2018-05-27T16:15",
         "weatherCode": 1,
         "condition": "Cloudy",
         "state": {
@@ -1378,19 +1396,56 @@ export const season2018IndyCarWeather = {
       "year": 2018,
       "series": "IndyCar",
       "date": "2018-06-02",
-      "localStartTime": "13:30",
+      "localStartTime": "13:00",
       "timezone": "auto",
       "latitude": 42.3314,
       "longitude": -83.0458,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "Low",
+      "startTimeMethod": "Series/track-type heuristic"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using IndyCar default 13:30"
+      "Workbook start time estimate (Low): 13:00",
+      "Start time method: Series/track-type heuristic"
     ],
     "samples": [
+      {
+        "time": "2018-06-02T13:00",
+        "weatherCode": 1,
+        "condition": "Cloudy",
+        "state": {
+          "condition": "Cloudy",
+          "gripLevel": 0.97,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Cloudy"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 36,
+        "temperature2m": 15.3,
+        "windSpeed10m": 24.9
+      },
+      {
+        "time": "2018-06-02T13:15",
+        "weatherCode": 1,
+        "condition": "Cloudy",
+        "state": {
+          "condition": "Cloudy",
+          "gripLevel": 0.97,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Cloudy"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 36,
+        "temperature2m": 15.3,
+        "windSpeed10m": 24.9
+      },
       {
         "time": "2018-06-02T13:30",
         "weatherCode": 1,
@@ -1399,7 +1454,7 @@ export const season2018IndyCarWeather = {
           "condition": "Cloudy",
           "gripLevel": 0.97,
           "wet": false,
-          "changingSoon": false,
+          "changingSoon": true,
           "label": "Cloudy"
         },
         "precipitationMm": 0.0,
@@ -1416,7 +1471,7 @@ export const season2018IndyCarWeather = {
           "condition": "Cloudy",
           "gripLevel": 0.97,
           "wet": false,
-          "changingSoon": false,
+          "changingSoon": true,
           "label": "Cloudy"
         },
         "precipitationMm": 0.0,
@@ -1427,37 +1482,37 @@ export const season2018IndyCarWeather = {
       },
       {
         "time": "2018-06-02T14:00",
-        "weatherCode": 1,
-        "condition": "Cloudy",
+        "weatherCode": 0,
+        "condition": "Dry",
         "state": {
-          "condition": "Cloudy",
-          "gripLevel": 0.97,
+          "condition": "Dry",
+          "gripLevel": 1,
           "wet": false,
-          "changingSoon": true,
-          "label": "Cloudy"
+          "changingSoon": false,
+          "label": "Dry"
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 36,
-        "temperature2m": 15.3,
-        "windSpeed10m": 24.9
+        "cloudCover": 7,
+        "temperature2m": 14.8,
+        "windSpeed10m": 23.8
       },
       {
         "time": "2018-06-02T14:15",
-        "weatherCode": 1,
-        "condition": "Cloudy",
+        "weatherCode": 0,
+        "condition": "Dry",
         "state": {
-          "condition": "Cloudy",
-          "gripLevel": 0.97,
+          "condition": "Dry",
+          "gripLevel": 1,
           "wet": false,
-          "changingSoon": true,
-          "label": "Cloudy"
+          "changingSoon": false,
+          "label": "Dry"
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 36,
-        "temperature2m": 15.3,
-        "windSpeed10m": 24.9
+        "cloudCover": 7,
+        "temperature2m": 14.8,
+        "windSpeed10m": 23.8
       },
       {
         "time": "2018-06-02T14:30",
@@ -1467,7 +1522,7 @@ export const season2018IndyCarWeather = {
           "condition": "Dry",
           "gripLevel": 1,
           "wet": false,
-          "changingSoon": false,
+          "changingSoon": true,
           "label": "Dry"
         },
         "precipitationMm": 0.0,
@@ -1484,7 +1539,7 @@ export const season2018IndyCarWeather = {
           "condition": "Dry",
           "gripLevel": 1,
           "wet": false,
-          "changingSoon": false,
+          "changingSoon": true,
           "label": "Dry"
         },
         "precipitationMm": 0.0,
@@ -1495,37 +1550,37 @@ export const season2018IndyCarWeather = {
       },
       {
         "time": "2018-06-02T15:00",
-        "weatherCode": 0,
-        "condition": "Dry",
+        "weatherCode": 1,
+        "condition": "Cloudy",
         "state": {
-          "condition": "Dry",
-          "gripLevel": 1,
+          "condition": "Cloudy",
+          "gripLevel": 0.97,
           "wet": false,
-          "changingSoon": true,
-          "label": "Dry"
+          "changingSoon": false,
+          "label": "Cloudy"
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 7,
-        "temperature2m": 14.8,
-        "windSpeed10m": 23.8
+        "cloudCover": 22,
+        "temperature2m": 14.5,
+        "windSpeed10m": 21.2
       },
       {
         "time": "2018-06-02T15:15",
-        "weatherCode": 0,
-        "condition": "Dry",
+        "weatherCode": 1,
+        "condition": "Cloudy",
         "state": {
-          "condition": "Dry",
-          "gripLevel": 1,
+          "condition": "Cloudy",
+          "gripLevel": 0.97,
           "wet": false,
-          "changingSoon": true,
-          "label": "Dry"
+          "changingSoon": false,
+          "label": "Cloudy"
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 7,
-        "temperature2m": 14.8,
-        "windSpeed10m": 23.8
+        "cloudCover": 22,
+        "temperature2m": 14.5,
+        "windSpeed10m": 21.2
       },
       {
         "time": "2018-06-02T15:30",
@@ -1560,40 +1615,6 @@ export const season2018IndyCarWeather = {
         "cloudCover": 22,
         "temperature2m": 14.5,
         "windSpeed10m": 21.2
-      },
-      {
-        "time": "2018-06-02T16:00",
-        "weatherCode": 1,
-        "condition": "Cloudy",
-        "state": {
-          "condition": "Cloudy",
-          "gripLevel": 0.97,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Cloudy"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 22,
-        "temperature2m": 14.5,
-        "windSpeed10m": 21.2
-      },
-      {
-        "time": "2018-06-02T16:15",
-        "weatherCode": 1,
-        "condition": "Cloudy",
-        "state": {
-          "condition": "Cloudy",
-          "gripLevel": 0.97,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Cloudy"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 22,
-        "temperature2m": 14.5,
-        "windSpeed10m": 21.2
       }
     ]
   },
@@ -1606,19 +1627,56 @@ export const season2018IndyCarWeather = {
       "year": 2018,
       "series": "IndyCar",
       "date": "2018-06-03",
-      "localStartTime": "13:30",
+      "localStartTime": "13:00",
       "timezone": "auto",
       "latitude": 42.3314,
       "longitude": -83.0458,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "Low",
+      "startTimeMethod": "Series/track-type heuristic"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using IndyCar default 13:30"
+      "Workbook start time estimate (Low): 13:00",
+      "Start time method: Series/track-type heuristic"
     ],
     "samples": [
+      {
+        "time": "2018-06-03T13:00",
+        "weatherCode": 1,
+        "condition": "Cloudy",
+        "state": {
+          "condition": "Cloudy",
+          "gripLevel": 0.97,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Cloudy"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 48,
+        "temperature2m": 15.8,
+        "windSpeed10m": 7.8
+      },
+      {
+        "time": "2018-06-03T13:15",
+        "weatherCode": 1,
+        "condition": "Cloudy",
+        "state": {
+          "condition": "Cloudy",
+          "gripLevel": 0.97,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Cloudy"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 48,
+        "temperature2m": 15.8,
+        "windSpeed10m": 7.8
+      },
       {
         "time": "2018-06-03T13:30",
         "weatherCode": 1,
@@ -1627,7 +1685,7 @@ export const season2018IndyCarWeather = {
           "condition": "Cloudy",
           "gripLevel": 0.97,
           "wet": false,
-          "changingSoon": false,
+          "changingSoon": true,
           "label": "Cloudy"
         },
         "precipitationMm": 0.0,
@@ -1644,7 +1702,7 @@ export const season2018IndyCarWeather = {
           "condition": "Cloudy",
           "gripLevel": 0.97,
           "wet": false,
-          "changingSoon": false,
+          "changingSoon": true,
           "label": "Cloudy"
         },
         "precipitationMm": 0.0,
@@ -1655,37 +1713,37 @@ export const season2018IndyCarWeather = {
       },
       {
         "time": "2018-06-03T14:00",
-        "weatherCode": 1,
+        "weatherCode": 2,
         "condition": "Cloudy",
         "state": {
           "condition": "Cloudy",
           "gripLevel": 0.97,
           "wet": false,
-          "changingSoon": true,
+          "changingSoon": false,
           "label": "Cloudy"
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 48,
-        "temperature2m": 15.8,
-        "windSpeed10m": 7.8
+        "cloudCover": 59,
+        "temperature2m": 15.4,
+        "windSpeed10m": 4.7
       },
       {
         "time": "2018-06-03T14:15",
-        "weatherCode": 1,
+        "weatherCode": 2,
         "condition": "Cloudy",
         "state": {
           "condition": "Cloudy",
           "gripLevel": 0.97,
           "wet": false,
-          "changingSoon": true,
+          "changingSoon": false,
           "label": "Cloudy"
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 48,
-        "temperature2m": 15.8,
-        "windSpeed10m": 7.8
+        "cloudCover": 59,
+        "temperature2m": 15.4,
+        "windSpeed10m": 4.7
       },
       {
         "time": "2018-06-03T14:30",
@@ -1695,7 +1753,7 @@ export const season2018IndyCarWeather = {
           "condition": "Cloudy",
           "gripLevel": 0.97,
           "wet": false,
-          "changingSoon": false,
+          "changingSoon": true,
           "label": "Cloudy"
         },
         "precipitationMm": 0.0,
@@ -1712,7 +1770,7 @@ export const season2018IndyCarWeather = {
           "condition": "Cloudy",
           "gripLevel": 0.97,
           "wet": false,
-          "changingSoon": false,
+          "changingSoon": true,
           "label": "Cloudy"
         },
         "precipitationMm": 0.0,
@@ -1723,37 +1781,37 @@ export const season2018IndyCarWeather = {
       },
       {
         "time": "2018-06-03T15:00",
-        "weatherCode": 2,
+        "weatherCode": 1,
         "condition": "Cloudy",
         "state": {
           "condition": "Cloudy",
           "gripLevel": 0.97,
           "wet": false,
-          "changingSoon": true,
+          "changingSoon": false,
           "label": "Cloudy"
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 59,
-        "temperature2m": 15.4,
-        "windSpeed10m": 4.7
+        "cloudCover": 44,
+        "temperature2m": 15.3,
+        "windSpeed10m": 5.8
       },
       {
         "time": "2018-06-03T15:15",
-        "weatherCode": 2,
+        "weatherCode": 1,
         "condition": "Cloudy",
         "state": {
           "condition": "Cloudy",
           "gripLevel": 0.97,
           "wet": false,
-          "changingSoon": true,
+          "changingSoon": false,
           "label": "Cloudy"
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 59,
-        "temperature2m": 15.4,
-        "windSpeed10m": 4.7
+        "cloudCover": 44,
+        "temperature2m": 15.3,
+        "windSpeed10m": 5.8
       },
       {
         "time": "2018-06-03T15:30",
@@ -1763,7 +1821,7 @@ export const season2018IndyCarWeather = {
           "condition": "Cloudy",
           "gripLevel": 0.97,
           "wet": false,
-          "changingSoon": false,
+          "changingSoon": true,
           "label": "Cloudy"
         },
         "precipitationMm": 0.0,
@@ -1774,40 +1832,6 @@ export const season2018IndyCarWeather = {
       },
       {
         "time": "2018-06-03T15:45",
-        "weatherCode": 1,
-        "condition": "Cloudy",
-        "state": {
-          "condition": "Cloudy",
-          "gripLevel": 0.97,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Cloudy"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 44,
-        "temperature2m": 15.3,
-        "windSpeed10m": 5.8
-      },
-      {
-        "time": "2018-06-03T16:00",
-        "weatherCode": 1,
-        "condition": "Cloudy",
-        "state": {
-          "condition": "Cloudy",
-          "gripLevel": 0.97,
-          "wet": false,
-          "changingSoon": true,
-          "label": "Cloudy"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 44,
-        "temperature2m": 15.3,
-        "windSpeed10m": 5.8
-      },
-      {
-        "time": "2018-06-03T16:15",
         "weatherCode": 1,
         "condition": "Cloudy",
         "state": {
@@ -1834,21 +1858,24 @@ export const season2018IndyCarWeather = {
       "year": 2018,
       "series": "IndyCar",
       "date": "2018-06-09",
-      "localStartTime": "13:30",
+      "localStartTime": "20:00",
       "timezone": "auto",
       "latitude": 32.7555,
       "longitude": -97.3308,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "High",
+      "startTimeMethod": "Known Texas night oval pattern"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using IndyCar default 13:30"
+      "Workbook start time estimate (High): 20:00",
+      "Start time method: Known Texas night oval pattern"
     ],
     "samples": [
       {
-        "time": "2018-06-09T13:30",
+        "time": "2018-06-09T20:00",
         "weatherCode": 1,
         "condition": "Cloudy",
         "state": {
@@ -1865,7 +1892,7 @@ export const season2018IndyCarWeather = {
         "windSpeed10m": 13.5
       },
       {
-        "time": "2018-06-09T13:45",
+        "time": "2018-06-09T20:15",
         "weatherCode": 1,
         "condition": "Cloudy",
         "state": {
@@ -1882,7 +1909,7 @@ export const season2018IndyCarWeather = {
         "windSpeed10m": 13.5
       },
       {
-        "time": "2018-06-09T14:00",
+        "time": "2018-06-09T20:30",
         "weatherCode": 1,
         "condition": "Cloudy",
         "state": {
@@ -1899,7 +1926,7 @@ export const season2018IndyCarWeather = {
         "windSpeed10m": 13.5
       },
       {
-        "time": "2018-06-09T14:15",
+        "time": "2018-06-09T20:45",
         "weatherCode": 1,
         "condition": "Cloudy",
         "state": {
@@ -1916,7 +1943,7 @@ export const season2018IndyCarWeather = {
         "windSpeed10m": 13.5
       },
       {
-        "time": "2018-06-09T14:30",
+        "time": "2018-06-09T21:00",
         "weatherCode": 1,
         "condition": "Cloudy",
         "state": {
@@ -1933,7 +1960,7 @@ export const season2018IndyCarWeather = {
         "windSpeed10m": 20.8
       },
       {
-        "time": "2018-06-09T14:45",
+        "time": "2018-06-09T21:15",
         "weatherCode": 1,
         "condition": "Cloudy",
         "state": {
@@ -1950,7 +1977,7 @@ export const season2018IndyCarWeather = {
         "windSpeed10m": 20.8
       },
       {
-        "time": "2018-06-09T15:00",
+        "time": "2018-06-09T21:30",
         "weatherCode": 1,
         "condition": "Cloudy",
         "state": {
@@ -1967,7 +1994,7 @@ export const season2018IndyCarWeather = {
         "windSpeed10m": 20.8
       },
       {
-        "time": "2018-06-09T15:15",
+        "time": "2018-06-09T21:45",
         "weatherCode": 1,
         "condition": "Cloudy",
         "state": {
@@ -1984,7 +2011,7 @@ export const season2018IndyCarWeather = {
         "windSpeed10m": 20.8
       },
       {
-        "time": "2018-06-09T15:30",
+        "time": "2018-06-09T22:00",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -2001,7 +2028,7 @@ export const season2018IndyCarWeather = {
         "windSpeed10m": 20.0
       },
       {
-        "time": "2018-06-09T15:45",
+        "time": "2018-06-09T22:15",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -2018,7 +2045,7 @@ export const season2018IndyCarWeather = {
         "windSpeed10m": 20.0
       },
       {
-        "time": "2018-06-09T16:00",
+        "time": "2018-06-09T22:30",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -2035,7 +2062,7 @@ export const season2018IndyCarWeather = {
         "windSpeed10m": 20.0
       },
       {
-        "time": "2018-06-09T16:15",
+        "time": "2018-06-09T22:45",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -2062,21 +2089,24 @@ export const season2018IndyCarWeather = {
       "year": 2018,
       "series": "IndyCar",
       "date": "2018-06-24",
-      "localStartTime": "13:30",
+      "localStartTime": "12:30",
       "timezone": "auto",
       "latitude": 43.8333,
       "longitude": -88.017,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "Medium",
+      "startTimeMethod": "Road-course midday estimate"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using IndyCar default 13:30"
+      "Workbook start time estimate (Medium): 12:30",
+      "Start time method: Road-course midday estimate"
     ],
     "samples": [
       {
-        "time": "2018-06-24T13:30",
+        "time": "2018-06-24T12:30",
         "weatherCode": 51,
         "condition": "LightRain",
         "state": {
@@ -2091,6 +2121,74 @@ export const season2018IndyCarWeather = {
         "cloudCover": 83,
         "temperature2m": 15.7,
         "windSpeed10m": 2.5
+      },
+      {
+        "time": "2018-06-24T12:45",
+        "weatherCode": 51,
+        "condition": "LightRain",
+        "state": {
+          "condition": "LightRain",
+          "gripLevel": 0.72,
+          "wet": true,
+          "changingSoon": false,
+          "label": "Light Rain"
+        },
+        "precipitationMm": 0.2,
+        "rainMm": 0.2,
+        "cloudCover": 83,
+        "temperature2m": 15.7,
+        "windSpeed10m": 2.5
+      },
+      {
+        "time": "2018-06-24T13:00",
+        "weatherCode": 51,
+        "condition": "LightRain",
+        "state": {
+          "condition": "LightRain",
+          "gripLevel": 0.72,
+          "wet": true,
+          "changingSoon": false,
+          "label": "Light Rain"
+        },
+        "precipitationMm": 0.2,
+        "rainMm": 0.2,
+        "cloudCover": 83,
+        "temperature2m": 15.7,
+        "windSpeed10m": 2.5
+      },
+      {
+        "time": "2018-06-24T13:15",
+        "weatherCode": 51,
+        "condition": "LightRain",
+        "state": {
+          "condition": "LightRain",
+          "gripLevel": 0.72,
+          "wet": true,
+          "changingSoon": false,
+          "label": "Light Rain"
+        },
+        "precipitationMm": 0.2,
+        "rainMm": 0.2,
+        "cloudCover": 83,
+        "temperature2m": 15.7,
+        "windSpeed10m": 2.5
+      },
+      {
+        "time": "2018-06-24T13:30",
+        "weatherCode": 51,
+        "condition": "LightRain",
+        "state": {
+          "condition": "LightRain",
+          "gripLevel": 0.72,
+          "wet": true,
+          "changingSoon": false,
+          "label": "Light Rain"
+        },
+        "precipitationMm": 0.1,
+        "rainMm": 0.1,
+        "cloudCover": 94,
+        "temperature2m": 15.6,
+        "windSpeed10m": 4.2
       },
       {
         "time": "2018-06-24T13:45",
@@ -2103,11 +2201,11 @@ export const season2018IndyCarWeather = {
           "changingSoon": false,
           "label": "Light Rain"
         },
-        "precipitationMm": 0.2,
-        "rainMm": 0.2,
-        "cloudCover": 83,
-        "temperature2m": 15.7,
-        "windSpeed10m": 2.5
+        "precipitationMm": 0.1,
+        "rainMm": 0.1,
+        "cloudCover": 94,
+        "temperature2m": 15.6,
+        "windSpeed10m": 4.2
       },
       {
         "time": "2018-06-24T14:00",
@@ -2120,11 +2218,11 @@ export const season2018IndyCarWeather = {
           "changingSoon": false,
           "label": "Light Rain"
         },
-        "precipitationMm": 0.2,
-        "rainMm": 0.2,
-        "cloudCover": 83,
-        "temperature2m": 15.7,
-        "windSpeed10m": 2.5
+        "precipitationMm": 0.1,
+        "rainMm": 0.1,
+        "cloudCover": 94,
+        "temperature2m": 15.6,
+        "windSpeed10m": 4.2
       },
       {
         "time": "2018-06-24T14:15",
@@ -2137,11 +2235,11 @@ export const season2018IndyCarWeather = {
           "changingSoon": false,
           "label": "Light Rain"
         },
-        "precipitationMm": 0.2,
-        "rainMm": 0.2,
-        "cloudCover": 83,
-        "temperature2m": 15.7,
-        "windSpeed10m": 2.5
+        "precipitationMm": 0.1,
+        "rainMm": 0.1,
+        "cloudCover": 94,
+        "temperature2m": 15.6,
+        "windSpeed10m": 4.2
       },
       {
         "time": "2018-06-24T14:30",
@@ -2156,9 +2254,9 @@ export const season2018IndyCarWeather = {
         },
         "precipitationMm": 0.1,
         "rainMm": 0.1,
-        "cloudCover": 94,
-        "temperature2m": 15.6,
-        "windSpeed10m": 4.2
+        "cloudCover": 100,
+        "temperature2m": 15.0,
+        "windSpeed10m": 5.2
       },
       {
         "time": "2018-06-24T14:45",
@@ -2173,80 +2271,12 @@ export const season2018IndyCarWeather = {
         },
         "precipitationMm": 0.1,
         "rainMm": 0.1,
-        "cloudCover": 94,
-        "temperature2m": 15.6,
-        "windSpeed10m": 4.2
+        "cloudCover": 100,
+        "temperature2m": 15.0,
+        "windSpeed10m": 5.2
       },
       {
         "time": "2018-06-24T15:00",
-        "weatherCode": 51,
-        "condition": "LightRain",
-        "state": {
-          "condition": "LightRain",
-          "gripLevel": 0.72,
-          "wet": true,
-          "changingSoon": false,
-          "label": "Light Rain"
-        },
-        "precipitationMm": 0.1,
-        "rainMm": 0.1,
-        "cloudCover": 94,
-        "temperature2m": 15.6,
-        "windSpeed10m": 4.2
-      },
-      {
-        "time": "2018-06-24T15:15",
-        "weatherCode": 51,
-        "condition": "LightRain",
-        "state": {
-          "condition": "LightRain",
-          "gripLevel": 0.72,
-          "wet": true,
-          "changingSoon": false,
-          "label": "Light Rain"
-        },
-        "precipitationMm": 0.1,
-        "rainMm": 0.1,
-        "cloudCover": 94,
-        "temperature2m": 15.6,
-        "windSpeed10m": 4.2
-      },
-      {
-        "time": "2018-06-24T15:30",
-        "weatherCode": 51,
-        "condition": "LightRain",
-        "state": {
-          "condition": "LightRain",
-          "gripLevel": 0.72,
-          "wet": true,
-          "changingSoon": false,
-          "label": "Light Rain"
-        },
-        "precipitationMm": 0.1,
-        "rainMm": 0.1,
-        "cloudCover": 100,
-        "temperature2m": 15.0,
-        "windSpeed10m": 5.2
-      },
-      {
-        "time": "2018-06-24T15:45",
-        "weatherCode": 51,
-        "condition": "LightRain",
-        "state": {
-          "condition": "LightRain",
-          "gripLevel": 0.72,
-          "wet": true,
-          "changingSoon": false,
-          "label": "Light Rain"
-        },
-        "precipitationMm": 0.1,
-        "rainMm": 0.1,
-        "cloudCover": 100,
-        "temperature2m": 15.0,
-        "windSpeed10m": 5.2
-      },
-      {
-        "time": "2018-06-24T16:00",
         "weatherCode": 51,
         "condition": "LightRain",
         "state": {
@@ -2263,7 +2293,7 @@ export const season2018IndyCarWeather = {
         "windSpeed10m": 5.2
       },
       {
-        "time": "2018-06-24T16:15",
+        "time": "2018-06-24T15:15",
         "weatherCode": 51,
         "condition": "LightRain",
         "state": {
@@ -2290,19 +2320,56 @@ export const season2018IndyCarWeather = {
       "year": 2018,
       "series": "IndyCar",
       "date": "2018-07-08",
-      "localStartTime": "13:30",
+      "localStartTime": "13:00",
       "timezone": "auto",
       "latitude": 41.6997,
       "longitude": -93.0479,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "Low",
+      "startTimeMethod": "Oval daytime heuristic"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using IndyCar default 13:30"
+      "Workbook start time estimate (Low): 13:00",
+      "Start time method: Oval daytime heuristic"
     ],
     "samples": [
+      {
+        "time": "2018-07-08T13:00",
+        "weatherCode": 0,
+        "condition": "Dry",
+        "state": {
+          "condition": "Dry",
+          "gripLevel": 1,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Dry"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 0,
+        "temperature2m": 19.1,
+        "windSpeed10m": 14.5
+      },
+      {
+        "time": "2018-07-08T13:15",
+        "weatherCode": 0,
+        "condition": "Dry",
+        "state": {
+          "condition": "Dry",
+          "gripLevel": 1,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Dry"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 0,
+        "temperature2m": 19.1,
+        "windSpeed10m": 14.5
+      },
       {
         "time": "2018-07-08T13:30",
         "weatherCode": 0,
@@ -2351,8 +2418,8 @@ export const season2018IndyCarWeather = {
         "precipitationMm": 0.0,
         "rainMm": 0.0,
         "cloudCover": 0,
-        "temperature2m": 19.1,
-        "windSpeed10m": 14.5
+        "temperature2m": 18.5,
+        "windSpeed10m": 13.9
       },
       {
         "time": "2018-07-08T14:15",
@@ -2368,8 +2435,8 @@ export const season2018IndyCarWeather = {
         "precipitationMm": 0.0,
         "rainMm": 0.0,
         "cloudCover": 0,
-        "temperature2m": 19.1,
-        "windSpeed10m": 14.5
+        "temperature2m": 18.5,
+        "windSpeed10m": 13.9
       },
       {
         "time": "2018-07-08T14:30",
@@ -2419,8 +2486,8 @@ export const season2018IndyCarWeather = {
         "precipitationMm": 0.0,
         "rainMm": 0.0,
         "cloudCover": 0,
-        "temperature2m": 18.5,
-        "windSpeed10m": 13.9
+        "temperature2m": 17.8,
+        "windSpeed10m": 12.0
       },
       {
         "time": "2018-07-08T15:15",
@@ -2436,8 +2503,8 @@ export const season2018IndyCarWeather = {
         "precipitationMm": 0.0,
         "rainMm": 0.0,
         "cloudCover": 0,
-        "temperature2m": 18.5,
-        "windSpeed10m": 13.9
+        "temperature2m": 17.8,
+        "windSpeed10m": 12.0
       },
       {
         "time": "2018-07-08T15:30",
@@ -2472,40 +2539,6 @@ export const season2018IndyCarWeather = {
         "cloudCover": 0,
         "temperature2m": 17.8,
         "windSpeed10m": 12.0
-      },
-      {
-        "time": "2018-07-08T16:00",
-        "weatherCode": 0,
-        "condition": "Dry",
-        "state": {
-          "condition": "Dry",
-          "gripLevel": 1,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Dry"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 0,
-        "temperature2m": 17.8,
-        "windSpeed10m": 12.0
-      },
-      {
-        "time": "2018-07-08T16:15",
-        "weatherCode": 0,
-        "condition": "Dry",
-        "state": {
-          "condition": "Dry",
-          "gripLevel": 1,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Dry"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 0,
-        "temperature2m": 17.8,
-        "windSpeed10m": 12.0
       }
     ]
   },
@@ -2518,19 +2551,56 @@ export const season2018IndyCarWeather = {
       "year": 2018,
       "series": "IndyCar",
       "date": "2018-07-15",
-      "localStartTime": "13:30",
+      "localStartTime": "13:00",
       "timezone": "auto",
       "latitude": 43.6532,
       "longitude": -79.3832,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "Medium",
+      "startTimeMethod": "Street race afternoon estimate"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using IndyCar default 13:30"
+      "Workbook start time estimate (Medium): 13:00",
+      "Start time method: Street race afternoon estimate"
     ],
     "samples": [
+      {
+        "time": "2018-07-15T13:00",
+        "weatherCode": 1,
+        "condition": "Cloudy",
+        "state": {
+          "condition": "Cloudy",
+          "gripLevel": 0.97,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Cloudy"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 22,
+        "temperature2m": 22.5,
+        "windSpeed10m": 5.2
+      },
+      {
+        "time": "2018-07-15T13:15",
+        "weatherCode": 1,
+        "condition": "Cloudy",
+        "state": {
+          "condition": "Cloudy",
+          "gripLevel": 0.97,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Cloudy"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 22,
+        "temperature2m": 22.5,
+        "windSpeed10m": 5.2
+      },
       {
         "time": "2018-07-15T13:30",
         "weatherCode": 1,
@@ -2578,9 +2648,9 @@ export const season2018IndyCarWeather = {
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 22,
+        "cloudCover": 21,
         "temperature2m": 22.5,
-        "windSpeed10m": 5.2
+        "windSpeed10m": 5.6
       },
       {
         "time": "2018-07-15T14:15",
@@ -2595,9 +2665,9 @@ export const season2018IndyCarWeather = {
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 22,
+        "cloudCover": 21,
         "temperature2m": 22.5,
-        "windSpeed10m": 5.2
+        "windSpeed10m": 5.6
       },
       {
         "time": "2018-07-15T14:30",
@@ -2607,7 +2677,7 @@ export const season2018IndyCarWeather = {
           "condition": "Cloudy",
           "gripLevel": 0.97,
           "wet": false,
-          "changingSoon": false,
+          "changingSoon": true,
           "label": "Cloudy"
         },
         "precipitationMm": 0.0,
@@ -2624,7 +2694,7 @@ export const season2018IndyCarWeather = {
           "condition": "Cloudy",
           "gripLevel": 0.97,
           "wet": false,
-          "changingSoon": false,
+          "changingSoon": true,
           "label": "Cloudy"
         },
         "precipitationMm": 0.0,
@@ -2635,37 +2705,37 @@ export const season2018IndyCarWeather = {
       },
       {
         "time": "2018-07-15T15:00",
-        "weatherCode": 1,
-        "condition": "Cloudy",
+        "weatherCode": 51,
+        "condition": "LightRain",
         "state": {
-          "condition": "Cloudy",
-          "gripLevel": 0.97,
-          "wet": false,
-          "changingSoon": true,
-          "label": "Cloudy"
+          "condition": "LightRain",
+          "gripLevel": 0.72,
+          "wet": true,
+          "changingSoon": false,
+          "label": "Light Rain"
         },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 21,
-        "temperature2m": 22.5,
-        "windSpeed10m": 5.6
+        "precipitationMm": 0.1,
+        "rainMm": 0.1,
+        "cloudCover": 40,
+        "temperature2m": 21.9,
+        "windSpeed10m": 6.0
       },
       {
         "time": "2018-07-15T15:15",
-        "weatherCode": 1,
-        "condition": "Cloudy",
+        "weatherCode": 51,
+        "condition": "LightRain",
         "state": {
-          "condition": "Cloudy",
-          "gripLevel": 0.97,
-          "wet": false,
-          "changingSoon": true,
-          "label": "Cloudy"
+          "condition": "LightRain",
+          "gripLevel": 0.72,
+          "wet": true,
+          "changingSoon": false,
+          "label": "Light Rain"
         },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 21,
-        "temperature2m": 22.5,
-        "windSpeed10m": 5.6
+        "precipitationMm": 0.1,
+        "rainMm": 0.1,
+        "cloudCover": 40,
+        "temperature2m": 21.9,
+        "windSpeed10m": 6.0
       },
       {
         "time": "2018-07-15T15:30",
@@ -2700,40 +2770,6 @@ export const season2018IndyCarWeather = {
         "cloudCover": 40,
         "temperature2m": 21.9,
         "windSpeed10m": 6.0
-      },
-      {
-        "time": "2018-07-15T16:00",
-        "weatherCode": 51,
-        "condition": "LightRain",
-        "state": {
-          "condition": "LightRain",
-          "gripLevel": 0.72,
-          "wet": true,
-          "changingSoon": false,
-          "label": "Light Rain"
-        },
-        "precipitationMm": 0.1,
-        "rainMm": 0.1,
-        "cloudCover": 40,
-        "temperature2m": 21.9,
-        "windSpeed10m": 6.0
-      },
-      {
-        "time": "2018-07-15T16:15",
-        "weatherCode": 51,
-        "condition": "LightRain",
-        "state": {
-          "condition": "LightRain",
-          "gripLevel": 0.72,
-          "wet": true,
-          "changingSoon": false,
-          "label": "Light Rain"
-        },
-        "precipitationMm": 0.1,
-        "rainMm": 0.1,
-        "cloudCover": 40,
-        "temperature2m": 21.9,
-        "windSpeed10m": 6.0
       }
     ]
   },
@@ -2751,12 +2787,15 @@ export const season2018IndyCarWeather = {
       "latitude": 40.6787,
       "longitude": -82.5824,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "Medium",
+      "startTimeMethod": "Road-course afternoon estimate"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using IndyCar default 13:30"
+      "Workbook start time estimate (Medium): 13:30",
+      "Start time method: Road-course afternoon estimate"
     ],
     "samples": [
       {
@@ -2974,19 +3013,56 @@ export const season2018IndyCarWeather = {
       "year": 2018,
       "series": "IndyCar",
       "date": "2018-08-19",
-      "localStartTime": "13:30",
+      "localStartTime": "13:00",
       "timezone": "auto",
       "latitude": 41.054,
       "longitude": -75.5027,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "Low",
+      "startTimeMethod": "Oval daytime heuristic"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using IndyCar default 13:30"
+      "Workbook start time estimate (Low): 13:00",
+      "Start time method: Oval daytime heuristic"
     ],
     "samples": [
+      {
+        "time": "2018-08-19T13:00",
+        "weatherCode": 2,
+        "condition": "Cloudy",
+        "state": {
+          "condition": "Cloudy",
+          "gripLevel": 0.97,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Cloudy"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 56,
+        "temperature2m": 18.6,
+        "windSpeed10m": 14.1
+      },
+      {
+        "time": "2018-08-19T13:15",
+        "weatherCode": 2,
+        "condition": "Cloudy",
+        "state": {
+          "condition": "Cloudy",
+          "gripLevel": 0.97,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Cloudy"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 56,
+        "temperature2m": 18.6,
+        "windSpeed10m": 14.1
+      },
       {
         "time": "2018-08-19T13:30",
         "weatherCode": 2,
@@ -3034,9 +3110,9 @@ export const season2018IndyCarWeather = {
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 56,
-        "temperature2m": 18.6,
-        "windSpeed10m": 14.1
+        "cloudCover": 58,
+        "temperature2m": 18.2,
+        "windSpeed10m": 12.1
       },
       {
         "time": "2018-08-19T14:15",
@@ -3051,9 +3127,9 @@ export const season2018IndyCarWeather = {
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 56,
-        "temperature2m": 18.6,
-        "windSpeed10m": 14.1
+        "cloudCover": 58,
+        "temperature2m": 18.2,
+        "windSpeed10m": 12.1
       },
       {
         "time": "2018-08-19T14:30",
@@ -3063,7 +3139,7 @@ export const season2018IndyCarWeather = {
           "condition": "Cloudy",
           "gripLevel": 0.97,
           "wet": false,
-          "changingSoon": false,
+          "changingSoon": true,
           "label": "Cloudy"
         },
         "precipitationMm": 0.0,
@@ -3080,7 +3156,7 @@ export const season2018IndyCarWeather = {
           "condition": "Cloudy",
           "gripLevel": 0.97,
           "wet": false,
-          "changingSoon": false,
+          "changingSoon": true,
           "label": "Cloudy"
         },
         "precipitationMm": 0.0,
@@ -3091,37 +3167,37 @@ export const season2018IndyCarWeather = {
       },
       {
         "time": "2018-08-19T15:00",
-        "weatherCode": 2,
+        "weatherCode": 3,
         "condition": "Cloudy",
         "state": {
           "condition": "Cloudy",
           "gripLevel": 0.97,
           "wet": false,
-          "changingSoon": true,
+          "changingSoon": false,
           "label": "Cloudy"
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 58,
-        "temperature2m": 18.2,
-        "windSpeed10m": 12.1
+        "cloudCover": 84,
+        "temperature2m": 18.1,
+        "windSpeed10m": 12.4
       },
       {
         "time": "2018-08-19T15:15",
-        "weatherCode": 2,
+        "weatherCode": 3,
         "condition": "Cloudy",
         "state": {
           "condition": "Cloudy",
           "gripLevel": 0.97,
           "wet": false,
-          "changingSoon": true,
+          "changingSoon": false,
           "label": "Cloudy"
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 58,
-        "temperature2m": 18.2,
-        "windSpeed10m": 12.1
+        "cloudCover": 84,
+        "temperature2m": 18.1,
+        "windSpeed10m": 12.4
       },
       {
         "time": "2018-08-19T15:30",
@@ -3131,7 +3207,7 @@ export const season2018IndyCarWeather = {
           "condition": "Cloudy",
           "gripLevel": 0.97,
           "wet": false,
-          "changingSoon": false,
+          "changingSoon": true,
           "label": "Cloudy"
         },
         "precipitationMm": 0.0,
@@ -3142,40 +3218,6 @@ export const season2018IndyCarWeather = {
       },
       {
         "time": "2018-08-19T15:45",
-        "weatherCode": 3,
-        "condition": "Cloudy",
-        "state": {
-          "condition": "Cloudy",
-          "gripLevel": 0.97,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Cloudy"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 84,
-        "temperature2m": 18.1,
-        "windSpeed10m": 12.4
-      },
-      {
-        "time": "2018-08-19T16:00",
-        "weatherCode": 3,
-        "condition": "Cloudy",
-        "state": {
-          "condition": "Cloudy",
-          "gripLevel": 0.97,
-          "wet": false,
-          "changingSoon": true,
-          "label": "Cloudy"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 84,
-        "temperature2m": 18.1,
-        "windSpeed10m": 12.4
-      },
-      {
-        "time": "2018-08-19T16:15",
         "weatherCode": 3,
         "condition": "Cloudy",
         "state": {
@@ -3202,21 +3244,24 @@ export const season2018IndyCarWeather = {
       "year": 2018,
       "series": "IndyCar",
       "date": "2018-08-25",
-      "localStartTime": "13:30",
+      "localStartTime": "19:30",
       "timezone": "auto",
       "latitude": 38.6826,
       "longitude": -90.1571,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "Medium",
+      "startTimeMethod": "Gateway oval evening estimate"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using IndyCar default 13:30"
+      "Workbook start time estimate (Medium): 19:30",
+      "Start time method: Gateway oval evening estimate"
     ],
     "samples": [
       {
-        "time": "2018-08-25T13:30",
+        "time": "2018-08-25T19:30",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -3233,7 +3278,7 @@ export const season2018IndyCarWeather = {
         "windSpeed10m": 14.8
       },
       {
-        "time": "2018-08-25T13:45",
+        "time": "2018-08-25T19:45",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -3250,7 +3295,7 @@ export const season2018IndyCarWeather = {
         "windSpeed10m": 14.8
       },
       {
-        "time": "2018-08-25T14:00",
+        "time": "2018-08-25T20:00",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -3267,7 +3312,7 @@ export const season2018IndyCarWeather = {
         "windSpeed10m": 14.8
       },
       {
-        "time": "2018-08-25T14:15",
+        "time": "2018-08-25T20:15",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -3284,7 +3329,7 @@ export const season2018IndyCarWeather = {
         "windSpeed10m": 14.8
       },
       {
-        "time": "2018-08-25T14:30",
+        "time": "2018-08-25T20:30",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -3301,7 +3346,7 @@ export const season2018IndyCarWeather = {
         "windSpeed10m": 18.1
       },
       {
-        "time": "2018-08-25T14:45",
+        "time": "2018-08-25T20:45",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -3318,7 +3363,7 @@ export const season2018IndyCarWeather = {
         "windSpeed10m": 18.1
       },
       {
-        "time": "2018-08-25T15:00",
+        "time": "2018-08-25T21:00",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -3335,7 +3380,7 @@ export const season2018IndyCarWeather = {
         "windSpeed10m": 18.1
       },
       {
-        "time": "2018-08-25T15:15",
+        "time": "2018-08-25T21:15",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -3352,7 +3397,7 @@ export const season2018IndyCarWeather = {
         "windSpeed10m": 18.1
       },
       {
-        "time": "2018-08-25T15:30",
+        "time": "2018-08-25T21:30",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -3369,7 +3414,7 @@ export const season2018IndyCarWeather = {
         "windSpeed10m": 18.8
       },
       {
-        "time": "2018-08-25T15:45",
+        "time": "2018-08-25T21:45",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -3386,7 +3431,7 @@ export const season2018IndyCarWeather = {
         "windSpeed10m": 18.8
       },
       {
-        "time": "2018-08-25T16:00",
+        "time": "2018-08-25T22:00",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -3403,7 +3448,7 @@ export const season2018IndyCarWeather = {
         "windSpeed10m": 18.8
       },
       {
-        "time": "2018-08-25T16:15",
+        "time": "2018-08-25T22:15",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -3430,21 +3475,24 @@ export const season2018IndyCarWeather = {
       "year": 2018,
       "series": "IndyCar",
       "date": "2018-09-02",
-      "localStartTime": "13:30",
+      "localStartTime": "12:30",
       "timezone": "auto",
       "latitude": 45.5152,
       "longitude": -122.6784,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "Medium",
+      "startTimeMethod": "West Coast road/street TV-window estimate"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using IndyCar default 13:30"
+      "Workbook start time estimate (Medium): 12:30",
+      "Start time method: West Coast road/street TV-window estimate"
     ],
     "samples": [
       {
-        "time": "2018-09-02T13:30",
+        "time": "2018-09-02T12:30",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -3459,6 +3507,74 @@ export const season2018IndyCarWeather = {
         "cloudCover": 0,
         "temperature2m": 13.9,
         "windSpeed10m": 9.1
+      },
+      {
+        "time": "2018-09-02T12:45",
+        "weatherCode": 0,
+        "condition": "Dry",
+        "state": {
+          "condition": "Dry",
+          "gripLevel": 1,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Dry"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 0,
+        "temperature2m": 13.9,
+        "windSpeed10m": 9.1
+      },
+      {
+        "time": "2018-09-02T13:00",
+        "weatherCode": 0,
+        "condition": "Dry",
+        "state": {
+          "condition": "Dry",
+          "gripLevel": 1,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Dry"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 0,
+        "temperature2m": 13.9,
+        "windSpeed10m": 9.1
+      },
+      {
+        "time": "2018-09-02T13:15",
+        "weatherCode": 0,
+        "condition": "Dry",
+        "state": {
+          "condition": "Dry",
+          "gripLevel": 1,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Dry"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 0,
+        "temperature2m": 13.9,
+        "windSpeed10m": 9.1
+      },
+      {
+        "time": "2018-09-02T13:30",
+        "weatherCode": 0,
+        "condition": "Dry",
+        "state": {
+          "condition": "Dry",
+          "gripLevel": 1,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Dry"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 0,
+        "temperature2m": 13.3,
+        "windSpeed10m": 8.8
       },
       {
         "time": "2018-09-02T13:45",
@@ -3474,8 +3590,8 @@ export const season2018IndyCarWeather = {
         "precipitationMm": 0.0,
         "rainMm": 0.0,
         "cloudCover": 0,
-        "temperature2m": 13.9,
-        "windSpeed10m": 9.1
+        "temperature2m": 13.3,
+        "windSpeed10m": 8.8
       },
       {
         "time": "2018-09-02T14:00",
@@ -3491,8 +3607,8 @@ export const season2018IndyCarWeather = {
         "precipitationMm": 0.0,
         "rainMm": 0.0,
         "cloudCover": 0,
-        "temperature2m": 13.9,
-        "windSpeed10m": 9.1
+        "temperature2m": 13.3,
+        "windSpeed10m": 8.8
       },
       {
         "time": "2018-09-02T14:15",
@@ -3508,8 +3624,8 @@ export const season2018IndyCarWeather = {
         "precipitationMm": 0.0,
         "rainMm": 0.0,
         "cloudCover": 0,
-        "temperature2m": 13.9,
-        "windSpeed10m": 9.1
+        "temperature2m": 13.3,
+        "windSpeed10m": 8.8
       },
       {
         "time": "2018-09-02T14:30",
@@ -3525,8 +3641,8 @@ export const season2018IndyCarWeather = {
         "precipitationMm": 0.0,
         "rainMm": 0.0,
         "cloudCover": 0,
-        "temperature2m": 13.3,
-        "windSpeed10m": 8.8
+        "temperature2m": 12.6,
+        "windSpeed10m": 6.3
       },
       {
         "time": "2018-09-02T14:45",
@@ -3542,8 +3658,8 @@ export const season2018IndyCarWeather = {
         "precipitationMm": 0.0,
         "rainMm": 0.0,
         "cloudCover": 0,
-        "temperature2m": 13.3,
-        "windSpeed10m": 8.8
+        "temperature2m": 12.6,
+        "windSpeed10m": 6.3
       },
       {
         "time": "2018-09-02T15:00",
@@ -3559,79 +3675,11 @@ export const season2018IndyCarWeather = {
         "precipitationMm": 0.0,
         "rainMm": 0.0,
         "cloudCover": 0,
-        "temperature2m": 13.3,
-        "windSpeed10m": 8.8
+        "temperature2m": 12.6,
+        "windSpeed10m": 6.3
       },
       {
         "time": "2018-09-02T15:15",
-        "weatherCode": 0,
-        "condition": "Dry",
-        "state": {
-          "condition": "Dry",
-          "gripLevel": 1,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Dry"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 0,
-        "temperature2m": 13.3,
-        "windSpeed10m": 8.8
-      },
-      {
-        "time": "2018-09-02T15:30",
-        "weatherCode": 0,
-        "condition": "Dry",
-        "state": {
-          "condition": "Dry",
-          "gripLevel": 1,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Dry"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 0,
-        "temperature2m": 12.6,
-        "windSpeed10m": 6.3
-      },
-      {
-        "time": "2018-09-02T15:45",
-        "weatherCode": 0,
-        "condition": "Dry",
-        "state": {
-          "condition": "Dry",
-          "gripLevel": 1,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Dry"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 0,
-        "temperature2m": 12.6,
-        "windSpeed10m": 6.3
-      },
-      {
-        "time": "2018-09-02T16:00",
-        "weatherCode": 0,
-        "condition": "Dry",
-        "state": {
-          "condition": "Dry",
-          "gripLevel": 1,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Dry"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 0,
-        "temperature2m": 12.6,
-        "windSpeed10m": 6.3
-      },
-      {
-        "time": "2018-09-02T16:15",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -3658,21 +3706,24 @@ export const season2018IndyCarWeather = {
       "year": 2018,
       "series": "IndyCar",
       "date": "2018-09-16",
-      "localStartTime": "13:30",
+      "localStartTime": "12:30",
       "timezone": "auto",
       "latitude": 38.2919,
       "longitude": -122.458,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "Medium",
+      "startTimeMethod": "West Coast road/street TV-window estimate"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using IndyCar default 13:30"
+      "Workbook start time estimate (Medium): 12:30",
+      "Start time method: West Coast road/street TV-window estimate"
     ],
     "samples": [
       {
-        "time": "2018-09-16T13:30",
+        "time": "2018-09-16T12:30",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -3687,6 +3738,74 @@ export const season2018IndyCarWeather = {
         "cloudCover": 0,
         "temperature2m": 13.2,
         "windSpeed10m": 11.3
+      },
+      {
+        "time": "2018-09-16T12:45",
+        "weatherCode": 0,
+        "condition": "Dry",
+        "state": {
+          "condition": "Dry",
+          "gripLevel": 1,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Dry"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 0,
+        "temperature2m": 13.2,
+        "windSpeed10m": 11.3
+      },
+      {
+        "time": "2018-09-16T13:00",
+        "weatherCode": 0,
+        "condition": "Dry",
+        "state": {
+          "condition": "Dry",
+          "gripLevel": 1,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Dry"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 0,
+        "temperature2m": 13.2,
+        "windSpeed10m": 11.3
+      },
+      {
+        "time": "2018-09-16T13:15",
+        "weatherCode": 0,
+        "condition": "Dry",
+        "state": {
+          "condition": "Dry",
+          "gripLevel": 1,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Dry"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 0,
+        "temperature2m": 13.2,
+        "windSpeed10m": 11.3
+      },
+      {
+        "time": "2018-09-16T13:30",
+        "weatherCode": 0,
+        "condition": "Dry",
+        "state": {
+          "condition": "Dry",
+          "gripLevel": 1,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Dry"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 0,
+        "temperature2m": 12.4,
+        "windSpeed10m": 9.4
       },
       {
         "time": "2018-09-16T13:45",
@@ -3702,8 +3821,8 @@ export const season2018IndyCarWeather = {
         "precipitationMm": 0.0,
         "rainMm": 0.0,
         "cloudCover": 0,
-        "temperature2m": 13.2,
-        "windSpeed10m": 11.3
+        "temperature2m": 12.4,
+        "windSpeed10m": 9.4
       },
       {
         "time": "2018-09-16T14:00",
@@ -3719,8 +3838,8 @@ export const season2018IndyCarWeather = {
         "precipitationMm": 0.0,
         "rainMm": 0.0,
         "cloudCover": 0,
-        "temperature2m": 13.2,
-        "windSpeed10m": 11.3
+        "temperature2m": 12.4,
+        "windSpeed10m": 9.4
       },
       {
         "time": "2018-09-16T14:15",
@@ -3736,8 +3855,8 @@ export const season2018IndyCarWeather = {
         "precipitationMm": 0.0,
         "rainMm": 0.0,
         "cloudCover": 0,
-        "temperature2m": 13.2,
-        "windSpeed10m": 11.3
+        "temperature2m": 12.4,
+        "windSpeed10m": 9.4
       },
       {
         "time": "2018-09-16T14:30",
@@ -3753,8 +3872,8 @@ export const season2018IndyCarWeather = {
         "precipitationMm": 0.0,
         "rainMm": 0.0,
         "cloudCover": 0,
-        "temperature2m": 12.4,
-        "windSpeed10m": 9.4
+        "temperature2m": 11.8,
+        "windSpeed10m": 7.6
       },
       {
         "time": "2018-09-16T14:45",
@@ -3770,8 +3889,8 @@ export const season2018IndyCarWeather = {
         "precipitationMm": 0.0,
         "rainMm": 0.0,
         "cloudCover": 0,
-        "temperature2m": 12.4,
-        "windSpeed10m": 9.4
+        "temperature2m": 11.8,
+        "windSpeed10m": 7.6
       },
       {
         "time": "2018-09-16T15:00",
@@ -3787,79 +3906,11 @@ export const season2018IndyCarWeather = {
         "precipitationMm": 0.0,
         "rainMm": 0.0,
         "cloudCover": 0,
-        "temperature2m": 12.4,
-        "windSpeed10m": 9.4
+        "temperature2m": 11.8,
+        "windSpeed10m": 7.6
       },
       {
         "time": "2018-09-16T15:15",
-        "weatherCode": 0,
-        "condition": "Dry",
-        "state": {
-          "condition": "Dry",
-          "gripLevel": 1,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Dry"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 0,
-        "temperature2m": 12.4,
-        "windSpeed10m": 9.4
-      },
-      {
-        "time": "2018-09-16T15:30",
-        "weatherCode": 0,
-        "condition": "Dry",
-        "state": {
-          "condition": "Dry",
-          "gripLevel": 1,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Dry"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 0,
-        "temperature2m": 11.8,
-        "windSpeed10m": 7.6
-      },
-      {
-        "time": "2018-09-16T15:45",
-        "weatherCode": 0,
-        "condition": "Dry",
-        "state": {
-          "condition": "Dry",
-          "gripLevel": 1,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Dry"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 0,
-        "temperature2m": 11.8,
-        "windSpeed10m": 7.6
-      },
-      {
-        "time": "2018-09-16T16:00",
-        "weatherCode": 0,
-        "condition": "Dry",
-        "state": {
-          "condition": "Dry",
-          "gripLevel": 1,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Dry"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 0,
-        "temperature2m": 11.8,
-        "windSpeed10m": 7.6
-      },
-      {
-        "time": "2018-09-16T16:15",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {

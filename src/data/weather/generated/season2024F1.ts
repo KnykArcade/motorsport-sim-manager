@@ -10,21 +10,24 @@ export const season2024F1Weather = {
       "year": 2024,
       "series": "F1",
       "date": "2024-03-02",
-      "localStartTime": "14:00",
+      "localStartTime": "18:00",
       "timezone": "auto",
       "latitude": 26.0325,
       "longitude": 50.5106,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "High",
+      "startTimeMethod": "Known F1 night-race pattern"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using F1 default 14:00"
+      "Workbook start time estimate (High): 18:00",
+      "Start time method: Known F1 night-race pattern"
     ],
     "samples": [
       {
-        "time": "2024-03-02T14:00",
+        "time": "2024-03-02T18:00",
         "weatherCode": 1,
         "condition": "Cloudy",
         "state": {
@@ -41,7 +44,7 @@ export const season2024F1Weather = {
         "windSpeed10m": 11.5
       },
       {
-        "time": "2024-03-02T14:15",
+        "time": "2024-03-02T18:15",
         "weatherCode": 1,
         "condition": "Cloudy",
         "state": {
@@ -58,24 +61,7 @@ export const season2024F1Weather = {
         "windSpeed10m": 11.5
       },
       {
-        "time": "2024-03-02T14:30",
-        "weatherCode": 1,
-        "condition": "Cloudy",
-        "state": {
-          "condition": "Cloudy",
-          "gripLevel": 0.97,
-          "wet": false,
-          "changingSoon": true,
-          "label": "Cloudy"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 40,
-        "temperature2m": 13.9,
-        "windSpeed10m": 11.5
-      },
-      {
-        "time": "2024-03-02T14:45",
+        "time": "2024-03-02T18:30",
         "weatherCode": 1,
         "condition": "Cloudy",
         "state": {
@@ -92,7 +78,24 @@ export const season2024F1Weather = {
         "windSpeed10m": 11.5
       },
       {
-        "time": "2024-03-02T15:00",
+        "time": "2024-03-02T18:45",
+        "weatherCode": 1,
+        "condition": "Cloudy",
+        "state": {
+          "condition": "Cloudy",
+          "gripLevel": 0.97,
+          "wet": false,
+          "changingSoon": true,
+          "label": "Cloudy"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 40,
+        "temperature2m": 13.9,
+        "windSpeed10m": 11.5
+      },
+      {
+        "time": "2024-03-02T19:00",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -109,7 +112,7 @@ export const season2024F1Weather = {
         "windSpeed10m": 12.5
       },
       {
-        "time": "2024-03-02T15:15",
+        "time": "2024-03-02T19:15",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -126,7 +129,7 @@ export const season2024F1Weather = {
         "windSpeed10m": 12.5
       },
       {
-        "time": "2024-03-02T15:30",
+        "time": "2024-03-02T19:30",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -143,7 +146,7 @@ export const season2024F1Weather = {
         "windSpeed10m": 12.5
       },
       {
-        "time": "2024-03-02T15:45",
+        "time": "2024-03-02T19:45",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -160,7 +163,7 @@ export const season2024F1Weather = {
         "windSpeed10m": 12.5
       },
       {
-        "time": "2024-03-02T16:00",
+        "time": "2024-03-02T20:00",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -177,7 +180,7 @@ export const season2024F1Weather = {
         "windSpeed10m": 14.0
       },
       {
-        "time": "2024-03-02T16:15",
+        "time": "2024-03-02T20:15",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -194,7 +197,7 @@ export const season2024F1Weather = {
         "windSpeed10m": 14.0
       },
       {
-        "time": "2024-03-02T16:30",
+        "time": "2024-03-02T20:30",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -211,7 +214,7 @@ export const season2024F1Weather = {
         "windSpeed10m": 14.0
       },
       {
-        "time": "2024-03-02T16:45",
+        "time": "2024-03-02T20:45",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -238,21 +241,24 @@ export const season2024F1Weather = {
       "year": 2024,
       "series": "F1",
       "date": "2024-03-09",
-      "localStartTime": "14:00",
+      "localStartTime": "20:00",
       "timezone": "auto",
       "latitude": 21.4858,
       "longitude": 39.1925,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "High",
+      "startTimeMethod": "Known F1 night-race pattern"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using F1 default 14:00"
+      "Workbook start time estimate (High): 20:00",
+      "Start time method: Known F1 night-race pattern"
     ],
     "samples": [
       {
-        "time": "2024-03-09T14:00",
+        "time": "2024-03-09T20:00",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -269,7 +275,7 @@ export const season2024F1Weather = {
         "windSpeed10m": 14.5
       },
       {
-        "time": "2024-03-09T14:15",
+        "time": "2024-03-09T20:15",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -286,7 +292,7 @@ export const season2024F1Weather = {
         "windSpeed10m": 14.5
       },
       {
-        "time": "2024-03-09T14:30",
+        "time": "2024-03-09T20:30",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -303,7 +309,7 @@ export const season2024F1Weather = {
         "windSpeed10m": 14.5
       },
       {
-        "time": "2024-03-09T14:45",
+        "time": "2024-03-09T20:45",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -320,7 +326,7 @@ export const season2024F1Weather = {
         "windSpeed10m": 14.5
       },
       {
-        "time": "2024-03-09T15:00",
+        "time": "2024-03-09T21:00",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -337,7 +343,7 @@ export const season2024F1Weather = {
         "windSpeed10m": 13.0
       },
       {
-        "time": "2024-03-09T15:15",
+        "time": "2024-03-09T21:15",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -354,7 +360,7 @@ export const season2024F1Weather = {
         "windSpeed10m": 13.0
       },
       {
-        "time": "2024-03-09T15:30",
+        "time": "2024-03-09T21:30",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -371,7 +377,7 @@ export const season2024F1Weather = {
         "windSpeed10m": 13.0
       },
       {
-        "time": "2024-03-09T15:45",
+        "time": "2024-03-09T21:45",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -388,7 +394,7 @@ export const season2024F1Weather = {
         "windSpeed10m": 13.0
       },
       {
-        "time": "2024-03-09T16:00",
+        "time": "2024-03-09T22:00",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -405,7 +411,7 @@ export const season2024F1Weather = {
         "windSpeed10m": 12.8
       },
       {
-        "time": "2024-03-09T16:15",
+        "time": "2024-03-09T22:15",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -422,7 +428,7 @@ export const season2024F1Weather = {
         "windSpeed10m": 12.8
       },
       {
-        "time": "2024-03-09T16:30",
+        "time": "2024-03-09T22:30",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -439,7 +445,7 @@ export const season2024F1Weather = {
         "windSpeed10m": 12.8
       },
       {
-        "time": "2024-03-09T16:45",
+        "time": "2024-03-09T22:45",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -466,90 +472,25 @@ export const season2024F1Weather = {
       "year": 2024,
       "series": "F1",
       "date": "2024-03-24",
-      "localStartTime": "14:00",
+      "localStartTime": "15:00",
       "timezone": "auto",
       "latitude": -37.8136,
       "longitude": 144.9631,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "Medium",
+      "startTimeMethod": "F1 Australia daytime pattern"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using F1 default 14:00"
+      "Workbook start time estimate (Medium): 15:00",
+      "Start time method: F1 Australia daytime pattern"
     ],
     "samples": [
       {
-        "time": "2024-03-24T14:00",
-        "weatherCode": 3,
-        "condition": "Cloudy",
-        "state": {
-          "condition": "Cloudy",
-          "gripLevel": 0.97,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Cloudy"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 92,
-        "temperature2m": 12.5,
-        "windSpeed10m": 5.4
-      },
-      {
-        "time": "2024-03-24T14:15",
-        "weatherCode": 3,
-        "condition": "Cloudy",
-        "state": {
-          "condition": "Cloudy",
-          "gripLevel": 0.97,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Cloudy"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 92,
-        "temperature2m": 12.5,
-        "windSpeed10m": 5.4
-      },
-      {
-        "time": "2024-03-24T14:30",
-        "weatherCode": 3,
-        "condition": "Cloudy",
-        "state": {
-          "condition": "Cloudy",
-          "gripLevel": 0.97,
-          "wet": false,
-          "changingSoon": true,
-          "label": "Cloudy"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 92,
-        "temperature2m": 12.5,
-        "windSpeed10m": 5.4
-      },
-      {
-        "time": "2024-03-24T14:45",
-        "weatherCode": 3,
-        "condition": "Cloudy",
-        "state": {
-          "condition": "Cloudy",
-          "gripLevel": 0.97,
-          "wet": false,
-          "changingSoon": true,
-          "label": "Cloudy"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 92,
-        "temperature2m": 12.5,
-        "windSpeed10m": 5.4
-      },
-      {
         "time": "2024-03-24T15:00",
-        "weatherCode": 1,
+        "weatherCode": 3,
         "condition": "Cloudy",
         "state": {
           "condition": "Cloudy",
@@ -560,13 +501,13 @@ export const season2024F1Weather = {
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 39,
-        "temperature2m": 12.9,
-        "windSpeed10m": 8.6
+        "cloudCover": 92,
+        "temperature2m": 12.5,
+        "windSpeed10m": 5.4
       },
       {
         "time": "2024-03-24T15:15",
-        "weatherCode": 1,
+        "weatherCode": 3,
         "condition": "Cloudy",
         "state": {
           "condition": "Cloudy",
@@ -577,13 +518,13 @@ export const season2024F1Weather = {
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 39,
-        "temperature2m": 12.9,
-        "windSpeed10m": 8.6
+        "cloudCover": 92,
+        "temperature2m": 12.5,
+        "windSpeed10m": 5.4
       },
       {
         "time": "2024-03-24T15:30",
-        "weatherCode": 1,
+        "weatherCode": 3,
         "condition": "Cloudy",
         "state": {
           "condition": "Cloudy",
@@ -594,12 +535,63 @@ export const season2024F1Weather = {
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 39,
-        "temperature2m": 12.9,
-        "windSpeed10m": 8.6
+        "cloudCover": 92,
+        "temperature2m": 12.5,
+        "windSpeed10m": 5.4
       },
       {
         "time": "2024-03-24T15:45",
+        "weatherCode": 3,
+        "condition": "Cloudy",
+        "state": {
+          "condition": "Cloudy",
+          "gripLevel": 0.97,
+          "wet": false,
+          "changingSoon": true,
+          "label": "Cloudy"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 92,
+        "temperature2m": 12.5,
+        "windSpeed10m": 5.4
+      },
+      {
+        "time": "2024-03-24T16:00",
+        "weatherCode": 1,
+        "condition": "Cloudy",
+        "state": {
+          "condition": "Cloudy",
+          "gripLevel": 0.97,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Cloudy"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 39,
+        "temperature2m": 12.9,
+        "windSpeed10m": 8.6
+      },
+      {
+        "time": "2024-03-24T16:15",
+        "weatherCode": 1,
+        "condition": "Cloudy",
+        "state": {
+          "condition": "Cloudy",
+          "gripLevel": 0.97,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Cloudy"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 39,
+        "temperature2m": 12.9,
+        "windSpeed10m": 8.6
+      },
+      {
+        "time": "2024-03-24T16:30",
         "weatherCode": 1,
         "condition": "Cloudy",
         "state": {
@@ -616,58 +608,75 @@ export const season2024F1Weather = {
         "windSpeed10m": 8.6
       },
       {
-        "time": "2024-03-24T16:00",
-        "weatherCode": 0,
-        "condition": "Dry",
-        "state": {
-          "condition": "Dry",
-          "gripLevel": 1,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Dry"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 14,
-        "temperature2m": 12.0,
-        "windSpeed10m": 12.4
-      },
-      {
-        "time": "2024-03-24T16:15",
-        "weatherCode": 0,
-        "condition": "Dry",
-        "state": {
-          "condition": "Dry",
-          "gripLevel": 1,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Dry"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 14,
-        "temperature2m": 12.0,
-        "windSpeed10m": 12.4
-      },
-      {
-        "time": "2024-03-24T16:30",
-        "weatherCode": 0,
-        "condition": "Dry",
-        "state": {
-          "condition": "Dry",
-          "gripLevel": 1,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Dry"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 14,
-        "temperature2m": 12.0,
-        "windSpeed10m": 12.4
-      },
-      {
         "time": "2024-03-24T16:45",
+        "weatherCode": 1,
+        "condition": "Cloudy",
+        "state": {
+          "condition": "Cloudy",
+          "gripLevel": 0.97,
+          "wet": false,
+          "changingSoon": true,
+          "label": "Cloudy"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 39,
+        "temperature2m": 12.9,
+        "windSpeed10m": 8.6
+      },
+      {
+        "time": "2024-03-24T17:00",
+        "weatherCode": 0,
+        "condition": "Dry",
+        "state": {
+          "condition": "Dry",
+          "gripLevel": 1,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Dry"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 14,
+        "temperature2m": 12.0,
+        "windSpeed10m": 12.4
+      },
+      {
+        "time": "2024-03-24T17:15",
+        "weatherCode": 0,
+        "condition": "Dry",
+        "state": {
+          "condition": "Dry",
+          "gripLevel": 1,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Dry"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 14,
+        "temperature2m": 12.0,
+        "windSpeed10m": 12.4
+      },
+      {
+        "time": "2024-03-24T17:30",
+        "weatherCode": 0,
+        "condition": "Dry",
+        "state": {
+          "condition": "Dry",
+          "gripLevel": 1,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Dry"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 14,
+        "temperature2m": 12.0,
+        "windSpeed10m": 12.4
+      },
+      {
+        "time": "2024-03-24T17:45",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -699,12 +708,15 @@ export const season2024F1Weather = {
       "latitude": 34.8819,
       "longitude": 136.5842,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "Medium",
+      "startTimeMethod": "F1 Asia daytime pattern"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using F1 default 14:00"
+      "Workbook start time estimate (Medium): 14:00",
+      "Start time method: F1 Asia daytime pattern"
     ],
     "samples": [
       {
@@ -922,90 +934,25 @@ export const season2024F1Weather = {
       "year": 2024,
       "series": "F1",
       "date": "2024-04-21",
-      "localStartTime": "14:00",
+      "localStartTime": "15:00",
       "timezone": "auto",
       "latitude": 31.2304,
       "longitude": 121.4737,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "Medium",
+      "startTimeMethod": "F1 Asia daytime pattern"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using F1 default 14:00"
+      "Workbook start time estimate (Medium): 15:00",
+      "Start time method: F1 Asia daytime pattern"
     ],
     "samples": [
       {
-        "time": "2024-04-21T14:00",
-        "weatherCode": 61,
-        "condition": "LightRain",
-        "state": {
-          "condition": "LightRain",
-          "gripLevel": 0.72,
-          "wet": true,
-          "changingSoon": false,
-          "label": "Light Rain"
-        },
-        "precipitationMm": 2.2,
-        "rainMm": 2.2,
-        "cloudCover": 100,
-        "temperature2m": 14.2,
-        "windSpeed10m": 6.8
-      },
-      {
-        "time": "2024-04-21T14:15",
-        "weatherCode": 61,
-        "condition": "LightRain",
-        "state": {
-          "condition": "LightRain",
-          "gripLevel": 0.72,
-          "wet": true,
-          "changingSoon": false,
-          "label": "Light Rain"
-        },
-        "precipitationMm": 2.2,
-        "rainMm": 2.2,
-        "cloudCover": 100,
-        "temperature2m": 14.2,
-        "windSpeed10m": 6.8
-      },
-      {
-        "time": "2024-04-21T14:30",
-        "weatherCode": 61,
-        "condition": "LightRain",
-        "state": {
-          "condition": "LightRain",
-          "gripLevel": 0.72,
-          "wet": true,
-          "changingSoon": true,
-          "label": "Light Rain"
-        },
-        "precipitationMm": 2.2,
-        "rainMm": 2.2,
-        "cloudCover": 100,
-        "temperature2m": 14.2,
-        "windSpeed10m": 6.8
-      },
-      {
-        "time": "2024-04-21T14:45",
-        "weatherCode": 61,
-        "condition": "LightRain",
-        "state": {
-          "condition": "LightRain",
-          "gripLevel": 0.72,
-          "wet": true,
-          "changingSoon": true,
-          "label": "Light Rain"
-        },
-        "precipitationMm": 2.2,
-        "rainMm": 2.2,
-        "cloudCover": 100,
-        "temperature2m": 14.2,
-        "windSpeed10m": 6.8
-      },
-      {
         "time": "2024-04-21T15:00",
-        "weatherCode": 53,
+        "weatherCode": 61,
         "condition": "LightRain",
         "state": {
           "condition": "LightRain",
@@ -1014,15 +961,15 @@ export const season2024F1Weather = {
           "changingSoon": false,
           "label": "Light Rain"
         },
-        "precipitationMm": 0.7,
-        "rainMm": 0.7,
+        "precipitationMm": 2.2,
+        "rainMm": 2.2,
         "cloudCover": 100,
-        "temperature2m": 14.1,
-        "windSpeed10m": 5.2
+        "temperature2m": 14.2,
+        "windSpeed10m": 6.8
       },
       {
         "time": "2024-04-21T15:15",
-        "weatherCode": 53,
+        "weatherCode": 61,
         "condition": "LightRain",
         "state": {
           "condition": "LightRain",
@@ -1031,15 +978,15 @@ export const season2024F1Weather = {
           "changingSoon": false,
           "label": "Light Rain"
         },
-        "precipitationMm": 0.7,
-        "rainMm": 0.7,
+        "precipitationMm": 2.2,
+        "rainMm": 2.2,
         "cloudCover": 100,
-        "temperature2m": 14.1,
-        "windSpeed10m": 5.2
+        "temperature2m": 14.2,
+        "windSpeed10m": 6.8
       },
       {
         "time": "2024-04-21T15:30",
-        "weatherCode": 53,
+        "weatherCode": 61,
         "condition": "LightRain",
         "state": {
           "condition": "LightRain",
@@ -1048,14 +995,65 @@ export const season2024F1Weather = {
           "changingSoon": true,
           "label": "Light Rain"
         },
-        "precipitationMm": 0.7,
-        "rainMm": 0.7,
+        "precipitationMm": 2.2,
+        "rainMm": 2.2,
         "cloudCover": 100,
-        "temperature2m": 14.1,
-        "windSpeed10m": 5.2
+        "temperature2m": 14.2,
+        "windSpeed10m": 6.8
       },
       {
         "time": "2024-04-21T15:45",
+        "weatherCode": 61,
+        "condition": "LightRain",
+        "state": {
+          "condition": "LightRain",
+          "gripLevel": 0.72,
+          "wet": true,
+          "changingSoon": true,
+          "label": "Light Rain"
+        },
+        "precipitationMm": 2.2,
+        "rainMm": 2.2,
+        "cloudCover": 100,
+        "temperature2m": 14.2,
+        "windSpeed10m": 6.8
+      },
+      {
+        "time": "2024-04-21T16:00",
+        "weatherCode": 53,
+        "condition": "LightRain",
+        "state": {
+          "condition": "LightRain",
+          "gripLevel": 0.72,
+          "wet": true,
+          "changingSoon": false,
+          "label": "Light Rain"
+        },
+        "precipitationMm": 0.7,
+        "rainMm": 0.7,
+        "cloudCover": 100,
+        "temperature2m": 14.1,
+        "windSpeed10m": 5.2
+      },
+      {
+        "time": "2024-04-21T16:15",
+        "weatherCode": 53,
+        "condition": "LightRain",
+        "state": {
+          "condition": "LightRain",
+          "gripLevel": 0.72,
+          "wet": true,
+          "changingSoon": false,
+          "label": "Light Rain"
+        },
+        "precipitationMm": 0.7,
+        "rainMm": 0.7,
+        "cloudCover": 100,
+        "temperature2m": 14.1,
+        "windSpeed10m": 5.2
+      },
+      {
+        "time": "2024-04-21T16:30",
         "weatherCode": 53,
         "condition": "LightRain",
         "state": {
@@ -1072,7 +1070,24 @@ export const season2024F1Weather = {
         "windSpeed10m": 5.2
       },
       {
-        "time": "2024-04-21T16:00",
+        "time": "2024-04-21T16:45",
+        "weatherCode": 53,
+        "condition": "LightRain",
+        "state": {
+          "condition": "LightRain",
+          "gripLevel": 0.72,
+          "wet": true,
+          "changingSoon": true,
+          "label": "Light Rain"
+        },
+        "precipitationMm": 0.7,
+        "rainMm": 0.7,
+        "cloudCover": 100,
+        "temperature2m": 14.1,
+        "windSpeed10m": 5.2
+      },
+      {
+        "time": "2024-04-21T17:00",
         "weatherCode": 51,
         "condition": "LightRain",
         "state": {
@@ -1089,7 +1104,7 @@ export const season2024F1Weather = {
         "windSpeed10m": 6.1
       },
       {
-        "time": "2024-04-21T16:15",
+        "time": "2024-04-21T17:15",
         "weatherCode": 51,
         "condition": "LightRain",
         "state": {
@@ -1106,7 +1121,7 @@ export const season2024F1Weather = {
         "windSpeed10m": 6.1
       },
       {
-        "time": "2024-04-21T16:30",
+        "time": "2024-04-21T17:30",
         "weatherCode": 51,
         "condition": "LightRain",
         "state": {
@@ -1123,7 +1138,7 @@ export const season2024F1Weather = {
         "windSpeed10m": 6.1
       },
       {
-        "time": "2024-04-21T16:45",
+        "time": "2024-04-21T17:45",
         "weatherCode": 51,
         "condition": "LightRain",
         "state": {
@@ -1150,188 +1165,89 @@ export const season2024F1Weather = {
       "year": 2024,
       "series": "F1",
       "date": "2024-05-05",
-      "localStartTime": "14:00",
+      "localStartTime": "15:30",
       "timezone": "auto",
       "latitude": 25.7617,
       "longitude": -80.1918,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "Medium",
+      "startTimeMethod": "Modern F1 U.S. broadcast-window estimate"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using F1 default 14:00"
+      "Workbook start time estimate (Medium): 15:30",
+      "Start time method: Modern F1 U.S. broadcast-window estimate"
     ],
     "samples": [
       {
-        "time": "2024-05-05T14:00",
-        "weatherCode": 1,
-        "condition": "Cloudy",
-        "state": {
-          "condition": "Cloudy",
-          "gripLevel": 0.97,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Cloudy"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 22,
-        "temperature2m": 24.7,
-        "windSpeed10m": 16.7
-      },
-      {
-        "time": "2024-05-05T14:15",
-        "weatherCode": 1,
-        "condition": "Cloudy",
-        "state": {
-          "condition": "Cloudy",
-          "gripLevel": 0.97,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Cloudy"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 22,
-        "temperature2m": 24.7,
-        "windSpeed10m": 16.7
-      },
-      {
-        "time": "2024-05-05T14:30",
-        "weatherCode": 1,
-        "condition": "Cloudy",
-        "state": {
-          "condition": "Cloudy",
-          "gripLevel": 0.97,
-          "wet": false,
-          "changingSoon": true,
-          "label": "Cloudy"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 22,
-        "temperature2m": 24.7,
-        "windSpeed10m": 16.7
-      },
-      {
-        "time": "2024-05-05T14:45",
-        "weatherCode": 1,
-        "condition": "Cloudy",
-        "state": {
-          "condition": "Cloudy",
-          "gripLevel": 0.97,
-          "wet": false,
-          "changingSoon": true,
-          "label": "Cloudy"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 22,
-        "temperature2m": 24.7,
-        "windSpeed10m": 16.7
-      },
-      {
-        "time": "2024-05-05T15:00",
-        "weatherCode": 0,
-        "condition": "Dry",
-        "state": {
-          "condition": "Dry",
-          "gripLevel": 1,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Dry"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 18,
-        "temperature2m": 24.6,
-        "windSpeed10m": 16.4
-      },
-      {
-        "time": "2024-05-05T15:15",
-        "weatherCode": 0,
-        "condition": "Dry",
-        "state": {
-          "condition": "Dry",
-          "gripLevel": 1,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Dry"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 18,
-        "temperature2m": 24.6,
-        "windSpeed10m": 16.4
-      },
-      {
         "time": "2024-05-05T15:30",
-        "weatherCode": 0,
-        "condition": "Dry",
+        "weatherCode": 1,
+        "condition": "Cloudy",
         "state": {
-          "condition": "Dry",
-          "gripLevel": 1,
+          "condition": "Cloudy",
+          "gripLevel": 0.97,
           "wet": false,
           "changingSoon": false,
-          "label": "Dry"
+          "label": "Cloudy"
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 18,
-        "temperature2m": 24.6,
-        "windSpeed10m": 16.4
+        "cloudCover": 22,
+        "temperature2m": 24.7,
+        "windSpeed10m": 16.7
       },
       {
         "time": "2024-05-05T15:45",
-        "weatherCode": 0,
-        "condition": "Dry",
+        "weatherCode": 1,
+        "condition": "Cloudy",
         "state": {
-          "condition": "Dry",
-          "gripLevel": 1,
+          "condition": "Cloudy",
+          "gripLevel": 0.97,
           "wet": false,
           "changingSoon": false,
-          "label": "Dry"
+          "label": "Cloudy"
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 18,
-        "temperature2m": 24.6,
-        "windSpeed10m": 16.4
+        "cloudCover": 22,
+        "temperature2m": 24.7,
+        "windSpeed10m": 16.7
       },
       {
         "time": "2024-05-05T16:00",
-        "weatherCode": 0,
-        "condition": "Dry",
+        "weatherCode": 1,
+        "condition": "Cloudy",
         "state": {
-          "condition": "Dry",
-          "gripLevel": 1,
+          "condition": "Cloudy",
+          "gripLevel": 0.97,
           "wet": false,
-          "changingSoon": false,
-          "label": "Dry"
+          "changingSoon": true,
+          "label": "Cloudy"
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 14,
-        "temperature2m": 24.6,
-        "windSpeed10m": 15.3
+        "cloudCover": 22,
+        "temperature2m": 24.7,
+        "windSpeed10m": 16.7
       },
       {
         "time": "2024-05-05T16:15",
-        "weatherCode": 0,
-        "condition": "Dry",
+        "weatherCode": 1,
+        "condition": "Cloudy",
         "state": {
-          "condition": "Dry",
-          "gripLevel": 1,
+          "condition": "Cloudy",
+          "gripLevel": 0.97,
           "wet": false,
-          "changingSoon": false,
-          "label": "Dry"
+          "changingSoon": true,
+          "label": "Cloudy"
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 14,
-        "temperature2m": 24.6,
-        "windSpeed10m": 15.3
+        "cloudCover": 22,
+        "temperature2m": 24.7,
+        "windSpeed10m": 16.7
       },
       {
         "time": "2024-05-05T16:30",
@@ -1341,6 +1257,108 @@ export const season2024F1Weather = {
           "condition": "Dry",
           "gripLevel": 1,
           "wet": false,
+          "changingSoon": false,
+          "label": "Dry"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 18,
+        "temperature2m": 24.6,
+        "windSpeed10m": 16.4
+      },
+      {
+        "time": "2024-05-05T16:45",
+        "weatherCode": 0,
+        "condition": "Dry",
+        "state": {
+          "condition": "Dry",
+          "gripLevel": 1,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Dry"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 18,
+        "temperature2m": 24.6,
+        "windSpeed10m": 16.4
+      },
+      {
+        "time": "2024-05-05T17:00",
+        "weatherCode": 0,
+        "condition": "Dry",
+        "state": {
+          "condition": "Dry",
+          "gripLevel": 1,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Dry"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 18,
+        "temperature2m": 24.6,
+        "windSpeed10m": 16.4
+      },
+      {
+        "time": "2024-05-05T17:15",
+        "weatherCode": 0,
+        "condition": "Dry",
+        "state": {
+          "condition": "Dry",
+          "gripLevel": 1,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Dry"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 18,
+        "temperature2m": 24.6,
+        "windSpeed10m": 16.4
+      },
+      {
+        "time": "2024-05-05T17:30",
+        "weatherCode": 0,
+        "condition": "Dry",
+        "state": {
+          "condition": "Dry",
+          "gripLevel": 1,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Dry"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 14,
+        "temperature2m": 24.6,
+        "windSpeed10m": 15.3
+      },
+      {
+        "time": "2024-05-05T17:45",
+        "weatherCode": 0,
+        "condition": "Dry",
+        "state": {
+          "condition": "Dry",
+          "gripLevel": 1,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Dry"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 14,
+        "temperature2m": 24.6,
+        "windSpeed10m": 15.3
+      },
+      {
+        "time": "2024-05-05T18:00",
+        "weatherCode": 0,
+        "condition": "Dry",
+        "state": {
+          "condition": "Dry",
+          "gripLevel": 1,
+          "wet": false,
           "changingSoon": true,
           "label": "Dry"
         },
@@ -1351,7 +1369,7 @@ export const season2024F1Weather = {
         "windSpeed10m": 15.3
       },
       {
-        "time": "2024-05-05T16:45",
+        "time": "2024-05-05T18:15",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -1378,140 +1396,126 @@ export const season2024F1Weather = {
       "year": 2024,
       "series": "F1",
       "date": "2024-05-19",
-      "localStartTime": "14:00",
+      "localStartTime": "15:00",
       "timezone": "auto",
       "latitude": 44.3559,
       "longitude": 11.7161,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "Medium",
+      "startTimeMethod": "Modern F1 European/default pattern"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using F1 default 14:00"
+      "Workbook start time estimate (Medium): 15:00",
+      "Start time method: Modern F1 European/default pattern"
     ],
     "samples": [
       {
-        "time": "2024-05-19T14:00",
-        "weatherCode": 0,
-        "condition": "Dry",
-        "state": {
-          "condition": "Dry",
-          "gripLevel": 1,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Dry"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 7,
-        "temperature2m": 15.9,
-        "windSpeed10m": 5.2
-      },
-      {
-        "time": "2024-05-19T14:15",
-        "weatherCode": 0,
-        "condition": "Dry",
-        "state": {
-          "condition": "Dry",
-          "gripLevel": 1,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Dry"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 7,
-        "temperature2m": 15.9,
-        "windSpeed10m": 5.2
-      },
-      {
-        "time": "2024-05-19T14:30",
-        "weatherCode": 0,
-        "condition": "Dry",
-        "state": {
-          "condition": "Dry",
-          "gripLevel": 1,
-          "wet": false,
-          "changingSoon": true,
-          "label": "Dry"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 7,
-        "temperature2m": 15.9,
-        "windSpeed10m": 5.2
-      },
-      {
-        "time": "2024-05-19T14:45",
-        "weatherCode": 0,
-        "condition": "Dry",
-        "state": {
-          "condition": "Dry",
-          "gripLevel": 1,
-          "wet": false,
-          "changingSoon": true,
-          "label": "Dry"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 7,
-        "temperature2m": 15.9,
-        "windSpeed10m": 5.2
-      },
-      {
         "time": "2024-05-19T15:00",
-        "weatherCode": 2,
-        "condition": "Cloudy",
+        "weatherCode": 0,
+        "condition": "Dry",
         "state": {
-          "condition": "Cloudy",
-          "gripLevel": 0.97,
+          "condition": "Dry",
+          "gripLevel": 1,
           "wet": false,
           "changingSoon": false,
-          "label": "Cloudy"
+          "label": "Dry"
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 64,
-        "temperature2m": 14.8,
-        "windSpeed10m": 6.2
+        "cloudCover": 7,
+        "temperature2m": 15.9,
+        "windSpeed10m": 5.2
       },
       {
         "time": "2024-05-19T15:15",
-        "weatherCode": 2,
-        "condition": "Cloudy",
+        "weatherCode": 0,
+        "condition": "Dry",
         "state": {
-          "condition": "Cloudy",
-          "gripLevel": 0.97,
+          "condition": "Dry",
+          "gripLevel": 1,
           "wet": false,
           "changingSoon": false,
-          "label": "Cloudy"
+          "label": "Dry"
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 64,
-        "temperature2m": 14.8,
-        "windSpeed10m": 6.2
+        "cloudCover": 7,
+        "temperature2m": 15.9,
+        "windSpeed10m": 5.2
       },
       {
         "time": "2024-05-19T15:30",
-        "weatherCode": 2,
-        "condition": "Cloudy",
+        "weatherCode": 0,
+        "condition": "Dry",
         "state": {
-          "condition": "Cloudy",
-          "gripLevel": 0.97,
+          "condition": "Dry",
+          "gripLevel": 1,
           "wet": false,
           "changingSoon": true,
-          "label": "Cloudy"
+          "label": "Dry"
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 64,
-        "temperature2m": 14.8,
-        "windSpeed10m": 6.2
+        "cloudCover": 7,
+        "temperature2m": 15.9,
+        "windSpeed10m": 5.2
       },
       {
         "time": "2024-05-19T15:45",
+        "weatherCode": 0,
+        "condition": "Dry",
+        "state": {
+          "condition": "Dry",
+          "gripLevel": 1,
+          "wet": false,
+          "changingSoon": true,
+          "label": "Dry"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 7,
+        "temperature2m": 15.9,
+        "windSpeed10m": 5.2
+      },
+      {
+        "time": "2024-05-19T16:00",
+        "weatherCode": 2,
+        "condition": "Cloudy",
+        "state": {
+          "condition": "Cloudy",
+          "gripLevel": 0.97,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Cloudy"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 64,
+        "temperature2m": 14.8,
+        "windSpeed10m": 6.2
+      },
+      {
+        "time": "2024-05-19T16:15",
+        "weatherCode": 2,
+        "condition": "Cloudy",
+        "state": {
+          "condition": "Cloudy",
+          "gripLevel": 0.97,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Cloudy"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 64,
+        "temperature2m": 14.8,
+        "windSpeed10m": 6.2
+      },
+      {
+        "time": "2024-05-19T16:30",
         "weatherCode": 2,
         "condition": "Cloudy",
         "state": {
@@ -1528,7 +1532,24 @@ export const season2024F1Weather = {
         "windSpeed10m": 6.2
       },
       {
-        "time": "2024-05-19T16:00",
+        "time": "2024-05-19T16:45",
+        "weatherCode": 2,
+        "condition": "Cloudy",
+        "state": {
+          "condition": "Cloudy",
+          "gripLevel": 0.97,
+          "wet": false,
+          "changingSoon": true,
+          "label": "Cloudy"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 64,
+        "temperature2m": 14.8,
+        "windSpeed10m": 6.2
+      },
+      {
+        "time": "2024-05-19T17:00",
         "weatherCode": 3,
         "condition": "Cloudy",
         "state": {
@@ -1545,7 +1566,7 @@ export const season2024F1Weather = {
         "windSpeed10m": 4.6
       },
       {
-        "time": "2024-05-19T16:15",
+        "time": "2024-05-19T17:15",
         "weatherCode": 3,
         "condition": "Cloudy",
         "state": {
@@ -1562,7 +1583,7 @@ export const season2024F1Weather = {
         "windSpeed10m": 4.6
       },
       {
-        "time": "2024-05-19T16:30",
+        "time": "2024-05-19T17:30",
         "weatherCode": 3,
         "condition": "Cloudy",
         "state": {
@@ -1579,7 +1600,7 @@ export const season2024F1Weather = {
         "windSpeed10m": 4.6
       },
       {
-        "time": "2024-05-19T16:45",
+        "time": "2024-05-19T17:45",
         "weatherCode": 3,
         "condition": "Cloudy",
         "state": {
@@ -1606,90 +1627,25 @@ export const season2024F1Weather = {
       "year": 2024,
       "series": "F1",
       "date": "2024-05-26",
-      "localStartTime": "14:00",
+      "localStartTime": "15:00",
       "timezone": "auto",
       "latitude": 43.7384,
       "longitude": 7.4246,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "Medium",
+      "startTimeMethod": "Modern F1 European/default pattern"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using F1 default 14:00"
+      "Workbook start time estimate (Medium): 15:00",
+      "Start time method: Modern F1 European/default pattern"
     ],
     "samples": [
       {
-        "time": "2024-05-26T14:00",
-        "weatherCode": 3,
-        "condition": "Cloudy",
-        "state": {
-          "condition": "Cloudy",
-          "gripLevel": 0.97,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Cloudy"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 100,
-        "temperature2m": 15.0,
-        "windSpeed10m": 3.2
-      },
-      {
-        "time": "2024-05-26T14:15",
-        "weatherCode": 3,
-        "condition": "Cloudy",
-        "state": {
-          "condition": "Cloudy",
-          "gripLevel": 0.97,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Cloudy"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 100,
-        "temperature2m": 15.0,
-        "windSpeed10m": 3.2
-      },
-      {
-        "time": "2024-05-26T14:30",
-        "weatherCode": 3,
-        "condition": "Cloudy",
-        "state": {
-          "condition": "Cloudy",
-          "gripLevel": 0.97,
-          "wet": false,
-          "changingSoon": true,
-          "label": "Cloudy"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 100,
-        "temperature2m": 15.0,
-        "windSpeed10m": 3.2
-      },
-      {
-        "time": "2024-05-26T14:45",
-        "weatherCode": 3,
-        "condition": "Cloudy",
-        "state": {
-          "condition": "Cloudy",
-          "gripLevel": 0.97,
-          "wet": false,
-          "changingSoon": true,
-          "label": "Cloudy"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 100,
-        "temperature2m": 15.0,
-        "windSpeed10m": 3.2
-      },
-      {
         "time": "2024-05-26T15:00",
-        "weatherCode": 1,
+        "weatherCode": 3,
         "condition": "Cloudy",
         "state": {
           "condition": "Cloudy",
@@ -1700,13 +1656,13 @@ export const season2024F1Weather = {
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 42,
-        "temperature2m": 14.9,
-        "windSpeed10m": 2.9
+        "cloudCover": 100,
+        "temperature2m": 15.0,
+        "windSpeed10m": 3.2
       },
       {
         "time": "2024-05-26T15:15",
-        "weatherCode": 1,
+        "weatherCode": 3,
         "condition": "Cloudy",
         "state": {
           "condition": "Cloudy",
@@ -1717,43 +1673,43 @@ export const season2024F1Weather = {
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 42,
-        "temperature2m": 14.9,
-        "windSpeed10m": 2.9
+        "cloudCover": 100,
+        "temperature2m": 15.0,
+        "windSpeed10m": 3.2
       },
       {
         "time": "2024-05-26T15:30",
-        "weatherCode": 1,
+        "weatherCode": 3,
         "condition": "Cloudy",
         "state": {
           "condition": "Cloudy",
           "gripLevel": 0.97,
           "wet": false,
-          "changingSoon": false,
+          "changingSoon": true,
           "label": "Cloudy"
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 42,
-        "temperature2m": 14.9,
-        "windSpeed10m": 2.9
+        "cloudCover": 100,
+        "temperature2m": 15.0,
+        "windSpeed10m": 3.2
       },
       {
         "time": "2024-05-26T15:45",
-        "weatherCode": 1,
+        "weatherCode": 3,
         "condition": "Cloudy",
         "state": {
           "condition": "Cloudy",
           "gripLevel": 0.97,
           "wet": false,
-          "changingSoon": false,
+          "changingSoon": true,
           "label": "Cloudy"
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 42,
-        "temperature2m": 14.9,
-        "windSpeed10m": 2.9
+        "cloudCover": 100,
+        "temperature2m": 15.0,
+        "windSpeed10m": 3.2
       },
       {
         "time": "2024-05-26T16:00",
@@ -1768,12 +1724,63 @@ export const season2024F1Weather = {
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 23,
-        "temperature2m": 14.6,
-        "windSpeed10m": 3.6
+        "cloudCover": 42,
+        "temperature2m": 14.9,
+        "windSpeed10m": 2.9
       },
       {
         "time": "2024-05-26T16:15",
+        "weatherCode": 1,
+        "condition": "Cloudy",
+        "state": {
+          "condition": "Cloudy",
+          "gripLevel": 0.97,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Cloudy"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 42,
+        "temperature2m": 14.9,
+        "windSpeed10m": 2.9
+      },
+      {
+        "time": "2024-05-26T16:30",
+        "weatherCode": 1,
+        "condition": "Cloudy",
+        "state": {
+          "condition": "Cloudy",
+          "gripLevel": 0.97,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Cloudy"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 42,
+        "temperature2m": 14.9,
+        "windSpeed10m": 2.9
+      },
+      {
+        "time": "2024-05-26T16:45",
+        "weatherCode": 1,
+        "condition": "Cloudy",
+        "state": {
+          "condition": "Cloudy",
+          "gripLevel": 0.97,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Cloudy"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 42,
+        "temperature2m": 14.9,
+        "windSpeed10m": 2.9
+      },
+      {
+        "time": "2024-05-26T17:00",
         "weatherCode": 1,
         "condition": "Cloudy",
         "state": {
@@ -1790,7 +1797,24 @@ export const season2024F1Weather = {
         "windSpeed10m": 3.6
       },
       {
-        "time": "2024-05-26T16:30",
+        "time": "2024-05-26T17:15",
+        "weatherCode": 1,
+        "condition": "Cloudy",
+        "state": {
+          "condition": "Cloudy",
+          "gripLevel": 0.97,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Cloudy"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 23,
+        "temperature2m": 14.6,
+        "windSpeed10m": 3.6
+      },
+      {
+        "time": "2024-05-26T17:30",
         "weatherCode": 1,
         "condition": "Cloudy",
         "state": {
@@ -1807,7 +1831,7 @@ export const season2024F1Weather = {
         "windSpeed10m": 3.6
       },
       {
-        "time": "2024-05-26T16:45",
+        "time": "2024-05-26T17:45",
         "weatherCode": 1,
         "condition": "Cloudy",
         "state": {
@@ -1839,12 +1863,15 @@ export const season2024F1Weather = {
       "latitude": 45.5017,
       "longitude": -73.5673,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "Medium",
+      "startTimeMethod": "F1 North America daytime pattern"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using F1 default 14:00"
+      "Workbook start time estimate (Medium): 14:00",
+      "Start time method: F1 North America daytime pattern"
     ],
     "samples": [
       {
@@ -2062,87 +2089,22 @@ export const season2024F1Weather = {
       "year": 2024,
       "series": "F1",
       "date": "2024-06-23",
-      "localStartTime": "14:00",
+      "localStartTime": "15:00",
       "timezone": "auto",
       "latitude": 41.55,
       "longitude": 2.25,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "Medium",
+      "startTimeMethod": "Modern F1 European/default pattern"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using F1 default 14:00"
+      "Workbook start time estimate (Medium): 15:00",
+      "Start time method: Modern F1 European/default pattern"
     ],
     "samples": [
-      {
-        "time": "2024-06-23T14:00",
-        "weatherCode": 3,
-        "condition": "Cloudy",
-        "state": {
-          "condition": "Cloudy",
-          "gripLevel": 0.97,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Cloudy"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 100,
-        "temperature2m": 18.4,
-        "windSpeed10m": 3.5
-      },
-      {
-        "time": "2024-06-23T14:15",
-        "weatherCode": 3,
-        "condition": "Cloudy",
-        "state": {
-          "condition": "Cloudy",
-          "gripLevel": 0.97,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Cloudy"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 100,
-        "temperature2m": 18.4,
-        "windSpeed10m": 3.5
-      },
-      {
-        "time": "2024-06-23T14:30",
-        "weatherCode": 3,
-        "condition": "Cloudy",
-        "state": {
-          "condition": "Cloudy",
-          "gripLevel": 0.97,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Cloudy"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 100,
-        "temperature2m": 18.4,
-        "windSpeed10m": 3.5
-      },
-      {
-        "time": "2024-06-23T14:45",
-        "weatherCode": 3,
-        "condition": "Cloudy",
-        "state": {
-          "condition": "Cloudy",
-          "gripLevel": 0.97,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Cloudy"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 100,
-        "temperature2m": 18.4,
-        "windSpeed10m": 3.5
-      },
       {
         "time": "2024-06-23T15:00",
         "weatherCode": 3,
@@ -2158,7 +2120,7 @@ export const season2024F1Weather = {
         "rainMm": 0.0,
         "cloudCover": 100,
         "temperature2m": 18.4,
-        "windSpeed10m": 3.1
+        "windSpeed10m": 3.5
       },
       {
         "time": "2024-06-23T15:15",
@@ -2175,7 +2137,7 @@ export const season2024F1Weather = {
         "rainMm": 0.0,
         "cloudCover": 100,
         "temperature2m": 18.4,
-        "windSpeed10m": 3.1
+        "windSpeed10m": 3.5
       },
       {
         "time": "2024-06-23T15:30",
@@ -2185,7 +2147,41 @@ export const season2024F1Weather = {
           "condition": "Cloudy",
           "gripLevel": 0.97,
           "wet": false,
-          "changingSoon": true,
+          "changingSoon": false,
+          "label": "Cloudy"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 100,
+        "temperature2m": 18.4,
+        "windSpeed10m": 3.5
+      },
+      {
+        "time": "2024-06-23T15:45",
+        "weatherCode": 3,
+        "condition": "Cloudy",
+        "state": {
+          "condition": "Cloudy",
+          "gripLevel": 0.97,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Cloudy"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 100,
+        "temperature2m": 18.4,
+        "windSpeed10m": 3.5
+      },
+      {
+        "time": "2024-06-23T16:00",
+        "weatherCode": 3,
+        "condition": "Cloudy",
+        "state": {
+          "condition": "Cloudy",
+          "gripLevel": 0.97,
+          "wet": false,
+          "changingSoon": false,
           "label": "Cloudy"
         },
         "precipitationMm": 0.0,
@@ -2195,7 +2191,24 @@ export const season2024F1Weather = {
         "windSpeed10m": 3.1
       },
       {
-        "time": "2024-06-23T15:45",
+        "time": "2024-06-23T16:15",
+        "weatherCode": 3,
+        "condition": "Cloudy",
+        "state": {
+          "condition": "Cloudy",
+          "gripLevel": 0.97,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Cloudy"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 100,
+        "temperature2m": 18.4,
+        "windSpeed10m": 3.1
+      },
+      {
+        "time": "2024-06-23T16:30",
         "weatherCode": 3,
         "condition": "Cloudy",
         "state": {
@@ -2212,7 +2225,24 @@ export const season2024F1Weather = {
         "windSpeed10m": 3.1
       },
       {
-        "time": "2024-06-23T16:00",
+        "time": "2024-06-23T16:45",
+        "weatherCode": 3,
+        "condition": "Cloudy",
+        "state": {
+          "condition": "Cloudy",
+          "gripLevel": 0.97,
+          "wet": false,
+          "changingSoon": true,
+          "label": "Cloudy"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 100,
+        "temperature2m": 18.4,
+        "windSpeed10m": 3.1
+      },
+      {
+        "time": "2024-06-23T17:00",
         "weatherCode": 51,
         "condition": "LightRain",
         "state": {
@@ -2229,7 +2259,7 @@ export const season2024F1Weather = {
         "windSpeed10m": 2.5
       },
       {
-        "time": "2024-06-23T16:15",
+        "time": "2024-06-23T17:15",
         "weatherCode": 51,
         "condition": "LightRain",
         "state": {
@@ -2246,7 +2276,7 @@ export const season2024F1Weather = {
         "windSpeed10m": 2.5
       },
       {
-        "time": "2024-06-23T16:30",
+        "time": "2024-06-23T17:30",
         "weatherCode": 51,
         "condition": "LightRain",
         "state": {
@@ -2263,7 +2293,7 @@ export const season2024F1Weather = {
         "windSpeed10m": 2.5
       },
       {
-        "time": "2024-06-23T16:45",
+        "time": "2024-06-23T17:45",
         "weatherCode": 51,
         "condition": "LightRain",
         "state": {
@@ -2290,140 +2320,126 @@ export const season2024F1Weather = {
       "year": 2024,
       "series": "F1",
       "date": "2024-06-30",
-      "localStartTime": "14:00",
+      "localStartTime": "15:00",
       "timezone": "auto",
       "latitude": 47.2197,
       "longitude": 14.7647,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "Medium",
+      "startTimeMethod": "Modern F1 European/default pattern"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using F1 default 14:00"
+      "Workbook start time estimate (Medium): 15:00",
+      "Start time method: Modern F1 European/default pattern"
     ],
     "samples": [
       {
-        "time": "2024-06-30T14:00",
-        "weatherCode": 1,
-        "condition": "Cloudy",
-        "state": {
-          "condition": "Cloudy",
-          "gripLevel": 0.97,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Cloudy"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 39,
-        "temperature2m": 18.6,
-        "windSpeed10m": 3.0
-      },
-      {
-        "time": "2024-06-30T14:15",
-        "weatherCode": 1,
-        "condition": "Cloudy",
-        "state": {
-          "condition": "Cloudy",
-          "gripLevel": 0.97,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Cloudy"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 39,
-        "temperature2m": 18.6,
-        "windSpeed10m": 3.0
-      },
-      {
-        "time": "2024-06-30T14:30",
-        "weatherCode": 1,
-        "condition": "Cloudy",
-        "state": {
-          "condition": "Cloudy",
-          "gripLevel": 0.97,
-          "wet": false,
-          "changingSoon": true,
-          "label": "Cloudy"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 39,
-        "temperature2m": 18.6,
-        "windSpeed10m": 3.0
-      },
-      {
-        "time": "2024-06-30T14:45",
-        "weatherCode": 1,
-        "condition": "Cloudy",
-        "state": {
-          "condition": "Cloudy",
-          "gripLevel": 0.97,
-          "wet": false,
-          "changingSoon": true,
-          "label": "Cloudy"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 39,
-        "temperature2m": 18.6,
-        "windSpeed10m": 3.0
-      },
-      {
         "time": "2024-06-30T15:00",
-        "weatherCode": 0,
-        "condition": "Dry",
+        "weatherCode": 1,
+        "condition": "Cloudy",
         "state": {
-          "condition": "Dry",
-          "gripLevel": 1,
+          "condition": "Cloudy",
+          "gripLevel": 0.97,
           "wet": false,
           "changingSoon": false,
-          "label": "Dry"
+          "label": "Cloudy"
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 9,
-        "temperature2m": 17.7,
-        "windSpeed10m": 3.4
+        "cloudCover": 39,
+        "temperature2m": 18.6,
+        "windSpeed10m": 3.0
       },
       {
         "time": "2024-06-30T15:15",
-        "weatherCode": 0,
-        "condition": "Dry",
+        "weatherCode": 1,
+        "condition": "Cloudy",
         "state": {
-          "condition": "Dry",
-          "gripLevel": 1,
+          "condition": "Cloudy",
+          "gripLevel": 0.97,
           "wet": false,
           "changingSoon": false,
-          "label": "Dry"
+          "label": "Cloudy"
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 9,
-        "temperature2m": 17.7,
-        "windSpeed10m": 3.4
+        "cloudCover": 39,
+        "temperature2m": 18.6,
+        "windSpeed10m": 3.0
       },
       {
         "time": "2024-06-30T15:30",
-        "weatherCode": 0,
-        "condition": "Dry",
+        "weatherCode": 1,
+        "condition": "Cloudy",
         "state": {
-          "condition": "Dry",
-          "gripLevel": 1,
+          "condition": "Cloudy",
+          "gripLevel": 0.97,
           "wet": false,
           "changingSoon": true,
-          "label": "Dry"
+          "label": "Cloudy"
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 9,
-        "temperature2m": 17.7,
-        "windSpeed10m": 3.4
+        "cloudCover": 39,
+        "temperature2m": 18.6,
+        "windSpeed10m": 3.0
       },
       {
         "time": "2024-06-30T15:45",
+        "weatherCode": 1,
+        "condition": "Cloudy",
+        "state": {
+          "condition": "Cloudy",
+          "gripLevel": 0.97,
+          "wet": false,
+          "changingSoon": true,
+          "label": "Cloudy"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 39,
+        "temperature2m": 18.6,
+        "windSpeed10m": 3.0
+      },
+      {
+        "time": "2024-06-30T16:00",
+        "weatherCode": 0,
+        "condition": "Dry",
+        "state": {
+          "condition": "Dry",
+          "gripLevel": 1,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Dry"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 9,
+        "temperature2m": 17.7,
+        "windSpeed10m": 3.4
+      },
+      {
+        "time": "2024-06-30T16:15",
+        "weatherCode": 0,
+        "condition": "Dry",
+        "state": {
+          "condition": "Dry",
+          "gripLevel": 1,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Dry"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 9,
+        "temperature2m": 17.7,
+        "windSpeed10m": 3.4
+      },
+      {
+        "time": "2024-06-30T16:30",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -2440,7 +2456,24 @@ export const season2024F1Weather = {
         "windSpeed10m": 3.4
       },
       {
-        "time": "2024-06-30T16:00",
+        "time": "2024-06-30T16:45",
+        "weatherCode": 0,
+        "condition": "Dry",
+        "state": {
+          "condition": "Dry",
+          "gripLevel": 1,
+          "wet": false,
+          "changingSoon": true,
+          "label": "Dry"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 9,
+        "temperature2m": 17.7,
+        "windSpeed10m": 3.4
+      },
+      {
+        "time": "2024-06-30T17:00",
         "weatherCode": 2,
         "condition": "Cloudy",
         "state": {
@@ -2457,7 +2490,7 @@ export const season2024F1Weather = {
         "windSpeed10m": 4.0
       },
       {
-        "time": "2024-06-30T16:15",
+        "time": "2024-06-30T17:15",
         "weatherCode": 2,
         "condition": "Cloudy",
         "state": {
@@ -2474,7 +2507,7 @@ export const season2024F1Weather = {
         "windSpeed10m": 4.0
       },
       {
-        "time": "2024-06-30T16:30",
+        "time": "2024-06-30T17:30",
         "weatherCode": 2,
         "condition": "Cloudy",
         "state": {
@@ -2491,7 +2524,7 @@ export const season2024F1Weather = {
         "windSpeed10m": 4.0
       },
       {
-        "time": "2024-06-30T16:45",
+        "time": "2024-06-30T17:45",
         "weatherCode": 2,
         "condition": "Cloudy",
         "state": {
@@ -2518,154 +2551,89 @@ export const season2024F1Weather = {
       "year": 2024,
       "series": "F1",
       "date": "2024-07-07",
-      "localStartTime": "14:00",
+      "localStartTime": "15:00",
       "timezone": "auto",
       "latitude": 52.0786,
       "longitude": -1.0169,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "Medium",
+      "startTimeMethod": "Modern F1 European/default pattern"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using F1 default 14:00"
+      "Workbook start time estimate (Medium): 15:00",
+      "Start time method: Modern F1 European/default pattern"
     ],
     "samples": [
       {
-        "time": "2024-07-07T14:00",
-        "weatherCode": 0,
-        "condition": "Dry",
-        "state": {
-          "condition": "Dry",
-          "gripLevel": 1,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Dry"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 0,
-        "temperature2m": 10.4,
-        "windSpeed10m": 15.5
-      },
-      {
-        "time": "2024-07-07T14:15",
-        "weatherCode": 0,
-        "condition": "Dry",
-        "state": {
-          "condition": "Dry",
-          "gripLevel": 1,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Dry"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 0,
-        "temperature2m": 10.4,
-        "windSpeed10m": 15.5
-      },
-      {
-        "time": "2024-07-07T14:30",
-        "weatherCode": 0,
-        "condition": "Dry",
-        "state": {
-          "condition": "Dry",
-          "gripLevel": 1,
-          "wet": false,
-          "changingSoon": true,
-          "label": "Dry"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 0,
-        "temperature2m": 10.4,
-        "windSpeed10m": 15.5
-      },
-      {
-        "time": "2024-07-07T14:45",
-        "weatherCode": 0,
-        "condition": "Dry",
-        "state": {
-          "condition": "Dry",
-          "gripLevel": 1,
-          "wet": false,
-          "changingSoon": true,
-          "label": "Dry"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 0,
-        "temperature2m": 10.4,
-        "windSpeed10m": 15.5
-      },
-      {
         "time": "2024-07-07T15:00",
-        "weatherCode": 1,
-        "condition": "Cloudy",
+        "weatherCode": 0,
+        "condition": "Dry",
         "state": {
-          "condition": "Cloudy",
-          "gripLevel": 0.97,
+          "condition": "Dry",
+          "gripLevel": 1,
           "wet": false,
           "changingSoon": false,
-          "label": "Cloudy"
+          "label": "Dry"
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 20,
-        "temperature2m": 10.0,
-        "windSpeed10m": 15.8
+        "cloudCover": 0,
+        "temperature2m": 10.4,
+        "windSpeed10m": 15.5
       },
       {
         "time": "2024-07-07T15:15",
-        "weatherCode": 1,
-        "condition": "Cloudy",
+        "weatherCode": 0,
+        "condition": "Dry",
         "state": {
-          "condition": "Cloudy",
-          "gripLevel": 0.97,
+          "condition": "Dry",
+          "gripLevel": 1,
           "wet": false,
           "changingSoon": false,
-          "label": "Cloudy"
+          "label": "Dry"
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 20,
-        "temperature2m": 10.0,
-        "windSpeed10m": 15.8
+        "cloudCover": 0,
+        "temperature2m": 10.4,
+        "windSpeed10m": 15.5
       },
       {
         "time": "2024-07-07T15:30",
-        "weatherCode": 1,
-        "condition": "Cloudy",
+        "weatherCode": 0,
+        "condition": "Dry",
         "state": {
-          "condition": "Cloudy",
-          "gripLevel": 0.97,
+          "condition": "Dry",
+          "gripLevel": 1,
           "wet": false,
-          "changingSoon": false,
-          "label": "Cloudy"
+          "changingSoon": true,
+          "label": "Dry"
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 20,
-        "temperature2m": 10.0,
-        "windSpeed10m": 15.8
+        "cloudCover": 0,
+        "temperature2m": 10.4,
+        "windSpeed10m": 15.5
       },
       {
         "time": "2024-07-07T15:45",
-        "weatherCode": 1,
-        "condition": "Cloudy",
+        "weatherCode": 0,
+        "condition": "Dry",
         "state": {
-          "condition": "Cloudy",
-          "gripLevel": 0.97,
+          "condition": "Dry",
+          "gripLevel": 1,
           "wet": false,
-          "changingSoon": false,
-          "label": "Cloudy"
+          "changingSoon": true,
+          "label": "Dry"
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 20,
-        "temperature2m": 10.0,
-        "windSpeed10m": 15.8
+        "cloudCover": 0,
+        "temperature2m": 10.4,
+        "windSpeed10m": 15.5
       },
       {
         "time": "2024-07-07T16:00",
@@ -2680,12 +2648,63 @@ export const season2024F1Weather = {
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 30,
-        "temperature2m": 9.7,
-        "windSpeed10m": 15.3
+        "cloudCover": 20,
+        "temperature2m": 10.0,
+        "windSpeed10m": 15.8
       },
       {
         "time": "2024-07-07T16:15",
+        "weatherCode": 1,
+        "condition": "Cloudy",
+        "state": {
+          "condition": "Cloudy",
+          "gripLevel": 0.97,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Cloudy"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 20,
+        "temperature2m": 10.0,
+        "windSpeed10m": 15.8
+      },
+      {
+        "time": "2024-07-07T16:30",
+        "weatherCode": 1,
+        "condition": "Cloudy",
+        "state": {
+          "condition": "Cloudy",
+          "gripLevel": 0.97,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Cloudy"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 20,
+        "temperature2m": 10.0,
+        "windSpeed10m": 15.8
+      },
+      {
+        "time": "2024-07-07T16:45",
+        "weatherCode": 1,
+        "condition": "Cloudy",
+        "state": {
+          "condition": "Cloudy",
+          "gripLevel": 0.97,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Cloudy"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 20,
+        "temperature2m": 10.0,
+        "windSpeed10m": 15.8
+      },
+      {
+        "time": "2024-07-07T17:00",
         "weatherCode": 1,
         "condition": "Cloudy",
         "state": {
@@ -2702,7 +2721,24 @@ export const season2024F1Weather = {
         "windSpeed10m": 15.3
       },
       {
-        "time": "2024-07-07T16:30",
+        "time": "2024-07-07T17:15",
+        "weatherCode": 1,
+        "condition": "Cloudy",
+        "state": {
+          "condition": "Cloudy",
+          "gripLevel": 0.97,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Cloudy"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 30,
+        "temperature2m": 9.7,
+        "windSpeed10m": 15.3
+      },
+      {
+        "time": "2024-07-07T17:30",
         "weatherCode": 1,
         "condition": "Cloudy",
         "state": {
@@ -2719,7 +2755,7 @@ export const season2024F1Weather = {
         "windSpeed10m": 15.3
       },
       {
-        "time": "2024-07-07T16:45",
+        "time": "2024-07-07T17:45",
         "weatherCode": 1,
         "condition": "Cloudy",
         "state": {
@@ -2746,87 +2782,22 @@ export const season2024F1Weather = {
       "year": 2024,
       "series": "F1",
       "date": "2024-07-21",
-      "localStartTime": "14:00",
+      "localStartTime": "15:00",
       "timezone": "auto",
       "latitude": 47.5983,
       "longitude": 19.2478,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "Medium",
+      "startTimeMethod": "Modern F1 European/default pattern"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using F1 default 14:00"
+      "Workbook start time estimate (Medium): 15:00",
+      "Start time method: Modern F1 European/default pattern"
     ],
     "samples": [
-      {
-        "time": "2024-07-21T14:00",
-        "weatherCode": 3,
-        "condition": "Cloudy",
-        "state": {
-          "condition": "Cloudy",
-          "gripLevel": 0.97,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Cloudy"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 100,
-        "temperature2m": 20.4,
-        "windSpeed10m": 6.1
-      },
-      {
-        "time": "2024-07-21T14:15",
-        "weatherCode": 3,
-        "condition": "Cloudy",
-        "state": {
-          "condition": "Cloudy",
-          "gripLevel": 0.97,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Cloudy"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 100,
-        "temperature2m": 20.4,
-        "windSpeed10m": 6.1
-      },
-      {
-        "time": "2024-07-21T14:30",
-        "weatherCode": 3,
-        "condition": "Cloudy",
-        "state": {
-          "condition": "Cloudy",
-          "gripLevel": 0.97,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Cloudy"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 100,
-        "temperature2m": 20.4,
-        "windSpeed10m": 6.1
-      },
-      {
-        "time": "2024-07-21T14:45",
-        "weatherCode": 3,
-        "condition": "Cloudy",
-        "state": {
-          "condition": "Cloudy",
-          "gripLevel": 0.97,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Cloudy"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 100,
-        "temperature2m": 20.4,
-        "windSpeed10m": 6.1
-      },
       {
         "time": "2024-07-21T15:00",
         "weatherCode": 3,
@@ -2842,7 +2813,7 @@ export const season2024F1Weather = {
         "rainMm": 0.0,
         "cloudCover": 100,
         "temperature2m": 20.4,
-        "windSpeed10m": 6.4
+        "windSpeed10m": 6.1
       },
       {
         "time": "2024-07-21T15:15",
@@ -2859,7 +2830,7 @@ export const season2024F1Weather = {
         "rainMm": 0.0,
         "cloudCover": 100,
         "temperature2m": 20.4,
-        "windSpeed10m": 6.4
+        "windSpeed10m": 6.1
       },
       {
         "time": "2024-07-21T15:30",
@@ -2876,7 +2847,7 @@ export const season2024F1Weather = {
         "rainMm": 0.0,
         "cloudCover": 100,
         "temperature2m": 20.4,
-        "windSpeed10m": 6.4
+        "windSpeed10m": 6.1
       },
       {
         "time": "2024-07-21T15:45",
@@ -2893,7 +2864,7 @@ export const season2024F1Weather = {
         "rainMm": 0.0,
         "cloudCover": 100,
         "temperature2m": 20.4,
-        "windSpeed10m": 6.4
+        "windSpeed10m": 6.1
       },
       {
         "time": "2024-07-21T16:00",
@@ -2909,8 +2880,8 @@ export const season2024F1Weather = {
         "precipitationMm": 0.0,
         "rainMm": 0.0,
         "cloudCover": 100,
-        "temperature2m": 20.0,
-        "windSpeed10m": 4.7
+        "temperature2m": 20.4,
+        "windSpeed10m": 6.4
       },
       {
         "time": "2024-07-21T16:15",
@@ -2926,11 +2897,45 @@ export const season2024F1Weather = {
         "precipitationMm": 0.0,
         "rainMm": 0.0,
         "cloudCover": 100,
-        "temperature2m": 20.0,
-        "windSpeed10m": 4.7
+        "temperature2m": 20.4,
+        "windSpeed10m": 6.4
       },
       {
         "time": "2024-07-21T16:30",
+        "weatherCode": 3,
+        "condition": "Cloudy",
+        "state": {
+          "condition": "Cloudy",
+          "gripLevel": 0.97,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Cloudy"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 100,
+        "temperature2m": 20.4,
+        "windSpeed10m": 6.4
+      },
+      {
+        "time": "2024-07-21T16:45",
+        "weatherCode": 3,
+        "condition": "Cloudy",
+        "state": {
+          "condition": "Cloudy",
+          "gripLevel": 0.97,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Cloudy"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 100,
+        "temperature2m": 20.4,
+        "windSpeed10m": 6.4
+      },
+      {
+        "time": "2024-07-21T17:00",
         "weatherCode": 3,
         "condition": "Cloudy",
         "state": {
@@ -2947,7 +2952,41 @@ export const season2024F1Weather = {
         "windSpeed10m": 4.7
       },
       {
-        "time": "2024-07-21T16:45",
+        "time": "2024-07-21T17:15",
+        "weatherCode": 3,
+        "condition": "Cloudy",
+        "state": {
+          "condition": "Cloudy",
+          "gripLevel": 0.97,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Cloudy"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 100,
+        "temperature2m": 20.0,
+        "windSpeed10m": 4.7
+      },
+      {
+        "time": "2024-07-21T17:30",
+        "weatherCode": 3,
+        "condition": "Cloudy",
+        "state": {
+          "condition": "Cloudy",
+          "gripLevel": 0.97,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Cloudy"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 100,
+        "temperature2m": 20.0,
+        "windSpeed10m": 4.7
+      },
+      {
+        "time": "2024-07-21T17:45",
         "weatherCode": 3,
         "condition": "Cloudy",
         "state": {
@@ -2974,87 +3013,22 @@ export const season2024F1Weather = {
       "year": 2024,
       "series": "F1",
       "date": "2024-07-28",
-      "localStartTime": "14:00",
+      "localStartTime": "15:00",
       "timezone": "auto",
       "latitude": 50.395,
       "longitude": 5.93,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "Medium",
+      "startTimeMethod": "Modern F1 European/default pattern"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using F1 default 14:00"
+      "Workbook start time estimate (Medium): 15:00",
+      "Start time method: Modern F1 European/default pattern"
     ],
     "samples": [
-      {
-        "time": "2024-07-28T14:00",
-        "weatherCode": 3,
-        "condition": "Cloudy",
-        "state": {
-          "condition": "Cloudy",
-          "gripLevel": 0.97,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Cloudy"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 100,
-        "temperature2m": 15.1,
-        "windSpeed10m": 11.9
-      },
-      {
-        "time": "2024-07-28T14:15",
-        "weatherCode": 3,
-        "condition": "Cloudy",
-        "state": {
-          "condition": "Cloudy",
-          "gripLevel": 0.97,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Cloudy"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 100,
-        "temperature2m": 15.1,
-        "windSpeed10m": 11.9
-      },
-      {
-        "time": "2024-07-28T14:30",
-        "weatherCode": 3,
-        "condition": "Cloudy",
-        "state": {
-          "condition": "Cloudy",
-          "gripLevel": 0.97,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Cloudy"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 100,
-        "temperature2m": 15.1,
-        "windSpeed10m": 11.9
-      },
-      {
-        "time": "2024-07-28T14:45",
-        "weatherCode": 3,
-        "condition": "Cloudy",
-        "state": {
-          "condition": "Cloudy",
-          "gripLevel": 0.97,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Cloudy"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 100,
-        "temperature2m": 15.1,
-        "windSpeed10m": 11.9
-      },
       {
         "time": "2024-07-28T15:00",
         "weatherCode": 3,
@@ -3069,8 +3043,8 @@ export const season2024F1Weather = {
         "precipitationMm": 0.0,
         "rainMm": 0.0,
         "cloudCover": 100,
-        "temperature2m": 14.5,
-        "windSpeed10m": 10.8
+        "temperature2m": 15.1,
+        "windSpeed10m": 11.9
       },
       {
         "time": "2024-07-28T15:15",
@@ -3086,8 +3060,8 @@ export const season2024F1Weather = {
         "precipitationMm": 0.0,
         "rainMm": 0.0,
         "cloudCover": 100,
-        "temperature2m": 14.5,
-        "windSpeed10m": 10.8
+        "temperature2m": 15.1,
+        "windSpeed10m": 11.9
       },
       {
         "time": "2024-07-28T15:30",
@@ -3103,11 +3077,28 @@ export const season2024F1Weather = {
         "precipitationMm": 0.0,
         "rainMm": 0.0,
         "cloudCover": 100,
-        "temperature2m": 14.5,
-        "windSpeed10m": 10.8
+        "temperature2m": 15.1,
+        "windSpeed10m": 11.9
       },
       {
         "time": "2024-07-28T15:45",
+        "weatherCode": 3,
+        "condition": "Cloudy",
+        "state": {
+          "condition": "Cloudy",
+          "gripLevel": 0.97,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Cloudy"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 100,
+        "temperature2m": 15.1,
+        "windSpeed10m": 11.9
+      },
+      {
+        "time": "2024-07-28T16:00",
         "weatherCode": 3,
         "condition": "Cloudy",
         "state": {
@@ -3124,23 +3115,6 @@ export const season2024F1Weather = {
         "windSpeed10m": 10.8
       },
       {
-        "time": "2024-07-28T16:00",
-        "weatherCode": 3,
-        "condition": "Cloudy",
-        "state": {
-          "condition": "Cloudy",
-          "gripLevel": 0.97,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Cloudy"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 92,
-        "temperature2m": 13.9,
-        "windSpeed10m": 11.8
-      },
-      {
         "time": "2024-07-28T16:15",
         "weatherCode": 3,
         "condition": "Cloudy",
@@ -3153,9 +3127,9 @@ export const season2024F1Weather = {
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 92,
-        "temperature2m": 13.9,
-        "windSpeed10m": 11.8
+        "cloudCover": 100,
+        "temperature2m": 14.5,
+        "windSpeed10m": 10.8
       },
       {
         "time": "2024-07-28T16:30",
@@ -3170,12 +3144,80 @@ export const season2024F1Weather = {
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
+        "cloudCover": 100,
+        "temperature2m": 14.5,
+        "windSpeed10m": 10.8
+      },
+      {
+        "time": "2024-07-28T16:45",
+        "weatherCode": 3,
+        "condition": "Cloudy",
+        "state": {
+          "condition": "Cloudy",
+          "gripLevel": 0.97,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Cloudy"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 100,
+        "temperature2m": 14.5,
+        "windSpeed10m": 10.8
+      },
+      {
+        "time": "2024-07-28T17:00",
+        "weatherCode": 3,
+        "condition": "Cloudy",
+        "state": {
+          "condition": "Cloudy",
+          "gripLevel": 0.97,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Cloudy"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
         "cloudCover": 92,
         "temperature2m": 13.9,
         "windSpeed10m": 11.8
       },
       {
-        "time": "2024-07-28T16:45",
+        "time": "2024-07-28T17:15",
+        "weatherCode": 3,
+        "condition": "Cloudy",
+        "state": {
+          "condition": "Cloudy",
+          "gripLevel": 0.97,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Cloudy"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 92,
+        "temperature2m": 13.9,
+        "windSpeed10m": 11.8
+      },
+      {
+        "time": "2024-07-28T17:30",
+        "weatherCode": 3,
+        "condition": "Cloudy",
+        "state": {
+          "condition": "Cloudy",
+          "gripLevel": 0.97,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Cloudy"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 92,
+        "temperature2m": 13.9,
+        "windSpeed10m": 11.8
+      },
+      {
+        "time": "2024-07-28T17:45",
         "weatherCode": 3,
         "condition": "Cloudy",
         "state": {
@@ -3202,140 +3244,126 @@ export const season2024F1Weather = {
       "year": 2024,
       "series": "F1",
       "date": "2024-08-25",
-      "localStartTime": "14:00",
+      "localStartTime": "15:00",
       "timezone": "auto",
       "latitude": 52.3711,
       "longitude": 4.5331,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "Medium",
+      "startTimeMethod": "Modern F1 European/default pattern"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using F1 default 14:00"
+      "Workbook start time estimate (Medium): 15:00",
+      "Start time method: Modern F1 European/default pattern"
     ],
     "samples": [
       {
-        "time": "2024-08-25T14:00",
-        "weatherCode": 51,
-        "condition": "LightRain",
-        "state": {
-          "condition": "LightRain",
-          "gripLevel": 0.72,
-          "wet": true,
-          "changingSoon": false,
-          "label": "Light Rain"
-        },
-        "precipitationMm": 0.1,
-        "rainMm": 0.1,
-        "cloudCover": 14,
-        "temperature2m": 17.6,
-        "windSpeed10m": 36.4
-      },
-      {
-        "time": "2024-08-25T14:15",
-        "weatherCode": 51,
-        "condition": "LightRain",
-        "state": {
-          "condition": "LightRain",
-          "gripLevel": 0.72,
-          "wet": true,
-          "changingSoon": false,
-          "label": "Light Rain"
-        },
-        "precipitationMm": 0.1,
-        "rainMm": 0.1,
-        "cloudCover": 14,
-        "temperature2m": 17.6,
-        "windSpeed10m": 36.4
-      },
-      {
-        "time": "2024-08-25T14:30",
-        "weatherCode": 51,
-        "condition": "LightRain",
-        "state": {
-          "condition": "LightRain",
-          "gripLevel": 0.72,
-          "wet": true,
-          "changingSoon": true,
-          "label": "Light Rain"
-        },
-        "precipitationMm": 0.1,
-        "rainMm": 0.1,
-        "cloudCover": 14,
-        "temperature2m": 17.6,
-        "windSpeed10m": 36.4
-      },
-      {
-        "time": "2024-08-25T14:45",
-        "weatherCode": 51,
-        "condition": "LightRain",
-        "state": {
-          "condition": "LightRain",
-          "gripLevel": 0.72,
-          "wet": true,
-          "changingSoon": true,
-          "label": "Light Rain"
-        },
-        "precipitationMm": 0.1,
-        "rainMm": 0.1,
-        "cloudCover": 14,
-        "temperature2m": 17.6,
-        "windSpeed10m": 36.4
-      },
-      {
         "time": "2024-08-25T15:00",
-        "weatherCode": 0,
-        "condition": "Dry",
+        "weatherCode": 51,
+        "condition": "LightRain",
         "state": {
-          "condition": "Dry",
-          "gripLevel": 1,
-          "wet": false,
+          "condition": "LightRain",
+          "gripLevel": 0.72,
+          "wet": true,
           "changingSoon": false,
-          "label": "Dry"
+          "label": "Light Rain"
         },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
+        "precipitationMm": 0.1,
+        "rainMm": 0.1,
         "cloudCover": 14,
-        "temperature2m": 17.4,
-        "windSpeed10m": 36.2
+        "temperature2m": 17.6,
+        "windSpeed10m": 36.4
       },
       {
         "time": "2024-08-25T15:15",
-        "weatherCode": 0,
-        "condition": "Dry",
+        "weatherCode": 51,
+        "condition": "LightRain",
         "state": {
-          "condition": "Dry",
-          "gripLevel": 1,
-          "wet": false,
+          "condition": "LightRain",
+          "gripLevel": 0.72,
+          "wet": true,
           "changingSoon": false,
-          "label": "Dry"
+          "label": "Light Rain"
         },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
+        "precipitationMm": 0.1,
+        "rainMm": 0.1,
         "cloudCover": 14,
-        "temperature2m": 17.4,
-        "windSpeed10m": 36.2
+        "temperature2m": 17.6,
+        "windSpeed10m": 36.4
       },
       {
         "time": "2024-08-25T15:30",
-        "weatherCode": 0,
-        "condition": "Dry",
+        "weatherCode": 51,
+        "condition": "LightRain",
         "state": {
-          "condition": "Dry",
-          "gripLevel": 1,
-          "wet": false,
+          "condition": "LightRain",
+          "gripLevel": 0.72,
+          "wet": true,
           "changingSoon": true,
-          "label": "Dry"
+          "label": "Light Rain"
         },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
+        "precipitationMm": 0.1,
+        "rainMm": 0.1,
         "cloudCover": 14,
-        "temperature2m": 17.4,
-        "windSpeed10m": 36.2
+        "temperature2m": 17.6,
+        "windSpeed10m": 36.4
       },
       {
         "time": "2024-08-25T15:45",
+        "weatherCode": 51,
+        "condition": "LightRain",
+        "state": {
+          "condition": "LightRain",
+          "gripLevel": 0.72,
+          "wet": true,
+          "changingSoon": true,
+          "label": "Light Rain"
+        },
+        "precipitationMm": 0.1,
+        "rainMm": 0.1,
+        "cloudCover": 14,
+        "temperature2m": 17.6,
+        "windSpeed10m": 36.4
+      },
+      {
+        "time": "2024-08-25T16:00",
+        "weatherCode": 0,
+        "condition": "Dry",
+        "state": {
+          "condition": "Dry",
+          "gripLevel": 1,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Dry"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 14,
+        "temperature2m": 17.4,
+        "windSpeed10m": 36.2
+      },
+      {
+        "time": "2024-08-25T16:15",
+        "weatherCode": 0,
+        "condition": "Dry",
+        "state": {
+          "condition": "Dry",
+          "gripLevel": 1,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Dry"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 14,
+        "temperature2m": 17.4,
+        "windSpeed10m": 36.2
+      },
+      {
+        "time": "2024-08-25T16:30",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -3352,7 +3380,24 @@ export const season2024F1Weather = {
         "windSpeed10m": 36.2
       },
       {
-        "time": "2024-08-25T16:00",
+        "time": "2024-08-25T16:45",
+        "weatherCode": 0,
+        "condition": "Dry",
+        "state": {
+          "condition": "Dry",
+          "gripLevel": 1,
+          "wet": false,
+          "changingSoon": true,
+          "label": "Dry"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 14,
+        "temperature2m": 17.4,
+        "windSpeed10m": 36.2
+      },
+      {
+        "time": "2024-08-25T17:00",
         "weatherCode": 61,
         "condition": "LightRain",
         "state": {
@@ -3369,7 +3414,7 @@ export const season2024F1Weather = {
         "windSpeed10m": 33.8
       },
       {
-        "time": "2024-08-25T16:15",
+        "time": "2024-08-25T17:15",
         "weatherCode": 61,
         "condition": "LightRain",
         "state": {
@@ -3386,7 +3431,7 @@ export const season2024F1Weather = {
         "windSpeed10m": 33.8
       },
       {
-        "time": "2024-08-25T16:30",
+        "time": "2024-08-25T17:30",
         "weatherCode": 61,
         "condition": "LightRain",
         "state": {
@@ -3403,7 +3448,7 @@ export const season2024F1Weather = {
         "windSpeed10m": 33.8
       },
       {
-        "time": "2024-08-25T16:45",
+        "time": "2024-08-25T17:45",
         "weatherCode": 61,
         "condition": "LightRain",
         "state": {
@@ -3430,90 +3475,25 @@ export const season2024F1Weather = {
       "year": 2024,
       "series": "F1",
       "date": "2024-09-01",
-      "localStartTime": "14:00",
+      "localStartTime": "15:00",
       "timezone": "auto",
       "latitude": 45.5845,
       "longitude": 9.2744,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "Medium",
+      "startTimeMethod": "Modern F1 European/default pattern"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using F1 default 14:00"
+      "Workbook start time estimate (Medium): 15:00",
+      "Start time method: Modern F1 European/default pattern"
     ],
     "samples": [
       {
-        "time": "2024-09-01T14:00",
-        "weatherCode": 2,
-        "condition": "Cloudy",
-        "state": {
-          "condition": "Cloudy",
-          "gripLevel": 0.97,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Cloudy"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 67,
-        "temperature2m": 24.5,
-        "windSpeed10m": 5.2
-      },
-      {
-        "time": "2024-09-01T14:15",
-        "weatherCode": 2,
-        "condition": "Cloudy",
-        "state": {
-          "condition": "Cloudy",
-          "gripLevel": 0.97,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Cloudy"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 67,
-        "temperature2m": 24.5,
-        "windSpeed10m": 5.2
-      },
-      {
-        "time": "2024-09-01T14:30",
-        "weatherCode": 2,
-        "condition": "Cloudy",
-        "state": {
-          "condition": "Cloudy",
-          "gripLevel": 0.97,
-          "wet": false,
-          "changingSoon": true,
-          "label": "Cloudy"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 67,
-        "temperature2m": 24.5,
-        "windSpeed10m": 5.2
-      },
-      {
-        "time": "2024-09-01T14:45",
-        "weatherCode": 2,
-        "condition": "Cloudy",
-        "state": {
-          "condition": "Cloudy",
-          "gripLevel": 0.97,
-          "wet": false,
-          "changingSoon": true,
-          "label": "Cloudy"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 67,
-        "temperature2m": 24.5,
-        "windSpeed10m": 5.2
-      },
-      {
         "time": "2024-09-01T15:00",
-        "weatherCode": 3,
+        "weatherCode": 2,
         "condition": "Cloudy",
         "state": {
           "condition": "Cloudy",
@@ -3524,13 +3504,13 @@ export const season2024F1Weather = {
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 88,
-        "temperature2m": 23.8,
-        "windSpeed10m": 4.7
+        "cloudCover": 67,
+        "temperature2m": 24.5,
+        "windSpeed10m": 5.2
       },
       {
         "time": "2024-09-01T15:15",
-        "weatherCode": 3,
+        "weatherCode": 2,
         "condition": "Cloudy",
         "state": {
           "condition": "Cloudy",
@@ -3541,43 +3521,43 @@ export const season2024F1Weather = {
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 88,
-        "temperature2m": 23.8,
-        "windSpeed10m": 4.7
+        "cloudCover": 67,
+        "temperature2m": 24.5,
+        "windSpeed10m": 5.2
       },
       {
         "time": "2024-09-01T15:30",
-        "weatherCode": 3,
+        "weatherCode": 2,
         "condition": "Cloudy",
         "state": {
           "condition": "Cloudy",
           "gripLevel": 0.97,
           "wet": false,
-          "changingSoon": false,
+          "changingSoon": true,
           "label": "Cloudy"
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 88,
-        "temperature2m": 23.8,
-        "windSpeed10m": 4.7
+        "cloudCover": 67,
+        "temperature2m": 24.5,
+        "windSpeed10m": 5.2
       },
       {
         "time": "2024-09-01T15:45",
-        "weatherCode": 3,
+        "weatherCode": 2,
         "condition": "Cloudy",
         "state": {
           "condition": "Cloudy",
           "gripLevel": 0.97,
           "wet": false,
-          "changingSoon": false,
+          "changingSoon": true,
           "label": "Cloudy"
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 88,
-        "temperature2m": 23.8,
-        "windSpeed10m": 4.7
+        "cloudCover": 67,
+        "temperature2m": 24.5,
+        "windSpeed10m": 5.2
       },
       {
         "time": "2024-09-01T16:00",
@@ -3592,9 +3572,9 @@ export const season2024F1Weather = {
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 86,
-        "temperature2m": 23.3,
-        "windSpeed10m": 4.5
+        "cloudCover": 88,
+        "temperature2m": 23.8,
+        "windSpeed10m": 4.7
       },
       {
         "time": "2024-09-01T16:15",
@@ -3609,12 +3589,46 @@ export const season2024F1Weather = {
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 86,
-        "temperature2m": 23.3,
-        "windSpeed10m": 4.5
+        "cloudCover": 88,
+        "temperature2m": 23.8,
+        "windSpeed10m": 4.7
       },
       {
         "time": "2024-09-01T16:30",
+        "weatherCode": 3,
+        "condition": "Cloudy",
+        "state": {
+          "condition": "Cloudy",
+          "gripLevel": 0.97,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Cloudy"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 88,
+        "temperature2m": 23.8,
+        "windSpeed10m": 4.7
+      },
+      {
+        "time": "2024-09-01T16:45",
+        "weatherCode": 3,
+        "condition": "Cloudy",
+        "state": {
+          "condition": "Cloudy",
+          "gripLevel": 0.97,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Cloudy"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 88,
+        "temperature2m": 23.8,
+        "windSpeed10m": 4.7
+      },
+      {
+        "time": "2024-09-01T17:00",
         "weatherCode": 3,
         "condition": "Cloudy",
         "state": {
@@ -3631,7 +3645,41 @@ export const season2024F1Weather = {
         "windSpeed10m": 4.5
       },
       {
-        "time": "2024-09-01T16:45",
+        "time": "2024-09-01T17:15",
+        "weatherCode": 3,
+        "condition": "Cloudy",
+        "state": {
+          "condition": "Cloudy",
+          "gripLevel": 0.97,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Cloudy"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 86,
+        "temperature2m": 23.3,
+        "windSpeed10m": 4.5
+      },
+      {
+        "time": "2024-09-01T17:30",
+        "weatherCode": 3,
+        "condition": "Cloudy",
+        "state": {
+          "condition": "Cloudy",
+          "gripLevel": 0.97,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Cloudy"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 86,
+        "temperature2m": 23.3,
+        "windSpeed10m": 4.5
+      },
+      {
+        "time": "2024-09-01T17:45",
         "weatherCode": 3,
         "condition": "Cloudy",
         "state": {
@@ -3658,140 +3706,126 @@ export const season2024F1Weather = {
       "year": 2024,
       "series": "F1",
       "date": "2024-09-15",
-      "localStartTime": "14:00",
+      "localStartTime": "15:00",
       "timezone": "auto",
       "latitude": 40.4093,
       "longitude": 49.8671,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "Medium",
+      "startTimeMethod": "F1 Asia/Europe daytime pattern"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using F1 default 14:00"
+      "Workbook start time estimate (Medium): 15:00",
+      "Start time method: F1 Asia/Europe daytime pattern"
     ],
     "samples": [
       {
-        "time": "2024-09-15T14:00",
-        "weatherCode": 0,
-        "condition": "Dry",
-        "state": {
-          "condition": "Dry",
-          "gripLevel": 1,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Dry"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 17,
-        "temperature2m": 20.9,
-        "windSpeed10m": 11.9
-      },
-      {
-        "time": "2024-09-15T14:15",
-        "weatherCode": 0,
-        "condition": "Dry",
-        "state": {
-          "condition": "Dry",
-          "gripLevel": 1,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Dry"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 17,
-        "temperature2m": 20.9,
-        "windSpeed10m": 11.9
-      },
-      {
-        "time": "2024-09-15T14:30",
-        "weatherCode": 0,
-        "condition": "Dry",
-        "state": {
-          "condition": "Dry",
-          "gripLevel": 1,
-          "wet": false,
-          "changingSoon": true,
-          "label": "Dry"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 17,
-        "temperature2m": 20.9,
-        "windSpeed10m": 11.9
-      },
-      {
-        "time": "2024-09-15T14:45",
-        "weatherCode": 0,
-        "condition": "Dry",
-        "state": {
-          "condition": "Dry",
-          "gripLevel": 1,
-          "wet": false,
-          "changingSoon": true,
-          "label": "Dry"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 17,
-        "temperature2m": 20.9,
-        "windSpeed10m": 11.9
-      },
-      {
         "time": "2024-09-15T15:00",
-        "weatherCode": 1,
-        "condition": "Cloudy",
+        "weatherCode": 0,
+        "condition": "Dry",
         "state": {
-          "condition": "Cloudy",
-          "gripLevel": 0.97,
+          "condition": "Dry",
+          "gripLevel": 1,
           "wet": false,
           "changingSoon": false,
-          "label": "Cloudy"
+          "label": "Dry"
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 26,
-        "temperature2m": 20.8,
-        "windSpeed10m": 12.4
+        "cloudCover": 17,
+        "temperature2m": 20.9,
+        "windSpeed10m": 11.9
       },
       {
         "time": "2024-09-15T15:15",
-        "weatherCode": 1,
-        "condition": "Cloudy",
+        "weatherCode": 0,
+        "condition": "Dry",
         "state": {
-          "condition": "Cloudy",
-          "gripLevel": 0.97,
+          "condition": "Dry",
+          "gripLevel": 1,
           "wet": false,
           "changingSoon": false,
-          "label": "Cloudy"
+          "label": "Dry"
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 26,
-        "temperature2m": 20.8,
-        "windSpeed10m": 12.4
+        "cloudCover": 17,
+        "temperature2m": 20.9,
+        "windSpeed10m": 11.9
       },
       {
         "time": "2024-09-15T15:30",
-        "weatherCode": 1,
-        "condition": "Cloudy",
+        "weatherCode": 0,
+        "condition": "Dry",
         "state": {
-          "condition": "Cloudy",
-          "gripLevel": 0.97,
+          "condition": "Dry",
+          "gripLevel": 1,
           "wet": false,
           "changingSoon": true,
-          "label": "Cloudy"
+          "label": "Dry"
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 26,
-        "temperature2m": 20.8,
-        "windSpeed10m": 12.4
+        "cloudCover": 17,
+        "temperature2m": 20.9,
+        "windSpeed10m": 11.9
       },
       {
         "time": "2024-09-15T15:45",
+        "weatherCode": 0,
+        "condition": "Dry",
+        "state": {
+          "condition": "Dry",
+          "gripLevel": 1,
+          "wet": false,
+          "changingSoon": true,
+          "label": "Dry"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 17,
+        "temperature2m": 20.9,
+        "windSpeed10m": 11.9
+      },
+      {
+        "time": "2024-09-15T16:00",
+        "weatherCode": 1,
+        "condition": "Cloudy",
+        "state": {
+          "condition": "Cloudy",
+          "gripLevel": 0.97,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Cloudy"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 26,
+        "temperature2m": 20.8,
+        "windSpeed10m": 12.4
+      },
+      {
+        "time": "2024-09-15T16:15",
+        "weatherCode": 1,
+        "condition": "Cloudy",
+        "state": {
+          "condition": "Cloudy",
+          "gripLevel": 0.97,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Cloudy"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 26,
+        "temperature2m": 20.8,
+        "windSpeed10m": 12.4
+      },
+      {
+        "time": "2024-09-15T16:30",
         "weatherCode": 1,
         "condition": "Cloudy",
         "state": {
@@ -3808,7 +3842,24 @@ export const season2024F1Weather = {
         "windSpeed10m": 12.4
       },
       {
-        "time": "2024-09-15T16:00",
+        "time": "2024-09-15T16:45",
+        "weatherCode": 1,
+        "condition": "Cloudy",
+        "state": {
+          "condition": "Cloudy",
+          "gripLevel": 0.97,
+          "wet": false,
+          "changingSoon": true,
+          "label": "Cloudy"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 26,
+        "temperature2m": 20.8,
+        "windSpeed10m": 12.4
+      },
+      {
+        "time": "2024-09-15T17:00",
         "weatherCode": 2,
         "condition": "Cloudy",
         "state": {
@@ -3825,7 +3876,7 @@ export const season2024F1Weather = {
         "windSpeed10m": 13.7
       },
       {
-        "time": "2024-09-15T16:15",
+        "time": "2024-09-15T17:15",
         "weatherCode": 2,
         "condition": "Cloudy",
         "state": {
@@ -3842,7 +3893,7 @@ export const season2024F1Weather = {
         "windSpeed10m": 13.7
       },
       {
-        "time": "2024-09-15T16:30",
+        "time": "2024-09-15T17:30",
         "weatherCode": 2,
         "condition": "Cloudy",
         "state": {
@@ -3859,7 +3910,7 @@ export const season2024F1Weather = {
         "windSpeed10m": 13.7
       },
       {
-        "time": "2024-09-15T16:45",
+        "time": "2024-09-15T17:45",
         "weatherCode": 2,
         "condition": "Cloudy",
         "state": {
@@ -3886,21 +3937,24 @@ export const season2024F1Weather = {
       "year": 2024,
       "series": "F1",
       "date": "2024-09-22",
-      "localStartTime": "14:00",
+      "localStartTime": "20:00",
       "timezone": "auto",
       "latitude": 1.3521,
       "longitude": 103.8198,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "High",
+      "startTimeMethod": "Known F1 night-race pattern"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using F1 default 14:00"
+      "Workbook start time estimate (High): 20:00",
+      "Start time method: Known F1 night-race pattern"
     ],
     "samples": [
       {
-        "time": "2024-09-22T14:00",
+        "time": "2024-09-22T20:00",
         "weatherCode": 3,
         "condition": "Cloudy",
         "state": {
@@ -3917,7 +3971,7 @@ export const season2024F1Weather = {
         "windSpeed10m": 5.3
       },
       {
-        "time": "2024-09-22T14:15",
+        "time": "2024-09-22T20:15",
         "weatherCode": 3,
         "condition": "Cloudy",
         "state": {
@@ -3934,7 +3988,7 @@ export const season2024F1Weather = {
         "windSpeed10m": 5.3
       },
       {
-        "time": "2024-09-22T14:30",
+        "time": "2024-09-22T20:30",
         "weatherCode": 3,
         "condition": "Cloudy",
         "state": {
@@ -3951,7 +4005,7 @@ export const season2024F1Weather = {
         "windSpeed10m": 5.3
       },
       {
-        "time": "2024-09-22T14:45",
+        "time": "2024-09-22T20:45",
         "weatherCode": 3,
         "condition": "Cloudy",
         "state": {
@@ -3968,7 +4022,7 @@ export const season2024F1Weather = {
         "windSpeed10m": 5.3
       },
       {
-        "time": "2024-09-22T15:00",
+        "time": "2024-09-22T21:00",
         "weatherCode": 3,
         "condition": "Cloudy",
         "state": {
@@ -3985,7 +4039,7 @@ export const season2024F1Weather = {
         "windSpeed10m": 6.7
       },
       {
-        "time": "2024-09-22T15:15",
+        "time": "2024-09-22T21:15",
         "weatherCode": 3,
         "condition": "Cloudy",
         "state": {
@@ -4002,7 +4056,7 @@ export const season2024F1Weather = {
         "windSpeed10m": 6.7
       },
       {
-        "time": "2024-09-22T15:30",
+        "time": "2024-09-22T21:30",
         "weatherCode": 3,
         "condition": "Cloudy",
         "state": {
@@ -4019,7 +4073,7 @@ export const season2024F1Weather = {
         "windSpeed10m": 6.7
       },
       {
-        "time": "2024-09-22T15:45",
+        "time": "2024-09-22T21:45",
         "weatherCode": 3,
         "condition": "Cloudy",
         "state": {
@@ -4036,7 +4090,7 @@ export const season2024F1Weather = {
         "windSpeed10m": 6.7
       },
       {
-        "time": "2024-09-22T16:00",
+        "time": "2024-09-22T22:00",
         "weatherCode": 3,
         "condition": "Cloudy",
         "state": {
@@ -4053,7 +4107,7 @@ export const season2024F1Weather = {
         "windSpeed10m": 6.3
       },
       {
-        "time": "2024-09-22T16:15",
+        "time": "2024-09-22T22:15",
         "weatherCode": 3,
         "condition": "Cloudy",
         "state": {
@@ -4070,7 +4124,7 @@ export const season2024F1Weather = {
         "windSpeed10m": 6.3
       },
       {
-        "time": "2024-09-22T16:30",
+        "time": "2024-09-22T22:30",
         "weatherCode": 3,
         "condition": "Cloudy",
         "state": {
@@ -4087,7 +4141,7 @@ export const season2024F1Weather = {
         "windSpeed10m": 6.3
       },
       {
-        "time": "2024-09-22T16:45",
+        "time": "2024-09-22T22:45",
         "weatherCode": 3,
         "condition": "Cloudy",
         "state": {
@@ -4119,12 +4173,15 @@ export const season2024F1Weather = {
       "latitude": 30.2672,
       "longitude": -97.7431,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "Medium",
+      "startTimeMethod": "F1 U.S. daytime pattern"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using F1 default 14:00"
+      "Workbook start time estimate (Medium): 14:00",
+      "Start time method: F1 U.S. daytime pattern"
     ],
     "samples": [
       {
@@ -4347,12 +4404,15 @@ export const season2024F1Weather = {
       "latitude": 19.4326,
       "longitude": -99.1332,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "Medium",
+      "startTimeMethod": "F1 Americas daytime pattern"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using F1 default 14:00"
+      "Workbook start time estimate (Medium): 14:00",
+      "Start time method: F1 Americas daytime pattern"
     ],
     "samples": [
       {
@@ -4575,12 +4635,15 @@ export const season2024F1Weather = {
       "latitude": -23.5505,
       "longitude": -46.6333,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "Medium",
+      "startTimeMethod": "F1 Americas daytime pattern"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using F1 default 14:00"
+      "Workbook start time estimate (Medium): 14:00",
+      "Start time method: F1 Americas daytime pattern"
     ],
     "samples": [
       {
@@ -4798,21 +4861,24 @@ export const season2024F1Weather = {
       "year": 2024,
       "series": "F1",
       "date": "2024-11-23",
-      "localStartTime": "14:00",
+      "localStartTime": "22:00",
       "timezone": "auto",
       "latitude": 36.1699,
       "longitude": -115.1398,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "High",
+      "startTimeMethod": "Known F1 night-race pattern"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using F1 default 14:00"
+      "Workbook start time estimate (High): 22:00",
+      "Start time method: Known F1 night-race pattern"
     ],
     "samples": [
       {
-        "time": "2024-11-23T14:00",
+        "time": "2024-11-23T22:00",
         "weatherCode": 3,
         "condition": "Cloudy",
         "state": {
@@ -4829,7 +4895,7 @@ export const season2024F1Weather = {
         "windSpeed10m": 0.9
       },
       {
-        "time": "2024-11-23T14:15",
+        "time": "2024-11-23T22:15",
         "weatherCode": 3,
         "condition": "Cloudy",
         "state": {
@@ -4846,7 +4912,7 @@ export const season2024F1Weather = {
         "windSpeed10m": 0.9
       },
       {
-        "time": "2024-11-23T14:30",
+        "time": "2024-11-23T22:30",
         "weatherCode": 3,
         "condition": "Cloudy",
         "state": {
@@ -4863,7 +4929,7 @@ export const season2024F1Weather = {
         "windSpeed10m": 0.9
       },
       {
-        "time": "2024-11-23T14:45",
+        "time": "2024-11-23T22:45",
         "weatherCode": 3,
         "condition": "Cloudy",
         "state": {
@@ -4880,7 +4946,7 @@ export const season2024F1Weather = {
         "windSpeed10m": 0.9
       },
       {
-        "time": "2024-11-23T15:00",
+        "time": "2024-11-23T23:00",
         "weatherCode": 3,
         "condition": "Cloudy",
         "state": {
@@ -4897,7 +4963,7 @@ export const season2024F1Weather = {
         "windSpeed10m": 1.5
       },
       {
-        "time": "2024-11-23T15:15",
+        "time": "2024-11-23T23:15",
         "weatherCode": 3,
         "condition": "Cloudy",
         "state": {
@@ -4914,7 +4980,7 @@ export const season2024F1Weather = {
         "windSpeed10m": 1.5
       },
       {
-        "time": "2024-11-23T15:30",
+        "time": "2024-11-23T23:30",
         "weatherCode": 3,
         "condition": "Cloudy",
         "state": {
@@ -4931,7 +4997,7 @@ export const season2024F1Weather = {
         "windSpeed10m": 1.5
       },
       {
-        "time": "2024-11-23T15:45",
+        "time": "2024-11-23T23:45",
         "weatherCode": 3,
         "condition": "Cloudy",
         "state": {
@@ -4948,7 +5014,7 @@ export const season2024F1Weather = {
         "windSpeed10m": 1.5
       },
       {
-        "time": "2024-11-23T16:00",
+        "time": "2024-11-24T00:00",
         "weatherCode": 2,
         "condition": "Cloudy",
         "state": {
@@ -4965,7 +5031,7 @@ export const season2024F1Weather = {
         "windSpeed10m": 3.5
       },
       {
-        "time": "2024-11-23T16:15",
+        "time": "2024-11-24T00:15",
         "weatherCode": 2,
         "condition": "Cloudy",
         "state": {
@@ -4982,7 +5048,7 @@ export const season2024F1Weather = {
         "windSpeed10m": 3.5
       },
       {
-        "time": "2024-11-23T16:30",
+        "time": "2024-11-24T00:30",
         "weatherCode": 2,
         "condition": "Cloudy",
         "state": {
@@ -4999,7 +5065,7 @@ export const season2024F1Weather = {
         "windSpeed10m": 3.5
       },
       {
-        "time": "2024-11-23T16:45",
+        "time": "2024-11-24T00:45",
         "weatherCode": 2,
         "condition": "Cloudy",
         "state": {
@@ -5026,21 +5092,24 @@ export const season2024F1Weather = {
       "year": 2024,
       "series": "F1",
       "date": "2024-12-01",
-      "localStartTime": "14:00",
+      "localStartTime": "20:00",
       "timezone": "auto",
       "latitude": 25.4207,
       "longitude": 51.4909,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "High",
+      "startTimeMethod": "Known F1 night-race pattern"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using F1 default 14:00"
+      "Workbook start time estimate (High): 20:00",
+      "Start time method: Known F1 night-race pattern"
     ],
     "samples": [
       {
-        "time": "2024-12-01T14:00",
+        "time": "2024-12-01T20:00",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -5057,7 +5126,7 @@ export const season2024F1Weather = {
         "windSpeed10m": 16.5
       },
       {
-        "time": "2024-12-01T14:15",
+        "time": "2024-12-01T20:15",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -5074,7 +5143,7 @@ export const season2024F1Weather = {
         "windSpeed10m": 16.5
       },
       {
-        "time": "2024-12-01T14:30",
+        "time": "2024-12-01T20:30",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -5091,7 +5160,7 @@ export const season2024F1Weather = {
         "windSpeed10m": 16.5
       },
       {
-        "time": "2024-12-01T14:45",
+        "time": "2024-12-01T20:45",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -5108,7 +5177,7 @@ export const season2024F1Weather = {
         "windSpeed10m": 16.5
       },
       {
-        "time": "2024-12-01T15:00",
+        "time": "2024-12-01T21:00",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -5125,7 +5194,7 @@ export const season2024F1Weather = {
         "windSpeed10m": 16.6
       },
       {
-        "time": "2024-12-01T15:15",
+        "time": "2024-12-01T21:15",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -5142,7 +5211,7 @@ export const season2024F1Weather = {
         "windSpeed10m": 16.6
       },
       {
-        "time": "2024-12-01T15:30",
+        "time": "2024-12-01T21:30",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -5159,7 +5228,7 @@ export const season2024F1Weather = {
         "windSpeed10m": 16.6
       },
       {
-        "time": "2024-12-01T15:45",
+        "time": "2024-12-01T21:45",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -5176,7 +5245,7 @@ export const season2024F1Weather = {
         "windSpeed10m": 16.6
       },
       {
-        "time": "2024-12-01T16:00",
+        "time": "2024-12-01T22:00",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -5193,7 +5262,7 @@ export const season2024F1Weather = {
         "windSpeed10m": 16.7
       },
       {
-        "time": "2024-12-01T16:15",
+        "time": "2024-12-01T22:15",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -5210,7 +5279,7 @@ export const season2024F1Weather = {
         "windSpeed10m": 16.7
       },
       {
-        "time": "2024-12-01T16:30",
+        "time": "2024-12-01T22:30",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -5227,7 +5296,7 @@ export const season2024F1Weather = {
         "windSpeed10m": 16.7
       },
       {
-        "time": "2024-12-01T16:45",
+        "time": "2024-12-01T22:45",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -5254,21 +5323,24 @@ export const season2024F1Weather = {
       "year": 2024,
       "series": "F1",
       "date": "2024-12-08",
-      "localStartTime": "14:00",
+      "localStartTime": "17:00",
       "timezone": "auto",
       "latitude": 24.4958,
       "longitude": 54.604,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "High",
+      "startTimeMethod": "Known F1 twilight-race pattern"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using F1 default 14:00"
+      "Workbook start time estimate (High): 17:00",
+      "Start time method: Known F1 twilight-race pattern"
     ],
     "samples": [
       {
-        "time": "2024-12-08T14:00",
+        "time": "2024-12-08T17:00",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -5285,7 +5357,7 @@ export const season2024F1Weather = {
         "windSpeed10m": 5.2
       },
       {
-        "time": "2024-12-08T14:15",
+        "time": "2024-12-08T17:15",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -5302,7 +5374,7 @@ export const season2024F1Weather = {
         "windSpeed10m": 5.2
       },
       {
-        "time": "2024-12-08T14:30",
+        "time": "2024-12-08T17:30",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -5319,7 +5391,7 @@ export const season2024F1Weather = {
         "windSpeed10m": 5.2
       },
       {
-        "time": "2024-12-08T14:45",
+        "time": "2024-12-08T17:45",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -5336,7 +5408,7 @@ export const season2024F1Weather = {
         "windSpeed10m": 5.2
       },
       {
-        "time": "2024-12-08T15:00",
+        "time": "2024-12-08T18:00",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -5353,7 +5425,7 @@ export const season2024F1Weather = {
         "windSpeed10m": 5.3
       },
       {
-        "time": "2024-12-08T15:15",
+        "time": "2024-12-08T18:15",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -5370,7 +5442,7 @@ export const season2024F1Weather = {
         "windSpeed10m": 5.3
       },
       {
-        "time": "2024-12-08T15:30",
+        "time": "2024-12-08T18:30",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -5387,7 +5459,7 @@ export const season2024F1Weather = {
         "windSpeed10m": 5.3
       },
       {
-        "time": "2024-12-08T15:45",
+        "time": "2024-12-08T18:45",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -5404,7 +5476,7 @@ export const season2024F1Weather = {
         "windSpeed10m": 5.3
       },
       {
-        "time": "2024-12-08T16:00",
+        "time": "2024-12-08T19:00",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -5421,7 +5493,7 @@ export const season2024F1Weather = {
         "windSpeed10m": 6.5
       },
       {
-        "time": "2024-12-08T16:15",
+        "time": "2024-12-08T19:15",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -5438,7 +5510,7 @@ export const season2024F1Weather = {
         "windSpeed10m": 6.5
       },
       {
-        "time": "2024-12-08T16:30",
+        "time": "2024-12-08T19:30",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -5455,7 +5527,7 @@ export const season2024F1Weather = {
         "windSpeed10m": 6.5
       },
       {
-        "time": "2024-12-08T16:45",
+        "time": "2024-12-08T19:45",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {

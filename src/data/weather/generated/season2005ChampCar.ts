@@ -10,21 +10,24 @@ export const season2005ChampCarWeather = {
       "year": 2005,
       "series": "Champ Car",
       "date": "2005-04-10",
-      "localStartTime": "14:00",
+      "localStartTime": "12:30",
       "timezone": "auto",
       "latitude": 33.7701,
       "longitude": -118.1937,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "Medium",
+      "startTimeMethod": "Long Beach street-race pattern"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using Champ Car default 14:00"
+      "Workbook start time estimate (Medium): 12:30",
+      "Start time method: Long Beach street-race pattern"
     ],
     "samples": [
       {
-        "time": "2005-04-10T14:00",
+        "time": "2005-04-10T12:30",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -39,6 +42,108 @@ export const season2005ChampCarWeather = {
         "cloudCover": 0,
         "temperature2m": 12.1,
         "windSpeed10m": 10.7
+      },
+      {
+        "time": "2005-04-10T12:45",
+        "weatherCode": 0,
+        "condition": "Dry",
+        "state": {
+          "condition": "Dry",
+          "gripLevel": 1,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Dry"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 0,
+        "temperature2m": 12.1,
+        "windSpeed10m": 10.7
+      },
+      {
+        "time": "2005-04-10T13:00",
+        "weatherCode": 0,
+        "condition": "Dry",
+        "state": {
+          "condition": "Dry",
+          "gripLevel": 1,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Dry"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 0,
+        "temperature2m": 12.1,
+        "windSpeed10m": 10.7
+      },
+      {
+        "time": "2005-04-10T13:15",
+        "weatherCode": 0,
+        "condition": "Dry",
+        "state": {
+          "condition": "Dry",
+          "gripLevel": 1,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Dry"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 0,
+        "temperature2m": 12.1,
+        "windSpeed10m": 10.7
+      },
+      {
+        "time": "2005-04-10T13:30",
+        "weatherCode": 0,
+        "condition": "Dry",
+        "state": {
+          "condition": "Dry",
+          "gripLevel": 1,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Dry"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 0,
+        "temperature2m": 11.6,
+        "windSpeed10m": 7.8
+      },
+      {
+        "time": "2005-04-10T13:45",
+        "weatherCode": 0,
+        "condition": "Dry",
+        "state": {
+          "condition": "Dry",
+          "gripLevel": 1,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Dry"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 0,
+        "temperature2m": 11.6,
+        "windSpeed10m": 7.8
+      },
+      {
+        "time": "2005-04-10T14:00",
+        "weatherCode": 0,
+        "condition": "Dry",
+        "state": {
+          "condition": "Dry",
+          "gripLevel": 1,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Dry"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 0,
+        "temperature2m": 11.6,
+        "windSpeed10m": 7.8
       },
       {
         "time": "2005-04-10T14:15",
@@ -54,8 +159,8 @@ export const season2005ChampCarWeather = {
         "precipitationMm": 0.0,
         "rainMm": 0.0,
         "cloudCover": 0,
-        "temperature2m": 12.1,
-        "windSpeed10m": 10.7
+        "temperature2m": 11.6,
+        "windSpeed10m": 7.8
       },
       {
         "time": "2005-04-10T14:30",
@@ -71,8 +176,8 @@ export const season2005ChampCarWeather = {
         "precipitationMm": 0.0,
         "rainMm": 0.0,
         "cloudCover": 0,
-        "temperature2m": 12.1,
-        "windSpeed10m": 10.7
+        "temperature2m": 12.0,
+        "windSpeed10m": 5.8
       },
       {
         "time": "2005-04-10T14:45",
@@ -88,8 +193,8 @@ export const season2005ChampCarWeather = {
         "precipitationMm": 0.0,
         "rainMm": 0.0,
         "cloudCover": 0,
-        "temperature2m": 12.1,
-        "windSpeed10m": 10.7
+        "temperature2m": 12.0,
+        "windSpeed10m": 5.8
       },
       {
         "time": "2005-04-10T15:00",
@@ -105,113 +210,11 @@ export const season2005ChampCarWeather = {
         "precipitationMm": 0.0,
         "rainMm": 0.0,
         "cloudCover": 0,
-        "temperature2m": 11.6,
-        "windSpeed10m": 7.8
+        "temperature2m": 12.0,
+        "windSpeed10m": 5.8
       },
       {
         "time": "2005-04-10T15:15",
-        "weatherCode": 0,
-        "condition": "Dry",
-        "state": {
-          "condition": "Dry",
-          "gripLevel": 1,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Dry"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 0,
-        "temperature2m": 11.6,
-        "windSpeed10m": 7.8
-      },
-      {
-        "time": "2005-04-10T15:30",
-        "weatherCode": 0,
-        "condition": "Dry",
-        "state": {
-          "condition": "Dry",
-          "gripLevel": 1,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Dry"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 0,
-        "temperature2m": 11.6,
-        "windSpeed10m": 7.8
-      },
-      {
-        "time": "2005-04-10T15:45",
-        "weatherCode": 0,
-        "condition": "Dry",
-        "state": {
-          "condition": "Dry",
-          "gripLevel": 1,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Dry"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 0,
-        "temperature2m": 11.6,
-        "windSpeed10m": 7.8
-      },
-      {
-        "time": "2005-04-10T16:00",
-        "weatherCode": 0,
-        "condition": "Dry",
-        "state": {
-          "condition": "Dry",
-          "gripLevel": 1,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Dry"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 0,
-        "temperature2m": 12.0,
-        "windSpeed10m": 5.8
-      },
-      {
-        "time": "2005-04-10T16:15",
-        "weatherCode": 0,
-        "condition": "Dry",
-        "state": {
-          "condition": "Dry",
-          "gripLevel": 1,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Dry"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 0,
-        "temperature2m": 12.0,
-        "windSpeed10m": 5.8
-      },
-      {
-        "time": "2005-04-10T16:30",
-        "weatherCode": 0,
-        "condition": "Dry",
-        "state": {
-          "condition": "Dry",
-          "gripLevel": 1,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Dry"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 0,
-        "temperature2m": 12.0,
-        "windSpeed10m": 5.8
-      },
-      {
-        "time": "2005-04-10T16:45",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -238,21 +241,24 @@ export const season2005ChampCarWeather = {
       "year": 2005,
       "series": "Champ Car",
       "date": "2005-05-22",
-      "localStartTime": "14:00",
+      "localStartTime": "13:00",
       "timezone": "auto",
       "latitude": 25.6866,
       "longitude": -100.3161,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "Low",
+      "startTimeMethod": "Series/track-type heuristic"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using Champ Car default 14:00"
+      "Workbook start time estimate (Low): 13:00",
+      "Start time method: Series/track-type heuristic"
     ],
     "samples": [
       {
-        "time": "2005-05-22T14:00",
+        "time": "2005-05-22T13:00",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -267,6 +273,74 @@ export const season2005ChampCarWeather = {
         "cloudCover": 0,
         "temperature2m": 25.3,
         "windSpeed10m": 5.6
+      },
+      {
+        "time": "2005-05-22T13:15",
+        "weatherCode": 0,
+        "condition": "Dry",
+        "state": {
+          "condition": "Dry",
+          "gripLevel": 1,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Dry"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 0,
+        "temperature2m": 25.3,
+        "windSpeed10m": 5.6
+      },
+      {
+        "time": "2005-05-22T13:30",
+        "weatherCode": 0,
+        "condition": "Dry",
+        "state": {
+          "condition": "Dry",
+          "gripLevel": 1,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Dry"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 0,
+        "temperature2m": 25.3,
+        "windSpeed10m": 5.6
+      },
+      {
+        "time": "2005-05-22T13:45",
+        "weatherCode": 0,
+        "condition": "Dry",
+        "state": {
+          "condition": "Dry",
+          "gripLevel": 1,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Dry"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 0,
+        "temperature2m": 25.3,
+        "windSpeed10m": 5.6
+      },
+      {
+        "time": "2005-05-22T14:00",
+        "weatherCode": 0,
+        "condition": "Dry",
+        "state": {
+          "condition": "Dry",
+          "gripLevel": 1,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Dry"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 0,
+        "temperature2m": 24.3,
+        "windSpeed10m": 6.0
       },
       {
         "time": "2005-05-22T14:15",
@@ -282,8 +356,8 @@ export const season2005ChampCarWeather = {
         "precipitationMm": 0.0,
         "rainMm": 0.0,
         "cloudCover": 0,
-        "temperature2m": 25.3,
-        "windSpeed10m": 5.6
+        "temperature2m": 24.3,
+        "windSpeed10m": 6.0
       },
       {
         "time": "2005-05-22T14:30",
@@ -299,8 +373,8 @@ export const season2005ChampCarWeather = {
         "precipitationMm": 0.0,
         "rainMm": 0.0,
         "cloudCover": 0,
-        "temperature2m": 25.3,
-        "windSpeed10m": 5.6
+        "temperature2m": 24.3,
+        "windSpeed10m": 6.0
       },
       {
         "time": "2005-05-22T14:45",
@@ -316,8 +390,8 @@ export const season2005ChampCarWeather = {
         "precipitationMm": 0.0,
         "rainMm": 0.0,
         "cloudCover": 0,
-        "temperature2m": 25.3,
-        "windSpeed10m": 5.6
+        "temperature2m": 24.3,
+        "windSpeed10m": 6.0
       },
       {
         "time": "2005-05-22T15:00",
@@ -333,8 +407,8 @@ export const season2005ChampCarWeather = {
         "precipitationMm": 0.0,
         "rainMm": 0.0,
         "cloudCover": 0,
-        "temperature2m": 24.3,
-        "windSpeed10m": 6.0
+        "temperature2m": 23.7,
+        "windSpeed10m": 4.8
       },
       {
         "time": "2005-05-22T15:15",
@@ -350,8 +424,8 @@ export const season2005ChampCarWeather = {
         "precipitationMm": 0.0,
         "rainMm": 0.0,
         "cloudCover": 0,
-        "temperature2m": 24.3,
-        "windSpeed10m": 6.0
+        "temperature2m": 23.7,
+        "windSpeed10m": 4.8
       },
       {
         "time": "2005-05-22T15:30",
@@ -367,79 +441,11 @@ export const season2005ChampCarWeather = {
         "precipitationMm": 0.0,
         "rainMm": 0.0,
         "cloudCover": 0,
-        "temperature2m": 24.3,
-        "windSpeed10m": 6.0
+        "temperature2m": 23.7,
+        "windSpeed10m": 4.8
       },
       {
         "time": "2005-05-22T15:45",
-        "weatherCode": 0,
-        "condition": "Dry",
-        "state": {
-          "condition": "Dry",
-          "gripLevel": 1,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Dry"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 0,
-        "temperature2m": 24.3,
-        "windSpeed10m": 6.0
-      },
-      {
-        "time": "2005-05-22T16:00",
-        "weatherCode": 0,
-        "condition": "Dry",
-        "state": {
-          "condition": "Dry",
-          "gripLevel": 1,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Dry"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 0,
-        "temperature2m": 23.7,
-        "windSpeed10m": 4.8
-      },
-      {
-        "time": "2005-05-22T16:15",
-        "weatherCode": 0,
-        "condition": "Dry",
-        "state": {
-          "condition": "Dry",
-          "gripLevel": 1,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Dry"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 0,
-        "temperature2m": 23.7,
-        "windSpeed10m": 4.8
-      },
-      {
-        "time": "2005-05-22T16:30",
-        "weatherCode": 0,
-        "condition": "Dry",
-        "state": {
-          "condition": "Dry",
-          "gripLevel": 1,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Dry"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 0,
-        "temperature2m": 23.7,
-        "windSpeed10m": 4.8
-      },
-      {
-        "time": "2005-05-22T16:45",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -466,21 +472,24 @@ export const season2005ChampCarWeather = {
       "year": 2005,
       "series": "Champ Car",
       "date": "2005-06-04",
-      "localStartTime": "14:00",
+      "localStartTime": "13:00",
       "timezone": "auto",
       "latitude": 43.0167,
       "longitude": -88.007,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "Medium",
+      "startTimeMethod": "Oval daytime estimate"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using Champ Car default 14:00"
+      "Workbook start time estimate (Medium): 13:00",
+      "Start time method: Oval daytime estimate"
     ],
     "samples": [
       {
-        "time": "2005-06-04T14:00",
+        "time": "2005-06-04T13:00",
         "weatherCode": 3,
         "condition": "Cloudy",
         "state": {
@@ -495,6 +504,74 @@ export const season2005ChampCarWeather = {
         "cloudCover": 100,
         "temperature2m": 16.2,
         "windSpeed10m": 5.6
+      },
+      {
+        "time": "2005-06-04T13:15",
+        "weatherCode": 3,
+        "condition": "Cloudy",
+        "state": {
+          "condition": "Cloudy",
+          "gripLevel": 0.97,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Cloudy"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 100,
+        "temperature2m": 16.2,
+        "windSpeed10m": 5.6
+      },
+      {
+        "time": "2005-06-04T13:30",
+        "weatherCode": 3,
+        "condition": "Cloudy",
+        "state": {
+          "condition": "Cloudy",
+          "gripLevel": 0.97,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Cloudy"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 100,
+        "temperature2m": 16.2,
+        "windSpeed10m": 5.6
+      },
+      {
+        "time": "2005-06-04T13:45",
+        "weatherCode": 3,
+        "condition": "Cloudy",
+        "state": {
+          "condition": "Cloudy",
+          "gripLevel": 0.97,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Cloudy"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 100,
+        "temperature2m": 16.2,
+        "windSpeed10m": 5.6
+      },
+      {
+        "time": "2005-06-04T14:00",
+        "weatherCode": 3,
+        "condition": "Cloudy",
+        "state": {
+          "condition": "Cloudy",
+          "gripLevel": 0.97,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Cloudy"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 100,
+        "temperature2m": 15.8,
+        "windSpeed10m": 2.6
       },
       {
         "time": "2005-06-04T14:15",
@@ -510,8 +587,8 @@ export const season2005ChampCarWeather = {
         "precipitationMm": 0.0,
         "rainMm": 0.0,
         "cloudCover": 100,
-        "temperature2m": 16.2,
-        "windSpeed10m": 5.6
+        "temperature2m": 15.8,
+        "windSpeed10m": 2.6
       },
       {
         "time": "2005-06-04T14:30",
@@ -527,8 +604,8 @@ export const season2005ChampCarWeather = {
         "precipitationMm": 0.0,
         "rainMm": 0.0,
         "cloudCover": 100,
-        "temperature2m": 16.2,
-        "windSpeed10m": 5.6
+        "temperature2m": 15.8,
+        "windSpeed10m": 2.6
       },
       {
         "time": "2005-06-04T14:45",
@@ -544,8 +621,8 @@ export const season2005ChampCarWeather = {
         "precipitationMm": 0.0,
         "rainMm": 0.0,
         "cloudCover": 100,
-        "temperature2m": 16.2,
-        "windSpeed10m": 5.6
+        "temperature2m": 15.8,
+        "windSpeed10m": 2.6
       },
       {
         "time": "2005-06-04T15:00",
@@ -561,8 +638,8 @@ export const season2005ChampCarWeather = {
         "precipitationMm": 0.0,
         "rainMm": 0.0,
         "cloudCover": 100,
-        "temperature2m": 15.8,
-        "windSpeed10m": 2.6
+        "temperature2m": 16.2,
+        "windSpeed10m": 3.3
       },
       {
         "time": "2005-06-04T15:15",
@@ -578,8 +655,8 @@ export const season2005ChampCarWeather = {
         "precipitationMm": 0.0,
         "rainMm": 0.0,
         "cloudCover": 100,
-        "temperature2m": 15.8,
-        "windSpeed10m": 2.6
+        "temperature2m": 16.2,
+        "windSpeed10m": 3.3
       },
       {
         "time": "2005-06-04T15:30",
@@ -595,79 +672,11 @@ export const season2005ChampCarWeather = {
         "precipitationMm": 0.0,
         "rainMm": 0.0,
         "cloudCover": 100,
-        "temperature2m": 15.8,
-        "windSpeed10m": 2.6
+        "temperature2m": 16.2,
+        "windSpeed10m": 3.3
       },
       {
         "time": "2005-06-04T15:45",
-        "weatherCode": 3,
-        "condition": "Cloudy",
-        "state": {
-          "condition": "Cloudy",
-          "gripLevel": 0.97,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Cloudy"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 100,
-        "temperature2m": 15.8,
-        "windSpeed10m": 2.6
-      },
-      {
-        "time": "2005-06-04T16:00",
-        "weatherCode": 3,
-        "condition": "Cloudy",
-        "state": {
-          "condition": "Cloudy",
-          "gripLevel": 0.97,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Cloudy"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 100,
-        "temperature2m": 16.2,
-        "windSpeed10m": 3.3
-      },
-      {
-        "time": "2005-06-04T16:15",
-        "weatherCode": 3,
-        "condition": "Cloudy",
-        "state": {
-          "condition": "Cloudy",
-          "gripLevel": 0.97,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Cloudy"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 100,
-        "temperature2m": 16.2,
-        "windSpeed10m": 3.3
-      },
-      {
-        "time": "2005-06-04T16:30",
-        "weatherCode": 3,
-        "condition": "Cloudy",
-        "state": {
-          "condition": "Cloudy",
-          "gripLevel": 0.97,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Cloudy"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 100,
-        "temperature2m": 16.2,
-        "windSpeed10m": 3.3
-      },
-      {
-        "time": "2005-06-04T16:45",
         "weatherCode": 3,
         "condition": "Cloudy",
         "state": {
@@ -694,21 +703,24 @@ export const season2005ChampCarWeather = {
       "year": 2005,
       "series": "Champ Car",
       "date": "2005-06-19",
-      "localStartTime": "14:00",
+      "localStartTime": "12:30",
       "timezone": "auto",
       "latitude": 45.5152,
       "longitude": -122.6784,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "Medium",
+      "startTimeMethod": "West Coast road/street TV-window estimate"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using Champ Car default 14:00"
+      "Workbook start time estimate (Medium): 12:30",
+      "Start time method: West Coast road/street TV-window estimate"
     ],
     "samples": [
       {
-        "time": "2005-06-19T14:00",
+        "time": "2005-06-19T12:30",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -723,6 +735,108 @@ export const season2005ChampCarWeather = {
         "cloudCover": 9,
         "temperature2m": 12.7,
         "windSpeed10m": 4.0
+      },
+      {
+        "time": "2005-06-19T12:45",
+        "weatherCode": 0,
+        "condition": "Dry",
+        "state": {
+          "condition": "Dry",
+          "gripLevel": 1,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Dry"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 9,
+        "temperature2m": 12.7,
+        "windSpeed10m": 4.0
+      },
+      {
+        "time": "2005-06-19T13:00",
+        "weatherCode": 0,
+        "condition": "Dry",
+        "state": {
+          "condition": "Dry",
+          "gripLevel": 1,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Dry"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 9,
+        "temperature2m": 12.7,
+        "windSpeed10m": 4.0
+      },
+      {
+        "time": "2005-06-19T13:15",
+        "weatherCode": 0,
+        "condition": "Dry",
+        "state": {
+          "condition": "Dry",
+          "gripLevel": 1,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Dry"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 9,
+        "temperature2m": 12.7,
+        "windSpeed10m": 4.0
+      },
+      {
+        "time": "2005-06-19T13:30",
+        "weatherCode": 0,
+        "condition": "Dry",
+        "state": {
+          "condition": "Dry",
+          "gripLevel": 1,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Dry"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 2,
+        "temperature2m": 12.3,
+        "windSpeed10m": 3.1
+      },
+      {
+        "time": "2005-06-19T13:45",
+        "weatherCode": 0,
+        "condition": "Dry",
+        "state": {
+          "condition": "Dry",
+          "gripLevel": 1,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Dry"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 2,
+        "temperature2m": 12.3,
+        "windSpeed10m": 3.1
+      },
+      {
+        "time": "2005-06-19T14:00",
+        "weatherCode": 0,
+        "condition": "Dry",
+        "state": {
+          "condition": "Dry",
+          "gripLevel": 1,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Dry"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 2,
+        "temperature2m": 12.3,
+        "windSpeed10m": 3.1
       },
       {
         "time": "2005-06-19T14:15",
@@ -737,9 +851,9 @@ export const season2005ChampCarWeather = {
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 9,
-        "temperature2m": 12.7,
-        "windSpeed10m": 4.0
+        "cloudCover": 2,
+        "temperature2m": 12.3,
+        "windSpeed10m": 3.1
       },
       {
         "time": "2005-06-19T14:30",
@@ -754,9 +868,9 @@ export const season2005ChampCarWeather = {
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 9,
-        "temperature2m": 12.7,
-        "windSpeed10m": 4.0
+        "cloudCover": 2,
+        "temperature2m": 12.2,
+        "windSpeed10m": 3.3
       },
       {
         "time": "2005-06-19T14:45",
@@ -771,9 +885,9 @@ export const season2005ChampCarWeather = {
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 9,
-        "temperature2m": 12.7,
-        "windSpeed10m": 4.0
+        "cloudCover": 2,
+        "temperature2m": 12.2,
+        "windSpeed10m": 3.3
       },
       {
         "time": "2005-06-19T15:00",
@@ -789,113 +903,11 @@ export const season2005ChampCarWeather = {
         "precipitationMm": 0.0,
         "rainMm": 0.0,
         "cloudCover": 2,
-        "temperature2m": 12.3,
-        "windSpeed10m": 3.1
+        "temperature2m": 12.2,
+        "windSpeed10m": 3.3
       },
       {
         "time": "2005-06-19T15:15",
-        "weatherCode": 0,
-        "condition": "Dry",
-        "state": {
-          "condition": "Dry",
-          "gripLevel": 1,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Dry"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 2,
-        "temperature2m": 12.3,
-        "windSpeed10m": 3.1
-      },
-      {
-        "time": "2005-06-19T15:30",
-        "weatherCode": 0,
-        "condition": "Dry",
-        "state": {
-          "condition": "Dry",
-          "gripLevel": 1,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Dry"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 2,
-        "temperature2m": 12.3,
-        "windSpeed10m": 3.1
-      },
-      {
-        "time": "2005-06-19T15:45",
-        "weatherCode": 0,
-        "condition": "Dry",
-        "state": {
-          "condition": "Dry",
-          "gripLevel": 1,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Dry"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 2,
-        "temperature2m": 12.3,
-        "windSpeed10m": 3.1
-      },
-      {
-        "time": "2005-06-19T16:00",
-        "weatherCode": 0,
-        "condition": "Dry",
-        "state": {
-          "condition": "Dry",
-          "gripLevel": 1,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Dry"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 2,
-        "temperature2m": 12.2,
-        "windSpeed10m": 3.3
-      },
-      {
-        "time": "2005-06-19T16:15",
-        "weatherCode": 0,
-        "condition": "Dry",
-        "state": {
-          "condition": "Dry",
-          "gripLevel": 1,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Dry"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 2,
-        "temperature2m": 12.2,
-        "windSpeed10m": 3.3
-      },
-      {
-        "time": "2005-06-19T16:30",
-        "weatherCode": 0,
-        "condition": "Dry",
-        "state": {
-          "condition": "Dry",
-          "gripLevel": 1,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Dry"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 2,
-        "temperature2m": 12.2,
-        "windSpeed10m": 3.3
-      },
-      {
-        "time": "2005-06-19T16:45",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -922,21 +934,24 @@ export const season2005ChampCarWeather = {
       "year": 2005,
       "series": "Champ Car",
       "date": "2005-06-26",
-      "localStartTime": "14:00",
+      "localStartTime": "13:00",
       "timezone": "auto",
       "latitude": 41.4993,
       "longitude": -81.6944,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "Low",
+      "startTimeMethod": "Series/track-type heuristic"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using Champ Car default 14:00"
+      "Workbook start time estimate (Low): 13:00",
+      "Start time method: Series/track-type heuristic"
     ],
     "samples": [
       {
-        "time": "2005-06-26T14:00",
+        "time": "2005-06-26T13:00",
         "weatherCode": 2,
         "condition": "Cloudy",
         "state": {
@@ -951,57 +966,125 @@ export const season2005ChampCarWeather = {
         "cloudCover": 63,
         "temperature2m": 24.5,
         "windSpeed10m": 6.3
+      },
+      {
+        "time": "2005-06-26T13:15",
+        "weatherCode": 2,
+        "condition": "Cloudy",
+        "state": {
+          "condition": "Cloudy",
+          "gripLevel": 0.97,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Cloudy"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 63,
+        "temperature2m": 24.5,
+        "windSpeed10m": 6.3
+      },
+      {
+        "time": "2005-06-26T13:30",
+        "weatherCode": 2,
+        "condition": "Cloudy",
+        "state": {
+          "condition": "Cloudy",
+          "gripLevel": 0.97,
+          "wet": false,
+          "changingSoon": true,
+          "label": "Cloudy"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 63,
+        "temperature2m": 24.5,
+        "windSpeed10m": 6.3
+      },
+      {
+        "time": "2005-06-26T13:45",
+        "weatherCode": 2,
+        "condition": "Cloudy",
+        "state": {
+          "condition": "Cloudy",
+          "gripLevel": 0.97,
+          "wet": false,
+          "changingSoon": true,
+          "label": "Cloudy"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 63,
+        "temperature2m": 24.5,
+        "windSpeed10m": 6.3
+      },
+      {
+        "time": "2005-06-26T14:00",
+        "weatherCode": 0,
+        "condition": "Dry",
+        "state": {
+          "condition": "Dry",
+          "gripLevel": 1,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Dry"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 19,
+        "temperature2m": 23.7,
+        "windSpeed10m": 6.1
       },
       {
         "time": "2005-06-26T14:15",
-        "weatherCode": 2,
-        "condition": "Cloudy",
+        "weatherCode": 0,
+        "condition": "Dry",
         "state": {
-          "condition": "Cloudy",
-          "gripLevel": 0.97,
+          "condition": "Dry",
+          "gripLevel": 1,
           "wet": false,
           "changingSoon": false,
-          "label": "Cloudy"
+          "label": "Dry"
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 63,
-        "temperature2m": 24.5,
-        "windSpeed10m": 6.3
+        "cloudCover": 19,
+        "temperature2m": 23.7,
+        "windSpeed10m": 6.1
       },
       {
         "time": "2005-06-26T14:30",
-        "weatherCode": 2,
-        "condition": "Cloudy",
+        "weatherCode": 0,
+        "condition": "Dry",
         "state": {
-          "condition": "Cloudy",
-          "gripLevel": 0.97,
+          "condition": "Dry",
+          "gripLevel": 1,
           "wet": false,
-          "changingSoon": true,
-          "label": "Cloudy"
+          "changingSoon": false,
+          "label": "Dry"
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 63,
-        "temperature2m": 24.5,
-        "windSpeed10m": 6.3
+        "cloudCover": 19,
+        "temperature2m": 23.7,
+        "windSpeed10m": 6.1
       },
       {
         "time": "2005-06-26T14:45",
-        "weatherCode": 2,
-        "condition": "Cloudy",
+        "weatherCode": 0,
+        "condition": "Dry",
         "state": {
-          "condition": "Cloudy",
-          "gripLevel": 0.97,
+          "condition": "Dry",
+          "gripLevel": 1,
           "wet": false,
-          "changingSoon": true,
-          "label": "Cloudy"
+          "changingSoon": false,
+          "label": "Dry"
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 63,
-        "temperature2m": 24.5,
-        "windSpeed10m": 6.3
+        "cloudCover": 19,
+        "temperature2m": 23.7,
+        "windSpeed10m": 6.1
       },
       {
         "time": "2005-06-26T15:00",
@@ -1016,8 +1099,8 @@ export const season2005ChampCarWeather = {
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 19,
-        "temperature2m": 23.7,
+        "cloudCover": 15,
+        "temperature2m": 23.8,
         "windSpeed10m": 6.1
       },
       {
@@ -1033,8 +1116,8 @@ export const season2005ChampCarWeather = {
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 19,
-        "temperature2m": 23.7,
+        "cloudCover": 15,
+        "temperature2m": 23.8,
         "windSpeed10m": 6.1
       },
       {
@@ -1050,80 +1133,12 @@ export const season2005ChampCarWeather = {
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 19,
-        "temperature2m": 23.7,
+        "cloudCover": 15,
+        "temperature2m": 23.8,
         "windSpeed10m": 6.1
       },
       {
         "time": "2005-06-26T15:45",
-        "weatherCode": 0,
-        "condition": "Dry",
-        "state": {
-          "condition": "Dry",
-          "gripLevel": 1,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Dry"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 19,
-        "temperature2m": 23.7,
-        "windSpeed10m": 6.1
-      },
-      {
-        "time": "2005-06-26T16:00",
-        "weatherCode": 0,
-        "condition": "Dry",
-        "state": {
-          "condition": "Dry",
-          "gripLevel": 1,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Dry"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 15,
-        "temperature2m": 23.8,
-        "windSpeed10m": 6.1
-      },
-      {
-        "time": "2005-06-26T16:15",
-        "weatherCode": 0,
-        "condition": "Dry",
-        "state": {
-          "condition": "Dry",
-          "gripLevel": 1,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Dry"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 15,
-        "temperature2m": 23.8,
-        "windSpeed10m": 6.1
-      },
-      {
-        "time": "2005-06-26T16:30",
-        "weatherCode": 0,
-        "condition": "Dry",
-        "state": {
-          "condition": "Dry",
-          "gripLevel": 1,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Dry"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 15,
-        "temperature2m": 23.8,
-        "windSpeed10m": 6.1
-      },
-      {
-        "time": "2005-06-26T16:45",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -1150,21 +1165,24 @@ export const season2005ChampCarWeather = {
       "year": 2005,
       "series": "Champ Car",
       "date": "2005-07-10",
-      "localStartTime": "14:00",
+      "localStartTime": "13:00",
       "timezone": "auto",
       "latitude": 43.6532,
       "longitude": -79.3832,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "Medium",
+      "startTimeMethod": "Street race afternoon estimate"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using Champ Car default 14:00"
+      "Workbook start time estimate (Medium): 13:00",
+      "Start time method: Street race afternoon estimate"
     ],
     "samples": [
       {
-        "time": "2005-07-10T14:00",
+        "time": "2005-07-10T13:00",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -1179,6 +1197,74 @@ export const season2005ChampCarWeather = {
         "cloudCover": 0,
         "temperature2m": 21.7,
         "windSpeed10m": 13.3
+      },
+      {
+        "time": "2005-07-10T13:15",
+        "weatherCode": 0,
+        "condition": "Dry",
+        "state": {
+          "condition": "Dry",
+          "gripLevel": 1,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Dry"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 0,
+        "temperature2m": 21.7,
+        "windSpeed10m": 13.3
+      },
+      {
+        "time": "2005-07-10T13:30",
+        "weatherCode": 0,
+        "condition": "Dry",
+        "state": {
+          "condition": "Dry",
+          "gripLevel": 1,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Dry"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 0,
+        "temperature2m": 21.7,
+        "windSpeed10m": 13.3
+      },
+      {
+        "time": "2005-07-10T13:45",
+        "weatherCode": 0,
+        "condition": "Dry",
+        "state": {
+          "condition": "Dry",
+          "gripLevel": 1,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Dry"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 0,
+        "temperature2m": 21.7,
+        "windSpeed10m": 13.3
+      },
+      {
+        "time": "2005-07-10T14:00",
+        "weatherCode": 0,
+        "condition": "Dry",
+        "state": {
+          "condition": "Dry",
+          "gripLevel": 1,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Dry"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 0,
+        "temperature2m": 20.9,
+        "windSpeed10m": 12.3
       },
       {
         "time": "2005-07-10T14:15",
@@ -1194,8 +1280,8 @@ export const season2005ChampCarWeather = {
         "precipitationMm": 0.0,
         "rainMm": 0.0,
         "cloudCover": 0,
-        "temperature2m": 21.7,
-        "windSpeed10m": 13.3
+        "temperature2m": 20.9,
+        "windSpeed10m": 12.3
       },
       {
         "time": "2005-07-10T14:30",
@@ -1211,8 +1297,8 @@ export const season2005ChampCarWeather = {
         "precipitationMm": 0.0,
         "rainMm": 0.0,
         "cloudCover": 0,
-        "temperature2m": 21.7,
-        "windSpeed10m": 13.3
+        "temperature2m": 20.9,
+        "windSpeed10m": 12.3
       },
       {
         "time": "2005-07-10T14:45",
@@ -1228,8 +1314,8 @@ export const season2005ChampCarWeather = {
         "precipitationMm": 0.0,
         "rainMm": 0.0,
         "cloudCover": 0,
-        "temperature2m": 21.7,
-        "windSpeed10m": 13.3
+        "temperature2m": 20.9,
+        "windSpeed10m": 12.3
       },
       {
         "time": "2005-07-10T15:00",
@@ -1245,8 +1331,8 @@ export const season2005ChampCarWeather = {
         "precipitationMm": 0.0,
         "rainMm": 0.0,
         "cloudCover": 0,
-        "temperature2m": 20.9,
-        "windSpeed10m": 12.3
+        "temperature2m": 20.3,
+        "windSpeed10m": 12.6
       },
       {
         "time": "2005-07-10T15:15",
@@ -1262,8 +1348,8 @@ export const season2005ChampCarWeather = {
         "precipitationMm": 0.0,
         "rainMm": 0.0,
         "cloudCover": 0,
-        "temperature2m": 20.9,
-        "windSpeed10m": 12.3
+        "temperature2m": 20.3,
+        "windSpeed10m": 12.6
       },
       {
         "time": "2005-07-10T15:30",
@@ -1279,79 +1365,11 @@ export const season2005ChampCarWeather = {
         "precipitationMm": 0.0,
         "rainMm": 0.0,
         "cloudCover": 0,
-        "temperature2m": 20.9,
-        "windSpeed10m": 12.3
+        "temperature2m": 20.3,
+        "windSpeed10m": 12.6
       },
       {
         "time": "2005-07-10T15:45",
-        "weatherCode": 0,
-        "condition": "Dry",
-        "state": {
-          "condition": "Dry",
-          "gripLevel": 1,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Dry"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 0,
-        "temperature2m": 20.9,
-        "windSpeed10m": 12.3
-      },
-      {
-        "time": "2005-07-10T16:00",
-        "weatherCode": 0,
-        "condition": "Dry",
-        "state": {
-          "condition": "Dry",
-          "gripLevel": 1,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Dry"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 0,
-        "temperature2m": 20.3,
-        "windSpeed10m": 12.6
-      },
-      {
-        "time": "2005-07-10T16:15",
-        "weatherCode": 0,
-        "condition": "Dry",
-        "state": {
-          "condition": "Dry",
-          "gripLevel": 1,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Dry"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 0,
-        "temperature2m": 20.3,
-        "windSpeed10m": 12.6
-      },
-      {
-        "time": "2005-07-10T16:30",
-        "weatherCode": 0,
-        "condition": "Dry",
-        "state": {
-          "condition": "Dry",
-          "gripLevel": 1,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Dry"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 0,
-        "temperature2m": 20.3,
-        "windSpeed10m": 12.6
-      },
-      {
-        "time": "2005-07-10T16:45",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -1378,21 +1396,24 @@ export const season2005ChampCarWeather = {
       "year": 2005,
       "series": "Champ Car",
       "date": "2005-07-17",
-      "localStartTime": "14:00",
+      "localStartTime": "13:00",
       "timezone": "auto",
       "latitude": 53.5461,
       "longitude": -113.4938,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "Low",
+      "startTimeMethod": "Series/track-type heuristic"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using Champ Car default 14:00"
+      "Workbook start time estimate (Low): 13:00",
+      "Start time method: Series/track-type heuristic"
     ],
     "samples": [
       {
-        "time": "2005-07-17T14:00",
+        "time": "2005-07-17T13:00",
         "weatherCode": 2,
         "condition": "Cloudy",
         "state": {
@@ -1407,6 +1428,74 @@ export const season2005ChampCarWeather = {
         "cloudCover": 60,
         "temperature2m": 14.7,
         "windSpeed10m": 18.9
+      },
+      {
+        "time": "2005-07-17T13:15",
+        "weatherCode": 2,
+        "condition": "Cloudy",
+        "state": {
+          "condition": "Cloudy",
+          "gripLevel": 0.97,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Cloudy"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 60,
+        "temperature2m": 14.7,
+        "windSpeed10m": 18.9
+      },
+      {
+        "time": "2005-07-17T13:30",
+        "weatherCode": 2,
+        "condition": "Cloudy",
+        "state": {
+          "condition": "Cloudy",
+          "gripLevel": 0.97,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Cloudy"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 60,
+        "temperature2m": 14.7,
+        "windSpeed10m": 18.9
+      },
+      {
+        "time": "2005-07-17T13:45",
+        "weatherCode": 2,
+        "condition": "Cloudy",
+        "state": {
+          "condition": "Cloudy",
+          "gripLevel": 0.97,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Cloudy"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 60,
+        "temperature2m": 14.7,
+        "windSpeed10m": 18.9
+      },
+      {
+        "time": "2005-07-17T14:00",
+        "weatherCode": 2,
+        "condition": "Cloudy",
+        "state": {
+          "condition": "Cloudy",
+          "gripLevel": 0.97,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Cloudy"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 60,
+        "temperature2m": 14.4,
+        "windSpeed10m": 19.7
       },
       {
         "time": "2005-07-17T14:15",
@@ -1422,8 +1511,8 @@ export const season2005ChampCarWeather = {
         "precipitationMm": 0.0,
         "rainMm": 0.0,
         "cloudCover": 60,
-        "temperature2m": 14.7,
-        "windSpeed10m": 18.9
+        "temperature2m": 14.4,
+        "windSpeed10m": 19.7
       },
       {
         "time": "2005-07-17T14:30",
@@ -1439,8 +1528,8 @@ export const season2005ChampCarWeather = {
         "precipitationMm": 0.0,
         "rainMm": 0.0,
         "cloudCover": 60,
-        "temperature2m": 14.7,
-        "windSpeed10m": 18.9
+        "temperature2m": 14.4,
+        "windSpeed10m": 19.7
       },
       {
         "time": "2005-07-17T14:45",
@@ -1456,8 +1545,8 @@ export const season2005ChampCarWeather = {
         "precipitationMm": 0.0,
         "rainMm": 0.0,
         "cloudCover": 60,
-        "temperature2m": 14.7,
-        "windSpeed10m": 18.9
+        "temperature2m": 14.4,
+        "windSpeed10m": 19.7
       },
       {
         "time": "2005-07-17T15:00",
@@ -1472,9 +1561,9 @@ export const season2005ChampCarWeather = {
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 60,
-        "temperature2m": 14.4,
-        "windSpeed10m": 19.7
+        "cloudCover": 70,
+        "temperature2m": 14.2,
+        "windSpeed10m": 20.0
       },
       {
         "time": "2005-07-17T15:15",
@@ -1489,9 +1578,9 @@ export const season2005ChampCarWeather = {
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 60,
-        "temperature2m": 14.4,
-        "windSpeed10m": 19.7
+        "cloudCover": 70,
+        "temperature2m": 14.2,
+        "windSpeed10m": 20.0
       },
       {
         "time": "2005-07-17T15:30",
@@ -1506,80 +1595,12 @@ export const season2005ChampCarWeather = {
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 60,
-        "temperature2m": 14.4,
-        "windSpeed10m": 19.7
+        "cloudCover": 70,
+        "temperature2m": 14.2,
+        "windSpeed10m": 20.0
       },
       {
         "time": "2005-07-17T15:45",
-        "weatherCode": 2,
-        "condition": "Cloudy",
-        "state": {
-          "condition": "Cloudy",
-          "gripLevel": 0.97,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Cloudy"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 60,
-        "temperature2m": 14.4,
-        "windSpeed10m": 19.7
-      },
-      {
-        "time": "2005-07-17T16:00",
-        "weatherCode": 2,
-        "condition": "Cloudy",
-        "state": {
-          "condition": "Cloudy",
-          "gripLevel": 0.97,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Cloudy"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 70,
-        "temperature2m": 14.2,
-        "windSpeed10m": 20.0
-      },
-      {
-        "time": "2005-07-17T16:15",
-        "weatherCode": 2,
-        "condition": "Cloudy",
-        "state": {
-          "condition": "Cloudy",
-          "gripLevel": 0.97,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Cloudy"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 70,
-        "temperature2m": 14.2,
-        "windSpeed10m": 20.0
-      },
-      {
-        "time": "2005-07-17T16:30",
-        "weatherCode": 2,
-        "condition": "Cloudy",
-        "state": {
-          "condition": "Cloudy",
-          "gripLevel": 0.97,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Cloudy"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 70,
-        "temperature2m": 14.2,
-        "windSpeed10m": 20.0
-      },
-      {
-        "time": "2005-07-17T16:45",
         "weatherCode": 2,
         "condition": "Cloudy",
         "state": {
@@ -1606,21 +1627,24 @@ export const season2005ChampCarWeather = {
       "year": 2005,
       "series": "Champ Car",
       "date": "2005-07-31",
-      "localStartTime": "14:00",
+      "localStartTime": "13:00",
       "timezone": "auto",
       "latitude": 37.3382,
       "longitude": -121.8863,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "Low",
+      "startTimeMethod": "Series/track-type heuristic"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using Champ Car default 14:00"
+      "Workbook start time estimate (Low): 13:00",
+      "Start time method: Series/track-type heuristic"
     ],
     "samples": [
       {
-        "time": "2005-07-31T14:00",
+        "time": "2005-07-31T13:00",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -1635,6 +1659,74 @@ export const season2005ChampCarWeather = {
         "cloudCover": 1,
         "temperature2m": 19.1,
         "windSpeed10m": 4.0
+      },
+      {
+        "time": "2005-07-31T13:15",
+        "weatherCode": 0,
+        "condition": "Dry",
+        "state": {
+          "condition": "Dry",
+          "gripLevel": 1,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Dry"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 1,
+        "temperature2m": 19.1,
+        "windSpeed10m": 4.0
+      },
+      {
+        "time": "2005-07-31T13:30",
+        "weatherCode": 0,
+        "condition": "Dry",
+        "state": {
+          "condition": "Dry",
+          "gripLevel": 1,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Dry"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 1,
+        "temperature2m": 19.1,
+        "windSpeed10m": 4.0
+      },
+      {
+        "time": "2005-07-31T13:45",
+        "weatherCode": 0,
+        "condition": "Dry",
+        "state": {
+          "condition": "Dry",
+          "gripLevel": 1,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Dry"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 1,
+        "temperature2m": 19.1,
+        "windSpeed10m": 4.0
+      },
+      {
+        "time": "2005-07-31T14:00",
+        "weatherCode": 0,
+        "condition": "Dry",
+        "state": {
+          "condition": "Dry",
+          "gripLevel": 1,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Dry"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 0,
+        "temperature2m": 18.5,
+        "windSpeed10m": 3.2
       },
       {
         "time": "2005-07-31T14:15",
@@ -1649,9 +1741,9 @@ export const season2005ChampCarWeather = {
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 1,
-        "temperature2m": 19.1,
-        "windSpeed10m": 4.0
+        "cloudCover": 0,
+        "temperature2m": 18.5,
+        "windSpeed10m": 3.2
       },
       {
         "time": "2005-07-31T14:30",
@@ -1666,9 +1758,9 @@ export const season2005ChampCarWeather = {
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 1,
-        "temperature2m": 19.1,
-        "windSpeed10m": 4.0
+        "cloudCover": 0,
+        "temperature2m": 18.5,
+        "windSpeed10m": 3.2
       },
       {
         "time": "2005-07-31T14:45",
@@ -1683,9 +1775,9 @@ export const season2005ChampCarWeather = {
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 1,
-        "temperature2m": 19.1,
-        "windSpeed10m": 4.0
+        "cloudCover": 0,
+        "temperature2m": 18.5,
+        "windSpeed10m": 3.2
       },
       {
         "time": "2005-07-31T15:00",
@@ -1702,7 +1794,7 @@ export const season2005ChampCarWeather = {
         "rainMm": 0.0,
         "cloudCover": 0,
         "temperature2m": 18.5,
-        "windSpeed10m": 3.2
+        "windSpeed10m": 1.9
       },
       {
         "time": "2005-07-31T15:15",
@@ -1719,7 +1811,7 @@ export const season2005ChampCarWeather = {
         "rainMm": 0.0,
         "cloudCover": 0,
         "temperature2m": 18.5,
-        "windSpeed10m": 3.2
+        "windSpeed10m": 1.9
       },
       {
         "time": "2005-07-31T15:30",
@@ -1736,78 +1828,10 @@ export const season2005ChampCarWeather = {
         "rainMm": 0.0,
         "cloudCover": 0,
         "temperature2m": 18.5,
-        "windSpeed10m": 3.2
+        "windSpeed10m": 1.9
       },
       {
         "time": "2005-07-31T15:45",
-        "weatherCode": 0,
-        "condition": "Dry",
-        "state": {
-          "condition": "Dry",
-          "gripLevel": 1,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Dry"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 0,
-        "temperature2m": 18.5,
-        "windSpeed10m": 3.2
-      },
-      {
-        "time": "2005-07-31T16:00",
-        "weatherCode": 0,
-        "condition": "Dry",
-        "state": {
-          "condition": "Dry",
-          "gripLevel": 1,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Dry"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 0,
-        "temperature2m": 18.5,
-        "windSpeed10m": 1.9
-      },
-      {
-        "time": "2005-07-31T16:15",
-        "weatherCode": 0,
-        "condition": "Dry",
-        "state": {
-          "condition": "Dry",
-          "gripLevel": 1,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Dry"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 0,
-        "temperature2m": 18.5,
-        "windSpeed10m": 1.9
-      },
-      {
-        "time": "2005-07-31T16:30",
-        "weatherCode": 0,
-        "condition": "Dry",
-        "state": {
-          "condition": "Dry",
-          "gripLevel": 1,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Dry"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 0,
-        "temperature2m": 18.5,
-        "windSpeed10m": 1.9
-      },
-      {
-        "time": "2005-07-31T16:45",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -1834,19 +1858,90 @@ export const season2005ChampCarWeather = {
       "year": 2005,
       "series": "Champ Car",
       "date": "2005-08-14",
-      "localStartTime": "14:00",
+      "localStartTime": "13:00",
       "timezone": "auto",
       "latitude": 39.7392,
       "longitude": -104.9903,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "Low",
+      "startTimeMethod": "Series/track-type heuristic"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using Champ Car default 14:00"
+      "Workbook start time estimate (Low): 13:00",
+      "Start time method: Series/track-type heuristic"
     ],
     "samples": [
+      {
+        "time": "2005-08-14T13:00",
+        "weatherCode": 3,
+        "condition": "Cloudy",
+        "state": {
+          "condition": "Cloudy",
+          "gripLevel": 0.97,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Cloudy"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 100,
+        "temperature2m": 14.0,
+        "windSpeed10m": 5.6
+      },
+      {
+        "time": "2005-08-14T13:15",
+        "weatherCode": 3,
+        "condition": "Cloudy",
+        "state": {
+          "condition": "Cloudy",
+          "gripLevel": 0.97,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Cloudy"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 100,
+        "temperature2m": 14.0,
+        "windSpeed10m": 5.6
+      },
+      {
+        "time": "2005-08-14T13:30",
+        "weatherCode": 3,
+        "condition": "Cloudy",
+        "state": {
+          "condition": "Cloudy",
+          "gripLevel": 0.97,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Cloudy"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 100,
+        "temperature2m": 14.0,
+        "windSpeed10m": 5.6
+      },
+      {
+        "time": "2005-08-14T13:45",
+        "weatherCode": 3,
+        "condition": "Cloudy",
+        "state": {
+          "condition": "Cloudy",
+          "gripLevel": 0.97,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Cloudy"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 100,
+        "temperature2m": 14.0,
+        "windSpeed10m": 5.6
+      },
       {
         "time": "2005-08-14T14:00",
         "weatherCode": 3,
@@ -1861,7 +1956,7 @@ export const season2005ChampCarWeather = {
         "precipitationMm": 0.0,
         "rainMm": 0.0,
         "cloudCover": 100,
-        "temperature2m": 14.0,
+        "temperature2m": 13.3,
         "windSpeed10m": 5.6
       },
       {
@@ -1878,7 +1973,7 @@ export const season2005ChampCarWeather = {
         "precipitationMm": 0.0,
         "rainMm": 0.0,
         "cloudCover": 100,
-        "temperature2m": 14.0,
+        "temperature2m": 13.3,
         "windSpeed10m": 5.6
       },
       {
@@ -1895,7 +1990,7 @@ export const season2005ChampCarWeather = {
         "precipitationMm": 0.0,
         "rainMm": 0.0,
         "cloudCover": 100,
-        "temperature2m": 14.0,
+        "temperature2m": 13.3,
         "windSpeed10m": 5.6
       },
       {
@@ -1912,7 +2007,7 @@ export const season2005ChampCarWeather = {
         "precipitationMm": 0.0,
         "rainMm": 0.0,
         "cloudCover": 100,
-        "temperature2m": 14.0,
+        "temperature2m": 13.3,
         "windSpeed10m": 5.6
       },
       {
@@ -1929,8 +2024,8 @@ export const season2005ChampCarWeather = {
         "precipitationMm": 0.0,
         "rainMm": 0.0,
         "cloudCover": 100,
-        "temperature2m": 13.3,
-        "windSpeed10m": 5.6
+        "temperature2m": 13.4,
+        "windSpeed10m": 6.4
       },
       {
         "time": "2005-08-14T15:15",
@@ -1946,8 +2041,8 @@ export const season2005ChampCarWeather = {
         "precipitationMm": 0.0,
         "rainMm": 0.0,
         "cloudCover": 100,
-        "temperature2m": 13.3,
-        "windSpeed10m": 5.6
+        "temperature2m": 13.4,
+        "windSpeed10m": 6.4
       },
       {
         "time": "2005-08-14T15:30",
@@ -1963,79 +2058,11 @@ export const season2005ChampCarWeather = {
         "precipitationMm": 0.0,
         "rainMm": 0.0,
         "cloudCover": 100,
-        "temperature2m": 13.3,
-        "windSpeed10m": 5.6
+        "temperature2m": 13.4,
+        "windSpeed10m": 6.4
       },
       {
         "time": "2005-08-14T15:45",
-        "weatherCode": 3,
-        "condition": "Cloudy",
-        "state": {
-          "condition": "Cloudy",
-          "gripLevel": 0.97,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Cloudy"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 100,
-        "temperature2m": 13.3,
-        "windSpeed10m": 5.6
-      },
-      {
-        "time": "2005-08-14T16:00",
-        "weatherCode": 3,
-        "condition": "Cloudy",
-        "state": {
-          "condition": "Cloudy",
-          "gripLevel": 0.97,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Cloudy"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 100,
-        "temperature2m": 13.4,
-        "windSpeed10m": 6.4
-      },
-      {
-        "time": "2005-08-14T16:15",
-        "weatherCode": 3,
-        "condition": "Cloudy",
-        "state": {
-          "condition": "Cloudy",
-          "gripLevel": 0.97,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Cloudy"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 100,
-        "temperature2m": 13.4,
-        "windSpeed10m": 6.4
-      },
-      {
-        "time": "2005-08-14T16:30",
-        "weatherCode": 3,
-        "condition": "Cloudy",
-        "state": {
-          "condition": "Cloudy",
-          "gripLevel": 0.97,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Cloudy"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 100,
-        "temperature2m": 13.4,
-        "windSpeed10m": 6.4
-      },
-      {
-        "time": "2005-08-14T16:45",
         "weatherCode": 3,
         "condition": "Cloudy",
         "state": {
@@ -2062,21 +2089,24 @@ export const season2005ChampCarWeather = {
       "year": 2005,
       "series": "Champ Car",
       "date": "2005-08-28",
-      "localStartTime": "14:00",
+      "localStartTime": "13:00",
       "timezone": "auto",
       "latitude": 45.5017,
       "longitude": -73.5673,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "Low",
+      "startTimeMethod": "Series/track-type heuristic"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using Champ Car default 14:00"
+      "Workbook start time estimate (Low): 13:00",
+      "Start time method: Series/track-type heuristic"
     ],
     "samples": [
       {
-        "time": "2005-08-28T14:00",
+        "time": "2005-08-28T13:00",
         "weatherCode": 1,
         "condition": "Cloudy",
         "state": {
@@ -2091,10 +2121,78 @@ export const season2005ChampCarWeather = {
         "cloudCover": 48,
         "temperature2m": 20.1,
         "windSpeed10m": 15.9
+      },
+      {
+        "time": "2005-08-28T13:15",
+        "weatherCode": 1,
+        "condition": "Cloudy",
+        "state": {
+          "condition": "Cloudy",
+          "gripLevel": 0.97,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Cloudy"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 48,
+        "temperature2m": 20.1,
+        "windSpeed10m": 15.9
+      },
+      {
+        "time": "2005-08-28T13:30",
+        "weatherCode": 1,
+        "condition": "Cloudy",
+        "state": {
+          "condition": "Cloudy",
+          "gripLevel": 0.97,
+          "wet": false,
+          "changingSoon": true,
+          "label": "Cloudy"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 48,
+        "temperature2m": 20.1,
+        "windSpeed10m": 15.9
+      },
+      {
+        "time": "2005-08-28T13:45",
+        "weatherCode": 1,
+        "condition": "Cloudy",
+        "state": {
+          "condition": "Cloudy",
+          "gripLevel": 0.97,
+          "wet": false,
+          "changingSoon": true,
+          "label": "Cloudy"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 48,
+        "temperature2m": 20.1,
+        "windSpeed10m": 15.9
+      },
+      {
+        "time": "2005-08-28T14:00",
+        "weatherCode": 2,
+        "condition": "Cloudy",
+        "state": {
+          "condition": "Cloudy",
+          "gripLevel": 0.97,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Cloudy"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 55,
+        "temperature2m": 19.9,
+        "windSpeed10m": 18.7
       },
       {
         "time": "2005-08-28T14:15",
-        "weatherCode": 1,
+        "weatherCode": 2,
         "condition": "Cloudy",
         "state": {
           "condition": "Cloudy",
@@ -2105,13 +2203,13 @@ export const season2005ChampCarWeather = {
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 48,
-        "temperature2m": 20.1,
-        "windSpeed10m": 15.9
+        "cloudCover": 55,
+        "temperature2m": 19.9,
+        "windSpeed10m": 18.7
       },
       {
         "time": "2005-08-28T14:30",
-        "weatherCode": 1,
+        "weatherCode": 2,
         "condition": "Cloudy",
         "state": {
           "condition": "Cloudy",
@@ -2122,13 +2220,13 @@ export const season2005ChampCarWeather = {
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 48,
-        "temperature2m": 20.1,
-        "windSpeed10m": 15.9
+        "cloudCover": 55,
+        "temperature2m": 19.9,
+        "windSpeed10m": 18.7
       },
       {
         "time": "2005-08-28T14:45",
-        "weatherCode": 1,
+        "weatherCode": 2,
         "condition": "Cloudy",
         "state": {
           "condition": "Cloudy",
@@ -2139,13 +2237,13 @@ export const season2005ChampCarWeather = {
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 48,
-        "temperature2m": 20.1,
-        "windSpeed10m": 15.9
+        "cloudCover": 55,
+        "temperature2m": 19.9,
+        "windSpeed10m": 18.7
       },
       {
         "time": "2005-08-28T15:00",
-        "weatherCode": 2,
+        "weatherCode": 3,
         "condition": "Cloudy",
         "state": {
           "condition": "Cloudy",
@@ -2156,13 +2254,13 @@ export const season2005ChampCarWeather = {
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 55,
-        "temperature2m": 19.9,
-        "windSpeed10m": 18.7
+        "cloudCover": 95,
+        "temperature2m": 20.0,
+        "windSpeed10m": 20.1
       },
       {
         "time": "2005-08-28T15:15",
-        "weatherCode": 2,
+        "weatherCode": 3,
         "condition": "Cloudy",
         "state": {
           "condition": "Cloudy",
@@ -2173,97 +2271,29 @@ export const season2005ChampCarWeather = {
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 55,
-        "temperature2m": 19.9,
-        "windSpeed10m": 18.7
+        "cloudCover": 95,
+        "temperature2m": 20.0,
+        "windSpeed10m": 20.1
       },
       {
         "time": "2005-08-28T15:30",
-        "weatherCode": 2,
+        "weatherCode": 3,
         "condition": "Cloudy",
         "state": {
           "condition": "Cloudy",
           "gripLevel": 0.97,
           "wet": false,
-          "changingSoon": true,
+          "changingSoon": false,
           "label": "Cloudy"
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 55,
-        "temperature2m": 19.9,
-        "windSpeed10m": 18.7
+        "cloudCover": 95,
+        "temperature2m": 20.0,
+        "windSpeed10m": 20.1
       },
       {
         "time": "2005-08-28T15:45",
-        "weatherCode": 2,
-        "condition": "Cloudy",
-        "state": {
-          "condition": "Cloudy",
-          "gripLevel": 0.97,
-          "wet": false,
-          "changingSoon": true,
-          "label": "Cloudy"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 55,
-        "temperature2m": 19.9,
-        "windSpeed10m": 18.7
-      },
-      {
-        "time": "2005-08-28T16:00",
-        "weatherCode": 3,
-        "condition": "Cloudy",
-        "state": {
-          "condition": "Cloudy",
-          "gripLevel": 0.97,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Cloudy"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 95,
-        "temperature2m": 20.0,
-        "windSpeed10m": 20.1
-      },
-      {
-        "time": "2005-08-28T16:15",
-        "weatherCode": 3,
-        "condition": "Cloudy",
-        "state": {
-          "condition": "Cloudy",
-          "gripLevel": 0.97,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Cloudy"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 95,
-        "temperature2m": 20.0,
-        "windSpeed10m": 20.1
-      },
-      {
-        "time": "2005-08-28T16:30",
-        "weatherCode": 3,
-        "condition": "Cloudy",
-        "state": {
-          "condition": "Cloudy",
-          "gripLevel": 0.97,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Cloudy"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 95,
-        "temperature2m": 20.0,
-        "windSpeed10m": 20.1
-      },
-      {
-        "time": "2005-08-28T16:45",
         "weatherCode": 3,
         "condition": "Cloudy",
         "state": {
@@ -2290,21 +2320,24 @@ export const season2005ChampCarWeather = {
       "year": 2005,
       "series": "Champ Car",
       "date": "2005-09-24",
-      "localStartTime": "14:00",
+      "localStartTime": "19:30",
       "timezone": "auto",
       "latitude": 36.1699,
       "longitude": -115.1398,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "Low",
+      "startTimeMethod": "Saturday oval evening heuristic"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using Champ Car default 14:00"
+      "Workbook start time estimate (Low): 19:30",
+      "Start time method: Saturday oval evening heuristic"
     ],
     "samples": [
       {
-        "time": "2005-09-24T14:00",
+        "time": "2005-09-24T19:30",
         "weatherCode": 3,
         "condition": "Cloudy",
         "state": {
@@ -2321,7 +2354,7 @@ export const season2005ChampCarWeather = {
         "windSpeed10m": 11.4
       },
       {
-        "time": "2005-09-24T14:15",
+        "time": "2005-09-24T19:45",
         "weatherCode": 3,
         "condition": "Cloudy",
         "state": {
@@ -2338,24 +2371,7 @@ export const season2005ChampCarWeather = {
         "windSpeed10m": 11.4
       },
       {
-        "time": "2005-09-24T14:30",
-        "weatherCode": 3,
-        "condition": "Cloudy",
-        "state": {
-          "condition": "Cloudy",
-          "gripLevel": 0.97,
-          "wet": false,
-          "changingSoon": true,
-          "label": "Cloudy"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 81,
-        "temperature2m": 25.5,
-        "windSpeed10m": 11.4
-      },
-      {
-        "time": "2005-09-24T14:45",
+        "time": "2005-09-24T20:00",
         "weatherCode": 3,
         "condition": "Cloudy",
         "state": {
@@ -2372,7 +2388,24 @@ export const season2005ChampCarWeather = {
         "windSpeed10m": 11.4
       },
       {
-        "time": "2005-09-24T15:00",
+        "time": "2005-09-24T20:15",
+        "weatherCode": 3,
+        "condition": "Cloudy",
+        "state": {
+          "condition": "Cloudy",
+          "gripLevel": 0.97,
+          "wet": false,
+          "changingSoon": true,
+          "label": "Cloudy"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 81,
+        "temperature2m": 25.5,
+        "windSpeed10m": 11.4
+      },
+      {
+        "time": "2005-09-24T20:30",
         "weatherCode": 2,
         "condition": "Cloudy",
         "state": {
@@ -2389,7 +2422,7 @@ export const season2005ChampCarWeather = {
         "windSpeed10m": 10.4
       },
       {
-        "time": "2005-09-24T15:15",
+        "time": "2005-09-24T20:45",
         "weatherCode": 2,
         "condition": "Cloudy",
         "state": {
@@ -2406,7 +2439,7 @@ export const season2005ChampCarWeather = {
         "windSpeed10m": 10.4
       },
       {
-        "time": "2005-09-24T15:30",
+        "time": "2005-09-24T21:00",
         "weatherCode": 2,
         "condition": "Cloudy",
         "state": {
@@ -2423,7 +2456,7 @@ export const season2005ChampCarWeather = {
         "windSpeed10m": 10.4
       },
       {
-        "time": "2005-09-24T15:45",
+        "time": "2005-09-24T21:15",
         "weatherCode": 2,
         "condition": "Cloudy",
         "state": {
@@ -2440,7 +2473,7 @@ export const season2005ChampCarWeather = {
         "windSpeed10m": 10.4
       },
       {
-        "time": "2005-09-24T16:00",
+        "time": "2005-09-24T21:30",
         "weatherCode": 2,
         "condition": "Cloudy",
         "state": {
@@ -2457,7 +2490,7 @@ export const season2005ChampCarWeather = {
         "windSpeed10m": 9.7
       },
       {
-        "time": "2005-09-24T16:15",
+        "time": "2005-09-24T21:45",
         "weatherCode": 2,
         "condition": "Cloudy",
         "state": {
@@ -2474,7 +2507,7 @@ export const season2005ChampCarWeather = {
         "windSpeed10m": 9.7
       },
       {
-        "time": "2005-09-24T16:30",
+        "time": "2005-09-24T22:00",
         "weatherCode": 2,
         "condition": "Cloudy",
         "state": {
@@ -2491,7 +2524,7 @@ export const season2005ChampCarWeather = {
         "windSpeed10m": 9.7
       },
       {
-        "time": "2005-09-24T16:45",
+        "time": "2005-09-24T22:15",
         "weatherCode": 2,
         "condition": "Cloudy",
         "state": {
@@ -2523,12 +2556,15 @@ export const season2005ChampCarWeather = {
       "latitude": -28.0027,
       "longitude": 153.4297,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "Medium",
+      "startTimeMethod": "Australia street-race estimate"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using Champ Car default 14:00"
+      "Workbook start time estimate (Medium): 14:00",
+      "Start time method: Australia street-race estimate"
     ],
     "samples": [
       {
@@ -2746,21 +2782,24 @@ export const season2005ChampCarWeather = {
       "year": 2005,
       "series": "Champ Car",
       "date": "2005-11-06",
-      "localStartTime": "14:00",
+      "localStartTime": "13:00",
       "timezone": "auto",
       "latitude": 19.4326,
       "longitude": -99.1332,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "Low",
+      "startTimeMethod": "Series/track-type heuristic"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using Champ Car default 14:00"
+      "Workbook start time estimate (Low): 13:00",
+      "Start time method: Series/track-type heuristic"
     ],
     "samples": [
       {
-        "time": "2005-11-06T14:00",
+        "time": "2005-11-06T13:00",
         "weatherCode": 1,
         "condition": "Cloudy",
         "state": {
@@ -2775,10 +2814,78 @@ export const season2005ChampCarWeather = {
         "cloudCover": 41,
         "temperature2m": 13.9,
         "windSpeed10m": 8.0
+      },
+      {
+        "time": "2005-11-06T13:15",
+        "weatherCode": 1,
+        "condition": "Cloudy",
+        "state": {
+          "condition": "Cloudy",
+          "gripLevel": 0.97,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Cloudy"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 41,
+        "temperature2m": 13.9,
+        "windSpeed10m": 8.0
+      },
+      {
+        "time": "2005-11-06T13:30",
+        "weatherCode": 1,
+        "condition": "Cloudy",
+        "state": {
+          "condition": "Cloudy",
+          "gripLevel": 0.97,
+          "wet": false,
+          "changingSoon": true,
+          "label": "Cloudy"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 41,
+        "temperature2m": 13.9,
+        "windSpeed10m": 8.0
+      },
+      {
+        "time": "2005-11-06T13:45",
+        "weatherCode": 1,
+        "condition": "Cloudy",
+        "state": {
+          "condition": "Cloudy",
+          "gripLevel": 0.97,
+          "wet": false,
+          "changingSoon": true,
+          "label": "Cloudy"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 41,
+        "temperature2m": 13.9,
+        "windSpeed10m": 8.0
+      },
+      {
+        "time": "2005-11-06T14:00",
+        "weatherCode": 2,
+        "condition": "Cloudy",
+        "state": {
+          "condition": "Cloudy",
+          "gripLevel": 0.97,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Cloudy"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 52,
+        "temperature2m": 13.8,
+        "windSpeed10m": 6.5
       },
       {
         "time": "2005-11-06T14:15",
-        "weatherCode": 1,
+        "weatherCode": 2,
         "condition": "Cloudy",
         "state": {
           "condition": "Cloudy",
@@ -2789,43 +2896,43 @@ export const season2005ChampCarWeather = {
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 41,
-        "temperature2m": 13.9,
-        "windSpeed10m": 8.0
+        "cloudCover": 52,
+        "temperature2m": 13.8,
+        "windSpeed10m": 6.5
       },
       {
         "time": "2005-11-06T14:30",
-        "weatherCode": 1,
+        "weatherCode": 2,
         "condition": "Cloudy",
         "state": {
           "condition": "Cloudy",
           "gripLevel": 0.97,
           "wet": false,
-          "changingSoon": true,
+          "changingSoon": false,
           "label": "Cloudy"
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 41,
-        "temperature2m": 13.9,
-        "windSpeed10m": 8.0
+        "cloudCover": 52,
+        "temperature2m": 13.8,
+        "windSpeed10m": 6.5
       },
       {
         "time": "2005-11-06T14:45",
-        "weatherCode": 1,
+        "weatherCode": 2,
         "condition": "Cloudy",
         "state": {
           "condition": "Cloudy",
           "gripLevel": 0.97,
           "wet": false,
-          "changingSoon": true,
+          "changingSoon": false,
           "label": "Cloudy"
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 41,
-        "temperature2m": 13.9,
-        "windSpeed10m": 8.0
+        "cloudCover": 52,
+        "temperature2m": 13.8,
+        "windSpeed10m": 6.5
       },
       {
         "time": "2005-11-06T15:00",
@@ -2840,9 +2947,9 @@ export const season2005ChampCarWeather = {
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 52,
-        "temperature2m": 13.8,
-        "windSpeed10m": 6.5
+        "cloudCover": 59,
+        "temperature2m": 13.2,
+        "windSpeed10m": 4.7
       },
       {
         "time": "2005-11-06T15:15",
@@ -2857,9 +2964,9 @@ export const season2005ChampCarWeather = {
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 52,
-        "temperature2m": 13.8,
-        "windSpeed10m": 6.5
+        "cloudCover": 59,
+        "temperature2m": 13.2,
+        "windSpeed10m": 4.7
       },
       {
         "time": "2005-11-06T15:30",
@@ -2874,80 +2981,12 @@ export const season2005ChampCarWeather = {
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 52,
-        "temperature2m": 13.8,
-        "windSpeed10m": 6.5
+        "cloudCover": 59,
+        "temperature2m": 13.2,
+        "windSpeed10m": 4.7
       },
       {
         "time": "2005-11-06T15:45",
-        "weatherCode": 2,
-        "condition": "Cloudy",
-        "state": {
-          "condition": "Cloudy",
-          "gripLevel": 0.97,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Cloudy"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 52,
-        "temperature2m": 13.8,
-        "windSpeed10m": 6.5
-      },
-      {
-        "time": "2005-11-06T16:00",
-        "weatherCode": 2,
-        "condition": "Cloudy",
-        "state": {
-          "condition": "Cloudy",
-          "gripLevel": 0.97,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Cloudy"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 59,
-        "temperature2m": 13.2,
-        "windSpeed10m": 4.7
-      },
-      {
-        "time": "2005-11-06T16:15",
-        "weatherCode": 2,
-        "condition": "Cloudy",
-        "state": {
-          "condition": "Cloudy",
-          "gripLevel": 0.97,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Cloudy"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 59,
-        "temperature2m": 13.2,
-        "windSpeed10m": 4.7
-      },
-      {
-        "time": "2005-11-06T16:30",
-        "weatherCode": 2,
-        "condition": "Cloudy",
-        "state": {
-          "condition": "Cloudy",
-          "gripLevel": 0.97,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Cloudy"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 59,
-        "temperature2m": 13.2,
-        "windSpeed10m": 4.7
-      },
-      {
-        "time": "2005-11-06T16:45",
         "weatherCode": 2,
         "condition": "Cloudy",
         "state": {

@@ -28,6 +28,6 @@ describe('historical weather loader', () => {
     const timeline = await getHistoricalWeatherTimeline(raceId);
     expect(timeline).toBeDefined();
     expect(timeline?.samples).toHaveLength(0);
-    expect(timeline?.assumptions.join(' ')).toContain('archive fetch skipped');
+    expect(timeline?.assumptions.join(' ')).toContain('after archive cutoff');
   });
 });

@@ -10,19 +10,56 @@ export const season2008IndyCarWeather = {
       "year": 2008,
       "series": "IndyCar",
       "date": "2008-03-29",
-      "localStartTime": "13:30",
+      "localStartTime": "13:00",
       "timezone": "auto",
       "latitude": 25.4687,
       "longitude": -80.4776,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "Medium",
+      "startTimeMethod": "Oval daytime estimate"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using IndyCar default 13:30"
+      "Workbook start time estimate (Medium): 13:00",
+      "Start time method: Oval daytime estimate"
     ],
     "samples": [
+      {
+        "time": "2008-03-29T13:00",
+        "weatherCode": 1,
+        "condition": "Cloudy",
+        "state": {
+          "condition": "Cloudy",
+          "gripLevel": 0.97,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Cloudy"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 29,
+        "temperature2m": 20.5,
+        "windSpeed10m": 6.5
+      },
+      {
+        "time": "2008-03-29T13:15",
+        "weatherCode": 1,
+        "condition": "Cloudy",
+        "state": {
+          "condition": "Cloudy",
+          "gripLevel": 0.97,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Cloudy"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 29,
+        "temperature2m": 20.5,
+        "windSpeed10m": 6.5
+      },
       {
         "time": "2008-03-29T13:30",
         "weatherCode": 1,
@@ -31,7 +68,7 @@ export const season2008IndyCarWeather = {
           "condition": "Cloudy",
           "gripLevel": 0.97,
           "wet": false,
-          "changingSoon": false,
+          "changingSoon": true,
           "label": "Cloudy"
         },
         "precipitationMm": 0.0,
@@ -48,7 +85,7 @@ export const season2008IndyCarWeather = {
           "condition": "Cloudy",
           "gripLevel": 0.97,
           "wet": false,
-          "changingSoon": false,
+          "changingSoon": true,
           "label": "Cloudy"
         },
         "precipitationMm": 0.0,
@@ -59,37 +96,37 @@ export const season2008IndyCarWeather = {
       },
       {
         "time": "2008-03-29T14:00",
-        "weatherCode": 1,
-        "condition": "Cloudy",
+        "weatherCode": 0,
+        "condition": "Dry",
         "state": {
-          "condition": "Cloudy",
-          "gripLevel": 0.97,
+          "condition": "Dry",
+          "gripLevel": 1,
           "wet": false,
-          "changingSoon": true,
-          "label": "Cloudy"
+          "changingSoon": false,
+          "label": "Dry"
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 29,
-        "temperature2m": 20.5,
-        "windSpeed10m": 6.5
+        "cloudCover": 17,
+        "temperature2m": 19.8,
+        "windSpeed10m": 7.6
       },
       {
         "time": "2008-03-29T14:15",
-        "weatherCode": 1,
-        "condition": "Cloudy",
+        "weatherCode": 0,
+        "condition": "Dry",
         "state": {
-          "condition": "Cloudy",
-          "gripLevel": 0.97,
+          "condition": "Dry",
+          "gripLevel": 1,
           "wet": false,
-          "changingSoon": true,
-          "label": "Cloudy"
+          "changingSoon": false,
+          "label": "Dry"
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 29,
-        "temperature2m": 20.5,
-        "windSpeed10m": 6.5
+        "cloudCover": 17,
+        "temperature2m": 19.8,
+        "windSpeed10m": 7.6
       },
       {
         "time": "2008-03-29T14:30",
@@ -99,7 +136,7 @@ export const season2008IndyCarWeather = {
           "condition": "Dry",
           "gripLevel": 1,
           "wet": false,
-          "changingSoon": false,
+          "changingSoon": true,
           "label": "Dry"
         },
         "precipitationMm": 0.0,
@@ -116,7 +153,7 @@ export const season2008IndyCarWeather = {
           "condition": "Dry",
           "gripLevel": 1,
           "wet": false,
-          "changingSoon": false,
+          "changingSoon": true,
           "label": "Dry"
         },
         "precipitationMm": 0.0,
@@ -127,37 +164,37 @@ export const season2008IndyCarWeather = {
       },
       {
         "time": "2008-03-29T15:00",
-        "weatherCode": 0,
-        "condition": "Dry",
+        "weatherCode": 1,
+        "condition": "Cloudy",
         "state": {
-          "condition": "Dry",
-          "gripLevel": 1,
+          "condition": "Cloudy",
+          "gripLevel": 0.97,
           "wet": false,
-          "changingSoon": true,
-          "label": "Dry"
+          "changingSoon": false,
+          "label": "Cloudy"
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 17,
-        "temperature2m": 19.8,
-        "windSpeed10m": 7.6
+        "cloudCover": 29,
+        "temperature2m": 19.0,
+        "windSpeed10m": 8.0
       },
       {
         "time": "2008-03-29T15:15",
-        "weatherCode": 0,
-        "condition": "Dry",
+        "weatherCode": 1,
+        "condition": "Cloudy",
         "state": {
-          "condition": "Dry",
-          "gripLevel": 1,
+          "condition": "Cloudy",
+          "gripLevel": 0.97,
           "wet": false,
-          "changingSoon": true,
-          "label": "Dry"
+          "changingSoon": false,
+          "label": "Cloudy"
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 17,
-        "temperature2m": 19.8,
-        "windSpeed10m": 7.6
+        "cloudCover": 29,
+        "temperature2m": 19.0,
+        "windSpeed10m": 8.0
       },
       {
         "time": "2008-03-29T15:30",
@@ -192,40 +229,6 @@ export const season2008IndyCarWeather = {
         "cloudCover": 29,
         "temperature2m": 19.0,
         "windSpeed10m": 8.0
-      },
-      {
-        "time": "2008-03-29T16:00",
-        "weatherCode": 1,
-        "condition": "Cloudy",
-        "state": {
-          "condition": "Cloudy",
-          "gripLevel": 0.97,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Cloudy"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 29,
-        "temperature2m": 19.0,
-        "windSpeed10m": 8.0
-      },
-      {
-        "time": "2008-03-29T16:15",
-        "weatherCode": 1,
-        "condition": "Cloudy",
-        "state": {
-          "condition": "Cloudy",
-          "gripLevel": 0.97,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Cloudy"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 29,
-        "temperature2m": 19.0,
-        "windSpeed10m": 8.0
       }
     ]
   },
@@ -238,21 +241,24 @@ export const season2008IndyCarWeather = {
       "year": 2008,
       "series": "IndyCar",
       "date": "2008-04-06",
-      "localStartTime": "13:30",
+      "localStartTime": "12:30",
       "timezone": "auto",
       "latitude": 27.7676,
       "longitude": -82.6403,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "Medium",
+      "startTimeMethod": "Street race midday estimate"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using IndyCar default 13:30"
+      "Workbook start time estimate (Medium): 12:30",
+      "Start time method: Street race midday estimate"
     ],
     "samples": [
       {
-        "time": "2008-04-06T13:30",
+        "time": "2008-04-06T12:30",
         "weatherCode": 61,
         "condition": "LightRain",
         "state": {
@@ -267,10 +273,78 @@ export const season2008IndyCarWeather = {
         "cloudCover": 100,
         "temperature2m": 22.5,
         "windSpeed10m": 7.9
+      },
+      {
+        "time": "2008-04-06T12:45",
+        "weatherCode": 61,
+        "condition": "LightRain",
+        "state": {
+          "condition": "LightRain",
+          "gripLevel": 0.72,
+          "wet": true,
+          "changingSoon": false,
+          "label": "Light Rain"
+        },
+        "precipitationMm": 1.7,
+        "rainMm": 1.7,
+        "cloudCover": 100,
+        "temperature2m": 22.5,
+        "windSpeed10m": 7.9
+      },
+      {
+        "time": "2008-04-06T13:00",
+        "weatherCode": 61,
+        "condition": "LightRain",
+        "state": {
+          "condition": "LightRain",
+          "gripLevel": 0.72,
+          "wet": true,
+          "changingSoon": true,
+          "label": "Light Rain"
+        },
+        "precipitationMm": 1.7,
+        "rainMm": 1.7,
+        "cloudCover": 100,
+        "temperature2m": 22.5,
+        "windSpeed10m": 7.9
+      },
+      {
+        "time": "2008-04-06T13:15",
+        "weatherCode": 61,
+        "condition": "LightRain",
+        "state": {
+          "condition": "LightRain",
+          "gripLevel": 0.72,
+          "wet": true,
+          "changingSoon": true,
+          "label": "Light Rain"
+        },
+        "precipitationMm": 1.7,
+        "rainMm": 1.7,
+        "cloudCover": 100,
+        "temperature2m": 22.5,
+        "windSpeed10m": 7.9
+      },
+      {
+        "time": "2008-04-06T13:30",
+        "weatherCode": 53,
+        "condition": "LightRain",
+        "state": {
+          "condition": "LightRain",
+          "gripLevel": 0.72,
+          "wet": true,
+          "changingSoon": false,
+          "label": "Light Rain"
+        },
+        "precipitationMm": 0.8,
+        "rainMm": 0.8,
+        "cloudCover": 100,
+        "temperature2m": 22.1,
+        "windSpeed10m": 9.7
       },
       {
         "time": "2008-04-06T13:45",
-        "weatherCode": 61,
+        "weatherCode": 53,
         "condition": "LightRain",
         "state": {
           "condition": "LightRain",
@@ -279,45 +353,45 @@ export const season2008IndyCarWeather = {
           "changingSoon": false,
           "label": "Light Rain"
         },
-        "precipitationMm": 1.7,
-        "rainMm": 1.7,
+        "precipitationMm": 0.8,
+        "rainMm": 0.8,
         "cloudCover": 100,
-        "temperature2m": 22.5,
-        "windSpeed10m": 7.9
+        "temperature2m": 22.1,
+        "windSpeed10m": 9.7
       },
       {
         "time": "2008-04-06T14:00",
-        "weatherCode": 61,
+        "weatherCode": 53,
         "condition": "LightRain",
         "state": {
           "condition": "LightRain",
           "gripLevel": 0.72,
           "wet": true,
-          "changingSoon": true,
+          "changingSoon": false,
           "label": "Light Rain"
         },
-        "precipitationMm": 1.7,
-        "rainMm": 1.7,
+        "precipitationMm": 0.8,
+        "rainMm": 0.8,
         "cloudCover": 100,
-        "temperature2m": 22.5,
-        "windSpeed10m": 7.9
+        "temperature2m": 22.1,
+        "windSpeed10m": 9.7
       },
       {
         "time": "2008-04-06T14:15",
-        "weatherCode": 61,
+        "weatherCode": 53,
         "condition": "LightRain",
         "state": {
           "condition": "LightRain",
           "gripLevel": 0.72,
           "wet": true,
-          "changingSoon": true,
+          "changingSoon": false,
           "label": "Light Rain"
         },
-        "precipitationMm": 1.7,
-        "rainMm": 1.7,
+        "precipitationMm": 0.8,
+        "rainMm": 0.8,
         "cloudCover": 100,
-        "temperature2m": 22.5,
-        "windSpeed10m": 7.9
+        "temperature2m": 22.1,
+        "windSpeed10m": 9.7
       },
       {
         "time": "2008-04-06T14:30",
@@ -330,11 +404,11 @@ export const season2008IndyCarWeather = {
           "changingSoon": false,
           "label": "Light Rain"
         },
-        "precipitationMm": 0.8,
-        "rainMm": 0.8,
+        "precipitationMm": 0.9,
+        "rainMm": 0.9,
         "cloudCover": 100,
-        "temperature2m": 22.1,
-        "windSpeed10m": 9.7
+        "temperature2m": 22.0,
+        "windSpeed10m": 17.1
       },
       {
         "time": "2008-04-06T14:45",
@@ -347,82 +421,14 @@ export const season2008IndyCarWeather = {
           "changingSoon": false,
           "label": "Light Rain"
         },
-        "precipitationMm": 0.8,
-        "rainMm": 0.8,
+        "precipitationMm": 0.9,
+        "rainMm": 0.9,
         "cloudCover": 100,
-        "temperature2m": 22.1,
-        "windSpeed10m": 9.7
+        "temperature2m": 22.0,
+        "windSpeed10m": 17.1
       },
       {
         "time": "2008-04-06T15:00",
-        "weatherCode": 53,
-        "condition": "LightRain",
-        "state": {
-          "condition": "LightRain",
-          "gripLevel": 0.72,
-          "wet": true,
-          "changingSoon": false,
-          "label": "Light Rain"
-        },
-        "precipitationMm": 0.8,
-        "rainMm": 0.8,
-        "cloudCover": 100,
-        "temperature2m": 22.1,
-        "windSpeed10m": 9.7
-      },
-      {
-        "time": "2008-04-06T15:15",
-        "weatherCode": 53,
-        "condition": "LightRain",
-        "state": {
-          "condition": "LightRain",
-          "gripLevel": 0.72,
-          "wet": true,
-          "changingSoon": false,
-          "label": "Light Rain"
-        },
-        "precipitationMm": 0.8,
-        "rainMm": 0.8,
-        "cloudCover": 100,
-        "temperature2m": 22.1,
-        "windSpeed10m": 9.7
-      },
-      {
-        "time": "2008-04-06T15:30",
-        "weatherCode": 53,
-        "condition": "LightRain",
-        "state": {
-          "condition": "LightRain",
-          "gripLevel": 0.72,
-          "wet": true,
-          "changingSoon": false,
-          "label": "Light Rain"
-        },
-        "precipitationMm": 0.9,
-        "rainMm": 0.9,
-        "cloudCover": 100,
-        "temperature2m": 22.0,
-        "windSpeed10m": 17.1
-      },
-      {
-        "time": "2008-04-06T15:45",
-        "weatherCode": 53,
-        "condition": "LightRain",
-        "state": {
-          "condition": "LightRain",
-          "gripLevel": 0.72,
-          "wet": true,
-          "changingSoon": false,
-          "label": "Light Rain"
-        },
-        "precipitationMm": 0.9,
-        "rainMm": 0.9,
-        "cloudCover": 100,
-        "temperature2m": 22.0,
-        "windSpeed10m": 17.1
-      },
-      {
-        "time": "2008-04-06T16:00",
         "weatherCode": 53,
         "condition": "LightRain",
         "state": {
@@ -439,7 +445,7 @@ export const season2008IndyCarWeather = {
         "windSpeed10m": 17.1
       },
       {
-        "time": "2008-04-06T16:15",
+        "time": "2008-04-06T15:15",
         "weatherCode": 53,
         "condition": "LightRain",
         "state": {
@@ -466,19 +472,56 @@ export const season2008IndyCarWeather = {
       "year": 2008,
       "series": "IndyCar",
       "date": "2008-04-20",
-      "localStartTime": "13:30",
+      "localStartTime": "13:00",
       "timezone": "auto",
       "latitude": 36.5325,
       "longitude": 140.2286,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "Medium",
+      "startTimeMethod": "Japan daytime estimate"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using IndyCar default 13:30"
+      "Workbook start time estimate (Medium): 13:00",
+      "Start time method: Japan daytime estimate"
     ],
     "samples": [
+      {
+        "time": "2008-04-20T13:00",
+        "weatherCode": 3,
+        "condition": "Cloudy",
+        "state": {
+          "condition": "Cloudy",
+          "gripLevel": 0.97,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Cloudy"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 100,
+        "temperature2m": 10.9,
+        "windSpeed10m": 18.8
+      },
+      {
+        "time": "2008-04-20T13:15",
+        "weatherCode": 3,
+        "condition": "Cloudy",
+        "state": {
+          "condition": "Cloudy",
+          "gripLevel": 0.97,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Cloudy"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 100,
+        "temperature2m": 10.9,
+        "windSpeed10m": 18.8
+      },
       {
         "time": "2008-04-20T13:30",
         "weatherCode": 3,
@@ -527,8 +570,8 @@ export const season2008IndyCarWeather = {
         "precipitationMm": 0.0,
         "rainMm": 0.0,
         "cloudCover": 100,
-        "temperature2m": 10.9,
-        "windSpeed10m": 18.8
+        "temperature2m": 10.8,
+        "windSpeed10m": 19.1
       },
       {
         "time": "2008-04-20T14:15",
@@ -544,8 +587,8 @@ export const season2008IndyCarWeather = {
         "precipitationMm": 0.0,
         "rainMm": 0.0,
         "cloudCover": 100,
-        "temperature2m": 10.9,
-        "windSpeed10m": 18.8
+        "temperature2m": 10.8,
+        "windSpeed10m": 19.1
       },
       {
         "time": "2008-04-20T14:30",
@@ -595,7 +638,7 @@ export const season2008IndyCarWeather = {
         "precipitationMm": 0.0,
         "rainMm": 0.0,
         "cloudCover": 100,
-        "temperature2m": 10.8,
+        "temperature2m": 10.9,
         "windSpeed10m": 19.1
       },
       {
@@ -612,7 +655,7 @@ export const season2008IndyCarWeather = {
         "precipitationMm": 0.0,
         "rainMm": 0.0,
         "cloudCover": 100,
-        "temperature2m": 10.8,
+        "temperature2m": 10.9,
         "windSpeed10m": 19.1
       },
       {
@@ -634,40 +677,6 @@ export const season2008IndyCarWeather = {
       },
       {
         "time": "2008-04-20T15:45",
-        "weatherCode": 3,
-        "condition": "Cloudy",
-        "state": {
-          "condition": "Cloudy",
-          "gripLevel": 0.97,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Cloudy"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 100,
-        "temperature2m": 10.9,
-        "windSpeed10m": 19.1
-      },
-      {
-        "time": "2008-04-20T16:00",
-        "weatherCode": 3,
-        "condition": "Cloudy",
-        "state": {
-          "condition": "Cloudy",
-          "gripLevel": 0.97,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Cloudy"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 100,
-        "temperature2m": 10.9,
-        "windSpeed10m": 19.1
-      },
-      {
-        "time": "2008-04-20T16:15",
         "weatherCode": 3,
         "condition": "Cloudy",
         "state": {
@@ -694,21 +703,24 @@ export const season2008IndyCarWeather = {
       "year": 2008,
       "series": "IndyCar",
       "date": "2008-04-20",
-      "localStartTime": "13:30",
+      "localStartTime": "12:30",
       "timezone": "auto",
       "latitude": 33.7701,
       "longitude": -118.1937,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "Medium",
+      "startTimeMethod": "Long Beach street-race pattern"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using IndyCar default 13:30"
+      "Workbook start time estimate (Medium): 12:30",
+      "Start time method: Long Beach street-race pattern"
     ],
     "samples": [
       {
-        "time": "2008-04-20T13:30",
+        "time": "2008-04-20T12:30",
         "weatherCode": 1,
         "condition": "Cloudy",
         "state": {
@@ -723,10 +735,78 @@ export const season2008IndyCarWeather = {
         "cloudCover": 42,
         "temperature2m": 11.8,
         "windSpeed10m": 5.4
+      },
+      {
+        "time": "2008-04-20T12:45",
+        "weatherCode": 1,
+        "condition": "Cloudy",
+        "state": {
+          "condition": "Cloudy",
+          "gripLevel": 0.97,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Cloudy"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 42,
+        "temperature2m": 11.8,
+        "windSpeed10m": 5.4
+      },
+      {
+        "time": "2008-04-20T13:00",
+        "weatherCode": 1,
+        "condition": "Cloudy",
+        "state": {
+          "condition": "Cloudy",
+          "gripLevel": 0.97,
+          "wet": false,
+          "changingSoon": true,
+          "label": "Cloudy"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 42,
+        "temperature2m": 11.8,
+        "windSpeed10m": 5.4
+      },
+      {
+        "time": "2008-04-20T13:15",
+        "weatherCode": 1,
+        "condition": "Cloudy",
+        "state": {
+          "condition": "Cloudy",
+          "gripLevel": 0.97,
+          "wet": false,
+          "changingSoon": true,
+          "label": "Cloudy"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 42,
+        "temperature2m": 11.8,
+        "windSpeed10m": 5.4
+      },
+      {
+        "time": "2008-04-20T13:30",
+        "weatherCode": 2,
+        "condition": "Cloudy",
+        "state": {
+          "condition": "Cloudy",
+          "gripLevel": 0.97,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Cloudy"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 62,
+        "temperature2m": 11.7,
+        "windSpeed10m": 3.6
       },
       {
         "time": "2008-04-20T13:45",
-        "weatherCode": 1,
+        "weatherCode": 2,
         "condition": "Cloudy",
         "state": {
           "condition": "Cloudy",
@@ -737,43 +817,43 @@ export const season2008IndyCarWeather = {
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 42,
-        "temperature2m": 11.8,
-        "windSpeed10m": 5.4
+        "cloudCover": 62,
+        "temperature2m": 11.7,
+        "windSpeed10m": 3.6
       },
       {
         "time": "2008-04-20T14:00",
-        "weatherCode": 1,
+        "weatherCode": 2,
         "condition": "Cloudy",
         "state": {
           "condition": "Cloudy",
           "gripLevel": 0.97,
           "wet": false,
-          "changingSoon": true,
+          "changingSoon": false,
           "label": "Cloudy"
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 42,
-        "temperature2m": 11.8,
-        "windSpeed10m": 5.4
+        "cloudCover": 62,
+        "temperature2m": 11.7,
+        "windSpeed10m": 3.6
       },
       {
         "time": "2008-04-20T14:15",
-        "weatherCode": 1,
+        "weatherCode": 2,
         "condition": "Cloudy",
         "state": {
           "condition": "Cloudy",
           "gripLevel": 0.97,
           "wet": false,
-          "changingSoon": true,
+          "changingSoon": false,
           "label": "Cloudy"
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 42,
-        "temperature2m": 11.8,
-        "windSpeed10m": 5.4
+        "cloudCover": 62,
+        "temperature2m": 11.7,
+        "windSpeed10m": 3.6
       },
       {
         "time": "2008-04-20T14:30",
@@ -788,9 +868,9 @@ export const season2008IndyCarWeather = {
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 62,
-        "temperature2m": 11.7,
-        "windSpeed10m": 3.6
+        "cloudCover": 64,
+        "temperature2m": 11.5,
+        "windSpeed10m": 2.5
       },
       {
         "time": "2008-04-20T14:45",
@@ -805,9 +885,9 @@ export const season2008IndyCarWeather = {
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 62,
-        "temperature2m": 11.7,
-        "windSpeed10m": 3.6
+        "cloudCover": 64,
+        "temperature2m": 11.5,
+        "windSpeed10m": 2.5
       },
       {
         "time": "2008-04-20T15:00",
@@ -822,80 +902,12 @@ export const season2008IndyCarWeather = {
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 62,
-        "temperature2m": 11.7,
-        "windSpeed10m": 3.6
+        "cloudCover": 64,
+        "temperature2m": 11.5,
+        "windSpeed10m": 2.5
       },
       {
         "time": "2008-04-20T15:15",
-        "weatherCode": 2,
-        "condition": "Cloudy",
-        "state": {
-          "condition": "Cloudy",
-          "gripLevel": 0.97,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Cloudy"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 62,
-        "temperature2m": 11.7,
-        "windSpeed10m": 3.6
-      },
-      {
-        "time": "2008-04-20T15:30",
-        "weatherCode": 2,
-        "condition": "Cloudy",
-        "state": {
-          "condition": "Cloudy",
-          "gripLevel": 0.97,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Cloudy"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 64,
-        "temperature2m": 11.5,
-        "windSpeed10m": 2.5
-      },
-      {
-        "time": "2008-04-20T15:45",
-        "weatherCode": 2,
-        "condition": "Cloudy",
-        "state": {
-          "condition": "Cloudy",
-          "gripLevel": 0.97,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Cloudy"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 64,
-        "temperature2m": 11.5,
-        "windSpeed10m": 2.5
-      },
-      {
-        "time": "2008-04-20T16:00",
-        "weatherCode": 2,
-        "condition": "Cloudy",
-        "state": {
-          "condition": "Cloudy",
-          "gripLevel": 0.97,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Cloudy"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 64,
-        "temperature2m": 11.5,
-        "windSpeed10m": 2.5
-      },
-      {
-        "time": "2008-04-20T16:15",
         "weatherCode": 2,
         "condition": "Cloudy",
         "state": {
@@ -922,19 +934,56 @@ export const season2008IndyCarWeather = {
       "year": 2008,
       "series": "IndyCar",
       "date": "2008-04-27",
-      "localStartTime": "13:30",
+      "localStartTime": "13:00",
       "timezone": "auto",
       "latitude": 39.1141,
       "longitude": -94.6275,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "Low",
+      "startTimeMethod": "Oval daytime heuristic"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using IndyCar default 13:30"
+      "Workbook start time estimate (Low): 13:00",
+      "Start time method: Oval daytime heuristic"
     ],
     "samples": [
+      {
+        "time": "2008-04-27T13:00",
+        "weatherCode": 2,
+        "condition": "Cloudy",
+        "state": {
+          "condition": "Cloudy",
+          "gripLevel": 0.97,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Cloudy"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 73,
+        "temperature2m": 9.4,
+        "windSpeed10m": 18.3
+      },
+      {
+        "time": "2008-04-27T13:15",
+        "weatherCode": 2,
+        "condition": "Cloudy",
+        "state": {
+          "condition": "Cloudy",
+          "gripLevel": 0.97,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Cloudy"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 73,
+        "temperature2m": 9.4,
+        "windSpeed10m": 18.3
+      },
       {
         "time": "2008-04-27T13:30",
         "weatherCode": 2,
@@ -943,7 +992,7 @@ export const season2008IndyCarWeather = {
           "condition": "Cloudy",
           "gripLevel": 0.97,
           "wet": false,
-          "changingSoon": false,
+          "changingSoon": true,
           "label": "Cloudy"
         },
         "precipitationMm": 0.0,
@@ -960,7 +1009,7 @@ export const season2008IndyCarWeather = {
           "condition": "Cloudy",
           "gripLevel": 0.97,
           "wet": false,
-          "changingSoon": false,
+          "changingSoon": true,
           "label": "Cloudy"
         },
         "precipitationMm": 0.0,
@@ -971,37 +1020,37 @@ export const season2008IndyCarWeather = {
       },
       {
         "time": "2008-04-27T14:00",
-        "weatherCode": 2,
-        "condition": "Cloudy",
+        "weatherCode": 51,
+        "condition": "LightRain",
         "state": {
-          "condition": "Cloudy",
-          "gripLevel": 0.97,
-          "wet": false,
-          "changingSoon": true,
-          "label": "Cloudy"
+          "condition": "LightRain",
+          "gripLevel": 0.72,
+          "wet": true,
+          "changingSoon": false,
+          "label": "Light Rain"
         },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 73,
-        "temperature2m": 9.4,
-        "windSpeed10m": 18.3
+        "precipitationMm": 0.1,
+        "rainMm": 0.1,
+        "cloudCover": 97,
+        "temperature2m": 9.0,
+        "windSpeed10m": 17.8
       },
       {
         "time": "2008-04-27T14:15",
-        "weatherCode": 2,
-        "condition": "Cloudy",
+        "weatherCode": 51,
+        "condition": "LightRain",
         "state": {
-          "condition": "Cloudy",
-          "gripLevel": 0.97,
-          "wet": false,
-          "changingSoon": true,
-          "label": "Cloudy"
+          "condition": "LightRain",
+          "gripLevel": 0.72,
+          "wet": true,
+          "changingSoon": false,
+          "label": "Light Rain"
         },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 73,
-        "temperature2m": 9.4,
-        "windSpeed10m": 18.3
+        "precipitationMm": 0.1,
+        "rainMm": 0.1,
+        "cloudCover": 97,
+        "temperature2m": 9.0,
+        "windSpeed10m": 17.8
       },
       {
         "time": "2008-04-27T14:30",
@@ -1048,11 +1097,11 @@ export const season2008IndyCarWeather = {
           "changingSoon": false,
           "label": "Light Rain"
         },
-        "precipitationMm": 0.1,
-        "rainMm": 0.1,
-        "cloudCover": 97,
-        "temperature2m": 9.0,
-        "windSpeed10m": 17.8
+        "precipitationMm": 0.4,
+        "rainMm": 0.4,
+        "cloudCover": 100,
+        "temperature2m": 7.8,
+        "windSpeed10m": 14.4
       },
       {
         "time": "2008-04-27T15:15",
@@ -1065,48 +1114,14 @@ export const season2008IndyCarWeather = {
           "changingSoon": false,
           "label": "Light Rain"
         },
-        "precipitationMm": 0.1,
-        "rainMm": 0.1,
-        "cloudCover": 97,
-        "temperature2m": 9.0,
-        "windSpeed10m": 17.8
+        "precipitationMm": 0.4,
+        "rainMm": 0.4,
+        "cloudCover": 100,
+        "temperature2m": 7.8,
+        "windSpeed10m": 14.4
       },
       {
         "time": "2008-04-27T15:30",
-        "weatherCode": 51,
-        "condition": "LightRain",
-        "state": {
-          "condition": "LightRain",
-          "gripLevel": 0.72,
-          "wet": true,
-          "changingSoon": false,
-          "label": "Light Rain"
-        },
-        "precipitationMm": 0.4,
-        "rainMm": 0.4,
-        "cloudCover": 100,
-        "temperature2m": 7.8,
-        "windSpeed10m": 14.4
-      },
-      {
-        "time": "2008-04-27T15:45",
-        "weatherCode": 51,
-        "condition": "LightRain",
-        "state": {
-          "condition": "LightRain",
-          "gripLevel": 0.72,
-          "wet": true,
-          "changingSoon": false,
-          "label": "Light Rain"
-        },
-        "precipitationMm": 0.4,
-        "rainMm": 0.4,
-        "cloudCover": 100,
-        "temperature2m": 7.8,
-        "windSpeed10m": 14.4
-      },
-      {
-        "time": "2008-04-27T16:00",
         "weatherCode": 51,
         "condition": "LightRain",
         "state": {
@@ -1123,7 +1138,7 @@ export const season2008IndyCarWeather = {
         "windSpeed10m": 14.4
       },
       {
-        "time": "2008-04-27T16:15",
+        "time": "2008-04-27T15:45",
         "weatherCode": 51,
         "condition": "LightRain",
         "state": {
@@ -1150,19 +1165,73 @@ export const season2008IndyCarWeather = {
       "year": 2008,
       "series": "IndyCar",
       "date": "2008-05-25",
-      "localStartTime": "13:30",
+      "localStartTime": "12:45",
       "timezone": "auto",
       "latitude": 39.8023,
       "longitude": -86.2672,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "High",
+      "startTimeMethod": "Known Indy 500 start-window estimate"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using IndyCar default 13:30"
+      "Workbook start time estimate (High): 12:45",
+      "Start time method: Known Indy 500 start-window estimate"
     ],
     "samples": [
+      {
+        "time": "2008-05-25T12:45",
+        "weatherCode": 2,
+        "condition": "Cloudy",
+        "state": {
+          "condition": "Cloudy",
+          "gripLevel": 0.97,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Cloudy"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 66,
+        "temperature2m": 13.3,
+        "windSpeed10m": 9.0
+      },
+      {
+        "time": "2008-05-25T13:00",
+        "weatherCode": 2,
+        "condition": "Cloudy",
+        "state": {
+          "condition": "Cloudy",
+          "gripLevel": 0.97,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Cloudy"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 66,
+        "temperature2m": 13.3,
+        "windSpeed10m": 9.0
+      },
+      {
+        "time": "2008-05-25T13:15",
+        "weatherCode": 2,
+        "condition": "Cloudy",
+        "state": {
+          "condition": "Cloudy",
+          "gripLevel": 0.97,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Cloudy"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 66,
+        "temperature2m": 13.3,
+        "windSpeed10m": 9.0
+      },
       {
         "time": "2008-05-25T13:30",
         "weatherCode": 2,
@@ -1193,9 +1262,9 @@ export const season2008IndyCarWeather = {
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 66,
-        "temperature2m": 13.3,
-        "windSpeed10m": 9.0
+        "cloudCover": 77,
+        "temperature2m": 12.4,
+        "windSpeed10m": 6.9
       },
       {
         "time": "2008-05-25T14:00",
@@ -1210,9 +1279,9 @@ export const season2008IndyCarWeather = {
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 66,
-        "temperature2m": 13.3,
-        "windSpeed10m": 9.0
+        "cloudCover": 77,
+        "temperature2m": 12.4,
+        "windSpeed10m": 6.9
       },
       {
         "time": "2008-05-25T14:15",
@@ -1227,9 +1296,9 @@ export const season2008IndyCarWeather = {
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 66,
-        "temperature2m": 13.3,
-        "windSpeed10m": 9.0
+        "cloudCover": 77,
+        "temperature2m": 12.4,
+        "windSpeed10m": 6.9
       },
       {
         "time": "2008-05-25T14:30",
@@ -1261,9 +1330,9 @@ export const season2008IndyCarWeather = {
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 77,
-        "temperature2m": 12.4,
-        "windSpeed10m": 6.9
+        "cloudCover": 57,
+        "temperature2m": 11.4,
+        "windSpeed10m": 9.5
       },
       {
         "time": "2008-05-25T15:00",
@@ -1278,63 +1347,12 @@ export const season2008IndyCarWeather = {
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 77,
-        "temperature2m": 12.4,
-        "windSpeed10m": 6.9
+        "cloudCover": 57,
+        "temperature2m": 11.4,
+        "windSpeed10m": 9.5
       },
       {
         "time": "2008-05-25T15:15",
-        "weatherCode": 2,
-        "condition": "Cloudy",
-        "state": {
-          "condition": "Cloudy",
-          "gripLevel": 0.97,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Cloudy"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 77,
-        "temperature2m": 12.4,
-        "windSpeed10m": 6.9
-      },
-      {
-        "time": "2008-05-25T15:30",
-        "weatherCode": 2,
-        "condition": "Cloudy",
-        "state": {
-          "condition": "Cloudy",
-          "gripLevel": 0.97,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Cloudy"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 57,
-        "temperature2m": 11.4,
-        "windSpeed10m": 9.5
-      },
-      {
-        "time": "2008-05-25T15:45",
-        "weatherCode": 2,
-        "condition": "Cloudy",
-        "state": {
-          "condition": "Cloudy",
-          "gripLevel": 0.97,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Cloudy"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 57,
-        "temperature2m": 11.4,
-        "windSpeed10m": 9.5
-      },
-      {
-        "time": "2008-05-25T16:00",
         "weatherCode": 2,
         "condition": "Cloudy",
         "state": {
@@ -1351,7 +1369,7 @@ export const season2008IndyCarWeather = {
         "windSpeed10m": 9.5
       },
       {
-        "time": "2008-05-25T16:15",
+        "time": "2008-05-25T15:30",
         "weatherCode": 2,
         "condition": "Cloudy",
         "state": {
@@ -1378,19 +1396,56 @@ export const season2008IndyCarWeather = {
       "year": 2008,
       "series": "IndyCar",
       "date": "2008-06-01",
-      "localStartTime": "13:30",
+      "localStartTime": "13:00",
       "timezone": "auto",
       "latitude": 43.0167,
       "longitude": -88.007,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "Medium",
+      "startTimeMethod": "Oval daytime estimate"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using IndyCar default 13:30"
+      "Workbook start time estimate (Medium): 13:00",
+      "Start time method: Oval daytime estimate"
     ],
     "samples": [
+      {
+        "time": "2008-06-01T13:00",
+        "weatherCode": 0,
+        "condition": "Dry",
+        "state": {
+          "condition": "Dry",
+          "gripLevel": 1,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Dry"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 2,
+        "temperature2m": 12.9,
+        "windSpeed10m": 5.8
+      },
+      {
+        "time": "2008-06-01T13:15",
+        "weatherCode": 0,
+        "condition": "Dry",
+        "state": {
+          "condition": "Dry",
+          "gripLevel": 1,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Dry"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 2,
+        "temperature2m": 12.9,
+        "windSpeed10m": 5.8
+      },
       {
         "time": "2008-06-01T13:30",
         "weatherCode": 0,
@@ -1439,8 +1494,8 @@ export const season2008IndyCarWeather = {
         "precipitationMm": 0.0,
         "rainMm": 0.0,
         "cloudCover": 2,
-        "temperature2m": 12.9,
-        "windSpeed10m": 5.8
+        "temperature2m": 12.4,
+        "windSpeed10m": 1.3
       },
       {
         "time": "2008-06-01T14:15",
@@ -1456,8 +1511,8 @@ export const season2008IndyCarWeather = {
         "precipitationMm": 0.0,
         "rainMm": 0.0,
         "cloudCover": 2,
-        "temperature2m": 12.9,
-        "windSpeed10m": 5.8
+        "temperature2m": 12.4,
+        "windSpeed10m": 1.3
       },
       {
         "time": "2008-06-01T14:30",
@@ -1506,9 +1561,9 @@ export const season2008IndyCarWeather = {
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 2,
-        "temperature2m": 12.4,
-        "windSpeed10m": 1.3
+        "cloudCover": 1,
+        "temperature2m": 13.2,
+        "windSpeed10m": 1.8
       },
       {
         "time": "2008-06-01T15:15",
@@ -1523,9 +1578,9 @@ export const season2008IndyCarWeather = {
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 2,
-        "temperature2m": 12.4,
-        "windSpeed10m": 1.3
+        "cloudCover": 1,
+        "temperature2m": 13.2,
+        "windSpeed10m": 1.8
       },
       {
         "time": "2008-06-01T15:30",
@@ -1560,40 +1615,6 @@ export const season2008IndyCarWeather = {
         "cloudCover": 1,
         "temperature2m": 13.2,
         "windSpeed10m": 1.8
-      },
-      {
-        "time": "2008-06-01T16:00",
-        "weatherCode": 0,
-        "condition": "Dry",
-        "state": {
-          "condition": "Dry",
-          "gripLevel": 1,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Dry"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 1,
-        "temperature2m": 13.2,
-        "windSpeed10m": 1.8
-      },
-      {
-        "time": "2008-06-01T16:15",
-        "weatherCode": 0,
-        "condition": "Dry",
-        "state": {
-          "condition": "Dry",
-          "gripLevel": 1,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Dry"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 1,
-        "temperature2m": 13.2,
-        "windSpeed10m": 1.8
       }
     ]
   },
@@ -1606,21 +1627,24 @@ export const season2008IndyCarWeather = {
       "year": 2008,
       "series": "IndyCar",
       "date": "2008-06-07",
-      "localStartTime": "13:30",
+      "localStartTime": "20:00",
       "timezone": "auto",
       "latitude": 32.7555,
       "longitude": -97.3308,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "High",
+      "startTimeMethod": "Known Texas night oval pattern"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using IndyCar default 13:30"
+      "Workbook start time estimate (High): 20:00",
+      "Start time method: Known Texas night oval pattern"
     ],
     "samples": [
       {
-        "time": "2008-06-07T13:30",
+        "time": "2008-06-07T20:00",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -1637,7 +1661,7 @@ export const season2008IndyCarWeather = {
         "windSpeed10m": 27.1
       },
       {
-        "time": "2008-06-07T13:45",
+        "time": "2008-06-07T20:15",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -1654,7 +1678,7 @@ export const season2008IndyCarWeather = {
         "windSpeed10m": 27.1
       },
       {
-        "time": "2008-06-07T14:00",
+        "time": "2008-06-07T20:30",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -1671,7 +1695,7 @@ export const season2008IndyCarWeather = {
         "windSpeed10m": 27.1
       },
       {
-        "time": "2008-06-07T14:15",
+        "time": "2008-06-07T20:45",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -1688,7 +1712,7 @@ export const season2008IndyCarWeather = {
         "windSpeed10m": 27.1
       },
       {
-        "time": "2008-06-07T14:30",
+        "time": "2008-06-07T21:00",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -1705,7 +1729,7 @@ export const season2008IndyCarWeather = {
         "windSpeed10m": 28.3
       },
       {
-        "time": "2008-06-07T14:45",
+        "time": "2008-06-07T21:15",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -1722,7 +1746,7 @@ export const season2008IndyCarWeather = {
         "windSpeed10m": 28.3
       },
       {
-        "time": "2008-06-07T15:00",
+        "time": "2008-06-07T21:30",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -1739,7 +1763,7 @@ export const season2008IndyCarWeather = {
         "windSpeed10m": 28.3
       },
       {
-        "time": "2008-06-07T15:15",
+        "time": "2008-06-07T21:45",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -1756,7 +1780,7 @@ export const season2008IndyCarWeather = {
         "windSpeed10m": 28.3
       },
       {
-        "time": "2008-06-07T15:30",
+        "time": "2008-06-07T22:00",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -1773,7 +1797,7 @@ export const season2008IndyCarWeather = {
         "windSpeed10m": 28.7
       },
       {
-        "time": "2008-06-07T15:45",
+        "time": "2008-06-07T22:15",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -1790,7 +1814,7 @@ export const season2008IndyCarWeather = {
         "windSpeed10m": 28.7
       },
       {
-        "time": "2008-06-07T16:00",
+        "time": "2008-06-07T22:30",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -1807,7 +1831,7 @@ export const season2008IndyCarWeather = {
         "windSpeed10m": 28.7
       },
       {
-        "time": "2008-06-07T16:15",
+        "time": "2008-06-07T22:45",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -1834,19 +1858,56 @@ export const season2008IndyCarWeather = {
       "year": 2008,
       "series": "IndyCar",
       "date": "2008-06-22",
-      "localStartTime": "13:30",
+      "localStartTime": "13:00",
       "timezone": "auto",
       "latitude": 41.6997,
       "longitude": -93.0479,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "Low",
+      "startTimeMethod": "Oval daytime heuristic"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using IndyCar default 13:30"
+      "Workbook start time estimate (Low): 13:00",
+      "Start time method: Oval daytime heuristic"
     ],
     "samples": [
+      {
+        "time": "2008-06-22T13:00",
+        "weatherCode": 0,
+        "condition": "Dry",
+        "state": {
+          "condition": "Dry",
+          "gripLevel": 1,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Dry"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 2,
+        "temperature2m": 17.4,
+        "windSpeed10m": 12.4
+      },
+      {
+        "time": "2008-06-22T13:15",
+        "weatherCode": 0,
+        "condition": "Dry",
+        "state": {
+          "condition": "Dry",
+          "gripLevel": 1,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Dry"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 2,
+        "temperature2m": 17.4,
+        "windSpeed10m": 12.4
+      },
       {
         "time": "2008-06-22T13:30",
         "weatherCode": 0,
@@ -1894,9 +1955,9 @@ export const season2008IndyCarWeather = {
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 2,
-        "temperature2m": 17.4,
-        "windSpeed10m": 12.4
+        "cloudCover": 1,
+        "temperature2m": 16.8,
+        "windSpeed10m": 11.4
       },
       {
         "time": "2008-06-22T14:15",
@@ -1911,9 +1972,9 @@ export const season2008IndyCarWeather = {
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 2,
-        "temperature2m": 17.4,
-        "windSpeed10m": 12.4
+        "cloudCover": 1,
+        "temperature2m": 16.8,
+        "windSpeed10m": 11.4
       },
       {
         "time": "2008-06-22T14:30",
@@ -1962,9 +2023,9 @@ export const season2008IndyCarWeather = {
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 1,
-        "temperature2m": 16.8,
-        "windSpeed10m": 11.4
+        "cloudCover": 0,
+        "temperature2m": 17.0,
+        "windSpeed10m": 10.6
       },
       {
         "time": "2008-06-22T15:15",
@@ -1979,9 +2040,9 @@ export const season2008IndyCarWeather = {
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 1,
-        "temperature2m": 16.8,
-        "windSpeed10m": 11.4
+        "cloudCover": 0,
+        "temperature2m": 17.0,
+        "windSpeed10m": 10.6
       },
       {
         "time": "2008-06-22T15:30",
@@ -2016,40 +2077,6 @@ export const season2008IndyCarWeather = {
         "cloudCover": 0,
         "temperature2m": 17.0,
         "windSpeed10m": 10.6
-      },
-      {
-        "time": "2008-06-22T16:00",
-        "weatherCode": 0,
-        "condition": "Dry",
-        "state": {
-          "condition": "Dry",
-          "gripLevel": 1,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Dry"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 0,
-        "temperature2m": 17.0,
-        "windSpeed10m": 10.6
-      },
-      {
-        "time": "2008-06-22T16:15",
-        "weatherCode": 0,
-        "condition": "Dry",
-        "state": {
-          "condition": "Dry",
-          "gripLevel": 1,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Dry"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 0,
-        "temperature2m": 17.0,
-        "windSpeed10m": 10.6
       }
     ]
   },
@@ -2062,21 +2089,24 @@ export const season2008IndyCarWeather = {
       "year": 2008,
       "series": "IndyCar",
       "date": "2008-06-28",
-      "localStartTime": "13:30",
+      "localStartTime": "20:00",
       "timezone": "auto",
       "latitude": 37.5407,
       "longitude": -77.436,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "High",
+      "startTimeMethod": "Known short-oval night pattern"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using IndyCar default 13:30"
+      "Workbook start time estimate (High): 20:00",
+      "Start time method: Known short-oval night pattern"
     ],
     "samples": [
       {
-        "time": "2008-06-28T13:30",
+        "time": "2008-06-28T20:00",
         "weatherCode": 2,
         "condition": "Cloudy",
         "state": {
@@ -2093,7 +2123,7 @@ export const season2008IndyCarWeather = {
         "windSpeed10m": 13.0
       },
       {
-        "time": "2008-06-28T13:45",
+        "time": "2008-06-28T20:15",
         "weatherCode": 2,
         "condition": "Cloudy",
         "state": {
@@ -2110,24 +2140,7 @@ export const season2008IndyCarWeather = {
         "windSpeed10m": 13.0
       },
       {
-        "time": "2008-06-28T14:00",
-        "weatherCode": 2,
-        "condition": "Cloudy",
-        "state": {
-          "condition": "Cloudy",
-          "gripLevel": 0.97,
-          "wet": false,
-          "changingSoon": true,
-          "label": "Cloudy"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 61,
-        "temperature2m": 26.4,
-        "windSpeed10m": 13.0
-      },
-      {
-        "time": "2008-06-28T14:15",
+        "time": "2008-06-28T20:30",
         "weatherCode": 2,
         "condition": "Cloudy",
         "state": {
@@ -2144,7 +2157,24 @@ export const season2008IndyCarWeather = {
         "windSpeed10m": 13.0
       },
       {
-        "time": "2008-06-28T14:30",
+        "time": "2008-06-28T20:45",
+        "weatherCode": 2,
+        "condition": "Cloudy",
+        "state": {
+          "condition": "Cloudy",
+          "gripLevel": 0.97,
+          "wet": false,
+          "changingSoon": true,
+          "label": "Cloudy"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 61,
+        "temperature2m": 26.4,
+        "windSpeed10m": 13.0
+      },
+      {
+        "time": "2008-06-28T21:00",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -2161,7 +2191,7 @@ export const season2008IndyCarWeather = {
         "windSpeed10m": 12.0
       },
       {
-        "time": "2008-06-28T14:45",
+        "time": "2008-06-28T21:15",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -2178,7 +2208,7 @@ export const season2008IndyCarWeather = {
         "windSpeed10m": 12.0
       },
       {
-        "time": "2008-06-28T15:00",
+        "time": "2008-06-28T21:30",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -2195,7 +2225,7 @@ export const season2008IndyCarWeather = {
         "windSpeed10m": 12.0
       },
       {
-        "time": "2008-06-28T15:15",
+        "time": "2008-06-28T21:45",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -2212,7 +2242,7 @@ export const season2008IndyCarWeather = {
         "windSpeed10m": 12.0
       },
       {
-        "time": "2008-06-28T15:30",
+        "time": "2008-06-28T22:00",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -2229,7 +2259,7 @@ export const season2008IndyCarWeather = {
         "windSpeed10m": 12.0
       },
       {
-        "time": "2008-06-28T15:45",
+        "time": "2008-06-28T22:15",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -2246,7 +2276,7 @@ export const season2008IndyCarWeather = {
         "windSpeed10m": 12.0
       },
       {
-        "time": "2008-06-28T16:00",
+        "time": "2008-06-28T22:30",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -2263,7 +2293,7 @@ export const season2008IndyCarWeather = {
         "windSpeed10m": 12.0
       },
       {
-        "time": "2008-06-28T16:15",
+        "time": "2008-06-28T22:45",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -2290,19 +2320,56 @@ export const season2008IndyCarWeather = {
       "year": 2008,
       "series": "IndyCar",
       "date": "2008-07-06",
-      "localStartTime": "13:30",
+      "localStartTime": "13:00",
       "timezone": "auto",
       "latitude": 42.3806,
       "longitude": -76.8733,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "Low",
+      "startTimeMethod": "Series/track-type heuristic"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using IndyCar default 13:30"
+      "Workbook start time estimate (Low): 13:00",
+      "Start time method: Series/track-type heuristic"
     ],
     "samples": [
+      {
+        "time": "2008-07-06T13:00",
+        "weatherCode": 0,
+        "condition": "Dry",
+        "state": {
+          "condition": "Dry",
+          "gripLevel": 1,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Dry"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 1,
+        "temperature2m": 19.2,
+        "windSpeed10m": 3.6
+      },
+      {
+        "time": "2008-07-06T13:15",
+        "weatherCode": 0,
+        "condition": "Dry",
+        "state": {
+          "condition": "Dry",
+          "gripLevel": 1,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Dry"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 1,
+        "temperature2m": 19.2,
+        "windSpeed10m": 3.6
+      },
       {
         "time": "2008-07-06T13:30",
         "weatherCode": 0,
@@ -2350,9 +2417,9 @@ export const season2008IndyCarWeather = {
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 1,
-        "temperature2m": 19.2,
-        "windSpeed10m": 3.6
+        "cloudCover": 3,
+        "temperature2m": 18.5,
+        "windSpeed10m": 3.9
       },
       {
         "time": "2008-07-06T14:15",
@@ -2367,9 +2434,9 @@ export const season2008IndyCarWeather = {
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 1,
-        "temperature2m": 19.2,
-        "windSpeed10m": 3.6
+        "cloudCover": 3,
+        "temperature2m": 18.5,
+        "windSpeed10m": 3.9
       },
       {
         "time": "2008-07-06T14:30",
@@ -2418,9 +2485,9 @@ export const season2008IndyCarWeather = {
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 3,
-        "temperature2m": 18.5,
-        "windSpeed10m": 3.9
+        "cloudCover": 4,
+        "temperature2m": 18.0,
+        "windSpeed10m": 2.9
       },
       {
         "time": "2008-07-06T15:15",
@@ -2435,9 +2502,9 @@ export const season2008IndyCarWeather = {
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 3,
-        "temperature2m": 18.5,
-        "windSpeed10m": 3.9
+        "cloudCover": 4,
+        "temperature2m": 18.0,
+        "windSpeed10m": 2.9
       },
       {
         "time": "2008-07-06T15:30",
@@ -2472,40 +2539,6 @@ export const season2008IndyCarWeather = {
         "cloudCover": 4,
         "temperature2m": 18.0,
         "windSpeed10m": 2.9
-      },
-      {
-        "time": "2008-07-06T16:00",
-        "weatherCode": 0,
-        "condition": "Dry",
-        "state": {
-          "condition": "Dry",
-          "gripLevel": 1,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Dry"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 4,
-        "temperature2m": 18.0,
-        "windSpeed10m": 2.9
-      },
-      {
-        "time": "2008-07-06T16:15",
-        "weatherCode": 0,
-        "condition": "Dry",
-        "state": {
-          "condition": "Dry",
-          "gripLevel": 1,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Dry"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 4,
-        "temperature2m": 18.0,
-        "windSpeed10m": 2.9
       }
     ]
   },
@@ -2518,21 +2551,24 @@ export const season2008IndyCarWeather = {
       "year": 2008,
       "series": "IndyCar",
       "date": "2008-07-12",
-      "localStartTime": "13:30",
+      "localStartTime": "19:30",
       "timezone": "auto",
       "latitude": 36.2081,
       "longitude": -86.2911,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "High",
+      "startTimeMethod": "Known Saturday night oval pattern"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using IndyCar default 13:30"
+      "Workbook start time estimate (High): 19:30",
+      "Start time method: Known Saturday night oval pattern"
     ],
     "samples": [
       {
-        "time": "2008-07-12T13:30",
+        "time": "2008-07-12T19:30",
         "weatherCode": 1,
         "condition": "Cloudy",
         "state": {
@@ -2549,7 +2585,7 @@ export const season2008IndyCarWeather = {
         "windSpeed10m": 7.6
       },
       {
-        "time": "2008-07-12T13:45",
+        "time": "2008-07-12T19:45",
         "weatherCode": 1,
         "condition": "Cloudy",
         "state": {
@@ -2566,24 +2602,7 @@ export const season2008IndyCarWeather = {
         "windSpeed10m": 7.6
       },
       {
-        "time": "2008-07-12T14:00",
-        "weatherCode": 1,
-        "condition": "Cloudy",
-        "state": {
-          "condition": "Cloudy",
-          "gripLevel": 0.97,
-          "wet": false,
-          "changingSoon": true,
-          "label": "Cloudy"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 20,
-        "temperature2m": 24.9,
-        "windSpeed10m": 7.6
-      },
-      {
-        "time": "2008-07-12T14:15",
+        "time": "2008-07-12T20:00",
         "weatherCode": 1,
         "condition": "Cloudy",
         "state": {
@@ -2600,7 +2619,24 @@ export const season2008IndyCarWeather = {
         "windSpeed10m": 7.6
       },
       {
-        "time": "2008-07-12T14:30",
+        "time": "2008-07-12T20:15",
+        "weatherCode": 1,
+        "condition": "Cloudy",
+        "state": {
+          "condition": "Cloudy",
+          "gripLevel": 0.97,
+          "wet": false,
+          "changingSoon": true,
+          "label": "Cloudy"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 20,
+        "temperature2m": 24.9,
+        "windSpeed10m": 7.6
+      },
+      {
+        "time": "2008-07-12T20:30",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -2617,7 +2653,7 @@ export const season2008IndyCarWeather = {
         "windSpeed10m": 7.8
       },
       {
-        "time": "2008-07-12T14:45",
+        "time": "2008-07-12T20:45",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -2634,7 +2670,7 @@ export const season2008IndyCarWeather = {
         "windSpeed10m": 7.8
       },
       {
-        "time": "2008-07-12T15:00",
+        "time": "2008-07-12T21:00",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -2651,7 +2687,7 @@ export const season2008IndyCarWeather = {
         "windSpeed10m": 7.8
       },
       {
-        "time": "2008-07-12T15:15",
+        "time": "2008-07-12T21:15",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -2668,7 +2704,7 @@ export const season2008IndyCarWeather = {
         "windSpeed10m": 7.8
       },
       {
-        "time": "2008-07-12T15:30",
+        "time": "2008-07-12T21:30",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -2685,7 +2721,7 @@ export const season2008IndyCarWeather = {
         "windSpeed10m": 7.9
       },
       {
-        "time": "2008-07-12T15:45",
+        "time": "2008-07-12T21:45",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -2702,7 +2738,7 @@ export const season2008IndyCarWeather = {
         "windSpeed10m": 7.9
       },
       {
-        "time": "2008-07-12T16:00",
+        "time": "2008-07-12T22:00",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -2719,7 +2755,7 @@ export const season2008IndyCarWeather = {
         "windSpeed10m": 7.9
       },
       {
-        "time": "2008-07-12T16:15",
+        "time": "2008-07-12T22:15",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -2751,12 +2787,15 @@ export const season2008IndyCarWeather = {
       "latitude": 40.6787,
       "longitude": -82.5824,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "Medium",
+      "startTimeMethod": "Road-course afternoon estimate"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using IndyCar default 13:30"
+      "Workbook start time estimate (Medium): 13:30",
+      "Start time method: Road-course afternoon estimate"
     ],
     "samples": [
       {
@@ -2974,19 +3013,56 @@ export const season2008IndyCarWeather = {
       "year": 2008,
       "series": "IndyCar",
       "date": "2008-07-26",
-      "localStartTime": "13:30",
+      "localStartTime": "13:00",
       "timezone": "auto",
       "latitude": 53.5461,
       "longitude": -113.4938,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "Low",
+      "startTimeMethod": "Series/track-type heuristic"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using IndyCar default 13:30"
+      "Workbook start time estimate (Low): 13:00",
+      "Start time method: Series/track-type heuristic"
     ],
     "samples": [
+      {
+        "time": "2008-07-26T13:00",
+        "weatherCode": 3,
+        "condition": "Cloudy",
+        "state": {
+          "condition": "Cloudy",
+          "gripLevel": 0.97,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Cloudy"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 93,
+        "temperature2m": 18.0,
+        "windSpeed10m": 12.0
+      },
+      {
+        "time": "2008-07-26T13:15",
+        "weatherCode": 3,
+        "condition": "Cloudy",
+        "state": {
+          "condition": "Cloudy",
+          "gripLevel": 0.97,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Cloudy"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 93,
+        "temperature2m": 18.0,
+        "windSpeed10m": 12.0
+      },
       {
         "time": "2008-07-26T13:30",
         "weatherCode": 3,
@@ -3034,9 +3110,9 @@ export const season2008IndyCarWeather = {
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 93,
-        "temperature2m": 18.0,
-        "windSpeed10m": 12.0
+        "cloudCover": 98,
+        "temperature2m": 16.9,
+        "windSpeed10m": 11.7
       },
       {
         "time": "2008-07-26T14:15",
@@ -3051,9 +3127,9 @@ export const season2008IndyCarWeather = {
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 93,
-        "temperature2m": 18.0,
-        "windSpeed10m": 12.0
+        "cloudCover": 98,
+        "temperature2m": 16.9,
+        "windSpeed10m": 11.7
       },
       {
         "time": "2008-07-26T14:30",
@@ -3102,9 +3178,9 @@ export const season2008IndyCarWeather = {
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 98,
-        "temperature2m": 16.9,
-        "windSpeed10m": 11.7
+        "cloudCover": 100,
+        "temperature2m": 16.3,
+        "windSpeed10m": 11.3
       },
       {
         "time": "2008-07-26T15:15",
@@ -3119,9 +3195,9 @@ export const season2008IndyCarWeather = {
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 98,
-        "temperature2m": 16.9,
-        "windSpeed10m": 11.7
+        "cloudCover": 100,
+        "temperature2m": 16.3,
+        "windSpeed10m": 11.3
       },
       {
         "time": "2008-07-26T15:30",
@@ -3156,40 +3232,6 @@ export const season2008IndyCarWeather = {
         "cloudCover": 100,
         "temperature2m": 16.3,
         "windSpeed10m": 11.3
-      },
-      {
-        "time": "2008-07-26T16:00",
-        "weatherCode": 3,
-        "condition": "Cloudy",
-        "state": {
-          "condition": "Cloudy",
-          "gripLevel": 0.97,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Cloudy"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 100,
-        "temperature2m": 16.3,
-        "windSpeed10m": 11.3
-      },
-      {
-        "time": "2008-07-26T16:15",
-        "weatherCode": 3,
-        "condition": "Cloudy",
-        "state": {
-          "condition": "Cloudy",
-          "gripLevel": 0.97,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Cloudy"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 100,
-        "temperature2m": 16.3,
-        "windSpeed10m": 11.3
       }
     ]
   },
@@ -3202,21 +3244,24 @@ export const season2008IndyCarWeather = {
       "year": 2008,
       "series": "IndyCar",
       "date": "2008-08-09",
-      "localStartTime": "13:30",
+      "localStartTime": "19:30",
       "timezone": "auto",
       "latitude": 38.6851,
       "longitude": -84.9052,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "Low",
+      "startTimeMethod": "Saturday oval evening heuristic"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using IndyCar default 13:30"
+      "Workbook start time estimate (Low): 19:30",
+      "Start time method: Saturday oval evening heuristic"
     ],
     "samples": [
       {
-        "time": "2008-08-09T13:30",
+        "time": "2008-08-09T19:30",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -3233,7 +3278,7 @@ export const season2008IndyCarWeather = {
         "windSpeed10m": 6.6
       },
       {
-        "time": "2008-08-09T13:45",
+        "time": "2008-08-09T19:45",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -3250,7 +3295,7 @@ export const season2008IndyCarWeather = {
         "windSpeed10m": 6.6
       },
       {
-        "time": "2008-08-09T14:00",
+        "time": "2008-08-09T20:00",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -3267,7 +3312,7 @@ export const season2008IndyCarWeather = {
         "windSpeed10m": 6.6
       },
       {
-        "time": "2008-08-09T14:15",
+        "time": "2008-08-09T20:15",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -3284,7 +3329,7 @@ export const season2008IndyCarWeather = {
         "windSpeed10m": 6.6
       },
       {
-        "time": "2008-08-09T14:30",
+        "time": "2008-08-09T20:30",
         "weatherCode": 1,
         "condition": "Cloudy",
         "state": {
@@ -3301,7 +3346,7 @@ export const season2008IndyCarWeather = {
         "windSpeed10m": 7.1
       },
       {
-        "time": "2008-08-09T14:45",
+        "time": "2008-08-09T20:45",
         "weatherCode": 1,
         "condition": "Cloudy",
         "state": {
@@ -3318,7 +3363,7 @@ export const season2008IndyCarWeather = {
         "windSpeed10m": 7.1
       },
       {
-        "time": "2008-08-09T15:00",
+        "time": "2008-08-09T21:00",
         "weatherCode": 1,
         "condition": "Cloudy",
         "state": {
@@ -3335,7 +3380,7 @@ export const season2008IndyCarWeather = {
         "windSpeed10m": 7.1
       },
       {
-        "time": "2008-08-09T15:15",
+        "time": "2008-08-09T21:15",
         "weatherCode": 1,
         "condition": "Cloudy",
         "state": {
@@ -3352,7 +3397,7 @@ export const season2008IndyCarWeather = {
         "windSpeed10m": 7.1
       },
       {
-        "time": "2008-08-09T15:30",
+        "time": "2008-08-09T21:30",
         "weatherCode": 2,
         "condition": "Cloudy",
         "state": {
@@ -3369,7 +3414,7 @@ export const season2008IndyCarWeather = {
         "windSpeed10m": 6.6
       },
       {
-        "time": "2008-08-09T15:45",
+        "time": "2008-08-09T21:45",
         "weatherCode": 2,
         "condition": "Cloudy",
         "state": {
@@ -3386,7 +3431,7 @@ export const season2008IndyCarWeather = {
         "windSpeed10m": 6.6
       },
       {
-        "time": "2008-08-09T16:00",
+        "time": "2008-08-09T22:00",
         "weatherCode": 2,
         "condition": "Cloudy",
         "state": {
@@ -3403,7 +3448,7 @@ export const season2008IndyCarWeather = {
         "windSpeed10m": 6.6
       },
       {
-        "time": "2008-08-09T16:15",
+        "time": "2008-08-09T22:15",
         "weatherCode": 2,
         "condition": "Cloudy",
         "state": {
@@ -3430,19 +3475,56 @@ export const season2008IndyCarWeather = {
       "year": 2008,
       "series": "IndyCar",
       "date": "2008-08-24",
-      "localStartTime": "13:30",
+      "localStartTime": "13:00",
       "timezone": "auto",
       "latitude": 38.2919,
       "longitude": -122.458,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "Low",
+      "startTimeMethod": "Series/track-type heuristic"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using IndyCar default 13:30"
+      "Workbook start time estimate (Low): 13:00",
+      "Start time method: Series/track-type heuristic"
     ],
     "samples": [
+      {
+        "time": "2008-08-24T13:00",
+        "weatherCode": 0,
+        "condition": "Dry",
+        "state": {
+          "condition": "Dry",
+          "gripLevel": 1,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Dry"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 1,
+        "temperature2m": 17.2,
+        "windSpeed10m": 5.4
+      },
+      {
+        "time": "2008-08-24T13:15",
+        "weatherCode": 0,
+        "condition": "Dry",
+        "state": {
+          "condition": "Dry",
+          "gripLevel": 1,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Dry"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 1,
+        "temperature2m": 17.2,
+        "windSpeed10m": 5.4
+      },
       {
         "time": "2008-08-24T13:30",
         "weatherCode": 0,
@@ -3491,8 +3573,8 @@ export const season2008IndyCarWeather = {
         "precipitationMm": 0.0,
         "rainMm": 0.0,
         "cloudCover": 1,
-        "temperature2m": 17.2,
-        "windSpeed10m": 5.4
+        "temperature2m": 16.5,
+        "windSpeed10m": 5.6
       },
       {
         "time": "2008-08-24T14:15",
@@ -3508,8 +3590,8 @@ export const season2008IndyCarWeather = {
         "precipitationMm": 0.0,
         "rainMm": 0.0,
         "cloudCover": 1,
-        "temperature2m": 17.2,
-        "windSpeed10m": 5.4
+        "temperature2m": 16.5,
+        "windSpeed10m": 5.6
       },
       {
         "time": "2008-08-24T14:30",
@@ -3559,8 +3641,8 @@ export const season2008IndyCarWeather = {
         "precipitationMm": 0.0,
         "rainMm": 0.0,
         "cloudCover": 1,
-        "temperature2m": 16.5,
-        "windSpeed10m": 5.6
+        "temperature2m": 15.9,
+        "windSpeed10m": 5.4
       },
       {
         "time": "2008-08-24T15:15",
@@ -3576,8 +3658,8 @@ export const season2008IndyCarWeather = {
         "precipitationMm": 0.0,
         "rainMm": 0.0,
         "cloudCover": 1,
-        "temperature2m": 16.5,
-        "windSpeed10m": 5.6
+        "temperature2m": 15.9,
+        "windSpeed10m": 5.4
       },
       {
         "time": "2008-08-24T15:30",
@@ -3612,40 +3694,6 @@ export const season2008IndyCarWeather = {
         "cloudCover": 1,
         "temperature2m": 15.9,
         "windSpeed10m": 5.4
-      },
-      {
-        "time": "2008-08-24T16:00",
-        "weatherCode": 0,
-        "condition": "Dry",
-        "state": {
-          "condition": "Dry",
-          "gripLevel": 1,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Dry"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 1,
-        "temperature2m": 15.9,
-        "windSpeed10m": 5.4
-      },
-      {
-        "time": "2008-08-24T16:15",
-        "weatherCode": 0,
-        "condition": "Dry",
-        "state": {
-          "condition": "Dry",
-          "gripLevel": 1,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Dry"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 1,
-        "temperature2m": 15.9,
-        "windSpeed10m": 5.4
       }
     ]
   },
@@ -3658,19 +3706,56 @@ export const season2008IndyCarWeather = {
       "year": 2008,
       "series": "IndyCar",
       "date": "2008-08-31",
-      "localStartTime": "13:30",
+      "localStartTime": "13:00",
       "timezone": "auto",
       "latitude": 42.3314,
       "longitude": -83.0458,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "Low",
+      "startTimeMethod": "Series/track-type heuristic"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using IndyCar default 13:30"
+      "Workbook start time estimate (Low): 13:00",
+      "Start time method: Series/track-type heuristic"
     ],
     "samples": [
+      {
+        "time": "2008-08-31T13:00",
+        "weatherCode": 0,
+        "condition": "Dry",
+        "state": {
+          "condition": "Dry",
+          "gripLevel": 1,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Dry"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 0,
+        "temperature2m": 20.0,
+        "windSpeed10m": 10.2
+      },
+      {
+        "time": "2008-08-31T13:15",
+        "weatherCode": 0,
+        "condition": "Dry",
+        "state": {
+          "condition": "Dry",
+          "gripLevel": 1,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Dry"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 0,
+        "temperature2m": 20.0,
+        "windSpeed10m": 10.2
+      },
       {
         "time": "2008-08-31T13:30",
         "weatherCode": 0,
@@ -3719,8 +3804,8 @@ export const season2008IndyCarWeather = {
         "precipitationMm": 0.0,
         "rainMm": 0.0,
         "cloudCover": 0,
-        "temperature2m": 20.0,
-        "windSpeed10m": 10.2
+        "temperature2m": 19.4,
+        "windSpeed10m": 10.3
       },
       {
         "time": "2008-08-31T14:15",
@@ -3736,8 +3821,8 @@ export const season2008IndyCarWeather = {
         "precipitationMm": 0.0,
         "rainMm": 0.0,
         "cloudCover": 0,
-        "temperature2m": 20.0,
-        "windSpeed10m": 10.2
+        "temperature2m": 19.4,
+        "windSpeed10m": 10.3
       },
       {
         "time": "2008-08-31T14:30",
@@ -3787,8 +3872,8 @@ export const season2008IndyCarWeather = {
         "precipitationMm": 0.0,
         "rainMm": 0.0,
         "cloudCover": 0,
-        "temperature2m": 19.4,
-        "windSpeed10m": 10.3
+        "temperature2m": 18.9,
+        "windSpeed10m": 10.8
       },
       {
         "time": "2008-08-31T15:15",
@@ -3804,8 +3889,8 @@ export const season2008IndyCarWeather = {
         "precipitationMm": 0.0,
         "rainMm": 0.0,
         "cloudCover": 0,
-        "temperature2m": 19.4,
-        "windSpeed10m": 10.3
+        "temperature2m": 18.9,
+        "windSpeed10m": 10.8
       },
       {
         "time": "2008-08-31T15:30",
@@ -3840,40 +3925,6 @@ export const season2008IndyCarWeather = {
         "cloudCover": 0,
         "temperature2m": 18.9,
         "windSpeed10m": 10.8
-      },
-      {
-        "time": "2008-08-31T16:00",
-        "weatherCode": 0,
-        "condition": "Dry",
-        "state": {
-          "condition": "Dry",
-          "gripLevel": 1,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Dry"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 0,
-        "temperature2m": 18.9,
-        "windSpeed10m": 10.8
-      },
-      {
-        "time": "2008-08-31T16:15",
-        "weatherCode": 0,
-        "condition": "Dry",
-        "state": {
-          "condition": "Dry",
-          "gripLevel": 1,
-          "wet": false,
-          "changingSoon": false,
-          "label": "Dry"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 0,
-        "temperature2m": 18.9,
-        "windSpeed10m": 10.8
       }
     ]
   },
@@ -3886,19 +3937,56 @@ export const season2008IndyCarWeather = {
       "year": 2008,
       "series": "IndyCar",
       "date": "2008-09-07",
-      "localStartTime": "13:30",
+      "localStartTime": "13:00",
       "timezone": "auto",
       "latitude": 41.525,
       "longitude": -88.0817,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "Low",
+      "startTimeMethod": "Oval daytime heuristic"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using IndyCar default 13:30"
+      "Workbook start time estimate (Low): 13:00",
+      "Start time method: Oval daytime heuristic"
     ],
     "samples": [
+      {
+        "time": "2008-09-07T13:00",
+        "weatherCode": 2,
+        "condition": "Cloudy",
+        "state": {
+          "condition": "Cloudy",
+          "gripLevel": 0.97,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Cloudy"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 75,
+        "temperature2m": 16.9,
+        "windSpeed10m": 7.9
+      },
+      {
+        "time": "2008-09-07T13:15",
+        "weatherCode": 2,
+        "condition": "Cloudy",
+        "state": {
+          "condition": "Cloudy",
+          "gripLevel": 0.97,
+          "wet": false,
+          "changingSoon": false,
+          "label": "Cloudy"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 75,
+        "temperature2m": 16.9,
+        "windSpeed10m": 7.9
+      },
       {
         "time": "2008-09-07T13:30",
         "weatherCode": 2,
@@ -3907,7 +3995,7 @@ export const season2008IndyCarWeather = {
           "condition": "Cloudy",
           "gripLevel": 0.97,
           "wet": false,
-          "changingSoon": false,
+          "changingSoon": true,
           "label": "Cloudy"
         },
         "precipitationMm": 0.0,
@@ -3924,7 +4012,7 @@ export const season2008IndyCarWeather = {
           "condition": "Cloudy",
           "gripLevel": 0.97,
           "wet": false,
-          "changingSoon": false,
+          "changingSoon": true,
           "label": "Cloudy"
         },
         "precipitationMm": 0.0,
@@ -3935,37 +4023,37 @@ export const season2008IndyCarWeather = {
       },
       {
         "time": "2008-09-07T14:00",
-        "weatherCode": 2,
+        "weatherCode": 3,
         "condition": "Cloudy",
         "state": {
           "condition": "Cloudy",
           "gripLevel": 0.97,
           "wet": false,
-          "changingSoon": true,
+          "changingSoon": false,
           "label": "Cloudy"
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 75,
-        "temperature2m": 16.9,
-        "windSpeed10m": 7.9
+        "cloudCover": 93,
+        "temperature2m": 16.7,
+        "windSpeed10m": 8.7
       },
       {
         "time": "2008-09-07T14:15",
-        "weatherCode": 2,
+        "weatherCode": 3,
         "condition": "Cloudy",
         "state": {
           "condition": "Cloudy",
           "gripLevel": 0.97,
           "wet": false,
-          "changingSoon": true,
+          "changingSoon": false,
           "label": "Cloudy"
         },
         "precipitationMm": 0.0,
         "rainMm": 0.0,
-        "cloudCover": 75,
-        "temperature2m": 16.9,
-        "windSpeed10m": 7.9
+        "cloudCover": 93,
+        "temperature2m": 16.7,
+        "windSpeed10m": 8.7
       },
       {
         "time": "2008-09-07T14:30",
@@ -3975,7 +4063,7 @@ export const season2008IndyCarWeather = {
           "condition": "Cloudy",
           "gripLevel": 0.97,
           "wet": false,
-          "changingSoon": false,
+          "changingSoon": true,
           "label": "Cloudy"
         },
         "precipitationMm": 0.0,
@@ -3992,7 +4080,7 @@ export const season2008IndyCarWeather = {
           "condition": "Cloudy",
           "gripLevel": 0.97,
           "wet": false,
-          "changingSoon": false,
+          "changingSoon": true,
           "label": "Cloudy"
         },
         "precipitationMm": 0.0,
@@ -4003,37 +4091,37 @@ export const season2008IndyCarWeather = {
       },
       {
         "time": "2008-09-07T15:00",
-        "weatherCode": 3,
-        "condition": "Cloudy",
+        "weatherCode": 51,
+        "condition": "LightRain",
         "state": {
-          "condition": "Cloudy",
-          "gripLevel": 0.97,
-          "wet": false,
-          "changingSoon": true,
-          "label": "Cloudy"
+          "condition": "LightRain",
+          "gripLevel": 0.72,
+          "wet": true,
+          "changingSoon": false,
+          "label": "Light Rain"
         },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 93,
-        "temperature2m": 16.7,
-        "windSpeed10m": 8.7
+        "precipitationMm": 0.2,
+        "rainMm": 0.2,
+        "cloudCover": 100,
+        "temperature2m": 16.0,
+        "windSpeed10m": 9.0
       },
       {
         "time": "2008-09-07T15:15",
-        "weatherCode": 3,
-        "condition": "Cloudy",
+        "weatherCode": 51,
+        "condition": "LightRain",
         "state": {
-          "condition": "Cloudy",
-          "gripLevel": 0.97,
-          "wet": false,
-          "changingSoon": true,
-          "label": "Cloudy"
+          "condition": "LightRain",
+          "gripLevel": 0.72,
+          "wet": true,
+          "changingSoon": false,
+          "label": "Light Rain"
         },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 93,
-        "temperature2m": 16.7,
-        "windSpeed10m": 8.7
+        "precipitationMm": 0.2,
+        "rainMm": 0.2,
+        "cloudCover": 100,
+        "temperature2m": 16.0,
+        "windSpeed10m": 9.0
       },
       {
         "time": "2008-09-07T15:30",
@@ -4054,40 +4142,6 @@ export const season2008IndyCarWeather = {
       },
       {
         "time": "2008-09-07T15:45",
-        "weatherCode": 51,
-        "condition": "LightRain",
-        "state": {
-          "condition": "LightRain",
-          "gripLevel": 0.72,
-          "wet": true,
-          "changingSoon": false,
-          "label": "Light Rain"
-        },
-        "precipitationMm": 0.2,
-        "rainMm": 0.2,
-        "cloudCover": 100,
-        "temperature2m": 16.0,
-        "windSpeed10m": 9.0
-      },
-      {
-        "time": "2008-09-07T16:00",
-        "weatherCode": 51,
-        "condition": "LightRain",
-        "state": {
-          "condition": "LightRain",
-          "gripLevel": 0.72,
-          "wet": true,
-          "changingSoon": false,
-          "label": "Light Rain"
-        },
-        "precipitationMm": 0.2,
-        "rainMm": 0.2,
-        "cloudCover": 100,
-        "temperature2m": 16.0,
-        "windSpeed10m": 9.0
-      },
-      {
-        "time": "2008-09-07T16:15",
         "weatherCode": 51,
         "condition": "LightRain",
         "state": {

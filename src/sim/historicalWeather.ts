@@ -36,7 +36,9 @@ export type HistoricalWeatherAnchor = {
   latitude?: number;
   longitude?: number;
   coordinateSource?: 'embedded' | 'geocoded' | 'assumed' | 'workbook';
-  startTimeSource?: 'embedded' | 'series-default';
+  startTimeSource?: 'embedded' | 'series-default' | 'workbook-estimate';
+  startTimeConfidence?: 'High' | 'Medium' | 'Low';
+  startTimeMethod?: string;
 };
 
 export type HistoricalWeatherTimeline = {

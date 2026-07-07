@@ -21,7 +21,7 @@ from urllib.request import Request, urlopen
 from openpyxl import load_workbook
 
 ROOT = Path('/home/ubuntu/motorsport-sim-manager')
-WORKBOOK = Path('/home/ubuntu/refwb-push/reference-workbooks/working/MASTER_SEASON_TRACK_LIST_POPULATED_COORDS_WEATHER_PULL_READY.xlsx')
+WORKBOOK = Path('/home/ubuntu/refwb-push/reference-workbooks/master/MASTER_SEASON_TRACK_LIST_WITH_RACE_START_TIMES.xlsx')
 CACHE_DIR = ROOT / '.cache' / 'historical-weather'
 GENERATED_DIR = ROOT / 'src/data/weather/generated'
 PHASE0_DIR = ROOT / 'src/data/phase0/generated'
@@ -231,6 +231,10 @@ class WeatherRow:
     date: str
     latitude: float
     longitude: float
+    start_time_local: str
+    start_date_for_weather: str
+    start_time_confidence: str
+    start_time_method: str
 
     @property
     def race_id(self) -> str:
@@ -238,10 +242,23 @@ class WeatherRow:
 
     @property
     def local_start_time(self) -> str:
-        return default_local_start_time(self.series, self.season)
+        return self.start_time_local or default_local_start_time(self.series, self.season)
+
+    @property
+    def weather_date(self) -> str:
+        return self.start_date_for_weather or self.date
+
+    @property
+    def start_time_source(self) -> str:
+        return 'workbook-estimate' if self.start_time_local else 'series-default'
 
     @property
     def assumptions(self) -> list[str]:
+        if self.start_time_local:
+            return [
+                f'Workbook start time estimate ({self.start_time_confidence or "unknown"}): {self.start_time_local}',
+                f'Start time method: {self.start_time_method or "unspecified"}',
+            ]
         return [f'No workbook start time; using {self.series} default {self.local_start_time}']
 
 
@@ -260,9 +277,13 @@ def load_rows() -> list[WeatherRow]:
             race_name=str(values[index['Race_Name']]),
             track_name=str(values[index['Track']]),
             track_id=str(values[index['TrackId']]),
-            date=str(values[index['Race_Date']]),
+            date=str(values[index['Race_Start_Date_For_Weather']] or values[index['Race_Date']]),
             latitude=float(values[index['Weather_Latitude']]),
             longitude=float(values[index['Weather_Longitude']]),
+            start_time_local=str(values[index['Race_Start_Time_Local']] or ''),
+            start_date_for_weather=str(values[index['Race_Start_Date_For_Weather']] or values[index['Race_Date']]),
+            start_time_confidence=str(values[index['Start_Time_Confidence']] or ''),
+            start_time_method=str(values[index['Start_Time_Method']] or ''),
         ))
     return rows
 
@@ -286,6 +307,12 @@ def write_ts_module(path: Path, header_lines: list[str], export_name: str, type_
         for line in header_lines:
             fh.write(f'{line}\n')
         fh.write(f'export const {export_name} = {body} satisfies Record<string, {type_name}>;\n')
+
+
+def load_cached_payload(cache_path: Path) -> dict[str, Any]:
+    if not cache_path.exists():
+        raise FileNotFoundError(f'Missing cached archive payload: {cache_path}')
+    return json.loads(cache_path.read_text(encoding='utf-8'))
 
 
 def main() -> int:
@@ -330,6 +357,8 @@ def main() -> int:
     # Note: the workbook stores CART for the Champ Car era; we normalize for the game runtime.
     fetched_rows = []
     skipped_rows: list[dict[str, Any]] = []
+    start_time_counts = {'real': 0, 'fallback': 0}
+    confidence_counts: dict[str, int] = defaultdict(int)
     with ThreadPoolExecutor(max_workers=max(1, args.workers)) as executor:
         futures = {executor.submit(_process_row, row): row for row in rows}
         for future in as_completed(futures):
@@ -337,6 +366,13 @@ def main() -> int:
             if result.get('skipped'):
                 skipped_rows.append(result['skip'])
             fetched_rows.append(result)
+            meta = result['meta']
+            if meta.get('startTimeSource') == 'series-default':
+                start_time_counts['fallback'] += 1
+            else:
+                start_time_counts['real'] += 1
+                confidence = str(meta.get('startTimeConfidence') or 'unknown')
+                confidence_counts[confidence] += 1
 
     fetched_rows.sort(key=lambda item: (item['meta']['seasonYear'], item['meta']['series'], item['meta']['round']))
 
@@ -389,6 +425,9 @@ def main() -> int:
 
     manifest = {
         'rows': len(rows),
+        'startTimeRealCount': start_time_counts['real'],
+        'startTimeFallbackCount': start_time_counts['fallback'],
+        'startTimeConfidenceCounts': dict(sorted(confidence_counts.items())),
         'skippedCount': len(skipped_rows),
         'skippedRows': skipped_rows,
         'raceMetaCount': len(race_meta),
@@ -407,9 +446,12 @@ def main() -> int:
 
 
 def _process_row(row: WeatherRow) -> dict[str, Any]:
-    parsed_date = parse_iso_date(row.date)
+    parsed_date = parse_iso_date(row.weather_date)
+    base_assumptions = list(row.assumptions)
+    if row.weather_date != row.date:
+        base_assumptions.append(f'Weather date for archive: {row.weather_date} (Race_Start_Date_For_Weather)')
     if parsed_date is None:
-        reason = f'Workbook date "{row.date}" is not ISO-8601; archive fetch skipped'
+        reason = f'Workbook weather date "{row.weather_date}" is not ISO-8601; archive fetch skipped'
         meta = {
             'raceId': row.race_id,
             'seasonYear': row.season,
@@ -418,21 +460,23 @@ def _process_row(row: WeatherRow) -> dict[str, Any]:
             'round': row.round_no,
             'trackId': row.track_id,
             'trackName': row.track_name,
-            'date': row.date,
+            'date': row.weather_date,
             'localStartTime': row.local_start_time,
             'timezone': 'auto',
             'latitude': row.latitude,
             'longitude': row.longitude,
             'coordinateSource': 'workbook',
-            'startTimeSource': 'series-default',
-            'assumptions': row.assumptions + [reason],
+            'startTimeSource': row.start_time_source,
+            'startTimeConfidence': row.start_time_confidence or None,
+            'startTimeMethod': row.start_time_method or None,
+            'assumptions': base_assumptions + [reason],
         }
         return {
             'skipped': True,
             'skip': {
                 'raceId': row.race_id,
                 'reason': reason,
-                'date': row.date,
+                'date': row.weather_date,
             },
             'meta': meta,
             'timeline': {
@@ -443,23 +487,25 @@ def _process_row(row: WeatherRow) -> dict[str, Any]:
                     'trackName': row.track_name,
                     'year': row.season,
                     'series': row.series,
-                    'date': row.date,
+                    'date': row.weather_date,
                     'localStartTime': row.local_start_time,
                     'timezone': 'auto',
                     'latitude': row.latitude,
                     'longitude': row.longitude,
                     'coordinateSource': 'workbook',
-                    'startTimeSource': 'series-default',
+                    'startTimeSource': row.start_time_source,
+                    'startTimeConfidence': row.start_time_confidence or None,
+                    'startTimeMethod': row.start_time_method or None,
                 },
                 'source': 'open-meteo-archive',
                 'resolutionMinutes': 15,
-                'assumptions': row.assumptions + [reason],
+                'assumptions': base_assumptions + [reason],
                 'samples': [],
             },
         }
     cutoff = date_cls.today()
     if parsed_date > cutoff:
-        reason = f'Workbook date {row.date} is after archive cutoff {cutoff.isoformat()}'
+        reason = f'Workbook weather date {row.weather_date} is after archive cutoff {cutoff.isoformat()}'
         meta = {
             'raceId': row.race_id,
             'seasonYear': row.season,
@@ -468,21 +514,23 @@ def _process_row(row: WeatherRow) -> dict[str, Any]:
             'round': row.round_no,
             'trackId': row.track_id,
             'trackName': row.track_name,
-            'date': row.date,
+            'date': row.weather_date,
             'localStartTime': row.local_start_time,
             'timezone': 'auto',
             'latitude': row.latitude,
             'longitude': row.longitude,
             'coordinateSource': 'workbook',
-            'startTimeSource': 'series-default',
-            'assumptions': row.assumptions + [reason],
+            'startTimeSource': row.start_time_source,
+            'startTimeConfidence': row.start_time_confidence or None,
+            'startTimeMethod': row.start_time_method or None,
+            'assumptions': base_assumptions + [reason],
         }
         return {
             'skipped': True,
             'skip': {
                 'raceId': row.race_id,
                 'reason': reason,
-                'date': row.date,
+                'date': row.weather_date,
             },
             'meta': meta,
             'timeline': {
@@ -493,23 +541,24 @@ def _process_row(row: WeatherRow) -> dict[str, Any]:
                     'trackName': row.track_name,
                     'year': row.season,
                     'series': row.series,
-                    'date': row.date,
+                    'date': row.weather_date,
                     'localStartTime': row.local_start_time,
                     'timezone': 'auto',
                     'latitude': row.latitude,
                     'longitude': row.longitude,
                     'coordinateSource': 'workbook',
-                    'startTimeSource': 'series-default',
+                    'startTimeSource': row.start_time_source,
+                    'startTimeConfidence': row.start_time_confidence or None,
+                    'startTimeMethod': row.start_time_method or None,
                 },
                 'source': 'open-meteo-archive',
                 'resolutionMinutes': 15,
-                'assumptions': row.assumptions + [reason],
+                'assumptions': base_assumptions + [reason],
                 'samples': [],
             },
         }
     cache_path = CACHE_DIR / f'{row.race_id}.json'
-    url = fetch_archive_url(row.latitude, row.longitude, row.date)
-    payload = fetch_with_backoff(url, cache_path)
+    payload = load_cached_payload(cache_path)
     hourly = parse_hourly_payload(payload)
     meta = {
         'raceId': row.race_id,
@@ -519,14 +568,16 @@ def _process_row(row: WeatherRow) -> dict[str, Any]:
         'round': row.round_no,
         'trackId': row.track_id,
         'trackName': row.track_name,
-        'date': row.date,
+        'date': row.weather_date,
         'localStartTime': row.local_start_time,
         'timezone': 'auto',
         'latitude': row.latitude,
         'longitude': row.longitude,
         'coordinateSource': 'workbook',
-        'startTimeSource': 'series-default',
-        'assumptions': row.assumptions,
+        'startTimeSource': row.start_time_source,
+        'startTimeConfidence': row.start_time_confidence or None,
+        'startTimeMethod': row.start_time_method or None,
+        'assumptions': base_assumptions,
     }
     timeline = {
         'anchor': {
@@ -536,19 +587,21 @@ def _process_row(row: WeatherRow) -> dict[str, Any]:
             'trackName': row.track_name,
             'year': row.season,
             'series': row.series,
-            'date': row.date,
+            'date': row.weather_date,
             'localStartTime': row.local_start_time,
             'timezone': 'auto',
             'latitude': row.latitude,
             'longitude': row.longitude,
             'coordinateSource': 'workbook',
-            'startTimeSource': 'series-default',
+            'startTimeSource': row.start_time_source,
+            'startTimeConfidence': row.start_time_confidence or None,
+            'startTimeMethod': row.start_time_method or None,
         },
         'source': 'open-meteo-archive',
         'resolutionMinutes': 15,
-        'assumptions': row.assumptions,
+        'assumptions': base_assumptions,
         'samples': build_timeline({
-            'date': row.date,
+            'date': row.weather_date,
             'localStartTime': row.local_start_time,
         }, hourly, 180, 15),
     }

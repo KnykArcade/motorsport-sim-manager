@@ -15,12 +15,15 @@ export const season1997IndyCarWeather = {
       "latitude": 43.2856,
       "longitude": -71.4676,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "Low",
+      "startTimeMethod": "Oval daytime heuristic"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using IndyCar default 13:00"
+      "Workbook start time estimate (Low): 13:00",
+      "Start time method: Oval daytime heuristic"
     ],
     "samples": [
       {
@@ -243,12 +246,15 @@ export const season1997IndyCarWeather = {
       "latitude": 36.1699,
       "longitude": -115.1398,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "Low",
+      "startTimeMethod": "Oval daytime heuristic"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using IndyCar default 13:00"
+      "Workbook start time estimate (Low): 13:00",
+      "Start time method: Oval daytime heuristic"
     ],
     "samples": [
       {
@@ -471,12 +477,15 @@ export const season1997IndyCarWeather = {
       "latitude": 28.3772,
       "longitude": -81.5707,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "Low",
+      "startTimeMethod": "Series/track-type heuristic"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using IndyCar default 13:00"
+      "Workbook start time estimate (Low): 13:00",
+      "Start time method: Series/track-type heuristic"
     ],
     "samples": [
       {
@@ -699,12 +708,15 @@ export const season1997IndyCarWeather = {
       "latitude": 33.4484,
       "longitude": -112.074,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "Medium",
+      "startTimeMethod": "Oval daytime estimate"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using IndyCar default 13:00"
+      "Workbook start time estimate (Medium): 13:00",
+      "Start time method: Oval daytime estimate"
     ],
     "samples": [
       {
@@ -922,19 +934,39 @@ export const season1997IndyCarWeather = {
       "year": 1997,
       "series": "IndyCar",
       "date": "1997-05-25",
-      "localStartTime": "13:00",
+      "localStartTime": "12:45",
       "timezone": "auto",
       "latitude": 39.8023,
       "longitude": -86.2672,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "High",
+      "startTimeMethod": "Known Indy 500 start-window estimate"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using IndyCar default 13:00"
+      "Workbook start time estimate (High): 12:45",
+      "Start time method: Known Indy 500 start-window estimate"
     ],
     "samples": [
+      {
+        "time": "1997-05-25T12:45",
+        "weatherCode": 53,
+        "condition": "LightRain",
+        "state": {
+          "condition": "LightRain",
+          "gripLevel": 0.72,
+          "wet": true,
+          "changingSoon": false,
+          "label": "Light Rain"
+        },
+        "precipitationMm": 0.8,
+        "rainMm": 0.8,
+        "cloudCover": 100,
+        "temperature2m": 18.9,
+        "windSpeed10m": 11.2
+      },
       {
         "time": "1997-05-25T13:00",
         "weatherCode": 53,
@@ -960,7 +992,7 @@ export const season1997IndyCarWeather = {
           "condition": "LightRain",
           "gripLevel": 0.72,
           "wet": true,
-          "changingSoon": false,
+          "changingSoon": true,
           "label": "Light Rain"
         },
         "precipitationMm": 0.8,
@@ -988,20 +1020,20 @@ export const season1997IndyCarWeather = {
       },
       {
         "time": "1997-05-25T13:45",
-        "weatherCode": 53,
+        "weatherCode": 51,
         "condition": "LightRain",
         "state": {
           "condition": "LightRain",
           "gripLevel": 0.72,
           "wet": true,
-          "changingSoon": true,
+          "changingSoon": false,
           "label": "Light Rain"
         },
-        "precipitationMm": 0.8,
-        "rainMm": 0.8,
+        "precipitationMm": 0.4,
+        "rainMm": 0.4,
         "cloudCover": 100,
-        "temperature2m": 18.9,
-        "windSpeed10m": 11.2
+        "temperature2m": 18.8,
+        "windSpeed10m": 13.3
       },
       {
         "time": "1997-05-25T14:00",
@@ -1028,7 +1060,7 @@ export const season1997IndyCarWeather = {
           "condition": "LightRain",
           "gripLevel": 0.72,
           "wet": true,
-          "changingSoon": false,
+          "changingSoon": true,
           "label": "Light Rain"
         },
         "precipitationMm": 0.4,
@@ -1056,20 +1088,20 @@ export const season1997IndyCarWeather = {
       },
       {
         "time": "1997-05-25T14:45",
-        "weatherCode": 51,
+        "weatherCode": 55,
         "condition": "LightRain",
         "state": {
           "condition": "LightRain",
           "gripLevel": 0.72,
           "wet": true,
-          "changingSoon": true,
+          "changingSoon": false,
           "label": "Light Rain"
         },
-        "precipitationMm": 0.4,
-        "rainMm": 0.4,
+        "precipitationMm": 1.0,
+        "rainMm": 1.0,
         "cloudCover": 100,
-        "temperature2m": 18.8,
-        "windSpeed10m": 13.3
+        "temperature2m": 19.0,
+        "windSpeed10m": 13.6
       },
       {
         "time": "1997-05-25T15:00",
@@ -1096,23 +1128,6 @@ export const season1997IndyCarWeather = {
           "condition": "LightRain",
           "gripLevel": 0.72,
           "wet": true,
-          "changingSoon": false,
-          "label": "Light Rain"
-        },
-        "precipitationMm": 1.0,
-        "rainMm": 1.0,
-        "cloudCover": 100,
-        "temperature2m": 19.0,
-        "windSpeed10m": 13.6
-      },
-      {
-        "time": "1997-05-25T15:30",
-        "weatherCode": 55,
-        "condition": "LightRain",
-        "state": {
-          "condition": "LightRain",
-          "gripLevel": 0.72,
-          "wet": true,
           "changingSoon": true,
           "label": "Light Rain"
         },
@@ -1123,7 +1138,7 @@ export const season1997IndyCarWeather = {
         "windSpeed10m": 13.6
       },
       {
-        "time": "1997-05-25T15:45",
+        "time": "1997-05-25T15:30",
         "weatherCode": 55,
         "condition": "LightRain",
         "state": {
@@ -1150,21 +1165,24 @@ export const season1997IndyCarWeather = {
       "year": 1997,
       "series": "IndyCar",
       "date": "1997-06-07",
-      "localStartTime": "13:00",
+      "localStartTime": "20:00",
       "timezone": "auto",
       "latitude": 32.7555,
       "longitude": -97.3308,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "High",
+      "startTimeMethod": "Known Texas night oval pattern"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using IndyCar default 13:00"
+      "Workbook start time estimate (High): 20:00",
+      "Start time method: Known Texas night oval pattern"
     ],
     "samples": [
       {
-        "time": "1997-06-07T13:00",
+        "time": "1997-06-07T20:00",
         "weatherCode": 3,
         "condition": "Cloudy",
         "state": {
@@ -1181,7 +1199,7 @@ export const season1997IndyCarWeather = {
         "windSpeed10m": 6.7
       },
       {
-        "time": "1997-06-07T13:15",
+        "time": "1997-06-07T20:15",
         "weatherCode": 3,
         "condition": "Cloudy",
         "state": {
@@ -1198,7 +1216,7 @@ export const season1997IndyCarWeather = {
         "windSpeed10m": 6.7
       },
       {
-        "time": "1997-06-07T13:30",
+        "time": "1997-06-07T20:30",
         "weatherCode": 3,
         "condition": "Cloudy",
         "state": {
@@ -1215,7 +1233,7 @@ export const season1997IndyCarWeather = {
         "windSpeed10m": 6.7
       },
       {
-        "time": "1997-06-07T13:45",
+        "time": "1997-06-07T20:45",
         "weatherCode": 3,
         "condition": "Cloudy",
         "state": {
@@ -1232,7 +1250,7 @@ export const season1997IndyCarWeather = {
         "windSpeed10m": 6.7
       },
       {
-        "time": "1997-06-07T14:00",
+        "time": "1997-06-07T21:00",
         "weatherCode": 3,
         "condition": "Cloudy",
         "state": {
@@ -1249,7 +1267,7 @@ export const season1997IndyCarWeather = {
         "windSpeed10m": 6.9
       },
       {
-        "time": "1997-06-07T14:15",
+        "time": "1997-06-07T21:15",
         "weatherCode": 3,
         "condition": "Cloudy",
         "state": {
@@ -1266,7 +1284,7 @@ export const season1997IndyCarWeather = {
         "windSpeed10m": 6.9
       },
       {
-        "time": "1997-06-07T14:30",
+        "time": "1997-06-07T21:30",
         "weatherCode": 3,
         "condition": "Cloudy",
         "state": {
@@ -1283,7 +1301,7 @@ export const season1997IndyCarWeather = {
         "windSpeed10m": 6.9
       },
       {
-        "time": "1997-06-07T14:45",
+        "time": "1997-06-07T21:45",
         "weatherCode": 3,
         "condition": "Cloudy",
         "state": {
@@ -1300,7 +1318,7 @@ export const season1997IndyCarWeather = {
         "windSpeed10m": 6.9
       },
       {
-        "time": "1997-06-07T15:00",
+        "time": "1997-06-07T22:00",
         "weatherCode": 3,
         "condition": "Cloudy",
         "state": {
@@ -1317,7 +1335,7 @@ export const season1997IndyCarWeather = {
         "windSpeed10m": 6.1
       },
       {
-        "time": "1997-06-07T15:15",
+        "time": "1997-06-07T22:15",
         "weatherCode": 3,
         "condition": "Cloudy",
         "state": {
@@ -1334,7 +1352,7 @@ export const season1997IndyCarWeather = {
         "windSpeed10m": 6.1
       },
       {
-        "time": "1997-06-07T15:30",
+        "time": "1997-06-07T22:30",
         "weatherCode": 3,
         "condition": "Cloudy",
         "state": {
@@ -1351,7 +1369,7 @@ export const season1997IndyCarWeather = {
         "windSpeed10m": 6.1
       },
       {
-        "time": "1997-06-07T15:45",
+        "time": "1997-06-07T22:45",
         "weatherCode": 3,
         "condition": "Cloudy",
         "state": {
@@ -1383,12 +1401,15 @@ export const season1997IndyCarWeather = {
       "latitude": 38.6822,
       "longitude": -104.7008,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "Low",
+      "startTimeMethod": "Oval daytime heuristic"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using IndyCar default 13:00"
+      "Workbook start time estimate (Low): 13:00",
+      "Start time method: Oval daytime heuristic"
     ],
     "samples": [
       {
@@ -1606,21 +1627,24 @@ export const season1997IndyCarWeather = {
       "year": 1997,
       "series": "IndyCar",
       "date": "1997-07-26",
-      "localStartTime": "13:00",
+      "localStartTime": "19:30",
       "timezone": "auto",
       "latitude": 35.4088,
       "longitude": -80.5795,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "Low",
+      "startTimeMethod": "Saturday oval evening heuristic"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using IndyCar default 13:00"
+      "Workbook start time estimate (Low): 19:30",
+      "Start time method: Saturday oval evening heuristic"
     ],
     "samples": [
       {
-        "time": "1997-07-26T13:00",
+        "time": "1997-07-26T19:30",
         "weatherCode": 2,
         "condition": "Cloudy",
         "state": {
@@ -1637,7 +1661,7 @@ export const season1997IndyCarWeather = {
         "windSpeed10m": 6.6
       },
       {
-        "time": "1997-07-26T13:15",
+        "time": "1997-07-26T19:45",
         "weatherCode": 2,
         "condition": "Cloudy",
         "state": {
@@ -1654,24 +1678,7 @@ export const season1997IndyCarWeather = {
         "windSpeed10m": 6.6
       },
       {
-        "time": "1997-07-26T13:30",
-        "weatherCode": 2,
-        "condition": "Cloudy",
-        "state": {
-          "condition": "Cloudy",
-          "gripLevel": 0.97,
-          "wet": false,
-          "changingSoon": true,
-          "label": "Cloudy"
-        },
-        "precipitationMm": 0.0,
-        "rainMm": 0.0,
-        "cloudCover": 68,
-        "temperature2m": 23.9,
-        "windSpeed10m": 6.6
-      },
-      {
-        "time": "1997-07-26T13:45",
+        "time": "1997-07-26T20:00",
         "weatherCode": 2,
         "condition": "Cloudy",
         "state": {
@@ -1688,7 +1695,24 @@ export const season1997IndyCarWeather = {
         "windSpeed10m": 6.6
       },
       {
-        "time": "1997-07-26T14:00",
+        "time": "1997-07-26T20:15",
+        "weatherCode": 2,
+        "condition": "Cloudy",
+        "state": {
+          "condition": "Cloudy",
+          "gripLevel": 0.97,
+          "wet": false,
+          "changingSoon": true,
+          "label": "Cloudy"
+        },
+        "precipitationMm": 0.0,
+        "rainMm": 0.0,
+        "cloudCover": 68,
+        "temperature2m": 23.9,
+        "windSpeed10m": 6.6
+      },
+      {
+        "time": "1997-07-26T20:30",
         "weatherCode": 1,
         "condition": "Cloudy",
         "state": {
@@ -1705,7 +1729,7 @@ export const season1997IndyCarWeather = {
         "windSpeed10m": 5.6
       },
       {
-        "time": "1997-07-26T14:15",
+        "time": "1997-07-26T20:45",
         "weatherCode": 1,
         "condition": "Cloudy",
         "state": {
@@ -1722,7 +1746,7 @@ export const season1997IndyCarWeather = {
         "windSpeed10m": 5.6
       },
       {
-        "time": "1997-07-26T14:30",
+        "time": "1997-07-26T21:00",
         "weatherCode": 1,
         "condition": "Cloudy",
         "state": {
@@ -1739,7 +1763,7 @@ export const season1997IndyCarWeather = {
         "windSpeed10m": 5.6
       },
       {
-        "time": "1997-07-26T14:45",
+        "time": "1997-07-26T21:15",
         "weatherCode": 1,
         "condition": "Cloudy",
         "state": {
@@ -1756,7 +1780,7 @@ export const season1997IndyCarWeather = {
         "windSpeed10m": 5.6
       },
       {
-        "time": "1997-07-26T15:00",
+        "time": "1997-07-26T21:30",
         "weatherCode": 1,
         "condition": "Cloudy",
         "state": {
@@ -1773,7 +1797,7 @@ export const season1997IndyCarWeather = {
         "windSpeed10m": 4.9
       },
       {
-        "time": "1997-07-26T15:15",
+        "time": "1997-07-26T21:45",
         "weatherCode": 1,
         "condition": "Cloudy",
         "state": {
@@ -1790,7 +1814,7 @@ export const season1997IndyCarWeather = {
         "windSpeed10m": 4.9
       },
       {
-        "time": "1997-07-26T15:30",
+        "time": "1997-07-26T22:00",
         "weatherCode": 1,
         "condition": "Cloudy",
         "state": {
@@ -1807,7 +1831,7 @@ export const season1997IndyCarWeather = {
         "windSpeed10m": 4.9
       },
       {
-        "time": "1997-07-26T15:45",
+        "time": "1997-07-26T22:15",
         "weatherCode": 1,
         "condition": "Cloudy",
         "state": {
@@ -1839,12 +1863,15 @@ export const season1997IndyCarWeather = {
       "latitude": 43.2856,
       "longitude": -71.4676,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "Low",
+      "startTimeMethod": "Oval daytime heuristic"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using IndyCar default 13:00"
+      "Workbook start time estimate (Low): 13:00",
+      "Start time method: Oval daytime heuristic"
     ],
     "samples": [
       {
@@ -2062,21 +2089,24 @@ export const season1997IndyCarWeather = {
       "year": 1997,
       "series": "IndyCar",
       "date": "1997-10-11",
-      "localStartTime": "13:00",
+      "localStartTime": "19:30",
       "timezone": "auto",
       "latitude": 36.1699,
       "longitude": -115.1398,
       "coordinateSource": "workbook",
-      "startTimeSource": "series-default"
+      "startTimeSource": "workbook-estimate",
+      "startTimeConfidence": "Low",
+      "startTimeMethod": "Saturday oval evening heuristic"
     },
     "source": "open-meteo-archive",
     "resolutionMinutes": 15,
     "assumptions": [
-      "No workbook start time; using IndyCar default 13:00"
+      "Workbook start time estimate (Low): 19:30",
+      "Start time method: Saturday oval evening heuristic"
     ],
     "samples": [
       {
-        "time": "1997-10-11T13:00",
+        "time": "1997-10-11T19:30",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -2093,7 +2123,7 @@ export const season1997IndyCarWeather = {
         "windSpeed10m": 18.1
       },
       {
-        "time": "1997-10-11T13:15",
+        "time": "1997-10-11T19:45",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -2110,7 +2140,7 @@ export const season1997IndyCarWeather = {
         "windSpeed10m": 18.1
       },
       {
-        "time": "1997-10-11T13:30",
+        "time": "1997-10-11T20:00",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -2127,7 +2157,7 @@ export const season1997IndyCarWeather = {
         "windSpeed10m": 18.1
       },
       {
-        "time": "1997-10-11T13:45",
+        "time": "1997-10-11T20:15",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -2144,7 +2174,7 @@ export const season1997IndyCarWeather = {
         "windSpeed10m": 18.1
       },
       {
-        "time": "1997-10-11T14:00",
+        "time": "1997-10-11T20:30",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -2161,7 +2191,7 @@ export const season1997IndyCarWeather = {
         "windSpeed10m": 16.1
       },
       {
-        "time": "1997-10-11T14:15",
+        "time": "1997-10-11T20:45",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -2178,7 +2208,7 @@ export const season1997IndyCarWeather = {
         "windSpeed10m": 16.1
       },
       {
-        "time": "1997-10-11T14:30",
+        "time": "1997-10-11T21:00",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -2195,7 +2225,7 @@ export const season1997IndyCarWeather = {
         "windSpeed10m": 16.1
       },
       {
-        "time": "1997-10-11T14:45",
+        "time": "1997-10-11T21:15",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -2212,7 +2242,7 @@ export const season1997IndyCarWeather = {
         "windSpeed10m": 16.1
       },
       {
-        "time": "1997-10-11T15:00",
+        "time": "1997-10-11T21:30",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -2229,7 +2259,7 @@ export const season1997IndyCarWeather = {
         "windSpeed10m": 15.5
       },
       {
-        "time": "1997-10-11T15:15",
+        "time": "1997-10-11T21:45",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -2246,7 +2276,7 @@ export const season1997IndyCarWeather = {
         "windSpeed10m": 15.5
       },
       {
-        "time": "1997-10-11T15:30",
+        "time": "1997-10-11T22:00",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
@@ -2263,7 +2293,7 @@ export const season1997IndyCarWeather = {
         "windSpeed10m": 15.5
       },
       {
-        "time": "1997-10-11T15:45",
+        "time": "1997-10-11T22:15",
         "weatherCode": 0,
         "condition": "Dry",
         "state": {
