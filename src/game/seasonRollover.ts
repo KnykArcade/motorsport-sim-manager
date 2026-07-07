@@ -7,11 +7,7 @@
 import { getCachedBundle } from '../data/seasonLoader';
 import type { SeasonBundle } from '../data/seasonCatalog';
 import { defaultCareerPhaseState } from './careerPhaseEngine';
-import {
-  careerMarketBundle,
-  marketRolloverChanges,
-  marketRolloverNotes,
-} from '../sim/careerMarketEngine';
+import { careerMarketBundle, marketRolloverChanges, marketRolloverNotes } from '../sim/careerMarketEngine';
 import {
   FACILITY_SPECS,
   facilityYouthDevelopmentBonus,
@@ -26,6 +22,7 @@ import {
   marketDriverToDriver,
   progressAcademyMember,
 } from '../sim/driverMarketEngine';
+import { activeDriversForTeam } from './careerState';
 import {
   academyRightsExpired,
   firstOptionStatusFor,
@@ -569,7 +566,7 @@ export function advanceSeason(state: GameState, nextBundle?: SeasonBundle): Game
   // Settle the offseason finances for the player's team: buyouts for new
   // signings, annual salaries for the new line-up, academy fees, and the
   // upcoming year's sponsorship income.
-  const playerDrivers = drivers.filter((d) => d.teamId === state.selectedTeamId);
+  const playerDrivers = activeDriversForTeam(state, state.selectedTeamId);
   const academyYearlyById: Record<string, number> = {};
   for (const y of market?.youth ?? []) academyYearlyById[y.id] = y.yearlyAcademyCost;
 

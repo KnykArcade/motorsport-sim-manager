@@ -92,17 +92,17 @@ const norm = (name: string) => name.trim().toLowerCase();
 function targetDriverOverall(ai: AITeamState): number {
   switch (ai.goal) {
     case 'TitleChallenge':
-      return 8.4;
+      return 84;
     case 'Podiums':
-      return 7.6;
+      return 76;
     case 'PointsFinish':
-      return 6.8;
+      return 68;
     case 'MidfieldImprovement':
-      return 6.0;
+      return 60;
     case 'YouthDevelopment':
-      return 6.2;
+      return 62;
     case 'Survival':
-      return 5.2;
+      return 52;
   }
 }
 
@@ -463,7 +463,7 @@ export function runAIOffseason(input: AIOffseasonInput): AIOffseasonResult {
           const best = affordable.sort((a, b) => b.rating - a.rating).slice(0, 5);
           const hire = rng.pick(best);
           const dept = roleMap[hire.role];
-          const boost = Math.round((hire.rating - 5) * 0.8);
+          const boost = Math.round((hire.rating - 50) * 0.08);
           updated = { ...updated, [dept]: clamp100(updated[dept] + Math.max(1, boost)) };
           team.budget -= toMoney(hire.signingFee);
           notes.push(`${team.name} hires ${hire.name} as ${hire.role}.`);
@@ -772,10 +772,10 @@ function processDriverMarket(
   const wantsUpgrade =
     weakest &&
     contractOpen &&
-    weakest.ratings.overall < target - 0.4 &&
+    weakest.ratings.overall < target - 4 &&
     (oldDeclining || rng.chance(0.3 + spec.risk * 0.4));
   if (weakest && wantsUpgrade) {
-    const margin = ai.archetype === 'ChampionshipContender' ? 0.3 : 0.8;
+    const margin = ai.archetype === 'ChampionshipContender' ? 3 : 8;
     const pick = bestCandidate(ctx, ai, cash, weakest.ratings.overall + margin);
     if (pick) {
       const signed = marketDriverToDriver(pick, { teamId: team.id, number: weakest.number });

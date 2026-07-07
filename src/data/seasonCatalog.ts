@@ -3,7 +3,6 @@
 // Full season bundles are loaded on demand via seasonLoader.ts.
 
 import type { Series } from '../types/gameTypes';
-import { aowAvailableSeasons } from './aowSeasonData';
 
 export type SeasonBundle = {
   season: import('../types/gameTypes').Season;
@@ -11,6 +10,21 @@ export type SeasonBundle = {
   drivers: import('../types/gameTypes').Driver[];
   cars: import('../types/gameTypes').Car[];
 };
+
+const aowAvailableSeasons: { year: number; series: 'CART' | 'Champ Car' | 'IndyCar'; label: string }[] = [
+  ...Array.from({ length: 14 }, (_, i) => {
+    const year = 1990 + i;
+    return { year, series: 'CART' as const, label: `${year} CART PPG Indy Car World Series` };
+  }),
+  ...Array.from({ length: 4 }, (_, i) => {
+    const year = 2004 + i;
+    return { year, series: 'Champ Car' as const, label: `${year} Champ Car World Series` };
+  }),
+  ...Array.from({ length: 12 }, (_, i) => {
+    const year = 1996 + i;
+    return { year, series: 'IndyCar' as const, label: `${year} Indy Racing League` };
+  }),
+];
 
 // Seasons available to start a new game, in display order.
 export const availableSeasons: { year: number; series: Series; label: string }[] = [

@@ -397,6 +397,19 @@ export function processAITeamActivity(state: GameState): GameState {
     }
   }
 
+  if (aiNews.length === 0 && teamsToProcess[0]) {
+    aiNews.push({
+      id: `news-ai-${weekId}-${teamsToProcess[0].id}`,
+      headline: `${teamsToProcess[0].name} keeps a steady paddock-week program`,
+      body: `${teamsToProcess[0].name} has no major developments to report this week, but the team remains active in the paddock.`,
+      timestamp: new Date().toISOString(),
+      category: 'ai_team',
+      priority: 'low',
+      careerPhase: 'paddock_week',
+      teamId: teamsToProcess[0].id,
+    });
+  }
+
   return {
     ...state,
     cars,

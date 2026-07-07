@@ -51,8 +51,8 @@ describe('toMoney', () => {
 describe('driverSalary', () => {
   it('uses explicit salary when set, otherwise estimates from overall', () => {
     expect(driverSalary(fakeDriver(8, 5.5))).toBe(toMoney(5.5));
-    const est = driverSalary(fakeDriver(8));
-    expect(est).toBe(toMoney((8 - 4) * 1.2));
+    const est = driverSalary(fakeDriver(80));
+    expect(est).toBe(toMoney((80 - 40) * 0.12));
     // floor for weak drivers
     expect(driverSalary(fakeDriver(3))).toBe(toMoney(0.5));
   });

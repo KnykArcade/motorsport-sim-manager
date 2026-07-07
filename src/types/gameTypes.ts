@@ -781,6 +781,7 @@ export type Phase0SeasonCalendarRow = {
   trackName: string;
   laps: number;
   distanceKm: number;
+  pointsMultiplier?: number;
 };
 
 export type Phase0SeasonAssignment = {

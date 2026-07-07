@@ -15,7 +15,7 @@ export function toMoney(millions: number): number {
 // salary, so estimate one from their overall rating.
 export function driverSalary(driver: Driver): number {
   if (driver.salary && driver.salary > 0) return toMoney(driver.salary);
-  const est = Math.max(0.5, (driver.ratings.overall - 4) * 1.2); // $M
+  const est = Math.max(0.5, (driver.ratings.overall - 40) * 0.12); // $M
   return toMoney(est);
 }
 
