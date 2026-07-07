@@ -56,6 +56,8 @@ export type Track = {
   name: string;
   gpName: string;
   country?: string;
+  latitude?: number;
+  longitude?: number;
   archetype: string;
   attributes: TrackAttributes;
   setupProfile: TrackSetupProfile;
@@ -68,6 +70,7 @@ export type Race = {
   gpName: string;
   trackId: string;
   trackName: string;
+  date?: string;
   laps: number;
   distanceKm?: number;
   pointsMultiplier?: number;
@@ -658,6 +661,8 @@ export type GlobalTrack = {
   locationDisplay?: string;
   locationConfidence?: string;
   locationSource?: string;
+  latitude?: number;
+  longitude?: number;
   lengthKm: number;
   seasonsUsed: Phase0SeasonKey[];
   aliases: string[];

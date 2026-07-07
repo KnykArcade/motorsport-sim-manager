@@ -1,0 +1,202 @@
+{
+  "rows": 1462,
+  "skippedCount": 20,
+  "skippedRows": [
+    {
+      "raceId": "2026-IndyCar-12",
+      "reason": "Workbook date 2026-07-19 is after archive cutoff 2026-07-07",
+      "date": "2026-07-19"
+    },
+    {
+      "raceId": "2026-IndyCar-16",
+      "reason": "Workbook date 2026-08-29 is after archive cutoff 2026-07-07",
+      "date": "2026-08-29"
+    },
+    {
+      "raceId": "2026-IndyCar-17",
+      "reason": "Workbook date 2026-08-30 is after archive cutoff 2026-07-07",
+      "date": "2026-08-30"
+    },
+    {
+      "raceId": "2026-F1-13",
+      "reason": "Workbook date 2026-09-04 is after archive cutoff 2026-07-07",
+      "date": "2026-09-04"
+    },
+    {
+      "raceId": "2026-F1-17",
+      "reason": "Workbook date 2026-10-23 is after archive cutoff 2026-07-07",
+      "date": "2026-10-23"
+    },
+    {
+      "raceId": "2026-F1-19",
+      "reason": "Workbook date 2026-11-06 is after archive cutoff 2026-07-07",
+      "date": "2026-11-06"
+    },
+    {
+      "raceId": "2026-F1-10",
+      "reason": "Workbook date 2026-07-17 is after archive cutoff 2026-07-07",
+      "date": "2026-07-17"
+    },
+    {
+      "raceId": "2026-F1-12",
+      "reason": "Workbook date 2026-08-21 is after archive cutoff 2026-07-07",
+      "date": "2026-08-21"
+    },
+    {
+      "raceId": "2026-IndyCar-18",
+      "reason": "Workbook date 2026-09-06 is after archive cutoff 2026-07-07",
+      "date": "2026-09-06"
+    },
+    {
+      "raceId": "2026-F1-14",
+      "reason": "Workbook date 2026-09-11 is after archive cutoff 2026-07-07",
+      "date": "2026-09-11"
+    },
+    {
+      "raceId": "2026-F1-18",
+      "reason": "Workbook date \"30 Oct-01 Nov\" is not ISO-8601; archive fetch skipped",
+      "date": "30 Oct-01 Nov"
+    },
+    {
+      "raceId": "2026-F1-21",
+      "reason": "Workbook date 2026-11-27 is after archive cutoff 2026-07-07",
+      "date": "2026-11-27"
+    },
+    {
+      "raceId": "2026-F1-22",
+      "reason": "Workbook date 2026-12-04 is after archive cutoff 2026-07-07",
+      "date": "2026-12-04"
+    },
+    {
+      "raceId": "2026-IndyCar-13",
+      "reason": "Workbook date 2026-08-09 is after archive cutoff 2026-07-07",
+      "date": "2026-08-09"
+    },
+    {
+      "raceId": "2026-F1-11",
+      "reason": "Workbook date 2026-07-24 is after archive cutoff 2026-07-07",
+      "date": "2026-07-24"
+    },
+    {
+      "raceId": "2026-F1-15",
+      "reason": "Workbook date 2026-09-24 is after archive cutoff 2026-07-07",
+      "date": "2026-09-24"
+    },
+    {
+      "raceId": "2026-F1-20",
+      "reason": "Workbook date 2026-11-19 is after archive cutoff 2026-07-07",
+      "date": "2026-11-19"
+    },
+    {
+      "raceId": "2026-F1-16",
+      "reason": "Workbook date 2026-10-09 is after archive cutoff 2026-07-07",
+      "date": "2026-10-09"
+    },
+    {
+      "raceId": "2026-IndyCar-14",
+      "reason": "Workbook date 2026-08-16 is after archive cutoff 2026-07-07",
+      "date": "2026-08-16"
+    },
+    {
+      "raceId": "2026-IndyCar-15",
+      "reason": "Workbook date 2026-08-23 is after archive cutoff 2026-07-07",
+      "date": "2026-08-23"
+    }
+  ],
+  "raceMetaCount": 1462,
+  "trackCoordinateCount": 1326,
+  "timelineCount": 1462,
+  "seasonCount": 86,
+  "seasonCounts": {
+    "1990-CART": 17,
+    "1990-F1": 16,
+    "1991-CART": 17,
+    "1991-F1": 16,
+    "1992-CART": 16,
+    "1992-F1": 16,
+    "1993-CART": 16,
+    "1993-F1": 16,
+    "1994-CART": 16,
+    "1994-F1": 16,
+    "1995-CART": 17,
+    "1995-F1": 17,
+    "1996-CART": 16,
+    "1996-F1": 16,
+    "1996-IndyCar": 3,
+    "1997-CART": 17,
+    "1997-F1": 17,
+    "1997-IndyCar": 10,
+    "1998-CART": 19,
+    "1998-F1": 16,
+    "1998-IndyCar": 11,
+    "1999-CART": 20,
+    "1999-F1": 16,
+    "1999-IndyCar": 10,
+    "2000-CART": 20,
+    "2000-F1": 17,
+    "2000-IndyCar": 9,
+    "2001-CART": 21,
+    "2001-F1": 17,
+    "2001-IndyCar": 13,
+    "2002-CART": 19,
+    "2002-F1": 17,
+    "2002-IndyCar": 15,
+    "2003-CART": 18,
+    "2003-F1": 16,
+    "2003-IndyCar": 16,
+    "2004-Champ Car": 14,
+    "2004-F1": 18,
+    "2004-IndyCar": 16,
+    "2005-Champ Car": 13,
+    "2005-F1": 19,
+    "2005-IndyCar": 17,
+    "2006-Champ Car": 14,
+    "2006-F1": 18,
+    "2006-IndyCar": 14,
+    "2007-Champ Car": 14,
+    "2007-F1": 17,
+    "2007-IndyCar": 17,
+    "2008-F1": 18,
+    "2008-IndyCar": 18,
+    "2009-F1": 17,
+    "2009-IndyCar": 17,
+    "2010-F1": 19,
+    "2010-IndyCar": 17,
+    "2011-F1": 19,
+    "2011-IndyCar": 17,
+    "2012-F1": 20,
+    "2012-IndyCar": 15,
+    "2013-F1": 19,
+    "2013-IndyCar": 19,
+    "2014-F1": 19,
+    "2014-IndyCar": 18,
+    "2015-F1": 19,
+    "2015-IndyCar": 16,
+    "2016-F1": 21,
+    "2016-IndyCar": 16,
+    "2017-F1": 20,
+    "2017-IndyCar": 17,
+    "2018-F1": 21,
+    "2018-IndyCar": 17,
+    "2019-F1": 21,
+    "2019-IndyCar": 17,
+    "2020-F1": 17,
+    "2020-IndyCar": 14,
+    "2021-F1": 22,
+    "2021-IndyCar": 16,
+    "2022-F1": 22,
+    "2022-IndyCar": 17,
+    "2023-F1": 22,
+    "2023-IndyCar": 17,
+    "2024-F1": 24,
+    "2024-IndyCar": 17,
+    "2025-F1": 24,
+    "2025-IndyCar": 17,
+    "2026-F1": 22,
+    "2026-IndyCar": 18
+  },
+  "exactJoinMatches": 1407,
+  "normalizedJoinMatches": 1462,
+  "rawCacheDir": "/home/ubuntu/motorsport-sim-manager/.cache/historical-weather",
+  "generatedBytes": 8301719
+}

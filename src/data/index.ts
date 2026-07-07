@@ -66,6 +66,12 @@ export {
   setSeasonBundles,
 } from './registry/masterRegistry';
 export { initializeMasterRegistry } from './registry/initializeMasterRegistry';
+export {
+  getHistoricalWeatherRaceMeta,
+  getHistoricalWeatherTimeline,
+  getCachedHistoricalWeatherTimeline,
+  preloadHistoricalWeatherSeason,
+} from './weather';
 
 // A large, varied pool of hireable specialists is generated per season/series
 // (deterministic). Memoized so the same season returns a stable pool.
@@ -92,4 +98,3 @@ export function getMaxQualifiers(series: string): number | undefined {
 export function getTrackById(id: string): Track | undefined {
   return getTrackFromRegistry(id);
 }
-

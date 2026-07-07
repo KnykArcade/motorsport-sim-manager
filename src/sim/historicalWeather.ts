@@ -9,6 +9,8 @@ export type HistoricalWeatherSample = {
   precipitationMm?: number;
   rainMm?: number;
   cloudCover?: number;
+  temperature2m?: number;
+  windSpeed10m?: number;
 };
 
 export type HistoricalWeatherHourlyPoint = {
@@ -17,6 +19,8 @@ export type HistoricalWeatherHourlyPoint = {
   precipitationMm?: number;
   rainMm?: number;
   cloudCover?: number;
+  temperature2m?: number;
+  windSpeed10m?: number;
 };
 
 export type HistoricalWeatherAnchor = {
@@ -31,16 +35,16 @@ export type HistoricalWeatherAnchor = {
   timezone?: string;
   latitude?: number;
   longitude?: number;
-  coordinateSource?: 'embedded' | 'geocoded' | 'assumed';
+  coordinateSource?: 'embedded' | 'geocoded' | 'assumed' | 'workbook';
   startTimeSource?: 'embedded' | 'series-default';
 };
 
 export type HistoricalWeatherTimeline = {
   anchor: HistoricalWeatherAnchor;
   source: 'open-meteo-archive';
-  resolutionMinutes: 15;
+  resolutionMinutes: number;
   assumptions: string[];
-  hourly: HistoricalWeatherHourlyPoint[];
+  hourly?: HistoricalWeatherHourlyPoint[];
   samples: HistoricalWeatherSample[];
 };
 
@@ -141,6 +145,8 @@ export function createHistoricalWeatherTimeline(
       precipitationMm: current.precipitationMm,
       rainMm: current.rainMm,
       cloudCover: current.cloudCover,
+      temperature2m: current.temperature2m,
+      windSpeed10m: current.windSpeed10m,
     });
   }
 

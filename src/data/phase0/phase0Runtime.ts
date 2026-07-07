@@ -5,6 +5,8 @@ import { globalCarsPhase0 } from './generated/globalCars';
 import { globalDriversPhase0 } from './generated/globalDrivers';
 import { globalTeamsPhase0 } from './generated/globalTeams';
 import { globalTracksPhase0 } from './generated/globalTracks';
+import { historicalWeatherRaceMeta } from '../weather/generated/raceMeta';
+import { historicalWeatherTrackCoordinates } from '../weather/generated/trackCoordinates';
 
 type Phase0TrackSource = any;
 type Phase0DriverSource = any;
@@ -33,6 +35,9 @@ type LegacyDriverSource = {
   number: number;
   teamId: string;
 };
+
+const historicalWeatherRaceMetaMap = historicalWeatherRaceMeta as Record<string, { date?: string; latitude?: number; longitude?: number }>;
+const historicalWeatherTrackCoordinatesMap = historicalWeatherTrackCoordinates as Record<string, { latitude: number; longitude: number }>;
 
 type LegacyCarSource = {
   id: string;
@@ -201,12 +206,15 @@ function trackDisplayName(source: Phase0TrackSource, trackName: string): string 
 }
 
 function buildTrack(trackId: string, trackName: string, source: Phase0TrackSource): Track {
+  const coords = historicalWeatherTrackCoordinatesMap[trackId];
   const displayName = trackDisplayName(source, trackName);
   return {
     id: trackId,
     name: displayName,
     gpName: displayName,
     country: source.country,
+    latitude: coords?.latitude,
+    longitude: coords?.longitude,
     archetype: source.category,
     attributes: mapAttributes(source),
     setupProfile: mapSetupProfile(source),
@@ -431,6 +439,10 @@ function buildTracks(phase0Season: Phase0SeasonBundle): Track[] {
   return [...tracks.values()];
 }
 
+function isoDateOrUndefined(value?: string): string | undefined {
+  return value && /^\d{4}-\d{2}-\d{2}$/.test(value) ? value : undefined;
+}
+
 export function buildPhase0SeasonBundle(phase0Season: Phase0SeasonBundle): {
   bundle: SeasonBundle;
   tracks: Track[];
@@ -450,6 +462,7 @@ export function buildPhase0SeasonBundle(phase0Season: Phase0SeasonBundle): {
         gpName: race.raceName,
         trackId: race.trackId,
         trackName: race.trackName,
+        date: isoDateOrUndefined(historicalWeatherRaceMetaMap[`${phase0Season.season}-${phase0Season.series}-${race.round}`]?.date),
         laps: race.laps,
         distanceKm: race.distanceKm,
         pointsMultiplier: race.pointsMultiplier ?? 1,
