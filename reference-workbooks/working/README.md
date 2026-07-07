@@ -1,6 +1,8 @@
 # Working / iteration workbooks
 
-69 workbook(s). Reference data only — NOT wired into the game.
+Source, per-season, and superseded/iteration workbooks kept for reference. Not the canonical source — see the master/ folder.
+
+76 workbook(s):
 
 - AOW_1990_2007_GAME_DATA.xlsx
 - AOW_1990_2007_RATINGS.xlsx
@@ -66,6 +68,13 @@
 - IndyCar_2024_Season_Full_Update.xlsx
 - IndyCar_2025_Season_Full_Update.xlsx
 - IndyCar_2026_Season_Full_Update.xlsx
+- MASTER_SEASON_BY_SEASON_TRACK_LIST_F1_INDYCAR_CART_1990_2026_ROUND_DATE_RATINGS.xlsx
+- MASTER_SEASON_BY_SEASON_TRACK_LIST_F1_INDYCAR_CART_1990_2026_ROUND_DATE_RATINGS_LOCATIONS_TRACK_CLASS_FIXED.xlsx
+- MASTER_SEASON_TRACK_LIST_POPULATED_COORDS_WEATHER_PULL_READY.xlsx
+- MASTER_TEAM_HISTORY_F1_AOW_INDYCAR_1990_2026.xlsx
+- MASTER_TRACK_LIST_F1_AOW_INDYCAR_1990_2026_KM_ONLY.xlsx
+- MOTORSPORT_MASTER_ALL_SEASONS.xlsx
+- Master_Driver_Registry_F1_IndyCar_1990_2026_with_traits.xlsx
 - Motorsport_Master_Race_Lap_Distance_Corrections.xlsx
 - Motorsport_Sim_Manager_MASTER_GAME_RATINGS_WORKBOOK_PASS23_F1_ESTIMATE_UNLOCK.xlsx
 - Motorsport_Sim_Manager_MASTER_GAME_RATINGS_WORKBOOK_PASS24_NON_WEATHER_FINAL_LOCK.xlsx
