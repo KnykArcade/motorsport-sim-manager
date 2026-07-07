@@ -1,7 +1,7 @@
-// Pre-Race-1 F1 roster enforcement.
+// Pre-Race-1 roster enforcement.
 //
-// F1 teams may intentionally start preseason with 0, 1, or 2 race drivers.
-// Before Race 1 (the first race weekend), every F1 team must have exactly 2
+// Teams may intentionally start preseason with 0, 1, or 2 race drivers.
+// Before Race 1 (the first race weekend), every team must have exactly 2
 // active race drivers. AI-controlled teams are auto-filled from the driver
 // market. The player's team is blocked from entering the race weekend until
 // they sign enough drivers.
@@ -39,7 +39,6 @@ export function canEnterRaceWeekend(state: GameState): {
   allowed: boolean;
   reason?: string;
 } {
-  if (state.series !== 'F1') return { allowed: true };
   const active = activeDriversForTeam(state, state.selectedTeamId);
   if (active.length < MAX_RACE_DRIVERS) {
     return {
@@ -78,11 +77,7 @@ function freeNumber(used: Set<number>): number {
 
 // Auto-fill AI teams that have fewer than 2 active race drivers.
 // Returns the updated state plus a list of auto-fill actions.
-export function enforceF1Rosters(state: GameState): EnforcementResult {
-  if (state.series !== 'F1') {
-    return { state, violations: [], autoFilled: [] };
-  }
-
+export function enforceRosters(state: GameState): EnforcementResult {
   let drivers = [...state.drivers];
   const teams = state.teams.map((t) => ({ ...t, driverIds: [...t.driverIds] }));
   const violations: RosterViolation[] = [];
@@ -189,6 +184,8 @@ export function enforceF1Rosters(state: GameState): EnforcementResult {
 
   return { state: finalState, violations, autoFilled };
 }
+
+export const enforceF1Rosters = enforceRosters;
 
 // Validate that a player signing a race driver is legal.
 export function validateRaceSeatSigning(

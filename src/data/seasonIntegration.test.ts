@@ -141,19 +141,19 @@ describe('historical season integration', () => {
   describe('known regression tests', () => {
     it('2001 Heinz-Harald Frentzen should not exist twice in F1 driver list', () => {
       const bundle = getSeasonBundle(2001, 'F1');
-      const frentzens = bundle!.drivers.filter((d) => d.id === 'd-2001-heinz-harald-frentzen');
+      const frentzens = bundle!.drivers.filter((d) => d.name === 'Heinz-Harald Frentzen');
       expect(frentzens.length).toBe(1);
     });
 
     it('2001 Jean Alesi should not exist twice in F1 driver list', () => {
       const bundle = getSeasonBundle(2001, 'F1');
-      const alesis = bundle!.drivers.filter((d) => d.id === 'd-2001-jean-alesi');
+      const alesis = bundle!.drivers.filter((d) => d.name === 'Jean Alesi');
       expect(alesis.length).toBe(1);
     });
 
     it('2003 Justin Wilson should not exist twice in F1 driver list', () => {
       const bundle = getSeasonBundle(2003, 'F1');
-      const wilsons = bundle!.drivers.filter((d) => d.id === 'd-2003-justin-wilson');
+      const wilsons = bundle!.drivers.filter((d) => d.name === 'Justin Wilson');
       expect(wilsons.length).toBe(1);
     });
 
@@ -165,31 +165,31 @@ describe('historical season integration', () => {
 
     it('2016 Max Verstappen should not be duplicated in the driver list', () => {
       const bundle = getSeasonBundle(2016, 'F1');
-      const verstappens = bundle!.drivers.filter((d) => d.id.includes('verstappen'));
+      const verstappens = bundle!.drivers.filter((d) => d.name === 'Max Verstappen');
       expect(verstappens.length, `Verstappen appears ${verstappens.length} times in 2016 driver list`).toBe(1);
     });
 
     it('2017 Carlos Sainz should not be duplicated in the driver list', () => {
       const bundle = getSeasonBundle(2017, 'F1');
-      const sainzs = bundle!.drivers.filter((d) => d.id.includes('sainz'));
+      const sainzs = bundle!.drivers.filter((d) => d.name === 'Carlos Sainz');
       expect(sainzs.length, `Sainz appears ${sainzs.length} times in 2017 driver list`).toBe(1);
     });
 
     it('2019 Pierre Gasly should not be duplicated in the driver list', () => {
       const bundle = getSeasonBundle(2019, 'F1');
-      const gaslys = bundle!.drivers.filter((d) => d.id.includes('gasly'));
+      const gaslys = bundle!.drivers.filter((d) => d.name === 'Pierre Gasly');
       expect(gaslys.length, `Gasly appears ${gaslys.length} times in 2019 driver list`).toBe(1);
     });
 
     it('2025 Yuki Tsunoda should not be duplicated in the driver list', () => {
       const bundle = getSeasonBundle(2025, 'F1');
-      const tsunodas = bundle!.drivers.filter((d) => d.id.includes('tsunoda'));
+      const tsunodas = bundle!.drivers.filter((d) => d.name === 'Yuki Tsunoda');
       expect(tsunodas.length, `Tsunoda appears ${tsunodas.length} times in 2025 driver list`).toBe(1);
     });
 
     it('1997 Jarno Trulli teamId should resolve to a valid team', () => {
       const bundle = getSeasonBundle(1997, 'F1');
-      const trulli = bundle!.drivers.find((d) => d.id === 'd-1997-jarno-trulli');
+      const trulli = bundle!.drivers.find((d) => d.name === 'Jarno Trulli');
       expect(trulli, 'Trulli should exist in 1997').toBeDefined();
       const teamIds = new Set(bundle!.teams.map((t) => t.id));
       expect(

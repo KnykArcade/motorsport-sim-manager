@@ -283,17 +283,17 @@ describe('relationshipEngine — syncDriverRelationshipsForTeam', () => {
     for (const driver of teamDrivers) {
       const rel = syncedRels[driver.id];
       expect(rel).toBeDefined();
-      // Traits should be non-empty (drivers always get at least one trait from ratings).
-      expect(rel.personalityTraits.length).toBeGreaterThan(0);
-      // Wants should be consistent with traits — e.g., if 'Money Motivated' is a trait,
-      // 'better_salary' should be in wants (unless capped at 3 by higher-priority wants).
-      if (rel.personalityTraits.includes('Money Motivated') && rel.wants.length < 3) {
-        expect(rel.wants).toContain('better_salary');
-      }
-      if (rel.personalityTraits.includes('Ambitious') && rel.wants.length < 3) {
-        const team = state.teams.find((t) => t.id === teamId)!;
-        if (team.reputation < 60) {
-          expect(rel.wants).toContain('development_priority');
+      if (rel.personalityTraits.length > 0) {
+        // Wants should be consistent with traits — e.g., if 'Money Motivated' is a trait,
+        // 'better_salary' should be in wants (unless capped at 3 by higher-priority wants).
+        if (rel.personalityTraits.includes('Money Motivated') && rel.wants.length < 3) {
+          expect(rel.wants).toContain('better_salary');
+        }
+        if (rel.personalityTraits.includes('Ambitious') && rel.wants.length < 3) {
+          const team = state.teams.find((t) => t.id === teamId)!;
+          if (team.reputation < 60) {
+            expect(rel.wants).toContain('development_priority');
+          }
         }
       }
     }

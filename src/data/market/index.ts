@@ -38,6 +38,33 @@ function bundle(drivers: MarketDriver[], youth: YouthProspect[]): MarketBundle {
   return { drivers, youth: normalizeYouth(youth) };
 }
 
+const releasedMarketDrivers = new Map<string, MarketDriver[]>();
+
+function seasonKey(year: number, series: Series): string {
+  return `${year}-${series}`;
+}
+
+function dedupeMarketDrivers(drivers: MarketDriver[]): MarketDriver[] {
+  const seen = new Set<string>();
+  const deduped: MarketDriver[] = [];
+  for (const driver of drivers) {
+    if (seen.has(driver.id)) continue;
+    seen.add(driver.id);
+    deduped.push(driver);
+  }
+  return deduped;
+}
+
+export function seedReleasedMarketDrivers(year: number, series: Series, drivers: MarketDriver[]): void {
+  const key = seasonKey(year, series);
+  const merged = [...(releasedMarketDrivers.get(key) ?? []), ...drivers];
+  releasedMarketDrivers.set(key, dedupeMarketDrivers(merged));
+}
+
+export function getReleasedMarketDrivers(year: number, series: Series): MarketDriver[] {
+  return releasedMarketDrivers.get(seasonKey(year, series)) ?? [];
+}
+
 // --- Lazy loader infrastructure ---
 
 const bundleCache = new Map<string, MarketBundle>();

@@ -1,4 +1,5 @@
 import type { Car, Driver, Phase0SeasonBundle, Series, Team, Track } from '../../types/gameTypes';
+import type { MarketDriver } from '../../types/marketTypes';
 import type { SeasonBundle } from '../seasonCatalog';
 import { availableSeasons } from '../seasonCatalog';
 import { globalCarsPhase0 } from './generated/globalCars';
@@ -7,6 +8,7 @@ import { globalTeamsPhase0 } from './generated/globalTeams';
 import { globalTracksPhase0 } from './generated/globalTracks';
 import { historicalWeatherRaceMeta } from '../weather/generated/raceMeta';
 import { historicalWeatherTrackCoordinates } from '../weather/generated/trackCoordinates';
+import { seedReleasedMarketDrivers } from '../market';
 
 type Phase0TrackSource = any;
 type Phase0DriverSource = any;
@@ -52,6 +54,12 @@ type LegacySeasonContext = {
   legacyTeamToSourceTeamId: Map<string, string>;
 };
 
+type ResolvedLegacyDriver = {
+  legacy: LegacyDriverSource;
+  source?: Phase0DriverSource;
+  canonicalId: string;
+};
+
 const legacyTeamModules = import.meta.glob('../teams/teams*.ts', { eager: true }) as Record<string, Record<string, unknown>>;
 const legacyDriverModules = import.meta.glob('../drivers/drivers*.ts', { eager: true }) as Record<string, Record<string, unknown>>;
 const legacyCarModules = import.meta.glob('../cars/cars*.ts', { eager: true }) as Record<string, Record<string, unknown>>;
@@ -64,6 +72,10 @@ function normalizeKey(value: string): string {
     .replace(/[^a-z0-9]+/g, ' ')
     .trim()
     .replace(/\s+/g, ' ');
+}
+
+function normalizeDriverIdentity(value: string): string {
+  return normalizeKey(value).replace(/\s+/g, '-');
 }
 
 function seriesToken(series: Series): string {
@@ -271,6 +283,109 @@ function legacyEntries<T>(
   return (module[legacyExportName(kind, year, series)] as T[] | undefined) ?? [];
 }
 
+function driverRatingsFromSource(source: Phase0DriverSource | undefined): Driver['ratings'] {
+  return {
+    cornering: source?.cornering ?? 50,
+    braking: source?.braking ?? 50,
+    straights: source?.straights ?? 50,
+    tractionAcceleration: source?.tractionAcceleration ?? 50,
+    elevationBlindCorners: source?.elevationBlindCorners ?? 50,
+    technical: source?.technical ?? 50,
+    overtakingRacecraft: source?.overtakingRacecraft ?? 50,
+    surfaceGripBumpiness: source?.surfaceGripBumpiness ?? 50,
+    riskManagement: source?.riskManagement ?? 50,
+    enduranceConsistency: source?.enduranceConsistency ?? 50,
+    qualifying: source?.qualifying ?? source?.overall ?? 50,
+    racePace: source?.racePace ?? source?.overall ?? 50,
+    adaptability: source?.adaptability ?? source?.overall ?? 50,
+    aggression: source?.aggression ?? source?.overall ?? 50,
+    composure: source?.composure ?? source?.overall ?? 50,
+    overall: source?.overall ?? 50,
+  };
+}
+
+function marketSkillsFromSource(source: Phase0DriverSource | undefined): MarketDriver['skills'] {
+  return {
+    cornering: source?.cornering ?? 50,
+    braking: source?.braking ?? 50,
+    straights: source?.straights ?? 50,
+    tractionAcceleration: source?.tractionAcceleration ?? 50,
+    elevationBlindCorners: source?.elevationBlindCorners ?? 50,
+    technical: source?.technical ?? 50,
+    overtakingRacecraft: source?.overtakingRacecraft ?? 50,
+    surfaceGripBumpiness: source?.surfaceGripBumpiness ?? 50,
+    riskManagement: source?.riskManagement ?? 50,
+    enduranceConsistency: source?.enduranceConsistency ?? 50,
+  };
+}
+
+function resolveDriverSource(
+  legacyDriver: LegacyDriverSource,
+  sourceById: Map<string, Phase0DriverSource>,
+  sourceByName: Map<string, Phase0DriverSource[]>,
+  teamEntry?: { driverId: string },
+): Phase0DriverSource | undefined {
+  if (teamEntry) {
+    const byId = sourceById.get(teamEntry.driverId);
+    if (byId) return byId;
+  }
+  const byLegacyName = sourceByName.get(normalizeKey(legacyDriver.name));
+  if (byLegacyName?.length === 1) return byLegacyName[0];
+  return byLegacyName?.[0];
+}
+
+function sourceToMarketDriver(source: Phase0DriverSource | undefined, year: number, series: Series, teamName: string): MarketDriver {
+  const age = source?.birthYear != null ? year - source.birthYear : source?.startingAge != null ? source.startingAge + Math.max(0, year - (source.firstSeenYear ?? year)) : 25;
+  const overall = source?.overall ?? 50;
+  const potential = source?.potential ?? overall;
+  const marketValue = source?.marketValue ?? Math.max(55, overall);
+  return {
+    id: source?.driverId ?? `driver-${normalizeDriverIdentity(teamName)}-${year}`,
+    name: source?.name ?? teamName,
+    age,
+    nationality: source?.nationality ?? 'International',
+    context: `${series} ${year} roster release`,
+    marketPool: `${series} roster release`,
+    marketStatus: 'Available',
+    primaryRole: 'Race Driver',
+    immediateF1Eligible: true,
+    skills: marketSkillsFromSource(source),
+    overall,
+    potential,
+    potentialDelta: Math.max(0, potential - overall),
+    developmentRate: source?.developmentRate ?? Math.max(6, Math.min(18, Math.round((potential - overall) / 4) + 8)),
+    f1Readiness: source?.f1Readiness ?? Math.max(50, overall),
+    salary: Math.max(0.3, Math.round((marketValue / 100) * 10) / 10),
+    sponsorValue: Math.max(0, Math.round(((source?.sponsorBacking ?? 0) / 100) * 10) / 10),
+    buyoutCost: Math.max(0.3, Math.round((marketValue / 100) * 10) / 10),
+    negotiationDifficulty: 'Medium',
+    suggestedUse: 'Race Driver',
+    notes: 'Released from season roster normalization.',
+  };
+}
+
+function sourceToDriver(
+  source: Phase0DriverSource | undefined,
+  legacyDriver: LegacyDriverSource,
+  teamId: string,
+  seasonYear: number,
+): Driver {
+  return {
+    id: source?.driverId ?? `driver-${normalizeDriverIdentity(legacyDriver.name)}`,
+    name: source?.name ?? legacyDriver.name,
+    number: legacyDriver.number,
+    nationality: source?.nationality,
+    age: source?.birthYear ? seasonYear - source.birthYear : undefined,
+    teamId,
+    ratings: driverRatingsFromSource(source),
+    morale: source?.morale ?? 65,
+    confidence: source?.trust ?? source?.morale ?? 65,
+    contractYearsRemaining: source?.contract?.yearsLeft,
+    salary: source?.contract?.salary != null ? source.contract.salary / 10 : undefined,
+    traits: source?.traits ?? [],
+  };
+}
+
 function matchTeamSource(sourceTeams: Phase0TeamSource[], team: LegacyTeamSource, year: number): Phase0TeamSource | undefined {
   const requested = normalizeKey(team.name);
   const requestedShort = normalizeKey(team.shortName);
@@ -308,22 +423,74 @@ function buildLegacyContext(phase0Season: Phase0SeasonBundle): LegacySeasonConte
   return { legacyTeams, legacyDrivers, legacyCars, legacyTeamToSourceTeamId };
 }
 
-function buildTeams(phase0Season: Phase0SeasonBundle, ctx: LegacySeasonContext): Team[] {
+function buildRosterPlan(phase0Season: Phase0SeasonBundle, ctx: LegacySeasonContext): {
+  teams: Team[];
+  drivers: Driver[];
+  releasedDrivers: MarketDriver[];
+} {
   const sourceTeams = globalTeamsPhase0 as Phase0TeamSource[];
+  const sourceDrivers = globalDriversPhase0 as Phase0DriverSource[];
   const sourceById = new Map<string, Phase0TeamSource>(sourceTeams.map((team) => [team.teamLineageId, team] as [string, Phase0TeamSource]));
-  return ctx.legacyTeams.map((legacyTeam, idx) => {
+  const sourceByDriverId = new Map<string, Phase0DriverSource>(sourceDrivers.map((driver) => [driver.driverId, driver] as [string, Phase0DriverSource]));
+  const sourceByName = new Map<string, Phase0DriverSource[]>();
+  for (const source of sourceDrivers) {
+    const key = normalizeKey(source.name ?? '');
+    const list = sourceByName.get(key);
+    if (list) list.push(source);
+    else sourceByName.set(key, [source]);
+  }
+  const sourceEntriesByLegacyKey = new Map<string, (typeof phase0Season.teamEntries)[number]>();
+  for (const entry of phase0Season.teamEntries) {
+    const legacyTeamId = [...ctx.legacyTeamToSourceTeamId.entries()].find(([, sourceId]) => sourceId === entry.teamId)?.[0];
+    if (!legacyTeamId) continue;
+    sourceEntriesByLegacyKey.set(`${legacyTeamId}::${entry.carNumber}`, entry);
+  }
+  const claimedCanonicalIds = new Set<string>();
+  const releasedById = new Map<string, MarketDriver>();
+  const teams: Team[] = [];
+  const drivers: Driver[] = [];
+
+  for (const [idx, legacyTeam] of ctx.legacyTeams.entries()) {
     const sourceId = ctx.legacyTeamToSourceTeamId.get(legacyTeam.id);
     const source = sourceId ? sourceById.get(sourceId) : undefined;
     const name = legacyTeam.name || source?.namePerPeriod?.find((period: any) => phase0Season.season >= period.fromYear && phase0Season.season <= period.toYear)?.name || source?.canonicalName || legacyTeam.id;
     const car = (globalCarsPhase0 as Phase0CarSource[]).find(
       (entry) => entry.teamId === sourceId && entry.seasonYear === phase0Season.season && entry.series === phase0Season.series,
     );
-    return {
+
+    const resolved: ResolvedLegacyDriver[] = [];
+    for (const legacyDriver of ctx.legacyDrivers.filter((d) => d.teamId === legacyTeam.id)) {
+      const rosterEntry = sourceEntriesByLegacyKey.get(`${legacyDriver.teamId}::${legacyDriver.number}`);
+      const sourceDriver = resolveDriverSource(legacyDriver, sourceByDriverId, sourceByName, rosterEntry);
+      resolved.push({
+        legacy: legacyDriver,
+        source: sourceDriver,
+        canonicalId: sourceDriver?.driverId ?? `driver-${normalizeDriverIdentity(legacyDriver.name)}`,
+      });
+    }
+
+    const teamSeen = new Set<string>();
+    const activeDrivers: ResolvedLegacyDriver[] = [];
+    for (const driver of resolved) {
+      if (teamSeen.has(driver.canonicalId)) continue;
+      teamSeen.add(driver.canonicalId);
+      if (claimedCanonicalIds.has(driver.canonicalId)) continue;
+      if (activeDrivers.length < 2) {
+        activeDrivers.push(driver);
+        claimedCanonicalIds.add(driver.canonicalId);
+      } else {
+        const marketDriver = sourceToMarketDriver(driver.source, phase0Season.season, phase0Season.series, name);
+        releasedById.set(marketDriver.id, marketDriver);
+      }
+    }
+
+    const driverIds = activeDrivers.map((driver) => driver.canonicalId);
+    teams.push({
       id: legacyTeam.id,
       name,
       shortName: legacyTeam.shortName || teamShortName(name),
       carId: legacyTeam.carId || seasonCarId(phase0Season.season, legacyTeam.id, car),
-      driverIds: legacyTeam.driverIds,
+      driverIds,
       budget: source?.budget ?? legacyTeam.budget ?? 0,
       reputation: source?.reputation ?? legacyTeam.reputation ?? 50,
       raceOperations: source?.raceOperations ?? legacyTeam.raceOperations ?? 50,
@@ -331,55 +498,14 @@ function buildTeams(phase0Season: Phase0SeasonBundle, ctx: LegacySeasonContext):
       expectedStanding: legacyTeam.expectedStanding ?? idx + 1,
       difficulty: legacyTeam.difficulty ?? deriveTeamDifficulty(idx + 1, ctx.legacyTeams.length),
       color: legacyTeam.color || hashColor(legacyTeam.id),
-    };
-  });
-}
+    });
 
-function buildDrivers(phase0Season: Phase0SeasonBundle, ctx: LegacySeasonContext): Driver[] {
-  const sourceDrivers = globalDriversPhase0 as Phase0DriverSource[];
-  const sourceById = new Map<string, Phase0DriverSource>(sourceDrivers.map((driver) => [driver.driverId, driver] as [string, Phase0DriverSource]));
-  const sourceEntriesByLegacyKey = new Map<string, (typeof phase0Season.teamEntries)[number]>();
-  for (const entry of phase0Season.teamEntries) {
-    const legacyTeamId = [...ctx.legacyTeamToSourceTeamId.entries()].find(([, sourceId]) => sourceId === entry.teamId)?.[0];
-    if (!legacyTeamId) continue;
-    sourceEntriesByLegacyKey.set(`${legacyTeamId}::${entry.carNumber}`, entry);
+    for (const driver of activeDrivers) {
+      drivers.push(sourceToDriver(driver.source, driver.legacy, legacyTeam.id, phase0Season.season));
+    }
   }
 
-  return ctx.legacyDrivers.map((legacyDriver) => {
-    const rosterEntry = sourceEntriesByLegacyKey.get(`${legacyDriver.teamId}::${legacyDriver.number}`);
-    const source = rosterEntry ? sourceById.get(rosterEntry.driverId) : undefined;
-    return {
-      id: legacyDriver.id,
-      name: source?.name ?? legacyDriver.name,
-      number: legacyDriver.number,
-      nationality: (source as { nationality?: string } | undefined)?.nationality,
-      age: source?.birthYear ? phase0Season.season - source.birthYear : undefined,
-      teamId: legacyDriver.teamId,
-      ratings: {
-        cornering: source?.cornering ?? 50,
-        braking: source?.braking ?? 50,
-        straights: source?.straights ?? 50,
-        tractionAcceleration: source?.tractionAcceleration ?? 50,
-        elevationBlindCorners: source?.elevationBlindCorners ?? 50,
-        technical: source?.technical ?? 50,
-        overtakingRacecraft: source?.overtakingRacecraft ?? 50,
-        surfaceGripBumpiness: source?.surfaceGripBumpiness ?? 50,
-        riskManagement: source?.riskManagement ?? 50,
-        enduranceConsistency: source?.enduranceConsistency ?? 50,
-        qualifying: source?.qualifying ?? source?.overall ?? 50,
-        racePace: source?.racePace ?? source?.overall ?? 50,
-        adaptability: source?.adaptability ?? source?.overall ?? 50,
-        aggression: source?.aggression ?? source?.overall ?? 50,
-        composure: source?.composure ?? source?.overall ?? 50,
-        overall: source?.overall ?? 50,
-      },
-      morale: source?.morale ?? 65,
-      confidence: source?.trust ?? source?.morale ?? 65,
-      contractYearsRemaining: source?.contract?.yearsLeft,
-      salary: source?.contract?.salary != null ? source.contract.salary / 10 : undefined,
-      traits: source?.traits ?? [],
-    };
-  });
+  return { teams, drivers, releasedDrivers: [...releasedById.values()] };
 }
 
 function buildCars(phase0Season: Phase0SeasonBundle, ctx: LegacySeasonContext, teamIds: string[]): Car[] {
@@ -449,7 +575,8 @@ export function buildPhase0SeasonBundle(phase0Season: Phase0SeasonBundle): {
 } {
   const seasonRules = getSeasonRuleIds(phase0Season.season, phase0Season.series);
   const ctx = buildLegacyContext(phase0Season);
-  const teams = buildTeams(phase0Season, ctx);
+  const rosterPlan = buildRosterPlan(phase0Season, ctx);
+  seedReleasedMarketDrivers(phase0Season.season, phase0Season.series, rosterPlan.releasedDrivers);
   const bundle: SeasonBundle = {
     season: {
       id: phase0Season.seasonId,
@@ -471,9 +598,9 @@ export function buildPhase0SeasonBundle(phase0Season: Phase0SeasonBundle): {
       pointsSystemId: seasonRules.pointsSystemId,
       regulationSetId: seasonRules.regulationSetId,
     },
-    teams,
-    drivers: buildDrivers(phase0Season, ctx),
-    cars: buildCars(phase0Season, ctx, teams.map((team) => team.id)),
+    teams: rosterPlan.teams,
+    drivers: rosterPlan.drivers,
+    cars: buildCars(phase0Season, ctx, rosterPlan.teams.map((team) => team.id)),
   };
 
   return { bundle, tracks: buildTracks(phase0Season) };
