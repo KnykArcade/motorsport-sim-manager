@@ -20,10 +20,10 @@ function round2(n: number): number {
   return Math.round(n * 100) / 100;
 }
 export function youthSigningCost(potential: number): number {
-  return round2(0.02 + (Math.max(0, Math.min(10, potential)) / 10) * 0.13);
+  return round2(0.02 + (Math.max(0, Math.min(100, potential)) / 100) * 0.13);
 }
 export function youthYearlyAcademyCost(potential: number): number {
-  return round2(0.01 + (Math.max(0, Math.min(10, potential)) / 10) * 0.09);
+  return round2(0.01 + (Math.max(0, Math.min(100, potential)) / 100) * 0.09);
 }
 
 function normalizeYouth(youth: YouthProspect[]): YouthProspect[] {

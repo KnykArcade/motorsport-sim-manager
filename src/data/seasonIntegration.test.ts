@@ -159,7 +159,7 @@ describe('historical season integration', () => {
 
     it('2001 Tomas Enge should not exist twice in F1 market list', () => {
       const market = getMarketBundle(2001, 'F1');
-      const enges = market!.drivers.filter((d) => d.id === 'mkt-2001-tomas-enge');
+      const enges = market!.drivers.filter((d) => d.id === 'DRV_0343');
       expect(enges.length).toBe(1);
     });
 
