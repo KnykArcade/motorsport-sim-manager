@@ -17,6 +17,7 @@ import type {
 } from '../types/engineTypes';
 import { suppliersFor } from '../data/engine/engineSuppliers';
 import { createSeededRandom, deriveSeed } from './random';
+import { toGameRating, toLegacyRating } from './ratingScale';
 
 function round2(n: number): number {
   return Math.round(n * 100) / 100;
@@ -88,18 +89,18 @@ const SUPPLIER_QUALITY_FACTOR = 0.25;
 const MAX_POWER_BONUS = 1.6;
 const MAX_RELIABILITY_BONUS = 1.4;
 
-// The enginePower / reliability deltas a deal grants on the 1-10 ratings scale.
+// The enginePower / reliability deltas a deal grants on the 1-100 ratings scale.
 export function engineBonusFromDeal(
   deal: EngineSupplierDeal,
   supplier?: EngineSupplier,
 ): { power: number; reliability: number } {
   const spec = ENGINE_DEAL_SPECS[deal.dealType];
-  const qPower = supplier ? (supplier.basePower - 5.5) * SUPPLIER_QUALITY_FACTOR : 0;
-  const qRel = supplier ? (supplier.baseReliability - 5.5) * SUPPLIER_QUALITY_FACTOR : 0;
-  const power = Math.max(-MAX_POWER_BONUS, Math.min(MAX_POWER_BONUS, round2(spec.powerDelta + qPower)));
+  const qPower = supplier ? (toLegacyRating(supplier.basePower) - 5.5) * SUPPLIER_QUALITY_FACTOR : 0;
+  const qRel = supplier ? (toLegacyRating(supplier.baseReliability) - 5.5) * SUPPLIER_QUALITY_FACTOR : 0;
+  const power = Math.max(-MAX_POWER_BONUS, Math.min(MAX_POWER_BONUS, round2(toGameRating(spec.powerDelta + qPower))));
   const reliability = Math.max(
-    -MAX_RELIABILITY_BONUS,
-    Math.min(MAX_RELIABILITY_BONUS, round2(spec.reliabilityDelta + qRel)),
+    -toGameRating(MAX_RELIABILITY_BONUS),
+    Math.min(toGameRating(MAX_RELIABILITY_BONUS), round2(toGameRating(spec.reliabilityDelta + qRel))),
   );
   return { power, reliability };
 }

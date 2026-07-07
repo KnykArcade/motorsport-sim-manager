@@ -45,7 +45,7 @@ function entry(over: Partial<MasterDriverEntry> = {}): MasterDriverEntry {
     willingnessToSwitchSeries: 50,
     careerStatus: 'adult_free_agent',
     marketEntryYear: 2005,
-    potential: 8,
+    potential: 80,
     baseRatingsByYear: [],
     traits: [],
     sponsorBacking: 0,
@@ -57,7 +57,7 @@ function entry(over: Partial<MasterDriverEntry> = {}): MasterDriverEntry {
     lastSeenYear: 2005,
     ...over,
     eligibleSeries: eligible,
-    baseRatings: baseRatings(over.baseRatings?.overall ?? 7),
+    baseRatings: baseRatings(over.baseRatings?.overall ?? 70),
   };
 }
 
@@ -98,7 +98,7 @@ describe('crossSeriesInterest', () => {
 
   it('increases with a stronger, more competitive team', () => {
     const e = entry();
-    const weak = crossSeriesInterest(e, year, false, offer({ teamReputation: 20, carCompetitiveness: 2 }));
+    const weak = crossSeriesInterest(e, year, false, offer({ teamReputation: 20, carCompetitiveness: 20 }));
     const strong = crossSeriesInterest(e, year, false, offer({ teamReputation: 95, carCompetitiveness: 9 }));
     expect(strong).toBeGreaterThan(weak);
   });
@@ -111,9 +111,9 @@ describe('crossSeriesInterest', () => {
   });
 
   it('a top driver rarely joins a weak foreign team; a journeyman is keener', () => {
-    const elite = entry({ baseRatings: baseRatings(9.5) });
-    const journeyman = entry({ baseRatings: baseRatings(6.2) });
-    const weakOffer = offer({ series: 'IndyCar', teamReputation: 25, carCompetitiveness: 2, salary: 2 });
+    const elite = entry({ baseRatings: baseRatings(95) });
+    const journeyman = entry({ baseRatings: baseRatings(62) });
+    const weakOffer = offer({ series: 'IndyCar', teamReputation: 25, carCompetitiveness: 20, salary: 2 });
     const eliteInterest = crossSeriesInterest(elite, year, true, weakOffer);
     const journeymanInterest = crossSeriesInterest(journeyman, year, true, weakOffer);
     expect(eliteInterest).toBeLessThan(journeymanInterest);

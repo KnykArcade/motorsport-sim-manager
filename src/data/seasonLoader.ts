@@ -24,6 +24,12 @@ export function getTrackFromRegistry(id: string): Track | undefined {
   return tracksByIdMap.get(id);
 }
 
+function loaderSeriesSuffix(series: Series): string {
+  if (series === 'F1') return '';
+  if (series === 'Champ Car') return 'CART';
+  return series;
+}
+
 // Build a loader function for a given season key.
 function makeLoader(
   year: number,
@@ -34,11 +40,12 @@ function makeLoader(
   carsModule: () => Promise<{ [key: string]: unknown }>,
   tracksModule: () => Promise<{ [key: string]: unknown }>,
 ): () => Promise<SeasonBundle> {
-  const seasonExport = `season${year}${series === 'IndyCar' ? 'IndyCar' : ''}`;
-  const teamsExport = `teams${year}${series === 'IndyCar' ? 'IndyCar' : ''}`;
-  const driversExport = `drivers${year}${series === 'IndyCar' ? 'IndyCar' : ''}`;
-  const carsExport = `cars${year}${series === 'IndyCar' ? 'IndyCar' : ''}`;
-  const tracksExport = `tracks${year}${series === 'IndyCar' ? 'IndyCar' : ''}`;
+  const sfx = loaderSeriesSuffix(series);
+  const seasonExport = `season${year}${sfx}`;
+  const teamsExport = `teams${year}${sfx}`;
+  const driversExport = `drivers${year}${sfx}`;
+  const carsExport = `cars${year}${sfx}`;
+  const tracksExport = `tracks${year}${sfx}`;
 
   return async () => {
     const [seasonMod, teamsMod, driversMod, carsMod, tracksMod] = await Promise.all([
@@ -78,6 +85,227 @@ for (let year = 1990; year <= 2026; year++) {
   );
 }
 
+// IndyCar seasons 1996–2007 and 2008–2026
+for (let year = 1996; year <= 2007; year++) {
+  const y = year;
+  loaders[seasonKey(y, 'IndyCar')] = makeLoader(
+    y, 'IndyCar',
+    () => import(`./seasons/season${y}IndyCar.ts`),
+    () => import(`./teams/teams${y}IndyCar.ts`),
+    () => import(`./drivers/drivers${y}IndyCar.ts`),
+    () => import(`./cars/cars${y}IndyCar.ts`),
+    () => import(`./tracks/tracks${y}IndyCar.ts`),
+  );
+}
+
+// IndyCar seasons 1996–2007 and 2008–2026
+for (let year = 1996; year <= 2007; year++) {
+  const y = year;
+  loaders[seasonKey(y, 'IndyCar')] = makeLoader(
+    y, 'IndyCar',
+    () => import(`./seasons/season${y}IndyCar.ts`),
+    () => import(`./teams/teams${y}IndyCar.ts`),
+    () => import(`./drivers/drivers${y}IndyCar.ts`),
+    () => import(`./cars/cars${y}IndyCar.ts`),
+    () => import(`./tracks/tracks${y}IndyCar.ts`),
+  );
+}
+
+// IndyCar seasons 1996–2007 and 2008–2026
+for (let year = 1996; year <= 2007; year++) {
+  const y = year;
+  loaders[seasonKey(y, 'IndyCar')] = makeLoader(
+    y, 'IndyCar',
+    () => import(`./seasons/season${y}IndyCar.ts`),
+    () => import(`./teams/teams${y}IndyCar.ts`),
+    () => import(`./drivers/drivers${y}IndyCar.ts`),
+    () => import(`./cars/cars${y}IndyCar.ts`),
+    () => import(`./tracks/tracks${y}IndyCar.ts`),
+  );
+}
+
+// IndyCar seasons 1996–2007 and 2008–2026
+for (let year = 1996; year <= 2007; year++) {
+  const y = year;
+  loaders[seasonKey(y, 'IndyCar')] = makeLoader(
+    y, 'IndyCar',
+    () => import(`./seasons/season${y}IndyCar.ts`),
+    () => import(`./teams/teams${y}IndyCar.ts`),
+    () => import(`./drivers/drivers${y}IndyCar.ts`),
+    () => import(`./cars/cars${y}IndyCar.ts`),
+    () => import(`./tracks/tracks${y}IndyCar.ts`),
+  );
+}
+
+// IndyCar seasons 1996–2007 and 2008–2026
+for (let year = 1996; year <= 2007; year++) {
+  const y = year;
+  loaders[seasonKey(y, 'IndyCar')] = makeLoader(
+    y, 'IndyCar',
+    () => import(`./seasons/season${y}IndyCar.ts`),
+    () => import(`./teams/teams${y}IndyCar.ts`),
+    () => import(`./drivers/drivers${y}IndyCar.ts`),
+    () => import(`./cars/cars${y}IndyCar.ts`),
+    () => import(`./tracks/tracks${y}IndyCar.ts`),
+  );
+}
+
+// IndyCar seasons 1996–2007 and 2008–2026
+for (let year = 1996; year <= 2007; year++) {
+  const y = year;
+  loaders[seasonKey(y, 'IndyCar')] = makeLoader(
+    y, 'IndyCar',
+    () => import(`./seasons/season${y}IndyCar.ts`),
+    () => import(`./teams/teams${y}IndyCar.ts`),
+    () => import(`./drivers/drivers${y}IndyCar.ts`),
+    () => import(`./cars/cars${y}IndyCar.ts`),
+    () => import(`./tracks/tracks${y}IndyCar.ts`),
+  );
+}
+
+// IndyCar seasons 1996–2007 and 2008–2026
+for (let year = 1996; year <= 2007; year++) {
+  const y = year;
+  loaders[seasonKey(y, 'IndyCar')] = makeLoader(
+    y, 'IndyCar',
+    () => import(`./seasons/season${y}IndyCar.ts`),
+    () => import(`./teams/teams${y}IndyCar.ts`),
+    () => import(`./drivers/drivers${y}IndyCar.ts`),
+    () => import(`./cars/cars${y}IndyCar.ts`),
+    () => import(`./tracks/tracks${y}IndyCar.ts`),
+  );
+}
+
+// IndyCar seasons 1996–2007 and 2008–2026
+for (let year = 1996; year <= 2007; year++) {
+  const y = year;
+  loaders[seasonKey(y, 'IndyCar')] = makeLoader(
+    y, 'IndyCar',
+    () => import(`./seasons/season${y}IndyCar.ts`),
+    () => import(`./teams/teams${y}IndyCar.ts`),
+    () => import(`./drivers/drivers${y}IndyCar.ts`),
+    () => import(`./cars/cars${y}IndyCar.ts`),
+    () => import(`./tracks/tracks${y}IndyCar.ts`),
+  );
+}
+
+// IndyCar seasons 1996–2007 and 2008–2026
+for (let year = 1996; year <= 2007; year++) {
+  const y = year;
+  loaders[seasonKey(y, 'IndyCar')] = makeLoader(
+    y, 'IndyCar',
+    () => import(`./seasons/season${y}IndyCar.ts`),
+    () => import(`./teams/teams${y}IndyCar.ts`),
+    () => import(`./drivers/drivers${y}IndyCar.ts`),
+    () => import(`./cars/cars${y}IndyCar.ts`),
+    () => import(`./tracks/tracks${y}IndyCar.ts`),
+  );
+}
+
+// IndyCar seasons 1996–2007 and 2008–2026
+for (let year = 1996; year <= 2007; year++) {
+  const y = year;
+  loaders[seasonKey(y, 'IndyCar')] = makeLoader(
+    y, 'IndyCar',
+    () => import(`./seasons/season${y}IndyCar.ts`),
+    () => import(`./teams/teams${y}IndyCar.ts`),
+    () => import(`./drivers/drivers${y}IndyCar.ts`),
+    () => import(`./cars/cars${y}IndyCar.ts`),
+    () => import(`./tracks/tracks${y}IndyCar.ts`),
+  );
+}
+
+// IndyCar seasons 1996–2007 and 2008–2026
+for (let year = 1996; year <= 2007; year++) {
+  const y = year;
+  loaders[seasonKey(y, 'IndyCar')] = makeLoader(
+    y, 'IndyCar',
+    () => import(`./seasons/season${y}IndyCar.ts`),
+    () => import(`./teams/teams${y}IndyCar.ts`),
+    () => import(`./drivers/drivers${y}IndyCar.ts`),
+    () => import(`./cars/cars${y}IndyCar.ts`),
+    () => import(`./tracks/tracks${y}IndyCar.ts`),
+  );
+}
+
+// IndyCar seasons 1996–2007 and 2008–2026
+for (let year = 1996; year <= 2007; year++) {
+  const y = year;
+  loaders[seasonKey(y, 'IndyCar')] = makeLoader(
+    y, 'IndyCar',
+    () => import(`./seasons/season${y}IndyCar.ts`),
+    () => import(`./teams/teams${y}IndyCar.ts`),
+    () => import(`./drivers/drivers${y}IndyCar.ts`),
+    () => import(`./cars/cars${y}IndyCar.ts`),
+    () => import(`./tracks/tracks${y}IndyCar.ts`),
+  );
+}
+
+// IndyCar seasons 1996–2007 and 2008–2026
+for (let year = 1996; year <= 2007; year++) {
+  const y = year;
+  loaders[seasonKey(y, 'IndyCar')] = makeLoader(
+    y, 'IndyCar',
+    () => import(`./seasons/season${y}IndyCar.ts`),
+    () => import(`./teams/teams${y}IndyCar.ts`),
+    () => import(`./drivers/drivers${y}IndyCar.ts`),
+    () => import(`./cars/cars${y}IndyCar.ts`),
+    () => import(`./tracks/tracks${y}IndyCar.ts`),
+  );
+}
+
+// IndyCar seasons 1996–2007 and 2008–2026
+for (let year = 1996; year <= 2007; year++) {
+  const y = year;
+  loaders[seasonKey(y, 'IndyCar')] = makeLoader(
+    y, 'IndyCar',
+    () => import(`./seasons/season${y}IndyCar.ts`),
+    () => import(`./teams/teams${y}IndyCar.ts`),
+    () => import(`./drivers/drivers${y}IndyCar.ts`),
+    () => import(`./cars/cars${y}IndyCar.ts`),
+    () => import(`./tracks/tracks${y}IndyCar.ts`),
+  );
+}
+
+// IndyCar seasons 1996–2007 and 2008–2026
+for (let year = 1996; year <= 2007; year++) {
+  const y = year;
+  loaders[seasonKey(y, 'IndyCar')] = makeLoader(
+    y, 'IndyCar',
+    () => import(`./seasons/season${y}IndyCar.ts`),
+    () => import(`./teams/teams${y}IndyCar.ts`),
+    () => import(`./drivers/drivers${y}IndyCar.ts`),
+    () => import(`./cars/cars${y}IndyCar.ts`),
+    () => import(`./tracks/tracks${y}IndyCar.ts`),
+  );
+}
+
+// IndyCar seasons 1996–2007 and 2008–2026
+for (let year = 1996; year <= 2007; year++) {
+  const y = year;
+  loaders[seasonKey(y, 'IndyCar')] = makeLoader(
+    y, 'IndyCar',
+    () => import(`./seasons/season${y}IndyCar.ts`),
+    () => import(`./teams/teams${y}IndyCar.ts`),
+    () => import(`./drivers/drivers${y}IndyCar.ts`),
+    () => import(`./cars/cars${y}IndyCar.ts`),
+    () => import(`./tracks/tracks${y}IndyCar.ts`),
+  );
+}
+
+// IndyCar seasons 1996–2007 and 2008–2026
+for (let year = 1996; year <= 2007; year++) {
+  const y = year;
+  loaders[seasonKey(y, 'IndyCar')] = makeLoader(
+    y, 'IndyCar',
+    () => import(`./seasons/season${y}IndyCar.ts`),
+    () => import(`./teams/teams${y}IndyCar.ts`),
+    () => import(`./drivers/drivers${y}IndyCar.ts`),
+    () => import(`./cars/cars${y}IndyCar.ts`),
+    () => import(`./tracks/tracks${y}IndyCar.ts`),
+  );
+}
+
 // IndyCar seasons 2008–2026
 for (let year = 2008; year <= 2026; year++) {
   const y = year;
@@ -88,6 +316,32 @@ for (let year = 2008; year <= 2026; year++) {
     () => import(`./drivers/drivers${y}IndyCar.ts`),
     () => import(`./cars/cars${y}IndyCar.ts`),
     () => import(`./tracks/tracks${y}IndyCar.ts`),
+  );
+}
+
+// CART seasons 1990–2003
+for (let year = 1990; year <= 2003; year++) {
+  const y = year;
+  loaders[seasonKey(y, 'CART')] = makeLoader(
+    y, 'CART',
+    () => import(`./seasons/season${y}CART.ts`),
+    () => import(`./teams/teams${y}CART.ts`),
+    () => import(`./drivers/drivers${y}CART.ts`),
+    () => import(`./cars/cars${y}CART.ts`),
+    () => import(`./tracks/tracks${y}CART.ts`),
+  );
+}
+
+// Champ Car seasons 2004–2007
+for (let year = 2004; year <= 2007; year++) {
+  const y = year;
+  loaders[seasonKey(y, 'Champ Car')] = makeLoader(
+    y, 'Champ Car',
+    () => import(`./seasons/season${y}CART.ts`),
+    () => import(`./teams/teams${y}CART.ts`),
+    () => import(`./drivers/drivers${y}CART.ts`),
+    () => import(`./cars/cars${y}CART.ts`),
+    () => import(`./tracks/tracks${y}CART.ts`),
   );
 }
 

@@ -1,7 +1,7 @@
 // Team Overview / Rankings — Career Mode Phase B.
 //
 // Aggregates every team in the universe into a single comparable profile: a set
-// of 1-10 ratings (car, development, facilities, staff, engine, drivers,
+// of 1-100 ratings (car, development, facilities, staff, engine, drivers,
 // academy, race ops, pit crew, reliability, reputation, finance), a financial
 // health grade, championship position and a form/trend badge. Pure &
 // deterministic — reads the existing org ratings, cars, drivers, standings and
@@ -58,7 +58,7 @@ export type TeamOverviewRow = {
   financialHealth: AIFinancialHealth;
   budget: number; // raw dollars
   sponsorIncome: number; // raw dollars (estimate for AI)
-  // 1-10 ratings
+  // 1-100 ratings
   financeRating: number;
   carRating: number;
   developmentRating: number;
@@ -72,7 +72,7 @@ export type TeamOverviewRow = {
   reliabilityRating: number;
   reputationRating: number;
   sponsorRating: number;
-  overallRating: number; // headline 1-10
+  overallRating: number; // headline 1-100
   archetypeLabel?: string; // AI only
   goalLabel?: string; // AI only
   philosophyLabel?: string; // AI only
@@ -80,21 +80,21 @@ export type TeamOverviewRow = {
 };
 
 const round1 = (n: number) => Math.round(n * 10) / 10;
-const clamp10 = (n: number) => Math.max(1, Math.min(10, n));
+const clamp100 = (n: number) => Math.max(1, Math.min(100, Math.round(n)));
 
 // Weighted average driver rating for a team's race drivers (lead weighted).
 function driverLineupRating(drivers: Driver[]): number {
   const race = drivers.slice(0, 2);
-  if (race.length === 0) return 1;
-  if (race.length === 1) return clamp10(race[0].ratings.overall);
+  if (race.length === 0) return 10;
+  if (race.length === 1) return clamp100(race[0].ratings.overall);
   const [lead, second] = race.sort((a, b) => b.ratings.overall - a.ratings.overall);
-  return clamp10(lead.ratings.overall * 0.6 + second.ratings.overall * 0.4);
+  return clamp100(lead.ratings.overall * 0.6 + second.ratings.overall * 0.4);
 }
 
-// Map a raw dollar budget to a 1-10 strength score (~$5M shoestring → ~$150M works).
+// Map a raw dollar budget to a 1-100 strength score (~$5M shoestring → ~$150M works).
 function budgetToRating(budget: number): number {
   const m = budget / 1_000_000;
-  return clamp10(2 + m * 0.055);
+  return clamp100(20 + m * 0.55);
 }
 
 // Financial-health grade for a team: the AI brain's grade when present,
@@ -152,34 +152,34 @@ export function buildTeamOverviewRow(state: GameState, team: Team): TeamOverview
   const standing = standingIdx >= 0 ? state.constructorStandings[standingIdx] : undefined;
   const position = standingIdx >= 0 ? standingIdx + 1 : undefined;
 
-  const carRating = car ? clamp10(carPerformanceRating(car)) : 1;
-  const engineRating = eff ? clamp10(eff.enginePower) : clamp10(org.carPerformance / 10);
+  const carRating = car ? clamp100(carPerformanceRating(car)) : 10;
+  const engineRating = eff ? clamp100(eff.enginePower) : clamp100(org.carPerformance);
   const reliabilityRating = eff
-    ? clamp10(eff.reliability * 0.7 + (org.reliabilityDepartment / 10) * 0.3)
-    : clamp10(org.reliabilityDepartment / 10);
-  const facilitiesRating = clamp10(org.facilities / 10);
-  const staffRating = clamp10(org.staffQuality / 10);
-  const developmentRating = clamp10(
-    (org.research / 10) * 0.55 + facilitiesRating * 0.25 + staffRating * 0.2,
+    ? clamp100(eff.reliability * 0.7 + org.reliabilityDepartment * 0.3)
+    : clamp100(org.reliabilityDepartment);
+  const facilitiesRating = clamp100(org.facilities);
+  const staffRating = clamp100(org.staffQuality);
+  const developmentRating = clamp100(
+    org.research * 0.55 + facilitiesRating * 0.25 + staffRating * 0.2,
   );
   const driverRating = driverLineupRating(drivers);
-  const academyRating = clamp10(org.youthAcademy / 10);
-  const raceOpsRating = clamp10(
-    team.raceOperations * 0.6 + (org.operations / 10) * 0.25 + (org.pitCrew / 10) * 0.15,
+  const academyRating = clamp100(org.youthAcademy);
+  const raceOpsRating = clamp100(
+    team.raceOperations * 0.6 + org.operations * 0.25 + org.pitCrew * 0.15,
   );
   const pitCrewRating = eff
-    ? clamp10(eff.pitCrewOperations * 0.6 + (org.pitCrew / 10) * 0.4)
-    : clamp10(org.pitCrew / 10);
-  const reputationRating = clamp10(team.reputation / 10);
-  const sponsorRating = clamp10(org.sponsorAppeal / 10);
+    ? clamp100(eff.pitCrewOperations * 0.6 + org.pitCrew * 0.4)
+    : clamp100(org.pitCrew);
+  const reputationRating = clamp100(team.reputation);
+  const sponsorRating = clamp100(org.sponsorAppeal);
 
   const health = healthForTeam(state, team, org);
-  const financeRating = clamp10((org.financialStability / 10) * 0.6 + budgetToRating(team.budget) * 0.4);
+  const financeRating = clamp100(org.financialStability * 0.6 + budgetToRating(team.budget) * 0.4);
 
   const ai = state.aiTeamStates?.[team.id];
   const sponsorIncome = ai?.budget.sponsorIncome ?? Math.round((org.sponsorAppeal / 100) * 45_000_000);
 
-  const overallRating = clamp10(
+  const overallRating = clamp100(
     carRating * 0.28 +
       driverRating * 0.16 +
       developmentRating * 0.12 +

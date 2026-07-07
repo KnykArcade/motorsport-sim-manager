@@ -4,7 +4,7 @@
 // ceiling while young, plateau through a peak window in their late 20s/early 30s,
 // then decline. Growth is modulated by development rate, morale and (for the
 // player's own youngsters) the Driver Academy. Applied once per offseason. Pure
-// and deterministic; ratings are on the game's 1-10 scale.
+// and deterministic; ratings are on the game's 1-100 scale.
 
 import type { Driver, DriverRatings } from '../types/gameTypes';
 import type {
@@ -13,6 +13,7 @@ import type {
   YouthTrait,
 } from '../types/developmentCurveTypes';
 import { createSeededRandom, deriveSeed } from './random';
+import { toLegacyRating } from './ratingScale';
 
 export type DevelopmentPhase = 'Developing' | 'Peak' | 'Declining';
 
@@ -34,7 +35,7 @@ const PERFORMANCE_KEYS: (keyof DriverRatings)[] = [
 const MENTAL_KEYS: (keyof DriverRatings)[] = ['enduranceConsistency', 'riskManagement', 'composure'];
 
 function clampRating(n: number): number {
-  return Math.max(1, Math.min(10, n));
+  return Math.max(1, Math.min(100, Math.round(n)));
 }
 function round1(n: number): number {
   return Math.round(n * 10) / 10;
@@ -44,7 +45,7 @@ function round1(n: number): number {
 // skew a little older (established), with deterministic per-driver variance.
 export function synthesizeAge(seed: string, driverId: string, overall: number): number {
   const rng = createSeededRandom(deriveSeed(seed, 'devage', driverId));
-  const base = 22 + (overall - 5) * 0.9 + rng.variance(4);
+  const base = 22 + (toLegacyRating(overall) - 5) * 0.9 + rng.variance(4);
   return Math.max(18, Math.min(38, Math.round(base)));
 }
 
@@ -87,7 +88,7 @@ export function createDriverDevelopmentCurve(
     age < peakAgeStart
       ? Math.min(2, (peakAgeStart - age) * 0.18 * (0.6 + developmentRate * 0.8))
       : 0;
-  const potentialCeiling = clampRating(overall + headroom + traitCeilingMod(traits));
+  const potentialCeiling = clampRating((toLegacyRating(overall) + headroom + traitCeilingMod(traits)) * 10);
 
   return {
     driverId: driver.id,
@@ -185,7 +186,7 @@ function overallDelta(
   const academyMod = traitAcademyMod(traits);
 
   if (phase === 'Developing') {
-    const headroom = Math.max(0, curve.potentialCeiling - overall);
+    const headroom = Math.max(0, toLegacyRating(curve.potentialCeiling) - toLegacyRating(overall));
     let delta = headroom * curve.developmentRate * 0.35 + academyBoost * 0.25 * academyMod + moraleBoost;
     delta += traitMod * 0.1;
     // Add seeded variance — Erratic traits get wild swings, Consistent stays steady.
@@ -193,7 +194,7 @@ function overallDelta(
     return { delta: Math.max(-0.1, Math.min(0.7, delta)), phase };
   }
   if (phase === 'Peak') {
-    const headroom = Math.max(0, curve.potentialCeiling - overall);
+    const headroom = Math.max(0, toLegacyRating(curve.potentialCeiling) - toLegacyRating(overall));
     let delta = Math.max(0, Math.min(0.15, headroom * 0.12));
     delta += rng.variance(0.03 * varianceScale);
     return { delta: Math.max(-0.05, Math.min(0.2, delta)), phase };
@@ -232,10 +233,10 @@ export function developmentStep(
 
   const r = driver.ratings;
   const next: DriverRatings = { ...r };
-  for (const key of PERFORMANCE_KEYS) next[key] = round1(clampRating(r[key] + delta));
-  for (const key of MENTAL_KEYS) next[key] = round1(clampRating(r[key] + mentalDelta));
-  next.aggression = round1(clampRating(r.aggression + curve.aggressionChange));
-  next.overall = round1(clampRating(overallBefore + delta));
+  for (const key of PERFORMANCE_KEYS) next[key] = round1(clampRating(r[key] + delta * 10));
+  for (const key of MENTAL_KEYS) next[key] = round1(clampRating(r[key] + mentalDelta * 10));
+  next.aggression = round1(clampRating(r.aggression + curve.aggressionChange * 10));
+  next.overall = round1(clampRating(overallBefore + delta * 10));
 
   const overallAfter = next.overall;
   const notes: string[] = [];
@@ -284,7 +285,7 @@ export function projectTrajectory(
     const phase = developmentPhase(curve, age);
     points.push({ age, overall: round1(overall), phase });
     const { delta } = overallDelta(curve, age + 1, overall, 50, 0, createSeededRandom(deriveSeed('traj', curve.driverId, age)));
-    overall = clampRating(overall + delta);
+    overall = clampRating(overall + delta * 10);
   }
   return points;
 }

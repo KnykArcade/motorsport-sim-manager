@@ -44,12 +44,12 @@ describe('buildTeamOverview', () => {
     expect(ids.size).toBe(s.teams.length);
   });
 
-  it('keeps every rating within the 1-10 scale', () => {
+  it('keeps every rating within the 1-100 scale', () => {
     const rows = buildTeamOverview(newGame());
     for (const row of rows) {
       for (const key of RATING_KEYS) {
         expect(row[key]).toBeGreaterThanOrEqual(1);
-        expect(row[key]).toBeLessThanOrEqual(10);
+        expect(row[key]).toBeLessThanOrEqual(100);
       }
     }
   });
@@ -102,7 +102,7 @@ describe('buildTeamOverview', () => {
     expect(rows.length).toBe(s.teams.length);
     for (const r of rows) {
       expect(r.overallRating).toBeGreaterThanOrEqual(1);
-      expect(r.overallRating).toBeLessThanOrEqual(10);
+      expect(r.overallRating).toBeLessThanOrEqual(100);
     }
   });
 });

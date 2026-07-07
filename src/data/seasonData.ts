@@ -236,6 +236,14 @@ import { teams2026IndyCar } from './teams/teams2026IndyCar';
 import { drivers2026IndyCar } from './drivers/drivers2026IndyCar';
 import { cars2026IndyCar } from './cars/cars2026IndyCar';
 
+// CART / Champ Car seasons
+import { season2007CART } from './seasons/season2007CART';
+import { teams2007CART } from './teams/teams2007CART';
+import { drivers2007CART } from './drivers/drivers2007CART';
+import { cars2007CART } from './cars/cars2007CART';
+import { driverMarket2007CART } from './market/driverMarket2007CART';
+import { youthProspects2007CART } from './market/youthProspects2007CART';
+
 // Also import all tracks for the track registry
 import { tracks1990 } from './tracks/tracks1990';
 import { tracks1991 } from './tracks/tracks1991';
@@ -293,6 +301,8 @@ import { tracks2023IndyCar } from './tracks/tracks2023IndyCar';
 import { tracks2024IndyCar } from './tracks/tracks2024IndyCar';
 import { tracks2025IndyCar } from './tracks/tracks2025IndyCar';
 import { tracks2026IndyCar } from './tracks/tracks2026IndyCar';
+import { tracks2007CART } from './tracks/tracks2007CART';
+import { aowSeasonBundles, aowMarketBundles, aowTracks } from './aowSeasonData';
 
 import { registerTracks, seedBundleCache } from './seasonLoader';
 import { setSeasonBundles } from './registry/masterRegistry';
@@ -313,6 +323,8 @@ registerTracks([
   ...tracks2016IndyCar, ...tracks2017IndyCar, ...tracks2018IndyCar, ...tracks2019IndyCar,
   ...tracks2020IndyCar, ...tracks2021IndyCar, ...tracks2022IndyCar, ...tracks2023IndyCar,
   ...tracks2024IndyCar, ...tracks2025IndyCar, ...tracks2026IndyCar,
+  ...tracks2007CART,
+  ...aowTracks,
 ]);
 
 const seasonBundles: Record<string, SeasonBundle> = {
@@ -372,6 +384,8 @@ const seasonBundles: Record<string, SeasonBundle> = {
   '2024-IndyCar': { season: season2024IndyCar, teams: teams2024IndyCar, drivers: drivers2024IndyCar, cars: cars2024IndyCar },
   '2025-IndyCar': { season: season2025IndyCar, teams: teams2025IndyCar, drivers: drivers2025IndyCar, cars: cars2025IndyCar },
   '2026-IndyCar': { season: season2026IndyCar, teams: teams2026IndyCar, drivers: drivers2026IndyCar, cars: cars2026IndyCar },
+  '2007-Champ Car': { season: season2007CART, teams: teams2007CART, drivers: drivers2007CART, cars: cars2007CART },
+  ...aowSeasonBundles,
 };
 
 export function getSeasonBundle(year: number, series: Series = 'F1'): SeasonBundle | undefined {
@@ -381,7 +395,11 @@ export function getSeasonBundle(year: number, series: Series = 'F1'): SeasonBund
 // Seed the async loader's cache so getCachedBundle works in tests that
 // import this module (e.g. createNewGame uses getCachedBundle as fallback).
 seedBundleCache(seasonBundles);
-seedMarketBundleCache({ '1995-F1': { drivers: driverMarket1995, youth: youthProspects1995 } });
+seedMarketBundleCache({
+  '1995-F1': { drivers: driverMarket1995, youth: youthProspects1995 },
+  '2007-Champ Car': { drivers: driverMarket2007CART, youth: youthProspects2007CART },
+  ...aowMarketBundles,
+});
 
 // Inject bundles into the master registry provider.
 setSeasonBundles(seasonBundles);

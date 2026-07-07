@@ -207,6 +207,18 @@ export const SERIES_PACKAGE_RULES: Record<Series, SeriesPackageRules> = {
     allowsSkipRace: false,
     allowsStartAndPark: false,
   },
+  CART: {
+    allowedPackages: ['FullAttack', 'Standard', 'Conservative', 'Budget', 'DevelopmentTest'],
+    baseWeekendCost: 1.2, // $M
+    allowsSkipRace: false,
+    allowsStartAndPark: false,
+  },
+  'Champ Car': {
+    allowedPackages: ['FullAttack', 'Standard', 'Conservative', 'Budget', 'DevelopmentTest'],
+    baseWeekendCost: 1.2, // $M
+    allowsSkipRace: false,
+    allowsStartAndPark: false,
+  },
 };
 
 // Future series can be added here. NASCAR would allow StartAndPark and SkipRace.
@@ -293,9 +305,9 @@ export function trackCostClass(track: Track): TrackCostClass {
   // Street circuits have higher logistics and damage risk.
   if (archetype === 'Street Circuit') return 'Street';
   // High-risk circuits have higher damage reserve.
-  if (archetype === 'High-Risk Circuit' || attrs.riskWallProximity >= 8) return 'HighDamageRisk';
+  if (archetype === 'High-Risk Circuit' || attrs.riskWallProximity >= 80) return 'HighDamageRisk';
   // Endurance circuits have higher wear.
-  if (archetype === 'Endurance/Reliability Circuit' && attrs.enduranceConsistency >= 8) return 'HighDamageRisk';
+  if (archetype === 'Endurance/Reliability Circuit' && attrs.enduranceConsistency >= 80) return 'HighDamageRisk';
 
   // Default to Normal for everything else.
   // In the future, specific tracks can be tagged as CrownJewel or International
@@ -461,7 +473,7 @@ function aiPackageWeight(
   }
 
   // --- Car reliability: fragile cars lean Conservative ---
-  if (ctx.carReliability < 5) {
+  if (ctx.carReliability < 50) {
     if (pkg === 'Conservative') weight *= 2;
     if (pkg === 'FullAttack') weight *= 0.6;
   }

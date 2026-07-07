@@ -39,12 +39,12 @@ const seed = 'seed';
 
 describe('shouldRetire', () => {
   it('always retires a driver past the hard age cap', () => {
-    expect(shouldRetire(driver({ age: 46, ratings: { ...driver().ratings, overall: 9 } }), seed, 2000)).toBe(true);
+    expect(shouldRetire(driver({ age: 46, ratings: { ...driver().ratings, overall: 90 } }), seed, 2000)).toBe(true);
   });
 
   it('retires a fading veteran but keeps an elite, motivated one', () => {
-    const fading = driver({ age: 43, morale: 60, ratings: { ...driver().ratings, overall: 6.5 } });
-    const elite = driver({ age: 43, morale: 70, ratings: { ...driver().ratings, overall: 8.4 } });
+    const fading = driver({ age: 43, morale: 60, ratings: { ...driver().ratings, overall: 65 } });
+    const elite = driver({ age: 43, morale: 70, ratings: { ...driver().ratings, overall: 84 } });
     expect(shouldRetire(fading, seed, 2000)).toBe(true);
     expect(shouldRetire(elite, seed, 2000)).toBe(false);
   });
@@ -54,7 +54,7 @@ describe('shouldRetire', () => {
   });
 
   it('only reviews a late-30s driver whose contract is expiring', () => {
-    const underContract = driver({ age: 40, contractYearsRemaining: 3, ratings: { ...driver().ratings, overall: 5 } });
+    const underContract = driver({ age: 40, contractYearsRemaining: 3, ratings: { ...driver().ratings, overall: 50 } });
     expect(shouldRetire(underContract, seed, 2000)).toBe(false);
   });
 

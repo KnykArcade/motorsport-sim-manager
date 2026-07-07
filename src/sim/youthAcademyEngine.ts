@@ -184,7 +184,7 @@ export function aiFirstOptionDecision(
 
   // High-potential but not yet ready: keep them close as a reserve/test driver,
   // or extend development rights if the reserve slot is taken.
-  const highPotential = member.potential >= 7 || ctx.promotionBias >= 0.6;
+  const highPotential = member.potential >= 70 || ctx.promotionBias >= 0.6;
   if (highPotential) {
     if (!ctx.hasReserve) return raceReady ? 'reserve' : 'test';
     // Reserve slot taken: extend if rights still valid, else commit to a senior

@@ -77,21 +77,21 @@ describe('Objective Setup Quality — track + car aware', () => {
   });
 
   it('is affected by car ratings: a high-aero car has a lower ideal wing than a low-aero car', () => {
-    const highAero = idealSetup(track, undefined, carWith({ aeroEfficiency: 9 }));
-    const lowAero = idealSetup(track, undefined, carWith({ aeroEfficiency: 2 }));
+    const highAero = idealSetup(track, undefined, carWith({ aeroEfficiency: 90 }));
+    const lowAero = idealSetup(track, undefined, carWith({ aeroEfficiency: 20 }));
     expect(highAero.rearWing).toBeLessThan(lowAero.rearWing);
   });
 
   it('shifts the ideal toward more cooling for a fragile car', () => {
-    const fragile = idealSetup(track, undefined, carWith({ reliability: 2 }));
-    const bulletproof = idealSetup(track, undefined, carWith({ reliability: 9 }));
+    const fragile = idealSetup(track, undefined, carWith({ reliability: 20 }));
+    const bulletproof = idealSetup(track, undefined, carWith({ reliability: 90 }));
     expect(fragile.engineCooling).toBeGreaterThan(bulletproof.engineCooling);
   });
 
   it('punishes tight cooling on a fragile car harder than on a reliable car', () => {
     const tight: CarSetup = { ...BALANCED_SETUP, engineCooling: 1 };
-    const fragileRisk = objectiveSetupQuality(tight, track, carWith({ reliability: 2 })).effects.reliabilityRisk;
-    const reliableRisk = objectiveSetupQuality(tight, track, carWith({ reliability: 9 })).effects.reliabilityRisk;
+    const fragileRisk = objectiveSetupQuality(tight, track, carWith({ reliability: 20 })).effects.reliabilityRisk;
+    const reliableRisk = objectiveSetupQuality(tight, track, carWith({ reliability: 90 })).effects.reliabilityRisk;
     expect(fragileRisk).toBeGreaterThan(reliableRisk);
   });
 
@@ -113,8 +113,8 @@ describe('Driver Setup Comfort — practice + adaptability', () => {
   });
 
   it('is higher for a more adaptable driver, all else equal', () => {
-    const adaptable = driverWith({ adaptability: 9 });
-    const rigid = driverWith({ adaptability: 2 });
+    const adaptable = driverWith({ adaptability: 95 });
+    const rigid = driverWith({ adaptability: 10 });
     const cA = driverSetupComfort({ driver: adaptable, currentSetup: practiced, practicedSetup: practiced, practiceLaps: 10 });
     const cR = driverSetupComfort({ driver: rigid, currentSetup: practiced, practicedSetup: practiced, practiceLaps: 10 });
     expect(cA.comfort).toBeGreaterThan(cR.comfort);
@@ -202,10 +202,10 @@ describe('Practice knowledge controls certainty', () => {
 });
 
 describe('Driver setup preferences', () => {
-  const aggressive = driverWith({ aggression: 9, enduranceConsistency: 4 });
-  const steady = driverWith({ aggression: 2, enduranceConsistency: 9 });
-  const sharpSetup: CarSetup = { ...BALANCED_SETUP, frontWing: 8, differential: 8, suspensionStiffness: 7 };
-  const stableSetup: CarSetup = { ...BALANCED_SETUP, frontWing: 4, differential: 3, suspensionStiffness: 4, tyreUsage: 3 };
+  const aggressive = driverWith({ aggression: 95, enduranceConsistency: 30 });
+  const steady = driverWith({ aggression: 10, enduranceConsistency: 95 });
+  const sharpSetup: CarSetup = { ...BALANCED_SETUP, frontWing: 10, differential: 10, suspensionStiffness: 9 };
+  const stableSetup: CarSetup = { ...BALANCED_SETUP, frontWing: 1, differential: 1, suspensionStiffness: 1, tyreUsage: 1 };
 
   it('infers a sharper front-end / aggressive-diff lean for aggressive drivers', () => {
     const p = inferSetupPreferences(aggressive);
@@ -268,14 +268,14 @@ describe('Performance formula — quality + comfort, bounded', () => {
       calculateQualifyingPace(baseDriver, car, track, awful, plan).score;
     // A +3 across-the-board car upgrade with a fixed (great) setup.
     const strongCar = carWith({
-      enginePower: Math.min(10, car.ratings.enginePower + 3),
-      aeroEfficiency: Math.min(10, car.ratings.aeroEfficiency + 3),
-      mechanicalGrip: Math.min(10, car.ratings.mechanicalGrip + 3),
+      enginePower: Math.min(100, car.ratings.enginePower + 30),
+      aeroEfficiency: Math.min(100, car.ratings.aeroEfficiency + 30),
+      mechanicalGrip: Math.min(100, car.ratings.mechanicalGrip + 30),
     });
     const weakCar = carWith({
-      enginePower: Math.max(1, car.ratings.enginePower - 3),
-      aeroEfficiency: Math.max(1, car.ratings.aeroEfficiency - 3),
-      mechanicalGrip: Math.max(1, car.ratings.mechanicalGrip - 3),
+      enginePower: Math.max(1, car.ratings.enginePower - 30),
+      aeroEfficiency: Math.max(1, car.ratings.aeroEfficiency - 30),
+      mechanicalGrip: Math.max(1, car.ratings.mechanicalGrip - 30),
     });
     const carSwing =
       calculateQualifyingPace(baseDriver, strongCar, track, great, plan).score -

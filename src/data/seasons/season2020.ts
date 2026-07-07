@@ -12,7 +12,7 @@ export const calendar2020: Race[] = [
     trackId: 'red-bull-ring-2020',
     trackName: 'Red Bull Ring',
     laps: 71,
-    distanceKm: 306.5,
+    distanceKm: 307.018,
     completed: false,
   },
   {
@@ -22,7 +22,7 @@ export const calendar2020: Race[] = [
     trackId: 'red-bull-ring-2020',
     trackName: 'Red Bull Ring',
     laps: 71,
-    distanceKm: 306.5,
+    distanceKm: 307.018,
     completed: false,
   },
   {
@@ -32,7 +32,7 @@ export const calendar2020: Race[] = [
     trackId: 'hungaroring-2020',
     trackName: 'Hungaroring',
     laps: 70,
-    distanceKm: 306.7,
+    distanceKm: 306.63,
     completed: false,
   },
   {
@@ -42,7 +42,7 @@ export const calendar2020: Race[] = [
     trackId: 'silverstone-circuit-2020',
     trackName: 'Silverstone Circuit',
     laps: 52,
-    distanceKm: 306.3,
+    distanceKm: 306.198,
     completed: false,
   },
   {
@@ -52,7 +52,7 @@ export const calendar2020: Race[] = [
     trackId: 'silverstone-circuit-2020',
     trackName: 'Silverstone Circuit',
     laps: 52,
-    distanceKm: 306.3,
+    distanceKm: 306.198,
     completed: false,
   },
   {
@@ -61,8 +61,8 @@ export const calendar2020: Race[] = [
     gpName: 'Spanish Grand Prix',
     trackId: 'circuit-de-barcelona-catalunya-2020',
     trackName: 'Circuit de Barcelona-Catalunya',
-    laps: 44,
-    distanceKm: 205.1,
+    laps: 66,
+    distanceKm: 307.104,
     completed: false,
   },
   {
@@ -72,7 +72,7 @@ export const calendar2020: Race[] = [
     trackId: 'circuit-de-spa-francorchamps-2020',
     trackName: 'Circuit de Spa-Francorchamps',
     laps: 44,
-    distanceKm: 308.2,
+    distanceKm: 308.052,
     completed: false,
   },
   {
@@ -82,7 +82,7 @@ export const calendar2020: Race[] = [
     trackId: 'autodromo-nazionale-monza-2020',
     trackName: 'Autodromo Nazionale Monza',
     laps: 53,
-    distanceKm: 306.7,
+    distanceKm: 306.72,
     completed: false,
   },
   {
@@ -92,7 +92,7 @@ export const calendar2020: Race[] = [
     trackId: 'mugello-circuit-2020',
     trackName: 'Mugello Circuit',
     laps: 59,
-    distanceKm: 309.4,
+    distanceKm: 309.455,
     completed: false,
   },
   {
@@ -102,7 +102,7 @@ export const calendar2020: Race[] = [
     trackId: 'sochi-autodrom-2020',
     trackName: 'Sochi Autodrom',
     laps: 53,
-    distanceKm: 309.9,
+    distanceKm: 309.745,
     completed: false,
   },
   {
@@ -112,7 +112,7 @@ export const calendar2020: Race[] = [
     trackId: 'nurburgring-gp-strecke-2020',
     trackName: 'Nurburgring GP-Strecke',
     laps: 60,
-    distanceKm: 308.9,
+    distanceKm: 308.617,
     completed: false,
   },
   {
@@ -122,7 +122,7 @@ export const calendar2020: Race[] = [
     trackId: 'autodromo-internacional-do-algarve-2020',
     trackName: 'Autodromo Internacional do Algarve',
     laps: 66,
-    distanceKm: 307.1,
+    distanceKm: 306.826,
     completed: false,
   },
   {
@@ -132,7 +132,7 @@ export const calendar2020: Race[] = [
     trackId: 'autodromo-enzo-e-dino-ferrari-2020',
     trackName: 'Autodromo Enzo e Dino Ferrari',
     laps: 63,
-    distanceKm: 309.7,
+    distanceKm: 309.049,
     completed: false,
   },
   {
@@ -142,7 +142,7 @@ export const calendar2020: Race[] = [
     trackId: 'istanbul-park-2020',
     trackName: 'Istanbul Park',
     laps: 58,
-    distanceKm: 309.6,
+    distanceKm: 309.396,
     completed: false,
   },
   {
@@ -152,7 +152,7 @@ export const calendar2020: Race[] = [
     trackId: 'bahrain-international-circuit-2020',
     trackName: 'Bahrain International Circuit',
     laps: 57,
-    distanceKm: 308.2,
+    distanceKm: 308.238,
     completed: false,
   },
   {
@@ -161,8 +161,8 @@ export const calendar2020: Race[] = [
     gpName: 'Sakhir Grand Prix',
     trackId: 'bahrain-outer-track-2020',
     trackName: 'Bahrain Outer Track',
-    laps: 80,
-    distanceKm: 283.4,
+    laps: 87,
+    distanceKm: 307.995,
     completed: false,
   },
   {
@@ -172,7 +172,7 @@ export const calendar2020: Race[] = [
     trackId: 'yas-marina-circuit-2020',
     trackName: 'Yas Marina Circuit',
     laps: 55,
-    distanceKm: 290.5,
+    distanceKm: 305.355,
     completed: false,
   },
 ];

@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useReducer, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useGame } from '../game/GameContext';
-import { availableSeasons, availableSeries, loadSeasonBundle, getCachedBundle, initializeMasterRegistry, preloadMarketBundle, type SeasonBundle } from '../data';
+import { availableSeasons, seriesGroups, loadSeasonBundle, getCachedBundle, initializeMasterRegistry, preloadMarketBundle, type SeasonBundle, type SeriesGroup } from '../data';
 import { effectiveCarRatings } from '../sim/trackFitEngine';
 import { Button } from '../components/Button';
 import { StatBar } from '../components/StatBar';
@@ -25,6 +25,7 @@ export function NewCareer() {
   const [selectedTeamId, setSelectedTeamId] = useState<string | null>(null);
   const [, setPrincipal] = useState<TeamPrincipal | null>(null);
   const [selectedDecade, setSelectedDecade] = useState<number | null>(1990);
+  const [groupId, setGroupId] = useState<string>('F1');
   // A stable seed so the engine offers shown here match the created save.
   const [seed] = useState(() => `seed-${Date.now()}`);
 
@@ -35,6 +36,16 @@ export function NewCareer() {
     setSelectedDecade(null);
     setSelectedTeamId(null);
   };
+
+  const selectGroup = (group: SeriesGroup) => {
+    setGroupId(group.id);
+    // Single-discipline groups (F1) resolve straight to their series;
+    // multi-discipline groups (AOW) default to their first discipline and
+    // still show a discipline picker.
+    selectSeries(group.disciplines[0].id);
+  };
+
+  const activeGroup = seriesGroups.find((g) => g.id === groupId) ?? seriesGroups[0];
 
   const cachedBundle = useMemo(() => getCachedBundle(year, series), [year, series]);
 
@@ -200,29 +211,58 @@ export function NewCareer() {
                 <h2 className="text-xl font-bold text-neutral-100">Choose Series & Season</h2>
                 <p className="text-sm text-neutral-400">Pick a series, then choose a decade before selecting a specific season.</p>
               </div>
-              <Button variant="primary" onClick={() => setStep('team')}>`n                Select Team`n              </Button>
+              <Button variant="primary" onClick={() => setStep('team')}>
+                Select Team
+              </Button>
             </div>
             <div>
               <p className="mb-2 text-sm font-medium text-neutral-300">Series</p>
               <div className="grid gap-3 sm:grid-cols-2">
-                {availableSeries.map((s) => (
-                  <button
-                    key={s.id}
-                    onClick={() => selectSeries(s.id)}
-                    className={`rounded-xl border p-4 text-left transition ${
-                      series === s.id
-                        ? 'border-amber-500 bg-amber-500/10'
-                        : 'border-neutral-800 bg-neutral-900/40 hover:border-neutral-700'
-                    }`}
-                  >
-                    <div className="text-lg font-semibold text-neutral-100">{s.label}</div>
-                    <div className="text-xs text-neutral-400">
-                      {availableSeasons.filter((y) => y.series === s.id).length} season(s) available
-                    </div>
-                  </button>
-                ))}
+                {seriesGroups.map((g) => {
+                  const seasonCount = availableSeasons.filter((y) =>
+                    g.disciplines.some((d) => d.id === y.series)
+                  ).length;
+                  return (
+                    <button
+                      key={g.id}
+                      onClick={() => selectGroup(g)}
+                      className={`rounded-xl border p-4 text-left transition ${
+                        groupId === g.id
+                          ? 'border-amber-500 bg-amber-500/10'
+                          : 'border-neutral-800 bg-neutral-900/40 hover:border-neutral-700'
+                      }`}
+                    >
+                      <div className="text-lg font-semibold text-neutral-100">{g.label}</div>
+                      <div className="text-xs text-neutral-400">{g.blurb}</div>
+                      <div className="mt-1 text-xs text-neutral-500">{seasonCount} season(s) available</div>
+                    </button>
+                  );
+                })}
               </div>
             </div>
+            {activeGroup.disciplines.length > 1 && (
+              <div>
+                <p className="mb-2 text-sm font-medium text-neutral-300">Discipline</p>
+                <div className="grid gap-3 sm:grid-cols-2">
+                  {activeGroup.disciplines.map((d) => (
+                    <button
+                      key={d.id}
+                      onClick={() => selectSeries(d.id)}
+                      className={`rounded-xl border p-4 text-left transition ${
+                        series === d.id
+                          ? 'border-amber-500 bg-amber-500/10'
+                          : 'border-neutral-800 bg-neutral-900/40 hover:border-neutral-700'
+                      }`}
+                    >
+                      <div className="text-base font-semibold text-neutral-100">{d.label}</div>
+                      <div className="text-xs text-neutral-400">
+                        {availableSeasons.filter((y) => y.series === d.id).length} season(s) available
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
             <div>
               <p className="mb-2 text-sm font-medium text-neutral-300">Era</p>
               <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">

@@ -83,7 +83,7 @@ export type AIOffseasonResult = {
   news: { headline: string; body?: string }[];
 };
 
-const clamp10 = (n: number) => Math.max(1, Math.min(10, Math.round(n * 10) / 10));
+const clamp10 = (n: number) => Math.max(1, Math.min(100, Math.round(n)));
 const clamp100 = (n: number) => Math.max(1, Math.min(100, Math.round(n)));
 const norm = (name: string) => name.trim().toLowerCase();
 
@@ -176,11 +176,11 @@ function developCar(
   // Near the cap even good projects often miss.
   const failChance = nearCapFailureChance(current);
   if (failChance > 0 && rng.chance(failChance) && outcome !== 'GreatSuccess') {
-    if (car.ratings.reliability < 9 && target !== 'reliability') {
+    if (car.ratings.reliability < 90 && target !== 'reliability') {
       const reliGain = clampGain(0.05 + rng.next() * 0.1);
       const ratings: CarRatings = {
         ...car.ratings,
-        reliability: clamp10(car.ratings.reliability + reliGain),
+        reliability: clamp10(car.ratings.reliability + reliGain * 10),
       };
       return {
         car: { ...car, ratings },
@@ -196,14 +196,14 @@ function developCar(
   // RareBackfire: small setback in the targeted area.
   if (outcome === 'RareBackfire') {
     const penalty = clampGain(Math.min(0.3, Math.abs(gain)));
-    const ratings: CarRatings = { ...car.ratings, [target]: clamp10(current - penalty) };
+    const ratings: CarRatings = { ...car.ratings, [target]: clamp10(current - penalty * 10) };
     return {
       car: { ...car, ratings },
       note: `${team.name}'s ${CAR_AREA_LABELS[target]} development backfires — a setback.`,
     };
   }
 
-  const ratings: CarRatings = { ...car.ratings, [target]: clamp10(current + gain) };
+  const ratings: CarRatings = { ...car.ratings, [target]: clamp10(current + gain * 10) };
   const scale = gain >= 0.4 ? 'a major' : gain >= 0.2 ? 'a' : 'a minor';
   const outcomeTag = outcome === 'GreatSuccess' ? ' — breakthrough!' : outcome === 'Failed' ? ' — minimal gains.' : '';
   const note = `${team.name} completes ${scale} ${CAR_AREA_LABELS[target]} development package${outcomeTag}`;
@@ -826,13 +826,13 @@ export function makeRookieDriver(
   }
   if (!name) name = `Rookie ${teamId}-${number}`;
   const base = 4 + rng.range(0, 1.2);
-  const r = () => Math.round(Math.max(1, Math.min(10, base + rng.range(-0.5, 0.7))) * 10) / 10;
+  const r = () => Math.round(Math.max(10, Math.min(100, (base + rng.range(-0.5, 0.7)) * 10)));
   const ratings: DriverRatings = {
     cornering: r(), braking: r(), straights: r(), tractionAcceleration: r(),
     elevationBlindCorners: r(), technical: r(), overtakingRacecraft: r(),
     surfaceGripBumpiness: r(), riskManagement: r(), enduranceConsistency: r(),
     qualifying: r(), racePace: r(), adaptability: r(), aggression: r(),
-    composure: r(), overall: Math.round(base * 10) / 10,
+    composure: r(), overall: Math.round(base * 10),
   };
   return {
     id: `d-rookie-${norm(name).replace(/\s+/g, '-')}-${number}`,
@@ -874,4 +874,3 @@ function replaceInRoster(roster: string[], oldId: string, newId: string): string
 function ensureInRoster(roster: string[], id: string): string[] {
   return roster.includes(id) ? roster : [...roster, id];
 }
-

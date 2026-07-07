@@ -1,5 +1,5 @@
 // Central access point for lightweight seed data and re-exports.
-// Heavy historical season data (teams, drivers, cars, tracks for all 56 seasons)
+// Heavy historical season data (teams, drivers, cars, tracks for all 86 seasons)
 // is NO LONGER imported here. It is loaded on demand via seasonLoader.ts.
 //
 // Season data must be loaded through loadSeasonBundle() or getCachedBundle().
@@ -13,8 +13,10 @@ import { getTrackFromRegistry } from './seasonLoader';
 export {
   availableSeasons,
   availableSeries,
+  seriesGroups,
   hasSeason,
   type SeasonBundle,
+  type SeriesGroup,
 } from './seasonCatalog';
 
 // Re-export season loader API

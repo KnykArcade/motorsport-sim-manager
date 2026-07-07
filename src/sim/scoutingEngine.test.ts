@@ -15,18 +15,18 @@ import {
 import type { MarketSkillRatings } from '../types/marketTypes';
 
 const skills: MarketSkillRatings = {
-  cornering: 8,
-  braking: 7,
-  straights: 6,
-  tractionAcceleration: 7,
-  elevationBlindCorners: 6,
-  technical: 8,
-  overtakingRacecraft: 9,
-  surfaceGripBumpiness: 6,
-  riskManagement: 5,
-  enduranceConsistency: 7,
+  cornering: 80,
+  braking: 70,
+  straights: 60,
+  tractionAcceleration: 70,
+  elevationBlindCorners: 60,
+  technical: 80,
+  overtakingRacecraft: 90,
+  surfaceGripBumpiness: 60,
+  riskManagement: 50,
+  enduranceConsistency: 70,
 };
-const target: ScoutTarget = { id: 'drv-1', skills, potential: 8.5 };
+const target: ScoutTarget = { id: 'drv-1', skills, potential: 85 };
 const SEED = 'seed-xyz';
 
 describe('scoutingEngine — accuracy', () => {
@@ -44,25 +44,25 @@ describe('scoutingEngine — accuracy', () => {
 });
 
 describe('scoutingEngine — potential fog', () => {
-  it('keeps a range even at maximum confidence and stays within 1-10', () => {
-    const maxConfidence = visiblePotentialRange(8.5, 1, SEED, target.id);
-    expect(maxConfidence[0]).toBeLessThan(8.5);
-    expect(maxConfidence[1]).toBeGreaterThan(8.5);
-    const [lo, hi] = visiblePotentialRange(8.5, 0, SEED, target.id);
+  it('keeps a range even at maximum confidence and stays within 1-100', () => {
+    const maxConfidence = visiblePotentialRange(85, 1, SEED, target.id);
+    expect(maxConfidence[0]).toBeLessThan(85);
+    expect(maxConfidence[1]).toBeGreaterThan(85);
+    const [lo, hi] = visiblePotentialRange(85, 0, SEED, target.id);
     expect(lo).toBeGreaterThanOrEqual(1);
-    expect(hi).toBeLessThanOrEqual(10);
+    expect(hi).toBeLessThanOrEqual(100);
     expect(lo).toBeLessThanOrEqual(hi);
   });
 
   it('narrows as accuracy improves', () => {
-    const wide = visiblePotentialRange(8.5, 0.2, SEED, target.id);
-    const narrow = visiblePotentialRange(8.5, 0.8, SEED, target.id);
+    const wide = visiblePotentialRange(85, 0.2, SEED, target.id);
+    const narrow = visiblePotentialRange(85, 0.8, SEED, target.id);
     expect(wide[1] - wide[0]).toBeGreaterThan(narrow[1] - narrow[0]);
   });
 
   it('keeps youth prospects much wider even at maximum scouting', () => {
-    const senior = visiblePotentialRange(8.5, 1, SEED, target.id, 'Driver');
-    const youth = visiblePotentialRange(8.5, 1, SEED, target.id, 'YouthProspect');
+    const senior = visiblePotentialRange(85, 1, SEED, target.id, 'Driver');
+    const youth = visiblePotentialRange(85, 1, SEED, target.id, 'YouthProspect');
     expect(youth[1] - youth[0]).toBeGreaterThan(senior[1] - senior[0]);
     expect(youth[1] - youth[0]).toBeGreaterThanOrEqual(2);
   });
@@ -70,13 +70,13 @@ describe('scoutingEngine — potential fog', () => {
 
 describe('scoutingEngine — skill fog', () => {
   it('hides skills when barely scouted and narrows them to ranges when fully scouted', () => {
-    expect(visibleSkill(8, 0.1, SEED, target.id, 'cornering')).toBe('Unknown');
-    expect(visibleSkill(8, 1, SEED, target.id, 'cornering')).toEqual([7.8, 8.4]);
+    expect(visibleSkill(80, 0.1, SEED, target.id, 'cornering')).toBe('Unknown');
+    expect(visibleSkill(80, 1, SEED, target.id, 'cornering')).toEqual([78, 84]);
   });
 
   it('keeps youth skill reports wider than senior skill reports', () => {
-    const senior = visibleSkill(8, 1, SEED, target.id, 'cornering', 'Driver');
-    const youth = visibleSkill(8, 1, SEED, target.id, 'cornering', 'YouthProspect');
+    const senior = visibleSkill(80, 1, SEED, target.id, 'cornering', 'Driver');
+    const youth = visibleSkill(80, 1, SEED, target.id, 'cornering', 'YouthProspect');
     expect(Array.isArray(senior)).toBe(true);
     expect(Array.isArray(youth)).toBe(true);
     const seniorRange = senior as [number, number];
@@ -97,9 +97,9 @@ describe('scoutingEngine — recordScouting', () => {
     const report = scouting.reports[target.id];
     expect(report.scoutingLevel).toBe(100);
     expect(isRevealed(report.accuracy)).toBe(true);
-    expect(report.potentialRange![0]).toBeLessThan(8.5);
-    expect(report.potentialRange![1]).toBeGreaterThan(8.5);
-    expect(report.visibleRatings.cornering).toEqual([7.8, 8.4]);
+    expect(report.potentialRange![0]).toBeLessThan(85);
+    expect(report.potentialRange![1]).toBeGreaterThan(85);
+    expect(report.visibleRatings.cornering).toEqual([78, 84]);
   });
 
   it('is deterministic for the same inputs', () => {
@@ -128,7 +128,7 @@ describe('scoutingEngine — fogView', () => {
     expect(revealed.maxed).toBe(true);
     expect(revealed.potential.value).toBeUndefined();
     expect(revealed.potential.range[1]).toBeGreaterThan(revealed.potential.range[0]);
-    expect(revealed.skills.overtakingRacecraft).toEqual([8.6, 9.2]);
+    expect(revealed.skills.overtakingRacecraft).toEqual([86, 92]);
   });
 });
 

@@ -46,15 +46,15 @@ describe('youthGenerationEngine', () => {
       expect(ids.size).toBe(20);
     });
 
-    it('all generated prospects have valid skill ratings (1-10)', () => {
+    it('all generated prospects have valid skill ratings (1-100)', () => {
       const prospects = generateYouthProspects('test-seed', 'F1', 2024, 20);
       for (const p of prospects) {
         expect(p.overall).toBeGreaterThan(0);
-        expect(p.overall).toBeLessThanOrEqual(10);
+        expect(p.overall).toBeLessThanOrEqual(100);
         expect(p.potential).toBeGreaterThan(0);
-        expect(p.potential).toBeLessThanOrEqual(10);
+        expect(p.potential).toBeLessThanOrEqual(100);
         expect(p.skills.cornering).toBeGreaterThanOrEqual(1);
-        expect(p.skills.cornering).toBeLessThanOrEqual(10);
+        expect(p.skills.cornering).toBeLessThanOrEqual(100);
       }
     });
 
@@ -94,8 +94,8 @@ describe('youthGenerationEngine', () => {
           elevationBlindCorners: 5, technical: 5, overtakingRacecraft: 5,
           surfaceGripBumpiness: 5, riskManagement: 5, enduranceConsistency: 5,
         },
-        overall: 5,
-        potential: 7,
+        overall: 50,
+        potential: 70,
         potentialDelta: 2,
         developmentRate: 0.5,
         yearsUntilF1Ready: 3,
@@ -131,8 +131,8 @@ describe('youthGenerationEngine', () => {
           elevationBlindCorners: 5, technical: 5, overtakingRacecraft: 5,
           surfaceGripBumpiness: 5, riskManagement: 5, enduranceConsistency: 5,
         },
-        overall: 5,
-        potential: 7,
+        overall: 50,
+        potential: 70,
         potentialDelta: 2,
         developmentRate: 0.5,
         yearsUntilF1Ready: 3,
@@ -171,8 +171,8 @@ describe('youthGenerationEngine', () => {
           elevationBlindCorners: 5, technical: 5, overtakingRacecraft: 5,
           surfaceGripBumpiness: 5, riskManagement: 5, enduranceConsistency: 5,
         },
-        overall: 5,
-        potential: 7,
+        overall: 50,
+        potential: 70,
         potentialDelta: 2,
         developmentRate: 0.5,
         yearsUntilF1Ready: 3,
@@ -206,8 +206,8 @@ describe('youthGenerationEngine', () => {
           elevationBlindCorners: 5, technical: 5, overtakingRacecraft: 5,
           surfaceGripBumpiness: 5, riskManagement: 5, enduranceConsistency: 5,
         },
-        overall: 5,
-        potential: 7,
+        overall: 50,
+        potential: 70,
         potentialDelta: 2,
         developmentRate: 0.5,
         yearsUntilF1Ready: 3,

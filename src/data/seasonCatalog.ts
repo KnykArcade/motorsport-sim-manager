@@ -3,6 +3,7 @@
 // Full season bundles are loaded on demand via seasonLoader.ts.
 
 import type { Series } from '../types/gameTypes';
+import { aowAvailableSeasons } from './aowSeasonData';
 
 export type SeasonBundle = {
   season: import('../types/gameTypes').Season;
@@ -50,6 +51,7 @@ export const availableSeasons: { year: number; series: Series; label: string }[]
   { year: 2024, series: 'F1', label: '2024 Formula 1 World Championship' },
   { year: 2025, series: 'F1', label: '2025 Formula 1 World Championship' },
   { year: 2026, series: 'F1', label: '2026 Formula 1 World Championship' },
+  ...aowAvailableSeasons,
   { year: 2008, series: 'IndyCar', label: '2008 IndyCar Series' },
   { year: 2009, series: 'IndyCar', label: '2009 IndyCar Series' },
   { year: 2010, series: 'IndyCar', label: '2010 IndyCar Series' },
@@ -75,6 +77,37 @@ export const availableSeasons: { year: number; series: Series; label: string }[]
 export const availableSeries: { id: Series; label: string }[] = [
   { id: 'F1', label: 'Formula 1' },
   { id: 'IndyCar', label: 'IndyCar' },
+  { id: 'CART', label: 'CART' },
+  { id: 'Champ Car', label: 'Champ Car' },
+];
+
+// Top-level selection groups for the New Career UI. A group either maps to a
+// single series (F1) or bundles several disciplines under one banner
+// (American Open Wheel → CART / IndyCar), each picked before choosing a year.
+export type SeriesGroup = {
+  id: string;
+  label: string;
+  blurb: string;
+  disciplines: { id: Series; label: string }[];
+};
+
+export const seriesGroups: SeriesGroup[] = [
+  {
+    id: 'F1',
+    label: 'Formula 1',
+    blurb: 'The FIA Formula One World Championship, 1990–2026.',
+    disciplines: [{ id: 'F1', label: 'Formula 1' }],
+  },
+  {
+    id: 'AOW',
+    label: 'American Open Wheel',
+    blurb: 'Top-flight US open-wheel racing — pick CART (Champ Car) or IndyCar.',
+    disciplines: [
+      { id: 'CART', label: 'CART (1990–2003)' },
+      { id: 'Champ Car', label: 'Champ Car (2004–2007)' },
+      { id: 'IndyCar', label: 'IndyCar (IRL / unified)' },
+    ],
+  },
 ];
 
 // Check if a season exists in the catalog.

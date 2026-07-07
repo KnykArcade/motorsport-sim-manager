@@ -63,6 +63,7 @@ export const calendar2019IndyCar: Race[] = [
     trackName: 'Indianapolis Motor Speedway',
     laps: 200,
     distanceKm: 800.0,
+    pointsMultiplier: 2,
     completed: false,
   },
   {
@@ -173,6 +174,8 @@ export const calendar2019IndyCar: Race[] = [
     trackName: 'WeatherTech Raceway Laguna Seca',
     laps: 90,
     distanceKm: 324.0,
+
+    pointsMultiplier: 2,
     completed: false,
   },
 ];

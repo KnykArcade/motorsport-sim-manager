@@ -11,6 +11,7 @@ import type {
   RegulationChangeEvent,
 } from '../types/gameTypes';
 import { createSeededRandom, deriveSeed, type Rng } from './random';
+import { toLegacyRating } from './ratingScale';
 import {
   facilityOutcomeChances,
   facilityImpactMultiplier,
@@ -122,10 +123,10 @@ export function RUSH_COST_MULTIPLIER(): number {
 }
 
 // Race Operations (engineering consistency) shifts development project success
-// odds. Neutral at raceOps 5; a 9-ops team adds ~8 percentage points, a 3-ops
-// team loses ~4 (capped).
+// odds. Neutral at raceOps 50; a 90-ops team adds ~8 percentage points, a
+// 30-ops team loses ~4 (capped).
 export function raceOpsDevelopmentBonus(raceOps: number): number {
-  return Math.max(-0.1, Math.min(0.1, (raceOps - 5) * 0.02));
+  return Math.max(-0.1, Math.min(0.1, (toLegacyRating(raceOps) - 5) * 0.02));
 }
 
 // Advance all active projects by one race; resolve completed ones.
@@ -231,32 +232,34 @@ export function applyDevelopmentProgress(
 
 // Multiplier on a raw development gain given the CURRENT rating of the area
 // being developed. Cheap and large at the bottom, very small near the cap.
-//   1.0–4.9 : 1.30  (larger gains, cheaper improvement)
-//   5.0–6.9 : 1.00  (normal)
-//   7.0–8.4 : 0.60  (smaller gains, higher cost)
-//   8.5–9.2 : 0.32  (difficult gains)
-//   9.3–10  : 0.14  (very small gains, high failure risk)
+//   10.0–49.0 : 1.30  (larger gains, cheaper improvement)
+//   50.0–69.0 : 1.00  (normal)
+//   70.0–84.0 : 0.60  (smaller gains, higher cost)
+//   85.0–92.0 : 0.32  (difficult gains)
+//   93.0–100  : 0.14  (very small gains, high failure risk)
 export function diminishingGainMultiplier(rating: number): number {
-  if (rating < 5) return 1.3;
-  if (rating < 7) return 1.0;
-  if (rating < 8.5) return 0.6;
-  if (rating < 9.3) return 0.32;
+  const legacy = toLegacyRating(rating);
+  if (legacy < 5) return 1.3;
+  if (legacy < 7) return 1.0;
+  if (legacy < 8.5) return 0.6;
+  if (legacy < 9.3) return 0.32;
   return 0.14;
 }
 
 // Extra chance a high-rated development project simply fails to deliver (no gain
 // or a minor setback). Near the ceiling even well-funded upgrades often miss.
 export function nearCapFailureChance(rating: number): number {
-  if (rating < 8.5) return 0;
-  if (rating < 9.3) return 0.25;
+  const legacy = toLegacyRating(rating);
+  if (legacy < 8.5) return 0;
+  if (legacy < 9.3) return 0.25;
   return 0.45;
 }
 
 // A midfield/back car improves more efficiently than a front-runner: a catch-up
 // multiplier that rewards teams sitting well below the front of the grid. `gap`
-// is (fieldTopRating - thisCarRating) on the 1-10 scale.
+// is (fieldTopRating - thisCarRating) on the 1-100 scale.
 export function catchUpMultiplier(gap: number): number {
-  return 1 + Math.max(0, Math.min(0.6, gap * 0.18));
+  return 1 + Math.max(0, Math.min(0.6, (gap / 10) * 0.18));
 }
 
 export type OffseasonDecayOptions = {
@@ -292,8 +295,6 @@ export function applyOffseasonDecay(
   const resist = 0.6 + (quality / 100) * 0.5 + budget * 0.3; // ~0.6..1.4
   const stableBase = 0.05;
   const shakeupBase = shakeup * 0.75; // stable 0, major ~0.75
-  const floor = 5.0;
-
   // A team that nails a new regulation concept recovers much of the reset (and
   // can even gain); one that misses it loses more. Scaled by shakeup magnitude
   // so it only matters in rules-change years.
@@ -302,7 +303,8 @@ export function applyOffseasonDecay(
   const out = {} as CarRatings;
   for (const k of Object.keys(ratings) as (keyof CarRatings)[]) {
     const v = ratings[k];
-    const above = Math.max(0, v - floor);
+    const legacy = toLegacyRating(v);
+    const above = Math.max(0, legacy - 5);
     // Regulation shakeups bite the strongest cars hardest (their advantage came
     // from a mature package that the rules reset), so the order reshuffles;
     // stable-year maintenance decay is gentle and roughly flat.
@@ -311,7 +313,8 @@ export function applyOffseasonDecay(
     const decay = (maintenance + reset) / Math.max(0.5, resist);
     // Nailing the concept can add a little raw performance on top (bounded).
     const adaptGain = adapt > 0 ? shakeup * adapt * 0.4 : 0;
-    out[k] = round1(clamp(v - decay + adaptGain, 1, 10));
+    const nextLegacy = clamp(legacy - decay + adaptGain, 1, 10);
+    out[k] = round1(nextLegacy * 10);
   }
   return out;
 }
@@ -362,7 +365,7 @@ export function calculateOffseasonCarryover(
   // Apply regulation carryover to the whole car (some performance is lost when
   // rules reset the field).
   (Object.keys(next) as (keyof CarRatings)[]).forEach((k) => {
-    // Only the development portion above the floor erodes; clamp to 1-10.
+    // Only the development portion above the floor erodes; clamp to 1-100.
     next[k] = clamp(round1(next[k] * (0.6 + 0.4 * regMod[k])), 1, 10);
   });
 

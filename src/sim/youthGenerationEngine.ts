@@ -111,78 +111,78 @@ function archetypeToProspect(
 
   switch (archetype) {
     case 'EliteWonderkid':
-      overall = rng.nextInt(72, 82) / 10;
-      potential = rng.nextInt(90, 99) / 10;
+      overall = rng.nextInt(72, 82);
+      potential = rng.nextInt(90, 99);
       developmentRate = rng.nextInt(75, 95) / 100;
       yearsUntilF1Ready = rng.nextInt(1, 2);
-      signingCost = rng.nextInt(3, 8) / 10;
-      yearlyAcademyCost = rng.nextInt(3, 6) / 10;
+      signingCost = rng.nextInt(30, 80) / 10;
+      yearlyAcademyCost = rng.nextInt(30, 60) / 10;
       riskLevel = 'Low';
       notes = 'Generational talent with elite ceiling. High competition from AI teams.';
       currentLevel = 'Karting / F4 prodigy';
       break;
     case 'HighUpsideRisk':
-      overall = rng.nextInt(55, 68) / 10;
-      potential = rng.nextInt(85, 95) / 10;
+      overall = rng.nextInt(55, 68);
+      potential = rng.nextInt(85, 95);
       developmentRate = rng.nextInt(40, 80) / 100;
       yearsUntilF1Ready = rng.nextInt(2, 4);
-      signingCost = rng.nextInt(2, 5) / 10;
-      yearlyAcademyCost = rng.nextInt(2, 4) / 10;
+      signingCost = rng.nextInt(20, 50) / 10;
+      yearlyAcademyCost = rng.nextInt(20, 40) / 10;
       riskLevel = 'High';
       notes = 'High ceiling but volatile development. Could be a star or a bust.';
       currentLevel = 'F4 / Regional formula';
       break;
     case 'SolidProfessional':
-      overall = rng.nextInt(60, 72) / 10;
-      potential = rng.nextInt(72, 82) / 10;
+      overall = rng.nextInt(60, 72);
+      potential = rng.nextInt(72, 82);
       developmentRate = rng.nextInt(60, 85) / 100;
       yearsUntilF1Ready = rng.nextInt(2, 4);
-      signingCost = rng.nextInt(1, 3) / 10;
-      yearlyAcademyCost = rng.nextInt(1, 3) / 10;
+      signingCost = rng.nextInt(10, 30) / 10;
+      yearlyAcademyCost = rng.nextInt(10, 30) / 10;
       riskLevel = 'Low';
       notes = 'Safe prospect with a solid floor. Reliable development curve.';
       currentLevel = 'F4 / F3 pathway';
       break;
     case 'TechnicalSpecialist':
-      overall = rng.nextInt(55, 68) / 10;
-      potential = rng.nextInt(70, 82) / 10;
+      overall = rng.nextInt(55, 68);
+      potential = rng.nextInt(70, 82);
       developmentRate = rng.nextInt(65, 88) / 100;
       yearsUntilF1Ready = rng.nextInt(3, 5);
-      signingCost = rng.nextInt(1, 3) / 10;
-      yearlyAcademyCost = rng.nextInt(1, 3) / 10;
+      signingCost = rng.nextInt(10, 30) / 10;
+      yearlyAcademyCost = rng.nextInt(10, 30) / 10;
       riskLevel = 'Medium';
       notes = 'Strong feedback and technical skills. Valuable for testing and development.';
       currentLevel = 'F4 / Formula Regional';
       break;
     case 'PayDriver':
-      overall = rng.nextInt(45, 60) / 10;
-      potential = rng.nextInt(55, 72) / 10;
+      overall = rng.nextInt(45, 60);
+      potential = rng.nextInt(55, 72);
       developmentRate = rng.nextInt(30, 60) / 100;
       yearsUntilF1Ready = rng.nextInt(3, 6);
-      signingCost = rng.nextInt(-3, 1) / 10;
-      yearlyAcademyCost = rng.nextInt(-2, 1) / 10;
+      signingCost = rng.nextInt(-30, 10) / 10;
+      yearlyAcademyCost = rng.nextInt(-20, 10) / 10;
       riskLevel = 'High';
       notes = 'Brings financial backing but limited on-track upside.';
       currentLevel = 'Formula Regional / Pay drive';
       break;
     case 'LateBloomer':
-      overall = rng.nextInt(45, 58) / 10;
-      potential = rng.nextInt(78, 90) / 10;
+      overall = rng.nextInt(45, 58);
+      potential = rng.nextInt(78, 90);
       developmentRate = rng.nextInt(35, 65) / 100;
       yearsUntilF1Ready = rng.nextInt(3, 5);
-      signingCost = rng.nextInt(1, 3) / 10;
-      yearlyAcademyCost = rng.nextInt(1, 2) / 10;
+      signingCost = rng.nextInt(10, 30) / 10;
+      yearlyAcademyCost = rng.nextInt(10, 20) / 10;
       riskLevel = 'Medium';
       notes = 'Modest early rating but hidden growth potential. May surprise.';
       currentLevel = 'Karting / Late starter';
       break;
     case 'OverhypedBust':
-      overall = rng.nextInt(62, 75) / 10;
-      potential = rng.nextInt(60, 72) / 10;
+      overall = rng.nextInt(62, 75);
+      potential = rng.nextInt(60, 72);
       developmentRate = rng.nextInt(20, 45) / 100;
       yearsUntilF1Ready = rng.nextInt(3, 6);
-      signingCost = rng.nextInt(2, 5) / 10;
-      yearlyAcademyCost = rng.nextInt(2, 4) / 10;
+      signingCost = rng.nextInt(20, 50) / 10;
+      yearlyAcademyCost = rng.nextInt(20, 40) / 10;
       riskLevel = 'High';
       notes = 'Looks promising but may develop poorly. Risky investment.';
       currentLevel = 'F4 / Hyped junior';
@@ -192,7 +192,7 @@ function archetypeToProspect(
   // Generate skills around the overall rating with some variance.
   const baseSkill = overall;
   const variance = 0.4;
-  const skill = () => Math.max(1, Math.min(10, Math.round((baseSkill + rng.next() * variance * 2 - variance) * 10) / 10));
+  const skill = () => Math.max(1, Math.min(100, Math.round(baseSkill + (rng.next() * variance * 2 - variance) * 10)));
 
   return {
     id,

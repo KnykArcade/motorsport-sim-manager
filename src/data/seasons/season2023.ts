@@ -12,7 +12,7 @@ export const calendar2023: Race[] = [
     trackId: 'bahrain-international-circuit-2023',
     trackName: 'Bahrain International Circuit',
     laps: 57,
-    distanceKm: 308.2,
+    distanceKm: 308.238,
     completed: false,
   },
   {
@@ -22,7 +22,7 @@ export const calendar2023: Race[] = [
     trackId: 'jeddah-corniche-circuit-2023',
     trackName: 'Jeddah Corniche Circuit',
     laps: 50,
-    distanceKm: 308.5,
+    distanceKm: 308.45,
     completed: false,
   },
   {
@@ -32,7 +32,7 @@ export const calendar2023: Race[] = [
     trackId: 'albert-park-circuit-2023',
     trackName: 'Albert Park Circuit',
     laps: 58,
-    distanceKm: 306.1,
+    distanceKm: 306.124,
     completed: false,
   },
   {
@@ -42,7 +42,7 @@ export const calendar2023: Race[] = [
     trackId: 'baku-city-circuit-2023',
     trackName: 'Baku City Circuit',
     laps: 51,
-    distanceKm: 306.0,
+    distanceKm: 306.049,
     completed: false,
   },
   {
@@ -52,7 +52,7 @@ export const calendar2023: Race[] = [
     trackId: 'miami-international-autodrome-2023',
     trackName: 'Miami International Autodrome',
     laps: 57,
-    distanceKm: 308.3,
+    distanceKm: 308.326,
     completed: false,
   },
   {
@@ -62,7 +62,7 @@ export const calendar2023: Race[] = [
     trackId: 'circuit-de-monaco-2023',
     trackName: 'Circuit de Monaco',
     laps: 78,
-    distanceKm: 260.3,
+    distanceKm: 260.286,
     completed: false,
   },
   {
@@ -72,7 +72,7 @@ export const calendar2023: Race[] = [
     trackId: 'circuit-de-barcelona-catalunya-2023',
     trackName: 'Circuit de Barcelona-Catalunya',
     laps: 66,
-    distanceKm: 307.2,
+    distanceKm: 307.236,
     completed: false,
   },
   {
@@ -82,7 +82,7 @@ export const calendar2023: Race[] = [
     trackId: 'circuit-gilles-villeneuve-2023',
     trackName: 'Circuit Gilles Villeneuve',
     laps: 70,
-    distanceKm: 305.3,
+    distanceKm: 305.27,
     completed: false,
   },
   {
@@ -92,7 +92,7 @@ export const calendar2023: Race[] = [
     trackId: 'red-bull-ring-2023',
     trackName: 'Red Bull Ring',
     laps: 71,
-    distanceKm: 306.5,
+    distanceKm: 307.018,
     completed: false,
   },
   {
@@ -102,7 +102,7 @@ export const calendar2023: Race[] = [
     trackId: 'silverstone-circuit-2023',
     trackName: 'Silverstone Circuit',
     laps: 52,
-    distanceKm: 306.2,
+    distanceKm: 306.198,
     completed: false,
   },
   {
@@ -112,7 +112,7 @@ export const calendar2023: Race[] = [
     trackId: 'hungaroring-2023',
     trackName: 'Hungaroring',
     laps: 70,
-    distanceKm: 306.6,
+    distanceKm: 306.63,
     completed: false,
   },
   {
@@ -122,7 +122,7 @@ export const calendar2023: Race[] = [
     trackId: 'circuit-de-spa-francorchamps-2023',
     trackName: 'Circuit de Spa-Francorchamps',
     laps: 44,
-    distanceKm: 308.1,
+    distanceKm: 308.052,
     completed: false,
   },
   {
@@ -132,7 +132,7 @@ export const calendar2023: Race[] = [
     trackId: 'circuit-zandvoort-2023',
     trackName: 'Circuit Zandvoort',
     laps: 72,
-    distanceKm: 306.6,
+    distanceKm: 306.587,
     completed: false,
   },
   {
@@ -142,7 +142,7 @@ export const calendar2023: Race[] = [
     trackId: 'autodromo-nazionale-monza-2023',
     trackName: 'Autodromo Nazionale Monza',
     laps: 53,
-    distanceKm: 306.7,
+    distanceKm: 306.72,
     completed: false,
   },
   {
@@ -152,7 +152,7 @@ export const calendar2023: Race[] = [
     trackId: 'marina-bay-street-circuit-2023',
     trackName: 'Marina Bay Street Circuit',
     laps: 62,
-    distanceKm: 306.1,
+    distanceKm: 306.143,
     completed: false,
   },
   {
@@ -162,7 +162,7 @@ export const calendar2023: Race[] = [
     trackId: 'suzuka-circuit-2023',
     trackName: 'Suzuka Circuit',
     laps: 53,
-    distanceKm: 307.5,
+    distanceKm: 307.471,
     completed: false,
   },
   {
@@ -172,7 +172,7 @@ export const calendar2023: Race[] = [
     trackId: 'lusail-international-circuit-2023',
     trackName: 'Lusail International Circuit',
     laps: 57,
-    distanceKm: 308.6,
+    distanceKm: 308.611,
     completed: false,
   },
   {
@@ -182,7 +182,7 @@ export const calendar2023: Race[] = [
     trackId: 'circuit-of-the-americas-2023',
     trackName: 'Circuit of the Americas',
     laps: 56,
-    distanceKm: 308.7,
+    distanceKm: 308.405,
     completed: false,
   },
   {
@@ -192,7 +192,7 @@ export const calendar2023: Race[] = [
     trackId: 'autodromo-hermanos-rodriguez-2023',
     trackName: 'Autodromo Hermanos Rodriguez',
     laps: 71,
-    distanceKm: 305.4,
+    distanceKm: 305.354,
     completed: false,
   },
   {
@@ -202,7 +202,7 @@ export const calendar2023: Race[] = [
     trackId: 'interlagos-autodromo-jose-carlos-pace-2023',
     trackName: 'Interlagos / Autodromo Jose Carlos Pace',
     laps: 71,
-    distanceKm: 305.9,
+    distanceKm: 305.879,
     completed: false,
   },
   {
@@ -212,7 +212,7 @@ export const calendar2023: Race[] = [
     trackId: 'las-vegas-strip-circuit-2023',
     trackName: 'Las Vegas Strip Circuit',
     laps: 50,
-    distanceKm: 310.0,
+    distanceKm: 309.958,
     completed: false,
   },
   {
@@ -222,7 +222,7 @@ export const calendar2023: Race[] = [
     trackId: 'yas-marina-circuit-2023',
     trackName: 'Yas Marina Circuit',
     laps: 58,
-    distanceKm: 306.2,
+    distanceKm: 306.183,
     completed: false,
   },
 ];

@@ -28,12 +28,12 @@ function newOffseasonState(): GameState {
 }
 
 describe('synthesizeDriverRatings', () => {
-  it('keeps all ratings in 1-10 range and preserves overall', () => {
+  it('keeps all ratings in 1-100 range and preserves overall', () => {
     const m = driverMarket1995[0];
     const r = synthesizeDriverRatings(m.skills, m.overall);
     for (const v of Object.values(r)) {
       expect(v).toBeGreaterThanOrEqual(1);
-      expect(v).toBeLessThanOrEqual(10);
+      expect(v).toBeLessThanOrEqual(100);
     }
     expect(r.overall).toBeCloseTo(m.overall, 5);
   });
@@ -198,10 +198,10 @@ function eighteenNextYear(teamId: string): AcademyMember {
     nationality: '—',
     birthYear: 1978, // age 18 in 1996
     academyTeamId: teamId,
-    skills: { ...synthesizeDriverRatings(driverMarket1995[0].skills, 7) },
-    overall: 7,
-    potential: 8.5,
-    developmentRate: 2,
+    skills: { ...synthesizeDriverRatings(driverMarket1995[0].skills, 70) },
+    overall: 70,
+    potential: 85,
+    developmentRate: 20,
     yearsUntilF1Ready: 0,
     signedYear: 1994,
   };

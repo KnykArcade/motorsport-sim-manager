@@ -70,8 +70,8 @@ const ROLE_BIOS: Record<StaffRole, [string, string, string]> = {
 };
 
 function tierIndex(rating: number): 0 | 1 | 2 {
-  if (rating >= 8) return 0;
-  if (rating >= 5) return 1;
+  if (rating >= 80) return 0;
+  if (rating >= 50) return 1;
   return 2;
 }
 
@@ -79,9 +79,9 @@ function tierIndex(rating: number): 0 | 1 | 2 {
 // some cheap rookies, with small seeded jitter so each pool feels distinct.
 function ratingForSlot(slot: number, total: number, rng: Rng): number {
   const t = total > 1 ? slot / (total - 1) : 0; // 0 (best) .. 1 (worst)
-  const base = 10 - t * 6.5; // 10 down to ~3.5
-  const jittered = base + rng.variance(0.6);
-  return Math.max(2, Math.min(10, Math.round(jittered)));
+  const base = 100 - t * 65; // 100 down to ~35
+  const jittered = base + rng.variance(6);
+  return Math.max(20, Math.min(100, Math.round(jittered)));
 }
 
 export function generateStaffPool(
@@ -111,7 +111,7 @@ export function generateStaffPool(
       if (usedNames.has(full)) full = `${full} ${ROLE_ABBR[role].toUpperCase()}${i}`;
       usedNames.add(full);
 
-      const salary = Math.round((0.4 + (rating - 1) * 0.5) * 10) / 10;
+      const salary = Math.round((0.4 + (rating / 10 - 1) * 0.5) * 10) / 10;
       const signingFee = Math.round(salary * 0.45 * 10) / 10;
 
       pool.push({

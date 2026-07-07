@@ -63,13 +63,13 @@ describe('developmentCurveEngine — age synthesis', () => {
 
 describe('developmentCurveEngine — curve + phase', () => {
   it('gives a young driver headroom above their current overall', () => {
-    const curve = createDriverDevelopmentCurve(driver('young', 6, 19), SEED);
-    expect(curve.potentialCeiling).toBeGreaterThan(6);
+    const curve = createDriverDevelopmentCurve(driver('young', 60, 19), SEED);
+    expect(curve.potentialCeiling).toBeGreaterThan(60);
     expect(developmentPhase(curve, 19)).toBe('Developing');
   });
 
   it('classifies peak and decline by age', () => {
-    const curve = createDriverDevelopmentCurve(driver('vet', 8, 30), SEED);
+    const curve = createDriverDevelopmentCurve(driver('vet', 80, 30), SEED);
     expect(developmentPhase(curve, curve.peakAgeStart)).toBe('Peak');
     expect(developmentPhase(curve, curve.peakAgeEnd + 1)).toBe('Declining');
   });
@@ -77,7 +77,7 @@ describe('developmentCurveEngine — curve + phase', () => {
 
 describe('developmentCurveEngine — step', () => {
   it('improves a young driver and ages them a year', () => {
-    const d = driver('young', 6, 20);
+    const d = driver('young', 60, 20);
     const curve = createDriverDevelopmentCurve(d, SEED);
     const { driver: next, result } = developmentStep(curve, d, SEED, { seasonYear: 2000 });
     expect(next.age).toBe(21);
@@ -86,27 +86,27 @@ describe('developmentCurveEngine — step', () => {
   });
 
   it('declines an older driver', () => {
-    const d = driver('vet', 8, 40);
+    const d = driver('vet', 80, 40);
     const curve = createDriverDevelopmentCurve(d, SEED);
     const { result } = developmentStep(curve, d, SEED, { seasonYear: 2000 });
     expect(result.phase).toBe('Declining');
     expect(result.overallAfter).toBeLessThan(result.overallBefore);
   });
 
-  it('keeps ratings within 1-10 and is deterministic', () => {
-    const d = driver('max', 9.9, 19);
+  it('keeps ratings within 1-100 and is deterministic', () => {
+    const d = driver('max', 99, 19);
     const curve = createDriverDevelopmentCurve(d, SEED);
     const a = developmentStep(curve, d, SEED, { seasonYear: 2000 });
     const b = developmentStep(curve, d, SEED, { seasonYear: 2000 });
     expect(a.driver.ratings).toEqual(b.driver.ratings);
     for (const v of Object.values(a.driver.ratings)) {
       expect(v).toBeGreaterThanOrEqual(1);
-      expect(v).toBeLessThanOrEqual(10);
+      expect(v).toBeLessThanOrEqual(100);
     }
   });
 
   it('academy boost helps a developing driver more', () => {
-    const d = driver('kid', 6, 20);
+    const d = driver('kid', 60, 20);
     const curve = createDriverDevelopmentCurve(d, SEED);
     const withBoost = developmentStep(curve, d, SEED, { seasonYear: 2000, academyBoost: 0.6 });
     const without = developmentStep(curve, d, SEED, { seasonYear: 2000, academyBoost: 0 });
@@ -116,18 +116,18 @@ describe('developmentCurveEngine — step', () => {
 
 describe('developmentCurveEngine — projection + seeding', () => {
   it('projects a trajectory that rises then falls over a career', () => {
-    const d = driver('arc', 6, 20);
+    const d = driver('arc', 60, 20);
     const curve = createDriverDevelopmentCurve(d, SEED);
-    const points = projectTrajectory(curve, 20, 6, 20);
+    const points = projectTrajectory(curve, 20, 60, 20);
     const overalls = points.map((p) => p.overall);
     const peak = Math.max(...overalls);
-    expect(peak).toBeGreaterThanOrEqual(6);
+    expect(peak).toBeGreaterThanOrEqual(60);
     // Late-career overall is below the peak (decline happened).
     expect(overalls[overalls.length - 1]).toBeLessThan(peak);
   });
 
   it('seeds a curve for every driver and fills missing ages', () => {
-    const roster = [driver('a', 7), driver('b', 8, 30)];
+    const roster = [driver('a', 70), driver('b', 80, 30)];
     const { curves, drivers } = seedDevelopmentCurves(roster, SEED);
     expect(Object.keys(curves)).toHaveLength(2);
     expect(drivers.every((d) => typeof d.age === 'number')).toBe(true);

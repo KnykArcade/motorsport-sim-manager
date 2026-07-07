@@ -34,7 +34,7 @@ export type LiveRaceOptions = {
   driverNames: Record<string, string>;
   // Team reputation (by team id) used to assign AI personalities.
   teamReputation: Record<string, number>;
-  // Race Operations Rating (1-10) by team id — drives the team pace component
+  // Race Operations Rating (1-100) by team id — drives the team pace component
   // and the per-weekend operations variance.
   teamRaceOps: Record<string, number>;
   // Season year — drives era-specific DNF-cause balancing.
@@ -107,7 +107,7 @@ export function createLiveRace(context: RaceContext, options: LiveRaceOptions): 
     const prepReliabilityMod = racePrepFocus && isPlayerTeam ? racePrepFocus.reliabilityModifier : 0;
     const prepMistakeMultiplier = racePrepFocus && isPlayerTeam ? racePrepFocus.mistakeRiskMultiplier : 1;
 
-    // Base Race Pace on the 1-10 scale (the pace score divided back out of the
+    // Base Race Pace on the 1-100 scale (the pace score divided back out of the
     // internal PACE_SPREAD blow-up), which the live-pace model builds on.
     const baseRacePace = clamp10((score + packagePaceBonus + prepPaceBonus) / PACE_SPREAD);
     // Per-car weekend operations execution (pit/reliability/strategy), zero-mean.
@@ -304,7 +304,7 @@ export function finalizeResults(
       gridPosition: c.grid,
       status: 'Finished',
       lapsCompleted: state.totalLaps,
-      points: context.pointsByPosition[i + 1] ?? 0,
+      points: Math.round((context.pointsByPosition[i + 1] ?? 0) * (context.pointsMultiplier ?? 1)),
       raceScore: round2(c.paceRating),
       gapText: i === 0 ? 'WIN' : `+${round1(c.totalTime - winnerTime)}s`,
       incidents: c.lastIncident ? [c.lastIncident] : [],

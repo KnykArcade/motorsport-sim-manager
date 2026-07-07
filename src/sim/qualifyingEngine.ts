@@ -22,6 +22,7 @@ import {
 import { calculateSetupFit } from './setupEngine';
 import { calculateCrashRisk, calculateMistakeRisk } from './mistakeEngine';
 import { PACE_SPREAD, PACE_WEIGHTS, WEEKEND_FORM_SPREAD, FORM_OPS_FACTOR } from './raceEngine';
+import { toLegacyRating } from './ratingScale';
 
 function clamp10(n: number): number {
   return Math.max(1, Math.min(10, n));
@@ -66,11 +67,11 @@ export function calculateQualifyingPace(
 ): { score: number; breakdown: ScoreBreakdown } {
   // Same 50/25/15/10 car/driver/team/other weighting as race pace, so the car
   // is the dominant factor in qualifying too.
-  const carComp = clamp10(avgCar(car) + calculateCarTrackFit(car, track));
+  const carComp = clamp10(toLegacyRating(avgCar(car)) + calculateCarTrackFit(car, track));
   const driverComp = clamp10(
-    (driver.ratings.qualifying + driver.ratings.overall) / 2 + calculateDriverTrackFit(driver, track),
+    (toLegacyRating(driver.ratings.qualifying) + toLegacyRating(driver.ratings.overall)) / 2 + calculateDriverTrackFit(driver, track),
   );
-  const teamComp = clamp10(teamRating);
+  const teamComp = clamp10(toLegacyRating(teamRating));
   const setupFit = calculateQualifyingSetupFit(driver, car, track, setup);
   const confidenceFactor = (driver.confidence - 65) / 15 + confidenceModifier;
   const otherComp = clamp10(5.5 + setupFit * 0.5 + runPlan.paceModifier + confidenceFactor);
@@ -176,7 +177,7 @@ function simulateLap(
   // Weather: wet/changeable sessions reward adaptable, composed drivers and add
   // chaos. Drivers who banked wet running in practice cope better.
   if (wetness > 0) {
-    const wetSkill = (driver.ratings.adaptability + driver.ratings.composure) / 2 - 5; // ~[-4,4]
+    const wetSkill = (toLegacyRating(driver.ratings.adaptability) + toLegacyRating(driver.ratings.composure)) / 2 - 5; // ~[-4,4]
     base += wetness * wetSkill * 0.7;
     if (entry.wetReady) base += wetness * 0.8;
   }

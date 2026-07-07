@@ -14,8 +14,8 @@ export function calculateMistakeRisk(
   const r = driver.ratings;
 
   // Composure & risk management reduce mistakes.
-  const skill = (r.composure + r.riskManagement) / 2; // 1-10
-  const base = 0.16 - skill * 0.013;
+  const skill = (r.composure + r.riskManagement) / 2; // 1-100
+  const base = 0.16 - (skill / 10) * 0.013;
 
   // High-risk / technical tracks punish errors more.
   const trackFactor =
@@ -33,7 +33,7 @@ export function calculateCrashRisk(
   aggression: number,
 ): number {
   const mistake = calculateMistakeRisk(driver, track, aggression, 0);
-  const wallFactor = track.attributes.riskWallProximity / 10;
+  const wallFactor = track.attributes.riskWallProximity / 100;
   return clamp(mistake * (0.3 + wallFactor * 0.5), 0.005, 0.4);
 }
 

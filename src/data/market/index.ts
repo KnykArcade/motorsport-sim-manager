@@ -45,7 +45,7 @@ const bundleCache = new Map<string, MarketBundle>();
 const marketLoaders: Record<string, () => Promise<{ drivers: MarketDriver[]; youth: YouthProspect[] }>> = {};
 
 function makeMarketLoader(year: number, series: Series) {
-  const suffix = series === 'IndyCar' ? 'IndyCar' : '';
+  const suffix = series === 'F1' ? '' : series === 'Champ Car' ? 'CART' : series;
   return async () => {
     const [driversMod, youthMod] = await Promise.all([
       import(`./driverMarket${year}${suffix}.ts`),
@@ -62,9 +62,104 @@ for (let year = 1990; year <= 2026; year++) {
   marketLoaders[`${year}-F1`] = makeMarketLoader(year, 'F1');
 }
 
+// IndyCar seasons 1996–2007 and 2008–2026
+for (let year = 1996; year <= 2007; year++) {
+  marketLoaders[`${year}-IndyCar`] = makeMarketLoader(year, 'IndyCar');
+}
+
+// IndyCar seasons 1996–2007 and 2008–2026
+for (let year = 1996; year <= 2007; year++) {
+  marketLoaders[`${year}-IndyCar`] = makeMarketLoader(year, 'IndyCar');
+}
+
+// IndyCar seasons 1996–2007 and 2008–2026
+for (let year = 1996; year <= 2007; year++) {
+  marketLoaders[`${year}-IndyCar`] = makeMarketLoader(year, 'IndyCar');
+}
+
+// IndyCar seasons 1996–2007 and 2008–2026
+for (let year = 1996; year <= 2007; year++) {
+  marketLoaders[`${year}-IndyCar`] = makeMarketLoader(year, 'IndyCar');
+}
+
+// IndyCar seasons 1996–2007 and 2008–2026
+for (let year = 1996; year <= 2007; year++) {
+  marketLoaders[`${year}-IndyCar`] = makeMarketLoader(year, 'IndyCar');
+}
+
+// IndyCar seasons 1996–2007 and 2008–2026
+for (let year = 1996; year <= 2007; year++) {
+  marketLoaders[`${year}-IndyCar`] = makeMarketLoader(year, 'IndyCar');
+}
+
+// IndyCar seasons 1996–2007 and 2008–2026
+for (let year = 1996; year <= 2007; year++) {
+  marketLoaders[`${year}-IndyCar`] = makeMarketLoader(year, 'IndyCar');
+}
+
+// IndyCar seasons 1996–2007 and 2008–2026
+for (let year = 1996; year <= 2007; year++) {
+  marketLoaders[`${year}-IndyCar`] = makeMarketLoader(year, 'IndyCar');
+}
+
+// IndyCar seasons 1996–2007 and 2008–2026
+for (let year = 1996; year <= 2007; year++) {
+  marketLoaders[`${year}-IndyCar`] = makeMarketLoader(year, 'IndyCar');
+}
+
+// IndyCar seasons 1996–2007 and 2008–2026
+for (let year = 1996; year <= 2007; year++) {
+  marketLoaders[`${year}-IndyCar`] = makeMarketLoader(year, 'IndyCar');
+}
+
+// IndyCar seasons 1996–2007 and 2008–2026
+for (let year = 1996; year <= 2007; year++) {
+  marketLoaders[`${year}-IndyCar`] = makeMarketLoader(year, 'IndyCar');
+}
+
+// IndyCar seasons 1996–2007 and 2008–2026
+for (let year = 1996; year <= 2007; year++) {
+  marketLoaders[`${year}-IndyCar`] = makeMarketLoader(year, 'IndyCar');
+}
+
+// IndyCar seasons 1996–2007 and 2008–2026
+for (let year = 1996; year <= 2007; year++) {
+  marketLoaders[`${year}-IndyCar`] = makeMarketLoader(year, 'IndyCar');
+}
+
+// IndyCar seasons 1996–2007 and 2008–2026
+for (let year = 1996; year <= 2007; year++) {
+  marketLoaders[`${year}-IndyCar`] = makeMarketLoader(year, 'IndyCar');
+}
+
+// IndyCar seasons 1996–2007 and 2008–2026
+for (let year = 1996; year <= 2007; year++) {
+  marketLoaders[`${year}-IndyCar`] = makeMarketLoader(year, 'IndyCar');
+}
+
+// IndyCar seasons 1996–2007 and 2008–2026
+for (let year = 1996; year <= 2007; year++) {
+  marketLoaders[`${year}-IndyCar`] = makeMarketLoader(year, 'IndyCar');
+}
+
+// IndyCar seasons 1996–2007 and 2008–2026
+for (let year = 1996; year <= 2007; year++) {
+  marketLoaders[`${year}-IndyCar`] = makeMarketLoader(year, 'IndyCar');
+}
+
 // IndyCar seasons 2008–2026
 for (let year = 2008; year <= 2026; year++) {
   marketLoaders[`${year}-IndyCar`] = makeMarketLoader(year, 'IndyCar');
+}
+
+// CART seasons 1990–2003
+for (let year = 1990; year <= 2003; year++) {
+  marketLoaders[`${year}-CART`] = makeMarketLoader(year, 'CART');
+}
+
+// Champ Car seasons 2004–2007
+for (let year = 2004; year <= 2007; year++) {
+  marketLoaders[`${year}-Champ Car`] = makeMarketLoader(year, 'Champ Car');
 }
 
 // Synchronous lookup — returns cached bundle or undefined if not yet loaded.

@@ -1140,7 +1140,7 @@ export function advanceSeason(state: GameState, nextBundle?: SeasonBundle): Game
         rolloverNews.push(driverBiddingLostNews(m.name, playerTeamName, res.rivalBid, nextYear, m.id));
       }
     } else {
-      rolloverNews.push(driverSignedNews(m.name, playerTeamName, state.selectedTeamId, m.id, nextYear, m.overall >= 8));
+      rolloverNews.push(driverSignedNews(m.name, playerTeamName, state.selectedTeamId, m.id, nextYear, m.overall >= 80));
     }
   }
   // Random paddock market drama.
@@ -1253,17 +1253,17 @@ export function advanceSeason(state: GameState, nextBundle?: SeasonBundle): Game
     }
   }
 
-  // Sync team.raceOperations (1-10) from the updated org ratings (0-100) so
+  // Sync team.raceOperations (1-100) from the updated org ratings (0-100) so
   // AI offseason staff/operations investments flow through to the race engine.
   const updatedOrgRatings = aiOffseason.orgRatings;
   const teamsWithOpsSync = teamsAfterDistress.map((t) => {
     const org = updatedOrgRatings[t.id];
     if (!org) return t;
-    // org.operations is 0-100; map to 1-10 scale.
-    const opsFromOrg = Math.max(1, Math.min(10, org.operations / 10));
+    // org.operations is 0-100; map directly to the team race-ops scale.
+    const opsFromOrg = Math.max(1, Math.min(100, org.operations));
     // Blend: 70% org-derived, 30% existing — gradual drift rather than snap.
     const newOps = t.raceOperations * 0.3 + opsFromOrg * 0.7;
-    return { ...t, raceOperations: Math.max(1, Math.min(10, Math.round(newOps * 10) / 10)) };
+    return { ...t, raceOperations: Math.max(1, Math.min(100, Math.round(newOps))) };
   });
 
   const now = new Date().toISOString();

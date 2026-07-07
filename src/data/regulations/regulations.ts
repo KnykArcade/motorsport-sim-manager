@@ -1,4 +1,5 @@
 import type { RegulationChangeEvent, RegulationSet } from '../../types/gameTypes';
+import { aowRegulations } from './aowRegulations';
 
 // ---------------------------------------------------------------------------
 // F1 & IndyCar Regulation Sets by Era
@@ -430,6 +431,8 @@ export const regulationSets: Record<string, RegulationSet> = {
     ],
   },
 };
+
+Object.assign(regulationSets, aowRegulations);
 
 export function getRegulationSet(id: string): RegulationSet | undefined {
   return regulationSets[id];

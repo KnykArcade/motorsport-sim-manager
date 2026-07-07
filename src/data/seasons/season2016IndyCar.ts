@@ -63,6 +63,7 @@ export const calendar2016IndyCar: Race[] = [
     trackName: 'Indianapolis Motor Speedway',
     laps: 200,
     distanceKm: 800.0,
+    pointsMultiplier: 2,
     completed: false,
   },
   {
@@ -163,6 +164,8 @@ export const calendar2016IndyCar: Race[] = [
     trackName: 'Sonoma Raceway',
     laps: 85,
     distanceKm: 323.0,
+
+    pointsMultiplier: 2,
     completed: false,
   },
 ];

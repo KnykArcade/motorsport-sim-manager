@@ -270,13 +270,13 @@ export function assignArchetype(
 ): AITeamArchetype {
   const rep = team.reputation;
   const cashM = team.budget / MILLION;
-  const carPace = car ? carPerformanceRating(car) : 5;
+  const carPace = car ? carPerformanceRating(car) : 50;
   const youth = org?.youthAcademy ?? 40;
   const sponsor = org?.sponsorAppeal ?? 40;
   const research = org?.research ?? 40;
   const nudge = createSeededRandom(deriveSeed(seed, 'archetype', team.id)).next();
 
-  if (rep >= 75 && carPace >= 7.3) return 'ChampionshipContender';
+  if (rep >= 75 && carPace >= 73) return 'ChampionshipContender';
   if (cashM < 28 && rep < 45) return 'SurvivalMode';
   if (rep < 42 && sponsor >= 55) return 'PayDriverReliant';
   if (youth >= 66) return rep >= 70 ? 'DevelopmentFocused' : 'YouthFocused';

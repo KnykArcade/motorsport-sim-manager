@@ -2102,7 +2102,7 @@ function generateAIPackages(
     // Build AI context from available state.
     const aiState = state.aiTeamStates?.[team.id];
     const car = carForTeam(state, team.id);
-    const carReliability = car ? effectiveCarRatings(car).reliability : 5;
+    const carReliability = car ? effectiveCarRatings(car).reliability : 50;
     const constructorPosition =
       constructorStandings.findIndex((s) => s.entityId === team.id) + 1 || teamCount;
 

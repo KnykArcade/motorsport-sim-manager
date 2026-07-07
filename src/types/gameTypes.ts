@@ -2,7 +2,7 @@
 // These types are intentionally decoupled from React so the simulation and
 // data layers can evolve independently of the UI.
 
-export type Series = 'F1' | 'IndyCar';
+export type Series = 'F1' | 'IndyCar' | 'CART' | 'Champ Car';
 
 export type GameMode = 'SingleSeason' | 'Career' | 'Sandbox';
 
@@ -22,7 +22,7 @@ export type TrackArchetype =
   | 'High-Risk Circuit'
   | 'Endurance/Reliability Circuit';
 
-// 1-10 scale ratings describing the physical character of a circuit.
+// 1-100 scale ratings describing the physical character of a circuit.
 export type TrackAttributes = {
   corners: number;
   braking: number;
@@ -70,6 +70,7 @@ export type Race = {
   trackName: string;
   laps: number;
   distanceKm?: number;
+  pointsMultiplier?: number;
   completed: boolean;
 };
 
@@ -105,7 +106,7 @@ export type Car = {
   // Accumulated development applied on top of base ratings.
   developmentLevel: CarRatings;
   // Engine supplier deal contribution to enginePower / reliability (Phase 5).
-  // A delta on the 1-10 ratings scale; absent = no engine-deal modifier.
+  // A delta on the 1-100 ratings scale; absent = no engine-deal modifier.
   engineBonus?: { power: number; reliability: number };
 };
 
@@ -156,11 +157,11 @@ export type Team = {
   driverIds: string[];
   budget: number;
   reputation: number; // 0-100
-  // Race Operations Rating (1-10): strategy, pit-crew quality, setup execution,
+  // Race Operations Rating (1-100): strategy, pit-crew quality, setup execution,
   // reliability management, engineering consistency and race-weekend execution.
   // Distinct from reputation (prestige/commercial). Drives the team component of
   // race & qualifying pace and the per-weekend operations variance.
-  raceOperations: number; // 1-10
+  raceOperations: number; // 1-100
   morale: number; // 0-100
   expectedStanding?: number;
   difficulty?: 'Easy' | 'Medium' | 'Hard' | 'Very Hard';
@@ -175,6 +176,7 @@ export type PointsSystem = {
   id: string;
   name: string;
   pointsByPosition: Record<number, number>;
+  bonusNotes?: string;
 };
 
 export type RegulationSet = {
@@ -491,3 +493,338 @@ export type NewsCategory =
   | 'general';
 
 export type NewsPriority = 'low' | 'normal' | 'high' | 'critical';
+
+// ---------------------------------------------------------------------------
+// Phase 0: expanded 1-100 master schema (additive, pilot-friendly)
+// ---------------------------------------------------------------------------
+
+export type Phase0SeasonKey = {
+  year: number;
+  series: Series;
+};
+
+export type Phase0SeriesAffinity = {
+  series: Series;
+  strength: number;
+};
+
+export type Phase0CareerTimelineEntry = {
+  year: number;
+  series: Series;
+  teamId: string;
+  role: 'driver' | 'reserve' | 'principal' | 'academy';
+};
+
+export type Phase0Contract = {
+  teamId: string;
+  yearsLeft: number;
+  salary: number;
+  options?: string[];
+};
+
+export type GlobalDriver = {
+  driverId: string;
+  name: string;
+  nationality?: string;
+  dateOfBirth?: string;
+  birthYear?: number;
+  traits: string[];
+  seriesAffinity: Phase0SeriesAffinity[];
+  careerTimeline: Phase0CareerTimelineEntry[];
+
+  cornering: number;
+  braking: number;
+  straights: number;
+  tractionAcceleration: number;
+  elevationBlindCorners: number;
+  technical: number;
+  overtakingRacecraft: number;
+  surfaceGripBumpiness: number;
+  riskManagement: number;
+  enduranceConsistency: number;
+  qualifying: number;
+  racePace: number;
+  startsRestarts: number;
+  wetWeather: number;
+  tireManagement: number;
+  adaptability: number;
+  aggression: number;
+  composure: number;
+  pressureHandling: number;
+  feedbackQuality: number;
+  technicalUnderstanding: number;
+  mechanicalSympathy: number;
+  overall: number;
+  potential: number;
+  developmentPotential: number;
+
+  morale: number;
+  trust: number;
+  reputation: number;
+  marketValue: number;
+  contract: Phase0Contract;
+};
+
+export type GlobalTeamNamePeriod = {
+  fromYear: number;
+  toYear?: number;
+  name: string;
+};
+
+export type GlobalTeamNameChangeEvent = {
+  year: number;
+  oldName?: string;
+  newName: string;
+  note?: string;
+};
+
+export type GlobalTeam = {
+  teamLineageId: string;
+  series: Series;
+  canonicalName: string;
+  namePerPeriod: GlobalTeamNamePeriod[];
+  nameChangeEvents: GlobalTeamNameChangeEvent[];
+
+  reputation: number;
+  raceOperations: number;
+  pitCrewOperations: number;
+  developmentRate: number;
+  facilities: number;
+  sponsorStrength: number;
+  commercialStrength: number;
+  politicalInfluence: number;
+  financeHealth: number;
+  budget: number;
+};
+
+export type GlobalCar = {
+  carId: string;
+  teamId: string;
+  seasonYear: number;
+  series: Series;
+  enginePower: number;
+  fuelEnergyEfficiency: number;
+  drag: number;
+  downforce: number;
+  chassisBalance: number;
+  cooling: number;
+  weightEfficiency: number;
+  mechanicalGrip: number;
+  brakingStability: number;
+  acceleration: number;
+  topSpeed: number;
+  tireWear: number;
+  tireWarmup: number;
+  tempControl: number;
+  wetPerformance: number;
+  reliability: number;
+  setupWindow: number;
+  upgradeCompatibility: number;
+  carOverall: number;
+};
+
+export type GlobalTrackDemandProfile = {
+  downforceDemand: number;
+  powerDemand: number;
+  mechanicalDemand: number;
+  brakeDemand: number;
+  tireDemand: number;
+  coolingDemand: number;
+  riskDemand: number;
+  tractionDemand?: number;
+  overtakingDifficulty?: number;
+  tireWearSeverity?: number;
+  reliabilityStress?: number;
+  setupComplexity?: number;
+  pitStrategySensitivity?: number;
+  safetyCarCautionRisk?: number;
+  overallTrackDifficulty?: number;
+  winnerBaseline?: number;
+};
+
+export type GlobalTrack = {
+  trackId: string;
+  name: string;
+  facility?: string;
+  configNote?: string;
+  type: 'oval' | 'street' | 'road' | 'mixed' | 'airport' | 'temporary';
+  category?: 'Road' | 'Street' | 'Oval';
+  ovalSubtype?: 'Short Oval' | 'Speedway' | 'Superspeedway';
+  subcategory?: string;
+  location?: string;
+  city?: string;
+  stateProvinceRegion?: string;
+  country?: string;
+  locationDisplay?: string;
+  locationConfidence?: string;
+  locationSource?: string;
+  lengthKm: number;
+  seasonsUsed: Phase0SeasonKey[];
+  aliases: string[];
+  attributes: {
+    corners: number;
+    braking: number;
+    straights: number;
+    tractionAcceleration: number;
+    elevationBlindCorners: number;
+    technical: number;
+    overtakingRacecraft: number;
+    surfaceGripBumpiness: number;
+    riskWallProximity: number;
+    enduranceConsistency: number;
+  };
+  demandProfile: GlobalTrackDemandProfile;
+};
+
+export type SupplierType = 'engine' | 'chassis';
+
+export type Supplier = {
+  supplierId: string;
+  type: SupplierType;
+  name: string;
+  seriesList: Series[];
+  years: { start: number; end?: number }[];
+  power: number;
+  reliability: number;
+  efficiency: number;
+};
+
+export type TireManufacturer = {
+  manufacturerId: string;
+  name: string;
+  series: Series;
+  seasonYear: number;
+  grip: number;
+  durability: number;
+  degradationControl: number;
+  warmup: number;
+  wetPerformance: number;
+  ovalLoadPerformance: number;
+  roadStreetPerformance: number;
+  consistency: number;
+  failureRisk: number;
+  compoundDepth: number;
+  developmentSupport: number;
+  costLevel: number;
+  politicalInfluence: number;
+};
+
+export type TeamPrincipalCareerEntry = {
+  year: number;
+  series: Series;
+  teamId: string;
+  role: string;
+};
+
+export type TeamPrincipalContract = {
+  teamId: string;
+  yearsLeft: number;
+  salary: number;
+  options?: string[];
+};
+
+export type TeamPrincipal = {
+  principalId: string;
+  name: string;
+  principalType: 'Real' | 'Generated';
+  careerTimeline: TeamPrincipalCareerEntry[];
+  contract?: TeamPrincipalContract;
+  leadership: number;
+  technicalVision: number;
+  operations: number;
+  driverManagement: number;
+  commercial: number;
+  political: number;
+  riskAppetite: number;
+  developmentVision: number;
+  crisisManagement: number;
+  negotiation: number;
+  reputation: number;
+};
+
+export type YouthProspectRatingBlock = {
+  cornering: number;
+  braking: number;
+  straights: number;
+  tractionAcceleration: number;
+  elevationBlindCorners: number;
+  technical: number;
+  overtakingRacecraft: number;
+  surfaceGripBumpiness: number;
+  riskManagement: number;
+  enduranceConsistency: number;
+};
+
+export type YouthProspect = {
+  prospectId: string;
+  name: string;
+  age: number;
+  birthYear: number;
+  nationality: string;
+  preferredSeries: Series | 'Any';
+  currentLevel: string;
+  potential: number;
+  hiddenRatings: YouthProspectRatingBlock;
+  signingDifficulty: string;
+};
+
+export type Phase0SeasonEntityReference = {
+  entityId: string;
+  label: string;
+  sourceSheet: string;
+};
+
+export type Phase0SeasonCalendarRow = {
+  round: number;
+  raceName: string;
+  trackId: string;
+  trackName: string;
+  laps: number;
+  distanceKm: number;
+};
+
+export type Phase0SeasonAssignment = {
+  season: number;
+  series: Series;
+  entityId: string;
+  role: 'driver' | 'team' | 'track' | 'supplier' | 'tire' | 'principal' | 'prospect';
+  sourceSheet: string;
+};
+
+export type Phase0SeasonBundle = {
+  season: number;
+  series: Series;
+  seasonId: string;
+  calendar: Phase0SeasonCalendarRow[];
+  standings?: Array<{
+    driverId: string;
+    teamId: string;
+    position: number;
+    points: number;
+  }>;
+  teamEntries: Array<{
+    teamId: string;
+    carNumber: string;
+    driverId: string;
+    chassis: string;
+    engine: string;
+  }>;
+  driverAssignments: Phase0SeasonEntityReference[];
+  teamAssignments: Phase0SeasonEntityReference[];
+  trackAssignments: Phase0SeasonEntityReference[];
+  supplierAssignments: Phase0SeasonEntityReference[];
+  tireAssignments: Phase0SeasonEntityReference[];
+  principalAssignments: Phase0SeasonEntityReference[];
+  youthAssignments: Phase0SeasonEntityReference[];
+};
+
+export type Phase0GlobalRegistry = {
+  drivers: GlobalDriver[];
+  teams: GlobalTeam[];
+  cars: GlobalCar[];
+  tracks: GlobalTrack[];
+  suppliers: Supplier[];
+  tires: TireManufacturer[];
+  principals: TeamPrincipal[];
+  youthProspects: YouthProspect[];
+};

@@ -78,25 +78,25 @@ describe('car-aware practice feedback (P5)', () => {
       .join(' | ');
 
   it('surfaces mechanical-grip hints for a weak-mechanical-grip car', () => {
-    const weak = messages(carWith({ mechanicalGrip: 2 }));
-    const strong = messages(carWith({ mechanicalGrip: 9 }));
+    const weak = messages(carWith({ mechanicalGrip: 20, aeroEfficiency: 90, enginePower: 90 }));
+    const strong = messages(carWith({ mechanicalGrip: 90, aeroEfficiency: 90, enginePower: 90 }));
     expect(weak).toMatch(/traction|grip|rear/);
     expect(weak).not.toEqual(strong);
   });
 
   it('flags cooling / conservative settings for a fragile car in a reliability shakedown', () => {
-    const fragile = messages(carWith({ reliability: 2 }), 'ReliabilityShakedown');
+    const fragile = messages(carWith({ reliability: 20 }), 'ReliabilityShakedown');
     expect(fragile).toMatch(/cool|conservative|temperature|fragile/);
   });
 
   it('mentions aero instability for an aero-weak car', () => {
-    const weakAero = messages(carWith({ aeroEfficiency: 2 }));
+    const weakAero = messages(carWith({ aeroEfficiency: 20 }));
     expect(weakAero).toMatch(/aero|high-speed|load/);
   });
 
   it('changes the tune of the low-drag conversation between a strong- and weak-engine car', () => {
-    const strongEngine = messages(carWith({ enginePower: 9 }));
-    const weakEngine = messages(carWith({ enginePower: 2 }));
+    const strongEngine = messages(carWith({ enginePower: 90 }));
+    const weakEngine = messages(carWith({ enginePower: 20 }));
     expect(strongEngine).not.toEqual(weakEngine);
   });
 
@@ -105,13 +105,13 @@ describe('car-aware practice feedback (P5)', () => {
     const countNegative = (car: Car) =>
       generatePracticeFeedback(driver, BALANCED_SETUP, track, 'SetupExploration', rng(), { car })
         .filter((f) => f.sentiment === 'Concern' || f.sentiment === 'Warning').length;
-    const weak = countNegative(carWith({ mechanicalGrip: 2, aeroEfficiency: 2, reliability: 2 }));
-    const strong = countNegative(carWith({ mechanicalGrip: 9, aeroEfficiency: 9, reliability: 9 }));
+    const weak = countNegative(carWith({ mechanicalGrip: 20, aeroEfficiency: 20, reliability: 20 }));
+    const strong = countNegative(carWith({ mechanicalGrip: 90, aeroEfficiency: 90, reliability: 90 }));
     expect(weak).toBeGreaterThan(strong);
   });
 
   it('gives broad, hedged feedback at low knowledge and specific feedback at high knowledge', () => {
-    const car = carWith({ mechanicalGrip: 2 });
+    const car = carWith({ mechanicalGrip: 20 });
     const low = generatePracticeFeedback(driver, BALANCED_SETUP, track, 'SetupExploration', createSeededRandom('k'), {
       car,
       knowledge: { setup: 0, tire: 0, reliability: 0 },

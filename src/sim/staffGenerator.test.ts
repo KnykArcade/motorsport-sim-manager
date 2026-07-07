@@ -21,11 +21,11 @@ describe('staff generator', () => {
   it('has a spread of ratings (stars and rookies) with costs that scale', () => {
     const pool = generateStaffPool(1995, 'F1');
     const ratings = pool.map((s) => s.rating);
-    expect(Math.max(...ratings)).toBeGreaterThanOrEqual(9);
-    expect(Math.min(...ratings)).toBeLessThanOrEqual(4);
+    expect(Math.max(...ratings)).toBeGreaterThanOrEqual(90);
+    expect(Math.min(...ratings)).toBeLessThanOrEqual(40);
     // Higher-rated staff cost more on average.
-    const star = pool.find((s) => s.rating >= 9)!;
-    const rookie = pool.find((s) => s.rating <= 4)!;
+    const star = pool.find((s) => s.rating >= 90)!;
+    const rookie = pool.find((s) => s.rating <= 40)!;
     expect(star.salary).toBeGreaterThan(rookie.salary);
   });
 
