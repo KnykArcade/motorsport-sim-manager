@@ -35,6 +35,7 @@ function baseRel(overrides: Partial<DriverRelationship> = {}): DriverRelationshi
     trustInCar: 55,
     trustInTeam: 55,
     trustInPrincipal: 58,
+    teamTrustInDriver: 55,
     ego: 50,
     personalityTraits: [],
     wants: [],
@@ -281,9 +282,15 @@ describe('driverConfidenceEngine — rollover', () => {
   });
 
   it('drifts low confidence upward', () => {
-    const low = baseRel({ selfConfidence: 20, trustInCar: 20, trustInTeam: 20, trustInPrincipal: 20, ego: 25 });
+    const low = baseRel({ selfConfidence: 20, trustInCar: 20, trustInTeam: 20, trustInPrincipal: 20, teamTrustInDriver: 20, ego: 25 });
     const rolled = rolloverConfidence(low);
     expect(rolled.selfConfidence).toBeGreaterThan(20);
+  });
+
+  it('drifts team trust in driver with rollover', () => {
+    const rel = baseRel({ teamTrustInDriver: 40 });
+    const rolled = rolloverConfidence(rel);
+    expect(rolled.teamTrustInDriver).toBeGreaterThan(40);
   });
 });
 

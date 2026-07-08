@@ -1503,6 +1503,7 @@ describe('careerPhaseEngine', () => {
             trustInCar: 50,
             trustInTeam: 55,
             trustInPrincipal: 58,
+            teamTrustInDriver: 55,
             ego: 45,
             personalityTraits: [],
             wants: [],

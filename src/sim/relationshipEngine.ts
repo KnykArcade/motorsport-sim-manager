@@ -127,6 +127,7 @@ function seedRelationship(
     trustInCar: clamp(Math.round(50 + (team.reputation - 50) * 0.3 + v())),
     trustInTeam: clamp(Math.round(55 + v())),
     trustInPrincipal: clamp(Math.round(58 + v())),
+    teamTrustInDriver: clamp(Math.round(52 + (team.reputation - 50) * 0.25 + (isNumberOne ? 4 : -2) + v())),
     ego,
     personalityTraits,
     wants,
@@ -199,6 +200,7 @@ export function rolloverRelationships(
         engineerChemistry: clamp(before.engineerChemistry + 4),
         morale: clamp(Math.round(before.morale * 0.5 + 60 * 0.5)),
         frustration: clamp(Math.round(before.frustration * 0.6)),
+        teamTrustInDriver: clamp(Math.round(before.teamTrustInDriver * 0.84 + fresh.teamTrustInDriver * 0.16)),
       };
     } else {
       merged[d.id] = fresh;
@@ -277,6 +279,7 @@ export function syncDriverRelationshipsForTeam(
       trustInCar: clamp(Math.round(50 + v())),
       trustInTeam: clamp(Math.round(55 + v())),
       trustInPrincipal: clamp(Math.round(58 + v())),
+      teamTrustInDriver: clamp(Math.round(50 + (driver.contractYearsRemaining ?? 1) * 3 + (isActive ? 2 : -1) + v())),
       ego: clamp(Math.round(45 + (driver.ratings.overall - 6) * 5 + v())),
       personalityTraits,
       wants,

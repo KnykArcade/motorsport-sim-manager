@@ -17,6 +17,7 @@
 import type { AnalyticsRecommendation, LiveCarState, LiveRaceState } from '../types/liveTypes';
 import { DIRTY_AIR_GAP } from './liveRacePace';
 import { cooldownFor } from './analyticsEngine';
+import { overallConfidenceScore } from './driverConfidenceEngine';
 
 // The permanent panel's display mode. A pending decision always wins; then an
 // active instruction; then a recent-decision cooldown; otherwise plain monitoring.
@@ -86,6 +87,10 @@ export type MonitorTile = {
 export type DriverMonitor = {
   driverId: string;
   position: number | null;
+  confidenceScore: number;
+  trustInTeam: number;
+  trustInCar: number;
+  teamTrustInDriver: number;
   focus: string; // primary thing the analytics team is watching
   focusLabel: string; // 1-3 word label of that focus (compact panel)
   strategyRead: string; // current plan read
@@ -361,9 +366,14 @@ export function buildAnalyticsMonitor(state: LiveRaceState, seatOrderIds: string
 
   const drivers: DriverMonitor[] = ordered.map((car) => {
     const behind = gapBehind(car, running);
+    const rel = state.driverRelationships?.[car.driverId];
     return {
       driverId: car.driverId,
       position: car.position,
+      confidenceScore: rel ? overallConfidenceScore(rel) : 50,
+      trustInTeam: rel?.trustInTeam ?? 50,
+      trustInCar: rel?.trustInCar ?? 50,
+      teamTrustInDriver: rel?.teamTrustInDriver ?? 50,
       focus: driverFocus(car, state, behind),
       focusLabel: driverFocusLabel(car, state, behind),
       strategyRead: strategyRead(car),

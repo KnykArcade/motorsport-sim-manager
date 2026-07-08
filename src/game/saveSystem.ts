@@ -20,6 +20,7 @@ function migrateRelationships(rels: Record<string, DriverRelationship>): Record<
       trustInCar: rel.trustInCar ?? 50,
       trustInTeam: rel.trustInTeam ?? 50,
       trustInPrincipal: rel.trustInPrincipal ?? 50,
+      teamTrustInDriver: rel.teamTrustInDriver ?? 50,
       ego: rel.ego ?? 50,
       personalityTraits: rel.personalityTraits ?? [],
       wants: rel.wants ?? [],

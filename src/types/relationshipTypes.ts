@@ -101,6 +101,7 @@ export type DriverRelationship = {
   trustInCar: number; // 0-100
   trustInTeam: number; // 0-100
   trustInPrincipal: number; // 0-100
+  teamTrustInDriver: number; // 0-100
   ego: number; // 0-100 (high = expects priority treatment)
   personalityTraits: DriverPersonalityTrait[];
   wants: DriverWant[];

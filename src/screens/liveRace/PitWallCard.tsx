@@ -25,6 +25,7 @@ export function PitWallCard({
   name,
   teamColor,
   finished,
+  trust,
   onMode,
   onPit,
   className = '',
@@ -33,6 +34,12 @@ export function PitWallCard({
   name: string;
   teamColor: string;
   finished: boolean;
+  trust?: {
+    driverTrust: number;
+    teamTrust: number;
+    carTrust: number;
+    teamTrustInDriver: number;
+  };
   onMode: (mode: PaceMode) => void;
   onPit: (decision?: { intensity?: PitIntensity; exitMode?: PaceMode; repairMode?: DamageRepairMode }) => void;
   className?: string;
@@ -117,6 +124,17 @@ export function PitWallCard({
         <span className="text-slate-500">Estimated Pit Window: </span>
         <span className="font-semibold tabular-nums text-amber-300">{pitWindow}</span>
       </div>
+
+      {trust && (
+        <div className="mt-0.5 rounded border border-slate-700/50 bg-slate-950/35 px-2 py-1">
+          <TrustReadout
+            driverTrust={trust.driverTrust}
+            teamTrust={trust.teamTrust}
+            carTrust={trust.carTrust}
+            teamTrustInDriver={trust.teamTrustInDriver}
+          />
+        </div>
+      )}
 
       {/* Risk row (single-line compact chips) */}
       <div className="mt-0.5 grid grid-cols-2 gap-1.5">
@@ -235,6 +253,62 @@ export function PitWallCard({
           </div>
         </div>
       )}
+    </div>
+  );
+}
+
+function TrustReadout({
+  driverTrust,
+  teamTrust,
+  carTrust,
+  teamTrustInDriver,
+}: {
+  driverTrust: number;
+  teamTrust: number;
+  carTrust: number;
+  teamTrustInDriver: number;
+}) {
+  return (
+    <div className="grid gap-1">
+      <TrustBar label="Driver Trust" value={driverTrust} accent="amber" />
+      <div className="grid grid-cols-3 gap-1">
+        <TrustBar label="Team Trust" value={teamTrust} accent="emerald" compact />
+        <TrustBar label="Car Trust" value={carTrust} accent="sky" compact />
+        <TrustBar label="Team→Driver" value={teamTrustInDriver} accent="violet" compact />
+      </div>
+    </div>
+  );
+}
+
+function TrustBar({
+  label,
+  value,
+  accent,
+  compact = false,
+}: {
+  label: string;
+  value: number;
+  accent: 'amber' | 'emerald' | 'sky' | 'violet';
+  compact?: boolean;
+}) {
+  const clamped = Math.max(0, Math.min(100, value));
+  const fill =
+    accent === 'amber'
+      ? 'bg-amber-400'
+      : accent === 'emerald'
+        ? 'bg-emerald-400'
+        : accent === 'sky'
+          ? 'bg-sky-400'
+          : 'bg-violet-400';
+  return (
+    <div className={compact ? 'text-[9px]' : 'text-[10px]'}>
+      <div className="mb-0.5 flex items-center justify-between gap-1 text-slate-400">
+        <span className="truncate uppercase tracking-wide">{label}</span>
+        <span className="tabular-nums text-slate-200">{clamped}%</span>
+      </div>
+      <div className="h-1.5 overflow-hidden rounded-full bg-slate-800">
+        <div className={`h-full rounded-full ${fill}`} style={{ width: `${clamped}%` }} />
+      </div>
     </div>
   );
 }

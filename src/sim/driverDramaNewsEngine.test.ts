@@ -36,6 +36,7 @@ function makeRel(overrides: Partial<DriverRelationship> = {}): DriverRelationshi
     trustInCar: 50,
     trustInTeam: 55,
     trustInPrincipal: 50,
+    teamTrustInDriver: 55,
     ego: 50,
     personalityTraits: [],
     wants: [],

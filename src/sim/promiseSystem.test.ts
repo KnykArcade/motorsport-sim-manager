@@ -28,6 +28,7 @@ function baseRel(overrides: Partial<DriverRelationship> = {}): DriverRelationshi
     trustInCar: 60,
     trustInTeam: 60,
     trustInPrincipal: 60,
+    teamTrustInDriver: 55,
     ego: 50,
     personalityTraits: [],
     wants: [],

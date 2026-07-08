@@ -18,6 +18,7 @@ import {
 } from '../sim/raceTickEngine';
 import { requiresDecision, DECISION_COUNTDOWN_SECONDS } from '../sim/analyticsEngine';
 import { buildAnalyticsMonitor } from '../sim/analyticsMonitor';
+import { overallConfidenceScore } from '../sim/driverConfidenceEngine';
 import { orderCardsBySeat } from '../sim/liveRaceCardOrder';
 import { applyTeamOrderToLive, recordTeamOrder, TEAM_ORDER_SPECS } from '../sim/relationshipEngine';
 import { Button } from '../components/Button';
@@ -558,6 +559,16 @@ export function LiveRace() {
                   name={driverName(c.driverId)}
                   teamColor={teamColor(c.teamId)}
                   finished={finished}
+                  trust={
+                    state.driverRelationships?.[c.driverId]
+                      ? {
+                          driverTrust: overallConfidenceScore(state.driverRelationships[c.driverId]),
+                          teamTrust: state.driverRelationships[c.driverId].trustInTeam,
+                          carTrust: state.driverRelationships[c.driverId].trustInCar,
+                          teamTrustInDriver: state.driverRelationships[c.driverId].teamTrustInDriver,
+                        }
+                      : undefined
+                  }
                   onMode={(m) => setMode(c.driverId, m)}
                   onPit={(decision) => pitNow(c.driverId, decision)}
                   className="min-h-0"

@@ -1,5 +1,5 @@
 // Left-side timing tower / running order. A compact full-field table with tabs
-// (Overview / Gaps / Tyres / Stops / Sectors). Player cars are highlighted and
+// (Overview / Gaps / Intervals / Tyres / Stops / Sectors). Player cars are highlighted and
 // every row carries compact reliability (R) and crash (C) risk indicators.
 
 import { useState } from 'react';
@@ -7,8 +7,8 @@ import type { LiveCarState } from '../../types/liveTypes';
 import { DeltaTag, RiskDot } from './dashboardUi';
 import { fmtLap, fmtSector, tyreLetter } from './dashboardFormat';
 
-type Tab = 'Overview' | 'Gaps' | 'Tyres' | 'Pit Stops' | 'Sectors';
-const TABS: Tab[] = ['Overview', 'Gaps', 'Tyres', 'Pit Stops', 'Sectors'];
+type Tab = 'Overview' | 'Gaps' | 'Intervals' | 'Tyres' | 'Pit Stops' | 'Sectors';
+const TABS: Tab[] = ['Overview', 'Gaps', 'Intervals', 'Tyres', 'Pit Stops', 'Sectors'];
 
 export function TimingTower({
   cars,
@@ -59,6 +59,7 @@ function Row({ car, tab, name, color }: { car: LiveCarState; tab: Tab; name: str
   const wear = Math.round(car.tire.wear);
   const life = Math.max(0, 100 - wear);
   const tyre = tyreLetter(car.tire.compound);
+  const position = car.position ?? 0;
 
   return (
     <tr
@@ -108,6 +109,12 @@ function Row({ car, tab, name, color }: { car: LiveCarState; tab: Tab; name: str
           <td className="py-1 pr-2 text-right tabular-nums text-slate-400">
             {!classified ? '—' : car.position === 1 ? '—' : `+${car.interval.toFixed(1)}`}
           </td>
+        </>
+      )}
+      {tab === 'Intervals' && (
+        <>
+          <td className="py-1 pr-1 text-right tabular-nums text-slate-300">{position === 1 ? 'LEADER' : `+${car.interval.toFixed(1)}`}</td>
+          <td className="py-1 pr-2 text-right tabular-nums text-slate-400">{position === 1 ? '—' : `P${Math.max(1, position - 1)}`}</td>
         </>
       )}
       {tab === 'Tyres' && (

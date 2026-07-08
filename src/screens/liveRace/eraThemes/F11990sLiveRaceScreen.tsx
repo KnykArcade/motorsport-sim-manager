@@ -8,6 +8,7 @@ import { kindLabel } from '../../../sim/analyticsMonitor';
 import type { AnalyticsRecommendation, LiveCarState, LiveRaceState, PaceMode, PitIntensity, RecAction, ReliabilityIssueType } from '../../../types/liveTypes';
 import type { Race } from '../../../types/gameTypes';
 import type { GameState } from '../../../game/careerState';
+import { overallConfidenceScore } from '../../../sim/driverConfidenceEngine';
 import { fmtLap, fmtSector, tyreLetter } from '../dashboardFormat';
 import type { ForecastEntry } from '../forecast';
 import { PIT_INTENSITY_ORDER } from '../../../sim/pitIntensityData';
@@ -202,7 +203,13 @@ export function F11990sLiveRaceScreen({
             >
               <div className="h-[calc(100%-37px)] overflow-y-auto p-2 text-[12px]">
                 <div className="space-y-3 text-zinc-200">
-                  {playerCars.map((car) => (
+                  {playerCars.map((car) => {
+                    const rel = state.driverRelationships?.[car.driverId];
+                    const driverTrust = rel ? overallConfidenceScore(rel) : 50;
+                    const teamTrust = rel?.trustInTeam ?? 50;
+                    const carTrust = rel?.trustInCar ?? 50;
+                    const teamTrustInDriver = rel?.teamTrustInDriver ?? 50;
+                    return (
                     <div key={car.driverId} className="rounded border border-zinc-800/70 bg-zinc-950/35 px-1.5 py-1">
                       <div className="flex items-center justify-between gap-2">
                         <span className="truncate">{shortName(nameOf(car.driverId)).toUpperCase()}</span>
@@ -212,8 +219,23 @@ export function F11990sLiveRaceScreen({
                         <span>{pitWindowStatus(car)}</span>
                         <span className="tabular-nums">{lastStopText(car)}</span>
                       </div>
+                      <div className="mt-1 rounded border border-zinc-800/60 bg-zinc-950/50 px-1 py-0.5 text-[9px] uppercase tracking-wide text-zinc-400">
+                        <div className="flex items-center justify-between gap-1 text-[9px]">
+                          <span>Driver Trust</span>
+                          <span className="tabular-nums text-zinc-200">{driverTrust}%</span>
+                        </div>
+                        <div className="mt-0.5 h-1 overflow-hidden rounded-full bg-zinc-800">
+                          <div className="h-full rounded-full bg-amber-400" style={{ width: `${driverTrust}%` }} />
+                        </div>
+                        <div className="mt-1 grid grid-cols-3 gap-1">
+                          <MiniTrustBar label="Team" value={teamTrust} fillClass="bg-emerald-400" />
+                          <MiniTrustBar label="Car" value={carTrust} fillClass="bg-sky-400" />
+                          <MiniTrustBar label="Team→Driver" value={teamTrustInDriver} fillClass="bg-violet-400" />
+                        </div>
+                      </div>
                     </div>
-                  ))}
+                    );
+                  })}
                   {playerCars.length === 0 && <div>No planned stop</div>}
                 </div>
               </div>
@@ -363,6 +385,29 @@ function RetroPanel({
   );
 }
 
+function MiniTrustBar({
+  label,
+  value,
+  fillClass,
+}: {
+  label: string;
+  value: number;
+  fillClass: string;
+}) {
+  const clamped = Math.max(0, Math.min(100, value));
+  return (
+    <div>
+      <div className="flex items-center justify-between gap-1 text-[8px] uppercase tracking-wide text-zinc-500">
+        <span>{label}</span>
+        <span className="tabular-nums text-zinc-200">{clamped}%</span>
+      </div>
+      <div className="mt-0.5 h-1 overflow-hidden rounded-full bg-zinc-800">
+        <div className={`h-full rounded-full ${fillClass}`} style={{ width: `${clamped}%` }} />
+      </div>
+    </div>
+  );
+}
+
 function RetroTimingTower({
   cars,
   nameOf,
@@ -372,11 +417,11 @@ function RetroTimingTower({
   nameOf: (driverId: string) => string;
   colorOf: (teamId: string) => string;
 }) {
-  const [tab, setTab] = useState<'Running Order' | 'Pit Stops' | 'Sectors'>('Running Order');
+  const [tab, setTab] = useState<'Running Order' | 'Pit Stops' | 'Sectors' | 'Intervals'>('Running Order');
   return (
     <RetroPanel title="Live Timing" className="flex h-full min-h-0 flex-col">
       <div className="flex shrink-0 gap-1 border-b border-zinc-800 px-2 py-1">
-        {(['Running Order', 'Pit Stops', 'Sectors'] as const).map((item) => (
+        {(['Running Order', 'Pit Stops', 'Sectors', 'Intervals'] as const).map((item) => (
           <button
             key={item}
             onClick={() => setTab(item)}
@@ -395,8 +440,18 @@ function RetroTimingTower({
       >
         <span>Pos</span>
         <span>Driver</span>
-        {tab === 'Pit Stops' ? <span className="text-right">Last</span> : tab === 'Sectors' ? <span className="text-right">S1</span> : <span className="text-right">Gap</span>}
-        {tab === 'Sectors' ? <span className="text-right">S2</span> : <span className="text-right">Pits</span>}
+        {tab === 'Pit Stops'
+          ? <span className="text-right">Last</span>
+          : tab === 'Intervals'
+            ? <span className="text-right">Interval</span>
+            : tab === 'Sectors'
+              ? <span className="text-right">S1</span>
+              : <span className="text-right">Gap</span>}
+        {tab === 'Intervals'
+          ? <span className="text-right">Ahead</span>
+          : tab === 'Sectors'
+            ? <span className="text-right">S2</span>
+            : <span className="text-right">Pits</span>}
         {tab === 'Sectors' ? <span className="text-right">S3</span> : <span className="text-right">{tab === 'Pit Stops' ? 'Lap' : 'Tyre'}</span>}
         {tab === 'Sectors' && <span className="text-right">Lap</span>}
       </div>
@@ -404,6 +459,7 @@ function RetroTimingTower({
         {cars.map((car) => {
           const tyre = tyreLetter(car.tire.compound);
           const life = Math.max(0, 100 - Math.round(car.tire.wear));
+          const position = car.position ?? 0;
           const retired = !car.running && car.status !== 'Finished';
           const retiredNote = retired ? `Retired - ${car.lastIncident ?? 'DNF'}` : '';
           return (
@@ -440,6 +496,12 @@ function RetroTimingTower({
                   <span className="text-right tabular-nums text-zinc-300">{fmtSector(car.lastSectors?.[1])}</span>
                   <span className="text-right tabular-nums text-zinc-300">{fmtSector(car.lastSectors?.[2])}</span>
                   <span className="text-right tabular-nums text-zinc-300">{car.lastLapTime > 0 ? fmtLap(car.lastLapTime) : '—'}</span>
+                </>
+              ) : tab === 'Intervals' ? (
+                <>
+                  <span className="text-right tabular-nums text-zinc-300">{position === 1 ? 'LEADER' : `+${car.interval.toFixed(1)}`}</span>
+                  <span className="text-right tabular-nums text-zinc-300">{position === 1 ? '—' : `P${Math.max(1, position - 1)}`}</span>
+                  <span className="text-right font-bold tabular-nums text-amber-300">{tyre.letter} {life}%</span>
                 </>
               ) : (
                 <>
