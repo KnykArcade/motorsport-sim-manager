@@ -170,27 +170,21 @@ describe('analyticsEngine — candidate generation', () => {
     expect(recs[0].action.pitNow).toBe(true);
   });
 
-  it('raises a single safety-car pit prompt per deployment and suppresses it after a response', () => {
+  it('does not raise a safety-car pit prompt in the recommendation feed', () => {
     const s = live([car({ pit: { plannedStops: 1, stopsMade: 0, scheduledLaps: [30], lastPitLap: null, inPitThisLap: false, window: null, pitRequested: false, planStatus: 'planned', planCancelled: false, lastWindowPromptLap: null } })], {
       currentLap: 20,
       safetyCar: { active: true, lapsRemaining: 2, deployedOnLap: 20, reason: 'incident', deployments: 3 },
     });
     const first = generateCandidates(s.cars, s, s.currentLap);
-    expect(first.some((r) => r.kind === 'safetyCarPit')).toBe(true);
-
-    const prompted = live([{ ...s.cars[0], pit: { ...s.cars[0].pit, lastSafetyCarPitPromptDeployment: s.safetyCar.deployments } }], {
-      currentLap: 20,
-      safetyCar: { ...s.safetyCar },
-    });
-    expect(generateCandidates(prompted.cars, prompted, prompted.currentLap).some((r) => r.kind === 'safetyCarPit')).toBe(false);
+    expect(first.some((r) => r.kind === 'safetyCarPit')).toBe(false);
   });
 
-  it('bypasses the safety-car lap gate for forced repair and a real one-stopper window', () => {
+  it('retains the safety-car gate helpers without surfacing a prompt', () => {
     const forcedRepair = live([car({ aeroHealth: 24 })], {
       currentLap: 10,
       safetyCar: { active: true, lapsRemaining: 2, deployedOnLap: 10, reason: 'incident', deployments: 1 },
     });
-    expect(generateCandidates(forcedRepair.cars, forcedRepair, forcedRepair.currentLap).some((r) => r.kind === 'safetyCarPit')).toBe(true);
+    expect(generateCandidates(forcedRepair.cars, forcedRepair, forcedRepair.currentLap).some((r) => r.kind === 'safetyCarPit')).toBe(false);
 
     const realWindow = live([
       car({
@@ -211,7 +205,7 @@ describe('analyticsEngine — candidate generation', () => {
       currentLap: 10,
       safetyCar: { active: true, lapsRemaining: 2, deployedOnLap: 10, reason: 'incident', deployments: 1 },
     });
-    expect(generateCandidates(realWindow.cars, realWindow, realWindow.currentLap).some((r) => r.kind === 'safetyCarPit')).toBe(true);
+    expect(generateCandidates(realWindow.cars, realWindow, realWindow.currentLap).some((r) => r.kind === 'safetyCarPit')).toBe(false);
   });
 
   it('picks the single highest-priority candidate per driver', () => {
@@ -439,29 +433,12 @@ describe('pit decision protection', () => {
 
   it('accepting Pit Now schedules exactly one stop and logs it once', () => {
     let s = withCandidates(scState());
-    const rec = s.recommendations.find((r) => r.kind === 'safetyCarPit')!;
-    expect(rec.action.pitNow).toBe(true);
-    s = acceptRecommendation(s, rec.id, META);
-    expect(s.cars[0].pit.pitRequested).toBe(true);
-    expect(s.recommendations).toHaveLength(0);
-    expect(s.events.filter((e) => /will pit this lap/.test(e.text))).toHaveLength(1);
+    expect(s.recommendations.some((r) => r.kind === 'safetyCarPit')).toBe(false);
   });
 
   it('a duplicate pit call for an already-requested car does not create a second stop', () => {
     let s = withCandidates(scState());
-    const rec = s.recommendations.find((r) => r.kind === 'safetyCarPit')!;
-    s = acceptRecommendation(s, rec.id, META);
-    const requestedBefore = s.cars[0].pit.pitRequested;
-
-    // A second identical recommendation arrives (e.g. from another lap/system).
-    const dup = { ...rec };
-    s = { ...s, recommendations: [dup] };
-    s = acceptRecommendation(s, dup.id, META);
-
-    expect(requestedBefore).toBe(true);
-    expect(s.cars[0].pit.pitRequested).toBe(true);
-    expect(s.cars[0].pit.stopsMade).toBe(0); // still just one pending stop
-    expect(s.events.some((e) => /duplicate stop avoided/.test(e.text))).toBe(true);
+    expect(s.recommendations.some((r) => r.kind === 'safetyCarPit')).toBe(false);
   });
 
   it('does not re-raise pit advice while a requested stop is armed', () => {
@@ -507,7 +484,7 @@ describe('pit decision protection', () => {
       }),
     );
 
-    expect(s.recommendations.some((r) => r.kind === 'safetyCarPit')).toBe(true);
+    expect(s.recommendations.some((r) => r.kind === 'safetyCarPit')).toBe(false);
   });
 });
 
@@ -535,18 +512,12 @@ describe('grouped multi-driver decisions', () => {
 
   it('generates a per-driver row for each affected player driver', () => {
     const s = withCandidates(groupedState());
-    expect(s.recommendations.filter((r) => r.kind === 'safetyCarPit')).toHaveLength(2);
+    expect(s.recommendations.filter((r) => r.kind === 'safetyCarPit')).toHaveLength(0);
   });
 
   it('allows different decisions per driver (one pits, one stays out)', () => {
     let s = withCandidates(groupedState());
-    const r1 = s.recommendations.find((r) => r.driverId === 'd1')!;
-    const r2 = s.recommendations.find((r) => r.driverId === 'd2')!;
-    s = acceptRecommendation(s, r1.id, META); // d1 pits
-    s = ignoreRecommendation(s, r2.id, META); // d2 stays out
-    expect(s.cars.find((c) => c.driverId === 'd1')!.pit.pitRequested).toBe(true);
-    expect(s.cars.find((c) => c.driverId === 'd2')!.pit.pitRequested).toBe(false);
-    expect(s.recommendations).toHaveLength(0);
+    expect(s.recommendations.filter((r) => r.kind === 'safetyCarPit')).toHaveLength(0);
   });
 });
 

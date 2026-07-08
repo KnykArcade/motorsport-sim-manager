@@ -75,6 +75,10 @@ import {
 const MAX_RACE_EVENTS = 3;
 // Baseline "other" (fuel system, illness, debris, etc.) per-lap DNF probability.
 const OTHER_PER_LAP = 0.00015;
+const WET_MECH_RISK_MULT = 1.08;
+const WET_CRASH_RISK_MULT = 1.2;
+const DAMAGE_FAILURE_FEEDBACK_CAP = 0.012;
+const DAMAGE_CRASH_FEEDBACK_CAP = 0.015;
 
 const PRIORITY_RANK: Record<RecPriority, number> = { low: 1, medium: 2, high: 3, urgent: 4 };
 const STRATEGY_MODE_LOCK_LAPS = 3;
@@ -464,7 +468,8 @@ export function stepLiveRace(state: LiveRaceState, meta: LiveRaceMeta): LiveRace
     // 1. Mechanical: car/engine reliability, mode, and any active warning.
     let mechRisk = c.baseFailureRisk * spec.reliabilityMult;
     const damageRisk = damageRiskContribution(damageComponents);
-    mechRisk += damageRisk.failureRisk;
+    mechRisk += Math.min(damageRisk.failureRisk, DAMAGE_FAILURE_FEEDBACK_CAP) * 0.6;
+    if (weather.wet) mechRisk *= WET_MECH_RISK_MULT;
     c.reliabilityRisk = mechRisk;
 
     // 2. Crash/contact: driver/track incident risk, amplified by mode, fighting,
@@ -474,10 +479,10 @@ export function stepLiveRace(state: LiveRaceState, meta: LiveRaceMeta): LiveRace
     const crashRisk =
       (c.baseCrashRisk * spec.crashMult + tyreRiskAdd * 0.05) *
       (fighting ? 1.25 : 1) *
-      (weather.wet ? 1.4 : 1) *
+      (weather.wet ? WET_CRASH_RISK_MULT : 1) *
       wallFactor *
       trustRiskMult *
-      (1 + damageRisk.crashRisk);
+      (1 + Math.min(damageRisk.crashRisk, DAMAGE_CRASH_FEEDBACK_CAP) * 0.6);
     c.crashRisk = crashRisk;
 
     // 3. Tyre failure: rare, only in the high-wear window before a forced pit.

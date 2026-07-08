@@ -1,4 +1,4 @@
-import { useState, type Dispatch, type ReactNode, type SetStateAction } from 'react';
+import { useEffect, useState, type Dispatch, type ReactNode, type SetStateAction } from 'react';
 import type { TrackDot } from '../../../components/RaceTrack2D';
 import { TrackMapAssetPanel } from '../../../components/TrackMapAssetPanel';
 import { modeSpec } from '../../../sim/liveRacePace';
@@ -13,6 +13,8 @@ import { fmtLap, fmtSector, tyreLetter } from '../dashboardFormat';
 import type { ForecastEntry } from '../forecast';
 import { PIT_INTENSITY_ORDER } from '../../../sim/pitIntensityData';
 import { getEraTheme, getEraThemeConfig } from '../../../theme/eraTheme';
+
+const SAFETY_CAR_PIT_LOSS_FACTOR = 0.4;
 
 type Speed = 1 | 10 | 30 | 60;
 
@@ -203,13 +205,7 @@ export function F11990sLiveRaceScreen({
             >
               <div className="h-[calc(100%-37px)] overflow-y-auto p-2 text-[12px]">
                 <div className="space-y-3 text-zinc-200">
-                  {playerCars.map((car) => {
-                    const rel = state.driverRelationships?.[car.driverId];
-                    const driverTrust = rel ? overallConfidenceScore(rel) : 50;
-                    const teamTrust = rel?.trustInTeam ?? 50;
-                    const carTrust = rel?.trustInCar ?? 50;
-                    const teamTrustInDriver = rel?.teamTrustInDriver ?? 50;
-                    return (
+                  {playerCars.map((car) => (
                     <div key={car.driverId} className="rounded border border-zinc-800/70 bg-zinc-950/35 px-1.5 py-1">
                       <div className="flex items-center justify-between gap-2">
                         <span className="truncate">{shortName(nameOf(car.driverId)).toUpperCase()}</span>
@@ -219,23 +215,8 @@ export function F11990sLiveRaceScreen({
                         <span>{pitWindowStatus(car)}</span>
                         <span className="tabular-nums">{lastStopText(car)}</span>
                       </div>
-                      <div className="mt-1 rounded border border-zinc-800/60 bg-zinc-950/50 px-1 py-0.5 text-[9px] uppercase tracking-wide text-zinc-400">
-                        <div className="flex items-center justify-between gap-1 text-[9px]">
-                          <span>Driver Trust</span>
-                          <span className="tabular-nums text-zinc-200">{driverTrust}%</span>
-                        </div>
-                        <div className="mt-0.5 h-1 overflow-hidden rounded-full bg-zinc-800">
-                          <div className="h-full rounded-full bg-amber-400" style={{ width: `${driverTrust}%` }} />
-                        </div>
-                        <div className="mt-1 grid grid-cols-3 gap-1">
-                          <MiniTrustBar label="Team" value={teamTrust} fillClass="bg-emerald-400" />
-                          <MiniTrustBar label="Car" value={carTrust} fillClass="bg-sky-400" />
-                          <MiniTrustBar label="Team→Driver" value={teamTrustInDriver} fillClass="bg-violet-400" />
-                        </div>
-                      </div>
                     </div>
-                    );
-                  })}
+                  ))}
                   {playerCars.length === 0 && <div>No planned stop</div>}
                 </div>
               </div>
@@ -261,7 +242,8 @@ export function F11990sLiveRaceScreen({
               bothDrivers={decisionRecs.length > 1 && decisionRecs.every((r) => r.kind === decisionRecs[0].kind)}
               decisionSecondsLeft={needsDecision ? decisionSecondsLeft : null}
               outcome={outcomes[car.driverId] ?? null}
-              onPit={() => onPit(car.driverId)}
+              trust={driverTrustFor(state, car.driverId)}
+              onPit={(decision) => onPit(car.driverId, decision)}
               onMode={(mode) => onMode(car.driverId, mode)}
               onOrders={() => onOpenOrders(car.driverId)}
               onAccept={handleAccept}
@@ -273,6 +255,16 @@ export function F11990sLiveRaceScreen({
           <TelemetrySectorTimes cars={focusCars} nameOf={nameOf} />
         </aside>
       </main>
+
+      {live.safetyCar.active && (
+        <div className="pointer-events-none absolute left-2 top-[72px] z-20 w-[min(520px,calc(100vw-1rem))]">
+          <SafetyCarInfoStrip
+            car={focusCars[0] ?? null}
+            live={live}
+            driverName={focusCars[0] ? nameOf(focusCars[0].driverId) : null}
+          />
+        </div>
+      )}
 
       <div className="sr-only" aria-live="polite">
         1990s F1 live race screen. Lap {live.currentLap} of {live.totalLaps}. {activeRecs.length} pit wall recommendations.
@@ -382,29 +374,6 @@ function RetroPanel({
       </div>
       {children}
     </section>
-  );
-}
-
-function MiniTrustBar({
-  label,
-  value,
-  fillClass,
-}: {
-  label: string;
-  value: number;
-  fillClass: string;
-}) {
-  const clamped = Math.max(0, Math.min(100, value));
-  return (
-    <div>
-      <div className="flex items-center justify-between gap-1 text-[8px] uppercase tracking-wide text-zinc-500">
-        <span>{label}</span>
-        <span className="tabular-nums text-zinc-200">{clamped}%</span>
-      </div>
-      <div className="mt-0.5 h-1 overflow-hidden rounded-full bg-zinc-800">
-        <div className={`h-full rounded-full ${fillClass}`} style={{ width: `${clamped}%` }} />
-      </div>
-    </div>
   );
 }
 
@@ -775,6 +744,7 @@ function DriverFocus({
   bothDrivers,
   decisionSecondsLeft,
   outcome,
+  trust,
   onPit,
   onMode,
   onOrders,
@@ -797,7 +767,13 @@ function DriverFocus({
   bothDrivers: boolean;
   decisionSecondsLeft: number | null;
   outcome: string | null;
-  onPit: () => void;
+  trust: {
+    driverTrust: number;
+    teamTrust: number;
+    carTrust: number;
+    teamTrustInDriver: number;
+  };
+  onPit: (decision?: { intensity?: PitIntensity; exitMode?: PaceMode }) => void;
   onMode: (mode: PaceMode) => void;
   onOrders: () => void;
   onAccept: (rec: AnalyticsRecommendation) => void;
@@ -810,6 +786,13 @@ function DriverFocus({
   const canPit = car.running && !car.pit.inPitThisLap && !finished;
   const gapToTeammate =
     teammate && teammate.running && car.running ? car.gapToLeader - teammate.gapToLeader : null;
+  const [pitIntensity, setPitIntensity] = useState<PitIntensity>(car.pit.intensity ?? car.pit.intensityDefault ?? 'Standard');
+  const [pitExitMode, setPitExitMode] = useState<PaceMode>(car.pit.exitMode ?? 'Conservative');
+
+  useEffect(() => {
+    setPitIntensity(car.pit.intensity ?? car.pit.intensityDefault ?? 'Standard');
+    setPitExitMode(car.pit.exitMode ?? 'Conservative');
+  }, [car.driverId, car.pit.exitMode, car.pit.intensity, car.pit.intensityDefault]);
   return (
     <RetroPanel
       title={`${number ?? car.position ?? '-'}  ${shortName(name)}  ${team}`}
@@ -830,7 +813,7 @@ function DriverFocus({
         {!finished && car.running && (
           <div className="flex items-center justify-end">
             <button
-              onClick={onPit}
+              onClick={() => onPit(car.pit.pitRequested ? undefined : { intensity: pitIntensity, exitMode: pitExitMode })}
               disabled={!canPit}
               className="shrink-0 rounded border border-amber-500/50 px-2 py-1 text-[9px] font-bold uppercase text-amber-300 hover:bg-amber-500/10 disabled:border-zinc-800 disabled:text-zinc-600"
             >
@@ -859,6 +842,9 @@ function DriverFocus({
             <FocusLine label="Tyre life" value={`${tyre.letter} ${Math.max(0, 100 - Math.round(car.tire.wear))}%`} />
           </div>
           <DriverPaceTrend values={lapTimes} color={trendColor} />
+        </div>
+        <div className="mt-1 rounded border border-zinc-800 bg-zinc-950/55 p-1.5">
+          <TrustReadout trust={trust} />
         </div>
         {!finished && car.running && (
           <div className="relative mt-1 flex min-h-0 flex-1 flex-col rounded border border-zinc-800 bg-zinc-950/55 p-1">
@@ -889,6 +875,18 @@ function DriverFocus({
               <ConditionLine label="Aero" level={componentCondition(car, 'Aero')} />
               <ConditionLine label="Overall" level={overallCondition(car)} />
               <ConditionLine label="Risk" level={riskCondition(car.reliabilityRiskLevel)} />
+            </div>
+            <div className="mt-1 rounded border border-zinc-800 bg-zinc-950/75 p-1.5">
+              <div className="mb-1 flex items-center justify-between gap-2">
+                <span className="text-[9px] font-bold uppercase tracking-wide text-zinc-500">Pit Strategy</span>
+                <span className="text-[9px] uppercase tracking-wide text-zinc-600">Queue the next stop</span>
+              </div>
+              <PitDecisionControls
+                intensity={pitIntensity}
+                exitMode={pitExitMode}
+                onIntensity={setPitIntensity}
+                onExitMode={setPitExitMode}
+              />
             </div>
             {rec ? (
               <DriverAlertCard
@@ -938,19 +936,19 @@ function DriverAlertCard({
 
   const pitActionOverride = pitCall ? { ...rec.action, pitIntensity, pitExitMode } : undefined;
   return (
-    <div className="z-10 mt-auto overflow-hidden rounded border-2 border-amber-400 bg-black/95 px-1.5 py-1 shadow-[0_0_20px_rgba(245,158,11,0.35)]">
+    <div className="z-10 mt-auto overflow-hidden rounded border-2 border-amber-400 bg-black/95 px-2 py-2 shadow-[0_0_20px_rgba(245,158,11,0.35)]">
       <div className="flex items-center gap-1 text-[10px] font-black uppercase tracking-wide text-amber-300">
         <span aria-hidden="true">{'\u26A0'}</span>
         <span className="truncate">{kindLabel(rec.kind)}{bothDrivers ? ' - Both Drivers' : ''}</span>
       </div>
-      <p className="line-clamp-1 text-[10px] leading-tight text-zinc-300">{rec.issue}</p>
-      <p className="line-clamp-1 text-[10px] font-semibold leading-tight text-amber-200">
+      <p className="line-clamp-2 text-[10px] leading-tight text-zinc-300">{rec.issue}</p>
+      <p className="line-clamp-2 text-[10px] font-semibold leading-tight text-amber-200">
         {rec.recommendedAction}
         {rec.suggestedDuration ? ` (${rec.suggestedDuration})` : ''}
       </p>
       {decisionSecondsLeft != null && <CountdownBar secondsLeft={decisionSecondsLeft} className="mt-0.5" compact />}
       {modifying ? (
-        <div className="mt-0.5 max-h-14 space-y-0.5 overflow-y-auto">
+        <div className="mt-1 max-h-24 space-y-1 overflow-y-auto">
           {[rec.action, ...rec.alternatives].map((a) => (
             <button
               key={a.type}
@@ -958,20 +956,20 @@ function DriverAlertCard({
                 onModify(rec, a);
                 setModifying(false);
               }}
-              className="w-full truncate rounded bg-zinc-800 px-2 py-0.5 text-left text-[10px] font-semibold text-zinc-200 hover:bg-zinc-700"
+              className="w-full truncate rounded bg-zinc-800 px-2 py-1.5 text-left text-[10px] font-semibold text-zinc-200 hover:bg-zinc-700"
             >
               {a.label}
             </button>
           ))}
           <button
             onClick={() => setModifying(false)}
-            className="w-full rounded py-0.5 text-[9px] uppercase text-zinc-500 hover:text-zinc-300"
+            className="w-full rounded py-1 text-[9px] uppercase text-zinc-500 hover:text-zinc-300"
           >
             Cancel
           </button>
         </div>
       ) : (
-        <div className="mt-0.5 space-y-1">
+        <div className="mt-1 space-y-1.5">
           {pitCall && (
             <PitDecisionControls
               intensity={pitIntensity}
@@ -980,28 +978,28 @@ function DriverAlertCard({
               onExitMode={setPitExitMode}
             />
           )}
-          <div className="grid grid-cols-4 gap-1">
+          <div className="grid grid-cols-4 gap-1.5">
             <button
               onClick={() => onAccept(rec, pitActionOverride)}
-              className="rounded-sm bg-amber-400 py-0.5 text-[9px] font-black uppercase text-black hover:bg-amber-300"
+              className="rounded-sm bg-amber-400 py-1.5 text-[9px] font-black uppercase text-black hover:bg-amber-300"
             >
               {pitCall ? 'Pit Now' : 'Accept'}
             </button>
             <button
               onClick={() => setModifying(true)}
-              className="rounded-sm border border-amber-500/60 py-0.5 text-[9px] font-bold uppercase text-amber-200 hover:bg-amber-500/15"
+              className="rounded-sm border border-amber-500/60 py-1.5 text-[9px] font-bold uppercase text-amber-200 hover:bg-amber-500/15"
             >
               Modify
             </button>
             <button
               onClick={() => onLetCrewDecide(rec)}
-              className="rounded-sm border border-amber-500/60 py-0.5 text-[9px] font-bold uppercase text-amber-200 hover:bg-amber-500/15"
+              className="rounded-sm border border-amber-500/60 py-1.5 text-[9px] font-bold uppercase text-amber-200 hover:bg-amber-500/15"
             >
               Crew
             </button>
             <button
               onClick={() => onIgnore(rec)}
-              className="rounded-sm border border-amber-500/60 py-0.5 text-[9px] font-bold uppercase text-amber-200 hover:bg-amber-500/15"
+              className="rounded-sm border border-amber-500/60 py-1.5 text-[9px] font-bold uppercase text-amber-200 hover:bg-amber-500/15"
             >
               {pitCall ? 'Stay Out' : 'Ignore'}
             </button>
@@ -1030,7 +1028,7 @@ function PitDecisionControls({
           <button
             key={value}
             onClick={() => onIntensity(value)}
-            className={`rounded-sm px-1 py-0.5 text-[9px] font-bold uppercase ${
+            className={`rounded-sm px-1 py-1.5 text-[9px] font-bold uppercase ${
               intensity === value ? 'bg-amber-300 text-black' : 'bg-zinc-900 text-zinc-400 hover:bg-zinc-800'
             }`}
           >
@@ -1043,7 +1041,7 @@ function PitDecisionControls({
           <button
             key={mode}
             onClick={() => onExitMode(mode)}
-            className={`rounded-sm px-1 py-0.5 text-[9px] font-bold uppercase ${
+            className={`rounded-sm px-1 py-1.5 text-[9px] font-bold uppercase ${
               exitMode === mode ? 'bg-emerald-300 text-black' : 'bg-zinc-900 text-zinc-400 hover:bg-zinc-800'
             }`}
           >
@@ -1053,6 +1051,105 @@ function PitDecisionControls({
       </div>
     </div>
   );
+}
+
+function TrustReadout({
+  trust,
+}: {
+  trust: {
+    driverTrust: number;
+    teamTrust: number;
+    carTrust: number;
+    teamTrustInDriver: number;
+  };
+}) {
+  return (
+    <div className="grid gap-1">
+      <TrustBar label="Driver Trust" value={trust.driverTrust} accent="amber" />
+      <div className="grid grid-cols-3 gap-1">
+        <TrustBar label="Team Trust" value={trust.teamTrust} accent="emerald" compact />
+        <TrustBar label="Car Trust" value={trust.carTrust} accent="sky" compact />
+        <TrustBar label="Team→Driver" value={trust.teamTrustInDriver} accent="violet" compact />
+      </div>
+    </div>
+  );
+}
+
+function TrustBar({
+  label,
+  value,
+  accent,
+  compact = false,
+}: {
+  label: string;
+  value: number;
+  accent: 'amber' | 'emerald' | 'sky' | 'violet';
+  compact?: boolean;
+}) {
+  const clamped = Math.max(0, Math.min(100, value));
+  const fill =
+    accent === 'amber'
+      ? 'bg-amber-400'
+      : accent === 'emerald'
+        ? 'bg-emerald-400'
+        : accent === 'sky'
+          ? 'bg-sky-400'
+          : 'bg-violet-400';
+  return (
+    <div className={compact ? 'text-[9px]' : 'text-[10px]'}>
+      <div className="mb-0.5 flex items-center justify-between gap-1 text-zinc-400">
+        <span className="truncate uppercase tracking-wide">{label}</span>
+        <span className="tabular-nums text-zinc-200">{clamped}%</span>
+      </div>
+      <div className="h-1.5 overflow-hidden rounded-full bg-zinc-800">
+        <div className={`h-full rounded-full ${fill}`} style={{ width: `${clamped}%` }} />
+      </div>
+    </div>
+  );
+}
+
+function SafetyCarInfoStrip({
+  car,
+  live,
+  driverName,
+}: {
+  car: LiveCarState | null;
+  live: LiveRaceState;
+  driverName: string | null;
+}) {
+  if (!live.safetyCar.active) return null;
+  const lapsLeft = Math.max(0, Math.ceil(live.safetyCar.lapsRemaining));
+  const greenLoss = car?.pitLossBase ?? 0;
+  const scLoss = Math.round(Math.max(0, greenLoss * SAFETY_CAR_PIT_LOSS_FACTOR) * 10) / 10;
+  const save = Math.round(Math.max(0, greenLoss - scLoss) * 10) / 10;
+  return (
+    <div className="rounded border border-yellow-400/60 bg-yellow-950/85 px-2 py-1 text-[10px] font-semibold text-yellow-100 shadow-lg shadow-black/30">
+      <div className="flex items-center justify-between gap-3">
+        <span className="uppercase tracking-wide text-yellow-200">Safety Car</span>
+        <span className="tabular-nums text-yellow-50">SC ends in ~{lapsLeft} laps</span>
+      </div>
+      <div className="mt-0.5 tabular-nums text-yellow-100">
+        Pit now saves ~{save.toFixed(1)}s{driverName ? ` for ${shortName(driverName)}` : ''}
+      </div>
+    </div>
+  );
+}
+
+function driverTrustFor(state: GameState, driverId: string) {
+  const rel = state.driverRelationships?.[driverId];
+  return rel
+    ? {
+        driverTrust: overallConfidenceScore(rel),
+        teamTrust: rel.trustInTeam,
+        carTrust: rel.trustInCar,
+        teamTrustInDriver: rel.teamTrustInDriver,
+      }
+    : {
+        driverTrust: 50,
+        teamTrust: 50,
+        carTrust: 50,
+        teamTrustInDriver: 50,
+      };
 }
 
 function driverFocusCars(playerCars: LiveCarState[], cars: LiveCarState[]): LiveCarState[] {

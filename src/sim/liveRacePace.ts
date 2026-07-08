@@ -177,7 +177,7 @@ export function tyreFailureRisk(wear: number, wet: boolean): number {
   if (wear >= 90) risk = 0.026;
   else if (wear >= 82) risk = 0.015;
   else if (wear >= 74) risk = 0.006;
-  return risk * (wet ? 1.4 : 1);
+  return risk * (wet ? 1 : 1);
 }
 
 // Fuel/distance: cars run heavy early and get progressively faster as fuel
