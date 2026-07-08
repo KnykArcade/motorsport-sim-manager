@@ -426,11 +426,13 @@ export type LiveCarState = {
 
   // Mutable race state.
   paceMode: PaceMode;
-  // When the Safety Car forces Conserve, remember the driver's/team's intended
-  // green-flag mode so it can resume when racing restarts.
+  // When the Safety Car forces Conserve, remember the pre-SC mode captured at
+  // deployment and the current post-SC resume target (which may be changed
+  // silently during the SC or overwritten by a pit exit mode).
+  safetyCarModePreSC?: PaceMode | null;
+  safetyCarModeAfterSC?: PaceMode | null;
+  // Legacy SC restart fields kept for compatibility with existing helpers.
   safetyCarModeBefore?: PaceMode | null;
-  // True when the restart mode is already locked in by a pit-box decision and
-  // should resume automatically when the safety car ends.
   safetyCarRestartLocked?: boolean;
   // Consecutive-lap counter for the current strategy mode (resets on any change).
   strategyStint: StrategyStintState;

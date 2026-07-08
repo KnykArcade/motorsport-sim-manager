@@ -54,10 +54,7 @@ import {
   pitIntensitySpec,
   pitIntensityStationaryFloor,
 } from './pitIntensityData';
-import {
-  combinedRestartDefaultModes,
-  markSafetyCarPitPrompted,
-} from './safetyCarStrategy';
+import { markSafetyCarPitPrompted } from './safetyCarStrategy';
 import { generateRaceEventPool, resolveRaceEventTrigger } from './raceEventEngine';
 import { rollReliabilityIssue } from './reliabilityEngine';
 import { findOption, applyDecisionEffects } from './raceDecisionEngine';
@@ -136,11 +133,10 @@ function applyPitExitMode(
   mode: PaceMode,
   currentLap: number,
 ): LiveCarState {
-  if (car.safetyCarModeBefore != null) {
+  if (car.safetyCarModePreSC != null) {
     return {
       ...car,
-      safetyCarModeBefore: mode,
-      safetyCarRestartLocked: true,
+      safetyCarModeAfterSC: mode,
       strategyStint: startStint(mode, car.paceMode, currentLap, 'pit'),
       pit: { ...car.pit, exitMode: mode },
     };
@@ -148,7 +144,8 @@ function applyPitExitMode(
   return {
     ...car,
     paceMode: mode,
-    safetyCarModeBefore: null,
+    safetyCarModePreSC: null,
+    safetyCarModeAfterSC: null,
     strategyStint: startStint(mode, car.paceMode, currentLap, 'pit'),
     pit: { ...car.pit, exitMode: mode },
   };
@@ -292,25 +289,40 @@ export function stepLiveRace(state: LiveRaceState, meta: LiveRaceMeta): LiveRace
       aeroHealth: car.aeroHealth ?? 100,
     };
     if (state.safetyCar.active) {
+      const preSC = c.safetyCarModePreSC ?? c.paceMode;
+      const afterSC = c.safetyCarModeAfterSC ?? c.paceMode;
       if (c.paceMode !== 'Conservative') {
-        const pitLocked = c.strategyStint.source === 'pit' && c.strategyStint.consecutiveLaps < strategyModeLockLapsFor(c);
         c = {
           ...c,
-          safetyCarModeBefore: c.safetyCarModeBefore ?? c.paceMode,
-          safetyCarRestartLocked: c.safetyCarRestartLocked ?? pitLocked,
+          safetyCarModePreSC: preSC,
+          safetyCarModeAfterSC: afterSC,
           paceMode: 'Conservative',
           strategyStint: startStint('Conservative', c.paceMode, nextLap, 'safety_car'),
         };
+      } else if (c.safetyCarModePreSC == null || c.safetyCarModeAfterSC == null) {
+        c = {
+          ...c,
+          safetyCarModePreSC: preSC,
+          safetyCarModeAfterSC: afterSC,
+        };
       }
-    } else if (c.safetyCarModeBefore && (c.safetyCarRestartLocked || !c.isPlayer)) {
-      const resumeMode = c.safetyCarModeBefore;
-      c = {
-        ...c,
-        safetyCarModeBefore: null,
-        safetyCarRestartLocked: false,
-        paceMode: resumeMode,
-        strategyStint: startStint(resumeMode, c.paceMode, nextLap, 'safety_car'),
-      };
+    } else if (c.safetyCarModePreSC != null) {
+      if (c.isPlayer) {
+        const resumeMode = c.safetyCarModeAfterSC ?? c.safetyCarModePreSC;
+        c = {
+          ...c,
+          safetyCarModePreSC: null,
+          safetyCarModeAfterSC: null,
+          paceMode: resumeMode,
+          strategyStint: startStint(resumeMode, c.paceMode, nextLap, 'safety_car'),
+        };
+      } else {
+        c = {
+          ...c,
+          safetyCarModePreSC: null,
+          safetyCarModeAfterSC: null,
+        };
+      }
     }
     const damageSettings = state.damageSettings ?? DEFAULT_DAMAGE_SETTINGS;
     const damageComponents = collectDamageComponents(c, meta.series, meta.year, damageSettings);
@@ -419,7 +431,6 @@ export function stepLiveRace(state: LiveRaceState, meta: LiveRaceMeta): LiveRace
         });
       }
       c = applyPitExitMode(c, pitExitMode, nextLap);
-      if (state.safetyCar.active) c.safetyCarRestartLocked = true;
       c.tire = {
         compound: weather.wet ? 'Wet' : 'Dry',
         age: 0,
@@ -667,12 +678,15 @@ export function stepLiveRace(state: LiveRaceState, meta: LiveRaceMeta): LiveRace
   if (scResult.justEnded) lapEvents.push({ lap: nextLap, text: 'Safety car in this lap — racing resumes.' });
   if (scResult.justEnded) {
     for (const c of newCars) {
-      if (c.running && c.safetyCarModeBefore && (c.safetyCarRestartLocked || !c.isPlayer)) {
-        const resumeMode = c.safetyCarModeBefore;
-        c.safetyCarModeBefore = null;
-        c.safetyCarRestartLocked = false;
+      if (c.running && c.safetyCarModePreSC != null && c.isPlayer) {
+        const resumeMode = c.safetyCarModeAfterSC ?? c.safetyCarModePreSC;
+        c.safetyCarModePreSC = null;
+        c.safetyCarModeAfterSC = null;
         c.paceMode = resumeMode;
         c.strategyStint = startStint(resumeMode, c.paceMode, nextLap, 'safety_car');
+      } else if (c.running && c.safetyCarModePreSC != null) {
+        c.safetyCarModePreSC = null;
+        c.safetyCarModeAfterSC = null;
       }
     }
   }
@@ -756,14 +770,7 @@ export function stepLiveRace(state: LiveRaceState, meta: LiveRaceMeta): LiveRace
     name,
     recEvents,
   );
-  const recommendations = scResult.justEnded
-    ? [
-        ...refreshedRecommendations,
-        ...safetyCarRestartRecommendations(orderedCars, track, nextLap, name).filter(
-          (rec) => !refreshedRecommendations.some((existing) => existing.id === rec.id),
-        ),
-      ]
-    : refreshedRecommendations;
+  const recommendations = refreshedRecommendations;
 
   const retirements = orderedCars.filter((c) => c.status === 'DNF').length;
 
@@ -904,20 +911,29 @@ export function setPlayerPaceMode(
   let changed = false;
   let cancelledInstruction: string | null = null;
   const cars = state.cars.map((c) => {
-    if (c.driverId !== driverId || !c.isPlayer || !c.running || c.paceMode === mode) return c;
+    const currentTarget = c.safetyCarModeAfterSC ?? c.safetyCarModePreSC ?? c.paceMode;
+    if (c.driverId !== driverId || !c.isPlayer || !c.running || (!state.safetyCar.active && c.paceMode === mode) || (state.safetyCar.active && c.paceMode === 'Conservative' && currentTarget === mode)) {
+      return c;
+    }
     changed = true;
     if (state.safetyCar.active) {
+      const preSC = c.safetyCarModePreSC ?? c.paceMode;
       return {
         ...c,
         paceMode: 'Conservative' as PaceMode,
-        safetyCarModeBefore: mode,
-        strategyStint: startStint('Conservative', c.paceMode, state.currentLap, 'safety_car'),
+        safetyCarModePreSC: preSC,
+        safetyCarModeAfterSC: mode,
+        strategyStint:
+          c.paceMode === 'Conservative'
+            ? c.strategyStint
+            : startStint('Conservative', c.paceMode, state.currentLap, 'safety_car'),
       };
     }
     return {
       ...c,
       paceMode: mode,
-      safetyCarModeBefore: null,
+      safetyCarModePreSC: null,
+      safetyCarModeAfterSC: null,
       strategyStint: startStint(mode, c.paceMode, state.currentLap, source),
     };
   });
@@ -976,59 +992,6 @@ function retire(c: LiveCarState, lap: number, cause: string): LiveCarState {
     lapsCompleted: lap,
     lastIncident: cause,
   };
-}
-
-function safetyCarRestartRecommendations(
-  cars: LiveCarState[],
-  track: Track,
-  lap: number,
-  name: (driverId: string) => string,
-): AnalyticsRecommendation[] {
-  const eligible = cars.filter(
-    (c) =>
-      c.isPlayer &&
-      c.running &&
-      c.safetyCarModeBefore &&
-      !c.safetyCarRestartLocked &&
-      !(c.strategyStint.source === 'pit' && c.strategyStint.consecutiveLaps < strategyModeLockLapsFor(c)),
-  );
-  if (eligible.length === 0) return [];
-
-  const paceModeByDriver = combinedRestartDefaultModes(eligible, track.attributes.overtakingRacecraft);
-  const affectedDriverIds = eligible.map((c) => c.driverId);
-  const primary = eligible[0];
-  const summary = eligible
-    .map((c) => `${name(c.driverId)} → ${paceModeByDriver[c.driverId] ?? c.safetyCarModeBefore ?? 'Conservative'}`)
-    .join(' · ');
-
-  return [
-    {
-      id: `${primary.driverId}:safetyCarRestart:${lap}`,
-      driverId: primary.driverId,
-      kind: 'safetyCarRestart',
-      priority: 'high' as const,
-      issue: 'Safety Car ending - choose restart modes.',
-      recommendedAction: 'Set restart mode for both cars.',
-      suggestedDuration: 'restart choice',
-      expectedImpact: `Restart plan: ${summary}`,
-      confidence: 88,
-      createdLap: lap,
-      expiresLap: lap + 1,
-      action: {
-        type: 'Balanced',
-        label: 'Restart plan',
-        paceMode: 'Balanced',
-        paceModeByDriver,
-      },
-      alternatives: [
-        { type: 'Conservative', label: 'All Conservative', paceMode: 'Conservative' },
-        { type: 'Balanced', label: 'Balanced Restart', paceMode: 'Balanced' },
-        { type: 'Push', label: 'Push Restart', paceMode: 'Push' },
-      ],
-      affectedDriverIds,
-      status: 'pending' as const,
-    },
-  ];
 }
 
 // Split a lap time into three sector times. No real track geometry is modelled,

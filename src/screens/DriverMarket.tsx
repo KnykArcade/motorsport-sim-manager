@@ -666,69 +666,84 @@ function YouthTab({
 
       <div>
         <h2 className="mb-2 text-lg font-semibold text-neutral-100">
-          Available Prospects ({available.length})
+          Youth Prospects ({available.length} open / {prospects.length} total)
         </h2>
         <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
-          {available.map((y) => (
-            <Panel key={y.id}>
-              <div className="mb-1 flex items-start justify-between gap-2">
-                <div>
-                  <div className="font-bold text-neutral-100">{y.name}</div>
-                  <div className="text-xs text-neutral-500">
-                    {y.nationality} · age {y.age} · {y.currentLevel}
+          {prospects.map((y) => {
+            const signed = academyByProspect.has(y.id);
+            return (
+              <Panel key={y.id}>
+                <div className="mb-1 flex items-start justify-between gap-2">
+                  <div>
+                    <div className="font-bold text-neutral-100">{y.name}</div>
+                    <div className="text-xs text-neutral-500">
+                      {y.nationality} · age {y.age} · {y.currentLevel}
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <span className="rounded bg-neutral-800 px-2 py-0.5 text-xs font-semibold text-sky-300">
+                      POT {potLabel(y.id, y.skills, y.potential, 'YouthProspect')}
+                    </span>
+                    <div className="mt-0.5 text-[10px] text-neutral-500">
+                      now {readoutForMarketOverall(state, y.id, y.skills, y.potential, y.overall, 'YouthProspect').label}
+                    </div>
                   </div>
                 </div>
-                <div className="text-right">
-                  <span className="rounded bg-neutral-800 px-2 py-0.5 text-xs font-semibold text-sky-300">
-                    POT {potLabel(y.id, y.skills, y.potential, 'YouthProspect')}
-                  </span>
-                  <div className="mt-0.5 text-[10px] text-neutral-500">
-                    now {readoutForMarketOverall(state, y.id, y.skills, y.potential, y.overall, 'YouthProspect').label}
-                  </div>
+                <div className="mb-2 flex flex-wrap gap-1 text-[10px]">
+                  {signed ? (
+                    <Tag tone="good">SIGNED</Tag>
+                  ) : (
+                    <>
+                      {y.academyEligibleNow && <Tag tone="good">Eligible now</Tag>}
+                      <Tag>{y.riskLevel} risk</Tag>
+                      <Tag>~{y.yearsUntilF1Ready}y to F1</Tag>
+                    </>
+                  )}
                 </div>
-              </div>
-              <div className="mb-2 flex flex-wrap gap-1 text-[10px]">
-                {y.academyEligibleNow && <Tag tone="good">Eligible now</Tag>}
-                <Tag>{y.riskLevel} risk</Tag>
-                <Tag>~{y.yearsUntilF1Ready}y to F1</Tag>
-              </div>
-              <div className="mb-2">
-                <DriverDossierButton
-                  state={state}
-                  subject={{ type: 'academy', driver: y }}
-                  context={`${y.currentLevel} - youth prospect`}
-                  focus="development"
-                />
-              </div>
-              <div className="mb-2">
-                <ScoutingWidget target={{ id: y.id, skills: y.skills, potential: y.potential }} entityType="YouthProspect" compact />
-              </div>
-              <TopSkills state={state} id={y.id} skills={y.skills} potential={y.potential} entityType="YouthProspect" />
-              <div className="mt-3 grid grid-cols-2 gap-2 text-xs">
-                <Stat label="Signing">
-                  <Money m={y.signingCost} />
-                </Stat>
-                <Stat label="Academy/yr">
-                  <Money m={y.yearlyAcademyCost} />
-                </Stat>
-              </div>
-              <div className="mt-3 border-t border-neutral-800 pt-2">
-                <Button
-                  variant="primary"
-                  className="w-full px-2 py-1 text-xs"
-                  disabled={academyFull || toMoney(y.signingCost) > budget}
-                  onClick={() => onSignYouth(y.id)}
-                >
-                  {academyFull
-                    ? 'Academy full'
-                    : toMoney(y.signingCost) > budget
-                      ? 'Insufficient budget'
-                      : 'Add to Academy'}
-                </Button>
-              </div>
-              <p className="mt-2 text-[11px] text-neutral-400">{y.suggestedPath}</p>
-            </Panel>
-          ))}
+                <div className="mb-2">
+                  <DriverDossierButton
+                    state={state}
+                    subject={{ type: 'academy', driver: y }}
+                    context={`${y.currentLevel} - youth prospect`}
+                    focus="development"
+                  />
+                </div>
+                <div className="mb-2">
+                  <ScoutingWidget target={{ id: y.id, skills: y.skills, potential: y.potential }} entityType="YouthProspect" compact />
+                </div>
+                <TopSkills state={state} id={y.id} skills={y.skills} potential={y.potential} entityType="YouthProspect" />
+                <div className="mt-3 grid grid-cols-2 gap-2 text-xs">
+                  <Stat label="Signing">
+                    <Money m={y.signingCost} />
+                  </Stat>
+                  <Stat label="Academy/yr">
+                    <Money m={y.yearlyAcademyCost} />
+                  </Stat>
+                </div>
+                <div className="mt-3 border-t border-neutral-800 pt-2">
+                  {signed ? (
+                    <div className="rounded border border-green-500/20 bg-green-500/10 px-2 py-1 text-xs text-green-200">
+                      Already signed to the academy.
+                    </div>
+                  ) : (
+                    <Button
+                      variant="primary"
+                      className="w-full px-2 py-1 text-xs"
+                      disabled={academyFull || toMoney(y.signingCost) > budget}
+                      onClick={() => onSignYouth(y.id)}
+                    >
+                      {academyFull
+                        ? 'Academy full'
+                        : toMoney(y.signingCost) > budget
+                          ? 'Insufficient budget'
+                          : 'Add to Academy'}
+                    </Button>
+                  )}
+                </div>
+                <p className="mt-2 text-[11px] text-neutral-400">{y.suggestedPath}</p>
+              </Panel>
+            );
+          })}
         </div>
       </div>
     </div>

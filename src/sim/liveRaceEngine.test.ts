@@ -23,7 +23,6 @@ import {
   stepLiveRaceToEnd,
   resolvePrompt,
   requestPlayerPit,
-  expireRecommendation,
   setPlayerPaceMode,
 } from './raceTickEngine';
 import type {
@@ -239,7 +238,7 @@ describe('live race engine', () => {
     expect(unhealthy.recCooldowns[`${player.driverId}:strategyModeLock`]).toBe(13);
   });
 
-  it('raises one restart prompt after the safety car and defaults the ignored decision to Conservative', () => {
+  it('silently restores player pace modes after the safety car and honours pit exit overrides', () => {
     const context = buildContext('restart-seed');
     const playerTeam = context.entrants[0].driver.teamId;
     let state = createRace(context, playerTeam);
@@ -256,8 +255,8 @@ describe('live race engine', () => {
           return {
             ...c,
             paceMode: 'Conservative',
-            safetyCarModeBefore: 'Push',
-            safetyCarRestartLocked: false,
+            safetyCarModePreSC: 'Push',
+            safetyCarModeAfterSC: 'Push',
             strategyStint: { ...c.strategyStint, source: 'safety_car', consecutiveLaps: 1 },
           };
         }
@@ -265,8 +264,8 @@ describe('live race engine', () => {
           return {
             ...c,
             paceMode: 'Conservative',
-            safetyCarModeBefore: 'Balanced',
-            safetyCarRestartLocked: true,
+            safetyCarModePreSC: 'Balanced',
+            safetyCarModeAfterSC: 'Balanced',
             strategyStint: { ...c.strategyStint, source: 'pit', consecutiveLaps: 2 },
           };
         }
@@ -276,16 +275,15 @@ describe('live race engine', () => {
 
     const meta = buildMeta(context, playerTeam);
     const after = stepLiveRace(state, meta);
-    const restart = after.recommendations.find((r) => r.kind === 'safetyCarRestart');
-    expect(restart).toBeDefined();
-    expect(restart?.affectedDriverIds).toEqual([first.driverId]);
-
-    const expired = expireRecommendation(after, restart!.id, meta);
-    const firstCar = expired.cars.find((c) => c.driverId === first.driverId)!;
-    const secondCar = expired.cars.find((c) => c.driverId === second.driverId)!;
-    expect(firstCar.paceMode).toBe('Conservative');
-    expect(firstCar.safetyCarModeBefore).toBeNull();
+    const firstCar = after.cars.find((c) => c.driverId === first.driverId)!;
+    const secondCar = after.cars.find((c) => c.driverId === second.driverId)!;
+    expect(after.recommendations.some((r) => r.kind === 'safetyCarRestart')).toBe(false);
+    expect(firstCar.paceMode).toBe('Push');
+    expect(firstCar.safetyCarModePreSC).toBeNull();
+    expect(firstCar.safetyCarModeAfterSC).toBeNull();
     expect(secondCar.paceMode).toBe('Balanced');
+    expect(secondCar.safetyCarModePreSC).toBeNull();
+    expect(secondCar.safetyCarModeAfterSC).toBeNull();
   });
 });
 
