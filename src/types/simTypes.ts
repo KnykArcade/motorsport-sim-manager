@@ -118,6 +118,8 @@ export type RaceContext = {
   };
   // Confidence performance modifier by driver ID (from driverConfidenceEngine).
   confidenceModifierByDriver?: Record<string, number>;
+  // Driver relationships by driver ID (trust / ego). Used for AI disagreement beats.
+  driverRelationships?: Record<string, import('./relationshipTypes').DriverRelationship>;
 };
 
 export type RacePrepFocusEffect = {

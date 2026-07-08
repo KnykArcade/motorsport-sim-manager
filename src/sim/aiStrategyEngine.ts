@@ -16,6 +16,10 @@ import type {
   TireCompound,
 } from '../types/liveTypes';
 import { createSeededRandom, deriveSeed } from './random';
+import {
+  shouldOfferSafetyCarPit,
+  driverDisagreementBias,
+} from './safetyCarStrategy';
 
 const PERSONALITIES: AIStrategyPersonality[] = [
   'Conservative',
@@ -132,6 +136,51 @@ function choosePitIntensity(car: LiveCarState, state: LiveRaceState, track: Trac
   return 'Standard';
 }
 
+function applyDriverDisagreement(
+  car: LiveCarState,
+  state: LiveRaceState,
+  rng: ReturnType<typeof createSeededRandom>,
+  mode: PaceMode,
+): { mode: PaceMode; note: string | null } {
+  const rel = state.driverRelationships?.[car.driverId];
+  if (!rel) return { mode, note: null };
+  const bias = driverDisagreementBias(rel);
+  if (bias < 0.22 || !rng.chance(Math.min(0.55, bias))) return { mode, note: null };
+
+  const hotter: Record<PaceMode, PaceMode> = {
+    Conservative: 'Balanced',
+    Balanced: 'Push',
+    Push: 'Attack',
+    Attack: 'Attack',
+    Defend: 'Balanced',
+    ProtectEngine: 'Conservative',
+  };
+  const calmer: Record<PaceMode, PaceMode> = {
+    Conservative: 'Conservative',
+    Balanced: 'Conservative',
+    Push: 'Balanced',
+    Attack: 'Push',
+    Defend: 'Balanced',
+    ProtectEngine: 'Conservative',
+  };
+  const hotBias = (rel.ego ?? 0) >= 65 || (rel.trustInTeam ?? 100) < 50;
+  const nextMode = hotBias ? hotter[mode] : calmer[mode];
+  if (nextMode === mode) return { mode, note: null };
+  return { mode: nextMode, note: 'driver disagrees with pit wall and adjusts the restart plan' };
+}
+
+function finalizeModeDecision(
+  car: LiveCarState,
+  state: LiveRaceState,
+  rng: ReturnType<typeof createSeededRandom>,
+  action: AIAction,
+): AIAction {
+  if (!action.paceMode || action.pitNow) return action;
+  const decision = applyDriverDisagreement(car, state, rng, action.paceMode);
+  if (decision.mode === action.paceMode) return action;
+  return { ...action, paceMode: decision.mode, note: decision.note };
+}
+
 // Decide an AI car's action for the upcoming lap. Pure given (car, state, lap).
 export function aiLapDecision(
   car: LiveCarState,
@@ -169,7 +218,7 @@ export function aiLapDecision(
   // 2. Safety car: opportunistic / undercut personalities grab the cheap stop if
   //    they still have a scheduled stop to make. Sharper race operations react
   //    to the safety car more reliably; weaker operations miss the window more.
-  if (state.safetyCar.active && car.pit.stopsMade < car.pit.plannedStops && car.tire.age >= 5) {
+  if (state.safetyCar.active && car.pit.stopsMade < car.pit.plannedStops && car.tire.age >= 5 && shouldOfferSafetyCarPit(car, lap)) {
     const baseGrab =
       car.personality === 'Opportunistic' || car.personality === 'UndercutFocused'
         ? 0.85
@@ -237,7 +286,7 @@ export function aiLapDecision(
       car.personality === 'Conservative' ||
       car.reliabilityIssue.severity === 'Severe';
     action.paceMode = protect ? 'ProtectEngine' : 'Conservative';
-    return action;
+    return finalizeModeDecision(car, state, rng, action);
   }
 
   // Proactive reliability: even without a flagged issue, a car with badly worn
@@ -245,20 +294,20 @@ export function aiLapDecision(
   const worstComponent = Math.min(car.engineHealth, car.gearboxHealth, car.brakeHealth);
   if (worstComponent < 22) {
     action.paceMode = worstComponent < 12 ? 'ProtectEngine' : 'Conservative';
-    return action;
+    return finalizeModeDecision(car, state, rng, action);
   }
 
   // Damage: a damaged car backs off to protect itself and avoid a bigger
   // failure, rather than pushing on into more trouble.
   if (car.damaged) {
     action.paceMode = 'Conservative';
-    return action;
+    return finalizeModeDecision(car, state, rng, action);
   }
 
   // Worn tyres → conserve (a pit will follow from the stop logic above).
   if (car.tire.wear > 70) {
     action.paceMode = 'Conservative';
-    return action;
+    return finalizeModeDecision(car, state, rng, action);
   }
 
   // Position fights: gaps to the cars immediately ahead and behind.
@@ -281,40 +330,40 @@ export function aiLapDecision(
     const clearlyFaster = car.tire.age + 6 < carAhead.tire.age && push > 0.4;
     if (!clearlyFaster) {
       action.paceMode = 'Balanced';
-      return action;
+      return finalizeModeDecision(car, state, rng, action);
     }
   }
 
   // Stuck behind a car within striking range → Attack (aggressive personalities).
   if (intervalAhead < 1.2 && push > 0.2 && car.tire.wear < 65) {
     action.paceMode = 'Attack';
-    return action;
+    return finalizeModeDecision(car, state, rng, action);
   }
   // Defending a points position late under pressure from behind → Defend.
   if (late && inPoints && intervalBehind < 1.2) {
     action.paceMode = 'Defend';
-    return action;
+    return finalizeModeDecision(car, state, rng, action);
   }
   // Leading comfortably late → back off and bring it home.
   if (late && car.position === 1 && intervalBehind > 6) {
     action.paceMode = push > 0.4 ? 'Balanced' : 'Conservative';
-    return action;
+    return finalizeModeDecision(car, state, rng, action);
   }
   // Chasing (lost ground, or late in the points) → Push.
   if (push > 0.4 && car.position != null && car.position > car.grid) {
     action.paceMode = 'Push';
-    return action;
+    return finalizeModeDecision(car, state, rng, action);
   }
   if (late && push > 0.4 && car.tire.wear < 60) {
     action.paceMode = 'Push';
-    return action;
+    return finalizeModeDecision(car, state, rng, action);
   }
   // Cautious personalities cruise conservatively.
   if (push < -0.4) {
     action.paceMode = 'Conservative';
-    return action;
+    return finalizeModeDecision(car, state, rng, action);
   }
 
   action.paceMode = 'Balanced';
-  return action;
+  return finalizeModeDecision(car, state, rng, action);
 }

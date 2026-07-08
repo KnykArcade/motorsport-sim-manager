@@ -168,6 +168,7 @@ export function buildRaceContext(
 
   // Build confidence modifier map from driver relationships.
   const confidenceModifierByDriver: Record<string, number> = {};
+  const driverRelationships = state.driverRelationships ?? {};
   if (state.driverRelationships) {
     for (const [id, rel] of Object.entries(state.driverRelationships)) {
       confidenceModifierByDriver[id] = confidencePerformanceModifier(rel);
@@ -197,6 +198,7 @@ export function buildRaceContext(
       strategy: strategyBonus(state.staff ?? []),
     },
     confidenceModifierByDriver,
+    driverRelationships,
   };
 
   return { context, track, raceId: race.id, totalLaps: race.laps };

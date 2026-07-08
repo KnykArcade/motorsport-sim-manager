@@ -121,6 +121,10 @@ export type PitStopState = {
   // Lap the current planned window was last recommended/prompted on, used to
   // throttle repeat "pit window open" prompts so they are not raised every lap.
   lastWindowPromptLap: number | null;
+  // Safety-car pit prompts are raised once per deployment; store the last
+  // deployment number that prompted this car so the recommendation stays off
+  // the board until the next SC deployment.
+  lastSafetyCarPitPromptDeployment?: number | null;
 };
 
 export type PitStopResultTier = 'Clean' | 'Minor' | 'Moderate' | 'Major';
@@ -323,6 +327,7 @@ export type RecAction = {
   // Combined pit-call choices.
   pitIntensity?: PitIntensity;
   pitExitMode?: PaceMode;
+  paceModeByDriver?: Record<string, PaceMode>;
   // If the action is a team order (needs the favoured driver, resolved by UI).
   teamOrder?: 'SwapPositions' | 'LetThemRace';
 };
@@ -390,6 +395,7 @@ export type LiveCarState = {
   driverComposure?: number; // optional live copy of driver composure rating
   driverRiskManagement?: number; // optional live copy of driver risk-management rating
   confidenceModifier?: number; // relationship confidence/trust modifier used for live hesitation and risk
+  driverRelationships?: Record<string, import('./relationshipTypes').DriverRelationship>;
   personality: AIStrategyPersonality;
   strategyId: string;
   instructionId: string;
@@ -399,6 +405,9 @@ export type LiveCarState = {
   // When the Safety Car forces Conserve, remember the driver's/team's intended
   // green-flag mode so it can resume when racing restarts.
   safetyCarModeBefore?: PaceMode | null;
+  // True when the restart mode is already locked in by a pit-box decision and
+  // should resume automatically when the safety car ends.
+  safetyCarRestartLocked?: boolean;
   // Consecutive-lap counter for the current strategy mode (resets on any change).
   strategyStint: StrategyStintState;
   // Current Live Race Pace (1-10), recomputed every lap from Base Race Pace and
@@ -443,6 +452,8 @@ export type LiveRaceState = {
   phase: LiveRacePhase;
   weather: WeatherState;
   safetyCar: SafetyCarState;
+  // Driver relationships for AI disagreement and trust-based beats.
+  driverRelationships?: Record<string, import('./relationshipTypes').DriverRelationship>;
   cars: LiveCarState[]; // ordered by running order (leader first), retired trail
   events: RaceEvent[];
   pendingPrompt: RaceDecisionPrompt | null;

@@ -203,11 +203,13 @@ export function createLiveRace(context: RaceContext, options: LiveRaceOptions): 
       ),
       opsForm,
       confidenceModifier,
+      driverRelationships: context.driverRelationships,
       personality,
       strategyId: strategy.id,
       instructionId: instruction.id,
       paceMode: initialPaceMode(instruction.id),
       safetyCarModeBefore: null,
+      safetyCarRestartLocked: false,
       strategyStint: initialStint(initialPaceMode(instruction.id)),
       liveRacePace: baseRacePace,
       tire: { compound, age: 0, wear: 0, stintTarget: pitPlan.stintTarget },
@@ -282,6 +284,7 @@ export function createLiveRace(context: RaceContext, options: LiveRaceOptions): 
     recCooldowns: {},
     battleTracker: {},
     retirements: 0,
+    driverRelationships: context.driverRelationships,
   };
 }
 

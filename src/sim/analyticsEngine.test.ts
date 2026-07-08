@@ -170,6 +170,50 @@ describe('analyticsEngine — candidate generation', () => {
     expect(recs[0].action.pitNow).toBe(true);
   });
 
+  it('raises a single safety-car pit prompt per deployment and suppresses it after a response', () => {
+    const s = live([car({ pit: { plannedStops: 1, stopsMade: 0, scheduledLaps: [30], lastPitLap: null, inPitThisLap: false, window: null, pitRequested: false, planStatus: 'planned', planCancelled: false, lastWindowPromptLap: null } })], {
+      currentLap: 20,
+      safetyCar: { active: true, lapsRemaining: 2, deployedOnLap: 20, reason: 'incident', deployments: 3 },
+    });
+    const first = generateCandidates(s.cars, s, s.currentLap);
+    expect(first.some((r) => r.kind === 'safetyCarPit')).toBe(true);
+
+    const prompted = live([{ ...s.cars[0], pit: { ...s.cars[0].pit, lastSafetyCarPitPromptDeployment: s.safetyCar.deployments } }], {
+      currentLap: 20,
+      safetyCar: { ...s.safetyCar },
+    });
+    expect(generateCandidates(prompted.cars, prompted, prompted.currentLap).some((r) => r.kind === 'safetyCarPit')).toBe(false);
+  });
+
+  it('bypasses the safety-car lap gate for forced repair and a real one-stopper window', () => {
+    const forcedRepair = live([car({ aeroHealth: 24 })], {
+      currentLap: 10,
+      safetyCar: { active: true, lapsRemaining: 2, deployedOnLap: 10, reason: 'incident', deployments: 1 },
+    });
+    expect(generateCandidates(forcedRepair.cars, forcedRepair, forcedRepair.currentLap).some((r) => r.kind === 'safetyCarPit')).toBe(true);
+
+    const realWindow = live([
+      car({
+        pit: {
+          plannedStops: 1,
+          stopsMade: 0,
+          scheduledLaps: [20],
+          lastPitLap: null,
+          inPitThisLap: false,
+          window: { open: 8, ideal: 10, close: 12 },
+          pitRequested: false,
+          planStatus: 'planned',
+          planCancelled: false,
+          lastWindowPromptLap: null,
+        },
+      }),
+    ], {
+      currentLap: 10,
+      safetyCar: { active: true, lapsRemaining: 2, deployedOnLap: 10, reason: 'incident', deployments: 1 },
+    });
+    expect(generateCandidates(realWindow.cars, realWindow, realWindow.currentLap).some((r) => r.kind === 'safetyCarPit')).toBe(true);
+  });
+
   it('picks the single highest-priority candidate per driver', () => {
     const s = live([
       car({ crashRiskLevel: 'High', paceMode: 'Push', tire: { compound: 'Dry', age: 30, wear: 65, stintTarget: 25 } }),
@@ -321,13 +365,15 @@ describe('recommendation lifecycle — duration, dedup, cooldown', () => {
     expect(s25.recommendations.some((r) => r.kind === 'attack')).toBe(false);
   });
 
-  it('manual strategy mode changes suppress medium strategy prompts for two laps', () => {
+  it('manual strategy mode changes suppress medium strategy prompts through the healthy 5-lap lock window', () => {
     const d1 = car({ driverId: 'd1', position: 5, interval: 3 });
     const behind = car({ driverId: 'd3', isPlayer: false, position: 6, interval: 0.6 });
     let s = setPlayerPaceMode(live([d1, behind]), 'd1', 'Attack');
     s = merge(s, 21);
     expect(s.recommendations.some((r) => r.kind === 'defend')).toBe(false);
     s = merge(s, 22);
+    expect(s.recommendations.some((r) => r.kind === 'defend')).toBe(false);
+    s = merge(s, 25);
     expect(s.recommendations.some((r) => r.kind === 'defend')).toBe(true);
   });
 

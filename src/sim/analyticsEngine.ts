@@ -18,6 +18,14 @@ import type {
   RecPriority,
 } from '../types/liveTypes';
 import { DIRTY_AIR_GAP } from './liveRacePace';
+import {
+  hasForcedRepairNeed,
+  hasRealSafetyCarPitWindow,
+  safetyCarPitAlreadyPrompted,
+  shouldOfferSafetyCarPit,
+} from './safetyCarStrategy';
+
+export { SAFETY_CAR_PIT_RECOMMENDATION_MIN_LAP } from './safetyCarStrategy';
 
 // Default laps a recommendation kind is suppressed before it may re-raise
 // (urgent recommendations bypass this so a worsening situation is never hidden).
@@ -45,10 +53,6 @@ export const KIND_COOLDOWN: Record<string, number> = {
   weatherTyres: 6,
   pitWindow: 6,
 };
-
-// Safety-car stops are powerful, but an opening-stint SC should not immediately
-// produce unrealistic pit calls. Let the race settle before the pit wall asks.
-export const SAFETY_CAR_PIT_RECOMMENDATION_MIN_LAP = 16;
 
 export function cooldownFor(kind: string): number {
   return KIND_COOLDOWN[kind] ?? REC_COOLDOWN;
@@ -192,18 +196,23 @@ function candidatesFor(
   // 4. Safety car out — cheap stop available.
   if (
     state.safetyCar.active &&
-    state.currentLap >= SAFETY_CAR_PIT_RECOMMENDATION_MIN_LAP &&
     stopsLeft > 0 &&
-    !pitCallArmed
+    !pitCallArmed &&
+    shouldOfferSafetyCarPit(car, state.currentLap) &&
+    !safetyCarPitAlreadyPrompted(car, state)
   ) {
     out.push({
       kind: 'safetyCarPit',
       priority: 'high',
-      issue: 'Safety car deployed — a pit stop costs much less time now.',
+      issue: hasForcedRepairNeed(car)
+        ? 'Critical car health under safety car — pit now before the issue worsens.'
+        : hasRealSafetyCarPitWindow(car, state.currentLap)
+          ? 'Safety car deployed — the car is in its real pit window.'
+          : 'Safety car deployed — a pit stop costs much less time now.',
       recommendedAction: 'Prioritise the pit stop under the safety car.',
       expectedImpact: 'Saves ~10s vs a green-flag stop.',
       confidence: 84,
-      action: A.pitNow(),
+      action: { ...A.pitNow(), pitIntensity: 'Standard', pitExitMode: 'Conservative' },
       alternatives: [A.stayOut()],
     });
   }

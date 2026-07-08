@@ -23,6 +23,8 @@ import {
   stepLiveRaceToEnd,
   resolvePrompt,
   requestPlayerPit,
+  expireRecommendation,
+  setPlayerPaceMode,
 } from './raceTickEngine';
 import type {
   Entrant,
@@ -199,6 +201,91 @@ describe('live race engine', () => {
     }
     // Not strictly guaranteed, but with this seed/field a prompt should occur.
     void sawPrompt;
+  });
+
+  it('uses a 3-5 lap strategy lock window based on stint health', () => {
+    const context = buildContext();
+    const playerTeam = context.entrants[0].driver.teamId;
+    let state = createRace(context, playerTeam);
+    const player = state.cars.find((c) => c.isPlayer)!;
+
+    state = {
+      ...state,
+      currentLap: 10,
+      cars: state.cars.map((c) =>
+        c.driverId === player.driverId
+          ? {
+              ...c,
+              damaged: false,
+              reliabilityIssue: null,
+              lastIncident: undefined,
+              liveRacePace: 8,
+              baseRacePace: 5,
+              tire: { ...c.tire, wear: 10, age: 3 },
+            }
+          : c,
+      ),
+    };
+    const healthy = setPlayerPaceMode(state, player.driverId, 'Push');
+    expect(healthy.recCooldowns[`${player.driverId}:strategyModeLock`]).toBe(15);
+
+    const unhealthyState = {
+      ...state,
+      cars: state.cars.map((c) =>
+        c.driverId === player.driverId ? { ...c, tire: { ...c.tire, wear: 90 }, damaged: true } : c,
+      ),
+    };
+    const unhealthy = setPlayerPaceMode(unhealthyState, player.driverId, 'Push');
+    expect(unhealthy.recCooldowns[`${player.driverId}:strategyModeLock`]).toBe(13);
+  });
+
+  it('raises one restart prompt after the safety car and defaults the ignored decision to Conservative', () => {
+    const context = buildContext('restart-seed');
+    const playerTeam = context.entrants[0].driver.teamId;
+    let state = createRace(context, playerTeam);
+    const playerCars = state.cars.filter((c) => c.isPlayer);
+    expect(playerCars.length).toBeGreaterThan(1);
+    const [first, second] = playerCars;
+
+    state = {
+      ...state,
+      currentLap: 22,
+      safetyCar: { active: true, lapsRemaining: 1, deployedOnLap: 21, reason: 'incident', deployments: 2 },
+      cars: state.cars.map((c) => {
+        if (c.driverId === first.driverId) {
+          return {
+            ...c,
+            paceMode: 'Conservative',
+            safetyCarModeBefore: 'Push',
+            safetyCarRestartLocked: false,
+            strategyStint: { ...c.strategyStint, source: 'safety_car', consecutiveLaps: 1 },
+          };
+        }
+        if (c.driverId === second.driverId) {
+          return {
+            ...c,
+            paceMode: 'Conservative',
+            safetyCarModeBefore: 'Balanced',
+            safetyCarRestartLocked: true,
+            strategyStint: { ...c.strategyStint, source: 'pit', consecutiveLaps: 2 },
+          };
+        }
+        return c;
+      }),
+    };
+
+    const meta = buildMeta(context, playerTeam);
+    const after = stepLiveRace(state, meta);
+    const restart = after.recommendations.find((r) => r.kind === 'safetyCarRestart');
+    expect(restart).toBeDefined();
+    expect(restart?.affectedDriverIds).toEqual([first.driverId]);
+
+    const expired = expireRecommendation(after, restart!.id, meta);
+    const firstCar = expired.cars.find((c) => c.driverId === first.driverId)!;
+    const secondCar = expired.cars.find((c) => c.driverId === second.driverId)!;
+    expect(firstCar.paceMode).toBe('Conservative');
+    expect(firstCar.safetyCarModeBefore).toBeNull();
+    expect(secondCar.paceMode).toBe('Balanced');
   });
 });
 

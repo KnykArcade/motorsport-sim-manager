@@ -78,6 +78,8 @@ export function RecommendationsPanel({
   const mode: PanelMode = selectPanelMode(recs, monitor.recent.length);
   const pendingCount = recs.filter((r) => r.status === 'pending').length;
   const grouped = pendingCount > 1;
+  const restartRec = recs.find((r) => r.kind === 'safetyCarRestart' && r.status === 'pending');
+  const visibleRecs = restartRec ? recs.filter((r) => r.id !== restartRec.id) : recs;
 
   return (
     <div
@@ -102,8 +104,17 @@ export function RecommendationsPanel({
         <p className="p-2 text-[10px] text-slate-500">No player cars running — monitoring paused.</p>
       ) : (
         <div className="flex min-h-0 flex-1 flex-col gap-1 overflow-hidden p-1">
+          {restartRec && (
+            <RestartDecisionCard
+              key={restartRec.id}
+              rec={restartRec}
+              nameOf={nameOf}
+              onAccept={onAccept}
+              onIgnore={onIgnore}
+            />
+          )}
           {monitor.drivers.map((d) => {
-            const cell = driverPanelCell(d.driverId, recs, monitor.recent, currentLap);
+            const cell = driverPanelCell(d.driverId, visibleRecs, monitor.recent, currentLap);
             const recKey = cell.state === 'decision' || cell.state === 'active' ? cell.rec.id : 'none';
             return (
               <DriverCell
@@ -138,6 +149,75 @@ export function RecommendationsPanel({
           )}
         </div>
       )}
+    </div>
+  );
+}
+
+function RestartDecisionCard({
+  rec,
+  nameOf,
+  onAccept,
+  onIgnore,
+}: {
+  rec: AnalyticsRecommendation;
+  nameOf: (driverId: string) => string;
+  onAccept: (rec: AnalyticsRecommendation, actionOverride?: RecAction) => void;
+  onIgnore: (rec: AnalyticsRecommendation) => void;
+}) {
+  const [paceModeByDriver, setPaceModeByDriver] = useState<Record<string, PaceMode>>(
+    rec.action.paceModeByDriver ?? { [rec.driverId]: rec.action.paceMode ?? 'Conservative' },
+  );
+  const affected = rec.affectedDriverIds ?? [rec.driverId];
+
+  return (
+    <div className="rounded-md border border-amber-500/50 bg-amber-500/[0.06] p-1.5">
+      <div className="flex items-start justify-between gap-2">
+        <div className="min-w-0">
+          <div className="text-[10px] font-bold uppercase tracking-wide text-amber-300">Safety Car Restart</div>
+          <div className="truncate text-[10px] text-slate-300">{rec.expectedImpact}</div>
+        </div>
+        <span className={`shrink-0 text-[9px] font-bold ${PRIORITY_TEXT[rec.priority]}`}>{rec.confidence}%</span>
+      </div>
+      <div className="mt-1 grid gap-1">
+        {affected.map((driverId) => {
+          const current = paceModeByDriver[driverId] ?? 'Conservative';
+          return (
+            <div key={driverId} className="rounded border border-slate-700/50 bg-slate-950/35 p-1">
+              <div className="mb-1 flex items-center justify-between gap-2">
+                <span className="truncate text-[10px] font-semibold text-slate-100">{nameOf(driverId)}</span>
+                <span className="text-[9px] uppercase tracking-wide text-slate-500">restart mode</span>
+              </div>
+              <div className="grid grid-cols-6 gap-1">
+                {SELECTABLE_MODES.map((mode) => (
+                  <button
+                    key={mode}
+                    onClick={() => setPaceModeByDriver((prev) => ({ ...prev, [driverId]: mode }))}
+                    className={`rounded px-1 py-0.5 text-[9px] font-semibold ${
+                      current === mode ? 'bg-amber-500 text-neutral-950' : 'bg-slate-800 text-slate-300 hover:bg-slate-700'
+                    }`}
+                  >
+                    {mode}
+                  </button>
+                ))}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+      <div className="mt-1 grid grid-cols-2 gap-1">
+        <button
+          onClick={() => onAccept(rec, { ...rec.action, paceModeByDriver })}
+          className="rounded bg-emerald-600 py-0.5 text-[10px] font-bold text-white hover:bg-emerald-500"
+        >
+          Accept
+        </button>
+        <button
+          onClick={() => onIgnore(rec)}
+          className="rounded bg-slate-800 py-0.5 text-[10px] font-bold text-slate-400 hover:bg-slate-700"
+        >
+          Stay Conservative
+        </button>
+      </div>
     </div>
   );
 }
