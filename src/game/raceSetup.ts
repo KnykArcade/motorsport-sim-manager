@@ -31,7 +31,8 @@ import {
 import type { SetupOption, Track } from '../types/gameTypes';
 import type { Entrant, RaceContext, RaceDecision, RacePrepFocusEffect } from '../types/simTypes';
 import type { RaceWeekendPackageEffects } from '../types/raceWeekendPackageTypes';
-import type { PitIntensity } from '../types/liveTypes';
+import type { DamageBalanceSettings, PitIntensity } from '../types/liveTypes';
+import type { TeamOrganizationRatings } from '../types/teamRatingsTypes';
 import { packageEffects as getPackageEffects } from '../sim/raceWeekendPackageEngine';
 import { confidencePerformanceModifier } from '../sim/driverConfidenceEngine';
 import type { LiveRaceMeta, LiveRaceOptions } from '../sim/liveRaceEngine';
@@ -209,6 +210,7 @@ export function buildLiveRaceOptions(
   context: RaceContext,
   raceId: string,
   totalLaps: number,
+  liveRaceOptions?: { damageSettings?: DamageBalanceSettings; teamOrgRatings?: Record<string, TeamOrganizationRatings> },
 ): LiveRaceOptions {
   const driverNames: Record<string, string> = {};
   context.entrants.forEach((e) => (driverNames[e.driver.id] = e.driver.name));
@@ -227,6 +229,8 @@ export function buildLiveRaceOptions(
     teamRaceOps,
     year: state.seasonYear,
     series: state.series,
+    damageSettings: liveRaceOptions?.damageSettings,
+    teamOrgRatings: liveRaceOptions?.teamOrgRatings ?? state.teamOrgRatings,
   };
 }
 

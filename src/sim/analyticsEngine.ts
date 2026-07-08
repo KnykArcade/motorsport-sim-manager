@@ -212,7 +212,7 @@ function candidatesFor(
       recommendedAction: 'Prioritise the pit stop under the safety car.',
       expectedImpact: 'Saves ~10s vs a green-flag stop.',
       confidence: 84,
-      action: { ...A.pitNow(), pitIntensity: 'Standard', pitExitMode: 'Conservative' },
+      action: { ...A.pitNow(), pitIntensity: 'Standard', pitExitMode: 'Conservative', repairMode: hasForcedRepairNeed(car) ? 'Critical' : 'None' },
       alternatives: [A.stayOut()],
     });
   }

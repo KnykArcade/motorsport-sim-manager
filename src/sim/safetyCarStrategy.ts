@@ -1,12 +1,14 @@
 import type { LiveCarState, LiveRaceState } from '../types/liveTypes';
+import { collectDamageComponents, hasForcedRepairNeed as damageHasForcedRepairNeed, hasTerminalDamage, DEFAULT_DAMAGE_SETTINGS } from './damageComponents';
 
 export const SAFETY_CAR_PIT_RECOMMENDATION_MIN_LAP = 16;
 
-const FORCED_REPAIR_HEALTH_CUTOFF = 30;
-
 export function hasForcedRepairNeed(car: LiveCarState): boolean {
-  if (car.reliabilityIssue?.severity === 'Severe') return true;
-  return Math.min(car.aeroHealth ?? 100, car.engineHealth ?? 100, car.brakeHealth ?? 100) <= FORCED_REPAIR_HEALTH_CUTOFF;
+  return damageHasForcedRepairNeed(collectDamageComponents(car, undefined, undefined, car.damageSettings ?? DEFAULT_DAMAGE_SETTINGS));
+}
+
+export function hasTerminalDamageNeed(car: LiveCarState): boolean {
+  return hasTerminalDamage(collectDamageComponents(car, undefined, undefined, car.damageSettings ?? DEFAULT_DAMAGE_SETTINGS));
 }
 
 export function hasRealSafetyCarPitWindow(car: LiveCarState, lap: number): boolean {

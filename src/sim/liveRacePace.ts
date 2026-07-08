@@ -21,6 +21,7 @@ import type {
   RiskLevel,
   TrafficStatus,
 } from '../types/liveTypes';
+import { collectDamageComponents, damagePacePenalty, DEFAULT_DAMAGE_SETTINGS } from './damageComponents';
 
 // Seconds of lap time gained per 1.0 of Live Race Pace (1-10). Chosen to match
 // the previous `paceRating * 0.45` spread (paceRating = baseRacePace * 4), so
@@ -332,10 +333,7 @@ export function computeLivePace(inp: LivePaceInputs): number {
   pace += dirty;
   if (dirty < 0) pace += spec.trafficPaceBonus; // Attack claws some of it back
 
-  if (car.damaged) pace -= 0.4;
-  if (car.reliabilityIssue && !car.reliabilityIssue.managed) {
-    pace -= car.reliabilityIssue.severity === 'Severe' ? 0.5 : 0.25;
-  }
+  pace -= damagePacePenalty(collectDamageComponents(car, undefined, undefined, car.damageSettings ?? DEFAULT_DAMAGE_SETTINGS));
   if (inp.mistakeThisLap) pace -= 0.6;
 
   return clamp(pace, 1, 10.5);

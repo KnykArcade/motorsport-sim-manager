@@ -41,10 +41,18 @@ function migrateGameState(state: GameState): GameState {
 
 export type GameSettings = {
   debugMode: boolean;
+  damageFrequency: number;
+  damageSeverity: number;
+  repairTimeMultiplier: number;
+  reliabilityStrictness: number;
 };
 
 export const defaultSettings: GameSettings = {
   debugMode: false,
+  damageFrequency: 1,
+  damageSeverity: 1,
+  repairTimeMultiplier: 1,
+  reliabilityStrictness: 1,
 };
 
 export function saveGame(state: GameState): void {

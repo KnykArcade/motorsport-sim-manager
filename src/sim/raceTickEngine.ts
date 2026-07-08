@@ -8,6 +8,7 @@
 import type { RaceEvent } from '../types/simTypes';
 import type {
   AnalyticsRecommendation,
+  DamageRepairMode,
   LiveCarState,
   LiveRaceState,
   PaceMode,
@@ -60,6 +61,16 @@ import {
 import { generateRaceEventPool, resolveRaceEventTrigger } from './raceEventEngine';
 import { rollReliabilityIssue } from './reliabilityEngine';
 import { findOption, applyDecisionEffects } from './raceDecisionEngine';
+import {
+  collectDamageComponents,
+  type DamageComponent,
+  damageRiskContribution,
+  damageRepairSeconds,
+  DEFAULT_DAMAGE_SETTINGS,
+  resolveReliabilityRecoveryOutcome,
+  type ReliabilityRecoveryRatings,
+  type ReliabilityRecoveryOutcome,
+} from './damageComponents';
 
 const MAX_RACE_EVENTS = 3;
 // Baseline "other" (fuel system, illness, debris, etc.) per-lap DNF probability.
@@ -92,6 +103,7 @@ const BATTLE_POINTS_CUTOFF = 10;
 type PitStopDecision = {
   intensity?: PitIntensity;
   exitMode?: PaceMode;
+  repairMode?: DamageRepairMode;
 };
 
 function resolvePitIntensity(car: LiveCarState): PitIntensity {
@@ -110,6 +122,7 @@ function applyPitDecision(car: LiveCarState, decision: PitStopDecision | undefin
       ...car.pit,
       intensity: decision.intensity ?? car.pit.intensity ?? car.pit.intensityDefault ?? 'Standard',
       exitMode: decision.exitMode ?? car.pit.exitMode ?? 'Conservative',
+      repairMode: decision.repairMode ?? car.pit.repairMode ?? 'None',
     },
   };
 }
@@ -139,6 +152,7 @@ function applyPitExitMode(
 
 function pitStopTimeFromLoss(
   pitLossBase: number,
+  repairSeconds: number,
   opsForm: number,
   safetyCarActive: boolean,
   rng: Rng,
@@ -154,7 +168,7 @@ function pitStopTimeFromLoss(
   const weekendBoost = opsForm * 0.22;
   const skillMitigation = clamp((skillBlend - 50) * 0.028 + weekendBoost, -0.85, 1.1);
   const stationary = clamp(
-    pitLossBase + spec.stationaryDelta - skillMitigation,
+    pitLossBase + repairSeconds + spec.stationaryDelta - skillMitigation,
     pitIntensityStationaryFloor(series),
     28,
   );
@@ -293,13 +307,23 @@ export function stepLiveRace(state: LiveRaceState, meta: LiveRaceMeta): LiveRace
         strategyStint: startStint(resumeMode, c.paceMode, nextLap, 'safety_car'),
       };
     }
+    const damageSettings = state.damageSettings ?? DEFAULT_DAMAGE_SETTINGS;
+    const damageComponents = collectDamageComponents(c, meta.series, meta.year, damageSettings);
+    if (c.running && damageComponents.some((component) => component.severity === 'terminal' && !component.repairableInRace)) {
+      const terminal = damageComponents.find((component) => component.severity === 'terminal' && !component.repairableInRace);
+      if (terminal) {
+        const retiredCar = retire(c, nextLap, `${terminal.kind} failure`);
+        lapEvents.push({ lap: nextLap, text: `${name(c.driverId)} retires with terminal ${terminal.kind.toLowerCase()} damage.` });
+        return retiredCar;
+      }
+    }
 
     // --- AI decision (player pace/pits come from player decisions) ---
     let wantsPit = false;
     if (!c.isPlayer) {
       const action = aiLapDecision(c, state, track, nextLap);
-      if (action.pitIntensity || action.pitExitMode) {
-        c = applyPitDecision(c, { intensity: action.pitIntensity, exitMode: action.pitExitMode });
+      if (action.pitIntensity || action.pitExitMode || action.repairMode) {
+        c = applyPitDecision(c, { intensity: action.pitIntensity, exitMode: action.pitExitMode, repairMode: action.repairMode });
       }
       if (!state.safetyCar.active) c.paceMode = action.paceMode;
       if (action.pitNow) {
@@ -364,8 +388,11 @@ export function stepLiveRace(state: LiveRaceState, meta: LiveRaceMeta): LiveRace
         });
       }
       pitLoss = state.safetyCar.active ? Math.max(8, c.pitLossBase - SAFETY_CAR_PIT_SAVING) : c.pitLossBase;
+      const repairMode = c.pit.repairMode ?? 'None';
+      const repairSeconds = damageRepairSeconds(damageComponents, repairMode);
       const pitStop = pitStopTimeFromLoss(
         pitLoss,
+        repairSeconds,
         c.opsForm,
         state.safetyCar.active,
         rng,
@@ -378,7 +405,8 @@ export function stepLiveRace(state: LiveRaceState, meta: LiveRaceMeta): LiveRace
       const doubleStackPenalty = state.safetyCar.active && pittedThisLap.some((p) => p.teamId === c.teamId) ? 2.8 : 0;
       c.pit.lastPitStopTime = round1(pitStop.time + doubleStackPenalty);
       c.pit.lastPitResult = pitStop.result;
-      lapEvents.push({ lap: nextLap, text: `${name(c.driverId)} ${pitStop.result.note}` });
+      const repairNote = repairSeconds > 0 ? ` and repairs add ${repairSeconds.toFixed(1)}s` : '';
+      lapEvents.push({ lap: nextLap, text: `${name(c.driverId)} ${pitStop.result.note}${repairNote}` });
       if (doubleStackPenalty > 0) {
         lapEvents.push({
           lap: nextLap,
@@ -435,11 +463,8 @@ export function stepLiveRace(state: LiveRaceState, meta: LiveRaceMeta): LiveRace
 
     // 1. Mechanical: car/engine reliability, mode, and any active warning.
     let mechRisk = c.baseFailureRisk * spec.reliabilityMult;
-    if (c.reliabilityIssue) {
-      mechRisk += c.reliabilityIssue.managed
-        ? c.reliabilityIssue.failureRisk * 0.3
-        : c.reliabilityIssue.failureRisk;
-    }
+    const damageRisk = damageRiskContribution(damageComponents);
+    mechRisk += damageRisk.failureRisk;
     c.reliabilityRisk = mechRisk;
 
     // 2. Crash/contact: driver/track incident risk, amplified by mode, fighting,
@@ -451,8 +476,8 @@ export function stepLiveRace(state: LiveRaceState, meta: LiveRaceMeta): LiveRace
       (fighting ? 1.25 : 1) *
       (weather.wet ? 1.4 : 1) *
       wallFactor *
-      (c.damaged ? 1.15 : 1) *
-      trustRiskMult;
+      trustRiskMult *
+      (1 + damageRisk.crashRisk);
     c.crashRisk = crashRisk;
 
     // 3. Tyre failure: rare, only in the high-wear window before a forced pit.
@@ -541,7 +566,20 @@ export function stepLiveRace(state: LiveRaceState, meta: LiveRaceMeta): LiveRace
     }
 
     // --- Fuel burn-off + component health wear (drives the pit-wall gauges) ---
-    updateFuelAndComponents(c, track, spec, nextLap, state.totalLaps);
+    updateFuelAndComponents(
+      c,
+      track,
+      spec,
+      nextLap,
+      state.totalLaps,
+      state.damageSettings ?? DEFAULT_DAMAGE_SETTINGS,
+      meta.series,
+      meta.year,
+      state.teamOrgRatings?.[c.teamId],
+      rng,
+      lapEvents,
+      name(c.driverId),
+    );
     return c;
   });
 
@@ -998,6 +1036,64 @@ function splitSectors(lapTime: number, rng: Rng): [number, number, number] {
   return [s1, s2, s3];
 }
 
+function recoveryRatingsFor(
+  c: LiveCarState,
+  teamOrg: { reliabilityDepartment: number; operations: number } | undefined,
+): ReliabilityRecoveryRatings {
+  return {
+    carReliability: c.carReliability ?? Math.max(0, 100 - c.baseFailureRisk * 100),
+    teamReliabilityDepartment: teamOrg?.reliabilityDepartment ?? 50,
+    teamRaceOperations: teamOrg?.operations ?? c.pitCrewOperations ?? 50,
+    driverEnduranceConsistency: c.driverEnduranceConsistency ?? 50,
+    driverComposure: c.driverComposure ?? 50,
+    driverRiskManagement: c.driverRiskManagement ?? 50,
+  };
+}
+
+function applyRecoveryEffect(
+  c: LiveCarState,
+  component: Pick<DamageComponent, 'kind' | 'severity' | 'managed'>,
+  outcome: ReliabilityRecoveryOutcome,
+): void {
+  const issue = c.reliabilityIssue;
+  const mechanicalHit = (amount: number): void => {
+    if (component.kind === 'Engine') c.engineHealth = clamp(c.engineHealth + amount, 0, 100);
+    else if (component.kind === 'Gearbox') c.gearboxHealth = clamp(c.gearboxHealth + amount, 0, 100);
+    else if (component.kind === 'Brakes') c.brakeHealth = clamp(c.brakeHealth + amount, 0, 100);
+  };
+  if (outcome === 'full') {
+    if (issue) c.reliabilityIssue = null;
+    mechanicalHit(7);
+    return;
+  }
+  if (outcome === 'partial') {
+    if (issue) {
+      c.reliabilityIssue = {
+        ...issue,
+        severity: issue.severity === 'Minor' ? 'Minor' : issue.severity === 'Moderate' ? 'Minor' : 'Moderate',
+        failureRisk: Math.max(0, issue.failureRisk * 0.8),
+        managed: true,
+      };
+    }
+    mechanicalHit(4);
+    return;
+  }
+  if (outcome === 'worse') {
+    if (issue) {
+      c.reliabilityIssue = {
+        ...issue,
+        severity: issue.severity === 'Minor' ? 'Moderate' : 'Severe',
+        failureRisk: Math.min(1, issue.failureRisk * 1.15 + 0.01),
+      };
+    }
+    mechanicalHit(-3);
+  }
+}
+
+function recoverySeverityRank(severity: DamageComponent['severity']): number {
+  return severity === 'minor' ? 1 : severity === 'moderate' ? 2 : severity === 'severe' ? 3 : 4;
+}
+
 // Burn fuel off across the distance and wear the mechanical components. Wear is
 // deterministic: worse cars (higher baseFailureRisk), aggressive modes, stress
 // tracks and active reliability issues all raise the per-lap drop, so the
@@ -1008,11 +1104,21 @@ function updateFuelAndComponents(
   spec: StrategyModeSpec,
   lap: number,
   totalLaps: number,
+  damageSettings: typeof DEFAULT_DAMAGE_SETTINGS,
+  series: Series | undefined,
+  year: number | undefined,
+  teamOrg: { reliabilityDepartment: number; operations: number } | undefined,
+  rng: Rng,
+  lapEvents: RaceEvent[],
+  driverName: string,
 ): void {
   c.fuel = clamp(100 * (1 - lap / Math.max(1, totalLaps)), 0, 100);
 
   const base = 0.12 + c.baseFailureRisk * 12;
   const modeMult = spec.reliabilityMult;
+  const paceRelief = c.paceMode === 'Conservative' ? 0.82 : c.paceMode === 'ProtectEngine' ? 0.68 : c.paceMode === 'Push' ? 1.1 : c.paceMode === 'Attack' ? 1.15 : c.paceMode === 'Defend' ? 0.94 : 1;
+  const strictness = damageSettings.reliabilityStrictness;
+  const damageRelief = c.paceMode === 'Conservative' || c.paceMode === 'ProtectEngine' ? 0.8 : 1.1;
   let eng = base * modeMult * (0.85 + track.attributes.straights * 0.03);
   let gear = base * modeMult * 0.85;
   let brake = base * (0.6 + track.attributes.braking * 0.05);
@@ -1026,10 +1132,36 @@ function updateFuelAndComponents(
     else eng += extra * 0.4;
   }
 
-  c.engineHealth = clamp(c.engineHealth - eng, 0, 100);
-  c.gearboxHealth = clamp(c.gearboxHealth - gear, 0, 100);
-  c.brakeHealth = clamp(c.brakeHealth - brake, 0, 100);
-  c.aeroHealth = clamp((c.aeroHealth ?? 100) - (c.damaged ? 0.16 : 0.03), 0, 100);
+  c.engineHealth = clamp(c.engineHealth - eng * paceRelief * damageRelief * strictness, 0, 100);
+  c.gearboxHealth = clamp(c.gearboxHealth - gear * paceRelief * damageRelief * strictness, 0, 100);
+  c.brakeHealth = clamp(c.brakeHealth - brake * paceRelief * damageRelief * strictness, 0, 100);
+  c.aeroHealth = clamp((c.aeroHealth ?? 100) - (c.damaged ? 0.16 : 0.03) * (c.paceMode === 'Attack' ? 1.1 : c.paceMode === 'Conservative' ? 0.8 : 1), 0, 100);
+
+  if (c.paceMode === 'Conservative' || c.paceMode === 'ProtectEngine') {
+    const recoveryComponents = collectDamageComponents(c, series, year, damageSettings).filter(
+      (component) => component.riskType === 'failure' && component.managed && component.severity !== 'none',
+    );
+    const recoveryComponent = recoveryComponents.sort((a, b) => recoverySeverityRank(b.severity) - recoverySeverityRank(a.severity))[0];
+    if (recoveryComponent) {
+      const outcome = resolveReliabilityRecoveryOutcome(
+        recoveryComponent,
+        recoveryRatingsFor(c, teamOrg),
+        rng.next(),
+      );
+      applyRecoveryEffect(c, recoveryComponent, outcome);
+      if (outcome !== 'none') {
+        lapEvents.push({
+          lap,
+          text:
+            outcome === 'full'
+              ? `${driverName} nurses ${recoveryComponent.kind.toLowerCase()} back to health.`
+              : outcome === 'partial'
+                ? `${driverName} stabilises ${recoveryComponent.kind.toLowerCase()} damage.`
+                : `${driverName} cannot stop ${recoveryComponent.kind.toLowerCase()} damage worsening.`,
+        });
+      }
+    }
+  }
 }
 
 // Advance the recommendation lifecycle for the player's drivers each lap:
@@ -1244,7 +1376,9 @@ function applyRecAction(
     s = requestPlayerPit(
       s,
       rec.driverId,
-      eff.pitIntensity || eff.pitExitMode ? { intensity: eff.pitIntensity, exitMode: eff.pitExitMode } : undefined,
+      eff.pitIntensity || eff.pitExitMode || eff.repairMode
+        ? { intensity: eff.pitIntensity, exitMode: eff.pitExitMode, repairMode: eff.repairMode }
+        : undefined,
     );
     const intensity = eff.pitIntensity ?? car.pit.intensity ?? car.pit.intensityDefault ?? 'Standard';
     const exitMode = eff.pitExitMode ?? car.pit.exitMode ?? 'Conservative';

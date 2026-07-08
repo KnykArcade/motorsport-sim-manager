@@ -4,7 +4,7 @@
 // grouped RecommendationsPanel above the cards, not inside each card.
 
 import { useState } from 'react';
-import type { LiveCarState, PaceMode, PitIntensity, ReliabilityIssueType } from '../../types/liveTypes';
+import type { DamageRepairMode, LiveCarState, PaceMode, PitIntensity, ReliabilityIssueType } from '../../types/liveTypes';
 import { SELECTABLE_MODES, modeSpec } from '../../sim/liveRacePace';
 import { PIT_INTENSITY_ORDER } from '../../sim/pitIntensityData';
 import { DeltaTag } from './dashboardUi';
@@ -34,11 +34,12 @@ export function PitWallCard({
   teamColor: string;
   finished: boolean;
   onMode: (mode: PaceMode) => void;
-  onPit: (decision?: { intensity?: PitIntensity; exitMode?: PaceMode }) => void;
+  onPit: (decision?: { intensity?: PitIntensity; exitMode?: PaceMode; repairMode?: DamageRepairMode }) => void;
   className?: string;
 }) {
   const [pitIntensity, setPitIntensity] = useState<PitIntensity>(car.pit.intensity ?? car.pit.intensityDefault ?? 'Standard');
   const [pitExitMode, setPitExitMode] = useState<PaceMode>(car.pit.exitMode ?? 'Conservative');
+  const [repairMode, setRepairMode] = useState<DamageRepairMode>(car.pit.repairMode ?? 'None');
 
   const finishedRace = car.status === 'Finished';
   const dnf = !car.running && !finishedRace;
@@ -162,7 +163,13 @@ export function PitWallCard({
             <div className="mb-1 flex items-center justify-between">
               <span className="text-[9px] uppercase tracking-wide text-slate-500">Pit Decision</span>
               <button
-                onClick={() => onPit(car.pit.pitRequested ? undefined : { intensity: pitIntensity, exitMode: pitExitMode })}
+                onClick={() =>
+                  onPit(
+                    car.pit.pitRequested
+                      ? undefined
+                      : { intensity: pitIntensity, exitMode: pitExitMode, repairMode },
+                  )
+                }
                 disabled={!canPit}
                 className={`rounded px-2 py-0.5 text-[10px] font-bold ${
                   canPit
@@ -198,6 +205,19 @@ export function PitWallCard({
                   }`}
                 >
                   {PACE_LABEL[mode]}
+                </button>
+              ))}
+            </div>
+            <div className="mt-1 grid grid-cols-3 gap-1">
+              {(['None', 'Critical', 'Full'] as DamageRepairMode[]).map((mode) => (
+                <button
+                  key={mode}
+                  onClick={() => setRepairMode(mode)}
+                  className={`rounded px-1 py-0.5 text-[9px] font-semibold ${
+                    repairMode === mode ? 'bg-cyan-500 text-neutral-950' : 'bg-slate-800 text-slate-300 hover:bg-slate-700'
+                  }`}
+                >
+                  {mode === 'None' ? 'No Repair' : mode === 'Critical' ? 'Critical' : 'Full Repair'}
                 </button>
               ))}
             </div>

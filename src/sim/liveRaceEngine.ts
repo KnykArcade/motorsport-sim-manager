@@ -11,6 +11,7 @@
 import type { RaceResult, Series, Track } from '../types/gameTypes';
 import type { RaceContext, RaceEvent, ScoreBreakdown } from '../types/simTypes';
 import type {
+  DamageBalanceSettings,
   AIStrategyPersonality,
   LiveCarState,
   LiveRaceState,
@@ -18,6 +19,7 @@ import type {
   PitIntensity,
   TireCompound,
 } from '../types/liveTypes';
+import type { TeamOrganizationRatings } from '../types/teamRatingsTypes';
 import { calculateRacePace, weekendForm, operationsForm, PACE_SPREAD } from './raceEngine';
 import { calculateReliabilityRisk, perLapFailureRisk } from './reliabilityEngine';
 import { calculateMistakeRisk, calculateCrashRisk } from './mistakeEngine';
@@ -27,6 +29,7 @@ import { buildPitPlan, pitStopLoss, pitWindowFor } from './pitStrategyEngine';
 import { initialWeather } from './weatherEngine';
 import { initialSafetyCar, SAFETY_CAR_PIT_SAVING } from './safetyCarEngine';
 import { initialStint } from './strategyStint';
+import { DEFAULT_DAMAGE_SETTINGS } from './damageComponents';
 
 export type LiveRaceOptions = {
   raceId: string;
@@ -45,6 +48,8 @@ export type LiveRaceOptions = {
   // Per-team default pit intensity, set pre-race and applied to live pit stops
   // unless the player overrides it in the pit box.
   pitIntensityByTeam?: Record<string, PitIntensity>;
+  damageSettings?: DamageBalanceSettings;
+  teamOrgRatings?: Record<string, TeamOrganizationRatings>;
 };
 
 // Metadata threaded through the tick engine for events and player prompts.
@@ -80,6 +85,7 @@ export function createLiveRace(context: RaceContext, options: LiveRaceOptions): 
   const { track } = context;
   const totalLaps = options.totalLaps;
   const weather = initialWeather(track, context.seed);
+  const damageSettings = options.damageSettings ?? DEFAULT_DAMAGE_SETTINGS;
 
   const gridByDriver: Record<string, number> = {};
   const incidentByDriver: Record<string, string | undefined> = {};
@@ -250,6 +256,7 @@ export function createLiveRace(context: RaceContext, options: LiveRaceOptions): 
       crashRiskLevel: 'Low',
       trafficStatus: 'Clear',
       statusMessage: 'On the grid',
+      damageSettings,
     };
   });
 
@@ -285,6 +292,8 @@ export function createLiveRace(context: RaceContext, options: LiveRaceOptions): 
     battleTracker: {},
     retirements: 0,
     driverRelationships: context.driverRelationships,
+    teamOrgRatings: options.teamOrgRatings,
+    damageSettings,
   };
 }
 

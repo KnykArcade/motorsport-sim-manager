@@ -15,7 +15,7 @@
 //                          a compact focus label and its next re-trigger.
 
 import { useState } from 'react';
-import type { AnalyticsRecommendation, PaceMode, PitIntensity, RecAction } from '../../types/liveTypes';
+import type { AnalyticsRecommendation, DamageRepairMode, PaceMode, PitIntensity, RecAction } from '../../types/liveTypes';
 import type {
   AnalyticsMonitor,
   DriverMonitor,
@@ -272,9 +272,10 @@ function DriverCell({
   const [modifying, setModifying] = useState(false);
   const [pitIntensity, setPitIntensity] = useState<PitIntensity>('Standard');
   const [pitExitMode, setPitExitMode] = useState<PaceMode>('Conservative');
+  const [repairMode, setRepairMode] = useState<DamageRepairMode>('None');
   const rec = cell.state === 'decision' || cell.state === 'active' ? cell.rec : null;
 
-  const pitActionOverride = rec?.action.pitNow ? { ...rec.action, pitIntensity, pitExitMode } : undefined;
+  const pitActionOverride = rec?.action.pitNow ? { ...rec.action, pitIntensity, pitExitMode, repairMode } : undefined;
 
   // Double-decision: one ultra-compact block per driver (name + rec on a single
   // line, then the same four controls as a single decision) so both fit the fixed panel.
@@ -298,8 +299,10 @@ function DriverCell({
           <PitDecisionControls
             intensity={pitIntensity}
             exitMode={pitExitMode}
+            repairMode={repairMode}
             onIntensity={setPitIntensity}
             onExitMode={setPitExitMode}
+            onRepairMode={setRepairMode}
           />
         )}
         <div className="mt-0.5 grid grid-cols-4 gap-1">
@@ -366,8 +369,10 @@ function DriverCell({
                 <PitDecisionControls
                   intensity={pitIntensity}
                   exitMode={pitExitMode}
+                  repairMode={repairMode}
                   onIntensity={setPitIntensity}
                   onExitMode={setPitExitMode}
+                  onRepairMode={setRepairMode}
                 />
               )}
               <div className="grid grid-cols-4 gap-1">
@@ -464,13 +469,17 @@ function DriverCell({
 function PitDecisionControls({
   intensity,
   exitMode,
+  repairMode,
   onIntensity,
   onExitMode,
+  onRepairMode,
 }: {
   intensity: PitIntensity;
   exitMode: PaceMode;
+  repairMode: DamageRepairMode;
   onIntensity: (value: PitIntensity) => void;
   onExitMode: (value: PaceMode) => void;
+  onRepairMode: (value: DamageRepairMode) => void;
 }) {
   return (
     <div className="space-y-1">
@@ -497,6 +506,19 @@ function PitDecisionControls({
             }`}
           >
             {mode}
+          </button>
+        ))}
+      </div>
+      <div className="grid grid-cols-3 gap-1">
+        {(['None', 'Critical', 'Full'] as DamageRepairMode[]).map((mode) => (
+          <button
+            key={mode}
+            onClick={() => onRepairMode(mode)}
+            className={`rounded py-0.5 text-[9px] font-semibold ${
+              repairMode === mode ? 'bg-cyan-500 text-neutral-950' : 'bg-slate-800 text-slate-300 hover:bg-slate-700'
+            }`}
+          >
+            {mode === 'None' ? 'No Repair' : mode === 'Critical' ? 'Critical' : 'Full Repair'}
           </button>
         ))}
       </div>

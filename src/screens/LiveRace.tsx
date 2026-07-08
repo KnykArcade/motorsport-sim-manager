@@ -47,7 +47,7 @@ type DnfAlert = {
 
 export function LiveRace() {
   const { raceId } = useParams();
-  const { state, dispatch } = useGame();
+  const { state, dispatch, settings } = useGame();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -59,7 +59,15 @@ export function LiveRace() {
     const built = buildRaceContext(state, decisions);
     if (!built) return null;
     const meta = buildLiveRaceMeta(state, built.track);
-    const options = buildLiveRaceOptions(state, built.context, built.raceId, built.totalLaps);
+    const options = buildLiveRaceOptions(state, built.context, built.raceId, built.totalLaps, {
+      damageSettings: {
+        damageFrequency: settings.damageFrequency,
+        damageSeverity: settings.damageSeverity,
+        repairTimeMultiplier: settings.repairTimeMultiplier,
+        reliabilityStrictness: settings.reliabilityStrictness,
+      },
+      teamOrgRatings: state.teamOrgRatings,
+    });
     return { context: built.context, meta, initial: createLiveRace(built.context, options) };
   });
 

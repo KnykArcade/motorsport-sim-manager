@@ -104,6 +104,7 @@ export type PitStopState = {
   intensityDefault?: PitIntensity;
   intensity?: PitIntensity;
   exitMode?: PaceMode;
+  repairMode?: DamageRepairMode;
   lastPitResult?: PitStopResult | null;
   inPitThisLap: boolean;
   // Player-controlled pitting: the next stop's advisory window, and a flag set
@@ -182,6 +183,24 @@ export type PaceMode =
   | 'ProtectEngine';
 
 export type PitIntensity = 'Conservative' | 'Standard' | 'Aggressive' | 'AllOut';
+export type DamageComponentKind =
+  | 'Aero'
+  | 'Suspension'
+  | 'Bodywork'
+  | 'Engine'
+  | 'Gearbox'
+  | 'Brakes'
+  | 'Cooling'
+  | 'Hydraulics'
+  | 'Electrical';
+export type DamageComponentSeverity = 'none' | 'minor' | 'moderate' | 'severe' | 'terminal';
+export type DamageBalanceSettings = {
+  damageFrequency: number;
+  damageSeverity: number;
+  repairTimeMultiplier: number;
+  reliabilityStrictness: number;
+};
+export type DamageRepairMode = 'None' | 'Critical' | 'Full';
 
 // What triggered the current strategy-mode change (drives the stint counter's
 // provenance; the counter itself is source-agnostic).
@@ -327,6 +346,7 @@ export type RecAction = {
   // Combined pit-call choices.
   pitIntensity?: PitIntensity;
   pitExitMode?: PaceMode;
+  repairMode?: DamageRepairMode;
   paceModeByDriver?: Record<string, PaceMode>;
   // If the action is a team order (needs the favoured driver, resolved by UI).
   teamOrder?: 'SwapPositions' | 'LetThemRace';
@@ -390,12 +410,16 @@ export type LiveCarState = {
   baseMistakeRisk: number; // per-lap (non-terminal) mistake probability baseline
   tireDegRate: number; // tyre wear points per lap at balanced pace
   pitLossBase: number; // green-flag pit-stop time loss (s)
+  damageSettings?: DamageBalanceSettings;
   opsForm: number; // per-weekend operations execution (0 neutral) — pit/strategy consistency
   pitCrewOperations?: number; // optional live copy of pit-crew rating for pit rolls
+  carReliability?: number; // optional live copy of car reliability for recovery rolls
+  driverEnduranceConsistency?: number; // optional live copy of driver endurance consistency
   driverComposure?: number; // optional live copy of driver composure rating
   driverRiskManagement?: number; // optional live copy of driver risk-management rating
   confidenceModifier?: number; // relationship confidence/trust modifier used for live hesitation and risk
   driverRelationships?: Record<string, import('./relationshipTypes').DriverRelationship>;
+  teamOrgRatings?: Record<string, import('./teamRatingsTypes').TeamOrganizationRatings>;
   personality: AIStrategyPersonality;
   strategyId: string;
   instructionId: string;
@@ -454,6 +478,7 @@ export type LiveRaceState = {
   safetyCar: SafetyCarState;
   // Driver relationships for AI disagreement and trust-based beats.
   driverRelationships?: Record<string, import('./relationshipTypes').DriverRelationship>;
+  teamOrgRatings?: Record<string, import('./teamRatingsTypes').TeamOrganizationRatings>;
   cars: LiveCarState[]; // ordered by running order (leader first), retired trail
   events: RaceEvent[];
   pendingPrompt: RaceDecisionPrompt | null;
@@ -482,4 +507,5 @@ export type LiveRaceState = {
   battleTracker: Record<string, number>;
   // Retirements this race (for the race-info panel).
   retirements: number;
+  damageSettings?: DamageBalanceSettings;
 };

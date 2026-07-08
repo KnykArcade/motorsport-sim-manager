@@ -20,6 +20,7 @@ import {
   shouldOfferSafetyCarPit,
   driverDisagreementBias,
 } from './safetyCarStrategy';
+import { collectDamageComponents, repairModeForComponents, DEFAULT_DAMAGE_SETTINGS } from './damageComponents';
 
 const PERSONALITIES: AIStrategyPersonality[] = [
   'Conservative',
@@ -58,6 +59,7 @@ export type AIAction = {
   note: string | null;
   pitIntensity?: PitIntensity;
   pitExitMode?: PaceMode;
+  repairMode?: 'None' | 'Critical' | 'Full';
 };
 
 function pushiness(personality: AIStrategyPersonality): number {
@@ -136,6 +138,10 @@ function choosePitIntensity(car: LiveCarState, state: LiveRaceState, track: Trac
   return 'Standard';
 }
 
+function chooseRepairMode(car: LiveCarState, state: LiveRaceState): 'None' | 'Critical' | 'Full' {
+  return repairModeForComponents(collectDamageComponents(car, state.series, undefined, state.damageSettings ?? DEFAULT_DAMAGE_SETTINGS));
+}
+
 function applyDriverDisagreement(
   car: LiveCarState,
   state: LiveRaceState,
@@ -203,6 +209,7 @@ export function aiLapDecision(
       action.note = 'pits for wet tyres';
       action.pitIntensity = choosePitIntensity(car, state, track, lap);
       action.pitExitMode = 'Conservative';
+      action.repairMode = chooseRepairMode(car, state);
       return action;
     }
   }
@@ -212,6 +219,7 @@ export function aiLapDecision(
     action.note = 'pits for slicks';
     action.pitIntensity = choosePitIntensity(car, state, track, lap);
     action.pitExitMode = 'Conservative';
+    action.repairMode = chooseRepairMode(car, state);
     return action;
   }
 
@@ -232,6 +240,7 @@ export function aiLapDecision(
       action.note = 'takes the safety-car pit stop';
       action.pitIntensity = choosePitIntensity(car, state, track, lap);
       action.pitExitMode = car.paceMode;
+      action.repairMode = chooseRepairMode(car, state);
       return action;
     }
   }
@@ -271,6 +280,7 @@ export function aiLapDecision(
       action.note = 'makes a scheduled stop';
       action.pitIntensity = choosePitIntensity(car, state, track, lap);
       action.pitExitMode = car.paceMode;
+      action.repairMode = chooseRepairMode(car, state);
       return action;
     }
   }
