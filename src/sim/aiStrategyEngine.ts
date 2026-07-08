@@ -12,6 +12,7 @@ import type {
   LiveCarState,
   LiveRaceState,
   PaceMode,
+  PitIntensity,
   TireCompound,
 } from '../types/liveTypes';
 import { createSeededRandom, deriveSeed } from './random';
@@ -51,6 +52,8 @@ export type AIAction = {
   paceMode: PaceMode;
   switchCompound: TireCompound | null;
   note: string | null;
+  pitIntensity?: PitIntensity;
+  pitExitMode?: PaceMode;
 };
 
 function pushiness(personality: AIStrategyPersonality): number {
@@ -99,6 +102,36 @@ function likelyToPit(mate: LiveCarState, lap: number): boolean {
   return next != null && mate.pit.stopsMade < mate.pit.plannedStops && lap >= next - 1;
 }
 
+function stableRiskAppetite(seed: string, teamId: string): number {
+  return createSeededRandom(deriveSeed(seed, 'ai-pit-risk-appetite', teamId)).next();
+}
+
+function choosePitIntensity(car: LiveCarState, state: LiveRaceState, track: Track, lap: number): PitIntensity {
+  const appetite = stableRiskAppetite(state.seed, car.teamId);
+  const strongCrew = (car.pitCrewOperations ?? 55) >= 78;
+  const strongDriver = (car.driverComposure ?? 55) >= 72 && (car.driverRiskManagement ?? 55) >= 72;
+  const crewBias = strongCrew ? 0.18 : (car.pitCrewOperations ?? 55) < 48 ? -0.12 : 0;
+  const driverBias = strongDriver ? 0.12 : (car.driverComposure ?? 55) < 45 || (car.driverRiskManagement ?? 55) < 45 ? -0.1 : 0;
+  const appetiteBias = appetite - 0.5;
+  let score = crewBias + driverBias + appetiteBias * 0.55;
+
+  if (state.safetyCar.active) score += 0.22;
+  if (car.tire.wear >= 82) score += 0.12;
+  if (car.tire.wear <= 55) score -= 0.05;
+  if (car.position != null && car.position <= 5) score += 0.08;
+  if (car.position != null && car.position > 10) score -= 0.05;
+  if ((car.interval < 1.2 || (state.cars.find((o) => o.running && o.position === (car.position ?? 0) + 1)?.interval ?? 99) < 1.2)) {
+    score += 0.12;
+  }
+  if (lap >= state.totalLaps * 0.7) score += 0.08;
+  if (track.attributes.overtakingRacecraft < 45) score += 0.05;
+
+  if (score >= 0.78) return 'AllOut';
+  if (score >= 0.35) return 'Aggressive';
+  if (score <= -0.18) return 'Conservative';
+  return 'Standard';
+}
+
 // Decide an AI car's action for the upcoming lap. Pure given (car, state, lap).
 export function aiLapDecision(
   car: LiveCarState,
@@ -119,6 +152,8 @@ export function aiLapDecision(
       action.pitNow = true;
       action.switchCompound = 'Wet';
       action.note = 'pits for wet tyres';
+      action.pitIntensity = choosePitIntensity(car, state, track, lap);
+      action.pitExitMode = 'Conservative';
       return action;
     }
   }
@@ -126,6 +161,8 @@ export function aiLapDecision(
     action.pitNow = true;
     action.switchCompound = 'Dry';
     action.note = 'pits for slicks';
+    action.pitIntensity = choosePitIntensity(car, state, track, lap);
+    action.pitExitMode = 'Conservative';
     return action;
   }
 
@@ -144,6 +181,8 @@ export function aiLapDecision(
       action.pitNow = true;
       action.switchCompound = state.weather.wet ? 'Wet' : 'Dry';
       action.note = 'takes the safety-car pit stop';
+      action.pitIntensity = choosePitIntensity(car, state, track, lap);
+      action.pitExitMode = car.paceMode;
       return action;
     }
   }
@@ -181,6 +220,8 @@ export function aiLapDecision(
       action.pitNow = true;
       action.switchCompound = state.weather.wet ? 'Wet' : 'Dry';
       action.note = 'makes a scheduled stop';
+      action.pitIntensity = choosePitIntensity(car, state, track, lap);
+      action.pitExitMode = car.paceMode;
       return action;
     }
   }

@@ -118,6 +118,7 @@ const META: LiveRaceMeta = {
   teamNames: { 't-player': 'Player Team' },
   playerTeamId: 't-player',
   year: 2005,
+  series: 'F1',
 };
 
 const nameOf = (id: string) => META.driverNames[id] ?? id;

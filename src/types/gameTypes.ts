@@ -165,6 +165,7 @@ export type Team = {
   // Distinct from reputation (prestige/commercial). Drives the team component of
   // race & qualifying pace and the per-weekend operations variance.
   raceOperations: number; // 1-100
+  pitIntensityDefault?: import('./liveTypes').PitIntensity;
   morale: number; // 0-100
   expectedStanding?: number;
   difficulty?: 'Easy' | 'Medium' | 'Hard' | 'Very Hard';

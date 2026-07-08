@@ -11,6 +11,8 @@ import type {
   LiveCarState,
   LiveRaceState,
   PaceMode,
+  PitIntensity,
+  PitStopResult,
   RecAction,
   RecPriority,
   StrategyModeSource,
@@ -33,7 +35,7 @@ import {
 import { mechanicalLabel, crashLabel, tyreLabel, otherLabel } from './dnfModel';
 import { generateCandidates, cooldownFor, isModeAction, REC_COOLDOWN } from './analyticsEngine';
 import { advanceStint, startStint, longStintNote } from './strategyStint';
-import type { Track } from '../types/gameTypes';
+import type { Series, Track } from '../types/gameTypes';
 import type { StrategyModeSpec } from './liveRacePace';
 import type { Rng } from './random';
 import { stepWeather } from './weatherEngine';
@@ -44,6 +46,13 @@ import {
 } from './safetyCarEngine';
 import { aiLapDecision } from './aiStrategyEngine';
 import { pitWindowFor } from './pitStrategyEngine';
+import {
+  pitIntensityBaseSeverity,
+  pitIntensityBotchRisk,
+  pitIntensityPenaltySeconds,
+  pitIntensitySpec,
+  pitIntensityStationaryFloor,
+} from './pitIntensityData';
 import { generateRaceEventPool, resolveRaceEventTrigger } from './raceEventEngine';
 import { rollReliabilityIssue } from './reliabilityEngine';
 import { findOption, applyDecisionEffects } from './raceDecisionEngine';
@@ -65,6 +74,135 @@ const MAX_BATTLE_EVENTS = 4;
 // A position battle is "meaningful" (worth logging) if it involves a player
 // driver, teammates, the closing laps, or the points/podium positions.
 const BATTLE_POINTS_CUTOFF = 10;
+
+type PitStopDecision = {
+  intensity?: PitIntensity;
+  exitMode?: PaceMode;
+};
+
+function resolvePitIntensity(car: LiveCarState): PitIntensity {
+  return car.pit.intensity ?? car.pit.intensityDefault ?? 'Standard';
+}
+
+function resolvePitExitMode(car: LiveCarState): PaceMode {
+  return car.pit.exitMode ?? 'Conservative';
+}
+
+function applyPitDecision(car: LiveCarState, decision: PitStopDecision | undefined): LiveCarState {
+  if (!decision) return car;
+  return {
+    ...car,
+    pit: {
+      ...car.pit,
+      intensity: decision.intensity ?? car.pit.intensity ?? car.pit.intensityDefault ?? 'Standard',
+      exitMode: decision.exitMode ?? car.pit.exitMode ?? 'Conservative',
+    },
+  };
+}
+
+function applyPitExitMode(
+  car: LiveCarState,
+  mode: PaceMode,
+  currentLap: number,
+): LiveCarState {
+  if (car.safetyCarModeBefore != null) {
+    return {
+      ...car,
+      safetyCarModeBefore: mode,
+      pit: { ...car.pit, exitMode: mode },
+    };
+  }
+  return {
+    ...car,
+    paceMode: mode,
+    safetyCarModeBefore: null,
+    strategyStint: startStint(mode, car.paceMode, currentLap, 'pit'),
+    pit: { ...car.pit, exitMode: mode },
+  };
+}
+
+function pitStopTimeFromLoss(
+  pitLossBase: number,
+  opsForm: number,
+  safetyCarActive: boolean,
+  rng: Rng,
+  intensity: PitIntensity,
+  pitCrewOperations: number,
+  driverComposure: number,
+  driverRiskManagement: number,
+  series: Series,
+): { time: number; result: PitStopResult } {
+  const spec = pitIntensitySpec(intensity);
+  const skillBlend =
+    pitCrewOperations * 0.46 + driverComposure * 0.27 + driverRiskManagement * 0.27;
+  const weekendBoost = opsForm * 0.22;
+  const skillMitigation = clamp((skillBlend - 50) * 0.028 + weekendBoost, -0.85, 1.1);
+  const stationary = clamp(
+    pitLossBase + spec.stationaryDelta - skillMitigation,
+    pitIntensityStationaryFloor(series),
+    28,
+  );
+
+  const botchRisk = pitIntensityBotchRisk(
+    intensity,
+    pitCrewOperations,
+    driverComposure,
+    driverRiskManagement,
+    opsForm,
+    safetyCarActive,
+  );
+  const botch = rng.chance(botchRisk);
+
+  if (!botch) {
+    const variance = rng.variance(0.14);
+    return {
+      time: round1(clamp(stationary + variance, pitIntensityStationaryFloor(series), 28)),
+      result: {
+        tier: 'Clean',
+        note: 'Nailed pit stop — clean and fast.',
+        addedSeconds: 0,
+      },
+    };
+  }
+
+  const severitySeed = clamp(
+    pitIntensityBaseSeverity(intensity) +
+      spec.severityDelta +
+      (skillBlend < 50 ? (50 - skillBlend) * 0.004 : 0) -
+      (skillBlend > 50 ? (skillBlend - 50) * 0.0018 : 0),
+    0.08,
+    0.9,
+  );
+  const tierRoll = rng.next();
+  let result: PitStopResult;
+  if (tierRoll < severitySeed * 0.18) {
+    const addedSeconds = round1(rng.range(13, pitIntensityPenaltySeconds(series)));
+    result = {
+      tier: 'Major',
+      note: `Pit stop botch — unsafe release / speeding penalty costs ${addedSeconds.toFixed(1)}s.`,
+      addedSeconds,
+    };
+  } else if (tierRoll < severitySeed * 0.52) {
+    const addedSeconds = round1(rng.range(2.6, 5.4));
+    result = {
+      tier: 'Moderate',
+      note: `Pit stop botch — slipped wheel nut / wrong call costs ${addedSeconds.toFixed(1)}s.`,
+      addedSeconds,
+    };
+  } else {
+    const addedSeconds = round1(rng.range(0.8, 1.9));
+    result = {
+      tier: 'Minor',
+      note: `Slow pit stop cost ${addedSeconds.toFixed(1)}s.`,
+      addedSeconds,
+    };
+  }
+
+  return {
+    time: round1(clamp(stationary + result.addedSeconds + rng.variance(0.12), pitIntensityStationaryFloor(series), 40)),
+    result,
+  };
+}
 
 // Advance one lap. `meta` carries track + names + player team.
 export function stepLiveRace(state: LiveRaceState, meta: LiveRaceMeta): LiveRaceState {
@@ -141,6 +279,9 @@ export function stepLiveRace(state: LiveRaceState, meta: LiveRaceMeta): LiveRace
     let wantsPit = false;
     if (!c.isPlayer) {
       const action = aiLapDecision(c, state, track, nextLap);
+      if (action.pitIntensity || action.pitExitMode) {
+        c = applyPitDecision(c, { intensity: action.pitIntensity, exitMode: action.pitExitMode });
+      }
       if (!state.safetyCar.active) c.paceMode = action.paceMode;
       if (action.pitNow) {
         wantsPit = true;
@@ -190,6 +331,8 @@ export function stepLiveRace(state: LiveRaceState, meta: LiveRaceMeta): LiveRace
           ? pitWindowFor(c.pit.scheduledLaps[0], state.totalLaps)
           : null;
       c.pit.lastWindowPromptLap = null;
+      const pitIntensity = resolvePitIntensity(c);
+      const pitExitMode = resolvePitExitMode(c);
       c.pit.planStatus =
         c.pit.scheduledLaps.length > 0 ? (recalc ? 'recalculated' : 'planned') : 'completed';
       // Clarify the strategy narrative when an early stop absorbs a planned stop.
@@ -201,14 +344,22 @@ export function stepLiveRace(state: LiveRaceState, meta: LiveRaceMeta): LiveRace
           }pit.`,
         });
       }
-      pitLoss = state.safetyCar.active
-        ? Math.max(8, c.pitLossBase - SAFETY_CAR_PIT_SAVING)
-        : c.pitLossBase;
-      const pitStop = pitStopTimeFromLoss(c.pitLossBase, c.opsForm, state.safetyCar.active, rng);
+      pitLoss = state.safetyCar.active ? Math.max(8, c.pitLossBase - SAFETY_CAR_PIT_SAVING) : c.pitLossBase;
+      const pitStop = pitStopTimeFromLoss(
+        pitLoss,
+        c.opsForm,
+        state.safetyCar.active,
+        rng,
+        pitIntensity,
+        c.pitCrewOperations ?? 55,
+        c.driverComposure ?? 55,
+        c.driverRiskManagement ?? 55,
+        meta.series,
+      );
       c.pit.lastPitStopTime = pitStop.time;
-      if (pitStop.slow) {
-        lapEvents.push({ lap: nextLap, text: `${name(c.driverId)} loses time with a slow ${pitStop.time.toFixed(1)}s pit stop.` });
-      }
+      c.pit.lastPitResult = pitStop.result;
+      lapEvents.push({ lap: nextLap, text: `${name(c.driverId)} ${pitStop.result.note}` });
+      c = applyPitExitMode(c, pitExitMode, nextLap);
       c.tire = {
         compound: weather.wet ? 'Wet' : 'Dry',
         age: 0,
@@ -593,12 +744,23 @@ export function resolvePrompt(state: LiveRaceState, optionId: string, meta: Live
 
 // Call a player car into the pits. The stop is executed on the next lap step.
 // No-op if the car has retired or finished, or already requested a stop.
-export function requestPlayerPit(state: LiveRaceState, driverId: string): LiveRaceState {
+export function requestPlayerPit(
+  state: LiveRaceState,
+  driverId: string,
+  decision?: PitStopDecision,
+): LiveRaceState {
   let changed = false;
   const cars = state.cars.map((c) => {
-    if (c.driverId !== driverId || !c.isPlayer || !c.running || c.pit.pitRequested) return c;
+    if (c.driverId !== driverId || !c.isPlayer || !c.running) return c;
     changed = true;
-    return { ...c, pit: { ...c.pit, pitRequested: true } };
+    const updated = applyPitDecision(c, decision);
+    return {
+      ...updated,
+      pit: {
+        ...updated.pit,
+        pitRequested: true,
+      },
+    };
   });
   return changed ? { ...state, cars } : state;
 }
@@ -1005,8 +1167,15 @@ function applyRecAction(
     if (car.pit.stopsMade >= car.pit.plannedStops && car.tire.wear < 60) {
       return addEvent(s, `Lap ${lap} — ${name}'s pit call postponed; no further stop planned.`);
     }
-    s = requestPlayerPit(s, rec.driverId);
-    return addEvent(s, `Lap ${lap} — pit wall ${verb} analytics recommendation: ${name} will pit this lap.`);
+    s = requestPlayerPit(
+      s,
+      rec.driverId,
+      eff.pitIntensity || eff.pitExitMode ? { intensity: eff.pitIntensity, exitMode: eff.pitExitMode } : undefined,
+    );
+    const intensity = eff.pitIntensity ?? car.pit.intensity ?? car.pit.intensityDefault ?? 'Standard';
+    const exitMode = eff.pitExitMode ?? car.pit.exitMode ?? 'Conservative';
+    const intensityLabel = intensity === 'Standard' ? '' : ` (${intensity})`;
+    return addEvent(s, `Lap ${lap} — pit wall ${verb} analytics recommendation: ${name} will pit this lap${intensityLabel}, exit ${exitMode}.`);
   }
 
   // --- Strategy-mode instruction ---
@@ -1035,10 +1204,15 @@ function applyRecAction(
 }
 
 // Accept a recommendation's recommended action.
-export function acceptRecommendation(state: LiveRaceState, recId: string, meta: LiveRaceMeta): LiveRaceState {
+export function acceptRecommendation(
+  state: LiveRaceState,
+  recId: string,
+  meta: LiveRaceMeta,
+  action?: RecAction,
+): LiveRaceState {
   const rec = state.recommendations.find((r) => r.id === recId);
   if (!rec) return state;
-  return applyRecAction(state, rec, rec.action, meta, 'accepted');
+  return applyRecAction(state, rec, action ?? rec.action, meta, 'accepted');
 }
 
 // Apply one of a recommendation's alternative (Modify) actions by type.
@@ -1266,16 +1440,6 @@ function trustRiskMultiplier(confidenceModifier: number, mode: PaceMode): number
   const lowTrust = Math.max(0, -confidenceModifier);
   const modeWeight = mode === 'Attack' ? 3.6 : 2.2;
   return 1 + lowTrust * modeWeight;
-}
-function pitStopTimeFromLoss(pitLossBase: number, opsForm: number, safetyCarActive: boolean, rng: Rng): { time: number; slow: boolean } {
-  const pitTimeBase = pitLossBase * 0.22 + 0.5;
-  const execution = opsForm * 0.35;
-  const safetyCarDelta = safetyCarActive ? 0.2 : 0;
-  const mistakeChance = clamp(0.075 - opsForm * 0.012, 0.012, 0.16);
-  const slow = rng.chance(mistakeChance);
-  const delay = slow ? rng.range(1.1, 4.6) : 0;
-  const variation = rng.variance(0.22);
-  return { time: round1(clamp(pitTimeBase - execution + safetyCarDelta + variation + delay, 2.0, 14.0)), slow };
 }
 function round1(n: number): number {
   return Math.round(n * 10) / 10;

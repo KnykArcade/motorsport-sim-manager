@@ -22,7 +22,7 @@ import { orderCardsBySeat } from '../sim/liveRaceCardOrder';
 import { applyTeamOrderToLive, recordTeamOrder, TEAM_ORDER_SPECS } from '../sim/relationshipEngine';
 import { Button } from '../components/Button';
 import type { TrackDot } from '../components/RaceTrack2D';
-import type { AnalyticsRecommendation, LiveRaceState, PaceMode, RecAction } from '../types/liveTypes';
+import type { AnalyticsRecommendation, LiveRaceState, PaceMode, PitIntensity, RecAction } from '../types/liveTypes';
 import type { RaceResult } from '../types/gameTypes';
 import type { RaceDecision } from '../types/simTypes';
 import type { TeamOrder, TeamOrderDecision } from '../types/relationshipTypes';
@@ -200,11 +200,13 @@ export function LiveRace() {
   };
   const chooseOption = (optionId: string) =>
     setLive((s) => (s ? resolvePrompt(s, optionId, engine.meta) : s));
-  const pitNow = (driverId: string) =>
+  const pitNow = (driverId: string, decision?: { intensity?: PitIntensity; exitMode?: PaceMode }) =>
     setLive((s) => {
       if (!s) return s;
       const car = s.cars.find((c) => c.driverId === driverId);
-      return car?.pit.pitRequested ? cancelPlayerPitRequest(s, driverId) : requestPlayerPit(s, driverId);
+      return car?.pit.pitRequested
+        ? cancelPlayerPitRequest(s, driverId)
+        : requestPlayerPit(s, driverId, decision);
     });
   const setMode = (driverId: string, mode: PaceMode) =>
     setLive((s) => (s ? setPlayerPaceMode(s, driverId, mode) : s));
@@ -267,8 +269,8 @@ export function LiveRace() {
     return applyRecommendationAction(s, rec.id, action, engine.meta, verb);
   };
 
-  const onAccept = (rec: AnalyticsRecommendation) =>
-    setLive((s) => (s ? resolveRec(s, rec, rec.action, 'accepted') : s));
+  const onAccept = (rec: AnalyticsRecommendation, actionOverride?: RecAction) =>
+    setLive((s) => (s ? resolveRec(s, rec, actionOverride ?? rec.action, 'accepted') : s));
   const onModify = (rec: AnalyticsRecommendation, action: RecAction) =>
     setLive((s) => (s ? resolveRec(s, rec, action, 'modified') : s));
   const onIgnore = (rec: AnalyticsRecommendation) =>
@@ -549,7 +551,7 @@ export function LiveRace() {
                   teamColor={teamColor(c.teamId)}
                   finished={finished}
                   onMode={(m) => setMode(c.driverId, m)}
-                  onPit={() => pitNow(c.driverId)}
+                  onPit={(decision) => pitNow(c.driverId, decision)}
                   className="min-h-0"
                 />
               ))

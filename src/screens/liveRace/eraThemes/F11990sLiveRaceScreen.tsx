@@ -5,11 +5,13 @@ import { modeSpec } from '../../../sim/liveRacePace';
 import { DECISION_COUNTDOWN_SECONDS } from '../../../sim/analyticsEngine';
 import type { AnalyticsMonitor } from '../../../sim/analyticsMonitor';
 import { kindLabel } from '../../../sim/analyticsMonitor';
-import type { AnalyticsRecommendation, LiveCarState, LiveRaceState, PaceMode, RecAction, ReliabilityIssueType } from '../../../types/liveTypes';
+import type { AnalyticsRecommendation, LiveCarState, LiveRaceState, PaceMode, PitIntensity, RecAction, ReliabilityIssueType } from '../../../types/liveTypes';
 import type { Race } from '../../../types/gameTypes';
 import type { GameState } from '../../../game/careerState';
 import { fmtLap, fmtSector, tyreLetter } from '../dashboardFormat';
 import type { ForecastEntry } from '../forecast';
+import { PIT_INTENSITY_ORDER } from '../../../sim/pitIntensityData';
+import { getEraTheme, getEraThemeConfig } from '../../../theme/eraTheme';
 
 type Speed = 1 | 10 | 30 | 60;
 
@@ -41,9 +43,9 @@ type Props = {
   onOpenLog: () => void;
   onExit: () => void;
   onFinishRace: () => void;
-  onPit: (driverId: string) => void;
+  onPit: (driverId: string, decision?: { intensity?: PitIntensity; exitMode?: PaceMode }) => void;
   onMode: (driverId: string, mode: PaceMode) => void;
-  onAccept: (rec: AnalyticsRecommendation) => void;
+  onAccept: (rec: AnalyticsRecommendation, actionOverride?: RecAction) => void;
   onModify: (rec: AnalyticsRecommendation, action: RecAction) => void;
   onIgnore: (rec: AnalyticsRecommendation) => void;
   onLetCrewDecide: (rec: AnalyticsRecommendation) => void;
@@ -96,9 +98,13 @@ export function F11990sLiveRaceScreen({
   const decisionRecs = activeRecs.filter((rec) => rec.status === 'pending' && rec.priority !== 'low');
   const lapHistory = useLapHistory(live.currentLap, focusCars);
   const { outcomes, recordOutcome } = useDecisionOutcomes(live.recommendations, live.currentLap);
-  const handleAccept = (rec: AnalyticsRecommendation) => {
-    recordOutcome(rec, `Request approved \u2014 ${rec.action.label}${rec.suggestedDuration ? ` (${rec.suggestedDuration})` : ''}`);
-    onAccept(rec);
+  const handleAccept = (rec: AnalyticsRecommendation, actionOverride?: RecAction) => {
+    const action = actionOverride ?? rec.action;
+    recordOutcome(
+      rec,
+      `Request approved \u2014 ${action.label}${rec.suggestedDuration ? ` (${rec.suggestedDuration})` : ''}`,
+    );
+    onAccept(rec, actionOverride);
   };
   const handleModify = (rec: AnalyticsRecommendation, action: RecAction) => {
     recordOutcome(rec, `Modified \u2014 ${action.label}`);
@@ -115,6 +121,7 @@ export function F11990sLiveRaceScreen({
     recordOutcome(rec, `Crew call \u2014 ${rec.action.label}`);
     onLetCrewDecide(rec);
   };
+  const eraLabel = getEraThemeConfig(getEraTheme(state.series, state.seasonYear)).label;
 
   return (
     <div
@@ -124,6 +131,7 @@ export function F11990sLiveRaceScreen({
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_20%,rgba(252,211,77,0.12),transparent_24%),linear-gradient(180deg,rgba(7,11,13,0.12),rgba(7,11,13,0.88))]" />
       <RetroTopBar
         season={state.seasonYear}
+        eraLabel={eraLabel}
         round={race?.round ?? null}
         raceName={race?.gpName ?? 'Live Race'}
         trackName={race?.trackName ?? live.trackId}
@@ -253,6 +261,7 @@ export function F11990sLiveRaceScreen({
 
 function RetroTopBar({
   season,
+  eraLabel,
   round,
   raceName,
   trackName,
@@ -265,6 +274,7 @@ function RetroTopBar({
   onExit,
 }: {
   season: number;
+  eraLabel: string;
   round: number | null;
   raceName: string;
   trackName: string;
@@ -279,7 +289,7 @@ function RetroTopBar({
   return (
     <header className="relative grid shrink-0 grid-cols-[1fr_1.35fr_auto_0.8fr_0.8fr_0.8fr_0.9fr_auto] items-center overflow-hidden rounded-b-md border border-amber-500/25 bg-black/85 text-zinc-100 shadow-lg max-lg:grid-cols-2">
       <div className="border-r border-zinc-700/70 px-4 py-2">
-        <div className="text-2xl font-black uppercase italic tracking-wide text-amber-400">1990s Era</div>
+        <div className="text-2xl font-black uppercase italic tracking-wide text-amber-400">{eraLabel}</div>
         <div className="text-sm font-bold text-amber-300">
           {season} Season{round != null ? ` RD ${round}` : ''}
         </div>
@@ -820,6 +830,7 @@ function DriverFocus({
             </div>
             {rec ? (
               <DriverAlertCard
+                key={rec.id}
                 rec={rec}
                 bothDrivers={bothDrivers}
                 decisionSecondsLeft={decisionSecondsLeft}
@@ -853,13 +864,17 @@ function DriverAlertCard({
   rec: AnalyticsRecommendation;
   bothDrivers: boolean;
   decisionSecondsLeft: number | null;
-  onAccept: (rec: AnalyticsRecommendation) => void;
+  onAccept: (rec: AnalyticsRecommendation, actionOverride?: RecAction) => void;
   onModify: (rec: AnalyticsRecommendation, action: RecAction) => void;
   onIgnore: (rec: AnalyticsRecommendation) => void;
   onLetCrewDecide: (rec: AnalyticsRecommendation) => void;
 }) {
   const [modifying, setModifying] = useState(false);
+  const [pitIntensity, setPitIntensity] = useState<PitIntensity>('Standard');
+  const [pitExitMode, setPitExitMode] = useState<PaceMode>('Conservative');
   const pitCall = /pit/i.test(rec.action.label);
+
+  const pitActionOverride = pitCall ? { ...rec.action, pitIntensity, pitExitMode } : undefined;
   return (
     <div className="z-10 mt-auto overflow-hidden rounded border-2 border-amber-400 bg-black/95 px-1.5 py-1 shadow-[0_0_20px_rgba(245,158,11,0.35)]">
       <div className="flex items-center gap-1 text-[10px] font-black uppercase tracking-wide text-amber-300">
@@ -894,33 +909,86 @@ function DriverAlertCard({
           </button>
         </div>
       ) : (
-        <div className="mt-0.5 grid grid-cols-4 gap-1">
-          <button
-            onClick={() => onAccept(rec)}
-            className="rounded-sm bg-amber-400 py-0.5 text-[9px] font-black uppercase text-black hover:bg-amber-300"
-          >
-            {pitCall ? 'Pit Now' : 'Accept'}
-          </button>
-          <button
-            onClick={() => setModifying(true)}
-            className="rounded-sm border border-amber-500/60 py-0.5 text-[9px] font-bold uppercase text-amber-200 hover:bg-amber-500/15"
-          >
-            Modify
-          </button>
-          <button
-            onClick={() => onLetCrewDecide(rec)}
-            className="rounded-sm border border-amber-500/60 py-0.5 text-[9px] font-bold uppercase text-amber-200 hover:bg-amber-500/15"
-          >
-            Crew
-          </button>
-          <button
-            onClick={() => onIgnore(rec)}
-            className="rounded-sm border border-amber-500/60 py-0.5 text-[9px] font-bold uppercase text-amber-200 hover:bg-amber-500/15"
-          >
-            {pitCall ? 'Stay Out' : 'Ignore'}
-          </button>
+        <div className="mt-0.5 space-y-1">
+          {pitCall && (
+            <PitDecisionControls
+              intensity={pitIntensity}
+              exitMode={pitExitMode}
+              onIntensity={setPitIntensity}
+              onExitMode={setPitExitMode}
+            />
+          )}
+          <div className="grid grid-cols-4 gap-1">
+            <button
+              onClick={() => onAccept(rec, pitActionOverride)}
+              className="rounded-sm bg-amber-400 py-0.5 text-[9px] font-black uppercase text-black hover:bg-amber-300"
+            >
+              {pitCall ? 'Pit Now' : 'Accept'}
+            </button>
+            <button
+              onClick={() => setModifying(true)}
+              className="rounded-sm border border-amber-500/60 py-0.5 text-[9px] font-bold uppercase text-amber-200 hover:bg-amber-500/15"
+            >
+              Modify
+            </button>
+            <button
+              onClick={() => onLetCrewDecide(rec)}
+              className="rounded-sm border border-amber-500/60 py-0.5 text-[9px] font-bold uppercase text-amber-200 hover:bg-amber-500/15"
+            >
+              Crew
+            </button>
+            <button
+              onClick={() => onIgnore(rec)}
+              className="rounded-sm border border-amber-500/60 py-0.5 text-[9px] font-bold uppercase text-amber-200 hover:bg-amber-500/15"
+            >
+              {pitCall ? 'Stay Out' : 'Ignore'}
+            </button>
+          </div>
         </div>
       )}
+    </div>
+  );
+}
+
+function PitDecisionControls({
+  intensity,
+  exitMode,
+  onIntensity,
+  onExitMode,
+}: {
+  intensity: PitIntensity;
+  exitMode: PaceMode;
+  onIntensity: (value: PitIntensity) => void;
+  onExitMode: (value: PaceMode) => void;
+}) {
+  return (
+    <div className="space-y-1">
+      <div className="grid grid-cols-4 gap-1">
+        {PIT_INTENSITY_ORDER.map((value) => (
+          <button
+            key={value}
+            onClick={() => onIntensity(value)}
+            className={`rounded-sm px-1 py-0.5 text-[9px] font-bold uppercase ${
+              intensity === value ? 'bg-amber-300 text-black' : 'bg-zinc-900 text-zinc-400 hover:bg-zinc-800'
+            }`}
+          >
+            {value}
+          </button>
+        ))}
+      </div>
+      <div className="grid grid-cols-6 gap-1">
+        {DISPLAY_MODES.map((mode) => (
+          <button
+            key={mode}
+            onClick={() => onExitMode(mode)}
+            className={`rounded-sm px-1 py-0.5 text-[9px] font-bold uppercase ${
+              exitMode === mode ? 'bg-emerald-300 text-black' : 'bg-zinc-900 text-zinc-400 hover:bg-zinc-800'
+            }`}
+          >
+            {modeLabel(mode)}
+          </button>
+        ))}
+      </div>
     </div>
   );
 }

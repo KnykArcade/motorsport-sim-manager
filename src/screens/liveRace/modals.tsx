@@ -3,7 +3,7 @@
 // vertical space on the main screen.
 
 import type { ReactNode } from 'react';
-import type { LiveCarState } from '../../types/liveTypes';
+import type { LiveCarState, PaceMode, PitIntensity } from '../../types/liveTypes';
 import type { RaceEvent } from '../../types/simTypes';
 import type { TeamOrder } from '../../types/relationshipTypes';
 import { TEAM_ORDER_SPECS } from '../../sim/relationshipEngine';
@@ -58,7 +58,7 @@ export function StrategyModal({
   currentLap: number;
   finished: boolean;
   nameOf: (id: string) => string;
-  onPit: (driverId: string) => void;
+  onPit: (driverId: string, decision?: { intensity?: PitIntensity; exitMode?: PaceMode }) => void;
   onClose: () => void;
 }) {
   return (
@@ -164,4 +164,3 @@ export function TeamOrdersModal({
     </Modal>
   );
 }
-

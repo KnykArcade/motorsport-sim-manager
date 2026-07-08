@@ -15,7 +15,7 @@
 //                          a compact focus label and its next re-trigger.
 
 import { useState } from 'react';
-import type { AnalyticsRecommendation, RecAction } from '../../types/liveTypes';
+import type { AnalyticsRecommendation, PaceMode, PitIntensity, RecAction } from '../../types/liveTypes';
 import type {
   AnalyticsMonitor,
   DriverMonitor,
@@ -23,6 +23,8 @@ import type {
   PanelMode,
 } from '../../sim/analyticsMonitor';
 import { kindLabel, selectPanelMode, driverPanelCell } from '../../sim/analyticsMonitor';
+import { PIT_INTENSITY_ORDER } from '../../sim/pitIntensityData';
+import { SELECTABLE_MODES } from '../../sim/liveRacePace';
 
 const PRIORITY_TEXT: Record<AnalyticsRecommendation['priority'], string> = {
   low: 'text-slate-400',
@@ -65,7 +67,7 @@ export function RecommendationsPanel({
   currentLap: number;
   decisionSecondsLeft?: number | null;
   nameOf: (driverId: string) => string;
-  onAccept: (rec: AnalyticsRecommendation) => void;
+  onAccept: (rec: AnalyticsRecommendation, actionOverride?: RecAction) => void;
   onModify: (rec: AnalyticsRecommendation, action: RecAction) => void;
   onIgnore: (rec: AnalyticsRecommendation) => void;
   onLetCrewDecide: (rec: AnalyticsRecommendation) => void;
@@ -100,19 +102,23 @@ export function RecommendationsPanel({
         <p className="p-2 text-[10px] text-slate-500">No player cars running — monitoring paused.</p>
       ) : (
         <div className="flex min-h-0 flex-1 flex-col gap-1 overflow-hidden p-1">
-          {monitor.drivers.map((d) => (
-            <DriverCell
-              key={d.driverId}
-              driver={d}
-              name={nameOf(d.driverId)}
-              cell={driverPanelCell(d.driverId, recs, monitor.recent, currentLap)}
-              compact={grouped}
-              onAccept={onAccept}
-              onModify={onModify}
-              onIgnore={onIgnore}
-              onLetCrewDecide={onLetCrewDecide}
-            />
-          ))}
+          {monitor.drivers.map((d) => {
+            const cell = driverPanelCell(d.driverId, recs, monitor.recent, currentLap);
+            const recKey = cell.state === 'decision' || cell.state === 'active' ? cell.rec.id : 'none';
+            return (
+              <DriverCell
+                key={`${d.driverId}-${recKey}`}
+                driver={d}
+                name={nameOf(d.driverId)}
+                cell={cell}
+                compact={grouped}
+                onAccept={onAccept}
+                onModify={onModify}
+                onIgnore={onIgnore}
+                onLetCrewDecide={onLetCrewDecide}
+              />
+            );
+          })}
 
           {grouped && (
             <div className="mt-auto grid shrink-0 grid-cols-2 gap-1 pt-0.5">
@@ -178,13 +184,17 @@ function DriverCell({
   name: string;
   cell: DriverPanelCell;
   compact?: boolean; // double-decision: drop the extra Let Crew Decide row / clamp copy
-  onAccept: (rec: AnalyticsRecommendation) => void;
+  onAccept: (rec: AnalyticsRecommendation, actionOverride?: RecAction) => void;
   onModify: (rec: AnalyticsRecommendation, action: RecAction) => void;
   onIgnore: (rec: AnalyticsRecommendation) => void;
   onLetCrewDecide: (rec: AnalyticsRecommendation) => void;
 }) {
   const [modifying, setModifying] = useState(false);
+  const [pitIntensity, setPitIntensity] = useState<PitIntensity>('Standard');
+  const [pitExitMode, setPitExitMode] = useState<PaceMode>('Conservative');
   const rec = cell.state === 'decision' || cell.state === 'active' ? cell.rec : null;
+
+  const pitActionOverride = rec?.action.pitNow ? { ...rec.action, pitIntensity, pitExitMode } : undefined;
 
   // Double-decision: one ultra-compact block per driver (name + rec on a single
   // line, then the same four controls as a single decision) so both fit the fixed panel.
@@ -204,9 +214,17 @@ function DriverCell({
             {cell.rec.confidence}%
           </span>
         </div>
+        {cell.rec.action.pitNow && (
+          <PitDecisionControls
+            intensity={pitIntensity}
+            exitMode={pitExitMode}
+            onIntensity={setPitIntensity}
+            onExitMode={setPitExitMode}
+          />
+        )}
         <div className="mt-0.5 grid grid-cols-4 gap-1">
           <button
-            onClick={() => onAccept(cell.rec)}
+            onClick={() => onAccept(cell.rec, pitActionOverride)}
             className="rounded bg-emerald-600 py-0.5 text-[10px] font-bold text-white hover:bg-emerald-500"
           >
             Accept
@@ -263,9 +281,18 @@ function DriverCell({
 
           {!modifying ? (
             // Single-decision: all four controls on one compact row.
-            <div className="mt-1 grid grid-cols-4 gap-1">
+            <div className="mt-1 space-y-1">
+              {cell.rec.action.pitNow && (
+                <PitDecisionControls
+                  intensity={pitIntensity}
+                  exitMode={pitExitMode}
+                  onIntensity={setPitIntensity}
+                  onExitMode={setPitExitMode}
+                />
+              )}
+              <div className="grid grid-cols-4 gap-1">
                 <button
-                  onClick={() => onAccept(cell.rec)}
+                  onClick={() => onAccept(cell.rec, pitActionOverride)}
                   className="rounded bg-emerald-600 py-0.5 text-[10px] font-bold text-white hover:bg-emerald-500"
                 >
                   Accept
@@ -288,6 +315,7 @@ function DriverCell({
                 >
                   Ignore
                 </button>
+              </div>
             </div>
           ) : (
             <div className="mt-1 space-y-0.5">
@@ -349,6 +377,49 @@ function DriverCell({
           <MonitorFootline driver={driver} />
         </div>
       )}
+    </div>
+  );
+}
+
+function PitDecisionControls({
+  intensity,
+  exitMode,
+  onIntensity,
+  onExitMode,
+}: {
+  intensity: PitIntensity;
+  exitMode: PaceMode;
+  onIntensity: (value: PitIntensity) => void;
+  onExitMode: (value: PaceMode) => void;
+}) {
+  return (
+    <div className="space-y-1">
+      <div className="grid grid-cols-4 gap-1">
+        {PIT_INTENSITY_ORDER.map((value) => (
+          <button
+            key={value}
+            onClick={() => onIntensity(value)}
+            className={`rounded py-0.5 text-[9px] font-semibold ${
+              intensity === value ? 'bg-amber-500 text-neutral-950' : 'bg-slate-800 text-slate-300 hover:bg-slate-700'
+            }`}
+          >
+            {value}
+          </button>
+        ))}
+      </div>
+      <div className="grid grid-cols-6 gap-1">
+        {SELECTABLE_MODES.map((mode) => (
+          <button
+            key={mode}
+            onClick={() => onExitMode(mode)}
+            className={`rounded py-0.5 text-[9px] font-semibold ${
+              exitMode === mode ? 'bg-emerald-500 text-neutral-950' : 'bg-slate-800 text-slate-300 hover:bg-slate-700'
+            }`}
+          >
+            {mode}
+          </button>
+        ))}
+      </div>
     </div>
   );
 }

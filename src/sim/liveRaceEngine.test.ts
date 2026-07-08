@@ -84,7 +84,7 @@ function buildMeta(context: RaceContext, playerTeamId: string): LiveRaceMeta {
     driverNames[e.driver.id] = e.driver.name;
     teamNames[e.driver.teamId] = e.driver.teamId;
   });
-  return { track: TRACK, driverNames, teamNames, playerTeamId, year: 1995 };
+  return { track: TRACK, driverNames, teamNames, playerTeamId, year: 1995, series: 'F1' };
 }
 
 function createRace(context: RaceContext, playerTeamId: string) {

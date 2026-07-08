@@ -178,7 +178,7 @@ describe('F11990sLiveRaceScreen', () => {
     );
 
     expect(html).toContain('data-testid="f1-1990s-live-race-screen"');
-    expect(html).toContain('1990s Era');
+    expect(html).toContain('1990s F1 Era');
     expect(html).toContain('Belgian Grand Prix');
     expect(html).toContain('Spa-Francorchamps');
     expect(html).toContain('Lap 18 / 44');

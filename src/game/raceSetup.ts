@@ -31,6 +31,7 @@ import {
 import type { SetupOption, Track } from '../types/gameTypes';
 import type { Entrant, RaceContext, RaceDecision, RacePrepFocusEffect } from '../types/simTypes';
 import type { RaceWeekendPackageEffects } from '../types/raceWeekendPackageTypes';
+import type { PitIntensity } from '../types/liveTypes';
 import { packageEffects as getPackageEffects } from '../sim/raceWeekendPackageEngine';
 import { confidencePerformanceModifier } from '../sim/driverConfidenceEngine';
 import type { LiveRaceMeta, LiveRaceOptions } from '../sim/liveRaceEngine';
@@ -150,9 +151,11 @@ export function buildRaceContext(
   const pointsSystem = getPointsSystem(state.pointsSystemId);
   const teamReputation: Record<string, number> = {};
   const teamRaceOps: Record<string, number> = {};
+  const pitIntensityByTeam: Record<string, PitIntensity> = {};
   const pkgEffects: Record<string, RaceWeekendPackageEffects> = {};
   state.teams.forEach((t) => {
     teamReputation[t.id] = t.reputation;
+    pitIntensityByTeam[t.id] = t.pitIntensityDefault ?? 'Standard';
     teamRaceOps[t.id] = t.raceOperations;
     // Player team uses their selected package; AI teams use Standard (no modifier)
     // until AI package selection is wired in.
@@ -185,6 +188,7 @@ export function buildRaceContext(
     year: state.seasonYear,
     teamReputation,
     teamRaceOps,
+    pitIntensityByTeam,
     packageEffectsByTeam: pkgEffects,
     racePrepFocusEffect: getRacePrepFocusEffect(state),
     playerTeamId: state.selectedTeamId,
@@ -229,7 +233,14 @@ export function buildLiveRaceMeta(state: GameState, track: Track): LiveRaceMeta 
   state.drivers.forEach((d) => (driverNames[d.id] = d.name));
   const teamNames: Record<string, string> = {};
   state.teams.forEach((t) => (teamNames[t.id] = t.name));
-  return { track, driverNames, teamNames, playerTeamId: state.selectedTeamId, year: state.seasonYear };
+  return {
+    track,
+    driverNames,
+    teamNames,
+    playerTeamId: state.selectedTeamId,
+    year: state.seasonYear,
+    series: state.series,
+  };
 }
 
 function getRacePrepFocusEffect(state: GameState): RacePrepFocusEffect | undefined {

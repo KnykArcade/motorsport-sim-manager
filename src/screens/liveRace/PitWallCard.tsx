@@ -3,8 +3,10 @@
 // health, and strategy-mode buttons. Data Analytics recommendations live in the
 // grouped RecommendationsPanel above the cards, not inside each card.
 
-import type { LiveCarState, PaceMode, ReliabilityIssueType } from '../../types/liveTypes';
+import { useState } from 'react';
+import type { LiveCarState, PaceMode, PitIntensity, ReliabilityIssueType } from '../../types/liveTypes';
 import { SELECTABLE_MODES, modeSpec } from '../../sim/liveRacePace';
+import { PIT_INTENSITY_ORDER } from '../../sim/pitIntensityData';
 import { DeltaTag } from './dashboardUi';
 import { fmtLap, ordinal, tyreLetter, RISK_STYLE } from './dashboardFormat';
 import type { RiskLevel } from '../../types/liveTypes';
@@ -32,9 +34,12 @@ export function PitWallCard({
   teamColor: string;
   finished: boolean;
   onMode: (mode: PaceMode) => void;
-  onPit: () => void;
+  onPit: (decision?: { intensity?: PitIntensity; exitMode?: PaceMode }) => void;
   className?: string;
 }) {
+  const [pitIntensity, setPitIntensity] = useState<PitIntensity>(car.pit.intensity ?? car.pit.intensityDefault ?? 'Standard');
+  const [pitExitMode, setPitExitMode] = useState<PaceMode>(car.pit.exitMode ?? 'Conservative');
+
   const finishedRace = car.status === 'Finished';
   const dnf = !car.running && !finishedRace;
   const wear = Math.round(car.tire.wear);
@@ -123,15 +128,6 @@ export function PitWallCard({
         <div className="mt-1">
           <div className="mb-0.5 flex items-center justify-between">
             <span className="text-[9px] uppercase tracking-wide text-slate-500">Strategy Mode</span>
-            <button
-              onClick={onPit}
-              disabled={!canPit}
-              className={`rounded px-2 py-0.5 text-[10px] font-bold ${
-                canPit ? (car.pit.pitRequested ? 'bg-amber-600 text-white hover:bg-amber-500' : 'bg-sky-600 text-white hover:bg-sky-500') : 'bg-slate-800 text-slate-600'
-              }`}
-            >
-              {car.pit.pitRequested ? 'Cancel Pit' : 'Pit'}
-            </button>
           </div>
           <div className="grid grid-cols-6 gap-1">
             {SELECTABLE_MODES.map((m) => {
@@ -161,6 +157,50 @@ export function PitWallCard({
                 </button>
               );
             })}
+          </div>
+          <div className="mt-1 rounded border border-slate-700/50 bg-slate-950/35 p-1">
+            <div className="mb-1 flex items-center justify-between">
+              <span className="text-[9px] uppercase tracking-wide text-slate-500">Pit Decision</span>
+              <button
+                onClick={() => onPit(car.pit.pitRequested ? undefined : { intensity: pitIntensity, exitMode: pitExitMode })}
+                disabled={!canPit}
+                className={`rounded px-2 py-0.5 text-[10px] font-bold ${
+                  canPit
+                    ? car.pit.pitRequested
+                      ? 'bg-amber-600 text-white hover:bg-amber-500'
+                      : 'bg-sky-600 text-white hover:bg-sky-500'
+                    : 'bg-slate-800 text-slate-600'
+                }`}
+              >
+                {car.pit.pitRequested ? 'Cancel Pit' : 'Pit'}
+              </button>
+            </div>
+            <div className="grid grid-cols-4 gap-1">
+              {PIT_INTENSITY_ORDER.map((value) => (
+                <button
+                  key={value}
+                  onClick={() => setPitIntensity(value)}
+                  className={`rounded px-1 py-0.5 text-[9px] font-semibold ${
+                    pitIntensity === value ? 'bg-amber-500 text-neutral-950' : 'bg-slate-800 text-slate-300 hover:bg-slate-700'
+                  }`}
+                >
+                  {value}
+                </button>
+              ))}
+            </div>
+            <div className="mt-1 grid grid-cols-6 gap-1">
+              {(['Conservative', 'Balanced', 'Push', 'Attack', 'Defend', 'ProtectEngine'] as PaceMode[]).map((mode) => (
+                <button
+                  key={mode}
+                  onClick={() => setPitExitMode(mode)}
+                  className={`rounded px-1 py-0.5 text-[9px] font-semibold ${
+                    pitExitMode === mode ? 'bg-emerald-500 text-neutral-950' : 'bg-slate-800 text-slate-300 hover:bg-slate-700'
+                  }`}
+                >
+                  {PACE_LABEL[mode]}
+                </button>
+              ))}
+            </div>
           </div>
           <div className="mt-1 rounded border border-slate-700/50 bg-slate-950/35 p-1">
             <div className="mb-0.5 text-[9px] uppercase tracking-wide text-slate-500">Car Reliability</div>
@@ -299,4 +339,3 @@ function worseCondition(a: ConditionLevel, b: ConditionLevel): ConditionLevel {
   const rank: Record<ConditionLevel, number> = { None: 0, Low: 1, Medium: 2, Critical: 3 };
   return rank[b] > rank[a] ? b : a;
 }
-

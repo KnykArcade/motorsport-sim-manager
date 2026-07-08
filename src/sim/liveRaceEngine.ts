@@ -15,6 +15,7 @@ import type {
   LiveCarState,
   LiveRaceState,
   PaceMode,
+  PitIntensity,
   TireCompound,
 } from '../types/liveTypes';
 import { calculateRacePace, weekendForm, operationsForm, PACE_SPREAD } from './raceEngine';
@@ -41,6 +42,9 @@ export type LiveRaceOptions = {
   year: number;
   // Series (e.g. 'F1', 'IndyCar') — drives series-specific DNF calibration.
   series: Series;
+  // Per-team default pit intensity, set pre-race and applied to live pit stops
+  // unless the player overrides it in the pit box.
+  pitIntensityByTeam?: Record<string, PitIntensity>;
 };
 
 // Metadata threaded through the tick engine for events and player prompts.
@@ -51,6 +55,7 @@ export type LiveRaceMeta = {
   playerTeamId: string;
   // Season year — drives era-specific DNF-cause balancing during the race.
   year: number;
+  series: Series;
 };
 
 const REF_LAP = 90; // reference lap time (s) — only relative deltas matter
@@ -93,6 +98,7 @@ export function createLiveRace(context: RaceContext, options: LiveRaceOptions): 
     const teamRating = options.teamRaceOps[e.driver.teamId];
     const pkgEffects = context.packageEffectsByTeam?.[e.driver.teamId];
     const confidenceModifier = context.confidenceModifierByDriver?.[e.driver.id] ?? 0;
+    const teamPitIntensity = options.pitIntensityByTeam?.[e.driver.teamId] ?? 'Standard';
     const { score: paceScore } = calculateRacePace(e.driver, e.car, track, setup, strategy, instruction, teamRating, confidenceModifier);
     // Per-team weekend form so the live race shares the quick race's variation.
     const score = paceScore + weekendForm(context.seed, e.driver.teamId, teamRating);
@@ -185,6 +191,9 @@ export function createLiveRace(context: RaceContext, options: LiveRaceOptions): 
       baseCrashRisk,
       baseMistakeRisk,
       tireDegRate,
+      pitCrewOperations: e.car.ratings.pitCrewOperations,
+      driverComposure: e.driver.ratings.composure,
+      driverRiskManagement: e.driver.ratings.riskManagement,
       pitLossBase: pitStopLoss(
         e.car,
         false,
@@ -208,6 +217,10 @@ export function createLiveRace(context: RaceContext, options: LiveRaceOptions): 
         scheduledLaps: pitPlan.scheduledLaps,
         lastPitLap: null,
         lastPitStopTime: null,
+        intensityDefault: teamPitIntensity,
+        intensity: teamPitIntensity,
+        exitMode: 'Conservative',
+        lastPitResult: null,
         inPitThisLap: false,
         // The player owns pit timing: show an advisory window for the first
         // stop and wait for the player to call the car in. AI cars pit off

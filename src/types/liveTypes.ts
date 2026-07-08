@@ -6,7 +6,7 @@
 // outcome as it plays out. The final classification is converted back into the
 // existing `RaceResult[]` shape so standings/news/morale are unaffected.
 
-import type { RaceFinishStatus } from './gameTypes';
+import type { RaceFinishStatus, Series } from './gameTypes';
 import type { RaceEvent } from './simTypes';
 
 // ---------------------------------------------------------------------------
@@ -101,6 +101,10 @@ export type PitStopState = {
   scheduledLaps: number[];
   lastPitLap: number | null;
   lastPitStopTime?: number | null;
+  intensityDefault?: PitIntensity;
+  intensity?: PitIntensity;
+  exitMode?: PaceMode;
+  lastPitResult?: PitStopResult | null;
   inPitThisLap: boolean;
   // Player-controlled pitting: the next stop's advisory window, and a flag set
   // when the player has called the car in. AI cars leave these null/false and
@@ -117,6 +121,14 @@ export type PitStopState = {
   // Lap the current planned window was last recommended/prompted on, used to
   // throttle repeat "pit window open" prompts so they are not raised every lap.
   lastWindowPromptLap: number | null;
+};
+
+export type PitStopResultTier = 'Clean' | 'Minor' | 'Moderate' | 'Major';
+
+export type PitStopResult = {
+  tier: PitStopResultTier;
+  note: string;
+  addedSeconds: number;
 };
 
 // ---------------------------------------------------------------------------
@@ -164,6 +176,8 @@ export type PaceMode =
   | 'Attack'
   | 'Defend'
   | 'ProtectEngine';
+
+export type PitIntensity = 'Conservative' | 'Standard' | 'Aggressive' | 'AllOut';
 
 // What triggered the current strategy-mode change (drives the stint counter's
 // provenance; the counter itself is source-agnostic).
@@ -306,6 +320,9 @@ export type RecAction = {
   paceMode?: PaceMode;
   // If the action is a pit call.
   pitNow?: boolean;
+  // Combined pit-call choices.
+  pitIntensity?: PitIntensity;
+  pitExitMode?: PaceMode;
   // If the action is a team order (needs the favoured driver, resolved by UI).
   teamOrder?: 'SwapPositions' | 'LetThemRace';
 };
@@ -369,6 +386,9 @@ export type LiveCarState = {
   tireDegRate: number; // tyre wear points per lap at balanced pace
   pitLossBase: number; // green-flag pit-stop time loss (s)
   opsForm: number; // per-weekend operations execution (0 neutral) — pit/strategy consistency
+  pitCrewOperations?: number; // optional live copy of pit-crew rating for pit rolls
+  driverComposure?: number; // optional live copy of driver composure rating
+  driverRiskManagement?: number; // optional live copy of driver risk-management rating
   confidenceModifier?: number; // relationship confidence/trust modifier used for live hesitation and risk
   personality: AIStrategyPersonality;
   strategyId: string;
@@ -418,6 +438,7 @@ export type LiveRaceState = {
   trackId: string;
   seed: string;
   totalLaps: number;
+  series?: Series;
   currentLap: number; // 0 = pre-start formation
   phase: LiveRacePhase;
   weather: WeatherState;
