@@ -1268,14 +1268,14 @@ function trustRiskMultiplier(confidenceModifier: number, mode: PaceMode): number
   return 1 + lowTrust * modeWeight;
 }
 function pitStopTimeFromLoss(pitLossBase: number, opsForm: number, safetyCarActive: boolean, rng: Rng): { time: number; slow: boolean } {
-  const eraBaseline = pitLossBase >= 30 ? 9.5 : pitLossBase >= 25 ? 7.2 : pitLossBase >= 20 ? 5.2 : 3.4;
+  const pitTimeBase = pitLossBase * 0.22 + 0.5;
   const execution = opsForm * 0.35;
   const safetyCarDelta = safetyCarActive ? 0.2 : 0;
   const mistakeChance = clamp(0.075 - opsForm * 0.012, 0.012, 0.16);
   const slow = rng.chance(mistakeChance);
   const delay = slow ? rng.range(1.1, 4.6) : 0;
   const variation = rng.variance(0.22);
-  return { time: round1(clamp(eraBaseline - execution + safetyCarDelta + variation + delay, 2.0, 14.0)), slow };
+  return { time: round1(clamp(pitTimeBase - execution + safetyCarDelta + variation + delay, 2.0, 14.0)), slow };
 }
 function round1(n: number): number {
   return Math.round(n * 10) / 10;

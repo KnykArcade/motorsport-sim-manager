@@ -8,7 +8,7 @@
 //
 // The per-lap advancement lives in raceTickEngine.ts.
 
-import type { RaceResult, Track } from '../types/gameTypes';
+import type { RaceResult, Series, Track } from '../types/gameTypes';
 import type { RaceContext, RaceEvent, ScoreBreakdown } from '../types/simTypes';
 import type {
   AIStrategyPersonality,
@@ -40,7 +40,7 @@ export type LiveRaceOptions = {
   // Season year — drives era-specific DNF-cause balancing.
   year: number;
   // Series (e.g. 'F1', 'IndyCar') — drives series-specific DNF calibration.
-  series: string;
+  series: Series;
 };
 
 // Metadata threaded through the tick engine for events and player prompts.
@@ -185,7 +185,13 @@ export function createLiveRace(context: RaceContext, options: LiveRaceOptions): 
       baseCrashRisk,
       baseMistakeRisk,
       tireDegRate,
-      pitLossBase: pitStopLoss(e.car, false, SAFETY_CAR_PIT_SAVING, opsForm + (isPlayer ? (context.playerStaffBonus?.pitCrew ?? 0) : 0)),
+      pitLossBase: pitStopLoss(
+        e.car,
+        false,
+        SAFETY_CAR_PIT_SAVING,
+        opsForm + (isPlayer ? (context.playerStaffBonus?.pitCrew ?? 0) : 0),
+        { track, series: options.series, year: options.year },
+      ),
       opsForm,
       confidenceModifier,
       personality,
