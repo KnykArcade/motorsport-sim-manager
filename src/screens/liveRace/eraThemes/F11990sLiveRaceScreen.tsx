@@ -79,7 +79,6 @@ export function F11990sLiveRaceScreen({
   onSpeed,
   onSkipToEnd,
   onOpenOrders,
-  onOpenStrategy,
   onOpenLog,
   onExit,
   onFinishRace,
@@ -96,9 +95,36 @@ export function F11990sLiveRaceScreen({
   const raceTime = formatElapsed(leader?.totalTime ?? 0);
   const airTemp = forecast[0]?.temp ?? (live.weather.wet ? 18 : 22);
   const trackTemp = airTemp + (live.weather.wet ? 2 : 6);
-  const canAdvance = !live.pendingPrompt && !needsDecision && !pausedByDnf && !finished;
-  const alert = raceAlert(live, forecast);
-  const decisionRecs = activeRecs.filter((rec) => rec.status === 'pending' && rec.priority !== 'low');
+  const [strategyDeskOpen, setStrategyDeskOpen] = useState(false);
+  const [pitStrategyByDriver, setPitStrategyByDriver] = useState<
+    Record<string, { intensity: PitIntensity; exitMode: PaceMode }>
+  >({});
+  useEffect(() => {
+    setPitStrategyByDriver((prev) => {
+      const next = { ...prev };
+      let changed = false;
+      for (const car of playerCars) {
+        if (!next[car.driverId]) {
+          next[car.driverId] = {
+            intensity: car.pit.intensity ?? car.pit.intensityDefault ?? 'Standard',
+            exitMode: car.pit.exitMode ?? 'Conservative',
+          };
+          changed = true;
+        }
+      }
+      for (const driverId of Object.keys(next)) {
+        if (!playerCars.some((car) => car.driverId === driverId)) {
+          delete next[driverId];
+          changed = true;
+        }
+      }
+      return changed ? next : prev;
+    });
+  }, [playerCars]);
+  const blockingPrompt = !!live.pendingPrompt && !live.safetyCar.active;
+  const canAdvance = !blockingPrompt && !needsDecision && !pausedByDnf && !finished;
+  const alert = raceAlert(live, forecast, focusCars[0] ?? null);
+  const decisionRecs = live.safetyCar.active ? [] : activeRecs.filter((rec) => rec.status === 'pending' && rec.priority !== 'low');
   const lapHistory = useLapHistory(live.currentLap, focusCars);
   const { outcomes, recordOutcome } = useDecisionOutcomes(live.recommendations, live.currentLap);
   const handleAccept = (rec: AnalyticsRecommendation, actionOverride?: RecAction) => {
@@ -196,7 +222,7 @@ export function F11990sLiveRaceScreen({
               className="min-h-0"
               headerRight={
                 <button
-                  onClick={onOpenStrategy}
+                  onClick={() => setStrategyDeskOpen(true)}
                   className="rounded border border-amber-500/55 bg-amber-500/10 px-2 py-0.5 text-[10px] font-black uppercase text-amber-300 hover:bg-amber-500/20"
                 >
                   Strategy Desk
@@ -240,10 +266,10 @@ export function F11990sLiveRaceScreen({
               finished={finished}
               rec={decisionRecs.find((r) => r.driverId === car.driverId) ?? null}
               bothDrivers={decisionRecs.length > 1 && decisionRecs.every((r) => r.kind === decisionRecs[0].kind)}
-              decisionSecondsLeft={needsDecision ? decisionSecondsLeft : null}
+              decisionSecondsLeft={blockingPrompt ? decisionSecondsLeft : null}
               outcome={outcomes[car.driverId] ?? null}
               trust={driverTrustFor(state, car.driverId)}
-              onPit={(decision) => onPit(car.driverId, decision)}
+              onPit={(decision) => onPit(car.driverId, decision ?? pitStrategyFor(pitStrategyByDriver, car))}
               onMode={(mode) => onMode(car.driverId, mode)}
               onOrders={() => onOpenOrders(car.driverId)}
               onAccept={handleAccept}
@@ -256,14 +282,19 @@ export function F11990sLiveRaceScreen({
         </aside>
       </main>
 
-      {live.safetyCar.active && (
-        <div className="pointer-events-none absolute left-2 top-[72px] z-20 w-[min(520px,calc(100vw-1rem))]">
-          <SafetyCarInfoStrip
-            car={focusCars[0] ?? null}
-            live={live}
-            driverName={focusCars[0] ? nameOf(focusCars[0].driverId) : null}
-          />
-        </div>
+      {strategyDeskOpen && (
+        <StrategyDeskModal
+          playerCars={playerCars}
+          strategyByDriver={pitStrategyByDriver}
+          nameOf={nameOf}
+          onClose={() => setStrategyDeskOpen(false)}
+          onChange={(driverId, next) =>
+            setPitStrategyByDriver((prev) => ({
+              ...prev,
+              [driverId]: next,
+            }))
+          }
+        />
       )}
 
       <div className="sr-only" aria-live="polite">
@@ -564,7 +595,7 @@ function RaceEventAlerts({
   nameOf: (driverId: string) => string;
 }) {
   if (!alert && !aiDnfFlash) return null;
-  const safetyCar = alert === 'Safety Car';
+  const safetyCar = !!alert?.startsWith('Safety Car');
   return (
     <div className="shrink-0 space-y-1 border-b border-zinc-800 p-1.5">
       {alert && (
@@ -786,13 +817,6 @@ function DriverFocus({
   const canPit = car.running && !car.pit.inPitThisLap && !finished;
   const gapToTeammate =
     teammate && teammate.running && car.running ? car.gapToLeader - teammate.gapToLeader : null;
-  const [pitIntensity, setPitIntensity] = useState<PitIntensity>(car.pit.intensity ?? car.pit.intensityDefault ?? 'Standard');
-  const [pitExitMode, setPitExitMode] = useState<PaceMode>(car.pit.exitMode ?? 'Conservative');
-
-  useEffect(() => {
-    setPitIntensity(car.pit.intensity ?? car.pit.intensityDefault ?? 'Standard');
-    setPitExitMode(car.pit.exitMode ?? 'Conservative');
-  }, [car.driverId, car.pit.exitMode, car.pit.intensity, car.pit.intensityDefault]);
   return (
     <RetroPanel
       title={`${number ?? car.position ?? '-'}  ${shortName(name)}  ${team}`}
@@ -809,11 +833,11 @@ function DriverFocus({
         ) : undefined
       }
     >
-      <div className="relative flex h-[calc(100%-37px)] flex-col overflow-y-auto px-2 py-1.5">
+      <div className="relative flex h-[calc(100%-37px)] flex-col overflow-hidden px-2 py-1.5">
         {!finished && car.running && (
           <div className="flex items-center justify-end">
             <button
-              onClick={() => onPit(car.pit.pitRequested ? undefined : { intensity: pitIntensity, exitMode: pitExitMode })}
+              onClick={() => onPit()}
               disabled={!canPit}
               className="shrink-0 rounded border border-amber-500/50 px-2 py-1 text-[9px] font-bold uppercase text-amber-300 hover:bg-amber-500/10 disabled:border-zinc-800 disabled:text-zinc-600"
             >
@@ -875,18 +899,6 @@ function DriverFocus({
               <ConditionLine label="Aero" level={componentCondition(car, 'Aero')} />
               <ConditionLine label="Overall" level={overallCondition(car)} />
               <ConditionLine label="Risk" level={riskCondition(car.reliabilityRiskLevel)} />
-            </div>
-            <div className="mt-1 rounded border border-zinc-800 bg-zinc-950/75 p-1.5">
-              <div className="mb-1 flex items-center justify-between gap-2">
-                <span className="text-[9px] font-bold uppercase tracking-wide text-zinc-500">Pit Strategy</span>
-                <span className="text-[9px] uppercase tracking-wide text-zinc-600">Queue the next stop</span>
-              </div>
-              <PitDecisionControls
-                intensity={pitIntensity}
-                exitMode={pitExitMode}
-                onIntensity={setPitIntensity}
-                onExitMode={setPitExitMode}
-              />
             </div>
             {rec ? (
               <DriverAlertCard
@@ -1108,33 +1120,6 @@ function TrustBar({
   );
 }
 
-function SafetyCarInfoStrip({
-  car,
-  live,
-  driverName,
-}: {
-  car: LiveCarState | null;
-  live: LiveRaceState;
-  driverName: string | null;
-}) {
-  if (!live.safetyCar.active) return null;
-  const lapsLeft = Math.max(0, Math.ceil(live.safetyCar.lapsRemaining));
-  const greenLoss = car?.pitLossBase ?? 0;
-  const scLoss = Math.round(Math.max(0, greenLoss * SAFETY_CAR_PIT_LOSS_FACTOR) * 10) / 10;
-  const save = Math.round(Math.max(0, greenLoss - scLoss) * 10) / 10;
-  return (
-    <div className="rounded border border-yellow-400/60 bg-yellow-950/85 px-2 py-1 text-[10px] font-semibold text-yellow-100 shadow-lg shadow-black/30">
-      <div className="flex items-center justify-between gap-3">
-        <span className="uppercase tracking-wide text-yellow-200">Safety Car</span>
-        <span className="tabular-nums text-yellow-50">SC ends in ~{lapsLeft} laps</span>
-      </div>
-      <div className="mt-0.5 tabular-nums text-yellow-100">
-        Pit now saves ~{save.toFixed(1)}s{driverName ? ` for ${shortName(driverName)}` : ''}
-      </div>
-    </div>
-  );
-}
-
 function driverTrustFor(state: GameState, driverId: string) {
   const rel = state.driverRelationships?.[driverId];
   return rel
@@ -1170,11 +1155,115 @@ function FocusLine({ label, value }: { label: string; value: string }) {
   );
 }
 
-function raceAlert(live: LiveRaceState, forecast: ForecastEntry[]): string | null {
-  if (live.safetyCar.active) return 'Safety Car';
+function pitStrategyFor(
+  strategyByDriver: Record<string, { intensity: PitIntensity; exitMode: PaceMode }>,
+  car: LiveCarState,
+): { intensity: PitIntensity; exitMode: PaceMode } {
+  return (
+    strategyByDriver[car.driverId] ?? {
+      intensity: car.pit.intensity ?? car.pit.intensityDefault ?? 'Standard',
+      exitMode: car.pit.exitMode ?? 'Conservative',
+    }
+  );
+}
+
+function raceAlert(live: LiveRaceState, forecast: ForecastEntry[], focusCar: LiveCarState | null): string | null {
+  if (live.safetyCar.active) {
+    const lapsLeft = Math.max(0, Math.ceil(live.safetyCar.lapsRemaining));
+    const save = safetyCarPitSaving(focusCar);
+    const saveText = Number.isInteger(save) ? `${save.toFixed(0)}` : save.toFixed(1);
+    return `Safety Car — ${lapsLeft}L — ${saveText}s`;
+  }
   if (live.weather.wet) return live.weather.condition === 'HeavyRain' ? 'Heavy Rain' : 'Wet Track';
   if (live.weather.changingSoon || forecast.slice(0, 3).some((entry) => entry.wet)) return 'Rain Approaching';
   return null;
+}
+
+function safetyCarPitSaving(car: LiveCarState | null): number {
+  const greenLoss = car?.pitLossBase ?? 0;
+  const scLoss = Math.round(Math.max(0, greenLoss * SAFETY_CAR_PIT_LOSS_FACTOR) * 10) / 10;
+  return Math.round(Math.max(0, greenLoss - scLoss) * 10) / 10;
+}
+
+function StrategyDeskModal({
+  playerCars,
+  strategyByDriver,
+  nameOf,
+  onChange,
+  onClose,
+}: {
+  playerCars: LiveCarState[];
+  strategyByDriver: Record<string, { intensity: PitIntensity; exitMode: PaceMode }>;
+  nameOf: (driverId: string) => string;
+  onChange: (driverId: string, next: { intensity: PitIntensity; exitMode: PaceMode }) => void;
+  onClose: () => void;
+}) {
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/72 p-4" onClick={onClose}>
+      <div
+        className="w-full max-w-3xl overflow-hidden rounded-xl border-2 border-amber-500/65 bg-[#14120f] shadow-2xl"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex items-center justify-between border-b border-amber-500/25 px-4 py-3">
+          <div>
+            <div className="text-[10px] font-black uppercase tracking-wide text-amber-300">Strategy Desk</div>
+            <div className="text-xs text-zinc-400">Queue pit intensity and exit mode here; the PIT button uses this selection.</div>
+          </div>
+          <button
+            onClick={onClose}
+            className="rounded border border-zinc-700 px-2 py-1 text-[10px] font-bold uppercase text-zinc-300 hover:border-amber-400 hover:text-amber-200"
+          >
+            Close
+          </button>
+        </div>
+        <div className="max-h-[70vh] overflow-y-auto p-4">
+          <div className="grid gap-4 lg:grid-cols-2">
+            {playerCars.map((car) => {
+              const strategy = strategyByDriver[car.driverId] ?? {
+                intensity: car.pit.intensity ?? car.pit.intensityDefault ?? 'Standard',
+                exitMode: car.pit.exitMode ?? 'Conservative',
+              };
+              return (
+                <div key={car.driverId} className="rounded-lg border border-zinc-800 bg-black/40 p-3">
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="min-w-0">
+                      <div className="truncate text-sm font-bold text-zinc-100">{nameOf(car.driverId)}</div>
+                      <div className="text-[10px] uppercase tracking-wide text-zinc-500">
+                        {strategy.intensity} · exits {strategy.exitMode}
+                      </div>
+                    </div>
+                    <button
+                      onClick={() =>
+                        onChange(car.driverId, {
+                          intensity: car.pit.intensity ?? car.pit.intensityDefault ?? 'Standard',
+                          exitMode: car.pit.exitMode ?? 'Conservative',
+                        })
+                      }
+                      className="rounded border border-zinc-700 px-2 py-1 text-[10px] font-bold uppercase text-zinc-300 hover:border-amber-400 hover:text-amber-200"
+                    >
+                      Reset
+                    </button>
+                  </div>
+                  <div className="mt-3">
+                    <div className="mb-1 text-[9px] font-bold uppercase tracking-wide text-zinc-500">Pit intensity</div>
+                    <PitDecisionControls
+                      intensity={strategy.intensity}
+                      exitMode={strategy.exitMode}
+                      onIntensity={(value) => onChange(car.driverId, { ...strategy, intensity: value })}
+                      onExitMode={(value) => onChange(car.driverId, { ...strategy, exitMode: value })}
+                    />
+                  </div>
+                  <div className="mt-3 rounded border border-zinc-800 bg-zinc-950/60 px-2 py-1 text-[10px] text-zinc-400">
+                    Apply this with the driver box PIT button when you are ready to box.
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
 }
 
 function radioLines(

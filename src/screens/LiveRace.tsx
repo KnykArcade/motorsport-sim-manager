@@ -84,6 +84,7 @@ export function LiveRace() {
   const committed = useRef(false);
   // Team orders called during the race, resolved into relationships at the flag.
   const teamOrders = useRef<TeamOrderDecision[]>([]);
+  const blockingPrompt = !!live?.pendingPrompt && !live?.safetyCar.active;
 
   // Fixed team-order for the player's drivers (seat #1 first, #2 second). The
   // right-side pit-wall cards keep this order for the whole race so they do not
@@ -123,7 +124,7 @@ export function LiveRace() {
   // or while a high/urgent recommendation is awaiting a decision.
   useEffect(() => {
     if (!engine || !live) return;
-    if (!playing || dnfAlert || live.pendingPrompt || live.phase === 'finished' || needsDecision) return;
+    if (!playing || dnfAlert || blockingPrompt || live.phase === 'finished' || needsDecision) return;
     const useRealLapPacing = shouldUseF11990sLiveRaceScreen(state?.series, state?.seasonYear);
     const leaderForPacing = live.cars.find((c) => c.position === 1 && c.running);
     const liveLapTime =
@@ -136,10 +137,10 @@ export function LiveRace() {
       ? Math.max(15_000, Math.min(120_000, liveLapTime * 1000)) / speed
       : 950 / speed;
     const id = setInterval(() => {
-      setLive((s) => (s && !s.pendingPrompt && s.phase !== 'finished' ? advanceLiveLap(s) : s));
+      setLive((s) => (s && (!s.pendingPrompt || s.safetyCar.active) && s.phase !== 'finished' ? advanceLiveLap(s) : s));
     }, intervalMs);
     return () => clearInterval(id);
-  }, [engine, live, playing, speed, needsDecision, dnfAlert, state?.series, state?.seasonYear]);
+  }, [engine, live, playing, speed, needsDecision, dnfAlert, blockingPrompt, state?.series, state?.seasonYear]);
 
   useEffect(() => {
     const id = setTimeout(() => setTrackAnimationTick(0), 0);
@@ -148,10 +149,10 @@ export function LiveRace() {
 
   useEffect(() => {
     if (!live || !shouldUseF11990sLiveRaceScreen(state?.series, state?.seasonYear)) return;
-    if (!playing || live.pendingPrompt || live.phase === 'finished' || needsDecision) return;
+    if (!playing || blockingPrompt || live.phase === 'finished' || needsDecision) return;
     const id = setInterval(() => setTrackAnimationTick((tick) => tick + 1), Math.max(160, 2200 / speed));
     return () => clearInterval(id);
-  }, [live, needsDecision, playing, speed, state?.series, state?.seasonYear]);
+  }, [live, needsDecision, playing, speed, blockingPrompt, state?.series, state?.seasonYear]);
 
   useEffect(() => {
     if (!aiDnfFlash) return;
@@ -201,7 +202,7 @@ export function LiveRace() {
   const driverNumber = (id: string) => state.drivers.find((d) => d.id === id)?.number ?? '';
   const teamColor = (id: string) => state.teams.find((t) => t.id === id)?.color ?? '#888';
 
-  const step = () => setLive((s) => (s ? advanceLiveLap(s) : s));
+  const step = () => setLive((s) => (s && (!s.pendingPrompt || s.safetyCar.active) ? advanceLiveLap(s) : s));
   const skipToEnd = () => {
     setPlaying(false);
     setLive((s) => (s ? stepLiveRaceToEnd(s, engine.meta) : s));
@@ -360,7 +361,7 @@ export function LiveRace() {
         <>
           <button
             onClick={() => setPlaying((p) => !p)}
-            disabled={!!live.pendingPrompt || needsDecision || !!dnfAlert}
+            disabled={blockingPrompt || needsDecision || !!dnfAlert}
             className={`rounded px-3 py-1 text-xs font-bold ${
               playing ? 'bg-slate-700 text-slate-100' : 'bg-emerald-600 text-white'
             } disabled:opacity-40`}
@@ -369,7 +370,7 @@ export function LiveRace() {
           </button>
           <button
             onClick={step}
-            disabled={playing || !!live.pendingPrompt || needsDecision || !!dnfAlert}
+            disabled={playing || blockingPrompt || needsDecision || !!dnfAlert}
             className="rounded bg-slate-800 px-2 py-1 text-xs font-semibold text-slate-200 hover:bg-slate-700 disabled:opacity-40"
           >
             +1
@@ -389,7 +390,7 @@ export function LiveRace() {
           </div>
           <button
             onClick={skipToEnd}
-            disabled={!!live.pendingPrompt || needsDecision || !!dnfAlert}
+            disabled={blockingPrompt || needsDecision || !!dnfAlert}
             className="rounded bg-slate-800 px-2 py-1 text-xs font-semibold text-slate-200 hover:bg-slate-700 disabled:opacity-40"
           >
             ⏩
@@ -457,7 +458,7 @@ export function LiveRace() {
           onIgnoreAll={onIgnoreAll}
         />
 
-        {live.pendingPrompt && (
+        {blockingPrompt && live.pendingPrompt && (
           <PromptOverlay
             title={live.pendingPrompt.title}
             driver={driverName(live.pendingPrompt.driverId)}
@@ -582,7 +583,7 @@ export function LiveRace() {
       </div>
 
       {/* Decision prompt overlay */}
-      {live.pendingPrompt && (
+      {blockingPrompt && live.pendingPrompt && (
         <PromptOverlay
           title={live.pendingPrompt.title}
           driver={driverName(live.pendingPrompt.driverId)}

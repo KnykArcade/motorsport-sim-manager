@@ -241,6 +241,7 @@ function pitStopTimeFromLoss(
 // Advance one lap. `meta` carries track + names + player team.
 export function stepLiveRace(state: LiveRaceState, meta: LiveRaceMeta): LiveRaceState {
   if (state.phase === 'finished') return state;
+  if (state.pendingPrompt && state.safetyCar.active) state = { ...state, pendingPrompt: null };
   if (state.pendingPrompt) return state; // resolve the prompt first
 
   const { track } = meta;
@@ -1189,6 +1190,13 @@ export function refreshRecommendations(
   recCooldowns: LiveRaceState['recCooldowns'];
 } {
   const prev = partial.recommendations;
+  if (partial.safetyCar.active) {
+    return {
+      recommendations: [],
+      ignoredRecs: partial.ignoredRecs,
+      recCooldowns: partial.recCooldowns,
+    };
+  }
   const candidates = generateCandidates(cars, partial, lap);
   const candById = new Map(candidates.map((c) => [c.id, c]));
   const carFor = (id: string) => cars.find((c) => c.driverId === id);
