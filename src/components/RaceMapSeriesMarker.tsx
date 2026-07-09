@@ -13,70 +13,293 @@ export type RaceMapSeriesMarkerProps = {
 };
 
 const PLAYER_RADIUS = 9;
-const AI_RADIUS = 7;
-const PLAYER_STROKE = 2.5;
-const AI_STROKE = 1;
+const AI_RADIUS = 9;
 
-function MarkerShape({ series, primaryColor, accentColor = "#f7f7f7", strokeWidth }: {
+// The provided SVG templates are drawn on a 24×24 viewBox with the shape
+// centered at (12,12) and an outer radius of ~9.4. We scale them down very
+// slightly so the final marker fits the requested 9px game footprint.
+const TEMPLATE_SCALE = 9 / 9.4;
+
+function MarkerShape({
+  series,
+  primaryColor,
+  accentColor = "#f7f7f7",
+}: {
   series: RaceSeries;
   primaryColor: string;
   accentColor?: string;
-  strokeWidth: number;
 }) {
   const dark = "#17191c";
   const white = "#f7f7f7";
   const black = "#050505";
   const plate = "#f2f2f2";
-  const common = {
-    strokeLinejoin: "round" as const,
-    strokeLinecap: "round" as const,
-  };
 
-  // Coordinates are centered around 0,0 and fit inside a 18px player footprint before scaling.
-  switch (series) {
-    case "nascar":
-      return <g>
-        <path d="M-5.2 -8.2 H5.2 L7.4 -5.0 V3.4 L0 8.3 L-7.4 3.4 V-5.0 Z" fill={dark} stroke={black} strokeWidth={strokeWidth + 0.9} {...common}/>
-        <path d="M-5.2 -8.2 H5.2 L7.4 -5.0 V3.4 L0 8.3 L-7.4 3.4 V-5.0 Z" fill={dark} stroke={white} strokeWidth={strokeWidth} {...common}/>
-        <path d="M-6.0 -4.7 L-4.0 -7.1 H-2.6 V4.4 L0 6.9 L-4.8 5.5 L-6.0 3.0 Z" fill={primaryColor}/>
-        <path d="M6.0 -4.7 L4.0 -7.1 H2.6 V4.4 L0 6.9 L4.8 5.5 L6.0 3.0 Z" fill={primaryColor}/>
-        <path d="M-4.8 -6.9 H4.8 L6.1 -4.8 H-6.1 Z" fill={accentColor} opacity={0.95}/>
-        <path d="M-5.2 -4.7 H5.2 V3.4 L0 6.7 L-5.2 3.4 Z" fill={dark}/>
-        <rect x={-5.3} y={-4.6} width={10.6} height={7.7} rx={1.1} fill={plate} stroke={black} strokeWidth={0.7}/>
-      </g>;
-    case "f1":
-      return <g>
-        <circle r={8.25} fill={dark} stroke={black} strokeWidth={strokeWidth + 0.9}/>
-        <circle r={8.25} fill={dark} stroke={white} strokeWidth={strokeWidth}/>
-        <path d="M-7.8 -4.7 Q-6.0 -5.8 -4.1 -6.1 V6.1 Q-6.0 5.8 -7.8 4.7 Q-6.9 0 -7.8 -4.7 Z" fill={accentColor} opacity={0.9}/>
-        <path d="M7.8 -4.7 Q6.0 -5.8 4.1 -6.1 V6.1 Q6.0 5.8 7.8 4.7 Q6.9 0 7.8 -4.7 Z" fill={accentColor} opacity={0.9}/>
-        <path d="M0 -8.4 L3.0 -3.7 L2.8 3.9 L0 8.45 L-2.8 3.9 L-3.0 -3.7 Z" fill={primaryColor}/>
-        <path d="M0 -5.7 L1.4 -2.9 V2.9 L0 5.7 L-1.4 2.9 V-2.9 Z" fill={dark} opacity={0.55}/>
-        <circle r={4.65} fill={plate} stroke={black} strokeWidth={0.7}/>
-      </g>;
-    case "indycar":
-      return <g>
-        <circle r={8.15} fill={dark} stroke={black} strokeWidth={strokeWidth + 0.9}/>
-        <circle r={8.15} fill={dark} stroke={white} strokeWidth={strokeWidth}/>
-        <path d="M-3.8 -7.3 H3.8 L4.7 -5.25 Q6.7 -3.7 7.6 -1.5 H5.0 Q4.2 -3.3 2.7 -4.4 H-2.7 Q-4.2 -3.3 -5.0 -1.5 H-7.6 Q-6.7 -3.7 -4.7 -5.25 Z" fill={accentColor}/>
-        <path d="M0 -8.2 L3.8 -4.5 L4.9 0 L3.7 4.6 L0 8.2 L-3.7 4.6 L-4.9 0 L-3.8 -4.5 Z" fill={primaryColor}/>
-        <path d="M0 -5.7 L2.0 -2.7 L2.7 0 L2.0 2.7 L0 5.7 L-2.0 2.7 L-2.7 0 L-2.0 -2.7 Z" fill={dark} opacity={0.55}/>
-        <rect x={-8.4} y={-1.8} width={2.4} height={3.6} rx={0.4} fill={accentColor}/>
-        <rect x={6.0} y={-1.8} width={2.4} height={3.6} rx={0.4} fill={accentColor}/>
-        <circle r={4.55} fill={plate} stroke={black} strokeWidth={0.7}/>
-      </g>;
-    case "cart":
-      return <g>
-        <path d="M-5.3 -8.1 H5.3 L7.1 -4.2 V3.4 L0 8.4 L-7.1 3.4 V-4.2 Z" fill={dark} stroke={black} strokeWidth={strokeWidth + 0.9} {...common}/>
-        <path d="M-5.3 -8.1 H5.3 L7.1 -4.2 V3.4 L0 8.4 L-7.1 3.4 V-4.2 Z" fill={dark} stroke={white} strokeWidth={strokeWidth} {...common}/>
-        <path d="M0 -7.2 L5.4 -4.8 V3.5 L0 7.2 L-5.4 3.5 V-4.8 Z" fill={primaryColor}/>
-        <path d="M-4.9 -6.6 H4.9 L5.8 -5.2 H-5.8 Z" fill={accentColor}/>
-        <path d="M0 -5.4 L3.3 -3.7 V2.8 L0 5.8 L-3.3 2.8 V-3.7 Z" fill={dark} opacity={0.56}/>
-        <path d="M-3.8 -3.7 H3.8 Q4.6 -3.7 4.6 -2.9 V2.8 L0 5.8 L-4.6 2.8 V-2.9 Q-4.6 -3.7 -3.8 -3.7 Z" fill={plate} stroke={black} strokeWidth={0.7}/>
-        <rect x={-8.0} y={-3.5} width={1.8} height={6.4} rx={0.2} fill={accentColor}/>
-        <rect x={6.2} y={-3.5} width={1.8} height={6.4} rx={0.2} fill={accentColor}/>
-      </g>;
-  }
+  return (
+    <g transform={`scale(${TEMPLATE_SCALE})`}>
+      <g transform="translate(-12 -12)">
+        {series === "f1" && (
+          <g>
+            <circle
+              cx="12"
+              cy="12"
+              r="9.4"
+              fill="none"
+              stroke={black}
+              strokeWidth={2.25}
+            />
+            <circle cx="12" cy="12" r="9.4" fill={dark} />
+            <circle
+              cx="12"
+              cy="12"
+              r="9.4"
+              fill="none"
+              stroke={white}
+              strokeWidth={1.25}
+            />
+            <path
+              d="M3.2 7.2 Q5.0 6.1 7.2 5.6 L7.2 18.4 Q5.0 17.9 3.2 16.8 Q4.0 12 3.2 7.2 Z"
+              fill={accentColor}
+              opacity={0.88}
+            />
+            <path
+              d="M20.8 7.2 Q19.0 6.1 16.8 5.6 L16.8 18.4 Q19.0 17.9 20.8 16.8 Q20.0 12 20.8 7.2 Z"
+              fill={accentColor}
+              opacity={0.88}
+            />
+            <path
+              d="M12 2.75 L15.25 8.15 L15.0 15.8 L12 21.3 L9.0 15.8 L8.75 8.15 Z"
+              fill={primaryColor}
+            />
+            <path
+              d="M12 5.2 L13.7 8.6 V15.4 L12 18.7 L10.3 15.4 V8.6 Z"
+              fill={dark}
+              opacity={0.55}
+            />
+            <path
+              d="M12 7.15 A4.85 4.85 0 1 1 12 16.85 A4.85 4.85 0 1 1 12 7.15"
+              fill={plate}
+              stroke={black}
+              strokeWidth={0.85}
+            />
+            <path
+              d="M12 3.4 V6.8 M12 17.2 V20.4"
+              stroke={white}
+              strokeWidth={0.45}
+              strokeLinecap="round"
+              opacity={0.72}
+            />
+            <path
+              d="M4.1 7.9 Q6.1 7.1 8.1 7.0 M15.9 7.0 Q17.9 7.1 19.9 7.9"
+              stroke={white}
+              strokeWidth={0.45}
+              strokeLinecap="round"
+              opacity={0.72}
+            />
+          </g>
+        )}
+
+        {series === "nascar" && (
+          <g>
+            <path
+              d="M5.1 3.0 H18.9 L20.8 6.2 V15.1 L12 21.1 L3.2 15.1 V6.2 Z"
+              fill="none"
+              stroke={black}
+              strokeWidth={2.25}
+              strokeLinejoin="round"
+              strokeLinecap="round"
+            />
+            <path
+              d="M5.1 3.0 H18.9 L20.8 6.2 V15.1 L12 21.1 L3.2 15.1 V6.2 Z"
+              fill={dark}
+            />
+            <path
+              d="M5.1 3.0 H18.9 L20.8 6.2 V15.1 L12 21.1 L3.2 15.1 V6.2 Z"
+              fill="none"
+              stroke={white}
+              strokeWidth={1.25}
+              strokeLinejoin="round"
+              strokeLinecap="round"
+            />
+            <path
+              d="M4.45 6.1 L6.7 4.15 H8.5 V17.2 L12 19.65 L7.2 18.15 L4.45 14.5 Z"
+              fill={primaryColor}
+            />
+            <path
+              d="M19.55 6.1 L17.3 4.15 H15.5 V17.2 L12 19.65 L16.8 18.15 L19.55 14.5 Z"
+              fill={primaryColor}
+            />
+            <path
+              d="M7.25 4.35 H16.75 L18.65 6.85 H5.35 Z"
+              fill={accentColor}
+              opacity={0.96}
+            />
+            <path
+              d="M6.1 7.15 H17.9 V15.1 L12 18.85 L6.1 15.1 Z"
+              fill={dark}
+            />
+            <path
+              d="M7.05 7.05 H16.95 Q17.75 7.05 17.75 7.85 V13.75 Q17.75 14.55 16.95 14.55 H7.05 Q6.25 14.55 6.25 13.75 V7.85 Q6.25 7.05 7.05 7.05 Z"
+              fill={plate}
+              stroke={black}
+              strokeWidth={0.85}
+            />
+            <path
+              d="M5.2 6.4 H18.8"
+              stroke={white}
+              strokeWidth={0.45}
+              strokeLinecap="round"
+              opacity={0.72}
+            />
+            <path
+              d="M5.2 14.8 L12 19.0 L18.8 14.8"
+              stroke={white}
+              strokeWidth={0.45}
+              strokeLinecap="round"
+              opacity={0.72}
+            />
+            <path
+              d="M8.7 4.15 V6.2 M15.3 4.15 V6.2"
+              stroke={white}
+              strokeWidth={0.45}
+              strokeLinecap="round"
+              opacity={0.72}
+            />
+          </g>
+        )}
+
+        {series === "indycar" && (
+          <g>
+            <circle
+              cx="12"
+              cy="12"
+              r="9.25"
+              fill="none"
+              stroke={black}
+              strokeWidth={2.25}
+            />
+            <circle cx="12" cy="12" r="9.25" fill={dark} />
+            <circle
+              cx="12"
+              cy="12"
+              r="9.25"
+              fill="none"
+              stroke={white}
+              strokeWidth={1.25}
+            />
+            <path
+              d="M7.6 3.9 H16.4 L17.35 6.1 Q19.3 7.6 20.3 9.9 H17.4 Q16.7 8.05 15.1 6.95 H8.9 Q7.3 8.05 6.6 9.9 H3.7 Q4.7 7.6 6.65 6.1 Z"
+              fill={accentColor}
+              opacity={0.96}
+            />
+            <path
+              d="M12 3.05 L15.9 6.95 L17.0 11.8 L15.8 17.05 L12 20.95 L8.2 17.05 L7.0 11.8 L8.1 6.95 Z"
+              fill={primaryColor}
+            />
+            <path
+              d="M12 5.35 L14.2 8.3 L14.85 12 L14.1 15.8 L12 18.65 L9.9 15.8 L9.15 12 L9.8 8.3 Z"
+              fill={dark}
+              opacity={0.55}
+            />
+            <path
+              d="M2.85 10.2 H5.25 Q5.0 12 5.25 13.8 H2.85 Z"
+              fill={accentColor}
+            />
+            <path
+              d="M18.75 10.2 H21.15 V13.8 H18.75 Q19.0 12 18.75 10.2 Z"
+              fill={accentColor}
+            />
+            <path
+              d="M12 7.35 A4.65 4.65 0 1 1 12 16.65 A4.65 4.65 0 1 1 12 7.35"
+              fill={plate}
+              stroke={black}
+              strokeWidth={0.85}
+            />
+            <path
+              d="M8.25 6.9 H15.75"
+              stroke={white}
+              strokeWidth={0.45}
+              strokeLinecap="round"
+              opacity={0.72}
+            />
+            <path
+              d="M6.2 10.0 Q5.9 12 6.2 14.0 M17.8 10.0 Q18.1 12 17.8 14.0"
+              stroke={white}
+              strokeWidth={0.45}
+              strokeLinecap="round"
+              opacity={0.72}
+            />
+          </g>
+        )}
+
+        {series === "cart" && (
+          <g>
+            <path
+              d="M4.9 3.1 H19.1 L21.0 7.4 V15.0 L12 21.2 L3.0 15.0 V7.4 Z"
+              fill="none"
+              stroke={black}
+              strokeWidth={2.25}
+              strokeLinejoin="round"
+              strokeLinecap="round"
+            />
+            <path
+              d="M4.9 3.1 H19.1 L21.0 7.4 V15.0 L12 21.2 L3.0 15.0 V7.4 Z"
+              fill={dark}
+            />
+            <path
+              d="M4.9 3.1 H19.1 L21.0 7.4 V15.0 L12 21.2 L3.0 15.0 V7.4 Z"
+              fill="none"
+              stroke={white}
+              strokeWidth={1.25}
+              strokeLinejoin="round"
+              strokeLinecap="round"
+            />
+            <path
+              d="M12 4.2 L17.8 6.75 V15.05 L12 19.5 L6.2 15.05 V6.75 Z"
+              fill={primaryColor}
+            />
+            <path
+              d="M5.9 4.5 H18.1 L18.9 6.1 H5.1 Z"
+              fill={accentColor}
+              opacity={0.96}
+            />
+            <path
+              d="M12 6.1 L15.8 8.0 V14.2 L12 17.15 L8.2 14.2 V8.0 Z"
+              fill={dark}
+              opacity={0.56}
+            />
+            <path
+              d="M8.0 8.0 H16.0 Q16.9 8.0 16.9 8.9 V14.0 L12 17.3 L7.1 14.0 V8.9 Q7.1 8.0 8.0 8.0 Z"
+              fill={plate}
+              stroke={black}
+              strokeWidth={0.85}
+            />
+            <path
+              d="M3.2 7.9 H5.2 V14.2 H3.2 Z"
+              fill={accentColor}
+            />
+            <path
+              d="M18.8 7.9 H20.8 V14.2 H18.8 Z"
+              fill={accentColor}
+            />
+            <path
+              d="M6.4 6.6 H17.6"
+              stroke={white}
+              strokeWidth={0.45}
+              strokeLinecap="round"
+              opacity={0.72}
+            />
+            <path
+              d="M8.2 14.1 L12 16.65 L15.8 14.1"
+              stroke={white}
+              strokeWidth={0.45}
+              strokeLinecap="round"
+              opacity={0.72}
+            />
+          </g>
+        )}
+      </g>
+    </g>
+  );
 }
 
 export function RaceMapSeriesMarker({
@@ -91,7 +314,6 @@ export function RaceMapSeriesMarker({
   selected = false,
 }: RaceMapSeriesMarkerProps) {
   const radius = isPlayer ? PLAYER_RADIUS : AI_RADIUS;
-  const strokeWidth = isPlayer ? PLAYER_STROKE : AI_STROKE;
   const scale = radius / PLAYER_RADIUS;
 
   return (
@@ -108,7 +330,6 @@ export function RaceMapSeriesMarker({
           series={series}
           primaryColor={primaryColor}
           accentColor={accentColor}
-          strokeWidth={strokeWidth}
         />
       </g>
       <text

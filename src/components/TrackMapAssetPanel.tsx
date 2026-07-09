@@ -1,4 +1,4 @@
-import { RaceTrack2D, type TrackDot, normalizeSeries, accentForPrimary } from './RaceTrack2D';
+import { RaceTrack2D, type TrackDot, normalizeSeries } from './RaceTrack2D';
 import { RaceMapSeriesMarker } from './RaceMapSeriesMarker';
 import { getTrackMapAsset } from '../data/trackMaps/getTrackMapAsset';
 import type { TrackMapGeometry, TrackMapPoint } from '../data/trackMaps/trackMapGeometry';
@@ -147,8 +147,8 @@ function normalizeProgress(value: number): number {
 }
 
 function MapDot({ point, dot, compact = false }: { point: TrackMapPoint; dot: TrackDot; compact?: boolean }) {
-  const radius = compact ? 12 : 24;
-  const scale = radius / 7;
+  const radius = compact ? 7 : 9;
+  const scale = radius / 9;
   return (
     <g transform={`translate(${point[0]} ${point[1]})`}>
       <title>{`P${dot.rank} car ${dot.label}${dot.gapToLeader ? `, ${dot.gapToLeader.toFixed(1)}s behind leader` : ''}`}</title>
@@ -159,8 +159,8 @@ function MapDot({ point, dot, compact = false }: { point: TrackMapPoint; dot: Tr
           series={normalizeSeries(dot.series)}
           number={dot.label}
           primaryColor={dot.color}
-          accentColor={dot.accentColor ?? accentForPrimary(dot.color)}
-          isPlayer={false}
+          accentColor={dot.accentColor}
+          isPlayer={true}
           selected={dot.isPlayer}
           rotationDeg={0}
         />

@@ -90,17 +90,6 @@ export function normalizeSeries(series: string | undefined, fallback: RaceSeries
   }
 }
 
-export function accentForPrimary(color: string, fallback = '#f7f7f7'): string {
-  const hex = color.replace('#', '');
-  if (hex.length !== 3 && hex.length !== 6) return fallback;
-  const r = parseInt(hex.substring(0, 2), 16);
-  const g = parseInt(hex.substring(2, 4), 16);
-  const b = parseInt(hex.substring(4, 6), 16);
-  if (isNaN(r) || isNaN(g) || isNaN(b)) return fallback;
-  const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
-  return luminance > 0.55 ? '#17191c' : '#f7f7f7';
-}
-
 function Dot({ x, y, dot }: { x: number; y: number; dot: TrackDot }) {
   return (
     <RaceMapSeriesMarker
@@ -109,8 +98,8 @@ function Dot({ x, y, dot }: { x: number; y: number; dot: TrackDot }) {
       series={normalizeSeries(dot.series)}
       number={dot.label}
       primaryColor={dot.color}
-      accentColor={dot.accentColor ?? accentForPrimary(dot.color)}
-      isPlayer={false}
+      accentColor={dot.accentColor}
+      isPlayer={true}
       selected={dot.isPlayer}
       rotationDeg={0}
     />
