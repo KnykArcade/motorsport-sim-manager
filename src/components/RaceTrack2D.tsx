@@ -1,3 +1,5 @@
+import { RaceMapSeriesMarker, type RaceSeries } from './RaceMapSeriesMarker';
+
 // Simplified 2D race view: coloured dots running around an oval circuit. Real
 // track geometry is not modelled — dots are spaced by running order and rotate
 // each lap so the field visibly moves. Cars in the pits sit in a pit-lane strip.
@@ -6,6 +8,8 @@ export type TrackDot = {
   driverId: string;
   label: string; // car number / short label
   color: string;
+  accentColor?: string; // secondary team color for the marker wings/tabs
+  series?: string; // series shape for the marker; falls back to the track-map default
   isPlayer: boolean;
   running: boolean;
   inPit: boolean;
@@ -69,20 +73,46 @@ export function RaceTrack2D({
   );
 }
 
+function normalizeSeries(series: string | undefined, fallback: RaceSeries = 'f1'): RaceSeries {
+  switch (series?.toLowerCase()) {
+    case 'f1':
+    case 'formula 1':
+      return 'f1';
+    case 'indycar':
+      return 'indycar';
+    case 'cart':
+    case 'champ car':
+      return 'cart';
+    case 'nascar':
+      return 'nascar';
+    default:
+      return fallback;
+  }
+}
+
+function accentForPrimary(color: string, fallback = '#f7f7f7'): string {
+  const hex = color.replace('#', '');
+  if (hex.length !== 3 && hex.length !== 6) return fallback;
+  const r = parseInt(hex.substring(0, 2), 16);
+  const g = parseInt(hex.substring(2, 4), 16);
+  const b = parseInt(hex.substring(4, 6), 16);
+  if (isNaN(r) || isNaN(g) || isNaN(b)) return fallback;
+  const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+  return luminance > 0.55 ? '#17191c' : '#f7f7f7';
+}
+
 function Dot({ x, y, dot }: { x: number; y: number; dot: TrackDot }) {
   return (
-    <g>
-      <circle
-        cx={x}
-        cy={y}
-        r={dot.isPlayer ? 9 : 7}
-        fill={dot.color}
-        stroke={dot.isPlayer ? '#fafafa' : '#0a0a0a'}
-        strokeWidth={dot.isPlayer ? 2.5 : 1}
-      />
-      <text x={x} y={y + 3} fontSize={8} textAnchor="middle" fill="#0a0a0a" fontWeight={700}>
-        {dot.label}
-      </text>
-    </g>
+    <RaceMapSeriesMarker
+      x={x}
+      y={y}
+      series={normalizeSeries(dot.series)}
+      number={dot.label}
+      primaryColor={dot.color}
+      accentColor={dot.accentColor ?? accentForPrimary(dot.color)}
+      isPlayer={dot.isPlayer}
+      selected={dot.isPlayer}
+      rotationDeg={0}
+    />
   );
 }

@@ -324,6 +324,7 @@ export function LiveRace() {
     driverId: c.driverId,
     label: String(driverNumber(c.driverId) || ''),
     color: teamColor(c.teamId),
+    series: state.series,
     isPlayer: c.isPlayer,
     running: c.running,
     inPit: c.pit.inPitThisLap,
