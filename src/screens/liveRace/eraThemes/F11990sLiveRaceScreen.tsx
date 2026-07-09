@@ -266,7 +266,7 @@ export function F11990sLiveRaceScreen({
               finished={finished}
               rec={decisionRecs.find((r) => r.driverId === car.driverId) ?? null}
               bothDrivers={decisionRecs.length > 1 && decisionRecs.every((r) => r.kind === decisionRecs[0].kind)}
-              decisionSecondsLeft={blockingPrompt ? decisionSecondsLeft : null}
+              decisionSecondsLeft={needsDecision ? decisionSecondsLeft : null}
               outcome={outcomes[car.driverId] ?? null}
               trust={driverTrustFor(state, car.driverId)}
               pitStrategy={pitStrategyFor(pitStrategyByDriver, car)}
