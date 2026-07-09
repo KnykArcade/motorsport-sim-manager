@@ -33,6 +33,18 @@ import { toLegacyRating } from './ratingScale';
 export const PACE_WEIGHTS = { car: 0.5, driver: 0.25, team: 0.15, other: 0.1 } as const;
 export const PACE_SPREAD = 4;
 
+// Quick-sim DNF cause mix target. The actual mechanical/crash/tyre risks are
+// blended with this profile so the season-wide split stays plausible (roughly
+// 50% mechanical, 45% crash, 3% tyre, 2% other) while individual retirements still
+// lean toward the bucket that actually fired.
+const QUICK_SIM_DNF_CAUSE_TARGET = {
+  reliability: 0.50,
+  crash: 0.44,
+  tyre: 0.03,
+  other: 0.03,
+};
+const QUICK_SIM_CAUSE_BLEND = 0.82;
+
 // Weekend form: a per-team, per-weekend swing (a strong/weak weekend hits both of
 // a team's cars together). This is what lets closely-matched front-runners trade
 // wins across a season instead of the fastest car winning every race. Teams with
@@ -305,10 +317,18 @@ export function computeRaceOutcome(context: RaceContext): RaceOutcome {
         inTraffic: grid > 6,
       };
       const dnfRiskWeights = {
-        reliability: relRisk * DNF_RATE_MULTIPLIER,
-        crash: crashRisk * DNF_RATE_MULTIPLIER,
-        tyre: tyreRisk * DNF_RATE_MULTIPLIER,
-        other: otherRisk,
+        reliability:
+          relRisk * DNF_RATE_MULTIPLIER * (1 - QUICK_SIM_CAUSE_BLEND) +
+          QUICK_SIM_DNF_CAUSE_TARGET.reliability * QUICK_SIM_CAUSE_BLEND,
+        crash:
+          crashRisk * DNF_RATE_MULTIPLIER * (1 - QUICK_SIM_CAUSE_BLEND) +
+          QUICK_SIM_DNF_CAUSE_TARGET.crash * QUICK_SIM_CAUSE_BLEND,
+        tyre:
+          tyreRisk * DNF_RATE_MULTIPLIER * (1 - QUICK_SIM_CAUSE_BLEND) +
+          QUICK_SIM_DNF_CAUSE_TARGET.tyre * QUICK_SIM_CAUSE_BLEND,
+        other:
+          otherRisk * (1 - QUICK_SIM_CAUSE_BLEND) +
+          QUICK_SIM_DNF_CAUSE_TARGET.other * QUICK_SIM_CAUSE_BLEND,
       };
       const { cause, label } = pickDnfCause(context.year, causeCtx, rng, dnfRiskWeights);
       status = 'DNF';
