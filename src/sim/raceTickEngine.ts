@@ -37,6 +37,7 @@ import type { Track } from '../types/gameTypes';
 import type { StrategyModeSpec } from './liveRacePace';
 import type { Rng } from './random';
 import { stepWeather } from './weatherEngine';
+import { toLegacyRating } from './ratingScale';
 import {
   stepSafetyCar,
   SAFETY_CAR_LAP_PENALTY,
@@ -50,7 +51,8 @@ import { findOption, applyDecisionEffects } from './raceDecisionEngine';
 
 const MAX_RACE_EVENTS = 3;
 // Baseline "other" (fuel system, illness, debris, etc.) per-lap DNF probability.
-const OTHER_PER_LAP = 0.00015;
+// Tuned to land in the 4-8% cause-share window for 1990s F1.
+const OTHER_PER_LAP = 0.00055;
 
 const PRIORITY_RANK: Record<RecPriority, number> = { low: 1, medium: 2, high: 3, urgent: 4 };
 const STRATEGY_MODE_LOCK_LAPS = 2;
@@ -267,7 +269,9 @@ export function stepLiveRace(state: LiveRaceState, meta: LiveRaceMeta): LiveRace
     // 2. Crash/contact: driver/track incident risk, amplified by mode, fighting,
     //    wet weather, wall proximity and existing damage; tyre wear only nudges.
     const tyreRiskAdd = tyreMistakeRisk(c.tire.wear);
-    const wallFactor = 1 + (track.attributes.riskWallProximity - 5) * 0.03;
+    // riskWallProximity is stored on the 1-100 scale, but the old 1-10 formula
+    // assumes a 5% baseline; convert to legacy 1-10 before applying it.
+    const wallFactor = 1 + (toLegacyRating(track.attributes.riskWallProximity) - 5) * 0.03;
     const crashRisk =
       (c.baseCrashRisk * spec.crashMult + tyreRiskAdd * 0.05) *
       (fighting ? 1.25 : 1) *
@@ -278,7 +282,7 @@ export function stepLiveRace(state: LiveRaceState, meta: LiveRaceMeta): LiveRace
     c.crashRisk = crashRisk;
 
     // 3. Tyre failure: rare, only in the high-wear window before a forced pit.
-    const tyreFailRisk = tyreFailureRisk(c.tire.wear, weather.wet);
+    const tyreFailRisk = tyreFailureRisk(c.tire.wear, weather.wet, meta.year);
     // 4. Other: fuel system, illness, debris, etc.
     const otherRisk = OTHER_PER_LAP;
 

@@ -75,9 +75,9 @@ bucket fired, so the reported cause always reflects the real trigger:
 ```
 mechRisk  = baseFailureRisk × mode.reliabilityMult (+ active-warning risk)
 crashRisk = (baseCrashRisk × mode.crashMult + tyreWear·0.05)
-            × fighting(1.25) × wet(1.4) × wallProximity × damaged(1.15)
-tyreFail  = tyreFailureRisk(wear, wet)   // rare; high-wear window only
-otherRisk = OTHER_PER_LAP                // fuel/illness/debris
+            × fighting(1.25) × wet(1.4) × wallFactor × damaged(1.15)
+tyreFail  = tyreFailureRisk(wear, wet, year)  // rare; ramps from wear ≥55
+otherRisk = OTHER_PER_LAP = 0.00055            // fuel/illness/debris
 
 if chance(mechRisk)  → Mechanical label   (or "<warning> — failure")
 else if chance(crashRisk) → Crash label
@@ -88,6 +88,12 @@ else if chance(otherRisk) → Other label
 - `baseFailureRisk` — mechanical: `perLapFailureRisk(perRaceRel) × eraReliabilityScale(year) × cal.mech`.
 - `baseCrashRisk` — incident: `perLapFailureRisk(perRaceCrash) × cal.crash` (driver aggression/composure + track).
 - `cal = liveRiskCalibration(year, series)` — **Live-only** era/series scaling (Quick Sim untouched).
+- `wallFactor` uses `toLegacyRating(track.attributes.riskWallProximity)` because the
+  underlying 1–10 formula was being fed raw 1–100 track data, over-inflating wall
+  effects in the live 1990s results.
+- `tyreFailureRisk` now ramps from moderate wear (55+) and applies a small era
+  scale (`eraTyreFailureScale`) so older 1990s F1 shows the targeted 2–4% tyre/wheel
+  DNFs despite heavier mechanical attrition.
 - Reliability warnings add only a small extra risk and AI teams **auto-manage**
   them, so an unmanaged warning no longer compounds into a near-certain retirement.
 - UI bands from `reliabilityRiskLevel()` / `crashRiskLevel()`.
@@ -97,30 +103,36 @@ else if chance(otherRisk) → Other label
 Tyre wear expresses itself as **pace loss** (`tyrePaceModifier`), **mistakes**
 (`tyreMistakeRisk`) and a **forced tyre-cliff pit** (`wear > 92` in the tick
 engine) long before it can end a race. Terminal tyre failure
-(`tyreFailureRisk`) only bites in the brief high-wear window a car occupies
-before pitting, keeping tyre/damage a small share of all DNFs (~4–10% game-wide,
-well under the 10–12% cap).
+(`tyreFailureRisk`) now ramps from a moderate wear window (55+) so tyre/wheel
+retirements stay in the 2–4% target band without overtaking the mechanical and
+crash causes that dominate the 1990s.
 
 ## DNF cause calibration per era (`src/sim/dnfModel.ts`)
 
 `liveRiskCalibration(year, series)` scales the mechanical/crash buckets so the
-aggregate labelled split lands on the era targets (the raw per-car risks are
-mechanical-heavy in every era; modern eras need crash-dominance). Targets:
+aggregate labelled split lands on the era targets. The raw per-car risks are
+mechanical-heavy in every era; modern eras need crash-dominance. 1990s F1 live
+values are currently:
 
-| Era | rel | crash | tyre | other |
-|---|---|---|---|---|
-| 1990–1994 | 65 | 25 | 7 | 3 |
-| 1995–2000 | 60 | 30 | 7 | 3 |
-| 2001–2005 | 55 | 35 | 7 | 3 |
-| 2006–2010 | 52 | 38 | 7 | 3 |
-| Modern F1 | 35 | 50 | 10 | 5 |
-| Modern IndyCar | 30 | 55 | 10 | 5 |
+| Era | mech | crash |
+|---|---|---|
+| 1990–1994 | 0.87 | 2.05 |
+| 1995–2000 | 0.84 | 1.95 |
 
-`eraReliabilityScale(year)` additionally cuts raw mechanical-failure probability
-(~0.82–0.92) to reduce reliability retirements ~15–25%. The Quick Sim
-(`raceEngine.ts`) still draws its cause from `eraDnfProfile` and is not affected
-by `liveRiskCalibration`; the live totals are calibrated to match Quick over
-large samples (see `scripts/retirement-audit.test.ts`).
+Target cause splits for 1990–1999 F1 (the main 1990s tuning window):
+
+| Window | dpr | mechanical | crash | tyre | other |
+|---|---|---|---|---|---|---|
+| 1990–1994 | 11.8–13.3 | 64–70% | 22–28% | 2–4% | 4–8% |
+| 1995–1999 | 9.5–11.2 | 58–66% | 27–35% | 2–4% | 4–8% |
+| Combined 1990–1999 | 10.8–11.7 | 60–68% | 25–33% | 2–4% | 4–8% |
+
+`eraReliabilityScale(year)` is the Quick-Sim mechanical multiplier (2.9 for
+1990–1994, 2.25 for 1995–2000) and is also applied to the live `baseFailureRisk`,
+so the two sims share the same per-car mechanical risk. The Quick Sim
+(`raceEngine.ts`) draws its cause from `eraDnfProfile` with `pickDnfCause`; the
+live race labels the actual bucket that fired. The live totals are calibrated to
+match the Quick Sim over large samples (see `scripts/retirement-audit.test.ts`).
 
 ## Status messages & traffic
 

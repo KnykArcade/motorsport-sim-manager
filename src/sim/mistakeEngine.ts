@@ -1,6 +1,7 @@
 // Mistake / crash probability for a driver in a session.
 
 import type { Driver, Track } from '../types/gameTypes';
+import { toLegacyRating } from './ratingScale';
 
 // Returns a probability in [0, 1] of a driver error.
 export function calculateMistakeRisk(
@@ -13,13 +14,17 @@ export function calculateMistakeRisk(
 ): number {
   const r = driver.ratings;
 
-  // Composure & risk management reduce mistakes.
-  const skill = (r.composure + r.riskManagement) / 2; // 1-100
-  const base = 0.16 - (skill / 10) * 0.013;
+  // Composure & risk management reduce mistakes. Ratings are 1-100 in the data,
+  // so convert to the legacy 1-10 scale before using the old 1-10 formula.
+  const composure = toLegacyRating(r.composure);
+  const riskManagement = toLegacyRating(r.riskManagement);
+  const skill = (composure + riskManagement) / 2;
+  const base = 0.16 - skill * 0.013;
 
   // High-risk / technical tracks punish errors more.
-  const trackFactor =
-    (track.attributes.riskWallProximity + track.attributes.technical - 10) * 0.008;
+  const wallProximity = toLegacyRating(track.attributes.riskWallProximity);
+  const technical = toLegacyRating(track.attributes.technical);
+  const trackFactor = (wallProximity + technical - 10) * 0.008;
 
   const risk = base + trackFactor + aggression * 0.05 + pressure * 0.02;
   return clamp(risk, 0.01, 0.5);
