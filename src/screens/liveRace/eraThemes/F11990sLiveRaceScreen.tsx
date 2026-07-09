@@ -269,6 +269,7 @@ export function F11990sLiveRaceScreen({
               decisionSecondsLeft={blockingPrompt ? decisionSecondsLeft : null}
               outcome={outcomes[car.driverId] ?? null}
               trust={driverTrustFor(state, car.driverId)}
+              pitStrategy={pitStrategyFor(pitStrategyByDriver, car)}
               onPit={(decision) => onPit(car.driverId, decision ?? pitStrategyFor(pitStrategyByDriver, car))}
               onMode={(mode) => onMode(car.driverId, mode)}
               onOrders={() => onOpenOrders(car.driverId)}
@@ -776,6 +777,7 @@ function DriverFocus({
   decisionSecondsLeft,
   outcome,
   trust,
+  pitStrategy,
   onPit,
   onMode,
   onOrders,
@@ -804,10 +806,11 @@ function DriverFocus({
     carTrust: number;
     teamTrustInDriver: number;
   };
+  pitStrategy: { intensity: PitIntensity; exitMode: PaceMode };
   onPit: (decision?: { intensity?: PitIntensity; exitMode?: PaceMode }) => void;
   onMode: (mode: PaceMode) => void;
   onOrders: () => void;
-  onAccept: (rec: AnalyticsRecommendation) => void;
+  onAccept: (rec: AnalyticsRecommendation, actionOverride?: RecAction) => void;
   onModify: (rec: AnalyticsRecommendation, action: RecAction) => void;
   onIgnore: (rec: AnalyticsRecommendation) => void;
   onLetCrewDecide: (rec: AnalyticsRecommendation) => void;
@@ -905,6 +908,7 @@ function DriverFocus({
                 key={rec.id}
                 rec={rec}
                 bothDrivers={bothDrivers}
+                pitStrategy={pitStrategy}
                 decisionSecondsLeft={decisionSecondsLeft}
                 onAccept={onAccept}
                 onModify={onModify}
@@ -927,6 +931,7 @@ function DriverFocus({
 function DriverAlertCard({
   rec,
   bothDrivers,
+  pitStrategy,
   decisionSecondsLeft,
   onAccept,
   onModify,
@@ -935,6 +940,7 @@ function DriverAlertCard({
 }: {
   rec: AnalyticsRecommendation;
   bothDrivers: boolean;
+  pitStrategy: { intensity: PitIntensity; exitMode: PaceMode };
   decisionSecondsLeft: number | null;
   onAccept: (rec: AnalyticsRecommendation, actionOverride?: RecAction) => void;
   onModify: (rec: AnalyticsRecommendation, action: RecAction) => void;
@@ -942,11 +948,11 @@ function DriverAlertCard({
   onLetCrewDecide: (rec: AnalyticsRecommendation) => void;
 }) {
   const [modifying, setModifying] = useState(false);
-  const [pitIntensity, setPitIntensity] = useState<PitIntensity>('Standard');
-  const [pitExitMode, setPitExitMode] = useState<PaceMode>('Conservative');
   const pitCall = /pit/i.test(rec.action.label);
 
-  const pitActionOverride = pitCall ? { ...rec.action, pitIntensity, pitExitMode } : undefined;
+  const pitActionOverride = pitCall
+    ? { ...rec.action, pitIntensity: pitStrategy.intensity, pitExitMode: pitStrategy.exitMode }
+    : undefined;
   return (
     <div className="z-10 mt-auto overflow-hidden rounded border-2 border-amber-400 bg-black/95 px-2 py-2 shadow-[0_0_20px_rgba(245,158,11,0.35)]">
       <div className="flex items-center gap-1 text-[10px] font-black uppercase tracking-wide text-amber-300">
@@ -982,14 +988,6 @@ function DriverAlertCard({
         </div>
       ) : (
         <div className="mt-1 space-y-1.5">
-          {pitCall && (
-            <PitDecisionControls
-              intensity={pitIntensity}
-              exitMode={pitExitMode}
-              onIntensity={setPitIntensity}
-              onExitMode={setPitExitMode}
-            />
-          )}
           <div className="grid grid-cols-4 gap-1.5">
             <button
               onClick={() => onAccept(rec, pitActionOverride)}
