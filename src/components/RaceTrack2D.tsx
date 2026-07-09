@@ -1,19 +1,15 @@
-// Simplified 2D race view: coloured markers running around an oval circuit. Real
-// track geometry is not modelled — markers are spaced by running order and
-// rotate each lap so the field visibly moves. Cars in the pits sit in a pit-lane strip.
+import { RaceMapSeriesMarker, type RaceSeries } from './RaceMapSeriesMarker';
 
-import {
-  TrackMapMarker,
-  headingOnOval,
-  normalizeProgress,
-  ovalPointAt,
-  resolveTrackMapMarkerVariant,
-} from './TrackMapMarker';
+// Simplified 2D race view: coloured dots running around an oval circuit. Real
+// track geometry is not modelled — dots are spaced by running order and rotate
+// each lap so the field visibly moves. Cars in the pits sit in a pit-lane strip.
 
 export type TrackDot = {
   driverId: string;
   label: string; // car number / short label
   color: string;
+  accentColor?: string; // secondary team color for the marker wings/tabs
+  series?: string; // series shape for the marker; falls back to the track-map default
   isPlayer: boolean;
   running: boolean;
   inPit: boolean;
@@ -22,8 +18,6 @@ export type TrackDot = {
   trackProgress?: number; // 0..1, approximate lap position derived from live timing gaps
   gapToLeader?: number;
   interval?: number;
-  damaged?: boolean;
-  fastestLap?: boolean;
 };
 
 const W = 460;
@@ -33,17 +27,18 @@ const CY = H / 2;
 const RX = 180;
 const RY = 95;
 
+function pointOnOval(t: number): { x: number; y: number } {
+  const angle = t * Math.PI * 2 - Math.PI / 2; // start at the top
+  return { x: CX + RX * Math.cos(angle), y: CY + RY * Math.sin(angle) };
+}
+
 export function RaceTrack2D({
   dots,
   rotation,
-  series,
-  year,
   className = 'w-full',
 }: {
   dots: TrackDot[];
   rotation: number;
-  series?: string;
-  year?: number;
   className?: string;
 }) {
   const running = dots.filter((d) => d.running && !d.inPit && !d.pitRequested).sort((a, b) => a.rank - b.rank);
@@ -65,52 +60,48 @@ export function RaceTrack2D({
 
       {/* Running cars on the oval */}
       {running.map((d, i) => {
-        const t = d.trackProgress ?? normalizeProgress(rotation + i * spacing);
-        const p = ovalPointAt(t, CX, CY, RX, RY);
-        return (
-          <TrackMapMarker
-            key={d.driverId}
-            x={p.x}
-            y={p.y}
-            headingDeg={headingOnOval(t)}
-            teamColor={d.color}
-            number={d.label || null}
-            rank={d.rank}
-            gapToLeader={d.gapToLeader}
-            variant={resolveTrackMapMarkerVariant(series, year)}
-            status={{
-              leader: d.rank === 1,
-              player: d.isPlayer,
-              inPit: d.inPit || d.pitRequested,
-              damaged: d.damaged,
-              fastestLap: d.fastestLap,
-            }}
-          />
-        );
+        const t = d.trackProgress ?? (rotation + i * spacing) % 1;
+        const p = pointOnOval(t);
+        return <Dot key={d.driverId} x={p.x} y={p.y} dot={d} />;
       })}
 
       {/* Pitting cars */}
       {pitting.map((d, i) => (
-        <TrackMapMarker
-          key={d.driverId}
-          x={CX - 90 + i * 26}
-          y={CY + RY + 31}
-          headingDeg={0}
-          teamColor={d.color}
-          number={d.label || null}
-          rank={d.rank}
-          gapToLeader={d.gapToLeader}
-          variant={resolveTrackMapMarkerVariant(series, year)}
-          compact
-          status={{
-            leader: d.rank === 1,
-            player: d.isPlayer,
-            inPit: true,
-            damaged: d.damaged,
-            fastestLap: d.fastestLap,
-          }}
-        />
+        <Dot key={d.driverId} x={CX - 90 + i * 26} y={CY + RY + 31} dot={d} />
       ))}
     </svg>
+  );
+}
+
+export function normalizeSeries(series: string | undefined, fallback: RaceSeries = 'f1'): RaceSeries {
+  switch (series?.toLowerCase()) {
+    case 'f1':
+    case 'formula 1':
+      return 'f1';
+    case 'indycar':
+      return 'indycar';
+    case 'cart':
+    case 'champ car':
+      return 'cart';
+    case 'nascar':
+      return 'nascar';
+    default:
+      return fallback;
+  }
+}
+
+function Dot({ x, y, dot }: { x: number; y: number; dot: TrackDot }) {
+  return (
+    <RaceMapSeriesMarker
+      x={x}
+      y={y}
+      series={normalizeSeries(dot.series)}
+      number={dot.label}
+      primaryColor={dot.color}
+      accentColor={dot.accentColor}
+      isPlayer={true}
+      selected={dot.isPlayer}
+      rotationDeg={0}
+    />
   );
 }
