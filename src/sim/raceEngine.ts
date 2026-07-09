@@ -89,6 +89,36 @@ function clamp10(n: number): number {
   return Math.max(1, Math.min(10, n));
 }
 
+function clamp(n: number, lo: number, hi: number): number {
+  return Math.max(lo, Math.min(hi, n));
+}
+
+// Quick-sim tyre-failure risk: derived from setup preservation, strategy
+// degradation, driver instruction wear, and track technical demand. Kept small
+// because a full tyre-deg simulation only runs in the live race.
+function tyreFailureRisk(
+  setup: SetupOption,
+  strategy: RaceStrategy,
+  instruction: DriverInstruction,
+  track: Track,
+): number {
+  const preservation = clamp(setup.tirePreservation, 1, 10);
+  const deg = clamp(strategy.tireDegModifier + 1, 0, 2);
+  const wear = clamp(instruction.tireWearModifier + 1, 0, 2);
+  const tech = clamp(track.attributes.technical, 1, 10);
+  return Math.max(
+    0.001,
+    Math.min(
+      0.08,
+      0.005
+        + (5 - preservation) * 0.004
+        + deg * 0.004
+        + wear * 0.004
+        + (tech - 5) * 0.0005,
+    ),
+  );
+}
+
 export function calculateRacePace(
   driver: Driver,
   car: Car,
@@ -249,16 +279,22 @@ export function computeRaceOutcome(context: RaceContext): RaceOutcome {
       grid <= 6 ? 0.5 : 0,
     ) * prepMistakeMultiplier;
 
+    // Tyre-failure risk for the quick sim.
+    const tyreRisk = tyreFailureRisk(setup, strategy, instruction, context.track);
+
     const incidents: string[] = [];
     let status: RaceResult['status'] = 'Finished';
     let lapsCompleted = totalLaps;
     let finalScore = score + gridBonus + form + driverSwing + packagePaceBonus + prepPaceBonus;
 
-    // Total retirement probability, then the *cause* is drawn from the era
-    // profile (nudged by car/driver/track), so the season-wide DNF cause split
-    // matches the era target while individual retirements stay plausible.
+    // Total retirement probability. Each risk bucket contributes its own weight,
+    // scaled by a global rate multiplier and capped so a single weekend cannot
+    // wipe out the whole field. The DNF cause is then drawn from those bucket
+    // weights so the reported cause matches the actual risk that triggered it.
     const otherRisk = 0.004;
-    const pDnf = Math.min(0.7, relRisk + crashRisk + otherRisk);
+    const DNF_RATE_MULTIPLIER = 0.75;
+    const bucketRisk = (relRisk + crashRisk + tyreRisk) * DNF_RATE_MULTIPLIER;
+    const pDnf = Math.min(0.5, bucketRisk + otherRisk);
     if (rng.chance(pDnf)) {
       const causeCtx: DnfCauseContext = {
         carReliability: effectiveCarRatings(e.car).reliability,
@@ -268,7 +304,13 @@ export function computeRaceOutcome(context: RaceContext): RaceOutcome {
         wallProximity: context.track.attributes.riskWallProximity,
         inTraffic: grid > 6,
       };
-      const { cause, label } = pickDnfCause(context.year, causeCtx, rng);
+      const dnfRiskWeights = {
+        reliability: relRisk * DNF_RATE_MULTIPLIER,
+        crash: crashRisk * DNF_RATE_MULTIPLIER,
+        tyre: tyreRisk * DNF_RATE_MULTIPLIER,
+        other: otherRisk,
+      };
+      const { cause, label } = pickDnfCause(context.year, causeCtx, rng, dnfRiskWeights);
       status = 'DNF';
       lapsCompleted =
         cause === 'Crash' ? rng.int(1, totalLaps - 5) : rng.int(3, totalLaps - 5);

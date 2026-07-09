@@ -98,21 +98,26 @@ const OTHER_CAUSES = ['Fuel system', 'Driver retired, unwell', 'Debris damage', 
 
 // Choose a DNF cause for a retiring car, weighted by the era profile and nudged
 // by context. Returns the cause plus a descriptive incident label.
+//
+// If `riskWeights` is supplied, the cause is drawn from those bucket weights
+// instead of the era profile, so the reported cause reflects the actual
+// mechanical/crash/tyre/other risk that triggered the retirement.
 export function pickDnfCause(
   year: number,
   ctx: DnfCauseContext,
   rng: Rng,
+  riskWeights?: EraDnfProfile,
 ): { cause: DnfCause; label: string } {
-  const p = eraDnfProfile(year);
+  const base = riskWeights ?? eraDnfProfile(year);
 
-  // Context multipliers (kept mild so the era profile dominates the aggregate).
-  const relW = p.reliability * (1 + (50 - ctx.carReliability) * 0.006);
+  // Context multipliers (kept mild so the era profile or supplied weights dominate).
+  const relW = base.reliability * (1 + (50 - ctx.carReliability) * 0.006);
   const crashW =
-    p.crash *
+    base.crash *
     (1 + (ctx.aggression - 50) * 0.006 + (50 - ctx.composure) * 0.005 + (ctx.wallProximity - 50) * 0.004) *
     (ctx.inTraffic ? 1.3 : 1);
-  const tyreW = p.tyre * (1 + Math.max(0, ctx.tyreWear - 60) * 0.03);
-  const otherW = p.other;
+  const tyreW = base.tyre * (1 + Math.max(0, ctx.tyreWear - 60) * 0.03);
+  const otherW = base.other;
 
   const total = Math.max(1e-6, relW + crashW + tyreW + otherW);
   let roll = rng.next() * total;
