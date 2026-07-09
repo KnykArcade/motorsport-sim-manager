@@ -1,4 +1,5 @@
-import { RaceMapSeriesMarker, type RaceSeries } from './RaceMapSeriesMarker';
+import { RaceMapSeriesMarker } from './RaceMapSeriesMarker';
+import { normalizeSeries } from './seriesMarker';
 
 // Simplified 2D race view: coloured dots running around an oval circuit. Real
 // track geometry is not modelled — dots are spaced by running order and rotate
@@ -71,23 +72,6 @@ export function RaceTrack2D({
       ))}
     </svg>
   );
-}
-
-export function normalizeSeries(series: string | undefined, fallback: RaceSeries = 'f1'): RaceSeries {
-  switch (series?.toLowerCase()) {
-    case 'f1':
-    case 'formula 1':
-      return 'f1';
-    case 'indycar':
-      return 'indycar';
-    case 'cart':
-    case 'champ car':
-      return 'cart';
-    case 'nascar':
-      return 'nascar';
-    default:
-      return fallback;
-  }
 }
 
 function Dot({ x, y, dot }: { x: number; y: number; dot: TrackDot }) {

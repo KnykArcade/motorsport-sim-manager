@@ -1,5 +1,6 @@
-import { RaceTrack2D, type TrackDot, normalizeSeries } from './RaceTrack2D';
+import { RaceTrack2D, type TrackDot } from './RaceTrack2D';
 import { RaceMapSeriesMarker } from './RaceMapSeriesMarker';
+import { normalizeSeries } from './seriesMarker';
 import { getTrackMapAsset } from '../data/trackMaps/getTrackMapAsset';
 import type { TrackMapGeometry, TrackMapPoint } from '../data/trackMaps/trackMapGeometry';
 

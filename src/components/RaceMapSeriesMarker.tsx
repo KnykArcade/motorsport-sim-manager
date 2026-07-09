@@ -1,4 +1,4 @@
-export type RaceSeries = "nascar" | "f1" | "indycar" | "cart";
+import type { RaceSeries } from './seriesMarker';
 
 export type RaceMapSeriesMarkerProps = {
   x: number;
