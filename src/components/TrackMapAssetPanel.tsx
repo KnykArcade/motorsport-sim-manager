@@ -1,4 +1,5 @@
-import { RaceTrack2D, type TrackDot } from './RaceTrack2D';
+import { RaceTrack2D, type TrackDot, normalizeSeries, accentForPrimary } from './RaceTrack2D';
+import { RaceMapSeriesMarker } from './RaceMapSeriesMarker';
 import { getTrackMapAsset } from '../data/trackMaps/getTrackMapAsset';
 import type { TrackMapGeometry, TrackMapPoint } from '../data/trackMaps/trackMapGeometry';
 
@@ -147,30 +148,24 @@ function normalizeProgress(value: number): number {
 
 function MapDot({ point, dot, compact = false }: { point: TrackMapPoint; dot: TrackDot; compact?: boolean }) {
   const radius = compact ? 12 : dot.isPlayer ? 28 : 24;
-  const fontSize = compact ? 12 : dot.label.length > 2 ? 17 : 21;
+  const markerBaseRadius = dot.isPlayer ? 9 : 7;
+  const scale = radius / markerBaseRadius;
   return (
     <g transform={`translate(${point[0]} ${point[1]})`}>
       <title>{`P${dot.rank} car ${dot.label}${dot.gapToLeader ? `, ${dot.gapToLeader.toFixed(1)}s behind leader` : ''}`}</title>
-      <circle r={radius + 8} fill="#050606" opacity="0.92" />
-      <circle
-        r={radius}
-        fill={dot.color}
-        stroke={dot.isPlayer ? '#fef3c7' : '#ffffff'}
-        strokeWidth={dot.isPlayer ? 6 : 4}
-      />
-      <circle r={Math.max(4, radius - 8)} fill="none" stroke="#050606" strokeWidth="2" opacity="0.45" />
-      <text
-        y={compact ? 4 : 7}
-        textAnchor="middle"
-        fill="#ffffff"
-        stroke="#050606"
-        strokeWidth={compact ? 2 : 4}
-        paintOrder="stroke"
-        fontSize={fontSize}
-        fontWeight="900"
-      >
-        {dot.label}
-      </text>
+      <g transform={`scale(${scale})`}>
+        <RaceMapSeriesMarker
+          x={0}
+          y={0}
+          series={normalizeSeries(dot.series)}
+          number={dot.label}
+          primaryColor={dot.color}
+          accentColor={dot.accentColor ?? accentForPrimary(dot.color)}
+          isPlayer={dot.isPlayer}
+          selected={dot.isPlayer}
+          rotationDeg={0}
+        />
+      </g>
     </g>
   );
 }

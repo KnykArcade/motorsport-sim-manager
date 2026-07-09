@@ -73,7 +73,7 @@ export function RaceTrack2D({
   );
 }
 
-function normalizeSeries(series: string | undefined, fallback: RaceSeries = 'f1'): RaceSeries {
+export function normalizeSeries(series: string | undefined, fallback: RaceSeries = 'f1'): RaceSeries {
   switch (series?.toLowerCase()) {
     case 'f1':
     case 'formula 1':
@@ -90,7 +90,7 @@ function normalizeSeries(series: string | undefined, fallback: RaceSeries = 'f1'
   }
 }
 
-function accentForPrimary(color: string, fallback = '#f7f7f7'): string {
+export function accentForPrimary(color: string, fallback = '#f7f7f7'): string {
   const hex = color.replace('#', '');
   if (hex.length !== 3 && hex.length !== 6) return fallback;
   const r = parseInt(hex.substring(0, 2), 16);
