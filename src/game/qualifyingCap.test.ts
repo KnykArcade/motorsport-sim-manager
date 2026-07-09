@@ -26,8 +26,8 @@ function advanceToRaceWeekend(state: GameState): GameState {
 }
 
 describe('qualifying cap (DNQ)', () => {
-  it('caps F1 grids at 24 cars', () => {
-    expect(getMaxQualifiers('F1')).toBe(24);
+  it('caps F1 grids at 26 cars', () => {
+    expect(getMaxQualifiers('F1')).toBe(26);
     expect(getMaxQualifiers('NASCAR')).toBe(43);
     expect(getMaxQualifiers('IndyCar')).toBe(28);
     expect(getMaxQualifiers('CART')).toBe(26);
@@ -43,14 +43,14 @@ describe('qualifying cap (DNQ)', () => {
     const results = state.qualifyingResults[raceId];
     expect(results.length).toBe(28); // 14 teams * 2 cars
     const dnq = results.filter((r) => r.dnq);
-    expect(dnq.length).toBe(4); // 28 - 24
+    expect(dnq.length).toBe(2); // 28 - 26
 
-    // DNQ cars are exactly the slowest (positions 25..28).
-    for (const r of dnq) expect(r.position).toBeGreaterThan(24);
-    for (const r of results.filter((r) => !r.dnq)) expect(r.position).toBeLessThanOrEqual(24);
+    // DNQ cars are exactly the slowest (positions 27..28).
+    for (const r of dnq) expect(r.position).toBeGreaterThan(26);
+    for (const r of results.filter((r) => !r.dnq)) expect(r.position).toBeLessThanOrEqual(26);
   });
 
-  it('only lets the 24 qualified cars score race results', () => {
+  it('only lets the 26 qualified cars score race results', () => {
     let state = advanceToRaceWeekend(newGame(1994, 'F1', 't-williams'));
     const raceId = state.calendar[state.currentRaceIndex].id;
     state = gameReducer(state, { type: 'RUN_QUALIFYING', decisions: [] })!;
@@ -58,7 +58,7 @@ describe('qualifying cap (DNQ)', () => {
 
     state = gameReducer(state, { type: 'RUN_RACE', decisions: [] })!;
     const results = state.completedRaceResults[raceId];
-    expect(results.length).toBe(24);
+    expect(results.length).toBe(26);
     for (const r of results) expect(dnqIds.has(r.driverId)).toBe(false);
   });
 
