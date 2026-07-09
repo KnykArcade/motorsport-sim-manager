@@ -110,7 +110,7 @@ function Dot({ x, y, dot }: { x: number; y: number; dot: TrackDot }) {
       number={dot.label}
       primaryColor={dot.color}
       accentColor={dot.accentColor ?? accentForPrimary(dot.color)}
-      isPlayer={dot.isPlayer}
+      isPlayer={false}
       selected={dot.isPlayer}
       rotationDeg={0}
     />

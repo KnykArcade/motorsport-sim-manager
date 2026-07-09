@@ -147,9 +147,8 @@ function normalizeProgress(value: number): number {
 }
 
 function MapDot({ point, dot, compact = false }: { point: TrackMapPoint; dot: TrackDot; compact?: boolean }) {
-  const radius = compact ? 12 : dot.isPlayer ? 28 : 24;
-  const markerBaseRadius = dot.isPlayer ? 9 : 7;
-  const scale = radius / markerBaseRadius;
+  const radius = compact ? 12 : 24;
+  const scale = radius / 7;
   return (
     <g transform={`translate(${point[0]} ${point[1]})`}>
       <title>{`P${dot.rank} car ${dot.label}${dot.gapToLeader ? `, ${dot.gapToLeader.toFixed(1)}s behind leader` : ''}`}</title>
@@ -161,7 +160,7 @@ function MapDot({ point, dot, compact = false }: { point: TrackMapPoint; dot: Tr
           number={dot.label}
           primaryColor={dot.color}
           accentColor={dot.accentColor ?? accentForPrimary(dot.color)}
-          isPlayer={dot.isPlayer}
+          isPlayer={false}
           selected={dot.isPlayer}
           rotationDeg={0}
         />
