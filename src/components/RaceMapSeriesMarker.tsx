@@ -12,13 +12,13 @@ export type RaceMapSeriesMarkerProps = {
   selected?: boolean;
 };
 
-const PLAYER_RADIUS = 15;
-const AI_RADIUS = 15;
+const PLAYER_RADIUS = 20;
+const AI_RADIUS = 20;
 
 // The provided SVG templates are drawn on a 24×24 viewBox with the shape
 // centered at (12,12) and an outer radius of ~9.4. Scale to the requested
-// 15px game footprint.
-const TEMPLATE_SCALE = 15 / 9.4;
+// 20px game footprint.
+const TEMPLATE_SCALE = 20 / 9.4;
 
 function MarkerShape({
   series,
