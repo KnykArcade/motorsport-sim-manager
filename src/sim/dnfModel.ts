@@ -22,24 +22,29 @@ export type EraDnfProfile = {
 
 // Target cause split by era (fractions sum to 1). Tune here.
 export function eraDnfProfile(year: number): EraDnfProfile {
-  if (year <= 1994) return { reliability: 0.7, crash: 0.2, tyre: 0.07, other: 0.03 };
-  if (year <= 2000) return { reliability: 0.65, crash: 0.25, tyre: 0.07, other: 0.03 };
-  if (year <= 2005) return { reliability: 0.6, crash: 0.3, tyre: 0.07, other: 0.03 };
-  if (year <= 2010) return { reliability: 0.55, crash: 0.35, tyre: 0.07, other: 0.03 };
-  if (year <= 2013) return { reliability: 0.5, crash: 0.4, tyre: 0.07, other: 0.03 };
-  return { reliability: 0.4, crash: 0.45, tyre: 0.1, other: 0.05 };
+  // 1990s F1: mechanical/technical dominates, but crashes and operational issues are common.
+  if (year <= 1994) return { reliability: 0.70, crash: 0.20, tyre: 0.03, other: 0.07 };
+  if (year <= 2000) return { reliability: 0.65, crash: 0.26, tyre: 0.03, other: 0.06 };
+  if (year <= 2005) return { reliability: 0.55, crash: 0.35, tyre: 0.07, other: 0.03 };
+  if (year <= 2010) return { reliability: 0.52, crash: 0.38, tyre: 0.07, other: 0.03 };
+  if (year <= 2013) return { reliability: 0.48, crash: 0.42, tyre: 0.07, other: 0.03 };
+  return { reliability: 0.38, crash: 0.47, tyre: 0.1, other: 0.05 };
 }
 
 // Multiplier applied to raw mechanical-failure probability to cut reliability
 // retirements. ~0.78 for 2006-2010 (the ~15-25% reduction), a touch higher for
 // neighbouring eras, ~1 for the earliest/most-modern where the raw model is fine.
 export function eraReliabilityScale(year: number): number {
-  if (year <= 1994) return 0.92;
-  if (year <= 2000) return 0.88;
-  if (year <= 2005) return 0.82;
-  if (year <= 2010) return 0.78; // strongest reduction, per brief
-  if (year <= 2013) return 0.82;
-  return 0.88;
+  // After fixing the 1-100 scale, the raw mechanical base is lower than intended
+  // (it was previously clamped to the minimum for most cars). These multipliers
+  // restore era-appropriate mechanical attrition: 1990s F1 is high, then gradually
+  // improves through the 2000s. Modern eras are still lower than the raw model.
+  if (year <= 1994) return 2.9;
+  if (year <= 2000) return 2.25;
+  if (year <= 2005) return 1.5;
+  if (year <= 2010) return 1.1;
+  if (year <= 2013) return 1.0;
+  return 0.9;
 }
 
 // Live-race retirement calibration (Live only; the Quick Sim is untouched).
@@ -53,13 +58,15 @@ export function eraReliabilityScale(year: number): number {
 // lands on the era targets in `eraDnfProfile`. Tune here.
 export type LiveRiskCalibration = { mech: number; crash: number };
 export function liveRiskCalibration(year: number, series: string): LiveRiskCalibration {
-  if (series === 'IndyCar') return { mech: 0.5, crash: 1.35 };
-  if (year <= 1994) return { mech: 0.95, crash: 0.54 };
-  if (year <= 2000) return { mech: 0.82, crash: 0.82 };
-  if (year <= 2005) return { mech: 0.88, crash: 0.9 };
-  if (year <= 2010) return { mech: 0.82, crash: 0.95 };
-  if (year <= 2013) return { mech: 0.68, crash: 1.1 };
-  return { mech: 0.36, crash: 1.2 };
+  // The raw per-car risks are mechanical-heavy after the scale fix, so live uses
+  // these multipliers to land the labelled cause split on the era targets.
+  if (series === 'IndyCar') return { mech: 0.55, crash: 1.35 };
+  if (year <= 1994) return { mech: 0.87, crash: 2.05 };
+  if (year <= 2000) return { mech: 0.84, crash: 1.95 };
+  if (year <= 2005) return { mech: 0.85, crash: 1.25 };
+  if (year <= 2010) return { mech: 0.78, crash: 1.15 };
+  if (year <= 2013) return { mech: 0.65, crash: 1.15 };
+  return { mech: 0.42, crash: 1.25 };
 }
 
 // Context that nudges the cause draw away from the flat era profile.
@@ -81,20 +88,49 @@ export type DnfCauseContext = {
 const MECHANICAL_CAUSES = [
   'Engine failure',
   'Gearbox failure',
+  'Transmission failure',
+  'Clutch failure',
   'Hydraulics failure',
   'Electrical failure',
-  'Suspension failure',
+  'Electronics failure',
   'Cooling failure',
+  'Overheating',
+  'Oil pressure failure',
+  'Oil leak',
+  'Fuel pressure problem',
+  'Fuel pump failure',
+  'Suspension failure',
+  'Brake failure',
+  'Steering failure',
+  'Driveshaft failure',
+  'Differential failure',
 ];
 const CRASH_CAUSES = [
   'Crashed out',
+  'Spun off',
   'Spun into the barriers',
   'Collision, retired',
   'Contact damage, retired',
   'Lost it under braking',
+  'First-lap collision',
 ];
-const TYRE_CAUSES = ['Puncture', 'Tyre failure', 'Delaminated tyre'];
-const OTHER_CAUSES = ['Fuel system', 'Driver retired, unwell', 'Debris damage', 'Wheel not attached'];
+const TYRE_CAUSES = [
+  'Puncture',
+  'Tyre failure',
+  'Tyre delamination',
+  'Wheel rim failure',
+  'Wheel nut issue',
+  'Wheel bearing failure',
+];
+const OTHER_CAUSES = [
+  'Driver unwell',
+  'Debris damage',
+  'Refuelling issue',
+  'Stalled',
+  'Out of fuel',
+  'Fire',
+  'Retired by team',
+];
 
 // Choose a DNF cause for a retiring car, weighted by the era profile and nudged
 // by context. Returns the cause plus a descriptive incident label.
@@ -149,10 +185,25 @@ export function otherLabel(rng: Rng): string {
 export function classifyDnfCause(incident: string | undefined): DnfCause {
   if (!incident) return 'Other';
   const s = incident.toLowerCase();
-  if (/(crash|spun|spin|collision|contact|barrier|braking|accident|hit )/.test(s)) return 'Crash';
-  if (/(puncture|tyre|tire|delamin)/.test(s)) return 'TyreDamage';
-  if (/(engine|gearbox|hydraul|electric|suspension|cooling|mechanical|brake|clutch|transmission|overheat)/.test(s))
+
+  // Tyre/wheel-specific labels first. 'wheel not attached' and 'wheel' on its own
+  // are not tyre failures, so match specific wheel parts only.
+  if (/(\bpuncture\b|\btyre\b|\btire\b|delamin|wheel rim|wheel nut|wheel bearing)/.test(s)) return 'TyreDamage';
+
+  // Mechanical root causes. Fuel pressure / fuel pump are mechanical; generic
+  // 'out of fuel' / 'refuelling' / 'fuel system' are operational (see below).
+  if (
+    /(engine|gearbox|transmission|clutch|hydraul|electric|electronics|suspension|brake|steering|cooling|overheat|oil|driveshaft|differential|mechanical|fuel pressure|fuel pump)/.test(s)
+  )
     return 'Mechanical';
-  if (/(fuel|unwell|debris|wheel|retired)/.test(s)) return 'Other';
+
+  // Crash / driver incident. 'lost it' is used as crash shorthand; it should
+  // lose to mechanical root causes above ('steering failure — lost it').
+  if (/(crash|spun|spin|collision|contact|barrier|barriers|accident|lost it)/.test(s)) return 'Crash';
+
+  // Operational / other.
+  if (/(driver unwell|illness|debris|refuelling|refueling|out of fuel|stalled|fire|retired by team|wheel not attached|fuel system)/.test(s))
+    return 'Other';
+
   return 'Other';
 }
