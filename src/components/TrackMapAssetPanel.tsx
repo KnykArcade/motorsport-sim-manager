@@ -148,8 +148,8 @@ function normalizeProgress(value: number): number {
 }
 
 function MapDot({ point, dot, compact = false }: { point: TrackMapPoint; dot: TrackDot; compact?: boolean }) {
-  const radius = compact ? 7 : 11;
-  const scale = radius / 11;
+  const radius = compact ? 9 : 15;
+  const scale = radius / 15;
   return (
     <g transform={`translate(${point[0]} ${point[1]})`}>
       <title>{`P${dot.rank} car ${dot.label}${dot.gapToLeader ? `, ${dot.gapToLeader.toFixed(1)}s behind leader` : ''}`}</title>
