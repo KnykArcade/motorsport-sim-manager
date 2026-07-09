@@ -54,6 +54,7 @@ type Props = {
   onLetCrewDecide: (rec: AnalyticsRecommendation) => void;
   onAcceptAll: () => void;
   onIgnoreAll: () => void;
+  crashOverlay?: ReactNode;
 };
 
 export function F11990sLiveRaceScreen({
@@ -88,6 +89,7 @@ export function F11990sLiveRaceScreen({
   onModify,
   onIgnore,
   onLetCrewDecide,
+  crashOverlay,
 }: Props) {
   const finished = live.phase === 'finished';
   const focusCars = driverFocusCars(playerCars, live.cars);
@@ -200,35 +202,17 @@ export function F11990sLiveRaceScreen({
               trackName={race?.trackName ?? live.trackId}
               dots={dots}
               rotation={rotation}
+              safetyCar={live.safetyCar.active}
             />
+            {crashOverlay}
           </div>
           <div className="grid min-h-0 gap-2 lg:grid-cols-[0.95fr_0.88fr]">
             <RetroPanel title="Team Radio" className="min-h-0">
-              <div className="h-[calc(100%-37px)] space-y-1 overflow-y-auto p-2 text-[12px]">
-                {playerCars.slice(0, 2).map((car) => (
-                  <div key={car.driverId} className="space-y-0.5">
-                    {radioLines(car, live, state, nameOf).map((line, index) => (
-                      <div key={`${car.driverId}-${index}`}>
-                        <span className="text-amber-300">{shortName(nameOf(car.driverId)).toUpperCase()}:</span>{' '}
-                        <span className="text-zinc-200">"{line}"</span>
-                      </div>
-                    ))}
-                  </div>
-                ))}
+              <div className="h-[calc(100%-37px)] overflow-y-auto p-2 text-[12px]">
+                <div className="text-zinc-500" />
               </div>
             </RetroPanel>
-            <RetroPanel
-              title="Pit Window"
-              className="min-h-0"
-              headerRight={
-                <button
-                  onClick={() => setStrategyDeskOpen(true)}
-                  className="rounded border border-amber-500/55 bg-amber-500/10 px-2 py-0.5 text-[10px] font-black uppercase text-amber-300 hover:bg-amber-500/20"
-                >
-                  Strategy Desk
-                </button>
-              }
-            >
+            <RetroPanel title="Pit Window" className="min-h-0">
               <div className="h-[calc(100%-37px)] overflow-y-auto p-2 text-[12px]">
                 <div className="space-y-3 text-zinc-200">
                   {playerCars.map((car) => (
@@ -270,9 +254,12 @@ export function F11990sLiveRaceScreen({
               outcome={outcomes[car.driverId] ?? null}
               trust={driverTrustFor(state, car.driverId)}
               pitStrategy={pitStrategyFor(pitStrategyByDriver, car)}
+              live={live}
+              state={state}
               onPit={(decision) => onPit(car.driverId, decision ?? pitStrategyFor(pitStrategyByDriver, car))}
               onMode={(mode) => onMode(car.driverId, mode)}
               onOrders={() => onOpenOrders(car.driverId)}
+              onStrategyDesk={() => setStrategyDeskOpen(true)}
               onAccept={handleAccept}
               onModify={handleModify}
               onIgnore={handleIgnore}
@@ -731,6 +718,7 @@ function RetroTrackMap({
   trackName,
   dots,
   rotation,
+  safetyCar = false,
 }: {
   series?: string;
   year?: number;
@@ -738,6 +726,7 @@ function RetroTrackMap({
   trackName?: string;
   dots: TrackDot[];
   rotation: number;
+  safetyCar?: boolean;
 }) {
   return (
     <div className="absolute inset-0 z-10 max-lg:hidden">
@@ -753,6 +742,7 @@ function RetroTrackMap({
               rotation={rotation}
               eraTheme="f1-1990s"
               hideFooterLabel
+              safetyCar={safetyCar}
               className="h-full w-full"
             />
           </div>
@@ -778,9 +768,12 @@ function DriverFocus({
   outcome,
   trust,
   pitStrategy,
+  live,
+  state,
   onPit,
   onMode,
   onOrders,
+  onStrategyDesk,
   onAccept,
   onModify,
   onIgnore,
@@ -807,9 +800,12 @@ function DriverFocus({
     teamTrustInDriver: number;
   };
   pitStrategy: { intensity: PitIntensity; exitMode: PaceMode };
+  live: LiveRaceState;
+  state: GameState;
   onPit: (decision?: { intensity?: PitIntensity; exitMode?: PaceMode }) => void;
   onMode: (mode: PaceMode) => void;
   onOrders: () => void;
+  onStrategyDesk: () => void;
   onAccept: (rec: AnalyticsRecommendation, actionOverride?: RecAction) => void;
   onModify: (rec: AnalyticsRecommendation, action: RecAction) => void;
   onIgnore: (rec: AnalyticsRecommendation) => void;
@@ -826,13 +822,22 @@ function DriverFocus({
       className={`h-full min-h-0 ${className}`}
       headerRight={
         car.isPlayer ? (
-          <button
-            onClick={onOrders}
-            disabled={!car.running || finished}
-            className="rounded border border-amber-500/55 bg-amber-500/10 px-2 py-0.5 text-[9px] font-black uppercase text-amber-300 hover:bg-amber-500/20 disabled:border-zinc-800 disabled:bg-zinc-950 disabled:text-zinc-600"
-          >
-            Team Orders
-          </button>
+          <div className="flex gap-1">
+            <button
+              onClick={onOrders}
+              disabled={!car.running || finished}
+              className="rounded border border-amber-500/55 bg-amber-500/10 px-2 py-0.5 text-[9px] font-black uppercase text-amber-300 hover:bg-amber-500/20 disabled:border-zinc-800 disabled:bg-zinc-950 disabled:text-zinc-600"
+            >
+              Team Orders
+            </button>
+            <button
+              onClick={onStrategyDesk}
+              disabled={!car.running || finished}
+              className="rounded border border-amber-500/55 bg-amber-500/10 px-2 py-0.5 text-[9px] font-black uppercase text-amber-300 hover:bg-amber-500/20 disabled:border-zinc-800 disabled:bg-zinc-950 disabled:text-zinc-600"
+            >
+              Strategy Desk
+            </button>
+          </div>
         ) : undefined
       }
     >
@@ -903,22 +908,33 @@ function DriverFocus({
               <ConditionLine label="Overall" level={overallCondition(car)} />
               <ConditionLine label="Risk" level={riskCondition(car.reliabilityRiskLevel)} />
             </div>
+            <div className="min-h-0 flex-1 overflow-y-auto py-1">
+              {radioLines(car, live, state, nameOf).map((line, index) => (
+                <div key={index} className="text-[10px] leading-tight text-zinc-300">
+                  {line}
+                </div>
+              ))}
+            </div>
             {rec ? (
-              <DriverAlertCard
-                key={rec.id}
-                rec={rec}
-                bothDrivers={bothDrivers}
-                pitStrategy={pitStrategy}
-                decisionSecondsLeft={decisionSecondsLeft}
-                onAccept={onAccept}
-                onModify={onModify}
-                onIgnore={onIgnore}
-                onLetCrewDecide={onLetCrewDecide}
-              />
+              <div className="absolute inset-x-0 bottom-0 z-10 p-1">
+                <DriverAlertCard
+                  key={rec.id}
+                  rec={rec}
+                  bothDrivers={bothDrivers}
+                  pitStrategy={pitStrategy}
+                  decisionSecondsLeft={decisionSecondsLeft}
+                  onAccept={onAccept}
+                  onModify={onModify}
+                  onIgnore={onIgnore}
+                  onLetCrewDecide={onLetCrewDecide}
+                />
+              </div>
             ) : outcome ? (
-              <div className="mt-auto rounded border-2 border-amber-500/70 bg-black/90 px-1.5 py-1 shadow-[0_0_14px_rgba(245,158,11,0.3)]">
-                <span className="text-[10px] font-black uppercase tracking-wide text-amber-300">Pit Wall</span>{' '}
-                <span className="text-[10px] leading-tight text-zinc-200">{outcome}</span>
+              <div className="absolute inset-x-0 bottom-0 z-10 p-1">
+                <div className="rounded border-2 border-amber-500/70 bg-black/90 px-1.5 py-1 shadow-[0_0_14px_rgba(245,158,11,0.3)]">
+                  <span className="text-[10px] font-black uppercase tracking-wide text-amber-300">Pit Wall</span>{' '}
+                  <span className="text-[10px] leading-tight text-zinc-200">{outcome}</span>
+                </div>
               </div>
             ) : null}
           </div>

@@ -129,12 +129,12 @@ export function TeamHQ() {
           {ratings && (
             <Panel title="Car Performance">
               <div className="grid gap-2 md:grid-cols-2">
-                <StatBar label="Engine Power" value={ratings.enginePower} />
-                <StatBar label="Aero Efficiency" value={ratings.aeroEfficiency} />
-                <StatBar label="Mechanical Grip" value={ratings.mechanicalGrip} />
-                <StatBar label="Reliability" value={ratings.reliability} />
-                <StatBar label="Pit Crew Ops" value={ratings.pitCrewOperations} />
-                <StatBar label="Condition" value={(car?.condition ?? 0) / 10} />
+                <StatBar label="Engine Power" value={ratings.enginePower} max={100} />
+                <StatBar label="Aero Efficiency" value={ratings.aeroEfficiency} max={100} />
+                <StatBar label="Mechanical Grip" value={ratings.mechanicalGrip} max={100} />
+                <StatBar label="Reliability" value={ratings.reliability} max={100} />
+                <StatBar label="Pit Crew Ops" value={ratings.pitCrewOperations} max={100} />
+                <StatBar label="Condition" value={car?.condition ?? 0} max={100} />
               </div>
             </Panel>
           )}
@@ -177,10 +177,10 @@ export function TeamHQ() {
                     </div>
                   </div>
                   <div className="mt-2 space-y-1">
-                    <StatBar label="Morale" value={d.morale / 10} />
-                    <StatBar label="Confidence" value={d.confidence / 10} />
-                    <StatBar label="Qualifying" value={d.ratings.qualifying} />
-                    <StatBar label="Race Pace" value={d.ratings.racePace} />
+                    <StatBar label="Morale" value={d.morale} max={100} />
+                    <StatBar label="Confidence" value={d.confidence} max={100} />
+                    <StatBar label="Qualifying" value={d.ratings.qualifying} max={100} />
+                    <StatBar label="Race Pace" value={d.ratings.racePace} max={100} />
                   </div>
                 </div>
               ))}

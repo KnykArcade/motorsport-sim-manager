@@ -143,6 +143,7 @@ export function pickDnfCause(
   ctx: DnfCauseContext,
   rng: Rng,
   riskWeights?: EraDnfProfile,
+  lap?: number,
 ): { cause: DnfCause; label: string } {
   const base = riskWeights ?? eraDnfProfile(year);
 
@@ -159,7 +160,7 @@ export function pickDnfCause(
   let roll = rng.next() * total;
   if (roll < relW) return { cause: 'Mechanical', label: rng.pick(MECHANICAL_CAUSES) };
   roll -= relW;
-  if (roll < crashW) return { cause: 'Crash', label: rng.pick(CRASH_CAUSES) };
+  if (roll < crashW) return { cause: 'Crash', label: crashLabel(rng, lap) };
   roll -= crashW;
   if (roll < tyreW) return { cause: 'TyreDamage', label: rng.pick(TYRE_CAUSES) };
   return { cause: 'Other', label: rng.pick(OTHER_CAUSES) };
@@ -171,8 +172,9 @@ export function pickDnfCause(
 export function mechanicalLabel(rng: Rng): string {
   return rng.pick(MECHANICAL_CAUSES);
 }
-export function crashLabel(rng: Rng): string {
-  return rng.pick(CRASH_CAUSES);
+export function crashLabel(rng: Rng, lap?: number): string {
+  const pool = lap === 1 ? CRASH_CAUSES : CRASH_CAUSES.filter((c) => c !== 'First-lap collision');
+  return rng.pick(pool);
 }
 export function tyreLabel(rng: Rng): string {
   return rng.pick(TYRE_CAUSES);

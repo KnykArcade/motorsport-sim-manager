@@ -280,10 +280,10 @@ function TopSkills({
     exact ? { value: skills[key], label: skills[key].toFixed(1) } : readoutForMarketSkill(state, id, skills, potential, key, entityType);
   return (
     <div className="grid grid-cols-1 gap-1">
-      <StatBar label="Cornering" value={readout('cornering').value ?? 0} valueLabel={readout('cornering').label} />
-      <StatBar label="Braking" value={readout('braking').value ?? 0} valueLabel={readout('braking').label} />
-      <StatBar label="Overtaking" value={readout('overtakingRacecraft').value ?? 0} valueLabel={readout('overtakingRacecraft').label} />
-      <StatBar label="Consistency" value={readout('enduranceConsistency').value ?? 0} valueLabel={readout('enduranceConsistency').label} />
+      <StatBar label="Cornering" value={readout('cornering').value ?? 0} max={100} valueLabel={readout('cornering').label} />
+      <StatBar label="Braking" value={readout('braking').value ?? 0} max={100} valueLabel={readout('braking').label} />
+      <StatBar label="Overtaking" value={readout('overtakingRacecraft').value ?? 0} max={100} valueLabel={readout('overtakingRacecraft').label} />
+      <StatBar label="Consistency" value={readout('enduranceConsistency').value ?? 0} max={100} valueLabel={readout('enduranceConsistency').label} />
     </div>
   );
 }

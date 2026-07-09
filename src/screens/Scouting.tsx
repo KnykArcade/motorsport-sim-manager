@@ -5,7 +5,7 @@ import { careerMarketBundle } from '../sim/careerMarketEngine';
 import { Panel } from '../components/Panel';
 import { Button } from '../components/Button';
 import { fogView, scoutingCost, type FogView, type ScoutTarget } from '../sim/scoutingEngine';
-import { formatMoney } from '../components/ui';
+import { formatMoney, ratingColor } from '../components/ui';
 import type { ScoutedEntityType, VisibleRating } from '../types/scoutingTypes';
 
 type Tab = 'senior' | 'youth';
@@ -228,12 +228,14 @@ function ScoutCard({
 function SkillRow({ label, value }: { label: string; value: VisibleRating }) {
   const known = value !== 'Unknown';
   const [lo, hi] = Array.isArray(value) ? value : typeof value === 'number' ? [value, value] : [0, 0];
-  const pct = known ? ((lo + hi) / 2 / 10) * 100 : 0;
+  const mid = known ? (lo + hi) / 2 : 0;
+  const pct = known ? mid : 0;
+  const color = ratingColor(mid / 10);
   return (
     <div className="flex items-center gap-2 text-xs">
       <span className="w-24 text-neutral-400">{label}</span>
       <div className="h-2 flex-1 overflow-hidden rounded-full bg-neutral-800">
-        {known && <div className="h-full bg-neutral-500" style={{ width: `${pct}%` }} />}
+        {known && <div className="h-full rounded-full" style={{ width: `${pct}%`, backgroundColor: color }} />}
       </div>
       <span className={`w-20 text-right tabular-nums ${known ? 'text-neutral-200' : 'text-neutral-600'}`}>
         {known ? `${lo.toFixed(1)}-${hi.toFixed(1)}` : '??'}

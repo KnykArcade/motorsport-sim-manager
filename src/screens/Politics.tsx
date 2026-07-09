@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useGame } from '../game/GameContext';
 import { teamById } from '../game/careerState';
 import { getRegulationSet } from '../data';
@@ -13,8 +14,18 @@ import type { RegulationProposal, RegulationVote } from '../types/politicsTypes'
 
 const VOTES: RegulationVote[] = ['Support', 'Oppose', 'Abstain'];
 
+type TabKey = 'regulations' | 'influence' | 'proposals' | 'history';
+
+const TABS: { key: TabKey; label: string }[] = [
+  { key: 'regulations', label: 'Season Regulations' },
+  { key: 'influence', label: 'Your Political Influence' },
+  { key: 'proposals', label: 'Open Proposals' },
+  { key: 'history', label: 'Vote History' },
+];
+
 export function Politics() {
   const { state, dispatch } = useGame();
+  const [activeTab, setActiveTab] = useState<TabKey>('regulations');
   if (!state) return null;
 
   const proposals = state.regulationProposals ?? [];
@@ -42,6 +53,8 @@ export function Politics() {
   const effectiveYear = proposals[0]?.seasonYearEffective ?? state.seasonYear + 1;
   const history = (state.regulationVoteHistory ?? []).slice().reverse();
 
+  const regSet = getRegulationSet(state.regulationSetId);
+
   return (
     <div className="space-y-6">
       <div>
@@ -53,86 +66,108 @@ export function Politics() {
         </p>
       </div>
 
-      {(() => {
-        const regSet = getRegulationSet(state.regulationSetId);
-        if (!regSet) return null;
-        return <RegulationPanel regulationSet={regSet} seasonYear={state.seasonYear} />;
-      })()}
+      <div className="rounded-lg border border-neutral-800 bg-[#0b0f17] p-1">
+        <div className="flex flex-wrap gap-1">
+          {TABS.map((tab) => (
+            <button
+              key={tab.key}
+              onClick={() => setActiveTab(tab.key)}
+              className={`rounded-md px-3 py-1.5 text-xs font-semibold transition-colors ${
+                activeTab === tab.key
+                  ? 'bg-amber-500 text-neutral-950'
+                  : 'text-neutral-400 hover:bg-neutral-800 hover:text-neutral-200'
+              }`}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </div>
+      </div>
 
-      <Panel title="Your Political Influence">
-        <div className="flex flex-wrap items-center justify-between gap-4">
-          <div>
-            <div className="text-3xl font-bold text-neutral-100 tabular-nums">{playerInfluence}</div>
-            <div className="text-xs text-neutral-500">
-              {playerRank > 0 ? `Ranked #${playerRank} of ${ranked.length} on the grid` : ''}
+      {activeTab === 'regulations' && regSet && (
+        <RegulationPanel regulationSet={regSet} seasonYear={state.seasonYear} />
+      )}
+
+      {activeTab === 'influence' && (
+        <Panel title="Your Political Influence">
+          <div className="flex flex-wrap items-center justify-between gap-4">
+            <div>
+              <div className="text-3xl font-bold text-neutral-100 tabular-nums">{playerInfluence}</div>
+              <div className="text-xs text-neutral-500">
+                {playerRank > 0 ? `Ranked #${playerRank} of ${ranked.length} on the grid` : ''}
+              </div>
+            </div>
+            <div className="min-w-[220px] flex-1">
+              <div className="space-y-1.5">
+                {ranked.slice(0, 6).map((r) => (
+                  <div key={r.teamId} className="flex items-center gap-2 text-xs">
+                    <span
+                      className={`w-28 truncate ${r.teamId === playerId ? 'font-semibold text-amber-300' : 'text-neutral-400'}`}
+                    >
+                      {teamName(r.teamId)}
+                    </span>
+                    <div className="h-2 flex-1 overflow-hidden rounded-full bg-neutral-800">
+                      <div
+                        className={`h-full ${r.teamId === playerId ? 'bg-amber-400' : 'bg-neutral-600'}`}
+                        style={{ width: `${(r.influence / maxInfluence) * 100}%` }}
+                      />
+                    </div>
+                    <span className="w-6 text-right tabular-nums text-neutral-400">{r.influence}</span>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
-          <div className="min-w-[220px] flex-1">
-            <div className="space-y-1.5">
-              {ranked.slice(0, 6).map((r) => (
-                <div key={r.teamId} className="flex items-center gap-2 text-xs">
-                  <span
-                    className={`w-28 truncate ${r.teamId === playerId ? 'font-semibold text-amber-300' : 'text-neutral-400'}`}
-                  >
-                    {teamName(r.teamId)}
-                  </span>
-                  <div className="h-2 flex-1 overflow-hidden rounded-full bg-neutral-800">
-                    <div
-                      className={`h-full ${r.teamId === playerId ? 'bg-amber-400' : 'bg-neutral-600'}`}
-                      style={{ width: `${(r.influence / maxInfluence) * 100}%` }}
-                    />
-                  </div>
-                  <span className="w-6 text-right tabular-nums text-neutral-400">{r.influence}</span>
-                </div>
+        </Panel>
+      )}
+
+      {activeTab === 'proposals' && (
+        <Panel title={`Open Proposals — vote for ${effectiveYear}`}>
+          {proposals.length === 0 ? (
+            <p className="text-sm text-neutral-400">No proposals are on the table right now.</p>
+          ) : (
+            <div className="space-y-3">
+              {proposals.map((p) => (
+                <ProposalCard
+                  key={p.id}
+                  proposal={p}
+                  teamName={teamName}
+                  influence={influence}
+                  playerTeamId={playerId}
+                  onVote={(vote) => dispatch({ type: 'SET_REGULATION_VOTE', proposalId: p.id, vote })}
+                />
               ))}
             </div>
-          </div>
-        </div>
-      </Panel>
+          )}
+        </Panel>
+      )}
 
-      <Panel title={`Open Proposals — vote for ${effectiveYear}`}>
-        {proposals.length === 0 ? (
-          <p className="text-sm text-neutral-400">No proposals are on the table right now.</p>
-        ) : (
-          <div className="space-y-3">
-            {proposals.map((p) => (
-              <ProposalCard
-                key={p.id}
-                proposal={p}
-                teamName={teamName}
-                influence={influence}
-                playerTeamId={playerId}
-                onVote={(vote) => dispatch({ type: 'SET_REGULATION_VOTE', proposalId: p.id, vote })}
-              />
-            ))}
-          </div>
-        )}
-      </Panel>
-
-      <Panel title="Vote History">
-        {history.length === 0 ? (
-          <p className="text-sm text-neutral-400">No regulations have been voted on yet.</p>
-        ) : (
-          <ul className="space-y-1.5 text-sm">
-            {history.map((r) => (
-              <li key={r.proposalId} className="flex flex-wrap items-center gap-2 text-neutral-300">
-                <span
-                  className={`rounded px-1.5 py-0.5 text-[10px] uppercase tracking-wide ${
-                    r.passed ? 'bg-green-950/60 text-green-300' : 'bg-red-950/60 text-red-300'
-                  }`}
-                >
-                  {r.passed ? 'Passed' : 'Rejected'}
-                </span>
-                <span className="text-neutral-400">{r.seasonYearEffective}</span>
-                <span className="text-neutral-200">{proposalTitle(r.proposalId)}</span>
-                <span className="text-xs text-neutral-500">
-                  for {r.supportWeight} · against {r.opposeWeight}
-                </span>
-              </li>
-            ))}
-          </ul>
-        )}
-      </Panel>
+      {activeTab === 'history' && (
+        <Panel title="Vote History">
+          {history.length === 0 ? (
+            <p className="text-sm text-neutral-400">No regulations have been voted on yet.</p>
+          ) : (
+            <ul className="space-y-1.5 text-sm">
+              {history.map((r) => (
+                <li key={r.proposalId} className="flex flex-wrap items-center gap-2 text-neutral-300">
+                  <span
+                    className={`rounded px-1.5 py-0.5 text-[10px] uppercase tracking-wide ${
+                      r.passed ? 'bg-green-950/60 text-green-300' : 'bg-red-950/60 text-red-300'
+                    }`}
+                  >
+                    {r.passed ? 'Passed' : 'Rejected'}
+                  </span>
+                  <span className="text-neutral-400">{r.seasonYearEffective}</span>
+                  <span className="text-neutral-200">{proposalTitle(r.proposalId)}</span>
+                  <span className="text-xs text-neutral-500">
+                    for {r.supportWeight} · against {r.opposeWeight}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </Panel>
+      )}
     </div>
   );
 }

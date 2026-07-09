@@ -400,6 +400,9 @@ export type LiveCarState = {
   running: boolean;
   status: RaceFinishStatus;
   retiredOnLap: number | null;
+  // Track position (0..1) where the car retired. Frozen so crashed cars stay
+  // stopped on the track map until the incident is cleared.
+  retiredTrackProgress?: number;
   lastIncident?: string;
 
   // Per-car simulation parameters (set at creation, mostly constant).
@@ -523,6 +526,9 @@ export type LiveRaceState = {
     driverIds: string[];
     severity: number;
     safetyCarDeployed: boolean;
+    // Track position (0..1) of the crash point. Used to freeze the incident
+    // markers in the crash-zoom popup so they don't keep driving.
+    trackProgress: number;
   };
   damageSettings?: DamageBalanceSettings;
 };

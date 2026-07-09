@@ -349,7 +349,7 @@ export function LiveRace() {
               .filter((c) => c.running && c.lastLapTime > 0)
               .reduce((sum, c, _, cars) => sum + c.lastLapTime / cars.length, 0) || 85;
   const sectorProgress = Math.min(1, trackAnimationTick / 12);
-  const rotation = ((live.currentLap + ((live.sector ?? 0) + sectorProgress) / 3) / 5) % 1;
+  const rotation = ((live.currentLap + ((live.sector ?? 0) + sectorProgress) / 3) % 1 + 1) % 1;
   const dots: TrackDot[] = live.cars.map((c) => ({
     driverId: c.driverId,
     label: String(driverNumber(c.driverId) || ''),
@@ -358,10 +358,11 @@ export function LiveRace() {
     series: state.series,
     isPlayer: c.isPlayer,
     running: c.running,
+    retired: c.status === 'DNF' && !c.running,
     inPit: c.pit.inPitThisLap,
     pitRequested: c.pit.pitRequested,
     rank: c.position ?? 99,
-    trackProgress: normalizeTrackProgress(rotation - c.gapToLeader / representativeLapTime),
+    trackProgress: c.retiredTrackProgress ?? normalizeTrackProgress(rotation - c.gapToLeader / representativeLapTime),
     gapToLeader: c.gapToLeader,
     interval: c.interval,
   }));
@@ -491,9 +492,8 @@ export function LiveRace() {
           onLetCrewDecide={onLetCrewDecide}
           onAcceptAll={onAcceptAll}
           onIgnoreAll={onIgnoreAll}
+          crashOverlay={crashOverlay}
         />
-
-        {crashOverlay}
 
         {blockingPrompt && live.pendingPrompt && (
           <PromptOverlay
@@ -553,8 +553,9 @@ export function LiveRace() {
         <TimingTower cars={live.cars} nameOf={driverName} colorOf={teamColor} />
 
         {/* Center — large track map (fills) + compact event log (fixed height) */}
-        <div className="flex min-h-0 flex-col gap-2 overflow-hidden">
+        <div className="relative flex min-h-0 flex-col gap-2 overflow-hidden">
           <TrackMapPanel live={live} dots={dots} rotation={rotation} className="min-h-0 flex-1" />
+          {crashOverlay}
           <EventLogPanel
             events={live.events}
             onOpenFull={() => setModal('log')}

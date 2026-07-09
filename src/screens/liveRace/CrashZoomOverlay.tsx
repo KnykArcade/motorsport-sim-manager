@@ -15,7 +15,7 @@ type Props = {
   onDismiss: () => void;
 };
 
-const ZOOM = 2;
+const ZOOM = 2.2;
 const NO_SC_DISMISS_MS = 5000;
 
 export function CrashZoomOverlay({
@@ -49,7 +49,7 @@ export function CrashZoomOverlay({
   }, [lastIncident, safetyCar.active, onDismiss]);
 
   const visibleIds = cleaned ? [] : lastIncident.driverIds;
-  const driverNames = lastIncident.driverIds.map(nameOf).join(', ');
+  const driverNames = cleaned ? '' : lastIncident.driverIds.map(nameOf).join(', ');
 
   const status = cleaned
     ? 'Incident cleared — safety car in this lap'
@@ -58,36 +58,37 @@ export function CrashZoomOverlay({
       : 'Incident';
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/65 p-4 backdrop-blur-sm">
-      <div className="flex w-full max-w-2xl flex-col gap-2 rounded-lg border border-amber-500/50 bg-[#0b0d0f] p-3 shadow-2xl">
-        <div className="flex items-start justify-between">
-          <div>
-            <div className="text-[11px] font-black uppercase tracking-wider text-amber-400">{status}</div>
-            <div className="text-sm font-semibold text-slate-100">Lap {lastIncident.lap} — {driverNames}</div>
+    <div className="absolute bottom-2 left-2 z-20 w-64 rounded-lg border border-amber-500/50 bg-[#0b0d0f] p-2 shadow-2xl">
+      <div className="flex items-start justify-between gap-2">
+        <div className="min-w-0">
+          <div className="text-[10px] font-black uppercase tracking-wider text-amber-400">{status}</div>
+          <div className="truncate text-xs font-semibold text-slate-100">
+            Lap {lastIncident.lap} — {driverNames}
           </div>
-          <button
-            onClick={onDismiss}
-            className="rounded bg-amber-500/10 px-2 py-1 text-[11px] font-bold text-amber-300 hover:bg-amber-500/20"
-          >
-            Close
-          </button>
         </div>
+        <button
+          onClick={onDismiss}
+          className="shrink-0 rounded bg-amber-500/10 px-2 py-1 text-[10px] font-bold text-amber-300 hover:bg-amber-500/20"
+        >
+          Close
+        </button>
+      </div>
 
-        <div className="aspect-[2/1] w-full overflow-hidden rounded-md border border-slate-700/50 bg-[#050606]">
-          <TrackMapAssetPanel
-            series={series}
-            year={year}
-            trackId={trackId}
-            trackName={trackName}
-            dots={dots}
-            rotation={0}
-            eraTheme="f1-1990s"
-            zoom={ZOOM}
-            focusDriverIds={lastIncident.driverIds}
-            incidentDriverIds={visibleIds}
-            className="h-full w-full"
-          />
-        </div>
+      <div className="mt-1 aspect-[2/1] w-full overflow-hidden rounded-md border border-slate-700/50 bg-[#050606]">
+        <TrackMapAssetPanel
+          series={series}
+          year={year}
+          trackId={trackId}
+          trackName={trackName}
+          dots={dots}
+          rotation={0}
+          eraTheme="f1-1990s"
+          zoom={ZOOM}
+          focusDriverIds={visibleIds}
+          focusTrackProgress={lastIncident.trackProgress}
+          incidentDriverIds={visibleIds}
+          className="h-full w-full"
+        />
       </div>
     </div>
   );

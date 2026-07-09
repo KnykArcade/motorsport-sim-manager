@@ -13,6 +13,7 @@ export type TrackDot = {
   series?: string; // series shape for the marker; falls back to the track-map default
   isPlayer: boolean;
   running: boolean;
+  retired?: boolean; // DNF — should be shown in the retired box instead of the track
   inPit: boolean;
   pitRequested?: boolean;
   rank: number; // 1 = leader
@@ -36,15 +37,20 @@ function pointOnOval(t: number): { x: number; y: number } {
 export function RaceTrack2D({
   dots,
   rotation,
+  safetyCar = false,
   className = 'w-full',
 }: {
   dots: TrackDot[];
   rotation: number;
+  safetyCar?: boolean;
   className?: string;
 }) {
   const running = dots.filter((d) => d.running && !d.inPit && !d.pitRequested).sort((a, b) => a.rank - b.rank);
   const pitting = dots.filter((d) => d.running && (d.inPit || d.pitRequested));
+  const retired = dots.filter((d) => d.retired);
   const spacing = 1 / Math.max(running.length, 14);
+  const safetyCarT = normalizeProgress(rotation + 0.04);
+  const safetyCarP = pointOnOval(safetyCarT);
 
   return (
     <svg viewBox={`0 0 ${W} ${H}`} className={className} role="img" aria-label="Live track map">
@@ -59,6 +65,31 @@ export function RaceTrack2D({
       <rect x={CX - 110} y={CY + RY + 18} width={220} height={26} rx={6} fill="#18181b" stroke="#27272a" />
       <text x={CX - 100} y={CY + RY + 35} fontSize={10} fill="#71717a">PIT</text>
 
+      {/* Retired box */}
+      {retired.length > 0 && (
+        <>
+          <rect x={CX + 115} y={CY + RY + 18} width={115} height={26} rx={6} fill="#18181b" stroke="#27272a" />
+          <text x={CX + 125} y={CY + RY + 35} fontSize={10} fill="#71717a">RETIRED</text>
+        </>
+      )}
+
+      {/* Safety car */}
+      {safetyCar && (
+        <g transform={`translate(${safetyCarP.x} ${safetyCarP.y})`}>
+          <RaceMapSeriesMarker
+            x={0}
+            y={0}
+            series="f1"
+            number=""
+            primaryColor="#facc15"
+            accentColor="#facc15"
+            isPlayer={false}
+            selected={false}
+            rotationDeg={0}
+          />
+        </g>
+      )}
+
       {/* Running cars on the oval */}
       {running.map((d, i) => {
         const t = d.trackProgress ?? (rotation + i * spacing) % 1;
@@ -70,8 +101,17 @@ export function RaceTrack2D({
       {pitting.map((d, i) => (
         <Dot key={d.driverId} x={CX - 90 + i * 26} y={CY + RY + 31} dot={d} />
       ))}
+
+      {/* Retired cars */}
+      {retired.map((d, i) => (
+        <Dot key={d.driverId} x={CX + 130 + i * 26} y={CY + RY + 31} dot={d} />
+      ))}
     </svg>
   );
+}
+
+function normalizeProgress(n: number): number {
+  return ((n % 1) + 1) % 1;
 }
 
 function Dot({ x, y, dot }: { x: number; y: number; dot: TrackDot }) {

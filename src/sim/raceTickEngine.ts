@@ -77,6 +77,10 @@ const SECTORS = 3;
 const OTHER_PER_LAP = 0.00055;
 const WET_MECH_RISK_MULT = 1.08;
 const WET_CRASH_RISK_MULT = 1.2;
+
+function normalizeProgress(n: number): number {
+  return ((n % 1) + 1) % 1;
+}
 const DAMAGE_FAILURE_FEEDBACK_CAP = 0.012;
 const DAMAGE_CRASH_FEEDBACK_CAP = 0.015;
 
@@ -535,7 +539,7 @@ export function stepLiveSector(state: LiveRaceState, meta: LiveRaceMeta): LiveRa
           : mechanicalLabel(rng);
       retired = { label, severity: 0.5 };
     } else if (rng.chance(crashRisk)) {
-      retired = { label: crashLabel(rng), severity: 0.7 };
+      retired = { label: crashLabel(rng, nextLap), severity: 0.7 };
     } else if (rng.chance(tyreFailRisk)) {
       retired = { label: tyreLabel(rng), severity: 0.6 };
     } else if (rng.chance(otherRisk)) {
@@ -745,6 +749,14 @@ export function stepLiveSector(state: LiveRaceState, meta: LiveRaceMeta): LiveRa
     running.forEach((c, i) => (c.totalTime = lead + i * 1));
   }
 
+  // Leader position on the current track lap. Used to freeze retired cars on
+  // the map at the exact point they went off.
+  const leaderProgress =
+    ((isFinalSector ? nextLap : state.currentLap + nextSector / 3) % 1 + 1) % 1;
+  const leaderLapTime = running[0]?.lastLapTime && running[0].lastLapTime > 0
+    ? running[0].lastLapTime
+    : 85;
+
   running.forEach((c, i) => {
     c.position = i + 1;
     c.gapToLeader = i === 0 ? 0 : round1(c.totalTime - running[0].totalTime);
@@ -752,6 +764,10 @@ export function stepLiveSector(state: LiveRaceState, meta: LiveRaceMeta): LiveRa
   });
   retired.forEach((c) => {
     c.position = null;
+    if (c.retiredTrackProgress == null) {
+      const gap = c.totalTime - (running[0]?.totalTime ?? c.totalTime);
+      c.retiredTrackProgress = normalizeProgress(leaderProgress - gap / leaderLapTime);
+    }
     c.gapToLeader = 0;
     c.interval = 0;
   });
@@ -880,6 +896,7 @@ export function stepLiveSector(state: LiveRaceState, meta: LiveRaceMeta): LiveRa
             driverIds: incidentDriverIds,
             severity: incidentSeverity,
             safetyCarDeployed: scResult.safetyCar.active,
+            trackProgress: leaderProgress,
           }
         : state.lastIncident,
   };

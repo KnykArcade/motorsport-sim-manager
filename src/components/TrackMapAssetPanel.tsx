@@ -18,9 +18,14 @@ type Props = {
   zoom?: number;
   // Driver IDs to focus the zoomed view on. If omitted, the centre of the track is used.
   focusDriverIds?: string[];
+  // An explicit track progress (0..1) to use as the zoom focus when no driver dot
+  // is available (e.g. after the crashed cars have been cleared from the overlay).
+  focusTrackProgress?: number;
   // Driver IDs that should be rendered even though they are no longer running
   // (e.g. retired cars in a crash-zoom overlay).
   incidentDriverIds?: string[];
+  // Show the safety car leading the field when it is active.
+  safetyCar?: boolean;
 };
 
 const W = 1000;
@@ -40,19 +45,21 @@ export function TrackMapAssetPanel({
   className = 'w-full',
   zoom,
   focusDriverIds,
+  focusTrackProgress,
   incidentDriverIds,
+  safetyCar = false,
 }: Props) {
   const match = getTrackMapAsset({ series, year, trackId, trackName });
 
   if (!match) {
     return (
       <div data-testid="track-map-asset-fallback" className={className}>
-        <RaceTrack2D dots={dots} rotation={rotation} className="h-full w-full" />
+        <RaceTrack2D dots={dots} rotation={rotation} safetyCar={safetyCar} className="h-full w-full" />
       </div>
     );
   }
 
-  const viewBox = zoomBox(zoom, focusDriverIds, dots, match.geometry);
+  const viewBox = zoomBox(zoom, focusDriverIds, focusTrackProgress, dots, match.geometry);
 
   return (
     <svg
@@ -72,6 +79,7 @@ export function TrackMapAssetPanel({
         hideFooterLabel={hideFooterLabel}
         zoom={zoom}
         incidentDriverIds={incidentDriverIds}
+        safetyCar={safetyCar}
       />
     </svg>
   );
@@ -85,6 +93,7 @@ function AssetTrackMap({
   hideFooterLabel,
   zoom,
   incidentDriverIds,
+  safetyCar = false,
 }: {
   geometry: TrackMapGeometry;
   dots: TrackDot[];
@@ -93,6 +102,7 @@ function AssetTrackMap({
   hideFooterLabel: boolean;
   zoom?: number;
   incidentDriverIds?: string[];
+  safetyCar?: boolean;
 }) {
   const fitted = fitPoints(geometry);
   const pathD = toPath(fitted);
@@ -101,6 +111,7 @@ function AssetTrackMap({
     .filter((dot) => (dot.running || showSet.has(dot.driverId)) && !dot.inPit && !dot.pitRequested)
     .sort((a, b) => a.rank - b.rank);
   const pitting = dots.filter((dot) => dot.running && (dot.inPit || dot.pitRequested));
+  const retired = dots.filter((dot) => dot.retired && !showSet.has(dot.driverId));
   const spacing = 1 / Math.max(running.length, 14);
 
   return (
@@ -120,6 +131,8 @@ function AssetTrackMap({
       <path d={pathD} fill="none" stroke={eraTheme === 'f1-1990s' ? '#e7e2d0' : '#cbd5e1'} strokeWidth="15" strokeLinecap="round" strokeLinejoin="round" opacity="0.98" />
       <path d={pathD} fill="none" stroke={eraTheme === 'f1-1990s' ? '#222a2d' : '#334155'} strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" strokeDasharray="18 22" />
 
+      {safetyCar && <SafetyCarDot point={pointAt(fitted, normalizeProgress(rotation + 0.04))} zoom={zoom} />}
+
       {running.map((dot, index) => {
         const progress = dot.trackProgress ?? (rotation + index * spacing) % 1;
         const point = pointAt(fitted, progress);
@@ -136,8 +149,18 @@ function AssetTrackMap({
         ))}
       </g>
 
+      <g transform={`translate(${W - PAD - 230} ${H - 34})`}>
+        <rect width="230" height="24" rx="7" fill="#090b0c" stroke="#30363a" />
+        <text x="12" y="17" fill="#71717a" fontSize="12" fontWeight="700">
+          RETIRED
+        </text>
+        {retired.map((dot, index) => (
+          <MapDot key={dot.driverId} point={[58 + index * 26, 12]} dot={dot} compact zoom={zoom} />
+        ))}
+      </g>
+
       {!hideFooterLabel && (
-        <text x={W - PAD} y={H - 13} textAnchor="end" fill="#71717a" fontSize="12" fontWeight="700">
+        <text x={W / 2} y={H - 10} textAnchor="middle" fill="#71717a" fontSize="12" fontWeight="700">
           {geometry.name.toUpperCase()} {geometry.year}
         </text>
       )}
@@ -171,6 +194,7 @@ function normalizeProgress(value: number): number {
 function zoomBox(
   zoom: number | undefined,
   focusDriverIds: string[] | undefined,
+  focusTrackProgress: number | undefined,
   dots: TrackDot[],
   geometry: TrackMapGeometry,
 ): string {
@@ -179,7 +203,7 @@ function zoomBox(
   }
 
   const fitted = fitPoints(geometry);
-  const focus = focusPoint(fitted, focusDriverIds, dots);
+  const focus = focusPoint(fitted, focusDriverIds, focusTrackProgress, dots);
   const width = W / zoom;
   const height = H / zoom;
   const cx = Math.max(width / 2, Math.min(W - width / 2, focus.x));
@@ -187,7 +211,12 @@ function zoomBox(
   return `${cx - width / 2} ${cy - height / 2} ${width} ${height}`;
 }
 
-function focusPoint(fitted: TrackMapPoint[], focusDriverIds: string[] | undefined, dots: TrackDot[]): { x: number; y: number } {
+function focusPoint(
+  fitted: TrackMapPoint[],
+  focusDriverIds: string[] | undefined,
+  focusTrackProgress: number | undefined,
+  dots: TrackDot[],
+): { x: number; y: number } {
   const focusSet = new Set(focusDriverIds ?? []);
   const focusDots = dots.filter((d) => focusSet.has(d.driverId) && d.trackProgress != null);
   if (focusDots.length > 0) {
@@ -195,6 +224,10 @@ function focusPoint(fitted: TrackMapPoint[], focusDriverIds: string[] | undefine
     const x = pts.reduce((sum, p) => sum + p[0], 0) / pts.length;
     const y = pts.reduce((sum, p) => sum + p[1], 0) / pts.length;
     return { x, y };
+  }
+  if (focusTrackProgress != null) {
+    const point = pointAt(fitted, focusTrackProgress);
+    return { x: point[0], y: point[1] };
   }
   return { x: W / 2, y: H / 2 };
 }
@@ -217,6 +250,30 @@ function MapDot({ point, dot, compact = false, zoom }: { point: TrackMapPoint; d
           accentColor={dot.accentColor}
           isPlayer={true}
           selected={dot.isPlayer}
+          rotationDeg={0}
+        />
+      </g>
+    </g>
+  );
+}
+
+function SafetyCarDot({ point, zoom }: { point: TrackMapPoint; zoom?: number }) {
+  const zoomFactor = zoom && zoom > 1 ? zoom : 1;
+  const radius = 20 / zoomFactor;
+  const scale = radius / 20;
+  return (
+    <g transform={`translate(${point[0]} ${point[1]})`}>
+      <title>Safety Car</title>
+      <g transform={`scale(${scale})`}>
+        <RaceMapSeriesMarker
+          x={0}
+          y={0}
+          series="f1"
+          number=""
+          primaryColor="#facc15"
+          accentColor="#facc15"
+          isPlayer={false}
+          selected={false}
           rotationDeg={0}
         />
       </g>

@@ -21,7 +21,7 @@ export function TrackMapPanel({
   return (
     <DashPanel title="Track Map" className={className} bodyClass="flex flex-col">
       <div className="flex min-h-0 flex-1 items-center justify-center px-2 py-1">
-        <RaceTrack2D dots={dots} rotation={rotation} className="mx-auto h-full max-h-full w-auto max-w-full" />
+        <RaceTrack2D dots={dots} rotation={rotation} safetyCar={sc} className="mx-auto h-full max-h-full w-auto max-w-full" />
       </div>
       {/* Weather / track-condition strip */}
       <div className="grid shrink-0 grid-cols-4 gap-px border-t border-slate-700/50 bg-slate-800/40 text-center">

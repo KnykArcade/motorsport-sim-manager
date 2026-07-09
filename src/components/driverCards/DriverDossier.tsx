@@ -1,7 +1,7 @@
 import { useMemo, useState, type ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '../Button';
-import { formatMoney } from '../ui';
+import { formatMoney, ratingColor } from '../ui';
 import { driverSalary, toMoney } from '../../sim/financeEngine';
 import { synthesizeDriverRatings } from '../../sim/driverMarketEngine';
 import { computeConfidenceState, overallConfidenceScore } from '../../sim/driverConfidenceEngine';
@@ -423,11 +423,12 @@ function DossierPanel({ title, emphasis, children }: { title: string; emphasis?:
 }
 
 function RatingLine({ label, readout }: { label: string; readout: RatingReadout }) {
-  const pct = Math.max(0, Math.min(100, (readout.value ?? 0) * 10));
+  const pct = Math.max(0, Math.min(100, readout.value ?? 0));
+  const color = ratingColor((readout.value ?? 0) / 10);
   return (
     <div className="driver-dossier-rating">
       <span>{label}</span>
-      <div><i style={{ width: `${pct}%` }} /></div>
+      <div><i style={{ width: `${pct}%`, background: color }} /></div>
       <strong>{readout.label}</strong>
     </div>
   );
