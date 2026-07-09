@@ -65,17 +65,17 @@ const SPRITE_PATHS: Record<TrackMapMarkerVariant, string> = {
 const BASE_FALLBACK: TrackMapMarkerVariant = 'f1-1990s';
 
 const NORMAL_LAYOUT: Record<'f1' | 'nascar' | 'indycar' | 'cart', SpriteLayout> = {
-  f1: { width: 50, height: 25, fontSize: 13, strokeWidth: 2.1 },
-  nascar: { width: 56, height: 28, fontSize: 14, strokeWidth: 2.4 },
-  indycar: { width: 50, height: 25, fontSize: 13, strokeWidth: 2.1 },
-  cart: { width: 50, height: 25, fontSize: 13, strokeWidth: 2.1 },
+  f1: { width: 120, height: 60, fontSize: 30, strokeWidth: 4.2 },
+  nascar: { width: 132, height: 66, fontSize: 32, strokeWidth: 4.5 },
+  indycar: { width: 120, height: 60, fontSize: 30, strokeWidth: 4.2 },
+  cart: { width: 120, height: 60, fontSize: 30, strokeWidth: 4.2 },
 };
 
 const COMPACT_LAYOUT: Record<'f1' | 'nascar' | 'indycar' | 'cart', SpriteLayout> = {
-  f1: { width: 38, height: 19, fontSize: 10, strokeWidth: 1.8 },
-  nascar: { width: 42, height: 21, fontSize: 10.5, strokeWidth: 2.0 },
-  indycar: { width: 38, height: 19, fontSize: 10, strokeWidth: 1.8 },
-  cart: { width: 38, height: 19, fontSize: 10, strokeWidth: 1.8 },
+  f1: { width: 88, height: 44, fontSize: 22, strokeWidth: 3.2 },
+  nascar: { width: 96, height: 48, fontSize: 24, strokeWidth: 3.4 },
+  indycar: { width: 88, height: 44, fontSize: 22, strokeWidth: 3.2 },
+  cart: { width: 88, height: 44, fontSize: 22, strokeWidth: 3.2 },
 };
 
 const NUMBER_ANCHOR = { x: 0.5, y: 0.5 };
