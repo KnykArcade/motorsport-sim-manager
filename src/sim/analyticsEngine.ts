@@ -25,6 +25,8 @@ export { SAFETY_CAR_PIT_RECOMMENDATION_MIN_LAP } from './safetyCarStrategy';
 export const REC_COOLDOWN = 5;
 // Laps a recommendation stays live if its trigger persists.
 const REC_TTL = 5;
+// Opening laps in which non-critical (medium/low) recommendations are suppressed.
+const EARLY_LAP_SUPPRESS = 10;
 // Positions that pay championship points (approximate, for points-defence advice).
 const POINTS_POSITIONS = 10;
 
@@ -424,6 +426,13 @@ export function generateCandidates(
 
   const out: AnalyticsRecommendation[] = [];
 
+  // During the opening laps, suppress routine (medium/low) advice so the player
+  // is not flooded with attack/defend prompts while the field is still bunched.
+  // Urgent/high-priority recommendations (weather, critical reliability, damage,
+  // pit window, safety car) are still allowed to fire.
+  const suppressRoutine = lap <= EARLY_LAP_SUPPRESS;
+  const allowedEarly = (c: Candidate) => !suppressRoutine || c.priority === 'high' || c.priority === 'urgent';
+
   const playerRunning = running.filter((c) => c.isPlayer);
   for (const car of playerRunning) {
     const cands = candidatesFor(
@@ -432,8 +441,9 @@ export function generateCandidates(
       intervalAhead[car.driverId] ?? 0,
       intervalBehind[car.driverId] ?? 0,
     );
-    if (cands.length === 0) continue;
-    const pick = cands.reduce((best, c) =>
+    const eligible = cands.filter(allowedEarly);
+    if (eligible.length === 0) continue;
+    const pick = eligible.reduce((best, c) =>
       PRIORITY_RANK[c.priority] > PRIORITY_RANK[best.priority] ? c : best,
     );
     out.push(toRec(pick, car.driverId, lap, state.totalLaps));
@@ -461,7 +471,9 @@ export function generateCandidates(
           action: A.letRace(),
           alternatives: [A.swap(), A.hold()],
         };
-        out.push(toRec(teammate, front.driverId, lap, state.totalLaps));
+        if (allowedEarly(teammate)) {
+          out.push(toRec(teammate, front.driverId, lap, state.totalLaps));
+        }
       }
     }
   }
