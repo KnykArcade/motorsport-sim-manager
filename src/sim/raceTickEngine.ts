@@ -71,6 +71,7 @@ import {
 } from './damageComponents';
 
 const MAX_RACE_EVENTS = 3;
+const SECTORS = 3;
 // Baseline "other" (fuel system, illness, debris, etc.) per-lap DNF probability.
 // Tuned to land in the 4-8% cause-share window for 1990s F1.
 const OTHER_PER_LAP = 0.00055;
@@ -238,14 +239,18 @@ function pitStopTimeFromLoss(
 }
 
 // Advance one lap. `meta` carries track + names + player team.
-export function stepLiveRace(state: LiveRaceState, meta: LiveRaceMeta): LiveRaceState {
+export function stepLiveSector(state: LiveRaceState, meta: LiveRaceMeta): LiveRaceState {
   if (state.phase === 'finished') return state;
   if (state.pendingPrompt && state.safetyCar.active) state = { ...state, pendingPrompt: null };
   if (state.pendingPrompt) return state; // resolve the prompt first
 
   const { track } = meta;
   const nextLap = state.currentLap + 1;
-  const isFinalLap = nextLap >= state.totalLaps;
+  const currentSectorIndex = state.sector ?? 0;
+  const nextSector: 0 | 1 | 2 = ((currentSectorIndex + 1) % 3) as 0 | 1 | 2;
+  const isFirstSector = currentSectorIndex === 0;
+  const isFinalSector = currentSectorIndex === 2;
+  const isFinalLap = isFinalSector && nextLap >= state.totalLaps;
   const name = (id: string) => meta.driverNames[id] ?? id;
 
   const lapEvents: RaceEvent[] = [];
@@ -255,13 +260,19 @@ export function stepLiveRace(state: LiveRaceState, meta: LiveRaceMeta): LiveRace
   const incidentDriverIds: string[] = [];
 
   // Weather first (affects the whole field this lap).
-  const { weather, changed: weatherChanged } = stepWeather(
-    state.weather,
-    track,
-    state.seed,
-    nextLap,
-    state.totalLaps,
-  );
+  let weather = state.weather;
+  let weatherChanged = false;
+  if (isFirstSector) {
+    const weatherResult = stepWeather(
+      state.weather,
+      track,
+      state.seed,
+      nextLap,
+      state.totalLaps,
+    );
+    weather = weatherResult.weather;
+    weatherChanged = weatherResult.changed;
+  }
 
   // Previous-lap running order, used for dirty-air / traffic and pressure. A
   // car's `interval` is its gap to the car directly ahead; the next car's
@@ -278,16 +289,17 @@ export function stepLiveRace(state: LiveRaceState, meta: LiveRaceMeta): LiveRace
   });
 
   // Transient per-car facts for post-order status messages.
-  const mistakeByDriver: Record<string, boolean> = {};
 
+  const carRngs: Record<string, Rng> = {};
   const newCars: LiveCarState[] = state.cars.map((car) => {
     if (!car.running) return car; // already retired — carried unchanged
 
-    const rng = createSeededRandom(deriveSeed(state.seed, 'lap', car.driverId, nextLap));
+    const rng = carRngs[car.driverId] ?? createSeededRandom(deriveSeed(state.seed, 'lap', car.driverId, nextLap));
+    carRngs[car.driverId] = rng;
     let c: LiveCarState = {
       ...car,
       tire: { ...car.tire },
-      pit: { ...car.pit, inPitThisLap: false, scheduledLaps: [...car.pit.scheduledLaps] },
+      pit: { ...car.pit, inPitThisLap: isFirstSector ? false : car.pit.inPitThisLap, scheduledLaps: [...car.pit.scheduledLaps] },
       reliabilityIssue: car.reliabilityIssue ? { ...car.reliabilityIssue } : null,
       aeroHealth: car.aeroHealth ?? 100,
     };
@@ -343,6 +355,9 @@ export function stepLiveRace(state: LiveRaceState, meta: LiveRaceMeta): LiveRace
 
     // --- AI decision (player pace/pits come from player decisions) ---
     let wantsPit = false;
+    let pitLoss = 0;
+    const spec = modeSpec(c.paceMode);
+    if (isFirstSector) {
     if (!c.isPlayer) {
       const action = aiLapDecision(c, state, track, nextLap);
       if (action.pitIntensity || action.pitExitMode || action.repairMode) {
@@ -372,7 +387,6 @@ export function stepLiveRace(state: LiveRaceState, meta: LiveRaceMeta): LiveRace
     }
 
     // --- Execute pit stop ---
-    let pitLoss = 0;
     if (wantsPit) {
       // A stop fulfils the nearest planned stop. Detect an *early* stop (one made
       // before reaching the next scheduled lap, e.g. a cheap safety-car stop) so
@@ -446,12 +460,12 @@ export function stepLiveRace(state: LiveRaceState, meta: LiveRaceMeta): LiveRace
       pittedThisLap.push(c);
     }
 
-    const spec = modeSpec(c.paceMode);
     const intervalAhead = intervalAheadByDriver[c.driverId] ?? 0;
     const intervalBehind = intervalBehindByDriver[c.driverId] ?? 0;
     const fighting =
       (intervalAhead > 0 && intervalAhead < 1.5) || (intervalBehind > 0 && intervalBehind < 1.5);
 
+    c.mistakeThisLap = false;
     // --- Tyre wear (applied before pace so this lap reflects current rubber) ---
     if (!wantsPit) {
       const wearAdd = c.tireDegRate * spec.wearMult * (weather.wet ? 0.6 : 1);
@@ -547,7 +561,7 @@ export function stepLiveRace(state: LiveRaceState, meta: LiveRaceMeta): LiveRace
         lapEvents.push({ lap: nextLap, text: `${name(c.driverId)} picks up front-wing damage.` });
       }
     }
-    mistakeByDriver[c.driverId] = mistakeThisLap;
+    c.mistakeThisLap = mistakeThisLap;
 
     // --- Live Race Pace (recomputed every lap) ---
     const formSwing = rng.variance(0.28);
@@ -579,38 +593,51 @@ export function stepLiveRace(state: LiveRaceState, meta: LiveRaceMeta): LiveRace
     if (state.safetyCar.active) lapTime = REF_LAP + SAFETY_CAR_LAP_PENALTY; // neutralised
     lapTime += pitLoss;
 
-    c.lastLapTime = round1(lapTime);
-    c.totalTime += lapTime;
-    c.lapsCompleted = nextLap;
-    // Track the fastest representative lap (ignore pit and safety-car laps).
-    const representative = !wantsPit && !state.safetyCar.active;
-    if (representative) {
-      const prevBest = c.bestLap;
-      c.bestLap = prevBest == null ? c.lastLapTime : Math.min(prevBest, c.lastLapTime);
-      c.lastSectors = splitSectors(c.lastLapTime, rng);
-      if (prevBest == null || c.lastLapTime <= prevBest) c.bestSectors = c.lastSectors;
+    c.lastSectors = splitSectors(round1(lapTime), rng);
     }
 
-    // --- Fuel burn-off + component health wear (drives the pit-wall gauges) ---
-    updateFuelAndComponents(
-      c,
-      track,
-      spec,
-      nextLap,
-      state.totalLaps,
-      state.damageSettings ?? DEFAULT_DAMAGE_SETTINGS,
-      meta.series,
-      meta.year,
-      state.teamOrgRatings?.[c.teamId],
-      rng,
-      lapEvents,
-      name(c.driverId),
-    );
+    if (isFinalSector) {
+      // --- Fuel burn-off + component health wear (drives the pit-wall gauges) ---
+      updateFuelAndComponents(
+        c,
+        track,
+        spec,
+        nextLap,
+        state.totalLaps,
+        state.damageSettings ?? DEFAULT_DAMAGE_SETTINGS,
+        meta.series,
+        meta.year,
+        state.teamOrgRatings?.[c.teamId],
+        rng,
+        lapEvents,
+        name(c.driverId),
+      );
+    }
+
+    // --- Advance cumulative time and sub-lap position --------------------------
+    if (c.lastSectors) {
+      c.totalTime += c.lastSectors[currentSectorIndex];
+    }
+    if (isFinalSector) {
+      c.lastLapTime = round1((c.lastSectors ?? [0, 0, 0]).reduce((a, b) => a + b, 0));
+      c.lapsCompleted = nextLap;
+      const representative = !c.pit.inPitThisLap && !state.safetyCar.active;
+      if (representative) {
+        const prevBest = c.bestLap;
+        c.bestLap = prevBest == null ? c.lastLapTime : Math.min(prevBest, c.lastLapTime);
+        if (prevBest == null || c.lastLapTime <= prevBest) c.bestSectors = c.lastSectors;
+      } else {
+        c.lastSectors = null;
+      }
+    }
+    c.currentSector = nextSector;
+    c.sectorProgress = 0;
     return c;
   });
 
-  // --- Unique race events (each fires at most once; up to a few per race) ---
   let firedEventIds = state.firedEventIds;
+  if (isFinalSector) {
+  // --- Unique race events (each fires at most once; up to a few per race) ---
   if (firedEventIds.length < MAX_RACE_EVENTS) {
     const pool = generateRaceEventPool(track, weather);
     const fired = resolveRaceEventTrigger(
@@ -663,12 +690,16 @@ export function stepLiveRace(state: LiveRaceState, meta: LiveRaceMeta): LiveRace
   // question exactly once.
 
   // --- Weather change event line (no pop-up; the wet-tyre call is an analytics rec) ---
-  if (weatherChanged) {
+  if (isFinalSector && weatherChanged) {
     lapEvents.push({ lap: nextLap, text: `Weather update: ${weather.label}.` });
   }
 
+  }
+
+  let scResult: ReturnType<typeof stepSafetyCar> = { safetyCar: state.safetyCar, justDeployed: false, justEnded: false };
+  if (isFinalSector) {
   // --- Safety car ---
-  const scResult = stepSafetyCar(
+  scResult = stepSafetyCar(
     state.safetyCar,
     track,
     weather,
@@ -700,6 +731,7 @@ export function stepLiveRace(state: LiveRaceState, meta: LiveRaceMeta): LiveRace
       }
     }
   }
+  }
 
   // --- Order the field ---
   const running = newCars.filter((c) => c.running).sort((x, y) => x.totalTime - y.totalTime);
@@ -724,8 +756,10 @@ export function stepLiveRace(state: LiveRaceState, meta: LiveRaceMeta): LiveRace
     c.interval = 0;
   });
 
+  let battleTracker = state.battleTracker;
+  if (isFinalSector) {
   // --- Battle / position-change events for the log's Battles feed ---------
-  const { events: battleEvents, tracker: battleTracker } = detectBattleEvents(
+  const battleResult = detectBattleEvents(
     state.cars,
     running,
     nextLap,
@@ -733,7 +767,10 @@ export function stepLiveRace(state: LiveRaceState, meta: LiveRaceMeta): LiveRace
     state.battleTracker,
     name,
   );
-  lapEvents.push(...battleEvents);
+  const battleEvents = battleResult.events;
+  battleTracker = battleResult.tracker;
+    lapEvents.push(...battleEvents);
+  }
 
   // --- Live status (risk bands, traffic, readable message) for running cars ---
   running.forEach((c, i) => {
@@ -750,7 +787,7 @@ export function stepLiveRace(state: LiveRaceState, meta: LiveRaceMeta): LiveRace
       intervalAhead,
       intervalBehind,
       underPressure,
-      mistakeThisLap: mistakeByDriver[c.driverId] ?? false,
+      mistakeThisLap: c.mistakeThisLap ?? false,
       pittedThisLap: c.pit.inPitThisLap,
       freshFromPit,
     });
@@ -759,54 +796,70 @@ export function stepLiveRace(state: LiveRaceState, meta: LiveRaceMeta): LiveRace
 
   let orderedCars = [...running, ...retired];
 
-  // --- Finish ---
-  let phase: LiveRaceState['phase'] = state.phase === 'formation' ? 'racing' : state.phase;
-  if (isFinalLap) {
-    phase = 'finished';
-    orderedCars = orderedCars.map((c) =>
-      c.running ? { ...c, running: false, status: 'Finished', lapsCompleted: state.totalLaps } : c,
-    );
-  }
-
-  // --- Data analytics recommendations for the player's drivers -------------
-  // The analytics panel is the sole decision interface. The lifecycle merge
-  // carries active instructions forward (without re-prompting), completes them
-  // when their duration ends, and only raises genuinely new / worsened advice.
-  const recEvents: RaceEvent[] = [];
-  const { recommendations: refreshedRecommendations, ignoredRecs, recCooldowns } = refreshRecommendations(
-    orderedCars,
-    { ...state, currentLap: nextLap, weather, safetyCar: scResult.safetyCar },
-    nextLap,
-    name,
-    recEvents,
-  );
-  const recommendations = refreshedRecommendations;
+  let phase: LiveRaceState['phase'] = state.phase;
+  let recommendations = state.recommendations;
+  let ignoredRecs = state.ignoredRecs;
+  let recCooldowns = state.recCooldowns;
+  let recEvents: RaceEvent[] = [];
+  let stintEvents: RaceEvent[] = [];
+  let carsWithStints: LiveCarState[];
 
   const retirements = orderedCars.filter((c) => c.status === 'DNF').length;
 
-  // --- Strategy-mode stint counters --------------------------------------
-  // Advance each running car's consecutive-lap counter for this completed lap.
-  // Mode changes made this lap by any path that did not itself reset the stint
-  // (an instruction completing back to Balanced, weather/safety-car effects, AI)
-  // are detected here and start a fresh stint. Retired/finished cars are skipped
-  // so their counter freezes. Long stints emit a single event-log note per stint.
-  const stintEvents: RaceEvent[] = [];
-  const carsWithStints = orderedCars.map((c) => {
-    if (!c.running) return c;
-    let stint = advanceStint(c.strategyStint, c.paceMode, nextLap);
-    if (c.isPlayer && !stint.warned) {
-      const note = longStintNote(stint.mode, stint.consecutiveLaps, name(c.driverId));
-      if (note) {
-        stintEvents.push({ lap: nextLap, text: note });
-        stint = { ...stint, warned: true };
-      }
+  if (isFinalSector) {
+    // --- Finish ---
+    phase = state.phase === 'formation' ? 'racing' : state.phase;
+    if (isFinalLap) {
+      phase = 'finished';
+      orderedCars = orderedCars.map((c) =>
+        c.running ? { ...c, running: false, status: 'Finished', lapsCompleted: state.totalLaps } : c,
+      );
     }
-    return { ...c, strategyStint: stint };
-  });
+
+    // --- Data analytics recommendations for the player's drivers -------------
+    // The analytics panel is the sole decision interface. The lifecycle merge
+    // carries active instructions forward (without re-prompting), completes them
+    // when their duration ends, and only raises genuinely new / worsened advice.
+    recEvents = [];
+    const recResult = refreshRecommendations(
+      orderedCars,
+      { ...state, currentLap: nextLap, weather, safetyCar: scResult.safetyCar },
+      nextLap,
+      name,
+      recEvents,
+    );
+    recommendations = recResult.recommendations;
+    ignoredRecs = recResult.ignoredRecs;
+    recCooldowns = recResult.recCooldowns;
+
+    // --- Strategy-mode stint counters --------------------------------------
+    // Advance each running car's consecutive-lap counter for this completed lap.
+    // Mode changes made this lap by any path that did not itself reset the stint
+    // (an instruction completing back to Balanced, weather/safety-car effects, AI)
+    // are detected here and start a fresh stint. Retired/finished cars are skipped
+    // so their counter freezes. Long stints emit a single event-log note per stint.
+    stintEvents = [];
+    carsWithStints = orderedCars.map((c) => {
+      if (!c.running) return c;
+      let stint = advanceStint(c.strategyStint, c.paceMode, nextLap);
+      if (c.isPlayer && !stint.warned) {
+        const note = longStintNote(stint.mode, stint.consecutiveLaps, name(c.driverId));
+        if (note) {
+          stintEvents.push({ lap: nextLap, text: note });
+          stint = { ...stint, warned: true };
+        }
+      }
+      return { ...c, strategyStint: stint };
+    });
+  } else {
+    carsWithStints = orderedCars;
+    stintEvents = [];
+  }
 
   return {
     ...state,
-    currentLap: nextLap,
+    currentLap: isFinalSector ? nextLap : state.currentLap,
+    sector: nextSector,
     phase,
     weather,
     safetyCar: scResult.safetyCar,
@@ -830,6 +883,15 @@ export function stepLiveRace(state: LiveRaceState, meta: LiveRaceMeta): LiveRace
           }
         : state.lastIncident,
   };
+}
+
+// Step a whole lap by running three sector steps.
+export function stepLiveRace(state: LiveRaceState, meta: LiveRaceMeta): LiveRaceState {
+  let s = state;
+  for (let i = 0; i < SECTORS; i++) {
+    s = stepLiveSector(s, meta);
+  }
+  return s;
 }
 
 // Apply the player's chosen option and clear the prompt so stepping resumes.
@@ -992,7 +1054,7 @@ export function resolvePromptDefault(state: LiveRaceState, meta: LiveRaceMeta): 
 export function stepLiveRaceToEnd(state: LiveRaceState, meta: LiveRaceMeta): LiveRaceState {
   let s = state;
   let guard = 0;
-  const maxIters = state.totalLaps * 3 + 10;
+  const maxIters = state.totalLaps + 10;
   while (s.phase !== 'finished' && guard < maxIters) {
     if (s.pendingPrompt) s = resolvePromptDefault(s, meta);
     else s = stepLiveRace(s, meta);

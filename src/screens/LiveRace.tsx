@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { useGame } from '../game/GameContext';
 import { activeDriversForTeam } from '../game/careerState';
@@ -13,8 +13,8 @@ import {
   resolvePrompt,
   resolveRecommendationExternally,
   setPlayerPaceMode,
-  stepLiveRace,
   stepLiveRaceToEnd,
+  stepLiveSector,
 } from '../sim/raceTickEngine';
 import { requiresDecision, DECISION_COUNTDOWN_SECONDS } from '../sim/analyticsEngine';
 import { buildAnalyticsMonitor } from '../sim/analyticsMonitor';
@@ -108,24 +108,27 @@ export function LiveRace() {
     .sort()
     .join(',');
 
-  function advanceLiveLap(s: LiveRaceState): LiveRaceState {
-    const next = stepLiveRace(s, engine!.meta);
-    const alert = dnfAlertFromTransition(s, next);
-    if (alert) {
-      const playerEntries = alert.entries.filter((entry) => entry.isPlayer);
-      const aiEntries = alert.entries.filter((entry) => !entry.isPlayer);
-      if (playerEntries.length > 0) {
-        setPlaying(false);
-        setDnfAlert({ lap: alert.lap, entries: playerEntries });
+  const advanceLiveSector = useCallback(
+    (s: LiveRaceState): LiveRaceState => {
+      const next = stepLiveSector(s, engine!.meta);
+      const alert = dnfAlertFromTransition(s, next);
+      if (alert) {
+        const playerEntries = alert.entries.filter((entry) => entry.isPlayer);
+        const aiEntries = alert.entries.filter((entry) => !entry.isPlayer);
+        if (playerEntries.length > 0) {
+          setPlaying(false);
+          setDnfAlert({ lap: alert.lap, entries: playerEntries });
+        }
+        if (aiEntries.length > 0) {
+          setAiDnfFlash({ lap: alert.lap, entries: aiEntries });
+        }
       }
-      if (aiEntries.length > 0) {
-        setAiDnfFlash({ lap: alert.lap, entries: aiEntries });
-      }
-    }
-    return next;
-  }
+      return next;
+    },
+    [engine],
+  );
 
-  // Playback loop — steps a lap on an interval while playing, paused on prompts
+  // Playback loop — steps a sector on an interval while playing, paused on prompts
   // or while a high/urgent recommendation is awaiting a decision.
   useEffect(() => {
     if (!engine || !live) return;
@@ -139,25 +142,38 @@ export function LiveRace() {
           ? leaderForPacing.bestLap
           : 85;
     const intervalMs = useRealLapPacing
-      ? Math.max(15_000, Math.min(120_000, liveLapTime * 1000)) / speed
-      : 950 / speed;
+      ? Math.max(15_000, Math.min(120_000, liveLapTime * 1000)) / speed / 3
+      : 950 / speed / 3;
     const id = setInterval(() => {
-      setLive((s) => (s && (!s.pendingPrompt || s.safetyCar.active) && s.phase !== 'finished' ? advanceLiveLap(s) : s));
+      setLive((s) => (s && (!s.pendingPrompt || s.safetyCar.active) && s.phase !== 'finished' ? advanceLiveSector(s) : s));
     }, intervalMs);
     return () => clearInterval(id);
-  }, [engine, live, playing, speed, needsDecision, dnfAlert, blockingPrompt, state?.series, state?.seasonYear]);
+  }, [advanceLiveSector, engine, live, playing, speed, needsDecision, dnfAlert, blockingPrompt, state?.series, state?.seasonYear]);
 
+  // Reset the intra-sector animation whenever a new sector begins.
   useEffect(() => {
     const id = setTimeout(() => setTrackAnimationTick(0), 0);
     return () => clearTimeout(id);
-  }, [live?.currentLap]);
+  }, [live?.currentLap, live?.sector]);
 
+  // Smoothly advance the sub-lap marker position for each of the three sectors.
   useEffect(() => {
-    if (!live || !shouldUseF11990sLiveRaceScreen(state?.series, state?.seasonYear)) return;
+    if (!engine || !live) return;
     if (!playing || blockingPrompt || live.phase === 'finished' || needsDecision) return;
-    const id = setInterval(() => setTrackAnimationTick((tick) => tick + 1), Math.max(160, 2200 / speed));
+    const useRealLapPacing = shouldUseF11990sLiveRaceScreen(state?.series, state?.seasonYear);
+    const leaderForPacing = live.cars.find((c) => c.position === 1 && c.running);
+    const liveLapTime =
+      leaderForPacing?.lastLapTime && leaderForPacing.lastLapTime > 0
+        ? leaderForPacing.lastLapTime
+        : leaderForPacing?.bestLap && leaderForPacing.bestLap > 0
+          ? leaderForPacing.bestLap
+          : 85;
+    const intervalMs = useRealLapPacing
+      ? Math.max(15_000, Math.min(120_000, liveLapTime * 1000)) / speed / 3
+      : 950 / speed / 3;
+    const id = setInterval(() => setTrackAnimationTick((tick) => tick + 1), Math.max(80, intervalMs / 12));
     return () => clearInterval(id);
-  }, [live, needsDecision, playing, speed, blockingPrompt, state?.series, state?.seasonYear]);
+  }, [engine, live, playing, speed, needsDecision, dnfAlert, blockingPrompt, state?.series, state?.seasonYear]);
 
   useEffect(() => {
     if (!aiDnfFlash) return;
@@ -207,7 +223,7 @@ export function LiveRace() {
   const driverNumber = (id: string) => state.drivers.find((d) => d.id === id)?.number ?? '';
   const teamColor = (id: string) => state.teams.find((t) => t.id === id)?.color ?? '#888';
 
-  const step = () => setLive((s) => (s && (!s.pendingPrompt || s.safetyCar.active) ? advanceLiveLap(s) : s));
+  const step = () => setLive((s) => (s && (!s.pendingPrompt || s.safetyCar.active) ? advanceLiveSector(s) : s));
   const skipToEnd = () => {
     setPlaying(false);
     setLive((s) => (s ? stepLiveRaceToEnd(s, engine.meta) : s));
@@ -332,10 +348,8 @@ export function LiveRace() {
         : live.cars
               .filter((c) => c.running && c.lastLapTime > 0)
               .reduce((sum, c, _, cars) => sum + c.lastLapTime / cars.length, 0) || 85;
-  const smoothLapProgress = shouldUseF11990sLiveRaceScreen(state.series, state.seasonYear)
-    ? (trackAnimationTick % 36) / 36
-    : 0;
-  const rotation = ((live.currentLap + smoothLapProgress) / 5) % 1;
+  const sectorProgress = Math.min(1, trackAnimationTick / 12);
+  const rotation = ((live.currentLap + ((live.sector ?? 0) + sectorProgress) / 3) / 5) % 1;
   const dots: TrackDot[] = live.cars.map((c) => ({
     driverId: c.driverId,
     label: String(driverNumber(c.driverId) || ''),

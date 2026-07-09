@@ -456,6 +456,12 @@ export type LiveCarState = {
   gearboxHealth: number;
   brakeHealth: number;
   aeroHealth?: number;
+  // Sub-lap position. 0..2 sector index and 0..1 progress through that sector.
+  currentSector?: 0 | 1 | 2 | 3;
+  sectorProgress?: number;
+  // True when the car has had a non-terminal mistake on the current lap. Stored
+  // so the status message persists across the per-sector status updates.
+  mistakeThisLap?: boolean;
   // Split of the last representative lap into three sector times (s). Empty
   // until a clean lap is set.
   lastSectors: [number, number, number] | null;
@@ -475,6 +481,7 @@ export type LiveRaceState = {
   totalLaps: number;
   series?: Series;
   currentLap: number; // 0 = pre-start formation
+  sector?: 0 | 1 | 2; // 0-based sector index within the current lap
   phase: LiveRacePhase;
   weather: WeatherState;
   safetyCar: SafetyCarState;
