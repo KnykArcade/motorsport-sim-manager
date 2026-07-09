@@ -230,7 +230,7 @@ function SkillRow({ label, value }: { label: string; value: VisibleRating }) {
   const [lo, hi] = Array.isArray(value) ? value : typeof value === 'number' ? [value, value] : [0, 0];
   const mid = known ? (lo + hi) / 2 : 0;
   const pct = known ? mid : 0;
-  const color = ratingColor(mid / 10);
+  const color = known ? ratingColor(mid) : '#52525b';
   return (
     <div className="flex items-center gap-2 text-xs">
       <span className="w-24 text-neutral-400">{label}</span>

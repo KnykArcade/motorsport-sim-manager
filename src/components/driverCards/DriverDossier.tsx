@@ -424,7 +424,7 @@ function DossierPanel({ title, emphasis, children }: { title: string; emphasis?:
 
 function RatingLine({ label, readout }: { label: string; readout: RatingReadout }) {
   const pct = Math.max(0, Math.min(100, readout.value ?? 0));
-  const color = ratingColor((readout.value ?? 0) / 10);
+  const color = ratingColor(readout.value ?? 0);
   return (
     <div className="driver-dossier-rating">
       <span>{label}</span>

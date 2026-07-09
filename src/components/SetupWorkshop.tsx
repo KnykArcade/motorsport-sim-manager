@@ -272,7 +272,7 @@ export function SetupWorkshop({
               <div className="flex shrink-0 items-center gap-2">
                 <span className="text-xs text-neutral-500">Fit</span>
                 {revealComponents ? (
-                  <span className="text-sm font-semibold tabular-nums" style={{ color: ratingColor(componentFit(comp.key) / 10) }}>
+                  <span className="text-sm font-semibold tabular-nums" style={{ color: ratingColor(componentFit(comp.key)) }}>
                     {componentFit(comp.key)}
                   </span>
                 ) : (
@@ -322,7 +322,7 @@ export function SetupWorkshop({
                 <span className="text-[10px] text-neutral-500">Conf: {engineerConfidenceLabel(setupKnowledge)}</span>
               </div>
               <div className="flex items-end gap-1.5">
-                <span className="text-2xl font-bold tabular-nums" style={{ color: ratingColor(safeScore(quality.quality) / 10) }}>
+                <span className="text-2xl font-bold tabular-nums" style={{ color: ratingColor(safeScore(quality.quality)) }}>
                   {qualityDisplay.label}
                 </span>
                 <span className="pb-0.5 text-[11px] text-neutral-500">{qualityDisplay.detail}</span>
@@ -348,7 +348,7 @@ export function SetupWorkshop({
                 <span className="text-[10px] font-medium text-neutral-300">{comfort.label}</span>
               </div>
               <div className="flex items-end gap-1.5">
-                <span className="text-2xl font-bold tabular-nums" style={{ color: ratingColor(safeScore(comfort.comfort) / 10) }}>
+                <span className="text-2xl font-bold tabular-nums" style={{ color: ratingColor(safeScore(comfort.comfort)) }}>
                   {comfort.label === 'Unknown' ? '—' : formatSetupScore(comfort.comfort)}
                 </span>
                 <span className="pb-0.5 text-[11px] text-neutral-500">{qualityDisplay.detail}</span>
@@ -430,7 +430,7 @@ export function SetupWorkshop({
                 <span className="text-[10px] text-neutral-500">Conf: {engineerConfidenceLabel(setupKnowledge)}</span>
               </div>
               <div className="flex items-end gap-1.5">
-                <span className="text-2xl font-bold tabular-nums" style={{ color: ratingColor(safeScore(quality.quality) / 10) }}>
+                <span className="text-2xl font-bold tabular-nums" style={{ color: ratingColor(safeScore(quality.quality)) }}>
                   {qualityDisplay.label}
                 </span>
                 <span className="pb-0.5 text-[11px] text-neutral-500">{qualityDisplay.detail}</span>
@@ -456,7 +456,7 @@ export function SetupWorkshop({
                 <span className="text-[10px] font-medium text-neutral-300">{comfort.label}</span>
               </div>
               <div className="flex items-end gap-1.5">
-                <span className="text-2xl font-bold tabular-nums" style={{ color: ratingColor(safeScore(comfort.comfort) / 10) }}>
+                <span className="text-2xl font-bold tabular-nums" style={{ color: ratingColor(safeScore(comfort.comfort)) }}>
                   {comfort.label === 'Unknown' ? '—' : formatSetupScore(comfort.comfort)}
                 </span>
                 <span className="pb-0.5 text-[11px] text-neutral-500">{qualityDisplay.detail}</span>
@@ -518,7 +518,7 @@ export function SetupWorkshop({
             <TrackDemandBars track={track} />
           </Panel>
 
-          <Panel title="Driver Feedback" className="hidden">
+          <Panel title="Driver Feedback">
             <ul className="space-y-1.5 text-xs text-neutral-300">
               {feedback.driverFeedback.map((f, i) => (
                 <li key={i}>“{f}”</li>
@@ -527,7 +527,7 @@ export function SetupWorkshop({
           </Panel>
 
           {feedback.engineerFeedback.length > 0 && (
-            <Panel title="Engineer Feedback" className="hidden">
+            <Panel title="Engineer Feedback">
               <ul className="space-y-1.5 text-xs text-neutral-300">
                 {feedback.engineerFeedback.map((f, i) => (
                   <li key={i}>{f}</li>
