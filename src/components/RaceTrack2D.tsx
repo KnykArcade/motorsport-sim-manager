@@ -1,6 +1,14 @@
-// Simplified 2D race view: coloured dots running around an oval circuit. Real
-// track geometry is not modelled — dots are spaced by running order and rotate
-// each lap so the field visibly moves. Cars in the pits sit in a pit-lane strip.
+// Simplified 2D race view: coloured markers running around an oval circuit. Real
+// track geometry is not modelled — markers are spaced by running order and
+// rotate each lap so the field visibly moves. Cars in the pits sit in a pit-lane strip.
+
+import {
+  TrackMapMarker,
+  headingOnOval,
+  normalizeProgress,
+  ovalPointAt,
+  resolveTrackMapMarkerVariant,
+} from './TrackMapMarker';
 
 export type TrackDot = {
   driverId: string;
@@ -14,6 +22,8 @@ export type TrackDot = {
   trackProgress?: number; // 0..1, approximate lap position derived from live timing gaps
   gapToLeader?: number;
   interval?: number;
+  damaged?: boolean;
+  fastestLap?: boolean;
 };
 
 const W = 460;
@@ -23,18 +33,17 @@ const CY = H / 2;
 const RX = 180;
 const RY = 95;
 
-function pointOnOval(t: number): { x: number; y: number } {
-  const angle = t * Math.PI * 2 - Math.PI / 2; // start at the top
-  return { x: CX + RX * Math.cos(angle), y: CY + RY * Math.sin(angle) };
-}
-
 export function RaceTrack2D({
   dots,
   rotation,
+  series,
+  year,
   className = 'w-full',
 }: {
   dots: TrackDot[];
   rotation: number;
+  series?: string;
+  year?: number;
   className?: string;
 }) {
   const running = dots.filter((d) => d.running && !d.inPit && !d.pitRequested).sort((a, b) => a.rank - b.rank);
@@ -56,33 +65,52 @@ export function RaceTrack2D({
 
       {/* Running cars on the oval */}
       {running.map((d, i) => {
-        const t = d.trackProgress ?? (rotation + i * spacing) % 1;
-        const p = pointOnOval(t);
-        return <Dot key={d.driverId} x={p.x} y={p.y} dot={d} />;
+        const t = d.trackProgress ?? normalizeProgress(rotation + i * spacing);
+        const p = ovalPointAt(t, CX, CY, RX, RY);
+        return (
+          <TrackMapMarker
+            key={d.driverId}
+            x={p.x}
+            y={p.y}
+            headingDeg={headingOnOval(t)}
+            teamColor={d.color}
+            number={d.label || null}
+            rank={d.rank}
+            gapToLeader={d.gapToLeader}
+            variant={resolveTrackMapMarkerVariant(series, year)}
+            status={{
+              leader: d.rank === 1,
+              player: d.isPlayer,
+              inPit: d.inPit || d.pitRequested,
+              damaged: d.damaged,
+              fastestLap: d.fastestLap,
+            }}
+          />
+        );
       })}
 
       {/* Pitting cars */}
       {pitting.map((d, i) => (
-        <Dot key={d.driverId} x={CX - 90 + i * 26} y={CY + RY + 31} dot={d} />
+        <TrackMapMarker
+          key={d.driverId}
+          x={CX - 90 + i * 26}
+          y={CY + RY + 31}
+          headingDeg={0}
+          teamColor={d.color}
+          number={d.label || null}
+          rank={d.rank}
+          gapToLeader={d.gapToLeader}
+          variant={resolveTrackMapMarkerVariant(series, year)}
+          compact
+          status={{
+            leader: d.rank === 1,
+            player: d.isPlayer,
+            inPit: true,
+            damaged: d.damaged,
+            fastestLap: d.fastestLap,
+          }}
+        />
       ))}
     </svg>
-  );
-}
-
-function Dot({ x, y, dot }: { x: number; y: number; dot: TrackDot }) {
-  return (
-    <g>
-      <circle
-        cx={x}
-        cy={y}
-        r={dot.isPlayer ? 9 : 7}
-        fill={dot.color}
-        stroke={dot.isPlayer ? '#fafafa' : '#0a0a0a'}
-        strokeWidth={dot.isPlayer ? 2.5 : 1}
-      />
-      <text x={x} y={y + 3} fontSize={8} textAnchor="middle" fill="#0a0a0a" fontWeight={700}>
-        {dot.label}
-      </text>
-    </g>
   );
 }

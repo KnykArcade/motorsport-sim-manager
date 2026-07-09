@@ -46,20 +46,20 @@ type SpriteLayout = {
 };
 
 const SPRITE_PATHS: Record<TrackMapMarkerVariant, string> = {
-  'f1-1990s': '/assets/track-markers/v4/padded/f1_1990s.png',
-  'f1-2000s': '/assets/track-markers/v4/padded/f1_2000s.png',
-  'f1-2010s': '/assets/track-markers/v4/padded/f1_2010s.png',
-  'f1-2020s': '/assets/track-markers/v4/padded/f1_2020s.png',
-  'nascar-1990s': '/assets/track-markers/v4/padded/nascar_1990s.png',
-  'nascar-2000s': '/assets/track-markers/v4/padded/nascar_2000s.png',
-  'nascar-2010s': '/assets/track-markers/v4/padded/nascar_2010s.png',
-  'nascar-2020s': '/assets/track-markers/v4/padded/nascar_2020s.png',
-  'indycar-1990s': '/assets/track-markers/v4/padded/indycar_1990s.png',
-  'indycar-2000s': '/assets/track-markers/v4/padded/indycar_2000s.png',
-  'indycar-2010s': '/assets/track-markers/v4/padded/indycar_2010s.png',
-  'indycar-2020s': '/assets/track-markers/v4/padded/indycar_2020s.png',
-  'cart-1990s': '/assets/track-markers/v4/padded/cart_1990s.png',
-  'cart-2000s': '/assets/track-markers/v4/padded/cart_2000s.png',
+  'f1-1990s': '/assets/track-markers/v4/tight/f1_1990s.png',
+  'f1-2000s': '/assets/track-markers/v4/tight/f1_2000s.png',
+  'f1-2010s': '/assets/track-markers/v4/tight/f1_2010s.png',
+  'f1-2020s': '/assets/track-markers/v4/tight/f1_2020s.png',
+  'nascar-1990s': '/assets/track-markers/v4/tight/nascar_1990s.png',
+  'nascar-2000s': '/assets/track-markers/v4/tight/nascar_2000s.png',
+  'nascar-2010s': '/assets/track-markers/v4/tight/nascar_2010s.png',
+  'nascar-2020s': '/assets/track-markers/v4/tight/nascar_2020s.png',
+  'indycar-1990s': '/assets/track-markers/v4/tight/indycar_1990s.png',
+  'indycar-2000s': '/assets/track-markers/v4/tight/indycar_2000s.png',
+  'indycar-2010s': '/assets/track-markers/v4/tight/indycar_2010s.png',
+  'indycar-2020s': '/assets/track-markers/v4/tight/indycar_2020s.png',
+  'cart-1990s': '/assets/track-markers/v4/tight/cart_1990s.png',
+  'cart-2000s': '/assets/track-markers/v4/tight/cart_2000s.png',
 };
 
 const BASE_FALLBACK: TrackMapMarkerVariant = 'f1-1990s';

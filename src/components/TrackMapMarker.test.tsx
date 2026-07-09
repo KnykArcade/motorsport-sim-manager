@@ -27,7 +27,7 @@ describe('TrackMapMarker', () => {
 
     expect(html).toContain('data-track-map-marker-variant="indycar-2010s"');
     expect(html).toContain('rotate(37)');
-    expect(html).toContain('href="/assets/track-markers/v4/padded/indycar_2010s.png"');
+    expect(html).toContain('href="/assets/track-markers/v4/tight/indycar_2010s.png"');
     expect(html).toContain('dominant-baseline="middle"');
     expect(html).toContain('33');
     expect(html).toContain('fastest lap');

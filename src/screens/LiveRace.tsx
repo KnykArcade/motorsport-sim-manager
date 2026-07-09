@@ -331,7 +331,16 @@ export function LiveRace() {
     ? (trackAnimationTick % 36) / 36
     : 0;
   const rotation = ((live.currentLap + smoothLapProgress) / 5) % 1;
-  const dots: TrackDot[] = live.cars.map((c) => ({
+  const dots: TrackDot[] = live.cars.map((c) => {
+    const bestLap = c.bestLap ?? 0;
+    const fastestLap =
+      bestLap > 0 &&
+      live.cars.every((other) => {
+        const otherBestLap = other.bestLap ?? 0;
+        return otherBestLap <= 0 || otherBestLap >= bestLap - 1e-6;
+      });
+
+    return {
     driverId: c.driverId,
     label: String(driverNumber(c.driverId) || ''),
     color: teamColor(c.teamId),
@@ -343,7 +352,10 @@ export function LiveRace() {
     trackProgress: c.running ? normalizeTrackProgress(rotation - c.gapToLeader / representativeLapTime) : undefined,
     gapToLeader: c.gapToLeader,
     interval: c.interval,
-  }));
+    damaged: c.damaged || !!c.reliabilityIssue || c.engineHealth < 100 || c.gearboxHealth < 100 || c.brakeHealth < 100 || (c.aeroHealth ?? 100) < 100,
+    fastestLap,
+    };
+  });
   // Locked to team seat order (not live position) so the cards never reorder.
   const playerCars = orderCardsBySeat(
     live.cars.filter((c) => c.isPlayer),
@@ -517,7 +529,7 @@ export function LiveRace() {
 
         {/* Center — large track map (fills) + compact event log (fixed height) */}
         <div className="flex min-h-0 flex-col gap-2 overflow-hidden">
-          <TrackMapPanel live={live} dots={dots} rotation={rotation} className="min-h-0 flex-1" />
+          <TrackMapPanel live={live} dots={dots} rotation={rotation} series={state.series} year={state.seasonYear} className="min-h-0 flex-1" />
           <EventLogPanel
             events={live.events}
             onOpenFull={() => setModal('log')}

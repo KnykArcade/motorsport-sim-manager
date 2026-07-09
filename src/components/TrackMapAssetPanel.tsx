@@ -1,6 +1,12 @@
 import { RaceTrack2D, type TrackDot } from './RaceTrack2D';
 import { getTrackMapAsset } from '../data/trackMaps/getTrackMapAsset';
 import type { TrackMapGeometry, TrackMapPoint } from '../data/trackMaps/trackMapGeometry';
+import {
+  TrackMapMarker,
+  headingFromPath,
+  normalizeProgress,
+  resolveTrackMapMarkerVariant,
+} from './TrackMapMarker';
 
 type Props = {
   series?: string;
@@ -35,7 +41,7 @@ export function TrackMapAssetPanel({
   if (!match) {
     return (
       <div data-testid="track-map-asset-fallback" className={className}>
-        <RaceTrack2D dots={dots} rotation={rotation} className="h-full w-full" />
+        <RaceTrack2D dots={dots} rotation={rotation} series={series} year={year} className="h-full w-full" />
       </div>
     );
   }
@@ -98,9 +104,29 @@ function AssetTrackMap({
       <path d={pathD} fill="none" stroke={eraTheme === 'f1-1990s' ? '#222a2d' : '#334155'} strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" strokeDasharray="18 22" />
 
       {running.map((dot, index) => {
-        const progress = dot.trackProgress ?? (rotation + index * spacing) % 1;
+        const progress = dot.trackProgress ?? normalizeProgress(rotation + index * spacing);
         const point = pointAt(fitted, progress);
-        return <MapDot key={dot.driverId} point={point} dot={dot} />;
+        const heading = headingAt(fitted, progress);
+        return (
+          <TrackMapMarker
+            key={dot.driverId}
+            x={point[0]}
+            y={point[1]}
+            headingDeg={heading}
+            teamColor={dot.color}
+            number={dot.label || null}
+            rank={dot.rank}
+            gapToLeader={dot.gapToLeader}
+            variant={resolveTrackMapMarkerVariant(geometry.series, geometry.year)}
+            status={{
+              leader: dot.rank === 1,
+              player: dot.isPlayer,
+              inPit: dot.inPit || dot.pitRequested,
+              damaged: dot.damaged,
+              fastestLap: dot.fastestLap,
+            }}
+          />
+        );
       })}
 
       <g transform={`translate(${PAD} ${H - 34})`}>
@@ -109,7 +135,25 @@ function AssetTrackMap({
           PIT
         </text>
         {pitting.map((dot, index) => (
-          <MapDot key={dot.driverId} point={[50 + index * 26, 12]} dot={dot} compact />
+          <TrackMapMarker
+            key={dot.driverId}
+            x={50 + index * 26}
+            y={12}
+            headingDeg={0}
+            teamColor={dot.color}
+            number={dot.label || null}
+            rank={dot.rank}
+            gapToLeader={dot.gapToLeader}
+            variant={resolveTrackMapMarkerVariant(geometry.series, geometry.year)}
+            compact
+            status={{
+              leader: dot.rank === 1,
+              player: dot.isPlayer,
+              inPit: true,
+              damaged: dot.damaged,
+              fastestLap: dot.fastestLap,
+            }}
+          />
         ))}
       </g>
 
@@ -136,46 +180,22 @@ function toPath(points: readonly TrackMapPoint[]): string {
 
 function pointAt(points: readonly TrackMapPoint[], t: number): TrackMapPoint {
   if (points.length === 0) return [W / 2, H / 2];
-  const progress = normalizeProgress(t);
+  const progress = normalizeTrackProgress(t);
   const index = Math.min(points.length - 1, Math.max(0, Math.floor(progress * points.length)));
   return points[index];
 }
 
-function normalizeProgress(value: number): number {
+function normalizeTrackProgress(value: number): number {
   return ((value % 1) + 1) % 1;
-}
-
-function MapDot({ point, dot, compact = false }: { point: TrackMapPoint; dot: TrackDot; compact?: boolean }) {
-  const radius = compact ? 12 : dot.isPlayer ? 28 : 24;
-  const fontSize = compact ? 12 : dot.label.length > 2 ? 17 : 21;
-  return (
-    <g transform={`translate(${point[0]} ${point[1]})`}>
-      <title>{`P${dot.rank} car ${dot.label}${dot.gapToLeader ? `, ${dot.gapToLeader.toFixed(1)}s behind leader` : ''}`}</title>
-      <circle r={radius + 8} fill="#050606" opacity="0.92" />
-      <circle
-        r={radius}
-        fill={dot.color}
-        stroke={dot.isPlayer ? '#fef3c7' : '#ffffff'}
-        strokeWidth={dot.isPlayer ? 6 : 4}
-      />
-      <circle r={Math.max(4, radius - 8)} fill="none" stroke="#050606" strokeWidth="2" opacity="0.45" />
-      <text
-        y={compact ? 4 : 7}
-        textAnchor="middle"
-        fill="#ffffff"
-        stroke="#050606"
-        strokeWidth={compact ? 2 : 4}
-        paintOrder="stroke"
-        fontSize={fontSize}
-        fontWeight="900"
-      >
-        {dot.label}
-      </text>
-    </g>
-  );
 }
 
 function round(value: number): number {
   return Number(value.toFixed(2));
 }
 
+function headingAt(points: readonly TrackMapPoint[], progress: number): number {
+  if (points.length < 2) return 0;
+  const normalized = normalizeTrackProgress(progress);
+  const index = Math.min(points.length - 1, Math.max(0, Math.floor(normalized * points.length)));
+  return headingFromPath(points, index);
+}
