@@ -509,5 +509,13 @@ export type LiveRaceState = {
   battleTracker: Record<string, number>;
   // Retirements this race (for the race-info panel).
   retirements: number;
+  // Snapshot of the most recent on-track incident for the crash-zoom overlay.
+  // Cleared by the UI once the popup has been dismissed.
+  lastIncident?: {
+    lap: number;
+    driverIds: string[];
+    severity: number;
+    safetyCarDeployed: boolean;
+  };
   damageSettings?: DamageBalanceSettings;
 };

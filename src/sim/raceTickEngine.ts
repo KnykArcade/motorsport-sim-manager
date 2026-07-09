@@ -252,6 +252,7 @@ export function stepLiveRace(state: LiveRaceState, meta: LiveRaceMeta): LiveRace
   const pittedThisLap: LiveCarState[] = [];
   let incidentThisLap = false;
   let incidentSeverity = 0;
+  const incidentDriverIds: string[] = [];
 
   // Weather first (affects the whole field this lap).
   const { weather, changed: weatherChanged } = stepWeather(
@@ -333,6 +334,9 @@ export function stepLiveRace(state: LiveRaceState, meta: LiveRaceMeta): LiveRace
       if (terminal) {
         const retiredCar = retire(c, nextLap, `${terminal.kind} failure`);
         lapEvents.push({ lap: nextLap, text: `${name(c.driverId)} retires with terminal ${terminal.kind.toLowerCase()} damage.` });
+        incidentThisLap = true;
+        incidentSeverity = Math.max(incidentSeverity, 0.6);
+        incidentDriverIds.push(c.driverId);
         return retiredCar;
       }
     }
@@ -528,6 +532,7 @@ export function stepLiveRace(state: LiveRaceState, meta: LiveRaceMeta): LiveRace
       lapEvents.push({ lap: nextLap, text: `${name(c.driverId)} retires — ${retired.label.toLowerCase()}.` });
       incidentThisLap = true;
       incidentSeverity = Math.max(incidentSeverity, retired.severity);
+      incidentDriverIds.push(c.driverId);
       return c;
     }
 
@@ -640,6 +645,7 @@ export function stepLiveRace(state: LiveRaceState, meta: LiveRaceMeta): LiveRace
             lapEvents.push({ lap: nextLap, text: `${name(victim.driverId)} is caught up in it and retires.` });
             incidentThisLap = true;
             incidentSeverity = Math.max(incidentSeverity, 0.7);
+            incidentDriverIds.push(victim.driverId);
           }
         }
         if (fx.triggerSafetyCar) {
@@ -814,6 +820,15 @@ export function stepLiveRace(state: LiveRaceState, meta: LiveRaceMeta): LiveRace
     recCooldowns,
     battleTracker,
     retirements,
+    lastIncident:
+      incidentDriverIds.length > 0
+        ? {
+            lap: nextLap,
+            driverIds: incidentDriverIds,
+            severity: incidentSeverity,
+            safetyCarDeployed: scResult.safetyCar.active,
+          }
+        : state.lastIncident,
   };
 }
 

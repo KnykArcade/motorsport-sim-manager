@@ -37,6 +37,7 @@ import { buildForecast } from './liveRace/forecast';
 import { FullEventLogModal, StrategyModal, TeamOrdersModal } from './liveRace/modals';
 import { F11990sLiveRaceScreen } from './liveRace/eraThemes/F11990sLiveRaceScreen';
 import { getLiveRaceEraTheme, shouldUseF11990sLiveRaceScreen } from './liveRace/eraThemes/getLiveRaceEraTheme';
+import { CrashZoomOverlay } from './liveRace/CrashZoomOverlay';
 
 type Speed = 1 | 10 | 30 | 60;
 
@@ -81,6 +82,10 @@ export function LiveRace() {
   const [dnfAlert, setDnfAlert] = useState<DnfAlert | null>(null);
   const [aiDnfFlash, setAiDnfFlash] = useState<DnfAlert | null>(null);
   const [decisionSecondsLeft, setDecisionSecondsLeft] = useState<number | null>(null);
+  const dismissCrash = useCallback(
+    () => setLive((s) => (s ? { ...s, lastIncident: undefined } : s)),
+    [],
+  );
   const committed = useRef(false);
   // Team orders called during the race, resolved into relationships at the flag.
   const teamOrders = useRef<TeamOrderDecision[]>([]);
@@ -342,7 +347,7 @@ export function LiveRace() {
     inPit: c.pit.inPitThisLap,
     pitRequested: c.pit.pitRequested,
     rank: c.position ?? 99,
-    trackProgress: c.running ? normalizeTrackProgress(rotation - c.gapToLeader / representativeLapTime) : undefined,
+    trackProgress: normalizeTrackProgress(rotation - c.gapToLeader / representativeLapTime),
     gapToLeader: c.gapToLeader,
     interval: c.interval,
   }));
@@ -356,6 +361,20 @@ export function LiveRace() {
   const monitor = buildAnalyticsMonitor(live, seatOrderIds);
   const useF11990sLiveRace = shouldUseF11990sLiveRaceScreen(state.series, state.seasonYear);
   const eraTheme = getLiveRaceEraTheme(state.series, state.seasonYear);
+
+  const crashOverlay = live.lastIncident && (
+    <CrashZoomOverlay
+      dots={dots}
+      lastIncident={live.lastIncident}
+      safetyCar={live.safetyCar}
+      series={state.series}
+      year={state.seasonYear}
+      trackId={race?.trackId ?? live.trackId}
+      trackName={race?.trackName}
+      nameOf={driverName}
+      onDismiss={dismissCrash}
+    />
+  );
 
   const controls = (
     <div className="flex items-center gap-1.5">
@@ -459,6 +478,8 @@ export function LiveRace() {
           onAcceptAll={onAcceptAll}
           onIgnoreAll={onIgnoreAll}
         />
+
+        {crashOverlay}
 
         {blockingPrompt && live.pendingPrompt && (
           <PromptOverlay
@@ -595,6 +616,8 @@ export function LiveRace() {
         />
       )}
       {dnfAlert && <DnfOverlay alert={dnfAlert} nameOf={driverName} onClose={() => setDnfAlert(null)} />}
+
+      {crashOverlay}
 
       {/* Modals */}
       {modal === 'log' && <FullEventLogModal events={live.events} onClose={() => setModal(null)} />}

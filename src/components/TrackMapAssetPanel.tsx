@@ -14,6 +14,13 @@ type Props = {
   eraTheme?: 'f1-1990s' | 'default';
   hideFooterLabel?: boolean;
   className?: string;
+  // Zoom into a region of the track. 1 = default, 2 = 2x magnification.
+  zoom?: number;
+  // Driver IDs to focus the zoomed view on. If omitted, the centre of the track is used.
+  focusDriverIds?: string[];
+  // Driver IDs that should be rendered even though they are no longer running
+  // (e.g. retired cars in a crash-zoom overlay).
+  incidentDriverIds?: string[];
 };
 
 const W = 1000;
@@ -31,6 +38,9 @@ export function TrackMapAssetPanel({
   eraTheme = 'default',
   hideFooterLabel = false,
   className = 'w-full',
+  zoom,
+  focusDriverIds,
+  incidentDriverIds,
 }: Props) {
   const match = getTrackMapAsset({ series, year, trackId, trackName });
 
@@ -42,9 +52,11 @@ export function TrackMapAssetPanel({
     );
   }
 
+  const viewBox = zoomBox(zoom, focusDriverIds, dots, match.geometry);
+
   return (
     <svg
-      viewBox={`0 0 ${W} ${H}`}
+      viewBox={viewBox}
       className={className}
       role="img"
       aria-label={`Live track map for ${trackName ?? match.geometry.name}`}
@@ -58,6 +70,8 @@ export function TrackMapAssetPanel({
         rotation={rotation}
         eraTheme={eraTheme}
         hideFooterLabel={hideFooterLabel}
+        zoom={zoom}
+        incidentDriverIds={incidentDriverIds}
       />
     </svg>
   );
@@ -69,16 +83,23 @@ function AssetTrackMap({
   rotation,
   eraTheme,
   hideFooterLabel,
+  zoom,
+  incidentDriverIds,
 }: {
   geometry: TrackMapGeometry;
   dots: TrackDot[];
   rotation: number;
   eraTheme: 'f1-1990s' | 'default';
   hideFooterLabel: boolean;
+  zoom?: number;
+  incidentDriverIds?: string[];
 }) {
   const fitted = fitPoints(geometry);
   const pathD = toPath(fitted);
-  const running = dots.filter((dot) => dot.running && !dot.inPit && !dot.pitRequested).sort((a, b) => a.rank - b.rank);
+  const showSet = new Set(incidentDriverIds ?? []);
+  const running = dots
+    .filter((dot) => (dot.running || showSet.has(dot.driverId)) && !dot.inPit && !dot.pitRequested)
+    .sort((a, b) => a.rank - b.rank);
   const pitting = dots.filter((dot) => dot.running && (dot.inPit || dot.pitRequested));
   const spacing = 1 / Math.max(running.length, 14);
 
@@ -102,7 +123,7 @@ function AssetTrackMap({
       {running.map((dot, index) => {
         const progress = dot.trackProgress ?? (rotation + index * spacing) % 1;
         const point = pointAt(fitted, progress);
-        return <MapDot key={dot.driverId} point={point} dot={dot} />;
+        return <MapDot key={dot.driverId} point={point} dot={dot} zoom={zoom} />;
       })}
 
       <g transform={`translate(${PAD} ${H - 34})`}>
@@ -111,7 +132,7 @@ function AssetTrackMap({
           PIT
         </text>
         {pitting.map((dot, index) => (
-          <MapDot key={dot.driverId} point={[50 + index * 26, 12]} dot={dot} compact />
+          <MapDot key={dot.driverId} point={[50 + index * 26, 12]} dot={dot} compact zoom={zoom} />
         ))}
       </g>
 
@@ -147,8 +168,41 @@ function normalizeProgress(value: number): number {
   return ((value % 1) + 1) % 1;
 }
 
-function MapDot({ point, dot, compact = false }: { point: TrackMapPoint; dot: TrackDot; compact?: boolean }) {
-  const radius = compact ? 12 : 20;
+function zoomBox(
+  zoom: number | undefined,
+  focusDriverIds: string[] | undefined,
+  dots: TrackDot[],
+  geometry: TrackMapGeometry,
+): string {
+  if (!zoom || zoom <= 1) {
+    return `0 0 ${W} ${H}`;
+  }
+
+  const fitted = fitPoints(geometry);
+  const focus = focusPoint(fitted, focusDriverIds, dots);
+  const width = W / zoom;
+  const height = H / zoom;
+  const cx = Math.max(width / 2, Math.min(W - width / 2, focus.x));
+  const cy = Math.max(height / 2, Math.min(H - height / 2, focus.y));
+  return `${cx - width / 2} ${cy - height / 2} ${width} ${height}`;
+}
+
+function focusPoint(fitted: TrackMapPoint[], focusDriverIds: string[] | undefined, dots: TrackDot[]): { x: number; y: number } {
+  const focusSet = new Set(focusDriverIds ?? []);
+  const focusDots = dots.filter((d) => focusSet.has(d.driverId) && d.trackProgress != null);
+  if (focusDots.length > 0) {
+    const pts = focusDots.map((d) => pointAt(fitted, d.trackProgress!));
+    const x = pts.reduce((sum, p) => sum + p[0], 0) / pts.length;
+    const y = pts.reduce((sum, p) => sum + p[1], 0) / pts.length;
+    return { x, y };
+  }
+  return { x: W / 2, y: H / 2 };
+}
+
+function MapDot({ point, dot, compact = false, zoom }: { point: TrackMapPoint; dot: TrackDot; compact?: boolean; zoom?: number }) {
+  const baseRadius = compact ? 12 : 20;
+  const zoomFactor = zoom && zoom > 1 ? zoom : 1;
+  const radius = baseRadius / zoomFactor;
   const scale = radius / 20;
   return (
     <g transform={`translate(${point[0]} ${point[1]})`}>
@@ -173,4 +227,3 @@ function MapDot({ point, dot, compact = false }: { point: TrackMapPoint; dot: Tr
 function round(value: number): number {
   return Number(value.toFixed(2));
 }
-
