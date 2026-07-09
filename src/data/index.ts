@@ -85,11 +85,24 @@ export function getStaffPool(year: number, series = 'F1'): StaffMember[] {
   return pool;
 }
 
-// Maximum number of cars allowed to start a race. F1 has historically capped the
-// grid (e.g. 24 cars in the early-mid 1990s); cars slower than the cap in
-// qualifying do not start (DNQ). Series without a cap return undefined.
+// Maximum number of cars allowed to start a race, by series. F1 uses the
+// historical 24-car cap; the other series use placeholder caps pending tuning.
+// Cars slower than the cap in qualifying do not start (DNQ). Series without a
+// cap return undefined.
 export function getMaxQualifiers(series: string): number | undefined {
-  return series === 'F1' ? 24 : undefined;
+  switch (series) {
+    case 'F1':
+      return 24;
+    case 'NASCAR':
+      return 43;
+    case 'IndyCar':
+      return 28;
+    case 'CART':
+    case 'Champ Car':
+      return 26;
+    default:
+      return undefined;
+  }
 }
 
 // Track lookup — uses the global tracks registry populated by seasonLoader.

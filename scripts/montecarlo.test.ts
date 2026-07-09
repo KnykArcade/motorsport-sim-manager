@@ -14,7 +14,8 @@
 //   MC_RUNS=100  MC_SEASONS=1995-F1,2008-F1,2026-F1,2026-IndyCar
 import { writeFileSync } from 'node:fs';
 import { test } from 'vitest';
-import { seasonBundles, getTrackById, getMaxQualifiers } from '../src/data';
+import { getTrackById, getMaxQualifiers } from '../src/data';
+import { seasonBundles } from '../src/data/seasonData';
 import { getPointsSystem } from '../src/data/pointsSystems/pointsSystems';
 import { setupOptionsById } from '../src/data/setupOptions/setupOptions';
 import { autoSetupOptionsForTrack } from '../src/sim/autoSetup';
@@ -39,6 +40,8 @@ type SeasonReport = {
   constructorTitles: Record<string, number>;
   driverTitles: Record<string, number>;
   avgPointsByTeam: Record<string, number>;
+  avgDnfsPerRace: number;
+  dnfRateByStarts: number;
   // average points by expected-standing group (1-4, 5-8, 9+)
   groupAvgPoints: { top4: number; mid: number; back: number };
   topConstructorShare: number;
@@ -100,13 +103,16 @@ function runSeason(key: string, seed: string): { drivers: RaceResult[][]; teams:
       teamRaceOps,
     };
     const { results: qResults } = simulateQualifying(qCtx);
+    const qualifiedIds = new Set(qResults.filter((r) => !r.dnq).map((r) => r.driverId));
+    const raceEntrants = entrants.filter((e) => qualifiedIds.has(e.driver.id));
+    const raceQualifyingResults = qResults.filter((r) => !r.dnq);
 
     const rDecisions: RaceContext['decisions'] = {};
-    entrants.forEach((e) => (rDecisions[e.driver.id] = aiRaceDecision(e.driver.id, track)));
+    raceEntrants.forEach((e) => (rDecisions[e.driver.id] = aiRaceDecision(e.driver.id, track)));
     const rCtx: RaceContext = {
       track,
-      entrants,
-      qualifyingResults: qResults,
+      entrants: raceEntrants,
+      qualifyingResults: raceQualifyingResults,
       decisions: rDecisions,
       setupOptions,
       strategies: raceStrategiesById,
@@ -141,6 +147,8 @@ function analyzeSeason(key: string, runs: number): SeasonReport {
   let totalRaces = 0;
   let midScores = 0;
   let backScores = 0;
+  let totalStarts = 0;
+  let totalDnfs = 0;
 
   for (let i = 0; i < runs; i++) {
     const seed = `mc-${key}-${i}`;
@@ -152,6 +160,8 @@ function analyzeSeason(key: string, runs: number): SeasonReport {
     for (const entry of cs) pointsSum[entry.entityId] = (pointsSum[entry.entityId] ?? 0) + entry.points;
     for (const race of allResults) {
       totalRaces++;
+      totalStarts += race.length;
+      totalDnfs += race.filter((r) => r.status !== 'Finished').length;
       const winner = race.find((r) => r.position === 1);
       if (winner) raceWins[winner.driverId] = (raceWins[winner.driverId] ?? 0) + 1;
       race.filter((r) => r.position !== null && r.position <= 3).forEach((r) => podiumTeams.add(r.teamId));
@@ -197,6 +207,8 @@ function analyzeSeason(key: string, runs: number): SeasonReport {
     driverTitles,
     avgPointsByTeam,
     groupAvgPoints,
+    avgDnfsPerRace: +(totalDnfs / Math.max(1, totalRaces)).toFixed(1),
+    dnfRateByStarts: +((totalDnfs / Math.max(1, totalStarts)) * 100).toFixed(1),
     topConstructorShare: +((topC[1] / runs) * 100).toFixed(1),
     topDriverShare: +((topD[1] / runs) * 100).toFixed(1),
     topConstructorTeam: teamNames[topC[0]] ?? topC[0],
@@ -211,10 +223,10 @@ function analyzeSeason(key: string, runs: number): SeasonReport {
 
 // Heavy analysis harness — skipped in the normal suite. Enable with MC_RUN=1:
 //   MC_RUN=1 MC_RUNS=100 npx vitest run scripts/montecarlo.test.ts
-const mc = process.env.MC_RUN ? test : test.skip;
+const mc = process.env.MC_RUN || process.env.MC_RUNS || process.env.MC_SEASONS ? test : test.skip;
 
 mc('monte carlo season dominance', () => {
-  const runs = Number(process.env.MC_RUNS ?? 100);
+  const runs = Number(process.env.MC_RUNS ?? 5);
   const seasonsEnv = process.env.MC_SEASONS;
   const keys = seasonsEnv ? seasonsEnv.split(',') : ['1995-F1', '2008-F1', '2026-F1', '2026-IndyCar'];
   const out: SeasonReport[] = [];
@@ -225,7 +237,8 @@ mc('monte carlo season dominance', () => {
     console.log(
       `${key}: top constructor ${rep.topConstructorTeam} ${rep.topConstructorShare}% | ` +
         `top driver ${rep.topDriverName} ${rep.topDriverShare}% | ` +
-        `avg pts top4=${rep.groupAvgPoints.top4} mid(5-8)=${rep.groupAvgPoints.mid} back(9+)=${rep.groupAvgPoints.back}`,
+        `avg pts top4=${rep.groupAvgPoints.top4} mid(5-8)=${rep.groupAvgPoints.mid} back(9+)=${rep.groupAvgPoints.back} | ` +
+        `DNFs/race=${rep.avgDnfsPerRace} DNF/start=${rep.dnfRateByStarts}%`,
     );
   }
   const label = process.env.MC_LABEL ?? 'baseline';

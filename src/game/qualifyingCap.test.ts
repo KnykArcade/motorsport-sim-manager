@@ -28,7 +28,11 @@ function advanceToRaceWeekend(state: GameState): GameState {
 describe('qualifying cap (DNQ)', () => {
   it('caps F1 grids at 24 cars', () => {
     expect(getMaxQualifiers('F1')).toBe(24);
-    expect(getMaxQualifiers('IndyCar')).toBeUndefined();
+    expect(getMaxQualifiers('NASCAR')).toBe(43);
+    expect(getMaxQualifiers('IndyCar')).toBe(28);
+    expect(getMaxQualifiers('CART')).toBe(26);
+    expect(getMaxQualifiers('Champ Car')).toBe(26);
+    expect(getMaxQualifiers('Super Formula')).toBeUndefined();
   });
 
   it('flags the slowest cars as DNQ when F1 entries exceed the cap', () => {
