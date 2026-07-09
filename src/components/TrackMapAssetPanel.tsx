@@ -162,6 +162,7 @@ function MapDot({ point, dot, compact = false }: { point: TrackMapPoint; dot: Tr
           accentColor={dot.accentColor ?? accentForPrimary(dot.color)}
           isPlayer={false}
           selected={dot.isPlayer}
+          selectedStrokeWidth={1.0 / scale}
           rotationDeg={0}
         />
       </g>

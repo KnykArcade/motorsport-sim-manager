@@ -10,6 +10,7 @@ export type RaceMapSeriesMarkerProps = {
   isPlayer?: boolean;
   rotationDeg?: number; // optional; leave 0 if markers do not rotate
   selected?: boolean;
+  selectedStrokeWidth?: number; // allows parent scaling to keep the ring thin
 };
 
 const PLAYER_RADIUS = 9;
@@ -89,6 +90,7 @@ export function RaceMapSeriesMarker({
   isPlayer = false,
   rotationDeg = 0,
   selected = false,
+  selectedStrokeWidth = 1.0,
 }: RaceMapSeriesMarkerProps) {
   const radius = isPlayer ? PLAYER_RADIUS : AI_RADIUS;
   const strokeWidth = isPlayer ? PLAYER_STROKE : AI_STROKE;
@@ -97,7 +99,7 @@ export function RaceMapSeriesMarker({
   return (
     <g transform={`translate(${x} ${y})`}>
       {selected && (
-        <circle r={radius + 3} fill="none" stroke="#ffd400" strokeWidth={1.5} opacity={0.9} />
+        <circle r={radius + 3} fill="none" stroke="#ffd400" strokeWidth={selectedStrokeWidth} opacity={0.9} />
       )}
       <g transform={`rotate(${rotationDeg}) scale(${scale})`}>
         <MarkerShape
