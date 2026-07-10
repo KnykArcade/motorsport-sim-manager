@@ -24,8 +24,8 @@ import pandas as pd
 
 ROOT = Path("/home/ubuntu/motorsport-sim-manager")
 WORKBOOK = Path(
-    "/home/ubuntu/attachments/6be62188-2ec2-45e8-a40b-1a9309bc7d3e/"
-    "NASCAR_MASTER_ALL_SEASONS_MANUFACTURER_READY_1990_2026_CLEANED.xlsx"
+    "/home/ubuntu/attachments/e0989ac8-701d-43cc-8d05-5832e862a1c8/"
+    "NASCAR_MASTER_ALL_SEASONS_RULES_POINTS_1990_2026.xlsx"
 )
 CACHE = Path("/home/ubuntu/tmp/nascar_race_cache.json")
 

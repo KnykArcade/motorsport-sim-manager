@@ -49,7 +49,10 @@ export const aowRegulations: Record<string, RegulationSet> = {
     tireChangeRules: "Unrestricted race-service tire changes",
     eraLabel: "NASCAR Winston Cup Gen 3 Era",
     notes: [
-      "1990 NASCAR Winston Cup season proof-of-concept. 29-race schedule mixing superspeedways, intermediates, short tracks, and road courses. Stock cars with no DRS, no push-to-pass, and refueling allowed during pit stops.",
+      "Latford full-season points: 175 to win; all races count; no postseason reset.",
+      "Steel-bodied, front-engine, rear-drive stock-car platform with season-specific templates and engine/aero rules.",
+      "Single-car qualifying; 43-car fields with provisionals; racing back to the caution line remained in effect.",
+      "No stage breaks; Goodyear spec tire; refueling allowed; unrestricted race-service tire changes.",
     ],
   },
   "reg-nascar-2000": {
@@ -84,7 +87,10 @@ export const aowRegulations: Record<string, RegulationSet> = {
     tireChangeRules: "Unrestricted race-service tire changes",
     eraLabel: "NASCAR Winston Cup Gen 4 Era",
     notes: [
-      "2000 NASCAR Winston Cup season. Gen 4 cars, full-size grid, refueling and unrestricted tire changes.",
+      "Latford full-season points: 175 to win; all races count; no postseason reset.",
+      "Gen 4 steel-bodied, front-engine, rear-drive stock cars with season-specific templates and engine/aero rules.",
+      "Single-car qualifying; 43-car fields with provisionals; racing back to the caution line still applied.",
+      "No stage breaks; Goodyear spec tire; refueling allowed; unrestricted tire changes.",
     ],
   },
   "reg-nascar-2010": {
@@ -119,7 +125,10 @@ export const aowRegulations: Record<string, RegulationSet> = {
     tireChangeRules: "Unrestricted race-service tire changes",
     eraLabel: "NASCAR Sprint Cup Chase Era",
     notes: [
-      "2010 NASCAR Sprint Cup season. Car of Tomorrow / Gen 5, Chase for the Sprint Cup, refueling allowed.",
+      "Latford race points with 185 to win; 12-driver, 10-race Chase after 26 races with win-seeded reset totals.",
+      "Car of Tomorrow / Gen 5 platform; traditional rear spoiler replaced the rear wing during the season.",
+      "Single-car qualifying; 43-car fields; field frozen at caution; no stage breaks; Goodyear spec tire.",
+      "Refueling allowed; unrestricted race-service tire changes; prepares for E15 fuel in 2011.",
     ],
   },
   "reg-nascar-2026": {
@@ -154,7 +163,10 @@ export const aowRegulations: Record<string, RegulationSet> = {
     tireChangeRules: "Unrestricted race-service tire changes",
     eraLabel: "NASCAR Next Gen Cup Era",
     notes: [
-      "2026 NASCAR Cup Series. Next Gen chassis, independent rear suspension, sequential gearbox, refueling allowed.",
+      "55 points to win; stage points retained (10-9-8-...-1 at each stage end); Daytona Duel top 10 score points.",
+      "16-driver, 10-race, non-elimination points-based Chase; top 16 in points after 26 races qualify; no win-and-in.",
+      "Next Gen spec-centered platform with manufacturer-specific bodywork, independent rear suspension, sequential gearbox.",
+      "40-car Charter/open-entry field with Open Exemption Provisional able to create a 41st position; refueling allowed; Goodyear spec tire.",
     ],
   },
   "reg-cart-1990-2001": {
