@@ -20,6 +20,7 @@ export type TrackDot = {
   trackProgress?: number; // 0..1, approximate lap position derived from live timing gaps
   gapToLeader?: number;
   interval?: number;
+  damagePercent?: number; // 0–100; 0 = undamaged, 100 = terminal
 };
 
 const W = 460;
@@ -32,6 +33,13 @@ const RY = 95;
 function pointOnOval(t: number): { x: number; y: number } {
   const angle = t * Math.PI * 2 - Math.PI / 2; // start at the top
   return { x: CX + RX * Math.cos(angle), y: CY + RY * Math.sin(angle) };
+}
+
+function headingOnOval(t: number): number {
+  const angle = t * Math.PI * 2 - Math.PI / 2;
+  const dx = -RX * Math.sin(angle);
+  const dy = RY * Math.cos(angle);
+  return (Math.atan2(dy, dx) * 180) / Math.PI;
 }
 
 export function RaceTrack2D({
@@ -51,6 +59,7 @@ export function RaceTrack2D({
   const spacing = 1 / Math.max(running.length, 14);
   const safetyCarT = normalizeProgress(rotation + 0.04);
   const safetyCarP = pointOnOval(safetyCarT);
+  const safetyCarHeading = headingOnOval(safetyCarT);
 
   return (
     <svg viewBox={`0 0 ${W} ${H}`} className={className} role="img" aria-label="Live track map">
@@ -85,7 +94,9 @@ export function RaceTrack2D({
             accentColor="#facc15"
             isPlayer={false}
             selected={false}
-            rotationDeg={0}
+            rotationDeg={safetyCarHeading}
+            size={20}
+            zoom={1}
           />
         </g>
       )}
@@ -94,17 +105,18 @@ export function RaceTrack2D({
       {running.map((d, i) => {
         const t = d.trackProgress ?? (rotation + i * spacing) % 1;
         const p = pointOnOval(t);
-        return <Dot key={d.driverId} x={p.x} y={p.y} dot={d} />;
+        const heading = headingOnOval(t);
+        return <Dot key={d.driverId} x={p.x} y={p.y} dot={d} rotationDeg={heading} />;
       })}
 
       {/* Pitting cars */}
       {pitting.map((d, i) => (
-        <Dot key={d.driverId} x={CX - 90 + i * 26} y={CY + RY + 31} dot={d} />
+        <Dot key={d.driverId} x={CX - 90 + i * 26} y={CY + RY + 31} dot={d} rotationDeg={0} />
       ))}
 
       {/* Retired cars */}
       {retired.map((d, i) => (
-        <Dot key={d.driverId} x={CX + 130 + i * 26} y={CY + RY + 31} dot={d} />
+        <Dot key={d.driverId} x={CX + 130 + i * 26} y={CY + RY + 31} dot={d} rotationDeg={0} />
       ))}
     </svg>
   );
@@ -114,7 +126,7 @@ function normalizeProgress(n: number): number {
   return ((n % 1) + 1) % 1;
 }
 
-function Dot({ x, y, dot }: { x: number; y: number; dot: TrackDot }) {
+function Dot({ x, y, dot, rotationDeg = 0 }: { x: number; y: number; dot: TrackDot; rotationDeg?: number }) {
   return (
     <RaceMapSeriesMarker
       x={x}
@@ -125,7 +137,10 @@ function Dot({ x, y, dot }: { x: number; y: number; dot: TrackDot }) {
       accentColor={dot.accentColor}
       isPlayer={true}
       selected={dot.isPlayer}
-      rotationDeg={0}
+      rotationDeg={rotationDeg}
+      damagePercent={dot.damagePercent}
+      size={20}
+      zoom={1}
     />
   );
 }

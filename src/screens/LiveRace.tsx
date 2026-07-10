@@ -21,6 +21,7 @@ import { buildAnalyticsMonitor } from '../sim/analyticsMonitor';
 import { orderCardsBySeat } from '../sim/liveRaceCardOrder';
 import { applyTeamOrderToLive, recordTeamOrder, TEAM_ORDER_SPECS } from '../sim/relationshipEngine';
 import { Button } from '../components/Button';
+import { getCarDamagePercent } from '../components/raceMarkerAssets';
 import type { TrackDot } from '../components/RaceTrack2D';
 import type { AnalyticsRecommendation, LiveRaceState, PaceMode, PitIntensity, RecAction } from '../types/liveTypes';
 import type { RaceResult } from '../types/gameTypes';
@@ -365,6 +366,7 @@ export function LiveRace() {
     trackProgress: c.retiredTrackProgress ?? normalizeTrackProgress(rotation - c.gapToLeader / representativeLapTime),
     gapToLeader: c.gapToLeader,
     interval: c.interval,
+    damagePercent: getCarDamagePercent(c),
   }));
   // Locked to team seat order (not live position) so the cards never reorder.
   const playerCars = orderCardsBySeat(

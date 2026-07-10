@@ -131,12 +131,19 @@ function AssetTrackMap({
       <path d={pathD} fill="none" stroke={eraTheme === 'f1-1990s' ? '#e7e2d0' : '#cbd5e1'} strokeWidth="15" strokeLinecap="round" strokeLinejoin="round" opacity="0.98" />
       <path d={pathD} fill="none" stroke={eraTheme === 'f1-1990s' ? '#222a2d' : '#334155'} strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" strokeDasharray="18 22" />
 
-      {safetyCar && <SafetyCarDot point={pointAt(fitted, normalizeProgress(rotation + 0.04))} zoom={zoom} />}
+      {safetyCar && (
+        <SafetyCarDot
+          point={pointAt(fitted, normalizeProgress(rotation + 0.04))}
+          rotationDeg={headingAt(fitted, normalizeProgress(rotation + 0.04))}
+          zoom={zoom}
+        />
+      )}
 
       {running.map((dot, index) => {
         const progress = dot.trackProgress ?? (rotation + index * spacing) % 1;
         const point = pointAt(fitted, progress);
-        return <MapDot key={dot.driverId} point={point} dot={dot} zoom={zoom} />;
+        const heading = headingAt(fitted, progress);
+        return <MapDot key={dot.driverId} point={point} dot={dot} rotationDeg={heading} zoom={zoom} />;
       })}
 
       <g transform={`translate(${PAD} ${H - 34})`}>
@@ -145,7 +152,7 @@ function AssetTrackMap({
           PIT
         </text>
         {pitting.map((dot, index) => (
-          <MapDot key={dot.driverId} point={[50 + index * 26, 12]} dot={dot} compact zoom={zoom} />
+          <MapDot key={dot.driverId} point={[50 + index * 26, 12]} dot={dot} compact rotationDeg={0} zoom={zoom} />
         ))}
       </g>
 
@@ -155,7 +162,7 @@ function AssetTrackMap({
           RETIRED
         </text>
         {retired.map((dot, index) => (
-          <MapDot key={dot.driverId} point={[58 + index * 26, 12]} dot={dot} compact zoom={zoom} />
+          <MapDot key={dot.driverId} point={[58 + index * 26, 12]} dot={dot} compact rotationDeg={0} zoom={zoom} />
         ))}
       </g>
 
@@ -185,6 +192,16 @@ function pointAt(points: readonly TrackMapPoint[], t: number): TrackMapPoint {
   const progress = normalizeProgress(t);
   const index = Math.min(points.length - 1, Math.max(0, Math.floor(progress * points.length)));
   return points[index];
+}
+
+function headingAt(points: readonly TrackMapPoint[], t: number): number {
+  if (points.length < 2) return 0;
+  const progress = normalizeProgress(t);
+  const index = Math.min(points.length - 1, Math.max(0, Math.floor(progress * points.length)));
+  const next = (index + 1) % points.length;
+  const [x1, y1] = points[index];
+  const [x2, y2] = points[next];
+  return (Math.atan2(y2 - y1, x2 - x1) * 180) / Math.PI;
 }
 
 function normalizeProgress(value: number): number {
@@ -232,51 +249,70 @@ function focusPoint(
   return { x: W / 2, y: H / 2 };
 }
 
-function MapDot({ point, dot, compact = false, zoom }: { point: TrackMapPoint; dot: TrackDot; compact?: boolean; zoom?: number }) {
-  const baseRadius = compact ? 12 : 20;
+function MapDot({
+  point,
+  dot,
+  compact = false,
+  rotationDeg = 0,
+  zoom,
+}: {
+  point: TrackMapPoint;
+  dot: TrackDot;
+  compact?: boolean;
+  rotationDeg?: number;
+  zoom?: number;
+}) {
+  const baseRadius = compact ? 6 : 10;
   const zoomFactor = zoom && zoom > 1 ? zoom : 1;
-  const radius = baseRadius / zoomFactor;
-  const scale = radius / 20;
+  const size = (baseRadius * 2) / zoomFactor;
   return (
     <g transform={`translate(${point[0]} ${point[1]})`}>
       <title>{`P${dot.rank} car ${dot.label}${dot.gapToLeader ? `, ${dot.gapToLeader.toFixed(1)}s behind leader` : ''}`}</title>
-      <g transform={`scale(${scale})`}>
-        <RaceMapSeriesMarker
-          x={0}
-          y={0}
-          series={normalizeSeries(dot.series)}
-          number={dot.label}
-          primaryColor={dot.color}
-          accentColor={dot.accentColor}
-          isPlayer={true}
-          selected={dot.isPlayer}
-          rotationDeg={0}
-        />
-      </g>
+      <RaceMapSeriesMarker
+        x={0}
+        y={0}
+        series={normalizeSeries(dot.series)}
+        number={dot.label}
+        primaryColor={dot.color}
+        accentColor={dot.accentColor}
+        isPlayer={true}
+        selected={dot.isPlayer}
+        rotationDeg={rotationDeg}
+        damagePercent={dot.damagePercent}
+        size={size}
+        zoom={zoomFactor}
+      />
     </g>
   );
 }
 
-function SafetyCarDot({ point, zoom }: { point: TrackMapPoint; zoom?: number }) {
+function SafetyCarDot({
+  point,
+  rotationDeg = 0,
+  zoom,
+}: {
+  point: TrackMapPoint;
+  rotationDeg?: number;
+  zoom?: number;
+}) {
   const zoomFactor = zoom && zoom > 1 ? zoom : 1;
-  const radius = 20 / zoomFactor;
-  const scale = radius / 20;
+  const size = 20 / zoomFactor;
   return (
     <g transform={`translate(${point[0]} ${point[1]})`}>
       <title>Safety Car</title>
-      <g transform={`scale(${scale})`}>
-        <RaceMapSeriesMarker
-          x={0}
-          y={0}
-          series="f1"
-          number=""
-          primaryColor="#facc15"
-          accentColor="#facc15"
-          isPlayer={false}
-          selected={false}
-          rotationDeg={0}
-        />
-      </g>
+      <RaceMapSeriesMarker
+        x={0}
+        y={0}
+        series="f1"
+        number=""
+        primaryColor="#facc15"
+        accentColor="#facc15"
+        isPlayer={false}
+        selected={false}
+        rotationDeg={rotationDeg}
+        size={size}
+        zoom={zoomFactor}
+      />
     </g>
   );
 }
