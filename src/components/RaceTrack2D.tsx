@@ -1,4 +1,4 @@
-import { F1_GAMEPLAY_MARKER_SIZE, RaceMapSeriesMarker } from './RaceMapSeriesMarker';
+import { GAMEPLAY_MARKER_SIZE, RaceMapSeriesMarker } from './RaceMapSeriesMarker';
 import { normalizeSeries } from './seriesMarker';
 
 // Simplified 2D race view: coloured dots running around an oval circuit. Real
@@ -160,7 +160,7 @@ function Dot({ x, y, dot, rotationDeg = 0 }: { x: number; y: number; dot: TrackD
         selected={dot.isPlayer}
         rotationDeg={rotationDeg}
         damagePercent={dot.damagePercent}
-        size={markerSeries === 'f1' ? F1_GAMEPLAY_MARKER_SIZE : 20}
+        size={GAMEPLAY_MARKER_SIZE}
         zoom={1}
       />
       <circle r={22} fill="transparent" pointerEvents="all" data-marker-hit-target="true" />

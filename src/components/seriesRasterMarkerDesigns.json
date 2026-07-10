@@ -1,0 +1,174 @@
+{
+  "nascar_1990s": {
+    "label": "NASCAR 1990s",
+    "canvasSize": 512,
+    "forwardAxis": "+x",
+    "gameplayFootprint": 40,
+    "numberDecal": false,
+    "identification": "hover and keyboard focus only",
+    "assets": {
+      "master": "/assets/markers/nascar/1990s/master-numberless.png",
+      "primaryShading": "/assets/markers/nascar/1990s/primary-shading.png",
+      "secondaryShading": "/assets/markers/nascar/1990s/secondary-shading.png",
+      "fixedDetails": "/assets/markers/nascar/1990s/fixed-details.png",
+      "primaryMask": "/assets/markers/nascar/1990s/primary-mask.png",
+      "secondaryMask": "/assets/markers/nascar/1990s/secondary-mask.png",
+      "silhouetteMask": "/assets/markers/nascar/1990s/silhouette-mask.png"
+    }
+  },
+  "nascar_2000s": {
+    "label": "NASCAR 2000s",
+    "canvasSize": 512,
+    "forwardAxis": "+x",
+    "gameplayFootprint": 40,
+    "numberDecal": false,
+    "identification": "hover and keyboard focus only",
+    "assets": {
+      "master": "/assets/markers/nascar/2000s/master-numberless.png",
+      "primaryShading": "/assets/markers/nascar/2000s/primary-shading.png",
+      "secondaryShading": "/assets/markers/nascar/2000s/secondary-shading.png",
+      "fixedDetails": "/assets/markers/nascar/2000s/fixed-details.png",
+      "primaryMask": "/assets/markers/nascar/2000s/primary-mask.png",
+      "secondaryMask": "/assets/markers/nascar/2000s/secondary-mask.png",
+      "silhouetteMask": "/assets/markers/nascar/2000s/silhouette-mask.png"
+    }
+  },
+  "nascar_2010s": {
+    "label": "NASCAR 2010s",
+    "canvasSize": 512,
+    "forwardAxis": "+x",
+    "gameplayFootprint": 40,
+    "numberDecal": false,
+    "identification": "hover and keyboard focus only",
+    "assets": {
+      "master": "/assets/markers/nascar/2010s/master-numberless.png",
+      "primaryShading": "/assets/markers/nascar/2010s/primary-shading.png",
+      "secondaryShading": "/assets/markers/nascar/2010s/secondary-shading.png",
+      "fixedDetails": "/assets/markers/nascar/2010s/fixed-details.png",
+      "primaryMask": "/assets/markers/nascar/2010s/primary-mask.png",
+      "secondaryMask": "/assets/markers/nascar/2010s/secondary-mask.png",
+      "silhouetteMask": "/assets/markers/nascar/2010s/silhouette-mask.png"
+    }
+  },
+  "nascar_2020s": {
+    "label": "NASCAR 2020s",
+    "canvasSize": 512,
+    "forwardAxis": "+x",
+    "gameplayFootprint": 40,
+    "numberDecal": false,
+    "identification": "hover and keyboard focus only",
+    "assets": {
+      "master": "/assets/markers/nascar/2020s/master-numberless.png",
+      "primaryShading": "/assets/markers/nascar/2020s/primary-shading.png",
+      "secondaryShading": "/assets/markers/nascar/2020s/secondary-shading.png",
+      "fixedDetails": "/assets/markers/nascar/2020s/fixed-details.png",
+      "primaryMask": "/assets/markers/nascar/2020s/primary-mask.png",
+      "secondaryMask": "/assets/markers/nascar/2020s/secondary-mask.png",
+      "silhouetteMask": "/assets/markers/nascar/2020s/silhouette-mask.png"
+    }
+  },
+  "indycar_1990s": {
+    "label": "IndyCar 1990s",
+    "canvasSize": 512,
+    "forwardAxis": "+x",
+    "gameplayFootprint": 40,
+    "numberDecal": false,
+    "identification": "hover and keyboard focus only",
+    "assets": {
+      "master": "/assets/markers/indycar/1990s/master-numberless.png",
+      "primaryShading": "/assets/markers/indycar/1990s/primary-shading.png",
+      "secondaryShading": "/assets/markers/indycar/1990s/secondary-shading.png",
+      "fixedDetails": "/assets/markers/indycar/1990s/fixed-details.png",
+      "primaryMask": "/assets/markers/indycar/1990s/primary-mask.png",
+      "secondaryMask": "/assets/markers/indycar/1990s/secondary-mask.png",
+      "silhouetteMask": "/assets/markers/indycar/1990s/silhouette-mask.png"
+    }
+  },
+  "indycar_2000s": {
+    "label": "IndyCar 2000s",
+    "canvasSize": 512,
+    "forwardAxis": "+x",
+    "gameplayFootprint": 40,
+    "numberDecal": false,
+    "identification": "hover and keyboard focus only",
+    "assets": {
+      "master": "/assets/markers/indycar/2000s/master-numberless.png",
+      "primaryShading": "/assets/markers/indycar/2000s/primary-shading.png",
+      "secondaryShading": "/assets/markers/indycar/2000s/secondary-shading.png",
+      "fixedDetails": "/assets/markers/indycar/2000s/fixed-details.png",
+      "primaryMask": "/assets/markers/indycar/2000s/primary-mask.png",
+      "secondaryMask": "/assets/markers/indycar/2000s/secondary-mask.png",
+      "silhouetteMask": "/assets/markers/indycar/2000s/silhouette-mask.png"
+    }
+  },
+  "indycar_2010s": {
+    "label": "IndyCar 2010s",
+    "canvasSize": 512,
+    "forwardAxis": "+x",
+    "gameplayFootprint": 40,
+    "numberDecal": false,
+    "identification": "hover and keyboard focus only",
+    "assets": {
+      "master": "/assets/markers/indycar/2010s/master-numberless.png",
+      "primaryShading": "/assets/markers/indycar/2010s/primary-shading.png",
+      "secondaryShading": "/assets/markers/indycar/2010s/secondary-shading.png",
+      "fixedDetails": "/assets/markers/indycar/2010s/fixed-details.png",
+      "primaryMask": "/assets/markers/indycar/2010s/primary-mask.png",
+      "secondaryMask": "/assets/markers/indycar/2010s/secondary-mask.png",
+      "silhouetteMask": "/assets/markers/indycar/2010s/silhouette-mask.png"
+    }
+  },
+  "indycar_2020s": {
+    "label": "IndyCar 2020s",
+    "canvasSize": 512,
+    "forwardAxis": "+x",
+    "gameplayFootprint": 40,
+    "numberDecal": false,
+    "identification": "hover and keyboard focus only",
+    "assets": {
+      "master": "/assets/markers/indycar/2020s/master-numberless.png",
+      "primaryShading": "/assets/markers/indycar/2020s/primary-shading.png",
+      "secondaryShading": "/assets/markers/indycar/2020s/secondary-shading.png",
+      "fixedDetails": "/assets/markers/indycar/2020s/fixed-details.png",
+      "primaryMask": "/assets/markers/indycar/2020s/primary-mask.png",
+      "secondaryMask": "/assets/markers/indycar/2020s/secondary-mask.png",
+      "silhouetteMask": "/assets/markers/indycar/2020s/silhouette-mask.png"
+    }
+  },
+  "cart_1990s": {
+    "label": "CART 1990s",
+    "canvasSize": 512,
+    "forwardAxis": "+x",
+    "gameplayFootprint": 40,
+    "numberDecal": false,
+    "identification": "hover and keyboard focus only",
+    "assets": {
+      "master": "/assets/markers/cart/1990s/master-numberless.png",
+      "primaryShading": "/assets/markers/cart/1990s/primary-shading.png",
+      "secondaryShading": "/assets/markers/cart/1990s/secondary-shading.png",
+      "fixedDetails": "/assets/markers/cart/1990s/fixed-details.png",
+      "primaryMask": "/assets/markers/cart/1990s/primary-mask.png",
+      "secondaryMask": "/assets/markers/cart/1990s/secondary-mask.png",
+      "silhouetteMask": "/assets/markers/cart/1990s/silhouette-mask.png"
+    }
+  },
+  "cart_2000s": {
+    "label": "CART 2000s",
+    "canvasSize": 512,
+    "forwardAxis": "+x",
+    "gameplayFootprint": 40,
+    "numberDecal": false,
+    "identification": "hover and keyboard focus only",
+    "assets": {
+      "master": "/assets/markers/cart/2000s/master-numberless.png",
+      "primaryShading": "/assets/markers/cart/2000s/primary-shading.png",
+      "secondaryShading": "/assets/markers/cart/2000s/secondary-shading.png",
+      "fixedDetails": "/assets/markers/cart/2000s/fixed-details.png",
+      "primaryMask": "/assets/markers/cart/2000s/primary-mask.png",
+      "secondaryMask": "/assets/markers/cart/2000s/secondary-mask.png",
+      "silhouetteMask": "/assets/markers/cart/2000s/silhouette-mask.png"
+    }
+  }
+}
+
+
