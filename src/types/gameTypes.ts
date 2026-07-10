@@ -170,6 +170,7 @@ export type Team = {
   expectedStanding?: number;
   difficulty?: 'Easy' | 'Medium' | 'Hard' | 'Very Hard';
   color: string; // accent color for UI
+  secondaryColor?: string; // optional second livery channel for two-color track markers
 };
 
 // ---------------------------------------------------------------------------
