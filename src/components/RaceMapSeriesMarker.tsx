@@ -1,16 +1,21 @@
+import { useId } from 'react';
 import {
   damageColorForState,
   damageStateFromPercent,
+  F1_MARKER_ERAS,
   seriesToAssetId,
   type DamageState,
+  type F1MarkerEra,
   type MarkerAssetId,
 } from './raceMarkerAssets';
 import type { RaceSeries } from './seriesMarker';
+import f1RasterMarkerDesignsJson from './f1RasterMarkerDesigns.json';
 
 export type RaceMapSeriesMarkerProps = {
   x: number;
   y: number;
   series: RaceSeries;
+  year?: number;
   number: string | number;
   primaryColor: string;
   accentColor?: string;
@@ -23,12 +28,30 @@ export type RaceMapSeriesMarkerProps = {
 };
 
 type MarkerGeometry = {
-  outerPath: string;
+  outerPath?: string;
   numberAnchor: { x: number; y: number };
   numberFontSize: number;
   numberMaxWidth: number;
+  numberStrokeWidth?: number;
 };
 
+type F1RasterMarkerDesign = MarkerGeometry & {
+  label: string;
+  canvasSize: number;
+  forwardAxis: '+x';
+  numberLocation: 'front nose between front tyres';
+  assets: {
+    master: string;
+    primaryShading: string;
+    secondaryShading: string;
+    fixedDetails: string;
+    primaryMask: string;
+    secondaryMask: string;
+    silhouetteMask: string;
+  };
+};
+
+export const F1_GAMEPLAY_MARKER_SIZE = 40;
 const DEFAULT_SIZE = 20;
 const DEFAULT_SECONDARY_COLOR = '#f7f7f7';
 const DESIGN_SIZE = 20;
@@ -42,9 +65,12 @@ const WHITE_KEYLINE_STROKE = 0.58;
 const DAMAGE_STROKE = 3;
 
 /**
- * Authoritative A/A/C/C silhouettes. All paths fit inside a 20×20 design
- * footprint with room for the approved bold damage outline.
+ * The F1 designs point toward +X on a common square canvas. Their raster layers
+ * are built directly from the approved artwork so the game never redraws or
+ * simplifies the cars.
  */
+const F1_MARKER_DESIGNS = f1RasterMarkerDesignsJson as Record<F1MarkerEra, F1RasterMarkerDesign>;
+
 const MARKER_GEOMETRY: Record<MarkerAssetId, MarkerGeometry> = {
   nascar_a: {
     outerPath: 'M-7.1-4.1H7.3Q8.5-4.1 8.75-3L7.35 3.2Q7.1 4.1 6 4.1H-8.1Q-9 4.1-8.65 3L-7.2-3.25Q-7-4.1-6-4.1Z',
@@ -52,14 +78,10 @@ const MARKER_GEOMETRY: Record<MarkerAssetId, MarkerGeometry> = {
     numberFontSize: 7.15,
     numberMaxWidth: 8.7,
   },
-  f1_a: {
-    // The approved F1 A silhouette is visually left-pointed but its logical
-    // forward heading is still right-facing at 0°.
-    outerPath: 'M-8.8 0C-5.4-2.25.2-4.25 4.85-4.25 7.45-4.25 8.65-2.45 8.65 0S7.45 4.25 4.85 4.25C.2 4.25-5.4 2.25-8.8 0Z',
-    numberAnchor: { x: 3.25, y: 0 },
-    numberFontSize: 6.45,
-    numberMaxWidth: 7.1,
-  },
+  f1_1990s: F1_MARKER_DESIGNS.f1_1990s,
+  f1_2000s: F1_MARKER_DESIGNS.f1_2000s,
+  f1_2010s: F1_MARKER_DESIGNS.f1_2010s,
+  f1_2020s: F1_MARKER_DESIGNS.f1_2020s,
   indycar_c: {
     outerPath: 'M8.65 0C5.25-2.2.25-4.15-5.25-4.15-7.65-4.15-8.85-2.3-8.85 0S-7.65 4.15-5.25 4.15C.25 4.15 5.25 2.2 8.65 0Z',
     numberAnchor: { x: -3.05, y: 0 },
@@ -80,15 +102,18 @@ function SilhouetteLayers({
   secondaryColor,
   damageState,
   selected,
+  uniqueId,
 }: {
   assetId: MarkerAssetId;
   primaryColor: string;
   secondaryColor: string;
   damageState: DamageState;
   selected: boolean;
+  uniqueId: string;
 }) {
   const geometry = MARKER_GEOMETRY[assetId];
   const damageColor = damageColorForState(damageState);
+  const isF1 = isF1MarkerEra(assetId);
 
   return (
     <g pointerEvents="none" data-marker-body={assetId}>
@@ -106,7 +131,7 @@ function SilhouetteLayers({
         </g>
       )}
 
-      {damageColor && (
+      {damageColor && !isF1 && geometry.outerPath && (
         <path
           d={geometry.outerPath}
           fill="none"
@@ -118,21 +143,29 @@ function SilhouetteLayers({
         />
       )}
 
-      <path
-        d={geometry.outerPath}
-        fill={primaryColor}
-        stroke={BLACK}
-        strokeWidth={OUTER_BLACK_STROKE}
-        strokeLinejoin="round"
-        strokeLinecap="round"
-        data-layer="primary"
-      />
+      {!isF1 && (
+        <path
+          d={geometry.outerPath!}
+          fill={primaryColor}
+          stroke={BLACK}
+          strokeWidth={OUTER_BLACK_STROKE}
+          strokeLinejoin="round"
+          strokeLinecap="round"
+          data-layer="primary"
+        />
+      )}
 
       {assetId === 'nascar_a' && (
         <NascarDetails secondaryColor={secondaryColor} />
       )}
-      {assetId === 'f1_a' && (
-        <F1Details secondaryColor={secondaryColor} />
+      {isF1MarkerEra(assetId) && (
+        <F1Details
+          assetId={assetId}
+          primaryColor={primaryColor}
+          secondaryColor={secondaryColor}
+          damageState={damageState}
+          uniqueId={uniqueId}
+        />
       )}
       {assetId === 'indycar_c' && (
         <IndyCarDetails secondaryColor={secondaryColor} />
@@ -141,15 +174,17 @@ function SilhouetteLayers({
         <CartDetails secondaryColor={secondaryColor} />
       )}
 
-      <path
-        d={geometry.outerPath}
-        fill="none"
-        stroke={WHITE}
-        strokeWidth={WHITE_KEYLINE_STROKE}
-        strokeLinejoin="round"
-        strokeLinecap="round"
-        data-layer="white-keyline"
-      />
+      {!isF1 && (
+        <path
+          d={geometry.outerPath!}
+          fill="none"
+          stroke={WHITE}
+          strokeWidth={WHITE_KEYLINE_STROKE}
+          strokeLinejoin="round"
+          strokeLinecap="round"
+          data-layer="white-keyline"
+        />
+      )}
     </g>
   );
 }
@@ -179,11 +214,94 @@ function NascarDetails({ secondaryColor }: { secondaryColor: string }) {
   );
 }
 
-function F1Details({ secondaryColor }: { secondaryColor: string }) {
+function isF1MarkerEra(assetId: MarkerAssetId): assetId is F1MarkerEra {
+  return (F1_MARKER_ERAS as readonly string[]).includes(assetId);
+}
+
+function F1Details({
+  assetId,
+  primaryColor,
+  secondaryColor,
+  damageState,
+  uniqueId,
+}: {
+  assetId: F1MarkerEra;
+  primaryColor: string;
+  secondaryColor: string;
+  damageState: DamageState;
+  uniqueId: string;
+}) {
+  const design = F1_MARKER_DESIGNS[assetId];
+  const primaryMaskId = `${uniqueId}-${assetId}-primary-mask`;
+  const secondaryMaskId = `${uniqueId}-${assetId}-secondary-mask`;
+  const silhouetteMaskId = `${uniqueId}-${assetId}-silhouette-mask`;
+  const damageColor = damageColorForState(damageState);
+  const damageOffsets = [
+    [-0.54, 0], [0.54, 0], [0, -0.54], [0, 0.54],
+    [-0.4, -0.4], [0.4, -0.4], [-0.4, 0.4], [0.4, 0.4],
+  ] as const;
+
   return (
-    <g>
-      <ellipse cx={3.25} cy={0} rx={4.15} ry={3.25} fill={BLACK} stroke={secondaryColor} strokeWidth={0.82} data-layer="secondary" />
-      <ellipse cx={3.25} cy={0} rx={3.5} ry={2.62} fill="#0b0d10" stroke="#23262a" strokeWidth={0.18} data-layer="fixed-black-field" />
+    <g
+      data-f1-era={design.label}
+      data-f1-artwork="approved-raster"
+      data-forward-axis={design.forwardAxis}
+      data-number-location={design.numberLocation}
+      style={{ isolation: 'isolate' }}
+    >
+      <defs>
+        <mask id={primaryMaskId} x={-10} y={-10} width={20} height={20} maskUnits="userSpaceOnUse">
+          <image href={design.assets.primaryMask} x={-10} y={-10} width={20} height={20} preserveAspectRatio="none" />
+        </mask>
+        <mask id={secondaryMaskId} x={-10} y={-10} width={20} height={20} maskUnits="userSpaceOnUse">
+          <image href={design.assets.secondaryMask} x={-10} y={-10} width={20} height={20} preserveAspectRatio="none" />
+        </mask>
+        <mask id={silhouetteMaskId} x={-10} y={-10} width={20} height={20} maskUnits="userSpaceOnUse">
+          <image href={design.assets.silhouetteMask} x={-10} y={-10} width={20} height={20} preserveAspectRatio="none" />
+        </mask>
+      </defs>
+
+      {damageColor && (
+        <g fill={damageColor} data-damage-outline={damageState}>
+          {damageOffsets.map(([dx, dy]) => (
+            <g key={`${dx}-${dy}`} transform={`translate(${dx} ${dy})`}>
+              <rect x={-10} y={-10} width={20} height={20} mask={`url(#${silhouetteMaskId})`} />
+            </g>
+          ))}
+        </g>
+      )}
+      <rect x={-10} y={-10} width={20} height={20} fill={primaryColor} mask={`url(#${primaryMaskId})`} data-layer="primary" />
+      <image
+        href={design.assets.primaryShading}
+        x={-10}
+        y={-10}
+        width={20}
+        height={20}
+        preserveAspectRatio="none"
+        style={{ mixBlendMode: 'multiply' }}
+        data-layer="primary-shading"
+      />
+      <rect x={-10} y={-10} width={20} height={20} fill={secondaryColor} mask={`url(#${secondaryMaskId})`} data-layer="secondary" />
+      <image
+        href={design.assets.secondaryShading}
+        x={-10}
+        y={-10}
+        width={20}
+        height={20}
+        preserveAspectRatio="none"
+        style={{ mixBlendMode: 'multiply' }}
+        data-layer="secondary-shading"
+      />
+      <image
+        href={design.assets.fixedDetails}
+        x={-10}
+        y={-10}
+        width={20}
+        height={20}
+        preserveAspectRatio="none"
+        data-layer="fixed-details"
+      />
+      <g data-layer="front-number-plate" data-location={design.numberLocation} />
     </g>
   );
 }
@@ -240,7 +358,7 @@ function RuntimeNumber({
       fontWeight={900}
       fill={WHITE}
       stroke={BLACK}
-      strokeWidth={0.95}
+      strokeWidth={geometry.numberStrokeWidth ?? 0.95}
       strokeLinejoin="round"
       paintOrder="stroke"
       textLength={textLength}
@@ -257,6 +375,7 @@ export function RaceMapSeriesMarker({
   x,
   y,
   series,
+  year,
   number,
   primaryColor,
   accentColor = DEFAULT_SECONDARY_COLOR,
@@ -265,7 +384,8 @@ export function RaceMapSeriesMarker({
   damagePercent,
   size = DEFAULT_SIZE,
 }: RaceMapSeriesMarkerProps) {
-  const assetId = seriesToAssetId(series);
+  const markerUid = useId().replaceAll(':', '');
+  const assetId = seriesToAssetId(series, year);
   const geometry = MARKER_GEOMETRY[assetId];
   const damageState = damageStateFromPercent(damagePercent);
   const scale = size / DESIGN_SIZE;
@@ -277,6 +397,7 @@ export function RaceMapSeriesMarker({
       data-damage-state={damageState}
       data-primary-color={primaryColor}
       data-secondary-color={accentColor}
+      data-marker-year={year}
     >
       <g transform={`scale(${CONTENT_SCALE})`} data-footprint-inset={CONTENT_SCALE}>
         <g transform={`rotate(${rotationDeg})`} data-heading-degrees={rotationDeg}>
@@ -286,6 +407,7 @@ export function RaceMapSeriesMarker({
             secondaryColor={accentColor}
             damageState={damageState}
             selected={selected}
+            uniqueId={markerUid}
           />
 
           {/* The anchor rotates with the marker. The nested inverse rotation is

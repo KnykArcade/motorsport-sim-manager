@@ -938,6 +938,24 @@ body {
   display: none;
 }
 
+/* Live track markers: the decal number stays intentionally compact on the
+   front nose between the tyres; hover/focus supplies the full driver identity without adding
+   permanent map clutter. */
+.track-map-car {
+  cursor: help;
+  outline: none;
+}
+
+.track-map-car-tooltip {
+  opacity: 0;
+  transition: opacity 90ms ease-out;
+}
+
+.track-map-car:hover .track-map-car-tooltip,
+.track-map-car:focus-visible .track-map-car-tooltip {
+  opacity: 1;
+}
+
 .f1-1990s-hotspot:focus-visible {
   outline: 2px solid #facc15;
   outline-offset: 5px;

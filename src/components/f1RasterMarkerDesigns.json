@@ -1,0 +1,90 @@
+{
+  "f1_1990s": {
+    "label": "1990s",
+    "canvasSize": 512,
+    "forwardAxis": "+x",
+    "assets": {
+      "master": "/assets/markers/f1/1990s/master-numberless.png",
+      "primaryShading": "/assets/markers/f1/1990s/primary-shading.png",
+      "secondaryShading": "/assets/markers/f1/1990s/secondary-shading.png",
+      "fixedDetails": "/assets/markers/f1/1990s/fixed-details.png",
+      "primaryMask": "/assets/markers/f1/1990s/primary-mask.png",
+      "secondaryMask": "/assets/markers/f1/1990s/secondary-mask.png",
+      "silhouetteMask": "/assets/markers/f1/1990s/silhouette-mask.png"
+    },
+    "numberLocation": "front nose between front tyres",
+    "numberAnchor": {
+      "x": 6.562,
+      "y": 0.059
+    },
+    "numberFontSize": 2.65,
+    "numberMaxWidth": 2.05,
+    "numberStrokeWidth": 0.34
+  },
+  "f1_2000s": {
+    "label": "2000s",
+    "canvasSize": 512,
+    "forwardAxis": "+x",
+    "assets": {
+      "master": "/assets/markers/f1/2000s/master-numberless.png",
+      "primaryShading": "/assets/markers/f1/2000s/primary-shading.png",
+      "secondaryShading": "/assets/markers/f1/2000s/secondary-shading.png",
+      "fixedDetails": "/assets/markers/f1/2000s/fixed-details.png",
+      "primaryMask": "/assets/markers/f1/2000s/primary-mask.png",
+      "secondaryMask": "/assets/markers/f1/2000s/secondary-mask.png",
+      "silhouetteMask": "/assets/markers/f1/2000s/silhouette-mask.png"
+    },
+    "numberLocation": "front nose between front tyres",
+    "numberAnchor": {
+      "x": 6.758,
+      "y": -0.02
+    },
+    "numberFontSize": 2.6,
+    "numberMaxWidth": 2.05,
+    "numberStrokeWidth": 0.34
+  },
+  "f1_2010s": {
+    "label": "2010s",
+    "canvasSize": 512,
+    "forwardAxis": "+x",
+    "assets": {
+      "master": "/assets/markers/f1/2010s/master-numberless.png",
+      "primaryShading": "/assets/markers/f1/2010s/primary-shading.png",
+      "secondaryShading": "/assets/markers/f1/2010s/secondary-shading.png",
+      "fixedDetails": "/assets/markers/f1/2010s/fixed-details.png",
+      "primaryMask": "/assets/markers/f1/2010s/primary-mask.png",
+      "secondaryMask": "/assets/markers/f1/2010s/secondary-mask.png",
+      "silhouetteMask": "/assets/markers/f1/2010s/silhouette-mask.png"
+    },
+    "numberLocation": "front nose between front tyres",
+    "numberAnchor": {
+      "x": 5.605,
+      "y": 0.02
+    },
+    "numberFontSize": 2.55,
+    "numberMaxWidth": 2.15,
+    "numberStrokeWidth": 0.34
+  },
+  "f1_2020s": {
+    "label": "2020s",
+    "canvasSize": 512,
+    "forwardAxis": "+x",
+    "assets": {
+      "master": "/assets/markers/f1/2020s/master-numberless.png",
+      "primaryShading": "/assets/markers/f1/2020s/primary-shading.png",
+      "secondaryShading": "/assets/markers/f1/2020s/secondary-shading.png",
+      "fixedDetails": "/assets/markers/f1/2020s/fixed-details.png",
+      "primaryMask": "/assets/markers/f1/2020s/primary-mask.png",
+      "secondaryMask": "/assets/markers/f1/2020s/secondary-mask.png",
+      "silhouetteMask": "/assets/markers/f1/2020s/silhouette-mask.png"
+    },
+    "numberLocation": "front nose between front tyres",
+    "numberAnchor": {
+      "x": 5.488,
+      "y": -0.02
+    },
+    "numberFontSize": 2.55,
+    "numberMaxWidth": 2.15,
+    "numberStrokeWidth": 0.34
+  }
+}

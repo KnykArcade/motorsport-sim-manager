@@ -16,7 +16,11 @@ export const DAMAGE_RANGES = {
   high: { min: 75, max: 100, color: '#FF2A2A' },
 } as const;
 
-export const MARKER_SERIES = ['nascar_a', 'f1_a', 'indycar_c', 'cart_c'] as const;
+export const F1_MARKER_ERAS = ['f1_1990s', 'f1_2000s', 'f1_2010s', 'f1_2020s'] as const;
+
+export type F1MarkerEra = (typeof F1_MARKER_ERAS)[number];
+
+export const MARKER_SERIES = ['nascar_a', ...F1_MARKER_ERAS, 'indycar_c', 'cart_c'] as const;
 
 export type MarkerAssetId = (typeof MARKER_SERIES)[number];
 
@@ -29,12 +33,19 @@ export function normalizeSeriesId(series: string | undefined): RaceSeries {
   return 'f1';
 }
 
-export function seriesToAssetId(series: string | undefined): MarkerAssetId {
+export function f1MarkerEraFromYear(year: number | undefined): F1MarkerEra {
+  if (year != null && year >= 2020) return 'f1_2020s';
+  if (year != null && year >= 2010) return 'f1_2010s';
+  if (year != null && year >= 2000) return 'f1_2000s';
+  return 'f1_1990s';
+}
+
+export function seriesToAssetId(series: string | undefined, year?: number): MarkerAssetId {
   switch (normalizeSeriesId(series)) {
     case 'nascar':
       return 'nascar_a';
     case 'f1':
-      return 'f1_a';
+      return f1MarkerEraFromYear(year);
     case 'indycar':
       return 'indycar_c';
     case 'cart':

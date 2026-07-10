@@ -222,6 +222,7 @@ export function LiveRace() {
   const team = state.teams.find((t) => t.id === state.selectedTeamId);
   const driverName = (id: string) => state.drivers.find((d) => d.id === id)?.name ?? id;
   const driverNumber = (id: string) => state.drivers.find((d) => d.id === id)?.number ?? '';
+  const teamName = (id: string) => state.teams.find((t) => t.id === id)?.name ?? id;
   const teamColor = (id: string) => state.teams.find((t) => t.id === id)?.color ?? '#888';
   const teamSecondaryColor = (id: string) => state.teams.find((t) => t.id === id)?.secondaryColor ?? '#f7f7f7';
 
@@ -358,6 +359,9 @@ export function LiveRace() {
     color: teamColor(c.teamId),
     accentColor: teamSecondaryColor(c.teamId),
     series: state.series,
+    year: state.seasonYear,
+    driverName: driverName(c.driverId),
+    teamName: teamName(c.teamId),
     isPlayer: c.isPlayer,
     running: c.running,
     retired: c.status === 'DNF' && !c.running,
