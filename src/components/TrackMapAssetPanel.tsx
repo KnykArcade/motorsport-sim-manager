@@ -1,5 +1,5 @@
 import { RaceTrack2D, type TrackDot } from './RaceTrack2D';
-import { F1_GAMEPLAY_MARKER_SIZE, RaceMapSeriesMarker } from './RaceMapSeriesMarker';
+import { GAMEPLAY_MARKER_SIZE, RaceMapSeriesMarker } from './RaceMapSeriesMarker';
 import { normalizeSeries } from './seriesMarker';
 import { getTrackMapAsset } from '../data/trackMaps/getTrackMapAsset';
 import type { TrackMapGeometry, TrackMapPoint } from '../data/trackMaps/trackMapGeometry';
@@ -349,7 +349,7 @@ function MapDot({
 }) {
   const zoomFactor = zoom && zoom > 1 ? zoom : 1;
   const markerSeries = normalizeSeries(dot.series);
-  const gameplaySize = markerSeries === 'f1' ? F1_GAMEPLAY_MARKER_SIZE : 20;
+  const gameplaySize = GAMEPLAY_MARKER_SIZE;
   const size = (compact ? 18 : gameplaySize) / zoomFactor;
   const tooltip = markerTooltipPosition(point);
   const numberAndName = `${dot.label ? `#${dot.label} ` : ''}${dot.driverName ?? `Car ${dot.label}`}`;
