@@ -1,11 +1,11 @@
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
-import { RaceMapSeriesMarker } from './RaceMapSeriesMarker';
+import { F1_GAMEPLAY_MARKER_SIZE, RaceMapSeriesMarker } from './RaceMapSeriesMarker';
 
 describe('RaceMapSeriesMarker', () => {
   it.each([
     ['nascar', 'nascar_a'],
-    ['f1', 'f1_a'],
+    ['f1', 'f1_1990s'],
     ['indycar', 'indycar_c'],
     ['cart', 'cart_c'],
   ] as const)('renders the approved %s finalist silhouette', (series, assetId) => {
@@ -48,7 +48,7 @@ describe('RaceMapSeriesMarker', () => {
     expect(html.match(/data-layer="secondary"/g)).toHaveLength(2);
   });
 
-  it('uses the secondary color for the F1 band and both open-wheel nose triangles', () => {
+  it('uses the secondary color for the F1 wings and both open-wheel nose triangles', () => {
     for (const series of ['f1', 'indycar', 'cart'] as const) {
       const html = renderToStaticMarkup(
         <RaceMapSeriesMarker
@@ -64,6 +64,32 @@ describe('RaceMapSeriesMarker', () => {
       expect(html).toMatch(/data-layer="secondary"/);
       expect(html).toContain('#ffe000');
     }
+  });
+
+  it.each([
+    [1992, 'f1_1990s', false],
+    [2005, 'f1_2000s', false],
+    [2016, 'f1_2010s', false],
+    [2024, 'f1_2020s', true],
+  ] as const)('renders the locked %i F1 silhouette with its number only at the front wing', (year, assetId, hasHalo) => {
+    const html = renderToStaticMarkup(
+      <RaceMapSeriesMarker
+        x={0}
+        y={0}
+        series="f1"
+        year={year}
+        number="44"
+        primaryColor="#00a19a"
+        accentColor="#f7f7f7"
+      />,
+    );
+
+    expect(html).toContain(`data-race-map-marker="${assetId}"`);
+    expect(html).toContain('data-layer="front-number-plate"');
+    expect(html).toContain('data-layer="front-wing"');
+    expect(html).toContain('data-layer="rear-wing"');
+    expect(html.match(/data-layer="runtime-number"/g)).toHaveLength(1);
+    expect(html.includes('data-layer="halo"')).toBe(hasHalo);
   });
 
   it.each([
@@ -114,7 +140,7 @@ describe('RaceMapSeriesMarker', () => {
 
     expect(html).toContain('transform="translate(12 8) scale(1)"');
     expect(html).toContain('transform="rotate(45)"');
-    expect(html).toContain('transform="translate(3.25 0)"');
+    expect(html).toContain('transform="translate(7.72 0)"');
     expect(html).toContain('transform="rotate(-45)"');
     expect(html.indexOf('transform="rotate(45)"')).toBeLessThan(html.indexOf('transform="rotate(-45)"'));
   });
@@ -124,6 +150,22 @@ describe('RaceMapSeriesMarker', () => {
       <RaceMapSeriesMarker x={0} y={0} series="cart" number="33" primaryColor="#008c94" size={10} />,
     );
     expect(html).toContain('transform="translate(0 0) scale(0.5)"');
+  });
+
+  it('locks live F1 markers to the approved 35px gameplay footprint', () => {
+    const html = renderToStaticMarkup(
+      <RaceMapSeriesMarker
+        x={0}
+        y={0}
+        series="f1"
+        year={1992}
+        number="5"
+        primaryColor="#ef202b"
+        size={F1_GAMEPLAY_MARKER_SIZE}
+      />,
+    );
+    expect(F1_GAMEPLAY_MARKER_SIZE).toBe(35);
+    expect(html).toContain('transform="translate(0 0) scale(1.75)"');
   });
 
   it('keeps the player focus cue visually separate from the damage outline', () => {
@@ -148,7 +190,7 @@ describe('RaceMapSeriesMarker', () => {
     const html = renderToStaticMarkup(
       <RaceMapSeriesMarker x={0} y={0} series="f1" number="" primaryColor="#facc15" />,
     );
-    expect(html).toContain('data-race-map-marker="f1_a"');
+    expect(html).toContain('data-race-map-marker="f1_1990s"');
     expect(html).not.toContain('data-layer="runtime-number"');
   });
 });

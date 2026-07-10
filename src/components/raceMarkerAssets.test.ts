@@ -7,17 +7,19 @@ import {
 } from './raceMarkerAssets';
 
 describe('raceMarkerAssets', () => {
-  it('maps series to the approved A/A/C/C finalist IDs', () => {
+  it('maps series and F1 season year to the locked marker IDs', () => {
     expect(seriesToAssetId('NASCAR')).toBe('nascar_a');
     expect(seriesToAssetId('nascar')).toBe('nascar_a');
-    expect(seriesToAssetId('F1')).toBe('f1_a');
-    expect(seriesToAssetId('formula 1')).toBe('f1_a');
+    expect(seriesToAssetId('F1', 1992)).toBe('f1_1990s');
+    expect(seriesToAssetId('formula 1', 2006)).toBe('f1_2000s');
+    expect(seriesToAssetId('F1', 2018)).toBe('f1_2010s');
+    expect(seriesToAssetId('F1', 2026)).toBe('f1_2020s');
     expect(seriesToAssetId('IndyCar')).toBe('indycar_c');
     expect(seriesToAssetId('indycar')).toBe('indycar_c');
     expect(seriesToAssetId('CART')).toBe('cart_c');
     expect(seriesToAssetId('champ car')).toBe('cart_c');
-    expect(seriesToAssetId('unknown')).toBe('f1_a');
-    expect(seriesToAssetId(undefined)).toBe('f1_a');
+    expect(seriesToAssetId('unknown')).toBe('f1_1990s');
+    expect(seriesToAssetId(undefined)).toBe('f1_1990s');
   });
 
   it('maps damage percent to the approved static states', () => {

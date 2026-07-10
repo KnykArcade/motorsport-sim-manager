@@ -1,5 +1,5 @@
 import { RaceTrack2D, type TrackDot } from './RaceTrack2D';
-import { RaceMapSeriesMarker } from './RaceMapSeriesMarker';
+import { F1_GAMEPLAY_MARKER_SIZE, RaceMapSeriesMarker } from './RaceMapSeriesMarker';
 import { normalizeSeries } from './seriesMarker';
 import { getTrackMapAsset } from '../data/trackMaps/getTrackMapAsset';
 import type { TrackMapGeometry, TrackMapPoint } from '../data/trackMaps/trackMapGeometry';
@@ -54,7 +54,7 @@ export function TrackMapAssetPanel({
   if (!match) {
     return (
       <div data-testid="track-map-asset-fallback" className={className}>
-        <RaceTrack2D dots={dots} rotation={rotation} safetyCar={safetyCar} className="h-full w-full" />
+        <RaceTrack2D dots={dots} rotation={rotation} year={year} safetyCar={safetyCar} className="h-full w-full" />
       </div>
     );
   }
@@ -74,6 +74,7 @@ export function TrackMapAssetPanel({
       <AssetTrackMap
         geometry={match.geometry}
         dots={dots}
+        year={year}
         rotation={rotation}
         eraTheme={eraTheme}
         hideFooterLabel={hideFooterLabel}
@@ -88,6 +89,7 @@ export function TrackMapAssetPanel({
 function AssetTrackMap({
   geometry,
   dots,
+  year,
   rotation,
   eraTheme,
   hideFooterLabel,
@@ -97,6 +99,7 @@ function AssetTrackMap({
 }: {
   geometry: TrackMapGeometry;
   dots: TrackDot[];
+  year?: number;
   rotation: number;
   eraTheme: 'f1-1990s' | 'default';
   hideFooterLabel: boolean;
@@ -134,6 +137,7 @@ function AssetTrackMap({
       {safetyCar && (
         <SafetyCarDot
           point={pointAt(fitted, normalizeProgress(rotation + 0.04))}
+          year={year}
           rotationDeg={headingAt(fitted, normalizeProgress(rotation + 0.04))}
           zoom={zoom}
         />
@@ -143,7 +147,7 @@ function AssetTrackMap({
         const progress = dot.trackProgress ?? (rotation + index * spacing) % 1;
         const point = pointAt(fitted, progress);
         const heading = headingAt(fitted, progress);
-        return <MapDot key={dot.driverId} point={point} dot={dot} rotationDeg={heading} zoom={zoom} />;
+        return <MapDot key={dot.driverId} point={point} dot={dot} year={year} rotationDeg={heading} zoom={zoom} />;
       })}
 
       <g transform={`translate(${PAD} ${H - 34})`}>
@@ -152,7 +156,7 @@ function AssetTrackMap({
           PIT
         </text>
         {pitting.map((dot, index) => (
-          <MapDot key={dot.driverId} point={[50 + index * 26, 12]} dot={dot} compact rotationDeg={0} zoom={zoom} />
+          <MapDot key={dot.driverId} point={[50 + index * 26, 12]} dot={dot} year={year} compact rotationDeg={0} zoom={zoom} />
         ))}
       </g>
 
@@ -162,7 +166,7 @@ function AssetTrackMap({
           RETIRED
         </text>
         {retired.map((dot, index) => (
-          <MapDot key={dot.driverId} point={[58 + index * 26, 12]} dot={dot} compact rotationDeg={0} zoom={zoom} />
+          <MapDot key={dot.driverId} point={[58 + index * 26, 12]} dot={dot} year={year} compact rotationDeg={0} zoom={zoom} />
         ))}
       </g>
 
@@ -252,26 +256,40 @@ function focusPoint(
 function MapDot({
   point,
   dot,
+  year,
   compact = false,
   rotationDeg = 0,
   zoom,
 }: {
   point: TrackMapPoint;
   dot: TrackDot;
+  year?: number;
   compact?: boolean;
   rotationDeg?: number;
   zoom?: number;
 }) {
-  const baseRadius = compact ? 6 : 10;
   const zoomFactor = zoom && zoom > 1 ? zoom : 1;
-  const size = (baseRadius * 2) / zoomFactor;
+  const markerSeries = normalizeSeries(dot.series);
+  const gameplaySize = markerSeries === 'f1' ? F1_GAMEPLAY_MARKER_SIZE : 20;
+  const size = (compact ? 18 : gameplaySize) / zoomFactor;
+  const tooltip = markerTooltipPosition(point);
+  const numberAndName = `${dot.label ? `#${dot.label} ` : ''}${dot.driverName ?? `Car ${dot.label}`}`;
+  const teamAndPosition = `${dot.teamName ?? 'Race car'} · P${dot.rank}`;
   return (
-    <g transform={`translate(${point[0]} ${point[1]})`}>
-      <title>{`P${dot.rank} car ${dot.label}${dot.gapToLeader ? `, ${dot.gapToLeader.toFixed(1)}s behind leader` : ''}`}</title>
+    <g
+      transform={`translate(${point[0]} ${point[1]})`}
+      className="track-map-car"
+      tabIndex={0}
+      role="img"
+      aria-label={`${numberAndName}, ${teamAndPosition}`}
+      data-track-map-driver={dot.driverId}
+    >
+      <title>{`${numberAndName}, ${teamAndPosition}${dot.gapToLeader ? `, ${dot.gapToLeader.toFixed(1)}s behind leader` : ''}`}</title>
       <RaceMapSeriesMarker
         x={0}
         y={0}
-        series={normalizeSeries(dot.series)}
+        series={markerSeries}
+        year={dot.year ?? year}
         number={dot.label}
         primaryColor={dot.color}
         accentColor={dot.accentColor}
@@ -282,21 +300,50 @@ function MapDot({
         size={size}
         zoom={zoomFactor}
       />
+      {!compact && (
+        <>
+          <circle r={Math.max(22 / zoomFactor, size * 0.62)} fill="transparent" pointerEvents="all" data-marker-hit-target="true" />
+          <g
+            className="track-map-car-tooltip"
+            transform={`translate(${tooltip.x} ${tooltip.y})`}
+            pointerEvents="none"
+            data-marker-tooltip="true"
+          >
+            <rect width="174" height="43" rx="5" fill="#07090b" stroke="#f2b600" strokeWidth="1.25" />
+            <rect x="7" y="8" width="8" height="27" rx="1" fill={dot.color} />
+            <text x="22" y="19" fill="#f7f7f7" fontSize="12" fontWeight="900" fontFamily="Arial Narrow, Roboto Condensed, Arial, sans-serif">
+              {numberAndName.toUpperCase()}
+            </text>
+            <text x="22" y="34" fill="#a1a1aa" fontSize="9.5" fontWeight="700" fontFamily="Arial Narrow, Roboto Condensed, Arial, sans-serif">
+              {teamAndPosition.toUpperCase()}
+            </text>
+          </g>
+        </>
+      )}
     </g>
   );
 }
 
+function markerTooltipPosition(point: TrackMapPoint): { x: number; y: number } {
+  return {
+    x: point[0] > W - 200 ? -184 : 12,
+    y: point[1] < 70 ? 12 : -55,
+  };
+}
+
 function SafetyCarDot({
   point,
+  year,
   rotationDeg = 0,
   zoom,
 }: {
   point: TrackMapPoint;
+  year?: number;
   rotationDeg?: number;
   zoom?: number;
 }) {
   const zoomFactor = zoom && zoom > 1 ? zoom : 1;
-  const size = 20 / zoomFactor;
+  const size = 24 / zoomFactor;
   return (
     <g transform={`translate(${point[0]} ${point[1]})`}>
       <title>Safety Car</title>
@@ -304,6 +351,7 @@ function SafetyCarDot({
         x={0}
         y={0}
         series="f1"
+        year={year}
         number=""
         primaryColor="#facc15"
         accentColor="#facc15"

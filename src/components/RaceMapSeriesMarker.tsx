@@ -1,16 +1,20 @@
 import {
   damageColorForState,
   damageStateFromPercent,
+  F1_MARKER_ERAS,
   seriesToAssetId,
   type DamageState,
+  type F1MarkerEra,
   type MarkerAssetId,
 } from './raceMarkerAssets';
 import type { RaceSeries } from './seriesMarker';
+import f1MarkerDesignsJson from './f1MarkerDesigns.json';
 
 export type RaceMapSeriesMarkerProps = {
   x: number;
   y: number;
   series: RaceSeries;
+  year?: number;
   number: string | number;
   primaryColor: string;
   accentColor?: string;
@@ -29,6 +33,22 @@ type MarkerGeometry = {
   numberMaxWidth: number;
 };
 
+type F1MarkerDesign = MarkerGeometry & {
+  label: string;
+  bodyPath: string;
+  sidepodPath: string;
+  nosePath: string;
+  rearWingPath: string;
+  frontWingPath: string;
+  accentPaths: string[];
+  detailPaths: string[];
+  wheels: Array<{ x: number; y: number; width: number; height: number; rx: number }>;
+  cockpit: { cx: number; cy: number; rx: number; ry: number };
+  haloPath: string | null;
+  numberPlate: { x: number; y: number; width: number; height: number; rx: number };
+};
+
+export const F1_GAMEPLAY_MARKER_SIZE = 35;
 const DEFAULT_SIZE = 20;
 const DEFAULT_SECONDARY_COLOR = '#f7f7f7';
 const DESIGN_SIZE = 20;
@@ -42,9 +62,12 @@ const WHITE_KEYLINE_STROKE = 0.58;
 const DAMAGE_STROKE = 3;
 
 /**
- * Authoritative A/A/C/C silhouettes. All paths fit inside a 20×20 design
- * footprint with room for the approved bold damage outline.
+ * Authoritative series silhouettes, including one locked F1 design per era.
+ * All paths fit inside a 20×20 vector design footprint and scale to the
+ * requested gameplay size with room for the approved bold damage outline.
  */
+const F1_MARKER_DESIGNS = f1MarkerDesignsJson as Record<F1MarkerEra, F1MarkerDesign>;
+
 const MARKER_GEOMETRY: Record<MarkerAssetId, MarkerGeometry> = {
   nascar_a: {
     outerPath: 'M-7.1-4.1H7.3Q8.5-4.1 8.75-3L7.35 3.2Q7.1 4.1 6 4.1H-8.1Q-9 4.1-8.65 3L-7.2-3.25Q-7-4.1-6-4.1Z',
@@ -52,14 +75,10 @@ const MARKER_GEOMETRY: Record<MarkerAssetId, MarkerGeometry> = {
     numberFontSize: 7.15,
     numberMaxWidth: 8.7,
   },
-  f1_a: {
-    // The approved F1 A silhouette is visually left-pointed but its logical
-    // forward heading is still right-facing at 0°.
-    outerPath: 'M-8.8 0C-5.4-2.25.2-4.25 4.85-4.25 7.45-4.25 8.65-2.45 8.65 0S7.45 4.25 4.85 4.25C.2 4.25-5.4 2.25-8.8 0Z',
-    numberAnchor: { x: 3.25, y: 0 },
-    numberFontSize: 6.45,
-    numberMaxWidth: 7.1,
-  },
+  f1_1990s: F1_MARKER_DESIGNS.f1_1990s,
+  f1_2000s: F1_MARKER_DESIGNS.f1_2000s,
+  f1_2010s: F1_MARKER_DESIGNS.f1_2010s,
+  f1_2020s: F1_MARKER_DESIGNS.f1_2020s,
   indycar_c: {
     outerPath: 'M8.65 0C5.25-2.2.25-4.15-5.25-4.15-7.65-4.15-8.85-2.3-8.85 0S-7.65 4.15-5.25 4.15C.25 4.15 5.25 2.2 8.65 0Z',
     numberAnchor: { x: -3.05, y: 0 },
@@ -131,8 +150,8 @@ function SilhouetteLayers({
       {assetId === 'nascar_a' && (
         <NascarDetails secondaryColor={secondaryColor} />
       )}
-      {assetId === 'f1_a' && (
-        <F1Details secondaryColor={secondaryColor} />
+      {isF1MarkerEra(assetId) && (
+        <F1Details assetId={assetId} primaryColor={primaryColor} secondaryColor={secondaryColor} />
       )}
       {assetId === 'indycar_c' && (
         <IndyCarDetails secondaryColor={secondaryColor} />
@@ -179,11 +198,96 @@ function NascarDetails({ secondaryColor }: { secondaryColor: string }) {
   );
 }
 
-function F1Details({ secondaryColor }: { secondaryColor: string }) {
+function isF1MarkerEra(assetId: MarkerAssetId): assetId is F1MarkerEra {
+  return (F1_MARKER_ERAS as readonly string[]).includes(assetId);
+}
+
+function F1Details({
+  assetId,
+  primaryColor,
+  secondaryColor,
+}: {
+  assetId: F1MarkerEra;
+  primaryColor: string;
+  secondaryColor: string;
+}) {
+  const design = F1_MARKER_DESIGNS[assetId];
   return (
-    <g>
-      <ellipse cx={3.25} cy={0} rx={4.15} ry={3.25} fill={BLACK} stroke={secondaryColor} strokeWidth={0.82} data-layer="secondary" />
-      <ellipse cx={3.25} cy={0} rx={3.5} ry={2.62} fill="#0b0d10" stroke="#23262a" strokeWidth={0.18} data-layer="fixed-black-field" />
+    <g data-f1-era={design.label}>
+      {design.wheels.map((wheel, index) => (
+        <rect
+          key={`${assetId}-wheel-${index}`}
+          {...wheel}
+          fill="#08090b"
+          stroke="#33383d"
+          strokeWidth={0.35}
+          data-layer="exposed-tyre"
+        />
+      ))}
+      {design.detailPaths.map((path, index) => (
+        <path
+          key={`${assetId}-suspension-${index}`}
+          d={path}
+          fill="none"
+          stroke={index === 0 ? '#111519' : '#d7d9dc'}
+          strokeWidth={index === 0 ? 0.5 : 0.24}
+          strokeLinecap="round"
+          opacity={index === 0 ? 1 : 0.75}
+          data-layer="suspension-detail"
+        />
+      ))}
+      <path d={design.rearWingPath} fill={secondaryColor} stroke={BLACK} strokeWidth={0.42} data-layer="rear-wing" />
+      <path d={design.bodyPath} fill={primaryColor} stroke={BLACK} strokeWidth={0.45} data-layer="primary" />
+      <path d={design.sidepodPath} fill={primaryColor} stroke={BLACK} strokeWidth={0.36} data-layer="era-sidepods" />
+      {design.accentPaths.map((path, index) => (
+        <path
+          key={`${assetId}-accent-${index}`}
+          d={path}
+          fill={index < 3 ? secondaryColor : 'none'}
+          stroke={index < 3 ? BLACK : secondaryColor}
+          strokeWidth={index < 3 ? 0.28 : 0.38}
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          data-layer="secondary"
+        />
+      ))}
+      <path d={design.nosePath} fill={primaryColor} stroke={BLACK} strokeWidth={0.34} data-layer="nose" />
+      <ellipse
+        {...design.cockpit}
+        fill="#080a0d"
+        stroke={secondaryColor}
+        strokeWidth={0.48}
+        data-layer="open-cockpit"
+      />
+      <ellipse
+        cx={design.cockpit.cx - 0.2}
+        cy={design.cockpit.cy}
+        rx={design.cockpit.rx * 0.56}
+        ry={design.cockpit.ry * 0.58}
+        fill="#20252a"
+        stroke="#050607"
+        strokeWidth={0.24}
+        data-layer="helmet"
+      />
+      {design.haloPath && (
+        <path
+          d={design.haloPath}
+          fill="none"
+          stroke="#111417"
+          strokeWidth={0.48}
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          data-layer="halo"
+        />
+      )}
+      <path d={design.frontWingPath} fill={secondaryColor} stroke={BLACK} strokeWidth={0.42} data-layer="front-wing" />
+      <rect
+        {...design.numberPlate}
+        fill={BLACK}
+        stroke={WHITE}
+        strokeWidth={0.3}
+        data-layer="front-number-plate"
+      />
     </g>
   );
 }
@@ -257,6 +361,7 @@ export function RaceMapSeriesMarker({
   x,
   y,
   series,
+  year,
   number,
   primaryColor,
   accentColor = DEFAULT_SECONDARY_COLOR,
@@ -265,7 +370,7 @@ export function RaceMapSeriesMarker({
   damagePercent,
   size = DEFAULT_SIZE,
 }: RaceMapSeriesMarkerProps) {
-  const assetId = seriesToAssetId(series);
+  const assetId = seriesToAssetId(series, year);
   const geometry = MARKER_GEOMETRY[assetId];
   const damageState = damageStateFromPercent(damagePercent);
   const scale = size / DESIGN_SIZE;
@@ -277,6 +382,7 @@ export function RaceMapSeriesMarker({
       data-damage-state={damageState}
       data-primary-color={primaryColor}
       data-secondary-color={accentColor}
+      data-marker-year={year}
     >
       <g transform={`scale(${CONTENT_SCALE})`} data-footprint-inset={CONTENT_SCALE}>
         <g transform={`rotate(${rotationDeg})`} data-heading-degrees={rotationDeg}>
