@@ -6,6 +6,12 @@ import { globalCarsPhase0 } from './generated/globalCars';
 import { globalDriversPhase0 } from './generated/globalDrivers';
 import { globalTeamsPhase0 } from './generated/globalTeams';
 import { globalTracksPhase0 } from './generated/globalTracks';
+import {
+  nascar1990Cars,
+  nascar1990Drivers,
+  nascar1990Teams,
+  nascar1990Tracks,
+} from './generated/globalNASCAR1990';
 import { historicalWeatherRaceMeta } from '../weather/generated/raceMeta';
 import { historicalWeatherTrackCoordinates } from '../weather/generated/trackCoordinates';
 import { seedReleasedMarketDrivers } from '../market';
@@ -14,6 +20,18 @@ type Phase0TrackSource = any;
 type Phase0DriverSource = any;
 type Phase0TeamSource = any;
 type Phase0CarSource = any;
+
+const allGlobalCars: Phase0CarSource[] = [];
+allGlobalCars.push(...(globalCarsPhase0 as unknown as Phase0CarSource[]), ...(nascar1990Cars as unknown as Phase0CarSource[]));
+
+const allGlobalDrivers: Phase0DriverSource[] = [];
+allGlobalDrivers.push(...(globalDriversPhase0 as unknown as Phase0DriverSource[]), ...(nascar1990Drivers as unknown as Phase0DriverSource[]));
+
+const allGlobalTeams: Phase0TeamSource[] = [];
+allGlobalTeams.push(...(globalTeamsPhase0 as unknown as Phase0TeamSource[]), ...(nascar1990Teams as unknown as Phase0TeamSource[]));
+
+const allGlobalTracks: Phase0TrackSource[] = [];
+allGlobalTracks.push(...(globalTracksPhase0 as unknown as Phase0TrackSource[]), ...(nascar1990Tracks as unknown as Phase0TrackSource[]));
 
 type LegacyTeamSource = {
   id: string;
@@ -121,6 +139,10 @@ function getSeasonRuleIds(year: number, series: Series): { pointsSystemId: strin
       : { pointsSystemId: 'pts-champcar-2007', regulationSetId: 'reg-champcar-2007' };
   }
 
+  if (series === 'NASCAR') {
+    return { pointsSystemId: 'pts-nascar-1990', regulationSetId: 'reg-nascar-1990' };
+  }
+
   if (year === 1996) return { pointsSystemId: 'pts-indycar-1996', regulationSetId: 'reg-indycar-1996' };
   if (year === 1997) return { pointsSystemId: 'pts-indycar-1997', regulationSetId: 'reg-indycar-1997-1999' };
   if (year <= 2000) return { pointsSystemId: 'pts-indycar-1998-2000', regulationSetId: 'reg-indycar-1997-1999' };
@@ -206,7 +228,7 @@ function resolveTrackSource(
 ): Phase0TrackSource | undefined {
   const requested = normalizeKey(trackName || trackId);
   let best: { score: number; track: Phase0TrackSource } | undefined;
-  for (const track of globalTracksPhase0 as Phase0TrackSource[]) {
+  for (const track of allGlobalTracks) {
     const score = scoreTrackMatch(track, seasonYear, series, requested, lapLengthKm);
     if (!best || score > best.score) best = { score, track };
   }
@@ -261,6 +283,7 @@ function seasonCarId(seasonYear: number, teamId: string, sourceCar?: Phase0CarSo
 function legacySeriesSuffix(series: Series): string {
   if (series === 'F1') return '';
   if (series === 'IndyCar') return 'IndyCar';
+  if (series === 'NASCAR') return 'NASCAR';
   return 'CART';
 }
 
@@ -414,7 +437,7 @@ function buildLegacyContext(phase0Season: Phase0SeasonBundle): LegacySeasonConte
   const legacyTeams = legacyEntries<LegacyTeamSource>(legacyTeamModules, 'teams', phase0Season.season, phase0Season.series);
   const legacyDrivers = legacyEntries<LegacyDriverSource>(legacyDriverModules, 'drivers', phase0Season.season, phase0Season.series);
   const legacyCars = legacyEntries<LegacyCarSource>(legacyCarModules, 'cars', phase0Season.season, phase0Season.series);
-  const sourceTeams = globalTeamsPhase0 as Phase0TeamSource[];
+  const sourceTeams = allGlobalTeams;
   const legacyTeamToSourceTeamId = new Map<string, string>();
   for (const team of legacyTeams) {
     const source = matchTeamSource(sourceTeams, team, phase0Season.season);
@@ -428,8 +451,8 @@ function buildRosterPlan(phase0Season: Phase0SeasonBundle, ctx: LegacySeasonCont
   drivers: Driver[];
   releasedDrivers: MarketDriver[];
 } {
-  const sourceTeams = globalTeamsPhase0 as Phase0TeamSource[];
-  const sourceDrivers = globalDriversPhase0 as Phase0DriverSource[];
+  const sourceTeams = allGlobalTeams;
+  const sourceDrivers = allGlobalDrivers;
   const sourceById = new Map<string, Phase0TeamSource>(sourceTeams.map((team) => [team.teamLineageId, team] as [string, Phase0TeamSource]));
   const sourceByDriverId = new Map<string, Phase0DriverSource>(sourceDrivers.map((driver) => [driver.driverId, driver] as [string, Phase0DriverSource]));
   const sourceByName = new Map<string, Phase0DriverSource[]>();
@@ -454,7 +477,7 @@ function buildRosterPlan(phase0Season: Phase0SeasonBundle, ctx: LegacySeasonCont
     const sourceId = ctx.legacyTeamToSourceTeamId.get(legacyTeam.id);
     const source = sourceId ? sourceById.get(sourceId) : undefined;
     const name = legacyTeam.name || source?.namePerPeriod?.find((period: any) => phase0Season.season >= period.fromYear && phase0Season.season <= period.toYear)?.name || source?.canonicalName || legacyTeam.id;
-    const car = (globalCarsPhase0 as Phase0CarSource[]).find(
+    const car = allGlobalCars.find(
       (entry) => entry.teamId === sourceId && entry.seasonYear === phase0Season.season && entry.series === phase0Season.series,
     );
 
@@ -509,7 +532,7 @@ function buildRosterPlan(phase0Season: Phase0SeasonBundle, ctx: LegacySeasonCont
 }
 
 function buildCars(phase0Season: Phase0SeasonBundle, ctx: LegacySeasonContext, teamIds: string[]): Car[] {
-  const sourceCars = (globalCarsPhase0 as Phase0CarSource[]).filter(
+  const sourceCars = allGlobalCars.filter(
     (car) => car.seasonYear === phase0Season.season && car.series === phase0Season.series,
   );
   const sourceByTeamId = new Map<string, Phase0CarSource>();

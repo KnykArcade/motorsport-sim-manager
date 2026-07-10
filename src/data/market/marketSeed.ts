@@ -20,11 +20,12 @@ const staticBundles = new Map<string, SeedBundle>();
 function seriesForMarketFile(year: number, suffix: string | undefined): Series {
   if (!suffix) return 'F1';
   if (suffix === 'IndyCar') return 'IndyCar';
+  if (suffix === 'NASCAR') return 'NASCAR';
   return year >= 2004 ? 'Champ Car' : 'CART';
 }
 
 for (const [path, driversMod] of Object.entries(eagerDriverModules)) {
-  const match = path.match(/driverMarket(\d{4})(IndyCar|CART)?\.ts$/);
+  const match = path.match(/driverMarket(\d{4})(IndyCar|CART|NASCAR)?\.ts$/);
   if (!match) continue;
   const year = Number(match[1]);
   const suffix = match[2];

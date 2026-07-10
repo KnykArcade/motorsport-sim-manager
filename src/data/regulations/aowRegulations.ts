@@ -17,6 +17,41 @@ const BASE_CARRYOVER = {
 };
 
 export const aowRegulations: Record<string, RegulationSet> = {
+  "reg-nascar-1990": {
+    id: "reg-nascar-1990",
+    seasonYear: 1990,
+    series: "NASCAR",
+    pointsSystemId: "pts-nascar-1990",
+    qualifyingFormat: "Single-car qualifying",
+    raceWeekendFormat: "Practice / Qualifying / Race",
+    testingLimit: undefined,
+    budgetCap: undefined,
+    designRules: {
+      ...BASE_DESIGN,
+      enginePowerWeight: 1.2,
+      aeroEfficiencyWeight: 1.05,
+      mechanicalGripWeight: 1.1,
+      reliabilityWeight: 1.05,
+      minimumReliability: 0.5,
+    },
+    carryoverModifiers: {
+      ...BASE_CARRYOVER,
+      enginePower: 0.85,
+      aeroEfficiency: 0.85,
+      mechanicalGrip: 0.85,
+      reliability: 0.85,
+      pitCrewOperations: 0.8,
+    },
+    refuelingAllowed: true,
+    drsEnabled: false,
+    sprintSupport: false,
+    pushToPass: false,
+    tireChangeRules: "Unrestricted race-service tire changes",
+    eraLabel: "NASCAR Winston Cup Gen 3 Era",
+    notes: [
+      "1990 NASCAR Winston Cup season proof-of-concept. 29-race schedule mixing superspeedways, intermediates, short tracks, and road courses. Stock cars with no DRS, no push-to-pass, and refueling allowed during pit stops.",
+    ],
+  },
   "reg-cart-1990-2001": {
     id: "reg-cart-1990-2001",
     seasonYear: 1990,

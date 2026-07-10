@@ -2,7 +2,7 @@
 // These types are intentionally decoupled from React so the simulation and
 // data layers can evolve independently of the UI.
 
-export type Series = 'F1' | 'IndyCar' | 'CART' | 'Champ Car';
+export type Series = 'F1' | 'IndyCar' | 'CART' | 'Champ Car' | 'NASCAR';
 
 export type GameMode = 'SingleSeason' | 'Career' | 'Sandbox';
 

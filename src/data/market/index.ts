@@ -190,6 +190,9 @@ for (let year = 2004; year <= 2007; year++) {
   marketLoaders[`${year}-Champ Car`] = makeMarketLoader(year, 'Champ Car');
 }
 
+// NASCAR 1990 proof-of-concept
+marketLoaders['1990-NASCAR'] = makeMarketLoader(1990, 'NASCAR');
+
 seedMarketBundleCache(buildStaticMarketBundleMap());
 
 // Synchronous lookup — returns cached bundle or undefined if not yet loaded.
