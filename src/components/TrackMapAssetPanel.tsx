@@ -32,6 +32,9 @@ const W = 1000;
 const H = 500;
 const PAD = 54;
 const BOTTOM_BAND = 36;
+const KYALAMI_SURFACE_WIDTH = 38;
+const KYALAMI_LANE_OFFSET = 7;
+const CLOSE_RACING_PROGRESS = 0.012;
 
 export function TrackMapAssetPanel({
   series,
@@ -116,6 +119,8 @@ function AssetTrackMap({
   const pitting = dots.filter((dot) => dot.running && (dot.inPit || dot.pitRequested));
   const retired = dots.filter((dot) => dot.retired && !showSet.has(dot.driverId));
   const spacing = 1 / Math.max(running.length, 14);
+  const isHistoricKyalami = eraTheme === 'f1-1990s' && geometry.id === 'kyalami-grand-prix-circuit-historic';
+  const laneOffsets = isHistoricKyalami ? closeRacingLaneOffsets(running) : new Map<string, number>();
 
   return (
     <>
@@ -127,12 +132,34 @@ function AssetTrackMap({
             <feMergeNode in="SourceGraphic" />
           </feMerge>
         </filter>
+        <linearGradient id={`kyalami-road-${geometry.id}`} x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stopColor="#f0ecdd" />
+          <stop offset="0.48" stopColor="#e4dfcf" />
+          <stop offset="1" stopColor="#d3cdbb" />
+        </linearGradient>
       </defs>
 
       <rect x="0" y="0" width={W} height={H} rx="12" fill={eraTheme === 'f1-1990s' ? '#050606' : '#0f172a'} />
-      <path d={pathD} fill="none" stroke="#111719" strokeWidth="48" strokeLinecap="round" strokeLinejoin="round" />
-      <path d={pathD} fill="none" stroke={eraTheme === 'f1-1990s' ? '#e7e2d0' : '#cbd5e1'} strokeWidth="15" strokeLinecap="round" strokeLinejoin="round" opacity="0.98" />
-      <path d={pathD} fill="none" stroke={eraTheme === 'f1-1990s' ? '#222a2d' : '#334155'} strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" strokeDasharray="18 22" />
+      {isHistoricKyalami ? (
+        <g
+          data-track-style="historic-kyalami-2.5d"
+          data-track-surface-width={KYALAMI_SURFACE_WIDTH}
+          data-close-racing-lane-offset={KYALAMI_LANE_OFFSET}
+        >
+          <path d={pathD} transform="translate(8 10)" fill="none" stroke="#080c0e" strokeWidth="68" strokeLinecap="round" strokeLinejoin="round" opacity="0.95" data-track-layer="drop-shadow" />
+          <path d={pathD} fill="none" stroke="#141a1c" strokeWidth="62" strokeLinecap="round" strokeLinejoin="round" data-track-layer="embankment" />
+          <path d={pathD} fill="none" stroke="#343b3d" strokeWidth="48" strokeLinecap="round" strokeLinejoin="round" data-track-layer="road-edge" />
+          <path d={pathD} fill="none" stroke={`url(#kyalami-road-${geometry.id})`} strokeWidth={KYALAMI_SURFACE_WIDTH} strokeLinecap="round" strokeLinejoin="round" data-track-layer="racing-surface" />
+          <path d={pathD} fill="none" stroke="#faf6e8" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" opacity="0.62" data-track-layer="surface-highlight" />
+          <path d={pathD} fill="none" stroke="#252c2f" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" strokeDasharray="18 22" data-track-layer="centre-line" />
+        </g>
+      ) : (
+        <>
+          <path d={pathD} fill="none" stroke="#111719" strokeWidth="48" strokeLinecap="round" strokeLinejoin="round" />
+          <path d={pathD} fill="none" stroke={eraTheme === 'f1-1990s' ? '#e7e2d0' : '#cbd5e1'} strokeWidth="15" strokeLinecap="round" strokeLinejoin="round" opacity="0.98" />
+          <path d={pathD} fill="none" stroke={eraTheme === 'f1-1990s' ? '#222a2d' : '#334155'} strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" strokeDasharray="18 22" />
+        </>
+      )}
 
       {safetyCar && (
         <SafetyCarDot
@@ -147,7 +174,8 @@ function AssetTrackMap({
         const progress = dot.trackProgress ?? (rotation + index * spacing) % 1;
         const point = pointAt(fitted, progress);
         const heading = headingAt(fitted, progress);
-        return <MapDot key={dot.driverId} point={point} dot={dot} year={year} rotationDeg={heading} zoom={zoom} />;
+        const displayPoint = offsetPoint(point, heading, laneOffsets.get(dot.driverId) ?? 0);
+        return <MapDot key={dot.driverId} point={displayPoint} dot={dot} year={year} rotationDeg={heading} zoom={zoom} />;
       })}
 
       <g transform={`translate(${PAD} ${H - 34})`}>
@@ -206,6 +234,57 @@ function headingAt(points: readonly TrackMapPoint[], t: number): number {
   const [x1, y1] = points[index];
   const [x2, y2] = points[next];
   return (Math.atan2(y2 - y1, x2 - x1) * 180) / Math.PI;
+}
+
+function offsetPoint(point: TrackMapPoint, heading: number, lateralOffset: number): TrackMapPoint {
+  if (lateralOffset === 0) return point;
+  const normal = ((heading + 90) * Math.PI) / 180;
+  return [round(point[0] + Math.cos(normal) * lateralOffset), round(point[1] + Math.sin(normal) * lateralOffset)];
+}
+
+/**
+ * The simulation does not expose a discrete left/right lane. When two cars are
+ * within roughly one marker length around the lap, give them small opposing
+ * lateral offsets. At 40px the 1990s silhouettes then touch or overlap slightly
+ * while remaining inside Kyalami's 38-unit racing surface.
+ */
+function closeRacingLaneOffsets(running: TrackDot[]): Map<string, number> {
+  const offsets = new Map<string, number>();
+  const candidates = running
+    .filter((dot) => dot.trackProgress != null)
+    .map((dot) => ({ dot, progress: normalizeProgress(dot.trackProgress!) }))
+    .sort((a, b) => a.progress - b.progress);
+
+  if (candidates.length < 2) return offsets;
+
+  const paired = new Set<string>();
+  for (let index = 0; index < candidates.length; index += 1) {
+    const current = candidates[index];
+    if (paired.has(current.dot.driverId)) continue;
+
+    let nearest: (typeof candidates)[number] | undefined;
+    let nearestDistance = Number.POSITIVE_INFINITY;
+    for (let otherIndex = 0; otherIndex < candidates.length; otherIndex += 1) {
+      if (index === otherIndex) continue;
+      const other = candidates[otherIndex];
+      if (paired.has(other.dot.driverId)) continue;
+      const direct = Math.abs(current.progress - other.progress);
+      const distance = Math.min(direct, 1 - direct);
+      if (distance < nearestDistance) {
+        nearest = other;
+        nearestDistance = distance;
+      }
+    }
+
+    if (!nearest || nearestDistance > CLOSE_RACING_PROGRESS) continue;
+    const ordered = [current.dot, nearest.dot].sort((a, b) => a.rank - b.rank);
+    offsets.set(ordered[0].driverId, -KYALAMI_LANE_OFFSET);
+    offsets.set(ordered[1].driverId, KYALAMI_LANE_OFFSET);
+    paired.add(current.dot.driverId);
+    paired.add(nearest.dot.driverId);
+  }
+
+  return offsets;
 }
 
 function normalizeProgress(value: number): number {

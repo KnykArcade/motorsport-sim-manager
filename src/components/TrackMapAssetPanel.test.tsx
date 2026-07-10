@@ -96,4 +96,30 @@ describe('TrackMapAssetPanel', () => {
     expect(html).toContain('#29 Nigel Mansell, Williams Renault · P2');
     expect(html).toContain('data-marker-tooltip="true"');
   });
+
+  it('renders historic Kyalami with a wide 2.5D racing surface and close-racing offsets', () => {
+    const kyalamiDots: TrackDot[] = [
+      { ...dots[0], driverId: 'mansell', label: '5', year: 1992, trackProgress: 0.2, rank: 1 },
+      { ...dots[1], driverId: 'patrese', label: '6', year: 1992, trackProgress: 0.207, rank: 2 },
+    ];
+    const html = renderToStaticMarkup(
+      <TrackMapAssetPanel
+        series="F1"
+        year={1992}
+        trackId="kyalami-grand-prix-circuit-1992"
+        trackName="Kyalami Grand Prix Circuit"
+        dots={kyalamiDots}
+        rotation={0.2}
+        eraTheme="f1-1990s"
+      />,
+    );
+
+    expect(html).toContain('data-track-style="historic-kyalami-2.5d"');
+    expect(html).toContain('data-track-surface-width="38"');
+    expect(html).toContain('data-track-layer="drop-shadow"');
+    expect(html).toContain('data-track-layer="racing-surface"');
+    expect(html).toContain('data-close-racing-lane-offset="7"');
+    expect(html).toContain('data-race-map-marker="f1_1990s"');
+    expect(html).toContain('data-marker-year="1992"');
+  });
 });
