@@ -207,6 +207,15 @@ export type GameState = {
   closureHooks?: { teamId: string; seasonYear: number; level: string }[];
 };
 
+export function minRaceDriversForSeries(series: Series): number {
+  return series === 'NASCAR' ? 1 : 2;
+}
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export function maxRaceDriversForSeries(_series: Series): number {
+  return 2;
+}
+
 export function teamById(state: GameState, id: string): Team | undefined {
   return state.teams.find((t) => t.id === id);
 }
@@ -223,19 +232,20 @@ export function driversForTeam(state: GameState, teamId: string): Driver[] {
   return state.drivers.filter((d) => d.teamId === teamId);
 }
 
-// Only two cars per team race. The active race drivers are the first two entries
-// of the team's roster (`team.driverIds`), resolved to the driver objects that
-// actually belong to that team. Any further roster members are reserves.
+// Race-seat count is series-aware. NASCAR teams may run a single car; all
+// other series currently require two race drivers. The cap of two seats still
+// applies everywhere, and rosters with 3+ drivers are reduced to two.
 export const MAX_RACE_DRIVERS = 2;
 
 export function activeDriversForTeam(state: GameState, teamId: string): Driver[] {
   const team = teamById(state, teamId);
+  const maxRaceDrivers = maxRaceDriversForSeries(state.series);
   const active: Driver[] = [];
   const seen = new Set<string>();
   // Only full race-seat contracts (contractType undefined or 'seat') may fill a
   // race seat. Third / reserve / test drivers are excluded until promoted.
   for (const id of team?.driverIds ?? []) {
-    if (active.length >= MAX_RACE_DRIVERS) break;
+    if (active.length >= maxRaceDrivers) break;
     if (seen.has(id)) continue;
     const driver = state.drivers.find((d) => d.id === id && d.teamId === teamId);
     if (driver && !isReserveContract(driver)) {
@@ -244,10 +254,10 @@ export function activeDriversForTeam(state: GameState, teamId: string): Driver[]
     }
   }
   // Fallback for rosters that don't fully specify driverIds: fill from the pool
-  // with race-seat drivers only.
-  if (active.length < MAX_RACE_DRIVERS) {
+  // with race-seat drivers only, but never beyond the series cap.
+  if (active.length < maxRaceDrivers) {
     for (const d of state.drivers) {
-      if (active.length >= MAX_RACE_DRIVERS) break;
+      if (active.length >= maxRaceDrivers) break;
       if (d.teamId === teamId && !seen.has(d.id) && !isReserveContract(d)) {
         active.push(d);
         seen.add(d.id);

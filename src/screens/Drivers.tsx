@@ -199,14 +199,14 @@ export function Drivers() {
                 </div>
               )}
               <div className="grid grid-cols-1 gap-1">
-                <StatBar label="Qualifying" value={stat('qualifying').value ?? 0} valueLabel={stat('qualifying').label} />
-                <StatBar label="Race Pace" value={stat('racePace').value ?? 0} valueLabel={stat('racePace').label} />
-                <StatBar label="Cornering" value={stat('cornering').value ?? 0} valueLabel={stat('cornering').label} />
-                <StatBar label="Overtaking" value={stat('overtakingRacecraft').value ?? 0} valueLabel={stat('overtakingRacecraft').label} />
-                <StatBar label="Composure" value={stat('composure').value ?? 0} valueLabel={stat('composure').label} />
-                <StatBar label="Aggression" value={stat('aggression').value ?? 0} valueLabel={stat('aggression').label} />
-                <StatBar label="Morale" value={d.morale / 10} />
-                <StatBar label="Confidence" value={d.confidence / 10} />
+                <StatBar label="Qualifying" value={stat('qualifying').value ?? 0} max={100} valueLabel={stat('qualifying').label} />
+                <StatBar label="Race Pace" value={stat('racePace').value ?? 0} max={100} valueLabel={stat('racePace').label} />
+                <StatBar label="Cornering" value={stat('cornering').value ?? 0} max={100} valueLabel={stat('cornering').label} />
+                <StatBar label="Overtaking" value={stat('overtakingRacecraft').value ?? 0} max={100} valueLabel={stat('overtakingRacecraft').label} />
+                <StatBar label="Composure" value={stat('composure').value ?? 0} max={100} valueLabel={stat('composure').label} />
+                <StatBar label="Aggression" value={stat('aggression').value ?? 0} max={100} valueLabel={stat('aggression').label} />
+                <StatBar label="Morale" value={d.morale} max={100} valueLabel={`${d.morale.toFixed(1)}`} />
+                <StatBar label="Confidence" value={d.confidence} max={100} valueLabel={`${d.confidence.toFixed(1)}`} />
               </div>
             </Panel>
           );

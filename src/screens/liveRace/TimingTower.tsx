@@ -1,14 +1,15 @@
 // Left-side timing tower / running order. A compact full-field table with tabs
-// (Overview / Gaps / Tyres / Stops / Sectors). Player cars are highlighted and
+// (Overview / Gaps / Intervals / Tyres / Stops / Sectors). Player cars are highlighted and
 // every row carries compact reliability (R) and crash (C) risk indicators.
 
 import { useState } from 'react';
 import type { LiveCarState } from '../../types/liveTypes';
 import { DeltaTag, RiskDot } from './dashboardUi';
 import { fmtLap, fmtSector, tyreLetter } from './dashboardFormat';
+import { ratingColor } from '../../components/ui';
 
-type Tab = 'Overview' | 'Gaps' | 'Tyres' | 'Pit Stops' | 'Sectors';
-const TABS: Tab[] = ['Overview', 'Gaps', 'Tyres', 'Pit Stops', 'Sectors'];
+type Tab = 'Overview' | 'Gaps' | 'Intervals' | 'Tyres' | 'Pit Stops' | 'Sectors';
+const TABS: Tab[] = ['Overview', 'Gaps', 'Intervals', 'Tyres', 'Pit Stops', 'Sectors'];
 
 export function TimingTower({
   cars,
@@ -59,6 +60,7 @@ function Row({ car, tab, name, color }: { car: LiveCarState; tab: Tab; name: str
   const wear = Math.round(car.tire.wear);
   const life = Math.max(0, 100 - wear);
   const tyre = tyreLetter(car.tire.compound);
+  const position = car.position ?? 0;
 
   return (
     <tr
@@ -110,6 +112,12 @@ function Row({ car, tab, name, color }: { car: LiveCarState; tab: Tab; name: str
           </td>
         </>
       )}
+      {tab === 'Intervals' && (
+        <>
+          <td className="py-1 pr-1 text-right tabular-nums text-slate-300">{position === 1 ? 'LEADER' : `+${car.interval.toFixed(1)}`}</td>
+          <td className="py-1 pr-2 text-right tabular-nums text-slate-400">{position === 1 ? '—' : `P${Math.max(1, position - 1)}`}</td>
+        </>
+      )}
       {tab === 'Tyres' && (
         <>
           <td className="py-1 text-center">
@@ -148,14 +156,14 @@ function Row({ car, tab, name, color }: { car: LiveCarState; tab: Tab; name: str
 }
 
 function TyreCell({ letter, className, life }: { letter: string; className: string; life: number }) {
-  const bar = life <= 20 ? 'bg-red-500' : life <= 45 ? 'bg-orange-500' : life <= 70 ? 'bg-amber-400' : 'bg-emerald-400';
+  const color = ratingColor(life);
   return (
     <span className="inline-flex items-center gap-1">
       <span className={`inline-flex h-4 w-4 items-center justify-center rounded-full text-[9px] font-bold ${className}`}>
         {letter}
       </span>
       <span className="h-1 w-8 overflow-hidden rounded-full bg-slate-800">
-        <span className={`block h-full ${bar}`} style={{ width: `${life}%` }} />
+        <span className="block h-full" style={{ width: `${Math.max(0, Math.min(100, life))}%`, backgroundColor: color }} />
       </span>
     </span>
   );

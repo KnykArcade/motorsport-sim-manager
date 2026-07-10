@@ -35,6 +35,7 @@ export const SERIES_PRESTIGE: Record<Series, number> = {
   IndyCar: 72,
   CART: 70,
   'Champ Car': 70,
+  NASCAR: 68,
 };
 
 export function seriesPrestige(series: Series): number {

@@ -8,6 +8,7 @@ import {
 } from '../sim/engineSupplierEngine';
 import { toMoney } from '../sim/financeEngine';
 import { Panel } from '../components/Panel';
+import { ratingColor } from '../components/ui';
 import { Button } from '../components/Button';
 import type { EngineState, EngineSupplierDeal } from '../types/engineTypes';
 
@@ -197,20 +198,19 @@ function ManufacturerPanel({ engine }: { engine: EngineState }) {
     );
   }
   const reviews = [...(engine.manufacturerReviews ?? [])].slice(-3).reverse();
-  const tone =
-    confidence >= 70 ? 'text-green-400' : confidence >= 40 ? 'text-amber-400' : 'text-red-400';
+  const color = ratingColor(confidence);
   return (
     <Panel title="Manufacturer Relationship">
       <div className="flex items-center justify-between">
         <div className="text-sm text-neutral-300">
           Target: <span className="font-semibold text-neutral-100">{objective.description}</span>
         </div>
-        <div className={`text-sm font-bold ${tone}`}>Confidence {confidence}</div>
+        <div className="text-sm font-bold" style={{ color }}>Confidence {confidence}</div>
       </div>
       <div className="mt-2 h-2 w-full overflow-hidden rounded bg-neutral-800">
         <div
-          className={`h-full ${confidence >= 70 ? 'bg-green-500' : confidence >= 40 ? 'bg-amber-500' : 'bg-red-500'}`}
-          style={{ width: `${confidence}%` }}
+          className="h-full"
+          style={{ width: `${confidence}%`, backgroundColor: color }}
         />
       </div>
       <p className="mt-2 text-xs text-neutral-500">

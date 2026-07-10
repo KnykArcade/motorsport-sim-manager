@@ -4,7 +4,7 @@ import { isSingleSeasonMode, isDevelopmentProjectAllowedForMode } from '../game/
 import { developmentProjectCatalog } from '../data/development/developmentProjects';
 import { Panel } from '../components/Panel';
 import { Button } from '../components/Button';
-import { formatMoney } from '../components/ui';
+import { formatMoney, ratingColor } from '../components/ui';
 import type { DevelopmentProject, DevelopmentOutcome } from '../types/gameTypes';
 import {
   developmentSlots,
@@ -140,8 +140,8 @@ export function Development() {
                   </div>
                   <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-neutral-800">
                     <div
-                      className={`h-full ${p.rushed ? 'bg-red-500' : 'bg-amber-500'}`}
-                      style={{ width: `${progressPct}%` }}
+                      className="h-full"
+                      style={{ width: `${progressPct}%`, backgroundColor: p.rushed ? '#ef4444' : ratingColor(progressPct) }}
                     />
                   </div>
                   <div className="mt-1 flex items-center justify-between">
@@ -336,7 +336,10 @@ function FactoryFloor({
                 <span className="rounded bg-zinc-800 px-2 py-0.5 text-xs font-semibold text-amber-200">L{level}</span>
               </div>
               <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-zinc-800">
-                <div className="h-full bg-amber-400" style={{ width: `${Math.min(100, level * 20)}%` }} />
+                <div
+                  className="h-full"
+                  style={{ width: `${Math.min(100, level * 20)}%`, backgroundColor: ratingColor(Math.min(100, level * 20)) }}
+                />
               </div>
               <div className="mt-2 text-[11px] text-neutral-400">
                 {active.length > 0 ? (

@@ -115,6 +115,10 @@ function monitor(): AnalyticsMonitor {
       {
         driverId: 'd-senna',
         position: 3,
+        confidenceScore: 74,
+        trustInTeam: 69,
+        trustInCar: 72,
+        teamTrustInDriver: 66,
         focus: 'Tyre life',
         focusLabel: 'Tyres',
         strategyRead: 'Plan on target',
@@ -178,13 +182,15 @@ describe('F11990sLiveRaceScreen', () => {
     );
 
     expect(html).toContain('data-testid="f1-1990s-live-race-screen"');
-    expect(html).toContain('1990s Era');
+    expect(html).toContain('1990s F1 Era');
     expect(html).toContain('Belgian Grand Prix');
     expect(html).toContain('Spa-Francorchamps');
     expect(html).toContain('Lap 18 / 44');
     expect(html).toContain('A. Senna');
     expect(html).toContain('M. Schumacher');
     expect(html).toContain('Live Timing');
+    expect(html).toContain('Intervals');
+    expect(html).toContain('Driver Trust');
     expect(html).toContain('data-testid="track-map-asset-panel"');
     expect((html.match(/Driver Focus/g) ?? []).length).toBeGreaterThanOrEqual(2);
     expect(html).toContain('Driver Focus');

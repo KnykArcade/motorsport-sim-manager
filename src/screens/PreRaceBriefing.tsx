@@ -4,6 +4,7 @@ import {
   activeDriversForTeam,
   carForTeam,
   currentRace,
+  minRaceDriversForSeries,
   teamById,
 } from '../game/careerState';
 import { getTrackById, getRegulationSet } from '../data';
@@ -54,6 +55,7 @@ export function PreRaceBriefing() {
   const team = teamById(state, state.selectedTeamId);
   const car = carForTeam(state, state.selectedTeamId);
   const activeDrivers = activeDriversForTeam(state, state.selectedTeamId);
+  const minDrivers = minRaceDriversForSeries(state.series);
   const carRatings = car ? effectiveCarRatings(car) : null;
 
   if (!race || !track) return null;
@@ -243,9 +245,9 @@ export function PreRaceBriefing() {
                   </span>
                 </li>
               ))}
-              {activeDrivers.length < 2 && (
+              {activeDrivers.length < minDrivers && (
                 <li className="text-sm text-orange-400">
-                  Only {activeDrivers.length} active driver(s). Sign a second driver before racing.
+                  Only {activeDrivers.length} active driver(s). Sign {minDrivers === 1 ? 'a driver' : 'a second driver'} before racing.
                 </li>
               )}
             </ul>

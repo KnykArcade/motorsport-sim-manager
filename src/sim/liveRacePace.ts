@@ -21,6 +21,7 @@ import type {
   RiskLevel,
   TrafficStatus,
 } from '../types/liveTypes';
+import { collectDamageComponents, damagePacePenalty, DEFAULT_DAMAGE_SETTINGS } from './damageComponents';
 
 // Seconds of lap time gained per 1.0 of Live Race Pace (1-10). Chosen to match
 // the previous `paceRating * 0.45` spread (paceRating = baseRacePace * 4), so
@@ -166,17 +167,29 @@ export function tyreMistakeRisk(wear: number): number {
   return 0.05;
 }
 
-// Terminal tyre-failure (puncture / delamination) probability per lap. Kept
-// deliberately RARE: tyre wear should express itself as pace loss, mistakes and
-// forced pit stops (see the tyre-cliff stop in raceTickEngine) long before it
-// ever ends a race. Only bites in the high-wear window a car briefly occupies
-// before it pits, so tyre/damage stays a small share of all retirements.
-export function tyreFailureRisk(wear: number, wet: boolean): number {
+// Scale for terminal tyre failures per era. Older 1990s F1 was more prone to
+// punctures/delaminations, so 1990-1994 gets a small bump to keep tyre DNFs in
+// the 2-4% window despite the heavier mechanical attrition of that era.
+function eraTyreFailureScale(year: number | undefined): number {
+  if (year == null) return 1;
+  if (year <= 1994) return 1.35;
+  if (year <= 2000) return 1.0;
+  return 0.85;
+}
+
+// Terminal tyre-failure (puncture / delamination / wheel issue) probability per
+// lap. Kept deliberately rare: tyre wear should express itself as pace loss,
+// mistakes and forced pit stops (see the tyre-cliff stop in raceTickEngine) long
+// before it ends a race. Failures now ramp from moderate wear (55+) so they show
+// up in the 1990s target split (~2-4% of race DNFs) without dominating.
+export function tyreFailureRisk(wear: number, wet: boolean, year?: number): number {
   let risk = 0;
-  if (wear >= 90) risk = 0.026;
-  else if (wear >= 82) risk = 0.015;
-  else if (wear >= 74) risk = 0.006;
-  return risk * (wet ? 1.4 : 1);
+  if (wear >= 90) risk = 0.018;
+  else if (wear >= 82) risk = 0.010;
+  else if (wear >= 74) risk = 0.005;
+  else if (wear >= 60) risk = 0.0015;
+  else if (wear >= 55) risk = 0.0008;
+  return risk * (wet ? 1.4 : 1) * eraTyreFailureScale(year);
 }
 
 // Fuel/distance: cars run heavy early and get progressively faster as fuel
@@ -332,10 +345,7 @@ export function computeLivePace(inp: LivePaceInputs): number {
   pace += dirty;
   if (dirty < 0) pace += spec.trafficPaceBonus; // Attack claws some of it back
 
-  if (car.damaged) pace -= 0.4;
-  if (car.reliabilityIssue && !car.reliabilityIssue.managed) {
-    pace -= car.reliabilityIssue.severity === 'Severe' ? 0.5 : 0.25;
-  }
+  pace -= damagePacePenalty(collectDamageComponents(car, undefined, undefined, car.damageSettings ?? DEFAULT_DAMAGE_SETTINGS));
   if (inp.mistakeThisLap) pace -= 0.6;
 
   return clamp(pace, 1, 10.5);

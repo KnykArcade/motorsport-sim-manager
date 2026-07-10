@@ -130,10 +130,18 @@ describe('relationshipEngine — seeding', () => {
   it('keeps all values within 0..100', () => {
     const rels = build();
     for (const rel of Object.values(rels)) {
-      for (const v of [rel.teamLoyalty, rel.engineerChemistry, rel.teammateRelationship, rel.morale, rel.frustration]) {
+      for (const v of [rel.teamLoyalty, rel.engineerChemistry, rel.teammateRelationship, rel.morale, rel.frustration, rel.teamTrustInDriver]) {
         expect(v).toBeGreaterThanOrEqual(0);
         expect(v).toBeLessThanOrEqual(100);
       }
+    }
+  });
+
+  it('seeds team trust in driver for every relationship', () => {
+    const rels = build();
+    for (const rel of Object.values(rels)) {
+      expect(rel.teamTrustInDriver).toBeGreaterThanOrEqual(0);
+      expect(rel.teamTrustInDriver).toBeLessThanOrEqual(100);
     }
   });
 
@@ -212,7 +220,7 @@ describe('relationshipEngine — team orders on the live race', () => {
 
 describe('relationshipEngine — consequences', () => {
   function pair(): Record<string, DriverRelationship> {
-    const base = { teamId: 't', teamLoyalty: 60, engineerChemistry: 60, teammateRelationship: 60, morale: 60, frustration: 20, numberOneExpectation: false, selfConfidence: 60, trustInCar: 55, trustInTeam: 55, trustInPrincipal: 58, ego: 50, personalityTraits: [] as DriverPersonalityTrait[], wants: [] as DriverWant[] };
+    const base = { teamId: 't', teamLoyalty: 60, engineerChemistry: 60, teammateRelationship: 60, morale: 60, frustration: 20, numberOneExpectation: false, selfConfidence: 60, trustInCar: 55, trustInTeam: 55, trustInPrincipal: 58, teamTrustInDriver: 55, ego: 50, personalityTraits: [] as DriverPersonalityTrait[], wants: [] as DriverWant[] };
     return {
       fav: { driverId: 'fav', teammateId: 'dis', ...base },
       dis: { driverId: 'dis', teammateId: 'fav', ...base },
@@ -330,6 +338,7 @@ describe('relationshipEngine — syncDriverRelationshipsForTeam', () => {
         trustInCar: 50,
         trustInTeam: 50,
         trustInPrincipal: 50,
+        teamTrustInDriver: 55,
         ego: 50,
         personalityTraits: ['Loyal'],
         wants: ['equal_treatment'],
@@ -374,6 +383,7 @@ describe('relationshipEngine — syncDriverRelationshipsForTeam', () => {
         trustInCar: 68,
         trustInTeam: 71,
         trustInPrincipal: 74,
+        teamTrustInDriver: 73,
         ego: 80,
         personalityTraits: ['High Ego', 'Ambitious'],
         wants: ['number_one_status', 'better_salary'],

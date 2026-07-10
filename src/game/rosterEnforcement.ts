@@ -18,7 +18,8 @@ import {
   activeDriversForTeam,
   driversForTeam,
   isReserveContract,
-  MAX_RACE_DRIVERS,
+  maxRaceDriversForSeries,
+  minRaceDriversForSeries,
 } from './careerState';
 import type { GameState } from './careerState';
 import type { MarketDriver } from '../types/marketTypes';
@@ -40,10 +41,12 @@ export function canEnterRaceWeekend(state: GameState): {
   reason?: string;
 } {
   const active = activeDriversForTeam(state, state.selectedTeamId);
-  if (active.length < MAX_RACE_DRIVERS) {
+  const minDrivers = minRaceDriversForSeries(state.series);
+  if (active.length < minDrivers) {
+    const required = minDrivers === 2 ? 'two' : minDrivers === 1 ? 'one' : String(minDrivers);
     return {
       allowed: false,
-      reason: `Your team must sign two race drivers before entering Round 1. You currently have ${active.length} active race driver${active.length === 1 ? '' : 's'}.`,
+      reason: `Your team must sign ${required} race driver${minDrivers === 1 ? '' : 's'} before entering Round 1. You currently have ${active.length} active race driver${active.length === 1 ? '' : 's'}.`,
     };
   }
   return { allowed: true };
@@ -112,7 +115,8 @@ export function enforceRosters(state: GameState): EnforcementResult {
       continue;
     }
 
-    const needed = MAX_RACE_DRIVERS - active.length;
+    const minDrivers = minRaceDriversForSeries(state.series);
+    const needed = minDrivers - active.length;
     if (needed <= 0) continue;
 
     const signedNames: string[] = [];
@@ -148,13 +152,14 @@ export function enforceRosters(state: GameState): EnforcementResult {
 
   // Post-enforcement validation.
   const finalState = { ...state, drivers, teams, signedMarketIds: [...signedMarketIds] };
+  const minDrivers = minRaceDriversForSeries(state.series);
 
   for (const team of teams) {
     const active = activeDriversForTeam(finalState, team.id);
-    if (active.length !== MAX_RACE_DRIVERS) {
+    if (active.length < minDrivers || active.length > maxRaceDriversForSeries(state.series)) {
       violations.push({
         teamId: team.id,
-        message: `${team.name} has ${active.length} active race drivers after enforcement (expected ${MAX_RACE_DRIVERS}).`,
+        message: `${team.name} has ${active.length} active race drivers after enforcement (expected ${minDrivers}-${maxRaceDriversForSeries(state.series)}).`,
       });
     }
     const roster = drivers.filter((d) => d.teamId === team.id);
@@ -192,8 +197,8 @@ export function validateRaceSeatSigning(
   state: GameState,
   marketId: string,
 ): { valid: boolean; reason?: string } {
-  if (state.series !== 'F1') {
-    return { valid: false, reason: 'Race-seat signing is only available for F1 teams.' };
+  if (state.series !== 'F1' && state.series !== 'NASCAR') {
+    return { valid: false, reason: 'Race-seat signing is only available for F1 and NASCAR teams.' };
   }
   if (!isPreseason(state)) {
     return { valid: false, reason: 'Race-seat signings are only available during preseason.' };
@@ -204,8 +209,9 @@ export function validateRaceSeatSigning(
 
   const roster = driversForTeam(state, state.selectedTeamId);
   const active = activeDriversForTeam(state, state.selectedTeamId);
-  if (active.length >= MAX_RACE_DRIVERS) {
-    return { valid: false, reason: 'Team already has 2 active race drivers.' };
+  const maxRaceDrivers = maxRaceDriversForSeries(state.series);
+  if (active.length >= maxRaceDrivers) {
+    return { valid: false, reason: `Team already has ${maxRaceDrivers} active race driver${maxRaceDrivers === 1 ? '' : 's'}.` };
   }
   if (roster.length >= 3) {
     return { valid: false, reason: 'Team already has 3 assigned drivers (maximum).' };

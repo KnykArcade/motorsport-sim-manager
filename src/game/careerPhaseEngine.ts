@@ -2,7 +2,7 @@
 // and deduplication logic for the between-race management flow.
 
 import type { GameState } from './careerState';
-import { activeDriversForTeam, carForTeam } from './careerState';
+import { activeDriversForTeam, carForTeam, minRaceDriversForSeries } from './careerState';
 import { getTrackById } from '../data';
 import { effectiveCarRatings } from '../sim/trackFitEngine';
 import { developmentSlots } from '../sim/facilityEngine';
@@ -233,7 +233,7 @@ export function approvePreseasonTab(
   // Guard: driverLineup tab requires valid race-seat count.
   if (tabId === 'driverLineup') {
     const activeDrivers = activeDriversForTeam(state, state.selectedTeamId);
-    if (activeDrivers.length < 2) {
+    if (activeDrivers.length < minRaceDriversForSeries(state.series)) {
       // Reject approval — return state unchanged.
       return state;
     }

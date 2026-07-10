@@ -8,9 +8,12 @@
 import type { RaceEvent } from '../types/simTypes';
 import type {
   AnalyticsRecommendation,
+  DamageRepairMode,
   LiveCarState,
   LiveRaceState,
   PaceMode,
+  PitIntensity,
+  PitStopResult,
   RecAction,
   RecPriority,
   StrategyModeSource,
@@ -33,10 +36,11 @@ import {
 import { mechanicalLabel, crashLabel, tyreLabel, otherLabel } from './dnfModel';
 import { generateCandidates, cooldownFor, isModeAction, REC_COOLDOWN } from './analyticsEngine';
 import { advanceStint, startStint, longStintNote } from './strategyStint';
-import type { Track } from '../types/gameTypes';
+import type { Series, Track } from '../types/gameTypes';
 import type { StrategyModeSpec } from './liveRacePace';
 import type { Rng } from './random';
 import { stepWeather } from './weatherEngine';
+import { toLegacyRating } from './ratingScale';
 import {
   stepSafetyCar,
   SAFETY_CAR_LAP_PENALTY,
@@ -44,16 +48,54 @@ import {
 } from './safetyCarEngine';
 import { aiLapDecision } from './aiStrategyEngine';
 import { pitWindowFor } from './pitStrategyEngine';
+import {
+  pitIntensityBaseSeverity,
+  pitIntensityBotchRisk,
+  pitIntensityPenaltySeconds,
+  pitIntensitySpec,
+  pitIntensityStationaryFloor,
+} from './pitIntensityData';
+import { markSafetyCarPitPrompted } from './safetyCarStrategy';
 import { generateRaceEventPool, resolveRaceEventTrigger } from './raceEventEngine';
 import { rollReliabilityIssue } from './reliabilityEngine';
 import { findOption, applyDecisionEffects } from './raceDecisionEngine';
+import {
+  collectDamageComponents,
+  type DamageComponent,
+  damageRiskContribution,
+  damageRepairSeconds,
+  DEFAULT_DAMAGE_SETTINGS,
+  resolveReliabilityRecoveryOutcome,
+  type ReliabilityRecoveryRatings,
+  type ReliabilityRecoveryOutcome,
+} from './damageComponents';
 
 const MAX_RACE_EVENTS = 3;
+const SECTORS = 3;
 // Baseline "other" (fuel system, illness, debris, etc.) per-lap DNF probability.
-const OTHER_PER_LAP = 0.00015;
+// Tuned to land in the 4-8% cause-share window for 1990s F1.
+const OTHER_PER_LAP = 0.00055;
+const WET_MECH_RISK_MULT = 1.08;
+const WET_CRASH_RISK_MULT = 1.2;
+
+function normalizeProgress(n: number): number {
+  return ((n % 1) + 1) % 1;
+}
+const DAMAGE_FAILURE_FEEDBACK_CAP = 0.012;
+const DAMAGE_CRASH_FEEDBACK_CAP = 0.015;
 
 const PRIORITY_RANK: Record<RecPriority, number> = { low: 1, medium: 2, high: 3, urgent: 4 };
-const STRATEGY_MODE_LOCK_LAPS = 2;
+const STRATEGY_MODE_LOCK_LAPS = 3;
+const STRATEGY_MODE_LOCK_EXTENSION_LAPS = 2;
+
+function strategyModeLockLapsFor(car: LiveCarState): number {
+  return isHealthyStrategyStint(car) ? STRATEGY_MODE_LOCK_LAPS + STRATEGY_MODE_LOCK_EXTENSION_LAPS : STRATEGY_MODE_LOCK_LAPS;
+}
+
+function isHealthyStrategyStint(car: LiveCarState): boolean {
+  const paceFine = car.liveRacePace >= Math.max(3.5, car.baseRacePace - 0.75);
+  return !car.damaged && !car.reliabilityIssue && !car.lastIncident && (car.tire.wear ?? 0) < 68 && paceFine;
+}
 
 // --- Battle / position-change event tuning -------------------------------
 // Gap (s) within which a car behind is "challenging" the car ahead.
@@ -66,29 +108,175 @@ const MAX_BATTLE_EVENTS = 4;
 // driver, teammates, the closing laps, or the points/podium positions.
 const BATTLE_POINTS_CUTOFF = 10;
 
+type PitStopDecision = {
+  intensity?: PitIntensity;
+  exitMode?: PaceMode;
+  repairMode?: DamageRepairMode;
+};
+
+function resolvePitIntensity(car: LiveCarState): PitIntensity {
+  return car.pit.intensity ?? car.pit.intensityDefault ?? 'Standard';
+}
+
+function resolvePitExitMode(car: LiveCarState): PaceMode {
+  return car.pit.exitMode ?? 'Conservative';
+}
+
+function applyPitDecision(car: LiveCarState, decision: PitStopDecision | undefined): LiveCarState {
+  if (!decision) return car;
+  return {
+    ...car,
+    pit: {
+      ...car.pit,
+      intensity: decision.intensity ?? car.pit.intensity ?? car.pit.intensityDefault ?? 'Standard',
+      exitMode: decision.exitMode ?? car.pit.exitMode ?? 'Conservative',
+      repairMode: decision.repairMode ?? car.pit.repairMode ?? 'None',
+    },
+  };
+}
+
+function applyPitExitMode(
+  car: LiveCarState,
+  mode: PaceMode,
+  currentLap: number,
+): LiveCarState {
+  if (car.safetyCarModePreSC != null) {
+    return {
+      ...car,
+      safetyCarModeAfterSC: mode,
+      strategyStint: startStint(mode, car.paceMode, currentLap, 'pit'),
+      pit: { ...car.pit, exitMode: mode },
+    };
+  }
+  return {
+    ...car,
+    paceMode: mode,
+    safetyCarModePreSC: null,
+    safetyCarModeAfterSC: null,
+    strategyStint: startStint(mode, car.paceMode, currentLap, 'pit'),
+    pit: { ...car.pit, exitMode: mode },
+  };
+}
+
+function pitStopTimeFromLoss(
+  pitLossBase: number,
+  repairSeconds: number,
+  opsForm: number,
+  safetyCarActive: boolean,
+  rng: Rng,
+  intensity: PitIntensity,
+  pitCrewOperations: number,
+  driverComposure: number,
+  driverRiskManagement: number,
+  series: Series,
+): { time: number; result: PitStopResult } {
+  const spec = pitIntensitySpec(intensity);
+  const skillBlend =
+    pitCrewOperations * 0.46 + driverComposure * 0.27 + driverRiskManagement * 0.27;
+  const weekendBoost = opsForm * 0.22;
+  const skillMitigation = clamp((skillBlend - 50) * 0.028 + weekendBoost, -0.85, 1.1);
+  const stationary = clamp(
+    pitLossBase + repairSeconds + spec.stationaryDelta - skillMitigation,
+    pitIntensityStationaryFloor(series),
+    28,
+  );
+
+  const botchRisk = pitIntensityBotchRisk(
+    intensity,
+    pitCrewOperations,
+    driverComposure,
+    driverRiskManagement,
+    opsForm,
+    safetyCarActive,
+  );
+  const botch = rng.chance(botchRisk);
+
+  if (!botch) {
+    const variance = rng.variance(0.14);
+    return {
+      time: round1(clamp(stationary + variance, pitIntensityStationaryFloor(series), 28)),
+      result: {
+        tier: 'Clean',
+        note: 'Nailed pit stop — clean and fast.',
+        addedSeconds: 0,
+      },
+    };
+  }
+
+  const severitySeed = clamp(
+    pitIntensityBaseSeverity(intensity) +
+      spec.severityDelta +
+      (skillBlend < 50 ? (50 - skillBlend) * 0.004 : 0) -
+      (skillBlend > 50 ? (skillBlend - 50) * 0.0018 : 0),
+    0.08,
+    0.9,
+  );
+  const tierRoll = rng.next();
+  let result: PitStopResult;
+  if (tierRoll < severitySeed * 0.18) {
+    const addedSeconds = round1(rng.range(13, pitIntensityPenaltySeconds(series)));
+    result = {
+      tier: 'Major',
+      note: `Pit stop botch — unsafe release / speeding penalty costs ${addedSeconds.toFixed(1)}s.`,
+      addedSeconds,
+    };
+  } else if (tierRoll < severitySeed * 0.52) {
+    const addedSeconds = round1(rng.range(2.6, 5.4));
+    result = {
+      tier: 'Moderate',
+      note: `Pit stop botch — slipped wheel nut / wrong call costs ${addedSeconds.toFixed(1)}s.`,
+      addedSeconds,
+    };
+  } else {
+    const addedSeconds = round1(rng.range(0.8, 1.9));
+    result = {
+      tier: 'Minor',
+      note: `Slow pit stop cost ${addedSeconds.toFixed(1)}s.`,
+      addedSeconds,
+    };
+  }
+
+  return {
+    time: round1(clamp(stationary + result.addedSeconds + rng.variance(0.12), pitIntensityStationaryFloor(series), 40)),
+    result,
+  };
+}
+
 // Advance one lap. `meta` carries track + names + player team.
-export function stepLiveRace(state: LiveRaceState, meta: LiveRaceMeta): LiveRaceState {
+export function stepLiveSector(state: LiveRaceState, meta: LiveRaceMeta): LiveRaceState {
   if (state.phase === 'finished') return state;
+  if (state.pendingPrompt && state.safetyCar.active) state = { ...state, pendingPrompt: null };
   if (state.pendingPrompt) return state; // resolve the prompt first
 
   const { track } = meta;
   const nextLap = state.currentLap + 1;
-  const isFinalLap = nextLap >= state.totalLaps;
+  const currentSectorIndex = state.sector ?? 0;
+  const nextSector: 0 | 1 | 2 = ((currentSectorIndex + 1) % 3) as 0 | 1 | 2;
+  const isFirstSector = currentSectorIndex === 0;
+  const isFinalSector = currentSectorIndex === 2;
+  const isFinalLap = isFinalSector && nextLap >= state.totalLaps;
   const name = (id: string) => meta.driverNames[id] ?? id;
 
   const lapEvents: RaceEvent[] = [];
   const pittedThisLap: LiveCarState[] = [];
   let incidentThisLap = false;
   let incidentSeverity = 0;
+  const incidentDriverIds: string[] = [];
 
   // Weather first (affects the whole field this lap).
-  const { weather, changed: weatherChanged } = stepWeather(
-    state.weather,
-    track,
-    state.seed,
-    nextLap,
-    state.totalLaps,
-  );
+  let weather = state.weather;
+  let weatherChanged = false;
+  if (isFirstSector) {
+    const weatherResult = stepWeather(
+      state.weather,
+      track,
+      state.seed,
+      nextLap,
+      state.totalLaps,
+    );
+    weather = weatherResult.weather;
+    weatherChanged = weatherResult.changed;
+  }
 
   // Previous-lap running order, used for dirty-air / traffic and pressure. A
   // car's `interval` is its gap to the car directly ahead; the next car's
@@ -105,42 +293,80 @@ export function stepLiveRace(state: LiveRaceState, meta: LiveRaceMeta): LiveRace
   });
 
   // Transient per-car facts for post-order status messages.
-  const mistakeByDriver: Record<string, boolean> = {};
 
+  const carRngs: Record<string, Rng> = {};
   const newCars: LiveCarState[] = state.cars.map((car) => {
     if (!car.running) return car; // already retired — carried unchanged
 
-    const rng = createSeededRandom(deriveSeed(state.seed, 'lap', car.driverId, nextLap));
+    const rng = carRngs[car.driverId] ?? createSeededRandom(deriveSeed(state.seed, 'lap', car.driverId, nextLap));
+    carRngs[car.driverId] = rng;
     let c: LiveCarState = {
       ...car,
       tire: { ...car.tire },
-      pit: { ...car.pit, inPitThisLap: false, scheduledLaps: [...car.pit.scheduledLaps] },
+      pit: { ...car.pit, inPitThisLap: isFirstSector ? false : car.pit.inPitThisLap, scheduledLaps: [...car.pit.scheduledLaps] },
       reliabilityIssue: car.reliabilityIssue ? { ...car.reliabilityIssue } : null,
       aeroHealth: car.aeroHealth ?? 100,
     };
     if (state.safetyCar.active) {
+      const preSC = c.safetyCarModePreSC ?? c.paceMode;
+      const afterSC = c.safetyCarModeAfterSC ?? c.paceMode;
       if (c.paceMode !== 'Conservative') {
         c = {
           ...c,
-          safetyCarModeBefore: c.safetyCarModeBefore ?? c.paceMode,
+          safetyCarModePreSC: preSC,
+          safetyCarModeAfterSC: afterSC,
           paceMode: 'Conservative',
           strategyStint: startStint('Conservative', c.paceMode, nextLap, 'safety_car'),
         };
+      } else if (c.safetyCarModePreSC == null || c.safetyCarModeAfterSC == null) {
+        c = {
+          ...c,
+          safetyCarModePreSC: preSC,
+          safetyCarModeAfterSC: afterSC,
+        };
       }
-    } else if (c.safetyCarModeBefore) {
-      const resumeMode = c.safetyCarModeBefore;
-      c = {
-        ...c,
-        safetyCarModeBefore: null,
-        paceMode: resumeMode,
-        strategyStint: startStint(resumeMode, c.paceMode, nextLap, 'safety_car'),
-      };
+    } else if (c.safetyCarModePreSC != null) {
+      if (c.isPlayer) {
+        const resumeMode = c.safetyCarModeAfterSC ?? c.safetyCarModePreSC;
+        c = {
+          ...c,
+          safetyCarModePreSC: null,
+          safetyCarModeAfterSC: null,
+          paceMode: resumeMode,
+          strategyStint: startStint(resumeMode, c.paceMode, nextLap, 'safety_car'),
+        };
+      } else {
+        c = {
+          ...c,
+          safetyCarModePreSC: null,
+          safetyCarModeAfterSC: null,
+        };
+      }
+    }
+    const damageSettings = state.damageSettings ?? DEFAULT_DAMAGE_SETTINGS;
+    const damageComponents = collectDamageComponents(c, meta.series, meta.year, damageSettings);
+    if (c.running && damageComponents.some((component) => component.severity === 'terminal' && !component.repairableInRace)) {
+      const terminal = damageComponents.find((component) => component.severity === 'terminal' && !component.repairableInRace);
+      if (terminal) {
+        const retiredCar = retire(c, nextLap, `${terminal.kind} failure`);
+        lapEvents.push({ lap: nextLap, text: `${name(c.driverId)} retires with terminal ${terminal.kind.toLowerCase()} damage.` });
+        incidentThisLap = true;
+        incidentSeverity = Math.max(incidentSeverity, 0.6);
+        incidentDriverIds.push(c.driverId);
+        return retiredCar;
+      }
     }
 
     // --- AI decision (player pace/pits come from player decisions) ---
     let wantsPit = false;
+    let pitLoss = 0;
+    const spec = modeSpec(c.paceMode);
+    if (isFirstSector) {
     if (!c.isPlayer) {
       const action = aiLapDecision(c, state, track, nextLap);
+      if (action.pitIntensity || action.pitExitMode || action.repairMode) {
+        c = applyPitDecision(c, { intensity: action.pitIntensity, exitMode: action.pitExitMode, repairMode: action.repairMode });
+      }
       if (!state.safetyCar.active) c.paceMode = action.paceMode;
       if (action.pitNow) {
         wantsPit = true;
@@ -165,7 +391,6 @@ export function stepLiveRace(state: LiveRaceState, meta: LiveRaceMeta): LiveRace
     }
 
     // --- Execute pit stop ---
-    let pitLoss = 0;
     if (wantsPit) {
       // A stop fulfils the nearest planned stop. Detect an *early* stop (one made
       // before reaching the next scheduled lap, e.g. a cheap safety-car stop) so
@@ -190,6 +415,8 @@ export function stepLiveRace(state: LiveRaceState, meta: LiveRaceMeta): LiveRace
           ? pitWindowFor(c.pit.scheduledLaps[0], state.totalLaps)
           : null;
       c.pit.lastWindowPromptLap = null;
+      const pitIntensity = resolvePitIntensity(c);
+      const pitExitMode = resolvePitExitMode(c);
       c.pit.planStatus =
         c.pit.scheduledLaps.length > 0 ? (recalc ? 'recalculated' : 'planned') : 'completed';
       // Clarify the strategy narrative when an early stop absorbs a planned stop.
@@ -201,14 +428,33 @@ export function stepLiveRace(state: LiveRaceState, meta: LiveRaceMeta): LiveRace
           }pit.`,
         });
       }
-      pitLoss = state.safetyCar.active
-        ? Math.max(8, c.pitLossBase - SAFETY_CAR_PIT_SAVING)
-        : c.pitLossBase;
-      const pitStop = pitStopTimeFromLoss(c.pitLossBase, c.opsForm, state.safetyCar.active, rng);
-      c.pit.lastPitStopTime = pitStop.time;
-      if (pitStop.slow) {
-        lapEvents.push({ lap: nextLap, text: `${name(c.driverId)} loses time with a slow ${pitStop.time.toFixed(1)}s pit stop.` });
+      pitLoss = state.safetyCar.active ? Math.max(8, c.pitLossBase - SAFETY_CAR_PIT_SAVING) : c.pitLossBase;
+      const repairMode = c.pit.repairMode ?? 'None';
+      const repairSeconds = damageRepairSeconds(damageComponents, repairMode);
+      const pitStop = pitStopTimeFromLoss(
+        pitLoss,
+        repairSeconds,
+        c.opsForm,
+        state.safetyCar.active,
+        rng,
+        pitIntensity,
+        c.pitCrewOperations ?? 55,
+        c.driverComposure ?? 55,
+        c.driverRiskManagement ?? 55,
+        meta.series,
+      );
+      const doubleStackPenalty = state.safetyCar.active && pittedThisLap.some((p) => p.teamId === c.teamId) ? 2.8 : 0;
+      c.pit.lastPitStopTime = round1(pitStop.time + doubleStackPenalty);
+      c.pit.lastPitResult = pitStop.result;
+      const repairNote = repairSeconds > 0 ? ` and repairs add ${repairSeconds.toFixed(1)}s` : '';
+      lapEvents.push({ lap: nextLap, text: `${name(c.driverId)} ${pitStop.result.note}${repairNote}` });
+      if (doubleStackPenalty > 0) {
+        lapEvents.push({
+          lap: nextLap,
+          text: `${name(c.driverId)} loses ${doubleStackPenalty.toFixed(1)}s in the double-stack queue.`,
+        });
       }
+      c = applyPitExitMode(c, pitExitMode, nextLap);
       c.tire = {
         compound: weather.wet ? 'Wet' : 'Dry',
         age: 0,
@@ -218,12 +464,12 @@ export function stepLiveRace(state: LiveRaceState, meta: LiveRaceMeta): LiveRace
       pittedThisLap.push(c);
     }
 
-    const spec = modeSpec(c.paceMode);
     const intervalAhead = intervalAheadByDriver[c.driverId] ?? 0;
     const intervalBehind = intervalBehindByDriver[c.driverId] ?? 0;
     const fighting =
       (intervalAhead > 0 && intervalAhead < 1.5) || (intervalBehind > 0 && intervalBehind < 1.5);
 
+    c.mistakeThisLap = false;
     // --- Tyre wear (applied before pace so this lap reflects current rubber) ---
     if (!wantsPit) {
       const wearAdd = c.tireDegRate * spec.wearMult * (weather.wet ? 0.6 : 1);
@@ -257,28 +503,28 @@ export function stepLiveRace(state: LiveRaceState, meta: LiveRaceMeta): LiveRace
 
     // 1. Mechanical: car/engine reliability, mode, and any active warning.
     let mechRisk = c.baseFailureRisk * spec.reliabilityMult;
-    if (c.reliabilityIssue) {
-      mechRisk += c.reliabilityIssue.managed
-        ? c.reliabilityIssue.failureRisk * 0.3
-        : c.reliabilityIssue.failureRisk;
-    }
+    const damageRisk = damageRiskContribution(damageComponents);
+    mechRisk += Math.min(damageRisk.failureRisk, DAMAGE_FAILURE_FEEDBACK_CAP) * 0.6;
+    if (weather.wet) mechRisk *= WET_MECH_RISK_MULT;
     c.reliabilityRisk = mechRisk;
 
     // 2. Crash/contact: driver/track incident risk, amplified by mode, fighting,
     //    wet weather, wall proximity and existing damage; tyre wear only nudges.
     const tyreRiskAdd = tyreMistakeRisk(c.tire.wear);
-    const wallFactor = 1 + (track.attributes.riskWallProximity - 5) * 0.03;
+    // riskWallProximity is stored on the 1-100 scale, but the old 1-10 formula
+    // assumes a 5% baseline; convert to legacy 1-10 before applying it.
+    const wallFactor = 1 + (toLegacyRating(track.attributes.riskWallProximity) - 5) * 0.03;
     const crashRisk =
       (c.baseCrashRisk * spec.crashMult + tyreRiskAdd * 0.05) *
       (fighting ? 1.25 : 1) *
-      (weather.wet ? 1.4 : 1) *
+      (weather.wet ? WET_CRASH_RISK_MULT : 1) *
       wallFactor *
-      (c.damaged ? 1.15 : 1) *
-      trustRiskMult;
+      trustRiskMult *
+      (1 + Math.min(damageRisk.crashRisk, DAMAGE_CRASH_FEEDBACK_CAP) * 0.6);
     c.crashRisk = crashRisk;
 
     // 3. Tyre failure: rare, only in the high-wear window before a forced pit.
-    const tyreFailRisk = tyreFailureRisk(c.tire.wear, weather.wet);
+    const tyreFailRisk = tyreFailureRisk(c.tire.wear, weather.wet, meta.year);
     // 4. Other: fuel system, illness, debris, etc.
     const otherRisk = OTHER_PER_LAP;
 
@@ -293,7 +539,7 @@ export function stepLiveRace(state: LiveRaceState, meta: LiveRaceMeta): LiveRace
           : mechanicalLabel(rng);
       retired = { label, severity: 0.5 };
     } else if (rng.chance(crashRisk)) {
-      retired = { label: crashLabel(rng), severity: 0.7 };
+      retired = { label: crashLabel(rng, nextLap), severity: 0.7 };
     } else if (rng.chance(tyreFailRisk)) {
       retired = { label: tyreLabel(rng), severity: 0.6 };
     } else if (rng.chance(otherRisk)) {
@@ -304,6 +550,7 @@ export function stepLiveRace(state: LiveRaceState, meta: LiveRaceMeta): LiveRace
       lapEvents.push({ lap: nextLap, text: `${name(c.driverId)} retires — ${retired.label.toLowerCase()}.` });
       incidentThisLap = true;
       incidentSeverity = Math.max(incidentSeverity, retired.severity);
+      incidentDriverIds.push(c.driverId);
       return c;
     }
 
@@ -318,7 +565,7 @@ export function stepLiveRace(state: LiveRaceState, meta: LiveRaceMeta): LiveRace
         lapEvents.push({ lap: nextLap, text: `${name(c.driverId)} picks up front-wing damage.` });
       }
     }
-    mistakeByDriver[c.driverId] = mistakeThisLap;
+    c.mistakeThisLap = mistakeThisLap;
 
     // --- Live Race Pace (recomputed every lap) ---
     const formSwing = rng.variance(0.28);
@@ -350,25 +597,51 @@ export function stepLiveRace(state: LiveRaceState, meta: LiveRaceMeta): LiveRace
     if (state.safetyCar.active) lapTime = REF_LAP + SAFETY_CAR_LAP_PENALTY; // neutralised
     lapTime += pitLoss;
 
-    c.lastLapTime = round1(lapTime);
-    c.totalTime += lapTime;
-    c.lapsCompleted = nextLap;
-    // Track the fastest representative lap (ignore pit and safety-car laps).
-    const representative = !wantsPit && !state.safetyCar.active;
-    if (representative) {
-      const prevBest = c.bestLap;
-      c.bestLap = prevBest == null ? c.lastLapTime : Math.min(prevBest, c.lastLapTime);
-      c.lastSectors = splitSectors(c.lastLapTime, rng);
-      if (prevBest == null || c.lastLapTime <= prevBest) c.bestSectors = c.lastSectors;
+    c.lastSectors = splitSectors(round1(lapTime), rng);
     }
 
-    // --- Fuel burn-off + component health wear (drives the pit-wall gauges) ---
-    updateFuelAndComponents(c, track, spec, nextLap, state.totalLaps);
+    if (isFinalSector) {
+      // --- Fuel burn-off + component health wear (drives the pit-wall gauges) ---
+      updateFuelAndComponents(
+        c,
+        track,
+        spec,
+        nextLap,
+        state.totalLaps,
+        state.damageSettings ?? DEFAULT_DAMAGE_SETTINGS,
+        meta.series,
+        meta.year,
+        state.teamOrgRatings?.[c.teamId],
+        rng,
+        lapEvents,
+        name(c.driverId),
+      );
+    }
+
+    // --- Advance cumulative time and sub-lap position --------------------------
+    if (c.lastSectors) {
+      c.totalTime += c.lastSectors[currentSectorIndex];
+    }
+    if (isFinalSector) {
+      c.lastLapTime = round1((c.lastSectors ?? [0, 0, 0]).reduce((a, b) => a + b, 0));
+      c.lapsCompleted = nextLap;
+      const representative = !c.pit.inPitThisLap && !state.safetyCar.active;
+      if (representative) {
+        const prevBest = c.bestLap;
+        c.bestLap = prevBest == null ? c.lastLapTime : Math.min(prevBest, c.lastLapTime);
+        if (prevBest == null || c.lastLapTime <= prevBest) c.bestSectors = c.lastSectors;
+      } else {
+        c.lastSectors = null;
+      }
+    }
+    c.currentSector = nextSector;
+    c.sectorProgress = 0;
     return c;
   });
 
-  // --- Unique race events (each fires at most once; up to a few per race) ---
   let firedEventIds = state.firedEventIds;
+  if (isFinalSector) {
+  // --- Unique race events (each fires at most once; up to a few per race) ---
   if (firedEventIds.length < MAX_RACE_EVENTS) {
     const pool = generateRaceEventPool(track, weather);
     const fired = resolveRaceEventTrigger(
@@ -403,6 +676,7 @@ export function stepLiveRace(state: LiveRaceState, meta: LiveRaceMeta): LiveRace
             lapEvents.push({ lap: nextLap, text: `${name(victim.driverId)} is caught up in it and retires.` });
             incidentThisLap = true;
             incidentSeverity = Math.max(incidentSeverity, 0.7);
+            incidentDriverIds.push(victim.driverId);
           }
         }
         if (fx.triggerSafetyCar) {
@@ -420,12 +694,16 @@ export function stepLiveRace(state: LiveRaceState, meta: LiveRaceMeta): LiveRace
   // question exactly once.
 
   // --- Weather change event line (no pop-up; the wet-tyre call is an analytics rec) ---
-  if (weatherChanged) {
+  if (isFinalSector && weatherChanged) {
     lapEvents.push({ lap: nextLap, text: `Weather update: ${weather.label}.` });
   }
 
+  }
+
+  let scResult: ReturnType<typeof stepSafetyCar> = { safetyCar: state.safetyCar, justDeployed: false, justEnded: false };
+  if (isFinalSector) {
   // --- Safety car ---
-  const scResult = stepSafetyCar(
+  scResult = stepSafetyCar(
     state.safetyCar,
     track,
     weather,
@@ -443,6 +721,21 @@ export function stepLiveRace(state: LiveRaceState, meta: LiveRaceMeta): LiveRace
     });
   }
   if (scResult.justEnded) lapEvents.push({ lap: nextLap, text: 'Safety car in this lap — racing resumes.' });
+  if (scResult.justEnded) {
+    for (const c of newCars) {
+      if (c.running && c.safetyCarModePreSC != null && c.isPlayer) {
+        const resumeMode = c.safetyCarModeAfterSC ?? c.safetyCarModePreSC;
+        c.safetyCarModePreSC = null;
+        c.safetyCarModeAfterSC = null;
+        c.paceMode = resumeMode;
+        c.strategyStint = startStint(resumeMode, c.paceMode, nextLap, 'safety_car');
+      } else if (c.running && c.safetyCarModePreSC != null) {
+        c.safetyCarModePreSC = null;
+        c.safetyCarModeAfterSC = null;
+      }
+    }
+  }
+  }
 
   // --- Order the field ---
   const running = newCars.filter((c) => c.running).sort((x, y) => x.totalTime - y.totalTime);
@@ -456,6 +749,14 @@ export function stepLiveRace(state: LiveRaceState, meta: LiveRaceMeta): LiveRace
     running.forEach((c, i) => (c.totalTime = lead + i * 1));
   }
 
+  // Leader position on the current track lap. Used to freeze retired cars on
+  // the map at the exact point they went off.
+  const leaderProgress =
+    ((isFinalSector ? nextLap : state.currentLap + nextSector / 3) % 1 + 1) % 1;
+  const leaderLapTime = running[0]?.lastLapTime && running[0].lastLapTime > 0
+    ? running[0].lastLapTime
+    : 85;
+
   running.forEach((c, i) => {
     c.position = i + 1;
     c.gapToLeader = i === 0 ? 0 : round1(c.totalTime - running[0].totalTime);
@@ -463,12 +764,18 @@ export function stepLiveRace(state: LiveRaceState, meta: LiveRaceMeta): LiveRace
   });
   retired.forEach((c) => {
     c.position = null;
+    if (c.retiredTrackProgress == null) {
+      const gap = c.totalTime - (running[0]?.totalTime ?? c.totalTime);
+      c.retiredTrackProgress = normalizeProgress(leaderProgress - gap / leaderLapTime);
+    }
     c.gapToLeader = 0;
     c.interval = 0;
   });
 
+  let battleTracker = state.battleTracker;
+  if (isFinalSector) {
   // --- Battle / position-change events for the log's Battles feed ---------
-  const { events: battleEvents, tracker: battleTracker } = detectBattleEvents(
+  const battleResult = detectBattleEvents(
     state.cars,
     running,
     nextLap,
@@ -476,7 +783,10 @@ export function stepLiveRace(state: LiveRaceState, meta: LiveRaceMeta): LiveRace
     state.battleTracker,
     name,
   );
-  lapEvents.push(...battleEvents);
+  const battleEvents = battleResult.events;
+  battleTracker = battleResult.tracker;
+    lapEvents.push(...battleEvents);
+  }
 
   // --- Live status (risk bands, traffic, readable message) for running cars ---
   running.forEach((c, i) => {
@@ -493,7 +803,7 @@ export function stepLiveRace(state: LiveRaceState, meta: LiveRaceMeta): LiveRace
       intervalAhead,
       intervalBehind,
       underPressure,
-      mistakeThisLap: mistakeByDriver[c.driverId] ?? false,
+      mistakeThisLap: c.mistakeThisLap ?? false,
       pittedThisLap: c.pit.inPitThisLap,
       freshFromPit,
     });
@@ -502,61 +812,70 @@ export function stepLiveRace(state: LiveRaceState, meta: LiveRaceMeta): LiveRace
 
   let orderedCars = [...running, ...retired];
 
-  // --- Finish ---
-  let phase: LiveRaceState['phase'] = state.phase === 'formation' ? 'racing' : state.phase;
-  if (isFinalLap) {
-    phase = 'finished';
-    orderedCars = orderedCars.map((c) =>
-      c.running ? { ...c, running: false, status: 'Finished', lapsCompleted: state.totalLaps } : c,
-    );
-  }
-
-  // --- Data analytics recommendations for the player's drivers -------------
-  // The analytics panel is the sole decision interface. The lifecycle merge
-  // carries active instructions forward (without re-prompting), completes them
-  // when their duration ends, and only raises genuinely new / worsened advice.
-  const recEvents: RaceEvent[] = [];
-  const { recommendations: refreshedRecommendations, ignoredRecs, recCooldowns } = refreshRecommendations(
-    orderedCars,
-    { ...state, currentLap: nextLap, weather, safetyCar: scResult.safetyCar },
-    nextLap,
-    name,
-    recEvents,
-  );
-  const recommendations = scResult.justEnded
-    ? [
-        ...refreshedRecommendations,
-        ...safetyCarRestartRecommendations(orderedCars, nextLap, name).filter(
-          (rec) => !refreshedRecommendations.some((existing) => existing.id === rec.id),
-        ),
-      ]
-    : refreshedRecommendations;
+  let phase: LiveRaceState['phase'] = state.phase;
+  let recommendations = state.recommendations;
+  let ignoredRecs = state.ignoredRecs;
+  let recCooldowns = state.recCooldowns;
+  let recEvents: RaceEvent[] = [];
+  let stintEvents: RaceEvent[] = [];
+  let carsWithStints: LiveCarState[];
 
   const retirements = orderedCars.filter((c) => c.status === 'DNF').length;
 
-  // --- Strategy-mode stint counters --------------------------------------
-  // Advance each running car's consecutive-lap counter for this completed lap.
-  // Mode changes made this lap by any path that did not itself reset the stint
-  // (an instruction completing back to Balanced, weather/safety-car effects, AI)
-  // are detected here and start a fresh stint. Retired/finished cars are skipped
-  // so their counter freezes. Long stints emit a single event-log note per stint.
-  const stintEvents: RaceEvent[] = [];
-  const carsWithStints = orderedCars.map((c) => {
-    if (!c.running) return c;
-    let stint = advanceStint(c.strategyStint, c.paceMode, nextLap);
-    if (c.isPlayer && !stint.warned) {
-      const note = longStintNote(stint.mode, stint.consecutiveLaps, name(c.driverId));
-      if (note) {
-        stintEvents.push({ lap: nextLap, text: note });
-        stint = { ...stint, warned: true };
-      }
+  if (isFinalSector) {
+    // --- Finish ---
+    phase = state.phase === 'formation' ? 'racing' : state.phase;
+    if (isFinalLap) {
+      phase = 'finished';
+      orderedCars = orderedCars.map((c) =>
+        c.running ? { ...c, running: false, status: 'Finished', lapsCompleted: state.totalLaps } : c,
+      );
     }
-    return { ...c, strategyStint: stint };
-  });
+
+    // --- Data analytics recommendations for the player's drivers -------------
+    // The analytics panel is the sole decision interface. The lifecycle merge
+    // carries active instructions forward (without re-prompting), completes them
+    // when their duration ends, and only raises genuinely new / worsened advice.
+    recEvents = [];
+    const recResult = refreshRecommendations(
+      orderedCars,
+      { ...state, currentLap: nextLap, weather, safetyCar: scResult.safetyCar },
+      nextLap,
+      name,
+      recEvents,
+    );
+    recommendations = recResult.recommendations;
+    ignoredRecs = recResult.ignoredRecs;
+    recCooldowns = recResult.recCooldowns;
+
+    // --- Strategy-mode stint counters --------------------------------------
+    // Advance each running car's consecutive-lap counter for this completed lap.
+    // Mode changes made this lap by any path that did not itself reset the stint
+    // (an instruction completing back to Balanced, weather/safety-car effects, AI)
+    // are detected here and start a fresh stint. Retired/finished cars are skipped
+    // so their counter freezes. Long stints emit a single event-log note per stint.
+    stintEvents = [];
+    carsWithStints = orderedCars.map((c) => {
+      if (!c.running) return c;
+      let stint = advanceStint(c.strategyStint, c.paceMode, nextLap);
+      if (c.isPlayer && !stint.warned) {
+        const note = longStintNote(stint.mode, stint.consecutiveLaps, name(c.driverId));
+        if (note) {
+          stintEvents.push({ lap: nextLap, text: note });
+          stint = { ...stint, warned: true };
+        }
+      }
+      return { ...c, strategyStint: stint };
+    });
+  } else {
+    carsWithStints = orderedCars;
+    stintEvents = [];
+  }
 
   return {
     ...state,
-    currentLap: nextLap,
+    currentLap: isFinalSector ? nextLap : state.currentLap,
+    sector: nextSector,
     phase,
     weather,
     safetyCar: scResult.safetyCar,
@@ -570,7 +889,26 @@ export function stepLiveRace(state: LiveRaceState, meta: LiveRaceMeta): LiveRace
     recCooldowns,
     battleTracker,
     retirements,
+    lastIncident:
+      incidentDriverIds.length > 0
+        ? {
+            lap: nextLap,
+            driverIds: incidentDriverIds,
+            severity: incidentSeverity,
+            safetyCarDeployed: scResult.safetyCar.active,
+            trackProgress: leaderProgress,
+          }
+        : state.lastIncident,
   };
+}
+
+// Step a whole lap by running three sector steps.
+export function stepLiveRace(state: LiveRaceState, meta: LiveRaceMeta): LiveRaceState {
+  let s = state;
+  for (let i = 0; i < SECTORS; i++) {
+    s = stepLiveSector(s, meta);
+  }
+  return s;
 }
 
 // Apply the player's chosen option and clear the prompt so stepping resumes.
@@ -593,14 +931,33 @@ export function resolvePrompt(state: LiveRaceState, optionId: string, meta: Live
 
 // Call a player car into the pits. The stop is executed on the next lap step.
 // No-op if the car has retired or finished, or already requested a stop.
-export function requestPlayerPit(state: LiveRaceState, driverId: string): LiveRaceState {
+export function requestPlayerPit(
+  state: LiveRaceState,
+  driverId: string,
+  decision?: PitStopDecision,
+): LiveRaceState {
   let changed = false;
   const cars = state.cars.map((c) => {
-    if (c.driverId !== driverId || !c.isPlayer || !c.running || c.pit.pitRequested) return c;
+    if (c.driverId !== driverId || !c.isPlayer || !c.running) return c;
     changed = true;
-    return { ...c, pit: { ...c.pit, pitRequested: true } };
+    const updated = applyPitDecision(c, decision);
+    return {
+      ...updated,
+      pit: {
+        ...updated.pit,
+        pitRequested: true,
+      },
+    };
   });
-  return changed ? { ...state, cars } : state;
+  const marked = changed && state.safetyCar.active
+    ? {
+        ...state,
+        cars: cars.map((c) =>
+          c.driverId === driverId ? markSafetyCarPitPrompted(c, state.safetyCar.deployments) : c,
+        ),
+      }
+    : null;
+  return changed ? (marked ?? { ...state, cars }) : state;
 }
 
 // Cancel only a pending "box this lap" request before the stop is executed.
@@ -652,24 +1009,36 @@ export function setPlayerPaceMode(
   let changed = false;
   let cancelledInstruction: string | null = null;
   const cars = state.cars.map((c) => {
-    if (c.driverId !== driverId || !c.isPlayer || !c.running || c.paceMode === mode) return c;
+    const currentTarget = c.safetyCarModeAfterSC ?? c.safetyCarModePreSC ?? c.paceMode;
+    if (c.driverId !== driverId || !c.isPlayer || !c.running || (!state.safetyCar.active && c.paceMode === mode) || (state.safetyCar.active && c.paceMode === 'Conservative' && currentTarget === mode)) {
+      return c;
+    }
     changed = true;
     if (state.safetyCar.active) {
+      const preSC = c.safetyCarModePreSC ?? c.paceMode;
       return {
         ...c,
         paceMode: 'Conservative' as PaceMode,
-        safetyCarModeBefore: mode,
-        strategyStint: startStint('Conservative', c.paceMode, state.currentLap, 'safety_car'),
+        safetyCarModePreSC: preSC,
+        safetyCarModeAfterSC: mode,
+        strategyStint:
+          c.paceMode === 'Conservative'
+            ? c.strategyStint
+            : startStint('Conservative', c.paceMode, state.currentLap, 'safety_car'),
       };
     }
     return {
       ...c,
       paceMode: mode,
-      safetyCarModeBefore: null,
+      safetyCarModePreSC: null,
+      safetyCarModeAfterSC: null,
       strategyStint: startStint(mode, c.paceMode, state.currentLap, source),
     };
   });
   if (!changed) return state;
+  const updatedCar = cars.find((c) => c.driverId === driverId) ?? state.cars.find((c) => c.driverId === driverId);
+  const lockCar = updatedCar ?? state.cars.find((c) => c.driverId === driverId);
+  const lockUntil = state.currentLap + (lockCar ? strategyModeLockLapsFor(lockCar) : STRATEGY_MODE_LOCK_LAPS);
   const recommendations = state.recommendations.map((r) => {
     if (r.driverId !== driverId || r.status !== 'active') return r;
     cancelledInstruction = r.appliedAction?.label ?? r.action.label;
@@ -687,7 +1056,7 @@ export function setPlayerPaceMode(
     : state.events;
   const recCooldowns = {
     ...state.recCooldowns,
-    [strategyModeLockKey(driverId)]: state.currentLap + STRATEGY_MODE_LOCK_LAPS,
+    [strategyModeLockKey(driverId)]: lockUntil,
   };
   return { ...state, cars, recommendations, events, recCooldowns };
 }
@@ -702,7 +1071,7 @@ export function resolvePromptDefault(state: LiveRaceState, meta: LiveRaceMeta): 
 export function stepLiveRaceToEnd(state: LiveRaceState, meta: LiveRaceMeta): LiveRaceState {
   let s = state;
   let guard = 0;
-  const maxIters = state.totalLaps * 3 + 10;
+  const maxIters = state.totalLaps + 10;
   while (s.phase !== 'finished' && guard < maxIters) {
     if (s.pendingPrompt) s = resolvePromptDefault(s, meta);
     else s = stepLiveRace(s, meta);
@@ -723,42 +1092,6 @@ function retire(c: LiveCarState, lap: number, cause: string): LiveCarState {
   };
 }
 
-function safetyCarRestartRecommendations(
-  cars: LiveCarState[],
-  lap: number,
-  name: (driverId: string) => string,
-): AnalyticsRecommendation[] {
-  return cars
-    .filter((c) => c.isPlayer && c.running && c.safetyCarModeBefore)
-    .map((c) => {
-      const resumeMode = c.safetyCarModeBefore ?? 'Balanced';
-      return {
-        id: `${c.driverId}:safetyCarRestart:${lap}`,
-        driverId: c.driverId,
-        kind: 'safetyCarRestart',
-        priority: 'high' as const,
-        issue: 'Safety Car ending - choose restart mode.',
-        recommendedAction: resumeMode === 'Conservative' ? 'Stay in Conservative mode' : `Resume ${resumeMode} mode`,
-        suggestedDuration: 'restart choice',
-        expectedImpact: `${name(c.driverId)} can resume the pre-Safety Car plan or stay conservative for the restart.`,
-        confidence: 88,
-        createdLap: lap,
-        expiresLap: lap + 1,
-        action: {
-          type: resumeMode,
-          label: resumeMode === 'Conservative' ? 'Stay Conservative' : `Resume ${resumeMode}`,
-          paceMode: resumeMode,
-        },
-        alternatives: [
-          { type: 'Conservative', label: 'Stay Conservative', paceMode: 'Conservative' },
-          { type: 'Balanced', label: 'Balanced Restart', paceMode: 'Balanced' },
-          { type: 'Push', label: 'Push Restart', paceMode: 'Push' },
-        ],
-        status: 'pending' as const,
-      };
-    });
-}
-
 // Split a lap time into three sector times. No real track geometry is modelled,
 // so the split is a lightly-jittered ~34/33/33% partition summing to the lap.
 function splitSectors(lapTime: number, rng: Rng): [number, number, number] {
@@ -768,6 +1101,64 @@ function splitSectors(lapTime: number, rng: Rng): [number, number, number] {
   const s2 = round3(lapTime * p2);
   const s3 = round3(lapTime - s1 - s2);
   return [s1, s2, s3];
+}
+
+function recoveryRatingsFor(
+  c: LiveCarState,
+  teamOrg: { reliabilityDepartment: number; operations: number } | undefined,
+): ReliabilityRecoveryRatings {
+  return {
+    carReliability: c.carReliability ?? Math.max(0, 100 - c.baseFailureRisk * 100),
+    teamReliabilityDepartment: teamOrg?.reliabilityDepartment ?? 50,
+    teamRaceOperations: teamOrg?.operations ?? c.pitCrewOperations ?? 50,
+    driverEnduranceConsistency: c.driverEnduranceConsistency ?? 50,
+    driverComposure: c.driverComposure ?? 50,
+    driverRiskManagement: c.driverRiskManagement ?? 50,
+  };
+}
+
+function applyRecoveryEffect(
+  c: LiveCarState,
+  component: Pick<DamageComponent, 'kind' | 'severity' | 'managed'>,
+  outcome: ReliabilityRecoveryOutcome,
+): void {
+  const issue = c.reliabilityIssue;
+  const mechanicalHit = (amount: number): void => {
+    if (component.kind === 'Engine') c.engineHealth = clamp(c.engineHealth + amount, 0, 100);
+    else if (component.kind === 'Gearbox') c.gearboxHealth = clamp(c.gearboxHealth + amount, 0, 100);
+    else if (component.kind === 'Brakes') c.brakeHealth = clamp(c.brakeHealth + amount, 0, 100);
+  };
+  if (outcome === 'full') {
+    if (issue) c.reliabilityIssue = null;
+    mechanicalHit(7);
+    return;
+  }
+  if (outcome === 'partial') {
+    if (issue) {
+      c.reliabilityIssue = {
+        ...issue,
+        severity: issue.severity === 'Minor' ? 'Minor' : issue.severity === 'Moderate' ? 'Minor' : 'Moderate',
+        failureRisk: Math.max(0, issue.failureRisk * 0.8),
+        managed: true,
+      };
+    }
+    mechanicalHit(4);
+    return;
+  }
+  if (outcome === 'worse') {
+    if (issue) {
+      c.reliabilityIssue = {
+        ...issue,
+        severity: issue.severity === 'Minor' ? 'Moderate' : 'Severe',
+        failureRisk: Math.min(1, issue.failureRisk * 1.15 + 0.01),
+      };
+    }
+    mechanicalHit(-3);
+  }
+}
+
+function recoverySeverityRank(severity: DamageComponent['severity']): number {
+  return severity === 'minor' ? 1 : severity === 'moderate' ? 2 : severity === 'severe' ? 3 : 4;
 }
 
 // Burn fuel off across the distance and wear the mechanical components. Wear is
@@ -780,11 +1171,21 @@ function updateFuelAndComponents(
   spec: StrategyModeSpec,
   lap: number,
   totalLaps: number,
+  damageSettings: typeof DEFAULT_DAMAGE_SETTINGS,
+  series: Series | undefined,
+  year: number | undefined,
+  teamOrg: { reliabilityDepartment: number; operations: number } | undefined,
+  rng: Rng,
+  lapEvents: RaceEvent[],
+  driverName: string,
 ): void {
   c.fuel = clamp(100 * (1 - lap / Math.max(1, totalLaps)), 0, 100);
 
   const base = 0.12 + c.baseFailureRisk * 12;
   const modeMult = spec.reliabilityMult;
+  const paceRelief = c.paceMode === 'Conservative' ? 0.82 : c.paceMode === 'ProtectEngine' ? 0.68 : c.paceMode === 'Push' ? 1.1 : c.paceMode === 'Attack' ? 1.15 : c.paceMode === 'Defend' ? 0.94 : 1;
+  const strictness = damageSettings.reliabilityStrictness;
+  const damageRelief = c.paceMode === 'Conservative' || c.paceMode === 'ProtectEngine' ? 0.8 : 1.1;
   let eng = base * modeMult * (0.85 + track.attributes.straights * 0.03);
   let gear = base * modeMult * 0.85;
   let brake = base * (0.6 + track.attributes.braking * 0.05);
@@ -798,10 +1199,36 @@ function updateFuelAndComponents(
     else eng += extra * 0.4;
   }
 
-  c.engineHealth = clamp(c.engineHealth - eng, 0, 100);
-  c.gearboxHealth = clamp(c.gearboxHealth - gear, 0, 100);
-  c.brakeHealth = clamp(c.brakeHealth - brake, 0, 100);
-  c.aeroHealth = clamp((c.aeroHealth ?? 100) - (c.damaged ? 0.16 : 0.03), 0, 100);
+  c.engineHealth = clamp(c.engineHealth - eng * paceRelief * damageRelief * strictness, 0, 100);
+  c.gearboxHealth = clamp(c.gearboxHealth - gear * paceRelief * damageRelief * strictness, 0, 100);
+  c.brakeHealth = clamp(c.brakeHealth - brake * paceRelief * damageRelief * strictness, 0, 100);
+  c.aeroHealth = clamp((c.aeroHealth ?? 100) - (c.damaged ? 0.16 : 0.03) * (c.paceMode === 'Attack' ? 1.1 : c.paceMode === 'Conservative' ? 0.8 : 1), 0, 100);
+
+  if (c.paceMode === 'Conservative' || c.paceMode === 'ProtectEngine') {
+    const recoveryComponents = collectDamageComponents(c, series, year, damageSettings).filter(
+      (component) => component.riskType === 'failure' && component.managed && component.severity !== 'none',
+    );
+    const recoveryComponent = recoveryComponents.sort((a, b) => recoverySeverityRank(b.severity) - recoverySeverityRank(a.severity))[0];
+    if (recoveryComponent) {
+      const outcome = resolveReliabilityRecoveryOutcome(
+        recoveryComponent,
+        recoveryRatingsFor(c, teamOrg),
+        rng.next(),
+      );
+      applyRecoveryEffect(c, recoveryComponent, outcome);
+      if (outcome !== 'none') {
+        lapEvents.push({
+          lap,
+          text:
+            outcome === 'full'
+              ? `${driverName} nurses ${recoveryComponent.kind.toLowerCase()} back to health.`
+              : outcome === 'partial'
+                ? `${driverName} stabilises ${recoveryComponent.kind.toLowerCase()} damage.`
+                : `${driverName} cannot stop ${recoveryComponent.kind.toLowerCase()} damage worsening.`,
+        });
+      }
+    }
+  }
 }
 
 // Advance the recommendation lifecycle for the player's drivers each lap:
@@ -824,6 +1251,13 @@ export function refreshRecommendations(
   recCooldowns: LiveRaceState['recCooldowns'];
 } {
   const prev = partial.recommendations;
+  if (partial.safetyCar.active) {
+    return {
+      recommendations: [],
+      ignoredRecs: partial.ignoredRecs,
+      recCooldowns: partial.recCooldowns,
+    };
+  }
   const candidates = generateCandidates(cars, partial, lap);
   const candById = new Map(candidates.map((c) => [c.id, c]));
   const carFor = (id: string) => cars.find((c) => c.driverId === id);
@@ -999,14 +1433,50 @@ function applyRecAction(
   if (eff.pitNow) {
     const car = state.cars.find((c) => c.driverId === rec.driverId);
     let s = withCooldown(removeRec(state, rec.id), rec);
+    if (rec.kind === 'safetyCarPit') {
+      s = {
+        ...s,
+        cars: s.cars.map((c) =>
+          c.driverId === rec.driverId ? markSafetyCarPitPrompted(c, s.safetyCar.deployments) : c,
+        ),
+      };
+    }
     if (!car || !car.running) return s;
     if (car.pit.inPitThisLap) return addEvent(s, `Lap ${lap} — ${name}'s pit call — already in the pits this lap.`);
     if (car.pit.pitRequested) return addEvent(s, `Lap ${lap} — ${name} is already called to the pits; duplicate stop avoided.`);
     if (car.pit.stopsMade >= car.pit.plannedStops && car.tire.wear < 60) {
       return addEvent(s, `Lap ${lap} — ${name}'s pit call postponed; no further stop planned.`);
     }
-    s = requestPlayerPit(s, rec.driverId);
-    return addEvent(s, `Lap ${lap} — pit wall ${verb} analytics recommendation: ${name} will pit this lap.`);
+    s = requestPlayerPit(
+      s,
+      rec.driverId,
+      eff.pitIntensity || eff.pitExitMode || eff.repairMode
+        ? { intensity: eff.pitIntensity, exitMode: eff.pitExitMode, repairMode: eff.repairMode }
+        : undefined,
+    );
+    const intensity = eff.pitIntensity ?? car.pit.intensity ?? car.pit.intensityDefault ?? 'Standard';
+    const exitMode = eff.pitExitMode ?? car.pit.exitMode ?? 'Conservative';
+    const intensityLabel = intensity === 'Standard' ? '' : ` (${intensity})`;
+    return addEvent(s, `Lap ${lap} — pit wall ${verb} analytics recommendation: ${name} will pit this lap${intensityLabel}, exit ${exitMode}.`);
+  }
+
+  if (rec.kind === 'safetyCarRestart') {
+    const modes = eff.paceModeByDriver ?? { [rec.driverId]: eff.paceMode ?? 'Conservative' };
+    const affected = new Set(rec.affectedDriverIds ?? [rec.driverId]);
+    const nextCars = state.cars.map((c) => {
+      if (!affected.has(c.driverId) || !c.running) return c;
+      const mode = modes[c.driverId] ?? 'Conservative';
+      return {
+        ...c,
+        paceMode: mode,
+        safetyCarModeBefore: null,
+        safetyCarRestartLocked: false,
+        strategyStint: startStint(mode, c.paceMode, lap, 'manual'),
+      };
+    });
+    const s = withCooldown(removeRec({ ...state, cars: nextCars }, rec.id), rec);
+    const summary = [...affected].map((id) => `${meta.driverNames[id] ?? id} → ${modes[id] ?? 'Conservative'}`).join(' · ');
+    return addEvent(s, `Lap ${lap} — restart modes set: ${summary}.`);
   }
 
   // --- Strategy-mode instruction ---
@@ -1035,10 +1505,15 @@ function applyRecAction(
 }
 
 // Accept a recommendation's recommended action.
-export function acceptRecommendation(state: LiveRaceState, recId: string, meta: LiveRaceMeta): LiveRaceState {
+export function acceptRecommendation(
+  state: LiveRaceState,
+  recId: string,
+  meta: LiveRaceMeta,
+  action?: RecAction,
+): LiveRaceState {
   const rec = state.recommendations.find((r) => r.id === recId);
   if (!rec) return state;
-  return applyRecAction(state, rec, rec.action, meta, 'accepted');
+  return applyRecAction(state, rec, action ?? rec.action, meta, 'accepted');
 }
 
 // Apply one of a recommendation's alternative (Modify) actions by type.
@@ -1084,11 +1559,22 @@ export function ignoreRecommendation(state: LiveRaceState, recId: string, meta?:
     { key: rec.id, lap, issue: rec.issue, priority: rec.priority, escalated: false },
   ];
   let s = withCooldown(removeRec(state, rec.id), rec);
-  if (rec.kind === 'safetyCarRestart') {
+  if (rec.kind === 'safetyCarPit') {
     s = {
       ...s,
       cars: s.cars.map((c) =>
-        c.driverId === rec.driverId ? { ...c, paceMode: 'Conservative', safetyCarModeBefore: null } : c,
+        c.driverId === rec.driverId ? markSafetyCarPitPrompted(c, s.safetyCar.deployments) : c,
+      ),
+    };
+  }
+  if (rec.kind === 'safetyCarRestart') {
+    const affected = new Set(rec.affectedDriverIds ?? [rec.driverId]);
+    s = {
+      ...s,
+      cars: s.cars.map((c) =>
+        affected.has(c.driverId)
+          ? { ...c, paceMode: 'Conservative', safetyCarModeBefore: null, safetyCarRestartLocked: false }
+          : c,
       ),
     };
   }
@@ -1111,6 +1597,25 @@ export function expireRecommendation(state: LiveRaceState, recId: string, meta?:
     { key: rec.id, lap, issue: rec.issue, priority: rec.priority, escalated: false },
   ];
   let s = withCooldown(removeRec(state, rec.id), rec);
+  if (rec.kind === 'safetyCarPit') {
+    s = {
+      ...s,
+      cars: s.cars.map((c) =>
+        c.driverId === rec.driverId ? markSafetyCarPitPrompted(c, s.safetyCar.deployments) : c,
+      ),
+    };
+  }
+  if (rec.kind === 'safetyCarRestart') {
+    const affected = new Set(rec.affectedDriverIds ?? [rec.driverId]);
+    s = {
+      ...s,
+      cars: s.cars.map((c) =>
+        affected.has(c.driverId)
+          ? { ...c, paceMode: 'Conservative', safetyCarModeBefore: null, safetyCarRestartLocked: false }
+          : c,
+      ),
+    };
+  }
   s = { ...s, ignoredRecs };
   const name = meta?.driverNames[rec.driverId] ?? rec.driverId;
   return addEvent(s, `Lap ${lap} — no pit wall response; ${name} stays on the current plan.`);
@@ -1266,16 +1771,6 @@ function trustRiskMultiplier(confidenceModifier: number, mode: PaceMode): number
   const lowTrust = Math.max(0, -confidenceModifier);
   const modeWeight = mode === 'Attack' ? 3.6 : 2.2;
   return 1 + lowTrust * modeWeight;
-}
-function pitStopTimeFromLoss(pitLossBase: number, opsForm: number, safetyCarActive: boolean, rng: Rng): { time: number; slow: boolean } {
-  const eraBaseline = pitLossBase >= 30 ? 9.5 : pitLossBase >= 25 ? 7.2 : pitLossBase >= 20 ? 5.2 : 3.4;
-  const execution = opsForm * 0.35;
-  const safetyCarDelta = safetyCarActive ? 0.2 : 0;
-  const mistakeChance = clamp(0.075 - opsForm * 0.012, 0.012, 0.16);
-  const slow = rng.chance(mistakeChance);
-  const delay = slow ? rng.range(1.1, 4.6) : 0;
-  const variation = rng.variance(0.22);
-  return { time: round1(clamp(eraBaseline - execution + safetyCarDelta + variation + delay, 2.0, 14.0)), slow };
 }
 function round1(n: number): number {
   return Math.round(n * 10) / 10;

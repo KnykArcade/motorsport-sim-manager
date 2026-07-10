@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { useGame } from '../game/GameContext';
 import { activeDriversForTeam } from '../game/careerState';
@@ -13,16 +13,17 @@ import {
   resolvePrompt,
   resolveRecommendationExternally,
   setPlayerPaceMode,
-  stepLiveRace,
   stepLiveRaceToEnd,
+  stepLiveSector,
 } from '../sim/raceTickEngine';
 import { requiresDecision, DECISION_COUNTDOWN_SECONDS } from '../sim/analyticsEngine';
 import { buildAnalyticsMonitor } from '../sim/analyticsMonitor';
 import { orderCardsBySeat } from '../sim/liveRaceCardOrder';
 import { applyTeamOrderToLive, recordTeamOrder, TEAM_ORDER_SPECS } from '../sim/relationshipEngine';
 import { Button } from '../components/Button';
+import { getCarDamagePercent } from '../components/raceMarkerAssets';
 import type { TrackDot } from '../components/RaceTrack2D';
-import type { AnalyticsRecommendation, LiveRaceState, PaceMode, RecAction } from '../types/liveTypes';
+import type { AnalyticsRecommendation, LiveRaceState, PaceMode, PitIntensity, RecAction } from '../types/liveTypes';
 import type { RaceResult } from '../types/gameTypes';
 import type { RaceDecision } from '../types/simTypes';
 import type { TeamOrder, TeamOrderDecision } from '../types/relationshipTypes';
@@ -37,8 +38,9 @@ import { buildForecast } from './liveRace/forecast';
 import { FullEventLogModal, StrategyModal, TeamOrdersModal } from './liveRace/modals';
 import { F11990sLiveRaceScreen } from './liveRace/eraThemes/F11990sLiveRaceScreen';
 import { getLiveRaceEraTheme, shouldUseF11990sLiveRaceScreen } from './liveRace/eraThemes/getLiveRaceEraTheme';
+import { CrashZoomOverlay } from './liveRace/CrashZoomOverlay';
 
-type Speed = 1 | 10 | 30 | 60;
+type Speed = 1 | 5 | 15 | 30;
 
 type DnfAlert = {
   lap: number;
@@ -47,7 +49,7 @@ type DnfAlert = {
 
 export function LiveRace() {
   const { raceId } = useParams();
-  const { state, dispatch } = useGame();
+  const { state, dispatch, settings } = useGame();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -59,7 +61,15 @@ export function LiveRace() {
     const built = buildRaceContext(state, decisions);
     if (!built) return null;
     const meta = buildLiveRaceMeta(state, built.track);
-    const options = buildLiveRaceOptions(state, built.context, built.raceId, built.totalLaps);
+    const options = buildLiveRaceOptions(state, built.context, built.raceId, built.totalLaps, {
+      damageSettings: {
+        damageFrequency: settings.damageFrequency,
+        damageSeverity: settings.damageSeverity,
+        repairTimeMultiplier: settings.repairTimeMultiplier,
+        reliabilityStrictness: settings.reliabilityStrictness,
+      },
+      teamOrgRatings: state.teamOrgRatings,
+    });
     return { context: built.context, meta, initial: createLiveRace(built.context, options) };
   });
 
@@ -73,9 +83,14 @@ export function LiveRace() {
   const [dnfAlert, setDnfAlert] = useState<DnfAlert | null>(null);
   const [aiDnfFlash, setAiDnfFlash] = useState<DnfAlert | null>(null);
   const [decisionSecondsLeft, setDecisionSecondsLeft] = useState<number | null>(null);
+  const dismissCrash = useCallback(
+    () => setLive((s) => (s ? { ...s, lastIncident: undefined } : s)),
+    [],
+  );
   const committed = useRef(false);
   // Team orders called during the race, resolved into relationships at the flag.
   const teamOrders = useRef<TeamOrderDecision[]>([]);
+  const blockingPrompt = !!live?.pendingPrompt && !live?.safetyCar.active;
 
   // Fixed team-order for the player's drivers (seat #1 first, #2 second). The
   // right-side pit-wall cards keep this order for the whole race so they do not
@@ -94,28 +109,31 @@ export function LiveRace() {
     .sort()
     .join(',');
 
-  function advanceLiveLap(s: LiveRaceState): LiveRaceState {
-    const next = stepLiveRace(s, engine!.meta);
-    const alert = dnfAlertFromTransition(s, next);
-    if (alert) {
-      const playerEntries = alert.entries.filter((entry) => entry.isPlayer);
-      const aiEntries = alert.entries.filter((entry) => !entry.isPlayer);
-      if (playerEntries.length > 0) {
-        setPlaying(false);
-        setDnfAlert({ lap: alert.lap, entries: playerEntries });
+  const advanceLiveSector = useCallback(
+    (s: LiveRaceState): LiveRaceState => {
+      const next = stepLiveSector(s, engine!.meta);
+      const alert = dnfAlertFromTransition(s, next);
+      if (alert) {
+        const playerEntries = alert.entries.filter((entry) => entry.isPlayer);
+        const aiEntries = alert.entries.filter((entry) => !entry.isPlayer);
+        if (playerEntries.length > 0) {
+          setPlaying(false);
+          setDnfAlert({ lap: alert.lap, entries: playerEntries });
+        }
+        if (aiEntries.length > 0) {
+          setAiDnfFlash({ lap: alert.lap, entries: aiEntries });
+        }
       }
-      if (aiEntries.length > 0) {
-        setAiDnfFlash({ lap: alert.lap, entries: aiEntries });
-      }
-    }
-    return next;
-  }
+      return next;
+    },
+    [engine],
+  );
 
-  // Playback loop — steps a lap on an interval while playing, paused on prompts
+  // Playback loop — steps a sector on an interval while playing, paused on prompts
   // or while a high/urgent recommendation is awaiting a decision.
   useEffect(() => {
     if (!engine || !live) return;
-    if (!playing || dnfAlert || live.pendingPrompt || live.phase === 'finished' || needsDecision) return;
+    if (!playing || dnfAlert || blockingPrompt || live.phase === 'finished' || needsDecision) return;
     const useRealLapPacing = shouldUseF11990sLiveRaceScreen(state?.series, state?.seasonYear);
     const leaderForPacing = live.cars.find((c) => c.position === 1 && c.running);
     const liveLapTime =
@@ -125,25 +143,38 @@ export function LiveRace() {
           ? leaderForPacing.bestLap
           : 85;
     const intervalMs = useRealLapPacing
-      ? Math.max(15_000, Math.min(120_000, liveLapTime * 1000)) / speed
-      : 950 / speed;
+      ? Math.max(15_000, Math.min(120_000, liveLapTime * 1000)) / speed / 3
+      : 950 / speed / 3;
     const id = setInterval(() => {
-      setLive((s) => (s && !s.pendingPrompt && s.phase !== 'finished' ? advanceLiveLap(s) : s));
+      setLive((s) => (s && (!s.pendingPrompt || s.safetyCar.active) && s.phase !== 'finished' ? advanceLiveSector(s) : s));
     }, intervalMs);
     return () => clearInterval(id);
-  }, [engine, live, playing, speed, needsDecision, dnfAlert, state?.series, state?.seasonYear]);
+  }, [advanceLiveSector, engine, live, playing, speed, needsDecision, dnfAlert, blockingPrompt, state?.series, state?.seasonYear]);
 
+  // Reset the intra-sector animation whenever a new sector begins.
   useEffect(() => {
     const id = setTimeout(() => setTrackAnimationTick(0), 0);
     return () => clearTimeout(id);
-  }, [live?.currentLap]);
+  }, [live?.currentLap, live?.sector]);
 
+  // Smoothly advance the sub-lap marker position for each of the three sectors.
   useEffect(() => {
-    if (!live || !shouldUseF11990sLiveRaceScreen(state?.series, state?.seasonYear)) return;
-    if (!playing || live.pendingPrompt || live.phase === 'finished' || needsDecision) return;
-    const id = setInterval(() => setTrackAnimationTick((tick) => tick + 1), Math.max(160, 2200 / speed));
+    if (!engine || !live) return;
+    if (!playing || blockingPrompt || live.phase === 'finished' || needsDecision) return;
+    const useRealLapPacing = shouldUseF11990sLiveRaceScreen(state?.series, state?.seasonYear);
+    const leaderForPacing = live.cars.find((c) => c.position === 1 && c.running);
+    const liveLapTime =
+      leaderForPacing?.lastLapTime && leaderForPacing.lastLapTime > 0
+        ? leaderForPacing.lastLapTime
+        : leaderForPacing?.bestLap && leaderForPacing.bestLap > 0
+          ? leaderForPacing.bestLap
+          : 85;
+    const intervalMs = useRealLapPacing
+      ? Math.max(15_000, Math.min(120_000, liveLapTime * 1000)) / speed / 3
+      : 950 / speed / 3;
+    const id = setInterval(() => setTrackAnimationTick((tick) => tick + 1), Math.max(80, intervalMs / 12));
     return () => clearInterval(id);
-  }, [live, needsDecision, playing, speed, state?.series, state?.seasonYear]);
+  }, [engine, live, playing, speed, needsDecision, dnfAlert, blockingPrompt, state?.series, state?.seasonYear]);
 
   useEffect(() => {
     if (!aiDnfFlash) return;
@@ -193,18 +224,20 @@ export function LiveRace() {
   const driverNumber = (id: string) => state.drivers.find((d) => d.id === id)?.number ?? '';
   const teamColor = (id: string) => state.teams.find((t) => t.id === id)?.color ?? '#888';
 
-  const step = () => setLive((s) => (s ? advanceLiveLap(s) : s));
+  const step = () => setLive((s) => (s && (!s.pendingPrompt || s.safetyCar.active) ? advanceLiveSector(s) : s));
   const skipToEnd = () => {
     setPlaying(false);
     setLive((s) => (s ? stepLiveRaceToEnd(s, engine.meta) : s));
   };
   const chooseOption = (optionId: string) =>
     setLive((s) => (s ? resolvePrompt(s, optionId, engine.meta) : s));
-  const pitNow = (driverId: string) =>
+  const pitNow = (driverId: string, decision?: { intensity?: PitIntensity; exitMode?: PaceMode }) =>
     setLive((s) => {
       if (!s) return s;
       const car = s.cars.find((c) => c.driverId === driverId);
-      return car?.pit.pitRequested ? cancelPlayerPitRequest(s, driverId) : requestPlayerPit(s, driverId);
+      return car?.pit.pitRequested
+        ? cancelPlayerPitRequest(s, driverId)
+        : requestPlayerPit(s, driverId, decision);
     });
   const setMode = (driverId: string, mode: PaceMode) =>
     setLive((s) => (s ? setPlayerPaceMode(s, driverId, mode) : s));
@@ -267,8 +300,8 @@ export function LiveRace() {
     return applyRecommendationAction(s, rec.id, action, engine.meta, verb);
   };
 
-  const onAccept = (rec: AnalyticsRecommendation) =>
-    setLive((s) => (s ? resolveRec(s, rec, rec.action, 'accepted') : s));
+  const onAccept = (rec: AnalyticsRecommendation, actionOverride?: RecAction) =>
+    setLive((s) => (s ? resolveRec(s, rec, actionOverride ?? rec.action, 'accepted') : s));
   const onModify = (rec: AnalyticsRecommendation, action: RecAction) =>
     setLive((s) => (s ? resolveRec(s, rec, action, 'modified') : s));
   const onIgnore = (rec: AnalyticsRecommendation) =>
@@ -316,22 +349,24 @@ export function LiveRace() {
         : live.cars
               .filter((c) => c.running && c.lastLapTime > 0)
               .reduce((sum, c, _, cars) => sum + c.lastLapTime / cars.length, 0) || 85;
-  const smoothLapProgress = shouldUseF11990sLiveRaceScreen(state.series, state.seasonYear)
-    ? (trackAnimationTick % 36) / 36
-    : 0;
-  const rotation = ((live.currentLap + smoothLapProgress) / 5) % 1;
+  const sectorProgress = Math.min(1, trackAnimationTick / 12);
+  const rotation = ((live.currentLap + ((live.sector ?? 0) + sectorProgress) / 3) % 1 + 1) % 1;
   const dots: TrackDot[] = live.cars.map((c) => ({
     driverId: c.driverId,
     label: String(driverNumber(c.driverId) || ''),
     color: teamColor(c.teamId),
+    accentColor: '#f7f7f7',
+    series: state.series,
     isPlayer: c.isPlayer,
     running: c.running,
+    retired: c.status === 'DNF' && !c.running,
     inPit: c.pit.inPitThisLap,
     pitRequested: c.pit.pitRequested,
     rank: c.position ?? 99,
-    trackProgress: c.running ? normalizeTrackProgress(rotation - c.gapToLeader / representativeLapTime) : undefined,
+    trackProgress: c.retiredTrackProgress ?? normalizeTrackProgress(rotation - c.gapToLeader / representativeLapTime),
     gapToLeader: c.gapToLeader,
     interval: c.interval,
+    damagePercent: getCarDamagePercent(c),
   }));
   // Locked to team seat order (not live position) so the cards never reorder.
   const playerCars = orderCardsBySeat(
@@ -344,13 +379,27 @@ export function LiveRace() {
   const useF11990sLiveRace = shouldUseF11990sLiveRaceScreen(state.series, state.seasonYear);
   const eraTheme = getLiveRaceEraTheme(state.series, state.seasonYear);
 
+  const crashOverlay = live.lastIncident && (
+    <CrashZoomOverlay
+      dots={dots}
+      lastIncident={live.lastIncident}
+      safetyCar={live.safetyCar}
+      series={state.series}
+      year={state.seasonYear}
+      trackId={race?.trackId ?? live.trackId}
+      trackName={race?.trackName}
+      nameOf={driverName}
+      onDismiss={dismissCrash}
+    />
+  );
+
   const controls = (
     <div className="flex items-center gap-1.5">
       {!finished ? (
         <>
           <button
             onClick={() => setPlaying((p) => !p)}
-            disabled={!!live.pendingPrompt || needsDecision || !!dnfAlert}
+            disabled={blockingPrompt || needsDecision || !!dnfAlert}
             className={`rounded px-3 py-1 text-xs font-bold ${
               playing ? 'bg-slate-700 text-slate-100' : 'bg-emerald-600 text-white'
             } disabled:opacity-40`}
@@ -359,13 +408,13 @@ export function LiveRace() {
           </button>
           <button
             onClick={step}
-            disabled={playing || !!live.pendingPrompt || needsDecision || !!dnfAlert}
+            disabled={playing || blockingPrompt || needsDecision || !!dnfAlert}
             className="rounded bg-slate-800 px-2 py-1 text-xs font-semibold text-slate-200 hover:bg-slate-700 disabled:opacity-40"
           >
             +1
           </button>
           <div className="flex items-center gap-0.5">
-            {([1, 10, 30, 60] as Speed[]).map((s) => (
+            {([1, 5, 15, 30] as Speed[]).map((s) => (
               <button
                 key={s}
                 onClick={() => setSpeed(s)}
@@ -379,7 +428,7 @@ export function LiveRace() {
           </div>
           <button
             onClick={skipToEnd}
-            disabled={!!live.pendingPrompt || needsDecision || !!dnfAlert}
+            disabled={blockingPrompt || needsDecision || !!dnfAlert}
             className="rounded bg-slate-800 px-2 py-1 text-xs font-semibold text-slate-200 hover:bg-slate-700 disabled:opacity-40"
           >
             ⏩
@@ -445,9 +494,10 @@ export function LiveRace() {
           onLetCrewDecide={onLetCrewDecide}
           onAcceptAll={onAcceptAll}
           onIgnoreAll={onIgnoreAll}
+          crashOverlay={crashOverlay}
         />
 
-        {live.pendingPrompt && (
+        {blockingPrompt && live.pendingPrompt && (
           <PromptOverlay
             title={live.pendingPrompt.title}
             driver={driverName(live.pendingPrompt.driverId)}
@@ -505,8 +555,9 @@ export function LiveRace() {
         <TimingTower cars={live.cars} nameOf={driverName} colorOf={teamColor} />
 
         {/* Center — large track map (fills) + compact event log (fixed height) */}
-        <div className="flex min-h-0 flex-col gap-2 overflow-hidden">
+        <div className="relative flex min-h-0 flex-col gap-2 overflow-hidden">
           <TrackMapPanel live={live} dots={dots} rotation={rotation} className="min-h-0 flex-1" />
+          {crashOverlay}
           <EventLogPanel
             events={live.events}
             onOpenFull={() => setModal('log')}
@@ -549,7 +600,7 @@ export function LiveRace() {
                   teamColor={teamColor(c.teamId)}
                   finished={finished}
                   onMode={(m) => setMode(c.driverId, m)}
-                  onPit={() => pitNow(c.driverId)}
+                  onPit={(decision) => pitNow(c.driverId, decision)}
                   className="min-h-0"
                 />
               ))
@@ -572,7 +623,7 @@ export function LiveRace() {
       </div>
 
       {/* Decision prompt overlay */}
-      {live.pendingPrompt && (
+      {blockingPrompt && live.pendingPrompt && (
         <PromptOverlay
           title={live.pendingPrompt.title}
           driver={driverName(live.pendingPrompt.driverId)}
@@ -582,6 +633,8 @@ export function LiveRace() {
         />
       )}
       {dnfAlert && <DnfOverlay alert={dnfAlert} nameOf={driverName} onClose={() => setDnfAlert(null)} />}
+
+      {crashOverlay}
 
       {/* Modals */}
       {modal === 'log' && <FullEventLogModal events={live.events} onClose={() => setModal(null)} />}

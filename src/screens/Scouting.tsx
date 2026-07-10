@@ -5,7 +5,7 @@ import { careerMarketBundle } from '../sim/careerMarketEngine';
 import { Panel } from '../components/Panel';
 import { Button } from '../components/Button';
 import { fogView, scoutingCost, type FogView, type ScoutTarget } from '../sim/scoutingEngine';
-import { formatMoney } from '../components/ui';
+import { formatMoney, ratingColor } from '../components/ui';
 import type { ScoutedEntityType, VisibleRating } from '../types/scoutingTypes';
 
 type Tab = 'senior' | 'youth';
@@ -73,9 +73,9 @@ export function Scouting() {
         <div className="flex items-center gap-3">
           <div className="text-sm text-neutral-400">Network accuracy</div>
           <div className="h-2 w-40 overflow-hidden rounded-full bg-neutral-800">
-            <div className="h-full bg-sky-500" style={{ width: `${networkPct}%` }} />
+            <div className="h-full" style={{ width: `${networkPct}%`, backgroundColor: ratingColor(networkPct) }} />
           </div>
-          <span className="text-sm font-semibold tabular-nums text-neutral-200">{networkPct}%</span>
+          <span className="text-sm font-semibold tabular-nums" style={{ color: ratingColor(networkPct) }}>{networkPct}%</span>
           <span className="text-xs text-neutral-500">
             Upgrade the Scouting Network facility to raise the baseline.
           </span>
@@ -186,8 +186,8 @@ function ScoutCard({
         </div>
         <div className="h-1.5 w-full overflow-hidden rounded-full bg-neutral-800">
           <div
-            className={`h-full ${view.maxed ? 'bg-green-500' : 'bg-sky-500'}`}
-            style={{ width: `${accPct}%` }}
+            className="h-full"
+            style={{ width: `${accPct}%`, backgroundColor: ratingColor(accPct) }}
           />
         </div>
       </div>
@@ -228,12 +228,14 @@ function ScoutCard({
 function SkillRow({ label, value }: { label: string; value: VisibleRating }) {
   const known = value !== 'Unknown';
   const [lo, hi] = Array.isArray(value) ? value : typeof value === 'number' ? [value, value] : [0, 0];
-  const pct = known ? ((lo + hi) / 2 / 10) * 100 : 0;
+  const mid = known ? (lo + hi) / 2 : 0;
+  const pct = known ? mid : 0;
+  const color = known ? ratingColor(mid) : '#52525b';
   return (
     <div className="flex items-center gap-2 text-xs">
       <span className="w-24 text-neutral-400">{label}</span>
       <div className="h-2 flex-1 overflow-hidden rounded-full bg-neutral-800">
-        {known && <div className="h-full bg-neutral-500" style={{ width: `${pct}%` }} />}
+        {known && <div className="h-full rounded-full" style={{ width: `${pct}%`, backgroundColor: color }} />}
       </div>
       <span className={`w-20 text-right tabular-nums ${known ? 'text-neutral-200' : 'text-neutral-600'}`}>
         {known ? `${lo.toFixed(1)}-${hi.toFixed(1)}` : '??'}
@@ -247,8 +249,8 @@ function overallText(view: FogView): string {
   if (values.length === 0) return 'OVR ??';
   const mids = values.map((v) => (Array.isArray(v) ? (v[0] + v[1]) / 2 : v));
   const avg = mids.reduce((sum, v) => sum + v, 0) / mids.length;
-  const uncertainty = Math.max(0.4, (1 - view.accuracy) * 2.2);
-  return `${Math.max(1, avg - uncertainty).toFixed(1)}-${Math.min(10, avg + uncertainty).toFixed(1)}`;
+  const uncertainty = Math.max(4, (1 - view.accuracy) * 22);
+  return `${Math.max(1, avg - uncertainty).toFixed(1)}-${Math.min(100, avg + uncertainty).toFixed(1)}`;
 }
 
 function viewMidpoint(view: FogView): number {

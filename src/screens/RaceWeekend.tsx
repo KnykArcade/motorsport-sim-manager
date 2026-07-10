@@ -4,6 +4,7 @@ import { useGame } from '../game/GameContext';
 import { activeDriversForTeam, carForTeam, currentRace } from '../game/careerState';
 import { lastBreakdowns } from '../game/gameReducer';
 import { getTrackById } from '../data';
+import { ratingColor } from '../components/ui';
 import { qualifyingRunPlans } from '../data/decisions/qualifyingRunPlans';
 import { raceStrategies } from '../data/decisions/raceStrategies';
 import { driverInstructions } from '../data/decisions/driverInstructions';
@@ -804,8 +805,11 @@ function PracticePhase({
             <span className="text-[10px] uppercase tracking-wide text-neutral-500">Lap allocation</span>
             <div className="h-2 w-40 overflow-hidden rounded-full bg-neutral-800">
               <div
-                className={`h-full ${lapsRemaining <= 0 ? 'bg-red-500' : 'bg-amber-500'}`}
-                style={{ width: `${lapBudget > 0 ? (lapsUsed / lapBudget) * 100 : 0}%` }}
+                className="h-full"
+                style={{
+                  width: `${lapBudget > 0 ? (lapsUsed / lapBudget) * 100 : 0}%`,
+                  backgroundColor: lapsRemaining <= 0 ? '#ef4444' : ratingColor(Math.max(0, 100 - (lapsUsed / lapBudget) * 100)),
+                }}
               />
             </div>
             <span className={`text-sm font-semibold ${lapsRemaining <= 0 ? 'text-red-400' : 'text-neutral-100'}`}>
@@ -1011,24 +1015,26 @@ function GainChip({ label, value, on }: { label: string; value: string; on: bool
 
 function MiniGauge({ label, value }: { label: string; value: number }) {
   const pct = Math.round(value * 100);
+  const color = ratingColor(pct);
   return (
     <div className="rounded border border-neutral-800 bg-neutral-900/40 px-2 py-1">
       <div className="mb-0.5 flex items-center justify-between text-[9px] uppercase tracking-wide text-neutral-500">
         <span>{label}</span>
-        <span className="text-neutral-300">{pct}%</span>
+        <span style={{ color }}>{pct}%</span>
       </div>
       <div className="h-1.5 overflow-hidden rounded bg-neutral-800">
-        <div className="h-full rounded bg-sky-500" style={{ width: `${pct}%` }} />
+        <div className="h-full rounded" style={{ width: `${pct}%`, backgroundColor: color }} />
       </div>
     </div>
   );
 }
 
 function PracticeKnowledgeChip({ label, value }: { label: string; value: number }) {
+  const color = ratingColor(value);
   return (
     <div className="rounded border border-neutral-700 bg-neutral-950/50 px-2 py-1">
       <div className="text-[9px] uppercase tracking-wide text-neutral-500">{label}</div>
-      <div className="text-xs font-semibold tabular-nums text-amber-300">{value}%</div>
+      <div className="text-xs font-semibold tabular-nums" style={{ color }}>{value}%</div>
     </div>
   );
 }

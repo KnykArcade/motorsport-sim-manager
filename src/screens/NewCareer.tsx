@@ -376,11 +376,11 @@ export function NewCareer() {
                     </div>
                     {ratings && (
                       <div className="space-y-1">
-                        <StatBar label="Engine" value={ratings.enginePower} />
-                        <StatBar label="Aero" value={ratings.aeroEfficiency} />
-                        <StatBar label="Mech Grip" value={ratings.mechanicalGrip} />
-                        <StatBar label="Reliability" value={ratings.reliability} />
-                        <StatBar label="Pit Crew" value={ratings.pitCrewOperations} />
+                        <StatBar label="Engine" value={ratings.enginePower} max={100} />
+                        <StatBar label="Aero" value={ratings.aeroEfficiency} max={100} />
+                        <StatBar label="Mech Grip" value={ratings.mechanicalGrip} max={100} />
+                        <StatBar label="Reliability" value={ratings.reliability} max={100} />
+                        <StatBar label="Pit Crew" value={ratings.pitCrewOperations} max={100} />
                       </div>
                     )}
                     <div className="mt-3 flex items-center justify-between text-xs text-neutral-500">

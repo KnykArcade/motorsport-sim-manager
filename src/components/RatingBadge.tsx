@@ -7,8 +7,8 @@ type Props = {
 };
 
 // A small colored pill showing a numeric rating.
-export function RatingBadge({ value, max = 10, label }: Props) {
-  const color = ratingColor((value / max) * 10);
+export function RatingBadge({ value, max = 100, label }: Props) {
+  const color = ratingColor((value / max) * 100);
   return (
     <span className="inline-flex items-center gap-1">
       {label && <span className="text-xs text-neutral-400">{label}</span>}

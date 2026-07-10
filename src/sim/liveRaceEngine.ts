@@ -8,15 +8,18 @@
 //
 // The per-lap advancement lives in raceTickEngine.ts.
 
-import type { RaceResult, Track } from '../types/gameTypes';
+import type { RaceResult, Series, Track } from '../types/gameTypes';
 import type { RaceContext, RaceEvent, ScoreBreakdown } from '../types/simTypes';
 import type {
+  DamageBalanceSettings,
   AIStrategyPersonality,
   LiveCarState,
   LiveRaceState,
   PaceMode,
+  PitIntensity,
   TireCompound,
 } from '../types/liveTypes';
+import type { TeamOrganizationRatings } from '../types/teamRatingsTypes';
 import { calculateRacePace, weekendForm, operationsForm, PACE_SPREAD } from './raceEngine';
 import { calculateReliabilityRisk, perLapFailureRisk } from './reliabilityEngine';
 import { calculateMistakeRisk, calculateCrashRisk } from './mistakeEngine';
@@ -26,6 +29,7 @@ import { buildPitPlan, pitStopLoss, pitWindowFor } from './pitStrategyEngine';
 import { initialWeather } from './weatherEngine';
 import { initialSafetyCar, SAFETY_CAR_PIT_SAVING } from './safetyCarEngine';
 import { initialStint } from './strategyStint';
+import { DEFAULT_DAMAGE_SETTINGS } from './damageComponents';
 
 export type LiveRaceOptions = {
   raceId: string;
@@ -40,7 +44,12 @@ export type LiveRaceOptions = {
   // Season year — drives era-specific DNF-cause balancing.
   year: number;
   // Series (e.g. 'F1', 'IndyCar') — drives series-specific DNF calibration.
-  series: string;
+  series: Series;
+  // Per-team default pit intensity, set pre-race and applied to live pit stops
+  // unless the player overrides it in the pit box.
+  pitIntensityByTeam?: Record<string, PitIntensity>;
+  damageSettings?: DamageBalanceSettings;
+  teamOrgRatings?: Record<string, TeamOrganizationRatings>;
 };
 
 // Metadata threaded through the tick engine for events and player prompts.
@@ -51,6 +60,7 @@ export type LiveRaceMeta = {
   playerTeamId: string;
   // Season year — drives era-specific DNF-cause balancing during the race.
   year: number;
+  series: Series;
 };
 
 const REF_LAP = 90; // reference lap time (s) — only relative deltas matter
@@ -75,6 +85,7 @@ export function createLiveRace(context: RaceContext, options: LiveRaceOptions): 
   const { track } = context;
   const totalLaps = options.totalLaps;
   const weather = initialWeather(track, context.seed);
+  const damageSettings = options.damageSettings ?? DEFAULT_DAMAGE_SETTINGS;
 
   const gridByDriver: Record<string, number> = {};
   const incidentByDriver: Record<string, string | undefined> = {};
@@ -93,6 +104,7 @@ export function createLiveRace(context: RaceContext, options: LiveRaceOptions): 
     const teamRating = options.teamRaceOps[e.driver.teamId];
     const pkgEffects = context.packageEffectsByTeam?.[e.driver.teamId];
     const confidenceModifier = context.confidenceModifierByDriver?.[e.driver.id] ?? 0;
+    const teamPitIntensity = options.pitIntensityByTeam?.[e.driver.teamId] ?? 'Standard';
     const { score: paceScore } = calculateRacePace(e.driver, e.car, track, setup, strategy, instruction, teamRating, confidenceModifier);
     // Per-team weekend form so the live race shares the quick race's variation.
     const score = paceScore + weekendForm(context.seed, e.driver.teamId, teamRating);
@@ -185,14 +197,25 @@ export function createLiveRace(context: RaceContext, options: LiveRaceOptions): 
       baseCrashRisk,
       baseMistakeRisk,
       tireDegRate,
-      pitLossBase: pitStopLoss(e.car, false, SAFETY_CAR_PIT_SAVING, opsForm + (isPlayer ? (context.playerStaffBonus?.pitCrew ?? 0) : 0)),
+      pitCrewOperations: e.car.ratings.pitCrewOperations,
+      driverComposure: e.driver.ratings.composure,
+      driverRiskManagement: e.driver.ratings.riskManagement,
+      pitLossBase: pitStopLoss(
+        e.car,
+        false,
+        SAFETY_CAR_PIT_SAVING,
+        opsForm + (isPlayer ? (context.playerStaffBonus?.pitCrew ?? 0) : 0),
+        { track, series: options.series, year: options.year },
+      ),
       opsForm,
       confidenceModifier,
+      driverRelationships: context.driverRelationships,
       personality,
       strategyId: strategy.id,
       instructionId: instruction.id,
       paceMode: initialPaceMode(instruction.id),
-      safetyCarModeBefore: null,
+      safetyCarModePreSC: null,
+      safetyCarModeAfterSC: null,
       strategyStint: initialStint(initialPaceMode(instruction.id)),
       liveRacePace: baseRacePace,
       tire: { compound, age: 0, wear: 0, stintTarget: pitPlan.stintTarget },
@@ -202,6 +225,10 @@ export function createLiveRace(context: RaceContext, options: LiveRaceOptions): 
         scheduledLaps: pitPlan.scheduledLaps,
         lastPitLap: null,
         lastPitStopTime: null,
+        intensityDefault: teamPitIntensity,
+        intensity: teamPitIntensity,
+        exitMode: 'Conservative',
+        lastPitResult: null,
         inPitThisLap: false,
         // The player owns pit timing: show an advisory window for the first
         // stop and wait for the player to call the car in. AI cars pit off
@@ -223,12 +250,15 @@ export function createLiveRace(context: RaceContext, options: LiveRaceOptions): 
       gearboxHealth: 100,
       brakeHealth: 100,
       aeroHealth: qIncident === 'Crash' ? 82 : 100,
+      currentSector: 0,
+      sectorProgress: 0,
       lastSectors: null,
       bestSectors: null,
       reliabilityRiskLevel: 'Low',
       crashRiskLevel: 'Low',
       trafficStatus: 'Clear',
       statusMessage: 'On the grid',
+      damageSettings,
     };
   });
 
@@ -250,6 +280,7 @@ export function createLiveRace(context: RaceContext, options: LiveRaceOptions): 
     seed: context.seed,
     totalLaps,
     currentLap: 0,
+    sector: 0,
     phase: 'formation',
     weather,
     safetyCar: initialSafetyCar(),
@@ -263,6 +294,9 @@ export function createLiveRace(context: RaceContext, options: LiveRaceOptions): 
     recCooldowns: {},
     battleTracker: {},
     retirements: 0,
+    driverRelationships: context.driverRelationships,
+    teamOrgRatings: options.teamOrgRatings,
+    damageSettings,
   };
 }
 

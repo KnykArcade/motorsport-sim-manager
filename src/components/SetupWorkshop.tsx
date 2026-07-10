@@ -272,7 +272,7 @@ export function SetupWorkshop({
               <div className="flex shrink-0 items-center gap-2">
                 <span className="text-xs text-neutral-500">Fit</span>
                 {revealComponents ? (
-                  <span className="text-sm font-semibold tabular-nums" style={{ color: ratingColor(componentFit(comp.key) / 10) }}>
+                  <span className="text-sm font-semibold tabular-nums" style={{ color: ratingColor(componentFit(comp.key)) }}>
                     {componentFit(comp.key)}
                   </span>
                 ) : (
@@ -322,7 +322,7 @@ export function SetupWorkshop({
                 <span className="text-[10px] text-neutral-500">Conf: {engineerConfidenceLabel(setupKnowledge)}</span>
               </div>
               <div className="flex items-end gap-1.5">
-                <span className="text-2xl font-bold tabular-nums" style={{ color: ratingColor(safeScore(quality.quality) / 10) }}>
+                <span className="text-2xl font-bold tabular-nums" style={{ color: ratingColor(safeScore(quality.quality)) }}>
                   {qualityDisplay.label}
                 </span>
                 <span className="pb-0.5 text-[11px] text-neutral-500">{qualityDisplay.detail}</span>
@@ -348,7 +348,7 @@ export function SetupWorkshop({
                 <span className="text-[10px] font-medium text-neutral-300">{comfort.label}</span>
               </div>
               <div className="flex items-end gap-1.5">
-                <span className="text-2xl font-bold tabular-nums" style={{ color: ratingColor(safeScore(comfort.comfort) / 10) }}>
+                <span className="text-2xl font-bold tabular-nums" style={{ color: ratingColor(safeScore(comfort.comfort)) }}>
                   {comfort.label === 'Unknown' ? '—' : formatSetupScore(comfort.comfort)}
                 </span>
                 <span className="pb-0.5 text-[11px] text-neutral-500">{qualityDisplay.detail}</span>
@@ -430,7 +430,7 @@ export function SetupWorkshop({
                 <span className="text-[10px] text-neutral-500">Conf: {engineerConfidenceLabel(setupKnowledge)}</span>
               </div>
               <div className="flex items-end gap-1.5">
-                <span className="text-2xl font-bold tabular-nums" style={{ color: ratingColor(safeScore(quality.quality) / 10) }}>
+                <span className="text-2xl font-bold tabular-nums" style={{ color: ratingColor(safeScore(quality.quality)) }}>
                   {qualityDisplay.label}
                 </span>
                 <span className="pb-0.5 text-[11px] text-neutral-500">{qualityDisplay.detail}</span>
@@ -456,7 +456,7 @@ export function SetupWorkshop({
                 <span className="text-[10px] font-medium text-neutral-300">{comfort.label}</span>
               </div>
               <div className="flex items-end gap-1.5">
-                <span className="text-2xl font-bold tabular-nums" style={{ color: ratingColor(safeScore(comfort.comfort) / 10) }}>
+                <span className="text-2xl font-bold tabular-nums" style={{ color: ratingColor(safeScore(comfort.comfort)) }}>
                   {comfort.label === 'Unknown' ? '—' : formatSetupScore(comfort.comfort)}
                 </span>
                 <span className="pb-0.5 text-[11px] text-neutral-500">{qualityDisplay.detail}</span>
@@ -518,7 +518,7 @@ export function SetupWorkshop({
             <TrackDemandBars track={track} />
           </Panel>
 
-          <Panel title="Driver Feedback" className="hidden">
+          <Panel title="Driver Feedback">
             <ul className="space-y-1.5 text-xs text-neutral-300">
               {feedback.driverFeedback.map((f, i) => (
                 <li key={i}>“{f}”</li>
@@ -527,7 +527,7 @@ export function SetupWorkshop({
           </Panel>
 
           {feedback.engineerFeedback.length > 0 && (
-            <Panel title="Engineer Feedback" className="hidden">
+            <Panel title="Engineer Feedback">
               <ul className="space-y-1.5 text-xs text-neutral-300">
                 {feedback.engineerFeedback.map((f, i) => (
                   <li key={i}>{f}</li>
@@ -575,14 +575,12 @@ export function SetupWorkshop({
   );
 }
 
-// A green/yellow/red band colour for a 0-10 component-fit value.
+// A green/yellow/red band colour for a 0-100 component-fit value.
 function fitBand(fit: number): string {
-  if (fit >= 7) return '#22c55e';
-  if (fit >= 4.5) return '#eab308';
-  return '#ef4444';
+  return ratingColor(fit);
 }
 
-// A compact SVG radar/spider chart of the per-component setup fit (0-10), with a
+// A compact SVG radar/spider chart of the per-component setup fit (0-100), with a
 // dashed "target" ring so the profile reads as tuning against a window, not a
 // single number.
 function SetupRadar({ data }: { data: { label: string; value: number }[] }) {
@@ -591,12 +589,12 @@ function SetupRadar({ data }: { data: { label: string; value: number }[] }) {
   const cx = size / 2;
   const cy = size / 2;
   const r = size / 2 - 26;
-  const target = 0.7; // 7/10 reference ring
+  const target = 0.7; // 70/100 reference ring
   const pointAt = (i: number, frac: number) => {
     const ang = (Math.PI * 2 * i) / n - Math.PI / 2;
     return [cx + Math.cos(ang) * r * frac, cy + Math.sin(ang) * r * frac] as const;
   };
-  const poly = data.map((d, i) => pointAt(i, Math.max(0, Math.min(1, d.value / 10)))).map((p) => p.join(',')).join(' ');
+  const poly = data.map((d, i) => pointAt(i, Math.max(0, Math.min(1, d.value / 100)))).map((p) => p.join(',')).join(' ');
   const targetPoly = data.map((_, i) => pointAt(i, target)).map((p) => p.join(',')).join(' ');
   return (
     <svg viewBox={`0 0 ${size} ${size}`} className="mx-auto block h-44 w-44">
@@ -625,14 +623,15 @@ function SetupRadar({ data }: { data: { label: string; value: number }[] }) {
 
 function MiniBar({ label, value }: { label: string; value: number }) {
   const pct = Math.round(Math.max(0, Math.min(1, safeScore(value, 0))) * 100);
+  const color = ratingColor(pct);
   return (
     <div>
       <div className="mb-0.5 flex justify-between text-[11px]">
         <span className="text-neutral-400">{label}</span>
-        <span className="tabular-nums text-neutral-500">{pct}%</span>
+        <span className="tabular-nums" style={{ color }}>{pct}%</span>
       </div>
       <div className="h-1.5 overflow-hidden rounded-full bg-neutral-800">
-        <div className="h-full bg-amber-500" style={{ width: `${pct}%` }} />
+        <div className="h-full" style={{ width: `${pct}%`, backgroundColor: color }} />
       </div>
     </div>
   );

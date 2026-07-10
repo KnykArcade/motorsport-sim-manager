@@ -2,7 +2,7 @@ import { useGame } from '../../game/GameContext';
 import { fogView, scoutingCost, type ScoutTarget } from '../../sim/scoutingEngine';
 import type { ScoutedEntityType, VisibleRating } from '../../types/scoutingTypes';
 import { Button } from '../Button';
-import { formatMoney } from '../ui';
+import { formatMoney, ratingColor } from '../ui';
 
 const SKILLS = [
   ['Cornering', 'cornering'],
@@ -45,7 +45,7 @@ export function ScoutingWidget({
         </span>
       </div>
       <div className="mb-2 h-1.5 overflow-hidden rounded bg-neutral-800">
-        <div className={view.maxed ? 'h-full bg-green-500' : 'h-full bg-sky-500'} style={{ width: `${accuracy}%` }} />
+        <div className="h-full" style={{ width: `${accuracy}%`, backgroundColor: ratingColor(accuracy) }} />
       </div>
       {!compact && (
         <div className="mb-2 grid gap-1 text-[11px]">

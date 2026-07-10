@@ -219,15 +219,13 @@ export const SERIES_PACKAGE_RULES: Record<Series, SeriesPackageRules> = {
     allowsSkipRace: false,
     allowsStartAndPark: false,
   },
+  NASCAR: {
+    allowedPackages: ['FullAttack', 'Standard', 'Conservative', 'Budget', 'DevelopmentTest', 'StartAndPark', 'SkipRace'],
+    baseWeekendCost: 1.8,
+    allowsSkipRace: true,
+    allowsStartAndPark: true,
+  },
 };
-
-// Future series can be added here. NASCAR would allow StartAndPark and SkipRace.
-// NASCAR: {
-//   allowedPackages: ['FullAttack', 'Standard', 'Conservative', 'Budget', 'DevelopmentTest', 'StartAndPark', 'SkipRace'],
-//   baseWeekendCost: 1.8,
-//   allowsSkipRace: true,
-//   allowsStartAndPark: true,
-// },
 
 export function availablePackagesForSeries(series: Series): RaceWeekendPackageType[] {
   const rules = SERIES_PACKAGE_RULES[series] ?? SERIES_PACKAGE_RULES.F1;

@@ -114,6 +114,7 @@ const META: LiveRaceMeta = {
   teamNames: { 't-player': 'Player Team' },
   playerTeamId: 't-player',
   year: 2005,
+  series: 'F1',
 };
 
 // Seed the analytics candidates onto the state so the accept/modify actions can

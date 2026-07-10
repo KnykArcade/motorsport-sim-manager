@@ -1,12 +1,20 @@
 // Small presentation helpers shared across components.
 
-// Map a 1-10 rating to a traffic-light color.
+// Map a 0-100 rating to a continuous traffic-light color.
 export function ratingColor(value: number): string {
-  if (value >= 8) return '#22c55e'; // green
-  if (value >= 6) return '#84cc16'; // lime
-  if (value >= 4) return '#eab308'; // yellow
-  if (value >= 2.5) return '#f97316'; // orange
-  return '#ef4444'; // red
+  const clamped = Math.max(0, Math.min(100, value));
+  // Hue stops: red (0) -> orange (30) -> yellow (60) -> lime (90) -> green (120).
+  let hue: number;
+  if (clamped <= 25) {
+    hue = (clamped / 25) * 30; // 0..30
+  } else if (clamped <= 50) {
+    hue = 30 + ((clamped - 25) / 25) * 30; // 30..60
+  } else if (clamped <= 75) {
+    hue = 60 + ((clamped - 50) / 25) * 30; // 60..90
+  } else {
+    hue = 90 + ((clamped - 75) / 25) * 30; // 90..120
+  }
+  return `hsl(${hue}, 80%, 50%)`;
 }
 
 export function ratingTextColor(value: number): string {

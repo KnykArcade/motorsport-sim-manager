@@ -66,6 +66,10 @@ export const availableSeasons: { year: number; series: Series; label: string }[]
   { year: 2025, series: 'F1', label: '2025 Formula 1 World Championship' },
   { year: 2026, series: 'F1', label: '2026 Formula 1 World Championship' },
   ...aowAvailableSeasons,
+  { year: 1990, series: 'NASCAR', label: '1990 NASCAR Winston Cup Series' },
+  { year: 2000, series: 'NASCAR', label: '2000 NASCAR Winston Cup Series' },
+  { year: 2010, series: 'NASCAR', label: '2010 NASCAR Sprint Cup Series' },
+  { year: 2026, series: 'NASCAR', label: '2026 NASCAR Cup Series' },
   { year: 2008, series: 'IndyCar', label: '2008 IndyCar Series' },
   { year: 2009, series: 'IndyCar', label: '2009 IndyCar Series' },
   { year: 2010, series: 'IndyCar', label: '2010 IndyCar Series' },
@@ -93,6 +97,7 @@ export const availableSeries: { id: Series; label: string }[] = [
   { id: 'IndyCar', label: 'IndyCar' },
   { id: 'CART', label: 'CART' },
   { id: 'Champ Car', label: 'Champ Car' },
+  { id: 'NASCAR', label: 'NASCAR' },
 ];
 
 // Top-level selection groups for the New Career UI. A group either maps to a
@@ -121,6 +126,12 @@ export const seriesGroups: SeriesGroup[] = [
       { id: 'Champ Car', label: 'Champ Car (2004–2007)' },
       { id: 'IndyCar', label: 'IndyCar (IRL / unified)' },
     ],
+  },
+  {
+    id: 'NASCAR',
+    label: 'NASCAR',
+    blurb: 'NASCAR stock car racing — Winston Cup (1990, 2000), Sprint Cup (2010), and Cup Series (2026).',
+    disciplines: [{ id: 'NASCAR', label: 'NASCAR Cup' }],
   },
 ];
 

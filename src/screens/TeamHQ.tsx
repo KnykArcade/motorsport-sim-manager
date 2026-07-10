@@ -5,6 +5,7 @@ import {
   carForTeam,
   currentRace,
   driversForTeam,
+  minRaceDriversForSeries,
   teamById,
 } from '../game/careerState';
 import { effectiveCarRatings } from '../sim/trackFitEngine';
@@ -19,7 +20,7 @@ import { NewsFeed } from '../components/NewsFeed';
 import { NewsPanel } from '../components/NewsPanel';
 import { TrackDemandBars } from '../components/TrackDemandBars';
 import { DriverDossierButton } from '../components/driverCards/DriverDossier';
-import { formatMoney } from '../components/ui';
+import { formatMoney, ratingColor } from '../components/ui';
 import {
   BACKGROUNDS,
   MANAGEMENT_STYLES,
@@ -48,7 +49,8 @@ export function TeamHQ() {
   const orgRatings = state.teamOrgRatings?.[state.selectedTeamId];
 
   const activeDrivers = activeDriversForTeam(state, state.selectedTeamId);
-  const hasEnoughDrivers = activeDrivers.length >= 2;
+  const minDrivers = minRaceDriversForSeries(state.series);
+  const hasEnoughDrivers = activeDrivers.length >= minDrivers;
 
   const driverName = (id: string) => state.drivers.find((d) => d.id === id)?.name ?? id;
   const teamName = (id: string) => state.teams.find((t) => t.id === id)?.name ?? id;
@@ -72,7 +74,7 @@ export function TeamHQ() {
             </Button>
           ) : (
             <Button variant="primary" onClick={() => navigate('/market')}>
-              Sign Race Drivers ({activeDrivers.length}/2) →
+              Sign Race Drivers ({activeDrivers.length}/{minDrivers}) →
             </Button>
           )}
           {race && !state.seasonComplete && (
@@ -106,7 +108,7 @@ export function TeamHQ() {
             >
               {!hasEnoughDrivers && (
                 <div className="mb-3 rounded border border-amber-600/50 bg-amber-900/20 px-3 py-2 text-sm text-amber-300">
-                  ⚠ Your team has only {activeDrivers.length} active race driver{activeDrivers.length === 1 ? '' : 's'}. Sign at least 2 drivers before entering the race weekend.
+                  ⚠ Your team has only {activeDrivers.length} active race driver{activeDrivers.length === 1 ? '' : 's'}. Sign at least {minDrivers} driver{minDrivers === 1 ? '' : 's'} before entering the race weekend.
                 </div>
               )}
               <div className="grid gap-4 md:grid-cols-2">
@@ -129,12 +131,12 @@ export function TeamHQ() {
           {ratings && (
             <Panel title="Car Performance">
               <div className="grid gap-2 md:grid-cols-2">
-                <StatBar label="Engine Power" value={ratings.enginePower} />
-                <StatBar label="Aero Efficiency" value={ratings.aeroEfficiency} />
-                <StatBar label="Mechanical Grip" value={ratings.mechanicalGrip} />
-                <StatBar label="Reliability" value={ratings.reliability} />
-                <StatBar label="Pit Crew Ops" value={ratings.pitCrewOperations} />
-                <StatBar label="Condition" value={(car?.condition ?? 0) / 10} />
+                <StatBar label="Engine Power" value={ratings.enginePower} max={100} />
+                <StatBar label="Aero Efficiency" value={ratings.aeroEfficiency} max={100} />
+                <StatBar label="Mechanical Grip" value={ratings.mechanicalGrip} max={100} />
+                <StatBar label="Reliability" value={ratings.reliability} max={100} />
+                <StatBar label="Pit Crew Ops" value={ratings.pitCrewOperations} max={100} />
+                <StatBar label="Condition" value={car?.condition ?? 0} max={100} />
               </div>
             </Panel>
           )}
@@ -177,10 +179,10 @@ export function TeamHQ() {
                     </div>
                   </div>
                   <div className="mt-2 space-y-1">
-                    <StatBar label="Morale" value={d.morale / 10} />
-                    <StatBar label="Confidence" value={d.confidence / 10} />
-                    <StatBar label="Qualifying" value={d.ratings.qualifying} />
-                    <StatBar label="Race Pace" value={d.ratings.racePace} />
+                    <StatBar label="Morale" value={d.morale} max={100} />
+                    <StatBar label="Confidence" value={d.confidence} max={100} />
+                    <StatBar label="Qualifying" value={d.ratings.qualifying} max={100} />
+                    <StatBar label="Race Pace" value={d.ratings.racePace} max={100} />
                   </div>
                 </div>
               ))}
@@ -362,7 +364,7 @@ function TeamRatingsPanel({
           <div key={r.label} className="flex items-center gap-2 text-xs">
             <span className="w-28 shrink-0 text-neutral-400">{r.label}</span>
             <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-neutral-800">
-              <div className="h-full bg-sky-500" style={{ width: `${r.value}%` }} />
+              <div className="h-full" style={{ width: `${r.value}%`, backgroundColor: ratingColor(r.value) }} />
             </div>
             <span className="w-6 text-right tabular-nums text-neutral-300">{r.value}</span>
           </div>

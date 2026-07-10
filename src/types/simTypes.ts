@@ -108,6 +108,8 @@ export type RaceContext = {
   racePrepFocusEffect?: RacePrepFocusEffect;
   // Player's team ID — used to apply race prep focus effects only to the player.
   playerTeamId?: string;
+  // Per-team default pit intensity for the live race pit box.
+  pitIntensityByTeam?: Record<string, import('./liveTypes').PitIntensity>;
   // Staff bonuses for the player's team: pit crew chief and strategist effects
   // applied to pit stop performance and strategy execution.
   playerStaffBonus?: {
@@ -116,6 +118,8 @@ export type RaceContext = {
   };
   // Confidence performance modifier by driver ID (from driverConfidenceEngine).
   confidenceModifierByDriver?: Record<string, number>;
+  // Driver relationships by driver ID (trust / ego). Used for AI disagreement beats.
+  driverRelationships?: Record<string, import('./relationshipTypes').DriverRelationship>;
 };
 
 export type RacePrepFocusEffect = {

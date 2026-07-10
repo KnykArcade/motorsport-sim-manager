@@ -7,6 +7,7 @@ import {
   currentRace,
   teamById,
   driversForTeam,
+  minRaceDriversForSeries,
 } from '../game/careerState';
 import { getTrackById, getRegulationSet } from '../data';
 import { effectiveCarRatings } from '../sim/trackFitEngine';
@@ -32,6 +33,7 @@ export function PreSeasonSetup() {
   const car = carForTeam(state, state.selectedTeamId);
   const drivers = driversForTeam(state, state.selectedTeamId);
   const activeDrivers = activeDriversForTeam(state, state.selectedTeamId);
+  const minDrivers = minRaceDriversForSeries(state.series);
   const race = currentRace(state);
   const track = race ? getTrackById(race.trackId) : undefined;
   const carRatings = car ? effectiveCarRatings(car) : null;
@@ -80,8 +82,8 @@ export function PreSeasonSetup() {
     { id: 'roundOnePreview', label: 'Round 1 Preview' },
   ];
 
-  // Driver lineup validation: F1 requires 2 race drivers.
-  const hasValidLineup = activeDrivers.length >= 2;
+  // Driver lineup validation: NASCAR requires 1 race driver, all other series 2.
+  const hasValidLineup = activeDrivers.length >= minDrivers;
 
   return (
     <div className="space-y-6">
@@ -226,7 +228,7 @@ export function PreSeasonSetup() {
               <div className="mt-3 rounded-lg bg-orange-950/30 p-3 text-sm text-orange-300">
                 <p className="font-semibold">Incomplete Lineup</p>
                 <p className="text-xs">
-                  Your team requires 2 active race drivers. Visit the Driver Market to sign a second driver.
+                  Your team requires {minDrivers} active race driver{minDrivers === 1 ? '' : 's'}. Visit the Driver Market to sign {minDrivers === 1 ? 'a driver' : 'a second driver'}.
                 </p>
               </div>
             )}

@@ -3,6 +3,7 @@
 import type { Car, SetupOption, Track } from '../types/gameTypes';
 import type { ReliabilityIssue, ReliabilityIssueType } from '../types/liveTypes';
 import type { Rng } from './random';
+import { toLegacyRating } from './ratingScale';
 import { effectiveCarRatings } from './trackFitEngine';
 
 // Sensitivity of DNF risk to the weekend's operations execution (see
@@ -28,16 +29,19 @@ export function calculateReliabilityRisk(
   opsForm = 0,
 ): number {
   const c = effectiveCarRatings(car);
+  const reliability = toLegacyRating(c.reliability);
 
   // Base failure rate: a 10-reliability car ~3% DNF, a 2-reliability car ~25%.
-  const base = 0.28 - c.reliability * 0.025;
+  // Ratings are 1-100 in the data, so convert to the legacy 1-10 scale the formula expects.
+  const base = 0.28 - reliability * 0.025;
 
   // Track punishment: risk + endurance demands increase mechanical attrition.
-  const trackStress =
-    (track.setupProfile.riskDemand + track.attributes.enduranceConsistency) / 2;
+  const riskDemand = toLegacyRating(track.setupProfile.riskDemand);
+  const enduranceConsistency = toLegacyRating(track.attributes.enduranceConsistency);
+  const trackStress = (riskDemand + enduranceConsistency) / 2;
   const trackFactor = (trackStress - 5) * 0.012;
 
-  // Setup: low reliability protection raises risk.
+  // Setup: low reliability protection raises risk. Setup values remain 1-10.
   const setupFactor = (5 - setup.reliabilityProtection) * 0.01;
 
   // Car condition: a damaged car (e.g. quali crash) is more fragile.

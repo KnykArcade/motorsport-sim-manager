@@ -5,13 +5,19 @@ import { modeSpec } from '../../../sim/liveRacePace';
 import { DECISION_COUNTDOWN_SECONDS } from '../../../sim/analyticsEngine';
 import type { AnalyticsMonitor } from '../../../sim/analyticsMonitor';
 import { kindLabel } from '../../../sim/analyticsMonitor';
-import type { AnalyticsRecommendation, LiveCarState, LiveRaceState, PaceMode, RecAction, ReliabilityIssueType } from '../../../types/liveTypes';
+import type { AnalyticsRecommendation, LiveCarState, LiveRaceState, PaceMode, PitIntensity, RecAction, ReliabilityIssueType } from '../../../types/liveTypes';
 import type { Race } from '../../../types/gameTypes';
 import type { GameState } from '../../../game/careerState';
+import { overallConfidenceScore } from '../../../sim/driverConfidenceEngine';
 import { fmtLap, fmtSector, tyreLetter } from '../dashboardFormat';
 import type { ForecastEntry } from '../forecast';
+import { PIT_INTENSITY_ORDER } from '../../../sim/pitIntensityData';
+import { getEraTheme, getEraThemeConfig } from '../../../theme/eraTheme';
+import { ratingColor } from '../../../components/ui';
 
-type Speed = 1 | 10 | 30 | 60;
+const SAFETY_CAR_PIT_LOSS_FACTOR = 0.4;
+
+type Speed = 1 | 5 | 15 | 30;
 
 type Props = {
   state: GameState;
@@ -41,14 +47,15 @@ type Props = {
   onOpenLog: () => void;
   onExit: () => void;
   onFinishRace: () => void;
-  onPit: (driverId: string) => void;
+  onPit: (driverId: string, decision?: { intensity?: PitIntensity; exitMode?: PaceMode }) => void;
   onMode: (driverId: string, mode: PaceMode) => void;
-  onAccept: (rec: AnalyticsRecommendation) => void;
+  onAccept: (rec: AnalyticsRecommendation, actionOverride?: RecAction) => void;
   onModify: (rec: AnalyticsRecommendation, action: RecAction) => void;
   onIgnore: (rec: AnalyticsRecommendation) => void;
   onLetCrewDecide: (rec: AnalyticsRecommendation) => void;
   onAcceptAll: () => void;
   onIgnoreAll: () => void;
+  crashOverlay?: ReactNode;
 };
 
 export function F11990sLiveRaceScreen({
@@ -74,7 +81,6 @@ export function F11990sLiveRaceScreen({
   onSpeed,
   onSkipToEnd,
   onOpenOrders,
-  onOpenStrategy,
   onOpenLog,
   onExit,
   onFinishRace,
@@ -84,6 +90,7 @@ export function F11990sLiveRaceScreen({
   onModify,
   onIgnore,
   onLetCrewDecide,
+  crashOverlay,
 }: Props) {
   const finished = live.phase === 'finished';
   const focusCars = driverFocusCars(playerCars, live.cars);
@@ -91,14 +98,23 @@ export function F11990sLiveRaceScreen({
   const raceTime = formatElapsed(leader?.totalTime ?? 0);
   const airTemp = forecast[0]?.temp ?? (live.weather.wet ? 18 : 22);
   const trackTemp = airTemp + (live.weather.wet ? 2 : 6);
-  const canAdvance = !live.pendingPrompt && !needsDecision && !pausedByDnf && !finished;
-  const alert = raceAlert(live, forecast);
-  const decisionRecs = activeRecs.filter((rec) => rec.status === 'pending' && rec.priority !== 'low');
+  const [strategyDeskOpen, setStrategyDeskOpen] = useState(false);
+  const [pitStrategyByDriver, setPitStrategyByDriver] = useState<
+    Record<string, { intensity: PitIntensity; exitMode: PaceMode }>
+  >({});
+  const blockingPrompt = !!live.pendingPrompt && !live.safetyCar.active;
+  const canAdvance = !blockingPrompt && !needsDecision && !pausedByDnf && !finished;
+  const alert = raceAlert(live, forecast, focusCars[0] ?? null);
+  const decisionRecs = live.safetyCar.active ? [] : activeRecs.filter((rec) => rec.status === 'pending' && rec.priority !== 'low');
   const lapHistory = useLapHistory(live.currentLap, focusCars);
   const { outcomes, recordOutcome } = useDecisionOutcomes(live.recommendations, live.currentLap);
-  const handleAccept = (rec: AnalyticsRecommendation) => {
-    recordOutcome(rec, `Request approved \u2014 ${rec.action.label}${rec.suggestedDuration ? ` (${rec.suggestedDuration})` : ''}`);
-    onAccept(rec);
+  const handleAccept = (rec: AnalyticsRecommendation, actionOverride?: RecAction) => {
+    const action = actionOverride ?? rec.action;
+    recordOutcome(
+      rec,
+      `Request approved \u2014 ${action.label}${rec.suggestedDuration ? ` (${rec.suggestedDuration})` : ''}`,
+    );
+    onAccept(rec, actionOverride);
   };
   const handleModify = (rec: AnalyticsRecommendation, action: RecAction) => {
     recordOutcome(rec, `Modified \u2014 ${action.label}`);
@@ -115,6 +131,7 @@ export function F11990sLiveRaceScreen({
     recordOutcome(rec, `Crew call \u2014 ${rec.action.label}`);
     onLetCrewDecide(rec);
   };
+  const eraLabel = getEraThemeConfig(getEraTheme(state.series, state.seasonYear)).label;
 
   return (
     <div
@@ -124,6 +141,7 @@ export function F11990sLiveRaceScreen({
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_20%,rgba(252,211,77,0.12),transparent_24%),linear-gradient(180deg,rgba(7,11,13,0.12),rgba(7,11,13,0.88))]" />
       <RetroTopBar
         season={state.seasonYear}
+        eraLabel={eraLabel}
         round={race?.round ?? null}
         raceName={race?.gpName ?? 'Live Race'}
         trackName={race?.trackName ?? live.trackId}
@@ -163,35 +181,17 @@ export function F11990sLiveRaceScreen({
               trackName={race?.trackName ?? live.trackId}
               dots={dots}
               rotation={rotation}
+              safetyCar={live.safetyCar.active}
             />
+            {crashOverlay}
           </div>
           <div className="grid min-h-0 gap-2 lg:grid-cols-[0.95fr_0.88fr]">
             <RetroPanel title="Team Radio" className="min-h-0">
-              <div className="h-[calc(100%-37px)] space-y-1 overflow-y-auto p-2 text-[12px]">
-                {playerCars.slice(0, 2).map((car) => (
-                  <div key={car.driverId} className="space-y-0.5">
-                    {radioLines(car, live, state, nameOf).map((line, index) => (
-                      <div key={`${car.driverId}-${index}`}>
-                        <span className="text-amber-300">{shortName(nameOf(car.driverId)).toUpperCase()}:</span>{' '}
-                        <span className="text-zinc-200">"{line}"</span>
-                      </div>
-                    ))}
-                  </div>
-                ))}
+              <div className="h-[calc(100%-37px)] overflow-y-auto p-2 text-[12px]">
+                <div className="text-zinc-500" />
               </div>
             </RetroPanel>
-            <RetroPanel
-              title="Pit Window"
-              className="min-h-0"
-              headerRight={
-                <button
-                  onClick={onOpenStrategy}
-                  className="rounded border border-amber-500/55 bg-amber-500/10 px-2 py-0.5 text-[10px] font-black uppercase text-amber-300 hover:bg-amber-500/20"
-                >
-                  Strategy Desk
-                </button>
-              }
-            >
+            <RetroPanel title="Pit Window" className="min-h-0">
               <div className="h-[calc(100%-37px)] overflow-y-auto p-2 text-[12px]">
                 <div className="space-y-3 text-zinc-200">
                   {playerCars.map((car) => (
@@ -231,9 +231,14 @@ export function F11990sLiveRaceScreen({
               bothDrivers={decisionRecs.length > 1 && decisionRecs.every((r) => r.kind === decisionRecs[0].kind)}
               decisionSecondsLeft={needsDecision ? decisionSecondsLeft : null}
               outcome={outcomes[car.driverId] ?? null}
-              onPit={() => onPit(car.driverId)}
+              trust={driverTrustFor(state, car.driverId)}
+              pitStrategy={pitStrategyFor(pitStrategyByDriver, car)}
+              live={live}
+              state={state}
+              onPit={(decision) => onPit(car.driverId, decision ?? pitStrategyFor(pitStrategyByDriver, car))}
               onMode={(mode) => onMode(car.driverId, mode)}
               onOrders={() => onOpenOrders(car.driverId)}
+              onStrategyDesk={() => setStrategyDeskOpen(true)}
               onAccept={handleAccept}
               onModify={handleModify}
               onIgnore={handleIgnore}
@@ -244,6 +249,21 @@ export function F11990sLiveRaceScreen({
         </aside>
       </main>
 
+      {strategyDeskOpen && (
+        <StrategyDeskModal
+          playerCars={playerCars}
+          strategyByDriver={pitStrategyByDriver}
+          nameOf={nameOf}
+          onClose={() => setStrategyDeskOpen(false)}
+          onChange={(driverId, next) =>
+            setPitStrategyByDriver((prev) => ({
+              ...prev,
+              [driverId]: next,
+            }))
+          }
+        />
+      )}
+
       <div className="sr-only" aria-live="polite">
         1990s F1 live race screen. Lap {live.currentLap} of {live.totalLaps}. {activeRecs.length} pit wall recommendations.
       </div>
@@ -253,6 +273,7 @@ export function F11990sLiveRaceScreen({
 
 function RetroTopBar({
   season,
+  eraLabel,
   round,
   raceName,
   trackName,
@@ -265,6 +286,7 @@ function RetroTopBar({
   onExit,
 }: {
   season: number;
+  eraLabel: string;
   round: number | null;
   raceName: string;
   trackName: string;
@@ -279,7 +301,7 @@ function RetroTopBar({
   return (
     <header className="relative grid shrink-0 grid-cols-[1fr_1.35fr_auto_0.8fr_0.8fr_0.8fr_0.9fr_auto] items-center overflow-hidden rounded-b-md border border-amber-500/25 bg-black/85 text-zinc-100 shadow-lg max-lg:grid-cols-2">
       <div className="border-r border-zinc-700/70 px-4 py-2">
-        <div className="text-2xl font-black uppercase italic tracking-wide text-amber-400">1990s Era</div>
+        <div className="text-2xl font-black uppercase italic tracking-wide text-amber-400">{eraLabel}</div>
         <div className="text-sm font-bold text-amber-300">
           {season} Season{round != null ? ` RD ${round}` : ''}
         </div>
@@ -362,11 +384,11 @@ function RetroTimingTower({
   nameOf: (driverId: string) => string;
   colorOf: (teamId: string) => string;
 }) {
-  const [tab, setTab] = useState<'Running Order' | 'Pit Stops' | 'Sectors'>('Running Order');
+  const [tab, setTab] = useState<'Running Order' | 'Pit Stops' | 'Sectors' | 'Intervals'>('Running Order');
   return (
     <RetroPanel title="Live Timing" className="flex h-full min-h-0 flex-col">
       <div className="flex shrink-0 gap-1 border-b border-zinc-800 px-2 py-1">
-        {(['Running Order', 'Pit Stops', 'Sectors'] as const).map((item) => (
+        {(['Running Order', 'Pit Stops', 'Sectors', 'Intervals'] as const).map((item) => (
           <button
             key={item}
             onClick={() => setTab(item)}
@@ -385,8 +407,18 @@ function RetroTimingTower({
       >
         <span>Pos</span>
         <span>Driver</span>
-        {tab === 'Pit Stops' ? <span className="text-right">Last</span> : tab === 'Sectors' ? <span className="text-right">S1</span> : <span className="text-right">Gap</span>}
-        {tab === 'Sectors' ? <span className="text-right">S2</span> : <span className="text-right">Pits</span>}
+        {tab === 'Pit Stops'
+          ? <span className="text-right">Last</span>
+          : tab === 'Intervals'
+            ? <span className="text-right">Interval</span>
+            : tab === 'Sectors'
+              ? <span className="text-right">S1</span>
+              : <span className="text-right">Gap</span>}
+        {tab === 'Intervals'
+          ? <span className="text-right">Ahead</span>
+          : tab === 'Sectors'
+            ? <span className="text-right">S2</span>
+            : <span className="text-right">Pits</span>}
         {tab === 'Sectors' ? <span className="text-right">S3</span> : <span className="text-right">{tab === 'Pit Stops' ? 'Lap' : 'Tyre'}</span>}
         {tab === 'Sectors' && <span className="text-right">Lap</span>}
       </div>
@@ -394,6 +426,7 @@ function RetroTimingTower({
         {cars.map((car) => {
           const tyre = tyreLetter(car.tire.compound);
           const life = Math.max(0, 100 - Math.round(car.tire.wear));
+          const position = car.position ?? 0;
           const retired = !car.running && car.status !== 'Finished';
           const retiredNote = retired ? `Retired - ${car.lastIncident ?? 'DNF'}` : '';
           return (
@@ -430,6 +463,12 @@ function RetroTimingTower({
                   <span className="text-right tabular-nums text-zinc-300">{fmtSector(car.lastSectors?.[1])}</span>
                   <span className="text-right tabular-nums text-zinc-300">{fmtSector(car.lastSectors?.[2])}</span>
                   <span className="text-right tabular-nums text-zinc-300">{car.lastLapTime > 0 ? fmtLap(car.lastLapTime) : '—'}</span>
+                </>
+              ) : tab === 'Intervals' ? (
+                <>
+                  <span className="text-right tabular-nums text-zinc-300">{position === 1 ? 'LEADER' : `+${car.interval.toFixed(1)}`}</span>
+                  <span className="text-right tabular-nums text-zinc-300">{position === 1 ? '—' : `P${Math.max(1, position - 1)}`}</span>
+                  <span className="text-right font-bold tabular-nums text-amber-300">{tyre.letter} {life}%</span>
                 </>
               ) : (
                 <>
@@ -523,7 +562,7 @@ function RaceEventAlerts({
   nameOf: (driverId: string) => string;
 }) {
   if (!alert && !aiDnfFlash) return null;
-  const safetyCar = alert === 'Safety Car';
+  const safetyCar = !!alert?.startsWith('Safety Car');
   return (
     <div className="shrink-0 space-y-1 border-b border-zinc-800 p-1.5">
       {alert && (
@@ -625,7 +664,7 @@ function PlaybackPanel({
             <button onClick={onStep} disabled={!canAdvance || playing} className="rounded border border-zinc-700 bg-zinc-900 px-1.5 py-0.5 text-[10px] font-bold text-zinc-300 hover:border-amber-400 disabled:opacity-40">
               +1
             </button>
-            {([1, 10, 30, 60] as Speed[]).map((s) => (
+            {([1, 5, 15, 30] as Speed[]).map((s) => (
               <button
                 key={s}
                 onClick={() => onSpeed(s)}
@@ -658,6 +697,7 @@ function RetroTrackMap({
   trackName,
   dots,
   rotation,
+  safetyCar = false,
 }: {
   series?: string;
   year?: number;
@@ -665,6 +705,7 @@ function RetroTrackMap({
   trackName?: string;
   dots: TrackDot[];
   rotation: number;
+  safetyCar?: boolean;
 }) {
   return (
     <div className="absolute inset-0 z-10 max-lg:hidden">
@@ -680,6 +721,7 @@ function RetroTrackMap({
               rotation={rotation}
               eraTheme="f1-1990s"
               hideFooterLabel
+              safetyCar={safetyCar}
               className="h-full w-full"
             />
           </div>
@@ -703,9 +745,14 @@ function DriverFocus({
   bothDrivers,
   decisionSecondsLeft,
   outcome,
+  trust,
+  pitStrategy,
+  live,
+  state,
   onPit,
   onMode,
   onOrders,
+  onStrategyDesk,
   onAccept,
   onModify,
   onIgnore,
@@ -725,10 +772,20 @@ function DriverFocus({
   bothDrivers: boolean;
   decisionSecondsLeft: number | null;
   outcome: string | null;
-  onPit: () => void;
+  trust: {
+    driverTrust: number;
+    teamTrust: number;
+    carTrust: number;
+    teamTrustInDriver: number;
+  };
+  pitStrategy: { intensity: PitIntensity; exitMode: PaceMode };
+  live: LiveRaceState;
+  state: GameState;
+  onPit: (decision?: { intensity?: PitIntensity; exitMode?: PaceMode }) => void;
   onMode: (mode: PaceMode) => void;
   onOrders: () => void;
-  onAccept: (rec: AnalyticsRecommendation) => void;
+  onStrategyDesk: () => void;
+  onAccept: (rec: AnalyticsRecommendation, actionOverride?: RecAction) => void;
   onModify: (rec: AnalyticsRecommendation, action: RecAction) => void;
   onIgnore: (rec: AnalyticsRecommendation) => void;
   onLetCrewDecide: (rec: AnalyticsRecommendation) => void;
@@ -744,21 +801,30 @@ function DriverFocus({
       className={`h-full min-h-0 ${className}`}
       headerRight={
         car.isPlayer ? (
-          <button
-            onClick={onOrders}
-            disabled={!car.running || finished}
-            className="rounded border border-amber-500/55 bg-amber-500/10 px-2 py-0.5 text-[9px] font-black uppercase text-amber-300 hover:bg-amber-500/20 disabled:border-zinc-800 disabled:bg-zinc-950 disabled:text-zinc-600"
-          >
-            Team Orders
-          </button>
+          <div className="flex gap-1">
+            <button
+              onClick={onOrders}
+              disabled={!car.running || finished}
+              className="rounded border border-amber-500/55 bg-amber-500/10 px-2 py-0.5 text-[9px] font-black uppercase text-amber-300 hover:bg-amber-500/20 disabled:border-zinc-800 disabled:bg-zinc-950 disabled:text-zinc-600"
+            >
+              Team Orders
+            </button>
+            <button
+              onClick={onStrategyDesk}
+              disabled={!car.running || finished}
+              className="rounded border border-amber-500/55 bg-amber-500/10 px-2 py-0.5 text-[9px] font-black uppercase text-amber-300 hover:bg-amber-500/20 disabled:border-zinc-800 disabled:bg-zinc-950 disabled:text-zinc-600"
+            >
+              Strategy Desk
+            </button>
+          </div>
         ) : undefined
       }
     >
-      <div className="relative flex h-[calc(100%-37px)] flex-col overflow-y-auto px-2 py-1.5">
+      <div className="relative flex h-[calc(100%-37px)] flex-col overflow-hidden px-2 py-1.5">
         {!finished && car.running && (
           <div className="flex items-center justify-end">
             <button
-              onClick={onPit}
+              onClick={() => onPit()}
               disabled={!canPit}
               className="shrink-0 rounded border border-amber-500/50 px-2 py-1 text-[9px] font-bold uppercase text-amber-300 hover:bg-amber-500/10 disabled:border-zinc-800 disabled:text-zinc-600"
             >
@@ -788,6 +854,9 @@ function DriverFocus({
           </div>
           <DriverPaceTrend values={lapTimes} color={trendColor} />
         </div>
+        <div className="mt-1 rounded border border-zinc-800 bg-zinc-950/55 p-1.5">
+          <TrustReadout trust={trust} />
+        </div>
         {!finished && car.running && (
           <div className="relative mt-1 flex min-h-0 flex-1 flex-col rounded border border-zinc-800 bg-zinc-950/55 p-1">
             <div className="mb-1 flex items-center justify-between gap-2">
@@ -811,27 +880,40 @@ function DriverFocus({
               ))}
             </div>
             <div className="mt-0.5 grid grid-cols-2 gap-x-3 gap-y-0.5 border-t border-zinc-800 pt-0.5">
-              <ConditionLine label="Engine" level={componentCondition(car, 'Engine')} />
-              <ConditionLine label="Brakes" level={componentCondition(car, 'Brakes')} />
-              <ConditionLine label="Gearbox" level={componentCondition(car, 'Gearbox')} />
-              <ConditionLine label="Aero" level={componentCondition(car, 'Aero')} />
+              <ConditionLine label="Engine" health={car.engineHealth} />
+              <ConditionLine label="Brakes" health={car.brakeHealth} />
+              <ConditionLine label="Gearbox" health={car.gearboxHealth} />
+              <ConditionLine label="Aero" health={car.aeroHealth ?? (car.damaged ? 72 : 100)} />
               <ConditionLine label="Overall" level={overallCondition(car)} />
               <ConditionLine label="Risk" level={riskCondition(car.reliabilityRiskLevel)} />
             </div>
+            <div className="min-h-0 flex-1 overflow-y-auto py-1">
+              {radioLines(car, live, state, nameOf).map((line, index) => (
+                <div key={index} className="text-[10px] leading-tight text-zinc-300">
+                  {line}
+                </div>
+              ))}
+            </div>
             {rec ? (
-              <DriverAlertCard
-                rec={rec}
-                bothDrivers={bothDrivers}
-                decisionSecondsLeft={decisionSecondsLeft}
-                onAccept={onAccept}
-                onModify={onModify}
-                onIgnore={onIgnore}
-                onLetCrewDecide={onLetCrewDecide}
-              />
+              <div className="absolute inset-x-0 bottom-0 z-10 p-1">
+                <DriverAlertCard
+                  key={rec.id}
+                  rec={rec}
+                  bothDrivers={bothDrivers}
+                  pitStrategy={pitStrategy}
+                  decisionSecondsLeft={decisionSecondsLeft}
+                  onAccept={onAccept}
+                  onModify={onModify}
+                  onIgnore={onIgnore}
+                  onLetCrewDecide={onLetCrewDecide}
+                />
+              </div>
             ) : outcome ? (
-              <div className="mt-auto rounded border-2 border-amber-500/70 bg-black/90 px-1.5 py-1 shadow-[0_0_14px_rgba(245,158,11,0.3)]">
-                <span className="text-[10px] font-black uppercase tracking-wide text-amber-300">Pit Wall</span>{' '}
-                <span className="text-[10px] leading-tight text-zinc-200">{outcome}</span>
+              <div className="absolute inset-x-0 bottom-0 z-10 p-1">
+                <div className="rounded border-2 border-amber-500/70 bg-black/90 px-1.5 py-1 shadow-[0_0_14px_rgba(245,158,11,0.3)]">
+                  <span className="text-[10px] font-black uppercase tracking-wide text-amber-300">Pit Wall</span>{' '}
+                  <span className="text-[10px] leading-tight text-zinc-200">{outcome}</span>
+                </div>
               </div>
             ) : null}
           </div>
@@ -844,6 +926,7 @@ function DriverFocus({
 function DriverAlertCard({
   rec,
   bothDrivers,
+  pitStrategy,
   decisionSecondsLeft,
   onAccept,
   onModify,
@@ -852,28 +935,33 @@ function DriverAlertCard({
 }: {
   rec: AnalyticsRecommendation;
   bothDrivers: boolean;
+  pitStrategy: { intensity: PitIntensity; exitMode: PaceMode };
   decisionSecondsLeft: number | null;
-  onAccept: (rec: AnalyticsRecommendation) => void;
+  onAccept: (rec: AnalyticsRecommendation, actionOverride?: RecAction) => void;
   onModify: (rec: AnalyticsRecommendation, action: RecAction) => void;
   onIgnore: (rec: AnalyticsRecommendation) => void;
   onLetCrewDecide: (rec: AnalyticsRecommendation) => void;
 }) {
   const [modifying, setModifying] = useState(false);
   const pitCall = /pit/i.test(rec.action.label);
+
+  const pitActionOverride = pitCall
+    ? { ...rec.action, pitIntensity: pitStrategy.intensity, pitExitMode: pitStrategy.exitMode }
+    : undefined;
   return (
-    <div className="z-10 mt-auto overflow-hidden rounded border-2 border-amber-400 bg-black/95 px-1.5 py-1 shadow-[0_0_20px_rgba(245,158,11,0.35)]">
+    <div className="z-10 mt-auto overflow-hidden rounded border-2 border-amber-400 bg-black/95 px-2 py-2 shadow-[0_0_20px_rgba(245,158,11,0.35)]">
       <div className="flex items-center gap-1 text-[10px] font-black uppercase tracking-wide text-amber-300">
         <span aria-hidden="true">{'\u26A0'}</span>
         <span className="truncate">{kindLabel(rec.kind)}{bothDrivers ? ' - Both Drivers' : ''}</span>
       </div>
-      <p className="line-clamp-1 text-[10px] leading-tight text-zinc-300">{rec.issue}</p>
-      <p className="line-clamp-1 text-[10px] font-semibold leading-tight text-amber-200">
+      <p className="line-clamp-2 text-[10px] leading-tight text-zinc-300">{rec.issue}</p>
+      <p className="line-clamp-2 text-[10px] font-semibold leading-tight text-amber-200">
         {rec.recommendedAction}
         {rec.suggestedDuration ? ` (${rec.suggestedDuration})` : ''}
       </p>
       {decisionSecondsLeft != null && <CountdownBar secondsLeft={decisionSecondsLeft} className="mt-0.5" compact />}
       {modifying ? (
-        <div className="mt-0.5 max-h-14 space-y-0.5 overflow-y-auto">
+        <div className="mt-1 max-h-24 space-y-1 overflow-y-auto">
           {[rec.action, ...rec.alternatives].map((a) => (
             <button
               key={a.type}
@@ -881,48 +969,156 @@ function DriverAlertCard({
                 onModify(rec, a);
                 setModifying(false);
               }}
-              className="w-full truncate rounded bg-zinc-800 px-2 py-0.5 text-left text-[10px] font-semibold text-zinc-200 hover:bg-zinc-700"
+              className="w-full truncate rounded bg-zinc-800 px-2 py-1.5 text-left text-[10px] font-semibold text-zinc-200 hover:bg-zinc-700"
             >
               {a.label}
             </button>
           ))}
           <button
             onClick={() => setModifying(false)}
-            className="w-full rounded py-0.5 text-[9px] uppercase text-zinc-500 hover:text-zinc-300"
+            className="w-full rounded py-1 text-[9px] uppercase text-zinc-500 hover:text-zinc-300"
           >
             Cancel
           </button>
         </div>
       ) : (
-        <div className="mt-0.5 grid grid-cols-4 gap-1">
-          <button
-            onClick={() => onAccept(rec)}
-            className="rounded-sm bg-amber-400 py-0.5 text-[9px] font-black uppercase text-black hover:bg-amber-300"
-          >
-            {pitCall ? 'Pit Now' : 'Accept'}
-          </button>
-          <button
-            onClick={() => setModifying(true)}
-            className="rounded-sm border border-amber-500/60 py-0.5 text-[9px] font-bold uppercase text-amber-200 hover:bg-amber-500/15"
-          >
-            Modify
-          </button>
-          <button
-            onClick={() => onLetCrewDecide(rec)}
-            className="rounded-sm border border-amber-500/60 py-0.5 text-[9px] font-bold uppercase text-amber-200 hover:bg-amber-500/15"
-          >
-            Crew
-          </button>
-          <button
-            onClick={() => onIgnore(rec)}
-            className="rounded-sm border border-amber-500/60 py-0.5 text-[9px] font-bold uppercase text-amber-200 hover:bg-amber-500/15"
-          >
-            {pitCall ? 'Stay Out' : 'Ignore'}
-          </button>
+        <div className="mt-1 space-y-1.5">
+          <div className="grid grid-cols-4 gap-1.5">
+            <button
+              onClick={() => onAccept(rec, pitActionOverride)}
+              className="rounded-sm bg-amber-400 py-1.5 text-[9px] font-black uppercase text-black hover:bg-amber-300"
+            >
+              {pitCall ? 'Pit Now' : 'Accept'}
+            </button>
+            <button
+              onClick={() => setModifying(true)}
+              className="rounded-sm border border-amber-500/60 py-1.5 text-[9px] font-bold uppercase text-amber-200 hover:bg-amber-500/15"
+            >
+              Modify
+            </button>
+            <button
+              onClick={() => onLetCrewDecide(rec)}
+              className="rounded-sm border border-amber-500/60 py-1.5 text-[9px] font-bold uppercase text-amber-200 hover:bg-amber-500/15"
+            >
+              Crew
+            </button>
+            <button
+              onClick={() => onIgnore(rec)}
+              className="rounded-sm border border-amber-500/60 py-1.5 text-[9px] font-bold uppercase text-amber-200 hover:bg-amber-500/15"
+            >
+              {pitCall ? 'Stay Out' : 'Ignore'}
+            </button>
+          </div>
         </div>
       )}
     </div>
   );
+}
+
+function PitDecisionControls({
+  intensity,
+  exitMode,
+  onIntensity,
+  onExitMode,
+}: {
+  intensity: PitIntensity;
+  exitMode: PaceMode;
+  onIntensity: (value: PitIntensity) => void;
+  onExitMode: (value: PaceMode) => void;
+}) {
+  return (
+    <div className="space-y-1">
+      <div className="grid grid-cols-4 gap-1">
+        {PIT_INTENSITY_ORDER.map((value) => (
+          <button
+            key={value}
+            onClick={() => onIntensity(value)}
+            className={`rounded-sm px-1 py-1.5 text-[9px] font-bold uppercase ${
+              intensity === value ? 'bg-amber-300 text-black' : 'bg-zinc-900 text-zinc-400 hover:bg-zinc-800'
+            }`}
+          >
+            {value}
+          </button>
+        ))}
+      </div>
+      <div className="grid grid-cols-6 gap-1">
+        {DISPLAY_MODES.map((mode) => (
+          <button
+            key={mode}
+            onClick={() => onExitMode(mode)}
+            className={`rounded-sm px-1 py-1.5 text-[9px] font-bold uppercase ${
+              exitMode === mode ? 'bg-emerald-300 text-black' : 'bg-zinc-900 text-zinc-400 hover:bg-zinc-800'
+            }`}
+          >
+            {modeLabel(mode)}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function TrustReadout({
+  trust,
+}: {
+  trust: {
+    driverTrust: number;
+    teamTrust: number;
+    carTrust: number;
+    teamTrustInDriver: number;
+  };
+}) {
+  return (
+    <div className="grid gap-1">
+      <TrustBar label="Driver Trust" value={trust.driverTrust} />
+      <div className="grid grid-cols-3 gap-1">
+        <TrustBar label="Team Trust" value={trust.teamTrust} compact />
+        <TrustBar label="Car Trust" value={trust.carTrust} compact />
+        <TrustBar label="Team→Driver" value={trust.teamTrustInDriver} compact />
+      </div>
+    </div>
+  );
+}
+
+function TrustBar({
+  label,
+  value,
+  compact = false,
+}: {
+  label: string;
+  value: number;
+  compact?: boolean;
+}) {
+  const clamped = Math.max(0, Math.min(100, value));
+  const color = ratingColor(clamped);
+  return (
+    <div className={compact ? 'text-[9px]' : 'text-[10px]'}>
+      <div className="mb-0.5 flex items-center justify-between gap-1 text-zinc-400">
+        <span className="truncate uppercase tracking-wide">{label}</span>
+        <span className="tabular-nums" style={{ color }}>{clamped}%</span>
+      </div>
+      <div className="h-1.5 overflow-hidden rounded-full bg-zinc-800">
+        <div className="h-full rounded-full" style={{ width: `${clamped}%`, backgroundColor: color }} />
+      </div>
+    </div>
+  );
+}
+
+function driverTrustFor(state: GameState, driverId: string) {
+  const rel = state.driverRelationships?.[driverId];
+  return rel
+    ? {
+        driverTrust: overallConfidenceScore(rel),
+        teamTrust: rel.trustInTeam,
+        carTrust: rel.trustInCar,
+        teamTrustInDriver: rel.teamTrustInDriver,
+      }
+    : {
+        driverTrust: 50,
+        teamTrust: 50,
+        carTrust: 50,
+        teamTrustInDriver: 50,
+      };
 }
 
 function driverFocusCars(playerCars: LiveCarState[], cars: LiveCarState[]): LiveCarState[] {
@@ -943,11 +1139,115 @@ function FocusLine({ label, value }: { label: string; value: string }) {
   );
 }
 
-function raceAlert(live: LiveRaceState, forecast: ForecastEntry[]): string | null {
-  if (live.safetyCar.active) return 'Safety Car';
+function pitStrategyFor(
+  strategyByDriver: Record<string, { intensity: PitIntensity; exitMode: PaceMode }>,
+  car: LiveCarState,
+): { intensity: PitIntensity; exitMode: PaceMode } {
+  return (
+    strategyByDriver[car.driverId] ?? {
+      intensity: car.pit.intensity ?? car.pit.intensityDefault ?? 'Standard',
+      exitMode: car.pit.exitMode ?? 'Conservative',
+    }
+  );
+}
+
+function raceAlert(live: LiveRaceState, forecast: ForecastEntry[], focusCar: LiveCarState | null): string | null {
+  if (live.safetyCar.active) {
+    const lapsLeft = Math.max(0, Math.ceil(live.safetyCar.lapsRemaining));
+    const save = safetyCarPitSaving(focusCar);
+    const saveText = Number.isInteger(save) ? `${save.toFixed(0)}` : save.toFixed(1);
+    return `Safety Car — ${lapsLeft}L — ${saveText}s`;
+  }
   if (live.weather.wet) return live.weather.condition === 'HeavyRain' ? 'Heavy Rain' : 'Wet Track';
   if (live.weather.changingSoon || forecast.slice(0, 3).some((entry) => entry.wet)) return 'Rain Approaching';
   return null;
+}
+
+function safetyCarPitSaving(car: LiveCarState | null): number {
+  const greenLoss = car?.pitLossBase ?? 0;
+  const scLoss = Math.round(Math.max(0, greenLoss * SAFETY_CAR_PIT_LOSS_FACTOR) * 10) / 10;
+  return Math.round(Math.max(0, greenLoss - scLoss) * 10) / 10;
+}
+
+function StrategyDeskModal({
+  playerCars,
+  strategyByDriver,
+  nameOf,
+  onChange,
+  onClose,
+}: {
+  playerCars: LiveCarState[];
+  strategyByDriver: Record<string, { intensity: PitIntensity; exitMode: PaceMode }>;
+  nameOf: (driverId: string) => string;
+  onChange: (driverId: string, next: { intensity: PitIntensity; exitMode: PaceMode }) => void;
+  onClose: () => void;
+}) {
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/72 p-4" onClick={onClose}>
+      <div
+        className="w-full max-w-3xl overflow-hidden rounded-xl border-2 border-amber-500/65 bg-[#14120f] shadow-2xl"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex items-center justify-between border-b border-amber-500/25 px-4 py-3">
+          <div>
+            <div className="text-[10px] font-black uppercase tracking-wide text-amber-300">Strategy Desk</div>
+            <div className="text-xs text-zinc-400">Queue pit intensity and exit mode here; the PIT button uses this selection.</div>
+          </div>
+          <button
+            onClick={onClose}
+            className="rounded border border-zinc-700 px-2 py-1 text-[10px] font-bold uppercase text-zinc-300 hover:border-amber-400 hover:text-amber-200"
+          >
+            Close
+          </button>
+        </div>
+        <div className="max-h-[70vh] overflow-y-auto p-4">
+          <div className="grid gap-4 lg:grid-cols-2">
+            {playerCars.map((car) => {
+              const strategy = strategyByDriver[car.driverId] ?? {
+                intensity: car.pit.intensity ?? car.pit.intensityDefault ?? 'Standard',
+                exitMode: car.pit.exitMode ?? 'Conservative',
+              };
+              return (
+                <div key={car.driverId} className="rounded-lg border border-zinc-800 bg-black/40 p-3">
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="min-w-0">
+                      <div className="truncate text-sm font-bold text-zinc-100">{nameOf(car.driverId)}</div>
+                      <div className="text-[10px] uppercase tracking-wide text-zinc-500">
+                        {strategy.intensity} · exits {strategy.exitMode}
+                      </div>
+                    </div>
+                    <button
+                      onClick={() =>
+                        onChange(car.driverId, {
+                          intensity: car.pit.intensity ?? car.pit.intensityDefault ?? 'Standard',
+                          exitMode: car.pit.exitMode ?? 'Conservative',
+                        })
+                      }
+                      className="rounded border border-zinc-700 px-2 py-1 text-[10px] font-bold uppercase text-zinc-300 hover:border-amber-400 hover:text-amber-200"
+                    >
+                      Reset
+                    </button>
+                  </div>
+                  <div className="mt-3">
+                    <div className="mb-1 text-[9px] font-bold uppercase tracking-wide text-zinc-500">Pit intensity</div>
+                    <PitDecisionControls
+                      intensity={strategy.intensity}
+                      exitMode={strategy.exitMode}
+                      onIntensity={(value) => onChange(car.driverId, { ...strategy, intensity: value })}
+                      onExitMode={(value) => onChange(car.driverId, { ...strategy, exitMode: value })}
+                    />
+                  </div>
+                  <div className="mt-3 rounded border border-zinc-800 bg-zinc-950/60 px-2 py-1 text-[10px] text-zinc-400">
+                    Apply this with the driver box PIT button when you are ready to box.
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
 }
 
 function radioLines(
@@ -1046,13 +1346,35 @@ const CONDITION_STYLE: Record<ConditionLevel, { bar: string; text: string; label
   Critical: { bar: 'bg-red-500', text: 'text-red-300', label: 'Critical' },
 };
 
-function ConditionLine({ label, level }: { label: string; level: ConditionLevel }) {
-  const style = CONDITION_STYLE[level];
+function ConditionLine({
+  label,
+  health,
+  level,
+}: {
+  label: string;
+  health?: number;
+  level?: ConditionLevel;
+}) {
+  if (health != null) {
+    const clamped = Math.max(0, Math.min(100, health));
+    const color = ratingColor(clamped);
+    return (
+      <div className="flex items-center gap-1 text-[9px]">
+        <span className="w-10 uppercase text-zinc-500">{label}</span>
+        <span className="h-1 flex-1 overflow-hidden rounded bg-zinc-800">
+          <span className="block h-full" style={{ width: `${clamped}%`, backgroundColor: color }} />
+        </span>
+        <span className="w-12 text-right font-bold uppercase tabular-nums" style={{ color }}>{Math.round(clamped)}%</span>
+      </div>
+    );
+  }
+  const resolved = level ?? 'None';
+  const style = CONDITION_STYLE[resolved];
   return (
     <div className="flex items-center gap-1 text-[9px]">
       <span className="w-10 uppercase text-zinc-500">{label}</span>
       <span className="h-1 flex-1 overflow-hidden rounded bg-zinc-800">
-        <span className={`block h-full ${style.bar}`} style={{ width: conditionWidth(level) }} />
+        <span className={`block h-full ${style.bar}`} style={{ width: conditionWidth(resolved) }} />
       </span>
       <span className={`w-12 text-right font-bold uppercase tabular-nums ${style.text}`}>{style.label}</span>
     </div>

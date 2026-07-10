@@ -13,7 +13,7 @@ import {
 } from '../sim/facilityEngine';
 import { Panel } from '../components/Panel';
 import { Button } from '../components/Button';
-import { formatMoney } from '../components/ui';
+import { formatMoney, ratingColor } from '../components/ui';
 import type { Facility, FacilitySpecialization } from '../types/facilityTypes';
 import {
   FACILITY_SPECIALIZATION_LABELS,
@@ -138,6 +138,8 @@ function FacilityCard({
 }) {
   const spec = FACILITY_SPECS[f.type];
   const maxed = !canUpgrade(f);
+  const fillPct = f.maxLevel > 0 ? (f.level / f.maxLevel) * 100 : 0;
+  const fillColor = ratingColor(fillPct);
   return (
     <div className="rounded-lg border border-neutral-800 bg-neutral-900/40 p-3">
       <div className="mb-1 flex items-start justify-between gap-2">
@@ -152,7 +154,8 @@ function FacilityCard({
         {Array.from({ length: f.maxLevel }).map((_, i) => (
           <div
             key={i}
-            className={`flex-1 rounded-sm ${i < f.level ? 'bg-amber-500' : 'bg-neutral-800'}`}
+            className="flex-1 rounded-sm"
+            style={{ backgroundColor: i < f.level ? fillColor : '#262626' }}
           />
         ))}
       </div>

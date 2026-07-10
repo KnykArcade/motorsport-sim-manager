@@ -15,7 +15,8 @@
 //                          a compact focus label and its next re-trigger.
 
 import { useState } from 'react';
-import type { AnalyticsRecommendation, RecAction } from '../../types/liveTypes';
+import type { AnalyticsRecommendation, DamageRepairMode, PaceMode, PitIntensity, RecAction } from '../../types/liveTypes';
+import { ratingColor } from '../../components/ui';
 import type {
   AnalyticsMonitor,
   DriverMonitor,
@@ -23,6 +24,8 @@ import type {
   PanelMode,
 } from '../../sim/analyticsMonitor';
 import { kindLabel, selectPanelMode, driverPanelCell } from '../../sim/analyticsMonitor';
+import { PIT_INTENSITY_ORDER } from '../../sim/pitIntensityData';
+import { SELECTABLE_MODES } from '../../sim/liveRacePace';
 
 const PRIORITY_TEXT: Record<AnalyticsRecommendation['priority'], string> = {
   low: 'text-slate-400',
@@ -65,7 +68,7 @@ export function RecommendationsPanel({
   currentLap: number;
   decisionSecondsLeft?: number | null;
   nameOf: (driverId: string) => string;
-  onAccept: (rec: AnalyticsRecommendation) => void;
+  onAccept: (rec: AnalyticsRecommendation, actionOverride?: RecAction) => void;
   onModify: (rec: AnalyticsRecommendation, action: RecAction) => void;
   onIgnore: (rec: AnalyticsRecommendation) => void;
   onLetCrewDecide: (rec: AnalyticsRecommendation) => void;
@@ -76,6 +79,8 @@ export function RecommendationsPanel({
   const mode: PanelMode = selectPanelMode(recs, monitor.recent.length);
   const pendingCount = recs.filter((r) => r.status === 'pending').length;
   const grouped = pendingCount > 1;
+  const restartRec = recs.find((r) => r.kind === 'safetyCarRestart' && r.status === 'pending');
+  const visibleRecs = restartRec ? recs.filter((r) => r.id !== restartRec.id) : recs;
 
   return (
     <div
@@ -100,19 +105,32 @@ export function RecommendationsPanel({
         <p className="p-2 text-[10px] text-slate-500">No player cars running — monitoring paused.</p>
       ) : (
         <div className="flex min-h-0 flex-1 flex-col gap-1 overflow-hidden p-1">
-          {monitor.drivers.map((d) => (
-            <DriverCell
-              key={d.driverId}
-              driver={d}
-              name={nameOf(d.driverId)}
-              cell={driverPanelCell(d.driverId, recs, monitor.recent, currentLap)}
-              compact={grouped}
+          {restartRec && (
+            <RestartDecisionCard
+              key={restartRec.id}
+              rec={restartRec}
+              nameOf={nameOf}
               onAccept={onAccept}
-              onModify={onModify}
               onIgnore={onIgnore}
-              onLetCrewDecide={onLetCrewDecide}
             />
-          ))}
+          )}
+          {monitor.drivers.map((d) => {
+            const cell = driverPanelCell(d.driverId, visibleRecs, monitor.recent, currentLap);
+            const recKey = cell.state === 'decision' || cell.state === 'active' ? cell.rec.id : 'none';
+            return (
+              <DriverCell
+                key={`${d.driverId}-${recKey}`}
+                driver={d}
+                name={nameOf(d.driverId)}
+                cell={cell}
+                compact={grouped}
+                onAccept={onAccept}
+                onModify={onModify}
+                onIgnore={onIgnore}
+                onLetCrewDecide={onLetCrewDecide}
+              />
+            );
+          })}
 
           {grouped && (
             <div className="mt-auto grid shrink-0 grid-cols-2 gap-1 pt-0.5">
@@ -132,6 +150,75 @@ export function RecommendationsPanel({
           )}
         </div>
       )}
+    </div>
+  );
+}
+
+function RestartDecisionCard({
+  rec,
+  nameOf,
+  onAccept,
+  onIgnore,
+}: {
+  rec: AnalyticsRecommendation;
+  nameOf: (driverId: string) => string;
+  onAccept: (rec: AnalyticsRecommendation, actionOverride?: RecAction) => void;
+  onIgnore: (rec: AnalyticsRecommendation) => void;
+}) {
+  const [paceModeByDriver, setPaceModeByDriver] = useState<Record<string, PaceMode>>(
+    rec.action.paceModeByDriver ?? { [rec.driverId]: rec.action.paceMode ?? 'Conservative' },
+  );
+  const affected = rec.affectedDriverIds ?? [rec.driverId];
+
+  return (
+    <div className="rounded-md border border-amber-500/50 bg-amber-500/[0.06] p-1.5">
+      <div className="flex items-start justify-between gap-2">
+        <div className="min-w-0">
+          <div className="text-[10px] font-bold uppercase tracking-wide text-amber-300">Safety Car Restart</div>
+          <div className="truncate text-[10px] text-slate-300">{rec.expectedImpact}</div>
+        </div>
+        <span className={`shrink-0 text-[9px] font-bold ${PRIORITY_TEXT[rec.priority]}`}>{rec.confidence}%</span>
+      </div>
+      <div className="mt-1 grid gap-1">
+        {affected.map((driverId) => {
+          const current = paceModeByDriver[driverId] ?? 'Conservative';
+          return (
+            <div key={driverId} className="rounded border border-slate-700/50 bg-slate-950/35 p-1">
+              <div className="mb-1 flex items-center justify-between gap-2">
+                <span className="truncate text-[10px] font-semibold text-slate-100">{nameOf(driverId)}</span>
+                <span className="text-[9px] uppercase tracking-wide text-slate-500">restart mode</span>
+              </div>
+              <div className="grid grid-cols-6 gap-1">
+                {SELECTABLE_MODES.map((mode) => (
+                  <button
+                    key={mode}
+                    onClick={() => setPaceModeByDriver((prev) => ({ ...prev, [driverId]: mode }))}
+                    className={`rounded px-1 py-0.5 text-[9px] font-semibold ${
+                      current === mode ? 'bg-amber-500 text-neutral-950' : 'bg-slate-800 text-slate-300 hover:bg-slate-700'
+                    }`}
+                  >
+                    {mode}
+                  </button>
+                ))}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+      <div className="mt-1 grid grid-cols-2 gap-1">
+        <button
+          onClick={() => onAccept(rec, { ...rec.action, paceModeByDriver })}
+          className="rounded bg-emerald-600 py-0.5 text-[10px] font-bold text-white hover:bg-emerald-500"
+        >
+          Accept
+        </button>
+        <button
+          onClick={() => onIgnore(rec)}
+          className="rounded bg-slate-800 py-0.5 text-[10px] font-bold text-slate-400 hover:bg-slate-700"
+        >
+          Stay Conservative
+        </button>
+      </div>
     </div>
   );
 }
@@ -178,13 +265,18 @@ function DriverCell({
   name: string;
   cell: DriverPanelCell;
   compact?: boolean; // double-decision: drop the extra Let Crew Decide row / clamp copy
-  onAccept: (rec: AnalyticsRecommendation) => void;
+  onAccept: (rec: AnalyticsRecommendation, actionOverride?: RecAction) => void;
   onModify: (rec: AnalyticsRecommendation, action: RecAction) => void;
   onIgnore: (rec: AnalyticsRecommendation) => void;
   onLetCrewDecide: (rec: AnalyticsRecommendation) => void;
 }) {
   const [modifying, setModifying] = useState(false);
+  const [pitIntensity, setPitIntensity] = useState<PitIntensity>('Standard');
+  const [pitExitMode, setPitExitMode] = useState<PaceMode>('Conservative');
+  const [repairMode, setRepairMode] = useState<DamageRepairMode>('None');
   const rec = cell.state === 'decision' || cell.state === 'active' ? cell.rec : null;
+
+  const pitActionOverride = rec?.action.pitNow ? { ...rec.action, pitIntensity, pitExitMode, repairMode } : undefined;
 
   // Double-decision: one ultra-compact block per driver (name + rec on a single
   // line, then the same four controls as a single decision) so both fit the fixed panel.
@@ -204,9 +296,19 @@ function DriverCell({
             {cell.rec.confidence}%
           </span>
         </div>
+        {cell.rec.action.pitNow && (
+          <PitDecisionControls
+            intensity={pitIntensity}
+            exitMode={pitExitMode}
+            repairMode={repairMode}
+            onIntensity={setPitIntensity}
+            onExitMode={setPitExitMode}
+            onRepairMode={setRepairMode}
+          />
+        )}
         <div className="mt-0.5 grid grid-cols-4 gap-1">
           <button
-            onClick={() => onAccept(cell.rec)}
+            onClick={() => onAccept(cell.rec, pitActionOverride)}
             className="rounded bg-emerald-600 py-0.5 text-[10px] font-bold text-white hover:bg-emerald-500"
           >
             Accept
@@ -263,9 +365,20 @@ function DriverCell({
 
           {!modifying ? (
             // Single-decision: all four controls on one compact row.
-            <div className="mt-1 grid grid-cols-4 gap-1">
+            <div className="mt-1 space-y-1">
+              {cell.rec.action.pitNow && (
+                <PitDecisionControls
+                  intensity={pitIntensity}
+                  exitMode={pitExitMode}
+                  repairMode={repairMode}
+                  onIntensity={setPitIntensity}
+                  onExitMode={setPitExitMode}
+                  onRepairMode={setRepairMode}
+                />
+              )}
+              <div className="grid grid-cols-4 gap-1">
                 <button
-                  onClick={() => onAccept(cell.rec)}
+                  onClick={() => onAccept(cell.rec, pitActionOverride)}
                   className="rounded bg-emerald-600 py-0.5 text-[10px] font-bold text-white hover:bg-emerald-500"
                 >
                   Accept
@@ -288,6 +401,7 @@ function DriverCell({
                 >
                   Ignore
                 </button>
+              </div>
             </div>
           ) : (
             <div className="mt-1 space-y-0.5">
@@ -345,10 +459,123 @@ function DriverCell({
 
       {cell.state === 'monitoring' && (
         <div className="mt-0.5">
+          <TrustReadout
+            driverTrust={driver.confidenceScore}
+            teamTrust={driver.trustInTeam}
+            carTrust={driver.trustInCar}
+            teamTrustInDriver={driver.teamTrustInDriver}
+          />
           <p className="text-[10px] text-slate-300">No decision pending · plan on target</p>
           <MonitorFootline driver={driver} />
         </div>
       )}
+    </div>
+  );
+}
+
+function TrustReadout({
+  driverTrust,
+  teamTrust,
+  carTrust,
+  teamTrustInDriver,
+}: {
+  driverTrust: number;
+  teamTrust: number;
+  carTrust: number;
+  teamTrustInDriver: number;
+}) {
+  return (
+    <div className="mb-1 rounded border border-slate-700/50 bg-slate-950/30 px-1.5 py-1">
+      <TrustBar label="Driver Trust" value={driverTrust} />
+      <div className="mt-1 grid grid-cols-3 gap-1">
+        <TrustBar label="Team Trust" value={teamTrust} compact />
+        <TrustBar label="Car Trust" value={carTrust} compact />
+        <TrustBar label="Team→Driver" value={teamTrustInDriver} compact />
+      </div>
+    </div>
+  );
+}
+
+function TrustBar({
+  label,
+  value,
+  compact = false,
+}: {
+  label: string;
+  value: number;
+  compact?: boolean;
+}) {
+  const clamped = Math.max(0, Math.min(100, value));
+  const color = ratingColor(clamped);
+  return (
+    <div className={compact ? 'text-[9px]' : 'text-[10px]'}>
+      <div className="mb-0.5 flex items-center justify-between gap-1 text-slate-400">
+        <span className="truncate uppercase tracking-wide">{label}</span>
+        <span className="tabular-nums" style={{ color }}>{clamped}%</span>
+      </div>
+      <div className="h-1.5 overflow-hidden rounded-full bg-slate-800">
+        <div className="h-full rounded-full" style={{ width: `${clamped}%`, backgroundColor: color }} />
+      </div>
+    </div>
+  );
+}
+
+function PitDecisionControls({
+  intensity,
+  exitMode,
+  repairMode,
+  onIntensity,
+  onExitMode,
+  onRepairMode,
+}: {
+  intensity: PitIntensity;
+  exitMode: PaceMode;
+  repairMode: DamageRepairMode;
+  onIntensity: (value: PitIntensity) => void;
+  onExitMode: (value: PaceMode) => void;
+  onRepairMode: (value: DamageRepairMode) => void;
+}) {
+  return (
+    <div className="space-y-1">
+      <div className="grid grid-cols-4 gap-1">
+        {PIT_INTENSITY_ORDER.map((value) => (
+          <button
+            key={value}
+            onClick={() => onIntensity(value)}
+            className={`rounded py-0.5 text-[9px] font-semibold ${
+              intensity === value ? 'bg-amber-500 text-neutral-950' : 'bg-slate-800 text-slate-300 hover:bg-slate-700'
+            }`}
+          >
+            {value}
+          </button>
+        ))}
+      </div>
+      <div className="grid grid-cols-6 gap-1">
+        {SELECTABLE_MODES.map((mode) => (
+          <button
+            key={mode}
+            onClick={() => onExitMode(mode)}
+            className={`rounded py-0.5 text-[9px] font-semibold ${
+              exitMode === mode ? 'bg-emerald-500 text-neutral-950' : 'bg-slate-800 text-slate-300 hover:bg-slate-700'
+            }`}
+          >
+            {mode}
+          </button>
+        ))}
+      </div>
+      <div className="grid grid-cols-3 gap-1">
+        {(['None', 'Critical', 'Full'] as DamageRepairMode[]).map((mode) => (
+          <button
+            key={mode}
+            onClick={() => onRepairMode(mode)}
+            className={`rounded py-0.5 text-[9px] font-semibold ${
+              repairMode === mode ? 'bg-cyan-500 text-neutral-950' : 'bg-slate-800 text-slate-300 hover:bg-slate-700'
+            }`}
+          >
+            {mode === 'None' ? 'No Repair' : mode === 'Critical' ? 'Critical' : 'Full Repair'}
+          </button>
+        ))}
+      </div>
     </div>
   );
 }

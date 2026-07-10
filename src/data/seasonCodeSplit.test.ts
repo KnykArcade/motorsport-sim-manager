@@ -13,34 +13,37 @@ import {
 
 describe('season code-splitting', () => {
   describe('season catalog (lightweight, no heavy data)', () => {
-    it('exposes all 86 seasons (37 F1 + 31 IndyCar + 14 CART + 4 Champ Car)', () => {
+    it('exposes all 90 seasons (37 F1 + 31 IndyCar + 14 CART + 4 Champ Car + 4 NASCAR)', () => {
       const f1 = availableSeasons.filter((s) => s.series === 'F1');
       const indy = availableSeasons.filter((s) => s.series === 'IndyCar');
       const cart = availableSeasons.filter((s) => s.series === 'CART');
       const champCar = availableSeasons.filter((s) => s.series === 'Champ Car');
+      const nascar = availableSeasons.filter((s) => s.series === 'NASCAR');
       expect(f1.length).toBe(37);
       expect(indy.length).toBe(31);
       expect(cart.length).toBe(14);
       expect(champCar.length).toBe(4);
-      expect(availableSeasons.length).toBe(86);
+      expect(nascar.length).toBe(4);
+      expect(availableSeasons.length).toBe(90);
     });
 
     it('exposes available series', () => {
-      expect(availableSeries.length).toBe(4);
-      expect(availableSeries.map((s) => s.id).sort()).toEqual(['CART', 'Champ Car', 'F1', 'IndyCar']);
+      expect(availableSeries.length).toBe(5);
+      expect(availableSeries.map((s) => s.id).sort()).toEqual(['CART', 'Champ Car', 'F1', 'IndyCar', 'NASCAR']);
     });
 
     it('hasSeason checks catalog membership', () => {
       expect(hasSeason(1995, 'F1')).toBe(true);
       expect(hasSeason(2026, 'IndyCar')).toBe(true);
+      expect(hasSeason(1990, 'NASCAR')).toBe(true);
       expect(hasSeason(1989, 'F1')).toBe(false);
       expect(hasSeason(2027, 'F1')).toBe(false);
     });
   });
 
   describe('season loader (async, code-split)', () => {
-    it('has loaders for all 86 seasons', () => {
-      expect(getLoaderKeys().length).toBe(86);
+    it('has loaders for all 90 seasons', () => {
+      expect(getLoaderKeys().length).toBe(90);
     });
 
     it('hasSeasonLoader matches catalog', () => {

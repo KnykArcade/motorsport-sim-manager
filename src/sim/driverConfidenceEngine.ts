@@ -71,6 +71,7 @@ export type ConfidenceUpdate = {
   trustInCarDelta?: number;
   trustInTeamDelta?: number;
   trustInPrincipalDelta?: number;
+  teamTrustInDriverDelta?: number;
   moraleDelta?: number;
   frustrationDelta?: number;
   egoDelta?: number;
@@ -110,6 +111,7 @@ export function reactToRaceResult(
       selfConfidenceDelta: carBlame ? -2 : -8,
       trustInCarDelta: carBlame ? -10 : -6,
       frustrationDelta: carBlame ? 7 : 6,
+      teamTrustInDriverDelta: carBlame ? -4 : -2,
       moraleDelta: -4,
       reason: carBlame ? 'DNF from car failure' : 'DNF from incident',
     });
@@ -119,6 +121,7 @@ export function reactToRaceResult(
         selfConfidenceDelta: -3,
         trustInCarDelta: -5,
         trustInPrincipalDelta: -2,
+        teamTrustInDriverDelta: -3,
         frustrationDelta: 4,
         reason: 'Aggressive stint ended in incident',
       });
@@ -131,6 +134,7 @@ export function reactToRaceResult(
         driverId: ctx.driverId,
         selfConfidenceDelta: 8,
         trustInPrincipalDelta: 2,
+        teamTrustInDriverDelta: 5,
         moraleDelta: 8,
         frustrationDelta: rel.frustration >= 45 ? -12 : -7,
         reason: 'Race win',
@@ -140,6 +144,7 @@ export function reactToRaceResult(
         driverId: ctx.driverId,
         selfConfidenceDelta: 5,
         trustInPrincipalDelta: 1,
+        teamTrustInDriverDelta: 3,
         moraleDelta: 5,
         frustrationDelta: rel.frustration >= 45 ? -8 : -4,
         reason: 'Podium finish',
@@ -148,6 +153,7 @@ export function reactToRaceResult(
       updates.push({
         driverId: ctx.driverId,
         selfConfidenceDelta: 2,
+        teamTrustInDriverDelta: 1,
         moraleDelta: 1,
         frustrationDelta: -1,
         reason: 'Top-half finish',
@@ -157,6 +163,7 @@ export function reactToRaceResult(
         driverId: ctx.driverId,
         selfConfidenceDelta: -2,
         trustInPrincipalDelta: rel.frustration >= 45 ? -2 : -1,
+        teamTrustInDriverDelta: -2,
         frustrationDelta: rel.frustration >= 45 ? 5 : 2,
         moraleDelta: -1,
         reason: rel.frustration >= 45 ? 'Poor finish revived prior frustration' : 'Poor finish',
@@ -166,6 +173,7 @@ export function reactToRaceResult(
       updates.push({
         driverId: ctx.driverId,
         trustInCarDelta: ctx.podium || ctx.win ? 3 : 2,
+        teamTrustInDriverDelta: ctx.podium || ctx.win ? 2 : 1,
         frustrationDelta: rel.trustInCar < 45 ? -2 : -1,
         reason: 'Clean finish rebuilt trust in car',
       });
@@ -180,12 +188,14 @@ export function reactToRaceResult(
         driverId: ctx.driverId,
         selfConfidenceDelta: 3,
         trustInCarDelta: 2,
+        teamTrustInDriverDelta: 1,
         reason: 'Gained positions in race',
       });
     } else if (qualDelta <= -3) {
       updates.push({
         driverId: ctx.driverId,
         selfConfidenceDelta: -2,
+        teamTrustInDriverDelta: -1,
         frustrationDelta: 2,
         reason: 'Lost positions in race',
       });
@@ -200,6 +210,7 @@ export function reactToRaceResult(
       updates.push({
         driverId: ctx.driverId,
         selfConfidenceDelta: egoBoost,
+        teamTrustInDriverDelta: 1,
         moraleDelta: 2,
         reason: 'Beat teammate',
       });
@@ -208,6 +219,7 @@ export function reactToRaceResult(
       updates.push({
         driverId: ctx.driverId,
         selfConfidenceDelta: egoHit,
+        teamTrustInDriverDelta: -1,
         frustrationDelta: traits.includes('Rivalry Prone') ? 4 : 2,
         reason: 'Finished behind teammate',
       });
@@ -220,6 +232,7 @@ export function reactToRaceResult(
       updates.push({
         driverId: ctx.driverId,
         trustInPrincipalDelta: 3,
+        teamTrustInDriverDelta: 1,
         moraleDelta: 2,
         egoDelta: traits.includes('High Ego') ? 3 : 1,
         reason: 'Favored by team orders',
@@ -229,6 +242,7 @@ export function reactToRaceResult(
       updates.push({
         driverId: ctx.driverId,
         trustInPrincipalDelta: -5,
+        teamTrustInDriverDelta: -3,
         moraleDelta: -3,
         frustrationDelta: 4,
         egoDelta: egoHit,
@@ -245,6 +259,7 @@ export function reactToRaceResult(
       trustInTeamDelta: ctx.finishingPosition <= 3 ? 3 : -2,
       trustInPrincipalDelta: ctx.finishingPosition <= 3 ? 2 : (nervousInCar ? -3 : -1),
       trustInCarDelta: nervousInCar && ctx.finishingPosition > 6 ? -2 : 0,
+      teamTrustInDriverDelta: ctx.finishingPosition <= 3 ? 2 : -1,
       frustrationDelta: nervousInCar && ctx.finishingPosition > 6 ? 3 : 0,
       reason: nervousInCar ? 'Aggressive strategy in low-trust car' : 'Aggressive strategy',
     });
@@ -289,12 +304,14 @@ export function reactToRaceResult(
       updates.push({
         driverId: ctx.driverId,
         selfConfidenceDelta: 3,
+        teamTrustInDriverDelta: 1,
         reason: 'Confidence-driven driver boosted by strong result',
       });
     } else if (ctx.finishingPosition > 12) {
       updates.push({
         driverId: ctx.driverId,
         selfConfidenceDelta: -3,
+        teamTrustInDriverDelta: -1,
         reason: 'Confidence-driven driver deflated by poor result',
       });
     }
@@ -321,6 +338,7 @@ export function applyConfidenceUpdates(
       trustInCar: clamp(rel.trustInCar + (u.trustInCarDelta ?? 0)),
       trustInTeam: clamp(rel.trustInTeam + (u.trustInTeamDelta ?? 0)),
       trustInPrincipal: clamp(rel.trustInPrincipal + (u.trustInPrincipalDelta ?? 0)),
+      teamTrustInDriver: clamp(rel.teamTrustInDriver + (u.teamTrustInDriverDelta ?? 0)),
       morale: clamp(rel.morale + (u.moraleDelta ?? 0)),
       frustration: clamp(rel.frustration + (u.frustrationDelta ?? 0)),
       ego: clamp(rel.ego + (u.egoDelta ?? 0)),
@@ -483,6 +501,7 @@ export function rolloverConfidence(
     trustInCar: clamp(Math.round(rel.trustInCar * 0.8 + 50 * 0.2)),
     trustInTeam: clamp(Math.round(rel.trustInTeam * 0.85 + 55 * 0.15)),
     trustInPrincipal: clamp(Math.round(rel.trustInPrincipal * 0.8 + 58 * 0.2)),
+    teamTrustInDriver: clamp(Math.round(rel.teamTrustInDriver * 0.85 + 55 * 0.15)),
     ego: clamp(Math.round(rel.ego * 0.9 + 50 * 0.1)),
   };
 }

@@ -4,9 +4,10 @@
 // car plans to stop) and a target stint length, and prices an individual stop.
 // Reactive decisions (undercut/cover, safety-car stops) mutate the schedule.
 
-import type { Car, RaceStrategy } from '../types/gameTypes';
+import type { Car, RaceStrategy, Track } from '../types/gameTypes';
 import type { PitWindow } from '../types/liveTypes';
 import { effectiveCarRatings } from './trackFitEngine';
+import { pitLossBaseline, type PitLossSeries } from './pitLossData';
 import { toLegacyRating } from './ratingScale';
 
 // Laps either side of the strategist's ideal stop lap that make up the window.
@@ -23,13 +24,16 @@ export function pitWindowFor(idealLap: number, totalLaps: number): PitWindow {
   };
 }
 
-// Base time lost for a green-flag stop (pit lane + service), before crew skill.
-const BASE_PIT_LOSS = 22;
-
 export type PitPlan = {
   plannedStops: number;
   scheduledLaps: number[];
   stintTarget: number;
+};
+
+export type PitLossContext = {
+  track?: Track;
+  series?: PitLossSeries;
+  year?: number;
 };
 
 // Number of planned stops implied by a strategy id.
@@ -84,9 +88,10 @@ export function pitStopLoss(
   underSafetyCar: boolean,
   safetyCarSaving: number,
   opsForm = 0,
+  context?: PitLossContext,
 ): number {
   const ops = effectiveCarRatings(car).pitCrewOperations; // 1-100
   const crewDelta = (5.5 - toLegacyRating(ops)) * 0.4 - opsForm * PIT_OPS_LOSS_SENS; // sharp day saves time
-  const loss = BASE_PIT_LOSS + crewDelta;
+  const loss = pitLossBaseline(context?.track, context?.series, context?.year) + crewDelta;
   return Math.max(8, underSafetyCar ? loss - safetyCarSaving : loss);
 }

@@ -6,7 +6,7 @@
 // outcome as it plays out. The final classification is converted back into the
 // existing `RaceResult[]` shape so standings/news/morale are unaffected.
 
-import type { RaceFinishStatus } from './gameTypes';
+import type { RaceFinishStatus, Series } from './gameTypes';
 import type { RaceEvent } from './simTypes';
 
 // ---------------------------------------------------------------------------
@@ -101,6 +101,11 @@ export type PitStopState = {
   scheduledLaps: number[];
   lastPitLap: number | null;
   lastPitStopTime?: number | null;
+  intensityDefault?: PitIntensity;
+  intensity?: PitIntensity;
+  exitMode?: PaceMode;
+  repairMode?: DamageRepairMode;
+  lastPitResult?: PitStopResult | null;
   inPitThisLap: boolean;
   // Player-controlled pitting: the next stop's advisory window, and a flag set
   // when the player has called the car in. AI cars leave these null/false and
@@ -117,6 +122,18 @@ export type PitStopState = {
   // Lap the current planned window was last recommended/prompted on, used to
   // throttle repeat "pit window open" prompts so they are not raised every lap.
   lastWindowPromptLap: number | null;
+  // Safety-car pit prompts are raised once per deployment; store the last
+  // deployment number that prompted this car so the recommendation stays off
+  // the board until the next SC deployment.
+  lastSafetyCarPitPromptDeployment?: number | null;
+};
+
+export type PitStopResultTier = 'Clean' | 'Minor' | 'Moderate' | 'Major';
+
+export type PitStopResult = {
+  tier: PitStopResultTier;
+  note: string;
+  addedSeconds: number;
 };
 
 // ---------------------------------------------------------------------------
@@ -164,6 +181,26 @@ export type PaceMode =
   | 'Attack'
   | 'Defend'
   | 'ProtectEngine';
+
+export type PitIntensity = 'Conservative' | 'Standard' | 'Aggressive' | 'AllOut';
+export type DamageComponentKind =
+  | 'Aero'
+  | 'Suspension'
+  | 'Bodywork'
+  | 'Engine'
+  | 'Gearbox'
+  | 'Brakes'
+  | 'Cooling'
+  | 'Hydraulics'
+  | 'Electrical';
+export type DamageComponentSeverity = 'none' | 'minor' | 'moderate' | 'severe' | 'terminal';
+export type DamageBalanceSettings = {
+  damageFrequency: number;
+  damageSeverity: number;
+  repairTimeMultiplier: number;
+  reliabilityStrictness: number;
+};
+export type DamageRepairMode = 'None' | 'Critical' | 'Full';
 
 // What triggered the current strategy-mode change (drives the stint counter's
 // provenance; the counter itself is source-agnostic).
@@ -306,6 +343,11 @@ export type RecAction = {
   paceMode?: PaceMode;
   // If the action is a pit call.
   pitNow?: boolean;
+  // Combined pit-call choices.
+  pitIntensity?: PitIntensity;
+  pitExitMode?: PaceMode;
+  repairMode?: DamageRepairMode;
+  paceModeByDriver?: Record<string, PaceMode>;
   // If the action is a team order (needs the favoured driver, resolved by UI).
   teamOrder?: 'SwapPositions' | 'LetThemRace';
 };
@@ -358,6 +400,9 @@ export type LiveCarState = {
   running: boolean;
   status: RaceFinishStatus;
   retiredOnLap: number | null;
+  // Track position (0..1) where the car retired. Frozen so crashed cars stay
+  // stopped on the track map until the incident is cleared.
+  retiredTrackProgress?: number;
   lastIncident?: string;
 
   // Per-car simulation parameters (set at creation, mostly constant).
@@ -368,17 +413,30 @@ export type LiveCarState = {
   baseMistakeRisk: number; // per-lap (non-terminal) mistake probability baseline
   tireDegRate: number; // tyre wear points per lap at balanced pace
   pitLossBase: number; // green-flag pit-stop time loss (s)
+  damageSettings?: DamageBalanceSettings;
   opsForm: number; // per-weekend operations execution (0 neutral) — pit/strategy consistency
+  pitCrewOperations?: number; // optional live copy of pit-crew rating for pit rolls
+  carReliability?: number; // optional live copy of car reliability for recovery rolls
+  driverEnduranceConsistency?: number; // optional live copy of driver endurance consistency
+  driverComposure?: number; // optional live copy of driver composure rating
+  driverRiskManagement?: number; // optional live copy of driver risk-management rating
   confidenceModifier?: number; // relationship confidence/trust modifier used for live hesitation and risk
+  driverRelationships?: Record<string, import('./relationshipTypes').DriverRelationship>;
+  teamOrgRatings?: Record<string, import('./teamRatingsTypes').TeamOrganizationRatings>;
   personality: AIStrategyPersonality;
   strategyId: string;
   instructionId: string;
 
   // Mutable race state.
   paceMode: PaceMode;
-  // When the Safety Car forces Conserve, remember the driver's/team's intended
-  // green-flag mode so it can resume when racing restarts.
+  // When the Safety Car forces Conserve, remember the pre-SC mode captured at
+  // deployment and the current post-SC resume target (which may be changed
+  // silently during the SC or overwritten by a pit exit mode).
+  safetyCarModePreSC?: PaceMode | null;
+  safetyCarModeAfterSC?: PaceMode | null;
+  // Legacy SC restart fields kept for compatibility with existing helpers.
   safetyCarModeBefore?: PaceMode | null;
+  safetyCarRestartLocked?: boolean;
   // Consecutive-lap counter for the current strategy mode (resets on any change).
   strategyStint: StrategyStintState;
   // Current Live Race Pace (1-10), recomputed every lap from Base Race Pace and
@@ -401,6 +459,12 @@ export type LiveCarState = {
   gearboxHealth: number;
   brakeHealth: number;
   aeroHealth?: number;
+  // Sub-lap position. 0..2 sector index and 0..1 progress through that sector.
+  currentSector?: 0 | 1 | 2 | 3;
+  sectorProgress?: number;
+  // True when the car has had a non-terminal mistake on the current lap. Stored
+  // so the status message persists across the per-sector status updates.
+  mistakeThisLap?: boolean;
   // Split of the last representative lap into three sector times (s). Empty
   // until a clean lap is set.
   lastSectors: [number, number, number] | null;
@@ -418,10 +482,15 @@ export type LiveRaceState = {
   trackId: string;
   seed: string;
   totalLaps: number;
+  series?: Series;
   currentLap: number; // 0 = pre-start formation
+  sector?: 0 | 1 | 2; // 0-based sector index within the current lap
   phase: LiveRacePhase;
   weather: WeatherState;
   safetyCar: SafetyCarState;
+  // Driver relationships for AI disagreement and trust-based beats.
+  driverRelationships?: Record<string, import('./relationshipTypes').DriverRelationship>;
+  teamOrgRatings?: Record<string, import('./teamRatingsTypes').TeamOrganizationRatings>;
   cars: LiveCarState[]; // ordered by running order (leader first), retired trail
   events: RaceEvent[];
   pendingPrompt: RaceDecisionPrompt | null;
@@ -450,4 +519,16 @@ export type LiveRaceState = {
   battleTracker: Record<string, number>;
   // Retirements this race (for the race-info panel).
   retirements: number;
+  // Snapshot of the most recent on-track incident for the crash-zoom overlay.
+  // Cleared by the UI once the popup has been dismissed.
+  lastIncident?: {
+    lap: number;
+    driverIds: string[];
+    severity: number;
+    safetyCarDeployed: boolean;
+    // Track position (0..1) of the crash point. Used to freeze the incident
+    // markers in the crash-zoom popup so they don't keep driving.
+    trackProgress: number;
+  };
+  damageSettings?: DamageBalanceSettings;
 };

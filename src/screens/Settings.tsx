@@ -34,6 +34,50 @@ export function Settings() {
         </label>
       </Panel>
 
+      <Panel title="Damage / Repair">
+        <div className="space-y-4">
+          {([
+            {
+              key: 'damageFrequency',
+              label: 'Damage Frequency',
+              desc: 'Higher values make contact, wear, and stress produce damage more often.',
+            },
+            {
+              key: 'damageSeverity',
+              label: 'Damage Severity',
+              desc: 'Higher values make each damage event more punishing.',
+            },
+            {
+              key: 'repairTimeMultiplier',
+              label: 'Repair Time Multiplier',
+              desc: 'Scales in-race repair time up or down.',
+            },
+            {
+              key: 'reliabilityStrictness',
+              label: 'Reliability Strictness',
+              desc: 'Realism to arcade: higher is harsher on reliability stress.',
+            },
+          ] as const).map(({ key, label, desc }) => (
+            <label key={key} className="block space-y-2">
+              <div className="flex items-center justify-between text-sm text-neutral-100">
+                <span>{label}</span>
+                <span className="text-xs text-neutral-400">{settings[key].toFixed(2)}x</span>
+              </div>
+              <div className="text-xs text-neutral-500">{desc}</div>
+              <input
+                type="range"
+                min="0.5"
+                max="1.5"
+                step="0.05"
+                value={settings[key]}
+                onChange={(e) => setSettings({ ...settings, [key]: Number(e.target.value) })}
+                className="w-full accent-amber-500"
+              />
+            </label>
+          ))}
+        </div>
+      </Panel>
+
       {state && (
         <Panel title="Career Mobility">
           <div className="space-y-3">
