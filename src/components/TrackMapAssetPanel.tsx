@@ -133,9 +133,9 @@ function AssetTrackMap({
           </feMerge>
         </filter>
         <linearGradient id={`kyalami-road-${geometry.id}`} x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0" stopColor="#f0ecdd" />
-          <stop offset="0.48" stopColor="#e4dfcf" />
-          <stop offset="1" stopColor="#d3cdbb" />
+          <stop offset="0" stopColor="#5c5f60" />
+          <stop offset="0.48" stopColor="#515354" />
+          <stop offset="1" stopColor="#46484a" />
         </linearGradient>
       </defs>
 
@@ -146,12 +146,12 @@ function AssetTrackMap({
           data-track-surface-width={KYALAMI_SURFACE_WIDTH}
           data-close-racing-lane-offset={KYALAMI_LANE_OFFSET}
         >
-          <path d={pathD} transform="translate(8 10)" fill="none" stroke="#080c0e" strokeWidth="68" strokeLinecap="round" strokeLinejoin="round" opacity="0.95" data-track-layer="drop-shadow" />
-          <path d={pathD} fill="none" stroke="#141a1c" strokeWidth="62" strokeLinecap="round" strokeLinejoin="round" data-track-layer="embankment" />
+          <path d={pathD} transform="translate(3 4)" fill="none" stroke="#080c0e" strokeWidth="60" strokeLinecap="round" strokeLinejoin="round" opacity="0.5" data-track-layer="drop-shadow" />
+          <path d={pathD} fill="none" stroke="#242a2c" strokeWidth="62" strokeLinecap="round" strokeLinejoin="round" data-track-layer="embankment" />
           <path d={pathD} fill="none" stroke="#343b3d" strokeWidth="48" strokeLinecap="round" strokeLinejoin="round" data-track-layer="road-edge" />
           <path d={pathD} fill="none" stroke={`url(#kyalami-road-${geometry.id})`} strokeWidth={KYALAMI_SURFACE_WIDTH} strokeLinecap="round" strokeLinejoin="round" data-track-layer="racing-surface" />
-          <path d={pathD} fill="none" stroke="#faf6e8" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" opacity="0.62" data-track-layer="surface-highlight" />
-          <path d={pathD} fill="none" stroke="#252c2f" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" strokeDasharray="18 22" data-track-layer="centre-line" />
+          <path d={pathD} fill="none" stroke="#cfd2d2" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" opacity="0.5" data-track-layer="surface-highlight" />
+          <path d={pathD} fill="none" stroke="#3fb6c6" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" strokeDasharray="18 22" opacity="0.55" data-track-layer="centre-line" />
         </g>
       ) : (
         <>
