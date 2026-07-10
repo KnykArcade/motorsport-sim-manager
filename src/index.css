@@ -939,7 +939,7 @@ body {
 }
 
 /* Live track markers: the decal number stays intentionally compact on the
-   front wing; hover/focus supplies the full driver identity without adding
+   front nose between the tyres; hover/focus supplies the full driver identity without adding
    permanent map clutter. */
 .track-map-car {
   cursor: help;

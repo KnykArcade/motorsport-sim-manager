@@ -24,7 +24,7 @@ describe('RaceMapSeriesMarker', () => {
     expect(html).toContain(`data-marker-body="${assetId}"`);
     expect(html).toContain('data-layer="primary"');
     expect(html).toContain('data-layer="secondary"');
-    expect(html).toContain(series === 'f1' ? 'data-layer="body-highlight"' : 'data-layer="white-keyline"');
+    expect(html).toContain(series === 'f1' ? 'data-layer="fixed-details"' : 'data-layer="white-keyline"');
     expect(html).toContain('data-layer="runtime-number"');
     expect(html).toContain('fill="#1255cc"');
     expect(html).toContain('#ffcc00');
@@ -67,11 +67,11 @@ describe('RaceMapSeriesMarker', () => {
   });
 
   it.each([
-    [1992, 'f1_1990s', false],
-    [2005, 'f1_2000s', false],
-    [2016, 'f1_2010s', false],
-    [2024, 'f1_2020s', true],
-  ] as const)('renders the locked %i F1 silhouette with its number only on the front nose', (year, assetId, hasHalo) => {
+    [1992, 'f1_1990s', '1990s'],
+    [2005, 'f1_2000s', '2000s'],
+    [2016, 'f1_2010s', '2010s'],
+    [2024, 'f1_2020s', '2020s'],
+  ] as const)('renders the locked %i F1 artwork with its number only on the front nose', (year, assetId, eraDirectory) => {
     const html = renderToStaticMarkup(
       <RaceMapSeriesMarker
         x={0}
@@ -85,17 +85,19 @@ describe('RaceMapSeriesMarker', () => {
     );
 
     expect(html).toContain(`data-race-map-marker="${assetId}"`);
+    expect(html).toContain('data-f1-artwork="approved-raster"');
+    expect(html).toContain('data-forward-axis="+x"');
+    expect(html).toContain('data-number-location="front nose between front tyres"');
     expect(html).toContain('data-layer="front-number-plate"');
-    expect(html).toContain('data-layer="front-wing"');
-    expect(html).toContain('data-layer="rear-wing"');
-    expect(html).toContain('data-layer="painted-floor-body"');
-    expect(html).toContain('data-layer="sidepod-intake"');
-    expect(html).toContain('data-layer="era-aero-detail"');
-    expect(html).toContain('data-layer="wing-plane-detail"');
-    expect(html).toContain('data-layer="body-highlight"');
-    expect(html).toContain('data-layer="tyre-groove"');
+    expect(html).toContain(`href="/assets/markers/f1/${eraDirectory}/primary-shading.png"`);
+    expect(html).toContain(`href="/assets/markers/f1/${eraDirectory}/secondary-shading.png"`);
+    expect(html).toContain(`href="/assets/markers/f1/${eraDirectory}/fixed-details.png"`);
+    expect(html).toContain(`href="/assets/markers/f1/${eraDirectory}/silhouette-mask.png"`);
+    expect(html).toContain('data-layer="primary-shading"');
+    expect(html).toContain('data-layer="secondary-shading"');
+    expect(html).toContain('data-layer="fixed-details"');
     expect(html.match(/data-layer="runtime-number"/g)).toHaveLength(1);
-    expect(html.includes('data-layer="halo"')).toBe(hasHalo);
+    expect(html).not.toContain('data-layer="rear-number"');
   });
 
   it.each([
@@ -146,12 +148,14 @@ describe('RaceMapSeriesMarker', () => {
 
     expect(html).toContain('transform="translate(12 8) scale(1)"');
     expect(html).toContain('transform="rotate(45)"');
-    expect(html).toContain('transform="translate(5.58 0)"');
+    expect(html).toContain('transform="translate(6.562 0.059)"');
+    expect(html).toContain('data-number-location="front nose between front tyres"');
+    expect(html).toContain('fill="#FF2A2A"');
     expect(html).toContain('transform="rotate(-45)"');
     expect(html.indexOf('transform="rotate(45)"')).toBeLessThan(html.indexOf('transform="rotate(-45)"'));
   });
 
-  it('scales the complete vector marker to the requested gameplay footprint', () => {
+  it('scales the complete marker to the requested gameplay footprint', () => {
     const html = renderToStaticMarkup(
       <RaceMapSeriesMarker x={0} y={0} series="cart" number="33" primaryColor="#008c94" size={10} />,
     );

@@ -1,3 +1,4 @@
+import { useId } from 'react';
 import {
   damageColorForState,
   damageStateFromPercent,
@@ -8,7 +9,7 @@ import {
   type MarkerAssetId,
 } from './raceMarkerAssets';
 import type { RaceSeries } from './seriesMarker';
-import f1MarkerDesignsJson from './f1MarkerDesigns.json';
+import f1RasterMarkerDesignsJson from './f1RasterMarkerDesigns.json';
 
 export type RaceMapSeriesMarkerProps = {
   x: number;
@@ -27,32 +28,27 @@ export type RaceMapSeriesMarkerProps = {
 };
 
 type MarkerGeometry = {
-  outerPath: string;
+  outerPath?: string;
   numberAnchor: { x: number; y: number };
   numberFontSize: number;
   numberMaxWidth: number;
+  numberStrokeWidth?: number;
 };
 
-type F1MarkerDesign = MarkerGeometry & {
+type F1RasterMarkerDesign = MarkerGeometry & {
   label: string;
-  accentFillCount: number;
-  wingColor: 'primary' | 'secondary';
-  floorPath: string;
-  bodyPath: string;
-  sidepodPath: string;
-  nosePath: string;
-  rearWingPath: string;
-  frontWingPath: string;
-  accentPaths: string[];
-  aeroPaths: string[];
-  intakePaths: string[];
-  highlightPaths: string[];
-  wingDetailPaths: string[];
-  detailPaths: string[];
-  wheels: Array<{ x: number; y: number; width: number; height: number; rx: number }>;
-  cockpit: { cx: number; cy: number; rx: number; ry: number };
-  haloPath: string | null;
-  numberPlate: { x: number; y: number; width: number; height: number; rx: number };
+  canvasSize: number;
+  forwardAxis: '+x';
+  numberLocation: 'front nose between front tyres';
+  assets: {
+    master: string;
+    primaryShading: string;
+    secondaryShading: string;
+    fixedDetails: string;
+    primaryMask: string;
+    secondaryMask: string;
+    silhouetteMask: string;
+  };
 };
 
 export const F1_GAMEPLAY_MARKER_SIZE = 40;
@@ -69,11 +65,11 @@ const WHITE_KEYLINE_STROKE = 0.58;
 const DAMAGE_STROKE = 3;
 
 /**
- * Authoritative series silhouettes, including one locked F1 design per era.
- * All paths fit inside a 20×20 vector design footprint and scale to the
- * requested gameplay size with room for the approved bold damage outline.
+ * The F1 designs point toward +X on a common square canvas. Their raster layers
+ * are built directly from the approved artwork so the game never redraws or
+ * simplifies the cars.
  */
-const F1_MARKER_DESIGNS = f1MarkerDesignsJson as Record<F1MarkerEra, F1MarkerDesign>;
+const F1_MARKER_DESIGNS = f1RasterMarkerDesignsJson as Record<F1MarkerEra, F1RasterMarkerDesign>;
 
 const MARKER_GEOMETRY: Record<MarkerAssetId, MarkerGeometry> = {
   nascar_a: {
@@ -106,12 +102,14 @@ function SilhouetteLayers({
   secondaryColor,
   damageState,
   selected,
+  uniqueId,
 }: {
   assetId: MarkerAssetId;
   primaryColor: string;
   secondaryColor: string;
   damageState: DamageState;
   selected: boolean;
+  uniqueId: string;
 }) {
   const geometry = MARKER_GEOMETRY[assetId];
   const damageColor = damageColorForState(damageState);
@@ -133,7 +131,7 @@ function SilhouetteLayers({
         </g>
       )}
 
-      {damageColor && (
+      {damageColor && !isF1 && geometry.outerPath && (
         <path
           d={geometry.outerPath}
           fill="none"
@@ -147,7 +145,7 @@ function SilhouetteLayers({
 
       {!isF1 && (
         <path
-          d={geometry.outerPath}
+          d={geometry.outerPath!}
           fill={primaryColor}
           stroke={BLACK}
           strokeWidth={OUTER_BLACK_STROKE}
@@ -161,7 +159,13 @@ function SilhouetteLayers({
         <NascarDetails secondaryColor={secondaryColor} />
       )}
       {isF1MarkerEra(assetId) && (
-        <F1Details assetId={assetId} primaryColor={primaryColor} secondaryColor={secondaryColor} />
+        <F1Details
+          assetId={assetId}
+          primaryColor={primaryColor}
+          secondaryColor={secondaryColor}
+          damageState={damageState}
+          uniqueId={uniqueId}
+        />
       )}
       {assetId === 'indycar_c' && (
         <IndyCarDetails secondaryColor={secondaryColor} />
@@ -172,7 +176,7 @@ function SilhouetteLayers({
 
       {!isF1 && (
         <path
-          d={geometry.outerPath}
+          d={geometry.outerPath!}
           fill="none"
           stroke={WHITE}
           strokeWidth={WHITE_KEYLINE_STROKE}
@@ -218,153 +222,86 @@ function F1Details({
   assetId,
   primaryColor,
   secondaryColor,
+  damageState,
+  uniqueId,
 }: {
   assetId: F1MarkerEra;
   primaryColor: string;
   secondaryColor: string;
+  damageState: DamageState;
+  uniqueId: string;
 }) {
   const design = F1_MARKER_DESIGNS[assetId];
-  const wingColor = design.wingColor === 'primary' ? primaryColor : secondaryColor;
+  const primaryMaskId = `${uniqueId}-${assetId}-primary-mask`;
+  const secondaryMaskId = `${uniqueId}-${assetId}-secondary-mask`;
+  const silhouetteMaskId = `${uniqueId}-${assetId}-silhouette-mask`;
+  const damageColor = damageColorForState(damageState);
+  const damageOffsets = [
+    [-0.54, 0], [0.54, 0], [0, -0.54], [0, 0.54],
+    [-0.4, -0.4], [0.4, -0.4], [-0.4, 0.4], [0.4, 0.4],
+  ] as const;
+
   return (
-    <g data-f1-era={design.label}>
-      <path
-        d={design.outerPath}
-        fill="none"
-        stroke={BLACK}
-        strokeWidth={0.52}
-        strokeLinejoin="round"
-        strokeLinecap="round"
-        data-layer="f1-black-outline"
-      />
-      {design.wheels.map((wheel, index) => (
-        <g key={`${assetId}-wheel-${index}`}>
-          <rect
-            {...wheel}
-            fill="#08090b"
-            stroke={WHITE}
-            strokeWidth={0.24}
-            data-layer="exposed-tyre"
-          />
-          <path
-            d={`M${wheel.x + wheel.width * 0.34} ${wheel.y + 0.16}V${wheel.y + wheel.height - 0.16}M${wheel.x + wheel.width * 0.68} ${wheel.y + 0.16}V${wheel.y + wheel.height - 0.16}`}
-            fill="none"
-            stroke="#3f444a"
-            strokeWidth={0.18}
-            data-layer="tyre-groove"
-          />
+    <g
+      data-f1-era={design.label}
+      data-f1-artwork="approved-raster"
+      data-forward-axis={design.forwardAxis}
+      data-number-location={design.numberLocation}
+      style={{ isolation: 'isolate' }}
+    >
+      <defs>
+        <mask id={primaryMaskId} x={-10} y={-10} width={20} height={20} maskUnits="userSpaceOnUse">
+          <image href={design.assets.primaryMask} x={-10} y={-10} width={20} height={20} preserveAspectRatio="none" />
+        </mask>
+        <mask id={secondaryMaskId} x={-10} y={-10} width={20} height={20} maskUnits="userSpaceOnUse">
+          <image href={design.assets.secondaryMask} x={-10} y={-10} width={20} height={20} preserveAspectRatio="none" />
+        </mask>
+        <mask id={silhouetteMaskId} x={-10} y={-10} width={20} height={20} maskUnits="userSpaceOnUse">
+          <image href={design.assets.silhouetteMask} x={-10} y={-10} width={20} height={20} preserveAspectRatio="none" />
+        </mask>
+      </defs>
+
+      {damageColor && (
+        <g fill={damageColor} data-damage-outline={damageState}>
+          {damageOffsets.map(([dx, dy]) => (
+            <g key={`${dx}-${dy}`} transform={`translate(${dx} ${dy})`}>
+              <rect x={-10} y={-10} width={20} height={20} mask={`url(#${silhouetteMaskId})`} />
+            </g>
+          ))}
         </g>
-      ))}
-      {design.detailPaths.map((path, index) => (
-        <path
-          key={`${assetId}-suspension-${index}`}
-          d={path}
-          fill="none"
-          stroke={index === 0 ? '#080a0c' : '#5f6872'}
-          strokeWidth={index === 0 ? 0.44 : 0.18}
-          strokeLinecap="round"
-          opacity={index === 0 ? 1 : 0.75}
-          data-layer="suspension-detail"
-        />
-      ))}
-      <path
-        d={design.floorPath}
-        fill={primaryColor}
-        stroke={BLACK}
-        strokeWidth={0.34}
-        strokeLinejoin="round"
-        data-layer="painted-floor-body"
-      />
-      <path d={design.rearWingPath} fill={wingColor} stroke={WHITE} strokeWidth={0.3} strokeLinejoin="round" data-layer="rear-wing" />
-      <path d={design.bodyPath} fill={primaryColor} stroke={WHITE} strokeWidth={0.28} strokeLinejoin="round" data-layer="primary" />
-      <path d={design.sidepodPath} fill={primaryColor} stroke={WHITE} strokeWidth={0.24} strokeLinejoin="round" data-layer="era-sidepods" />
-      {design.accentPaths.map((path, index) => (
-        <path
-          key={`${assetId}-accent-${index}`}
-          d={path}
-          fill={index < 3 ? (index < design.accentFillCount ? secondaryColor : primaryColor) : 'none'}
-          stroke={index < 3 ? BLACK : secondaryColor}
-          strokeWidth={index < 3 ? 0.28 : 0.38}
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          data-layer="secondary"
-        />
-      ))}
-      {design.aeroPaths.map((path, index) => (
-        <path
-          key={`${assetId}-aero-${index}`}
-          d={path}
-          fill="#101317"
-          stroke="#c9ced4"
-          strokeWidth={0.2}
-          strokeLinejoin="round"
-          data-layer="era-aero-detail"
-        />
-      ))}
-      {design.intakePaths.map((path, index) => (
-        <path
-          key={`${assetId}-intake-${index}`}
-          d={path}
-          fill="#050607"
-          stroke="#d5d8dc"
-          strokeWidth={0.16}
-          data-layer="sidepod-intake"
-        />
-      ))}
-      <path d={design.nosePath} fill={primaryColor} stroke={WHITE} strokeWidth={0.24} strokeLinejoin="round" data-layer="nose" />
-      <ellipse
-        {...design.cockpit}
-        fill="#080a0d"
-        stroke={WHITE}
-        strokeWidth={0.28}
-        data-layer="open-cockpit"
-      />
-      <ellipse
-        cx={design.cockpit.cx - 0.2}
-        cy={design.cockpit.cy}
-        rx={design.cockpit.rx * 0.56}
-        ry={design.cockpit.ry * 0.58}
-        fill="#20252a"
-        stroke="#050607"
-        strokeWidth={0.24}
-        data-layer="helmet"
-      />
-      {design.haloPath && (
-        <>
-          <path d={design.haloPath} fill="none" stroke={BLACK} strokeWidth={0.92} strokeLinecap="round" strokeLinejoin="round" />
-          <path d={design.haloPath} fill="none" stroke={WHITE} strokeWidth={0.2} strokeLinecap="round" strokeLinejoin="round" data-layer="halo" />
-        </>
       )}
-      <path d={design.frontWingPath} fill={wingColor} stroke={WHITE} strokeWidth={0.3} strokeLinejoin="round" data-layer="front-wing" />
-      {design.wingDetailPaths.map((path, index) => (
-        <path
-          key={`${assetId}-wing-detail-${index}`}
-          d={path}
-          fill="none"
-          stroke={index === 0 ? BLACK : '#14181c'}
-          strokeWidth={index === 0 ? 0.34 : 0.28}
-          strokeLinecap="round"
-          data-layer="wing-plane-detail"
-        />
-      ))}
-      {design.highlightPaths.map((path, index) => (
-        <path
-          key={`${assetId}-highlight-${index}`}
-          d={path}
-          fill="none"
-          stroke={WHITE}
-          strokeWidth={0.22}
-          strokeLinecap="round"
-          opacity={0.72}
-          data-layer="body-highlight"
-        />
-      ))}
-      <rect
-        {...design.numberPlate}
-        fill={BLACK}
-        stroke={WHITE}
-        strokeWidth={0.3}
-        data-layer="front-number-plate"
+      <rect x={-10} y={-10} width={20} height={20} fill={primaryColor} mask={`url(#${primaryMaskId})`} data-layer="primary" />
+      <image
+        href={design.assets.primaryShading}
+        x={-10}
+        y={-10}
+        width={20}
+        height={20}
+        preserveAspectRatio="none"
+        style={{ mixBlendMode: 'multiply' }}
+        data-layer="primary-shading"
       />
+      <rect x={-10} y={-10} width={20} height={20} fill={secondaryColor} mask={`url(#${secondaryMaskId})`} data-layer="secondary" />
+      <image
+        href={design.assets.secondaryShading}
+        x={-10}
+        y={-10}
+        width={20}
+        height={20}
+        preserveAspectRatio="none"
+        style={{ mixBlendMode: 'multiply' }}
+        data-layer="secondary-shading"
+      />
+      <image
+        href={design.assets.fixedDetails}
+        x={-10}
+        y={-10}
+        width={20}
+        height={20}
+        preserveAspectRatio="none"
+        data-layer="fixed-details"
+      />
+      <g data-layer="front-number-plate" data-location={design.numberLocation} />
     </g>
   );
 }
@@ -421,7 +358,7 @@ function RuntimeNumber({
       fontWeight={900}
       fill={WHITE}
       stroke={BLACK}
-      strokeWidth={0.95}
+      strokeWidth={geometry.numberStrokeWidth ?? 0.95}
       strokeLinejoin="round"
       paintOrder="stroke"
       textLength={textLength}
@@ -447,6 +384,7 @@ export function RaceMapSeriesMarker({
   damagePercent,
   size = DEFAULT_SIZE,
 }: RaceMapSeriesMarkerProps) {
+  const markerUid = useId().replaceAll(':', '');
   const assetId = seriesToAssetId(series, year);
   const geometry = MARKER_GEOMETRY[assetId];
   const damageState = damageStateFromPercent(damagePercent);
@@ -469,6 +407,7 @@ export function RaceMapSeriesMarker({
             secondaryColor={accentColor}
             damageState={damageState}
             selected={selected}
+            uniqueId={markerUid}
           />
 
           {/* The anchor rotates with the marker. The nested inverse rotation is
