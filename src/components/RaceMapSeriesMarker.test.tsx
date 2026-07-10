@@ -24,7 +24,7 @@ describe('RaceMapSeriesMarker', () => {
     expect(html).toContain(`data-marker-body="${assetId}"`);
     expect(html).toContain('data-layer="primary"');
     expect(html).toContain('data-layer="secondary"');
-    expect(html).toContain('data-layer="white-keyline"');
+    expect(html).toContain(series === 'f1' ? 'data-layer="body-highlight"' : 'data-layer="white-keyline"');
     expect(html).toContain('data-layer="runtime-number"');
     expect(html).toContain('fill="#1255cc"');
     expect(html).toContain('#ffcc00');
@@ -71,7 +71,7 @@ describe('RaceMapSeriesMarker', () => {
     [2005, 'f1_2000s', false],
     [2016, 'f1_2010s', false],
     [2024, 'f1_2020s', true],
-  ] as const)('renders the locked %i F1 silhouette with its number only at the front wing', (year, assetId, hasHalo) => {
+  ] as const)('renders the locked %i F1 silhouette with its number only on the front nose', (year, assetId, hasHalo) => {
     const html = renderToStaticMarkup(
       <RaceMapSeriesMarker
         x={0}
@@ -88,6 +88,12 @@ describe('RaceMapSeriesMarker', () => {
     expect(html).toContain('data-layer="front-number-plate"');
     expect(html).toContain('data-layer="front-wing"');
     expect(html).toContain('data-layer="rear-wing"');
+    expect(html).toContain('data-layer="painted-floor-body"');
+    expect(html).toContain('data-layer="sidepod-intake"');
+    expect(html).toContain('data-layer="era-aero-detail"');
+    expect(html).toContain('data-layer="wing-plane-detail"');
+    expect(html).toContain('data-layer="body-highlight"');
+    expect(html).toContain('data-layer="tyre-groove"');
     expect(html.match(/data-layer="runtime-number"/g)).toHaveLength(1);
     expect(html.includes('data-layer="halo"')).toBe(hasHalo);
   });
@@ -140,7 +146,7 @@ describe('RaceMapSeriesMarker', () => {
 
     expect(html).toContain('transform="translate(12 8) scale(1)"');
     expect(html).toContain('transform="rotate(45)"');
-    expect(html).toContain('transform="translate(7.72 0)"');
+    expect(html).toContain('transform="translate(5.58 0)"');
     expect(html).toContain('transform="rotate(-45)"');
     expect(html.indexOf('transform="rotate(45)"')).toBeLessThan(html.indexOf('transform="rotate(-45)"'));
   });
@@ -152,7 +158,7 @@ describe('RaceMapSeriesMarker', () => {
     expect(html).toContain('transform="translate(0 0) scale(0.5)"');
   });
 
-  it('locks live F1 markers to the approved 35px gameplay footprint', () => {
+  it('locks live F1 markers to the approved 40px gameplay footprint', () => {
     const html = renderToStaticMarkup(
       <RaceMapSeriesMarker
         x={0}
@@ -164,8 +170,8 @@ describe('RaceMapSeriesMarker', () => {
         size={F1_GAMEPLAY_MARKER_SIZE}
       />,
     );
-    expect(F1_GAMEPLAY_MARKER_SIZE).toBe(35);
-    expect(html).toContain('transform="translate(0 0) scale(1.75)"');
+    expect(F1_GAMEPLAY_MARKER_SIZE).toBe(40);
+    expect(html).toContain('transform="translate(0 0) scale(2)"');
   });
 
   it('keeps the player focus cue visually separate from the damage outline', () => {

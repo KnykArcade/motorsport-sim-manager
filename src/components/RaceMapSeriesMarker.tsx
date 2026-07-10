@@ -35,12 +35,19 @@ type MarkerGeometry = {
 
 type F1MarkerDesign = MarkerGeometry & {
   label: string;
+  accentFillCount: number;
+  wingColor: 'primary' | 'secondary';
+  floorPath: string;
   bodyPath: string;
   sidepodPath: string;
   nosePath: string;
   rearWingPath: string;
   frontWingPath: string;
   accentPaths: string[];
+  aeroPaths: string[];
+  intakePaths: string[];
+  highlightPaths: string[];
+  wingDetailPaths: string[];
   detailPaths: string[];
   wheels: Array<{ x: number; y: number; width: number; height: number; rx: number }>;
   cockpit: { cx: number; cy: number; rx: number; ry: number };
@@ -48,7 +55,7 @@ type F1MarkerDesign = MarkerGeometry & {
   numberPlate: { x: number; y: number; width: number; height: number; rx: number };
 };
 
-export const F1_GAMEPLAY_MARKER_SIZE = 35;
+export const F1_GAMEPLAY_MARKER_SIZE = 40;
 const DEFAULT_SIZE = 20;
 const DEFAULT_SECONDARY_COLOR = '#f7f7f7';
 const DESIGN_SIZE = 20;
@@ -108,6 +115,7 @@ function SilhouetteLayers({
 }) {
   const geometry = MARKER_GEOMETRY[assetId];
   const damageColor = damageColorForState(damageState);
+  const isF1 = isF1MarkerEra(assetId);
 
   return (
     <g pointerEvents="none" data-marker-body={assetId}>
@@ -137,15 +145,17 @@ function SilhouetteLayers({
         />
       )}
 
-      <path
-        d={geometry.outerPath}
-        fill={primaryColor}
-        stroke={BLACK}
-        strokeWidth={OUTER_BLACK_STROKE}
-        strokeLinejoin="round"
-        strokeLinecap="round"
-        data-layer="primary"
-      />
+      {!isF1 && (
+        <path
+          d={geometry.outerPath}
+          fill={primaryColor}
+          stroke={BLACK}
+          strokeWidth={OUTER_BLACK_STROKE}
+          strokeLinejoin="round"
+          strokeLinecap="round"
+          data-layer="primary"
+        />
+      )}
 
       {assetId === 'nascar_a' && (
         <NascarDetails secondaryColor={secondaryColor} />
@@ -160,15 +170,17 @@ function SilhouetteLayers({
         <CartDetails secondaryColor={secondaryColor} />
       )}
 
-      <path
-        d={geometry.outerPath}
-        fill="none"
-        stroke={WHITE}
-        strokeWidth={WHITE_KEYLINE_STROKE}
-        strokeLinejoin="round"
-        strokeLinecap="round"
-        data-layer="white-keyline"
-      />
+      {!isF1 && (
+        <path
+          d={geometry.outerPath}
+          fill="none"
+          stroke={WHITE}
+          strokeWidth={WHITE_KEYLINE_STROKE}
+          strokeLinejoin="round"
+          strokeLinecap="round"
+          data-layer="white-keyline"
+        />
+      )}
     </g>
   );
 }
@@ -212,38 +224,64 @@ function F1Details({
   secondaryColor: string;
 }) {
   const design = F1_MARKER_DESIGNS[assetId];
+  const wingColor = design.wingColor === 'primary' ? primaryColor : secondaryColor;
   return (
     <g data-f1-era={design.label}>
+      <path
+        d={design.outerPath}
+        fill="none"
+        stroke={BLACK}
+        strokeWidth={0.52}
+        strokeLinejoin="round"
+        strokeLinecap="round"
+        data-layer="f1-black-outline"
+      />
       {design.wheels.map((wheel, index) => (
-        <rect
-          key={`${assetId}-wheel-${index}`}
-          {...wheel}
-          fill="#08090b"
-          stroke="#33383d"
-          strokeWidth={0.35}
-          data-layer="exposed-tyre"
-        />
+        <g key={`${assetId}-wheel-${index}`}>
+          <rect
+            {...wheel}
+            fill="#08090b"
+            stroke={WHITE}
+            strokeWidth={0.24}
+            data-layer="exposed-tyre"
+          />
+          <path
+            d={`M${wheel.x + wheel.width * 0.34} ${wheel.y + 0.16}V${wheel.y + wheel.height - 0.16}M${wheel.x + wheel.width * 0.68} ${wheel.y + 0.16}V${wheel.y + wheel.height - 0.16}`}
+            fill="none"
+            stroke="#3f444a"
+            strokeWidth={0.18}
+            data-layer="tyre-groove"
+          />
+        </g>
       ))}
       {design.detailPaths.map((path, index) => (
         <path
           key={`${assetId}-suspension-${index}`}
           d={path}
           fill="none"
-          stroke={index === 0 ? '#111519' : '#d7d9dc'}
-          strokeWidth={index === 0 ? 0.5 : 0.24}
+          stroke={index === 0 ? '#080a0c' : '#5f6872'}
+          strokeWidth={index === 0 ? 0.44 : 0.18}
           strokeLinecap="round"
           opacity={index === 0 ? 1 : 0.75}
           data-layer="suspension-detail"
         />
       ))}
-      <path d={design.rearWingPath} fill={secondaryColor} stroke={BLACK} strokeWidth={0.42} data-layer="rear-wing" />
-      <path d={design.bodyPath} fill={primaryColor} stroke={BLACK} strokeWidth={0.45} data-layer="primary" />
-      <path d={design.sidepodPath} fill={primaryColor} stroke={BLACK} strokeWidth={0.36} data-layer="era-sidepods" />
+      <path
+        d={design.floorPath}
+        fill={primaryColor}
+        stroke={BLACK}
+        strokeWidth={0.34}
+        strokeLinejoin="round"
+        data-layer="painted-floor-body"
+      />
+      <path d={design.rearWingPath} fill={wingColor} stroke={WHITE} strokeWidth={0.3} strokeLinejoin="round" data-layer="rear-wing" />
+      <path d={design.bodyPath} fill={primaryColor} stroke={WHITE} strokeWidth={0.28} strokeLinejoin="round" data-layer="primary" />
+      <path d={design.sidepodPath} fill={primaryColor} stroke={WHITE} strokeWidth={0.24} strokeLinejoin="round" data-layer="era-sidepods" />
       {design.accentPaths.map((path, index) => (
         <path
           key={`${assetId}-accent-${index}`}
           d={path}
-          fill={index < 3 ? secondaryColor : 'none'}
+          fill={index < 3 ? (index < design.accentFillCount ? secondaryColor : primaryColor) : 'none'}
           stroke={index < 3 ? BLACK : secondaryColor}
           strokeWidth={index < 3 ? 0.28 : 0.38}
           strokeLinecap="round"
@@ -251,12 +289,33 @@ function F1Details({
           data-layer="secondary"
         />
       ))}
-      <path d={design.nosePath} fill={primaryColor} stroke={BLACK} strokeWidth={0.34} data-layer="nose" />
+      {design.aeroPaths.map((path, index) => (
+        <path
+          key={`${assetId}-aero-${index}`}
+          d={path}
+          fill="#101317"
+          stroke="#c9ced4"
+          strokeWidth={0.2}
+          strokeLinejoin="round"
+          data-layer="era-aero-detail"
+        />
+      ))}
+      {design.intakePaths.map((path, index) => (
+        <path
+          key={`${assetId}-intake-${index}`}
+          d={path}
+          fill="#050607"
+          stroke="#d5d8dc"
+          strokeWidth={0.16}
+          data-layer="sidepod-intake"
+        />
+      ))}
+      <path d={design.nosePath} fill={primaryColor} stroke={WHITE} strokeWidth={0.24} strokeLinejoin="round" data-layer="nose" />
       <ellipse
         {...design.cockpit}
         fill="#080a0d"
-        stroke={secondaryColor}
-        strokeWidth={0.48}
+        stroke={WHITE}
+        strokeWidth={0.28}
         data-layer="open-cockpit"
       />
       <ellipse
@@ -270,17 +329,35 @@ function F1Details({
         data-layer="helmet"
       />
       {design.haloPath && (
-        <path
-          d={design.haloPath}
-          fill="none"
-          stroke="#111417"
-          strokeWidth={0.48}
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          data-layer="halo"
-        />
+        <>
+          <path d={design.haloPath} fill="none" stroke={BLACK} strokeWidth={0.92} strokeLinecap="round" strokeLinejoin="round" />
+          <path d={design.haloPath} fill="none" stroke={WHITE} strokeWidth={0.2} strokeLinecap="round" strokeLinejoin="round" data-layer="halo" />
+        </>
       )}
-      <path d={design.frontWingPath} fill={secondaryColor} stroke={BLACK} strokeWidth={0.42} data-layer="front-wing" />
+      <path d={design.frontWingPath} fill={wingColor} stroke={WHITE} strokeWidth={0.3} strokeLinejoin="round" data-layer="front-wing" />
+      {design.wingDetailPaths.map((path, index) => (
+        <path
+          key={`${assetId}-wing-detail-${index}`}
+          d={path}
+          fill="none"
+          stroke={index === 0 ? BLACK : '#14181c'}
+          strokeWidth={index === 0 ? 0.34 : 0.28}
+          strokeLinecap="round"
+          data-layer="wing-plane-detail"
+        />
+      ))}
+      {design.highlightPaths.map((path, index) => (
+        <path
+          key={`${assetId}-highlight-${index}`}
+          d={path}
+          fill="none"
+          stroke={WHITE}
+          strokeWidth={0.22}
+          strokeLinecap="round"
+          opacity={0.72}
+          data-layer="body-highlight"
+        />
+      ))}
       <rect
         {...design.numberPlate}
         fill={BLACK}
