@@ -12,6 +12,24 @@ import {
   nascar1990Teams,
   nascar1990Tracks,
 } from './generated/globalNASCAR1990';
+import {
+  nascar2000Cars,
+  nascar2000Drivers,
+  nascar2000Teams,
+  nascar2000Tracks,
+} from './generated/globalNASCAR2000';
+import {
+  nascar2010Cars,
+  nascar2010Drivers,
+  nascar2010Teams,
+  nascar2010Tracks,
+} from './generated/globalNASCAR2010';
+import {
+  nascar2026Cars,
+  nascar2026Drivers,
+  nascar2026Teams,
+  nascar2026Tracks,
+} from './generated/globalNASCAR2026';
 import { historicalWeatherRaceMeta } from '../weather/generated/raceMeta';
 import { historicalWeatherTrackCoordinates } from '../weather/generated/trackCoordinates';
 import { seedReleasedMarketDrivers } from '../market';
@@ -22,16 +40,40 @@ type Phase0TeamSource = any;
 type Phase0CarSource = any;
 
 const allGlobalCars: Phase0CarSource[] = [];
-allGlobalCars.push(...(globalCarsPhase0 as unknown as Phase0CarSource[]), ...(nascar1990Cars as unknown as Phase0CarSource[]));
+allGlobalCars.push(
+  ...(globalCarsPhase0 as unknown as Phase0CarSource[]),
+  ...(nascar1990Cars as unknown as Phase0CarSource[]),
+  ...(nascar2000Cars as unknown as Phase0CarSource[]),
+  ...(nascar2010Cars as unknown as Phase0CarSource[]),
+  ...(nascar2026Cars as unknown as Phase0CarSource[]),
+);
 
 const allGlobalDrivers: Phase0DriverSource[] = [];
-allGlobalDrivers.push(...(globalDriversPhase0 as unknown as Phase0DriverSource[]), ...(nascar1990Drivers as unknown as Phase0DriverSource[]));
+allGlobalDrivers.push(
+  ...(globalDriversPhase0 as unknown as Phase0DriverSource[]),
+  ...(nascar1990Drivers as unknown as Phase0DriverSource[]),
+  ...(nascar2000Drivers as unknown as Phase0DriverSource[]),
+  ...(nascar2010Drivers as unknown as Phase0DriverSource[]),
+  ...(nascar2026Drivers as unknown as Phase0DriverSource[]),
+);
 
 const allGlobalTeams: Phase0TeamSource[] = [];
-allGlobalTeams.push(...(globalTeamsPhase0 as unknown as Phase0TeamSource[]), ...(nascar1990Teams as unknown as Phase0TeamSource[]));
+allGlobalTeams.push(
+  ...(globalTeamsPhase0 as unknown as Phase0TeamSource[]),
+  ...(nascar1990Teams as unknown as Phase0TeamSource[]),
+  ...(nascar2000Teams as unknown as Phase0TeamSource[]),
+  ...(nascar2010Teams as unknown as Phase0TeamSource[]),
+  ...(nascar2026Teams as unknown as Phase0TeamSource[]),
+);
 
 const allGlobalTracks: Phase0TrackSource[] = [];
-allGlobalTracks.push(...(globalTracksPhase0 as unknown as Phase0TrackSource[]), ...(nascar1990Tracks as unknown as Phase0TrackSource[]));
+allGlobalTracks.push(
+  ...(globalTracksPhase0 as unknown as Phase0TrackSource[]),
+  ...(nascar1990Tracks as unknown as Phase0TrackSource[]),
+  ...(nascar2000Tracks as unknown as Phase0TrackSource[]),
+  ...(nascar2010Tracks as unknown as Phase0TrackSource[]),
+  ...(nascar2026Tracks as unknown as Phase0TrackSource[]),
+);
 
 type LegacyTeamSource = {
   id: string;
@@ -140,7 +182,7 @@ function getSeasonRuleIds(year: number, series: Series): { pointsSystemId: strin
   }
 
   if (series === 'NASCAR') {
-    return { pointsSystemId: 'pts-nascar-1990', regulationSetId: 'reg-nascar-1990' };
+    return { pointsSystemId: `pts-nascar-${year}`, regulationSetId: `reg-nascar-${year}` };
   }
 
   if (year === 1996) return { pointsSystemId: 'pts-indycar-1996', regulationSetId: 'reg-indycar-1996' };

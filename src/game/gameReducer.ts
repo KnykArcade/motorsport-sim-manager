@@ -31,7 +31,7 @@ import {
   carForTeam,
   currentRace,
   driversForTeam,
-  MAX_RACE_DRIVERS,
+  maxRaceDriversForSeries,
   type GameState,
 } from './careerState';
 import { buildRaceContext, playerTunedSetups } from './raceSetup';
@@ -392,7 +392,7 @@ function signThirdDriver(state: GameState, marketId: string): GameState {
   if (!team) return state;
 
   const roster = driversForTeam(state, teamId);
-  if (roster.length >= MAX_RACE_DRIVERS + 1) return state; // already have a 3rd driver
+  if (roster.length >= maxRaceDriversForSeries(state.series) + 1) return state; // already have a 3rd driver
   if (roster.some((d) => d.contractType === 'third')) return state;
 
   const m = careerMarketBundle(state).drivers.find((d) => d.id === marketId);

@@ -1,4 +1,4 @@
-import { useEffect, useState, type Dispatch, type ReactNode, type SetStateAction } from 'react';
+import { useState, type Dispatch, type ReactNode, type SetStateAction } from 'react';
 import type { TrackDot } from '../../../components/RaceTrack2D';
 import { TrackMapAssetPanel } from '../../../components/TrackMapAssetPanel';
 import { modeSpec } from '../../../sim/liveRacePace';
@@ -13,6 +13,7 @@ import { fmtLap, fmtSector, tyreLetter } from '../dashboardFormat';
 import type { ForecastEntry } from '../forecast';
 import { PIT_INTENSITY_ORDER } from '../../../sim/pitIntensityData';
 import { getEraTheme, getEraThemeConfig } from '../../../theme/eraTheme';
+import { ratingColor } from '../../../components/ui';
 
 const SAFETY_CAR_PIT_LOSS_FACTOR = 0.4;
 
@@ -101,28 +102,6 @@ export function F11990sLiveRaceScreen({
   const [pitStrategyByDriver, setPitStrategyByDriver] = useState<
     Record<string, { intensity: PitIntensity; exitMode: PaceMode }>
   >({});
-  useEffect(() => {
-    setPitStrategyByDriver((prev) => {
-      const next = { ...prev };
-      let changed = false;
-      for (const car of playerCars) {
-        if (!next[car.driverId]) {
-          next[car.driverId] = {
-            intensity: car.pit.intensity ?? car.pit.intensityDefault ?? 'Standard',
-            exitMode: car.pit.exitMode ?? 'Conservative',
-          };
-          changed = true;
-        }
-      }
-      for (const driverId of Object.keys(next)) {
-        if (!playerCars.some((car) => car.driverId === driverId)) {
-          delete next[driverId];
-          changed = true;
-        }
-      }
-      return changed ? next : prev;
-    });
-  }, [playerCars]);
   const blockingPrompt = !!live.pendingPrompt && !live.safetyCar.active;
   const canAdvance = !blockingPrompt && !needsDecision && !pausedByDnf && !finished;
   const alert = raceAlert(live, forecast, focusCars[0] ?? null);
@@ -901,10 +880,10 @@ function DriverFocus({
               ))}
             </div>
             <div className="mt-0.5 grid grid-cols-2 gap-x-3 gap-y-0.5 border-t border-zinc-800 pt-0.5">
-              <ConditionLine label="Engine" level={componentCondition(car, 'Engine')} />
-              <ConditionLine label="Brakes" level={componentCondition(car, 'Brakes')} />
-              <ConditionLine label="Gearbox" level={componentCondition(car, 'Gearbox')} />
-              <ConditionLine label="Aero" level={componentCondition(car, 'Aero')} />
+              <ConditionLine label="Engine" health={car.engineHealth} />
+              <ConditionLine label="Brakes" health={car.brakeHealth} />
+              <ConditionLine label="Gearbox" health={car.gearboxHealth} />
+              <ConditionLine label="Aero" health={car.aeroHealth ?? (car.damaged ? 72 : 100)} />
               <ConditionLine label="Overall" level={overallCondition(car)} />
               <ConditionLine label="Risk" level={riskCondition(car.reliabilityRiskLevel)} />
             </div>
@@ -1091,11 +1070,11 @@ function TrustReadout({
 }) {
   return (
     <div className="grid gap-1">
-      <TrustBar label="Driver Trust" value={trust.driverTrust} accent="amber" />
+      <TrustBar label="Driver Trust" value={trust.driverTrust} />
       <div className="grid grid-cols-3 gap-1">
-        <TrustBar label="Team Trust" value={trust.teamTrust} accent="emerald" compact />
-        <TrustBar label="Car Trust" value={trust.carTrust} accent="sky" compact />
-        <TrustBar label="Team→Driver" value={trust.teamTrustInDriver} accent="violet" compact />
+        <TrustBar label="Team Trust" value={trust.teamTrust} compact />
+        <TrustBar label="Car Trust" value={trust.carTrust} compact />
+        <TrustBar label="Team→Driver" value={trust.teamTrustInDriver} compact />
       </div>
     </div>
   );
@@ -1104,31 +1083,22 @@ function TrustReadout({
 function TrustBar({
   label,
   value,
-  accent,
   compact = false,
 }: {
   label: string;
   value: number;
-  accent: 'amber' | 'emerald' | 'sky' | 'violet';
   compact?: boolean;
 }) {
   const clamped = Math.max(0, Math.min(100, value));
-  const fill =
-    accent === 'amber'
-      ? 'bg-amber-400'
-      : accent === 'emerald'
-        ? 'bg-emerald-400'
-        : accent === 'sky'
-          ? 'bg-sky-400'
-          : 'bg-violet-400';
+  const color = ratingColor(clamped);
   return (
     <div className={compact ? 'text-[9px]' : 'text-[10px]'}>
       <div className="mb-0.5 flex items-center justify-between gap-1 text-zinc-400">
         <span className="truncate uppercase tracking-wide">{label}</span>
-        <span className="tabular-nums text-zinc-200">{clamped}%</span>
+        <span className="tabular-nums" style={{ color }}>{clamped}%</span>
       </div>
       <div className="h-1.5 overflow-hidden rounded-full bg-zinc-800">
-        <div className={`h-full rounded-full ${fill}`} style={{ width: `${clamped}%` }} />
+        <div className="h-full rounded-full" style={{ width: `${clamped}%`, backgroundColor: color }} />
       </div>
     </div>
   );
@@ -1376,13 +1346,35 @@ const CONDITION_STYLE: Record<ConditionLevel, { bar: string; text: string; label
   Critical: { bar: 'bg-red-500', text: 'text-red-300', label: 'Critical' },
 };
 
-function ConditionLine({ label, level }: { label: string; level: ConditionLevel }) {
-  const style = CONDITION_STYLE[level];
+function ConditionLine({
+  label,
+  health,
+  level,
+}: {
+  label: string;
+  health?: number;
+  level?: ConditionLevel;
+}) {
+  if (health != null) {
+    const clamped = Math.max(0, Math.min(100, health));
+    const color = ratingColor(clamped);
+    return (
+      <div className="flex items-center gap-1 text-[9px]">
+        <span className="w-10 uppercase text-zinc-500">{label}</span>
+        <span className="h-1 flex-1 overflow-hidden rounded bg-zinc-800">
+          <span className="block h-full" style={{ width: `${clamped}%`, backgroundColor: color }} />
+        </span>
+        <span className="w-12 text-right font-bold uppercase tabular-nums" style={{ color }}>{Math.round(clamped)}%</span>
+      </div>
+    );
+  }
+  const resolved = level ?? 'None';
+  const style = CONDITION_STYLE[resolved];
   return (
     <div className="flex items-center gap-1 text-[9px]">
       <span className="w-10 uppercase text-zinc-500">{label}</span>
       <span className="h-1 flex-1 overflow-hidden rounded bg-zinc-800">
-        <span className={`block h-full ${style.bar}`} style={{ width: conditionWidth(level) }} />
+        <span className={`block h-full ${style.bar}`} style={{ width: conditionWidth(resolved) }} />
       </span>
       <span className={`w-12 text-right font-bold uppercase tabular-nums ${style.text}`}>{style.label}</span>
     </div>

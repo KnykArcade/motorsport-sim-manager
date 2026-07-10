@@ -7,6 +7,7 @@ import type { ReactNode } from 'react';
 import type { RiskLevel } from '../../types/liveTypes';
 import { RISK_STYLE, deltaDisplay } from './dashboardFormat';
 import { positionDeltaValue } from '../../sim/positionDelta';
+import { ratingColor } from '../../components/ui';
 
 // Standardized grid-movement tag (▲n / ━0 / ▼n) shown next to a driver's
 // position across the timing tower and pit-wall cards. `grid`/`position` are the
@@ -101,41 +102,19 @@ export function DashPanel({
 export function Gauge({
   label,
   value,
-  tone,
 }: {
   label: string;
   value: number; // 0-100
-  tone?: 'health' | 'fuel' | 'tyre';
 }) {
   const pct = Math.max(0, Math.min(100, value));
-  const color = barColor(pct, tone ?? 'health');
+  const color = ratingColor(pct);
   return (
     <div className="flex items-center gap-1.5">
       <span className="w-14 shrink-0 text-[10px] text-slate-400">{label}</span>
       <span className="h-1.5 flex-1 overflow-hidden rounded-full bg-slate-800">
-        <span className={`block h-full ${color}`} style={{ width: `${pct}%` }} />
+        <span className="block h-full" style={{ width: `${pct}%`, backgroundColor: color }} />
       </span>
-      <span className="w-8 shrink-0 text-right text-[10px] tabular-nums text-slate-300">{Math.round(pct)}%</span>
+      <span className="w-8 shrink-0 text-right text-[10px] tabular-nums" style={{ color }}>{Math.round(pct)}%</span>
     </div>
   );
-}
-
-function barColor(pct: number, tone: 'health' | 'fuel' | 'tyre'): string {
-  if (tone === 'tyre') {
-    // tyre value passed as "life" (100 = fresh)
-    if (pct <= 20) return 'bg-red-500';
-    if (pct <= 45) return 'bg-orange-500';
-    if (pct <= 70) return 'bg-amber-400';
-    return 'bg-emerald-400';
-  }
-  if (tone === 'fuel') {
-    if (pct <= 10) return 'bg-red-500';
-    if (pct <= 25) return 'bg-amber-400';
-    return 'bg-sky-400';
-  }
-  // health
-  if (pct <= 40) return 'bg-red-500';
-  if (pct <= 65) return 'bg-orange-500';
-  if (pct <= 82) return 'bg-amber-400';
-  return 'bg-emerald-400';
 }

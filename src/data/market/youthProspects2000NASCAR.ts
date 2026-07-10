@@ -3,18 +3,18 @@ import type {
   YouthProspect,
 } from '../../types/marketTypes';
 
-export const youthProspects1990NASCAR: YouthProspect[] = [
+export const youthProspects2000NASCAR: YouthProspect[] = [
   {
-    "id": "youth-nascar-1990-1",
-    "name": "Bobby Hamilton Jr.",
+    "id": "youth-nascar-2000-1",
+    "name": "Brian Vickers",
     "age": 17,
-    "birthYear": 1973,
+    "birthYear": 1983,
     "nationality": "United States",
     "currentLevel": "Late Model",
     "marketPool": "NASCAR",
     "marketStatus": "Academy Prospect",
     "academyEligibleNow": true,
-    "earliestFullAcademyYear": 1990,
+    "earliestFullAcademyYear": 2000,
     "skills": {
       "cornering": 45,
       "braking": 46,
@@ -39,16 +39,16 @@ export const youthProspects1990NASCAR: YouthProspect[] = [
     "notes": ""
   },
   {
-    "id": "youth-nascar-1990-2",
-    "name": "Casey Atwood",
+    "id": "youth-nascar-2000-2",
+    "name": "Aric Almirola",
     "age": 17,
-    "birthYear": 1973,
+    "birthYear": 1983,
     "nationality": "United States",
     "currentLevel": "Late Model",
     "marketPool": "NASCAR",
     "marketStatus": "Academy Prospect",
     "academyEligibleNow": true,
-    "earliestFullAcademyYear": 1990,
+    "earliestFullAcademyYear": 2000,
     "skills": {
       "cornering": 48,
       "braking": 48,
@@ -73,16 +73,16 @@ export const youthProspects1990NASCAR: YouthProspect[] = [
     "notes": ""
   },
   {
-    "id": "youth-nascar-1990-3",
-    "name": "Jason Keller",
+    "id": "youth-nascar-2000-3",
+    "name": "Kyle Busch",
     "age": 17,
-    "birthYear": 1973,
+    "birthYear": 1983,
     "nationality": "United States",
     "currentLevel": "Late Model",
     "marketPool": "NASCAR",
     "marketStatus": "Academy Prospect",
     "academyEligibleNow": true,
-    "earliestFullAcademyYear": 1990,
+    "earliestFullAcademyYear": 2000,
     "skills": {
       "cornering": 51,
       "braking": 50,
@@ -107,16 +107,16 @@ export const youthProspects1990NASCAR: YouthProspect[] = [
     "notes": ""
   },
   {
-    "id": "youth-nascar-1990-4",
-    "name": "Hank Parker Jr.",
+    "id": "youth-nascar-2000-4",
+    "name": "Reed Sorenson",
     "age": 17,
-    "birthYear": 1973,
+    "birthYear": 1983,
     "nationality": "United States",
     "currentLevel": "Late Model",
     "marketPool": "NASCAR",
     "marketStatus": "Academy Prospect",
     "academyEligibleNow": true,
-    "earliestFullAcademyYear": 1990,
+    "earliestFullAcademyYear": 2000,
     "skills": {
       "cornering": 54,
       "braking": 52,
@@ -141,16 +141,16 @@ export const youthProspects1990NASCAR: YouthProspect[] = [
     "notes": ""
   },
   {
-    "id": "youth-nascar-1990-5",
-    "name": "David Green",
+    "id": "youth-nascar-2000-5",
+    "name": "Denny Hamlin",
     "age": 17,
-    "birthYear": 1973,
+    "birthYear": 1983,
     "nationality": "United States",
     "currentLevel": "Late Model",
     "marketPool": "NASCAR",
     "marketStatus": "Academy Prospect",
     "academyEligibleNow": true,
-    "earliestFullAcademyYear": 1990,
+    "earliestFullAcademyYear": 2000,
     "skills": {
       "cornering": 57,
       "braking": 54,

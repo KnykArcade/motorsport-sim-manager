@@ -5,6 +5,7 @@ import { getRegulationSet } from '../data';
 import { Panel } from '../components/Panel';
 import { Button } from '../components/Button';
 import { RegulationPanel } from '../components/RegulationPanel';
+import { ratingColor } from '../components/ui';
 import {
   computePoliticalInfluence,
   influenceByTeam,
@@ -48,7 +49,6 @@ export function Politics() {
   const playerId = state.selectedTeamId;
   const playerInfluence = influence[playerId] ?? 0;
   const playerRank = ranked.findIndex((r) => r.teamId === playerId) + 1;
-  const maxInfluence = ranked[0]?.influence || 1;
 
   const effectiveYear = proposals[0]?.seasonYearEffective ?? state.seasonYear + 1;
   const history = (state.regulationVoteHistory ?? []).slice().reverse();
@@ -108,11 +108,11 @@ export function Politics() {
                     </span>
                     <div className="h-2 flex-1 overflow-hidden rounded-full bg-neutral-800">
                       <div
-                        className={`h-full ${r.teamId === playerId ? 'bg-amber-400' : 'bg-neutral-600'}`}
-                        style={{ width: `${(r.influence / maxInfluence) * 100}%` }}
+                        className="h-full"
+                        style={{ width: `${r.influence}%`, backgroundColor: r.teamId === playerId ? '#f59e0b' : ratingColor(r.influence) }}
                       />
                     </div>
-                    <span className="w-6 text-right tabular-nums text-neutral-400">{r.influence}</span>
+                    <span className="w-6 text-right tabular-nums" style={{ color: r.teamId === playerId ? '#f59e0b' : ratingColor(r.influence) }}>{r.influence}</span>
                   </div>
                 ))}
               </div>
@@ -230,7 +230,7 @@ function ProposalCard({
           <span className="text-neutral-500 tabular-nums">{supportPct}% support</span>
         </div>
         <div className="flex h-2 w-full overflow-hidden rounded-full bg-neutral-800">
-          <div className="h-full bg-green-500" style={{ width: `${supportPct}%` }} />
+          <div className="h-full" style={{ width: `${supportPct}%`, backgroundColor: ratingColor(supportPct) }} />
           <div className="h-full bg-red-500" style={{ width: `${100 - supportPct}%` }} />
         </div>
       </div>

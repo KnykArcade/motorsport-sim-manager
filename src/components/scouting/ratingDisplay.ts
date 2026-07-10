@@ -79,7 +79,7 @@ export function readoutForMarketOverall(
   const known = Object.values(view.skills).map(visibleRatingMidpoint).filter((v): v is number => v != null);
   if (known.length === 0) return { label: '??', value: null, exact: false };
   const avg = known.reduce((sum, v) => sum + v, 0) / known.length;
-  const uncertainty = Math.max(0.4, (1 - view.accuracy) * 2.2);
+  const uncertainty = Math.max(4, (1 - view.accuracy) * 22);
   const range: [number, number] = [round1(clampRating(avg - uncertainty)), round1(clampRating(avg + uncertainty))];
   return { label: rangeLabel(range), value: midpoint(range), range, exact: false };
 }
@@ -103,7 +103,7 @@ function visibleReadout(value: VisibleRating): RatingReadout {
 }
 
 function broadReadout(value: number): RatingReadout {
-  const spread = 1.2;
+  const spread = 12;
   const range: [number, number] = [round1(clampRating(value - spread)), round1(clampRating(value + spread))];
   return { label: rangeLabel(range), value: midpoint(range), range, exact: false };
 }
@@ -121,7 +121,7 @@ function midpoint(range: [number, number]): number {
 }
 
 function clampRating(n: number): number {
-  return Math.max(1, Math.min(10, n));
+  return Math.max(1, Math.min(100, n));
 }
 
 function round1(n: number): number {

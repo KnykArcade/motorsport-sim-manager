@@ -190,8 +190,10 @@ for (let year = 2004; year <= 2007; year++) {
   marketLoaders[`${year}-Champ Car`] = makeMarketLoader(year, 'Champ Car');
 }
 
-// NASCAR 1990 proof-of-concept
-marketLoaders['1990-NASCAR'] = makeMarketLoader(1990, 'NASCAR');
+// NASCAR 1990/2000/2010/2026
+for (const year of [1990, 2000, 2010, 2026]) {
+  marketLoaders[`${year}-NASCAR`] = makeMarketLoader(year, 'NASCAR');
+}
 
 seedMarketBundleCache(buildStaticMarketBundleMap());
 

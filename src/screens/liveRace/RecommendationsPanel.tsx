@@ -16,6 +16,7 @@
 
 import { useState } from 'react';
 import type { AnalyticsRecommendation, DamageRepairMode, PaceMode, PitIntensity, RecAction } from '../../types/liveTypes';
+import { ratingColor } from '../../components/ui';
 import type {
   AnalyticsMonitor,
   DriverMonitor,
@@ -485,11 +486,11 @@ function TrustReadout({
 }) {
   return (
     <div className="mb-1 rounded border border-slate-700/50 bg-slate-950/30 px-1.5 py-1">
-      <TrustBar label="Driver Trust" value={driverTrust} accent="amber" />
+      <TrustBar label="Driver Trust" value={driverTrust} />
       <div className="mt-1 grid grid-cols-3 gap-1">
-        <TrustBar label="Team Trust" value={teamTrust} accent="emerald" compact />
-        <TrustBar label="Car Trust" value={carTrust} accent="sky" compact />
-        <TrustBar label="Team→Driver" value={teamTrustInDriver} accent="violet" compact />
+        <TrustBar label="Team Trust" value={teamTrust} compact />
+        <TrustBar label="Car Trust" value={carTrust} compact />
+        <TrustBar label="Team→Driver" value={teamTrustInDriver} compact />
       </div>
     </div>
   );
@@ -498,31 +499,22 @@ function TrustReadout({
 function TrustBar({
   label,
   value,
-  accent,
   compact = false,
 }: {
   label: string;
   value: number;
-  accent: 'amber' | 'emerald' | 'sky' | 'violet';
   compact?: boolean;
 }) {
   const clamped = Math.max(0, Math.min(100, value));
-  const fill =
-    accent === 'amber'
-      ? 'bg-amber-400'
-      : accent === 'emerald'
-        ? 'bg-emerald-400'
-        : accent === 'sky'
-          ? 'bg-sky-400'
-          : 'bg-violet-400';
+  const color = ratingColor(clamped);
   return (
     <div className={compact ? 'text-[9px]' : 'text-[10px]'}>
       <div className="mb-0.5 flex items-center justify-between gap-1 text-slate-400">
         <span className="truncate uppercase tracking-wide">{label}</span>
-        <span className="tabular-nums text-slate-200">{clamped}%</span>
+        <span className="tabular-nums" style={{ color }}>{clamped}%</span>
       </div>
       <div className="h-1.5 overflow-hidden rounded-full bg-slate-800">
-        <div className={`h-full rounded-full ${fill}`} style={{ width: `${clamped}%` }} />
+        <div className="h-full rounded-full" style={{ width: `${clamped}%`, backgroundColor: color }} />
       </div>
     </div>
   );

@@ -5,6 +5,7 @@ import type { GameState } from '../game/careerState';
 import { Panel } from '../components/Panel';
 import { Button } from '../components/Button';
 import { DriverDossierButton } from '../components/driverCards/DriverDossier';
+import { ratingColor } from '../components/ui';
 import { TEAM_ORDER_SPECS } from '../sim/relationshipEngine';
 import {
   computeConfidenceState,
@@ -272,25 +273,15 @@ export function Relationships() {
 }
 
 function Bar({ label, value, good }: { label: string; value: number; good: boolean }) {
-  const tone = good
-    ? value >= 66
-      ? 'bg-green-500'
-      : value >= 33
-        ? 'bg-amber-400'
-        : 'bg-red-500'
-    : value >= 66
-      ? 'bg-red-500'
-      : value >= 33
-        ? 'bg-amber-400'
-        : 'bg-green-500';
+  const color = ratingColor(good ? value : 100 - value);
   return (
     <div>
       <div className="mb-0.5 flex items-center justify-between text-xs">
         <span className="text-neutral-400">{label}</span>
-        <span className="tabular-nums font-medium text-neutral-200">{value}</span>
+        <span className="tabular-nums font-medium" style={{ color }}>{value}</span>
       </div>
       <div className="h-2 w-full overflow-hidden rounded-full bg-neutral-800">
-        <div className={`h-full ${tone}`} style={{ width: `${value}%` }} />
+        <div className="h-full" style={{ width: `${value}%`, backgroundColor: color }} />
       </div>
     </div>
   );

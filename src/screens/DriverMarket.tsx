@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { useGame } from '../game/GameContext';
-import { activeDriversForTeam, carForTeam, driversForTeam, teamById, MAX_RACE_DRIVERS } from '../game/careerState';
+import { activeDriversForTeam, carForTeam, driversForTeam, teamById, maxRaceDriversForSeries } from '../game/careerState';
 import { isPreseason } from '../game/rosterEnforcement';
 import { isSingleSeasonMode } from '../game/modeRestrictions';
 import { careerMarketBundle } from '../sim/careerMarketEngine';
@@ -65,7 +65,7 @@ export function DriverMarket() {
   const carOverall = playerCar ? carPerformanceRating(playerCar) : 50;
   const seats = activeDriversForTeam(state, state.selectedTeamId);
   const roster = driversForTeam(state, state.selectedTeamId);
-  const openRaceSeats = MAX_RACE_DRIVERS - seats.length;
+  const openRaceSeats = maxRaceDriversForSeries(state.series) - seats.length;
   const hasThirdDriver = roster.some((d) => d.contractType === 'third');
   const canSignThird = !offseason && !hasThirdDriver && roster.length < 3;
   const canSignRaceDriver = preseason && openRaceSeats > 0 && roster.length < 3;

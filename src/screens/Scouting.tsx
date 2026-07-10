@@ -73,9 +73,9 @@ export function Scouting() {
         <div className="flex items-center gap-3">
           <div className="text-sm text-neutral-400">Network accuracy</div>
           <div className="h-2 w-40 overflow-hidden rounded-full bg-neutral-800">
-            <div className="h-full bg-sky-500" style={{ width: `${networkPct}%` }} />
+            <div className="h-full" style={{ width: `${networkPct}%`, backgroundColor: ratingColor(networkPct) }} />
           </div>
-          <span className="text-sm font-semibold tabular-nums text-neutral-200">{networkPct}%</span>
+          <span className="text-sm font-semibold tabular-nums" style={{ color: ratingColor(networkPct) }}>{networkPct}%</span>
           <span className="text-xs text-neutral-500">
             Upgrade the Scouting Network facility to raise the baseline.
           </span>
@@ -186,8 +186,8 @@ function ScoutCard({
         </div>
         <div className="h-1.5 w-full overflow-hidden rounded-full bg-neutral-800">
           <div
-            className={`h-full ${view.maxed ? 'bg-green-500' : 'bg-sky-500'}`}
-            style={{ width: `${accPct}%` }}
+            className="h-full"
+            style={{ width: `${accPct}%`, backgroundColor: ratingColor(accPct) }}
           />
         </div>
       </div>
@@ -249,8 +249,8 @@ function overallText(view: FogView): string {
   if (values.length === 0) return 'OVR ??';
   const mids = values.map((v) => (Array.isArray(v) ? (v[0] + v[1]) / 2 : v));
   const avg = mids.reduce((sum, v) => sum + v, 0) / mids.length;
-  const uncertainty = Math.max(0.4, (1 - view.accuracy) * 2.2);
-  return `${Math.max(1, avg - uncertainty).toFixed(1)}-${Math.min(10, avg + uncertainty).toFixed(1)}`;
+  const uncertainty = Math.max(4, (1 - view.accuracy) * 22);
+  return `${Math.max(1, avg - uncertainty).toFixed(1)}-${Math.min(100, avg + uncertainty).toFixed(1)}`;
 }
 
 function viewMidpoint(view: FogView): number {

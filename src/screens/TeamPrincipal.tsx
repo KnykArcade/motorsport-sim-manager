@@ -3,6 +3,7 @@ import { teamById } from '../game/careerState';
 import { Panel } from '../components/Panel';
 import { Button } from '../components/Button';
 import { RENEW_THRESHOLD, SACK_THRESHOLD } from '../sim/principalEngine';
+import { ratingColor } from '../components/ui';
 import type { JobOffer } from '../types/principalTypes';
 
 export function TeamPrincipal() {
@@ -108,8 +109,8 @@ function securityTone(value: number): string {
 }
 
 function JobSecurityBar({ value }: { value: number }) {
-  const tone =
-    value < SACK_THRESHOLD ? 'bg-red-500' : value < RENEW_THRESHOLD ? 'bg-amber-400' : 'bg-green-500';
+  const clamped = Math.max(0, Math.min(100, value));
+  const color = ratingColor(clamped);
   const label =
     value < SACK_THRESHOLD
       ? 'On the brink — a poor season ends your tenure.'
@@ -119,7 +120,7 @@ function JobSecurityBar({ value }: { value: number }) {
   return (
     <div className="mt-4">
       <div className="h-2 w-full overflow-hidden rounded-full bg-neutral-800">
-        <div className={`h-full ${tone}`} style={{ width: `${value}%` }} />
+        <div className="h-full" style={{ width: `${clamped}%`, backgroundColor: color }} />
       </div>
       <p className="mt-1 text-xs text-neutral-500">{label}</p>
     </div>

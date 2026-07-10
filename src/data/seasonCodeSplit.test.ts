@@ -13,7 +13,7 @@ import {
 
 describe('season code-splitting', () => {
   describe('season catalog (lightweight, no heavy data)', () => {
-    it('exposes all 87 seasons (37 F1 + 31 IndyCar + 14 CART + 4 Champ Car + 1 NASCAR)', () => {
+    it('exposes all 90 seasons (37 F1 + 31 IndyCar + 14 CART + 4 Champ Car + 4 NASCAR)', () => {
       const f1 = availableSeasons.filter((s) => s.series === 'F1');
       const indy = availableSeasons.filter((s) => s.series === 'IndyCar');
       const cart = availableSeasons.filter((s) => s.series === 'CART');
@@ -23,8 +23,8 @@ describe('season code-splitting', () => {
       expect(indy.length).toBe(31);
       expect(cart.length).toBe(14);
       expect(champCar.length).toBe(4);
-      expect(nascar.length).toBe(1);
-      expect(availableSeasons.length).toBe(87);
+      expect(nascar.length).toBe(4);
+      expect(availableSeasons.length).toBe(90);
     });
 
     it('exposes available series', () => {
@@ -42,8 +42,8 @@ describe('season code-splitting', () => {
   });
 
   describe('season loader (async, code-split)', () => {
-    it('has loaders for all 87 seasons', () => {
-      expect(getLoaderKeys().length).toBe(87);
+    it('has loaders for all 90 seasons', () => {
+      expect(getLoaderKeys().length).toBe(90);
     });
 
     it('hasSeasonLoader matches catalog', () => {

@@ -129,7 +129,7 @@ function StaffCard({
         )}
       </div>
       <div className="mb-2">
-        <StatBar label="Rating" value={s.rating} />
+        <StatBar label="Rating" value={s.rating} max={10} />
       </div>
       <div className="grid grid-cols-2 gap-2 text-xs">
         <Stat label="Salary/yr">{formatMoney(toMoney(s.salary))}</Stat>
