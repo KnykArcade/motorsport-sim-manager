@@ -16,7 +16,7 @@ import { getEraTheme, getEraThemeConfig } from '../../../theme/eraTheme';
 
 const SAFETY_CAR_PIT_LOSS_FACTOR = 0.4;
 
-type Speed = 1 | 10 | 30 | 60;
+type Speed = 1 | 5 | 15 | 30;
 
 type Props = {
   state: GameState;
@@ -685,7 +685,7 @@ function PlaybackPanel({
             <button onClick={onStep} disabled={!canAdvance || playing} className="rounded border border-zinc-700 bg-zinc-900 px-1.5 py-0.5 text-[10px] font-bold text-zinc-300 hover:border-amber-400 disabled:opacity-40">
               +1
             </button>
-            {([1, 10, 30, 60] as Speed[]).map((s) => (
+            {([1, 5, 15, 30] as Speed[]).map((s) => (
               <button
                 key={s}
                 onClick={() => onSpeed(s)}

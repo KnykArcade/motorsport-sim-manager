@@ -39,7 +39,7 @@ import { F11990sLiveRaceScreen } from './liveRace/eraThemes/F11990sLiveRaceScree
 import { getLiveRaceEraTheme, shouldUseF11990sLiveRaceScreen } from './liveRace/eraThemes/getLiveRaceEraTheme';
 import { CrashZoomOverlay } from './liveRace/CrashZoomOverlay';
 
-type Speed = 1 | 10 | 30 | 60;
+type Speed = 1 | 5 | 15 | 30;
 
 type DnfAlert = {
   lap: number;
@@ -412,7 +412,7 @@ export function LiveRace() {
             +1
           </button>
           <div className="flex items-center gap-0.5">
-            {([1, 10, 30, 60] as Speed[]).map((s) => (
+            {([1, 5, 15, 30] as Speed[]).map((s) => (
               <button
                 key={s}
                 onClick={() => setSpeed(s)}
