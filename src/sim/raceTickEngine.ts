@@ -60,6 +60,7 @@ import {
 import { markSafetyCarPitPrompted } from './safetyCarStrategy';
 import { beginPitJourney, advancePitJourneyForElapsedSeconds } from './pitJourneyEngine';
 import { findPitTransitRecord } from '../data/pit/pitDataLookup';
+import { initialRaceControlState, stepRaceControlState } from './raceControlEngine';
 import { generateRaceEventPool, resolveRaceEventTrigger } from './raceEventEngine';
 import { rollReliabilityIssue } from './reliabilityEngine';
 import { findOption, applyDecisionEffects } from './raceDecisionEngine';
@@ -787,6 +788,12 @@ export function stepLiveSector(state: LiveRaceState, meta: LiveRaceMeta): LiveRa
     state.totalLaps,
     state.ruleProfile,
   );
+  }
+  let raceControl = state.raceControl ?? initialRaceControlState(state.ruleProfile);
+  if (isFinalSector) {
+    raceControl = stepRaceControlState(raceControl, scResult, state.ruleProfile, nextLap);
+  }
+  if (isFinalSector) {
   if (scResult.justDeployed) {
     const minGreen = nextLap + scResult.safetyCar.lapsRemaining;
     const maxGreen = Math.min(state.totalLaps, minGreen + 1);
@@ -819,12 +826,6 @@ export function stepLiveSector(state: LiveRaceState, meta: LiveRaceMeta): LiveRa
   const retired = newCars
     .filter((c) => !c.running)
     .sort((x, y) => (y.retiredOnLap ?? 0) - (x.retiredOnLap ?? 0));
-
-  // Compress the field on safety-car deployment (bunch up behind the leader).
-  if (scResult.justDeployed && running.length > 0) {
-    const lead = running[0].totalTime;
-    running.forEach((c, i) => (c.totalTime = lead + i * 1));
-  }
 
   // Leader position on the current track lap. Used to freeze retired cars on
   // the map at the exact point they went off.
@@ -989,6 +990,10 @@ export function stepLiveSector(state: LiveRaceState, meta: LiveRaceMeta): LiveRa
     stintEvents = [];
   }
 
+  if (phase === 'finished') {
+    raceControl = stepRaceControlState(raceControl, scResult, state.ruleProfile, nextLap, true);
+  }
+
   return {
     ...state,
     currentLap: isFinalSector ? nextLap : state.currentLap,
@@ -997,6 +1002,7 @@ export function stepLiveSector(state: LiveRaceState, meta: LiveRaceMeta): LiveRa
     phase,
     weather,
     safetyCar: scResult.safetyCar,
+    raceControl,
     cars: carsWithStints,
     events: [...state.events, ...lapEvents, ...recEvents, ...stintEvents],
     pendingPrompt: null,
