@@ -2,7 +2,6 @@
 // All seasons use dynamic import() so Vite code-splits each season's market data.
 
 import type { MarketDriver, YouthProspect } from '../../types/marketTypes';
-import { buildStaticMarketBundleMap } from './marketSeed';
 import type { Series } from '../../types/gameTypes';
 
 export type MarketBundle = {
@@ -194,8 +193,6 @@ for (let year = 2004; year <= 2007; year++) {
 for (const year of [1990, 2000, 2010, 2026]) {
   marketLoaders[`${year}-NASCAR`] = makeMarketLoader(year, 'NASCAR');
 }
-
-seedMarketBundleCache(buildStaticMarketBundleMap());
 
 // Synchronous lookup — returns cached bundle or undefined if not yet loaded.
 export function getMarketBundle(year: number, series: Series = 'F1'): MarketBundle | undefined {

@@ -2,3 +2,7 @@
 // registry so tests that use createNewGame / advanceSeason / getTrackById
 // work without each test file needing to import seasonData explicitly.
 import './data/seasonData';
+import { seedMarketBundleCache } from './data/market';
+import { buildStaticMarketBundleMap } from './data/market/marketSeed';
+
+seedMarketBundleCache(buildStaticMarketBundleMap());

@@ -6,10 +6,12 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
+    "check:bundle": "node scripts/checkBundleSize.mjs",
     "lint": "eslint .",
     "typecheck": "tsc -b --noEmit",
     "preview": "vite preview",
     "test": "vitest run",
+    "test:season-loop": "vitest run src/game/seasonLoop.e2e.test.ts",
     "pit:convert": "node scripts/convertPitWorkbook.mjs"
   },
   "dependencies": {
