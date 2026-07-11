@@ -3,6 +3,7 @@ import { GAMEPLAY_MARKER_SIZE, RaceMapSeriesMarker } from './RaceMapSeriesMarker
 import { normalizeSeries } from './seriesMarker';
 import { getTrackMapAsset } from '../data/trackMaps/getTrackMapAsset';
 import type { TrackMapGeometry, TrackMapPoint } from '../data/trackMaps/trackMapGeometry';
+import { BATCH_1_HISTORIC_IMAGE_POINTS } from '../data/trackMaps/historicImageTrackMaps';
 
 type Props = {
   series?: string;
@@ -32,9 +33,7 @@ const W = 1000;
 const H = 500;
 const PAD = 54;
 const BOTTOM_BAND = 36;
-const KYALAMI_IMAGE_SIZE = 1000;
-const KYALAMI_HISTORIC_MAP_IMAGE = '/assets/track-maps/kyalami-historic-2p5d.png';
-const KYALAMI_LANE_OFFSET = 7;
+const HISTORIC_IMAGE_LANE_OFFSET = 7;
 const CLOSE_RACING_PROGRESS = 0.012;
 
 const KYALAMI_HISTORIC_IMAGE_POINTS: TrackMapPoint[] = [
@@ -92,7 +91,60 @@ const KYALAMI_HISTORIC_IMAGE_POINTS: TrackMapPoint[] = [
   [734.4, 569.3],
   [679.7, 614.3],
 ];
-const KYALAMI_HISTORIC_MAP_POINTS: TrackMapPoint[] = KYALAMI_HISTORIC_IMAGE_POINTS.map(([x, y]) => [x, y * (H / KYALAMI_IMAGE_SIZE)]);
+const KYALAMI_HISTORIC_MAP_POINTS: TrackMapPoint[] = KYALAMI_HISTORIC_IMAGE_POINTS.map(([x, y]) => [x, y * 0.5]);
+
+type ImageBackedTrackMapConfig = {
+  backgroundKey: string;
+  imageHref: string;
+  points: readonly TrackMapPoint[];
+  styleKey: string;
+  testId: string;
+};
+
+const HISTORIC_IMAGE_TRACK_MAPS: Record<string, ImageBackedTrackMapConfig> = {
+  'kyalami-grand-prix-circuit-historic': {
+    backgroundKey: 'kyalami-historic-2p5d',
+    imageHref: '/assets/track-maps/kyalami-historic-2p5d.png',
+    points: KYALAMI_HISTORIC_MAP_POINTS,
+    styleKey: 'historic-kyalami-image-2.5d',
+    testId: 'kyalami-historic-image',
+  },
+  'phoenix-street-circuit-historic': {
+    backgroundKey: 'phoenix-historic-2p5d',
+    imageHref: '/assets/track-maps/phoenix-historic-2p5d.png',
+    points: BATCH_1_HISTORIC_IMAGE_POINTS.phoenix,
+    styleKey: 'historic-phoenix-image-2.5d',
+    testId: 'phoenix-historic-image',
+  },
+  'donington-park-historic': {
+    backgroundKey: 'donington-historic-2p5d',
+    imageHref: '/assets/track-maps/donington-historic-2p5d.png',
+    points: BATCH_1_HISTORIC_IMAGE_POINTS.donington,
+    styleKey: 'historic-donington-image-2.5d',
+    testId: 'donington-historic-image',
+  },
+  'adelaide-street-circuit-historic': {
+    backgroundKey: 'adelaide-historic-2p5d',
+    imageHref: '/assets/track-maps/adelaide-historic-2p5d.png',
+    points: BATCH_1_HISTORIC_IMAGE_POINTS.adelaide,
+    styleKey: 'historic-adelaide-image-2.5d',
+    testId: 'adelaide-historic-image',
+  },
+  'autodromo-do-estoril-historic': {
+    backgroundKey: 'estoril-historic-2p5d',
+    imageHref: '/assets/track-maps/estoril-historic-2p5d.png',
+    points: BATCH_1_HISTORIC_IMAGE_POINTS.estoril,
+    styleKey: 'historic-estoril-image-2.5d',
+    testId: 'estoril-historic-image',
+  },
+  'ti-circuit-aida-historic': {
+    backgroundKey: 'aida-historic-2p5d',
+    imageHref: '/assets/track-maps/aida-historic-2p5d.png',
+    points: BATCH_1_HISTORIC_IMAGE_POINTS.aida,
+    styleKey: 'historic-aida-image-2.5d',
+    testId: 'aida-historic-image',
+  },
+};
 
 export function TrackMapAssetPanel({
   series,
@@ -120,8 +172,8 @@ export function TrackMapAssetPanel({
     );
   }
 
-  const isHistoricKyalami = eraTheme === 'f1-1990s' && match.geometry.id === 'kyalami-grand-prix-circuit-historic';
-  const viewBox = zoomBox(zoom, focusDriverIds, focusTrackProgress, dots, match.geometry, isHistoricKyalami);
+  const imageMap = eraTheme === 'f1-1990s' ? HISTORIC_IMAGE_TRACK_MAPS[match.geometry.id] : undefined;
+  const viewBox = zoomBox(zoom, focusDriverIds, focusTrackProgress, dots, match.geometry, imageMap);
 
   return (
     <svg
@@ -139,6 +191,7 @@ export function TrackMapAssetPanel({
         year={year}
         rotation={rotation}
         eraTheme={eraTheme}
+        imageMap={imageMap}
         hideFooterLabel={hideFooterLabel}
         zoom={zoom}
         incidentDriverIds={incidentDriverIds}
@@ -154,6 +207,7 @@ function AssetTrackMap({
   year,
   rotation,
   eraTheme,
+  imageMap,
   hideFooterLabel,
   zoom,
   incidentDriverIds,
@@ -164,14 +218,14 @@ function AssetTrackMap({
   year?: number;
   rotation: number;
   eraTheme: 'f1-1990s' | 'default';
+  imageMap?: ImageBackedTrackMapConfig;
   hideFooterLabel: boolean;
   zoom?: number;
   incidentDriverIds?: string[];
   safetyCar?: boolean;
 }) {
-  const isHistoricKyalami = eraTheme === 'f1-1990s' && geometry.id === 'kyalami-grand-prix-circuit-historic';
   const fitted = fitPoints(geometry);
-  const trackPoints = isHistoricKyalami ? KYALAMI_HISTORIC_MAP_POINTS : fitted;
+  const trackPoints = imageMap?.points ?? fitted;
   const pathD = toPath(fitted);
   const mapWidth = W;
   const mapHeight = H;
@@ -182,7 +236,7 @@ function AssetTrackMap({
   const pitting = dots.filter((dot) => dot.running && (dot.inPit || dot.pitRequested));
   const retired = dots.filter((dot) => dot.retired && !showSet.has(dot.driverId));
   const spacing = 1 / Math.max(running.length, 14);
-  const laneOffsets = isHistoricKyalami ? closeRacingLaneOffsets(running) : new Map<string, number>();
+  const laneOffsets = imageMap ? closeRacingLaneOffsets(running) : new Map<string, number>();
 
   return (
     <>
@@ -197,17 +251,17 @@ function AssetTrackMap({
       </defs>
 
       <rect x="0" y="0" width={mapWidth} height={mapHeight} rx="12" fill={eraTheme === 'f1-1990s' ? '#050606' : '#0f172a'} />
-      {isHistoricKyalami ? (
-        <g data-track-style="historic-kyalami-image-2.5d" data-track-map-background="kyalami-historic-2p5d">
+      {imageMap ? (
+        <g data-track-style={imageMap.styleKey} data-track-map-background={imageMap.backgroundKey}>
           <image
             x="0"
             y="0"
-            width={KYALAMI_IMAGE_SIZE}
+            width={W}
             height={H}
-            href={KYALAMI_HISTORIC_MAP_IMAGE}
+            href={imageMap.imageHref}
             preserveAspectRatio="none"
             data-track-layer="scenery-background"
-            data-testid="kyalami-historic-image"
+            data-testid={imageMap.testId}
           />
         </g>
       ) : (
@@ -335,8 +389,8 @@ function closeRacingLaneOffsets(running: TrackDot[]): Map<string, number> {
 
     if (!nearest || nearestDistance > CLOSE_RACING_PROGRESS) continue;
     const ordered = [current.dot, nearest.dot].sort((a, b) => a.rank - b.rank);
-    offsets.set(ordered[0].driverId, -KYALAMI_LANE_OFFSET);
-    offsets.set(ordered[1].driverId, KYALAMI_LANE_OFFSET);
+    offsets.set(ordered[0].driverId, -HISTORIC_IMAGE_LANE_OFFSET);
+    offsets.set(ordered[1].driverId, HISTORIC_IMAGE_LANE_OFFSET);
     paired.add(current.dot.driverId);
     paired.add(nearest.dot.driverId);
   }
@@ -354,7 +408,7 @@ function zoomBox(
   focusTrackProgress: number | undefined,
   dots: TrackDot[],
   geometry: TrackMapGeometry,
-  isHistoricKyalami: boolean,
+  imageMap?: ImageBackedTrackMapConfig,
 ): string {
   const mapWidth = W;
   const mapHeight = H;
@@ -362,7 +416,7 @@ function zoomBox(
     return `0 0 ${mapWidth} ${mapHeight}`;
   }
 
-  const fitted = isHistoricKyalami ? KYALAMI_HISTORIC_MAP_POINTS : fitPoints(geometry);
+  const fitted = imageMap?.points ?? fitPoints(geometry);
   const focus = focusPoint(fitted, focusDriverIds, focusTrackProgress, dots, mapWidth, mapHeight);
   const width = mapWidth / zoom;
   const height = mapHeight / zoom;
@@ -372,7 +426,7 @@ function zoomBox(
 }
 
 function focusPoint(
-  fitted: TrackMapPoint[],
+  fitted: readonly TrackMapPoint[],
   focusDriverIds: string[] | undefined,
   focusTrackProgress: number | undefined,
   dots: TrackDot[],
