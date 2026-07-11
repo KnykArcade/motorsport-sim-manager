@@ -58,6 +58,8 @@ import {
   pitIntensityStationaryFloor,
 } from './pitIntensityData';
 import { markSafetyCarPitPrompted } from './safetyCarStrategy';
+import { beginPitJourney, advancePitJourneyForElapsedSeconds } from './pitJourneyEngine';
+import { findPitTransitRecord } from '../data/pit/pitDataLookup';
 import { generateRaceEventPool, resolveRaceEventTrigger } from './raceEventEngine';
 import { rollReliabilityIssue } from './reliabilityEngine';
 import { findOption, applyDecisionEffects } from './raceDecisionEngine';
@@ -368,7 +370,23 @@ export function stepLiveSector(state: LiveRaceState, meta: LiveRaceMeta): LiveRa
     let wantsPit = false;
     let pitLoss = 0;
     const spec = modeSpec(c.paceMode);
-    if (isFirstSector) {
+    const activeJourney = c.pit.journey && c.pit.journey.phase !== 'Rejoined' ? c.pit.journey : null;
+    if (activeJourney) {
+      const journeyStep = advancePitJourneyForElapsedSeconds(activeJourney, fixedStepSeconds);
+      c.pit.journey = journeyStep.journey;
+      c.pit.inPitThisLap = true;
+      pitLoss = journeyStep.appliedThisStepSeconds;
+      if (c.positionState) c.positionState = { ...c.positionState, lane: 'PitLane' };
+      if (journeyStep.serviceCompletedThisStep) {
+        c.tire = { compound: weather.wet ? 'Wet' : 'Dry', age: 0, wear: 0, stintTarget: c.tire.stintTarget };
+      }
+      if (journeyStep.rejoinedThisStep) {
+        c.pit.lastVisitBreakdown = journeyStep.journey.breakdown;
+        c = applyPitExitMode(c, resolvePitExitMode(c), nextLap);
+        if (c.positionState) c.positionState = { ...c.positionState, lane: 'RacingLine' };
+      }
+    }
+    if (isFirstSector && !activeJourney) {
     if (!c.isPlayer) {
       const action = aiLapDecision(c, state, track, nextLap);
       if (action.pitIntensity || action.pitExitMode || action.repairMode) {
@@ -435,12 +453,11 @@ export function stepLiveSector(state: LiveRaceState, meta: LiveRaceMeta): LiveRa
           }pit.`,
         });
       }
-      pitLoss = state.safetyCar.active ? Math.max(8, c.pitLossBase - SAFETY_CAR_PIT_SAVING) : c.pitLossBase;
       const repairMode = c.pit.repairMode ?? 'None';
       const repairSeconds = damageRepairSeconds(damageComponents, repairMode);
       const pitStop = pitStopTimeFromLoss(
-        pitLoss,
-        repairSeconds,
+        pitIntensityStationaryFloor(meta.series),
+        0,
         c.opsForm,
         state.safetyCar.active,
         rng,
@@ -450,9 +467,44 @@ export function stepLiveSector(state: LiveRaceState, meta: LiveRaceMeta): LiveRa
         c.driverRiskManagement ?? 55,
         meta.series,
       );
-      const doubleStackPenalty = state.safetyCar.active && pittedThisLap.some((p) => p.teamId === c.teamId) ? 2.8 : 0;
-      c.pit.lastPitStopTime = round1(pitStop.time + doubleStackPenalty);
+      const teammateUsingBox = pittedThisLap.some((p) => p.teamId === c.teamId)
+        || state.cars.some((other) =>
+          other.driverId !== c.driverId
+          && other.teamId === c.teamId
+          && other.pit.journey != null
+          && ['PitTransitToBox', 'QueuedBehindTeammate', 'StationaryService'].includes(other.pit.journey.phase));
+      const doubleStackPenalty = teammateUsingBox ? 2.8 : 0;
+      c.pit.lastPitStopTime = round1(pitStop.time + repairSeconds + doubleStackPenalty);
       c.pit.lastPitResult = pitStop.result;
+      const transitLookup = findPitTransitRecord({ gameTrackId: track.id, series: meta.series, year: meta.year });
+      const transitLossSeconds = transitLookup.kind === 'matched'
+        ? transitLookup.record.transitLossSeconds
+        : Math.max(0, c.pitLossBase - pitStop.time);
+      const cautionAdjustmentSeconds = state.safetyCar.active
+        ? -Math.min(SAFETY_CAR_PIT_SAVING, transitLossSeconds)
+        : 0;
+      c.pit.journey = beginPitJourney({
+        pitDataTrackId: transitLookup.kind === 'matched' ? transitLookup.record.pitDataTrackId : null,
+        transitLossSeconds,
+        individualPitStopSeconds: pitStop.time,
+        queueDelaySeconds: doubleStackPenalty,
+        entryExitErrorSeconds: 0,
+        penaltyDelaySeconds: 0,
+        repairDelaySeconds: repairSeconds,
+        cautionAdjustmentSeconds,
+        sourceMethod: transitLookup.kind === 'matched' ? transitLookup.record.pitLossMethod : 'legacy-fallback',
+        confidence: transitLookup.kind === 'matched' ? transitLookup.record.confidence : 'Fallback',
+      });
+      const journeyStep = advancePitJourneyForElapsedSeconds(c.pit.journey, fixedStepSeconds, doubleStackPenalty > 0);
+      c.pit.journey = journeyStep.journey;
+      pitLoss = journeyStep.appliedThisStepSeconds;
+      if (journeyStep.rejoinedThisStep) {
+        c.pit.lastVisitBreakdown = journeyStep.journey.breakdown;
+        c = applyPitExitMode(c, pitExitMode, nextLap);
+        if (c.positionState) c.positionState = { ...c.positionState, lane: 'RacingLine' };
+      } else if (c.positionState) {
+        c.positionState = { ...c.positionState, lane: 'PitLane' };
+      }
       const repairNote = repairSeconds > 0 ? ` and repairs add ${repairSeconds.toFixed(1)}s` : '';
       lapEvents.push({ lap: nextLap, text: `${name(c.driverId)} ${pitStop.result.note}${repairNote}` });
       if (doubleStackPenalty > 0) {
@@ -461,13 +513,9 @@ export function stepLiveSector(state: LiveRaceState, meta: LiveRaceMeta): LiveRa
           text: `${name(c.driverId)} loses ${doubleStackPenalty.toFixed(1)}s in the double-stack queue.`,
         });
       }
-      c = applyPitExitMode(c, pitExitMode, nextLap);
-      c.tire = {
-        compound: weather.wet ? 'Wet' : 'Dry',
-        age: 0,
-        wear: 0,
-        stintTarget: c.tire.stintTarget,
-      };
+      if (journeyStep.serviceCompletedThisStep) {
+        c.tire = { compound: weather.wet ? 'Wet' : 'Dry', age: 0, wear: 0, stintTarget: c.tire.stintTarget };
+      }
       pittedThisLap.push(c);
     }
 
@@ -478,7 +526,7 @@ export function stepLiveSector(state: LiveRaceState, meta: LiveRaceMeta): LiveRa
 
     c.mistakeThisLap = false;
     // --- Tyre wear (applied before pace so this lap reflects current rubber) ---
-    if (!wantsPit) {
+    if (!wantsPit && !activeJourney) {
       const wearAdd = c.tireDegRate * spec.wearMult * (weather.wet ? 0.6 : 1);
       c.tire = { ...c.tire, age: c.tire.age + 1, wear: clamp(c.tire.wear + wearAdd, 0, 100) };
     }

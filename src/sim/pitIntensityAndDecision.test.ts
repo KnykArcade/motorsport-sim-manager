@@ -8,7 +8,7 @@ import { autoSetupOptionsForTrack } from './autoSetup';
 import { aiQualifyingDecision, aiRaceDecision } from '../game/ai';
 import { simulateQualifying } from './qualifyingEngine';
 import { createLiveRace, type LiveRaceMeta } from './liveRaceEngine';
-import { acceptRecommendation } from './raceTickEngine';
+import { acceptRecommendation, stepLiveSector } from './raceTickEngine';
 import { aiLapDecision } from './aiStrategyEngine';
 import {
   PIT_INTENSITY_ORDER,
@@ -169,6 +169,25 @@ describe('pit intensity and combined pit decision', () => {
     expect(acceptedCar.pit.intensity).toBe('Aggressive');
     expect(acceptedCar.pit.exitMode).toBe('Push');
     expect(acceptedCar.pit.pitRequested).toBe(true);
+  });
+
+  it('turns an accepted pit call into a reconciled physical journey', () => {
+    const context = buildContext('pit-journey-live');
+    const playerTeamId = context.entrants[0].driver.teamId;
+    const meta = buildMeta(context, playerTeamId);
+    const accepted = acceptPitDecision({ seed: 'pit-journey-live', intensity: 'Standard', exitMode: 'Balanced' });
+    const calledDriverId = playerCar(accepted).driverId;
+    const stepped = stepLiveSector(accepted, meta);
+    const car = stepped.cars.find((candidate) => candidate.driverId === calledDriverId)!;
+    expect(car.pit.stopsMade).toBe(1);
+    expect(car.pit.journey).toBeTruthy();
+    expect(car.pit.journey!.appliedLossSeconds).toBeLessThanOrEqual(car.pit.journey!.breakdown.totalPitVisitLossSeconds);
+    if (car.pit.journey!.phase === 'Rejoined') {
+      expect(car.pit.lastVisitBreakdown).toEqual(car.pit.journey!.breakdown);
+      expect(car.pit.journey!.appliedLossSeconds).toBe(car.pit.journey!.breakdown.totalPitVisitLossSeconds);
+    }
+    expect(car.pit.journey!.breakdown.individualPitStopSeconds).toBeGreaterThan(0);
+    expect(car.pit.journey!.breakdown.transitLossSeconds).toBeGreaterThanOrEqual(0);
   });
 
   it('AI returns a valid pit intensity and exit mode when it chooses to pit', () => {
