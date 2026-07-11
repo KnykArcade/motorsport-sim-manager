@@ -7,7 +7,8 @@ import { teams1995 } from '../data/teams/teams1995';
 import { aiQualifyingDecision, aiRaceDecision } from '../game/ai';
 import { simulateQualifying } from './qualifyingEngine';
 import { autoSetupOptionsForTrack } from './autoSetup';
-import { createLiveRace } from './liveRaceEngine';
+import { createLiveRace, type LiveRaceMeta } from './liveRaceEngine';
+import { stepLiveSector } from './raceTickEngine';
 import type { Entrant, QualifyingDecision, RaceContext, RaceDecision } from '../types/simTypes';
 
 const TRACK = tracks1995[0];
@@ -49,6 +50,18 @@ function buildContext(seed = 'segment-init|1995|r1'): RaceContext {
   };
 }
 
+
+function buildMeta(context: RaceContext): LiveRaceMeta {
+  return {
+    track: context.track,
+    driverNames: Object.fromEntries(context.entrants.map((entrant) => [entrant.driver.id, entrant.driver.name])),
+    teamNames: Object.fromEntries(context.entrants.map((entrant) => [entrant.driver.teamId, entrant.driver.teamId])),
+    playerTeamId: context.entrants[0].driver.teamId,
+    year: context.year,
+    series: 'F1',
+  };
+}
+
 describe('live race segment initialization', () => {
   it('initializes circuit metadata and authoritative car position state', () => {
     const context = buildContext();
@@ -69,5 +82,28 @@ describe('live race segment initialization', () => {
     expect(state.circuit?.segments.length).toBeGreaterThan(0);
     expect(state.cars.every((car) => car.positionState?.completedLaps === 0)).toBe(true);
     expect(state.cars.every((car) => car.positionState?.normalizedLapProgress === 0)).toBe(true);
+    expect(state.cars.every((car) => car.positionState?.authoritativeRaceTime === car.totalTime)).toBe(true);
   });
+
+  it('advances authoritative position during a live sector tick', () => {
+    const context = buildContext('segment-tick|1995|r1');
+    const state = createLiveRace(context, {
+      raceId: 'race',
+      playerTeamId: context.entrants[0].driver.teamId,
+      totalLaps: 10,
+      driverNames: Object.fromEntries(context.entrants.map((entrant) => [entrant.driver.id, entrant.driver.name])),
+      teamReputation: Object.fromEntries(context.entrants.map((entrant) => [entrant.driver.teamId, 50])),
+      teamRaceOps,
+      year: context.year,
+      series: 'F1',
+    });
+
+    const stepped = stepLiveSector(state, buildMeta(context));
+    const car = stepped.cars.find((candidate) => candidate.running)!;
+    expect(stepped.sector).toBe(1);
+    expect(car.positionState?.totalRaceDistanceMeters).toBeGreaterThan(0);
+    expect(car.positionState?.normalizedLapProgress).toBeGreaterThan(0);
+    expect(car.positionState?.completedLaps).toBe(0);
+  });
+
 });

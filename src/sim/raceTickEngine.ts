@@ -20,6 +20,8 @@ import type {
 } from '../types/liveTypes';
 import { createSeededRandom, deriveSeed } from './random';
 import { REF_LAP, type LiveRaceMeta } from './liveRaceEngine';
+import { advanceCarPositionThroughSegments, applyPositionToLegacyCarFields, classifyCarsByDistance, createInitialCarPositionState } from './segmentRaceEngine';
+import { estimateLapTimeFromLivePace, splitLapIntoCircuitSectorTimes } from './segmentPaceEngine';
 import {
   computeLivePace,
   modeSpec,
@@ -30,7 +32,6 @@ import {
   statusMessage,
   tyreMistakeRisk,
   tyreFailureRisk,
-  LIVE_PACE_K,
   DIRTY_AIR_GAP,
 } from './liveRacePace';
 import { mechanicalLabel, crashLabel, tyreLabel, otherLabel } from './dnfModel';
@@ -584,7 +585,7 @@ export function stepLiveSector(state: LiveRaceState, meta: LiveRaceMeta): LiveRa
     );
 
     // --- Lap time (derived from Live Race Pace) ---
-    let lapTime = REF_LAP - c.liveRacePace * LIVE_PACE_K;
+    let lapTime = estimateLapTimeFromLivePace(REF_LAP, c.liveRacePace);
     // Wrong tyres for the conditions cost time on top of the grip loss already
     // folded into live pace.
     if (weather.wet && c.tire.compound === 'Dry') {
@@ -597,7 +598,9 @@ export function stepLiveSector(state: LiveRaceState, meta: LiveRaceMeta): LiveRa
     if (state.safetyCar.active) lapTime = REF_LAP + SAFETY_CAR_LAP_PENALTY; // neutralised
     lapTime += pitLoss;
 
-    c.lastSectors = splitSectors(round1(lapTime), rng);
+    c.lastSectors = state.circuit
+      ? splitLapIntoCircuitSectorTimes(round1(lapTime), state.circuit)
+      : splitSectors(round1(lapTime), rng);
     }
 
     if (isFinalSector) {
@@ -620,7 +623,16 @@ export function stepLiveSector(state: LiveRaceState, meta: LiveRaceMeta): LiveRa
 
     // --- Advance cumulative time and sub-lap position --------------------------
     if (c.lastSectors) {
-      c.totalTime += c.lastSectors[currentSectorIndex];
+      const sectorTime = c.lastSectors[currentSectorIndex];
+      c.totalTime += sectorTime;
+      if (state.circuit && c.running) {
+        const advanced = advanceCarPositionThroughSegments(
+          c.positionState ?? createInitialCarPositionState({ raceTimeSeconds: c.totalTime - sectorTime }),
+          state.circuit,
+          sectorTime,
+        );
+        c = applyPositionToLegacyCarFields(c, advanced.position, advanced.events);
+      }
     }
     if (isFinalSector) {
       c.lastLapTime = round1((c.lastSectors ?? [0, 0, 0]).reduce((a, b) => a + b, 0));
@@ -738,7 +750,9 @@ export function stepLiveSector(state: LiveRaceState, meta: LiveRaceMeta): LiveRa
   }
 
   // --- Order the field ---
-  const running = newCars.filter((c) => c.running).sort((x, y) => x.totalTime - y.totalTime);
+  const running = state.circuit
+    ? classifyCarsByDistance(newCars.filter((c) => c.running))
+    : newCars.filter((c) => c.running).sort((x, y) => x.totalTime - y.totalTime);
   const retired = newCars
     .filter((c) => !c.running)
     .sort((x, y) => (y.retiredOnLap ?? 0) - (x.retiredOnLap ?? 0));

@@ -178,13 +178,15 @@ export function createLiveRace(context: RaceContext, options: LiveRaceOptions): 
 
     const compound: TireCompound = weather.wet ? 'Wet' : 'Dry';
 
+    const initialTotalTime = grid * 0.3;
+
     return {
       driverId: e.driver.id,
       teamId: e.driver.teamId,
       isPlayer,
       grid,
       position: grid,
-      totalTime: grid * 0.3, // grid order at the start, before pace takes over
+      totalTime: initialTotalTime, // grid order at the start, before pace takes over
       gapToLeader: 0,
       interval: 0,
       lastLapTime: 0,
@@ -194,7 +196,7 @@ export function createLiveRace(context: RaceContext, options: LiveRaceOptions): 
       status: 'Finished',
       retiredOnLap: null,
       lastIncident: qIncident === 'Crash' ? 'Carrying qualifying crash damage' : undefined,
-      positionState: createInitialCarPositionState(),
+      positionState: createInitialCarPositionState({ raceTimeSeconds: initialTotalTime }),
       paceRating: score,
       baseRacePace,
       baseFailureRisk,
