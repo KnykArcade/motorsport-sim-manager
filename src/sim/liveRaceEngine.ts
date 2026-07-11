@@ -30,6 +30,8 @@ import { initialWeather } from './weatherEngine';
 import { initialSafetyCar, SAFETY_CAR_PIT_SAVING } from './safetyCarEngine';
 import { initialStint } from './strategyStint';
 import { DEFAULT_DAMAGE_SETTINGS } from './damageComponents';
+import { getCircuitSegmentsForRace } from '../data/circuits/circuitLookup';
+import { createInitialCarPositionState, DEFAULT_FIXED_STEP_SECONDS } from './segmentRaceEngine';
 
 export type LiveRaceOptions = {
   raceId: string;
@@ -84,6 +86,7 @@ function initialPaceMode(instructionId: string): PaceMode {
 export function createLiveRace(context: RaceContext, options: LiveRaceOptions): LiveRaceState {
   const { track } = context;
   const totalLaps = options.totalLaps;
+  const circuit = getCircuitSegmentsForRace({ track, year: options.year, series: options.series, totalLaps });
   const weather = initialWeather(track, context.seed);
   const damageSettings = options.damageSettings ?? DEFAULT_DAMAGE_SETTINGS;
 
@@ -175,13 +178,15 @@ export function createLiveRace(context: RaceContext, options: LiveRaceOptions): 
 
     const compound: TireCompound = weather.wet ? 'Wet' : 'Dry';
 
+    const initialTotalTime = grid * 0.3;
+
     return {
       driverId: e.driver.id,
       teamId: e.driver.teamId,
       isPlayer,
       grid,
       position: grid,
-      totalTime: grid * 0.3, // grid order at the start, before pace takes over
+      totalTime: initialTotalTime, // grid order at the start, before pace takes over
       gapToLeader: 0,
       interval: 0,
       lastLapTime: 0,
@@ -191,6 +196,7 @@ export function createLiveRace(context: RaceContext, options: LiveRaceOptions): 
       status: 'Finished',
       retiredOnLap: null,
       lastIncident: qIncident === 'Crash' ? 'Carrying qualifying crash damage' : undefined,
+      positionState: createInitialCarPositionState({ raceTimeSeconds: initialTotalTime }),
       paceRating: score,
       baseRacePace,
       baseFailureRisk,
@@ -278,6 +284,10 @@ export function createLiveRace(context: RaceContext, options: LiveRaceOptions): 
     raceId: options.raceId,
     trackId: track.id,
     seed: context.seed,
+    simVersion: 2,
+    simulationClockSeconds: 0,
+    fixedStepSeconds: DEFAULT_FIXED_STEP_SECONDS,
+    circuit,
     totalLaps,
     currentLap: 0,
     sector: 0,
