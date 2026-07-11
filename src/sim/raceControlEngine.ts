@@ -16,6 +16,7 @@ export function initialRaceControlState(ruleProfile?: RaceRuleProfile): LiveRace
     mode: 'Green', previousMode: null, deployedOnLap: null, reason: null,
     restartProcedure: ruleProfile?.raceControl.restartProcedure ?? 'SeriesDefault', deployments: 0, queueFormed: false,
     pitLaneOpen: true, pitLaneClosedOnLap: null,
+    freePassApplied: false, freePassDriverId: null,
   };
 }
 
@@ -39,6 +40,8 @@ export function stepRaceControlState(
       queueFormed: false,
       pitLaneOpen: !ruleProfile?.pitLane.closesUnderFullCourseCaution,
       pitLaneClosedOnLap: ruleProfile?.pitLane.closesUnderFullCourseCaution ? lap : null,
+      freePassApplied: false,
+      freePassDriverId: null,
     };
   }
   if (transition.justEnded) {
@@ -54,6 +57,43 @@ export function stepRaceControlState(
 export function openPitLaneWhenQueueFormed(state: LiveRaceControlState): LiveRaceControlState {
   if (!state.queueFormed || state.pitLaneOpen) return state;
   return { ...state, pitLaneOpen: true };
+}
+
+export function applyRaceControlFreePass(
+  cars: readonly LiveCarState[],
+  circuit: CircuitSegmentSet,
+  state: LiveRaceControlState,
+  ruleProfile?: RaceRuleProfile,
+): { cars: LiveCarState[]; state: LiveRaceControlState; driverId: string | null } {
+  if (!state.queueFormed || state.freePassApplied || !ruleProfile?.pitLane.luckyDog) {
+    return { cars: [...cars], state, driverId: null };
+  }
+  const ordered = classifyCarsByDistance(cars);
+  const leader = ordered.find((car) => car.running && car.positionState && !car.pit.inPitThisLap);
+  const candidate = leader?.positionState
+    ? ordered.find((car) => car.running && car.positionState && !car.pit.inPitThisLap
+      && car.positionState.completedLaps < leader.positionState!.completedLaps)
+    : undefined;
+  if (!leader?.positionState || !candidate?.positionState) {
+    return { cars: ordered, state: { ...state, freePassApplied: true }, driverId: null };
+  }
+  const maximumRestoredDistance = candidate.positionState.totalRaceDistanceMeters + circuit.lapLengthMeters;
+  const restoredLap = Math.floor(maximumRestoredDistance / circuit.lapLengthMeters);
+  const tailOfRestoredLap = ordered
+    .filter((car) => car.driverId !== candidate.driverId && car.running && car.positionState
+      && car.positionState.completedLaps === restoredLap)
+    .reduce((tail, car) => Math.min(tail, car.positionState!.totalRaceDistanceMeters), Number.POSITIVE_INFINITY);
+  const restoredDistance = Number.isFinite(tailOfRestoredLap)
+    ? Math.min(maximumRestoredDistance, tailOfRestoredLap - 12)
+    : maximumRestoredDistance;
+  const updated = ordered.map((car) => car.driverId === candidate.driverId
+    ? { ...car, positionState: repositionCarAtRaceDistance(car.positionState!, Math.max(0, restoredDistance), circuit) }
+    : car);
+  return {
+    cars: classifyCarsByDistance(updated),
+    state: { ...state, freePassApplied: true, freePassDriverId: candidate.driverId },
+    driverId: candidate.driverId,
+  };
 }
 
 export type QueueCatchUpOptions = { targetGapMeters?: number; catchUpSpeedMetersPerSecond?: number };
@@ -77,7 +117,16 @@ export function applyRaceControlQueueCatchUp(
       updated.push(car);
       continue;
     }
-    const ahead = [...updated].reverse().find((candidate) => candidate.running && candidate.positionState && !candidate.pit.inPitThisLap);
+    const nextLapBoundary = (car.positionState.completedLaps + 1) * circuit.lapLengthMeters;
+    const ahead = [...updated].reverse().find((candidate) => {
+      if (!candidate.running || !candidate.positionState || candidate.pit.inPitThisLap) return false;
+      if (candidate.positionState.completedLaps === car.positionState!.completedLaps) return true;
+      const proposedDistance = Math.min(
+        candidate.positionState.totalRaceDistanceMeters - targetGap,
+        car.positionState!.totalRaceDistanceMeters + maximumCatchUp,
+      );
+      return proposedDistance < nextLapBoundary;
+    });
     if (!ahead?.positionState) {
       updated.push(car);
       continue;

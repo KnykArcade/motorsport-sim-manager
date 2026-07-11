@@ -21,4 +21,6 @@ export type LiveRaceControlState = {
   queueFormed: boolean;
   pitLaneOpen: boolean;
   pitLaneClosedOnLap: number | null;
+  freePassApplied: boolean;
+  freePassDriverId: string | null;
 };
