@@ -526,6 +526,7 @@ export type LiveRaceState = {
   // challenge can be logged once (a "defends"/"stuck behind" line) and a faded
   // challenge can be closed out ("attack fades") without re-logging every lap.
   battleTracker: Record<string, number>;
+  battleStates?: Record<string, import('../sim/battleStateEngine').BattleState>;
   // Retirements this race (for the race-info panel).
   retirements: number;
   // Snapshot of the most recent on-track incident for the crash-zoom overlay.

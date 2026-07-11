@@ -303,6 +303,7 @@ export function createLiveRace(context: RaceContext, options: LiveRaceOptions): 
     ignoredRecs: [],
     recCooldowns: {},
     battleTracker: {},
+    battleStates: {},
     retirements: 0,
     driverRelationships: context.driverRelationships,
     teamOrgRatings: options.teamOrgRatings,

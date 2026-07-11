@@ -21,6 +21,7 @@ import type {
 import { createSeededRandom, deriveSeed } from './random';
 import { REF_LAP, type LiveRaceMeta } from './liveRaceEngine';
 import { advanceCarPositionThroughSegments, applyDistanceBasedTrafficState, applyPositionToLegacyCarFields, classifyCarsByDistance, createInitialCarPositionState } from './segmentRaceEngine';
+import { stepBattleStates } from './battleStateEngine';
 import { estimateLapTimeFromLivePace, splitLapIntoCircuitSectorTimes } from './segmentPaceEngine';
 import {
   computeLivePace,
@@ -819,6 +820,36 @@ export function stepLiveSector(state: LiveRaceState, meta: LiveRaceMeta): LiveRa
   running.splice(0, running.length, ...carsWithDistanceTraffic.filter((car) => car.running));
   retired.splice(0, retired.length, ...carsWithDistanceTraffic.filter((car) => !car.running));
 
+  let battleStates = state.battleStates ?? {};
+  if (state.circuit && !scResult.safetyCar.active) {
+    const battleResult = stepBattleStates(running, state.circuit, battleStates, state.cars);
+    running.splice(0, running.length, ...battleResult.cars.filter((car) => car.running));
+    battleStates = battleResult.states;
+    const leaderDistance = running[0]?.positionState?.totalRaceDistanceMeters ?? 0;
+    running.forEach((car, index) => {
+      car.position = index + 1;
+      const distance = car.positionState?.totalRaceDistanceMeters ?? leaderDistance;
+      const speed = Math.max(1, car.positionState?.currentSpeedMetersPerSecond ?? 1);
+      const aheadDistance = index > 0
+        ? running[index - 1]?.positionState?.totalRaceDistanceMeters ?? distance
+        : distance;
+      car.gapToLeader = index === 0 ? 0 : round1((leaderDistance - distance) / speed);
+      car.interval = index === 0 ? 0 : round1((aheadDistance - distance) / speed);
+    });
+    for (const outcome of battleResult.outcomes) {
+      const attacker = name(outcome.attackerId);
+      const defender = name(outcome.defenderId);
+      const text = outcome.outcome === 'CleanPass'
+        ? `${attacker} completes a clean pass on ${defender} for P${running.findIndex((car) => car.driverId === outcome.attackerId) + 1}.`
+        : outcome.outcome === 'AttackerLosesTime'
+          ? `${attacker} loses time after an unsuccessful move on ${defender}.`
+          : `${defender} holds off ${attacker}'s passing attempt.`;
+      lapEvents.push({ lap: nextLap, text, category: 'battle' });
+    }
+  } else if (scResult.safetyCar.active) {
+    battleStates = {};
+  }
+
   // --- Live status (risk bands, traffic, readable message) for running cars ---
   running.forEach((c, i) => {
     const intervalAhead = i === 0 ? 0 : c.interval;
@@ -926,6 +957,7 @@ export function stepLiveSector(state: LiveRaceState, meta: LiveRaceMeta): LiveRa
     ignoredRecs,
     recCooldowns,
     battleTracker,
+    battleStates,
     retirements,
     lastIncident:
       incidentDriverIds.length > 0
