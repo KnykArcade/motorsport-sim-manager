@@ -84,4 +84,5 @@ export type PitJourneyState = {
   breakdown: PitVisitBreakdown;
   appliedLossSeconds: number;
   serviceCompleted: boolean;
+  phaseElapsedSeconds?: number;
 };
