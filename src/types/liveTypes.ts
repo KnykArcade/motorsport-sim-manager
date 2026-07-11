@@ -8,8 +8,11 @@
 
 import type { RaceFinishStatus, Series } from './gameTypes';
 import type { CircuitSegmentSet } from './circuitTypes';
+import type { RaceRuleProfile } from './raceRulesTypes';
+import type { PitJourneyState, PitVisitBreakdown } from './pitTypes';
 import type { CarPositionState } from './positionTypes';
 import type { RaceEvent } from './simTypes';
+import type { LiveRaceControlState } from './raceControlTypes';
 
 // ---------------------------------------------------------------------------
 // Weather
@@ -128,6 +131,8 @@ export type PitStopState = {
   // deployment number that prompted this car so the recommendation stays off
   // the board until the next SC deployment.
   lastSafetyCarPitPromptDeployment?: number | null;
+  journey?: PitJourneyState | null;
+  lastVisitBreakdown?: PitVisitBreakdown | null;
 };
 
 export type PitStopResultTier = 'Clean' | 'Minor' | 'Moderate' | 'Major';
@@ -490,6 +495,7 @@ export type LiveRaceState = {
   simulationClockSeconds?: number;
   fixedStepSeconds?: number;
   circuit?: CircuitSegmentSet;
+  ruleProfile?: RaceRuleProfile;
   totalLaps: number;
   series?: Series;
   currentLap: number; // 0 = pre-start formation
@@ -497,6 +503,7 @@ export type LiveRaceState = {
   phase: LiveRacePhase;
   weather: WeatherState;
   safetyCar: SafetyCarState;
+  raceControl?: LiveRaceControlState;
   // Driver relationships for AI disagreement and trust-based beats.
   driverRelationships?: Record<string, import('./relationshipTypes').DriverRelationship>;
   teamOrgRatings?: Record<string, import('./teamRatingsTypes').TeamOrganizationRatings>;
@@ -526,6 +533,7 @@ export type LiveRaceState = {
   // challenge can be logged once (a "defends"/"stuck behind" line) and a faded
   // challenge can be closed out ("attack fades") without re-logging every lap.
   battleTracker: Record<string, number>;
+  battleStates?: Record<string, import('../sim/battleStateEngine').BattleState>;
   // Retirements this race (for the race-info panel).
   retirements: number;
   // Snapshot of the most recent on-track incident for the crash-zoom overlay.

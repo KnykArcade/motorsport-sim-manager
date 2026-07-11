@@ -80,6 +80,9 @@ describe('live race segment initialization', () => {
     expect(state.simulationClockSeconds).toBe(0);
     expect(state.circuit?.trackId).toBe(context.track.id);
     expect(state.circuit?.segments.length).toBeGreaterThan(0);
+    expect(state.ruleProfile?.id).toBe('f1-1994-2009');
+    expect(state.ruleProfile?.fuel.refuelingAllowed).toBe(true);
+    expect(state.raceControl?.mode).toBe('Green');
     expect(state.cars.every((car) => car.positionState?.completedLaps === 0)).toBe(true);
     expect(state.cars.every((car) => car.positionState?.normalizedLapProgress === 0)).toBe(true);
     expect(state.cars.every((car) => car.positionState?.authoritativeRaceTime === car.totalTime)).toBe(true);

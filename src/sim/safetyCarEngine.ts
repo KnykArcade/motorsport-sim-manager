@@ -7,6 +7,7 @@
 
 import type { Track } from '../types/gameTypes';
 import type { SafetyCarState, WeatherState } from '../types/liveTypes';
+import type { RaceRuleProfile } from '../types/raceRulesTypes';
 import { createSeededRandom, deriveSeed } from './random';
 
 export function initialSafetyCar(): SafetyCarState {
@@ -37,6 +38,7 @@ export function stepSafetyCar(
   seed: string,
   lap: number,
   totalLaps: number,
+  ruleProfile?: RaceRuleProfile,
 ): { safetyCar: SafetyCarState; justDeployed: boolean; justEnded: boolean } {
   const rng = createSeededRandom(deriveSeed(seed, 'safetycar', track.id, lap));
 
@@ -52,8 +54,15 @@ export function stepSafetyCar(
     return { safetyCar: { ...sc, lapsRemaining }, justDeployed: false, justEnded: false };
   }
 
-  // Not currently active — evaluate triggers. Never deploy on the last 2 laps.
-  if (lap >= totalLaps - 2) {
+  // Not currently active: profile rules decide whether a late-race or
+  // full-course neutralisation is available. Legacy saves keep the old
+  // final-two-laps fallback when no profile has been stored yet.
+  if (!ruleProfile?.raceControl.lateRaceCautionsAllowed && lap >= totalLaps - 2) {
+    return { safetyCar: sc, justDeployed: false, justEnded: false };
+  }
+
+  const supportedModes = ruleProfile?.raceControl.supportedModes;
+  if (supportedModes && !supportedModes.includes('SafetyCar') && !supportedModes.includes('PaceCar') && !supportedModes.includes('FullCourseYellow')) {
     return { safetyCar: sc, justDeployed: false, justEnded: false };
   }
 

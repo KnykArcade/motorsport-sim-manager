@@ -2,10 +2,9 @@ import type { CircuitSegmentSet } from '../types/circuitTypes';
 import type { LiveCarState, LiveRaceState } from '../types/liveTypes';
 import type { CarPositionState, TrackLane, TrafficPhase } from '../types/positionTypes';
 import { applyFinishLineCrossing, applySectorCrossing, createInitialTimingState, type TimingCrossingEvent } from './timingLineEngine';
+import { updateTrafficStatesForCars } from './trafficStateEngine';
 
 export const DEFAULT_FIXED_STEP_SECONDS = 1;
-export const DIRTY_AIR_DISTANCE_METERS = 100;
-
 export type SegmentAdvanceResult = {
   position: CarPositionState;
   events: TimingCrossingEvent[];
@@ -37,6 +36,7 @@ export function advanceCarPositionThroughSegments(
   position: CarPositionState,
   circuit: CircuitSegmentSet,
   elapsedSeconds: number,
+  traversalPaceMultiplier = 1,
 ): SegmentAdvanceResult {
   if (elapsedSeconds <= 0 || circuit.segments.length === 0) {
     return { position, events: [] };
@@ -49,7 +49,7 @@ export function advanceCarPositionThroughSegments(
 
   while (remainingSeconds > 1e-9) {
     const segment = circuit.segments[next.currentSegmentIndex] ?? circuit.segments[0];
-    const segmentTime = Math.max(0.001, segment.representativeTimeSeconds);
+    const segmentTime = Math.max(0.001, segment.representativeTimeSeconds / Math.max(0.05, traversalPaceMultiplier));
     const remainingProgress = Math.max(0, 1 - next.progressWithinSegment);
     const timeToBoundary = remainingProgress * segmentTime;
 
@@ -111,7 +111,7 @@ export function advanceLiveRaceSegmentClock(state: LiveRaceState, elapsedSeconds
     return applyPositionToLegacyCarFields(car, result.position, result.events);
   });
 
-  const ordered = applyDistanceBasedTrafficState(classifyCarsByDistance(cars));
+  const ordered = updateTrafficStatesForCars(classifyCarsByDistance(cars), circuit);
   ordered.forEach((car, index) => {
     if (car.running) car.position = index + 1;
   });
@@ -131,42 +131,6 @@ export function classifyCarsByDistance(cars: readonly LiveCarState[]): LiveCarSt
     const distanceB = b.positionState?.totalRaceDistanceMeters ?? b.lapsCompleted;
     if (distanceA !== distanceB) return distanceB - distanceA;
     return a.totalTime - b.totalTime;
-  });
-}
-
-export function applyDistanceBasedTrafficState(cars: readonly LiveCarState[]): LiveCarState[] {
-  const running = cars.filter((car) => car.running);
-  const distanceByDriver = new Map(
-    running.map((car) => [car.driverId, car.positionState?.totalRaceDistanceMeters ?? 0]),
-  );
-
-  return cars.map((car) => {
-    if (!car.running || !car.positionState) return car;
-    const runningIndex = running.findIndex((candidate) => candidate.driverId === car.driverId);
-    const ahead = runningIndex > 0 ? running[runningIndex - 1] : undefined;
-    const behind = runningIndex >= 0 ? running[runningIndex + 1] : undefined;
-    const carDistance = distanceByDriver.get(car.driverId) ?? 0;
-    const distanceToCarAheadMeters = ahead
-      ? Math.max(0, (distanceByDriver.get(ahead.driverId) ?? carDistance) - carDistance)
-      : null;
-    const distanceToCarBehindMeters = behind
-      ? Math.max(0, carDistance - (distanceByDriver.get(behind.driverId) ?? carDistance))
-      : null;
-    const closeAhead = distanceToCarAheadMeters != null && distanceToCarAheadMeters < DIRTY_AIR_DISTANCE_METERS;
-    const closeBehind = distanceToCarBehindMeters != null && distanceToCarBehindMeters < DIRTY_AIR_DISTANCE_METERS;
-    const trafficPhase: TrafficPhase = closeAhead
-      ? car.paceMode === 'Attack' ? 'Attacking' : 'InDirtyAir'
-      : closeBehind && car.paceMode === 'Defend' ? 'Defending' : 'ClearAir';
-
-    return {
-      ...car,
-      positionState: {
-        ...car.positionState,
-        distanceToCarAheadMeters,
-        distanceToCarBehindMeters,
-        trafficPhase,
-      },
-    };
   });
 }
 
@@ -220,6 +184,34 @@ function updatePositionWithinSegment(
   };
 }
 
+export function repositionCarAtRaceDistance(
+  position: CarPositionState,
+  totalRaceDistanceMeters: number,
+  circuit: CircuitSegmentSet,
+): CarPositionState {
+  const completedLaps = Math.floor(totalRaceDistanceMeters / circuit.lapLengthMeters);
+  const lapDistance = totalRaceDistanceMeters - completedLaps * circuit.lapLengthMeters;
+  let accumulated = 0;
+  let currentSegmentIndex = Math.max(0, circuit.segments.length - 1);
+  let progressWithinSegment = 1;
+  for (const segment of circuit.segments) {
+    if (lapDistance <= accumulated + segment.lengthMeters) {
+      currentSegmentIndex = segment.index;
+      progressWithinSegment = segment.lengthMeters > 0 ? (lapDistance - accumulated) / segment.lengthMeters : 0;
+      break;
+    }
+    accumulated += segment.lengthMeters;
+  }
+  return {
+    ...position,
+    completedLaps,
+    currentSegmentIndex,
+    progressWithinSegment: Math.max(0, Math.min(1, progressWithinSegment)),
+    totalRaceDistanceMeters,
+    normalizedLapProgress: circuit.lapLengthMeters > 0 ? lapDistance / circuit.lapLengthMeters : 0,
+  };
+}
+
 function sectorFromProgress(progress: number): 0 | 1 | 2 | 3 {
   if (progress <= 0) return 0;
   if (progress < 1 / 3) return 1;
@@ -229,3 +221,6 @@ function sectorFromProgress(progress: number): 0 | 1 | 2 | 3 {
 
 function round3(value: number): number { return Math.round(value * 1000) / 1000; }
 function round6(value: number): number { return Math.round(value * 1000000) / 1000000; }
+
+// Kept as a compatibility export while callers migrate to trafficStateEngine.
+export { updateTrafficStatesForCars as applyDistanceBasedTrafficState } from './trafficStateEngine';

@@ -21,6 +21,7 @@ import type {
 import { createSeededRandom, deriveSeed } from './random';
 import { REF_LAP, type LiveRaceMeta } from './liveRaceEngine';
 import { advanceCarPositionThroughSegments, applyDistanceBasedTrafficState, applyPositionToLegacyCarFields, classifyCarsByDistance, createInitialCarPositionState } from './segmentRaceEngine';
+import { stepBattleStates } from './battleStateEngine';
 import { estimateLapTimeFromLivePace, splitLapIntoCircuitSectorTimes } from './segmentPaceEngine';
 import {
   computeLivePace,
@@ -57,6 +58,9 @@ import {
   pitIntensityStationaryFloor,
 } from './pitIntensityData';
 import { markSafetyCarPitPrompted } from './safetyCarStrategy';
+import { beginPitJourney, advancePitJourneyForElapsedSeconds } from './pitJourneyEngine';
+import { findPitTransitRecord } from '../data/pit/pitDataLookup';
+import { applyRaceControlFreePass, applyRaceControlQueueCatchUp, initialRaceControlState, openPitLaneWhenQueueFormed, stepRaceControlState } from './raceControlEngine';
 import { generateRaceEventPool, resolveRaceEventTrigger } from './raceEventEngine';
 import { rollReliabilityIssue } from './reliabilityEngine';
 import { findOption, applyDecisionEffects } from './raceDecisionEngine';
@@ -257,6 +261,11 @@ export function stepLiveSector(state: LiveRaceState, meta: LiveRaceMeta): LiveRa
   const isFinalSector = currentSectorIndex === 2;
   const isFinalLap = isFinalSector && nextLap >= state.totalLaps;
   const name = (id: string) => meta.driverNames[id] ?? id;
+  const fixedStepSeconds = state.circuit
+    ? state.circuit.segments
+      .filter((segment) => segment.sector === currentSectorIndex + 1)
+      .reduce((sum, segment) => sum + segment.representativeTimeSeconds, 0)
+    : 0;
 
   const lapEvents: RaceEvent[] = [];
   const pittedThisLap: LiveCarState[] = [];
@@ -362,7 +371,24 @@ export function stepLiveSector(state: LiveRaceState, meta: LiveRaceMeta): LiveRa
     let wantsPit = false;
     let pitLoss = 0;
     const spec = modeSpec(c.paceMode);
-    if (isFirstSector) {
+    const pitLaneOpen = state.raceControl?.pitLaneOpen ?? true;
+    const activeJourney = c.pit.journey && c.pit.journey.phase !== 'Rejoined' ? c.pit.journey : null;
+    if (activeJourney) {
+      const journeyStep = advancePitJourneyForElapsedSeconds(activeJourney, fixedStepSeconds);
+      c.pit.journey = journeyStep.journey;
+      c.pit.inPitThisLap = true;
+      pitLoss = journeyStep.appliedThisStepSeconds;
+      if (c.positionState) c.positionState = { ...c.positionState, lane: 'PitLane' };
+      if (journeyStep.serviceCompletedThisStep) {
+        c.tire = { compound: weather.wet ? 'Wet' : 'Dry', age: 0, wear: 0, stintTarget: c.tire.stintTarget };
+      }
+      if (journeyStep.rejoinedThisStep) {
+        c.pit.lastVisitBreakdown = journeyStep.journey.breakdown;
+        c = applyPitExitMode(c, resolvePitExitMode(c), nextLap);
+        if (c.positionState) c.positionState = { ...c.positionState, lane: 'RacingLine' };
+      }
+    }
+    if (isFirstSector && !activeJourney) {
     if (!c.isPlayer) {
       const action = aiLapDecision(c, state, track, nextLap);
       if (action.pitIntensity || action.pitExitMode || action.repairMode) {
@@ -389,6 +415,11 @@ export function stepLiveSector(state: LiveRaceState, meta: LiveRaceMeta): LiveRa
       if (c.isPlayer) {
         lapEvents.push({ lap: nextLap, text: `${name(c.driverId)} is forced to box — tyres past the cliff.` });
       }
+    }
+
+    if (wantsPit && !pitLaneOpen) {
+      if (c.isPlayer) lapEvents.push({ lap: nextLap, text: `${name(c.driverId)} must stay out — pit road is closed.` });
+      wantsPit = false;
     }
 
     // --- Execute pit stop ---
@@ -429,12 +460,11 @@ export function stepLiveSector(state: LiveRaceState, meta: LiveRaceMeta): LiveRa
           }pit.`,
         });
       }
-      pitLoss = state.safetyCar.active ? Math.max(8, c.pitLossBase - SAFETY_CAR_PIT_SAVING) : c.pitLossBase;
       const repairMode = c.pit.repairMode ?? 'None';
       const repairSeconds = damageRepairSeconds(damageComponents, repairMode);
       const pitStop = pitStopTimeFromLoss(
-        pitLoss,
-        repairSeconds,
+        pitIntensityStationaryFloor(meta.series),
+        0,
         c.opsForm,
         state.safetyCar.active,
         rng,
@@ -444,9 +474,44 @@ export function stepLiveSector(state: LiveRaceState, meta: LiveRaceMeta): LiveRa
         c.driverRiskManagement ?? 55,
         meta.series,
       );
-      const doubleStackPenalty = state.safetyCar.active && pittedThisLap.some((p) => p.teamId === c.teamId) ? 2.8 : 0;
-      c.pit.lastPitStopTime = round1(pitStop.time + doubleStackPenalty);
+      const teammateUsingBox = pittedThisLap.some((p) => p.teamId === c.teamId)
+        || state.cars.some((other) =>
+          other.driverId !== c.driverId
+          && other.teamId === c.teamId
+          && other.pit.journey != null
+          && ['PitTransitToBox', 'QueuedBehindTeammate', 'StationaryService'].includes(other.pit.journey.phase));
+      const doubleStackPenalty = teammateUsingBox ? 2.8 : 0;
+      c.pit.lastPitStopTime = round1(pitStop.time + repairSeconds + doubleStackPenalty);
       c.pit.lastPitResult = pitStop.result;
+      const transitLookup = findPitTransitRecord({ gameTrackId: track.id, series: meta.series, year: meta.year });
+      const transitLossSeconds = transitLookup.kind === 'matched'
+        ? transitLookup.record.transitLossSeconds
+        : Math.max(0, c.pitLossBase - pitStop.time);
+      const cautionAdjustmentSeconds = state.safetyCar.active
+        ? -Math.min(SAFETY_CAR_PIT_SAVING, transitLossSeconds)
+        : 0;
+      c.pit.journey = beginPitJourney({
+        pitDataTrackId: transitLookup.kind === 'matched' ? transitLookup.record.pitDataTrackId : null,
+        transitLossSeconds,
+        individualPitStopSeconds: pitStop.time,
+        queueDelaySeconds: doubleStackPenalty,
+        entryExitErrorSeconds: 0,
+        penaltyDelaySeconds: 0,
+        repairDelaySeconds: repairSeconds,
+        cautionAdjustmentSeconds,
+        sourceMethod: transitLookup.kind === 'matched' ? transitLookup.record.pitLossMethod : 'legacy-fallback',
+        confidence: transitLookup.kind === 'matched' ? transitLookup.record.confidence : 'Fallback',
+      });
+      const journeyStep = advancePitJourneyForElapsedSeconds(c.pit.journey, fixedStepSeconds, doubleStackPenalty > 0);
+      c.pit.journey = journeyStep.journey;
+      pitLoss = journeyStep.appliedThisStepSeconds;
+      if (journeyStep.rejoinedThisStep) {
+        c.pit.lastVisitBreakdown = journeyStep.journey.breakdown;
+        c = applyPitExitMode(c, pitExitMode, nextLap);
+        if (c.positionState) c.positionState = { ...c.positionState, lane: 'RacingLine' };
+      } else if (c.positionState) {
+        c.positionState = { ...c.positionState, lane: 'PitLane' };
+      }
       const repairNote = repairSeconds > 0 ? ` and repairs add ${repairSeconds.toFixed(1)}s` : '';
       lapEvents.push({ lap: nextLap, text: `${name(c.driverId)} ${pitStop.result.note}${repairNote}` });
       if (doubleStackPenalty > 0) {
@@ -455,13 +520,9 @@ export function stepLiveSector(state: LiveRaceState, meta: LiveRaceMeta): LiveRa
           text: `${name(c.driverId)} loses ${doubleStackPenalty.toFixed(1)}s in the double-stack queue.`,
         });
       }
-      c = applyPitExitMode(c, pitExitMode, nextLap);
-      c.tire = {
-        compound: weather.wet ? 'Wet' : 'Dry',
-        age: 0,
-        wear: 0,
-        stintTarget: c.tire.stintTarget,
-      };
+      if (journeyStep.serviceCompletedThisStep) {
+        c.tire = { compound: weather.wet ? 'Wet' : 'Dry', age: 0, wear: 0, stintTarget: c.tire.stintTarget };
+      }
       pittedThisLap.push(c);
     }
 
@@ -472,7 +533,7 @@ export function stepLiveSector(state: LiveRaceState, meta: LiveRaceMeta): LiveRa
 
     c.mistakeThisLap = false;
     // --- Tyre wear (applied before pace so this lap reflects current rubber) ---
-    if (!wantsPit) {
+    if (!wantsPit && !activeJourney) {
       const wearAdd = c.tireDegRate * spec.wearMult * (weather.wet ? 0.6 : 1);
       c.tire = { ...c.tire, age: c.tire.age + 1, wear: clamp(c.tire.wear + wearAdd, 0, 100) };
     }
@@ -626,12 +687,20 @@ export function stepLiveSector(state: LiveRaceState, meta: LiveRaceMeta): LiveRa
       const sectorTime = c.lastSectors[currentSectorIndex];
       c.totalTime += sectorTime;
       if (state.circuit && c.running) {
+        const legacyTotalTime = c.totalTime;
+        const lapTime = Math.max(1, (c.lastSectors ?? [REF_LAP / 3, REF_LAP / 3, REF_LAP / 3]).reduce((sum, seconds) => sum + seconds, 0));
+        const traversalPaceMultiplier = state.circuit.baselineLapTimeSeconds / lapTime;
         const advanced = advanceCarPositionThroughSegments(
-          c.positionState ?? createInitialCarPositionState({ raceTimeSeconds: c.totalTime - sectorTime }),
+          c.positionState ?? createInitialCarPositionState({ raceTimeSeconds: state.simulationClockSeconds ?? 0 }),
           state.circuit,
-          sectorTime,
+          fixedStepSeconds,
+          traversalPaceMultiplier,
         );
         c = applyPositionToLegacyCarFields(c, advanced.position, advanced.events);
+        // RaceResult and current UI gaps still consume cumulative time during
+        // this compatibility slice. Physical order, laps and crossings come
+        // from positionState; remove this projection after those consumers move.
+        c.totalTime = legacyTotalTime;
       }
     }
     if (isFinalSector) {
@@ -723,7 +792,14 @@ export function stepLiveSector(state: LiveRaceState, meta: LiveRaceMeta): LiveRa
     state.seed,
     nextLap,
     state.totalLaps,
+    state.ruleProfile,
   );
+  }
+  let raceControl = state.raceControl ?? initialRaceControlState(state.ruleProfile);
+  if (isFinalSector) {
+    raceControl = stepRaceControlState(raceControl, scResult, state.ruleProfile, nextLap);
+  }
+  if (isFinalSector) {
   if (scResult.justDeployed) {
     const minGreen = nextLap + scResult.safetyCar.lapsRemaining;
     const maxGreen = Math.min(state.totalLaps, minGreen + 1);
@@ -731,6 +807,7 @@ export function stepLiveSector(state: LiveRaceState, meta: LiveRaceMeta): LiveRa
       lap: nextLap,
       text: `Safety car deployed — ${scResult.safetyCar.reason}. Green expected in ${scResult.safetyCar.lapsRemaining}-${scResult.safetyCar.lapsRemaining + 1} laps (around L${minGreen}${maxGreen !== minGreen ? `-${maxGreen}` : ''}).`,
     });
+    if (!raceControl.pitLaneOpen) lapEvents.push({ lap: nextLap, text: 'Pit road is closed under caution.' });
   }
   if (scResult.justEnded) lapEvents.push({ lap: nextLap, text: 'Safety car in this lap — racing resumes.' });
   if (scResult.justEnded) {
@@ -750,17 +827,28 @@ export function stepLiveSector(state: LiveRaceState, meta: LiveRaceMeta): LiveRa
   }
 
   // --- Order the field ---
-  const running = state.circuit
+  let running = state.circuit
     ? classifyCarsByDistance(newCars.filter((c) => c.running))
     : newCars.filter((c) => c.running).sort((x, y) => x.totalTime - y.totalTime);
   const retired = newCars
     .filter((c) => !c.running)
     .sort((x, y) => (y.retiredOnLap ?? 0) - (x.retiredOnLap ?? 0));
 
-  // Compress the field on safety-car deployment (bunch up behind the leader).
-  if (scResult.justDeployed && running.length > 0) {
-    const lead = running[0].totalTime;
-    running.forEach((c, i) => (c.totalTime = lead + i * 1));
+  if (state.circuit) {
+    const pitLaneWasOpen = raceControl.pitLaneOpen;
+    const catchUp = applyRaceControlQueueCatchUp(running, state.circuit, raceControl.mode, fixedStepSeconds);
+    running = catchUp.cars;
+    raceControl = { ...raceControl, queueFormed: catchUp.queueFormed };
+    raceControl = openPitLaneWhenQueueFormed(raceControl);
+    if (!pitLaneWasOpen && raceControl.pitLaneOpen) {
+      lapEvents.push({ lap: nextLap, text: 'Pit road is now open.' });
+    }
+    const freePass = applyRaceControlFreePass(running, state.circuit, raceControl, state.ruleProfile);
+    running = freePass.cars;
+    raceControl = freePass.state;
+    if (freePass.driverId) {
+      lapEvents.push({ lap: nextLap, text: `${name(freePass.driverId)} receives the free pass and regains one lap.` });
+    }
   }
 
   // Leader position on the current track lap. Used to freeze retired cars on
@@ -773,8 +861,17 @@ export function stepLiveSector(state: LiveRaceState, meta: LiveRaceMeta): LiveRa
 
   running.forEach((c, i) => {
     c.position = i + 1;
-    c.gapToLeader = i === 0 ? 0 : round1(c.totalTime - running[0].totalTime);
-    c.interval = i === 0 ? 0 : round1(c.totalTime - running[i - 1].totalTime);
+    const neutralized = ['SafetyCar', 'PaceCar', 'FullCourseYellow', 'Caution'].includes(raceControl.mode);
+    if (neutralized && c.positionState && running[0]?.positionState) {
+      const speed = Math.max(1, c.positionState.currentSpeedMetersPerSecond);
+      const leaderDistance = running[0].positionState.totalRaceDistanceMeters;
+      const aheadDistance = running[i - 1]?.positionState?.totalRaceDistanceMeters ?? c.positionState.totalRaceDistanceMeters;
+      c.gapToLeader = i === 0 ? 0 : round1((leaderDistance - c.positionState.totalRaceDistanceMeters) / speed);
+      c.interval = i === 0 ? 0 : round1((aheadDistance - c.positionState.totalRaceDistanceMeters) / speed);
+    } else {
+      c.gapToLeader = i === 0 ? 0 : round1(c.totalTime - running[0].totalTime);
+      c.interval = i === 0 ? 0 : round1(c.totalTime - running[i - 1].totalTime);
+    }
   });
   retired.forEach((c) => {
     c.position = null;
@@ -802,9 +899,39 @@ export function stepLiveSector(state: LiveRaceState, meta: LiveRaceMeta): LiveRa
     lapEvents.push(...battleEvents);
   }
 
-  const carsWithDistanceTraffic = applyDistanceBasedTrafficState([...running, ...retired]);
+  const carsWithDistanceTraffic = applyDistanceBasedTrafficState([...running, ...retired], state.circuit);
   running.splice(0, running.length, ...carsWithDistanceTraffic.filter((car) => car.running));
   retired.splice(0, retired.length, ...carsWithDistanceTraffic.filter((car) => !car.running));
+
+  let battleStates = state.battleStates ?? {};
+  if (state.circuit && !scResult.safetyCar.active) {
+    const battleResult = stepBattleStates(running, state.circuit, battleStates, state.cars);
+    running.splice(0, running.length, ...battleResult.cars.filter((car) => car.running));
+    battleStates = battleResult.states;
+    const leaderDistance = running[0]?.positionState?.totalRaceDistanceMeters ?? 0;
+    running.forEach((car, index) => {
+      car.position = index + 1;
+      const distance = car.positionState?.totalRaceDistanceMeters ?? leaderDistance;
+      const speed = Math.max(1, car.positionState?.currentSpeedMetersPerSecond ?? 1);
+      const aheadDistance = index > 0
+        ? running[index - 1]?.positionState?.totalRaceDistanceMeters ?? distance
+        : distance;
+      car.gapToLeader = index === 0 ? 0 : round1((leaderDistance - distance) / speed);
+      car.interval = index === 0 ? 0 : round1((aheadDistance - distance) / speed);
+    });
+    for (const outcome of battleResult.outcomes) {
+      const attacker = name(outcome.attackerId);
+      const defender = name(outcome.defenderId);
+      const text = outcome.outcome === 'CleanPass'
+        ? `${attacker} completes a clean pass on ${defender} for P${running.findIndex((car) => car.driverId === outcome.attackerId) + 1}.`
+        : outcome.outcome === 'AttackerLosesTime'
+          ? `${attacker} loses time after an unsuccessful move on ${defender}.`
+          : `${defender} holds off ${attacker}'s passing attempt.`;
+      lapEvents.push({ lap: nextLap, text, category: 'battle' });
+    }
+  } else if (scResult.safetyCar.active) {
+    battleStates = {};
+  }
 
   // --- Live status (risk bands, traffic, readable message) for running cars ---
   running.forEach((c, i) => {
@@ -896,13 +1023,19 @@ export function stepLiveSector(state: LiveRaceState, meta: LiveRaceMeta): LiveRa
     stintEvents = [];
   }
 
+  if (phase === 'finished') {
+    raceControl = stepRaceControlState(raceControl, scResult, state.ruleProfile, nextLap, true);
+  }
+
   return {
     ...state,
     currentLap: isFinalSector ? nextLap : state.currentLap,
+    simulationClockSeconds: round3((state.simulationClockSeconds ?? 0) + fixedStepSeconds),
     sector: nextSector,
     phase,
     weather,
     safetyCar: scResult.safetyCar,
+    raceControl,
     cars: carsWithStints,
     events: [...state.events, ...lapEvents, ...recEvents, ...stintEvents],
     pendingPrompt: null,
@@ -912,6 +1045,7 @@ export function stepLiveSector(state: LiveRaceState, meta: LiveRaceMeta): LiveRa
     ignoredRecs,
     recCooldowns,
     battleTracker,
+    battleStates,
     retirements,
     lastIncident:
       incidentDriverIds.length > 0
