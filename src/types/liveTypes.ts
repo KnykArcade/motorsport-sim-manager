@@ -9,6 +9,7 @@
 import type { RaceFinishStatus, Series } from './gameTypes';
 import type { CircuitSegmentSet } from './circuitTypes';
 import type { RaceRuleProfile } from './raceRulesTypes';
+import type { PitJourneyState, PitVisitBreakdown } from './pitTypes';
 import type { CarPositionState } from './positionTypes';
 import type { RaceEvent } from './simTypes';
 
@@ -129,6 +130,8 @@ export type PitStopState = {
   // deployment number that prompted this car so the recommendation stays off
   // the board until the next SC deployment.
   lastSafetyCarPitPromptDeployment?: number | null;
+  journey?: PitJourneyState | null;
+  lastVisitBreakdown?: PitVisitBreakdown | null;
 };
 
 export type PitStopResultTier = 'Clean' | 'Minor' | 'Moderate' | 'Major';

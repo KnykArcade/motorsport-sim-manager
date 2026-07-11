@@ -77,3 +77,11 @@ export type PitTransitAllocation = {
   fromBoxSeconds: number;
   exitSeconds: number;
 };
+
+export type PitJourneyState = {
+  phase: PitJourneyPhase;
+  allocation: PitTransitAllocation;
+  breakdown: PitVisitBreakdown;
+  appliedLossSeconds: number;
+  serviceCompleted: boolean;
+};
