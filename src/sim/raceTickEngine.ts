@@ -60,7 +60,7 @@ import {
 import { markSafetyCarPitPrompted } from './safetyCarStrategy';
 import { beginPitJourney, advancePitJourneyForElapsedSeconds } from './pitJourneyEngine';
 import { findPitTransitRecord } from '../data/pit/pitDataLookup';
-import { applyRaceControlQueueCatchUp, initialRaceControlState, openPitLaneWhenQueueFormed, stepRaceControlState } from './raceControlEngine';
+import { applyRaceControlFreePass, applyRaceControlQueueCatchUp, initialRaceControlState, openPitLaneWhenQueueFormed, stepRaceControlState } from './raceControlEngine';
 import { generateRaceEventPool, resolveRaceEventTrigger } from './raceEventEngine';
 import { rollReliabilityIssue } from './reliabilityEngine';
 import { findOption, applyDecisionEffects } from './raceDecisionEngine';
@@ -842,6 +842,12 @@ export function stepLiveSector(state: LiveRaceState, meta: LiveRaceMeta): LiveRa
     raceControl = openPitLaneWhenQueueFormed(raceControl);
     if (!pitLaneWasOpen && raceControl.pitLaneOpen) {
       lapEvents.push({ lap: nextLap, text: 'Pit road is now open.' });
+    }
+    const freePass = applyRaceControlFreePass(running, state.circuit, raceControl, state.ruleProfile);
+    running = freePass.cars;
+    raceControl = freePass.state;
+    if (freePass.driverId) {
+      lapEvents.push({ lap: nextLap, text: `${name(freePass.driverId)} receives the free pass and regains one lap.` });
     }
   }
 

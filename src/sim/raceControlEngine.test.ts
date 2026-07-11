@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import { selectRaceRuleProfile } from '../data/rules/raceRuleProfiles';
-import { applyRaceControlQueueCatchUp, initialRaceControlState, openPitLaneWhenQueueFormed, stepRaceControlState } from './raceControlEngine';
+import { applyRaceControlFreePass, applyRaceControlQueueCatchUp, initialRaceControlState, openPitLaneWhenQueueFormed, stepRaceControlState } from './raceControlEngine';
 import type { CircuitSegmentSet } from '../types/circuitTypes';
 import type { LiveCarState } from '../types/liveTypes';
-import { createInitialCarPositionState } from './segmentRaceEngine';
+import { createInitialCarPositionState, repositionCarAtRaceDistance } from './segmentRaceEngine';
 
 describe('race control state engine', () => {
   it('uses SafetyCar for F1 and PaceCar for NASCAR', () => {
@@ -60,6 +60,39 @@ describe('race control state engine', () => {
     expect(openPitLaneWhenQueueFormed(state).pitLaneOpen).toBe(false);
     expect(openPitLaneWhenQueueFormed({ ...state, queueFormed: true }).pitLaneOpen).toBe(true);
   });
+
+  it('does not erase lap deficits while forming the caution queue', () => {
+    const cars = [car('leader', 2500), car('lead-lap', 2200), car('lapped', 1400)];
+    const result = applyRaceControlQueueCatchUp(cars, circuit, 'PaceCar', 100);
+    expect(result.queueFormed).toBe(true);
+    expect(result.cars.find((candidate) => candidate.driverId === 'lapped')!.positionState!.completedLaps).toBe(1);
+    expect(result.cars.find((candidate) => candidate.driverId === 'lapped')!.positionState!.totalRaceDistanceMeters).toBe(1400);
+  });
+
+  it('awards one free pass to the highest-running lapped car after the queue forms', () => {
+    const profile = selectRaceRuleProfile('NASCAR', 2003);
+    const state = { ...initialRaceControlState(profile), mode: 'PaceCar' as const, queueFormed: true };
+    const result = applyRaceControlFreePass(
+      [car('leader', 2500), car('lead-lap', 2200), car('first-lapped', 1400), car('second-lapped', 1300)],
+      circuit,
+      state,
+      profile,
+    );
+    expect(result.driverId).toBe('first-lapped');
+    expect(result.state.freePassDriverId).toBe('first-lapped');
+    expect(result.cars.find((candidate) => candidate.driverId === 'first-lapped')!.positionState!.totalRaceDistanceMeters).toBe(2188);
+    expect(result.cars.find((candidate) => candidate.driverId === 'second-lapped')!.positionState!.totalRaceDistanceMeters).toBe(1300);
+    expect(applyRaceControlFreePass(result.cars, circuit, result.state, profile).driverId).toBeNull();
+  });
+
+  it('does not award a free pass before the queue forms or when the era disallows it', () => {
+    const modern = selectRaceRuleProfile('NASCAR', 2003);
+    const historical = selectRaceRuleProfile('NASCAR', 2002);
+    const cars = [car('leader', 2500), car('lapped', 1400)];
+    expect(applyRaceControlFreePass(cars, circuit, initialRaceControlState(modern), modern).driverId).toBeNull();
+    const queued = { ...initialRaceControlState(historical), mode: 'PaceCar' as const, queueFormed: true };
+    expect(applyRaceControlFreePass(cars, circuit, queued, historical).driverId).toBeNull();
+  });
 });
 
 const circuit: CircuitSegmentSet = {
@@ -72,6 +105,6 @@ function car(driverId: string, distance: number): LiveCarState {
   return {
     driverId, running: true, totalTime: 0,
     pit: { inPitThisLap: false },
-    positionState: { ...createInitialCarPositionState(), totalRaceDistanceMeters: distance },
+    positionState: repositionCarAtRaceDistance(createInitialCarPositionState(), distance, circuit),
   } as LiveCarState;
 }
