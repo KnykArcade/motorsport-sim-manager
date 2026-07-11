@@ -7,6 +7,8 @@
 // existing `RaceResult[]` shape so standings/news/morale are unaffected.
 
 import type { RaceFinishStatus, Series } from './gameTypes';
+import type { CircuitSegmentSet } from './circuitTypes';
+import type { CarPositionState } from './positionTypes';
 import type { RaceEvent } from './simTypes';
 
 // ---------------------------------------------------------------------------
@@ -404,6 +406,9 @@ export type LiveCarState = {
   // stopped on the track map until the incident is cleared.
   retiredTrackProgress?: number;
   lastIncident?: string;
+  // Authoritative segment/distance position used by the segment-based live
+  // simulation. Kept optional while the legacy lap-tick engine is migrated.
+  positionState?: CarPositionState;
 
   // Per-car simulation parameters (set at creation, mostly constant).
   paceRating: number; // baseline pace score (higher = faster) — internal scale
@@ -481,6 +486,10 @@ export type LiveRaceState = {
   raceId: string;
   trackId: string;
   seed: string;
+  simVersion?: 2;
+  simulationClockSeconds?: number;
+  fixedStepSeconds?: number;
+  circuit?: CircuitSegmentSet;
   totalLaps: number;
   series?: Series;
   currentLap: number; // 0 = pre-start formation
