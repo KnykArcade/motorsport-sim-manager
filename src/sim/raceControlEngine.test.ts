@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { selectRaceRuleProfile } from '../data/rules/raceRuleProfiles';
-import { applyRaceControlQueueCatchUp, initialRaceControlState, stepRaceControlState } from './raceControlEngine';
+import { applyRaceControlQueueCatchUp, initialRaceControlState, openPitLaneWhenQueueFormed, stepRaceControlState } from './raceControlEngine';
 import type { CircuitSegmentSet } from '../types/circuitTypes';
 import type { LiveCarState } from '../types/liveTypes';
 import { createInitialCarPositionState } from './segmentRaceEngine';
@@ -10,8 +10,13 @@ describe('race control state engine', () => {
     const transition = { safetyCar: { active: true, lapsRemaining: 3, deployedOnLap: 5, reason: 'Incident', deployments: 1 }, justDeployed: true, justEnded: false };
     const f1 = selectRaceRuleProfile('F1', 1995);
     const nascar = selectRaceRuleProfile('NASCAR', 2026);
-    expect(stepRaceControlState(initialRaceControlState(f1), transition, f1, 5).mode).toBe('SafetyCar');
-    expect(stepRaceControlState(initialRaceControlState(nascar), transition, nascar, 5).mode).toBe('PaceCar');
+    const f1State = stepRaceControlState(initialRaceControlState(f1), transition, f1, 5);
+    const nascarState = stepRaceControlState(initialRaceControlState(nascar), transition, nascar, 5);
+    expect(f1State.mode).toBe('SafetyCar');
+    expect(f1State.pitLaneOpen).toBe(true);
+    expect(nascarState.mode).toBe('PaceCar');
+    expect(nascarState.pitLaneOpen).toBe(false);
+    expect(nascarState.pitLaneClosedOnLap).toBe(5);
   });
 
   it('moves through a restart state before returning green', () => {
@@ -48,6 +53,12 @@ describe('race control state engine', () => {
     expect(formed).toBe(true);
     expect(cars[0]!.positionState!.totalRaceDistanceMeters - cars[1]!.positionState!.totalRaceDistanceMeters).toBeCloseTo(12);
     expect(applyRaceControlQueueCatchUp(cars, circuit, 'Green', 10).cars).toEqual(cars);
+  });
+
+  it('reopens a closed pit lane only after the physical queue forms', () => {
+    const state = { ...initialRaceControlState(), mode: 'PaceCar' as const, pitLaneOpen: false };
+    expect(openPitLaneWhenQueueFormed(state).pitLaneOpen).toBe(false);
+    expect(openPitLaneWhenQueueFormed({ ...state, queueFormed: true }).pitLaneOpen).toBe(true);
   });
 });
 

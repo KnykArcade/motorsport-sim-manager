@@ -19,4 +19,6 @@ export type LiveRaceControlState = {
   restartProcedure: 'Standing' | 'RollingSingleFile' | 'RollingDoubleFile' | 'SeriesDefault';
   deployments: number;
   queueFormed: boolean;
+  pitLaneOpen: boolean;
+  pitLaneClosedOnLap: number | null;
 };
