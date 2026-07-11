@@ -128,4 +128,36 @@ describe('TrackMapAssetPanel', () => {
     expect(html).toContain('data-track-map-driver="mansell"');
     expect(html).toContain('data-track-map-driver="patrese"');
   });
+
+  it('renders a Batch 1 historic map through the shared image-backed path', () => {
+    const phoenixDots: TrackDot[] = [
+      { ...dots[0], driverId: 'mansell', label: '5', year: 1990, trackProgress: 0.2, rank: 1 },
+      { ...dots[1], driverId: 'patrese', label: '6', year: 1990, trackProgress: 0.207, rank: 2 },
+    ];
+    const html = renderToStaticMarkup(
+      <TrackMapAssetPanel
+        series="F1"
+        year={1990}
+        trackId="phoenix-street-circuit-1990"
+        trackName="Phoenix Street Circuit"
+        dots={phoenixDots}
+        rotation={0.2}
+        eraTheme="f1-1990s"
+      />,
+    );
+
+    expect(html).toContain('viewBox="0 0 1000 500"');
+    expect(html).toContain('preserveAspectRatio="none"');
+    expect(html).toContain('data-track-style="historic-phoenix-image-2.5d"');
+    expect(html).toContain('data-track-map-background="phoenix-historic-2p5d"');
+    expect(html).toContain('data-testid="phoenix-historic-image"');
+    expect(html).toContain('href="/assets/track-maps/phoenix-historic-2p5d.png"');
+    expect(html).toContain('width="1000"');
+    expect(html).toContain('height="500"');
+    expect(html).not.toContain('data-track-layer="racing-surface"');
+    expect(html).toContain('data-race-map-marker="f1_1990s"');
+    expect(html).toContain('data-marker-year="1990"');
+    expect(html).toContain('data-track-map-driver="mansell"');
+    expect(html).toContain('data-track-map-driver="patrese"');
+  });
 });
