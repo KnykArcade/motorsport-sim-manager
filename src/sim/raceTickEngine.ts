@@ -20,7 +20,7 @@ import type {
 } from '../types/liveTypes';
 import { createSeededRandom, deriveSeed } from './random';
 import { REF_LAP, type LiveRaceMeta } from './liveRaceEngine';
-import { advanceCarPositionThroughSegments, applyPositionToLegacyCarFields, classifyCarsByDistance, createInitialCarPositionState } from './segmentRaceEngine';
+import { advanceCarPositionThroughSegments, applyDistanceBasedTrafficState, applyPositionToLegacyCarFields, classifyCarsByDistance, createInitialCarPositionState } from './segmentRaceEngine';
 import { estimateLapTimeFromLivePace, splitLapIntoCircuitSectorTimes } from './segmentPaceEngine';
 import {
   computeLivePace,
@@ -802,6 +802,10 @@ export function stepLiveSector(state: LiveRaceState, meta: LiveRaceMeta): LiveRa
     lapEvents.push(...battleEvents);
   }
 
+  const carsWithDistanceTraffic = applyDistanceBasedTrafficState([...running, ...retired]);
+  running.splice(0, running.length, ...carsWithDistanceTraffic.filter((car) => car.running));
+  retired.splice(0, retired.length, ...carsWithDistanceTraffic.filter((car) => !car.running));
+
   // --- Live status (risk bands, traffic, readable message) for running cars ---
   running.forEach((c, i) => {
     const intervalAhead = i === 0 ? 0 : c.interval;
@@ -811,7 +815,13 @@ export function stepLiveSector(state: LiveRaceState, meta: LiveRaceMeta): LiveRa
     const freshFromPit = c.pit.stopsMade > 0 && c.tire.age <= 2 && !c.pit.inPitThisLap;
     c.reliabilityRiskLevel = reliabilityRiskLevel(c);
     c.crashRiskLevel = crashRiskLevel(c);
-    c.trafficStatus = trafficStatus({ mode: c.paceMode, intervalAhead, underPressure });
+    c.trafficStatus = trafficStatus({
+      mode: c.paceMode,
+      intervalAhead,
+      underPressure,
+      distanceAheadMeters: c.positionState?.distanceToCarAheadMeters,
+      distanceBehindMeters: c.positionState?.distanceToCarBehindMeters,
+    });
     c.statusMessage = statusMessage({
       car: c,
       intervalAhead,

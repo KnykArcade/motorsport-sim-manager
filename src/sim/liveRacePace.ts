@@ -304,10 +304,17 @@ export function trafficStatus(inp: {
   mode: PaceMode;
   intervalAhead: number;
   underPressure: boolean;
+  distanceAheadMeters?: number | null;
+  distanceBehindMeters?: number | null;
 }): TrafficStatus {
-  const inDirtyAir = inp.intervalAhead > 0 && inp.intervalAhead < DIRTY_AIR_GAP;
+  const inDirtyAir = inp.distanceAheadMeters != null
+    ? inp.distanceAheadMeters < 100
+    : inp.intervalAhead > 0 && inp.intervalAhead < DIRTY_AIR_GAP;
+  const underPressure = inp.distanceBehindMeters != null
+    ? inp.distanceBehindMeters < 100
+    : inp.underPressure;
   if (inp.mode === 'Attack' && inDirtyAir) return 'Attacking';
-  if (inp.mode === 'Defend' && inp.underPressure) return 'Defending';
+  if (inp.mode === 'Defend' && underPressure) return 'Defending';
   if (inDirtyAir) return 'InTraffic';
   return 'Clear';
 }
