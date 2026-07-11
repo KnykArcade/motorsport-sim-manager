@@ -132,14 +132,14 @@ const HISTORIC_IMAGE_TRACK_MAPS: Record<string, ImageBackedTrackMapConfig> = {
   },
   'autodromo-do-estoril-historic': {
     backgroundKey: 'estoril-historic-2p5d',
-    imageHref: '/assets/track-maps/estoril-historic-2.5d.png',
+    imageHref: '/assets/track-maps/estoril-historic-2p5d.png',
     points: BATCH_1_HISTORIC_IMAGE_POINTS.estoril,
     styleKey: 'historic-estoril-image-2.5d',
     testId: 'estoril-historic-image',
   },
   'ti-circuit-aida-historic': {
     backgroundKey: 'aida-historic-2p5d',
-    imageHref: '/assets/track-maps/aida-historic-2.5d.png',
+    imageHref: '/assets/track-maps/aida-historic-2p5d.png',
     points: BATCH_1_HISTORIC_IMAGE_POINTS.aida,
     styleKey: 'historic-aida-image-2.5d',
     testId: 'aida-historic-image',
