@@ -92,6 +92,7 @@ const KYALAMI_HISTORIC_IMAGE_POINTS: TrackMapPoint[] = [
   [734.4, 569.3],
   [679.7, 614.3],
 ];
+const KYALAMI_HISTORIC_MAP_POINTS: TrackMapPoint[] = KYALAMI_HISTORIC_IMAGE_POINTS.map(([x, y]) => [x, y * (H / KYALAMI_IMAGE_SIZE)]);
 
 export function TrackMapAssetPanel({
   series,
@@ -130,7 +131,7 @@ export function TrackMapAssetPanel({
       aria-label={`Live track map for ${trackName ?? match.geometry.name}`}
       data-testid="track-map-asset-panel"
       data-track-map-match={match.matchType}
-      preserveAspectRatio={isHistoricKyalami ? 'xMidYMid meet' : 'none'}
+      preserveAspectRatio="none"
     >
       <AssetTrackMap
         geometry={match.geometry}
@@ -170,10 +171,10 @@ function AssetTrackMap({
 }) {
   const isHistoricKyalami = eraTheme === 'f1-1990s' && geometry.id === 'kyalami-grand-prix-circuit-historic';
   const fitted = fitPoints(geometry);
-  const trackPoints = isHistoricKyalami ? KYALAMI_HISTORIC_IMAGE_POINTS : fitted;
+  const trackPoints = isHistoricKyalami ? KYALAMI_HISTORIC_MAP_POINTS : fitted;
   const pathD = toPath(fitted);
-  const mapWidth = isHistoricKyalami ? KYALAMI_IMAGE_SIZE : W;
-  const mapHeight = isHistoricKyalami ? KYALAMI_IMAGE_SIZE : H;
+  const mapWidth = W;
+  const mapHeight = H;
   const showSet = new Set(incidentDriverIds ?? []);
   const running = dots
     .filter((dot) => (dot.running || showSet.has(dot.driverId)) && !dot.inPit && !dot.pitRequested)
@@ -202,9 +203,9 @@ function AssetTrackMap({
             x="0"
             y="0"
             width={KYALAMI_IMAGE_SIZE}
-            height={KYALAMI_IMAGE_SIZE}
+            height={H}
             href={KYALAMI_HISTORIC_MAP_IMAGE}
-            preserveAspectRatio="xMidYMid meet"
+            preserveAspectRatio="none"
             data-track-layer="scenery-background"
             data-testid="kyalami-historic-image"
           />
@@ -355,13 +356,13 @@ function zoomBox(
   geometry: TrackMapGeometry,
   isHistoricKyalami: boolean,
 ): string {
-  const mapWidth = isHistoricKyalami ? KYALAMI_IMAGE_SIZE : W;
-  const mapHeight = isHistoricKyalami ? KYALAMI_IMAGE_SIZE : H;
+  const mapWidth = W;
+  const mapHeight = H;
   if (!zoom || zoom <= 1) {
     return `0 0 ${mapWidth} ${mapHeight}`;
   }
 
-  const fitted = isHistoricKyalami ? KYALAMI_HISTORIC_IMAGE_POINTS : fitPoints(geometry);
+  const fitted = isHistoricKyalami ? KYALAMI_HISTORIC_MAP_POINTS : fitPoints(geometry);
   const focus = focusPoint(fitted, focusDriverIds, focusTrackProgress, dots, mapWidth, mapHeight);
   const width = mapWidth / zoom;
   const height = mapHeight / zoom;
