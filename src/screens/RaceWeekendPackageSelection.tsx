@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useState } from 'react';
 import { useGame } from '../game/GameContext';
 import { currentRace } from '../game/careerState';
 import { getTrackById } from '../data';
@@ -32,28 +32,24 @@ export function RaceWeekendPackageSelection({ onConfirm, eraTheme }: Props) {
     state?.raceWeekendPackage && race && state.raceWeekendPackage.raceId === race.id
       ? state.raceWeekendPackage
       : undefined;
-  const [selected, setSelected] = useState<RaceWeekendPackageType | null>(
-    currentPackage?.packageType ?? null,
-  );
+  const [selection, setSelection] = useState<{
+    raceId: string | null;
+    packageType: RaceWeekendPackageType | null;
+  }>({
+    raceId: race?.id ?? null,
+    packageType: currentPackage?.packageType ?? null,
+  });
+  const selected =
+    selection.raceId === (race?.id ?? null)
+      ? selection.packageType
+      : currentPackage?.packageType ?? null;
+  const setSelected = (packageType: RaceWeekendPackageType) => {
+    setSelection({ raceId: race?.id ?? null, packageType });
+  };
 
-  useEffect(() => {
-    setSelected(currentPackage?.packageType ?? null);
-  }, [currentPackage?.packageType, race?.id]);
-
-  const availablePackages = useMemo(
-    () => (state ? availablePackagesForSeries(state.series) : []),
-    [state],
-  );
-
-  const allCosts = useMemo(() => {
-    if (!state || !team || !track) return null;
-    return computeAllPackageCosts(state.series, team, track);
-  }, [state, team, track]);
-
-  const canAffordNormal = useMemo(
-    () => (state && team && track ? canAffordAnyNormalPackage(state.series, team, track) : true),
-    [state, team, track],
-  );
+  const availablePackages = state ? availablePackagesForSeries(state.series) : [];
+  const allCosts = state && team && track ? computeAllPackageCosts(state.series, team, track) : null;
+  const canAffordNormal = state && team && track ? canAffordAnyNormalPackage(state.series, team, track) : true;
 
   if (!state || !race || !track || !team || !allCosts) {
     return (
