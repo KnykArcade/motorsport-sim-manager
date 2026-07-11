@@ -1,11 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { advancePitJourney, beginPitJourney } from './pitJourneyEngine';
+import { advancePitJourney, advancePitJourneyForElapsedSeconds, beginPitJourney } from './pitJourneyEngine';
 
 describe('pit journey engine', () => {
   it('applies transit and stationary service exactly once across physical phases', () => {
     let journey = visit();
     const losses: number[] = [];
-    for (let step = 0; step < 10 && journey.phase !== 'Rejoined'; step++) {
+    for (let step = 0; step < 20 && journey.phase !== 'Rejoined'; step++) {
       const result = advancePitJourney(journey);
       journey = result.journey;
       losses.push(result.appliedThisStepSeconds);
@@ -40,6 +40,38 @@ describe('pit journey engine', () => {
     expect(phases).not.toContain('StationaryService');
     expect(journey.serviceCompleted).toBe(true);
     expect(journey.appliedLossSeconds).toBe(journey.breakdown.totalPitVisitLossSeconds);
+  });
+
+  it('advances through multiple phases using elapsed simulation time', () => {
+    let journey = visit();
+    const first = advancePitJourneyForElapsedSeconds(journey, 5);
+    journey = first.journey;
+    expect(journey.phase).toBe('PitTransitToBox');
+    expect(journey.phaseElapsedSeconds).toBeGreaterThan(0);
+    expect(first.appliedThisStepSeconds).toBeCloseTo(5);
+
+    const finish = advancePitJourneyForElapsedSeconds(journey, 30);
+    expect(finish.journey.phase).toBe('Rejoined');
+    expect(finish.journey.appliedLossSeconds).toBe(finish.journey.breakdown.totalPitVisitLossSeconds);
+  });
+
+  it('consumes the separate queue delay before stationary service', () => {
+    let journey = visit();
+    while (journey.phase !== 'PitTransitToBox') journey = advancePitJourney(journey).journey;
+    journey = advancePitJourney(journey, true).journey;
+    const waiting = advancePitJourneyForElapsedSeconds(journey, 0.6, true);
+    expect(waiting.journey.phase).toBe('QueuedBehindTeammate');
+    expect(waiting.journey.phaseElapsedSeconds).toBe(0.6);
+    expect(waiting.consumedElapsedSeconds).toBe(0.6);
+    expect(waiting.appliedThisStepSeconds).toBe(0.6);
+  });
+
+  it('accepts merged foundation state without partial-phase progress', () => {
+    const legacy = visit();
+    delete legacy.phaseElapsedSeconds;
+    const result = advancePitJourneyForElapsedSeconds(legacy, 1);
+    expect(result.journey.appliedLossSeconds).toBe(1);
+    expect(Number.isNaN(result.journey.appliedLossSeconds)).toBe(false);
   });
 });
 
