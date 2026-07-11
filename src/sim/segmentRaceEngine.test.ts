@@ -39,6 +39,14 @@ describe('segment race engine', () => {
     expect(result.events.at(-1)).toMatchObject({ type: 'Lap', lap: 1, lapTime: 100 });
   });
 
+  it('uses the same elapsed clock step while car-specific pace changes distance', () => {
+    const fast = advanceCarPositionThroughSegments(createInitialCarPositionState(), circuit, 10, 1.1);
+    const slow = advanceCarPositionThroughSegments(createInitialCarPositionState(), circuit, 10, 0.9);
+    expect(fast.position.authoritativeRaceTime).toBe(10);
+    expect(slow.position.authoritativeRaceTime).toBe(10);
+    expect(fast.position.totalRaceDistanceMeters).toBeGreaterThan(slow.position.totalRaceDistanceMeters);
+  });
+
   it('classifies running cars by authoritative distance before total time', () => {
     const leader = car('leader', 90, 900);
     const chaser = car('chaser', 80, 950);
@@ -66,7 +74,7 @@ describe('segment race engine', () => {
   it('marks attack and defence phases from distance-based pressure', () => {
     const leader = car('leader', 90, 1000);
     leader.paceMode = 'Defend';
-    const chaser = car('chaser', 91, 950);
+    const chaser = car('chaser', 91, 975);
     chaser.paceMode = 'Attack';
 
     const updated = applyDistanceBasedTrafficState([leader, chaser]);

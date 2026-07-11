@@ -257,6 +257,11 @@ export function stepLiveSector(state: LiveRaceState, meta: LiveRaceMeta): LiveRa
   const isFinalSector = currentSectorIndex === 2;
   const isFinalLap = isFinalSector && nextLap >= state.totalLaps;
   const name = (id: string) => meta.driverNames[id] ?? id;
+  const fixedStepSeconds = state.circuit
+    ? state.circuit.segments
+      .filter((segment) => segment.sector === currentSectorIndex + 1)
+      .reduce((sum, segment) => sum + segment.representativeTimeSeconds, 0)
+    : 0;
 
   const lapEvents: RaceEvent[] = [];
   const pittedThisLap: LiveCarState[] = [];
@@ -626,12 +631,20 @@ export function stepLiveSector(state: LiveRaceState, meta: LiveRaceMeta): LiveRa
       const sectorTime = c.lastSectors[currentSectorIndex];
       c.totalTime += sectorTime;
       if (state.circuit && c.running) {
+        const legacyTotalTime = c.totalTime;
+        const lapTime = Math.max(1, (c.lastSectors ?? [REF_LAP / 3, REF_LAP / 3, REF_LAP / 3]).reduce((sum, seconds) => sum + seconds, 0));
+        const traversalPaceMultiplier = state.circuit.baselineLapTimeSeconds / lapTime;
         const advanced = advanceCarPositionThroughSegments(
-          c.positionState ?? createInitialCarPositionState({ raceTimeSeconds: c.totalTime - sectorTime }),
+          c.positionState ?? createInitialCarPositionState({ raceTimeSeconds: state.simulationClockSeconds ?? 0 }),
           state.circuit,
-          sectorTime,
+          fixedStepSeconds,
+          traversalPaceMultiplier,
         );
         c = applyPositionToLegacyCarFields(c, advanced.position, advanced.events);
+        // RaceResult and current UI gaps still consume cumulative time during
+        // this compatibility slice. Physical order, laps and crossings come
+        // from positionState; remove this projection after those consumers move.
+        c.totalTime = legacyTotalTime;
       }
     }
     if (isFinalSector) {
@@ -802,7 +815,7 @@ export function stepLiveSector(state: LiveRaceState, meta: LiveRaceMeta): LiveRa
     lapEvents.push(...battleEvents);
   }
 
-  const carsWithDistanceTraffic = applyDistanceBasedTrafficState([...running, ...retired]);
+  const carsWithDistanceTraffic = applyDistanceBasedTrafficState([...running, ...retired], state.circuit);
   running.splice(0, running.length, ...carsWithDistanceTraffic.filter((car) => car.running));
   retired.splice(0, retired.length, ...carsWithDistanceTraffic.filter((car) => !car.running));
 
@@ -899,6 +912,7 @@ export function stepLiveSector(state: LiveRaceState, meta: LiveRaceMeta): LiveRa
   return {
     ...state,
     currentLap: isFinalSector ? nextLap : state.currentLap,
+    simulationClockSeconds: round3((state.simulationClockSeconds ?? 0) + fixedStepSeconds),
     sector: nextSector,
     phase,
     weather,
