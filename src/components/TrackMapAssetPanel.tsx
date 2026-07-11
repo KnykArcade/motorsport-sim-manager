@@ -3,7 +3,10 @@ import { GAMEPLAY_MARKER_SIZE, RaceMapSeriesMarker } from './RaceMapSeriesMarker
 import { normalizeSeries } from './seriesMarker';
 import { getTrackMapAsset } from '../data/trackMaps/getTrackMapAsset';
 import type { TrackMapGeometry, TrackMapPoint } from '../data/trackMaps/trackMapGeometry';
-import { BATCH_1_HISTORIC_IMAGE_POINTS } from '../data/trackMaps/historicImageTrackMaps';
+import {
+  BATCH_1_HISTORIC_IMAGE_POINTS,
+  BATCH_2_HISTORIC_IMAGE_POINTS,
+} from '../data/trackMaps/historicImageTrackMaps';
 
 type Props = {
   series?: string;
@@ -143,6 +146,48 @@ const HISTORIC_IMAGE_TRACK_MAPS: Record<string, ImageBackedTrackMapConfig> = {
     points: BATCH_1_HISTORIC_IMAGE_POINTS.aida,
     styleKey: 'historic-aida-image-2.5d',
     testId: 'aida-historic-image',
+  },
+  'paul-ricard-historic': {
+    backgroundKey: 'paul-ricard-historic-2p5d',
+    imageHref: '/assets/track-maps/paul-ricard-historic-2p5d.png',
+    points: BATCH_2_HISTORIC_IMAGE_POINTS.paulRicard,
+    styleKey: 'historic-paul-ricard-image-2.5d',
+    testId: 'paul-ricard-historic-image',
+  },
+  'jerez-historic': {
+    backgroundKey: 'jerez-historic-2p5d',
+    imageHref: '/assets/track-maps/jerez-historic-2p5d.png',
+    points: BATCH_2_HISTORIC_IMAGE_POINTS.jerez,
+    styleKey: 'historic-jerez-image-2.5d',
+    testId: 'jerez-historic-image',
+  },
+  'circuito-de-jerez-historic': {
+    backgroundKey: 'jerez-historic-2p5d',
+    imageHref: '/assets/track-maps/jerez-historic-2p5d.png',
+    points: BATCH_2_HISTORIC_IMAGE_POINTS.jerez,
+    styleKey: 'historic-jerez-image-2.5d',
+    testId: 'jerez-historic-image',
+  },
+  'autodromo-oscar-alfredo-galvez-historic': {
+    backgroundKey: 'buenos-aires-galvez-historic-2p5d',
+    imageHref: '/assets/track-maps/buenos-aires-galvez-historic-2p5d.png',
+    points: BATCH_2_HISTORIC_IMAGE_POINTS.buenosAires,
+    styleKey: 'historic-buenos-aires-galvez-image-2.5d',
+    testId: 'buenos-aires-galvez-historic-image',
+  },
+  'hockenheimring-2016': {
+    backgroundKey: 'hockenheim-historic-2p5d',
+    imageHref: '/assets/track-maps/hockenheim-historic-2p5d.png',
+    points: BATCH_2_HISTORIC_IMAGE_POINTS.hockenheim,
+    styleKey: 'historic-hockenheim-image-2.5d',
+    testId: 'hockenheim-historic-image',
+  },
+  'circuit-gilles-villeneuve-2016': {
+    backgroundKey: 'gilles-villeneuve-historic-2p5d',
+    imageHref: '/assets/track-maps/gilles-villeneuve-historic-2p5d.png',
+    points: BATCH_2_HISTORIC_IMAGE_POINTS.gillesVilleneuve,
+    styleKey: 'historic-gilles-villeneuve-image-2.5d',
+    testId: 'gilles-villeneuve-historic-image',
   },
 };
 
