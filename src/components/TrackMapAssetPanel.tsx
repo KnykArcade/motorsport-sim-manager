@@ -6,6 +6,7 @@ import type { TrackMapGeometry, TrackMapPoint } from '../data/trackMaps/trackMap
 import {
   BATCH_1_HISTORIC_IMAGE_POINTS,
   BATCH_2_HISTORIC_IMAGE_POINTS,
+  BATCH_3_HISTORIC_IMAGE_POINTS,
 } from '../data/trackMaps/historicImageTrackMaps';
 
 type Props = {
@@ -188,6 +189,13 @@ const HISTORIC_IMAGE_TRACK_MAPS: Record<string, ImageBackedTrackMapConfig> = {
     points: BATCH_2_HISTORIC_IMAGE_POINTS.gillesVilleneuve,
     styleKey: 'historic-gilles-villeneuve-image-2.5d',
     testId: 'gilles-villeneuve-historic-image',
+  },
+  'interlagos-2026': {
+    backgroundKey: 'interlagos-historic-2p5d',
+    imageHref: '/assets/track-maps/interlagos-historic-2p5d.png',
+    points: BATCH_3_HISTORIC_IMAGE_POINTS.interlagos,
+    styleKey: 'historic-interlagos-image-2.5d',
+    testId: 'interlagos-historic-image',
   },
 };
 

@@ -192,4 +192,25 @@ describe('TrackMapAssetPanel', () => {
     expect(html).toContain('data-track-map-driver="mansell"');
     expect(html).toContain('data-track-map-driver="patrese"');
   });
+
+  it('renders historic Interlagos using the hand-traced image-backed path', () => {
+    const html = renderToStaticMarkup(
+      <TrackMapAssetPanel
+        series="F1"
+        year={1990}
+        trackId="interlagos-1990"
+        trackName="Interlagos"
+        dots={dots}
+        rotation={0.2}
+        eraTheme="f1-1990s"
+      />,
+    );
+
+    expect(html).toContain('data-track-style="historic-interlagos-image-2.5d"');
+    expect(html).toContain('data-track-map-background="interlagos-historic-2p5d"');
+    expect(html).toContain('data-testid="interlagos-historic-image"');
+    expect(html).toContain('href="/assets/track-maps/interlagos-historic-2p5d.png"');
+    expect(html).not.toContain('data-track-layer="racing-surface"');
+    expect(html).toContain('data-track-map-driver="driver-1"');
+  });
 });
