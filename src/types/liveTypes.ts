@@ -12,6 +12,7 @@ import type { RaceRuleProfile } from './raceRulesTypes';
 import type { PitJourneyState, PitVisitBreakdown } from './pitTypes';
 import type { CarPositionState } from './positionTypes';
 import type { RaceEvent } from './simTypes';
+import type { LiveRaceControlState } from './raceControlTypes';
 
 // ---------------------------------------------------------------------------
 // Weather
@@ -502,6 +503,7 @@ export type LiveRaceState = {
   phase: LiveRacePhase;
   weather: WeatherState;
   safetyCar: SafetyCarState;
+  raceControl?: LiveRaceControlState;
   // Driver relationships for AI disagreement and trust-based beats.
   driverRelationships?: Record<string, import('./relationshipTypes').DriverRelationship>;
   teamOrgRatings?: Record<string, import('./teamRatingsTypes').TeamOrganizationRatings>;

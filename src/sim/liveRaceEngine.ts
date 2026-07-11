@@ -33,6 +33,7 @@ import { DEFAULT_DAMAGE_SETTINGS } from './damageComponents';
 import { getCircuitSegmentsForRace } from '../data/circuits/circuitLookup';
 import { selectRaceRuleProfile } from '../data/rules/raceRuleProfiles';
 import { createInitialCarPositionState, DEFAULT_FIXED_STEP_SECONDS } from './segmentRaceEngine';
+import { initialRaceControlState } from './raceControlEngine';
 
 export type LiveRaceOptions = {
   raceId: string;
@@ -297,6 +298,7 @@ export function createLiveRace(context: RaceContext, options: LiveRaceOptions): 
     phase: 'formation',
     weather,
     safetyCar: initialSafetyCar(),
+    raceControl: initialRaceControlState(ruleProfile),
     cars,
     events,
     pendingPrompt: null,
