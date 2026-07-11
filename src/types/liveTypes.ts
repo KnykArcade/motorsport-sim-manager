@@ -8,6 +8,7 @@
 
 import type { RaceFinishStatus, Series } from './gameTypes';
 import type { CircuitSegmentSet } from './circuitTypes';
+import type { RaceRuleProfile } from './raceRulesTypes';
 import type { CarPositionState } from './positionTypes';
 import type { RaceEvent } from './simTypes';
 
@@ -490,6 +491,7 @@ export type LiveRaceState = {
   simulationClockSeconds?: number;
   fixedStepSeconds?: number;
   circuit?: CircuitSegmentSet;
+  ruleProfile?: RaceRuleProfile;
   totalLaps: number;
   series?: Series;
   currentLap: number; // 0 = pre-start formation

@@ -31,6 +31,7 @@ import { initialSafetyCar, SAFETY_CAR_PIT_SAVING } from './safetyCarEngine';
 import { initialStint } from './strategyStint';
 import { DEFAULT_DAMAGE_SETTINGS } from './damageComponents';
 import { getCircuitSegmentsForRace } from '../data/circuits/circuitLookup';
+import { selectRaceRuleProfile } from '../data/rules/raceRuleProfiles';
 import { createInitialCarPositionState, DEFAULT_FIXED_STEP_SECONDS } from './segmentRaceEngine';
 
 export type LiveRaceOptions = {
@@ -87,6 +88,7 @@ export function createLiveRace(context: RaceContext, options: LiveRaceOptions): 
   const { track } = context;
   const totalLaps = options.totalLaps;
   const circuit = getCircuitSegmentsForRace({ track, year: options.year, series: options.series, totalLaps });
+  const ruleProfile = selectRaceRuleProfile(options.series, options.year, track);
   const weather = initialWeather(track, context.seed);
   const damageSettings = options.damageSettings ?? DEFAULT_DAMAGE_SETTINGS;
 
@@ -288,6 +290,7 @@ export function createLiveRace(context: RaceContext, options: LiveRaceOptions): 
     simulationClockSeconds: 0,
     fixedStepSeconds: DEFAULT_FIXED_STEP_SECONDS,
     circuit,
+    ruleProfile,
     totalLaps,
     currentLap: 0,
     sector: 0,
