@@ -4,6 +4,7 @@ import type { CarPositionState, TrackLane, TrafficPhase } from '../types/positio
 import { applyFinishLineCrossing, applySectorCrossing, createInitialTimingState, type TimingCrossingEvent } from './timingLineEngine';
 
 export const DEFAULT_FIXED_STEP_SECONDS = 1;
+export const DIRTY_AIR_DISTANCE_METERS = 100;
 
 export type SegmentAdvanceResult = {
   position: CarPositionState;
@@ -110,7 +111,7 @@ export function advanceLiveRaceSegmentClock(state: LiveRaceState, elapsedSeconds
     return applyPositionToLegacyCarFields(car, result.position, result.events);
   });
 
-  const ordered = classifyCarsByDistance(cars);
+  const ordered = applyDistanceBasedTrafficState(classifyCarsByDistance(cars));
   ordered.forEach((car, index) => {
     if (car.running) car.position = index + 1;
   });
@@ -130,6 +131,42 @@ export function classifyCarsByDistance(cars: readonly LiveCarState[]): LiveCarSt
     const distanceB = b.positionState?.totalRaceDistanceMeters ?? b.lapsCompleted;
     if (distanceA !== distanceB) return distanceB - distanceA;
     return a.totalTime - b.totalTime;
+  });
+}
+
+export function applyDistanceBasedTrafficState(cars: readonly LiveCarState[]): LiveCarState[] {
+  const running = cars.filter((car) => car.running);
+  const distanceByDriver = new Map(
+    running.map((car) => [car.driverId, car.positionState?.totalRaceDistanceMeters ?? 0]),
+  );
+
+  return cars.map((car) => {
+    if (!car.running || !car.positionState) return car;
+    const runningIndex = running.findIndex((candidate) => candidate.driverId === car.driverId);
+    const ahead = runningIndex > 0 ? running[runningIndex - 1] : undefined;
+    const behind = runningIndex >= 0 ? running[runningIndex + 1] : undefined;
+    const carDistance = distanceByDriver.get(car.driverId) ?? 0;
+    const distanceToCarAheadMeters = ahead
+      ? Math.max(0, (distanceByDriver.get(ahead.driverId) ?? carDistance) - carDistance)
+      : null;
+    const distanceToCarBehindMeters = behind
+      ? Math.max(0, carDistance - (distanceByDriver.get(behind.driverId) ?? carDistance))
+      : null;
+    const closeAhead = distanceToCarAheadMeters != null && distanceToCarAheadMeters < DIRTY_AIR_DISTANCE_METERS;
+    const closeBehind = distanceToCarBehindMeters != null && distanceToCarBehindMeters < DIRTY_AIR_DISTANCE_METERS;
+    const trafficPhase: TrafficPhase = closeAhead
+      ? car.paceMode === 'Attack' ? 'Attacking' : 'InDirtyAir'
+      : closeBehind && car.paceMode === 'Defend' ? 'Defending' : 'ClearAir';
+
+    return {
+      ...car,
+      positionState: {
+        ...car.positionState,
+        distanceToCarAheadMeters,
+        distanceToCarBehindMeters,
+        trafficPhase,
+      },
+    };
   });
 }
 

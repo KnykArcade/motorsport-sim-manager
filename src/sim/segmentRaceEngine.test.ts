@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { CircuitSegmentSet } from '../types/circuitTypes';
 import type { LiveCarState } from '../types/liveTypes';
-import { advanceCarPositionThroughSegments, classifyCarsByDistance, createInitialCarPositionState } from './segmentRaceEngine';
+import { advanceCarPositionThroughSegments, applyDistanceBasedTrafficState, classifyCarsByDistance, createInitialCarPositionState } from './segmentRaceEngine';
 
 const circuit: CircuitSegmentSet = {
   id: 'tiny',
@@ -43,6 +43,35 @@ describe('segment race engine', () => {
     const leader = car('leader', 90, 900);
     const chaser = car('chaser', 80, 950);
     expect(classifyCarsByDistance([leader, chaser]).map((c) => c.driverId)).toEqual(['chaser', 'leader']);
+  });
+
+  it('detects traffic from authoritative distance rather than timing interval', () => {
+    const leader = car('leader', 90, 1000);
+    const chaser = car('chaser', 200, 940);
+    chaser.interval = 12;
+
+    const updated = applyDistanceBasedTrafficState([leader, chaser]);
+    expect(updated[0]?.positionState).toMatchObject({
+      distanceToCarAheadMeters: null,
+      distanceToCarBehindMeters: 60,
+      trafficPhase: 'ClearAir',
+    });
+    expect(updated[1]?.positionState).toMatchObject({
+      distanceToCarAheadMeters: 60,
+      distanceToCarBehindMeters: null,
+      trafficPhase: 'InDirtyAir',
+    });
+  });
+
+  it('marks attack and defence phases from distance-based pressure', () => {
+    const leader = car('leader', 90, 1000);
+    leader.paceMode = 'Defend';
+    const chaser = car('chaser', 91, 950);
+    chaser.paceMode = 'Attack';
+
+    const updated = applyDistanceBasedTrafficState([leader, chaser]);
+    expect(updated[0]?.positionState?.trafficPhase).toBe('Defending');
+    expect(updated[1]?.positionState?.trafficPhase).toBe('Attacking');
   });
 });
 
