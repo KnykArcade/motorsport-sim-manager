@@ -32,9 +32,66 @@ const W = 1000;
 const H = 500;
 const PAD = 54;
 const BOTTOM_BAND = 36;
-const KYALAMI_SURFACE_WIDTH = 38;
+const KYALAMI_IMAGE_SIZE = 1000;
+const KYALAMI_HISTORIC_MAP_IMAGE = '/assets/track-maps/kyalami-historic-2p5d.png';
 const KYALAMI_LANE_OFFSET = 7;
 const CLOSE_RACING_PROGRESS = 0.012;
+
+const KYALAMI_HISTORIC_IMAGE_POINTS: TrackMapPoint[] = [
+  [636.7, 647.5],
+  [593.8, 676.8],
+  [543.9, 714.8],
+  [498, 749],
+  [459, 766.6],
+  [428.7, 754.9],
+  [418.9, 714.8],
+  [424.8, 650.4],
+  [421.9, 582],
+  [408.2, 509.8],
+  [387.7, 445.3],
+  [366.2, 393.6],
+  [341.8, 351.6],
+  [305.7, 347.7],
+  [285.2, 388.7],
+  [270.5, 453.1],
+  [246.1, 518.6],
+  [207, 574.2],
+  [160.2, 619.1],
+  [111.3, 639.6],
+  [76.2, 627.9],
+  [69.3, 584],
+  [89.8, 546.9],
+  [132.8, 532.2],
+  [184.6, 522.5],
+  [222.7, 498],
+  [229.5, 453.1],
+  [235.4, 396.5],
+  [255.9, 350.6],
+  [298.8, 306.6],
+  [345.7, 259.8],
+  [389.6, 216.8],
+  [438.5, 219.7],
+  [462.9, 257.8],
+  [468.8, 330.1],
+  [482.4, 401.4],
+  [515.6, 440.4],
+  [565.4, 462.9],
+  [621.1, 455.1],
+  [670.9, 419.9],
+  [710, 370.1],
+  [750, 322.3],
+  [791, 276.4],
+  [833, 226.6],
+  [883.8, 211.9],
+  [924.8, 240.2],
+  [938.5, 297.9],
+  [931.6, 381.8],
+  [911.1, 455.1],
+  [864.3, 515.6],
+  [795.9, 532.2],
+  [734.4, 569.3],
+  [679.7, 614.3],
+];
 
 export function TrackMapAssetPanel({
   series,
@@ -62,7 +119,8 @@ export function TrackMapAssetPanel({
     );
   }
 
-  const viewBox = zoomBox(zoom, focusDriverIds, focusTrackProgress, dots, match.geometry);
+  const isHistoricKyalami = eraTheme === 'f1-1990s' && match.geometry.id === 'kyalami-grand-prix-circuit-historic';
+  const viewBox = zoomBox(zoom, focusDriverIds, focusTrackProgress, dots, match.geometry, isHistoricKyalami);
 
   return (
     <svg
@@ -72,7 +130,7 @@ export function TrackMapAssetPanel({
       aria-label={`Live track map for ${trackName ?? match.geometry.name}`}
       data-testid="track-map-asset-panel"
       data-track-map-match={match.matchType}
-      preserveAspectRatio="none"
+      preserveAspectRatio={isHistoricKyalami ? 'xMidYMid meet' : 'none'}
     >
       <AssetTrackMap
         geometry={match.geometry}
@@ -110,8 +168,12 @@ function AssetTrackMap({
   incidentDriverIds?: string[];
   safetyCar?: boolean;
 }) {
+  const isHistoricKyalami = eraTheme === 'f1-1990s' && geometry.id === 'kyalami-grand-prix-circuit-historic';
   const fitted = fitPoints(geometry);
+  const trackPoints = isHistoricKyalami ? KYALAMI_HISTORIC_IMAGE_POINTS : fitted;
   const pathD = toPath(fitted);
+  const mapWidth = isHistoricKyalami ? KYALAMI_IMAGE_SIZE : W;
+  const mapHeight = isHistoricKyalami ? KYALAMI_IMAGE_SIZE : H;
   const showSet = new Set(incidentDriverIds ?? []);
   const running = dots
     .filter((dot) => (dot.running || showSet.has(dot.driverId)) && !dot.inPit && !dot.pitRequested)
@@ -119,7 +181,6 @@ function AssetTrackMap({
   const pitting = dots.filter((dot) => dot.running && (dot.inPit || dot.pitRequested));
   const retired = dots.filter((dot) => dot.retired && !showSet.has(dot.driverId));
   const spacing = 1 / Math.max(running.length, 14);
-  const isHistoricKyalami = eraTheme === 'f1-1990s' && geometry.id === 'kyalami-grand-prix-circuit-historic';
   const laneOffsets = isHistoricKyalami ? closeRacingLaneOffsets(running) : new Map<string, number>();
 
   return (
@@ -132,26 +193,21 @@ function AssetTrackMap({
             <feMergeNode in="SourceGraphic" />
           </feMerge>
         </filter>
-        <linearGradient id={`kyalami-road-${geometry.id}`} x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0" stopColor="#f0ecdd" />
-          <stop offset="0.48" stopColor="#e4dfcf" />
-          <stop offset="1" stopColor="#d3cdbb" />
-        </linearGradient>
       </defs>
 
-      <rect x="0" y="0" width={W} height={H} rx="12" fill={eraTheme === 'f1-1990s' ? '#050606' : '#0f172a'} />
+      <rect x="0" y="0" width={mapWidth} height={mapHeight} rx="12" fill={eraTheme === 'f1-1990s' ? '#050606' : '#0f172a'} />
       {isHistoricKyalami ? (
-        <g
-          data-track-style="historic-kyalami-2.5d"
-          data-track-surface-width={KYALAMI_SURFACE_WIDTH}
-          data-close-racing-lane-offset={KYALAMI_LANE_OFFSET}
-        >
-          <path d={pathD} transform="translate(8 10)" fill="none" stroke="#080c0e" strokeWidth="68" strokeLinecap="round" strokeLinejoin="round" opacity="0.95" data-track-layer="drop-shadow" />
-          <path d={pathD} fill="none" stroke="#141a1c" strokeWidth="62" strokeLinecap="round" strokeLinejoin="round" data-track-layer="embankment" />
-          <path d={pathD} fill="none" stroke="#343b3d" strokeWidth="48" strokeLinecap="round" strokeLinejoin="round" data-track-layer="road-edge" />
-          <path d={pathD} fill="none" stroke={`url(#kyalami-road-${geometry.id})`} strokeWidth={KYALAMI_SURFACE_WIDTH} strokeLinecap="round" strokeLinejoin="round" data-track-layer="racing-surface" />
-          <path d={pathD} fill="none" stroke="#faf6e8" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" opacity="0.62" data-track-layer="surface-highlight" />
-          <path d={pathD} fill="none" stroke="#252c2f" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" strokeDasharray="18 22" data-track-layer="centre-line" />
+        <g data-track-style="historic-kyalami-image-2.5d" data-track-map-background="kyalami-historic-2p5d">
+          <image
+            x="0"
+            y="0"
+            width={KYALAMI_IMAGE_SIZE}
+            height={KYALAMI_IMAGE_SIZE}
+            href={KYALAMI_HISTORIC_MAP_IMAGE}
+            preserveAspectRatio="xMidYMid meet"
+            data-track-layer="scenery-background"
+            data-testid="kyalami-historic-image"
+          />
         </g>
       ) : (
         <>
@@ -163,22 +219,22 @@ function AssetTrackMap({
 
       {safetyCar && (
         <SafetyCarDot
-          point={pointAt(fitted, normalizeProgress(rotation + 0.04))}
+          point={pointAt(trackPoints, normalizeProgress(rotation + 0.04))}
           year={year}
-          rotationDeg={headingAt(fitted, normalizeProgress(rotation + 0.04))}
+          rotationDeg={headingAt(trackPoints, normalizeProgress(rotation + 0.04))}
           zoom={zoom}
         />
       )}
 
       {running.map((dot, index) => {
         const progress = dot.trackProgress ?? (rotation + index * spacing) % 1;
-        const point = pointAt(fitted, progress);
-        const heading = headingAt(fitted, progress);
+        const point = pointAt(trackPoints, progress);
+        const heading = headingAt(trackPoints, progress);
         const displayPoint = offsetPoint(point, heading, laneOffsets.get(dot.driverId) ?? 0);
         return <MapDot key={dot.driverId} point={displayPoint} dot={dot} year={year} rotationDeg={heading} zoom={zoom} />;
       })}
 
-      <g transform={`translate(${PAD} ${H - 34})`}>
+      <g transform={`translate(${PAD} ${mapHeight - 34})`}>
         <rect width="230" height="24" rx="7" fill="#090b0c" stroke="#30363a" />
         <text x="12" y="17" fill="#71717a" fontSize="12" fontWeight="700">
           PIT
@@ -188,7 +244,7 @@ function AssetTrackMap({
         ))}
       </g>
 
-      <g transform={`translate(${W - PAD - 230} ${H - 34})`}>
+      <g transform={`translate(${mapWidth - PAD - 230} ${mapHeight - 34})`}>
         <rect width="230" height="24" rx="7" fill="#090b0c" stroke="#30363a" />
         <text x="12" y="17" fill="#71717a" fontSize="12" fontWeight="700">
           RETIRED
@@ -199,7 +255,7 @@ function AssetTrackMap({
       </g>
 
       {!hideFooterLabel && (
-        <text x={W / 2} y={H - 10} textAnchor="middle" fill="#71717a" fontSize="12" fontWeight="700">
+        <text x={mapWidth / 2} y={mapHeight - 10} textAnchor="middle" fill="#71717a" fontSize="12" fontWeight="700">
           {geometry.name.toUpperCase()} {geometry.year}
         </text>
       )}
@@ -246,7 +302,7 @@ function offsetPoint(point: TrackMapPoint, heading: number, lateralOffset: numbe
  * The simulation does not expose a discrete left/right lane. When two cars are
  * within roughly one marker length around the lap, give them small opposing
  * lateral offsets. At 40px the 1990s silhouettes then touch or overlap slightly
- * while remaining inside Kyalami's 38-unit racing surface.
+ * while remaining inside Kyalami's image-backed racing surface.
  */
 function closeRacingLaneOffsets(running: TrackDot[]): Map<string, number> {
   const offsets = new Map<string, number>();
@@ -297,17 +353,20 @@ function zoomBox(
   focusTrackProgress: number | undefined,
   dots: TrackDot[],
   geometry: TrackMapGeometry,
+  isHistoricKyalami: boolean,
 ): string {
+  const mapWidth = isHistoricKyalami ? KYALAMI_IMAGE_SIZE : W;
+  const mapHeight = isHistoricKyalami ? KYALAMI_IMAGE_SIZE : H;
   if (!zoom || zoom <= 1) {
-    return `0 0 ${W} ${H}`;
+    return `0 0 ${mapWidth} ${mapHeight}`;
   }
 
-  const fitted = fitPoints(geometry);
-  const focus = focusPoint(fitted, focusDriverIds, focusTrackProgress, dots);
-  const width = W / zoom;
-  const height = H / zoom;
-  const cx = Math.max(width / 2, Math.min(W - width / 2, focus.x));
-  const cy = Math.max(height / 2, Math.min(H - height / 2, focus.y));
+  const fitted = isHistoricKyalami ? KYALAMI_HISTORIC_IMAGE_POINTS : fitPoints(geometry);
+  const focus = focusPoint(fitted, focusDriverIds, focusTrackProgress, dots, mapWidth, mapHeight);
+  const width = mapWidth / zoom;
+  const height = mapHeight / zoom;
+  const cx = Math.max(width / 2, Math.min(mapWidth - width / 2, focus.x));
+  const cy = Math.max(height / 2, Math.min(mapHeight - height / 2, focus.y));
   return `${cx - width / 2} ${cy - height / 2} ${width} ${height}`;
 }
 
@@ -316,6 +375,8 @@ function focusPoint(
   focusDriverIds: string[] | undefined,
   focusTrackProgress: number | undefined,
   dots: TrackDot[],
+  mapWidth = W,
+  mapHeight = H,
 ): { x: number; y: number } {
   const focusSet = new Set(focusDriverIds ?? []);
   const focusDots = dots.filter((d) => focusSet.has(d.driverId) && d.trackProgress != null);
@@ -329,7 +390,7 @@ function focusPoint(
     const point = pointAt(fitted, focusTrackProgress);
     return { x: point[0], y: point[1] };
   }
-  return { x: W / 2, y: H / 2 };
+  return { x: mapWidth / 2, y: mapHeight / 2 };
 }
 
 function MapDot({
