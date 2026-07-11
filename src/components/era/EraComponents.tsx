@@ -1,5 +1,5 @@
 import type { ButtonHTMLAttributes, ReactNode, TableHTMLAttributes } from 'react';
-import { useEraTheme } from '../../theme/EraThemeContext';
+import { useEraTheme } from '../../theme/useEraTheme';
 import type { MotorsportEraTheme } from '../../theme/eraTheme';
 
 type EraProp = {

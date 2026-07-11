@@ -34,10 +34,85 @@ import { historicalWeatherRaceMeta } from '../weather/generated/raceMeta';
 import { historicalWeatherTrackCoordinates } from '../weather/generated/trackCoordinates';
 import { seedReleasedMarketDrivers } from '../market';
 
-type Phase0TrackSource = any;
-type Phase0DriverSource = any;
-type Phase0TeamSource = any;
-type Phase0CarSource = any;
+type Phase0TrackSource = {
+  name?: string;
+  facility?: string;
+  locationDisplay?: string;
+  lengthKm?: number;
+  seasonsUsed?: Array<{ year: number; series: Series }>;
+  aliases?: string[];
+  country: string;
+  category: string;
+  subcategory: string;
+  configNote?: string;
+  attributes: Track['attributes'];
+  demandProfile: {
+    downforceDemand: number;
+    powerDemand: number;
+    mechanicalDemand: number;
+    brakeDemand: number;
+    riskDemand: number;
+  };
+};
+
+type Phase0DriverSource = {
+  driverId: string;
+  name?: string;
+  nationality?: string;
+  birthYear?: number;
+  startingAge?: number;
+  firstSeenYear?: number;
+  cornering?: number;
+  braking?: number;
+  straights?: number;
+  tractionAcceleration?: number;
+  elevationBlindCorners?: number;
+  technical?: number;
+  overtakingRacecraft?: number;
+  surfaceGripBumpiness?: number;
+  riskManagement?: number;
+  enduranceConsistency?: number;
+  qualifying?: number;
+  racePace?: number;
+  adaptability?: number;
+  aggression?: number;
+  composure?: number;
+  overall?: number;
+  potential?: number;
+  marketValue?: number;
+  developmentRate?: number;
+  f1Readiness?: number;
+  sponsorBacking?: number;
+  morale?: number;
+  trust?: number;
+  contract?: {
+    salary?: number;
+    yearsLeft?: number;
+  };
+  traits?: string[];
+};
+
+type Phase0TeamSource = {
+  teamLineageId: string;
+  canonicalName?: string;
+  namePerPeriod?: Array<{ fromYear: number; toYear: number; name?: string }>;
+  budget?: number;
+  reputation?: number;
+  raceOperations?: number;
+  financeHealth?: number;
+};
+
+type Phase0CarSource = {
+  carId?: string;
+  teamId: string;
+  seasonYear: number;
+  series: Series;
+  enginePower: number;
+  downforce: number;
+  mechanicalGrip: number;
+  reliability: number;
+  setupWindow: number;
+};
 
 const allGlobalCars: Phase0CarSource[] = [];
 allGlobalCars.push(
@@ -220,7 +295,7 @@ function mapSetupProfile(source: Phase0TrackSource): Track['setupProfile'] {
     mechanicalGripEmphasis: source.demandProfile.mechanicalDemand,
     brakeDemand: source.demandProfile.brakeDemand,
     reliabilityRiskFocus: source.demandProfile.riskDemand,
-    strategyNotes: source.configNote || source.locationDisplay,
+    strategyNotes: source.configNote || source.locationDisplay || source.name || 'Imported track',
     aeroDemand: source.demandProfile.downforceDemand,
     powerDemand: source.demandProfile.powerDemand,
     mechanicalDemand: source.demandProfile.mechanicalDemand,
@@ -241,7 +316,7 @@ function scoreTrackMatch(
   const facility = normalizeKey(source?.facility ?? '');
   const location = normalizeKey(source?.locationDisplay ?? '');
 
-  if (source.seasonsUsed?.some((entry: any) => entry.year === seasonYear && entry.series === series)) score += 50;
+  if (source.seasonsUsed?.some((entry) => entry.year === seasonYear && entry.series === series)) score += 50;
   if (label === name) score += 40;
   if (label === facility) score += 35;
   if (label === location) score += 25;
@@ -278,7 +353,7 @@ function resolveTrackSource(
 }
 
 function trackDisplayName(source: Phase0TrackSource, trackName: string): string {
-  return trackName || source?.facility || source?.name;
+  return trackName || source.facility || source.name || 'Imported Track';
 }
 
 function buildTrack(trackId: string, trackName: string, source: Phase0TrackSource): Track {
@@ -518,7 +593,7 @@ function buildRosterPlan(phase0Season: Phase0SeasonBundle, ctx: LegacySeasonCont
   for (const [idx, legacyTeam] of ctx.legacyTeams.entries()) {
     const sourceId = ctx.legacyTeamToSourceTeamId.get(legacyTeam.id);
     const source = sourceId ? sourceById.get(sourceId) : undefined;
-    const name = legacyTeam.name || source?.namePerPeriod?.find((period: any) => phase0Season.season >= period.fromYear && phase0Season.season <= period.toYear)?.name || source?.canonicalName || legacyTeam.id;
+    const name = legacyTeam.name || source?.namePerPeriod?.find((period) => phase0Season.season >= period.fromYear && phase0Season.season <= period.toYear)?.name || source?.canonicalName || legacyTeam.id;
     const car = allGlobalCars.find(
       (entry) => entry.teamId === sourceId && entry.seasonYear === phase0Season.season && entry.series === phase0Season.series,
     );

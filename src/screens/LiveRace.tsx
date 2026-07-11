@@ -222,7 +222,9 @@ export function LiveRace() {
   const team = state.teams.find((t) => t.id === state.selectedTeamId);
   const driverName = (id: string) => state.drivers.find((d) => d.id === id)?.name ?? id;
   const driverNumber = (id: string) => state.drivers.find((d) => d.id === id)?.number ?? '';
+  const teamName = (id: string) => state.teams.find((t) => t.id === id)?.name ?? id;
   const teamColor = (id: string) => state.teams.find((t) => t.id === id)?.color ?? '#888';
+  const teamSecondaryColor = (id: string) => state.teams.find((t) => t.id === id)?.secondaryColor ?? '#f7f7f7';
 
   const step = () => setLive((s) => (s && (!s.pendingPrompt || s.safetyCar.active) ? advanceLiveSector(s) : s));
   const skipToEnd = () => {
@@ -355,8 +357,11 @@ export function LiveRace() {
     driverId: c.driverId,
     label: String(driverNumber(c.driverId) || ''),
     color: teamColor(c.teamId),
-    accentColor: '#f7f7f7',
+    accentColor: teamSecondaryColor(c.teamId),
     series: state.series,
+    year: state.seasonYear,
+    driverName: driverName(c.driverId),
+    teamName: teamName(c.teamId),
     isPlayer: c.isPlayer,
     running: c.running,
     retired: c.status === 'DNF' && !c.running,

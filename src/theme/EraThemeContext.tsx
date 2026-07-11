@@ -1,9 +1,6 @@
-import { createContext, useContext, type ReactNode } from 'react';
-import { getEraThemeConfig, type EraThemeConfig, type MotorsportEraTheme } from './eraTheme';
-
-const fallback = getEraThemeConfig('fallback');
-
-const EraThemeContext = createContext<EraThemeConfig>(fallback);
+import type { ReactNode } from 'react';
+import { getEraThemeConfig, type MotorsportEraTheme } from './eraTheme';
+import { EraThemeContext } from './EraThemeContextValue';
 
 export function EraThemeProvider({
   theme,
@@ -17,8 +14,4 @@ export function EraThemeProvider({
       {children}
     </EraThemeContext.Provider>
   );
-}
-
-export function useEraTheme(): EraThemeConfig {
-  return useContext(EraThemeContext);
 }

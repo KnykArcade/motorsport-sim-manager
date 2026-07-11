@@ -1,140 +1,170 @@
-import { useEffect, useId, useState } from 'react';
+import { useId } from 'react';
 import {
-  baseMarkerUrl,
-  criticalFrameFromTick,
-  criticalFrameUrl,
-  damageOverlayUrl,
+  damageColorForState,
   damageStateFromPercent,
-  pickMarkerSize,
+  F1_MARKER_ERAS,
   seriesToAssetId,
   type DamageState,
+  type F1MarkerEra,
+  type MarkerAssetId,
 } from './raceMarkerAssets';
-import { useRaceMarkerFrame } from './raceMarkerAnimation';
 import type { RaceSeries } from './seriesMarker';
+import f1RasterMarkerDesignsJson from './f1RasterMarkerDesigns.json';
+import seriesRasterMarkerDesignsJson from './seriesRasterMarkerDesigns.json';
 
 export type RaceMapSeriesMarkerProps = {
   x: number;
   y: number;
   series: RaceSeries;
+  year?: number;
   number: string | number;
   primaryColor: string;
   accentColor?: string;
   isPlayer?: boolean;
-  rotationDeg?: number; // marker and overlay rotate with track heading
+  rotationDeg?: number;
   selected?: boolean;
-  damagePercent?: number; // 0–100
-  size?: number; // viewBox diameter; default 20
-  zoom?: number; // viewBox zoom factor; used to pick the best-resolution asset
+  damagePercent?: number;
+  size?: number;
+  zoom?: number;
 };
 
-const DEFAULT_SIZE = 20;
-const NUMBER_PLATE_RATIO = 0.29;
-const NUMBER_FONT_RATIO = 0.45;
-const NUMBER_STROKE_RATIO = 0.04;
-const PLATE_STROKE_RATIO = 0.04;
+type RasterMarkerDesign = {
+  label: string;
+  canvasSize: number;
+  forwardAxis: '+x';
+  gameplayFootprint?: number;
+  numberDecal?: boolean;
+  identification?: string;
+  numberLocation?: string;
+  numberAnchor?: { x: number; y: number };
+  numberFontSize?: number;
+  numberMaxWidth?: number;
+  numberStrokeWidth?: number;
+  assets: {
+    master: string;
+    primaryShading: string;
+    secondaryShading: string;
+    fixedDetails: string;
+    primaryMask: string;
+    secondaryMask: string;
+    silhouetteMask: string;
+  };
+};
 
-function useReducedMotion(): boolean {
-  const [reduced, setReduced] = useState(() =>
-    typeof window !== 'undefined' ? window.matchMedia('(prefers-reduced-motion: reduce)').matches : false,
-  );
+export const GAMEPLAY_MARKER_SIZE = 40;
+export const F1_GAMEPLAY_MARKER_SIZE = GAMEPLAY_MARKER_SIZE;
+const DEFAULT_SECONDARY_COLOR = '#f7f7f7';
+const DESIGN_SIZE = 20;
+const CONTENT_SCALE = 0.925;
+const WHITE = '#f7f7f7';
 
-  useEffect(() => {
-    const mql = window.matchMedia('(prefers-reduced-motion: reduce)');
-    const listener = (e: MediaQueryListEvent) => setReduced(e.matches);
-    mql.addEventListener('change', listener);
-    return () => mql.removeEventListener('change', listener);
-  }, []);
+const F1_MARKER_DESIGNS = f1RasterMarkerDesignsJson as Record<F1MarkerEra, RasterMarkerDesign>;
+const SERIES_MARKER_DESIGNS = seriesRasterMarkerDesignsJson as Record<Exclude<MarkerAssetId, F1MarkerEra>, RasterMarkerDesign>;
+const RASTER_MARKER_DESIGNS = {
+  ...F1_MARKER_DESIGNS,
+  ...SERIES_MARKER_DESIGNS,
+} as Record<MarkerAssetId, RasterMarkerDesign>;
 
-  return reduced;
+function isF1MarkerEra(assetId: MarkerAssetId): assetId is F1MarkerEra {
+  return (F1_MARKER_ERAS as readonly string[]).includes(assetId);
 }
 
-function DamageOverlayImage({
+function RasterDetails({
   assetId,
-  state,
-  assetSize,
-  size,
+  primaryColor,
+  secondaryColor,
+  damageState,
+  uniqueId,
 }: {
-  assetId: string;
-  state: DamageState;
-  assetSize: number;
-  size: number;
+  assetId: MarkerAssetId;
+  primaryColor: string;
+  secondaryColor: string;
+  damageState: DamageState;
+  uniqueId: string;
 }) {
-  if (state === 'healthy') return null;
-  const scale = size / assetSize;
-  return (
-    <image
-      x={-assetSize / 2}
-      y={-assetSize / 2}
-      width={assetSize}
-      height={assetSize}
-      transform={`scale(${scale})`}
-      href={damageOverlayUrl(assetId, state, assetSize)}
-      preserveAspectRatio="xMidYMid meet"
-      pointerEvents="none"
-    />
-  );
-}
-
-function CriticalDamageOverlayImage({
-  assetId,
-  assetSize,
-  size,
-}: {
-  assetId: string;
-  assetSize: number;
-  size: number;
-}) {
-  const frame = useRaceMarkerFrame();
-  const reducedMotion = useReducedMotion();
-  const frameIndex = reducedMotion ? 1 : criticalFrameFromTick(frame);
-  const scale = size / assetSize;
-  return (
-    <image
-      x={-assetSize / 2}
-      y={-assetSize / 2}
-      width={assetSize}
-      height={assetSize}
-      transform={`scale(${scale})`}
-      href={criticalFrameUrl(assetId, frameIndex, assetSize)}
-      preserveAspectRatio="xMidYMid meet"
-      pointerEvents="none"
-    />
-  );
-}
-
-function NumberPlate({ number, size }: { number: string | number; size: number }) {
-  const text = String(number);
-  if (!text) return null;
-
-  const plateRadius = size * NUMBER_PLATE_RATIO;
-  const fontSize = size * NUMBER_FONT_RATIO;
-  const plateStroke = Math.max(0.5, size * PLATE_STROKE_RATIO);
-  const textStroke = Math.max(0.5, size * NUMBER_STROKE_RATIO);
+  const design = RASTER_MARKER_DESIGNS[assetId];
+  const primaryMaskId = `${uniqueId}-${assetId}-primary-mask`;
+  const secondaryMaskId = `${uniqueId}-${assetId}-secondary-mask`;
+  const silhouetteMaskId = `${uniqueId}-${assetId}-silhouette-mask`;
+  const damageColor = damageColorForState(damageState);
+  const damageOffsets = [
+    [-0.54, 0], [0.54, 0], [0, -0.54], [0, 0.54],
+    [-0.4, -0.4], [0.4, -0.4], [-0.4, 0.4], [0.4, 0.4],
+  ] as const;
+  const f1 = isF1MarkerEra(assetId);
 
   return (
-    <g pointerEvents="none">
-      <circle
-        r={plateRadius}
-        fill="#151515"
-        stroke="#ffffff"
-        strokeWidth={plateStroke}
-      />
-      <text
-        x={0}
-        y={0}
-        textAnchor="middle"
-        dominantBaseline="central"
-        fontSize={fontSize}
-        fontFamily="Arial Narrow, Roboto Condensed, Arial, sans-serif"
-        fontWeight={900}
-        fill="#ffffff"
-        stroke="#151515"
-        strokeWidth={textStroke}
-        paintOrder="stroke"
-      >
-        {text}
-      </text>
+    <g
+      data-raster-marker={design.label}
+      data-raster-artwork="approved-raster"
+      data-f1-era={f1 ? design.label : undefined}
+      data-f1-artwork={f1 ? 'approved-raster' : undefined}
+      data-forward-axis={design.forwardAxis}
+      data-number-location={f1 ? design.numberLocation : undefined}
+      data-identification={f1 ? undefined : design.identification}
+      style={{ isolation: 'isolate' }}
+    >
+      <defs>
+        <mask id={primaryMaskId} x={-10} y={-10} width={20} height={20} maskUnits="userSpaceOnUse">
+          <image href={design.assets.primaryMask} x={-10} y={-10} width={20} height={20} preserveAspectRatio="none" />
+        </mask>
+        <mask id={secondaryMaskId} x={-10} y={-10} width={20} height={20} maskUnits="userSpaceOnUse">
+          <image href={design.assets.secondaryMask} x={-10} y={-10} width={20} height={20} preserveAspectRatio="none" />
+        </mask>
+        <mask id={silhouetteMaskId} x={-10} y={-10} width={20} height={20} maskUnits="userSpaceOnUse">
+          <image href={design.assets.silhouetteMask} x={-10} y={-10} width={20} height={20} preserveAspectRatio="none" />
+        </mask>
+      </defs>
+
+      {damageColor && (
+        <g fill={damageColor} data-damage-outline={damageState}>
+          {damageOffsets.map(([dx, dy]) => (
+            <g key={`${dx}-${dy}`} transform={`translate(${dx} ${dy})`}>
+              <rect x={-10} y={-10} width={20} height={20} mask={`url(#${silhouetteMaskId})`} />
+            </g>
+          ))}
+        </g>
+      )}
+      <rect x={-10} y={-10} width={20} height={20} fill={primaryColor} mask={`url(#${primaryMaskId})`} data-layer="primary" />
+      <image href={design.assets.primaryShading} x={-10} y={-10} width={20} height={20} preserveAspectRatio="none" style={{ mixBlendMode: 'multiply' }} data-layer="primary-shading" />
+      <rect x={-10} y={-10} width={20} height={20} fill={secondaryColor} mask={`url(#${secondaryMaskId})`} data-layer="secondary" />
+      <image href={design.assets.secondaryShading} x={-10} y={-10} width={20} height={20} preserveAspectRatio="none" style={{ mixBlendMode: 'multiply' }} data-layer="secondary-shading" />
+      <image href={design.assets.fixedDetails} x={-10} y={-10} width={20} height={20} preserveAspectRatio="none" data-layer="fixed-details" />
+      {f1 && <g data-layer="front-number-plate" data-location={design.numberLocation} />}
     </g>
+  );
+}
+
+function RuntimeNumber({ value, design }: { value: string | number; design: RasterMarkerDesign }) {
+  const text = String(value).trim();
+  if (!text || !design.numberAnchor || !design.numberFontSize || !design.numberMaxWidth) return null;
+  const lengthScale = text.length <= 1 ? 1.08 : text.length === 2 ? 1 : 0.78;
+  const fontSize = design.numberFontSize * lengthScale;
+  const estimatedWidth = text.length * fontSize * 0.58;
+  const textLength = estimatedWidth > design.numberMaxWidth ? design.numberMaxWidth : undefined;
+
+  return (
+    <text
+      x={0}
+      y={0.15}
+      textAnchor="middle"
+      dominantBaseline="central"
+      fontSize={fontSize}
+      fontFamily="Arial Narrow, Roboto Condensed, Arial, sans-serif"
+      fontStyle="italic"
+      fontWeight={900}
+      fill={WHITE}
+      stroke="#07090b"
+      strokeWidth={design.numberStrokeWidth ?? 0.95}
+      strokeLinejoin="round"
+      paintOrder="stroke"
+      textLength={textLength}
+      lengthAdjust={textLength ? 'spacingAndGlyphs' : undefined}
+      pointerEvents="none"
+      data-layer="runtime-number"
+    >
+      {text}
+    </text>
   );
 }
 
@@ -142,80 +172,54 @@ export function RaceMapSeriesMarker({
   x,
   y,
   series,
+  year,
   number,
   primaryColor,
+  accentColor = DEFAULT_SECONDARY_COLOR,
   rotationDeg = 0,
   selected = false,
   damagePercent,
-  size = DEFAULT_SIZE,
-  zoom = 1,
+  size = GAMEPLAY_MARKER_SIZE,
 }: RaceMapSeriesMarkerProps) {
-  const filterId = useId();
-  const radius = size / 2;
-  const assetId = seriesToAssetId(series);
-  const state = damageStateFromPercent(damagePercent);
-  const screenSize = size * zoom;
-  const assetSize = pickMarkerSize(screenSize);
-  const scale = size / assetSize;
+  const markerUid = useId().replaceAll(':', '');
+  const assetId = seriesToAssetId(series, year);
+  const design = RASTER_MARKER_DESIGNS[assetId];
+  const damageState = damageStateFromPercent(damagePercent);
+  const scale = size / DESIGN_SIZE;
+  const renderNumber = isF1MarkerEra(assetId) && design.numberDecal !== false && design.numberAnchor;
 
-  // The color filter uses the supplied neutral PNG as a mask.
-  // Dark body pixels become the team color; bright outline pixels become white.
   return (
-    <g transform={`translate(${x} ${y})`}>
-      {selected && (
-        <g>
-          <circle r={radius + 5} fill="#ffd400" opacity={0.08} />
-          <circle r={radius + 4} fill="#ffd400" opacity={0.14} />
-          <circle r={radius + 2} fill="#ffd400" opacity={0.22} />
-        </g>
-      )}
-      <defs>
-        <filter
-          id={filterId}
-          x="-20%"
-          y="-20%"
-          width="140%"
-          height="140%"
-          colorInterpolationFilters="sRGB"
-        >
-          <feColorMatrix
-            in="SourceGraphic"
-            type="luminanceToAlpha"
-            result="luma"
-          />
-          <feComponentTransfer in="luma" result="bodyMask">
-            <feFuncA type="linear" slope="-1" intercept="1" />
-          </feComponentTransfer>
-          <feComponentTransfer in="luma" result="outlineMask">
-            <feFuncA type="linear" slope="1" intercept="0" />
-          </feComponentTransfer>
-          <feFlood floodColor={primaryColor} floodOpacity={1} result="teamFill" />
-          <feComposite in="teamFill" in2="bodyMask" operator="in" result="teamBody" />
-          <feFlood floodColor="#ffffff" floodOpacity={1} result="whiteFill" />
-          <feComposite in="whiteFill" in2="outlineMask" operator="in" result="whiteOutline" />
-          <feComposite in="whiteOutline" in2="teamBody" operator="over" result="colored" />
-        </filter>
-      </defs>
-      <g transform={`rotate(${rotationDeg})`}>
-        <image
-          x={-assetSize / 2}
-          y={-assetSize / 2}
-          width={assetSize}
-          height={assetSize}
-          transform={`scale(${scale})`}
-          href={baseMarkerUrl(assetId, assetSize)}
-          filter={`url(#${filterId})`}
-          preserveAspectRatio="xMidYMid meet"
-          pointerEvents="none"
-        />
-        {state === 'critical' ? (
-          <CriticalDamageOverlayImage assetId={assetId} assetSize={assetSize} size={size} />
-        ) : (
-          <DamageOverlayImage assetId={assetId} state={state} assetSize={assetSize} size={size} />
+    <g
+      transform={`translate(${x} ${y}) scale(${scale})`}
+      data-race-map-marker={assetId}
+      data-damage-state={damageState}
+      data-primary-color={primaryColor}
+      data-secondary-color={accentColor}
+      data-marker-year={year}
+    >
+      <g transform={`scale(${CONTENT_SCALE})`} data-footprint-inset={CONTENT_SCALE}>
+        {selected && (
+          <g data-selected-focus="true">
+            <circle r={10.55} fill="#ffffff" opacity={0.045} />
+            <circle r={10.1} fill="none" stroke="#ffffff" strokeWidth={0.42} strokeDasharray="1.2 1.8" opacity={0.2} />
+          </g>
         )}
-      </g>
-      <g transform={`rotate(${-rotationDeg})`}>
-        <NumberPlate number={number} size={size} />
+        <g transform={`rotate(${rotationDeg})`} data-heading-degrees={rotationDeg} data-marker-body={assetId}>
+          <RasterDetails
+            assetId={assetId}
+            primaryColor={primaryColor}
+            secondaryColor={accentColor}
+            damageState={damageState}
+            uniqueId={markerUid}
+          />
+          {renderNumber && (
+            <g transform={`translate(${design.numberAnchor!.x} ${design.numberAnchor!.y})`} data-number-anchor={assetId}>
+              <g transform={`rotate(${-rotationDeg})`} data-number-counter-rotation={-rotationDeg}>
+                <RuntimeNumber value={number} design={design} />
+              </g>
+            </g>
+          )}
+        </g>
       </g>
     </g>
   );

@@ -1,4 +1,4 @@
-import { RaceMapSeriesMarker } from './RaceMapSeriesMarker';
+import { GAMEPLAY_MARKER_SIZE, RaceMapSeriesMarker } from './RaceMapSeriesMarker';
 import { normalizeSeries } from './seriesMarker';
 
 // Simplified 2D race view: coloured dots running around an oval circuit. Real
@@ -11,6 +11,9 @@ export type TrackDot = {
   color: string;
   accentColor?: string; // secondary team color for the marker wings/tabs
   series?: string; // series shape for the marker; falls back to the track-map default
+  year?: number; // selects the era-specific F1 silhouette
+  driverName?: string; // hover identification
+  teamName?: string; // hover identification
   isPlayer: boolean;
   running: boolean;
   retired?: boolean; // DNF — should be shown in the retired box instead of the track
@@ -45,11 +48,13 @@ function headingOnOval(t: number): number {
 export function RaceTrack2D({
   dots,
   rotation,
+  year,
   safetyCar = false,
   className = 'w-full',
 }: {
   dots: TrackDot[];
   rotation: number;
+  year?: number;
   safetyCar?: boolean;
   className?: string;
 }) {
@@ -89,6 +94,7 @@ export function RaceTrack2D({
             x={0}
             y={0}
             series="f1"
+            year={year}
             number=""
             primaryColor="#facc15"
             accentColor="#facc15"
@@ -127,20 +133,52 @@ function normalizeProgress(n: number): number {
 }
 
 function Dot({ x, y, dot, rotationDeg = 0 }: { x: number; y: number; dot: TrackDot; rotationDeg?: number }) {
+  const markerSeries = normalizeSeries(dot.series);
+  const numberAndName = `${dot.label ? `#${dot.label} ` : ''}${dot.driverName ?? `Car ${dot.label}`}`;
+  const teamAndPosition = `${dot.teamName ?? 'Race car'} · P${dot.rank}`;
+  const tooltipX = x > W - 190 ? -184 : 12;
+  const tooltipY = y < 62 ? 12 : -55;
   return (
-    <RaceMapSeriesMarker
-      x={x}
-      y={y}
-      series={normalizeSeries(dot.series)}
-      number={dot.label}
-      primaryColor={dot.color}
-      accentColor={dot.accentColor}
-      isPlayer={true}
-      selected={dot.isPlayer}
-      rotationDeg={rotationDeg}
-      damagePercent={dot.damagePercent}
-      size={20}
-      zoom={1}
-    />
+    <g
+      transform={`translate(${x} ${y})`}
+      className="track-map-car"
+      tabIndex={0}
+      role="img"
+      aria-label={`${numberAndName}, ${teamAndPosition}`}
+      data-track-map-driver={dot.driverId}
+    >
+      <title>{`${numberAndName}, ${teamAndPosition}`}</title>
+      <RaceMapSeriesMarker
+        x={0}
+        y={0}
+        series={markerSeries}
+        year={dot.year}
+        number={dot.label}
+        primaryColor={dot.color}
+        accentColor={dot.accentColor}
+        isPlayer={true}
+        selected={dot.isPlayer}
+        rotationDeg={rotationDeg}
+        damagePercent={dot.damagePercent}
+        size={GAMEPLAY_MARKER_SIZE}
+        zoom={1}
+      />
+      <circle r={22} fill="transparent" pointerEvents="all" data-marker-hit-target="true" />
+      <g
+        className="track-map-car-tooltip"
+        transform={`translate(${tooltipX} ${tooltipY})`}
+        pointerEvents="none"
+        data-marker-tooltip="true"
+      >
+        <rect width="174" height="43" rx="5" fill="#07090b" stroke="#f2b600" strokeWidth="1.25" />
+        <rect x="7" y="8" width="8" height="27" rx="1" fill={dot.color} />
+        <text x="22" y="19" fill="#f7f7f7" fontSize="12" fontWeight="900" fontFamily="Arial Narrow, Roboto Condensed, Arial, sans-serif">
+          {numberAndName.toUpperCase()}
+        </text>
+        <text x="22" y="34" fill="#a1a1aa" fontSize="9.5" fontWeight="700" fontFamily="Arial Narrow, Roboto Condensed, Arial, sans-serif">
+          {teamAndPosition.toUpperCase()}
+        </text>
+      </g>
+    </g>
   );
 }

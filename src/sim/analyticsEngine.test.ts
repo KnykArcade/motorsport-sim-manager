@@ -432,12 +432,12 @@ describe('pit decision protection', () => {
   }
 
   it('accepting Pit Now schedules exactly one stop and logs it once', () => {
-    let s = withCandidates(scState());
+    const s = withCandidates(scState());
     expect(s.recommendations.some((r) => r.kind === 'safetyCarPit')).toBe(false);
   });
 
   it('a duplicate pit call for an already-requested car does not create a second stop', () => {
-    let s = withCandidates(scState());
+    const s = withCandidates(scState());
     expect(s.recommendations.some((r) => r.kind === 'safetyCarPit')).toBe(false);
   });
 
@@ -516,7 +516,7 @@ describe('grouped multi-driver decisions', () => {
   });
 
   it('allows different decisions per driver (one pits, one stays out)', () => {
-    let s = withCandidates(groupedState());
+    const s = withCandidates(groupedState());
     expect(s.recommendations.filter((r) => r.kind === 'safetyCarPit')).toHaveLength(0);
   });
 });
