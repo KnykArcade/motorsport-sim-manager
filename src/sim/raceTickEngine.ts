@@ -60,7 +60,7 @@ import {
 import { markSafetyCarPitPrompted } from './safetyCarStrategy';
 import { beginPitJourney, advancePitJourneyForElapsedSeconds } from './pitJourneyEngine';
 import { findPitTransitRecord } from '../data/pit/pitDataLookup';
-import { initialRaceControlState, stepRaceControlState } from './raceControlEngine';
+import { applyRaceControlQueueCatchUp, initialRaceControlState, stepRaceControlState } from './raceControlEngine';
 import { generateRaceEventPool, resolveRaceEventTrigger } from './raceEventEngine';
 import { rollReliabilityIssue } from './reliabilityEngine';
 import { findOption, applyDecisionEffects } from './raceDecisionEngine';
@@ -820,12 +820,18 @@ export function stepLiveSector(state: LiveRaceState, meta: LiveRaceMeta): LiveRa
   }
 
   // --- Order the field ---
-  const running = state.circuit
+  let running = state.circuit
     ? classifyCarsByDistance(newCars.filter((c) => c.running))
     : newCars.filter((c) => c.running).sort((x, y) => x.totalTime - y.totalTime);
   const retired = newCars
     .filter((c) => !c.running)
     .sort((x, y) => (y.retiredOnLap ?? 0) - (x.retiredOnLap ?? 0));
+
+  if (state.circuit) {
+    const catchUp = applyRaceControlQueueCatchUp(running, state.circuit, raceControl.mode, fixedStepSeconds);
+    running = catchUp.cars;
+    raceControl = { ...raceControl, queueFormed: catchUp.queueFormed };
+  }
 
   // Leader position on the current track lap. Used to freeze retired cars on
   // the map at the exact point they went off.
@@ -837,8 +843,17 @@ export function stepLiveSector(state: LiveRaceState, meta: LiveRaceMeta): LiveRa
 
   running.forEach((c, i) => {
     c.position = i + 1;
-    c.gapToLeader = i === 0 ? 0 : round1(c.totalTime - running[0].totalTime);
-    c.interval = i === 0 ? 0 : round1(c.totalTime - running[i - 1].totalTime);
+    const neutralized = ['SafetyCar', 'PaceCar', 'FullCourseYellow', 'Caution'].includes(raceControl.mode);
+    if (neutralized && c.positionState && running[0]?.positionState) {
+      const speed = Math.max(1, c.positionState.currentSpeedMetersPerSecond);
+      const leaderDistance = running[0].positionState.totalRaceDistanceMeters;
+      const aheadDistance = running[i - 1]?.positionState?.totalRaceDistanceMeters ?? c.positionState.totalRaceDistanceMeters;
+      c.gapToLeader = i === 0 ? 0 : round1((leaderDistance - c.positionState.totalRaceDistanceMeters) / speed);
+      c.interval = i === 0 ? 0 : round1((aheadDistance - c.positionState.totalRaceDistanceMeters) / speed);
+    } else {
+      c.gapToLeader = i === 0 ? 0 : round1(c.totalTime - running[0].totalTime);
+      c.interval = i === 0 ? 0 : round1(c.totalTime - running[i - 1].totalTime);
+    }
   });
   retired.forEach((c) => {
     c.position = null;

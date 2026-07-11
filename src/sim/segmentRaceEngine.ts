@@ -184,6 +184,34 @@ function updatePositionWithinSegment(
   };
 }
 
+export function repositionCarAtRaceDistance(
+  position: CarPositionState,
+  totalRaceDistanceMeters: number,
+  circuit: CircuitSegmentSet,
+): CarPositionState {
+  const completedLaps = Math.floor(totalRaceDistanceMeters / circuit.lapLengthMeters);
+  const lapDistance = totalRaceDistanceMeters - completedLaps * circuit.lapLengthMeters;
+  let accumulated = 0;
+  let currentSegmentIndex = Math.max(0, circuit.segments.length - 1);
+  let progressWithinSegment = 1;
+  for (const segment of circuit.segments) {
+    if (lapDistance <= accumulated + segment.lengthMeters) {
+      currentSegmentIndex = segment.index;
+      progressWithinSegment = segment.lengthMeters > 0 ? (lapDistance - accumulated) / segment.lengthMeters : 0;
+      break;
+    }
+    accumulated += segment.lengthMeters;
+  }
+  return {
+    ...position,
+    completedLaps,
+    currentSegmentIndex,
+    progressWithinSegment: Math.max(0, Math.min(1, progressWithinSegment)),
+    totalRaceDistanceMeters,
+    normalizedLapProgress: circuit.lapLengthMeters > 0 ? lapDistance / circuit.lapLengthMeters : 0,
+  };
+}
+
 function sectorFromProgress(progress: number): 0 | 1 | 2 | 3 {
   if (progress <= 0) return 0;
   if (progress < 1 / 3) return 1;
