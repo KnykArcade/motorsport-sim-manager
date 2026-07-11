@@ -98,11 +98,21 @@ const KYALAMI_HISTORIC_IMAGE_POINTS: TrackMapPoint[] = [
 const KYALAMI_HISTORIC_MAP_POINTS: TrackMapPoint[] = KYALAMI_HISTORIC_IMAGE_POINTS.map(([x, y]) => [x, y * 0.5]);
 
 type ImageBackedTrackMapConfig = {
+  allEras?: boolean;
   backgroundKey: string;
   imageHref: string;
   points: readonly TrackMapPoint[];
   styleKey: string;
   testId: string;
+};
+
+const INTERLAGOS_IMAGE_MAP: ImageBackedTrackMapConfig = {
+  allEras: true,
+  backgroundKey: 'interlagos-historic-2p5d',
+  imageHref: '/assets/track-maps/interlagos-historic-2p5d.png',
+  points: BATCH_3_HISTORIC_IMAGE_POINTS.interlagos,
+  styleKey: 'historic-interlagos-image-2.5d',
+  testId: 'interlagos-historic-image',
 };
 
 const HISTORIC_IMAGE_TRACK_MAPS: Record<string, ImageBackedTrackMapConfig> = {
@@ -190,13 +200,16 @@ const HISTORIC_IMAGE_TRACK_MAPS: Record<string, ImageBackedTrackMapConfig> = {
     styleKey: 'historic-gilles-villeneuve-image-2.5d',
     testId: 'gilles-villeneuve-historic-image',
   },
-  'interlagos-2026': {
-    backgroundKey: 'interlagos-historic-2p5d',
-    imageHref: '/assets/track-maps/interlagos-historic-2p5d.png',
-    points: BATCH_3_HISTORIC_IMAGE_POINTS.interlagos,
-    styleKey: 'historic-interlagos-image-2.5d',
-    testId: 'interlagos-historic-image',
-  },
+  'autodromo-jose-carlos-pace-2016': INTERLAGOS_IMAGE_MAP,
+  'autodromo-jose-carlos-pace-2017': INTERLAGOS_IMAGE_MAP,
+  'autodromo-jose-carlos-pace-2018': INTERLAGOS_IMAGE_MAP,
+  'autodromo-jose-carlos-pace-2019': INTERLAGOS_IMAGE_MAP,
+  'interlagos-autodromo-jose-carlos-pace-2021': INTERLAGOS_IMAGE_MAP,
+  'interlagos-autodromo-jose-carlos-pace-2022': INTERLAGOS_IMAGE_MAP,
+  'interlagos-autodromo-jose-carlos-pace-2023': INTERLAGOS_IMAGE_MAP,
+  'interlagos-autodromo-jose-carlos-pace-2024': INTERLAGOS_IMAGE_MAP,
+  'interlagos-autodromo-jose-carlos-pace-2025': INTERLAGOS_IMAGE_MAP,
+  'interlagos-2026': INTERLAGOS_IMAGE_MAP,
 };
 
 export function TrackMapAssetPanel({
@@ -225,7 +238,8 @@ export function TrackMapAssetPanel({
     );
   }
 
-  const imageMap = eraTheme === 'f1-1990s' ? HISTORIC_IMAGE_TRACK_MAPS[match.geometry.id] : undefined;
+  const configuredImageMap = HISTORIC_IMAGE_TRACK_MAPS[match.geometry.id];
+  const imageMap = eraTheme === 'f1-1990s' || configuredImageMap?.allEras ? configuredImageMap : undefined;
   const viewBox = zoomBox(zoom, focusDriverIds, focusTrackProgress, dots, match.geometry, imageMap);
 
   return (
