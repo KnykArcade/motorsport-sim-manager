@@ -18,4 +18,5 @@ export type LiveRaceControlState = {
   reason: string | null;
   restartProcedure: 'Standing' | 'RollingSingleFile' | 'RollingDoubleFile' | 'SeriesDefault';
   deployments: number;
+  queueFormed: boolean;
 };
