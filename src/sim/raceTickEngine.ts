@@ -737,6 +737,7 @@ export function stepLiveSector(state: LiveRaceState, meta: LiveRaceMeta): LiveRa
     state.seed,
     nextLap,
     state.totalLaps,
+    state.ruleProfile,
   );
   if (scResult.justDeployed) {
     const minGreen = nextLap + scResult.safetyCar.lapsRemaining;
