@@ -60,7 +60,7 @@ import {
 import { markSafetyCarPitPrompted } from './safetyCarStrategy';
 import { beginPitJourney, advancePitJourneyForElapsedSeconds } from './pitJourneyEngine';
 import { findPitTransitRecord } from '../data/pit/pitDataLookup';
-import { applyRaceControlQueueCatchUp, initialRaceControlState, stepRaceControlState } from './raceControlEngine';
+import { applyRaceControlQueueCatchUp, initialRaceControlState, openPitLaneWhenQueueFormed, stepRaceControlState } from './raceControlEngine';
 import { generateRaceEventPool, resolveRaceEventTrigger } from './raceEventEngine';
 import { rollReliabilityIssue } from './reliabilityEngine';
 import { findOption, applyDecisionEffects } from './raceDecisionEngine';
@@ -371,6 +371,7 @@ export function stepLiveSector(state: LiveRaceState, meta: LiveRaceMeta): LiveRa
     let wantsPit = false;
     let pitLoss = 0;
     const spec = modeSpec(c.paceMode);
+    const pitLaneOpen = state.raceControl?.pitLaneOpen ?? true;
     const activeJourney = c.pit.journey && c.pit.journey.phase !== 'Rejoined' ? c.pit.journey : null;
     if (activeJourney) {
       const journeyStep = advancePitJourneyForElapsedSeconds(activeJourney, fixedStepSeconds);
@@ -414,6 +415,11 @@ export function stepLiveSector(state: LiveRaceState, meta: LiveRaceMeta): LiveRa
       if (c.isPlayer) {
         lapEvents.push({ lap: nextLap, text: `${name(c.driverId)} is forced to box — tyres past the cliff.` });
       }
+    }
+
+    if (wantsPit && !pitLaneOpen) {
+      if (c.isPlayer) lapEvents.push({ lap: nextLap, text: `${name(c.driverId)} must stay out — pit road is closed.` });
+      wantsPit = false;
     }
 
     // --- Execute pit stop ---
@@ -801,6 +807,7 @@ export function stepLiveSector(state: LiveRaceState, meta: LiveRaceMeta): LiveRa
       lap: nextLap,
       text: `Safety car deployed — ${scResult.safetyCar.reason}. Green expected in ${scResult.safetyCar.lapsRemaining}-${scResult.safetyCar.lapsRemaining + 1} laps (around L${minGreen}${maxGreen !== minGreen ? `-${maxGreen}` : ''}).`,
     });
+    if (!raceControl.pitLaneOpen) lapEvents.push({ lap: nextLap, text: 'Pit road is closed under caution.' });
   }
   if (scResult.justEnded) lapEvents.push({ lap: nextLap, text: 'Safety car in this lap — racing resumes.' });
   if (scResult.justEnded) {
@@ -828,9 +835,14 @@ export function stepLiveSector(state: LiveRaceState, meta: LiveRaceMeta): LiveRa
     .sort((x, y) => (y.retiredOnLap ?? 0) - (x.retiredOnLap ?? 0));
 
   if (state.circuit) {
+    const pitLaneWasOpen = raceControl.pitLaneOpen;
     const catchUp = applyRaceControlQueueCatchUp(running, state.circuit, raceControl.mode, fixedStepSeconds);
     running = catchUp.cars;
     raceControl = { ...raceControl, queueFormed: catchUp.queueFormed };
+    raceControl = openPitLaneWhenQueueFormed(raceControl);
+    if (!pitLaneWasOpen && raceControl.pitLaneOpen) {
+      lapEvents.push({ lap: nextLap, text: 'Pit road is now open.' });
+    }
   }
 
   // Leader position on the current track lap. Used to freeze retired cars on

@@ -15,6 +15,7 @@ export function initialRaceControlState(ruleProfile?: RaceRuleProfile): LiveRace
   return {
     mode: 'Green', previousMode: null, deployedOnLap: null, reason: null,
     restartProcedure: ruleProfile?.raceControl.restartProcedure ?? 'SeriesDefault', deployments: 0, queueFormed: false,
+    pitLaneOpen: true, pitLaneClosedOnLap: null,
   };
 }
 
@@ -36,16 +37,23 @@ export function stepRaceControlState(
       restartProcedure: ruleProfile?.raceControl.restartProcedure ?? previous.restartProcedure,
       deployments: transition.safetyCar.deployments,
       queueFormed: false,
+      pitLaneOpen: !ruleProfile?.pitLane.closesUnderFullCourseCaution,
+      pitLaneClosedOnLap: ruleProfile?.pitLane.closesUnderFullCourseCaution ? lap : null,
     };
   }
   if (transition.justEnded) {
-    return { ...previous, previousMode: previous.mode, mode: 'GreenFlagRestart' };
+    return { ...previous, previousMode: previous.mode, mode: 'GreenFlagRestart', pitLaneOpen: true };
   }
   if (transition.safetyCar.active) return previous;
   if (previous.mode === 'GreenFlagRestart' || previous.mode === 'RestartFormation') {
-    return { ...previous, previousMode: previous.mode, mode: 'Green', reason: null, queueFormed: false };
+    return { ...previous, previousMode: previous.mode, mode: 'Green', reason: null, queueFormed: false, pitLaneOpen: true };
   }
-  return previous.mode === 'Finished' ? previous : { ...previous, mode: 'Green', queueFormed: false };
+  return previous.mode === 'Finished' ? previous : { ...previous, mode: 'Green', queueFormed: false, pitLaneOpen: true };
+}
+
+export function openPitLaneWhenQueueFormed(state: LiveRaceControlState): LiveRaceControlState {
+  if (!state.queueFormed || state.pitLaneOpen) return state;
+  return { ...state, pitLaneOpen: true };
 }
 
 export type QueueCatchUpOptions = { targetGapMeters?: number; catchUpSpeedMetersPerSecond?: number };

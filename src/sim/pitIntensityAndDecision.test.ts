@@ -190,6 +190,45 @@ describe('pit intensity and combined pit decision', () => {
     expect(car.pit.journey!.breakdown.transitLossSeconds).toBeGreaterThanOrEqual(0);
   });
 
+  it('holds a player pit call while pit road is closed and executes it after reopening', () => {
+    const context = buildContext('pit-road-closure-live');
+    const playerTeamId = context.entrants[0].driver.teamId;
+    const meta = buildMeta(context, playerTeamId);
+    const accepted = acceptPitDecision({
+      seed: 'pit-road-closure-live',
+      intensity: 'Standard',
+      exitMode: 'Balanced',
+    });
+    const calledDriverId = playerCar(accepted).driverId;
+    let stepped: LiveRaceState = {
+      ...accepted,
+      raceControl: {
+        ...accepted.raceControl!,
+        mode: 'PaceCar',
+        pitLaneOpen: false,
+        pitLaneClosedOnLap: accepted.currentLap,
+      },
+    };
+
+    stepped = stepLiveSector(stepped, meta);
+    let car = stepped.cars.find((candidate) => candidate.driverId === calledDriverId)!;
+    expect(car.pit.stopsMade).toBe(0);
+    expect(car.pit.pitRequested).toBe(true);
+    expect(car.pit.journey).toBeFalsy();
+    expect(stepped.events.some((event) => event.text.includes('pit road is closed'))).toBe(true);
+
+    stepped = stepLiveSector(stepLiveSector(stepped, meta), meta);
+    stepped = {
+      ...stepped,
+      raceControl: { ...stepped.raceControl!, pitLaneOpen: true },
+    };
+    stepped = stepLiveSector(stepped, meta);
+    car = stepped.cars.find((candidate) => candidate.driverId === calledDriverId)!;
+    expect(car.pit.stopsMade).toBe(1);
+    expect(car.pit.pitRequested).toBe(false);
+    expect(car.pit.journey).toBeTruthy();
+  });
+
   it('AI returns a valid pit intensity and exit mode when it chooses to pit', () => {
     const context = buildContext('pit-ai');
     const playerTeamId = context.entrants[0].driver.teamId;
