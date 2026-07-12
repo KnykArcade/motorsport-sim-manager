@@ -68,8 +68,10 @@ export function stepSafetyCar(
     return { safetyCar: sc, justDeployed: false, justEnded: false };
   }
 
+  const minimumGreenLaps = ruleProfile?.raceControl.minimumGreenLapsBetweenCautions
+    ?? MIN_GREEN_LAPS_BETWEEN_SAFETY_CARS;
   const greenLaps = sc.lastEndedOnLap == null ? Number.POSITIVE_INFINITY : lap - sc.lastEndedOnLap;
-  if (greenLaps < MIN_GREEN_LAPS_BETWEEN_SAFETY_CARS && (!trigger.incidentThisLap || trigger.incidentSeverity < 0.9)) {
+  if (greenLaps < minimumGreenLaps && (!trigger.incidentThisLap || trigger.incidentSeverity < 0.9)) {
     return { safetyCar: sc, justDeployed: false, justEnded: false };
   }
 
@@ -88,7 +90,8 @@ export function stepSafetyCar(
     reason = 'Stopped car / debris on track';
   }
 
-  if (rng.chance(deployChance)) {
+  const frequencyMultiplier = ruleProfile?.raceControl.cautionFrequencyMultiplier ?? 1;
+  if (rng.chance(Math.min(1, deployChance * frequencyMultiplier))) {
     const duration = rng.int(2, 4);
     return {
       safetyCar: {

@@ -52,4 +52,29 @@ describe('safety car rule-profile integration', () => {
     );
     expect(results.some((result) => result.justDeployed)).toBe(true);
   });
+
+  it('uses the profile-specific green-lap requirement', () => {
+    const base = selectRaceRuleProfile('F1', 1995, track);
+    const profile = {
+      ...base,
+      raceControl: { ...base.raceControl, minimumGreenLapsBetweenCautions: 2 },
+    };
+    const recentlyEnded = { ...initialSafetyCar(), deployments: 1, lastEndedOnLap: 10 };
+    const results = Array.from({ length: 40 }, (_, index) =>
+      stepSafetyCar(recentlyEnded, track, weather, incident, `profile-cooldown-${index}`, 12, 20, profile),
+    );
+    expect(results.some((result) => result.justDeployed)).toBe(true);
+  });
+
+  it('uses the profile-specific caution frequency multiplier', () => {
+    const base = selectRaceRuleProfile('F1', 1995, track);
+    const disabled = {
+      ...base,
+      raceControl: { ...base.raceControl, cautionFrequencyMultiplier: 0 },
+    };
+    const results = Array.from({ length: 40 }, (_, index) =>
+      stepSafetyCar(initialSafetyCar(), track, weather, incident, `profile-frequency-${index}`, 8, 20, disabled),
+    );
+    expect(results.every((result) => !result.justDeployed)).toBe(true);
+  });
 });
