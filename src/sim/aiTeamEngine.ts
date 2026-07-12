@@ -301,8 +301,15 @@ export function estimatePrizeMoney(constructorPosition: number, teamCount: numbe
   return toMoney(top - (top - tail) * frac);
 }
 
-export function updateAIReputation(team: Team, constructorPosition: number, teamCount: number): Team {
-  const expected = team.expectedStanding ?? Math.ceil(teamCount / 2);
+export function updateAIReputation(
+  team: Team,
+  constructorPosition: number,
+  teams: Team[],
+): Team {
+  const rankedReputations = [...teams]
+    .sort((a, b) => b.reputation - a.reputation)
+    .findIndex((candidate) => candidate.id === team.id);
+  const expected = rankedReputations >= 0 ? rankedReputations + 1 : Math.ceil(teams.length / 2);
   const performanceGap = expected - constructorPosition;
   const drift = Math.max(-2, Math.min(2, performanceGap * 0.35));
   return {

@@ -722,7 +722,7 @@ export function advanceSeason(state: GameState, nextBundle?: SeasonBundle): Game
     }
     const aiDelta = aiRollover.budgetDeltaByTeam[t.id] ?? 0;
     const position = constructorPositionOf(state, t.id);
-    const reputationAdjusted = updateAIReputation(t, position, state.teams.length);
+    const reputationAdjusted = updateAIReputation(t, position, state.teams);
     return aiDelta
       ? { ...reputationAdjusted, budget: reputationAdjusted.budget + aiDelta }
       : reputationAdjusted;
