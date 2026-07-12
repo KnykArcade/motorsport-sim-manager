@@ -34,4 +34,22 @@ describe('safety car rule-profile integration', () => {
     );
     expect(results.every((result) => !result.justDeployed)).toBe(true);
   });
+
+  it('requires green running before another ordinary safety car deployment', () => {
+    const profile = selectRaceRuleProfile('F1', 1995, track);
+    const recentlyEnded = { ...initialSafetyCar(), deployments: 1, lastEndedOnLap: 10 };
+    const results = Array.from({ length: 30 }, (_, index) =>
+      stepSafetyCar(recentlyEnded, track, weather, { incidentThisLap: true, incidentSeverity: 0.8 }, `cooldown-${index}`, 12, 20, profile),
+    );
+    expect(results.every((result) => !result.justDeployed)).toBe(true);
+  });
+
+  it('allows a severe incident to override the green-running cooldown', () => {
+    const profile = selectRaceRuleProfile('F1', 1995, track);
+    const recentlyEnded = { ...initialSafetyCar(), deployments: 1, lastEndedOnLap: 10 };
+    const results = Array.from({ length: 30 }, (_, index) =>
+      stepSafetyCar(recentlyEnded, track, weather, incident, `severe-${index}`, 12, 20, profile),
+    );
+    expect(results.some((result) => result.justDeployed)).toBe(true);
+  });
 });

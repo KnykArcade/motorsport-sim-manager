@@ -47,6 +47,7 @@ export type SafetyCarState = {
   reason: string | null;
   // How many times the SC has been deployed this race.
   deployments: number;
+  lastEndedOnLap?: number | null;
 };
 
 // ---------------------------------------------------------------------------
