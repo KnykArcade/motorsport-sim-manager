@@ -28,6 +28,9 @@ export type WeatherCondition =
 
 export type WeatherState = {
   condition: WeatherCondition;
+  // Consecutive completed simulation steps in this condition. Optional for
+  // compatibility with saves created before weather-strategy hysteresis.
+  lapsInCondition?: number;
   // 0..1 grip available relative to a dry track (1 = full dry grip).
   gripLevel: number;
   wet: boolean;
