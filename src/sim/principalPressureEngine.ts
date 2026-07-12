@@ -15,6 +15,8 @@
 
 import type { NewsItem, NewsCategory, NewsPriority } from '../types/gameTypes';
 import type { FinancialDistressState } from '../types/raceWeekendPackageTypes';
+import type { PrincipalAttributes } from '../types/principalTypes';
+import { createSeededRandom } from './random';
 
 // Player career mobility setting.
 export type CareerMobilityMode = 'StandardCareer' | 'TeamLock' | 'Sandbox';
@@ -32,7 +34,22 @@ export type AIPrincipalState = {
   seasonsAtTeam: number;
   // Whether the principal was fired this offseason.
   fired: boolean;
+  attributes?: PrincipalAttributes;
 };
+
+export function createAIPrincipalAttributes(seed: string, reputation: number): PrincipalAttributes {
+  const rng = createSeededRandom(seed);
+  const base = (offset: number) =>
+    Math.max(1, Math.min(100, Math.round(42 + reputation * 0.22 + offset + rng.variance(5))));
+  return {
+    mediaImage: base(4),
+    boardConfidence: base(7),
+    financialDiscipline: base(1),
+    driverManagement: base(2),
+    development: base(3),
+    strategy: base(2),
+  };
+}
 
 // Result of a pressure evaluation for a principal.
 export type PrincipalPressureEvaluation = {

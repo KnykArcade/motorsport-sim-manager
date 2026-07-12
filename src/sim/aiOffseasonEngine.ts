@@ -24,6 +24,7 @@ import type { EngineState } from '../types/engineTypes';
 import type { TeamOrganizationRatings } from '../types/teamRatingsTypes';
 import type { AcademyMember, MarketDriver, YouthProspect } from '../types/marketTypes';
 import type { AITeamState } from '../types/aiTeamTypes';
+import type { PrincipalAttributes } from '../types/principalTypes';
 import type { MarketBundle } from '../data/market';
 import { MILLION, toMoney } from './financeEngine';
 import { carPerformanceRating } from './trackFitEngine';
@@ -66,6 +67,7 @@ export type AIOffseasonInput = {
   cars: Car[];
   engine?: EngineState;
   aiTeamStates: Record<string, AITeamState>;
+  aiPrincipals?: Record<string, { attributes?: PrincipalAttributes }>;
   aiAcademies: Record<string, AcademyMember[]>;
   orgRatings: Record<string, TeamOrganizationRatings>;
   market: MarketBundle;
@@ -145,6 +147,7 @@ function developCar(
   rng: Rng,
   org: TeamOrganizationRatings | undefined,
   regulationAffectedAreas: RegulationChangeEvent['affectedAreas'] | undefined,
+  principalAttributes: PrincipalAttributes | undefined,
 ): { car: Car; note: string } | null {
   const spec = ARCHETYPE_SPECS[ai.archetype];
   const budget = ai.budget.developmentSpend;
@@ -180,7 +183,10 @@ function developCar(
 
   // Base gain scales with spend and risk appetite.
   const budgetM = budget / MILLION;
-  const base = Math.min(0.9, 0.12 + budgetM * 0.012 + traitRisk * 0.25);
+  const principalMultiplier = principalAttributes
+    ? 1 + (principalAttributes.development - 50) / 500
+    : 1;
+  const base = Math.min(0.9, (0.12 + budgetM * 0.012 + traitRisk * 0.25) * principalMultiplier);
 
   let gain = base * gainMultiplier * impactMult * (0.7 + rng.next() * 0.6);
 
@@ -392,15 +398,20 @@ export function runAIOffseason(input: AIOffseasonInput): AIOffseasonResult {
                 ? 0.2
                 : 0;
       // Regulation adaptation: in a shakeup year some teams nail the new concept
-      // and some miss it. Seeded per team+year with a mild bias toward strong
-      // technical departments, but with real variance so the order can reshuffle.
+      // and some miss it. Preparedness leads; seeded noise keeps outcomes from
+      // becoming perfectly deterministic from static ratings alone.
       let regulationAdaptation = 0;
       if (shakeup > 0) {
         const roll = createSeededRandom(
           deriveSeed(input.seed, 'reg-adapt', team.id, input.nextYear),
         ).next();
-        const techBias = (facilityStaffQuality - 55) / 100; // ~-0.5..0.45
-        regulationAdaptation = Math.max(-1, Math.min(1, (roll - 0.5) * 2 + techBias));
+        const principal = input.aiPrincipals?.[team.id]?.attributes;
+        const preparedness =
+          ((org?.research ?? 45) * 0.35 +
+            (org?.facilities ?? 45) * 0.25 +
+            (principal?.development ?? 50) * 0.2 +
+            (org?.staffQuality ?? 45) * 0.2 - 50) / 50;
+        regulationAdaptation = Math.max(-1, Math.min(1, preparedness * 0.9 + (roll - 0.5) * 0.9));
       }
       const decayed: Car = {
         ...car,
@@ -422,6 +433,7 @@ export function runAIOffseason(input: AIOffseasonInput): AIOffseasonResult {
         rng,
         org,
         input.regulationAffectedAreas,
+        input.aiPrincipals?.[team.id]?.attributes,
       );
       if (dev) {
         // The development *spend* is already applied to the team's cash by the
@@ -455,16 +467,32 @@ export function runAIOffseason(input: AIOffseasonInput): AIOffseasonResult {
       news.push({ headline: n });
     }
     team.budget -= marketResult.spent;
+    if (marketResult.signedIds.length > 0 && rng.chance(0.05)) {
+      const signedDriver = drivers.find((d) => marketResult.signedIds.includes(d.id));
+      if (signedDriver) {
+        drivers = drivers.map((d) =>
+          d.id === signedDriver.id
+            ? { ...d, morale: Math.max(0, d.morale - 12), confidence: Math.max(0, d.confidence - 8) }
+            : d,
+        );
+        const note = `${team.name}'s new signing ${signedDriver.name} struggles to match expectations.`;
+        notes.push(note);
+        news.push({ headline: note });
+      }
+    }
 
     // 4) Staff / sponsor / engine light adjustments --------------------------
     const org = orgRatings[team.id];
     if (org) {
       const invest = ai.financialHealth === 'Excellent' || ai.financialHealth === 'Stable';
       const retrench = ai.financialHealth === 'Critical' || ai.financialHealth === 'AtRisk';
-      const staffTargets: ('staffQuality' | 'operations' | 'research')[] = [
+      const staffTargets: ('staffQuality' | 'operations' | 'research' | 'facilities' | 'youthAcademy' | 'pitCrew')[] = [
         'staffQuality',
         'operations',
         'research',
+        'facilities',
+        'youthAcademy',
+        'pitCrew',
       ];
       let updated = { ...org };
 
@@ -483,10 +511,19 @@ export function runAIOffseason(input: AIOffseasonInput): AIOffseasonResult {
           const hire = rng.pick(best);
           const dept = roleMap[hire.role];
           const boost = Math.round((hire.rating - 50) * 0.08);
-          updated = { ...updated, [dept]: clamp100(updated[dept] + Math.max(1, boost)) };
+          const failedHire = rng.chance(0.05);
+          if (!failedHire) {
+            updated = { ...updated, [dept]: clamp100(updated[dept] + Math.max(1, boost)) };
+          }
           team.budget -= toMoney(hire.signingFee);
-          notes.push(`${team.name} hires ${hire.name} as ${hire.role}.`);
-          news.push({ headline: `${team.name} hires ${hire.name} as ${hire.role}.` });
+          if (failedHire) {
+            const note = `${team.name}'s staff hire ${hire.name} fails to settle — the fee is lost with no performance gain.`;
+            notes.push(note);
+            news.push({ headline: note });
+          } else {
+            notes.push(`${team.name} hires ${hire.name} as ${hire.role}.`);
+            news.push({ headline: `${team.name} hires ${hire.name} as ${hire.role}.` });
+          }
         }
       }
 
@@ -496,7 +533,8 @@ export function runAIOffseason(input: AIOffseasonInput): AIOffseasonResult {
         notes.push(`${team.name} strengthens its ${staffDeptLabel(dept)} department.`);
         news.push({ headline: `${team.name} strengthens its ${staffDeptLabel(dept)} department.` });
       } else if (retrench && rng.chance(0.4)) {
-        updated = { ...updated, staffQuality: clamp100(updated.staffQuality - 2) };
+        const dept = rng.pick(staffTargets);
+        updated = { ...updated, [dept]: clamp100(updated[dept] - 2) };
       }
       // Sponsor movement tracks financial health.
       if (invest && rng.chance(0.3)) {

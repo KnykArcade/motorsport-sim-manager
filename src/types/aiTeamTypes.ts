@@ -90,6 +90,7 @@ export type AITeamState = {
   budget: AITeamBudget;
   // Persistent team identity — traits and description that survive across seasons.
   philosophy?: TeamPhilosophy;
+  principalAttributes?: import('./principalTypes').PrincipalAttributes;
   // Consecutive seasons the team has been AtRisk/Critical — drives the drift
   // toward Survival Mode (and recovery back out of it).
   seasonsInTrouble: number;
