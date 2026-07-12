@@ -147,7 +147,7 @@ export function weightedDevTarget(
       : 'Testing';
     const regulationBonus = affectedAreas.includes(regulationArea) ? 12 : 0;
     const traitBonus = bias[area];
-    const score = need + traitBonus * 5 + regulationBonus;
+    const score = need + traitBonus * 50 + regulationBonus;
     if (score > bestScore) {
       bestScore = score;
       best = area;

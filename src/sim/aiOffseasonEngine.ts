@@ -104,7 +104,7 @@ function targetDriverOverall(ai: AITeamState): number {
     case 'TitleChallenge':
       return 84;
     case 'Podiums':
-      return 68;
+      return 72;
     case 'PointsFinish':
       return 68;
     case 'MidfieldImprovement':
