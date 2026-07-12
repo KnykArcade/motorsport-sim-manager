@@ -63,6 +63,7 @@ import { findPitTransitRecord } from '../data/pit/pitDataLookup';
 import { applyRaceControlFreePass, applyRaceControlQueueCatchUp, initialRaceControlState, openPitLaneWhenQueueFormed, stepRaceControlState } from './raceControlEngine';
 import { generateRaceEventPool, resolveRaceEventTrigger } from './raceEventEngine';
 import { rollReliabilityIssue } from './reliabilityEngine';
+import { curateRaceEvents } from './raceEventJournal';
 import { findOption, applyDecisionEffects } from './raceDecisionEngine';
 import {
   collectDamageComponents,
@@ -1043,7 +1044,7 @@ export function stepLiveSector(state: LiveRaceState, meta: LiveRaceMeta): LiveRa
     safetyCar: scResult.safetyCar,
     raceControl,
     cars: carsWithStints,
-    events: [...state.events, ...lapEvents, ...recEvents, ...stintEvents],
+    events: [...state.events, ...curateRaceEvents([...lapEvents, ...recEvents, ...stintEvents], state.events)],
     pendingPrompt: null,
     promptCooldown: state.promptCooldown,
     firedEventIds,
