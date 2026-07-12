@@ -12,6 +12,7 @@
     "preview": "vite preview",
     "test": "vitest run",
     "test:season-loop": "vitest run src/game/seasonLoop.e2e.test.ts",
+    "calibrate:live": "node scripts/runLiveRaceCalibration.mjs",
     "pit:convert": "node scripts/convertPitWorkbook.mjs"
   },
   "dependencies": {
