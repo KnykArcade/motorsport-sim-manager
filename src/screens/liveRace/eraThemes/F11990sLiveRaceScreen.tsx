@@ -1,4 +1,4 @@
-import { useState, type Dispatch, type ReactNode, type SetStateAction } from 'react';
+import { useRef, useState, type Dispatch, type PointerEvent as ReactPointerEvent, type ReactNode, type SetStateAction } from 'react';
 import type { TrackDot } from '../../../components/RaceTrack2D';
 import { TrackMapAssetPanel } from '../../../components/TrackMapAssetPanel';
 import { modeSpec } from '../../../sim/liveRacePace';
@@ -707,11 +707,103 @@ function RetroTrackMap({
   rotation: number;
   safetyCar?: boolean;
 }) {
+  const zoomLevels = [1, 1.25, 1.5, 2] as const;
+  const [zoomIndex, setZoomIndex] = useState(0);
+  const [panOffset, setPanOffset] = useState({ x: 0, y: 0 });
+  const drag = useRef<{
+    pointerId: number;
+    startX: number;
+    startY: number;
+    startPan: { x: number; y: number };
+  } | null>(null);
+  const zoom = zoomLevels[zoomIndex];
+  const fitTrack = () => {
+    setZoomIndex(0);
+    setPanOffset({ x: 0, y: 0 });
+  };
+  const zoomOut = () => {
+    const nextIndex = Math.max(0, zoomIndex - 1);
+    setZoomIndex(nextIndex);
+    if (nextIndex === 0) setPanOffset({ x: 0, y: 0 });
+  };
+  const zoomIn = () => setZoomIndex((index) => Math.min(zoomLevels.length - 1, index + 1));
+  const startPan = (event: ReactPointerEvent<HTMLDivElement>) => {
+    if (zoom <= 1) return;
+    event.currentTarget.setPointerCapture(event.pointerId);
+    drag.current = {
+      pointerId: event.pointerId,
+      startX: event.clientX,
+      startY: event.clientY,
+      startPan: panOffset,
+    };
+  };
+  const movePan = (event: ReactPointerEvent<HTMLDivElement>) => {
+    const activeDrag = drag.current;
+    if (!activeDrag || activeDrag.pointerId !== event.pointerId) return;
+    const bounds = event.currentTarget.getBoundingClientRect();
+    if (bounds.width === 0 || bounds.height === 0) return;
+    setPanOffset({
+      x: activeDrag.startPan.x - (event.clientX - activeDrag.startX) / bounds.width / zoom,
+      y: activeDrag.startPan.y - (event.clientY - activeDrag.startY) / bounds.height / zoom,
+    });
+  };
+  const endPan = (event: ReactPointerEvent<HTMLDivElement>) => {
+    if (drag.current?.pointerId !== event.pointerId) return;
+    drag.current = null;
+    if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+      event.currentTarget.releasePointerCapture(event.pointerId);
+    }
+  };
+
   return (
     <div className="absolute inset-0 z-10 max-lg:hidden">
-      <RetroPanel title="Track Map" className="h-full bg-black/78 backdrop-blur-[1px]">
+      <RetroPanel
+        title="Track Map"
+        className="h-full bg-black/78 backdrop-blur-[1px]"
+        headerRight={
+          <div className="flex items-center gap-1" data-testid="track-map-zoom-controls">
+            <button
+              type="button"
+              onClick={fitTrack}
+              className="rounded border border-amber-500/45 px-1.5 py-0.5 text-[9px] font-black text-amber-200 hover:bg-amber-400/15"
+              aria-label="Fit entire track"
+            >
+              FIT
+            </button>
+            <button
+              type="button"
+              onClick={zoomOut}
+              disabled={zoomIndex === 0}
+              className="h-5 w-5 rounded border border-zinc-600 text-[12px] font-black text-zinc-200 disabled:cursor-not-allowed disabled:opacity-35"
+              aria-label="Zoom track map out"
+            >
+              −
+            </button>
+            <span className="w-8 text-center text-[9px] tabular-nums text-zinc-300" aria-live="polite">
+              {zoom}×
+            </span>
+            <button
+              type="button"
+              onClick={zoomIn}
+              disabled={zoomIndex === zoomLevels.length - 1}
+              className="h-5 w-5 rounded border border-zinc-600 text-[12px] font-black text-zinc-200 disabled:cursor-not-allowed disabled:opacity-35"
+              aria-label="Zoom track map in"
+            >
+              +
+            </button>
+          </div>
+        }
+      >
         <div className="flex h-[calc(100%-37px)] flex-col">
-          <div className="min-h-0 flex-1 p-1">
+          <div
+            className={`relative min-h-0 flex-1 p-1 ${zoom > 1 ? 'cursor-grab active:cursor-grabbing' : ''}`}
+            style={{ touchAction: zoom > 1 ? 'none' : 'auto' }}
+            onPointerDown={startPan}
+            onPointerMove={movePan}
+            onPointerUp={endPan}
+            onPointerCancel={endPan}
+            data-track-map-pan-enabled={zoom > 1 ? 'true' : 'false'}
+          >
             <TrackMapAssetPanel
               series={series}
               year={year}
@@ -722,8 +814,15 @@ function RetroTrackMap({
               eraTheme="f1-1990s"
               hideFooterLabel
               safetyCar={safetyCar}
+              zoom={zoom}
+              panOffset={panOffset}
               className="h-full w-full"
             />
+            {zoom > 1 && (
+              <div className="pointer-events-none absolute bottom-2 left-1/2 -translate-x-1/2 rounded bg-black/75 px-2 py-1 text-[9px] font-bold uppercase tracking-wide text-zinc-200">
+                Drag map to move
+              </div>
+            )}
           </div>
         </div>
       </RetroPanel>

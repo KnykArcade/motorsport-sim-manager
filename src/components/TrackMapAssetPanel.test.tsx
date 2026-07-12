@@ -192,4 +192,62 @@ describe('TrackMapAssetPanel', () => {
     expect(html).toContain('data-track-map-driver="mansell"');
     expect(html).toContain('data-track-map-driver="patrese"');
   });
+
+  it('renders the hand-traced Interlagos map for the actual 1995 Brazilian GP id', () => {
+    const html = renderToStaticMarkup(
+      <TrackMapAssetPanel
+        series="F1"
+        year={1995}
+        trackId="autodromo-jose-carlos-pace"
+        trackName="Autodromo Jose Carlos Pace"
+        dots={dots}
+        rotation={0.2}
+        eraTheme="f1-1990s"
+      />,
+    );
+
+    expect(html).toContain('data-track-style="historic-interlagos-image-2.5d"');
+    expect(html).toContain('data-track-map-background="interlagos-historic-2p5d"');
+    expect(html).toContain('data-testid="interlagos-historic-image"');
+    expect(html).toContain('href="/assets/track-maps/interlagos-historic-2p5d.png"');
+    expect(html).not.toContain('data-track-layer="racing-surface"');
+    expect(html).toContain('data-track-map-driver="driver-1"');
+    expect(html).toContain('data-marker-size="35"');
+  });
+
+  it('moves the image-backed viewport using normalized pan offsets while zoomed', () => {
+    const html = renderToStaticMarkup(
+      <TrackMapAssetPanel
+        series="F1"
+        year={1995}
+        trackId="autodromo-jose-carlos-pace"
+        trackName="Autodromo Jose Carlos Pace"
+        dots={dots}
+        rotation={0.2}
+        eraTheme="f1-1990s"
+        zoom={2}
+        panOffset={{ x: 0.1, y: 0.1 }}
+      />,
+    );
+
+    expect(html).toContain('viewBox="350 175 500 250"');
+    expect(html).toContain('data-marker-size="35"');
+  });
+
+  it('uses the Interlagos scenic map for modern Brazilian GP aliases without an era override', () => {
+    const html = renderToStaticMarkup(
+      <TrackMapAssetPanel
+        series="F1"
+        year={2025}
+        trackId="interlagos-autodromo-jose-carlos-pace-2025"
+        trackName="Interlagos / Autodromo Jose Carlos Pace"
+        dots={dots}
+        rotation={0.2}
+      />,
+    );
+
+    expect(html).toContain('data-track-map-background="interlagos-historic-2p5d"');
+    expect(html).toContain('data-testid="interlagos-historic-image"');
+    expect(html).not.toContain('data-track-layer="racing-surface"');
+  });
 });
