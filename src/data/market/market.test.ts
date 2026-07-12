@@ -36,7 +36,7 @@ describe('youth market costs', () => {
     }
   });
 
-  it('keeps each loaded market bundle at the locked 100-entry target', () => {
+  it('loads one uncapped shared universe for every series in a year', () => {
     for (const [year, series] of [
       [1994, 'F1'],
       [2005, 'Champ Car'],
@@ -44,8 +44,13 @@ describe('youth market costs', () => {
     ] as const) {
       const bundle = getMarketBundle(year, series);
       expect(bundle).toBeDefined();
-      expect(bundle!.drivers).toHaveLength(100);
-      expect(bundle!.youth).toHaveLength(100);
+      expect(bundle!.drivers.length).toBeGreaterThan(0);
+      expect(bundle!.youth.length).toBeGreaterThan(0);
+      expect(getMarketBundle(year, 'F1')).toBe(getMarketBundle(year, series));
+      const names = [...bundle!.drivers, ...bundle!.youth].map((entry) => entry.name
+        .normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim());
+      expect(new Set(names).size).toBe(names.length);
+      expect(bundle!.drivers.every((driver) => (driver.seriesPreferences?.length ?? 0) > 0)).toBe(true);
     }
   });
 

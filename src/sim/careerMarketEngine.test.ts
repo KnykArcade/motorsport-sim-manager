@@ -80,11 +80,11 @@ describe('age + retirement', () => {
 });
 
 describe('availability windows', () => {
-  it('adult available only from market-entry year, of racing age, in-series', () => {
+  it('makes adult drivers available universe-wide after market entry', () => {
     const e = entry({ marketEntryYear: 2005, birthYear: 1985 }); // age 20 in 2005
     expect(isAdultAvailable(e, 2004, 'F1')).toBe(false); // before entry
     expect(isAdultAvailable(e, 2005, 'F1')).toBe(true);
-    expect(isAdultAvailable(e, 2005, 'IndyCar')).toBe(false); // not eligible series
+    expect(isAdultAvailable(e, 2005, 'IndyCar')).toBe(true); // preference affects interest, not eligibility
   });
 
   it('youth available within the academy window, then ages out', () => {

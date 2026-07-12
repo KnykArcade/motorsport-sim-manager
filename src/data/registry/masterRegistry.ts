@@ -469,6 +469,8 @@ export function buildMasterRegistry(): MasterDriverRegistry {
   // Set series-specific ratings + secondary interest once all sources merged.
   for (const id of registry.order) {
     const e = registry.byId[id];
+    e.preferredSeries = (Object.entries(e.seriesExperience) as Array<[Series, number]>)
+      .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))[0]?.[0] ?? e.preferredSeries;
     e.secondarySeriesInterest = e.eligibleSeries.filter((s) => s !== e.preferredSeries);
     // Series-specific base ratings = latest snapshot per series.
     const bySeries: Partial<Record<Series, RegistryBaseRatings>> = {};

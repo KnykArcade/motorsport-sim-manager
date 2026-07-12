@@ -21,6 +21,11 @@ export type MarketSkillRatings = {
 };
 
 // A senior / feeder-series driver available on the transfer market.
+export type SeriesPreference = {
+  series: import('./gameTypes').Series;
+  weight: number; // 0-100; preference affects offer interest, never eligibility
+};
+
 export type MarketDriver = {
   id: string;
   name: string;
@@ -30,6 +35,7 @@ export type MarketDriver = {
   marketPool: string;
   marketStatus: string;
   primaryRole: string;
+  seriesPreferences?: SeriesPreference[];
   immediateF1Eligible: boolean;
   skills: MarketSkillRatings;
   overall: number;
@@ -55,6 +61,7 @@ export type YouthProspect = {
   currentLevel: string;
   marketPool: string;
   marketStatus: string;
+  seriesPreferences?: SeriesPreference[];
   academyEligibleNow: boolean;
   earliestFullAcademyYear: number;
   skills: MarketSkillRatings;

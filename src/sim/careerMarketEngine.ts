@@ -78,7 +78,7 @@ export function isRetiredByAge(e: MasterDriverEntry, year: number): boolean {
 // only for other series are surfaced separately as cross-series candidates
 // (see crossSeriesEngine).
 export function isAdultAvailable(e: MasterDriverEntry, year: number, series: Series): boolean {
-  if (!e.eligibleSeries.includes(series)) return false;
+  void series;
   if (e.marketEntryYear > year) return false;
   if (isRetiredByAge(e, year)) return false;
   const age = ageInYear(e, year);
@@ -90,7 +90,7 @@ export function isAdultAvailable(e: MasterDriverEntry, year: number, series: Ser
 // youth window (academyEligibleYear reached, not yet adult-eligible).
 export function isYouthAvailable(e: MasterDriverEntry, year: number, series: Series): boolean {
   if (e.academyEligibleYear == null) return false;
-  if (!e.eligibleSeries.includes(series)) return false;
+  void series;
   if (e.academyEligibleYear > year) return false;
   const adultYear = e.adultEligibleYear ?? Infinity;
   if (year >= adultYear) return false;
@@ -114,6 +114,10 @@ export function entryToMarketDriver(e: MasterDriverEntry, year: number): MarketD
     marketPool: 'registry',
     marketStatus: 'available',
     primaryRole: 'race',
+    seriesPreferences: [
+      { series: e.preferredSeries, weight: 100 },
+      ...e.secondarySeriesInterest.map((series, index) => ({ series, weight: Math.max(55, 80 - index * 10) })),
+    ],
     immediateF1Eligible: true,
     skills: skillsOf(e),
     overall: e.baseRatings.overall,
@@ -236,6 +240,14 @@ export function careerMarketBundle(state: GameState): MarketBundle {
   const staticBundle = getMarketBundle(year, series);
   const releasedDrivers = getReleasedMarketDrivers(year, series);
   const occupied = occupiedIdentities(state);
+  // A driver holding an active seat in any championship belongs to the shared
+  // universe roster, not the open market—even when the player manages another
+  // series. Season snapshots in the registry come only from active grids.
+  for (const entry of registryList(reg)) {
+    if (entry.baseRatingsByYear.some((snapshot) => snapshot.year === year)) {
+      occupied.names.add(entry.canonicalName);
+    }
+  }
 
   // Normalize the curated youth pool by age: under-12 are hidden entirely
   // (not yet in any market), 12–17 stay in the youth pool, and any who have
@@ -286,14 +298,13 @@ export function careerMarketBundle(state: GameState): MarketBundle {
     seenDrivers.add(key);
     drivers.push(clean === d.name ? d : { ...d, name: clean });
   }
-  const cappedDrivers = drivers.slice(0, 100);
 
   const seenYouth = new Set<string>(occupied.names);
   const youth: YouthProspect[] = [];
   for (const y of [...curatedYouth, ...extraYouth]) {
     const clean = sanitizeMarketName(y.name);
     const key = canonicalNameOf(clean);
-    if (seenYouth.has(key) || cappedDrivers.some((d) => canonicalNameOf(d.name) === key)) continue;
+    if (seenYouth.has(key) || drivers.some((d) => canonicalNameOf(d.name) === key)) continue;
     seenYouth.add(key);
     youth.push(clean === y.name ? y : { ...y, name: clean });
   }
@@ -302,7 +313,7 @@ export function careerMarketBundle(state: GameState): MarketBundle {
   // Generate deterministic fictional prospects to fill the gap when curated data
   // is insufficient (e.g., modern F1 seasons where all prospects are 18+).
   // Pass occupied names to avoid collisions with existing drivers.
-  const allOccupiedNames = new Set<string>([...seenYouth, ...cappedDrivers.map((d) => canonicalNameOf(d.name))]);
+  const allOccupiedNames = new Set<string>([...seenYouth, ...drivers.map((d) => canonicalNameOf(d.name))]);
   const filledYouth = ensureMinimumYouthProspects(
     youth,
     state.randomSeed,
@@ -311,7 +322,7 @@ export function careerMarketBundle(state: GameState): MarketBundle {
     allOccupiedNames,
   );
 
-  return { drivers: cappedDrivers, youth: filledYouth };
+  return { drivers, youth: filledYouth };
 }
 
 // --- Rollover deltas (for the offseason summary) ----------------------------
