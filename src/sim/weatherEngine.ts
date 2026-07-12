@@ -34,6 +34,7 @@ function isWet(c: WeatherCondition): boolean {
 export function makeWeatherState(condition: WeatherCondition, changingSoon = false): WeatherState {
   return {
     condition,
+    lapsInCondition: 1,
     gripLevel: GRIP[condition],
     wet: isWet(condition),
     changingSoon,
@@ -99,7 +100,10 @@ export function stepWeather(
 
   // Base chance of a change per lap; higher on rain-prone tracks and never on
   // the final couple of laps (keeps endgames stable).
-  if (lap >= totalLaps - 2) return { weather: { ...weather, changingSoon: false }, changed: false };
+  if (lap >= totalLaps - 2) return {
+    weather: { ...weather, changingSoon: false, lapsInCondition: (weather.lapsInCondition ?? 1) + 1 },
+    changed: false,
+  };
 
   const rainProneness =
     (track.attributes.riskWallProximity + track.attributes.enduranceConsistency) / 20;
@@ -108,13 +112,19 @@ export function stepWeather(
   if (!rng.chance(changeChance)) {
     // Occasionally flag an upcoming change to telegraph gambles.
     const soon = rng.chance(0.08) && (weather.condition === 'Cloudy' || weather.condition === 'Drying');
-    return { weather: { ...weather, changingSoon: soon }, changed: false };
+    return {
+      weather: { ...weather, changingSoon: soon, lapsInCondition: (weather.lapsInCondition ?? 1) + 1 },
+      changed: false,
+    };
   }
 
   const options = NEXT[weather.condition];
   const next = rng.pick(options);
   if (next === weather.condition) {
-    return { weather: { ...weather, changingSoon: false }, changed: false };
+    return {
+      weather: { ...weather, changingSoon: false, lapsInCondition: (weather.lapsInCondition ?? 1) + 1 },
+      changed: false,
+    };
   }
   return { weather: makeWeatherState(next, true), changed: true };
 }

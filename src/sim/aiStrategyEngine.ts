@@ -64,6 +64,7 @@ export type AIAction = {
 };
 
 export const MIN_NON_EMERGENCY_PIT_STINT_LAPS = 6;
+export const WEATHER_TYRE_CONFIRMATION_LAPS = 2;
 
 function recentlyPitted(car: LiveCarState, lap: number): boolean {
   return car.pit.lastPitLap != null && lap - car.pit.lastPitLap < MIN_NON_EMERGENCY_PIT_STINT_LAPS;
@@ -236,7 +237,12 @@ export function aiLapDecision(
 
   // 1. Weather: get onto the right tyres. Wet track + dry tyres = pit for wets.
   const onWets = car.tire.compound === 'Wet';
-  if (state.weather.wet && !onWets) {
+  const weatherLaps = state.weather.lapsInCondition ?? 1;
+  const wetTyresRequired = state.weather.condition === 'HeavyRain'
+    || (state.weather.wet && weatherLaps >= WEATHER_TYRE_CONFIRMATION_LAPS);
+  const slicksRequired = state.weather.condition === 'Dry'
+    && weatherLaps >= WEATHER_TYRE_CONFIRMATION_LAPS;
+  if (wetTyresRequired && !onWets) {
     // Reactive personalities switch immediately; others may gamble briefly.
     const switchChance = car.personality === 'RiskAverse' || car.personality === 'ReliabilityProtective' ? 0.95 : 0.7;
     if (rng.chance(switchChance)) {
@@ -250,7 +256,7 @@ export function aiLapDecision(
       return action;
     }
   }
-  if (!state.weather.wet && onWets && state.weather.condition !== 'Drying') {
+  if (slicksRequired && onWets) {
     action.pitNow = true;
     action.switchCompound = 'Dry';
     action.note = 'pits for slicks';

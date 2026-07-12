@@ -112,6 +112,22 @@ describe('aiLapDecision — core behaviours', () => {
     expect(action.switchCompound).toBe('Wet');
   });
 
+  it('waits for light rain to persist before changing tyres', () => {
+    const c = car({ personality: 'RiskAverse' });
+    const transient = live([c], { weather: { condition: 'LightRain', lapsInCondition: 1, gripLevel: 0.72, wet: true, changingSoon: true, label: 'Light Rain' } });
+    const confirmed = live([c], { weather: { condition: 'LightRain', lapsInCondition: 2, gripLevel: 0.72, wet: true, changingSoon: false, label: 'Light Rain' } });
+    expect(aiLapDecision(c, transient, TRACK, 21).pitNow).toBe(false);
+    expect(aiLapDecision(c, confirmed, TRACK, 21).pitNow).toBe(true);
+  });
+
+  it('waits for a dry track to persist before abandoning wets', () => {
+    const c = car({ tire: { compound: 'Wet', age: 8, wear: 20, stintTarget: 20 } });
+    const transient = live([c], { weather: { condition: 'Dry', lapsInCondition: 1, gripLevel: 1, wet: false, changingSoon: true, label: 'Dry' } });
+    const confirmed = live([c], { weather: { condition: 'Dry', lapsInCondition: 2, gripLevel: 1, wet: false, changingSoon: false, label: 'Dry' } });
+    expect(aiLapDecision(c, transient, TRACK, 21).pitNow).toBe(false);
+    expect(aiLapDecision(c, confirmed, TRACK, 21).pitNow).toBe(true);
+  });
+
   it('makes its scheduled stop once the target lap arrives', () => {
     const c = car({ pit: { plannedStops: 1, stopsMade: 0, scheduledLaps: [22], lastPitLap: null, inPitThisLap: false, window: null, pitRequested: false, planStatus: 'planned', planCancelled: false, lastWindowPromptLap: null } });
     const action = aiLapDecision(c, live([c]), TRACK, 22);
