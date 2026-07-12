@@ -12,6 +12,7 @@ import { simulateQualifying, qualifyingFormatFor } from '../src/sim/qualifyingEn
 import { createLiveRace, type LiveRaceMeta } from '../src/sim/liveRaceEngine';
 import { resolvePromptDefault, stepLiveRace } from '../src/sim/raceTickEngine';
 import { aggregateLiveRaceCalibration, measureLiveRaceCalibrationRun } from '../src/sim/calibration/liveRaceCalibration';
+import { assessLiveRaceCalibration, selectLiveRaceCalibrationTargets } from '../src/sim/calibration/liveRaceCalibrationTargets';
 import type { Entrant, QualifyingContext, RaceContext } from '../src/types/simTypes';
 import type { Series } from '../src/types/gameTypes';
 
@@ -85,7 +86,8 @@ test('deterministic live race calibration', () => {
   }
 
   const report = aggregateLiveRaceCalibration(runs, maxStopsByCar);
-  console.log(JSON.stringify({ season: `${year}-${series}`, track: race.trackName, ...report }, null, 2));
+  const targetAssessment = assessLiveRaceCalibration(report, selectLiveRaceCalibrationTargets(series, year));
+  console.log(JSON.stringify({ season: `${year}-${series}`, track: race.trackName, ...report, targetAssessment }, null, 2));
   expect(report.runs).toBe(sims);
   expect(report.pitCallReconciliationFailures).toBe(0);
 }, 120_000);
