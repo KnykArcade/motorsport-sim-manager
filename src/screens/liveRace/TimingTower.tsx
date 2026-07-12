@@ -7,6 +7,7 @@ import type { LiveCarState } from '../../types/liveTypes';
 import { DeltaTag, RiskDot } from './dashboardUi';
 import { fmtLap, fmtSector, tyreLetter } from './dashboardFormat';
 import { ratingColor } from '../../components/ui';
+import { formatLiveTimingDelta } from '../../sim/liveTimingGapEngine';
 
 type Tab = 'Overview' | 'Gaps' | 'Intervals' | 'Tyres' | 'Pit Stops' | 'Sectors';
 const TABS: Tab[] = ['Overview', 'Gaps', 'Intervals', 'Tyres', 'Pit Stops', 'Sectors'];
@@ -108,13 +109,13 @@ function Row({ car, tab, name, color }: { car: LiveCarState; tab: Tab; name: str
         <>
           <td className="py-1 pr-1 text-right tabular-nums text-slate-300">{gapText(car, classified)}</td>
           <td className="py-1 pr-2 text-right tabular-nums text-slate-400">
-            {!classified ? '—' : car.position === 1 ? '—' : `+${car.interval.toFixed(1)}`}
+            {!classified ? '—' : car.position === 1 ? '—' : formatLiveTimingDelta(car.interval, car.lapsBehindCarAhead)}
           </td>
         </>
       )}
       {tab === 'Intervals' && (
         <>
-          <td className="py-1 pr-1 text-right tabular-nums text-slate-300">{position === 1 ? 'LEADER' : `+${car.interval.toFixed(1)}`}</td>
+          <td className="py-1 pr-1 text-right tabular-nums text-slate-300">{position === 1 ? 'LEADER' : formatLiveTimingDelta(car.interval, car.lapsBehindCarAhead)}</td>
           <td className="py-1 pr-2 text-right tabular-nums text-slate-400">{position === 1 ? '—' : `P${Math.max(1, position - 1)}`}</td>
         </>
       )}
@@ -172,7 +173,7 @@ function TyreCell({ letter, className, life }: { letter: string; className: stri
 function gapText(car: LiveCarState, classified: boolean): string {
   if (!classified) return '—';
   if (car.position === 1) return 'LEAD';
-  return `+${car.gapToLeader.toFixed(1)}`;
+  return formatLiveTimingDelta(car.gapToLeader, car.lapsBehindLeader);
 }
 
 function nextPitText(car: LiveCarState): string {

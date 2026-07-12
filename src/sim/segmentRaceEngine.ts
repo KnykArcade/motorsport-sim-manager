@@ -69,7 +69,7 @@ export function advanceCarPositionThroughSegments(
 
     if (segment.timingLine === 'Sector1' || segment.timingLine === 'Sector2') {
       const sector = segment.timingLine === 'Sector1' ? 1 : 2;
-      const result = applySectorCrossing(next.timing, sector, crossingTime);
+      const result = applySectorCrossing(next.timing, sector, crossingTime, next.completedLaps + 1);
       next = { ...next, timing: result.timing };
       events.push(result.event);
     }

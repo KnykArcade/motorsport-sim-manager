@@ -406,6 +406,8 @@ export type LiveCarState = {
   totalTime: number; // cumulative race time (s); lower = ahead
   gapToLeader: number; // seconds
   interval: number; // seconds to car ahead
+  lapsBehindLeader?: number;
+  lapsBehindCarAhead?: number;
   lastLapTime: number;
   bestLap: number | null; // fastest clean lap so far (s); null until set
   lapsCompleted: number;

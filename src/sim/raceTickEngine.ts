@@ -65,6 +65,7 @@ import { applyRaceControlFreePass, applyRaceControlQueueCatchUp, initialRaceCont
 import { generateRaceEventPool, resolveRaceEventTrigger } from './raceEventEngine';
 import { rollReliabilityIssue } from './reliabilityEngine';
 import { curateRaceEvents } from './raceEventJournal';
+import { updateLiveTimingGaps } from './liveTimingGapEngine';
 import { findOption, applyDecisionEffects } from './raceDecisionEngine';
 import {
   collectDamageComponents,
@@ -891,17 +892,6 @@ export function stepLiveSector(state: LiveRaceState, meta: LiveRaceMeta): LiveRa
 
   running.forEach((c, i) => {
     c.position = i + 1;
-    const neutralized = ['SafetyCar', 'PaceCar', 'FullCourseYellow', 'Caution'].includes(raceControl.mode);
-    if (neutralized && c.positionState && running[0]?.positionState) {
-      const speed = Math.max(1, c.positionState.currentSpeedMetersPerSecond);
-      const leaderDistance = running[0].positionState.totalRaceDistanceMeters;
-      const aheadDistance = running[i - 1]?.positionState?.totalRaceDistanceMeters ?? c.positionState.totalRaceDistanceMeters;
-      c.gapToLeader = i === 0 ? 0 : round1((leaderDistance - c.positionState.totalRaceDistanceMeters) / speed);
-      c.interval = i === 0 ? 0 : round1((aheadDistance - c.positionState.totalRaceDistanceMeters) / speed);
-    } else {
-      c.gapToLeader = i === 0 ? 0 : round1(c.totalTime - running[0].totalTime);
-      c.interval = i === 0 ? 0 : round1(c.totalTime - running[i - 1].totalTime);
-    }
   });
   retired.forEach((c) => {
     c.position = null;
@@ -938,17 +928,6 @@ export function stepLiveSector(state: LiveRaceState, meta: LiveRaceMeta): LiveRa
     const battleResult = stepBattleStates(running, state.circuit, battleStates, state.cars);
     running.splice(0, running.length, ...battleResult.cars.filter((car) => car.running));
     battleStates = battleResult.states;
-    const leaderDistance = running[0]?.positionState?.totalRaceDistanceMeters ?? 0;
-    running.forEach((car, index) => {
-      car.position = index + 1;
-      const distance = car.positionState?.totalRaceDistanceMeters ?? leaderDistance;
-      const speed = Math.max(1, car.positionState?.currentSpeedMetersPerSecond ?? 1);
-      const aheadDistance = index > 0
-        ? running[index - 1]?.positionState?.totalRaceDistanceMeters ?? distance
-        : distance;
-      car.gapToLeader = index === 0 ? 0 : round1((leaderDistance - distance) / speed);
-      car.interval = index === 0 ? 0 : round1((aheadDistance - distance) / speed);
-    });
     for (const outcome of isFinalSector ? battleResult.outcomes : []) {
       if (outcome.outcome !== 'CleanPass') continue;
       const attacker = name(outcome.attackerId);
@@ -959,6 +938,8 @@ export function stepLiveSector(state: LiveRaceState, meta: LiveRaceMeta): LiveRa
   } else if (scResult.safetyCar.active) {
     battleStates = {};
   }
+
+  running.splice(0, running.length, ...updateLiveTimingGaps(running, state.circuit).filter((car) => car.running));
 
   // --- Live status (risk bands, traffic, readable message) for running cars ---
   running.forEach((c, i) => {
