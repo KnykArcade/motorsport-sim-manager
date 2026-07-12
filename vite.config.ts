@@ -28,7 +28,7 @@ export default defineConfig({
           if (id.includes('/src/data/phase0/generated/globalCars')) return 'phase0-global-cars';
           if (id.includes('/src/data/phase0/generated/globalTracks')) return 'phase0-global-tracks';
           if (id.includes('/src/data/phase0/generated/globalTeams')) return 'phase0-global-teams';
-          if (id.includes('/src/data/phase0/generated/globalNASCAR')) return 'phase0-global-nascar';
+          if (id.includes('/src/data/phase0/generated/globalNASCAR')) return undefined;
           if (id.includes('/src/data/weather/generated/raceMeta')) return 'weather-race-meta';
           if (id.includes('/src/data/weather/generated/trackCoordinates')) return 'weather-track-coordinates';
           // seasonData.ts and the heavy season files it imports (tracks/, teams/,

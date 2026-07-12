@@ -145,7 +145,7 @@ export const nascar2000Drivers: GlobalDriver[] = [
     "reputation": 99,
     "marketValue": 99,
     "contract": {
-      "teamId": "NASCAR_2000_TEAM_ROUSH_RACING",
+      "teamId": "NASCAR_2000_TEAM_ROUSH_RACING_TEAM_3",
       "yearsLeft": 1,
       "salary": 50,
       "options": []
@@ -337,7 +337,7 @@ export const nascar2000Drivers: GlobalDriver[] = [
     "reputation": 98,
     "marketValue": 98,
     "contract": {
-      "teamId": "NASCAR_2000_TEAM_PENSKE_KRANEFUSS_RACING",
+      "teamId": "NASCAR_2000_TEAM_PENSKE_KRANEFUSS_RACING_TEAM_1",
       "yearsLeft": 1,
       "salary": 49,
       "options": []
@@ -385,7 +385,7 @@ export const nascar2000Drivers: GlobalDriver[] = [
     "reputation": 96,
     "marketValue": 96,
     "contract": {
-      "teamId": "NASCAR_2000_TEAM_ROUSH_RACING",
+      "teamId": "NASCAR_2000_TEAM_ROUSH_RACING_TEAM_1",
       "yearsLeft": 1,
       "salary": 48,
       "options": []
@@ -433,7 +433,7 @@ export const nascar2000Drivers: GlobalDriver[] = [
     "reputation": 95,
     "marketValue": 95,
     "contract": {
-      "teamId": "NASCAR_2000_TEAM_HENDRICK_MOTORSPORTS",
+      "teamId": "NASCAR_2000_TEAM_HENDRICK_MOTORSPORTS_TEAM_1",
       "yearsLeft": 1,
       "salary": 48,
       "options": []
@@ -481,7 +481,7 @@ export const nascar2000Drivers: GlobalDriver[] = [
     "reputation": 94,
     "marketValue": 94,
     "contract": {
-      "teamId": "NASCAR_2000_TEAM_BILL_DAVIS_RACING",
+      "teamId": "NASCAR_2000_TEAM_BILL_DAVIS_RACING_TEAM_1",
       "yearsLeft": 1,
       "salary": 47,
       "options": []
@@ -673,7 +673,7 @@ export const nascar2000Drivers: GlobalDriver[] = [
     "reputation": 91,
     "marketValue": 91,
     "contract": {
-      "teamId": "NASCAR_2000_TEAM_ROUSH_RACING",
+      "teamId": "NASCAR_2000_TEAM_ROUSH_RACING_TEAM_2",
       "yearsLeft": 1,
       "salary": 46,
       "options": []
@@ -721,7 +721,7 @@ export const nascar2000Drivers: GlobalDriver[] = [
     "reputation": 91,
     "marketValue": 91,
     "contract": {
-      "teamId": "NASCAR_2000_TEAM_ANDY_PETREE_RACING",
+      "teamId": "NASCAR_2000_TEAM_ANDY_PETREE_RACING_TEAM_1",
       "yearsLeft": 1,
       "salary": 46,
       "options": []
@@ -817,7 +817,7 @@ export const nascar2000Drivers: GlobalDriver[] = [
     "reputation": 88,
     "marketValue": 88,
     "contract": {
-      "teamId": "NASCAR_2000_TEAM_HENDRICK_MOTORSPORTS",
+      "teamId": "NASCAR_2000_TEAM_HENDRICK_MOTORSPORTS_TEAM_1",
       "yearsLeft": 1,
       "salary": 44,
       "options": []
@@ -913,7 +913,7 @@ export const nascar2000Drivers: GlobalDriver[] = [
     "reputation": 87,
     "marketValue": 87,
     "contract": {
-      "teamId": "NASCAR_2000_TEAM_TEAM_SABCO",
+      "teamId": "NASCAR_2000_TEAM_TEAM_SABCO_TEAM_1",
       "yearsLeft": 1,
       "salary": 44,
       "options": []
@@ -961,7 +961,7 @@ export const nascar2000Drivers: GlobalDriver[] = [
     "reputation": 86,
     "marketValue": 86,
     "contract": {
-      "teamId": "NASCAR_2000_TEAM_HENDRICK_MOTORSPORTS",
+      "teamId": "NASCAR_2000_TEAM_HENDRICK_MOTORSPORTS_TEAM_2",
       "yearsLeft": 1,
       "salary": 43,
       "options": []
@@ -1057,7 +1057,7 @@ export const nascar2000Drivers: GlobalDriver[] = [
     "reputation": 85,
     "marketValue": 85,
     "contract": {
-      "teamId": "NASCAR_2000_TEAM_HAAS_CARTER_MOTORSPORTS",
+      "teamId": "NASCAR_2000_TEAM_HAAS_CARTER_MOTORSPORTS_TEAM_1",
       "yearsLeft": 1,
       "salary": 42,
       "options": []
@@ -1105,7 +1105,7 @@ export const nascar2000Drivers: GlobalDriver[] = [
     "reputation": 83,
     "marketValue": 83,
     "contract": {
-      "teamId": "NASCAR_2000_TEAM_PETTY_ENTERPRISES",
+      "teamId": "NASCAR_2000_TEAM_PETTY_ENTERPRISES_TEAM_1",
       "yearsLeft": 1,
       "salary": 42,
       "options": []
@@ -1153,7 +1153,7 @@ export const nascar2000Drivers: GlobalDriver[] = [
     "reputation": 82,
     "marketValue": 82,
     "contract": {
-      "teamId": "NASCAR_2000_TEAM_PENSKE_KRANEFUSS_RACING",
+      "teamId": "NASCAR_2000_TEAM_PENSKE_KRANEFUSS_RACING_TEAM_1",
       "yearsLeft": 1,
       "salary": 41,
       "options": []
@@ -1249,7 +1249,7 @@ export const nascar2000Drivers: GlobalDriver[] = [
     "reputation": 81,
     "marketValue": 81,
     "contract": {
-      "teamId": "NASCAR_2000_TEAM_ANDY_PETREE_RACING",
+      "teamId": "NASCAR_2000_TEAM_ANDY_PETREE_RACING_TEAM_1",
       "yearsLeft": 1,
       "salary": 40,
       "options": []
@@ -1297,7 +1297,7 @@ export const nascar2000Drivers: GlobalDriver[] = [
     "reputation": 81,
     "marketValue": 81,
     "contract": {
-      "teamId": "NASCAR_2000_TEAM_TEAM_SABCO",
+      "teamId": "NASCAR_2000_TEAM_TEAM_SABCO_TEAM_1",
       "yearsLeft": 1,
       "salary": 40,
       "options": []
@@ -1345,7 +1345,7 @@ export const nascar2000Drivers: GlobalDriver[] = [
     "reputation": 79,
     "marketValue": 79,
     "contract": {
-      "teamId": "NASCAR_2000_TEAM_ROUSH_RACING",
+      "teamId": "NASCAR_2000_TEAM_ROUSH_RACING_TEAM_1",
       "yearsLeft": 1,
       "salary": 40,
       "options": []
@@ -1489,7 +1489,7 @@ export const nascar2000Drivers: GlobalDriver[] = [
     "reputation": 76,
     "marketValue": 76,
     "contract": {
-      "teamId": "NASCAR_2000_TEAM_BILL_DAVIS_RACING",
+      "teamId": "NASCAR_2000_TEAM_BILL_DAVIS_RACING_TEAM_1",
       "yearsLeft": 1,
       "salary": 38,
       "options": []
@@ -1537,7 +1537,7 @@ export const nascar2000Drivers: GlobalDriver[] = [
     "reputation": 77,
     "marketValue": 77,
     "contract": {
-      "teamId": "NASCAR_2000_TEAM_ROUSH_RACING",
+      "teamId": "NASCAR_2000_TEAM_ROUSH_RACING_TEAM_2",
       "yearsLeft": 1,
       "salary": 38,
       "options": []
@@ -1729,7 +1729,7 @@ export const nascar2000Drivers: GlobalDriver[] = [
     "reputation": 72,
     "marketValue": 72,
     "contract": {
-      "teamId": "NASCAR_2000_TEAM_HAAS_CARTER_MOTORSPORTS",
+      "teamId": "NASCAR_2000_TEAM_HAAS_CARTER_MOTORSPORTS_TEAM_1",
       "yearsLeft": 1,
       "salary": 36,
       "options": []
@@ -1969,7 +1969,7 @@ export const nascar2000Drivers: GlobalDriver[] = [
     "reputation": 68,
     "marketValue": 68,
     "contract": {
-      "teamId": "NASCAR_2000_TEAM_PENSKE_KRANEFUSS_RACING",
+      "teamId": "NASCAR_2000_TEAM_PENSKE_KRANEFUSS_RACING_TEAM_1",
       "yearsLeft": 1,
       "salary": 34,
       "options": []
@@ -2017,7 +2017,7 @@ export const nascar2000Drivers: GlobalDriver[] = [
     "reputation": 67,
     "marketValue": 67,
     "contract": {
-      "teamId": "NASCAR_2000_TEAM_TEAM_SABCO",
+      "teamId": "NASCAR_2000_TEAM_TEAM_SABCO_TEAM_2",
       "yearsLeft": 1,
       "salary": 34,
       "options": []
@@ -2305,7 +2305,7 @@ export const nascar2000Drivers: GlobalDriver[] = [
     "reputation": 61,
     "marketValue": 61,
     "contract": {
-      "teamId": "NASCAR_2000_TEAM_ROUSH_RACING",
+      "teamId": "NASCAR_2000_TEAM_ROUSH_RACING_TEAM_2",
       "yearsLeft": 1,
       "salary": 30,
       "options": []
@@ -2353,7 +2353,7 @@ export const nascar2000Drivers: GlobalDriver[] = [
     "reputation": 60,
     "marketValue": 60,
     "contract": {
-      "teamId": "NASCAR_2000_TEAM_HENDRICK_MOTORSPORTS",
+      "teamId": "NASCAR_2000_TEAM_HENDRICK_MOTORSPORTS_TEAM_1",
       "yearsLeft": 1,
       "salary": 30,
       "options": []
@@ -2497,7 +2497,7 @@ export const nascar2000Drivers: GlobalDriver[] = [
     "reputation": 59,
     "marketValue": 59,
     "contract": {
-      "teamId": "NASCAR_2000_TEAM_PETTY_ENTERPRISES",
+      "teamId": "NASCAR_2000_TEAM_PETTY_ENTERPRISES_TEAM_1",
       "yearsLeft": 1,
       "salary": 30,
       "options": []
@@ -2785,7 +2785,7 @@ export const nascar2000Drivers: GlobalDriver[] = [
     "reputation": 54,
     "marketValue": 54,
     "contract": {
-      "teamId": "NASCAR_2000_TEAM_TEAM_SABCO",
+      "teamId": "NASCAR_2000_TEAM_TEAM_SABCO_TEAM_2",
       "yearsLeft": 1,
       "salary": 27,
       "options": []
@@ -2929,7 +2929,7 @@ export const nascar2000Drivers: GlobalDriver[] = [
     "reputation": 51,
     "marketValue": 51,
     "contract": {
-      "teamId": "NASCAR_2000_TEAM_HENDRICK_MOTORSPORTS",
+      "teamId": "NASCAR_2000_TEAM_HENDRICK_MOTORSPORTS_TEAM_1",
       "yearsLeft": 1,
       "salary": 26,
       "options": []
@@ -3121,7 +3121,7 @@ export const nascar2000Drivers: GlobalDriver[] = [
     "reputation": 47,
     "marketValue": 47,
     "contract": {
-      "teamId": "NASCAR_2000_TEAM_PENSKE_KRANEFUSS_RACING",
+      "teamId": "NASCAR_2000_TEAM_PENSKE_KRANEFUSS_RACING_TEAM_1",
       "yearsLeft": 1,
       "salary": 24,
       "options": []
@@ -3313,7 +3313,7 @@ export const nascar2000Drivers: GlobalDriver[] = [
     "reputation": 44,
     "marketValue": 44,
     "contract": {
-      "teamId": "NASCAR_2000_TEAM_PETTY_ENTERPRISES",
+      "teamId": "NASCAR_2000_TEAM_PETTY_ENTERPRISES_TEAM_2",
       "yearsLeft": 1,
       "salary": 22,
       "options": []
@@ -3361,7 +3361,7 @@ export const nascar2000Drivers: GlobalDriver[] = [
     "reputation": 44,
     "marketValue": 44,
     "contract": {
-      "teamId": "NASCAR_2000_TEAM_PENSKE_KRANEFUSS_RACING",
+      "teamId": "NASCAR_2000_TEAM_PENSKE_KRANEFUSS_RACING_TEAM_2",
       "yearsLeft": 1,
       "salary": 22,
       "options": []
@@ -3553,7 +3553,7 @@ export const nascar2000Drivers: GlobalDriver[] = [
     "reputation": 36,
     "marketValue": 36,
     "contract": {
-      "teamId": "NASCAR_2000_TEAM_BILL_DAVIS_RACING",
+      "teamId": "NASCAR_2000_TEAM_BILL_DAVIS_RACING_TEAM_2",
       "yearsLeft": 1,
       "salary": 18,
       "options": []
@@ -4427,20 +4427,49 @@ export const nascar2000Drivers: GlobalDriver[] = [
 
 export const nascar2000Teams: GlobalTeam[] = [
   {
-    "teamLineageId": "NASCAR_2000_TEAM_A_J_FOYT_RACING",
+    "teamLineageId": "NASCAR_2000_TEAM_A_J_FOYT_RACING_TEAM_1",
     "series": "NASCAR",
-    "canonicalName": "A. J. Foyt Racing",
+    "canonicalName": "A. J. Foyt Racing team 1",
     "namePerPeriod": [
       {
         "fromYear": 2000,
         "toYear": 2000,
-        "name": "A. J. Foyt Racing"
+        "name": "A. J. Foyt Racing team 1"
       }
     ],
     "nameChangeEvents": [
       {
         "year": 2000,
-        "newName": "A. J. Foyt Racing",
+        "newName": "A. J. Foyt Racing team 1",
+        "note": "First season this lineage appears in uploaded source data."
+      }
+    ],
+    "reputation": 72,
+    "raceOperations": 72,
+    "pitCrewOperations": 73,
+    "developmentRate": 50,
+    "facilities": 72,
+    "sponsorStrength": 72,
+    "commercialStrength": 72,
+    "politicalInfluence": 72,
+    "financeHealth": 72,
+    "budget": 72000000
+  },
+  {
+    "teamLineageId": "NASCAR_2000_TEAM_A_J_FOYT_RACING_TEAM_2",
+    "series": "NASCAR",
+    "canonicalName": "A. J. Foyt Racing team 2",
+    "namePerPeriod": [
+      {
+        "fromYear": 2000,
+        "toYear": 2000,
+        "name": "A. J. Foyt Racing team 2"
+      }
+    ],
+    "nameChangeEvents": [
+      {
+        "year": 2000,
+        "newName": "A. J. Foyt Racing team 2",
         "note": "First season this lineage appears in uploaded source data."
       }
     ],
@@ -4458,60 +4487,60 @@ export const nascar2000Teams: GlobalTeam[] = [
   {
     "teamLineageId": "NASCAR_2000_TEAM_ANDY_PETREE_RACING_TEAM_1",
     "series": "NASCAR",
-    "canonicalName": "Andy Petree Racing team 1",
+    "canonicalName": "Andy Petree Racing Team 1",
     "namePerPeriod": [
       {
         "fromYear": 2000,
         "toYear": 2000,
-        "name": "Andy Petree Racing team 1"
+        "name": "Andy Petree Racing Team 1"
       }
     ],
     "nameChangeEvents": [
       {
         "year": 2000,
-        "newName": "Andy Petree Racing team 1",
+        "newName": "Andy Petree Racing Team 1",
         "note": "First season this lineage appears in uploaded source data."
       }
     ],
-    "reputation": 77,
-    "raceOperations": 77,
-    "pitCrewOperations": 77,
+    "reputation": 89,
+    "raceOperations": 89,
+    "pitCrewOperations": 89,
     "developmentRate": 50,
-    "facilities": 77,
-    "sponsorStrength": 77,
-    "commercialStrength": 77,
-    "politicalInfluence": 77,
-    "financeHealth": 77,
-    "budget": 77000000
+    "facilities": 89,
+    "sponsorStrength": 89,
+    "commercialStrength": 89,
+    "politicalInfluence": 89,
+    "financeHealth": 89,
+    "budget": 89000000
   },
   {
     "teamLineageId": "NASCAR_2000_TEAM_ANDY_PETREE_RACING_TEAM_2",
     "series": "NASCAR",
-    "canonicalName": "Andy Petree Racing team 2",
+    "canonicalName": "Andy Petree Racing Team 2",
     "namePerPeriod": [
       {
         "fromYear": 2000,
         "toYear": 2000,
-        "name": "Andy Petree Racing team 2"
+        "name": "Andy Petree Racing Team 2"
       }
     ],
     "nameChangeEvents": [
       {
         "year": 2000,
-        "newName": "Andy Petree Racing team 2",
+        "newName": "Andy Petree Racing Team 2",
         "note": "First season this lineage appears in uploaded source data."
       }
     ],
-    "reputation": 77,
-    "raceOperations": 77,
-    "pitCrewOperations": 77,
+    "reputation": 65,
+    "raceOperations": 65,
+    "pitCrewOperations": 64,
     "developmentRate": 50,
-    "facilities": 77,
-    "sponsorStrength": 77,
-    "commercialStrength": 77,
-    "politicalInfluence": 77,
-    "financeHealth": 77,
-    "budget": 77000000
+    "facilities": 65,
+    "sponsorStrength": 65,
+    "commercialStrength": 65,
+    "politicalInfluence": 65,
+    "financeHealth": 65,
+    "budget": 65000000
   },
   {
     "teamLineageId": "NASCAR_2000_TEAM_BILL_BAIRD_MOTORSPORTS",
@@ -4545,60 +4574,60 @@ export const nascar2000Teams: GlobalTeam[] = [
   {
     "teamLineageId": "NASCAR_2000_TEAM_BILL_DAVIS_RACING_TEAM_1",
     "series": "NASCAR",
-    "canonicalName": "Bill Davis Racing team 1",
+    "canonicalName": "Bill Davis Racing Team 1",
     "namePerPeriod": [
       {
         "fromYear": 2000,
         "toYear": 2000,
-        "name": "Bill Davis Racing team 1"
+        "name": "Bill Davis Racing Team 1"
       }
     ],
     "nameChangeEvents": [
       {
         "year": 2000,
-        "newName": "Bill Davis Racing team 1",
+        "newName": "Bill Davis Racing Team 1",
         "note": "First season this lineage appears in uploaded source data."
       }
     ],
-    "reputation": 67,
-    "raceOperations": 67,
-    "pitCrewOperations": 66,
+    "reputation": 92,
+    "raceOperations": 92,
+    "pitCrewOperations": 90,
     "developmentRate": 50,
-    "facilities": 67,
-    "sponsorStrength": 67,
-    "commercialStrength": 67,
-    "politicalInfluence": 67,
-    "financeHealth": 67,
-    "budget": 67000000
+    "facilities": 92,
+    "sponsorStrength": 92,
+    "commercialStrength": 92,
+    "politicalInfluence": 92,
+    "financeHealth": 92,
+    "budget": 92000000
   },
   {
     "teamLineageId": "NASCAR_2000_TEAM_BILL_DAVIS_RACING_TEAM_2",
     "series": "NASCAR",
-    "canonicalName": "Bill Davis Racing team 2",
+    "canonicalName": "Bill Davis Racing Team 2",
     "namePerPeriod": [
       {
         "fromYear": 2000,
         "toYear": 2000,
-        "name": "Bill Davis Racing team 2"
+        "name": "Bill Davis Racing Team 2"
       }
     ],
     "nameChangeEvents": [
       {
         "year": 2000,
-        "newName": "Bill Davis Racing team 2",
+        "newName": "Bill Davis Racing Team 2",
         "note": "First season this lineage appears in uploaded source data."
       }
     ],
-    "reputation": 67,
-    "raceOperations": 67,
-    "pitCrewOperations": 66,
+    "reputation": 40,
+    "raceOperations": 40,
+    "pitCrewOperations": 42,
     "developmentRate": 50,
-    "facilities": 67,
-    "sponsorStrength": 67,
-    "commercialStrength": 67,
-    "politicalInfluence": 67,
-    "financeHealth": 67,
-    "budget": 67000000
+    "facilities": 40,
+    "sponsorStrength": 40,
+    "commercialStrength": 40,
+    "politicalInfluence": 40,
+    "financeHealth": 40,
+    "budget": 40000000
   },
   {
     "teamLineageId": "NASCAR_2000_TEAM_BILL_ELLIOTT_RACING",
@@ -4775,20 +4804,49 @@ export const nascar2000Teams: GlobalTeam[] = [
     "budget": 92000000
   },
   {
-    "teamLineageId": "NASCAR_2000_TEAM_DONLAVEY_RACING",
+    "teamLineageId": "NASCAR_2000_TEAM_DONLAVEY_RACING_TEAM_1",
     "series": "NASCAR",
-    "canonicalName": "Donlavey Racing",
+    "canonicalName": "Donlavey Racing team 1",
     "namePerPeriod": [
       {
         "fromYear": 2000,
         "toYear": 2000,
-        "name": "Donlavey Racing"
+        "name": "Donlavey Racing team 1"
       }
     ],
     "nameChangeEvents": [
       {
         "year": 2000,
-        "newName": "Donlavey Racing",
+        "newName": "Donlavey Racing team 1",
+        "note": "First season this lineage appears in uploaded source data."
+      }
+    ],
+    "reputation": 61,
+    "raceOperations": 61,
+    "pitCrewOperations": 60,
+    "developmentRate": 50,
+    "facilities": 61,
+    "sponsorStrength": 61,
+    "commercialStrength": 61,
+    "politicalInfluence": 61,
+    "financeHealth": 61,
+    "budget": 61000000
+  },
+  {
+    "teamLineageId": "NASCAR_2000_TEAM_DONLAVEY_RACING_TEAM_2",
+    "series": "NASCAR",
+    "canonicalName": "Donlavey Racing team 2",
+    "namePerPeriod": [
+      {
+        "fromYear": 2000,
+        "toYear": 2000,
+        "name": "Donlavey Racing team 2"
+      }
+    ],
+    "nameChangeEvents": [
+      {
+        "year": 2000,
+        "newName": "Donlavey Racing team 2",
         "note": "First season this lineage appears in uploaded source data."
       }
     ],
@@ -4951,118 +5009,147 @@ export const nascar2000Teams: GlobalTeam[] = [
   {
     "teamLineageId": "NASCAR_2000_TEAM_HAAS_CARTER_MOTORSPORTS_TEAM_1",
     "series": "NASCAR",
-    "canonicalName": "Haas-Carter Motorsports team 1",
+    "canonicalName": "Haas-Carter Motorsports Team 1",
     "namePerPeriod": [
       {
         "fromYear": 2000,
         "toYear": 2000,
-        "name": "Haas-Carter Motorsports team 1"
+        "name": "Haas-Carter Motorsports Team 1"
       }
     ],
     "nameChangeEvents": [
       {
         "year": 2000,
-        "newName": "Haas-Carter Motorsports team 1",
+        "newName": "Haas-Carter Motorsports Team 1",
         "note": "First season this lineage appears in uploaded source data."
       }
     ],
-    "reputation": 71,
-    "raceOperations": 71,
-    "pitCrewOperations": 71,
+    "reputation": 82,
+    "raceOperations": 82,
+    "pitCrewOperations": 83,
     "developmentRate": 50,
-    "facilities": 71,
-    "sponsorStrength": 71,
-    "commercialStrength": 71,
-    "politicalInfluence": 71,
-    "financeHealth": 71,
-    "budget": 71000000
+    "facilities": 82,
+    "sponsorStrength": 82,
+    "commercialStrength": 82,
+    "politicalInfluence": 82,
+    "financeHealth": 82,
+    "budget": 82000000
   },
   {
     "teamLineageId": "NASCAR_2000_TEAM_HAAS_CARTER_MOTORSPORTS_TEAM_2",
     "series": "NASCAR",
-    "canonicalName": "Haas-Carter Motorsports team 2",
+    "canonicalName": "Haas-Carter Motorsports Team 2",
     "namePerPeriod": [
       {
         "fromYear": 2000,
         "toYear": 2000,
-        "name": "Haas-Carter Motorsports team 2"
+        "name": "Haas-Carter Motorsports Team 2"
       }
     ],
     "nameChangeEvents": [
       {
         "year": 2000,
-        "newName": "Haas-Carter Motorsports team 2",
+        "newName": "Haas-Carter Motorsports Team 2",
         "note": "First season this lineage appears in uploaded source data."
       }
     ],
-    "reputation": 71,
-    "raceOperations": 71,
-    "pitCrewOperations": 71,
+    "reputation": 59,
+    "raceOperations": 59,
+    "pitCrewOperations": 59,
     "developmentRate": 50,
-    "facilities": 71,
-    "sponsorStrength": 71,
-    "commercialStrength": 71,
-    "politicalInfluence": 71,
-    "financeHealth": 71,
-    "budget": 71000000
+    "facilities": 59,
+    "sponsorStrength": 59,
+    "commercialStrength": 59,
+    "politicalInfluence": 59,
+    "financeHealth": 59,
+    "budget": 59000000
   },
   {
-    "teamLineageId": "NASCAR_2000_TEAM_HENDRICK_MOTORSPORTS_TEAM_1",
+    "teamLineageId": "NASCAR_2000_TEAM_HENDRICK_MOTORSPORTS_TEAM_1_TEAM_1",
     "series": "NASCAR",
-    "canonicalName": "Hendrick Motorsports team 1",
+    "canonicalName": "Hendrick Motorsports Team 1 team 1",
     "namePerPeriod": [
       {
         "fromYear": 2000,
         "toYear": 2000,
-        "name": "Hendrick Motorsports team 1"
+        "name": "Hendrick Motorsports Team 1 team 1"
       }
     ],
     "nameChangeEvents": [
       {
         "year": 2000,
-        "newName": "Hendrick Motorsports team 1",
+        "newName": "Hendrick Motorsports Team 1 team 1",
         "note": "First season this lineage appears in uploaded source data."
       }
     ],
-    "reputation": 89,
-    "raceOperations": 89,
-    "pitCrewOperations": 90,
+    "reputation": 91,
+    "raceOperations": 91,
+    "pitCrewOperations": 92,
     "developmentRate": 50,
-    "facilities": 89,
-    "sponsorStrength": 89,
-    "commercialStrength": 89,
-    "politicalInfluence": 89,
-    "financeHealth": 89,
-    "budget": 89000000
+    "facilities": 91,
+    "sponsorStrength": 91,
+    "commercialStrength": 91,
+    "politicalInfluence": 91,
+    "financeHealth": 91,
+    "budget": 91000000
+  },
+  {
+    "teamLineageId": "NASCAR_2000_TEAM_HENDRICK_MOTORSPORTS_TEAM_1_TEAM_2",
+    "series": "NASCAR",
+    "canonicalName": "Hendrick Motorsports Team 1 team 2",
+    "namePerPeriod": [
+      {
+        "fromYear": 2000,
+        "toYear": 2000,
+        "name": "Hendrick Motorsports Team 1 team 2"
+      }
+    ],
+    "nameChangeEvents": [
+      {
+        "year": 2000,
+        "newName": "Hendrick Motorsports Team 1 team 2",
+        "note": "First season this lineage appears in uploaded source data."
+      }
+    ],
+    "reputation": 91,
+    "raceOperations": 91,
+    "pitCrewOperations": 92,
+    "developmentRate": 50,
+    "facilities": 91,
+    "sponsorStrength": 91,
+    "commercialStrength": 91,
+    "politicalInfluence": 91,
+    "financeHealth": 91,
+    "budget": 91000000
   },
   {
     "teamLineageId": "NASCAR_2000_TEAM_HENDRICK_MOTORSPORTS_TEAM_2",
     "series": "NASCAR",
-    "canonicalName": "Hendrick Motorsports team 2",
+    "canonicalName": "Hendrick Motorsports Team 2",
     "namePerPeriod": [
       {
         "fromYear": 2000,
         "toYear": 2000,
-        "name": "Hendrick Motorsports team 2"
+        "name": "Hendrick Motorsports Team 2"
       }
     ],
     "nameChangeEvents": [
       {
         "year": 2000,
-        "newName": "Hendrick Motorsports team 2",
+        "newName": "Hendrick Motorsports Team 2",
         "note": "First season this lineage appears in uploaded source data."
       }
     ],
-    "reputation": 89,
-    "raceOperations": 89,
-    "pitCrewOperations": 90,
+    "reputation": 86,
+    "raceOperations": 86,
+    "pitCrewOperations": 87,
     "developmentRate": 50,
-    "facilities": 89,
-    "sponsorStrength": 89,
-    "commercialStrength": 89,
-    "politicalInfluence": 89,
-    "financeHealth": 89,
-    "budget": 89000000
+    "facilities": 86,
+    "sponsorStrength": 86,
+    "commercialStrength": 86,
+    "politicalInfluence": 86,
+    "financeHealth": 86,
+    "budget": 86000000
   },
   {
     "teamLineageId": "NASCAR_2000_TEAM_HOVER_MOTORSPORTS",
@@ -5181,20 +5268,78 @@ export const nascar2000Teams: GlobalTeam[] = [
     "budget": 28000000
   },
   {
-    "teamLineageId": "NASCAR_2000_TEAM_JOE_BESSEY_RACING",
+    "teamLineageId": "NASCAR_2000_TEAM_JOE_BESSEY_RACING_TEAM_1",
     "series": "NASCAR",
-    "canonicalName": "Joe Bessey Racing",
+    "canonicalName": "Joe Bessey Racing team 1",
     "namePerPeriod": [
       {
         "fromYear": 2000,
         "toYear": 2000,
-        "name": "Joe Bessey Racing"
+        "name": "Joe Bessey Racing team 1"
       }
     ],
     "nameChangeEvents": [
       {
         "year": 2000,
-        "newName": "Joe Bessey Racing",
+        "newName": "Joe Bessey Racing team 1",
+        "note": "First season this lineage appears in uploaded source data."
+      }
+    ],
+    "reputation": 65,
+    "raceOperations": 65,
+    "pitCrewOperations": 65,
+    "developmentRate": 50,
+    "facilities": 65,
+    "sponsorStrength": 65,
+    "commercialStrength": 65,
+    "politicalInfluence": 65,
+    "financeHealth": 65,
+    "budget": 65000000
+  },
+  {
+    "teamLineageId": "NASCAR_2000_TEAM_JOE_BESSEY_RACING_TEAM_2",
+    "series": "NASCAR",
+    "canonicalName": "Joe Bessey Racing team 2",
+    "namePerPeriod": [
+      {
+        "fromYear": 2000,
+        "toYear": 2000,
+        "name": "Joe Bessey Racing team 2"
+      }
+    ],
+    "nameChangeEvents": [
+      {
+        "year": 2000,
+        "newName": "Joe Bessey Racing team 2",
+        "note": "First season this lineage appears in uploaded source data."
+      }
+    ],
+    "reputation": 65,
+    "raceOperations": 65,
+    "pitCrewOperations": 65,
+    "developmentRate": 50,
+    "facilities": 65,
+    "sponsorStrength": 65,
+    "commercialStrength": 65,
+    "politicalInfluence": 65,
+    "financeHealth": 65,
+    "budget": 65000000
+  },
+  {
+    "teamLineageId": "NASCAR_2000_TEAM_JOE_BESSEY_RACING_TEAM_3",
+    "series": "NASCAR",
+    "canonicalName": "Joe Bessey Racing team 3",
+    "namePerPeriod": [
+      {
+        "fromYear": 2000,
+        "toYear": 2000,
+        "name": "Joe Bessey Racing team 3"
+      }
+    ],
+    "nameChangeEvents": [
+      {
+        "year": 2000,
+        "newName": "Joe Bessey Racing team 3",
         "note": "First season this lineage appears in uploaded source data."
       }
     ],
@@ -5239,20 +5384,49 @@ export const nascar2000Teams: GlobalTeam[] = [
     "budget": 100000000
   },
   {
-    "teamLineageId": "NASCAR_2000_TEAM_LJ_RACING",
+    "teamLineageId": "NASCAR_2000_TEAM_LJ_RACING_TEAM_1",
     "series": "NASCAR",
-    "canonicalName": "LJ Racing",
+    "canonicalName": "LJ Racing team 1",
     "namePerPeriod": [
       {
         "fromYear": 2000,
         "toYear": 2000,
-        "name": "LJ Racing"
+        "name": "LJ Racing team 1"
       }
     ],
     "nameChangeEvents": [
       {
         "year": 2000,
-        "newName": "LJ Racing",
+        "newName": "LJ Racing team 1",
+        "note": "First season this lineage appears in uploaded source data."
+      }
+    ],
+    "reputation": 59,
+    "raceOperations": 59,
+    "pitCrewOperations": 61,
+    "developmentRate": 50,
+    "facilities": 59,
+    "sponsorStrength": 59,
+    "commercialStrength": 59,
+    "politicalInfluence": 59,
+    "financeHealth": 59,
+    "budget": 59000000
+  },
+  {
+    "teamLineageId": "NASCAR_2000_TEAM_LJ_RACING_TEAM_2",
+    "series": "NASCAR",
+    "canonicalName": "LJ Racing team 2",
+    "namePerPeriod": [
+      {
+        "fromYear": 2000,
+        "toYear": 2000,
+        "name": "LJ Racing team 2"
+      }
+    ],
+    "nameChangeEvents": [
+      {
+        "year": 2000,
+        "newName": "LJ Racing team 2",
         "note": "First season this lineage appears in uploaded source data."
       }
     ],
@@ -5384,20 +5558,78 @@ export const nascar2000Teams: GlobalTeam[] = [
     "budget": 69000000
   },
   {
-    "teamLineageId": "NASCAR_2000_TEAM_MARCIS_AUTO_RACING",
+    "teamLineageId": "NASCAR_2000_TEAM_MARCIS_AUTO_RACING_TEAM_1",
     "series": "NASCAR",
-    "canonicalName": "Marcis Auto Racing",
+    "canonicalName": "Marcis Auto Racing team 1",
     "namePerPeriod": [
       {
         "fromYear": 2000,
         "toYear": 2000,
-        "name": "Marcis Auto Racing"
+        "name": "Marcis Auto Racing team 1"
       }
     ],
     "nameChangeEvents": [
       {
         "year": 2000,
-        "newName": "Marcis Auto Racing",
+        "newName": "Marcis Auto Racing team 1",
+        "note": "First season this lineage appears in uploaded source data."
+      }
+    ],
+    "reputation": 59,
+    "raceOperations": 59,
+    "pitCrewOperations": 57,
+    "developmentRate": 50,
+    "facilities": 59,
+    "sponsorStrength": 59,
+    "commercialStrength": 59,
+    "politicalInfluence": 59,
+    "financeHealth": 59,
+    "budget": 59000000
+  },
+  {
+    "teamLineageId": "NASCAR_2000_TEAM_MARCIS_AUTO_RACING_TEAM_2",
+    "series": "NASCAR",
+    "canonicalName": "Marcis Auto Racing team 2",
+    "namePerPeriod": [
+      {
+        "fromYear": 2000,
+        "toYear": 2000,
+        "name": "Marcis Auto Racing team 2"
+      }
+    ],
+    "nameChangeEvents": [
+      {
+        "year": 2000,
+        "newName": "Marcis Auto Racing team 2",
+        "note": "First season this lineage appears in uploaded source data."
+      }
+    ],
+    "reputation": 59,
+    "raceOperations": 59,
+    "pitCrewOperations": 57,
+    "developmentRate": 50,
+    "facilities": 59,
+    "sponsorStrength": 59,
+    "commercialStrength": 59,
+    "politicalInfluence": 59,
+    "financeHealth": 59,
+    "budget": 59000000
+  },
+  {
+    "teamLineageId": "NASCAR_2000_TEAM_MARCIS_AUTO_RACING_TEAM_3",
+    "series": "NASCAR",
+    "canonicalName": "Marcis Auto Racing team 3",
+    "namePerPeriod": [
+      {
+        "fromYear": 2000,
+        "toYear": 2000,
+        "name": "Marcis Auto Racing team 3"
+      }
+    ],
+    "nameChangeEvents": [
+      {
+        "year": 2000,
+        "newName": "Marcis Auto Racing team 3",
         "note": "First season this lineage appears in uploaded source data."
       }
     ],
@@ -5587,120 +5819,178 @@ export const nascar2000Teams: GlobalTeam[] = [
     "budget": 71000000
   },
   {
-    "teamLineageId": "NASCAR_2000_TEAM_PENSKE_KRANEFUSS_RACING_TEAM_1",
+    "teamLineageId": "NASCAR_2000_TEAM_PENSKE_KRANEFUSS_RACING_TEAM_1_TEAM_1",
     "series": "NASCAR",
-    "canonicalName": "Penske-Kranefuss Racing team 1",
+    "canonicalName": "Penske-Kranefuss Racing Team 1 team 1",
     "namePerPeriod": [
       {
         "fromYear": 2000,
         "toYear": 2000,
-        "name": "Penske-Kranefuss Racing team 1"
+        "name": "Penske-Kranefuss Racing Team 1 team 1"
       }
     ],
     "nameChangeEvents": [
       {
         "year": 2000,
-        "newName": "Penske-Kranefuss Racing team 1",
+        "newName": "Penske-Kranefuss Racing Team 1 team 1",
         "note": "First season this lineage appears in uploaded source data."
       }
     ],
-    "reputation": 68,
-    "raceOperations": 68,
-    "pitCrewOperations": 71,
+    "reputation": 93,
+    "raceOperations": 93,
+    "pitCrewOperations": 96,
     "developmentRate": 50,
-    "facilities": 68,
-    "sponsorStrength": 68,
-    "commercialStrength": 68,
-    "politicalInfluence": 68,
-    "financeHealth": 68,
-    "budget": 68000000
+    "facilities": 93,
+    "sponsorStrength": 93,
+    "commercialStrength": 93,
+    "politicalInfluence": 93,
+    "financeHealth": 93,
+    "budget": 93000000
+  },
+  {
+    "teamLineageId": "NASCAR_2000_TEAM_PENSKE_KRANEFUSS_RACING_TEAM_1_TEAM_2",
+    "series": "NASCAR",
+    "canonicalName": "Penske-Kranefuss Racing Team 1 team 2",
+    "namePerPeriod": [
+      {
+        "fromYear": 2000,
+        "toYear": 2000,
+        "name": "Penske-Kranefuss Racing Team 1 team 2"
+      }
+    ],
+    "nameChangeEvents": [
+      {
+        "year": 2000,
+        "newName": "Penske-Kranefuss Racing Team 1 team 2",
+        "note": "First season this lineage appears in uploaded source data."
+      }
+    ],
+    "reputation": 93,
+    "raceOperations": 93,
+    "pitCrewOperations": 96,
+    "developmentRate": 50,
+    "facilities": 93,
+    "sponsorStrength": 93,
+    "commercialStrength": 93,
+    "politicalInfluence": 93,
+    "financeHealth": 93,
+    "budget": 93000000
   },
   {
     "teamLineageId": "NASCAR_2000_TEAM_PENSKE_KRANEFUSS_RACING_TEAM_2",
     "series": "NASCAR",
-    "canonicalName": "Penske-Kranefuss Racing team 2",
+    "canonicalName": "Penske-Kranefuss Racing Team 2",
     "namePerPeriod": [
       {
         "fromYear": 2000,
         "toYear": 2000,
-        "name": "Penske-Kranefuss Racing team 2"
+        "name": "Penske-Kranefuss Racing Team 2"
       }
     ],
     "nameChangeEvents": [
       {
         "year": 2000,
-        "newName": "Penske-Kranefuss Racing team 2",
+        "newName": "Penske-Kranefuss Racing Team 2",
         "note": "First season this lineage appears in uploaded source data."
       }
     ],
-    "reputation": 68,
-    "raceOperations": 68,
-    "pitCrewOperations": 71,
+    "reputation": 44,
+    "raceOperations": 44,
+    "pitCrewOperations": 46,
     "developmentRate": 50,
-    "facilities": 68,
-    "sponsorStrength": 68,
-    "commercialStrength": 68,
-    "politicalInfluence": 68,
-    "financeHealth": 68,
-    "budget": 68000000
+    "facilities": 44,
+    "sponsorStrength": 44,
+    "commercialStrength": 44,
+    "politicalInfluence": 44,
+    "financeHealth": 44,
+    "budget": 44000000
   },
   {
-    "teamLineageId": "NASCAR_2000_TEAM_PETTY_ENTERPRISES_TEAM_1",
+    "teamLineageId": "NASCAR_2000_TEAM_PETTY_ENTERPRISES_TEAM_1_TEAM_1",
     "series": "NASCAR",
-    "canonicalName": "Petty Enterprises team 1",
+    "canonicalName": "Petty Enterprises Team 1 team 1",
     "namePerPeriod": [
       {
         "fromYear": 2000,
         "toYear": 2000,
-        "name": "Petty Enterprises team 1"
+        "name": "Petty Enterprises Team 1 team 1"
       }
     ],
     "nameChangeEvents": [
       {
         "year": 2000,
-        "newName": "Petty Enterprises team 1",
+        "newName": "Petty Enterprises Team 1 team 1",
         "note": "First season this lineage appears in uploaded source data."
       }
     ],
-    "reputation": 74,
-    "raceOperations": 74,
-    "pitCrewOperations": 74,
+    "reputation": 79,
+    "raceOperations": 79,
+    "pitCrewOperations": 80,
     "developmentRate": 50,
-    "facilities": 74,
-    "sponsorStrength": 74,
-    "commercialStrength": 74,
-    "politicalInfluence": 74,
-    "financeHealth": 74,
-    "budget": 74000000
+    "facilities": 79,
+    "sponsorStrength": 79,
+    "commercialStrength": 79,
+    "politicalInfluence": 79,
+    "financeHealth": 79,
+    "budget": 79000000
+  },
+  {
+    "teamLineageId": "NASCAR_2000_TEAM_PETTY_ENTERPRISES_TEAM_1_TEAM_2",
+    "series": "NASCAR",
+    "canonicalName": "Petty Enterprises Team 1 team 2",
+    "namePerPeriod": [
+      {
+        "fromYear": 2000,
+        "toYear": 2000,
+        "name": "Petty Enterprises Team 1 team 2"
+      }
+    ],
+    "nameChangeEvents": [
+      {
+        "year": 2000,
+        "newName": "Petty Enterprises Team 1 team 2",
+        "note": "First season this lineage appears in uploaded source data."
+      }
+    ],
+    "reputation": 79,
+    "raceOperations": 79,
+    "pitCrewOperations": 80,
+    "developmentRate": 50,
+    "facilities": 79,
+    "sponsorStrength": 79,
+    "commercialStrength": 79,
+    "politicalInfluence": 79,
+    "financeHealth": 79,
+    "budget": 79000000
   },
   {
     "teamLineageId": "NASCAR_2000_TEAM_PETTY_ENTERPRISES_TEAM_2",
     "series": "NASCAR",
-    "canonicalName": "Petty Enterprises team 2",
+    "canonicalName": "Petty Enterprises Team 2",
     "namePerPeriod": [
       {
         "fromYear": 2000,
         "toYear": 2000,
-        "name": "Petty Enterprises team 2"
+        "name": "Petty Enterprises Team 2"
       }
     ],
     "nameChangeEvents": [
       {
         "year": 2000,
-        "newName": "Petty Enterprises team 2",
+        "newName": "Petty Enterprises Team 2",
         "note": "First season this lineage appears in uploaded source data."
       }
     ],
-    "reputation": 74,
-    "raceOperations": 74,
-    "pitCrewOperations": 74,
+    "reputation": 67,
+    "raceOperations": 67,
+    "pitCrewOperations": 67,
     "developmentRate": 50,
-    "facilities": 74,
-    "sponsorStrength": 74,
-    "commercialStrength": 74,
-    "politicalInfluence": 74,
-    "financeHealth": 74,
-    "budget": 74000000
+    "facilities": 67,
+    "sponsorStrength": 67,
+    "commercialStrength": 67,
+    "politicalInfluence": 67,
+    "financeHealth": 67,
+    "budget": 67000000
   },
   {
     "teamLineageId": "NASCAR_2000_TEAM_PETTY_HUGGINS_MOTORSPORTS",
@@ -5792,18 +6082,18 @@ export const nascar2000Teams: GlobalTeam[] = [
   {
     "teamLineageId": "NASCAR_2000_TEAM_ROUSH_RACING_TEAM_1",
     "series": "NASCAR",
-    "canonicalName": "Roush Racing team 1",
+    "canonicalName": "Roush Racing Team 1",
     "namePerPeriod": [
       {
         "fromYear": 2000,
         "toYear": 2000,
-        "name": "Roush Racing team 1"
+        "name": "Roush Racing Team 1"
       }
     ],
     "nameChangeEvents": [
       {
         "year": 2000,
-        "newName": "Roush Racing team 1",
+        "newName": "Roush Racing Team 1",
         "note": "First season this lineage appears in uploaded source data."
       }
     ],
@@ -5819,62 +6109,91 @@ export const nascar2000Teams: GlobalTeam[] = [
     "budget": 94000000
   },
   {
-    "teamLineageId": "NASCAR_2000_TEAM_ROUSH_RACING_TEAM_2",
+    "teamLineageId": "NASCAR_2000_TEAM_ROUSH_RACING_TEAM_2_TEAM_1",
     "series": "NASCAR",
-    "canonicalName": "Roush Racing team 2",
+    "canonicalName": "Roush Racing Team 2 team 1",
     "namePerPeriod": [
       {
         "fromYear": 2000,
         "toYear": 2000,
-        "name": "Roush Racing team 2"
+        "name": "Roush Racing Team 2 team 1"
       }
     ],
     "nameChangeEvents": [
       {
         "year": 2000,
-        "newName": "Roush Racing team 2",
+        "newName": "Roush Racing Team 2 team 1",
         "note": "First season this lineage appears in uploaded source data."
       }
     ],
-    "reputation": 94,
-    "raceOperations": 94,
-    "pitCrewOperations": 95,
+    "reputation": 88,
+    "raceOperations": 88,
+    "pitCrewOperations": 89,
     "developmentRate": 50,
-    "facilities": 94,
-    "sponsorStrength": 94,
-    "commercialStrength": 94,
-    "politicalInfluence": 94,
-    "financeHealth": 94,
-    "budget": 94000000
+    "facilities": 88,
+    "sponsorStrength": 88,
+    "commercialStrength": 88,
+    "politicalInfluence": 88,
+    "financeHealth": 88,
+    "budget": 88000000
+  },
+  {
+    "teamLineageId": "NASCAR_2000_TEAM_ROUSH_RACING_TEAM_2_TEAM_2",
+    "series": "NASCAR",
+    "canonicalName": "Roush Racing Team 2 team 2",
+    "namePerPeriod": [
+      {
+        "fromYear": 2000,
+        "toYear": 2000,
+        "name": "Roush Racing Team 2 team 2"
+      }
+    ],
+    "nameChangeEvents": [
+      {
+        "year": 2000,
+        "newName": "Roush Racing Team 2 team 2",
+        "note": "First season this lineage appears in uploaded source data."
+      }
+    ],
+    "reputation": 88,
+    "raceOperations": 88,
+    "pitCrewOperations": 89,
+    "developmentRate": 50,
+    "facilities": 88,
+    "sponsorStrength": 88,
+    "commercialStrength": 88,
+    "politicalInfluence": 88,
+    "financeHealth": 88,
+    "budget": 88000000
   },
   {
     "teamLineageId": "NASCAR_2000_TEAM_ROUSH_RACING_TEAM_3",
     "series": "NASCAR",
-    "canonicalName": "Roush Racing team 3",
+    "canonicalName": "Roush Racing Team 3",
     "namePerPeriod": [
       {
         "fromYear": 2000,
         "toYear": 2000,
-        "name": "Roush Racing team 3"
+        "name": "Roush Racing Team 3"
       }
     ],
     "nameChangeEvents": [
       {
         "year": 2000,
-        "newName": "Roush Racing team 3",
+        "newName": "Roush Racing Team 3",
         "note": "First season this lineage appears in uploaded source data."
       }
     ],
-    "reputation": 94,
-    "raceOperations": 94,
-    "pitCrewOperations": 95,
+    "reputation": 100,
+    "raceOperations": 100,
+    "pitCrewOperations": 100,
     "developmentRate": 50,
-    "facilities": 94,
-    "sponsorStrength": 94,
-    "commercialStrength": 94,
-    "politicalInfluence": 94,
-    "financeHealth": 94,
-    "budget": 94000000
+    "facilities": 100,
+    "sponsorStrength": 100,
+    "commercialStrength": 100,
+    "politicalInfluence": 100,
+    "financeHealth": 100,
+    "budget": 100000000
   },
   {
     "teamLineageId": "NASCAR_2000_TEAM_SADLER_BROTHERS_RACING",
@@ -5966,60 +6285,89 @@ export const nascar2000Teams: GlobalTeam[] = [
   {
     "teamLineageId": "NASCAR_2000_TEAM_TEAM_SABCO_TEAM_1",
     "series": "NASCAR",
-    "canonicalName": "Team SABCO team 1",
+    "canonicalName": "Team SABCO Team 1",
     "namePerPeriod": [
       {
         "fromYear": 2000,
         "toYear": 2000,
-        "name": "Team SABCO team 1"
+        "name": "Team SABCO Team 1"
       }
     ],
     "nameChangeEvents": [
       {
         "year": 2000,
-        "newName": "Team SABCO team 1",
+        "newName": "Team SABCO Team 1",
         "note": "First season this lineage appears in uploaded source data."
       }
     ],
-    "reputation": 76,
-    "raceOperations": 76,
-    "pitCrewOperations": 77,
+    "reputation": 85,
+    "raceOperations": 85,
+    "pitCrewOperations": 87,
     "developmentRate": 50,
-    "facilities": 76,
-    "sponsorStrength": 76,
-    "commercialStrength": 76,
-    "politicalInfluence": 76,
-    "financeHealth": 76,
-    "budget": 76000000
+    "facilities": 85,
+    "sponsorStrength": 85,
+    "commercialStrength": 85,
+    "politicalInfluence": 85,
+    "financeHealth": 85,
+    "budget": 85000000
   },
   {
-    "teamLineageId": "NASCAR_2000_TEAM_TEAM_SABCO_TEAM_2",
+    "teamLineageId": "NASCAR_2000_TEAM_TEAM_SABCO_TEAM_2_TEAM_1",
     "series": "NASCAR",
-    "canonicalName": "Team SABCO team 2",
+    "canonicalName": "Team SABCO Team 2 team 1",
     "namePerPeriod": [
       {
         "fromYear": 2000,
         "toYear": 2000,
-        "name": "Team SABCO team 2"
+        "name": "Team SABCO Team 2 team 1"
       }
     ],
     "nameChangeEvents": [
       {
         "year": 2000,
-        "newName": "Team SABCO team 2",
+        "newName": "Team SABCO Team 2 team 1",
         "note": "First season this lineage appears in uploaded source data."
       }
     ],
-    "reputation": 76,
-    "raceOperations": 76,
-    "pitCrewOperations": 77,
+    "reputation": 67,
+    "raceOperations": 67,
+    "pitCrewOperations": 67,
     "developmentRate": 50,
-    "facilities": 76,
-    "sponsorStrength": 76,
-    "commercialStrength": 76,
-    "politicalInfluence": 76,
-    "financeHealth": 76,
-    "budget": 76000000
+    "facilities": 67,
+    "sponsorStrength": 67,
+    "commercialStrength": 67,
+    "politicalInfluence": 67,
+    "financeHealth": 67,
+    "budget": 67000000
+  },
+  {
+    "teamLineageId": "NASCAR_2000_TEAM_TEAM_SABCO_TEAM_2_TEAM_2",
+    "series": "NASCAR",
+    "canonicalName": "Team SABCO Team 2 team 2",
+    "namePerPeriod": [
+      {
+        "fromYear": 2000,
+        "toYear": 2000,
+        "name": "Team SABCO Team 2 team 2"
+      }
+    ],
+    "nameChangeEvents": [
+      {
+        "year": 2000,
+        "newName": "Team SABCO Team 2 team 2",
+        "note": "First season this lineage appears in uploaded source data."
+      }
+    ],
+    "reputation": 67,
+    "raceOperations": 67,
+    "pitCrewOperations": 67,
+    "developmentRate": 50,
+    "facilities": 67,
+    "sponsorStrength": 67,
+    "commercialStrength": 67,
+    "politicalInfluence": 67,
+    "financeHealth": 67,
+    "budget": 67000000
   },
   {
     "teamLineageId": "NASCAR_2000_TEAM_TRISTAR_MOTORSPORTS",
@@ -6112,8 +6460,33 @@ export const nascar2000Teams: GlobalTeam[] = [
 
 export const nascar2000Cars: GlobalCar[] = [
   {
-    "carId": "car-2000-nascar-a-j-foyt-racing",
-    "teamId": "NASCAR_2000_TEAM_A_J_FOYT_RACING",
+    "carId": "car-2000-nascar-a-j-foyt-racing-team-1",
+    "teamId": "NASCAR_2000_TEAM_A_J_FOYT_RACING_TEAM_1",
+    "seasonYear": 2000,
+    "series": "NASCAR",
+    "enginePower": 74,
+    "fuelEnergyEfficiency": 50,
+    "drag": 28,
+    "downforce": 72,
+    "chassisBalance": 72,
+    "cooling": 70,
+    "weightEfficiency": 72,
+    "mechanicalGrip": 69,
+    "brakingStability": 72,
+    "acceleration": 72,
+    "topSpeed": 73,
+    "tireWear": 30,
+    "tireWarmup": 50,
+    "tempControl": 70,
+    "wetPerformance": 70,
+    "reliability": 70,
+    "setupWindow": 73,
+    "upgradeCompatibility": 50,
+    "carOverall": 72
+  },
+  {
+    "carId": "car-2000-nascar-a-j-foyt-racing-team-2",
+    "teamId": "NASCAR_2000_TEAM_A_J_FOYT_RACING_TEAM_2",
     "seasonYear": 2000,
     "series": "NASCAR",
     "enginePower": 74,
@@ -6141,50 +6514,50 @@ export const nascar2000Cars: GlobalCar[] = [
     "teamId": "NASCAR_2000_TEAM_ANDY_PETREE_RACING_TEAM_1",
     "seasonYear": 2000,
     "series": "NASCAR",
-    "enginePower": 79,
+    "enginePower": 88,
     "fuelEnergyEfficiency": 50,
-    "drag": 26,
-    "downforce": 74,
-    "chassisBalance": 77,
-    "cooling": 78,
-    "weightEfficiency": 77,
-    "mechanicalGrip": 78,
-    "brakingStability": 78,
-    "acceleration": 78,
-    "topSpeed": 77,
-    "tireWear": 22,
+    "drag": 15,
+    "downforce": 85,
+    "chassisBalance": 89,
+    "cooling": 91,
+    "weightEfficiency": 89,
+    "mechanicalGrip": 90,
+    "brakingStability": 89,
+    "acceleration": 89,
+    "topSpeed": 87,
+    "tireWear": 10,
     "tireWarmup": 50,
-    "tempControl": 78,
-    "wetPerformance": 78,
-    "reliability": 78,
-    "setupWindow": 77,
+    "tempControl": 91,
+    "wetPerformance": 90,
+    "reliability": 91,
+    "setupWindow": 89,
     "upgradeCompatibility": 50,
-    "carOverall": 77
+    "carOverall": 89
   },
   {
     "carId": "car-2000-nascar-andy-petree-racing-team-2",
     "teamId": "NASCAR_2000_TEAM_ANDY_PETREE_RACING_TEAM_2",
     "seasonYear": 2000,
     "series": "NASCAR",
-    "enginePower": 79,
+    "enginePower": 69,
     "fuelEnergyEfficiency": 50,
-    "drag": 26,
-    "downforce": 74,
-    "chassisBalance": 77,
-    "cooling": 78,
-    "weightEfficiency": 77,
-    "mechanicalGrip": 78,
-    "brakingStability": 78,
-    "acceleration": 78,
-    "topSpeed": 77,
-    "tireWear": 22,
+    "drag": 38,
+    "downforce": 62,
+    "chassisBalance": 65,
+    "cooling": 64,
+    "weightEfficiency": 65,
+    "mechanicalGrip": 65,
+    "brakingStability": 67,
+    "acceleration": 67,
+    "topSpeed": 66,
+    "tireWear": 36,
     "tireWarmup": 50,
-    "tempControl": 78,
-    "wetPerformance": 78,
-    "reliability": 78,
-    "setupWindow": 77,
+    "tempControl": 64,
+    "wetPerformance": 64,
+    "reliability": 64,
+    "setupWindow": 64,
     "upgradeCompatibility": 50,
-    "carOverall": 77
+    "carOverall": 65
   },
   {
     "carId": "car-2000-nascar-bill-baird-motorsports",
@@ -6216,50 +6589,50 @@ export const nascar2000Cars: GlobalCar[] = [
     "teamId": "NASCAR_2000_TEAM_BILL_DAVIS_RACING_TEAM_1",
     "seasonYear": 2000,
     "series": "NASCAR",
-    "enginePower": 67,
+    "enginePower": 92,
     "fuelEnergyEfficiency": 50,
-    "drag": 32,
-    "downforce": 68,
-    "chassisBalance": 67,
-    "cooling": 67,
-    "weightEfficiency": 67,
-    "mechanicalGrip": 65,
-    "brakingStability": 66,
-    "acceleration": 66,
-    "topSpeed": 67,
-    "tireWear": 34,
+    "drag": 5,
+    "downforce": 95,
+    "chassisBalance": 92,
+    "cooling": 95,
+    "weightEfficiency": 92,
+    "mechanicalGrip": 90,
+    "brakingStability": 91,
+    "acceleration": 91,
+    "topSpeed": 93,
+    "tireWear": 8,
     "tireWarmup": 50,
-    "tempControl": 67,
-    "wetPerformance": 66,
-    "reliability": 67,
-    "setupWindow": 66,
+    "tempControl": 95,
+    "wetPerformance": 92,
+    "reliability": 95,
+    "setupWindow": 90,
     "upgradeCompatibility": 50,
-    "carOverall": 67
+    "carOverall": 92
   },
   {
     "carId": "car-2000-nascar-bill-davis-racing-team-2",
     "teamId": "NASCAR_2000_TEAM_BILL_DAVIS_RACING_TEAM_2",
     "seasonYear": 2000,
     "series": "NASCAR",
-    "enginePower": 67,
+    "enginePower": 41,
     "fuelEnergyEfficiency": 50,
-    "drag": 32,
-    "downforce": 68,
-    "chassisBalance": 67,
-    "cooling": 67,
-    "weightEfficiency": 67,
-    "mechanicalGrip": 65,
-    "brakingStability": 66,
-    "acceleration": 66,
-    "topSpeed": 67,
-    "tireWear": 34,
+    "drag": 60,
+    "downforce": 40,
+    "chassisBalance": 40,
+    "cooling": 39,
+    "weightEfficiency": 40,
+    "mechanicalGrip": 40,
+    "brakingStability": 40,
+    "acceleration": 40,
+    "topSpeed": 41,
+    "tireWear": 60,
     "tireWarmup": 50,
-    "tempControl": 67,
-    "wetPerformance": 66,
-    "reliability": 67,
-    "setupWindow": 66,
+    "tempControl": 39,
+    "wetPerformance": 40,
+    "reliability": 39,
+    "setupWindow": 42,
     "upgradeCompatibility": 50,
-    "carOverall": 67
+    "carOverall": 40
   },
   {
     "carId": "car-2000-nascar-bill-elliott-racing",
@@ -6412,8 +6785,33 @@ export const nascar2000Cars: GlobalCar[] = [
     "carOverall": 92
   },
   {
-    "carId": "car-2000-nascar-donlavey-racing",
-    "teamId": "NASCAR_2000_TEAM_DONLAVEY_RACING",
+    "carId": "car-2000-nascar-donlavey-racing-team-1",
+    "teamId": "NASCAR_2000_TEAM_DONLAVEY_RACING_TEAM_1",
+    "seasonYear": 2000,
+    "series": "NASCAR",
+    "enginePower": 65,
+    "fuelEnergyEfficiency": 50,
+    "drag": 38,
+    "downforce": 62,
+    "chassisBalance": 61,
+    "cooling": 59,
+    "weightEfficiency": 61,
+    "mechanicalGrip": 57,
+    "brakingStability": 61,
+    "acceleration": 61,
+    "topSpeed": 64,
+    "tireWear": 42,
+    "tireWarmup": 50,
+    "tempControl": 59,
+    "wetPerformance": 58,
+    "reliability": 59,
+    "setupWindow": 60,
+    "upgradeCompatibility": 50,
+    "carOverall": 61
+  },
+  {
+    "carId": "car-2000-nascar-donlavey-racing-team-2",
+    "teamId": "NASCAR_2000_TEAM_DONLAVEY_RACING_TEAM_2",
     "seasonYear": 2000,
     "series": "NASCAR",
     "enginePower": 65,
@@ -6566,100 +6964,125 @@ export const nascar2000Cars: GlobalCar[] = [
     "teamId": "NASCAR_2000_TEAM_HAAS_CARTER_MOTORSPORTS_TEAM_1",
     "seasonYear": 2000,
     "series": "NASCAR",
-    "enginePower": 74,
+    "enginePower": 86,
     "fuelEnergyEfficiency": 50,
-    "drag": 31,
-    "downforce": 69,
-    "chassisBalance": 71,
-    "cooling": 71,
-    "weightEfficiency": 71,
-    "mechanicalGrip": 69,
-    "brakingStability": 72,
-    "acceleration": 72,
-    "topSpeed": 72,
-    "tireWear": 30,
+    "drag": 20,
+    "downforce": 80,
+    "chassisBalance": 82,
+    "cooling": 82,
+    "weightEfficiency": 82,
+    "mechanicalGrip": 78,
+    "brakingStability": 82,
+    "acceleration": 82,
+    "topSpeed": 84,
+    "tireWear": 20,
     "tireWarmup": 50,
-    "tempControl": 71,
-    "wetPerformance": 70,
-    "reliability": 71,
-    "setupWindow": 71,
+    "tempControl": 82,
+    "wetPerformance": 80,
+    "reliability": 82,
+    "setupWindow": 83,
     "upgradeCompatibility": 50,
-    "carOverall": 71
+    "carOverall": 82
   },
   {
     "carId": "car-2000-nascar-haas-carter-motorsports-team-2",
     "teamId": "NASCAR_2000_TEAM_HAAS_CARTER_MOTORSPORTS_TEAM_2",
     "seasonYear": 2000,
     "series": "NASCAR",
-    "enginePower": 74,
+    "enginePower": 61,
     "fuelEnergyEfficiency": 50,
-    "drag": 31,
-    "downforce": 69,
-    "chassisBalance": 71,
-    "cooling": 71,
-    "weightEfficiency": 71,
-    "mechanicalGrip": 69,
-    "brakingStability": 72,
-    "acceleration": 72,
-    "topSpeed": 72,
-    "tireWear": 30,
+    "drag": 42,
+    "downforce": 58,
+    "chassisBalance": 59,
+    "cooling": 59,
+    "weightEfficiency": 59,
+    "mechanicalGrip": 59,
+    "brakingStability": 60,
+    "acceleration": 60,
+    "topSpeed": 60,
+    "tireWear": 41,
     "tireWarmup": 50,
-    "tempControl": 71,
-    "wetPerformance": 70,
-    "reliability": 71,
-    "setupWindow": 71,
+    "tempControl": 59,
+    "wetPerformance": 59,
+    "reliability": 59,
+    "setupWindow": 59,
     "upgradeCompatibility": 50,
-    "carOverall": 71
+    "carOverall": 59
   },
   {
-    "carId": "car-2000-nascar-hendrick-motorsports-team-1",
-    "teamId": "NASCAR_2000_TEAM_HENDRICK_MOTORSPORTS_TEAM_1",
+    "carId": "car-2000-nascar-hendrick-motorsports-team-1-team-1",
+    "teamId": "NASCAR_2000_TEAM_HENDRICK_MOTORSPORTS_TEAM_1_TEAM_1",
     "seasonYear": 2000,
     "series": "NASCAR",
-    "enginePower": 91,
+    "enginePower": 92,
     "fuelEnergyEfficiency": 50,
-    "drag": 12,
-    "downforce": 88,
-    "chassisBalance": 89,
+    "drag": 10,
+    "downforce": 90,
+    "chassisBalance": 91,
     "cooling": 88,
-    "weightEfficiency": 89,
-    "mechanicalGrip": 88,
-    "brakingStability": 90,
-    "acceleration": 90,
-    "topSpeed": 90,
-    "tireWear": 12,
+    "weightEfficiency": 91,
+    "mechanicalGrip": 92,
+    "brakingStability": 92,
+    "acceleration": 92,
+    "topSpeed": 91,
+    "tireWear": 10,
     "tireWarmup": 50,
     "tempControl": 88,
-    "wetPerformance": 88,
+    "wetPerformance": 90,
     "reliability": 88,
-    "setupWindow": 90,
+    "setupWindow": 92,
     "upgradeCompatibility": 50,
-    "carOverall": 89
+    "carOverall": 91
+  },
+  {
+    "carId": "car-2000-nascar-hendrick-motorsports-team-1-team-2",
+    "teamId": "NASCAR_2000_TEAM_HENDRICK_MOTORSPORTS_TEAM_1_TEAM_2",
+    "seasonYear": 2000,
+    "series": "NASCAR",
+    "enginePower": 92,
+    "fuelEnergyEfficiency": 50,
+    "drag": 10,
+    "downforce": 90,
+    "chassisBalance": 91,
+    "cooling": 88,
+    "weightEfficiency": 91,
+    "mechanicalGrip": 92,
+    "brakingStability": 92,
+    "acceleration": 92,
+    "topSpeed": 91,
+    "tireWear": 10,
+    "tireWarmup": 50,
+    "tempControl": 88,
+    "wetPerformance": 90,
+    "reliability": 88,
+    "setupWindow": 92,
+    "upgradeCompatibility": 50,
+    "carOverall": 91
   },
   {
     "carId": "car-2000-nascar-hendrick-motorsports-team-2",
     "teamId": "NASCAR_2000_TEAM_HENDRICK_MOTORSPORTS_TEAM_2",
     "seasonYear": 2000,
     "series": "NASCAR",
-    "enginePower": 91,
+    "enginePower": 90,
     "fuelEnergyEfficiency": 50,
-    "drag": 12,
-    "downforce": 88,
-    "chassisBalance": 89,
-    "cooling": 88,
-    "weightEfficiency": 89,
-    "mechanicalGrip": 88,
-    "brakingStability": 90,
-    "acceleration": 90,
-    "topSpeed": 90,
-    "tireWear": 12,
+    "drag": 15,
+    "downforce": 85,
+    "chassisBalance": 86,
+    "cooling": 87,
+    "weightEfficiency": 86,
+    "mechanicalGrip": 83,
+    "brakingStability": 86,
+    "acceleration": 86,
+    "topSpeed": 88,
+    "tireWear": 15,
     "tireWarmup": 50,
-    "tempControl": 88,
-    "wetPerformance": 88,
-    "reliability": 88,
-    "setupWindow": 90,
+    "tempControl": 87,
+    "wetPerformance": 85,
+    "reliability": 87,
+    "setupWindow": 87,
     "upgradeCompatibility": 50,
-    "carOverall": 89
+    "carOverall": 86
   },
   {
     "carId": "car-2000-nascar-hover-motorsports",
@@ -6762,8 +7185,58 @@ export const nascar2000Cars: GlobalCar[] = [
     "carOverall": 28
   },
   {
-    "carId": "car-2000-nascar-joe-bessey-racing",
-    "teamId": "NASCAR_2000_TEAM_JOE_BESSEY_RACING",
+    "carId": "car-2000-nascar-joe-bessey-racing-team-1",
+    "teamId": "NASCAR_2000_TEAM_JOE_BESSEY_RACING_TEAM_1",
+    "seasonYear": 2000,
+    "series": "NASCAR",
+    "enginePower": 65,
+    "fuelEnergyEfficiency": 50,
+    "drag": 31,
+    "downforce": 69,
+    "chassisBalance": 65,
+    "cooling": 64,
+    "weightEfficiency": 65,
+    "mechanicalGrip": 63,
+    "brakingStability": 64,
+    "acceleration": 64,
+    "topSpeed": 67,
+    "tireWear": 36,
+    "tireWarmup": 50,
+    "tempControl": 64,
+    "wetPerformance": 64,
+    "reliability": 64,
+    "setupWindow": 65,
+    "upgradeCompatibility": 50,
+    "carOverall": 65
+  },
+  {
+    "carId": "car-2000-nascar-joe-bessey-racing-team-2",
+    "teamId": "NASCAR_2000_TEAM_JOE_BESSEY_RACING_TEAM_2",
+    "seasonYear": 2000,
+    "series": "NASCAR",
+    "enginePower": 65,
+    "fuelEnergyEfficiency": 50,
+    "drag": 31,
+    "downforce": 69,
+    "chassisBalance": 65,
+    "cooling": 64,
+    "weightEfficiency": 65,
+    "mechanicalGrip": 63,
+    "brakingStability": 64,
+    "acceleration": 64,
+    "topSpeed": 67,
+    "tireWear": 36,
+    "tireWarmup": 50,
+    "tempControl": 64,
+    "wetPerformance": 64,
+    "reliability": 64,
+    "setupWindow": 65,
+    "upgradeCompatibility": 50,
+    "carOverall": 65
+  },
+  {
+    "carId": "car-2000-nascar-joe-bessey-racing-team-3",
+    "teamId": "NASCAR_2000_TEAM_JOE_BESSEY_RACING_TEAM_3",
     "seasonYear": 2000,
     "series": "NASCAR",
     "enginePower": 65,
@@ -6812,8 +7285,33 @@ export const nascar2000Cars: GlobalCar[] = [
     "carOverall": 100
   },
   {
-    "carId": "car-2000-nascar-lj-racing",
-    "teamId": "NASCAR_2000_TEAM_LJ_RACING",
+    "carId": "car-2000-nascar-lj-racing-team-1",
+    "teamId": "NASCAR_2000_TEAM_LJ_RACING_TEAM_1",
+    "seasonYear": 2000,
+    "series": "NASCAR",
+    "enginePower": 61,
+    "fuelEnergyEfficiency": 50,
+    "drag": 41,
+    "downforce": 59,
+    "chassisBalance": 59,
+    "cooling": 58,
+    "weightEfficiency": 59,
+    "mechanicalGrip": 56,
+    "brakingStability": 58,
+    "acceleration": 58,
+    "topSpeed": 60,
+    "tireWear": 43,
+    "tireWarmup": 50,
+    "tempControl": 58,
+    "wetPerformance": 57,
+    "reliability": 58,
+    "setupWindow": 61,
+    "upgradeCompatibility": 50,
+    "carOverall": 59
+  },
+  {
+    "carId": "car-2000-nascar-lj-racing-team-2",
+    "teamId": "NASCAR_2000_TEAM_LJ_RACING_TEAM_2",
     "seasonYear": 2000,
     "series": "NASCAR",
     "enginePower": 61,
@@ -6937,8 +7435,58 @@ export const nascar2000Cars: GlobalCar[] = [
     "carOverall": 69
   },
   {
-    "carId": "car-2000-nascar-marcis-auto-racing",
-    "teamId": "NASCAR_2000_TEAM_MARCIS_AUTO_RACING",
+    "carId": "car-2000-nascar-marcis-auto-racing-team-1",
+    "teamId": "NASCAR_2000_TEAM_MARCIS_AUTO_RACING_TEAM_1",
+    "seasonYear": 2000,
+    "series": "NASCAR",
+    "enginePower": 63,
+    "fuelEnergyEfficiency": 50,
+    "drag": 43,
+    "downforce": 57,
+    "chassisBalance": 59,
+    "cooling": 59,
+    "weightEfficiency": 59,
+    "mechanicalGrip": 57,
+    "brakingStability": 60,
+    "acceleration": 60,
+    "topSpeed": 61,
+    "tireWear": 42,
+    "tireWarmup": 50,
+    "tempControl": 59,
+    "wetPerformance": 58,
+    "reliability": 59,
+    "setupWindow": 57,
+    "upgradeCompatibility": 50,
+    "carOverall": 59
+  },
+  {
+    "carId": "car-2000-nascar-marcis-auto-racing-team-2",
+    "teamId": "NASCAR_2000_TEAM_MARCIS_AUTO_RACING_TEAM_2",
+    "seasonYear": 2000,
+    "series": "NASCAR",
+    "enginePower": 63,
+    "fuelEnergyEfficiency": 50,
+    "drag": 43,
+    "downforce": 57,
+    "chassisBalance": 59,
+    "cooling": 59,
+    "weightEfficiency": 59,
+    "mechanicalGrip": 57,
+    "brakingStability": 60,
+    "acceleration": 60,
+    "topSpeed": 61,
+    "tireWear": 42,
+    "tireWarmup": 50,
+    "tempControl": 59,
+    "wetPerformance": 58,
+    "reliability": 59,
+    "setupWindow": 57,
+    "upgradeCompatibility": 50,
+    "carOverall": 59
+  },
+  {
+    "carId": "car-2000-nascar-marcis-auto-racing-team-3",
+    "teamId": "NASCAR_2000_TEAM_MARCIS_AUTO_RACING_TEAM_3",
     "seasonYear": 2000,
     "series": "NASCAR",
     "enginePower": 63,
@@ -7112,104 +7660,154 @@ export const nascar2000Cars: GlobalCar[] = [
     "carOverall": 71
   },
   {
-    "carId": "car-2000-nascar-penske-kranefuss-racing-team-1",
-    "teamId": "NASCAR_2000_TEAM_PENSKE_KRANEFUSS_RACING_TEAM_1",
+    "carId": "car-2000-nascar-penske-kranefuss-racing-team-1-team-1",
+    "teamId": "NASCAR_2000_TEAM_PENSKE_KRANEFUSS_RACING_TEAM_1_TEAM_1",
     "seasonYear": 2000,
     "series": "NASCAR",
-    "enginePower": 70,
+    "enginePower": 93,
     "fuelEnergyEfficiency": 50,
-    "drag": 34,
-    "downforce": 66,
-    "chassisBalance": 68,
-    "cooling": 69,
-    "weightEfficiency": 68,
-    "mechanicalGrip": 66,
-    "brakingStability": 68,
-    "acceleration": 68,
-    "topSpeed": 68,
-    "tireWear": 32,
+    "drag": 11,
+    "downforce": 89,
+    "chassisBalance": 93,
+    "cooling": 93,
+    "weightEfficiency": 93,
+    "mechanicalGrip": 92,
+    "brakingStability": 92,
+    "acceleration": 92,
+    "topSpeed": 91,
+    "tireWear": 8,
     "tireWarmup": 50,
-    "tempControl": 69,
-    "wetPerformance": 68,
-    "reliability": 69,
-    "setupWindow": 71,
+    "tempControl": 93,
+    "wetPerformance": 92,
+    "reliability": 93,
+    "setupWindow": 96,
     "upgradeCompatibility": 50,
-    "carOverall": 68
+    "carOverall": 93
+  },
+  {
+    "carId": "car-2000-nascar-penske-kranefuss-racing-team-1-team-2",
+    "teamId": "NASCAR_2000_TEAM_PENSKE_KRANEFUSS_RACING_TEAM_1_TEAM_2",
+    "seasonYear": 2000,
+    "series": "NASCAR",
+    "enginePower": 93,
+    "fuelEnergyEfficiency": 50,
+    "drag": 11,
+    "downforce": 89,
+    "chassisBalance": 93,
+    "cooling": 93,
+    "weightEfficiency": 93,
+    "mechanicalGrip": 92,
+    "brakingStability": 92,
+    "acceleration": 92,
+    "topSpeed": 91,
+    "tireWear": 8,
+    "tireWarmup": 50,
+    "tempControl": 93,
+    "wetPerformance": 92,
+    "reliability": 93,
+    "setupWindow": 96,
+    "upgradeCompatibility": 50,
+    "carOverall": 93
   },
   {
     "carId": "car-2000-nascar-penske-kranefuss-racing-team-2",
     "teamId": "NASCAR_2000_TEAM_PENSKE_KRANEFUSS_RACING_TEAM_2",
     "seasonYear": 2000,
     "series": "NASCAR",
-    "enginePower": 70,
+    "enginePower": 46,
     "fuelEnergyEfficiency": 50,
-    "drag": 34,
-    "downforce": 66,
-    "chassisBalance": 68,
-    "cooling": 69,
-    "weightEfficiency": 68,
-    "mechanicalGrip": 66,
-    "brakingStability": 68,
-    "acceleration": 68,
-    "topSpeed": 68,
-    "tireWear": 32,
+    "drag": 57,
+    "downforce": 43,
+    "chassisBalance": 44,
+    "cooling": 45,
+    "weightEfficiency": 44,
+    "mechanicalGrip": 40,
+    "brakingStability": 43,
+    "acceleration": 43,
+    "topSpeed": 45,
+    "tireWear": 58,
     "tireWarmup": 50,
-    "tempControl": 69,
-    "wetPerformance": 68,
-    "reliability": 69,
-    "setupWindow": 71,
+    "tempControl": 45,
+    "wetPerformance": 42,
+    "reliability": 45,
+    "setupWindow": 46,
     "upgradeCompatibility": 50,
-    "carOverall": 68
+    "carOverall": 44
   },
   {
-    "carId": "car-2000-nascar-petty-enterprises-team-1",
-    "teamId": "NASCAR_2000_TEAM_PETTY_ENTERPRISES_TEAM_1",
+    "carId": "car-2000-nascar-petty-enterprises-team-1-team-1",
+    "teamId": "NASCAR_2000_TEAM_PETTY_ENTERPRISES_TEAM_1_TEAM_1",
     "seasonYear": 2000,
     "series": "NASCAR",
-    "enginePower": 78,
+    "enginePower": 85,
     "fuelEnergyEfficiency": 50,
-    "drag": 28,
-    "downforce": 72,
-    "chassisBalance": 74,
-    "cooling": 74,
-    "weightEfficiency": 74,
-    "mechanicalGrip": 71,
-    "brakingStability": 74,
-    "acceleration": 74,
-    "topSpeed": 76,
-    "tireWear": 28,
+    "drag": 23,
+    "downforce": 77,
+    "chassisBalance": 79,
+    "cooling": 79,
+    "weightEfficiency": 79,
+    "mechanicalGrip": 76,
+    "brakingStability": 80,
+    "acceleration": 80,
+    "topSpeed": 82,
+    "tireWear": 22,
     "tireWarmup": 50,
-    "tempControl": 74,
-    "wetPerformance": 72,
-    "reliability": 74,
-    "setupWindow": 74,
+    "tempControl": 79,
+    "wetPerformance": 78,
+    "reliability": 79,
+    "setupWindow": 80,
     "upgradeCompatibility": 50,
-    "carOverall": 74
+    "carOverall": 79
+  },
+  {
+    "carId": "car-2000-nascar-petty-enterprises-team-1-team-2",
+    "teamId": "NASCAR_2000_TEAM_PETTY_ENTERPRISES_TEAM_1_TEAM_2",
+    "seasonYear": 2000,
+    "series": "NASCAR",
+    "enginePower": 85,
+    "fuelEnergyEfficiency": 50,
+    "drag": 23,
+    "downforce": 77,
+    "chassisBalance": 79,
+    "cooling": 79,
+    "weightEfficiency": 79,
+    "mechanicalGrip": 76,
+    "brakingStability": 80,
+    "acceleration": 80,
+    "topSpeed": 82,
+    "tireWear": 22,
+    "tireWarmup": 50,
+    "tempControl": 79,
+    "wetPerformance": 78,
+    "reliability": 79,
+    "setupWindow": 80,
+    "upgradeCompatibility": 50,
+    "carOverall": 79
   },
   {
     "carId": "car-2000-nascar-petty-enterprises-team-2",
     "teamId": "NASCAR_2000_TEAM_PETTY_ENTERPRISES_TEAM_2",
     "seasonYear": 2000,
     "series": "NASCAR",
-    "enginePower": 78,
+    "enginePower": 70,
     "fuelEnergyEfficiency": 50,
-    "drag": 28,
-    "downforce": 72,
-    "chassisBalance": 74,
-    "cooling": 74,
-    "weightEfficiency": 74,
-    "mechanicalGrip": 71,
-    "brakingStability": 74,
-    "acceleration": 74,
-    "topSpeed": 76,
-    "tireWear": 28,
+    "drag": 34,
+    "downforce": 66,
+    "chassisBalance": 67,
+    "cooling": 68,
+    "weightEfficiency": 67,
+    "mechanicalGrip": 66,
+    "brakingStability": 68,
+    "acceleration": 68,
+    "topSpeed": 68,
+    "tireWear": 33,
     "tireWarmup": 50,
-    "tempControl": 74,
-    "wetPerformance": 72,
-    "reliability": 74,
-    "setupWindow": 74,
+    "tempControl": 68,
+    "wetPerformance": 67,
+    "reliability": 68,
+    "setupWindow": 67,
     "upgradeCompatibility": 50,
-    "carOverall": 74
+    "carOverall": 67
   },
   {
     "carId": "car-2000-nascar-petty-huggins-motorsports",
@@ -7291,75 +7889,100 @@ export const nascar2000Cars: GlobalCar[] = [
     "teamId": "NASCAR_2000_TEAM_ROUSH_RACING_TEAM_1",
     "seasonYear": 2000,
     "series": "NASCAR",
-    "enginePower": 93,
+    "enginePower": 94,
     "fuelEnergyEfficiency": 50,
-    "drag": 5,
-    "downforce": 95,
+    "drag": 3,
+    "downforce": 97,
     "chassisBalance": 94,
-    "cooling": 94,
+    "cooling": 91,
     "weightEfficiency": 94,
-    "mechanicalGrip": 93,
+    "mechanicalGrip": 92,
     "brakingStability": 93,
     "acceleration": 93,
-    "topSpeed": 94,
-    "tireWear": 6,
+    "topSpeed": 95,
+    "tireWear": 8,
     "tireWarmup": 50,
-    "tempControl": 94,
-    "wetPerformance": 94,
-    "reliability": 94,
+    "tempControl": 91,
+    "wetPerformance": 92,
+    "reliability": 91,
     "setupWindow": 95,
     "upgradeCompatibility": 50,
     "carOverall": 94
   },
   {
-    "carId": "car-2000-nascar-roush-racing-team-2",
-    "teamId": "NASCAR_2000_TEAM_ROUSH_RACING_TEAM_2",
+    "carId": "car-2000-nascar-roush-racing-team-2-team-1",
+    "teamId": "NASCAR_2000_TEAM_ROUSH_RACING_TEAM_2_TEAM_1",
     "seasonYear": 2000,
     "series": "NASCAR",
-    "enginePower": 93,
+    "enginePower": 86,
     "fuelEnergyEfficiency": 50,
-    "drag": 5,
-    "downforce": 95,
-    "chassisBalance": 94,
-    "cooling": 94,
-    "weightEfficiency": 94,
-    "mechanicalGrip": 93,
-    "brakingStability": 93,
-    "acceleration": 93,
-    "topSpeed": 94,
-    "tireWear": 6,
+    "drag": 10,
+    "downforce": 90,
+    "chassisBalance": 88,
+    "cooling": 90,
+    "weightEfficiency": 88,
+    "mechanicalGrip": 87,
+    "brakingStability": 86,
+    "acceleration": 86,
+    "topSpeed": 88,
+    "tireWear": 12,
     "tireWarmup": 50,
-    "tempControl": 94,
-    "wetPerformance": 94,
-    "reliability": 94,
-    "setupWindow": 95,
+    "tempControl": 90,
+    "wetPerformance": 88,
+    "reliability": 90,
+    "setupWindow": 89,
     "upgradeCompatibility": 50,
-    "carOverall": 94
+    "carOverall": 88
+  },
+  {
+    "carId": "car-2000-nascar-roush-racing-team-2-team-2",
+    "teamId": "NASCAR_2000_TEAM_ROUSH_RACING_TEAM_2_TEAM_2",
+    "seasonYear": 2000,
+    "series": "NASCAR",
+    "enginePower": 86,
+    "fuelEnergyEfficiency": 50,
+    "drag": 10,
+    "downforce": 90,
+    "chassisBalance": 88,
+    "cooling": 90,
+    "weightEfficiency": 88,
+    "mechanicalGrip": 87,
+    "brakingStability": 86,
+    "acceleration": 86,
+    "topSpeed": 88,
+    "tireWear": 12,
+    "tireWarmup": 50,
+    "tempControl": 90,
+    "wetPerformance": 88,
+    "reliability": 90,
+    "setupWindow": 89,
+    "upgradeCompatibility": 50,
+    "carOverall": 88
   },
   {
     "carId": "car-2000-nascar-roush-racing-team-3",
     "teamId": "NASCAR_2000_TEAM_ROUSH_RACING_TEAM_3",
     "seasonYear": 2000,
     "series": "NASCAR",
-    "enginePower": 93,
+    "enginePower": 100,
     "fuelEnergyEfficiency": 50,
-    "drag": 5,
-    "downforce": 95,
-    "chassisBalance": 94,
-    "cooling": 94,
-    "weightEfficiency": 94,
-    "mechanicalGrip": 93,
-    "brakingStability": 93,
-    "acceleration": 93,
-    "topSpeed": 94,
-    "tireWear": 6,
+    "drag": 1,
+    "downforce": 99,
+    "chassisBalance": 100,
+    "cooling": 100,
+    "weightEfficiency": 100,
+    "mechanicalGrip": 100,
+    "brakingStability": 100,
+    "acceleration": 100,
+    "topSpeed": 100,
+    "tireWear": 1,
     "tireWarmup": 50,
-    "tempControl": 94,
-    "wetPerformance": 94,
-    "reliability": 94,
-    "setupWindow": 95,
+    "tempControl": 100,
+    "wetPerformance": 100,
+    "reliability": 100,
+    "setupWindow": 100,
     "upgradeCompatibility": 50,
-    "carOverall": 94
+    "carOverall": 100
   },
   {
     "carId": "car-2000-nascar-sadler-brothers-racing",
@@ -7441,50 +8064,75 @@ export const nascar2000Cars: GlobalCar[] = [
     "teamId": "NASCAR_2000_TEAM_TEAM_SABCO_TEAM_1",
     "seasonYear": 2000,
     "series": "NASCAR",
-    "enginePower": 77,
+    "enginePower": 85,
     "fuelEnergyEfficiency": 50,
-    "drag": 21,
-    "downforce": 79,
-    "chassisBalance": 76,
-    "cooling": 76,
-    "weightEfficiency": 76,
-    "mechanicalGrip": 73,
-    "brakingStability": 75,
-    "acceleration": 75,
-    "topSpeed": 78,
-    "tireWear": 26,
+    "drag": 13,
+    "downforce": 87,
+    "chassisBalance": 85,
+    "cooling": 83,
+    "weightEfficiency": 85,
+    "mechanicalGrip": 82,
+    "brakingStability": 84,
+    "acceleration": 84,
+    "topSpeed": 86,
+    "tireWear": 18,
     "tireWarmup": 50,
-    "tempControl": 76,
-    "wetPerformance": 74,
-    "reliability": 76,
-    "setupWindow": 77,
+    "tempControl": 83,
+    "wetPerformance": 82,
+    "reliability": 83,
+    "setupWindow": 87,
     "upgradeCompatibility": 50,
-    "carOverall": 76
+    "carOverall": 85
   },
   {
-    "carId": "car-2000-nascar-team-sabco-team-2",
-    "teamId": "NASCAR_2000_TEAM_TEAM_SABCO_TEAM_2",
+    "carId": "car-2000-nascar-team-sabco-team-2-team-1",
+    "teamId": "NASCAR_2000_TEAM_TEAM_SABCO_TEAM_2_TEAM_1",
     "seasonYear": 2000,
     "series": "NASCAR",
-    "enginePower": 77,
+    "enginePower": 68,
     "fuelEnergyEfficiency": 50,
-    "drag": 21,
-    "downforce": 79,
-    "chassisBalance": 76,
-    "cooling": 76,
-    "weightEfficiency": 76,
-    "mechanicalGrip": 73,
-    "brakingStability": 75,
-    "acceleration": 75,
-    "topSpeed": 78,
-    "tireWear": 26,
+    "drag": 30,
+    "downforce": 70,
+    "chassisBalance": 67,
+    "cooling": 68,
+    "weightEfficiency": 67,
+    "mechanicalGrip": 63,
+    "brakingStability": 66,
+    "acceleration": 66,
+    "topSpeed": 69,
+    "tireWear": 34,
     "tireWarmup": 50,
-    "tempControl": 76,
-    "wetPerformance": 74,
-    "reliability": 76,
-    "setupWindow": 77,
+    "tempControl": 68,
+    "wetPerformance": 66,
+    "reliability": 68,
+    "setupWindow": 67,
     "upgradeCompatibility": 50,
-    "carOverall": 76
+    "carOverall": 67
+  },
+  {
+    "carId": "car-2000-nascar-team-sabco-team-2-team-2",
+    "teamId": "NASCAR_2000_TEAM_TEAM_SABCO_TEAM_2_TEAM_2",
+    "seasonYear": 2000,
+    "series": "NASCAR",
+    "enginePower": 68,
+    "fuelEnergyEfficiency": 50,
+    "drag": 30,
+    "downforce": 70,
+    "chassisBalance": 67,
+    "cooling": 68,
+    "weightEfficiency": 67,
+    "mechanicalGrip": 63,
+    "brakingStability": 66,
+    "acceleration": 66,
+    "topSpeed": 69,
+    "tireWear": 34,
+    "tireWarmup": 50,
+    "tempControl": 68,
+    "wetPerformance": 66,
+    "reliability": 68,
+    "setupWindow": 67,
+    "upgradeCompatibility": 50,
+    "carOverall": 67
   },
   {
     "carId": "car-2000-nascar-tristar-motorsports",
@@ -7598,8 +8246,8 @@ export const nascar2000Tracks: GlobalTrack[] = [
       "technical": 50,
       "overtakingRacecraft": 75,
       "surfaceGripBumpiness": 65,
-      "riskWallProximity": 50,
-      "enduranceConsistency": 50
+      "riskWallProximity": 86,
+      "enduranceConsistency": 78
     },
     "demandProfile": {
       "downforceDemand": 60,
@@ -7608,15 +8256,15 @@ export const nascar2000Tracks: GlobalTrack[] = [
       "brakeDemand": 45,
       "tireDemand": 65,
       "coolingDemand": 50,
-      "riskDemand": 50,
+      "riskDemand": 86,
       "tractionDemand": 75,
       "overtakingDifficulty": 25,
       "tireWearSeverity": 65,
-      "reliabilityStress": 50,
+      "reliabilityStress": 78,
       "setupComplexity": 50,
       "pitStrategySensitivity": 50,
       "safetyCarCautionRisk": 50,
-      "overallTrackDifficulty": 53,
+      "overallTrackDifficulty": 65,
       "winnerBaseline": 50
     },
     "ovalSubtype": "Superspeedway"
@@ -7655,8 +8303,8 @@ export const nascar2000Tracks: GlobalTrack[] = [
       "technical": 70,
       "overtakingRacecraft": 72,
       "surfaceGripBumpiness": 88,
-      "riskWallProximity": 50,
-      "enduranceConsistency": 50
+      "riskWallProximity": 80,
+      "enduranceConsistency": 86
     },
     "demandProfile": {
       "downforceDemand": 75,
@@ -7665,15 +8313,15 @@ export const nascar2000Tracks: GlobalTrack[] = [
       "brakeDemand": 76,
       "tireDemand": 88,
       "coolingDemand": 50,
-      "riskDemand": 50,
+      "riskDemand": 80,
       "tractionDemand": 84,
       "overtakingDifficulty": 28,
       "tireWearSeverity": 88,
-      "reliabilityStress": 50,
+      "reliabilityStress": 86,
       "setupComplexity": 70,
       "pitStrategySensitivity": 50,
       "safetyCarCautionRisk": 50,
-      "overallTrackDifficulty": 65,
+      "overallTrackDifficulty": 75,
       "winnerBaseline": 50
     },
     "ovalSubtype": "Speedway"
@@ -7712,8 +8360,8 @@ export const nascar2000Tracks: GlobalTrack[] = [
       "technical": 66,
       "overtakingRacecraft": 72,
       "surfaceGripBumpiness": 74,
-      "riskWallProximity": 50,
-      "enduranceConsistency": 50
+      "riskWallProximity": 82,
+      "enduranceConsistency": 78
     },
     "demandProfile": {
       "downforceDemand": 70,
@@ -7722,15 +8370,15 @@ export const nascar2000Tracks: GlobalTrack[] = [
       "brakeDemand": 68,
       "tireDemand": 74,
       "coolingDemand": 50,
-      "riskDemand": 50,
+      "riskDemand": 82,
       "tractionDemand": 78,
       "overtakingDifficulty": 28,
       "tireWearSeverity": 74,
-      "reliabilityStress": 50,
+      "reliabilityStress": 78,
       "setupComplexity": 66,
       "pitStrategySensitivity": 50,
       "safetyCarCautionRisk": 50,
-      "overallTrackDifficulty": 62,
+      "overallTrackDifficulty": 73,
       "winnerBaseline": 50
     },
     "ovalSubtype": "Speedway"
@@ -7769,8 +8417,8 @@ export const nascar2000Tracks: GlobalTrack[] = [
       "technical": 65,
       "overtakingRacecraft": 72,
       "surfaceGripBumpiness": 78,
-      "riskWallProximity": 50,
-      "enduranceConsistency": 50
+      "riskWallProximity": 82,
+      "enduranceConsistency": 78
     },
     "demandProfile": {
       "downforceDemand": 70,
@@ -7779,15 +8427,15 @@ export const nascar2000Tracks: GlobalTrack[] = [
       "brakeDemand": 68,
       "tireDemand": 78,
       "coolingDemand": 50,
-      "riskDemand": 50,
+      "riskDemand": 82,
       "tractionDemand": 78,
       "overtakingDifficulty": 28,
       "tireWearSeverity": 78,
-      "reliabilityStress": 50,
+      "reliabilityStress": 78,
       "setupComplexity": 65,
       "pitStrategySensitivity": 50,
       "safetyCarCautionRisk": 50,
-      "overallTrackDifficulty": 62,
+      "overallTrackDifficulty": 72,
       "winnerBaseline": 50
     },
     "ovalSubtype": "Speedway"
@@ -7826,8 +8474,8 @@ export const nascar2000Tracks: GlobalTrack[] = [
       "technical": 86,
       "overtakingRacecraft": 62,
       "surfaceGripBumpiness": 92,
-      "riskWallProximity": 50,
-      "enduranceConsistency": 50
+      "riskWallProximity": 72,
+      "enduranceConsistency": 78
     },
     "demandProfile": {
       "downforceDemand": 88,
@@ -7836,15 +8484,15 @@ export const nascar2000Tracks: GlobalTrack[] = [
       "brakeDemand": 85,
       "tireDemand": 92,
       "coolingDemand": 50,
-      "riskDemand": 50,
+      "riskDemand": 72,
       "tractionDemand": 88,
       "overtakingDifficulty": 38,
       "tireWearSeverity": 92,
-      "reliabilityStress": 50,
+      "reliabilityStress": 78,
       "setupComplexity": 86,
       "pitStrategySensitivity": 50,
       "safetyCarCautionRisk": 50,
-      "overallTrackDifficulty": 75,
+      "overallTrackDifficulty": 82,
       "winnerBaseline": 50
     },
     "ovalSubtype": "Speedway"
@@ -7883,8 +8531,8 @@ export const nascar2000Tracks: GlobalTrack[] = [
       "technical": 90,
       "overtakingRacecraft": 60,
       "surfaceGripBumpiness": 85,
-      "riskWallProximity": 50,
-      "enduranceConsistency": 50
+      "riskWallProximity": 92,
+      "enduranceConsistency": 86
     },
     "demandProfile": {
       "downforceDemand": 92,
@@ -7893,15 +8541,15 @@ export const nascar2000Tracks: GlobalTrack[] = [
       "brakeDemand": 88,
       "tireDemand": 85,
       "coolingDemand": 50,
-      "riskDemand": 50,
+      "riskDemand": 92,
       "tractionDemand": 95,
       "overtakingDifficulty": 40,
       "tireWearSeverity": 85,
-      "reliabilityStress": 50,
+      "reliabilityStress": 86,
       "setupComplexity": 90,
       "pitStrategySensitivity": 50,
       "safetyCarCautionRisk": 50,
-      "overallTrackDifficulty": 77,
+      "overallTrackDifficulty": 91,
       "winnerBaseline": 50
     },
     "ovalSubtype": "Short Oval"
@@ -7940,8 +8588,8 @@ export const nascar2000Tracks: GlobalTrack[] = [
       "technical": 66,
       "overtakingRacecraft": 72,
       "surfaceGripBumpiness": 74,
-      "riskWallProximity": 50,
-      "enduranceConsistency": 50
+      "riskWallProximity": 82,
+      "enduranceConsistency": 78
     },
     "demandProfile": {
       "downforceDemand": 70,
@@ -7950,15 +8598,15 @@ export const nascar2000Tracks: GlobalTrack[] = [
       "brakeDemand": 70,
       "tireDemand": 74,
       "coolingDemand": 50,
-      "riskDemand": 50,
+      "riskDemand": 82,
       "tractionDemand": 78,
       "overtakingDifficulty": 28,
       "tireWearSeverity": 74,
-      "reliabilityStress": 50,
+      "reliabilityStress": 78,
       "setupComplexity": 66,
       "pitStrategySensitivity": 50,
       "safetyCarCautionRisk": 50,
-      "overallTrackDifficulty": 62,
+      "overallTrackDifficulty": 73,
       "winnerBaseline": 50
     },
     "ovalSubtype": "Speedway"
@@ -7997,8 +8645,8 @@ export const nascar2000Tracks: GlobalTrack[] = [
       "technical": 92,
       "overtakingRacecraft": 64,
       "surfaceGripBumpiness": 78,
-      "riskWallProximity": 50,
-      "enduranceConsistency": 50
+      "riskWallProximity": 82,
+      "enduranceConsistency": 88
     },
     "demandProfile": {
       "downforceDemand": 94,
@@ -8007,15 +8655,15 @@ export const nascar2000Tracks: GlobalTrack[] = [
       "brakeDemand": 96,
       "tireDemand": 78,
       "coolingDemand": 50,
-      "riskDemand": 50,
+      "riskDemand": 82,
       "tractionDemand": 92,
       "overtakingDifficulty": 36,
       "tireWearSeverity": 78,
-      "reliabilityStress": 50,
+      "reliabilityStress": 88,
       "setupComplexity": 92,
       "pitStrategySensitivity": 50,
       "safetyCarCautionRisk": 50,
-      "overallTrackDifficulty": 79,
+      "overallTrackDifficulty": 89,
       "winnerBaseline": 50
     },
     "ovalSubtype": "Short Oval"
@@ -8054,8 +8702,8 @@ export const nascar2000Tracks: GlobalTrack[] = [
       "technical": 52,
       "overtakingRacecraft": 78,
       "surfaceGripBumpiness": 65,
-      "riskWallProximity": 50,
-      "enduranceConsistency": 50
+      "riskWallProximity": 86,
+      "enduranceConsistency": 78
     },
     "demandProfile": {
       "downforceDemand": 62,
@@ -8064,15 +8712,15 @@ export const nascar2000Tracks: GlobalTrack[] = [
       "brakeDemand": 44,
       "tireDemand": 65,
       "coolingDemand": 50,
-      "riskDemand": 50,
+      "riskDemand": 86,
       "tractionDemand": 78,
       "overtakingDifficulty": 22,
       "tireWearSeverity": 65,
-      "reliabilityStress": 50,
+      "reliabilityStress": 78,
       "setupComplexity": 52,
       "pitStrategySensitivity": 50,
       "safetyCarCautionRisk": 50,
-      "overallTrackDifficulty": 55,
+      "overallTrackDifficulty": 67,
       "winnerBaseline": 50
     },
     "ovalSubtype": "Superspeedway"
@@ -8111,8 +8759,8 @@ export const nascar2000Tracks: GlobalTrack[] = [
       "technical": 60,
       "overtakingRacecraft": 78,
       "surfaceGripBumpiness": 72,
-      "riskWallProximity": 50,
-      "enduranceConsistency": 50
+      "riskWallProximity": 72,
+      "enduranceConsistency": 76
     },
     "demandProfile": {
       "downforceDemand": 66,
@@ -8121,15 +8769,15 @@ export const nascar2000Tracks: GlobalTrack[] = [
       "brakeDemand": 60,
       "tireDemand": 72,
       "coolingDemand": 50,
-      "riskDemand": 50,
+      "riskDemand": 72,
       "tractionDemand": 74,
       "overtakingDifficulty": 22,
       "tireWearSeverity": 72,
-      "reliabilityStress": 50,
+      "reliabilityStress": 76,
       "setupComplexity": 60,
       "pitStrategySensitivity": 50,
       "safetyCarCautionRisk": 50,
-      "overallTrackDifficulty": 59,
+      "overallTrackDifficulty": 66,
       "winnerBaseline": 50
     },
     "ovalSubtype": "Speedway"
@@ -8168,8 +8816,8 @@ export const nascar2000Tracks: GlobalTrack[] = [
       "technical": 78,
       "overtakingRacecraft": 76,
       "surfaceGripBumpiness": 72,
-      "riskWallProximity": 50,
-      "enduranceConsistency": 50
+      "riskWallProximity": 70,
+      "enduranceConsistency": 82
     },
     "demandProfile": {
       "downforceDemand": 78,
@@ -8178,15 +8826,15 @@ export const nascar2000Tracks: GlobalTrack[] = [
       "brakeDemand": 82,
       "tireDemand": 72,
       "coolingDemand": 50,
-      "riskDemand": 50,
+      "riskDemand": 70,
       "tractionDemand": 90,
       "overtakingDifficulty": 24,
       "tireWearSeverity": 72,
-      "reliabilityStress": 50,
+      "reliabilityStress": 82,
       "setupComplexity": 78,
       "pitStrategySensitivity": 50,
       "safetyCarCautionRisk": 50,
-      "overallTrackDifficulty": 69,
+      "overallTrackDifficulty": 75,
       "winnerBaseline": 50
     },
     "ovalSubtype": "Short Oval"
@@ -8225,8 +8873,8 @@ export const nascar2000Tracks: GlobalTrack[] = [
       "technical": 66,
       "overtakingRacecraft": 72,
       "surfaceGripBumpiness": 76,
-      "riskWallProximity": 50,
-      "enduranceConsistency": 50
+      "riskWallProximity": 76,
+      "enduranceConsistency": 76
     },
     "demandProfile": {
       "downforceDemand": 70,
@@ -8235,15 +8883,15 @@ export const nascar2000Tracks: GlobalTrack[] = [
       "brakeDemand": 68,
       "tireDemand": 76,
       "coolingDemand": 50,
-      "riskDemand": 50,
+      "riskDemand": 76,
       "tractionDemand": 78,
       "overtakingDifficulty": 28,
       "tireWearSeverity": 76,
-      "reliabilityStress": 50,
+      "reliabilityStress": 76,
       "setupComplexity": 66,
       "pitStrategySensitivity": 50,
       "safetyCarCautionRisk": 50,
-      "overallTrackDifficulty": 62,
+      "overallTrackDifficulty": 71,
       "winnerBaseline": 50
     },
     "ovalSubtype": "Speedway"
@@ -8282,8 +8930,8 @@ export const nascar2000Tracks: GlobalTrack[] = [
       "technical": 84,
       "overtakingRacecraft": 64,
       "surfaceGripBumpiness": 86,
-      "riskWallProximity": 50,
-      "enduranceConsistency": 50
+      "riskWallProximity": 72,
+      "enduranceConsistency": 76
     },
     "demandProfile": {
       "downforceDemand": 86,
@@ -8292,15 +8940,15 @@ export const nascar2000Tracks: GlobalTrack[] = [
       "brakeDemand": 84,
       "tireDemand": 86,
       "coolingDemand": 50,
-      "riskDemand": 50,
+      "riskDemand": 72,
       "tractionDemand": 90,
       "overtakingDifficulty": 36,
       "tireWearSeverity": 86,
-      "reliabilityStress": 50,
+      "reliabilityStress": 76,
       "setupComplexity": 84,
       "pitStrategySensitivity": 50,
       "safetyCarCautionRisk": 50,
-      "overallTrackDifficulty": 73,
+      "overallTrackDifficulty": 81,
       "winnerBaseline": 50
     },
     "ovalSubtype": "Speedway"
@@ -8339,8 +8987,8 @@ export const nascar2000Tracks: GlobalTrack[] = [
       "technical": 62,
       "overtakingRacecraft": 76,
       "surfaceGripBumpiness": 72,
-      "riskWallProximity": 50,
-      "enduranceConsistency": 50
+      "riskWallProximity": 72,
+      "enduranceConsistency": 76
     },
     "demandProfile": {
       "downforceDemand": 68,
@@ -8349,15 +8997,15 @@ export const nascar2000Tracks: GlobalTrack[] = [
       "brakeDemand": 62,
       "tireDemand": 72,
       "coolingDemand": 50,
-      "riskDemand": 50,
+      "riskDemand": 72,
       "tractionDemand": 76,
       "overtakingDifficulty": 24,
       "tireWearSeverity": 72,
-      "reliabilityStress": 50,
+      "reliabilityStress": 76,
       "setupComplexity": 62,
       "pitStrategySensitivity": 50,
       "safetyCarCautionRisk": 50,
-      "overallTrackDifficulty": 60,
+      "overallTrackDifficulty": 67,
       "winnerBaseline": 50
     },
     "ovalSubtype": "Speedway"
@@ -8396,8 +9044,8 @@ export const nascar2000Tracks: GlobalTrack[] = [
       "technical": 82,
       "overtakingRacecraft": 70,
       "surfaceGripBumpiness": 72,
-      "riskWallProximity": 50,
-      "enduranceConsistency": 50
+      "riskWallProximity": 86,
+      "enduranceConsistency": 78
     },
     "demandProfile": {
       "downforceDemand": 82,
@@ -8406,15 +9054,15 @@ export const nascar2000Tracks: GlobalTrack[] = [
       "brakeDemand": 88,
       "tireDemand": 72,
       "coolingDemand": 50,
-      "riskDemand": 50,
+      "riskDemand": 86,
       "tractionDemand": 76,
       "overtakingDifficulty": 30,
       "tireWearSeverity": 72,
-      "reliabilityStress": 50,
+      "reliabilityStress": 78,
       "setupComplexity": 82,
       "pitStrategySensitivity": 50,
       "safetyCarCautionRisk": 50,
-      "overallTrackDifficulty": 71,
+      "overallTrackDifficulty": 83,
       "winnerBaseline": 50
     },
     "ovalSubtype": "Superspeedway"
@@ -8453,8 +9101,8 @@ export const nascar2000Tracks: GlobalTrack[] = [
       "technical": 92,
       "overtakingRacecraft": 66,
       "surfaceGripBumpiness": 74,
-      "riskWallProximity": 50,
-      "enduranceConsistency": 50
+      "riskWallProximity": 68,
+      "enduranceConsistency": 84
     },
     "demandProfile": {
       "downforceDemand": 90,
@@ -8463,15 +9111,15 @@ export const nascar2000Tracks: GlobalTrack[] = [
       "brakeDemand": 88,
       "tireDemand": 74,
       "coolingDemand": 50,
-      "riskDemand": 50,
+      "riskDemand": 68,
       "tractionDemand": 88,
       "overtakingDifficulty": 34,
       "tireWearSeverity": 74,
-      "reliabilityStress": 50,
+      "reliabilityStress": 84,
       "setupComplexity": 92,
       "pitStrategySensitivity": 50,
       "safetyCarCautionRisk": 50,
-      "overallTrackDifficulty": 77,
+      "overallTrackDifficulty": 83,
       "winnerBaseline": 50
     }
   },
@@ -8509,8 +9157,8 @@ export const nascar2000Tracks: GlobalTrack[] = [
       "technical": 82,
       "overtakingRacecraft": 66,
       "surfaceGripBumpiness": 74,
-      "riskWallProximity": 50,
-      "enduranceConsistency": 50
+      "riskWallProximity": 72,
+      "enduranceConsistency": 78
     },
     "demandProfile": {
       "downforceDemand": 82,
@@ -8519,15 +9167,15 @@ export const nascar2000Tracks: GlobalTrack[] = [
       "brakeDemand": 88,
       "tireDemand": 74,
       "coolingDemand": 50,
-      "riskDemand": 50,
+      "riskDemand": 72,
       "tractionDemand": 86,
       "overtakingDifficulty": 34,
       "tireWearSeverity": 74,
-      "reliabilityStress": 50,
+      "reliabilityStress": 78,
       "setupComplexity": 82,
       "pitStrategySensitivity": 50,
       "safetyCarCautionRisk": 50,
-      "overallTrackDifficulty": 71,
+      "overallTrackDifficulty": 79,
       "winnerBaseline": 50
     },
     "ovalSubtype": "Speedway"
@@ -8566,8 +9214,8 @@ export const nascar2000Tracks: GlobalTrack[] = [
       "technical": 78,
       "overtakingRacecraft": 62,
       "surfaceGripBumpiness": 72,
-      "riskWallProximity": 50,
-      "enduranceConsistency": 50
+      "riskWallProximity": 86,
+      "enduranceConsistency": 78
     },
     "demandProfile": {
       "downforceDemand": 80,
@@ -8576,15 +9224,15 @@ export const nascar2000Tracks: GlobalTrack[] = [
       "brakeDemand": 82,
       "tireDemand": 72,
       "coolingDemand": 50,
-      "riskDemand": 50,
+      "riskDemand": 86,
       "tractionDemand": 76,
       "overtakingDifficulty": 38,
       "tireWearSeverity": 72,
-      "reliabilityStress": 50,
+      "reliabilityStress": 78,
       "setupComplexity": 78,
       "pitStrategySensitivity": 50,
       "safetyCarCautionRisk": 50,
-      "overallTrackDifficulty": 69,
+      "overallTrackDifficulty": 81,
       "winnerBaseline": 50
     },
     "ovalSubtype": "Superspeedway"
@@ -8623,8 +9271,8 @@ export const nascar2000Tracks: GlobalTrack[] = [
       "technical": 88,
       "overtakingRacecraft": 72,
       "surfaceGripBumpiness": 72,
-      "riskWallProximity": 50,
-      "enduranceConsistency": 50
+      "riskWallProximity": 70,
+      "enduranceConsistency": 82
     },
     "demandProfile": {
       "downforceDemand": 86,
@@ -8633,15 +9281,15 @@ export const nascar2000Tracks: GlobalTrack[] = [
       "brakeDemand": 84,
       "tireDemand": 72,
       "coolingDemand": 50,
-      "riskDemand": 50,
+      "riskDemand": 70,
       "tractionDemand": 82,
       "overtakingDifficulty": 28,
       "tireWearSeverity": 72,
-      "reliabilityStress": 50,
+      "reliabilityStress": 82,
       "setupComplexity": 88,
       "pitStrategySensitivity": 50,
       "safetyCarCautionRisk": 50,
-      "overallTrackDifficulty": 75,
+      "overallTrackDifficulty": 81,
       "winnerBaseline": 50
     }
   },
@@ -8679,8 +9327,8 @@ export const nascar2000Tracks: GlobalTrack[] = [
       "technical": 78,
       "overtakingRacecraft": 70,
       "surfaceGripBumpiness": 76,
-      "riskWallProximity": 50,
-      "enduranceConsistency": 50
+      "riskWallProximity": 72,
+      "enduranceConsistency": 78
     },
     "demandProfile": {
       "downforceDemand": 78,
@@ -8689,15 +9337,15 @@ export const nascar2000Tracks: GlobalTrack[] = [
       "brakeDemand": 82,
       "tireDemand": 76,
       "coolingDemand": 50,
-      "riskDemand": 50,
+      "riskDemand": 72,
       "tractionDemand": 84,
       "overtakingDifficulty": 30,
       "tireWearSeverity": 76,
-      "reliabilityStress": 50,
+      "reliabilityStress": 78,
       "setupComplexity": 78,
       "pitStrategySensitivity": 50,
       "safetyCarCautionRisk": 50,
-      "overallTrackDifficulty": 69,
+      "overallTrackDifficulty": 76,
       "winnerBaseline": 50
     },
     "ovalSubtype": "Speedway"
@@ -8736,8 +9384,8 @@ export const nascar2000Tracks: GlobalTrack[] = [
       "technical": 68,
       "overtakingRacecraft": 74,
       "surfaceGripBumpiness": 78,
-      "riskWallProximity": 50,
-      "enduranceConsistency": 50
+      "riskWallProximity": 76,
+      "enduranceConsistency": 76
     },
     "demandProfile": {
       "downforceDemand": 72,
@@ -8746,15 +9394,15 @@ export const nascar2000Tracks: GlobalTrack[] = [
       "brakeDemand": 70,
       "tireDemand": 78,
       "coolingDemand": 50,
-      "riskDemand": 50,
+      "riskDemand": 76,
       "tractionDemand": 82,
       "overtakingDifficulty": 26,
       "tireWearSeverity": 78,
-      "reliabilityStress": 50,
+      "reliabilityStress": 76,
       "setupComplexity": 68,
       "pitStrategySensitivity": 50,
       "safetyCarCautionRisk": 50,
-      "overallTrackDifficulty": 63,
+      "overallTrackDifficulty": 72,
       "winnerBaseline": 50
     },
     "ovalSubtype": "Speedway"

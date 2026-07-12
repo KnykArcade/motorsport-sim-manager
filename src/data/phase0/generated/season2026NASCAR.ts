@@ -14,7 +14,7 @@ export const season2026NASCARPhase0: Phase0SeasonBundle = {
       "trackId": "TRK_NASCAR_DAYTONA",
       "trackName": "Daytona International Speedway",
       "laps": 200,
-      "distanceKm": 804.67
+      "distanceKm": 804.7
     },
     {
       "round": 2,
@@ -22,7 +22,7 @@ export const season2026NASCARPhase0: Phase0SeasonBundle = {
       "trackId": "TRK_NASCAR_ATLANTA",
       "trackName": "EchoPark Speedway",
       "laps": 260,
-      "distanceKm": 644.38
+      "distanceKm": 644.4
     },
     {
       "round": 3,
@@ -30,7 +30,7 @@ export const season2026NASCARPhase0: Phase0SeasonBundle = {
       "trackId": "TRK_NASCAR_COTA",
       "trackName": "Circuit of the Americas",
       "laps": 95,
-      "distanceKm": 523.792
+      "distanceKm": 366.9
     },
     {
       "round": 4,
@@ -38,7 +38,7 @@ export const season2026NASCARPhase0: Phase0SeasonBundle = {
       "trackId": "TRK_NASCAR_PHOENIX",
       "trackName": "Phoenix Raceway",
       "laps": 312,
-      "distanceKm": 502.114
+      "distanceKm": 502.1
     },
     {
       "round": 5,
@@ -46,7 +46,7 @@ export const season2026NASCARPhase0: Phase0SeasonBundle = {
       "trackId": "TRK_NASCAR_LAS_VEGAS",
       "trackName": "Las Vegas Motor Speedway",
       "laps": 267,
-      "distanceKm": 644.541
+      "distanceKm": 644.5
     },
     {
       "round": 6,
@@ -54,7 +54,7 @@ export const season2026NASCARPhase0: Phase0SeasonBundle = {
       "trackId": "TRK_NASCAR_DARLINGTON",
       "trackName": "Darlington Raceway",
       "laps": 293,
-      "distanceKm": 644.119
+      "distanceKm": 644.1
     },
     {
       "round": 7,
@@ -62,7 +62,7 @@ export const season2026NASCARPhase0: Phase0SeasonBundle = {
       "trackId": "TRK_NASCAR_MARTINSVILLE",
       "trackName": "Martinsville Speedway",
       "laps": 400,
-      "distanceKm": 338.605
+      "distanceKm": 338.6
     },
     {
       "round": 8,
@@ -70,7 +70,7 @@ export const season2026NASCARPhase0: Phase0SeasonBundle = {
       "trackId": "TRK_NASCAR_BRISTOL",
       "trackName": "Bristol Motor Speedway",
       "laps": 500,
-      "distanceKm": 428.889
+      "distanceKm": 428.9
     },
     {
       "round": 9,
@@ -78,7 +78,7 @@ export const season2026NASCARPhase0: Phase0SeasonBundle = {
       "trackId": "TRK_NASCAR_KANSAS",
       "trackName": "Kansas Speedway",
       "laps": 267,
-      "distanceKm": 644.541
+      "distanceKm": 644.5
     },
     {
       "round": 10,
@@ -86,7 +86,7 @@ export const season2026NASCARPhase0: Phase0SeasonBundle = {
       "trackId": "TRK_NASCAR_TALLADEGA",
       "trackName": "Talladega Superspeedway",
       "laps": 188,
-      "distanceKm": 804.799
+      "distanceKm": 804.8
     },
     {
       "round": 11,
@@ -94,7 +94,7 @@ export const season2026NASCARPhase0: Phase0SeasonBundle = {
       "trackId": "TRK_NASCAR_TEXAS",
       "trackName": "Texas Motor Speedway",
       "laps": 267,
-      "distanceKm": 644.541
+      "distanceKm": 644.5
     },
     {
       "round": 12,
@@ -102,7 +102,7 @@ export const season2026NASCARPhase0: Phase0SeasonBundle = {
       "trackId": "TRK_NASCAR_WATKINS_GLEN",
       "trackName": "Watkins Glen International",
       "laps": 100,
-      "distanceKm": 394.288
+      "distanceKm": 354.9
     },
     {
       "round": 13,
@@ -110,7 +110,7 @@ export const season2026NASCARPhase0: Phase0SeasonBundle = {
       "trackId": "TRK_NASCAR_CHARLOTTE",
       "trackName": "Charlotte Motor Speedway",
       "laps": 400,
-      "distanceKm": 965.604
+      "distanceKm": 965.6
     },
     {
       "round": 14,
@@ -118,7 +118,7 @@ export const season2026NASCARPhase0: Phase0SeasonBundle = {
       "trackId": "TRK_NASCAR_NASHVILLE",
       "trackName": "Nashville Superspeedway",
       "laps": 300,
-      "distanceKm": 643.575
+      "distanceKm": 643.6
     },
     {
       "round": 15,
@@ -126,7 +126,7 @@ export const season2026NASCARPhase0: Phase0SeasonBundle = {
       "trackId": "TRK_NASCAR_MICHIGAN",
       "trackName": "Michigan International Speedway",
       "laps": 200,
-      "distanceKm": 643.736
+      "distanceKm": 643.7
     },
     {
       "round": 16,
@@ -134,7 +134,7 @@ export const season2026NASCARPhase0: Phase0SeasonBundle = {
       "trackId": "TRK_NASCAR_POCONO",
       "trackName": "Pocono Raceway",
       "laps": 160,
-      "distanceKm": 643.736
+      "distanceKm": 643.7
     },
     {
       "round": 17,
@@ -142,7 +142,7 @@ export const season2026NASCARPhase0: Phase0SeasonBundle = {
       "trackId": "TRK_NASCAR_CORONADO_STREET",
       "trackName": "Coronado Street Course",
       "laps": 74,
-      "distanceKm": 404.91
+      "distanceKm": 410.4
     },
     {
       "round": 18,
@@ -150,7 +150,7 @@ export const season2026NASCARPhase0: Phase0SeasonBundle = {
       "trackId": "TRK_NASCAR_SONOMA",
       "trackName": "Sonoma Raceway",
       "laps": 110,
-      "distanceKm": 352.285
+      "distanceKm": 352.3
     },
     {
       "round": 19,
@@ -158,7 +158,7 @@ export const season2026NASCARPhase0: Phase0SeasonBundle = {
       "trackId": "TRK_NASCAR_CHICAGOLAND",
       "trackName": "Chicagoland Speedway",
       "laps": 267,
-      "distanceKm": 644.541
+      "distanceKm": 644.5
     },
     {
       "round": 20,
@@ -166,7 +166,7 @@ export const season2026NASCARPhase0: Phase0SeasonBundle = {
       "trackId": "TRK_NASCAR_ATLANTA",
       "trackName": "EchoPark Speedway",
       "laps": 260,
-      "distanceKm": 644.38
+      "distanceKm": 644.4
     },
     {
       "round": 21,
@@ -174,7 +174,7 @@ export const season2026NASCARPhase0: Phase0SeasonBundle = {
       "trackId": "TRK_NASCAR_NORTH_WILKESBORO",
       "trackName": "North Wilkesboro Speedway",
       "laps": 450,
-      "distanceKm": 452.627
+      "distanceKm": 452.6
     },
     {
       "round": 22,
@@ -182,7 +182,7 @@ export const season2026NASCARPhase0: Phase0SeasonBundle = {
       "trackId": "TRK_NASCAR_INDIANAPOLIS",
       "trackName": "Indianapolis Motor Speedway",
       "laps": 160,
-      "distanceKm": 643.736
+      "distanceKm": 643.7
     },
     {
       "round": 23,
@@ -190,7 +190,7 @@ export const season2026NASCARPhase0: Phase0SeasonBundle = {
       "trackId": "TRK_NASCAR_IOWA",
       "trackName": "Iowa Speedway",
       "laps": 350,
-      "distanceKm": 492.86
+      "distanceKm": 492.9
     },
     {
       "round": 24,
@@ -198,7 +198,7 @@ export const season2026NASCARPhase0: Phase0SeasonBundle = {
       "trackId": "TRK_NASCAR_RICHMOND",
       "trackName": "Richmond Raceway",
       "laps": 400,
-      "distanceKm": 482.802
+      "distanceKm": 482.8
     },
     {
       "round": 25,
@@ -206,7 +206,7 @@ export const season2026NASCARPhase0: Phase0SeasonBundle = {
       "trackId": "TRK_NASCAR_NEW_HAMPSHIRE",
       "trackName": "New Hampshire Motor Speedway",
       "laps": 301,
-      "distanceKm": 512.507
+      "distanceKm": 512.5
     },
     {
       "round": 26,
@@ -214,7 +214,7 @@ export const season2026NASCARPhase0: Phase0SeasonBundle = {
       "trackId": "TRK_NASCAR_DAYTONA",
       "trackName": "Daytona International Speedway",
       "laps": 160,
-      "distanceKm": 643.736
+      "distanceKm": 643.7
     },
     {
       "round": 27,
@@ -222,7 +222,7 @@ export const season2026NASCARPhase0: Phase0SeasonBundle = {
       "trackId": "TRK_NASCAR_DARLINGTON",
       "trackName": "Darlington Raceway",
       "laps": 366,
-      "distanceKm": 804.599
+      "distanceKm": 806.8
     },
     {
       "round": 28,
@@ -230,7 +230,7 @@ export const season2026NASCARPhase0: Phase0SeasonBundle = {
       "trackId": "TRK_NASCAR_WWT",
       "trackName": "World Wide Technology Raceway",
       "laps": 240,
-      "distanceKm": 482.802
+      "distanceKm": 482.8
     },
     {
       "round": 29,
@@ -238,7 +238,7 @@ export const season2026NASCARPhase0: Phase0SeasonBundle = {
       "trackId": "TRK_NASCAR_BRISTOL",
       "trackName": "Bristol Motor Speedway",
       "laps": 500,
-      "distanceKm": 428.889
+      "distanceKm": 428.9
     },
     {
       "round": 30,
@@ -246,7 +246,7 @@ export const season2026NASCARPhase0: Phase0SeasonBundle = {
       "trackId": "TRK_NASCAR_KANSAS",
       "trackName": "Kansas Speedway",
       "laps": 267,
-      "distanceKm": 644.541
+      "distanceKm": 644.5
     },
     {
       "round": 31,
@@ -254,7 +254,7 @@ export const season2026NASCARPhase0: Phase0SeasonBundle = {
       "trackId": "TRK_NASCAR_LAS_VEGAS",
       "trackName": "Las Vegas Motor Speedway",
       "laps": 267,
-      "distanceKm": 644.541
+      "distanceKm": 644.5
     },
     {
       "round": 32,
@@ -262,7 +262,7 @@ export const season2026NASCARPhase0: Phase0SeasonBundle = {
       "trackId": "TRK_NASCAR_CHARLOTTE",
       "trackName": "Charlotte Motor Speedway",
       "laps": 267,
-      "distanceKm": 644.541
+      "distanceKm": 644.5
     },
     {
       "round": 33,
@@ -270,7 +270,7 @@ export const season2026NASCARPhase0: Phase0SeasonBundle = {
       "trackId": "TRK_NASCAR_PHOENIX",
       "trackName": "Phoenix Raceway",
       "laps": 312,
-      "distanceKm": 502.114
+      "distanceKm": 502.1
     },
     {
       "round": 34,
@@ -278,7 +278,7 @@ export const season2026NASCARPhase0: Phase0SeasonBundle = {
       "trackId": "TRK_NASCAR_TALLADEGA",
       "trackName": "Talladega Superspeedway",
       "laps": 188,
-      "distanceKm": 804.799
+      "distanceKm": 804.8
     },
     {
       "round": 35,
@@ -286,7 +286,7 @@ export const season2026NASCARPhase0: Phase0SeasonBundle = {
       "trackId": "TRK_NASCAR_MARTINSVILLE",
       "trackName": "Martinsville Speedway",
       "laps": 500,
-      "distanceKm": 423.256
+      "distanceKm": 423.3
     },
     {
       "round": 36,
@@ -294,157 +294,157 @@ export const season2026NASCARPhase0: Phase0SeasonBundle = {
       "trackId": "TRK_NASCAR_HOMESTEAD",
       "trackName": "Homestead-Miami Speedway",
       "laps": 267,
-      "distanceKm": 644.541
+      "distanceKm": 644.5
     }
   ],
   "standings": [
     {
       "driverId": "driver-nascar-2026-denny-hamlin",
-      "teamId": "NASCAR_2026_TEAM_JOE_GIBBS_RACING",
+      "teamId": "NASCAR_2026_TEAM_JOE_GIBBS_RACING_TEAM_1",
       "position": 1,
       "points": 764.0
     },
     {
       "driverId": "driver-nascar-2026-tyler-reddick",
-      "teamId": "NASCAR_2026_TEAM_23XI_RACING",
+      "teamId": "NASCAR_2026_TEAM_23XI_RACING_TEAM_1",
       "position": 2,
       "points": 720.0
     },
     {
       "driverId": "driver-nascar-2026-ryan-blaney",
-      "teamId": "NASCAR_2026_TEAM_TEAM_PENSKE",
+      "teamId": "NASCAR_2026_TEAM_TEAM_PENSKE_TEAM_1",
       "position": 3,
       "points": 651.0
     },
     {
       "driverId": "driver-nascar-2026-ty-gibbs",
-      "teamId": "NASCAR_2026_TEAM_JOE_GIBBS_RACING",
+      "teamId": "NASCAR_2026_TEAM_JOE_GIBBS_RACING_TEAM_2",
       "position": 4,
       "points": 627.0
     },
     {
       "driverId": "driver-nascar-2026-chase-elliott",
-      "teamId": "NASCAR_2026_TEAM_HENDRICK_MOTORSPORTS",
+      "teamId": "NASCAR_2026_TEAM_HENDRICK_MOTORSPORTS_TEAM_1",
       "position": 5,
       "points": 584.0
     },
     {
       "driverId": "driver-nascar-2026-kyle-larson",
-      "teamId": "NASCAR_2026_TEAM_HENDRICK_MOTORSPORTS",
+      "teamId": "NASCAR_2026_TEAM_HENDRICK_MOTORSPORTS_TEAM_1",
       "position": 6,
       "points": 583.0
     },
     {
       "driverId": "driver-nascar-2026-chris-buescher",
-      "teamId": "NASCAR_2026_TEAM_RFK_RACING",
+      "teamId": "NASCAR_2026_TEAM_RFK_RACING_TEAM_1",
       "position": 7,
       "points": 541.0
     },
     {
       "driverId": "driver-nascar-2026-chase-briscoe",
-      "teamId": "NASCAR_2026_TEAM_JOE_GIBBS_RACING",
+      "teamId": "NASCAR_2026_TEAM_JOE_GIBBS_RACING_TEAM_1",
       "position": 8,
       "points": 538.0
     },
     {
       "driverId": "driver-nascar-2026-carson-hocevar",
-      "teamId": "NASCAR_2026_TEAM_SPIRE_MOTORSPORTS",
+      "teamId": "NASCAR_2026_TEAM_SPIRE_MOTORSPORTS_TEAM_2",
       "position": 9,
       "points": 524.0
     },
     {
       "driverId": "driver-nascar-2026-christopher-bell",
-      "teamId": "NASCAR_2026_TEAM_JOE_GIBBS_RACING",
+      "teamId": "NASCAR_2026_TEAM_JOE_GIBBS_RACING_TEAM_2",
       "position": 10,
       "points": 512.0
     },
     {
       "driverId": "driver-nascar-2026-daniel-suarez",
-      "teamId": "NASCAR_2026_TEAM_SPIRE_MOTORSPORTS",
+      "teamId": "NASCAR_2026_TEAM_SPIRE_MOTORSPORTS_TEAM_1",
       "position": 11,
       "points": 507.0
     },
     {
       "driverId": "driver-nascar-2026-william-byron",
-      "teamId": "NASCAR_2026_TEAM_HENDRICK_MOTORSPORTS",
+      "teamId": "NASCAR_2026_TEAM_HENDRICK_MOTORSPORTS_TEAM_2",
       "position": 12,
       "points": 499.0
     },
     {
       "driverId": "driver-nascar-2026-bubba-wallace",
-      "teamId": "NASCAR_2026_TEAM_23XI_RACING",
+      "teamId": "NASCAR_2026_TEAM_23XI_RACING_TEAM_1",
       "position": 13,
       "points": 484.0
     },
     {
       "driverId": "driver-nascar-2026-shane-van-gisbergen",
-      "teamId": "NASCAR_2026_TEAM_TRACKHOUSE_RACING",
+      "teamId": "NASCAR_2026_TEAM_TRACKHOUSE_RACING_TEAM_2",
       "position": 14,
       "points": 437.0
     },
     {
       "driverId": "driver-nascar-2026-austin-cindric",
-      "teamId": "NASCAR_2026_TEAM_TEAM_PENSKE",
+      "teamId": "NASCAR_2026_TEAM_TEAM_PENSKE_TEAM_1",
       "position": 15,
       "points": 434.0
     },
     {
       "driverId": "driver-nascar-2026-erik-jones",
-      "teamId": "NASCAR_2026_TEAM_LEGACY_MOTOR_CLUB",
+      "teamId": "NASCAR_2026_TEAM_LEGACY_MOTOR_CLUB_TEAM_1",
       "position": 16,
       "points": 411.0
     },
     {
       "driverId": "driver-nascar-2026-ryan-preece",
-      "teamId": "NASCAR_2026_TEAM_RFK_RACING",
+      "teamId": "NASCAR_2026_TEAM_RFK_RACING_TEAM_2",
       "position": 17,
       "points": 407.0
     },
     {
       "driverId": "driver-nascar-2026-joey-logano",
-      "teamId": "NASCAR_2026_TEAM_TEAM_PENSKE",
+      "teamId": "NASCAR_2026_TEAM_TEAM_PENSKE_TEAM_2",
       "position": 18,
       "points": 395.0
     },
     {
       "driverId": "driver-nascar-2026-a-j-allmendinger",
-      "teamId": "NASCAR_2026_TEAM_KAULIG_RACING",
+      "teamId": "NASCAR_2026_TEAM_KAULIG_RACING_TEAM_1",
       "position": 19,
       "points": 395.0
     },
     {
       "driverId": "driver-nascar-2026-brad-keselowski",
-      "teamId": "NASCAR_2026_TEAM_RFK_RACING",
+      "teamId": "NASCAR_2026_TEAM_RFK_RACING_TEAM_1",
       "position": 20,
       "points": 392.0
     },
     {
       "driverId": "driver-nascar-2026-michael-mcdowell",
-      "teamId": "NASCAR_2026_TEAM_SPIRE_MOTORSPORTS",
+      "teamId": "NASCAR_2026_TEAM_SPIRE_MOTORSPORTS_TEAM_1",
       "position": 21,
       "points": 377.0
     },
     {
       "driverId": "driver-nascar-2026-ross-chastain",
-      "teamId": "NASCAR_2026_TEAM_TRACKHOUSE_RACING",
+      "teamId": "NASCAR_2026_TEAM_TRACKHOUSE_RACING_TEAM_1",
       "position": 22,
       "points": 375.0
     },
     {
       "driverId": "driver-nascar-2026-zane-smith",
-      "teamId": "NASCAR_2026_TEAM_FRONT_ROW_MOTORSPORTS",
+      "teamId": "NASCAR_2026_TEAM_FRONT_ROW_MOTORSPORTS_TEAM_2",
       "position": 23,
       "points": 349.0
     },
     {
       "driverId": "driver-nascar-2026-riley-herbst",
-      "teamId": "NASCAR_2026_TEAM_23XI_RACING",
+      "teamId": "NASCAR_2026_TEAM_23XI_RACING_TEAM_2",
       "position": 24,
       "points": 348.0
     },
     {
       "driverId": "driver-nascar-2026-todd-gilliland",
-      "teamId": "NASCAR_2026_TEAM_FRONT_ROW_MOTORSPORTS",
+      "teamId": "NASCAR_2026_TEAM_FRONT_ROW_MOTORSPORTS_TEAM_1",
       "position": 25,
       "points": 335.0
     },
@@ -456,25 +456,25 @@ export const season2026NASCARPhase0: Phase0SeasonBundle = {
     },
     {
       "driverId": "driver-nascar-2026-john-hunter-nemechek",
-      "teamId": "NASCAR_2026_TEAM_LEGACY_MOTOR_CLUB",
+      "teamId": "NASCAR_2026_TEAM_LEGACY_MOTOR_CLUB_TEAM_1",
       "position": 27,
       "points": 324.0
     },
     {
       "driverId": "driver-nascar-2026-austin-dillon",
-      "teamId": "NASCAR_2026_TEAM_RICHARD_CHILDRESS_RACING",
+      "teamId": "NASCAR_2026_TEAM_RICHARD_CHILDRESS_RACING_TEAM_1",
       "position": 28,
       "points": 293.0
     },
     {
       "driverId": "driver-nascar-2026-alex-bowman",
-      "teamId": "NASCAR_2026_TEAM_HENDRICK_MOTORSPORTS",
+      "teamId": "NASCAR_2026_TEAM_HENDRICK_MOTORSPORTS_TEAM_2",
       "position": 29,
       "points": 266.0
     },
     {
       "driverId": "driver-nascar-2026-noah-gragson",
-      "teamId": "NASCAR_2026_TEAM_FRONT_ROW_MOTORSPORTS",
+      "teamId": "NASCAR_2026_TEAM_FRONT_ROW_MOTORSPORTS_TEAM_1",
       "position": 30,
       "points": 231.0
     },
@@ -486,7 +486,7 @@ export const season2026NASCARPhase0: Phase0SeasonBundle = {
     },
     {
       "driverId": "driver-nascar-2026-ty-dillon",
-      "teamId": "NASCAR_2026_TEAM_KAULIG_RACING",
+      "teamId": "NASCAR_2026_TEAM_KAULIG_RACING_TEAM_1",
       "position": 32,
       "points": 221.0
     },
@@ -498,7 +498,7 @@ export const season2026NASCARPhase0: Phase0SeasonBundle = {
     },
     {
       "driverId": "driver-nascar-2026-connor-zilisch",
-      "teamId": "NASCAR_2026_TEAM_TRACKHOUSE_RACING",
+      "teamId": "NASCAR_2026_TEAM_TRACKHOUSE_RACING_TEAM_1",
       "position": 34,
       "points": 199.0
     },
@@ -510,7 +510,7 @@ export const season2026NASCARPhase0: Phase0SeasonBundle = {
     },
     {
       "driverId": "driver-nascar-2026-kevin-magnussen",
-      "teamId": "NASCAR_2026_TEAM_TRACKHOUSE_RACING",
+      "teamId": "NASCAR_2026_TEAM_TRACKHOUSE_RACING_TEAM_2",
       "position": 36,
       "points": 11.0
     },
@@ -522,7 +522,7 @@ export const season2026NASCARPhase0: Phase0SeasonBundle = {
     },
     {
       "driverId": "driver-nascar-2026-jimmie-johnson",
-      "teamId": "NASCAR_2026_TEAM_LEGACY_MOTOR_CLUB",
+      "teamId": "NASCAR_2026_TEAM_LEGACY_MOTOR_CLUB_TEAM_2",
       "position": 38,
       "points": 9.0
     },
@@ -540,13 +540,13 @@ export const season2026NASCARPhase0: Phase0SeasonBundle = {
     },
     {
       "driverId": "driver-nascar-2026-corey-heim",
-      "teamId": "NASCAR_2026_TEAM_23XI_RACING",
+      "teamId": "NASCAR_2026_TEAM_23XI_RACING_TEAM_2",
       "position": 0,
       "points": 0.0
     },
     {
       "driverId": "driver-nascar-2026-austin-hill",
-      "teamId": "NASCAR_2026_TEAM_RICHARD_CHILDRESS_RACING",
+      "teamId": "NASCAR_2026_TEAM_RICHARD_CHILDRESS_RACING_TEAM_1",
       "position": 0,
       "points": 0.0
     },
@@ -558,7 +558,7 @@ export const season2026NASCARPhase0: Phase0SeasonBundle = {
     },
     {
       "driverId": "driver-nascar-2026-justin-allgaier",
-      "teamId": "NASCAR_2026_TEAM_HENDRICK_MOTORSPORTS",
+      "teamId": "NASCAR_2026_TEAM_HENDRICK_MOTORSPORTS_TEAM_2",
       "position": 0,
       "points": 0.0
     },
@@ -570,7 +570,7 @@ export const season2026NASCARPhase0: Phase0SeasonBundle = {
     },
     {
       "driverId": "driver-nascar-2026-jesse-love",
-      "teamId": "NASCAR_2026_TEAM_RICHARD_CHILDRESS_RACING",
+      "teamId": "NASCAR_2026_TEAM_RICHARD_CHILDRESS_RACING_TEAM_2",
       "position": 0,
       "points": 0.0
     },
@@ -588,7 +588,7 @@ export const season2026NASCARPhase0: Phase0SeasonBundle = {
     },
     {
       "driverId": "driver-nascar-2026-anthony-alfredo",
-      "teamId": "NASCAR_2026_TEAM_HENDRICK_MOTORSPORTS",
+      "teamId": "NASCAR_2026_TEAM_HENDRICK_MOTORSPORTS_TEAM_2",
       "position": 0,
       "points": 0.0
     },
@@ -606,31 +606,31 @@ export const season2026NASCARPhase0: Phase0SeasonBundle = {
     },
     {
       "driverId": "driver-nascar-2026-chandler-smith",
-      "teamId": "NASCAR_2026_TEAM_FRONT_ROW_MOTORSPORTS",
+      "teamId": "NASCAR_2026_TEAM_FRONT_ROW_MOTORSPORTS_TEAM_2",
       "position": 0,
       "points": 0.0
     },
     {
       "driverId": "driver-nascar-2026-corey-lajoie",
-      "teamId": "NASCAR_2026_TEAM_RFK_RACING",
+      "teamId": "NASCAR_2026_TEAM_RFK_RACING_TEAM_2",
       "position": 0,
       "points": 0.0
     },
     {
       "driverId": "driver-nascar-2026-myatt-snider",
-      "teamId": "NASCAR_2026_TEAM_HENDRICK_MOTORSPORTS",
+      "teamId": "NASCAR_2026_TEAM_HENDRICK_MOTORSPORTS_TEAM_2",
       "position": 0,
       "points": 0.0
     },
     {
       "driverId": "driver-nascar-2026-brent-crews",
-      "teamId": "NASCAR_2026_TEAM_JOE_GIBBS_RACING",
+      "teamId": "NASCAR_2026_TEAM_JOE_GIBBS_RACING_TEAM_2",
       "position": 0,
       "points": 0.0
     },
     {
       "driverId": "driver-nascar-2026-kyle-busch",
-      "teamId": "NASCAR_2026_TEAM_RICHARD_CHILDRESS_RACING",
+      "teamId": "NASCAR_2026_TEAM_RICHARD_CHILDRESS_RACING_TEAM_1",
       "position": 0,
       "points": 0.0
     }
@@ -672,6 +672,13 @@ export const season2026NASCARPhase0: Phase0SeasonBundle = {
       "engine": "Chevrolet"
     },
     {
+      "teamId": "NASCAR_2026_TEAM_BEARD_MOTORSPORTS",
+      "carNumber": "62",
+      "driverId": "driver-nascar-2026-casey-mears",
+      "chassis": "Chevrolet",
+      "engine": "Chevrolet"
+    },
+    {
       "teamId": "NASCAR_2026_TEAM_FRONT_ROW_MOTORSPORTS_TEAM_1",
       "carNumber": "4",
       "driverId": "driver-nascar-2026-noah-gragson",
@@ -700,9 +707,37 @@ export const season2026NASCARPhase0: Phase0SeasonBundle = {
       "engine": "Ford"
     },
     {
-      "teamId": "NASCAR_2026_TEAM_GARAGE_66",
+      "teamId": "NASCAR_2026_TEAM_GARAGE_66_TEAM_1",
       "carNumber": "66",
       "driverId": "driver-nascar-2026-casey-mears",
+      "chassis": "Ford",
+      "engine": "Ford"
+    },
+    {
+      "teamId": "NASCAR_2026_TEAM_GARAGE_66_TEAM_1",
+      "carNumber": "66",
+      "driverId": "driver-nascar-2026-carl-long",
+      "chassis": "Ford",
+      "engine": "Ford"
+    },
+    {
+      "teamId": "NASCAR_2026_TEAM_GARAGE_66_TEAM_2",
+      "carNumber": "66",
+      "driverId": "driver-nascar-2026-timmy-hill",
+      "chassis": "Ford",
+      "engine": "Ford"
+    },
+    {
+      "teamId": "NASCAR_2026_TEAM_GARAGE_66_TEAM_2",
+      "carNumber": "66",
+      "driverId": "driver-nascar-2026-chad-finchum",
+      "chassis": "Ford",
+      "engine": "Ford"
+    },
+    {
+      "teamId": "NASCAR_2026_TEAM_GARAGE_66_TEAM_3",
+      "carNumber": "66",
+      "driverId": "driver-nascar-2026-josh-bilicki",
       "chassis": "Ford",
       "engine": "Ford"
     },
@@ -728,16 +763,30 @@ export const season2026NASCARPhase0: Phase0SeasonBundle = {
       "engine": "Chevrolet"
     },
     {
-      "teamId": "NASCAR_2026_TEAM_HENDRICK_MOTORSPORTS_TEAM_2",
+      "teamId": "NASCAR_2026_TEAM_HENDRICK_MOTORSPORTS_TEAM_2_TEAM_1",
       "carNumber": "24",
       "driverId": "driver-nascar-2026-william-byron",
       "chassis": "Chevrolet",
       "engine": "Chevrolet"
     },
     {
-      "teamId": "NASCAR_2026_TEAM_HENDRICK_MOTORSPORTS_TEAM_2",
+      "teamId": "NASCAR_2026_TEAM_HENDRICK_MOTORSPORTS_TEAM_2_TEAM_1",
       "carNumber": "48",
       "driverId": "driver-nascar-2026-alex-bowman",
+      "chassis": "Chevrolet",
+      "engine": "Chevrolet"
+    },
+    {
+      "teamId": "NASCAR_2026_TEAM_HENDRICK_MOTORSPORTS_TEAM_2_TEAM_2",
+      "carNumber": "48",
+      "driverId": "driver-nascar-2026-anthony-alfredo",
+      "chassis": "Chevrolet",
+      "engine": "Chevrolet"
+    },
+    {
+      "teamId": "NASCAR_2026_TEAM_HENDRICK_MOTORSPORTS_TEAM_2_TEAM_2",
+      "carNumber": "48",
+      "driverId": "driver-nascar-2026-justin-allgaier",
       "chassis": "Chevrolet",
       "engine": "Chevrolet"
     },
@@ -784,14 +833,14 @@ export const season2026NASCARPhase0: Phase0SeasonBundle = {
       "engine": "Toyota"
     },
     {
-      "teamId": "NASCAR_2026_TEAM_KAULIG_RACING",
+      "teamId": "NASCAR_2026_TEAM_KAULIG_RACING_TEAM_1",
       "carNumber": "10",
       "driverId": "driver-nascar-2026-ty-dillon",
       "chassis": "Chevrolet",
       "engine": "Chevrolet"
     },
     {
-      "teamId": "NASCAR_2026_TEAM_KAULIG_RACING",
+      "teamId": "NASCAR_2026_TEAM_KAULIG_RACING_TEAM_1",
       "carNumber": "16",
       "driverId": "driver-nascar-2026-a-j-allmendinger",
       "chassis": "Chevrolet",
@@ -819,9 +868,23 @@ export const season2026NASCARPhase0: Phase0SeasonBundle = {
       "engine": "Toyota"
     },
     {
-      "teamId": "NASCAR_2026_TEAM_LIVE_FAST_MOTORSPORTS",
+      "teamId": "NASCAR_2026_TEAM_LIVE_FAST_MOTORSPORTS_TEAM_1",
       "carNumber": "78",
       "driverId": "driver-nascar-2026-b-j-mcleod",
+      "chassis": "Chevrolet",
+      "engine": "Chevrolet"
+    },
+    {
+      "teamId": "NASCAR_2026_TEAM_LIVE_FAST_MOTORSPORTS_TEAM_1",
+      "carNumber": "78",
+      "driverId": "driver-nascar-2026-daniel-dye",
+      "chassis": "Chevrolet",
+      "engine": "Chevrolet"
+    },
+    {
+      "teamId": "NASCAR_2026_TEAM_LIVE_FAST_MOTORSPORTS_TEAM_2",
+      "carNumber": "78",
+      "driverId": "driver-nascar-2026-katherine-legge",
       "chassis": "Chevrolet",
       "engine": "Chevrolet"
     },
@@ -829,6 +892,13 @@ export const season2026NASCARPhase0: Phase0SeasonBundle = {
       "teamId": "NASCAR_2026_TEAM_NY_RACING_TEAM",
       "carNumber": "44",
       "driverId": "driver-nascar-2026-j-j-yeley",
+      "chassis": "Chevrolet",
+      "engine": "Chevrolet"
+    },
+    {
+      "teamId": "NASCAR_2026_TEAM_NY_RACING_TEAM",
+      "carNumber": "44",
+      "driverId": "driver-nascar-2026-joey-gase",
       "chassis": "Chevrolet",
       "engine": "Chevrolet"
     },
@@ -861,16 +931,23 @@ export const season2026NASCARPhase0: Phase0SeasonBundle = {
       "engine": "Ford"
     },
     {
-      "teamId": "NASCAR_2026_TEAM_RICHARD_CHILDRESS_RACING_TEAM_1",
+      "teamId": "NASCAR_2026_TEAM_RICHARD_CHILDRESS_RACING_TEAM_1_TEAM_1",
       "carNumber": "3",
       "driverId": "driver-nascar-2026-austin-dillon",
       "chassis": "Chevrolet",
       "engine": "Chevrolet"
     },
     {
-      "teamId": "NASCAR_2026_TEAM_RICHARD_CHILDRESS_RACING_TEAM_1",
+      "teamId": "NASCAR_2026_TEAM_RICHARD_CHILDRESS_RACING_TEAM_1_TEAM_1",
       "carNumber": "8/33",
       "driverId": "driver-nascar-2026-kyle-busch",
+      "chassis": "Chevrolet",
+      "engine": "Chevrolet"
+    },
+    {
+      "teamId": "NASCAR_2026_TEAM_RICHARD_CHILDRESS_RACING_TEAM_1_TEAM_2",
+      "carNumber": "8/33",
+      "driverId": "driver-nascar-2026-austin-hill",
       "chassis": "Chevrolet",
       "engine": "Chevrolet"
     },
@@ -968,28 +1045,8 @@ export const season2026NASCARPhase0: Phase0SeasonBundle = {
   ],
   "driverAssignments": [
     {
-      "entityId": "driver-nascar-2026-chris-buescher",
-      "label": "Chris Buescher",
-      "sourceSheet": "Driver_Ratings"
-    },
-    {
-      "entityId": "driver-nascar-2026-todd-gilliland",
-      "label": "Todd Gilliland",
-      "sourceSheet": "Driver_Ratings"
-    },
-    {
-      "entityId": "driver-nascar-2026-joey-gase",
-      "label": "Joey Gase",
-      "sourceSheet": "Driver_Ratings"
-    },
-    {
-      "entityId": "driver-nascar-2026-justin-allgaier",
-      "label": "Justin Allgaier",
-      "sourceSheet": "Driver_Ratings"
-    },
-    {
-      "entityId": "driver-nascar-2026-chase-elliott",
-      "label": "Chase Elliott",
+      "entityId": "driver-nascar-2026-denny-hamlin",
+      "label": "Denny Hamlin",
       "sourceSheet": "Driver_Ratings"
     },
     {
@@ -998,13 +1055,18 @@ export const season2026NASCARPhase0: Phase0SeasonBundle = {
       "sourceSheet": "Driver_Ratings"
     },
     {
-      "entityId": "driver-nascar-2026-joey-logano",
-      "label": "Joey Logano",
+      "entityId": "driver-nascar-2026-ryan-blaney",
+      "label": "Ryan Blaney",
       "sourceSheet": "Driver_Ratings"
     },
     {
-      "entityId": "driver-nascar-2026-chad-finchum",
-      "label": "Chad Finchum",
+      "entityId": "driver-nascar-2026-ty-gibbs",
+      "label": "Ty Gibbs",
+      "sourceSheet": "Driver_Ratings"
+    },
+    {
+      "entityId": "driver-nascar-2026-chase-elliott",
+      "label": "Chase Elliott",
       "sourceSheet": "Driver_Ratings"
     },
     {
@@ -1013,8 +1075,13 @@ export const season2026NASCARPhase0: Phase0SeasonBundle = {
       "sourceSheet": "Driver_Ratings"
     },
     {
-      "entityId": "driver-nascar-2026-christopher-bell",
-      "label": "Christopher Bell",
+      "entityId": "driver-nascar-2026-chris-buescher",
+      "label": "Chris Buescher",
+      "sourceSheet": "Driver_Ratings"
+    },
+    {
+      "entityId": "driver-nascar-2026-chase-briscoe",
+      "label": "Chase Briscoe",
       "sourceSheet": "Driver_Ratings"
     },
     {
@@ -1023,48 +1090,13 @@ export const season2026NASCARPhase0: Phase0SeasonBundle = {
       "sourceSheet": "Driver_Ratings"
     },
     {
-      "entityId": "driver-nascar-2026-josh-berry",
-      "label": "Josh Berry",
+      "entityId": "driver-nascar-2026-christopher-bell",
+      "label": "Christopher Bell",
       "sourceSheet": "Driver_Ratings"
     },
     {
-      "entityId": "driver-nascar-2026-ricky-stenhouse-jr",
-      "label": "Ricky Stenhouse Jr.",
-      "sourceSheet": "Driver_Ratings"
-    },
-    {
-      "entityId": "driver-nascar-2026-jimmie-johnson",
-      "label": "Jimmie Johnson",
-      "sourceSheet": "Driver_Ratings"
-    },
-    {
-      "entityId": "driver-nascar-2026-michael-mcdowell",
-      "label": "Michael McDowell",
-      "sourceSheet": "Driver_Ratings"
-    },
-    {
-      "entityId": "driver-nascar-2026-casey-mears",
-      "label": "Casey Mears",
-      "sourceSheet": "Driver_Ratings"
-    },
-    {
-      "entityId": "driver-nascar-2026-cody-ware",
-      "label": "Cody Ware",
-      "sourceSheet": "Driver_Ratings"
-    },
-    {
-      "entityId": "driver-nascar-2026-riley-herbst",
-      "label": "Riley Herbst",
-      "sourceSheet": "Driver_Ratings"
-    },
-    {
-      "entityId": "driver-nascar-2026-corey-heim",
-      "label": "Corey Heim",
-      "sourceSheet": "Driver_Ratings"
-    },
-    {
-      "entityId": "driver-nascar-2026-kyle-busch",
-      "label": "Kyle Busch",
+      "entityId": "driver-nascar-2026-daniel-suarez",
+      "label": "Daniel Suarez",
       "sourceSheet": "Driver_Ratings"
     },
     {
@@ -1073,53 +1105,18 @@ export const season2026NASCARPhase0: Phase0SeasonBundle = {
       "sourceSheet": "Driver_Ratings"
     },
     {
-      "entityId": "driver-nascar-2026-john-hunter-nemechek",
-      "label": "John Hunter Nemechek",
-      "sourceSheet": "Driver_Ratings"
-    },
-    {
-      "entityId": "driver-nascar-2026-jesse-love",
-      "label": "Jesse Love",
-      "sourceSheet": "Driver_Ratings"
-    },
-    {
-      "entityId": "driver-nascar-2026-corey-lajoie",
-      "label": "Corey LaJoie",
-      "sourceSheet": "Driver_Ratings"
-    },
-    {
-      "entityId": "driver-nascar-2026-anthony-alfredo",
-      "label": "Anthony Alfredo",
-      "sourceSheet": "Driver_Ratings"
-    },
-    {
-      "entityId": "driver-nascar-2026-b-j-mcleod",
-      "label": "B. J. McLeod",
-      "sourceSheet": "Driver_Ratings"
-    },
-    {
-      "entityId": "driver-nascar-2026-ryan-preece",
-      "label": "Ryan Preece",
-      "sourceSheet": "Driver_Ratings"
-    },
-    {
-      "entityId": "driver-nascar-2026-connor-zilisch",
-      "label": "Connor Zilisch",
-      "sourceSheet": "Driver_Ratings"
-    },
-    {
-      "entityId": "driver-nascar-2026-cole-custer",
-      "label": "Cole Custer",
-      "sourceSheet": "Driver_Ratings"
-    },
-    {
       "entityId": "driver-nascar-2026-bubba-wallace",
       "label": "Bubba Wallace",
       "sourceSheet": "Driver_Ratings"
     },
     {
-      "entityId": "driver-nascar-2026-j-j-yeley",
-      "label": "J. J. Yeley",
+      "entityId": "driver-nascar-2026-shane-van-gisbergen",
+      "label": "Shane van Gisbergen",
+      "sourceSheet": "Driver_Ratings"
+    },
+    {
+      "entityId": "driver-nascar-2026-austin-cindric",
+      "label": "Austin Cindric",
       "sourceSheet": "Driver_Ratings"
     },
     {
@@ -1128,28 +1125,63 @@ export const season2026NASCARPhase0: Phase0SeasonBundle = {
       "sourceSheet": "Driver_Ratings"
     },
     {
+      "entityId": "driver-nascar-2026-ryan-preece",
+      "label": "Ryan Preece",
+      "sourceSheet": "Driver_Ratings"
+    },
+    {
+      "entityId": "driver-nascar-2026-joey-logano",
+      "label": "Joey Logano",
+      "sourceSheet": "Driver_Ratings"
+    },
+    {
       "entityId": "driver-nascar-2026-a-j-allmendinger",
       "label": "A. J. Allmendinger",
       "sourceSheet": "Driver_Ratings"
     },
     {
-      "entityId": "driver-nascar-2026-brent-crews",
-      "label": "Brent Crews",
+      "entityId": "driver-nascar-2026-brad-keselowski",
+      "label": "Brad Keselowski",
       "sourceSheet": "Driver_Ratings"
     },
     {
-      "entityId": "driver-nascar-2026-ryan-blaney",
-      "label": "Ryan Blaney",
+      "entityId": "driver-nascar-2026-michael-mcdowell",
+      "label": "Michael McDowell",
       "sourceSheet": "Driver_Ratings"
     },
     {
-      "entityId": "driver-nascar-2026-chandler-smith",
-      "label": "Chandler Smith",
+      "entityId": "driver-nascar-2026-ross-chastain",
+      "label": "Ross Chastain",
       "sourceSheet": "Driver_Ratings"
     },
     {
       "entityId": "driver-nascar-2026-zane-smith",
       "label": "Zane Smith",
+      "sourceSheet": "Driver_Ratings"
+    },
+    {
+      "entityId": "driver-nascar-2026-riley-herbst",
+      "label": "Riley Herbst",
+      "sourceSheet": "Driver_Ratings"
+    },
+    {
+      "entityId": "driver-nascar-2026-todd-gilliland",
+      "label": "Todd Gilliland",
+      "sourceSheet": "Driver_Ratings"
+    },
+    {
+      "entityId": "driver-nascar-2026-ricky-stenhouse-jr",
+      "label": "Ricky Stenhouse Jr.",
+      "sourceSheet": "Driver_Ratings"
+    },
+    {
+      "entityId": "driver-nascar-2026-john-hunter-nemechek",
+      "label": "John Hunter Nemechek",
+      "sourceSheet": "Driver_Ratings"
+    },
+    {
+      "entityId": "driver-nascar-2026-austin-dillon",
+      "label": "Austin Dillon",
       "sourceSheet": "Driver_Ratings"
     },
     {
@@ -1163,43 +1195,8 @@ export const season2026NASCARPhase0: Phase0SeasonBundle = {
       "sourceSheet": "Driver_Ratings"
     },
     {
-      "entityId": "driver-nascar-2026-kevin-magnussen",
-      "label": "Kevin Magnussen",
-      "sourceSheet": "Driver_Ratings"
-    },
-    {
-      "entityId": "driver-nascar-2026-timmy-hill",
-      "label": "Timmy Hill",
-      "sourceSheet": "Driver_Ratings"
-    },
-    {
-      "entityId": "driver-nascar-2026-ross-chastain",
-      "label": "Ross Chastain",
-      "sourceSheet": "Driver_Ratings"
-    },
-    {
-      "entityId": "driver-nascar-2026-shane-van-gisbergen",
-      "label": "Shane van Gisbergen",
-      "sourceSheet": "Driver_Ratings"
-    },
-    {
-      "entityId": "driver-nascar-2026-ty-gibbs",
-      "label": "Ty Gibbs",
-      "sourceSheet": "Driver_Ratings"
-    },
-    {
-      "entityId": "driver-nascar-2026-carl-long",
-      "label": "Carl Long",
-      "sourceSheet": "Driver_Ratings"
-    },
-    {
-      "entityId": "driver-nascar-2026-josh-bilicki",
-      "label": "Josh Bilicki",
-      "sourceSheet": "Driver_Ratings"
-    },
-    {
-      "entityId": "driver-nascar-2026-austin-hill",
-      "label": "Austin Hill",
+      "entityId": "driver-nascar-2026-josh-berry",
+      "label": "Josh Berry",
       "sourceSheet": "Driver_Ratings"
     },
     {
@@ -1208,23 +1205,33 @@ export const season2026NASCARPhase0: Phase0SeasonBundle = {
       "sourceSheet": "Driver_Ratings"
     },
     {
-      "entityId": "driver-nascar-2026-austin-dillon",
-      "label": "Austin Dillon",
+      "entityId": "driver-nascar-2026-cole-custer",
+      "label": "Cole Custer",
       "sourceSheet": "Driver_Ratings"
     },
     {
-      "entityId": "driver-nascar-2026-daniel-dye",
-      "label": "Daniel Dye",
+      "entityId": "driver-nascar-2026-connor-zilisch",
+      "label": "Connor Zilisch",
       "sourceSheet": "Driver_Ratings"
     },
     {
-      "entityId": "driver-nascar-2026-denny-hamlin",
-      "label": "Denny Hamlin",
+      "entityId": "driver-nascar-2026-cody-ware",
+      "label": "Cody Ware",
       "sourceSheet": "Driver_Ratings"
     },
     {
-      "entityId": "driver-nascar-2026-austin-cindric",
-      "label": "Austin Cindric",
+      "entityId": "driver-nascar-2026-kevin-magnussen",
+      "label": "Kevin Magnussen",
+      "sourceSheet": "Driver_Ratings"
+    },
+    {
+      "entityId": "driver-nascar-2026-casey-mears",
+      "label": "Casey Mears",
+      "sourceSheet": "Driver_Ratings"
+    },
+    {
+      "entityId": "driver-nascar-2026-jimmie-johnson",
+      "label": "Jimmie Johnson",
       "sourceSheet": "Driver_Ratings"
     },
     {
@@ -1233,35 +1240,160 @@ export const season2026NASCARPhase0: Phase0SeasonBundle = {
       "sourceSheet": "Driver_Ratings"
     },
     {
+      "entityId": "driver-nascar-2026-b-j-mcleod",
+      "label": "B. J. McLeod",
+      "sourceSheet": "Driver_Ratings"
+    },
+    {
+      "entityId": "driver-nascar-2026-corey-heim",
+      "label": "Corey Heim",
+      "sourceSheet": "Driver_Ratings"
+    },
+    {
+      "entityId": "driver-nascar-2026-austin-hill",
+      "label": "Austin Hill",
+      "sourceSheet": "Driver_Ratings"
+    },
+    {
+      "entityId": "driver-nascar-2026-j-j-yeley",
+      "label": "J. J. Yeley",
+      "sourceSheet": "Driver_Ratings"
+    },
+    {
+      "entityId": "driver-nascar-2026-justin-allgaier",
+      "label": "Justin Allgaier",
+      "sourceSheet": "Driver_Ratings"
+    },
+    {
+      "entityId": "driver-nascar-2026-daniel-dye",
+      "label": "Daniel Dye",
+      "sourceSheet": "Driver_Ratings"
+    },
+    {
+      "entityId": "driver-nascar-2026-jesse-love",
+      "label": "Jesse Love",
+      "sourceSheet": "Driver_Ratings"
+    },
+    {
+      "entityId": "driver-nascar-2026-chad-finchum",
+      "label": "Chad Finchum",
+      "sourceSheet": "Driver_Ratings"
+    },
+    {
+      "entityId": "driver-nascar-2026-joey-gase",
+      "label": "Joey Gase",
+      "sourceSheet": "Driver_Ratings"
+    },
+    {
+      "entityId": "driver-nascar-2026-anthony-alfredo",
+      "label": "Anthony Alfredo",
+      "sourceSheet": "Driver_Ratings"
+    },
+    {
+      "entityId": "driver-nascar-2026-josh-bilicki",
+      "label": "Josh Bilicki",
+      "sourceSheet": "Driver_Ratings"
+    },
+    {
+      "entityId": "driver-nascar-2026-timmy-hill",
+      "label": "Timmy Hill",
+      "sourceSheet": "Driver_Ratings"
+    },
+    {
+      "entityId": "driver-nascar-2026-chandler-smith",
+      "label": "Chandler Smith",
+      "sourceSheet": "Driver_Ratings"
+    },
+    {
+      "entityId": "driver-nascar-2026-corey-lajoie",
+      "label": "Corey LaJoie",
+      "sourceSheet": "Driver_Ratings"
+    },
+    {
       "entityId": "driver-nascar-2026-myatt-snider",
       "label": "Myatt Snider",
       "sourceSheet": "Driver_Ratings"
     },
     {
-      "entityId": "driver-nascar-2026-chase-briscoe",
-      "label": "Chase Briscoe",
+      "entityId": "driver-nascar-2026-brent-crews",
+      "label": "Brent Crews",
       "sourceSheet": "Driver_Ratings"
     },
     {
-      "entityId": "driver-nascar-2026-daniel-suarez",
-      "label": "Daniel Suarez",
-      "sourceSheet": "Driver_Ratings"
-    },
-    {
-      "entityId": "driver-nascar-2026-brad-keselowski",
-      "label": "Brad Keselowski",
+      "entityId": "driver-nascar-2026-kyle-busch",
+      "label": "Kyle Busch",
       "sourceSheet": "Driver_Ratings"
     }
   ],
   "teamAssignments": [
     {
-      "entityId": "NASCAR_2026_TEAM_HAAS_FACTORY_TEAM",
-      "label": "Haas Factory Team",
+      "entityId": "NASCAR_2026_TEAM_JOE_GIBBS_RACING_TEAM_1",
+      "label": "Joe Gibbs Racing Team 1",
       "sourceSheet": "Car_Ratings"
     },
     {
-      "entityId": "NASCAR_2026_TEAM_HENDRICK_MOTORSPORTS",
-      "label": "Hendrick Motorsports",
+      "entityId": "NASCAR_2026_TEAM_HENDRICK_MOTORSPORTS_TEAM_1",
+      "label": "Hendrick Motorsports Team 1",
+      "sourceSheet": "Car_Ratings"
+    },
+    {
+      "entityId": "NASCAR_2026_TEAM_23XI_RACING_TEAM_1",
+      "label": "23XI Racing Team 1",
+      "sourceSheet": "Car_Ratings"
+    },
+    {
+      "entityId": "NASCAR_2026_TEAM_JOE_GIBBS_RACING_TEAM_2",
+      "label": "Joe Gibbs Racing Team 2",
+      "sourceSheet": "Car_Ratings"
+    },
+    {
+      "entityId": "NASCAR_2026_TEAM_TEAM_PENSKE_TEAM_1",
+      "label": "Team Penske Team 1",
+      "sourceSheet": "Car_Ratings"
+    },
+    {
+      "entityId": "NASCAR_2026_TEAM_SPIRE_MOTORSPORTS_TEAM_2",
+      "label": "Spire Motorsports Team 2",
+      "sourceSheet": "Car_Ratings"
+    },
+    {
+      "entityId": "NASCAR_2026_TEAM_RFK_RACING_TEAM_1",
+      "label": "RFK Racing Team 1",
+      "sourceSheet": "Car_Ratings"
+    },
+    {
+      "entityId": "NASCAR_2026_TEAM_SPIRE_MOTORSPORTS_TEAM_1",
+      "label": "Spire Motorsports Team 1",
+      "sourceSheet": "Car_Ratings"
+    },
+    {
+      "entityId": "NASCAR_2026_TEAM_TEAM_PENSKE_TEAM_2",
+      "label": "Team Penske Team 2",
+      "sourceSheet": "Car_Ratings"
+    },
+    {
+      "entityId": "NASCAR_2026_TEAM_HENDRICK_MOTORSPORTS_TEAM_2",
+      "label": "Hendrick Motorsports Team 2",
+      "sourceSheet": "Car_Ratings"
+    },
+    {
+      "entityId": "NASCAR_2026_TEAM_LEGACY_MOTOR_CLUB_TEAM_1",
+      "label": "Legacy Motor Club Team 1",
+      "sourceSheet": "Car_Ratings"
+    },
+    {
+      "entityId": "NASCAR_2026_TEAM_RICHARD_CHILDRESS_RACING_TEAM_1",
+      "label": "Richard Childress Racing Team 1",
+      "sourceSheet": "Car_Ratings"
+    },
+    {
+      "entityId": "NASCAR_2026_TEAM_TRACKHOUSE_RACING_TEAM_2",
+      "label": "Trackhouse Racing Team 2",
+      "sourceSheet": "Car_Ratings"
+    },
+    {
+      "entityId": "NASCAR_2026_TEAM_KAULIG_RACING_TEAM_1",
+      "label": "Kaulig Racing Team 1",
       "sourceSheet": "Car_Ratings"
     },
     {
@@ -1270,43 +1402,13 @@ export const season2026NASCARPhase0: Phase0SeasonBundle = {
       "sourceSheet": "Car_Ratings"
     },
     {
-      "entityId": "NASCAR_2026_TEAM_KAULIG_RACING",
-      "label": "Kaulig Racing",
+      "entityId": "NASCAR_2026_TEAM_FRONT_ROW_MOTORSPORTS_TEAM_1",
+      "label": "Front Row Motorsports Team 1",
       "sourceSheet": "Car_Ratings"
     },
     {
-      "entityId": "NASCAR_2026_TEAM_RICHARD_CHILDRESS_RACING",
-      "label": "Richard Childress Racing",
-      "sourceSheet": "Car_Ratings"
-    },
-    {
-      "entityId": "NASCAR_2026_TEAM_RICK_WARE_RACING",
-      "label": "Rick Ware Racing",
-      "sourceSheet": "Car_Ratings"
-    },
-    {
-      "entityId": "NASCAR_2026_TEAM_SPIRE_MOTORSPORTS",
-      "label": "Spire Motorsports",
-      "sourceSheet": "Car_Ratings"
-    },
-    {
-      "entityId": "NASCAR_2026_TEAM_TRACKHOUSE_RACING",
-      "label": "Trackhouse Racing",
-      "sourceSheet": "Car_Ratings"
-    },
-    {
-      "entityId": "NASCAR_2026_TEAM_FRONT_ROW_MOTORSPORTS",
-      "label": "Front Row Motorsports",
-      "sourceSheet": "Car_Ratings"
-    },
-    {
-      "entityId": "NASCAR_2026_TEAM_RFK_RACING",
-      "label": "RFK Racing",
-      "sourceSheet": "Car_Ratings"
-    },
-    {
-      "entityId": "NASCAR_2026_TEAM_TEAM_PENSKE",
-      "label": "Team Penske",
+      "entityId": "NASCAR_2026_TEAM_TRACKHOUSE_RACING_TEAM_1",
+      "label": "Trackhouse Racing Team 1",
       "sourceSheet": "Car_Ratings"
     },
     {
@@ -1315,18 +1417,43 @@ export const season2026NASCARPhase0: Phase0SeasonBundle = {
       "sourceSheet": "Car_Ratings"
     },
     {
-      "entityId": "NASCAR_2026_TEAM_23XI_RACING",
-      "label": "23XI Racing",
+      "entityId": "NASCAR_2026_TEAM_HAAS_FACTORY_TEAM",
+      "label": "Haas Factory Team",
       "sourceSheet": "Car_Ratings"
     },
     {
-      "entityId": "NASCAR_2026_TEAM_JOE_GIBBS_RACING",
-      "label": "Joe Gibbs Racing",
+      "entityId": "NASCAR_2026_TEAM_23XI_RACING_TEAM_2",
+      "label": "23XI Racing Team 2",
       "sourceSheet": "Car_Ratings"
     },
     {
-      "entityId": "NASCAR_2026_TEAM_LEGACY_MOTOR_CLUB",
-      "label": "Legacy Motor Club",
+      "entityId": "NASCAR_2026_TEAM_RFK_RACING_TEAM_2",
+      "label": "RFK Racing Team 2",
+      "sourceSheet": "Car_Ratings"
+    },
+    {
+      "entityId": "NASCAR_2026_TEAM_RICK_WARE_RACING",
+      "label": "Rick Ware Racing",
+      "sourceSheet": "Car_Ratings"
+    },
+    {
+      "entityId": "NASCAR_2026_TEAM_LEGACY_MOTOR_CLUB_TEAM_2",
+      "label": "Legacy Motor Club Team 2",
+      "sourceSheet": "Car_Ratings"
+    },
+    {
+      "entityId": "NASCAR_2026_TEAM_GARAGE_66",
+      "label": "Garage 66",
+      "sourceSheet": "Car_Ratings"
+    },
+    {
+      "entityId": "NASCAR_2026_TEAM_LIVE_FAST_MOTORSPORTS",
+      "label": "Live Fast Motorsports",
+      "sourceSheet": "Car_Ratings"
+    },
+    {
+      "entityId": "NASCAR_2026_TEAM_FRONT_ROW_MOTORSPORTS_TEAM_2",
+      "label": "Front Row Motorsports Team 2",
       "sourceSheet": "Car_Ratings"
     },
     {
@@ -1340,18 +1467,13 @@ export const season2026NASCARPhase0: Phase0SeasonBundle = {
       "sourceSheet": "Car_Ratings"
     },
     {
-      "entityId": "NASCAR_2026_TEAM_LIVE_FAST_MOTORSPORTS",
-      "label": "Live Fast Motorsports",
+      "entityId": "NASCAR_2026_TEAM_RICHARD_CHILDRESS_RACING_TEAM_2",
+      "label": "Richard Childress Racing Team 2",
       "sourceSheet": "Car_Ratings"
     },
     {
       "entityId": "NASCAR_2026_TEAM_NY_RACING_TEAM",
       "label": "NY Racing Team",
-      "sourceSheet": "Car_Ratings"
-    },
-    {
-      "entityId": "NASCAR_2026_TEAM_GARAGE_66",
-      "label": "Garage 66",
       "sourceSheet": "Car_Ratings"
     }
   ],

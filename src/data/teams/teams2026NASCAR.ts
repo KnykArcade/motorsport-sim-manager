@@ -6,7 +6,7 @@ import type {
 export const teams2026NASCAR: Team[] = [
   {
     "id": "t-2026-nascar-23xi-racing-team-1",
-    "name": "23XI Racing team 1",
+    "name": "23XI Racing Team 1",
     "shortName": "",
     "carId": "car-2026-nascar-23xi-racing-team-1",
     "driverIds": [
@@ -14,8 +14,8 @@ export const teams2026NASCAR: Team[] = [
       "d-2026-nascar-tyler-reddick"
     ],
     "budget": 50,
-    "reputation": 75,
-    "raceOperations": 75,
+    "reputation": 95,
+    "raceOperations": 95,
     "morale": 65,
     "expectedStanding": 1,
     "difficulty": "Medium",
@@ -24,7 +24,7 @@ export const teams2026NASCAR: Team[] = [
   },
   {
     "id": "t-2026-nascar-23xi-racing-team-2",
-    "name": "23XI Racing team 2",
+    "name": "23XI Racing Team 2",
     "shortName": "",
     "carId": "car-2026-nascar-23xi-racing-team-2",
     "driverIds": [
@@ -32,8 +32,8 @@ export const teams2026NASCAR: Team[] = [
       "d-2026-nascar-corey-heim"
     ],
     "budget": 50,
-    "reputation": 75,
-    "raceOperations": 75,
+    "reputation": 62,
+    "raceOperations": 62,
     "morale": 65,
     "expectedStanding": 2,
     "difficulty": "Medium",
@@ -46,11 +46,12 @@ export const teams2026NASCAR: Team[] = [
     "shortName": "",
     "carId": "car-2026-nascar-beard-motorsports",
     "driverIds": [
-      "d-2026-nascar-anthony-alfredo"
+      "d-2026-nascar-anthony-alfredo",
+      "d-2026-nascar-casey-mears"
     ],
     "budget": 50,
-    "reputation": 35,
-    "raceOperations": 35,
+    "reputation": 43,
+    "raceOperations": 43,
     "morale": 65,
     "expectedStanding": 3,
     "difficulty": "Medium",
@@ -59,7 +60,7 @@ export const teams2026NASCAR: Team[] = [
   },
   {
     "id": "t-2026-nascar-front-row-motorsports-team-1",
-    "name": "Front Row Motorsports team 1",
+    "name": "Front Row Motorsports Team 1",
     "shortName": "",
     "carId": "car-2026-nascar-front-row-motorsports-team-1",
     "driverIds": [
@@ -67,8 +68,8 @@ export const teams2026NASCAR: Team[] = [
       "d-2026-nascar-todd-gilliland"
     ],
     "budget": 50,
-    "reputation": 58,
-    "raceOperations": 58,
+    "reputation": 69,
+    "raceOperations": 69,
     "morale": 65,
     "expectedStanding": 4,
     "difficulty": "Medium",
@@ -77,7 +78,7 @@ export const teams2026NASCAR: Team[] = [
   },
   {
     "id": "t-2026-nascar-front-row-motorsports-team-2",
-    "name": "Front Row Motorsports team 2",
+    "name": "Front Row Motorsports Team 2",
     "shortName": "",
     "carId": "car-2026-nascar-front-row-motorsports-team-2",
     "driverIds": [
@@ -85,8 +86,8 @@ export const teams2026NASCAR: Team[] = [
       "d-2026-nascar-chandler-smith"
     ],
     "budget": 50,
-    "reputation": 58,
-    "raceOperations": 58,
+    "reputation": 45,
+    "raceOperations": 45,
     "morale": 65,
     "expectedStanding": 5,
     "difficulty": "Medium",
@@ -94,18 +95,54 @@ export const teams2026NASCAR: Team[] = [
     "country": "United States"
   },
   {
-    "id": "t-2026-nascar-garage-66",
-    "name": "Garage 66",
+    "id": "t-2026-nascar-garage-66-team-1",
+    "name": "Garage 66 team 1",
     "shortName": "",
-    "carId": "car-2026-nascar-garage-66",
+    "carId": "car-2026-nascar-garage-66-team-1",
     "driverIds": [
-      "d-2026-nascar-casey-mears"
+      "d-2026-nascar-casey-mears",
+      "d-2026-nascar-carl-long"
     ],
     "budget": 50,
-    "reputation": 35,
-    "raceOperations": 35,
+    "reputation": 50,
+    "raceOperations": 50,
     "morale": 65,
     "expectedStanding": 6,
+    "difficulty": "Medium",
+    "color": "#60a5fa",
+    "country": "United States"
+  },
+  {
+    "id": "t-2026-nascar-garage-66-team-2",
+    "name": "Garage 66 team 2",
+    "shortName": "",
+    "carId": "car-2026-nascar-garage-66-team-2",
+    "driverIds": [
+      "d-2026-nascar-timmy-hill",
+      "d-2026-nascar-chad-finchum"
+    ],
+    "budget": 50,
+    "reputation": 50,
+    "raceOperations": 50,
+    "morale": 65,
+    "expectedStanding": 7,
+    "difficulty": "Medium",
+    "color": "#60a5fa",
+    "country": "United States"
+  },
+  {
+    "id": "t-2026-nascar-garage-66-team-3",
+    "name": "Garage 66 team 3",
+    "shortName": "",
+    "carId": "car-2026-nascar-garage-66-team-3",
+    "driverIds": [
+      "d-2026-nascar-josh-bilicki"
+    ],
+    "budget": 50,
+    "reputation": 50,
+    "raceOperations": 50,
+    "morale": 65,
+    "expectedStanding": 8,
     "difficulty": "Medium",
     "color": "#60a5fa",
     "country": "United States"
@@ -119,17 +156,17 @@ export const teams2026NASCAR: Team[] = [
       "d-2026-nascar-cole-custer"
     ],
     "budget": 50,
-    "reputation": 40,
-    "raceOperations": 40,
+    "reputation": 62,
+    "raceOperations": 62,
     "morale": 65,
-    "expectedStanding": 7,
+    "expectedStanding": 9,
     "difficulty": "Medium",
     "color": "#60a5fa",
     "country": "United States"
   },
   {
     "id": "t-2026-nascar-hendrick-motorsports-team-1",
-    "name": "Hendrick Motorsports team 1",
+    "name": "Hendrick Motorsports Team 1",
     "shortName": "",
     "carId": "car-2026-nascar-hendrick-motorsports-team-1",
     "driverIds": [
@@ -137,28 +174,46 @@ export const teams2026NASCAR: Team[] = [
       "d-2026-nascar-chase-elliott"
     ],
     "budget": 50,
-    "reputation": 85,
-    "raceOperations": 85,
+    "reputation": 95,
+    "raceOperations": 95,
     "morale": 65,
-    "expectedStanding": 8,
+    "expectedStanding": 10,
     "difficulty": "Medium",
     "color": "#60a5fa",
     "country": "United States"
   },
   {
-    "id": "t-2026-nascar-hendrick-motorsports-team-2",
-    "name": "Hendrick Motorsports team 2",
+    "id": "t-2026-nascar-hendrick-motorsports-team-2-team-1",
+    "name": "Hendrick Motorsports Team 2 team 1",
     "shortName": "",
-    "carId": "car-2026-nascar-hendrick-motorsports-team-2",
+    "carId": "car-2026-nascar-hendrick-motorsports-team-2-team-1",
     "driverIds": [
       "d-2026-nascar-william-byron",
       "d-2026-nascar-alex-bowman"
     ],
     "budget": 50,
-    "reputation": 85,
-    "raceOperations": 85,
+    "reputation": 80,
+    "raceOperations": 80,
     "morale": 65,
-    "expectedStanding": 9,
+    "expectedStanding": 11,
+    "difficulty": "Medium",
+    "color": "#60a5fa",
+    "country": "United States"
+  },
+  {
+    "id": "t-2026-nascar-hendrick-motorsports-team-2-team-2",
+    "name": "Hendrick Motorsports Team 2 team 2",
+    "shortName": "",
+    "carId": "car-2026-nascar-hendrick-motorsports-team-2-team-2",
+    "driverIds": [
+      "d-2026-nascar-anthony-alfredo",
+      "d-2026-nascar-justin-allgaier"
+    ],
+    "budget": 50,
+    "reputation": 80,
+    "raceOperations": 80,
+    "morale": 65,
+    "expectedStanding": 12,
     "difficulty": "Medium",
     "color": "#60a5fa",
     "country": "United States"
@@ -172,10 +227,10 @@ export const teams2026NASCAR: Team[] = [
       "d-2026-nascar-ricky-stenhouse-jr"
     ],
     "budget": 50,
-    "reputation": 43,
-    "raceOperations": 43,
+    "reputation": 70,
+    "raceOperations": 70,
     "morale": 65,
-    "expectedStanding": 10,
+    "expectedStanding": 13,
     "difficulty": "Medium",
     "color": "#60a5fa",
     "country": "United States"
@@ -189,62 +244,8 @@ export const teams2026NASCAR: Team[] = [
       "d-2026-nascar-justin-allgaier"
     ],
     "budget": 50,
-    "reputation": 35,
-    "raceOperations": 35,
-    "morale": 65,
-    "expectedStanding": 11,
-    "difficulty": "Medium",
-    "color": "#60a5fa",
-    "country": "United States"
-  },
-  {
-    "id": "t-2026-nascar-joe-gibbs-racing-team-1",
-    "name": "Joe Gibbs Racing team 1",
-    "shortName": "",
-    "carId": "car-2026-nascar-joe-gibbs-racing-team-1",
-    "driverIds": [
-      "d-2026-nascar-denny-hamlin",
-      "d-2026-nascar-chase-briscoe"
-    ],
-    "budget": 50,
-    "reputation": 99,
-    "raceOperations": 99,
-    "morale": 65,
-    "expectedStanding": 12,
-    "difficulty": "Medium",
-    "color": "#60a5fa",
-    "country": "United States"
-  },
-  {
-    "id": "t-2026-nascar-joe-gibbs-racing-team-2",
-    "name": "Joe Gibbs Racing team 2",
-    "shortName": "",
-    "carId": "car-2026-nascar-joe-gibbs-racing-team-2",
-    "driverIds": [
-      "d-2026-nascar-christopher-bell",
-      "d-2026-nascar-ty-gibbs"
-    ],
-    "budget": 50,
-    "reputation": 99,
-    "raceOperations": 99,
-    "morale": 65,
-    "expectedStanding": 13,
-    "difficulty": "Medium",
-    "color": "#60a5fa",
-    "country": "United States"
-  },
-  {
-    "id": "t-2026-nascar-kaulig-racing",
-    "name": "Kaulig Racing",
-    "shortName": "",
-    "carId": "car-2026-nascar-kaulig-racing",
-    "driverIds": [
-      "d-2026-nascar-ty-dillon",
-      "d-2026-nascar-a-j-allmendinger"
-    ],
-    "budget": 50,
-    "reputation": 51,
-    "raceOperations": 51,
+    "reputation": 41,
+    "raceOperations": 41,
     "morale": 65,
     "expectedStanding": 14,
     "difficulty": "Medium",
@@ -252,17 +253,17 @@ export const teams2026NASCAR: Team[] = [
     "country": "United States"
   },
   {
-    "id": "t-2026-nascar-legacy-motor-club-team-1",
-    "name": "Legacy Motor Club team 1",
+    "id": "t-2026-nascar-joe-gibbs-racing-team-1",
+    "name": "Joe Gibbs Racing Team 1",
     "shortName": "",
-    "carId": "car-2026-nascar-legacy-motor-club-team-1",
+    "carId": "car-2026-nascar-joe-gibbs-racing-team-1",
     "driverIds": [
-      "d-2026-nascar-john-hunter-nemechek",
-      "d-2026-nascar-erik-jones"
+      "d-2026-nascar-denny-hamlin",
+      "d-2026-nascar-chase-briscoe"
     ],
     "budget": 50,
-    "reputation": 54,
-    "raceOperations": 54,
+    "reputation": 98,
+    "raceOperations": 98,
     "morale": 65,
     "expectedStanding": 15,
     "difficulty": "Medium",
@@ -270,16 +271,17 @@ export const teams2026NASCAR: Team[] = [
     "country": "United States"
   },
   {
-    "id": "t-2026-nascar-legacy-motor-club-team-2",
-    "name": "Legacy Motor Club team 2",
+    "id": "t-2026-nascar-joe-gibbs-racing-team-2",
+    "name": "Joe Gibbs Racing Team 2",
     "shortName": "",
-    "carId": "car-2026-nascar-legacy-motor-club-team-2",
+    "carId": "car-2026-nascar-joe-gibbs-racing-team-2",
     "driverIds": [
-      "d-2026-nascar-jimmie-johnson"
+      "d-2026-nascar-christopher-bell",
+      "d-2026-nascar-ty-gibbs"
     ],
     "budget": 50,
-    "reputation": 54,
-    "raceOperations": 54,
+    "reputation": 92,
+    "raceOperations": 92,
     "morale": 65,
     "expectedStanding": 16,
     "difficulty": "Medium",
@@ -287,18 +289,89 @@ export const teams2026NASCAR: Team[] = [
     "country": "United States"
   },
   {
-    "id": "t-2026-nascar-live-fast-motorsports",
-    "name": "Live Fast Motorsports",
+    "id": "t-2026-nascar-kaulig-racing-team-1",
+    "name": "Kaulig Racing Team 1",
     "shortName": "",
-    "carId": "car-2026-nascar-live-fast-motorsports",
+    "carId": "car-2026-nascar-kaulig-racing-team-1",
     "driverIds": [
-      "d-2026-nascar-b-j-mcleod"
+      "d-2026-nascar-ty-dillon",
+      "d-2026-nascar-a-j-allmendinger"
     ],
     "budget": 50,
-    "reputation": 35,
-    "raceOperations": 35,
+    "reputation": 72,
+    "raceOperations": 72,
     "morale": 65,
     "expectedStanding": 17,
+    "difficulty": "Medium",
+    "color": "#60a5fa",
+    "country": "United States"
+  },
+  {
+    "id": "t-2026-nascar-legacy-motor-club-team-1",
+    "name": "Legacy Motor Club Team 1",
+    "shortName": "",
+    "carId": "car-2026-nascar-legacy-motor-club-team-1",
+    "driverIds": [
+      "d-2026-nascar-john-hunter-nemechek",
+      "d-2026-nascar-erik-jones"
+    ],
+    "budget": 50,
+    "reputation": 80,
+    "raceOperations": 80,
+    "morale": 65,
+    "expectedStanding": 18,
+    "difficulty": "Medium",
+    "color": "#60a5fa",
+    "country": "United States"
+  },
+  {
+    "id": "t-2026-nascar-legacy-motor-club-team-2",
+    "name": "Legacy Motor Club Team 2",
+    "shortName": "",
+    "carId": "car-2026-nascar-legacy-motor-club-team-2",
+    "driverIds": [
+      "d-2026-nascar-jimmie-johnson"
+    ],
+    "budget": 50,
+    "reputation": 53,
+    "raceOperations": 53,
+    "morale": 65,
+    "expectedStanding": 19,
+    "difficulty": "Medium",
+    "color": "#60a5fa",
+    "country": "United States"
+  },
+  {
+    "id": "t-2026-nascar-live-fast-motorsports-team-1",
+    "name": "Live Fast Motorsports team 1",
+    "shortName": "",
+    "carId": "car-2026-nascar-live-fast-motorsports-team-1",
+    "driverIds": [
+      "d-2026-nascar-b-j-mcleod",
+      "d-2026-nascar-daniel-dye"
+    ],
+    "budget": 50,
+    "reputation": 47,
+    "raceOperations": 47,
+    "morale": 65,
+    "expectedStanding": 20,
+    "difficulty": "Medium",
+    "color": "#60a5fa",
+    "country": "United States"
+  },
+  {
+    "id": "t-2026-nascar-live-fast-motorsports-team-2",
+    "name": "Live Fast Motorsports team 2",
+    "shortName": "",
+    "carId": "car-2026-nascar-live-fast-motorsports-team-2",
+    "driverIds": [
+      "d-2026-nascar-katherine-legge"
+    ],
+    "budget": 50,
+    "reputation": 47,
+    "raceOperations": 47,
+    "morale": 65,
+    "expectedStanding": 21,
     "difficulty": "Medium",
     "color": "#60a5fa",
     "country": "United States"
@@ -309,20 +382,21 @@ export const teams2026NASCAR: Team[] = [
     "shortName": "",
     "carId": "car-2026-nascar-ny-racing-team",
     "driverIds": [
-      "d-2026-nascar-j-j-yeley"
+      "d-2026-nascar-j-j-yeley",
+      "d-2026-nascar-joey-gase"
     ],
     "budget": 50,
-    "reputation": 35,
-    "raceOperations": 35,
+    "reputation": 37,
+    "raceOperations": 37,
     "morale": 65,
-    "expectedStanding": 18,
+    "expectedStanding": 22,
     "difficulty": "Medium",
     "color": "#60a5fa",
     "country": "United States"
   },
   {
     "id": "t-2026-nascar-rfk-racing-team-1",
-    "name": "RFK Racing team 1",
+    "name": "RFK Racing Team 1",
     "shortName": "",
     "carId": "car-2026-nascar-rfk-racing-team-1",
     "driverIds": [
@@ -330,17 +404,17 @@ export const teams2026NASCAR: Team[] = [
       "d-2026-nascar-chris-buescher"
     ],
     "budget": 50,
-    "reputation": 70,
-    "raceOperations": 70,
+    "reputation": 90,
+    "raceOperations": 90,
     "morale": 65,
-    "expectedStanding": 19,
+    "expectedStanding": 23,
     "difficulty": "Medium",
     "color": "#60a5fa",
     "country": "United States"
   },
   {
     "id": "t-2026-nascar-rfk-racing-team-2",
-    "name": "RFK Racing team 2",
+    "name": "RFK Racing Team 2",
     "shortName": "",
     "carId": "car-2026-nascar-rfk-racing-team-2",
     "driverIds": [
@@ -348,45 +422,62 @@ export const teams2026NASCAR: Team[] = [
       "d-2026-nascar-corey-lajoie"
     ],
     "budget": 50,
-    "reputation": 70,
-    "raceOperations": 70,
+    "reputation": 57,
+    "raceOperations": 57,
     "morale": 65,
-    "expectedStanding": 20,
+    "expectedStanding": 24,
     "difficulty": "Medium",
     "color": "#60a5fa",
     "country": "United States"
   },
   {
-    "id": "t-2026-nascar-richard-childress-racing-team-1",
-    "name": "Richard Childress Racing team 1",
+    "id": "t-2026-nascar-richard-childress-racing-team-1-team-1",
+    "name": "Richard Childress Racing Team 1 team 1",
     "shortName": "",
-    "carId": "car-2026-nascar-richard-childress-racing-team-1",
+    "carId": "car-2026-nascar-richard-childress-racing-team-1-team-1",
     "driverIds": [
       "d-2026-nascar-austin-dillon",
       "d-2026-nascar-kyle-busch"
     ],
     "budget": 50,
-    "reputation": 42,
-    "raceOperations": 42,
+    "reputation": 73,
+    "raceOperations": 73,
     "morale": 65,
-    "expectedStanding": 21,
+    "expectedStanding": 25,
+    "difficulty": "Medium",
+    "color": "#60a5fa",
+    "country": "United States"
+  },
+  {
+    "id": "t-2026-nascar-richard-childress-racing-team-1-team-2",
+    "name": "Richard Childress Racing Team 1 team 2",
+    "shortName": "",
+    "carId": "car-2026-nascar-richard-childress-racing-team-1-team-2",
+    "driverIds": [
+      "d-2026-nascar-austin-hill"
+    ],
+    "budget": 50,
+    "reputation": 73,
+    "raceOperations": 73,
+    "morale": 65,
+    "expectedStanding": 26,
     "difficulty": "Medium",
     "color": "#60a5fa",
     "country": "United States"
   },
   {
     "id": "t-2026-nascar-richard-childress-racing-team-2",
-    "name": "Richard Childress Racing team 2",
+    "name": "Richard Childress Racing Team 2",
     "shortName": "",
     "carId": "car-2026-nascar-richard-childress-racing-team-2",
     "driverIds": [
       "d-2026-nascar-jesse-love"
     ],
     "budget": 50,
-    "reputation": 42,
-    "raceOperations": 42,
+    "reputation": 38,
+    "raceOperations": 38,
     "morale": 65,
-    "expectedStanding": 22,
+    "expectedStanding": 27,
     "difficulty": "Medium",
     "color": "#60a5fa",
     "country": "United States"
@@ -400,96 +491,8 @@ export const teams2026NASCAR: Team[] = [
       "d-2026-nascar-cody-ware"
     ],
     "budget": 50,
-    "reputation": 39,
-    "raceOperations": 39,
-    "morale": 65,
-    "expectedStanding": 23,
-    "difficulty": "Medium",
-    "color": "#60a5fa",
-    "country": "United States"
-  },
-  {
-    "id": "t-2026-nascar-spire-motorsports-team-1",
-    "name": "Spire Motorsports team 1",
-    "shortName": "",
-    "carId": "car-2026-nascar-spire-motorsports-team-1",
-    "driverIds": [
-      "d-2026-nascar-daniel-suarez",
-      "d-2026-nascar-michael-mcdowell"
-    ],
-    "budget": 50,
-    "reputation": 71,
-    "raceOperations": 71,
-    "morale": 65,
-    "expectedStanding": 24,
-    "difficulty": "Medium",
-    "color": "#60a5fa",
-    "country": "United States"
-  },
-  {
-    "id": "t-2026-nascar-spire-motorsports-team-2",
-    "name": "Spire Motorsports team 2",
-    "shortName": "",
-    "carId": "car-2026-nascar-spire-motorsports-team-2",
-    "driverIds": [
-      "d-2026-nascar-carson-hocevar"
-    ],
-    "budget": 50,
-    "reputation": 71,
-    "raceOperations": 71,
-    "morale": 65,
-    "expectedStanding": 25,
-    "difficulty": "Medium",
-    "color": "#60a5fa",
-    "country": "United States"
-  },
-  {
-    "id": "t-2026-nascar-team-penske-team-1",
-    "name": "Team Penske team 1",
-    "shortName": "",
-    "carId": "car-2026-nascar-team-penske-team-1",
-    "driverIds": [
-      "d-2026-nascar-austin-cindric",
-      "d-2026-nascar-ryan-blaney"
-    ],
-    "budget": 50,
-    "reputation": 73,
-    "raceOperations": 73,
-    "morale": 65,
-    "expectedStanding": 26,
-    "difficulty": "Medium",
-    "color": "#60a5fa",
-    "country": "United States"
-  },
-  {
-    "id": "t-2026-nascar-team-penske-team-2",
-    "name": "Team Penske team 2",
-    "shortName": "",
-    "carId": "car-2026-nascar-team-penske-team-2",
-    "driverIds": [
-      "d-2026-nascar-joey-logano"
-    ],
-    "budget": 50,
-    "reputation": 73,
-    "raceOperations": 73,
-    "morale": 65,
-    "expectedStanding": 27,
-    "difficulty": "Medium",
-    "color": "#60a5fa",
-    "country": "United States"
-  },
-  {
-    "id": "t-2026-nascar-trackhouse-racing-team-1",
-    "name": "Trackhouse Racing team 1",
-    "shortName": "",
-    "carId": "car-2026-nascar-trackhouse-racing-team-1",
-    "driverIds": [
-      "d-2026-nascar-ross-chastain",
-      "d-2026-nascar-connor-zilisch"
-    ],
-    "budget": 50,
-    "reputation": 61,
-    "raceOperations": 61,
+    "reputation": 55,
+    "raceOperations": 55,
     "morale": 65,
     "expectedStanding": 28,
     "difficulty": "Medium",
@@ -497,8 +500,96 @@ export const teams2026NASCAR: Team[] = [
     "country": "United States"
   },
   {
+    "id": "t-2026-nascar-spire-motorsports-team-1",
+    "name": "Spire Motorsports Team 1",
+    "shortName": "",
+    "carId": "car-2026-nascar-spire-motorsports-team-1",
+    "driverIds": [
+      "d-2026-nascar-daniel-suarez",
+      "d-2026-nascar-michael-mcdowell"
+    ],
+    "budget": 50,
+    "reputation": 84,
+    "raceOperations": 84,
+    "morale": 65,
+    "expectedStanding": 29,
+    "difficulty": "Medium",
+    "color": "#60a5fa",
+    "country": "United States"
+  },
+  {
+    "id": "t-2026-nascar-spire-motorsports-team-2",
+    "name": "Spire Motorsports Team 2",
+    "shortName": "",
+    "carId": "car-2026-nascar-spire-motorsports-team-2",
+    "driverIds": [
+      "d-2026-nascar-carson-hocevar"
+    ],
+    "budget": 50,
+    "reputation": 91,
+    "raceOperations": 91,
+    "morale": 65,
+    "expectedStanding": 30,
+    "difficulty": "Medium",
+    "color": "#60a5fa",
+    "country": "United States"
+  },
+  {
+    "id": "t-2026-nascar-team-penske-team-1",
+    "name": "Team Penske Team 1",
+    "shortName": "",
+    "carId": "car-2026-nascar-team-penske-team-1",
+    "driverIds": [
+      "d-2026-nascar-austin-cindric",
+      "d-2026-nascar-ryan-blaney"
+    ],
+    "budget": 50,
+    "reputation": 92,
+    "raceOperations": 92,
+    "morale": 65,
+    "expectedStanding": 31,
+    "difficulty": "Medium",
+    "color": "#60a5fa",
+    "country": "United States"
+  },
+  {
+    "id": "t-2026-nascar-team-penske-team-2",
+    "name": "Team Penske Team 2",
+    "shortName": "",
+    "carId": "car-2026-nascar-team-penske-team-2",
+    "driverIds": [
+      "d-2026-nascar-joey-logano"
+    ],
+    "budget": 50,
+    "reputation": 83,
+    "raceOperations": 83,
+    "morale": 65,
+    "expectedStanding": 32,
+    "difficulty": "Medium",
+    "color": "#60a5fa",
+    "country": "United States"
+  },
+  {
+    "id": "t-2026-nascar-trackhouse-racing-team-1",
+    "name": "Trackhouse Racing Team 1",
+    "shortName": "",
+    "carId": "car-2026-nascar-trackhouse-racing-team-1",
+    "driverIds": [
+      "d-2026-nascar-ross-chastain",
+      "d-2026-nascar-connor-zilisch"
+    ],
+    "budget": 50,
+    "reputation": 65,
+    "raceOperations": 65,
+    "morale": 65,
+    "expectedStanding": 33,
+    "difficulty": "Medium",
+    "color": "#60a5fa",
+    "country": "United States"
+  },
+  {
     "id": "t-2026-nascar-trackhouse-racing-team-2",
-    "name": "Trackhouse Racing team 2",
+    "name": "Trackhouse Racing Team 2",
     "shortName": "",
     "carId": "car-2026-nascar-trackhouse-racing-team-2",
     "driverIds": [
@@ -506,10 +597,10 @@ export const teams2026NASCAR: Team[] = [
       "d-2026-nascar-kevin-magnussen"
     ],
     "budget": 50,
-    "reputation": 61,
-    "raceOperations": 61,
+    "reputation": 73,
+    "raceOperations": 73,
     "morale": 65,
-    "expectedStanding": 29,
+    "expectedStanding": 34,
     "difficulty": "Medium",
     "color": "#60a5fa",
     "country": "United States"
@@ -523,10 +614,10 @@ export const teams2026NASCAR: Team[] = [
       "d-2026-nascar-josh-berry"
     ],
     "budget": 50,
-    "reputation": 40,
-    "raceOperations": 40,
+    "reputation": 63,
+    "raceOperations": 63,
     "morale": 65,
-    "expectedStanding": 30,
+    "expectedStanding": 35,
     "difficulty": "Medium",
     "color": "#60a5fa",
     "country": "United States"

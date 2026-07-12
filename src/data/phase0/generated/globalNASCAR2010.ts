@@ -49,7 +49,7 @@ export const nascar2010Drivers: GlobalDriver[] = [
     "reputation": 99,
     "marketValue": 99,
     "contract": {
-      "teamId": "NASCAR_2010_TEAM_HENDRICK_MOTORSPORTS",
+      "teamId": "NASCAR_2010_TEAM_HENDRICK_MOTORSPORTS_TEAM_2",
       "yearsLeft": 1,
       "salary": 50,
       "options": []
@@ -97,7 +97,7 @@ export const nascar2010Drivers: GlobalDriver[] = [
     "reputation": 100,
     "marketValue": 100,
     "contract": {
-      "teamId": "NASCAR_2010_TEAM_JOE_GIBBS_RACING",
+      "teamId": "NASCAR_2010_TEAM_JOE_GIBBS_RACING_TEAM_1",
       "yearsLeft": 1,
       "salary": 50,
       "options": []
@@ -145,7 +145,7 @@ export const nascar2010Drivers: GlobalDriver[] = [
     "reputation": 100,
     "marketValue": 100,
     "contract": {
-      "teamId": "NASCAR_2010_TEAM_RICHARD_CHILDRESS_RACING",
+      "teamId": "NASCAR_2010_TEAM_RICHARD_CHILDRESS_RACING_TEAM_1",
       "yearsLeft": 1,
       "salary": 50,
       "options": []
@@ -193,7 +193,7 @@ export const nascar2010Drivers: GlobalDriver[] = [
     "reputation": 100,
     "marketValue": 100,
     "contract": {
-      "teamId": "NASCAR_2010_TEAM_ROUSH_FENWAY_RACING",
+      "teamId": "NASCAR_2010_TEAM_ROUSH_FENWAY_RACING_TEAM_2",
       "yearsLeft": 1,
       "salary": 50,
       "options": []
@@ -241,7 +241,7 @@ export const nascar2010Drivers: GlobalDriver[] = [
     "reputation": 99,
     "marketValue": 99,
     "contract": {
-      "teamId": "NASCAR_2010_TEAM_ROUSH_FENWAY_RACING",
+      "teamId": "NASCAR_2010_TEAM_ROUSH_FENWAY_RACING_TEAM_2",
       "yearsLeft": 1,
       "salary": 50,
       "options": []
@@ -289,7 +289,7 @@ export const nascar2010Drivers: GlobalDriver[] = [
     "reputation": 97,
     "marketValue": 97,
     "contract": {
-      "teamId": "NASCAR_2010_TEAM_ROUSH_FENWAY_RACING",
+      "teamId": "NASCAR_2010_TEAM_ROUSH_FENWAY_RACING_TEAM_1",
       "yearsLeft": 1,
       "salary": 48,
       "options": []
@@ -337,7 +337,7 @@ export const nascar2010Drivers: GlobalDriver[] = [
     "reputation": 97,
     "marketValue": 97,
     "contract": {
-      "teamId": "NASCAR_2010_TEAM_STEWART_HAAS_RACING",
+      "teamId": "NASCAR_2010_TEAM_STEWART_HAAS_RACING_TEAM_1",
       "yearsLeft": 1,
       "salary": 48,
       "options": []
@@ -385,7 +385,7 @@ export const nascar2010Drivers: GlobalDriver[] = [
     "reputation": 97,
     "marketValue": 97,
     "contract": {
-      "teamId": "NASCAR_2010_TEAM_JOE_GIBBS_RACING",
+      "teamId": "NASCAR_2010_TEAM_JOE_GIBBS_RACING_TEAM_1",
       "yearsLeft": 1,
       "salary": 48,
       "options": []
@@ -433,7 +433,7 @@ export const nascar2010Drivers: GlobalDriver[] = [
     "reputation": 95,
     "marketValue": 95,
     "contract": {
-      "teamId": "NASCAR_2010_TEAM_HENDRICK_MOTORSPORTS",
+      "teamId": "NASCAR_2010_TEAM_HENDRICK_MOTORSPORTS_TEAM_1",
       "yearsLeft": 1,
       "salary": 48,
       "options": []
@@ -481,7 +481,7 @@ export const nascar2010Drivers: GlobalDriver[] = [
     "reputation": 95,
     "marketValue": 95,
     "contract": {
-      "teamId": "NASCAR_2010_TEAM_RICHARD_CHILDRESS_RACING",
+      "teamId": "NASCAR_2010_TEAM_RICHARD_CHILDRESS_RACING_TEAM_2",
       "yearsLeft": 1,
       "salary": 48,
       "options": []
@@ -529,7 +529,7 @@ export const nascar2010Drivers: GlobalDriver[] = [
     "reputation": 93,
     "marketValue": 93,
     "contract": {
-      "teamId": "NASCAR_2010_TEAM_PENSKE_CHAMPIONSHIP_RACING",
+      "teamId": "NASCAR_2010_TEAM_PENSKE_CHAMPIONSHIP_RACING_TEAM_1",
       "yearsLeft": 1,
       "salary": 46,
       "options": []
@@ -577,7 +577,7 @@ export const nascar2010Drivers: GlobalDriver[] = [
     "reputation": 95,
     "marketValue": 95,
     "contract": {
-      "teamId": "NASCAR_2010_TEAM_RICHARD_CHILDRESS_RACING",
+      "teamId": "NASCAR_2010_TEAM_RICHARD_CHILDRESS_RACING_TEAM_1",
       "yearsLeft": 1,
       "salary": 48,
       "options": []
@@ -625,7 +625,7 @@ export const nascar2010Drivers: GlobalDriver[] = [
     "reputation": 84,
     "marketValue": 84,
     "contract": {
-      "teamId": "NASCAR_2010_TEAM_HENDRICK_MOTORSPORTS",
+      "teamId": "NASCAR_2010_TEAM_HENDRICK_MOTORSPORTS_TEAM_1",
       "yearsLeft": 1,
       "salary": 42,
       "options": []
@@ -673,7 +673,7 @@ export const nascar2010Drivers: GlobalDriver[] = [
     "reputation": 81,
     "marketValue": 81,
     "contract": {
-      "teamId": "NASCAR_2010_TEAM_EARNHARDT_GANASSI_RACING",
+      "teamId": "NASCAR_2010_TEAM_EARNHARDT_GANASSI_RACING_TEAM_1",
       "yearsLeft": 1,
       "salary": 40,
       "options": []
@@ -721,7 +721,7 @@ export const nascar2010Drivers: GlobalDriver[] = [
     "reputation": 83,
     "marketValue": 83,
     "contract": {
-      "teamId": "NASCAR_2010_TEAM_STEWART_HAAS_RACING",
+      "teamId": "NASCAR_2010_TEAM_STEWART_HAAS_RACING_TEAM_1",
       "yearsLeft": 1,
       "salary": 42,
       "options": []
@@ -769,7 +769,7 @@ export const nascar2010Drivers: GlobalDriver[] = [
     "reputation": 79,
     "marketValue": 79,
     "contract": {
-      "teamId": "NASCAR_2010_TEAM_JOE_GIBBS_RACING",
+      "teamId": "NASCAR_2010_TEAM_JOE_GIBBS_RACING_TEAM_2",
       "yearsLeft": 1,
       "salary": 40,
       "options": []
@@ -817,7 +817,7 @@ export const nascar2010Drivers: GlobalDriver[] = [
     "reputation": 78,
     "marketValue": 78,
     "contract": {
-      "teamId": "NASCAR_2010_TEAM_EARNHARDT_GANASSI_RACING",
+      "teamId": "NASCAR_2010_TEAM_EARNHARDT_GANASSI_RACING_TEAM_1",
       "yearsLeft": 1,
       "salary": 39,
       "options": []
@@ -865,7 +865,7 @@ export const nascar2010Drivers: GlobalDriver[] = [
     "reputation": 76,
     "marketValue": 76,
     "contract": {
-      "teamId": "NASCAR_2010_TEAM_MICHAEL_WALTRIP_RACING",
+      "teamId": "NASCAR_2010_TEAM_MICHAEL_WALTRIP_RACING_TEAM_1",
       "yearsLeft": 1,
       "salary": 38,
       "options": []
@@ -913,7 +913,7 @@ export const nascar2010Drivers: GlobalDriver[] = [
     "reputation": 75,
     "marketValue": 75,
     "contract": {
-      "teamId": "NASCAR_2010_TEAM_RICHARD_PETTY_MOTORSPORTS",
+      "teamId": "NASCAR_2010_TEAM_RICHARD_PETTY_MOTORSPORTS_TEAM_2",
       "yearsLeft": 1,
       "salary": 38,
       "options": []
@@ -961,7 +961,7 @@ export const nascar2010Drivers: GlobalDriver[] = [
     "reputation": 74,
     "marketValue": 74,
     "contract": {
-      "teamId": "NASCAR_2010_TEAM_RICHARD_PETTY_MOTORSPORTS",
+      "teamId": "NASCAR_2010_TEAM_RICHARD_PETTY_MOTORSPORTS_TEAM_1",
       "yearsLeft": 1,
       "salary": 37,
       "options": []
@@ -1009,7 +1009,7 @@ export const nascar2010Drivers: GlobalDriver[] = [
     "reputation": 78,
     "marketValue": 78,
     "contract": {
-      "teamId": "NASCAR_2010_TEAM_HENDRICK_MOTORSPORTS",
+      "teamId": "NASCAR_2010_TEAM_HENDRICK_MOTORSPORTS_TEAM_2",
       "yearsLeft": 1,
       "salary": 39,
       "options": []
@@ -1057,7 +1057,7 @@ export const nascar2010Drivers: GlobalDriver[] = [
     "reputation": 73,
     "marketValue": 73,
     "contract": {
-      "teamId": "NASCAR_2010_TEAM_MICHAEL_WALTRIP_RACING",
+      "teamId": "NASCAR_2010_TEAM_MICHAEL_WALTRIP_RACING_TEAM_1",
       "yearsLeft": 1,
       "salary": 36,
       "options": []
@@ -1105,7 +1105,7 @@ export const nascar2010Drivers: GlobalDriver[] = [
     "reputation": 72,
     "marketValue": 72,
     "contract": {
-      "teamId": "NASCAR_2010_TEAM_RICHARD_PETTY_MOTORSPORTS",
+      "teamId": "NASCAR_2010_TEAM_RICHARD_PETTY_MOTORSPORTS_TEAM_2",
       "yearsLeft": 1,
       "salary": 36,
       "options": []
@@ -1153,7 +1153,7 @@ export const nascar2010Drivers: GlobalDriver[] = [
     "reputation": 74,
     "marketValue": 74,
     "contract": {
-      "teamId": "NASCAR_2010_TEAM_ROUSH_FENWAY_RACING",
+      "teamId": "NASCAR_2010_TEAM_ROUSH_FENWAY_RACING_TEAM_1",
       "yearsLeft": 1,
       "salary": 37,
       "options": []
@@ -1201,7 +1201,7 @@ export const nascar2010Drivers: GlobalDriver[] = [
     "reputation": 73,
     "marketValue": 73,
     "contract": {
-      "teamId": "NASCAR_2010_TEAM_PENSKE_CHAMPIONSHIP_RACING",
+      "teamId": "NASCAR_2010_TEAM_PENSKE_CHAMPIONSHIP_RACING_TEAM_1",
       "yearsLeft": 1,
       "salary": 36,
       "options": []
@@ -1249,7 +1249,7 @@ export const nascar2010Drivers: GlobalDriver[] = [
     "reputation": 66,
     "marketValue": 66,
     "contract": {
-      "teamId": "NASCAR_2010_TEAM_JTG_DAUGHERTY_RACING_WITH_MICHAEL_WALTRIP_RACING",
+      "teamId": "NASCAR_2010_TEAM_JTG_DAUGHERTY_RACING_WITH_MICHAEL_WALTRIP_RACING_TEAM_1",
       "yearsLeft": 1,
       "salary": 33,
       "options": []
@@ -1297,7 +1297,7 @@ export const nascar2010Drivers: GlobalDriver[] = [
     "reputation": 66,
     "marketValue": 66,
     "contract": {
-      "teamId": "NASCAR_2010_TEAM_RICHARD_PETTY_MOTORSPORTS",
+      "teamId": "NASCAR_2010_TEAM_RICHARD_PETTY_MOTORSPORTS_TEAM_1",
       "yearsLeft": 1,
       "salary": 33,
       "options": []
@@ -1345,7 +1345,7 @@ export const nascar2010Drivers: GlobalDriver[] = [
     "reputation": 64,
     "marketValue": 64,
     "contract": {
-      "teamId": "NASCAR_2010_TEAM_FURNITURE_ROW_RACING",
+      "teamId": "NASCAR_2010_TEAM_FURNITURE_ROW_RACING_TEAM_1",
       "yearsLeft": 1,
       "salary": 32,
       "options": []
@@ -1393,7 +1393,7 @@ export const nascar2010Drivers: GlobalDriver[] = [
     "reputation": 63,
     "marketValue": 63,
     "contract": {
-      "teamId": "NASCAR_2010_TEAM_PENSKE_CHAMPIONSHIP_RACING",
+      "teamId": "NASCAR_2010_TEAM_PENSKE_CHAMPIONSHIP_RACING_TEAM_2",
       "yearsLeft": 1,
       "salary": 32,
       "options": []
@@ -1441,7 +1441,7 @@ export const nascar2010Drivers: GlobalDriver[] = [
     "reputation": 62,
     "marketValue": 62,
     "contract": {
-      "teamId": "NASCAR_2010_TEAM_RED_BULL_RACING",
+      "teamId": "NASCAR_2010_TEAM_RED_BULL_RACING_TEAM_1",
       "yearsLeft": 1,
       "salary": 31,
       "options": []
@@ -1489,7 +1489,7 @@ export const nascar2010Drivers: GlobalDriver[] = [
     "reputation": 55,
     "marketValue": 55,
     "contract": {
-      "teamId": "NASCAR_2010_TEAM_TRG_MOTORSPORTS",
+      "teamId": "NASCAR_2010_TEAM_TRG_MOTORSPORTS_TEAM_1",
       "yearsLeft": 1,
       "salary": 28,
       "options": []
@@ -1537,7 +1537,7 @@ export const nascar2010Drivers: GlobalDriver[] = [
     "reputation": 55,
     "marketValue": 55,
     "contract": {
-      "teamId": "NASCAR_2010_TEAM_FRONT_ROW_MOTORSPORTS",
+      "teamId": "NASCAR_2010_TEAM_FRONT_ROW_MOTORSPORTS_TEAM_2",
       "yearsLeft": 1,
       "salary": 28,
       "options": []
@@ -1585,7 +1585,7 @@ export const nascar2010Drivers: GlobalDriver[] = [
     "reputation": 54,
     "marketValue": 54,
     "contract": {
-      "teamId": "NASCAR_2010_TEAM_FRONT_ROW_MOTORSPORTS",
+      "teamId": "NASCAR_2010_TEAM_FRONT_ROW_MOTORSPORTS_TEAM_1",
       "yearsLeft": 1,
       "salary": 27,
       "options": []
@@ -1633,7 +1633,7 @@ export const nascar2010Drivers: GlobalDriver[] = [
     "reputation": 51,
     "marketValue": 51,
     "contract": {
-      "teamId": "NASCAR_2010_TEAM_ROBBY_GORDON_MOTORSPORTS",
+      "teamId": "NASCAR_2010_TEAM_ROBBY_GORDON_MOTORSPORTS_TEAM_1",
       "yearsLeft": 1,
       "salary": 26,
       "options": []
@@ -1681,7 +1681,7 @@ export const nascar2010Drivers: GlobalDriver[] = [
     "reputation": 50,
     "marketValue": 50,
     "contract": {
-      "teamId": "NASCAR_2010_TEAM_FRONT_ROW_MOTORSPORTS",
+      "teamId": "NASCAR_2010_TEAM_FRONT_ROW_MOTORSPORTS_TEAM_1",
       "yearsLeft": 1,
       "salary": 25,
       "options": []
@@ -1729,7 +1729,7 @@ export const nascar2010Drivers: GlobalDriver[] = [
     "reputation": 49,
     "marketValue": 49,
     "contract": {
-      "teamId": "NASCAR_2010_TEAM_GERMAIN_RACING",
+      "teamId": "NASCAR_2010_TEAM_GERMAIN_RACING_TEAM_1",
       "yearsLeft": 1,
       "salary": 24,
       "options": []
@@ -1777,7 +1777,7 @@ export const nascar2010Drivers: GlobalDriver[] = [
     "reputation": 46,
     "marketValue": 46,
     "contract": {
-      "teamId": "NASCAR_2010_TEAM_PRISM_MOTORSPORTS",
+      "teamId": "NASCAR_2010_TEAM_PRISM_MOTORSPORTS_TEAM_1",
       "yearsLeft": 1,
       "salary": 23,
       "options": []
@@ -1825,7 +1825,7 @@ export const nascar2010Drivers: GlobalDriver[] = [
     "reputation": 46,
     "marketValue": 46,
     "contract": {
-      "teamId": "NASCAR_2010_TEAM_NEMCO_MOTORSPORTS",
+      "teamId": "NASCAR_2010_TEAM_NEMCO_MOTORSPORTS_TEAM_1",
       "yearsLeft": 1,
       "salary": 23,
       "options": []
@@ -1873,7 +1873,7 @@ export const nascar2010Drivers: GlobalDriver[] = [
     "reputation": 44,
     "marketValue": 44,
     "contract": {
-      "teamId": "NASCAR_2010_TEAM_BRAUN_RACING",
+      "teamId": "NASCAR_2010_TEAM_BRAUN_RACING_TEAM_1",
       "yearsLeft": 1,
       "salary": 22,
       "options": []
@@ -1921,7 +1921,7 @@ export const nascar2010Drivers: GlobalDriver[] = [
     "reputation": 46,
     "marketValue": 46,
     "contract": {
-      "teamId": "NASCAR_2010_TEAM_RED_BULL_RACING",
+      "teamId": "NASCAR_2010_TEAM_RED_BULL_RACING_TEAM_1",
       "yearsLeft": 1,
       "salary": 23,
       "options": []
@@ -1969,7 +1969,7 @@ export const nascar2010Drivers: GlobalDriver[] = [
     "reputation": 41,
     "marketValue": 41,
     "contract": {
-      "teamId": "NASCAR_2010_TEAM_WOOD_BROTHERS_RACING",
+      "teamId": "NASCAR_2010_TEAM_WOOD_BROTHERS_RACING_TEAM_1",
       "yearsLeft": 1,
       "salary": 20,
       "options": []
@@ -2017,7 +2017,7 @@ export const nascar2010Drivers: GlobalDriver[] = [
     "reputation": 41,
     "marketValue": 41,
     "contract": {
-      "teamId": "NASCAR_2010_TEAM_PRISM_MOTORSPORTS",
+      "teamId": "NASCAR_2010_TEAM_PRISM_MOTORSPORTS_TEAM_1",
       "yearsLeft": 1,
       "salary": 20,
       "options": []
@@ -2065,7 +2065,7 @@ export const nascar2010Drivers: GlobalDriver[] = [
     "reputation": 41,
     "marketValue": 41,
     "contract": {
-      "teamId": "NASCAR_2010_TEAM_GERMAIN_RACING",
+      "teamId": "NASCAR_2010_TEAM_GERMAIN_RACING_TEAM_1",
       "yearsLeft": 1,
       "salary": 20,
       "options": []
@@ -2113,7 +2113,7 @@ export const nascar2010Drivers: GlobalDriver[] = [
     "reputation": 39,
     "marketValue": 39,
     "contract": {
-      "teamId": "NASCAR_2010_TEAM_WHITNEY_MOTORSPORTS",
+      "teamId": "NASCAR_2010_TEAM_WHITNEY_MOTORSPORTS_TEAM_1",
       "yearsLeft": 1,
       "salary": 20,
       "options": []
@@ -2161,7 +2161,7 @@ export const nascar2010Drivers: GlobalDriver[] = [
     "reputation": 38,
     "marketValue": 38,
     "contract": {
-      "teamId": "NASCAR_2010_TEAM_WHITNEY_MOTORSPORTS",
+      "teamId": "NASCAR_2010_TEAM_WHITNEY_MOTORSPORTS_TEAM_1",
       "yearsLeft": 1,
       "salary": 19,
       "options": []
@@ -2209,7 +2209,7 @@ export const nascar2010Drivers: GlobalDriver[] = [
     "reputation": 36,
     "marketValue": 36,
     "contract": {
-      "teamId": "NASCAR_2010_TEAM_LATITUDE_43_MOTORSPORTS",
+      "teamId": "NASCAR_2010_TEAM_LATITUDE_43_MOTORSPORTS_TEAM_1",
       "yearsLeft": 1,
       "salary": 18,
       "options": []
@@ -2257,7 +2257,7 @@ export const nascar2010Drivers: GlobalDriver[] = [
     "reputation": 36,
     "marketValue": 36,
     "contract": {
-      "teamId": "NASCAR_2010_TEAM_PHOENIX_RACING",
+      "teamId": "NASCAR_2010_TEAM_PHOENIX_RACING_TEAM_1",
       "yearsLeft": 1,
       "salary": 18,
       "options": []
@@ -2305,7 +2305,7 @@ export const nascar2010Drivers: GlobalDriver[] = [
     "reputation": 35,
     "marketValue": 35,
     "contract": {
-      "teamId": "NASCAR_2010_TEAM_PHOENIX_RACING",
+      "teamId": "NASCAR_2010_TEAM_PHOENIX_RACING_TEAM_1",
       "yearsLeft": 1,
       "salary": 18,
       "options": []
@@ -2353,7 +2353,7 @@ export const nascar2010Drivers: GlobalDriver[] = [
     "reputation": 36,
     "marketValue": 36,
     "contract": {
-      "teamId": "NASCAR_2010_TEAM_FRONT_ROW_MOTORSPORTS",
+      "teamId": "NASCAR_2010_TEAM_FRONT_ROW_MOTORSPORTS_TEAM_1",
       "yearsLeft": 1,
       "salary": 18,
       "options": []
@@ -2401,7 +2401,7 @@ export const nascar2010Drivers: GlobalDriver[] = [
     "reputation": 32,
     "marketValue": 32,
     "contract": {
-      "teamId": "NASCAR_2010_TEAM_LATITUDE_43_MOTORSPORTS",
+      "teamId": "NASCAR_2010_TEAM_LATITUDE_43_MOTORSPORTS_TEAM_1",
       "yearsLeft": 1,
       "salary": 16,
       "options": []
@@ -2449,7 +2449,7 @@ export const nascar2010Drivers: GlobalDriver[] = [
     "reputation": 34,
     "marketValue": 34,
     "contract": {
-      "teamId": "NASCAR_2010_TEAM_TRG_MOTORSPORTS",
+      "teamId": "NASCAR_2010_TEAM_TRG_MOTORSPORTS_TEAM_1",
       "yearsLeft": 1,
       "salary": 17,
       "options": []
@@ -2497,7 +2497,7 @@ export const nascar2010Drivers: GlobalDriver[] = [
     "reputation": 31,
     "marketValue": 31,
     "contract": {
-      "teamId": "NASCAR_2010_TEAM_LATITUDE_43_MOTORSPORTS",
+      "teamId": "NASCAR_2010_TEAM_LATITUDE_43_MOTORSPORTS_TEAM_1",
       "yearsLeft": 1,
       "salary": 16,
       "options": []
@@ -2545,7 +2545,7 @@ export const nascar2010Drivers: GlobalDriver[] = [
     "reputation": 28,
     "marketValue": 28,
     "contract": {
-      "teamId": "NASCAR_2010_TEAM_GUNSELMAN_MOTORSPORTS",
+      "teamId": "NASCAR_2010_TEAM_GUNSELMAN_MOTORSPORTS_TEAM_1",
       "yearsLeft": 1,
       "salary": 14,
       "options": []
@@ -2593,7 +2593,7 @@ export const nascar2010Drivers: GlobalDriver[] = [
     "reputation": 32,
     "marketValue": 32,
     "contract": {
-      "teamId": "NASCAR_2010_TEAM_FRONT_ROW_MOTORSPORTS",
+      "teamId": "NASCAR_2010_TEAM_FRONT_ROW_MOTORSPORTS_TEAM_2",
       "yearsLeft": 1,
       "salary": 16,
       "options": []
@@ -2641,7 +2641,7 @@ export const nascar2010Drivers: GlobalDriver[] = [
     "reputation": 26,
     "marketValue": 26,
     "contract": {
-      "teamId": "NASCAR_2010_TEAM_MICHAEL_WALTRIP_RACING",
+      "teamId": "NASCAR_2010_TEAM_MICHAEL_WALTRIP_RACING_TEAM_2",
       "yearsLeft": 1,
       "salary": 13,
       "options": []
@@ -2689,7 +2689,7 @@ export const nascar2010Drivers: GlobalDriver[] = [
     "reputation": 30,
     "marketValue": 30,
     "contract": {
-      "teamId": "NASCAR_2010_TEAM_ROBBY_GORDON_MOTORSPORTS",
+      "teamId": "NASCAR_2010_TEAM_ROBBY_GORDON_MOTORSPORTS_TEAM_1",
       "yearsLeft": 1,
       "salary": 15,
       "options": []
@@ -2737,7 +2737,7 @@ export const nascar2010Drivers: GlobalDriver[] = [
     "reputation": 27,
     "marketValue": 27,
     "contract": {
-      "teamId": "NASCAR_2010_TEAM_LATITUDE_43_MOTORSPORTS",
+      "teamId": "NASCAR_2010_TEAM_LATITUDE_43_MOTORSPORTS_TEAM_1",
       "yearsLeft": 1,
       "salary": 14,
       "options": []
@@ -2785,7 +2785,7 @@ export const nascar2010Drivers: GlobalDriver[] = [
     "reputation": 30,
     "marketValue": 30,
     "contract": {
-      "teamId": "NASCAR_2010_TEAM_RED_BULL_RACING",
+      "teamId": "NASCAR_2010_TEAM_RED_BULL_RACING_TEAM_1",
       "yearsLeft": 1,
       "salary": 15,
       "options": []
@@ -2833,7 +2833,7 @@ export const nascar2010Drivers: GlobalDriver[] = [
     "reputation": 25,
     "marketValue": 25,
     "contract": {
-      "teamId": "NASCAR_2010_TEAM_WHITNEY_MOTORSPORTS",
+      "teamId": "NASCAR_2010_TEAM_WHITNEY_MOTORSPORTS_TEAM_1",
       "yearsLeft": 1,
       "salary": 12,
       "options": []
@@ -2881,7 +2881,7 @@ export const nascar2010Drivers: GlobalDriver[] = [
     "reputation": 22,
     "marketValue": 22,
     "contract": {
-      "teamId": "NASCAR_2010_TEAM_TOMMY_BALDWIN_RACING",
+      "teamId": "NASCAR_2010_TEAM_TOMMY_BALDWIN_RACING_TEAM_1",
       "yearsLeft": 1,
       "salary": 11,
       "options": []
@@ -2929,7 +2929,7 @@ export const nascar2010Drivers: GlobalDriver[] = [
     "reputation": 26,
     "marketValue": 26,
     "contract": {
-      "teamId": "NASCAR_2010_TEAM_TRG_MOTORSPORTS",
+      "teamId": "NASCAR_2010_TEAM_TRG_MOTORSPORTS_TEAM_1",
       "yearsLeft": 1,
       "salary": 13,
       "options": []
@@ -2977,7 +2977,7 @@ export const nascar2010Drivers: GlobalDriver[] = [
     "reputation": 20,
     "marketValue": 20,
     "contract": {
-      "teamId": "NASCAR_2010_TEAM_TOMMY_BALDWIN_RACING",
+      "teamId": "NASCAR_2010_TEAM_TOMMY_BALDWIN_RACING_TEAM_1",
       "yearsLeft": 1,
       "salary": 10,
       "options": []
@@ -3025,7 +3025,7 @@ export const nascar2010Drivers: GlobalDriver[] = [
     "reputation": 23,
     "marketValue": 23,
     "contract": {
-      "teamId": "NASCAR_2010_TEAM_PHOENIX_RACING",
+      "teamId": "NASCAR_2010_TEAM_PHOENIX_RACING_TEAM_1",
       "yearsLeft": 1,
       "salary": 12,
       "options": []
@@ -3073,7 +3073,7 @@ export const nascar2010Drivers: GlobalDriver[] = [
     "reputation": 20,
     "marketValue": 20,
     "contract": {
-      "teamId": "NASCAR_2010_TEAM_KEYED_UP_MOTORSPORTS",
+      "teamId": "NASCAR_2010_TEAM_KEYED_UP_MOTORSPORTS_TEAM_1",
       "yearsLeft": 1,
       "salary": 10,
       "options": []
@@ -3121,7 +3121,7 @@ export const nascar2010Drivers: GlobalDriver[] = [
     "reputation": 21,
     "marketValue": 21,
     "contract": {
-      "teamId": "NASCAR_2010_TEAM_LATITUDE_43_MOTORSPORTS",
+      "teamId": "NASCAR_2010_TEAM_LATITUDE_43_MOTORSPORTS_TEAM_1",
       "yearsLeft": 1,
       "salary": 10,
       "options": []
@@ -3169,7 +3169,7 @@ export const nascar2010Drivers: GlobalDriver[] = [
     "reputation": 21,
     "marketValue": 21,
     "contract": {
-      "teamId": "NASCAR_2010_TEAM_WOOD_BROTHERS_RACING",
+      "teamId": "NASCAR_2010_TEAM_WOOD_BROTHERS_RACING_TEAM_1",
       "yearsLeft": 1,
       "salary": 10,
       "options": []
@@ -3217,7 +3217,7 @@ export const nascar2010Drivers: GlobalDriver[] = [
     "reputation": 22,
     "marketValue": 22,
     "contract": {
-      "teamId": "NASCAR_2010_TEAM_TRG_MOTORSPORTS",
+      "teamId": "NASCAR_2010_TEAM_TRG_MOTORSPORTS_TEAM_1",
       "yearsLeft": 1,
       "salary": 11,
       "options": []
@@ -3265,7 +3265,7 @@ export const nascar2010Drivers: GlobalDriver[] = [
     "reputation": 15,
     "marketValue": 15,
     "contract": {
-      "teamId": "NASCAR_2010_TEAM_STAVOLA_LABONTE_RACING",
+      "teamId": "NASCAR_2010_TEAM_STAVOLA_LABONTE_RACING_TEAM_1",
       "yearsLeft": 1,
       "salary": 8,
       "options": []
@@ -3313,7 +3313,7 @@ export const nascar2010Drivers: GlobalDriver[] = [
     "reputation": 18,
     "marketValue": 18,
     "contract": {
-      "teamId": "NASCAR_2010_TEAM_BRAUN_RACING",
+      "teamId": "NASCAR_2010_TEAM_BRAUN_RACING_TEAM_1",
       "yearsLeft": 1,
       "salary": 9,
       "options": []
@@ -3361,7 +3361,7 @@ export const nascar2010Drivers: GlobalDriver[] = [
     "reputation": 18,
     "marketValue": 18,
     "contract": {
-      "teamId": "NASCAR_2010_TEAM_BRAUN_RACING",
+      "teamId": "NASCAR_2010_TEAM_BRAUN_RACING_TEAM_1",
       "yearsLeft": 1,
       "salary": 9,
       "options": []
@@ -3409,7 +3409,7 @@ export const nascar2010Drivers: GlobalDriver[] = [
     "reputation": 19,
     "marketValue": 19,
     "contract": {
-      "teamId": "NASCAR_2010_TEAM_FRONT_ROW_MOTORSPORTS",
+      "teamId": "NASCAR_2010_TEAM_FRONT_ROW_MOTORSPORTS_TEAM_1",
       "yearsLeft": 1,
       "salary": 10,
       "options": []
@@ -3457,7 +3457,7 @@ export const nascar2010Drivers: GlobalDriver[] = [
     "reputation": 13,
     "marketValue": 13,
     "contract": {
-      "teamId": "NASCAR_2010_TEAM_TOMMY_BALDWIN_RACING",
+      "teamId": "NASCAR_2010_TEAM_TOMMY_BALDWIN_RACING_TEAM_1",
       "yearsLeft": 1,
       "salary": 6,
       "options": []
@@ -3505,7 +3505,7 @@ export const nascar2010Drivers: GlobalDriver[] = [
     "reputation": 13,
     "marketValue": 13,
     "contract": {
-      "teamId": "NASCAR_2010_TEAM_TOMMY_BALDWIN_RACING",
+      "teamId": "NASCAR_2010_TEAM_TOMMY_BALDWIN_RACING_TEAM_1",
       "yearsLeft": 1,
       "salary": 6,
       "options": []
@@ -3553,7 +3553,7 @@ export const nascar2010Drivers: GlobalDriver[] = [
     "reputation": 69,
     "marketValue": 69,
     "contract": {
-      "teamId": "NASCAR_2010_TEAM_NEMCO_MOTORSPORTS",
+      "teamId": "NASCAR_2010_TEAM_NEMCO_MOTORSPORTS_TEAM_2",
       "yearsLeft": 1,
       "salary": 34,
       "options": []
@@ -3601,7 +3601,7 @@ export const nascar2010Drivers: GlobalDriver[] = [
     "reputation": 16,
     "marketValue": 16,
     "contract": {
-      "teamId": "NASCAR_2010_TEAM_TRG_MOTORSPORTS",
+      "teamId": "NASCAR_2010_TEAM_TRG_MOTORSPORTS_TEAM_1",
       "yearsLeft": 1,
       "salary": 8,
       "options": []
@@ -3649,7 +3649,7 @@ export const nascar2010Drivers: GlobalDriver[] = [
     "reputation": 75,
     "marketValue": 75,
     "contract": {
-      "teamId": "NASCAR_2010_TEAM_ASH_RACING",
+      "teamId": "NASCAR_2010_TEAM_ASH_RACING_TEAM_1",
       "yearsLeft": 1,
       "salary": 38,
       "options": []
@@ -3697,7 +3697,7 @@ export const nascar2010Drivers: GlobalDriver[] = [
     "reputation": 56,
     "marketValue": 56,
     "contract": {
-      "teamId": "NASCAR_2010_TEAM_TOMMY_BALDWIN_RACING",
+      "teamId": "NASCAR_2010_TEAM_TOMMY_BALDWIN_RACING_TEAM_1",
       "yearsLeft": 1,
       "salary": 28,
       "options": []
@@ -3745,7 +3745,7 @@ export const nascar2010Drivers: GlobalDriver[] = [
     "reputation": 61,
     "marketValue": 61,
     "contract": {
-      "teamId": "NASCAR_2010_TEAM_GUNSELMAN_MOTORSPORTS",
+      "teamId": "NASCAR_2010_TEAM_GUNSELMAN_MOTORSPORTS_TEAM_1",
       "yearsLeft": 1,
       "salary": 30,
       "options": []
@@ -3793,7 +3793,7 @@ export const nascar2010Drivers: GlobalDriver[] = [
     "reputation": 48,
     "marketValue": 48,
     "contract": {
-      "teamId": "NASCAR_2010_TEAM_PRISM_MOTORSPORTS",
+      "teamId": "NASCAR_2010_TEAM_PRISM_MOTORSPORTS_TEAM_1",
       "yearsLeft": 1,
       "salary": 24,
       "options": []
@@ -3841,7 +3841,7 @@ export const nascar2010Drivers: GlobalDriver[] = [
     "reputation": 45,
     "marketValue": 45,
     "contract": {
-      "teamId": "NASCAR_2010_TEAM_MORGAN_MCCLURE_MOTORSPORTS",
+      "teamId": "NASCAR_2010_TEAM_MORGAN_MCCLURE_MOTORSPORTS_TEAM_1",
       "yearsLeft": 1,
       "salary": 22,
       "options": []
@@ -3889,7 +3889,7 @@ export const nascar2010Drivers: GlobalDriver[] = [
     "reputation": 35,
     "marketValue": 35,
     "contract": {
-      "teamId": "NASCAR_2010_TEAM_TRI_STAR_MOTORSPORTS",
+      "teamId": "NASCAR_2010_TEAM_TRI_STAR_MOTORSPORTS_TEAM_1",
       "yearsLeft": 1,
       "salary": 18,
       "options": []
@@ -3937,7 +3937,7 @@ export const nascar2010Drivers: GlobalDriver[] = [
     "reputation": 27,
     "marketValue": 27,
     "contract": {
-      "teamId": "NASCAR_2010_TEAM_K_AUTOMOTIVE_MOTORSPORTS",
+      "teamId": "NASCAR_2010_TEAM_K_AUTOMOTIVE_MOTORSPORTS_TEAM_1",
       "yearsLeft": 1,
       "salary": 14,
       "options": []
@@ -3985,7 +3985,7 @@ export const nascar2010Drivers: GlobalDriver[] = [
     "reputation": 32,
     "marketValue": 32,
     "contract": {
-      "teamId": "NASCAR_2010_TEAM_STRATUS_RACING_GROUP",
+      "teamId": "NASCAR_2010_TEAM_STRATUS_RACING_GROUP_TEAM_1",
       "yearsLeft": 1,
       "salary": 16,
       "options": []
@@ -4033,7 +4033,7 @@ export const nascar2010Drivers: GlobalDriver[] = [
     "reputation": 24,
     "marketValue": 24,
     "contract": {
-      "teamId": "NASCAR_2010_TEAM_K_AUTOMOTIVE_MOTORSPORTS",
+      "teamId": "NASCAR_2010_TEAM_K_AUTOMOTIVE_MOTORSPORTS_TEAM_1",
       "yearsLeft": 1,
       "salary": 12,
       "options": []
@@ -4081,7 +4081,7 @@ export const nascar2010Drivers: GlobalDriver[] = [
     "reputation": 17,
     "marketValue": 17,
     "contract": {
-      "teamId": "NASCAR_2010_TEAM_NORM_BENNING_RACING",
+      "teamId": "NASCAR_2010_TEAM_NORM_BENNING_RACING_TEAM_1",
       "yearsLeft": 1,
       "salary": 8,
       "options": []
@@ -4091,20 +4091,20 @@ export const nascar2010Drivers: GlobalDriver[] = [
 
 export const nascar2010Teams: GlobalTeam[] = [
   {
-    "teamLineageId": "NASCAR_2010_TEAM_ASH_RACING",
+    "teamLineageId": "NASCAR_2010_TEAM_ASH_RACING_TEAM_1",
     "series": "NASCAR",
-    "canonicalName": "Ash Racing",
+    "canonicalName": "Ash Racing Team 1",
     "namePerPeriod": [
       {
         "fromYear": 2010,
         "toYear": 2010,
-        "name": "Ash Racing"
+        "name": "Ash Racing Team 1"
       }
     ],
     "nameChangeEvents": [
       {
         "year": 2010,
-        "newName": "Ash Racing",
+        "newName": "Ash Racing Team 1",
         "note": "First season this lineage appears in uploaded source data."
       }
     ],
@@ -4120,20 +4120,20 @@ export const nascar2010Teams: GlobalTeam[] = [
     "budget": 86000000
   },
   {
-    "teamLineageId": "NASCAR_2010_TEAM_BAM_RACING",
+    "teamLineageId": "NASCAR_2010_TEAM_BAM_RACING_TEAM_1",
     "series": "NASCAR",
-    "canonicalName": "BAM Racing",
+    "canonicalName": "BAM Racing Team 1",
     "namePerPeriod": [
       {
         "fromYear": 2010,
         "toYear": 2010,
-        "name": "BAM Racing"
+        "name": "BAM Racing Team 1"
       }
     ],
     "nameChangeEvents": [
       {
         "year": 2010,
-        "newName": "BAM Racing",
+        "newName": "BAM Racing Team 1",
         "note": "First season this lineage appears in uploaded source data."
       }
     ],
@@ -4149,20 +4149,20 @@ export const nascar2010Teams: GlobalTeam[] = [
     "budget": 28000000
   },
   {
-    "teamLineageId": "NASCAR_2010_TEAM_BRAUN_RACING",
+    "teamLineageId": "NASCAR_2010_TEAM_BRAUN_RACING_TEAM_1_TEAM_1",
     "series": "NASCAR",
-    "canonicalName": "Braun Racing",
+    "canonicalName": "Braun Racing Team 1 team 1",
     "namePerPeriod": [
       {
         "fromYear": 2010,
         "toYear": 2010,
-        "name": "Braun Racing"
+        "name": "Braun Racing Team 1 team 1"
       }
     ],
     "nameChangeEvents": [
       {
         "year": 2010,
-        "newName": "Braun Racing",
+        "newName": "Braun Racing Team 1 team 1",
         "note": "First season this lineage appears in uploaded source data."
       }
     ],
@@ -4178,20 +4178,49 @@ export const nascar2010Teams: GlobalTeam[] = [
     "budget": 38000000
   },
   {
-    "teamLineageId": "NASCAR_2010_TEAM_EARNHARDT_GANASSI_RACING",
+    "teamLineageId": "NASCAR_2010_TEAM_BRAUN_RACING_TEAM_1_TEAM_2",
     "series": "NASCAR",
-    "canonicalName": "Earnhardt Ganassi Racing",
+    "canonicalName": "Braun Racing Team 1 team 2",
     "namePerPeriod": [
       {
         "fromYear": 2010,
         "toYear": 2010,
-        "name": "Earnhardt Ganassi Racing"
+        "name": "Braun Racing Team 1 team 2"
       }
     ],
     "nameChangeEvents": [
       {
         "year": 2010,
-        "newName": "Earnhardt Ganassi Racing",
+        "newName": "Braun Racing Team 1 team 2",
+        "note": "First season this lineage appears in uploaded source data."
+      }
+    ],
+    "reputation": 38,
+    "raceOperations": 38,
+    "pitCrewOperations": 37,
+    "developmentRate": 50,
+    "facilities": 38,
+    "sponsorStrength": 38,
+    "commercialStrength": 38,
+    "politicalInfluence": 38,
+    "financeHealth": 38,
+    "budget": 38000000
+  },
+  {
+    "teamLineageId": "NASCAR_2010_TEAM_EARNHARDT_GANASSI_RACING_TEAM_1",
+    "series": "NASCAR",
+    "canonicalName": "Earnhardt Ganassi Racing Team 1",
+    "namePerPeriod": [
+      {
+        "fromYear": 2010,
+        "toYear": 2010,
+        "name": "Earnhardt Ganassi Racing Team 1"
+      }
+    ],
+    "nameChangeEvents": [
+      {
+        "year": 2010,
+        "newName": "Earnhardt Ganassi Racing Team 1",
         "note": "First season this lineage appears in uploaded source data."
       }
     ],
@@ -4207,26 +4236,26 @@ export const nascar2010Teams: GlobalTeam[] = [
     "budget": 80000000
   },
   {
-    "teamLineageId": "NASCAR_2010_TEAM_FRONT_ROW_MOTORSPORTS_TEAM_1",
+    "teamLineageId": "NASCAR_2010_TEAM_FRONT_ROW_MOTORSPORTS_TEAM_1_TEAM_1",
     "series": "NASCAR",
-    "canonicalName": "Front Row Motorsports team 1",
+    "canonicalName": "Front Row Motorsports Team 1 team 1",
     "namePerPeriod": [
       {
         "fromYear": 2010,
         "toYear": 2010,
-        "name": "Front Row Motorsports team 1"
+        "name": "Front Row Motorsports Team 1 team 1"
       }
     ],
     "nameChangeEvents": [
       {
         "year": 2010,
-        "newName": "Front Row Motorsports team 1",
+        "newName": "Front Row Motorsports Team 1 team 1",
         "note": "First season this lineage appears in uploaded source data."
       }
     ],
     "reputation": 50,
     "raceOperations": 50,
-    "pitCrewOperations": 49,
+    "pitCrewOperations": 48,
     "developmentRate": 50,
     "facilities": 50,
     "sponsorStrength": 50,
@@ -4236,26 +4265,26 @@ export const nascar2010Teams: GlobalTeam[] = [
     "budget": 50000000
   },
   {
-    "teamLineageId": "NASCAR_2010_TEAM_FRONT_ROW_MOTORSPORTS_TEAM_2",
+    "teamLineageId": "NASCAR_2010_TEAM_FRONT_ROW_MOTORSPORTS_TEAM_1_TEAM_2",
     "series": "NASCAR",
-    "canonicalName": "Front Row Motorsports team 2",
+    "canonicalName": "Front Row Motorsports Team 1 team 2",
     "namePerPeriod": [
       {
         "fromYear": 2010,
         "toYear": 2010,
-        "name": "Front Row Motorsports team 2"
+        "name": "Front Row Motorsports Team 1 team 2"
       }
     ],
     "nameChangeEvents": [
       {
         "year": 2010,
-        "newName": "Front Row Motorsports team 2",
+        "newName": "Front Row Motorsports Team 1 team 2",
         "note": "First season this lineage appears in uploaded source data."
       }
     ],
     "reputation": 50,
     "raceOperations": 50,
-    "pitCrewOperations": 49,
+    "pitCrewOperations": 48,
     "developmentRate": 50,
     "facilities": 50,
     "sponsorStrength": 50,
@@ -4265,20 +4294,223 @@ export const nascar2010Teams: GlobalTeam[] = [
     "budget": 50000000
   },
   {
-    "teamLineageId": "NASCAR_2010_TEAM_FURNITURE_ROW_RACING",
+    "teamLineageId": "NASCAR_2010_TEAM_FRONT_ROW_MOTORSPORTS_TEAM_1_TEAM_3",
     "series": "NASCAR",
-    "canonicalName": "Furniture Row Racing",
+    "canonicalName": "Front Row Motorsports Team 1 team 3",
     "namePerPeriod": [
       {
         "fromYear": 2010,
         "toYear": 2010,
-        "name": "Furniture Row Racing"
+        "name": "Front Row Motorsports Team 1 team 3"
       }
     ],
     "nameChangeEvents": [
       {
         "year": 2010,
-        "newName": "Furniture Row Racing",
+        "newName": "Front Row Motorsports Team 1 team 3",
+        "note": "First season this lineage appears in uploaded source data."
+      }
+    ],
+    "reputation": 50,
+    "raceOperations": 50,
+    "pitCrewOperations": 48,
+    "developmentRate": 50,
+    "facilities": 50,
+    "sponsorStrength": 50,
+    "commercialStrength": 50,
+    "politicalInfluence": 50,
+    "financeHealth": 50,
+    "budget": 50000000
+  },
+  {
+    "teamLineageId": "NASCAR_2010_TEAM_FRONT_ROW_MOTORSPORTS_TEAM_1_TEAM_4",
+    "series": "NASCAR",
+    "canonicalName": "Front Row Motorsports Team 1 team 4",
+    "namePerPeriod": [
+      {
+        "fromYear": 2010,
+        "toYear": 2010,
+        "name": "Front Row Motorsports Team 1 team 4"
+      }
+    ],
+    "nameChangeEvents": [
+      {
+        "year": 2010,
+        "newName": "Front Row Motorsports Team 1 team 4",
+        "note": "First season this lineage appears in uploaded source data."
+      }
+    ],
+    "reputation": 50,
+    "raceOperations": 50,
+    "pitCrewOperations": 48,
+    "developmentRate": 50,
+    "facilities": 50,
+    "sponsorStrength": 50,
+    "commercialStrength": 50,
+    "politicalInfluence": 50,
+    "financeHealth": 50,
+    "budget": 50000000
+  },
+  {
+    "teamLineageId": "NASCAR_2010_TEAM_FRONT_ROW_MOTORSPORTS_TEAM_1_TEAM_5",
+    "series": "NASCAR",
+    "canonicalName": "Front Row Motorsports Team 1 team 5",
+    "namePerPeriod": [
+      {
+        "fromYear": 2010,
+        "toYear": 2010,
+        "name": "Front Row Motorsports Team 1 team 5"
+      }
+    ],
+    "nameChangeEvents": [
+      {
+        "year": 2010,
+        "newName": "Front Row Motorsports Team 1 team 5",
+        "note": "First season this lineage appears in uploaded source data."
+      }
+    ],
+    "reputation": 50,
+    "raceOperations": 50,
+    "pitCrewOperations": 48,
+    "developmentRate": 50,
+    "facilities": 50,
+    "sponsorStrength": 50,
+    "commercialStrength": 50,
+    "politicalInfluence": 50,
+    "financeHealth": 50,
+    "budget": 50000000
+  },
+  {
+    "teamLineageId": "NASCAR_2010_TEAM_FRONT_ROW_MOTORSPORTS_TEAM_1_TEAM_6",
+    "series": "NASCAR",
+    "canonicalName": "Front Row Motorsports Team 1 team 6",
+    "namePerPeriod": [
+      {
+        "fromYear": 2010,
+        "toYear": 2010,
+        "name": "Front Row Motorsports Team 1 team 6"
+      }
+    ],
+    "nameChangeEvents": [
+      {
+        "year": 2010,
+        "newName": "Front Row Motorsports Team 1 team 6",
+        "note": "First season this lineage appears in uploaded source data."
+      }
+    ],
+    "reputation": 50,
+    "raceOperations": 50,
+    "pitCrewOperations": 48,
+    "developmentRate": 50,
+    "facilities": 50,
+    "sponsorStrength": 50,
+    "commercialStrength": 50,
+    "politicalInfluence": 50,
+    "financeHealth": 50,
+    "budget": 50000000
+  },
+  {
+    "teamLineageId": "NASCAR_2010_TEAM_FRONT_ROW_MOTORSPORTS_TEAM_2_TEAM_1",
+    "series": "NASCAR",
+    "canonicalName": "Front Row Motorsports Team 2 team 1",
+    "namePerPeriod": [
+      {
+        "fromYear": 2010,
+        "toYear": 2010,
+        "name": "Front Row Motorsports Team 2 team 1"
+      }
+    ],
+    "nameChangeEvents": [
+      {
+        "year": 2010,
+        "newName": "Front Row Motorsports Team 2 team 1",
+        "note": "First season this lineage appears in uploaded source data."
+      }
+    ],
+    "reputation": 51,
+    "raceOperations": 51,
+    "pitCrewOperations": 50,
+    "developmentRate": 50,
+    "facilities": 51,
+    "sponsorStrength": 51,
+    "commercialStrength": 51,
+    "politicalInfluence": 51,
+    "financeHealth": 51,
+    "budget": 51000000
+  },
+  {
+    "teamLineageId": "NASCAR_2010_TEAM_FRONT_ROW_MOTORSPORTS_TEAM_2_TEAM_2",
+    "series": "NASCAR",
+    "canonicalName": "Front Row Motorsports Team 2 team 2",
+    "namePerPeriod": [
+      {
+        "fromYear": 2010,
+        "toYear": 2010,
+        "name": "Front Row Motorsports Team 2 team 2"
+      }
+    ],
+    "nameChangeEvents": [
+      {
+        "year": 2010,
+        "newName": "Front Row Motorsports Team 2 team 2",
+        "note": "First season this lineage appears in uploaded source data."
+      }
+    ],
+    "reputation": 51,
+    "raceOperations": 51,
+    "pitCrewOperations": 50,
+    "developmentRate": 50,
+    "facilities": 51,
+    "sponsorStrength": 51,
+    "commercialStrength": 51,
+    "politicalInfluence": 51,
+    "financeHealth": 51,
+    "budget": 51000000
+  },
+  {
+    "teamLineageId": "NASCAR_2010_TEAM_FRONT_ROW_MOTORSPORTS_TEAM_2_TEAM_3",
+    "series": "NASCAR",
+    "canonicalName": "Front Row Motorsports Team 2 team 3",
+    "namePerPeriod": [
+      {
+        "fromYear": 2010,
+        "toYear": 2010,
+        "name": "Front Row Motorsports Team 2 team 3"
+      }
+    ],
+    "nameChangeEvents": [
+      {
+        "year": 2010,
+        "newName": "Front Row Motorsports Team 2 team 3",
+        "note": "First season this lineage appears in uploaded source data."
+      }
+    ],
+    "reputation": 51,
+    "raceOperations": 51,
+    "pitCrewOperations": 50,
+    "developmentRate": 50,
+    "facilities": 51,
+    "sponsorStrength": 51,
+    "commercialStrength": 51,
+    "politicalInfluence": 51,
+    "financeHealth": 51,
+    "budget": 51000000
+  },
+  {
+    "teamLineageId": "NASCAR_2010_TEAM_FURNITURE_ROW_RACING_TEAM_1",
+    "series": "NASCAR",
+    "canonicalName": "Furniture Row Racing Team 1",
+    "namePerPeriod": [
+      {
+        "fromYear": 2010,
+        "toYear": 2010,
+        "name": "Furniture Row Racing Team 1"
+      }
+    ],
+    "nameChangeEvents": [
+      {
+        "year": 2010,
+        "newName": "Furniture Row Racing Team 1",
         "note": "First season this lineage appears in uploaded source data."
       }
     ],
@@ -4294,20 +4526,20 @@ export const nascar2010Teams: GlobalTeam[] = [
     "budget": 65000000
   },
   {
-    "teamLineageId": "NASCAR_2010_TEAM_GERMAIN_RACING",
+    "teamLineageId": "NASCAR_2010_TEAM_GERMAIN_RACING_TEAM_1",
     "series": "NASCAR",
-    "canonicalName": "Germain Racing",
+    "canonicalName": "Germain Racing Team 1",
     "namePerPeriod": [
       {
         "fromYear": 2010,
         "toYear": 2010,
-        "name": "Germain Racing"
+        "name": "Germain Racing Team 1"
       }
     ],
     "nameChangeEvents": [
       {
         "year": 2010,
-        "newName": "Germain Racing",
+        "newName": "Germain Racing Team 1",
         "note": "First season this lineage appears in uploaded source data."
       }
     ],
@@ -4323,20 +4555,78 @@ export const nascar2010Teams: GlobalTeam[] = [
     "budget": 47000000
   },
   {
-    "teamLineageId": "NASCAR_2010_TEAM_GUNSELMAN_MOTORSPORTS",
+    "teamLineageId": "NASCAR_2010_TEAM_GUNSELMAN_MOTORSPORTS_TEAM_1_TEAM_1",
     "series": "NASCAR",
-    "canonicalName": "Gunselman Motorsports",
+    "canonicalName": "Gunselman Motorsports Team 1 team 1",
     "namePerPeriod": [
       {
         "fromYear": 2010,
         "toYear": 2010,
-        "name": "Gunselman Motorsports"
+        "name": "Gunselman Motorsports Team 1 team 1"
       }
     ],
     "nameChangeEvents": [
       {
         "year": 2010,
-        "newName": "Gunselman Motorsports",
+        "newName": "Gunselman Motorsports Team 1 team 1",
+        "note": "First season this lineage appears in uploaded source data."
+      }
+    ],
+    "reputation": 26,
+    "raceOperations": 26,
+    "pitCrewOperations": 25,
+    "developmentRate": 50,
+    "facilities": 26,
+    "sponsorStrength": 26,
+    "commercialStrength": 26,
+    "politicalInfluence": 26,
+    "financeHealth": 26,
+    "budget": 26000000
+  },
+  {
+    "teamLineageId": "NASCAR_2010_TEAM_GUNSELMAN_MOTORSPORTS_TEAM_1_TEAM_2",
+    "series": "NASCAR",
+    "canonicalName": "Gunselman Motorsports Team 1 team 2",
+    "namePerPeriod": [
+      {
+        "fromYear": 2010,
+        "toYear": 2010,
+        "name": "Gunselman Motorsports Team 1 team 2"
+      }
+    ],
+    "nameChangeEvents": [
+      {
+        "year": 2010,
+        "newName": "Gunselman Motorsports Team 1 team 2",
+        "note": "First season this lineage appears in uploaded source data."
+      }
+    ],
+    "reputation": 26,
+    "raceOperations": 26,
+    "pitCrewOperations": 25,
+    "developmentRate": 50,
+    "facilities": 26,
+    "sponsorStrength": 26,
+    "commercialStrength": 26,
+    "politicalInfluence": 26,
+    "financeHealth": 26,
+    "budget": 26000000
+  },
+  {
+    "teamLineageId": "NASCAR_2010_TEAM_GUNSELMAN_MOTORSPORTS_TEAM_1_TEAM_3",
+    "series": "NASCAR",
+    "canonicalName": "Gunselman Motorsports Team 1 team 3",
+    "namePerPeriod": [
+      {
+        "fromYear": 2010,
+        "toYear": 2010,
+        "name": "Gunselman Motorsports Team 1 team 3"
+      }
+    ],
+    "nameChangeEvents": [
+      {
+        "year": 2010,
+        "newName": "Gunselman Motorsports Team 1 team 3",
         "note": "First season this lineage appears in uploaded source data."
       }
     ],
@@ -4354,76 +4644,76 @@ export const nascar2010Teams: GlobalTeam[] = [
   {
     "teamLineageId": "NASCAR_2010_TEAM_HENDRICK_MOTORSPORTS_TEAM_1",
     "series": "NASCAR",
-    "canonicalName": "Hendrick Motorsports team 1",
+    "canonicalName": "Hendrick Motorsports Team 1",
     "namePerPeriod": [
       {
         "fromYear": 2010,
         "toYear": 2010,
-        "name": "Hendrick Motorsports team 1"
+        "name": "Hendrick Motorsports Team 1"
       }
     ],
     "nameChangeEvents": [
       {
         "year": 2010,
-        "newName": "Hendrick Motorsports team 1",
+        "newName": "Hendrick Motorsports Team 1",
         "note": "First season this lineage appears in uploaded source data."
       }
     ],
-    "reputation": 98,
-    "raceOperations": 98,
-    "pitCrewOperations": 99,
+    "reputation": 97,
+    "raceOperations": 97,
+    "pitCrewOperations": 98,
     "developmentRate": 50,
-    "facilities": 98,
-    "sponsorStrength": 98,
-    "commercialStrength": 98,
-    "politicalInfluence": 98,
-    "financeHealth": 98,
-    "budget": 98000000
+    "facilities": 97,
+    "sponsorStrength": 97,
+    "commercialStrength": 97,
+    "politicalInfluence": 97,
+    "financeHealth": 97,
+    "budget": 97000000
   },
   {
     "teamLineageId": "NASCAR_2010_TEAM_HENDRICK_MOTORSPORTS_TEAM_2",
     "series": "NASCAR",
-    "canonicalName": "Hendrick Motorsports team 2",
+    "canonicalName": "Hendrick Motorsports Team 2",
     "namePerPeriod": [
       {
         "fromYear": 2010,
         "toYear": 2010,
-        "name": "Hendrick Motorsports team 2"
+        "name": "Hendrick Motorsports Team 2"
       }
     ],
     "nameChangeEvents": [
       {
         "year": 2010,
-        "newName": "Hendrick Motorsports team 2",
+        "newName": "Hendrick Motorsports Team 2",
         "note": "First season this lineage appears in uploaded source data."
       }
     ],
-    "reputation": 98,
-    "raceOperations": 98,
-    "pitCrewOperations": 99,
+    "reputation": 100,
+    "raceOperations": 100,
+    "pitCrewOperations": 100,
     "developmentRate": 50,
-    "facilities": 98,
-    "sponsorStrength": 98,
-    "commercialStrength": 98,
-    "politicalInfluence": 98,
-    "financeHealth": 98,
-    "budget": 98000000
+    "facilities": 100,
+    "sponsorStrength": 100,
+    "commercialStrength": 100,
+    "politicalInfluence": 100,
+    "financeHealth": 100,
+    "budget": 100000000
   },
   {
-    "teamLineageId": "NASCAR_2010_TEAM_JTG_DAUGHERTY_RACING_WITH_MICHAEL_WALTRIP_RACING",
+    "teamLineageId": "NASCAR_2010_TEAM_JTG_DAUGHERTY_RACING_WITH_MICHAEL_WALTRIP_RACING_TEAM_1",
     "series": "NASCAR",
-    "canonicalName": "JTG Daugherty Racing with Michael Waltrip Racing",
+    "canonicalName": "JTG Daugherty Racing with Michael Waltrip Racing Team 1",
     "namePerPeriod": [
       {
         "fromYear": 2010,
         "toYear": 2010,
-        "name": "JTG Daugherty Racing with Michael Waltrip Racing"
+        "name": "JTG Daugherty Racing with Michael Waltrip Racing Team 1"
       }
     ],
     "nameChangeEvents": [
       {
         "year": 2010,
-        "newName": "JTG Daugherty Racing with Michael Waltrip Racing",
+        "newName": "JTG Daugherty Racing with Michael Waltrip Racing Team 1",
         "note": "First season this lineage appears in uploaded source data."
       }
     ],
@@ -4441,76 +4731,76 @@ export const nascar2010Teams: GlobalTeam[] = [
   {
     "teamLineageId": "NASCAR_2010_TEAM_JOE_GIBBS_RACING_TEAM_1",
     "series": "NASCAR",
-    "canonicalName": "Joe Gibbs Racing team 1",
+    "canonicalName": "Joe Gibbs Racing Team 1",
     "namePerPeriod": [
       {
         "fromYear": 2010,
         "toYear": 2010,
-        "name": "Joe Gibbs Racing team 1"
+        "name": "Joe Gibbs Racing Team 1"
       }
     ],
     "nameChangeEvents": [
       {
         "year": 2010,
-        "newName": "Joe Gibbs Racing team 1",
+        "newName": "Joe Gibbs Racing Team 1",
         "note": "First season this lineage appears in uploaded source data."
       }
     ],
-    "reputation": 91,
-    "raceOperations": 91,
-    "pitCrewOperations": 92,
+    "reputation": 100,
+    "raceOperations": 100,
+    "pitCrewOperations": 100,
     "developmentRate": 50,
-    "facilities": 91,
-    "sponsorStrength": 91,
-    "commercialStrength": 91,
-    "politicalInfluence": 91,
-    "financeHealth": 91,
-    "budget": 91000000
+    "facilities": 100,
+    "sponsorStrength": 100,
+    "commercialStrength": 100,
+    "politicalInfluence": 100,
+    "financeHealth": 100,
+    "budget": 100000000
   },
   {
     "teamLineageId": "NASCAR_2010_TEAM_JOE_GIBBS_RACING_TEAM_2",
     "series": "NASCAR",
-    "canonicalName": "Joe Gibbs Racing team 2",
+    "canonicalName": "Joe Gibbs Racing Team 2",
     "namePerPeriod": [
       {
         "fromYear": 2010,
         "toYear": 2010,
-        "name": "Joe Gibbs Racing team 2"
+        "name": "Joe Gibbs Racing Team 2"
       }
     ],
     "nameChangeEvents": [
       {
         "year": 2010,
-        "newName": "Joe Gibbs Racing team 2",
+        "newName": "Joe Gibbs Racing Team 2",
         "note": "First season this lineage appears in uploaded source data."
       }
     ],
-    "reputation": 91,
-    "raceOperations": 91,
-    "pitCrewOperations": 92,
+    "reputation": 81,
+    "raceOperations": 81,
+    "pitCrewOperations": 83,
     "developmentRate": 50,
-    "facilities": 91,
-    "sponsorStrength": 91,
-    "commercialStrength": 91,
-    "politicalInfluence": 91,
-    "financeHealth": 91,
-    "budget": 91000000
+    "facilities": 81,
+    "sponsorStrength": 81,
+    "commercialStrength": 81,
+    "politicalInfluence": 81,
+    "financeHealth": 81,
+    "budget": 81000000
   },
   {
-    "teamLineageId": "NASCAR_2010_TEAM_K_AUTOMOTIVE_MOTORSPORTS",
+    "teamLineageId": "NASCAR_2010_TEAM_K_AUTOMOTIVE_MOTORSPORTS_TEAM_1",
     "series": "NASCAR",
-    "canonicalName": "K-Automotive Motorsports",
+    "canonicalName": "K-Automotive Motorsports Team 1",
     "namePerPeriod": [
       {
         "fromYear": 2010,
         "toYear": 2010,
-        "name": "K-Automotive Motorsports"
+        "name": "K-Automotive Motorsports Team 1"
       }
     ],
     "nameChangeEvents": [
       {
         "year": 2010,
-        "newName": "K-Automotive Motorsports",
+        "newName": "K-Automotive Motorsports Team 1",
         "note": "First season this lineage appears in uploaded source data."
       }
     ],
@@ -4526,20 +4816,20 @@ export const nascar2010Teams: GlobalTeam[] = [
     "budget": 30000000
   },
   {
-    "teamLineageId": "NASCAR_2010_TEAM_KEYED_UP_MOTORSPORTS",
+    "teamLineageId": "NASCAR_2010_TEAM_KEYED_UP_MOTORSPORTS_TEAM_1",
     "series": "NASCAR",
-    "canonicalName": "Keyed-Up Motorsports",
+    "canonicalName": "Keyed-Up Motorsports Team 1",
     "namePerPeriod": [
       {
         "fromYear": 2010,
         "toYear": 2010,
-        "name": "Keyed-Up Motorsports"
+        "name": "Keyed-Up Motorsports Team 1"
       }
     ],
     "nameChangeEvents": [
       {
         "year": 2010,
-        "newName": "Keyed-Up Motorsports",
+        "newName": "Keyed-Up Motorsports Team 1",
         "note": "First season this lineage appears in uploaded source data."
       }
     ],
@@ -4555,20 +4845,20 @@ export const nascar2010Teams: GlobalTeam[] = [
     "budget": 20000000
   },
   {
-    "teamLineageId": "NASCAR_2010_TEAM_KIRK_SHELMERDINE_RACING",
+    "teamLineageId": "NASCAR_2010_TEAM_KIRK_SHELMERDINE_RACING_TEAM_1",
     "series": "NASCAR",
-    "canonicalName": "Kirk Shelmerdine Racing",
+    "canonicalName": "Kirk Shelmerdine Racing Team 1",
     "namePerPeriod": [
       {
         "fromYear": 2010,
         "toYear": 2010,
-        "name": "Kirk Shelmerdine Racing"
+        "name": "Kirk Shelmerdine Racing Team 1"
       }
     ],
     "nameChangeEvents": [
       {
         "year": 2010,
-        "newName": "Kirk Shelmerdine Racing",
+        "newName": "Kirk Shelmerdine Racing Team 1",
         "note": "First season this lineage appears in uploaded source data."
       }
     ],
@@ -4584,20 +4874,107 @@ export const nascar2010Teams: GlobalTeam[] = [
     "budget": 29000000
   },
   {
-    "teamLineageId": "NASCAR_2010_TEAM_LATITUDE_43_MOTORSPORTS",
+    "teamLineageId": "NASCAR_2010_TEAM_LATITUDE_43_MOTORSPORTS_TEAM_1_TEAM_1",
     "series": "NASCAR",
-    "canonicalName": "Latitude 43 Motorsports",
+    "canonicalName": "Latitude 43 Motorsports Team 1 team 1",
     "namePerPeriod": [
       {
         "fromYear": 2010,
         "toYear": 2010,
-        "name": "Latitude 43 Motorsports"
+        "name": "Latitude 43 Motorsports Team 1 team 1"
       }
     ],
     "nameChangeEvents": [
       {
         "year": 2010,
-        "newName": "Latitude 43 Motorsports",
+        "newName": "Latitude 43 Motorsports Team 1 team 1",
+        "note": "First season this lineage appears in uploaded source data."
+      }
+    ],
+    "reputation": 34,
+    "raceOperations": 34,
+    "pitCrewOperations": 32,
+    "developmentRate": 50,
+    "facilities": 34,
+    "sponsorStrength": 34,
+    "commercialStrength": 34,
+    "politicalInfluence": 34,
+    "financeHealth": 34,
+    "budget": 34000000
+  },
+  {
+    "teamLineageId": "NASCAR_2010_TEAM_LATITUDE_43_MOTORSPORTS_TEAM_1_TEAM_2",
+    "series": "NASCAR",
+    "canonicalName": "Latitude 43 Motorsports Team 1 team 2",
+    "namePerPeriod": [
+      {
+        "fromYear": 2010,
+        "toYear": 2010,
+        "name": "Latitude 43 Motorsports Team 1 team 2"
+      }
+    ],
+    "nameChangeEvents": [
+      {
+        "year": 2010,
+        "newName": "Latitude 43 Motorsports Team 1 team 2",
+        "note": "First season this lineage appears in uploaded source data."
+      }
+    ],
+    "reputation": 34,
+    "raceOperations": 34,
+    "pitCrewOperations": 32,
+    "developmentRate": 50,
+    "facilities": 34,
+    "sponsorStrength": 34,
+    "commercialStrength": 34,
+    "politicalInfluence": 34,
+    "financeHealth": 34,
+    "budget": 34000000
+  },
+  {
+    "teamLineageId": "NASCAR_2010_TEAM_LATITUDE_43_MOTORSPORTS_TEAM_1_TEAM_3",
+    "series": "NASCAR",
+    "canonicalName": "Latitude 43 Motorsports Team 1 team 3",
+    "namePerPeriod": [
+      {
+        "fromYear": 2010,
+        "toYear": 2010,
+        "name": "Latitude 43 Motorsports Team 1 team 3"
+      }
+    ],
+    "nameChangeEvents": [
+      {
+        "year": 2010,
+        "newName": "Latitude 43 Motorsports Team 1 team 3",
+        "note": "First season this lineage appears in uploaded source data."
+      }
+    ],
+    "reputation": 34,
+    "raceOperations": 34,
+    "pitCrewOperations": 32,
+    "developmentRate": 50,
+    "facilities": 34,
+    "sponsorStrength": 34,
+    "commercialStrength": 34,
+    "politicalInfluence": 34,
+    "financeHealth": 34,
+    "budget": 34000000
+  },
+  {
+    "teamLineageId": "NASCAR_2010_TEAM_LATITUDE_43_MOTORSPORTS_TEAM_1_TEAM_4",
+    "series": "NASCAR",
+    "canonicalName": "Latitude 43 Motorsports Team 1 team 4",
+    "namePerPeriod": [
+      {
+        "fromYear": 2010,
+        "toYear": 2010,
+        "name": "Latitude 43 Motorsports Team 1 team 4"
+      }
+    ],
+    "nameChangeEvents": [
+      {
+        "year": 2010,
+        "newName": "Latitude 43 Motorsports Team 1 team 4",
         "note": "First season this lineage appears in uploaded source data."
       }
     ],
@@ -4615,76 +4992,163 @@ export const nascar2010Teams: GlobalTeam[] = [
   {
     "teamLineageId": "NASCAR_2010_TEAM_MICHAEL_WALTRIP_RACING_TEAM_1",
     "series": "NASCAR",
-    "canonicalName": "Michael Waltrip Racing team 1",
+    "canonicalName": "Michael Waltrip Racing Team 1",
     "namePerPeriod": [
       {
         "fromYear": 2010,
         "toYear": 2010,
-        "name": "Michael Waltrip Racing team 1"
+        "name": "Michael Waltrip Racing Team 1"
       }
     ],
     "nameChangeEvents": [
       {
         "year": 2010,
-        "newName": "Michael Waltrip Racing team 1",
+        "newName": "Michael Waltrip Racing Team 1",
         "note": "First season this lineage appears in uploaded source data."
       }
     ],
-    "reputation": 52,
-    "raceOperations": 52,
-    "pitCrewOperations": 51,
+    "reputation": 76,
+    "raceOperations": 76,
+    "pitCrewOperations": 74,
     "developmentRate": 50,
-    "facilities": 52,
-    "sponsorStrength": 52,
-    "commercialStrength": 52,
-    "politicalInfluence": 52,
-    "financeHealth": 52,
-    "budget": 52000000
+    "facilities": 76,
+    "sponsorStrength": 76,
+    "commercialStrength": 76,
+    "politicalInfluence": 76,
+    "financeHealth": 76,
+    "budget": 76000000
   },
   {
-    "teamLineageId": "NASCAR_2010_TEAM_MICHAEL_WALTRIP_RACING_TEAM_2",
+    "teamLineageId": "NASCAR_2010_TEAM_MICHAEL_WALTRIP_RACING_TEAM_2_TEAM_1",
     "series": "NASCAR",
-    "canonicalName": "Michael Waltrip Racing team 2",
+    "canonicalName": "Michael Waltrip Racing Team 2 team 1",
     "namePerPeriod": [
       {
         "fromYear": 2010,
         "toYear": 2010,
-        "name": "Michael Waltrip Racing team 2"
+        "name": "Michael Waltrip Racing Team 2 team 1"
       }
     ],
     "nameChangeEvents": [
       {
         "year": 2010,
-        "newName": "Michael Waltrip Racing team 2",
+        "newName": "Michael Waltrip Racing Team 2 team 1",
         "note": "First season this lineage appears in uploaded source data."
       }
     ],
-    "reputation": 52,
-    "raceOperations": 52,
-    "pitCrewOperations": 51,
+    "reputation": 28,
+    "raceOperations": 28,
+    "pitCrewOperations": 28,
     "developmentRate": 50,
-    "facilities": 52,
-    "sponsorStrength": 52,
-    "commercialStrength": 52,
-    "politicalInfluence": 52,
-    "financeHealth": 52,
-    "budget": 52000000
+    "facilities": 28,
+    "sponsorStrength": 28,
+    "commercialStrength": 28,
+    "politicalInfluence": 28,
+    "financeHealth": 28,
+    "budget": 28000000
   },
   {
-    "teamLineageId": "NASCAR_2010_TEAM_MORGAN_MCCLURE_MOTORSPORTS",
+    "teamLineageId": "NASCAR_2010_TEAM_MICHAEL_WALTRIP_RACING_TEAM_2_TEAM_2",
     "series": "NASCAR",
-    "canonicalName": "Morgan-McClure Motorsports",
+    "canonicalName": "Michael Waltrip Racing Team 2 team 2",
     "namePerPeriod": [
       {
         "fromYear": 2010,
         "toYear": 2010,
-        "name": "Morgan-McClure Motorsports"
+        "name": "Michael Waltrip Racing Team 2 team 2"
       }
     ],
     "nameChangeEvents": [
       {
         "year": 2010,
-        "newName": "Morgan-McClure Motorsports",
+        "newName": "Michael Waltrip Racing Team 2 team 2",
+        "note": "First season this lineage appears in uploaded source data."
+      }
+    ],
+    "reputation": 28,
+    "raceOperations": 28,
+    "pitCrewOperations": 28,
+    "developmentRate": 50,
+    "facilities": 28,
+    "sponsorStrength": 28,
+    "commercialStrength": 28,
+    "politicalInfluence": 28,
+    "financeHealth": 28,
+    "budget": 28000000
+  },
+  {
+    "teamLineageId": "NASCAR_2010_TEAM_MICHAEL_WALTRIP_RACING_TEAM_2_TEAM_3",
+    "series": "NASCAR",
+    "canonicalName": "Michael Waltrip Racing Team 2 team 3",
+    "namePerPeriod": [
+      {
+        "fromYear": 2010,
+        "toYear": 2010,
+        "name": "Michael Waltrip Racing Team 2 team 3"
+      }
+    ],
+    "nameChangeEvents": [
+      {
+        "year": 2010,
+        "newName": "Michael Waltrip Racing Team 2 team 3",
+        "note": "First season this lineage appears in uploaded source data."
+      }
+    ],
+    "reputation": 28,
+    "raceOperations": 28,
+    "pitCrewOperations": 28,
+    "developmentRate": 50,
+    "facilities": 28,
+    "sponsorStrength": 28,
+    "commercialStrength": 28,
+    "politicalInfluence": 28,
+    "financeHealth": 28,
+    "budget": 28000000
+  },
+  {
+    "teamLineageId": "NASCAR_2010_TEAM_MICHAEL_WALTRIP_RACING_TEAM_2_TEAM_4",
+    "series": "NASCAR",
+    "canonicalName": "Michael Waltrip Racing Team 2 team 4",
+    "namePerPeriod": [
+      {
+        "fromYear": 2010,
+        "toYear": 2010,
+        "name": "Michael Waltrip Racing Team 2 team 4"
+      }
+    ],
+    "nameChangeEvents": [
+      {
+        "year": 2010,
+        "newName": "Michael Waltrip Racing Team 2 team 4",
+        "note": "First season this lineage appears in uploaded source data."
+      }
+    ],
+    "reputation": 28,
+    "raceOperations": 28,
+    "pitCrewOperations": 28,
+    "developmentRate": 50,
+    "facilities": 28,
+    "sponsorStrength": 28,
+    "commercialStrength": 28,
+    "politicalInfluence": 28,
+    "financeHealth": 28,
+    "budget": 28000000
+  },
+  {
+    "teamLineageId": "NASCAR_2010_TEAM_MORGAN_MCCLURE_MOTORSPORTS_TEAM_1",
+    "series": "NASCAR",
+    "canonicalName": "Morgan-McClure Motorsports Team 1",
+    "namePerPeriod": [
+      {
+        "fromYear": 2010,
+        "toYear": 2010,
+        "name": "Morgan-McClure Motorsports Team 1"
+      }
+    ],
+    "nameChangeEvents": [
+      {
+        "year": 2010,
+        "newName": "Morgan-McClure Motorsports Team 1",
         "note": "First season this lineage appears in uploaded source data."
       }
     ],
@@ -4700,49 +5164,78 @@ export const nascar2010Teams: GlobalTeam[] = [
     "budget": 72000000
   },
   {
-    "teamLineageId": "NASCAR_2010_TEAM_NEMCO_MOTORSPORTS",
+    "teamLineageId": "NASCAR_2010_TEAM_NEMCO_MOTORSPORTS_TEAM_1",
     "series": "NASCAR",
-    "canonicalName": "NEMCO Motorsports",
+    "canonicalName": "NEMCO Motorsports Team 1",
     "namePerPeriod": [
       {
         "fromYear": 2010,
         "toYear": 2010,
-        "name": "NEMCO Motorsports"
+        "name": "NEMCO Motorsports Team 1"
       }
     ],
     "nameChangeEvents": [
       {
         "year": 2010,
-        "newName": "NEMCO Motorsports",
+        "newName": "NEMCO Motorsports Team 1",
         "note": "First season this lineage appears in uploaded source data."
       }
     ],
-    "reputation": 29,
-    "raceOperations": 29,
-    "pitCrewOperations": 30,
+    "reputation": 46,
+    "raceOperations": 46,
+    "pitCrewOperations": 47,
     "developmentRate": 50,
-    "facilities": 29,
-    "sponsorStrength": 29,
-    "commercialStrength": 29,
-    "politicalInfluence": 29,
-    "financeHealth": 29,
-    "budget": 29000000
+    "facilities": 46,
+    "sponsorStrength": 46,
+    "commercialStrength": 46,
+    "politicalInfluence": 46,
+    "financeHealth": 46,
+    "budget": 46000000
   },
   {
-    "teamLineageId": "NASCAR_2010_TEAM_NORM_BENNING_RACING",
+    "teamLineageId": "NASCAR_2010_TEAM_NEMCO_MOTORSPORTS_TEAM_2",
     "series": "NASCAR",
-    "canonicalName": "Norm Benning Racing",
+    "canonicalName": "NEMCO Motorsports Team 2",
     "namePerPeriod": [
       {
         "fromYear": 2010,
         "toYear": 2010,
-        "name": "Norm Benning Racing"
+        "name": "NEMCO Motorsports Team 2"
       }
     ],
     "nameChangeEvents": [
       {
         "year": 2010,
-        "newName": "Norm Benning Racing",
+        "newName": "NEMCO Motorsports Team 2",
+        "note": "First season this lineage appears in uploaded source data."
+      }
+    ],
+    "reputation": 43,
+    "raceOperations": 43,
+    "pitCrewOperations": 12,
+    "developmentRate": 50,
+    "facilities": 43,
+    "sponsorStrength": 43,
+    "commercialStrength": 43,
+    "politicalInfluence": 43,
+    "financeHealth": 43,
+    "budget": 43000000
+  },
+  {
+    "teamLineageId": "NASCAR_2010_TEAM_NORM_BENNING_RACING_TEAM_1",
+    "series": "NASCAR",
+    "canonicalName": "Norm Benning Racing Team 1",
+    "namePerPeriod": [
+      {
+        "fromYear": 2010,
+        "toYear": 2010,
+        "name": "Norm Benning Racing Team 1"
+      }
+    ],
+    "nameChangeEvents": [
+      {
+        "year": 2010,
+        "newName": "Norm Benning Racing Team 1",
         "note": "First season this lineage appears in uploaded source data."
       }
     ],
@@ -4760,76 +5253,76 @@ export const nascar2010Teams: GlobalTeam[] = [
   {
     "teamLineageId": "NASCAR_2010_TEAM_PENSKE_CHAMPIONSHIP_RACING_TEAM_1",
     "series": "NASCAR",
-    "canonicalName": "Penske Championship Racing team 1",
+    "canonicalName": "Penske Championship Racing Team 1",
     "namePerPeriod": [
       {
         "fromYear": 2010,
         "toYear": 2010,
-        "name": "Penske Championship Racing team 1"
+        "name": "Penske Championship Racing Team 1"
       }
     ],
     "nameChangeEvents": [
       {
         "year": 2010,
-        "newName": "Penske Championship Racing team 1",
+        "newName": "Penske Championship Racing Team 1",
         "note": "First season this lineage appears in uploaded source data."
       }
     ],
-    "reputation": 78,
-    "raceOperations": 78,
-    "pitCrewOperations": 79,
+    "reputation": 91,
+    "raceOperations": 91,
+    "pitCrewOperations": 93,
     "developmentRate": 50,
-    "facilities": 78,
-    "sponsorStrength": 78,
-    "commercialStrength": 78,
-    "politicalInfluence": 78,
-    "financeHealth": 78,
-    "budget": 78000000
+    "facilities": 91,
+    "sponsorStrength": 91,
+    "commercialStrength": 91,
+    "politicalInfluence": 91,
+    "financeHealth": 91,
+    "budget": 91000000
   },
   {
     "teamLineageId": "NASCAR_2010_TEAM_PENSKE_CHAMPIONSHIP_RACING_TEAM_2",
     "series": "NASCAR",
-    "canonicalName": "Penske Championship Racing team 2",
+    "canonicalName": "Penske Championship Racing Team 2",
     "namePerPeriod": [
       {
         "fromYear": 2010,
         "toYear": 2010,
-        "name": "Penske Championship Racing team 2"
+        "name": "Penske Championship Racing Team 2"
       }
     ],
     "nameChangeEvents": [
       {
         "year": 2010,
-        "newName": "Penske Championship Racing team 2",
+        "newName": "Penske Championship Racing Team 2",
         "note": "First season this lineage appears in uploaded source data."
       }
     ],
-    "reputation": 78,
-    "raceOperations": 78,
-    "pitCrewOperations": 79,
+    "reputation": 66,
+    "raceOperations": 66,
+    "pitCrewOperations": 65,
     "developmentRate": 50,
-    "facilities": 78,
-    "sponsorStrength": 78,
-    "commercialStrength": 78,
-    "politicalInfluence": 78,
-    "financeHealth": 78,
-    "budget": 78000000
+    "facilities": 66,
+    "sponsorStrength": 66,
+    "commercialStrength": 66,
+    "politicalInfluence": 66,
+    "financeHealth": 66,
+    "budget": 66000000
   },
   {
-    "teamLineageId": "NASCAR_2010_TEAM_PHOENIX_RACING",
+    "teamLineageId": "NASCAR_2010_TEAM_PHOENIX_RACING_TEAM_1_TEAM_1",
     "series": "NASCAR",
-    "canonicalName": "Phoenix Racing",
+    "canonicalName": "Phoenix Racing Team 1 team 1",
     "namePerPeriod": [
       {
         "fromYear": 2010,
         "toYear": 2010,
-        "name": "Phoenix Racing"
+        "name": "Phoenix Racing Team 1 team 1"
       }
     ],
     "nameChangeEvents": [
       {
         "year": 2010,
-        "newName": "Phoenix Racing",
+        "newName": "Phoenix Racing Team 1 team 1",
         "note": "First season this lineage appears in uploaded source data."
       }
     ],
@@ -4845,20 +5338,78 @@ export const nascar2010Teams: GlobalTeam[] = [
     "budget": 35000000
   },
   {
-    "teamLineageId": "NASCAR_2010_TEAM_PRISM_MOTORSPORTS",
+    "teamLineageId": "NASCAR_2010_TEAM_PHOENIX_RACING_TEAM_1_TEAM_2",
     "series": "NASCAR",
-    "canonicalName": "Prism Motorsports",
+    "canonicalName": "Phoenix Racing Team 1 team 2",
     "namePerPeriod": [
       {
         "fromYear": 2010,
         "toYear": 2010,
-        "name": "Prism Motorsports"
+        "name": "Phoenix Racing Team 1 team 2"
       }
     ],
     "nameChangeEvents": [
       {
         "year": 2010,
-        "newName": "Prism Motorsports",
+        "newName": "Phoenix Racing Team 1 team 2",
+        "note": "First season this lineage appears in uploaded source data."
+      }
+    ],
+    "reputation": 35,
+    "raceOperations": 35,
+    "pitCrewOperations": 33,
+    "developmentRate": 50,
+    "facilities": 35,
+    "sponsorStrength": 35,
+    "commercialStrength": 35,
+    "politicalInfluence": 35,
+    "financeHealth": 35,
+    "budget": 35000000
+  },
+  {
+    "teamLineageId": "NASCAR_2010_TEAM_PHOENIX_RACING_TEAM_1_TEAM_3",
+    "series": "NASCAR",
+    "canonicalName": "Phoenix Racing Team 1 team 3",
+    "namePerPeriod": [
+      {
+        "fromYear": 2010,
+        "toYear": 2010,
+        "name": "Phoenix Racing Team 1 team 3"
+      }
+    ],
+    "nameChangeEvents": [
+      {
+        "year": 2010,
+        "newName": "Phoenix Racing Team 1 team 3",
+        "note": "First season this lineage appears in uploaded source data."
+      }
+    ],
+    "reputation": 35,
+    "raceOperations": 35,
+    "pitCrewOperations": 33,
+    "developmentRate": 50,
+    "facilities": 35,
+    "sponsorStrength": 35,
+    "commercialStrength": 35,
+    "politicalInfluence": 35,
+    "financeHealth": 35,
+    "budget": 35000000
+  },
+  {
+    "teamLineageId": "NASCAR_2010_TEAM_PRISM_MOTORSPORTS_TEAM_1_TEAM_1",
+    "series": "NASCAR",
+    "canonicalName": "Prism Motorsports Team 1 team 1",
+    "namePerPeriod": [
+      {
+        "fromYear": 2010,
+        "toYear": 2010,
+        "name": "Prism Motorsports Team 1 team 1"
+      }
+    ],
+    "nameChangeEvents": [
+      {
+        "year": 2010,
+        "newName": "Prism Motorsports Team 1 team 1",
         "note": "First season this lineage appears in uploaded source data."
       }
     ],
@@ -4874,20 +5425,107 @@ export const nascar2010Teams: GlobalTeam[] = [
     "budget": 42000000
   },
   {
-    "teamLineageId": "NASCAR_2010_TEAM_R3_MOTORSPORTS",
+    "teamLineageId": "NASCAR_2010_TEAM_PRISM_MOTORSPORTS_TEAM_1_TEAM_2",
     "series": "NASCAR",
-    "canonicalName": "R3 Motorsports",
+    "canonicalName": "Prism Motorsports Team 1 team 2",
     "namePerPeriod": [
       {
         "fromYear": 2010,
         "toYear": 2010,
-        "name": "R3 Motorsports"
+        "name": "Prism Motorsports Team 1 team 2"
       }
     ],
     "nameChangeEvents": [
       {
         "year": 2010,
-        "newName": "R3 Motorsports",
+        "newName": "Prism Motorsports Team 1 team 2",
+        "note": "First season this lineage appears in uploaded source data."
+      }
+    ],
+    "reputation": 42,
+    "raceOperations": 42,
+    "pitCrewOperations": 40,
+    "developmentRate": 50,
+    "facilities": 42,
+    "sponsorStrength": 42,
+    "commercialStrength": 42,
+    "politicalInfluence": 42,
+    "financeHealth": 42,
+    "budget": 42000000
+  },
+  {
+    "teamLineageId": "NASCAR_2010_TEAM_PRISM_MOTORSPORTS_TEAM_1_TEAM_3",
+    "series": "NASCAR",
+    "canonicalName": "Prism Motorsports Team 1 team 3",
+    "namePerPeriod": [
+      {
+        "fromYear": 2010,
+        "toYear": 2010,
+        "name": "Prism Motorsports Team 1 team 3"
+      }
+    ],
+    "nameChangeEvents": [
+      {
+        "year": 2010,
+        "newName": "Prism Motorsports Team 1 team 3",
+        "note": "First season this lineage appears in uploaded source data."
+      }
+    ],
+    "reputation": 42,
+    "raceOperations": 42,
+    "pitCrewOperations": 40,
+    "developmentRate": 50,
+    "facilities": 42,
+    "sponsorStrength": 42,
+    "commercialStrength": 42,
+    "politicalInfluence": 42,
+    "financeHealth": 42,
+    "budget": 42000000
+  },
+  {
+    "teamLineageId": "NASCAR_2010_TEAM_PRISM_MOTORSPORTS_TEAM_1_TEAM_4",
+    "series": "NASCAR",
+    "canonicalName": "Prism Motorsports Team 1 team 4",
+    "namePerPeriod": [
+      {
+        "fromYear": 2010,
+        "toYear": 2010,
+        "name": "Prism Motorsports Team 1 team 4"
+      }
+    ],
+    "nameChangeEvents": [
+      {
+        "year": 2010,
+        "newName": "Prism Motorsports Team 1 team 4",
+        "note": "First season this lineage appears in uploaded source data."
+      }
+    ],
+    "reputation": 42,
+    "raceOperations": 42,
+    "pitCrewOperations": 40,
+    "developmentRate": 50,
+    "facilities": 42,
+    "sponsorStrength": 42,
+    "commercialStrength": 42,
+    "politicalInfluence": 42,
+    "financeHealth": 42,
+    "budget": 42000000
+  },
+  {
+    "teamLineageId": "NASCAR_2010_TEAM_R3_MOTORSPORTS_TEAM_1",
+    "series": "NASCAR",
+    "canonicalName": "R3 Motorsports Team 1",
+    "namePerPeriod": [
+      {
+        "fromYear": 2010,
+        "toYear": 2010,
+        "name": "R3 Motorsports Team 1"
+      }
+    ],
+    "nameChangeEvents": [
+      {
+        "year": 2010,
+        "newName": "R3 Motorsports Team 1",
         "note": "First season this lineage appears in uploaded source data."
       }
     ],
@@ -4903,20 +5541,107 @@ export const nascar2010Teams: GlobalTeam[] = [
     "budget": 28000000
   },
   {
-    "teamLineageId": "NASCAR_2010_TEAM_RED_BULL_RACING",
+    "teamLineageId": "NASCAR_2010_TEAM_RED_BULL_RACING_TEAM_1_TEAM_1",
     "series": "NASCAR",
-    "canonicalName": "Red Bull Racing",
+    "canonicalName": "Red Bull Racing Team 1 team 1",
     "namePerPeriod": [
       {
         "fromYear": 2010,
         "toYear": 2010,
-        "name": "Red Bull Racing"
+        "name": "Red Bull Racing Team 1 team 1"
       }
     ],
     "nameChangeEvents": [
       {
         "year": 2010,
-        "newName": "Red Bull Racing",
+        "newName": "Red Bull Racing Team 1 team 1",
+        "note": "First season this lineage appears in uploaded source data."
+      }
+    ],
+    "reputation": 56,
+    "raceOperations": 56,
+    "pitCrewOperations": 55,
+    "developmentRate": 50,
+    "facilities": 56,
+    "sponsorStrength": 56,
+    "commercialStrength": 56,
+    "politicalInfluence": 56,
+    "financeHealth": 56,
+    "budget": 56000000
+  },
+  {
+    "teamLineageId": "NASCAR_2010_TEAM_RED_BULL_RACING_TEAM_1_TEAM_2",
+    "series": "NASCAR",
+    "canonicalName": "Red Bull Racing Team 1 team 2",
+    "namePerPeriod": [
+      {
+        "fromYear": 2010,
+        "toYear": 2010,
+        "name": "Red Bull Racing Team 1 team 2"
+      }
+    ],
+    "nameChangeEvents": [
+      {
+        "year": 2010,
+        "newName": "Red Bull Racing Team 1 team 2",
+        "note": "First season this lineage appears in uploaded source data."
+      }
+    ],
+    "reputation": 56,
+    "raceOperations": 56,
+    "pitCrewOperations": 55,
+    "developmentRate": 50,
+    "facilities": 56,
+    "sponsorStrength": 56,
+    "commercialStrength": 56,
+    "politicalInfluence": 56,
+    "financeHealth": 56,
+    "budget": 56000000
+  },
+  {
+    "teamLineageId": "NASCAR_2010_TEAM_RED_BULL_RACING_TEAM_1_TEAM_3",
+    "series": "NASCAR",
+    "canonicalName": "Red Bull Racing Team 1 team 3",
+    "namePerPeriod": [
+      {
+        "fromYear": 2010,
+        "toYear": 2010,
+        "name": "Red Bull Racing Team 1 team 3"
+      }
+    ],
+    "nameChangeEvents": [
+      {
+        "year": 2010,
+        "newName": "Red Bull Racing Team 1 team 3",
+        "note": "First season this lineage appears in uploaded source data."
+      }
+    ],
+    "reputation": 56,
+    "raceOperations": 56,
+    "pitCrewOperations": 55,
+    "developmentRate": 50,
+    "facilities": 56,
+    "sponsorStrength": 56,
+    "commercialStrength": 56,
+    "politicalInfluence": 56,
+    "financeHealth": 56,
+    "budget": 56000000
+  },
+  {
+    "teamLineageId": "NASCAR_2010_TEAM_RED_BULL_RACING_TEAM_1_TEAM_4",
+    "series": "NASCAR",
+    "canonicalName": "Red Bull Racing Team 1 team 4",
+    "namePerPeriod": [
+      {
+        "fromYear": 2010,
+        "toYear": 2010,
+        "name": "Red Bull Racing Team 1 team 4"
+      }
+    ],
+    "nameChangeEvents": [
+      {
+        "year": 2010,
+        "newName": "Red Bull Racing Team 1 team 4",
         "note": "First season this lineage appears in uploaded source data."
       }
     ],
@@ -4934,105 +5659,134 @@ export const nascar2010Teams: GlobalTeam[] = [
   {
     "teamLineageId": "NASCAR_2010_TEAM_RICHARD_CHILDRESS_RACING_TEAM_1",
     "series": "NASCAR",
-    "canonicalName": "Richard Childress Racing team 1",
+    "canonicalName": "Richard Childress Racing Team 1",
     "namePerPeriod": [
       {
         "fromYear": 2010,
         "toYear": 2010,
-        "name": "Richard Childress Racing team 1"
+        "name": "Richard Childress Racing Team 1"
       }
     ],
     "nameChangeEvents": [
       {
         "year": 2010,
-        "newName": "Richard Childress Racing team 1",
+        "newName": "Richard Childress Racing Team 1",
         "note": "First season this lineage appears in uploaded source data."
       }
     ],
-    "reputation": 99,
-    "raceOperations": 99,
-    "pitCrewOperations": 99,
+    "reputation": 100,
+    "raceOperations": 100,
+    "pitCrewOperations": 100,
     "developmentRate": 50,
-    "facilities": 99,
-    "sponsorStrength": 99,
-    "commercialStrength": 99,
-    "politicalInfluence": 99,
-    "financeHealth": 99,
-    "budget": 99000000
+    "facilities": 100,
+    "sponsorStrength": 100,
+    "commercialStrength": 100,
+    "politicalInfluence": 100,
+    "financeHealth": 100,
+    "budget": 100000000
   },
   {
     "teamLineageId": "NASCAR_2010_TEAM_RICHARD_CHILDRESS_RACING_TEAM_2",
     "series": "NASCAR",
-    "canonicalName": "Richard Childress Racing team 2",
+    "canonicalName": "Richard Childress Racing Team 2",
     "namePerPeriod": [
       {
         "fromYear": 2010,
         "toYear": 2010,
-        "name": "Richard Childress Racing team 2"
+        "name": "Richard Childress Racing Team 2"
       }
     ],
     "nameChangeEvents": [
       {
         "year": 2010,
-        "newName": "Richard Childress Racing team 2",
+        "newName": "Richard Childress Racing Team 2",
         "note": "First season this lineage appears in uploaded source data."
       }
     ],
-    "reputation": 99,
-    "raceOperations": 99,
-    "pitCrewOperations": 99,
+    "reputation": 97,
+    "raceOperations": 97,
+    "pitCrewOperations": 97,
     "developmentRate": 50,
-    "facilities": 99,
-    "sponsorStrength": 99,
-    "commercialStrength": 99,
-    "politicalInfluence": 99,
-    "financeHealth": 99,
-    "budget": 99000000
+    "facilities": 97,
+    "sponsorStrength": 97,
+    "commercialStrength": 97,
+    "politicalInfluence": 97,
+    "financeHealth": 97,
+    "budget": 97000000
   },
   {
-    "teamLineageId": "NASCAR_2010_TEAM_RICHARD_PETTY_MOTORSPORTS_TEAM_1",
+    "teamLineageId": "NASCAR_2010_TEAM_RICHARD_PETTY_MOTORSPORTS_TEAM_1_TEAM_1",
     "series": "NASCAR",
-    "canonicalName": "Richard Petty Motorsports team 1",
+    "canonicalName": "Richard Petty Motorsports Team 1 team 1",
     "namePerPeriod": [
       {
         "fromYear": 2010,
         "toYear": 2010,
-        "name": "Richard Petty Motorsports team 1"
+        "name": "Richard Petty Motorsports Team 1 team 1"
       }
     ],
     "nameChangeEvents": [
       {
         "year": 2010,
-        "newName": "Richard Petty Motorsports team 1",
+        "newName": "Richard Petty Motorsports Team 1 team 1",
         "note": "First season this lineage appears in uploaded source data."
       }
     ],
-    "reputation": 73,
-    "raceOperations": 73,
+    "reputation": 72,
+    "raceOperations": 72,
     "pitCrewOperations": 72,
     "developmentRate": 50,
-    "facilities": 73,
-    "sponsorStrength": 73,
-    "commercialStrength": 73,
-    "politicalInfluence": 73,
-    "financeHealth": 73,
-    "budget": 73000000
+    "facilities": 72,
+    "sponsorStrength": 72,
+    "commercialStrength": 72,
+    "politicalInfluence": 72,
+    "financeHealth": 72,
+    "budget": 72000000
+  },
+  {
+    "teamLineageId": "NASCAR_2010_TEAM_RICHARD_PETTY_MOTORSPORTS_TEAM_1_TEAM_2",
+    "series": "NASCAR",
+    "canonicalName": "Richard Petty Motorsports Team 1 team 2",
+    "namePerPeriod": [
+      {
+        "fromYear": 2010,
+        "toYear": 2010,
+        "name": "Richard Petty Motorsports Team 1 team 2"
+      }
+    ],
+    "nameChangeEvents": [
+      {
+        "year": 2010,
+        "newName": "Richard Petty Motorsports Team 1 team 2",
+        "note": "First season this lineage appears in uploaded source data."
+      }
+    ],
+    "reputation": 72,
+    "raceOperations": 72,
+    "pitCrewOperations": 72,
+    "developmentRate": 50,
+    "facilities": 72,
+    "sponsorStrength": 72,
+    "commercialStrength": 72,
+    "politicalInfluence": 72,
+    "financeHealth": 72,
+    "budget": 72000000
   },
   {
     "teamLineageId": "NASCAR_2010_TEAM_RICHARD_PETTY_MOTORSPORTS_TEAM_2",
     "series": "NASCAR",
-    "canonicalName": "Richard Petty Motorsports team 2",
+    "canonicalName": "Richard Petty Motorsports Team 2",
     "namePerPeriod": [
       {
         "fromYear": 2010,
         "toYear": 2010,
-        "name": "Richard Petty Motorsports team 2"
+        "name": "Richard Petty Motorsports Team 2"
       }
     ],
     "nameChangeEvents": [
       {
         "year": 2010,
-        "newName": "Richard Petty Motorsports team 2",
+        "newName": "Richard Petty Motorsports Team 2",
         "note": "First season this lineage appears in uploaded source data."
       }
     ],
@@ -5048,20 +5802,107 @@ export const nascar2010Teams: GlobalTeam[] = [
     "budget": 73000000
   },
   {
-    "teamLineageId": "NASCAR_2010_TEAM_ROBBY_GORDON_MOTORSPORTS",
+    "teamLineageId": "NASCAR_2010_TEAM_ROBBY_GORDON_MOTORSPORTS_TEAM_1_TEAM_1",
     "series": "NASCAR",
-    "canonicalName": "Robby Gordon Motorsports",
+    "canonicalName": "Robby Gordon Motorsports Team 1 team 1",
     "namePerPeriod": [
       {
         "fromYear": 2010,
         "toYear": 2010,
-        "name": "Robby Gordon Motorsports"
+        "name": "Robby Gordon Motorsports Team 1 team 1"
       }
     ],
     "nameChangeEvents": [
       {
         "year": 2010,
-        "newName": "Robby Gordon Motorsports",
+        "newName": "Robby Gordon Motorsports Team 1 team 1",
+        "note": "First season this lineage appears in uploaded source data."
+      }
+    ],
+    "reputation": 48,
+    "raceOperations": 48,
+    "pitCrewOperations": 49,
+    "developmentRate": 50,
+    "facilities": 48,
+    "sponsorStrength": 48,
+    "commercialStrength": 48,
+    "politicalInfluence": 48,
+    "financeHealth": 48,
+    "budget": 48000000
+  },
+  {
+    "teamLineageId": "NASCAR_2010_TEAM_ROBBY_GORDON_MOTORSPORTS_TEAM_1_TEAM_2",
+    "series": "NASCAR",
+    "canonicalName": "Robby Gordon Motorsports Team 1 team 2",
+    "namePerPeriod": [
+      {
+        "fromYear": 2010,
+        "toYear": 2010,
+        "name": "Robby Gordon Motorsports Team 1 team 2"
+      }
+    ],
+    "nameChangeEvents": [
+      {
+        "year": 2010,
+        "newName": "Robby Gordon Motorsports Team 1 team 2",
+        "note": "First season this lineage appears in uploaded source data."
+      }
+    ],
+    "reputation": 48,
+    "raceOperations": 48,
+    "pitCrewOperations": 49,
+    "developmentRate": 50,
+    "facilities": 48,
+    "sponsorStrength": 48,
+    "commercialStrength": 48,
+    "politicalInfluence": 48,
+    "financeHealth": 48,
+    "budget": 48000000
+  },
+  {
+    "teamLineageId": "NASCAR_2010_TEAM_ROBBY_GORDON_MOTORSPORTS_TEAM_1_TEAM_3",
+    "series": "NASCAR",
+    "canonicalName": "Robby Gordon Motorsports Team 1 team 3",
+    "namePerPeriod": [
+      {
+        "fromYear": 2010,
+        "toYear": 2010,
+        "name": "Robby Gordon Motorsports Team 1 team 3"
+      }
+    ],
+    "nameChangeEvents": [
+      {
+        "year": 2010,
+        "newName": "Robby Gordon Motorsports Team 1 team 3",
+        "note": "First season this lineage appears in uploaded source data."
+      }
+    ],
+    "reputation": 48,
+    "raceOperations": 48,
+    "pitCrewOperations": 49,
+    "developmentRate": 50,
+    "facilities": 48,
+    "sponsorStrength": 48,
+    "commercialStrength": 48,
+    "politicalInfluence": 48,
+    "financeHealth": 48,
+    "budget": 48000000
+  },
+  {
+    "teamLineageId": "NASCAR_2010_TEAM_ROBBY_GORDON_MOTORSPORTS_TEAM_1_TEAM_4",
+    "series": "NASCAR",
+    "canonicalName": "Robby Gordon Motorsports Team 1 team 4",
+    "namePerPeriod": [
+      {
+        "fromYear": 2010,
+        "toYear": 2010,
+        "name": "Robby Gordon Motorsports Team 1 team 4"
+      }
+    ],
+    "nameChangeEvents": [
+      {
+        "year": 2010,
+        "newName": "Robby Gordon Motorsports Team 1 team 4",
         "note": "First season this lineage appears in uploaded source data."
       }
     ],
@@ -5079,76 +5920,76 @@ export const nascar2010Teams: GlobalTeam[] = [
   {
     "teamLineageId": "NASCAR_2010_TEAM_ROUSH_FENWAY_RACING_TEAM_1",
     "series": "NASCAR",
-    "canonicalName": "Roush Fenway Racing team 1",
+    "canonicalName": "Roush Fenway Racing Team 1",
     "namePerPeriod": [
       {
         "fromYear": 2010,
         "toYear": 2010,
-        "name": "Roush Fenway Racing team 1"
+        "name": "Roush Fenway Racing Team 1"
       }
     ],
     "nameChangeEvents": [
       {
         "year": 2010,
-        "newName": "Roush Fenway Racing team 1",
+        "newName": "Roush Fenway Racing Team 1",
         "note": "First season this lineage appears in uploaded source data."
       }
     ],
-    "reputation": 98,
-    "raceOperations": 98,
-    "pitCrewOperations": 99,
+    "reputation": 96,
+    "raceOperations": 96,
+    "pitCrewOperations": 98,
     "developmentRate": 50,
-    "facilities": 98,
-    "sponsorStrength": 98,
-    "commercialStrength": 98,
-    "politicalInfluence": 98,
-    "financeHealth": 98,
-    "budget": 98000000
+    "facilities": 96,
+    "sponsorStrength": 96,
+    "commercialStrength": 96,
+    "politicalInfluence": 96,
+    "financeHealth": 96,
+    "budget": 96000000
   },
   {
     "teamLineageId": "NASCAR_2010_TEAM_ROUSH_FENWAY_RACING_TEAM_2",
     "series": "NASCAR",
-    "canonicalName": "Roush Fenway Racing team 2",
+    "canonicalName": "Roush Fenway Racing Team 2",
     "namePerPeriod": [
       {
         "fromYear": 2010,
         "toYear": 2010,
-        "name": "Roush Fenway Racing team 2"
+        "name": "Roush Fenway Racing Team 2"
       }
     ],
     "nameChangeEvents": [
       {
         "year": 2010,
-        "newName": "Roush Fenway Racing team 2",
+        "newName": "Roush Fenway Racing Team 2",
         "note": "First season this lineage appears in uploaded source data."
       }
     ],
-    "reputation": 98,
-    "raceOperations": 98,
-    "pitCrewOperations": 99,
+    "reputation": 99,
+    "raceOperations": 99,
+    "pitCrewOperations": 100,
     "developmentRate": 50,
-    "facilities": 98,
-    "sponsorStrength": 98,
-    "commercialStrength": 98,
-    "politicalInfluence": 98,
-    "financeHealth": 98,
-    "budget": 98000000
+    "facilities": 99,
+    "sponsorStrength": 99,
+    "commercialStrength": 99,
+    "politicalInfluence": 99,
+    "financeHealth": 99,
+    "budget": 99000000
   },
   {
-    "teamLineageId": "NASCAR_2010_TEAM_STAVOLA_LABONTE_RACING",
+    "teamLineageId": "NASCAR_2010_TEAM_STAVOLA_LABONTE_RACING_TEAM_1",
     "series": "NASCAR",
-    "canonicalName": "Stavola Labonte Racing",
+    "canonicalName": "Stavola Labonte Racing Team 1",
     "namePerPeriod": [
       {
         "fromYear": 2010,
         "toYear": 2010,
-        "name": "Stavola Labonte Racing"
+        "name": "Stavola Labonte Racing Team 1"
       }
     ],
     "nameChangeEvents": [
       {
         "year": 2010,
-        "newName": "Stavola Labonte Racing",
+        "newName": "Stavola Labonte Racing Team 1",
         "note": "First season this lineage appears in uploaded source data."
       }
     ],
@@ -5164,20 +6005,20 @@ export const nascar2010Teams: GlobalTeam[] = [
     "budget": 17000000
   },
   {
-    "teamLineageId": "NASCAR_2010_TEAM_STEWART_HAAS_RACING",
+    "teamLineageId": "NASCAR_2010_TEAM_STEWART_HAAS_RACING_TEAM_1",
     "series": "NASCAR",
-    "canonicalName": "Stewart-Haas Racing",
+    "canonicalName": "Stewart-Haas Racing Team 1",
     "namePerPeriod": [
       {
         "fromYear": 2010,
         "toYear": 2010,
-        "name": "Stewart-Haas Racing"
+        "name": "Stewart-Haas Racing Team 1"
       }
     ],
     "nameChangeEvents": [
       {
         "year": 2010,
-        "newName": "Stewart-Haas Racing",
+        "newName": "Stewart-Haas Racing Team 1",
         "note": "First season this lineage appears in uploaded source data."
       }
     ],
@@ -5193,20 +6034,20 @@ export const nascar2010Teams: GlobalTeam[] = [
     "budget": 98000000
   },
   {
-    "teamLineageId": "NASCAR_2010_TEAM_STRATUS_RACING_GROUP",
+    "teamLineageId": "NASCAR_2010_TEAM_STRATUS_RACING_GROUP_TEAM_1",
     "series": "NASCAR",
-    "canonicalName": "Stratus Racing Group",
+    "canonicalName": "Stratus Racing Group Team 1",
     "namePerPeriod": [
       {
         "fromYear": 2010,
         "toYear": 2010,
-        "name": "Stratus Racing Group"
+        "name": "Stratus Racing Group Team 1"
       }
     ],
     "nameChangeEvents": [
       {
         "year": 2010,
-        "newName": "Stratus Racing Group",
+        "newName": "Stratus Racing Group Team 1",
         "note": "First season this lineage appears in uploaded source data."
       }
     ],
@@ -5222,20 +6063,20 @@ export const nascar2010Teams: GlobalTeam[] = [
     "budget": 36000000
   },
   {
-    "teamLineageId": "NASCAR_2010_TEAM_TRG_MOTORSPORTS",
+    "teamLineageId": "NASCAR_2010_TEAM_TRG_MOTORSPORTS_TEAM_1_TEAM_1",
     "series": "NASCAR",
-    "canonicalName": "TRG Motorsports",
+    "canonicalName": "TRG Motorsports Team 1 team 1",
     "namePerPeriod": [
       {
         "fromYear": 2010,
         "toYear": 2010,
-        "name": "TRG Motorsports"
+        "name": "TRG Motorsports Team 1 team 1"
       }
     ],
     "nameChangeEvents": [
       {
         "year": 2010,
-        "newName": "TRG Motorsports",
+        "newName": "TRG Motorsports Team 1 team 1",
         "note": "First season this lineage appears in uploaded source data."
       }
     ],
@@ -5251,20 +6092,107 @@ export const nascar2010Teams: GlobalTeam[] = [
     "budget": 46000000
   },
   {
-    "teamLineageId": "NASCAR_2010_TEAM_TOMMY_BALDWIN_RACING",
+    "teamLineageId": "NASCAR_2010_TEAM_TRG_MOTORSPORTS_TEAM_1_TEAM_2",
     "series": "NASCAR",
-    "canonicalName": "Tommy Baldwin Racing",
+    "canonicalName": "TRG Motorsports Team 1 team 2",
     "namePerPeriod": [
       {
         "fromYear": 2010,
         "toYear": 2010,
-        "name": "Tommy Baldwin Racing"
+        "name": "TRG Motorsports Team 1 team 2"
       }
     ],
     "nameChangeEvents": [
       {
         "year": 2010,
-        "newName": "Tommy Baldwin Racing",
+        "newName": "TRG Motorsports Team 1 team 2",
+        "note": "First season this lineage appears in uploaded source data."
+      }
+    ],
+    "reputation": 46,
+    "raceOperations": 46,
+    "pitCrewOperations": 45,
+    "developmentRate": 50,
+    "facilities": 46,
+    "sponsorStrength": 46,
+    "commercialStrength": 46,
+    "politicalInfluence": 46,
+    "financeHealth": 46,
+    "budget": 46000000
+  },
+  {
+    "teamLineageId": "NASCAR_2010_TEAM_TRG_MOTORSPORTS_TEAM_1_TEAM_3",
+    "series": "NASCAR",
+    "canonicalName": "TRG Motorsports Team 1 team 3",
+    "namePerPeriod": [
+      {
+        "fromYear": 2010,
+        "toYear": 2010,
+        "name": "TRG Motorsports Team 1 team 3"
+      }
+    ],
+    "nameChangeEvents": [
+      {
+        "year": 2010,
+        "newName": "TRG Motorsports Team 1 team 3",
+        "note": "First season this lineage appears in uploaded source data."
+      }
+    ],
+    "reputation": 46,
+    "raceOperations": 46,
+    "pitCrewOperations": 45,
+    "developmentRate": 50,
+    "facilities": 46,
+    "sponsorStrength": 46,
+    "commercialStrength": 46,
+    "politicalInfluence": 46,
+    "financeHealth": 46,
+    "budget": 46000000
+  },
+  {
+    "teamLineageId": "NASCAR_2010_TEAM_TRG_MOTORSPORTS_TEAM_1_TEAM_4",
+    "series": "NASCAR",
+    "canonicalName": "TRG Motorsports Team 1 team 4",
+    "namePerPeriod": [
+      {
+        "fromYear": 2010,
+        "toYear": 2010,
+        "name": "TRG Motorsports Team 1 team 4"
+      }
+    ],
+    "nameChangeEvents": [
+      {
+        "year": 2010,
+        "newName": "TRG Motorsports Team 1 team 4",
+        "note": "First season this lineage appears in uploaded source data."
+      }
+    ],
+    "reputation": 46,
+    "raceOperations": 46,
+    "pitCrewOperations": 45,
+    "developmentRate": 50,
+    "facilities": 46,
+    "sponsorStrength": 46,
+    "commercialStrength": 46,
+    "politicalInfluence": 46,
+    "financeHealth": 46,
+    "budget": 46000000
+  },
+  {
+    "teamLineageId": "NASCAR_2010_TEAM_TOMMY_BALDWIN_RACING_TEAM_1_TEAM_1",
+    "series": "NASCAR",
+    "canonicalName": "Tommy Baldwin Racing Team 1 team 1",
+    "namePerPeriod": [
+      {
+        "fromYear": 2010,
+        "toYear": 2010,
+        "name": "Tommy Baldwin Racing Team 1 team 1"
+      }
+    ],
+    "nameChangeEvents": [
+      {
+        "year": 2010,
+        "newName": "Tommy Baldwin Racing Team 1 team 1",
         "note": "First season this lineage appears in uploaded source data."
       }
     ],
@@ -5280,20 +6208,165 @@ export const nascar2010Teams: GlobalTeam[] = [
     "budget": 21000000
   },
   {
-    "teamLineageId": "NASCAR_2010_TEAM_TRI_STAR_MOTORSPORTS",
+    "teamLineageId": "NASCAR_2010_TEAM_TOMMY_BALDWIN_RACING_TEAM_1_TEAM_2",
     "series": "NASCAR",
-    "canonicalName": "Tri-Star Motorsports",
+    "canonicalName": "Tommy Baldwin Racing Team 1 team 2",
     "namePerPeriod": [
       {
         "fromYear": 2010,
         "toYear": 2010,
-        "name": "Tri-Star Motorsports"
+        "name": "Tommy Baldwin Racing Team 1 team 2"
       }
     ],
     "nameChangeEvents": [
       {
         "year": 2010,
-        "newName": "Tri-Star Motorsports",
+        "newName": "Tommy Baldwin Racing Team 1 team 2",
+        "note": "First season this lineage appears in uploaded source data."
+      }
+    ],
+    "reputation": 21,
+    "raceOperations": 21,
+    "pitCrewOperations": 19,
+    "developmentRate": 50,
+    "facilities": 21,
+    "sponsorStrength": 21,
+    "commercialStrength": 21,
+    "politicalInfluence": 21,
+    "financeHealth": 21,
+    "budget": 21000000
+  },
+  {
+    "teamLineageId": "NASCAR_2010_TEAM_TOMMY_BALDWIN_RACING_TEAM_1_TEAM_3",
+    "series": "NASCAR",
+    "canonicalName": "Tommy Baldwin Racing Team 1 team 3",
+    "namePerPeriod": [
+      {
+        "fromYear": 2010,
+        "toYear": 2010,
+        "name": "Tommy Baldwin Racing Team 1 team 3"
+      }
+    ],
+    "nameChangeEvents": [
+      {
+        "year": 2010,
+        "newName": "Tommy Baldwin Racing Team 1 team 3",
+        "note": "First season this lineage appears in uploaded source data."
+      }
+    ],
+    "reputation": 21,
+    "raceOperations": 21,
+    "pitCrewOperations": 19,
+    "developmentRate": 50,
+    "facilities": 21,
+    "sponsorStrength": 21,
+    "commercialStrength": 21,
+    "politicalInfluence": 21,
+    "financeHealth": 21,
+    "budget": 21000000
+  },
+  {
+    "teamLineageId": "NASCAR_2010_TEAM_TOMMY_BALDWIN_RACING_TEAM_1_TEAM_4",
+    "series": "NASCAR",
+    "canonicalName": "Tommy Baldwin Racing Team 1 team 4",
+    "namePerPeriod": [
+      {
+        "fromYear": 2010,
+        "toYear": 2010,
+        "name": "Tommy Baldwin Racing Team 1 team 4"
+      }
+    ],
+    "nameChangeEvents": [
+      {
+        "year": 2010,
+        "newName": "Tommy Baldwin Racing Team 1 team 4",
+        "note": "First season this lineage appears in uploaded source data."
+      }
+    ],
+    "reputation": 21,
+    "raceOperations": 21,
+    "pitCrewOperations": 19,
+    "developmentRate": 50,
+    "facilities": 21,
+    "sponsorStrength": 21,
+    "commercialStrength": 21,
+    "politicalInfluence": 21,
+    "financeHealth": 21,
+    "budget": 21000000
+  },
+  {
+    "teamLineageId": "NASCAR_2010_TEAM_TOMMY_BALDWIN_RACING_TEAM_1_TEAM_5",
+    "series": "NASCAR",
+    "canonicalName": "Tommy Baldwin Racing Team 1 team 5",
+    "namePerPeriod": [
+      {
+        "fromYear": 2010,
+        "toYear": 2010,
+        "name": "Tommy Baldwin Racing Team 1 team 5"
+      }
+    ],
+    "nameChangeEvents": [
+      {
+        "year": 2010,
+        "newName": "Tommy Baldwin Racing Team 1 team 5",
+        "note": "First season this lineage appears in uploaded source data."
+      }
+    ],
+    "reputation": 21,
+    "raceOperations": 21,
+    "pitCrewOperations": 19,
+    "developmentRate": 50,
+    "facilities": 21,
+    "sponsorStrength": 21,
+    "commercialStrength": 21,
+    "politicalInfluence": 21,
+    "financeHealth": 21,
+    "budget": 21000000
+  },
+  {
+    "teamLineageId": "NASCAR_2010_TEAM_TOMMY_BALDWIN_RACING_TEAM_1_TEAM_6",
+    "series": "NASCAR",
+    "canonicalName": "Tommy Baldwin Racing Team 1 team 6",
+    "namePerPeriod": [
+      {
+        "fromYear": 2010,
+        "toYear": 2010,
+        "name": "Tommy Baldwin Racing Team 1 team 6"
+      }
+    ],
+    "nameChangeEvents": [
+      {
+        "year": 2010,
+        "newName": "Tommy Baldwin Racing Team 1 team 6",
+        "note": "First season this lineage appears in uploaded source data."
+      }
+    ],
+    "reputation": 21,
+    "raceOperations": 21,
+    "pitCrewOperations": 19,
+    "developmentRate": 50,
+    "facilities": 21,
+    "sponsorStrength": 21,
+    "commercialStrength": 21,
+    "politicalInfluence": 21,
+    "financeHealth": 21,
+    "budget": 21000000
+  },
+  {
+    "teamLineageId": "NASCAR_2010_TEAM_TRI_STAR_MOTORSPORTS_TEAM_1",
+    "series": "NASCAR",
+    "canonicalName": "Tri-Star Motorsports Team 1",
+    "namePerPeriod": [
+      {
+        "fromYear": 2010,
+        "toYear": 2010,
+        "name": "Tri-Star Motorsports Team 1"
+      }
+    ],
+    "nameChangeEvents": [
+      {
+        "year": 2010,
+        "newName": "Tri-Star Motorsports Team 1",
         "note": "First season this lineage appears in uploaded source data."
       }
     ],
@@ -5309,20 +6382,20 @@ export const nascar2010Teams: GlobalTeam[] = [
     "budget": 56000000
   },
   {
-    "teamLineageId": "NASCAR_2010_TEAM_WHITNEY_MOTORSPORTS",
+    "teamLineageId": "NASCAR_2010_TEAM_WHITNEY_MOTORSPORTS_TEAM_1_TEAM_1",
     "series": "NASCAR",
-    "canonicalName": "Whitney Motorsports",
+    "canonicalName": "Whitney Motorsports Team 1 team 1",
     "namePerPeriod": [
       {
         "fromYear": 2010,
         "toYear": 2010,
-        "name": "Whitney Motorsports"
+        "name": "Whitney Motorsports Team 1 team 1"
       }
     ],
     "nameChangeEvents": [
       {
         "year": 2010,
-        "newName": "Whitney Motorsports",
+        "newName": "Whitney Motorsports Team 1 team 1",
         "note": "First season this lineage appears in uploaded source data."
       }
     ],
@@ -5338,20 +6411,78 @@ export const nascar2010Teams: GlobalTeam[] = [
     "budget": 39000000
   },
   {
-    "teamLineageId": "NASCAR_2010_TEAM_WOOD_BROTHERS_RACING",
+    "teamLineageId": "NASCAR_2010_TEAM_WHITNEY_MOTORSPORTS_TEAM_1_TEAM_2",
     "series": "NASCAR",
-    "canonicalName": "Wood Brothers Racing",
+    "canonicalName": "Whitney Motorsports Team 1 team 2",
     "namePerPeriod": [
       {
         "fromYear": 2010,
         "toYear": 2010,
-        "name": "Wood Brothers Racing"
+        "name": "Whitney Motorsports Team 1 team 2"
       }
     ],
     "nameChangeEvents": [
       {
         "year": 2010,
-        "newName": "Wood Brothers Racing",
+        "newName": "Whitney Motorsports Team 1 team 2",
+        "note": "First season this lineage appears in uploaded source data."
+      }
+    ],
+    "reputation": 39,
+    "raceOperations": 39,
+    "pitCrewOperations": 40,
+    "developmentRate": 50,
+    "facilities": 39,
+    "sponsorStrength": 39,
+    "commercialStrength": 39,
+    "politicalInfluence": 39,
+    "financeHealth": 39,
+    "budget": 39000000
+  },
+  {
+    "teamLineageId": "NASCAR_2010_TEAM_WHITNEY_MOTORSPORTS_TEAM_1_TEAM_3",
+    "series": "NASCAR",
+    "canonicalName": "Whitney Motorsports Team 1 team 3",
+    "namePerPeriod": [
+      {
+        "fromYear": 2010,
+        "toYear": 2010,
+        "name": "Whitney Motorsports Team 1 team 3"
+      }
+    ],
+    "nameChangeEvents": [
+      {
+        "year": 2010,
+        "newName": "Whitney Motorsports Team 1 team 3",
+        "note": "First season this lineage appears in uploaded source data."
+      }
+    ],
+    "reputation": 39,
+    "raceOperations": 39,
+    "pitCrewOperations": 40,
+    "developmentRate": 50,
+    "facilities": 39,
+    "sponsorStrength": 39,
+    "commercialStrength": 39,
+    "politicalInfluence": 39,
+    "financeHealth": 39,
+    "budget": 39000000
+  },
+  {
+    "teamLineageId": "NASCAR_2010_TEAM_WOOD_BROTHERS_RACING_TEAM_1",
+    "series": "NASCAR",
+    "canonicalName": "Wood Brothers Racing Team 1",
+    "namePerPeriod": [
+      {
+        "fromYear": 2010,
+        "toYear": 2010,
+        "name": "Wood Brothers Racing Team 1"
+      }
+    ],
+    "nameChangeEvents": [
+      {
+        "year": 2010,
+        "newName": "Wood Brothers Racing Team 1",
         "note": "First season this lineage appears in uploaded source data."
       }
     ],
@@ -5370,8 +6501,8 @@ export const nascar2010Teams: GlobalTeam[] = [
 
 export const nascar2010Cars: GlobalCar[] = [
   {
-    "carId": "car-2010-nascar-ash-racing",
-    "teamId": "NASCAR_2010_TEAM_ASH_RACING",
+    "carId": "car-2010-nascar-ash-racing-team-1",
+    "teamId": "NASCAR_2010_TEAM_ASH_RACING_TEAM_1",
     "seasonYear": 2010,
     "series": "NASCAR",
     "enginePower": 90,
@@ -5395,8 +6526,8 @@ export const nascar2010Cars: GlobalCar[] = [
     "carOverall": 86
   },
   {
-    "carId": "car-2010-nascar-bam-racing",
-    "teamId": "NASCAR_2010_TEAM_BAM_RACING",
+    "carId": "car-2010-nascar-bam-racing-team-1",
+    "teamId": "NASCAR_2010_TEAM_BAM_RACING_TEAM_1",
     "seasonYear": 2010,
     "series": "NASCAR",
     "enginePower": 27,
@@ -5420,8 +6551,8 @@ export const nascar2010Cars: GlobalCar[] = [
     "carOverall": 28
   },
   {
-    "carId": "car-2010-nascar-braun-racing",
-    "teamId": "NASCAR_2010_TEAM_BRAUN_RACING",
+    "carId": "car-2010-nascar-braun-racing-team-1-team-1",
+    "teamId": "NASCAR_2010_TEAM_BRAUN_RACING_TEAM_1_TEAM_1",
     "seasonYear": 2010,
     "series": "NASCAR",
     "enginePower": 38,
@@ -5445,8 +6576,33 @@ export const nascar2010Cars: GlobalCar[] = [
     "carOverall": 38
   },
   {
-    "carId": "car-2010-nascar-earnhardt-ganassi-racing",
-    "teamId": "NASCAR_2010_TEAM_EARNHARDT_GANASSI_RACING",
+    "carId": "car-2010-nascar-braun-racing-team-1-team-2",
+    "teamId": "NASCAR_2010_TEAM_BRAUN_RACING_TEAM_1_TEAM_2",
+    "seasonYear": 2010,
+    "series": "NASCAR",
+    "enginePower": 38,
+    "fuelEnergyEfficiency": 50,
+    "drag": 60,
+    "downforce": 40,
+    "chassisBalance": 38,
+    "cooling": 39,
+    "weightEfficiency": 38,
+    "mechanicalGrip": 38,
+    "brakingStability": 38,
+    "acceleration": 38,
+    "topSpeed": 39,
+    "tireWear": 62,
+    "tireWarmup": 50,
+    "tempControl": 39,
+    "wetPerformance": 38,
+    "reliability": 39,
+    "setupWindow": 37,
+    "upgradeCompatibility": 50,
+    "carOverall": 38
+  },
+  {
+    "carId": "car-2010-nascar-earnhardt-ganassi-racing-team-1",
+    "teamId": "NASCAR_2010_TEAM_EARNHARDT_GANASSI_RACING_TEAM_1",
     "seasonYear": 2010,
     "series": "NASCAR",
     "enginePower": 82,
@@ -5470,8 +6626,8 @@ export const nascar2010Cars: GlobalCar[] = [
     "carOverall": 80
   },
   {
-    "carId": "car-2010-nascar-front-row-motorsports-team-1",
-    "teamId": "NASCAR_2010_TEAM_FRONT_ROW_MOTORSPORTS_TEAM_1",
+    "carId": "car-2010-nascar-front-row-motorsports-team-1-team-1",
+    "teamId": "NASCAR_2010_TEAM_FRONT_ROW_MOTORSPORTS_TEAM_1_TEAM_1",
     "seasonYear": 2010,
     "series": "NASCAR",
     "enginePower": 50,
@@ -5479,24 +6635,24 @@ export const nascar2010Cars: GlobalCar[] = [
     "drag": 50,
     "downforce": 50,
     "chassisBalance": 50,
-    "cooling": 51,
+    "cooling": 49,
     "weightEfficiency": 50,
-    "mechanicalGrip": 52,
-    "brakingStability": 51,
-    "acceleration": 51,
+    "mechanicalGrip": 51,
+    "brakingStability": 50,
+    "acceleration": 50,
     "topSpeed": 50,
-    "tireWear": 48,
+    "tireWear": 50,
     "tireWarmup": 50,
-    "tempControl": 51,
-    "wetPerformance": 52,
-    "reliability": 51,
-    "setupWindow": 49,
+    "tempControl": 49,
+    "wetPerformance": 50,
+    "reliability": 49,
+    "setupWindow": 48,
     "upgradeCompatibility": 50,
     "carOverall": 50
   },
   {
-    "carId": "car-2010-nascar-front-row-motorsports-team-2",
-    "teamId": "NASCAR_2010_TEAM_FRONT_ROW_MOTORSPORTS_TEAM_2",
+    "carId": "car-2010-nascar-front-row-motorsports-team-1-team-2",
+    "teamId": "NASCAR_2010_TEAM_FRONT_ROW_MOTORSPORTS_TEAM_1_TEAM_2",
     "seasonYear": 2010,
     "series": "NASCAR",
     "enginePower": 50,
@@ -5504,24 +6660,199 @@ export const nascar2010Cars: GlobalCar[] = [
     "drag": 50,
     "downforce": 50,
     "chassisBalance": 50,
-    "cooling": 51,
+    "cooling": 49,
     "weightEfficiency": 50,
-    "mechanicalGrip": 52,
-    "brakingStability": 51,
-    "acceleration": 51,
+    "mechanicalGrip": 51,
+    "brakingStability": 50,
+    "acceleration": 50,
     "topSpeed": 50,
-    "tireWear": 48,
+    "tireWear": 50,
     "tireWarmup": 50,
-    "tempControl": 51,
-    "wetPerformance": 52,
-    "reliability": 51,
-    "setupWindow": 49,
+    "tempControl": 49,
+    "wetPerformance": 50,
+    "reliability": 49,
+    "setupWindow": 48,
     "upgradeCompatibility": 50,
     "carOverall": 50
   },
   {
-    "carId": "car-2010-nascar-furniture-row-racing",
-    "teamId": "NASCAR_2010_TEAM_FURNITURE_ROW_RACING",
+    "carId": "car-2010-nascar-front-row-motorsports-team-1-team-3",
+    "teamId": "NASCAR_2010_TEAM_FRONT_ROW_MOTORSPORTS_TEAM_1_TEAM_3",
+    "seasonYear": 2010,
+    "series": "NASCAR",
+    "enginePower": 50,
+    "fuelEnergyEfficiency": 50,
+    "drag": 50,
+    "downforce": 50,
+    "chassisBalance": 50,
+    "cooling": 49,
+    "weightEfficiency": 50,
+    "mechanicalGrip": 51,
+    "brakingStability": 50,
+    "acceleration": 50,
+    "topSpeed": 50,
+    "tireWear": 50,
+    "tireWarmup": 50,
+    "tempControl": 49,
+    "wetPerformance": 50,
+    "reliability": 49,
+    "setupWindow": 48,
+    "upgradeCompatibility": 50,
+    "carOverall": 50
+  },
+  {
+    "carId": "car-2010-nascar-front-row-motorsports-team-1-team-4",
+    "teamId": "NASCAR_2010_TEAM_FRONT_ROW_MOTORSPORTS_TEAM_1_TEAM_4",
+    "seasonYear": 2010,
+    "series": "NASCAR",
+    "enginePower": 50,
+    "fuelEnergyEfficiency": 50,
+    "drag": 50,
+    "downforce": 50,
+    "chassisBalance": 50,
+    "cooling": 49,
+    "weightEfficiency": 50,
+    "mechanicalGrip": 51,
+    "brakingStability": 50,
+    "acceleration": 50,
+    "topSpeed": 50,
+    "tireWear": 50,
+    "tireWarmup": 50,
+    "tempControl": 49,
+    "wetPerformance": 50,
+    "reliability": 49,
+    "setupWindow": 48,
+    "upgradeCompatibility": 50,
+    "carOverall": 50
+  },
+  {
+    "carId": "car-2010-nascar-front-row-motorsports-team-1-team-5",
+    "teamId": "NASCAR_2010_TEAM_FRONT_ROW_MOTORSPORTS_TEAM_1_TEAM_5",
+    "seasonYear": 2010,
+    "series": "NASCAR",
+    "enginePower": 50,
+    "fuelEnergyEfficiency": 50,
+    "drag": 50,
+    "downforce": 50,
+    "chassisBalance": 50,
+    "cooling": 49,
+    "weightEfficiency": 50,
+    "mechanicalGrip": 51,
+    "brakingStability": 50,
+    "acceleration": 50,
+    "topSpeed": 50,
+    "tireWear": 50,
+    "tireWarmup": 50,
+    "tempControl": 49,
+    "wetPerformance": 50,
+    "reliability": 49,
+    "setupWindow": 48,
+    "upgradeCompatibility": 50,
+    "carOverall": 50
+  },
+  {
+    "carId": "car-2010-nascar-front-row-motorsports-team-1-team-6",
+    "teamId": "NASCAR_2010_TEAM_FRONT_ROW_MOTORSPORTS_TEAM_1_TEAM_6",
+    "seasonYear": 2010,
+    "series": "NASCAR",
+    "enginePower": 50,
+    "fuelEnergyEfficiency": 50,
+    "drag": 50,
+    "downforce": 50,
+    "chassisBalance": 50,
+    "cooling": 49,
+    "weightEfficiency": 50,
+    "mechanicalGrip": 51,
+    "brakingStability": 50,
+    "acceleration": 50,
+    "topSpeed": 50,
+    "tireWear": 50,
+    "tireWarmup": 50,
+    "tempControl": 49,
+    "wetPerformance": 50,
+    "reliability": 49,
+    "setupWindow": 48,
+    "upgradeCompatibility": 50,
+    "carOverall": 50
+  },
+  {
+    "carId": "car-2010-nascar-front-row-motorsports-team-2-team-1",
+    "teamId": "NASCAR_2010_TEAM_FRONT_ROW_MOTORSPORTS_TEAM_2_TEAM_1",
+    "seasonYear": 2010,
+    "series": "NASCAR",
+    "enginePower": 50,
+    "fuelEnergyEfficiency": 50,
+    "drag": 50,
+    "downforce": 50,
+    "chassisBalance": 51,
+    "cooling": 52,
+    "weightEfficiency": 51,
+    "mechanicalGrip": 53,
+    "brakingStability": 52,
+    "acceleration": 52,
+    "topSpeed": 50,
+    "tireWear": 48,
+    "tireWarmup": 50,
+    "tempControl": 52,
+    "wetPerformance": 52,
+    "reliability": 52,
+    "setupWindow": 50,
+    "upgradeCompatibility": 50,
+    "carOverall": 51
+  },
+  {
+    "carId": "car-2010-nascar-front-row-motorsports-team-2-team-2",
+    "teamId": "NASCAR_2010_TEAM_FRONT_ROW_MOTORSPORTS_TEAM_2_TEAM_2",
+    "seasonYear": 2010,
+    "series": "NASCAR",
+    "enginePower": 50,
+    "fuelEnergyEfficiency": 50,
+    "drag": 50,
+    "downforce": 50,
+    "chassisBalance": 51,
+    "cooling": 52,
+    "weightEfficiency": 51,
+    "mechanicalGrip": 53,
+    "brakingStability": 52,
+    "acceleration": 52,
+    "topSpeed": 50,
+    "tireWear": 48,
+    "tireWarmup": 50,
+    "tempControl": 52,
+    "wetPerformance": 52,
+    "reliability": 52,
+    "setupWindow": 50,
+    "upgradeCompatibility": 50,
+    "carOverall": 51
+  },
+  {
+    "carId": "car-2010-nascar-front-row-motorsports-team-2-team-3",
+    "teamId": "NASCAR_2010_TEAM_FRONT_ROW_MOTORSPORTS_TEAM_2_TEAM_3",
+    "seasonYear": 2010,
+    "series": "NASCAR",
+    "enginePower": 50,
+    "fuelEnergyEfficiency": 50,
+    "drag": 50,
+    "downforce": 50,
+    "chassisBalance": 51,
+    "cooling": 52,
+    "weightEfficiency": 51,
+    "mechanicalGrip": 53,
+    "brakingStability": 52,
+    "acceleration": 52,
+    "topSpeed": 50,
+    "tireWear": 48,
+    "tireWarmup": 50,
+    "tempControl": 52,
+    "wetPerformance": 52,
+    "reliability": 52,
+    "setupWindow": 50,
+    "upgradeCompatibility": 50,
+    "carOverall": 51
+  },
+  {
+    "carId": "car-2010-nascar-furniture-row-racing-team-1",
+    "teamId": "NASCAR_2010_TEAM_FURNITURE_ROW_RACING_TEAM_1",
     "seasonYear": 2010,
     "series": "NASCAR",
     "enginePower": 69,
@@ -5545,8 +6876,8 @@ export const nascar2010Cars: GlobalCar[] = [
     "carOverall": 65
   },
   {
-    "carId": "car-2010-nascar-germain-racing",
-    "teamId": "NASCAR_2010_TEAM_GERMAIN_RACING",
+    "carId": "car-2010-nascar-germain-racing-team-1",
+    "teamId": "NASCAR_2010_TEAM_GERMAIN_RACING_TEAM_1",
     "seasonYear": 2010,
     "series": "NASCAR",
     "enginePower": 47,
@@ -5570,8 +6901,58 @@ export const nascar2010Cars: GlobalCar[] = [
     "carOverall": 47
   },
   {
-    "carId": "car-2010-nascar-gunselman-motorsports",
-    "teamId": "NASCAR_2010_TEAM_GUNSELMAN_MOTORSPORTS",
+    "carId": "car-2010-nascar-gunselman-motorsports-team-1-team-1",
+    "teamId": "NASCAR_2010_TEAM_GUNSELMAN_MOTORSPORTS_TEAM_1_TEAM_1",
+    "seasonYear": 2010,
+    "series": "NASCAR",
+    "enginePower": 26,
+    "fuelEnergyEfficiency": 50,
+    "drag": 75,
+    "downforce": 25,
+    "chassisBalance": 26,
+    "cooling": 28,
+    "weightEfficiency": 26,
+    "mechanicalGrip": 27,
+    "brakingStability": 26,
+    "acceleration": 26,
+    "topSpeed": 26,
+    "tireWear": 72,
+    "tireWarmup": 50,
+    "tempControl": 28,
+    "wetPerformance": 28,
+    "reliability": 28,
+    "setupWindow": 25,
+    "upgradeCompatibility": 50,
+    "carOverall": 26
+  },
+  {
+    "carId": "car-2010-nascar-gunselman-motorsports-team-1-team-2",
+    "teamId": "NASCAR_2010_TEAM_GUNSELMAN_MOTORSPORTS_TEAM_1_TEAM_2",
+    "seasonYear": 2010,
+    "series": "NASCAR",
+    "enginePower": 26,
+    "fuelEnergyEfficiency": 50,
+    "drag": 75,
+    "downforce": 25,
+    "chassisBalance": 26,
+    "cooling": 28,
+    "weightEfficiency": 26,
+    "mechanicalGrip": 27,
+    "brakingStability": 26,
+    "acceleration": 26,
+    "topSpeed": 26,
+    "tireWear": 72,
+    "tireWarmup": 50,
+    "tempControl": 28,
+    "wetPerformance": 28,
+    "reliability": 28,
+    "setupWindow": 25,
+    "upgradeCompatibility": 50,
+    "carOverall": 26
+  },
+  {
+    "carId": "car-2010-nascar-gunselman-motorsports-team-1-team-3",
+    "teamId": "NASCAR_2010_TEAM_GUNSELMAN_MOTORSPORTS_TEAM_1_TEAM_3",
     "seasonYear": 2010,
     "series": "NASCAR",
     "enginePower": 26,
@@ -5599,25 +6980,25 @@ export const nascar2010Cars: GlobalCar[] = [
     "teamId": "NASCAR_2010_TEAM_HENDRICK_MOTORSPORTS_TEAM_1",
     "seasonYear": 2010,
     "series": "NASCAR",
-    "enginePower": 100,
+    "enginePower": 99,
     "fuelEnergyEfficiency": 50,
-    "drag": 4,
-    "downforce": 96,
-    "chassisBalance": 98,
-    "cooling": 99,
-    "weightEfficiency": 98,
-    "mechanicalGrip": 98,
-    "brakingStability": 99,
-    "acceleration": 99,
-    "topSpeed": 98,
-    "tireWear": 2,
+    "drag": 7,
+    "downforce": 93,
+    "chassisBalance": 97,
+    "cooling": 98,
+    "weightEfficiency": 97,
+    "mechanicalGrip": 95,
+    "brakingStability": 97,
+    "acceleration": 97,
+    "topSpeed": 97,
+    "tireWear": 4,
     "tireWarmup": 50,
-    "tempControl": 99,
-    "wetPerformance": 98,
-    "reliability": 99,
-    "setupWindow": 99,
+    "tempControl": 98,
+    "wetPerformance": 96,
+    "reliability": 98,
+    "setupWindow": 98,
     "upgradeCompatibility": 50,
-    "carOverall": 98
+    "carOverall": 97
   },
   {
     "carId": "car-2010-nascar-hendrick-motorsports-team-2",
@@ -5626,27 +7007,27 @@ export const nascar2010Cars: GlobalCar[] = [
     "series": "NASCAR",
     "enginePower": 100,
     "fuelEnergyEfficiency": 50,
-    "drag": 4,
-    "downforce": 96,
-    "chassisBalance": 98,
-    "cooling": 99,
-    "weightEfficiency": 98,
-    "mechanicalGrip": 98,
-    "brakingStability": 99,
-    "acceleration": 99,
-    "topSpeed": 98,
-    "tireWear": 2,
+    "drag": 2,
+    "downforce": 98,
+    "chassisBalance": 100,
+    "cooling": 100,
+    "weightEfficiency": 100,
+    "mechanicalGrip": 100,
+    "brakingStability": 100,
+    "acceleration": 100,
+    "topSpeed": 99,
+    "tireWear": 1,
     "tireWarmup": 50,
-    "tempControl": 99,
-    "wetPerformance": 98,
-    "reliability": 99,
-    "setupWindow": 99,
+    "tempControl": 100,
+    "wetPerformance": 100,
+    "reliability": 100,
+    "setupWindow": 100,
     "upgradeCompatibility": 50,
-    "carOverall": 98
+    "carOverall": 100
   },
   {
-    "carId": "car-2010-nascar-jtg-daugherty-racing-with-michael-waltrip-racing",
-    "teamId": "NASCAR_2010_TEAM_JTG_DAUGHERTY_RACING_WITH_MICHAEL_WALTRIP_RACING",
+    "carId": "car-2010-nascar-jtg-daugherty-racing-with-michael-waltrip-racing-team-1",
+    "teamId": "NASCAR_2010_TEAM_JTG_DAUGHERTY_RACING_WITH_MICHAEL_WALTRIP_RACING_TEAM_1",
     "seasonYear": 2010,
     "series": "NASCAR",
     "enginePower": 67,
@@ -5674,54 +7055,54 @@ export const nascar2010Cars: GlobalCar[] = [
     "teamId": "NASCAR_2010_TEAM_JOE_GIBBS_RACING_TEAM_1",
     "seasonYear": 2010,
     "series": "NASCAR",
-    "enginePower": 90,
+    "enginePower": 100,
     "fuelEnergyEfficiency": 50,
-    "drag": 10,
-    "downforce": 90,
-    "chassisBalance": 91,
-    "cooling": 92,
-    "weightEfficiency": 91,
-    "mechanicalGrip": 89,
-    "brakingStability": 90,
-    "acceleration": 90,
-    "topSpeed": 90,
-    "tireWear": 10,
+    "drag": 1,
+    "downforce": 99,
+    "chassisBalance": 100,
+    "cooling": 100,
+    "weightEfficiency": 100,
+    "mechanicalGrip": 100,
+    "brakingStability": 100,
+    "acceleration": 100,
+    "topSpeed": 100,
+    "tireWear": 1,
     "tireWarmup": 50,
-    "tempControl": 92,
-    "wetPerformance": 90,
-    "reliability": 92,
-    "setupWindow": 92,
+    "tempControl": 100,
+    "wetPerformance": 100,
+    "reliability": 100,
+    "setupWindow": 100,
     "upgradeCompatibility": 50,
-    "carOverall": 91
+    "carOverall": 100
   },
   {
     "carId": "car-2010-nascar-joe-gibbs-racing-team-2",
     "teamId": "NASCAR_2010_TEAM_JOE_GIBBS_RACING_TEAM_2",
     "seasonYear": 2010,
     "series": "NASCAR",
-    "enginePower": 90,
+    "enginePower": 79,
     "fuelEnergyEfficiency": 50,
-    "drag": 10,
-    "downforce": 90,
-    "chassisBalance": 91,
-    "cooling": 92,
-    "weightEfficiency": 91,
-    "mechanicalGrip": 89,
-    "brakingStability": 90,
-    "acceleration": 90,
-    "topSpeed": 90,
-    "tireWear": 10,
+    "drag": 20,
+    "downforce": 80,
+    "chassisBalance": 81,
+    "cooling": 83,
+    "weightEfficiency": 81,
+    "mechanicalGrip": 78,
+    "brakingStability": 78,
+    "acceleration": 78,
+    "topSpeed": 79,
+    "tireWear": 20,
     "tireWarmup": 50,
-    "tempControl": 92,
-    "wetPerformance": 90,
-    "reliability": 92,
-    "setupWindow": 92,
+    "tempControl": 83,
+    "wetPerformance": 80,
+    "reliability": 83,
+    "setupWindow": 83,
     "upgradeCompatibility": 50,
-    "carOverall": 91
+    "carOverall": 81
   },
   {
-    "carId": "car-2010-nascar-k-automotive-motorsports",
-    "teamId": "NASCAR_2010_TEAM_K_AUTOMOTIVE_MOTORSPORTS",
+    "carId": "car-2010-nascar-k-automotive-motorsports-team-1",
+    "teamId": "NASCAR_2010_TEAM_K_AUTOMOTIVE_MOTORSPORTS_TEAM_1",
     "seasonYear": 2010,
     "series": "NASCAR",
     "enginePower": 30,
@@ -5745,8 +7126,8 @@ export const nascar2010Cars: GlobalCar[] = [
     "carOverall": 30
   },
   {
-    "carId": "car-2010-nascar-keyed-up-motorsports",
-    "teamId": "NASCAR_2010_TEAM_KEYED_UP_MOTORSPORTS",
+    "carId": "car-2010-nascar-keyed-up-motorsports-team-1",
+    "teamId": "NASCAR_2010_TEAM_KEYED_UP_MOTORSPORTS_TEAM_1",
     "seasonYear": 2010,
     "series": "NASCAR",
     "enginePower": 20,
@@ -5770,8 +7151,8 @@ export const nascar2010Cars: GlobalCar[] = [
     "carOverall": 20
   },
   {
-    "carId": "car-2010-nascar-kirk-shelmerdine-racing",
-    "teamId": "NASCAR_2010_TEAM_KIRK_SHELMERDINE_RACING",
+    "carId": "car-2010-nascar-kirk-shelmerdine-racing-team-1",
+    "teamId": "NASCAR_2010_TEAM_KIRK_SHELMERDINE_RACING_TEAM_1",
     "seasonYear": 2010,
     "series": "NASCAR",
     "enginePower": 30,
@@ -5795,8 +7176,83 @@ export const nascar2010Cars: GlobalCar[] = [
     "carOverall": 29
   },
   {
-    "carId": "car-2010-nascar-latitude-43-motorsports",
-    "teamId": "NASCAR_2010_TEAM_LATITUDE_43_MOTORSPORTS",
+    "carId": "car-2010-nascar-latitude-43-motorsports-team-1-team-1",
+    "teamId": "NASCAR_2010_TEAM_LATITUDE_43_MOTORSPORTS_TEAM_1_TEAM_1",
+    "seasonYear": 2010,
+    "series": "NASCAR",
+    "enginePower": 34,
+    "fuelEnergyEfficiency": 50,
+    "drag": 64,
+    "downforce": 36,
+    "chassisBalance": 34,
+    "cooling": 36,
+    "weightEfficiency": 34,
+    "mechanicalGrip": 32,
+    "brakingStability": 33,
+    "acceleration": 33,
+    "topSpeed": 35,
+    "tireWear": 66,
+    "tireWarmup": 50,
+    "tempControl": 36,
+    "wetPerformance": 34,
+    "reliability": 36,
+    "setupWindow": 32,
+    "upgradeCompatibility": 50,
+    "carOverall": 34
+  },
+  {
+    "carId": "car-2010-nascar-latitude-43-motorsports-team-1-team-2",
+    "teamId": "NASCAR_2010_TEAM_LATITUDE_43_MOTORSPORTS_TEAM_1_TEAM_2",
+    "seasonYear": 2010,
+    "series": "NASCAR",
+    "enginePower": 34,
+    "fuelEnergyEfficiency": 50,
+    "drag": 64,
+    "downforce": 36,
+    "chassisBalance": 34,
+    "cooling": 36,
+    "weightEfficiency": 34,
+    "mechanicalGrip": 32,
+    "brakingStability": 33,
+    "acceleration": 33,
+    "topSpeed": 35,
+    "tireWear": 66,
+    "tireWarmup": 50,
+    "tempControl": 36,
+    "wetPerformance": 34,
+    "reliability": 36,
+    "setupWindow": 32,
+    "upgradeCompatibility": 50,
+    "carOverall": 34
+  },
+  {
+    "carId": "car-2010-nascar-latitude-43-motorsports-team-1-team-3",
+    "teamId": "NASCAR_2010_TEAM_LATITUDE_43_MOTORSPORTS_TEAM_1_TEAM_3",
+    "seasonYear": 2010,
+    "series": "NASCAR",
+    "enginePower": 34,
+    "fuelEnergyEfficiency": 50,
+    "drag": 64,
+    "downforce": 36,
+    "chassisBalance": 34,
+    "cooling": 36,
+    "weightEfficiency": 34,
+    "mechanicalGrip": 32,
+    "brakingStability": 33,
+    "acceleration": 33,
+    "topSpeed": 35,
+    "tireWear": 66,
+    "tireWarmup": 50,
+    "tempControl": 36,
+    "wetPerformance": 34,
+    "reliability": 36,
+    "setupWindow": 32,
+    "upgradeCompatibility": 50,
+    "carOverall": 34
+  },
+  {
+    "carId": "car-2010-nascar-latitude-43-motorsports-team-1-team-4",
+    "teamId": "NASCAR_2010_TEAM_LATITUDE_43_MOTORSPORTS_TEAM_1_TEAM_4",
     "seasonYear": 2010,
     "series": "NASCAR",
     "enginePower": 34,
@@ -5824,54 +7280,129 @@ export const nascar2010Cars: GlobalCar[] = [
     "teamId": "NASCAR_2010_TEAM_MICHAEL_WALTRIP_RACING_TEAM_1",
     "seasonYear": 2010,
     "series": "NASCAR",
-    "enginePower": 51,
+    "enginePower": 75,
     "fuelEnergyEfficiency": 50,
-    "drag": 46,
-    "downforce": 54,
-    "chassisBalance": 52,
-    "cooling": 53,
-    "weightEfficiency": 52,
-    "mechanicalGrip": 52,
-    "brakingStability": 52,
-    "acceleration": 52,
-    "topSpeed": 52,
-    "tireWear": 48,
+    "drag": 22,
+    "downforce": 78,
+    "chassisBalance": 76,
+    "cooling": 76,
+    "weightEfficiency": 76,
+    "mechanicalGrip": 76,
+    "brakingStability": 76,
+    "acceleration": 76,
+    "topSpeed": 76,
+    "tireWear": 24,
     "tireWarmup": 50,
-    "tempControl": 53,
-    "wetPerformance": 52,
-    "reliability": 53,
-    "setupWindow": 51,
+    "tempControl": 76,
+    "wetPerformance": 76,
+    "reliability": 76,
+    "setupWindow": 74,
     "upgradeCompatibility": 50,
-    "carOverall": 52
+    "carOverall": 76
   },
   {
-    "carId": "car-2010-nascar-michael-waltrip-racing-team-2",
-    "teamId": "NASCAR_2010_TEAM_MICHAEL_WALTRIP_RACING_TEAM_2",
+    "carId": "car-2010-nascar-michael-waltrip-racing-team-2-team-1",
+    "teamId": "NASCAR_2010_TEAM_MICHAEL_WALTRIP_RACING_TEAM_2_TEAM_1",
     "seasonYear": 2010,
     "series": "NASCAR",
-    "enginePower": 51,
+    "enginePower": 27,
     "fuelEnergyEfficiency": 50,
-    "drag": 46,
-    "downforce": 54,
-    "chassisBalance": 52,
-    "cooling": 53,
-    "weightEfficiency": 52,
-    "mechanicalGrip": 52,
-    "brakingStability": 52,
-    "acceleration": 52,
-    "topSpeed": 52,
-    "tireWear": 48,
+    "drag": 70,
+    "downforce": 30,
+    "chassisBalance": 28,
+    "cooling": 30,
+    "weightEfficiency": 28,
+    "mechanicalGrip": 27,
+    "brakingStability": 27,
+    "acceleration": 27,
+    "topSpeed": 28,
+    "tireWear": 72,
     "tireWarmup": 50,
-    "tempControl": 53,
-    "wetPerformance": 52,
-    "reliability": 53,
-    "setupWindow": 51,
+    "tempControl": 30,
+    "wetPerformance": 28,
+    "reliability": 30,
+    "setupWindow": 28,
     "upgradeCompatibility": 50,
-    "carOverall": 52
+    "carOverall": 28
   },
   {
-    "carId": "car-2010-nascar-morgan-mcclure-motorsports",
-    "teamId": "NASCAR_2010_TEAM_MORGAN_MCCLURE_MOTORSPORTS",
+    "carId": "car-2010-nascar-michael-waltrip-racing-team-2-team-2",
+    "teamId": "NASCAR_2010_TEAM_MICHAEL_WALTRIP_RACING_TEAM_2_TEAM_2",
+    "seasonYear": 2010,
+    "series": "NASCAR",
+    "enginePower": 27,
+    "fuelEnergyEfficiency": 50,
+    "drag": 70,
+    "downforce": 30,
+    "chassisBalance": 28,
+    "cooling": 30,
+    "weightEfficiency": 28,
+    "mechanicalGrip": 27,
+    "brakingStability": 27,
+    "acceleration": 27,
+    "topSpeed": 28,
+    "tireWear": 72,
+    "tireWarmup": 50,
+    "tempControl": 30,
+    "wetPerformance": 28,
+    "reliability": 30,
+    "setupWindow": 28,
+    "upgradeCompatibility": 50,
+    "carOverall": 28
+  },
+  {
+    "carId": "car-2010-nascar-michael-waltrip-racing-team-2-team-3",
+    "teamId": "NASCAR_2010_TEAM_MICHAEL_WALTRIP_RACING_TEAM_2_TEAM_3",
+    "seasonYear": 2010,
+    "series": "NASCAR",
+    "enginePower": 27,
+    "fuelEnergyEfficiency": 50,
+    "drag": 70,
+    "downforce": 30,
+    "chassisBalance": 28,
+    "cooling": 30,
+    "weightEfficiency": 28,
+    "mechanicalGrip": 27,
+    "brakingStability": 27,
+    "acceleration": 27,
+    "topSpeed": 28,
+    "tireWear": 72,
+    "tireWarmup": 50,
+    "tempControl": 30,
+    "wetPerformance": 28,
+    "reliability": 30,
+    "setupWindow": 28,
+    "upgradeCompatibility": 50,
+    "carOverall": 28
+  },
+  {
+    "carId": "car-2010-nascar-michael-waltrip-racing-team-2-team-4",
+    "teamId": "NASCAR_2010_TEAM_MICHAEL_WALTRIP_RACING_TEAM_2_TEAM_4",
+    "seasonYear": 2010,
+    "series": "NASCAR",
+    "enginePower": 27,
+    "fuelEnergyEfficiency": 50,
+    "drag": 70,
+    "downforce": 30,
+    "chassisBalance": 28,
+    "cooling": 30,
+    "weightEfficiency": 28,
+    "mechanicalGrip": 27,
+    "brakingStability": 27,
+    "acceleration": 27,
+    "topSpeed": 28,
+    "tireWear": 72,
+    "tireWarmup": 50,
+    "tempControl": 30,
+    "wetPerformance": 28,
+    "reliability": 30,
+    "setupWindow": 28,
+    "upgradeCompatibility": 50,
+    "carOverall": 28
+  },
+  {
+    "carId": "car-2010-nascar-morgan-mcclure-motorsports-team-1",
+    "teamId": "NASCAR_2010_TEAM_MORGAN_MCCLURE_MOTORSPORTS_TEAM_1",
     "seasonYear": 2010,
     "series": "NASCAR",
     "enginePower": 100,
@@ -5895,33 +7426,58 @@ export const nascar2010Cars: GlobalCar[] = [
     "carOverall": 72
   },
   {
-    "carId": "car-2010-nascar-nemco-motorsports",
-    "teamId": "NASCAR_2010_TEAM_NEMCO_MOTORSPORTS",
+    "carId": "car-2010-nascar-nemco-motorsports-team-1",
+    "teamId": "NASCAR_2010_TEAM_NEMCO_MOTORSPORTS_TEAM_1",
     "seasonYear": 2010,
     "series": "NASCAR",
-    "enginePower": 29,
+    "enginePower": 47,
     "fuelEnergyEfficiency": 50,
-    "drag": 71,
-    "downforce": 29,
-    "chassisBalance": 29,
-    "cooling": 28,
-    "weightEfficiency": 29,
-    "mechanicalGrip": 28,
-    "brakingStability": 28,
-    "acceleration": 28,
-    "topSpeed": 29,
-    "tireWear": 72,
+    "drag": 55,
+    "downforce": 45,
+    "chassisBalance": 46,
+    "cooling": 48,
+    "weightEfficiency": 46,
+    "mechanicalGrip": 45,
+    "brakingStability": 46,
+    "acceleration": 46,
+    "topSpeed": 46,
+    "tireWear": 54,
     "tireWarmup": 50,
-    "tempControl": 28,
-    "wetPerformance": 28,
-    "reliability": 28,
-    "setupWindow": 30,
+    "tempControl": 48,
+    "wetPerformance": 46,
+    "reliability": 48,
+    "setupWindow": 47,
     "upgradeCompatibility": 50,
-    "carOverall": 29
+    "carOverall": 46
   },
   {
-    "carId": "car-2010-nascar-norm-benning-racing",
-    "teamId": "NASCAR_2010_TEAM_NORM_BENNING_RACING",
+    "carId": "car-2010-nascar-nemco-motorsports-team-2",
+    "teamId": "NASCAR_2010_TEAM_NEMCO_MOTORSPORTS_TEAM_2",
+    "seasonYear": 2010,
+    "series": "NASCAR",
+    "enginePower": 100,
+    "fuelEnergyEfficiency": 50,
+    "drag": 88,
+    "downforce": 12,
+    "chassisBalance": 43,
+    "cooling": 80,
+    "weightEfficiency": 43,
+    "mechanicalGrip": 11,
+    "brakingStability": 56,
+    "acceleration": 56,
+    "topSpeed": 65,
+    "tireWear": 54,
+    "tireWarmup": 50,
+    "tempControl": 80,
+    "wetPerformance": 46,
+    "reliability": 80,
+    "setupWindow": 12,
+    "upgradeCompatibility": 50,
+    "carOverall": 43
+  },
+  {
+    "carId": "car-2010-nascar-norm-benning-racing-team-1",
+    "teamId": "NASCAR_2010_TEAM_NORM_BENNING_RACING_TEAM_1",
     "seasonYear": 2010,
     "series": "NASCAR",
     "enginePower": 20,
@@ -5949,54 +7505,54 @@ export const nascar2010Cars: GlobalCar[] = [
     "teamId": "NASCAR_2010_TEAM_PENSKE_CHAMPIONSHIP_RACING_TEAM_1",
     "seasonYear": 2010,
     "series": "NASCAR",
-    "enginePower": 79,
+    "enginePower": 90,
     "fuelEnergyEfficiency": 50,
-    "drag": 23,
-    "downforce": 77,
-    "chassisBalance": 78,
-    "cooling": 80,
-    "weightEfficiency": 78,
-    "mechanicalGrip": 77,
-    "brakingStability": 78,
-    "acceleration": 78,
-    "topSpeed": 78,
-    "tireWear": 22,
+    "drag": 10,
+    "downforce": 90,
+    "chassisBalance": 91,
+    "cooling": 92,
+    "weightEfficiency": 91,
+    "mechanicalGrip": 89,
+    "brakingStability": 90,
+    "acceleration": 90,
+    "topSpeed": 90,
+    "tireWear": 10,
     "tireWarmup": 50,
-    "tempControl": 80,
-    "wetPerformance": 78,
-    "reliability": 80,
-    "setupWindow": 79,
+    "tempControl": 92,
+    "wetPerformance": 90,
+    "reliability": 92,
+    "setupWindow": 93,
     "upgradeCompatibility": 50,
-    "carOverall": 78
+    "carOverall": 91
   },
   {
     "carId": "car-2010-nascar-penske-championship-racing-team-2",
     "teamId": "NASCAR_2010_TEAM_PENSKE_CHAMPIONSHIP_RACING_TEAM_2",
     "seasonYear": 2010,
     "series": "NASCAR",
-    "enginePower": 79,
+    "enginePower": 67,
     "fuelEnergyEfficiency": 50,
-    "drag": 23,
-    "downforce": 77,
-    "chassisBalance": 78,
-    "cooling": 80,
-    "weightEfficiency": 78,
-    "mechanicalGrip": 77,
-    "brakingStability": 78,
-    "acceleration": 78,
-    "topSpeed": 78,
-    "tireWear": 22,
+    "drag": 36,
+    "downforce": 64,
+    "chassisBalance": 66,
+    "cooling": 67,
+    "weightEfficiency": 66,
+    "mechanicalGrip": 65,
+    "brakingStability": 66,
+    "acceleration": 66,
+    "topSpeed": 66,
+    "tireWear": 34,
     "tireWarmup": 50,
-    "tempControl": 80,
-    "wetPerformance": 78,
-    "reliability": 80,
-    "setupWindow": 79,
+    "tempControl": 67,
+    "wetPerformance": 66,
+    "reliability": 67,
+    "setupWindow": 65,
     "upgradeCompatibility": 50,
-    "carOverall": 78
+    "carOverall": 66
   },
   {
-    "carId": "car-2010-nascar-phoenix-racing",
-    "teamId": "NASCAR_2010_TEAM_PHOENIX_RACING",
+    "carId": "car-2010-nascar-phoenix-racing-team-1-team-1",
+    "teamId": "NASCAR_2010_TEAM_PHOENIX_RACING_TEAM_1_TEAM_1",
     "seasonYear": 2010,
     "series": "NASCAR",
     "enginePower": 35,
@@ -6020,8 +7576,58 @@ export const nascar2010Cars: GlobalCar[] = [
     "carOverall": 35
   },
   {
-    "carId": "car-2010-nascar-prism-motorsports",
-    "teamId": "NASCAR_2010_TEAM_PRISM_MOTORSPORTS",
+    "carId": "car-2010-nascar-phoenix-racing-team-1-team-2",
+    "teamId": "NASCAR_2010_TEAM_PHOENIX_RACING_TEAM_1_TEAM_2",
+    "seasonYear": 2010,
+    "series": "NASCAR",
+    "enginePower": 35,
+    "fuelEnergyEfficiency": 50,
+    "drag": 66,
+    "downforce": 34,
+    "chassisBalance": 35,
+    "cooling": 36,
+    "weightEfficiency": 35,
+    "mechanicalGrip": 37,
+    "brakingStability": 36,
+    "acceleration": 36,
+    "topSpeed": 35,
+    "tireWear": 64,
+    "tireWarmup": 50,
+    "tempControl": 36,
+    "wetPerformance": 36,
+    "reliability": 36,
+    "setupWindow": 33,
+    "upgradeCompatibility": 50,
+    "carOverall": 35
+  },
+  {
+    "carId": "car-2010-nascar-phoenix-racing-team-1-team-3",
+    "teamId": "NASCAR_2010_TEAM_PHOENIX_RACING_TEAM_1_TEAM_3",
+    "seasonYear": 2010,
+    "series": "NASCAR",
+    "enginePower": 35,
+    "fuelEnergyEfficiency": 50,
+    "drag": 66,
+    "downforce": 34,
+    "chassisBalance": 35,
+    "cooling": 36,
+    "weightEfficiency": 35,
+    "mechanicalGrip": 37,
+    "brakingStability": 36,
+    "acceleration": 36,
+    "topSpeed": 35,
+    "tireWear": 64,
+    "tireWarmup": 50,
+    "tempControl": 36,
+    "wetPerformance": 36,
+    "reliability": 36,
+    "setupWindow": 33,
+    "upgradeCompatibility": 50,
+    "carOverall": 35
+  },
+  {
+    "carId": "car-2010-nascar-prism-motorsports-team-1-team-1",
+    "teamId": "NASCAR_2010_TEAM_PRISM_MOTORSPORTS_TEAM_1_TEAM_1",
     "seasonYear": 2010,
     "series": "NASCAR",
     "enginePower": 42,
@@ -6045,8 +7651,83 @@ export const nascar2010Cars: GlobalCar[] = [
     "carOverall": 42
   },
   {
-    "carId": "car-2010-nascar-r3-motorsports",
-    "teamId": "NASCAR_2010_TEAM_R3_MOTORSPORTS",
+    "carId": "car-2010-nascar-prism-motorsports-team-1-team-2",
+    "teamId": "NASCAR_2010_TEAM_PRISM_MOTORSPORTS_TEAM_1_TEAM_2",
+    "seasonYear": 2010,
+    "series": "NASCAR",
+    "enginePower": 42,
+    "fuelEnergyEfficiency": 50,
+    "drag": 60,
+    "downforce": 40,
+    "chassisBalance": 42,
+    "cooling": 44,
+    "weightEfficiency": 42,
+    "mechanicalGrip": 43,
+    "brakingStability": 42,
+    "acceleration": 42,
+    "topSpeed": 41,
+    "tireWear": 56,
+    "tireWarmup": 50,
+    "tempControl": 44,
+    "wetPerformance": 44,
+    "reliability": 44,
+    "setupWindow": 40,
+    "upgradeCompatibility": 50,
+    "carOverall": 42
+  },
+  {
+    "carId": "car-2010-nascar-prism-motorsports-team-1-team-3",
+    "teamId": "NASCAR_2010_TEAM_PRISM_MOTORSPORTS_TEAM_1_TEAM_3",
+    "seasonYear": 2010,
+    "series": "NASCAR",
+    "enginePower": 42,
+    "fuelEnergyEfficiency": 50,
+    "drag": 60,
+    "downforce": 40,
+    "chassisBalance": 42,
+    "cooling": 44,
+    "weightEfficiency": 42,
+    "mechanicalGrip": 43,
+    "brakingStability": 42,
+    "acceleration": 42,
+    "topSpeed": 41,
+    "tireWear": 56,
+    "tireWarmup": 50,
+    "tempControl": 44,
+    "wetPerformance": 44,
+    "reliability": 44,
+    "setupWindow": 40,
+    "upgradeCompatibility": 50,
+    "carOverall": 42
+  },
+  {
+    "carId": "car-2010-nascar-prism-motorsports-team-1-team-4",
+    "teamId": "NASCAR_2010_TEAM_PRISM_MOTORSPORTS_TEAM_1_TEAM_4",
+    "seasonYear": 2010,
+    "series": "NASCAR",
+    "enginePower": 42,
+    "fuelEnergyEfficiency": 50,
+    "drag": 60,
+    "downforce": 40,
+    "chassisBalance": 42,
+    "cooling": 44,
+    "weightEfficiency": 42,
+    "mechanicalGrip": 43,
+    "brakingStability": 42,
+    "acceleration": 42,
+    "topSpeed": 41,
+    "tireWear": 56,
+    "tireWarmup": 50,
+    "tempControl": 44,
+    "wetPerformance": 44,
+    "reliability": 44,
+    "setupWindow": 40,
+    "upgradeCompatibility": 50,
+    "carOverall": 42
+  },
+  {
+    "carId": "car-2010-nascar-r3-motorsports-team-1",
+    "teamId": "NASCAR_2010_TEAM_R3_MOTORSPORTS_TEAM_1",
     "seasonYear": 2010,
     "series": "NASCAR",
     "enginePower": 29,
@@ -6070,8 +7751,83 @@ export const nascar2010Cars: GlobalCar[] = [
     "carOverall": 28
   },
   {
-    "carId": "car-2010-nascar-red-bull-racing",
-    "teamId": "NASCAR_2010_TEAM_RED_BULL_RACING",
+    "carId": "car-2010-nascar-red-bull-racing-team-1-team-1",
+    "teamId": "NASCAR_2010_TEAM_RED_BULL_RACING_TEAM_1_TEAM_1",
+    "seasonYear": 2010,
+    "series": "NASCAR",
+    "enginePower": 57,
+    "fuelEnergyEfficiency": 50,
+    "drag": 44,
+    "downforce": 56,
+    "chassisBalance": 56,
+    "cooling": 54,
+    "weightEfficiency": 56,
+    "mechanicalGrip": 58,
+    "brakingStability": 58,
+    "acceleration": 58,
+    "topSpeed": 57,
+    "tireWear": 44,
+    "tireWarmup": 50,
+    "tempControl": 54,
+    "wetPerformance": 56,
+    "reliability": 54,
+    "setupWindow": 55,
+    "upgradeCompatibility": 50,
+    "carOverall": 56
+  },
+  {
+    "carId": "car-2010-nascar-red-bull-racing-team-1-team-2",
+    "teamId": "NASCAR_2010_TEAM_RED_BULL_RACING_TEAM_1_TEAM_2",
+    "seasonYear": 2010,
+    "series": "NASCAR",
+    "enginePower": 57,
+    "fuelEnergyEfficiency": 50,
+    "drag": 44,
+    "downforce": 56,
+    "chassisBalance": 56,
+    "cooling": 54,
+    "weightEfficiency": 56,
+    "mechanicalGrip": 58,
+    "brakingStability": 58,
+    "acceleration": 58,
+    "topSpeed": 57,
+    "tireWear": 44,
+    "tireWarmup": 50,
+    "tempControl": 54,
+    "wetPerformance": 56,
+    "reliability": 54,
+    "setupWindow": 55,
+    "upgradeCompatibility": 50,
+    "carOverall": 56
+  },
+  {
+    "carId": "car-2010-nascar-red-bull-racing-team-1-team-3",
+    "teamId": "NASCAR_2010_TEAM_RED_BULL_RACING_TEAM_1_TEAM_3",
+    "seasonYear": 2010,
+    "series": "NASCAR",
+    "enginePower": 57,
+    "fuelEnergyEfficiency": 50,
+    "drag": 44,
+    "downforce": 56,
+    "chassisBalance": 56,
+    "cooling": 54,
+    "weightEfficiency": 56,
+    "mechanicalGrip": 58,
+    "brakingStability": 58,
+    "acceleration": 58,
+    "topSpeed": 57,
+    "tireWear": 44,
+    "tireWarmup": 50,
+    "tempControl": 54,
+    "wetPerformance": 56,
+    "reliability": 54,
+    "setupWindow": 55,
+    "upgradeCompatibility": 50,
+    "carOverall": 56
+  },
+  {
+    "carId": "car-2010-nascar-red-bull-racing-team-1-team-4",
+    "teamId": "NASCAR_2010_TEAM_RED_BULL_RACING_TEAM_1_TEAM_4",
     "seasonYear": 2010,
     "series": "NASCAR",
     "enginePower": 57,
@@ -6099,67 +7855,67 @@ export const nascar2010Cars: GlobalCar[] = [
     "teamId": "NASCAR_2010_TEAM_RICHARD_CHILDRESS_RACING_TEAM_1",
     "seasonYear": 2010,
     "series": "NASCAR",
-    "enginePower": 99,
+    "enginePower": 100,
     "fuelEnergyEfficiency": 50,
     "drag": 1,
-    "downforce": 99,
-    "chassisBalance": 99,
+    "downforce": 100,
+    "chassisBalance": 100,
     "cooling": 100,
-    "weightEfficiency": 99,
-    "mechanicalGrip": 97,
-    "brakingStability": 98,
-    "acceleration": 98,
-    "topSpeed": 99,
-    "tireWear": 2,
+    "weightEfficiency": 100,
+    "mechanicalGrip": 100,
+    "brakingStability": 100,
+    "acceleration": 100,
+    "topSpeed": 100,
+    "tireWear": 1,
     "tireWarmup": 50,
     "tempControl": 100,
-    "wetPerformance": 98,
+    "wetPerformance": 100,
     "reliability": 100,
-    "setupWindow": 99,
+    "setupWindow": 100,
     "upgradeCompatibility": 50,
-    "carOverall": 99
+    "carOverall": 100
   },
   {
     "carId": "car-2010-nascar-richard-childress-racing-team-2",
     "teamId": "NASCAR_2010_TEAM_RICHARD_CHILDRESS_RACING_TEAM_2",
     "seasonYear": 2010,
     "series": "NASCAR",
-    "enginePower": 99,
+    "enginePower": 98,
     "fuelEnergyEfficiency": 50,
-    "drag": 1,
-    "downforce": 99,
-    "chassisBalance": 99,
+    "drag": 2,
+    "downforce": 98,
+    "chassisBalance": 97,
     "cooling": 100,
-    "weightEfficiency": 99,
-    "mechanicalGrip": 97,
-    "brakingStability": 98,
-    "acceleration": 98,
-    "topSpeed": 99,
-    "tireWear": 2,
+    "weightEfficiency": 97,
+    "mechanicalGrip": 94,
+    "brakingStability": 96,
+    "acceleration": 96,
+    "topSpeed": 98,
+    "tireWear": 3,
     "tireWarmup": 50,
     "tempControl": 100,
-    "wetPerformance": 98,
+    "wetPerformance": 97,
     "reliability": 100,
-    "setupWindow": 99,
+    "setupWindow": 97,
     "upgradeCompatibility": 50,
-    "carOverall": 99
+    "carOverall": 97
   },
   {
-    "carId": "car-2010-nascar-richard-petty-motorsports-team-1",
-    "teamId": "NASCAR_2010_TEAM_RICHARD_PETTY_MOTORSPORTS_TEAM_1",
+    "carId": "car-2010-nascar-richard-petty-motorsports-team-1-team-1",
+    "teamId": "NASCAR_2010_TEAM_RICHARD_PETTY_MOTORSPORTS_TEAM_1_TEAM_1",
     "seasonYear": 2010,
     "series": "NASCAR",
     "enginePower": 74,
     "fuelEnergyEfficiency": 50,
-    "drag": 27,
-    "downforce": 73,
-    "chassisBalance": 73,
+    "drag": 28,
+    "downforce": 72,
+    "chassisBalance": 72,
     "cooling": 73,
-    "weightEfficiency": 73,
-    "mechanicalGrip": 72,
-    "brakingStability": 73,
-    "acceleration": 73,
-    "topSpeed": 74,
+    "weightEfficiency": 72,
+    "mechanicalGrip": 70,
+    "brakingStability": 72,
+    "acceleration": 72,
+    "topSpeed": 73,
     "tireWear": 28,
     "tireWarmup": 50,
     "tempControl": 73,
@@ -6167,7 +7923,32 @@ export const nascar2010Cars: GlobalCar[] = [
     "reliability": 73,
     "setupWindow": 72,
     "upgradeCompatibility": 50,
-    "carOverall": 73
+    "carOverall": 72
+  },
+  {
+    "carId": "car-2010-nascar-richard-petty-motorsports-team-1-team-2",
+    "teamId": "NASCAR_2010_TEAM_RICHARD_PETTY_MOTORSPORTS_TEAM_1_TEAM_2",
+    "seasonYear": 2010,
+    "series": "NASCAR",
+    "enginePower": 74,
+    "fuelEnergyEfficiency": 50,
+    "drag": 28,
+    "downforce": 72,
+    "chassisBalance": 72,
+    "cooling": 73,
+    "weightEfficiency": 72,
+    "mechanicalGrip": 70,
+    "brakingStability": 72,
+    "acceleration": 72,
+    "topSpeed": 73,
+    "tireWear": 28,
+    "tireWarmup": 50,
+    "tempControl": 73,
+    "wetPerformance": 72,
+    "reliability": 73,
+    "setupWindow": 72,
+    "upgradeCompatibility": 50,
+    "carOverall": 72
   },
   {
     "carId": "car-2010-nascar-richard-petty-motorsports-team-2",
@@ -6176,27 +7957,102 @@ export const nascar2010Cars: GlobalCar[] = [
     "series": "NASCAR",
     "enginePower": 74,
     "fuelEnergyEfficiency": 50,
-    "drag": 27,
-    "downforce": 73,
+    "drag": 26,
+    "downforce": 74,
     "chassisBalance": 73,
     "cooling": 73,
     "weightEfficiency": 73,
-    "mechanicalGrip": 72,
-    "brakingStability": 73,
-    "acceleration": 73,
+    "mechanicalGrip": 74,
+    "brakingStability": 74,
+    "acceleration": 74,
     "topSpeed": 74,
-    "tireWear": 28,
+    "tireWear": 26,
     "tireWarmup": 50,
     "tempControl": 73,
-    "wetPerformance": 72,
+    "wetPerformance": 74,
     "reliability": 73,
     "setupWindow": 72,
     "upgradeCompatibility": 50,
     "carOverall": 73
   },
   {
-    "carId": "car-2010-nascar-robby-gordon-motorsports",
-    "teamId": "NASCAR_2010_TEAM_ROBBY_GORDON_MOTORSPORTS",
+    "carId": "car-2010-nascar-robby-gordon-motorsports-team-1-team-1",
+    "teamId": "NASCAR_2010_TEAM_ROBBY_GORDON_MOTORSPORTS_TEAM_1_TEAM_1",
+    "seasonYear": 2010,
+    "series": "NASCAR",
+    "enginePower": 51,
+    "fuelEnergyEfficiency": 50,
+    "drag": 54,
+    "downforce": 46,
+    "chassisBalance": 48,
+    "cooling": 48,
+    "weightEfficiency": 48,
+    "mechanicalGrip": 48,
+    "brakingStability": 50,
+    "acceleration": 50,
+    "topSpeed": 49,
+    "tireWear": 52,
+    "tireWarmup": 50,
+    "tempControl": 48,
+    "wetPerformance": 48,
+    "reliability": 48,
+    "setupWindow": 49,
+    "upgradeCompatibility": 50,
+    "carOverall": 48
+  },
+  {
+    "carId": "car-2010-nascar-robby-gordon-motorsports-team-1-team-2",
+    "teamId": "NASCAR_2010_TEAM_ROBBY_GORDON_MOTORSPORTS_TEAM_1_TEAM_2",
+    "seasonYear": 2010,
+    "series": "NASCAR",
+    "enginePower": 51,
+    "fuelEnergyEfficiency": 50,
+    "drag": 54,
+    "downforce": 46,
+    "chassisBalance": 48,
+    "cooling": 48,
+    "weightEfficiency": 48,
+    "mechanicalGrip": 48,
+    "brakingStability": 50,
+    "acceleration": 50,
+    "topSpeed": 49,
+    "tireWear": 52,
+    "tireWarmup": 50,
+    "tempControl": 48,
+    "wetPerformance": 48,
+    "reliability": 48,
+    "setupWindow": 49,
+    "upgradeCompatibility": 50,
+    "carOverall": 48
+  },
+  {
+    "carId": "car-2010-nascar-robby-gordon-motorsports-team-1-team-3",
+    "teamId": "NASCAR_2010_TEAM_ROBBY_GORDON_MOTORSPORTS_TEAM_1_TEAM_3",
+    "seasonYear": 2010,
+    "series": "NASCAR",
+    "enginePower": 51,
+    "fuelEnergyEfficiency": 50,
+    "drag": 54,
+    "downforce": 46,
+    "chassisBalance": 48,
+    "cooling": 48,
+    "weightEfficiency": 48,
+    "mechanicalGrip": 48,
+    "brakingStability": 50,
+    "acceleration": 50,
+    "topSpeed": 49,
+    "tireWear": 52,
+    "tireWarmup": 50,
+    "tempControl": 48,
+    "wetPerformance": 48,
+    "reliability": 48,
+    "setupWindow": 49,
+    "upgradeCompatibility": 50,
+    "carOverall": 48
+  },
+  {
+    "carId": "car-2010-nascar-robby-gordon-motorsports-team-1-team-4",
+    "teamId": "NASCAR_2010_TEAM_ROBBY_GORDON_MOTORSPORTS_TEAM_1_TEAM_4",
     "seasonYear": 2010,
     "series": "NASCAR",
     "enginePower": 51,
@@ -6224,54 +8080,54 @@ export const nascar2010Cars: GlobalCar[] = [
     "teamId": "NASCAR_2010_TEAM_ROUSH_FENWAY_RACING_TEAM_1",
     "seasonYear": 2010,
     "series": "NASCAR",
-    "enginePower": 96,
+    "enginePower": 94,
     "fuelEnergyEfficiency": 50,
-    "drag": 2,
-    "downforce": 98,
-    "chassisBalance": 98,
-    "cooling": 99,
-    "weightEfficiency": 98,
-    "mechanicalGrip": 97,
-    "brakingStability": 96,
-    "acceleration": 96,
-    "topSpeed": 97,
-    "tireWear": 2,
+    "drag": 5,
+    "downforce": 95,
+    "chassisBalance": 96,
+    "cooling": 98,
+    "weightEfficiency": 96,
+    "mechanicalGrip": 96,
+    "brakingStability": 95,
+    "acceleration": 95,
+    "topSpeed": 94,
+    "tireWear": 3,
     "tireWarmup": 50,
-    "tempControl": 99,
-    "wetPerformance": 98,
-    "reliability": 99,
-    "setupWindow": 99,
+    "tempControl": 98,
+    "wetPerformance": 97,
+    "reliability": 98,
+    "setupWindow": 98,
     "upgradeCompatibility": 50,
-    "carOverall": 98
+    "carOverall": 96
   },
   {
     "carId": "car-2010-nascar-roush-fenway-racing-team-2",
     "teamId": "NASCAR_2010_TEAM_ROUSH_FENWAY_RACING_TEAM_2",
     "seasonYear": 2010,
     "series": "NASCAR",
-    "enginePower": 96,
+    "enginePower": 98,
     "fuelEnergyEfficiency": 50,
-    "drag": 2,
-    "downforce": 98,
-    "chassisBalance": 98,
-    "cooling": 99,
-    "weightEfficiency": 98,
-    "mechanicalGrip": 97,
-    "brakingStability": 96,
-    "acceleration": 96,
-    "topSpeed": 97,
-    "tireWear": 2,
+    "drag": 1,
+    "downforce": 100,
+    "chassisBalance": 99,
+    "cooling": 100,
+    "weightEfficiency": 99,
+    "mechanicalGrip": 98,
+    "brakingStability": 98,
+    "acceleration": 98,
+    "topSpeed": 99,
+    "tireWear": 1,
     "tireWarmup": 50,
-    "tempControl": 99,
-    "wetPerformance": 98,
-    "reliability": 99,
-    "setupWindow": 99,
+    "tempControl": 100,
+    "wetPerformance": 99,
+    "reliability": 100,
+    "setupWindow": 100,
     "upgradeCompatibility": 50,
-    "carOverall": 98
+    "carOverall": 99
   },
   {
-    "carId": "car-2010-nascar-stavola-labonte-racing",
-    "teamId": "NASCAR_2010_TEAM_STAVOLA_LABONTE_RACING",
+    "carId": "car-2010-nascar-stavola-labonte-racing-team-1",
+    "teamId": "NASCAR_2010_TEAM_STAVOLA_LABONTE_RACING_TEAM_1",
     "seasonYear": 2010,
     "series": "NASCAR",
     "enginePower": 19,
@@ -6295,8 +8151,8 @@ export const nascar2010Cars: GlobalCar[] = [
     "carOverall": 17
   },
   {
-    "carId": "car-2010-nascar-stewart-haas-racing",
-    "teamId": "NASCAR_2010_TEAM_STEWART_HAAS_RACING",
+    "carId": "car-2010-nascar-stewart-haas-racing-team-1",
+    "teamId": "NASCAR_2010_TEAM_STEWART_HAAS_RACING_TEAM_1",
     "seasonYear": 2010,
     "series": "NASCAR",
     "enginePower": 100,
@@ -6320,8 +8176,8 @@ export const nascar2010Cars: GlobalCar[] = [
     "carOverall": 98
   },
   {
-    "carId": "car-2010-nascar-stratus-racing-group",
-    "teamId": "NASCAR_2010_TEAM_STRATUS_RACING_GROUP",
+    "carId": "car-2010-nascar-stratus-racing-group-team-1",
+    "teamId": "NASCAR_2010_TEAM_STRATUS_RACING_GROUP_TEAM_1",
     "seasonYear": 2010,
     "series": "NASCAR",
     "enginePower": 20,
@@ -6345,8 +8201,8 @@ export const nascar2010Cars: GlobalCar[] = [
     "carOverall": 36
   },
   {
-    "carId": "car-2010-nascar-trg-motorsports",
-    "teamId": "NASCAR_2010_TEAM_TRG_MOTORSPORTS",
+    "carId": "car-2010-nascar-trg-motorsports-team-1-team-1",
+    "teamId": "NASCAR_2010_TEAM_TRG_MOTORSPORTS_TEAM_1_TEAM_1",
     "seasonYear": 2010,
     "series": "NASCAR",
     "enginePower": 47,
@@ -6370,8 +8226,83 @@ export const nascar2010Cars: GlobalCar[] = [
     "carOverall": 46
   },
   {
-    "carId": "car-2010-nascar-tommy-baldwin-racing",
-    "teamId": "NASCAR_2010_TEAM_TOMMY_BALDWIN_RACING",
+    "carId": "car-2010-nascar-trg-motorsports-team-1-team-2",
+    "teamId": "NASCAR_2010_TEAM_TRG_MOTORSPORTS_TEAM_1_TEAM_2",
+    "seasonYear": 2010,
+    "series": "NASCAR",
+    "enginePower": 47,
+    "fuelEnergyEfficiency": 50,
+    "drag": 51,
+    "downforce": 49,
+    "chassisBalance": 46,
+    "cooling": 45,
+    "weightEfficiency": 46,
+    "mechanicalGrip": 46,
+    "brakingStability": 46,
+    "acceleration": 46,
+    "topSpeed": 48,
+    "tireWear": 54,
+    "tireWarmup": 50,
+    "tempControl": 45,
+    "wetPerformance": 46,
+    "reliability": 45,
+    "setupWindow": 45,
+    "upgradeCompatibility": 50,
+    "carOverall": 46
+  },
+  {
+    "carId": "car-2010-nascar-trg-motorsports-team-1-team-3",
+    "teamId": "NASCAR_2010_TEAM_TRG_MOTORSPORTS_TEAM_1_TEAM_3",
+    "seasonYear": 2010,
+    "series": "NASCAR",
+    "enginePower": 47,
+    "fuelEnergyEfficiency": 50,
+    "drag": 51,
+    "downforce": 49,
+    "chassisBalance": 46,
+    "cooling": 45,
+    "weightEfficiency": 46,
+    "mechanicalGrip": 46,
+    "brakingStability": 46,
+    "acceleration": 46,
+    "topSpeed": 48,
+    "tireWear": 54,
+    "tireWarmup": 50,
+    "tempControl": 45,
+    "wetPerformance": 46,
+    "reliability": 45,
+    "setupWindow": 45,
+    "upgradeCompatibility": 50,
+    "carOverall": 46
+  },
+  {
+    "carId": "car-2010-nascar-trg-motorsports-team-1-team-4",
+    "teamId": "NASCAR_2010_TEAM_TRG_MOTORSPORTS_TEAM_1_TEAM_4",
+    "seasonYear": 2010,
+    "series": "NASCAR",
+    "enginePower": 47,
+    "fuelEnergyEfficiency": 50,
+    "drag": 51,
+    "downforce": 49,
+    "chassisBalance": 46,
+    "cooling": 45,
+    "weightEfficiency": 46,
+    "mechanicalGrip": 46,
+    "brakingStability": 46,
+    "acceleration": 46,
+    "topSpeed": 48,
+    "tireWear": 54,
+    "tireWarmup": 50,
+    "tempControl": 45,
+    "wetPerformance": 46,
+    "reliability": 45,
+    "setupWindow": 45,
+    "upgradeCompatibility": 50,
+    "carOverall": 46
+  },
+  {
+    "carId": "car-2010-nascar-tommy-baldwin-racing-team-1-team-1",
+    "teamId": "NASCAR_2010_TEAM_TOMMY_BALDWIN_RACING_TEAM_1_TEAM_1",
     "seasonYear": 2010,
     "series": "NASCAR",
     "enginePower": 24,
@@ -6395,8 +8326,133 @@ export const nascar2010Cars: GlobalCar[] = [
     "carOverall": 21
   },
   {
-    "carId": "car-2010-nascar-tri-star-motorsports",
-    "teamId": "NASCAR_2010_TEAM_TRI_STAR_MOTORSPORTS",
+    "carId": "car-2010-nascar-tommy-baldwin-racing-team-1-team-2",
+    "teamId": "NASCAR_2010_TEAM_TOMMY_BALDWIN_RACING_TEAM_1_TEAM_2",
+    "seasonYear": 2010,
+    "series": "NASCAR",
+    "enginePower": 24,
+    "fuelEnergyEfficiency": 50,
+    "drag": 80,
+    "downforce": 20,
+    "chassisBalance": 21,
+    "cooling": 19,
+    "weightEfficiency": 21,
+    "mechanicalGrip": 22,
+    "brakingStability": 23,
+    "acceleration": 23,
+    "topSpeed": 22,
+    "tireWear": 80,
+    "tireWarmup": 50,
+    "tempControl": 19,
+    "wetPerformance": 20,
+    "reliability": 19,
+    "setupWindow": 19,
+    "upgradeCompatibility": 50,
+    "carOverall": 21
+  },
+  {
+    "carId": "car-2010-nascar-tommy-baldwin-racing-team-1-team-3",
+    "teamId": "NASCAR_2010_TEAM_TOMMY_BALDWIN_RACING_TEAM_1_TEAM_3",
+    "seasonYear": 2010,
+    "series": "NASCAR",
+    "enginePower": 24,
+    "fuelEnergyEfficiency": 50,
+    "drag": 80,
+    "downforce": 20,
+    "chassisBalance": 21,
+    "cooling": 19,
+    "weightEfficiency": 21,
+    "mechanicalGrip": 22,
+    "brakingStability": 23,
+    "acceleration": 23,
+    "topSpeed": 22,
+    "tireWear": 80,
+    "tireWarmup": 50,
+    "tempControl": 19,
+    "wetPerformance": 20,
+    "reliability": 19,
+    "setupWindow": 19,
+    "upgradeCompatibility": 50,
+    "carOverall": 21
+  },
+  {
+    "carId": "car-2010-nascar-tommy-baldwin-racing-team-1-team-4",
+    "teamId": "NASCAR_2010_TEAM_TOMMY_BALDWIN_RACING_TEAM_1_TEAM_4",
+    "seasonYear": 2010,
+    "series": "NASCAR",
+    "enginePower": 24,
+    "fuelEnergyEfficiency": 50,
+    "drag": 80,
+    "downforce": 20,
+    "chassisBalance": 21,
+    "cooling": 19,
+    "weightEfficiency": 21,
+    "mechanicalGrip": 22,
+    "brakingStability": 23,
+    "acceleration": 23,
+    "topSpeed": 22,
+    "tireWear": 80,
+    "tireWarmup": 50,
+    "tempControl": 19,
+    "wetPerformance": 20,
+    "reliability": 19,
+    "setupWindow": 19,
+    "upgradeCompatibility": 50,
+    "carOverall": 21
+  },
+  {
+    "carId": "car-2010-nascar-tommy-baldwin-racing-team-1-team-5",
+    "teamId": "NASCAR_2010_TEAM_TOMMY_BALDWIN_RACING_TEAM_1_TEAM_5",
+    "seasonYear": 2010,
+    "series": "NASCAR",
+    "enginePower": 24,
+    "fuelEnergyEfficiency": 50,
+    "drag": 80,
+    "downforce": 20,
+    "chassisBalance": 21,
+    "cooling": 19,
+    "weightEfficiency": 21,
+    "mechanicalGrip": 22,
+    "brakingStability": 23,
+    "acceleration": 23,
+    "topSpeed": 22,
+    "tireWear": 80,
+    "tireWarmup": 50,
+    "tempControl": 19,
+    "wetPerformance": 20,
+    "reliability": 19,
+    "setupWindow": 19,
+    "upgradeCompatibility": 50,
+    "carOverall": 21
+  },
+  {
+    "carId": "car-2010-nascar-tommy-baldwin-racing-team-1-team-6",
+    "teamId": "NASCAR_2010_TEAM_TOMMY_BALDWIN_RACING_TEAM_1_TEAM_6",
+    "seasonYear": 2010,
+    "series": "NASCAR",
+    "enginePower": 24,
+    "fuelEnergyEfficiency": 50,
+    "drag": 80,
+    "downforce": 20,
+    "chassisBalance": 21,
+    "cooling": 19,
+    "weightEfficiency": 21,
+    "mechanicalGrip": 22,
+    "brakingStability": 23,
+    "acceleration": 23,
+    "topSpeed": 22,
+    "tireWear": 80,
+    "tireWarmup": 50,
+    "tempControl": 19,
+    "wetPerformance": 20,
+    "reliability": 19,
+    "setupWindow": 19,
+    "upgradeCompatibility": 50,
+    "carOverall": 21
+  },
+  {
+    "carId": "car-2010-nascar-tri-star-motorsports-team-1",
+    "teamId": "NASCAR_2010_TEAM_TRI_STAR_MOTORSPORTS_TEAM_1",
     "seasonYear": 2010,
     "series": "NASCAR",
     "enginePower": 60,
@@ -6420,8 +8476,8 @@ export const nascar2010Cars: GlobalCar[] = [
     "carOverall": 56
   },
   {
-    "carId": "car-2010-nascar-whitney-motorsports",
-    "teamId": "NASCAR_2010_TEAM_WHITNEY_MOTORSPORTS",
+    "carId": "car-2010-nascar-whitney-motorsports-team-1-team-1",
+    "teamId": "NASCAR_2010_TEAM_WHITNEY_MOTORSPORTS_TEAM_1_TEAM_1",
     "seasonYear": 2010,
     "series": "NASCAR",
     "enginePower": 38,
@@ -6445,8 +8501,58 @@ export const nascar2010Cars: GlobalCar[] = [
     "carOverall": 39
   },
   {
-    "carId": "car-2010-nascar-wood-brothers-racing",
-    "teamId": "NASCAR_2010_TEAM_WOOD_BROTHERS_RACING",
+    "carId": "car-2010-nascar-whitney-motorsports-team-1-team-2",
+    "teamId": "NASCAR_2010_TEAM_WHITNEY_MOTORSPORTS_TEAM_1_TEAM_2",
+    "seasonYear": 2010,
+    "series": "NASCAR",
+    "enginePower": 38,
+    "fuelEnergyEfficiency": 50,
+    "drag": 60,
+    "downforce": 40,
+    "chassisBalance": 39,
+    "cooling": 40,
+    "weightEfficiency": 39,
+    "mechanicalGrip": 38,
+    "brakingStability": 38,
+    "acceleration": 38,
+    "topSpeed": 39,
+    "tireWear": 61,
+    "tireWarmup": 50,
+    "tempControl": 40,
+    "wetPerformance": 39,
+    "reliability": 40,
+    "setupWindow": 40,
+    "upgradeCompatibility": 50,
+    "carOverall": 39
+  },
+  {
+    "carId": "car-2010-nascar-whitney-motorsports-team-1-team-3",
+    "teamId": "NASCAR_2010_TEAM_WHITNEY_MOTORSPORTS_TEAM_1_TEAM_3",
+    "seasonYear": 2010,
+    "series": "NASCAR",
+    "enginePower": 38,
+    "fuelEnergyEfficiency": 50,
+    "drag": 60,
+    "downforce": 40,
+    "chassisBalance": 39,
+    "cooling": 40,
+    "weightEfficiency": 39,
+    "mechanicalGrip": 38,
+    "brakingStability": 38,
+    "acceleration": 38,
+    "topSpeed": 39,
+    "tireWear": 61,
+    "tireWarmup": 50,
+    "tempControl": 40,
+    "wetPerformance": 39,
+    "reliability": 40,
+    "setupWindow": 40,
+    "upgradeCompatibility": 50,
+    "carOverall": 39
+  },
+  {
+    "carId": "car-2010-nascar-wood-brothers-racing-team-1",
+    "teamId": "NASCAR_2010_TEAM_WOOD_BROTHERS_RACING_TEAM_1",
     "seasonYear": 2010,
     "series": "NASCAR",
     "enginePower": 37,
@@ -6506,8 +8612,8 @@ export const nascar2010Tracks: GlobalTrack[] = [
       "technical": 50,
       "overtakingRacecraft": 75,
       "surfaceGripBumpiness": 65,
-      "riskWallProximity": 50,
-      "enduranceConsistency": 50
+      "riskWallProximity": 86,
+      "enduranceConsistency": 78
     },
     "demandProfile": {
       "downforceDemand": 60,
@@ -6516,15 +8622,15 @@ export const nascar2010Tracks: GlobalTrack[] = [
       "brakeDemand": 45,
       "tireDemand": 65,
       "coolingDemand": 50,
-      "riskDemand": 50,
+      "riskDemand": 86,
       "tractionDemand": 75,
       "overtakingDifficulty": 25,
       "tireWearSeverity": 65,
-      "reliabilityStress": 50,
+      "reliabilityStress": 78,
       "setupComplexity": 50,
       "pitStrategySensitivity": 50,
       "safetyCarCautionRisk": 50,
-      "overallTrackDifficulty": 53,
+      "overallTrackDifficulty": 65,
       "winnerBaseline": 50
     },
     "ovalSubtype": "Superspeedway"
@@ -6563,8 +8669,8 @@ export const nascar2010Tracks: GlobalTrack[] = [
       "technical": 60,
       "overtakingRacecraft": 78,
       "surfaceGripBumpiness": 72,
-      "riskWallProximity": 50,
-      "enduranceConsistency": 50
+      "riskWallProximity": 72,
+      "enduranceConsistency": 76
     },
     "demandProfile": {
       "downforceDemand": 66,
@@ -6573,15 +8679,15 @@ export const nascar2010Tracks: GlobalTrack[] = [
       "brakeDemand": 60,
       "tireDemand": 72,
       "coolingDemand": 50,
-      "riskDemand": 50,
+      "riskDemand": 72,
       "tractionDemand": 74,
       "overtakingDifficulty": 22,
       "tireWearSeverity": 72,
-      "reliabilityStress": 50,
+      "reliabilityStress": 76,
       "setupComplexity": 60,
       "pitStrategySensitivity": 50,
       "safetyCarCautionRisk": 50,
-      "overallTrackDifficulty": 59,
+      "overallTrackDifficulty": 66,
       "winnerBaseline": 50
     },
     "ovalSubtype": "Speedway"
@@ -6620,8 +8726,8 @@ export const nascar2010Tracks: GlobalTrack[] = [
       "technical": 66,
       "overtakingRacecraft": 72,
       "surfaceGripBumpiness": 74,
-      "riskWallProximity": 50,
-      "enduranceConsistency": 50
+      "riskWallProximity": 82,
+      "enduranceConsistency": 78
     },
     "demandProfile": {
       "downforceDemand": 70,
@@ -6630,15 +8736,15 @@ export const nascar2010Tracks: GlobalTrack[] = [
       "brakeDemand": 68,
       "tireDemand": 74,
       "coolingDemand": 50,
-      "riskDemand": 50,
+      "riskDemand": 82,
       "tractionDemand": 78,
       "overtakingDifficulty": 28,
       "tireWearSeverity": 74,
-      "reliabilityStress": 50,
+      "reliabilityStress": 78,
       "setupComplexity": 66,
       "pitStrategySensitivity": 50,
       "safetyCarCautionRisk": 50,
-      "overallTrackDifficulty": 62,
+      "overallTrackDifficulty": 73,
       "winnerBaseline": 50
     },
     "ovalSubtype": "Speedway"
@@ -6677,8 +8783,8 @@ export const nascar2010Tracks: GlobalTrack[] = [
       "technical": 65,
       "overtakingRacecraft": 72,
       "surfaceGripBumpiness": 78,
-      "riskWallProximity": 50,
-      "enduranceConsistency": 50
+      "riskWallProximity": 82,
+      "enduranceConsistency": 78
     },
     "demandProfile": {
       "downforceDemand": 70,
@@ -6687,15 +8793,15 @@ export const nascar2010Tracks: GlobalTrack[] = [
       "brakeDemand": 68,
       "tireDemand": 78,
       "coolingDemand": 50,
-      "riskDemand": 50,
+      "riskDemand": 82,
       "tractionDemand": 78,
       "overtakingDifficulty": 28,
       "tireWearSeverity": 78,
-      "reliabilityStress": 50,
+      "reliabilityStress": 78,
       "setupComplexity": 65,
       "pitStrategySensitivity": 50,
       "safetyCarCautionRisk": 50,
-      "overallTrackDifficulty": 62,
+      "overallTrackDifficulty": 72,
       "winnerBaseline": 50
     },
     "ovalSubtype": "Speedway"
@@ -6734,8 +8840,8 @@ export const nascar2010Tracks: GlobalTrack[] = [
       "technical": 90,
       "overtakingRacecraft": 60,
       "surfaceGripBumpiness": 85,
-      "riskWallProximity": 50,
-      "enduranceConsistency": 50
+      "riskWallProximity": 92,
+      "enduranceConsistency": 86
     },
     "demandProfile": {
       "downforceDemand": 92,
@@ -6744,15 +8850,15 @@ export const nascar2010Tracks: GlobalTrack[] = [
       "brakeDemand": 88,
       "tireDemand": 85,
       "coolingDemand": 50,
-      "riskDemand": 50,
+      "riskDemand": 92,
       "tractionDemand": 95,
       "overtakingDifficulty": 40,
       "tireWearSeverity": 85,
-      "reliabilityStress": 50,
+      "reliabilityStress": 86,
       "setupComplexity": 90,
       "pitStrategySensitivity": 50,
       "safetyCarCautionRisk": 50,
-      "overallTrackDifficulty": 77,
+      "overallTrackDifficulty": 91,
       "winnerBaseline": 50
     },
     "ovalSubtype": "Short Oval"
@@ -6791,8 +8897,8 @@ export const nascar2010Tracks: GlobalTrack[] = [
       "technical": 92,
       "overtakingRacecraft": 64,
       "surfaceGripBumpiness": 78,
-      "riskWallProximity": 50,
-      "enduranceConsistency": 50
+      "riskWallProximity": 82,
+      "enduranceConsistency": 88
     },
     "demandProfile": {
       "downforceDemand": 94,
@@ -6801,15 +8907,15 @@ export const nascar2010Tracks: GlobalTrack[] = [
       "brakeDemand": 96,
       "tireDemand": 78,
       "coolingDemand": 50,
-      "riskDemand": 50,
+      "riskDemand": 82,
       "tractionDemand": 92,
       "overtakingDifficulty": 36,
       "tireWearSeverity": 78,
-      "reliabilityStress": 50,
+      "reliabilityStress": 88,
       "setupComplexity": 92,
       "pitStrategySensitivity": 50,
       "safetyCarCautionRisk": 50,
-      "overallTrackDifficulty": 79,
+      "overallTrackDifficulty": 89,
       "winnerBaseline": 50
     },
     "ovalSubtype": "Short Oval"
@@ -6848,8 +8954,8 @@ export const nascar2010Tracks: GlobalTrack[] = [
       "technical": 78,
       "overtakingRacecraft": 70,
       "surfaceGripBumpiness": 76,
-      "riskWallProximity": 50,
-      "enduranceConsistency": 50
+      "riskWallProximity": 72,
+      "enduranceConsistency": 78
     },
     "demandProfile": {
       "downforceDemand": 78,
@@ -6858,15 +8964,15 @@ export const nascar2010Tracks: GlobalTrack[] = [
       "brakeDemand": 82,
       "tireDemand": 76,
       "coolingDemand": 50,
-      "riskDemand": 50,
+      "riskDemand": 72,
       "tractionDemand": 84,
       "overtakingDifficulty": 30,
       "tireWearSeverity": 76,
-      "reliabilityStress": 50,
+      "reliabilityStress": 78,
       "setupComplexity": 78,
       "pitStrategySensitivity": 50,
       "safetyCarCautionRisk": 50,
-      "overallTrackDifficulty": 69,
+      "overallTrackDifficulty": 76,
       "winnerBaseline": 50
     },
     "ovalSubtype": "Speedway"
@@ -6905,8 +9011,8 @@ export const nascar2010Tracks: GlobalTrack[] = [
       "technical": 66,
       "overtakingRacecraft": 72,
       "surfaceGripBumpiness": 74,
-      "riskWallProximity": 50,
-      "enduranceConsistency": 50
+      "riskWallProximity": 82,
+      "enduranceConsistency": 78
     },
     "demandProfile": {
       "downforceDemand": 70,
@@ -6915,15 +9021,15 @@ export const nascar2010Tracks: GlobalTrack[] = [
       "brakeDemand": 70,
       "tireDemand": 74,
       "coolingDemand": 50,
-      "riskDemand": 50,
+      "riskDemand": 82,
       "tractionDemand": 78,
       "overtakingDifficulty": 28,
       "tireWearSeverity": 74,
-      "reliabilityStress": 50,
+      "reliabilityStress": 78,
       "setupComplexity": 66,
       "pitStrategySensitivity": 50,
       "safetyCarCautionRisk": 50,
-      "overallTrackDifficulty": 62,
+      "overallTrackDifficulty": 73,
       "winnerBaseline": 50
     },
     "ovalSubtype": "Speedway"
@@ -6962,8 +9068,8 @@ export const nascar2010Tracks: GlobalTrack[] = [
       "technical": 52,
       "overtakingRacecraft": 78,
       "surfaceGripBumpiness": 65,
-      "riskWallProximity": 50,
-      "enduranceConsistency": 50
+      "riskWallProximity": 86,
+      "enduranceConsistency": 78
     },
     "demandProfile": {
       "downforceDemand": 62,
@@ -6972,15 +9078,15 @@ export const nascar2010Tracks: GlobalTrack[] = [
       "brakeDemand": 44,
       "tireDemand": 65,
       "coolingDemand": 50,
-      "riskDemand": 50,
+      "riskDemand": 86,
       "tractionDemand": 78,
       "overtakingDifficulty": 22,
       "tireWearSeverity": 65,
-      "reliabilityStress": 50,
+      "reliabilityStress": 78,
       "setupComplexity": 52,
       "pitStrategySensitivity": 50,
       "safetyCarCautionRisk": 50,
-      "overallTrackDifficulty": 55,
+      "overallTrackDifficulty": 67,
       "winnerBaseline": 50
     },
     "ovalSubtype": "Superspeedway"
@@ -7019,8 +9125,8 @@ export const nascar2010Tracks: GlobalTrack[] = [
       "technical": 78,
       "overtakingRacecraft": 76,
       "surfaceGripBumpiness": 72,
-      "riskWallProximity": 50,
-      "enduranceConsistency": 50
+      "riskWallProximity": 70,
+      "enduranceConsistency": 82
     },
     "demandProfile": {
       "downforceDemand": 78,
@@ -7029,15 +9135,15 @@ export const nascar2010Tracks: GlobalTrack[] = [
       "brakeDemand": 82,
       "tireDemand": 72,
       "coolingDemand": 50,
-      "riskDemand": 50,
+      "riskDemand": 70,
       "tractionDemand": 90,
       "overtakingDifficulty": 24,
       "tireWearSeverity": 72,
-      "reliabilityStress": 50,
+      "reliabilityStress": 82,
       "setupComplexity": 78,
       "pitStrategySensitivity": 50,
       "safetyCarCautionRisk": 50,
-      "overallTrackDifficulty": 69,
+      "overallTrackDifficulty": 75,
       "winnerBaseline": 50
     },
     "ovalSubtype": "Short Oval"
@@ -7076,8 +9182,8 @@ export const nascar2010Tracks: GlobalTrack[] = [
       "technical": 86,
       "overtakingRacecraft": 62,
       "surfaceGripBumpiness": 92,
-      "riskWallProximity": 50,
-      "enduranceConsistency": 50
+      "riskWallProximity": 72,
+      "enduranceConsistency": 78
     },
     "demandProfile": {
       "downforceDemand": 88,
@@ -7086,15 +9192,15 @@ export const nascar2010Tracks: GlobalTrack[] = [
       "brakeDemand": 85,
       "tireDemand": 92,
       "coolingDemand": 50,
-      "riskDemand": 50,
+      "riskDemand": 72,
       "tractionDemand": 88,
       "overtakingDifficulty": 38,
       "tireWearSeverity": 92,
-      "reliabilityStress": 50,
+      "reliabilityStress": 78,
       "setupComplexity": 86,
       "pitStrategySensitivity": 50,
       "safetyCarCautionRisk": 50,
-      "overallTrackDifficulty": 75,
+      "overallTrackDifficulty": 82,
       "winnerBaseline": 50
     },
     "ovalSubtype": "Speedway"
@@ -7133,8 +9239,8 @@ export const nascar2010Tracks: GlobalTrack[] = [
       "technical": 84,
       "overtakingRacecraft": 64,
       "surfaceGripBumpiness": 86,
-      "riskWallProximity": 50,
-      "enduranceConsistency": 50
+      "riskWallProximity": 72,
+      "enduranceConsistency": 76
     },
     "demandProfile": {
       "downforceDemand": 86,
@@ -7143,15 +9249,15 @@ export const nascar2010Tracks: GlobalTrack[] = [
       "brakeDemand": 84,
       "tireDemand": 86,
       "coolingDemand": 50,
-      "riskDemand": 50,
+      "riskDemand": 72,
       "tractionDemand": 90,
       "overtakingDifficulty": 36,
       "tireWearSeverity": 86,
-      "reliabilityStress": 50,
+      "reliabilityStress": 76,
       "setupComplexity": 84,
       "pitStrategySensitivity": 50,
       "safetyCarCautionRisk": 50,
-      "overallTrackDifficulty": 73,
+      "overallTrackDifficulty": 81,
       "winnerBaseline": 50
     },
     "ovalSubtype": "Speedway"
@@ -7190,8 +9296,8 @@ export const nascar2010Tracks: GlobalTrack[] = [
       "technical": 66,
       "overtakingRacecraft": 72,
       "surfaceGripBumpiness": 76,
-      "riskWallProximity": 50,
-      "enduranceConsistency": 50
+      "riskWallProximity": 76,
+      "enduranceConsistency": 76
     },
     "demandProfile": {
       "downforceDemand": 70,
@@ -7200,15 +9306,15 @@ export const nascar2010Tracks: GlobalTrack[] = [
       "brakeDemand": 68,
       "tireDemand": 76,
       "coolingDemand": 50,
-      "riskDemand": 50,
+      "riskDemand": 76,
       "tractionDemand": 78,
       "overtakingDifficulty": 28,
       "tireWearSeverity": 76,
-      "reliabilityStress": 50,
+      "reliabilityStress": 76,
       "setupComplexity": 66,
       "pitStrategySensitivity": 50,
       "safetyCarCautionRisk": 50,
-      "overallTrackDifficulty": 62,
+      "overallTrackDifficulty": 71,
       "winnerBaseline": 50
     },
     "ovalSubtype": "Speedway"
@@ -7247,8 +9353,8 @@ export const nascar2010Tracks: GlobalTrack[] = [
       "technical": 82,
       "overtakingRacecraft": 70,
       "surfaceGripBumpiness": 72,
-      "riskWallProximity": 50,
-      "enduranceConsistency": 50
+      "riskWallProximity": 86,
+      "enduranceConsistency": 78
     },
     "demandProfile": {
       "downforceDemand": 82,
@@ -7257,15 +9363,15 @@ export const nascar2010Tracks: GlobalTrack[] = [
       "brakeDemand": 88,
       "tireDemand": 72,
       "coolingDemand": 50,
-      "riskDemand": 50,
+      "riskDemand": 86,
       "tractionDemand": 76,
       "overtakingDifficulty": 30,
       "tireWearSeverity": 72,
-      "reliabilityStress": 50,
+      "reliabilityStress": 78,
       "setupComplexity": 82,
       "pitStrategySensitivity": 50,
       "safetyCarCautionRisk": 50,
-      "overallTrackDifficulty": 71,
+      "overallTrackDifficulty": 83,
       "winnerBaseline": 50
     },
     "ovalSubtype": "Superspeedway"
@@ -7304,8 +9410,8 @@ export const nascar2010Tracks: GlobalTrack[] = [
       "technical": 62,
       "overtakingRacecraft": 76,
       "surfaceGripBumpiness": 72,
-      "riskWallProximity": 50,
-      "enduranceConsistency": 50
+      "riskWallProximity": 72,
+      "enduranceConsistency": 76
     },
     "demandProfile": {
       "downforceDemand": 68,
@@ -7314,15 +9420,15 @@ export const nascar2010Tracks: GlobalTrack[] = [
       "brakeDemand": 62,
       "tireDemand": 72,
       "coolingDemand": 50,
-      "riskDemand": 50,
+      "riskDemand": 72,
       "tractionDemand": 76,
       "overtakingDifficulty": 24,
       "tireWearSeverity": 72,
-      "reliabilityStress": 50,
+      "reliabilityStress": 76,
       "setupComplexity": 62,
       "pitStrategySensitivity": 50,
       "safetyCarCautionRisk": 50,
-      "overallTrackDifficulty": 60,
+      "overallTrackDifficulty": 67,
       "winnerBaseline": 50
     },
     "ovalSubtype": "Speedway"
@@ -7361,8 +9467,8 @@ export const nascar2010Tracks: GlobalTrack[] = [
       "technical": 92,
       "overtakingRacecraft": 66,
       "surfaceGripBumpiness": 74,
-      "riskWallProximity": 50,
-      "enduranceConsistency": 50
+      "riskWallProximity": 68,
+      "enduranceConsistency": 84
     },
     "demandProfile": {
       "downforceDemand": 90,
@@ -7371,15 +9477,15 @@ export const nascar2010Tracks: GlobalTrack[] = [
       "brakeDemand": 88,
       "tireDemand": 74,
       "coolingDemand": 50,
-      "riskDemand": 50,
+      "riskDemand": 68,
       "tractionDemand": 88,
       "overtakingDifficulty": 34,
       "tireWearSeverity": 74,
-      "reliabilityStress": 50,
+      "reliabilityStress": 84,
       "setupComplexity": 92,
       "pitStrategySensitivity": 50,
       "safetyCarCautionRisk": 50,
-      "overallTrackDifficulty": 77,
+      "overallTrackDifficulty": 83,
       "winnerBaseline": 50
     }
   },
@@ -7417,8 +9523,8 @@ export const nascar2010Tracks: GlobalTrack[] = [
       "technical": 82,
       "overtakingRacecraft": 66,
       "surfaceGripBumpiness": 74,
-      "riskWallProximity": 50,
-      "enduranceConsistency": 50
+      "riskWallProximity": 72,
+      "enduranceConsistency": 78
     },
     "demandProfile": {
       "downforceDemand": 82,
@@ -7427,15 +9533,15 @@ export const nascar2010Tracks: GlobalTrack[] = [
       "brakeDemand": 88,
       "tireDemand": 74,
       "coolingDemand": 50,
-      "riskDemand": 50,
+      "riskDemand": 72,
       "tractionDemand": 86,
       "overtakingDifficulty": 34,
       "tireWearSeverity": 74,
-      "reliabilityStress": 50,
+      "reliabilityStress": 78,
       "setupComplexity": 82,
       "pitStrategySensitivity": 50,
       "safetyCarCautionRisk": 50,
-      "overallTrackDifficulty": 71,
+      "overallTrackDifficulty": 79,
       "winnerBaseline": 50
     },
     "ovalSubtype": "Speedway"
@@ -7474,8 +9580,8 @@ export const nascar2010Tracks: GlobalTrack[] = [
       "technical": 66,
       "overtakingRacecraft": 72,
       "surfaceGripBumpiness": 74,
-      "riskWallProximity": 50,
-      "enduranceConsistency": 50
+      "riskWallProximity": 76,
+      "enduranceConsistency": 76
     },
     "demandProfile": {
       "downforceDemand": 70,
@@ -7484,15 +9590,15 @@ export const nascar2010Tracks: GlobalTrack[] = [
       "brakeDemand": 68,
       "tireDemand": 74,
       "coolingDemand": 50,
-      "riskDemand": 50,
+      "riskDemand": 76,
       "tractionDemand": 82,
       "overtakingDifficulty": 28,
       "tireWearSeverity": 74,
-      "reliabilityStress": 50,
+      "reliabilityStress": 76,
       "setupComplexity": 66,
       "pitStrategySensitivity": 50,
       "safetyCarCautionRisk": 50,
-      "overallTrackDifficulty": 62,
+      "overallTrackDifficulty": 71,
       "winnerBaseline": 50
     },
     "ovalSubtype": "Speedway"
@@ -7531,8 +9637,8 @@ export const nascar2010Tracks: GlobalTrack[] = [
       "technical": 78,
       "overtakingRacecraft": 62,
       "surfaceGripBumpiness": 72,
-      "riskWallProximity": 50,
-      "enduranceConsistency": 50
+      "riskWallProximity": 86,
+      "enduranceConsistency": 78
     },
     "demandProfile": {
       "downforceDemand": 80,
@@ -7541,15 +9647,15 @@ export const nascar2010Tracks: GlobalTrack[] = [
       "brakeDemand": 82,
       "tireDemand": 72,
       "coolingDemand": 50,
-      "riskDemand": 50,
+      "riskDemand": 86,
       "tractionDemand": 76,
       "overtakingDifficulty": 38,
       "tireWearSeverity": 72,
-      "reliabilityStress": 50,
+      "reliabilityStress": 78,
       "setupComplexity": 78,
       "pitStrategySensitivity": 50,
       "safetyCarCautionRisk": 50,
-      "overallTrackDifficulty": 69,
+      "overallTrackDifficulty": 81,
       "winnerBaseline": 50
     },
     "ovalSubtype": "Superspeedway"
@@ -7588,8 +9694,8 @@ export const nascar2010Tracks: GlobalTrack[] = [
       "technical": 88,
       "overtakingRacecraft": 72,
       "surfaceGripBumpiness": 72,
-      "riskWallProximity": 50,
-      "enduranceConsistency": 50
+      "riskWallProximity": 70,
+      "enduranceConsistency": 82
     },
     "demandProfile": {
       "downforceDemand": 86,
@@ -7598,15 +9704,15 @@ export const nascar2010Tracks: GlobalTrack[] = [
       "brakeDemand": 84,
       "tireDemand": 72,
       "coolingDemand": 50,
-      "riskDemand": 50,
+      "riskDemand": 70,
       "tractionDemand": 82,
       "overtakingDifficulty": 28,
       "tireWearSeverity": 72,
-      "reliabilityStress": 50,
+      "reliabilityStress": 82,
       "setupComplexity": 88,
       "pitStrategySensitivity": 50,
       "safetyCarCautionRisk": 50,
-      "overallTrackDifficulty": 75,
+      "overallTrackDifficulty": 81,
       "winnerBaseline": 50
     }
   },
@@ -7644,8 +9750,8 @@ export const nascar2010Tracks: GlobalTrack[] = [
       "technical": 66,
       "overtakingRacecraft": 74,
       "surfaceGripBumpiness": 73,
-      "riskWallProximity": 50,
-      "enduranceConsistency": 50
+      "riskWallProximity": 76,
+      "enduranceConsistency": 76
     },
     "demandProfile": {
       "downforceDemand": 70,
@@ -7654,15 +9760,15 @@ export const nascar2010Tracks: GlobalTrack[] = [
       "brakeDemand": 68,
       "tireDemand": 73,
       "coolingDemand": 50,
-      "riskDemand": 50,
+      "riskDemand": 76,
       "tractionDemand": 80,
       "overtakingDifficulty": 26,
       "tireWearSeverity": 73,
-      "reliabilityStress": 50,
+      "reliabilityStress": 76,
       "setupComplexity": 66,
       "pitStrategySensitivity": 50,
       "safetyCarCautionRisk": 50,
-      "overallTrackDifficulty": 62,
+      "overallTrackDifficulty": 71,
       "winnerBaseline": 50
     },
     "ovalSubtype": "Speedway"
@@ -7701,8 +9807,8 @@ export const nascar2010Tracks: GlobalTrack[] = [
       "technical": 68,
       "overtakingRacecraft": 74,
       "surfaceGripBumpiness": 78,
-      "riskWallProximity": 50,
-      "enduranceConsistency": 50
+      "riskWallProximity": 76,
+      "enduranceConsistency": 76
     },
     "demandProfile": {
       "downforceDemand": 72,
@@ -7711,15 +9817,15 @@ export const nascar2010Tracks: GlobalTrack[] = [
       "brakeDemand": 70,
       "tireDemand": 78,
       "coolingDemand": 50,
-      "riskDemand": 50,
+      "riskDemand": 76,
       "tractionDemand": 82,
       "overtakingDifficulty": 26,
       "tireWearSeverity": 78,
-      "reliabilityStress": 50,
+      "reliabilityStress": 76,
       "setupComplexity": 68,
       "pitStrategySensitivity": 50,
       "safetyCarCautionRisk": 50,
-      "overallTrackDifficulty": 63,
+      "overallTrackDifficulty": 72,
       "winnerBaseline": 50
     },
     "ovalSubtype": "Speedway"

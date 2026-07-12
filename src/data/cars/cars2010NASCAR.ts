@@ -5,8 +5,8 @@ import type {
 
 export const cars2010NASCAR: Car[] = [
   {
-    "id": "car-2010-nascar-ash-racing",
-    "teamId": "t-2010-nascar-ash-racing",
+    "id": "car-2010-nascar-ash-racing-team-1",
+    "teamId": "t-2010-nascar-ash-racing-team-1",
     "seasonYear": 2010,
     "ratings": {
       "enginePower": 90,
@@ -25,8 +25,8 @@ export const cars2010NASCAR: Car[] = [
     }
   },
   {
-    "id": "car-2010-nascar-bam-racing",
-    "teamId": "t-2010-nascar-bam-racing",
+    "id": "car-2010-nascar-bam-racing-team-1",
+    "teamId": "t-2010-nascar-bam-racing-team-1",
     "seasonYear": 2010,
     "ratings": {
       "enginePower": 27,
@@ -45,8 +45,8 @@ export const cars2010NASCAR: Car[] = [
     }
   },
   {
-    "id": "car-2010-nascar-braun-racing",
-    "teamId": "t-2010-nascar-braun-racing",
+    "id": "car-2010-nascar-braun-racing-team-1-team-1",
+    "teamId": "t-2010-nascar-braun-racing-team-1-team-1",
     "seasonYear": 2010,
     "ratings": {
       "enginePower": 38,
@@ -65,8 +65,28 @@ export const cars2010NASCAR: Car[] = [
     }
   },
   {
-    "id": "car-2010-nascar-earnhardt-ganassi-racing",
-    "teamId": "t-2010-nascar-earnhardt-ganassi-racing",
+    "id": "car-2010-nascar-braun-racing-team-1-team-2",
+    "teamId": "t-2010-nascar-braun-racing-team-1-team-2",
+    "seasonYear": 2010,
+    "ratings": {
+      "enginePower": 38,
+      "aeroEfficiency": 40,
+      "mechanicalGrip": 38,
+      "reliability": 39,
+      "pitCrewOperations": 37
+    },
+    "condition": 100,
+    "developmentLevel": {
+      "enginePower": 0,
+      "aeroEfficiency": 0,
+      "mechanicalGrip": 0,
+      "reliability": 0,
+      "pitCrewOperations": 0
+    }
+  },
+  {
+    "id": "car-2010-nascar-earnhardt-ganassi-racing-team-1",
+    "teamId": "t-2010-nascar-earnhardt-ganassi-racing-team-1",
     "seasonYear": 2010,
     "ratings": {
       "enginePower": 82,
@@ -85,15 +105,15 @@ export const cars2010NASCAR: Car[] = [
     }
   },
   {
-    "id": "car-2010-nascar-front-row-motorsports-team-1",
-    "teamId": "t-2010-nascar-front-row-motorsports-team-1",
+    "id": "car-2010-nascar-front-row-motorsports-team-1-team-1",
+    "teamId": "t-2010-nascar-front-row-motorsports-team-1-team-1",
     "seasonYear": 2010,
     "ratings": {
       "enginePower": 50,
       "aeroEfficiency": 50,
-      "mechanicalGrip": 52,
-      "reliability": 51,
-      "pitCrewOperations": 49
+      "mechanicalGrip": 51,
+      "reliability": 49,
+      "pitCrewOperations": 48
     },
     "condition": 100,
     "developmentLevel": {
@@ -105,15 +125,15 @@ export const cars2010NASCAR: Car[] = [
     }
   },
   {
-    "id": "car-2010-nascar-front-row-motorsports-team-2",
-    "teamId": "t-2010-nascar-front-row-motorsports-team-2",
+    "id": "car-2010-nascar-front-row-motorsports-team-1-team-2",
+    "teamId": "t-2010-nascar-front-row-motorsports-team-1-team-2",
     "seasonYear": 2010,
     "ratings": {
       "enginePower": 50,
       "aeroEfficiency": 50,
-      "mechanicalGrip": 52,
-      "reliability": 51,
-      "pitCrewOperations": 49
+      "mechanicalGrip": 51,
+      "reliability": 49,
+      "pitCrewOperations": 48
     },
     "condition": 100,
     "developmentLevel": {
@@ -125,8 +145,148 @@ export const cars2010NASCAR: Car[] = [
     }
   },
   {
-    "id": "car-2010-nascar-furniture-row-racing",
-    "teamId": "t-2010-nascar-furniture-row-racing",
+    "id": "car-2010-nascar-front-row-motorsports-team-1-team-3",
+    "teamId": "t-2010-nascar-front-row-motorsports-team-1-team-3",
+    "seasonYear": 2010,
+    "ratings": {
+      "enginePower": 50,
+      "aeroEfficiency": 50,
+      "mechanicalGrip": 51,
+      "reliability": 49,
+      "pitCrewOperations": 48
+    },
+    "condition": 100,
+    "developmentLevel": {
+      "enginePower": 0,
+      "aeroEfficiency": 0,
+      "mechanicalGrip": 0,
+      "reliability": 0,
+      "pitCrewOperations": 0
+    }
+  },
+  {
+    "id": "car-2010-nascar-front-row-motorsports-team-1-team-4",
+    "teamId": "t-2010-nascar-front-row-motorsports-team-1-team-4",
+    "seasonYear": 2010,
+    "ratings": {
+      "enginePower": 50,
+      "aeroEfficiency": 50,
+      "mechanicalGrip": 51,
+      "reliability": 49,
+      "pitCrewOperations": 48
+    },
+    "condition": 100,
+    "developmentLevel": {
+      "enginePower": 0,
+      "aeroEfficiency": 0,
+      "mechanicalGrip": 0,
+      "reliability": 0,
+      "pitCrewOperations": 0
+    }
+  },
+  {
+    "id": "car-2010-nascar-front-row-motorsports-team-1-team-5",
+    "teamId": "t-2010-nascar-front-row-motorsports-team-1-team-5",
+    "seasonYear": 2010,
+    "ratings": {
+      "enginePower": 50,
+      "aeroEfficiency": 50,
+      "mechanicalGrip": 51,
+      "reliability": 49,
+      "pitCrewOperations": 48
+    },
+    "condition": 100,
+    "developmentLevel": {
+      "enginePower": 0,
+      "aeroEfficiency": 0,
+      "mechanicalGrip": 0,
+      "reliability": 0,
+      "pitCrewOperations": 0
+    }
+  },
+  {
+    "id": "car-2010-nascar-front-row-motorsports-team-1-team-6",
+    "teamId": "t-2010-nascar-front-row-motorsports-team-1-team-6",
+    "seasonYear": 2010,
+    "ratings": {
+      "enginePower": 50,
+      "aeroEfficiency": 50,
+      "mechanicalGrip": 51,
+      "reliability": 49,
+      "pitCrewOperations": 48
+    },
+    "condition": 100,
+    "developmentLevel": {
+      "enginePower": 0,
+      "aeroEfficiency": 0,
+      "mechanicalGrip": 0,
+      "reliability": 0,
+      "pitCrewOperations": 0
+    }
+  },
+  {
+    "id": "car-2010-nascar-front-row-motorsports-team-2-team-1",
+    "teamId": "t-2010-nascar-front-row-motorsports-team-2-team-1",
+    "seasonYear": 2010,
+    "ratings": {
+      "enginePower": 50,
+      "aeroEfficiency": 50,
+      "mechanicalGrip": 53,
+      "reliability": 52,
+      "pitCrewOperations": 50
+    },
+    "condition": 100,
+    "developmentLevel": {
+      "enginePower": 0,
+      "aeroEfficiency": 0,
+      "mechanicalGrip": 0,
+      "reliability": 0,
+      "pitCrewOperations": 0
+    }
+  },
+  {
+    "id": "car-2010-nascar-front-row-motorsports-team-2-team-2",
+    "teamId": "t-2010-nascar-front-row-motorsports-team-2-team-2",
+    "seasonYear": 2010,
+    "ratings": {
+      "enginePower": 50,
+      "aeroEfficiency": 50,
+      "mechanicalGrip": 53,
+      "reliability": 52,
+      "pitCrewOperations": 50
+    },
+    "condition": 100,
+    "developmentLevel": {
+      "enginePower": 0,
+      "aeroEfficiency": 0,
+      "mechanicalGrip": 0,
+      "reliability": 0,
+      "pitCrewOperations": 0
+    }
+  },
+  {
+    "id": "car-2010-nascar-front-row-motorsports-team-2-team-3",
+    "teamId": "t-2010-nascar-front-row-motorsports-team-2-team-3",
+    "seasonYear": 2010,
+    "ratings": {
+      "enginePower": 50,
+      "aeroEfficiency": 50,
+      "mechanicalGrip": 53,
+      "reliability": 52,
+      "pitCrewOperations": 50
+    },
+    "condition": 100,
+    "developmentLevel": {
+      "enginePower": 0,
+      "aeroEfficiency": 0,
+      "mechanicalGrip": 0,
+      "reliability": 0,
+      "pitCrewOperations": 0
+    }
+  },
+  {
+    "id": "car-2010-nascar-furniture-row-racing-team-1",
+    "teamId": "t-2010-nascar-furniture-row-racing-team-1",
     "seasonYear": 2010,
     "ratings": {
       "enginePower": 69,
@@ -145,8 +305,8 @@ export const cars2010NASCAR: Car[] = [
     }
   },
   {
-    "id": "car-2010-nascar-germain-racing",
-    "teamId": "t-2010-nascar-germain-racing",
+    "id": "car-2010-nascar-germain-racing-team-1",
+    "teamId": "t-2010-nascar-germain-racing-team-1",
     "seasonYear": 2010,
     "ratings": {
       "enginePower": 47,
@@ -165,8 +325,48 @@ export const cars2010NASCAR: Car[] = [
     }
   },
   {
-    "id": "car-2010-nascar-gunselman-motorsports",
-    "teamId": "t-2010-nascar-gunselman-motorsports",
+    "id": "car-2010-nascar-gunselman-motorsports-team-1-team-1",
+    "teamId": "t-2010-nascar-gunselman-motorsports-team-1-team-1",
+    "seasonYear": 2010,
+    "ratings": {
+      "enginePower": 26,
+      "aeroEfficiency": 25,
+      "mechanicalGrip": 27,
+      "reliability": 28,
+      "pitCrewOperations": 25
+    },
+    "condition": 100,
+    "developmentLevel": {
+      "enginePower": 0,
+      "aeroEfficiency": 0,
+      "mechanicalGrip": 0,
+      "reliability": 0,
+      "pitCrewOperations": 0
+    }
+  },
+  {
+    "id": "car-2010-nascar-gunselman-motorsports-team-1-team-2",
+    "teamId": "t-2010-nascar-gunselman-motorsports-team-1-team-2",
+    "seasonYear": 2010,
+    "ratings": {
+      "enginePower": 26,
+      "aeroEfficiency": 25,
+      "mechanicalGrip": 27,
+      "reliability": 28,
+      "pitCrewOperations": 25
+    },
+    "condition": 100,
+    "developmentLevel": {
+      "enginePower": 0,
+      "aeroEfficiency": 0,
+      "mechanicalGrip": 0,
+      "reliability": 0,
+      "pitCrewOperations": 0
+    }
+  },
+  {
+    "id": "car-2010-nascar-gunselman-motorsports-team-1-team-3",
+    "teamId": "t-2010-nascar-gunselman-motorsports-team-1-team-3",
     "seasonYear": 2010,
     "ratings": {
       "enginePower": 26,
@@ -189,11 +389,11 @@ export const cars2010NASCAR: Car[] = [
     "teamId": "t-2010-nascar-hendrick-motorsports-team-1",
     "seasonYear": 2010,
     "ratings": {
-      "enginePower": 100,
-      "aeroEfficiency": 96,
-      "mechanicalGrip": 98,
-      "reliability": 99,
-      "pitCrewOperations": 99
+      "enginePower": 99,
+      "aeroEfficiency": 93,
+      "mechanicalGrip": 95,
+      "reliability": 98,
+      "pitCrewOperations": 98
     },
     "condition": 100,
     "developmentLevel": {
@@ -210,10 +410,10 @@ export const cars2010NASCAR: Car[] = [
     "seasonYear": 2010,
     "ratings": {
       "enginePower": 100,
-      "aeroEfficiency": 96,
-      "mechanicalGrip": 98,
-      "reliability": 99,
-      "pitCrewOperations": 99
+      "aeroEfficiency": 98,
+      "mechanicalGrip": 100,
+      "reliability": 100,
+      "pitCrewOperations": 100
     },
     "condition": 100,
     "developmentLevel": {
@@ -225,8 +425,8 @@ export const cars2010NASCAR: Car[] = [
     }
   },
   {
-    "id": "car-2010-nascar-jtg-daugherty-racing-with-michael-waltrip-racing",
-    "teamId": "t-2010-nascar-jtg-daugherty-racing-with-michael-waltrip-racing",
+    "id": "car-2010-nascar-jtg-daugherty-racing-with-michael-waltrip-racing-team-1",
+    "teamId": "t-2010-nascar-jtg-daugherty-racing-with-michael-waltrip-racing-team-1",
     "seasonYear": 2010,
     "ratings": {
       "enginePower": 67,
@@ -249,11 +449,11 @@ export const cars2010NASCAR: Car[] = [
     "teamId": "t-2010-nascar-joe-gibbs-racing-team-1",
     "seasonYear": 2010,
     "ratings": {
-      "enginePower": 90,
-      "aeroEfficiency": 90,
-      "mechanicalGrip": 89,
-      "reliability": 92,
-      "pitCrewOperations": 92
+      "enginePower": 100,
+      "aeroEfficiency": 99,
+      "mechanicalGrip": 100,
+      "reliability": 100,
+      "pitCrewOperations": 100
     },
     "condition": 100,
     "developmentLevel": {
@@ -269,11 +469,11 @@ export const cars2010NASCAR: Car[] = [
     "teamId": "t-2010-nascar-joe-gibbs-racing-team-2",
     "seasonYear": 2010,
     "ratings": {
-      "enginePower": 90,
-      "aeroEfficiency": 90,
-      "mechanicalGrip": 89,
-      "reliability": 92,
-      "pitCrewOperations": 92
+      "enginePower": 79,
+      "aeroEfficiency": 80,
+      "mechanicalGrip": 78,
+      "reliability": 83,
+      "pitCrewOperations": 83
     },
     "condition": 100,
     "developmentLevel": {
@@ -285,8 +485,8 @@ export const cars2010NASCAR: Car[] = [
     }
   },
   {
-    "id": "car-2010-nascar-k-automotive-motorsports",
-    "teamId": "t-2010-nascar-k-automotive-motorsports",
+    "id": "car-2010-nascar-k-automotive-motorsports-team-1",
+    "teamId": "t-2010-nascar-k-automotive-motorsports-team-1",
     "seasonYear": 2010,
     "ratings": {
       "enginePower": 30,
@@ -305,8 +505,8 @@ export const cars2010NASCAR: Car[] = [
     }
   },
   {
-    "id": "car-2010-nascar-keyed-up-motorsports",
-    "teamId": "t-2010-nascar-keyed-up-motorsports",
+    "id": "car-2010-nascar-keyed-up-motorsports-team-1",
+    "teamId": "t-2010-nascar-keyed-up-motorsports-team-1",
     "seasonYear": 2010,
     "ratings": {
       "enginePower": 20,
@@ -325,8 +525,8 @@ export const cars2010NASCAR: Car[] = [
     }
   },
   {
-    "id": "car-2010-nascar-kirk-shelmerdine-racing",
-    "teamId": "t-2010-nascar-kirk-shelmerdine-racing",
+    "id": "car-2010-nascar-kirk-shelmerdine-racing-team-1",
+    "teamId": "t-2010-nascar-kirk-shelmerdine-racing-team-1",
     "seasonYear": 2010,
     "ratings": {
       "enginePower": 30,
@@ -345,8 +545,68 @@ export const cars2010NASCAR: Car[] = [
     }
   },
   {
-    "id": "car-2010-nascar-latitude-43-motorsports",
-    "teamId": "t-2010-nascar-latitude-43-motorsports",
+    "id": "car-2010-nascar-latitude-43-motorsports-team-1-team-1",
+    "teamId": "t-2010-nascar-latitude-43-motorsports-team-1-team-1",
+    "seasonYear": 2010,
+    "ratings": {
+      "enginePower": 34,
+      "aeroEfficiency": 36,
+      "mechanicalGrip": 32,
+      "reliability": 36,
+      "pitCrewOperations": 32
+    },
+    "condition": 100,
+    "developmentLevel": {
+      "enginePower": 0,
+      "aeroEfficiency": 0,
+      "mechanicalGrip": 0,
+      "reliability": 0,
+      "pitCrewOperations": 0
+    }
+  },
+  {
+    "id": "car-2010-nascar-latitude-43-motorsports-team-1-team-2",
+    "teamId": "t-2010-nascar-latitude-43-motorsports-team-1-team-2",
+    "seasonYear": 2010,
+    "ratings": {
+      "enginePower": 34,
+      "aeroEfficiency": 36,
+      "mechanicalGrip": 32,
+      "reliability": 36,
+      "pitCrewOperations": 32
+    },
+    "condition": 100,
+    "developmentLevel": {
+      "enginePower": 0,
+      "aeroEfficiency": 0,
+      "mechanicalGrip": 0,
+      "reliability": 0,
+      "pitCrewOperations": 0
+    }
+  },
+  {
+    "id": "car-2010-nascar-latitude-43-motorsports-team-1-team-3",
+    "teamId": "t-2010-nascar-latitude-43-motorsports-team-1-team-3",
+    "seasonYear": 2010,
+    "ratings": {
+      "enginePower": 34,
+      "aeroEfficiency": 36,
+      "mechanicalGrip": 32,
+      "reliability": 36,
+      "pitCrewOperations": 32
+    },
+    "condition": 100,
+    "developmentLevel": {
+      "enginePower": 0,
+      "aeroEfficiency": 0,
+      "mechanicalGrip": 0,
+      "reliability": 0,
+      "pitCrewOperations": 0
+    }
+  },
+  {
+    "id": "car-2010-nascar-latitude-43-motorsports-team-1-team-4",
+    "teamId": "t-2010-nascar-latitude-43-motorsports-team-1-team-4",
     "seasonYear": 2010,
     "ratings": {
       "enginePower": 34,
@@ -369,11 +629,11 @@ export const cars2010NASCAR: Car[] = [
     "teamId": "t-2010-nascar-michael-waltrip-racing-team-1",
     "seasonYear": 2010,
     "ratings": {
-      "enginePower": 51,
-      "aeroEfficiency": 54,
-      "mechanicalGrip": 52,
-      "reliability": 53,
-      "pitCrewOperations": 51
+      "enginePower": 75,
+      "aeroEfficiency": 78,
+      "mechanicalGrip": 76,
+      "reliability": 76,
+      "pitCrewOperations": 74
     },
     "condition": 100,
     "developmentLevel": {
@@ -385,15 +645,15 @@ export const cars2010NASCAR: Car[] = [
     }
   },
   {
-    "id": "car-2010-nascar-michael-waltrip-racing-team-2",
-    "teamId": "t-2010-nascar-michael-waltrip-racing-team-2",
+    "id": "car-2010-nascar-michael-waltrip-racing-team-2-team-1",
+    "teamId": "t-2010-nascar-michael-waltrip-racing-team-2-team-1",
     "seasonYear": 2010,
     "ratings": {
-      "enginePower": 51,
-      "aeroEfficiency": 54,
-      "mechanicalGrip": 52,
-      "reliability": 53,
-      "pitCrewOperations": 51
+      "enginePower": 27,
+      "aeroEfficiency": 30,
+      "mechanicalGrip": 27,
+      "reliability": 30,
+      "pitCrewOperations": 28
     },
     "condition": 100,
     "developmentLevel": {
@@ -405,8 +665,68 @@ export const cars2010NASCAR: Car[] = [
     }
   },
   {
-    "id": "car-2010-nascar-morgan-mcclure-motorsports",
-    "teamId": "t-2010-nascar-morgan-mcclure-motorsports",
+    "id": "car-2010-nascar-michael-waltrip-racing-team-2-team-2",
+    "teamId": "t-2010-nascar-michael-waltrip-racing-team-2-team-2",
+    "seasonYear": 2010,
+    "ratings": {
+      "enginePower": 27,
+      "aeroEfficiency": 30,
+      "mechanicalGrip": 27,
+      "reliability": 30,
+      "pitCrewOperations": 28
+    },
+    "condition": 100,
+    "developmentLevel": {
+      "enginePower": 0,
+      "aeroEfficiency": 0,
+      "mechanicalGrip": 0,
+      "reliability": 0,
+      "pitCrewOperations": 0
+    }
+  },
+  {
+    "id": "car-2010-nascar-michael-waltrip-racing-team-2-team-3",
+    "teamId": "t-2010-nascar-michael-waltrip-racing-team-2-team-3",
+    "seasonYear": 2010,
+    "ratings": {
+      "enginePower": 27,
+      "aeroEfficiency": 30,
+      "mechanicalGrip": 27,
+      "reliability": 30,
+      "pitCrewOperations": 28
+    },
+    "condition": 100,
+    "developmentLevel": {
+      "enginePower": 0,
+      "aeroEfficiency": 0,
+      "mechanicalGrip": 0,
+      "reliability": 0,
+      "pitCrewOperations": 0
+    }
+  },
+  {
+    "id": "car-2010-nascar-michael-waltrip-racing-team-2-team-4",
+    "teamId": "t-2010-nascar-michael-waltrip-racing-team-2-team-4",
+    "seasonYear": 2010,
+    "ratings": {
+      "enginePower": 27,
+      "aeroEfficiency": 30,
+      "mechanicalGrip": 27,
+      "reliability": 30,
+      "pitCrewOperations": 28
+    },
+    "condition": 100,
+    "developmentLevel": {
+      "enginePower": 0,
+      "aeroEfficiency": 0,
+      "mechanicalGrip": 0,
+      "reliability": 0,
+      "pitCrewOperations": 0
+    }
+  },
+  {
+    "id": "car-2010-nascar-morgan-mcclure-motorsports-team-1",
+    "teamId": "t-2010-nascar-morgan-mcclure-motorsports-team-1",
     "seasonYear": 2010,
     "ratings": {
       "enginePower": 100,
@@ -425,15 +745,15 @@ export const cars2010NASCAR: Car[] = [
     }
   },
   {
-    "id": "car-2010-nascar-nemco-motorsports",
-    "teamId": "t-2010-nascar-nemco-motorsports",
+    "id": "car-2010-nascar-nemco-motorsports-team-1",
+    "teamId": "t-2010-nascar-nemco-motorsports-team-1",
     "seasonYear": 2010,
     "ratings": {
-      "enginePower": 29,
-      "aeroEfficiency": 29,
-      "mechanicalGrip": 28,
-      "reliability": 28,
-      "pitCrewOperations": 30
+      "enginePower": 47,
+      "aeroEfficiency": 45,
+      "mechanicalGrip": 45,
+      "reliability": 48,
+      "pitCrewOperations": 47
     },
     "condition": 100,
     "developmentLevel": {
@@ -445,8 +765,28 @@ export const cars2010NASCAR: Car[] = [
     }
   },
   {
-    "id": "car-2010-nascar-norm-benning-racing",
-    "teamId": "t-2010-nascar-norm-benning-racing",
+    "id": "car-2010-nascar-nemco-motorsports-team-2",
+    "teamId": "t-2010-nascar-nemco-motorsports-team-2",
+    "seasonYear": 2010,
+    "ratings": {
+      "enginePower": 100,
+      "aeroEfficiency": 12,
+      "mechanicalGrip": 11,
+      "reliability": 80,
+      "pitCrewOperations": 12
+    },
+    "condition": 100,
+    "developmentLevel": {
+      "enginePower": 0,
+      "aeroEfficiency": 0,
+      "mechanicalGrip": 0,
+      "reliability": 0,
+      "pitCrewOperations": 0
+    }
+  },
+  {
+    "id": "car-2010-nascar-norm-benning-racing-team-1",
+    "teamId": "t-2010-nascar-norm-benning-racing-team-1",
     "seasonYear": 2010,
     "ratings": {
       "enginePower": 20,
@@ -469,11 +809,11 @@ export const cars2010NASCAR: Car[] = [
     "teamId": "t-2010-nascar-penske-championship-racing-team-1",
     "seasonYear": 2010,
     "ratings": {
-      "enginePower": 79,
-      "aeroEfficiency": 77,
-      "mechanicalGrip": 77,
-      "reliability": 80,
-      "pitCrewOperations": 79
+      "enginePower": 90,
+      "aeroEfficiency": 90,
+      "mechanicalGrip": 89,
+      "reliability": 92,
+      "pitCrewOperations": 93
     },
     "condition": 100,
     "developmentLevel": {
@@ -489,11 +829,11 @@ export const cars2010NASCAR: Car[] = [
     "teamId": "t-2010-nascar-penske-championship-racing-team-2",
     "seasonYear": 2010,
     "ratings": {
-      "enginePower": 79,
-      "aeroEfficiency": 77,
-      "mechanicalGrip": 77,
-      "reliability": 80,
-      "pitCrewOperations": 79
+      "enginePower": 67,
+      "aeroEfficiency": 64,
+      "mechanicalGrip": 65,
+      "reliability": 67,
+      "pitCrewOperations": 65
     },
     "condition": 100,
     "developmentLevel": {
@@ -505,8 +845,8 @@ export const cars2010NASCAR: Car[] = [
     }
   },
   {
-    "id": "car-2010-nascar-phoenix-racing",
-    "teamId": "t-2010-nascar-phoenix-racing",
+    "id": "car-2010-nascar-phoenix-racing-team-1-team-1",
+    "teamId": "t-2010-nascar-phoenix-racing-team-1-team-1",
     "seasonYear": 2010,
     "ratings": {
       "enginePower": 35,
@@ -525,8 +865,48 @@ export const cars2010NASCAR: Car[] = [
     }
   },
   {
-    "id": "car-2010-nascar-prism-motorsports",
-    "teamId": "t-2010-nascar-prism-motorsports",
+    "id": "car-2010-nascar-phoenix-racing-team-1-team-2",
+    "teamId": "t-2010-nascar-phoenix-racing-team-1-team-2",
+    "seasonYear": 2010,
+    "ratings": {
+      "enginePower": 35,
+      "aeroEfficiency": 34,
+      "mechanicalGrip": 37,
+      "reliability": 36,
+      "pitCrewOperations": 33
+    },
+    "condition": 100,
+    "developmentLevel": {
+      "enginePower": 0,
+      "aeroEfficiency": 0,
+      "mechanicalGrip": 0,
+      "reliability": 0,
+      "pitCrewOperations": 0
+    }
+  },
+  {
+    "id": "car-2010-nascar-phoenix-racing-team-1-team-3",
+    "teamId": "t-2010-nascar-phoenix-racing-team-1-team-3",
+    "seasonYear": 2010,
+    "ratings": {
+      "enginePower": 35,
+      "aeroEfficiency": 34,
+      "mechanicalGrip": 37,
+      "reliability": 36,
+      "pitCrewOperations": 33
+    },
+    "condition": 100,
+    "developmentLevel": {
+      "enginePower": 0,
+      "aeroEfficiency": 0,
+      "mechanicalGrip": 0,
+      "reliability": 0,
+      "pitCrewOperations": 0
+    }
+  },
+  {
+    "id": "car-2010-nascar-prism-motorsports-team-1-team-1",
+    "teamId": "t-2010-nascar-prism-motorsports-team-1-team-1",
     "seasonYear": 2010,
     "ratings": {
       "enginePower": 42,
@@ -545,8 +925,68 @@ export const cars2010NASCAR: Car[] = [
     }
   },
   {
-    "id": "car-2010-nascar-r3-motorsports",
-    "teamId": "t-2010-nascar-r3-motorsports",
+    "id": "car-2010-nascar-prism-motorsports-team-1-team-2",
+    "teamId": "t-2010-nascar-prism-motorsports-team-1-team-2",
+    "seasonYear": 2010,
+    "ratings": {
+      "enginePower": 42,
+      "aeroEfficiency": 40,
+      "mechanicalGrip": 43,
+      "reliability": 44,
+      "pitCrewOperations": 40
+    },
+    "condition": 100,
+    "developmentLevel": {
+      "enginePower": 0,
+      "aeroEfficiency": 0,
+      "mechanicalGrip": 0,
+      "reliability": 0,
+      "pitCrewOperations": 0
+    }
+  },
+  {
+    "id": "car-2010-nascar-prism-motorsports-team-1-team-3",
+    "teamId": "t-2010-nascar-prism-motorsports-team-1-team-3",
+    "seasonYear": 2010,
+    "ratings": {
+      "enginePower": 42,
+      "aeroEfficiency": 40,
+      "mechanicalGrip": 43,
+      "reliability": 44,
+      "pitCrewOperations": 40
+    },
+    "condition": 100,
+    "developmentLevel": {
+      "enginePower": 0,
+      "aeroEfficiency": 0,
+      "mechanicalGrip": 0,
+      "reliability": 0,
+      "pitCrewOperations": 0
+    }
+  },
+  {
+    "id": "car-2010-nascar-prism-motorsports-team-1-team-4",
+    "teamId": "t-2010-nascar-prism-motorsports-team-1-team-4",
+    "seasonYear": 2010,
+    "ratings": {
+      "enginePower": 42,
+      "aeroEfficiency": 40,
+      "mechanicalGrip": 43,
+      "reliability": 44,
+      "pitCrewOperations": 40
+    },
+    "condition": 100,
+    "developmentLevel": {
+      "enginePower": 0,
+      "aeroEfficiency": 0,
+      "mechanicalGrip": 0,
+      "reliability": 0,
+      "pitCrewOperations": 0
+    }
+  },
+  {
+    "id": "car-2010-nascar-r3-motorsports-team-1",
+    "teamId": "t-2010-nascar-r3-motorsports-team-1",
     "seasonYear": 2010,
     "ratings": {
       "enginePower": 29,
@@ -565,8 +1005,68 @@ export const cars2010NASCAR: Car[] = [
     }
   },
   {
-    "id": "car-2010-nascar-red-bull-racing",
-    "teamId": "t-2010-nascar-red-bull-racing",
+    "id": "car-2010-nascar-red-bull-racing-team-1-team-1",
+    "teamId": "t-2010-nascar-red-bull-racing-team-1-team-1",
+    "seasonYear": 2010,
+    "ratings": {
+      "enginePower": 57,
+      "aeroEfficiency": 56,
+      "mechanicalGrip": 58,
+      "reliability": 54,
+      "pitCrewOperations": 55
+    },
+    "condition": 100,
+    "developmentLevel": {
+      "enginePower": 0,
+      "aeroEfficiency": 0,
+      "mechanicalGrip": 0,
+      "reliability": 0,
+      "pitCrewOperations": 0
+    }
+  },
+  {
+    "id": "car-2010-nascar-red-bull-racing-team-1-team-2",
+    "teamId": "t-2010-nascar-red-bull-racing-team-1-team-2",
+    "seasonYear": 2010,
+    "ratings": {
+      "enginePower": 57,
+      "aeroEfficiency": 56,
+      "mechanicalGrip": 58,
+      "reliability": 54,
+      "pitCrewOperations": 55
+    },
+    "condition": 100,
+    "developmentLevel": {
+      "enginePower": 0,
+      "aeroEfficiency": 0,
+      "mechanicalGrip": 0,
+      "reliability": 0,
+      "pitCrewOperations": 0
+    }
+  },
+  {
+    "id": "car-2010-nascar-red-bull-racing-team-1-team-3",
+    "teamId": "t-2010-nascar-red-bull-racing-team-1-team-3",
+    "seasonYear": 2010,
+    "ratings": {
+      "enginePower": 57,
+      "aeroEfficiency": 56,
+      "mechanicalGrip": 58,
+      "reliability": 54,
+      "pitCrewOperations": 55
+    },
+    "condition": 100,
+    "developmentLevel": {
+      "enginePower": 0,
+      "aeroEfficiency": 0,
+      "mechanicalGrip": 0,
+      "reliability": 0,
+      "pitCrewOperations": 0
+    }
+  },
+  {
+    "id": "car-2010-nascar-red-bull-racing-team-1-team-4",
+    "teamId": "t-2010-nascar-red-bull-racing-team-1-team-4",
     "seasonYear": 2010,
     "ratings": {
       "enginePower": 57,
@@ -589,11 +1089,11 @@ export const cars2010NASCAR: Car[] = [
     "teamId": "t-2010-nascar-richard-childress-racing-team-1",
     "seasonYear": 2010,
     "ratings": {
-      "enginePower": 99,
-      "aeroEfficiency": 99,
-      "mechanicalGrip": 97,
+      "enginePower": 100,
+      "aeroEfficiency": 100,
+      "mechanicalGrip": 100,
       "reliability": 100,
-      "pitCrewOperations": 99
+      "pitCrewOperations": 100
     },
     "condition": 100,
     "developmentLevel": {
@@ -609,11 +1109,11 @@ export const cars2010NASCAR: Car[] = [
     "teamId": "t-2010-nascar-richard-childress-racing-team-2",
     "seasonYear": 2010,
     "ratings": {
-      "enginePower": 99,
-      "aeroEfficiency": 99,
-      "mechanicalGrip": 97,
+      "enginePower": 98,
+      "aeroEfficiency": 98,
+      "mechanicalGrip": 94,
       "reliability": 100,
-      "pitCrewOperations": 99
+      "pitCrewOperations": 97
     },
     "condition": 100,
     "developmentLevel": {
@@ -625,13 +1125,33 @@ export const cars2010NASCAR: Car[] = [
     }
   },
   {
-    "id": "car-2010-nascar-richard-petty-motorsports-team-1",
-    "teamId": "t-2010-nascar-richard-petty-motorsports-team-1",
+    "id": "car-2010-nascar-richard-petty-motorsports-team-1-team-1",
+    "teamId": "t-2010-nascar-richard-petty-motorsports-team-1-team-1",
     "seasonYear": 2010,
     "ratings": {
       "enginePower": 74,
-      "aeroEfficiency": 73,
-      "mechanicalGrip": 72,
+      "aeroEfficiency": 72,
+      "mechanicalGrip": 70,
+      "reliability": 73,
+      "pitCrewOperations": 72
+    },
+    "condition": 100,
+    "developmentLevel": {
+      "enginePower": 0,
+      "aeroEfficiency": 0,
+      "mechanicalGrip": 0,
+      "reliability": 0,
+      "pitCrewOperations": 0
+    }
+  },
+  {
+    "id": "car-2010-nascar-richard-petty-motorsports-team-1-team-2",
+    "teamId": "t-2010-nascar-richard-petty-motorsports-team-1-team-2",
+    "seasonYear": 2010,
+    "ratings": {
+      "enginePower": 74,
+      "aeroEfficiency": 72,
+      "mechanicalGrip": 70,
       "reliability": 73,
       "pitCrewOperations": 72
     },
@@ -650,8 +1170,8 @@ export const cars2010NASCAR: Car[] = [
     "seasonYear": 2010,
     "ratings": {
       "enginePower": 74,
-      "aeroEfficiency": 73,
-      "mechanicalGrip": 72,
+      "aeroEfficiency": 74,
+      "mechanicalGrip": 74,
       "reliability": 73,
       "pitCrewOperations": 72
     },
@@ -665,8 +1185,68 @@ export const cars2010NASCAR: Car[] = [
     }
   },
   {
-    "id": "car-2010-nascar-robby-gordon-motorsports",
-    "teamId": "t-2010-nascar-robby-gordon-motorsports",
+    "id": "car-2010-nascar-robby-gordon-motorsports-team-1-team-1",
+    "teamId": "t-2010-nascar-robby-gordon-motorsports-team-1-team-1",
+    "seasonYear": 2010,
+    "ratings": {
+      "enginePower": 51,
+      "aeroEfficiency": 46,
+      "mechanicalGrip": 48,
+      "reliability": 48,
+      "pitCrewOperations": 49
+    },
+    "condition": 100,
+    "developmentLevel": {
+      "enginePower": 0,
+      "aeroEfficiency": 0,
+      "mechanicalGrip": 0,
+      "reliability": 0,
+      "pitCrewOperations": 0
+    }
+  },
+  {
+    "id": "car-2010-nascar-robby-gordon-motorsports-team-1-team-2",
+    "teamId": "t-2010-nascar-robby-gordon-motorsports-team-1-team-2",
+    "seasonYear": 2010,
+    "ratings": {
+      "enginePower": 51,
+      "aeroEfficiency": 46,
+      "mechanicalGrip": 48,
+      "reliability": 48,
+      "pitCrewOperations": 49
+    },
+    "condition": 100,
+    "developmentLevel": {
+      "enginePower": 0,
+      "aeroEfficiency": 0,
+      "mechanicalGrip": 0,
+      "reliability": 0,
+      "pitCrewOperations": 0
+    }
+  },
+  {
+    "id": "car-2010-nascar-robby-gordon-motorsports-team-1-team-3",
+    "teamId": "t-2010-nascar-robby-gordon-motorsports-team-1-team-3",
+    "seasonYear": 2010,
+    "ratings": {
+      "enginePower": 51,
+      "aeroEfficiency": 46,
+      "mechanicalGrip": 48,
+      "reliability": 48,
+      "pitCrewOperations": 49
+    },
+    "condition": 100,
+    "developmentLevel": {
+      "enginePower": 0,
+      "aeroEfficiency": 0,
+      "mechanicalGrip": 0,
+      "reliability": 0,
+      "pitCrewOperations": 0
+    }
+  },
+  {
+    "id": "car-2010-nascar-robby-gordon-motorsports-team-1-team-4",
+    "teamId": "t-2010-nascar-robby-gordon-motorsports-team-1-team-4",
     "seasonYear": 2010,
     "ratings": {
       "enginePower": 51,
@@ -689,11 +1269,11 @@ export const cars2010NASCAR: Car[] = [
     "teamId": "t-2010-nascar-roush-fenway-racing-team-1",
     "seasonYear": 2010,
     "ratings": {
-      "enginePower": 96,
-      "aeroEfficiency": 98,
-      "mechanicalGrip": 97,
-      "reliability": 99,
-      "pitCrewOperations": 99
+      "enginePower": 94,
+      "aeroEfficiency": 95,
+      "mechanicalGrip": 96,
+      "reliability": 98,
+      "pitCrewOperations": 98
     },
     "condition": 100,
     "developmentLevel": {
@@ -709,11 +1289,11 @@ export const cars2010NASCAR: Car[] = [
     "teamId": "t-2010-nascar-roush-fenway-racing-team-2",
     "seasonYear": 2010,
     "ratings": {
-      "enginePower": 96,
-      "aeroEfficiency": 98,
-      "mechanicalGrip": 97,
-      "reliability": 99,
-      "pitCrewOperations": 99
+      "enginePower": 98,
+      "aeroEfficiency": 100,
+      "mechanicalGrip": 98,
+      "reliability": 100,
+      "pitCrewOperations": 100
     },
     "condition": 100,
     "developmentLevel": {
@@ -725,8 +1305,8 @@ export const cars2010NASCAR: Car[] = [
     }
   },
   {
-    "id": "car-2010-nascar-stavola-labonte-racing",
-    "teamId": "t-2010-nascar-stavola-labonte-racing",
+    "id": "car-2010-nascar-stavola-labonte-racing-team-1",
+    "teamId": "t-2010-nascar-stavola-labonte-racing-team-1",
     "seasonYear": 2010,
     "ratings": {
       "enginePower": 19,
@@ -745,8 +1325,8 @@ export const cars2010NASCAR: Car[] = [
     }
   },
   {
-    "id": "car-2010-nascar-stewart-haas-racing",
-    "teamId": "t-2010-nascar-stewart-haas-racing",
+    "id": "car-2010-nascar-stewart-haas-racing-team-1",
+    "teamId": "t-2010-nascar-stewart-haas-racing-team-1",
     "seasonYear": 2010,
     "ratings": {
       "enginePower": 100,
@@ -765,8 +1345,8 @@ export const cars2010NASCAR: Car[] = [
     }
   },
   {
-    "id": "car-2010-nascar-stratus-racing-group",
-    "teamId": "t-2010-nascar-stratus-racing-group",
+    "id": "car-2010-nascar-stratus-racing-group-team-1",
+    "teamId": "t-2010-nascar-stratus-racing-group-team-1",
     "seasonYear": 2010,
     "ratings": {
       "enginePower": 20,
@@ -785,8 +1365,8 @@ export const cars2010NASCAR: Car[] = [
     }
   },
   {
-    "id": "car-2010-nascar-trg-motorsports",
-    "teamId": "t-2010-nascar-trg-motorsports",
+    "id": "car-2010-nascar-trg-motorsports-team-1-team-1",
+    "teamId": "t-2010-nascar-trg-motorsports-team-1-team-1",
     "seasonYear": 2010,
     "ratings": {
       "enginePower": 47,
@@ -805,8 +1385,68 @@ export const cars2010NASCAR: Car[] = [
     }
   },
   {
-    "id": "car-2010-nascar-tommy-baldwin-racing",
-    "teamId": "t-2010-nascar-tommy-baldwin-racing",
+    "id": "car-2010-nascar-trg-motorsports-team-1-team-2",
+    "teamId": "t-2010-nascar-trg-motorsports-team-1-team-2",
+    "seasonYear": 2010,
+    "ratings": {
+      "enginePower": 47,
+      "aeroEfficiency": 49,
+      "mechanicalGrip": 46,
+      "reliability": 45,
+      "pitCrewOperations": 45
+    },
+    "condition": 100,
+    "developmentLevel": {
+      "enginePower": 0,
+      "aeroEfficiency": 0,
+      "mechanicalGrip": 0,
+      "reliability": 0,
+      "pitCrewOperations": 0
+    }
+  },
+  {
+    "id": "car-2010-nascar-trg-motorsports-team-1-team-3",
+    "teamId": "t-2010-nascar-trg-motorsports-team-1-team-3",
+    "seasonYear": 2010,
+    "ratings": {
+      "enginePower": 47,
+      "aeroEfficiency": 49,
+      "mechanicalGrip": 46,
+      "reliability": 45,
+      "pitCrewOperations": 45
+    },
+    "condition": 100,
+    "developmentLevel": {
+      "enginePower": 0,
+      "aeroEfficiency": 0,
+      "mechanicalGrip": 0,
+      "reliability": 0,
+      "pitCrewOperations": 0
+    }
+  },
+  {
+    "id": "car-2010-nascar-trg-motorsports-team-1-team-4",
+    "teamId": "t-2010-nascar-trg-motorsports-team-1-team-4",
+    "seasonYear": 2010,
+    "ratings": {
+      "enginePower": 47,
+      "aeroEfficiency": 49,
+      "mechanicalGrip": 46,
+      "reliability": 45,
+      "pitCrewOperations": 45
+    },
+    "condition": 100,
+    "developmentLevel": {
+      "enginePower": 0,
+      "aeroEfficiency": 0,
+      "mechanicalGrip": 0,
+      "reliability": 0,
+      "pitCrewOperations": 0
+    }
+  },
+  {
+    "id": "car-2010-nascar-tommy-baldwin-racing-team-1-team-1",
+    "teamId": "t-2010-nascar-tommy-baldwin-racing-team-1-team-1",
     "seasonYear": 2010,
     "ratings": {
       "enginePower": 24,
@@ -825,8 +1465,108 @@ export const cars2010NASCAR: Car[] = [
     }
   },
   {
-    "id": "car-2010-nascar-tri-star-motorsports",
-    "teamId": "t-2010-nascar-tri-star-motorsports",
+    "id": "car-2010-nascar-tommy-baldwin-racing-team-1-team-2",
+    "teamId": "t-2010-nascar-tommy-baldwin-racing-team-1-team-2",
+    "seasonYear": 2010,
+    "ratings": {
+      "enginePower": 24,
+      "aeroEfficiency": 20,
+      "mechanicalGrip": 22,
+      "reliability": 19,
+      "pitCrewOperations": 19
+    },
+    "condition": 100,
+    "developmentLevel": {
+      "enginePower": 0,
+      "aeroEfficiency": 0,
+      "mechanicalGrip": 0,
+      "reliability": 0,
+      "pitCrewOperations": 0
+    }
+  },
+  {
+    "id": "car-2010-nascar-tommy-baldwin-racing-team-1-team-3",
+    "teamId": "t-2010-nascar-tommy-baldwin-racing-team-1-team-3",
+    "seasonYear": 2010,
+    "ratings": {
+      "enginePower": 24,
+      "aeroEfficiency": 20,
+      "mechanicalGrip": 22,
+      "reliability": 19,
+      "pitCrewOperations": 19
+    },
+    "condition": 100,
+    "developmentLevel": {
+      "enginePower": 0,
+      "aeroEfficiency": 0,
+      "mechanicalGrip": 0,
+      "reliability": 0,
+      "pitCrewOperations": 0
+    }
+  },
+  {
+    "id": "car-2010-nascar-tommy-baldwin-racing-team-1-team-4",
+    "teamId": "t-2010-nascar-tommy-baldwin-racing-team-1-team-4",
+    "seasonYear": 2010,
+    "ratings": {
+      "enginePower": 24,
+      "aeroEfficiency": 20,
+      "mechanicalGrip": 22,
+      "reliability": 19,
+      "pitCrewOperations": 19
+    },
+    "condition": 100,
+    "developmentLevel": {
+      "enginePower": 0,
+      "aeroEfficiency": 0,
+      "mechanicalGrip": 0,
+      "reliability": 0,
+      "pitCrewOperations": 0
+    }
+  },
+  {
+    "id": "car-2010-nascar-tommy-baldwin-racing-team-1-team-5",
+    "teamId": "t-2010-nascar-tommy-baldwin-racing-team-1-team-5",
+    "seasonYear": 2010,
+    "ratings": {
+      "enginePower": 24,
+      "aeroEfficiency": 20,
+      "mechanicalGrip": 22,
+      "reliability": 19,
+      "pitCrewOperations": 19
+    },
+    "condition": 100,
+    "developmentLevel": {
+      "enginePower": 0,
+      "aeroEfficiency": 0,
+      "mechanicalGrip": 0,
+      "reliability": 0,
+      "pitCrewOperations": 0
+    }
+  },
+  {
+    "id": "car-2010-nascar-tommy-baldwin-racing-team-1-team-6",
+    "teamId": "t-2010-nascar-tommy-baldwin-racing-team-1-team-6",
+    "seasonYear": 2010,
+    "ratings": {
+      "enginePower": 24,
+      "aeroEfficiency": 20,
+      "mechanicalGrip": 22,
+      "reliability": 19,
+      "pitCrewOperations": 19
+    },
+    "condition": 100,
+    "developmentLevel": {
+      "enginePower": 0,
+      "aeroEfficiency": 0,
+      "mechanicalGrip": 0,
+      "reliability": 0,
+      "pitCrewOperations": 0
+    }
+  },
+  {
+    "id": "car-2010-nascar-tri-star-motorsports-team-1",
+    "teamId": "t-2010-nascar-tri-star-motorsports-team-1",
     "seasonYear": 2010,
     "ratings": {
       "enginePower": 60,
@@ -845,8 +1585,8 @@ export const cars2010NASCAR: Car[] = [
     }
   },
   {
-    "id": "car-2010-nascar-whitney-motorsports",
-    "teamId": "t-2010-nascar-whitney-motorsports",
+    "id": "car-2010-nascar-whitney-motorsports-team-1-team-1",
+    "teamId": "t-2010-nascar-whitney-motorsports-team-1-team-1",
     "seasonYear": 2010,
     "ratings": {
       "enginePower": 38,
@@ -865,8 +1605,48 @@ export const cars2010NASCAR: Car[] = [
     }
   },
   {
-    "id": "car-2010-nascar-wood-brothers-racing",
-    "teamId": "t-2010-nascar-wood-brothers-racing",
+    "id": "car-2010-nascar-whitney-motorsports-team-1-team-2",
+    "teamId": "t-2010-nascar-whitney-motorsports-team-1-team-2",
+    "seasonYear": 2010,
+    "ratings": {
+      "enginePower": 38,
+      "aeroEfficiency": 40,
+      "mechanicalGrip": 38,
+      "reliability": 40,
+      "pitCrewOperations": 40
+    },
+    "condition": 100,
+    "developmentLevel": {
+      "enginePower": 0,
+      "aeroEfficiency": 0,
+      "mechanicalGrip": 0,
+      "reliability": 0,
+      "pitCrewOperations": 0
+    }
+  },
+  {
+    "id": "car-2010-nascar-whitney-motorsports-team-1-team-3",
+    "teamId": "t-2010-nascar-whitney-motorsports-team-1-team-3",
+    "seasonYear": 2010,
+    "ratings": {
+      "enginePower": 38,
+      "aeroEfficiency": 40,
+      "mechanicalGrip": 38,
+      "reliability": 40,
+      "pitCrewOperations": 40
+    },
+    "condition": 100,
+    "developmentLevel": {
+      "enginePower": 0,
+      "aeroEfficiency": 0,
+      "mechanicalGrip": 0,
+      "reliability": 0,
+      "pitCrewOperations": 0
+    }
+  },
+  {
+    "id": "car-2010-nascar-wood-brothers-racing-team-1",
+    "teamId": "t-2010-nascar-wood-brothers-racing-team-1",
     "seasonYear": 2010,
     "ratings": {
       "enginePower": 37,

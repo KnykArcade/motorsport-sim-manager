@@ -1,7 +1,7 @@
 import type { Series, Track, Phase0SeasonBundle } from '../types/gameTypes';
 import type { SeasonBundle } from './seasonCatalog';
 import { availableSeasons } from './seasonCatalog';
-import { buildPhase0SeasonBundle, seasonExportKey, seasonImportPath } from './phase0/phase0Runtime';
+import { buildPhase0SeasonBundle, registerLegacySeasonModule, registerPhase0GlobalModule, seasonExportKey, seasonImportPath } from './phase0/phase0Runtime';
 
 const bundleCache = new Map<string, SeasonBundle>();
 const trackRegistry = new Map<string, Track>();
@@ -25,7 +25,20 @@ export function getTrackFromRegistry(id: string): Track | undefined {
 const loaders: Record<string, () => Promise<SeasonBundle>> = {};
 for (const { year, series } of availableSeasons) {
   loaders[cacheKey(year, series)] = async () => {
-    const module = (await import(/* @vite-ignore */ seasonImportPath(year, series))) as Record<string, unknown>;
+    const suffix = series === 'F1' ? '' : series === 'Champ Car' ? 'CART' : series;
+    const [module, globalModule, teamsModule, driversModule, carsModule] = await Promise.all([
+      import(/* @vite-ignore */ seasonImportPath(year, series)) as Promise<Record<string, unknown>>,
+      series === 'NASCAR'
+        ? import(`./phase0/generated/globalNASCAR${year}.ts`) as Promise<Record<string, unknown>>
+        : Promise.resolve(undefined),
+      import(`./teams/teams${year}${suffix}.ts`) as Promise<Record<string, unknown>>,
+      import(`./drivers/drivers${year}${suffix}.ts`) as Promise<Record<string, unknown>>,
+      import(`./cars/cars${year}${suffix}.ts`) as Promise<Record<string, unknown>>,
+    ]);
+    if (globalModule) registerPhase0GlobalModule(globalModule);
+    registerLegacySeasonModule('teams', year, series, teamsModule);
+    registerLegacySeasonModule('drivers', year, series, driversModule);
+    registerLegacySeasonModule('cars', year, series, carsModule);
     const phase0Season = module[seasonExportKey(year, series)] as Phase0SeasonBundle | undefined;
     if (!phase0Season) {
       throw new Error(`Missing generated season export ${seasonExportKey(year, series)}`);

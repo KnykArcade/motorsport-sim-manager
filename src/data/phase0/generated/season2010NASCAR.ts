@@ -14,7 +14,7 @@ export const season2010NASCARPhase0: Phase0SeasonBundle = {
       "trackId": "TRK_NASCAR_DAYTONA",
       "trackName": "Daytona International Speedway",
       "laps": 200,
-      "distanceKm": 804.67
+      "distanceKm": 804.7
     },
     {
       "round": 2,
@@ -22,7 +22,7 @@ export const season2010NASCARPhase0: Phase0SeasonBundle = {
       "trackId": "TRK_NASCAR_CALIFORNIA",
       "trackName": "Auto Club Speedway",
       "laps": 250,
-      "distanceKm": 804.67
+      "distanceKm": 804.7
     },
     {
       "round": 3,
@@ -30,7 +30,7 @@ export const season2010NASCARPhase0: Phase0SeasonBundle = {
       "trackId": "TRK_NASCAR_LAS_VEGAS",
       "trackName": "Las Vegas Motor Speedway",
       "laps": 267,
-      "distanceKm": 644.541
+      "distanceKm": 644.5
     },
     {
       "round": 4,
@@ -38,7 +38,7 @@ export const season2010NASCARPhase0: Phase0SeasonBundle = {
       "trackId": "TRK_NASCAR_ATLANTA",
       "trackName": "Atlanta Motor Speedway",
       "laps": 325,
-      "distanceKm": 805.475
+      "distanceKm": 805.5
     },
     {
       "round": 5,
@@ -46,7 +46,7 @@ export const season2010NASCARPhase0: Phase0SeasonBundle = {
       "trackId": "TRK_NASCAR_BRISTOL",
       "trackName": "Bristol Motor Speedway",
       "laps": 500,
-      "distanceKm": 428.889
+      "distanceKm": 428.9
     },
     {
       "round": 6,
@@ -54,7 +54,7 @@ export const season2010NASCARPhase0: Phase0SeasonBundle = {
       "trackId": "TRK_NASCAR_MARTINSVILLE",
       "trackName": "Martinsville Speedway",
       "laps": 500,
-      "distanceKm": 423.256
+      "distanceKm": 423.3
     },
     {
       "round": 7,
@@ -62,7 +62,7 @@ export const season2010NASCARPhase0: Phase0SeasonBundle = {
       "trackId": "TRK_NASCAR_PHOENIX",
       "trackName": "Phoenix International Raceway",
       "laps": 373,
-      "distanceKm": 600.284
+      "distanceKm": 603.5
     },
     {
       "round": 8,
@@ -70,7 +70,7 @@ export const season2010NASCARPhase0: Phase0SeasonBundle = {
       "trackId": "TRK_NASCAR_TEXAS",
       "trackName": "Texas Motor Speedway",
       "laps": 333,
-      "distanceKm": 803.865
+      "distanceKm": 806.3
     },
     {
       "round": 9,
@@ -78,7 +78,7 @@ export const season2010NASCARPhase0: Phase0SeasonBundle = {
       "trackId": "TRK_NASCAR_TALLADEGA",
       "trackName": "Talladega Superspeedway",
       "laps": 188,
-      "distanceKm": 804.799
+      "distanceKm": 804.8
     },
     {
       "round": 10,
@@ -86,7 +86,7 @@ export const season2010NASCARPhase0: Phase0SeasonBundle = {
       "trackId": "TRK_NASCAR_RICHMOND",
       "trackName": "Richmond International Raceway",
       "laps": 400,
-      "distanceKm": 482.802
+      "distanceKm": 482.8
     },
     {
       "round": 11,
@@ -94,7 +94,7 @@ export const season2010NASCARPhase0: Phase0SeasonBundle = {
       "trackId": "TRK_NASCAR_DARLINGTON",
       "trackName": "Darlington Raceway",
       "laps": 366,
-      "distanceKm": 804.599
+      "distanceKm": 806.8
     },
     {
       "round": 12,
@@ -102,7 +102,7 @@ export const season2010NASCARPhase0: Phase0SeasonBundle = {
       "trackId": "TRK_NASCAR_DOVER",
       "trackName": "Dover International Speedway",
       "laps": 400,
-      "distanceKm": 643.736
+      "distanceKm": 643.7
     },
     {
       "round": 13,
@@ -110,7 +110,7 @@ export const season2010NASCARPhase0: Phase0SeasonBundle = {
       "trackId": "TRK_NASCAR_CHARLOTTE",
       "trackName": "Charlotte Motor Speedway",
       "laps": 400,
-      "distanceKm": 965.604
+      "distanceKm": 965.6
     },
     {
       "round": 14,
@@ -118,7 +118,7 @@ export const season2010NASCARPhase0: Phase0SeasonBundle = {
       "trackId": "TRK_NASCAR_POCONO",
       "trackName": "Pocono Raceway",
       "laps": 200,
-      "distanceKm": 804.67
+      "distanceKm": 804.7
     },
     {
       "round": 15,
@@ -126,7 +126,7 @@ export const season2010NASCARPhase0: Phase0SeasonBundle = {
       "trackId": "TRK_NASCAR_MICHIGAN",
       "trackName": "Michigan International Speedway",
       "laps": 200,
-      "distanceKm": 643.736
+      "distanceKm": 643.7
     },
     {
       "round": 16,
@@ -134,7 +134,7 @@ export const season2010NASCARPhase0: Phase0SeasonBundle = {
       "trackId": "TRK_NASCAR_SONOMA",
       "trackName": "Infineon Raceway",
       "laps": 110,
-      "distanceKm": 352.285
+      "distanceKm": 352.3
     },
     {
       "round": 17,
@@ -142,7 +142,7 @@ export const season2010NASCARPhase0: Phase0SeasonBundle = {
       "trackId": "TRK_NASCAR_NEW_HAMPSHIRE",
       "trackName": "New Hampshire Motor Speedway",
       "laps": 301,
-      "distanceKm": 512.507
+      "distanceKm": 512.5
     },
     {
       "round": 18,
@@ -150,7 +150,7 @@ export const season2010NASCARPhase0: Phase0SeasonBundle = {
       "trackId": "TRK_NASCAR_DAYTONA",
       "trackName": "Daytona International Speedway",
       "laps": 160,
-      "distanceKm": 643.736
+      "distanceKm": 643.7
     },
     {
       "round": 19,
@@ -158,7 +158,7 @@ export const season2010NASCARPhase0: Phase0SeasonBundle = {
       "trackId": "TRK_NASCAR_CHICAGOLAND",
       "trackName": "Chicagoland Speedway",
       "laps": 267,
-      "distanceKm": 644.541
+      "distanceKm": 644.5
     },
     {
       "round": 20,
@@ -166,7 +166,7 @@ export const season2010NASCARPhase0: Phase0SeasonBundle = {
       "trackId": "TRK_NASCAR_INDIANAPOLIS",
       "trackName": "Indianapolis Motor Speedway",
       "laps": 160,
-      "distanceKm": 643.736
+      "distanceKm": 643.7
     },
     {
       "round": 21,
@@ -174,7 +174,7 @@ export const season2010NASCARPhase0: Phase0SeasonBundle = {
       "trackId": "TRK_NASCAR_POCONO",
       "trackName": "Pocono Raceway",
       "laps": 200,
-      "distanceKm": 804.67
+      "distanceKm": 804.7
     },
     {
       "round": 22,
@@ -182,7 +182,7 @@ export const season2010NASCARPhase0: Phase0SeasonBundle = {
       "trackId": "TRK_NASCAR_WATKINS_GLEN",
       "trackName": "Watkins Glen International",
       "laps": 90,
-      "distanceKm": 354.859
+      "distanceKm": 354.9
     },
     {
       "round": 23,
@@ -190,7 +190,7 @@ export const season2010NASCARPhase0: Phase0SeasonBundle = {
       "trackId": "TRK_NASCAR_MICHIGAN",
       "trackName": "Michigan International Speedway",
       "laps": 200,
-      "distanceKm": 643.736
+      "distanceKm": 643.7
     },
     {
       "round": 24,
@@ -198,7 +198,7 @@ export const season2010NASCARPhase0: Phase0SeasonBundle = {
       "trackId": "TRK_NASCAR_BRISTOL",
       "trackName": "Bristol Motor Speedway",
       "laps": 500,
-      "distanceKm": 428.889
+      "distanceKm": 428.9
     },
     {
       "round": 25,
@@ -206,7 +206,7 @@ export const season2010NASCARPhase0: Phase0SeasonBundle = {
       "trackId": "TRK_NASCAR_ATLANTA",
       "trackName": "Atlanta Motor Speedway",
       "laps": 325,
-      "distanceKm": 805.475
+      "distanceKm": 805.5
     },
     {
       "round": 26,
@@ -214,7 +214,7 @@ export const season2010NASCARPhase0: Phase0SeasonBundle = {
       "trackId": "TRK_NASCAR_RICHMOND",
       "trackName": "Richmond International Raceway",
       "laps": 400,
-      "distanceKm": 482.802
+      "distanceKm": 482.8
     },
     {
       "round": 27,
@@ -222,7 +222,7 @@ export const season2010NASCARPhase0: Phase0SeasonBundle = {
       "trackId": "TRK_NASCAR_NEW_HAMPSHIRE",
       "trackName": "New Hampshire Motor Speedway",
       "laps": 300,
-      "distanceKm": 510.805
+      "distanceKm": 510.8
     },
     {
       "round": 28,
@@ -230,7 +230,7 @@ export const season2010NASCARPhase0: Phase0SeasonBundle = {
       "trackId": "TRK_NASCAR_DOVER",
       "trackName": "Dover International Speedway",
       "laps": 400,
-      "distanceKm": 643.736
+      "distanceKm": 643.7
     },
     {
       "round": 29,
@@ -238,7 +238,7 @@ export const season2010NASCARPhase0: Phase0SeasonBundle = {
       "trackId": "TRK_NASCAR_KANSAS",
       "trackName": "Kansas Speedway",
       "laps": 267,
-      "distanceKm": 644.541
+      "distanceKm": 644.5
     },
     {
       "round": 30,
@@ -246,7 +246,7 @@ export const season2010NASCARPhase0: Phase0SeasonBundle = {
       "trackId": "TRK_NASCAR_CALIFORNIA",
       "trackName": "Auto Club Speedway",
       "laps": 200,
-      "distanceKm": 643.736
+      "distanceKm": 643.7
     },
     {
       "round": 31,
@@ -254,7 +254,7 @@ export const season2010NASCARPhase0: Phase0SeasonBundle = {
       "trackId": "TRK_NASCAR_CHARLOTTE",
       "trackName": "Charlotte Motor Speedway",
       "laps": 333,
-      "distanceKm": 803.865
+      "distanceKm": 806.3
     },
     {
       "round": 32,
@@ -262,7 +262,7 @@ export const season2010NASCARPhase0: Phase0SeasonBundle = {
       "trackId": "TRK_NASCAR_MARTINSVILLE",
       "trackName": "Martinsville Speedway",
       "laps": 500,
-      "distanceKm": 423.256
+      "distanceKm": 423.3
     },
     {
       "round": 33,
@@ -270,7 +270,7 @@ export const season2010NASCARPhase0: Phase0SeasonBundle = {
       "trackId": "TRK_NASCAR_TALLADEGA",
       "trackName": "Talladega Superspeedway",
       "laps": 188,
-      "distanceKm": 804.799
+      "distanceKm": 804.8
     },
     {
       "round": 34,
@@ -278,7 +278,7 @@ export const season2010NASCARPhase0: Phase0SeasonBundle = {
       "trackId": "TRK_NASCAR_TEXAS",
       "trackName": "Texas Motor Speedway",
       "laps": 333,
-      "distanceKm": 803.865
+      "distanceKm": 806.3
     },
     {
       "round": 35,
@@ -286,7 +286,7 @@ export const season2010NASCARPhase0: Phase0SeasonBundle = {
       "trackId": "TRK_NASCAR_PHOENIX",
       "trackName": "Phoenix International Raceway",
       "laps": 312,
-      "distanceKm": 502.114
+      "distanceKm": 502.1
     },
     {
       "round": 36,
@@ -294,596 +294,750 @@ export const season2010NASCARPhase0: Phase0SeasonBundle = {
       "trackId": "TRK_NASCAR_HOMESTEAD",
       "trackName": "Homestead-Miami Speedway",
       "laps": 267,
-      "distanceKm": 644.541
+      "distanceKm": 644.5
     }
   ],
   "standings": [
     {
       "driverId": "driver-nascar-2010-jimmie-johnson",
-      "teamId": "NASCAR_2010_TEAM_HENDRICK_MOTORSPORTS",
+      "teamId": "NASCAR_2010_TEAM_HENDRICK_MOTORSPORTS_TEAM_2",
       "position": 1,
       "points": 6622.0
     },
     {
       "driverId": "driver-nascar-2010-denny-hamlin",
-      "teamId": "NASCAR_2010_TEAM_JOE_GIBBS_RACING",
+      "teamId": "NASCAR_2010_TEAM_JOE_GIBBS_RACING_TEAM_1",
       "position": 2,
       "points": 6583.0
     },
     {
       "driverId": "driver-nascar-2010-kevin-harvick",
-      "teamId": "NASCAR_2010_TEAM_RICHARD_CHILDRESS_RACING",
+      "teamId": "NASCAR_2010_TEAM_RICHARD_CHILDRESS_RACING_TEAM_1",
       "position": 3,
       "points": 6581.0
     },
     {
       "driverId": "driver-nascar-2010-carl-edwards",
-      "teamId": "NASCAR_2010_TEAM_ROUSH_FENWAY_RACING",
+      "teamId": "NASCAR_2010_TEAM_ROUSH_FENWAY_RACING_TEAM_2",
       "position": 4,
       "points": 6393.0
     },
     {
       "driverId": "driver-nascar-2010-matt-kenseth",
-      "teamId": "NASCAR_2010_TEAM_ROUSH_FENWAY_RACING",
+      "teamId": "NASCAR_2010_TEAM_ROUSH_FENWAY_RACING_TEAM_2",
       "position": 5,
       "points": 6294.0
     },
     {
       "driverId": "driver-nascar-2010-greg-biffle",
-      "teamId": "NASCAR_2010_TEAM_ROUSH_FENWAY_RACING",
+      "teamId": "NASCAR_2010_TEAM_ROUSH_FENWAY_RACING_TEAM_1",
       "position": 6,
       "points": 6247.0
     },
     {
       "driverId": "driver-nascar-2010-tony-stewart",
-      "teamId": "NASCAR_2010_TEAM_STEWART_HAAS_RACING",
+      "teamId": "NASCAR_2010_TEAM_STEWART_HAAS_RACING_TEAM_1",
       "position": 7,
       "points": 6221.0
     },
     {
       "driverId": "driver-nascar-2010-kyle-busch",
-      "teamId": "NASCAR_2010_TEAM_JOE_GIBBS_RACING",
+      "teamId": "NASCAR_2010_TEAM_JOE_GIBBS_RACING_TEAM_1",
       "position": 8,
       "points": 6182.0
     },
     {
       "driverId": "driver-nascar-2010-jeff-gordon",
-      "teamId": "NASCAR_2010_TEAM_HENDRICK_MOTORSPORTS",
+      "teamId": "NASCAR_2010_TEAM_HENDRICK_MOTORSPORTS_TEAM_1",
       "position": 9,
       "points": 6176.0
     },
     {
       "driverId": "driver-nascar-2010-clint-bowyer",
-      "teamId": "NASCAR_2010_TEAM_RICHARD_CHILDRESS_RACING",
+      "teamId": "NASCAR_2010_TEAM_RICHARD_CHILDRESS_RACING_TEAM_2",
       "position": 10,
       "points": 6155.0
     },
     {
       "driverId": "driver-nascar-2010-kurt-busch",
-      "teamId": "NASCAR_2010_TEAM_PENSKE_CHAMPIONSHIP_RACING",
+      "teamId": "NASCAR_2010_TEAM_PENSKE_CHAMPIONSHIP_RACING_TEAM_1",
       "position": 11,
       "points": 6142.0
     },
     {
       "driverId": "driver-nascar-2010-jeff-burton",
-      "teamId": "NASCAR_2010_TEAM_RICHARD_CHILDRESS_RACING",
+      "teamId": "NASCAR_2010_TEAM_RICHARD_CHILDRESS_RACING_TEAM_1",
       "position": 12,
       "points": 6033.0
     },
     {
       "driverId": "driver-nascar-2010-mark-martin",
-      "teamId": "NASCAR_2010_TEAM_HENDRICK_MOTORSPORTS",
+      "teamId": "NASCAR_2010_TEAM_HENDRICK_MOTORSPORTS_TEAM_1",
       "position": 13,
       "points": 4364.0
     },
     {
       "driverId": "driver-nascar-2010-jamie-mcmurray",
-      "teamId": "NASCAR_2010_TEAM_EARNHARDT_GANASSI_RACING",
+      "teamId": "NASCAR_2010_TEAM_EARNHARDT_GANASSI_RACING_TEAM_1",
       "position": 14,
       "points": 4325.0
     },
     {
       "driverId": "driver-nascar-2010-ryan-newman",
-      "teamId": "NASCAR_2010_TEAM_STEWART_HAAS_RACING",
+      "teamId": "NASCAR_2010_TEAM_STEWART_HAAS_RACING_TEAM_1",
       "position": 15,
       "points": 4302.0
     },
     {
       "driverId": "driver-nascar-2010-joey-logano",
-      "teamId": "NASCAR_2010_TEAM_JOE_GIBBS_RACING",
+      "teamId": "NASCAR_2010_TEAM_JOE_GIBBS_RACING_TEAM_2",
       "position": 16,
       "points": 4185.0
     },
     {
       "driverId": "driver-nascar-2010-juan-pablo-montoya",
-      "teamId": "NASCAR_2010_TEAM_EARNHARDT_GANASSI_RACING",
+      "teamId": "NASCAR_2010_TEAM_EARNHARDT_GANASSI_RACING_TEAM_1",
       "position": 17,
       "points": 4118.0
     },
     {
       "driverId": "driver-nascar-2010-david-reutimann",
-      "teamId": "NASCAR_2010_TEAM_MICHAEL_WALTRIP_RACING",
+      "teamId": "NASCAR_2010_TEAM_MICHAEL_WALTRIP_RACING_TEAM_1",
       "position": 18,
       "points": 4024.0
     },
     {
       "driverId": "driver-nascar-2010-a-j-allmendinger",
-      "teamId": "NASCAR_2010_TEAM_RICHARD_PETTY_MOTORSPORTS",
+      "teamId": "NASCAR_2010_TEAM_RICHARD_PETTY_MOTORSPORTS_TEAM_2",
       "position": 19,
       "points": 3998.0
     },
     {
       "driverId": "driver-nascar-2010-kasey-kahne",
-      "teamId": "NASCAR_2010_TEAM_RICHARD_PETTY_MOTORSPORTS",
+      "teamId": "NASCAR_2010_TEAM_RICHARD_PETTY_MOTORSPORTS_TEAM_1",
       "position": 20,
       "points": 3961.0
     },
     {
       "driverId": "driver-nascar-2010-dale-earnhardt-jr",
-      "teamId": "NASCAR_2010_TEAM_HENDRICK_MOTORSPORTS",
+      "teamId": "NASCAR_2010_TEAM_HENDRICK_MOTORSPORTS_TEAM_2",
       "position": 21,
       "points": 3953.0
     },
     {
       "driverId": "driver-nascar-2010-martin-truex-jr",
-      "teamId": "NASCAR_2010_TEAM_MICHAEL_WALTRIP_RACING",
+      "teamId": "NASCAR_2010_TEAM_MICHAEL_WALTRIP_RACING_TEAM_1",
       "position": 22,
       "points": 3916.0
     },
     {
       "driverId": "driver-nascar-2010-paul-menard",
-      "teamId": "NASCAR_2010_TEAM_RICHARD_PETTY_MOTORSPORTS",
+      "teamId": "NASCAR_2010_TEAM_RICHARD_PETTY_MOTORSPORTS_TEAM_2",
       "position": 23,
       "points": 3776.0
     },
     {
       "driverId": "driver-nascar-2010-david-ragan",
-      "teamId": "NASCAR_2010_TEAM_ROUSH_FENWAY_RACING",
+      "teamId": "NASCAR_2010_TEAM_ROUSH_FENWAY_RACING_TEAM_1",
       "position": 24,
       "points": 3599.0
     },
     {
       "driverId": "driver-nascar-2010-brad-keselowski",
-      "teamId": "NASCAR_2010_TEAM_PENSKE_CHAMPIONSHIP_RACING",
+      "teamId": "NASCAR_2010_TEAM_PENSKE_CHAMPIONSHIP_RACING_TEAM_1",
       "position": 25,
       "points": 3485.0
     },
     {
       "driverId": "driver-nascar-2010-marcos-ambrose",
-      "teamId": "NASCAR_2010_TEAM_JTG_DAUGHERTY_RACING_WITH_MICHAEL_WALTRIP_RACING",
+      "teamId": "NASCAR_2010_TEAM_JTG_DAUGHERTY_RACING_WITH_MICHAEL_WALTRIP_RACING_TEAM_1",
       "position": 26,
       "points": 3422.0
     },
     {
       "driverId": "driver-nascar-2010-elliott-sadler",
-      "teamId": "NASCAR_2010_TEAM_RICHARD_PETTY_MOTORSPORTS",
+      "teamId": "NASCAR_2010_TEAM_RICHARD_PETTY_MOTORSPORTS_TEAM_1",
       "position": 27,
       "points": 3234.0
     },
     {
       "driverId": "driver-nascar-2010-regan-smith",
-      "teamId": "NASCAR_2010_TEAM_FURNITURE_ROW_RACING",
+      "teamId": "NASCAR_2010_TEAM_FURNITURE_ROW_RACING_TEAM_1",
       "position": 28,
       "points": 3229.0
     },
     {
       "driverId": "driver-nascar-2010-sam-hornish-jr",
-      "teamId": "NASCAR_2010_TEAM_PENSKE_CHAMPIONSHIP_RACING",
+      "teamId": "NASCAR_2010_TEAM_PENSKE_CHAMPIONSHIP_RACING_TEAM_2",
       "position": 29,
       "points": 3214.0
     },
     {
       "driverId": "driver-nascar-2010-scott-speed",
-      "teamId": "NASCAR_2010_TEAM_RED_BULL_RACING",
+      "teamId": "NASCAR_2010_TEAM_RED_BULL_RACING_TEAM_1",
       "position": 30,
       "points": 3178.0
     },
     {
       "driverId": "driver-nascar-2010-bobby-labonte",
-      "teamId": "NASCAR_2010_TEAM_TRG_MOTORSPORTS",
+      "teamId": "NASCAR_2010_TEAM_TRG_MOTORSPORTS_TEAM_1",
       "position": 31,
       "points": 2583.0
     },
     {
       "driverId": "driver-nascar-2010-david-gilliland",
-      "teamId": "NASCAR_2010_TEAM_FRONT_ROW_MOTORSPORTS",
+      "teamId": "NASCAR_2010_TEAM_FRONT_ROW_MOTORSPORTS_TEAM_2",
       "position": 32,
       "points": 2445.0
     },
     {
       "driverId": "driver-nascar-2010-travis-kvapil",
-      "teamId": "NASCAR_2010_TEAM_FRONT_ROW_MOTORSPORTS",
+      "teamId": "NASCAR_2010_TEAM_FRONT_ROW_MOTORSPORTS_TEAM_1",
       "position": 33,
       "points": 2426.0
     },
     {
       "driverId": "driver-nascar-2010-robby-gordon",
-      "teamId": "NASCAR_2010_TEAM_ROBBY_GORDON_MOTORSPORTS",
+      "teamId": "NASCAR_2010_TEAM_ROBBY_GORDON_MOTORSPORTS_TEAM_1",
       "position": 34,
       "points": 2028.0
     },
     {
       "driverId": "driver-nascar-2010-kevin-conway",
-      "teamId": "NASCAR_2010_TEAM_FRONT_ROW_MOTORSPORTS",
+      "teamId": "NASCAR_2010_TEAM_FRONT_ROW_MOTORSPORTS_TEAM_1",
       "position": 35,
       "points": 1830.0
     },
     {
       "driverId": "driver-nascar-2010-casey-mears",
-      "teamId": "NASCAR_2010_TEAM_GERMAIN_RACING",
+      "teamId": "NASCAR_2010_TEAM_GERMAIN_RACING_TEAM_1",
       "position": 36,
       "points": 1573.0
     },
     {
       "driverId": "driver-nascar-2010-dave-blaney",
-      "teamId": "NASCAR_2010_TEAM_PRISM_MOTORSPORTS",
+      "teamId": "NASCAR_2010_TEAM_PRISM_MOTORSPORTS_TEAM_1",
       "position": 37,
       "points": 1416.0
     },
     {
       "driverId": "driver-nascar-2010-joe-nemechek",
-      "teamId": "NASCAR_2010_TEAM_NEMCO_MOTORSPORTS",
+      "teamId": "NASCAR_2010_TEAM_NEMCO_MOTORSPORTS_TEAM_1",
       "position": 38,
       "points": 1361.0
     },
     {
       "driverId": "driver-nascar-2010-reed-sorenson",
-      "teamId": "NASCAR_2010_TEAM_BRAUN_RACING",
+      "teamId": "NASCAR_2010_TEAM_BRAUN_RACING_TEAM_1",
       "position": 39,
       "points": 1355.0
     },
     {
       "driverId": "driver-nascar-2010-brian-vickers",
-      "teamId": "NASCAR_2010_TEAM_RED_BULL_RACING",
+      "teamId": "NASCAR_2010_TEAM_RED_BULL_RACING_TEAM_1",
       "position": 40,
       "points": 1158.0
     },
     {
       "driverId": "driver-nascar-2010-bill-elliott",
-      "teamId": "NASCAR_2010_TEAM_WOOD_BROTHERS_RACING",
+      "teamId": "NASCAR_2010_TEAM_WOOD_BROTHERS_RACING_TEAM_1",
       "position": 41,
       "points": 1107.0
     },
     {
       "driverId": "driver-nascar-2010-mike-bliss",
-      "teamId": "NASCAR_2010_TEAM_PRISM_MOTORSPORTS",
+      "teamId": "NASCAR_2010_TEAM_PRISM_MOTORSPORTS_TEAM_1",
       "position": 42,
       "points": 1050.0
     },
     {
       "driverId": "driver-nascar-2010-max-papis",
-      "teamId": "NASCAR_2010_TEAM_GERMAIN_RACING",
+      "teamId": "NASCAR_2010_TEAM_GERMAIN_RACING_TEAM_1",
       "position": 43,
       "points": 907.0
     },
     {
       "driverId": "driver-nascar-2010-j-j-yeley",
-      "teamId": "NASCAR_2010_TEAM_WHITNEY_MOTORSPORTS",
+      "teamId": "NASCAR_2010_TEAM_WHITNEY_MOTORSPORTS_TEAM_1",
       "position": 44,
       "points": 891.0
     },
     {
       "driverId": "driver-nascar-2010-michael-mcdowell",
-      "teamId": "NASCAR_2010_TEAM_WHITNEY_MOTORSPORTS",
+      "teamId": "NASCAR_2010_TEAM_WHITNEY_MOTORSPORTS_TEAM_1",
       "position": 45,
       "points": 879.0
     },
     {
       "driverId": "driver-nascar-2010-david-stremme",
-      "teamId": "NASCAR_2010_TEAM_LATITUDE_43_MOTORSPORTS",
+      "teamId": "NASCAR_2010_TEAM_LATITUDE_43_MOTORSPORTS_TEAM_1",
       "position": 46,
       "points": 825.0
     },
     {
       "driverId": "driver-nascar-2010-landon-cassill",
-      "teamId": "NASCAR_2010_TEAM_PHOENIX_RACING",
+      "teamId": "NASCAR_2010_TEAM_PHOENIX_RACING_TEAM_1",
       "position": 47,
       "points": 717.0
     },
     {
       "driverId": "driver-nascar-2010-aric-almirola",
-      "teamId": "NASCAR_2010_TEAM_PHOENIX_RACING",
+      "teamId": "NASCAR_2010_TEAM_PHOENIX_RACING_TEAM_1",
       "position": 48,
       "points": 704.0
     },
     {
       "driverId": "driver-nascar-2010-tony-raines",
-      "teamId": "NASCAR_2010_TEAM_FRONT_ROW_MOTORSPORTS",
+      "teamId": "NASCAR_2010_TEAM_FRONT_ROW_MOTORSPORTS_TEAM_1",
       "position": 49,
       "points": 534.0
     },
     {
       "driverId": "driver-nascar-2010-patrick-carpentier",
-      "teamId": "NASCAR_2010_TEAM_LATITUDE_43_MOTORSPORTS",
+      "teamId": "NASCAR_2010_TEAM_LATITUDE_43_MOTORSPORTS_TEAM_1",
       "position": 50,
       "points": 474.0
     },
     {
       "driverId": "driver-nascar-2010-andy-lally",
-      "teamId": "NASCAR_2010_TEAM_TRG_MOTORSPORTS",
+      "teamId": "NASCAR_2010_TEAM_TRG_MOTORSPORTS_TEAM_1",
       "position": 51,
       "points": 471.0
     },
     {
       "driverId": "driver-nascar-2010-boris-said",
-      "teamId": "NASCAR_2010_TEAM_LATITUDE_43_MOTORSPORTS",
+      "teamId": "NASCAR_2010_TEAM_LATITUDE_43_MOTORSPORTS_TEAM_1",
       "position": 52,
       "points": 448.0
     },
     {
       "driverId": "driver-nascar-2010-todd-bodine",
-      "teamId": "NASCAR_2010_TEAM_GUNSELMAN_MOTORSPORTS",
+      "teamId": "NASCAR_2010_TEAM_GUNSELMAN_MOTORSPORTS_TEAM_1",
       "position": 53,
       "points": 313.0
     },
     {
       "driverId": "driver-nascar-2010-robert-richardson-jr",
-      "teamId": "NASCAR_2010_TEAM_FRONT_ROW_MOTORSPORTS",
+      "teamId": "NASCAR_2010_TEAM_FRONT_ROW_MOTORSPORTS_TEAM_2",
       "position": 54,
       "points": 301.0
     },
     {
       "driverId": "driver-nascar-2010-michael-waltrip",
-      "teamId": "NASCAR_2010_TEAM_MICHAEL_WALTRIP_RACING",
+      "teamId": "NASCAR_2010_TEAM_MICHAEL_WALTRIP_RACING_TEAM_2",
       "position": 55,
       "points": 284.0
     },
     {
       "driverId": "driver-nascar-2010-p-j-jones",
-      "teamId": "NASCAR_2010_TEAM_ROBBY_GORDON_MOTORSPORTS",
+      "teamId": "NASCAR_2010_TEAM_ROBBY_GORDON_MOTORSPORTS_TEAM_1",
       "position": 56,
       "points": 190.0
     },
     {
       "driverId": "driver-nascar-2010-jeff-green",
-      "teamId": "NASCAR_2010_TEAM_LATITUDE_43_MOTORSPORTS",
+      "teamId": "NASCAR_2010_TEAM_LATITUDE_43_MOTORSPORTS_TEAM_1",
       "position": 57,
       "points": 186.0
     },
     {
       "driverId": "driver-nascar-2010-mattias-ekstrom",
-      "teamId": "NASCAR_2010_TEAM_RED_BULL_RACING",
+      "teamId": "NASCAR_2010_TEAM_RED_BULL_RACING_TEAM_1",
       "position": 58,
       "points": 175.0
     },
     {
       "driverId": "driver-nascar-2010-terry-cook",
-      "teamId": "NASCAR_2010_TEAM_WHITNEY_MOTORSPORTS",
+      "teamId": "NASCAR_2010_TEAM_WHITNEY_MOTORSPORTS_TEAM_1",
       "position": 59,
       "points": 164.0
     },
     {
       "driverId": "driver-nascar-2010-johnny-sauter",
-      "teamId": "NASCAR_2010_TEAM_TOMMY_BALDWIN_RACING",
+      "teamId": "NASCAR_2010_TEAM_TOMMY_BALDWIN_RACING_TEAM_1",
       "position": 60,
       "points": 154.0
     },
     {
       "driverId": "driver-nascar-2010-chad-mccumbee",
-      "teamId": "NASCAR_2010_TEAM_TRG_MOTORSPORTS",
+      "teamId": "NASCAR_2010_TEAM_TRG_MOTORSPORTS_TEAM_1",
       "position": 61,
       "points": 134.0
     },
     {
       "driverId": "driver-nascar-2010-steve-park",
-      "teamId": "NASCAR_2010_TEAM_TOMMY_BALDWIN_RACING",
+      "teamId": "NASCAR_2010_TEAM_TOMMY_BALDWIN_RACING_TEAM_1",
       "position": 62,
       "points": 129.0
     },
     {
       "driverId": "driver-nascar-2010-jan-magnussen",
-      "teamId": "NASCAR_2010_TEAM_PHOENIX_RACING",
+      "teamId": "NASCAR_2010_TEAM_PHOENIX_RACING_TEAM_1",
       "position": 63,
       "points": 127.0
     },
     {
       "driverId": "driver-nascar-2010-scott-riggs",
-      "teamId": "NASCAR_2010_TEAM_KEYED_UP_MOTORSPORTS",
+      "teamId": "NASCAR_2010_TEAM_KEYED_UP_MOTORSPORTS_TEAM_1",
       "position": 64,
       "points": 116.0
     },
     {
       "driverId": "driver-nascar-2010-ken-schrader",
-      "teamId": "NASCAR_2010_TEAM_LATITUDE_43_MOTORSPORTS",
+      "teamId": "NASCAR_2010_TEAM_LATITUDE_43_MOTORSPORTS_TEAM_1",
       "position": 65,
       "points": 114.0
     },
     {
       "driverId": "driver-nascar-2010-trevor-bayne",
-      "teamId": "NASCAR_2010_TEAM_WOOD_BROTHERS_RACING",
+      "teamId": "NASCAR_2010_TEAM_WOOD_BROTHERS_RACING_TEAM_1",
       "position": 66,
       "points": 112.0
     },
     {
       "driverId": "driver-nascar-2010-hermie-sadler",
-      "teamId": "NASCAR_2010_TEAM_TRG_MOTORSPORTS",
+      "teamId": "NASCAR_2010_TEAM_TRG_MOTORSPORTS_TEAM_1",
       "position": 67,
       "points": 85.0
     },
     {
       "driverId": "driver-nascar-2010-terry-labonte",
-      "teamId": "NASCAR_2010_TEAM_STAVOLA_LABONTE_RACING",
+      "teamId": "NASCAR_2010_TEAM_STAVOLA_LABONTE_RACING_TEAM_1",
       "position": 68,
       "points": 83.0
     },
     {
       "driverId": "driver-nascar-2010-jacques-villeneuve",
-      "teamId": "NASCAR_2010_TEAM_BRAUN_RACING",
+      "teamId": "NASCAR_2010_TEAM_BRAUN_RACING_TEAM_1",
       "position": 69,
       "points": 76.0
     },
     {
       "driverId": "driver-nascar-2010-jason-leffler",
-      "teamId": "NASCAR_2010_TEAM_BRAUN_RACING",
+      "teamId": "NASCAR_2010_TEAM_BRAUN_RACING_TEAM_1",
       "position": 70,
       "points": 68.0
     },
     {
       "driverId": "driver-nascar-2010-john-andretti",
-      "teamId": "NASCAR_2010_TEAM_FRONT_ROW_MOTORSPORTS",
+      "teamId": "NASCAR_2010_TEAM_FRONT_ROW_MOTORSPORTS_TEAM_1",
       "position": 71,
       "points": 49.0
     },
     {
       "driverId": "driver-nascar-2010-ron-fellows",
-      "teamId": "NASCAR_2010_TEAM_TOMMY_BALDWIN_RACING",
+      "teamId": "NASCAR_2010_TEAM_TOMMY_BALDWIN_RACING_TEAM_1",
       "position": 72,
       "points": 43.0
     },
     {
       "driverId": "driver-nascar-2010-geoff-bodine",
-      "teamId": "NASCAR_2010_TEAM_TOMMY_BALDWIN_RACING",
+      "teamId": "NASCAR_2010_TEAM_TOMMY_BALDWIN_RACING_TEAM_1",
       "position": 73,
       "points": 40.0
     },
     {
       "driverId": "driver-nascar-2010-jeff-fuller",
-      "teamId": "NASCAR_2010_TEAM_NEMCO_MOTORSPORTS",
+      "teamId": "NASCAR_2010_TEAM_NEMCO_MOTORSPORTS_TEAM_2",
       "position": 74,
       "points": 34.0
     },
     {
       "driverId": "driver-nascar-2010-brendan-gaughan",
-      "teamId": "NASCAR_2010_TEAM_TRG_MOTORSPORTS",
+      "teamId": "NASCAR_2010_TEAM_TRG_MOTORSPORTS_TEAM_1",
       "position": 75,
       "points": 34.0
     },
     {
       "driverId": "driver-nascar-2010-brandon-ash",
-      "teamId": "NASCAR_2010_TEAM_ASH_RACING",
+      "teamId": "NASCAR_2010_TEAM_ASH_RACING_TEAM_1",
       "position": 76,
       "points": 0.0
     },
     {
       "driverId": "driver-nascar-2010-brian-simo",
-      "teamId": "NASCAR_2010_TEAM_TOMMY_BALDWIN_RACING",
+      "teamId": "NASCAR_2010_TEAM_TOMMY_BALDWIN_RACING_TEAM_1",
       "position": 77,
       "points": 0.0
     },
     {
       "driverId": "driver-nascar-2010-josh-wise",
-      "teamId": "NASCAR_2010_TEAM_GUNSELMAN_MOTORSPORTS",
+      "teamId": "NASCAR_2010_TEAM_GUNSELMAN_MOTORSPORTS_TEAM_1",
       "position": 78,
       "points": 0.0
     },
     {
       "driverId": "driver-nascar-2010-ted-musgrave",
-      "teamId": "NASCAR_2010_TEAM_PRISM_MOTORSPORTS",
+      "teamId": "NASCAR_2010_TEAM_PRISM_MOTORSPORTS_TEAM_1",
       "position": 79,
       "points": 0.0
     },
     {
       "driverId": "driver-nascar-2010-kevin-lepage",
-      "teamId": "NASCAR_2010_TEAM_MORGAN_MCCLURE_MOTORSPORTS",
+      "teamId": "NASCAR_2010_TEAM_MORGAN_MCCLURE_MOTORSPORTS_TEAM_1",
       "position": 80,
       "points": 0.0
     },
     {
       "driverId": "driver-nascar-2010-tony-ave",
-      "teamId": "NASCAR_2010_TEAM_TRI_STAR_MOTORSPORTS",
+      "teamId": "NASCAR_2010_TEAM_TRI_STAR_MOTORSPORTS_TEAM_1",
       "position": 81,
       "points": 0.0
     },
     {
       "driverId": "driver-nascar-2010-brian-keselowski",
-      "teamId": "NASCAR_2010_TEAM_K_AUTOMOTIVE_MOTORSPORTS",
+      "teamId": "NASCAR_2010_TEAM_K_AUTOMOTIVE_MOTORSPORTS_TEAM_1",
       "position": 82,
       "points": 0.0
     },
     {
       "driverId": "driver-nascar-2010-derrike-cope",
-      "teamId": "NASCAR_2010_TEAM_STRATUS_RACING_GROUP",
+      "teamId": "NASCAR_2010_TEAM_STRATUS_RACING_GROUP_TEAM_1",
       "position": 83,
       "points": 0.0
     },
     {
       "driverId": "driver-nascar-2010-mike-wallace",
-      "teamId": "NASCAR_2010_TEAM_K_AUTOMOTIVE_MOTORSPORTS",
+      "teamId": "NASCAR_2010_TEAM_K_AUTOMOTIVE_MOTORSPORTS_TEAM_1",
       "position": 84,
       "points": 0.0
     },
     {
       "driverId": "driver-nascar-2010-norm-benning",
-      "teamId": "NASCAR_2010_TEAM_NORM_BENNING_RACING",
+      "teamId": "NASCAR_2010_TEAM_NORM_BENNING_RACING_TEAM_1",
       "position": 85,
       "points": 0.0
     }
   ],
   "teamEntries": [
     {
-      "teamId": "NASCAR_2010_TEAM_ASH_RACING",
+      "teamId": "NASCAR_2010_TEAM_ASH_RACING_TEAM_1",
       "carNumber": "02",
       "driverId": "driver-nascar-2010-brandon-ash",
       "chassis": "Dodge",
       "engine": "Dodge"
     },
     {
-      "teamId": "NASCAR_2010_TEAM_BAM_RACING",
+      "teamId": "NASCAR_2010_TEAM_BAM_RACING_TEAM_1",
       "carNumber": "49",
       "driverId": "driver-nascar-2010-david-gilliland",
       "chassis": "Toyota",
       "engine": "Toyota"
     },
     {
-      "teamId": "NASCAR_2010_TEAM_BRAUN_RACING",
+      "teamId": "NASCAR_2010_TEAM_BRAUN_RACING_TEAM_1_TEAM_1",
       "carNumber": "32",
       "driverId": "driver-nascar-2010-reed-sorenson",
       "chassis": "Toyota",
       "engine": "Toyota"
     },
     {
-      "teamId": "NASCAR_2010_TEAM_EARNHARDT_GANASSI_RACING",
+      "teamId": "NASCAR_2010_TEAM_BRAUN_RACING_TEAM_1_TEAM_1",
+      "carNumber": "32",
+      "driverId": "driver-nascar-2010-mike-bliss",
+      "chassis": "Toyota",
+      "engine": "Toyota"
+    },
+    {
+      "teamId": "NASCAR_2010_TEAM_BRAUN_RACING_TEAM_1_TEAM_2",
+      "carNumber": "32",
+      "driverId": "driver-nascar-2010-jacques-villeneuve",
+      "chassis": "Toyota",
+      "engine": "Toyota"
+    },
+    {
+      "teamId": "NASCAR_2010_TEAM_BRAUN_RACING_TEAM_1_TEAM_2",
+      "carNumber": "32",
+      "driverId": "driver-nascar-2010-jason-leffler",
+      "chassis": "Toyota",
+      "engine": "Toyota"
+    },
+    {
+      "teamId": "NASCAR_2010_TEAM_EARNHARDT_GANASSI_RACING_TEAM_1",
       "carNumber": "1",
       "driverId": "driver-nascar-2010-jamie-mcmurray",
       "chassis": "Chevrolet",
       "engine": "Chevrolet"
     },
     {
-      "teamId": "NASCAR_2010_TEAM_EARNHARDT_GANASSI_RACING",
+      "teamId": "NASCAR_2010_TEAM_EARNHARDT_GANASSI_RACING_TEAM_1",
       "carNumber": "42",
       "driverId": "driver-nascar-2010-juan-pablo-montoya",
       "chassis": "Chevrolet",
       "engine": "Chevrolet"
     },
     {
-      "teamId": "NASCAR_2010_TEAM_FRONT_ROW_MOTORSPORTS_TEAM_1",
+      "teamId": "NASCAR_2010_TEAM_FRONT_ROW_MOTORSPORTS_TEAM_1_TEAM_1",
       "carNumber": "34",
       "driverId": "driver-nascar-2010-john-andretti",
       "chassis": "Ford",
       "engine": "Ford"
     },
     {
-      "teamId": "NASCAR_2010_TEAM_FRONT_ROW_MOTORSPORTS_TEAM_1",
+      "teamId": "NASCAR_2010_TEAM_FRONT_ROW_MOTORSPORTS_TEAM_1_TEAM_1",
+      "carNumber": "34",
+      "driverId": "driver-nascar-2010-travis-kvapil",
+      "chassis": "Ford",
+      "engine": "Ford"
+    },
+    {
+      "teamId": "NASCAR_2010_TEAM_FRONT_ROW_MOTORSPORTS_TEAM_1_TEAM_2",
+      "carNumber": "34",
+      "driverId": "driver-nascar-2010-kevin-conway",
+      "chassis": "Ford",
+      "engine": "Ford"
+    },
+    {
+      "teamId": "NASCAR_2010_TEAM_FRONT_ROW_MOTORSPORTS_TEAM_1_TEAM_2",
+      "carNumber": "34",
+      "driverId": "driver-nascar-2010-tony-raines",
+      "chassis": "Ford",
+      "engine": "Ford"
+    },
+    {
+      "teamId": "NASCAR_2010_TEAM_FRONT_ROW_MOTORSPORTS_TEAM_1_TEAM_3",
+      "carNumber": "34",
+      "driverId": "driver-nascar-2010-robert-richardson-jr",
+      "chassis": "Ford",
+      "engine": "Ford"
+    },
+    {
+      "teamId": "NASCAR_2010_TEAM_FRONT_ROW_MOTORSPORTS_TEAM_1_TEAM_3",
       "carNumber": "37",
       "driverId": "driver-nascar-2010-travis-kvapil",
       "chassis": "Ford",
       "engine": "Ford"
     },
     {
-      "teamId": "NASCAR_2010_TEAM_FRONT_ROW_MOTORSPORTS_TEAM_2",
+      "teamId": "NASCAR_2010_TEAM_FRONT_ROW_MOTORSPORTS_TEAM_1_TEAM_4",
+      "carNumber": "37",
+      "driverId": "driver-nascar-2010-kevin-conway",
+      "chassis": "Ford",
+      "engine": "Ford"
+    },
+    {
+      "teamId": "NASCAR_2010_TEAM_FRONT_ROW_MOTORSPORTS_TEAM_1_TEAM_4",
+      "carNumber": "37",
+      "driverId": "driver-nascar-2010-david-gilliland",
+      "chassis": "Ford",
+      "engine": "Ford"
+    },
+    {
+      "teamId": "NASCAR_2010_TEAM_FRONT_ROW_MOTORSPORTS_TEAM_1_TEAM_5",
+      "carNumber": "37",
+      "driverId": "driver-nascar-2010-robert-richardson-jr",
+      "chassis": "Ford",
+      "engine": "Ford"
+    },
+    {
+      "teamId": "NASCAR_2010_TEAM_FRONT_ROW_MOTORSPORTS_TEAM_1_TEAM_5",
+      "carNumber": "37",
+      "driverId": "driver-nascar-2010-tony-raines",
+      "chassis": "Ford",
+      "engine": "Ford"
+    },
+    {
+      "teamId": "NASCAR_2010_TEAM_FRONT_ROW_MOTORSPORTS_TEAM_1_TEAM_6",
+      "carNumber": "37",
+      "driverId": "driver-nascar-2010-dave-blaney",
+      "chassis": "Ford",
+      "engine": "Ford"
+    },
+    {
+      "teamId": "NASCAR_2010_TEAM_FRONT_ROW_MOTORSPORTS_TEAM_2_TEAM_1",
       "carNumber": "38",
       "driverId": "driver-nascar-2010-robert-richardson-jr",
       "chassis": "Ford",
       "engine": "Ford"
     },
     {
-      "teamId": "NASCAR_2010_TEAM_FURNITURE_ROW_RACING",
+      "teamId": "NASCAR_2010_TEAM_FRONT_ROW_MOTORSPORTS_TEAM_2_TEAM_1",
+      "carNumber": "38",
+      "driverId": "driver-nascar-2010-david-gilliland",
+      "chassis": "Ford",
+      "engine": "Ford"
+    },
+    {
+      "teamId": "NASCAR_2010_TEAM_FRONT_ROW_MOTORSPORTS_TEAM_2_TEAM_2",
+      "carNumber": "38",
+      "driverId": "driver-nascar-2010-kevin-conway",
+      "chassis": "Ford",
+      "engine": "Ford"
+    },
+    {
+      "teamId": "NASCAR_2010_TEAM_FRONT_ROW_MOTORSPORTS_TEAM_2_TEAM_2",
+      "carNumber": "38",
+      "driverId": "driver-nascar-2010-travis-kvapil",
+      "chassis": "Ford",
+      "engine": "Ford"
+    },
+    {
+      "teamId": "NASCAR_2010_TEAM_FRONT_ROW_MOTORSPORTS_TEAM_2_TEAM_3",
+      "carNumber": "38",
+      "driverId": "driver-nascar-2010-dave-blaney",
+      "chassis": "Ford",
+      "engine": "Ford"
+    },
+    {
+      "teamId": "NASCAR_2010_TEAM_FURNITURE_ROW_RACING_TEAM_1",
       "carNumber": "78",
       "driverId": "driver-nascar-2010-regan-smith",
       "chassis": "Chevrolet",
       "engine": "Chevrolet"
     },
     {
-      "teamId": "NASCAR_2010_TEAM_GERMAIN_RACING",
+      "teamId": "NASCAR_2010_TEAM_GERMAIN_RACING_TEAM_1",
       "carNumber": "13",
       "driverId": "driver-nascar-2010-max-papis",
       "chassis": "Toyota",
       "engine": "Toyota"
     },
     {
-      "teamId": "NASCAR_2010_TEAM_GUNSELMAN_MOTORSPORTS",
+      "teamId": "NASCAR_2010_TEAM_GERMAIN_RACING_TEAM_1",
+      "carNumber": "13",
+      "driverId": "driver-nascar-2010-casey-mears",
+      "chassis": "Toyota",
+      "engine": "Toyota"
+    },
+    {
+      "teamId": "NASCAR_2010_TEAM_GUNSELMAN_MOTORSPORTS_TEAM_1_TEAM_1",
       "carNumber": "64",
       "driverId": "driver-nascar-2010-tony-raines",
+      "chassis": "Toyota",
+      "engine": "Toyota"
+    },
+    {
+      "teamId": "NASCAR_2010_TEAM_GUNSELMAN_MOTORSPORTS_TEAM_1_TEAM_1",
+      "carNumber": "64",
+      "driverId": "driver-nascar-2010-todd-bodine",
+      "chassis": "Toyota",
+      "engine": "Toyota"
+    },
+    {
+      "teamId": "NASCAR_2010_TEAM_GUNSELMAN_MOTORSPORTS_TEAM_1_TEAM_2",
+      "carNumber": "64",
+      "driverId": "driver-nascar-2010-chad-mccumbee",
+      "chassis": "Toyota",
+      "engine": "Toyota"
+    },
+    {
+      "teamId": "NASCAR_2010_TEAM_GUNSELMAN_MOTORSPORTS_TEAM_1_TEAM_2",
+      "carNumber": "64",
+      "driverId": "driver-nascar-2010-landon-cassill",
+      "chassis": "Toyota",
+      "engine": "Toyota"
+    },
+    {
+      "teamId": "NASCAR_2010_TEAM_GUNSELMAN_MOTORSPORTS_TEAM_1_TEAM_3",
+      "carNumber": "64",
+      "driverId": "driver-nascar-2010-josh-wise",
+      "chassis": "Toyota",
+      "engine": "Toyota"
+    },
+    {
+      "teamId": "NASCAR_2010_TEAM_GUNSELMAN_MOTORSPORTS_TEAM_1_TEAM_3",
+      "carNumber": "64",
+      "driverId": "driver-nascar-2010-jeff-green",
       "chassis": "Toyota",
       "engine": "Toyota"
     },
@@ -916,7 +1070,7 @@ export const season2010NASCARPhase0: Phase0SeasonBundle = {
       "engine": "Chevrolet"
     },
     {
-      "teamId": "NASCAR_2010_TEAM_JTG_DAUGHERTY_RACING_WITH_MICHAEL_WALTRIP_RACING",
+      "teamId": "NASCAR_2010_TEAM_JTG_DAUGHERTY_RACING_WITH_MICHAEL_WALTRIP_RACING_TEAM_1",
       "carNumber": "47",
       "driverId": "driver-nascar-2010-marcos-ambrose",
       "chassis": "Toyota",
@@ -944,30 +1098,86 @@ export const season2010NASCARPhase0: Phase0SeasonBundle = {
       "engine": "Toyota"
     },
     {
-      "teamId": "NASCAR_2010_TEAM_K_AUTOMOTIVE_MOTORSPORTS",
+      "teamId": "NASCAR_2010_TEAM_K_AUTOMOTIVE_MOTORSPORTS_TEAM_1",
       "carNumber": "92",
       "driverId": "driver-nascar-2010-mike-wallace",
       "chassis": "Dodge",
       "engine": "Dodge"
     },
     {
-      "teamId": "NASCAR_2010_TEAM_KEYED_UP_MOTORSPORTS",
+      "teamId": "NASCAR_2010_TEAM_K_AUTOMOTIVE_MOTORSPORTS_TEAM_1",
+      "carNumber": "92",
+      "driverId": "driver-nascar-2010-brian-keselowski",
+      "chassis": "Dodge",
+      "engine": "Dodge"
+    },
+    {
+      "teamId": "NASCAR_2010_TEAM_KEYED_UP_MOTORSPORTS_TEAM_1",
       "carNumber": "90",
       "driverId": "driver-nascar-2010-casey-mears",
       "chassis": "Chevrolet",
       "engine": "Chevrolet"
     },
     {
-      "teamId": "NASCAR_2010_TEAM_KIRK_SHELMERDINE_RACING",
+      "teamId": "NASCAR_2010_TEAM_KEYED_UP_MOTORSPORTS_TEAM_1",
+      "carNumber": "90",
+      "driverId": "driver-nascar-2010-scott-riggs",
+      "chassis": "Chevrolet",
+      "engine": "Chevrolet"
+    },
+    {
+      "teamId": "NASCAR_2010_TEAM_KIRK_SHELMERDINE_RACING_TEAM_1",
       "carNumber": "27",
       "driverId": "driver-nascar-2010-todd-bodine",
       "chassis": "Toyota",
       "engine": "Toyota"
     },
     {
-      "teamId": "NASCAR_2010_TEAM_LATITUDE_43_MOTORSPORTS",
+      "teamId": "NASCAR_2010_TEAM_LATITUDE_43_MOTORSPORTS_TEAM_1_TEAM_1",
       "carNumber": "26",
       "driverId": "driver-nascar-2010-boris-said",
+      "chassis": "Ford",
+      "engine": "Ford"
+    },
+    {
+      "teamId": "NASCAR_2010_TEAM_LATITUDE_43_MOTORSPORTS_TEAM_1_TEAM_1",
+      "carNumber": "26",
+      "driverId": "driver-nascar-2010-david-stremme",
+      "chassis": "Ford",
+      "engine": "Ford"
+    },
+    {
+      "teamId": "NASCAR_2010_TEAM_LATITUDE_43_MOTORSPORTS_TEAM_1_TEAM_2",
+      "carNumber": "26",
+      "driverId": "driver-nascar-2010-patrick-carpentier",
+      "chassis": "Ford",
+      "engine": "Ford"
+    },
+    {
+      "teamId": "NASCAR_2010_TEAM_LATITUDE_43_MOTORSPORTS_TEAM_1_TEAM_2",
+      "carNumber": "26",
+      "driverId": "driver-nascar-2010-jeff-green",
+      "chassis": "Ford",
+      "engine": "Ford"
+    },
+    {
+      "teamId": "NASCAR_2010_TEAM_LATITUDE_43_MOTORSPORTS_TEAM_1_TEAM_3",
+      "carNumber": "26",
+      "driverId": "driver-nascar-2010-ken-schrader",
+      "chassis": "Ford",
+      "engine": "Ford"
+    },
+    {
+      "teamId": "NASCAR_2010_TEAM_LATITUDE_43_MOTORSPORTS_TEAM_1_TEAM_3",
+      "carNumber": "26",
+      "driverId": "driver-nascar-2010-bill-elliott",
+      "chassis": "Ford",
+      "engine": "Ford"
+    },
+    {
+      "teamId": "NASCAR_2010_TEAM_LATITUDE_43_MOTORSPORTS_TEAM_1_TEAM_4",
+      "carNumber": "26",
+      "driverId": "driver-nascar-2010-j-j-yeley",
       "chassis": "Ford",
       "engine": "Ford"
     },
@@ -986,42 +1196,77 @@ export const season2010NASCARPhase0: Phase0SeasonBundle = {
       "engine": "Toyota"
     },
     {
-      "teamId": "NASCAR_2010_TEAM_MICHAEL_WALTRIP_RACING_TEAM_2",
+      "teamId": "NASCAR_2010_TEAM_MICHAEL_WALTRIP_RACING_TEAM_2_TEAM_1",
       "carNumber": "51",
       "driverId": "driver-nascar-2010-michael-waltrip",
       "chassis": "Toyota",
       "engine": "Toyota"
     },
     {
-      "teamId": "NASCAR_2010_TEAM_MICHAEL_WALTRIP_RACING_TEAM_2",
+      "teamId": "NASCAR_2010_TEAM_MICHAEL_WALTRIP_RACING_TEAM_2_TEAM_1",
       "carNumber": "55",
       "driverId": "driver-nascar-2010-michael-waltrip",
       "chassis": "Toyota",
       "engine": "Toyota"
     },
     {
-      "teamId": "NASCAR_2010_TEAM_MORGAN_MCCLURE_MOTORSPORTS",
+      "teamId": "NASCAR_2010_TEAM_MICHAEL_WALTRIP_RACING_TEAM_2_TEAM_2",
+      "carNumber": "55",
+      "driverId": "driver-nascar-2010-michael-mcdowell",
+      "chassis": "Toyota",
+      "engine": "Toyota"
+    },
+    {
+      "teamId": "NASCAR_2010_TEAM_MICHAEL_WALTRIP_RACING_TEAM_2_TEAM_2",
+      "carNumber": "55",
+      "driverId": "driver-nascar-2010-dave-blaney",
+      "chassis": "Toyota",
+      "engine": "Toyota"
+    },
+    {
+      "teamId": "NASCAR_2010_TEAM_MICHAEL_WALTRIP_RACING_TEAM_2_TEAM_3",
+      "carNumber": "55",
+      "driverId": "driver-nascar-2010-mike-bliss",
+      "chassis": "Toyota",
+      "engine": "Toyota"
+    },
+    {
+      "teamId": "NASCAR_2010_TEAM_MICHAEL_WALTRIP_RACING_TEAM_2_TEAM_3",
+      "carNumber": "55",
+      "driverId": "driver-nascar-2010-terry-labonte",
+      "chassis": "Toyota",
+      "engine": "Toyota"
+    },
+    {
+      "teamId": "NASCAR_2010_TEAM_MICHAEL_WALTRIP_RACING_TEAM_2_TEAM_4",
+      "carNumber": "55",
+      "driverId": "driver-nascar-2010-terry-cook",
+      "chassis": "Toyota",
+      "engine": "Toyota"
+    },
+    {
+      "teamId": "NASCAR_2010_TEAM_MORGAN_MCCLURE_MOTORSPORTS_TEAM_1",
       "carNumber": "4",
       "driverId": "driver-nascar-2010-kevin-lepage",
       "chassis": "Chevrolet",
       "engine": "Chevrolet"
     },
     {
-      "teamId": "NASCAR_2010_TEAM_NEMCO_MOTORSPORTS",
+      "teamId": "NASCAR_2010_TEAM_NEMCO_MOTORSPORTS_TEAM_1",
       "carNumber": "87",
       "driverId": "driver-nascar-2010-joe-nemechek",
       "chassis": "Toyota",
       "engine": "Toyota"
     },
     {
-      "teamId": "NASCAR_2010_TEAM_NEMCO_MOTORSPORTS",
+      "teamId": "NASCAR_2010_TEAM_NEMCO_MOTORSPORTS_TEAM_2",
       "carNumber": "97",
       "driverId": "driver-nascar-2010-jeff-fuller",
       "chassis": "Toyota",
       "engine": "Toyota"
     },
     {
-      "teamId": "NASCAR_2010_TEAM_NORM_BENNING_RACING",
+      "teamId": "NASCAR_2010_TEAM_NORM_BENNING_RACING_TEAM_1",
       "carNumber": "57",
       "driverId": "driver-nascar-2010-norm-benning",
       "chassis": "Chevrolet",
@@ -1049,37 +1294,156 @@ export const season2010NASCARPhase0: Phase0SeasonBundle = {
       "engine": "Dodge"
     },
     {
-      "teamId": "NASCAR_2010_TEAM_PHOENIX_RACING",
+      "teamId": "NASCAR_2010_TEAM_PHOENIX_RACING_TEAM_1_TEAM_1",
       "carNumber": "09",
       "driverId": "driver-nascar-2010-aric-almirola",
       "chassis": "Chevrolet",
       "engine": "Chevrolet"
     },
     {
-      "teamId": "NASCAR_2010_TEAM_PRISM_MOTORSPORTS",
+      "teamId": "NASCAR_2010_TEAM_PHOENIX_RACING_TEAM_1_TEAM_1",
+      "carNumber": "09",
+      "driverId": "driver-nascar-2010-mike-bliss",
+      "chassis": "Chevrolet",
+      "engine": "Chevrolet"
+    },
+    {
+      "teamId": "NASCAR_2010_TEAM_PHOENIX_RACING_TEAM_1_TEAM_2",
+      "carNumber": "09",
+      "driverId": "driver-nascar-2010-terry-cook",
+      "chassis": "Chevrolet",
+      "engine": "Chevrolet"
+    },
+    {
+      "teamId": "NASCAR_2010_TEAM_PHOENIX_RACING_TEAM_1_TEAM_2",
+      "carNumber": "09",
+      "driverId": "driver-nascar-2010-landon-cassill",
+      "chassis": "Chevrolet",
+      "engine": "Chevrolet"
+    },
+    {
+      "teamId": "NASCAR_2010_TEAM_PHOENIX_RACING_TEAM_1_TEAM_3",
+      "carNumber": "09",
+      "driverId": "driver-nascar-2010-jan-magnussen",
+      "chassis": "Chevrolet",
+      "engine": "Chevrolet"
+    },
+    {
+      "teamId": "NASCAR_2010_TEAM_PHOENIX_RACING_TEAM_1_TEAM_3",
+      "carNumber": "09",
+      "driverId": "driver-nascar-2010-bobby-labonte",
+      "chassis": "Chevrolet",
+      "engine": "Chevrolet"
+    },
+    {
+      "teamId": "NASCAR_2010_TEAM_PRISM_MOTORSPORTS_TEAM_1_TEAM_1",
       "carNumber": "66",
       "driverId": "driver-nascar-2010-dave-blaney",
       "chassis": "Toyota",
       "engine": "Toyota"
     },
     {
-      "teamId": "NASCAR_2010_TEAM_R3_MOTORSPORTS",
+      "teamId": "NASCAR_2010_TEAM_PRISM_MOTORSPORTS_TEAM_1_TEAM_1",
+      "carNumber": "66",
+      "driverId": "driver-nascar-2010-michael-mcdowell",
+      "chassis": "Toyota",
+      "engine": "Toyota"
+    },
+    {
+      "teamId": "NASCAR_2010_TEAM_PRISM_MOTORSPORTS_TEAM_1_TEAM_2",
+      "carNumber": "66",
+      "driverId": "driver-nascar-2010-scott-riggs",
+      "chassis": "Toyota",
+      "engine": "Toyota"
+    },
+    {
+      "teamId": "NASCAR_2010_TEAM_PRISM_MOTORSPORTS_TEAM_1_TEAM_2",
+      "carNumber": "66",
+      "driverId": "driver-nascar-2010-johnny-sauter",
+      "chassis": "Toyota",
+      "engine": "Toyota"
+    },
+    {
+      "teamId": "NASCAR_2010_TEAM_PRISM_MOTORSPORTS_TEAM_1_TEAM_3",
+      "carNumber": "66",
+      "driverId": "driver-nascar-2010-ted-musgrave",
+      "chassis": "Toyota",
+      "engine": "Toyota"
+    },
+    {
+      "teamId": "NASCAR_2010_TEAM_PRISM_MOTORSPORTS_TEAM_1_TEAM_3",
+      "carNumber": "66",
+      "driverId": "driver-nascar-2010-jason-leffler",
+      "chassis": "Toyota",
+      "engine": "Toyota"
+    },
+    {
+      "teamId": "NASCAR_2010_TEAM_PRISM_MOTORSPORTS_TEAM_1_TEAM_4",
+      "carNumber": "66",
+      "driverId": "driver-nascar-2010-mike-bliss",
+      "chassis": "Toyota",
+      "engine": "Toyota"
+    },
+    {
+      "teamId": "NASCAR_2010_TEAM_R3_MOTORSPORTS_TEAM_1",
       "carNumber": "23",
       "driverId": "driver-nascar-2010-johnny-sauter",
       "chassis": "Toyota",
       "engine": "Toyota"
     },
     {
-      "teamId": "NASCAR_2010_TEAM_RED_BULL_RACING",
+      "teamId": "NASCAR_2010_TEAM_R3_MOTORSPORTS_TEAM_1",
+      "carNumber": "23",
+      "driverId": "driver-nascar-2010-josh-wise",
+      "chassis": "Toyota",
+      "engine": "Toyota"
+    },
+    {
+      "teamId": "NASCAR_2010_TEAM_RED_BULL_RACING_TEAM_1_TEAM_1",
       "carNumber": "82",
       "driverId": "driver-nascar-2010-scott-speed",
       "chassis": "Toyota",
       "engine": "Toyota"
     },
     {
-      "teamId": "NASCAR_2010_TEAM_RED_BULL_RACING",
+      "teamId": "NASCAR_2010_TEAM_RED_BULL_RACING_TEAM_1_TEAM_1",
       "carNumber": "83",
       "driverId": "driver-nascar-2010-brian-vickers",
+      "chassis": "Toyota",
+      "engine": "Toyota"
+    },
+    {
+      "teamId": "NASCAR_2010_TEAM_RED_BULL_RACING_TEAM_1_TEAM_2",
+      "carNumber": "83",
+      "driverId": "driver-nascar-2010-casey-mears",
+      "chassis": "Toyota",
+      "engine": "Toyota"
+    },
+    {
+      "teamId": "NASCAR_2010_TEAM_RED_BULL_RACING_TEAM_1_TEAM_2",
+      "carNumber": "83",
+      "driverId": "driver-nascar-2010-mattias-ekstrom",
+      "chassis": "Toyota",
+      "engine": "Toyota"
+    },
+    {
+      "teamId": "NASCAR_2010_TEAM_RED_BULL_RACING_TEAM_1_TEAM_3",
+      "carNumber": "83",
+      "driverId": "driver-nascar-2010-reed-sorenson",
+      "chassis": "Toyota",
+      "engine": "Toyota"
+    },
+    {
+      "teamId": "NASCAR_2010_TEAM_RED_BULL_RACING_TEAM_1_TEAM_3",
+      "carNumber": "83",
+      "driverId": "driver-nascar-2010-boris-said",
+      "chassis": "Toyota",
+      "engine": "Toyota"
+    },
+    {
+      "teamId": "NASCAR_2010_TEAM_RED_BULL_RACING_TEAM_1_TEAM_4",
+      "carNumber": "83",
+      "driverId": "driver-nascar-2010-kasey-kahne",
       "chassis": "Toyota",
       "engine": "Toyota"
     },
@@ -1105,14 +1469,21 @@ export const season2010NASCARPhase0: Phase0SeasonBundle = {
       "engine": "Chevrolet"
     },
     {
-      "teamId": "NASCAR_2010_TEAM_RICHARD_PETTY_MOTORSPORTS_TEAM_1",
+      "teamId": "NASCAR_2010_TEAM_RICHARD_PETTY_MOTORSPORTS_TEAM_1_TEAM_1",
       "carNumber": "9",
       "driverId": "driver-nascar-2010-kasey-kahne",
       "chassis": "Ford",
       "engine": "Ford"
     },
     {
-      "teamId": "NASCAR_2010_TEAM_RICHARD_PETTY_MOTORSPORTS_TEAM_1",
+      "teamId": "NASCAR_2010_TEAM_RICHARD_PETTY_MOTORSPORTS_TEAM_1_TEAM_1",
+      "carNumber": "9",
+      "driverId": "driver-nascar-2010-aric-almirola",
+      "chassis": "Ford",
+      "engine": "Ford"
+    },
+    {
+      "teamId": "NASCAR_2010_TEAM_RICHARD_PETTY_MOTORSPORTS_TEAM_1_TEAM_2",
       "carNumber": "19",
       "driverId": "driver-nascar-2010-elliott-sadler",
       "chassis": "Ford",
@@ -1133,16 +1504,58 @@ export const season2010NASCARPhase0: Phase0SeasonBundle = {
       "engine": "Ford"
     },
     {
-      "teamId": "NASCAR_2010_TEAM_ROBBY_GORDON_MOTORSPORTS",
+      "teamId": "NASCAR_2010_TEAM_ROBBY_GORDON_MOTORSPORTS_TEAM_1_TEAM_1",
       "carNumber": "7",
       "driverId": "driver-nascar-2010-robby-gordon",
       "chassis": "Toyota",
       "engine": "Toyota"
     },
     {
-      "teamId": "NASCAR_2010_TEAM_ROBBY_GORDON_MOTORSPORTS",
+      "teamId": "NASCAR_2010_TEAM_ROBBY_GORDON_MOTORSPORTS_TEAM_1_TEAM_1",
+      "carNumber": "7",
+      "driverId": "driver-nascar-2010-ted-musgrave",
+      "chassis": "Toyota",
+      "engine": "Toyota"
+    },
+    {
+      "teamId": "NASCAR_2010_TEAM_ROBBY_GORDON_MOTORSPORTS_TEAM_1_TEAM_2",
+      "carNumber": "7",
+      "driverId": "driver-nascar-2010-bobby-labonte",
+      "chassis": "Toyota",
+      "engine": "Toyota"
+    },
+    {
+      "teamId": "NASCAR_2010_TEAM_ROBBY_GORDON_MOTORSPORTS_TEAM_1_TEAM_2",
+      "carNumber": "7",
+      "driverId": "driver-nascar-2010-p-j-jones",
+      "chassis": "Toyota",
+      "engine": "Toyota"
+    },
+    {
+      "teamId": "NASCAR_2010_TEAM_ROBBY_GORDON_MOTORSPORTS_TEAM_1_TEAM_3",
+      "carNumber": "7",
+      "driverId": "driver-nascar-2010-kevin-conway",
+      "chassis": "Toyota",
+      "engine": "Toyota"
+    },
+    {
+      "teamId": "NASCAR_2010_TEAM_ROBBY_GORDON_MOTORSPORTS_TEAM_1_TEAM_3",
       "carNumber": "07",
       "driverId": "driver-nascar-2010-p-j-jones",
+      "chassis": "Toyota",
+      "engine": "Toyota"
+    },
+    {
+      "teamId": "NASCAR_2010_TEAM_ROBBY_GORDON_MOTORSPORTS_TEAM_1_TEAM_4",
+      "carNumber": "07",
+      "driverId": "driver-nascar-2010-robby-gordon",
+      "chassis": "Toyota",
+      "engine": "Toyota"
+    },
+    {
+      "teamId": "NASCAR_2010_TEAM_ROBBY_GORDON_MOTORSPORTS_TEAM_1_TEAM_4",
+      "carNumber": "07",
+      "driverId": "driver-nascar-2010-kevin-conway",
       "chassis": "Toyota",
       "engine": "Toyota"
     },
@@ -1175,79 +1588,240 @@ export const season2010NASCARPhase0: Phase0SeasonBundle = {
       "engine": "Ford"
     },
     {
-      "teamId": "NASCAR_2010_TEAM_STAVOLA_LABONTE_RACING",
+      "teamId": "NASCAR_2010_TEAM_STAVOLA_LABONTE_RACING_TEAM_1",
       "carNumber": "10",
       "driverId": "driver-nascar-2010-terry-labonte",
       "chassis": "Chevrolet",
       "engine": "Chevrolet"
     },
     {
-      "teamId": "NASCAR_2010_TEAM_STEWART_HAAS_RACING",
+      "teamId": "NASCAR_2010_TEAM_STAVOLA_LABONTE_RACING_TEAM_1",
+      "carNumber": "10",
+      "driverId": "driver-nascar-2010-bobby-labonte",
+      "chassis": "Chevrolet",
+      "engine": "Chevrolet"
+    },
+    {
+      "teamId": "NASCAR_2010_TEAM_STEWART_HAAS_RACING_TEAM_1",
       "carNumber": "14",
       "driverId": "driver-nascar-2010-tony-stewart",
       "chassis": "Chevrolet",
       "engine": "Chevrolet"
     },
     {
-      "teamId": "NASCAR_2010_TEAM_STEWART_HAAS_RACING",
+      "teamId": "NASCAR_2010_TEAM_STEWART_HAAS_RACING_TEAM_1",
       "carNumber": "39",
       "driverId": "driver-nascar-2010-ryan-newman",
       "chassis": "Chevrolet",
       "engine": "Chevrolet"
     },
     {
-      "teamId": "NASCAR_2010_TEAM_STRATUS_RACING_GROUP",
+      "teamId": "NASCAR_2010_TEAM_STRATUS_RACING_GROUP_TEAM_1",
       "carNumber": "75",
       "driverId": "driver-nascar-2010-derrike-cope",
       "chassis": "Dodge",
       "engine": "Dodge"
     },
     {
-      "teamId": "NASCAR_2010_TEAM_TRG_MOTORSPORTS",
+      "teamId": "NASCAR_2010_TEAM_TRG_MOTORSPORTS_TEAM_1_TEAM_1",
       "carNumber": "71",
       "driverId": "driver-nascar-2010-bobby-labonte",
       "chassis": "Chevrolet",
       "engine": "Chevrolet"
     },
     {
-      "teamId": "NASCAR_2010_TEAM_TOMMY_BALDWIN_RACING",
+      "teamId": "NASCAR_2010_TEAM_TRG_MOTORSPORTS_TEAM_1_TEAM_1",
+      "carNumber": "71",
+      "driverId": "driver-nascar-2010-andy-lally",
+      "chassis": "Chevrolet",
+      "engine": "Chevrolet"
+    },
+    {
+      "teamId": "NASCAR_2010_TEAM_TRG_MOTORSPORTS_TEAM_1_TEAM_2",
+      "carNumber": "71",
+      "driverId": "driver-nascar-2010-mike-bliss",
+      "chassis": "Chevrolet",
+      "engine": "Chevrolet"
+    },
+    {
+      "teamId": "NASCAR_2010_TEAM_TRG_MOTORSPORTS_TEAM_1_TEAM_2",
+      "carNumber": "71",
+      "driverId": "driver-nascar-2010-landon-cassill",
+      "chassis": "Chevrolet",
+      "engine": "Chevrolet"
+    },
+    {
+      "teamId": "NASCAR_2010_TEAM_TRG_MOTORSPORTS_TEAM_1_TEAM_3",
+      "carNumber": "71",
+      "driverId": "driver-nascar-2010-tony-raines",
+      "chassis": "Chevrolet",
+      "engine": "Chevrolet"
+    },
+    {
+      "teamId": "NASCAR_2010_TEAM_TRG_MOTORSPORTS_TEAM_1_TEAM_3",
+      "carNumber": "71",
+      "driverId": "driver-nascar-2010-hermie-sadler",
+      "chassis": "Chevrolet",
+      "engine": "Chevrolet"
+    },
+    {
+      "teamId": "NASCAR_2010_TEAM_TRG_MOTORSPORTS_TEAM_1_TEAM_4",
+      "carNumber": "71",
+      "driverId": "driver-nascar-2010-chad-mccumbee",
+      "chassis": "Chevrolet",
+      "engine": "Chevrolet"
+    },
+    {
+      "teamId": "NASCAR_2010_TEAM_TRG_MOTORSPORTS_TEAM_1_TEAM_4",
+      "carNumber": "71",
+      "driverId": "driver-nascar-2010-brendan-gaughan",
+      "chassis": "Chevrolet",
+      "engine": "Chevrolet"
+    },
+    {
+      "teamId": "NASCAR_2010_TEAM_TOMMY_BALDWIN_RACING_TEAM_1_TEAM_1",
       "carNumber": "36",
       "driverId": "driver-nascar-2010-mike-bliss",
       "chassis": "Chevrolet",
       "engine": "Chevrolet"
     },
     {
-      "teamId": "NASCAR_2010_TEAM_TOMMY_BALDWIN_RACING",
+      "teamId": "NASCAR_2010_TEAM_TOMMY_BALDWIN_RACING_TEAM_1_TEAM_1",
+      "carNumber": "36",
+      "driverId": "driver-nascar-2010-johnny-sauter",
+      "chassis": "Chevrolet",
+      "engine": "Chevrolet"
+    },
+    {
+      "teamId": "NASCAR_2010_TEAM_TOMMY_BALDWIN_RACING_TEAM_1_TEAM_2",
+      "carNumber": "36",
+      "driverId": "driver-nascar-2010-casey-mears",
+      "chassis": "Chevrolet",
+      "engine": "Chevrolet"
+    },
+    {
+      "teamId": "NASCAR_2010_TEAM_TOMMY_BALDWIN_RACING_TEAM_1_TEAM_2",
+      "carNumber": "36",
+      "driverId": "driver-nascar-2010-geoff-bodine",
+      "chassis": "Chevrolet",
+      "engine": "Chevrolet"
+    },
+    {
+      "teamId": "NASCAR_2010_TEAM_TOMMY_BALDWIN_RACING_TEAM_1_TEAM_3",
+      "carNumber": "36",
+      "driverId": "driver-nascar-2010-brian-simo",
+      "chassis": "Chevrolet",
+      "engine": "Chevrolet"
+    },
+    {
+      "teamId": "NASCAR_2010_TEAM_TOMMY_BALDWIN_RACING_TEAM_1_TEAM_3",
+      "carNumber": "36",
+      "driverId": "driver-nascar-2010-steve-park",
+      "chassis": "Chevrolet",
+      "engine": "Chevrolet"
+    },
+    {
+      "teamId": "NASCAR_2010_TEAM_TOMMY_BALDWIN_RACING_TEAM_1_TEAM_4",
+      "carNumber": "36",
+      "driverId": "driver-nascar-2010-ron-fellows",
+      "chassis": "Chevrolet",
+      "engine": "Chevrolet"
+    },
+    {
+      "teamId": "NASCAR_2010_TEAM_TOMMY_BALDWIN_RACING_TEAM_1_TEAM_4",
+      "carNumber": "36",
+      "driverId": "driver-nascar-2010-dave-blaney",
+      "chassis": "Chevrolet",
+      "engine": "Chevrolet"
+    },
+    {
+      "teamId": "NASCAR_2010_TEAM_TOMMY_BALDWIN_RACING_TEAM_1_TEAM_5",
+      "carNumber": "36",
+      "driverId": "driver-nascar-2010-j-j-yeley",
+      "chassis": "Chevrolet",
+      "engine": "Chevrolet"
+    },
+    {
+      "teamId": "NASCAR_2010_TEAM_TOMMY_BALDWIN_RACING_TEAM_1_TEAM_5",
       "carNumber": "35",
       "driverId": "driver-nascar-2010-johnny-sauter",
       "chassis": "Chevrolet",
       "engine": "Chevrolet"
     },
     {
-      "teamId": "NASCAR_2010_TEAM_TRI_STAR_MOTORSPORTS",
+      "teamId": "NASCAR_2010_TEAM_TOMMY_BALDWIN_RACING_TEAM_1_TEAM_6",
+      "carNumber": "35",
+      "driverId": "driver-nascar-2010-aric-almirola",
+      "chassis": "Chevrolet",
+      "engine": "Chevrolet"
+    },
+    {
+      "teamId": "NASCAR_2010_TEAM_TOMMY_BALDWIN_RACING_TEAM_1_TEAM_6",
       "carNumber": "35",
       "driverId": "driver-nascar-2010-tony-ave",
       "chassis": "Chevrolet",
       "engine": "Chevrolet"
     },
     {
-      "teamId": "NASCAR_2010_TEAM_WHITNEY_MOTORSPORTS",
+      "teamId": "NASCAR_2010_TEAM_TRI_STAR_MOTORSPORTS_TEAM_1",
+      "carNumber": "35",
+      "driverId": "driver-nascar-2010-tony-ave",
+      "chassis": "Chevrolet",
+      "engine": "Chevrolet"
+    },
+    {
+      "teamId": "NASCAR_2010_TEAM_WHITNEY_MOTORSPORTS_TEAM_1_TEAM_1",
       "carNumber": "46",
       "driverId": "driver-nascar-2010-michael-mcdowell",
       "chassis": "Chevrolet",
       "engine": "Chevrolet"
     },
     {
-      "teamId": "NASCAR_2010_TEAM_WHITNEY_MOTORSPORTS",
+      "teamId": "NASCAR_2010_TEAM_WHITNEY_MOTORSPORTS_TEAM_1_TEAM_1",
+      "carNumber": "46",
+      "driverId": "driver-nascar-2010-terry-cook",
+      "chassis": "Chevrolet",
+      "engine": "Chevrolet"
+    },
+    {
+      "teamId": "NASCAR_2010_TEAM_WHITNEY_MOTORSPORTS_TEAM_1_TEAM_2",
+      "carNumber": "46",
+      "driverId": "driver-nascar-2010-j-j-yeley",
+      "chassis": "Chevrolet",
+      "engine": "Chevrolet"
+    },
+    {
+      "teamId": "NASCAR_2010_TEAM_WHITNEY_MOTORSPORTS_TEAM_1_TEAM_2",
       "carNumber": "81",
       "driverId": "driver-nascar-2010-j-j-yeley",
       "chassis": "Dodge",
       "engine": "Dodge"
     },
     {
-      "teamId": "NASCAR_2010_TEAM_WOOD_BROTHERS_RACING",
+      "teamId": "NASCAR_2010_TEAM_WHITNEY_MOTORSPORTS_TEAM_1_TEAM_3",
+      "carNumber": "81",
+      "driverId": "driver-nascar-2010-scott-riggs",
+      "chassis": "Dodge",
+      "engine": "Dodge"
+    },
+    {
+      "teamId": "NASCAR_2010_TEAM_WHITNEY_MOTORSPORTS_TEAM_1_TEAM_3",
+      "carNumber": "81",
+      "driverId": "driver-nascar-2010-terry-labonte",
+      "chassis": "Dodge",
+      "engine": "Dodge"
+    },
+    {
+      "teamId": "NASCAR_2010_TEAM_WOOD_BROTHERS_RACING_TEAM_1",
       "carNumber": "21",
       "driverId": "driver-nascar-2010-bill-elliott",
+      "chassis": "Ford",
+      "engine": "Ford"
+    },
+    {
+      "teamId": "NASCAR_2010_TEAM_WOOD_BROTHERS_RACING_TEAM_1",
+      "carNumber": "21",
+      "driverId": "driver-nascar-2010-trevor-bayne",
       "chassis": "Ford",
       "engine": "Ford"
     }
@@ -1681,183 +2255,228 @@ export const season2010NASCARPhase0: Phase0SeasonBundle = {
   ],
   "teamAssignments": [
     {
-      "entityId": "NASCAR_2010_TEAM_ASH_RACING",
-      "label": "Ash Racing",
+      "entityId": "NASCAR_2010_TEAM_EARNHARDT_GANASSI_RACING_TEAM_1",
+      "label": "Earnhardt Ganassi Racing Team 1",
       "sourceSheet": "Car_Ratings"
     },
     {
-      "entityId": "NASCAR_2010_TEAM_BAM_RACING",
-      "label": "BAM Racing",
+      "entityId": "NASCAR_2010_TEAM_FURNITURE_ROW_RACING_TEAM_1",
+      "label": "Furniture Row Racing Team 1",
       "sourceSheet": "Car_Ratings"
     },
     {
-      "entityId": "NASCAR_2010_TEAM_BRAUN_RACING",
-      "label": "Braun Racing",
+      "entityId": "NASCAR_2010_TEAM_HENDRICK_MOTORSPORTS_TEAM_1",
+      "label": "Hendrick Motorsports Team 1",
       "sourceSheet": "Car_Ratings"
     },
     {
-      "entityId": "NASCAR_2010_TEAM_EARNHARDT_GANASSI_RACING",
-      "label": "Earnhardt Ganassi Racing",
+      "entityId": "NASCAR_2010_TEAM_HENDRICK_MOTORSPORTS_TEAM_2",
+      "label": "Hendrick Motorsports Team 2",
       "sourceSheet": "Car_Ratings"
     },
     {
-      "entityId": "NASCAR_2010_TEAM_FRONT_ROW_MOTORSPORTS",
-      "label": "Front Row Motorsports",
+      "entityId": "NASCAR_2010_TEAM_PHOENIX_RACING_TEAM_1",
+      "label": "Phoenix Racing Team 1",
       "sourceSheet": "Car_Ratings"
     },
     {
-      "entityId": "NASCAR_2010_TEAM_FURNITURE_ROW_RACING",
-      "label": "Furniture Row Racing",
+      "entityId": "NASCAR_2010_TEAM_RICHARD_CHILDRESS_RACING_TEAM_1",
+      "label": "Richard Childress Racing Team 1",
       "sourceSheet": "Car_Ratings"
     },
     {
-      "entityId": "NASCAR_2010_TEAM_GERMAIN_RACING",
-      "label": "Germain Racing",
+      "entityId": "NASCAR_2010_TEAM_RICHARD_CHILDRESS_RACING_TEAM_2",
+      "label": "Richard Childress Racing Team 2",
       "sourceSheet": "Car_Ratings"
     },
     {
-      "entityId": "NASCAR_2010_TEAM_GUNSELMAN_MOTORSPORTS",
-      "label": "Gunselman Motorsports",
+      "entityId": "NASCAR_2010_TEAM_STEWART_HAAS_RACING_TEAM_1",
+      "label": "Stewart-Haas Racing Team 1",
       "sourceSheet": "Car_Ratings"
     },
     {
-      "entityId": "NASCAR_2010_TEAM_HENDRICK_MOTORSPORTS",
-      "label": "Hendrick Motorsports",
+      "entityId": "NASCAR_2010_TEAM_TOMMY_BALDWIN_RACING_TEAM_1",
+      "label": "Tommy Baldwin Racing Team 1",
       "sourceSheet": "Car_Ratings"
     },
     {
-      "entityId": "NASCAR_2010_TEAM_JOE_GIBBS_RACING",
-      "label": "Joe Gibbs Racing",
+      "entityId": "NASCAR_2010_TEAM_TRG_MOTORSPORTS_TEAM_1",
+      "label": "TRG Motorsports Team 1",
       "sourceSheet": "Car_Ratings"
     },
     {
-      "entityId": "NASCAR_2010_TEAM_JTG_DAUGHERTY_RACING_WITH_MICHAEL_WALTRIP_RACING",
-      "label": "JTG Daugherty Racing with Michael Waltrip Racing",
+      "entityId": "NASCAR_2010_TEAM_WHITNEY_MOTORSPORTS_TEAM_1",
+      "label": "Whitney Motorsports Team 1",
       "sourceSheet": "Car_Ratings"
     },
     {
-      "entityId": "NASCAR_2010_TEAM_K_AUTOMOTIVE_MOTORSPORTS",
-      "label": "K-Automotive Motorsports",
+      "entityId": "NASCAR_2010_TEAM_PENSKE_CHAMPIONSHIP_RACING_TEAM_1",
+      "label": "Penske Championship Racing Team 1",
       "sourceSheet": "Car_Ratings"
     },
     {
-      "entityId": "NASCAR_2010_TEAM_KEYED_UP_MOTORSPORTS",
-      "label": "Keyed-Up Motorsports",
+      "entityId": "NASCAR_2010_TEAM_PENSKE_CHAMPIONSHIP_RACING_TEAM_2",
+      "label": "Penske Championship Racing Team 2",
       "sourceSheet": "Car_Ratings"
     },
     {
-      "entityId": "NASCAR_2010_TEAM_KIRK_SHELMERDINE_RACING",
-      "label": "Kirk Shelmerdine Racing",
+      "entityId": "NASCAR_2010_TEAM_FRONT_ROW_MOTORSPORTS_TEAM_1",
+      "label": "Front Row Motorsports Team 1",
       "sourceSheet": "Car_Ratings"
     },
     {
-      "entityId": "NASCAR_2010_TEAM_LATITUDE_43_MOTORSPORTS",
-      "label": "Latitude 43 Motorsports",
+      "entityId": "NASCAR_2010_TEAM_FRONT_ROW_MOTORSPORTS_TEAM_2",
+      "label": "Front Row Motorsports Team 2",
       "sourceSheet": "Car_Ratings"
     },
     {
-      "entityId": "NASCAR_2010_TEAM_MICHAEL_WALTRIP_RACING",
-      "label": "Michael Waltrip Racing",
+      "entityId": "NASCAR_2010_TEAM_LATITUDE_43_MOTORSPORTS_TEAM_1",
+      "label": "Latitude 43 Motorsports Team 1",
       "sourceSheet": "Car_Ratings"
     },
     {
-      "entityId": "NASCAR_2010_TEAM_MORGAN_MCCLURE_MOTORSPORTS",
-      "label": "Morgan-McClure Motorsports",
+      "entityId": "NASCAR_2010_TEAM_RICHARD_PETTY_MOTORSPORTS_TEAM_1",
+      "label": "Richard Petty Motorsports Team 1",
       "sourceSheet": "Car_Ratings"
     },
     {
-      "entityId": "NASCAR_2010_TEAM_NEMCO_MOTORSPORTS",
-      "label": "NEMCO Motorsports",
+      "entityId": "NASCAR_2010_TEAM_RICHARD_PETTY_MOTORSPORTS_TEAM_2",
+      "label": "Richard Petty Motorsports Team 2",
       "sourceSheet": "Car_Ratings"
     },
     {
-      "entityId": "NASCAR_2010_TEAM_NORM_BENNING_RACING",
-      "label": "Norm Benning Racing",
+      "entityId": "NASCAR_2010_TEAM_ROUSH_FENWAY_RACING_TEAM_1",
+      "label": "Roush Fenway Racing Team 1",
       "sourceSheet": "Car_Ratings"
     },
     {
-      "entityId": "NASCAR_2010_TEAM_PENSKE_CHAMPIONSHIP_RACING",
-      "label": "Penske Championship Racing",
+      "entityId": "NASCAR_2010_TEAM_ROUSH_FENWAY_RACING_TEAM_2",
+      "label": "Roush Fenway Racing Team 2",
       "sourceSheet": "Car_Ratings"
     },
     {
-      "entityId": "NASCAR_2010_TEAM_PHOENIX_RACING",
-      "label": "Phoenix Racing",
+      "entityId": "NASCAR_2010_TEAM_GERMAIN_RACING_TEAM_1",
+      "label": "Germain Racing Team 1",
       "sourceSheet": "Car_Ratings"
     },
     {
-      "entityId": "NASCAR_2010_TEAM_PRISM_MOTORSPORTS",
-      "label": "Prism Motorsports",
+      "entityId": "NASCAR_2010_TEAM_JOE_GIBBS_RACING_TEAM_1",
+      "label": "Joe Gibbs Racing Team 1",
       "sourceSheet": "Car_Ratings"
     },
     {
-      "entityId": "NASCAR_2010_TEAM_R3_MOTORSPORTS",
-      "label": "R3 Motorsports",
+      "entityId": "NASCAR_2010_TEAM_JOE_GIBBS_RACING_TEAM_2",
+      "label": "Joe Gibbs Racing Team 2",
       "sourceSheet": "Car_Ratings"
     },
     {
-      "entityId": "NASCAR_2010_TEAM_RED_BULL_RACING",
-      "label": "Red Bull Racing",
+      "entityId": "NASCAR_2010_TEAM_JTG_DAUGHERTY_RACING_WITH_MICHAEL_WALTRIP_RACING_TEAM_1",
+      "label": "JTG Daugherty Racing with Michael Waltrip Racing Team 1",
       "sourceSheet": "Car_Ratings"
     },
     {
-      "entityId": "NASCAR_2010_TEAM_RICHARD_CHILDRESS_RACING",
-      "label": "Richard Childress Racing",
+      "entityId": "NASCAR_2010_TEAM_MICHAEL_WALTRIP_RACING_TEAM_1",
+      "label": "Michael Waltrip Racing Team 1",
       "sourceSheet": "Car_Ratings"
     },
     {
-      "entityId": "NASCAR_2010_TEAM_RICHARD_PETTY_MOTORSPORTS",
-      "label": "Richard Petty Motorsports",
+      "entityId": "NASCAR_2010_TEAM_PRISM_MOTORSPORTS_TEAM_1",
+      "label": "Prism Motorsports Team 1",
       "sourceSheet": "Car_Ratings"
     },
     {
-      "entityId": "NASCAR_2010_TEAM_ROBBY_GORDON_MOTORSPORTS",
-      "label": "Robby Gordon Motorsports",
+      "entityId": "NASCAR_2010_TEAM_NEMCO_MOTORSPORTS_TEAM_1",
+      "label": "NEMCO Motorsports Team 1",
       "sourceSheet": "Car_Ratings"
     },
     {
-      "entityId": "NASCAR_2010_TEAM_ROUSH_FENWAY_RACING",
-      "label": "Roush Fenway Racing",
+      "entityId": "NASCAR_2010_TEAM_RED_BULL_RACING_TEAM_1",
+      "label": "Red Bull Racing Team 1",
       "sourceSheet": "Car_Ratings"
     },
     {
-      "entityId": "NASCAR_2010_TEAM_STAVOLA_LABONTE_RACING",
-      "label": "Stavola Labonte Racing",
+      "entityId": "NASCAR_2010_TEAM_ROBBY_GORDON_MOTORSPORTS_TEAM_1",
+      "label": "Robby Gordon Motorsports Team 1",
       "sourceSheet": "Car_Ratings"
     },
     {
-      "entityId": "NASCAR_2010_TEAM_STEWART_HAAS_RACING",
-      "label": "Stewart-Haas Racing",
+      "entityId": "NASCAR_2010_TEAM_KEYED_UP_MOTORSPORTS_TEAM_1",
+      "label": "Keyed-Up Motorsports Team 1",
       "sourceSheet": "Car_Ratings"
     },
     {
-      "entityId": "NASCAR_2010_TEAM_STRATUS_RACING_GROUP",
-      "label": "Stratus Racing Group",
+      "entityId": "NASCAR_2010_TEAM_MORGAN_MCCLURE_MOTORSPORTS_TEAM_1",
+      "label": "Morgan-McClure Motorsports Team 1",
       "sourceSheet": "Car_Ratings"
     },
     {
-      "entityId": "NASCAR_2010_TEAM_TOMMY_BALDWIN_RACING",
-      "label": "Tommy Baldwin Racing",
+      "entityId": "NASCAR_2010_TEAM_NORM_BENNING_RACING_TEAM_1",
+      "label": "Norm Benning Racing Team 1",
       "sourceSheet": "Car_Ratings"
     },
     {
-      "entityId": "NASCAR_2010_TEAM_TRG_MOTORSPORTS",
-      "label": "TRG Motorsports",
+      "entityId": "NASCAR_2010_TEAM_STAVOLA_LABONTE_RACING_TEAM_1",
+      "label": "Stavola Labonte Racing Team 1",
       "sourceSheet": "Car_Ratings"
     },
     {
-      "entityId": "NASCAR_2010_TEAM_TRI_STAR_MOTORSPORTS",
-      "label": "Tri-Star Motorsports",
+      "entityId": "NASCAR_2010_TEAM_TRI_STAR_MOTORSPORTS_TEAM_1",
+      "label": "Tri-Star Motorsports Team 1",
       "sourceSheet": "Car_Ratings"
     },
     {
-      "entityId": "NASCAR_2010_TEAM_WHITNEY_MOTORSPORTS",
-      "label": "Whitney Motorsports",
+      "entityId": "NASCAR_2010_TEAM_ASH_RACING_TEAM_1",
+      "label": "Ash Racing Team 1",
       "sourceSheet": "Car_Ratings"
     },
     {
-      "entityId": "NASCAR_2010_TEAM_WOOD_BROTHERS_RACING",
-      "label": "Wood Brothers Racing",
+      "entityId": "NASCAR_2010_TEAM_K_AUTOMOTIVE_MOTORSPORTS_TEAM_1",
+      "label": "K-Automotive Motorsports Team 1",
+      "sourceSheet": "Car_Ratings"
+    },
+    {
+      "entityId": "NASCAR_2010_TEAM_STRATUS_RACING_GROUP_TEAM_1",
+      "label": "Stratus Racing Group Team 1",
+      "sourceSheet": "Car_Ratings"
+    },
+    {
+      "entityId": "NASCAR_2010_TEAM_WOOD_BROTHERS_RACING_TEAM_1",
+      "label": "Wood Brothers Racing Team 1",
+      "sourceSheet": "Car_Ratings"
+    },
+    {
+      "entityId": "NASCAR_2010_TEAM_BAM_RACING_TEAM_1",
+      "label": "BAM Racing Team 1",
+      "sourceSheet": "Car_Ratings"
+    },
+    {
+      "entityId": "NASCAR_2010_TEAM_BRAUN_RACING_TEAM_1",
+      "label": "Braun Racing Team 1",
+      "sourceSheet": "Car_Ratings"
+    },
+    {
+      "entityId": "NASCAR_2010_TEAM_GUNSELMAN_MOTORSPORTS_TEAM_1",
+      "label": "Gunselman Motorsports Team 1",
+      "sourceSheet": "Car_Ratings"
+    },
+    {
+      "entityId": "NASCAR_2010_TEAM_KIRK_SHELMERDINE_RACING_TEAM_1",
+      "label": "Kirk Shelmerdine Racing Team 1",
+      "sourceSheet": "Car_Ratings"
+    },
+    {
+      "entityId": "NASCAR_2010_TEAM_MICHAEL_WALTRIP_RACING_TEAM_2",
+      "label": "Michael Waltrip Racing Team 2",
+      "sourceSheet": "Car_Ratings"
+    },
+    {
+      "entityId": "NASCAR_2010_TEAM_NEMCO_MOTORSPORTS_TEAM_2",
+      "label": "NEMCO Motorsports Team 2",
+      "sourceSheet": "Car_Ratings"
+    },
+    {
+      "entityId": "NASCAR_2010_TEAM_R3_MOTORSPORTS_TEAM_1",
+      "label": "R3 Motorsports Team 1",
       "sourceSheet": "Car_Ratings"
     }
   ],

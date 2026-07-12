@@ -16,20 +16,18 @@ from __future__ import annotations
 import json
 import math
 import re
+import sys
 import unicodedata
 from pathlib import Path
 from statistics import mean
 
 import pandas as pd
 
-ROOT = Path("/home/ubuntu/motorsport-sim-manager")
-WORKBOOK = Path(
-    "/home/ubuntu/attachments/e0989ac8-701d-43cc-8d05-5832e862a1c8/"
-    "NASCAR_MASTER_ALL_SEASONS_RULES_POINTS_1990_2026.xlsx"
-)
-CACHE = Path("/home/ubuntu/tmp/nascar_race_cache.json")
+ROOT = Path(__file__).resolve().parents[1]
+WORKBOOK = Path(sys.argv[1]).resolve() if len(sys.argv) > 1 else ROOT / "NASCAR_MASTER_ALL_SEASONS_WORKING_PASS5_1990_2026.xlsx"
+CACHE = ROOT / "tmp" / "nascar_race_cache.json"
 
-YEARS = [1990, 2000, 2010, 2026]
+YEARS = list(range(1990, 2027))
 
 MI_TO_KM = 1.60934
 KM_TO_MI = 0.621371
@@ -109,6 +107,7 @@ NO_NUMBER_DEFAULT = {
 }
 
 RACE_CACHE: dict[str, dict] = {}
+SOURCE_SHEETS: dict[str, pd.DataFrame] = {}
 
 
 def load_cache() -> None:
@@ -526,7 +525,8 @@ def make_track_source(year: int, row: dict) -> dict:
 
 def build_team_groups(entries: pd.DataFrame) -> list[dict]:
     """Group Team_Entries into split teams. Each team is limited to 2 entries."""
-    primary = entries.drop_duplicates(subset=["EntryId"], keep="first")
+    identity_columns = ["EntryId"] if "EntryId" in entries.columns else ["Team", "Car#", "Driver"]
+    primary = entries.drop_duplicates(subset=identity_columns, keep="first")
     groups: list[dict] = []
     for team_name, team_rows in primary.groupby("Team"):
         team_rows = team_rows.reset_index(drop=True)
@@ -554,12 +554,12 @@ def generate_year(year: int) -> None:
         "youth": ROOT / "src" / "data" / "market" / f"youthProspects{year}NASCAR.ts",
     }
 
-    calendar_df = pd.read_excel(WORKBOOK, sheet_name="Calendar")
-    standings_df = pd.read_excel(WORKBOOK, sheet_name="Standings")
-    entries_df = pd.read_excel(WORKBOOK, sheet_name="Team_Entries")
-    driver_ratings_df = pd.read_excel(WORKBOOK, sheet_name="Driver_Ratings")
-    car_ratings_df = pd.read_excel(WORKBOOK, sheet_name="Car_Ratings")
-    track_ratings_df = pd.read_excel(WORKBOOK, sheet_name="Track_Ratings")
+    calendar_df = SOURCE_SHEETS["Calendar"]
+    standings_df = SOURCE_SHEETS["Standings"]
+    entries_df = SOURCE_SHEETS["Team_Entries"]
+    driver_ratings_df = SOURCE_SHEETS["Driver_Ratings"]
+    car_ratings_df = SOURCE_SHEETS["Car_Ratings"]
+    track_ratings_df = SOURCE_SHEETS["Track_Ratings"]
 
     calendar_df = calendar_df[calendar_df["Season"] == year].sort_values("Round")
     standings_df = standings_df[standings_df["Season"] == year]
@@ -578,14 +578,16 @@ def generate_year(year: int) -> None:
     races: list[dict] = []
     for _, row in calendar_df.iterrows():
         rnd = safe_int(row["Round"])
-        actual = get_actual_laps(year, rnd)
+        source_laps = safe_int(row.get("Laps"), 0)
+        actual = source_laps or get_actual_laps(year, rnd)
         tid = str(row["TrackId"]).strip()
         name = str(row["Race Name"]).strip()
         laps = compute_laps(year, tid, name, actual)
         if laps is None:
             laps = 100
         length_miles = track_length_miles(year, tid) or 2.5
-        distance_km = round(laps * length_miles * MI_TO_KM, 3)
+        source_distance = safe_float(row.get("DistanceKm"), 0.0)
+        distance_km = round(source_distance or (laps * length_miles * MI_TO_KM), 3)
         races.append(
             {
                 "round": rnd,
@@ -911,6 +913,37 @@ def generate_year(year: int) -> None:
             }
         )
 
+    # Some seasons have every rated driver assigned to a race entry. Keep the
+    # driver market usable by exposing that season's academy prospects as
+    # unsigned development drivers instead of leaving an empty hiring pool.
+    if not market_drivers:
+        for prospect in youth_prospects:
+            market_drivers.append(
+                {
+                    "id": f"market-{prospect['id']}",
+                    "name": prospect["name"],
+                    "age": prospect["age"],
+                    "nationality": prospect["nationality"],
+                    "context": "NASCAR",
+                    "marketPool": "NASCAR",
+                    "marketStatus": "Free Agent",
+                    "primaryRole": "Driver",
+                    "immediateF1Eligible": False,
+                    "skills": prospect["skills"],
+                    "overall": prospect["overall"],
+                    "potential": prospect["potential"],
+                    "potentialDelta": prospect["potentialDelta"],
+                    "developmentRate": prospect["developmentRate"],
+                    "f1Readiness": 0,
+                    "salary": 0.25,
+                    "sponsorValue": 0.1,
+                    "buyoutCost": 0.0,
+                    "negotiationDifficulty": "Low",
+                    "suggestedUse": "Development / reserve",
+                    "notes": "Unsigned NASCAR development prospect.",
+                }
+            )
+
     # Emit
     write_ts(
         out["global"],
@@ -1022,6 +1055,16 @@ def _youth_names_for_year(year: int) -> list[str]:
 
 
 def generate() -> None:
+    if not WORKBOOK.exists():
+        raise FileNotFoundError(
+            f"NASCAR source workbook not found: {WORKBOOK}. "
+            "Pass its path as the first argument."
+        )
+    global SOURCE_SHEETS
+    SOURCE_SHEETS = pd.read_excel(
+        WORKBOOK,
+        sheet_name=["Calendar", "Standings", "Team_Entries", "Driver_Ratings", "Car_Ratings", "Track_Ratings"],
+    )
     load_cache()
     for year in YEARS:
         generate_year(year)

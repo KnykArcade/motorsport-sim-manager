@@ -189,8 +189,8 @@ for (let year = 2004; year <= 2007; year++) {
   marketLoaders[`${year}-Champ Car`] = makeMarketLoader(year, 'Champ Car');
 }
 
-// NASCAR 1990/2000/2010/2026
-for (const year of [1990, 2000, 2010, 2026]) {
+// NASCAR 1990–2026
+for (const year of Array.from({ length: 37 }, (_, i) => 1990 + i)) {
   marketLoaders[`${year}-NASCAR`] = makeMarketLoader(year, 'NASCAR');
 }
 

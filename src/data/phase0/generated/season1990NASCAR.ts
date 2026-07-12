@@ -14,7 +14,7 @@ export const season1990NASCARPhase0: Phase0SeasonBundle = {
       "trackId": "TRK_NASCAR_DAYTONA",
       "trackName": "Daytona International Speedway",
       "laps": 200,
-      "distanceKm": 804.67
+      "distanceKm": 804.7
     },
     {
       "round": 2,
@@ -22,7 +22,7 @@ export const season1990NASCARPhase0: Phase0SeasonBundle = {
       "trackId": "TRK_NASCAR_RICHMOND",
       "trackName": "Richmond International Raceway",
       "laps": 400,
-      "distanceKm": 482.802
+      "distanceKm": 482.8
     },
     {
       "round": 3,
@@ -30,7 +30,7 @@ export const season1990NASCARPhase0: Phase0SeasonBundle = {
       "trackId": "TRK_NASCAR_ROCKINGHAM",
       "trackName": "North Carolina Motor Speedway",
       "laps": 492,
-      "distanceKm": 805.256
+      "distanceKm": 805.3
     },
     {
       "round": 4,
@@ -38,7 +38,7 @@ export const season1990NASCARPhase0: Phase0SeasonBundle = {
       "trackId": "TRK_NASCAR_ATLANTA",
       "trackName": "Atlanta International Raceway",
       "laps": 328,
-      "distanceKm": 812.91
+      "distanceKm": 803.4
     },
     {
       "round": 5,
@@ -46,7 +46,7 @@ export const season1990NASCARPhase0: Phase0SeasonBundle = {
       "trackId": "TRK_NASCAR_DARLINGTON",
       "trackName": "Darlington Raceway",
       "laps": 367,
-      "distanceKm": 806.798
+      "distanceKm": 806.8
     },
     {
       "round": 6,
@@ -54,7 +54,7 @@ export const season1990NASCARPhase0: Phase0SeasonBundle = {
       "trackId": "TRK_NASCAR_BRISTOL",
       "trackName": "Bristol International Raceway",
       "laps": 500,
-      "distanceKm": 428.889
+      "distanceKm": 428.9
     },
     {
       "round": 7,
@@ -62,7 +62,7 @@ export const season1990NASCARPhase0: Phase0SeasonBundle = {
       "trackId": "TRK_NASCAR_NORTH_WILKESBORO",
       "trackName": "North Wilkesboro Speedway",
       "laps": 400,
-      "distanceKm": 402.335
+      "distanceKm": 402.3
     },
     {
       "round": 8,
@@ -70,7 +70,7 @@ export const season1990NASCARPhase0: Phase0SeasonBundle = {
       "trackId": "TRK_NASCAR_MARTINSVILLE",
       "trackName": "Martinsville Speedway",
       "laps": 500,
-      "distanceKm": 423.256
+      "distanceKm": 423.3
     },
     {
       "round": 9,
@@ -78,7 +78,7 @@ export const season1990NASCARPhase0: Phase0SeasonBundle = {
       "trackId": "TRK_NASCAR_TALLADEGA",
       "trackName": "Talladega Superspeedway",
       "laps": 188,
-      "distanceKm": 804.799
+      "distanceKm": 804.8
     },
     {
       "round": 10,
@@ -86,7 +86,7 @@ export const season1990NASCARPhase0: Phase0SeasonBundle = {
       "trackId": "TRK_NASCAR_CHARLOTTE",
       "trackName": "Charlotte Motor Speedway",
       "laps": 400,
-      "distanceKm": 965.604
+      "distanceKm": 965.6
     },
     {
       "round": 11,
@@ -94,7 +94,7 @@ export const season1990NASCARPhase0: Phase0SeasonBundle = {
       "trackId": "TRK_NASCAR_DOVER",
       "trackName": "Dover Downs International Speedway",
       "laps": 500,
-      "distanceKm": 804.67
+      "distanceKm": 804.7
     },
     {
       "round": 12,
@@ -102,7 +102,7 @@ export const season1990NASCARPhase0: Phase0SeasonBundle = {
       "trackId": "TRK_NASCAR_SONOMA",
       "trackName": "Sears Point Raceway",
       "laps": 74,
-      "distanceKm": 300.11
+      "distanceKm": 300.1
     },
     {
       "round": 13,
@@ -110,7 +110,7 @@ export const season1990NASCARPhase0: Phase0SeasonBundle = {
       "trackId": "TRK_NASCAR_POCONO",
       "trackName": "Pocono International Raceway",
       "laps": 200,
-      "distanceKm": 804.67
+      "distanceKm": 804.7
     },
     {
       "round": 14,
@@ -118,7 +118,7 @@ export const season1990NASCARPhase0: Phase0SeasonBundle = {
       "trackId": "TRK_NASCAR_MICHIGAN",
       "trackName": "Michigan International Speedway",
       "laps": 200,
-      "distanceKm": 643.736
+      "distanceKm": 643.7
     },
     {
       "round": 15,
@@ -126,7 +126,7 @@ export const season1990NASCARPhase0: Phase0SeasonBundle = {
       "trackId": "TRK_NASCAR_DAYTONA",
       "trackName": "Daytona International Speedway",
       "laps": 160,
-      "distanceKm": 643.736
+      "distanceKm": 643.7
     },
     {
       "round": 16,
@@ -134,7 +134,7 @@ export const season1990NASCARPhase0: Phase0SeasonBundle = {
       "trackId": "TRK_NASCAR_POCONO",
       "trackName": "Pocono International Raceway",
       "laps": 200,
-      "distanceKm": 804.67
+      "distanceKm": 804.7
     },
     {
       "round": 17,
@@ -142,7 +142,7 @@ export const season1990NASCARPhase0: Phase0SeasonBundle = {
       "trackId": "TRK_NASCAR_TALLADEGA",
       "trackName": "Talladega Superspeedway",
       "laps": 188,
-      "distanceKm": 804.799
+      "distanceKm": 804.8
     },
     {
       "round": 18,
@@ -150,7 +150,7 @@ export const season1990NASCARPhase0: Phase0SeasonBundle = {
       "trackId": "TRK_NASCAR_WATKINS_GLEN",
       "trackName": "Watkins Glen International",
       "laps": 90,
-      "distanceKm": 354.859
+      "distanceKm": 354.9
     },
     {
       "round": 19,
@@ -158,7 +158,7 @@ export const season1990NASCARPhase0: Phase0SeasonBundle = {
       "trackId": "TRK_NASCAR_MICHIGAN",
       "trackName": "Michigan International Speedway",
       "laps": 200,
-      "distanceKm": 643.736
+      "distanceKm": 643.7
     },
     {
       "round": 20,
@@ -166,7 +166,7 @@ export const season1990NASCARPhase0: Phase0SeasonBundle = {
       "trackId": "TRK_NASCAR_BRISTOL",
       "trackName": "Bristol International Raceway",
       "laps": 500,
-      "distanceKm": 428.889
+      "distanceKm": 428.9
     },
     {
       "round": 21,
@@ -174,7 +174,7 @@ export const season1990NASCARPhase0: Phase0SeasonBundle = {
       "trackId": "TRK_NASCAR_DARLINGTON",
       "trackName": "Darlington Raceway",
       "laps": 367,
-      "distanceKm": 806.798
+      "distanceKm": 806.8
     },
     {
       "round": 22,
@@ -182,7 +182,7 @@ export const season1990NASCARPhase0: Phase0SeasonBundle = {
       "trackId": "TRK_NASCAR_RICHMOND",
       "trackName": "Richmond International Raceway",
       "laps": 400,
-      "distanceKm": 482.802
+      "distanceKm": 482.8
     },
     {
       "round": 23,
@@ -190,7 +190,7 @@ export const season1990NASCARPhase0: Phase0SeasonBundle = {
       "trackId": "TRK_NASCAR_DOVER",
       "trackName": "Dover Downs International Speedway",
       "laps": 500,
-      "distanceKm": 804.67
+      "distanceKm": 804.7
     },
     {
       "round": 24,
@@ -198,7 +198,7 @@ export const season1990NASCARPhase0: Phase0SeasonBundle = {
       "trackId": "TRK_NASCAR_MARTINSVILLE",
       "trackName": "Martinsville Speedway",
       "laps": 500,
-      "distanceKm": 423.256
+      "distanceKm": 423.3
     },
     {
       "round": 25,
@@ -206,7 +206,7 @@ export const season1990NASCARPhase0: Phase0SeasonBundle = {
       "trackId": "TRK_NASCAR_NORTH_WILKESBORO",
       "trackName": "North Wilkesboro Speedway",
       "laps": 400,
-      "distanceKm": 402.335
+      "distanceKm": 402.3
     },
     {
       "round": 26,
@@ -214,7 +214,7 @@ export const season1990NASCARPhase0: Phase0SeasonBundle = {
       "trackId": "TRK_NASCAR_CHARLOTTE",
       "trackName": "Charlotte Motor Speedway",
       "laps": 334,
-      "distanceKm": 806.279
+      "distanceKm": 806.3
     },
     {
       "round": 27,
@@ -222,7 +222,7 @@ export const season1990NASCARPhase0: Phase0SeasonBundle = {
       "trackId": "TRK_NASCAR_ROCKINGHAM",
       "trackName": "North Carolina Motor Speedway",
       "laps": 492,
-      "distanceKm": 805.256
+      "distanceKm": 805.3
     },
     {
       "round": 28,
@@ -230,7 +230,7 @@ export const season1990NASCARPhase0: Phase0SeasonBundle = {
       "trackId": "TRK_NASCAR_PHOENIX",
       "trackName": "Phoenix International Raceway",
       "laps": 312,
-      "distanceKm": 502.114
+      "distanceKm": 502.1
     },
     {
       "round": 29,
@@ -238,7 +238,7 @@ export const season1990NASCARPhase0: Phase0SeasonBundle = {
       "trackId": "TRK_NASCAR_ATLANTA",
       "trackName": "Atlanta Motor Speedway",
       "laps": 328,
-      "distanceKm": 812.91
+      "distanceKm": 803.4
     }
   ],
   "standings": [
@@ -280,7 +280,7 @@ export const season1990NASCARPhase0: Phase0SeasonBundle = {
     },
     {
       "driverId": "driver-nascar-1990-ricky-rudd",
-      "teamId": "NASCAR_1990_TEAM_HENDRICK_MOTORSPORTS",
+      "teamId": "NASCAR_1990_TEAM_HENDRICK_MOTORSPORTS_TEAM_1",
       "position": 7,
       "points": 3601.0
     },
@@ -298,7 +298,7 @@ export const season1990NASCARPhase0: Phase0SeasonBundle = {
     },
     {
       "driverId": "driver-nascar-1990-ken-schrader",
-      "teamId": "NASCAR_1990_TEAM_HENDRICK_MOTORSPORTS",
+      "teamId": "NASCAR_1990_TEAM_HENDRICK_MOTORSPORTS_TEAM_2",
       "position": 10,
       "points": 3572.0
     },
@@ -358,7 +358,7 @@ export const season1990NASCARPhase0: Phase0SeasonBundle = {
     },
     {
       "driverId": "driver-nascar-1990-darrell-waltrip",
-      "teamId": "NASCAR_1990_TEAM_HENDRICK_MOTORSPORTS",
+      "teamId": "NASCAR_1990_TEAM_HENDRICK_MOTORSPORTS_TEAM_1",
       "position": 20,
       "points": 3013.0
     },
@@ -430,7 +430,7 @@ export const season1990NASCARPhase0: Phase0SeasonBundle = {
     },
     {
       "driverId": "driver-nascar-1990-greg-sacks",
-      "teamId": "NASCAR_1990_TEAM_HENDRICK_MOTORSPORTS",
+      "teamId": "NASCAR_1990_TEAM_HENDRICK_MOTORSPORTS_TEAM_1",
       "position": 32,
       "points": 1663.0
     },
@@ -454,7 +454,7 @@ export const season1990NASCARPhase0: Phase0SeasonBundle = {
     },
     {
       "driverId": "driver-nascar-1990-jimmy-horton",
-      "teamId": "NASCAR_1990_TEAM_HENDRICK_MOTORSPORTS",
+      "teamId": "NASCAR_1990_TEAM_HENDRICK_MOTORSPORTS_TEAM_1",
       "position": 36,
       "points": 756.0
     },
@@ -682,7 +682,7 @@ export const season1990NASCARPhase0: Phase0SeasonBundle = {
     },
     {
       "driverId": "driver-nascar-1990-stan-barrett",
-      "teamId": "NASCAR_1990_TEAM_HENDRICK_MOTORSPORTS",
+      "teamId": "NASCAR_1990_TEAM_HENDRICK_MOTORSPORTS_TEAM_1",
       "position": 74,
       "points": 112.0
     },
@@ -716,9 +716,23 @@ export const season1990NASCARPhase0: Phase0SeasonBundle = {
       "engine": "Pontiac"
     },
     {
-      "teamId": "NASCAR_1990_TEAM_BOBBY_ALLISON_RACING",
+      "teamId": "NASCAR_1990_TEAM_BOBBY_ALLISON_RACING_TEAM_1",
       "carNumber": "12",
       "driverId": "driver-nascar-1990-mike-alexander",
+      "chassis": "Buick",
+      "engine": "Buick"
+    },
+    {
+      "teamId": "NASCAR_1990_TEAM_BOBBY_ALLISON_RACING_TEAM_1",
+      "carNumber": "12",
+      "driverId": "driver-nascar-1990-jeff-purvis",
+      "chassis": "Buick",
+      "engine": "Buick"
+    },
+    {
+      "teamId": "NASCAR_1990_TEAM_BOBBY_ALLISON_RACING_TEAM_2",
+      "carNumber": "12",
+      "driverId": "driver-nascar-1990-hut-stricklin",
       "chassis": "Buick",
       "engine": "Buick"
     },
@@ -744,16 +758,37 @@ export const season1990NASCARPhase0: Phase0SeasonBundle = {
       "engine": "Oldsmobile"
     },
     {
-      "teamId": "NASCAR_1990_TEAM_HENDRICK_MOTORSPORTS_TEAM_1",
+      "teamId": "NASCAR_1990_TEAM_HENDRICK_MOTORSPORTS_TEAM_1_TEAM_1",
       "carNumber": "5",
       "driverId": "driver-nascar-1990-ricky-rudd",
       "chassis": "Chevrolet",
       "engine": "Chevrolet"
     },
     {
-      "teamId": "NASCAR_1990_TEAM_HENDRICK_MOTORSPORTS_TEAM_1",
+      "teamId": "NASCAR_1990_TEAM_HENDRICK_MOTORSPORTS_TEAM_1_TEAM_1",
       "carNumber": "17",
       "driverId": "driver-nascar-1990-darrell-waltrip",
+      "chassis": "Chevrolet",
+      "engine": "Chevrolet"
+    },
+    {
+      "teamId": "NASCAR_1990_TEAM_HENDRICK_MOTORSPORTS_TEAM_1_TEAM_2",
+      "carNumber": "17",
+      "driverId": "driver-nascar-1990-jimmy-horton",
+      "chassis": "Chevrolet",
+      "engine": "Chevrolet"
+    },
+    {
+      "teamId": "NASCAR_1990_TEAM_HENDRICK_MOTORSPORTS_TEAM_1_TEAM_2",
+      "carNumber": "17",
+      "driverId": "driver-nascar-1990-sarel-van-der-merwe",
+      "chassis": "Chevrolet",
+      "engine": "Chevrolet"
+    },
+    {
+      "teamId": "NASCAR_1990_TEAM_HENDRICK_MOTORSPORTS_TEAM_1_TEAM_3",
+      "carNumber": "17",
+      "driverId": "driver-nascar-1990-greg-sacks",
       "chassis": "Chevrolet",
       "engine": "Chevrolet"
     },
@@ -786,6 +821,13 @@ export const season1990NASCARPhase0: Phase0SeasonBundle = {
       "engine": "Oldsmobile"
     },
     {
+      "teamId": "NASCAR_1990_TEAM_LEO_JACKSON_MOTORSPORTS",
+      "carNumber": "33",
+      "driverId": "driver-nascar-1990-phil-parsons",
+      "chassis": "Oldsmobile",
+      "engine": "Oldsmobile"
+    },
+    {
       "teamId": "NASCAR_1990_TEAM_MARCIS_AUTO_RACING",
       "carNumber": "71",
       "driverId": "driver-nascar-1990-dave-marcis",
@@ -814,9 +856,37 @@ export const season1990NASCARPhase0: Phase0SeasonBundle = {
       "engine": "Oldsmobile"
     },
     {
-      "teamId": "NASCAR_1990_TEAM_MOROSO_RACING",
+      "teamId": "NASCAR_1990_TEAM_MORGAN_MCCLURE_MOTORSPORTS",
+      "carNumber": "4",
+      "driverId": "driver-nascar-1990-ernie-irvan",
+      "chassis": "Chevrolet",
+      "engine": "Chevrolet"
+    },
+    {
+      "teamId": "NASCAR_1990_TEAM_MOROSO_RACING_TEAM_1",
       "carNumber": "20",
       "driverId": "driver-nascar-1990-rob-moroso",
+      "chassis": "Oldsmobile",
+      "engine": "Oldsmobile"
+    },
+    {
+      "teamId": "NASCAR_1990_TEAM_MOROSO_RACING_TEAM_1",
+      "carNumber": "20",
+      "driverId": "driver-nascar-1990-jimmy-hensley",
+      "chassis": "Oldsmobile",
+      "engine": "Oldsmobile"
+    },
+    {
+      "teamId": "NASCAR_1990_TEAM_MOROSO_RACING_TEAM_2",
+      "carNumber": "20",
+      "driverId": "driver-nascar-1990-chad-little",
+      "chassis": "Oldsmobile",
+      "engine": "Oldsmobile"
+    },
+    {
+      "teamId": "NASCAR_1990_TEAM_MOROSO_RACING_TEAM_2",
+      "carNumber": "20",
+      "driverId": "driver-nascar-1990-steve-grissom",
       "chassis": "Oldsmobile",
       "engine": "Oldsmobile"
     },
@@ -824,6 +894,13 @@ export const season1990NASCARPhase0: Phase0SeasonBundle = {
       "teamId": "NASCAR_1990_TEAM_OSTERLUND_RACING",
       "carNumber": "57",
       "driverId": "driver-nascar-1990-jimmy-spencer",
+      "chassis": "Pontiac",
+      "engine": "Pontiac"
+    },
+    {
+      "teamId": "NASCAR_1990_TEAM_OSTERLUND_RACING",
+      "carNumber": "57",
+      "driverId": "driver-nascar-1990-jim-bown",
       "chassis": "Pontiac",
       "engine": "Pontiac"
     },
@@ -891,6 +968,13 @@ export const season1990NASCARPhase0: Phase0SeasonBundle = {
       "engine": "Chevrolet"
     },
     {
+      "teamId": "NASCAR_1990_TEAM_TRAVIS_CARTER_ENTERPRISES",
+      "carNumber": "98",
+      "driverId": "driver-nascar-1990-rick-mast",
+      "chassis": "Chevrolet",
+      "engine": "Chevrolet"
+    },
+    {
       "teamId": "NASCAR_1990_TEAM_WHITCOMB_RACING",
       "carNumber": "10",
       "driverId": "driver-nascar-1990-derrike-cope",
@@ -901,6 +985,13 @@ export const season1990NASCARPhase0: Phase0SeasonBundle = {
       "teamId": "NASCAR_1990_TEAM_WOOD_BROTHERS_RACING",
       "carNumber": "21",
       "driverId": "driver-nascar-1990-neil-bonnett",
+      "chassis": "Ford",
+      "engine": "Ford"
+    },
+    {
+      "teamId": "NASCAR_1990_TEAM_WOOD_BROTHERS_RACING",
+      "carNumber": "21",
+      "driverId": "driver-nascar-1990-dale-jarrett",
       "chassis": "Ford",
       "engine": "Ford"
     }
@@ -1319,8 +1410,13 @@ export const season1990NASCARPhase0: Phase0SeasonBundle = {
       "sourceSheet": "Car_Ratings"
     },
     {
-      "entityId": "NASCAR_1990_TEAM_HENDRICK_MOTORSPORTS",
-      "label": "Hendrick Motorsports",
+      "entityId": "NASCAR_1990_TEAM_HENDRICK_MOTORSPORTS_TEAM_1",
+      "label": "Hendrick Motorsports Team 1",
+      "sourceSheet": "Car_Ratings"
+    },
+    {
+      "entityId": "NASCAR_1990_TEAM_HENDRICK_MOTORSPORTS_TEAM_2",
+      "label": "Hendrick Motorsports Team 2",
       "sourceSheet": "Car_Ratings"
     },
     {

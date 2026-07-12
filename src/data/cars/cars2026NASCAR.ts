@@ -9,11 +9,11 @@ export const cars2026NASCAR: Car[] = [
     "teamId": "t-2026-nascar-23xi-racing-team-1",
     "seasonYear": 2026,
     "ratings": {
-      "enginePower": 75,
-      "aeroEfficiency": 75,
-      "mechanicalGrip": 75,
-      "reliability": 75,
-      "pitCrewOperations": 75
+      "enginePower": 97,
+      "aeroEfficiency": 95,
+      "mechanicalGrip": 94,
+      "reliability": 94,
+      "pitCrewOperations": 95
     },
     "condition": 100,
     "developmentLevel": {
@@ -29,11 +29,11 @@ export const cars2026NASCAR: Car[] = [
     "teamId": "t-2026-nascar-23xi-racing-team-2",
     "seasonYear": 2026,
     "ratings": {
-      "enginePower": 75,
-      "aeroEfficiency": 75,
-      "mechanicalGrip": 75,
-      "reliability": 75,
-      "pitCrewOperations": 75
+      "enginePower": 64,
+      "aeroEfficiency": 62,
+      "mechanicalGrip": 61,
+      "reliability": 61,
+      "pitCrewOperations": 62
     },
     "condition": 100,
     "developmentLevel": {
@@ -49,11 +49,11 @@ export const cars2026NASCAR: Car[] = [
     "teamId": "t-2026-nascar-beard-motorsports",
     "seasonYear": 2026,
     "ratings": {
-      "enginePower": 35,
-      "aeroEfficiency": 35,
-      "mechanicalGrip": 35,
-      "reliability": 35,
-      "pitCrewOperations": 35
+      "enginePower": 45,
+      "aeroEfficiency": 43,
+      "mechanicalGrip": 42,
+      "reliability": 42,
+      "pitCrewOperations": 43
     },
     "condition": 100,
     "developmentLevel": {
@@ -69,11 +69,11 @@ export const cars2026NASCAR: Car[] = [
     "teamId": "t-2026-nascar-front-row-motorsports-team-1",
     "seasonYear": 2026,
     "ratings": {
-      "enginePower": 58,
-      "aeroEfficiency": 58,
-      "mechanicalGrip": 58,
-      "reliability": 58,
-      "pitCrewOperations": 58
+      "enginePower": 71,
+      "aeroEfficiency": 69,
+      "mechanicalGrip": 68,
+      "reliability": 68,
+      "pitCrewOperations": 69
     },
     "condition": 100,
     "developmentLevel": {
@@ -89,11 +89,11 @@ export const cars2026NASCAR: Car[] = [
     "teamId": "t-2026-nascar-front-row-motorsports-team-2",
     "seasonYear": 2026,
     "ratings": {
-      "enginePower": 58,
-      "aeroEfficiency": 58,
-      "mechanicalGrip": 58,
-      "reliability": 58,
-      "pitCrewOperations": 58
+      "enginePower": 47,
+      "aeroEfficiency": 45,
+      "mechanicalGrip": 44,
+      "reliability": 44,
+      "pitCrewOperations": 45
     },
     "condition": 100,
     "developmentLevel": {
@@ -105,15 +105,55 @@ export const cars2026NASCAR: Car[] = [
     }
   },
   {
-    "id": "car-2026-nascar-garage-66",
-    "teamId": "t-2026-nascar-garage-66",
+    "id": "car-2026-nascar-garage-66-team-1",
+    "teamId": "t-2026-nascar-garage-66-team-1",
     "seasonYear": 2026,
     "ratings": {
-      "enginePower": 35,
-      "aeroEfficiency": 35,
-      "mechanicalGrip": 35,
-      "reliability": 35,
-      "pitCrewOperations": 35
+      "enginePower": 52,
+      "aeroEfficiency": 50,
+      "mechanicalGrip": 49,
+      "reliability": 49,
+      "pitCrewOperations": 50
+    },
+    "condition": 100,
+    "developmentLevel": {
+      "enginePower": 0,
+      "aeroEfficiency": 0,
+      "mechanicalGrip": 0,
+      "reliability": 0,
+      "pitCrewOperations": 0
+    }
+  },
+  {
+    "id": "car-2026-nascar-garage-66-team-2",
+    "teamId": "t-2026-nascar-garage-66-team-2",
+    "seasonYear": 2026,
+    "ratings": {
+      "enginePower": 52,
+      "aeroEfficiency": 50,
+      "mechanicalGrip": 49,
+      "reliability": 49,
+      "pitCrewOperations": 50
+    },
+    "condition": 100,
+    "developmentLevel": {
+      "enginePower": 0,
+      "aeroEfficiency": 0,
+      "mechanicalGrip": 0,
+      "reliability": 0,
+      "pitCrewOperations": 0
+    }
+  },
+  {
+    "id": "car-2026-nascar-garage-66-team-3",
+    "teamId": "t-2026-nascar-garage-66-team-3",
+    "seasonYear": 2026,
+    "ratings": {
+      "enginePower": 52,
+      "aeroEfficiency": 50,
+      "mechanicalGrip": 49,
+      "reliability": 49,
+      "pitCrewOperations": 50
     },
     "condition": 100,
     "developmentLevel": {
@@ -129,11 +169,11 @@ export const cars2026NASCAR: Car[] = [
     "teamId": "t-2026-nascar-haas-factory-team",
     "seasonYear": 2026,
     "ratings": {
-      "enginePower": 40,
-      "aeroEfficiency": 40,
-      "mechanicalGrip": 40,
-      "reliability": 40,
-      "pitCrewOperations": 40
+      "enginePower": 64,
+      "aeroEfficiency": 62,
+      "mechanicalGrip": 61,
+      "reliability": 61,
+      "pitCrewOperations": 62
     },
     "condition": 100,
     "developmentLevel": {
@@ -149,11 +189,11 @@ export const cars2026NASCAR: Car[] = [
     "teamId": "t-2026-nascar-hendrick-motorsports-team-1",
     "seasonYear": 2026,
     "ratings": {
-      "enginePower": 85,
-      "aeroEfficiency": 85,
-      "mechanicalGrip": 85,
-      "reliability": 85,
-      "pitCrewOperations": 85
+      "enginePower": 97,
+      "aeroEfficiency": 95,
+      "mechanicalGrip": 94,
+      "reliability": 94,
+      "pitCrewOperations": 95
     },
     "condition": 100,
     "developmentLevel": {
@@ -165,15 +205,35 @@ export const cars2026NASCAR: Car[] = [
     }
   },
   {
-    "id": "car-2026-nascar-hendrick-motorsports-team-2",
-    "teamId": "t-2026-nascar-hendrick-motorsports-team-2",
+    "id": "car-2026-nascar-hendrick-motorsports-team-2-team-1",
+    "teamId": "t-2026-nascar-hendrick-motorsports-team-2-team-1",
     "seasonYear": 2026,
     "ratings": {
-      "enginePower": 85,
-      "aeroEfficiency": 85,
-      "mechanicalGrip": 85,
-      "reliability": 85,
-      "pitCrewOperations": 85
+      "enginePower": 82,
+      "aeroEfficiency": 80,
+      "mechanicalGrip": 79,
+      "reliability": 79,
+      "pitCrewOperations": 80
+    },
+    "condition": 100,
+    "developmentLevel": {
+      "enginePower": 0,
+      "aeroEfficiency": 0,
+      "mechanicalGrip": 0,
+      "reliability": 0,
+      "pitCrewOperations": 0
+    }
+  },
+  {
+    "id": "car-2026-nascar-hendrick-motorsports-team-2-team-2",
+    "teamId": "t-2026-nascar-hendrick-motorsports-team-2-team-2",
+    "seasonYear": 2026,
+    "ratings": {
+      "enginePower": 82,
+      "aeroEfficiency": 80,
+      "mechanicalGrip": 79,
+      "reliability": 79,
+      "pitCrewOperations": 80
     },
     "condition": 100,
     "developmentLevel": {
@@ -189,11 +249,11 @@ export const cars2026NASCAR: Car[] = [
     "teamId": "t-2026-nascar-hyak-motorsports",
     "seasonYear": 2026,
     "ratings": {
-      "enginePower": 43,
-      "aeroEfficiency": 43,
-      "mechanicalGrip": 43,
-      "reliability": 43,
-      "pitCrewOperations": 43
+      "enginePower": 72,
+      "aeroEfficiency": 70,
+      "mechanicalGrip": 69,
+      "reliability": 69,
+      "pitCrewOperations": 70
     },
     "condition": 100,
     "developmentLevel": {
@@ -209,11 +269,11 @@ export const cars2026NASCAR: Car[] = [
     "teamId": "t-2026-nascar-jr-motorsports",
     "seasonYear": 2026,
     "ratings": {
-      "enginePower": 35,
-      "aeroEfficiency": 35,
-      "mechanicalGrip": 35,
-      "reliability": 35,
-      "pitCrewOperations": 35
+      "enginePower": 43,
+      "aeroEfficiency": 41,
+      "mechanicalGrip": 40,
+      "reliability": 40,
+      "pitCrewOperations": 41
     },
     "condition": 100,
     "developmentLevel": {
@@ -229,11 +289,11 @@ export const cars2026NASCAR: Car[] = [
     "teamId": "t-2026-nascar-joe-gibbs-racing-team-1",
     "seasonYear": 2026,
     "ratings": {
-      "enginePower": 99,
-      "aeroEfficiency": 99,
-      "mechanicalGrip": 99,
-      "reliability": 99,
-      "pitCrewOperations": 99
+      "enginePower": 100,
+      "aeroEfficiency": 98,
+      "mechanicalGrip": 97,
+      "reliability": 97,
+      "pitCrewOperations": 98
     },
     "condition": 100,
     "developmentLevel": {
@@ -249,11 +309,11 @@ export const cars2026NASCAR: Car[] = [
     "teamId": "t-2026-nascar-joe-gibbs-racing-team-2",
     "seasonYear": 2026,
     "ratings": {
-      "enginePower": 99,
-      "aeroEfficiency": 99,
-      "mechanicalGrip": 99,
-      "reliability": 99,
-      "pitCrewOperations": 99
+      "enginePower": 94,
+      "aeroEfficiency": 92,
+      "mechanicalGrip": 91,
+      "reliability": 91,
+      "pitCrewOperations": 92
     },
     "condition": 100,
     "developmentLevel": {
@@ -265,15 +325,15 @@ export const cars2026NASCAR: Car[] = [
     }
   },
   {
-    "id": "car-2026-nascar-kaulig-racing",
-    "teamId": "t-2026-nascar-kaulig-racing",
+    "id": "car-2026-nascar-kaulig-racing-team-1",
+    "teamId": "t-2026-nascar-kaulig-racing-team-1",
     "seasonYear": 2026,
     "ratings": {
-      "enginePower": 51,
-      "aeroEfficiency": 51,
-      "mechanicalGrip": 51,
-      "reliability": 51,
-      "pitCrewOperations": 51
+      "enginePower": 74,
+      "aeroEfficiency": 72,
+      "mechanicalGrip": 71,
+      "reliability": 71,
+      "pitCrewOperations": 72
     },
     "condition": 100,
     "developmentLevel": {
@@ -289,11 +349,11 @@ export const cars2026NASCAR: Car[] = [
     "teamId": "t-2026-nascar-legacy-motor-club-team-1",
     "seasonYear": 2026,
     "ratings": {
-      "enginePower": 54,
-      "aeroEfficiency": 54,
-      "mechanicalGrip": 54,
-      "reliability": 54,
-      "pitCrewOperations": 54
+      "enginePower": 82,
+      "aeroEfficiency": 80,
+      "mechanicalGrip": 79,
+      "reliability": 79,
+      "pitCrewOperations": 80
     },
     "condition": 100,
     "developmentLevel": {
@@ -309,11 +369,11 @@ export const cars2026NASCAR: Car[] = [
     "teamId": "t-2026-nascar-legacy-motor-club-team-2",
     "seasonYear": 2026,
     "ratings": {
-      "enginePower": 54,
-      "aeroEfficiency": 54,
-      "mechanicalGrip": 54,
-      "reliability": 54,
-      "pitCrewOperations": 54
+      "enginePower": 55,
+      "aeroEfficiency": 53,
+      "mechanicalGrip": 52,
+      "reliability": 52,
+      "pitCrewOperations": 53
     },
     "condition": 100,
     "developmentLevel": {
@@ -325,15 +385,35 @@ export const cars2026NASCAR: Car[] = [
     }
   },
   {
-    "id": "car-2026-nascar-live-fast-motorsports",
-    "teamId": "t-2026-nascar-live-fast-motorsports",
+    "id": "car-2026-nascar-live-fast-motorsports-team-1",
+    "teamId": "t-2026-nascar-live-fast-motorsports-team-1",
     "seasonYear": 2026,
     "ratings": {
-      "enginePower": 35,
-      "aeroEfficiency": 35,
-      "mechanicalGrip": 35,
-      "reliability": 35,
-      "pitCrewOperations": 35
+      "enginePower": 49,
+      "aeroEfficiency": 47,
+      "mechanicalGrip": 46,
+      "reliability": 46,
+      "pitCrewOperations": 47
+    },
+    "condition": 100,
+    "developmentLevel": {
+      "enginePower": 0,
+      "aeroEfficiency": 0,
+      "mechanicalGrip": 0,
+      "reliability": 0,
+      "pitCrewOperations": 0
+    }
+  },
+  {
+    "id": "car-2026-nascar-live-fast-motorsports-team-2",
+    "teamId": "t-2026-nascar-live-fast-motorsports-team-2",
+    "seasonYear": 2026,
+    "ratings": {
+      "enginePower": 49,
+      "aeroEfficiency": 47,
+      "mechanicalGrip": 46,
+      "reliability": 46,
+      "pitCrewOperations": 47
     },
     "condition": 100,
     "developmentLevel": {
@@ -349,11 +429,11 @@ export const cars2026NASCAR: Car[] = [
     "teamId": "t-2026-nascar-ny-racing-team",
     "seasonYear": 2026,
     "ratings": {
-      "enginePower": 35,
-      "aeroEfficiency": 35,
-      "mechanicalGrip": 35,
-      "reliability": 35,
-      "pitCrewOperations": 35
+      "enginePower": 39,
+      "aeroEfficiency": 37,
+      "mechanicalGrip": 36,
+      "reliability": 36,
+      "pitCrewOperations": 37
     },
     "condition": 100,
     "developmentLevel": {
@@ -369,11 +449,11 @@ export const cars2026NASCAR: Car[] = [
     "teamId": "t-2026-nascar-rfk-racing-team-1",
     "seasonYear": 2026,
     "ratings": {
-      "enginePower": 70,
-      "aeroEfficiency": 70,
-      "mechanicalGrip": 70,
-      "reliability": 70,
-      "pitCrewOperations": 70
+      "enginePower": 92,
+      "aeroEfficiency": 90,
+      "mechanicalGrip": 89,
+      "reliability": 89,
+      "pitCrewOperations": 90
     },
     "condition": 100,
     "developmentLevel": {
@@ -389,11 +469,11 @@ export const cars2026NASCAR: Car[] = [
     "teamId": "t-2026-nascar-rfk-racing-team-2",
     "seasonYear": 2026,
     "ratings": {
-      "enginePower": 70,
-      "aeroEfficiency": 70,
-      "mechanicalGrip": 70,
-      "reliability": 70,
-      "pitCrewOperations": 70
+      "enginePower": 59,
+      "aeroEfficiency": 57,
+      "mechanicalGrip": 56,
+      "reliability": 56,
+      "pitCrewOperations": 57
     },
     "condition": 100,
     "developmentLevel": {
@@ -405,15 +485,35 @@ export const cars2026NASCAR: Car[] = [
     }
   },
   {
-    "id": "car-2026-nascar-richard-childress-racing-team-1",
-    "teamId": "t-2026-nascar-richard-childress-racing-team-1",
+    "id": "car-2026-nascar-richard-childress-racing-team-1-team-1",
+    "teamId": "t-2026-nascar-richard-childress-racing-team-1-team-1",
     "seasonYear": 2026,
     "ratings": {
-      "enginePower": 42,
-      "aeroEfficiency": 42,
-      "mechanicalGrip": 42,
-      "reliability": 42,
-      "pitCrewOperations": 42
+      "enginePower": 75,
+      "aeroEfficiency": 73,
+      "mechanicalGrip": 72,
+      "reliability": 72,
+      "pitCrewOperations": 73
+    },
+    "condition": 100,
+    "developmentLevel": {
+      "enginePower": 0,
+      "aeroEfficiency": 0,
+      "mechanicalGrip": 0,
+      "reliability": 0,
+      "pitCrewOperations": 0
+    }
+  },
+  {
+    "id": "car-2026-nascar-richard-childress-racing-team-1-team-2",
+    "teamId": "t-2026-nascar-richard-childress-racing-team-1-team-2",
+    "seasonYear": 2026,
+    "ratings": {
+      "enginePower": 75,
+      "aeroEfficiency": 73,
+      "mechanicalGrip": 72,
+      "reliability": 72,
+      "pitCrewOperations": 73
     },
     "condition": 100,
     "developmentLevel": {
@@ -429,11 +529,11 @@ export const cars2026NASCAR: Car[] = [
     "teamId": "t-2026-nascar-richard-childress-racing-team-2",
     "seasonYear": 2026,
     "ratings": {
-      "enginePower": 42,
-      "aeroEfficiency": 42,
-      "mechanicalGrip": 42,
-      "reliability": 42,
-      "pitCrewOperations": 42
+      "enginePower": 40,
+      "aeroEfficiency": 38,
+      "mechanicalGrip": 37,
+      "reliability": 37,
+      "pitCrewOperations": 38
     },
     "condition": 100,
     "developmentLevel": {
@@ -449,11 +549,11 @@ export const cars2026NASCAR: Car[] = [
     "teamId": "t-2026-nascar-rick-ware-racing",
     "seasonYear": 2026,
     "ratings": {
-      "enginePower": 39,
-      "aeroEfficiency": 39,
-      "mechanicalGrip": 39,
-      "reliability": 39,
-      "pitCrewOperations": 39
+      "enginePower": 57,
+      "aeroEfficiency": 55,
+      "mechanicalGrip": 54,
+      "reliability": 54,
+      "pitCrewOperations": 55
     },
     "condition": 100,
     "developmentLevel": {
@@ -469,11 +569,11 @@ export const cars2026NASCAR: Car[] = [
     "teamId": "t-2026-nascar-spire-motorsports-team-1",
     "seasonYear": 2026,
     "ratings": {
-      "enginePower": 71,
-      "aeroEfficiency": 71,
-      "mechanicalGrip": 71,
-      "reliability": 71,
-      "pitCrewOperations": 71
+      "enginePower": 86,
+      "aeroEfficiency": 84,
+      "mechanicalGrip": 83,
+      "reliability": 83,
+      "pitCrewOperations": 84
     },
     "condition": 100,
     "developmentLevel": {
@@ -489,11 +589,11 @@ export const cars2026NASCAR: Car[] = [
     "teamId": "t-2026-nascar-spire-motorsports-team-2",
     "seasonYear": 2026,
     "ratings": {
-      "enginePower": 71,
-      "aeroEfficiency": 71,
-      "mechanicalGrip": 71,
-      "reliability": 71,
-      "pitCrewOperations": 71
+      "enginePower": 93,
+      "aeroEfficiency": 91,
+      "mechanicalGrip": 90,
+      "reliability": 90,
+      "pitCrewOperations": 91
     },
     "condition": 100,
     "developmentLevel": {
@@ -509,11 +609,11 @@ export const cars2026NASCAR: Car[] = [
     "teamId": "t-2026-nascar-team-penske-team-1",
     "seasonYear": 2026,
     "ratings": {
-      "enginePower": 73,
-      "aeroEfficiency": 73,
-      "mechanicalGrip": 73,
-      "reliability": 73,
-      "pitCrewOperations": 73
+      "enginePower": 94,
+      "aeroEfficiency": 92,
+      "mechanicalGrip": 91,
+      "reliability": 91,
+      "pitCrewOperations": 92
     },
     "condition": 100,
     "developmentLevel": {
@@ -529,11 +629,11 @@ export const cars2026NASCAR: Car[] = [
     "teamId": "t-2026-nascar-team-penske-team-2",
     "seasonYear": 2026,
     "ratings": {
-      "enginePower": 73,
-      "aeroEfficiency": 73,
-      "mechanicalGrip": 73,
-      "reliability": 73,
-      "pitCrewOperations": 73
+      "enginePower": 85,
+      "aeroEfficiency": 83,
+      "mechanicalGrip": 82,
+      "reliability": 82,
+      "pitCrewOperations": 83
     },
     "condition": 100,
     "developmentLevel": {
@@ -549,11 +649,11 @@ export const cars2026NASCAR: Car[] = [
     "teamId": "t-2026-nascar-trackhouse-racing-team-1",
     "seasonYear": 2026,
     "ratings": {
-      "enginePower": 61,
-      "aeroEfficiency": 61,
-      "mechanicalGrip": 61,
-      "reliability": 61,
-      "pitCrewOperations": 61
+      "enginePower": 67,
+      "aeroEfficiency": 65,
+      "mechanicalGrip": 64,
+      "reliability": 64,
+      "pitCrewOperations": 65
     },
     "condition": 100,
     "developmentLevel": {
@@ -569,11 +669,11 @@ export const cars2026NASCAR: Car[] = [
     "teamId": "t-2026-nascar-trackhouse-racing-team-2",
     "seasonYear": 2026,
     "ratings": {
-      "enginePower": 61,
-      "aeroEfficiency": 61,
-      "mechanicalGrip": 61,
-      "reliability": 61,
-      "pitCrewOperations": 61
+      "enginePower": 75,
+      "aeroEfficiency": 73,
+      "mechanicalGrip": 72,
+      "reliability": 72,
+      "pitCrewOperations": 73
     },
     "condition": 100,
     "developmentLevel": {
@@ -589,11 +689,11 @@ export const cars2026NASCAR: Car[] = [
     "teamId": "t-2026-nascar-wood-brothers-racing",
     "seasonYear": 2026,
     "ratings": {
-      "enginePower": 40,
-      "aeroEfficiency": 40,
-      "mechanicalGrip": 40,
-      "reliability": 40,
-      "pitCrewOperations": 40
+      "enginePower": 65,
+      "aeroEfficiency": 63,
+      "mechanicalGrip": 62,
+      "reliability": 62,
+      "pitCrewOperations": 63
     },
     "condition": 100,
     "developmentLevel": {

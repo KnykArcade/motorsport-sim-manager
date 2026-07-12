@@ -65,8 +65,28 @@ export const cars1990NASCAR: Car[] = [
     }
   },
   {
-    "id": "car-1990-nascar-bobby-allison-racing",
-    "teamId": "t-1990-nascar-bobby-allison-racing",
+    "id": "car-1990-nascar-bobby-allison-racing-team-1",
+    "teamId": "t-1990-nascar-bobby-allison-racing-team-1",
+    "seasonYear": 1990,
+    "ratings": {
+      "enginePower": 70,
+      "aeroEfficiency": 70,
+      "mechanicalGrip": 70,
+      "reliability": 69,
+      "pitCrewOperations": 72
+    },
+    "condition": 100,
+    "developmentLevel": {
+      "enginePower": 0,
+      "aeroEfficiency": 0,
+      "mechanicalGrip": 0,
+      "reliability": 0,
+      "pitCrewOperations": 0
+    }
+  },
+  {
+    "id": "car-1990-nascar-bobby-allison-racing-team-2",
+    "teamId": "t-1990-nascar-bobby-allison-racing-team-2",
     "seasonYear": 1990,
     "ratings": {
       "enginePower": 70,
@@ -145,15 +165,55 @@ export const cars1990NASCAR: Car[] = [
     }
   },
   {
-    "id": "car-1990-nascar-hendrick-motorsports-team-1",
-    "teamId": "t-1990-nascar-hendrick-motorsports-team-1",
+    "id": "car-1990-nascar-hendrick-motorsports-team-1-team-1",
+    "teamId": "t-1990-nascar-hendrick-motorsports-team-1-team-1",
     "seasonYear": 1990,
     "ratings": {
-      "enginePower": 89,
-      "aeroEfficiency": 86,
-      "mechanicalGrip": 87,
-      "reliability": 88,
-      "pitCrewOperations": 86
+      "enginePower": 87,
+      "aeroEfficiency": 82,
+      "mechanicalGrip": 86,
+      "reliability": 87,
+      "pitCrewOperations": 84
+    },
+    "condition": 100,
+    "developmentLevel": {
+      "enginePower": 0,
+      "aeroEfficiency": 0,
+      "mechanicalGrip": 0,
+      "reliability": 0,
+      "pitCrewOperations": 0
+    }
+  },
+  {
+    "id": "car-1990-nascar-hendrick-motorsports-team-1-team-2",
+    "teamId": "t-1990-nascar-hendrick-motorsports-team-1-team-2",
+    "seasonYear": 1990,
+    "ratings": {
+      "enginePower": 87,
+      "aeroEfficiency": 82,
+      "mechanicalGrip": 86,
+      "reliability": 87,
+      "pitCrewOperations": 84
+    },
+    "condition": 100,
+    "developmentLevel": {
+      "enginePower": 0,
+      "aeroEfficiency": 0,
+      "mechanicalGrip": 0,
+      "reliability": 0,
+      "pitCrewOperations": 0
+    }
+  },
+  {
+    "id": "car-1990-nascar-hendrick-motorsports-team-1-team-3",
+    "teamId": "t-1990-nascar-hendrick-motorsports-team-1-team-3",
+    "seasonYear": 1990,
+    "ratings": {
+      "enginePower": 87,
+      "aeroEfficiency": 82,
+      "mechanicalGrip": 86,
+      "reliability": 87,
+      "pitCrewOperations": 84
     },
     "condition": 100,
     "developmentLevel": {
@@ -169,11 +229,11 @@ export const cars1990NASCAR: Car[] = [
     "teamId": "t-1990-nascar-hendrick-motorsports-team-2",
     "seasonYear": 1990,
     "ratings": {
-      "enginePower": 89,
-      "aeroEfficiency": 86,
-      "mechanicalGrip": 87,
+      "enginePower": 90,
+      "aeroEfficiency": 89,
+      "mechanicalGrip": 88,
       "reliability": 88,
-      "pitCrewOperations": 86
+      "pitCrewOperations": 87
     },
     "condition": 100,
     "developmentLevel": {
@@ -325,8 +385,28 @@ export const cars1990NASCAR: Car[] = [
     }
   },
   {
-    "id": "car-1990-nascar-moroso-racing",
-    "teamId": "t-1990-nascar-moroso-racing",
+    "id": "car-1990-nascar-moroso-racing-team-1",
+    "teamId": "t-1990-nascar-moroso-racing-team-1",
+    "seasonYear": 1990,
+    "ratings": {
+      "enginePower": 74,
+      "aeroEfficiency": 71,
+      "mechanicalGrip": 74,
+      "reliability": 73,
+      "pitCrewOperations": 72
+    },
+    "condition": 100,
+    "developmentLevel": {
+      "enginePower": 0,
+      "aeroEfficiency": 0,
+      "mechanicalGrip": 0,
+      "reliability": 0,
+      "pitCrewOperations": 0
+    }
+  },
+  {
+    "id": "car-1990-nascar-moroso-racing-team-2",
+    "teamId": "t-1990-nascar-moroso-racing-team-2",
     "seasonYear": 1990,
     "ratings": {
       "enginePower": 74,

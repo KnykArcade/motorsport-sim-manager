@@ -5,8 +5,28 @@ import type {
 
 export const cars2000NASCAR: Car[] = [
   {
-    "id": "car-2000-nascar-a-j-foyt-racing",
-    "teamId": "t-2000-nascar-a-j-foyt-racing",
+    "id": "car-2000-nascar-a-j-foyt-racing-team-1",
+    "teamId": "t-2000-nascar-a-j-foyt-racing-team-1",
+    "seasonYear": 2000,
+    "ratings": {
+      "enginePower": 74,
+      "aeroEfficiency": 72,
+      "mechanicalGrip": 69,
+      "reliability": 70,
+      "pitCrewOperations": 73
+    },
+    "condition": 100,
+    "developmentLevel": {
+      "enginePower": 0,
+      "aeroEfficiency": 0,
+      "mechanicalGrip": 0,
+      "reliability": 0,
+      "pitCrewOperations": 0
+    }
+  },
+  {
+    "id": "car-2000-nascar-a-j-foyt-racing-team-2",
+    "teamId": "t-2000-nascar-a-j-foyt-racing-team-2",
     "seasonYear": 2000,
     "ratings": {
       "enginePower": 74,
@@ -29,11 +49,11 @@ export const cars2000NASCAR: Car[] = [
     "teamId": "t-2000-nascar-andy-petree-racing-team-1",
     "seasonYear": 2000,
     "ratings": {
-      "enginePower": 79,
-      "aeroEfficiency": 74,
-      "mechanicalGrip": 78,
-      "reliability": 78,
-      "pitCrewOperations": 77
+      "enginePower": 88,
+      "aeroEfficiency": 85,
+      "mechanicalGrip": 90,
+      "reliability": 91,
+      "pitCrewOperations": 89
     },
     "condition": 100,
     "developmentLevel": {
@@ -49,11 +69,11 @@ export const cars2000NASCAR: Car[] = [
     "teamId": "t-2000-nascar-andy-petree-racing-team-2",
     "seasonYear": 2000,
     "ratings": {
-      "enginePower": 79,
-      "aeroEfficiency": 74,
-      "mechanicalGrip": 78,
-      "reliability": 78,
-      "pitCrewOperations": 77
+      "enginePower": 69,
+      "aeroEfficiency": 62,
+      "mechanicalGrip": 65,
+      "reliability": 64,
+      "pitCrewOperations": 64
     },
     "condition": 100,
     "developmentLevel": {
@@ -89,11 +109,11 @@ export const cars2000NASCAR: Car[] = [
     "teamId": "t-2000-nascar-bill-davis-racing-team-1",
     "seasonYear": 2000,
     "ratings": {
-      "enginePower": 67,
-      "aeroEfficiency": 68,
-      "mechanicalGrip": 65,
-      "reliability": 67,
-      "pitCrewOperations": 66
+      "enginePower": 92,
+      "aeroEfficiency": 95,
+      "mechanicalGrip": 90,
+      "reliability": 95,
+      "pitCrewOperations": 90
     },
     "condition": 100,
     "developmentLevel": {
@@ -109,11 +129,11 @@ export const cars2000NASCAR: Car[] = [
     "teamId": "t-2000-nascar-bill-davis-racing-team-2",
     "seasonYear": 2000,
     "ratings": {
-      "enginePower": 67,
-      "aeroEfficiency": 68,
-      "mechanicalGrip": 65,
-      "reliability": 67,
-      "pitCrewOperations": 66
+      "enginePower": 41,
+      "aeroEfficiency": 40,
+      "mechanicalGrip": 40,
+      "reliability": 39,
+      "pitCrewOperations": 42
     },
     "condition": 100,
     "developmentLevel": {
@@ -245,8 +265,28 @@ export const cars2000NASCAR: Car[] = [
     }
   },
   {
-    "id": "car-2000-nascar-donlavey-racing",
-    "teamId": "t-2000-nascar-donlavey-racing",
+    "id": "car-2000-nascar-donlavey-racing-team-1",
+    "teamId": "t-2000-nascar-donlavey-racing-team-1",
+    "seasonYear": 2000,
+    "ratings": {
+      "enginePower": 65,
+      "aeroEfficiency": 62,
+      "mechanicalGrip": 57,
+      "reliability": 59,
+      "pitCrewOperations": 60
+    },
+    "condition": 100,
+    "developmentLevel": {
+      "enginePower": 0,
+      "aeroEfficiency": 0,
+      "mechanicalGrip": 0,
+      "reliability": 0,
+      "pitCrewOperations": 0
+    }
+  },
+  {
+    "id": "car-2000-nascar-donlavey-racing-team-2",
+    "teamId": "t-2000-nascar-donlavey-racing-team-2",
     "seasonYear": 2000,
     "ratings": {
       "enginePower": 65,
@@ -369,11 +409,11 @@ export const cars2000NASCAR: Car[] = [
     "teamId": "t-2000-nascar-haas-carter-motorsports-team-1",
     "seasonYear": 2000,
     "ratings": {
-      "enginePower": 74,
-      "aeroEfficiency": 69,
-      "mechanicalGrip": 69,
-      "reliability": 71,
-      "pitCrewOperations": 71
+      "enginePower": 86,
+      "aeroEfficiency": 80,
+      "mechanicalGrip": 78,
+      "reliability": 82,
+      "pitCrewOperations": 83
     },
     "condition": 100,
     "developmentLevel": {
@@ -389,11 +429,11 @@ export const cars2000NASCAR: Car[] = [
     "teamId": "t-2000-nascar-haas-carter-motorsports-team-2",
     "seasonYear": 2000,
     "ratings": {
-      "enginePower": 74,
-      "aeroEfficiency": 69,
-      "mechanicalGrip": 69,
-      "reliability": 71,
-      "pitCrewOperations": 71
+      "enginePower": 61,
+      "aeroEfficiency": 58,
+      "mechanicalGrip": 59,
+      "reliability": 59,
+      "pitCrewOperations": 59
     },
     "condition": 100,
     "developmentLevel": {
@@ -405,15 +445,35 @@ export const cars2000NASCAR: Car[] = [
     }
   },
   {
-    "id": "car-2000-nascar-hendrick-motorsports-team-1",
-    "teamId": "t-2000-nascar-hendrick-motorsports-team-1",
+    "id": "car-2000-nascar-hendrick-motorsports-team-1-team-1",
+    "teamId": "t-2000-nascar-hendrick-motorsports-team-1-team-1",
     "seasonYear": 2000,
     "ratings": {
-      "enginePower": 91,
-      "aeroEfficiency": 88,
-      "mechanicalGrip": 88,
+      "enginePower": 92,
+      "aeroEfficiency": 90,
+      "mechanicalGrip": 92,
       "reliability": 88,
-      "pitCrewOperations": 90
+      "pitCrewOperations": 92
+    },
+    "condition": 100,
+    "developmentLevel": {
+      "enginePower": 0,
+      "aeroEfficiency": 0,
+      "mechanicalGrip": 0,
+      "reliability": 0,
+      "pitCrewOperations": 0
+    }
+  },
+  {
+    "id": "car-2000-nascar-hendrick-motorsports-team-1-team-2",
+    "teamId": "t-2000-nascar-hendrick-motorsports-team-1-team-2",
+    "seasonYear": 2000,
+    "ratings": {
+      "enginePower": 92,
+      "aeroEfficiency": 90,
+      "mechanicalGrip": 92,
+      "reliability": 88,
+      "pitCrewOperations": 92
     },
     "condition": 100,
     "developmentLevel": {
@@ -429,11 +489,11 @@ export const cars2000NASCAR: Car[] = [
     "teamId": "t-2000-nascar-hendrick-motorsports-team-2",
     "seasonYear": 2000,
     "ratings": {
-      "enginePower": 91,
-      "aeroEfficiency": 88,
-      "mechanicalGrip": 88,
-      "reliability": 88,
-      "pitCrewOperations": 90
+      "enginePower": 90,
+      "aeroEfficiency": 85,
+      "mechanicalGrip": 83,
+      "reliability": 87,
+      "pitCrewOperations": 87
     },
     "condition": 100,
     "developmentLevel": {
@@ -525,8 +585,48 @@ export const cars2000NASCAR: Car[] = [
     }
   },
   {
-    "id": "car-2000-nascar-joe-bessey-racing",
-    "teamId": "t-2000-nascar-joe-bessey-racing",
+    "id": "car-2000-nascar-joe-bessey-racing-team-1",
+    "teamId": "t-2000-nascar-joe-bessey-racing-team-1",
+    "seasonYear": 2000,
+    "ratings": {
+      "enginePower": 65,
+      "aeroEfficiency": 69,
+      "mechanicalGrip": 63,
+      "reliability": 64,
+      "pitCrewOperations": 65
+    },
+    "condition": 100,
+    "developmentLevel": {
+      "enginePower": 0,
+      "aeroEfficiency": 0,
+      "mechanicalGrip": 0,
+      "reliability": 0,
+      "pitCrewOperations": 0
+    }
+  },
+  {
+    "id": "car-2000-nascar-joe-bessey-racing-team-2",
+    "teamId": "t-2000-nascar-joe-bessey-racing-team-2",
+    "seasonYear": 2000,
+    "ratings": {
+      "enginePower": 65,
+      "aeroEfficiency": 69,
+      "mechanicalGrip": 63,
+      "reliability": 64,
+      "pitCrewOperations": 65
+    },
+    "condition": 100,
+    "developmentLevel": {
+      "enginePower": 0,
+      "aeroEfficiency": 0,
+      "mechanicalGrip": 0,
+      "reliability": 0,
+      "pitCrewOperations": 0
+    }
+  },
+  {
+    "id": "car-2000-nascar-joe-bessey-racing-team-3",
+    "teamId": "t-2000-nascar-joe-bessey-racing-team-3",
     "seasonYear": 2000,
     "ratings": {
       "enginePower": 65,
@@ -565,8 +665,28 @@ export const cars2000NASCAR: Car[] = [
     }
   },
   {
-    "id": "car-2000-nascar-lj-racing",
-    "teamId": "t-2000-nascar-lj-racing",
+    "id": "car-2000-nascar-lj-racing-team-1",
+    "teamId": "t-2000-nascar-lj-racing-team-1",
+    "seasonYear": 2000,
+    "ratings": {
+      "enginePower": 61,
+      "aeroEfficiency": 59,
+      "mechanicalGrip": 56,
+      "reliability": 58,
+      "pitCrewOperations": 61
+    },
+    "condition": 100,
+    "developmentLevel": {
+      "enginePower": 0,
+      "aeroEfficiency": 0,
+      "mechanicalGrip": 0,
+      "reliability": 0,
+      "pitCrewOperations": 0
+    }
+  },
+  {
+    "id": "car-2000-nascar-lj-racing-team-2",
+    "teamId": "t-2000-nascar-lj-racing-team-2",
     "seasonYear": 2000,
     "ratings": {
       "enginePower": 61,
@@ -665,8 +785,48 @@ export const cars2000NASCAR: Car[] = [
     }
   },
   {
-    "id": "car-2000-nascar-marcis-auto-racing",
-    "teamId": "t-2000-nascar-marcis-auto-racing",
+    "id": "car-2000-nascar-marcis-auto-racing-team-1",
+    "teamId": "t-2000-nascar-marcis-auto-racing-team-1",
+    "seasonYear": 2000,
+    "ratings": {
+      "enginePower": 63,
+      "aeroEfficiency": 57,
+      "mechanicalGrip": 57,
+      "reliability": 59,
+      "pitCrewOperations": 57
+    },
+    "condition": 100,
+    "developmentLevel": {
+      "enginePower": 0,
+      "aeroEfficiency": 0,
+      "mechanicalGrip": 0,
+      "reliability": 0,
+      "pitCrewOperations": 0
+    }
+  },
+  {
+    "id": "car-2000-nascar-marcis-auto-racing-team-2",
+    "teamId": "t-2000-nascar-marcis-auto-racing-team-2",
+    "seasonYear": 2000,
+    "ratings": {
+      "enginePower": 63,
+      "aeroEfficiency": 57,
+      "mechanicalGrip": 57,
+      "reliability": 59,
+      "pitCrewOperations": 57
+    },
+    "condition": 100,
+    "developmentLevel": {
+      "enginePower": 0,
+      "aeroEfficiency": 0,
+      "mechanicalGrip": 0,
+      "reliability": 0,
+      "pitCrewOperations": 0
+    }
+  },
+  {
+    "id": "car-2000-nascar-marcis-auto-racing-team-3",
+    "teamId": "t-2000-nascar-marcis-auto-racing-team-3",
     "seasonYear": 2000,
     "ratings": {
       "enginePower": 63,
@@ -805,15 +965,35 @@ export const cars2000NASCAR: Car[] = [
     }
   },
   {
-    "id": "car-2000-nascar-penske-kranefuss-racing-team-1",
-    "teamId": "t-2000-nascar-penske-kranefuss-racing-team-1",
+    "id": "car-2000-nascar-penske-kranefuss-racing-team-1-team-1",
+    "teamId": "t-2000-nascar-penske-kranefuss-racing-team-1-team-1",
     "seasonYear": 2000,
     "ratings": {
-      "enginePower": 70,
-      "aeroEfficiency": 66,
-      "mechanicalGrip": 66,
-      "reliability": 69,
-      "pitCrewOperations": 71
+      "enginePower": 93,
+      "aeroEfficiency": 89,
+      "mechanicalGrip": 92,
+      "reliability": 93,
+      "pitCrewOperations": 96
+    },
+    "condition": 100,
+    "developmentLevel": {
+      "enginePower": 0,
+      "aeroEfficiency": 0,
+      "mechanicalGrip": 0,
+      "reliability": 0,
+      "pitCrewOperations": 0
+    }
+  },
+  {
+    "id": "car-2000-nascar-penske-kranefuss-racing-team-1-team-2",
+    "teamId": "t-2000-nascar-penske-kranefuss-racing-team-1-team-2",
+    "seasonYear": 2000,
+    "ratings": {
+      "enginePower": 93,
+      "aeroEfficiency": 89,
+      "mechanicalGrip": 92,
+      "reliability": 93,
+      "pitCrewOperations": 96
     },
     "condition": 100,
     "developmentLevel": {
@@ -829,11 +1009,11 @@ export const cars2000NASCAR: Car[] = [
     "teamId": "t-2000-nascar-penske-kranefuss-racing-team-2",
     "seasonYear": 2000,
     "ratings": {
-      "enginePower": 70,
-      "aeroEfficiency": 66,
-      "mechanicalGrip": 66,
-      "reliability": 69,
-      "pitCrewOperations": 71
+      "enginePower": 46,
+      "aeroEfficiency": 43,
+      "mechanicalGrip": 40,
+      "reliability": 45,
+      "pitCrewOperations": 46
     },
     "condition": 100,
     "developmentLevel": {
@@ -845,15 +1025,35 @@ export const cars2000NASCAR: Car[] = [
     }
   },
   {
-    "id": "car-2000-nascar-petty-enterprises-team-1",
-    "teamId": "t-2000-nascar-petty-enterprises-team-1",
+    "id": "car-2000-nascar-petty-enterprises-team-1-team-1",
+    "teamId": "t-2000-nascar-petty-enterprises-team-1-team-1",
     "seasonYear": 2000,
     "ratings": {
-      "enginePower": 78,
-      "aeroEfficiency": 72,
-      "mechanicalGrip": 71,
-      "reliability": 74,
-      "pitCrewOperations": 74
+      "enginePower": 85,
+      "aeroEfficiency": 77,
+      "mechanicalGrip": 76,
+      "reliability": 79,
+      "pitCrewOperations": 80
+    },
+    "condition": 100,
+    "developmentLevel": {
+      "enginePower": 0,
+      "aeroEfficiency": 0,
+      "mechanicalGrip": 0,
+      "reliability": 0,
+      "pitCrewOperations": 0
+    }
+  },
+  {
+    "id": "car-2000-nascar-petty-enterprises-team-1-team-2",
+    "teamId": "t-2000-nascar-petty-enterprises-team-1-team-2",
+    "seasonYear": 2000,
+    "ratings": {
+      "enginePower": 85,
+      "aeroEfficiency": 77,
+      "mechanicalGrip": 76,
+      "reliability": 79,
+      "pitCrewOperations": 80
     },
     "condition": 100,
     "developmentLevel": {
@@ -869,11 +1069,11 @@ export const cars2000NASCAR: Car[] = [
     "teamId": "t-2000-nascar-petty-enterprises-team-2",
     "seasonYear": 2000,
     "ratings": {
-      "enginePower": 78,
-      "aeroEfficiency": 72,
-      "mechanicalGrip": 71,
-      "reliability": 74,
-      "pitCrewOperations": 74
+      "enginePower": 70,
+      "aeroEfficiency": 66,
+      "mechanicalGrip": 66,
+      "reliability": 68,
+      "pitCrewOperations": 67
     },
     "condition": 100,
     "developmentLevel": {
@@ -949,10 +1149,10 @@ export const cars2000NASCAR: Car[] = [
     "teamId": "t-2000-nascar-roush-racing-team-1",
     "seasonYear": 2000,
     "ratings": {
-      "enginePower": 93,
-      "aeroEfficiency": 95,
-      "mechanicalGrip": 93,
-      "reliability": 94,
+      "enginePower": 94,
+      "aeroEfficiency": 97,
+      "mechanicalGrip": 92,
+      "reliability": 91,
       "pitCrewOperations": 95
     },
     "condition": 100,
@@ -965,15 +1165,35 @@ export const cars2000NASCAR: Car[] = [
     }
   },
   {
-    "id": "car-2000-nascar-roush-racing-team-2",
-    "teamId": "t-2000-nascar-roush-racing-team-2",
+    "id": "car-2000-nascar-roush-racing-team-2-team-1",
+    "teamId": "t-2000-nascar-roush-racing-team-2-team-1",
     "seasonYear": 2000,
     "ratings": {
-      "enginePower": 93,
-      "aeroEfficiency": 95,
-      "mechanicalGrip": 93,
-      "reliability": 94,
-      "pitCrewOperations": 95
+      "enginePower": 86,
+      "aeroEfficiency": 90,
+      "mechanicalGrip": 87,
+      "reliability": 90,
+      "pitCrewOperations": 89
+    },
+    "condition": 100,
+    "developmentLevel": {
+      "enginePower": 0,
+      "aeroEfficiency": 0,
+      "mechanicalGrip": 0,
+      "reliability": 0,
+      "pitCrewOperations": 0
+    }
+  },
+  {
+    "id": "car-2000-nascar-roush-racing-team-2-team-2",
+    "teamId": "t-2000-nascar-roush-racing-team-2-team-2",
+    "seasonYear": 2000,
+    "ratings": {
+      "enginePower": 86,
+      "aeroEfficiency": 90,
+      "mechanicalGrip": 87,
+      "reliability": 90,
+      "pitCrewOperations": 89
     },
     "condition": 100,
     "developmentLevel": {
@@ -989,11 +1209,11 @@ export const cars2000NASCAR: Car[] = [
     "teamId": "t-2000-nascar-roush-racing-team-3",
     "seasonYear": 2000,
     "ratings": {
-      "enginePower": 93,
-      "aeroEfficiency": 95,
-      "mechanicalGrip": 93,
-      "reliability": 94,
-      "pitCrewOperations": 95
+      "enginePower": 100,
+      "aeroEfficiency": 99,
+      "mechanicalGrip": 100,
+      "reliability": 100,
+      "pitCrewOperations": 100
     },
     "condition": 100,
     "developmentLevel": {
@@ -1069,11 +1289,11 @@ export const cars2000NASCAR: Car[] = [
     "teamId": "t-2000-nascar-team-sabco-team-1",
     "seasonYear": 2000,
     "ratings": {
-      "enginePower": 77,
-      "aeroEfficiency": 79,
-      "mechanicalGrip": 73,
-      "reliability": 76,
-      "pitCrewOperations": 77
+      "enginePower": 85,
+      "aeroEfficiency": 87,
+      "mechanicalGrip": 82,
+      "reliability": 83,
+      "pitCrewOperations": 87
     },
     "condition": 100,
     "developmentLevel": {
@@ -1085,15 +1305,35 @@ export const cars2000NASCAR: Car[] = [
     }
   },
   {
-    "id": "car-2000-nascar-team-sabco-team-2",
-    "teamId": "t-2000-nascar-team-sabco-team-2",
+    "id": "car-2000-nascar-team-sabco-team-2-team-1",
+    "teamId": "t-2000-nascar-team-sabco-team-2-team-1",
     "seasonYear": 2000,
     "ratings": {
-      "enginePower": 77,
-      "aeroEfficiency": 79,
-      "mechanicalGrip": 73,
-      "reliability": 76,
-      "pitCrewOperations": 77
+      "enginePower": 68,
+      "aeroEfficiency": 70,
+      "mechanicalGrip": 63,
+      "reliability": 68,
+      "pitCrewOperations": 67
+    },
+    "condition": 100,
+    "developmentLevel": {
+      "enginePower": 0,
+      "aeroEfficiency": 0,
+      "mechanicalGrip": 0,
+      "reliability": 0,
+      "pitCrewOperations": 0
+    }
+  },
+  {
+    "id": "car-2000-nascar-team-sabco-team-2-team-2",
+    "teamId": "t-2000-nascar-team-sabco-team-2-team-2",
+    "seasonYear": 2000,
+    "ratings": {
+      "enginePower": 68,
+      "aeroEfficiency": 70,
+      "mechanicalGrip": 63,
+      "reliability": 68,
+      "pitCrewOperations": 67
     },
     "condition": 100,
     "developmentLevel": {
