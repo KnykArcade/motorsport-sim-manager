@@ -412,6 +412,9 @@ export type LiveCarState = {
   running: boolean;
   status: RaceFinishStatus;
   retiredOnLap: number | null;
+  // Authoritative time at which this car crossed the line after the chequered
+  // flag was shown. Present only for classified finishers.
+  finishLineCrossingTime?: number | null;
   // Track position (0..1) where the car retired. Frozen so crashed cars stay
   // stopped on the track map until the incident is cleared.
   retiredTrackProgress?: number;

@@ -1069,24 +1069,49 @@ export function finalizeLiveTimingAtChequered(
   totalLaps: number,
   circuit: LiveRaceState['circuit'],
 ): LiveCarState[] {
-  const finishDistance = circuit ? totalLaps * circuit.lapLengthMeters : null;
-  const finishers = cars
+  const projected = cars
     .filter((car) => car.running)
-    .sort((a, b) => a.totalTime - b.totalTime);
-  const winnerTime = finishers[0]?.totalTime ?? 0;
-  const classified = finishers.map((car, index) => {
-    const aheadTime = index === 0 ? car.totalTime : finishers[index - 1]!.totalTime;
+    .map((car) => {
+      if (!circuit || !car.positionState) {
+        return { car, crossingTime: car.totalTime, completedLaps: totalLaps, positionState: car.positionState };
+      }
+      const position = car.positionState;
+      const physicalCompletedLaps = Math.max(
+        position.completedLaps,
+        Math.floor(position.totalRaceDistanceMeters / circuit.lapLengthMeters),
+      );
+      const alreadyCrossedRaceDistance = physicalCompletedLaps >= totalLaps;
+      const targetCompletedLaps = alreadyCrossedRaceDistance
+        ? totalLaps
+        : Math.min(totalLaps, physicalCompletedLaps + 1);
+      const targetDistance = targetCompletedLaps * circuit.lapLengthMeters;
+      const remainingDistance = Math.max(0, targetDistance - position.totalRaceDistanceMeters);
+      const speed = Math.max(1, position.currentSpeedMetersPerSecond);
+      const crossingTime = alreadyCrossedRaceDistance
+        ? (position.timing.lastFinishLineCrossingTime ?? car.totalTime)
+        : position.authoritativeRaceTime + remainingDistance / speed;
+      return {
+        car,
+        crossingTime,
+        completedLaps: targetCompletedLaps,
+        positionState: repositionCarAtRaceDistance(position, targetDistance, circuit),
+      };
+    })
+    .sort((a, b) => a.crossingTime - b.crossingTime || a.car.totalTime - b.car.totalTime);
+  const winnerTime = projected[0]?.crossingTime ?? 0;
+  const classified = projected.map(({ car, crossingTime, completedLaps, positionState }, index) => {
+    const aheadTime = index === 0 ? crossingTime : projected[index - 1]!.crossingTime;
     return {
       ...car,
       running: false,
       status: 'Finished' as const,
       position: index + 1,
-      lapsCompleted: totalLaps,
-      gapToLeader: index === 0 ? 0 : round1(car.totalTime - winnerTime),
-      interval: index === 0 ? 0 : round1(car.totalTime - aheadTime),
-      positionState: finishDistance != null && car.positionState
-        ? repositionCarAtRaceDistance(car.positionState, finishDistance, circuit!)
-        : car.positionState,
+      lapsCompleted: completedLaps,
+      totalTime: crossingTime,
+      finishLineCrossingTime: crossingTime,
+      gapToLeader: index === 0 ? 0 : round1(crossingTime - winnerTime),
+      interval: index === 0 ? 0 : round1(crossingTime - aheadTime),
+      positionState,
     };
   });
   const retired = cars

@@ -26,6 +26,7 @@ import {
   requestPlayerPit,
   setPlayerPaceMode,
 } from './raceTickEngine';
+import { repositionCarAtRaceDistance } from './segmentRaceEngine';
 import type {
   Entrant,
   QualifyingDecision,
@@ -139,8 +140,9 @@ describe('live race engine', () => {
     expect(liveFinishers[0]?.gapToLeader).toBe(0);
     expect(liveFinishers.every((car, index) => index === 0 || car.gapToLeader >= liveFinishers[index - 1]!.gapToLeader)).toBe(true);
     if (state.circuit) {
-      const finishDistance = TOTAL_LAPS * state.circuit.lapLengthMeters;
-      expect(liveFinishers.every((car) => car.positionState?.totalRaceDistanceMeters === finishDistance)).toBe(true);
+      expect(liveFinishers.every((car) => car.positionState?.normalizedLapProgress === 0)).toBe(true);
+      expect(liveFinishers.every((car) => car.finishLineCrossingTime != null)).toBe(true);
+      expect(liveFinishers.every((car) => car.positionState?.completedLaps === car.lapsCompleted)).toBe(true);
     }
 
     // Exactly one winner, scoring points; finishers are uniquely ranked.
@@ -204,6 +206,38 @@ describe('live race engine', () => {
     expect(classified.map((car) => car.position)).toEqual([1, 2]);
     expect(classified[1]!.gapToLeader).toBe(5);
     expect(classified.every((car) => car.positionState?.totalRaceDistanceMeters === finishDistance)).toBe(true);
+  });
+
+  it('classifies a lapped car at its own next finish-line crossing', () => {
+    const context = buildContext('lapped-chequered-crossing');
+    const state = createRace(context, context.entrants[0].driver.teamId);
+    const circuit = state.circuit!;
+    const leader = {
+      ...state.cars[0]!,
+      totalTime: 3600,
+      positionState: {
+        ...repositionCarAtRaceDistance(state.cars[0]!.positionState!, TOTAL_LAPS * circuit.lapLengthMeters, circuit),
+        authoritativeRaceTime: 3600,
+      },
+    };
+    const lappedDistance = (TOTAL_LAPS - 2) * circuit.lapLengthMeters + circuit.lapLengthMeters * 0.75;
+    const lapped = {
+      ...state.cars[1]!,
+      totalTime: 3598,
+      positionState: {
+        ...repositionCarAtRaceDistance(state.cars[1]!.positionState!, lappedDistance, circuit),
+        currentSpeedMetersPerSecond: 50,
+        authoritativeRaceTime: 3600,
+      },
+    };
+
+    const classified = finalizeLiveTimingAtChequered([leader, lapped], TOTAL_LAPS, circuit);
+
+    expect(classified[0]!.driverId).toBe(leader.driverId);
+    expect(classified[1]!.lapsCompleted).toBe(TOTAL_LAPS - 1);
+    expect(classified[1]!.positionState?.normalizedLapProgress).toBe(0);
+    expect(classified[1]!.positionState?.totalRaceDistanceMeters).toBe((TOTAL_LAPS - 1) * circuit.lapLengthMeters);
+    expect(classified[1]!.finishLineCrossingTime).toBeGreaterThan(classified[0]!.finishLineCrossingTime!);
   });
 
   it('is deterministic for a fixed seed', () => {

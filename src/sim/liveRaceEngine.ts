@@ -337,12 +337,12 @@ export function finalizeResults(
 ): { results: RaceResult[]; events: RaceEvent[]; breakdowns: Record<string, ScoreBreakdown> } {
   const finishers = state.cars
     .filter((c) => c.status === 'Finished')
-    .sort((a, b) => a.totalTime - b.totalTime);
+    .sort((a, b) => (a.position ?? Number.MAX_SAFE_INTEGER) - (b.position ?? Number.MAX_SAFE_INTEGER));
   const dnfs = state.cars
     .filter((c) => c.status !== 'Finished')
     .sort((a, b) => b.lapsCompleted - a.lapsCompleted);
 
-  const winnerTime = finishers[0]?.totalTime ?? 0;
+  const winnerTime = finishers[0]?.finishLineCrossingTime ?? finishers[0]?.totalTime ?? 0;
   const results: RaceResult[] = [];
   const breakdowns: Record<string, ScoreBreakdown> = {};
 
@@ -353,10 +353,14 @@ export function finalizeResults(
       teamId: c.teamId,
       gridPosition: c.grid,
       status: 'Finished',
-      lapsCompleted: state.totalLaps,
+      lapsCompleted: c.lapsCompleted,
       points: Math.round((context.pointsByPosition[i + 1] ?? 0) * (context.pointsMultiplier ?? 1)),
       raceScore: round2(c.paceRating),
-      gapText: i === 0 ? 'WIN' : `+${round1(c.totalTime - winnerTime)}s`,
+      gapText: i === 0
+        ? 'WIN'
+        : c.lapsCompleted < state.totalLaps
+          ? `+${state.totalLaps - c.lapsCompleted} Lap${state.totalLaps - c.lapsCompleted === 1 ? '' : 's'}`
+          : `+${round1((c.finishLineCrossingTime ?? c.totalTime) - winnerTime)}s`,
       incidents: c.lastIncident ? [c.lastIncident] : [],
       rating: ratingFor(i + 1, c.grid),
     });
