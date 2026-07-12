@@ -411,7 +411,7 @@ export function runAIOffseason(input: AIOffseasonInput): AIOffseasonResult {
             (org?.facilities ?? 45) * 0.25 +
             (principal?.development ?? 50) * 0.2 +
             (org?.staffQuality ?? 45) * 0.2 - 50) / 50;
-        regulationAdaptation = Math.max(-1, Math.min(1, preparedness * 0.9 + (roll - 0.5) * 0.9));
+        regulationAdaptation = Math.max(-1, Math.min(1, preparedness * 1.2 + (roll - 0.5) * 2));
       }
       const decayed: Car = {
         ...car,
