@@ -212,6 +212,26 @@ describe('TrackMapAssetPanel', () => {
     expect(html).toContain('href="/assets/track-maps/interlagos-historic-2p5d.png"');
     expect(html).not.toContain('data-track-layer="racing-surface"');
     expect(html).toContain('data-track-map-driver="driver-1"');
+    expect(html).toContain('data-marker-size="35"');
+  });
+
+  it('moves the image-backed viewport using normalized pan offsets while zoomed', () => {
+    const html = renderToStaticMarkup(
+      <TrackMapAssetPanel
+        series="F1"
+        year={1995}
+        trackId="autodromo-jose-carlos-pace"
+        trackName="Autodromo Jose Carlos Pace"
+        dots={dots}
+        rotation={0.2}
+        eraTheme="f1-1990s"
+        zoom={2}
+        panOffset={{ x: 0.1, y: 0.1 }}
+      />,
+    );
+
+    expect(html).toContain('viewBox="350 175 500 250"');
+    expect(html).toContain('data-marker-size="35"');
   });
 
   it('uses the Interlagos scenic map for modern Brazilian GP aliases without an era override', () => {

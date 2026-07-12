@@ -21,6 +21,8 @@ type Props = {
   className?: string;
   // Zoom into a region of the track. 1 = default, 2 = 2x magnification.
   zoom?: number;
+  // Normalized map-space offset applied to the zoom focus for user-controlled panning.
+  panOffset?: { x: number; y: number };
   // Driver IDs to focus the zoomed view on. If omitted, the centre of the track is used.
   focusDriverIds?: string[];
   // An explicit track progress (0..1) to use as the zoom focus when no driver dot
@@ -223,6 +225,7 @@ export function TrackMapAssetPanel({
   hideFooterLabel = false,
   className = 'w-full',
   zoom,
+  panOffset,
   focusDriverIds,
   focusTrackProgress,
   incidentDriverIds,
@@ -240,7 +243,7 @@ export function TrackMapAssetPanel({
 
   const configuredImageMap = HISTORIC_IMAGE_TRACK_MAPS[match.geometry.id];
   const imageMap = eraTheme === 'f1-1990s' || configuredImageMap?.allEras ? configuredImageMap : undefined;
-  const viewBox = zoomBox(zoom, focusDriverIds, focusTrackProgress, dots, match.geometry, imageMap);
+  const viewBox = zoomBox(zoom, focusDriverIds, focusTrackProgress, dots, match.geometry, imageMap, panOffset);
 
   return (
     <svg
@@ -353,7 +356,17 @@ function AssetTrackMap({
         const point = pointAt(trackPoints, progress);
         const heading = headingAt(trackPoints, progress);
         const displayPoint = offsetPoint(point, heading, laneOffsets.get(dot.driverId) ?? 0);
-        return <MapDot key={dot.driverId} point={displayPoint} dot={dot} year={year} rotationDeg={heading} zoom={zoom} />;
+        return (
+          <MapDot
+            key={dot.driverId}
+            point={displayPoint}
+            dot={dot}
+            year={year}
+            rotationDeg={heading}
+            zoom={zoom}
+            markerSize={imageMap ? 35 : GAMEPLAY_MARKER_SIZE}
+          />
+        );
       })}
 
       <g transform={`translate(${PAD} ${mapHeight - 34})`}>
@@ -476,6 +489,7 @@ function zoomBox(
   dots: TrackDot[],
   geometry: TrackMapGeometry,
   imageMap?: ImageBackedTrackMapConfig,
+  panOffset?: { x: number; y: number },
 ): string {
   const mapWidth = W;
   const mapHeight = H;
@@ -485,10 +499,12 @@ function zoomBox(
 
   const fitted = imageMap?.points ?? fitPoints(geometry);
   const focus = focusPoint(fitted, focusDriverIds, focusTrackProgress, dots, mapWidth, mapHeight);
+  const focusX = focus.x + (panOffset?.x ?? 0) * mapWidth;
+  const focusY = focus.y + (panOffset?.y ?? 0) * mapHeight;
   const width = mapWidth / zoom;
   const height = mapHeight / zoom;
-  const cx = Math.max(width / 2, Math.min(mapWidth - width / 2, focus.x));
-  const cy = Math.max(height / 2, Math.min(mapHeight - height / 2, focus.y));
+  const cx = Math.max(width / 2, Math.min(mapWidth - width / 2, focusX));
+  const cy = Math.max(height / 2, Math.min(mapHeight - height / 2, focusY));
   return `${cx - width / 2} ${cy - height / 2} ${width} ${height}`;
 }
 
@@ -522,6 +538,7 @@ function MapDot({
   compact = false,
   rotationDeg = 0,
   zoom,
+  markerSize = GAMEPLAY_MARKER_SIZE,
 }: {
   point: TrackMapPoint;
   dot: TrackDot;
@@ -529,11 +546,11 @@ function MapDot({
   compact?: boolean;
   rotationDeg?: number;
   zoom?: number;
+  markerSize?: number;
 }) {
   const zoomFactor = zoom && zoom > 1 ? zoom : 1;
   const markerSeries = normalizeSeries(dot.series);
-  const gameplaySize = GAMEPLAY_MARKER_SIZE;
-  const size = (compact ? 18 : gameplaySize) / zoomFactor;
+  const size = (compact ? 18 : markerSize) / zoomFactor;
   const tooltip = markerTooltipPosition(point);
   const numberAndName = `${dot.label ? `#${dot.label} ` : ''}${dot.driverName ?? `Car ${dot.label}`}`;
   const teamAndPosition = `${dot.teamName ?? 'Race car'} · P${dot.rank}`;
@@ -545,6 +562,7 @@ function MapDot({
       role="img"
       aria-label={`${numberAndName}, ${teamAndPosition}`}
       data-track-map-driver={dot.driverId}
+      data-marker-size={compact ? undefined : markerSize}
     >
       <title>{`${numberAndName}, ${teamAndPosition}${dot.gapToLeader ? `, ${dot.gapToLeader.toFixed(1)}s behind leader` : ''}`}</title>
       <RaceMapSeriesMarker

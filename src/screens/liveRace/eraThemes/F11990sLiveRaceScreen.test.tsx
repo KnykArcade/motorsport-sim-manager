@@ -197,6 +197,7 @@ describe('F11990sLiveRaceScreen', () => {
     expect(html).toContain('aria-label="Zoom track map out"');
     expect(html).toContain('aria-label="Zoom track map in"');
     expect(html).toContain('1×');
+    expect(html).toContain('data-track-map-pan-enabled="false"');
     expect(html).toContain('3  A. Senna  McLaren Ford');
     expect(html).toContain('1  M. Schumacher  Benetton Renault');
     expect(html).toContain('Team Radio');
