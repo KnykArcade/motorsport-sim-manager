@@ -1353,7 +1353,25 @@ function applyRecoveryEffect(
 }
 
 function recoverySeverityRank(severity: DamageComponent['severity']): number {
-  return severity === 'minor' ? 1 : severity === 'moderate' ? 2 : severity === 'severe' ? 3 : 4;
+  return severity === 'none' ? 0 : severity === 'minor' ? 1 : severity === 'moderate' ? 2 : severity === 'severe' ? 3 : 4;
+}
+
+export const RELIABILITY_EVENT_COOLDOWN_LAPS = 6;
+
+export function shouldLogReliabilityRecovery(
+  outcome: ReliabilityRecoveryOutcome,
+  before: DamageComponent['severity'],
+  after: DamageComponent['severity'],
+  lap: number,
+  nextAllowedLap: number,
+): boolean {
+  if (outcome === 'none') return false;
+  const beforeRank = recoverySeverityRank(before);
+  const afterRank = recoverySeverityRank(after);
+  if (outcome === 'full' && afterRank === 0 && beforeRank > 0) return true;
+  if (lap < nextAllowedLap) return false;
+  if ((outcome === 'full' || outcome === 'partial') && afterRank < beforeRank) return true;
+  return outcome === 'worse' && afterRank > beforeRank;
 }
 
 // Burn fuel off across the distance and wear the mechanical components. Wear is
@@ -1410,16 +1428,26 @@ function updateFuelAndComponents(
         recoveryRatingsFor(c, teamOrg),
         rng.next(),
       );
+      const beforeSeverity = recoveryComponent.severity;
       applyRecoveryEffect(c, recoveryComponent, outcome);
-      if (outcome !== 'none') {
+      const afterSeverity = collectDamageComponents(c, series, year, damageSettings)
+        .find((component) => component.kind === recoveryComponent.kind)?.severity ?? 'none';
+      const nextAllowedLap = c.reliabilityEventCooldowns?.[recoveryComponent.kind] ?? 0;
+      if (shouldLogReliabilityRecovery(outcome, beforeSeverity, afterSeverity, lap, nextAllowedLap)) {
+        c.reliabilityEventCooldowns = {
+          ...c.reliabilityEventCooldowns,
+          [recoveryComponent.kind]: lap + RELIABILITY_EVENT_COOLDOWN_LAPS,
+        };
+        const fullyRecovered = afterSeverity === 'none';
+        const worsened = recoverySeverityRank(afterSeverity) > recoverySeverityRank(beforeSeverity);
         lapEvents.push({
           lap,
-          text:
-            outcome === 'full'
-              ? `${driverName} nurses ${recoveryComponent.kind.toLowerCase()} back to health.`
-              : outcome === 'partial'
-                ? `${driverName} stabilises ${recoveryComponent.kind.toLowerCase()} damage.`
-                : `${driverName} cannot stop ${recoveryComponent.kind.toLowerCase()} damage worsening.`,
+          text: fullyRecovered
+            ? `${driverName} nurses ${recoveryComponent.kind.toLowerCase()} back to health.`
+            : worsened
+              ? `${driverName} cannot stop ${recoveryComponent.kind.toLowerCase()} damage worsening.`
+              : `${driverName} stabilises ${recoveryComponent.kind.toLowerCase()} damage.`,
+          category: worsened ? 'incident' : 'status',
         });
       }
     }

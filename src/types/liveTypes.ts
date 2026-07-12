@@ -457,6 +457,7 @@ export type LiveCarState = {
   tire: TireState;
   pit: PitStopState;
   reliabilityIssue: ReliabilityIssue | null;
+  reliabilityEventCooldowns?: Record<string, number>;
   reliabilityRisk: number; // current effective per-lap mechanical-failure probability
   crashRisk: number; // current effective per-lap crash/incident probability
   damaged: boolean;
