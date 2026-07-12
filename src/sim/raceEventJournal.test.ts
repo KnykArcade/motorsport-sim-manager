@@ -39,11 +39,22 @@ describe('race event journal curation', () => {
     expect(curateRaceEvents([{ lap: 15, text: 'Useful update.' }], existing)).toHaveLength(1);
   });
 
-  it('preserves physical pit events even when the strategy budget is full', () => {
+  it('budgets routine clean stops while preserving exceptional pit events', () => {
     const events: RaceEvent[] = [
       ...Array.from({ length: 4 }, (_, index) => ({ lap: 12, text: `Strategy note ${index}.`, category: 'strategy' as const })),
-      { lap: 12, text: 'Driver makes a scheduled stop.', category: 'strategy' as const },
+      { lap: 12, text: 'Driver Nailed pit stop — clean and fast.', category: 'strategy' as const },
+      { lap: 12, text: 'Driver Pit stop botch — unsafe release costs 14.0s.', category: 'strategy' as const },
     ];
-    expect(curateRaceEvents(events).at(-1)?.text).toBe('Driver makes a scheduled stop.');
+    const kept = curateRaceEvents(events);
+    expect(kept.some((event) => /Nailed pit stop/.test(event.text))).toBe(false);
+    expect(kept.at(-1)?.text).toMatch(/unsafe release/);
+  });
+
+  it('preserves a grouped weather tyre call after the strategy budget is full', () => {
+    const kept = curateRaceEvents([
+      { lap: 20, text: 'Routine strategy update.', category: 'strategy' },
+      { lap: 20, text: '18 AI cars pit for wet tyres as conditions worsen.', category: 'strategy' },
+    ]);
+    expect(kept).toHaveLength(2);
   });
 });

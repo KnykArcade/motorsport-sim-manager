@@ -61,7 +61,10 @@ export function curateRaceEvents(
 
 function isProtectedEvent(event: RaceEvent): boolean {
   if (event.category === 'incident' || event.category === 'race-control') return true;
-  return /(pit stop|pits for|makes a scheduled stop|takes the safety-car pit stop|double-stack|forced to box)/i.test(event.text);
+  // Routine clean stops are useful context, but must share the normal strategy
+  // budget or a long race can produce hundreds of near-identical entries.
+  // Preserve calls that explain a strategy change and every abnormal outcome.
+  return /(pit(?:s)? for|takes the safety-car pit stop|double-stack|forced to box|pit stop botch|slow pit stop|unsafe release|speeding penalty|wheel nut|repairs? add)/i.test(event.text);
 }
 
 function eventKey(event: RaceEvent): string {

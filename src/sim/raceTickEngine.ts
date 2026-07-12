@@ -17,6 +17,7 @@ import type {
   RecAction,
   RecPriority,
   StrategyModeSource,
+  TireCompound,
 } from '../types/liveTypes';
 import { createSeededRandom, deriveSeed } from './random';
 import { REF_LAP, type LiveRaceMeta } from './liveRaceEngine';
@@ -64,6 +65,7 @@ import { applyRaceControlFreePass, applyRaceControlQueueCatchUp, initialRaceCont
 import { generateRaceEventPool, resolveRaceEventTrigger } from './raceEventEngine';
 import { rollReliabilityIssue } from './reliabilityEngine';
 import { curateRaceEvents } from './raceEventJournal';
+import { updateLiveTimingGaps } from './liveTimingGapEngine';
 import { findOption, applyDecisionEffects } from './raceDecisionEngine';
 import {
   collectDamageComponents,
@@ -270,6 +272,8 @@ export function stepLiveSector(state: LiveRaceState, meta: LiveRaceMeta): LiveRa
 
   const lapEvents: RaceEvent[] = [];
   const pittedThisLap: LiveCarState[] = [];
+  let aiWetTyreCalls = 0;
+  let aiSlickTyreCalls = 0;
   let incidentThisLap = false;
   let incidentSeverity = 0;
   const incidentDriverIds: string[] = [];
@@ -370,7 +374,7 @@ export function stepLiveSector(state: LiveRaceState, meta: LiveRaceMeta): LiveRa
 
     // --- AI decision (player pace/pits come from player decisions) ---
     let wantsPit = false;
-    let pitCallNote: string | null = null;
+    let aiWeatherCompound: TireCompound | null = null;
     let pitLoss = 0;
     const spec = modeSpec(c.paceMode);
     const pitLaneOpen = state.raceControl?.pitLaneOpen ?? true;
@@ -399,7 +403,9 @@ export function stepLiveSector(state: LiveRaceState, meta: LiveRaceMeta): LiveRa
       if (!state.safetyCar.active) c.paceMode = action.paceMode;
       if (action.pitNow) {
         wantsPit = true;
-        pitCallNote = action.pitReason === 'Weather' ? action.note : null;
+        if (action.pitReason === 'Weather') {
+          aiWeatherCompound = action.switchCompound;
+        }
       }
       // AI fallback: pit on the scheduled lap.
       const routineStopAllowed = c.pit.lastPitLap == null
@@ -432,7 +438,8 @@ export function stepLiveSector(state: LiveRaceState, meta: LiveRaceMeta): LiveRa
 
     // --- Execute pit stop ---
     if (wantsPit) {
-      if (pitCallNote) lapEvents.push({ lap: nextLap, text: `${name(c.driverId)} ${pitCallNote}.` });
+      if (aiWeatherCompound === 'Wet') aiWetTyreCalls += 1;
+      else if (aiWeatherCompound === 'Dry') aiSlickTyreCalls += 1;
       // A stop fulfils the nearest planned stop. Detect an *early* stop (one made
       // before reaching the next scheduled lap, e.g. a cheap safety-car stop) so
       // we can consume that planned stop too — otherwise the car would pit again
@@ -729,6 +736,21 @@ export function stepLiveSector(state: LiveRaceState, meta: LiveRaceMeta): LiveRa
     return c;
   });
 
+  if (aiWetTyreCalls > 0) {
+    lapEvents.push({
+      lap: nextLap,
+      text: `${aiWetTyreCalls} AI car${aiWetTyreCalls === 1 ? '' : 's'} pit for wet tyres as conditions worsen.`,
+      category: 'strategy',
+    });
+  }
+  if (aiSlickTyreCalls > 0) {
+    lapEvents.push({
+      lap: nextLap,
+      text: `${aiSlickTyreCalls} AI car${aiSlickTyreCalls === 1 ? '' : 's'} pit for slicks as the track dries.`,
+      category: 'strategy',
+    });
+  }
+
   let firedEventIds = state.firedEventIds;
   if (isFinalSector) {
   // --- Unique race events (each fires at most once; up to a few per race) ---
@@ -870,17 +892,6 @@ export function stepLiveSector(state: LiveRaceState, meta: LiveRaceMeta): LiveRa
 
   running.forEach((c, i) => {
     c.position = i + 1;
-    const neutralized = ['SafetyCar', 'PaceCar', 'FullCourseYellow', 'Caution'].includes(raceControl.mode);
-    if (neutralized && c.positionState && running[0]?.positionState) {
-      const speed = Math.max(1, c.positionState.currentSpeedMetersPerSecond);
-      const leaderDistance = running[0].positionState.totalRaceDistanceMeters;
-      const aheadDistance = running[i - 1]?.positionState?.totalRaceDistanceMeters ?? c.positionState.totalRaceDistanceMeters;
-      c.gapToLeader = i === 0 ? 0 : round1((leaderDistance - c.positionState.totalRaceDistanceMeters) / speed);
-      c.interval = i === 0 ? 0 : round1((aheadDistance - c.positionState.totalRaceDistanceMeters) / speed);
-    } else {
-      c.gapToLeader = i === 0 ? 0 : round1(c.totalTime - running[0].totalTime);
-      c.interval = i === 0 ? 0 : round1(c.totalTime - running[i - 1].totalTime);
-    }
   });
   retired.forEach((c) => {
     c.position = null;
@@ -917,17 +928,6 @@ export function stepLiveSector(state: LiveRaceState, meta: LiveRaceMeta): LiveRa
     const battleResult = stepBattleStates(running, state.circuit, battleStates, state.cars);
     running.splice(0, running.length, ...battleResult.cars.filter((car) => car.running));
     battleStates = battleResult.states;
-    const leaderDistance = running[0]?.positionState?.totalRaceDistanceMeters ?? 0;
-    running.forEach((car, index) => {
-      car.position = index + 1;
-      const distance = car.positionState?.totalRaceDistanceMeters ?? leaderDistance;
-      const speed = Math.max(1, car.positionState?.currentSpeedMetersPerSecond ?? 1);
-      const aheadDistance = index > 0
-        ? running[index - 1]?.positionState?.totalRaceDistanceMeters ?? distance
-        : distance;
-      car.gapToLeader = index === 0 ? 0 : round1((leaderDistance - distance) / speed);
-      car.interval = index === 0 ? 0 : round1((aheadDistance - distance) / speed);
-    });
     for (const outcome of isFinalSector ? battleResult.outcomes : []) {
       if (outcome.outcome !== 'CleanPass') continue;
       const attacker = name(outcome.attackerId);
@@ -938,6 +938,8 @@ export function stepLiveSector(state: LiveRaceState, meta: LiveRaceMeta): LiveRa
   } else if (scResult.safetyCar.active) {
     battleStates = {};
   }
+
+  running.splice(0, running.length, ...updateLiveTimingGaps(running, state.circuit).filter((car) => car.running));
 
   // --- Live status (risk bands, traffic, readable message) for running cars ---
   running.forEach((c, i) => {

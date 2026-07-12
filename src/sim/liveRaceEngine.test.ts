@@ -174,7 +174,7 @@ describe('live race engine', () => {
     const meta = buildMeta(context, context.entrants[0].driver.teamId);
     const state = stepLiveRaceToEnd(createRace(context, context.entrants[0].driver.teamId), meta);
     const committedPitCalls = state.events.filter((event) =>
-      /pits for (wet tyres|slicks)|takes the safety-car pit stop|makes a scheduled stop/i.test(event.text),
+      /pit(?:s)? for (wet tyres|slicks)|takes the safety-car pit stop|makes a scheduled stop/i.test(event.text),
     );
     const physicalStops = state.cars.reduce((total, car) => total + car.pit.stopsMade, 0);
     expect(committedPitCalls.length).toBeLessThanOrEqual(physicalStops);

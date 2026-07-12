@@ -10,6 +10,7 @@ import { PIT_INTENSITY_ORDER } from '../../sim/pitIntensityData';
 import { DeltaTag } from './dashboardUi';
 import { fmtLap, ordinal, tyreLetter, RISK_STYLE } from './dashboardFormat';
 import type { RiskLevel } from '../../types/liveTypes';
+import { formatLiveTimingDelta } from '../../sim/liveTimingGapEngine';
 
 const PACE_LABEL: Record<PaceMode, string> = {
   Conservative: 'Cons',
@@ -103,7 +104,7 @@ export function PitWallCard({
 
       {/* Key telemetry row */}
       <div className="mt-0.5 grid grid-cols-4 gap-1 text-center">
-        <Metric label="Gap Ldr" value={car.position === 1 ? 'LEAD' : `+${car.gapToLeader.toFixed(1)}`} />
+        <Metric label="Gap Ldr" value={car.position === 1 ? 'LEAD' : formatLiveTimingDelta(car.gapToLeader, car.lapsBehindLeader)} />
         <Metric label="Last Lap" value={car.lastLapTime > 0 ? fmtLap(car.lastLapTime) : '—'} />
         <Metric label="Pace" value={car.liveRacePace.toFixed(1)} accent />
         <Metric label={`Tyre ${tyre.letter}`} value={`${life}%`} />

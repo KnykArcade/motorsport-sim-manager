@@ -3,9 +3,9 @@ import { aggregateLiveRaceCalibration, type LiveRaceCalibrationRun } from './liv
 import { assessLiveRaceCalibration, selectLiveRaceCalibrationTargets } from './liveRaceCalibrationTargets';
 
 const run: LiveRaceCalibrationRun = {
-  seed: 'target-test', carsStarted: 20, playerCars: 2, pitStops: 24, carsWithThreePlusStops: 0,
+  seed: 'target-test', carsStarted: 20, raceLaps: 60, playerCars: 2, pitStops: 24, carsWithThreePlusStops: 0,
   committedPitCalls: 20, recommendationAppearances: 12, modeChanges: 80,
-  safetyCarDeployments: 2, retirements: 3, totalEvents: 80,
+  safetyCarDeployments: 2, retirements: 3, totalEvents: 80, pitEventEntries: 12,
   eventsByCategory: { incident: 4, strategy: 30, status: 20, battle: 18, weather: 2, 'race-control': 6 },
   stopDistribution: { '0': 2, '1': 12, '2': 6 },
 };
@@ -26,6 +26,6 @@ describe('live race calibration targets', () => {
     const assessment = assessLiveRaceCalibration(report, selectLiveRaceCalibrationTargets('F1', 1995));
     expect(assessment.withinTargets).toBe(true);
     expect(assessment.metrics.pitStopsPerCar).toMatchObject({ actual: 1.2, within: true });
-    expect(Object.keys(assessment.metrics)).toHaveLength(5);
+    expect(Object.keys(assessment.metrics)).toHaveLength(7);
   });
 });

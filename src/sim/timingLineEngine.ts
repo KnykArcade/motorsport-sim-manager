@@ -18,6 +18,7 @@ export function applySectorCrossing(
   timing: TimingCrossingState,
   sector: 1 | 2,
   crossingTime: number,
+  currentLap = 0,
 ): { timing: TimingCrossingState; event: TimingCrossingEvent } {
   const sectorTime = round3(crossingTime - timing.currentSectorStartTime);
   return {
@@ -26,6 +27,10 @@ export function applySectorCrossing(
       lastSectorCrossed: sector,
       lastSectorCrossingTime: crossingTime,
       currentSectorStartTime: crossingTime,
+      lineCrossings: {
+        ...timing.lineCrossings,
+        [sector === 1 ? 'Sector1' : 'Sector2']: { lap: currentLap, time: crossingTime },
+      },
     },
     event: { type: 'Sector', sector, crossingTime, sectorTime },
   };
@@ -46,6 +51,10 @@ export function applyFinishLineCrossing(
       lastFinishLineCrossingTime: crossingTime,
       currentLapStartTime: crossingTime,
       currentSectorStartTime: crossingTime,
+      lineCrossings: {
+        ...timing.lineCrossings,
+        Finish: { lap: completedLap, time: crossingTime },
+      },
     },
     event: { type: 'Lap', lap: completedLap, crossingTime, lapTime, sectorTime },
   };

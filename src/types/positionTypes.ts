@@ -19,6 +19,9 @@ export type TimingCrossingState = {
   lastFinishLineCrossingTime: number | null;
   currentLapStartTime: number;
   currentSectorStartTime: number;
+  // Latest crossing at each timing line. Kept separately so a trailing car can
+  // be compared with the same line/lap after the car ahead reaches another line.
+  lineCrossings?: Partial<Record<'Sector1' | 'Sector2' | 'Finish', { lap: number; time: number }>>;
 };
 
 export type CarPositionState = {

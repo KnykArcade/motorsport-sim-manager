@@ -14,6 +14,7 @@ import type { ForecastEntry } from '../forecast';
 import { PIT_INTENSITY_ORDER } from '../../../sim/pitIntensityData';
 import { getEraTheme, getEraThemeConfig } from '../../../theme/eraTheme';
 import { ratingColor } from '../../../components/ui';
+import { formatLiveTimingDelta } from '../../../sim/liveTimingGapEngine';
 
 const SAFETY_CAR_PIT_LOSS_FACTOR = 0.4;
 
@@ -466,13 +467,13 @@ function RetroTimingTower({
                 </>
               ) : tab === 'Intervals' ? (
                 <>
-                  <span className="text-right tabular-nums text-zinc-300">{position === 1 ? 'LEADER' : `+${car.interval.toFixed(1)}`}</span>
+                  <span className="text-right tabular-nums text-zinc-300">{position === 1 ? 'LEADER' : formatLiveTimingDelta(car.interval, car.lapsBehindCarAhead)}</span>
                   <span className="text-right tabular-nums text-zinc-300">{position === 1 ? '—' : `P${Math.max(1, position - 1)}`}</span>
                   <span className="text-right font-bold tabular-nums text-amber-300">{tyre.letter} {life}%</span>
                 </>
               ) : (
                 <>
-                  <span className="text-right tabular-nums text-zinc-300">{car.position === 1 ? 'LEADER' : retired ? '-' : `+${car.gapToLeader.toFixed(1)}`}</span>
+                  <span className="text-right tabular-nums text-zinc-300">{car.position === 1 ? 'LEADER' : retired ? '-' : formatLiveTimingDelta(car.gapToLeader, car.lapsBehindLeader)}</span>
                   <span className="text-right tabular-nums">{car.pit.stopsMade}</span>
                   <span className="text-right font-bold tabular-nums text-amber-300">{tyre.letter} {life}%</span>
                 </>
@@ -935,7 +936,7 @@ function DriverFocus({
           <div className="grid min-w-0 flex-1 grid-cols-2 gap-x-2 gap-y-0.5 self-start text-[10px] leading-tight">
             <FocusLine label="Position" value={car.position ? ordinalText(car.position) : 'Out'} />
             <FocusLine label="Last lap" value={car.lastLapTime > 0 ? fmtLap(car.lastLapTime) : 'N/A'} />
-            <FocusLine label="Gap to leader" value={car.position === 1 ? 'Leader' : `+${car.gapToLeader.toFixed(1)}`} />
+            <FocusLine label="Gap to leader" value={car.position === 1 ? 'Leader' : formatLiveTimingDelta(car.gapToLeader, car.lapsBehindLeader)} />
             <FocusLine
               label={teammate ? `Gap to ${shortName(nameOf(teammate.driverId)).split(' ').pop()}` : 'Best lap'}
               value={
@@ -1398,7 +1399,11 @@ function radioLines(
   const fallback = [
     'Car balance is stable for now.',
     `Current mode ${modeLabel(car.paceMode)} is understood.`,
-    car.gapToLeader > 0 ? `Gap ahead is ${car.interval.toFixed(1)} seconds.` : 'Clean air at the front.',
+    car.gapToLeader > 0
+      ? car.lapsBehindCarAhead
+        ? `The car ahead is ${car.lapsBehindCarAhead} lap${car.lapsBehindCarAhead === 1 ? '' : 's'} ahead.`
+        : `Gap ahead is ${car.interval.toFixed(1)} seconds.`
+      : 'Clean air at the front.',
     car.tire.wear > 35 ? 'Tyre temperatures are moving, but still in range.' : 'Tyre temperatures look controlled.',
   ];
   while (messages.length < 2) {

@@ -90,4 +90,5 @@ test('deterministic live race calibration', () => {
   console.log(JSON.stringify({ season: `${year}-${series}`, track: race.trackName, ...report, targetAssessment }, null, 2));
   expect(report.runs).toBe(sims);
   expect(report.pitCallReconciliationFailures).toBe(0);
+  if (process.env.CAL_ASSERT_TARGETS === '1') expect(targetAssessment.withinTargets).toBe(true);
 }, 120_000);
