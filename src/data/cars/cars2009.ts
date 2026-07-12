@@ -65,9 +65,9 @@ export const cars2009: Car[] = [
     teamId: 't-williams-toyota',
     seasonYear: 2009,
     ratings: {
-      enginePower: 6.1,
-      aeroEfficiency: 6.6,
-      mechanicalGrip: 6.2,
+      enginePower: 5.0,
+      aeroEfficiency: 5.3,
+      mechanicalGrip: 5.3,
       reliability: 5.8,
       pitCrewOperations: 5.9,
     },

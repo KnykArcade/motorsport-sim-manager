@@ -93,9 +93,9 @@ export const cars2019: Car[] = [
     teamId: 't-renault',
     seasonYear: 2019,
     ratings: {
-      enginePower: 6.4,
-      aeroEfficiency: 5.9,
-      mechanicalGrip: 5.9,
+      enginePower: 7.2,
+      aeroEfficiency: 6.8,
+      mechanicalGrip: 6.7,
       reliability: 5.8,
       pitCrewOperations: 5.9,
     },

@@ -51,9 +51,9 @@ export const cars2000: Car[] = [
     teamId: 't-jordan-mugen-honda',
     seasonYear: 2000,
     ratings: {
-      enginePower: 7.5,
-      aeroEfficiency: 8.0,
-      mechanicalGrip: 7.3,
+      enginePower: 5.1,
+      aeroEfficiency: 5.2,
+      mechanicalGrip: 5.3,
       reliability: 6.7,
       pitCrewOperations: 7.4,
     },
