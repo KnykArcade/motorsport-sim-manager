@@ -39,6 +39,7 @@ import { FullEventLogModal, StrategyModal, TeamOrdersModal } from './liveRace/mo
 import { F11990sLiveRaceScreen } from './liveRace/eraThemes/F11990sLiveRaceScreen';
 import { getLiveRaceEraTheme, shouldUseF11990sLiveRaceScreen } from './liveRace/eraThemes/getLiveRaceEraTheme';
 import { CrashZoomOverlay } from './liveRace/CrashZoomOverlay';
+import { advanceTrackProgress, blendTrackProgress, sectorPlaybackIntervalMs } from '../sim/trackMapInterpolation';
 
 type Speed = 1 | 5 | 15 | 30;
 
@@ -76,7 +77,8 @@ export function LiveRace() {
   const [live, setLive] = useState<LiveRaceState | null>(() => engine?.initial ?? null);
   const [playing, setPlaying] = useState(false);
   const [speed, setSpeed] = useState<Speed>(1);
-  const [trackAnimationTick, setTrackAnimationTick] = useState(0);
+  const [animatedTrackProgress, setAnimatedTrackProgress] = useState<Record<string, number>>({});
+  const animatedTrackProgressRef = useRef<Record<string, number>>({});
   const [modal, setModal] = useState<'log' | 'strategy' | 'orders' | null>(null);
   const [ordersFocusDriverId, setOrdersFocusDriverId] = useState<string | null>(null);
   const [podium, setPodium] = useState<PodiumSnapshot | null>(null);
@@ -134,7 +136,6 @@ export function LiveRace() {
   useEffect(() => {
     if (!engine || !live) return;
     if (!playing || dnfAlert || blockingPrompt || live.phase === 'finished' || needsDecision) return;
-    const useRealLapPacing = shouldUseF11990sLiveRaceScreen(state?.series, state?.seasonYear);
     const leaderForPacing = live.cars.find((c) => c.position === 1 && c.running);
     const liveLapTime =
       leaderForPacing?.lastLapTime && leaderForPacing.lastLapTime > 0
@@ -142,39 +143,66 @@ export function LiveRace() {
         : leaderForPacing?.bestLap && leaderForPacing.bestLap > 0
           ? leaderForPacing.bestLap
           : 85;
-    const intervalMs = useRealLapPacing
-      ? Math.max(15_000, Math.min(120_000, liveLapTime * 1000)) / speed / 3
-      : 950 / speed / 3;
+    const intervalMs = sectorPlaybackIntervalMs(liveLapTime, speed);
     const id = setInterval(() => {
       setLive((s) => (s && (!s.pendingPrompt || s.safetyCar.active) && s.phase !== 'finished' ? advanceLiveSector(s) : s));
     }, intervalMs);
     return () => clearInterval(id);
-  }, [advanceLiveSector, engine, live, playing, speed, needsDecision, dnfAlert, blockingPrompt, state?.series, state?.seasonYear]);
+  }, [advanceLiveSector, engine, live, playing, speed, needsDecision, dnfAlert, blockingPrompt]);
 
-  // Reset the intra-sector animation whenever a new sector begins.
+  // Renderer-only real-time motion. Simulation snapshots remain authoritative;
+  // animation extrapolates each car from its own position/speed and smoothly
+  // corrects toward every new snapshot without feeding values back into the sim.
   useEffect(() => {
-    const id = setTimeout(() => setTrackAnimationTick(0), 0);
-    return () => clearTimeout(id);
-  }, [live?.currentLap, live?.sector]);
+    if (!live?.circuit) return;
+    const authoritative = Object.fromEntries(live.cars.map((car) => [
+      car.driverId,
+      car.positionState?.normalizedLapProgress ?? 0,
+    ]));
+    if (!playing || blockingPrompt || live.phase === 'finished' || needsDecision) {
+      if (live.phase === 'finished') {
+        const syncFrame = requestAnimationFrame(() => {
+          animatedTrackProgressRef.current = authoritative;
+          setAnimatedTrackProgress(authoritative);
+        });
+        return () => cancelAnimationFrame(syncFrame);
+      }
+      return;
+    }
 
-  // Smoothly advance the sub-lap marker position for each of the three sectors.
-  useEffect(() => {
-    if (!engine || !live) return;
-    if (!playing || blockingPrompt || live.phase === 'finished' || needsDecision) return;
-    const useRealLapPacing = shouldUseF11990sLiveRaceScreen(state?.series, state?.seasonYear);
-    const leaderForPacing = live.cars.find((c) => c.position === 1 && c.running);
-    const liveLapTime =
-      leaderForPacing?.lastLapTime && leaderForPacing.lastLapTime > 0
-        ? leaderForPacing.lastLapTime
-        : leaderForPacing?.bestLap && leaderForPacing.bestLap > 0
-          ? leaderForPacing.bestLap
-          : 85;
-    const intervalMs = useRealLapPacing
-      ? Math.max(15_000, Math.min(120_000, liveLapTime * 1000)) / speed / 3
-      : 950 / speed / 3;
-    const id = setInterval(() => setTrackAnimationTick((tick) => tick + 1), Math.max(80, intervalMs / 12));
-    return () => clearInterval(id);
-  }, [engine, live, playing, speed, needsDecision, dnfAlert, blockingPrompt, state?.series, state?.seasonYear]);
+    const startedAt = performance.now();
+    const starts = { ...authoritative, ...animatedTrackProgressRef.current };
+    const lapLength = live.circuit.lapLengthMeters;
+    const leaderForPacing = live.cars.find((car) => car.position === 1 && car.running);
+    const liveLapTime = leaderForPacing?.lastLapTime && leaderForPacing.lastLapTime > 0
+      ? leaderForPacing.lastLapTime
+      : leaderForPacing?.bestLap && leaderForPacing.bestLap > 0
+        ? leaderForPacing.bestLap
+        : live.circuit.baselineLapTimeSeconds || 85;
+    const fallbackSpeed = lapLength / Math.max(1, liveLapTime);
+    const correctionMs = Math.min(750, sectorPlaybackIntervalMs(liveLapTime, speed) / 4);
+    let frameId = 0;
+    const renderFrame = (now: number) => {
+      const elapsedMs = Math.max(0, now - startedAt);
+      const correction = Math.min(1, elapsedMs / Math.max(1, correctionMs));
+      const next: Record<string, number> = {};
+      for (const car of live.cars) {
+        const authoritativeProgress = authoritative[car.driverId] ?? 0;
+        if (!car.running || car.pit.inPitThisLap) {
+          next[car.driverId] = authoritativeProgress;
+          continue;
+        }
+        const displaySpeed = Math.max(1, car.positionState?.currentSpeedMetersPerSecond ?? fallbackSpeed);
+        const correctedStart = blendTrackProgress(starts[car.driverId] ?? authoritativeProgress, authoritativeProgress, correction);
+        next[car.driverId] = advanceTrackProgress(correctedStart, displaySpeed, elapsedMs, speed, lapLength);
+      }
+      animatedTrackProgressRef.current = next;
+      setAnimatedTrackProgress(next);
+      frameId = requestAnimationFrame(renderFrame);
+    };
+    frameId = requestAnimationFrame(renderFrame);
+    return () => cancelAnimationFrame(frameId);
+  }, [live, playing, speed, needsDecision, blockingPrompt]);
 
   useEffect(() => {
     if (!aiDnfFlash) return;
@@ -351,8 +379,9 @@ export function LiveRace() {
         : live.cars
               .filter((c) => c.running && c.lastLapTime > 0)
               .reduce((sum, c, _, cars) => sum + c.lastLapTime / cars.length, 0) || 85;
-  const sectorProgress = Math.min(1, trackAnimationTick / 12);
-  const rotation = ((live.currentLap + ((live.sector ?? 0) + sectorProgress) / 3) % 1 + 1) % 1;
+  const rotation = leader
+    ? animatedTrackProgress[leader.driverId] ?? leader.positionState?.normalizedLapProgress ?? 0
+    : 0;
   const dots: TrackDot[] = live.cars.map((c) => ({
     driverId: c.driverId,
     label: String(driverNumber(c.driverId) || ''),
@@ -368,7 +397,10 @@ export function LiveRace() {
     inPit: c.pit.inPitThisLap,
     pitRequested: c.pit.pitRequested,
     rank: c.position ?? 99,
-    trackProgress: c.retiredTrackProgress ?? normalizeTrackProgress(rotation - c.gapToLeader / representativeLapTime),
+    trackProgress: c.retiredTrackProgress
+      ?? animatedTrackProgress[c.driverId]
+      ?? c.positionState?.normalizedLapProgress
+      ?? normalizeTrackProgress(rotation - c.gapToLeader / representativeLapTime),
     gapToLeader: c.gapToLeader,
     interval: c.interval,
     damagePercent: getCarDamagePercent(c),
