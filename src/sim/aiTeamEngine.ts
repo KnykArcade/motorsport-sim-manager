@@ -279,11 +279,11 @@ export function assignArchetype(
   if (rep >= 75 && carPace >= 73) return 'ChampionshipContender';
   if (cashM < 28 && rep < 45) return 'SurvivalMode';
   if (rep < 42 && sponsor >= 55) return 'PayDriverReliant';
-  if (youth >= 66) return rep >= 70 ? 'DevelopmentFocused' : 'YouthFocused';
-  if (research >= 60 && rep >= 45 && rep < 72) {
-    return nudge < 0.6 ? 'AmbitiousBuilder' : 'DevelopmentFocused';
+  if (youth >= 60) return rep >= 62 ? 'DevelopmentFocused' : 'YouthFocused';
+  if (research >= 52 && rep >= 42 && rep < 72) {
+    return nudge < 0.45 ? 'AmbitiousBuilder' : 'DevelopmentFocused';
   }
-  if (cashM >= 65 && rep < 72) return 'AggressiveSpender';
+  if (cashM >= 48 && rep < 72) return 'AggressiveSpender';
   if (rep < 45) return nudge < 0.5 ? 'SurvivalMode' : 'PayDriverReliant';
   return 'FinanciallyConservative';
 }
@@ -294,8 +294,8 @@ export function assignArchetype(
 // A gentle curve: champions earn far more than the tail of the grid.
 export function estimatePrizeMoney(constructorPosition: number, teamCount: number): number {
   const pos = Math.max(1, Math.min(teamCount, constructorPosition));
-  const top = 45; // $M for P1
-  const tail = 6; // $M for last
+  const top = 48; // $M for P1
+  const tail = 7; // $M for last
   const frac = teamCount > 1 ? (pos - 1) / (teamCount - 1) : 0;
   return toMoney(top - (top - tail) * frac);
 }
@@ -477,7 +477,10 @@ export function evolveArchetype(
     return 'SurvivalMode';
   }
   // Recovery out of Survival Mode once finances stabilize.
-  if (current === 'SurvivalMode' && (health === 'Stable' || health === 'Excellent')) {
+  if (
+    current === 'SurvivalMode' &&
+    (health === 'Stable' || health === 'Excellent' || (health === 'Tight' && cashGrowthRatio >= 1.1))
+  ) {
     return 'FinanciallyConservative';
   }
   // A big cash injection (investment) emboldens a stable team.

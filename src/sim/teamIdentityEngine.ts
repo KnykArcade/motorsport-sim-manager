@@ -14,6 +14,7 @@
 // that persist and evolve across seasons.
 
 import type { TeamPhilosophyTrait, AITeamArchetype, TeamMemoryEntry } from '../types/aiTeamTypes';
+import type { RegulationChangeEvent } from '../types/gameTypes';
 export type { TeamMemoryEntry };
 
 // ---------------------------------------------------------------------------
@@ -119,12 +120,13 @@ export function weightedDevTarget(
   car: { ratings: { aeroEfficiency: number; enginePower: number; mechanicalGrip: number; reliability: number; pitCrewOperations: number } },
   hadReliabilityProblem: boolean,
   traits: TeamPhilosophyTrait[] | undefined,
+  affectedAreas: RegulationChangeEvent['affectedAreas'] = [],
 ): 'aeroEfficiency' | 'enginePower' | 'mechanicalGrip' | 'reliability' | 'pitCrewOperations' {
   const bias = devAreaBias(traits);
   const eff = car.ratings;
 
   // If reliability is a problem, strongly bias there unless traits override.
-  if (hadReliabilityProblem && eff.reliability < 8.5) {
+  if (hadReliabilityProblem && eff.reliability < 85) {
     const reliabilityWeight = 1 + bias.reliability;
     if (reliabilityWeight > 0.5) return 'reliability';
   }
@@ -136,9 +138,16 @@ export function weightedDevTarget(
   let best: typeof areas[0] = 'aeroEfficiency';
   let bestScore = -Infinity;
   for (const area of areas) {
-    const need = 10 - eff[area]; // lower rating = higher need
+    const need = Math.max(0, 100 - eff[area]); // lower rating = higher need
+    const regulationArea =
+      area === 'enginePower' ? 'Engine'
+      : area === 'aeroEfficiency' ? 'Aero'
+      : area === 'mechanicalGrip' ? 'Mechanical'
+      : area === 'reliability' ? 'Reliability'
+      : 'Testing';
+    const regulationBonus = affectedAreas.includes(regulationArea) ? 12 : 0;
     const traitBonus = bias[area];
-    const score = need + traitBonus * 5;
+    const score = need + traitBonus * 5 + regulationBonus;
     if (score > bestScore) {
       bestScore = score;
       best = area;

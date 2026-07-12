@@ -325,7 +325,16 @@ export function processAITeamActivity(state: GameState): GameState {
     let newsBody = '';
     let isRealChange = false;
 
-    if (archetype === 'AggressiveSpender' || archetype === 'DevelopmentFocused') {
+    const developmentBudget = aiState?.budget.developmentSpend ?? 0;
+    const developmentChance =
+      aiState?.financialHealth === 'Excellent'
+        ? archetype === 'AggressiveSpender' ? 0.9 : archetype === 'DevelopmentFocused' ? 0.8 : 0.35
+        : aiState?.financialHealth === 'Stable'
+          ? archetype === 'AggressiveSpender' ? 0.75 : archetype === 'DevelopmentFocused' ? 0.65 : 0.2
+          : aiState?.financialHealth === 'Tight'
+            ? archetype === 'AggressiveSpender' ? 0.35 : archetype === 'DevelopmentFocused' ? 0.25 : 0.08
+            : 0;
+    if (developmentBudget >= 1_000_000 && developmentChance > 0 && rng.chance(developmentChance)) {
       // Aggressive teams push development: small car stat improvement.
       const improvement = rng.range(1, 4);
       const stat = rng.chance(0.5) ? 'enginePower' : 'aeroEfficiency';

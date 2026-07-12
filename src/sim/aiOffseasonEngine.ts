@@ -10,7 +10,16 @@
 //
 // Pure & deterministic: given the same inputs it produces the same moves.
 
-import type { Car, CarRatings, Driver, DriverRatings, StandingsEntry, Team, ProjectRiskLevel } from '../types/gameTypes';
+import type {
+  Car,
+  CarRatings,
+  Driver,
+  DriverRatings,
+  RegulationChangeEvent,
+  StandingsEntry,
+  Team,
+  ProjectRiskLevel,
+} from '../types/gameTypes';
 import type { EngineState } from '../types/engineTypes';
 import type { TeamOrganizationRatings } from '../types/teamRatingsTypes';
 import type { AcademyMember, MarketDriver, YouthProspect } from '../types/marketTypes';
@@ -68,6 +77,7 @@ export type AIOffseasonInput = {
   // 0 (stable regulations) .. 1 (major regulation shakeup) for the upcoming
   // season. Drives offseason car decay/reshuffle and carryover reduction.
   regulationShakeup?: number;
+  regulationAffectedAreas?: RegulationChangeEvent['affectedAreas'];
   series?: string;
 };
 
@@ -134,6 +144,7 @@ function developCar(
   fieldTopRating: number,
   rng: Rng,
   org: TeamOrganizationRatings | undefined,
+  regulationAffectedAreas: RegulationChangeEvent['affectedAreas'] | undefined,
 ): { car: Car; note: string } | null {
   const spec = ARCHETYPE_SPECS[ai.archetype];
   const budget = ai.budget.developmentSpend;
@@ -159,7 +170,12 @@ function developCar(
   const gainMultiplier = OUTCOME_GAIN_MULTIPLIERS[outcome];
   const impactMult = facilityImpactMultiplier(facLevel);
 
-  const target = weightedDevTarget(car, hadReliabilityProblem, ai.philosophy?.traits);
+  const target = weightedDevTarget(
+    car,
+    hadReliabilityProblem,
+    ai.philosophy?.traits,
+    regulationAffectedAreas,
+  );
   const current = car.ratings[target];
 
   // Base gain scales with spend and risk appetite.
@@ -403,6 +419,7 @@ export function runAIOffseason(input: AIOffseasonInput): AIOffseasonResult {
         fieldTopRating,
         rng,
         org,
+        input.regulationAffectedAreas,
       );
       if (dev) {
         // The development *spend* is already applied to the team's cash by the

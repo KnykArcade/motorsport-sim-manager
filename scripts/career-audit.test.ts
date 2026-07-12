@@ -10,6 +10,8 @@
 import { describe, it, expect } from 'vitest';
 
 import { runCareerAudit, type CareerAuditReport } from './careerAudit';
+import { createNewGame } from '../src/game/initialCareer';
+import { advanceSeason } from '../src/game/seasonRollover';
 
 describe('Career audit — F1 1990, 20 real-race seasons', () => {
   const report: CareerAuditReport = runCareerAudit({ seasons: 20, seed: 'career-audit-1990' });
@@ -99,5 +101,34 @@ describe('Career audit — F1 1990, 20 real-race seasons', () => {
       // Every AI team is graded exactly once.
       expect(total).toBeGreaterThan(0);
     }
+  });
+
+  it('records AI in-season upgrades and does not have a declining grid-average trend', () => {
+    const averages = seasons.map((s) => s.carRating.avg);
+    expect(averages.at(-1)!).toBeGreaterThanOrEqual(averages[0]);
+    const totalUpgrades = seasons.reduce((sum, s) => sum + s.aiActivity.upgrades, 0);
+    expect(totalUpgrades / seasons.length).toBeGreaterThanOrEqual(1);
+  });
+
+  it('decrements carried-over AI driver contracts at rollover', () => {
+    const before = createNewGame({
+      gameMode: 'Career',
+      seasonYear: 1990,
+      series: 'F1',
+      teamId: '__audit_no_player__',
+      seed: 'contract-rollover-regression',
+    });
+    const next = advanceSeason({ ...before, seasonComplete: true });
+    const aiIds = new Set(
+      before.drivers
+        .filter((d) => d.teamId !== before.selectedTeamId)
+        .map((d) => d.id),
+    );
+    const carried = next.drivers.find((d) => aiIds.has(d.id));
+    expect(carried).toBeDefined();
+    const prior = before.drivers.find((d) => d.id === carried!.id)!;
+    expect(carried!.contractYearsRemaining).toBe(
+      Math.max(0, (prior.contractYearsRemaining ?? 0) - 1),
+    );
   });
 });
