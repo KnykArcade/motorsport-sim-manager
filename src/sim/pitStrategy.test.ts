@@ -4,7 +4,9 @@ import { generateCandidates } from './analyticsEngine';
 import {
   acceptRecommendation,
   cancelPlayerPitPlan,
+  ignoreRecommendation,
   modifyRecommendation,
+  refreshRecommendations,
 } from './raceTickEngine';
 import { orderCardsBySeat } from './liveRaceCardOrder';
 import type { LiveRaceMeta } from './liveRaceEngine';
@@ -168,6 +170,23 @@ describe('pit window prompt (no automatic pit)', () => {
     expect(pitEvents).toHaveLength(1);
     // The recommendation is consumed, not left to fire again.
     expect(after.recommendations.find((r) => r.id === rec.id)).toBeUndefined();
+  });
+
+  it('does not re-prompt after the player ignores the same pit window', () => {
+    const s = withCandidates(
+      live([car({ pit: { window: { open: 20, ideal: 23, close: 26 } } })], { currentLap: 20 }),
+    );
+    const rec = s.recommendations.find((candidate) => candidate.kind === 'pitWindow')!;
+    const ignored = ignoreRecommendation(s, rec.id, META);
+    const events: LiveRaceState['events'] = [];
+    const refreshed = refreshRecommendations(
+      ignored.cars,
+      { ...ignored, currentLap: 26 },
+      26,
+      (driverId) => driverId,
+      events,
+    );
+    expect(refreshed.recommendations.find((candidate) => candidate.kind === 'pitWindow')).toBeUndefined();
   });
 });
 

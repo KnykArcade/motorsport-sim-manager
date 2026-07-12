@@ -48,7 +48,7 @@ import {
   SAFETY_CAR_LAP_PENALTY,
   SAFETY_CAR_PIT_SAVING,
 } from './safetyCarEngine';
-import { aiLapDecision } from './aiStrategyEngine';
+import { aiLapDecision, MIN_NON_EMERGENCY_PIT_STINT_LAPS } from './aiStrategyEngine';
 import { pitWindowFor } from './pitStrategyEngine';
 import {
   pitIntensityBaseSeverity,
@@ -369,6 +369,7 @@ export function stepLiveSector(state: LiveRaceState, meta: LiveRaceMeta): LiveRa
 
     // --- AI decision (player pace/pits come from player decisions) ---
     let wantsPit = false;
+    let pitCallNote: string | null = null;
     let pitLoss = 0;
     const spec = modeSpec(c.paceMode);
     const pitLaneOpen = state.raceControl?.pitLaneOpen ?? true;
@@ -397,10 +398,13 @@ export function stepLiveSector(state: LiveRaceState, meta: LiveRaceMeta): LiveRa
       if (!state.safetyCar.active) c.paceMode = action.paceMode;
       if (action.pitNow) {
         wantsPit = true;
-        if (action.note) lapEvents.push({ lap: nextLap, text: `${name(c.driverId)} ${action.note}.` });
+        pitCallNote = action.note;
       }
       // AI fallback: pit on the scheduled lap.
-      if (!wantsPit && c.pit.scheduledLaps.length > 0 && nextLap >= c.pit.scheduledLaps[0]) wantsPit = true;
+      const routineStopAllowed = c.pit.lastPitLap == null
+        || nextLap - c.pit.lastPitLap >= MIN_NON_EMERGENCY_PIT_STINT_LAPS
+        || c.tire.wear > 92;
+      if (!wantsPit && routineStopAllowed && c.pit.scheduledLaps.length > 0 && nextLap >= c.pit.scheduledLaps[0]) wantsPit = true;
     } else {
       // Player owns pit timing: the car only pits when the player has called it
       // in (via the pit-wall / an accepted analytics recommendation). The planned
@@ -418,12 +422,16 @@ export function stepLiveSector(state: LiveRaceState, meta: LiveRaceMeta): LiveRa
     }
 
     if (wantsPit && !pitLaneOpen) {
-      if (c.isPlayer) lapEvents.push({ lap: nextLap, text: `${name(c.driverId)} must stay out — pit road is closed.` });
+      if (c.isPlayer && c.pit.lastPitRoadClosedEventDeployment !== state.safetyCar.deployments) {
+        lapEvents.push({ lap: nextLap, text: `${name(c.driverId)} must stay out — pit road is closed.` });
+        c.pit.lastPitRoadClosedEventDeployment = state.safetyCar.deployments;
+      }
       wantsPit = false;
     }
 
     // --- Execute pit stop ---
     if (wantsPit) {
+      if (pitCallNote) lapEvents.push({ lap: nextLap, text: `${name(c.driverId)} ${pitCallNote}.` });
       // A stop fulfils the nearest planned stop. Detect an *early* stop (one made
       // before reaching the next scheduled lap, e.g. a cheap safety-car stop) so
       // we can consume that planned stop too — otherwise the car would pit again
@@ -1466,6 +1474,7 @@ export function refreshRecommendations(
     .filter((i) => lap - i.lap < REC_COOLDOWN * 3)
     .map((i) => {
       if (i.escalated) return i;
+      if (i.key.endsWith(':pitWindow')) return i;
       const cand = candById.get(i.key);
       if (!cand || PRIORITY_RANK[cand.priority] <= PRIORITY_RANK[i.priority]) return i;
       const [driverId] = i.key.split(':');
@@ -1531,7 +1540,7 @@ export function refreshRecommendations(
     if (liveIds.has(cand.id)) continue;
     if (shouldSuppressModeCandidate(cand, recCooldowns, activeModeDrivers, lap)) continue;
     const cd = recCooldowns[cand.id];
-    if (cand.priority !== 'urgent' && cd != null && lap < cd) continue;
+    if (cd != null && lap < cd && (cand.priority !== 'urgent' || cand.kind === 'pitWindow')) continue;
     result.push(cand);
     liveIds.add(cand.id);
     // Log the first appearance of important advice once (skip if it was just
@@ -1570,9 +1579,13 @@ function addEvent(state: LiveRaceState, text: string): LiveRaceState {
 }
 
 function withCooldown(state: LiveRaceState, rec: AnalyticsRecommendation): LiveRaceState {
+  const car = state.cars.find((candidate) => candidate.driverId === rec.driverId);
+  const cooldownUntil = rec.kind === 'pitWindow' && car?.pit.window
+    ? car.pit.window.close + 1
+    : state.currentLap + cooldownFor(rec.kind);
   return {
     ...state,
-    recCooldowns: { ...state.recCooldowns, [rec.id]: state.currentLap + cooldownFor(rec.kind) },
+    recCooldowns: { ...state.recCooldowns, [rec.id]: cooldownUntil },
   };
 }
 

@@ -118,6 +118,26 @@ describe('aiLapDecision — core behaviours', () => {
     expect(action.pitNow).toBe(true);
   });
 
+  it('does not schedule another routine stop inside the minimum post-stop stint', () => {
+    const c = car({
+      pit: { plannedStops: 2, stopsMade: 1, scheduledLaps: [22], lastPitLap: 19, inPitThisLap: false, window: null, pitRequested: false, planStatus: 'planned', planCancelled: false, lastWindowPromptLap: null },
+      tire: { compound: 'Dry', age: 3, wear: 35, stintTarget: 20 },
+    });
+    expect(aiLapDecision(c, live([c]), TRACK, 22).pitNow).toBe(false);
+  });
+
+  it('still permits an urgent weather stop inside the minimum post-stop stint', () => {
+    const c = car({
+      pit: { plannedStops: 1, stopsMade: 1, scheduledLaps: [], lastPitLap: 19, inPitThisLap: false, window: null, pitRequested: false, planStatus: 'completed', planCancelled: false, lastWindowPromptLap: null },
+      tire: { compound: 'Dry', age: 3, wear: 15, stintTarget: 20 },
+      personality: 'RiskAverse',
+    });
+    const wet = live([c], { weather: { condition: 'HeavyRain', gripLevel: 0.7, wet: true, changingSoon: false, label: 'Heavy Rain' } });
+    const action = aiLapDecision(c, wet, TRACK, 22);
+    expect(action.pitNow).toBe(true);
+    expect(action.pitReason).toBe('Weather');
+  });
+
   it('varies pit timing by strategy personality', () => {
     const pit: LiveCarState['pit'] = {
       plannedStops: 1,
