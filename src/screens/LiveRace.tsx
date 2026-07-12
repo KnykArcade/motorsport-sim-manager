@@ -39,7 +39,7 @@ import { FullEventLogModal, StrategyModal, TeamOrdersModal } from './liveRace/mo
 import { F11990sLiveRaceScreen } from './liveRace/eraThemes/F11990sLiveRaceScreen';
 import { getLiveRaceEraTheme, shouldUseF11990sLiveRaceScreen } from './liveRace/eraThemes/getLiveRaceEraTheme';
 import { CrashZoomOverlay } from './liveRace/CrashZoomOverlay';
-import { advanceTrackProgress, blendTrackProgress, sectorPlaybackIntervalMs } from '../sim/trackMapInterpolation';
+import { advanceTrackProgress, reconcileTrackProgressForward, sectorPlaybackIntervalMs } from '../sim/trackMapInterpolation';
 
 type Speed = 1 | 5 | 15 | 30;
 
@@ -193,7 +193,11 @@ export function LiveRace() {
           continue;
         }
         const displaySpeed = Math.max(1, car.positionState?.currentSpeedMetersPerSecond ?? fallbackSpeed);
-        const correctedStart = blendTrackProgress(starts[car.driverId] ?? authoritativeProgress, authoritativeProgress, correction);
+        const correctedStart = reconcileTrackProgressForward(
+          starts[car.driverId] ?? authoritativeProgress,
+          authoritativeProgress,
+          correction,
+        );
         next[car.driverId] = advanceTrackProgress(correctedStart, displaySpeed, elapsedMs, speed, lapLength);
       }
       animatedTrackProgressRef.current = next;

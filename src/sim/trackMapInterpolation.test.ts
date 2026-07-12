@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { advanceTrackProgress, blendTrackProgress, sectorPlaybackIntervalMs } from './trackMapInterpolation';
+import { advanceTrackProgress, blendTrackProgress, reconcileTrackProgressForward, sectorPlaybackIntervalMs } from './trackMapInterpolation';
 
 describe('track map interpolation', () => {
   it('uses real lap duration at 1x and scales display time only', () => {
@@ -14,5 +14,15 @@ describe('track map interpolation', () => {
 
   it('blends forward across start-finish without moving backwards around the lap', () => {
     expect(blendTrackProgress(0.98, 0.02, 0.5)).toBeCloseTo(0);
+  });
+
+  it('does not reverse when a refreshed snapshot is behind the displayed marker', () => {
+    expect(reconcileTrackProgressForward(0.35, 0.3, 1)).toBeCloseTo(0.35);
+    expect(reconcileTrackProgressForward(0.35, 0.3, 0.5)).toBeCloseTo(0.35);
+  });
+
+  it('still reconciles forward, including across start-finish', () => {
+    expect(reconcileTrackProgressForward(0.2, 0.3, 0.5)).toBeCloseTo(0.25);
+    expect(reconcileTrackProgressForward(0.98, 0.02, 0.5)).toBeCloseTo(0);
   });
 });
