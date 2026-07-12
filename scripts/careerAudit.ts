@@ -241,8 +241,11 @@ function auditSeason(
       archetypeCounts[ai.archetype] = (archetypeCounts[ai.archetype] ?? 0) + 1;
     }
   }
-  const driverAverage = state.drivers.length
-    ? state.drivers.reduce((sum, d) => sum + d.ratings.overall, 0) / state.drivers.length
+  const gridDrivers = state.drivers.filter(
+    (d) => d.contractType !== 'reserve' && d.contractType !== 'third' && d.contractType !== 'test',
+  );
+  const driverAverage = gridDrivers.length
+    ? gridDrivers.reduce((sum, d) => sum + d.ratings.overall, 0) / gridDrivers.length
     : 0;
 
   // Invariants.

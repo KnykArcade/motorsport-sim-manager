@@ -104,7 +104,7 @@ function targetDriverOverall(ai: AITeamState): number {
     case 'TitleChallenge':
       return 84;
     case 'Podiums':
-      return 76;
+      return 68;
     case 'PointsFinish':
       return 68;
     case 'MidfieldImprovement':
@@ -267,12 +267,14 @@ function bestCandidate(
   ai: AITeamState,
   cash: number,
   minOverall: number,
+  maxOverall = Infinity,
 ): MarketDriver | undefined {
   let best: MarketDriver | undefined;
   let bestScore = -Infinity;
   for (const m of ctx.available) {
     if (ctx.taken.has(m.id) || ctx.takenNames.has(norm(m.name))) continue;
     if (m.overall < minOverall) continue;
+    if (m.overall > maxOverall) continue;
     if (signingCost(m, ai) > cash) continue;
     const score = evaluateCandidate(m, ai);
     if (score > bestScore) {
@@ -584,7 +586,7 @@ function processAcademy(
       Infinity,
     );
     const affordability = affordabilityFor(team, ai);
-    const decision = aiFirstOptionDecision(member, {
+    const rawDecision = aiFirstOptionDecision(member, {
       weakestSeatOverall: Number.isFinite(weakestSeat) ? weakestSeat : 5,
       hasEmptySeat: seatDrivers.length < 2,
       hasReserve: reserves.length > 0,
@@ -592,6 +594,14 @@ function processAcademy(
       promotionBias: spec.youthBias,
       rightsExpired: expired,
     });
+    const raceSeatCeiling =
+      ai.goal === 'Podiums' || ai.goal === 'PointsFinish'
+        ? targetDriverOverall(ai) + 2
+        : 90;
+    const decision =
+      rawDecision === 'race_seat' && member.overall > raceSeatCeiling
+        ? member.yearsUntilF1Ready <= 0 ? 'reserve' : 'test'
+        : rawDecision;
     const applied = applyAcademyDecision(
       decision,
       member,
@@ -786,14 +796,25 @@ function processDriverMarket(
   const contractOpen =
     weakest && (weakest.contractYearsRemaining == null || weakest.contractYearsRemaining <= 1);
   const oldDeclining = weakest != null && (weakest.age ?? 0) >= 37;
+  const upgradeChance = 0.12 + spec.risk * 0.15;
   const wantsUpgrade =
     weakest &&
     contractOpen &&
-    weakest.ratings.overall < target - 4 &&
-    (oldDeclining || rng.chance(0.3 + spec.risk * 0.4));
+    weakest.ratings.overall < target - 8 &&
+    (oldDeclining || rng.chance(upgradeChance));
   if (weakest && wantsUpgrade) {
     const margin = ai.archetype === 'ChampionshipContender' ? 3 : 8;
-    const pick = bestCandidate(ctx, ai, cash, weakest.ratings.overall + margin);
+    // Prefer a competent replacement near the team's target rather than always
+    // selecting the strongest free agent. This keeps repeated contract churn
+    // from ratcheting the whole grid toward the market's upper tail.
+    const targetCeiling = target + (ai.archetype === 'ChampionshipContender' ? 5 : 0);
+    const pick = bestCandidate(
+      ctx,
+      ai,
+      cash,
+      weakest.ratings.overall + margin,
+      targetCeiling,
+    );
     if (pick) {
       const signed = marketDriverToDriver(pick, { teamId: team.id, number: weakest.number });
       nextDrivers = nextDrivers.filter((d) => d.id !== weakest.id).concat(signed);
