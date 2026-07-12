@@ -107,9 +107,9 @@ export const cars2020: Car[] = [
     teamId: 't-williams-mercedes',
     seasonYear: 2020,
     ratings: {
-      enginePower: 7.1,
-      aeroEfficiency: 5.0,
-      mechanicalGrip: 5.0,
+      enginePower: 6.2,
+      aeroEfficiency: 4.1,
+      mechanicalGrip: 4.1,
       reliability: 5.6,
       pitCrewOperations: 5.3,
     },

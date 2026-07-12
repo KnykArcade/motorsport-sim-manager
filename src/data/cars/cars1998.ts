@@ -93,9 +93,9 @@ export const cars1998: Car[] = [
     teamId: 't-prost-peugeot',
     seasonYear: 1998,
     ratings: {
-      enginePower: 5.5,
-      aeroEfficiency: 5.2,
-      mechanicalGrip: 5.1,
+      enginePower: 4.7,
+      aeroEfficiency: 4.4,
+      mechanicalGrip: 4.4,
       reliability: 4.2,
       pitCrewOperations: 5.2,
     },
