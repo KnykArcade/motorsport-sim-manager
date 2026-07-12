@@ -11,8 +11,10 @@ import type { RaceRuleProfile } from '../types/raceRulesTypes';
 import { createSeededRandom, deriveSeed } from './random';
 
 export function initialSafetyCar(): SafetyCarState {
-  return { active: false, lapsRemaining: 0, deployedOnLap: null, reason: null, deployments: 0 };
+  return { active: false, lapsRemaining: 0, deployedOnLap: null, reason: null, deployments: 0, lastEndedOnLap: null };
 }
+
+export const MIN_GREEN_LAPS_BETWEEN_SAFETY_CARS = 5;
 
 // Time penalty (s/lap) applied to every running car while the SC is out — the
 // whole field is slowed to neutralise the race.
@@ -46,7 +48,7 @@ export function stepSafetyCar(
     const lapsRemaining = sc.lapsRemaining - 1;
     if (lapsRemaining <= 0) {
       return {
-        safetyCar: { ...sc, active: false, lapsRemaining: 0 },
+        safetyCar: { ...sc, active: false, lapsRemaining: 0, lastEndedOnLap: lap },
         justDeployed: false,
         justEnded: true,
       };
@@ -66,18 +68,23 @@ export function stepSafetyCar(
     return { safetyCar: sc, justDeployed: false, justEnded: false };
   }
 
+  const greenLaps = sc.lastEndedOnLap == null ? Number.POSITIVE_INFINITY : lap - sc.lastEndedOnLap;
+  if (greenLaps < MIN_GREEN_LAPS_BETWEEN_SAFETY_CARS && (!trigger.incidentThisLap || trigger.incidentSeverity < 0.9)) {
+    return { safetyCar: sc, justDeployed: false, justEnded: false };
+  }
+
   const wallFactor = track.attributes.riskWallProximity / 10; // street circuits riskier
   let deployChance: number;
   let reason: string;
 
   if (trigger.incidentThisLap) {
-    deployChance = 0.35 + trigger.incidentSeverity * 0.4 + wallFactor * 0.2;
+    deployChance = 0.08 + trigger.incidentSeverity * 0.28 + wallFactor * 0.05;
     reason = 'Debris from an incident';
   } else if (weather.condition === 'HeavyRain') {
-    deployChance = 0.18;
+    deployChance = 0.08;
     reason = 'Heavy rain — conditions too dangerous';
   } else {
-    deployChance = 0.012 + wallFactor * 0.02;
+    deployChance = 0.003 + wallFactor * 0.006;
     reason = 'Stopped car / debris on track';
   }
 

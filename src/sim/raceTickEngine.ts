@@ -399,7 +399,7 @@ export function stepLiveSector(state: LiveRaceState, meta: LiveRaceMeta): LiveRa
       if (!state.safetyCar.active) c.paceMode = action.paceMode;
       if (action.pitNow) {
         wantsPit = true;
-        pitCallNote = action.note;
+        pitCallNote = action.pitReason === 'Weather' ? action.note : null;
       }
       // AI fallback: pit on the scheduled lap.
       const routineStopAllowed = c.pit.lastPitLap == null
@@ -928,14 +928,11 @@ export function stepLiveSector(state: LiveRaceState, meta: LiveRaceMeta): LiveRa
       car.gapToLeader = index === 0 ? 0 : round1((leaderDistance - distance) / speed);
       car.interval = index === 0 ? 0 : round1((aheadDistance - distance) / speed);
     });
-    for (const outcome of battleResult.outcomes) {
+    for (const outcome of isFinalSector ? battleResult.outcomes : []) {
+      if (outcome.outcome !== 'CleanPass') continue;
       const attacker = name(outcome.attackerId);
       const defender = name(outcome.defenderId);
-      const text = outcome.outcome === 'CleanPass'
-        ? `${attacker} completes a clean pass on ${defender} for P${running.findIndex((car) => car.driverId === outcome.attackerId) + 1}.`
-        : outcome.outcome === 'AttackerLosesTime'
-          ? `${attacker} loses time after an unsuccessful move on ${defender}.`
-          : `${defender} holds off ${attacker}'s passing attempt.`;
+      const text = `${attacker} completes a clean pass on ${defender} for P${running.findIndex((car) => car.driverId === outcome.attackerId) + 1}.`;
       lapEvents.push({ lap: nextLap, text, category: 'battle' });
     }
   } else if (scResult.safetyCar.active) {

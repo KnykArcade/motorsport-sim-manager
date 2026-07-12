@@ -18,7 +18,7 @@ describe('race event journal curation', () => {
       { lap: 8, text: 'Routine update two.' },
       { lap: 8, text: 'Routine update three.' },
     ], existing);
-    expect(kept.map((event) => event.text)).toEqual(['Routine update two.']);
+    expect(kept).toHaveLength(0);
   });
 
   it('caps routine categories while preserving incidents and race-control messages', () => {
@@ -28,9 +28,15 @@ describe('race event journal curation', () => {
       ...Array.from({ length: 3 }, (_, index) => ({ lap: 10, text: `Race-control notice ${index}.`, category: 'race-control' as const })),
     ];
     const kept = curateRaceEvents(events);
-    expect(kept.filter((event) => event.category === 'status')).toHaveLength(2);
+    expect(kept.filter((event) => event.category === 'status')).toHaveLength(1);
     expect(kept.filter((event) => event.category === 'incident')).toHaveLength(4);
     expect(kept.filter((event) => event.category === 'race-control')).toHaveLength(3);
+  });
+
+  it('spaces routine status updates across laps', () => {
+    const existing: RaceEvent[] = [{ lap: 10, text: 'Previous status.', category: 'status' }];
+    expect(curateRaceEvents([{ lap: 11, text: 'Too soon.' }], existing)).toHaveLength(0);
+    expect(curateRaceEvents([{ lap: 15, text: 'Useful update.' }], existing)).toHaveLength(1);
   });
 
   it('preserves physical pit events even when the strategy budget is full', () => {
