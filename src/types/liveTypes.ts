@@ -131,6 +131,7 @@ export type PitStopState = {
   // deployment number that prompted this car so the recommendation stays off
   // the board until the next SC deployment.
   lastSafetyCarPitPromptDeployment?: number | null;
+  lastPitRoadClosedEventDeployment?: number | null;
   journey?: PitJourneyState | null;
   lastVisitBreakdown?: PitVisitBreakdown | null;
 };

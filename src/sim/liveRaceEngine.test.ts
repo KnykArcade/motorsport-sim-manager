@@ -167,6 +167,17 @@ describe('live race engine', () => {
     expect(finishers.every((c) => c.bestLap != null && c.bestLap > 0)).toBe(true);
   });
 
+  it('never logs more AI pit commitments than physical stops', () => {
+    const context = buildContext('pit-call-reconciliation');
+    const meta = buildMeta(context, context.entrants[0].driver.teamId);
+    const state = stepLiveRaceToEnd(createRace(context, context.entrants[0].driver.teamId), meta);
+    const committedPitCalls = state.events.filter((event) =>
+      /pits for (wet tyres|slicks)|takes the safety-car pit stop|makes a scheduled stop/i.test(event.text),
+    );
+    const physicalStops = state.cars.reduce((total, car) => total + car.pit.stopsMade, 0);
+    expect(committedPitCalls.length).toBeLessThanOrEqual(physicalStops);
+  });
+
   it('ignores finish-line distance overshoot when assigning the live timing order', () => {
     const context = buildContext('finish-overshoot');
     const state = createRace(context, context.entrants[0].driver.teamId);

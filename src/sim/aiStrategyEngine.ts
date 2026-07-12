@@ -60,7 +60,14 @@ export type AIAction = {
   pitIntensity?: PitIntensity;
   pitExitMode?: PaceMode;
   repairMode?: 'None' | 'Critical' | 'Full';
+  pitReason?: 'Weather' | 'SafetyCar' | 'Scheduled';
 };
+
+export const MIN_NON_EMERGENCY_PIT_STINT_LAPS = 6;
+
+function recentlyPitted(car: LiveCarState, lap: number): boolean {
+  return car.pit.lastPitLap != null && lap - car.pit.lastPitLap < MIN_NON_EMERGENCY_PIT_STINT_LAPS;
+}
 
 function pushiness(personality: AIStrategyPersonality): number {
   switch (personality) {
@@ -210,6 +217,7 @@ export function aiLapDecision(
       action.pitIntensity = choosePitIntensity(car, state, track, lap);
       action.pitExitMode = 'Conservative';
       action.repairMode = chooseRepairMode(car, state);
+      action.pitReason = 'Weather';
       return action;
     }
   }
@@ -220,13 +228,14 @@ export function aiLapDecision(
     action.pitIntensity = choosePitIntensity(car, state, track, lap);
     action.pitExitMode = 'Conservative';
     action.repairMode = chooseRepairMode(car, state);
+    action.pitReason = 'Weather';
     return action;
   }
 
   // 2. Safety car: opportunistic / undercut personalities grab the cheap stop if
   //    they still have a scheduled stop to make. Sharper race operations react
   //    to the safety car more reliably; weaker operations miss the window more.
-  if (state.safetyCar.active && car.pit.stopsMade < car.pit.plannedStops && car.tire.age >= 5 && shouldOfferSafetyCarPit(car, lap)) {
+  if (state.safetyCar.active && !recentlyPitted(car, lap) && car.pit.stopsMade < car.pit.plannedStops && car.tire.age >= 5 && shouldOfferSafetyCarPit(car, lap)) {
     const baseGrab =
       car.personality === 'Opportunistic' || car.personality === 'UndercutFocused'
         ? 0.85
@@ -241,6 +250,7 @@ export function aiLapDecision(
       action.pitIntensity = choosePitIntensity(car, state, track, lap);
       action.pitExitMode = car.paceMode;
       action.repairMode = chooseRepairMode(car, state);
+      action.pitReason = 'SafetyCar';
       return action;
     }
   }
@@ -258,7 +268,7 @@ export function aiLapDecision(
       target += 1;
     }
     // Worn tyres force the stop regardless.
-    if (lap >= target || car.tire.wear > 82) {
+    if ((lap >= target || car.tire.wear > 82) && (!recentlyPitted(car, lap) || car.tire.wear > 92)) {
       // Double-stack avoidance: if a teammate just ahead is also pitting this
       // lap, the trailing car holds one more lap to avoid queuing behind its
       // own crew — unless its tyres are already at the cliff, where the stop
@@ -281,6 +291,7 @@ export function aiLapDecision(
       action.pitIntensity = choosePitIntensity(car, state, track, lap);
       action.pitExitMode = car.paceMode;
       action.repairMode = chooseRepairMode(car, state);
+      action.pitReason = 'Scheduled';
       return action;
     }
   }

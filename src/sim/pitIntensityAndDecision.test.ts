@@ -218,6 +218,9 @@ describe('pit intensity and combined pit decision', () => {
     expect(stepped.events.some((event) => event.text.includes('pit road is closed'))).toBe(true);
 
     stepped = stepLiveSector(stepLiveSector(stepped, meta), meta);
+    stepped = stepLiveSector(stepped, meta);
+    expect(stepped.events.filter((event) => event.text.includes('pit road is closed'))).toHaveLength(1);
+    stepped = stepLiveSector(stepLiveSector(stepped, meta), meta);
     stepped = {
       ...stepped,
       raceControl: { ...stepped.raceControl!, pitLaneOpen: true },
