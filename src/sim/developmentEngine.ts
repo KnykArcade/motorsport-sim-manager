@@ -242,8 +242,8 @@ export function diminishingGainMultiplier(rating: number): number {
   if (legacy < 5) return 1.3;
   if (legacy < 7) return 1.0;
   if (legacy < 8.5) return 0.6;
-  if (legacy < 9.3) return 0.32;
-  return 0.14;
+  if (legacy < 9.3) return 0.2;
+  return 0.05;
 }
 
 // Extra chance a high-rated development project simply fails to deliver (no gain
@@ -259,7 +259,7 @@ export function nearCapFailureChance(rating: number): number {
 // multiplier that rewards teams sitting well below the front of the grid. `gap`
 // is (fieldTopRating - thisCarRating) on the 1-100 scale.
 export function catchUpMultiplier(gap: number): number {
-  return 1 + Math.max(0, Math.min(0.6, (gap / 10) * 0.18));
+  return 1 + Math.max(0, Math.min(1.5, (gap / 10) * 0.3));
 }
 
 export type OffseasonDecayOptions = {
@@ -308,11 +308,12 @@ export function applyOffseasonDecay(
     // Regulation shakeups bite the strongest cars hardest (their advantage came
     // from a mature package that the rules reset), so the order reshuffles;
     // stable-year maintenance decay is gentle and roughly flat.
-    const maintenance = stableBase * (0.5 + above / 8);
-    const reset = shakeupBase * (above / 4) * (1 - adapt * 0.9);
+    const levelMaintenance = Math.max(0, legacy - 7.5) * 0.22;
+    const maintenance = stableBase * (0.5 + above / 8) + levelMaintenance;
+    const reset = shakeupBase * (above / 4) * Math.max(0, 1 - adapt * 3);
     const decay = (maintenance + reset) / Math.max(0.5, resist);
     // Nailing the concept can add a little raw performance on top (bounded).
-    const adaptGain = adapt > 0 ? shakeup * adapt * 0.4 : 0;
+    const adaptGain = adapt > 0 ? shakeup * adapt * 0.6 : 0;
     const nextLegacy = clamp(legacy - decay + adaptGain, 1, 10);
     out[k] = round1(nextLegacy * 10);
   }

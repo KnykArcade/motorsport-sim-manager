@@ -199,6 +199,7 @@ export type GameState = {
     contractYearsRemaining: number;
     seasonsAtTeam: number;
     fired: boolean;
+    attributes?: import('../types/principalTypes').PrincipalAttributes;
   }>;
 
   // Closure/replacement hooks stored for future expansion when a team reaches

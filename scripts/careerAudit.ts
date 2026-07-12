@@ -58,6 +58,7 @@ export type SeasonAudit = {
   year: number;
   // Constructors' champion (real, from simulated results).
   constructorChampion: { teamId: string; name: string; points: number } | undefined;
+  constructorPositions: Record<string, number>;
   driverChampion: { driverId: string; name: string; points: number } | undefined;
   // Car competitiveness spread across the grid this year.
   carRating: { min: number; avg: number; max: number };
@@ -69,6 +70,7 @@ export type SeasonAudit = {
   archetypeCounts: Record<string, number>;
   aiActivity: { upgrades: number; reliabilityFixes: number; setbacks: number };
   driverAverage: number;
+  aiReputationByTeam: Record<string, number>;
   // Invariant probes.
   duplicateNames: string[];
   academyOver21: { memberId: string; name: string; age: number }[];
@@ -214,6 +216,9 @@ function auditSeason(
   const constructorChampion = cs[0]
     ? { teamId: cs[0].entityId, name: teamName.get(cs[0].entityId) ?? cs[0].entityId, points: cs[0].points }
     : undefined;
+  const constructorPositions = Object.fromEntries(
+    cs.map((entry, index) => [teamName.get(entry.entityId) ?? entry.entityId, index + 1]),
+  );
   const driverChampion = ds[0]
     ? { driverId: ds[0].entityId, name: driverName.get(ds[0].entityId) ?? ds[0].entityId, points: ds[0].points }
     : undefined;
@@ -223,6 +228,7 @@ function auditSeason(
   const saturatedCars = ratings.filter((r) => r >= SATURATION_RATING).length;
 
   const aiStates = state.aiTeamStates ?? {};
+  const aiReputationByTeam: Record<string, number> = {};
   const aiBudgets: number[] = [];
   const financialHealth: Record<AIFinancialHealth, number> = {
     Excellent: 0,
@@ -234,6 +240,7 @@ function auditSeason(
   const archetypeCounts: Record<string, number> = {};
   for (const team of state.teams) {
     if (team.id === state.selectedTeamId) continue;
+    aiReputationByTeam[team.name] = team.reputation;
     aiBudgets.push(team.budget);
     const ai = aiStates[team.id];
     if (ai) {
@@ -287,6 +294,7 @@ function auditSeason(
   return {
     year: state.seasonYear,
     constructorChampion,
+    constructorPositions,
     driverChampion,
     carRating,
     saturatedCars,
@@ -295,6 +303,7 @@ function auditSeason(
     archetypeCounts,
     aiActivity,
     driverAverage: +driverAverage.toFixed(2),
+    aiReputationByTeam,
     duplicateNames,
     academyOver21,
     youthPoolOverAge,

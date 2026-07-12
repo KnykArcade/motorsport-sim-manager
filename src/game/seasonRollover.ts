@@ -70,7 +70,7 @@ import { generateRegulationProposals, resolveRegulationVoting } from '../sim/pol
 import { refreshScoutingNetwork } from '../sim/scoutingEngine';
 import { createDriverDevelopmentCurve, developmentStep } from '../sim/developmentCurveEngine';
 import { finalizeSeasonHistory } from '../sim/universeHistoryEngine';
-import { buildAITeamState, rolloverAITeamStates, constructorPositionOf } from '../sim/aiTeamEngine';
+import { buildAITeamState, rolloverAITeamStates, constructorPositionOf, updateAIReputation } from '../sim/aiTeamEngine';
 import { updateTeamMemory } from '../sim/teamIdentityEngine';
 import type { TeamMemoryEntry } from '../types/aiTeamTypes';
 import { runAIOffseason, makeRookieDriver } from '../sim/aiOffseasonEngine';
@@ -79,6 +79,7 @@ import { applyDriverRetirements } from '../sim/driverRetirementEngine';
 import { applyDistressConsequences } from '../sim/financialDistressEngine';
 import {
   evaluatePrincipalPressure,
+  createAIPrincipalAttributes,
   generateReplacementPrincipalName,
   principalHiredNews,
   type CareerMobilityMode,
@@ -720,7 +721,11 @@ export function advanceSeason(state: GameState, nextBundle?: SeasonBundle): Game
       return { ...t, budget: t.budget + budgetDelta, driverIds: rebuildRoster(t.driverIds) };
     }
     const aiDelta = aiRollover.budgetDeltaByTeam[t.id] ?? 0;
-    return aiDelta ? { ...t, budget: t.budget + aiDelta } : t;
+    const position = constructorPositionOf(state, t.id);
+    const reputationAdjusted = updateAIReputation(t, position, state.teams);
+    return aiDelta
+      ? { ...reputationAdjusted, budget: reputationAdjusted.budget + aiDelta }
+      : reputationAdjusted;
   });
 
   // Owner-expectation review for the completed season → owner patience, then
@@ -1055,6 +1060,19 @@ export function advanceSeason(state: GameState, nextBundle?: SeasonBundle): Game
     academy: nextAcademy,
     signedMarketIds: finalSignedMarketIds,
   });
+  const aiPrincipalsForOffseason = { ...(state.aiPrincipals ?? {}) };
+  for (const team of rosterTeams) {
+    if (team.id === state.selectedTeamId || aiPrincipalsForOffseason[team.id]) continue;
+    aiPrincipalsForOffseason[team.id] = {
+      principalId: `principal-${team.id}`,
+      name: `${team.name} Principal`,
+      pressure: 0,
+      contractYearsRemaining: 2,
+      seasonsAtTeam: 0,
+      fired: false,
+      attributes: createAIPrincipalAttributes(`${state.randomSeed}-${team.id}`, team.reputation),
+    };
+  }
   const aiOffseason = runAIOffseason({
     nextYear,
     seed: state.randomSeed,
@@ -1064,6 +1082,7 @@ export function advanceSeason(state: GameState, nextBundle?: SeasonBundle): Game
     cars,
     engine: nextEngine,
     aiTeamStates: aiRollover.states,
+    aiPrincipals: aiPrincipalsForOffseason,
     aiAcademies: state.aiAcademies ?? {},
     orgRatings: state.teamOrgRatings ?? {},
     market: aiMarket,
@@ -1161,7 +1180,7 @@ export function advanceSeason(state: GameState, nextBundle?: SeasonBundle): Game
   let teamsAfterDistress = gridFilled.teams;
   const financialDistress = { ...state.financialDistress };
   const closureHooks = [...(state.closureHooks ?? [])];
-  const aiPrincipals = { ...(state.aiPrincipals ?? {}) };
+  const aiPrincipals = { ...aiPrincipalsForOffseason };
 
   for (const team of state.teams) {
     const distress = financialDistress[team.id];
@@ -1250,6 +1269,10 @@ export function advanceSeason(state: GameState, nextBundle?: SeasonBundle): Game
           contractYearsRemaining: 2,
           seasonsAtTeam: 0,
           fired: false,
+          attributes: createAIPrincipalAttributes(
+            `${state.randomSeed}-${team.id}-${nextYear}`,
+            team.reputation,
+          ),
         };
         rolloverNews.push(principalHiredNews(newPrincipalName, team.id, team.name, state.seasonYear));
       } else {
@@ -1261,9 +1284,65 @@ export function advanceSeason(state: GameState, nextBundle?: SeasonBundle): Game
           contractYearsRemaining: Math.max(0, (aiPrincipal?.contractYearsRemaining ?? 2) - 1),
           seasonsAtTeam: (aiPrincipal?.seasonsAtTeam ?? 0) + 1,
           fired: false,
+          attributes: aiPrincipal?.attributes
+            ?? createAIPrincipalAttributes(`${state.randomSeed}-${team.id}`, team.reputation),
         };
       }
     }
+  }
+
+  // High-performing AI principals can be poached when their contract expires.
+  // Moves are seeded and limited to a clearly stronger destination with a weak
+  // or vacant principal, leaving the existing firing path intact.
+  const movedPrincipalTeams = new Set<string>();
+  for (const source of state.teams) {
+    if (source.id === state.selectedTeamId) continue;
+    const principal = aiPrincipals[source.id];
+    if (!principal || principal.contractYearsRemaining > 0 || movedPrincipalTeams.has(source.id)) continue;
+    const sourceAttributes = principal.attributes;
+    if (!sourceAttributes || sourceAttributes.development < 60) continue;
+    const destination = state.teams
+      .filter((candidate) => candidate.id !== state.selectedTeamId && candidate.id !== source.id)
+      .filter((candidate) => candidate.reputation >= source.reputation + 15)
+      .filter((candidate) => {
+        const candidatePrincipal = aiPrincipals[candidate.id];
+        return !candidatePrincipal
+          || candidatePrincipal.contractYearsRemaining <= 0
+          || candidatePrincipal.pressure >= 70;
+      })
+      .sort((a, b) => b.reputation - a.reputation)[0];
+    if (!destination) continue;
+    aiPrincipals[destination.id] = {
+      ...principal,
+      principalId: `principal-${destination.id}-${nextYear}`,
+      contractYearsRemaining: 2,
+      seasonsAtTeam: 0,
+      fired: false,
+    };
+    aiPrincipals[source.id] = {
+      principalId: `principal-${source.id}-${nextYear}`,
+      name: generateReplacementPrincipalName(`${state.randomSeed}-${source.id}-${nextYear}-poach`),
+      pressure: 20,
+      contractYearsRemaining: 2,
+      seasonsAtTeam: 0,
+      fired: false,
+      attributes: createAIPrincipalAttributes(
+        `${state.randomSeed}-${source.id}-${nextYear}-replacement`,
+        source.reputation,
+      ),
+    };
+    movedPrincipalTeams.add(source.id);
+    movedPrincipalTeams.add(destination.id);
+    rolloverNews.push({
+      id: `news-principal-poached-${state.seasonYear}-${source.id}-${destination.id}`,
+      headline: `${destination.name} poaches ${principal.name} from ${source.name}`,
+      body: `${principal.name} leaves ${source.name} for the stronger ${destination.name} project after their contract expires.`,
+      timestamp: new Date().toISOString(),
+      category: 'career_event',
+      priority: 'high',
+      careerPhase: 'season_end',
+      teamId: destination.id,
+    });
   }
 
   // Sync team.raceOperations (1-100) from the updated org ratings (0-100) so
@@ -1278,6 +1357,13 @@ export function advanceSeason(state: GameState, nextBundle?: SeasonBundle): Game
     const newOps = t.raceOperations * 0.3 + opsFromOrg * 0.7;
     return { ...t, raceOperations: Math.max(1, Math.min(100, Math.round(newOps))) };
   });
+  const carsWithPitCrewSync = aiOffseason.cars.map((car) => {
+    const org = updatedOrgRatings[car.teamId];
+    if (!org) return car;
+    const pitCrew = Math.max(1, Math.min(100, org.pitCrew));
+    const blended = Math.round(car.ratings.pitCrewOperations * 0.3 + pitCrew * 0.7);
+    return { ...car, ratings: { ...car.ratings, pitCrewOperations: blended } };
+  });
 
   const now = new Date().toISOString();
   const nextState: GameState = {
@@ -1290,7 +1376,7 @@ export function advanceSeason(state: GameState, nextBundle?: SeasonBundle): Game
     pointsSystemId,
     regulationSetId,
     drivers: gridFilled.drivers,
-    cars: aiOffseason.cars,
+    cars: carsWithPitCrewSync,
     teams: teamsWithOpsSync,
     teamOrgRatings: updatedOrgRatings,
     aiAcademies: aiOffseason.aiAcademies,
@@ -1316,6 +1402,7 @@ export function advanceSeason(state: GameState, nextBundle?: SeasonBundle): Game
     developmentCurves: nextCurves,
     universeHistory: nextUniverseHistory,
     aiTeamStates: aiRollover.states,
+    aiPrincipals,
     aiTeamMemory: updatedMemory,
     carSetups,
     academy: nextAcademy,

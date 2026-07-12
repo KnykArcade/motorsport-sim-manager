@@ -65,9 +65,25 @@ describe('Career audit — F1 1990, 20 real-race seasons', () => {
   // --- Competitive balance ---------------------------------------------------
 
   it('produces dynasties without a permanent lockout', () => {
-    // The pre-cleanup run locked out 18/20 titles for one team (0.90 share).
-    expect(report.distinctConstructorChampions).toBeGreaterThanOrEqual(2);
-    expect(report.topTeamTitleShare).toBeLessThanOrEqual(0.8);
+    expect(report.distinctConstructorChampions).toBeGreaterThanOrEqual(4);
+    expect(report.topTeamTitleShare).toBeLessThanOrEqual(0.5);
+  });
+
+  it('shows constructor mobility and evolving AI reputations', () => {
+    const first = seasons[0].constructorPositions;
+    const last = seasons.at(-1)!.constructorPositions;
+    const deltas = Object.keys(first).map((team) => (first[team] ?? 0) - (last[team] ?? 0));
+    expect(Math.max(...deltas)).toBeGreaterThanOrEqual(4);
+    expect(Math.min(...deltas)).toBeLessThanOrEqual(-4);
+
+    const reputationChanged = seasons
+      .slice(1)
+      .some((season, index) =>
+        Object.keys(season.aiReputationByTeam).some((team) =>
+          season.aiReputationByTeam[team] !== seasons[index].aiReputationByTeam[team],
+        ),
+      );
+    expect(reputationChanged).toBe(true);
   });
 
   // --- Development / rating saturation ---------------------------------------
