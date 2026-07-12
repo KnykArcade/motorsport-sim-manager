@@ -192,6 +192,11 @@ describe('F11990sLiveRaceScreen', () => {
     expect(html).toContain('Intervals');
     expect(html).toContain('Driver Trust');
     expect(html).toContain('data-testid="track-map-asset-panel"');
+    expect(html).toContain('data-testid="track-map-zoom-controls"');
+    expect(html).toContain('aria-label="Fit entire track"');
+    expect(html).toContain('aria-label="Zoom track map out"');
+    expect(html).toContain('aria-label="Zoom track map in"');
+    expect(html).toContain('1×');
     expect(html).toContain('3  A. Senna  McLaren Ford');
     expect(html).toContain('1  M. Schumacher  Benetton Renault');
     expect(html).toContain('Team Radio');

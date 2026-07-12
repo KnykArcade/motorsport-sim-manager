@@ -707,9 +707,51 @@ function RetroTrackMap({
   rotation: number;
   safetyCar?: boolean;
 }) {
+  const zoomLevels = [1, 1.25, 1.5, 2] as const;
+  const [zoomIndex, setZoomIndex] = useState(0);
+  const zoom = zoomLevels[zoomIndex];
+  const zoomOut = () => setZoomIndex((index) => Math.max(0, index - 1));
+  const zoomIn = () => setZoomIndex((index) => Math.min(zoomLevels.length - 1, index + 1));
+
   return (
     <div className="absolute inset-0 z-10 max-lg:hidden">
-      <RetroPanel title="Track Map" className="h-full bg-black/78 backdrop-blur-[1px]">
+      <RetroPanel
+        title="Track Map"
+        className="h-full bg-black/78 backdrop-blur-[1px]"
+        headerRight={
+          <div className="flex items-center gap-1" data-testid="track-map-zoom-controls">
+            <button
+              type="button"
+              onClick={() => setZoomIndex(0)}
+              className="rounded border border-amber-500/45 px-1.5 py-0.5 text-[9px] font-black text-amber-200 hover:bg-amber-400/15"
+              aria-label="Fit entire track"
+            >
+              FIT
+            </button>
+            <button
+              type="button"
+              onClick={zoomOut}
+              disabled={zoomIndex === 0}
+              className="h-5 w-5 rounded border border-zinc-600 text-[12px] font-black text-zinc-200 disabled:cursor-not-allowed disabled:opacity-35"
+              aria-label="Zoom track map out"
+            >
+              −
+            </button>
+            <span className="w-8 text-center text-[9px] tabular-nums text-zinc-300" aria-live="polite">
+              {zoom}×
+            </span>
+            <button
+              type="button"
+              onClick={zoomIn}
+              disabled={zoomIndex === zoomLevels.length - 1}
+              className="h-5 w-5 rounded border border-zinc-600 text-[12px] font-black text-zinc-200 disabled:cursor-not-allowed disabled:opacity-35"
+              aria-label="Zoom track map in"
+            >
+              +
+            </button>
+          </div>
+        }
+      >
         <div className="flex h-[calc(100%-37px)] flex-col">
           <div className="min-h-0 flex-1 p-1">
             <TrackMapAssetPanel
@@ -722,6 +764,7 @@ function RetroTrackMap({
               eraTheme="f1-1990s"
               hideFooterLabel
               safetyCar={safetyCar}
+              zoom={zoom}
               className="h-full w-full"
             />
           </div>
