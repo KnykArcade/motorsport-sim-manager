@@ -259,7 +259,7 @@ export function nearCapFailureChance(rating: number): number {
 // multiplier that rewards teams sitting well below the front of the grid. `gap`
 // is (fieldTopRating - thisCarRating) on the 1-100 scale.
 export function catchUpMultiplier(gap: number): number {
-  return 1 + Math.max(0, Math.min(0.6, (gap / 10) * 0.45));
+  return 1 + Math.max(0, Math.min(1.5, (gap / 10) * 0.3));
 }
 
 export type OffseasonDecayOptions = {
