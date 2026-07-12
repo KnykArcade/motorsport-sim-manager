@@ -17,6 +17,7 @@ import type {
   RecAction,
   RecPriority,
   StrategyModeSource,
+  TireCompound,
 } from '../types/liveTypes';
 import { createSeededRandom, deriveSeed } from './random';
 import { REF_LAP, type LiveRaceMeta } from './liveRaceEngine';
@@ -270,6 +271,8 @@ export function stepLiveSector(state: LiveRaceState, meta: LiveRaceMeta): LiveRa
 
   const lapEvents: RaceEvent[] = [];
   const pittedThisLap: LiveCarState[] = [];
+  let aiWetTyreCalls = 0;
+  let aiSlickTyreCalls = 0;
   let incidentThisLap = false;
   let incidentSeverity = 0;
   const incidentDriverIds: string[] = [];
@@ -370,7 +373,7 @@ export function stepLiveSector(state: LiveRaceState, meta: LiveRaceMeta): LiveRa
 
     // --- AI decision (player pace/pits come from player decisions) ---
     let wantsPit = false;
-    let pitCallNote: string | null = null;
+    let aiWeatherCompound: TireCompound | null = null;
     let pitLoss = 0;
     const spec = modeSpec(c.paceMode);
     const pitLaneOpen = state.raceControl?.pitLaneOpen ?? true;
@@ -399,7 +402,9 @@ export function stepLiveSector(state: LiveRaceState, meta: LiveRaceMeta): LiveRa
       if (!state.safetyCar.active) c.paceMode = action.paceMode;
       if (action.pitNow) {
         wantsPit = true;
-        pitCallNote = action.pitReason === 'Weather' ? action.note : null;
+        if (action.pitReason === 'Weather') {
+          aiWeatherCompound = action.switchCompound;
+        }
       }
       // AI fallback: pit on the scheduled lap.
       const routineStopAllowed = c.pit.lastPitLap == null
@@ -432,7 +437,8 @@ export function stepLiveSector(state: LiveRaceState, meta: LiveRaceMeta): LiveRa
 
     // --- Execute pit stop ---
     if (wantsPit) {
-      if (pitCallNote) lapEvents.push({ lap: nextLap, text: `${name(c.driverId)} ${pitCallNote}.` });
+      if (aiWeatherCompound === 'Wet') aiWetTyreCalls += 1;
+      else if (aiWeatherCompound === 'Dry') aiSlickTyreCalls += 1;
       // A stop fulfils the nearest planned stop. Detect an *early* stop (one made
       // before reaching the next scheduled lap, e.g. a cheap safety-car stop) so
       // we can consume that planned stop too — otherwise the car would pit again
@@ -728,6 +734,21 @@ export function stepLiveSector(state: LiveRaceState, meta: LiveRaceMeta): LiveRa
     c.sectorProgress = 0;
     return c;
   });
+
+  if (aiWetTyreCalls > 0) {
+    lapEvents.push({
+      lap: nextLap,
+      text: `${aiWetTyreCalls} AI car${aiWetTyreCalls === 1 ? '' : 's'} pit for wet tyres as conditions worsen.`,
+      category: 'strategy',
+    });
+  }
+  if (aiSlickTyreCalls > 0) {
+    lapEvents.push({
+      lap: nextLap,
+      text: `${aiSlickTyreCalls} AI car${aiSlickTyreCalls === 1 ? '' : 's'} pit for slicks as the track dries.`,
+      category: 'strategy',
+    });
+  }
 
   let firedEventIds = state.firedEventIds;
   if (isFinalSector) {

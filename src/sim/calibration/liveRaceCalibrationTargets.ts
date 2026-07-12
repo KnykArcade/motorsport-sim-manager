@@ -14,6 +14,8 @@ export type LiveRaceCalibrationTargetProfile = {
     modeChangesPerCar: CalibrationBand;
     recommendationsPerPlayerCar: CalibrationBand;
     safetyCarDeployments: CalibrationBand;
+    eventsPerLap: CalibrationBand;
+    pitEventEntriesPerStop: CalibrationBand;
   };
 };
 
@@ -29,6 +31,8 @@ const openWheelBands = {
   modeChangesPerCar: { min: 3, max: 18 },
   recommendationsPerPlayerCar: { min: 2, max: 18 },
   safetyCarDeployments: { min: 0, max: 10 },
+  eventsPerLap: { min: 0.2, max: 2.5 },
+  pitEventEntriesPerStop: { min: 0, max: 1.3 },
 };
 
 export const LIVE_RACE_CALIBRATION_TARGETS: readonly LiveRaceCalibrationTargetProfile[] = [
@@ -38,6 +42,7 @@ export const LIVE_RACE_CALIBRATION_TARGETS: readonly LiveRaceCalibrationTargetPr
       pitStopsPerCar: { min: 0.5, max: 2.2 }, threePlusStopRatePct: { min: 0, max: 15 },
       modeChangesPerCar: { min: 1, max: 9 }, recommendationsPerPlayerCar: { min: 1, max: 14 },
       safetyCarDeployments: { min: 0, max: 5 },
+      eventsPerLap: { min: 0.2, max: 1.8 }, pitEventEntriesPerStop: { min: 0, max: 1 },
     },
   },
   {
@@ -46,6 +51,7 @@ export const LIVE_RACE_CALIBRATION_TARGETS: readonly LiveRaceCalibrationTargetPr
       pitStopsPerCar: { min: 0.5, max: 2.3 }, threePlusStopRatePct: { min: 0, max: 30 },
       modeChangesPerCar: { min: 1, max: 9 }, recommendationsPerPlayerCar: { min: 1, max: 12 },
       safetyCarDeployments: { min: 0, max: 5 },
+      eventsPerLap: { min: 0.2, max: 1.8 }, pitEventEntriesPerStop: { min: 0, max: 1.3 },
     },
   },
   { id: 'cart', series: 'CART', startYear: 1990, endYear: 2003, bands: openWheelBands },
@@ -57,6 +63,7 @@ export const LIVE_RACE_CALIBRATION_TARGETS: readonly LiveRaceCalibrationTargetPr
       pitStopsPerCar: { min: 3, max: 12 }, threePlusStopRatePct: { min: 50, max: 100 },
       modeChangesPerCar: { min: 5, max: 35 }, recommendationsPerPlayerCar: { min: 2, max: 30 },
       safetyCarDeployments: { min: 2, max: 18 },
+      eventsPerLap: { min: 0.2, max: 2.8 }, pitEventEntriesPerStop: { min: 0, max: 1 },
     },
   },
 ];
@@ -80,6 +87,8 @@ export function assessLiveRaceCalibration(
     modeChangesPerCar: report.rates.modeChangesPerCar,
     recommendationsPerPlayerCar: report.rates.recommendationsPerPlayerCar,
     safetyCarDeployments: report.averages.safetyCarDeployments,
+    eventsPerLap: report.rates.eventsPerLap,
+    pitEventEntriesPerStop: report.rates.pitEventEntriesPerStop,
   };
   const metrics = Object.fromEntries(Object.entries(profile.bands).map(([key, band]) => {
     const actual = actuals[key as keyof typeof actuals];
