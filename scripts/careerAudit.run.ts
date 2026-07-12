@@ -4,11 +4,38 @@
 //   AUDIT_SEASONS=20 AUDIT_SEED=career-audit-1990 npx tsx scripts/careerAudit.run.ts
 
 import { runCareerAudit } from './careerAudit';
+import { mkdirSync, writeFileSync } from 'node:fs';
+import { join } from 'node:path';
 
 const seasons = Number(process.env.AUDIT_SEASONS ?? 20);
 const seed = process.env.AUDIT_SEED ?? 'career-audit-1990';
 
 const report = runCareerAudit({ seasons, seed });
+const outputDir = process.env.AUDIT_OUT;
+if (outputDir) {
+  mkdirSync(outputDir, { recursive: true });
+  writeFileSync(join(outputDir, 'career-simulation-report.json'), `${JSON.stringify({
+    seed,
+    startYear: report.seasons[0]?.year,
+    endYear: report.seasons.at(-1)?.year,
+    series: 'F1',
+    ...report,
+  }, null, 2)}\n`);
+  const lines = [
+    `# Career Simulation Audit`,
+    '',
+    `Seed: \`${seed}\`; seasons: ${seasons}; years: ${report.seasons[0]?.year ?? 'n/a'}–${report.seasons.at(-1)?.year ?? 'n/a'}`,
+    '',
+    '| Year | Top car | Grid avg | Driver avg | Upgrades | Reliability fixes | Setbacks | Archetypes | Financial health |',
+    '|---:|---:|---:|---:|---:|---:|---:|---|---|',
+    ...report.seasons.map((s) =>
+      `| ${s.year} | ${s.carRating.max.toFixed(1)} | ${s.carRating.avg.toFixed(1)} | ${s.driverAverage.toFixed(1)} | ${s.aiActivity.upgrades} | ${s.aiActivity.reliabilityFixes} | ${s.aiActivity.setbacks} | ${Object.entries(s.archetypeCounts).map(([k, v]) => `${k}: ${v}`).join(', ')} | ${Object.entries(s.financialHealth).map(([k, v]) => `${k}: ${v}`).join(', ')} |`,
+    ),
+    '',
+    `Max car rating: ${report.maxCarRating.toFixed(1)}; distinct constructor champions: ${report.distinctConstructorChampions}; top-team title share: ${report.topTeamTitleShare.toFixed(2)}`,
+  ];
+  writeFileSync(join(outputDir, 'career-simulation-summary.md'), `${lines.join('\n')}\n`);
+}
 
 const pad = (s: string, n: number) => s.padEnd(n).slice(0, n);
 const money = (n: number) => `$${(n / 1_000_000).toFixed(0)}M`;

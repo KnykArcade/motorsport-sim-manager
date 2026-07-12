@@ -25,6 +25,7 @@ import { buildDriverStandings, buildConstructorStandings } from '../src/sim/stan
 import { carPerformanceRating } from '../src/sim/trackFitEngine';
 import { createNewGame } from '../src/game/initialCareer';
 import { advanceSeason } from '../src/game/seasonRollover';
+import { defaultCareerPhaseState, processAITeamActivity } from '../src/game/careerPhaseEngine';
 import { activeDriversForTeam } from '../src/game/careerState';
 import type { GameState } from '../src/game/careerState';
 import { careerMarketBundle, youthProspectAge, YOUTH_MAX_AGE } from '../src/sim/careerMarketEngine';
@@ -65,6 +66,9 @@ export type SeasonAudit = {
   // AI budgets (player team excluded) in raw dollars.
   budget: { min: number; avg: number; max: number };
   financialHealth: Record<AIFinancialHealth, number>;
+  archetypeCounts: Record<string, number>;
+  aiActivity: { upgrades: number; reliabilityFixes: number; setbacks: number };
+  driverAverage: number;
   // Invariant probes.
   duplicateNames: string[];
   academyOver21: { memberId: string; name: string; age: number }[];
@@ -101,30 +105,53 @@ const NO_PLAYER_TEAM_ID = '__audit_no_player__';
 
 // Simulate every round of the current season on the given state, all AI, and
 // return the per-race results keyed by race id (as the reducer stores them).
-function simulateSeason(state: GameState): Record<string, RaceResult[]> {
-  const carByTeam = new Map(state.cars.map((c) => [c.teamId, c]));
-  const entrants: Entrant[] = [];
-  for (const team of state.teams) {
-    const car = carByTeam.get(team.id);
-    if (!car) continue;
-    for (const driver of activeDriversForTeam(state, team.id)) {
-      entrants.push({ driver, car });
-    }
-  }
-
-  const teamReputation: Record<string, number> = {};
-  const teamRaceOps: Record<string, number> = {};
-  for (const t of state.teams) {
-    teamReputation[t.id] = t.reputation;
-    teamRaceOps[t.id] = t.raceOperations;
-  }
-
+function simulateSeason(
+  state: GameState,
+): {
+  results: Record<string, RaceResult[]>;
+  state: GameState;
+  activity: { upgrades: number; reliabilityFixes: number; setbacks: number };
+} {
   const pointsSystem = getPointsSystem(state.pointsSystemId);
   const maxQualifiers = getMaxQualifiers(state.series);
   const format = qualifyingFormatFor(state.seasonYear, state.series);
 
   const byRace: Record<string, RaceResult[]> = {};
+  let workingState = state;
+  let upgrades = 0;
+  let reliabilityFixes = 0;
+  let setbacks = 0;
   for (const race of state.calendar) {
+    const phase = workingState.careerPhase ?? defaultCareerPhaseState();
+    const previousNews = workingState.news;
+    workingState = processAITeamActivity({
+      ...workingState,
+      careerPhase: {
+        ...phase,
+        currentRound: race.round,
+        paddockWeekId: `audit-${workingState.seasonYear}-${race.round}`,
+        aiActionsProcessedForCurrentWeek: false,
+      },
+    });
+    const activityHeadlines = workingState.news
+      .filter((n) => !previousNews.includes(n))
+      .map((n) => n.headline);
+    upgrades += activityHeadlines.filter((h) => h.includes('brings upgrade')).length;
+    reliabilityFixes += activityHeadlines.filter((h) => h.includes('addresses reliability')).length;
+    setbacks += activityHeadlines.filter((h) => h.includes('suffers setback')).length;
+    const carByTeam = new Map(workingState.cars.map((c) => [c.teamId, c]));
+    const entrants: Entrant[] = [];
+    for (const team of workingState.teams) {
+      const car = carByTeam.get(team.id);
+      if (!car) continue;
+      for (const driver of activeDriversForTeam(workingState, team.id)) entrants.push({ driver, car });
+    }
+    const teamReputation: Record<string, number> = {};
+    const teamRaceOps: Record<string, number> = {};
+    for (const t of workingState.teams) {
+      teamReputation[t.id] = t.reputation;
+      teamRaceOps[t.id] = t.raceOperations;
+    }
     const track = getTrackById(race.trackId);
     if (!track) continue;
     const setupOptions = { ...setupOptionsById, ...autoSetupOptionsForTrack(track) };
@@ -137,7 +164,7 @@ function simulateSeason(state: GameState): Record<string, RaceResult[]> {
       decisions: qDecisions,
       setupOptions,
       runPlans: qualifyingRunPlansById,
-      seed: `${state.randomSeed}-${state.seasonYear}-r${race.round}`,
+      seed: `${workingState.randomSeed}-${workingState.seasonYear}-r${race.round}`,
       maxQualifiers,
       format,
       teamReputation,
@@ -156,15 +183,15 @@ function simulateSeason(state: GameState): Record<string, RaceResult[]> {
       strategies: raceStrategiesById,
       instructions: driverInstructionsById,
       pointsByPosition: pointsSystem.pointsByPosition,
-      seed: `${state.randomSeed}-${state.seasonYear}-r${race.round}`,
-      year: state.seasonYear,
+      seed: `${workingState.randomSeed}-${workingState.seasonYear}-r${race.round}`,
+      year: workingState.seasonYear,
       teamReputation,
       teamRaceOps,
     };
     const { results } = simulateRace(rCtx);
     byRace[race.id] = results;
   }
-  return byRace;
+  return { results: byRace, state: workingState, activity: { upgrades, reliabilityFixes, setbacks } };
 }
 
 function summarize(nums: number[]): { min: number; avg: number; max: number } {
@@ -175,7 +202,10 @@ function summarize(nums: number[]): { min: number; avg: number; max: number } {
   return { min: +min.toFixed(2), avg: +avg.toFixed(2), max: +max.toFixed(2) };
 }
 
-function auditSeason(state: GameState): SeasonAudit {
+function auditSeason(
+  state: GameState,
+  aiActivity: SeasonAudit['aiActivity'],
+): SeasonAudit {
   const teamName = new Map(state.teams.map((t) => [t.id, t.name]));
   const driverName = new Map(state.drivers.map((d) => [d.id, d.name]));
 
@@ -201,12 +231,22 @@ function auditSeason(state: GameState): SeasonAudit {
     AtRisk: 0,
     Critical: 0,
   };
+  const archetypeCounts: Record<string, number> = {};
   for (const team of state.teams) {
     if (team.id === state.selectedTeamId) continue;
     aiBudgets.push(team.budget);
     const ai = aiStates[team.id];
-    if (ai) financialHealth[ai.financialHealth] += 1;
+    if (ai) {
+      financialHealth[ai.financialHealth] += 1;
+      archetypeCounts[ai.archetype] = (archetypeCounts[ai.archetype] ?? 0) + 1;
+    }
   }
+  const gridDrivers = state.drivers.filter(
+    (d) => d.contractType !== 'reserve' && d.contractType !== 'third' && d.contractType !== 'test',
+  );
+  const driverAverage = gridDrivers.length
+    ? gridDrivers.reduce((sum, d) => sum + d.ratings.overall, 0) / gridDrivers.length
+    : 0;
 
   // Invariants.
   const names = state.drivers.map((d) => normalizeName(d.name));
@@ -252,6 +292,9 @@ function auditSeason(state: GameState): SeasonAudit {
     saturatedCars,
     budget: summarize(aiBudgets),
     financialHealth,
+    archetypeCounts,
+    aiActivity,
+    driverAverage: +driverAverage.toFixed(2),
     duplicateNames,
     academyOver21,
     youthPoolOverAge,
@@ -278,13 +321,19 @@ export function runCareerAudit(opts: AuditOptions = {}): CareerAuditReport {
   const seasons: SeasonAudit[] = [];
   for (let i = 0; i < seasonsToRun; i++) {
     // Play the season for real so the standings reflect actual results.
-    const completedRaceResults = simulateSeason(state);
+    const simulated = simulateSeason(state);
+    const completedRaceResults = simulated.results;
     const allResults = Object.values(completedRaceResults);
     const driverStandings = buildDriverStandings(allResults);
     const constructorStandings = buildConstructorStandings(allResults);
-    state = { ...state, completedRaceResults, driverStandings, constructorStandings };
+    state = {
+      ...simulated.state,
+      completedRaceResults,
+      driverStandings,
+      constructorStandings,
+    };
 
-    seasons.push(auditSeason(state));
+    seasons.push(auditSeason(state, simulated.activity));
 
     // Roll the offseason over, feeding the real standings into the AI/finance/
     // development/regulation systems.

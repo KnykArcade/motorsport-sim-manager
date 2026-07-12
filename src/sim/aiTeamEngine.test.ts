@@ -111,6 +111,25 @@ describe('assignArchetype', () => {
     const t = team({ reputation: 55, budget: 50_000_000 });
     expect(assignArchetype(t, org({ youthAcademy: 80 }), car(50), 's')).toBe('YouthFocused');
   });
+
+  it('recognizes realistic development-focused and aggressive midfield teams', () => {
+    expect(
+      assignArchetype(
+        team({ reputation: 65, budget: 45_000_000 }),
+        org({ youthAcademy: 65 }),
+        car(50),
+        's',
+      ),
+    ).toBe('DevelopmentFocused');
+    expect(
+      assignArchetype(
+        team({ reputation: 55, budget: 50_000_000 }),
+        org({ youthAcademy: 40, research: 40 }),
+        car(50),
+        's',
+      ),
+    ).toBe('AggressiveSpender');
+  });
 });
 
 describe('estimatePrizeMoney', () => {
@@ -176,6 +195,12 @@ describe('aiTeamGoal', () => {
     expect(aiTeamGoal('FinanciallyConservative', 11, 12, 'Stable')).toBe('MidfieldImprovement');
     expect(aiTeamGoal('YouthFocused', 6, 12, 'Stable')).toBe('YouthDevelopment');
     expect(aiTeamGoal('ChampionshipContender', 1, 12, 'Critical')).toBe('Survival');
+  });
+});
+
+describe('evolveArchetype recovery', () => {
+  it('lets SurvivalMode recover after a positive non-distressed season', () => {
+    expect(evolveArchetype('SurvivalMode', 'Tight', 0, 1.1)).toBe('FinanciallyConservative');
   });
 });
 

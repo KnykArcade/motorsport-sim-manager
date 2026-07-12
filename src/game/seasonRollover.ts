@@ -418,9 +418,21 @@ export function advanceSeason(state: GameState, nextBundle?: SeasonBundle): Game
   const upgradeById = new Map(reservePromotions.map((p) => [p.reserveId, p.upgraded]));
   const drivers = [
     ...state.drivers
-      .map((d) => replacements.get(d.id) ?? d)
+      .map((d) => {
+        const replacement = replacements.get(d.id);
+        if (replacement) return replacement;
+        const promoted = upgradeById.get(d.id);
+        if (promoted) return promoted;
+        // AI contracts consume one year at each rollover. Player contracts are
+        // left untouched so the player's in-season negotiation UX remains the
+        // source of truth for those deals.
+        if (d.teamId === state.selectedTeamId) return d;
+        return {
+          ...d,
+          contractYearsRemaining: Math.max(0, (d.contractYearsRemaining ?? 0) - 1),
+        };
+      })
       .filter((d) => !promotedSeatIds.has(d.id))
-      .map((d) => upgradeById.get(d.id) ?? d)
       .filter((d) => !departures.has(d.id)),
     // New reserve/test/3rd drivers promoted from the academy via first option.
     ...firstOption.reserveDrivers,
@@ -517,6 +529,9 @@ export function advanceSeason(state: GameState, nextBundle?: SeasonBundle): Game
     (max, ev) => Math.max(max, severityToShakeup(ev.severity)),
     0,
   );
+  const regulationAffectedAreas = [
+    ...new Set(voteResolution.regulationChanges.flatMap((ev) => ev.affectedAreas)),
+  ];
 
   // Carry the player car's development into the new baseline; reset condition.
   // The player car is subject to the same offseason maintenance decay as the AI
@@ -1056,6 +1071,7 @@ export function advanceSeason(state: GameState, nextBundle?: SeasonBundle): Game
     reservedNames: aiReservedNames,
     constructorStandings: state.constructorStandings,
     regulationShakeup,
+    regulationAffectedAreas,
     series: state.series,
   });
 
