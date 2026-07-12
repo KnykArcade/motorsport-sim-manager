@@ -21,6 +21,7 @@ import { createLiveRace, finalizeResults, type LiveRaceMeta } from './liveRaceEn
 import {
   stepLiveRace,
   stepLiveRaceToEnd,
+  finalizeLiveTimingAtChequered,
   resolvePrompt,
   requestPlayerPit,
   setPlayerPaceMode,
@@ -131,6 +132,17 @@ describe('live race engine', () => {
     const { results } = finalizeResults(state, context);
     expect(results.length).toBe(context.entrants.length);
 
+    const liveFinishers = state.cars.filter((car) => car.status === 'Finished');
+    const resultFinishers = results.filter((result) => result.status === 'Finished');
+    expect(liveFinishers.map((car) => car.driverId)).toEqual(resultFinishers.map((result) => result.driverId));
+    expect(liveFinishers.map((car) => car.position)).toEqual(resultFinishers.map((result) => result.position));
+    expect(liveFinishers[0]?.gapToLeader).toBe(0);
+    expect(liveFinishers.every((car, index) => index === 0 || car.gapToLeader >= liveFinishers[index - 1]!.gapToLeader)).toBe(true);
+    if (state.circuit) {
+      const finishDistance = TOTAL_LAPS * state.circuit.lapLengthMeters;
+      expect(liveFinishers.every((car) => car.positionState?.totalRaceDistanceMeters === finishDistance)).toBe(true);
+    }
+
     // Exactly one winner, scoring points; finishers are uniquely ranked.
     const winners = results.filter((r) => r.position === 1);
     expect(winners.length).toBe(1);
@@ -153,6 +165,34 @@ describe('live race engine', () => {
     expect(finishers.every((c) => c.status === 'Finished' && c.position != null)).toBe(true);
     // A representative best lap is captured for cars that ran green laps.
     expect(finishers.every((c) => c.bestLap != null && c.bestLap > 0)).toBe(true);
+  });
+
+  it('ignores finish-line distance overshoot when assigning the live timing order', () => {
+    const context = buildContext('finish-overshoot');
+    const state = createRace(context, context.entrants[0].driver.teamId);
+    const circuit = state.circuit!;
+    const finishDistance = TOTAL_LAPS * circuit.lapLengthMeters;
+    const faster = {
+      ...state.cars[0]!,
+      totalTime: 3600,
+      positionState: { ...state.cars[0]!.positionState!, totalRaceDistanceMeters: finishDistance + 10 },
+    };
+    const slowerWithMoreOvershoot = {
+      ...state.cars[1]!,
+      totalTime: 3605,
+      positionState: { ...state.cars[1]!.positionState!, totalRaceDistanceMeters: finishDistance + 80 },
+    };
+
+    const classified = finalizeLiveTimingAtChequered(
+      [slowerWithMoreOvershoot, faster],
+      TOTAL_LAPS,
+      circuit,
+    );
+
+    expect(classified.map((car) => car.driverId)).toEqual([faster.driverId, slowerWithMoreOvershoot.driverId]);
+    expect(classified.map((car) => car.position)).toEqual([1, 2]);
+    expect(classified[1]!.gapToLeader).toBe(5);
+    expect(classified.every((car) => car.positionState?.totalRaceDistanceMeters === finishDistance)).toBe(true);
   });
 
   it('is deterministic for a fixed seed', () => {

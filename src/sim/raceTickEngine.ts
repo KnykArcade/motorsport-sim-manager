@@ -20,7 +20,7 @@ import type {
 } from '../types/liveTypes';
 import { createSeededRandom, deriveSeed } from './random';
 import { REF_LAP, type LiveRaceMeta } from './liveRaceEngine';
-import { advanceCarPositionThroughSegments, applyDistanceBasedTrafficState, applyPositionToLegacyCarFields, classifyCarsByDistance, createInitialCarPositionState } from './segmentRaceEngine';
+import { advanceCarPositionThroughSegments, applyDistanceBasedTrafficState, applyPositionToLegacyCarFields, classifyCarsByDistance, createInitialCarPositionState, repositionCarAtRaceDistance } from './segmentRaceEngine';
 import { stepBattleStates } from './battleStateEngine';
 import { estimateLapTimeFromLivePace, splitLapIntoCircuitSectorTimes } from './segmentPaceEngine';
 import {
@@ -978,9 +978,7 @@ export function stepLiveSector(state: LiveRaceState, meta: LiveRaceMeta): LiveRa
     phase = state.phase === 'formation' ? 'racing' : state.phase;
     if (isFinalLap) {
       phase = 'finished';
-      orderedCars = orderedCars.map((c) =>
-        c.running ? { ...c, running: false, status: 'Finished', lapsCompleted: state.totalLaps } : c,
-      );
+      orderedCars = finalizeLiveTimingAtChequered(orderedCars, state.totalLaps, state.circuit);
     }
 
     // --- Data analytics recommendations for the player's drivers -------------
@@ -1058,6 +1056,37 @@ export function stepLiveSector(state: LiveRaceState, meta: LiveRaceMeta): LiveRa
           }
         : state.lastIncident,
   };
+}
+
+export function finalizeLiveTimingAtChequered(
+  cars: readonly LiveCarState[],
+  totalLaps: number,
+  circuit: LiveRaceState['circuit'],
+): LiveCarState[] {
+  const finishDistance = circuit ? totalLaps * circuit.lapLengthMeters : null;
+  const finishers = cars
+    .filter((car) => car.running)
+    .sort((a, b) => a.totalTime - b.totalTime);
+  const winnerTime = finishers[0]?.totalTime ?? 0;
+  const classified = finishers.map((car, index) => {
+    const aheadTime = index === 0 ? car.totalTime : finishers[index - 1]!.totalTime;
+    return {
+      ...car,
+      running: false,
+      status: 'Finished' as const,
+      position: index + 1,
+      lapsCompleted: totalLaps,
+      gapToLeader: index === 0 ? 0 : round1(car.totalTime - winnerTime),
+      interval: index === 0 ? 0 : round1(car.totalTime - aheadTime),
+      positionState: finishDistance != null && car.positionState
+        ? repositionCarAtRaceDistance(car.positionState, finishDistance, circuit!)
+        : car.positionState,
+    };
+  });
+  const retired = cars
+    .filter((car) => !car.running)
+    .map((car) => ({ ...car, position: null, gapToLeader: 0, interval: 0 }));
+  return [...classified, ...retired];
 }
 
 // Step a whole lap by running three sector steps.
