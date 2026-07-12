@@ -166,6 +166,45 @@ describe('aiLapDecision — core behaviours', () => {
 });
 
 describe('aiLapDecision — Phase E extensions', () => {
+  it('holds an AI mode through its minimum stint instead of flipping immediately', () => {
+    const c = car({
+      paceMode: 'Attack',
+      personality: 'Balanced',
+      interval: 3,
+      strategyStint: { ...initialStint('Attack'), consecutiveLaps: 2 },
+    });
+    expect(aiLapDecision(c, live([c]), TRACK, 21).paceMode).toBe('Attack');
+  });
+
+  it('allows a mode to end after its minimum stint when the trigger has cleared', () => {
+    const c = car({
+      paceMode: 'Attack',
+      personality: 'Balanced',
+      interval: 3,
+      strategyStint: { ...initialStint('Attack'), consecutiveLaps: 3 },
+    });
+    expect(aiLapDecision(c, live([c]), TRACK, 21).paceMode).toBe('Balanced');
+  });
+
+  it('uses a wider exit threshold to keep an established attack stable', () => {
+    const c = car({
+      paceMode: 'Attack',
+      personality: 'Balanced',
+      interval: 1.5,
+      strategyStint: { ...initialStint('Attack'), consecutiveLaps: 5 },
+    });
+    expect(aiLapDecision(c, live([c]), TRACK, 21).paceMode).toBe('Attack');
+  });
+
+  it('lets damage override mode hysteresis immediately', () => {
+    const c = car({
+      paceMode: 'Attack',
+      damaged: true,
+      strategyStint: { ...initialStint('Attack'), consecutiveLaps: 1 },
+    });
+    expect(aiLapDecision(c, live([c]), TRACK, 21).paceMode).toBe('Conservative');
+  });
+
   it('nurses a car with badly worn components even without a flagged issue', () => {
     const c = car({ engineHealth: 10 });
     const action = aiLapDecision(c, live([c]), TRACK, 21);

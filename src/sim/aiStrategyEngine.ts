@@ -187,11 +187,40 @@ function finalizeModeDecision(
   state: LiveRaceState,
   rng: ReturnType<typeof createSeededRandom>,
   action: AIAction,
+  emergencyOverride = false,
 ): AIAction {
   if (!action.paceMode || action.pitNow) return action;
   const decision = applyDriverDisagreement(car, state, rng, action.paceMode);
-  if (decision.mode === action.paceMode) return action;
-  return { ...action, paceMode: decision.mode, note: decision.note };
+  const desiredMode = decision.mode;
+  if (desiredMode === car.paceMode) {
+    return decision.mode === action.paceMode ? action : { ...action, paceMode: desiredMode, note: decision.note };
+  }
+  if (!emergencyOverride && shouldHoldCurrentMode(car, state)) {
+    return { ...action, paceMode: car.paceMode, note: null };
+  }
+  return desiredMode === action.paceMode ? action : { ...action, paceMode: desiredMode, note: decision.note };
+}
+
+export const AI_MODE_MINIMUM_LAPS: Record<PaceMode, number> = {
+  Balanced: 1,
+  Push: 4,
+  Attack: 3,
+  Defend: 3,
+  Conservative: 4,
+  ProtectEngine: 5,
+};
+
+function shouldHoldCurrentMode(car: LiveCarState, state: LiveRaceState): boolean {
+  const stint = car.strategyStint;
+  if (stint.mode === car.paceMode && stint.consecutiveLaps < AI_MODE_MINIMUM_LAPS[car.paceMode]) return true;
+  if (car.paceMode === 'Attack' && car.position != null && car.position > 1) {
+    return car.interval > 0 && car.interval < 1.8 && car.tire.wear < 70;
+  }
+  if (car.paceMode === 'Defend' && car.position != null) {
+    const behind = state.cars.find((candidate) => candidate.running && candidate.position === car.position! + 1);
+    return behind != null && behind.interval > 0 && behind.interval < 1.8;
+  }
+  return false;
 }
 
 // Decide an AI car's action for the upcoming lap. Pure given (car, state, lap).
@@ -307,7 +336,7 @@ export function aiLapDecision(
       car.personality === 'Conservative' ||
       car.reliabilityIssue.severity === 'Severe';
     action.paceMode = protect ? 'ProtectEngine' : 'Conservative';
-    return finalizeModeDecision(car, state, rng, action);
+    return finalizeModeDecision(car, state, rng, action, true);
   }
 
   // Proactive reliability: even without a flagged issue, a car with badly worn
@@ -315,14 +344,14 @@ export function aiLapDecision(
   const worstComponent = Math.min(car.engineHealth, car.gearboxHealth, car.brakeHealth);
   if (worstComponent < 22) {
     action.paceMode = worstComponent < 12 ? 'ProtectEngine' : 'Conservative';
-    return finalizeModeDecision(car, state, rng, action);
+    return finalizeModeDecision(car, state, rng, action, true);
   }
 
   // Damage: a damaged car backs off to protect itself and avoid a bigger
   // failure, rather than pushing on into more trouble.
   if (car.damaged) {
     action.paceMode = 'Conservative';
-    return finalizeModeDecision(car, state, rng, action);
+    return finalizeModeDecision(car, state, rng, action, true);
   }
 
   // Worn tyres → conserve (a pit will follow from the stop logic above).
