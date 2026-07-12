@@ -32,6 +32,8 @@ export type PitLaneRuleProfile = {
 export type RaceControlRuleProfile = {
   supportedModes: RaceControlMode[];
   lateRaceCautionsAllowed: boolean;
+  cautionFrequencyMultiplier: number;
+  minimumGreenLapsBetweenCautions: number;
   instantFieldCompression: false;
   restartProcedure: RestartProcedure;
   overtime: boolean;

@@ -13,7 +13,7 @@ export const RACE_RULE_PROFILES: readonly RaceRuleProfile[] = [
     tyres: { compoundModel: 'F1Historical', mandatoryCompoundChange: false },
     overtakingAids: { drs: false, pushToPass: false, drafting: 'Minimal' },
     pitLane: { closesUnderFullCourseCaution: false, waveArounds: false, luckyDog: false, speedLimitSource: 'Unknown' },
-    raceControl: { supportedModes: ['LocalYellow', 'SafetyCar', 'RedFlag'], lateRaceCautionsAllowed: true, instantFieldCompression: false, restartProcedure: 'RollingSingleFile', overtime: false, stageRacing: false },
+    raceControl: { supportedModes: ['LocalYellow', 'SafetyCar', 'RedFlag'], lateRaceCautionsAllowed: true, cautionFrequencyMultiplier: 0.65, minimumGreenLapsBetweenCautions: 5, instantFieldCompression: false, restartProcedure: 'RollingSingleFile', overtime: false, stageRacing: false },
     notes: ['Historical F1 standing starts, no DRS, no race refueling.'],
   },
   {
@@ -27,7 +27,7 @@ export const RACE_RULE_PROFILES: readonly RaceRuleProfile[] = [
     tyres: { compoundModel: 'F1Historical', mandatoryCompoundChange: false },
     overtakingAids: { drs: false, pushToPass: false, drafting: 'Minimal' },
     pitLane: { closesUnderFullCourseCaution: false, waveArounds: false, luckyDog: false, speedLimitSource: 'SeriesEraFallback' },
-    raceControl: { supportedModes: ['LocalYellow', 'SafetyCar', 'RedFlag'], lateRaceCautionsAllowed: true, instantFieldCompression: false, restartProcedure: 'RollingSingleFile', overtime: false, stageRacing: false },
+    raceControl: { supportedModes: ['LocalYellow', 'SafetyCar', 'RedFlag'], lateRaceCautionsAllowed: true, cautionFrequencyMultiplier: 0.65, minimumGreenLapsBetweenCautions: 5, instantFieldCompression: false, restartProcedure: 'RollingSingleFile', overtime: false, stageRacing: false },
     notes: ['F1 refueling era; service time is generated per stop, not from workbook transit data.'],
   },
   {
@@ -41,7 +41,7 @@ export const RACE_RULE_PROFILES: readonly RaceRuleProfile[] = [
     tyres: { compoundModel: 'F1Modern', mandatoryCompoundChange: true },
     overtakingAids: { drs: true, pushToPass: false, drafting: 'Moderate' },
     pitLane: { closesUnderFullCourseCaution: false, waveArounds: false, luckyDog: false, speedLimitSource: 'SeriesEraFallback' },
-    raceControl: { supportedModes: ['LocalYellow', 'VirtualSafetyCar', 'SafetyCar', 'RedFlag'], lateRaceCautionsAllowed: true, instantFieldCompression: false, restartProcedure: 'SeriesDefault', overtime: false, stageRacing: false },
+    raceControl: { supportedModes: ['LocalYellow', 'VirtualSafetyCar', 'SafetyCar', 'RedFlag'], lateRaceCautionsAllowed: true, cautionFrequencyMultiplier: 0.65, minimumGreenLapsBetweenCautions: 5, instantFieldCompression: false, restartProcedure: 'SeriesDefault', overtime: false, stageRacing: false },
     notes: ['Modern F1 no-refueling era with DRS/VSC only in supported years.'],
   },
   {
@@ -55,7 +55,7 @@ export const RACE_RULE_PROFILES: readonly RaceRuleProfile[] = [
     tyres: { compoundModel: 'GenericDryWet', mandatoryCompoundChange: false },
     overtakingAids: { drs: false, pushToPass: false, drafting: 'Strong' },
     pitLane: { closesUnderFullCourseCaution: true, waveArounds: true, luckyDog: false, speedLimitSource: 'SeriesEraFallback' },
-    raceControl: { supportedModes: ['LocalYellow', 'FullCourseYellow', 'PaceCar', 'RedFlag'], lateRaceCautionsAllowed: true, instantFieldCompression: false, restartProcedure: 'RollingSingleFile', overtime: false, stageRacing: false },
+    raceControl: { supportedModes: ['LocalYellow', 'FullCourseYellow', 'PaceCar', 'RedFlag'], lateRaceCautionsAllowed: true, cautionFrequencyMultiplier: 0.75, minimumGreenLapsBetweenCautions: 4, instantFieldCompression: false, restartProcedure: 'RollingSingleFile', overtime: false, stageRacing: false },
     notes: ['CART rules vary by event; profile captures top-level live simulation behavior.'],
   },
   {
@@ -69,7 +69,7 @@ export const RACE_RULE_PROFILES: readonly RaceRuleProfile[] = [
     tyres: { compoundModel: 'GenericDryWet', mandatoryCompoundChange: false },
     overtakingAids: { drs: false, pushToPass: true, drafting: 'Moderate' },
     pitLane: { closesUnderFullCourseCaution: true, waveArounds: true, luckyDog: false, speedLimitSource: 'SeriesEraFallback' },
-    raceControl: { supportedModes: ['LocalYellow', 'FullCourseYellow', 'PaceCar', 'RedFlag'], lateRaceCautionsAllowed: true, instantFieldCompression: false, restartProcedure: 'RollingSingleFile', overtime: false, stageRacing: false },
+    raceControl: { supportedModes: ['LocalYellow', 'FullCourseYellow', 'PaceCar', 'RedFlag'], lateRaceCautionsAllowed: true, cautionFrequencyMultiplier: 0.75, minimumGreenLapsBetweenCautions: 4, instantFieldCompression: false, restartProcedure: 'RollingSingleFile', overtime: false, stageRacing: false },
     notes: ['Champ Car profile normalizes ChampCar/Champ Car naming at lookup boundaries.'],
   },
   {
@@ -83,7 +83,7 @@ export const RACE_RULE_PROFILES: readonly RaceRuleProfile[] = [
     tyres: { compoundModel: 'IndyCarPrimaryAlternate', mandatoryCompoundChange: false },
     overtakingAids: { drs: false, pushToPass: true, drafting: 'Strong' },
     pitLane: { closesUnderFullCourseCaution: true, waveArounds: true, luckyDog: false, speedLimitSource: 'SeriesEraFallback' },
-    raceControl: { supportedModes: ['LocalYellow', 'FullCourseYellow', 'PaceCar', 'RedFlag'], lateRaceCautionsAllowed: true, instantFieldCompression: false, restartProcedure: 'RollingSingleFile', overtime: false, stageRacing: false },
+    raceControl: { supportedModes: ['LocalYellow', 'FullCourseYellow', 'PaceCar', 'RedFlag'], lateRaceCautionsAllowed: true, cautionFrequencyMultiplier: 0.75, minimumGreenLapsBetweenCautions: 4, instantFieldCompression: false, restartProcedure: 'RollingSingleFile', overtime: false, stageRacing: false },
     notes: ['IndyCar road/street/oval procedure varies by event and is refined by track discipline.'],
   },
   {
@@ -97,7 +97,7 @@ export const RACE_RULE_PROFILES: readonly RaceRuleProfile[] = [
     tyres: { compoundModel: 'NASCARSet', mandatoryCompoundChange: false },
     overtakingAids: { drs: false, pushToPass: false, drafting: 'Pack' },
     pitLane: { closesUnderFullCourseCaution: true, waveArounds: true, luckyDog: false, speedLimitSource: 'SeriesEraFallback' },
-    raceControl: { supportedModes: ['LocalYellow', 'FullCourseYellow', 'PaceCar', 'RedFlag', 'Overtime'], lateRaceCautionsAllowed: true, instantFieldCompression: false, restartProcedure: 'RollingDoubleFile', overtime: true, stageRacing: false },
+    raceControl: { supportedModes: ['LocalYellow', 'FullCourseYellow', 'PaceCar', 'RedFlag', 'Overtime'], lateRaceCautionsAllowed: true, cautionFrequencyMultiplier: 1, minimumGreenLapsBetweenCautions: 3, instantFieldCompression: false, restartProcedure: 'RollingDoubleFile', overtime: true, stageRacing: false },
     notes: ['NASCAR pre-free-pass era profile.'],
   },
   {
@@ -111,7 +111,7 @@ export const RACE_RULE_PROFILES: readonly RaceRuleProfile[] = [
     tyres: { compoundModel: 'NASCARSet', mandatoryCompoundChange: false },
     overtakingAids: { drs: false, pushToPass: false, drafting: 'Pack' },
     pitLane: { closesUnderFullCourseCaution: true, waveArounds: true, luckyDog: true, speedLimitSource: 'SeriesEraFallback' },
-    raceControl: { supportedModes: ['LocalYellow', 'FullCourseYellow', 'PaceCar', 'RedFlag', 'Overtime'], lateRaceCautionsAllowed: true, instantFieldCompression: false, restartProcedure: 'RollingDoubleFile', overtime: true, stageRacing: false },
+    raceControl: { supportedModes: ['LocalYellow', 'FullCourseYellow', 'PaceCar', 'RedFlag', 'Overtime'], lateRaceCautionsAllowed: true, cautionFrequencyMultiplier: 1, minimumGreenLapsBetweenCautions: 3, instantFieldCompression: false, restartProcedure: 'RollingDoubleFile', overtime: true, stageRacing: false },
     notes: ['NASCAR free-pass era before stage racing.'],
   },
   {
@@ -125,7 +125,7 @@ export const RACE_RULE_PROFILES: readonly RaceRuleProfile[] = [
     tyres: { compoundModel: 'NASCARSet', mandatoryCompoundChange: false },
     overtakingAids: { drs: false, pushToPass: false, drafting: 'Pack' },
     pitLane: { closesUnderFullCourseCaution: true, waveArounds: true, luckyDog: true, speedLimitSource: 'SeriesEraFallback' },
-    raceControl: { supportedModes: ['LocalYellow', 'FullCourseYellow', 'PaceCar', 'RedFlag', 'Overtime'], lateRaceCautionsAllowed: true, instantFieldCompression: false, restartProcedure: 'RollingDoubleFile', overtime: true, stageRacing: true },
+    raceControl: { supportedModes: ['LocalYellow', 'FullCourseYellow', 'PaceCar', 'RedFlag', 'Overtime'], lateRaceCautionsAllowed: true, cautionFrequencyMultiplier: 1, minimumGreenLapsBetweenCautions: 3, instantFieldCompression: false, restartProcedure: 'RollingDoubleFile', overtime: true, stageRacing: true },
     notes: ['NASCAR stage-era profile with stage cautions/overtime enabled only for applicable years.'],
   },
 ];

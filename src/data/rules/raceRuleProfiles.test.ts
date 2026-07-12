@@ -16,4 +16,11 @@ describe('race rule profiles', () => {
     expect(selectRaceRuleProfile('F1', 1995).overtakingAids.drs).toBe(false);
     expect(selectRaceRuleProfile('F1', 2026).overtakingAids.drs).toBe(true);
   });
+
+  it('uses series-specific caution cadence without retroactive leakage', () => {
+    const historicalF1 = selectRaceRuleProfile('F1', 1995).raceControl;
+    const modernNascar = selectRaceRuleProfile('NASCAR', 2026).raceControl;
+    expect(historicalF1.cautionFrequencyMultiplier).toBeLessThan(modernNascar.cautionFrequencyMultiplier);
+    expect(historicalF1.minimumGreenLapsBetweenCautions).toBeGreaterThan(modernNascar.minimumGreenLapsBetweenCautions);
+  });
 });
