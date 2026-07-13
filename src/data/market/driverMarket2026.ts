@@ -374,7 +374,7 @@ export const driverMarket2026: MarketDriver[] = [
     buyoutCost: 5,
     negotiationDifficulty: 'Hard',
     suggestedUse: 'Prospect',
-    notes: 'High pace but needs polish.'
+    notes: 'High pace but needs polish. Source: https://www.fiawec.com/en/news/martins-makes-move-into-endurance-racing-with-alpine/8610'
   },
   {
     id: 'mkt-2026-paul-aron',
@@ -408,7 +408,7 @@ export const driverMarket2026: MarketDriver[] = [
     buyoutCost: 5.2,
     negotiationDifficulty: 'Hard',
     suggestedUse: 'Prospect',
-    notes: 'Good future signing.'
+    notes: 'Good future signing. Source: https://www.alpinef1.com/drivers/paul-aron'
   },
   {
     id: 'mkt-2026-dino-beganovic',
@@ -442,7 +442,7 @@ export const driverMarket2026: MarketDriver[] = [
     buyoutCost: 5,
     negotiationDifficulty: 'Hard',
     suggestedUse: 'Prospect',
-    notes: 'High-quality academy target.'
+    notes: 'High-quality academy target. Source: https://www.fiaformula2.com/Drivers/1252/Dino-Beganovic'
   },
   {
     id: 'mkt-2026-jak-crawford',
@@ -476,7 +476,7 @@ export const driverMarket2026: MarketDriver[] = [
     buyoutCost: 4.8,
     negotiationDifficulty: 'Hard',
     suggestedUse: 'Prospect/Pay Driver',
-    notes: 'Good Cadillac/Williams market fit.'
+    notes: 'Good Cadillac/Williams market fit. Source: https://www.astonmartinf1.com/en-GB/driver/jak-crawford'
   },
   {
     id: 'mkt-2026-ayumu-iwasa',

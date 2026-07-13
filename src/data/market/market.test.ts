@@ -99,10 +99,19 @@ describe('youth market costs', () => {
     expect(names).not.toContain('Brent Crews');
   });
 
-  it('retains source citations for the first verified 2026 adult batch', async () => {
+  it('retains source citations for verified 2026 adult candidates', async () => {
     await preloadMarketBundle(2026, 'F1');
     const bundle = getMarketBundle(2026, 'F1')!;
-    for (const name of ['Jack Doohan', 'Felipe Drugovich', 'Theo Pourchaire', 'Frederik Vesti']) {
+    for (const name of [
+      'Jack Doohan',
+      'Felipe Drugovich',
+      'Theo Pourchaire',
+      'Frederik Vesti',
+      'Victor Martins',
+      'Paul Aron',
+      'Dino Beganovic',
+      'Jak Crawford',
+    ]) {
       expect(bundle.drivers.find((driver) => driver.name === name)?.notes).toContain('Source: https://');
     }
   });
