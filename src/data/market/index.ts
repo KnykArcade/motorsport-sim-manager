@@ -147,9 +147,8 @@ export function seedMarketBundleCache(
       mergeUniverseEntries(entries.flatMap(({ series, marketBundle }) => marketBundle.drivers
         .filter((entry) => !(series === 'NASCAR' && entry.id.startsWith('market-youth-nascar-')))
         .map((entry) => ({ entry, source: series })))),
-      mergeUniverseEntries(entries.flatMap(({ series, marketBundle }) => series === 'NASCAR'
-        ? []
-        : marketBundle.youth.map((entry) => ({ entry, source: series })))),
+      mergeUniverseEntries(entries.flatMap(({ series, marketBundle }) => marketBundle.youth
+        .map((entry) => ({ entry, source: series })))),
     ));
   }
 }
@@ -165,9 +164,7 @@ export async function preloadMarketBundle(year: number, series: Series = 'F1'): 
     mergeUniverseEntries(loaded.flatMap(({ source, drivers }) => drivers
       .filter((entry) => !(source === 'NASCAR' && entry.id.startsWith('market-youth-nascar-')))
       .map((entry) => ({ entry, source })))),
-    mergeUniverseEntries(loaded.flatMap(({ source, youth }) => source === 'NASCAR'
-      ? []
-      : youth.map((entry) => ({ entry, source })))),
+    mergeUniverseEntries(loaded.flatMap(({ source, youth }) => youth.map((entry) => ({ entry, source })))),
   ));
 }
 

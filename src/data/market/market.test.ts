@@ -1,5 +1,9 @@
 import { describe, it, expect, beforeAll } from 'vitest';
 import { getMarketBundle, youthSigningCost, youthYearlyAcademyCost, preloadMarketBundle } from './index';
+import { youthProspects1998NASCAR } from './youthProspects1998NASCAR';
+import { youthProspects2015NASCAR } from './youthProspects2015NASCAR';
+import { youthProspects2017NASCAR } from './youthProspects2017NASCAR';
+import { youthProspects2025NASCAR } from './youthProspects2025NASCAR';
 
 describe('youth market costs', () => {
   beforeAll(async () => {
@@ -52,6 +56,25 @@ describe('youth market costs', () => {
       expect(new Set(names).size).toBe(names.length);
       expect(bundle!.drivers.every((driver) => (driver.seriesPreferences?.length ?? 0) > 0)).toBe(true);
     }
+  });
+
+  it('keeps researched NASCAR minors in the shared youth universe', () => {
+    const samples = [
+      ...youthProspects1998NASCAR,
+      ...youthProspects2015NASCAR,
+      ...youthProspects2017NASCAR,
+      ...youthProspects2025NASCAR,
+    ];
+
+    expect(samples.map((prospect) => prospect.name)).toEqual(expect.arrayContaining([
+      'Auggie Vidovich',
+      'Cole Custer',
+      'Harrison Burton',
+      'Brent Crews',
+    ]));
+    expect(samples.every((prospect) => prospect.age >= 12 && prospect.age <= 17)).toBe(true);
+    expect(samples.every((prospect) => prospect.seriesPreferences?.[0]?.series === 'NASCAR')).toBe(true);
+    expect(samples.every((prospect) => prospect.notes.includes('Source: https://'))).toBe(true);
   });
 
   it('scales cost with potential', () => {
