@@ -4,7 +4,40 @@
 // cumulative career stats for drivers, teams and the player principal — so a
 // long save reads like an alternate-history racing record book.
 
-import type { StandingsEntry } from './gameTypes';
+import type { Series, StandingsEntry } from './gameTypes';
+
+// The live multi-series world that surrounds the championship the player is
+// managing. This is deliberately lean: it persists contracts and seats for
+// every championship without duplicating each series' full race simulation.
+export type UniverseDriverContract = {
+  driverId: string;
+  registryDriverId?: string;
+  name: string;
+  teamId: string;
+  series: Series;
+  contractYearsRemaining: number;
+};
+
+export type UniverseTeamRoster = {
+  teamId: string;
+  name: string;
+  reputation: number;
+  seatCount: number;
+  driverIds: string[];
+};
+
+export type UniverseChampionshipState = {
+  series: Series;
+  seasonYear: number;
+  teams: UniverseTeamRoster[];
+  drivers: UniverseDriverContract[];
+};
+
+export type MotorsportUniverseState = {
+  version: 1;
+  seasonYear: number;
+  championships: Partial<Record<Series, UniverseChampionshipState>>;
+};
 
 export type RaceHistoryRecord = {
   raceId: string;

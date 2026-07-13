@@ -29,6 +29,7 @@ import { getMarketBundle, youthSigningCost, youthYearlyAcademyCost, type MarketB
 import { getReleasedMarketDrivers } from '../data/market';
 import { ensureMinimumYouthProspects } from './youthGenerationEngine';
 import type { GameState } from '../game/careerState';
+import { universeOccupiedNames } from './motorsportUniverseEngine';
 
 export const ROOKIE_AGE = 18; // adult driver market eligibility (18+)
 export const YOUTH_MIN_AGE = 12; // youth academy / scouting pool floor (12–17)
@@ -214,6 +215,7 @@ export function occupiedIdentities(state: GameState): {
   // Use canonicalNameOf so abbreviated names (e.g. "M. Schumacher") match
   // their full-form identity in the registry.
   for (const d of state.drivers) names.add(canonicalNameOf(d.name));
+  for (const name of universeOccupiedNames(state.motorsportUniverse)) names.add(name);
   // The player's academy and every AI team's academy hold rights to their youth.
   for (const a of state.academy ?? []) names.add(canonicalNameOf(a.name));
   for (const members of Object.values(state.aiAcademies ?? {})) {
@@ -250,7 +252,9 @@ export function careerMarketBundle(state: GameState): MarketBundle {
   // series. Market and youth history does not count as an active-seat record.
   for (const entry of registryList(reg)) {
     if (entry.activeSeatsByYear?.length) rosterConfirmedNames.add(entry.canonicalName);
-    if (entry.activeSeatsByYear?.some((seat) => seat.year === year)) {
+    // Legacy saves without a live universe still use historical seat snapshots.
+    // Once the persistent world exists, its evolving contracts are authoritative.
+    if (!state.motorsportUniverse && entry.activeSeatsByYear?.some((seat) => seat.year === year)) {
       occupied.names.add(entry.canonicalName);
     }
   }

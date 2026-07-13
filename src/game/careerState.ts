@@ -35,7 +35,7 @@ import type { RegulationProposal, RegulationVoteResult } from '../types/politics
 import type { HistoricalEventHook, FiredEvent } from '../types/eventHookTypes';
 import type { ScoutingState } from '../types/scoutingTypes';
 import type { DriverDevelopmentCurve } from '../types/developmentCurveTypes';
-import type { UniverseHistory } from '../types/universeTypes';
+import type { MotorsportUniverseState, UniverseHistory } from '../types/universeTypes';
 import type { AITeamState, TeamMemoryEntry } from '../types/aiTeamTypes';
 import type { RaceWeekendPackageSelection, FinancialDistressMap } from '../types/raceWeekendPackageTypes';
 import type { CareerPhaseState } from '../types/careerPhaseTypes';
@@ -147,6 +147,9 @@ export type GameState = {
   developmentCurves?: Record<string, DriverDevelopmentCurve>;
   // 13. Universe records / history database.
   universeHistory?: UniverseHistory;
+  // Persistent rosters and contracts for every championship active in this
+  // career year. Unlike universeHistory, this is the live off-screen world.
+  motorsportUniverse?: MotorsportUniverseState;
 
   // AI Team Management (Phase C): the management brain for every non-player
   // team — archetype, budget, financial health, goal — keyed by teamId. Absent
