@@ -18,12 +18,6 @@ function career(year = 1998): GameState {
   });
 }
 
-function universeNames(state: GameState): string[] {
-  return Object.values(state.motorsportUniverse?.championships ?? {})
-    .flatMap((championship) => championship?.drivers ?? [])
-    .map((driver) => canonicalNameOf(driver.name));
-}
-
 describe('persistent multi-series universe', () => {
   it('seeds every championship active in the starting year', () => {
     const state = career();
@@ -38,9 +32,35 @@ describe('persistent multi-series universe', () => {
     }
   });
 
-  it('never assigns one canonical driver to two championships', () => {
-    const names = universeNames(career());
-    expect(new Set(names).size).toBe(names.length);
+  it('preserves documented drivers who start in more than one championship', () => {
+    const state = career();
+    const cartNames = new Set(
+      state.motorsportUniverse!.championships.CART!.drivers.map((driver) => canonicalNameOf(driver.name)),
+    );
+    const nascarNames = new Set(
+      state.motorsportUniverse!.championships.NASCAR!.drivers.map((driver) => canonicalNameOf(driver.name)),
+    );
+    expect(cartNames.has('robby gordon')).toBe(true);
+    expect(nascarNames.has('robby gordon')).toBe(true);
+  });
+
+  it('keeps an existing concurrent contract in each series while both remain active', () => {
+    const state = career();
+    const universe = structuredClone(state.motorsportUniverse!);
+    for (const series of ['CART', 'NASCAR'] as const) {
+      const contract = universe.championships[series]!.drivers.find(
+        (driver) => canonicalNameOf(driver.name) === 'robby gordon',
+      )!;
+      contract.contractYearsRemaining = 2;
+    }
+    const after = advanceSeason({ ...state, motorsportUniverse: universe, seasonComplete: true });
+    for (const series of ['CART', 'NASCAR'] as const) {
+      expect(
+        after.motorsportUniverse!.championships[series]!.drivers.some(
+          (driver) => canonicalNameOf(driver.name) === 'robby gordon',
+        ),
+      ).toBe(true);
+    }
   });
 
   it('removes every live universe seat holder from the shared market', () => {
@@ -65,8 +85,10 @@ describe('persistent multi-series universe', () => {
       after.motorsportUniverse!.championships.F1!.drivers.map((driver) => canonicalNameOf(driver.name)),
     );
     expect(universeSelectedNames).toEqual(selectedNames);
-    const names = universeNames(after);
-    expect(new Set(names).size).toBe(names.length);
+    for (const championship of Object.values(after.motorsportUniverse!.championships)) {
+      const names = championship!.drivers.map((driver) => canonicalNameOf(driver.name));
+      expect(new Set(names).size).toBe(names.length);
+    }
   });
 
   it('backfills a legacy save after registry initialization', () => {

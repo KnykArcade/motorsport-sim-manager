@@ -42,10 +42,15 @@ function championshipFromRoster(
 ): UniverseChampionshipState {
   const contracts: UniverseDriverContract[] = [];
   const driverIdsByTeam = new Map<string, string[]>();
+  const championshipNames = new Set<string>();
 
   for (const driver of drivers.filter(activeSeat)) {
     const nameKey = canonicalNameOf(driver.name);
-    if (occupiedNames.has(nameKey)) continue;
+    // A documented driver may legitimately race in multiple championships in
+    // the same year. De-duplicate only within this championship; the global set
+    // is for market availability and future free-agent signings.
+    if (championshipNames.has(nameKey)) continue;
+    championshipNames.add(nameKey);
     occupiedNames.add(nameKey);
     const contractYearsRemaining = driver.contractYearsRemaining
       ?? 1 + Math.floor(hash01(`${seed}-${year}-${series}-${nameKey}`) * 3);
@@ -172,13 +177,17 @@ function advanceOffscreenChampionship(
 ): UniverseChampionshipState {
   const drivers: UniverseDriverContract[] = [];
   const retainedByTeam = new Map<string, UniverseDriverContract[]>();
+  const retainedNames = new Set<string>();
 
   for (const contract of current.drivers) {
     const nameKey = canonicalNameOf(contract.name);
     const yearsLeft = contract.contractYearsRemaining - 1;
     const renew = yearsLeft <= 0 && hash01(`${seed}-${nextYear}-renew-${contract.driverId}`) < 0.58;
     if (yearsLeft <= 0 && !renew) continue;
-    if (occupiedNames.has(nameKey)) continue;
+    // Existing concurrent cross-series contracts are valid. Only block a
+    // duplicate seat inside this same championship.
+    if (retainedNames.has(nameKey)) continue;
+    retainedNames.add(nameKey);
     const retained = {
       ...contract,
       contractYearsRemaining: renew
