@@ -21,6 +21,15 @@ jobs:
       - run: npm ci
       - run: npm run typecheck
       - run: npm run lint
+      - run: npm run archive:data
+      - name: Upload master-data recovery files
+        uses: actions/upload-artifact@v4
+        with:
+          name: master-data-archive-${{ github.sha }}
+          path: |
+            artifacts/master-archive/current/
+            docs/master-data/Motorsport_Sim_Manager_FINAL_MASTER_ARCHIVE_1990_2026.xlsx
+          retention-days: 90
       - run: npm run test:season-loop
       - run: npm run build
       - run: npm run check:bundle
