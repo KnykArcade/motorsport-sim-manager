@@ -85,6 +85,13 @@ describe('youth market costs', () => {
     }
   });
 
+  it('never exposes generated or synthetic entries in the shared market', () => {
+    const bundle = getMarketBundle(1998, 'F1')!;
+    expect([...bundle.drivers, ...bundle.youth].every(
+      (entry) => !/generated|synthetic|filler|placeholder/i.test(`${entry.name} ${entry.notes ?? ''}`),
+    )).toBe(true);
+  });
+
   it('scales cost with potential', () => {
     expect(youthSigningCost(90)).toBeGreaterThan(youthSigningCost(50));
     expect(youthYearlyAcademyCost(90)).toBeGreaterThan(youthYearlyAcademyCost(50));

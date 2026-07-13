@@ -158,6 +158,13 @@ describe('careerMarketBundle (real career state)', () => {
     expect(new Set(ids).size).toBe(ids.length);
   });
 
+  it('never reintroduces generated market fillers through the registry', () => {
+    const living = careerMarketBundle(state);
+    expect([...living.drivers, ...living.youth].every(
+      (entry) => !/generated|synthetic|filler|placeholder/i.test(`${entry.name} ${entry.notes ?? ''}`),
+    )).toBe(true);
+  });
+
   it('only lists youth aged 12–17 and never in both youth and adult pools', () => {
     const living = careerMarketBundle(state);
     for (const y of living.youth) {

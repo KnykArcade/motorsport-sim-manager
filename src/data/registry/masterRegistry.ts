@@ -18,6 +18,7 @@ import type {
   CareerPhase,
   MasterDriverEntry,
   MasterDriverRegistry,
+  RegistryActiveSeatSnapshot,
   RegistryBaseRatings,
   RegistryMergeResult,
   RegistryDriverStatus,
@@ -184,6 +185,10 @@ function baseRatingsFrom(skills: MarketSkillRatings, overall: number, potential:
   return { ...skills, overall, potential };
 }
 
+function isGeneratedMarketFiller(entry: MarketDriver | YouthProspect): boolean {
+  return /generated|synthetic|filler|placeholder/i.test(`${entry.name} ${entry.notes ?? ''}`);
+}
+
 // --- Registry accumulation --------------------------------------------------
 
 function emptyRegistry(): MasterDriverRegistry {
@@ -250,6 +255,9 @@ function mergeOne(
     skills: fields.skills,
     sourceId: fields.sourceId,
   };
+  const activeSeat: RegistryActiveSeatSnapshot | undefined = ctx.status === 'active_driver'
+    ? { year: ctx.year, series: ctx.series, sourceId: fields.sourceId }
+    : undefined;
 
   if (existing) {
     // Idempotent: never re-add the same source id.
@@ -257,6 +265,10 @@ function mergeOne(
       existing.sourceIds.push(fields.sourceId);
       existing.baseRatingsByYear.push(snapshot);
       existing.baseRatingsByYear.sort((a, b) => a.year - b.year || a.series.localeCompare(b.series));
+    }
+    if (activeSeat && !(existing.activeSeatsByYear ?? []).some((seat) => seat.sourceId === activeSeat.sourceId)) {
+      existing.activeSeatsByYear = [...(existing.activeSeatsByYear ?? []), activeSeat]
+        .sort((a, b) => a.year - b.year || a.series.localeCompare(b.series));
     }
     existing.firstSeenYear = Math.min(existing.firstSeenYear, ctx.year);
     existing.lastSeenYear = Math.max(existing.lastSeenYear, ctx.year);
@@ -310,6 +322,7 @@ function mergeOne(
     potential: fields.potential,
     baseRatings: fields.baseRatings,
     baseRatingsByYear: [snapshot],
+    activeSeatsByYear: activeSeat ? [activeSeat] : [],
     traits: fields.traits,
     sponsorBacking: fields.sponsorBacking,
     payDriverFunding: fields.payDriverFunding,
@@ -370,6 +383,7 @@ export function importMarketDrivers(
 ): RegistryMergeResult {
   const result = { created: [] as string[], merged: [] as string[] };
   for (const m of drivers) {
+    if (isGeneratedMarketFiller(m)) continue;
     mergeOne(
       registry,
       {
@@ -404,6 +418,7 @@ export function importYouthProspects(
 ): RegistryMergeResult {
   const result = { created: [] as string[], merged: [] as string[] };
   for (const y of youth) {
+    if (isGeneratedMarketFiller(y)) continue;
     const adultEligibleYear = (y.birthYear || year - y.age) + 18;
     mergeOne(
       registry,

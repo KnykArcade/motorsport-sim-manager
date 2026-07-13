@@ -213,6 +213,7 @@ describe('buildMasterRegistry (real seed data)', () => {
     expect(schumi).toBeDefined();
     // Appears across many F1 seasons in the seed data.
     expect(schumi.baseRatingsByYear.length).toBeGreaterThan(1);
+    expect(schumi.activeSeatsByYear?.length).toBeGreaterThan(0);
     expect(schumi.firstSeenYear).toBeLessThan(schumi.lastSeenYear);
   });
 

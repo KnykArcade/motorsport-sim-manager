@@ -123,6 +123,12 @@ function applyCuratorMarketExclusions<T extends MarketDriver | YouthProspect>(ye
   return entries.filter((entry) => !isCuratorRemovedGeneratedPlaceholder(year, entry.name));
 }
 
+// Real-driver migration guard: historical seed files can still contain openly
+// generated filler. Such entries are never eligible for the shared universe.
+function applyDocumentedOnlyFilter<T extends MarketDriver | YouthProspect>(entries: T[]): T[] {
+  return entries.filter((entry) => !/generated|synthetic|filler|placeholder/i.test(`${entry.name} ${entry.notes ?? ''}`));
+}
+
 function makeMarketLoader(year: number, series: Series) {
   const suffix = series === 'F1' ? '' : series === 'Champ Car' ? 'CART' : series;
   return async () => {
@@ -156,12 +162,14 @@ export function seedMarketBundleCache(
     byYear.set(year, entries);
   }
   for (const [year, entries] of byYear) {
+    const drivers = mergeUniverseEntries(entries.flatMap(({ series, marketBundle }) => marketBundle.drivers
+      .filter((entry) => !(series === 'NASCAR' && entry.id.startsWith('market-youth-nascar-')))
+      .map((entry) => ({ entry, source: series }))));
+    const youth = mergeUniverseEntries(entries.flatMap(({ series, marketBundle }) => marketBundle.youth
+      .map((entry) => ({ entry, source: series }))));
     bundleCache.set(year, bundle(
-      applyCuratorMarketExclusions(year, mergeUniverseEntries(entries.flatMap(({ series, marketBundle }) => marketBundle.drivers
-        .filter((entry) => !(series === 'NASCAR' && entry.id.startsWith('market-youth-nascar-')))
-        .map((entry) => ({ entry, source: series }))))),
-      applyCuratorMarketExclusions(year, mergeUniverseEntries(entries.flatMap(({ series, marketBundle }) => marketBundle.youth
-        .map((entry) => ({ entry, source: series }))))),
+      applyDocumentedOnlyFilter(applyCuratorMarketExclusions(year, drivers)),
+      applyDocumentedOnlyFilter(applyCuratorMarketExclusions(year, youth)),
     ));
   }
 }
@@ -173,11 +181,14 @@ export async function preloadMarketBundle(year: number, series: Series = 'F1'): 
   if (bundleCache.has(year)) return;
   const sources = availableSeasons.filter((season) => season.year === year && marketLoaders[`${year}-${season.series}`]);
   const loaded = await Promise.all(sources.map(async (source) => ({ source: source.series, ...(await marketLoaders[`${year}-${source.series}`]()) })));
+  const drivers = mergeUniverseEntries(loaded.flatMap(({ source, drivers: sourceDrivers }) => sourceDrivers
+    .filter((entry) => !(source === 'NASCAR' && entry.id.startsWith('market-youth-nascar-')))
+    .map((entry) => ({ entry, source }))));
+  const youth = mergeUniverseEntries(loaded.flatMap(({ source, youth: sourceYouth }) => sourceYouth
+    .map((entry) => ({ entry, source }))));
   bundleCache.set(year, bundle(
-    applyCuratorMarketExclusions(year, mergeUniverseEntries(loaded.flatMap(({ source, drivers }) => drivers
-      .filter((entry) => !(source === 'NASCAR' && entry.id.startsWith('market-youth-nascar-')))
-      .map((entry) => ({ entry, source }))))),
-    applyCuratorMarketExclusions(year, mergeUniverseEntries(loaded.flatMap(({ source, youth }) => youth.map((entry) => ({ entry, source }))))),
+    applyDocumentedOnlyFilter(applyCuratorMarketExclusions(year, drivers)),
+    applyDocumentedOnlyFilter(applyCuratorMarketExclusions(year, youth)),
   ));
 }
 

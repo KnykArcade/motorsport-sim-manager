@@ -242,9 +242,9 @@ export function careerMarketBundle(state: GameState): MarketBundle {
   const occupied = occupiedIdentities(state);
   // A driver holding an active seat in any championship belongs to the shared
   // universe roster, not the open market—even when the player manages another
-  // series. Season snapshots in the registry come only from active grids.
+  // series. Market and youth history does not count as an active-seat record.
   for (const entry of registryList(reg)) {
-    if (entry.baseRatingsByYear.some((snapshot) => snapshot.year === year)) {
+    if (entry.activeSeatsByYear?.some((seat) => seat.year === year)) {
       occupied.names.add(entry.canonicalName);
     }
   }

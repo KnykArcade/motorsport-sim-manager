@@ -46,6 +46,14 @@ export type RegistryRatingSnapshot = {
   sourceId: string; // the id used in that season's source file
 };
 
+// A documented race seat in a season roster. Kept separate from market and
+// ratings history so a market appearance never looks like a signed contract.
+export type RegistryActiveSeatSnapshot = {
+  year: number;
+  series: Series;
+  sourceId: string;
+};
+
 // One canonical driver in the Master Driver Registry.
 export type MasterDriverEntry = {
   // --- Identity ---
@@ -76,6 +84,7 @@ export type MasterDriverEntry = {
   developmentCurve?: string; // qualitative curve label if known
   baseRatings: RegistryBaseRatings;
   baseRatingsByYear: RegistryRatingSnapshot[]; // per-season snapshots, sorted
+  activeSeatsByYear?: RegistryActiveSeatSnapshot[]; // documented roster seats only
   seriesSpecificRatings?: Partial<Record<Series, RegistryBaseRatings>>;
   traits: string[];
 
