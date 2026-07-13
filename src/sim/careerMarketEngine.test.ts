@@ -12,6 +12,7 @@ import {
   marketRolloverChanges,
   entryToMarketDriver,
   entryToYouthProspect,
+  youthProspectToAdultMarketDriver,
   RETIRE_AGE,
 } from './careerMarketEngine';
 
@@ -118,9 +119,21 @@ describe('availability windows', () => {
 
 describe('entry → market/youth shapes', () => {
   it('produces stable reg- prefixed ids', () => {
-    const e = entry({ driverId: 'ayrton-senna', birthYear: 1980 });
+    const e = entry({
+      driverId: 'ayrton-senna',
+      birthYear: 1980,
+      preferredSeries: 'NASCAR',
+      secondarySeriesInterest: ['IndyCar'],
+    });
     expect(entryToMarketDriver(e, 2005).id).toBe('reg-ayrton-senna');
-    expect(entryToYouthProspect(e, 1996).id).toBe('reg-ayrton-senna');
+    const youth = entryToYouthProspect(e, 1996);
+    expect(youth.id).toBe('reg-ayrton-senna');
+    expect(youth.seriesPreferences).toEqual([
+      { series: 'NASCAR', weight: 100 },
+      { series: 'IndyCar', weight: 80 },
+    ]);
+    expect(youthProspectToAdultMarketDriver(youth, 1998).seriesPreferences)
+      .toEqual(youth.seriesPreferences);
   });
 });
 

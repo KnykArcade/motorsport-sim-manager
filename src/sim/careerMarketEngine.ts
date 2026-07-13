@@ -152,6 +152,7 @@ export function youthProspectToAdultMarketDriver(y: YouthProspect, year: number)
     marketPool: 'adult',
     marketStatus: 'adult_market_eligible',
     primaryRole: 'race',
+    seriesPreferences: y.seriesPreferences?.map((preference) => ({ ...preference })),
     immediateF1Eligible: y.yearsUntilF1Ready <= 0,
     skills: { ...y.skills },
     overall: y.overall,
@@ -179,6 +180,10 @@ export function entryToYouthProspect(e: MasterDriverEntry, year: number): YouthP
     currentLevel: 'junior',
     marketPool: 'registry',
     marketStatus: 'available',
+    seriesPreferences: [
+      { series: e.preferredSeries, weight: 100 },
+      ...e.secondarySeriesInterest.map((series, index) => ({ series, weight: Math.max(55, 80 - index * 10) })),
+    ],
     academyEligibleNow: (e.academyEligibleYear ?? year) <= year,
     earliestFullAcademyYear: e.academyEligibleYear ?? year,
     skills: skillsOf(e),

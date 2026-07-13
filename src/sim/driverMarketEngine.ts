@@ -131,6 +131,7 @@ export function signProspectToAcademy(
     nationality: p.nationality,
     birthYear: p.birthYear,
     academyTeamId: teamId,
+    seriesPreferences: p.seriesPreferences?.map((preference) => ({ ...preference })),
     skills: { ...p.skills },
     overall: p.overall,
     potential: p.potential,

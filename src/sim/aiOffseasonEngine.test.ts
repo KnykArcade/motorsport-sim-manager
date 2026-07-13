@@ -228,6 +228,23 @@ describe('runAIOffseason — driver market', () => {
     expect(result.drivers.some((d) => d.name === 'Star Player')).toBe(false);
   });
 
+  it('leans toward the series-preferring driver without excluding alternatives', () => {
+    const input = baseInput({
+      series: 'NASCAR',
+      drivers: [seatDriver('d1', 6)],
+      market: {
+        drivers: [
+          marketDriver('reg-f1', 7, { seriesPreferences: [{ series: 'F1', weight: 100 }] }),
+          marketDriver('reg-nascar', 7, { seriesPreferences: [{ series: 'NASCAR', weight: 100 }] }),
+        ],
+        youth: [],
+      },
+    });
+    const result = runAIOffseason(input);
+    expect(result.signedMarketIds).toContain('reg-nascar');
+    expect(result.signedMarketIds).not.toContain('reg-f1');
+  });
+
   it('promotes an existing reserve before shopping the market for an empty seat', () => {
     const reserve = seatDriver('res1', 7, { contractType: 'reserve', number: 40 });
     const input = baseInput({

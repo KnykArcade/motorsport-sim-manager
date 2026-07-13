@@ -121,6 +121,9 @@ export type AcademyMember = {
   birthYear: number;
   // The team that holds academy rights (and therefore first option at 18).
   academyTeamId: string;
+  // Retained through academy development so the driver's preferred path is not
+  // lost if they later graduate or return to the shared senior market.
+  seriesPreferences?: SeriesPreference[];
   skills: MarketSkillRatings;
   overall: number;
   potential: number;

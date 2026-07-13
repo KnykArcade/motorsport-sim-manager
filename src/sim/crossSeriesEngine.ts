@@ -27,6 +27,7 @@ import {
   RETIRE_AGE,
 } from './careerMarketEngine';
 import type { GameState } from '../game/careerState';
+import { seriesPreferenceWeight } from './seriesPreferenceEngine';
 
 // Relative prestige of each series (0-100). F1 is the pinnacle; a driver drops
 // down reluctantly, especially an established one with a seat.
@@ -162,8 +163,7 @@ export function marketDriverOfferInterest(
   playerCarOverall: number,
 ): number | undefined {
   if (!md.id.startsWith('reg-')) {
-    const preference = md.seriesPreferences?.find((entry) => entry.series === state.series)?.weight;
-    return preference ?? 45;
+    return seriesPreferenceWeight(md.seriesPreferences, state.series);
   }
   const e = getMasterRegistry().byId[md.id.slice(4)];
   if (!e) return undefined;
