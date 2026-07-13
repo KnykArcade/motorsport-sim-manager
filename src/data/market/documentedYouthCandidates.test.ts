@@ -36,6 +36,24 @@ describe('documented shared youth candidates', () => {
     ]));
   });
 
+  it('repairs the thin 1991-1993 classes with documented American junior racers', () => {
+    expect(documentedYouthForYear(1991).map((entry) => entry.name)).toEqual(expect.arrayContaining([
+      'Jimmie Johnson',
+      'Kevin Harvick',
+      'Ryan Newman',
+      'Sam Hornish Jr.',
+      'Dale Earnhardt Jr.',
+    ]));
+    expect(documentedYouthForYear(1992).find((entry) => entry.name === 'Jimmie Johnson')?.seriesPreferences?.[0]).toEqual({
+      series: 'NASCAR',
+      weight: 100,
+    });
+    expect(documentedYouthForYear(1993).find((entry) => entry.name === 'Sam Hornish Jr.')?.seriesPreferences?.[0]).toEqual({
+      series: 'IndyCar',
+      weight: 100,
+    });
+  });
+
   it('defines each identity once and ages it through eligible seasons', () => {
     expect(documentedYouthForYear(2024).find((entry) => entry.name === 'Noah Baglin')?.age).toBe(12);
     expect(documentedYouthForYear(2026).find((entry) => entry.name === 'Noah Baglin')?.age).toBe(14);

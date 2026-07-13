@@ -10,12 +10,109 @@ type DocumentedYouthCandidate = {
   overall: number;
   potential: number;
   source: string;
+  seriesPreferences?: YouthProspect['seriesPreferences'];
 };
 
 // Real junior drivers are defined once here and projected into only the seasons
 // in which they are both documented competitors and 12-17 years old. This
 // avoids copying the same identity into separate series/year seed files.
 const DOCUMENTED_YOUTH_CANDIDATES: DocumentedYouthCandidate[] = [
+  {
+    id: 'real-youth-jimmie-johnson',
+    name: 'Jimmie Johnson',
+    birthYear: 1975,
+    nationality: 'USA',
+    firstAvailableYear: 1990,
+    levelByYear: { 1990: 'Off-road racing', 1991: 'Off-road racing', 1992: 'Off-road racing' },
+    overall: 50,
+    potential: 92,
+    source: 'https://www.nascar.com/gallery/jimmie-johnson-through-the-years/',
+    seriesPreferences: [
+      { series: 'NASCAR', weight: 100 },
+      { series: 'IndyCar', weight: 25 },
+      { series: 'F1', weight: 15 },
+    ],
+  },
+  {
+    id: 'real-youth-kevin-harvick',
+    name: 'Kevin Harvick',
+    birthYear: 1975,
+    nationality: 'USA',
+    firstAvailableYear: 1990,
+    levelByYear: { 1990: 'Karting', 1991: 'Karting', 1992: 'Karting' },
+    overall: 49,
+    potential: 89,
+    source: 'https://www.nascar.com/news-media/2015/03/20/bakersfield-roots-run-deep-for-harvick/',
+    seriesPreferences: [
+      { series: 'NASCAR', weight: 100 },
+      { series: 'IndyCar', weight: 20 },
+      { series: 'F1', weight: 10 },
+    ],
+  },
+  {
+    id: 'real-youth-ryan-newman',
+    name: 'Ryan Newman',
+    birthYear: 1977,
+    nationality: 'USA',
+    firstAvailableYear: 1990,
+    levelByYear: { 1990: 'Midget racing', 1991: 'Midget racing', 1992: 'Midget racing', 1993: 'Midget racing', 1994: 'Midget racing' },
+    overall: 48,
+    potential: 85,
+    source: 'https://www.nascar.com/news-media/2019/07/16/ryan-newman-feels-more-of-a-rookie-than-ever/',
+    seriesPreferences: [
+      { series: 'NASCAR', weight: 100 },
+      { series: 'IndyCar', weight: 40 },
+      { series: 'F1', weight: 15 },
+    ],
+  },
+  {
+    id: 'real-youth-sam-hornish-jr',
+    name: 'Sam Hornish Jr.',
+    birthYear: 1979,
+    nationality: 'USA',
+    firstAvailableYear: 1991,
+    levelByYear: { 1991: 'Karting', 1992: 'Karting', 1993: 'Karting', 1994: 'Karting', 1995: 'Karting', 1996: 'Formula Ford' },
+    overall: 47,
+    potential: 88,
+    source: 'https://www.nascar.com/news-media/2021/06/10/where-are-they-now-sam-hornish-jr/',
+    seriesPreferences: [
+      { series: 'IndyCar', weight: 100 },
+      { series: 'NASCAR', weight: 60 },
+      { series: 'F1', weight: 25 },
+    ],
+  },
+  {
+    id: 'real-youth-dale-earnhardt-jr',
+    name: 'Dale Earnhardt Jr.',
+    birthYear: 1974,
+    nationality: 'USA',
+    firstAvailableYear: 1991,
+    levelByYear: { 1991: 'Entry-level stock cars' },
+    overall: 52,
+    potential: 88,
+    source: 'https://www.nascar.com/news-media/2017/07/11/dale-earnhardt-jr-legend-car-roots-nascarman-blog/',
+    seriesPreferences: [
+      { series: 'NASCAR', weight: 100 },
+      { series: 'IndyCar', weight: 15 },
+      { series: 'F1', weight: 10 },
+    ],
+  },
+  {
+    id: 'real-youth-kurt-busch',
+    name: 'Kurt Busch',
+    birthYear: 1978,
+    nationality: 'USA',
+    firstAvailableYear: 1994,
+    levelByYear: { 1994: 'Dwarf and Legends Cars', 1995: 'Dwarf and Legends Cars' },
+    overall: 50,
+    potential: 89,
+    source: 'https://www.nascar.com/news-media/2026/01/23/kurt-busch-reflects-nascar-hall-of-fame-induction/',
+    seriesPreferences: [
+      { series: 'NASCAR', weight: 100 },
+      { series: 'IndyCar', weight: 20 },
+      { series: 'F1', weight: 10 },
+    ],
+  },
   {
     id: 'real-youth-max-chilton',
     name: 'Max Chilton',
@@ -411,7 +508,7 @@ export function documentedYouthForYear(year: number): YouthProspect[] {
       currentLevel: candidate.levelByYear[year] ?? 'Documented junior competition',
       marketPool: 'Shared Motorsport Youth Market',
       marketStatus: 'Academy Prospect',
-      seriesPreferences: [
+      seriesPreferences: candidate.seriesPreferences ?? [
         { series: 'F1', weight: 100 },
         { series: 'IndyCar', weight: 45 },
         { series: 'NASCAR', weight: 30 },
