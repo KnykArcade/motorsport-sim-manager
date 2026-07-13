@@ -22,6 +22,20 @@ describe('documented shared youth candidates', () => {
     }
   });
 
+  it('preserves sourced junior continuity through the 2004-2011 seed gaps', () => {
+    expect(documentedYouthForYear(2006).map((entry) => entry.name)).toEqual(expect.arrayContaining([
+      'Max Chilton',
+      'Alexander Rossi',
+      'Felipe Nasr',
+      'Marcus Ericsson',
+      'Stoffel Vandoorne',
+    ]));
+    expect(documentedYouthForYear(2009).map((entry) => entry.name)).toEqual(expect.arrayContaining([
+      'Carlos Sainz',
+      'Pascal Wehrlein',
+    ]));
+  });
+
   it('defines each identity once and ages it through eligible seasons', () => {
     expect(documentedYouthForYear(2024).find((entry) => entry.name === 'Noah Baglin')?.age).toBe(12);
     expect(documentedYouthForYear(2026).find((entry) => entry.name === 'Noah Baglin')?.age).toBe(14);
