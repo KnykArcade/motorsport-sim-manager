@@ -110,6 +110,19 @@ function mergeUniverseEntries<T extends MarketDriver | YouthProspect>(entries: A
   return [...byName.values()];
 }
 
+// The shared-market workbook is the curator's source of truth for generated
+// placeholders. The reviewed workbook removes these team-named CART/IndyCar
+// reserve and academy fillers (1990-2007), so keep them out of every series'
+// shared market even though their original seed files remain for history.
+function isCuratorRemovedGeneratedPlaceholder(year: number, name: string): boolean {
+  return /^(?:199\d|200[0-7]) (?:CART|IndyCar) .+ (?:Reserve|Prospect) [A-E]$/.test(name)
+    && Number(name.slice(0, 4)) === year;
+}
+
+function applyCuratorMarketExclusions<T extends MarketDriver | YouthProspect>(year: number, entries: T[]): T[] {
+  return entries.filter((entry) => !isCuratorRemovedGeneratedPlaceholder(year, entry.name));
+}
+
 function makeMarketLoader(year: number, series: Series) {
   const suffix = series === 'F1' ? '' : series === 'Champ Car' ? 'CART' : series;
   return async () => {
@@ -144,11 +157,11 @@ export function seedMarketBundleCache(
   }
   for (const [year, entries] of byYear) {
     bundleCache.set(year, bundle(
-      mergeUniverseEntries(entries.flatMap(({ series, marketBundle }) => marketBundle.drivers
+      applyCuratorMarketExclusions(year, mergeUniverseEntries(entries.flatMap(({ series, marketBundle }) => marketBundle.drivers
         .filter((entry) => !(series === 'NASCAR' && entry.id.startsWith('market-youth-nascar-')))
-        .map((entry) => ({ entry, source: series })))),
-      mergeUniverseEntries(entries.flatMap(({ series, marketBundle }) => marketBundle.youth
-        .map((entry) => ({ entry, source: series })))),
+        .map((entry) => ({ entry, source: series }))))),
+      applyCuratorMarketExclusions(year, mergeUniverseEntries(entries.flatMap(({ series, marketBundle }) => marketBundle.youth
+        .map((entry) => ({ entry, source: series }))))),
     ));
   }
 }
@@ -161,10 +174,10 @@ export async function preloadMarketBundle(year: number, series: Series = 'F1'): 
   const sources = availableSeasons.filter((season) => season.year === year && marketLoaders[`${year}-${season.series}`]);
   const loaded = await Promise.all(sources.map(async (source) => ({ source: source.series, ...(await marketLoaders[`${year}-${source.series}`]()) })));
   bundleCache.set(year, bundle(
-    mergeUniverseEntries(loaded.flatMap(({ source, drivers }) => drivers
+    applyCuratorMarketExclusions(year, mergeUniverseEntries(loaded.flatMap(({ source, drivers }) => drivers
       .filter((entry) => !(source === 'NASCAR' && entry.id.startsWith('market-youth-nascar-')))
-      .map((entry) => ({ entry, source })))),
-    mergeUniverseEntries(loaded.flatMap(({ source, youth }) => youth.map((entry) => ({ entry, source })))),
+      .map((entry) => ({ entry, source }))))),
+    applyCuratorMarketExclusions(year, mergeUniverseEntries(loaded.flatMap(({ source, youth }) => youth.map((entry) => ({ entry, source }))))),
   ));
 }
 

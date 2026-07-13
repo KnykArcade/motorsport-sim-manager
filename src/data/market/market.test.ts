@@ -77,6 +77,14 @@ describe('youth market costs', () => {
     expect(samples.every((prospect) => prospect.notes.includes('Source: https://'))).toBe(true);
   });
 
+  it('honors curator removals of generated CART and IndyCar placeholders', () => {
+    for (const year of [1994, 2005] as const) {
+      const bundle = getMarketBundle(year, 'F1')!;
+      const generatedPlaceholder = new RegExp(`^${year} (?:CART|IndyCar) .+ (?:Reserve|Prospect) [A-E]$`);
+      expect([...bundle.drivers, ...bundle.youth].some((entry) => generatedPlaceholder.test(entry.name))).toBe(false);
+    }
+  });
+
   it('scales cost with potential', () => {
     expect(youthSigningCost(90)).toBeGreaterThan(youthSigningCost(50));
     expect(youthYearlyAcademyCost(90)).toBeGreaterThan(youthYearlyAcademyCost(50));
