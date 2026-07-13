@@ -17,3 +17,19 @@ it('does not surface uncited generic youth prospects in a historical career', as
   expect(youth.some((entry) => /Noah Ricci|Ethan Brooks|Luca Weber/.test(entry.name))).toBe(false);
   expect(youth.some((entry) => entry.id.startsWith('gen-yth-'))).toBe(false);
 });
+
+it('normalizes every displayed historical youth age to 12-17', async () => {
+  for (const year of [2009, 2010, 2024, 2026]) {
+    await initializeMasterRegistry(year, 'F1');
+    await preloadMarketBundle(year, 'F1');
+    const state = createNewGame({
+      gameMode: 'Career',
+      seasonYear: year,
+      series: 'F1',
+      teamId: year === 2009 ? 't-brawn' : 't-mclaren',
+      seed: `historical-youth-age-${year}`,
+    });
+    const youth = careerMarketBundle(state).youth;
+    expect(youth.every((entry) => entry.age >= 12 && entry.age <= 17)).toBe(true);
+  }
+});

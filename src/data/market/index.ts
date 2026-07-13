@@ -4,6 +4,7 @@
 import type { MarketDriver, YouthProspect } from '../../types/marketTypes';
 import type { Series } from '../../types/gameTypes';
 import { availableSeasons } from '../seasonCatalog';
+import { documentedYouthForYear } from './documentedYouthCandidates';
 
 export type MarketBundle = {
   drivers: MarketDriver[];
@@ -175,8 +176,11 @@ export function seedMarketBundleCache(
     const drivers = mergeUniverseEntries(entries.flatMap(({ series, marketBundle }) => marketBundle.drivers
       .filter((entry) => !(series === 'NASCAR' && entry.id.startsWith('market-youth-nascar-')))
       .map((entry) => ({ entry, source: series }))));
-    const youth = mergeUniverseEntries(entries.flatMap(({ series, marketBundle }) => marketBundle.youth
-      .map((entry) => ({ entry, source: series }))));
+    const youth = mergeUniverseEntries([
+      ...entries.flatMap(({ series, marketBundle }) => marketBundle.youth
+        .map((entry) => ({ entry, source: series }))),
+      ...documentedYouthForYear(year).map((entry) => ({ entry, source: 'F1' as Series })),
+    ]);
     bundleCache.set(year, bundle(
       applyDocumentedOnlyFilter(applyCuratorMarketExclusions(year, drivers)),
       applyDocumentedOnlyFilter(applyCuratorMarketExclusions(year, youth)),
@@ -194,8 +198,11 @@ export async function preloadMarketBundle(year: number, series: Series = 'F1'): 
   const drivers = mergeUniverseEntries(loaded.flatMap(({ source, drivers: sourceDrivers }) => sourceDrivers
     .filter((entry) => !(source === 'NASCAR' && entry.id.startsWith('market-youth-nascar-')))
     .map((entry) => ({ entry, source }))));
-  const youth = mergeUniverseEntries(loaded.flatMap(({ source, youth: sourceYouth }) => sourceYouth
-    .map((entry) => ({ entry, source }))));
+  const youth = mergeUniverseEntries([
+    ...loaded.flatMap(({ source, youth: sourceYouth }) => sourceYouth
+      .map((entry) => ({ entry, source }))),
+    ...documentedYouthForYear(year).map((entry) => ({ entry, source: 'F1' as Series })),
+  ]);
   bundleCache.set(year, bundle(
     applyDocumentedOnlyFilter(applyCuratorMarketExclusions(year, drivers)),
     applyDocumentedOnlyFilter(applyCuratorMarketExclusions(year, youth)),

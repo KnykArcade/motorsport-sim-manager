@@ -263,7 +263,7 @@ export function careerMarketBundle(state: GameState): MarketBundle {
     const age = youthProspectAge(y, year);
     if (age < YOUTH_MIN_AGE) continue; // not yet available
     if (age > YOUTH_MAX_AGE) curatedYouthToAdults.push(youthProspectToAdultMarketDriver(y, year));
-    else curatedYouth.push(y);
+    else curatedYouth.push(age === y.age ? y : { ...y, age, birthYear: y.birthYear ?? year - age });
   }
 
   const curatedDrivers = [...releasedDrivers, ...curatedYouthToAdults];
