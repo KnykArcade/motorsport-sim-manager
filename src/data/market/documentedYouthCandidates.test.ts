@@ -16,6 +16,12 @@ describe('documented shared youth candidates', () => {
     expect(documentedYouthForYear(2026).length).toBeGreaterThanOrEqual(4);
   });
 
+  it('strengthens every thin 2016-2022 class with documented real juniors', () => {
+    for (let year = 2016; year <= 2022; year += 1) {
+      expect(documentedYouthForYear(year).length).toBeGreaterThanOrEqual(5);
+    }
+  });
+
   it('defines each identity once and ages it through eligible seasons', () => {
     expect(documentedYouthForYear(2024).find((entry) => entry.name === 'Noah Baglin')?.age).toBe(12);
     expect(documentedYouthForYear(2026).find((entry) => entry.name === 'Noah Baglin')?.age).toBe(14);
