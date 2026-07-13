@@ -309,18 +309,13 @@ export function careerMarketBundle(state: GameState): MarketBundle {
     youth.push(clean === y.name ? y : { ...y, name: clean });
   }
 
-  // Ensure the youth pool always has at least MIN_YOUTH_PROSPECTS (12) prospects.
-  // Generate deterministic fictional prospects to fill the gap when curated data
-  // is insufficient (e.g., modern F1 seasons where all prospects are 18+).
-  // Pass occupied names to avoid collisions with existing drivers.
+  // Historical careers are real-driver only: a thin verified youth class stays
+  // thin rather than being padded with fictional prospects. Generation remains
+  // available for post-2026 future seasons, where historical data cannot exist.
   const allOccupiedNames = new Set<string>([...seenYouth, ...drivers.map((d) => canonicalNameOf(d.name))]);
-  const filledYouth = ensureMinimumYouthProspects(
-    youth,
-    state.randomSeed,
-    state.series,
-    year,
-    allOccupiedNames,
-  );
+  const filledYouth = year <= 2026
+    ? youth
+    : ensureMinimumYouthProspects(youth, state.randomSeed, state.series, year, allOccupiedNames);
 
   return { drivers, youth: filledYouth };
 }
