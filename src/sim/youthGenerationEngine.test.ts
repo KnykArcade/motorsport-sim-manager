@@ -31,6 +31,13 @@ describe('youthGenerationEngine', () => {
       expect(a).not.toEqual(b);
     });
 
+    it('generates one shared future class regardless of selected series', () => {
+      const f1 = generateYouthProspects('test-seed', 'F1', 2027, 10);
+      const nascar = generateYouthProspects('test-seed', 'NASCAR', 2027, 10);
+      expect(nascar).toEqual(f1);
+      expect(f1.every((prospect) => prospect.seriesPreferences?.[0]?.weight === 100)).toBe(true);
+    });
+
     it('all generated prospects have valid ages (14-17)', () => {
       const prospects = generateYouthProspects('test-seed', 'F1', 2024, 20);
       for (const p of prospects) {

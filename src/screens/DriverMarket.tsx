@@ -11,6 +11,7 @@ import { academyCapacityFor } from '../sim/teamRatingsEngine';
 import { toMoney } from '../sim/financeEngine';
 import { thirdDriverMidSeasonFee } from '../sim/contractEngine';
 import { competingBidFor, bidToWin, resolveDriverBid } from '../sim/driverBiddingEngine';
+import { preferredSeries } from '../sim/seriesPreferenceEngine';
 import { Panel } from '../components/Panel';
 import { StatBar } from '../components/StatBar';
 import { Button } from '../components/Button';
@@ -32,7 +33,7 @@ import type {
 } from '../types/marketTypes';
 import type { Driver } from '../types/gameTypes';
 
-type Tab = 'senior' | 'youth' | 'crossover';
+type Tab = 'senior' | 'youth';
 
 export function DriverMarket() {
   const { state, dispatch } = useGame();
@@ -43,16 +44,9 @@ export function DriverMarket() {
     [state],
   );
 
-  // Split the senior pool into same-series drivers and cross-series (foreign)
-  // candidates so each has its own tab.
-  const seniorDrivers = useMemo(
-    () => (bundle?.drivers ?? []).filter((d) => d.marketPool !== 'crossSeries'),
-    [bundle],
-  );
-  const crossoverDrivers = useMemo(
-    () => (bundle?.drivers ?? []).filter((d) => d.marketPool === 'crossSeries'),
-    [bundle],
-  );
+  // One universe-wide senior market. Series preference changes interest and AI
+  // decisions, but never moves a driver into a separate or hidden pool.
+  const seniorDrivers = bundle?.drivers ?? [];
 
   if (!state) return null;
 
@@ -96,9 +90,6 @@ export function DriverMarket() {
         <div className="flex gap-2">
           <TabButton active={tab === 'senior'} onClick={() => setTab('senior')}>
             Senior Market{bundle ? ` (${seniorDrivers.length})` : ''}
-          </TabButton>
-          <TabButton active={tab === 'crossover'} onClick={() => setTab('crossover')}>
-            Crossover{bundle ? ` (${crossoverDrivers.length})` : ''}
           </TabButton>
           {!singleSeason && (
             <TabButton active={tab === 'youth'} onClick={() => setTab('youth')}>
@@ -162,19 +153,9 @@ export function DriverMarket() {
         </Panel>
       )}
 
-      {bundle && tab === 'crossover' && crossoverDrivers.length === 0 && (
-        <Panel>
-          <p className="text-sm text-neutral-400">
-            No drivers from other series are open to switching into {state.series} right now.
-            Seatless, younger, and veteran drivers are the most willing to cross over as the
-            universe grows.
-          </p>
-        </Panel>
-      )}
-
-      {bundle && (tab === 'senior' || tab === 'crossover') && (
+      {bundle && tab === 'senior' && (
         <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
-          {(tab === 'senior' ? seniorDrivers : crossoverDrivers)
+          {seniorDrivers
             .map((d) => {
               const interest = marketDriverOfferInterest(state, d, orgOverall, carOverall);
               return (
@@ -382,6 +363,7 @@ function SeniorCard({
   const resolution = resolveDriverBid(bid, d, teamOverall, seed, interest);
   const affordableBid = toMoney(bid) <= budget;
   const overallReadout = readoutForMarketOverall(state, d.id, d.skills, d.potential, d.overall);
+  const preferred = preferredSeries(d.seriesPreferences);
   return (
     <Panel>
       <div className="mb-1 flex items-start justify-between gap-2">
@@ -421,6 +403,7 @@ function SeniorCard({
       <div className="mb-2 flex flex-wrap gap-1 text-[10px]">
         <Tag>{d.marketStatus}</Tag>
         <Tag>{d.primaryRole}</Tag>
+        {preferred && <Tag tone={preferred === state.series ? 'good' : 'neutral'}>Prefers {preferred}</Tag>}
         {d.immediateF1Eligible && <Tag tone="good">F1-ready</Tag>}
         <Tag tone="warn">{d.negotiationDifficulty} difficulty</Tag>
       </div>
@@ -671,6 +654,7 @@ function YouthTab({
         <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
           {prospects.map((y) => {
             const signed = academyByProspect.has(y.id);
+            const preferred = preferredSeries(y.seriesPreferences);
             return (
               <Panel key={y.id}>
                 <div className="mb-1 flex items-start justify-between gap-2">
@@ -695,6 +679,7 @@ function YouthTab({
                   ) : (
                     <>
                       {y.academyEligibleNow && <Tag tone="good">Eligible now</Tag>}
+                      {preferred && <Tag tone={preferred === state.series ? 'good' : 'neutral'}>Prefers {preferred}</Tag>}
                       <Tag>{y.riskLevel} risk</Tag>
                       <Tag>~{y.yearsUntilF1Ready}y to F1</Tag>
                     </>

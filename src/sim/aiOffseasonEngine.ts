@@ -19,6 +19,7 @@ import type {
   StandingsEntry,
   Team,
   ProjectRiskLevel,
+  Series,
 } from '../types/gameTypes';
 import type { EngineState } from '../types/engineTypes';
 import type { TeamOrganizationRatings } from '../types/teamRatingsTypes';
@@ -57,6 +58,7 @@ import { weightedDevTarget, effectiveRisk, marketMod } from './teamIdentityEngin
 import { createSeededRandom, deriveSeed, type Rng } from './random';
 import { getStaffPool } from '../data';
 import type { StaffRole } from '../types/staffTypes';
+import { seriesPreferenceBonus } from './seriesPreferenceEngine';
 
 export type AIOffseasonInput = {
   nextYear: number;
@@ -80,7 +82,7 @@ export type AIOffseasonInput = {
   // season. Drives offseason car decay/reshuffle and carryover reduction.
   regulationShakeup?: number;
   regulationAffectedAreas?: RegulationChangeEvent['affectedAreas'];
-  series?: string;
+  series?: Series;
 };
 
 export type AIOffseasonResult = {
@@ -240,7 +242,7 @@ function clampGain(g: number): number {
 
 // Score a market driver for a team: rating-led, with a pay-driver team valuing
 // sponsor money and a youth-focused team valuing upside.
-function evaluateCandidate(m: MarketDriver, ai: AITeamState): number {
+function evaluateCandidate(m: MarketDriver, ai: AITeamState, series: Series): number {
   const spec = ARCHETYPE_SPECS[ai.archetype];
   const traitMod = marketMod(ai.philosophy?.traits);
   return (
@@ -248,7 +250,8 @@ function evaluateCandidate(m: MarketDriver, ai: AITeamState): number {
     (spec.payDriverBias + traitMod.payDriverBias) * (m.sponsorValue * 0.15) +
     (spec.youthBias + traitMod.youthBias) * (m.potential - m.overall) * 0.3 +
     traitMod.potentialBias * (m.potential - m.overall) * 0.2 +
-    traitMod.overallBias * m.overall * 0.05
+    traitMod.overallBias * m.overall * 0.05 +
+    seriesPreferenceBonus(m.seriesPreferences, series)
   );
 }
 
@@ -274,6 +277,7 @@ function bestCandidate(
   cash: number,
   minOverall: number,
   maxOverall = Infinity,
+  series: Series = 'F1',
 ): MarketDriver | undefined {
   let best: MarketDriver | undefined;
   let bestScore = -Infinity;
@@ -282,7 +286,7 @@ function bestCandidate(
     if (m.overall < minOverall) continue;
     if (m.overall > maxOverall) continue;
     if (signingCost(m, ai) > cash) continue;
-    const score = evaluateCandidate(m, ai);
+    const score = evaluateCandidate(m, ai, series);
     if (score > bestScore) {
       bestScore = score;
       best = m;
@@ -464,7 +468,14 @@ export function runAIOffseason(input: AIOffseasonInput): AIOffseasonResult {
     }
 
     // 3) Driver market: fill empty seats, then one considered upgrade ---------
-    const marketResult = processDriverMarket(team, ai, drivers, ctx, rng);
+    const marketResult = processDriverMarket(
+      team,
+      ai,
+      drivers,
+      ctx,
+      rng,
+      input.series ?? 'F1',
+    );
     drivers = marketResult.drivers;
     for (const id of marketResult.signedIds) signedMarketIds.push(id);
     for (const n of marketResult.notes) {
@@ -674,7 +685,14 @@ function processAcademy(
   // affordability and youth appetite.
   const wantsYouth = kept.length < capacity && rng.chance(0.25 + spec.youthBias * 0.55);
   if (wantsYouth) {
-    const prospect = pickYouthProspect(env.youthPool, env.takenYouthNames, team, ai, rng);
+    const prospect = pickYouthProspect(
+      env.youthPool,
+      env.takenYouthNames,
+      team,
+      ai,
+      rng,
+      input.series ?? 'F1',
+    );
     if (prospect && team.budget - toMoney(prospect.signingCost) > ai.budget.reserveTarget * 0.5) {
       team.budget -= toMoney(prospect.signingCost);
       env.takenYouthNames.add(norm(prospect.name));
@@ -748,6 +766,7 @@ function pickYouthProspect(
   team: Team,
   ai: AITeamState,
   rng: Rng,
+  series: Series,
 ): YouthProspect | undefined {
   const spendable = spendableCash(team, ai);
   const affordable = pool.filter(
@@ -757,7 +776,9 @@ function pickYouthProspect(
   // Rich teams chase the highest-potential prospect; poorer teams pick a
   // cheaper one. A little randomness keeps academies varied.
   const spec = ARCHETYPE_SPECS[ai.archetype];
-  const ranked = [...affordable].sort((a, b) => b.potential - a.potential);
+  const ranked = [...affordable].sort((a, b) =>
+    (b.potential + seriesPreferenceBonus(b.seriesPreferences, series))
+    - (a.potential + seriesPreferenceBonus(a.seriesPreferences, series)));
   if (spec.risk >= 0.6 || ai.financialHealth === 'Excellent') {
     return ranked[0];
   }
@@ -773,6 +794,7 @@ function processDriverMarket(
   drivers: Driver[],
   ctx: MarketCtx,
   rng: Rng,
+  series: Series,
 ): { drivers: Driver[]; signedIds: string[]; spent: number; notes: string[] } {
   const spec = ARCHETYPE_SPECS[ai.archetype];
   const notes: string[] = [];
@@ -804,7 +826,7 @@ function processDriverMarket(
       // A team must never start a season a car short: prefer the best affordable
       // driver, but if nothing fits the budget take the cheapest available (a pay
       // driver), and only generate a rookie if the market is genuinely empty.
-      const pick = bestCandidate(ctx, ai, cash, 4) ?? cheapestCandidate(ctx, ai);
+      const pick = bestCandidate(ctx, ai, cash, 4, Infinity, series) ?? cheapestCandidate(ctx, ai);
       const number = freeNumber();
       if (!pick) {
         const rookie = makeRookieDriver(team.id, number, rng, ctx.takenNames);
@@ -857,6 +879,7 @@ function processDriverMarket(
       cash,
       weakest.ratings.overall + margin,
       targetCeiling,
+      series,
     );
     if (pick) {
       const signed = marketDriverToDriver(pick, { teamId: team.id, number: weakest.number });

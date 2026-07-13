@@ -11,6 +11,7 @@
 // to pay drivers and bust risks.
 
 import type { YouthProspect } from '../types/marketTypes';
+import type { Series } from '../types/gameTypes';
 import { createSeededRandom, deriveSeed } from './random';
 import { normalizeName } from '../data/registry/masterRegistry';
 
@@ -60,6 +61,8 @@ const LAST_NAMES = [
   'Carvalho', 'Novak', 'Yamamoto', 'Sullivan',
 ];
 
+const SHARED_SERIES: Series[] = ['F1', 'CART', 'Champ Car', 'IndyCar', 'NASCAR'];
+
 type Rng = {
   next: () => number;
   nextInt: (min: number, max: number) => number;
@@ -98,6 +101,8 @@ function archetypeToProspect(
   const lastName = rng.pick(LAST_NAMES);
   const name = `${firstName} ${lastName}`;
   const id = `gen-yth-${year}-${index}-${deriveSeed(name, nationality)}`;
+  const preferred = rng.pick(SHARED_SERIES);
+  const secondary = rng.pick(SHARED_SERIES.filter((series) => series !== preferred));
 
   let overall: number;
   let potential: number;
@@ -203,6 +208,10 @@ function archetypeToProspect(
     currentLevel,
     marketPool: 'Youth',
     marketStatus: 'Prospect',
+    seriesPreferences: [
+      { series: preferred, weight: 100 },
+      { series: secondary, weight: 65 },
+    ],
     academyEligibleNow: true,
     earliestFullAcademyYear: year,
     skills: {
@@ -231,7 +240,9 @@ function archetypeToProspect(
 }
 
 // Generate deterministic fictional youth prospects to fill the pool.
-// seed inputs: save seed, series, season year, generation cycle.
+// The series argument is retained for API compatibility, but deliberately does
+// not affect the seed: future careers share one universe-wide youth class for a
+// given save/year regardless of which championship the player manages.
 // occupiedNames is an optional set of normalized names to avoid collisions.
 export function generateYouthProspects(
   seed: string,
@@ -240,7 +251,8 @@ export function generateYouthProspects(
   count: number,
   occupiedNames?: Set<string>,
 ): YouthProspect[] {
-  const genSeed = deriveSeed(seed, 'youth-gen', series, year);
+  void series;
+  const genSeed = deriveSeed(seed, 'youth-gen', 'shared-universe', year);
   const rng = makeRng(genSeed);
   const prospects: YouthProspect[] = [];
   let attempts = 0;
