@@ -23,6 +23,19 @@ export function blendTrackProgress(from: number, to: number, alpha: number): num
   return normalizeTrackProgress(from + delta * clamped);
 }
 
+// Reconcile a renderer that has extrapolated slightly ahead of the latest sim
+// snapshot without ever moving a car backwards. If the snapshot is behind, the
+// marker holds its current correction baseline until the simulation catches up.
+export function reconcileTrackProgressForward(displayed: number, authoritative: number, alpha: number): number {
+  const from = normalizeTrackProgress(displayed);
+  const to = normalizeTrackProgress(authoritative);
+  let delta = to - from;
+  if (delta > 0.5) delta -= 1;
+  if (delta < -0.5) delta += 1;
+  if (delta <= 0) return from;
+  return normalizeTrackProgress(from + delta * Math.max(0, Math.min(1, alpha)));
+}
+
 export function normalizeTrackProgress(value: number): number {
   return ((value % 1) + 1) % 1;
 }

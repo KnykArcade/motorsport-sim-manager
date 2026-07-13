@@ -10,6 +10,8 @@
 import { describe, it, expect } from 'vitest';
 
 import { runCareerAudit, type CareerAuditReport } from './careerAudit';
+import { createNewGame } from '../src/game/initialCareer';
+import { advanceSeason } from '../src/game/seasonRollover';
 
 describe('Career audit — F1 1990, 20 real-race seasons', () => {
   const report: CareerAuditReport = runCareerAudit({ seasons: 20, seed: 'career-audit-1990' });
@@ -63,9 +65,25 @@ describe('Career audit — F1 1990, 20 real-race seasons', () => {
   // --- Competitive balance ---------------------------------------------------
 
   it('produces dynasties without a permanent lockout', () => {
-    // The pre-cleanup run locked out 18/20 titles for one team (0.90 share).
-    expect(report.distinctConstructorChampions).toBeGreaterThanOrEqual(2);
-    expect(report.topTeamTitleShare).toBeLessThanOrEqual(0.8);
+    expect(report.distinctConstructorChampions).toBeGreaterThanOrEqual(4);
+    expect(report.topTeamTitleShare).toBeLessThanOrEqual(0.5);
+  });
+
+  it('shows constructor mobility and evolving AI reputations', () => {
+    const first = seasons[0].constructorPositions;
+    const last = seasons.at(-1)!.constructorPositions;
+    const deltas = Object.keys(first).map((team) => (first[team] ?? 0) - (last[team] ?? 0));
+    expect(Math.max(...deltas)).toBeGreaterThanOrEqual(4);
+    expect(Math.min(...deltas)).toBeLessThanOrEqual(-4);
+
+    const reputationChanged = seasons
+      .slice(1)
+      .some((season, index) =>
+        Object.keys(season.aiReputationByTeam).some((team) =>
+          season.aiReputationByTeam[team] !== seasons[index].aiReputationByTeam[team],
+        ),
+      );
+    expect(reputationChanged).toBe(true);
   });
 
   // --- Development / rating saturation ---------------------------------------
@@ -99,5 +117,34 @@ describe('Career audit — F1 1990, 20 real-race seasons', () => {
       // Every AI team is graded exactly once.
       expect(total).toBeGreaterThan(0);
     }
+  });
+
+  it('records AI in-season upgrades and does not have a declining grid-average trend', () => {
+    const averages = seasons.map((s) => s.carRating.avg);
+    expect(averages.at(-1)!).toBeGreaterThanOrEqual(averages[0]);
+    const totalUpgrades = seasons.reduce((sum, s) => sum + s.aiActivity.upgrades, 0);
+    expect(totalUpgrades / seasons.length).toBeGreaterThanOrEqual(1);
+  });
+
+  it('decrements carried-over AI driver contracts at rollover', () => {
+    const before = createNewGame({
+      gameMode: 'Career',
+      seasonYear: 1990,
+      series: 'F1',
+      teamId: '__audit_no_player__',
+      seed: 'contract-rollover-regression',
+    });
+    const next = advanceSeason({ ...before, seasonComplete: true });
+    const aiIds = new Set(
+      before.drivers
+        .filter((d) => d.teamId !== before.selectedTeamId)
+        .map((d) => d.id),
+    );
+    const carried = next.drivers.find((d) => aiIds.has(d.id));
+    expect(carried).toBeDefined();
+    const prior = before.drivers.find((d) => d.id === carried!.id)!;
+    expect(carried!.contractYearsRemaining).toBe(
+      Math.max(0, (prior.contractYearsRemaining ?? 0) - 1),
+    );
   });
 });

@@ -7,6 +7,7 @@
 
 import type { Car, Team } from '../types/gameTypes';
 import type { TeamOrganizationRatings } from '../types/teamRatingsTypes';
+import type { PrincipalAttributes } from '../types/principalTypes';
 import type {
   AIFinancialHealth,
   AITeamArchetype,
@@ -279,11 +280,11 @@ export function assignArchetype(
   if (rep >= 75 && carPace >= 73) return 'ChampionshipContender';
   if (cashM < 28 && rep < 45) return 'SurvivalMode';
   if (rep < 42 && sponsor >= 55) return 'PayDriverReliant';
-  if (youth >= 66) return rep >= 70 ? 'DevelopmentFocused' : 'YouthFocused';
-  if (research >= 60 && rep >= 45 && rep < 72) {
-    return nudge < 0.6 ? 'AmbitiousBuilder' : 'DevelopmentFocused';
+  if (youth >= 60) return rep >= 62 ? 'DevelopmentFocused' : 'YouthFocused';
+  if (research >= 52 && rep >= 42 && rep < 72) {
+    return nudge < 0.45 ? 'AmbitiousBuilder' : 'DevelopmentFocused';
   }
-  if (cashM >= 65 && rep < 72) return 'AggressiveSpender';
+  if (cashM >= 48 && rep < 72) return 'AggressiveSpender';
   if (rep < 45) return nudge < 0.5 ? 'SurvivalMode' : 'PayDriverReliant';
   return 'FinanciallyConservative';
 }
@@ -294,10 +295,27 @@ export function assignArchetype(
 // A gentle curve: champions earn far more than the tail of the grid.
 export function estimatePrizeMoney(constructorPosition: number, teamCount: number): number {
   const pos = Math.max(1, Math.min(teamCount, constructorPosition));
-  const top = 45; // $M for P1
-  const tail = 6; // $M for last
+  const top = 48; // $M for P1
+  const tail = 7; // $M for last
   const frac = teamCount > 1 ? (pos - 1) / (teamCount - 1) : 0;
   return toMoney(top - (top - tail) * frac);
+}
+
+export function updateAIReputation(
+  team: Team,
+  constructorPosition: number,
+  teams: Team[],
+): Team {
+  const rankedReputations = [...teams]
+    .sort((a, b) => b.reputation - a.reputation)
+    .findIndex((candidate) => candidate.id === team.id);
+  const expected = rankedReputations >= 0 ? rankedReputations + 1 : Math.ceil(teams.length / 2);
+  const performanceGap = expected - constructorPosition;
+  const drift = Math.max(-2, Math.min(2, performanceGap * 0.35));
+  return {
+    ...team,
+    reputation: Math.max(1, Math.min(100, Math.round((team.reputation + drift) * 10) / 10)),
+  };
 }
 
 // Estimated annual sponsor income from commercial appeal + reputation.
@@ -315,6 +333,10 @@ function estimateStaffCost(org: TeamOrganizationRatings | undefined): number {
 // Base operating cost (logistics, race ops) scaled a little by reputation.
 function estimateOperatingCost(team: Team): number {
   return toMoney(7 + team.reputation * 0.05);
+}
+
+function principalBudgetFactor(attributes: PrincipalAttributes | undefined): number {
+  return attributes ? 1 + (attributes.financialDiscipline - 50) / 500 : 1;
 }
 
 // Ongoing testing programme cost — grows with the team's technical ambition.
@@ -356,6 +378,7 @@ export function estimateAIBudget(
   org: TeamOrganizationRatings | undefined,
   archetype: AITeamArchetype,
   constructorPosition: number,
+  principalAttributes?: PrincipalAttributes,
 ): AITeamBudget {
   const spec = ARCHETYPE_SPECS[archetype];
   const startingCash = team.budget;
@@ -366,7 +389,7 @@ export function estimateAIBudget(
   const staffSalaries = estimateStaffCost(org);
   const engineDeal = state.engine?.deals?.[team.id];
   const engineCost = engineDeal ? toMoney(engineDeal.annualCost) : toMoney(6);
-  const operatingCost = estimateOperatingCost(team);
+  const operatingCost = Math.round(estimateOperatingCost(team) * principalBudgetFactor(principalAttributes));
   const testingCost = estimateTestingCost(org);
   const academyCost = estimateAcademyCost(org);
   const sponsorPenalty = estimateSponsorPenalty(team, constructorPosition, teamCount);
@@ -389,8 +412,11 @@ export function estimateAIBudget(
     0.05,
     Math.min(0.6, 0.12 + spec.risk * 0.35 - spec.reserveFactor * 0.15),
   );
+  const efficiency = principalAttributes
+    ? 1 + (principalAttributes.financialDiscipline - 50) / 400
+    : 1;
   const investmentPool =
-    Math.max(0, operatingSurplus) * surplusSpendRate + excessCash * excessSpendRate;
+    (Math.max(0, operatingSurplus) * surplusSpendRate + excessCash * excessSpendRate) * efficiency;
 
   const developmentSpend = Math.round(spec.devBias * investmentPool);
   const facilitySpend = Math.round(spec.facilityBias * investmentPool);
@@ -477,7 +503,10 @@ export function evolveArchetype(
     return 'SurvivalMode';
   }
   // Recovery out of Survival Mode once finances stabilize.
-  if (current === 'SurvivalMode' && (health === 'Stable' || health === 'Excellent')) {
+  if (
+    current === 'SurvivalMode' &&
+    (health === 'Stable' || health === 'Excellent' || (health === 'Tight' && cashGrowthRatio >= 1.1))
+  ) {
     return 'FinanciallyConservative';
   }
   // A big cash injection (investment) emboldens a stable team.
@@ -506,7 +535,7 @@ export function buildAITeamState(state: GameState, team: Team): AITeamState {
   const car = state.cars.find((c) => c.teamId === team.id);
   const archetype = assignArchetype(team, org, car, state.randomSeed);
   const position = constructorPositionOf(state, team.id);
-  const budget = estimateAIBudget(state, team, org, archetype, position);
+  const budget = estimateAIBudget(state, team, org, archetype, position, state.aiPrincipals?.[team.id]?.attributes);
   const health = financialHealth(budget);
   const goal = aiTeamGoal(archetype, position, state.teams.length, health);
   const philosophy = generatePhilosophy(team, archetype, state.randomSeed);
@@ -517,6 +546,7 @@ export function buildAITeamState(state: GameState, team: Team): AITeamState {
     goal,
     budget,
     philosophy,
+    principalAttributes: state.aiPrincipals?.[team.id]?.attributes,
     seasonsInTrouble: health === 'AtRisk' || health === 'Critical' ? 1 : 0,
     lastConstructorPosition: state.constructorStandings.length ? position : undefined,
   };
@@ -566,7 +596,14 @@ export function rolloverAITeamStates(
     const prevState = prev[team.id];
 
     const archetype0 = prevState?.archetype ?? assignArchetype(team, org, car, state.randomSeed);
-    const budget = estimateAIBudget(state, team, org, archetype0, position);
+    const budget = estimateAIBudget(
+      state,
+      team,
+      org,
+      archetype0,
+      position,
+      prevState?.principalAttributes ?? state.aiPrincipals?.[team.id]?.attributes,
+    );
     const health = financialHealth(budget);
 
     const wasTrouble = health === 'AtRisk' || health === 'Critical';
@@ -609,6 +646,7 @@ export function rolloverAITeamStates(
       goal,
       budget,
       philosophy,
+      principalAttributes: prevState?.principalAttributes ?? state.aiPrincipals?.[team.id]?.attributes,
       seasonsInTrouble,
       lastConstructorPosition: position,
     };

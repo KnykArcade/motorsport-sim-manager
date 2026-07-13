@@ -149,9 +149,9 @@ export const cars2010: Car[] = [
     teamId: 't-virgin-cosworth',
     seasonYear: 2010,
     ratings: {
-      enginePower: 4.7,
-      aeroEfficiency: 3.9,
-      mechanicalGrip: 4.0,
+      enginePower: 4.1,
+      aeroEfficiency: 3.6,
+      mechanicalGrip: 3.4,
       reliability: 3.5,
       pitCrewOperations: 4.1,
     },

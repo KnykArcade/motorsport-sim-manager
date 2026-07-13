@@ -121,9 +121,9 @@ export const cars2007: Car[] = [
     teamId: 't-toro-rosso-ferrari',
     seasonYear: 2007,
     ratings: {
-      enginePower: 5.1,
-      aeroEfficiency: 4.2,
-      mechanicalGrip: 4.1,
+      enginePower: 5.8,
+      aeroEfficiency: 4.9,
+      mechanicalGrip: 4.8,
       reliability: 3.8,
       pitCrewOperations: 3.9,
     },

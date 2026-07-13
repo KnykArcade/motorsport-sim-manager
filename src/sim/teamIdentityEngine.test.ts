@@ -16,11 +16,11 @@ import type { TeamPhilosophyTrait } from '../types/aiTeamTypes';
 function car(ratings: { aeroEfficiency?: number; enginePower?: number; mechanicalGrip?: number; reliability?: number; pitCrewOperations?: number }) {
   return {
     ratings: {
-      aeroEfficiency: ratings.aeroEfficiency ?? 7,
-      enginePower: ratings.enginePower ?? 7,
-      mechanicalGrip: ratings.mechanicalGrip ?? 7,
-      reliability: ratings.reliability ?? 7,
-      pitCrewOperations: ratings.pitCrewOperations ?? 7,
+      aeroEfficiency: ratings.aeroEfficiency ?? 70,
+      enginePower: ratings.enginePower ?? 70,
+      mechanicalGrip: ratings.mechanicalGrip ?? 70,
+      reliability: ratings.reliability ?? 70,
+      pitCrewOperations: ratings.pitCrewOperations ?? 70,
     },
   };
 }
@@ -43,24 +43,34 @@ describe('teamIdentityEngine', () => {
 
   describe('weightedDevTarget', () => {
     it('targets reliability when there is a reliability problem', () => {
-      const target = weightedDevTarget(car({ reliability: 7.5 }), true, ['TechnicalInnovator']);
+      const target = weightedDevTarget(car({ reliability: 75 }), true, ['TechnicalInnovator']);
       expect(target).toBe('reliability');
     });
 
     it('targets weakest area by default', () => {
-      const target = weightedDevTarget(car({ aeroEfficiency: 5, enginePower: 8, mechanicalGrip: 8, reliability: 8, pitCrewOperations: 8 }), false, undefined);
+      const target = weightedDevTarget(car({ aeroEfficiency: 50, enginePower: 80, mechanicalGrip: 80, reliability: 80, pitCrewOperations: 80 }), false, undefined);
       expect(target).toBe('aeroEfficiency');
     });
 
     it('trait bias can shift target away from weakest area', () => {
       // All equal ratings, TechnicalInnovator biases toward aero.
-      const target = weightedDevTarget(car({ aeroEfficiency: 7, enginePower: 7, mechanicalGrip: 7, reliability: 7, pitCrewOperations: 7 }), false, ['TechnicalInnovator']);
+      const target = weightedDevTarget(car({ aeroEfficiency: 70, enginePower: 70, mechanicalGrip: 70, reliability: 70, pitCrewOperations: 70 }), false, ['TechnicalInnovator']);
       expect(target).toBe('aeroEfficiency');
     });
 
     it('Traditionalist biases toward reliability', () => {
-      const target = weightedDevTarget(car({ aeroEfficiency: 7, enginePower: 7, mechanicalGrip: 7, reliability: 7, pitCrewOperations: 7 }), false, ['Traditionalist']);
+      const target = weightedDevTarget(car({ aeroEfficiency: 70, enginePower: 70, mechanicalGrip: 70, reliability: 70, pitCrewOperations: 70 }), false, ['Traditionalist']);
       expect(target).toBe('reliability');
+    });
+
+    it('prioritizes a regulation-affected area on the runtime 1-100 scale', () => {
+      const target = weightedDevTarget(
+        car({ aeroEfficiency: 80, enginePower: 70, mechanicalGrip: 80, reliability: 80, pitCrewOperations: 80 }),
+        false,
+        undefined,
+        ['Engine'],
+      );
+      expect(target).toBe('enginePower');
     });
   });
 
