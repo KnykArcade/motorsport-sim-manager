@@ -167,6 +167,16 @@ describe('import + dedup', () => {
     expect(e.baseRatingsByYear).toHaveLength(1);
   });
 
+  it('retains separate season snapshots when historical files reuse a driver id', () => {
+    const reg = empty();
+    importSeasonDrivers(reg, [gridDriver('driver-jenson', 'Jenson Button', 6, { age: 20 })], 2000, 'F1');
+    importSeasonDrivers(reg, [gridDriver('driver-jenson', 'Jenson Button', 7, { age: 21 })], 2001, 'F1');
+    const e = registryList(reg)[0];
+    expect(e.sourceIds).toEqual(['driver-jenson']);
+    expect(e.baseRatingsByYear.map((entry) => entry.year)).toEqual([2000, 2001]);
+    expect(e.activeSeatsByYear?.map((entry) => entry.year)).toEqual([2000, 2001]);
+  });
+
   it('merges a youth prospect and a later grid appearance into one identity', () => {
     const reg = empty();
     importYouthProspects(reg, [youth('yth-kimi', 'Kimi Räikkönen', { age: 16, birthYear: 1979 })], 1995, 'F1');
@@ -213,6 +223,7 @@ describe('buildMasterRegistry (real seed data)', () => {
     expect(schumi).toBeDefined();
     // Appears across many F1 seasons in the seed data.
     expect(schumi.baseRatingsByYear.length).toBeGreaterThan(1);
+    expect(schumi.activeSeatsByYear?.length).toBeGreaterThan(0);
     expect(schumi.firstSeenYear).toBeLessThan(schumi.lastSeenYear);
   });
 

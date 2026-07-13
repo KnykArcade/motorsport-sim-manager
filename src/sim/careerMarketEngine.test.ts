@@ -80,11 +80,11 @@ describe('age + retirement', () => {
 });
 
 describe('availability windows', () => {
-  it('adult available only from market-entry year, of racing age, in-series', () => {
+  it('makes adult drivers available universe-wide after market entry', () => {
     const e = entry({ marketEntryYear: 2005, birthYear: 1985 }); // age 20 in 2005
     expect(isAdultAvailable(e, 2004, 'F1')).toBe(false); // before entry
     expect(isAdultAvailable(e, 2005, 'F1')).toBe(true);
-    expect(isAdultAvailable(e, 2005, 'IndyCar')).toBe(false); // not eligible series
+    expect(isAdultAvailable(e, 2005, 'IndyCar')).toBe(true); // preference affects interest, not eligibility
   });
 
   it('youth available within the academy window, then ages out', () => {
@@ -156,6 +156,14 @@ describe('careerMarketBundle (real career state)', () => {
     const living = careerMarketBundle(state);
     const ids = living.drivers.map((d) => d.id);
     expect(new Set(ids).size).toBe(ids.length);
+  });
+
+  it('never reintroduces generated market fillers through the registry', () => {
+    const living = careerMarketBundle(state);
+    expect([...living.drivers, ...living.youth].every(
+      (entry) => !/generated|synthetic|filler|placeholder/i.test(`${entry.name} ${entry.notes ?? ''}`),
+    )).toBe(true);
+    expect(living.youth.some((entry) => entry.id.startsWith('gen-yth-'))).toBe(false);
   });
 
   it('only lists youth aged 12–17 and never in both youth and adult pools', () => {

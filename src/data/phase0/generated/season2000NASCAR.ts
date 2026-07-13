@@ -14,7 +14,7 @@ export const season2000NASCARPhase0: Phase0SeasonBundle = {
       "trackId": "TRK_NASCAR_DAYTONA",
       "trackName": "Daytona International Speedway",
       "laps": 200,
-      "distanceKm": 804.67
+      "distanceKm": 804.7
     },
     {
       "round": 2,
@@ -22,7 +22,7 @@ export const season2000NASCARPhase0: Phase0SeasonBundle = {
       "trackId": "TRK_NASCAR_ROCKINGHAM",
       "trackName": "Rockingham Speedway",
       "laps": 393,
-      "distanceKm": 643.223
+      "distanceKm": 643.2
     },
     {
       "round": 3,
@@ -30,7 +30,7 @@ export const season2000NASCARPhase0: Phase0SeasonBundle = {
       "trackId": "TRK_NASCAR_LAS_VEGAS",
       "trackName": "Las Vegas Motor Speedway",
       "laps": 267,
-      "distanceKm": 644.541
+      "distanceKm": 644.5
     },
     {
       "round": 4,
@@ -38,7 +38,7 @@ export const season2000NASCARPhase0: Phase0SeasonBundle = {
       "trackId": "TRK_NASCAR_ATLANTA",
       "trackName": "Atlanta Motor Speedway",
       "laps": 325,
-      "distanceKm": 805.475
+      "distanceKm": 805.5
     },
     {
       "round": 5,
@@ -46,7 +46,7 @@ export const season2000NASCARPhase0: Phase0SeasonBundle = {
       "trackId": "TRK_NASCAR_DARLINGTON",
       "trackName": "Darlington Raceway",
       "laps": 293,
-      "distanceKm": 644.119
+      "distanceKm": 644.1
     },
     {
       "round": 6,
@@ -54,7 +54,7 @@ export const season2000NASCARPhase0: Phase0SeasonBundle = {
       "trackId": "TRK_NASCAR_BRISTOL",
       "trackName": "Bristol Motor Speedway",
       "laps": 500,
-      "distanceKm": 428.889
+      "distanceKm": 428.9
     },
     {
       "round": 7,
@@ -62,7 +62,7 @@ export const season2000NASCARPhase0: Phase0SeasonBundle = {
       "trackId": "TRK_NASCAR_TEXAS",
       "trackName": "Texas Motor Speedway",
       "laps": 333,
-      "distanceKm": 803.865
+      "distanceKm": 806.3
     },
     {
       "round": 8,
@@ -70,7 +70,7 @@ export const season2000NASCARPhase0: Phase0SeasonBundle = {
       "trackId": "TRK_NASCAR_MARTINSVILLE",
       "trackName": "Martinsville Speedway",
       "laps": 500,
-      "distanceKm": 423.256
+      "distanceKm": 423.3
     },
     {
       "round": 9,
@@ -78,7 +78,7 @@ export const season2000NASCARPhase0: Phase0SeasonBundle = {
       "trackId": "TRK_NASCAR_TALLADEGA",
       "trackName": "Talladega Superspeedway",
       "laps": 188,
-      "distanceKm": 804.799
+      "distanceKm": 804.8
     },
     {
       "round": 10,
@@ -86,7 +86,7 @@ export const season2000NASCARPhase0: Phase0SeasonBundle = {
       "trackId": "TRK_NASCAR_CALIFORNIA",
       "trackName": "California Speedway",
       "laps": 250,
-      "distanceKm": 804.67
+      "distanceKm": 804.7
     },
     {
       "round": 11,
@@ -94,7 +94,7 @@ export const season2000NASCARPhase0: Phase0SeasonBundle = {
       "trackId": "TRK_NASCAR_RICHMOND",
       "trackName": "Richmond International Raceway",
       "laps": 400,
-      "distanceKm": 482.802
+      "distanceKm": 482.8
     },
     {
       "round": 12,
@@ -102,7 +102,7 @@ export const season2000NASCARPhase0: Phase0SeasonBundle = {
       "trackId": "TRK_NASCAR_CHARLOTTE",
       "trackName": "Charlotte Motor Speedway",
       "laps": 400,
-      "distanceKm": 965.604
+      "distanceKm": 965.6
     },
     {
       "round": 13,
@@ -110,7 +110,7 @@ export const season2000NASCARPhase0: Phase0SeasonBundle = {
       "trackId": "TRK_NASCAR_DOVER",
       "trackName": "Dover Downs International Speedway",
       "laps": 400,
-      "distanceKm": 643.736
+      "distanceKm": 643.7
     },
     {
       "round": 14,
@@ -118,7 +118,7 @@ export const season2000NASCARPhase0: Phase0SeasonBundle = {
       "trackId": "TRK_NASCAR_MICHIGAN",
       "trackName": "Michigan Speedway",
       "laps": 200,
-      "distanceKm": 643.736
+      "distanceKm": 643.7
     },
     {
       "round": 15,
@@ -126,7 +126,7 @@ export const season2000NASCARPhase0: Phase0SeasonBundle = {
       "trackId": "TRK_NASCAR_POCONO",
       "trackName": "Pocono Raceway",
       "laps": 200,
-      "distanceKm": 804.67
+      "distanceKm": 804.7
     },
     {
       "round": 16,
@@ -134,7 +134,7 @@ export const season2000NASCARPhase0: Phase0SeasonBundle = {
       "trackId": "TRK_NASCAR_SONOMA",
       "trackName": "Sears Point Raceway",
       "laps": 110,
-      "distanceKm": 352.285
+      "distanceKm": 352.3
     },
     {
       "round": 17,
@@ -142,7 +142,7 @@ export const season2000NASCARPhase0: Phase0SeasonBundle = {
       "trackId": "TRK_NASCAR_DAYTONA",
       "trackName": "Daytona International Speedway",
       "laps": 160,
-      "distanceKm": 643.736
+      "distanceKm": 643.7
     },
     {
       "round": 18,
@@ -150,7 +150,7 @@ export const season2000NASCARPhase0: Phase0SeasonBundle = {
       "trackId": "TRK_NASCAR_NEW_HAMPSHIRE",
       "trackName": "New Hampshire International Speedway",
       "laps": 300,
-      "distanceKm": 510.805
+      "distanceKm": 510.8
     },
     {
       "round": 19,
@@ -158,7 +158,7 @@ export const season2000NASCARPhase0: Phase0SeasonBundle = {
       "trackId": "TRK_NASCAR_POCONO",
       "trackName": "Pocono Raceway",
       "laps": 200,
-      "distanceKm": 804.67
+      "distanceKm": 804.7
     },
     {
       "round": 20,
@@ -166,7 +166,7 @@ export const season2000NASCARPhase0: Phase0SeasonBundle = {
       "trackId": "TRK_NASCAR_INDIANAPOLIS",
       "trackName": "Indianapolis Motor Speedway",
       "laps": 160,
-      "distanceKm": 643.736
+      "distanceKm": 643.7
     },
     {
       "round": 21,
@@ -174,7 +174,7 @@ export const season2000NASCARPhase0: Phase0SeasonBundle = {
       "trackId": "TRK_NASCAR_WATKINS_GLEN",
       "trackName": "Watkins Glen International",
       "laps": 90,
-      "distanceKm": 354.859
+      "distanceKm": 354.9
     },
     {
       "round": 22,
@@ -182,7 +182,7 @@ export const season2000NASCARPhase0: Phase0SeasonBundle = {
       "trackId": "TRK_NASCAR_MICHIGAN",
       "trackName": "Michigan Speedway",
       "laps": 200,
-      "distanceKm": 643.736
+      "distanceKm": 643.7
     },
     {
       "round": 23,
@@ -190,7 +190,7 @@ export const season2000NASCARPhase0: Phase0SeasonBundle = {
       "trackId": "TRK_NASCAR_BRISTOL",
       "trackName": "Bristol Motor Speedway",
       "laps": 500,
-      "distanceKm": 428.889
+      "distanceKm": 428.9
     },
     {
       "round": 24,
@@ -198,7 +198,7 @@ export const season2000NASCARPhase0: Phase0SeasonBundle = {
       "trackId": "TRK_NASCAR_DARLINGTON",
       "trackName": "Darlington Raceway",
       "laps": 366,
-      "distanceKm": 804.599
+      "distanceKm": 806.8
     },
     {
       "round": 25,
@@ -206,7 +206,7 @@ export const season2000NASCARPhase0: Phase0SeasonBundle = {
       "trackId": "TRK_NASCAR_RICHMOND",
       "trackName": "Richmond International Raceway",
       "laps": 400,
-      "distanceKm": 482.802
+      "distanceKm": 482.8
     },
     {
       "round": 26,
@@ -214,7 +214,7 @@ export const season2000NASCARPhase0: Phase0SeasonBundle = {
       "trackId": "TRK_NASCAR_NEW_HAMPSHIRE",
       "trackName": "New Hampshire International Speedway",
       "laps": 300,
-      "distanceKm": 510.805
+      "distanceKm": 510.8
     },
     {
       "round": 27,
@@ -222,7 +222,7 @@ export const season2000NASCARPhase0: Phase0SeasonBundle = {
       "trackId": "TRK_NASCAR_DOVER",
       "trackName": "Dover Downs International Speedway",
       "laps": 400,
-      "distanceKm": 643.736
+      "distanceKm": 643.7
     },
     {
       "round": 28,
@@ -230,7 +230,7 @@ export const season2000NASCARPhase0: Phase0SeasonBundle = {
       "trackId": "TRK_NASCAR_MARTINSVILLE",
       "trackName": "Martinsville Speedway",
       "laps": 500,
-      "distanceKm": 423.256
+      "distanceKm": 423.3
     },
     {
       "round": 29,
@@ -238,7 +238,7 @@ export const season2000NASCARPhase0: Phase0SeasonBundle = {
       "trackId": "TRK_NASCAR_CHARLOTTE",
       "trackName": "Charlotte Motor Speedway",
       "laps": 333,
-      "distanceKm": 803.865
+      "distanceKm": 806.3
     },
     {
       "round": 30,
@@ -246,7 +246,7 @@ export const season2000NASCARPhase0: Phase0SeasonBundle = {
       "trackId": "TRK_NASCAR_TALLADEGA",
       "trackName": "Talladega Superspeedway",
       "laps": 188,
-      "distanceKm": 804.799
+      "distanceKm": 804.8
     },
     {
       "round": 31,
@@ -254,7 +254,7 @@ export const season2000NASCARPhase0: Phase0SeasonBundle = {
       "trackId": "TRK_NASCAR_ROCKINGHAM",
       "trackName": "Rockingham Speedway",
       "laps": 393,
-      "distanceKm": 643.223
+      "distanceKm": 643.2
     },
     {
       "round": 32,
@@ -262,7 +262,7 @@ export const season2000NASCARPhase0: Phase0SeasonBundle = {
       "trackId": "TRK_NASCAR_PHOENIX",
       "trackName": "Phoenix International Raceway",
       "laps": 312,
-      "distanceKm": 502.114
+      "distanceKm": 502.1
     },
     {
       "round": 33,
@@ -270,7 +270,7 @@ export const season2000NASCARPhase0: Phase0SeasonBundle = {
       "trackId": "TRK_NASCAR_HOMESTEAD",
       "trackName": "Homestead-Miami Speedway",
       "laps": 267,
-      "distanceKm": 644.541
+      "distanceKm": 644.5
     },
     {
       "round": 34,
@@ -278,7 +278,7 @@ export const season2000NASCARPhase0: Phase0SeasonBundle = {
       "trackId": "TRK_NASCAR_ATLANTA",
       "trackName": "Atlanta Motor Speedway",
       "laps": 325,
-      "distanceKm": 805.475
+      "distanceKm": 805.5
     }
   ],
   "standings": [
@@ -296,7 +296,7 @@ export const season2000NASCARPhase0: Phase0SeasonBundle = {
     },
     {
       "driverId": "driver-nascar-2000-jeff-burton",
-      "teamId": "NASCAR_2000_TEAM_ROUSH_RACING",
+      "teamId": "NASCAR_2000_TEAM_ROUSH_RACING_TEAM_3",
       "position": 3,
       "points": 4841.0
     },
@@ -320,25 +320,25 @@ export const season2000NASCARPhase0: Phase0SeasonBundle = {
     },
     {
       "driverId": "driver-nascar-2000-rusty-wallace",
-      "teamId": "NASCAR_2000_TEAM_PENSKE_KRANEFUSS_RACING",
+      "teamId": "NASCAR_2000_TEAM_PENSKE_KRANEFUSS_RACING_TEAM_1",
       "position": 7,
       "points": 4544.0
     },
     {
       "driverId": "driver-nascar-2000-mark-martin",
-      "teamId": "NASCAR_2000_TEAM_ROUSH_RACING",
+      "teamId": "NASCAR_2000_TEAM_ROUSH_RACING_TEAM_1",
       "position": 8,
       "points": 4410.0
     },
     {
       "driverId": "driver-nascar-2000-jeff-gordon",
-      "teamId": "NASCAR_2000_TEAM_HENDRICK_MOTORSPORTS",
+      "teamId": "NASCAR_2000_TEAM_HENDRICK_MOTORSPORTS_TEAM_1",
       "position": 9,
       "points": 4361.0
     },
     {
       "driverId": "driver-nascar-2000-ward-burton",
-      "teamId": "NASCAR_2000_TEAM_BILL_DAVIS_RACING",
+      "teamId": "NASCAR_2000_TEAM_BILL_DAVIS_RACING_TEAM_1",
       "position": 10,
       "points": 4152.0
     },
@@ -362,13 +362,13 @@ export const season2000NASCARPhase0: Phase0SeasonBundle = {
     },
     {
       "driverId": "driver-nascar-2000-matt-kenseth",
-      "teamId": "NASCAR_2000_TEAM_ROUSH_RACING",
+      "teamId": "NASCAR_2000_TEAM_ROUSH_RACING_TEAM_2",
       "position": 14,
       "points": 3711.0
     },
     {
       "driverId": "driver-nascar-2000-joe-nemechek",
-      "teamId": "NASCAR_2000_TEAM_ANDY_PETREE_RACING",
+      "teamId": "NASCAR_2000_TEAM_ANDY_PETREE_RACING_TEAM_1",
       "position": 15,
       "points": 3534.0
     },
@@ -380,7 +380,7 @@ export const season2000NASCARPhase0: Phase0SeasonBundle = {
     },
     {
       "driverId": "driver-nascar-2000-terry-labonte",
-      "teamId": "NASCAR_2000_TEAM_HENDRICK_MOTORSPORTS",
+      "teamId": "NASCAR_2000_TEAM_HENDRICK_MOTORSPORTS_TEAM_1",
       "position": 17,
       "points": 3433.0
     },
@@ -392,13 +392,13 @@ export const season2000NASCARPhase0: Phase0SeasonBundle = {
     },
     {
       "driverId": "driver-nascar-2000-sterling-marlin",
-      "teamId": "NASCAR_2000_TEAM_TEAM_SABCO",
+      "teamId": "NASCAR_2000_TEAM_TEAM_SABCO_TEAM_1",
       "position": 19,
       "points": 3363.0
     },
     {
       "driverId": "driver-nascar-2000-jerry-nadeau",
-      "teamId": "NASCAR_2000_TEAM_HENDRICK_MOTORSPORTS",
+      "teamId": "NASCAR_2000_TEAM_HENDRICK_MOTORSPORTS_TEAM_2",
       "position": 20,
       "points": 3273.0
     },
@@ -410,19 +410,19 @@ export const season2000NASCARPhase0: Phase0SeasonBundle = {
     },
     {
       "driverId": "driver-nascar-2000-jimmy-spencer",
-      "teamId": "NASCAR_2000_TEAM_HAAS_CARTER_MOTORSPORTS",
+      "teamId": "NASCAR_2000_TEAM_HAAS_CARTER_MOTORSPORTS_TEAM_1",
       "position": 22,
       "points": 3188.0
     },
     {
       "driverId": "driver-nascar-2000-john-andretti",
-      "teamId": "NASCAR_2000_TEAM_PETTY_ENTERPRISES",
+      "teamId": "NASCAR_2000_TEAM_PETTY_ENTERPRISES_TEAM_1",
       "position": 23,
       "points": 3169.0
     },
     {
       "driverId": "driver-nascar-2000-jeremy-mayfield",
-      "teamId": "NASCAR_2000_TEAM_PENSKE_KRANEFUSS_RACING",
+      "teamId": "NASCAR_2000_TEAM_PENSKE_KRANEFUSS_RACING_TEAM_1",
       "position": 24,
       "points": 3156.0
     },
@@ -434,19 +434,19 @@ export const season2000NASCARPhase0: Phase0SeasonBundle = {
     },
     {
       "driverId": "driver-nascar-2000-kenny-wallace",
-      "teamId": "NASCAR_2000_TEAM_ANDY_PETREE_RACING",
+      "teamId": "NASCAR_2000_TEAM_ANDY_PETREE_RACING_TEAM_1",
       "position": 26,
       "points": 2874.0
     },
     {
       "driverId": "driver-nascar-2000-michael-waltrip",
-      "teamId": "NASCAR_2000_TEAM_TEAM_SABCO",
+      "teamId": "NASCAR_2000_TEAM_TEAM_SABCO_TEAM_1",
       "position": 27,
       "points": 2797.0
     },
     {
       "driverId": "driver-nascar-2000-kevin-lepage",
-      "teamId": "NASCAR_2000_TEAM_ROUSH_RACING",
+      "teamId": "NASCAR_2000_TEAM_ROUSH_RACING_TEAM_1",
       "position": 28,
       "points": 2795.0
     },
@@ -464,13 +464,13 @@ export const season2000NASCARPhase0: Phase0SeasonBundle = {
     },
     {
       "driverId": "driver-nascar-2000-dave-blaney",
-      "teamId": "NASCAR_2000_TEAM_BILL_DAVIS_RACING",
+      "teamId": "NASCAR_2000_TEAM_BILL_DAVIS_RACING_TEAM_1",
       "position": 31,
       "points": 2656.0
     },
     {
       "driverId": "driver-nascar-2000-chad-little",
-      "teamId": "NASCAR_2000_TEAM_ROUSH_RACING",
+      "teamId": "NASCAR_2000_TEAM_ROUSH_RACING_TEAM_2",
       "position": 32,
       "points": 2634.0
     },
@@ -494,7 +494,7 @@ export const season2000NASCARPhase0: Phase0SeasonBundle = {
     },
     {
       "driverId": "driver-nascar-2000-darrell-waltrip",
-      "teamId": "NASCAR_2000_TEAM_HAAS_CARTER_MOTORSPORTS",
+      "teamId": "NASCAR_2000_TEAM_HAAS_CARTER_MOTORSPORTS_TEAM_1",
       "position": 36,
       "points": 1981.0
     },
@@ -524,13 +524,13 @@ export const season2000NASCARPhase0: Phase0SeasonBundle = {
     },
     {
       "driverId": "driver-nascar-2000-kyle-petty",
-      "teamId": "NASCAR_2000_TEAM_PENSKE_KRANEFUSS_RACING",
+      "teamId": "NASCAR_2000_TEAM_PENSKE_KRANEFUSS_RACING_TEAM_1",
       "position": 41,
       "points": 1441.0
     },
     {
       "driverId": "driver-nascar-2000-kenny-irwin-jr",
-      "teamId": "NASCAR_2000_TEAM_TEAM_SABCO",
+      "teamId": "NASCAR_2000_TEAM_TEAM_SABCO_TEAM_2",
       "position": 42,
       "points": 1440.0
     },
@@ -566,13 +566,13 @@ export const season2000NASCARPhase0: Phase0SeasonBundle = {
     },
     {
       "driverId": "driver-nascar-2000-kurt-busch",
-      "teamId": "NASCAR_2000_TEAM_ROUSH_RACING",
+      "teamId": "NASCAR_2000_TEAM_ROUSH_RACING_TEAM_2",
       "position": 48,
       "points": 613.0
     },
     {
       "driverId": "driver-nascar-2000-todd-bodine",
-      "teamId": "NASCAR_2000_TEAM_HENDRICK_MOTORSPORTS",
+      "teamId": "NASCAR_2000_TEAM_HENDRICK_MOTORSPORTS_TEAM_1",
       "position": 49,
       "points": 456.0
     },
@@ -590,7 +590,7 @@ export const season2000NASCARPhase0: Phase0SeasonBundle = {
     },
     {
       "driverId": "driver-nascar-2000-steve-grissom",
-      "teamId": "NASCAR_2000_TEAM_PETTY_ENTERPRISES",
+      "teamId": "NASCAR_2000_TEAM_PETTY_ENTERPRISES_TEAM_1",
       "position": 52,
       "points": 419.0
     },
@@ -626,7 +626,7 @@ export const season2000NASCARPhase0: Phase0SeasonBundle = {
     },
     {
       "driverId": "driver-nascar-2000-p-j-jones",
-      "teamId": "NASCAR_2000_TEAM_TEAM_SABCO",
+      "teamId": "NASCAR_2000_TEAM_TEAM_SABCO_TEAM_2",
       "position": 58,
       "points": 158.0
     },
@@ -644,7 +644,7 @@ export const season2000NASCARPhase0: Phase0SeasonBundle = {
     },
     {
       "driverId": "driver-nascar-2000-ron-hornaday-jr",
-      "teamId": "NASCAR_2000_TEAM_HENDRICK_MOTORSPORTS",
+      "teamId": "NASCAR_2000_TEAM_HENDRICK_MOTORSPORTS_TEAM_1",
       "position": 61,
       "points": 118.0
     },
@@ -668,7 +668,7 @@ export const season2000NASCARPhase0: Phase0SeasonBundle = {
     },
     {
       "driverId": "driver-nascar-2000-tom-hubert",
-      "teamId": "NASCAR_2000_TEAM_PENSKE_KRANEFUSS_RACING",
+      "teamId": "NASCAR_2000_TEAM_PENSKE_KRANEFUSS_RACING_TEAM_1",
       "position": 65,
       "points": 64.0
     },
@@ -692,13 +692,13 @@ export const season2000NASCARPhase0: Phase0SeasonBundle = {
     },
     {
       "driverId": "driver-nascar-2000-adam-petty",
-      "teamId": "NASCAR_2000_TEAM_PETTY_ENTERPRISES",
+      "teamId": "NASCAR_2000_TEAM_PETTY_ENTERPRISES_TEAM_2",
       "position": 69,
       "points": 43.0
     },
     {
       "driverId": "driver-nascar-2000-ryan-newman",
-      "teamId": "NASCAR_2000_TEAM_PENSKE_KRANEFUSS_RACING",
+      "teamId": "NASCAR_2000_TEAM_PENSKE_KRANEFUSS_RACING_TEAM_2",
       "position": 70,
       "points": 40.0
     },
@@ -722,7 +722,7 @@ export const season2000NASCARPhase0: Phase0SeasonBundle = {
     },
     {
       "driverId": "driver-nascar-2000-scott-wimmer",
-      "teamId": "NASCAR_2000_TEAM_BILL_DAVIS_RACING",
+      "teamId": "NASCAR_2000_TEAM_BILL_DAVIS_RACING_TEAM_2",
       "position": 74,
       "points": 0.0
     },
@@ -837,14 +837,28 @@ export const season2000NASCARPhase0: Phase0SeasonBundle = {
   ],
   "teamEntries": [
     {
-      "teamId": "NASCAR_2000_TEAM_A_J_FOYT_RACING",
+      "teamId": "NASCAR_2000_TEAM_A_J_FOYT_RACING_TEAM_1",
       "carNumber": "14",
       "driverId": "driver-nascar-2000-mike-bliss",
       "chassis": "Pontiac",
       "engine": "Pontiac"
     },
     {
-      "teamId": "NASCAR_2000_TEAM_A_J_FOYT_RACING",
+      "teamId": "NASCAR_2000_TEAM_A_J_FOYT_RACING_TEAM_1",
+      "carNumber": "14",
+      "driverId": "driver-nascar-2000-dick-trickle",
+      "chassis": "Pontiac",
+      "engine": "Pontiac"
+    },
+    {
+      "teamId": "NASCAR_2000_TEAM_A_J_FOYT_RACING_TEAM_2",
+      "carNumber": "14",
+      "driverId": "driver-nascar-2000-rick-mast",
+      "chassis": "Pontiac",
+      "engine": "Pontiac"
+    },
+    {
+      "teamId": "NASCAR_2000_TEAM_A_J_FOYT_RACING_TEAM_2",
       "carNumber": "41",
       "driverId": "driver-nascar-2000-larry-foyt",
       "chassis": "Pontiac",
@@ -907,6 +921,13 @@ export const season2000NASCARPhase0: Phase0SeasonBundle = {
       "engine": "Ford"
     },
     {
+      "teamId": "NASCAR_2000_TEAM_BILL_ELLIOTT_RACING",
+      "carNumber": "94",
+      "driverId": "driver-nascar-2000-david-green",
+      "chassis": "Ford",
+      "engine": "Ford"
+    },
+    {
       "teamId": "NASCAR_2000_TEAM_BOBBY_HAMILTON_RACING",
       "carNumber": "57",
       "driverId": "driver-nascar-2000-bobby-hamilton-jr",
@@ -935,6 +956,13 @@ export const season2000NASCARPhase0: Phase0SeasonBundle = {
       "engine": "Chevrolet"
     },
     {
+      "teamId": "NASCAR_2000_TEAM_COULTER_RACING",
+      "carNumber": "61",
+      "driverId": "driver-nascar-2000-tim-sauter",
+      "chassis": "Chevrolet",
+      "engine": "Chevrolet"
+    },
+    {
       "teamId": "NASCAR_2000_TEAM_DALE_EARNHARDT_INC",
       "carNumber": "1",
       "driverId": "driver-nascar-2000-steve-park",
@@ -949,9 +977,23 @@ export const season2000NASCARPhase0: Phase0SeasonBundle = {
       "engine": "Chevrolet"
     },
     {
-      "teamId": "NASCAR_2000_TEAM_DONLAVEY_RACING",
+      "teamId": "NASCAR_2000_TEAM_DONLAVEY_RACING_TEAM_1",
       "carNumber": "90",
       "driverId": "driver-nascar-2000-ed-berrier",
+      "chassis": "Ford",
+      "engine": "Ford"
+    },
+    {
+      "teamId": "NASCAR_2000_TEAM_DONLAVEY_RACING_TEAM_1",
+      "carNumber": "90",
+      "driverId": "driver-nascar-2000-brian-simo",
+      "chassis": "Ford",
+      "engine": "Ford"
+    },
+    {
+      "teamId": "NASCAR_2000_TEAM_DONLAVEY_RACING_TEAM_2",
+      "carNumber": "90",
+      "driverId": "driver-nascar-2000-hut-stricklin",
       "chassis": "Ford",
       "engine": "Ford"
     },
@@ -959,6 +1001,13 @@ export const season2000NASCARPhase0: Phase0SeasonBundle = {
       "teamId": "NASCAR_2000_TEAM_EEL_RIVER_RACING",
       "carNumber": "27",
       "driverId": "driver-nascar-2000-jeff-fuller",
+      "chassis": "Pontiac",
+      "engine": "Pontiac"
+    },
+    {
+      "teamId": "NASCAR_2000_TEAM_EEL_RIVER_RACING",
+      "carNumber": "27",
+      "driverId": "driver-nascar-2000-mike-bliss",
       "chassis": "Pontiac",
       "engine": "Pontiac"
     },
@@ -977,6 +1026,13 @@ export const season2000NASCARPhase0: Phase0SeasonBundle = {
       "engine": "Ford"
     },
     {
+      "teamId": "NASCAR_2000_TEAM_FENLEY_MOORE_MOTORSPORTS",
+      "carNumber": "15",
+      "driverId": "driver-nascar-2000-ted-musgrave",
+      "chassis": "Ford",
+      "engine": "Ford"
+    },
+    {
       "teamId": "NASCAR_2000_TEAM_GALAXY_MOTORSPORTS",
       "carNumber": "75",
       "driverId": "driver-nascar-2000-wally-dallenbach-jr",
@@ -987,6 +1043,13 @@ export const season2000NASCARPhase0: Phase0SeasonBundle = {
       "teamId": "NASCAR_2000_TEAM_GERHART_RACING",
       "carNumber": "89",
       "driverId": "driver-nascar-2000-bobby-gerhart",
+      "chassis": "Chevrolet",
+      "engine": "Chevrolet"
+    },
+    {
+      "teamId": "NASCAR_2000_TEAM_GERHART_RACING",
+      "carNumber": "89",
+      "driverId": "driver-nascar-2000-austin-cameron",
       "chassis": "Chevrolet",
       "engine": "Chevrolet"
     },
@@ -1012,14 +1075,28 @@ export const season2000NASCARPhase0: Phase0SeasonBundle = {
       "engine": "Ford"
     },
     {
-      "teamId": "NASCAR_2000_TEAM_HENDRICK_MOTORSPORTS_TEAM_1",
+      "teamId": "NASCAR_2000_TEAM_HENDRICK_MOTORSPORTS_TEAM_1_TEAM_1",
       "carNumber": "5",
       "driverId": "driver-nascar-2000-terry-labonte",
       "chassis": "Chevrolet",
       "engine": "Chevrolet"
     },
     {
-      "teamId": "NASCAR_2000_TEAM_HENDRICK_MOTORSPORTS_TEAM_1",
+      "teamId": "NASCAR_2000_TEAM_HENDRICK_MOTORSPORTS_TEAM_1_TEAM_1",
+      "carNumber": "5",
+      "driverId": "driver-nascar-2000-todd-bodine",
+      "chassis": "Chevrolet",
+      "engine": "Chevrolet"
+    },
+    {
+      "teamId": "NASCAR_2000_TEAM_HENDRICK_MOTORSPORTS_TEAM_1_TEAM_2",
+      "carNumber": "5",
+      "driverId": "driver-nascar-2000-ron-hornaday-jr",
+      "chassis": "Chevrolet",
+      "engine": "Chevrolet"
+    },
+    {
+      "teamId": "NASCAR_2000_TEAM_HENDRICK_MOTORSPORTS_TEAM_1_TEAM_2",
       "carNumber": "24",
       "driverId": "driver-nascar-2000-jeff-gordon",
       "chassis": "Chevrolet",
@@ -1047,6 +1124,13 @@ export const season2000NASCARPhase0: Phase0SeasonBundle = {
       "engine": "Chevrolet"
     },
     {
+      "teamId": "NASCAR_2000_TEAM_JKR_MOTORSPORTS",
+      "carNumber": "34",
+      "driverId": "driver-nascar-2000-todd-bodine",
+      "chassis": "Chevrolet",
+      "engine": "Chevrolet"
+    },
+    {
       "teamId": "NASCAR_2000_TEAM_JASPER_MOTORSPORTS",
       "carNumber": "77",
       "driverId": "driver-nascar-2000-robert-pressley",
@@ -1061,9 +1145,44 @@ export const season2000NASCARPhase0: Phase0SeasonBundle = {
       "engine": "Chevrolet"
     },
     {
-      "teamId": "NASCAR_2000_TEAM_JOE_BESSEY_RACING",
+      "teamId": "NASCAR_2000_TEAM_JOE_BESSEY_RACING_TEAM_1",
       "carNumber": "60",
       "driverId": "driver-nascar-2000-geoff-bodine",
+      "chassis": "Chevrolet",
+      "engine": "Chevrolet"
+    },
+    {
+      "teamId": "NASCAR_2000_TEAM_JOE_BESSEY_RACING_TEAM_1",
+      "carNumber": "60",
+      "driverId": "driver-nascar-2000-ted-musgrave",
+      "chassis": "Chevrolet",
+      "engine": "Chevrolet"
+    },
+    {
+      "teamId": "NASCAR_2000_TEAM_JOE_BESSEY_RACING_TEAM_2",
+      "carNumber": "60",
+      "driverId": "driver-nascar-2000-dick-trickle",
+      "chassis": "Chevrolet",
+      "engine": "Chevrolet"
+    },
+    {
+      "teamId": "NASCAR_2000_TEAM_JOE_BESSEY_RACING_TEAM_2",
+      "carNumber": "60",
+      "driverId": "driver-nascar-2000-rich-bickle",
+      "chassis": "Chevrolet",
+      "engine": "Chevrolet"
+    },
+    {
+      "teamId": "NASCAR_2000_TEAM_JOE_BESSEY_RACING_TEAM_3",
+      "carNumber": "60",
+      "driverId": "driver-nascar-2000-joe-bessey",
+      "chassis": "Chevrolet",
+      "engine": "Chevrolet"
+    },
+    {
+      "teamId": "NASCAR_2000_TEAM_JOE_BESSEY_RACING_TEAM_3",
+      "carNumber": "60",
+      "driverId": "driver-nascar-2000-hermie-sadler",
       "chassis": "Chevrolet",
       "engine": "Chevrolet"
     },
@@ -1082,9 +1201,30 @@ export const season2000NASCARPhase0: Phase0SeasonBundle = {
       "engine": "Pontiac"
     },
     {
-      "teamId": "NASCAR_2000_TEAM_LJ_RACING",
+      "teamId": "NASCAR_2000_TEAM_LJ_RACING_TEAM_1",
       "carNumber": "91",
       "driverId": "driver-nascar-2000-andy-hillenburg",
+      "chassis": "Chevrolet",
+      "engine": "Chevrolet"
+    },
+    {
+      "teamId": "NASCAR_2000_TEAM_LJ_RACING_TEAM_1",
+      "carNumber": "91",
+      "driverId": "driver-nascar-2000-todd-bodine",
+      "chassis": "Chevrolet",
+      "engine": "Chevrolet"
+    },
+    {
+      "teamId": "NASCAR_2000_TEAM_LJ_RACING_TEAM_2",
+      "carNumber": "91",
+      "driverId": "driver-nascar-2000-larry-gunselman",
+      "chassis": "Chevrolet",
+      "engine": "Chevrolet"
+    },
+    {
+      "teamId": "NASCAR_2000_TEAM_LJ_RACING_TEAM_2",
+      "carNumber": "91",
+      "driverId": "driver-nascar-2000-blaise-alexander",
       "chassis": "Chevrolet",
       "engine": "Chevrolet"
     },
@@ -1092,6 +1232,13 @@ export const season2000NASCARPhase0: Phase0SeasonBundle = {
       "teamId": "NASCAR_2000_TEAM_LARRY_HEDRICK_MOTORSPORTS",
       "carNumber": "41",
       "driverId": "driver-nascar-2000-rick-mast",
+      "chassis": "Chevrolet",
+      "engine": "Chevrolet"
+    },
+    {
+      "teamId": "NASCAR_2000_TEAM_LARRY_HEDRICK_MOTORSPORTS",
+      "carNumber": "41",
+      "driverId": "driver-nascar-2000-gary-bradberry",
       "chassis": "Chevrolet",
       "engine": "Chevrolet"
     },
@@ -1110,6 +1257,13 @@ export const season2000NASCARPhase0: Phase0SeasonBundle = {
       "engine": "Ford"
     },
     {
+      "teamId": "NASCAR_2000_TEAM_MACPHERSON_MOTORSPORTS",
+      "carNumber": "98",
+      "driverId": "driver-nascar-2000-geoff-bodine",
+      "chassis": "Ford",
+      "engine": "Ford"
+    },
+    {
       "teamId": "NASCAR_2000_TEAM_MANSION_MOTORSPORTS",
       "carNumber": "85",
       "driverId": "driver-nascar-2000-carl-long",
@@ -1117,16 +1271,51 @@ export const season2000NASCARPhase0: Phase0SeasonBundle = {
       "engine": "Ford"
     },
     {
-      "teamId": "NASCAR_2000_TEAM_MARCIS_AUTO_RACING",
+      "teamId": "NASCAR_2000_TEAM_MANSION_MOTORSPORTS",
+      "carNumber": "85",
+      "driverId": "driver-nascar-2000-darrell-waltrip",
+      "chassis": "Ford",
+      "engine": "Ford"
+    },
+    {
+      "teamId": "NASCAR_2000_TEAM_MARCIS_AUTO_RACING_TEAM_1",
       "carNumber": "71",
       "driverId": "driver-nascar-2000-dave-marcis",
       "chassis": "Chevrolet",
       "engine": "Chevrolet"
     },
     {
-      "teamId": "NASCAR_2000_TEAM_MARCIS_AUTO_RACING",
+      "teamId": "NASCAR_2000_TEAM_MARCIS_AUTO_RACING_TEAM_1",
+      "carNumber": "71",
+      "driverId": "driver-nascar-2000-r-k-smith",
+      "chassis": "Chevrolet",
+      "engine": "Chevrolet"
+    },
+    {
+      "teamId": "NASCAR_2000_TEAM_MARCIS_AUTO_RACING_TEAM_2",
+      "carNumber": "71",
+      "driverId": "driver-nascar-2000-kerry-earnhardt",
+      "chassis": "Chevrolet",
+      "engine": "Chevrolet"
+    },
+    {
+      "teamId": "NASCAR_2000_TEAM_MARCIS_AUTO_RACING_TEAM_2",
+      "carNumber": "71",
+      "driverId": "driver-nascar-2000-dick-trickle",
+      "chassis": "Chevrolet",
+      "engine": "Chevrolet"
+    },
+    {
+      "teamId": "NASCAR_2000_TEAM_MARCIS_AUTO_RACING_TEAM_3",
       "carNumber": "72",
       "driverId": "driver-nascar-2000-jim-sauter",
+      "chassis": "Chevrolet",
+      "engine": "Chevrolet"
+    },
+    {
+      "teamId": "NASCAR_2000_TEAM_MARCIS_AUTO_RACING_TEAM_3",
+      "carNumber": "72",
+      "driverId": "driver-nascar-2000-dwayne-leik",
       "chassis": "Chevrolet",
       "engine": "Chevrolet"
     },
@@ -1134,6 +1323,13 @@ export const season2000NASCARPhase0: Phase0SeasonBundle = {
       "teamId": "NASCAR_2000_TEAM_MELLING_RACING",
       "carNumber": "9",
       "driverId": "driver-nascar-2000-stacy-compton",
+      "chassis": "Ford",
+      "engine": "Ford"
+    },
+    {
+      "teamId": "NASCAR_2000_TEAM_MELLING_RACING",
+      "carNumber": "9",
+      "driverId": "driver-nascar-2000-bobby-hillin-jr",
       "chassis": "Ford",
       "engine": "Ford"
     },
@@ -1180,16 +1376,30 @@ export const season2000NASCARPhase0: Phase0SeasonBundle = {
       "engine": "Ford"
     },
     {
-      "teamId": "NASCAR_2000_TEAM_PENSKE_KRANEFUSS_RACING_TEAM_1",
+      "teamId": "NASCAR_2000_TEAM_PENSKE_KRANEFUSS_RACING_TEAM_1_TEAM_1",
       "carNumber": "2",
       "driverId": "driver-nascar-2000-rusty-wallace",
       "chassis": "Ford",
       "engine": "Ford"
     },
     {
-      "teamId": "NASCAR_2000_TEAM_PENSKE_KRANEFUSS_RACING_TEAM_1",
+      "teamId": "NASCAR_2000_TEAM_PENSKE_KRANEFUSS_RACING_TEAM_1_TEAM_1",
       "carNumber": "12",
       "driverId": "driver-nascar-2000-jeremy-mayfield",
+      "chassis": "Ford",
+      "engine": "Ford"
+    },
+    {
+      "teamId": "NASCAR_2000_TEAM_PENSKE_KRANEFUSS_RACING_TEAM_1_TEAM_2",
+      "carNumber": "12",
+      "driverId": "driver-nascar-2000-kyle-petty",
+      "chassis": "Ford",
+      "engine": "Ford"
+    },
+    {
+      "teamId": "NASCAR_2000_TEAM_PENSKE_KRANEFUSS_RACING_TEAM_1_TEAM_2",
+      "carNumber": "12",
+      "driverId": "driver-nascar-2000-tom-hubert",
       "chassis": "Ford",
       "engine": "Ford"
     },
@@ -1201,16 +1411,23 @@ export const season2000NASCARPhase0: Phase0SeasonBundle = {
       "engine": "Ford"
     },
     {
-      "teamId": "NASCAR_2000_TEAM_PETTY_ENTERPRISES_TEAM_1",
+      "teamId": "NASCAR_2000_TEAM_PETTY_ENTERPRISES_TEAM_1_TEAM_1",
       "carNumber": "43",
       "driverId": "driver-nascar-2000-john-andretti",
       "chassis": "Pontiac",
       "engine": "Pontiac"
     },
     {
-      "teamId": "NASCAR_2000_TEAM_PETTY_ENTERPRISES_TEAM_1",
+      "teamId": "NASCAR_2000_TEAM_PETTY_ENTERPRISES_TEAM_1_TEAM_1",
       "carNumber": "44",
       "driverId": "driver-nascar-2000-kyle-petty",
+      "chassis": "Pontiac",
+      "engine": "Pontiac"
+    },
+    {
+      "teamId": "NASCAR_2000_TEAM_PETTY_ENTERPRISES_TEAM_1_TEAM_2",
+      "carNumber": "44",
+      "driverId": "driver-nascar-2000-steve-grissom",
       "chassis": "Pontiac",
       "engine": "Pontiac"
     },
@@ -1220,6 +1437,13 @@ export const season2000NASCARPhase0: Phase0SeasonBundle = {
       "driverId": "driver-nascar-2000-adam-petty",
       "chassis": "Chevrolet",
       "engine": "Chevrolet"
+    },
+    {
+      "teamId": "NASCAR_2000_TEAM_PETTY_ENTERPRISES_TEAM_2",
+      "carNumber": "45",
+      "driverId": "driver-nascar-2000-kyle-petty",
+      "chassis": "Pontiac",
+      "engine": "Pontiac"
     },
     {
       "teamId": "NASCAR_2000_TEAM_PETTY_HUGGINS_MOTORSPORTS",
@@ -1271,16 +1495,23 @@ export const season2000NASCARPhase0: Phase0SeasonBundle = {
       "engine": "Ford"
     },
     {
-      "teamId": "NASCAR_2000_TEAM_ROUSH_RACING_TEAM_2",
+      "teamId": "NASCAR_2000_TEAM_ROUSH_RACING_TEAM_2_TEAM_1",
       "carNumber": "17",
       "driverId": "driver-nascar-2000-matt-kenseth",
       "chassis": "Ford",
       "engine": "Ford"
     },
     {
-      "teamId": "NASCAR_2000_TEAM_ROUSH_RACING_TEAM_2",
+      "teamId": "NASCAR_2000_TEAM_ROUSH_RACING_TEAM_2_TEAM_1",
       "carNumber": "97",
       "driverId": "driver-nascar-2000-chad-little",
+      "chassis": "Ford",
+      "engine": "Ford"
+    },
+    {
+      "teamId": "NASCAR_2000_TEAM_ROUSH_RACING_TEAM_2_TEAM_2",
+      "carNumber": "97",
+      "driverId": "driver-nascar-2000-kurt-busch",
       "chassis": "Ford",
       "engine": "Ford"
     },
@@ -1313,6 +1544,13 @@ export const season2000NASCARPhase0: Phase0SeasonBundle = {
       "engine": "Ford"
     },
     {
+      "teamId": "NASCAR_2000_TEAM_TEAM_MENARD",
+      "carNumber": "13",
+      "driverId": "driver-nascar-2000-p-j-jones",
+      "chassis": "Ford",
+      "engine": "Ford"
+    },
+    {
       "teamId": "NASCAR_2000_TEAM_TEAM_SABCO_TEAM_1",
       "carNumber": "40",
       "driverId": "driver-nascar-2000-sterling-marlin",
@@ -1327,16 +1565,30 @@ export const season2000NASCARPhase0: Phase0SeasonBundle = {
       "engine": "Chevrolet"
     },
     {
-      "teamId": "NASCAR_2000_TEAM_TEAM_SABCO_TEAM_2",
+      "teamId": "NASCAR_2000_TEAM_TEAM_SABCO_TEAM_2_TEAM_1",
       "carNumber": "42",
       "driverId": "driver-nascar-2000-kenny-irwin-jr",
       "chassis": "Chevrolet",
       "engine": "Chevrolet"
     },
     {
-      "teamId": "NASCAR_2000_TEAM_TEAM_SABCO_TEAM_2",
+      "teamId": "NASCAR_2000_TEAM_TEAM_SABCO_TEAM_2_TEAM_1",
       "carNumber": "01",
       "driverId": "driver-nascar-2000-ted-musgrave",
+      "chassis": "Chevrolet",
+      "engine": "Chevrolet"
+    },
+    {
+      "teamId": "NASCAR_2000_TEAM_TEAM_SABCO_TEAM_2_TEAM_2",
+      "carNumber": "01",
+      "driverId": "driver-nascar-2000-p-j-jones",
+      "chassis": "Chevrolet",
+      "engine": "Chevrolet"
+    },
+    {
+      "teamId": "NASCAR_2000_TEAM_TEAM_SABCO_TEAM_2_TEAM_2",
+      "carNumber": "01",
+      "driverId": "driver-nascar-2000-bobby-hamilton-jr",
       "chassis": "Chevrolet",
       "engine": "Chevrolet"
     },
@@ -1831,8 +2083,13 @@ export const season2000NASCARPhase0: Phase0SeasonBundle = {
       "sourceSheet": "Car_Ratings"
     },
     {
-      "entityId": "NASCAR_2000_TEAM_ANDY_PETREE_RACING",
-      "label": "Andy Petree Racing",
+      "entityId": "NASCAR_2000_TEAM_ANDY_PETREE_RACING_TEAM_1",
+      "label": "Andy Petree Racing Team 1",
+      "sourceSheet": "Car_Ratings"
+    },
+    {
+      "entityId": "NASCAR_2000_TEAM_ANDY_PETREE_RACING_TEAM_2",
+      "label": "Andy Petree Racing Team 2",
       "sourceSheet": "Car_Ratings"
     },
     {
@@ -1841,8 +2098,13 @@ export const season2000NASCARPhase0: Phase0SeasonBundle = {
       "sourceSheet": "Car_Ratings"
     },
     {
-      "entityId": "NASCAR_2000_TEAM_BILL_DAVIS_RACING",
-      "label": "Bill Davis Racing",
+      "entityId": "NASCAR_2000_TEAM_BILL_DAVIS_RACING_TEAM_1",
+      "label": "Bill Davis Racing Team 1",
+      "sourceSheet": "Car_Ratings"
+    },
+    {
+      "entityId": "NASCAR_2000_TEAM_BILL_DAVIS_RACING_TEAM_2",
+      "label": "Bill Davis Racing Team 2",
       "sourceSheet": "Car_Ratings"
     },
     {
@@ -1906,18 +2168,33 @@ export const season2000NASCARPhase0: Phase0SeasonBundle = {
       "sourceSheet": "Car_Ratings"
     },
     {
-      "entityId": "NASCAR_2000_TEAM_HAAS_CARTER_MOTORSPORTS",
-      "label": "Haas-Carter Motorsports",
+      "entityId": "NASCAR_2000_TEAM_HAAS_CARTER_MOTORSPORTS_TEAM_1",
+      "label": "Haas-Carter Motorsports Team 1",
       "sourceSheet": "Car_Ratings"
     },
     {
-      "entityId": "NASCAR_2000_TEAM_HENDRICK_MOTORSPORTS",
-      "label": "Hendrick Motorsports",
+      "entityId": "NASCAR_2000_TEAM_HAAS_CARTER_MOTORSPORTS_TEAM_2",
+      "label": "Haas-Carter Motorsports Team 2",
+      "sourceSheet": "Car_Ratings"
+    },
+    {
+      "entityId": "NASCAR_2000_TEAM_HENDRICK_MOTORSPORTS_TEAM_1",
+      "label": "Hendrick Motorsports Team 1",
+      "sourceSheet": "Car_Ratings"
+    },
+    {
+      "entityId": "NASCAR_2000_TEAM_HENDRICK_MOTORSPORTS_TEAM_2",
+      "label": "Hendrick Motorsports Team 2",
       "sourceSheet": "Car_Ratings"
     },
     {
       "entityId": "NASCAR_2000_TEAM_HOVER_MOTORSPORTS",
       "label": "Hover Motorsports",
+      "sourceSheet": "Car_Ratings"
+    },
+    {
+      "entityId": "NASCAR_2000_TEAM_JKR_MOTORSPORTS",
+      "label": "JKR Motorsports",
       "sourceSheet": "Car_Ratings"
     },
     {
@@ -1931,11 +2208,6 @@ export const season2000NASCARPhase0: Phase0SeasonBundle = {
       "sourceSheet": "Car_Ratings"
     },
     {
-      "entityId": "NASCAR_2000_TEAM_JKR_MOTORSPORTS",
-      "label": "JKR Motorsports",
-      "sourceSheet": "Car_Ratings"
-    },
-    {
       "entityId": "NASCAR_2000_TEAM_JOE_BESSEY_RACING",
       "label": "Joe Bessey Racing",
       "sourceSheet": "Car_Ratings"
@@ -1946,13 +2218,18 @@ export const season2000NASCARPhase0: Phase0SeasonBundle = {
       "sourceSheet": "Car_Ratings"
     },
     {
+      "entityId": "NASCAR_2000_TEAM_LJ_RACING",
+      "label": "LJ Racing",
+      "sourceSheet": "Car_Ratings"
+    },
+    {
       "entityId": "NASCAR_2000_TEAM_LARRY_HEDRICK_MOTORSPORTS",
       "label": "Larry Hedrick Motorsports",
       "sourceSheet": "Car_Ratings"
     },
     {
-      "entityId": "NASCAR_2000_TEAM_LJ_RACING",
-      "label": "LJ Racing",
+      "entityId": "NASCAR_2000_TEAM_MB2_MOTORSPORTS",
+      "label": "MB2 Motorsports",
       "sourceSheet": "Car_Ratings"
     },
     {
@@ -1968,11 +2245,6 @@ export const season2000NASCARPhase0: Phase0SeasonBundle = {
     {
       "entityId": "NASCAR_2000_TEAM_MARCIS_AUTO_RACING",
       "label": "Marcis Auto Racing",
-      "sourceSheet": "Car_Ratings"
-    },
-    {
-      "entityId": "NASCAR_2000_TEAM_MB2_MOTORSPORTS",
-      "label": "MB2 Motorsports",
       "sourceSheet": "Car_Ratings"
     },
     {
@@ -2001,23 +2273,33 @@ export const season2000NASCARPhase0: Phase0SeasonBundle = {
       "sourceSheet": "Car_Ratings"
     },
     {
-      "entityId": "NASCAR_2000_TEAM_PENSKE_KRANEFUSS_RACING",
-      "label": "Penske-Kranefuss Racing",
+      "entityId": "NASCAR_2000_TEAM_PPI_MOTORSPORTS",
+      "label": "PPI Motorsports",
       "sourceSheet": "Car_Ratings"
     },
     {
-      "entityId": "NASCAR_2000_TEAM_PETTY_ENTERPRISES",
-      "label": "Petty Enterprises",
+      "entityId": "NASCAR_2000_TEAM_PENSKE_KRANEFUSS_RACING_TEAM_1",
+      "label": "Penske-Kranefuss Racing Team 1",
+      "sourceSheet": "Car_Ratings"
+    },
+    {
+      "entityId": "NASCAR_2000_TEAM_PENSKE_KRANEFUSS_RACING_TEAM_2",
+      "label": "Penske-Kranefuss Racing Team 2",
+      "sourceSheet": "Car_Ratings"
+    },
+    {
+      "entityId": "NASCAR_2000_TEAM_PETTY_ENTERPRISES_TEAM_1",
+      "label": "Petty Enterprises Team 1",
+      "sourceSheet": "Car_Ratings"
+    },
+    {
+      "entityId": "NASCAR_2000_TEAM_PETTY_ENTERPRISES_TEAM_2",
+      "label": "Petty Enterprises Team 2",
       "sourceSheet": "Car_Ratings"
     },
     {
       "entityId": "NASCAR_2000_TEAM_PETTY_HUGGINS_MOTORSPORTS",
       "label": "Petty-Huggins Motorsports",
-      "sourceSheet": "Car_Ratings"
-    },
-    {
-      "entityId": "NASCAR_2000_TEAM_PPI_MOTORSPORTS",
-      "label": "PPI Motorsports",
       "sourceSheet": "Car_Ratings"
     },
     {
@@ -2031,8 +2313,18 @@ export const season2000NASCARPhase0: Phase0SeasonBundle = {
       "sourceSheet": "Car_Ratings"
     },
     {
-      "entityId": "NASCAR_2000_TEAM_ROUSH_RACING",
-      "label": "Roush Racing",
+      "entityId": "NASCAR_2000_TEAM_ROUSH_RACING_TEAM_1",
+      "label": "Roush Racing Team 1",
+      "sourceSheet": "Car_Ratings"
+    },
+    {
+      "entityId": "NASCAR_2000_TEAM_ROUSH_RACING_TEAM_2",
+      "label": "Roush Racing Team 2",
+      "sourceSheet": "Car_Ratings"
+    },
+    {
+      "entityId": "NASCAR_2000_TEAM_ROUSH_RACING_TEAM_3",
+      "label": "Roush Racing Team 3",
       "sourceSheet": "Car_Ratings"
     },
     {
@@ -2051,8 +2343,13 @@ export const season2000NASCARPhase0: Phase0SeasonBundle = {
       "sourceSheet": "Car_Ratings"
     },
     {
-      "entityId": "NASCAR_2000_TEAM_TEAM_SABCO",
-      "label": "Team SABCO",
+      "entityId": "NASCAR_2000_TEAM_TEAM_SABCO_TEAM_1",
+      "label": "Team SABCO Team 1",
+      "sourceSheet": "Car_Ratings"
+    },
+    {
+      "entityId": "NASCAR_2000_TEAM_TEAM_SABCO_TEAM_2",
+      "label": "Team SABCO Team 2",
       "sourceSheet": "Car_Ratings"
     },
     {

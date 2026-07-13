@@ -5,10 +5,10 @@ import type {
 
 export const teams2010NASCAR: Team[] = [
   {
-    "id": "t-2010-nascar-ash-racing",
-    "name": "Ash Racing",
+    "id": "t-2010-nascar-ash-racing-team-1",
+    "name": "Ash Racing Team 1",
     "shortName": "",
-    "carId": "car-2010-nascar-ash-racing",
+    "carId": "car-2010-nascar-ash-racing-team-1",
     "driverIds": [
       "d-2010-nascar-brandon-ash"
     ],
@@ -22,10 +22,10 @@ export const teams2010NASCAR: Team[] = [
     "country": "United States"
   },
   {
-    "id": "t-2010-nascar-bam-racing",
-    "name": "BAM Racing",
+    "id": "t-2010-nascar-bam-racing-team-1",
+    "name": "BAM Racing Team 1",
     "shortName": "",
-    "carId": "car-2010-nascar-bam-racing",
+    "carId": "car-2010-nascar-bam-racing-team-1",
     "driverIds": [
       "d-2010-nascar-david-gilliland"
     ],
@@ -39,12 +39,13 @@ export const teams2010NASCAR: Team[] = [
     "country": "United States"
   },
   {
-    "id": "t-2010-nascar-braun-racing",
-    "name": "Braun Racing",
+    "id": "t-2010-nascar-braun-racing-team-1-team-1",
+    "name": "Braun Racing Team 1 team 1",
     "shortName": "",
-    "carId": "car-2010-nascar-braun-racing",
+    "carId": "car-2010-nascar-braun-racing-team-1-team-1",
     "driverIds": [
-      "d-2010-nascar-reed-sorenson"
+      "d-2010-nascar-reed-sorenson",
+      "d-2010-nascar-mike-bliss"
     ],
     "budget": 50,
     "reputation": 38,
@@ -56,10 +57,28 @@ export const teams2010NASCAR: Team[] = [
     "country": "United States"
   },
   {
-    "id": "t-2010-nascar-earnhardt-ganassi-racing",
-    "name": "Earnhardt Ganassi Racing",
+    "id": "t-2010-nascar-braun-racing-team-1-team-2",
+    "name": "Braun Racing Team 1 team 2",
     "shortName": "",
-    "carId": "car-2010-nascar-earnhardt-ganassi-racing",
+    "carId": "car-2010-nascar-braun-racing-team-1-team-2",
+    "driverIds": [
+      "d-2010-nascar-jacques-villeneuve",
+      "d-2010-nascar-jason-leffler"
+    ],
+    "budget": 50,
+    "reputation": 38,
+    "raceOperations": 38,
+    "morale": 65,
+    "expectedStanding": 4,
+    "difficulty": "Medium",
+    "color": "#60a5fa",
+    "country": "United States"
+  },
+  {
+    "id": "t-2010-nascar-earnhardt-ganassi-racing-team-1",
+    "name": "Earnhardt Ganassi Racing Team 1",
+    "shortName": "",
+    "carId": "car-2010-nascar-earnhardt-ganassi-racing-team-1",
     "driverIds": [
       "d-2010-nascar-jamie-mcmurray",
       "d-2010-nascar-juan-pablo-montoya"
@@ -68,36 +87,19 @@ export const teams2010NASCAR: Team[] = [
     "reputation": 80,
     "raceOperations": 80,
     "morale": 65,
-    "expectedStanding": 4,
-    "difficulty": "Medium",
-    "color": "#60a5fa",
-    "country": "United States"
-  },
-  {
-    "id": "t-2010-nascar-front-row-motorsports-team-1",
-    "name": "Front Row Motorsports team 1",
-    "shortName": "",
-    "carId": "car-2010-nascar-front-row-motorsports-team-1",
-    "driverIds": [
-      "d-2010-nascar-john-andretti",
-      "d-2010-nascar-travis-kvapil"
-    ],
-    "budget": 50,
-    "reputation": 50,
-    "raceOperations": 50,
-    "morale": 65,
     "expectedStanding": 5,
     "difficulty": "Medium",
     "color": "#60a5fa",
     "country": "United States"
   },
   {
-    "id": "t-2010-nascar-front-row-motorsports-team-2",
-    "name": "Front Row Motorsports team 2",
+    "id": "t-2010-nascar-front-row-motorsports-team-1-team-1",
+    "name": "Front Row Motorsports Team 1 team 1",
     "shortName": "",
-    "carId": "car-2010-nascar-front-row-motorsports-team-2",
+    "carId": "car-2010-nascar-front-row-motorsports-team-1-team-1",
     "driverIds": [
-      "d-2010-nascar-robert-richardson-jr"
+      "d-2010-nascar-john-andretti",
+      "d-2010-nascar-travis-kvapil"
     ],
     "budget": 50,
     "reputation": 50,
@@ -109,16 +111,17 @@ export const teams2010NASCAR: Team[] = [
     "country": "United States"
   },
   {
-    "id": "t-2010-nascar-furniture-row-racing",
-    "name": "Furniture Row Racing",
+    "id": "t-2010-nascar-front-row-motorsports-team-1-team-2",
+    "name": "Front Row Motorsports Team 1 team 2",
     "shortName": "",
-    "carId": "car-2010-nascar-furniture-row-racing",
+    "carId": "car-2010-nascar-front-row-motorsports-team-1-team-2",
     "driverIds": [
-      "d-2010-nascar-regan-smith"
+      "d-2010-nascar-kevin-conway",
+      "d-2010-nascar-tony-raines"
     ],
     "budget": 50,
-    "reputation": 65,
-    "raceOperations": 65,
+    "reputation": 50,
+    "raceOperations": 50,
     "morale": 65,
     "expectedStanding": 7,
     "difficulty": "Medium",
@@ -126,16 +129,17 @@ export const teams2010NASCAR: Team[] = [
     "country": "United States"
   },
   {
-    "id": "t-2010-nascar-germain-racing",
-    "name": "Germain Racing",
+    "id": "t-2010-nascar-front-row-motorsports-team-1-team-3",
+    "name": "Front Row Motorsports Team 1 team 3",
     "shortName": "",
-    "carId": "car-2010-nascar-germain-racing",
+    "carId": "car-2010-nascar-front-row-motorsports-team-1-team-3",
     "driverIds": [
-      "d-2010-nascar-max-papis"
+      "d-2010-nascar-robert-richardson-jr",
+      "d-2010-nascar-travis-kvapil"
     ],
     "budget": 50,
-    "reputation": 47,
-    "raceOperations": 47,
+    "reputation": 50,
+    "raceOperations": 50,
     "morale": 65,
     "expectedStanding": 8,
     "difficulty": "Medium",
@@ -143,16 +147,17 @@ export const teams2010NASCAR: Team[] = [
     "country": "United States"
   },
   {
-    "id": "t-2010-nascar-gunselman-motorsports",
-    "name": "Gunselman Motorsports",
+    "id": "t-2010-nascar-front-row-motorsports-team-1-team-4",
+    "name": "Front Row Motorsports Team 1 team 4",
     "shortName": "",
-    "carId": "car-2010-nascar-gunselman-motorsports",
+    "carId": "car-2010-nascar-front-row-motorsports-team-1-team-4",
     "driverIds": [
-      "d-2010-nascar-tony-raines"
+      "d-2010-nascar-kevin-conway",
+      "d-2010-nascar-david-gilliland"
     ],
     "budget": 50,
-    "reputation": 26,
-    "raceOperations": 26,
+    "reputation": 50,
+    "raceOperations": 50,
     "morale": 65,
     "expectedStanding": 9,
     "difficulty": "Medium",
@@ -160,17 +165,17 @@ export const teams2010NASCAR: Team[] = [
     "country": "United States"
   },
   {
-    "id": "t-2010-nascar-hendrick-motorsports-team-1",
-    "name": "Hendrick Motorsports team 1",
+    "id": "t-2010-nascar-front-row-motorsports-team-1-team-5",
+    "name": "Front Row Motorsports Team 1 team 5",
     "shortName": "",
-    "carId": "car-2010-nascar-hendrick-motorsports-team-1",
+    "carId": "car-2010-nascar-front-row-motorsports-team-1-team-5",
     "driverIds": [
-      "d-2010-nascar-mark-martin",
-      "d-2010-nascar-jeff-gordon"
+      "d-2010-nascar-robert-richardson-jr",
+      "d-2010-nascar-tony-raines"
     ],
     "budget": 50,
-    "reputation": 98,
-    "raceOperations": 98,
+    "reputation": 50,
+    "raceOperations": 50,
     "morale": 65,
     "expectedStanding": 10,
     "difficulty": "Medium",
@@ -178,17 +183,16 @@ export const teams2010NASCAR: Team[] = [
     "country": "United States"
   },
   {
-    "id": "t-2010-nascar-hendrick-motorsports-team-2",
-    "name": "Hendrick Motorsports team 2",
+    "id": "t-2010-nascar-front-row-motorsports-team-1-team-6",
+    "name": "Front Row Motorsports Team 1 team 6",
     "shortName": "",
-    "carId": "car-2010-nascar-hendrick-motorsports-team-2",
+    "carId": "car-2010-nascar-front-row-motorsports-team-1-team-6",
     "driverIds": [
-      "d-2010-nascar-jimmie-johnson",
-      "d-2010-nascar-dale-earnhardt-jr"
+      "d-2010-nascar-dave-blaney"
     ],
     "budget": 50,
-    "reputation": 98,
-    "raceOperations": 98,
+    "reputation": 50,
+    "raceOperations": 50,
     "morale": 65,
     "expectedStanding": 11,
     "difficulty": "Medium",
@@ -196,16 +200,17 @@ export const teams2010NASCAR: Team[] = [
     "country": "United States"
   },
   {
-    "id": "t-2010-nascar-jtg-daugherty-racing-with-michael-waltrip-racing",
-    "name": "JTG Daugherty Racing with Michael Waltrip Racing",
+    "id": "t-2010-nascar-front-row-motorsports-team-2-team-1",
+    "name": "Front Row Motorsports Team 2 team 1",
     "shortName": "",
-    "carId": "car-2010-nascar-jtg-daugherty-racing-with-michael-waltrip-racing",
+    "carId": "car-2010-nascar-front-row-motorsports-team-2-team-1",
     "driverIds": [
-      "d-2010-nascar-marcos-ambrose"
+      "d-2010-nascar-robert-richardson-jr",
+      "d-2010-nascar-david-gilliland"
     ],
     "budget": 50,
-    "reputation": 68,
-    "raceOperations": 68,
+    "reputation": 51,
+    "raceOperations": 51,
     "morale": 65,
     "expectedStanding": 12,
     "difficulty": "Medium",
@@ -213,17 +218,17 @@ export const teams2010NASCAR: Team[] = [
     "country": "United States"
   },
   {
-    "id": "t-2010-nascar-joe-gibbs-racing-team-1",
-    "name": "Joe Gibbs Racing team 1",
+    "id": "t-2010-nascar-front-row-motorsports-team-2-team-2",
+    "name": "Front Row Motorsports Team 2 team 2",
     "shortName": "",
-    "carId": "car-2010-nascar-joe-gibbs-racing-team-1",
+    "carId": "car-2010-nascar-front-row-motorsports-team-2-team-2",
     "driverIds": [
-      "d-2010-nascar-denny-hamlin",
-      "d-2010-nascar-kyle-busch"
+      "d-2010-nascar-kevin-conway",
+      "d-2010-nascar-travis-kvapil"
     ],
     "budget": 50,
-    "reputation": 91,
-    "raceOperations": 91,
+    "reputation": 51,
+    "raceOperations": 51,
     "morale": 65,
     "expectedStanding": 13,
     "difficulty": "Medium",
@@ -231,16 +236,16 @@ export const teams2010NASCAR: Team[] = [
     "country": "United States"
   },
   {
-    "id": "t-2010-nascar-joe-gibbs-racing-team-2",
-    "name": "Joe Gibbs Racing team 2",
+    "id": "t-2010-nascar-front-row-motorsports-team-2-team-3",
+    "name": "Front Row Motorsports Team 2 team 3",
     "shortName": "",
-    "carId": "car-2010-nascar-joe-gibbs-racing-team-2",
+    "carId": "car-2010-nascar-front-row-motorsports-team-2-team-3",
     "driverIds": [
-      "d-2010-nascar-joey-logano"
+      "d-2010-nascar-dave-blaney"
     ],
     "budget": 50,
-    "reputation": 91,
-    "raceOperations": 91,
+    "reputation": 51,
+    "raceOperations": 51,
     "morale": 65,
     "expectedStanding": 14,
     "difficulty": "Medium",
@@ -248,16 +253,16 @@ export const teams2010NASCAR: Team[] = [
     "country": "United States"
   },
   {
-    "id": "t-2010-nascar-k-automotive-motorsports",
-    "name": "K-Automotive Motorsports",
+    "id": "t-2010-nascar-furniture-row-racing-team-1",
+    "name": "Furniture Row Racing Team 1",
     "shortName": "",
-    "carId": "car-2010-nascar-k-automotive-motorsports",
+    "carId": "car-2010-nascar-furniture-row-racing-team-1",
     "driverIds": [
-      "d-2010-nascar-mike-wallace"
+      "d-2010-nascar-regan-smith"
     ],
     "budget": 50,
-    "reputation": 30,
-    "raceOperations": 30,
+    "reputation": 65,
+    "raceOperations": 65,
     "morale": 65,
     "expectedStanding": 15,
     "difficulty": "Medium",
@@ -265,16 +270,17 @@ export const teams2010NASCAR: Team[] = [
     "country": "United States"
   },
   {
-    "id": "t-2010-nascar-keyed-up-motorsports",
-    "name": "Keyed-Up Motorsports",
+    "id": "t-2010-nascar-germain-racing-team-1",
+    "name": "Germain Racing Team 1",
     "shortName": "",
-    "carId": "car-2010-nascar-keyed-up-motorsports",
+    "carId": "car-2010-nascar-germain-racing-team-1",
     "driverIds": [
+      "d-2010-nascar-max-papis",
       "d-2010-nascar-casey-mears"
     ],
     "budget": 50,
-    "reputation": 20,
-    "raceOperations": 20,
+    "reputation": 47,
+    "raceOperations": 47,
     "morale": 65,
     "expectedStanding": 16,
     "difficulty": "Medium",
@@ -282,16 +288,17 @@ export const teams2010NASCAR: Team[] = [
     "country": "United States"
   },
   {
-    "id": "t-2010-nascar-kirk-shelmerdine-racing",
-    "name": "Kirk Shelmerdine Racing",
+    "id": "t-2010-nascar-gunselman-motorsports-team-1-team-1",
+    "name": "Gunselman Motorsports Team 1 team 1",
     "shortName": "",
-    "carId": "car-2010-nascar-kirk-shelmerdine-racing",
+    "carId": "car-2010-nascar-gunselman-motorsports-team-1-team-1",
     "driverIds": [
+      "d-2010-nascar-tony-raines",
       "d-2010-nascar-todd-bodine"
     ],
     "budget": 50,
-    "reputation": 29,
-    "raceOperations": 29,
+    "reputation": 26,
+    "raceOperations": 26,
     "morale": 65,
     "expectedStanding": 17,
     "difficulty": "Medium",
@@ -299,16 +306,17 @@ export const teams2010NASCAR: Team[] = [
     "country": "United States"
   },
   {
-    "id": "t-2010-nascar-latitude-43-motorsports",
-    "name": "Latitude 43 Motorsports",
+    "id": "t-2010-nascar-gunselman-motorsports-team-1-team-2",
+    "name": "Gunselman Motorsports Team 1 team 2",
     "shortName": "",
-    "carId": "car-2010-nascar-latitude-43-motorsports",
+    "carId": "car-2010-nascar-gunselman-motorsports-team-1-team-2",
     "driverIds": [
-      "d-2010-nascar-boris-said"
+      "d-2010-nascar-chad-mccumbee",
+      "d-2010-nascar-landon-cassill"
     ],
     "budget": 50,
-    "reputation": 34,
-    "raceOperations": 34,
+    "reputation": 26,
+    "raceOperations": 26,
     "morale": 65,
     "expectedStanding": 18,
     "difficulty": "Medium",
@@ -316,17 +324,17 @@ export const teams2010NASCAR: Team[] = [
     "country": "United States"
   },
   {
-    "id": "t-2010-nascar-michael-waltrip-racing-team-1",
-    "name": "Michael Waltrip Racing team 1",
+    "id": "t-2010-nascar-gunselman-motorsports-team-1-team-3",
+    "name": "Gunselman Motorsports Team 1 team 3",
     "shortName": "",
-    "carId": "car-2010-nascar-michael-waltrip-racing-team-1",
+    "carId": "car-2010-nascar-gunselman-motorsports-team-1-team-3",
     "driverIds": [
-      "d-2010-nascar-david-reutimann",
-      "d-2010-nascar-martin-truex-jr"
+      "d-2010-nascar-josh-wise",
+      "d-2010-nascar-jeff-green"
     ],
     "budget": 50,
-    "reputation": 52,
-    "raceOperations": 52,
+    "reputation": 26,
+    "raceOperations": 26,
     "morale": 65,
     "expectedStanding": 19,
     "difficulty": "Medium",
@@ -334,17 +342,17 @@ export const teams2010NASCAR: Team[] = [
     "country": "United States"
   },
   {
-    "id": "t-2010-nascar-michael-waltrip-racing-team-2",
-    "name": "Michael Waltrip Racing team 2",
+    "id": "t-2010-nascar-hendrick-motorsports-team-1",
+    "name": "Hendrick Motorsports Team 1",
     "shortName": "",
-    "carId": "car-2010-nascar-michael-waltrip-racing-team-2",
+    "carId": "car-2010-nascar-hendrick-motorsports-team-1",
     "driverIds": [
-      "d-2010-nascar-michael-waltrip",
-      "d-2010-nascar-michael-waltrip"
+      "d-2010-nascar-mark-martin",
+      "d-2010-nascar-jeff-gordon"
     ],
     "budget": 50,
-    "reputation": 52,
-    "raceOperations": 52,
+    "reputation": 97,
+    "raceOperations": 97,
     "morale": 65,
     "expectedStanding": 20,
     "difficulty": "Medium",
@@ -352,16 +360,17 @@ export const teams2010NASCAR: Team[] = [
     "country": "United States"
   },
   {
-    "id": "t-2010-nascar-morgan-mcclure-motorsports",
-    "name": "Morgan-McClure Motorsports",
+    "id": "t-2010-nascar-hendrick-motorsports-team-2",
+    "name": "Hendrick Motorsports Team 2",
     "shortName": "",
-    "carId": "car-2010-nascar-morgan-mcclure-motorsports",
+    "carId": "car-2010-nascar-hendrick-motorsports-team-2",
     "driverIds": [
-      "d-2010-nascar-kevin-lepage"
+      "d-2010-nascar-jimmie-johnson",
+      "d-2010-nascar-dale-earnhardt-jr"
     ],
     "budget": 50,
-    "reputation": 72,
-    "raceOperations": 72,
+    "reputation": 100,
+    "raceOperations": 100,
     "morale": 65,
     "expectedStanding": 21,
     "difficulty": "Medium",
@@ -369,17 +378,16 @@ export const teams2010NASCAR: Team[] = [
     "country": "United States"
   },
   {
-    "id": "t-2010-nascar-nemco-motorsports",
-    "name": "NEMCO Motorsports",
+    "id": "t-2010-nascar-jtg-daugherty-racing-with-michael-waltrip-racing-team-1",
+    "name": "JTG Daugherty Racing with Michael Waltrip Racing Team 1",
     "shortName": "",
-    "carId": "car-2010-nascar-nemco-motorsports",
+    "carId": "car-2010-nascar-jtg-daugherty-racing-with-michael-waltrip-racing-team-1",
     "driverIds": [
-      "d-2010-nascar-joe-nemechek",
-      "d-2010-nascar-jeff-fuller"
+      "d-2010-nascar-marcos-ambrose"
     ],
     "budget": 50,
-    "reputation": 29,
-    "raceOperations": 29,
+    "reputation": 68,
+    "raceOperations": 68,
     "morale": 65,
     "expectedStanding": 22,
     "difficulty": "Medium",
@@ -387,16 +395,17 @@ export const teams2010NASCAR: Team[] = [
     "country": "United States"
   },
   {
-    "id": "t-2010-nascar-norm-benning-racing",
-    "name": "Norm Benning Racing",
+    "id": "t-2010-nascar-joe-gibbs-racing-team-1",
+    "name": "Joe Gibbs Racing Team 1",
     "shortName": "",
-    "carId": "car-2010-nascar-norm-benning-racing",
+    "carId": "car-2010-nascar-joe-gibbs-racing-team-1",
     "driverIds": [
-      "d-2010-nascar-norm-benning"
+      "d-2010-nascar-denny-hamlin",
+      "d-2010-nascar-kyle-busch"
     ],
     "budget": 50,
-    "reputation": 28,
-    "raceOperations": 28,
+    "reputation": 100,
+    "raceOperations": 100,
     "morale": 65,
     "expectedStanding": 23,
     "difficulty": "Medium",
@@ -404,17 +413,16 @@ export const teams2010NASCAR: Team[] = [
     "country": "United States"
   },
   {
-    "id": "t-2010-nascar-penske-championship-racing-team-1",
-    "name": "Penske Championship Racing team 1",
+    "id": "t-2010-nascar-joe-gibbs-racing-team-2",
+    "name": "Joe Gibbs Racing Team 2",
     "shortName": "",
-    "carId": "car-2010-nascar-penske-championship-racing-team-1",
+    "carId": "car-2010-nascar-joe-gibbs-racing-team-2",
     "driverIds": [
-      "d-2010-nascar-kurt-busch",
-      "d-2010-nascar-brad-keselowski"
+      "d-2010-nascar-joey-logano"
     ],
     "budget": 50,
-    "reputation": 78,
-    "raceOperations": 78,
+    "reputation": 81,
+    "raceOperations": 81,
     "morale": 65,
     "expectedStanding": 24,
     "difficulty": "Medium",
@@ -422,16 +430,17 @@ export const teams2010NASCAR: Team[] = [
     "country": "United States"
   },
   {
-    "id": "t-2010-nascar-penske-championship-racing-team-2",
-    "name": "Penske Championship Racing team 2",
+    "id": "t-2010-nascar-k-automotive-motorsports-team-1",
+    "name": "K-Automotive Motorsports Team 1",
     "shortName": "",
-    "carId": "car-2010-nascar-penske-championship-racing-team-2",
+    "carId": "car-2010-nascar-k-automotive-motorsports-team-1",
     "driverIds": [
-      "d-2010-nascar-sam-hornish-jr"
+      "d-2010-nascar-mike-wallace",
+      "d-2010-nascar-brian-keselowski"
     ],
     "budget": 50,
-    "reputation": 78,
-    "raceOperations": 78,
+    "reputation": 30,
+    "raceOperations": 30,
     "morale": 65,
     "expectedStanding": 25,
     "difficulty": "Medium",
@@ -439,16 +448,17 @@ export const teams2010NASCAR: Team[] = [
     "country": "United States"
   },
   {
-    "id": "t-2010-nascar-phoenix-racing",
-    "name": "Phoenix Racing",
+    "id": "t-2010-nascar-keyed-up-motorsports-team-1",
+    "name": "Keyed-Up Motorsports Team 1",
     "shortName": "",
-    "carId": "car-2010-nascar-phoenix-racing",
+    "carId": "car-2010-nascar-keyed-up-motorsports-team-1",
     "driverIds": [
-      "d-2010-nascar-aric-almirola"
+      "d-2010-nascar-casey-mears",
+      "d-2010-nascar-scott-riggs"
     ],
     "budget": 50,
-    "reputation": 35,
-    "raceOperations": 35,
+    "reputation": 20,
+    "raceOperations": 20,
     "morale": 65,
     "expectedStanding": 26,
     "difficulty": "Medium",
@@ -456,16 +466,16 @@ export const teams2010NASCAR: Team[] = [
     "country": "United States"
   },
   {
-    "id": "t-2010-nascar-prism-motorsports",
-    "name": "Prism Motorsports",
+    "id": "t-2010-nascar-kirk-shelmerdine-racing-team-1",
+    "name": "Kirk Shelmerdine Racing Team 1",
     "shortName": "",
-    "carId": "car-2010-nascar-prism-motorsports",
+    "carId": "car-2010-nascar-kirk-shelmerdine-racing-team-1",
     "driverIds": [
-      "d-2010-nascar-dave-blaney"
+      "d-2010-nascar-todd-bodine"
     ],
     "budget": 50,
-    "reputation": 42,
-    "raceOperations": 42,
+    "reputation": 29,
+    "raceOperations": 29,
     "morale": 65,
     "expectedStanding": 27,
     "difficulty": "Medium",
@@ -473,16 +483,17 @@ export const teams2010NASCAR: Team[] = [
     "country": "United States"
   },
   {
-    "id": "t-2010-nascar-r3-motorsports",
-    "name": "R3 Motorsports",
+    "id": "t-2010-nascar-latitude-43-motorsports-team-1-team-1",
+    "name": "Latitude 43 Motorsports Team 1 team 1",
     "shortName": "",
-    "carId": "car-2010-nascar-r3-motorsports",
+    "carId": "car-2010-nascar-latitude-43-motorsports-team-1-team-1",
     "driverIds": [
-      "d-2010-nascar-johnny-sauter"
+      "d-2010-nascar-boris-said",
+      "d-2010-nascar-david-stremme"
     ],
     "budget": 50,
-    "reputation": 28,
-    "raceOperations": 28,
+    "reputation": 34,
+    "raceOperations": 34,
     "morale": 65,
     "expectedStanding": 28,
     "difficulty": "Medium",
@@ -490,10 +501,398 @@ export const teams2010NASCAR: Team[] = [
     "country": "United States"
   },
   {
-    "id": "t-2010-nascar-red-bull-racing",
-    "name": "Red Bull Racing",
+    "id": "t-2010-nascar-latitude-43-motorsports-team-1-team-2",
+    "name": "Latitude 43 Motorsports Team 1 team 2",
     "shortName": "",
-    "carId": "car-2010-nascar-red-bull-racing",
+    "carId": "car-2010-nascar-latitude-43-motorsports-team-1-team-2",
+    "driverIds": [
+      "d-2010-nascar-patrick-carpentier",
+      "d-2010-nascar-jeff-green"
+    ],
+    "budget": 50,
+    "reputation": 34,
+    "raceOperations": 34,
+    "morale": 65,
+    "expectedStanding": 29,
+    "difficulty": "Medium",
+    "color": "#60a5fa",
+    "country": "United States"
+  },
+  {
+    "id": "t-2010-nascar-latitude-43-motorsports-team-1-team-3",
+    "name": "Latitude 43 Motorsports Team 1 team 3",
+    "shortName": "",
+    "carId": "car-2010-nascar-latitude-43-motorsports-team-1-team-3",
+    "driverIds": [
+      "d-2010-nascar-ken-schrader",
+      "d-2010-nascar-bill-elliott"
+    ],
+    "budget": 50,
+    "reputation": 34,
+    "raceOperations": 34,
+    "morale": 65,
+    "expectedStanding": 30,
+    "difficulty": "Medium",
+    "color": "#60a5fa",
+    "country": "United States"
+  },
+  {
+    "id": "t-2010-nascar-latitude-43-motorsports-team-1-team-4",
+    "name": "Latitude 43 Motorsports Team 1 team 4",
+    "shortName": "",
+    "carId": "car-2010-nascar-latitude-43-motorsports-team-1-team-4",
+    "driverIds": [
+      "d-2010-nascar-j-j-yeley"
+    ],
+    "budget": 50,
+    "reputation": 34,
+    "raceOperations": 34,
+    "morale": 65,
+    "expectedStanding": 31,
+    "difficulty": "Medium",
+    "color": "#60a5fa",
+    "country": "United States"
+  },
+  {
+    "id": "t-2010-nascar-michael-waltrip-racing-team-1",
+    "name": "Michael Waltrip Racing Team 1",
+    "shortName": "",
+    "carId": "car-2010-nascar-michael-waltrip-racing-team-1",
+    "driverIds": [
+      "d-2010-nascar-david-reutimann",
+      "d-2010-nascar-martin-truex-jr"
+    ],
+    "budget": 50,
+    "reputation": 76,
+    "raceOperations": 76,
+    "morale": 65,
+    "expectedStanding": 32,
+    "difficulty": "Medium",
+    "color": "#60a5fa",
+    "country": "United States"
+  },
+  {
+    "id": "t-2010-nascar-michael-waltrip-racing-team-2-team-1",
+    "name": "Michael Waltrip Racing Team 2 team 1",
+    "shortName": "",
+    "carId": "car-2010-nascar-michael-waltrip-racing-team-2-team-1",
+    "driverIds": [
+      "d-2010-nascar-michael-waltrip",
+      "d-2010-nascar-michael-waltrip"
+    ],
+    "budget": 50,
+    "reputation": 28,
+    "raceOperations": 28,
+    "morale": 65,
+    "expectedStanding": 33,
+    "difficulty": "Medium",
+    "color": "#60a5fa",
+    "country": "United States"
+  },
+  {
+    "id": "t-2010-nascar-michael-waltrip-racing-team-2-team-2",
+    "name": "Michael Waltrip Racing Team 2 team 2",
+    "shortName": "",
+    "carId": "car-2010-nascar-michael-waltrip-racing-team-2-team-2",
+    "driverIds": [
+      "d-2010-nascar-michael-mcdowell",
+      "d-2010-nascar-dave-blaney"
+    ],
+    "budget": 50,
+    "reputation": 28,
+    "raceOperations": 28,
+    "morale": 65,
+    "expectedStanding": 34,
+    "difficulty": "Medium",
+    "color": "#60a5fa",
+    "country": "United States"
+  },
+  {
+    "id": "t-2010-nascar-michael-waltrip-racing-team-2-team-3",
+    "name": "Michael Waltrip Racing Team 2 team 3",
+    "shortName": "",
+    "carId": "car-2010-nascar-michael-waltrip-racing-team-2-team-3",
+    "driverIds": [
+      "d-2010-nascar-mike-bliss",
+      "d-2010-nascar-terry-labonte"
+    ],
+    "budget": 50,
+    "reputation": 28,
+    "raceOperations": 28,
+    "morale": 65,
+    "expectedStanding": 35,
+    "difficulty": "Medium",
+    "color": "#60a5fa",
+    "country": "United States"
+  },
+  {
+    "id": "t-2010-nascar-michael-waltrip-racing-team-2-team-4",
+    "name": "Michael Waltrip Racing Team 2 team 4",
+    "shortName": "",
+    "carId": "car-2010-nascar-michael-waltrip-racing-team-2-team-4",
+    "driverIds": [
+      "d-2010-nascar-terry-cook"
+    ],
+    "budget": 50,
+    "reputation": 28,
+    "raceOperations": 28,
+    "morale": 65,
+    "expectedStanding": 36,
+    "difficulty": "Medium",
+    "color": "#60a5fa",
+    "country": "United States"
+  },
+  {
+    "id": "t-2010-nascar-morgan-mcclure-motorsports-team-1",
+    "name": "Morgan-McClure Motorsports Team 1",
+    "shortName": "",
+    "carId": "car-2010-nascar-morgan-mcclure-motorsports-team-1",
+    "driverIds": [
+      "d-2010-nascar-kevin-lepage"
+    ],
+    "budget": 50,
+    "reputation": 72,
+    "raceOperations": 72,
+    "morale": 65,
+    "expectedStanding": 37,
+    "difficulty": "Medium",
+    "color": "#60a5fa",
+    "country": "United States"
+  },
+  {
+    "id": "t-2010-nascar-nemco-motorsports-team-1",
+    "name": "NEMCO Motorsports Team 1",
+    "shortName": "",
+    "carId": "car-2010-nascar-nemco-motorsports-team-1",
+    "driverIds": [
+      "d-2010-nascar-joe-nemechek"
+    ],
+    "budget": 50,
+    "reputation": 46,
+    "raceOperations": 46,
+    "morale": 65,
+    "expectedStanding": 38,
+    "difficulty": "Medium",
+    "color": "#60a5fa",
+    "country": "United States"
+  },
+  {
+    "id": "t-2010-nascar-nemco-motorsports-team-2",
+    "name": "NEMCO Motorsports Team 2",
+    "shortName": "",
+    "carId": "car-2010-nascar-nemco-motorsports-team-2",
+    "driverIds": [
+      "d-2010-nascar-jeff-fuller"
+    ],
+    "budget": 50,
+    "reputation": 43,
+    "raceOperations": 43,
+    "morale": 65,
+    "expectedStanding": 39,
+    "difficulty": "Medium",
+    "color": "#60a5fa",
+    "country": "United States"
+  },
+  {
+    "id": "t-2010-nascar-norm-benning-racing-team-1",
+    "name": "Norm Benning Racing Team 1",
+    "shortName": "",
+    "carId": "car-2010-nascar-norm-benning-racing-team-1",
+    "driverIds": [
+      "d-2010-nascar-norm-benning"
+    ],
+    "budget": 50,
+    "reputation": 28,
+    "raceOperations": 28,
+    "morale": 65,
+    "expectedStanding": 40,
+    "difficulty": "Medium",
+    "color": "#60a5fa",
+    "country": "United States"
+  },
+  {
+    "id": "t-2010-nascar-penske-championship-racing-team-1",
+    "name": "Penske Championship Racing Team 1",
+    "shortName": "",
+    "carId": "car-2010-nascar-penske-championship-racing-team-1",
+    "driverIds": [
+      "d-2010-nascar-kurt-busch",
+      "d-2010-nascar-brad-keselowski"
+    ],
+    "budget": 50,
+    "reputation": 91,
+    "raceOperations": 91,
+    "morale": 65,
+    "expectedStanding": 41,
+    "difficulty": "Medium",
+    "color": "#60a5fa",
+    "country": "United States"
+  },
+  {
+    "id": "t-2010-nascar-penske-championship-racing-team-2",
+    "name": "Penske Championship Racing Team 2",
+    "shortName": "",
+    "carId": "car-2010-nascar-penske-championship-racing-team-2",
+    "driverIds": [
+      "d-2010-nascar-sam-hornish-jr"
+    ],
+    "budget": 50,
+    "reputation": 66,
+    "raceOperations": 66,
+    "morale": 65,
+    "expectedStanding": 42,
+    "difficulty": "Medium",
+    "color": "#60a5fa",
+    "country": "United States"
+  },
+  {
+    "id": "t-2010-nascar-phoenix-racing-team-1-team-1",
+    "name": "Phoenix Racing Team 1 team 1",
+    "shortName": "",
+    "carId": "car-2010-nascar-phoenix-racing-team-1-team-1",
+    "driverIds": [
+      "d-2010-nascar-aric-almirola",
+      "d-2010-nascar-mike-bliss"
+    ],
+    "budget": 50,
+    "reputation": 35,
+    "raceOperations": 35,
+    "morale": 65,
+    "expectedStanding": 43,
+    "difficulty": "Medium",
+    "color": "#60a5fa",
+    "country": "United States"
+  },
+  {
+    "id": "t-2010-nascar-phoenix-racing-team-1-team-2",
+    "name": "Phoenix Racing Team 1 team 2",
+    "shortName": "",
+    "carId": "car-2010-nascar-phoenix-racing-team-1-team-2",
+    "driverIds": [
+      "d-2010-nascar-terry-cook",
+      "d-2010-nascar-landon-cassill"
+    ],
+    "budget": 50,
+    "reputation": 35,
+    "raceOperations": 35,
+    "morale": 65,
+    "expectedStanding": 44,
+    "difficulty": "Medium",
+    "color": "#60a5fa",
+    "country": "United States"
+  },
+  {
+    "id": "t-2010-nascar-phoenix-racing-team-1-team-3",
+    "name": "Phoenix Racing Team 1 team 3",
+    "shortName": "",
+    "carId": "car-2010-nascar-phoenix-racing-team-1-team-3",
+    "driverIds": [
+      "d-2010-nascar-jan-magnussen",
+      "d-2010-nascar-bobby-labonte"
+    ],
+    "budget": 50,
+    "reputation": 35,
+    "raceOperations": 35,
+    "morale": 65,
+    "expectedStanding": 45,
+    "difficulty": "Medium",
+    "color": "#60a5fa",
+    "country": "United States"
+  },
+  {
+    "id": "t-2010-nascar-prism-motorsports-team-1-team-1",
+    "name": "Prism Motorsports Team 1 team 1",
+    "shortName": "",
+    "carId": "car-2010-nascar-prism-motorsports-team-1-team-1",
+    "driverIds": [
+      "d-2010-nascar-dave-blaney",
+      "d-2010-nascar-michael-mcdowell"
+    ],
+    "budget": 50,
+    "reputation": 42,
+    "raceOperations": 42,
+    "morale": 65,
+    "expectedStanding": 46,
+    "difficulty": "Medium",
+    "color": "#60a5fa",
+    "country": "United States"
+  },
+  {
+    "id": "t-2010-nascar-prism-motorsports-team-1-team-2",
+    "name": "Prism Motorsports Team 1 team 2",
+    "shortName": "",
+    "carId": "car-2010-nascar-prism-motorsports-team-1-team-2",
+    "driverIds": [
+      "d-2010-nascar-scott-riggs",
+      "d-2010-nascar-johnny-sauter"
+    ],
+    "budget": 50,
+    "reputation": 42,
+    "raceOperations": 42,
+    "morale": 65,
+    "expectedStanding": 47,
+    "difficulty": "Medium",
+    "color": "#60a5fa",
+    "country": "United States"
+  },
+  {
+    "id": "t-2010-nascar-prism-motorsports-team-1-team-3",
+    "name": "Prism Motorsports Team 1 team 3",
+    "shortName": "",
+    "carId": "car-2010-nascar-prism-motorsports-team-1-team-3",
+    "driverIds": [
+      "d-2010-nascar-ted-musgrave",
+      "d-2010-nascar-jason-leffler"
+    ],
+    "budget": 50,
+    "reputation": 42,
+    "raceOperations": 42,
+    "morale": 65,
+    "expectedStanding": 48,
+    "difficulty": "Medium",
+    "color": "#60a5fa",
+    "country": "United States"
+  },
+  {
+    "id": "t-2010-nascar-prism-motorsports-team-1-team-4",
+    "name": "Prism Motorsports Team 1 team 4",
+    "shortName": "",
+    "carId": "car-2010-nascar-prism-motorsports-team-1-team-4",
+    "driverIds": [
+      "d-2010-nascar-mike-bliss"
+    ],
+    "budget": 50,
+    "reputation": 42,
+    "raceOperations": 42,
+    "morale": 65,
+    "expectedStanding": 49,
+    "difficulty": "Medium",
+    "color": "#60a5fa",
+    "country": "United States"
+  },
+  {
+    "id": "t-2010-nascar-r3-motorsports-team-1",
+    "name": "R3 Motorsports Team 1",
+    "shortName": "",
+    "carId": "car-2010-nascar-r3-motorsports-team-1",
+    "driverIds": [
+      "d-2010-nascar-johnny-sauter",
+      "d-2010-nascar-josh-wise"
+    ],
+    "budget": 50,
+    "reputation": 28,
+    "raceOperations": 28,
+    "morale": 65,
+    "expectedStanding": 50,
+    "difficulty": "Medium",
+    "color": "#60a5fa",
+    "country": "United States"
+  },
+  {
+    "id": "t-2010-nascar-red-bull-racing-team-1-team-1",
+    "name": "Red Bull Racing Team 1 team 1",
+    "shortName": "",
+    "carId": "car-2010-nascar-red-bull-racing-team-1-team-1",
     "driverIds": [
       "d-2010-nascar-scott-speed",
       "d-2010-nascar-brian-vickers"
@@ -502,14 +901,67 @@ export const teams2010NASCAR: Team[] = [
     "reputation": 56,
     "raceOperations": 56,
     "morale": 65,
-    "expectedStanding": 29,
+    "expectedStanding": 51,
+    "difficulty": "Medium",
+    "color": "#60a5fa",
+    "country": "United States"
+  },
+  {
+    "id": "t-2010-nascar-red-bull-racing-team-1-team-2",
+    "name": "Red Bull Racing Team 1 team 2",
+    "shortName": "",
+    "carId": "car-2010-nascar-red-bull-racing-team-1-team-2",
+    "driverIds": [
+      "d-2010-nascar-casey-mears",
+      "d-2010-nascar-mattias-ekstrom"
+    ],
+    "budget": 50,
+    "reputation": 56,
+    "raceOperations": 56,
+    "morale": 65,
+    "expectedStanding": 52,
+    "difficulty": "Medium",
+    "color": "#60a5fa",
+    "country": "United States"
+  },
+  {
+    "id": "t-2010-nascar-red-bull-racing-team-1-team-3",
+    "name": "Red Bull Racing Team 1 team 3",
+    "shortName": "",
+    "carId": "car-2010-nascar-red-bull-racing-team-1-team-3",
+    "driverIds": [
+      "d-2010-nascar-reed-sorenson",
+      "d-2010-nascar-boris-said"
+    ],
+    "budget": 50,
+    "reputation": 56,
+    "raceOperations": 56,
+    "morale": 65,
+    "expectedStanding": 53,
+    "difficulty": "Medium",
+    "color": "#60a5fa",
+    "country": "United States"
+  },
+  {
+    "id": "t-2010-nascar-red-bull-racing-team-1-team-4",
+    "name": "Red Bull Racing Team 1 team 4",
+    "shortName": "",
+    "carId": "car-2010-nascar-red-bull-racing-team-1-team-4",
+    "driverIds": [
+      "d-2010-nascar-kasey-kahne"
+    ],
+    "budget": 50,
+    "reputation": 56,
+    "raceOperations": 56,
+    "morale": 65,
+    "expectedStanding": 54,
     "difficulty": "Medium",
     "color": "#60a5fa",
     "country": "United States"
   },
   {
     "id": "t-2010-nascar-richard-childress-racing-team-1",
-    "name": "Richard Childress Racing team 1",
+    "name": "Richard Childress Racing Team 1",
     "shortName": "",
     "carId": "car-2010-nascar-richard-childress-racing-team-1",
     "driverIds": [
@@ -517,52 +969,69 @@ export const teams2010NASCAR: Team[] = [
       "d-2010-nascar-jeff-burton"
     ],
     "budget": 50,
-    "reputation": 99,
-    "raceOperations": 99,
+    "reputation": 100,
+    "raceOperations": 100,
     "morale": 65,
-    "expectedStanding": 30,
+    "expectedStanding": 55,
     "difficulty": "Medium",
     "color": "#60a5fa",
     "country": "United States"
   },
   {
     "id": "t-2010-nascar-richard-childress-racing-team-2",
-    "name": "Richard Childress Racing team 2",
+    "name": "Richard Childress Racing Team 2",
     "shortName": "",
     "carId": "car-2010-nascar-richard-childress-racing-team-2",
     "driverIds": [
       "d-2010-nascar-clint-bowyer"
     ],
     "budget": 50,
-    "reputation": 99,
-    "raceOperations": 99,
+    "reputation": 97,
+    "raceOperations": 97,
     "morale": 65,
-    "expectedStanding": 31,
+    "expectedStanding": 56,
     "difficulty": "Medium",
     "color": "#60a5fa",
     "country": "United States"
   },
   {
-    "id": "t-2010-nascar-richard-petty-motorsports-team-1",
-    "name": "Richard Petty Motorsports team 1",
+    "id": "t-2010-nascar-richard-petty-motorsports-team-1-team-1",
+    "name": "Richard Petty Motorsports Team 1 team 1",
     "shortName": "",
-    "carId": "car-2010-nascar-richard-petty-motorsports-team-1",
+    "carId": "car-2010-nascar-richard-petty-motorsports-team-1-team-1",
     "driverIds": [
       "d-2010-nascar-kasey-kahne",
+      "d-2010-nascar-aric-almirola"
+    ],
+    "budget": 50,
+    "reputation": 72,
+    "raceOperations": 72,
+    "morale": 65,
+    "expectedStanding": 57,
+    "difficulty": "Medium",
+    "color": "#60a5fa",
+    "country": "United States"
+  },
+  {
+    "id": "t-2010-nascar-richard-petty-motorsports-team-1-team-2",
+    "name": "Richard Petty Motorsports Team 1 team 2",
+    "shortName": "",
+    "carId": "car-2010-nascar-richard-petty-motorsports-team-1-team-2",
+    "driverIds": [
       "d-2010-nascar-elliott-sadler"
     ],
     "budget": 50,
-    "reputation": 73,
-    "raceOperations": 73,
+    "reputation": 72,
+    "raceOperations": 72,
     "morale": 65,
-    "expectedStanding": 32,
+    "expectedStanding": 58,
     "difficulty": "Medium",
     "color": "#60a5fa",
     "country": "United States"
   },
   {
     "id": "t-2010-nascar-richard-petty-motorsports-team-2",
-    "name": "Richard Petty Motorsports team 2",
+    "name": "Richard Petty Motorsports Team 2",
     "shortName": "",
     "carId": "car-2010-nascar-richard-petty-motorsports-team-2",
     "driverIds": [
@@ -573,32 +1042,86 @@ export const teams2010NASCAR: Team[] = [
     "reputation": 73,
     "raceOperations": 73,
     "morale": 65,
-    "expectedStanding": 33,
+    "expectedStanding": 59,
     "difficulty": "Medium",
     "color": "#60a5fa",
     "country": "United States"
   },
   {
-    "id": "t-2010-nascar-robby-gordon-motorsports",
-    "name": "Robby Gordon Motorsports",
+    "id": "t-2010-nascar-robby-gordon-motorsports-team-1-team-1",
+    "name": "Robby Gordon Motorsports Team 1 team 1",
     "shortName": "",
-    "carId": "car-2010-nascar-robby-gordon-motorsports",
+    "carId": "car-2010-nascar-robby-gordon-motorsports-team-1-team-1",
     "driverIds": [
       "d-2010-nascar-robby-gordon",
+      "d-2010-nascar-ted-musgrave"
+    ],
+    "budget": 50,
+    "reputation": 48,
+    "raceOperations": 48,
+    "morale": 65,
+    "expectedStanding": 60,
+    "difficulty": "Medium",
+    "color": "#60a5fa",
+    "country": "United States"
+  },
+  {
+    "id": "t-2010-nascar-robby-gordon-motorsports-team-1-team-2",
+    "name": "Robby Gordon Motorsports Team 1 team 2",
+    "shortName": "",
+    "carId": "car-2010-nascar-robby-gordon-motorsports-team-1-team-2",
+    "driverIds": [
+      "d-2010-nascar-bobby-labonte",
       "d-2010-nascar-p-j-jones"
     ],
     "budget": 50,
     "reputation": 48,
     "raceOperations": 48,
     "morale": 65,
-    "expectedStanding": 34,
+    "expectedStanding": 61,
+    "difficulty": "Medium",
+    "color": "#60a5fa",
+    "country": "United States"
+  },
+  {
+    "id": "t-2010-nascar-robby-gordon-motorsports-team-1-team-3",
+    "name": "Robby Gordon Motorsports Team 1 team 3",
+    "shortName": "",
+    "carId": "car-2010-nascar-robby-gordon-motorsports-team-1-team-3",
+    "driverIds": [
+      "d-2010-nascar-kevin-conway",
+      "d-2010-nascar-p-j-jones"
+    ],
+    "budget": 50,
+    "reputation": 48,
+    "raceOperations": 48,
+    "morale": 65,
+    "expectedStanding": 62,
+    "difficulty": "Medium",
+    "color": "#60a5fa",
+    "country": "United States"
+  },
+  {
+    "id": "t-2010-nascar-robby-gordon-motorsports-team-1-team-4",
+    "name": "Robby Gordon Motorsports Team 1 team 4",
+    "shortName": "",
+    "carId": "car-2010-nascar-robby-gordon-motorsports-team-1-team-4",
+    "driverIds": [
+      "d-2010-nascar-robby-gordon",
+      "d-2010-nascar-kevin-conway"
+    ],
+    "budget": 50,
+    "reputation": 48,
+    "raceOperations": 48,
+    "morale": 65,
+    "expectedStanding": 63,
     "difficulty": "Medium",
     "color": "#60a5fa",
     "country": "United States"
   },
   {
     "id": "t-2010-nascar-roush-fenway-racing-team-1",
-    "name": "Roush Fenway Racing team 1",
+    "name": "Roush Fenway Racing Team 1",
     "shortName": "",
     "carId": "car-2010-nascar-roush-fenway-racing-team-1",
     "driverIds": [
@@ -606,17 +1129,17 @@ export const teams2010NASCAR: Team[] = [
       "d-2010-nascar-greg-biffle"
     ],
     "budget": 50,
-    "reputation": 98,
-    "raceOperations": 98,
+    "reputation": 96,
+    "raceOperations": 96,
     "morale": 65,
-    "expectedStanding": 35,
+    "expectedStanding": 64,
     "difficulty": "Medium",
     "color": "#60a5fa",
     "country": "United States"
   },
   {
     "id": "t-2010-nascar-roush-fenway-racing-team-2",
-    "name": "Roush Fenway Racing team 2",
+    "name": "Roush Fenway Racing Team 2",
     "shortName": "",
     "carId": "car-2010-nascar-roush-fenway-racing-team-2",
     "driverIds": [
@@ -624,36 +1147,37 @@ export const teams2010NASCAR: Team[] = [
       "d-2010-nascar-carl-edwards"
     ],
     "budget": 50,
-    "reputation": 98,
-    "raceOperations": 98,
+    "reputation": 99,
+    "raceOperations": 99,
     "morale": 65,
-    "expectedStanding": 36,
+    "expectedStanding": 65,
     "difficulty": "Medium",
     "color": "#60a5fa",
     "country": "United States"
   },
   {
-    "id": "t-2010-nascar-stavola-labonte-racing",
-    "name": "Stavola Labonte Racing",
+    "id": "t-2010-nascar-stavola-labonte-racing-team-1",
+    "name": "Stavola Labonte Racing Team 1",
     "shortName": "",
-    "carId": "car-2010-nascar-stavola-labonte-racing",
+    "carId": "car-2010-nascar-stavola-labonte-racing-team-1",
     "driverIds": [
-      "d-2010-nascar-terry-labonte"
+      "d-2010-nascar-terry-labonte",
+      "d-2010-nascar-bobby-labonte"
     ],
     "budget": 50,
     "reputation": 17,
     "raceOperations": 17,
     "morale": 65,
-    "expectedStanding": 37,
+    "expectedStanding": 66,
     "difficulty": "Medium",
     "color": "#60a5fa",
     "country": "United States"
   },
   {
-    "id": "t-2010-nascar-stewart-haas-racing",
-    "name": "Stewart-Haas Racing",
+    "id": "t-2010-nascar-stewart-haas-racing-team-1",
+    "name": "Stewart-Haas Racing Team 1",
     "shortName": "",
-    "carId": "car-2010-nascar-stewart-haas-racing",
+    "carId": "car-2010-nascar-stewart-haas-racing-team-1",
     "driverIds": [
       "d-2010-nascar-tony-stewart",
       "d-2010-nascar-ryan-newman"
@@ -662,16 +1186,16 @@ export const teams2010NASCAR: Team[] = [
     "reputation": 98,
     "raceOperations": 98,
     "morale": 65,
-    "expectedStanding": 38,
+    "expectedStanding": 67,
     "difficulty": "Medium",
     "color": "#60a5fa",
     "country": "United States"
   },
   {
-    "id": "t-2010-nascar-stratus-racing-group",
-    "name": "Stratus Racing Group",
+    "id": "t-2010-nascar-stratus-racing-group-team-1",
+    "name": "Stratus Racing Group Team 1",
     "shortName": "",
-    "carId": "car-2010-nascar-stratus-racing-group",
+    "carId": "car-2010-nascar-stratus-racing-group-team-1",
     "driverIds": [
       "d-2010-nascar-derrike-cope"
     ],
@@ -679,33 +1203,88 @@ export const teams2010NASCAR: Team[] = [
     "reputation": 36,
     "raceOperations": 36,
     "morale": 65,
-    "expectedStanding": 39,
+    "expectedStanding": 68,
     "difficulty": "Medium",
     "color": "#60a5fa",
     "country": "United States"
   },
   {
-    "id": "t-2010-nascar-trg-motorsports",
-    "name": "TRG Motorsports",
+    "id": "t-2010-nascar-trg-motorsports-team-1-team-1",
+    "name": "TRG Motorsports Team 1 team 1",
     "shortName": "",
-    "carId": "car-2010-nascar-trg-motorsports",
+    "carId": "car-2010-nascar-trg-motorsports-team-1-team-1",
     "driverIds": [
-      "d-2010-nascar-bobby-labonte"
+      "d-2010-nascar-bobby-labonte",
+      "d-2010-nascar-andy-lally"
     ],
     "budget": 50,
     "reputation": 46,
     "raceOperations": 46,
     "morale": 65,
-    "expectedStanding": 40,
+    "expectedStanding": 69,
     "difficulty": "Medium",
     "color": "#60a5fa",
     "country": "United States"
   },
   {
-    "id": "t-2010-nascar-tommy-baldwin-racing",
-    "name": "Tommy Baldwin Racing",
+    "id": "t-2010-nascar-trg-motorsports-team-1-team-2",
+    "name": "TRG Motorsports Team 1 team 2",
     "shortName": "",
-    "carId": "car-2010-nascar-tommy-baldwin-racing",
+    "carId": "car-2010-nascar-trg-motorsports-team-1-team-2",
+    "driverIds": [
+      "d-2010-nascar-mike-bliss",
+      "d-2010-nascar-landon-cassill"
+    ],
+    "budget": 50,
+    "reputation": 46,
+    "raceOperations": 46,
+    "morale": 65,
+    "expectedStanding": 70,
+    "difficulty": "Medium",
+    "color": "#60a5fa",
+    "country": "United States"
+  },
+  {
+    "id": "t-2010-nascar-trg-motorsports-team-1-team-3",
+    "name": "TRG Motorsports Team 1 team 3",
+    "shortName": "",
+    "carId": "car-2010-nascar-trg-motorsports-team-1-team-3",
+    "driverIds": [
+      "d-2010-nascar-tony-raines",
+      "d-2010-nascar-hermie-sadler"
+    ],
+    "budget": 50,
+    "reputation": 46,
+    "raceOperations": 46,
+    "morale": 65,
+    "expectedStanding": 71,
+    "difficulty": "Medium",
+    "color": "#60a5fa",
+    "country": "United States"
+  },
+  {
+    "id": "t-2010-nascar-trg-motorsports-team-1-team-4",
+    "name": "TRG Motorsports Team 1 team 4",
+    "shortName": "",
+    "carId": "car-2010-nascar-trg-motorsports-team-1-team-4",
+    "driverIds": [
+      "d-2010-nascar-chad-mccumbee",
+      "d-2010-nascar-brendan-gaughan"
+    ],
+    "budget": 50,
+    "reputation": 46,
+    "raceOperations": 46,
+    "morale": 65,
+    "expectedStanding": 72,
+    "difficulty": "Medium",
+    "color": "#60a5fa",
+    "country": "United States"
+  },
+  {
+    "id": "t-2010-nascar-tommy-baldwin-racing-team-1-team-1",
+    "name": "Tommy Baldwin Racing Team 1 team 1",
+    "shortName": "",
+    "carId": "car-2010-nascar-tommy-baldwin-racing-team-1-team-1",
     "driverIds": [
       "d-2010-nascar-mike-bliss",
       "d-2010-nascar-johnny-sauter"
@@ -714,16 +1293,106 @@ export const teams2010NASCAR: Team[] = [
     "reputation": 21,
     "raceOperations": 21,
     "morale": 65,
-    "expectedStanding": 41,
+    "expectedStanding": 73,
     "difficulty": "Medium",
     "color": "#60a5fa",
     "country": "United States"
   },
   {
-    "id": "t-2010-nascar-tri-star-motorsports",
-    "name": "Tri-Star Motorsports",
+    "id": "t-2010-nascar-tommy-baldwin-racing-team-1-team-2",
+    "name": "Tommy Baldwin Racing Team 1 team 2",
     "shortName": "",
-    "carId": "car-2010-nascar-tri-star-motorsports",
+    "carId": "car-2010-nascar-tommy-baldwin-racing-team-1-team-2",
+    "driverIds": [
+      "d-2010-nascar-casey-mears",
+      "d-2010-nascar-geoff-bodine"
+    ],
+    "budget": 50,
+    "reputation": 21,
+    "raceOperations": 21,
+    "morale": 65,
+    "expectedStanding": 74,
+    "difficulty": "Medium",
+    "color": "#60a5fa",
+    "country": "United States"
+  },
+  {
+    "id": "t-2010-nascar-tommy-baldwin-racing-team-1-team-3",
+    "name": "Tommy Baldwin Racing Team 1 team 3",
+    "shortName": "",
+    "carId": "car-2010-nascar-tommy-baldwin-racing-team-1-team-3",
+    "driverIds": [
+      "d-2010-nascar-brian-simo",
+      "d-2010-nascar-steve-park"
+    ],
+    "budget": 50,
+    "reputation": 21,
+    "raceOperations": 21,
+    "morale": 65,
+    "expectedStanding": 75,
+    "difficulty": "Medium",
+    "color": "#60a5fa",
+    "country": "United States"
+  },
+  {
+    "id": "t-2010-nascar-tommy-baldwin-racing-team-1-team-4",
+    "name": "Tommy Baldwin Racing Team 1 team 4",
+    "shortName": "",
+    "carId": "car-2010-nascar-tommy-baldwin-racing-team-1-team-4",
+    "driverIds": [
+      "d-2010-nascar-ron-fellows",
+      "d-2010-nascar-dave-blaney"
+    ],
+    "budget": 50,
+    "reputation": 21,
+    "raceOperations": 21,
+    "morale": 65,
+    "expectedStanding": 76,
+    "difficulty": "Medium",
+    "color": "#60a5fa",
+    "country": "United States"
+  },
+  {
+    "id": "t-2010-nascar-tommy-baldwin-racing-team-1-team-5",
+    "name": "Tommy Baldwin Racing Team 1 team 5",
+    "shortName": "",
+    "carId": "car-2010-nascar-tommy-baldwin-racing-team-1-team-5",
+    "driverIds": [
+      "d-2010-nascar-j-j-yeley",
+      "d-2010-nascar-johnny-sauter"
+    ],
+    "budget": 50,
+    "reputation": 21,
+    "raceOperations": 21,
+    "morale": 65,
+    "expectedStanding": 77,
+    "difficulty": "Medium",
+    "color": "#60a5fa",
+    "country": "United States"
+  },
+  {
+    "id": "t-2010-nascar-tommy-baldwin-racing-team-1-team-6",
+    "name": "Tommy Baldwin Racing Team 1 team 6",
+    "shortName": "",
+    "carId": "car-2010-nascar-tommy-baldwin-racing-team-1-team-6",
+    "driverIds": [
+      "d-2010-nascar-aric-almirola",
+      "d-2010-nascar-tony-ave"
+    ],
+    "budget": 50,
+    "reputation": 21,
+    "raceOperations": 21,
+    "morale": 65,
+    "expectedStanding": 78,
+    "difficulty": "Medium",
+    "color": "#60a5fa",
+    "country": "United States"
+  },
+  {
+    "id": "t-2010-nascar-tri-star-motorsports-team-1",
+    "name": "Tri-Star Motorsports Team 1",
+    "shortName": "",
+    "carId": "car-2010-nascar-tri-star-motorsports-team-1",
     "driverIds": [
       "d-2010-nascar-tony-ave"
     ],
@@ -731,42 +1400,79 @@ export const teams2010NASCAR: Team[] = [
     "reputation": 56,
     "raceOperations": 56,
     "morale": 65,
-    "expectedStanding": 42,
+    "expectedStanding": 79,
     "difficulty": "Medium",
     "color": "#60a5fa",
     "country": "United States"
   },
   {
-    "id": "t-2010-nascar-whitney-motorsports",
-    "name": "Whitney Motorsports",
+    "id": "t-2010-nascar-whitney-motorsports-team-1-team-1",
+    "name": "Whitney Motorsports Team 1 team 1",
     "shortName": "",
-    "carId": "car-2010-nascar-whitney-motorsports",
+    "carId": "car-2010-nascar-whitney-motorsports-team-1-team-1",
     "driverIds": [
       "d-2010-nascar-michael-mcdowell",
+      "d-2010-nascar-terry-cook"
+    ],
+    "budget": 50,
+    "reputation": 39,
+    "raceOperations": 39,
+    "morale": 65,
+    "expectedStanding": 80,
+    "difficulty": "Medium",
+    "color": "#60a5fa",
+    "country": "United States"
+  },
+  {
+    "id": "t-2010-nascar-whitney-motorsports-team-1-team-2",
+    "name": "Whitney Motorsports Team 1 team 2",
+    "shortName": "",
+    "carId": "car-2010-nascar-whitney-motorsports-team-1-team-2",
+    "driverIds": [
+      "d-2010-nascar-j-j-yeley",
       "d-2010-nascar-j-j-yeley"
     ],
     "budget": 50,
     "reputation": 39,
     "raceOperations": 39,
     "morale": 65,
-    "expectedStanding": 43,
+    "expectedStanding": 81,
     "difficulty": "Medium",
     "color": "#60a5fa",
     "country": "United States"
   },
   {
-    "id": "t-2010-nascar-wood-brothers-racing",
-    "name": "Wood Brothers Racing",
+    "id": "t-2010-nascar-whitney-motorsports-team-1-team-3",
+    "name": "Whitney Motorsports Team 1 team 3",
     "shortName": "",
-    "carId": "car-2010-nascar-wood-brothers-racing",
+    "carId": "car-2010-nascar-whitney-motorsports-team-1-team-3",
     "driverIds": [
-      "d-2010-nascar-bill-elliott"
+      "d-2010-nascar-scott-riggs",
+      "d-2010-nascar-terry-labonte"
+    ],
+    "budget": 50,
+    "reputation": 39,
+    "raceOperations": 39,
+    "morale": 65,
+    "expectedStanding": 82,
+    "difficulty": "Medium",
+    "color": "#60a5fa",
+    "country": "United States"
+  },
+  {
+    "id": "t-2010-nascar-wood-brothers-racing-team-1",
+    "name": "Wood Brothers Racing Team 1",
+    "shortName": "",
+    "carId": "car-2010-nascar-wood-brothers-racing-team-1",
+    "driverIds": [
+      "d-2010-nascar-bill-elliott",
+      "d-2010-nascar-trevor-bayne"
     ],
     "budget": 50,
     "reputation": 37,
     "raceOperations": 37,
     "morale": 65,
-    "expectedStanding": 44,
+    "expectedStanding": 83,
     "difficulty": "Medium",
     "color": "#60a5fa",
     "country": "United States"

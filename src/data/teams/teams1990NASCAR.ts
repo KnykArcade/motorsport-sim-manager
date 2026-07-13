@@ -56,18 +56,36 @@ export const teams1990NASCAR: Team[] = [
     "country": "United States"
   },
   {
-    "id": "t-1990-nascar-bobby-allison-racing",
-    "name": "Bobby Allison Racing",
+    "id": "t-1990-nascar-bobby-allison-racing-team-1",
+    "name": "Bobby Allison Racing team 1",
     "shortName": "",
-    "carId": "car-1990-nascar-bobby-allison-racing",
+    "carId": "car-1990-nascar-bobby-allison-racing-team-1",
     "driverIds": [
-      "d-1990-nascar-mike-alexander"
+      "d-1990-nascar-mike-alexander",
+      "d-1990-nascar-jeff-purvis"
     ],
     "budget": 50,
     "reputation": 70,
     "raceOperations": 70,
     "morale": 65,
     "expectedStanding": 4,
+    "difficulty": "Medium",
+    "color": "#60a5fa",
+    "country": "United States"
+  },
+  {
+    "id": "t-1990-nascar-bobby-allison-racing-team-2",
+    "name": "Bobby Allison Racing team 2",
+    "shortName": "",
+    "carId": "car-1990-nascar-bobby-allison-racing-team-2",
+    "driverIds": [
+      "d-1990-nascar-hut-stricklin"
+    ],
+    "budget": 50,
+    "reputation": 70,
+    "raceOperations": 70,
+    "morale": 65,
+    "expectedStanding": 5,
     "difficulty": "Medium",
     "color": "#60a5fa",
     "country": "United States"
@@ -84,7 +102,7 @@ export const teams1990NASCAR: Team[] = [
     "reputation": 91,
     "raceOperations": 91,
     "morale": 65,
-    "expectedStanding": 5,
+    "expectedStanding": 6,
     "difficulty": "Medium",
     "color": "#60a5fa",
     "country": "United States"
@@ -101,7 +119,7 @@ export const teams1990NASCAR: Team[] = [
     "reputation": 80,
     "raceOperations": 80,
     "morale": 65,
-    "expectedStanding": 6,
+    "expectedStanding": 7,
     "difficulty": "Medium",
     "color": "#60a5fa",
     "country": "United States"
@@ -118,42 +136,77 @@ export const teams1990NASCAR: Team[] = [
     "reputation": 86,
     "raceOperations": 86,
     "morale": 65,
-    "expectedStanding": 7,
-    "difficulty": "Medium",
-    "color": "#60a5fa",
-    "country": "United States"
-  },
-  {
-    "id": "t-1990-nascar-hendrick-motorsports-team-1",
-    "name": "Hendrick Motorsports team 1",
-    "shortName": "",
-    "carId": "car-1990-nascar-hendrick-motorsports-team-1",
-    "driverIds": [
-      "d-1990-nascar-ricky-rudd",
-      "d-1990-nascar-darrell-waltrip"
-    ],
-    "budget": 50,
-    "reputation": 87,
-    "raceOperations": 87,
-    "morale": 65,
     "expectedStanding": 8,
     "difficulty": "Medium",
     "color": "#60a5fa",
     "country": "United States"
   },
   {
+    "id": "t-1990-nascar-hendrick-motorsports-team-1-team-1",
+    "name": "Hendrick Motorsports Team 1 team 1",
+    "shortName": "",
+    "carId": "car-1990-nascar-hendrick-motorsports-team-1-team-1",
+    "driverIds": [
+      "d-1990-nascar-ricky-rudd",
+      "d-1990-nascar-darrell-waltrip"
+    ],
+    "budget": 50,
+    "reputation": 85,
+    "raceOperations": 85,
+    "morale": 65,
+    "expectedStanding": 9,
+    "difficulty": "Medium",
+    "color": "#60a5fa",
+    "country": "United States"
+  },
+  {
+    "id": "t-1990-nascar-hendrick-motorsports-team-1-team-2",
+    "name": "Hendrick Motorsports Team 1 team 2",
+    "shortName": "",
+    "carId": "car-1990-nascar-hendrick-motorsports-team-1-team-2",
+    "driverIds": [
+      "d-1990-nascar-jimmy-horton",
+      "d-1990-nascar-sarel-van-der-merwe"
+    ],
+    "budget": 50,
+    "reputation": 85,
+    "raceOperations": 85,
+    "morale": 65,
+    "expectedStanding": 10,
+    "difficulty": "Medium",
+    "color": "#60a5fa",
+    "country": "United States"
+  },
+  {
+    "id": "t-1990-nascar-hendrick-motorsports-team-1-team-3",
+    "name": "Hendrick Motorsports Team 1 team 3",
+    "shortName": "",
+    "carId": "car-1990-nascar-hendrick-motorsports-team-1-team-3",
+    "driverIds": [
+      "d-1990-nascar-greg-sacks"
+    ],
+    "budget": 50,
+    "reputation": 85,
+    "raceOperations": 85,
+    "morale": 65,
+    "expectedStanding": 11,
+    "difficulty": "Medium",
+    "color": "#60a5fa",
+    "country": "United States"
+  },
+  {
     "id": "t-1990-nascar-hendrick-motorsports-team-2",
-    "name": "Hendrick Motorsports team 2",
+    "name": "Hendrick Motorsports Team 2",
     "shortName": "",
     "carId": "car-1990-nascar-hendrick-motorsports-team-2",
     "driverIds": [
       "d-1990-nascar-ken-schrader"
     ],
     "budget": 50,
-    "reputation": 87,
-    "raceOperations": 87,
+    "reputation": 88,
+    "raceOperations": 88,
     "morale": 65,
-    "expectedStanding": 9,
+    "expectedStanding": 12,
     "difficulty": "Medium",
     "color": "#60a5fa",
     "country": "United States"
@@ -170,7 +223,7 @@ export const teams1990NASCAR: Team[] = [
     "reputation": 93,
     "raceOperations": 93,
     "morale": 65,
-    "expectedStanding": 10,
+    "expectedStanding": 13,
     "difficulty": "Medium",
     "color": "#60a5fa",
     "country": "United States"
@@ -187,7 +240,7 @@ export const teams1990NASCAR: Team[] = [
     "reputation": 86,
     "raceOperations": 86,
     "morale": 65,
-    "expectedStanding": 11,
+    "expectedStanding": 14,
     "difficulty": "Medium",
     "color": "#60a5fa",
     "country": "United States"
@@ -198,13 +251,14 @@ export const teams1990NASCAR: Team[] = [
     "shortName": "",
     "carId": "car-1990-nascar-leo-jackson-motorsports",
     "driverIds": [
-      "d-1990-nascar-harry-gant"
+      "d-1990-nascar-harry-gant",
+      "d-1990-nascar-phil-parsons"
     ],
     "budget": 50,
     "reputation": 79,
     "raceOperations": 79,
     "morale": 65,
-    "expectedStanding": 12,
+    "expectedStanding": 15,
     "difficulty": "Medium",
     "color": "#60a5fa",
     "country": "United States"
@@ -221,7 +275,7 @@ export const teams1990NASCAR: Team[] = [
     "reputation": 80,
     "raceOperations": 80,
     "morale": 65,
-    "expectedStanding": 13,
+    "expectedStanding": 16,
     "difficulty": "Medium",
     "color": "#60a5fa",
     "country": "United States"
@@ -238,7 +292,7 @@ export const teams1990NASCAR: Team[] = [
     "reputation": 73,
     "raceOperations": 73,
     "morale": 65,
-    "expectedStanding": 14,
+    "expectedStanding": 17,
     "difficulty": "Medium",
     "color": "#60a5fa",
     "country": "United States"
@@ -255,7 +309,7 @@ export const teams1990NASCAR: Team[] = [
     "reputation": 94,
     "raceOperations": 94,
     "morale": 65,
-    "expectedStanding": 15,
+    "expectedStanding": 18,
     "difficulty": "Medium",
     "color": "#60a5fa",
     "country": "United States"
@@ -266,30 +320,50 @@ export const teams1990NASCAR: Team[] = [
     "shortName": "",
     "carId": "car-1990-nascar-morgan-mcclure-motorsports",
     "driverIds": [
-      "d-1990-nascar-phil-parsons"
+      "d-1990-nascar-phil-parsons",
+      "d-1990-nascar-ernie-irvan"
     ],
     "budget": 50,
     "reputation": 85,
     "raceOperations": 85,
     "morale": 65,
-    "expectedStanding": 16,
+    "expectedStanding": 19,
     "difficulty": "Medium",
     "color": "#60a5fa",
     "country": "United States"
   },
   {
-    "id": "t-1990-nascar-moroso-racing",
-    "name": "Moroso Racing",
+    "id": "t-1990-nascar-moroso-racing-team-1",
+    "name": "Moroso Racing team 1",
     "shortName": "",
-    "carId": "car-1990-nascar-moroso-racing",
+    "carId": "car-1990-nascar-moroso-racing-team-1",
     "driverIds": [
-      "d-1990-nascar-rob-moroso"
+      "d-1990-nascar-rob-moroso",
+      "d-1990-nascar-jimmy-hensley"
     ],
     "budget": 50,
     "reputation": 73,
     "raceOperations": 73,
     "morale": 65,
-    "expectedStanding": 17,
+    "expectedStanding": 20,
+    "difficulty": "Medium",
+    "color": "#60a5fa",
+    "country": "United States"
+  },
+  {
+    "id": "t-1990-nascar-moroso-racing-team-2",
+    "name": "Moroso Racing team 2",
+    "shortName": "",
+    "carId": "car-1990-nascar-moroso-racing-team-2",
+    "driverIds": [
+      "d-1990-nascar-chad-little",
+      "d-1990-nascar-steve-grissom"
+    ],
+    "budget": 50,
+    "reputation": 73,
+    "raceOperations": 73,
+    "morale": 65,
+    "expectedStanding": 21,
     "difficulty": "Medium",
     "color": "#60a5fa",
     "country": "United States"
@@ -300,13 +374,14 @@ export const teams1990NASCAR: Team[] = [
     "shortName": "",
     "carId": "car-1990-nascar-osterlund-racing",
     "driverIds": [
-      "d-1990-nascar-jimmy-spencer"
+      "d-1990-nascar-jimmy-spencer",
+      "d-1990-nascar-jim-bown"
     ],
     "budget": 50,
     "reputation": 74,
     "raceOperations": 74,
     "morale": 65,
-    "expectedStanding": 18,
+    "expectedStanding": 22,
     "difficulty": "Medium",
     "color": "#60a5fa",
     "country": "United States"
@@ -323,7 +398,7 @@ export const teams1990NASCAR: Team[] = [
     "reputation": 77,
     "raceOperations": 77,
     "morale": 65,
-    "expectedStanding": 19,
+    "expectedStanding": 23,
     "difficulty": "Medium",
     "color": "#60a5fa",
     "country": "United States"
@@ -340,7 +415,7 @@ export const teams1990NASCAR: Team[] = [
     "reputation": 85,
     "raceOperations": 85,
     "morale": 65,
-    "expectedStanding": 20,
+    "expectedStanding": 24,
     "difficulty": "Medium",
     "color": "#60a5fa",
     "country": "United States"
@@ -357,7 +432,7 @@ export const teams1990NASCAR: Team[] = [
     "reputation": 78,
     "raceOperations": 78,
     "morale": 65,
-    "expectedStanding": 21,
+    "expectedStanding": 25,
     "difficulty": "Medium",
     "color": "#60a5fa",
     "country": "United States"
@@ -374,7 +449,7 @@ export const teams1990NASCAR: Team[] = [
     "reputation": 97,
     "raceOperations": 97,
     "morale": 65,
-    "expectedStanding": 22,
+    "expectedStanding": 26,
     "difficulty": "Medium",
     "color": "#60a5fa",
     "country": "United States"
@@ -391,7 +466,7 @@ export const teams1990NASCAR: Team[] = [
     "reputation": 86,
     "raceOperations": 86,
     "morale": 65,
-    "expectedStanding": 23,
+    "expectedStanding": 27,
     "difficulty": "Medium",
     "color": "#60a5fa",
     "country": "United States"
@@ -408,7 +483,7 @@ export const teams1990NASCAR: Team[] = [
     "reputation": 95,
     "raceOperations": 95,
     "morale": 65,
-    "expectedStanding": 24,
+    "expectedStanding": 28,
     "difficulty": "Medium",
     "color": "#60a5fa",
     "country": "United States"
@@ -425,7 +500,7 @@ export const teams1990NASCAR: Team[] = [
     "reputation": 88,
     "raceOperations": 88,
     "morale": 65,
-    "expectedStanding": 25,
+    "expectedStanding": 29,
     "difficulty": "Medium",
     "color": "#60a5fa",
     "country": "United States"
@@ -442,7 +517,7 @@ export const teams1990NASCAR: Team[] = [
     "reputation": 81,
     "raceOperations": 81,
     "morale": 65,
-    "expectedStanding": 26,
+    "expectedStanding": 30,
     "difficulty": "Medium",
     "color": "#60a5fa",
     "country": "United States"
@@ -453,13 +528,14 @@ export const teams1990NASCAR: Team[] = [
     "shortName": "",
     "carId": "car-1990-nascar-travis-carter-enterprises",
     "driverIds": [
-      "d-1990-nascar-butch-miller"
+      "d-1990-nascar-butch-miller",
+      "d-1990-nascar-rick-mast"
     ],
     "budget": 50,
     "reputation": 74,
     "raceOperations": 74,
     "morale": 65,
-    "expectedStanding": 27,
+    "expectedStanding": 31,
     "difficulty": "Medium",
     "color": "#60a5fa",
     "country": "United States"
@@ -476,7 +552,7 @@ export const teams1990NASCAR: Team[] = [
     "reputation": 82,
     "raceOperations": 82,
     "morale": 65,
-    "expectedStanding": 28,
+    "expectedStanding": 32,
     "difficulty": "Medium",
     "color": "#60a5fa",
     "country": "United States"
@@ -487,13 +563,14 @@ export const teams1990NASCAR: Team[] = [
     "shortName": "",
     "carId": "car-1990-nascar-wood-brothers-racing",
     "driverIds": [
-      "d-1990-nascar-neil-bonnett"
+      "d-1990-nascar-neil-bonnett",
+      "d-1990-nascar-dale-jarrett"
     ],
     "budget": 50,
     "reputation": 74,
     "raceOperations": 74,
     "morale": 65,
-    "expectedStanding": 29,
+    "expectedStanding": 33,
     "difficulty": "Medium",
     "color": "#60a5fa",
     "country": "United States"

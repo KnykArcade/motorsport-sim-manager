@@ -5,13 +5,13 @@ import type {
 
 export const teams2000NASCAR: Team[] = [
   {
-    "id": "t-2000-nascar-a-j-foyt-racing",
-    "name": "A. J. Foyt Racing",
+    "id": "t-2000-nascar-a-j-foyt-racing-team-1",
+    "name": "A. J. Foyt Racing team 1",
     "shortName": "",
-    "carId": "car-2000-nascar-a-j-foyt-racing",
+    "carId": "car-2000-nascar-a-j-foyt-racing-team-1",
     "driverIds": [
       "d-2000-nascar-mike-bliss",
-      "d-2000-nascar-larry-foyt"
+      "d-2000-nascar-dick-trickle"
     ],
     "budget": 50,
     "reputation": 72,
@@ -23,17 +23,17 @@ export const teams2000NASCAR: Team[] = [
     "country": "United States"
   },
   {
-    "id": "t-2000-nascar-andy-petree-racing-team-1",
-    "name": "Andy Petree Racing team 1",
+    "id": "t-2000-nascar-a-j-foyt-racing-team-2",
+    "name": "A. J. Foyt Racing team 2",
     "shortName": "",
-    "carId": "car-2000-nascar-andy-petree-racing-team-1",
+    "carId": "car-2000-nascar-a-j-foyt-racing-team-2",
     "driverIds": [
-      "d-2000-nascar-joe-nemechek",
-      "d-2000-nascar-kenny-wallace"
+      "d-2000-nascar-rick-mast",
+      "d-2000-nascar-larry-foyt"
     ],
     "budget": 50,
-    "reputation": 77,
-    "raceOperations": 77,
+    "reputation": 72,
+    "raceOperations": 72,
     "morale": 65,
     "expectedStanding": 2,
     "difficulty": "Medium",
@@ -41,18 +41,36 @@ export const teams2000NASCAR: Team[] = [
     "country": "United States"
   },
   {
+    "id": "t-2000-nascar-andy-petree-racing-team-1",
+    "name": "Andy Petree Racing Team 1",
+    "shortName": "",
+    "carId": "car-2000-nascar-andy-petree-racing-team-1",
+    "driverIds": [
+      "d-2000-nascar-joe-nemechek",
+      "d-2000-nascar-kenny-wallace"
+    ],
+    "budget": 50,
+    "reputation": 89,
+    "raceOperations": 89,
+    "morale": 65,
+    "expectedStanding": 3,
+    "difficulty": "Medium",
+    "color": "#60a5fa",
+    "country": "United States"
+  },
+  {
     "id": "t-2000-nascar-andy-petree-racing-team-2",
-    "name": "Andy Petree Racing team 2",
+    "name": "Andy Petree Racing Team 2",
     "shortName": "",
     "carId": "car-2000-nascar-andy-petree-racing-team-2",
     "driverIds": [
       "d-2000-nascar-geoff-bodine"
     ],
     "budget": 50,
-    "reputation": 77,
-    "raceOperations": 77,
+    "reputation": 65,
+    "raceOperations": 65,
     "morale": 65,
-    "expectedStanding": 3,
+    "expectedStanding": 4,
     "difficulty": "Medium",
     "color": "#60a5fa",
     "country": "United States"
@@ -69,14 +87,14 @@ export const teams2000NASCAR: Team[] = [
     "reputation": 37,
     "raceOperations": 37,
     "morale": 65,
-    "expectedStanding": 4,
+    "expectedStanding": 5,
     "difficulty": "Medium",
     "color": "#60a5fa",
     "country": "United States"
   },
   {
     "id": "t-2000-nascar-bill-davis-racing-team-1",
-    "name": "Bill Davis Racing team 1",
+    "name": "Bill Davis Racing Team 1",
     "shortName": "",
     "carId": "car-2000-nascar-bill-davis-racing-team-1",
     "driverIds": [
@@ -84,27 +102,27 @@ export const teams2000NASCAR: Team[] = [
       "d-2000-nascar-dave-blaney"
     ],
     "budget": 50,
-    "reputation": 67,
-    "raceOperations": 67,
+    "reputation": 92,
+    "raceOperations": 92,
     "morale": 65,
-    "expectedStanding": 5,
+    "expectedStanding": 6,
     "difficulty": "Medium",
     "color": "#60a5fa",
     "country": "United States"
   },
   {
     "id": "t-2000-nascar-bill-davis-racing-team-2",
-    "name": "Bill Davis Racing team 2",
+    "name": "Bill Davis Racing Team 2",
     "shortName": "",
     "carId": "car-2000-nascar-bill-davis-racing-team-2",
     "driverIds": [
       "d-2000-nascar-scott-wimmer"
     ],
     "budget": 50,
-    "reputation": 67,
-    "raceOperations": 67,
+    "reputation": 40,
+    "raceOperations": 40,
     "morale": 65,
-    "expectedStanding": 6,
+    "expectedStanding": 7,
     "difficulty": "Medium",
     "color": "#60a5fa",
     "country": "United States"
@@ -115,13 +133,14 @@ export const teams2000NASCAR: Team[] = [
     "shortName": "",
     "carId": "car-2000-nascar-bill-elliott-racing",
     "driverIds": [
-      "d-2000-nascar-bill-elliott"
+      "d-2000-nascar-bill-elliott",
+      "d-2000-nascar-david-green"
     ],
     "budget": 50,
     "reputation": 82,
     "raceOperations": 82,
     "morale": 65,
-    "expectedStanding": 7,
+    "expectedStanding": 8,
     "difficulty": "Medium",
     "color": "#60a5fa",
     "country": "United States"
@@ -138,7 +157,7 @@ export const teams2000NASCAR: Team[] = [
     "reputation": 52,
     "raceOperations": 52,
     "morale": 65,
-    "expectedStanding": 8,
+    "expectedStanding": 9,
     "difficulty": "Medium",
     "color": "#60a5fa",
     "country": "United States"
@@ -155,7 +174,7 @@ export const teams2000NASCAR: Team[] = [
     "reputation": 73,
     "raceOperations": 73,
     "morale": 65,
-    "expectedStanding": 9,
+    "expectedStanding": 10,
     "difficulty": "Medium",
     "color": "#60a5fa",
     "country": "United States"
@@ -172,7 +191,7 @@ export const teams2000NASCAR: Team[] = [
     "reputation": 46,
     "raceOperations": 46,
     "morale": 65,
-    "expectedStanding": 10,
+    "expectedStanding": 11,
     "difficulty": "Medium",
     "color": "#60a5fa",
     "country": "United States"
@@ -183,13 +202,14 @@ export const teams2000NASCAR: Team[] = [
     "shortName": "",
     "carId": "car-2000-nascar-coulter-racing",
     "driverIds": [
-      "d-2000-nascar-rich-bickle"
+      "d-2000-nascar-rich-bickle",
+      "d-2000-nascar-tim-sauter"
     ],
     "budget": 50,
     "reputation": 51,
     "raceOperations": 51,
     "morale": 65,
-    "expectedStanding": 11,
+    "expectedStanding": 12,
     "difficulty": "Medium",
     "color": "#60a5fa",
     "country": "United States"
@@ -207,24 +227,42 @@ export const teams2000NASCAR: Team[] = [
     "reputation": 92,
     "raceOperations": 92,
     "morale": 65,
-    "expectedStanding": 12,
+    "expectedStanding": 13,
     "difficulty": "Medium",
     "color": "#60a5fa",
     "country": "United States"
   },
   {
-    "id": "t-2000-nascar-donlavey-racing",
-    "name": "Donlavey Racing",
+    "id": "t-2000-nascar-donlavey-racing-team-1",
+    "name": "Donlavey Racing team 1",
     "shortName": "",
-    "carId": "car-2000-nascar-donlavey-racing",
+    "carId": "car-2000-nascar-donlavey-racing-team-1",
     "driverIds": [
-      "d-2000-nascar-ed-berrier"
+      "d-2000-nascar-ed-berrier",
+      "d-2000-nascar-brian-simo"
     ],
     "budget": 50,
     "reputation": 61,
     "raceOperations": 61,
     "morale": 65,
-    "expectedStanding": 13,
+    "expectedStanding": 14,
+    "difficulty": "Medium",
+    "color": "#60a5fa",
+    "country": "United States"
+  },
+  {
+    "id": "t-2000-nascar-donlavey-racing-team-2",
+    "name": "Donlavey Racing team 2",
+    "shortName": "",
+    "carId": "car-2000-nascar-donlavey-racing-team-2",
+    "driverIds": [
+      "d-2000-nascar-hut-stricklin"
+    ],
+    "budget": 50,
+    "reputation": 61,
+    "raceOperations": 61,
+    "morale": 65,
+    "expectedStanding": 15,
     "difficulty": "Medium",
     "color": "#60a5fa",
     "country": "United States"
@@ -235,13 +273,14 @@ export const teams2000NASCAR: Team[] = [
     "shortName": "",
     "carId": "car-2000-nascar-eel-river-racing",
     "driverIds": [
-      "d-2000-nascar-jeff-fuller"
+      "d-2000-nascar-jeff-fuller",
+      "d-2000-nascar-mike-bliss"
     ],
     "budget": 50,
     "reputation": 68,
     "raceOperations": 68,
     "morale": 65,
-    "expectedStanding": 14,
+    "expectedStanding": 16,
     "difficulty": "Medium",
     "color": "#60a5fa",
     "country": "United States"
@@ -258,7 +297,7 @@ export const teams2000NASCAR: Team[] = [
     "reputation": 57,
     "raceOperations": 57,
     "morale": 65,
-    "expectedStanding": 15,
+    "expectedStanding": 17,
     "difficulty": "Medium",
     "color": "#60a5fa",
     "country": "United States"
@@ -269,13 +308,14 @@ export const teams2000NASCAR: Team[] = [
     "shortName": "",
     "carId": "car-2000-nascar-fenley-moore-motorsports",
     "driverIds": [
-      "d-2000-nascar-derrike-cope"
+      "d-2000-nascar-derrike-cope",
+      "d-2000-nascar-ted-musgrave"
     ],
     "budget": 50,
     "reputation": 68,
     "raceOperations": 68,
     "morale": 65,
-    "expectedStanding": 16,
+    "expectedStanding": 18,
     "difficulty": "Medium",
     "color": "#60a5fa",
     "country": "United States"
@@ -292,7 +332,7 @@ export const teams2000NASCAR: Team[] = [
     "reputation": 73,
     "raceOperations": 73,
     "morale": 65,
-    "expectedStanding": 17,
+    "expectedStanding": 19,
     "difficulty": "Medium",
     "color": "#60a5fa",
     "country": "United States"
@@ -303,46 +343,12 @@ export const teams2000NASCAR: Team[] = [
     "shortName": "",
     "carId": "car-2000-nascar-gerhart-racing",
     "driverIds": [
-      "d-2000-nascar-bobby-gerhart"
+      "d-2000-nascar-bobby-gerhart",
+      "d-2000-nascar-austin-cameron"
     ],
     "budget": 50,
     "reputation": 31,
     "raceOperations": 31,
-    "morale": 65,
-    "expectedStanding": 18,
-    "difficulty": "Medium",
-    "color": "#60a5fa",
-    "country": "United States"
-  },
-  {
-    "id": "t-2000-nascar-haas-carter-motorsports-team-1",
-    "name": "Haas-Carter Motorsports team 1",
-    "shortName": "",
-    "carId": "car-2000-nascar-haas-carter-motorsports-team-1",
-    "driverIds": [
-      "d-2000-nascar-jimmy-spencer",
-      "d-2000-nascar-darrell-waltrip"
-    ],
-    "budget": 50,
-    "reputation": 71,
-    "raceOperations": 71,
-    "morale": 65,
-    "expectedStanding": 19,
-    "difficulty": "Medium",
-    "color": "#60a5fa",
-    "country": "United States"
-  },
-  {
-    "id": "t-2000-nascar-haas-carter-motorsports-team-2",
-    "name": "Haas-Carter Motorsports team 2",
-    "shortName": "",
-    "carId": "car-2000-nascar-haas-carter-motorsports-team-2",
-    "driverIds": [
-      "d-2000-nascar-todd-bodine"
-    ],
-    "budget": 50,
-    "reputation": 71,
-    "raceOperations": 71,
     "morale": 65,
     "expectedStanding": 20,
     "difficulty": "Medium",
@@ -350,17 +356,17 @@ export const teams2000NASCAR: Team[] = [
     "country": "United States"
   },
   {
-    "id": "t-2000-nascar-hendrick-motorsports-team-1",
-    "name": "Hendrick Motorsports team 1",
+    "id": "t-2000-nascar-haas-carter-motorsports-team-1",
+    "name": "Haas-Carter Motorsports Team 1",
     "shortName": "",
-    "carId": "car-2000-nascar-hendrick-motorsports-team-1",
+    "carId": "car-2000-nascar-haas-carter-motorsports-team-1",
     "driverIds": [
-      "d-2000-nascar-terry-labonte",
-      "d-2000-nascar-jeff-gordon"
+      "d-2000-nascar-jimmy-spencer",
+      "d-2000-nascar-darrell-waltrip"
     ],
     "budget": 50,
-    "reputation": 89,
-    "raceOperations": 89,
+    "reputation": 82,
+    "raceOperations": 82,
     "morale": 65,
     "expectedStanding": 21,
     "difficulty": "Medium",
@@ -368,18 +374,71 @@ export const teams2000NASCAR: Team[] = [
     "country": "United States"
   },
   {
+    "id": "t-2000-nascar-haas-carter-motorsports-team-2",
+    "name": "Haas-Carter Motorsports Team 2",
+    "shortName": "",
+    "carId": "car-2000-nascar-haas-carter-motorsports-team-2",
+    "driverIds": [
+      "d-2000-nascar-todd-bodine"
+    ],
+    "budget": 50,
+    "reputation": 59,
+    "raceOperations": 59,
+    "morale": 65,
+    "expectedStanding": 22,
+    "difficulty": "Medium",
+    "color": "#60a5fa",
+    "country": "United States"
+  },
+  {
+    "id": "t-2000-nascar-hendrick-motorsports-team-1-team-1",
+    "name": "Hendrick Motorsports Team 1 team 1",
+    "shortName": "",
+    "carId": "car-2000-nascar-hendrick-motorsports-team-1-team-1",
+    "driverIds": [
+      "d-2000-nascar-terry-labonte",
+      "d-2000-nascar-todd-bodine"
+    ],
+    "budget": 50,
+    "reputation": 91,
+    "raceOperations": 91,
+    "morale": 65,
+    "expectedStanding": 23,
+    "difficulty": "Medium",
+    "color": "#60a5fa",
+    "country": "United States"
+  },
+  {
+    "id": "t-2000-nascar-hendrick-motorsports-team-1-team-2",
+    "name": "Hendrick Motorsports Team 1 team 2",
+    "shortName": "",
+    "carId": "car-2000-nascar-hendrick-motorsports-team-1-team-2",
+    "driverIds": [
+      "d-2000-nascar-ron-hornaday-jr",
+      "d-2000-nascar-jeff-gordon"
+    ],
+    "budget": 50,
+    "reputation": 91,
+    "raceOperations": 91,
+    "morale": 65,
+    "expectedStanding": 24,
+    "difficulty": "Medium",
+    "color": "#60a5fa",
+    "country": "United States"
+  },
+  {
     "id": "t-2000-nascar-hendrick-motorsports-team-2",
-    "name": "Hendrick Motorsports team 2",
+    "name": "Hendrick Motorsports Team 2",
     "shortName": "",
     "carId": "car-2000-nascar-hendrick-motorsports-team-2",
     "driverIds": [
       "d-2000-nascar-jerry-nadeau"
     ],
     "budget": 50,
-    "reputation": 89,
-    "raceOperations": 89,
+    "reputation": 86,
+    "raceOperations": 86,
     "morale": 65,
-    "expectedStanding": 22,
+    "expectedStanding": 25,
     "difficulty": "Medium",
     "color": "#60a5fa",
     "country": "United States"
@@ -396,7 +455,7 @@ export const teams2000NASCAR: Team[] = [
     "reputation": 33,
     "raceOperations": 33,
     "morale": 65,
-    "expectedStanding": 23,
+    "expectedStanding": 26,
     "difficulty": "Medium",
     "color": "#60a5fa",
     "country": "United States"
@@ -407,13 +466,14 @@ export const teams2000NASCAR: Team[] = [
     "shortName": "",
     "carId": "car-2000-nascar-jkr-motorsports",
     "driverIds": [
-      "d-2000-nascar-david-green"
+      "d-2000-nascar-david-green",
+      "d-2000-nascar-todd-bodine"
     ],
     "budget": 50,
     "reputation": 60,
     "raceOperations": 60,
     "morale": 65,
-    "expectedStanding": 24,
+    "expectedStanding": 27,
     "difficulty": "Medium",
     "color": "#60a5fa",
     "country": "United States"
@@ -430,7 +490,7 @@ export const teams2000NASCAR: Team[] = [
     "reputation": 81,
     "raceOperations": 81,
     "morale": 65,
-    "expectedStanding": 25,
+    "expectedStanding": 28,
     "difficulty": "Medium",
     "color": "#60a5fa",
     "country": "United States"
@@ -447,24 +507,61 @@ export const teams2000NASCAR: Team[] = [
     "reputation": 28,
     "raceOperations": 28,
     "morale": 65,
-    "expectedStanding": 26,
+    "expectedStanding": 29,
     "difficulty": "Medium",
     "color": "#60a5fa",
     "country": "United States"
   },
   {
-    "id": "t-2000-nascar-joe-bessey-racing",
-    "name": "Joe Bessey Racing",
+    "id": "t-2000-nascar-joe-bessey-racing-team-1",
+    "name": "Joe Bessey Racing team 1",
     "shortName": "",
-    "carId": "car-2000-nascar-joe-bessey-racing",
+    "carId": "car-2000-nascar-joe-bessey-racing-team-1",
     "driverIds": [
-      "d-2000-nascar-geoff-bodine"
+      "d-2000-nascar-geoff-bodine",
+      "d-2000-nascar-ted-musgrave"
     ],
     "budget": 50,
     "reputation": 65,
     "raceOperations": 65,
     "morale": 65,
-    "expectedStanding": 27,
+    "expectedStanding": 30,
+    "difficulty": "Medium",
+    "color": "#60a5fa",
+    "country": "United States"
+  },
+  {
+    "id": "t-2000-nascar-joe-bessey-racing-team-2",
+    "name": "Joe Bessey Racing team 2",
+    "shortName": "",
+    "carId": "car-2000-nascar-joe-bessey-racing-team-2",
+    "driverIds": [
+      "d-2000-nascar-dick-trickle",
+      "d-2000-nascar-rich-bickle"
+    ],
+    "budget": 50,
+    "reputation": 65,
+    "raceOperations": 65,
+    "morale": 65,
+    "expectedStanding": 31,
+    "difficulty": "Medium",
+    "color": "#60a5fa",
+    "country": "United States"
+  },
+  {
+    "id": "t-2000-nascar-joe-bessey-racing-team-3",
+    "name": "Joe Bessey Racing team 3",
+    "shortName": "",
+    "carId": "car-2000-nascar-joe-bessey-racing-team-3",
+    "driverIds": [
+      "d-2000-nascar-joe-bessey",
+      "d-2000-nascar-hermie-sadler"
+    ],
+    "budget": 50,
+    "reputation": 65,
+    "raceOperations": 65,
+    "morale": 65,
+    "expectedStanding": 32,
     "difficulty": "Medium",
     "color": "#60a5fa",
     "country": "United States"
@@ -482,24 +579,43 @@ export const teams2000NASCAR: Team[] = [
     "reputation": 100,
     "raceOperations": 100,
     "morale": 65,
-    "expectedStanding": 28,
+    "expectedStanding": 33,
     "difficulty": "Medium",
     "color": "#60a5fa",
     "country": "United States"
   },
   {
-    "id": "t-2000-nascar-lj-racing",
-    "name": "LJ Racing",
+    "id": "t-2000-nascar-lj-racing-team-1",
+    "name": "LJ Racing team 1",
     "shortName": "",
-    "carId": "car-2000-nascar-lj-racing",
+    "carId": "car-2000-nascar-lj-racing-team-1",
     "driverIds": [
-      "d-2000-nascar-andy-hillenburg"
+      "d-2000-nascar-andy-hillenburg",
+      "d-2000-nascar-todd-bodine"
     ],
     "budget": 50,
     "reputation": 59,
     "raceOperations": 59,
     "morale": 65,
-    "expectedStanding": 29,
+    "expectedStanding": 34,
+    "difficulty": "Medium",
+    "color": "#60a5fa",
+    "country": "United States"
+  },
+  {
+    "id": "t-2000-nascar-lj-racing-team-2",
+    "name": "LJ Racing team 2",
+    "shortName": "",
+    "carId": "car-2000-nascar-lj-racing-team-2",
+    "driverIds": [
+      "d-2000-nascar-larry-gunselman",
+      "d-2000-nascar-blaise-alexander"
+    ],
+    "budget": 50,
+    "reputation": 59,
+    "raceOperations": 59,
+    "morale": 65,
+    "expectedStanding": 35,
     "difficulty": "Medium",
     "color": "#60a5fa",
     "country": "United States"
@@ -510,13 +626,14 @@ export const teams2000NASCAR: Team[] = [
     "shortName": "",
     "carId": "car-2000-nascar-larry-hedrick-motorsports",
     "driverIds": [
-      "d-2000-nascar-rick-mast"
+      "d-2000-nascar-rick-mast",
+      "d-2000-nascar-gary-bradberry"
     ],
     "budget": 50,
     "reputation": 71,
     "raceOperations": 71,
     "morale": 65,
-    "expectedStanding": 30,
+    "expectedStanding": 36,
     "difficulty": "Medium",
     "color": "#60a5fa",
     "country": "United States"
@@ -533,7 +650,7 @@ export const teams2000NASCAR: Team[] = [
     "reputation": 88,
     "raceOperations": 88,
     "morale": 65,
-    "expectedStanding": 31,
+    "expectedStanding": 37,
     "difficulty": "Medium",
     "color": "#60a5fa",
     "country": "United States"
@@ -544,13 +661,14 @@ export const teams2000NASCAR: Team[] = [
     "shortName": "",
     "carId": "car-2000-nascar-macpherson-motorsports",
     "driverIds": [
-      "d-2000-nascar-jeff-fuller"
+      "d-2000-nascar-jeff-fuller",
+      "d-2000-nascar-geoff-bodine"
     ],
     "budget": 50,
     "reputation": 65,
     "raceOperations": 65,
     "morale": 65,
-    "expectedStanding": 32,
+    "expectedStanding": 38,
     "difficulty": "Medium",
     "color": "#60a5fa",
     "country": "United States"
@@ -561,31 +679,68 @@ export const teams2000NASCAR: Team[] = [
     "shortName": "",
     "carId": "car-2000-nascar-mansion-motorsports",
     "driverIds": [
-      "d-2000-nascar-carl-long"
+      "d-2000-nascar-carl-long",
+      "d-2000-nascar-darrell-waltrip"
     ],
     "budget": 50,
     "reputation": 69,
     "raceOperations": 69,
     "morale": 65,
-    "expectedStanding": 33,
+    "expectedStanding": 39,
     "difficulty": "Medium",
     "color": "#60a5fa",
     "country": "United States"
   },
   {
-    "id": "t-2000-nascar-marcis-auto-racing",
-    "name": "Marcis Auto Racing",
+    "id": "t-2000-nascar-marcis-auto-racing-team-1",
+    "name": "Marcis Auto Racing team 1",
     "shortName": "",
-    "carId": "car-2000-nascar-marcis-auto-racing",
+    "carId": "car-2000-nascar-marcis-auto-racing-team-1",
     "driverIds": [
       "d-2000-nascar-dave-marcis",
-      "d-2000-nascar-jim-sauter"
+      "d-2000-nascar-r-k-smith"
     ],
     "budget": 50,
     "reputation": 59,
     "raceOperations": 59,
     "morale": 65,
-    "expectedStanding": 34,
+    "expectedStanding": 40,
+    "difficulty": "Medium",
+    "color": "#60a5fa",
+    "country": "United States"
+  },
+  {
+    "id": "t-2000-nascar-marcis-auto-racing-team-2",
+    "name": "Marcis Auto Racing team 2",
+    "shortName": "",
+    "carId": "car-2000-nascar-marcis-auto-racing-team-2",
+    "driverIds": [
+      "d-2000-nascar-kerry-earnhardt",
+      "d-2000-nascar-dick-trickle"
+    ],
+    "budget": 50,
+    "reputation": 59,
+    "raceOperations": 59,
+    "morale": 65,
+    "expectedStanding": 41,
+    "difficulty": "Medium",
+    "color": "#60a5fa",
+    "country": "United States"
+  },
+  {
+    "id": "t-2000-nascar-marcis-auto-racing-team-3",
+    "name": "Marcis Auto Racing team 3",
+    "shortName": "",
+    "carId": "car-2000-nascar-marcis-auto-racing-team-3",
+    "driverIds": [
+      "d-2000-nascar-jim-sauter",
+      "d-2000-nascar-dwayne-leik"
+    ],
+    "budget": 50,
+    "reputation": 59,
+    "raceOperations": 59,
+    "morale": 65,
+    "expectedStanding": 42,
     "difficulty": "Medium",
     "color": "#60a5fa",
     "country": "United States"
@@ -596,13 +751,14 @@ export const teams2000NASCAR: Team[] = [
     "shortName": "",
     "carId": "car-2000-nascar-melling-racing",
     "driverIds": [
-      "d-2000-nascar-stacy-compton"
+      "d-2000-nascar-stacy-compton",
+      "d-2000-nascar-bobby-hillin-jr"
     ],
     "budget": 50,
     "reputation": 69,
     "raceOperations": 69,
     "morale": 65,
-    "expectedStanding": 35,
+    "expectedStanding": 43,
     "difficulty": "Medium",
     "color": "#60a5fa",
     "country": "United States"
@@ -619,7 +775,7 @@ export const teams2000NASCAR: Team[] = [
     "reputation": 65,
     "raceOperations": 65,
     "morale": 65,
-    "expectedStanding": 36,
+    "expectedStanding": 44,
     "difficulty": "Medium",
     "color": "#60a5fa",
     "country": "United States"
@@ -636,7 +792,7 @@ export const teams2000NASCAR: Team[] = [
     "reputation": 77,
     "raceOperations": 77,
     "morale": 65,
-    "expectedStanding": 37,
+    "expectedStanding": 45,
     "difficulty": "Medium",
     "color": "#60a5fa",
     "country": "United States"
@@ -653,7 +809,7 @@ export const teams2000NASCAR: Team[] = [
     "reputation": 40,
     "raceOperations": 40,
     "morale": 65,
-    "expectedStanding": 38,
+    "expectedStanding": 46,
     "difficulty": "Medium",
     "color": "#60a5fa",
     "country": "United States"
@@ -670,7 +826,7 @@ export const teams2000NASCAR: Team[] = [
     "reputation": 35,
     "raceOperations": 35,
     "morale": 65,
-    "expectedStanding": 39,
+    "expectedStanding": 47,
     "difficulty": "Medium",
     "color": "#60a5fa",
     "country": "United States"
@@ -688,77 +844,113 @@ export const teams2000NASCAR: Team[] = [
     "reputation": 71,
     "raceOperations": 71,
     "morale": 65,
-    "expectedStanding": 40,
+    "expectedStanding": 48,
     "difficulty": "Medium",
     "color": "#60a5fa",
     "country": "United States"
   },
   {
-    "id": "t-2000-nascar-penske-kranefuss-racing-team-1",
-    "name": "Penske-Kranefuss Racing team 1",
+    "id": "t-2000-nascar-penske-kranefuss-racing-team-1-team-1",
+    "name": "Penske-Kranefuss Racing Team 1 team 1",
     "shortName": "",
-    "carId": "car-2000-nascar-penske-kranefuss-racing-team-1",
+    "carId": "car-2000-nascar-penske-kranefuss-racing-team-1-team-1",
     "driverIds": [
       "d-2000-nascar-rusty-wallace",
       "d-2000-nascar-jeremy-mayfield"
     ],
     "budget": 50,
-    "reputation": 68,
-    "raceOperations": 68,
+    "reputation": 93,
+    "raceOperations": 93,
     "morale": 65,
-    "expectedStanding": 41,
+    "expectedStanding": 49,
+    "difficulty": "Medium",
+    "color": "#60a5fa",
+    "country": "United States"
+  },
+  {
+    "id": "t-2000-nascar-penske-kranefuss-racing-team-1-team-2",
+    "name": "Penske-Kranefuss Racing Team 1 team 2",
+    "shortName": "",
+    "carId": "car-2000-nascar-penske-kranefuss-racing-team-1-team-2",
+    "driverIds": [
+      "d-2000-nascar-kyle-petty",
+      "d-2000-nascar-tom-hubert"
+    ],
+    "budget": 50,
+    "reputation": 93,
+    "raceOperations": 93,
+    "morale": 65,
+    "expectedStanding": 50,
     "difficulty": "Medium",
     "color": "#60a5fa",
     "country": "United States"
   },
   {
     "id": "t-2000-nascar-penske-kranefuss-racing-team-2",
-    "name": "Penske-Kranefuss Racing team 2",
+    "name": "Penske-Kranefuss Racing Team 2",
     "shortName": "",
     "carId": "car-2000-nascar-penske-kranefuss-racing-team-2",
     "driverIds": [
       "d-2000-nascar-ryan-newman"
     ],
     "budget": 50,
-    "reputation": 68,
-    "raceOperations": 68,
+    "reputation": 44,
+    "raceOperations": 44,
     "morale": 65,
-    "expectedStanding": 42,
+    "expectedStanding": 51,
     "difficulty": "Medium",
     "color": "#60a5fa",
     "country": "United States"
   },
   {
-    "id": "t-2000-nascar-petty-enterprises-team-1",
-    "name": "Petty Enterprises team 1",
+    "id": "t-2000-nascar-petty-enterprises-team-1-team-1",
+    "name": "Petty Enterprises Team 1 team 1",
     "shortName": "",
-    "carId": "car-2000-nascar-petty-enterprises-team-1",
+    "carId": "car-2000-nascar-petty-enterprises-team-1-team-1",
     "driverIds": [
       "d-2000-nascar-john-andretti",
       "d-2000-nascar-kyle-petty"
     ],
     "budget": 50,
-    "reputation": 74,
-    "raceOperations": 74,
+    "reputation": 79,
+    "raceOperations": 79,
     "morale": 65,
-    "expectedStanding": 43,
+    "expectedStanding": 52,
+    "difficulty": "Medium",
+    "color": "#60a5fa",
+    "country": "United States"
+  },
+  {
+    "id": "t-2000-nascar-petty-enterprises-team-1-team-2",
+    "name": "Petty Enterprises Team 1 team 2",
+    "shortName": "",
+    "carId": "car-2000-nascar-petty-enterprises-team-1-team-2",
+    "driverIds": [
+      "d-2000-nascar-steve-grissom"
+    ],
+    "budget": 50,
+    "reputation": 79,
+    "raceOperations": 79,
+    "morale": 65,
+    "expectedStanding": 53,
     "difficulty": "Medium",
     "color": "#60a5fa",
     "country": "United States"
   },
   {
     "id": "t-2000-nascar-petty-enterprises-team-2",
-    "name": "Petty Enterprises team 2",
+    "name": "Petty Enterprises Team 2",
     "shortName": "",
     "carId": "car-2000-nascar-petty-enterprises-team-2",
     "driverIds": [
-      "d-2000-nascar-adam-petty"
+      "d-2000-nascar-adam-petty",
+      "d-2000-nascar-kyle-petty"
     ],
     "budget": 50,
-    "reputation": 74,
-    "raceOperations": 74,
+    "reputation": 67,
+    "raceOperations": 67,
     "morale": 65,
-    "expectedStanding": 44,
+    "expectedStanding": 54,
     "difficulty": "Medium",
     "color": "#60a5fa",
     "country": "United States"
@@ -775,7 +967,7 @@ export const teams2000NASCAR: Team[] = [
     "reputation": 32,
     "raceOperations": 32,
     "morale": 65,
-    "expectedStanding": 45,
+    "expectedStanding": 55,
     "difficulty": "Medium",
     "color": "#60a5fa",
     "country": "United States"
@@ -793,7 +985,7 @@ export const teams2000NASCAR: Team[] = [
     "reputation": 99,
     "raceOperations": 99,
     "morale": 65,
-    "expectedStanding": 46,
+    "expectedStanding": 56,
     "difficulty": "Medium",
     "color": "#60a5fa",
     "country": "United States"
@@ -811,14 +1003,14 @@ export const teams2000NASCAR: Team[] = [
     "reputation": 98,
     "raceOperations": 98,
     "morale": 65,
-    "expectedStanding": 47,
+    "expectedStanding": 57,
     "difficulty": "Medium",
     "color": "#60a5fa",
     "country": "United States"
   },
   {
     "id": "t-2000-nascar-roush-racing-team-1",
-    "name": "Roush Racing team 1",
+    "name": "Roush Racing Team 1",
     "shortName": "",
     "carId": "car-2000-nascar-roush-racing-team-1",
     "driverIds": [
@@ -829,42 +1021,59 @@ export const teams2000NASCAR: Team[] = [
     "reputation": 94,
     "raceOperations": 94,
     "morale": 65,
-    "expectedStanding": 48,
+    "expectedStanding": 58,
     "difficulty": "Medium",
     "color": "#60a5fa",
     "country": "United States"
   },
   {
-    "id": "t-2000-nascar-roush-racing-team-2",
-    "name": "Roush Racing team 2",
+    "id": "t-2000-nascar-roush-racing-team-2-team-1",
+    "name": "Roush Racing Team 2 team 1",
     "shortName": "",
-    "carId": "car-2000-nascar-roush-racing-team-2",
+    "carId": "car-2000-nascar-roush-racing-team-2-team-1",
     "driverIds": [
       "d-2000-nascar-matt-kenseth",
       "d-2000-nascar-chad-little"
     ],
     "budget": 50,
-    "reputation": 94,
-    "raceOperations": 94,
+    "reputation": 88,
+    "raceOperations": 88,
     "morale": 65,
-    "expectedStanding": 49,
+    "expectedStanding": 59,
+    "difficulty": "Medium",
+    "color": "#60a5fa",
+    "country": "United States"
+  },
+  {
+    "id": "t-2000-nascar-roush-racing-team-2-team-2",
+    "name": "Roush Racing Team 2 team 2",
+    "shortName": "",
+    "carId": "car-2000-nascar-roush-racing-team-2-team-2",
+    "driverIds": [
+      "d-2000-nascar-kurt-busch"
+    ],
+    "budget": 50,
+    "reputation": 88,
+    "raceOperations": 88,
+    "morale": 65,
+    "expectedStanding": 60,
     "difficulty": "Medium",
     "color": "#60a5fa",
     "country": "United States"
   },
   {
     "id": "t-2000-nascar-roush-racing-team-3",
-    "name": "Roush Racing team 3",
+    "name": "Roush Racing Team 3",
     "shortName": "",
     "carId": "car-2000-nascar-roush-racing-team-3",
     "driverIds": [
       "d-2000-nascar-jeff-burton"
     ],
     "budget": 50,
-    "reputation": 94,
-    "raceOperations": 94,
+    "reputation": 100,
+    "raceOperations": 100,
     "morale": 65,
-    "expectedStanding": 50,
+    "expectedStanding": 61,
     "difficulty": "Medium",
     "color": "#60a5fa",
     "country": "United States"
@@ -881,7 +1090,7 @@ export const teams2000NASCAR: Team[] = [
     "reputation": 41,
     "raceOperations": 41,
     "morale": 65,
-    "expectedStanding": 51,
+    "expectedStanding": 62,
     "difficulty": "Medium",
     "color": "#60a5fa",
     "country": "United States"
@@ -898,7 +1107,7 @@ export const teams2000NASCAR: Team[] = [
     "reputation": 43,
     "raceOperations": 43,
     "morale": 65,
-    "expectedStanding": 52,
+    "expectedStanding": 63,
     "difficulty": "Medium",
     "color": "#60a5fa",
     "country": "United States"
@@ -909,20 +1118,21 @@ export const teams2000NASCAR: Team[] = [
     "shortName": "",
     "carId": "car-2000-nascar-team-menard",
     "driverIds": [
-      "d-2000-nascar-robby-gordon"
+      "d-2000-nascar-robby-gordon",
+      "d-2000-nascar-p-j-jones"
     ],
     "budget": 50,
     "reputation": 64,
     "raceOperations": 64,
     "morale": 65,
-    "expectedStanding": 53,
+    "expectedStanding": 64,
     "difficulty": "Medium",
     "color": "#60a5fa",
     "country": "United States"
   },
   {
     "id": "t-2000-nascar-team-sabco-team-1",
-    "name": "Team SABCO team 1",
+    "name": "Team SABCO Team 1",
     "shortName": "",
     "carId": "car-2000-nascar-team-sabco-team-1",
     "driverIds": [
@@ -930,28 +1140,46 @@ export const teams2000NASCAR: Team[] = [
       "d-2000-nascar-michael-waltrip"
     ],
     "budget": 50,
-    "reputation": 76,
-    "raceOperations": 76,
+    "reputation": 85,
+    "raceOperations": 85,
     "morale": 65,
-    "expectedStanding": 54,
+    "expectedStanding": 65,
     "difficulty": "Medium",
     "color": "#60a5fa",
     "country": "United States"
   },
   {
-    "id": "t-2000-nascar-team-sabco-team-2",
-    "name": "Team SABCO team 2",
+    "id": "t-2000-nascar-team-sabco-team-2-team-1",
+    "name": "Team SABCO Team 2 team 1",
     "shortName": "",
-    "carId": "car-2000-nascar-team-sabco-team-2",
+    "carId": "car-2000-nascar-team-sabco-team-2-team-1",
     "driverIds": [
       "d-2000-nascar-kenny-irwin-jr",
       "d-2000-nascar-ted-musgrave"
     ],
     "budget": 50,
-    "reputation": 76,
-    "raceOperations": 76,
+    "reputation": 67,
+    "raceOperations": 67,
     "morale": 65,
-    "expectedStanding": 55,
+    "expectedStanding": 66,
+    "difficulty": "Medium",
+    "color": "#60a5fa",
+    "country": "United States"
+  },
+  {
+    "id": "t-2000-nascar-team-sabco-team-2-team-2",
+    "name": "Team SABCO Team 2 team 2",
+    "shortName": "",
+    "carId": "car-2000-nascar-team-sabco-team-2-team-2",
+    "driverIds": [
+      "d-2000-nascar-p-j-jones",
+      "d-2000-nascar-bobby-hamilton-jr"
+    ],
+    "budget": 50,
+    "reputation": 67,
+    "raceOperations": 67,
+    "morale": 65,
+    "expectedStanding": 67,
     "difficulty": "Medium",
     "color": "#60a5fa",
     "country": "United States"
@@ -968,7 +1196,7 @@ export const teams2000NASCAR: Team[] = [
     "reputation": 28,
     "raceOperations": 28,
     "morale": 65,
-    "expectedStanding": 56,
+    "expectedStanding": 68,
     "difficulty": "Medium",
     "color": "#60a5fa",
     "country": "United States"
@@ -985,7 +1213,7 @@ export const teams2000NASCAR: Team[] = [
     "reputation": 91,
     "raceOperations": 91,
     "morale": 65,
-    "expectedStanding": 57,
+    "expectedStanding": 69,
     "difficulty": "Medium",
     "color": "#60a5fa",
     "country": "United States"
@@ -1002,7 +1230,7 @@ export const teams2000NASCAR: Team[] = [
     "reputation": 78,
     "raceOperations": 78,
     "morale": 65,
-    "expectedStanding": 58,
+    "expectedStanding": 70,
     "difficulty": "Medium",
     "color": "#60a5fa",
     "country": "United States"

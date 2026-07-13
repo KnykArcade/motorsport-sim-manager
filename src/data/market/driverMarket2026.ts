@@ -204,7 +204,7 @@ export const driverMarket2026: MarketDriver[] = [
     buyoutCost: 5,
     negotiationDifficulty: 'Hard',
     suggestedUse: 'Prospect/Test',
-    notes: 'Development reserve with upside.'
+    notes: 'Development reserve with upside. Source: https://www.formula1.com/en/drivers/jack-doohan'
   },
   {
     id: 'DRV_0244',
@@ -272,7 +272,7 @@ export const driverMarket2026: MarketDriver[] = [
     buyoutCost: 5.5,
     negotiationDifficulty: 'Hard',
     suggestedUse: 'Reserve/Race Seat',
-    notes: 'Ready reserve with credible race-seat case.'
+    notes: 'Ready reserve with credible race-seat case. Source: https://www.fiaformulae.com/en/drivers/da1d5184-3792-43f4-b723-89bc304e9b9a/felipe-drugovich'
   },
   {
     id: 'mkt-2026-theo-pourchaire',
@@ -306,7 +306,7 @@ export const driverMarket2026: MarketDriver[] = [
     buyoutCost: 5.8,
     negotiationDifficulty: 'Hard',
     suggestedUse: 'Prospect/Race Seat',
-    notes: 'High-quality junior/senior hybrid.'
+    notes: 'High-quality junior/senior hybrid. Source: https://www.mercedesamgf1.com/drivers/driver/theo-pourchaire'
   },
   {
     id: 'mkt-2026-frederik-vesti',
@@ -340,7 +340,7 @@ export const driverMarket2026: MarketDriver[] = [
     buyoutCost: 5,
     negotiationDifficulty: 'Hard',
     suggestedUse: 'Test/Reserve',
-    notes: 'Useful academy depth.'
+    notes: 'Useful academy depth. Source: https://www.imsa.com/drivers/frederik-vesti/'
   },
   {
     id: 'mkt-2026-victor-martins',
@@ -374,7 +374,7 @@ export const driverMarket2026: MarketDriver[] = [
     buyoutCost: 5,
     negotiationDifficulty: 'Hard',
     suggestedUse: 'Prospect',
-    notes: 'High pace but needs polish.'
+    notes: 'High pace but needs polish. Source: https://www.fiawec.com/en/news/martins-makes-move-into-endurance-racing-with-alpine/8610'
   },
   {
     id: 'mkt-2026-paul-aron',
@@ -408,7 +408,7 @@ export const driverMarket2026: MarketDriver[] = [
     buyoutCost: 5.2,
     negotiationDifficulty: 'Hard',
     suggestedUse: 'Prospect',
-    notes: 'Good future signing.'
+    notes: 'Good future signing. Source: https://www.alpinef1.com/drivers/paul-aron'
   },
   {
     id: 'mkt-2026-dino-beganovic',
@@ -442,7 +442,7 @@ export const driverMarket2026: MarketDriver[] = [
     buyoutCost: 5,
     negotiationDifficulty: 'Hard',
     suggestedUse: 'Prospect',
-    notes: 'High-quality academy target.'
+    notes: 'High-quality academy target. Source: https://www.fiaformula2.com/Drivers/1252/Dino-Beganovic'
   },
   {
     id: 'mkt-2026-jak-crawford',
@@ -476,7 +476,7 @@ export const driverMarket2026: MarketDriver[] = [
     buyoutCost: 4.8,
     negotiationDifficulty: 'Hard',
     suggestedUse: 'Prospect/Pay Driver',
-    notes: 'Good Cadillac/Williams market fit.'
+    notes: 'Good Cadillac/Williams market fit. Source: https://www.astonmartinf1.com/en-GB/driver/jak-crawford'
   },
   {
     id: 'mkt-2026-ayumu-iwasa',
@@ -510,7 +510,7 @@ export const driverMarket2026: MarketDriver[] = [
     buyoutCost: 5.2,
     negotiationDifficulty: 'Hard',
     suggestedUse: 'Prospect/Reserve',
-    notes: 'Aston/Honda-linked option.'
+    notes: 'Aston/Honda-linked option. Source: https://superformula.net/sf3/driver/24818/'
   },
   {
     id: 'mkt-2026-alex-dunne',
@@ -544,7 +544,7 @@ export const driverMarket2026: MarketDriver[] = [
     buyoutCost: 4.5,
     negotiationDifficulty: 'Hard',
     suggestedUse: 'Prospect',
-    notes: 'High upside, needs development.'
+    notes: 'High upside, needs development. Source: https://media.alpinecars.com/alex-dunne-signs-with-alpine-academy-ahead-of-2026-fia-formula-2-championship-season/?lang=eng'
   },
   {
     id: 'mkt-2026-rafael-camara',
@@ -578,7 +578,7 @@ export const driverMarket2026: MarketDriver[] = [
     buyoutCost: 4.2,
     negotiationDifficulty: 'Hard',
     suggestedUse: 'Prospect',
-    notes: 'Long-term Ferrari/Brazilian market appeal.'
+    notes: 'Long-term Ferrari/Brazilian market appeal. Source: https://www.fia.com/system/files/decision-document/2026_montreal_event_-_f2_entry_list_-_montreal_2026.pdf'
   },
   {
     id: 'mkt-2026-ugo-ugochukwu',
@@ -612,7 +612,7 @@ export const driverMarket2026: MarketDriver[] = [
     buyoutCost: 4,
     negotiationDifficulty: 'Hard',
     suggestedUse: 'Prospect',
-    notes: 'Great US/Cadillac-linked prospect.'
+    notes: 'Great US/Cadillac-linked prospect. Source: https://ugougochukwu.com/'
   },
   {
     id: 'mkt-2026-luke-browning',
@@ -646,7 +646,7 @@ export const driverMarket2026: MarketDriver[] = [
     buyoutCost: 4.5,
     negotiationDifficulty: 'Hard',
     suggestedUse: 'Prospect/Reserve',
-    notes: 'Good Williams reserve fit.'
+    notes: 'Good Williams reserve fit. Source: https://kondo-racing.jp/topics/post-5473.html'
   },
   {
     id: 'mkt-2026-christian-mansell',
@@ -680,7 +680,7 @@ export const driverMarket2026: MarketDriver[] = [
     buyoutCost: 4,
     negotiationDifficulty: 'Hard',
     suggestedUse: 'Prospect',
-    notes: 'Midfield academy depth.'
+    notes: 'Midfield academy depth. Source: https://www.christianmansellracing.com/'
   },
   {
     id: 'DRV_0258',
@@ -884,7 +884,7 @@ export const driverMarket2026: MarketDriver[] = [
     buyoutCost: 5,
     negotiationDifficulty: 'Hard',
     suggestedUse: 'Test/Reserve',
-    notes: 'Excellent testing/sim value.'
+    notes: 'Excellent testing/sim value. Source: https://www.fiawec.com/en/news/toyota-reveals-new-name-and-fresh-look-for-2026-title-tilt/8607'
   },
   {
     id: 'mkt-2026-pepe-marti',
@@ -918,7 +918,7 @@ export const driverMarket2026: MarketDriver[] = [
     buyoutCost: 4.2,
     negotiationDifficulty: 'Hard',
     suggestedUse: 'Prospect',
-    notes: 'Madrid-era prospect hook.'
+    notes: 'Madrid-era prospect hook. Source: https://www.pepemartiofficial.com/'
   },
   {
     id: 'mkt-2026-sami-meguetounif',
@@ -952,7 +952,7 @@ export const driverMarket2026: MarketDriver[] = [
     buyoutCost: 3.8,
     negotiationDifficulty: 'Hard',
     suggestedUse: 'Prospect',
-    notes: 'Development depth.'
+    notes: 'Development depth. Source: https://www.europeanlemansseries.com/en/driver/2026/12147'
   },
   {
     id: 'mkt-2026-gabriele-mini',
@@ -986,7 +986,7 @@ export const driverMarket2026: MarketDriver[] = [
     buyoutCost: 4.8,
     negotiationDifficulty: 'Hard',
     suggestedUse: 'Prospect',
-    notes: 'Strong academy option.'
+    notes: 'Strong academy option. Source: https://www.fiaformula2.com/Latest/lMSyMkcW1wbJE3WzEeHRD/gabriele-mini-aiming-for-f2-redemption-in-2026'
   },
   {
     id: 'mkt-2026-sebastian-montoya',
@@ -1020,7 +1020,7 @@ export const driverMarket2026: MarketDriver[] = [
     buyoutCost: 4,
     negotiationDifficulty: 'Hard',
     suggestedUse: 'Prospect/Marketing',
-    notes: 'Development plus North/South American appeal.'
+    notes: 'Development plus North/South American appeal. Source: https://www.fiaformula2.com/Latest/2togMP1kZq8EXFs6Yvir6I/sebastian-montoya-stays-with-prema-racing-for-the-2026-season'
   },
   {
     id: 'mkt-2026-F1-fill-01',

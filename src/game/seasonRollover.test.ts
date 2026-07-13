@@ -57,7 +57,8 @@ describe('advanceSeason', () => {
     const base = newOffseasonState();
     const seat = base.drivers.find((d) => d.teamId === base.selectedTeamId)!;
     const incoming = careerMarketBundle(base).drivers.find(
-      (d) => !base.drivers.some((s) => s.id === d.id || s.name === d.name),
+      (d) => d.seriesPreferences?.some((preference) => preference.series === 'F1')
+        && !base.drivers.some((s) => s.id === d.id || s.name === d.name),
     )!;
     const state: GameState = {
       ...base,
@@ -126,7 +127,8 @@ describe('advanceSeason', () => {
     const base = newOffseasonState();
     const seat = base.drivers.find((d) => d.teamId === base.selectedTeamId)!;
     const incoming = careerMarketBundle(base).drivers.find(
-      (d) => !base.drivers.some((s) => s.id === d.id || s.name === d.name),
+      (d) => d.seriesPreferences?.some((preference) => preference.series === 'F1')
+        && !base.drivers.some((s) => s.id === d.id || s.name === d.name),
     )!;
     const overall = base.teamOrgRatings?.[base.selectedTeamId]?.overallTeamRating ?? 50;
     const winning = bidToWin(incoming, overall, base.randomSeed);

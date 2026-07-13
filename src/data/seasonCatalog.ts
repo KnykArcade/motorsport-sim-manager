@@ -26,6 +26,21 @@ const aowAvailableSeasons: { year: number; series: 'CART' | 'Champ Car' | 'IndyC
   }),
 ];
 
+const nascarAvailableSeasons: { year: number; series: 'NASCAR'; label: string }[] = Array.from(
+  { length: 37 },
+  (_, i) => {
+    const year = 1990 + i;
+    const era = year <= 2003
+      ? 'Winston Cup Series'
+      : year <= 2007
+        ? 'Nextel Cup Series'
+        : year <= 2016
+          ? 'Sprint Cup Series'
+          : 'Cup Series';
+    return { year, series: 'NASCAR' as const, label: `${year} NASCAR ${era}` };
+  },
+);
+
 // Seasons available to start a new game, in display order.
 export const availableSeasons: { year: number; series: Series; label: string }[] = [
   { year: 1990, series: 'F1', label: '1990 Formula 1 World Championship' },
@@ -66,10 +81,7 @@ export const availableSeasons: { year: number; series: Series; label: string }[]
   { year: 2025, series: 'F1', label: '2025 Formula 1 World Championship' },
   { year: 2026, series: 'F1', label: '2026 Formula 1 World Championship' },
   ...aowAvailableSeasons,
-  { year: 1990, series: 'NASCAR', label: '1990 NASCAR Winston Cup Series' },
-  { year: 2000, series: 'NASCAR', label: '2000 NASCAR Winston Cup Series' },
-  { year: 2010, series: 'NASCAR', label: '2010 NASCAR Sprint Cup Series' },
-  { year: 2026, series: 'NASCAR', label: '2026 NASCAR Cup Series' },
+  ...nascarAvailableSeasons,
   { year: 2008, series: 'IndyCar', label: '2008 IndyCar Series' },
   { year: 2009, series: 'IndyCar', label: '2009 IndyCar Series' },
   { year: 2010, series: 'IndyCar', label: '2010 IndyCar Series' },
@@ -130,7 +142,7 @@ export const seriesGroups: SeriesGroup[] = [
   {
     id: 'NASCAR',
     label: 'NASCAR',
-    blurb: 'NASCAR stock car racing — Winston Cup (1990, 2000), Sprint Cup (2010), and Cup Series (2026).',
+    blurb: 'NASCAR Cup stock car racing, 1990–2026.',
     disciplines: [{ id: 'NASCAR', label: 'NASCAR Cup' }],
   },
 ];

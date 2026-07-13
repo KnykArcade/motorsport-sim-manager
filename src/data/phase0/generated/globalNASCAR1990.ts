@@ -337,7 +337,7 @@ export const nascar1990Drivers: GlobalDriver[] = [
     "reputation": 90,
     "marketValue": 90,
     "contract": {
-      "teamId": "NASCAR_1990_TEAM_HENDRICK_MOTORSPORTS",
+      "teamId": "NASCAR_1990_TEAM_HENDRICK_MOTORSPORTS_TEAM_1",
       "yearsLeft": 1,
       "salary": 45,
       "options": []
@@ -481,7 +481,7 @@ export const nascar1990Drivers: GlobalDriver[] = [
     "reputation": 89,
     "marketValue": 89,
     "contract": {
-      "teamId": "NASCAR_1990_TEAM_HENDRICK_MOTORSPORTS",
+      "teamId": "NASCAR_1990_TEAM_HENDRICK_MOTORSPORTS_TEAM_2",
       "yearsLeft": 1,
       "salary": 44,
       "options": []
@@ -961,7 +961,7 @@ export const nascar1990Drivers: GlobalDriver[] = [
     "reputation": 81,
     "marketValue": 81,
     "contract": {
-      "teamId": "NASCAR_1990_TEAM_HENDRICK_MOTORSPORTS",
+      "teamId": "NASCAR_1990_TEAM_HENDRICK_MOTORSPORTS_TEAM_1",
       "yearsLeft": 1,
       "salary": 40,
       "options": []
@@ -1537,7 +1537,7 @@ export const nascar1990Drivers: GlobalDriver[] = [
     "reputation": 68,
     "marketValue": 68,
     "contract": {
-      "teamId": "NASCAR_1990_TEAM_HENDRICK_MOTORSPORTS",
+      "teamId": "NASCAR_1990_TEAM_HENDRICK_MOTORSPORTS_TEAM_1",
       "yearsLeft": 1,
       "salary": 34,
       "options": []
@@ -1729,7 +1729,7 @@ export const nascar1990Drivers: GlobalDriver[] = [
     "reputation": 63,
     "marketValue": 63,
     "contract": {
-      "teamId": "NASCAR_1990_TEAM_HENDRICK_MOTORSPORTS",
+      "teamId": "NASCAR_1990_TEAM_HENDRICK_MOTORSPORTS_TEAM_1",
       "yearsLeft": 1,
       "salary": 32,
       "options": []
@@ -3553,7 +3553,7 @@ export const nascar1990Drivers: GlobalDriver[] = [
     "reputation": 45,
     "marketValue": 45,
     "contract": {
-      "teamId": "NASCAR_1990_TEAM_HENDRICK_MOTORSPORTS",
+      "teamId": "NASCAR_1990_TEAM_HENDRICK_MOTORSPORTS_TEAM_1",
       "yearsLeft": 1,
       "salary": 22,
       "options": []
@@ -3698,20 +3698,49 @@ export const nascar1990Teams: GlobalTeam[] = [
     "budget": 90000000
   },
   {
-    "teamLineageId": "NASCAR_1990_TEAM_BOBBY_ALLISON_RACING",
+    "teamLineageId": "NASCAR_1990_TEAM_BOBBY_ALLISON_RACING_TEAM_1",
     "series": "NASCAR",
-    "canonicalName": "Bobby Allison Racing",
+    "canonicalName": "Bobby Allison Racing team 1",
     "namePerPeriod": [
       {
         "fromYear": 1990,
         "toYear": 1990,
-        "name": "Bobby Allison Racing"
+        "name": "Bobby Allison Racing team 1"
       }
     ],
     "nameChangeEvents": [
       {
         "year": 1990,
-        "newName": "Bobby Allison Racing",
+        "newName": "Bobby Allison Racing team 1",
+        "note": "First season this lineage appears in uploaded source data."
+      }
+    ],
+    "reputation": 70,
+    "raceOperations": 70,
+    "pitCrewOperations": 72,
+    "developmentRate": 50,
+    "facilities": 70,
+    "sponsorStrength": 70,
+    "commercialStrength": 70,
+    "politicalInfluence": 70,
+    "financeHealth": 70,
+    "budget": 70000000
+  },
+  {
+    "teamLineageId": "NASCAR_1990_TEAM_BOBBY_ALLISON_RACING_TEAM_2",
+    "series": "NASCAR",
+    "canonicalName": "Bobby Allison Racing team 2",
+    "namePerPeriod": [
+      {
+        "fromYear": 1990,
+        "toYear": 1990,
+        "name": "Bobby Allison Racing team 2"
+      }
+    ],
+    "nameChangeEvents": [
+      {
+        "year": 1990,
+        "newName": "Bobby Allison Racing team 2",
         "note": "First season this lineage appears in uploaded source data."
       }
     ],
@@ -3814,62 +3843,120 @@ export const nascar1990Teams: GlobalTeam[] = [
     "budget": 86000000
   },
   {
-    "teamLineageId": "NASCAR_1990_TEAM_HENDRICK_MOTORSPORTS_TEAM_1",
+    "teamLineageId": "NASCAR_1990_TEAM_HENDRICK_MOTORSPORTS_TEAM_1_TEAM_1",
     "series": "NASCAR",
-    "canonicalName": "Hendrick Motorsports team 1",
+    "canonicalName": "Hendrick Motorsports Team 1 team 1",
     "namePerPeriod": [
       {
         "fromYear": 1990,
         "toYear": 1990,
-        "name": "Hendrick Motorsports team 1"
+        "name": "Hendrick Motorsports Team 1 team 1"
       }
     ],
     "nameChangeEvents": [
       {
         "year": 1990,
-        "newName": "Hendrick Motorsports team 1",
+        "newName": "Hendrick Motorsports Team 1 team 1",
         "note": "First season this lineage appears in uploaded source data."
       }
     ],
-    "reputation": 87,
-    "raceOperations": 87,
-    "pitCrewOperations": 86,
+    "reputation": 85,
+    "raceOperations": 85,
+    "pitCrewOperations": 84,
     "developmentRate": 50,
-    "facilities": 87,
-    "sponsorStrength": 87,
-    "commercialStrength": 87,
-    "politicalInfluence": 87,
-    "financeHealth": 87,
-    "budget": 87000000
+    "facilities": 85,
+    "sponsorStrength": 85,
+    "commercialStrength": 85,
+    "politicalInfluence": 85,
+    "financeHealth": 85,
+    "budget": 85000000
+  },
+  {
+    "teamLineageId": "NASCAR_1990_TEAM_HENDRICK_MOTORSPORTS_TEAM_1_TEAM_2",
+    "series": "NASCAR",
+    "canonicalName": "Hendrick Motorsports Team 1 team 2",
+    "namePerPeriod": [
+      {
+        "fromYear": 1990,
+        "toYear": 1990,
+        "name": "Hendrick Motorsports Team 1 team 2"
+      }
+    ],
+    "nameChangeEvents": [
+      {
+        "year": 1990,
+        "newName": "Hendrick Motorsports Team 1 team 2",
+        "note": "First season this lineage appears in uploaded source data."
+      }
+    ],
+    "reputation": 85,
+    "raceOperations": 85,
+    "pitCrewOperations": 84,
+    "developmentRate": 50,
+    "facilities": 85,
+    "sponsorStrength": 85,
+    "commercialStrength": 85,
+    "politicalInfluence": 85,
+    "financeHealth": 85,
+    "budget": 85000000
+  },
+  {
+    "teamLineageId": "NASCAR_1990_TEAM_HENDRICK_MOTORSPORTS_TEAM_1_TEAM_3",
+    "series": "NASCAR",
+    "canonicalName": "Hendrick Motorsports Team 1 team 3",
+    "namePerPeriod": [
+      {
+        "fromYear": 1990,
+        "toYear": 1990,
+        "name": "Hendrick Motorsports Team 1 team 3"
+      }
+    ],
+    "nameChangeEvents": [
+      {
+        "year": 1990,
+        "newName": "Hendrick Motorsports Team 1 team 3",
+        "note": "First season this lineage appears in uploaded source data."
+      }
+    ],
+    "reputation": 85,
+    "raceOperations": 85,
+    "pitCrewOperations": 84,
+    "developmentRate": 50,
+    "facilities": 85,
+    "sponsorStrength": 85,
+    "commercialStrength": 85,
+    "politicalInfluence": 85,
+    "financeHealth": 85,
+    "budget": 85000000
   },
   {
     "teamLineageId": "NASCAR_1990_TEAM_HENDRICK_MOTORSPORTS_TEAM_2",
     "series": "NASCAR",
-    "canonicalName": "Hendrick Motorsports team 2",
+    "canonicalName": "Hendrick Motorsports Team 2",
     "namePerPeriod": [
       {
         "fromYear": 1990,
         "toYear": 1990,
-        "name": "Hendrick Motorsports team 2"
+        "name": "Hendrick Motorsports Team 2"
       }
     ],
     "nameChangeEvents": [
       {
         "year": 1990,
-        "newName": "Hendrick Motorsports team 2",
+        "newName": "Hendrick Motorsports Team 2",
         "note": "First season this lineage appears in uploaded source data."
       }
     ],
-    "reputation": 87,
-    "raceOperations": 87,
-    "pitCrewOperations": 86,
+    "reputation": 88,
+    "raceOperations": 88,
+    "pitCrewOperations": 87,
     "developmentRate": 50,
-    "facilities": 87,
-    "sponsorStrength": 87,
-    "commercialStrength": 87,
-    "politicalInfluence": 87,
-    "financeHealth": 87,
-    "budget": 87000000
+    "facilities": 88,
+    "sponsorStrength": 88,
+    "commercialStrength": 88,
+    "politicalInfluence": 88,
+    "financeHealth": 88,
+    "budget": 88000000
   },
   {
     "teamLineageId": "NASCAR_1990_TEAM_JUNIOR_JOHNSON_ASSOCIATES",
@@ -4075,20 +4162,49 @@ export const nascar1990Teams: GlobalTeam[] = [
     "budget": 85000000
   },
   {
-    "teamLineageId": "NASCAR_1990_TEAM_MOROSO_RACING",
+    "teamLineageId": "NASCAR_1990_TEAM_MOROSO_RACING_TEAM_1",
     "series": "NASCAR",
-    "canonicalName": "Moroso Racing",
+    "canonicalName": "Moroso Racing team 1",
     "namePerPeriod": [
       {
         "fromYear": 1990,
         "toYear": 1990,
-        "name": "Moroso Racing"
+        "name": "Moroso Racing team 1"
       }
     ],
     "nameChangeEvents": [
       {
         "year": 1990,
-        "newName": "Moroso Racing",
+        "newName": "Moroso Racing team 1",
+        "note": "First season this lineage appears in uploaded source data."
+      }
+    ],
+    "reputation": 73,
+    "raceOperations": 73,
+    "pitCrewOperations": 72,
+    "developmentRate": 50,
+    "facilities": 73,
+    "sponsorStrength": 73,
+    "commercialStrength": 73,
+    "politicalInfluence": 73,
+    "financeHealth": 73,
+    "budget": 73000000
+  },
+  {
+    "teamLineageId": "NASCAR_1990_TEAM_MOROSO_RACING_TEAM_2",
+    "series": "NASCAR",
+    "canonicalName": "Moroso Racing team 2",
+    "namePerPeriod": [
+      {
+        "fromYear": 1990,
+        "toYear": 1990,
+        "name": "Moroso Racing team 2"
+      }
+    ],
+    "nameChangeEvents": [
+      {
+        "year": 1990,
+        "newName": "Moroso Racing team 2",
         "note": "First season this lineage appears in uploaded source data."
       }
     ],
@@ -4530,8 +4646,33 @@ export const nascar1990Cars: GlobalCar[] = [
     "carOverall": 90
   },
   {
-    "carId": "car-1990-nascar-bobby-allison-racing",
-    "teamId": "NASCAR_1990_TEAM_BOBBY_ALLISON_RACING",
+    "carId": "car-1990-nascar-bobby-allison-racing-team-1",
+    "teamId": "NASCAR_1990_TEAM_BOBBY_ALLISON_RACING_TEAM_1",
+    "seasonYear": 1990,
+    "series": "NASCAR",
+    "enginePower": 70,
+    "fuelEnergyEfficiency": 50,
+    "drag": 30,
+    "downforce": 70,
+    "chassisBalance": 70,
+    "cooling": 69,
+    "weightEfficiency": 70,
+    "mechanicalGrip": 70,
+    "brakingStability": 70,
+    "acceleration": 70,
+    "topSpeed": 70,
+    "tireWear": 30,
+    "tireWarmup": 50,
+    "tempControl": 69,
+    "wetPerformance": 70,
+    "reliability": 69,
+    "setupWindow": 72,
+    "upgradeCompatibility": 50,
+    "carOverall": 70
+  },
+  {
+    "carId": "car-1990-nascar-bobby-allison-racing-team-2",
+    "teamId": "NASCAR_1990_TEAM_BOBBY_ALLISON_RACING_TEAM_2",
     "seasonYear": 1990,
     "series": "NASCAR",
     "enginePower": 70,
@@ -4630,54 +4771,104 @@ export const nascar1990Cars: GlobalCar[] = [
     "carOverall": 86
   },
   {
-    "carId": "car-1990-nascar-hendrick-motorsports-team-1",
-    "teamId": "NASCAR_1990_TEAM_HENDRICK_MOTORSPORTS_TEAM_1",
+    "carId": "car-1990-nascar-hendrick-motorsports-team-1-team-1",
+    "teamId": "NASCAR_1990_TEAM_HENDRICK_MOTORSPORTS_TEAM_1_TEAM_1",
     "seasonYear": 1990,
     "series": "NASCAR",
-    "enginePower": 89,
+    "enginePower": 87,
     "fuelEnergyEfficiency": 50,
-    "drag": 14,
-    "downforce": 86,
-    "chassisBalance": 87,
-    "cooling": 88,
-    "weightEfficiency": 87,
-    "mechanicalGrip": 87,
-    "brakingStability": 88,
-    "acceleration": 88,
-    "topSpeed": 88,
-    "tireWear": 12,
+    "drag": 18,
+    "downforce": 82,
+    "chassisBalance": 85,
+    "cooling": 87,
+    "weightEfficiency": 85,
+    "mechanicalGrip": 86,
+    "brakingStability": 86,
+    "acceleration": 86,
+    "topSpeed": 85,
+    "tireWear": 14,
     "tireWarmup": 50,
-    "tempControl": 88,
-    "wetPerformance": 88,
-    "reliability": 88,
-    "setupWindow": 86,
+    "tempControl": 87,
+    "wetPerformance": 86,
+    "reliability": 87,
+    "setupWindow": 84,
     "upgradeCompatibility": 50,
-    "carOverall": 87
+    "carOverall": 85
+  },
+  {
+    "carId": "car-1990-nascar-hendrick-motorsports-team-1-team-2",
+    "teamId": "NASCAR_1990_TEAM_HENDRICK_MOTORSPORTS_TEAM_1_TEAM_2",
+    "seasonYear": 1990,
+    "series": "NASCAR",
+    "enginePower": 87,
+    "fuelEnergyEfficiency": 50,
+    "drag": 18,
+    "downforce": 82,
+    "chassisBalance": 85,
+    "cooling": 87,
+    "weightEfficiency": 85,
+    "mechanicalGrip": 86,
+    "brakingStability": 86,
+    "acceleration": 86,
+    "topSpeed": 85,
+    "tireWear": 14,
+    "tireWarmup": 50,
+    "tempControl": 87,
+    "wetPerformance": 86,
+    "reliability": 87,
+    "setupWindow": 84,
+    "upgradeCompatibility": 50,
+    "carOverall": 85
+  },
+  {
+    "carId": "car-1990-nascar-hendrick-motorsports-team-1-team-3",
+    "teamId": "NASCAR_1990_TEAM_HENDRICK_MOTORSPORTS_TEAM_1_TEAM_3",
+    "seasonYear": 1990,
+    "series": "NASCAR",
+    "enginePower": 87,
+    "fuelEnergyEfficiency": 50,
+    "drag": 18,
+    "downforce": 82,
+    "chassisBalance": 85,
+    "cooling": 87,
+    "weightEfficiency": 85,
+    "mechanicalGrip": 86,
+    "brakingStability": 86,
+    "acceleration": 86,
+    "topSpeed": 85,
+    "tireWear": 14,
+    "tireWarmup": 50,
+    "tempControl": 87,
+    "wetPerformance": 86,
+    "reliability": 87,
+    "setupWindow": 84,
+    "upgradeCompatibility": 50,
+    "carOverall": 85
   },
   {
     "carId": "car-1990-nascar-hendrick-motorsports-team-2",
     "teamId": "NASCAR_1990_TEAM_HENDRICK_MOTORSPORTS_TEAM_2",
     "seasonYear": 1990,
     "series": "NASCAR",
-    "enginePower": 89,
+    "enginePower": 90,
     "fuelEnergyEfficiency": 50,
-    "drag": 14,
-    "downforce": 86,
-    "chassisBalance": 87,
+    "drag": 11,
+    "downforce": 89,
+    "chassisBalance": 88,
     "cooling": 88,
-    "weightEfficiency": 87,
-    "mechanicalGrip": 87,
-    "brakingStability": 88,
-    "acceleration": 88,
-    "topSpeed": 88,
+    "weightEfficiency": 88,
+    "mechanicalGrip": 88,
+    "brakingStability": 89,
+    "acceleration": 89,
+    "topSpeed": 90,
     "tireWear": 12,
     "tireWarmup": 50,
     "tempControl": 88,
     "wetPerformance": 88,
     "reliability": 88,
-    "setupWindow": 86,
+    "setupWindow": 87,
     "upgradeCompatibility": 50,
-    "carOverall": 87
+    "carOverall": 88
   },
   {
     "carId": "car-1990-nascar-junior-johnson-associates",
@@ -4855,8 +5046,33 @@ export const nascar1990Cars: GlobalCar[] = [
     "carOverall": 85
   },
   {
-    "carId": "car-1990-nascar-moroso-racing",
-    "teamId": "NASCAR_1990_TEAM_MOROSO_RACING",
+    "carId": "car-1990-nascar-moroso-racing-team-1",
+    "teamId": "NASCAR_1990_TEAM_MOROSO_RACING_TEAM_1",
+    "seasonYear": 1990,
+    "series": "NASCAR",
+    "enginePower": 74,
+    "fuelEnergyEfficiency": 50,
+    "drag": 29,
+    "downforce": 71,
+    "chassisBalance": 73,
+    "cooling": 73,
+    "weightEfficiency": 73,
+    "mechanicalGrip": 74,
+    "brakingStability": 74,
+    "acceleration": 74,
+    "topSpeed": 73,
+    "tireWear": 26,
+    "tireWarmup": 50,
+    "tempControl": 73,
+    "wetPerformance": 74,
+    "reliability": 73,
+    "setupWindow": 72,
+    "upgradeCompatibility": 50,
+    "carOverall": 73
+  },
+  {
+    "carId": "car-1990-nascar-moroso-racing-team-2",
+    "teamId": "NASCAR_1990_TEAM_MOROSO_RACING_TEAM_2",
     "seasonYear": 1990,
     "series": "NASCAR",
     "enginePower": 74,

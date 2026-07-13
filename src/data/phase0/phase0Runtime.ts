@@ -6,30 +6,6 @@ import { globalCarsPhase0 } from './generated/globalCars';
 import { globalDriversPhase0 } from './generated/globalDrivers';
 import { globalTeamsPhase0 } from './generated/globalTeams';
 import { globalTracksPhase0 } from './generated/globalTracks';
-import {
-  nascar1990Cars,
-  nascar1990Drivers,
-  nascar1990Teams,
-  nascar1990Tracks,
-} from './generated/globalNASCAR1990';
-import {
-  nascar2000Cars,
-  nascar2000Drivers,
-  nascar2000Teams,
-  nascar2000Tracks,
-} from './generated/globalNASCAR2000';
-import {
-  nascar2010Cars,
-  nascar2010Drivers,
-  nascar2010Teams,
-  nascar2010Tracks,
-} from './generated/globalNASCAR2010';
-import {
-  nascar2026Cars,
-  nascar2026Drivers,
-  nascar2026Teams,
-  nascar2026Tracks,
-} from './generated/globalNASCAR2026';
 import { historicalWeatherRaceMeta } from '../weather/generated/raceMeta';
 import { historicalWeatherTrackCoordinates } from '../weather/generated/trackCoordinates';
 import { seedReleasedMarketDrivers } from '../market';
@@ -114,41 +90,27 @@ type Phase0CarSource = {
   setupWindow: number;
 };
 
-const allGlobalCars: Phase0CarSource[] = [];
-allGlobalCars.push(
-  ...(globalCarsPhase0 as unknown as Phase0CarSource[]),
-  ...(nascar1990Cars as unknown as Phase0CarSource[]),
-  ...(nascar2000Cars as unknown as Phase0CarSource[]),
-  ...(nascar2010Cars as unknown as Phase0CarSource[]),
-  ...(nascar2026Cars as unknown as Phase0CarSource[]),
-);
+const allGlobalCars: Phase0CarSource[] = [...(globalCarsPhase0 as unknown as Phase0CarSource[])];
 
-const allGlobalDrivers: Phase0DriverSource[] = [];
-allGlobalDrivers.push(
-  ...(globalDriversPhase0 as unknown as Phase0DriverSource[]),
-  ...(nascar1990Drivers as unknown as Phase0DriverSource[]),
-  ...(nascar2000Drivers as unknown as Phase0DriverSource[]),
-  ...(nascar2010Drivers as unknown as Phase0DriverSource[]),
-  ...(nascar2026Drivers as unknown as Phase0DriverSource[]),
-);
+const allGlobalDrivers: Phase0DriverSource[] = [...(globalDriversPhase0 as unknown as Phase0DriverSource[])];
 
-const allGlobalTeams: Phase0TeamSource[] = [];
-allGlobalTeams.push(
-  ...(globalTeamsPhase0 as unknown as Phase0TeamSource[]),
-  ...(nascar1990Teams as unknown as Phase0TeamSource[]),
-  ...(nascar2000Teams as unknown as Phase0TeamSource[]),
-  ...(nascar2010Teams as unknown as Phase0TeamSource[]),
-  ...(nascar2026Teams as unknown as Phase0TeamSource[]),
-);
+const allGlobalTeams: Phase0TeamSource[] = [...(globalTeamsPhase0 as unknown as Phase0TeamSource[])];
 
-const allGlobalTracks: Phase0TrackSource[] = [];
-allGlobalTracks.push(
-  ...(globalTracksPhase0 as unknown as Phase0TrackSource[]),
-  ...(nascar1990Tracks as unknown as Phase0TrackSource[]),
-  ...(nascar2000Tracks as unknown as Phase0TrackSource[]),
-  ...(nascar2010Tracks as unknown as Phase0TrackSource[]),
-  ...(nascar2026Tracks as unknown as Phase0TrackSource[]),
-);
+const allGlobalTracks: Phase0TrackSource[] = [...(globalTracksPhase0 as unknown as Phase0TrackSource[])];
+
+const registeredGlobalModules = new WeakSet<object>();
+
+export function registerPhase0GlobalModule(module: Record<string, unknown>): void {
+  if (registeredGlobalModules.has(module)) return;
+  registeredGlobalModules.add(module);
+  for (const [key, value] of Object.entries(module)) {
+    if (!Array.isArray(value)) continue;
+    if (key.endsWith('Cars')) allGlobalCars.push(...(value as Phase0CarSource[]));
+    else if (key.endsWith('Drivers')) allGlobalDrivers.push(...(value as Phase0DriverSource[]));
+    else if (key.endsWith('Teams')) allGlobalTeams.push(...(value as Phase0TeamSource[]));
+    else if (key.endsWith('Tracks')) allGlobalTracks.push(...(value as Phase0TrackSource[]));
+  }
+}
 
 type LegacyTeamSource = {
   id: string;
@@ -195,9 +157,27 @@ type ResolvedLegacyDriver = {
   canonicalId: string;
 };
 
-const legacyTeamModules = import.meta.glob('../teams/teams*.ts', { eager: true }) as Record<string, Record<string, unknown>>;
-const legacyDriverModules = import.meta.glob('../drivers/drivers*.ts', { eager: true }) as Record<string, Record<string, unknown>>;
-const legacyCarModules = import.meta.glob('../cars/cars*.ts', { eager: true }) as Record<string, Record<string, unknown>>;
+const legacyTeamModules: Record<string, Record<string, unknown>> = {};
+const legacyDriverModules: Record<string, Record<string, unknown>> = {};
+const legacyCarModules: Record<string, Record<string, unknown>> = {};
+
+export function registerLegacyModule(
+  kind: 'teams' | 'drivers' | 'cars',
+  path: string,
+  module: Record<string, unknown>,
+): void {
+  const target = kind === 'teams' ? legacyTeamModules : kind === 'drivers' ? legacyDriverModules : legacyCarModules;
+  target[path] = module;
+}
+
+export function registerLegacySeasonModule(
+  kind: 'teams' | 'drivers' | 'cars',
+  year: number,
+  series: Series,
+  module: Record<string, unknown>,
+): void {
+  registerLegacyModule(kind, legacyModuleKey(kind, year, series), module);
+}
 
 function normalizeKey(value: string): string {
   return value
@@ -257,7 +237,8 @@ function getSeasonRuleIds(year: number, series: Series): { pointsSystemId: strin
   }
 
   if (series === 'NASCAR') {
-    return { pointsSystemId: `pts-nascar-${year}`, regulationSetId: `reg-nascar-${year}` };
+    const rulesYear = year <= 1999 ? 1990 : year <= 2009 ? 2000 : year <= 2016 ? 2010 : 2026;
+    return { pointsSystemId: `pts-nascar-${rulesYear}`, regulationSetId: `reg-nascar-${rulesYear}` };
   }
 
   if (year === 1996) return { pointsSystemId: 'pts-indycar-1996', regulationSetId: 'reg-indycar-1996' };

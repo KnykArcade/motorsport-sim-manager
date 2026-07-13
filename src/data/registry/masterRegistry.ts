@@ -18,6 +18,7 @@ import type {
   CareerPhase,
   MasterDriverEntry,
   MasterDriverRegistry,
+  RegistryActiveSeatSnapshot,
   RegistryBaseRatings,
   RegistryMergeResult,
   RegistryDriverStatus,
@@ -184,6 +185,10 @@ function baseRatingsFrom(skills: MarketSkillRatings, overall: number, potential:
   return { ...skills, overall, potential };
 }
 
+function isGeneratedMarketFiller(entry: MarketDriver | YouthProspect): boolean {
+  return /generated|synthetic|filler|placeholder/i.test(`${entry.name} ${entry.notes ?? ''}`);
+}
+
 // --- Registry accumulation --------------------------------------------------
 
 function emptyRegistry(): MasterDriverRegistry {
@@ -250,13 +255,30 @@ function mergeOne(
     skills: fields.skills,
     sourceId: fields.sourceId,
   };
+  const activeSeat: RegistryActiveSeatSnapshot | undefined = ctx.status === 'active_driver'
+    ? { year: ctx.year, series: ctx.series, sourceId: fields.sourceId }
+    : undefined;
 
   if (existing) {
-    // Idempotent: never re-add the same source id.
-    if (!existing.sourceIds.includes(fields.sourceId)) {
-      existing.sourceIds.push(fields.sourceId);
+    // Source ids are not guaranteed to include the season. Some historical
+    // files reuse the same driver id year after year, so idempotency must be
+    // evaluated against the full year/series/source snapshot rather than the
+    // source id alone.
+    if (!existing.sourceIds.includes(fields.sourceId)) existing.sourceIds.push(fields.sourceId);
+    const hasSnapshot = existing.baseRatingsByYear.some((entry) =>
+      entry.year === snapshot.year
+      && entry.series === snapshot.series
+      && entry.sourceId === snapshot.sourceId);
+    if (!hasSnapshot) {
       existing.baseRatingsByYear.push(snapshot);
       existing.baseRatingsByYear.sort((a, b) => a.year - b.year || a.series.localeCompare(b.series));
+    }
+    if (activeSeat && !(existing.activeSeatsByYear ?? []).some((seat) =>
+      seat.year === activeSeat.year
+      && seat.series === activeSeat.series
+      && seat.sourceId === activeSeat.sourceId)) {
+      existing.activeSeatsByYear = [...(existing.activeSeatsByYear ?? []), activeSeat]
+        .sort((a, b) => a.year - b.year || a.series.localeCompare(b.series));
     }
     existing.firstSeenYear = Math.min(existing.firstSeenYear, ctx.year);
     existing.lastSeenYear = Math.max(existing.lastSeenYear, ctx.year);
@@ -310,6 +332,7 @@ function mergeOne(
     potential: fields.potential,
     baseRatings: fields.baseRatings,
     baseRatingsByYear: [snapshot],
+    activeSeatsByYear: activeSeat ? [activeSeat] : [],
     traits: fields.traits,
     sponsorBacking: fields.sponsorBacking,
     payDriverFunding: fields.payDriverFunding,
@@ -370,6 +393,7 @@ export function importMarketDrivers(
 ): RegistryMergeResult {
   const result = { created: [] as string[], merged: [] as string[] };
   for (const m of drivers) {
+    if (isGeneratedMarketFiller(m)) continue;
     mergeOne(
       registry,
       {
@@ -404,6 +428,7 @@ export function importYouthProspects(
 ): RegistryMergeResult {
   const result = { created: [] as string[], merged: [] as string[] };
   for (const y of youth) {
+    if (isGeneratedMarketFiller(y)) continue;
     const adultEligibleYear = (y.birthYear || year - y.age) + 18;
     mergeOne(
       registry,
@@ -469,6 +494,8 @@ export function buildMasterRegistry(): MasterDriverRegistry {
   // Set series-specific ratings + secondary interest once all sources merged.
   for (const id of registry.order) {
     const e = registry.byId[id];
+    e.preferredSeries = (Object.entries(e.seriesExperience) as Array<[Series, number]>)
+      .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))[0]?.[0] ?? e.preferredSeries;
     e.secondarySeriesInterest = e.eligibleSeries.filter((s) => s !== e.preferredSeries);
     // Series-specific base ratings = latest snapshot per series.
     const bySeries: Partial<Record<Series, RegistryBaseRatings>> = {};

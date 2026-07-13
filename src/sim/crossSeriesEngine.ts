@@ -161,10 +161,12 @@ export function marketDriverOfferInterest(
   playerTeamReputation: number,
   playerCarOverall: number,
 ): number | undefined {
-  if (!md.id.startsWith('reg-')) return undefined;
+  if (!md.id.startsWith('reg-')) {
+    const preference = md.seriesPreferences?.find((entry) => entry.series === state.series)?.weight;
+    return preference ?? 45;
+  }
   const e = getMasterRegistry().byId[md.id.slice(4)];
   if (!e) return undefined;
-  if (e.eligibleSeries.includes(state.series)) return undefined; // same-series: unchanged
   const offer: SeriesOffer = {
     series: state.series,
     teamReputation: playerTeamReputation,
