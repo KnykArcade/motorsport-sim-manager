@@ -204,7 +204,7 @@ export const driverMarket2026: MarketDriver[] = [
     buyoutCost: 5,
     negotiationDifficulty: 'Hard',
     suggestedUse: 'Prospect/Test',
-    notes: 'Development reserve with upside.'
+    notes: 'Development reserve with upside. Source: https://www.formula1.com/en/drivers/jack-doohan'
   },
   {
     id: 'DRV_0244',
@@ -272,7 +272,7 @@ export const driverMarket2026: MarketDriver[] = [
     buyoutCost: 5.5,
     negotiationDifficulty: 'Hard',
     suggestedUse: 'Reserve/Race Seat',
-    notes: 'Ready reserve with credible race-seat case.'
+    notes: 'Ready reserve with credible race-seat case. Source: https://www.fiaformulae.com/en/drivers/da1d5184-3792-43f4-b723-89bc304e9b9a/felipe-drugovich'
   },
   {
     id: 'mkt-2026-theo-pourchaire',
@@ -306,7 +306,7 @@ export const driverMarket2026: MarketDriver[] = [
     buyoutCost: 5.8,
     negotiationDifficulty: 'Hard',
     suggestedUse: 'Prospect/Race Seat',
-    notes: 'High-quality junior/senior hybrid.'
+    notes: 'High-quality junior/senior hybrid. Source: https://www.mercedesamgf1.com/drivers/driver/theo-pourchaire'
   },
   {
     id: 'mkt-2026-frederik-vesti',
@@ -340,7 +340,7 @@ export const driverMarket2026: MarketDriver[] = [
     buyoutCost: 5,
     negotiationDifficulty: 'Hard',
     suggestedUse: 'Test/Reserve',
-    notes: 'Useful academy depth.'
+    notes: 'Useful academy depth. Source: https://www.imsa.com/drivers/frederik-vesti/'
   },
   {
     id: 'mkt-2026-victor-martins',
