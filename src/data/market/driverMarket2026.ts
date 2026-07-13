@@ -510,7 +510,7 @@ export const driverMarket2026: MarketDriver[] = [
     buyoutCost: 5.2,
     negotiationDifficulty: 'Hard',
     suggestedUse: 'Prospect/Reserve',
-    notes: 'Aston/Honda-linked option.'
+    notes: 'Aston/Honda-linked option. Source: https://superformula.net/sf3/driver/24818/'
   },
   {
     id: 'mkt-2026-alex-dunne',
@@ -544,7 +544,7 @@ export const driverMarket2026: MarketDriver[] = [
     buyoutCost: 4.5,
     negotiationDifficulty: 'Hard',
     suggestedUse: 'Prospect',
-    notes: 'High upside, needs development.'
+    notes: 'High upside, needs development. Source: https://media.alpinecars.com/alex-dunne-signs-with-alpine-academy-ahead-of-2026-fia-formula-2-championship-season/?lang=eng'
   },
   {
     id: 'mkt-2026-rafael-camara',
@@ -578,7 +578,7 @@ export const driverMarket2026: MarketDriver[] = [
     buyoutCost: 4.2,
     negotiationDifficulty: 'Hard',
     suggestedUse: 'Prospect',
-    notes: 'Long-term Ferrari/Brazilian market appeal.'
+    notes: 'Long-term Ferrari/Brazilian market appeal. Source: https://www.fia.com/system/files/decision-document/2026_montreal_event_-_f2_entry_list_-_montreal_2026.pdf'
   },
   {
     id: 'mkt-2026-ugo-ugochukwu',
@@ -612,7 +612,7 @@ export const driverMarket2026: MarketDriver[] = [
     buyoutCost: 4,
     negotiationDifficulty: 'Hard',
     suggestedUse: 'Prospect',
-    notes: 'Great US/Cadillac-linked prospect.'
+    notes: 'Great US/Cadillac-linked prospect. Source: https://ugougochukwu.com/'
   },
   {
     id: 'mkt-2026-luke-browning',

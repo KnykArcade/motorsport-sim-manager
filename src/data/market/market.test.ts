@@ -111,6 +111,10 @@ describe('youth market costs', () => {
       'Paul Aron',
       'Dino Beganovic',
       'Jak Crawford',
+      'Ayumu Iwasa',
+      'Alex Dunne',
+      'Rafael Camara',
+      'Ugo Ugochukwu',
     ]) {
       expect(bundle.drivers.find((driver) => driver.name === name)?.notes).toContain('Source: https://');
     }
