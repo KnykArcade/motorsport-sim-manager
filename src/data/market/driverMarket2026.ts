@@ -646,7 +646,7 @@ export const driverMarket2026: MarketDriver[] = [
     buyoutCost: 4.5,
     negotiationDifficulty: 'Hard',
     suggestedUse: 'Prospect/Reserve',
-    notes: 'Good Williams reserve fit.'
+    notes: 'Good Williams reserve fit. Source: https://kondo-racing.jp/topics/post-5473.html'
   },
   {
     id: 'mkt-2026-christian-mansell',
@@ -680,7 +680,7 @@ export const driverMarket2026: MarketDriver[] = [
     buyoutCost: 4,
     negotiationDifficulty: 'Hard',
     suggestedUse: 'Prospect',
-    notes: 'Midfield academy depth.'
+    notes: 'Midfield academy depth. Source: https://www.christianmansellracing.com/'
   },
   {
     id: 'DRV_0258',
@@ -884,7 +884,7 @@ export const driverMarket2026: MarketDriver[] = [
     buyoutCost: 5,
     negotiationDifficulty: 'Hard',
     suggestedUse: 'Test/Reserve',
-    notes: 'Excellent testing/sim value.'
+    notes: 'Excellent testing/sim value. Source: https://www.fiawec.com/en/news/toyota-reveals-new-name-and-fresh-look-for-2026-title-tilt/8607'
   },
   {
     id: 'mkt-2026-pepe-marti',
@@ -918,7 +918,7 @@ export const driverMarket2026: MarketDriver[] = [
     buyoutCost: 4.2,
     negotiationDifficulty: 'Hard',
     suggestedUse: 'Prospect',
-    notes: 'Madrid-era prospect hook.'
+    notes: 'Madrid-era prospect hook. Source: https://www.pepemartiofficial.com/'
   },
   {
     id: 'mkt-2026-sami-meguetounif',
@@ -952,7 +952,7 @@ export const driverMarket2026: MarketDriver[] = [
     buyoutCost: 3.8,
     negotiationDifficulty: 'Hard',
     suggestedUse: 'Prospect',
-    notes: 'Development depth.'
+    notes: 'Development depth. Source: https://www.europeanlemansseries.com/en/driver/2026/12147'
   },
   {
     id: 'mkt-2026-gabriele-mini',
@@ -986,7 +986,7 @@ export const driverMarket2026: MarketDriver[] = [
     buyoutCost: 4.8,
     negotiationDifficulty: 'Hard',
     suggestedUse: 'Prospect',
-    notes: 'Strong academy option.'
+    notes: 'Strong academy option. Source: https://www.fiaformula2.com/Latest/lMSyMkcW1wbJE3WzEeHRD/gabriele-mini-aiming-for-f2-redemption-in-2026'
   },
   {
     id: 'mkt-2026-sebastian-montoya',
@@ -1020,7 +1020,7 @@ export const driverMarket2026: MarketDriver[] = [
     buyoutCost: 4,
     negotiationDifficulty: 'Hard',
     suggestedUse: 'Prospect/Marketing',
-    notes: 'Development plus North/South American appeal.'
+    notes: 'Development plus North/South American appeal. Source: https://www.fiaformula2.com/Latest/2togMP1kZq8EXFs6Yvir6I/sebastian-montoya-stays-with-prema-racing-for-the-2026-season'
   },
   {
     id: 'mkt-2026-F1-fill-01',

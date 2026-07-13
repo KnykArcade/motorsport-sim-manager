@@ -115,6 +115,13 @@ describe('youth market costs', () => {
       'Alex Dunne',
       'Rafael Camara',
       'Ugo Ugochukwu',
+      'Luke Browning',
+      'Christian Mansell',
+      'Ryo Hirakawa',
+      'Pepe Marti',
+      'Sami Meguetounif',
+      'Gabriele Mini',
+      'Sebastian Montoya',
     ]) {
       expect(bundle.drivers.find((driver) => driver.name === name)?.notes).toContain('Source: https://');
     }
