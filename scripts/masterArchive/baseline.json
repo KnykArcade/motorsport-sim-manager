@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "minimumCounts": {
+    "masterDrivers": 1782,
+    "driverHistory": 9620,
+    "activeRosterRecords": 4391,
+    "adultMarketRecords": 4523,
+    "youthMarketRecords": 706
+  },
+  "exactSeasonCounts": {
+    "total": 123,
+    "F1": 37,
+    "CART": 14,
+    "Champ Car": 4,
+    "IndyCar": 31,
+    "NASCAR": 37
+  },
+  "yearRange": {
+    "first": 1990,
+    "last": 2026
+  }
+}
