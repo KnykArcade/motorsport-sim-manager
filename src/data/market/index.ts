@@ -119,8 +119,18 @@ function isCuratorRemovedGeneratedPlaceholder(year: number, name: string): boole
     && Number(name.slice(0, 4)) === year;
 }
 
+// Verified roster corrections discovered during the real-driver audit. These
+// drivers were present in legacy market files despite competing in the named
+// season, so they are not open-market candidates.
+const CURATED_ACTIVE_ROSTER_EXCLUSIONS: Record<number, Set<string>> = {
+  2026: new Set(['myatt snider', 'brent crews']),
+};
+
 function applyCuratorMarketExclusions<T extends MarketDriver | YouthProspect>(year: number, entries: T[]): T[] {
-  return entries.filter((entry) => !isCuratorRemovedGeneratedPlaceholder(year, entry.name));
+  const activeRosterNames = CURATED_ACTIVE_ROSTER_EXCLUSIONS[year];
+  return entries.filter((entry) =>
+    !isCuratorRemovedGeneratedPlaceholder(year, entry.name)
+    && !activeRosterNames?.has(normalizeIdentity(entry.name)));
 }
 
 // Real-driver migration guard: historical seed files can still contain openly

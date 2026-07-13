@@ -92,6 +92,13 @@ describe('youth market costs', () => {
     )).toBe(true);
   });
 
+  it('removes audited active NASCAR drivers from the 2026 shared market', async () => {
+    await preloadMarketBundle(2026, 'F1');
+    const names = getMarketBundle(2026, 'F1')!.drivers.map((driver) => driver.name);
+    expect(names).not.toContain('Myatt Snider');
+    expect(names).not.toContain('Brent Crews');
+  });
+
   it('scales cost with potential', () => {
     expect(youthSigningCost(90)).toBeGreaterThan(youthSigningCost(50));
     expect(youthYearlyAcademyCost(90)).toBeGreaterThan(youthYearlyAcademyCost(50));
