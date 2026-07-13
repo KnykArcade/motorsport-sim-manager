@@ -27,7 +27,6 @@ import {
 } from '../data/registry/masterRegistry';
 import { getMarketBundle, youthSigningCost, youthYearlyAcademyCost, type MarketBundle } from '../data/market';
 import { getReleasedMarketDrivers } from '../data/market';
-import { crossSeriesCandidates } from './crossSeriesEngine';
 import { ensureMinimumYouthProspects } from './youthGenerationEngine';
 import type { GameState } from '../game/careerState';
 
@@ -281,22 +280,17 @@ export function careerMarketBundle(state: GameState): MarketBundle {
     }
   }
 
-  // Foreign-series free agents open to switching into this series.
-  const takenDriverNames = new Set([
-    ...curatedDriverNames,
-    ...extraDrivers.map((d) => canonicalNameOf(d.name)),
-  ]);
-  const crossSeries = crossSeriesCandidates(state).filter(
-    (d) => !takenDriverNames.has(canonicalNameOf(d.name)),
-  );
-
   // Final safety net: sanitize every market name and enforce a single identity
   // across the whole bundle. Names already occupied by the career universe (on
   // the grid, in any academy) are pre-seeded so they can never reappear, and no
   // driver may sit in both the adult market and the youth pool.
   const seenDrivers = new Set<string>(occupied.names);
   const drivers: MarketDriver[] = [];
-  for (const d of [...curatedDrivers, ...extraDrivers, ...(staticBundle?.drivers ?? []), ...crossSeries]) {
+  // The static bundle and registry are already assembled across every series.
+  // Do not append the selected-series cross-series shortlist here: doing so
+  // made the supposedly shared adult market differ depending on which series
+  // the player selected for the same career year.
+  for (const d of [...curatedDrivers, ...extraDrivers, ...(staticBundle?.drivers ?? [])]) {
     const clean = sanitizeMarketName(d.name);
     const key = canonicalNameOf(clean);
     if (seenDrivers.has(key)) continue;

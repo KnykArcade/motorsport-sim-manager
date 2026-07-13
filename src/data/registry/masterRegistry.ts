@@ -260,13 +260,23 @@ function mergeOne(
     : undefined;
 
   if (existing) {
-    // Idempotent: never re-add the same source id.
-    if (!existing.sourceIds.includes(fields.sourceId)) {
-      existing.sourceIds.push(fields.sourceId);
+    // Source ids are not guaranteed to include the season. Some historical
+    // files reuse the same driver id year after year, so idempotency must be
+    // evaluated against the full year/series/source snapshot rather than the
+    // source id alone.
+    if (!existing.sourceIds.includes(fields.sourceId)) existing.sourceIds.push(fields.sourceId);
+    const hasSnapshot = existing.baseRatingsByYear.some((entry) =>
+      entry.year === snapshot.year
+      && entry.series === snapshot.series
+      && entry.sourceId === snapshot.sourceId);
+    if (!hasSnapshot) {
       existing.baseRatingsByYear.push(snapshot);
       existing.baseRatingsByYear.sort((a, b) => a.year - b.year || a.series.localeCompare(b.series));
     }
-    if (activeSeat && !(existing.activeSeatsByYear ?? []).some((seat) => seat.sourceId === activeSeat.sourceId)) {
+    if (activeSeat && !(existing.activeSeatsByYear ?? []).some((seat) =>
+      seat.year === activeSeat.year
+      && seat.series === activeSeat.series
+      && seat.sourceId === activeSeat.sourceId)) {
       existing.activeSeatsByYear = [...(existing.activeSeatsByYear ?? []), activeSeat]
         .sort((a, b) => a.year - b.year || a.series.localeCompare(b.series));
     }
