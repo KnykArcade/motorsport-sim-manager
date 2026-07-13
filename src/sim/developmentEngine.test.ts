@@ -55,6 +55,12 @@ describe('catchUpMultiplier — midfield catch-up efficiency', () => {
     // Bounded so the midfield can close but not leapfrog overnight.
     expect(catchUpMultiplier(20)).toBeLessThanOrEqual(1.6);
   });
+
+  it('gives a materially stronger development opportunity to a trailing car', () => {
+    expect(catchUpMultiplier(10)).toBeGreaterThanOrEqual(1.4);
+    expect(catchUpMultiplier(15)).toBe(1.6);
+    expect(catchUpMultiplier(40)).toBe(1.6);
+  });
 });
 
 describe('applyOffseasonDecay — ratings do not stay maxed forever', () => {

@@ -352,15 +352,16 @@ export function runAIOffseason(input: AIOffseasonInput): AIOffseasonResult {
     return n;
   };
 
-  // Process AI teams in a stable order (constructor standing, then id) so
-  // stronger teams get first pick of the market.
+  // Process AI teams in a stable reverse-constructor order so lower-ranked
+  // teams get the first opportunity to improve. Candidate quality,
+  // affordability and team fit still determine whether a signing happens.
   const orderIndex = new Map(input.constructorStandings.map((s, i) => [s.entityId, i]));
   const aiTeams = teams
     .filter((t) => t.id !== input.selectedTeamId && input.aiTeamStates[t.id])
     .sort((a, b) => {
       const ia = orderIndex.get(a.id) ?? Number.MAX_SAFE_INTEGER;
       const ib = orderIndex.get(b.id) ?? Number.MAX_SAFE_INTEGER;
-      if (ia !== ib) return ia - ib;
+      if (ia !== ib) return ib - ia;
       if (a.reputation !== b.reputation) return b.reputation - a.reputation;
       return a.id.localeCompare(b.id);
     });

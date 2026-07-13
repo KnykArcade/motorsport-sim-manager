@@ -240,6 +240,35 @@ describe('runAIOffseason — driver market', () => {
     expect(promoted?.contractType).toBe('seat');
     expect(result.signedMarketIds).not.toContain('reg-x');
   });
+
+  it('gives the lower-ranked team the first opportunity to sign an available driver', () => {
+    const topTeam = team({ id: 't-top', name: 'Top Team', carId: 'c-top' });
+    const trailingTeam = team({ id: 't-trailing', name: 'Trailing Team', carId: 'c-trailing' });
+    const result = runAIOffseason(baseInput({
+      teams: [topTeam, trailingTeam],
+      drivers: [
+        seatDriver('d-top', 6, { teamId: topTeam.id }),
+        seatDriver('d-trailing', 6, { teamId: trailingTeam.id }),
+      ],
+      cars: [],
+      aiTeamStates: {
+        [topTeam.id]: aiState({ teamId: topTeam.id }),
+        [trailingTeam.id]: aiState({ teamId: trailingTeam.id }),
+      },
+      orgRatings: {
+        [topTeam.id]: org({ teamId: topTeam.id }),
+        [trailingTeam.id]: org({ teamId: trailingTeam.id }),
+      },
+      market: { drivers: [marketDriver('reg-one', 8)], youth: [] },
+      constructorStandings: [
+        { entityId: topTeam.id, points: 100, wins: 5, podiums: 8, dnfs: 0 },
+        { entityId: trailingTeam.id, points: 10, wins: 0, podiums: 0, dnfs: 2 },
+      ],
+    }));
+
+    expect(result.drivers.find((driver) => driver.id === 'd-reg-one')?.teamId)
+      .toBe(trailingTeam.id);
+  });
 });
 
 describe('runAIOffseason — development', () => {
