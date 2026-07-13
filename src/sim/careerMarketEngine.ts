@@ -240,10 +240,12 @@ export function careerMarketBundle(state: GameState): MarketBundle {
   const staticBundle = getMarketBundle(year, series);
   const releasedDrivers = getReleasedMarketDrivers(year, series);
   const occupied = occupiedIdentities(state);
+  const rosterConfirmedNames = new Set<string>();
   // A driver holding an active seat in any championship belongs to the shared
   // universe roster, not the open market—even when the player manages another
   // series. Market and youth history does not count as an active-seat record.
   for (const entry of registryList(reg)) {
+    if (entry.activeSeatsByYear?.length) rosterConfirmedNames.add(entry.canonicalName);
     if (entry.activeSeatsByYear?.some((seat) => seat.year === year)) {
       occupied.names.add(entry.canonicalName);
     }
@@ -255,6 +257,9 @@ export function careerMarketBundle(state: GameState): MarketBundle {
   const curatedYouth: YouthProspect[] = [];
   const curatedYouthToAdults: MarketDriver[] = [];
   for (const y of staticBundle?.youth ?? []) {
+    // Historical youth must be traceable to a documented roster identity or a
+    // row-level source. This blocks generic legacy karting/F4 placeholders.
+    if (!rosterConfirmedNames.has(canonicalNameOf(y.name)) && !/source:\s*https?:\/\//i.test(y.notes ?? '')) continue;
     const age = youthProspectAge(y, year);
     if (age < YOUTH_MIN_AGE) continue; // not yet available
     if (age > YOUTH_MAX_AGE) curatedYouthToAdults.push(youthProspectToAdultMarketDriver(y, year));
