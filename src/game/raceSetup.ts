@@ -36,6 +36,7 @@ import type { TeamOrganizationRatings } from '../types/teamRatingsTypes';
 import { carWithFittedParts } from '../sim/partsEngine';
 import { packageEffects as getPackageEffects } from '../sim/raceWeekendPackageEngine';
 import { confidencePerformanceModifier } from '../sim/driverConfidenceEngine';
+import { applyLeadershipPreparationModifier } from '../sim/phase18IdentityCultureEngine';
 import type { LiveRaceMeta, LiveRaceOptions } from '../sim/liveRaceEngine';
 import { computeRacePrepFocusEffect, getOrCreatePhaseState } from './careerPhaseEngine';
 
@@ -256,5 +257,5 @@ export function buildLiveRaceMeta(state: GameState, track: Track): LiveRaceMeta 
 function getRacePrepFocusEffect(state: GameState): RacePrepFocusEffect | undefined {
   const phaseState = getOrCreatePhaseState(state);
   if (!phaseState.racePrepFocus || phaseState.racePrepFocusApplied) return undefined;
-  return computeRacePrepFocusEffect(phaseState.racePrepFocus);
+  return applyLeadershipPreparationModifier(state, computeRacePrepFocusEffect(phaseState.racePrepFocus));
 }

@@ -5,6 +5,13 @@ import { Button } from '../components/Button';
 import { RENEW_THRESHOLD, SACK_THRESHOLD } from '../sim/principalEngine';
 import { ratingColor } from '../components/ui';
 import type { JobOffer } from '../types/principalTypes';
+import { DEPARTMENT_IDS, TEAM_CULTURE_AXES } from '../types/phase18Types';
+import {
+  cultureDescriptor,
+  leadershipGameplayModifiers,
+  PRINCIPAL_IDENTITY_DESCRIPTIONS,
+  PRINCIPAL_IDENTITY_LABELS,
+} from '../sim/phase18IdentityCultureEngine';
 
 export function TeamPrincipal() {
   const { state, dispatch } = useGame();
@@ -25,6 +32,10 @@ export function TeamPrincipal() {
   const currentTeam = teamById(state, principal.currentTeamId);
   const offers = state.jobOffers ?? [];
   const accepted = state.acceptedJobOfferId;
+  const identity = state.phase18?.principalIdentity;
+  const culture = state.phase18?.teamCultures[state.selectedTeamId];
+  const departments = state.phase18?.departmentMoods[state.selectedTeamId];
+  const leadershipModifiers = leadershipGameplayModifiers(state);
 
   return (
     <div className="space-y-6">
@@ -67,6 +78,95 @@ export function TeamPrincipal() {
           <Metric label="Strategy" value={String(principal.attributes.strategy)} />
         </div>
       </Panel>
+
+      {identity && culture && departments && (
+        <>
+          <Panel title="Leadership Identity">
+            <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(280px,0.8fr)]">
+              <div>
+                <div className="text-lg font-bold text-amber-300">
+                  {PRINCIPAL_IDENTITY_LABELS[identity.dominantIdentity]}
+                </div>
+                <p className="mt-1 text-sm text-neutral-400">
+                  {PRINCIPAL_IDENTITY_DESCRIPTIONS[identity.dominantIdentity]}
+                </p>
+                <div className="mt-3 flex flex-wrap gap-2 text-xs">
+                  <Tag>{identity.totalIdentityXp} leadership XP</Tag>
+                  {identity.secondaryIdentity && (
+                    <Tag>Secondary: {PRINCIPAL_IDENTITY_LABELS[identity.secondaryIdentity]}</Tag>
+                  )}
+                </div>
+              </div>
+              <div className="space-y-2">
+                {Object.entries(identity.scores)
+                  .sort(([, a], [, b]) => b - a)
+                  .slice(0, 3)
+                  .map(([key, score]) => (
+                    <RatingBar
+                      key={key}
+                      label={PRINCIPAL_IDENTITY_LABELS[key as keyof typeof PRINCIPAL_IDENTITY_LABELS]}
+                      value={score}
+                      max={Math.max(12, ...Object.values(identity.scores))}
+                    />
+                  ))}
+              </div>
+            </div>
+            {identity.history.length > 0 && (
+              <div className="mt-4 border-t border-neutral-800 pt-3">
+                <div className="text-[10px] font-semibold uppercase tracking-wide text-neutral-500">Recent defining decisions</div>
+                <ul className="mt-2 space-y-1 text-xs text-neutral-400">
+                  {identity.history.slice(-3).reverse().map((entry) => (
+                    <li key={entry.id}>+{entry.amount} {PRINCIPAL_IDENTITY_LABELS[entry.identity]} — {entry.reason}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </Panel>
+
+          <Panel title="Team Culture">
+            <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
+              <div>
+                <div className="font-semibold text-neutral-100">{cultureDescriptor(culture)}</div>
+                <div className="mt-1 text-xs text-neutral-500">
+                  Culture belongs to {currentTeam?.name ?? 'the team'} and remains if its principal changes.
+                </div>
+              </div>
+              <div className="flex gap-2 text-xs">
+                <Tag>Cohesion {Math.round(culture.cohesion)}</Tag>
+                <Tag>Stability {Math.round(culture.stability)}</Tag>
+              </div>
+            </div>
+            <div className="grid gap-x-6 gap-y-2 md:grid-cols-2">
+              {TEAM_CULTURE_AXES.map((axis) => (
+                <RatingBar key={axis} label={splitLabel(axis)} value={culture.axes[axis]} max={100} />
+              ))}
+            </div>
+            <div className="mt-4 grid gap-2 text-xs sm:grid-cols-3">
+              <ModifierCard label="Development outcomes" value={leadershipModifiers.developmentSuccessBonus} />
+              <ModifierCard label="Morale influence" value={leadershipModifiers.moraleEffectMultiplier - 1} />
+              <ModifierCard label="Race preparation" value={leadershipModifiers.preparationEffectMultiplier - 1} />
+            </div>
+          </Panel>
+
+          <Panel title="Department Confidence">
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+              {DEPARTMENT_IDS.map((departmentId) => {
+                const mood = departments[departmentId];
+                return (
+                  <div key={departmentId} className="rounded-lg border border-neutral-800 bg-neutral-900/40 p-3">
+                    <div className="text-xs font-semibold text-neutral-200">{splitLabel(departmentId)}</div>
+                    <div className="mt-2 space-y-1">
+                      <RatingBar label="Trust" value={mood.trustInPrincipal} max={100} compact />
+                      <RatingBar label="Alignment" value={mood.strategicAlignment} max={100} compact />
+                      <RatingBar label="Morale" value={mood.morale} max={100} compact />
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </Panel>
+        </>
+      )}
 
       <Panel title="Career Record">
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
@@ -192,4 +292,34 @@ function Metric({ label, value, tone }: { label: string; value: string; tone?: s
 
 function Tag({ children }: { children: React.ReactNode }) {
   return <span className="rounded bg-neutral-800/60 px-1.5 py-0.5 text-neutral-300">{children}</span>;
+}
+
+function RatingBar({ label, value, max, compact = false }: { label: string; value: number; max: number; compact?: boolean }) {
+  const width = Math.max(0, Math.min(100, (value / Math.max(1, max)) * 100));
+  return (
+    <div>
+      <div className={`flex justify-between ${compact ? 'text-[10px]' : 'text-xs'} text-neutral-400`}>
+        <span>{label}</span><span>{Math.round(value)}</span>
+      </div>
+      <div className={`${compact ? 'mt-0.5 h-1' : 'mt-1 h-1.5'} overflow-hidden rounded-full bg-neutral-800`}>
+        <div className="h-full rounded-full bg-amber-500" style={{ width: `${width}%` }} />
+      </div>
+    </div>
+  );
+}
+
+function ModifierCard({ label, value }: { label: string; value: number }) {
+  const percent = Math.round(value * 100);
+  return (
+    <div className="rounded border border-neutral-800 bg-neutral-900/40 p-2 text-neutral-400">
+      <div>{label}</div>
+      <div className={`font-semibold ${percent > 0 ? 'text-green-400' : percent < 0 ? 'text-red-400' : 'text-neutral-300'}`}>
+        {percent > 0 ? '+' : ''}{percent}%
+      </div>
+    </div>
+  );
+}
+
+function splitLabel(value: string): string {
+  return value.replace(/([a-z])([A-Z])/g, '$1 $2');
 }

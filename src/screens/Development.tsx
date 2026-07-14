@@ -21,6 +21,7 @@ import {
 } from '../sim/developmentEngine';
 import { developmentSuccessBonus } from '../sim/staffEngine';
 import { facilityDevelopmentSuccessBonus } from '../sim/facilityEngine';
+import { leadershipGameplayModifiers } from '../sim/phase18IdentityCultureEngine';
 import type { Facility, FacilityType } from '../types/facilityTypes';
 
 const RISK_COLORS: Record<string, string> = {
@@ -57,7 +58,8 @@ export function Development() {
   const usedSlots = state.activeDevelopmentProjects.length;
   const staffBonus = developmentSuccessBonus(state.staff ?? []);
   const facSuccessBonus = facilityDevelopmentSuccessBonus(state.facilities);
-  const totalSuccessBonus = staffBonus + facSuccessBonus;
+  const cultureBonus = leadershipGameplayModifiers(state).developmentSuccessBonus;
+  const totalSuccessBonus = staffBonus + facSuccessBonus + cultureBonus;
   const isF11990sFactory = state.series === 'F1' && state.seasonYear >= 1990 && state.seasonYear < 2000;
 
   const effectSummary = (p: DevelopmentProject) => {
