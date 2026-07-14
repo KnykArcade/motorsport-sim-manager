@@ -169,8 +169,16 @@ export type ContractClause = {
   partyType: ContractPartyType;
   partyId: string;
   clauseType: ContractClauseType;
+  title?: string;
   description: string;
   status: 'Active' | 'Satisfied' | 'Breached' | 'Waived' | 'Expired';
+  risk?: 'Secure' | 'Watch' | 'AtRisk' | 'Triggered';
+  triggerDescription?: string;
+  breachConsequence?: string;
+  renegotiationCost?: number;
+  mediaRisk?: 'Low' | 'Medium' | 'High';
+  visibleToPlayer?: boolean;
+  aiRelevant?: boolean;
   startSeasonYear: number;
   dueSeasonYear?: number;
   dueRound?: number;
@@ -179,7 +187,12 @@ export type ContractClause = {
   linkedPromiseId?: string;
   fulfilledSeasonYear?: number;
   breachedSeasonYear?: number;
+  lastEvaluatedSeasonYear?: number;
+  lastEvaluatedRound?: number;
+  resolutionNote?: string;
 };
+
+export type ContractBreachResponse = 'Apologize' | 'Compensate' | 'PromiseCorrection' | 'AcceptDamage';
 
 export type TeamCultureAxis =
   | 'Innovation'

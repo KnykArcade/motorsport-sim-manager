@@ -14,6 +14,7 @@ import { StatBar } from '../components/StatBar';
 import { formatMoney } from '../components/ui';
 import { ROLE_EFFECT, STAFF_ROLES, type StaffMember, type StaffRole } from '../types/staffTypes';
 import { ADVISOR_ROLE_LABELS } from '../sim/phase18AdvisorEngine';
+import { contractClauseLabel } from '../sim/phase18ContractClauseEngine';
 
 export function Staff() {
   const { state, dispatch } = useGame();
@@ -32,6 +33,9 @@ export function Staff() {
     .filter((recommendation) => recommendation.teamId === state.selectedTeamId)
     .slice(-6)
     .reverse();
+  const staffClauses = (state.phase18?.contractClauses ?? []).filter((clause) =>
+    clause.teamId === state.selectedTeamId && clause.partyType === 'Staff' && clause.status === 'Active',
+  );
 
   const current = byRole[activeRole];
   const candidates = pool
@@ -86,6 +90,23 @@ export function Staff() {
                 </div>
               </div>
             ))}
+          </div>
+        )}
+      </Panel>
+
+      <Panel title="Staff Contract Commitments">
+        {staffClauses.length === 0 ? <p className="text-sm text-neutral-500">Staff clauses appear when specialists join the team.</p> : (
+          <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+            {staffClauses.map((clause) => {
+              const member = roster.find((staff) => staff.id === clause.partyId);
+              return <div key={clause.id} className="rounded-lg border border-sky-500/25 bg-neutral-900/40 p-3">
+                <div className="flex justify-between gap-2"><span className="font-semibold text-neutral-100">{member?.name ?? clause.partyId}</span><span className="text-[10px] uppercase text-sky-300">{clause.risk ?? 'Secure'}</span></div>
+                <div className="mt-1 text-xs font-semibold text-sky-300">{contractClauseLabel(clause.clauseType)}</div>
+                <p className="mt-1 text-[11px] text-neutral-400">{clause.description}</p>
+                <div className="mt-2 text-[10px] text-amber-200">Reviewed: {clause.triggerDescription}</div>
+                <div className="mt-1 text-[10px] text-red-300">Risk: {clause.breachConsequence}</div>
+              </div>;
+            })}
           </div>
         )}
       </Panel>
