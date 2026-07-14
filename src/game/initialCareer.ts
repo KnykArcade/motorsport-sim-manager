@@ -26,6 +26,7 @@ import { buildAllTeamOrganizationRatings } from '../sim/teamRatingsEngine';
 import { buildAllAITeamStates } from '../sim/aiTeamEngine';
 import { enforceRosters } from './rosterEnforcement';
 import type { TeamPrincipal } from '../types/principalTypes';
+import { createMotorsportUniverse } from '../sim/motorsportUniverseEngine';
 
 // Deep clone via structuredClone (available in modern browsers / Node 18+).
 function clone<T>(value: T): T {
@@ -221,8 +222,19 @@ export function createNewGame(options: NewGameOptions): GameState {
   };
 
   const normalizedState = enforceRosters(baseState).state;
+  const stateWithUniverse: GameState = {
+    ...normalizedState,
+    motorsportUniverse: createMotorsportUniverse(
+      options.seasonYear,
+      options.series,
+      bundle,
+      seed,
+      normalizedState.teams,
+      normalizedState.drivers,
+    ),
+  };
 
   // AI Team Management (Phase C): give every non-player team its management
   // brain (archetype, budget, financial health, goal).
-  return { ...normalizedState, aiTeamStates: buildAllAITeamStates(normalizedState) };
+  return { ...stateWithUniverse, aiTeamStates: buildAllAITeamStates(stateWithUniverse) };
 }

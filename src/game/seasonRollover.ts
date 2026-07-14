@@ -8,6 +8,7 @@ import { getCachedBundle } from '../data/seasonLoader';
 import type { SeasonBundle } from '../data/seasonCatalog';
 import { defaultCareerPhaseState } from './careerPhaseEngine';
 import { careerMarketBundle, marketRolloverChanges, marketRolloverNotes } from '../sim/careerMarketEngine';
+import { advanceMotorsportUniverse } from '../sim/motorsportUniverseEngine';
 import {
   FACILITY_SPECS,
   facilityYouthDevelopmentBonus,
@@ -1441,6 +1442,12 @@ export function advanceSeason(state: GameState, nextBundle?: SeasonBundle): Game
     ].slice(0, 80),
     careerPhase: defaultCareerPhaseState(),
   };
+  nextState.motorsportUniverse = advanceMotorsportUniverse(
+    state,
+    nextYear,
+    nextState.teams,
+    nextState.drivers,
+  );
 
   // If the principal switched teams, re-point the player-scoped systems
   // (selected team, setups, commercial, facilities, engine deal) at the new team.
