@@ -65,13 +65,18 @@ export type AdvisorRecommendation = {
   teamId: string;
   advisorRole: AdvisorRole;
   advisorId?: string;
+  advisorName?: string;
   decisionType: string;
   decisionId?: string;
+  recommendedOptionId?: string;
   recommendation: string;
   rationale: string;
   confidence: number;
   urgency: 'Low' | 'Normal' | 'High' | 'Critical';
   status: AdvisorRecommendationStatus;
+  resolvedOptionId?: string;
+  resolutionNote?: string;
+  trustChange?: number;
   createdSeasonYear: number;
   createdRound?: number;
   expiresSeasonYear?: number;

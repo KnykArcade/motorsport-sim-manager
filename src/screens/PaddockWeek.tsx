@@ -13,12 +13,18 @@ import {
 } from '../game/careerState';
 import { developmentSlots } from '../sim/facilityEngine';
 import { leadershipDecisionPreview } from '../sim/phase18IdentityCultureEngine';
+import {
+  ADVISOR_ROLE_LABELS,
+  advisorRecommendationsForDecision,
+  hasAdvisorDisagreement,
+} from '../sim/phase18AdvisorEngine';
 import { getGameModeLabel } from '../game/modeRestrictions';
 import { Panel } from '../components/Panel';
 import { Button } from '../components/Button';
 import { NewsPanel } from '../components/NewsPanel';
 import { formatMoney } from '../components/ui';
 import type { PaddockEvent, PaddockEventCategory } from '../types/careerPhaseTypes';
+import type { AdvisorRecommendation } from '../types/phase18Types';
 import { RaceWeekendPackageSelection } from './RaceWeekendPackageSelection';
 
 const CATEGORY_LABELS: Record<PaddockEventCategory, string> = {
@@ -102,6 +108,14 @@ export function PaddockWeek() {
   const pendingCount = unresolvedCount + (packageSelected ? 0 : 1);
 
   const canAdvance = !hasUnresolvedRequiredDecisions(state) && packageSelected;
+  const resolvedDecisionIds = new Set(
+    phaseState.paddockEvents.filter((event) => !!event.resolvedOptionId).map((event) => event.id),
+  );
+  const advisorDebrief = (state.phase18?.advisorRecommendations ?? []).filter(
+    (recommendation) => recommendation.decisionId
+      && resolvedDecisionIds.has(recommendation.decisionId)
+      && (recommendation.status === 'Accepted' || recommendation.status === 'Overruled'),
+  );
 
   const advanceToBriefing = () => {
     dispatch({ type: 'ADVANCE_TO_PRE_RACE_BRIEFING' });
@@ -182,6 +196,7 @@ export function PaddockWeek() {
                 <DecisionCard
                   key={event.id}
                   event={event}
+                  recommendations={advisorRecommendationsForDecision(state, event.id)}
                   onResolve={(optionId) =>
                     dispatch({ type: 'RESOLVE_PADDOCK_EVENT', eventId: event.id, optionId })
                   }
@@ -208,6 +223,35 @@ export function PaddockWeek() {
                 );
               })}
           </ul>
+        </Panel>
+      )}
+
+      {advisorDebrief.length > 0 && (
+        <Panel title="Advisor Debrief">
+          <div className="grid gap-2 md:grid-cols-2 xl:grid-cols-3">
+            {advisorDebrief.map((recommendation) => (
+              <div key={recommendation.id} className="rounded-lg border border-neutral-800 bg-neutral-900/40 p-3">
+                <div className="flex items-center justify-between gap-2">
+                  <div className="text-xs font-semibold text-neutral-100">
+                    {recommendation.advisorName ?? ADVISOR_ROLE_LABELS[recommendation.advisorRole]}
+                  </div>
+                  <span className={`rounded px-1.5 py-0.5 text-[10px] font-semibold uppercase ${
+                    recommendation.status === 'Accepted'
+                      ? 'bg-emerald-500/10 text-emerald-300'
+                      : 'bg-orange-500/10 text-orange-300'
+                  }`}>
+                    {recommendation.status}
+                  </span>
+                </div>
+                <div className="mt-1 text-[11px] text-neutral-400">{recommendation.resolutionNote}</div>
+                <div className={`mt-2 text-[10px] font-semibold ${
+                  (recommendation.trustChange ?? 0) >= 0 ? 'text-emerald-400' : 'text-red-400'
+                }`}>
+                  Department trust {(recommendation.trustChange ?? 0) > 0 ? '+' : ''}{recommendation.trustChange ?? 0}
+                </div>
+              </div>
+            ))}
+          </div>
         </Panel>
       )}
 
@@ -259,15 +303,38 @@ function HubSection({ title, events }: { title: string; events: PaddockEvent[] }
 
 function DecisionCard({
   event,
+  recommendations,
   onResolve,
 }: {
   event: PaddockEvent;
+  recommendations: AdvisorRecommendation[];
   onResolve: (optionId: string) => void;
 }) {
+  const disagreement = hasAdvisorDisagreement(recommendations);
   return (
     <div className="rounded-lg border border-amber-600/30 bg-amber-500/5 p-4">
       <div className="text-sm font-semibold text-amber-300">{event.title}</div>
       <p className="mt-1 text-sm text-neutral-300">{event.description}</p>
+      {recommendations.length > 0 && (
+        <div className="mt-3 rounded-lg border border-sky-800/60 bg-sky-950/20 p-3">
+          <div className="flex items-center justify-between gap-3">
+            <div className="text-xs font-semibold uppercase tracking-wide text-sky-300">Advisor Council</div>
+            {disagreement && (
+              <span className="rounded bg-orange-500/15 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-orange-300">
+                Internal disagreement
+              </span>
+            )}
+          </div>
+          <div className="mt-2 grid gap-2 lg:grid-cols-3">
+            {recommendations.map((recommendation) => (
+              <AdvisorCard key={recommendation.id} recommendation={recommendation} />
+            ))}
+          </div>
+          <p className="mt-2 text-[10px] text-neutral-500">
+            Following advice improves department trust and execution. Overruling strong advice can reduce trust and strategic alignment.
+          </p>
+        </div>
+      )}
       {event.options && event.options.length > 0 && (
         <div className="mt-3 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
           {event.options.map((option) => (
@@ -275,6 +342,27 @@ function DecisionCard({
           ))}
         </div>
       )}
+    </div>
+  );
+}
+
+function AdvisorCard({ recommendation }: { recommendation: AdvisorRecommendation }) {
+  const confidenceTone = recommendation.confidence >= 75
+    ? 'text-emerald-300'
+    : recommendation.confidence >= 55 ? 'text-sky-300' : 'text-neutral-400';
+  return (
+    <div className="rounded border border-sky-900/60 bg-neutral-950/40 p-2.5">
+      <div className="flex items-start justify-between gap-2">
+        <div>
+          <div className="text-xs font-semibold text-neutral-100">
+            {recommendation.advisorName ?? ADVISOR_ROLE_LABELS[recommendation.advisorRole]}
+          </div>
+          <div className="text-[10px] text-neutral-500">{ADVISOR_ROLE_LABELS[recommendation.advisorRole]}</div>
+        </div>
+        <div className={`text-[10px] font-semibold ${confidenceTone}`}>{recommendation.confidence}%</div>
+      </div>
+      <div className="mt-2 text-xs font-semibold text-sky-300">Recommends: {recommendation.recommendation}</div>
+      <p className="mt-1 text-[11px] leading-relaxed text-neutral-400">{recommendation.rationale}</p>
     </div>
   );
 }

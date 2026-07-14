@@ -13,6 +13,7 @@ import {
   type TeamCultureTag,
 } from '../types/phase18Types';
 import { ensurePhase18FoundationState } from './phase18FoundationEngine';
+import { advisorPreparationEffectMultiplier } from './phase18AdvisorEngine';
 
 export const PRINCIPAL_IDENTITY_LABELS: Record<PrincipalIdentity, string> = {
   BalancedLeader: 'Balanced Leader',
@@ -269,10 +270,11 @@ export function cultureDescriptor(culture: TeamCultureState): string {
 }
 
 export function applyLeadershipPreparationModifier(
-  state: Pick<GameState, 'phase18' | 'selectedTeamId'>,
+  state: Pick<GameState, 'phase18' | 'selectedTeamId' | 'careerPhase'>,
   effect: RacePrepFocusEffect,
 ): RacePrepFocusEffect {
-  const multiplier = leadershipGameplayModifiers(state).preparationEffectMultiplier;
+  const multiplier = leadershipGameplayModifiers(state).preparationEffectMultiplier
+    * advisorPreparationEffectMultiplier(state);
   return {
     ...effect,
     paceModifier: effect.paceModifier * multiplier,
