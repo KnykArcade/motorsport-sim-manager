@@ -93,7 +93,7 @@ import {
   leadershipGameplayModifiers,
 } from '../sim/phase18IdentityCultureEngine';
 import type { TeamOrderDecision, PromiseType } from '../types/relationshipTypes';
-import type { CarLaunchApproach, ContractBreachResponse, ContractClauseType, IntelligenceAction, PreseasonTestingFocus } from '../types/phase18Types';
+import type { CarLaunchApproach, ContractBreachResponse, ContractClauseType, FailureInvestigationLevel, FailureResponse, IntelligenceAction, PreseasonTestingFocus } from '../types/phase18Types';
 import {
   applyNegotiatedDriverClause,
   ensureContractClauses,
@@ -105,6 +105,7 @@ import {
 } from '../sim/phase18ContractClauseEngine';
 import { generatePaddockIntelligence, resolveIntelligenceAction } from '../sim/phase18IntelligenceEngine';
 import { applyPreseasonCarModifier, completeCarLaunch, completePreseasonTesting, ensurePreseasonHubState, resolvePreseasonFlaw } from '../sim/phase18PreseasonEngine';
+import { applyFailureRiskModifier, investigateFailure, recordFailureInvestigations, respondToFailure } from '../sim/phase18FailureInvestigationEngine';
 import { createSeededRandom, deriveSeed } from '../sim/random';
 import type { AcademyDecision, FirstOptionDecision, SeatSigning } from '../types/marketTypes';
 import type { FinanceTransaction } from '../types/financeTypes';
@@ -274,6 +275,8 @@ export type GameAction =
   | { type: 'COMPLETE_CAR_LAUNCH'; approach: CarLaunchApproach }
   | { type: 'COMPLETE_PRESEASON_TESTING'; focus: PreseasonTestingFocus }
   | { type: 'RESOLVE_PRESEASON_FLAW'; flawId: string }
+  | { type: 'INVESTIGATE_FAILURE'; caseId: string; level: FailureInvestigationLevel }
+  | { type: 'RESPOND_TO_FAILURE'; caseId: string; response: FailureResponse }
   | { type: 'SET_FACILITY_SPECIALIZATION'; specialization: FacilitySpecialization };
 
 // Run one practice session for the player's drivers: simulate each assignment,
@@ -389,7 +392,7 @@ function buildEntrants(state: GameState): Entrant[] {
     for (const driver of activeDriversForTeam(state, team.id)) {
       entrants.push({
         driver,
-        car: applyPreseasonCarModifier(state, carWithFittedParts(car, state.teamParts?.[team.id], driver.id)),
+        car: applyFailureRiskModifier(state, applyPreseasonCarModifier(state, carWithFittedParts(car, state.teamParts?.[team.id], driver.id))),
       });
     }
   }
@@ -955,6 +958,16 @@ export function gameReducer(state: GameState | null, action: GameAction): GameSt
     case 'RESOLVE_PRESEASON_FLAW': {
       if (!state) return state;
       return resolvePreseasonFlaw(state, action.flawId);
+    }
+
+    case 'INVESTIGATE_FAILURE': {
+      if (!state) return state;
+      return investigateFailure(state, action.caseId, action.level);
+    }
+
+    case 'RESPOND_TO_FAILURE': {
+      if (!state) return state;
+      return respondToFailure(state, action.caseId, action.response);
     }
 
     case 'SET_FACILITY_SPECIALIZATION': {
@@ -1987,7 +2000,7 @@ function applyRaceResults(
   const nextIndex = state.currentRaceIndex + 1;
   const seasonComplete = nextIndex >= calendar.length;
 
-  return {
+  const completedState: GameState = {
     ...state,
     calendar,
     drivers,
@@ -2011,6 +2024,7 @@ function applyRaceResults(
     currentRaceIndex: seasonComplete ? state.currentRaceIndex : nextIndex,
     seasonComplete,
   };
+  return recordFailureInvestigations(completedState, race.id, race.round, results);
 }
 
 function partsRound(state: GameState): number {
