@@ -2,10 +2,9 @@ import { useGame } from '../game/GameContext';
 import { teamById } from '../game/careerState';
 import { isSingleSeasonMode, isDevelopmentProjectAllowedForMode } from '../game/modeRestrictions';
 import { developmentProjectCatalog } from '../data/development/developmentProjects';
-import { foundationProjectForBranch, rdBranchMetadata } from '../data/rd/rdFoundationCatalog';
-import { rdNodesById } from '../data/rd/rdCatalog';
 import { Panel } from '../components/Panel';
 import { Button } from '../components/Button';
+import { RDTreePanel } from '../components/development/RDTreePanel';
 import { formatMoney, ratingColor } from '../components/ui';
 import type { DevelopmentProject, DevelopmentOutcome } from '../types/gameTypes';
 import {
@@ -22,13 +21,6 @@ import {
 import { developmentSuccessBonus } from '../sim/staffEngine';
 import { facilityDevelopmentSuccessBonus } from '../sim/facilityEngine';
 import type { Facility, FacilityType } from '../types/facilityTypes';
-import type { RDBranchId } from '../types/rdTypes';
-import {
-  cashCostForBand,
-  createInitialTeamResearch,
-  durationRoundsForBand,
-  tppCostForBand,
-} from '../sim/rdEngine';
 
 const RISK_COLORS: Record<string, string> = {
   Safe: 'text-green-400',
@@ -66,36 +58,6 @@ export function Development() {
   const facSuccessBonus = facilityDevelopmentSuccessBonus(state.facilities);
   const totalSuccessBonus = staffBonus + facSuccessBonus;
   const isF11990sFactory = state.series === 'F1' && state.seasonYear >= 1990 && state.seasonYear < 2000;
-  const research = state.teamResearch?.[state.selectedTeamId]
-    ?? createInitialTeamResearch(state.selectedTeamId, state.seasonYear);
-  const focusMetadata = research.focus
-    ? rdBranchMetadata.find((branch) => branch.id === research.focus?.branchId)
-    : undefined;
-  const foundationDefinition = research.focus
-    ? foundationProjectForBranch(research.focus.branchId)
-    : undefined;
-  const foundationNode = foundationDefinition ? rdNodesById[foundationDefinition.nodeId] : undefined;
-  const rdCashCost = foundationNode
-    ? cashCostForBand(foundationNode.cashCostBand, budget, state.series, state.seasonYear)
-    : 0;
-  const rdTppCost = foundationNode ? tppCostForBand(foundationNode.tppCostBand) : 0;
-  const rdDuration = foundationNode
-    ? durationRoundsForBand(foundationNode.durationBand, state.calendar.length)
-    : 0;
-  const activeFoundation = foundationDefinition
-    ? research.activeProjects.find((project) => project.nodeId === foundationDefinition.nodeId)
-    : undefined;
-  const completedFoundation = foundationDefinition
-    ? research.completedNodes.some((completed) => completed.nodeId === foundationDefinition.nodeId)
-    : false;
-  const canStartFoundation = !!foundationDefinition
-    && !singleSeason
-    && !activeFoundation
-    && !completedFoundation
-    && research.activeProjects.length === 0
-    && budget >= rdCashCost
-    && research.tpp.balance >= rdTppCost;
-  const canChangeFocus = !!research.focus && state.seasonYear > research.focus.lockedThroughSeasonYear;
 
   const effectSummary = (p: DevelopmentProject) => {
     const parts: string[] = [];
@@ -140,125 +102,7 @@ export function Development() {
         </div>
       )}
 
-      <Panel title="Research & Development Foundation">
-        <div className="mb-4 grid gap-3 sm:grid-cols-3">
-          <div className="rounded-lg border border-neutral-800 bg-neutral-900/50 p-3">
-            <div className="text-xs uppercase tracking-wide text-neutral-500">Team Principal Points</div>
-            <div className="mt-1 text-xl font-bold text-amber-300">{research.tpp.balance} TPP</div>
-            <div className="mt-1 text-xs text-neutral-500">Leadership capital shared across research and future political decisions.</div>
-          </div>
-          <div className="rounded-lg border border-neutral-800 bg-neutral-900/50 p-3">
-            <div className="text-xs uppercase tracking-wide text-neutral-500">Research Focus</div>
-            <div className="mt-1 text-base font-semibold text-neutral-100">{focusMetadata?.label ?? 'Not selected'}</div>
-            <div className="mt-1 text-xs text-neutral-500">
-              {research.focus
-                ? `Locked through ${research.focus.lockedThroughSeasonYear}`
-                : 'Selecting a focus creates a three-season commitment.'}
-            </div>
-          </div>
-          <div className="rounded-lg border border-neutral-800 bg-neutral-900/50 p-3">
-            <div className="text-xs uppercase tracking-wide text-neutral-500">Catalog Loaded</div>
-            <div className="mt-1 text-xl font-bold text-neutral-100">430 nodes</div>
-            <div className="mt-1 text-xs text-neutral-500">Ten validated branches; this PR activates each branch's first foundation node.</div>
-          </div>
-        </div>
-
-        {(!research.focus || canChangeFocus) && (
-          <div>
-            <div className="mb-2 text-sm font-semibold text-neutral-200">
-              {research.focus ? 'Change research focus' : 'Choose your three-season research focus'}
-            </div>
-            <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-5">
-              {rdBranchMetadata.map((branch) => (
-                <button
-                  key={branch.id}
-                  type="button"
-                  disabled={singleSeason || research.focus?.branchId === branch.id}
-                  onClick={() => dispatch({ type: 'SET_RESEARCH_FOCUS', branchId: branch.id as RDBranchId })}
-                  className="rounded-lg border border-neutral-700 bg-neutral-900/50 p-3 text-left transition hover:border-amber-600 hover:bg-neutral-800/70 disabled:cursor-not-allowed disabled:opacity-50"
-                >
-                  <div className="text-sm font-semibold text-neutral-100">{branch.shortLabel}</div>
-                  <div className="mt-1 text-[11px] leading-4 text-neutral-500">{branch.description}</div>
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {research.focus && foundationDefinition && foundationNode && (
-          <div className="mt-4 rounded-lg border border-amber-900/60 bg-amber-950/10 p-4">
-            <div className="flex flex-wrap items-start justify-between gap-3">
-              <div className="max-w-3xl">
-                <div className="text-xs uppercase tracking-wide text-amber-400">Tier 1 foundation project · {foundationNode.sourceId}</div>
-                <div className="mt-1 text-lg font-semibold text-neutral-100">{foundationNode.name}</div>
-                <div className="mt-2 whitespace-pre-line text-xs leading-5 text-neutral-400">{foundationNode.mainEffects}</div>
-                <div className="mt-2 text-xs text-emerald-400">Completion effect: {foundationDefinition.modifier.description}</div>
-              </div>
-              <div className="min-w-44 text-right text-xs text-neutral-400">
-                <div>{formatMoney(rdCashCost)}</div>
-                <div>{rdTppCost} TPP</div>
-                <div>{rdDuration} race rounds</div>
-              </div>
-            </div>
-
-            {activeFoundation ? (
-              <div className="mt-4">
-                <div className="flex justify-between text-xs text-neutral-400">
-                  <span>Research in progress</span>
-                  <span>{activeFoundation.progressRounds}/{activeFoundation.durationRounds} rounds</span>
-                </div>
-                <div className="mt-1.5 h-2 overflow-hidden rounded-full bg-neutral-800">
-                  <div
-                    className="h-full bg-amber-500"
-                    style={{ width: `${Math.min(100, (activeFoundation.progressRounds / activeFoundation.durationRounds) * 100)}%` }}
-                  />
-                </div>
-              </div>
-            ) : completedFoundation ? (
-              <div className="mt-4 rounded border border-emerald-800 bg-emerald-950/30 p-2 text-sm text-emerald-300">
-                Foundation completed and its persistent modifier is active.
-              </div>
-            ) : (
-              <div className="mt-4 flex items-center justify-between gap-3">
-                <div className="text-xs text-neutral-500">
-                  {singleSeason
-                    ? 'Long-term R&D is available in Career and Sandbox modes.'
-                    : budget < rdCashCost
-                      ? 'Insufficient team budget.'
-                      : research.tpp.balance < rdTppCost
-                        ? 'Insufficient TPP.'
-                        : research.activeProjects.length > 0
-                          ? 'Complete the active R&D project first.'
-                          : 'Ready to begin.'}
-                </div>
-                <Button
-                  variant={canStartFoundation ? 'primary' : 'secondary'}
-                  disabled={!canStartFoundation}
-                  onClick={() => dispatch({ type: 'START_RD_PROJECT', nodeId: foundationDefinition.nodeId })}
-                >
-                  Start Foundation Research
-                </Button>
-              </div>
-            )}
-          </div>
-        )}
-
-        {research.tpp.ledger.length > 0 && (
-          <div className="mt-4 border-t border-neutral-800 pt-3">
-            <div className="mb-2 text-xs font-semibold uppercase tracking-wide text-neutral-500">Recent TPP activity</div>
-            <div className="space-y-1">
-              {research.tpp.ledger.slice(-3).reverse().map((entry) => (
-                <div key={entry.id} className="flex justify-between text-xs text-neutral-400">
-                  <span>{entry.seasonYear} · {entry.description}</span>
-                  <span className={entry.amount >= 0 ? 'text-emerald-400' : 'text-amber-400'}>
-                    {entry.amount >= 0 ? '+' : ''}{entry.amount} TPP · {entry.balanceAfter} remaining
-                  </span>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-      </Panel>
+      <RDTreePanel />
 
       {usedSlots >= slots && (
         <div className="rounded-lg border border-orange-800 bg-orange-900/20 p-3 text-sm text-orange-300">

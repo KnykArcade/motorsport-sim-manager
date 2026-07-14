@@ -1,4 +1,4 @@
-import type { CarRatings } from './gameTypes';
+import type { CarRatings, DevelopmentOutcome, Series } from './gameTypes';
 
 export const RD_BRANCH_IDS = [
   'engine',
@@ -28,6 +28,48 @@ export type RDModifier = {
   value: number;
   description: string;
   appliedSeasonYear: number;
+};
+
+export type RDModifierTemplate = Omit<RDModifier, 'id' | 'sourceNodeId' | 'appliedSeasonYear'>;
+
+export type RDProjectRiskLevel = 'Safe' | 'Standard' | 'Aggressive' | 'Experimental';
+
+export type RDPrerequisiteTierCount = {
+  tier: number;
+  count: number;
+  allowActive?: boolean;
+  excludeNodeIds?: string[];
+};
+
+export type RDProjectStartRequest = {
+  nodeId: string;
+  sourceId: string;
+  nodeName: string;
+  displayName: string;
+  branchId: RDBranchId;
+  tier: number;
+  path: string;
+  cashCostBand: RDCostBand;
+  tppCostBand: RDCostBand;
+  durationBand: RDDurationBand;
+  riskLevel: RDProjectRiskLevel;
+  prerequisiteGroups: string[][];
+  prerequisiteTierCounts: RDPrerequisiteTierCount[];
+  available: boolean;
+  availabilityLabel: string;
+  availabilityReason?: string;
+  seriesWeight: number;
+  modifierTemplates: RDModifierTemplate[];
+  contextSeries?: Series;
+  contextSeasonYear?: number;
+};
+
+export type RDOutcomeResult = {
+  outcome: DevelopmentOutcome;
+  multiplier: number;
+  label: string;
+  description: string;
+  appliedModifiers: RDModifier[];
 };
 
 export type RDNodeDefinition = {
@@ -93,6 +135,14 @@ export type RDActiveProject = {
   durationRounds: number;
   cashCost: number;
   tppCost: number;
+  nodeName?: string;
+  sourceId?: string;
+  branchId?: RDBranchId;
+  tier?: number;
+  path?: string;
+  riskLevel?: RDProjectRiskLevel;
+  seriesWeight?: number;
+  modifierTemplates?: RDModifierTemplate[];
 };
 
 export type RDCompletedNode = {
@@ -100,6 +150,20 @@ export type RDCompletedNode = {
   teamId: string;
   completedSeasonYear: number;
   completedRound: number;
+  sourceId?: string;
+  branchId?: RDBranchId;
+  tier?: number;
+  outcomeResult?: RDOutcomeResult;
+};
+
+export type RDProjectHistoryEntry = {
+  projectId: string;
+  nodeId: string;
+  nodeName: string;
+  seasonYear: number;
+  round: number;
+  outcomeResult: RDOutcomeResult;
+  completed: boolean;
 };
 
 export type TeamResearchState = {
@@ -109,6 +173,7 @@ export type TeamResearchState = {
   activeProjects: RDActiveProject[];
   completedNodes: RDCompletedNode[];
   modifiers: RDModifier[];
+  projectHistory: RDProjectHistoryEntry[];
 };
 
 export type TeamResearchMap = Record<string, TeamResearchState>;
