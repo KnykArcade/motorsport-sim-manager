@@ -96,6 +96,12 @@ export type AITeamState = {
   seasonsInTrouble: number;
   // Last final constructor position, used for the Team Overview trend + goals.
   lastConstructorPosition?: number;
+  // In-season technical-director bookkeeping. Actual projects and components
+  // live in teamResearch/teamParts; these fields keep budget discipline and a
+  // concise audit trail on the AI brain itself.
+  technicalSpendThisSeason?: number;
+  lastTechnicalDecision?: string;
+  lastTechnicalDecisionRound?: number;
 };
 
 // Multi-season memory: track a team's historical performance to influence

@@ -15,6 +15,7 @@ import { activeDriversForTeam } from '../game/careerState';
 import { effectiveCarRatings, carPerformanceRating } from './trackFitEngine';
 import { buildTeamOrganizationRatings } from './teamRatingsEngine';
 import { ARCHETYPE_SPECS, GOAL_LABELS, TRAIT_LABELS } from './aiTeamEngine';
+import { aiTechnicalSummary } from './aiTechnicalDirectorEngine';
 
 export type TeamTrend =
   | 'TitlePush'
@@ -249,6 +250,7 @@ export type TeamOverviewDetail = {
   strengths: { label: string; value: number }[];
   weaknesses: { label: string; value: number }[];
   recentMoves: string[];
+  technicalProgram: ReturnType<typeof aiTechnicalSummary>;
 };
 
 const RATING_FIELDS: { key: keyof TeamOverviewRow; label: string }[] = [
@@ -301,5 +303,6 @@ export function buildTeamOverviewDetail(state: GameState, teamId: string): TeamO
     strengths,
     weaknesses,
     recentMoves,
+    technicalProgram: aiTechnicalSummary(state, teamId),
   };
 }

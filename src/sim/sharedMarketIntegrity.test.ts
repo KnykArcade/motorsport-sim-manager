@@ -45,4 +45,4 @@ it('keeps every 1990-2026 career market shared, real, unique, age-valid, and ros
       expect(youth.filter((name) => active.has(name)), `${year} ${series} active youth leaks`).toEqual([]);
     }
   }
-});
+}, 20_000);

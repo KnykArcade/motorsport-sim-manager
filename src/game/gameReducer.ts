@@ -181,6 +181,7 @@ import {
   startPartRepair,
   transferFittedParts,
 } from '../sim/partsEngine';
+import { progressAITechnicalProgramsAfterRace } from '../sim/aiTechnicalDirectorEngine';
 
 export type GameAction =
   | { type: 'NEW_GAME'; options: NewGameOptions }
@@ -1652,7 +1653,7 @@ function applyRaceResults(
     driverRelationships = applyConfidenceUpdates(driverRelationships, allUpdates);
   }
   // A per-race transport/logistics stipend helps offset the weekend package cost.
-  const teams = state.teams.map((t) => ({ ...t, morale: morale.teamMorale[t.id] ?? t.morale }));
+  let teams = state.teams.map((t) => ({ ...t, morale: morale.teamMorale[t.id] ?? t.morale }));
   let cars = state.cars.map((c) => ({ ...c }));
   const financeTxns: FinanceTransaction[] = [];
   const damageMessages: string[] = [];
@@ -1816,6 +1817,25 @@ function applyRaceResults(
     devMessages.push(...partsTick.messages);
   }
 
+  // Every non-player team now progresses the same research and component
+  // lifecycle systems. Their technical directors then make the next
+  // budget-aware project, repair, fitting, and manufacturing decisions.
+  let aiTeamStates = state.aiTeamStates;
+  if (partsTrack) {
+    const aiTechnical = progressAITechnicalProgramsAfterRace(
+      { ...state, teams, cars, teamResearch, teamParts, aiTeamStates },
+      race,
+      results,
+      partsTrack,
+    );
+    teams = aiTechnical.state.teams;
+    cars = aiTechnical.state.cars;
+    teamResearch = aiTechnical.state.teamResearch ?? teamResearch;
+    teamParts = aiTechnical.state.teamParts ?? teamParts;
+    aiTeamStates = aiTechnical.state.aiTeamStates;
+    devMessages.push(...aiTechnical.messages);
+  }
+
   // News.
   const driverNames: Record<string, string> = {};
   state.drivers.forEach((d) => (driverNames[d.id] = d.name));
@@ -1915,6 +1935,7 @@ function applyRaceResults(
     completedDevelopmentProjects,
     teamResearch,
     teamParts,
+    aiTeamStates,
     finance: [...(state.finance ?? []), ...financeTxns],
     raceArchive,
     driverRelationships,

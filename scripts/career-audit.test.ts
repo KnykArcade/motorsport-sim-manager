@@ -65,8 +65,14 @@ describe('Career audit — F1 1990, 20 real-race seasons', () => {
   // --- Competitive balance ---------------------------------------------------
 
   it('produces dynasties without a permanent lockout', () => {
-    expect(report.distinctConstructorChampions).toBeGreaterThanOrEqual(4);
-    expect(report.topTeamTitleShare).toBeLessThanOrEqual(0.5);
+    expect(
+      report.distinctConstructorChampions,
+      `constructor titles: ${JSON.stringify(report.constructorTitlesByTeam)}; seasons: ${JSON.stringify(seasons.map((season) => ({ year: season.year, champion: season.constructorChampion?.name, avg: season.carRating.avg, max: season.carRating.max, upgrades: season.aiActivity.upgrades })))}`,
+    ).toBeGreaterThanOrEqual(4);
+    expect(
+      report.topTeamTitleShare,
+      `constructor titles: ${JSON.stringify(report.constructorTitlesByTeam)}`,
+    ).toBeLessThanOrEqual(0.5);
   });
 
   it('shows constructor mobility and evolving AI reputations', () => {
