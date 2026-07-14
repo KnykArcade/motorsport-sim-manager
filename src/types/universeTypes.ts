@@ -26,11 +26,27 @@ export type UniverseTeamRoster = {
   driverIds: string[];
 };
 
+export type UniverseChampionshipSeason = {
+  seasonYear: number;
+  series: Series;
+  completedRaces: number;
+  driverChampionId?: string;
+  driverChampionName?: string;
+  teamChampionId?: string;
+  teamChampionName?: string;
+  driverNames: Record<string, string>;
+  teamNames: Record<string, string>;
+  driverStandings: StandingsEntry[];
+  teamStandings: StandingsEntry[];
+};
+
 export type UniverseChampionshipState = {
   series: Series;
   seasonYear: number;
   teams: UniverseTeamRoster[];
   drivers: UniverseDriverContract[];
+  // Optional for saves created before off-screen championship simulation.
+  seasonHistory?: UniverseChampionshipSeason[];
 };
 
 export type MotorsportUniverseState = {

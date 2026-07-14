@@ -1,11 +1,13 @@
 import { availableSeasons } from '../data/seasonCatalog';
 import { getCachedBundle } from '../data/seasonLoader';
+import { getPointsSystem } from '../data/pointsSystems/pointsSystems';
 import { canonicalNameOf, getMasterRegistry, registryList } from '../data/registry/masterRegistry';
 import type { SeasonBundle } from '../data/seasonCatalog';
-import type { Driver, Series, Team } from '../types/gameTypes';
+import type { Driver, Series, StandingsEntry, Team } from '../types/gameTypes';
 import type { MasterDriverEntry } from '../types/registryTypes';
 import type {
   MotorsportUniverseState,
+  UniverseChampionshipSeason,
   UniverseChampionshipState,
   UniverseDriverContract,
   UniverseTeamRoster,
@@ -78,7 +80,7 @@ function championshipFromRoster(
     };
   });
 
-  return { series, seasonYear: year, teams: teamRosters, drivers: contracts };
+  return { series, seasonYear: year, teams: teamRosters, drivers: contracts, seasonHistory: [] };
 }
 
 function activeSeriesForYear(year: number): Series[] {
@@ -169,12 +171,146 @@ function eligibleCandidate(entry: MasterDriverEntry, year: number, occupiedNames
   return age == null || (age >= 18 && age <= 48);
 }
 
+function emptyStanding(entityId: string): StandingsEntry {
+  return { entityId, points: 0, wins: 0, podiums: 0, dnfs: 0 };
+}
+
+function sortedStandings(table: Map<string, StandingsEntry>): StandingsEntry[] {
+  return [...table.values()].sort(
+    (a, b) => b.points - a.points || b.wins - a.wins || b.podiums - a.podiums || a.entityId.localeCompare(b.entityId),
+  );
+}
+
+function normalizedOverall(contract: UniverseDriverContract, series: Series, year: number): number {
+  const registry = getMasterRegistry();
+  const entry = contract.registryDriverId
+    ? registry.byId[contract.registryDriverId]
+    : registryList(registry).find((candidate) => candidate.canonicalName === canonicalNameOf(contract.name));
+  if (!entry) return 50;
+  const snapshot = [...entry.baseRatingsByYear]
+    .filter((item) => item.series === series && item.year <= year)
+    .sort((a, b) => b.year - a.year)[0]
+    ?? [...entry.baseRatingsByYear].filter((item) => item.year <= year).sort((a, b) => b.year - a.year)[0];
+  const overall = snapshot?.overall ?? entry.baseRatings.overall;
+  return overall <= 10 ? overall * 10 : overall;
+}
+
+function retirementRate(series: Series, year: number): number {
+  if (series === 'NASCAR') return 0.1;
+  if (series === 'F1') return year < 2000 ? 0.18 : year < 2010 ? 0.12 : 0.08;
+  return year < 2000 ? 0.16 : 0.11;
+}
+
+function fallbackRaceCount(series: Series): number {
+  if (series === 'NASCAR') return 36;
+  if (series === 'F1') return 22;
+  return 17;
+}
+
+// A lightweight annual simulation for championships the player is not driving.
+// It produces real persisted standings without running every live-race subsystem.
+export function simulateOffscreenChampionshipSeason(
+  championship: UniverseChampionshipState,
+  seed: string,
+): UniverseChampionshipSeason {
+  const bundle = getCachedBundle(championship.seasonYear, championship.series);
+  const completedRaces = bundle?.season.calendar.length ?? fallbackRaceCount(championship.series);
+  const points = getPointsSystem(bundle?.season.pointsSystemId ?? 'pts-modern').pointsByPosition;
+  const driverTable = new Map(championship.drivers.map((driver) => [driver.driverId, emptyStanding(driver.driverId)]));
+  const teamTable = new Map(championship.teams.map((team) => [team.teamId, emptyStanding(team.teamId)]));
+  const teamById = new Map(championship.teams.map((team) => [team.teamId, team]));
+
+  for (let round = 1; round <= completedRaces; round += 1) {
+    const classified = championship.drivers.map((driver) => {
+      const team = teamById.get(driver.teamId);
+      const ability = normalizedOverall(driver, championship.series, championship.seasonYear);
+      const teamStrength = team?.reputation ?? 50;
+      const noise = hash01(`${seed}-${championship.seasonYear}-${championship.series}-${round}-${driver.driverId}-pace`);
+      const dnf = hash01(`${seed}-${championship.seasonYear}-${championship.series}-${round}-${driver.driverId}-dnf`)
+        < retirementRate(championship.series, championship.seasonYear);
+      return { driver, dnf, score: ability * 0.58 + teamStrength * 0.3 + noise * 24 };
+    }).sort((a, b) => Number(a.dnf) - Number(b.dnf) || b.score - a.score);
+
+    let finishingPosition = 0;
+    for (const result of classified) {
+      const driverStanding = driverTable.get(result.driver.driverId)!;
+      const teamStanding = teamTable.get(result.driver.teamId)!;
+      if (result.dnf) {
+        driverStanding.dnfs += 1;
+        teamStanding.dnfs += 1;
+        continue;
+      }
+      finishingPosition += 1;
+      const scored = points[finishingPosition] ?? 0;
+      driverStanding.points += scored;
+      teamStanding.points += scored;
+      if (finishingPosition === 1) {
+        driverStanding.wins += 1;
+        teamStanding.wins += 1;
+      }
+      if (finishingPosition <= 3) {
+        driverStanding.podiums += 1;
+        teamStanding.podiums += 1;
+      }
+    }
+  }
+
+  const driverStandings = sortedStandings(driverTable);
+  const teamStandings = sortedStandings(teamTable);
+  const driverChampionId = driverStandings[0]?.entityId;
+  const teamChampionId = teamStandings[0]?.entityId;
+  return {
+    seasonYear: championship.seasonYear,
+    series: championship.series,
+    completedRaces,
+    driverChampionId,
+    driverChampionName: championship.drivers.find((driver) => driver.driverId === driverChampionId)?.name,
+    teamChampionId,
+    teamChampionName: championship.teams.find((team) => team.teamId === teamChampionId)?.name,
+    driverNames: Object.fromEntries(championship.drivers.map((driver) => [driver.driverId, driver.name])),
+    teamNames: Object.fromEntries(championship.teams.map((team) => [team.teamId, team.name])),
+    driverStandings,
+    teamStandings,
+  };
+}
+
+export function performanceRenewalProbability(
+  contract: UniverseDriverContract,
+  completedSeason: UniverseChampionshipSeason,
+  team: UniverseTeamRoster | undefined,
+): number {
+  const index = completedSeason.driverStandings.findIndex((standing) => standing.entityId === contract.driverId);
+  const fieldSize = Math.max(2, completedSeason.driverStandings.length);
+  const performance = index < 0 ? 0.5 : 1 - index / (fieldSize - 1);
+  return Math.min(0.92, 0.32 + performance * 0.48 + (team?.reputation ?? 50) / 1000);
+}
+
+function selectedSeasonSummary(state: GameState): UniverseChampionshipSeason | undefined {
+  if (state.driverStandings.length === 0 || state.constructorStandings.length === 0) return undefined;
+  const driverChampionId = state.driverStandings[0]?.entityId;
+  const teamChampionId = state.constructorStandings[0]?.entityId;
+  return {
+    seasonYear: state.seasonYear,
+    series: state.series,
+    completedRaces: Object.keys(state.completedRaceResults).length,
+    driverChampionId,
+    driverChampionName: state.drivers.find((driver) => driver.id === driverChampionId)?.name,
+    teamChampionId,
+    teamChampionName: state.teams.find((team) => team.id === teamChampionId)?.name,
+    driverNames: Object.fromEntries(state.drivers.map((driver) => [driver.id, driver.name])),
+    teamNames: Object.fromEntries(state.teams.map((team) => [team.id, team.name])),
+    driverStandings: state.driverStandings,
+    teamStandings: state.constructorStandings,
+  };
+}
+
 function advanceOffscreenChampionship(
   current: UniverseChampionshipState,
   nextYear: number,
   occupiedNames: Set<string>,
   seed: string,
 ): UniverseChampionshipState {
+  const completedSeason = simulateOffscreenChampionshipSeason(current, seed);
   const drivers: UniverseDriverContract[] = [];
   const retainedByTeam = new Map<string, UniverseDriverContract[]>();
   const retainedNames = new Set<string>();
@@ -182,7 +318,9 @@ function advanceOffscreenChampionship(
   for (const contract of current.drivers) {
     const nameKey = canonicalNameOf(contract.name);
     const yearsLeft = contract.contractYearsRemaining - 1;
-    const renew = yearsLeft <= 0 && hash01(`${seed}-${nextYear}-renew-${contract.driverId}`) < 0.58;
+    const team = current.teams.find((candidate) => candidate.teamId === contract.teamId);
+    const renew = yearsLeft <= 0
+      && hash01(`${seed}-${nextYear}-renew-${contract.driverId}`) < performanceRenewalProbability(contract, completedSeason, team);
     if (yearsLeft <= 0 && !renew) continue;
     // Existing concurrent cross-series contracts are valid. Only block a
     // duplicate seat inside this same championship.
@@ -205,7 +343,13 @@ function advanceOffscreenChampionship(
     .filter((entry) => eligibleCandidate(entry, nextYear, occupiedNames))
     .sort((a, b) => candidateScore(b, current.series, nextYear, seed) - candidateScore(a, current.series, nextYear, seed));
 
-  const teams = current.teams.map((team) => {
+  const teamOrder = [...current.teams].sort((a, b) => {
+    const aPosition = completedSeason.teamStandings.findIndex((standing) => standing.entityId === a.teamId);
+    const bPosition = completedSeason.teamStandings.findIndex((standing) => standing.entityId === b.teamId);
+    return aPosition - bPosition;
+  });
+  const updatedTeams = new Map<string, UniverseTeamRoster>();
+  for (const team of teamOrder) {
     const teamDrivers = retainedByTeam.get(team.teamId) ?? [];
     while (teamDrivers.length < team.seatCount) {
       const candidateIndex = candidates.findIndex((entry) => eligibleCandidate(entry, nextYear, occupiedNames));
@@ -223,10 +367,17 @@ function advanceOffscreenChampionship(
       teamDrivers.push(contract);
       drivers.push(contract);
     }
-    return { ...team, driverIds: teamDrivers.map((driver) => driver.driverId) };
-  });
+    updatedTeams.set(team.teamId, { ...team, driverIds: teamDrivers.map((driver) => driver.driverId) });
+  }
+  const teams = current.teams.map((team) => updatedTeams.get(team.teamId) ?? team);
 
-  return { ...current, seasonYear: nextYear, teams, drivers };
+  return {
+    ...current,
+    seasonYear: nextYear,
+    teams,
+    drivers,
+    seasonHistory: [...(current.seasonHistory ?? []), completedSeason].slice(-50),
+  };
 }
 
 export function advanceMotorsportUniverse(
@@ -242,7 +393,7 @@ export function advanceMotorsportUniverse(
 
   const occupiedNames = new Set<string>();
   const championships: Partial<Record<Series, UniverseChampionshipState>> = {};
-  championships[state.series] = championshipFromRoster(
+  const selectedChampionship = championshipFromRoster(
     nextYear,
     state.series,
     selectedTeams,
@@ -250,6 +401,12 @@ export function advanceMotorsportUniverse(
     occupiedNames,
     state.randomSeed,
   );
+  const completedSelectedSeason = selectedSeasonSummary(state);
+  const priorSelectedHistory = current.championships[state.series]?.seasonHistory ?? [];
+  selectedChampionship.seasonHistory = completedSelectedSeason
+    ? [...priorSelectedHistory, completedSelectedSeason].slice(-50)
+    : priorSelectedHistory;
+  championships[state.series] = selectedChampionship;
 
   const catalogSeries = activeSeriesForYear(nextYear);
   // After the final historical season, keep the existing championships alive

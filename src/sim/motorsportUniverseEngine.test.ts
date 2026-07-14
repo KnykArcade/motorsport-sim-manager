@@ -5,7 +5,12 @@ import { createNewGame } from '../game/initialCareer';
 import { advanceSeason } from '../game/seasonRollover';
 import type { GameState } from '../game/careerState';
 import { careerMarketBundle } from './careerMarketEngine';
-import { ensureMotorsportUniverse, universeOccupiedNames } from './motorsportUniverseEngine';
+import {
+  ensureMotorsportUniverse,
+  performanceRenewalProbability,
+  simulateOffscreenChampionshipSeason,
+  universeOccupiedNames,
+} from './motorsportUniverseEngine';
 
 function career(year = 1998): GameState {
   const bundle = getSeasonBundle(year, 'F1')!;
@@ -72,6 +77,31 @@ describe('persistent multi-series universe', () => {
     }
   });
 
+  it('simulates deterministic off-screen standings using the real season length', () => {
+    const championship = career().motorsportUniverse!.championships.NASCAR!;
+    const first = simulateOffscreenChampionshipSeason(championship, 'standings-seed');
+    const second = simulateOffscreenChampionshipSeason(championship, 'standings-seed');
+    expect(second).toEqual(first);
+    expect(first.completedRaces).toBe(getSeasonBundle(1998, 'NASCAR')!.season.calendar.length);
+    expect(first.driverStandings).toHaveLength(championship.drivers.length);
+    expect(first.teamStandings).toHaveLength(championship.teams.length);
+    expect(first.driverChampionId).toBe(first.driverStandings[0].entityId);
+    expect(first.teamChampionId).toBe(first.teamStandings[0].entityId);
+    expect(first.driverStandings.reduce((wins, standing) => wins + standing.wins, 0)).toBe(first.completedRaces);
+  });
+
+  it('gives stronger performers a better renewal chance', () => {
+    const championship = career().motorsportUniverse!.championships.CART!;
+    const summary = simulateOffscreenChampionshipSeason(championship, 'renewal-seed');
+    const champion = championship.drivers.find((driver) => driver.driverId === summary.driverStandings[0].entityId)!;
+    const last = championship.drivers.find((driver) => driver.driverId === summary.driverStandings.at(-1)!.entityId)!;
+    const championTeam = championship.teams.find((team) => team.teamId === champion.teamId);
+    const lastTeam = championship.teams.find((team) => team.teamId === last.teamId);
+    expect(performanceRenewalProbability(champion, summary, championTeam)).toBeGreaterThan(
+      performanceRenewalProbability(last, summary, lastTeam),
+    );
+  });
+
   it('advances off-screen contracts and keeps the selected series synchronized', () => {
     const before = career();
     const after = advanceSeason({ ...before, seasonComplete: true });
@@ -80,6 +110,8 @@ describe('persistent multi-series universe', () => {
       expect(championship!.seasonYear).toBe(1999);
       expect(championship!.drivers.every((driver) => driver.contractYearsRemaining >= 1)).toBe(true);
     }
+    expect(after.motorsportUniverse!.championships.NASCAR!.seasonHistory).toHaveLength(1);
+    expect(after.motorsportUniverse!.championships.CART!.seasonHistory?.[0].seasonYear).toBe(1998);
     const selectedNames = new Set(after.drivers.map((driver) => canonicalNameOf(driver.name)));
     const universeSelectedNames = new Set(
       after.motorsportUniverse!.championships.F1!.drivers.map((driver) => canonicalNameOf(driver.name)),
