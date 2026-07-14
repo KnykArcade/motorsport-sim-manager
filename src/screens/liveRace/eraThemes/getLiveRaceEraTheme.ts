@@ -12,10 +12,8 @@ export function getLiveRaceEraTheme(
 }
 
 export function shouldUseF11990sLiveRaceScreen(
-  _series: Series | string | undefined | null,
-  _year: number | undefined | null,
+  series: Series | string | undefined | null,
+  year: number | undefined | null,
 ): boolean {
-  void _series;
-  void _year;
-  return true;
+  return series === 'F1' && typeof year === 'number' && year >= 1990 && year <= 1999;
 }
