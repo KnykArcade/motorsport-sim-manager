@@ -20,6 +20,7 @@ import type { RaceResult } from '../types/gameTypes';
 import type { FinanceTransaction } from '../types/financeTypes';
 import type { RacePrepFocusEffect } from '../types/simTypes';
 import { createSeededRandom, deriveSeed } from '../sim/random';
+import { planAITechnicalPrograms } from '../sim/aiTechnicalDirectorEngine';
 
 export function defaultCareerPhaseState(): CareerPhaseState {
   return {
@@ -288,10 +289,15 @@ export function processAITeamActivity(state: GameState): GameState {
   const phaseState = getOrCreatePhaseState(state);
   if (phaseState.aiActionsProcessedForCurrentWeek) return state;
 
-  const aiStates = state.aiTeamStates ?? {};
   const aiTeams = state.teams.filter((t) => t.id !== state.selectedTeamId);
   const aiNews: typeof state.news = [];
-  let cars = [...state.cars];
+
+  if (aiTeams.length === 0) {
+    return {
+      ...state,
+      careerPhase: { ...phaseState, aiActionsProcessedForCurrentWeek: true },
+    };
+  }
 
   // Seeded RNG based on save seed, season year, round, and paddock week ID.
   // This makes AI activity deterministic for the same save/week — reproducible
@@ -311,6 +317,10 @@ export function processAITeamActivity(state: GameState): GameState {
     const idx = (startIndex + i) % aiTeams.length;
     teamsToProcess.push(aiTeams[idx]);
   }
+
+  const planned = planAITechnicalPrograms(state, teamsToProcess.map((team) => team.id));
+  const aiStates = planned.aiTeamStates ?? {};
+  const cars = [...planned.cars];
 
   for (const aiTeam of teamsToProcess) {
     const aiState = aiStates[aiTeam.id];
@@ -335,68 +345,27 @@ export function processAITeamActivity(state: GameState): GameState {
             ? archetype === 'AggressiveSpender' ? 0.35 : archetype === 'DevelopmentFocused' ? 0.25 : 0.08
             : 0;
     if (developmentBudget >= 1_000_000 && developmentChance > 0 && rng.chance(developmentChance)) {
-      // Aggressive teams push development: small car stat improvement.
-      const improvement = rng.range(1, 4);
-      const statRoll = rng.next();
-      const stat =
-        statRoll < 0.4 ? 'enginePower'
-        : statRoll < 0.75 ? 'aeroEfficiency'
-        : statRoll < 0.9 ? 'mechanicalGrip'
-        : 'pitCrewOperations';
-      cars = cars.map((c) =>
-        c.teamId === aiTeam.id
-          ? {
-              ...c,
-              developmentLevel: {
-                ...c.developmentLevel,
-                [stat]: clamp10((c.developmentLevel as Record<string, number>)[stat] + improvement),
-              },
-            }
-          : c,
-      );
+      // The technical director has already committed budget through the shared
+      // R&D/parts systems above. Paddock-week activity reports that decision;
+      // performance only changes when the project actually completes.
+      const activeProject = planned.teamResearch?.[aiTeam.id]?.activeProjects.at(-1);
       isRealChange = true;
-      newsHeadline = `${aiTeam.name} brings upgrade to next race`;
-      const statLabel: Record<typeof stat, string> = {
-        enginePower: 'Engine power',
-        aeroEfficiency: 'Aero efficiency',
-        mechanicalGrip: 'Mechanical grip',
-        pitCrewOperations: 'Pit-crew operations',
-      };
-      newsBody = `${aiTeam.name} has completed a development push. ${statLabel[stat]} improved by ${improvement.toFixed(2)}.`;
+      newsHeadline = `${aiTeam.name} advances its technical program`;
+      newsBody = activeProject
+        ? `${aiTeam.name} is working on ${activeProject.nodeName ?? activeProject.nodeId}.`
+        : `${aiTeam.name} has prioritized component preparation and factory work.`;
     } else if (ratings.reliability < 50 && rng.chance(0.4)) {
-      // Struggling teams fix reliability: small reliability improvement.
-      const improvement = rng.range(1, 4);
-      cars = cars.map((c) =>
-        c.teamId === aiTeam.id
-          ? {
-              ...c,
-              developmentLevel: {
-                ...c.developmentLevel,
-                reliability: clamp10(c.developmentLevel.reliability + improvement),
-              },
-            }
-          : c,
-      );
+      // Reliability concerns steer real research/component decisions rather
+      // than granting an instant hidden stat increase.
       isRealChange = true;
       newsHeadline = `${aiTeam.name} addresses reliability concerns`;
-      newsBody = `${aiTeam.name} has worked on reliability. Rating improved by ${improvement.toFixed(2)} to ${(ratings.reliability + improvement).toFixed(1)}.`;
+      newsBody = planned.aiTeamStates?.[aiTeam.id]?.lastTechnicalDecision
+        ?? `${aiTeam.name} has prioritized reliability work.`;
     } else if (rng.chance(0.15)) {
-      // Rare reliability setback.
-      const setback = rng.range(0.1, 0.3);
-      cars = cars.map((c) =>
-        c.teamId === aiTeam.id
-          ? {
-              ...c,
-              developmentLevel: {
-                ...c.developmentLevel,
-                reliability: clamp10(c.developmentLevel.reliability - setback),
-              },
-            }
-          : c,
-      );
-      isRealChange = true;
+      // Project failures/backfires are resolved by the deterministic R&D
+      // outcome engine; this is only the public paddock report.
       newsHeadline = `${aiTeam.name} suffers setback in testing`;
-      newsBody = `${aiTeam.name} encountered reliability issues. Rating dropped by ${setback.toFixed(2)} to ${(ratings.reliability - setback).toFixed(1)}.`;
+      newsBody = `${aiTeam.name} reports a difficult technical week without a usable upgrade.`;
     } else if (aiState && (aiState.financialHealth === 'Critical' || aiState.financialHealth === 'AtRisk') && rng.chance(0.3)) {
       // Financial trouble — no car change, but news.
       newsHeadline = `${aiTeam.name} facing financial difficulties`;
@@ -431,9 +400,9 @@ export function processAITeamActivity(state: GameState): GameState {
   }
 
   return {
-    ...state,
+    ...planned,
     cars,
-    news: [...aiNews, ...state.news].slice(0, 80),
+    news: [...aiNews, ...planned.news].slice(0, 80),
     careerPhase: {
       ...phaseState,
       aiActionsProcessedForCurrentWeek: true,

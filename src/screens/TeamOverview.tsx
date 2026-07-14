@@ -364,6 +364,25 @@ function TeamDetail({
             )}
           </div>
 
+          <div className="rounded-lg border border-neutral-800 bg-neutral-900/40 p-3">
+            <div className="mb-2 text-[10px] font-semibold uppercase tracking-wide text-neutral-500">
+              Technical program
+            </div>
+            <div className="grid grid-cols-2 gap-x-6 gap-y-1 text-sm">
+              <Line label="R&D focus" value={detail.technicalProgram.focus?.replace('_', ' ') ?? 'Not selected'} />
+              <Line label="Active projects" value={String(detail.technicalProgram.activeProjects)} />
+              <Line label="Completed projects" value={String(detail.technicalProgram.completedProjects)} />
+              <Line label="Factory orders" value={String(detail.technicalProgram.factoryOrders)} />
+              <Line label="Technical spend" value={formatMoney(detail.technicalProgram.spend)} />
+              <Line label="Critical fitted parts" value={String(detail.technicalProgram.criticalParts)} />
+            </div>
+            {detail.technicalProgram.lastDecision && (
+              <div className="mt-2 text-xs text-neutral-400">
+                Latest: <span className="text-neutral-200">{detail.technicalProgram.lastDecision}</span>
+              </div>
+            )}
+          </div>
+
           <div>
             <div className="mb-1 text-xs uppercase tracking-wide text-neutral-500">Strengths</div>
             <div className="flex flex-wrap gap-2">

@@ -33,6 +33,7 @@ import { normalizeName } from '../src/data/registry/masterRegistry';
 import type { Entrant, RaceContext, QualifyingContext } from '../src/types/simTypes';
 import type { RaceResult } from '../src/types/gameTypes';
 import type { AIFinancialHealth } from '../src/types/aiTeamTypes';
+import { progressAITechnicalProgramsAfterRace } from '../src/sim/aiTechnicalDirectorEngine';
 
 const MARKET_TAGS = [
   'contract watch',
@@ -138,7 +139,6 @@ function simulateSeason(
     const activityHeadlines = workingState.news
       .filter((n) => !previousNews.includes(n))
       .map((n) => n.headline);
-    upgrades += activityHeadlines.filter((h) => h.includes('brings upgrade')).length;
     reliabilityFixes += activityHeadlines.filter((h) => h.includes('addresses reliability')).length;
     setbacks += activityHeadlines.filter((h) => h.includes('suffers setback')).length;
     const carByTeam = new Map(workingState.cars.map((c) => [c.teamId, c]));
@@ -192,6 +192,17 @@ function simulateSeason(
     };
     const { results } = simulateRace(rCtx);
     byRace[race.id] = results;
+    const completedBefore = Object.values(workingState.teamResearch ?? {})
+      .reduce((sum, research) => sum + research.completedNodes.length, 0);
+    workingState = progressAITechnicalProgramsAfterRace(
+      workingState,
+      race,
+      results,
+      track,
+    ).state;
+    const completedAfter = Object.values(workingState.teamResearch ?? {})
+      .reduce((sum, research) => sum + research.completedNodes.length, 0);
+    upgrades += Math.max(0, completedAfter - completedBefore);
   }
   return { results: byRace, state: workingState, activity: { upgrades, reliabilityFixes, setbacks } };
 }
