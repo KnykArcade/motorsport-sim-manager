@@ -38,6 +38,7 @@ import { packageEffects as getPackageEffects } from '../sim/raceWeekendPackageEn
 import { confidencePerformanceModifier } from '../sim/driverConfidenceEngine';
 import { applyLeadershipPreparationModifier } from '../sim/phase18IdentityCultureEngine';
 import { applyPreseasonCarModifier } from '../sim/phase18PreseasonEngine';
+import { applyFailureRiskModifier } from '../sim/phase18FailureInvestigationEngine';
 import type { LiveRaceMeta, LiveRaceOptions } from '../sim/liveRaceEngine';
 import { computeRacePrepFocusEffect, getOrCreatePhaseState } from './careerPhaseEngine';
 
@@ -140,7 +141,7 @@ export function buildRaceContext(
       if (didNotQualify.has(driver.id)) continue;
       entrants.push({
         driver,
-        car: applyPreseasonCarModifier(state, carWithFittedParts(car, state.teamParts?.[team.id], driver.id)),
+        car: applyFailureRiskModifier(state, applyPreseasonCarModifier(state, carWithFittedParts(car, state.teamParts?.[team.id], driver.id))),
       });
     }
   }

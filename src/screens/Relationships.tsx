@@ -131,6 +131,7 @@ function loyaltyRiskText(modifier: number): string {
 }
 
 export function Relationships() {
+  const [activeSection, setActiveSection] = useState<'race' | 'reserve' | 'clauses' | 'orders'>('race');
   const { state, dispatch } = useGame();
   if (!state) return null;
 
@@ -173,8 +174,12 @@ export function Relationships() {
         </p>
       </div>
 
+      <div className="flex flex-wrap gap-1 rounded-lg border border-neutral-800 bg-neutral-950/70 p-1">
+        {([['race', 'Race Drivers'], ['reserve', `Reserve (${reserveDrivers.length})`], ['clauses', `Clauses & Promises (${contractClauses.length})`], ['orders', `Team Orders (${orders.length})`]] as const).map(([id, label]) => <button key={id} type="button" onClick={() => setActiveSection(id)} className={`rounded px-3 py-2 text-xs font-semibold ${activeSection === id ? 'bg-amber-500 text-neutral-950' : 'text-neutral-400 hover:bg-neutral-800 hover:text-neutral-100'}`}>{label}</button>)}
+      </div>
+
       {/* Race Drivers Section */}
-      <div>
+      {activeSection === 'race' && <div>
         <h2 className="mb-3 text-sm font-semibold uppercase text-neutral-500">Race Drivers</h2>
         <div className="grid gap-4 lg:grid-cols-2">
           {activeDrivers.map((d) => {
@@ -205,10 +210,10 @@ export function Relationships() {
             );
           })}
         </div>
-      </div>
+      </div>}
 
       {/* Reserve / Third Driver Section */}
-      {reserveDrivers.length > 0 && (
+      {activeSection === 'reserve' && reserveDrivers.length > 0 && (
         <div>
           <h2 className="mb-3 text-sm font-semibold uppercase text-neutral-500">Reserve / Third Driver</h2>
           <div className="grid gap-4 lg:grid-cols-2">
@@ -241,15 +246,16 @@ export function Relationships() {
           </div>
         </div>
       )}
+      {activeSection === 'reserve' && reserveDrivers.length === 0 && <Panel title="Reserve / Third Driver"><p className="text-sm text-neutral-500">No reserve or third driver is currently signed.</p></Panel>}
 
       {/* Empty state if no drivers */}
-      {teamDrivers.length === 0 && (
+      {activeSection === 'race' && teamDrivers.length === 0 && (
         <Panel title="No Drivers">
           <p className="text-sm text-neutral-400">Your team has no drivers signed.</p>
         </Panel>
       )}
 
-      <Panel title="Contract Clauses & Promise Links">
+      {activeSection === 'clauses' && <Panel title="Contract Clauses & Promise Links">
         <p className="mb-3 text-xs text-neutral-400">
           These are binding management commitments. A linked promise updates the clause automatically; a breach affects trust, morale and future negotiations.
         </p>
@@ -278,9 +284,9 @@ export function Relationships() {
             ))}
           </div>
         )}
-      </Panel>
+      </Panel>}
 
-      <Panel title="Team-Order Log (this season)">
+      {activeSection === 'orders' && <Panel title="Team-Order Log (this season)">
         {orders.length === 0 ? (
           <p className="text-sm text-neutral-400">
             No team orders issued yet. Call them from the Live Race pit wall.
@@ -303,7 +309,7 @@ export function Relationships() {
             ))}
           </ul>
         )}
-      </Panel>
+      </Panel>}
     </div>
   );
 }

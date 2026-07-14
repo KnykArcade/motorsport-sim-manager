@@ -78,6 +78,7 @@ import { ensurePhase18FoundationState } from '../sim/phase18FoundationEngine';
 import { ensureContractClauses } from '../sim/phase18ContractClauseEngine';
 import { rolloverIntelligenceReports } from '../sim/phase18IntelligenceEngine';
 import { ensurePreseasonHubState } from '../sim/phase18PreseasonEngine';
+import { ensureFailureInvestigationState } from '../sim/phase18FailureInvestigationEngine';
 import { updateTeamMemory } from '../sim/teamIdentityEngine';
 import type { TeamMemoryEntry } from '../types/aiTeamTypes';
 import { runAIOffseason, makeRookieDriver } from '../sim/aiOffseasonEngine';
@@ -1490,10 +1491,10 @@ export function advanceSeason(state: GameState, nextBundle?: SeasonBundle): Game
       // The player/AI ownership map changes with the move, so regenerate the
       // new season's programmes after the destination team is known.
       movedState.phase18 = { ...movedState.phase18!, preseason: undefined };
-      return ensurePreseasonHubState(movedState);
+      return ensureFailureInvestigationState(ensurePreseasonHubState(movedState));
     }
   }
-  return ensurePreseasonHubState(nextState);
+  return ensureFailureInvestigationState(ensurePreseasonHubState(nextState));
 }
 
 // Switch the player to a new team after a principal move: rebuild the

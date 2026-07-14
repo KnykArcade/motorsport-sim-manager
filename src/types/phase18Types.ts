@@ -208,6 +208,39 @@ export type PreseasonHubState = {
   rivalReports: PreseasonRivalReport[];
 };
 
+export type FailureTrigger = 'MechanicalFailure' | 'CrashDamage' | 'TyreFailure' | 'OperationsError' | 'DriverMistake' | 'LegalityConcern';
+export type FailureRootCause = 'DriverError' | 'PartWear' | 'ManufacturingFlaw' | 'DesignWeakness' | 'SetupAggression' | 'SupplierIssue' | 'OperationsError' | 'UnluckyIncident' | 'LegalityPressure' | 'Unknown';
+export type FailureInvestigationLevel = 'QuickReview' | 'StandardInvestigation' | 'FullTechnicalInvestigation';
+export type FailureResponse = 'RepairProperly' | 'RushRepair' | 'ReplacePart' | 'DetunePackage' | 'DefendDriver' | 'BlameSupplier' | 'HideIssue';
+
+export type FailureInvestigationCase = {
+  id: string;
+  seasonYear: number;
+  round: number;
+  raceId: string;
+  teamId: string;
+  driverId?: string;
+  trigger: FailureTrigger;
+  incidentSummary: string;
+  suspectedCause: FailureRootCause;
+  hiddenRootCause: FailureRootCause;
+  status: 'AwaitingInvestigation' | 'FindingsReady' | 'Resolved' | 'Minimized';
+  investigationLevel?: FailureInvestigationLevel;
+  finding?: FailureRootCause;
+  confidence: number;
+  repeatedIssueCount: number;
+  unresolvedRisk: number;
+  response?: FailureResponse;
+  consequenceSummary?: string;
+  aiDecisionReason?: string;
+};
+
+export type FailureInvestigationState = {
+  cases: FailureInvestigationCase[];
+  repeatedIssueCounters: Record<string, number>;
+  history: string[];
+};
+
 export type ContractPartyType = 'Driver' | 'Staff' | 'TeamPrincipal';
 
 export type ContractClauseType =
@@ -412,6 +445,7 @@ export type Phase18FoundationState = {
   departmentMoods: Record<string, Record<DepartmentId, DepartmentMood>>;
   intelligenceReports: IntelligenceReport[];
   preseason?: PreseasonHubState;
+  failureInvestigations?: FailureInvestigationState;
   contractClauses: ContractClause[];
   teamCultures: Record<string, TeamCultureState>;
   rivalRelationships: Record<string, RivalRelationship>;
