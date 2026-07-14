@@ -121,6 +121,36 @@ describe('persistent multi-series universe', () => {
       const names = championship!.drivers.map((driver) => canonicalNameOf(driver.name));
       expect(new Set(names).size).toBe(names.length);
     }
+    expect(after.motorsportUniverse!.championships.NASCAR!.movementHistory?.length).toBeGreaterThan(0);
+    expect(
+      after.motorsportUniverse!.championships.NASCAR!.movementHistory?.every(
+        (movement) => movement.effectiveYear === 1999 && movement.driverName.length > 0,
+      ),
+    ).toBe(true);
+  });
+
+  it('does not create new cross-series double-signings during rollover', () => {
+    const before = career();
+    const memberships = (state: GameState) => {
+      const result = new Map<string, Set<string>>();
+      for (const [series, championship] of Object.entries(state.motorsportUniverse!.championships)) {
+        for (const driver of championship!.drivers) {
+          const name = canonicalNameOf(driver.name);
+          const seriesSet = result.get(name) ?? new Set<string>();
+          seriesSet.add(series);
+          result.set(name, seriesSet);
+        }
+      }
+      return result;
+    };
+    const beforeMemberships = memberships(before);
+    const after = advanceSeason({ ...before, seasonComplete: true });
+    for (const [name, seriesSet] of memberships(after)) {
+      if (seriesSet.size <= 1) continue;
+      const priorSeries = beforeMemberships.get(name) ?? new Set<string>();
+      expect(priorSeries.size).toBeGreaterThan(1);
+      expect([...seriesSet].every((series) => priorSeries.has(series))).toBe(true);
+    }
   });
 
   it('backfills a legacy save after registry initialization', () => {

@@ -10,6 +10,7 @@ import type {
   UniverseChampionshipSeason,
   UniverseChampionshipState,
   UniverseDriverContract,
+  UniverseDriverMovement,
   UniverseTeamRoster,
 } from '../types/universeTypes';
 import type { GameState } from '../game/careerState';
@@ -80,7 +81,72 @@ function championshipFromRoster(
     };
   });
 
-  return { series, seasonYear: year, teams: teamRosters, drivers: contracts, seasonHistory: [] };
+  return {
+    series,
+    seasonYear: year,
+    teams: teamRosters,
+    drivers: contracts,
+    seasonHistory: [],
+    movementHistory: [],
+  };
+}
+
+function movementId(
+  year: number,
+  series: Series,
+  kind: UniverseDriverMovement['kind'],
+  driverId: string,
+  teamId?: string,
+): string {
+  return `${year}-${series}-${kind}-${driverId}-${teamId ?? 'market'}`;
+}
+
+function compareRosters(
+  previous: UniverseChampionshipState | undefined,
+  next: UniverseChampionshipState,
+  effectiveYear: number,
+): UniverseDriverMovement[] {
+  if (!previous) return [];
+  const priorByName = new Map(previous.drivers.map((driver) => [canonicalNameOf(driver.name), driver]));
+  const nextByName = new Map(next.drivers.map((driver) => [canonicalNameOf(driver.name), driver]));
+  const priorTeams = new Map(previous.teams.map((team) => [team.teamId, team.name]));
+  const nextTeams = new Map(next.teams.map((team) => [team.teamId, team.name]));
+  const movements: UniverseDriverMovement[] = [];
+
+  for (const driver of next.drivers) {
+    const prior = priorByName.get(canonicalNameOf(driver.name));
+    if (prior?.teamId === driver.teamId) continue;
+    const kind = prior ? 'transfer' : 'signing';
+    movements.push({
+      id: movementId(effectiveYear, next.series, kind, driver.driverId, driver.teamId),
+      effectiveYear,
+      series: next.series,
+      kind,
+      driverId: driver.driverId,
+      driverName: driver.name,
+      fromTeamId: prior?.teamId,
+      fromTeamName: prior ? priorTeams.get(prior.teamId) : undefined,
+      toTeamId: driver.teamId,
+      toTeamName: nextTeams.get(driver.teamId),
+      contractYears: driver.contractYearsRemaining,
+    });
+  }
+
+  for (const driver of previous.drivers) {
+    if (nextByName.has(canonicalNameOf(driver.name))) continue;
+    movements.push({
+      id: movementId(effectiveYear, next.series, 'release', driver.driverId, driver.teamId),
+      effectiveYear,
+      series: next.series,
+      kind: 'release',
+      driverId: driver.driverId,
+      driverName: driver.name,
+      fromTeamId: driver.teamId,
+      fromTeamName: priorTeams.get(driver.teamId),
+    });
+  }
+
+  return movements;
 }
 
 function activeSeriesForYear(year: number): Series[] {
@@ -314,6 +380,9 @@ function advanceOffscreenChampionship(
   const drivers: UniverseDriverContract[] = [];
   const retainedByTeam = new Map<string, UniverseDriverContract[]>();
   const retainedNames = new Set<string>();
+  const teamNames = new Map(current.teams.map((team) => [team.teamId, team.name]));
+  const priorByCanonicalName = new Map(current.drivers.map((driver) => [canonicalNameOf(driver.name), driver]));
+  const movementByDriverName = new Map<string, UniverseDriverMovement>();
 
   for (const contract of current.drivers) {
     const nameKey = canonicalNameOf(contract.name);
@@ -321,7 +390,19 @@ function advanceOffscreenChampionship(
     const team = current.teams.find((candidate) => candidate.teamId === contract.teamId);
     const renew = yearsLeft <= 0
       && hash01(`${seed}-${nextYear}-renew-${contract.driverId}`) < performanceRenewalProbability(contract, completedSeason, team);
-    if (yearsLeft <= 0 && !renew) continue;
+    if (yearsLeft <= 0 && !renew) {
+      movementByDriverName.set(nameKey, {
+        id: movementId(nextYear, current.series, 'release', contract.driverId, contract.teamId),
+        effectiveYear: nextYear,
+        series: current.series,
+        kind: 'release',
+        driverId: contract.driverId,
+        driverName: contract.name,
+        fromTeamId: contract.teamId,
+        fromTeamName: teamNames.get(contract.teamId),
+      });
+      continue;
+    }
     // Existing concurrent cross-series contracts are valid. Only block a
     // duplicate seat inside this same championship.
     if (retainedNames.has(nameKey)) continue;
@@ -332,6 +413,21 @@ function advanceOffscreenChampionship(
         ? 1 + Math.floor(hash01(`${seed}-${nextYear}-term-${contract.driverId}`) * 3)
         : yearsLeft,
     };
+    if (renew) {
+      movementByDriverName.set(nameKey, {
+        id: movementId(nextYear, current.series, 'renewal', contract.driverId, contract.teamId),
+        effectiveYear: nextYear,
+        series: current.series,
+        kind: 'renewal',
+        driverId: contract.driverId,
+        driverName: contract.name,
+        fromTeamId: contract.teamId,
+        fromTeamName: teamNames.get(contract.teamId),
+        toTeamId: contract.teamId,
+        toTeamName: teamNames.get(contract.teamId),
+        contractYears: retained.contractYearsRemaining,
+      });
+    }
     occupiedNames.add(nameKey);
     drivers.push(retained);
     const teamDrivers = retainedByTeam.get(retained.teamId) ?? [];
@@ -363,6 +459,22 @@ function advanceOffscreenChampionship(
         series: current.series,
         contractYearsRemaining: 1 + Math.floor(hash01(`${seed}-${nextYear}-sign-${entry.driverId}`) * 3),
       };
+      const nameKey = entry.canonicalName;
+      const prior = priorByCanonicalName.get(nameKey);
+      const kind: UniverseDriverMovement['kind'] = prior && prior.teamId !== team.teamId ? 'transfer' : 'signing';
+      movementByDriverName.set(nameKey, {
+        id: movementId(nextYear, current.series, kind, contract.driverId, team.teamId),
+        effectiveYear: nextYear,
+        series: current.series,
+        kind,
+        driverId: contract.driverId,
+        driverName: contract.name,
+        fromTeamId: prior?.teamId,
+        fromTeamName: prior ? teamNames.get(prior.teamId) : undefined,
+        toTeamId: team.teamId,
+        toTeamName: team.name,
+        contractYears: contract.contractYearsRemaining,
+      });
       occupiedNames.add(entry.canonicalName);
       teamDrivers.push(contract);
       drivers.push(contract);
@@ -377,6 +489,7 @@ function advanceOffscreenChampionship(
     teams,
     drivers,
     seasonHistory: [...(current.seasonHistory ?? []), completedSeason].slice(-50),
+    movementHistory: [...(current.movementHistory ?? []), ...movementByDriverName.values()].slice(-200),
   };
 }
 
@@ -391,14 +504,14 @@ export function advanceMotorsportUniverse(
   const selectedBundle = getCachedBundle(nextYear, state.series) ?? getCachedBundle(state.seasonYear, state.series);
   if (!current || !selectedBundle) return current;
 
-  const occupiedNames = new Set<string>();
   const championships: Partial<Record<Series, UniverseChampionshipState>> = {};
+  const selectedOccupiedNames = new Set<string>();
   const selectedChampionship = championshipFromRoster(
     nextYear,
     state.series,
     selectedTeams,
     selectedDrivers,
-    occupiedNames,
+    selectedOccupiedNames,
     state.randomSeed,
   );
   const completedSelectedSeason = selectedSeasonSummary(state);
@@ -406,6 +519,11 @@ export function advanceMotorsportUniverse(
   selectedChampionship.seasonHistory = completedSelectedSeason
     ? [...priorSelectedHistory, completedSelectedSeason].slice(-50)
     : priorSelectedHistory;
+  const priorSelected = current.championships[state.series];
+  selectedChampionship.movementHistory = [
+    ...(priorSelected?.movementHistory ?? []),
+    ...compareRosters(priorSelected, selectedChampionship, nextYear),
+  ].slice(-200);
   championships[state.series] = selectedChampionship;
 
   const catalogSeries = activeSeriesForYear(nextYear);
@@ -420,11 +538,33 @@ export function advanceMotorsportUniverse(
     if (series === state.series || !activeSeries.has(series)) continue;
     const prior = current.championships[series];
     if (prior) {
+      // Reserve every seat outside the championship currently being advanced.
+      // Already-advanced grids use their new roster; not-yet-advanced grids use
+      // their current roster. That prevents a new cross-series double-signing
+      // while still preserving documented concurrent contracts already in place.
+      const occupiedNames = new Set<string>();
+      for (const [otherSeries, championship] of Object.entries(current.championships)) {
+        if (otherSeries === series || championships[otherSeries as Series]) continue;
+        for (const driver of championship?.drivers ?? []) occupiedNames.add(canonicalNameOf(driver.name));
+      }
+      for (const [otherSeries, championship] of Object.entries(championships)) {
+        if (otherSeries === series) continue;
+        for (const driver of championship?.drivers ?? []) occupiedNames.add(canonicalNameOf(driver.name));
+      }
       championships[series] = advanceOffscreenChampionship(prior, nextYear, occupiedNames, state.randomSeed);
       continue;
     }
     const bundle = getCachedBundle(nextYear, series);
-    if (bundle) championships[series] = championshipFromRoster(nextYear, series, bundle.teams, bundle.drivers, occupiedNames, state.randomSeed);
+    if (bundle) {
+      championships[series] = championshipFromRoster(
+        nextYear,
+        series,
+        bundle.teams,
+        bundle.drivers,
+        new Set<string>(),
+        state.randomSeed,
+      );
+    }
   }
 
   return { version: 1, seasonYear: nextYear, championships };

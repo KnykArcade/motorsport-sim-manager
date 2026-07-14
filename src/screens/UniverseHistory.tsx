@@ -6,9 +6,12 @@ import type {
   SeasonHistoryRecord,
   TeamCareerStats,
   UniverseChampionshipSeason,
+  UniverseChampionshipState,
+  UniverseDriverMovement,
 } from '../types/universeTypes';
+import type { Series } from '../types/gameTypes';
 
-type Tab = 'records' | 'drivers' | 'teams' | 'seasons' | 'world';
+type Tab = 'records' | 'drivers' | 'teams' | 'seasons' | 'world' | 'grid';
 
 export function UniverseHistory() {
   const { state } = useGame();
@@ -35,8 +38,11 @@ export function UniverseHistory() {
   const worldSeasons = Object.values(state.motorsportUniverse?.championships ?? {})
     .flatMap((championship) => championship?.seasonHistory ?? [])
     .sort((a, b) => b.seasonYear - a.seasonYear || a.series.localeCompare(b.series));
+  const worldChampionships = state.motorsportUniverse?.championships ?? {};
+  const worldSeatCount = Object.values(worldChampionships)
+    .reduce((total, championship) => total + (championship?.drivers.length ?? 0), 0);
 
-  if (seasons.length === 0 && worldSeasons.length === 0) {
+  if (seasons.length === 0 && worldSeasons.length === 0 && worldSeatCount === 0) {
     return (
       <div className="space-y-6">
         <Header />
@@ -69,6 +75,9 @@ export function UniverseHistory() {
           </TabButton>
           <TabButton active={tab === 'world'} onClick={() => setTab('world')}>
             World Championships ({worldSeasons.length})
+          </TabButton>
+          <TabButton active={tab === 'grid'} onClick={() => setTab('grid')}>
+            World Grid ({worldSeatCount})
           </TabButton>
         </div>
       </div>
@@ -134,6 +143,91 @@ export function UniverseHistory() {
           )}
         </div>
       )}
+      {tab === 'grid' && <WorldGrid championships={worldChampionships} />}
+    </div>
+  );
+}
+
+export function WorldGrid({
+  championships,
+}: {
+  championships: Partial<Record<Series, UniverseChampionshipState>>;
+}) {
+  const entries = Object.values(championships)
+    .filter((championship): championship is UniverseChampionshipState => Boolean(championship))
+    .sort((a, b) => a.series.localeCompare(b.series));
+  const movements = entries
+    .flatMap((championship) => championship.movementHistory ?? [])
+    .sort((a, b) => b.effectiveYear - a.effectiveYear || a.series.localeCompare(b.series) || a.id.localeCompare(b.id))
+    .slice(0, 30);
+
+  return (
+    <div className="space-y-4">
+      {entries.map((championship) => {
+        const drivers = new Map(championship.drivers.map((driver) => [driver.driverId, driver]));
+        return (
+          <Panel key={championship.series}>
+            <div className="mb-3 flex items-baseline justify-between gap-3">
+              <div className="font-bold text-neutral-100">{championship.series}</div>
+              <div className="text-xs text-neutral-500">{championship.seasonYear} grid</div>
+            </div>
+            <div className="grid gap-2 md:grid-cols-2 xl:grid-cols-3">
+              {championship.teams.map((team) => (
+                <div key={team.teamId} className="rounded border border-neutral-800 bg-neutral-950/40 p-2.5">
+                  <div className="text-sm font-semibold text-neutral-200">{team.name}</div>
+                  <div className="mt-1 space-y-0.5">
+                    {team.driverIds.map((driverId) => {
+                      const driver = drivers.get(driverId);
+                      return (
+                        <div key={driverId} className="flex justify-between gap-3 text-xs">
+                          <span className="text-neutral-300">{driver?.name ?? driverId}</span>
+                          {driver && (
+                            <span className="whitespace-nowrap text-neutral-500">
+                              {driver.contractYearsRemaining} yr{driver.contractYearsRemaining === 1 ? '' : 's'}
+                            </span>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </Panel>
+        );
+      })}
+
+      <Panel>
+        <div className="font-bold text-neutral-100">Recent Driver Moves</div>
+        {movements.length > 0 ? (
+          <div className="mt-2 divide-y divide-neutral-800/70">
+            {movements.map((movement) => <MovementRow key={movement.id} movement={movement} />)}
+          </div>
+        ) : (
+          <p className="mt-2 text-sm text-neutral-400">
+            Driver renewals, releases, transfers and signings will appear after the first offseason.
+          </p>
+        )}
+      </Panel>
+    </div>
+  );
+}
+
+function MovementRow({ movement }: { movement: UniverseDriverMovement }) {
+  const detail = movement.kind === 'renewal'
+    ? `renewed with ${movement.toTeamName ?? movement.fromTeamName ?? 'their team'}`
+    : movement.kind === 'release'
+      ? `released by ${movement.fromTeamName ?? 'their team'}`
+      : movement.kind === 'transfer'
+        ? `moved from ${movement.fromTeamName ?? 'another team'} to ${movement.toTeamName ?? 'a new team'}`
+        : `signed for ${movement.toTeamName ?? 'a new team'}`;
+  return (
+    <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 py-2 text-sm">
+      <div>
+        <span className="font-semibold text-neutral-200">{movement.driverName}</span>{' '}
+        <span className="text-neutral-400">{detail}</span>
+      </div>
+      <div className="text-xs text-neutral-500">{movement.effectiveYear} · {movement.series}</div>
     </div>
   );
 }
