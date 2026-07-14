@@ -26,6 +26,10 @@ import {
   applyLeadershipDecision,
   leadershipGameplayModifiers,
 } from '../sim/phase18IdentityCultureEngine';
+import {
+  generateAdvisorRecommendations,
+  resolveAdvisorRecommendations,
+} from '../sim/phase18AdvisorEngine';
 
 export function defaultCareerPhaseState(): CareerPhaseState {
   return {
@@ -626,7 +630,11 @@ export function resolvePaddockEvent(
     updatedState = { ...updatedState, news: [newsItem, ...updatedState.news].slice(0, 80) };
   }
 
-  return applyLeadershipDecision(updatedState, event, option);
+  return resolveAdvisorRecommendations(
+    applyLeadershipDecision(updatedState, event, option),
+    event,
+    option,
+  );
 }
 
 function clamp10(n: number): number {
@@ -1159,7 +1167,7 @@ export function generateAndStorePaddockEvents(state: GameState): GameState {
     }
   }
 
-  return {
+  const withEvents: GameState = {
     ...state,
     careerPhase: {
       ...phaseState,
@@ -1169,6 +1177,7 @@ export function generateAndStorePaddockEvents(state: GameState): GameState {
       announcedCompletedProjectIds: [...announced],
     },
   };
+  return generateAdvisorRecommendations(withEvents, events);
 }
 
 // --- AI team activity (real between-race processing) ------------------------

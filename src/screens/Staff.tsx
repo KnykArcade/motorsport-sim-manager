@@ -13,6 +13,7 @@ import { Button } from '../components/Button';
 import { StatBar } from '../components/StatBar';
 import { formatMoney } from '../components/ui';
 import { ROLE_EFFECT, STAFF_ROLES, type StaffMember, type StaffRole } from '../types/staffTypes';
+import { ADVISOR_ROLE_LABELS } from '../sim/phase18AdvisorEngine';
 
 export function Staff() {
   const { state, dispatch } = useGame();
@@ -27,6 +28,10 @@ export function Staff() {
 
   const devBonus = developmentSuccessBonus(roster);
   const setupBonus = setupConfidenceBonus(roster);
+  const councilActivity = (state.phase18?.advisorRecommendations ?? [])
+    .filter((recommendation) => recommendation.teamId === state.selectedTeamId)
+    .slice(-6)
+    .reverse();
 
   const current = byRole[activeRole];
   const candidates = pool
@@ -48,6 +53,42 @@ export function Staff() {
         <Kpi label="Dev Success Bonus" value={`${devBonus >= 0 ? '+' : ''}${Math.round(devBonus * 100)}%`} />
         <Kpi label="Setup Confidence Bonus" value={`${setupBonus >= 0 ? '+' : ''}${setupBonus.toFixed(1)}`} />
       </div>
+
+      <Panel title="Advisor Council Activity">
+        {councilActivity.length === 0 ? (
+          <p className="text-sm text-neutral-500">
+            The council will issue recommendations when management decisions reach the paddock agenda.
+          </p>
+        ) : (
+          <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+            {councilActivity.map((recommendation) => (
+              <div key={recommendation.id} className="rounded-lg border border-neutral-800 bg-neutral-900/40 p-3">
+                <div className="flex items-start justify-between gap-2">
+                  <div>
+                    <div className="text-sm font-semibold text-neutral-100">
+                      {recommendation.advisorName ?? ADVISOR_ROLE_LABELS[recommendation.advisorRole]}
+                    </div>
+                    <div className="text-[10px] text-neutral-500">{ADVISOR_ROLE_LABELS[recommendation.advisorRole]}</div>
+                  </div>
+                  <span className={`rounded px-1.5 py-0.5 text-[10px] font-semibold uppercase ${advisorStatusTone(recommendation.status)}`}>
+                    {recommendation.status}
+                  </span>
+                </div>
+                <div className="mt-2 text-xs font-semibold text-sky-300">{recommendation.recommendation}</div>
+                <p className="mt-1 text-[11px] text-neutral-400">{recommendation.rationale}</p>
+                <div className="mt-2 flex justify-between text-[10px] text-neutral-500">
+                  <span>Confidence {recommendation.confidence}%</span>
+                  {recommendation.trustChange != null && (
+                    <span className={recommendation.trustChange >= 0 ? 'text-emerald-400' : 'text-red-400'}>
+                      Trust {recommendation.trustChange > 0 ? '+' : ''}{recommendation.trustChange}
+                    </span>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </Panel>
 
       <div className="flex flex-wrap gap-1 border-b border-neutral-800">
         {STAFF_ROLES.map((role) => {
@@ -172,4 +213,11 @@ function Stat({ label, children }: { label: string; children: React.ReactNode })
       <div className="font-semibold tabular-nums text-neutral-200">{children}</div>
     </div>
   );
+}
+
+function advisorStatusTone(status: string): string {
+  if (status === 'Accepted') return 'bg-emerald-500/10 text-emerald-300';
+  if (status === 'Overruled' || status === 'Rejected') return 'bg-orange-500/10 text-orange-300';
+  if (status === 'Expired') return 'bg-neutral-800 text-neutral-500';
+  return 'bg-sky-500/10 text-sky-300';
 }
