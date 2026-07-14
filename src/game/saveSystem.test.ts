@@ -1,7 +1,9 @@
-import { describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it } from 'vitest';
 import { createNewGame } from './initialCareer';
 import type { GameState } from './careerState';
 import type { CommercialState } from '../types/sponsorTypes';
+import { deleteSave, loadGame, migrateGameState, saveGame } from './saveSystem';
+import { CURRENT_SAVE_SCHEMA_VERSION } from './saveSchema';
 
 function freshState(): GameState {
   return createNewGame({
@@ -12,6 +14,21 @@ function freshState(): GameState {
     seed: 'save-test',
   });
 }
+
+beforeEach(() => {
+  const values = new Map<string, string>();
+  Object.defineProperty(globalThis, 'localStorage', {
+    configurable: true,
+    value: {
+      getItem: (key: string) => values.get(key) ?? null,
+      setItem: (key: string, value: string) => values.set(key, value),
+      removeItem: (key: string) => values.delete(key),
+      clear: () => values.clear(),
+      key: (index: number) => [...values.keys()][index] ?? null,
+      get length() { return values.size; },
+    },
+  });
+});
 
 describe('save model', () => {
   it('populates the implemented systems and leaves unbuilt ones unset', () => {
@@ -37,6 +54,11 @@ describe('save model', () => {
     // Parts lifecycle: fitted components and factory inventory are persisted.
     expect(Object.keys(s.teamParts ?? {})).toHaveLength(s.teams.length);
     expect(s.teamParts?.[s.selectedTeamId].inventory.length).toBeGreaterThan(0);
+    // Phase 18A: the living-paddock schema is present before any feature engine
+    // begins evolving identity, culture, advice, intelligence, or rivalries.
+    expect(s.saveSchemaVersion).toBe(CURRENT_SAVE_SCHEMA_VERSION);
+    expect(s.phase18).toBeDefined();
+    expect(Object.keys(s.phase18?.teamCultures ?? {})).toHaveLength(s.teams.length);
   });
 
   it('round-trips the new optional systems through JSON', () => {
@@ -64,5 +86,34 @@ describe('save model', () => {
     expect(cloned.teamParts?.[cloned.selectedTeamId].inventory).toEqual(
       withSystems.teamParts?.[withSystems.selectedTeamId].inventory,
     );
+    expect(cloned.phase18).toEqual(withSystems.phase18);
+    expect(cloned.saveSchemaVersion).toBe(CURRENT_SAVE_SCHEMA_VERSION);
+  });
+
+  it('migrates a pre-versioned save into the Phase 18 schema without losing existing state', () => {
+    const current = freshState();
+    const legacy = structuredClone(current);
+    delete legacy.saveSchemaVersion;
+    delete legacy.phase18;
+    const migrated = migrateGameState(legacy);
+
+    expect(migrated.saveSchemaVersion).toBe(CURRENT_SAVE_SCHEMA_VERSION);
+    expect(migrated.phase18?.principalIdentity.principalId).toBe(current.principal?.id);
+    expect(Object.keys(migrated.phase18?.departmentMoods ?? {})).toHaveLength(current.teams.length);
+    expect(migrated.teamResearch).toEqual(current.teamResearch);
+    expect(migrated.teamParts).toEqual(current.teamParts);
+  });
+
+  it('round-trips Phase 18 state through the real save slot', () => {
+    const state = freshState();
+    state.phase18!.legacy.score = 101;
+    state.phase18!.teamCultures[state.selectedTeamId].tags = ['AeroInnovator'];
+    saveGame(state);
+    const restored = loadGame();
+    deleteSave();
+
+    expect(restored?.saveSchemaVersion).toBe(CURRENT_SAVE_SCHEMA_VERSION);
+    expect(restored?.phase18?.legacy.score).toBe(101);
+    expect(restored?.phase18?.teamCultures[state.selectedTeamId].tags).toEqual(['AeroInnovator']);
   });
 });

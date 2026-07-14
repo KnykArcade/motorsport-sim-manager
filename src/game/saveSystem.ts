@@ -1,14 +1,14 @@
 // localStorage-based save/load. A single active save slot for the MVP, plus a
-// settings blob. Designed so a backend can replace this later.
-//
-// The persisted format is the bare GameState — there is no save-version envelope
-// or migration layer. This is a prototype build: the data model is authoritative
-// and saves written by an older build are not expected to load.
+// settings blob. The persisted format remains a bare GameState, but it now
+// carries saveSchemaVersion and passes through a deterministic migration layer
+// so older careers receive required subsystem defaults without losing history.
 
 import type { GameState } from './careerState';
 import type { DriverRelationship } from '../types/relationshipTypes';
 import { ensureTeamResearchMap } from '../sim/rdEngine';
 import { ensureTeamPartsMap } from '../sim/partsEngine';
+import { ensurePhase18FoundationState } from '../sim/phase18FoundationEngine';
+import { CURRENT_SAVE_SCHEMA_VERSION } from './saveSchema';
 
 const SAVE_KEY = 'msm:save:v1';
 const SETTINGS_KEY = 'msm:settings:v1';
@@ -31,7 +31,7 @@ function migrateRelationships(rels: Record<string, DriverRelationship>): Record<
   return migrated;
 }
 
-function migrateGameState(state: GameState): GameState {
+export function migrateGameState(state: GameState): GameState {
   const patched: Partial<GameState> = { ...state };
   if (patched.driverRelationships) {
     patched.driverRelationships = migrateRelationships(patched.driverRelationships);
@@ -50,6 +50,14 @@ function migrateGameState(state: GameState): GameState {
     patched.drivers ?? [],
     state.seasonYear,
   );
+  patched.phase18 = ensurePhase18FoundationState(patched.phase18, {
+    teams: patched.teams ?? [],
+    selectedTeamId: patched.selectedTeamId ?? '',
+    seasonYear: patched.seasonYear ?? state.seasonYear,
+    principal: patched.principal,
+    aiPrincipals: patched.aiPrincipals,
+  });
+  patched.saveSchemaVersion = CURRENT_SAVE_SCHEMA_VERSION;
   return patched as GameState;
 }
 
@@ -70,7 +78,11 @@ export const defaultSettings: GameSettings = {
 };
 
 export function saveGame(state: GameState): void {
-  const toStore: GameState = { ...state, updatedAt: new Date().toISOString() };
+  const toStore: GameState = {
+    ...state,
+    saveSchemaVersion: CURRENT_SAVE_SCHEMA_VERSION,
+    updatedAt: new Date().toISOString(),
+  };
   try {
     localStorage.setItem(SAVE_KEY, JSON.stringify(toStore));
   } catch (err) {

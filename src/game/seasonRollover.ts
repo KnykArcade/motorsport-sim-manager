@@ -74,6 +74,7 @@ import { refreshScoutingNetwork } from '../sim/scoutingEngine';
 import { createDriverDevelopmentCurve, developmentStep } from '../sim/developmentCurveEngine';
 import { finalizeSeasonHistory } from '../sim/universeHistoryEngine';
 import { buildAITeamState, rolloverAITeamStates, constructorPositionOf, updateAIReputation } from '../sim/aiTeamEngine';
+import { ensurePhase18FoundationState } from '../sim/phase18FoundationEngine';
 import { updateTeamMemory } from '../sim/teamIdentityEngine';
 import type { TeamMemoryEntry } from '../types/aiTeamTypes';
 import { runAIOffseason, makeRookieDriver } from '../sim/aiOffseasonEngine';
@@ -1468,6 +1469,7 @@ export function advanceSeason(state: GameState, nextBundle?: SeasonBundle): Game
     nextState.teams,
     nextState.drivers,
   );
+  nextState.phase18 = ensurePhase18FoundationState(nextState.phase18, nextState);
 
   // If the principal switched teams, re-point the player-scoped systems
   // (selected team, setups, commercial, facilities, engine deal) at the new team.
@@ -1514,12 +1516,16 @@ function applyPrincipalMove(state: GameState, newTeamId: string): GameState {
     aiTeamStates[leftTeam.id] = buildAITeamState(movedState, leftTeam);
   }
 
-  return {
+  const nextState: GameState = {
     ...movedState,
     carSetups,
     commercial,
     facilities,
     engine,
     aiTeamStates,
+  };
+  return {
+    ...nextState,
+    phase18: ensurePhase18FoundationState(nextState.phase18, nextState),
   };
 }
