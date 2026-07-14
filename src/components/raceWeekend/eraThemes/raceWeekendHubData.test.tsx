@@ -347,20 +347,20 @@ describe('F1 1990s garage hotspots', () => {
 describe('F1 1990s hub mode restrictions', () => {
   it('does not show long-term quick actions in Single Season mode', () => {
     const labels = buildQuickActions(makeState(1994, 'SingleSeason')).map((action) => action.label);
-    expect(labels).not.toContain('Driver Scouting');
+    expect(labels).not.toContain('Scouting & Intelligence');
     expect(labels).not.toContain('Sponsorship');
     expect(labels).not.toContain('Regulation Updates');
   });
 
   it('shows allowed long-term quick actions in Career mode', () => {
     const labels = buildQuickActions(makeState(1994, 'Career')).map((action) => action.label);
-    expect(labels).toContain('Driver Scouting');
+    expect(labels).toContain('Scouting & Intelligence');
     expect(labels).toContain('Sponsorship');
   });
 
   it('does not inherit Single Season restrictions in Sandbox mode', () => {
     const labels = buildQuickActions(makeState(1994, 'Sandbox')).map((action) => action.label);
-    expect(labels).toContain('Driver Scouting');
+    expect(labels).toContain('Scouting & Intelligence');
     expect(labels).toContain('Sponsorship');
   });
 });

@@ -94,6 +94,7 @@ import {
 } from '../sim/phase18IdentityCultureEngine';
 import type { TeamOrderDecision, PromiseType } from '../types/relationshipTypes';
 import type { ContractBreachResponse, ContractClauseType } from '../types/phase18Types';
+import type { IntelligenceAction } from '../types/phase18Types';
 import {
   applyNegotiatedDriverClause,
   ensureContractClauses,
@@ -103,6 +104,7 @@ import {
   respondToContractBreach,
   syncClausePromiseResolution,
 } from '../sim/phase18ContractClauseEngine';
+import { generatePaddockIntelligence, resolveIntelligenceAction } from '../sim/phase18IntelligenceEngine';
 import { createSeededRandom, deriveSeed } from '../sim/random';
 import type { AcademyDecision, FirstOptionDecision, SeatSigning } from '../types/marketTypes';
 import type { FinanceTransaction } from '../types/financeTypes';
@@ -268,6 +270,7 @@ export type GameAction =
   | { type: 'MAKE_PROMISE'; driverId: string; promiseType: PromiseType; dueSeason?: number; dueRound?: number }
   | { type: 'RESOLVE_PROMISE'; promiseId: string; fulfilled: boolean }
   | { type: 'RESPOND_TO_CONTRACT_BREACH'; clauseId: string; response: ContractBreachResponse }
+  | { type: 'RESOLVE_INTELLIGENCE_ACTION'; reportId: string; action: IntelligenceAction }
   | { type: 'SET_FACILITY_SPECIALIZATION'; specialization: FacilitySpecialization };
 
 // Run one practice session for the player's drivers: simulate each assignment,
@@ -836,6 +839,7 @@ export function gameReducer(state: GameState | null, action: GameAction): GameSt
       // Process AI team activity once per paddock week (real state changes).
       state = processAITeamActivity(state);
       state = evaluateContractClauses(state);
+      state = generatePaddockIntelligence(state);
       // Generate paddock week career news.
       const race = currentRace(state);
       const paddockCtx: CareerNewsContext = {
@@ -925,6 +929,11 @@ export function gameReducer(state: GameState | null, action: GameAction): GameSt
     case 'RESPOND_TO_CONTRACT_BREACH': {
       if (!state) return state;
       return respondToContractBreach(state, action.clauseId, action.response);
+    }
+
+    case 'RESOLVE_INTELLIGENCE_ACTION': {
+      if (!state) return state;
+      return resolveIntelligenceAction(state, action.reportId, action.action);
     }
 
     case 'SET_FACILITY_SPECIALIZATION': {

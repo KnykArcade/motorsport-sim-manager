@@ -138,13 +138,25 @@ export type IntelligenceReport = {
   confidence: number;
   reliability: number;
   assessment: 'Unverified' | 'Plausible' | 'Likely' | 'Confirmed' | 'Disproven';
+  status?: 'Active' | 'Resolved' | 'Dismissed' | 'Expired';
   hiddenTruth?: 'True' | 'False' | 'Mixed';
+  category?: 'Development' | 'Performance' | 'Reliability' | 'DriverMarket' | 'Finance' | 'Politics' | 'Commercial';
+  detailLevel?: 'Headline' | 'Briefing' | 'Detailed';
+  gameplayRelevance?: 'Low' | 'Medium' | 'High' | 'Critical';
+  visibility?: 'Private' | 'Public' | 'Leaked';
+  possibleActions?: Array<'Investigate' | 'AskAdvisor' | 'Monitor' | 'Ignore'>;
+  actionHistory?: Array<{ seasonYear: number; round?: number; action: string; outcome: string }>;
+  aiKnownTeamIds?: string[];
+  aiResponses?: Array<{ teamId: string; action: string; reason: string }>;
+  revealedOutcome?: string;
   discoveredSeasonYear: number;
   discoveredRound?: number;
   expiresSeasonYear?: number;
   expiresRound?: number;
   actionTaken?: string;
 };
+
+export type IntelligenceAction = 'Investigate' | 'AskAdvisor' | 'Monitor' | 'Ignore';
 
 export type ContractPartyType = 'Driver' | 'Staff' | 'TeamPrincipal';
 
