@@ -40,6 +40,20 @@ export type UniverseChampionshipSeason = {
   teamStandings: StandingsEntry[];
 };
 
+export type UniverseDriverMovement = {
+  id: string;
+  effectiveYear: number;
+  series: Series;
+  kind: 'signing' | 'transfer' | 'renewal' | 'release';
+  driverId: string;
+  driverName: string;
+  fromTeamId?: string;
+  fromTeamName?: string;
+  toTeamId?: string;
+  toTeamName?: string;
+  contractYears?: number;
+};
+
 export type UniverseChampionshipState = {
   series: Series;
   seasonYear: number;
@@ -47,6 +61,8 @@ export type UniverseChampionshipState = {
   drivers: UniverseDriverContract[];
   // Optional for saves created before off-screen championship simulation.
   seasonHistory?: UniverseChampionshipSeason[];
+  // Optional for saves created before world-grid movement tracking.
+  movementHistory?: UniverseDriverMovement[];
 };
 
 export type MotorsportUniverseState = {
