@@ -1,7 +1,10 @@
 // Center track map — the visual anchor. Reuses the simplified 2D oval, marks
 // player cars, and shows a weather / track-condition strip beneath the map.
 
+import { useState } from 'react';
+import { IsometricTrackMap } from '../../components/IsometricTrackMap';
 import { RaceTrack2D, type TrackDot } from '../../components/RaceTrack2D';
+import { getTrackMapAsset } from '../../data/trackMaps/getTrackMapAsset';
 import type { LiveRaceState } from '../../types/liveTypes';
 import { DashPanel } from './dashboardUi';
 
@@ -9,19 +12,52 @@ export function TrackMapPanel({
   live,
   dots,
   rotation,
+  series,
+  year,
   className = '',
 }: {
   live: LiveRaceState;
   dots: TrackDot[];
   rotation: number;
+  series: string;
+  year: number;
   className?: string;
 }) {
+  const [isIso, setIso] = useState(false);
   const wet = live.weather.wet;
   const sc = live.safetyCar.active;
+  const trackMatch = getTrackMapAsset({ series, year, trackId: live.trackId });
+  const canIso = isIso && trackMatch != null;
+
   return (
-    <DashPanel title="Track Map" className={className} bodyClass="flex flex-col">
+    <DashPanel
+      title="Track Map"
+      className={className}
+      bodyClass="flex flex-col"
+      right={
+        trackMatch && (
+          <button
+            type="button"
+            onClick={() => setIso((v) => !v)}
+            className="text-[10px] font-semibold uppercase tracking-wide text-slate-400 hover:text-slate-200"
+            aria-label={isIso ? 'Switch to 2D map' : 'Switch to isometric map'}
+          >
+            {isIso ? '2D' : 'ISO'}
+          </button>
+        )
+      }
+    >
       <div className="flex min-h-0 flex-1 items-center justify-center px-2 py-1">
-        <RaceTrack2D dots={dots} rotation={rotation} safetyCar={sc} className="mx-auto h-full max-h-full w-auto max-w-full" />
+        {canIso ? (
+          <IsometricTrackMap
+            geometry={trackMatch.geometry}
+            dots={dots}
+            rotation={rotation}
+            className="mx-auto h-full max-h-full w-auto max-w-full"
+          />
+        ) : (
+          <RaceTrack2D dots={dots} rotation={rotation} safetyCar={sc} className="mx-auto h-full max-h-full w-auto max-w-full" />
+        )}
       </div>
       {/* Weather / track-condition strip */}
       <div className="grid shrink-0 grid-cols-4 gap-px border-t border-slate-700/50 bg-slate-800/40 text-center">

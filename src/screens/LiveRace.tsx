@@ -597,7 +597,14 @@ export function LiveRace() {
 
         {/* Center — large track map (fills) + compact event log (fixed height) */}
         <div className="relative flex min-h-0 flex-col gap-2 overflow-hidden">
-          <TrackMapPanel live={live} dots={dots} rotation={rotation} className="min-h-0 flex-1" />
+          <TrackMapPanel
+            live={live}
+            dots={dots}
+            rotation={rotation}
+            series={state.series}
+            year={state.seasonYear}
+            className="min-h-0 flex-1"
+          />
           {crashOverlay}
           <EventLogPanel
             events={live.events}
