@@ -79,6 +79,7 @@ import { ensureContractClauses } from '../sim/phase18ContractClauseEngine';
 import { rolloverIntelligenceReports } from '../sim/phase18IntelligenceEngine';
 import { ensurePreseasonHubState } from '../sim/phase18PreseasonEngine';
 import { ensureFailureInvestigationState } from '../sim/phase18FailureInvestigationEngine';
+import { ensureRivalRelationships, recordStaffPoach } from '../sim/phase18RivalRelationshipEngine';
 import { updateTeamMemory } from '../sim/teamIdentityEngine';
 import type { TeamMemoryEntry } from '../types/aiTeamTypes';
 import { runAIOffseason, makeRookieDriver } from '../sim/aiOffseasonEngine';
@@ -1303,6 +1304,7 @@ export function advanceSeason(state: GameState, nextBundle?: SeasonBundle): Game
   // Moves are seeded and limited to a clearly stronger destination with a weak
   // or vacant principal, leaving the existing firing path intact.
   const movedPrincipalTeams = new Set<string>();
+  const principalPoachPairs: Array<{ sourceTeamId: string; destinationTeamId: string }> = [];
   for (const source of state.teams) {
     if (source.id === state.selectedTeamId) continue;
     const principal = aiPrincipals[source.id];
@@ -1341,6 +1343,7 @@ export function advanceSeason(state: GameState, nextBundle?: SeasonBundle): Game
     };
     movedPrincipalTeams.add(source.id);
     movedPrincipalTeams.add(destination.id);
+    principalPoachPairs.push({ sourceTeamId: source.id, destinationTeamId: destination.id });
     rolloverNews.push({
       id: `news-principal-poached-${state.seasonYear}-${source.id}-${destination.id}`,
       headline: `${destination.name} poaches ${principal.name} from ${source.name}`,
@@ -1491,10 +1494,14 @@ export function advanceSeason(state: GameState, nextBundle?: SeasonBundle): Game
       // The player/AI ownership map changes with the move, so regenerate the
       // new season's programmes after the destination team is known.
       movedState.phase18 = { ...movedState.phase18!, preseason: undefined };
-      return ensureFailureInvestigationState(ensurePreseasonHubState(movedState));
+      let finalized = ensureRivalRelationships(ensureFailureInvestigationState(ensurePreseasonHubState(movedState)));
+      for (const pair of principalPoachPairs) finalized = recordStaffPoach(finalized, pair.sourceTeamId, pair.destinationTeamId);
+      return finalized;
     }
   }
-  return ensureFailureInvestigationState(ensurePreseasonHubState(nextState));
+  let finalized = ensureRivalRelationships(ensureFailureInvestigationState(ensurePreseasonHubState(nextState)));
+  for (const pair of principalPoachPairs) finalized = recordStaffPoach(finalized, pair.sourceTeamId, pair.destinationTeamId);
+  return finalized;
 }
 
 // Switch the player to a new team after a principal move: rebuild the

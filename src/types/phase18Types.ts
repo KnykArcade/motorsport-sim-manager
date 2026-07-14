@@ -368,6 +368,8 @@ export type RivalRelationship = {
   history: RivalRelationshipEvent[];
 };
 
+export type RivalAction = 'OpenDialogue' | 'TechnicalExchange' | 'ScoutPersonnel' | 'FileProtest';
+
 export type LegacyRecordCategory =
   | 'RaceWin'
   | 'Podium'
