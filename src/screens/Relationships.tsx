@@ -22,6 +22,8 @@ import type {
   DriverPromise,
   PromiseType,
 } from '../types/relationshipTypes';
+import { contractClauseLabel } from '../sim/phase18ContractClauseEngine';
+import type { ContractBreachResponse } from '../types/phase18Types';
 
 const ORDER_LABEL: Record<TeamOrder, string> = Object.fromEntries(
   TEAM_ORDER_SPECS.map((s) => [s.order, s.label]),
@@ -151,6 +153,9 @@ export function Relationships() {
   const reserveDrivers = teamDrivers.filter((d) => !activeDrivers.some((ad) => ad.id === d.id));
   const orders = (state.teamOrderHistory ?? []).slice().reverse();
   const allPromises = state.driverPromises ?? [];
+  const contractClauses = (state.phase18?.contractClauses ?? []).filter((clause) =>
+    clause.teamId === teamId && clause.partyType === 'Driver' && teamDrivers.some((driver) => driver.id === clause.partyId),
+  );
   const driverContractYears = (id: string) =>
     state.drivers.find((d) => d.id === id)?.contractYearsRemaining ?? 0;
 
@@ -243,6 +248,37 @@ export function Relationships() {
           <p className="text-sm text-neutral-400">Your team has no drivers signed.</p>
         </Panel>
       )}
+
+      <Panel title="Contract Clauses & Promise Links">
+        <p className="mb-3 text-xs text-neutral-400">
+          These are binding management commitments. A linked promise updates the clause automatically; a breach affects trust, morale and future negotiations.
+        </p>
+        {contractClauses.length === 0 ? <p className="text-sm text-neutral-500">No contract clauses are active.</p> : (
+          <div className="grid gap-3 lg:grid-cols-2">
+            {contractClauses.slice().reverse().map((clause) => (
+              <div key={clause.id} className={`rounded border p-3 ${clause.status === 'Breached' ? 'border-red-500/50 bg-red-500/5' : clause.status === 'Active' ? 'border-sky-500/30 bg-neutral-900/50' : 'border-neutral-800 bg-neutral-900/30'}`}>
+                <div className="flex items-start justify-between gap-2">
+                  <div><div className="font-semibold text-neutral-100">{driverName(clause.partyId)} · {contractClauseLabel(clause.clauseType)}</div><div className="text-[10px] uppercase text-neutral-500">{clause.status} · risk {clause.risk ?? 'Secure'}</div></div>
+                  {clause.linkedPromiseId && <span className="rounded bg-violet-500/15 px-1.5 py-0.5 text-[10px] text-violet-300">promise linked</span>}
+                </div>
+                <p className="mt-2 text-xs text-neutral-300">{clause.description}</p>
+                <div className="mt-2 text-[11px] text-amber-200">Trigger: {clause.triggerDescription}</div>
+                <div className="mt-1 text-[11px] text-red-300">If broken: {clause.breachConsequence}</div>
+                {clause.resolutionNote && <div className="mt-1 text-[11px] text-neutral-500">{clause.resolutionNote}</div>}
+                {clause.status === 'Breached' && !clause.resolutionNote?.startsWith('Management response:') && (
+                  <div className="mt-3 flex flex-wrap gap-1.5">
+                    {(['Apologize', 'Compensate', 'PromiseCorrection', 'AcceptDamage'] as ContractBreachResponse[]).map((response) => (
+                      <Button key={response} variant="ghost" className="px-2 py-1 text-[10px]" onClick={() => dispatch({ type: 'RESPOND_TO_CONTRACT_BREACH', clauseId: clause.id, response })}>
+                        {response === 'PromiseCorrection' ? 'Promise correction' : response}{response === 'Compensate' && clause.renegotiationCost ? ` ($${(clause.renegotiationCost / 1_000_000).toFixed(1)}M)` : ''}
+                      </Button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+      </Panel>
 
       <Panel title="Team-Order Log (this season)">
         {orders.length === 0 ? (

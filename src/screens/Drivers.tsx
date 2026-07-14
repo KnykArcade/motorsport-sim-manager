@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useGame } from '../game/GameContext';
 import { Panel } from '../components/Panel';
 import { StatBar } from '../components/StatBar';
@@ -13,6 +14,8 @@ import {
   reserveDriversForTeam,
   teamById,
 } from '../game/careerState';
+import { contractClauseLabel, DRIVER_NEGOTIATION_CLAUSES } from '../sim/phase18ContractClauseEngine';
+import type { ContractClause, ContractClauseType } from '../types/phase18Types';
 
 export function Drivers() {
   const { state, dispatch } = useGame();
@@ -31,8 +34,11 @@ export function Drivers() {
   const canNegotiateContracts = state.gameMode !== 'SingleSeason' && !state.seasonComplete;
   const extensionCost = (driver: typeof state.drivers[number], years: number, offerMultiplier = 1) =>
     Math.round(driverExtensionSigningFee(driver, years, racesRemaining, state.calendar.length) * offerMultiplier);
-  const extendDriver = (driverId: string, years: number, offerMultiplier: number) =>
-    dispatch({ type: 'EXTEND_DRIVER_CONTRACT', driverId, years, offerMultiplier });
+  const extendDriver = (driverId: string, years: number, offerMultiplier: number, clauseType?: ContractClauseType) =>
+    dispatch({ type: 'EXTEND_DRIVER_CONTRACT', driverId, years, offerMultiplier, clauseType });
+  const activeClause = (driverId: string) => state.phase18?.contractClauses.find((clause) =>
+    clause.partyId === driverId && clause.status === 'Active',
+  );
   const contractOfferNews = state.news.filter((item) => item.id.startsWith('news-contract-offer-'));
   const latestContractOffer = (driverId: string) => contractOfferNews.find((item) => item.driverId === driverId);
 
@@ -80,6 +86,7 @@ export function Drivers() {
                         canNegotiate={canNegotiateContracts}
                         extensionCost={extensionCost}
                         latestOffer={latestContractOffer(driver.id)}
+                        currentClause={activeClause(driver.id)}
                         onExtend={extendDriver}
                       />
                     </>
@@ -158,6 +165,7 @@ export function Drivers() {
                       canNegotiate={canNegotiateContracts}
                       extensionCost={extensionCost}
                       latestOffer={latestContractOffer(r.id)}
+                      currentClause={activeClause(r.id)}
                       onExtend={extendDriver}
                     />
                   </div>
@@ -222,6 +230,7 @@ function ContractExtensionControls({
   canNegotiate,
   extensionCost,
   latestOffer,
+  currentClause,
   onExtend,
 }: {
   driver: NonNullable<ReturnType<typeof useGame>['state']>['drivers'][number];
@@ -229,8 +238,10 @@ function ContractExtensionControls({
   canNegotiate: boolean;
   extensionCost: (driver: NonNullable<ReturnType<typeof useGame>['state']>['drivers'][number], years: number, offerMultiplier?: number) => number;
   latestOffer?: NonNullable<ReturnType<typeof useGame>['state']>['news'][number];
-  onExtend: (driverId: string, years: number, offerMultiplier: number) => void;
+  currentClause?: ContractClause;
+  onExtend: (driverId: string, years: number, offerMultiplier: number, clauseType?: ContractClauseType) => void;
 }) {
+  const [clauseType, setClauseType] = useState<ContractClauseType>(currentClause?.clauseType ?? 'EqualTreatment');
   const yearsLeft = driver.contractYearsRemaining ?? 1;
   const maxed = yearsLeft >= 5;
   if (!canNegotiate) {
@@ -246,6 +257,23 @@ function ContractExtensionControls({
   const accepted = latestOffer?.id.includes('-accepted-') ?? false;
   return (
     <div className="mt-2 border-t border-neutral-800 pt-2 text-[11px]">
+      {currentClause && (
+        <div className="mb-2 rounded border border-sky-500/25 bg-sky-500/5 px-2 py-1.5">
+          <div className="flex items-center justify-between gap-2">
+            <span className="font-semibold text-sky-300">Active clause: {contractClauseLabel(currentClause.clauseType)}</span>
+            <span className="text-neutral-500">{currentClause.risk ?? 'Secure'}</span>
+          </div>
+          <div className="mt-0.5 text-neutral-400">{currentClause.triggerDescription ?? currentClause.description}</div>
+        </div>
+      )}
+      {!maxed && (
+        <label className="mb-2 flex items-center justify-between gap-2 text-neutral-400">
+          <span>Contract promise</span>
+          <select value={clauseType} onChange={(event) => setClauseType(event.target.value as ContractClauseType)} className="rounded border border-neutral-700 bg-neutral-900 px-2 py-1 text-neutral-200">
+            {DRIVER_NEGOTIATION_CLAUSES.map((type) => <option key={type} value={type}>{contractClauseLabel(type)}</option>)}
+          </select>
+        </label>
+      )}
       <div className="flex flex-wrap items-center gap-1.5">
         <span className="mr-auto text-neutral-500">
           Contract: <span className="text-neutral-300">{yearsLeft} yr{yearsLeft === 1 ? '' : 's'} left</span>
@@ -261,7 +289,7 @@ function ContractExtensionControls({
                 className="px-2 py-1 text-[11px]"
                 disabled={twoYearCost > budget}
                 title={twoYearCost > budget ? 'Insufficient budget' : `Preferred multi-year offer ${formatMoney(twoYearCost)}`}
-                onClick={() => onExtend(driver.id, 2, 1.2)}
+                onClick={() => onExtend(driver.id, 2, 1.2, clauseType)}
               >
                 Preferred +2 ({formatMoney(twoYearCost)})
               </Button>
@@ -271,7 +299,7 @@ function ContractExtensionControls({
               className="px-2 py-1 text-[11px]"
               disabled={strongOneYearCost > budget}
               title={strongOneYearCost > budget ? 'Insufficient budget' : `Improved short-term offer ${formatMoney(strongOneYearCost)}`}
-              onClick={() => onExtend(driver.id, 1, 1.35)}
+              onClick={() => onExtend(driver.id, 1, 1.35, clauseType)}
             >
               Better +1 ({formatMoney(strongOneYearCost)})
             </Button>
@@ -280,7 +308,7 @@ function ContractExtensionControls({
               className="px-2 py-1 text-[11px]"
               disabled={oneYearCost > budget}
               title={oneYearCost > budget ? 'Insufficient budget' : `Short-term offer ${formatMoney(oneYearCost)}; secure drivers may push for more years`}
-              onClick={() => onExtend(driver.id, 1, 1)}
+              onClick={() => onExtend(driver.id, 1, 1, clauseType)}
             >
               Offer +1 ({formatMoney(oneYearCost)})
             </Button>

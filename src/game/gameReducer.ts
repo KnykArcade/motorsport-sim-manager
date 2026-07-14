@@ -93,6 +93,16 @@ import {
   leadershipGameplayModifiers,
 } from '../sim/phase18IdentityCultureEngine';
 import type { TeamOrderDecision, PromiseType } from '../types/relationshipTypes';
+import type { ContractBreachResponse, ContractClauseType } from '../types/phase18Types';
+import {
+  applyNegotiatedDriverClause,
+  ensureContractClauses,
+  evaluateContractClauses,
+  linkPromiseToClause,
+  negotiationClauseScore,
+  respondToContractBreach,
+  syncClausePromiseResolution,
+} from '../sim/phase18ContractClauseEngine';
 import { createSeededRandom, deriveSeed } from '../sim/random';
 import type { AcademyDecision, FirstOptionDecision, SeatSigning } from '../types/marketTypes';
 import type { FinanceTransaction } from '../types/financeTypes';
@@ -240,7 +250,7 @@ export type GameAction =
   | { type: 'SWAP_RACE_DRIVER'; seatIndex: number; reserveDriverId: string }
   | { type: 'SIGN_THIRD_DRIVER'; marketId: string }
   | { type: 'PROMOTE_THIRD_DRIVER'; seatDriverId: string; thirdDriverId: string }
-  | { type: 'EXTEND_DRIVER_CONTRACT'; driverId: string; years: number; offerMultiplier?: number }
+  | { type: 'EXTEND_DRIVER_CONTRACT'; driverId: string; years: number; offerMultiplier?: number; clauseType?: ContractClauseType }
   | { type: 'ADVANCE_SEASON'; nextBundle?: import('../data/seasonCatalog').SeasonBundle }
   | { type: 'ADVANCE_RACE' }
   | { type: 'SIGN_RACE_DRIVER'; marketId: string }
@@ -257,6 +267,7 @@ export type GameAction =
   | { type: 'ALLOCATE_SKILL_POINT'; attribute: 'mediaImage' | 'boardConfidence' | 'financialDiscipline' | 'driverManagement' | 'development' | 'strategy'; points?: number }
   | { type: 'MAKE_PROMISE'; driverId: string; promiseType: PromiseType; dueSeason?: number; dueRound?: number }
   | { type: 'RESOLVE_PROMISE'; promiseId: string; fulfilled: boolean }
+  | { type: 'RESPOND_TO_CONTRACT_BREACH'; clauseId: string; response: ContractBreachResponse }
   | { type: 'SET_FACILITY_SPECIALIZATION'; specialization: FacilitySpecialization };
 
 // Run one practice session for the player's drivers: simulate each assignment,
@@ -661,7 +672,18 @@ export function gameReducer(state: GameState | null, action: GameAction): GameSt
 
     case 'FIRE_STAFF': {
       if (!state) return state;
-      return { ...state, staff: (state.staff ?? []).filter((s) => s.id !== action.staffId) };
+      return {
+        ...state,
+        staff: (state.staff ?? []).filter((s) => s.id !== action.staffId),
+        phase18: state.phase18 ? {
+          ...state.phase18,
+          contractClauses: state.phase18.contractClauses.map((clause) =>
+            clause.partyId === action.staffId && clause.status === 'Active'
+              ? { ...clause, status: 'Expired' as const, resolutionNote: 'Contract ended when the staff member was released.' }
+              : clause,
+          ),
+        } : state.phase18,
+      };
     }
 
     case 'UPGRADE_FACILITY': {
@@ -733,7 +755,7 @@ export function gameReducer(state: GameState | null, action: GameAction): GameSt
 
     case 'EXTEND_DRIVER_CONTRACT': {
       if (!state) return state;
-      return extendDriverContract(state, action.driverId, action.years, action.offerMultiplier ?? 1);
+      return extendDriverContract(state, action.driverId, action.years, action.offerMultiplier ?? 1, action.clauseType);
     }
 
     case 'ADVANCE_SEASON': {
@@ -813,6 +835,7 @@ export function gameReducer(state: GameState | null, action: GameAction): GameSt
       if (getCareerPhase(state) !== 'paddock_week') return state;
       // Process AI team activity once per paddock week (real state changes).
       state = processAITeamActivity(state);
+      state = evaluateContractClauses(state);
       // Generate paddock week career news.
       const race = currentRace(state);
       const paddockCtx: CareerNewsContext = {
@@ -882,7 +905,7 @@ export function gameReducer(state: GameState | null, action: GameAction): GameSt
       );
       const promises = [...existingPromises, promise];
       const relationships = applyPromiseResolution(state.driverRelationships, promise);
-      return { ...state, driverPromises: promises, driverRelationships: relationships, promiseCounter: counter + 1 };
+      return linkPromiseToClause({ ...state, driverPromises: promises, driverRelationships: relationships, promiseCounter: counter + 1 }, promise);
     }
 
     case 'RESOLVE_PROMISE': {
@@ -896,7 +919,12 @@ export function gameReducer(state: GameState | null, action: GameAction): GameSt
       const relationships = state.driverRelationships
         ? applyPromiseResolution(state.driverRelationships, resolved)
         : state.driverRelationships;
-      return { ...state, driverPromises: promises, driverRelationships: relationships };
+      return syncClausePromiseResolution({ ...state, driverPromises: promises, driverRelationships: relationships }, resolved);
+    }
+
+    case 'RESPOND_TO_CONTRACT_BREACH': {
+      if (!state) return state;
+      return respondToContractBreach(state, action.clauseId, action.response);
     }
 
     case 'SET_FACILITY_SPECIALIZATION': {
@@ -929,7 +957,7 @@ function clamp100(n: number): number {
   return Math.max(0, Math.min(100, Math.round(n)));
 }
 
-function extendDriverContract(state: GameState, driverId: string, years: number, offerMultiplier: number): GameState {
+function extendDriverContract(state: GameState, driverId: string, years: number, offerMultiplier: number, clauseType?: ContractClauseType): GameState {
   if (state.seasonComplete) return state;
   const driver = state.drivers.find((d) => d.id === driverId && d.teamId === state.selectedTeamId);
   if (!driver) return state;
@@ -942,7 +970,7 @@ function extendDriverContract(state: GameState, driverId: string, years: number,
   const fee = Math.round(driverExtensionSigningFee(driver, appliedYears, racesRemaining, state.calendar.length) * multiplier);
   if (fee > playerBudget(state)) return state;
 
-  const offer = evaluateExtensionOffer(state, driver, appliedYears, multiplier);
+  const offer = evaluateExtensionOffer(state, driver, appliedYears, multiplier, clauseType);
   if (!offer.accepted) {
     const rel = state.driverRelationships?.[driverId];
     const driverRelationships =
@@ -989,7 +1017,7 @@ function extendDriverContract(state: GameState, driverId: string, years: number,
       }
       : charged.driverRelationships;
   const acceptedNews = contractOfferNews(charged, driver, appliedYears, fee, true, offer.score);
-  return { ...charged, drivers, driverRelationships, news: [acceptedNews, ...charged.news].slice(0, 80) };
+  return applyNegotiatedDriverClause({ ...charged, drivers, driverRelationships, news: [acceptedNews, ...charged.news].slice(0, 80) }, driverId, clauseType);
 }
 
 function evaluateExtensionOffer(
@@ -997,6 +1025,7 @@ function evaluateExtensionOffer(
   driver: Driver,
   appliedYears: number,
   offerMultiplier: number,
+  clauseType?: ContractClauseType,
 ): { accepted: boolean; score: number } {
   const rel = state.driverRelationships?.[driver.id];
   const team = state.teams.find((t) => t.id === state.selectedTeamId);
@@ -1018,7 +1047,8 @@ function evaluateExtensionOffer(
     : 0;
   const securityBoost = (appliedYears >= 2 ? 9 + appliedYears * 7 : seatInsecure ? 5 : 1) + (offerMultiplier - 1) * 44;
   const expiringBoost = (driver.contractYearsRemaining ?? 1) <= 1 ? 4 : 0;
-  const score = Math.round(22 + relationshipScore + driverMood + teamPull + securityBoost + expiringBoost - ambitionPenalty - shortTermPenalty);
+  const clauseBoost = negotiationClauseScore(state, driver, clauseType);
+  const score = Math.round(22 + relationshipScore + driverMood + teamPull + securityBoost + expiringBoost + clauseBoost - ambitionPenalty - shortTermPenalty);
   return { accepted: score >= 58, score };
 }
 
@@ -1123,7 +1153,7 @@ function hireStaff(state: GameState, staffId: string): GameState {
     careerPhase: getCareerPhase(charged),
     teamId: hireTeam?.id,
   };
-  return { ...charged, staff: nextRoster, news: [staffNews, ...charged.news].slice(0, 80) };
+  return ensureContractClauses({ ...charged, staff: nextRoster, news: [staffNews, ...charged.news].slice(0, 80) });
 }
 
 // Order a facility upgrade: charge the cost now (must be affordable); the level
