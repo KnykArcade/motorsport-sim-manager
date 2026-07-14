@@ -30,6 +30,8 @@ import { enforceRosters } from './rosterEnforcement';
 import type { TeamPrincipal } from '../types/principalTypes';
 import { createMotorsportUniverse } from '../sim/motorsportUniverseEngine';
 import { planAITechnicalPrograms } from '../sim/aiTechnicalDirectorEngine';
+import { createInitialPhase18FoundationState } from '../sim/phase18FoundationEngine';
+import { CURRENT_SAVE_SCHEMA_VERSION } from './saveSchema';
 
 // Deep clone via structuredClone (available in modern browsers / Node 18+).
 function clone<T>(value: T): T {
@@ -174,6 +176,7 @@ export function createNewGame(options: NewGameOptions): GameState {
     id: `save-${Date.now()}`,
     createdAt: now,
     updatedAt: now,
+    saveSchemaVersion: CURRENT_SAVE_SCHEMA_VERSION,
     gameMode: options.gameMode,
     series: options.series,
     seasonYear: options.seasonYear,
@@ -246,5 +249,9 @@ export function createNewGame(options: NewGameOptions): GameState {
   // AI Team Management (Phase C): give every non-player team its management
   // brain (archetype, budget, financial health, goal).
   const stateWithAI = { ...stateWithUniverse, aiTeamStates: buildAllAITeamStates(stateWithUniverse) };
-  return planAITechnicalPrograms(stateWithAI);
+  const stateWithTechnicalPrograms = planAITechnicalPrograms(stateWithAI);
+  return {
+    ...stateWithTechnicalPrograms,
+    phase18: createInitialPhase18FoundationState(stateWithTechnicalPrograms),
+  };
 }

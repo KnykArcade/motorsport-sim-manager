@@ -41,11 +41,15 @@ import type { RaceWeekendPackageSelection, FinancialDistressMap } from '../types
 import type { CareerPhaseState } from '../types/careerPhaseTypes';
 import type { TeamResearchMap } from '../types/rdTypes';
 import type { TeamPartsMap } from '../types/partsTypes';
+import type { Phase18FoundationState } from '../types/phase18Types';
 
 export type GameState = {
   id: string;
   createdAt: string;
   updatedAt: string;
+  // Persisted format revision. Optional only so pre-versioned saves can be
+  // recognized and migrated on load.
+  saveSchemaVersion?: number;
 
   gameMode: GameMode;
   series: Series;
@@ -177,6 +181,10 @@ export type GameState = {
   // its own academy, keyed by teamId. They progress and reach first-option age
   // exactly like the player's academy. Absent on pre-Phase-D saves.
   aiAcademies?: Record<string, AcademyMember[]>;
+
+  // Phase 18+ living-paddock data foundation. Gameplay engines progressively
+  // consume these persisted models in the reviewable PRs after 18A.
+  phase18?: Phase18FoundationState;
 
   randomSeed: string;
   seasonComplete: boolean;
