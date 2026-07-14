@@ -158,6 +158,56 @@ export type IntelligenceReport = {
 
 export type IntelligenceAction = 'Investigate' | 'AskAdvisor' | 'Monitor' | 'Ignore';
 
+export type CarLaunchApproach = 'Measured' | 'CommercialShowcase' | 'PerformanceStatement';
+export type PreseasonTestingFocus = 'Balanced' | 'Performance' | 'Reliability' | 'RaceOperations' | 'Experimental';
+export type PreseasonFlawArea = 'PowerUnit' | 'Aerodynamics' | 'Mechanical' | 'Reliability' | 'Operations';
+
+export type PreseasonHiddenFlaw = {
+  id: string;
+  area: PreseasonFlawArea;
+  severity: number;
+  discovered: boolean;
+  resolved: boolean;
+  description: string;
+};
+
+export type PreseasonTestingReport = {
+  day: number;
+  headline: string;
+  summary: string;
+  paceSignal: number;
+  reliabilitySignal: number;
+  confidence: number;
+};
+
+export type PreseasonProgramState = {
+  teamId: string;
+  seasonYear: number;
+  launchApproach?: CarLaunchApproach;
+  launchCompleted: boolean;
+  testingFocus?: PreseasonTestingFocus;
+  testingCompleted: boolean;
+  testingReports: PreseasonTestingReport[];
+  hiddenFlaws: PreseasonHiddenFlaw[];
+  readiness: { pace: number; reliability: number; operations: number; knowledge: number; overall: number };
+  aiDecisionReason?: string;
+};
+
+export type PreseasonRivalReport = {
+  id: string;
+  teamId: string;
+  claim: string;
+  confidence: number;
+  assessment: 'Unverified' | 'Plausible' | 'Likely';
+  hiddenTruth: 'True' | 'False' | 'Mixed';
+};
+
+export type PreseasonHubState = {
+  seasonYear: number;
+  programs: Record<string, PreseasonProgramState>;
+  rivalReports: PreseasonRivalReport[];
+};
+
 export type ContractPartyType = 'Driver' | 'Staff' | 'TeamPrincipal';
 
 export type ContractClauseType =
@@ -361,6 +411,7 @@ export type Phase18FoundationState = {
   advisorRecommendations: AdvisorRecommendation[];
   departmentMoods: Record<string, Record<DepartmentId, DepartmentMood>>;
   intelligenceReports: IntelligenceReport[];
+  preseason?: PreseasonHubState;
   contractClauses: ContractClause[];
   teamCultures: Record<string, TeamCultureState>;
   rivalRelationships: Record<string, RivalRelationship>;
