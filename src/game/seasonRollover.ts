@@ -17,6 +17,7 @@ import {
 import { BALANCED_SETUP } from '../data/setup/setupComponents';
 import { applyOffseasonDecay, calculateOffseasonCarryover } from '../sim/developmentEngine';
 import { allocateSeasonTPP, ensureTeamResearchMap } from '../sim/rdEngine';
+import { rolloverTeamPartsMap } from '../sim/partsEngine';
 import {
   academyMemberAge,
   academyMemberToDriver,
@@ -1430,6 +1431,12 @@ export function advanceSeason(state: GameState, nextBundle?: SeasonBundle): Game
     activeDevelopmentProjects: [],
     completedDevelopmentProjects: [],
     teamResearch: nextTeamResearch,
+    teamParts: rolloverTeamPartsMap(
+      state.teamParts,
+      teamsWithOpsSync,
+      gridFilled.drivers,
+      nextYear,
+    ),
     offseasonHistory: [...state.offseasonHistory, summary],
     newsArchive: archiveMajorStories(state.news, state.newsArchive),
     news: [

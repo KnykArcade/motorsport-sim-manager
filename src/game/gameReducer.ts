@@ -168,6 +168,19 @@ import {
   approvePreseasonTab,
 } from './careerPhaseEngine';
 import { isActionBlocked, isSingleSeasonMode } from './modeRestrictions';
+import type { PartType } from '../types/partsTypes';
+import {
+  carWithFittedParts,
+  ensureTeamPartsMap,
+  fitPart,
+  manufacturingQuote,
+  progressPartsAfterRace,
+  repairQuote,
+  retirePart,
+  startPartManufacturing,
+  startPartRepair,
+  transferFittedParts,
+} from '../sim/partsEngine';
 
 export type GameAction =
   | { type: 'NEW_GAME'; options: NewGameOptions }
@@ -186,6 +199,10 @@ export type GameAction =
   | { type: 'RUSH_DEVELOPMENT'; projectId: string }
   | { type: 'SET_RESEARCH_FOCUS'; branchId: RDBranchId }
   | { type: 'START_RD_PROJECT'; request: RDProjectStartRequest }
+  | { type: 'START_PART_MANUFACTURING'; partType: PartType; quantity?: number }
+  | { type: 'FIT_PART'; partId: string; driverId: string }
+  | { type: 'REPAIR_PART'; partId: string }
+  | { type: 'RETIRE_PART'; partId: string }
   | { type: 'SET_CAR_SETUP'; driverId: string; setup: CarSetup }
   | {
       type: 'RUN_PRACTICE_SESSION';
@@ -348,7 +365,10 @@ function buildEntrants(state: GameState): Entrant[] {
     const car = carForTeam(state, team.id);
     if (!car) continue;
     for (const driver of activeDriversForTeam(state, team.id)) {
-      entrants.push({ driver, car });
+      entrants.push({
+        driver,
+        car: carWithFittedParts(car, state.teamParts?.[team.id], driver.id),
+      });
     }
   }
   return entrants;
@@ -393,7 +413,17 @@ function swapRaceDriver(state: GameState, seatIndex: number, reserveDriverId: st
     if (d.id === seatDriverId) return { ...d, contractType: 'reserve' as const };
     return d;
   });
-  const updated = { ...state, teams, drivers };
+  const teamParts = ensureTeamPartsMap(state.teamParts, teams, drivers, state.seasonYear);
+  const currentParts = teamParts[teamId];
+  const updatedParts = currentParts
+    ? transferFittedParts(currentParts, seatDriverId, reserveDriverId)
+    : currentParts;
+  const updated = {
+    ...state,
+    teams,
+    drivers,
+    teamParts: updatedParts ? { ...teamParts, [teamId]: updatedParts } : teamParts,
+  };
   // Sync relationships after roster change.
   return syncDriverRelationshipsForTeam(updated, teamId, state.randomSeed ?? 'sync');
 }
@@ -526,6 +556,26 @@ export function gameReducer(state: GameState | null, action: GameAction): GameSt
     case 'START_RD_PROJECT': {
       if (!state || isSingleSeasonMode(state.gameMode)) return state;
       return startRDProject(state, action.request);
+    }
+
+    case 'START_PART_MANUFACTURING': {
+      if (!state) return state;
+      return startPartManufacturingAction(state, action.partType, action.quantity ?? 1);
+    }
+
+    case 'FIT_PART': {
+      if (!state) return state;
+      return fitPartAction(state, action.partId, action.driverId);
+    }
+
+    case 'REPAIR_PART': {
+      if (!state) return state;
+      return repairPartAction(state, action.partId);
+    }
+
+    case 'RETIRE_PART': {
+      if (!state) return state;
+      return retirePartAction(state, action.partId);
     }
 
     case 'SET_CAR_SETUP': {
@@ -1747,6 +1797,25 @@ function applyRaceResults(
     });
   }
 
+  // Player component lifecycle shares the authoritative race-completion tick:
+  // fitted parts accrue track-specific wear while factory builds and repairs
+  // advance one round. AI inventories are seeded for the later AI-R&D phase but
+  // are deliberately not managed here yet.
+  let teamParts = ensureTeamPartsMap(state.teamParts, state.teams, state.drivers, state.seasonYear);
+  const playerParts = teamParts[state.selectedTeamId];
+  const partsTrack = getTrackById(race.trackId);
+  if (playerParts && partsTrack) {
+    const partsTick = progressPartsAfterRace(
+      playerParts,
+      results,
+      partsTrack,
+      state.seasonYear,
+      race.round,
+    );
+    teamParts = { ...teamParts, [state.selectedTeamId]: partsTick.state };
+    devMessages.push(...partsTick.messages);
+  }
+
   // News.
   const driverNames: Record<string, string> = {};
   state.drivers.forEach((d) => (driverNames[d.id] = d.name));
@@ -1845,6 +1914,7 @@ function applyRaceResults(
     activeDevelopmentProjects,
     completedDevelopmentProjects,
     teamResearch,
+    teamParts,
     finance: [...(state.finance ?? []), ...financeTxns],
     raceArchive,
     driverRelationships,
@@ -1854,6 +1924,84 @@ function applyRaceResults(
     currentRaceIndex: seasonComplete ? state.currentRaceIndex : nextIndex,
     seasonComplete,
   };
+}
+
+function partsRound(state: GameState): number {
+  return currentRace(state)?.round ?? state.currentRaceIndex + 1;
+}
+
+function startPartManufacturingAction(state: GameState, partType: PartType, quantity: number): GameState {
+  const team = state.teams.find((candidate) => candidate.id === state.selectedTeamId);
+  if (!team) return state;
+  const teamParts = ensureTeamPartsMap(state.teamParts, state.teams, state.drivers, state.seasonYear);
+  const parts = teamParts[state.selectedTeamId];
+  if (!parts || parts.manufacturingQueue.length >= 3) return state;
+  const research = ensureTeamResearchMap(state.teamResearch, state.teams, state.seasonYear)[state.selectedTeamId];
+  const order = manufacturingQuote(parts, partType, quantity, research, state.seasonYear, partsRound(state));
+  if (team.budget < order.cost) return state;
+  const updated = startPartManufacturing(parts, order);
+  if (updated === parts) return state;
+  return {
+    ...state,
+    teams: state.teams.map((candidate) => candidate.id === team.id
+      ? { ...candidate, budget: candidate.budget - order.cost }
+      : candidate),
+    teamParts: { ...teamParts, [team.id]: updated },
+    finance: [
+      ...(state.finance ?? []),
+      makeTransaction(
+        state.seasonYear,
+        'Development',
+        `${order.quantity}x ${partType.replace('_', ' ')} manufacturing`,
+        -order.cost,
+        partsRound(state),
+      ),
+    ],
+  };
+}
+
+function fitPartAction(state: GameState, partId: string, driverId: string): GameState {
+  const driver = state.drivers.find((candidate) => candidate.id === driverId && candidate.teamId === state.selectedTeamId);
+  if (!driver) return state;
+  const teamParts = ensureTeamPartsMap(state.teamParts, state.teams, state.drivers, state.seasonYear);
+  const parts = teamParts[state.selectedTeamId];
+  if (!parts) return state;
+  const updated = fitPart(parts, partId, driverId, state.seasonYear, partsRound(state));
+  if (updated === parts) return state;
+  return { ...state, teamParts: { ...teamParts, [state.selectedTeamId]: updated } };
+}
+
+function repairPartAction(state: GameState, partId: string): GameState {
+  const team = state.teams.find((candidate) => candidate.id === state.selectedTeamId);
+  if (!team) return state;
+  const teamParts = ensureTeamPartsMap(state.teamParts, state.teams, state.drivers, state.seasonYear);
+  const parts = teamParts[state.selectedTeamId];
+  const part = parts?.inventory.find((candidate) => candidate.id === partId);
+  if (!parts || !part) return state;
+  const quote = repairQuote(part);
+  if (team.budget < quote.cost) return state;
+  const updated = startPartRepair(parts, partId);
+  if (updated === parts) return state;
+  return {
+    ...state,
+    teams: state.teams.map((candidate) => candidate.id === team.id
+      ? { ...candidate, budget: candidate.budget - quote.cost }
+      : candidate),
+    teamParts: { ...teamParts, [team.id]: updated },
+    finance: [
+      ...(state.finance ?? []),
+      makeTransaction(state.seasonYear, 'Development', `${part.name} repair`, -quote.cost, partsRound(state)),
+    ],
+  };
+}
+
+function retirePartAction(state: GameState, partId: string): GameState {
+  const teamParts = ensureTeamPartsMap(state.teamParts, state.teams, state.drivers, state.seasonYear);
+  const parts = teamParts[state.selectedTeamId];
+  if (!parts) return state;
+  const updated = retirePart(parts, partId, state.seasonYear, partsRound(state));
+  if (updated === parts) return state;
+  return { ...state, teamParts: { ...teamParts, [state.selectedTeamId]: updated } };
 }
 
 function startDevelopment(state: GameState, projectId: string, rushed: boolean): GameState {

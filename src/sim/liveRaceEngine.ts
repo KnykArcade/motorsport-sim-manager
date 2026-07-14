@@ -255,10 +255,13 @@ export function createLiveRace(context: RaceContext, options: LiveRaceOptions): 
       crashRisk: baseCrashRisk,
       damaged: false,
       fuel: 100,
-      engineHealth: 100,
-      gearboxHealth: 100,
-      brakeHealth: 100,
-      aeroHealth: qIncident === 'Crash' ? 82 : 100,
+      engineHealth: clamp100(e.car.componentCondition?.powerUnit ?? 100),
+      gearboxHealth: clamp100(e.car.componentCondition?.gearbox ?? 100),
+      brakeHealth: clamp100(e.car.componentCondition?.brakes ?? 100),
+      aeroHealth: Math.min(
+        qIncident === 'Crash' ? 82 : 100,
+        clamp100(e.car.componentCondition?.aero ?? 100),
+      ),
       currentSector: 0,
       sectorProgress: 0,
       lastSectors: null,
@@ -409,6 +412,9 @@ function ratingFor(finishPos: number, grid: number): number {
 
 function clamp10(n: number): number {
   return Math.max(1, Math.min(10, n));
+}
+function clamp100(n: number): number {
+  return Math.max(1, Math.min(100, n));
 }
 function round1(n: number): number {
   return Math.round(n * 10) / 10;

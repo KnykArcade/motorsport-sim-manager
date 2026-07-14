@@ -33,6 +33,7 @@ import type { Entrant, RaceContext, RaceDecision, RacePrepFocusEffect } from '..
 import type { RaceWeekendPackageEffects } from '../types/raceWeekendPackageTypes';
 import type { DamageBalanceSettings, PitIntensity } from '../types/liveTypes';
 import type { TeamOrganizationRatings } from '../types/teamRatingsTypes';
+import { carWithFittedParts } from '../sim/partsEngine';
 import { packageEffects as getPackageEffects } from '../sim/raceWeekendPackageEngine';
 import { confidencePerformanceModifier } from '../sim/driverConfidenceEngine';
 import type { LiveRaceMeta, LiveRaceOptions } from '../sim/liveRaceEngine';
@@ -135,7 +136,10 @@ export function buildRaceContext(
     if (!car) continue;
     for (const driver of activeDriversForTeam(state, team.id)) {
       if (didNotQualify.has(driver.id)) continue;
-      entrants.push({ driver, car });
+      entrants.push({
+        driver,
+        car: carWithFittedParts(car, state.teamParts?.[team.id], driver.id),
+      });
     }
   }
 

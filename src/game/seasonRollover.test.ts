@@ -53,6 +53,30 @@ describe('academy progression', () => {
 });
 
 describe('advanceSeason', () => {
+  it('starts the new season with fresh fitted components and preserves parts history', () => {
+    const base = newOffseasonState();
+    const playerParts = base.teamParts![base.selectedTeamId];
+    const state: GameState = {
+      ...base,
+      teamParts: {
+        ...base.teamParts,
+        [base.selectedTeamId]: {
+          ...playerParts,
+          inventory: playerParts.inventory.map((part, index) => index === 0 ? { ...part, condition: 22 } : part),
+          history: [{
+            id: 'parts-history-test', seasonYear: base.seasonYear, round: 1,
+            type: 'worn', description: 'Test component wear',
+          }],
+        },
+      },
+    };
+    const next = advanceSeason(state);
+    const nextParts = next.teamParts![base.selectedTeamId];
+    expect(nextParts.inventory.filter((part) => part.status === 'fitted').every((part) => part.condition === 100)).toBe(true);
+    expect(nextParts.manufacturingQueue).toEqual([]);
+    expect(nextParts.history.some((entry) => entry.id === 'parts-history-test')).toBe(true);
+  });
+
   it('applies a market signing, increments the year, and resets the season', () => {
     const base = newOffseasonState();
     const seat = base.drivers.find((d) => d.teamId === base.selectedTeamId)!;

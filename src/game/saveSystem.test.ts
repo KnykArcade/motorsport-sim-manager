@@ -34,6 +34,9 @@ describe('save model', () => {
     // R&D foundation: every team owns its own research state and TPP ledger.
     expect(Object.keys(s.teamResearch ?? {})).toHaveLength(s.teams.length);
     expect(s.teamResearch?.[s.selectedTeamId].tpp.balance).toBe(30);
+    // Parts lifecycle: fitted components and factory inventory are persisted.
+    expect(Object.keys(s.teamParts ?? {})).toHaveLength(s.teams.length);
+    expect(s.teamParts?.[s.selectedTeamId].inventory.length).toBeGreaterThan(0);
   });
 
   it('round-trips the new optional systems through JSON', () => {
@@ -58,5 +61,8 @@ describe('save model', () => {
     const cloned = JSON.parse(JSON.stringify(withSystems)) as GameState;
     expect(cloned.commercial?.sponsors[0].name).toBe('Test Co');
     expect(cloned.commercial?.commercialReputation).toBe(60);
+    expect(cloned.teamParts?.[cloned.selectedTeamId].inventory).toEqual(
+      withSystems.teamParts?.[withSystems.selectedTeamId].inventory,
+    );
   });
 });
