@@ -119,6 +119,10 @@ export function ensurePhase18FoundationState(
   }
 
   return {
+    // Preserve feature modules added after the original foundation schema. The
+    // explicit fields below are still normalized/backfilled, while extensions
+    // such as the preseason hub survive subsequent ensure calls and save loads.
+    ...existing,
     version: PHASE_18_FOUNDATION_VERSION,
     principalIdentity: ensurePrincipalIdentity(playerPrincipalId, existing?.principalIdentity),
     aiPrincipalIdentities,

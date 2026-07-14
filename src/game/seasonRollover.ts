@@ -77,6 +77,7 @@ import { buildAITeamState, rolloverAITeamStates, constructorPositionOf, updateAI
 import { ensurePhase18FoundationState } from '../sim/phase18FoundationEngine';
 import { ensureContractClauses } from '../sim/phase18ContractClauseEngine';
 import { rolloverIntelligenceReports } from '../sim/phase18IntelligenceEngine';
+import { ensurePreseasonHubState } from '../sim/phase18PreseasonEngine';
 import { updateTeamMemory } from '../sim/teamIdentityEngine';
 import type { TeamMemoryEntry } from '../types/aiTeamTypes';
 import { runAIOffseason, makeRookieDriver } from '../sim/aiOffseasonEngine';
@@ -1483,12 +1484,16 @@ export function advanceSeason(state: GameState, nextBundle?: SeasonBundle): Game
     const isVoluntary = !!state.acceptedJobOfferId
       && (state.jobOffers ?? []).some(
         (o) => o.id === state.acceptedJobOfferId && o.kind === 'Offer' && o.teamId === moveTeamId,
-      );
+    );
     if (isVoluntary || (mobilityMode !== 'TeamLock' && mobilityMode !== 'Sandbox')) {
-      return applyPrincipalMove(nextState, moveTeamId);
+      const movedState = applyPrincipalMove(nextState, moveTeamId);
+      // The player/AI ownership map changes with the move, so regenerate the
+      // new season's programmes after the destination team is known.
+      movedState.phase18 = { ...movedState.phase18!, preseason: undefined };
+      return ensurePreseasonHubState(movedState);
     }
   }
-  return nextState;
+  return ensurePreseasonHubState(nextState);
 }
 
 // Switch the player to a new team after a principal move: rebuild the

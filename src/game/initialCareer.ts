@@ -32,6 +32,7 @@ import { createMotorsportUniverse } from '../sim/motorsportUniverseEngine';
 import { planAITechnicalPrograms } from '../sim/aiTechnicalDirectorEngine';
 import { createInitialPhase18FoundationState } from '../sim/phase18FoundationEngine';
 import { ensureContractClauses } from '../sim/phase18ContractClauseEngine';
+import { ensurePreseasonHubState } from '../sim/phase18PreseasonEngine';
 import { CURRENT_SAVE_SCHEMA_VERSION } from './saveSchema';
 
 // Deep clone via structuredClone (available in modern browsers / Node 18+).
@@ -251,8 +252,8 @@ export function createNewGame(options: NewGameOptions): GameState {
   // brain (archetype, budget, financial health, goal).
   const stateWithAI = { ...stateWithUniverse, aiTeamStates: buildAllAITeamStates(stateWithUniverse) };
   const stateWithTechnicalPrograms = planAITechnicalPrograms(stateWithAI);
-  return ensureContractClauses({
+  return ensurePreseasonHubState(ensureContractClauses({
     ...stateWithTechnicalPrograms,
     phase18: createInitialPhase18FoundationState(stateWithTechnicalPrograms),
-  });
+  }));
 }

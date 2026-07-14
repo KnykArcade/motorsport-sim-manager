@@ -21,6 +21,22 @@ import { formatMoney } from '../components/ui';
 import { isPreseasonChecklistComplete, getPreseasonApprovals } from '../game/careerPhaseEngine';
 import { getGameModeLabel } from '../game/modeRestrictions';
 import { OWNER_PERSONALITY_LABELS, OWNER_PERSONALITY_DESCRIPTIONS } from '../types/expectationTypes';
+import type { CarLaunchApproach, PreseasonTestingFocus } from '../types/phase18Types';
+import { PRESEASON_FLAW_FIX_COST, PRESEASON_TESTING_COST, preseasonProgramFor } from '../sim/phase18PreseasonEngine';
+
+const LAUNCH_OPTIONS: Array<{ id: CarLaunchApproach; label: string; description: string }> = [
+  { id: 'Measured', label: 'Measured Reveal', description: 'Protect expectations and give engineers a calm start.' },
+  { id: 'CommercialShowcase', label: 'Commercial Showcase', description: 'Prioritize sponsor confidence and public momentum.' },
+  { id: 'PerformanceStatement', label: 'Performance Statement', description: 'Set an ambitious tone with greater pressure to deliver.' },
+];
+
+const TESTING_OPTIONS: Array<{ id: PreseasonTestingFocus; label: string; description: string }> = [
+  { id: 'Balanced', label: 'Balanced Baseline', description: 'Steady gains across pace, reliability, operations, and knowledge.' },
+  { id: 'Performance', label: 'Performance Runs', description: 'Prioritize outright pace with less durability work.' },
+  { id: 'Reliability', label: 'Reliability Validation', description: 'Maximize mileage and the chance of discovering hidden flaws.' },
+  { id: 'RaceOperations', label: 'Race Operations', description: 'Practice procedures, pit work, and Race 1 execution.' },
+  { id: 'Experimental', label: 'Experimental Programme', description: 'Highest pace upside with extra reliability and flaw risk.' },
+];
 
 export function PreSeasonSetup() {
   const { state, dispatch } = useGame();
@@ -38,6 +54,9 @@ export function PreSeasonSetup() {
   const track = race ? getTrackById(race.trackId) : undefined;
   const carRatings = car ? effectiveCarRatings(car) : null;
   const slots = developmentSlots(state.facilities);
+  const preseasonProgram = preseasonProgramFor(state);
+  const preseasonHub = state.phase18?.preseason;
+  const canConfirmDevelopment = !!preseasonProgram?.launchCompleted && !!preseasonProgram.testingCompleted;
 
   const isCareer = state.gameMode === 'Career';
   const isSingleSeason = state.gameMode === 'SingleSeason';
@@ -260,6 +279,50 @@ export function PreSeasonSetup() {
                 <StatChip label="Pit Crew" value={carRatings.pitCrewOperations.toFixed(1)} />
               </div>
             )}
+            <div className="mt-5 space-y-4 border-t border-neutral-800 pt-4">
+              <div>
+                <div className="flex items-center justify-between gap-2">
+                  <h3 className="text-sm font-semibold text-neutral-100">1. Car Launch</h3>
+                  <span className={`rounded px-2 py-0.5 text-[10px] font-semibold uppercase ${preseasonProgram?.launchCompleted ? 'bg-emerald-500/15 text-emerald-300' : 'bg-amber-500/15 text-amber-300'}`}>{preseasonProgram?.launchCompleted ? preseasonProgram.launchApproach : 'Decision required'}</span>
+                </div>
+                <p className="mt-1 text-xs text-neutral-500">The launch sets sponsor expectations, team morale, and the public tone before testing.</p>
+                {!preseasonProgram?.launchCompleted && <div className="mt-3 grid gap-2 md:grid-cols-3">
+                  {LAUNCH_OPTIONS.map((option) => <button key={option.id} type="button" onClick={() => dispatch({ type: 'COMPLETE_CAR_LAUNCH', approach: option.id })} className="rounded-lg border border-neutral-700 bg-neutral-900/50 p-3 text-left hover:border-sky-500/60"><div className="text-xs font-semibold text-sky-300">{option.label}</div><p className="mt-1 text-[11px] text-neutral-400">{option.description}</p></button>)}
+                </div>}
+              </div>
+
+              <div>
+                <div className="flex items-center justify-between gap-2">
+                  <h3 className="text-sm font-semibold text-neutral-100">2. Testing Programme</h3>
+                  <span className={`rounded px-2 py-0.5 text-[10px] font-semibold uppercase ${preseasonProgram?.testingCompleted ? 'bg-emerald-500/15 text-emerald-300' : 'bg-amber-500/15 text-amber-300'}`}>{preseasonProgram?.testingCompleted ? preseasonProgram.testingFocus : preseasonProgram?.launchCompleted ? 'Choose focus' : 'Launch first'}</span>
+                </div>
+                {!preseasonProgram?.testingCompleted && <div className="mt-3 grid gap-2 md:grid-cols-2 xl:grid-cols-5">
+                  {TESTING_OPTIONS.map((option) => {
+                    const cost = isSingleSeason ? 0 : PRESEASON_TESTING_COST[option.id];
+                    return <button key={option.id} type="button" disabled={!preseasonProgram?.launchCompleted || (team?.budget ?? 0) < cost} onClick={() => dispatch({ type: 'COMPLETE_PRESEASON_TESTING', focus: option.id })} className="rounded-lg border border-neutral-700 bg-neutral-900/50 p-3 text-left enabled:hover:border-amber-500/60 disabled:cursor-not-allowed disabled:opacity-40"><div className="text-xs font-semibold text-amber-300">{option.label}</div><p className="mt-1 text-[11px] text-neutral-400">{option.description}</p><div className="mt-2 text-[10px] text-neutral-500">{cost ? formatMoney(cost) : 'Included'}</div></button>;
+                  })}
+                </div>}
+                {preseasonProgram?.testingCompleted && <div className="mt-3 grid gap-2 md:grid-cols-3">
+                  {preseasonProgram.testingReports.map((report) => <div key={report.day} className="rounded border border-neutral-800 bg-neutral-900/45 p-3"><div className="text-xs font-semibold text-neutral-100">{report.headline}</div><p className="mt-1 text-[11px] text-neutral-400">{report.summary}</p><div className="mt-2 flex justify-between text-[10px] text-neutral-500"><span>Pace {report.paceSignal}</span><span>Reliability {report.reliabilitySignal}</span><span>Confidence {report.confidence}%</span></div></div>)}
+                </div>}
+              </div>
+
+              {preseasonProgram?.testingCompleted && <div>
+                <h3 className="text-sm font-semibold text-neutral-100">Race 1 Readiness</h3>
+                <div className="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-5">
+                  <ReadinessChip label="Overall" value={preseasonProgram.readiness.overall} />
+                  <ReadinessChip label="Pace" value={preseasonProgram.readiness.pace} />
+                  <ReadinessChip label="Reliability" value={preseasonProgram.readiness.reliability} />
+                  <ReadinessChip label="Operations" value={preseasonProgram.readiness.operations} />
+                  <ReadinessChip label="Knowledge" value={preseasonProgram.readiness.knowledge} />
+                </div>
+              </div>}
+
+              {preseasonProgram?.hiddenFlaws.some((flaw) => flaw.discovered) && <div className="rounded-lg border border-orange-500/35 bg-orange-500/5 p-3">
+                <h3 className="text-sm font-semibold text-orange-200">Discovered Technical Issues</h3>
+                <div className="mt-2 space-y-2">{preseasonProgram.hiddenFlaws.filter((flaw) => flaw.discovered).map((flaw) => <div key={flaw.id} className="flex flex-wrap items-center justify-between gap-2 text-xs"><div><span className="font-semibold text-neutral-200">{flaw.area}</span><span className="ml-2 text-neutral-400">{flaw.description}</span></div>{flaw.resolved ? <span className="text-emerald-300">Corrected</span> : <Button variant="ghost" className="px-2 py-1 text-[11px]" disabled={(team?.budget ?? 0) < PRESEASON_FLAW_FIX_COST} onClick={() => dispatch({ type: 'RESOLVE_PRESEASON_FLAW', flawId: flaw.id })}>Correct before Race 1 ({formatMoney(PRESEASON_FLAW_FIX_COST)})</Button>}</div>)}</div>
+              </div>}
+            </div>
             <div className="mt-3 text-sm text-neutral-400">
               Car condition: {Math.round(car?.condition ?? 0)}%
             </div>
@@ -278,9 +341,9 @@ export function PreSeasonSetup() {
               <Button
                 variant="primary"
                 onClick={() => approveTab('carDevelopment')}
-                disabled={approvals.carDevelopment}
+                disabled={approvals.carDevelopment || !canConfirmDevelopment}
               >
-                {approvals.carDevelopment ? 'Confirmed' : 'Confirm Development Plan'}
+                {approvals.carDevelopment ? 'Confirmed' : canConfirmDevelopment ? 'Confirm Development Plan' : 'Complete Launch & Testing First'}
               </Button>
             </div>
           </Panel>
@@ -397,6 +460,15 @@ export function PreSeasonSetup() {
                 <div className="mt-3">
                   <TrackDemandBars track={track} />
                 </div>
+                {preseasonProgram?.testingCompleted && <div className="mt-4 rounded-lg border border-sky-500/25 bg-sky-500/5 p-3">
+                  <div className="flex items-center justify-between"><span className="text-sm font-semibold text-sky-200">Your Race 1 readiness</span><span className="text-lg font-bold text-neutral-100">{preseasonProgram.readiness.overall}%</span></div>
+                  <p className="mt-1 text-xs text-neutral-400">Testing readiness modifies the opening-round car baseline. Any unresolved hidden flaw can reduce reliability.</p>
+                </div>}
+                {(preseasonHub?.rivalReports.length ?? 0) > 0 && <div className="mt-4">
+                  <h3 className="text-sm font-semibold text-neutral-100">Rival Testing Watch</h3>
+                  <p className="mt-1 text-xs text-neutral-500">Fuel loads and run plans are unknown. Treat every claim as an estimate.</p>
+                  <div className="mt-2 grid gap-2 md:grid-cols-2">{preseasonHub!.rivalReports.slice(0, 4).map((report) => <div key={report.id} className="rounded border border-neutral-800 bg-neutral-900/45 p-2.5"><div className="flex justify-between gap-2 text-[10px] uppercase text-neutral-500"><span>{state.teams.find((entry) => entry.id === report.teamId)?.name ?? report.teamId}</span><span>{report.assessment} · {report.confidence}%</span></div><p className="mt-1 text-xs text-neutral-300">{report.claim}</p></div>)}</div>
+                </div>}
               </>
             ) : (
               <p className="text-sm text-neutral-500">Race data not available.</p>
@@ -431,4 +503,9 @@ function StatChip({ label, value }: { label: string; value: string }) {
       <div className="text-sm font-bold text-neutral-200">{value}</div>
     </div>
   );
+}
+
+function ReadinessChip({ label, value }: { label: string; value: number }) {
+  const tone = value >= 75 ? 'text-emerald-300' : value >= 60 ? 'text-sky-300' : value >= 45 ? 'text-amber-300' : 'text-red-300';
+  return <div className="rounded border border-neutral-800 bg-neutral-900/45 px-3 py-2 text-center"><div className="text-[10px] uppercase text-neutral-500">{label}</div><div className={`mt-1 text-lg font-bold ${tone}`}>{value}</div></div>;
 }

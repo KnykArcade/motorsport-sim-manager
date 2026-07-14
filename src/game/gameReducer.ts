@@ -93,8 +93,7 @@ import {
   leadershipGameplayModifiers,
 } from '../sim/phase18IdentityCultureEngine';
 import type { TeamOrderDecision, PromiseType } from '../types/relationshipTypes';
-import type { ContractBreachResponse, ContractClauseType } from '../types/phase18Types';
-import type { IntelligenceAction } from '../types/phase18Types';
+import type { CarLaunchApproach, ContractBreachResponse, ContractClauseType, IntelligenceAction, PreseasonTestingFocus } from '../types/phase18Types';
 import {
   applyNegotiatedDriverClause,
   ensureContractClauses,
@@ -105,6 +104,7 @@ import {
   syncClausePromiseResolution,
 } from '../sim/phase18ContractClauseEngine';
 import { generatePaddockIntelligence, resolveIntelligenceAction } from '../sim/phase18IntelligenceEngine';
+import { applyPreseasonCarModifier, completeCarLaunch, completePreseasonTesting, ensurePreseasonHubState, resolvePreseasonFlaw } from '../sim/phase18PreseasonEngine';
 import { createSeededRandom, deriveSeed } from '../sim/random';
 import type { AcademyDecision, FirstOptionDecision, SeatSigning } from '../types/marketTypes';
 import type { FinanceTransaction } from '../types/financeTypes';
@@ -271,6 +271,9 @@ export type GameAction =
   | { type: 'RESOLVE_PROMISE'; promiseId: string; fulfilled: boolean }
   | { type: 'RESPOND_TO_CONTRACT_BREACH'; clauseId: string; response: ContractBreachResponse }
   | { type: 'RESOLVE_INTELLIGENCE_ACTION'; reportId: string; action: IntelligenceAction }
+  | { type: 'COMPLETE_CAR_LAUNCH'; approach: CarLaunchApproach }
+  | { type: 'COMPLETE_PRESEASON_TESTING'; focus: PreseasonTestingFocus }
+  | { type: 'RESOLVE_PRESEASON_FLAW'; flawId: string }
   | { type: 'SET_FACILITY_SPECIALIZATION'; specialization: FacilitySpecialization };
 
 // Run one practice session for the player's drivers: simulate each assignment,
@@ -386,7 +389,7 @@ function buildEntrants(state: GameState): Entrant[] {
     for (const driver of activeDriversForTeam(state, team.id)) {
       entrants.push({
         driver,
-        car: carWithFittedParts(car, state.teamParts?.[team.id], driver.id),
+        car: applyPreseasonCarModifier(state, carWithFittedParts(car, state.teamParts?.[team.id], driver.id)),
       });
     }
   }
@@ -818,6 +821,9 @@ export function gameReducer(state: GameState | null, action: GameAction): GameSt
       if (!state) return state;
       if (getCareerPhase(state) !== 'pre_season_setup') return state;
       if (!isPreseasonChecklistComplete(state)) return state;
+      state = ensurePreseasonHubState(state);
+      if (!state.phase18?.preseason?.programs[state.selectedTeamId]?.launchCompleted) state = completeCarLaunch(state, 'Measured');
+      if (!state.phase18?.preseason?.programs[state.selectedTeamId]?.testingCompleted) state = completePreseasonTesting(state, 'Balanced');
       // Generate preseason career news.
       const preseasonCtx: CareerNewsContext = {
         state,
@@ -934,6 +940,21 @@ export function gameReducer(state: GameState | null, action: GameAction): GameSt
     case 'RESOLVE_INTELLIGENCE_ACTION': {
       if (!state) return state;
       return resolveIntelligenceAction(state, action.reportId, action.action);
+    }
+
+    case 'COMPLETE_CAR_LAUNCH': {
+      if (!state) return state;
+      return completeCarLaunch(state, action.approach);
+    }
+
+    case 'COMPLETE_PRESEASON_TESTING': {
+      if (!state) return state;
+      return completePreseasonTesting(state, action.focus);
+    }
+
+    case 'RESOLVE_PRESEASON_FLAW': {
+      if (!state) return state;
+      return resolvePreseasonFlaw(state, action.flawId);
     }
 
     case 'SET_FACILITY_SPECIALIZATION': {
