@@ -6,19 +6,21 @@ import { setupOptionsById } from '../data/setupOptions/setupOptions';
 import { autoSetupOptionsForTrack } from '../sim/autoSetup';
 import { qualifyingRunPlansById } from '../data/decisions/qualifyingRunPlans';
 import { developmentProjectsById } from '../data/development/developmentProjects';
-import { rdFoundationProjectById } from '../data/rd/rdFoundationCatalog';
 import { qualifyingFormatFor, simulateQualifying } from '../sim/qualifyingEngine';
 import { simulateRace } from '../sim/raceEngine';
 import { buildConstructorStandings, buildDriverStandings } from '../sim/standingsEngine';
-import { applyDevelopmentProgress, raceOpsDevelopmentBonus, computeAdjustedDuration, RUSH_COST_MULTIPLIER } from '../sim/developmentEngine';
+import { applyDevelopmentProgress, raceOpsDevelopmentBonus, computeAdjustedDuration, diminishingGainMultiplier, RUSH_COST_MULTIPLIER } from '../sim/developmentEngine';
 import {
-  canStartFoundationProject,
+  adjustedResearchCashCost,
+  adjustedResearchDuration,
+  canStartResearchProject,
   cashCostForBand,
   durationRoundsForBand,
   ensureTeamResearchMap,
   progressTeamResearch,
   selectResearchFocus,
-  startFoundationProject,
+  researchModifierTotal,
+  startResearchProject,
   tppCostForBand,
 } from '../sim/rdEngine';
 import { updateMorale } from '../sim/moraleEngine';
@@ -103,7 +105,7 @@ import type {
 } from '../types/gameTypes';
 import type { EngineDealType } from '../types/engineTypes';
 import type { RegulationVote } from '../types/politicsTypes';
-import type { RDBranchId } from '../types/rdTypes';
+import type { RDBranchId, RDProjectStartRequest } from '../types/rdTypes';
 import type { ScoutedEntityType } from '../types/scoutingTypes';
 import { driverScoutTarget, recordScouting, scoutingCost, type ScoutTarget } from '../sim/scoutingEngine';
 import type {
@@ -183,7 +185,7 @@ export type GameAction =
   | { type: 'START_DEVELOPMENT'; projectId: string; rushed?: boolean }
   | { type: 'RUSH_DEVELOPMENT'; projectId: string }
   | { type: 'SET_RESEARCH_FOCUS'; branchId: RDBranchId }
-  | { type: 'START_RD_PROJECT'; nodeId: string }
+  | { type: 'START_RD_PROJECT'; request: RDProjectStartRequest }
   | { type: 'SET_CAR_SETUP'; driverId: string; setup: CarSetup }
   | {
       type: 'RUN_PRACTICE_SESSION';
@@ -523,7 +525,7 @@ export function gameReducer(state: GameState | null, action: GameAction): GameSt
 
     case 'START_RD_PROJECT': {
       if (!state || isSingleSeasonMode(state.gameMode)) return state;
-      return startRDProject(state, action.nodeId);
+      return startRDProject(state, action.request);
     }
 
     case 'SET_CAR_SETUP': {
@@ -1719,7 +1721,17 @@ function applyRaceResults(
   let teamResearch = ensureTeamResearchMap(state.teamResearch, state.teams, state.seasonYear);
   const playerResearch = teamResearch[state.selectedTeamId];
   if (playerResearch?.activeProjects.length) {
-    const rdTick = progressTeamResearch(playerResearch, state.seasonYear, race.round);
+    const rdSupportBonus = researchModifierTotal(playerResearch, 'department', 'driverFeedback')
+      + researchModifierTotal(playerResearch, 'race_weekend', 'dataAccuracy');
+    const rdTick = progressTeamResearch(
+      playerResearch,
+      state.seasonYear,
+      race.round,
+      state.randomSeed,
+      developmentSuccessBonus(state.staff ?? [])
+        + facilityDevelopmentSuccessBonus(state.facilities)
+        + rdSupportBonus,
+    );
     teamResearch = { ...teamResearch, [state.selectedTeamId]: rdTick.teamResearch };
     devMessages.push(...rdTick.messages);
     cars = cars.map((car) => {
@@ -1727,7 +1739,9 @@ function applyRaceResults(
       const developmentLevel = { ...car.developmentLevel };
       for (const [key, value] of Object.entries(rdTick.carRatingDeltas)) {
         const rating = key as keyof typeof developmentLevel;
-        developmentLevel[rating] = (developmentLevel[rating] ?? 0) + (value ?? 0);
+        const currentRating = car.ratings[rating] + (developmentLevel[rating] ?? 0);
+        developmentLevel[rating] = (developmentLevel[rating] ?? 0)
+          + (value ?? 0) * diminishingGainMultiplier(currentRating);
       }
       return { ...car, developmentLevel };
     });
@@ -1908,23 +1922,27 @@ function setResearchFocusAction(state: GameState, branchId: RDBranchId): GameSta
   return { ...state, teamResearch: { ...teamResearch, [state.selectedTeamId]: updated } };
 }
 
-function startRDProject(state: GameState, nodeId: string): GameState {
-  const definition = rdFoundationProjectById[nodeId];
+function startRDProject(state: GameState, request: RDProjectStartRequest): GameState {
   const team = state.teams.find((candidate) => candidate.id === state.selectedTeamId);
-  if (!definition || !team) return state;
+  if (!team) return state;
+  if (request.contextSeries && request.contextSeries !== state.series) return state;
+  if (request.contextSeasonYear && request.contextSeasonYear !== state.seasonYear) return state;
 
   const teamResearch = ensureTeamResearchMap(state.teamResearch, state.teams, state.seasonYear);
   const research = teamResearch[state.selectedTeamId];
   if (!research) return state;
-  const cashCost = cashCostForBand('Low', team.budget, state.series, state.seasonYear);
-  const tppCost = tppCostForBand('Low');
-  const durationRounds = durationRoundsForBand('Short', state.calendar.length);
-  if (!canStartFoundationProject(research, nodeId, team.budget, cashCost, tppCost)) return state;
+  const baseCashCost = cashCostForBand(request.cashCostBand, team.budget, state.series, state.seasonYear);
+  const cashCost = adjustedResearchCashCost(baseCashCost, research);
+  const tppCost = tppCostForBand(request.tppCostBand);
+  const baseDuration = durationRoundsForBand(request.durationBand, state.calendar.length);
+  const durationRounds = adjustedResearchDuration(baseDuration, research);
+  const maxActiveProjects = Math.max(0, developmentSlots(state.facilities) - state.activeDevelopmentProjects.length);
+  if (!canStartResearchProject(research, request, team.budget, cashCost, tppCost, maxActiveProjects)) return state;
 
   const round = state.calendar[state.currentRaceIndex]?.round ?? state.currentRaceIndex + 1;
-  const updated = startFoundationProject(
+  const updated = startResearchProject(
     research,
-    definition,
+    request,
     state.seasonYear,
     round,
     cashCost,
@@ -1938,7 +1956,7 @@ function startRDProject(state: GameState, nodeId: string): GameState {
       : candidate),
     finance: [
       ...(state.finance ?? []),
-      makeTransaction(state.seasonYear, 'Development', `${definition.name} (R&D)`, -cashCost, round),
+      makeTransaction(state.seasonYear, 'Development', `${request.displayName} (R&D)`, -cashCost, round),
     ],
     teamResearch: { ...teamResearch, [state.selectedTeamId]: updated },
   };

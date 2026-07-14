@@ -36,7 +36,9 @@ describe('R&D foundation engine', () => {
     expect(second.teamResearch.activeProjects).toHaveLength(0);
     expect(second.teamResearch.completedNodes[0].nodeId).toBe('engine:E1');
     expect(second.teamResearch.modifiers[0].target).toBe('enginePower');
-    expect(second.carRatingDeltas.enginePower).toBe(0.35);
+    expect(second.carRatingDeltas.enginePower).toBeGreaterThan(0);
+    expect(second.carRatingDeltas.enginePower).toBe(second.teamResearch.modifiers[0].value);
+    expect(second.teamResearch.projectHistory).toHaveLength(1);
   });
 
   it('keeps research team-owned and adds the annual TPP allocation', () => {

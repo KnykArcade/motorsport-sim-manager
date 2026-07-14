@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { createNewGame } from './initialCareer';
 import { gameReducer } from './gameReducer';
+import { rdNodesById } from '../data/rd/rdCatalog';
+import { buildRDProjectStartRequest } from '../sim/rdNodeRules';
 
 describe('R&D foundation reducer integration', () => {
   it('initializes every team and starts the focused foundation node', () => {
@@ -15,7 +17,8 @@ describe('R&D foundation reducer integration', () => {
 
     const focused = gameReducer(initial, { type: 'SET_RESEARCH_FOCUS', branchId: 'engine' })!;
     const beforeBudget = focused.teams.find((team) => team.id === focused.selectedTeamId)!.budget;
-    const started = gameReducer(focused, { type: 'START_RD_PROJECT', nodeId: 'engine:E1' })!;
+    const request = buildRDProjectStartRequest(rdNodesById['engine:E1'], focused.series, focused.seasonYear);
+    const started = gameReducer(focused, { type: 'START_RD_PROJECT', request })!;
     const research = started.teamResearch?.[started.selectedTeamId];
     expect(research?.focus?.lockedThroughSeasonYear).toBe(1997);
     expect(research?.activeProjects[0].nodeId).toBe('engine:E1');
