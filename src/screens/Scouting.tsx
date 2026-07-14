@@ -7,8 +7,10 @@ import { Button } from '../components/Button';
 import { fogView, scoutingCost, type FogView, type ScoutTarget } from '../sim/scoutingEngine';
 import { formatMoney, ratingColor } from '../components/ui';
 import type { ScoutedEntityType, VisibleRating } from '../types/scoutingTypes';
+import type { IntelligenceAction, IntelligenceReport } from '../types/phase18Types';
+import { INTELLIGENCE_INVESTIGATION_COST, intelligenceConfidenceLabel } from '../sim/phase18IntelligenceEngine';
 
-type Tab = 'senior' | 'youth';
+type Tab = 'intelligence' | 'senior' | 'youth';
 
 const SKILL_LABELS: { key: string; label: string }[] = [
   { key: 'cornering', label: 'Cornering' },
@@ -19,7 +21,8 @@ const SKILL_LABELS: { key: string; label: string }[] = [
 
 export function Scouting() {
   const { state, dispatch } = useGame();
-  const [tab, setTab] = useState<Tab>('senior');
+  const [tab, setTab] = useState<Tab>('intelligence');
+  const [intelFilter, setIntelFilter] = useState<'Active' | 'History'>('Active');
 
   const bundle = useMemo(
     () => (state ? careerMarketBundle(state) : undefined),
@@ -60,6 +63,9 @@ export function Scouting() {
           </p>
         </div>
         <div className="flex gap-2">
+          <TabButton active={tab === 'intelligence'} onClick={() => setTab('intelligence')}>
+            Paddock Intelligence
+          </TabButton>
           <TabButton active={tab === 'senior'} onClick={() => setTab('senior')}>
             Senior{bundle ? ` (${bundle.drivers.length})` : ''}
           </TabButton>
@@ -69,7 +75,17 @@ export function Scouting() {
         </div>
       </div>
 
-      <Panel title="Scouting Network">
+      {tab === 'intelligence' && (
+        <IntelligenceDashboard
+          state={state}
+          budget={budget}
+          filter={intelFilter}
+          onFilter={setIntelFilter}
+          onAction={(reportId, action) => dispatch({ type: 'RESOLVE_INTELLIGENCE_ACTION', reportId, action })}
+        />
+      )}
+
+      {tab !== 'intelligence' && <Panel title="Scouting Network">
         <div className="flex items-center gap-3">
           <div className="text-sm text-neutral-400">Network accuracy</div>
           <div className="h-2 w-40 overflow-hidden rounded-full bg-neutral-800">
@@ -83,9 +99,9 @@ export function Scouting() {
             Budget: <span className="font-semibold text-neutral-200">{formatMoney(budget)}</span>
           </span>
         </div>
-      </Panel>
+      </Panel>}
 
-      {!bundle && (
+      {tab !== 'intelligence' && !bundle && (
         <Panel>
           <p className="text-sm text-neutral-400">
             No market data is available for the {state.seasonYear} {state.series} season.
@@ -138,6 +154,93 @@ export function Scouting() {
       )}
     </div>
   );
+}
+
+function IntelligenceDashboard({ state, budget, filter, onFilter, onAction }: {
+  state: NonNullable<ReturnType<typeof useGame>['state']>;
+  budget: number;
+  filter: 'Active' | 'History';
+  onFilter: (filter: 'Active' | 'History') => void;
+  onAction: (reportId: string, action: IntelligenceAction) => void;
+}) {
+  const allReports = state.phase18?.intelligenceReports ?? [];
+  const reports = allReports.filter((report) => filter === 'Active'
+    ? (report.status ?? 'Active') === 'Active'
+    : (report.status ?? 'Active') !== 'Active').slice().reverse();
+  const teamName = (id?: string) => state.teams.find((team) => team.id === id)?.name ?? id ?? 'Unknown team';
+  const activeCount = allReports.filter((report) => (report.status ?? 'Active') === 'Active').length;
+  return (
+    <div className="space-y-4">
+      <div className="grid gap-3 sm:grid-cols-3">
+        <IntelKpi label="Active reports" value={String(activeCount)} detail="Claims still being assessed" />
+        <IntelKpi label="Resolved history" value={String(allReports.length - activeCount)} detail="Confirmed, disputed, or expired" />
+        <IntelKpi label="Investigation cost" value={formatMoney(INTELLIGENCE_INVESTIGATION_COST)} detail="May expose false or misleading claims" />
+      </div>
+      <Panel>
+        <div className="mb-3 flex flex-wrap items-start justify-between gap-3">
+          <div>
+            <h2 className="font-semibold text-neutral-100">Paddock Intelligence</h2>
+            <p className="mt-1 max-w-3xl text-xs text-neutral-400">Reports may be true, incomplete, misleading, or false. Confidence measures evidence quality, not certainty.</p>
+          </div>
+          <div className="flex gap-1">
+            {(['Active', 'History'] as const).map((value) => <TabButton key={value} active={filter === value} onClick={() => onFilter(value)}>{value}</TabButton>)}
+          </div>
+        </div>
+        {reports.length === 0 ? (
+          <div className="rounded border border-dashed border-neutral-700 p-5 text-center text-sm text-neutral-500">
+            {filter === 'Active' ? 'No active reports yet. New intelligence arrives during paddock weeks.' : 'No resolved intelligence history yet.'}
+          </div>
+        ) : (
+          <div className="grid gap-3 xl:grid-cols-2">
+            {reports.map((report) => <IntelligenceCard key={report.id} report={report} teamName={teamName} budget={budget} onAction={onAction} />)}
+          </div>
+        )}
+      </Panel>
+    </div>
+  );
+}
+
+function IntelligenceCard({ report, teamName, budget, onAction }: {
+  report: IntelligenceReport;
+  teamName: (id?: string) => string;
+  budget: number;
+  onAction: (reportId: string, action: IntelligenceAction) => void;
+}) {
+  const active = (report.status ?? 'Active') === 'Active';
+  const tone = report.assessment === 'Confirmed' ? 'text-emerald-300' : report.assessment === 'Disproven' ? 'text-red-300' : report.assessment === 'Likely' ? 'text-sky-300' : 'text-amber-300';
+  const latestAction = report.actionHistory?.at(-1);
+  return (
+    <div className={`rounded-lg border p-4 ${report.assessment === 'Disproven' ? 'border-red-500/30 bg-red-500/5' : 'border-neutral-800 bg-neutral-900/45'}`}>
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <div className="text-[10px] font-semibold uppercase tracking-wide text-neutral-500">{report.category ?? report.subjectType} · {report.source} · {report.visibility ?? 'Private'}</div>
+          <h3 className="mt-1 font-semibold text-neutral-100">{report.title}</h3>
+          <div className="mt-0.5 text-xs text-neutral-500">Target: {teamName(report.targetTeamId)}</div>
+        </div>
+        <div className="text-right text-[10px]"><div className={`font-semibold uppercase ${tone}`}>{report.assessment}</div><div className="mt-1 text-neutral-500">{intelligenceConfidenceLabel(report.confidence)} · {report.confidence}%</div></div>
+      </div>
+      <p className="mt-3 text-sm text-neutral-300">{report.summary}</p>
+      <div className="mt-3 grid grid-cols-3 gap-2 text-[10px]">
+        <IntelDatum label="Source reliability" value={`${report.reliability}%`} />
+        <IntelDatum label="Relevance" value={report.gameplayRelevance ?? 'Medium'} />
+        <IntelDatum label="Expires" value={report.expiresRound ? `Round ${report.expiresRound}` : `${report.expiresSeasonYear ?? '-'}`} />
+      </div>
+      {report.revealedOutcome && <div className={`mt-3 rounded border px-2.5 py-2 text-xs ${report.assessment === 'Disproven' ? 'border-red-500/30 text-red-200' : 'border-emerald-500/25 text-emerald-200'}`}>{report.revealedOutcome}</div>}
+      {(report.aiResponses ?? []).length > 0 && <div className="mt-3 rounded bg-neutral-950/60 px-2.5 py-2 text-[11px] text-neutral-400"><span className="font-semibold text-violet-300">Observed rival activity: </span>{report.aiResponses!.map((response) => `${teamName(response.teamId)} ${response.action.toLowerCase()}`).join('; ')}.</div>}
+      {latestAction && <div className="mt-2 text-[11px] text-neutral-500">Latest action: {latestAction.action} - {latestAction.outcome}</div>}
+      {active && <div className="mt-3 flex flex-wrap gap-1.5 border-t border-neutral-800 pt-3">
+        {(['Investigate', 'AskAdvisor', 'Monitor', 'Ignore'] as IntelligenceAction[]).map((action) => <Button key={action} variant={action === 'Investigate' ? 'primary' : 'ghost'} className="px-2 py-1 text-[11px]" disabled={action === 'Investigate' && budget < INTELLIGENCE_INVESTIGATION_COST} onClick={() => onAction(report.id, action)} title={action === 'Investigate' ? `Spend ${formatMoney(INTELLIGENCE_INVESTIGATION_COST)} to improve this report` : undefined}>{action === 'AskAdvisor' ? 'Ask advisors' : action}</Button>)}
+      </div>}
+    </div>
+  );
+}
+
+function IntelKpi({ label, value, detail }: { label: string; value: string; detail: string }) {
+  return <div className="rounded-lg border border-neutral-800 bg-neutral-900/40 p-3"><div className="text-[10px] uppercase tracking-wide text-neutral-500">{label}</div><div className="mt-1 text-xl font-bold text-neutral-100">{value}</div><div className="mt-1 text-[11px] text-neutral-500">{detail}</div></div>;
+}
+
+function IntelDatum({ label, value }: { label: string; value: string }) {
+  return <div className="rounded bg-neutral-800/50 px-2 py-1.5"><div className="text-neutral-500">{label}</div><div className="mt-0.5 font-semibold text-neutral-200">{value}</div></div>;
 }
 
 function potentialText(view: FogView): string {

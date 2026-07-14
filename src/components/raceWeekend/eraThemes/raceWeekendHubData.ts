@@ -413,7 +413,7 @@ export function buildF11990sGarageHotspots(args: {
 export function buildQuickActions(state: GameState): QuickAction[] {
   const raw: Array<QuickAction & { route?: string }> = [
     { id: 'messages', label: 'Messages / News', action: { type: 'route', to: '/news' }, route: '/news', count: state.news.length },
-    { id: 'scouting', label: 'Driver Scouting', action: { type: 'route', to: '/market' }, route: '/scouting' },
+    { id: 'scouting', label: 'Scouting & Intelligence', action: { type: 'route', to: '/scouting' }, route: '/scouting' },
     { id: 'sponsorship', label: 'Sponsorship', action: { type: 'route', to: '/sponsors' }, route: '/sponsors' },
     { id: 'regulations', label: 'Regulation Updates', action: { type: 'route', to: '/politics' }, route: '/politics' },
     { id: 'calendar', label: 'Calendar', action: { type: 'route', to: '/calendar' }, route: '/calendar' },

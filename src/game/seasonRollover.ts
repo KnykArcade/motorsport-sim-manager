@@ -76,6 +76,7 @@ import { finalizeSeasonHistory } from '../sim/universeHistoryEngine';
 import { buildAITeamState, rolloverAITeamStates, constructorPositionOf, updateAIReputation } from '../sim/aiTeamEngine';
 import { ensurePhase18FoundationState } from '../sim/phase18FoundationEngine';
 import { ensureContractClauses } from '../sim/phase18ContractClauseEngine';
+import { rolloverIntelligenceReports } from '../sim/phase18IntelligenceEngine';
 import { updateTeamMemory } from '../sim/teamIdentityEngine';
 import type { TeamMemoryEntry } from '../types/aiTeamTypes';
 import { runAIOffseason, makeRookieDriver } from '../sim/aiOffseasonEngine';
@@ -1471,6 +1472,7 @@ export function advanceSeason(state: GameState, nextBundle?: SeasonBundle): Game
     nextState.drivers,
   );
   nextState.phase18 = ensurePhase18FoundationState(nextState.phase18, nextState);
+  nextState.phase18 = rolloverIntelligenceReports(nextState).phase18;
   nextState.phase18 = ensureContractClauses(nextState).phase18;
 
   // If the principal switched teams, re-point the player-scoped systems

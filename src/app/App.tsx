@@ -42,6 +42,7 @@ const PaddockWeek = lazy(() => import('../screens/PaddockWeek').then((m) => ({ d
 const PreRaceBriefing = lazy(() => import('../screens/PreRaceBriefing').then((m) => ({ default: m.PreRaceBriefing })));
 const PreSeasonSetup = lazy(() => import('../screens/PreSeasonSetup').then((m) => ({ default: m.PreSeasonSetup })));
 const NewsCenter = lazy(() => import('../screens/NewsCenter').then((m) => ({ default: m.NewsCenter })));
+const Scouting = lazy(() => import('../screens/Scouting').then((m) => ({ default: m.Scouting })));
 
 // Wrap in-game screens with the dashboard layout and redirect to the menu when
 // there is no active game.
@@ -264,7 +265,7 @@ export default function App() {
           <Route path="/principal" element={<InGame><TeamPrincipal /></InGame>} />
           <Route path="/relationships" element={<InGame><Relationships /></InGame>} />
           <Route path="/politics" element={<ModeGuard route="/politics"><Politics /></ModeGuard>} />
-          <Route path="/scouting" element={<Navigate to="/market" replace />} />
+          <Route path="/scouting" element={<ModeGuard route="/scouting"><Scouting /></ModeGuard>} />
           <Route path="/curves" element={<ModeGuard route="/curves"><DriverCurves /></ModeGuard>} />
           <Route path="/records" element={<InGame><UniverseHistory /></InGame>} />
           <Route path="/history" element={<InGame><RaceHistory /></InGame>} />
