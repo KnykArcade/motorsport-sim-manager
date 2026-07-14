@@ -5,9 +5,10 @@ import type {
   DriverCareerStats,
   SeasonHistoryRecord,
   TeamCareerStats,
+  UniverseChampionshipSeason,
 } from '../types/universeTypes';
 
-type Tab = 'records' | 'drivers' | 'teams' | 'seasons';
+type Tab = 'records' | 'drivers' | 'teams' | 'seasons' | 'world';
 
 export function UniverseHistory() {
   const { state } = useGame();
@@ -31,8 +32,11 @@ export function UniverseHistory() {
   const seasons = history?.seasons ?? [];
   const drivers = Object.values(history?.driverCareerStats ?? {});
   const teams = Object.values(history?.teamCareerStats ?? {});
+  const worldSeasons = Object.values(state.motorsportUniverse?.championships ?? {})
+    .flatMap((championship) => championship?.seasonHistory ?? [])
+    .sort((a, b) => b.seasonYear - a.seasonYear || a.series.localeCompare(b.series));
 
-  if (seasons.length === 0) {
+  if (seasons.length === 0 && worldSeasons.length === 0) {
     return (
       <div className="space-y-6">
         <Header />
@@ -62,6 +66,9 @@ export function UniverseHistory() {
           </TabButton>
           <TabButton active={tab === 'seasons'} onClick={() => setTab('seasons')}>
             Seasons ({seasons.length})
+          </TabButton>
+          <TabButton active={tab === 'world'} onClick={() => setTab('world')}>
+            World Championships ({worldSeasons.length})
           </TabButton>
         </div>
       </div>
@@ -112,7 +119,67 @@ export function UniverseHistory() {
             ))}
         </div>
       )}
+      {tab === 'world' && (
+        <div className="space-y-3">
+          {worldSeasons.length > 0 ? (
+            worldSeasons.map((season) => (
+              <WorldSeasonCard key={`${season.seasonYear}-${season.series}`} season={season} />
+            ))
+          ) : (
+            <Panel>
+              <p className="text-sm text-neutral-400">
+                Off-screen championship results will appear after the first completed season.
+              </p>
+            </Panel>
+          )}
+        </div>
+      )}
     </div>
+  );
+}
+
+export function WorldSeasonCard({ season }: { season: UniverseChampionshipSeason }) {
+  const topFive = season.driverStandings.slice(0, 5);
+  return (
+    <Panel>
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <div className="font-bold text-neutral-100">{season.seasonYear} {season.series}</div>
+          <div className="mt-0.5 text-sm text-neutral-300">
+            🏆 {season.driverChampionName ?? season.driverChampionId ?? '—'}
+            <span className="text-neutral-500"> · </span>
+            {season.teamChampionName ?? season.teamChampionId ?? '—'}
+          </div>
+        </div>
+        <div className="text-xs text-neutral-500">{season.completedRaces} races</div>
+      </div>
+      <div className="mt-3 overflow-x-auto">
+        <table className="w-full text-sm">
+          <thead>
+            <tr className="text-left text-[10px] uppercase tracking-wide text-neutral-500">
+              <th className="py-1 pr-2">Pos</th>
+              <th className="py-1 pr-2">Driver</th>
+              <Th>Points</Th>
+              <Th>Wins</Th>
+              <Th>Podiums</Th>
+            </tr>
+          </thead>
+          <tbody>
+            {topFive.map((standing, index) => (
+              <tr key={standing.entityId} className="border-t border-neutral-800/60">
+                <td className="py-1 pr-2 text-neutral-500">{index + 1}</td>
+                <td className="py-1 pr-2 font-medium text-neutral-200">
+                  {season.driverNames[standing.entityId] ?? standing.entityId}
+                </td>
+                <Td highlight={index === 0}>{Math.round(standing.points)}</Td>
+                <Td>{standing.wins}</Td>
+                <Td>{standing.podiums}</Td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </Panel>
   );
 }
 
