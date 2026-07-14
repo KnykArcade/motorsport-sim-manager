@@ -16,6 +16,7 @@ import {
 } from '../sim/facilityEngine';
 import { BALANCED_SETUP } from '../data/setup/setupComponents';
 import { applyOffseasonDecay, calculateOffseasonCarryover } from '../sim/developmentEngine';
+import { allocateSeasonTPP, ensureTeamResearchMap } from '../sim/rdEngine';
 import {
   academyMemberAge,
   academyMemberToDriver,
@@ -1366,6 +1367,17 @@ export function advanceSeason(state: GameState, nextBundle?: SeasonBundle): Game
     return { ...car, ratings: { ...car.ratings, pitCrewOperations: blended } };
   });
 
+  // Research belongs to the team, not the principal. Preserve every team's
+  // projects/focus/modifiers through rollover and issue the annual leadership
+  // allocation regardless of whether the player changed jobs.
+  const ensuredTeamResearch = ensureTeamResearchMap(state.teamResearch, teamsWithOpsSync, state.seasonYear);
+  const nextTeamResearch = Object.fromEntries(
+    Object.entries(ensuredTeamResearch).map(([teamId, research]) => [
+      teamId,
+      allocateSeasonTPP(research, nextYear),
+    ]),
+  );
+
   const now = new Date().toISOString();
   const nextState: GameState = {
     ...state,
@@ -1417,6 +1429,7 @@ export function advanceSeason(state: GameState, nextBundle?: SeasonBundle): Game
     constructorStandings: [],
     activeDevelopmentProjects: [],
     completedDevelopmentProjects: [],
+    teamResearch: nextTeamResearch,
     offseasonHistory: [...state.offseasonHistory, summary],
     newsArchive: archiveMajorStories(state.news, state.newsArchive),
     news: [
