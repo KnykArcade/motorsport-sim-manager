@@ -88,6 +88,10 @@ import { buildRaceArchiveEntry } from '../sim/lapArchiveEngine';
 import { resolveTeamOrderConsequences } from '../sim/relationshipEngine';
 import { reactToRaceResult, applyConfidenceUpdates, makePromise, resolvePromise, applyPromiseResolution, evaluatePromisesAfterRace, checkExpiredPromises, hasActivePromiseOfType, confidencePerformanceModifier, type ConfidenceUpdate, type RaceEventContext, type PromiseResolution } from '../sim/driverConfidenceEngine';
 import { allocateSkillPoint } from '../sim/principalEngine';
+import {
+  applyLeadershipPreparationModifier,
+  leadershipGameplayModifiers,
+} from '../sim/phase18IdentityCultureEngine';
 import type { TeamOrderDecision, PromiseType } from '../types/relationshipTypes';
 import { createSeededRandom, deriveSeed } from '../sim/random';
 import type { AcademyDecision, FirstOptionDecision, SeatSigning } from '../types/marketTypes';
@@ -1471,7 +1475,7 @@ function runQualifying(state: GameState, playerDecisions: QualifyingDecision[]):
 function getRacePrepFocusEffectForQualifying(state: GameState): RacePrepFocusEffect | undefined {
   const phaseState = getOrCreatePhaseState(state);
   if (!phaseState.racePrepFocus || phaseState.racePrepFocusApplied) return undefined;
-  return computeRacePrepFocusEffect(phaseState.racePrepFocus);
+  return applyLeadershipPreparationModifier(state, computeRacePrepFocusEffect(phaseState.racePrepFocus));
 }
 
 function runRace(state: GameState, playerDecisions: RaceDecision[]): GameState {
@@ -1749,7 +1753,8 @@ function applyRaceResults(
       race.round,
       developmentSuccessBonus(state.staff ?? []) +
         facilityDevelopmentSuccessBonus(state.facilities) +
-        (playerTeamData ? raceOpsDevelopmentBonus(playerTeamData.raceOperations) : 0),
+        (playerTeamData ? raceOpsDevelopmentBonus(playerTeamData.raceOperations) : 0) +
+        leadershipGameplayModifiers(state).developmentSuccessBonus,
     );
     activeDevelopmentProjects = tick.active;
     completedDevelopmentProjects = [...completedDevelopmentProjects, ...tick.completed];
@@ -1781,7 +1786,8 @@ function applyRaceResults(
       state.randomSeed,
       developmentSuccessBonus(state.staff ?? [])
         + facilityDevelopmentSuccessBonus(state.facilities)
-        + rdSupportBonus,
+        + rdSupportBonus
+        + leadershipGameplayModifiers(state).developmentSuccessBonus,
     );
     teamResearch = { ...teamResearch, [state.selectedTeamId]: rdTick.teamResearch };
     devMessages.push(...rdTick.messages);

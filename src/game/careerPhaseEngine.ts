@@ -21,6 +21,11 @@ import type { FinanceTransaction } from '../types/financeTypes';
 import type { RacePrepFocusEffect } from '../types/simTypes';
 import { createSeededRandom, deriveSeed } from '../sim/random';
 import { planAITechnicalPrograms } from '../sim/aiTechnicalDirectorEngine';
+import {
+  applyAILeadershipDirection,
+  applyLeadershipDecision,
+  leadershipGameplayModifiers,
+} from '../sim/phase18IdentityCultureEngine';
 
 export function defaultCareerPhaseState(): CareerPhaseState {
   return {
@@ -399,8 +404,18 @@ export function processAITeamActivity(state: GameState): GameState {
     });
   }
 
+  let culturallyEvolved: GameState = { ...planned, cars };
+  for (const aiTeam of teamsToProcess) {
+    culturallyEvolved = applyAILeadershipDirection(
+      culturallyEvolved,
+      aiTeam.id,
+      aiStates[aiTeam.id]?.archetype ?? 'FinanciallyConservative',
+      phaseState.currentRound,
+    );
+  }
+
   return {
-    ...planned,
+    ...culturallyEvolved,
     cars,
     news: [...aiNews, ...planned.news].slice(0, 80),
     careerPhase: {
@@ -456,6 +471,7 @@ export function resolvePaddockEvent(
 
   // Apply effects only once.
   if (alreadyApplied || !option) return updatedState;
+  const leadershipModifiers = leadershipGameplayModifiers(updatedState);
 
   // --- Apply budgetChange ---
   if (option.budgetChange) {
@@ -484,17 +500,20 @@ export function resolvePaddockEvent(
   const isRacePrepFocusEvent =
     event.category === 'general_team' && event.title.startsWith('Select race preparation focus');
   if (option.moraleChange && !isRacePrepFocusEvent) {
+    const moraleChange = option.moraleChange > 0
+      ? option.moraleChange * leadershipModifiers.moraleEffectMultiplier
+      : option.moraleChange / leadershipModifiers.moraleEffectMultiplier;
     const activeDriverIds = new Set(
       activeDriversForTeam(state, state.selectedTeamId).map((d) => d.id),
     );
     const drivers = updatedState.drivers.map((d) =>
       activeDriverIds.has(d.id)
-        ? { ...d, morale: Math.max(0, Math.min(100, d.morale + option.moraleChange!)) }
+        ? { ...d, morale: Math.max(0, Math.min(100, d.morale + moraleChange)) }
         : d,
     );
     const teams = updatedState.teams.map((t) =>
       t.id === updatedState.selectedTeamId
-        ? { ...t, morale: Math.max(0, Math.min(100, t.morale + option.moraleChange!)) }
+        ? { ...t, morale: Math.max(0, Math.min(100, t.morale + moraleChange)) }
         : t,
     );
     updatedState = { ...updatedState, drivers, teams };
@@ -607,7 +626,7 @@ export function resolvePaddockEvent(
     updatedState = { ...updatedState, news: [newsItem, ...updatedState.news].slice(0, 80) };
   }
 
-  return updatedState;
+  return applyLeadershipDecision(updatedState, event, option);
 }
 
 function clamp10(n: number): number {

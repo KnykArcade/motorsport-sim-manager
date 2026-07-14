@@ -12,6 +12,7 @@ import {
   teamById,
 } from '../game/careerState';
 import { developmentSlots } from '../sim/facilityEngine';
+import { leadershipDecisionPreview } from '../sim/phase18IdentityCultureEngine';
 import { getGameModeLabel } from '../game/modeRestrictions';
 import { Panel } from '../components/Panel';
 import { Button } from '../components/Button';
@@ -270,18 +271,38 @@ function DecisionCard({
       {event.options && event.options.length > 0 && (
         <div className="mt-3 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
           {event.options.map((option) => (
-            <button
-              key={option.id}
-              onClick={() => onResolve(option.id)}
-              className="rounded-lg border border-neutral-700 bg-neutral-900/60 p-3 text-left transition-colors hover:border-amber-500 hover:bg-amber-500/10"
-            >
-              <div className="text-sm font-semibold text-neutral-100">{option.label}</div>
-              <div className="mt-0.5 text-xs text-neutral-400">{option.description}</div>
-            </button>
+            <DecisionOptionButton key={option.id} event={event} option={option} onResolve={onResolve} />
           ))}
         </div>
       )}
     </div>
+  );
+}
+
+function DecisionOptionButton({
+  event,
+  option,
+  onResolve,
+}: {
+  event: PaddockEvent;
+  option: NonNullable<PaddockEvent['options']>[number];
+  onResolve: (optionId: string) => void;
+}) {
+  const preview = leadershipDecisionPreview(event, option);
+  return (
+    <button
+      onClick={() => onResolve(option.id)}
+      className="rounded-lg border border-neutral-700 bg-neutral-900/60 p-3 text-left transition-colors hover:border-amber-500 hover:bg-amber-500/10"
+    >
+      <div className="text-sm font-semibold text-neutral-100">{option.label}</div>
+      <div className="mt-0.5 text-xs text-neutral-400">{option.description}</div>
+      <div className="mt-2 text-[10px] font-semibold uppercase tracking-wide text-amber-400">
+        +{preview.xp} {preview.identityLabel}
+      </div>
+      {preview.cultureChanges.length > 0 && (
+        <div className="mt-0.5 text-[10px] text-neutral-500">{preview.cultureChanges.join(' · ')}</div>
+      )}
+    </button>
   );
 }
 
