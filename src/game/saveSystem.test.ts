@@ -31,6 +31,9 @@ describe('save model', () => {
     expect(s.driverRelationships).toBeDefined();
     // Phase 11: universe history / records is seeded on a new career.
     expect(s.universeHistory).toBeDefined();
+    // R&D foundation: every team owns its own research state and TPP ledger.
+    expect(Object.keys(s.teamResearch ?? {})).toHaveLength(s.teams.length);
+    expect(s.teamResearch?.[s.selectedTeamId].tpp.balance).toBe(30);
   });
 
   it('round-trips the new optional systems through JSON', () => {

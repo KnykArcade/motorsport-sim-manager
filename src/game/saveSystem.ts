@@ -7,6 +7,7 @@
 
 import type { GameState } from './careerState';
 import type { DriverRelationship } from '../types/relationshipTypes';
+import { ensureTeamResearchMap } from '../sim/rdEngine';
 
 const SAVE_KEY = 'msm:save:v1';
 const SETTINGS_KEY = 'msm:settings:v1';
@@ -37,6 +38,11 @@ function migrateGameState(state: GameState): GameState {
   if (!patched.driverPromises) {
     patched.driverPromises = [];
   }
+  patched.teamResearch = ensureTeamResearchMap(
+    patched.teamResearch,
+    patched.teams ?? [],
+    state.seasonYear,
+  );
   return patched as GameState;
 }
 

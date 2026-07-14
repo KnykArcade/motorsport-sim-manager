@@ -39,6 +39,7 @@ import type { MotorsportUniverseState, UniverseHistory } from '../types/universe
 import type { AITeamState, TeamMemoryEntry } from '../types/aiTeamTypes';
 import type { RaceWeekendPackageSelection, FinancialDistressMap } from '../types/raceWeekendPackageTypes';
 import type { CareerPhaseState } from '../types/careerPhaseTypes';
+import type { TeamResearchMap } from '../types/rdTypes';
 
 export type GameState = {
   id: string;
@@ -94,6 +95,11 @@ export type GameState = {
 
   activeDevelopmentProjects: DevelopmentProject[];
   completedDevelopmentProjects: DevelopmentProject[];
+
+  // Team-owned research state for every entrant. Kept separate from the legacy
+  // development projects so the full R&D tree can be introduced incrementally.
+  // Optional for save compatibility; the save migration backfills every team.
+  teamResearch?: TeamResearchMap;
 
   news: NewsItem[];
   regulationHistory: RegulationChangeEvent[];

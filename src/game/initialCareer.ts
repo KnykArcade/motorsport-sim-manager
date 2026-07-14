@@ -24,6 +24,7 @@ import { seedDevelopmentCurves } from '../sim/developmentCurveEngine';
 import { createInitialUniverseHistory } from '../sim/universeHistoryEngine';
 import { buildAllTeamOrganizationRatings } from '../sim/teamRatingsEngine';
 import { buildAllAITeamStates } from '../sim/aiTeamEngine';
+import { createInitialTeamResearchMap } from '../sim/rdEngine';
 import { enforceRosters } from './rosterEnforcement';
 import type { TeamPrincipal } from '../types/principalTypes';
 import { createMotorsportUniverse } from '../sim/motorsportUniverseEngine';
@@ -190,6 +191,7 @@ export function createNewGame(options: NewGameOptions): GameState {
     constructorStandings: [],
     activeDevelopmentProjects: [],
     completedDevelopmentProjects: [],
+    teamResearch: createInitialTeamResearchMap(bundle.teams, options.seasonYear),
     news: [
       {
         id: 'news-welcome',
