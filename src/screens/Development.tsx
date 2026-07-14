@@ -5,6 +5,7 @@ import { developmentProjectCatalog } from '../data/development/developmentProjec
 import { Panel } from '../components/Panel';
 import { Button } from '../components/Button';
 import { RDTreePanel } from '../components/development/RDTreePanel';
+import { PartsInventoryPanel } from '../components/development/PartsInventoryPanel';
 import { formatMoney, ratingColor } from '../components/ui';
 import type { DevelopmentProject, DevelopmentOutcome } from '../types/gameTypes';
 import {
@@ -103,6 +104,8 @@ export function Development() {
       )}
 
       <RDTreePanel />
+
+      <PartsInventoryPanel />
 
       {usedSlots >= slots && (
         <div className="rounded-lg border border-orange-800 bg-orange-900/20 p-3 text-sm text-orange-300">

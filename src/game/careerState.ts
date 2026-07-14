@@ -40,6 +40,7 @@ import type { AITeamState, TeamMemoryEntry } from '../types/aiTeamTypes';
 import type { RaceWeekendPackageSelection, FinancialDistressMap } from '../types/raceWeekendPackageTypes';
 import type { CareerPhaseState } from '../types/careerPhaseTypes';
 import type { TeamResearchMap } from '../types/rdTypes';
+import type { TeamPartsMap } from '../types/partsTypes';
 
 export type GameState = {
   id: string;
@@ -100,6 +101,11 @@ export type GameState = {
   // development projects so the full R&D tree can be introduced incrementally.
   // Optional for save compatibility; the save migration backfills every team.
   teamResearch?: TeamResearchMap;
+
+  // Driver-specific fitted components, spare inventory, repairs, and factory
+  // manufacturing queues. Optional so saves from before the parts phase can be
+  // migrated by seeding a standard component set for every entrant.
+  teamParts?: TeamPartsMap;
 
   news: NewsItem[];
   regulationHistory: RegulationChangeEvent[];

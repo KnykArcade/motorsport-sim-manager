@@ -25,6 +25,7 @@ import { createInitialUniverseHistory } from '../sim/universeHistoryEngine';
 import { buildAllTeamOrganizationRatings } from '../sim/teamRatingsEngine';
 import { buildAllAITeamStates } from '../sim/aiTeamEngine';
 import { createInitialTeamResearchMap } from '../sim/rdEngine';
+import { createInitialTeamPartsMap } from '../sim/partsEngine';
 import { enforceRosters } from './rosterEnforcement';
 import type { TeamPrincipal } from '../types/principalTypes';
 import { createMotorsportUniverse } from '../sim/motorsportUniverseEngine';
@@ -226,6 +227,11 @@ export function createNewGame(options: NewGameOptions): GameState {
   const normalizedState = enforceRosters(baseState).state;
   const stateWithUniverse: GameState = {
     ...normalizedState,
+    teamParts: createInitialTeamPartsMap(
+      normalizedState.teams,
+      normalizedState.drivers,
+      options.seasonYear,
+    ),
     motorsportUniverse: createMotorsportUniverse(
       options.seasonYear,
       options.series,

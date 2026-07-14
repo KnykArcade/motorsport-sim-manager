@@ -111,6 +111,16 @@ export type Car = {
   // Engine supplier deal contribution to enginePower / reliability (Phase 5).
   // A delta on the 1-100 ratings scale; absent = no engine-deal modifier.
   engineBonus?: { power: number; reliability: number };
+  // Transient driver-specific component condition supplied by the parts engine
+  // when building a qualifying or race entrant. Historical car data and saves
+  // omit it; the shared team car remains the underlying design package.
+  componentCondition?: {
+    powerUnit?: number;
+    gearbox?: number;
+    aero?: number;
+    brakes?: number;
+    suspension?: number;
+  };
 };
 
 export type DriverRatings = {
