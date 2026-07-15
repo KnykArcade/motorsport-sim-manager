@@ -5,6 +5,10 @@ import { buildPhase0SeasonBundle, registerLegacySeasonModule, registerPhase0Glob
 
 const bundleCache = new Map<string, SeasonBundle>();
 const trackRegistry = new Map<string, Track>();
+const generatedSeasonLoaders = import.meta.glob('./phase0/generated/season*.ts') as Record<
+  string,
+  () => Promise<Record<string, unknown>>
+>;
 
 function cacheKey(year: number, series: Series): string {
   return `${year}-${series}`;
@@ -26,8 +30,12 @@ const loaders: Record<string, () => Promise<SeasonBundle>> = {};
 for (const { year, series } of availableSeasons) {
   loaders[cacheKey(year, series)] = async () => {
     const suffix = series === 'F1' ? '' : series === 'Champ Car' ? 'CART' : series;
+    const generatedSeasonLoader = generatedSeasonLoaders[seasonImportPath(year, series)];
+    if (!generatedSeasonLoader) {
+      throw new Error(`Missing generated season module ${seasonImportPath(year, series)}`);
+    }
     const [module, globalModule, teamsModule, driversModule, carsModule] = await Promise.all([
-      import(/* @vite-ignore */ seasonImportPath(year, series)) as Promise<Record<string, unknown>>,
+      generatedSeasonLoader(),
       series === 'NASCAR'
         ? import(`./phase0/generated/globalNASCAR${year}.ts`) as Promise<Record<string, unknown>>
         : Promise.resolve(undefined),
