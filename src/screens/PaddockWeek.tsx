@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useGame } from '../game/GameContext';
 import {
@@ -64,9 +64,13 @@ const SEVERITY_COLORS: Record<string, string> = {
   critical: 'text-red-400',
 };
 
+type PaddockTab = 'overview' | 'decisions' | 'updates' | 'debrief';
+
 export function PaddockWeek() {
   const { state, dispatch } = useGame();
   const navigate = useNavigate();
+  const [tab, setTab] = useState<PaddockTab>('decisions');
+  const [updateCategory, setUpdateCategory] = useState<PaddockEventCategory>('next_race');
 
   // Generate paddock events on mount if not already generated.
   useEffect(() => {
@@ -120,6 +124,12 @@ export function PaddockWeek() {
   const storyDecisions = phaseState.paddockEvents.filter(
     (event) => !!event.narrativeStoryId && !event.resolvedOptionId,
   );
+  const resolvedDecisions = phaseState.paddockEvents.filter((event) => !!event.resolvedOptionId);
+  const populatedCategories = CATEGORY_ORDER.filter((category) => (eventsByCategory[category]?.length ?? 0) > 0);
+  const visibleUpdateCategory = populatedCategories.includes(updateCategory)
+    ? updateCategory
+    : populatedCategories[0] ?? 'next_race';
+  const updateCount = populatedCategories.reduce((total, category) => total + (eventsByCategory[category]?.length ?? 0), 0);
 
   const advanceToBriefing = () => {
     dispatch({ type: 'ADVANCE_TO_PRE_RACE_BRIEFING' });
@@ -162,8 +172,15 @@ export function PaddockWeek() {
         <KpiCard label="Active Drivers" value={`${activeDrivers.length}/2`} />
       </div>
 
+      <div className="flex flex-wrap gap-1 rounded-lg border border-neutral-800 bg-neutral-950/70 p-1" aria-label="Paddock Week sections">
+        <PaddockTabButton active={tab === 'overview'} onClick={() => setTab('overview')} label="Overview" />
+        <PaddockTabButton active={tab === 'decisions'} onClick={() => setTab('decisions')} label="Decisions" count={pendingCount + storyDecisions.length} attention={pendingCount > 0} />
+        <PaddockTabButton active={tab === 'updates'} onClick={() => setTab('updates')} label="Team Updates" count={updateCount} />
+        <PaddockTabButton active={tab === 'debrief'} onClick={() => setTab('debrief')} label="Decision Debrief" count={resolvedDecisions.length} />
+      </div>
+
       {/* Paddock News */}
-      <div className="grid gap-4 lg:grid-cols-2">
+      {tab === 'overview' && <div className="grid gap-4 lg:grid-cols-2">
         <NewsPanel
           news={state.news}
           title="Paddock Headlines"
@@ -179,9 +196,10 @@ export function PaddockWeek() {
           categoryFilter={['financial', 'sponsor', 'career_event']}
           emptyMessage="No team news this week."
         />
-      </div>
+      </div>}
 
       {/* Required Decisions */}
+      {tab === 'decisions' && <>
       {(unresolvedCount > 0 || !packageSelected) && (
         <Panel title="Required Decisions" className="border-amber-600/30">
           <div className="space-y-4">
@@ -227,8 +245,15 @@ export function PaddockWeek() {
           </div>
         </Panel>
       )}
+      {pendingCount === 0 && storyDecisions.length === 0 && (
+        <Panel title="Decisions Complete">
+          <p className="text-sm text-emerald-300">All required decisions are complete. Review updates or advance to the pre-race briefing.</p>
+        </Panel>
+      )}
+      </>}
 
       {/* Resolved Decisions */}
+      {tab === 'debrief' && <div className="grid gap-4 xl:grid-cols-2">
       {phaseState.paddockEvents.some((e) => e.isRequiredDecision && e.resolvedOptionId) && (
         <Panel title="Resolved Decisions">
           <ul className="space-y-2">
@@ -276,20 +301,24 @@ export function PaddockWeek() {
           </div>
         </Panel>
       )}
+      {resolvedDecisions.length === 0 && advisorDebrief.length === 0 && (
+        <Panel title="Decision Debrief"><p className="text-sm text-neutral-500">Decision outcomes and advisor reactions will appear here.</p></Panel>
+      )}
+      </div>}
 
       {/* Hub Sections */}
-      <div className="grid gap-6 lg:grid-cols-2">
-        {CATEGORY_ORDER.map((category) => {
-          const events = eventsByCategory[category] ?? [];
-          return (
-            <HubSection
-              key={category}
-              title={CATEGORY_LABELS[category]}
-              events={events}
-            />
-          );
-        })}
-      </div>
+      {tab === 'updates' && <div className="space-y-4">
+        {populatedCategories.length > 0 ? <>
+          <div className="flex flex-wrap gap-1">
+            {populatedCategories.map((category) => (
+              <button key={category} type="button" onClick={() => setUpdateCategory(category)} className={`rounded px-2.5 py-1.5 text-[11px] font-semibold ${visibleUpdateCategory === category ? 'bg-sky-500 text-neutral-950' : 'bg-neutral-900 text-neutral-400 hover:bg-neutral-800 hover:text-neutral-100'}`}>
+                {CATEGORY_LABELS[category]} ({eventsByCategory[category]?.length ?? 0})
+              </button>
+            ))}
+          </div>
+          <HubSection title={CATEGORY_LABELS[visibleUpdateCategory]} events={eventsByCategory[visibleUpdateCategory] ?? []} />
+        </> : <Panel title="Team Updates"><p className="text-sm text-neutral-500">No major updates this week.</p></Panel>}
+      </div>}
     </div>
   );
 }
@@ -422,5 +451,34 @@ function KpiCard({ label, value }: { label: string; value: string }) {
       <div className="text-xs font-semibold uppercase tracking-wide text-neutral-500">{label}</div>
       <div className="mt-1 text-lg font-bold text-neutral-100">{value}</div>
     </div>
+  );
+}
+
+function PaddockTabButton({
+  active,
+  onClick,
+  label,
+  count,
+  attention = false,
+}: {
+  active: boolean;
+  onClick: () => void;
+  label: string;
+  count?: number;
+  attention?: boolean;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={`flex items-center gap-2 rounded px-3 py-2 text-xs font-semibold ${active ? 'bg-amber-500 text-neutral-950' : 'text-neutral-400 hover:bg-neutral-800 hover:text-neutral-100'}`}
+    >
+      <span>{label}</span>
+      {count != null && count > 0 && (
+        <span className={`rounded-full px-1.5 py-0.5 text-[9px] tabular-nums ${active ? 'bg-neutral-950/20 text-neutral-950' : attention ? 'bg-orange-500/20 text-orange-300' : 'bg-neutral-800 text-neutral-300'}`}>
+          {count}
+        </span>
+      )}
+    </button>
   );
 }
