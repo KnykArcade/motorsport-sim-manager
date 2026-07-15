@@ -38,6 +38,7 @@ import { ensureRivalRelationships } from '../sim/phase18RivalRelationshipEngine'
 import { syncNarratives } from '../sim/phase18NarrativeEngine';
 import { CURRENT_SAVE_SCHEMA_VERSION } from './saveSchema';
 import { createAIPrincipalAttributes } from '../sim/principalPressureEngine';
+import { ensureCharacterInteractionState } from '../sim/characterInteractionEngine';
 
 // Deep clone via structuredClone (available in modern browsers / Node 18+).
 function clone<T>(value: T): T {
@@ -290,6 +291,7 @@ export function createNewGame(options: NewGameOptions): GameState {
     randomSeed: seed,
     seasonComplete: false,
     careerMobilityMode: 'StandardCareer',
+    characterInteractions: ensureCharacterInteractionState(),
   };
 
   const normalizedState = enforceRosters(baseState).state;

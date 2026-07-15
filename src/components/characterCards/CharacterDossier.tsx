@@ -13,6 +13,9 @@ import {
   PRINCIPAL_IDENTITY_LABELS,
 } from '../../sim/phase18IdentityCultureEngine';
 import { contractClauseLabel } from '../../sim/phase18ContractClauseEngine';
+import type { CharacterInteractionTarget } from '../../types/characterInteractionTypes';
+import { interactionHistoryForTarget } from '../../sim/characterInteractionEngine';
+import { CharacterActionPanel } from './CharacterActionPanel';
 
 export type CharacterDossierSubject =
   | { type: 'playerPrincipal' }
@@ -20,7 +23,7 @@ export type CharacterDossierSubject =
   | { type: 'owner'; teamId: string }
   | { type: 'staff'; staff: StaffMember };
 
-type DossierTab = 'profile' | 'standing' | 'history';
+type DossierTab = 'profile' | 'standing' | 'actions' | 'history';
 
 type DossierMetric = {
   label: string;
@@ -317,6 +320,27 @@ type ButtonProps = {
   className?: string;
 };
 
+function interactionTargetFor(
+  state: GameState,
+  subject: CharacterDossierSubject,
+  model: CharacterDossierModel,
+): CharacterInteractionTarget | undefined {
+  if (subject.type === 'playerPrincipal') return undefined;
+  if (subject.type === 'aiPrincipal') {
+    return { type: 'RivalPrincipal', id: model.id, name: model.name, teamId: subject.teamId };
+  }
+  if (subject.type === 'owner') {
+    return { type: 'Owner', id: model.id, name: model.name, teamId: subject.teamId };
+  }
+  const active = (state.staff ?? []).some((member) => member.id === subject.staff.id);
+  return {
+    type: active ? 'Staff' : 'StaffCandidate',
+    id: subject.staff.id,
+    name: subject.staff.name,
+    teamId: active ? state.selectedTeamId : undefined,
+  };
+}
+
 export function CharacterDossierButton({ state, subject, children, className = '' }: ButtonProps) {
   const [open, setOpen] = useState(false);
   const model = useMemo(() => buildCharacterDossier(state, subject), [state, subject]);
@@ -332,14 +356,16 @@ export function CharacterDossierButton({ state, subject, children, className = '
       >
         {children ?? 'Character Card'}
       </Button>
-      {open && <CharacterDossierModal model={model} onClose={() => setOpen(false)} />}
+      {open && <CharacterDossierModal state={state} subject={subject} model={model} onClose={() => setOpen(false)} />}
     </>
   );
 }
 
-function CharacterDossierModal({ model, onClose }: { model: CharacterDossierModel; onClose: () => void }) {
+function CharacterDossierModal({ state, subject, model, onClose }: { state: GameState; subject: CharacterDossierSubject; model: CharacterDossierModel; onClose: () => void }) {
   const [tab, setTab] = useState<DossierTab>('profile');
   const navigate = useNavigate();
+  const interactionTarget = interactionTargetFor(state, subject, model);
+  const interactionHistory = interactionTarget ? interactionHistoryForTarget(state, interactionTarget) : [];
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 p-3 backdrop-blur-sm" role="dialog" aria-modal="true" aria-label={`${model.name} character dossier`}>
       <div className="flex max-h-[92vh] w-full max-w-5xl flex-col overflow-hidden rounded-xl border border-neutral-700 bg-neutral-950 shadow-2xl" style={{ borderTopColor: model.accent, borderTopWidth: 4 }}>
@@ -358,7 +384,7 @@ function CharacterDossierModal({ model, onClose }: { model: CharacterDossierMode
         </header>
 
         <nav className="flex gap-1 border-b border-neutral-800 bg-neutral-950 px-4 pt-2" aria-label="Character dossier sections">
-          {(['profile', 'standing', 'history'] as DossierTab[]).map((item) => (
+          {(['profile', 'standing', 'actions', 'history'] as DossierTab[]).map((item) => (
             <button key={item} type="button" onClick={() => setTab(item)} className={`rounded-t-md border-b-2 px-4 py-2 text-xs font-semibold capitalize ${tab === item ? 'border-amber-400 text-amber-300' : 'border-transparent text-neutral-500 hover:text-neutral-200'}`}>{item}</button>
           ))}
         </nav>
@@ -388,9 +414,20 @@ function CharacterDossierModal({ model, onClose }: { model: CharacterDossierMode
             </div>
           )}
 
+          {tab === 'actions' && (
+            <DossierSection title="Management Actions">
+              <CharacterActionPanel state={state} target={interactionTarget} />
+            </DossierSection>
+          )}
+
           {tab === 'history' && (
             <DossierSection title="Career Memory">
-              {model.history.length ? <div className="grid gap-2 md:grid-cols-2">{model.history.map((entry) => <article key={entry.key} className="rounded border border-neutral-800 bg-neutral-900/40 p-3"><div className="text-sm font-semibold text-neutral-200">{entry.title}</div><p className="mt-1 text-xs text-neutral-400">{entry.detail}</p>{entry.meta && <div className="mt-2 text-[10px] uppercase tracking-wide text-neutral-600">{entry.meta}</div>}</article>)}</div> : <Empty>No major career events have been recorded yet.</Empty>}
+              {interactionHistory.length > 0 && (
+                <div className="mb-4 grid gap-2 md:grid-cols-2">
+                  {interactionHistory.map((entry) => <article key={entry.id} className="rounded border border-amber-900/60 bg-amber-950/15 p-3"><div className="text-sm font-semibold text-amber-200">{entry.actionLabel}</div><p className="mt-1 text-xs text-neutral-400">{entry.outcome}</p><div className="mt-2 text-[10px] uppercase tracking-wide text-neutral-600">{entry.seasonYear} · Round {entry.round} · {entry.tone}</div></article>)}
+                </div>
+              )}
+              {model.history.length ? <div className="grid gap-2 md:grid-cols-2">{model.history.map((entry) => <article key={entry.key} className="rounded border border-neutral-800 bg-neutral-900/40 p-3"><div className="text-sm font-semibold text-neutral-200">{entry.title}</div><p className="mt-1 text-xs text-neutral-400">{entry.detail}</p>{entry.meta && <div className="mt-2 text-[10px] uppercase tracking-wide text-neutral-600">{entry.meta}</div>}</article>)}</div> : interactionHistory.length === 0 ? <Empty>No major career events have been recorded yet.</Empty> : null}
             </DossierSection>
           )}
         </div>

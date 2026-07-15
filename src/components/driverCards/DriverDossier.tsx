@@ -17,6 +17,7 @@ import type { Driver, DriverRatings, RaceResult } from '../../types/gameTypes';
 import type { AcademyMember, MarketDriver, YouthProspect } from '../../types/marketTypes';
 import type { DriverRelationship, DriverWant } from '../../types/relationshipTypes';
 import { getEraTheme, getEraThemeConfig, type MotorsportEraTheme } from '../../theme/eraTheme';
+import { CharacterActionPanel } from '../characterCards/CharacterActionPanel';
 
 type DriverSubject =
   | { type: 'driver'; driver: Driver }
@@ -375,6 +376,20 @@ function DriverDossierModal({
                 {profile.salary && <MetricPill label="Salary" value={formatMoney(profile.salary)} tone="watch" />}
                 {activePromises > 0 && <MetricPill label="Active promises" value={activePromises} tone="risk" />}
               </DossierPanel>
+
+              {subject.type === 'driver' && subject.driver.teamId === state.selectedTeamId && (
+                <DossierPanel title="Management Actions" emphasis={focus === 'relationship'}>
+                  <CharacterActionPanel
+                    state={state}
+                    target={{
+                      type: 'Driver',
+                      id: subject.driver.id,
+                      name: subject.driver.name,
+                      teamId: subject.driver.teamId,
+                    }}
+                  />
+                </DossierPanel>
+              )}
 
               <DossierPanel title="Career Notes" emphasis={focus === 'career'}>
                 {profile.seasonStats ? (
