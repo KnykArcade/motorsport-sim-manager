@@ -203,6 +203,14 @@ import {
   transferFittedParts,
 } from '../sim/partsEngine';
 import { progressAITechnicalProgramsAfterRace } from '../sim/aiTechnicalDirectorEngine';
+import {
+  performCharacterInteraction,
+  recruitmentSigningDiscount,
+} from '../sim/characterInteractionEngine';
+import type {
+  CharacterInteractionAction,
+  CharacterInteractionTarget,
+} from '../types/characterInteractionTypes';
 
 export type GameAction =
   | { type: 'NEW_GAME'; options: NewGameOptions }
@@ -246,6 +254,7 @@ export type GameAction =
   | { type: 'CLEAR_ACADEMY_DECISION'; academyId: string }
   | { type: 'HIRE_STAFF'; staffId: string }
   | { type: 'FIRE_STAFF'; staffId: string }
+  | { type: 'PERFORM_CHARACTER_INTERACTION'; target: CharacterInteractionTarget; action: CharacterInteractionAction }
   | { type: 'UPGRADE_FACILITY'; facilityId: string }
   | { type: 'SIGN_ENGINE_DEAL'; supplierId: string; dealType: EngineDealType }
   | { type: 'SIGN_SPONSOR'; offerId: string }
@@ -698,6 +707,11 @@ export function gameReducer(state: GameState | null, action: GameAction): GameSt
           ),
         } : state.phase18,
       };
+    }
+
+    case 'PERFORM_CHARACTER_INTERACTION': {
+      if (!state) return state;
+      return performCharacterInteraction(state, action.target, action.action);
     }
 
     case 'UPGRADE_FACILITY': {
@@ -1196,11 +1210,17 @@ function hireStaff(state: GameState, staffId: string): GameState {
   if (roster.some((s) => s.id === staffId)) return state;
   const recruit = getStaffPool(state.seasonYear, state.series).find((s) => s.id === staffId);
   if (!recruit) return state;
-  const fee = toMoney(recruit.signingFee);
+  const signingDiscount = recruitmentSigningDiscount(state, staffId);
+  const fee = Math.round(toMoney(recruit.signingFee) * (1 - signingDiscount));
   if (fee > playerBudget(state)) return state;
   const charged = applyTransaction(
     state,
-    makeTransaction(state.seasonYear, 'Staff', `Hired ${recruit.name} (${recruit.role})`, -fee),
+    makeTransaction(
+      state.seasonYear,
+      'Staff',
+      `Hired ${recruit.name} (${recruit.role})${signingDiscount > 0 ? ` - ${Math.round(signingDiscount * 100)}% relationship discount` : ''}`,
+      -fee,
+    ),
   );
   const nextRoster = [...roster.filter((s) => s.role !== recruit.role), recruit];
   const hireTeam = state.teams.find((t) => t.id === state.selectedTeamId);

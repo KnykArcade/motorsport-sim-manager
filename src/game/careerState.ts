@@ -42,6 +42,7 @@ import type { CareerPhaseState } from '../types/careerPhaseTypes';
 import type { TeamResearchMap } from '../types/rdTypes';
 import type { TeamPartsMap } from '../types/partsTypes';
 import type { Phase18FoundationState } from '../types/phase18Types';
+import type { CharacterInteractionState } from '../types/characterInteractionTypes';
 
 export type GameState = {
   id: string;
@@ -185,6 +186,10 @@ export type GameState = {
   // Phase 18+ living-paddock data foundation. Gameplay engines progressively
   // consume these persisted models in the reviewable PRs after 18A.
   phase18?: Phase18FoundationState;
+
+  // Phase 19 people-management actions, their outcomes, per-character weekly
+  // cooldowns, and recruitment interest. Optional for older-save migration.
+  characterInteractions?: CharacterInteractionState;
 
   randomSeed: string;
   seasonComplete: boolean;
