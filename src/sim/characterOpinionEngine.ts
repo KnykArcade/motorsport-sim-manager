@@ -55,13 +55,14 @@ export function characterOpinionKey(target: Pick<CharacterInteractionTarget, 'ty
 
 function interactionState(state?: CharacterInteractionState): CharacterInteractionState {
   return {
-    version: 3,
+    version: 4,
     history: state?.history ?? [],
     lastInteractionByTarget: state?.lastInteractionByTarget ?? {},
     recruitmentInterest: state?.recruitmentInterest ?? {},
     requestHistory: state?.requestHistory ?? [],
     opinions: state?.opinions ?? {},
     memories: state?.memories ?? [],
+    ambitions: state?.ambitions ?? [],
   };
 }
 
@@ -152,7 +153,7 @@ function opinionBase(
   };
 }
 
-function currentTargets(state: GameState): CharacterInteractionTarget[] {
+export function currentCharacterTargets(state: GameState): CharacterInteractionTarget[] {
   const targets: CharacterInteractionTarget[] = [];
   for (const driver of state.drivers.filter((entry) => entry.teamId === state.selectedTeamId)) {
     targets.push({ type: 'Driver', id: driver.id, name: driver.name, teamId: driver.teamId });
@@ -175,7 +176,7 @@ function currentTargets(state: GameState): CharacterInteractionTarget[] {
 export function ensureCharacterOpinions(state: GameState): GameState {
   const current = interactionState(state.characterInteractions);
   const opinions = { ...current.opinions };
-  for (const target of currentTargets(state)) {
+  for (const target of currentCharacterTargets(state)) {
     const key = characterOpinionKey(target);
     if (!opinions[key]) opinions[key] = opinionBase(state, target);
   }

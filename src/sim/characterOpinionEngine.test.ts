@@ -87,7 +87,7 @@ describe('character opinion engine', () => {
     expect(resolveCharacterRequest(resolved, request, 'set-boundary')).toBe(resolved);
   });
 
-  it('backfills version-three opinions on old saves without losing existing memories', () => {
+  it('backfills current opinions on old saves without losing existing memories', () => {
     const state = freshState();
     const driver = state.drivers.find((candidate) => candidate.teamId === state.selectedTeamId)!;
     const target: CharacterInteractionTarget = { type: 'Driver', id: driver.id, name: driver.name, teamId: driver.teamId };
@@ -95,11 +95,11 @@ describe('character opinion engine', () => {
       source: 'Interaction', label: 'Honest meeting', description: 'The driver felt heard.', tone: 'Positive', effects: ['+3 trust'],
     });
     const legacy = structuredClone(remembered);
-    legacy.characterInteractions!.version = 3;
+    legacy.characterInteractions!.version = 4;
     delete legacy.characterInteractions!.opinions[characterOpinionKey(target)];
     const migrated = migrateGameState(legacy);
 
-    expect(migrated.characterInteractions?.version).toBe(3);
+    expect(migrated.characterInteractions?.version).toBe(4);
     expect(characterOpinionFor(migrated, target)).toBeTruthy();
     expect(characterMemoriesForTarget(migrated, target)).toHaveLength(1);
   });
