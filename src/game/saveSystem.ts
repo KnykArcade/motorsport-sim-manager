@@ -24,6 +24,7 @@ import { ensureCharacterMandates } from '../sim/characterMandateEngine';
 import { ensureCharacterBreakingPoints } from '../sim/characterBreakingPointEngine';
 import { ensureCharacterFutureIntentions } from '../sim/characterFutureIntentEngine';
 import { ensureAIStaffRosters } from '../sim/aiStaffRosterEngine';
+import { ensurePersonnelCareerLedger } from '../sim/personnelCareerLedgerEngine';
 
 const SAVE_KEY = 'msm:save:v1';
 const SETTINGS_KEY = 'msm:settings:v1';
@@ -90,7 +91,8 @@ export function migrateGameState(state: GameState): GameState {
   });
   patched.characterInteractions = ensureCharacterInteractionState(patched.characterInteractions);
   patched.saveSchemaVersion = CURRENT_SAVE_SCHEMA_VERSION;
-  return ensureCharacterFutureIntentions(ensureCharacterBreakingPoints(ensureCharacterMandates(ensureCharacterInitiatives(ensureCharacterInfluence(ensureCharacterConnections(ensureCharacterAmbitions(ensureCharacterOpinions(syncNarratives(ensureRivalRelationships(ensureFailureInvestigationState(ensurePreseasonHubState(ensureContractClauses(patched as GameState)))))))))))));
+  const migrated = ensureCharacterFutureIntentions(ensureCharacterBreakingPoints(ensureCharacterMandates(ensureCharacterInitiatives(ensureCharacterInfluence(ensureCharacterConnections(ensureCharacterAmbitions(ensureCharacterOpinions(syncNarratives(ensureRivalRelationships(ensureFailureInvestigationState(ensurePreseasonHubState(ensureContractClauses(patched as GameState)))))))))))));
+  return ensurePersonnelCareerLedger(migrated);
 }
 
 export type GameSettings = {

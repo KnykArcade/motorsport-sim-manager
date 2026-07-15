@@ -83,6 +83,7 @@ describe('character dossier models', () => {
     expect(dossier.name).toBe(state.aiPrincipals?.[rivalTeam.id].name);
     expect(dossier.metrics.some((metric) => metric.label === 'Pressure Control')).toBe(true);
     expect(dossier.identityLabel).toBeTruthy();
+    expect(dossier.history.some((entry) => entry.title.includes(rivalTeam.name))).toBe(true);
   });
 
   it('assembles ownership priorities without inventing a historical owner name', async () => {

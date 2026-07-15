@@ -108,6 +108,7 @@ import { applyPreseasonCarModifier, completeCarLaunch, completePreseasonTesting,
 import { applyFailureRiskModifier, investigateFailure, recordFailureInvestigations, respondToFailure } from '../sim/phase18FailureInvestigationEngine';
 import { evolveRivalRelationshipsAfterRace, recordRegulationVoteRelationships, recordStaffPoach, takeRivalAction } from '../sim/phase18RivalRelationshipEngine';
 import { staffEmployer, staffPoachingCompensation } from '../sim/aiStaffRosterEngine';
+import { reconcilePersonnelCareerLedger } from '../sim/personnelCareerLedgerEngine';
 import { recordRaceLegacy } from '../sim/phase18LegacyEngine';
 import { syncNarratives } from '../sim/phase18NarrativeEngine';
 import { applyNarrativeAIReactions, resolveNarrativeResponse } from '../sim/phase18NarrativeResponseEngine';
@@ -1271,7 +1272,8 @@ function hireStaff(state: GameState, staffId: string): GameState {
     },
   } : chargedWithTransfer;
   const hired = refreshCharacterFutureIntentions(ensureContractClauses({ ...withReplacementClauses, staff: nextRoster, news: [staffNews, ...chargedWithTransfer.news].slice(0, 80) }));
-  return employerTeamId ? recordStaffPoach(hired, employerTeamId, state.selectedTeamId) : hired;
+  const completed = employerTeamId ? recordStaffPoach(hired, employerTeamId, state.selectedTeamId) : hired;
+  return reconcilePersonnelCareerLedger(state, completed, state.seasonYear, 'Contract ended following a staff change');
 }
 
 function formatStaffMoney(value: number): string {
@@ -1309,7 +1311,7 @@ function fireStaff(state: GameState, staffId: string): GameState {
       ),
     } : charged.phase18,
   };
-  return refreshCharacterFutureIntentions(released);
+  return reconcilePersonnelCareerLedger(state, refreshCharacterFutureIntentions(released), state.seasonYear, 'Released by the team');
 }
 
 function extendStaffContract(state: GameState, staffId: string, years: number, offerMultiplier: number): GameState {
