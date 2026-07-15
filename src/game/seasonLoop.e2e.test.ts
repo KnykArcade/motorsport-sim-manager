@@ -1,3 +1,4 @@
+import '../testDataSetup';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { loadSeasonBundle } from '../data/seasonLoader';
 import { preloadMarketBundle } from '../data/market';

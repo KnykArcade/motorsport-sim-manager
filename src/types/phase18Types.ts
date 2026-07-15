@@ -441,6 +441,21 @@ export type NarrativeStory = {
   progress?: number;
   consequenceSummary?: string;
   aiReaction?: string;
+  responseStatus?: 'Observed' | 'AwaitingResponse' | 'Responded';
+  lastResponseId?: string;
+  lastResponseSummary?: string;
+  responseHistory?: NarrativeResponseRecord[];
+  lastAIReactionSeasonYear?: number;
+  lastAIReactionRound?: number;
+};
+
+export type NarrativeResponseRecord = {
+  id: string;
+  seasonYear: number;
+  round?: number;
+  responseId: string;
+  responseLabel: string;
+  consequence: string;
 };
 
 export type Phase18FoundationState = {

@@ -1,3 +1,4 @@
+import '../../testDataSetup';
 import { describe, it, expect } from 'vitest';
 import type { Driver, Series } from '../../types/gameTypes';
 import type { MarketDriver, MarketSkillRatings, YouthProspect } from '../../types/marketTypes';

@@ -1,3 +1,4 @@
+import '../src/testDataSetup';
 // Long-run Career-Mode invariants — start an F1 1990 career and advance 20
 // seasons of offseason rollover (driver market, youth academy, retirements, AI
 // offseason, finances), asserting the universe stays self-consistent the whole

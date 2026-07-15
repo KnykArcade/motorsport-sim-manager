@@ -1,8 +1,2 @@
-// Vitest setup — imports seasonData to seed the bundle cache and track
-// registry so tests that use createNewGame / advanceSeason / getTrackById
-// work without each test file needing to import seasonData explicitly.
-import './data/seasonData';
-import { seedMarketBundleCache } from './data/market';
-import { buildStaticMarketBundleMap } from './data/market/marketSeed';
-
-seedMarketBundleCache(buildStaticMarketBundleMap());
+// Keep global setup lightweight. Tests that need the complete historical
+// universe explicitly import testDataSetup.ts.

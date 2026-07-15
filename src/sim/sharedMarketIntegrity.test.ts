@@ -1,3 +1,4 @@
+import '../testDataSetup';
 import { expect, it } from 'vitest';
 import { initializeMasterRegistry, preloadMarketBundle } from '../data';
 import { getMarketBundle } from '../data/market';

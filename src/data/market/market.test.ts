@@ -1,3 +1,4 @@
+import '../../testDataSetup';
 import { describe, it, expect, beforeAll } from 'vitest';
 import { getMarketBundle, youthSigningCost, youthYearlyAcademyCost, preloadMarketBundle } from './index';
 import { youthProspects1998NASCAR } from './youthProspects1998NASCAR';

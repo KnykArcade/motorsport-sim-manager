@@ -58,6 +58,7 @@ export type PaddockEvent = {
   resolvedOptionId?: string;
   effectsApplied: boolean;
   createdAt: string;
+  narrativeStoryId?: string;
 };
 
 export type PreseasonChecklistItem = {

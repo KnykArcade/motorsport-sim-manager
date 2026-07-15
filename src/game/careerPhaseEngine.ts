@@ -30,6 +30,7 @@ import {
   generateAdvisorRecommendations,
   resolveAdvisorRecommendations,
 } from '../sim/phase18AdvisorEngine';
+import { narrativeResponseEvents } from '../sim/phase18NarrativeResponseEngine';
 
 export function defaultCareerPhaseState(): CareerPhaseState {
   return {
@@ -1156,6 +1157,7 @@ export function generateAndStorePaddockEvents(state: GameState): GameState {
   if (phaseState.generatedEventsForCurrentWeek) return state;
 
   const events = generatePaddockWeekEvents(state);
+  events.push(...narrativeResponseEvents(state));
 
   // Track newly announced completed projects.
   const announced = new Set(phaseState.announcedCompletedProjectIds);

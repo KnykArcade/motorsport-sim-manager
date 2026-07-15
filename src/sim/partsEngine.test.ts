@@ -1,3 +1,4 @@
+import '../testDataSetup';
 import { describe, expect, it } from 'vitest';
 import { getTrackById } from '../data';
 import { createNewGame } from '../game/initialCareer';

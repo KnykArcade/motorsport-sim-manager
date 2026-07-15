@@ -1,3 +1,4 @@
+import '../testDataSetup';
 import { describe, expect, it } from 'vitest';
 import { activeDriversForTeam } from './careerState';
 import { gameReducer } from './gameReducer';
