@@ -15,6 +15,7 @@ import { ensureRivalRelationships } from '../sim/phase18RivalRelationshipEngine'
 import { syncNarratives } from '../sim/phase18NarrativeEngine';
 import { CURRENT_SAVE_SCHEMA_VERSION } from './saveSchema';
 import { ensureCharacterInteractionState } from '../sim/characterInteractionEngine';
+import { ensureCharacterOpinions } from '../sim/characterOpinionEngine';
 
 const SAVE_KEY = 'msm:save:v1';
 const SETTINGS_KEY = 'msm:settings:v1';
@@ -65,7 +66,7 @@ export function migrateGameState(state: GameState): GameState {
   });
   patched.characterInteractions = ensureCharacterInteractionState(patched.characterInteractions);
   patched.saveSchemaVersion = CURRENT_SAVE_SCHEMA_VERSION;
-  return syncNarratives(ensureRivalRelationships(ensureFailureInvestigationState(ensurePreseasonHubState(ensureContractClauses(patched as GameState)))));
+  return ensureCharacterOpinions(syncNarratives(ensureRivalRelationships(ensureFailureInvestigationState(ensurePreseasonHubState(ensureContractClauses(patched as GameState))))));
 }
 
 export type GameSettings = {

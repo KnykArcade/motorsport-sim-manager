@@ -12,6 +12,7 @@ import { makeTransaction } from './financeEngine';
 import { ensureCharacterInteractionState } from './characterInteractionEngine';
 import { ensurePhase18FoundationState } from './phase18FoundationEngine';
 import { addRivalRelationshipEvent, rivalRelationship } from './phase18RivalRelationshipEngine';
+import { characterOpinionFor, recordCharacterMemory } from './characterOpinionEngine';
 
 const STAFF_DEPARTMENT: Record<StaffRole, DepartmentId> = {
   'Technical Director': 'Technical',
@@ -104,14 +105,17 @@ function driverRequest(state: GameState): PaddockEvent | undefined {
     .map((candidate) => ({ candidate, relationship: state.driverRelationships?.[candidate.id] }))
     .filter((entry) => !!entry.relationship)
     .sort((a, b) => {
-      const aScore = a.relationship!.frustration + (100 - a.relationship!.trustInPrincipal) + a.relationship!.wants.length * 5;
-      const bScore = b.relationship!.frustration + (100 - b.relationship!.trustInPrincipal) + b.relationship!.wants.length * 5;
+      const aOpinion = characterOpinionFor(state, { type: 'Driver', id: a.candidate.id, name: a.candidate.name, teamId: a.candidate.teamId }).score;
+      const bOpinion = characterOpinionFor(state, { type: 'Driver', id: b.candidate.id, name: b.candidate.name, teamId: b.candidate.teamId }).score;
+      const aScore = a.relationship!.frustration + (100 - a.relationship!.trustInPrincipal) + a.relationship!.wants.length * 5 + Math.max(0, -aOpinion);
+      const bScore = b.relationship!.frustration + (100 - b.relationship!.trustInPrincipal) + b.relationship!.wants.length * 5 + Math.max(0, -bOpinion);
       return bScore - aScore || a.candidate.id.localeCompare(b.candidate.id);
     })[0];
   if (!driver) return undefined;
   const want = driver.relationship!.wants[0];
   const concern = want ? WANT_LABEL[want] : 'their role and the direction of the team';
-  const required = driver.relationship!.frustration >= 55 || driver.relationship!.trustInPrincipal <= 35;
+  const opinion = characterOpinionFor(state, { type: 'Driver', id: driver.candidate.id, name: driver.candidate.name, teamId: driver.candidate.teamId });
+  const required = driver.relationship!.frustration >= 55 || driver.relationship!.trustInPrincipal <= 35 || opinion.score <= -25;
   return requestEvent(
     state,
     'DriverConcern',
@@ -134,19 +138,24 @@ function staffRequest(state: GameState): PaddockEvent | undefined {
     .sort((a, b) => {
       const aMood = phase18.departmentMoods[state.selectedTeamId][STAFF_DEPARTMENT[a.role]];
       const bMood = phase18.departmentMoods[state.selectedTeamId][STAFF_DEPARTMENT[b.role]];
-      return (bMood.workload - bMood.morale) - (aMood.workload - aMood.morale) || a.id.localeCompare(b.id);
+      const aOpinion = characterOpinionFor(state, { type: 'Staff', id: a.id, name: a.name, teamId: state.selectedTeamId }).score;
+      const bOpinion = characterOpinionFor(state, { type: 'Staff', id: b.id, name: b.name, teamId: state.selectedTeamId }).score;
+      const aPressure = aMood.workload - aMood.morale + Math.max(0, -aOpinion);
+      const bPressure = bMood.workload - bMood.morale + Math.max(0, -bOpinion);
+      return bPressure - aPressure || a.id.localeCompare(b.id);
     })[0];
   if (!member) return undefined;
   const departmentId = STAFF_DEPARTMENT[member.role];
   const mood = phase18.departmentMoods[state.selectedTeamId][departmentId];
-  const required = mood.workload >= 75 || mood.morale <= 35 || mood.trustInPrincipal <= 30;
+  const opinion = characterOpinionFor(state, { type: 'Staff', id: member.id, name: member.name, teamId: state.selectedTeamId });
+  const required = mood.workload >= 75 || mood.morale <= 35 || mood.trustInPrincipal <= 30 || opinion.score <= -25;
   return requestEvent(
     state,
     'StaffSupport',
     { targetType: 'Staff', targetId: member.id, targetName: member.name, teamId: state.selectedTeamId },
     'staff',
     `${member.name} requests a department review`,
-    `${member.name} says the ${departmentId} department needs clearer support. Morale is ${mood.morale}/100, workload is ${mood.workload}/100, and trust in your leadership is ${mood.trustInPrincipal}/100.`,
+    `${member.name} says the ${departmentId} department needs clearer support. Morale is ${mood.morale}/100, workload is ${mood.workload}/100, trust is ${mood.trustInPrincipal}/100, and their personal opinion of you is ${opinion.score > 0 ? '+' : ''}${opinion.score}.`,
     [
       option('hear-department', 'Hear the department out', 'Invite the staff member into the planning process and adjust priorities together.'),
       option('fund-support', 'Fund workload support', 'Commit $500K to temporary support and reduce the department workload.', 1),
@@ -160,14 +169,16 @@ function ownerRequest(state: GameState): PaddockEvent | undefined {
   const team = state.teams.find((candidate) => candidate.id === state.selectedTeamId);
   const reputation = state.teamReputations?.[state.selectedTeamId];
   if (!team || !reputation || !state.principal) return undefined;
-  const required = reputation.ownerPatience <= 40 || state.principal.jobSecurity <= 35;
+  const target = { type: 'Owner' as const, id: `owner-${team.id}`, name: `${team.name} Ownership`, teamId: team.id };
+  const opinion = characterOpinionFor(state, target);
+  const required = reputation.ownerPatience <= 40 || state.principal.jobSecurity <= 35 || opinion.score <= -25;
   return requestEvent(
     state,
     'OwnerReview',
-    { targetType: 'Owner', targetId: `owner-${team.id}`, targetName: `${team.name} Ownership`, teamId: team.id },
+    { targetType: target.type, targetId: target.id, targetName: target.name, teamId: target.teamId },
     'finance',
     `${team.name} ownership calls a progress review`,
-    `Ownership wants a direct account of results, spending, and the plan ahead. Owner patience is ${reputation.ownerPatience}/100 and your job security is ${state.principal.jobSecurity}/100.`,
+    `Ownership wants a direct account of results, spending, and the plan ahead. Owner patience is ${reputation.ownerPatience}/100, its opinion of you is ${opinion.score > 0 ? '+' : ''}${opinion.score}, and your job security is ${state.principal.jobSecurity}/100.`,
     [
       option('present-evidence', 'Present the evidence', 'Use performance, development, and financial evidence to defend the current plan.'),
       option('commit-target', 'Commit to a near-term target', 'Ask for patience by putting your authority behind the next competitive milestone.', 1),
@@ -186,19 +197,21 @@ function rivalRequest(state: GameState): PaddockEvent | undefined {
   if (!rival) return undefined;
   const principal = state.aiPrincipals?.[rival.team.id];
   const name = principal?.name ?? `${rival.team.shortName} Team Principal`;
+  const target = { type: 'RivalPrincipal' as const, id: principal?.principalId ?? `principal-${rival.team.id}`, name, teamId: rival.team.id };
+  const opinion = characterOpinionFor(state, target);
   return requestEvent(
     state,
     'RivalApproach',
-    { targetType: 'RivalPrincipal', targetId: principal?.principalId ?? `principal-${rival.team.id}`, targetName: name, teamId: rival.team.id },
+    { targetType: target.type, targetId: target.id, targetName: target.name, teamId: target.teamId },
     'regulation',
     `${name} seeks a paddock conversation`,
-    `${name} has approached you as relations with ${rival.team.name} sit at ${rival.relationship!.score}. The conversation could lower tension or become another public confrontation.`,
+    `${name} has approached you as relations with ${rival.team.name} sit at ${rival.relationship!.score} and their personal opinion of you is ${opinion.score > 0 ? '+' : ''}${opinion.score}. The conversation could lower tension or become another public confrontation.`,
     [
       option('private-channel', 'Keep it private', 'Open a discreet channel and look for limited common ground.'),
       option('public-response', 'Take the issue public', 'Use the media to apply pressure and strengthen your public position.', 2),
       option('decline-meeting', 'Decline the meeting', 'Avoid immediate escalation but leave the underlying tension unresolved.', 1),
     ],
-    false,
+    opinion.score <= -60,
   );
 }
 
@@ -419,9 +432,21 @@ export function resolveCharacterRequest(state: GameState, event: PaddockEvent, o
     teamId: meta.teamId,
     driverId: meta.targetType === 'Driver' ? meta.targetId : undefined,
   };
-  return {
+  const withRequestRecord: GameState = {
     ...result.state,
     characterInteractions: { ...updatedInteractions, requestHistory: [...updatedInteractions.requestHistory, record].slice(-250) },
     news: [news, ...result.state.news].slice(0, 80),
   };
+  return recordCharacterMemory(withRequestRecord, {
+    type: meta.targetType,
+    id: meta.targetId,
+    name: meta.targetName,
+    teamId: meta.teamId,
+  }, {
+    source: 'Request',
+    label: optionLabel,
+    description: result.outcome,
+    tone: result.tone,
+    effects: result.effects,
+  });
 }
