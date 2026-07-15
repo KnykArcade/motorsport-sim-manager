@@ -3,7 +3,7 @@
 import { getCachedBundle } from '../data/seasonLoader';
 import type { SeasonBundle } from '../data/seasonCatalog';
 import { BALANCED_SETUP } from '../data/setup/setupComponents';
-import type { GameMode, Series } from '../types/gameTypes';
+import type { GameMode, Series, TeamPrincipal as HistoricalTeamPrincipal } from '../types/gameTypes';
 import type { CarSetup } from '../types/setupTypes';
 import type { GameState } from './careerState';
 import { buildInitialCommercial } from '../sim/commercialEngine';
@@ -37,10 +37,61 @@ import { ensureFailureInvestigationState } from '../sim/phase18FailureInvestigat
 import { ensureRivalRelationships } from '../sim/phase18RivalRelationshipEngine';
 import { syncNarratives } from '../sim/phase18NarrativeEngine';
 import { CURRENT_SAVE_SCHEMA_VERSION } from './saveSchema';
+import { createAIPrincipalAttributes } from '../sim/principalPressureEngine';
 
 // Deep clone via structuredClone (available in modern browsers / Node 18+).
 function clone<T>(value: T): T {
   return structuredClone(value);
+}
+
+function principalRoleScore(principal: HistoricalTeamPrincipal, teamId: string, year: number, series: Series): number {
+  const role = principal.careerTimeline.find((entry) =>
+    entry.teamId === teamId && entry.year === year && entry.series === series,
+  )?.role ?? '';
+  if (/team principal|team boss|crew chief/i.test(role)) return 3;
+  if (/owner/i.test(role)) return 2;
+  return 1;
+}
+
+function createInitialAIPrincipals(
+  bundle: SeasonBundle,
+  selectedTeamId: string,
+  year: number,
+  series: Series,
+  seed: string,
+): NonNullable<GameState['aiPrincipals']> {
+  const principals = bundle.principals ?? [];
+  const result: NonNullable<GameState['aiPrincipals']> = {};
+  for (const team of bundle.teams) {
+    if (team.id === selectedTeamId) continue;
+    const historical = principals
+      .filter((candidate) => candidate.careerTimeline.some((entry) =>
+        entry.teamId === team.id && entry.year === year && entry.series === series,
+      ))
+      .sort((a, b) => principalRoleScore(b, team.id, year, series) - principalRoleScore(a, team.id, year, series))[0];
+    const priorSeasons = historical?.careerTimeline.filter((entry) =>
+      entry.teamId === team.id && entry.series === series && entry.year <= year,
+    ).length ?? 1;
+    result[team.id] = {
+      principalId: historical?.principalId ?? `principal-${team.id}`,
+      name: historical?.name ?? `${team.shortName} Team Principal`,
+      pressure: 0,
+      contractYearsRemaining: historical?.contract?.teamId === team.id
+        ? Math.max(1, historical.contract.yearsLeft)
+        : 2,
+      seasonsAtTeam: Math.max(0, priorSeasons - 1),
+      fired: false,
+      attributes: historical ? {
+        mediaImage: Math.round((historical.commercial + historical.political + historical.reputation) / 3),
+        boardConfidence: historical.leadership,
+        financialDiscipline: historical.commercial,
+        driverManagement: historical.driverManagement,
+        development: Math.round((historical.technicalVision + historical.developmentVision) / 2),
+        strategy: Math.round((historical.operations + historical.crisisManagement) / 2),
+      } : createAIPrincipalAttributes(`${seed}-${team.id}`, team.reputation),
+    };
+  }
+  return result;
 }
 
 export type NewGameOptions = {
@@ -135,6 +186,13 @@ export function createNewGame(options: NewGameOptions): GameState {
   const jobOffers = principal
     ? generateJobOffers(principal, bundle.teams, teamReputations, options.seasonYear, seed)
     : undefined;
+  const aiPrincipals = createInitialAIPrincipals(
+    bundle,
+    options.teamId,
+    options.seasonYear,
+    options.series,
+    seed,
+  );
 
   // Driver relationships + team orders (Living Universe Phase 7): the human side
   // of every garage — loyalty, chemistry, teammate rivalry, morale, frustration.
@@ -220,6 +278,7 @@ export function createNewGame(options: NewGameOptions): GameState {
     principal,
     jobOffers,
     teamPrincipal,
+    aiPrincipals,
     teamOrgRatings,
     driverRelationships,
     teamOrderHistory: [],

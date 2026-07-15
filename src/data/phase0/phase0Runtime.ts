@@ -1,4 +1,4 @@
-import type { Car, Driver, Phase0SeasonBundle, Series, Team, Track } from '../../types/gameTypes';
+import type { Car, Driver, Phase0SeasonBundle, Series, Team, TeamPrincipal, Track } from '../../types/gameTypes';
 import type { MarketDriver } from '../../types/marketTypes';
 import type { SeasonBundle } from '../seasonCatalog';
 import { availableSeasons } from '../seasonCatalog';
@@ -690,13 +690,19 @@ function isoDateOrUndefined(value?: string): string | undefined {
   return value && /^\d{4}-\d{2}-\d{2}$/.test(value) ? value : undefined;
 }
 
-export function buildPhase0SeasonBundle(phase0Season: Phase0SeasonBundle): {
+export function buildPhase0SeasonBundle(
+  phase0Season: Phase0SeasonBundle,
+  principalSources: readonly TeamPrincipal[] = [],
+): {
   bundle: SeasonBundle;
   tracks: Track[];
 } {
   const seasonRules = getSeasonRuleIds(phase0Season.season, phase0Season.series);
   const ctx = buildLegacyContext(phase0Season);
   const rosterPlan = buildRosterPlan(phase0Season, ctx);
+  const sourceToLegacyTeamId = new Map(
+    [...ctx.legacyTeamToSourceTeamId.entries()].map(([legacyId, sourceId]) => [sourceId, legacyId]),
+  );
   seedReleasedMarketDrivers(phase0Season.season, phase0Season.series, rosterPlan.releasedDrivers);
   const bundle: SeasonBundle = {
     season: {
@@ -722,6 +728,23 @@ export function buildPhase0SeasonBundle(phase0Season: Phase0SeasonBundle): {
     teams: rosterPlan.teams,
     drivers: rosterPlan.drivers,
     cars: buildCars(phase0Season, ctx, rosterPlan.teams.map((team) => team.id)),
+    principals: principalSources
+      .filter((principal) => principal.careerTimeline.some((entry) =>
+        entry.year === phase0Season.season
+        && entry.series === phase0Season.series
+        && sourceToLegacyTeamId.has(entry.teamId),
+      ))
+      .map((principal) => ({
+        ...principal,
+        careerTimeline: principal.careerTimeline.map((entry) => ({
+          ...entry,
+          teamId: sourceToLegacyTeamId.get(entry.teamId) ?? entry.teamId,
+        })),
+        contract: principal.contract ? {
+          ...principal.contract,
+          teamId: sourceToLegacyTeamId.get(principal.contract.teamId) ?? principal.contract.teamId,
+        } : undefined,
+      })),
   };
 
   return { bundle, tracks: buildTracks(phase0Season) };

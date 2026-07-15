@@ -3,6 +3,7 @@ import { useGame } from '../game/GameContext';
 import { Panel } from '../components/Panel';
 import { RatingBadge } from '../components/RatingBadge';
 import { DriverDossierButton } from '../components/driverCards/DriverDossier';
+import { CharacterDossierButton } from '../components/characterCards/CharacterDossier';
 import { formatMoney, ratingColor } from '../components/ui';
 import {
   buildTeamOverview,
@@ -268,9 +269,24 @@ function TeamDetail({
       <Panel
         title={row.name}
         actions={
-          <button onClick={onClose} className="text-xs text-neutral-500 hover:text-neutral-200">
-            ✕ Close
-          </button>
+          <div className="flex flex-wrap items-center gap-1">
+            {state && (
+              <>
+                <CharacterDossierButton
+                  state={state}
+                  subject={row.isPlayer ? { type: 'playerPrincipal' } : { type: 'aiPrincipal', teamId: row.teamId }}
+                >
+                  Principal Card
+                </CharacterDossierButton>
+                <CharacterDossierButton state={state} subject={{ type: 'owner', teamId: row.teamId }}>
+                  Owner Card
+                </CharacterDossierButton>
+              </>
+            )}
+            <button onClick={onClose} className="text-xs text-neutral-500 hover:text-neutral-200">
+              ✕ Close
+            </button>
+          </div>
         }
       >
         <div className="space-y-4">

@@ -9,6 +9,7 @@ export type SeasonBundle = {
   teams: import('../types/gameTypes').Team[];
   drivers: import('../types/gameTypes').Driver[];
   cars: import('../types/gameTypes').Car[];
+  principals?: import('../types/gameTypes').TeamPrincipal[];
 };
 
 const aowAvailableSeasons: { year: number; series: 'CART' | 'Champ Car' | 'IndyCar'; label: string }[] = [
