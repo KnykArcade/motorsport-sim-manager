@@ -15,6 +15,7 @@ import {
   characterOpinionLabel,
 } from '../../sim/characterOpinionEngine';
 import { activeAmbitionForTarget } from '../../sim/characterAmbitionEngine';
+import { connectedCharacter, connectionsForTarget, factionsForTarget } from '../../sim/characterConnectionEngine';
 
 type Props = {
   state: GameState;
@@ -37,7 +38,7 @@ const PRESSURE_CLASS = {
 
 export function CharacterActionPanel({ state, target }: Props) {
   const { dispatch } = useGame();
-  const [section, setSection] = useState<'overview' | 'interact' | 'recent'>('overview');
+  const [section, setSection] = useState<'overview' | 'interact' | 'connections' | 'recent'>('overview');
   if (!target) {
     return <p className="text-sm text-neutral-500">This is your own management dossier. Actions are taken with the people around you.</p>;
   }
@@ -50,6 +51,8 @@ export function CharacterActionPanel({ state, target }: Props) {
   const allMemories = characterMemoriesForTarget(state, target);
   const memories = allMemories.slice(0, 3);
   const ambition = activeAmbitionForTarget(state, target);
+  const connections = connectionsForTarget(state, target).slice(0, 6);
+  const factions = factionsForTarget(state, target);
 
   return (
     <div className="space-y-4">
@@ -57,6 +60,7 @@ export function CharacterActionPanel({ state, target }: Props) {
         {([
           ['overview', 'Opinion & ambition'],
           ['interact', 'Direct actions'],
+          ['connections', 'Connections'],
           ['recent', 'Recent history'],
         ] as const).map(([id, label]) => (
           <button
@@ -168,6 +172,56 @@ export function CharacterActionPanel({ state, target }: Props) {
               )}
             </>
           )}
+        </div>
+      )}
+
+      {section === 'connections' && (
+        <div className="grid gap-3 lg:grid-cols-[1.35fr_1fr]">
+          <section className="rounded-lg border border-neutral-800 bg-neutral-950/70 p-3">
+            <div className="text-[10px] font-bold uppercase tracking-[0.16em] text-neutral-500">Personal network</div>
+            {connections.length > 0 ? (
+              <div className="mt-2 grid gap-2 sm:grid-cols-2">
+                {connections.map((connection) => {
+                  const other = connectedCharacter(connection, target);
+                  const positive = connection.affinity >= 0;
+                  return (
+                    <article key={connection.id} className="rounded border border-neutral-800 bg-neutral-900/60 p-2.5">
+                      <div className="flex items-start justify-between gap-2">
+                        <div>
+                          <strong className="block text-xs text-neutral-200">{other.name}</strong>
+                          <span className="text-[10px] text-neutral-500">{connection.kind.replace(/([a-z])([A-Z])/g, '$1 $2')}</span>
+                        </div>
+                        <span className={`rounded px-1.5 py-0.5 text-[10px] font-bold ${positive ? 'bg-emerald-950 text-emerald-300' : 'bg-red-950 text-red-300'}`}>
+                          {connection.band} {connection.affinity > 0 ? '+' : ''}{connection.affinity}
+                        </span>
+                      </div>
+                      <p className="mt-2 text-[10px] leading-relaxed text-neutral-400">{connection.basis}</p>
+                      <div className="mt-1 text-[10px] text-neutral-600">Influence strength {connection.strength}</div>
+                    </article>
+                  );
+                })}
+              </div>
+            ) : <p className="mt-2 text-xs text-neutral-500">No meaningful connections have formed around {target.name} yet.</p>}
+          </section>
+          <section className="rounded-lg border border-neutral-800 bg-neutral-950/70 p-3">
+            <div className="text-[10px] font-bold uppercase tracking-[0.16em] text-neutral-500">Factions and camps</div>
+            {factions.length > 0 ? (
+              <div className="mt-2 space-y-2">
+                {factions.map((faction) => (
+                  <article key={faction.id} className="rounded border border-neutral-800 bg-neutral-900/60 p-2.5">
+                    <div className="flex items-center justify-between gap-2">
+                      <strong className="text-xs text-neutral-200">{faction.name}</strong>
+                      <span className="text-[10px] font-semibold text-amber-300">{faction.stance}</span>
+                    </div>
+                    <p className="mt-1 text-[10px] leading-relaxed text-neutral-400">{faction.description}</p>
+                    <div className="mt-2 flex gap-3 text-[10px] text-neutral-500">
+                      <span>Cohesion {faction.cohesion}</span><span>Influence {faction.influence}</span>
+                    </div>
+                  </article>
+                ))}
+              </div>
+            ) : <p className="mt-2 text-xs text-neutral-500">This character is not currently part of an influential camp.</p>}
+          </section>
         </div>
       )}
 

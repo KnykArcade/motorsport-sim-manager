@@ -33,6 +33,7 @@ import {
 import { narrativeResponseEvents } from '../sim/phase18NarrativeResponseEngine';
 import { generateCharacterRequestEvents } from '../sim/characterRequestEngine';
 import { advanceCharacterAmbitions, generateCharacterAmbitionEvents } from '../sim/characterAmbitionEngine';
+import { generateCharacterConnectionEvents, refreshCharacterConnections } from '../sim/characterConnectionEngine';
 
 export function defaultCareerPhaseState(): CareerPhaseState {
   return {
@@ -1158,12 +1159,14 @@ export function generateAndStorePaddockEvents(state: GameState): GameState {
   const phaseState = getOrCreatePhaseState(state);
   if (phaseState.generatedEventsForCurrentWeek) return state;
 
-  const stateWithAmbitions = advanceCharacterAmbitions(state);
+  const stateWithConnections = refreshCharacterConnections(state);
+  const stateWithAmbitions = advanceCharacterAmbitions(stateWithConnections);
   const updatedPhaseState = getOrCreatePhaseState(stateWithAmbitions);
 
   const events = generatePaddockWeekEvents(stateWithAmbitions);
   events.push(...generateCharacterRequestEvents(stateWithAmbitions));
   events.push(...generateCharacterAmbitionEvents(stateWithAmbitions));
+  events.push(...generateCharacterConnectionEvents(stateWithAmbitions));
   events.push(...narrativeResponseEvents(stateWithAmbitions));
 
   // Track newly announced completed projects.

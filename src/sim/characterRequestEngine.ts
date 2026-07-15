@@ -13,6 +13,7 @@ import { ensureCharacterInteractionState } from './characterInteractionEngine';
 import { ensurePhase18FoundationState } from './phase18FoundationEngine';
 import { addRivalRelationshipEvent, rivalRelationship } from './phase18RivalRelationshipEngine';
 import { characterOpinionFor, recordCharacterMemory } from './characterOpinionEngine';
+import { propagateCharacterReaction } from './characterConnectionEngine';
 
 const STAFF_DEPARTMENT: Record<StaffRole, DepartmentId> = {
   'Technical Director': 'Technical',
@@ -437,16 +438,18 @@ export function resolveCharacterRequest(state: GameState, event: PaddockEvent, o
     characterInteractions: { ...updatedInteractions, requestHistory: [...updatedInteractions.requestHistory, record].slice(-250) },
     news: [news, ...result.state.news].slice(0, 80),
   };
-  return recordCharacterMemory(withRequestRecord, {
+  const target = {
     type: meta.targetType,
     id: meta.targetId,
     name: meta.targetName,
     teamId: meta.teamId,
-  }, {
+  };
+  const remembered = recordCharacterMemory(withRequestRecord, target, {
     source: 'Request',
     label: optionLabel,
     description: result.outcome,
     tone: result.tone,
     effects: result.effects,
   });
+  return propagateCharacterReaction(remembered, target, result.tone, optionLabel);
 }
