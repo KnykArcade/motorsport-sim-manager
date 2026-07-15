@@ -60,10 +60,11 @@ export function ensureCharacterInteractionState(
   interactionState?: CharacterInteractionState,
 ): CharacterInteractionState {
   return {
-    version: 1,
+    version: 2,
     history: interactionState?.history ?? [],
     lastInteractionByTarget: interactionState?.lastInteractionByTarget ?? {},
     recruitmentInterest: interactionState?.recruitmentInterest ?? {},
+    requestHistory: interactionState?.requestHistory ?? [],
   };
 }
 
@@ -363,6 +364,15 @@ export function interactionHistoryForTarget(
   target: CharacterInteractionTarget,
 ): CharacterInteractionRecord[] {
   return ensureCharacterInteractionState(state.characterInteractions).history
+    .filter((record) => record.targetType === target.type && record.targetId === target.id)
+    .reverse();
+}
+
+export function characterRequestHistoryForTarget(
+  state: GameState,
+  target: CharacterInteractionTarget,
+) {
+  return ensureCharacterInteractionState(state.characterInteractions).requestHistory
     .filter((record) => record.targetType === target.type && record.targetId === target.id)
     .reverse();
 }

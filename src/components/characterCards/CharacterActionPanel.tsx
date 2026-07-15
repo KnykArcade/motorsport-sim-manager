@@ -2,6 +2,7 @@ import type { GameState } from '../../game/careerState';
 import { useGame } from '../../game/GameContext';
 import {
   availableCharacterActions,
+  characterRequestHistoryForTarget,
   interactionHistoryForTarget,
   isCharacterInteractionAvailable,
 } from '../../sim/characterInteractionEngine';
@@ -28,6 +29,7 @@ export function CharacterActionPanel({ state, target }: Props) {
   const actions = availableCharacterActions(state, target);
   const available = isCharacterInteractionAvailable(state, target);
   const latest = interactionHistoryForTarget(state, target)[0];
+  const requestHistory = characterRequestHistoryForTarget(state, target).slice(0, 3);
 
   if (!actions.length) {
     return <p className="text-sm text-neutral-500">No direct management actions are available with this character in their current role.</p>;
@@ -70,6 +72,23 @@ export function CharacterActionPanel({ state, target }: Props) {
           <p className="mt-2 text-xs leading-relaxed text-neutral-200">{latest.outcome}</p>
           <div className="mt-2 flex flex-wrap gap-1.5">
             {latest.effects.map((effect) => <span key={effect} className="rounded bg-black/25 px-2 py-1 text-[10px]">{effect}</span>)}
+          </div>
+        </section>
+      )}
+
+      {requestHistory.length > 0 && (
+        <section className="rounded-lg border border-neutral-800 bg-neutral-950/50 p-3">
+          <div className="text-[10px] font-bold uppercase tracking-[0.16em] text-neutral-500">Recent requests and decisions</div>
+          <div className="mt-2 space-y-2">
+            {requestHistory.map((record) => (
+              <article key={record.id} className="rounded border border-neutral-800 bg-neutral-900/50 p-2.5">
+                <div className="flex items-center justify-between gap-2 text-xs">
+                  <strong className="text-neutral-200">{record.optionLabel}</strong>
+                  <span className="text-[10px] text-neutral-600">{record.seasonYear} · R{record.round}</span>
+                </div>
+                <p className="mt-1 text-[11px] leading-relaxed text-neutral-400">{record.outcome}</p>
+              </article>
+            ))}
           </div>
         </section>
       )}

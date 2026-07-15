@@ -10,6 +10,7 @@ import {
   carForTeam,
   currentRace,
   teamById,
+  type GameState,
 } from '../game/careerState';
 import { developmentSlots } from '../sim/facilityEngine';
 import { leadershipDecisionPreview } from '../sim/phase18IdentityCultureEngine';
@@ -26,6 +27,8 @@ import { formatMoney } from '../components/ui';
 import type { PaddockEvent, PaddockEventCategory } from '../types/careerPhaseTypes';
 import type { AdvisorRecommendation } from '../types/phase18Types';
 import { RaceWeekendPackageSelection } from './RaceWeekendPackageSelection';
+import { CharacterDossierButton } from '../components/characterCards/CharacterDossier';
+import { DriverDossierButton } from '../components/driverCards/DriverDossier';
 
 const CATEGORY_LABELS: Record<PaddockEventCategory, string> = {
   development: 'Development / Factory',
@@ -64,12 +67,12 @@ const SEVERITY_COLORS: Record<string, string> = {
   critical: 'text-red-400',
 };
 
-type PaddockTab = 'overview' | 'decisions' | 'updates' | 'debrief';
+type PaddockTab = 'overview' | 'people' | 'decisions' | 'updates' | 'debrief';
 
 export function PaddockWeek() {
   const { state, dispatch } = useGame();
   const navigate = useNavigate();
-  const [tab, setTab] = useState<PaddockTab>('decisions');
+  const [tab, setTab] = useState<PaddockTab>('people');
   const [updateCategory, setUpdateCategory] = useState<PaddockEventCategory>('next_race');
 
   // Generate paddock events on mount if not already generated.
@@ -91,7 +94,7 @@ export function PaddockWeek() {
     if (!phaseState) return {};
     const map: Record<string, PaddockEvent[]> = {};
     for (const e of phaseState.paddockEvents) {
-      if (e.narrativeStoryId) continue;
+      if (e.narrativeStoryId || e.characterRequest) continue;
       if (!map[e.category]) map[e.category] = [];
       map[e.category].push(e);
     }
@@ -110,6 +113,12 @@ export function PaddockWeek() {
   const unresolvedCount = phaseState.paddockEvents.filter(
     (e) => e.isRequiredDecision && !e.resolvedOptionId,
   ).length;
+  const characterRequests = phaseState.paddockEvents.filter((event) => !!event.characterRequest);
+  const unresolvedCharacterRequests = characterRequests.filter((event) => !event.resolvedOptionId);
+  const resolvedCharacterRequests = characterRequests.filter((event) => !!event.resolvedOptionId);
+  const nonCharacterUnresolved = phaseState.paddockEvents.filter(
+    (event) => event.isRequiredDecision && !event.resolvedOptionId && !event.characterRequest,
+  );
   const pendingCount = unresolvedCount + (packageSelected ? 0 : 1);
 
   const canAdvance = !hasUnresolvedRequiredDecisions(state) && packageSelected;
@@ -124,7 +133,7 @@ export function PaddockWeek() {
   const storyDecisions = phaseState.paddockEvents.filter(
     (event) => !!event.narrativeStoryId && !event.resolvedOptionId,
   );
-  const resolvedDecisions = phaseState.paddockEvents.filter((event) => !!event.resolvedOptionId);
+  const resolvedDecisions = phaseState.paddockEvents.filter((event) => !!event.resolvedOptionId && !event.characterRequest);
   const populatedCategories = CATEGORY_ORDER.filter((category) => (eventsByCategory[category]?.length ?? 0) > 0);
   const visibleUpdateCategory = populatedCategories.includes(updateCategory)
     ? updateCategory
@@ -174,7 +183,8 @@ export function PaddockWeek() {
 
       <div className="flex flex-wrap gap-1 rounded-lg border border-neutral-800 bg-neutral-950/70 p-1" aria-label="Paddock Week sections">
         <PaddockTabButton active={tab === 'overview'} onClick={() => setTab('overview')} label="Overview" />
-        <PaddockTabButton active={tab === 'decisions'} onClick={() => setTab('decisions')} label="Decisions" count={pendingCount + storyDecisions.length} attention={pendingCount > 0} />
+        <PaddockTabButton active={tab === 'people'} onClick={() => setTab('people')} label="People" count={characterRequests.length} attention={unresolvedCharacterRequests.some((event) => event.isRequiredDecision)} />
+        <PaddockTabButton active={tab === 'decisions'} onClick={() => setTab('decisions')} label="Operations" count={nonCharacterUnresolved.length + (packageSelected ? 0 : 1) + storyDecisions.length} attention={nonCharacterUnresolved.length > 0 || !packageSelected} />
         <PaddockTabButton active={tab === 'updates'} onClick={() => setTab('updates')} label="Team Updates" count={updateCount} />
         <PaddockTabButton active={tab === 'debrief'} onClick={() => setTab('debrief')} label="Decision Debrief" count={resolvedDecisions.length} />
       </div>
@@ -198,9 +208,39 @@ export function PaddockWeek() {
         />
       </div>}
 
+      {tab === 'people' && <div className="space-y-4">
+        {unresolvedCharacterRequests.length > 0 && (
+          <Panel title="Conversations Waiting for You" className="border-violet-600/30">
+            <p className="mb-3 text-xs text-neutral-500">Characters can now bring their own concerns, requests, and political approaches to you. Required conversations must be answered before the week can advance.</p>
+            <div className="grid gap-3 xl:grid-cols-2">
+              {unresolvedCharacterRequests.map((event) => (
+                <CharacterDecisionCard
+                  key={event.id}
+                  state={state}
+                  event={event}
+                  recommendations={advisorRecommendationsForDecision(state, event.id)}
+                  onResolve={(optionId) => dispatch({ type: 'RESOLVE_PADDOCK_EVENT', eventId: event.id, optionId })}
+                />
+              ))}
+            </div>
+          </Panel>
+        )}
+        {resolvedCharacterRequests.length > 0 && (
+          <Panel title="This Week's People Decisions">
+            <div className="grid gap-3 xl:grid-cols-2">
+              {resolvedCharacterRequests.map((event) => {
+                const record = state.characterInteractions?.requestHistory.find((entry) => entry.eventId === event.id);
+                return <article key={event.id} className="rounded-lg border border-neutral-800 bg-neutral-900/40 p-3"><div className="flex items-center justify-between gap-3"><div className="text-sm font-semibold text-neutral-200">{event.characterRequest?.targetName}</div><span className="rounded bg-emerald-500/10 px-2 py-1 text-[10px] font-semibold uppercase text-emerald-300">Resolved</span></div><div className="mt-1 text-xs font-semibold text-amber-300">{record?.optionLabel ?? event.options?.find((option) => option.id === event.resolvedOptionId)?.label}</div><p className="mt-1 text-xs leading-relaxed text-neutral-400">{record?.outcome ?? event.description}</p>{record?.effects.length ? <div className="mt-2 flex flex-wrap gap-1">{record.effects.map((effect) => <span key={effect} className="rounded bg-neutral-800 px-2 py-1 text-[10px] text-neutral-300">{effect}</span>)}</div> : null}</article>;
+              })}
+            </div>
+          </Panel>
+        )}
+        {characterRequests.length === 0 && <Panel title="People"><p className="text-sm text-neutral-500">No character has requested your attention this week.</p></Panel>}
+      </div>}
+
       {/* Required Decisions */}
       {tab === 'decisions' && <>
-      {(unresolvedCount > 0 || !packageSelected) && (
+      {(nonCharacterUnresolved.length > 0 || !packageSelected) && (
         <Panel title="Required Decisions" className="border-amber-600/30">
           <div className="space-y-4">
             {!packageSelected && (
@@ -213,7 +253,7 @@ export function PaddockWeek() {
               </div>
             )}
             {phaseState.paddockEvents
-              .filter((e) => e.isRequiredDecision && !e.resolvedOptionId)
+              .filter((e) => e.isRequiredDecision && !e.resolvedOptionId && !e.characterRequest)
               .map((event) => (
                 <DecisionCard
                   key={event.id}
@@ -245,7 +285,7 @@ export function PaddockWeek() {
           </div>
         </Panel>
       )}
-      {pendingCount === 0 && storyDecisions.length === 0 && (
+      {nonCharacterUnresolved.length === 0 && packageSelected && storyDecisions.length === 0 && (
         <Panel title="Decisions Complete">
           <p className="text-sm text-emerald-300">All required decisions are complete. Review updates or advance to the pre-race briefing.</p>
         </Panel>
@@ -254,11 +294,11 @@ export function PaddockWeek() {
 
       {/* Resolved Decisions */}
       {tab === 'debrief' && <div className="grid gap-4 xl:grid-cols-2">
-      {phaseState.paddockEvents.some((e) => e.isRequiredDecision && e.resolvedOptionId) && (
+      {phaseState.paddockEvents.some((e) => e.isRequiredDecision && e.resolvedOptionId && !e.characterRequest) && (
         <Panel title="Resolved Decisions">
           <ul className="space-y-2">
             {phaseState.paddockEvents
-              .filter((e) => e.isRequiredDecision && e.resolvedOptionId)
+              .filter((e) => e.isRequiredDecision && e.resolvedOptionId && !e.characterRequest)
               .map((event) => {
                 const option = event.options?.find((o) => o.id === event.resolvedOptionId);
                 return (
@@ -349,6 +389,42 @@ function HubSection({ title, events }: { title: string; events: PaddockEvent[] }
         </ul>
       )}
     </Panel>
+  );
+}
+
+function CharacterDecisionCard({
+  state,
+  event,
+  recommendations,
+  onResolve,
+}: {
+  state: GameState;
+  event: PaddockEvent;
+  recommendations: AdvisorRecommendation[];
+  onResolve: (optionId: string) => void;
+}) {
+  const character = event.characterRequest;
+  if (!character) return null;
+  const driver = character.targetType === 'Driver'
+    ? state.drivers.find((candidate) => candidate.id === character.targetId)
+    : undefined;
+  const staff = character.targetType === 'Staff'
+    ? (state.staff ?? []).find((candidate) => candidate.id === character.targetId)
+    : undefined;
+  return (
+    <div className="rounded-xl border border-violet-800/60 bg-violet-950/10 p-3">
+      <div className="mb-3 flex items-center justify-between gap-3 border-b border-violet-900/50 pb-2">
+        <div>
+          <div className="text-[10px] font-bold uppercase tracking-[0.16em] text-violet-300">{character.requestKind.replace(/([a-z])([A-Z])/g, '$1 $2')}</div>
+          <div className="text-sm font-semibold text-neutral-100">{character.targetName}</div>
+        </div>
+        {driver && <DriverDossierButton state={state} subject={{ type: 'driver', driver }} context="Paddock Week request">Open Driver Card</DriverDossierButton>}
+        {staff && <CharacterDossierButton state={state} subject={{ type: 'staff', staff }}>Open Character Card</CharacterDossierButton>}
+        {character.targetType === 'Owner' && character.teamId && <CharacterDossierButton state={state} subject={{ type: 'owner', teamId: character.teamId }}>Open Character Card</CharacterDossierButton>}
+        {character.targetType === 'RivalPrincipal' && character.teamId && <CharacterDossierButton state={state} subject={{ type: 'aiPrincipal', teamId: character.teamId }}>Open Character Card</CharacterDossierButton>}
+      </div>
+      <DecisionCard event={event} recommendations={recommendations} onResolve={onResolve} />
+    </div>
   );
 }
 

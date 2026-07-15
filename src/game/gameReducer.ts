@@ -211,6 +211,7 @@ import type {
   CharacterInteractionAction,
   CharacterInteractionTarget,
 } from '../types/characterInteractionTypes';
+import { resolveCharacterRequest } from '../sim/characterRequestEngine';
 
 export type GameAction =
   | { type: 'NEW_GAME'; options: NewGameOptions }
@@ -893,6 +894,7 @@ export function gameReducer(state: GameState | null, action: GameAction): GameSt
       const event = state.careerPhase?.paddockEvents.find((entry) => entry.id === action.eventId);
       const alreadyApplied = event?.effectsApplied ?? false;
       let resolved = resolvePaddockEvent(state, action.eventId, action.optionId);
+      if (event?.characterRequest && !alreadyApplied) resolved = resolveCharacterRequest(resolved, event, action.optionId);
       if (event?.narrativeStoryId && !alreadyApplied) resolved = resolveNarrativeResponse(resolved, event.narrativeStoryId, action.optionId);
       return syncNarratives(resolved);
     }

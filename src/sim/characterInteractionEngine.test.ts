@@ -91,10 +91,11 @@ describe('character interaction engine', () => {
     const legacy = structuredClone(state);
     delete legacy.characterInteractions;
     expect(migrateGameState(legacy).characterInteractions).toEqual({
-      version: 1,
+      version: 2,
       history: [],
       lastInteractionByTarget: {},
       recruitmentInterest: {},
+      requestHistory: [],
     });
 
     const driver = state.drivers.find((candidate) => candidate.teamId === state.selectedTeamId)!;
