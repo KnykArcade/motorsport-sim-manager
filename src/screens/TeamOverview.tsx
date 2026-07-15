@@ -1,4 +1,4 @@
-import { Fragment, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useGame } from '../game/GameContext';
 import { Panel } from '../components/Panel';
 import { RatingBadge } from '../components/RatingBadge';
@@ -16,6 +16,14 @@ import {
 } from '../sim/teamOverviewEngine';
 import type { AIFinancialHealth } from '../types/aiTeamTypes';
 import { ARCHETYPE_SPECS, TRAIT_LABELS } from '../sim/aiTeamEngine';
+import { Button } from '../components/Button';
+import {
+  TEAM_DETAIL_TABS,
+  TEAM_OVERVIEW_PAGE_SIZE,
+  teamOverviewPage,
+  teamOverviewPageCount,
+  type TeamDetailTab,
+} from './teamOverviewViewModel';
 
 type SortKey =
   | 'championshipPosition'
@@ -81,6 +89,7 @@ export function TeamOverview() {
   const [sortKey, setSortKey] = useState<SortKey>('championshipPosition');
   const [filter, setFilter] = useState<Filter>('all');
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [page, setPage] = useState(0);
 
   const rows = useMemo(() => (state ? buildTeamOverview(state) : []), [state]);
   const detail = useMemo(
@@ -100,6 +109,9 @@ export function TeamOverview() {
     const d = sortValue(a, sortKey) - sortValue(b, sortKey);
     return ascending ? d : -d;
   });
+  const pageCount = teamOverviewPageCount(sorted.length);
+  const safePage = Math.min(page, pageCount - 1);
+  const visibleRows = teamOverviewPage(sorted, safePage);
 
   return (
     <div className="space-y-6">
@@ -111,12 +123,23 @@ export function TeamOverview() {
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          <FilterTabs filter={filter} onChange={setFilter} />
+          <FilterTabs
+            filter={filter}
+            onChange={(next) => {
+              setFilter(next);
+              setPage(0);
+              setSelectedId(null);
+            }}
+          />
           <label className="flex items-center gap-2 text-xs text-neutral-400">
             Sort by
             <select
               value={sortKey}
-              onChange={(e) => setSortKey(e.target.value as SortKey)}
+              onChange={(e) => {
+                setSortKey(e.target.value as SortKey);
+                setPage(0);
+                setSelectedId(null);
+              }}
               className="rounded-md border border-neutral-700 bg-neutral-900 px-2 py-1 text-sm text-neutral-200"
             >
               <option value="championshipPosition">Championship</option>
@@ -156,16 +179,16 @@ export function TeamOverview() {
               </tr>
             </thead>
             <tbody>
-              {sorted.map((row, i) => (
-                <Fragment key={row.teamId}>
-                  <tr
-                    onClick={() => setSelectedId(selectedId === row.teamId ? null : row.teamId)}
-                    className={`cursor-pointer border-b border-neutral-900 transition-colors hover:bg-neutral-800/40 ${
-                      row.isPlayer ? 'bg-amber-500/5' : ''
-                    } ${selectedId === row.teamId ? 'bg-neutral-800/60' : ''}`}
-                  >
+              {visibleRows.map((row, i) => (
+                <tr
+                  key={row.teamId}
+                  onClick={() => setSelectedId(selectedId === row.teamId ? null : row.teamId)}
+                  className={`cursor-pointer border-b border-neutral-900 transition-colors hover:bg-neutral-800/40 ${
+                    row.isPlayer ? 'bg-amber-500/5' : ''
+                  } ${selectedId === row.teamId ? 'bg-neutral-800/60' : ''}`}
+                >
                     <td className="px-2 py-2 tabular-nums text-neutral-500">
-                      {row.championshipPosition ?? i + 1}
+                      {row.championshipPosition ?? safePage * TEAM_OVERVIEW_PAGE_SIZE + i + 1}
                     </td>
                     <td className="px-2 py-2">
                       <div className="flex items-center gap-2">
@@ -214,20 +237,36 @@ export function TeamOverview() {
                         {TREND_STYLE[row.trend].icon} {TREND_LABELS[row.trend]}
                       </span>
                     </td>
-                  </tr>
-                  {selectedId === row.teamId && detail && (
-                    <tr className="border-b border-neutral-800 bg-neutral-950/50">
-                      <td colSpan={18} className="px-3 py-4">
-                        <TeamDetail detail={detail} onClose={() => setSelectedId(null)} />
-                      </td>
-                    </tr>
-                  )}
-                </Fragment>
+                </tr>
               ))}
             </tbody>
           </table>
         </div>
+        <div className="flex items-center justify-between gap-3 border-t border-neutral-800 px-3 py-2">
+          <Button
+            variant="secondary"
+            className="px-3 py-1 text-xs"
+            onClick={() => setPage(Math.max(0, safePage - 1))}
+            disabled={safePage === 0}
+          >
+            Previous
+          </Button>
+          <span className="text-xs text-neutral-500">
+            Teams {sorted.length ? safePage * TEAM_OVERVIEW_PAGE_SIZE + 1 : 0}–
+            {Math.min(sorted.length, (safePage + 1) * TEAM_OVERVIEW_PAGE_SIZE)} of {sorted.length} · Page{' '}
+            {safePage + 1} of {pageCount}
+          </span>
+          <Button
+            variant="secondary"
+            className="px-3 py-1 text-xs"
+            onClick={() => setPage(Math.min(pageCount - 1, safePage + 1))}
+            disabled={safePage >= pageCount - 1}
+          >
+            Next
+          </Button>
+        </div>
       </Panel>
+      {selectedId && detail && <TeamDetail detail={detail} onClose={() => setSelectedId(null)} />}
     </div>
   );
 }
@@ -263,32 +302,78 @@ function TeamDetail({
   onClose: () => void;
 }) {
   const { state } = useGame();
+  const [tab, setTab] = useState<TeamDetailTab>('overview');
   const { row } = detail;
   return (
-    <div className="grid gap-6 lg:grid-cols-2">
-      <Panel
-        title={row.name}
-        actions={
-          <div className="flex flex-wrap items-center gap-1">
-            {state && (
-              <>
-                <CharacterDossierButton
-                  state={state}
-                  subject={row.isPlayer ? { type: 'playerPrincipal' } : { type: 'aiPrincipal', teamId: row.teamId }}
-                >
-                  Principal Card
-                </CharacterDossierButton>
-                <CharacterDossierButton state={state} subject={{ type: 'owner', teamId: row.teamId }}>
-                  Owner Card
-                </CharacterDossierButton>
-              </>
-            )}
-            <button onClick={onClose} className="text-xs text-neutral-500 hover:text-neutral-200">
-              ✕ Close
-            </button>
-          </div>
-        }
+    <div
+      className="fixed inset-0 z-[90] flex items-center justify-center bg-black/80 p-3 backdrop-blur-sm"
+      role="dialog"
+      aria-modal="true"
+      aria-label={`${row.name} team dossier`}
+    >
+      <div
+        className="flex max-h-[92vh] w-full max-w-6xl flex-col overflow-hidden rounded-xl border border-neutral-700 bg-neutral-950 shadow-2xl"
+        style={{ borderTopColor: row.color, borderTopWidth: 4 }}
       >
+        <header className="flex items-center justify-between gap-4 border-b border-neutral-800 bg-neutral-900/80 px-5 py-3">
+          <div>
+            <div className="text-[10px] font-semibold uppercase tracking-[0.2em] text-neutral-500">Team universe dossier</div>
+            <h2 className="text-xl font-bold text-neutral-100">{row.name}</h2>
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            className="rounded border border-neutral-700 px-3 py-1.5 text-xs text-neutral-300 hover:bg-neutral-800"
+          >
+            Close
+          </button>
+        </header>
+        <nav
+          className="grid grid-cols-2 gap-1 border-b border-neutral-800 bg-neutral-950 p-2 sm:grid-cols-4"
+          aria-label="Team dossier sections"
+        >
+          {TEAM_DETAIL_TABS.map((item) => (
+            <button
+              key={item.id}
+              type="button"
+              onClick={() => setTab(item.id)}
+              aria-current={tab === item.id ? 'page' : undefined}
+              className={`rounded px-3 py-2 text-xs font-semibold ${
+                tab === item.id
+                  ? 'bg-amber-500 text-neutral-950'
+                  : 'text-neutral-400 hover:bg-neutral-900 hover:text-neutral-100'
+              }`}
+            >
+              {item.label}
+            </button>
+          ))}
+        </nav>
+        <div className="min-h-0 flex-1 overflow-y-auto p-4">
+          {tab === 'overview' && (
+            <Panel
+              title={row.name}
+              actions={
+                <div className="flex flex-wrap items-center gap-1">
+                  {state && (
+                    <>
+                      <CharacterDossierButton
+                        state={state}
+                        subject={
+                          row.isPlayer
+                            ? { type: 'playerPrincipal' }
+                            : { type: 'aiPrincipal', teamId: row.teamId }
+                        }
+                      >
+                        Principal Card
+                      </CharacterDossierButton>
+                      <CharacterDossierButton state={state} subject={{ type: 'owner', teamId: row.teamId }}>
+                        Owner Card
+                      </CharacterDossierButton>
+                    </>
+                  )}
+                </div>
+              }
+            >
         <div className="space-y-4">
           <div className="flex flex-wrap items-center gap-2 text-sm">
             <span
@@ -418,9 +503,10 @@ function TeamDetail({
             </div>
           </div>
         </div>
-      </Panel>
+            </Panel>
+          )}
 
-      <div className="space-y-6">
+      {tab === 'ratings' && (
         <Panel title="Ratings">
           <div className="grid grid-cols-2 gap-x-6 gap-y-2 sm:grid-cols-3">
             <RatingRow label="Car" value={row.carRating} />
@@ -437,7 +523,9 @@ function TeamDetail({
             <RatingRow label="Reputation" value={row.reputationRating} />
           </div>
         </Panel>
+      )}
 
+      {tab === 'lineup' && (
         <Panel title="Lineup & Academy">
           <div className="space-y-3 text-sm">
             <div>
@@ -499,9 +587,11 @@ function TeamDetail({
             </div>
           </div>
         </Panel>
+      )}
 
-        {detail.recentMoves.length > 0 && (
-          <Panel title="Recent Offseason Moves">
+      {tab === 'moves' && (
+        <Panel title="Recent Offseason Moves">
+          {detail.recentMoves.length > 0 ? (
             <ul className="space-y-1 text-sm text-neutral-300">
               {detail.recentMoves.map((m, i) => (
                 <li key={i} className="flex gap-2">
@@ -510,8 +600,12 @@ function TeamDetail({
                 </li>
               ))}
             </ul>
-          </Panel>
-        )}
+          ) : (
+            <div className="text-sm text-neutral-500">No recent offseason moves are recorded for this team.</div>
+          )}
+        </Panel>
+      )}
+        </div>
       </div>
     </div>
   );
