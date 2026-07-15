@@ -1,4 +1,4 @@
-import type { Series, Track, Phase0SeasonBundle } from '../types/gameTypes';
+import type { Series, Track, Phase0SeasonBundle, TeamPrincipal } from '../types/gameTypes';
 import type { SeasonBundle } from './seasonCatalog';
 import { availableSeasons } from './seasonCatalog';
 import { buildPhase0SeasonBundle, registerLegacySeasonModule, registerPhase0GlobalModule, seasonExportKey, seasonImportPath } from './phase0/phase0Runtime';
@@ -34,11 +34,12 @@ for (const { year, series } of availableSeasons) {
     if (!generatedSeasonLoader) {
       throw new Error(`Missing generated season module ${seasonImportPath(year, series)}`);
     }
-    const [module, globalModule, teamsModule, driversModule, carsModule] = await Promise.all([
+    const [module, globalModule, principalModule, teamsModule, driversModule, carsModule] = await Promise.all([
       generatedSeasonLoader(),
       series === 'NASCAR'
         ? import(`./phase0/generated/globalNASCAR${year}.ts`) as Promise<Record<string, unknown>>
         : Promise.resolve(undefined),
+      import('./phase0/generated/globalPrincipals.ts') as Promise<Record<string, unknown>>,
       import(`./teams/teams${year}${suffix}.ts`) as Promise<Record<string, unknown>>,
       import(`./drivers/drivers${year}${suffix}.ts`) as Promise<Record<string, unknown>>,
       import(`./cars/cars${year}${suffix}.ts`) as Promise<Record<string, unknown>>,
@@ -51,7 +52,10 @@ for (const { year, series } of availableSeasons) {
     if (!phase0Season) {
       throw new Error(`Missing generated season export ${seasonExportKey(year, series)}`);
     }
-    const { bundle, tracks } = buildPhase0SeasonBundle(phase0Season);
+    const { bundle, tracks } = buildPhase0SeasonBundle(
+      phase0Season,
+      (principalModule.globalPrincipalsPhase0 ?? []) as TeamPrincipal[],
+    );
     registerTracks(tracks);
     return bundle;
   };

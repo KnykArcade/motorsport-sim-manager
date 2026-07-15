@@ -15,6 +15,8 @@ import { formatMoney } from '../components/ui';
 import { ROLE_EFFECT, STAFF_ROLES, type StaffMember, type StaffRole } from '../types/staffTypes';
 import { ADVISOR_ROLE_LABELS } from '../sim/phase18AdvisorEngine';
 import { contractClauseLabel } from '../sim/phase18ContractClauseEngine';
+import { CharacterDossierButton } from '../components/characterCards/CharacterDossier';
+import type { GameState } from '../game/careerState';
 
 export function Staff() {
   const { state, dispatch } = useGame();
@@ -144,6 +146,7 @@ export function Staff() {
           {candidates.map((s) => (
             <StaffCard
               key={s.id}
+              state={state}
               s={s}
               hired={hiredById.has(s.id)}
               current={current?.id === s.id}
@@ -159,6 +162,7 @@ export function Staff() {
 }
 
 function StaffCard({
+  state,
   s,
   hired,
   current,
@@ -166,6 +170,7 @@ function StaffCard({
   onHire,
   onFire,
 }: {
+  state: GameState;
   s: StaffMember;
   hired: boolean;
   current: boolean;
@@ -198,6 +203,9 @@ function StaffCard({
         <Stat label="Signing">{formatMoney(toMoney(s.signingFee))}</Stat>
       </div>
       <p className="mt-2 text-[11px] italic text-neutral-500">{s.bio}</p>
+      <CharacterDossierButton state={state} subject={{ type: 'staff', staff: s }} className="mt-2 w-full">
+        Open Personnel File
+      </CharacterDossierButton>
       <div className="mt-3 border-t border-neutral-800 pt-2">
         {hired ? (
           <Button variant="danger" className="w-full px-2 py-1 text-xs" onClick={onFire}>

@@ -12,6 +12,7 @@ import {
   PRINCIPAL_IDENTITY_DESCRIPTIONS,
   PRINCIPAL_IDENTITY_LABELS,
 } from '../sim/phase18IdentityCultureEngine';
+import { CharacterDossierButton } from '../components/characterCards/CharacterDossier';
 
 export function TeamPrincipal() {
   const { state, dispatch } = useGame();
@@ -47,7 +48,10 @@ export function TeamPrincipal() {
         </p>
       </div>
 
-      <Panel title="Your Standing">
+      <Panel
+        title="Your Standing"
+        actions={<CharacterDossierButton state={state} subject={{ type: 'playerPrincipal' }}>Your Character Card</CharacterDossierButton>}
+      >
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
             <div className="text-lg font-bold text-neutral-100">{principal.name}</div>

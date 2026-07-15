@@ -10,6 +10,7 @@ import {
 } from '../sim/commercialEngine';
 import type { Sponsor } from '../types/sponsorTypes';
 import { OWNER_PERSONALITY_LABELS, OWNER_PERSONALITY_DESCRIPTIONS } from '../types/expectationTypes';
+import { CharacterDossierButton } from '../components/characterCards/CharacterDossier';
 
 const TYPE_LABEL: Record<Sponsor['type'], string> = {
   Title: 'Title',
@@ -180,7 +181,10 @@ export function Sponsors() {
       )}
 
       {expectation && (
-        <Panel title="Owner Expectations">
+        <Panel
+          title="Owner Expectations"
+          actions={<CharacterDossierButton state={state} subject={{ type: 'owner', teamId: state.selectedTeamId }}>Owner Card</CharacterDossierButton>}
+        >
           <div className="space-y-2 text-sm">
             {reputation?.ownerPersonality && (
               <div className="mb-2 rounded bg-neutral-800/50 px-3 py-2">
