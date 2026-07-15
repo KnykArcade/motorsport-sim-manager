@@ -111,6 +111,7 @@ import type { CarSetup } from '../types/setupTypes';
 import type { ExpectationReview, TeamExpectation, TeamReputation } from '../types/expectationTypes';
 import type { DriverRelationship } from '../types/relationshipTypes';
 import { carForTeam, type GameState } from './careerState';
+import { ensureCharacterFutureIntentions } from '../sim/characterFutureIntentEngine';
 
 // Annual sponsorship the player's team earns, driven by reputation and the
 // appeal (overall rating) of its driver line-up. Invented but ties sponsorship
@@ -424,6 +425,27 @@ export function advanceSeason(state: GameState, nextBundle?: SeasonBundle): Game
     }
   }
 
+  // Player contracts now consume one year like every other contract. A deal
+  // that reaches zero ends unless a replacement/promotion has already resolved
+  // the seat. Future intention explains the departure, while the existing
+  // grid-integrity pass below guarantees that the team still fields a legal
+  // lineup next season.
+  const displacedSeatIds = new Set(reservePromotions.map((promotion) => promotion.seatDriverId));
+  const contractDepartures = state.drivers.filter((driver) => {
+    if (driver.teamId !== state.selectedTeamId) return false;
+    if (replacements.has(driver.id) || displacedSeatIds.has(driver.id) || promotedReserveIds.has(driver.id)) return false;
+    return Math.max(0, (driver.contractYearsRemaining ?? 1) - 1) === 0;
+  });
+  for (const driver of contractDepartures) {
+    departures.add(driver.id);
+    const intent = state.characterInteractions?.futureIntentions.find((entry) => entry.target.type === 'Driver' && entry.target.id === driver.id);
+    departureNotes.push(intent?.status === 'WantsExit'
+      ? `${driver.name} left when their contract expired after making clear they wanted to leave.`
+      : intent?.status === 'TestingMarket'
+        ? `${driver.name} left at contract expiry after testing the driver market.`
+        : `${driver.name}'s contract expired without an extension, so they left the team.`);
+  }
+
   // Build next season's driver list: apply replacements, promote reserves
   // (dropping the displaced seat driver), then remove departures.
   const promotedSeatIds = new Set(reservePromotions.map((p) => p.seatDriverId));
@@ -435,10 +457,12 @@ export function advanceSeason(state: GameState, nextBundle?: SeasonBundle): Game
         if (replacement) return replacement;
         const promoted = upgradeById.get(d.id);
         if (promoted) return promoted;
-        // AI contracts consume one year at each rollover. Player contracts are
-        // left untouched so the player's in-season negotiation UX remains the
-        // source of truth for those deals.
-        if (d.teamId === state.selectedTeamId) return d;
+        // Every retained contract consumes one year at rollover. Expired player
+        // deals are filtered through the departure set below.
+        if (d.teamId === state.selectedTeamId) return {
+          ...d,
+          contractYearsRemaining: Math.max(0, (d.contractYearsRemaining ?? 1) - 1),
+        };
         return {
           ...d,
           contractYearsRemaining: Math.max(0, (d.contractYearsRemaining ?? 0) - 1),
@@ -961,11 +985,12 @@ export function advanceSeason(state: GameState, nextBundle?: SeasonBundle): Game
   }
 
   // Evaluate season-end promises (contract renewal, promotion, etc.).
-  const playerTeamDrivers = drivers.filter((x) => x.teamId === state.selectedTeamId);
+  const playerTeamDrivers = state.drivers.filter((x) => x.teamId === state.selectedTeamId);
   let seasonEndPromises = checkedPromises;
   for (const d of playerTeamDrivers) {
-    const wasReplaced = !drivers.some((x) => x.id === d.id && x.teamId === state.selectedTeamId);
-    const contractRenewed = (d.contractYearsRemaining ?? 0) > 0;
+    const retained = drivers.find((x) => x.id === d.id && x.teamId === state.selectedTeamId);
+    const wasReplaced = !retained;
+    const contractRenewed = (retained?.contractYearsRemaining ?? 0) > 0;
     const wasPromoted = d.contractType !== 'reserve' && d.contractType !== 'third' && d.contractType !== 'test';
     const gotPracticeTime = true; // simplified — if the driver was on the team, they got practice
     const resolutions = evaluatePromisesAtSeasonEnd(seasonEndPromises, d.id, {
@@ -1168,6 +1193,23 @@ export function advanceSeason(state: GameState, nextBundle?: SeasonBundle): Game
   // --- Financial distress consequences & principal pressure evaluation ---
   const rolloverNews: typeof state.news = [];
   rolloverNews.push(...voteResolution.news);
+  for (const driver of contractDepartures) {
+    const intent = state.characterInteractions?.futureIntentions.find((entry) => entry.target.type === 'Driver' && entry.target.id === driver.id);
+    rolloverNews.push({
+      id: `news-contract-expiry-${nextYear}-${driver.id}`,
+      headline: `${driver.name} leaves after contract expiry`,
+      body: intent?.status === 'WantsExit'
+        ? `${driver.name} departed after the final year of the deal and had already made clear that the relationship was no longer sustainable.`
+        : intent?.status === 'TestingMarket'
+          ? `${driver.name} allowed the contract to expire after considering alternatives on the driver market.`
+          : `${driver.name} left after the team reached season rollover without agreeing an extension.`,
+      timestamp: new Date(Date.UTC(nextYear, 0, 1)).toISOString(),
+      category: 'career_event',
+      priority: 'high',
+      teamId: state.selectedTeamId,
+      driverId: driver.id,
+    });
+  }
 
   // Driver market drama news: signings, bidding losses, refusals.
   const playerTeamName = playerTeam?.name ?? 'Your team';
@@ -1500,12 +1542,12 @@ export function advanceSeason(state: GameState, nextBundle?: SeasonBundle): Game
       movedState.phase18 = { ...movedState.phase18!, preseason: undefined };
       let finalized = ensureRivalRelationships(ensureFailureInvestigationState(ensurePreseasonHubState(movedState)));
       for (const pair of principalPoachPairs) finalized = recordStaffPoach(finalized, pair.sourceTeamId, pair.destinationTeamId);
-      return finalized;
+      return ensureCharacterFutureIntentions(finalized);
     }
   }
   let finalized = ensureRivalRelationships(ensureFailureInvestigationState(ensurePreseasonHubState(nextState)));
   for (const pair of principalPoachPairs) finalized = recordStaffPoach(finalized, pair.sourceTeamId, pair.destinationTeamId);
-  return finalized;
+  return ensureCharacterFutureIntentions(finalized);
 }
 
 // Switch the player to a new team after a principal move: rebuild the

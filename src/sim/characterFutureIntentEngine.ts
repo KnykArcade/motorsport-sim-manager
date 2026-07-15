@@ -129,6 +129,34 @@ export function generateCharacterFutureIntentEvents(state: GameState): PaddockEv
     }));
 }
 
+export function generateExpiringDriverContractEvents(state: GameState): PaddockEvent[] {
+  if (state.gameMode === 'SingleSeason') return [];
+  const round = roundOf(state);
+  const racesRemaining = Math.max(0, state.calendar.length - state.currentRaceIndex);
+  if (racesRemaining > 3) return [];
+  const weekId = state.careerPhase?.paddockWeekId ?? `pw-${state.seasonYear}-${round}`;
+  return state.drivers
+    .filter((driver) => driver.teamId === state.selectedTeamId && (driver.contractYearsRemaining ?? 1) <= 1)
+    .map((driver) => {
+      const intent = state.characterInteractions?.futureIntentions.find((entry) => entry.target.type === 'Driver' && entry.target.id === driver.id);
+      const intentLabel = intent ? characterFutureIntentLabel(intent.target, intent.status) : 'Future undecided';
+      return {
+        id: `pe-${weekId}-expiring-contract-${driver.id}`,
+        weekId,
+        season: state.seasonYear,
+        series: state.series,
+        round,
+        category: 'driver_morale' as const,
+        title: `Contract decision required soon: ${driver.name}`,
+        description: `${driver.name}'s deal expires at season rollover. Current intention: ${intentLabel}. Extend the contract before the season ends or prepare a replacement.`,
+        severity: intent?.status === 'WantsExit' ? 'major' as const : 'minor' as const,
+        isRequiredDecision: false,
+        effectsApplied: true,
+        createdAt: new Date(Date.UTC(state.seasonYear, 0, Math.max(1, round + 1))).toISOString(),
+      };
+    });
+}
+
 export function futureIntentForTarget(state: GameState, target: CharacterInteractionTarget): CharacterFutureIntent | undefined {
   return state.characterInteractions?.futureIntentions.find((entry) => characterOpinionKey(entry.target) === characterOpinionKey(target));
 }

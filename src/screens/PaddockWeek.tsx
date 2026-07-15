@@ -166,6 +166,7 @@ export function PaddockWeek() {
   const activeMandates = activeCharacterMandates(state).slice(0, 6);
   const unstableCharacters = unstableCharacterStability(state).slice(0, 6);
   const atRiskIntentions = atRiskFutureIntentions(state).slice(0, 6);
+  const expiringDrivers = state.gameMode === 'SingleSeason' ? [] : state.drivers.filter((driver) => driver.teamId === state.selectedTeamId && (driver.contractYearsRemaining ?? 1) <= 1);
 
   const advanceToBriefing = () => {
     dispatch({ type: 'ADVANCE_TO_PRE_RACE_BRIEFING' });
@@ -238,7 +239,7 @@ export function PaddockWeek() {
       {tab === 'people' && <div className="space-y-4">
         <div className="flex gap-1 rounded-lg border border-neutral-800 bg-neutral-950/70 p-1" aria-label="People management sections">
           <PaddockTabButton active={peopleSection === 'attention'} onClick={() => setPeopleSection('attention')} label="Needs Attention" count={unresolvedCharacterRequests.length + unresolvedCharacterDisputes.length + unresolvedCharacterInitiatives.length + unresolvedCharacterBreakingPoints.length} attention={[...unresolvedCharacterRequests, ...unresolvedCharacterDisputes, ...unresolvedCharacterInitiatives, ...unresolvedCharacterBreakingPoints].some((event) => event.isRequiredDecision)} />
-          <PaddockTabButton active={peopleSection === 'support'} onClick={() => setPeopleSection('support')} label="Support & Mandates" count={activeMandates.length + unstableCharacters.length + atRiskIntentions.length} />
+          <PaddockTabButton active={peopleSection === 'support'} onClick={() => setPeopleSection('support')} label="Support & Mandates" count={activeMandates.length + unstableCharacters.length + atRiskIntentions.length + expiringDrivers.length} />
           <PaddockTabButton active={peopleSection === 'resolved'} onClick={() => setPeopleSection('resolved')} label="Resolved This Week" count={resolvedCharacterRequests.length + resolvedCharacterDisputes.length + resolvedCharacterInitiatives.length + resolvedCharacterBreakingPoints.length} />
         </div>
         {peopleSection === 'support' && internalInfluence.length > 0 && (
@@ -303,6 +304,17 @@ export function PaddockWeek() {
                   <div className="mt-2 flex justify-between text-[10px] text-neutral-500"><span>Leverage {intent.leverage}</span>{intent.target.type === 'Driver' && <span>Renewal {intent.negotiationModifier}</span>}</div>
                 </article>
               ))}
+            </div>
+          </Panel>
+        )}
+        {peopleSection === 'support' && expiringDrivers.length > 0 && (
+          <Panel title="Expiring Driver Contracts">
+            <p className="mb-3 text-xs text-neutral-500">These deals end at season rollover. Agree an extension in the Drivers screen or prepare a replacement; otherwise the driver leaves and the reserve/rookie fallback fills any empty race seat.</p>
+            <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
+              {expiringDrivers.map((driver) => {
+                const intent = state.characterInteractions?.futureIntentions.find((entry) => entry.target.type === 'Driver' && entry.target.id === driver.id);
+                return <article key={driver.id} className="rounded-lg border border-red-900/50 bg-red-950/10 p-3"><div className="flex items-start justify-between gap-2"><div><strong className="block text-xs text-neutral-200">{driver.name}</strong><span className="text-[10px] text-neutral-500">{driver.contractType ?? 'Race seat'}</span></div><span className="text-[10px] font-bold text-red-300">Expires this year</span></div><p className="mt-2 text-[10px] text-neutral-400">{intent ? characterFutureIntentLabel(intent.target, intent.status) : 'Future undecided'}</p></article>;
+              })}
             </div>
           </Panel>
         )}
@@ -372,7 +384,7 @@ export function PaddockWeek() {
         {peopleSection === 'resolved' && resolvedCharacterInitiatives.length > 0 && <Panel title="Initiatives Answered This Week"><div className="grid gap-3 xl:grid-cols-2">{resolvedCharacterInitiatives.map((event) => { const initiative = state.characterInteractions?.initiatives.find((entry) => entry.id === event.characterInitiative?.initiativeId); return <article key={event.id} className="rounded-lg border border-fuchsia-900/40 bg-fuchsia-950/10 p-3"><div className="flex items-center justify-between gap-3"><strong className="text-sm text-neutral-200">{event.characterInitiative?.target.name}</strong><span className="rounded bg-fuchsia-500/10 px-2 py-1 text-[10px] font-semibold uppercase text-fuchsia-300">{initiative?.status ?? 'Resolved'}</span></div><div className="mt-1 text-xs font-semibold text-amber-300">{initiative?.optionLabel}</div><p className="mt-1 text-xs text-neutral-400">{initiative?.outcome}</p></article>; })}</div></Panel>}
         {peopleSection === 'resolved' && resolvedCharacterBreakingPoints.length > 0 && <Panel title="Breaking Points Addressed"><div className="grid gap-3 xl:grid-cols-2">{resolvedCharacterBreakingPoints.map((event) => { const entry = state.characterInteractions?.breakingPoints.find((item) => item.id === event.characterBreakingPoint?.breakingPointId); return <article key={event.id} className="rounded-lg border border-red-900/40 bg-red-950/10 p-3"><div className="flex items-center justify-between gap-3"><strong className="text-sm text-neutral-200">{event.characterBreakingPoint?.target.name}</strong><span className="rounded bg-red-500/10 px-2 py-1 text-[10px] font-semibold uppercase text-red-300">{entry?.status ?? 'Addressed'}</span></div><div className="mt-1 text-xs font-semibold text-amber-300">{entry?.optionLabel}</div><p className="mt-1 text-xs text-neutral-400">{entry?.outcome}</p></article>; })}</div></Panel>}
         {peopleSection === 'attention' && unresolvedCharacterRequests.length === 0 && unresolvedCharacterDisputes.length === 0 && unresolvedCharacterInitiatives.length === 0 && unresolvedCharacterBreakingPoints.length === 0 && <Panel title="Needs Attention"><p className="text-sm text-neutral-500">No character requires a decision this week.</p></Panel>}
-        {peopleSection === 'support' && internalInfluence.length === 0 && activeMandates.length === 0 && unstableCharacters.length === 0 && atRiskIntentions.length === 0 && <Panel title="Support & Mandates"><p className="text-sm text-neutral-500">No internal support, delegated mandates, unstable relationships, or retention risks are currently recorded.</p></Panel>}
+        {peopleSection === 'support' && internalInfluence.length === 0 && activeMandates.length === 0 && unstableCharacters.length === 0 && atRiskIntentions.length === 0 && expiringDrivers.length === 0 && <Panel title="Support & Mandates"><p className="text-sm text-neutral-500">No internal support, delegated mandates, unstable relationships, retention risks, or expiring contracts are currently recorded.</p></Panel>}
         {peopleSection === 'resolved' && resolvedCharacterRequests.length === 0 && resolvedCharacterDisputes.length === 0 && resolvedCharacterInitiatives.length === 0 && resolvedCharacterBreakingPoints.length === 0 && <Panel title="Resolved This Week"><p className="text-sm text-neutral-500">No people decisions have been resolved this week.</p></Panel>}
       </div>}
 

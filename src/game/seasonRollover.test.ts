@@ -54,6 +54,42 @@ describe('academy progression', () => {
 });
 
 describe('advanceSeason', () => {
+  it('ages retained player contracts by one year at rollover', () => {
+    const base = newOffseasonState();
+    const driver = activeDriversForTeam(base, base.selectedTeamId)[0];
+    const state: GameState = {
+      ...base,
+      drivers: base.drivers.map((entry) => entry.teamId === base.selectedTeamId
+        ? { ...entry, contractYearsRemaining: entry.id === driver.id ? 2 : 3 }
+        : entry),
+    };
+    const next = advanceSeason(state);
+    expect(next.drivers.find((entry) => entry.id === driver.id)?.contractYearsRemaining).toBe(1);
+  });
+
+  it('releases an expired player driver, explains the intention, and preserves a legal lineup', () => {
+    const base = newOffseasonState();
+    const driver = activeDriversForTeam(base, base.selectedTeamId)[0];
+    const state: GameState = {
+      ...base,
+      drivers: base.drivers.map((entry) => entry.teamId === base.selectedTeamId
+        ? { ...entry, contractYearsRemaining: entry.id === driver.id ? 1 : 3 }
+        : entry),
+      characterInteractions: {
+        ...base.characterInteractions!,
+        futureIntentions: base.characterInteractions!.futureIntentions.map((entry) => entry.target.type === 'Driver' && entry.target.id === driver.id
+          ? { ...entry, status: 'WantsExit' as const, negotiationModifier: -22 }
+          : entry),
+      },
+    };
+    const next = advanceSeason(state);
+    expect(next.drivers.some((entry) => entry.id === driver.id && entry.teamId === base.selectedTeamId)).toBe(false);
+    expect(activeDriversForTeam(next, base.selectedTeamId)).toHaveLength(2);
+    expect(next.offseasonHistory.at(-1)?.notes.some((note) => note.includes(driver.name) && note.includes('wanted to leave'))).toBe(true);
+    expect(next.news.some((item) => item.id.includes('contract-expiry') && item.driverId === driver.id)).toBe(true);
+    expect(next.characterInteractions!.futureIntentions.some((entry) => entry.target.id === driver.id)).toBe(false);
+  });
+
   it('starts the new season with fresh fitted components and preserves parts history', () => {
     const base = newOffseasonState();
     const playerParts = base.teamParts![base.selectedTeamId];
@@ -87,6 +123,7 @@ describe('advanceSeason', () => {
     )!;
     const state: GameState = {
       ...base,
+      drivers: base.drivers.map((driver) => driver.teamId === base.selectedTeamId ? { ...driver, contractYearsRemaining: 2 } : driver),
       pendingSignings: [
         // A generous bid guarantees the contested signing is won.
         {
@@ -129,6 +166,7 @@ describe('advanceSeason', () => {
     )!;
     const state: GameState = {
       ...base,
+      drivers: base.drivers.map((driver) => driver.teamId === base.selectedTeamId ? { ...driver, contractYearsRemaining: 2 } : driver),
       pendingSignings: [
         {
           seatDriverId: seat.id,
@@ -260,6 +298,7 @@ describe('Academy Rights / First Option at rollover', () => {
     const seat = activeDriversForTeam(base, base.selectedTeamId)[0];
     const next = advanceSeason({
       ...base,
+      drivers: base.drivers.map((driver) => driver.teamId === base.selectedTeamId ? { ...driver, contractYearsRemaining: 2 } : driver),
       academy: [member],
       academyDecisions: [{ academyId: member.id, decision: 'race_seat', seatDriverId: seat.id }],
     });
@@ -275,6 +314,7 @@ describe('Academy Rights / First Option at rollover', () => {
     const member = eighteenNextYear(base.selectedTeamId);
     const next = advanceSeason({
       ...base,
+      drivers: base.drivers.map((driver) => driver.teamId === base.selectedTeamId ? { ...driver, contractYearsRemaining: 2 } : driver),
       academy: [member],
       academyDecisions: [{ academyId: member.id, decision: 'reserve' }],
     });

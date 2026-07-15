@@ -12,6 +12,7 @@ import {
   driverFutureIntentContractModifier,
   futureIntentForTarget,
   generateCharacterFutureIntentEvents,
+  generateExpiringDriverContractEvents,
   refreshCharacterFutureIntentions,
 } from './characterFutureIntentEngine';
 import { characterOpinionKey, currentCharacterTargets } from './characterOpinionEngine';
@@ -60,6 +61,20 @@ describe('character future intent engine', () => {
     const exiting = refreshCharacterFutureIntentions(withOpinion(base, target, -100));
     expect(driverFutureIntentContractModifier(committed, target.id)).toBe(8);
     expect(driverFutureIntentContractModifier(exiting, target.id)).toBe(-22);
+  });
+
+  it('warns about expiring player contracts during the final three races', () => {
+    const base = freshState();
+    const driver = activeDriversForTeam(base, base.selectedTeamId)[0];
+    const finalStretch: GameState = {
+      ...base,
+      currentRaceIndex: base.calendar.length - 2,
+      drivers: base.drivers.map((entry) => entry.id === driver.id ? { ...entry, contractYearsRemaining: 1 } : entry),
+    };
+    const events = generateExpiringDriverContractEvents(finalStretch);
+    expect(events.some((event) => event.title.includes(driver.name))).toBe(true);
+    expect(events.find((event) => event.title.includes(driver.name))?.description).toContain('expires at season rollover');
+    expect(generateExpiringDriverContractEvents({ ...finalStretch, currentRaceIndex: 0 })).toHaveLength(0);
   });
 
   it('lets the same standard renewal succeed or fail based on future intent leverage', () => {
