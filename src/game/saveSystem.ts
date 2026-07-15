@@ -47,6 +47,12 @@ function migrateRelationships(rels: Record<string, DriverRelationship>): Record<
 
 export function migrateGameState(state: GameState): GameState {
   const patched: Partial<GameState> = { ...state };
+  if (patched.staff) {
+    patched.staff = patched.staff.map((member) => ({
+      ...member,
+      contractYearsRemaining: member.contractYearsRemaining ?? 2,
+    }));
+  }
   if (patched.driverRelationships) {
     patched.driverRelationships = migrateRelationships(patched.driverRelationships);
   }

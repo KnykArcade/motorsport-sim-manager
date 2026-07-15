@@ -7,6 +7,7 @@ import type {
   DepartmentId,
 } from '../types/phase18Types';
 import { ensurePhase18FoundationState } from './phase18FoundationEngine';
+import { staffRatingOutOfTen } from './staffEngine';
 
 export const ADVISOR_ROLE_LABELS: Record<AdvisorRole, string> = {
   TechnicalDirector: 'Technical Director',
@@ -78,7 +79,7 @@ function confidenceFor(
   trustInPrincipal: number,
   strategicAlignment: number,
 ): number {
-  const competence = staff ? staff.rating * 6 : 30;
+  const competence = staff ? staffRatingOutOfTen(staff.rating) * 6 : 30;
   return Math.round(clamp(competence + trustInPrincipal * 0.18 + strategicAlignment * 0.12, 35, 95));
 }
 

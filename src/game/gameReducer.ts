@@ -68,7 +68,7 @@ import {
   sponsorInstallmentPayment,
   sponsorSlotCapacity,
 } from '../sim/commercialEngine';
-import { developmentSuccessBonus } from '../sim/staffEngine';
+import { developmentSuccessBonus, extendedStaffSalaryMillions, staffExtensionSigningFee, staffRatingOutOfTen, staffReleaseCost } from '../sim/staffEngine';
 import {
   FACILITY_SPECS,
   facilityDevelopmentSuccessBonus,
@@ -128,6 +128,7 @@ import type { EngineDealType } from '../types/engineTypes';
 import type { RegulationVote } from '../types/politicsTypes';
 import type { RDBranchId, RDProjectStartRequest } from '../types/rdTypes';
 import type { ScoutedEntityType } from '../types/scoutingTypes';
+import type { StaffMember } from '../types/staffTypes';
 import { driverScoutTarget, recordScouting, scoutingCost, type ScoutTarget } from '../sim/scoutingEngine';
 import type {
   Entrant,
@@ -215,7 +216,7 @@ import { resolveCharacterRequest } from '../sim/characterRequestEngine';
 import { resolveCharacterDispute } from '../sim/characterDisputeEngine';
 import { resolveCharacterInitiative } from '../sim/characterInitiativeEngine';
 import { resolveCharacterBreakingPoint } from '../sim/characterBreakingPointEngine';
-import { driverFutureIntentContractModifier, refreshCharacterFutureIntentions } from '../sim/characterFutureIntentEngine';
+import { driverFutureIntentContractModifier, refreshCharacterFutureIntentions, staffFutureIntentContractModifier } from '../sim/characterFutureIntentEngine';
 
 export type GameAction =
   | { type: 'NEW_GAME'; options: NewGameOptions }
@@ -259,6 +260,7 @@ export type GameAction =
   | { type: 'CLEAR_ACADEMY_DECISION'; academyId: string }
   | { type: 'HIRE_STAFF'; staffId: string }
   | { type: 'FIRE_STAFF'; staffId: string }
+  | { type: 'EXTEND_STAFF_CONTRACT'; staffId: string; years: number; offerMultiplier?: number }
   | { type: 'PERFORM_CHARACTER_INTERACTION'; target: CharacterInteractionTarget; action: CharacterInteractionAction }
   | { type: 'UPGRADE_FACILITY'; facilityId: string }
   | { type: 'SIGN_ENGINE_DEAL'; supplierId: string; dealType: EngineDealType }
@@ -700,18 +702,12 @@ export function gameReducer(state: GameState | null, action: GameAction): GameSt
 
     case 'FIRE_STAFF': {
       if (!state) return state;
-      return {
-        ...state,
-        staff: (state.staff ?? []).filter((s) => s.id !== action.staffId),
-        phase18: state.phase18 ? {
-          ...state.phase18,
-          contractClauses: state.phase18.contractClauses.map((clause) =>
-            clause.partyId === action.staffId && clause.status === 'Active'
-              ? { ...clause, status: 'Expired' as const, resolutionNote: 'Contract ended when the staff member was released.' }
-              : clause,
-          ),
-        } : state.phase18,
-      };
+      return fireStaff(state, action.staffId);
+    }
+
+    case 'EXTEND_STAFF_CONTRACT': {
+      if (!state) return state;
+      return extendStaffContract(state, action.staffId, action.years, action.offerMultiplier ?? 1);
     }
 
     case 'PERFORM_CHARACTER_INTERACTION': {
@@ -1220,31 +1216,138 @@ function hireStaff(state: GameState, staffId: string): GameState {
   if (roster.some((s) => s.id === staffId)) return state;
   const recruit = getStaffPool(state.seasonYear, state.series).find((s) => s.id === staffId);
   if (!recruit) return state;
+  const replaced = roster.find((member) => member.role === recruit.role);
   const signingDiscount = recruitmentSigningDiscount(state, staffId);
   const fee = Math.round(toMoney(recruit.signingFee) * (1 - signingDiscount));
-  if (fee > playerBudget(state)) return state;
+  const severance = replaced ? staffReleaseCost(replaced) : 0;
+  if (fee + severance > playerBudget(state)) return state;
   const charged = applyTransaction(
     state,
     makeTransaction(
       state.seasonYear,
       'Staff',
-      `Hired ${recruit.name} (${recruit.role})${signingDiscount > 0 ? ` - ${Math.round(signingDiscount * 100)}% relationship discount` : ''}`,
-      -fee,
+      `Hired ${recruit.name} (${recruit.role})${replaced ? `; released ${replaced.name}` : ''}${signingDiscount > 0 ? ` - ${Math.round(signingDiscount * 100)}% relationship discount` : ''}`,
+      -(fee + severance),
     ),
   );
-  const nextRoster = [...roster.filter((s) => s.role !== recruit.role), recruit];
+  const nextRoster = [
+    ...roster.filter((s) => s.role !== recruit.role),
+    { ...recruit, contractYearsRemaining: 2 },
+  ];
   const hireTeam = state.teams.find((t) => t.id === state.selectedTeamId);
   const staffNews: NewsItem = {
     id: `news-staff-hire-${recruit.id}-${state.seasonYear}`,
     headline: `${hireTeam?.name ?? 'The team'} appoints ${recruit.name} as ${recruit.role}`,
-    body: `The team strengthens its technical department with a new ${recruit.role}.`,
+    body: replaced
+      ? `${recruit.name} replaces ${replaced.name}. The appointment includes a two-year contract and ${formatStaffMoney(severance)} in early-release compensation.`
+      : `The team strengthens its technical department with a new ${recruit.role} on a two-year contract.`,
     timestamp: new Date().toISOString(),
     category: 'development',
     priority: 'normal',
     careerPhase: getCareerPhase(charged),
     teamId: hireTeam?.id,
   };
-  return ensureContractClauses({ ...charged, staff: nextRoster, news: [staffNews, ...charged.news].slice(0, 80) });
+  const withReplacementClauses = replaced && charged.phase18 ? {
+    ...charged,
+    phase18: {
+      ...charged.phase18,
+      contractClauses: charged.phase18.contractClauses.map((clause) =>
+        clause.partyId === replaced.id && clause.status === 'Active'
+          ? { ...clause, status: 'Expired' as const, resolutionNote: 'Contract ended when the specialist was replaced.' }
+          : clause,
+      ),
+    },
+  } : charged;
+  return refreshCharacterFutureIntentions(ensureContractClauses({ ...withReplacementClauses, staff: nextRoster, news: [staffNews, ...charged.news].slice(0, 80) }));
+}
+
+function formatStaffMoney(value: number): string {
+  return `$${(value / 1_000_000).toFixed(1)}M`;
+}
+
+function fireStaff(state: GameState, staffId: string): GameState {
+  const member = (state.staff ?? []).find((entry) => entry.id === staffId);
+  if (!member) return state;
+  const severance = staffReleaseCost(member);
+  if (severance > playerBudget(state)) return state;
+  const charged = severance > 0
+    ? applyTransaction(state, makeTransaction(state.seasonYear, 'Staff', `Released ${member.name} (${member.role})`, -severance))
+    : state;
+  const news: NewsItem = {
+    id: `news-staff-release-${member.id}-${state.seasonYear}-${state.currentRaceIndex}`,
+    headline: `${member.name} leaves the ${member.role} position`,
+    body: `${state.teams.find((team) => team.id === state.selectedTeamId)?.name ?? 'The team'} ended the contract early and paid ${formatStaffMoney(severance)} in compensation. The role is now vacant.`,
+    timestamp: new Date().toISOString(),
+    category: 'development',
+    priority: 'normal',
+    careerPhase: getCareerPhase(charged),
+    teamId: state.selectedTeamId,
+  };
+  const released: GameState = {
+    ...charged,
+    staff: (charged.staff ?? []).filter((entry) => entry.id !== staffId),
+    news: [news, ...charged.news].slice(0, 80),
+    phase18: charged.phase18 ? {
+      ...charged.phase18,
+      contractClauses: charged.phase18.contractClauses.map((clause) =>
+        clause.partyId === staffId && clause.status === 'Active'
+          ? { ...clause, status: 'Expired' as const, resolutionNote: 'Contract ended when the staff member was released.' }
+          : clause,
+      ),
+    } : charged.phase18,
+  };
+  return refreshCharacterFutureIntentions(released);
+}
+
+function extendStaffContract(state: GameState, staffId: string, years: number, offerMultiplier: number): GameState {
+  if (state.seasonComplete || isSingleSeasonMode(state.gameMode)) return state;
+  const member = (state.staff ?? []).find((entry) => entry.id === staffId);
+  if (!member) return state;
+  const currentYears = member.contractYearsRemaining ?? 2;
+  if (currentYears >= 5) return state;
+  const appliedYears = Math.min(Math.max(1, Math.min(3, Math.round(years))), 5 - currentYears);
+  const multiplier = Math.max(1, Math.min(2.5, offerMultiplier));
+  const racesRemaining = Math.max(1, state.calendar.length - state.currentRaceIndex);
+  const fee = staffExtensionSigningFee(member, appliedYears, racesRemaining, state.calendar.length, multiplier);
+  if (fee > playerBudget(state)) return state;
+  const score = staffExtensionInterest(state, member, appliedYears, multiplier);
+  const accepted = score >= 58;
+  const team = state.teams.find((entry) => entry.id === state.selectedTeamId);
+  const news: NewsItem = {
+    id: `news-staff-contract-offer-${accepted ? 'accepted' : 'refused'}-${state.seasonYear}-${state.currentRaceIndex}-${member.id}-${state.news.length}`,
+    headline: accepted
+      ? `${member.name} agrees to a ${appliedYears}-year extension`
+      : `${member.name} turns down the contract offer`,
+    body: accepted
+      ? `${team?.name ?? 'The team'} secured its ${member.role} with a revised long-term package.`
+      : `${member.name} is not ready to recommit on those terms. Improve the offer or repair the working relationship before season rollover. Interest score: ${score}.`,
+    timestamp: new Date().toISOString(),
+    category: 'development',
+    priority: accepted ? 'normal' : 'high',
+    careerPhase: getCareerPhase(state),
+    teamId: state.selectedTeamId,
+  };
+  if (!accepted) return { ...state, news: [news, ...state.news].slice(0, 80) };
+  const charged = applyTransaction(state, makeTransaction(state.seasonYear, 'Staff', `Extension accepted: ${member.name} +${appliedYears} yr`, -fee));
+  return {
+    ...charged,
+    staff: (charged.staff ?? []).map((entry) => entry.id === member.id ? {
+      ...entry,
+      contractYearsRemaining: currentYears + appliedYears,
+      salary: Math.max(entry.salary, extendedStaffSalaryMillions(entry, appliedYears)),
+    } : entry),
+    news: [news, ...charged.news].slice(0, 80),
+  };
+}
+
+function staffExtensionInterest(state: GameState, member: StaffMember, years: number, multiplier: number): number {
+  const opinion = state.characterInteractions?.opinions[`Staff:${member.id}`];
+  const trust = opinion?.trust ?? 50;
+  const respect = opinion?.respect ?? 50;
+  const futureIntent = staffFutureIntentContractModifier(state, member.id);
+  const ratingPremium = Math.max(0, staffRatingOutOfTen(member.rating) - 7) * 3;
+  const expiringBoost = (member.contractYearsRemaining ?? 2) <= 1 ? 5 : 0;
+  return Math.round(35 + trust * 0.25 + respect * 0.15 + years * 6 + (multiplier - 1) * 40 + futureIntent + expiringBoost - ratingPremium);
 }
 
 // Order a facility upgrade: charge the cost now (must be affordable); the level

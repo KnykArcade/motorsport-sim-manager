@@ -7,6 +7,7 @@ import { ensureCharacterInteractionState } from './characterInteractionEngine';
 import { recordCharacterMemory } from './characterOpinionEngine';
 import { ensurePhase18FoundationState } from './phase18FoundationEngine';
 import { addRivalRelationshipEvent, rivalRelationship } from './phase18RivalRelationshipEngine';
+import { staffRatingOutOfTen } from './staffEngine';
 
 const STAFF_DEPARTMENT: Record<StaffRole, DepartmentId> = {
   'Technical Director': 'Technical',
@@ -129,7 +130,7 @@ export function createCharacterMandateFromInitiative(state: GameState, initiativ
 function contribution(state: GameState, mandate: CharacterMandate): number {
   if (mandate.authority === 'Limited') return 1;
   if (mandate.kind === 'GarageLeadership') return (state.drivers.find((entry) => entry.id === mandate.target.id)?.ratings.overall ?? 0) >= 8 ? 2 : 1;
-  if (mandate.kind === 'DepartmentAuthority') return (state.staff?.find((entry) => entry.id === mandate.target.id)?.rating ?? 0) >= 8 ? 2 : 1;
+  if (mandate.kind === 'DepartmentAuthority') return staffRatingOutOfTen(state.staff?.find((entry) => entry.id === mandate.target.id)?.rating ?? 0) >= 8 ? 2 : 1;
   return 2;
 }
 

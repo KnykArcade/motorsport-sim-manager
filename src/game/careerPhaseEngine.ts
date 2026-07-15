@@ -40,7 +40,7 @@ import { applyCharacterInfluenceEffects, generateCharacterInfluenceEvents, refre
 import { createCharacterInitiative, generateCharacterInitiativeEvents } from '../sim/characterInitiativeEngine';
 import { advanceCharacterMandates, generateCharacterMandateEvents } from '../sim/characterMandateEngine';
 import { advanceCharacterBreakingPoints, generateCharacterBreakingPointEvents } from '../sim/characterBreakingPointEngine';
-import { generateCharacterFutureIntentEvents, generateExpiringDriverContractEvents, refreshCharacterFutureIntentions } from '../sim/characterFutureIntentEngine';
+import { generateCharacterFutureIntentEvents, generateExpiringDriverContractEvents, generateExpiringStaffContractEvents, refreshCharacterFutureIntentions } from '../sim/characterFutureIntentEngine';
 
 export function defaultCareerPhaseState(): CareerPhaseState {
   return {
@@ -1189,6 +1189,7 @@ export function generateAndStorePaddockEvents(state: GameState): GameState {
   events.push(...generateCharacterBreakingPointEvents(stateWithFutureIntentions));
   events.push(...generateCharacterFutureIntentEvents(stateWithFutureIntentions));
   events.push(...generateExpiringDriverContractEvents(stateWithFutureIntentions));
+  events.push(...generateExpiringStaffContractEvents(stateWithFutureIntentions));
   events.push(...narrativeResponseEvents(stateWithFutureIntentions));
 
   // Track newly announced completed projects.
