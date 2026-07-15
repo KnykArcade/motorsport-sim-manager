@@ -77,6 +77,10 @@ export type PaddockEvent = {
     characterA: CharacterInteractionTarget;
     characterB: CharacterInteractionTarget;
   };
+  characterInitiative?: {
+    initiativeId: string;
+    target: CharacterInteractionTarget;
+  };
 };
 
 export type PreseasonChecklistItem = {

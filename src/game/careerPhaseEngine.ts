@@ -37,6 +37,7 @@ import { generateCharacterConnectionEvents, refreshCharacterConnections } from '
 import { generateCharacterDisputeEvents, refreshCharacterDisputes } from '../sim/characterDisputeEngine';
 import { advanceCharacterCommitments, generateCharacterCommitmentEvents } from '../sim/characterCommitmentEngine';
 import { applyCharacterInfluenceEffects, generateCharacterInfluenceEvents, refreshCharacterInfluence } from '../sim/characterInfluenceEngine';
+import { createCharacterInitiative, generateCharacterInitiativeEvents } from '../sim/characterInitiativeEngine';
 
 export function defaultCareerPhaseState(): CareerPhaseState {
   return {
@@ -1167,29 +1168,31 @@ export function generateAndStorePaddockEvents(state: GameState): GameState {
   const stateWithAmbitions = advanceCharacterAmbitions(stateWithDisputes);
   const stateWithCommitments = advanceCharacterCommitments(stateWithAmbitions);
   const stateWithInfluence = applyCharacterInfluenceEffects(refreshCharacterInfluence(stateWithCommitments));
-  const updatedPhaseState = getOrCreatePhaseState(stateWithInfluence);
+  const stateWithInitiatives = createCharacterInitiative(stateWithInfluence);
+  const updatedPhaseState = getOrCreatePhaseState(stateWithInitiatives);
 
-  const events = generatePaddockWeekEvents(stateWithInfluence);
-  events.push(...generateCharacterRequestEvents(stateWithInfluence));
-  events.push(...generateCharacterAmbitionEvents(stateWithInfluence));
-  events.push(...generateCharacterConnectionEvents(stateWithInfluence));
-  events.push(...generateCharacterDisputeEvents(stateWithInfluence));
-  events.push(...generateCharacterCommitmentEvents(stateWithInfluence));
-  events.push(...generateCharacterInfluenceEvents(stateWithInfluence));
-  events.push(...narrativeResponseEvents(stateWithInfluence));
+  const events = generatePaddockWeekEvents(stateWithInitiatives);
+  events.push(...generateCharacterRequestEvents(stateWithInitiatives));
+  events.push(...generateCharacterAmbitionEvents(stateWithInitiatives));
+  events.push(...generateCharacterConnectionEvents(stateWithInitiatives));
+  events.push(...generateCharacterDisputeEvents(stateWithInitiatives));
+  events.push(...generateCharacterCommitmentEvents(stateWithInitiatives));
+  events.push(...generateCharacterInfluenceEvents(stateWithInitiatives));
+  events.push(...generateCharacterInitiativeEvents(stateWithInitiatives));
+  events.push(...narrativeResponseEvents(stateWithInitiatives));
 
   // Track newly announced completed projects.
   const announced = new Set(phaseState.announcedCompletedProjectIds);
   for (const e of events) {
     if (e.category === 'development' && e.title.startsWith('Upgrade completed: ')) {
       const projName = e.title.replace('Upgrade completed: ', '');
-      const proj = stateWithInfluence.completedDevelopmentProjects.find((p) => p.name === projName);
+      const proj = stateWithInitiatives.completedDevelopmentProjects.find((p) => p.name === projName);
       if (proj) announced.add(proj.id);
     }
   }
 
   const withEvents: GameState = {
-    ...stateWithInfluence,
+    ...stateWithInitiatives,
     careerPhase: {
       ...updatedPhaseState,
       paddockEvents: events,

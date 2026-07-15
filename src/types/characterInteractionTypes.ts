@@ -85,7 +85,7 @@ export type CharacterMemory = {
   teamId?: string;
   seasonYear: number;
   round: number;
-  source: 'Interaction' | 'Request' | 'Ambition' | 'Connection' | 'Dispute' | 'Commitment';
+  source: 'Interaction' | 'Request' | 'Ambition' | 'Connection' | 'Dispute' | 'Commitment' | 'Initiative';
   label: string;
   description: string;
   tone: CharacterInteractionRecord['tone'];
@@ -217,8 +217,38 @@ export type CharacterInfluenceProfile = {
   lastAppliedRound?: number;
 };
 
+export type CharacterInitiativeKind =
+  | 'DriverLeadership'
+  | 'DriverChallenge'
+  | 'StaffProposal'
+  | 'StaffResistance'
+  | 'OwnerBacking'
+  | 'OwnerIntervention'
+  | 'RivalOutreach'
+  | 'RivalPressure';
+
+export type CharacterInitiative = {
+  id: string;
+  target: CharacterInteractionTarget;
+  kind: CharacterInitiativeKind;
+  title: string;
+  description: string;
+  motive: string;
+  powerAtStart: number;
+  supportAtStart: number;
+  startedSeason: number;
+  startedRound: number;
+  status: 'Active' | 'Accepted' | 'Compromised' | 'Rejected' | 'Expired';
+  optionId?: string;
+  optionLabel?: string;
+  outcome?: string;
+  effects?: string[];
+  resolvedSeason?: number;
+  resolvedRound?: number;
+};
+
 export type CharacterInteractionState = {
-  version: 8;
+  version: 9;
   history: CharacterInteractionRecord[];
   lastInteractionByTarget: Record<string, { seasonYear: number; round: number }>;
   recruitmentInterest: Record<string, number>;
@@ -231,6 +261,7 @@ export type CharacterInteractionState = {
   disputes: CharacterDispute[];
   commitments: CharacterCommitment[];
   influence: CharacterInfluenceProfile[];
+  initiatives: CharacterInitiative[];
 };
 
 export type CharacterRequestKind =
