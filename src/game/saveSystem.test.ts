@@ -96,6 +96,7 @@ describe('save model', () => {
     const legacy = structuredClone(current);
     delete legacy.saveSchemaVersion;
     delete legacy.phase18;
+    delete legacy.personnelCareerHistory;
     const migrated = migrateGameState(legacy);
 
     expect(migrated.saveSchemaVersion).toBe(CURRENT_SAVE_SCHEMA_VERSION);
@@ -103,6 +104,7 @@ describe('save model', () => {
     expect(Object.keys(migrated.phase18?.departmentMoods ?? {})).toHaveLength(current.teams.length);
     expect(migrated.teamResearch).toEqual(current.teamResearch);
     expect(migrated.teamParts).toEqual(current.teamParts);
+    expect(migrated.personnelCareerHistory?.some((tenure) => tenure.personId === current.principal?.id)).toBe(true);
   });
 
   it('round-trips Phase 18 state through the real save slot', () => {

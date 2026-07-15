@@ -43,6 +43,7 @@ import type { TeamResearchMap } from '../types/rdTypes';
 import type { TeamPartsMap } from '../types/partsTypes';
 import type { Phase18FoundationState } from '../types/phase18Types';
 import type { CharacterInteractionState } from '../types/characterInteractionTypes';
+import type { PersonnelCareerTenure } from '../types/personnelCareerTypes';
 
 export type GameState = {
   id: string;
@@ -194,6 +195,10 @@ export type GameState = {
   // Phase 19 people-management actions, their outcomes, per-character weekly
   // cooldowns, and recruitment interest. Optional for older-save migration.
   characterInteractions?: CharacterInteractionState;
+
+  // Persistent employment timeline for principals and named staff. This keeps
+  // character identity and career history intact as people change teams.
+  personnelCareerHistory?: PersonnelCareerTenure[];
 
   randomSeed: string;
   seasonComplete: boolean;

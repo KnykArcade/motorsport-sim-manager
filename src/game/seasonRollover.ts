@@ -114,6 +114,7 @@ import { carForTeam, type GameState } from './careerState';
 import { ensureCharacterFutureIntentions } from '../sim/characterFutureIntentEngine';
 import { executePersonnelMoves } from '../sim/personnelMoveEngine';
 import { rolloverAIStaffRosters } from '../sim/aiStaffRosterEngine';
+import { reconcilePersonnelCareerLedger } from '../sim/personnelCareerLedgerEngine';
 
 // Annual sponsorship the player's team earns, driven by reputation and the
 // appeal (overall rating) of its driver line-up. Invented but ties sponsorship
@@ -1449,7 +1450,6 @@ export function advanceSeason(state: GameState, nextBundle?: SeasonBundle): Game
     if (!destination) continue;
     aiPrincipals[destination.id] = {
       ...principal,
-      principalId: `principal-${destination.id}-${nextYear}`,
       contractYearsRemaining: 2,
       seasonsAtTeam: 0,
       fired: false,
@@ -1479,6 +1479,20 @@ export function advanceSeason(state: GameState, nextBundle?: SeasonBundle): Game
       careerPhase: 'season_end',
       teamId: destination.id,
     });
+  }
+
+  // Principal identity belongs to the person, not the team slot. Carry the
+  // existing leadership profile to the destination before the foundation pass
+  // creates a clean profile for the replacement at the source team.
+  let phase18ForRollover = state.phase18;
+  if (state.phase18 && principalPoachPairs.length > 0) {
+    const identities = { ...state.phase18.aiPrincipalIdentities };
+    for (const pair of principalPoachPairs) {
+      const movedIdentity = identities[pair.sourceTeamId];
+      delete identities[pair.sourceTeamId];
+      if (movedIdentity) identities[pair.destinationTeamId] = movedIdentity;
+    }
+    phase18ForRollover = { ...state.phase18, aiPrincipalIdentities: identities };
   }
 
   // Sync team.raceOperations (1-100) from the updated org ratings (0-100) so
@@ -1601,14 +1615,14 @@ export function advanceSeason(state: GameState, nextBundle?: SeasonBundle): Game
       ...state.characterInteractions,
       personnelMoves: personnelMoveExecution.agreements,
     } : state.characterInteractions,
-    phase18: state.phase18 ? {
-      ...state.phase18,
-      contractClauses: state.phase18.contractClauses.map((clause) =>
+    phase18: phase18ForRollover ? {
+      ...phase18ForRollover,
+      contractClauses: phase18ForRollover.contractClauses.map((clause) =>
         departingStaffIds.has(clause.partyId) && clause.status === 'Active'
           ? { ...clause, status: 'Expired' as const, resolutionNote: 'Contract completed and the staff member left the team.' }
           : clause,
       ),
-    } : state.phase18,
+    } : phase18ForRollover,
   };
   nextState.motorsportUniverse = advanceMotorsportUniverse(
     state,
@@ -1638,12 +1652,12 @@ export function advanceSeason(state: GameState, nextBundle?: SeasonBundle): Game
       movedState.phase18 = { ...movedState.phase18!, preseason: undefined };
       let finalized = ensureRivalRelationships(ensureFailureInvestigationState(ensurePreseasonHubState(movedState)));
       for (const pair of principalPoachPairs) finalized = recordStaffPoach(finalized, pair.sourceTeamId, pair.destinationTeamId);
-      return ensureCharacterFutureIntentions(finalized);
+      return reconcilePersonnelCareerLedger(state, ensureCharacterFutureIntentions(finalized), nextYear, 'Season rollover');
     }
   }
   let finalized = ensureRivalRelationships(ensureFailureInvestigationState(ensurePreseasonHubState(nextState)));
   for (const pair of principalPoachPairs) finalized = recordStaffPoach(finalized, pair.sourceTeamId, pair.destinationTeamId);
-  return ensureCharacterFutureIntentions(finalized);
+  return reconcilePersonnelCareerLedger(state, ensureCharacterFutureIntentions(finalized), nextYear, 'Season rollover');
 }
 
 // Switch the player to a new team after a principal move: rebuild the

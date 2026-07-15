@@ -17,6 +17,8 @@ import { staffRatingOutOfTen } from '../../sim/staffEngine';
 import type { CharacterInteractionTarget } from '../../types/characterInteractionTypes';
 import { interactionHistoryForTarget } from '../../sim/characterInteractionEngine';
 import { CharacterActionPanel } from './CharacterActionPanel';
+import { personnelCareerFor } from '../../sim/personnelCareerLedgerEngine';
+import type { PersonnelCareerKind } from '../../types/personnelCareerTypes';
 
 export type CharacterDossierSubject =
   | { type: 'playerPrincipal' }
@@ -77,6 +79,25 @@ function teamPosition(state: GameState, teamId: string): string {
   return position >= 0 ? `P${position + 1}` : 'Not classified';
 }
 
+function personnelTimeline(
+  state: GameState,
+  kind: PersonnelCareerKind,
+  personId: string,
+): DossierHistoryEntry[] {
+  return personnelCareerFor(state, kind, personId).map((tenure) => ({
+    key: tenure.id,
+    title: `${tenure.role} · ${tenure.teamName}`,
+    detail: tenure.leftReason
+      ? `${tenure.joinedReason}. ${tenure.leftReason}.`
+      : tenure.joinedReason,
+    meta: tenure.endedSeason == null
+      ? `${tenure.startedSeason}–present`
+      : tenure.startedSeason === tenure.endedSeason
+        ? String(tenure.startedSeason)
+        : `${tenure.startedSeason}–${tenure.endedSeason}`,
+  }));
+}
+
 // Kept beside the modal so the subject-to-view-model contract cannot drift from
 // the dossier UI; exported for deterministic coverage without rendering a DOM.
 // eslint-disable-next-line react-refresh/only-export-components
@@ -128,6 +149,7 @@ export function buildCharacterDossier(
       ] : [],
       commitments: clauses.map((clause) => `${contractClauseLabel(clause.clauseType)} — ${clause.status}`),
       history: [
+        ...personnelTimeline(state, 'TeamPrincipal', profile?.id ?? created?.id ?? 'player-principal'),
         ...(identity?.history.slice(-8).reverse().map((entry) => ({
           key: entry.id,
           title: `+${entry.amount} ${PRINCIPAL_IDENTITY_LABELS[entry.identity]}`,
@@ -190,6 +212,7 @@ export function buildCharacterDossier(
       ] : [{ label: 'Pressure Control', value: pressureStanding, score: pressureStanding }],
       commitments: [],
       history: [
+        ...personnelTimeline(state, 'TeamPrincipal', principal?.principalId ?? `principal-${subject.teamId}`),
         ...(identity?.history.slice(-8).reverse().map((entry) => ({
           key: entry.id,
           title: `+${entry.amount} ${PRINCIPAL_IDENTITY_LABELS[entry.identity]}`,
@@ -305,12 +328,15 @@ export function buildCharacterDossier(
     traits: [staff.role, active ? 'Integrated with team' : employer ? 'Employed by rival' : 'Available to hire'],
     metrics: [{ label: 'Role Rating', value: `${roleRating.toFixed(1)}/10`, score: roleRating * 10 }],
     commitments: clauses.map((clause) => `${contractClauseLabel(clause.clauseType)} — ${clause.status}`),
-    history: recommendations.slice(-10).reverse().map((recommendation) => ({
-      key: recommendation.id,
-      title: recommendation.recommendation,
-      detail: recommendation.resolutionNote ?? recommendation.rationale,
-      meta: `${recommendation.createdSeasonYear}${recommendation.createdRound ? ` · Round ${recommendation.createdRound}` : ''} · ${recommendation.status}`,
-    })),
+    history: [
+      ...personnelTimeline(state, 'Staff', staff.id),
+      ...recommendations.slice(-10).reverse().map((recommendation) => ({
+        key: recommendation.id,
+        title: recommendation.recommendation,
+        detail: recommendation.resolutionNote ?? recommendation.rationale,
+        meta: `${recommendation.createdSeasonYear}${recommendation.createdRound ? ` · Round ${recommendation.createdRound}` : ''} · ${recommendation.status}`,
+      })),
+    ],
     playerRead: active
       ? `${staff.name} is your ${staff.role.toLowerCase()} and has a ${roleRating.toFixed(1)}/10 role rating.`
       : employer

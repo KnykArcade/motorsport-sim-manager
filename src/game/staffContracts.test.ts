@@ -93,6 +93,10 @@ describe('staff contracts', () => {
     expect(Object.values(hired.aiStaff ?? {}).flat().some((member) => member.id === candidate.id)).toBe(false);
     expect(hired.teams.find((team) => team.id === employerTeamId)!.budget).toBe(employerBudget + compensation);
     expect(hired.news[0].body).toContain('contract compensation');
+    const career = hired.personnelCareerHistory?.filter((tenure) => tenure.kind === 'Staff' && tenure.personId === candidate.id) ?? [];
+    expect(career).toHaveLength(2);
+    expect(career.find((tenure) => tenure.teamId === employerTeamId)?.endedSeason).toBe(base.seasonYear);
+    expect(career.find((tenure) => tenure.teamId === base.selectedTeamId)?.endedSeason).toBeUndefined();
   });
 
   it('does not offer future staff extensions in single-season mode', () => {
