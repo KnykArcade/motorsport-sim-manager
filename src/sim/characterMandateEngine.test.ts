@@ -97,7 +97,7 @@ describe('character mandate engine', () => {
     const legacy = structuredClone(freshState());
     delete (legacy.characterInteractions as Partial<typeof legacy.characterInteractions>)?.mandates;
     const migrated = migrateGameState(legacy);
-    expect(migrated.characterInteractions!.version).toBe(10);
+    expect(migrated.characterInteractions!.version).toBe(11);
     expect(migrated.characterInteractions!.mandates).toEqual([]);
   });
 });

@@ -21,6 +21,7 @@ import { ensureCharacterConnections } from '../sim/characterConnectionEngine';
 import { ensureCharacterInfluence } from '../sim/characterInfluenceEngine';
 import { ensureCharacterInitiatives } from '../sim/characterInitiativeEngine';
 import { ensureCharacterMandates } from '../sim/characterMandateEngine';
+import { ensureCharacterBreakingPoints } from '../sim/characterBreakingPointEngine';
 
 const SAVE_KEY = 'msm:save:v1';
 const SETTINGS_KEY = 'msm:settings:v1';
@@ -71,7 +72,7 @@ export function migrateGameState(state: GameState): GameState {
   });
   patched.characterInteractions = ensureCharacterInteractionState(patched.characterInteractions);
   patched.saveSchemaVersion = CURRENT_SAVE_SCHEMA_VERSION;
-  return ensureCharacterMandates(ensureCharacterInitiatives(ensureCharacterInfluence(ensureCharacterConnections(ensureCharacterAmbitions(ensureCharacterOpinions(syncNarratives(ensureRivalRelationships(ensureFailureInvestigationState(ensurePreseasonHubState(ensureContractClauses(patched as GameState)))))))))));
+  return ensureCharacterBreakingPoints(ensureCharacterMandates(ensureCharacterInitiatives(ensureCharacterInfluence(ensureCharacterConnections(ensureCharacterAmbitions(ensureCharacterOpinions(syncNarratives(ensureRivalRelationships(ensureFailureInvestigationState(ensurePreseasonHubState(ensureContractClauses(patched as GameState))))))))))));
 }
 
 export type GameSettings = {

@@ -87,7 +87,7 @@ describe('character commitment engine', () => {
     const legacy = structuredClone(freshState());
     delete (legacy.characterInteractions as Partial<typeof legacy.characterInteractions>)?.commitments;
     const migrated = migrateGameState(legacy);
-    expect(migrated.characterInteractions!.version).toBe(10);
+    expect(migrated.characterInteractions!.version).toBe(11);
     expect(migrated.characterInteractions!.commitments).toEqual([]);
   });
 });

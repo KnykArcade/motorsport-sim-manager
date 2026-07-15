@@ -21,6 +21,7 @@ import { commitmentsForTarget } from '../../sim/characterCommitmentEngine';
 import { influenceForTarget } from '../../sim/characterInfluenceEngine';
 import { initiativesForTarget } from '../../sim/characterInitiativeEngine';
 import { mandatesForTarget } from '../../sim/characterMandateEngine';
+import { breakingPointsForTarget, stabilityForTarget } from '../../sim/characterBreakingPointEngine';
 
 type Props = {
   state: GameState;
@@ -77,6 +78,10 @@ export function CharacterActionPanel({ state, target }: Props) {
   const mandates = mandatesForTarget(state, target);
   const activeMandate = mandates.find((mandate) => mandate.status === 'Active');
   const recentMandates = mandates.filter((mandate) => mandate.status !== 'Active').slice(0, 3);
+  const stability = stabilityForTarget(state, target);
+  const breakingPoints = breakingPointsForTarget(state, target);
+  const activeBreakingPoint = breakingPoints.find((entry) => entry.status === 'Active');
+  const recentBreakingPoints = breakingPoints.filter((entry) => entry.status !== 'Active').slice(0, 3);
 
   return (
     <div className="space-y-4">
@@ -131,6 +136,13 @@ export function CharacterActionPanel({ state, target }: Props) {
               </div>
               <p className="mt-1 text-[10px] leading-relaxed text-neutral-300">{influence.effectLabel}</p>
               <div className="mt-1 line-clamp-1 text-[10px] text-neutral-500">{influence.basis.join(' · ')}</div>
+            </div>
+          )}
+          {stability && (
+            <div className={`mt-3 rounded border p-2.5 ${stability.band === 'BreakingPoint' ? 'border-red-800/70 bg-red-950/25' : stability.band === 'Unsettled' ? 'border-amber-800/60 bg-amber-950/20' : 'border-neutral-800 bg-neutral-900/70'}`}>
+              <div className="flex items-center justify-between gap-2"><div><div className="text-[10px] font-bold uppercase tracking-[0.14em] text-neutral-500">Relationship stability</div><strong className="mt-0.5 block text-xs text-neutral-200">{stability.band}</strong></div><span className={`text-sm font-bold ${stability.band === 'BreakingPoint' ? 'text-red-300' : stability.band === 'Unsettled' ? 'text-amber-300' : 'text-neutral-300'}`}>{stability.score}/100</span></div>
+              <p className="mt-1 line-clamp-2 text-[10px] leading-relaxed text-neutral-500">{stability.reasons.join(' · ') || 'No major destabilizing pressure is currently recorded.'}</p>
+              {activeBreakingPoint && <div className="mt-2 rounded border border-red-900/50 bg-red-950/30 px-2 py-1.5 text-[10px] font-semibold text-red-300">Required response pending in Paddock Week</div>}
             </div>
           )}
           {activeInitiative && (
@@ -305,6 +317,7 @@ export function CharacterActionPanel({ state, target }: Props) {
           {resolvedCommitments.length > 0 && <div className="mt-3 border-t border-neutral-800 pt-3"><div className="text-[10px] font-bold uppercase tracking-[0.16em] text-neutral-500">Commitment outcomes</div><div className="mt-2 grid gap-2 lg:grid-cols-3">{resolvedCommitments.map((commitment) => <article key={commitment.id} className={`rounded border p-2.5 ${commitment.status === 'Fulfilled' ? 'border-emerald-900/70 bg-emerald-950/20' : 'border-red-900/70 bg-red-950/20'}`}><div className="flex items-center justify-between gap-2"><strong className="text-xs text-neutral-200">{commitment.title}</strong><span className={`text-[10px] font-bold ${commitment.status === 'Fulfilled' ? 'text-emerald-300' : 'text-red-300'}`}>{commitment.status}</span></div><p className="mt-1 text-[10px] text-neutral-500">{commitment.measureLabel}: {commitment.currentValue}/{commitment.targetValue}</p></article>)}</div></div>}
           {recentInitiatives.length > 0 && <div className="mt-3 border-t border-neutral-800 pt-3"><div className="text-[10px] font-bold uppercase tracking-[0.16em] text-neutral-500">Initiative outcomes</div><div className="mt-2 grid gap-2 lg:grid-cols-3">{recentInitiatives.map((initiative) => <article key={initiative.id} className="rounded border border-fuchsia-900/50 bg-fuchsia-950/10 p-2.5"><div className="flex items-center justify-between gap-2"><strong className="text-xs text-neutral-200">{initiative.title}</strong><span className="text-[10px] font-bold text-fuchsia-300">{initiative.status}</span></div><p className="mt-1 line-clamp-2 text-[10px] text-neutral-500">{initiative.outcome ?? initiative.motive}</p></article>)}</div></div>}
           {recentMandates.length > 0 && <div className="mt-3 border-t border-neutral-800 pt-3"><div className="text-[10px] font-bold uppercase tracking-[0.16em] text-neutral-500">Mandate accountability</div><div className="mt-2 grid gap-2 lg:grid-cols-3">{recentMandates.map((mandate) => <article key={mandate.id} className={`rounded border p-2.5 ${mandate.status === 'Succeeded' ? 'border-emerald-900/60 bg-emerald-950/15' : 'border-red-900/60 bg-red-950/15'}`}><div className="flex items-center justify-between gap-2"><strong className="text-xs text-neutral-200">{mandate.title}</strong><span className={`text-[10px] font-bold ${mandate.status === 'Succeeded' ? 'text-emerald-300' : 'text-red-300'}`}>{mandate.status}</span></div><p className="mt-1 line-clamp-2 text-[10px] text-neutral-500">{mandate.outcome}</p></article>)}</div></div>}
+          {recentBreakingPoints.length > 0 && <div className="mt-3 border-t border-neutral-800 pt-3"><div className="text-[10px] font-bold uppercase tracking-[0.16em] text-neutral-500">Breaking-point decisions</div><div className="mt-2 grid gap-2 lg:grid-cols-3">{recentBreakingPoints.map((entry) => <article key={entry.id} className={`rounded border p-2.5 ${entry.status === 'Defused' ? 'border-emerald-900/60 bg-emerald-950/15' : entry.status === 'Escalated' ? 'border-red-900/60 bg-red-950/15' : 'border-amber-900/60 bg-amber-950/15'}`}><div className="flex items-center justify-between gap-2"><strong className="text-xs text-neutral-200">{entry.optionLabel ?? 'Breaking point resolved'}</strong><span className="text-[10px] font-bold text-neutral-400">{entry.status}</span></div><p className="mt-1 line-clamp-2 text-[10px] text-neutral-500">{entry.outcome}</p></article>)}</div></div>}
         </section>
       )}
     </div>

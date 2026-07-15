@@ -39,6 +39,7 @@ import { advanceCharacterCommitments, generateCharacterCommitmentEvents } from '
 import { applyCharacterInfluenceEffects, generateCharacterInfluenceEvents, refreshCharacterInfluence } from '../sim/characterInfluenceEngine';
 import { createCharacterInitiative, generateCharacterInitiativeEvents } from '../sim/characterInitiativeEngine';
 import { advanceCharacterMandates, generateCharacterMandateEvents } from '../sim/characterMandateEngine';
+import { advanceCharacterBreakingPoints, generateCharacterBreakingPointEvents } from '../sim/characterBreakingPointEngine';
 
 export function defaultCareerPhaseState(): CareerPhaseState {
   return {
@@ -1171,18 +1172,20 @@ export function generateAndStorePaddockEvents(state: GameState): GameState {
   const stateWithCommitments = advanceCharacterCommitments(stateWithAmbitions);
   const stateWithInfluence = applyCharacterInfluenceEffects(refreshCharacterInfluence(stateWithCommitments));
   const stateWithInitiatives = createCharacterInitiative(stateWithInfluence);
-  const updatedPhaseState = getOrCreatePhaseState(stateWithInitiatives);
+  const stateWithBreakingPoints = advanceCharacterBreakingPoints(stateWithInitiatives);
+  const updatedPhaseState = getOrCreatePhaseState(stateWithBreakingPoints);
 
-  const events = generatePaddockWeekEvents(stateWithInitiatives);
-  events.push(...generateCharacterRequestEvents(stateWithInitiatives));
-  events.push(...generateCharacterAmbitionEvents(stateWithInitiatives));
-  events.push(...generateCharacterConnectionEvents(stateWithInitiatives));
-  events.push(...generateCharacterDisputeEvents(stateWithInitiatives));
-  events.push(...generateCharacterCommitmentEvents(stateWithInitiatives));
-  events.push(...generateCharacterInfluenceEvents(stateWithInitiatives));
-  events.push(...generateCharacterInitiativeEvents(stateWithInitiatives));
-  events.push(...generateCharacterMandateEvents(stateWithInitiatives));
-  events.push(...narrativeResponseEvents(stateWithInitiatives));
+  const events = generatePaddockWeekEvents(stateWithBreakingPoints);
+  events.push(...generateCharacterRequestEvents(stateWithBreakingPoints));
+  events.push(...generateCharacterAmbitionEvents(stateWithBreakingPoints));
+  events.push(...generateCharacterConnectionEvents(stateWithBreakingPoints));
+  events.push(...generateCharacterDisputeEvents(stateWithBreakingPoints));
+  events.push(...generateCharacterCommitmentEvents(stateWithBreakingPoints));
+  events.push(...generateCharacterInfluenceEvents(stateWithBreakingPoints));
+  events.push(...generateCharacterInitiativeEvents(stateWithBreakingPoints));
+  events.push(...generateCharacterMandateEvents(stateWithBreakingPoints));
+  events.push(...generateCharacterBreakingPointEvents(stateWithBreakingPoints));
+  events.push(...narrativeResponseEvents(stateWithBreakingPoints));
 
   // Track newly announced completed projects.
   const announced = new Set(phaseState.announcedCompletedProjectIds);
@@ -1195,7 +1198,7 @@ export function generateAndStorePaddockEvents(state: GameState): GameState {
   }
 
   const withEvents: GameState = {
-    ...stateWithInitiatives,
+    ...stateWithBreakingPoints,
     careerPhase: {
       ...updatedPhaseState,
       paddockEvents: events,
