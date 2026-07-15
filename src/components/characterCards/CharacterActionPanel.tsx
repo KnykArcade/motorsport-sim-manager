@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import type { GameState } from '../../game/careerState';
 import { useGame } from '../../game/GameContext';
 import {
@@ -13,6 +14,7 @@ import {
   characterOpinionFor,
   characterOpinionLabel,
 } from '../../sim/characterOpinionEngine';
+import { activeAmbitionForTarget } from '../../sim/characterAmbitionEngine';
 
 type Props = {
   state: GameState;
@@ -26,8 +28,16 @@ const TONE_CLASS = {
   Informational: 'border-sky-800/70 bg-sky-950/30 text-sky-200',
 } as const;
 
+const PRESSURE_CLASS = {
+  Calm: 'text-emerald-300',
+  Watchful: 'text-sky-300',
+  Pressing: 'text-amber-300',
+  Ultimatum: 'text-red-300',
+} as const;
+
 export function CharacterActionPanel({ state, target }: Props) {
   const { dispatch } = useGame();
+  const [section, setSection] = useState<'overview' | 'interact' | 'recent'>('overview');
   if (!target) {
     return <p className="text-sm text-neutral-500">This is your own management dossier. Actions are taken with the people around you.</p>;
   }
@@ -39,99 +49,144 @@ export function CharacterActionPanel({ state, target }: Props) {
   const opinion = characterOpinionFor(state, target);
   const allMemories = characterMemoriesForTarget(state, target);
   const memories = allMemories.slice(0, 3);
-
-  if (!actions.length) {
-    return <p className="text-sm text-neutral-500">No direct management actions are available with this character in their current role.</p>;
-  }
+  const ambition = activeAmbitionForTarget(state, target);
 
   return (
     <div className="space-y-4">
-      <section className="rounded-lg border border-neutral-800 bg-neutral-950/70 p-3">
-        <div className="flex flex-wrap items-start justify-between gap-3">
-          <div>
-            <div className="text-[10px] font-bold uppercase tracking-[0.16em] text-neutral-500">Opinion of you</div>
-            <div className="mt-1 text-lg font-semibold text-neutral-100">
-              {characterOpinionLabel(opinion.score)} <span className="text-sm font-normal text-neutral-500">{opinion.score > 0 ? '+' : ''}{opinion.score}</span>
-            </div>
-          </div>
-          <div className="grid grid-cols-3 gap-2 text-center text-[10px]">
-            <div className="rounded border border-neutral-800 bg-neutral-900 px-2 py-1"><span className="block text-neutral-500">Trust</span><strong className="text-neutral-200">{opinion.trust}</strong></div>
-            <div className="rounded border border-neutral-800 bg-neutral-900 px-2 py-1"><span className="block text-neutral-500">Respect</span><strong className="text-neutral-200">{opinion.respect}</strong></div>
-            <div className="rounded border border-neutral-800 bg-neutral-900 px-2 py-1"><span className="block text-neutral-500">Memories</span><strong className="text-neutral-200">{allMemories.length}</strong></div>
-          </div>
-        </div>
-        <div className="mt-3 flex flex-wrap gap-1.5 text-[10px]">
-          <span className="rounded bg-amber-950/60 px-2 py-1 text-amber-200">Agenda: {characterAgendaLabel(opinion.agenda)}</span>
-          {opinion.traits.map((trait) => <span key={trait} className="rounded bg-neutral-900 px-2 py-1 text-neutral-400">{trait}</span>)}
-        </div>
-        {memories.length > 0 && (
-          <div className="mt-3 grid gap-2 lg:grid-cols-3">
-            {memories.map((memory) => (
-              <article key={memory.id} className={`rounded border p-2 ${TONE_CLASS[memory.tone]}`}>
-                <div className="flex items-center justify-between gap-2 text-[10px] font-semibold">
-                  <span>{memory.label}</span>
-                  <span className="opacity-60">{memory.seasonYear} · R{memory.round}</span>
-                </div>
-                <p className="mt-1 line-clamp-2 text-[10px] leading-relaxed text-neutral-300">{memory.description}</p>
-              </article>
-            ))}
-          </div>
-        )}
-      </section>
-
-      <div className="rounded border border-neutral-800 bg-neutral-950/70 p-3">
-        <div className="text-xs font-semibold text-neutral-200">
-          {available ? 'Choose one meaningful interaction this round' : 'Interaction completed for this round'}
-        </div>
-        <p className="mt-1 text-xs text-neutral-500">
-          {available
-            ? 'The result changes the relationship or management state immediately and is recorded in this career.'
-            : `You have already met with ${target.name}. Another action becomes available next round.`}
-        </p>
-      </div>
-
-      <div className="grid gap-3 md:grid-cols-2">
-        {actions.map((action) => (
-          <article key={action.id} className="flex flex-col rounded-lg border border-neutral-800 bg-neutral-900/50 p-3">
-            <h4 className="text-sm font-semibold text-neutral-100">{action.label}</h4>
-            <p className="mt-1 flex-1 text-xs leading-relaxed text-neutral-400">{action.description}</p>
-            <p className="mt-2 text-[11px] text-amber-300/80">Likely effect: {action.effectPreview}</p>
-            <button
-              type="button"
-              disabled={!available}
-              onClick={() => dispatch({ type: 'PERFORM_CHARACTER_INTERACTION', target, action: action.id })}
-              className="mt-3 rounded bg-amber-500 px-3 py-2 text-xs font-semibold text-neutral-950 hover:bg-amber-400 disabled:cursor-not-allowed disabled:bg-neutral-800 disabled:text-neutral-600"
-            >
-              {available ? action.label : 'Used this round'}
-            </button>
-          </article>
+      <div className="flex gap-1 rounded-lg border border-neutral-800 bg-neutral-950/70 p-1">
+        {([
+          ['overview', 'Opinion & ambition'],
+          ['interact', 'Direct actions'],
+          ['recent', 'Recent history'],
+        ] as const).map(([id, label]) => (
+          <button
+            key={id}
+            type="button"
+            onClick={() => setSection(id)}
+            className={`flex-1 rounded px-2 py-2 text-[11px] font-semibold transition-colors ${section === id ? 'bg-amber-500 text-neutral-950' : 'text-neutral-400 hover:bg-neutral-900 hover:text-neutral-200'}`}
+          >
+            {label}
+          </button>
         ))}
       </div>
 
-      {latest && (
-        <section className={`rounded-lg border p-3 ${TONE_CLASS[latest.tone]}`}>
-          <div className="text-[10px] font-bold uppercase tracking-[0.16em]">Latest outcome · {latest.actionLabel}</div>
-          <p className="mt-2 text-xs leading-relaxed text-neutral-200">{latest.outcome}</p>
-          <div className="mt-2 flex flex-wrap gap-1.5">
-            {latest.effects.map((effect) => <span key={effect} className="rounded bg-black/25 px-2 py-1 text-[10px]">{effect}</span>)}
+      {section === 'overview' && (
+        <section className="rounded-lg border border-neutral-800 bg-neutral-950/70 p-3">
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div>
+              <div className="text-[10px] font-bold uppercase tracking-[0.16em] text-neutral-500">Opinion of you</div>
+              <div className="mt-1 text-lg font-semibold text-neutral-100">
+                {characterOpinionLabel(opinion.score)} <span className="text-sm font-normal text-neutral-500">{opinion.score > 0 ? '+' : ''}{opinion.score}</span>
+              </div>
+            </div>
+            <div className="grid grid-cols-3 gap-2 text-center text-[10px]">
+              <div className="rounded border border-neutral-800 bg-neutral-900 px-2 py-1"><span className="block text-neutral-500">Trust</span><strong className="text-neutral-200">{opinion.trust}</strong></div>
+              <div className="rounded border border-neutral-800 bg-neutral-900 px-2 py-1"><span className="block text-neutral-500">Respect</span><strong className="text-neutral-200">{opinion.respect}</strong></div>
+              <div className="rounded border border-neutral-800 bg-neutral-900 px-2 py-1"><span className="block text-neutral-500">Memories</span><strong className="text-neutral-200">{allMemories.length}</strong></div>
+            </div>
           </div>
+          <div className="mt-3 flex flex-wrap gap-1.5 text-[10px]">
+            <span className="rounded bg-amber-950/60 px-2 py-1 text-amber-200">Agenda: {characterAgendaLabel(opinion.agenda)}</span>
+            {opinion.traits.map((trait) => <span key={trait} className="rounded bg-neutral-900 px-2 py-1 text-neutral-400">{trait}</span>)}
+          </div>
+          {ambition && (
+            <div className="mt-3 rounded border border-neutral-800 bg-neutral-900/70 p-2.5">
+              <div className="flex flex-wrap items-start justify-between gap-2">
+                <div>
+                  <div className="text-[10px] font-bold uppercase tracking-[0.14em] text-neutral-500">Active ambition</div>
+                  <strong className="mt-1 block text-xs text-neutral-200">{ambition.title}</strong>
+                </div>
+                <span className={`text-[10px] font-bold uppercase tracking-wide ${PRESSURE_CLASS[ambition.pressure]}`}>{ambition.pressure}</span>
+              </div>
+              <p className="mt-1 text-[11px] leading-relaxed text-neutral-400">{ambition.description}</p>
+              <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-neutral-800">
+                <div className="h-full rounded-full bg-amber-500" style={{ width: `${Math.min(100, Math.round((ambition.currentValue / Math.max(1, ambition.targetValue)) * 100))}%` }} />
+              </div>
+              <div className="mt-1 flex items-center justify-between gap-2 text-[10px] text-neutral-500">
+                <span>{ambition.measureLabel}: {ambition.currentValue}/{ambition.targetValue}</span>
+                <span>Due {ambition.deadlineSeason} · R{ambition.deadlineRound}</span>
+              </div>
+            </div>
+          )}
+          {memories.length > 0 && (
+            <div className="mt-3 grid gap-2 lg:grid-cols-3">
+              {memories.map((memory) => (
+                <article key={memory.id} className={`rounded border p-2 ${TONE_CLASS[memory.tone]}`}>
+                  <div className="flex items-center justify-between gap-2 text-[10px] font-semibold">
+                    <span>{memory.label}</span>
+                    <span className="opacity-60">{memory.seasonYear} · R{memory.round}</span>
+                  </div>
+                  <p className="mt-1 line-clamp-2 text-[10px] leading-relaxed text-neutral-300">{memory.description}</p>
+                </article>
+              ))}
+            </div>
+          )}
         </section>
       )}
 
-      {requestHistory.length > 0 && (
+      {section === 'interact' && (
+        <div className="space-y-3">
+          {!actions.length ? (
+            <p className="rounded border border-neutral-800 bg-neutral-950/70 p-3 text-sm text-neutral-500">No direct management actions are available with this character in their current role.</p>
+          ) : (
+            <>
+              <div className="rounded border border-neutral-800 bg-neutral-950/70 p-3">
+                <div className="text-xs font-semibold text-neutral-200">
+                  {available ? 'Choose one meaningful interaction this round' : 'Interaction completed for this round'}
+                </div>
+                <p className="mt-1 text-xs text-neutral-500">
+                  {available
+                    ? 'The result changes the relationship or management state immediately and is recorded in this career.'
+                    : `You have already met with ${target.name}. Another action becomes available next round.`}
+                </p>
+              </div>
+              <div className="grid gap-3 md:grid-cols-2">
+                {actions.map((action) => (
+                  <article key={action.id} className="flex flex-col rounded-lg border border-neutral-800 bg-neutral-900/50 p-3">
+                    <h4 className="text-sm font-semibold text-neutral-100">{action.label}</h4>
+                    <p className="mt-1 flex-1 text-xs leading-relaxed text-neutral-400">{action.description}</p>
+                    <p className="mt-2 text-[11px] text-amber-300/80">Likely effect: {action.effectPreview}</p>
+                    <button
+                      type="button"
+                      disabled={!available}
+                      onClick={() => dispatch({ type: 'PERFORM_CHARACTER_INTERACTION', target, action: action.id })}
+                      className="mt-3 rounded bg-amber-500 px-3 py-2 text-xs font-semibold text-neutral-950 hover:bg-amber-400 disabled:cursor-not-allowed disabled:bg-neutral-800 disabled:text-neutral-600"
+                    >
+                      {available ? action.label : 'Used this round'}
+                    </button>
+                  </article>
+                ))}
+              </div>
+              {latest && (
+                <section className={`rounded-lg border p-3 ${TONE_CLASS[latest.tone]}`}>
+                  <div className="text-[10px] font-bold uppercase tracking-[0.16em]">Latest outcome · {latest.actionLabel}</div>
+                  <p className="mt-2 text-xs leading-relaxed text-neutral-200">{latest.outcome}</p>
+                  <div className="mt-2 flex flex-wrap gap-1.5">
+                    {latest.effects.map((effect) => <span key={effect} className="rounded bg-black/25 px-2 py-1 text-[10px]">{effect}</span>)}
+                  </div>
+                </section>
+              )}
+            </>
+          )}
+        </div>
+      )}
+
+      {section === 'recent' && (
         <section className="rounded-lg border border-neutral-800 bg-neutral-950/50 p-3">
           <div className="text-[10px] font-bold uppercase tracking-[0.16em] text-neutral-500">Recent requests and decisions</div>
-          <div className="mt-2 space-y-2">
-            {requestHistory.map((record) => (
-              <article key={record.id} className="rounded border border-neutral-800 bg-neutral-900/50 p-2.5">
-                <div className="flex items-center justify-between gap-2 text-xs">
-                  <strong className="text-neutral-200">{record.optionLabel}</strong>
-                  <span className="text-[10px] text-neutral-600">{record.seasonYear} · R{record.round}</span>
-                </div>
-                <p className="mt-1 text-[11px] leading-relaxed text-neutral-400">{record.outcome}</p>
-              </article>
-            ))}
-          </div>
+          {requestHistory.length > 0 ? (
+            <div className="mt-2 grid gap-2 lg:grid-cols-3">
+              {requestHistory.map((record) => (
+                <article key={record.id} className="rounded border border-neutral-800 bg-neutral-900/50 p-2.5">
+                  <div className="flex items-center justify-between gap-2 text-xs">
+                    <strong className="text-neutral-200">{record.optionLabel}</strong>
+                    <span className="text-[10px] text-neutral-600">{record.seasonYear} · R{record.round}</span>
+                  </div>
+                  <p className="mt-1 text-[11px] leading-relaxed text-neutral-400">{record.outcome}</p>
+                </article>
+              ))}
+            </div>
+          ) : <p className="mt-2 text-xs text-neutral-500">No character-request decisions have been recorded with {target.name} yet.</p>}
         </section>
       )}
     </div>

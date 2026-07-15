@@ -40,6 +40,7 @@ import { CURRENT_SAVE_SCHEMA_VERSION } from './saveSchema';
 import { createAIPrincipalAttributes } from '../sim/principalPressureEngine';
 import { ensureCharacterInteractionState } from '../sim/characterInteractionEngine';
 import { ensureCharacterOpinions } from '../sim/characterOpinionEngine';
+import { ensureCharacterAmbitions } from '../sim/characterAmbitionEngine';
 
 // Deep clone via structuredClone (available in modern browsers / Node 18+).
 function clone<T>(value: T): T {
@@ -317,8 +318,8 @@ export function createNewGame(options: NewGameOptions): GameState {
   // brain (archetype, budget, financial health, goal).
   const stateWithAI = { ...stateWithUniverse, aiTeamStates: buildAllAITeamStates(stateWithUniverse) };
   const stateWithTechnicalPrograms = planAITechnicalPrograms(stateWithAI);
-  return ensureCharacterOpinions(syncNarratives(ensureRivalRelationships(ensureFailureInvestigationState(ensurePreseasonHubState(ensureContractClauses({
+  return ensureCharacterAmbitions(ensureCharacterOpinions(syncNarratives(ensureRivalRelationships(ensureFailureInvestigationState(ensurePreseasonHubState(ensureContractClauses({
     ...stateWithTechnicalPrograms,
     phase18: createInitialPhase18FoundationState(stateWithTechnicalPrograms),
-  }))))));
+  })))))));
 }

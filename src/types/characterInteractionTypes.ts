@@ -85,7 +85,7 @@ export type CharacterMemory = {
   teamId?: string;
   seasonYear: number;
   round: number;
-  source: 'Interaction' | 'Request';
+  source: 'Interaction' | 'Request' | 'Ambition';
   label: string;
   description: string;
   tone: CharacterInteractionRecord['tone'];
@@ -94,14 +94,41 @@ export type CharacterMemory = {
   effects: string[];
 };
 
+export type CharacterAmbitionStatus = 'Active' | 'Satisfied' | 'Failed';
+export type CharacterAmbitionPressure = 'Calm' | 'Watchful' | 'Pressing' | 'Ultimatum';
+
+export type CharacterAmbition = {
+  id: string;
+  targetType: CharacterInteractionTargetType;
+  targetId: string;
+  targetName: string;
+  teamId?: string;
+  agenda: CharacterAgenda;
+  title: string;
+  description: string;
+  measureLabel: string;
+  currentValue: number;
+  targetValue: number;
+  startedSeason: number;
+  startedRound: number;
+  deadlineSeason: number;
+  deadlineRound: number;
+  status: CharacterAmbitionStatus;
+  pressure: CharacterAmbitionPressure;
+  resolvedSeason?: number;
+  resolvedRound?: number;
+  outcome?: string;
+};
+
 export type CharacterInteractionState = {
-  version: 3;
+  version: 4;
   history: CharacterInteractionRecord[];
   lastInteractionByTarget: Record<string, { seasonYear: number; round: number }>;
   recruitmentInterest: Record<string, number>;
   requestHistory: CharacterRequestResolution[];
   opinions: Record<string, CharacterOpinion>;
   memories: CharacterMemory[];
+  ambitions: CharacterAmbition[];
 };
 
 export type CharacterRequestKind =

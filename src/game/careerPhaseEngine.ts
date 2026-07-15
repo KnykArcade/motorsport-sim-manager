@@ -32,6 +32,7 @@ import {
 } from '../sim/phase18AdvisorEngine';
 import { narrativeResponseEvents } from '../sim/phase18NarrativeResponseEngine';
 import { generateCharacterRequestEvents } from '../sim/characterRequestEngine';
+import { advanceCharacterAmbitions, generateCharacterAmbitionEvents } from '../sim/characterAmbitionEngine';
 
 export function defaultCareerPhaseState(): CareerPhaseState {
   return {
@@ -1157,24 +1158,28 @@ export function generateAndStorePaddockEvents(state: GameState): GameState {
   const phaseState = getOrCreatePhaseState(state);
   if (phaseState.generatedEventsForCurrentWeek) return state;
 
-  const events = generatePaddockWeekEvents(state);
-  events.push(...generateCharacterRequestEvents(state));
-  events.push(...narrativeResponseEvents(state));
+  const stateWithAmbitions = advanceCharacterAmbitions(state);
+  const updatedPhaseState = getOrCreatePhaseState(stateWithAmbitions);
+
+  const events = generatePaddockWeekEvents(stateWithAmbitions);
+  events.push(...generateCharacterRequestEvents(stateWithAmbitions));
+  events.push(...generateCharacterAmbitionEvents(stateWithAmbitions));
+  events.push(...narrativeResponseEvents(stateWithAmbitions));
 
   // Track newly announced completed projects.
   const announced = new Set(phaseState.announcedCompletedProjectIds);
   for (const e of events) {
     if (e.category === 'development' && e.title.startsWith('Upgrade completed: ')) {
       const projName = e.title.replace('Upgrade completed: ', '');
-      const proj = state.completedDevelopmentProjects.find((p) => p.name === projName);
+      const proj = stateWithAmbitions.completedDevelopmentProjects.find((p) => p.name === projName);
       if (proj) announced.add(proj.id);
     }
   }
 
   const withEvents: GameState = {
-    ...state,
+    ...stateWithAmbitions,
     careerPhase: {
-      ...phaseState,
+      ...updatedPhaseState,
       paddockEvents: events,
       generatedEventsForCurrentWeek: true,
       requiredDecisionsComplete: !events.some((e) => e.isRequiredDecision),
