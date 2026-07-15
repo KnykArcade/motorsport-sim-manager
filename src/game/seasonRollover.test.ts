@@ -1,3 +1,4 @@
+import '../testDataSetup';
 import {
   describe,
   expect,

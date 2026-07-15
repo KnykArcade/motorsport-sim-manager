@@ -1,3 +1,4 @@
+import '../testDataSetup';
 import { describe, expect, it } from 'vitest';
 import { createNewGame } from '../game/initialCareer';
 import type { GameState } from '../game/careerState';

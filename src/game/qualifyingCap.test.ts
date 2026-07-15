@@ -1,3 +1,4 @@
+import '../testDataSetup';
 import { describe, it, expect } from 'vitest';
 import { createNewGame } from './initialCareer';
 import { gameReducer } from './gameReducer';

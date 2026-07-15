@@ -1,3 +1,4 @@
+import '../src/testDataSetup';
 // P6 long-run audit — drives the real-race career audit (runCareerAudit) for 20
 // seasons from F1-1990 and asserts the cleanup's acceptance criteria: no broken
 // roster/market invariants, believable-but-not-locked competitive balance, car

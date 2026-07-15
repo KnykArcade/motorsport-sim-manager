@@ -1,3 +1,4 @@
+import '../testDataSetup';
 import { describe, expect, it } from 'vitest';
 import { AI_RD_NODE_INDEX } from '../data/rd/rdAIIndex.generated';
 import { rdNodeCatalog } from '../data/rd/rdCatalog';
