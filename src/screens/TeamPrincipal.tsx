@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useGame } from '../game/GameContext';
 import { teamById } from '../game/careerState';
 import { Panel } from '../components/Panel';
@@ -13,9 +14,17 @@ import {
   PRINCIPAL_IDENTITY_LABELS,
 } from '../sim/phase18IdentityCultureEngine';
 import { CharacterDossierButton } from '../components/characterCards/CharacterDossier';
+import {
+  PRINCIPAL_COMMAND_TABS,
+  PRINCIPAL_OFFERS_PER_PAGE,
+  principalJobOfferPage,
+  type PrincipalCommandTab,
+} from './teamPrincipalViewModel';
 
 export function TeamPrincipal() {
   const { state, dispatch } = useGame();
+  const [activeTab, setActiveTab] = useState<PrincipalCommandTab>('standing');
+  const [offerPage, setOfferPage] = useState(0);
   if (!state) return null;
 
   const principal = state.principal;
@@ -37,6 +46,9 @@ export function TeamPrincipal() {
   const culture = state.phase18?.teamCultures[state.selectedTeamId];
   const departments = state.phase18?.departmentMoods[state.selectedTeamId];
   const leadershipModifiers = leadershipGameplayModifiers(state);
+  const offerPageCount = Math.max(1, Math.ceil(offers.length / PRINCIPAL_OFFERS_PER_PAGE));
+  const safeOfferPage = Math.min(offerPage, offerPageCount - 1);
+  const visibleOffers = principalJobOfferPage(offers, safeOfferPage);
 
   return (
     <div className="space-y-6">
@@ -48,43 +60,66 @@ export function TeamPrincipal() {
         </p>
       </div>
 
-      <Panel
-        title="Your Standing"
-        actions={<CharacterDossierButton state={state} subject={{ type: 'playerPrincipal' }}>Your Character Card</CharacterDossierButton>}
-      >
-        <div className="flex flex-wrap items-start justify-between gap-4">
-          <div>
-            <div className="text-lg font-bold text-neutral-100">{principal.name}</div>
-            <div className="text-sm text-amber-400">
-              {currentTeam?.name ?? 'Between teams'}
-            </div>
-            <div className="mt-1 text-xs text-neutral-500">
-              Contract: {principal.contractYearsRemaining} year
-              {principal.contractYearsRemaining === 1 ? '' : 's'} remaining
-            </div>
-          </div>
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-            <Metric label="Reputation" value={String(principal.reputation)} />
-            <Metric label="Job Security" value={String(principal.jobSecurity)} tone={securityTone(principal.jobSecurity)} />
-            <Metric label="Seasons" value={String(principal.careerStats.seasonsCompleted)} />
-          </div>
-        </div>
-        <JobSecurityBar value={principal.jobSecurity} />
-      </Panel>
+      <div className="rounded-xl border border-neutral-800 bg-neutral-950/80 p-1.5">
+        <nav className="grid grid-cols-2 gap-1 sm:grid-cols-5" aria-label="Team Principal command center sections">
+          {PRINCIPAL_COMMAND_TABS.map((tab) => (
+            <button
+              key={tab.id}
+              type="button"
+              onClick={() => setActiveTab(tab.id)}
+              title={tab.description}
+              aria-current={activeTab === tab.id ? 'page' : undefined}
+              className={`rounded-lg px-3 py-2 text-xs font-semibold transition-colors ${activeTab === tab.id ? 'bg-amber-500 text-neutral-950' : 'text-neutral-400 hover:bg-neutral-900 hover:text-neutral-100'}`}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </nav>
+        <p className="px-2 pb-1 pt-2 text-[11px] text-neutral-500">
+          {PRINCIPAL_COMMAND_TABS.find((tab) => tab.id === activeTab)?.description}
+        </p>
+      </div>
 
-      <Panel title="Attributes">
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-          <Metric label="Media Image" value={String(principal.attributes.mediaImage)} />
-          <Metric label="Board Confidence" value={String(principal.attributes.boardConfidence)} />
-          <Metric label="Financial Discipline" value={String(principal.attributes.financialDiscipline)} />
-          <Metric label="Driver Management" value={String(principal.attributes.driverManagement)} />
-          <Metric label="Development" value={String(principal.attributes.development)} />
-          <Metric label="Strategy" value={String(principal.attributes.strategy)} />
-        </div>
-      </Panel>
+      {activeTab === 'standing' && (
+        <div className="grid gap-4 xl:grid-cols-[1.05fr_0.95fr]">
+          <Panel
+            title="Your Standing"
+            actions={<CharacterDossierButton state={state} subject={{ type: 'playerPrincipal' }}>Your Character Card</CharacterDossierButton>}
+          >
+            <div className="flex flex-wrap items-start justify-between gap-4">
+              <div>
+                <div className="text-lg font-bold text-neutral-100">{principal.name}</div>
+                <div className="text-sm text-amber-400">
+                  {currentTeam?.name ?? 'Between teams'}
+                </div>
+                <div className="mt-1 text-xs text-neutral-500">
+                  Contract: {principal.contractYearsRemaining} year
+                  {principal.contractYearsRemaining === 1 ? '' : 's'} remaining
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+                <Metric label="Reputation" value={String(principal.reputation)} />
+                <Metric label="Job Security" value={String(principal.jobSecurity)} tone={securityTone(principal.jobSecurity)} />
+                <Metric label="Seasons" value={String(principal.careerStats.seasonsCompleted)} />
+              </div>
+            </div>
+            <JobSecurityBar value={principal.jobSecurity} />
+          </Panel>
 
-      {identity && culture && departments && (
-        <>
+          <Panel title="Attributes">
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+              <Metric label="Media Image" value={String(principal.attributes.mediaImage)} />
+              <Metric label="Board Confidence" value={String(principal.attributes.boardConfidence)} />
+              <Metric label="Financial Discipline" value={String(principal.attributes.financialDiscipline)} />
+              <Metric label="Driver Management" value={String(principal.attributes.driverManagement)} />
+              <Metric label="Development" value={String(principal.attributes.development)} />
+              <Metric label="Strategy" value={String(principal.attributes.strategy)} />
+            </div>
+          </Panel>
+        </div>
+      )}
+
+      {identity && activeTab === 'identity' && (
           <Panel title="Leadership Identity">
             <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(280px,0.8fr)]">
               <div>
@@ -126,7 +161,9 @@ export function TeamPrincipal() {
               </div>
             )}
           </Panel>
+      )}
 
+      {culture && activeTab === 'culture' && (
           <Panel title="Team Culture">
             <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
               <div>
@@ -151,7 +188,9 @@ export function TeamPrincipal() {
               <ModifierCard label="Race preparation" value={leadershipModifiers.preparationEffectMultiplier - 1} />
             </div>
           </Panel>
+      )}
 
+      {departments && activeTab === 'departments' && (
           <Panel title="Department Confidence">
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
               {DEPARTMENT_IDS.map((departmentId) => {
@@ -169,39 +208,51 @@ export function TeamPrincipal() {
               })}
             </div>
           </Panel>
-        </>
       )}
 
-      <Panel title="Career Record">
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
-          <Metric label="Race Wins" value={String(principal.careerStats.raceWins)} />
-          <Metric label="Podiums" value={String(principal.careerStats.podiums)} />
-          <Metric label="Drivers' Titles" value={String(principal.careerStats.driverTitles)} />
-          <Metric label="Constructors' Titles" value={String(principal.careerStats.constructorTitles)} />
-          <Metric label="Teams Managed" value={String(principal.careerStats.teamsManaged.length)} />
-        </div>
-      </Panel>
+      {activeTab === 'career' && (
+        <div className="space-y-4">
+          <Panel title="Career Record">
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
+              <Metric label="Race Wins" value={String(principal.careerStats.raceWins)} />
+              <Metric label="Podiums" value={String(principal.careerStats.podiums)} />
+              <Metric label="Drivers' Titles" value={String(principal.careerStats.driverTitles)} />
+              <Metric label="Constructors' Titles" value={String(principal.careerStats.constructorTitles)} />
+              <Metric label="Teams Managed" value={String(principal.careerStats.teamsManaged.length)} />
+            </div>
+          </Panel>
 
-      <Panel title="Job Market">
-        {offers.length === 0 ? (
-          <p className="text-sm text-neutral-400">
-            No rival teams are approaching you right now. Strong results draw more interest.
-          </p>
-        ) : (
-          <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
-            {offers.map((offer) => (
-              <OfferCard
-                key={offer.id}
-                offer={offer}
-                teamName={teamById(state, offer.teamId)?.name ?? offer.teamId}
-                accepted={accepted === offer.id}
-                onAccept={() => dispatch({ type: 'ACCEPT_JOB_OFFER', offerId: offer.id })}
-                onDecline={() => dispatch({ type: 'DECLINE_JOB_OFFER', offerId: offer.id })}
-              />
-            ))}
-          </div>
-        )}
-      </Panel>
+          <Panel title="Job Market">
+            {offers.length === 0 ? (
+              <p className="text-sm text-neutral-400">
+                No rival teams are approaching you right now. Strong results draw more interest.
+              </p>
+            ) : (
+              <>
+                <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+                  {visibleOffers.map((offer) => (
+                    <OfferCard
+                      key={offer.id}
+                      offer={offer}
+                      teamName={teamById(state, offer.teamId)?.name ?? offer.teamId}
+                      accepted={accepted === offer.id}
+                      onAccept={() => dispatch({ type: 'ACCEPT_JOB_OFFER', offerId: offer.id })}
+                      onDecline={() => dispatch({ type: 'DECLINE_JOB_OFFER', offerId: offer.id })}
+                    />
+                  ))}
+                </div>
+                {offerPageCount > 1 && (
+                  <div className="mt-3 flex items-center justify-between gap-3 border-t border-neutral-800 pt-3">
+                    <Button variant="secondary" className="px-3 py-1 text-xs" onClick={() => setOfferPage(Math.max(0, safeOfferPage - 1))} disabled={safeOfferPage === 0}>Previous</Button>
+                    <span className="text-xs text-neutral-500">Offer page {safeOfferPage + 1} of {offerPageCount}</span>
+                    <Button variant="secondary" className="px-3 py-1 text-xs" onClick={() => setOfferPage(Math.min(offerPageCount - 1, safeOfferPage + 1))} disabled={safeOfferPage >= offerPageCount - 1}>Next</Button>
+                  </div>
+                )}
+              </>
+            )}
+          </Panel>
+        </div>
+      )}
     </div>
   );
 }
