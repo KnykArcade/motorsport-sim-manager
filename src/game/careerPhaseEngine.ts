@@ -41,6 +41,7 @@ import { createCharacterInitiative, generateCharacterInitiativeEvents } from '..
 import { advanceCharacterMandates, generateCharacterMandateEvents } from '../sim/characterMandateEngine';
 import { advanceCharacterBreakingPoints, generateCharacterBreakingPointEvents } from '../sim/characterBreakingPointEngine';
 import { generateCharacterFutureIntentEvents, generateExpiringDriverContractEvents, generateExpiringStaffContractEvents, refreshCharacterFutureIntentions } from '../sim/characterFutureIntentEngine';
+import { generateCharacterMarketApproachEvents } from '../sim/characterMarketApproachEngine';
 
 export function defaultCareerPhaseState(): CareerPhaseState {
   return {
@@ -1188,6 +1189,7 @@ export function generateAndStorePaddockEvents(state: GameState): GameState {
   events.push(...generateCharacterMandateEvents(stateWithFutureIntentions));
   events.push(...generateCharacterBreakingPointEvents(stateWithFutureIntentions));
   events.push(...generateCharacterFutureIntentEvents(stateWithFutureIntentions));
+  events.push(...generateCharacterMarketApproachEvents(stateWithFutureIntentions));
   events.push(...generateExpiringDriverContractEvents(stateWithFutureIntentions));
   events.push(...generateExpiringStaffContractEvents(stateWithFutureIntentions));
   events.push(...narrativeResponseEvents(stateWithFutureIntentions));

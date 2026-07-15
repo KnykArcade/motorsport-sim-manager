@@ -336,6 +336,8 @@ export type CharacterInteractionState = {
 export type CharacterRequestKind =
   | 'DriverConcern'
   | 'StaffSupport'
+  | 'DriverMarketApproach'
+  | 'StaffMarketApproach'
   | 'OwnerReview'
   | 'RivalApproach';
 

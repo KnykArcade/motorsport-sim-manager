@@ -15,6 +15,7 @@ import { addRivalRelationshipEvent, rivalRelationship } from './phase18RivalRela
 import { characterOpinionFor, recordCharacterMemory } from './characterOpinionEngine';
 import { propagateCharacterReaction } from './characterConnectionEngine';
 import { createCharacterCommitmentFromRequest } from './characterCommitmentEngine';
+import { resolveCharacterMarketApproach } from './characterMarketApproachEngine';
 
 const STAFF_DEPARTMENT: Record<StaffRole, DepartmentId> = {
   'Technical Director': 'Technical',
@@ -403,6 +404,8 @@ export function resolveCharacterRequest(state: GameState, event: PaddockEvent, o
     ? resolveDriverRequest(state, event, optionId)
     : meta.requestKind === 'StaffSupport'
       ? resolveStaffRequest(state, event, optionId)
+      : meta.requestKind === 'DriverMarketApproach' || meta.requestKind === 'StaffMarketApproach'
+        ? resolveCharacterMarketApproach(state, event, optionId)
       : meta.requestKind === 'OwnerReview'
         ? resolveOwnerRequest(state, event, optionId)
         : resolveRivalRequest(state, event, optionId);
