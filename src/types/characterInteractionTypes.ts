@@ -85,7 +85,7 @@ export type CharacterMemory = {
   teamId?: string;
   seasonYear: number;
   round: number;
-  source: 'Interaction' | 'Request' | 'Ambition' | 'Connection';
+  source: 'Interaction' | 'Request' | 'Ambition' | 'Connection' | 'Dispute';
   label: string;
   description: string;
   tone: CharacterInteractionRecord['tone'];
@@ -142,6 +142,24 @@ export type CharacterConnection = {
   lastReportedBand: CharacterConnectionBand;
   lastUpdatedSeason: number;
   lastUpdatedRound: number;
+  manualAffinityAdjustment?: number;
+};
+
+export type CharacterDisputeStatus = 'Active' | 'Mediated' | 'Resolved' | 'Escalating';
+
+export type CharacterDispute = {
+  id: string;
+  connectionId: string;
+  characterA: CharacterInteractionTarget;
+  characterB: CharacterInteractionTarget;
+  issue: string;
+  status: CharacterDisputeStatus;
+  intensity: number;
+  startedSeason: number;
+  startedRound: number;
+  lastReviewedSeason?: number;
+  lastReviewedRound?: number;
+  resolutionLabel?: string;
 };
 
 export type CharacterFaction = {
@@ -158,7 +176,7 @@ export type CharacterFaction = {
 };
 
 export type CharacterInteractionState = {
-  version: 5;
+  version: 6;
   history: CharacterInteractionRecord[];
   lastInteractionByTarget: Record<string, { seasonYear: number; round: number }>;
   recruitmentInterest: Record<string, number>;
@@ -168,6 +186,7 @@ export type CharacterInteractionState = {
   ambitions: CharacterAmbition[];
   connections: CharacterConnection[];
   factions: CharacterFaction[];
+  disputes: CharacterDispute[];
 };
 
 export type CharacterRequestKind =

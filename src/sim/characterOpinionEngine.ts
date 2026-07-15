@@ -55,7 +55,7 @@ export function characterOpinionKey(target: Pick<CharacterInteractionTarget, 'ty
 
 function interactionState(state?: CharacterInteractionState): CharacterInteractionState {
   return {
-    version: 5,
+    version: 6,
     history: state?.history ?? [],
     lastInteractionByTarget: state?.lastInteractionByTarget ?? {},
     recruitmentInterest: state?.recruitmentInterest ?? {},
@@ -65,6 +65,7 @@ function interactionState(state?: CharacterInteractionState): CharacterInteracti
     ambitions: state?.ambitions ?? [],
     connections: state?.connections ?? [],
     factions: state?.factions ?? [],
+    disputes: state?.disputes ?? [],
   };
 }
 

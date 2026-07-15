@@ -91,7 +91,7 @@ describe('character interaction engine', () => {
     const legacy = structuredClone(state);
     delete legacy.characterInteractions;
     expect(migrateGameState(legacy).characterInteractions).toEqual({
-      version: 5,
+      version: 6,
       history: [],
       lastInteractionByTarget: {},
       recruitmentInterest: {},
@@ -101,6 +101,7 @@ describe('character interaction engine', () => {
       ambitions: expect.any(Array),
       connections: expect.any(Array),
       factions: expect.any(Array),
+      disputes: expect.any(Array),
     });
 
     const driver = state.drivers.find((candidate) => candidate.teamId === state.selectedTeamId)!;
