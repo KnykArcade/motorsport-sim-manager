@@ -21,10 +21,16 @@ import { contractClauseLabel } from '../sim/phase18ContractClauseEngine';
 import { CharacterDossierButton } from '../components/characterCards/CharacterDossier';
 import type { GameState } from '../game/careerState';
 import { characterFutureIntentLabel } from '../sim/characterFutureIntentEngine';
+import { staffEmployer, staffPoachingCompensation } from '../sim/aiStaffRosterEngine';
+
+type StaffMarketView = 'available' | 'rivals';
+const STAFF_PAGE_SIZE = 9;
 
 export function Staff() {
   const { state, dispatch } = useGame();
   const [activeRole, setActiveRole] = useState<StaffRole>(STAFF_ROLES[0]);
+  const [marketView, setMarketView] = useState<StaffMarketView>('available');
+  const [candidatePage, setCandidatePage] = useState(0);
   if (!state) return null;
 
   const budget = teamById(state, state.selectedTeamId)?.budget ?? 0;
@@ -32,6 +38,9 @@ export function Staff() {
   const hiredById = new Set(roster.map((s) => s.id));
   const byRole = staffByRole(roster);
   const pool = getStaffPool(state.seasonYear, state.series);
+  const employerByStaffId = new Map(
+    Object.entries(state.aiStaff ?? {}).flatMap(([teamId, staff]) => staff.map((member) => [member.id, teamId] as const)),
+  );
   const contractOfferNews = state.news.filter((item) => item.id.startsWith('news-staff-contract-offer-'));
   const racesRemaining = Math.max(1, state.calendar.length - state.currentRaceIndex);
 
@@ -47,12 +56,15 @@ export function Staff() {
 
   const current = byRole[activeRole];
   const roleCandidates = pool
-    .filter((s) => s.role === activeRole)
+    .filter((s) => s.role === activeRole && (marketView === 'rivals' ? employerByStaffId.has(s.id) : !employerByStaffId.has(s.id)))
     .map((s) => current?.id === s.id ? current : s);
   const candidates = [
-    ...(current && !roleCandidates.some((candidate) => candidate.id === current.id) ? [current] : []),
+    ...(marketView === 'available' && current && !roleCandidates.some((candidate) => candidate.id === current.id) ? [current] : []),
     ...roleCandidates,
   ].sort((a, b) => b.rating - a.rating);
+  const pageCount = Math.max(1, Math.ceil(candidates.length / STAFF_PAGE_SIZE));
+  const page = Math.min(candidatePage, pageCount - 1);
+  const visibleCandidates = candidates.slice(page * STAFF_PAGE_SIZE, (page + 1) * STAFF_PAGE_SIZE);
 
   return (
     <div className="space-y-6">
@@ -131,7 +143,7 @@ export function Staff() {
             <button
               key={role}
               type="button"
-              onClick={() => setActiveRole(role)}
+              onClick={() => { setActiveRole(role); setCandidatePage(0); }}
               className={`-mb-px rounded-t-md border-b-2 px-3 py-2 text-sm font-medium transition-colors ${
                 isActive
                   ? 'border-amber-500 text-neutral-100'
@@ -150,18 +162,29 @@ export function Staff() {
         })}
       </div>
 
-      <Panel title={activeRole}>
-        <p className="mb-3 text-xs text-neutral-500">{ROLE_EFFECT[activeRole]}</p>
+      <div className="flex gap-1 rounded-lg border border-neutral-800 bg-neutral-950/70 p-1" aria-label="Staff market sections">
+        <button type="button" onClick={() => { setMarketView('available'); setCandidatePage(0); }} className={`flex-1 rounded px-3 py-2 text-xs font-semibold ${marketView === 'available' ? 'bg-emerald-500/15 text-emerald-300' : 'text-neutral-500 hover:text-neutral-200'}`}>Available Market</button>
+        <button type="button" onClick={() => { setMarketView('rivals'); setCandidatePage(0); }} className={`flex-1 rounded px-3 py-2 text-xs font-semibold ${marketView === 'rivals' ? 'bg-orange-500/15 text-orange-300' : 'text-neutral-500 hover:text-neutral-200'}`}>Rival Team Staff</button>
+      </div>
+
+      <Panel title={`${activeRole} · ${marketView === 'available' ? 'Available' : 'Employed by Rivals'}`}>
+        <p className="mb-3 text-xs text-neutral-500">{marketView === 'available' ? ROLE_EFFECT[activeRole] : 'These specialists are under contract. Hiring one pays their employer compensation and will affect the relationship between the teams.'}</p>
         <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
-          {candidates.map((s) => (
+          {visibleCandidates.map((s) => {
+            const employerTeamId = employerByStaffId.get(s.id) ?? staffEmployer(state.aiStaff, s.id);
+            const employer = state.teams.find((team) => team.id === employerTeamId);
+            const poachingCost = employerTeamId ? staffPoachingCompensation(s) : 0;
+            return (
             <StaffCard
               key={s.id}
               state={state}
               s={s}
               hired={hiredById.has(s.id)}
               current={current?.id === s.id}
-              affordable={toMoney(s.signingFee) + (current && current.id !== s.id ? staffReleaseCost(current) : 0) <= budget}
+              affordable={toMoney(s.signingFee) + poachingCost + (current && current.id !== s.id ? staffReleaseCost(current) : 0) <= budget}
               replacementCost={current && current.id !== s.id ? staffReleaseCost(current) : 0}
+              employerName={employer?.name}
+              poachingCost={poachingCost}
               extensionCost={(member, years, multiplier) => staffExtensionSigningFee(member, years, racesRemaining, state.calendar.length, multiplier)}
               latestOffer={contractOfferNews.find((item) => item.id.includes(`-${s.id}-`))}
               futureIntent={state.characterInteractions?.futureIntentions.find((entry) => entry.target.type === 'Staff' && entry.target.id === s.id)}
@@ -169,8 +192,10 @@ export function Staff() {
               onFire={() => dispatch({ type: 'FIRE_STAFF', staffId: s.id })}
               onExtend={(years, offerMultiplier) => dispatch({ type: 'EXTEND_STAFF_CONTRACT', staffId: s.id, years, offerMultiplier })}
             />
-          ))}
+          );})}
         </div>
+        {visibleCandidates.length === 0 && <p className="text-sm text-neutral-500">No {activeRole.toLowerCase()} candidates are listed in this section.</p>}
+        {pageCount > 1 && <div className="mt-4 flex items-center justify-center gap-3 border-t border-neutral-800 pt-3"><Button variant="ghost" disabled={page === 0} onClick={() => setCandidatePage(Math.max(0, page - 1))}>Previous</Button><span className="text-xs text-neutral-500">Page {page + 1} of {pageCount} · {candidates.length} candidates</span><Button variant="ghost" disabled={page >= pageCount - 1} onClick={() => setCandidatePage(Math.min(pageCount - 1, page + 1))}>Next</Button></div>}
       </Panel>
     </div>
   );
@@ -183,6 +208,8 @@ function StaffCard({
   current,
   affordable,
   replacementCost,
+  employerName,
+  poachingCost,
   extensionCost,
   latestOffer,
   futureIntent,
@@ -196,6 +223,8 @@ function StaffCard({
   current: boolean;
   affordable: boolean;
   replacementCost: number;
+  employerName?: string;
+  poachingCost: number;
   extensionCost: (member: StaffMember, years: number, offerMultiplier: number) => number;
   latestOffer?: GameState['news'][number];
   futureIntent?: NonNullable<GameState['characterInteractions']>['futureIntentions'][number];
@@ -224,13 +253,14 @@ function StaffCard({
             on staff
           </span>
         )}
+        {!current && employerName && <span className="rounded bg-orange-500/15 px-1.5 py-0.5 text-[10px] font-semibold text-orange-300">{employerName}</span>}
       </div>
       <div className="mb-2">
         <StatBar label="Rating" value={staffRatingOutOfTen(s.rating)} max={10} />
       </div>
       <div className="grid grid-cols-2 gap-2 text-xs">
         <Stat label="Salary/yr">{formatMoney(toMoney(s.salary))}</Stat>
-        <Stat label={current ? 'Contract' : 'Signing'}>{current ? `${yearsLeft} yr${yearsLeft === 1 ? '' : 's'} left` : formatMoney(toMoney(s.signingFee))}</Stat>
+        <Stat label={current ? 'Contract' : employerName ? 'Poaching total' : 'Signing'}>{current ? `${yearsLeft} yr${yearsLeft === 1 ? '' : 's'} left` : formatMoney(toMoney(s.signingFee) + poachingCost)}</Stat>
       </div>
       <p className="mt-2 text-[11px] italic text-neutral-500">{s.bio}</p>
       <CharacterDossierButton state={state} subject={{ type: 'staff', staff: s }} className="mt-2 w-full">
@@ -257,7 +287,7 @@ function StaffCard({
             disabled={!affordable}
             onClick={onHire}
           >
-            {affordable ? `Hire${replacementCost > 0 ? ` + ${formatMoney(replacementCost)} replacement cost` : ''}` : 'Insufficient budget'}
+            {affordable ? `${employerName ? `Poach from ${employerName}` : 'Hire'}${replacementCost > 0 ? ` + ${formatMoney(replacementCost)} replacement cost` : ''}` : 'Insufficient budget'}
           </Button>
         )}
       </div>

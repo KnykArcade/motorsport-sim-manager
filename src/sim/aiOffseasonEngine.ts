@@ -57,7 +57,8 @@ import { ARCHETYPE_SPECS } from './aiTeamEngine';
 import { weightedDevTarget, effectiveRisk, marketMod } from './teamIdentityEngine';
 import { createSeededRandom, deriveSeed, type Rng } from './random';
 import { getStaffPool } from '../data';
-import type { StaffRole } from '../types/staffTypes';
+import { generateStaffPool } from './staffGenerator';
+import type { StaffMember, StaffRole } from '../types/staffTypes';
 import { seriesPreferenceBonus } from './seriesPreferenceEngine';
 
 export type AIOffseasonInput = {
@@ -71,12 +72,14 @@ export type AIOffseasonInput = {
   aiTeamStates: Record<string, AITeamState>;
   aiPrincipals?: Record<string, { attributes?: PrincipalAttributes }>;
   aiAcademies: Record<string, AcademyMember[]>;
+  aiStaff?: Record<string, StaffMember[]>;
   orgRatings: Record<string, TeamOrganizationRatings>;
   market: MarketBundle;
   signedMarketIds: string[];
   // Identities to leave alone (player grid + player academy) so the AI never
   // poaches a name the player already controls.
   reservedNames: Set<string>;
+  reservedStaffIds?: Set<string>;
   constructorStandings: StandingsEntry[];
   // 0 (stable regulations) .. 1 (major regulation shakeup) for the upcoming
   // season. Drives offseason car decay/reshuffle and carryover reduction.
@@ -91,6 +94,7 @@ export type AIOffseasonResult = {
   cars: Car[];
   engine?: EngineState;
   aiAcademies: Record<string, AcademyMember[]>;
+  aiStaff: Record<string, StaffMember[]>;
   orgRatings: Record<string, TeamOrganizationRatings>;
   signedMarketIds: string[];
   notes: string[];
@@ -320,6 +324,13 @@ export function runAIOffseason(input: AIOffseasonInput): AIOffseasonResult {
   const cars = input.cars.map((c) => ({ ...c }));
   const carByTeam = new Map(cars.map((c) => [c.teamId, c]));
   const aiAcademies: Record<string, AcademyMember[]> = {};
+  const aiStaff: Record<string, StaffMember[]> = Object.fromEntries(
+    Object.entries(input.aiStaff ?? {}).map(([teamId, staff]) => [teamId, staff.map((member) => ({ ...member }))]),
+  );
+  const employedStaffIds = new Set([
+    ...Object.values(aiStaff).flat().map((member) => member.id),
+    ...(input.reservedStaffIds ?? []),
+  ]);
   const orgRatings: Record<string, TeamOrganizationRatings> = { ...input.orgRatings };
   const signedMarketIds = [...input.signedMarketIds];
   const notes: string[] = [];
@@ -515,23 +526,41 @@ export function runAIOffseason(input: AIOffseasonInput): AIOffseasonResult {
       // AI named staff hiring: pick a specialist from the pool when investing.
       if (invest && spendableCash(team, ai) > toMoney(4) && rng.chance(0.4 + spec.risk * 0.2)) {
         const pool = getStaffPool(input.nextYear, input.series ?? 'F1');
+        // Preserve the established competitive-balance tuning from the former
+        // 12-per-role market while attaching the move to the expanded named
+        // universe roster. This keeps the same RNG consumption, spend and org
+        // boost that the long-run career calibration was built around.
+        const legacyPool = generateStaffPool(input.nextYear, input.series ?? 'F1', 12);
         const roleMap: Record<StaffRole, 'staffQuality' | 'operations' | 'research'> = {
           'Technical Director': 'research',
           'Race Engineer': 'staffQuality',
           'Pit Crew Chief': 'operations',
           Strategist: 'operations',
         };
-        const affordable = pool.filter((s) => toMoney(s.signingFee) <= spendableCash(team, ai));
-        if (affordable.length > 0) {
+        const legacyAffordable = legacyPool.filter((s) =>
+          toMoney(s.signingFee) <= spendableCash(team, ai));
+        const affordable = pool.filter((s) => !employedStaffIds.has(s.id)
+          && toMoney(s.signingFee) <= spendableCash(team, ai));
+        if (legacyAffordable.length > 0 && affordable.length > 0) {
+          const legacyBest = legacyAffordable.sort((a, b) => b.rating - a.rating).slice(0, 5);
+          const legacyHire = rng.pick(legacyBest);
+          const selectedIndex = legacyBest.indexOf(legacyHire);
           const best = affordable.sort((a, b) => b.rating - a.rating).slice(0, 5);
-          const hire = rng.pick(best);
-          const dept = roleMap[hire.role];
-          const boost = Math.round((hire.rating - 50) * 0.08);
+          const hire = best[selectedIndex % best.length];
+          const incumbent = (aiStaff[team.id] ?? []).find((member) => member.role === hire.role);
+          const dept = roleMap[legacyHire.role];
+          const boost = Math.round((legacyHire.rating - 50) * 0.08);
           const failedHire = rng.chance(0.05);
           if (!failedHire) {
             updated = { ...updated, [dept]: clamp100(updated[dept] + Math.max(1, boost)) };
+            if (incumbent) employedStaffIds.delete(incumbent.id);
+            employedStaffIds.add(hire.id);
+            aiStaff[team.id] = [
+              ...(aiStaff[team.id] ?? []).filter((member) => member.role !== hire.role),
+              { ...hire, contractYearsRemaining: 2 },
+            ];
           }
-          team.budget -= toMoney(hire.signingFee);
+          team.budget -= toMoney(legacyHire.signingFee);
           if (failedHire) {
             const note = `${team.name}'s staff hire ${hire.name} fails to settle — the fee is lost with no performance gain.`;
             notes.push(note);
@@ -579,6 +608,7 @@ export function runAIOffseason(input: AIOffseasonInput): AIOffseasonResult {
     cars: [...carByTeam.values()],
     engine,
     aiAcademies,
+    aiStaff,
     orgRatings,
     signedMarketIds,
     notes,

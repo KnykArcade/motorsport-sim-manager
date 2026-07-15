@@ -95,6 +95,7 @@ export type GameState = {
   // Named specialists who have moved to AI teams. AI departments remain
   // abstract, but these people retain a real, queryable destination.
   aiStaff?: Record<string, StaffMember[]>;
+  aiStaffInitialized?: boolean;
 
   // Per-race history + lap-time archive (Phase D). Optional for save compat.
   raceArchive?: RaceArchiveEntry[];

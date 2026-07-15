@@ -47,6 +47,7 @@ import { ensureCharacterInitiatives } from '../sim/characterInitiativeEngine';
 import { ensureCharacterMandates } from '../sim/characterMandateEngine';
 import { ensureCharacterBreakingPoints } from '../sim/characterBreakingPointEngine';
 import { ensureCharacterFutureIntentions } from '../sim/characterFutureIntentEngine';
+import { ensureAIStaffRosters } from '../sim/aiStaffRosterEngine';
 
 // Deep clone via structuredClone (available in modern browsers / Node 18+).
 function clone<T>(value: T): T {
@@ -305,6 +306,8 @@ export function createNewGame(options: NewGameOptions): GameState {
   const normalizedState = enforceRosters(baseState).state;
   const stateWithUniverse: GameState = {
     ...normalizedState,
+    aiStaff: ensureAIStaffRosters(undefined, false, normalizedState.teams, normalizedState.selectedTeamId, normalizedState.seasonYear, normalizedState.series),
+    aiStaffInitialized: true,
     teamParts: createInitialTeamPartsMap(
       normalizedState.teams,
       normalizedState.drivers,

@@ -74,16 +74,12 @@ export function executePersonnelMoves(
   teams: Team[],
   nextYear: number,
   sourceDrivers: Driver[] = state.drivers,
+  sourceAIStaff: Record<string, StaffMember[]> = state.aiStaff ?? {},
 ): PersonnelMoveExecution {
   let nextDrivers = drivers.map((driver) => ({ ...driver }));
   let nextTeams = teams.map((team) => ({ ...team, driverIds: [...team.driverIds] }));
   const aiStaff = Object.fromEntries(
-    Object.entries(state.aiStaff ?? {}).map(([teamId, staff]) => [
-      teamId,
-      staff
-        .map((member) => ({ ...member, contractYearsRemaining: Math.max(0, (member.contractYearsRemaining ?? 2) - 1) }))
-        .filter((member) => (member.contractYearsRemaining ?? 0) > 0),
-    ]),
+    Object.entries(sourceAIStaff).map(([teamId, staff]) => [teamId, staff.map((member) => ({ ...member }))]),
   );
   const notes: string[] = [];
   const agreements = ensureCharacterInteractionState(state.characterInteractions).personnelMoves.map((entry) => ({ ...entry }));
