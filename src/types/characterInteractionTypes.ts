@@ -44,12 +44,64 @@ export type CharacterInteractionRecord = {
   effects: string[];
 };
 
+export type CharacterAgenda =
+  | 'CompetitiveStatus'
+  | 'CareerSecurity'
+  | 'TeamHarmony'
+  | 'FinancialReward'
+  | 'Recognition'
+  | 'TechnicalFreedom'
+  | 'Resources'
+  | 'Stability'
+  | 'ImmediateResults'
+  | 'FinancialDiscipline'
+  | 'LongTermGrowth'
+  | 'Prestige'
+  | 'Tradition'
+  | 'Cooperation'
+  | 'PoliticalInfluence'
+  | 'TechnicalAdvantage'
+  | 'PublicStanding';
+
+export type CharacterOpinion = {
+  targetType: CharacterInteractionTargetType;
+  targetId: string;
+  targetName: string;
+  teamId?: string;
+  score: number;
+  trust: number;
+  respect: number;
+  agenda: CharacterAgenda;
+  traits: string[];
+  lastUpdatedSeason: number;
+  lastUpdatedRound: number;
+};
+
+export type CharacterMemory = {
+  id: string;
+  targetType: CharacterInteractionTargetType;
+  targetId: string;
+  targetName: string;
+  teamId?: string;
+  seasonYear: number;
+  round: number;
+  source: 'Interaction' | 'Request';
+  label: string;
+  description: string;
+  tone: CharacterInteractionRecord['tone'];
+  strength: 1 | 2 | 3 | 4 | 5;
+  opinionDelta: number;
+  effects: string[];
+};
+
 export type CharacterInteractionState = {
-  version: 2;
+  version: 3;
   history: CharacterInteractionRecord[];
   lastInteractionByTarget: Record<string, { seasonYear: number; round: number }>;
   recruitmentInterest: Record<string, number>;
   requestHistory: CharacterRequestResolution[];
+  opinions: Record<string, CharacterOpinion>;
+  memories: CharacterMemory[];
 };
 
 export type CharacterRequestKind =

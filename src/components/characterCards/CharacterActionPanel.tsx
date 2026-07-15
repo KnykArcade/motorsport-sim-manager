@@ -7,6 +7,12 @@ import {
   isCharacterInteractionAvailable,
 } from '../../sim/characterInteractionEngine';
 import type { CharacterInteractionTarget } from '../../types/characterInteractionTypes';
+import {
+  characterAgendaLabel,
+  characterMemoriesForTarget,
+  characterOpinionFor,
+  characterOpinionLabel,
+} from '../../sim/characterOpinionEngine';
 
 type Props = {
   state: GameState;
@@ -30,6 +36,9 @@ export function CharacterActionPanel({ state, target }: Props) {
   const available = isCharacterInteractionAvailable(state, target);
   const latest = interactionHistoryForTarget(state, target)[0];
   const requestHistory = characterRequestHistoryForTarget(state, target).slice(0, 3);
+  const opinion = characterOpinionFor(state, target);
+  const allMemories = characterMemoriesForTarget(state, target);
+  const memories = allMemories.slice(0, 3);
 
   if (!actions.length) {
     return <p className="text-sm text-neutral-500">No direct management actions are available with this character in their current role.</p>;
@@ -37,6 +46,39 @@ export function CharacterActionPanel({ state, target }: Props) {
 
   return (
     <div className="space-y-4">
+      <section className="rounded-lg border border-neutral-800 bg-neutral-950/70 p-3">
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div>
+            <div className="text-[10px] font-bold uppercase tracking-[0.16em] text-neutral-500">Opinion of you</div>
+            <div className="mt-1 text-lg font-semibold text-neutral-100">
+              {characterOpinionLabel(opinion.score)} <span className="text-sm font-normal text-neutral-500">{opinion.score > 0 ? '+' : ''}{opinion.score}</span>
+            </div>
+          </div>
+          <div className="grid grid-cols-3 gap-2 text-center text-[10px]">
+            <div className="rounded border border-neutral-800 bg-neutral-900 px-2 py-1"><span className="block text-neutral-500">Trust</span><strong className="text-neutral-200">{opinion.trust}</strong></div>
+            <div className="rounded border border-neutral-800 bg-neutral-900 px-2 py-1"><span className="block text-neutral-500">Respect</span><strong className="text-neutral-200">{opinion.respect}</strong></div>
+            <div className="rounded border border-neutral-800 bg-neutral-900 px-2 py-1"><span className="block text-neutral-500">Memories</span><strong className="text-neutral-200">{allMemories.length}</strong></div>
+          </div>
+        </div>
+        <div className="mt-3 flex flex-wrap gap-1.5 text-[10px]">
+          <span className="rounded bg-amber-950/60 px-2 py-1 text-amber-200">Agenda: {characterAgendaLabel(opinion.agenda)}</span>
+          {opinion.traits.map((trait) => <span key={trait} className="rounded bg-neutral-900 px-2 py-1 text-neutral-400">{trait}</span>)}
+        </div>
+        {memories.length > 0 && (
+          <div className="mt-3 grid gap-2 lg:grid-cols-3">
+            {memories.map((memory) => (
+              <article key={memory.id} className={`rounded border p-2 ${TONE_CLASS[memory.tone]}`}>
+                <div className="flex items-center justify-between gap-2 text-[10px] font-semibold">
+                  <span>{memory.label}</span>
+                  <span className="opacity-60">{memory.seasonYear} · R{memory.round}</span>
+                </div>
+                <p className="mt-1 line-clamp-2 text-[10px] leading-relaxed text-neutral-300">{memory.description}</p>
+              </article>
+            ))}
+          </div>
+        )}
+      </section>
+
       <div className="rounded border border-neutral-800 bg-neutral-950/70 p-3">
         <div className="text-xs font-semibold text-neutral-200">
           {available ? 'Choose one meaningful interaction this round' : 'Interaction completed for this round'}

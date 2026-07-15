@@ -10,6 +10,7 @@ import type {
 import type { DepartmentId } from '../types/phase18Types';
 import { ensurePhase18FoundationState } from './phase18FoundationEngine';
 import { addRivalRelationshipEvent } from './phase18RivalRelationshipEngine';
+import { recordCharacterMemory } from './characterOpinionEngine';
 
 export type CharacterActionSpec = {
   id: CharacterInteractionAction;
@@ -60,11 +61,13 @@ export function ensureCharacterInteractionState(
   interactionState?: CharacterInteractionState,
 ): CharacterInteractionState {
   return {
-    version: 2,
+    version: 3,
     history: interactionState?.history ?? [],
     lastInteractionByTarget: interactionState?.lastInteractionByTarget ?? {},
     recruitmentInterest: interactionState?.recruitmentInterest ?? {},
     requestHistory: interactionState?.requestHistory ?? [],
+    opinions: interactionState?.opinions ?? {},
+    memories: interactionState?.memories ?? [],
   };
 }
 
@@ -351,7 +354,16 @@ export function performCharacterInteraction(
       : target.type === 'Owner'
         ? performOwnerAction(state, target, action)
         : performRivalPrincipalAction(state, target, action);
-  return result ? recordInteraction(result.state, target, action, result.outcome, result.tone, result.effects) : state;
+  if (!result) return state;
+  const recorded = recordInteraction(result.state, target, action, result.outcome, result.tone, result.effects);
+  const actionLabel = CHARACTER_ACTION_SPECS.find((spec) => spec.id === action)?.label ?? action;
+  return recordCharacterMemory(recorded, target, {
+    source: 'Interaction',
+    label: actionLabel,
+    description: result.outcome,
+    tone: result.tone,
+    effects: result.effects,
+  });
 }
 
 export function recruitmentSigningDiscount(state: GameState, staffId: string): number {
