@@ -102,7 +102,7 @@ describe('character influence engine', () => {
     const legacy = structuredClone(base);
     delete (legacy.characterInteractions as Partial<typeof legacy.characterInteractions>)?.influence;
     const migrated = migrateGameState(legacy);
-    expect(migrated.characterInteractions!.version).toBe(12);
+    expect(migrated.characterInteractions!.version).toBe(13);
     expect(migrated.characterInteractions!.influence.length).toBeGreaterThan(0);
   });
 });

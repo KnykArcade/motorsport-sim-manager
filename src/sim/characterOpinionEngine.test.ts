@@ -99,7 +99,7 @@ describe('character opinion engine', () => {
     delete legacy.characterInteractions!.opinions[characterOpinionKey(target)];
     const migrated = migrateGameState(legacy);
 
-    expect(migrated.characterInteractions?.version).toBe(12);
+    expect(migrated.characterInteractions?.version).toBe(13);
     expect(characterOpinionFor(migrated, target)).toBeTruthy();
     expect(characterMemoriesForTarget(migrated, target)).toHaveLength(1);
   });

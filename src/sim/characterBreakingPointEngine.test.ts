@@ -104,7 +104,7 @@ describe('character breaking point engine', () => {
     delete (legacy.characterInteractions as Partial<typeof legacy.characterInteractions>)?.stability;
     delete (legacy.characterInteractions as Partial<typeof legacy.characterInteractions>)?.breakingPoints;
     const migrated = migrateGameState(legacy);
-    expect(migrated.characterInteractions!.version).toBe(12);
+    expect(migrated.characterInteractions!.version).toBe(13);
     expect(migrated.characterInteractions!.stability.length).toBeGreaterThan(0);
     expect(migrated.characterInteractions!.breakingPoints).toEqual([]);
   });

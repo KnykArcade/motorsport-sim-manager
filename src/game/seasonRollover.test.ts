@@ -18,6 +18,7 @@ import { activeDriversForTeam, isReserveContract, type GameState } from './caree
 import type { AcademyMember } from '../types/marketTypes';
 import { getStaffPool } from '../data';
 import { gameReducer } from './gameReducer';
+import { schedulePersonnelMove } from '../sim/personnelMoveEngine';
 
 function newOffseasonState(): GameState {
   const teamId = 't-benetton';
@@ -94,6 +95,29 @@ describe('advanceSeason', () => {
     expect(next.characterInteractions!.futureIntentions.some((entry) => entry.target.id === candidate.id)).toBe(false);
   });
 
+  it('places an agreed staff departure with the named rival at rollover', () => {
+    const base = newOffseasonState();
+    const candidate = getStaffPool(base.seasonYear, base.series)[0];
+    const hired = gameReducer({ ...base, seasonComplete: false }, { type: 'HIRE_STAFF', staffId: candidate.id })!;
+    const destination = hired.teams.find((team) => team.id !== hired.selectedTeamId)!;
+    const expiring: GameState = {
+      ...hired,
+      seasonComplete: true,
+      staff: hired.staff!.map((member) => ({ ...member, contractYearsRemaining: 1 })),
+      drivers: hired.drivers.map((driver) => driver.teamId === hired.selectedTeamId ? { ...driver, contractYearsRemaining: 2 } : driver),
+    };
+    const planned = schedulePersonnelMove(expiring, {
+      targetType: 'Staff', targetId: candidate.id, targetName: candidate.name,
+      sourceTeamId: expiring.selectedTeamId, destinationTeamId: destination.id, destinationTeamName: destination.name,
+      agreedSeason: expiring.seasonYear, effectiveSeason: expiring.seasonYear + 1, reason: 'Test agreement',
+    });
+    const next = advanceSeason(planned);
+    expect(next.staff?.some((member) => member.id === candidate.id)).toBe(false);
+    expect(next.aiStaff?.[destination.id]?.find((member) => member.id === candidate.id)).toMatchObject({ contractYearsRemaining: 2 });
+    expect(next.characterInteractions!.personnelMoves.at(-1)).toMatchObject({ status: 'Completed', completedSeason: next.seasonYear });
+    expect(next.news.some((item) => item.headline.includes(candidate.name) && item.headline.includes(destination.name))).toBe(true);
+  });
+
   it('ages retained player contracts by one year at rollover', () => {
     const base = newOffseasonState();
     const driver = activeDriversForTeam(base, base.selectedTeamId)[0];
@@ -128,6 +152,35 @@ describe('advanceSeason', () => {
     expect(next.offseasonHistory.at(-1)?.notes.some((note) => note.includes(driver.name) && note.includes('wanted to leave'))).toBe(true);
     expect(next.news.some((item) => item.id.includes('contract-expiry') && item.driverId === driver.id)).toBe(true);
     expect(next.characterInteractions!.futureIntentions.some((entry) => entry.target.id === driver.id)).toBe(false);
+  });
+
+  it('executes an agreed driver move to the named rival and keeps both lineups legal', () => {
+    const base = newOffseasonState();
+    const driver = activeDriversForTeam(base, base.selectedTeamId)[0];
+    const destination = base.teams.find((team) => team.id !== base.selectedTeamId)!;
+    const expiring: GameState = {
+      ...base,
+      drivers: base.drivers.map((entry) => entry.teamId === base.selectedTeamId
+        ? { ...entry, contractYearsRemaining: entry.id === driver.id ? 1 : 3 }
+        : entry),
+    };
+    const planned = schedulePersonnelMove(expiring, {
+      targetType: 'Driver', targetId: driver.id, targetName: driver.name,
+      sourceTeamId: expiring.selectedTeamId, destinationTeamId: destination.id, destinationTeamName: destination.name,
+      agreedSeason: expiring.seasonYear, effectiveSeason: expiring.seasonYear + 1, reason: 'Test agreement',
+    });
+    const next = advanceSeason(planned);
+    expect(next.drivers.find((entry) => entry.id === driver.id)).toMatchObject({
+      teamId: destination.id,
+      contractYearsRemaining: 2,
+      contractType: 'seat',
+    });
+    if (driver.age != null) expect(next.drivers.find((entry) => entry.id === driver.id)?.age).toBe(driver.age + 1);
+    expect(activeDriversForTeam(next, base.selectedTeamId)).toHaveLength(2);
+    expect(activeDriversForTeam(next, destination.id)).toHaveLength(2);
+    expect(next.teams.find((team) => team.id === destination.id)?.driverIds).toContain(driver.id);
+    expect(next.characterInteractions!.personnelMoves.at(-1)).toMatchObject({ status: 'Completed', completedSeason: next.seasonYear });
+    expect(next.motorsportUniverse?.championships.F1?.movementHistory?.some((move) => move.driverId === driver.id && move.toTeamId === destination.id)).toBe(true);
   });
 
   it('starts the new season with fresh fitted components and preserves parts history', () => {

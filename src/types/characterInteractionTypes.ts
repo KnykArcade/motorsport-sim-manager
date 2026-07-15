@@ -312,8 +312,23 @@ export type CharacterFutureIntent = {
   lastUpdatedRound: number;
 };
 
+export type PersonnelMoveAgreement = {
+  id: string;
+  targetType: 'Driver' | 'Staff';
+  targetId: string;
+  targetName: string;
+  sourceTeamId: string;
+  destinationTeamId: string;
+  destinationTeamName: string;
+  agreedSeason: number;
+  effectiveSeason: number;
+  status: 'Pending' | 'Completed' | 'Cancelled';
+  reason: string;
+  completedSeason?: number;
+};
+
 export type CharacterInteractionState = {
-  version: 12;
+  version: 13;
   history: CharacterInteractionRecord[];
   lastInteractionByTarget: Record<string, { seasonYear: number; round: number }>;
   recruitmentInterest: Record<string, number>;
@@ -331,6 +346,7 @@ export type CharacterInteractionState = {
   stability: CharacterStabilityProfile[];
   breakingPoints: CharacterBreakingPoint[];
   futureIntentions: CharacterFutureIntent[];
+  personnelMoves: PersonnelMoveAgreement[];
 };
 
 export type CharacterRequestKind =

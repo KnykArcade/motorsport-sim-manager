@@ -112,6 +112,7 @@ import type { ExpectationReview, TeamExpectation, TeamReputation } from '../type
 import type { DriverRelationship } from '../types/relationshipTypes';
 import { carForTeam, type GameState } from './careerState';
 import { ensureCharacterFutureIntentions } from '../sim/characterFutureIntentEngine';
+import { executePersonnelMoves } from '../sim/personnelMoveEngine';
 
 // Annual sponsorship the player's team earns, driven by reputation and the
 // appeal (overall rating) of its driver line-up. Invented but ties sponsorship
@@ -1148,6 +1149,27 @@ export function advanceSeason(state: GameState, nextBundle?: SeasonBundle): Game
     regulationAffectedAreas,
     series: state.series,
   });
+  const pendingMoveDriverIds = new Set(
+    (state.characterInteractions?.personnelMoves ?? [])
+      .filter((move) => move.status === 'Pending' && move.targetType === 'Driver' && move.effectiveSeason === nextYear)
+      .map((move) => move.targetId),
+  );
+  const progressedMoveDrivers = state.drivers.map((driver) => {
+    if (!pendingMoveDriverIds.has(driver.id)) return driver;
+    let curve = nextCurves[driver.id];
+    if (!curve) {
+      curve = createDriverDevelopmentCurve(driver, state.randomSeed);
+      nextCurves[driver.id] = curve;
+    }
+    return developmentStep(curve, driver, state.randomSeed, { seasonYear: nextYear, academyBoost: 0 }).driver;
+  });
+  const personnelMoveExecution = executePersonnelMoves(
+    state,
+    aiOffseason.drivers,
+    aiOffseason.teams,
+    nextYear,
+    progressedMoveDrivers,
+  );
 
   const champion = state.driverStandings[0];
   const constructorChamp = state.constructorStandings[0];
@@ -1176,6 +1198,7 @@ export function advanceSeason(state: GameState, nextBundle?: SeasonBundle): Game
       ...retirement.notes,
       ...aiRollover.notes,
       ...aiOffseason.notes,
+      ...personnelMoveExecution.notes,
     ],
   };
 
@@ -1203,21 +1226,29 @@ export function advanceSeason(state: GameState, nextBundle?: SeasonBundle): Game
 
   // Final grid-integrity pass: no team may start the new season a car short.
   const gridFilled = fillEmptyRaceSeats(
-    aiOffseason.drivers,
-    aiOffseason.teams,
+    personnelMoveExecution.drivers,
+    personnelMoveExecution.teams,
     state.randomSeed,
     nextYear,
   );
 
   // --- Financial distress consequences & principal pressure evaluation ---
   const rolloverNews: typeof state.news = [];
+  const completedMoveByTarget = new Map(
+    personnelMoveExecution.agreements
+      .filter((entry) => entry.status === 'Completed' && entry.completedSeason === nextYear)
+      .map((entry) => [`${entry.targetType}:${entry.targetId}`, entry]),
+  );
   rolloverNews.push(...voteResolution.news);
   for (const driver of contractDepartures) {
     const intent = state.characterInteractions?.futureIntentions.find((entry) => entry.target.type === 'Driver' && entry.target.id === driver.id);
+    const completedMove = completedMoveByTarget.get(`Driver:${driver.id}`);
     rolloverNews.push({
       id: `news-contract-expiry-${nextYear}-${driver.id}`,
-      headline: `${driver.name} leaves after contract expiry`,
-      body: intent?.status === 'WantsExit'
+      headline: completedMove ? `${driver.name} joins ${completedMove.destinationTeamName}` : `${driver.name} leaves after contract expiry`,
+      body: completedMove
+        ? `${driver.name} completed the current contract and joined ${completedMove.destinationTeamName} on the previously agreed deal.`
+        : intent?.status === 'WantsExit'
         ? `${driver.name} departed after the final year of the deal and had already made clear that the relationship was no longer sustainable.`
         : intent?.status === 'TestingMarket'
           ? `${driver.name} allowed the contract to expire after considering alternatives on the driver market.`
@@ -1231,10 +1262,13 @@ export function advanceSeason(state: GameState, nextBundle?: SeasonBundle): Game
   }
   for (const member of staffDepartures) {
     const intent = state.characterInteractions?.futureIntentions.find((entry) => entry.target.type === 'Staff' && entry.target.id === member.id);
+    const completedMove = completedMoveByTarget.get(`Staff:${member.id}`);
     rolloverNews.push({
       id: `news-staff-contract-expiry-${nextYear}-${member.id}`,
-      headline: `${member.name} leaves the ${member.role} position`,
-      body: intent?.status === 'WantsExit'
+      headline: completedMove ? `${member.name} joins ${completedMove.destinationTeamName}` : `${member.name} leaves the ${member.role} position`,
+      body: completedMove
+        ? `${member.name} completed the current contract and joined ${completedMove.destinationTeamName} as ${member.role} on the previously agreed deal.`
+        : intent?.status === 'WantsExit'
         ? `${member.name} completed the contract and departed after the working relationship became unsustainable.`
         : intent?.status === 'TestingMarket'
           ? `${member.name} completed the contract and accepted an opportunity elsewhere after listening to outside offers.`
@@ -1508,6 +1542,7 @@ export function advanceSeason(state: GameState, nextBundle?: SeasonBundle): Game
     carSetups,
     academy: nextAcademy,
     staff: nextStaff,
+    aiStaff: personnelMoveExecution.aiStaff,
     pendingSignings: [],
     academyDecisions: [],
     signedMarketIds: aiOffseason.signedMarketIds,
@@ -1549,6 +1584,10 @@ export function advanceSeason(state: GameState, nextBundle?: SeasonBundle): Game
       ...state.news,
     ].slice(0, 80),
     careerPhase: defaultCareerPhaseState(),
+    characterInteractions: state.characterInteractions ? {
+      ...state.characterInteractions,
+      personnelMoves: personnelMoveExecution.agreements,
+    } : state.characterInteractions,
     phase18: state.phase18 ? {
       ...state.phase18,
       contractClauses: state.phase18.contractClauses.map((clause) =>

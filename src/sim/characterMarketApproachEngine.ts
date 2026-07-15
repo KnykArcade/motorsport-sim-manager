@@ -7,6 +7,7 @@ import { characterOpinionFor } from './characterOpinionEngine';
 import { characterFutureIntentLabel } from './characterFutureIntentEngine';
 import { addRivalRelationshipEvent } from './phase18RivalRelationshipEngine';
 import { extendedStaffSalaryMillions, staffExtensionSigningFee } from './staffEngine';
+import { cancelPendingPersonnelMove, schedulePersonnelMove } from './personnelMoveEngine';
 
 export type MarketApproachResolution = {
   state: GameState;
@@ -165,6 +166,22 @@ function setIntentStatus(state: GameState, event: PaddockEvent, status: Characte
   };
 }
 
+function planRivalMove(state: GameState, event: PaddockEvent, reason: string): GameState {
+  const meta = event.characterRequest;
+  if (!meta?.rivalTeamId || !meta.rivalTeamName || (meta.targetType !== 'Driver' && meta.targetType !== 'Staff')) return state;
+  return schedulePersonnelMove(state, {
+    targetType: meta.targetType,
+    targetId: meta.targetId,
+    targetName: meta.targetName,
+    sourceTeamId: state.selectedTeamId,
+    destinationTeamId: meta.rivalTeamId,
+    destinationTeamName: meta.rivalTeamName,
+    agreedSeason: state.seasonYear,
+    effectiveSeason: state.seasonYear + 1,
+    reason,
+  });
+}
+
 function extendTarget(state: GameState, event: PaddockEvent, addedYears: number): GameState {
   const meta = event.characterRequest!;
   if (meta.targetType === 'Driver') {
@@ -207,17 +224,17 @@ function interestScore(state: GameState, event: PaddockEvent, aggressive: boolea
 
 export function resolveCharacterMarketApproach(state: GameState, event: PaddockEvent, optionId: string): MarketApproachResolution {
   const meta = event.characterRequest;
-  if (!meta || (meta.requestKind !== 'DriverMarketApproach' && meta.requestKind !== 'StaffMarketApproach')) {
+  if (!meta || (meta.requestKind !== 'DriverMarketApproach' && meta.requestKind !== 'StaffMarketApproach') || (meta.targetType !== 'Driver' && meta.targetType !== 'Staff')) {
     return { state, outcome: 'The market approach closed without a valid contract target.', tone: 'Informational', effects: [] };
   }
   const rivalName = meta.rivalTeamName ?? 'A rival team';
   if (optionId === 'accept-departure-plan') {
-    const released = setIntentStatus(
+    const released = planRivalMove(setIntentStatus(
       adjustRival(state, event, -2, `${rivalName} secured permission to complete a personnel approach.`),
       event,
       'WantsExit',
       `${meta.targetName} and the team agreed to separate when the current contract expires.`,
-    );
+    ), event, `${meta.targetName} accepted ${rivalName}'s offer after an orderly departure was agreed.`);
     return {
       state: released,
       outcome: `${meta.targetName} will complete the current deal and join ${rivalName} after season rollover. Management can now plan the vacancy openly.`,
@@ -229,19 +246,25 @@ export function resolveCharacterMarketApproach(state: GameState, event: PaddockE
   const aggressive = optionId === 'match-rival-package';
   const cost = aggressive ? meta.counterofferCost ?? 0 : 0;
   if (cost > playerBudget(state)) {
+    const planned = planRivalMove(state, event, `${meta.targetName}'s rival offer remained active after the team could not fund a counteroffer.`);
     return {
-      state,
-      outcome: `The team could not fund the ${formatMoney(cost)} counteroffer. ${meta.targetName}'s current contract remains set to expire.`,
+      state: planned,
+      outcome: `The team could not fund the ${formatMoney(cost)} counteroffer. ${meta.targetName}'s current contract remains set to expire before the agreed move to ${rivalName}.`,
       tone: 'Negative',
-      effects: ['Counteroffer blocked by budget', 'Contract still expiring'],
+      effects: ['Counteroffer blocked by budget', `Move to ${rivalName} planned at contract expiry`],
     };
   }
   const score = interestScore(state, event, aggressive);
   const accepted = score >= 58;
   if (!accepted) {
     const worsened = adjustRival(state, event, -4, `${rivalName}'s approach survived a failed retention attempt.`);
+    const departing = planRivalMove(
+      setIntentStatus(worsened, event, 'WantsExit', `${meta.targetName} rejected the retention attempt and intends to leave at contract expiry.`),
+      event,
+      `${meta.targetName} accepted ${rivalName}'s offer after rejecting the retention attempt.`,
+    );
     return {
-      state: setIntentStatus(worsened, event, 'WantsExit', `${meta.targetName} rejected the retention attempt and intends to leave at contract expiry.`),
+      state: departing,
       outcome: aggressive
         ? `${meta.targetName} rejected the improved package and intends to accept ${rivalName}'s offer. Interest score: ${score}.`
         : `${meta.targetName} was not persuaded by the personal pitch and now expects to leave for ${rivalName}. Interest score: ${score}.`,
@@ -261,6 +284,7 @@ export function resolveCharacterMarketApproach(state: GameState, event: PaddockE
       ? `${meta.targetName} accepted improved terms and recommitted to the team.`
       : `${meta.targetName} accepted a one-year bridge agreement after a direct conversation.`,
   );
+  retained = cancelPendingPersonnelMove(retained, meta.targetType, meta.targetId);
   if (meta.targetType === 'Driver' && retained.driverRelationships?.[meta.targetId]) {
     const relationship = retained.driverRelationships[meta.targetId];
     retained = {

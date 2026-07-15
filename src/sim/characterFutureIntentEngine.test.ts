@@ -124,7 +124,7 @@ describe('character future intent engine', () => {
     const legacy = structuredClone(freshState());
     delete (legacy.characterInteractions as Partial<typeof legacy.characterInteractions>)?.futureIntentions;
     const migrated = migrateGameState(legacy);
-    expect(migrated.characterInteractions!.version).toBe(12);
+    expect(migrated.characterInteractions!.version).toBe(13);
     expect(migrated.characterInteractions!.futureIntentions.length).toBeGreaterThan(0);
   });
 

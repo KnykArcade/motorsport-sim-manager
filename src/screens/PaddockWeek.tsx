@@ -168,6 +168,8 @@ export function PaddockWeek() {
   const atRiskIntentions = atRiskFutureIntentions(state).slice(0, 6);
   const expiringDrivers = state.gameMode === 'SingleSeason' ? [] : state.drivers.filter((driver) => driver.teamId === state.selectedTeamId && (driver.contractYearsRemaining ?? 1) <= 1);
   const expiringStaff = state.gameMode === 'SingleSeason' ? [] : (state.staff ?? []).filter((member) => (member.contractYearsRemaining ?? 2) <= 1);
+  const pendingPersonnelMoves = (state.characterInteractions?.personnelMoves ?? [])
+    .filter((move) => move.status === 'Pending' && move.effectiveSeason === state.seasonYear + 1);
 
   const advanceToBriefing = () => {
     dispatch({ type: 'ADVANCE_TO_PRE_RACE_BRIEFING' });
@@ -212,7 +214,7 @@ export function PaddockWeek() {
 
       <div className="flex flex-wrap gap-1 rounded-lg border border-neutral-800 bg-neutral-950/70 p-1" aria-label="Paddock Week sections">
         <PaddockTabButton active={tab === 'overview'} onClick={() => setTab('overview')} label="Overview" />
-        <PaddockTabButton active={tab === 'people'} onClick={() => setTab('people')} label="People" count={characterRequests.length + characterDisputes.length + characterInitiatives.length + characterBreakingPoints.length + activeMandates.length} attention={[...unresolvedCharacterRequests, ...unresolvedCharacterDisputes, ...unresolvedCharacterInitiatives, ...unresolvedCharacterBreakingPoints].some((event) => event.isRequiredDecision)} />
+        <PaddockTabButton active={tab === 'people'} onClick={() => setTab('people')} label="People" count={characterRequests.length + characterDisputes.length + characterInitiatives.length + characterBreakingPoints.length + activeMandates.length + pendingPersonnelMoves.length} attention={[...unresolvedCharacterRequests, ...unresolvedCharacterDisputes, ...unresolvedCharacterInitiatives, ...unresolvedCharacterBreakingPoints].some((event) => event.isRequiredDecision)} />
         <PaddockTabButton active={tab === 'decisions'} onClick={() => setTab('decisions')} label="Operations" count={nonCharacterUnresolved.length + (packageSelected ? 0 : 1) + storyDecisions.length} attention={nonCharacterUnresolved.length > 0 || !packageSelected} />
         <PaddockTabButton active={tab === 'updates'} onClick={() => setTab('updates')} label="Team Updates" count={updateCount} />
         <PaddockTabButton active={tab === 'debrief'} onClick={() => setTab('debrief')} label="Decision Debrief" count={resolvedDecisions.length} />
@@ -240,7 +242,7 @@ export function PaddockWeek() {
       {tab === 'people' && <div className="space-y-4">
         <div className="flex gap-1 rounded-lg border border-neutral-800 bg-neutral-950/70 p-1" aria-label="People management sections">
           <PaddockTabButton active={peopleSection === 'attention'} onClick={() => setPeopleSection('attention')} label="Needs Attention" count={unresolvedCharacterRequests.length + unresolvedCharacterDisputes.length + unresolvedCharacterInitiatives.length + unresolvedCharacterBreakingPoints.length} attention={[...unresolvedCharacterRequests, ...unresolvedCharacterDisputes, ...unresolvedCharacterInitiatives, ...unresolvedCharacterBreakingPoints].some((event) => event.isRequiredDecision)} />
-          <PaddockTabButton active={peopleSection === 'support'} onClick={() => setPeopleSection('support')} label="Support & Mandates" count={activeMandates.length + unstableCharacters.length + atRiskIntentions.length + expiringDrivers.length + expiringStaff.length} />
+          <PaddockTabButton active={peopleSection === 'support'} onClick={() => setPeopleSection('support')} label="Support & Mandates" count={activeMandates.length + unstableCharacters.length + atRiskIntentions.length + expiringDrivers.length + expiringStaff.length + pendingPersonnelMoves.length} />
           <PaddockTabButton active={peopleSection === 'resolved'} onClick={() => setPeopleSection('resolved')} label="Resolved This Week" count={resolvedCharacterRequests.length + resolvedCharacterDisputes.length + resolvedCharacterInitiatives.length + resolvedCharacterBreakingPoints.length} />
         </div>
         {peopleSection === 'support' && internalInfluence.length > 0 && (
@@ -276,6 +278,20 @@ export function PaddockWeek() {
                   <div className="mt-2 text-[10px] text-neutral-500">{mandate.measureLabel}</div>
                   <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-neutral-800"><div className="h-full rounded-full bg-cyan-500" style={{ width: `${Math.min(100, Math.round((mandate.currentValue / Math.max(1, mandate.targetValue)) * 100))}%` }} /></div>
                   <div className="mt-1 text-right text-[10px] text-neutral-400">{mandate.currentValue}/{mandate.targetValue}</div>
+                </article>
+              ))}
+            </div>
+          </Panel>
+        )}
+        {peopleSection === 'support' && pendingPersonnelMoves.length > 0 && (
+          <Panel title="Planned Personnel Moves">
+            <p className="mb-3 text-xs text-neutral-500">These departures are agreed, not rumors. The person will finish the current contract and join the named team at season rollover.</p>
+            <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
+              {pendingPersonnelMoves.map((move) => (
+                <article key={move.id} className="rounded-lg border border-orange-900/50 bg-orange-950/10 p-3">
+                  <div className="flex items-start justify-between gap-2"><div><strong className="block text-xs text-neutral-200">{move.targetName}</strong><span className="text-[10px] text-neutral-500">{move.targetType}</span></div><span className="text-[10px] font-bold text-orange-300">{move.effectiveSeason}</span></div>
+                  <p className="mt-2 text-[10px] text-neutral-300">Joining <strong>{move.destinationTeamName}</strong></p>
+                  <p className="mt-1 line-clamp-2 text-[10px] leading-relaxed text-neutral-500">{move.reason}</p>
                 </article>
               ))}
             </div>
@@ -396,7 +412,7 @@ export function PaddockWeek() {
         {peopleSection === 'resolved' && resolvedCharacterInitiatives.length > 0 && <Panel title="Initiatives Answered This Week"><div className="grid gap-3 xl:grid-cols-2">{resolvedCharacterInitiatives.map((event) => { const initiative = state.characterInteractions?.initiatives.find((entry) => entry.id === event.characterInitiative?.initiativeId); return <article key={event.id} className="rounded-lg border border-fuchsia-900/40 bg-fuchsia-950/10 p-3"><div className="flex items-center justify-between gap-3"><strong className="text-sm text-neutral-200">{event.characterInitiative?.target.name}</strong><span className="rounded bg-fuchsia-500/10 px-2 py-1 text-[10px] font-semibold uppercase text-fuchsia-300">{initiative?.status ?? 'Resolved'}</span></div><div className="mt-1 text-xs font-semibold text-amber-300">{initiative?.optionLabel}</div><p className="mt-1 text-xs text-neutral-400">{initiative?.outcome}</p></article>; })}</div></Panel>}
         {peopleSection === 'resolved' && resolvedCharacterBreakingPoints.length > 0 && <Panel title="Breaking Points Addressed"><div className="grid gap-3 xl:grid-cols-2">{resolvedCharacterBreakingPoints.map((event) => { const entry = state.characterInteractions?.breakingPoints.find((item) => item.id === event.characterBreakingPoint?.breakingPointId); return <article key={event.id} className="rounded-lg border border-red-900/40 bg-red-950/10 p-3"><div className="flex items-center justify-between gap-3"><strong className="text-sm text-neutral-200">{event.characterBreakingPoint?.target.name}</strong><span className="rounded bg-red-500/10 px-2 py-1 text-[10px] font-semibold uppercase text-red-300">{entry?.status ?? 'Addressed'}</span></div><div className="mt-1 text-xs font-semibold text-amber-300">{entry?.optionLabel}</div><p className="mt-1 text-xs text-neutral-400">{entry?.outcome}</p></article>; })}</div></Panel>}
         {peopleSection === 'attention' && unresolvedCharacterRequests.length === 0 && unresolvedCharacterDisputes.length === 0 && unresolvedCharacterInitiatives.length === 0 && unresolvedCharacterBreakingPoints.length === 0 && <Panel title="Needs Attention"><p className="text-sm text-neutral-500">No character requires a decision this week.</p></Panel>}
-        {peopleSection === 'support' && internalInfluence.length === 0 && activeMandates.length === 0 && unstableCharacters.length === 0 && atRiskIntentions.length === 0 && expiringDrivers.length === 0 && expiringStaff.length === 0 && <Panel title="Support & Mandates"><p className="text-sm text-neutral-500">No internal support, delegated mandates, unstable relationships, retention risks, or expiring contracts are currently recorded.</p></Panel>}
+        {peopleSection === 'support' && internalInfluence.length === 0 && activeMandates.length === 0 && unstableCharacters.length === 0 && atRiskIntentions.length === 0 && expiringDrivers.length === 0 && expiringStaff.length === 0 && pendingPersonnelMoves.length === 0 && <Panel title="Support & Mandates"><p className="text-sm text-neutral-500">No internal support, delegated mandates, unstable relationships, retention risks, planned moves, or expiring contracts are currently recorded.</p></Panel>}
         {peopleSection === 'resolved' && resolvedCharacterRequests.length === 0 && resolvedCharacterDisputes.length === 0 && resolvedCharacterInitiatives.length === 0 && resolvedCharacterBreakingPoints.length === 0 && <Panel title="Resolved This Week"><p className="text-sm text-neutral-500">No people decisions have been resolved this week.</p></Panel>}
       </div>}
 

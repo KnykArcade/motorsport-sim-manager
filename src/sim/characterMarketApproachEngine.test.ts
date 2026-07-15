@@ -96,6 +96,12 @@ describe('character market approaches', () => {
     expect(rejected.drivers.find((entry) => entry.id === driver.id)?.contractYearsRemaining).toBe(1);
     expect(rejected.teams.find((team) => team.id === state.selectedTeamId)!.budget).toBe(beforeBudget);
     expect(rejected.news[0].body).toContain('rejected');
+    expect(rejected.characterInteractions!.personnelMoves.at(-1)).toMatchObject({
+      targetType: 'Driver',
+      targetId: driver.id,
+      effectiveSeason: state.seasonYear + 1,
+      status: 'Pending',
+    });
   });
 
   it('rewards a strong personal relationship with a one-year bridge agreement', () => {
@@ -112,6 +118,11 @@ describe('character market approaches', () => {
     const released = resolve(atRisk(base, 'Driver', driver.id), 'accept-departure-plan');
     expect(released.drivers.find((entry) => entry.id === driver.id)?.contractYearsRemaining).toBe(1);
     expect(released.characterInteractions!.futureIntentions.find((entry) => entry.target.id === driver.id)?.status).toBe('WantsExit');
+    expect(released.characterInteractions!.personnelMoves.at(-1)).toMatchObject({
+      targetId: driver.id,
+      destinationTeamId: expect.not.stringMatching(base.selectedTeamId),
+      status: 'Pending',
+    });
     expect(generateCharacterMarketApproachEvents(released)).toHaveLength(0);
   });
 
