@@ -1,6 +1,7 @@
 // Career phase system types for the between-race management flow.
 
 import type {
+  CharacterInteractionTarget,
   CharacterInteractionTargetType,
   CharacterRequestKind,
 } from './characterInteractionTypes';
@@ -70,6 +71,11 @@ export type PaddockEvent = {
     targetId: string;
     targetName: string;
     teamId?: string;
+  };
+  characterDispute?: {
+    disputeId: string;
+    characterA: CharacterInteractionTarget;
+    characterB: CharacterInteractionTarget;
   };
 };
 

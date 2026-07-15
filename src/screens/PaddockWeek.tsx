@@ -94,7 +94,7 @@ export function PaddockWeek() {
     if (!phaseState) return {};
     const map: Record<string, PaddockEvent[]> = {};
     for (const e of phaseState.paddockEvents) {
-      if (e.narrativeStoryId || e.characterRequest) continue;
+      if (e.narrativeStoryId || e.characterRequest || e.characterDispute) continue;
       if (!map[e.category]) map[e.category] = [];
       map[e.category].push(e);
     }
@@ -116,8 +116,11 @@ export function PaddockWeek() {
   const characterRequests = phaseState.paddockEvents.filter((event) => !!event.characterRequest);
   const unresolvedCharacterRequests = characterRequests.filter((event) => !event.resolvedOptionId);
   const resolvedCharacterRequests = characterRequests.filter((event) => !!event.resolvedOptionId);
+  const characterDisputes = phaseState.paddockEvents.filter((event) => !!event.characterDispute);
+  const unresolvedCharacterDisputes = characterDisputes.filter((event) => !event.resolvedOptionId);
+  const resolvedCharacterDisputes = characterDisputes.filter((event) => !!event.resolvedOptionId);
   const nonCharacterUnresolved = phaseState.paddockEvents.filter(
-    (event) => event.isRequiredDecision && !event.resolvedOptionId && !event.characterRequest,
+    (event) => event.isRequiredDecision && !event.resolvedOptionId && !event.characterRequest && !event.characterDispute,
   );
   const pendingCount = unresolvedCount + (packageSelected ? 0 : 1);
 
@@ -133,7 +136,7 @@ export function PaddockWeek() {
   const storyDecisions = phaseState.paddockEvents.filter(
     (event) => !!event.narrativeStoryId && !event.resolvedOptionId,
   );
-  const resolvedDecisions = phaseState.paddockEvents.filter((event) => !!event.resolvedOptionId && !event.characterRequest);
+  const resolvedDecisions = phaseState.paddockEvents.filter((event) => !!event.resolvedOptionId && !event.characterRequest && !event.characterDispute);
   const populatedCategories = CATEGORY_ORDER.filter((category) => (eventsByCategory[category]?.length ?? 0) > 0);
   const visibleUpdateCategory = populatedCategories.includes(updateCategory)
     ? updateCategory
@@ -183,7 +186,7 @@ export function PaddockWeek() {
 
       <div className="flex flex-wrap gap-1 rounded-lg border border-neutral-800 bg-neutral-950/70 p-1" aria-label="Paddock Week sections">
         <PaddockTabButton active={tab === 'overview'} onClick={() => setTab('overview')} label="Overview" />
-        <PaddockTabButton active={tab === 'people'} onClick={() => setTab('people')} label="People" count={characterRequests.length} attention={unresolvedCharacterRequests.some((event) => event.isRequiredDecision)} />
+        <PaddockTabButton active={tab === 'people'} onClick={() => setTab('people')} label="People" count={characterRequests.length + characterDisputes.length} attention={[...unresolvedCharacterRequests, ...unresolvedCharacterDisputes].some((event) => event.isRequiredDecision)} />
         <PaddockTabButton active={tab === 'decisions'} onClick={() => setTab('decisions')} label="Operations" count={nonCharacterUnresolved.length + (packageSelected ? 0 : 1) + storyDecisions.length} attention={nonCharacterUnresolved.length > 0 || !packageSelected} />
         <PaddockTabButton active={tab === 'updates'} onClick={() => setTab('updates')} label="Team Updates" count={updateCount} />
         <PaddockTabButton active={tab === 'debrief'} onClick={() => setTab('debrief')} label="Decision Debrief" count={resolvedDecisions.length} />
@@ -209,6 +212,19 @@ export function PaddockWeek() {
       </div>}
 
       {tab === 'people' && <div className="space-y-4">
+        {unresolvedCharacterDisputes.length > 0 && (
+          <Panel title="Conflicts Requiring Management" className="border-red-700/30">
+            <p className="mb-3 text-xs text-neutral-500">Persistent tensions can become active disputes. Your intervention affects both people, their connection, and the camps around them.</p>
+            <div className="grid gap-3 xl:grid-cols-2">
+              {unresolvedCharacterDisputes.map((event) => (
+                <div key={event.id} className="rounded-xl border border-red-900/60 bg-red-950/10 p-3">
+                  <div className="mb-2 text-[10px] font-bold uppercase tracking-[0.16em] text-red-300">Character dispute · {event.characterDispute?.characterA.name} vs {event.characterDispute?.characterB.name}</div>
+                  <DecisionCard event={event} recommendations={advisorRecommendationsForDecision(state, event.id)} onResolve={(optionId) => dispatch({ type: 'RESOLVE_PADDOCK_EVENT', eventId: event.id, optionId })} />
+                </div>
+              ))}
+            </div>
+          </Panel>
+        )}
         {unresolvedCharacterRequests.length > 0 && (
           <Panel title="Conversations Waiting for You" className="border-violet-600/30">
             <p className="mb-3 text-xs text-neutral-500">Characters can now bring their own concerns, requests, and political approaches to you. Required conversations must be answered before the week can advance.</p>
@@ -235,7 +251,8 @@ export function PaddockWeek() {
             </div>
           </Panel>
         )}
-        {characterRequests.length === 0 && <Panel title="People"><p className="text-sm text-neutral-500">No character has requested your attention this week.</p></Panel>}
+        {resolvedCharacterDisputes.length > 0 && <Panel title="Disputes Addressed This Week"><div className="grid gap-3 xl:grid-cols-2">{resolvedCharacterDisputes.map((event) => <article key={event.id} className="rounded-lg border border-neutral-800 bg-neutral-900/40 p-3"><div className="flex items-center justify-between gap-3"><strong className="text-sm text-neutral-200">{event.characterDispute?.characterA.name} / {event.characterDispute?.characterB.name}</strong><span className="rounded bg-emerald-500/10 px-2 py-1 text-[10px] font-semibold uppercase text-emerald-300">Addressed</span></div><div className="mt-1 text-xs font-semibold text-amber-300">{event.options?.find((option) => option.id === event.resolvedOptionId)?.label}</div><p className="mt-1 text-xs text-neutral-400">The decision is now part of both characters' persistent history.</p></article>)}</div></Panel>}
+        {characterRequests.length === 0 && characterDisputes.length === 0 && <Panel title="People"><p className="text-sm text-neutral-500">No character needs your attention this week.</p></Panel>}
       </div>}
 
       {/* Required Decisions */}
@@ -253,7 +270,7 @@ export function PaddockWeek() {
               </div>
             )}
             {phaseState.paddockEvents
-              .filter((e) => e.isRequiredDecision && !e.resolvedOptionId && !e.characterRequest)
+              .filter((e) => e.isRequiredDecision && !e.resolvedOptionId && !e.characterRequest && !e.characterDispute)
               .map((event) => (
                 <DecisionCard
                   key={event.id}
@@ -294,11 +311,11 @@ export function PaddockWeek() {
 
       {/* Resolved Decisions */}
       {tab === 'debrief' && <div className="grid gap-4 xl:grid-cols-2">
-      {phaseState.paddockEvents.some((e) => e.isRequiredDecision && e.resolvedOptionId && !e.characterRequest) && (
+      {phaseState.paddockEvents.some((e) => e.isRequiredDecision && e.resolvedOptionId && !e.characterRequest && !e.characterDispute) && (
         <Panel title="Resolved Decisions">
           <ul className="space-y-2">
             {phaseState.paddockEvents
-              .filter((e) => e.isRequiredDecision && e.resolvedOptionId && !e.characterRequest)
+              .filter((e) => e.isRequiredDecision && e.resolvedOptionId && !e.characterRequest && !e.characterDispute)
               .map((event) => {
                 const option = event.options?.find((o) => o.id === event.resolvedOptionId);
                 return (

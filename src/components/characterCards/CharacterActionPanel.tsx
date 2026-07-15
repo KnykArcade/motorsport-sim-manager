@@ -16,6 +16,7 @@ import {
 } from '../../sim/characterOpinionEngine';
 import { activeAmbitionForTarget } from '../../sim/characterAmbitionEngine';
 import { connectedCharacter, connectionsForTarget, factionsForTarget } from '../../sim/characterConnectionEngine';
+import { disputesForTarget } from '../../sim/characterDisputeEngine';
 
 type Props = {
   state: GameState;
@@ -53,6 +54,7 @@ export function CharacterActionPanel({ state, target }: Props) {
   const ambition = activeAmbitionForTarget(state, target);
   const connections = connectionsForTarget(state, target).slice(0, 6);
   const factions = factionsForTarget(state, target);
+  const disputes = disputesForTarget(state, target).filter((dispute) => dispute.status !== 'Resolved');
 
   return (
     <div className="space-y-4">
@@ -177,6 +179,7 @@ export function CharacterActionPanel({ state, target }: Props) {
 
       {section === 'connections' && (
         <div className="grid gap-3 lg:grid-cols-[1.35fr_1fr]">
+          {disputes.length > 0 && <section className="rounded-lg border border-red-900/70 bg-red-950/15 p-3 lg:col-span-2"><div className="text-[10px] font-bold uppercase tracking-[0.16em] text-red-300">Active disputes</div><div className="mt-2 grid gap-2 sm:grid-cols-2">{disputes.map((dispute) => { const other = dispute.characterA.id === target.id && dispute.characterA.type === target.type ? dispute.characterB : dispute.characterA; return <article key={dispute.id} className="rounded border border-red-900/50 bg-neutral-950/60 p-2.5"><div className="flex items-center justify-between gap-2"><strong className="text-xs text-neutral-200">With {other.name}</strong><span className="text-[10px] font-bold text-red-300">{dispute.status} · {dispute.intensity}</span></div><p className="mt-1 text-[10px] leading-relaxed text-neutral-400">Disagreement over {dispute.issue}.</p>{dispute.resolutionLabel && <div className="mt-1 text-[10px] text-amber-300">Last intervention: {dispute.resolutionLabel}</div>}</article>; })}</div></section>}
           <section className="rounded-lg border border-neutral-800 bg-neutral-950/70 p-3">
             <div className="text-[10px] font-bold uppercase tracking-[0.16em] text-neutral-500">Personal network</div>
             {connections.length > 0 ? (

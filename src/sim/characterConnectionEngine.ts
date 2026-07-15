@@ -213,7 +213,16 @@ export function refreshCharacterConnections(state: GameState): GameState {
   const existing = new Map((seeded.characterInteractions?.connections ?? []).map((entry) => [entry.id, entry]));
   const connections = desiredConnections(seeded).map((entry) => {
     const previous = existing.get(entry.id);
-    return { ...entry, lastReportedBand: previous?.band ?? entry.band };
+    const manualAffinityAdjustment = previous?.manualAffinityAdjustment ?? 0;
+    const affinity = clamp(entry.affinity + manualAffinityAdjustment, -100, 100);
+    return {
+      ...entry,
+      affinity,
+      band: bandFor(affinity),
+      kind: kindFor(affinity, entry.kind),
+      lastReportedBand: previous?.band ?? entry.band,
+      manualAffinityAdjustment,
+    };
   });
   return { ...seeded, characterInteractions: { ...seeded.characterInteractions!, connections, factions: buildFactions(seeded, connections) } };
 }
