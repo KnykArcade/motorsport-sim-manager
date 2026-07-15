@@ -14,6 +14,7 @@ import { ensurePhase18FoundationState } from './phase18FoundationEngine';
 import { addRivalRelationshipEvent, rivalRelationship } from './phase18RivalRelationshipEngine';
 import { characterOpinionFor, recordCharacterMemory } from './characterOpinionEngine';
 import { propagateCharacterReaction } from './characterConnectionEngine';
+import { createCharacterCommitmentFromRequest } from './characterCommitmentEngine';
 
 const STAFF_DEPARTMENT: Record<StaffRole, DepartmentId> = {
   'Technical Director': 'Technical',
@@ -451,5 +452,6 @@ export function resolveCharacterRequest(state: GameState, event: PaddockEvent, o
     tone: result.tone,
     effects: result.effects,
   });
-  return propagateCharacterReaction(remembered, target, result.tone, optionLabel);
+  const committed = createCharacterCommitmentFromRequest(remembered, event, optionId, result.effects);
+  return propagateCharacterReaction(committed, target, result.tone, optionLabel);
 }

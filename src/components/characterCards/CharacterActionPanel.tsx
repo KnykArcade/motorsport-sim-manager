@@ -17,6 +17,7 @@ import {
 import { activeAmbitionForTarget } from '../../sim/characterAmbitionEngine';
 import { connectedCharacter, connectionsForTarget, factionsForTarget } from '../../sim/characterConnectionEngine';
 import { disputesForTarget } from '../../sim/characterDisputeEngine';
+import { commitmentsForTarget } from '../../sim/characterCommitmentEngine';
 
 type Props = {
   state: GameState;
@@ -55,6 +56,9 @@ export function CharacterActionPanel({ state, target }: Props) {
   const connections = connectionsForTarget(state, target).slice(0, 6);
   const factions = factionsForTarget(state, target);
   const disputes = disputesForTarget(state, target).filter((dispute) => dispute.status !== 'Resolved');
+  const commitments = commitmentsForTarget(state, target);
+  const activeCommitments = commitments.filter((commitment) => commitment.status === 'Active').slice(0, 2);
+  const resolvedCommitments = commitments.filter((commitment) => commitment.status !== 'Active').slice(0, 3);
 
   return (
     <div className="space-y-4">
@@ -114,6 +118,7 @@ export function CharacterActionPanel({ state, target }: Props) {
               </div>
             </div>
           )}
+          {activeCommitments.length > 0 && <div className="mt-3 grid gap-2 sm:grid-cols-2">{activeCommitments.map((commitment) => <article key={commitment.id} className="rounded border border-violet-800/60 bg-violet-950/20 p-2.5"><div className="flex items-start justify-between gap-2"><div><div className="text-[10px] font-bold uppercase tracking-[0.14em] text-violet-300">Your commitment</div><strong className="mt-1 block text-xs text-neutral-200">{commitment.title}</strong></div><span className="text-[10px] font-semibold text-amber-300">Due R{commitment.dueRound}</span></div><p className="mt-1 text-[10px] leading-relaxed text-neutral-400">{commitment.measureLabel}: {commitment.currentValue}/{commitment.targetValue} {commitment.direction === 'AtMost' ? 'maximum' : 'required'}</p></article>)}</div>}
           {memories.length > 0 && (
             <div className="mt-3 grid gap-2 lg:grid-cols-3">
               {memories.map((memory) => (
@@ -244,6 +249,7 @@ export function CharacterActionPanel({ state, target }: Props) {
               ))}
             </div>
           ) : <p className="mt-2 text-xs text-neutral-500">No character-request decisions have been recorded with {target.name} yet.</p>}
+          {resolvedCommitments.length > 0 && <div className="mt-3 border-t border-neutral-800 pt-3"><div className="text-[10px] font-bold uppercase tracking-[0.16em] text-neutral-500">Commitment outcomes</div><div className="mt-2 grid gap-2 lg:grid-cols-3">{resolvedCommitments.map((commitment) => <article key={commitment.id} className={`rounded border p-2.5 ${commitment.status === 'Fulfilled' ? 'border-emerald-900/70 bg-emerald-950/20' : 'border-red-900/70 bg-red-950/20'}`}><div className="flex items-center justify-between gap-2"><strong className="text-xs text-neutral-200">{commitment.title}</strong><span className={`text-[10px] font-bold ${commitment.status === 'Fulfilled' ? 'text-emerald-300' : 'text-red-300'}`}>{commitment.status}</span></div><p className="mt-1 text-[10px] text-neutral-500">{commitment.measureLabel}: {commitment.currentValue}/{commitment.targetValue}</p></article>)}</div></div>}
         </section>
       )}
     </div>

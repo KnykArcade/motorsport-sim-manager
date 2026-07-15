@@ -35,6 +35,7 @@ import { generateCharacterRequestEvents } from '../sim/characterRequestEngine';
 import { advanceCharacterAmbitions, generateCharacterAmbitionEvents } from '../sim/characterAmbitionEngine';
 import { generateCharacterConnectionEvents, refreshCharacterConnections } from '../sim/characterConnectionEngine';
 import { generateCharacterDisputeEvents, refreshCharacterDisputes } from '../sim/characterDisputeEngine';
+import { advanceCharacterCommitments, generateCharacterCommitmentEvents } from '../sim/characterCommitmentEngine';
 
 export function defaultCareerPhaseState(): CareerPhaseState {
   return {
@@ -1163,27 +1164,29 @@ export function generateAndStorePaddockEvents(state: GameState): GameState {
   const stateWithConnections = refreshCharacterConnections(state);
   const stateWithDisputes = refreshCharacterDisputes(stateWithConnections);
   const stateWithAmbitions = advanceCharacterAmbitions(stateWithDisputes);
-  const updatedPhaseState = getOrCreatePhaseState(stateWithAmbitions);
+  const stateWithCommitments = advanceCharacterCommitments(stateWithAmbitions);
+  const updatedPhaseState = getOrCreatePhaseState(stateWithCommitments);
 
-  const events = generatePaddockWeekEvents(stateWithAmbitions);
-  events.push(...generateCharacterRequestEvents(stateWithAmbitions));
-  events.push(...generateCharacterAmbitionEvents(stateWithAmbitions));
-  events.push(...generateCharacterConnectionEvents(stateWithAmbitions));
-  events.push(...generateCharacterDisputeEvents(stateWithAmbitions));
-  events.push(...narrativeResponseEvents(stateWithAmbitions));
+  const events = generatePaddockWeekEvents(stateWithCommitments);
+  events.push(...generateCharacterRequestEvents(stateWithCommitments));
+  events.push(...generateCharacterAmbitionEvents(stateWithCommitments));
+  events.push(...generateCharacterConnectionEvents(stateWithCommitments));
+  events.push(...generateCharacterDisputeEvents(stateWithCommitments));
+  events.push(...generateCharacterCommitmentEvents(stateWithCommitments));
+  events.push(...narrativeResponseEvents(stateWithCommitments));
 
   // Track newly announced completed projects.
   const announced = new Set(phaseState.announcedCompletedProjectIds);
   for (const e of events) {
     if (e.category === 'development' && e.title.startsWith('Upgrade completed: ')) {
       const projName = e.title.replace('Upgrade completed: ', '');
-      const proj = stateWithAmbitions.completedDevelopmentProjects.find((p) => p.name === projName);
+      const proj = stateWithCommitments.completedDevelopmentProjects.find((p) => p.name === projName);
       if (proj) announced.add(proj.id);
     }
   }
 
   const withEvents: GameState = {
-    ...stateWithAmbitions,
+    ...stateWithCommitments,
     careerPhase: {
       ...updatedPhaseState,
       paddockEvents: events,
