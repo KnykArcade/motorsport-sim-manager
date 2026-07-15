@@ -18,15 +18,27 @@ import { contractClauseLabel, DRIVER_NEGOTIATION_CLAUSES } from '../sim/phase18C
 import type { ContractClause, ContractClauseType } from '../types/phase18Types';
 import type { CharacterFutureIntent } from '../types/characterInteractionTypes';
 import { characterFutureIntentLabel, futureIntentForTarget } from '../sim/characterFutureIntentEngine';
+import {
+  DRIVER_DIRECTORY_PAGE_SIZE,
+  DRIVERS_TABS,
+  driverDirectoryPage,
+  driverDirectoryPageCount,
+  type DriversTab,
+} from './driversViewModel';
 
 export function Drivers() {
   const { state, dispatch } = useGame();
+  const [tab, setTab] = useState<DriversTab>('lineup');
+  const [directoryPage, setDirectoryPage] = useState(0);
   if (!state) return null;
 
   const teamName = (id: string) => state.teams.find((t) => t.id === id)?.name ?? id;
   const teamColor = (id: string) => state.teams.find((t) => t.id === id)?.color ?? '#666';
 
   const ordered = state.drivers;
+  const directoryPageCount = driverDirectoryPageCount(ordered.length);
+  const safeDirectoryPage = Math.min(directoryPage, directoryPageCount - 1);
+  const visibleDirectoryDrivers = driverDirectoryPage(ordered, safeDirectoryPage);
 
   const playerTeam = teamById(state, state.selectedTeamId);
   const raceSeats = activeDriversForTeam(state, state.selectedTeamId);
@@ -48,7 +60,28 @@ export function Drivers() {
     <div className="space-y-6">
       <h1 className="text-2xl font-bold text-neutral-100">Drivers</h1>
 
-      {playerTeam && (
+      <nav
+        className="grid grid-cols-3 gap-1 rounded-lg border border-neutral-800 bg-neutral-950/70 p-1"
+        aria-label="Driver roster sections"
+      >
+        {DRIVERS_TABS.map((item) => (
+          <button
+            key={item.id}
+            type="button"
+            onClick={() => setTab(item.id)}
+            aria-current={tab === item.id ? 'page' : undefined}
+            className={`rounded px-3 py-2 text-xs font-semibold transition-colors ${
+              tab === item.id
+                ? 'bg-amber-500 text-neutral-950'
+                : 'text-neutral-400 hover:bg-neutral-900 hover:text-neutral-100'
+            }`}
+          >
+            {item.label}
+          </button>
+        ))}
+      </nav>
+
+      {tab === 'lineup' && playerTeam && (
         <Panel className="ring-1 ring-amber-500/60">
           <div className="mb-3 flex items-center justify-between">
             <h2 className="text-lg font-semibold text-neutral-100">
@@ -117,32 +150,29 @@ export function Drivers() {
             </div>
           )}
 
-          <div className="mt-4">
-            <div className="mb-2 text-sm font-semibold text-neutral-300">
-              Reserve Drivers {reserves.length === 0 && <span className="font-normal text-neutral-500">— none</span>}
-            </div>
-            {reserves.length > 0 && (
-              <div className="space-y-2">
-                {reserves.map((r) => (
-                  <div
-                    key={r.id}
-                    className="flex items-center justify-between rounded border border-neutral-800 bg-neutral-900/40 px-3 py-2"
-                  >
-                    <span className="text-sm text-neutral-200">
-                      #{r.number} {r.name}{' '}
-                      <span className="text-xs text-amber-300/80">
-                        {r.ratings.overall.toFixed(1)}
-                      </span>
-                      {r.contractType === 'third' && (
+        </Panel>
+      )}
+
+      {tab === 'reserves' && playerTeam && (
+        <Panel title={`Reserve Drivers — ${playerTeam.name}`}>
+          {reserves.length > 0 ? (
+            <div className="grid gap-3 lg:grid-cols-2">
+              {reserves.map((reserve) => (
+                <div key={reserve.id} className="rounded border border-neutral-800 bg-neutral-900/40 p-3">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <span className="text-sm font-semibold text-neutral-200">
+                      #{reserve.number} {reserve.name}{' '}
+                      <span className="text-xs text-amber-300/80">{reserve.ratings.overall.toFixed(1)}</span>
+                      {reserve.contractType === 'third' && (
                         <span className="ml-2 rounded bg-sky-500/15 px-1.5 py-0.5 text-[10px] text-sky-300">
                           3rd driver
                         </span>
                       )}
                     </span>
-                    <div className="flex gap-2">
+                    <div className="flex flex-wrap gap-2">
                       <DriverDossierButton
                         state={state}
-                        subject={{ type: 'driver', driver: r }}
+                        subject={{ type: 'driver', driver: reserve }}
                         context={`Reserve - ${playerTeam.name}`}
                         focus="development"
                       />
@@ -154,7 +184,7 @@ export function Drivers() {
                             dispatch({
                               type: 'SWAP_RACE_DRIVER',
                               seatIndex: seat,
-                              reserveDriverId: r.id,
+                              reserveDriverId: reserve.id,
                             })
                           }
                         >
@@ -162,68 +192,100 @@ export function Drivers() {
                         </Button>
                       ))}
                     </div>
-                    <ContractExtensionControls
-                      driver={r}
-                      budget={teamBudget}
-                      canNegotiate={canNegotiateContracts}
-                      extensionCost={extensionCost}
-                      latestOffer={latestContractOffer(r.id)}
-                      currentClause={activeClause(r.id)}
-                      futureIntent={futureIntentForTarget(state, { type: 'Driver', id: r.id, name: r.name, teamId: r.teamId })}
-                      onExtend={extendDriver}
-                    />
                   </div>
-                ))}
-              </div>
-            )}
-          </div>
+                  <ContractExtensionControls
+                    driver={reserve}
+                    budget={teamBudget}
+                    canNegotiate={canNegotiateContracts}
+                    extensionCost={extensionCost}
+                    latestOffer={latestContractOffer(reserve.id)}
+                    currentClause={activeClause(reserve.id)}
+                    futureIntent={futureIntentForTarget(state, {
+                      type: 'Driver',
+                      id: reserve.id,
+                      name: reserve.name,
+                      teamId: reserve.teamId,
+                    })}
+                    onExtend={extendDriver}
+                  />
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="rounded border border-dashed border-neutral-700 px-4 py-8 text-center text-sm text-neutral-500">
+              No reserve or test drivers are currently signed.
+            </div>
+          )}
         </Panel>
       )}
 
-      <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
-        {ordered.map((d) => {
-          const isPlayer = d.teamId === state.selectedTeamId;
-          const overall = readoutForDriverRating(state, d, 'overall');
-          const stat = (key: keyof typeof d.ratings) => readoutForDriverRating(state, d, key);
-          return (
-            <Panel key={d.id} className={isPlayer ? 'ring-1 ring-amber-500/60' : ''}>
-              <div className="mb-2 flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <span className="h-5 w-1.5 rounded-sm" style={{ backgroundColor: teamColor(d.teamId) }} />
-                  <span className="font-bold text-neutral-100">#{d.number} {d.name}</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="rounded bg-neutral-800 px-2 py-0.5 text-xs font-semibold text-amber-300">
-                    {overall.label}
-                  </span>
-                  <DriverDossierButton
-                    state={state}
-                    subject={{ type: 'driver', driver: d }}
-                    context={teamName(d.teamId)}
-                    focus={isPlayer ? 'relationship' : 'identity'}
-                  />
-                </div>
-              </div>
-              <div className="mb-2 text-xs text-neutral-500">{teamName(d.teamId)}</div>
-              {!isPlayer && (
-                <div className="mb-2">
-                  <ScoutingWidget target={driverScoutTarget(d)} entityType="Driver" compact />
-                </div>
-              )}
-              <div className="grid grid-cols-1 gap-1">
-                <StatBar label="Qualifying" value={stat('qualifying').value ?? 0} max={100} valueLabel={stat('qualifying').label} />
-                <StatBar label="Race Pace" value={stat('racePace').value ?? 0} max={100} valueLabel={stat('racePace').label} />
-                <StatBar label="Cornering" value={stat('cornering').value ?? 0} max={100} valueLabel={stat('cornering').label} />
-                <StatBar label="Overtaking" value={stat('overtakingRacecraft').value ?? 0} max={100} valueLabel={stat('overtakingRacecraft').label} />
-                <StatBar label="Composure" value={stat('composure').value ?? 0} max={100} valueLabel={stat('composure').label} />
-                <StatBar label="Aggression" value={stat('aggression').value ?? 0} max={100} valueLabel={stat('aggression').label} />
-                <StatBar label="Morale" value={d.morale} max={100} valueLabel={`${d.morale.toFixed(1)}`} />
-                <StatBar label="Confidence" value={d.confidence} max={100} valueLabel={`${d.confidence.toFixed(1)}`} />
-              </div>
-            </Panel>
-          );
-        })}
-      </div>
+      {tab === 'directory' && (
+        <>
+          <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+            {visibleDirectoryDrivers.map((d) => {
+              const isPlayer = d.teamId === state.selectedTeamId;
+              const overall = readoutForDriverRating(state, d, 'overall');
+              const stat = (key: keyof typeof d.ratings) => readoutForDriverRating(state, d, key);
+              return (
+                <Panel key={d.id} className={isPlayer ? 'ring-1 ring-amber-500/60' : ''}>
+                  <div className="mb-2 flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <span className="h-5 w-1.5 rounded-sm" style={{ backgroundColor: teamColor(d.teamId) }} />
+                      <span className="font-bold text-neutral-100">#{d.number} {d.name}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="rounded bg-neutral-800 px-2 py-0.5 text-xs font-semibold text-amber-300">
+                        {overall.label}
+                      </span>
+                      <DriverDossierButton
+                        state={state}
+                        subject={{ type: 'driver', driver: d }}
+                        context={teamName(d.teamId)}
+                        focus={isPlayer ? 'relationship' : 'identity'}
+                      />
+                    </div>
+                  </div>
+                  <div className="mb-2 text-xs text-neutral-500">{teamName(d.teamId)}</div>
+                  {!isPlayer && (
+                    <div className="mb-2">
+                      <ScoutingWidget target={driverScoutTarget(d)} entityType="Driver" compact />
+                    </div>
+                  )}
+                  <div className="grid grid-cols-1 gap-1">
+                    <StatBar label="Qualifying" value={stat('qualifying').value ?? 0} max={100} valueLabel={stat('qualifying').label} />
+                    <StatBar label="Race Pace" value={stat('racePace').value ?? 0} max={100} valueLabel={stat('racePace').label} />
+                    <StatBar label="Morale" value={d.morale} max={100} valueLabel={`${d.morale.toFixed(1)}`} />
+                    <StatBar label="Confidence" value={d.confidence} max={100} valueLabel={`${d.confidence.toFixed(1)}`} />
+                  </div>
+                </Panel>
+              );
+            })}
+          </div>
+          <div className="flex items-center justify-between gap-3 rounded-lg border border-neutral-800 bg-neutral-950/60 px-3 py-2">
+            <Button
+              variant="secondary"
+              className="px-3 py-1 text-xs"
+              onClick={() => setDirectoryPage(Math.max(0, safeDirectoryPage - 1))}
+              disabled={safeDirectoryPage === 0}
+            >
+              Previous
+            </Button>
+            <span className="text-xs text-neutral-500">
+              Drivers {ordered.length ? safeDirectoryPage * DRIVER_DIRECTORY_PAGE_SIZE + 1 : 0}–
+              {Math.min(ordered.length, (safeDirectoryPage + 1) * DRIVER_DIRECTORY_PAGE_SIZE)} of {ordered.length} ·
+              Page {safeDirectoryPage + 1} of {directoryPageCount}
+            </span>
+            <Button
+              variant="secondary"
+              className="px-3 py-1 text-xs"
+              onClick={() => setDirectoryPage(Math.min(directoryPageCount - 1, safeDirectoryPage + 1))}
+              disabled={safeDirectoryPage >= directoryPageCount - 1}
+            >
+              Next
+            </Button>
+          </div>
+        </>
+      )}
     </div>
   );
 }
