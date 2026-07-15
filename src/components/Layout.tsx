@@ -28,6 +28,7 @@ const NAV = [
   { to: '/principal', label: 'Principal', icon: 'TP' },
   { to: '/relationships', label: 'Driver Relations', icon: 'DR' },
   { to: '/rivals', label: 'Team Rivalries', icon: 'RV' },
+  { to: '/stories', label: 'Paddock Stories', icon: 'PS' },
   { to: '/politics', label: 'Regulations', icon: 'RG' },
   { to: '/data', label: 'Data Viewer', icon: 'DT' },
   { to: '/settings', label: 'Settings', icon: 'SE' },

@@ -39,7 +39,9 @@ describe('Phase 18 foundation state', () => {
     expect(foundation.contractClauses.every((clause) => clause.status === 'Active')).toBe(true);
     expect(Object.keys(foundation.rivalRelationships)).toHaveLength(state.teams.length * (state.teams.length - 1) / 2);
     expect(foundation.legacy.score).toBe(0);
-    expect(foundation.narratives).toEqual([]);
+    expect(foundation.narratives.length).toBeGreaterThan(0);
+    expect(foundation.narratives.every((story) => story.createdSeasonYear === state.seasonYear)).toBe(true);
+    expect(foundation.narratives.every((story) => story.status === 'Active')).toBe(true);
   });
 
   it('is deterministic and uses order-independent rivalry ids', () => {

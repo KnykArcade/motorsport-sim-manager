@@ -437,6 +437,10 @@ export type NarrativeStory = {
   linkedStaffIds: string[];
   actionRoute?: string;
   sourceEventIds: string[];
+  stage?: 'Emerging' | 'Escalating' | 'Flashpoint' | 'Cooling' | 'Resolved';
+  progress?: number;
+  consequenceSummary?: string;
+  aiReaction?: string;
 };
 
 export type Phase18FoundationState = {
