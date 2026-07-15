@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useGame } from '../game/GameContext';
 import {
@@ -32,10 +33,12 @@ import { calculateAcademyCapacity } from '../sim/teamRatingsEngine';
 import type { TeamOrganizationRatings } from '../types/teamRatingsTypes';
 import type { GameMode } from '../types/gameTypes';
 import type { TeamPrincipal } from '../types/principalTypes';
+import { TEAM_HQ_TABS, type TeamHQTab } from './teamHQViewModel';
 
 export function TeamHQ() {
   const { state } = useGame();
   const navigate = useNavigate();
+  const [tab, setTab] = useState<TeamHQTab>('race');
   if (!state) return null;
 
   const team = teamById(state, state.selectedTeamId);
@@ -92,10 +95,31 @@ export function TeamHQ() {
         <KpiCard label="Active Projects" value={String(state.activeDevelopmentProjects.length)} />
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-3">
-        <div className="space-y-6 lg:col-span-2">
+      <nav
+        className="grid grid-cols-2 gap-1 rounded-lg border border-neutral-800 bg-neutral-950/70 p-1 sm:grid-cols-3 xl:grid-cols-6"
+        aria-label="Team HQ command center"
+      >
+        {TEAM_HQ_TABS.map((item) => (
+          <button
+            key={item.id}
+            type="button"
+            onClick={() => setTab(item.id)}
+            aria-current={tab === item.id ? 'page' : undefined}
+            className={`rounded px-3 py-2 text-xs font-semibold transition-colors ${
+              tab === item.id
+                ? 'bg-amber-500 text-neutral-950'
+                : 'text-neutral-400 hover:bg-neutral-900 hover:text-neutral-100'
+            }`}
+          >
+            {item.label}
+          </button>
+        ))}
+      </nav>
+
+      <div className="grid gap-4 lg:grid-cols-2">
+        <div className={`space-y-4 ${tab === 'organization' ? 'lg:col-span-2' : ''}`}>
           {/* Next race briefing */}
-          {race && track && !state.seasonComplete && (
+          {tab === 'race' && race && track && !state.seasonComplete && (
             <Panel
               title={`Next Race · Round ${race.round}`}
               actions={
@@ -128,7 +152,7 @@ export function TeamHQ() {
           )}
 
           {/* Car performance */}
-          {ratings && (
+          {tab === 'car' && ratings && (
             <Panel title="Car Performance">
               <div className="grid gap-2 md:grid-cols-2">
                 <StatBar label="Engine Power" value={ratings.enginePower} max={100} />
@@ -141,28 +165,33 @@ export function TeamHQ() {
             </Panel>
           )}
 
-          {/* Season regulations */}
-          {(() => {
-            const regSet = getRegulationSet(state.regulationSetId);
-            if (!regSet) return null;
-            return (
-              <RegulationPanel
-                regulationSet={regSet}
-                seasonYear={state.seasonYear}
-                locked={isSingleSeasonMode(state.gameMode)}
-                compact
-              />
-            );
-          })()}
-
           {/* Team organization ratings */}
-          {orgRatings && <TeamRatingsPanel ratings={orgRatings} academyUsed={(state.academy ?? []).length} />}
+          {tab === 'organization' && orgRatings && (
+            <TeamRatingsPanel ratings={orgRatings} academyUsed={(state.academy ?? []).length} />
+          )}
+
+          {tab === 'news' && (
+            <Panel title="Top Stories">
+              <NewsFeed items={state.news} limit={4} />
+            </Panel>
+          )}
+          {tab === 'race' && state.seasonComplete && (
+            <Panel title="Season Complete">
+              <div className="flex items-center justify-between gap-4">
+                <p className="text-sm text-neutral-400">Review the completed season and prepare the next chapter.</p>
+                <Button variant="primary" onClick={() => navigate('/season-review')}>
+                  Open Season Review →
+                </Button>
+              </div>
+            </Panel>
+          )}
 
           {/* Drivers */}
-          <Panel title="Drivers">
-            <div className="grid gap-3 sm:grid-cols-2">
-              {drivers.map((d) => (
-                <div key={d.id} className="rounded-lg border border-neutral-800 bg-neutral-900/40 p-3">
+          {tab === 'personnel' && (
+            <Panel title="Drivers">
+              <div className="grid gap-3 sm:grid-cols-2">
+                {drivers.map((d) => (
+                  <div key={d.id} className="rounded-lg border border-neutral-800 bg-neutral-900/40 p-3">
                   <div className="flex items-center justify-between gap-2">
                     <div className="flex items-center gap-2">
                       <MoraleDot morale={d.morale} />
@@ -184,17 +213,32 @@ export function TeamHQ() {
                     <StatBar label="Qualifying" value={d.ratings.qualifying} max={100} />
                     <StatBar label="Race Pace" value={d.ratings.racePace} max={100} />
                   </div>
-                </div>
-              ))}
-            </div>
-          </Panel>
+                  </div>
+                ))}
+              </div>
+            </Panel>
+          )}
         </div>
 
-        <div className="space-y-6">
-          {principal && <PrincipalPanel principal={principal} />}
+        <div className="space-y-4">
+          {tab === 'car' && (() => {
+            const regSet = getRegulationSet(state.regulationSetId);
+            if (!regSet) return null;
+            return (
+              <RegulationPanel
+                regulationSet={regSet}
+                seasonYear={state.seasonYear}
+                locked={isSingleSeasonMode(state.gameMode)}
+                compact
+              />
+            );
+          })()}
 
-          <Panel title="Quick Actions">
-            <div className="grid grid-cols-2 gap-2">
+          {tab === 'personnel' && principal && <PrincipalPanel principal={principal} />}
+
+          {tab === 'race' && (
+            <Panel title="Quick Actions">
+              <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
               <Button onClick={() => navigate('/calendar')}>Calendar</Button>
               <Button onClick={() => navigate('/standings')}>Standings</Button>
               <Button onClick={() => navigate('/history')}>Race History</Button>
@@ -212,39 +256,40 @@ export function TeamHQ() {
               <Button onClick={() => navigate('/records')}>Universe History</Button>
               <Button onClick={() => navigate('/data')}>Team Data</Button>
               <Button onClick={() => navigate('/settings')}>Settings</Button>
-            </div>
-          </Panel>
+              </div>
+            </Panel>
+          )}
 
-          <Panel title="Top Stories">
-            <NewsFeed items={state.news} limit={6} />
-          </Panel>
-
-          <NewsPanel
-            news={state.news}
-            title="My Team News"
-            maxItems={4}
-            teamId={state.selectedTeamId}
-            emptyMessage="No team-specific news yet."
-          />
+          {tab === 'news' && (
+            <NewsPanel
+              news={state.news}
+              title="My Team News"
+              maxItems={4}
+              teamId={state.selectedTeamId}
+              emptyMessage="No team-specific news yet."
+            />
+          )}
         </div>
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-2">
-        <StandingsTable
-          title="Drivers' Championship"
-          entries={state.driverStandings.slice(0, 8)}
-          nameOf={driverName}
-          subtitleOf={(id) => teamName(state.drivers.find((d) => d.id === id)?.teamId ?? '')}
-          highlightId={drivers[0]?.id}
-        />
-        <StandingsTable
-          title="Constructors' Championship"
-          entries={state.constructorStandings.slice(0, 8)}
-          nameOf={teamName}
-          colorOf={teamColor}
-          highlightId={state.selectedTeamId}
-        />
-      </div>
+      {tab === 'standings' && (
+        <div className="grid gap-4 lg:grid-cols-2">
+          <StandingsTable
+            title="Drivers' Championship"
+            entries={state.driverStandings.slice(0, 8)}
+            nameOf={driverName}
+            subtitleOf={(id) => teamName(state.drivers.find((d) => d.id === id)?.teamId ?? '')}
+            highlightId={drivers[0]?.id}
+          />
+          <StandingsTable
+            title="Constructors' Championship"
+            entries={state.constructorStandings.slice(0, 8)}
+            nameOf={teamName}
+            colorOf={teamColor}
+            highlightId={state.selectedTeamId}
+          />
+        </div>
+      )}
     </div>
   );
 }
