@@ -272,6 +272,8 @@ export function buildCharacterDossier(
 
   const staff = subject.staff;
   const active = (state.staff ?? []).some((member) => member.id === staff.id);
+  const employerTeamId = Object.entries(state.aiStaff ?? {}).find(([, roster]) => roster.some((member) => member.id === staff.id))?.[0];
+  const employer = state.teams.find((team) => team.id === employerTeamId);
   const clauses = (state.phase18?.contractClauses ?? []).filter(
     (clause) => clause.partyType === 'Staff' && clause.partyId === staff.id,
   );
@@ -285,22 +287,22 @@ export function buildCharacterDossier(
     role: staff.role,
     organization: active
       ? state.teams.find((team) => team.id === state.selectedTeamId)?.name ?? 'Your Team'
-      : 'Available Personnel',
+      : employer?.name ?? 'Available Personnel',
     accent: active
       ? state.teams.find((team) => team.id === state.selectedTeamId)?.color ?? '#f59e0b'
-      : '#64748b',
-    context: active ? 'Team personnel file' : 'Recruitment dossier',
+      : employer?.color ?? '#64748b',
+    context: active ? 'Team personnel file' : employer ? 'Rival personnel file' : 'Recruitment dossier',
     summary: staff.bio,
-    identityLabel: active ? 'Current Staff Member' : 'Recruitment Candidate',
+    identityLabel: active ? 'Current Staff Member' : employer ? 'Rival Staff Member' : 'Recruitment Candidate',
     identityDescription: `${staff.role}: ${staff.bio}`,
     facts: [
       { label: 'Nationality', value: staff.nationality },
       { label: 'Salary', value: formatMoney(staff.salary * 1_000_000) },
       { label: 'Signing fee', value: formatMoney(staff.signingFee * 1_000_000) },
-      { label: 'Status', value: active ? 'Under contract' : 'Available' },
-      ...(active ? [{ label: 'Contract', value: `${staff.contractYearsRemaining ?? 2} year${(staff.contractYearsRemaining ?? 2) === 1 ? '' : 's'} remaining` }] : []),
+      { label: 'Status', value: active ? 'Under contract with your team' : employer ? `Under contract with ${employer.name}` : 'Available' },
+      ...(active || employer ? [{ label: 'Contract', value: `${staff.contractYearsRemaining ?? 2} year${(staff.contractYearsRemaining ?? 2) === 1 ? '' : 's'} remaining` }] : []),
     ],
-    traits: [staff.role, active ? 'Integrated with team' : 'Available to hire'],
+    traits: [staff.role, active ? 'Integrated with team' : employer ? 'Employed by rival' : 'Available to hire'],
     metrics: [{ label: 'Role Rating', value: `${roleRating.toFixed(1)}/10`, score: roleRating * 10 }],
     commitments: clauses.map((clause) => `${contractClauseLabel(clause.clauseType)} — ${clause.status}`),
     history: recommendations.slice(-10).reverse().map((recommendation) => ({
@@ -311,7 +313,9 @@ export function buildCharacterDossier(
     })),
     playerRead: active
       ? `${staff.name} is your ${staff.role.toLowerCase()} and has a ${roleRating.toFixed(1)}/10 role rating.`
-      : `${staff.name} is available with a ${roleRating.toFixed(1)}/10 role rating and a ${formatMoney(staff.signingFee * 1_000_000)} signing fee.`,
+      : employer
+        ? `${staff.name} is ${employer.name}'s ${staff.role.toLowerCase()} with a ${roleRating.toFixed(1)}/10 role rating. Recruiting them requires contract compensation.`
+        : `${staff.name} is available with a ${roleRating.toFixed(1)}/10 role rating and a ${formatMoney(staff.signingFee * 1_000_000)} signing fee.`,
     route: '/staff',
   };
 }
@@ -336,11 +340,12 @@ function interactionTargetFor(
     return { type: 'Owner', id: model.id, name: model.name, teamId: subject.teamId };
   }
   const active = (state.staff ?? []).some((member) => member.id === subject.staff.id);
+  const employerTeamId = Object.entries(state.aiStaff ?? {}).find(([, roster]) => roster.some((member) => member.id === subject.staff.id))?.[0];
   return {
     type: active ? 'Staff' : 'StaffCandidate',
     id: subject.staff.id,
     name: subject.staff.name,
-    teamId: active ? state.selectedTeamId : undefined,
+    teamId: active ? state.selectedTeamId : employerTeamId,
   };
 }
 

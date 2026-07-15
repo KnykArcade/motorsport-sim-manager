@@ -106,7 +106,8 @@ import {
 import { generatePaddockIntelligence, resolveIntelligenceAction } from '../sim/phase18IntelligenceEngine';
 import { applyPreseasonCarModifier, completeCarLaunch, completePreseasonTesting, ensurePreseasonHubState, resolvePreseasonFlaw } from '../sim/phase18PreseasonEngine';
 import { applyFailureRiskModifier, investigateFailure, recordFailureInvestigations, respondToFailure } from '../sim/phase18FailureInvestigationEngine';
-import { evolveRivalRelationshipsAfterRace, recordRegulationVoteRelationships, takeRivalAction } from '../sim/phase18RivalRelationshipEngine';
+import { evolveRivalRelationshipsAfterRace, recordRegulationVoteRelationships, recordStaffPoach, takeRivalAction } from '../sim/phase18RivalRelationshipEngine';
+import { staffEmployer, staffPoachingCompensation } from '../sim/aiStaffRosterEngine';
 import { recordRaceLegacy } from '../sim/phase18LegacyEngine';
 import { syncNarratives } from '../sim/phase18NarrativeEngine';
 import { applyNarrativeAIReactions, resolveNarrativeResponse } from '../sim/phase18NarrativeResponseEngine';
@@ -1217,17 +1218,20 @@ function hireStaff(state: GameState, staffId: string): GameState {
   const recruit = getStaffPool(state.seasonYear, state.series).find((s) => s.id === staffId);
   if (!recruit) return state;
   const replaced = roster.find((member) => member.role === recruit.role);
+  const employerTeamId = staffEmployer(state.aiStaff, recruit.id);
+  const employer = state.teams.find((team) => team.id === employerTeamId);
   const signingDiscount = recruitmentSigningDiscount(state, staffId);
   const fee = Math.round(toMoney(recruit.signingFee) * (1 - signingDiscount));
+  const poachingCompensation = employerTeamId ? staffPoachingCompensation(recruit) : 0;
   const severance = replaced ? staffReleaseCost(replaced) : 0;
-  if (fee + severance > playerBudget(state)) return state;
+  if (fee + poachingCompensation + severance > playerBudget(state)) return state;
   const charged = applyTransaction(
     state,
     makeTransaction(
       state.seasonYear,
       'Staff',
-      `Hired ${recruit.name} (${recruit.role})${replaced ? `; released ${replaced.name}` : ''}${signingDiscount > 0 ? ` - ${Math.round(signingDiscount * 100)}% relationship discount` : ''}`,
-      -(fee + severance),
+      `${employer ? `Poached` : 'Hired'} ${recruit.name} (${recruit.role})${employer ? ` from ${employer.name}` : ''}${replaced ? `; released ${replaced.name}` : ''}${signingDiscount > 0 ? ` - ${Math.round(signingDiscount * 100)}% relationship discount` : ''}`,
+      -(fee + poachingCompensation + severance),
     ),
   );
   const nextRoster = [
@@ -1239,26 +1243,35 @@ function hireStaff(state: GameState, staffId: string): GameState {
     id: `news-staff-hire-${recruit.id}-${state.seasonYear}`,
     headline: `${hireTeam?.name ?? 'The team'} appoints ${recruit.name} as ${recruit.role}`,
     body: replaced
-      ? `${recruit.name} replaces ${replaced.name}. The appointment includes a two-year contract and ${formatStaffMoney(severance)} in early-release compensation.`
-      : `The team strengthens its technical department with a new ${recruit.role} on a two-year contract.`,
+      ? `${recruit.name} replaces ${replaced.name}. The appointment includes a two-year contract and ${formatStaffMoney(severance)} in early-release compensation.${employer ? ` ${employer.name} receives ${formatStaffMoney(poachingCompensation)} in contract compensation.` : ''}`
+      : `The team strengthens its technical department with a new ${recruit.role} on a two-year contract.${employer ? ` ${recruit.name} leaves ${employer.name}, which receives ${formatStaffMoney(poachingCompensation)} in contract compensation.` : ''}`,
     timestamp: new Date().toISOString(),
     category: 'development',
     priority: 'normal',
     careerPhase: getCareerPhase(charged),
     teamId: hireTeam?.id,
   };
-  const withReplacementClauses = replaced && charged.phase18 ? {
+  const chargedWithTransfer = employerTeamId ? {
     ...charged,
+    teams: charged.teams.map((team) => team.id === employerTeamId ? { ...team, budget: team.budget + poachingCompensation } : team),
+    aiStaff: Object.fromEntries(Object.entries(charged.aiStaff ?? {}).map(([teamId, staff]) => [
+      teamId,
+      teamId === employerTeamId ? staff.filter((member) => member.id !== recruit.id) : staff,
+    ])),
+  } : charged;
+  const withReplacementClauses = replaced && chargedWithTransfer.phase18 ? {
+    ...chargedWithTransfer,
     phase18: {
-      ...charged.phase18,
-      contractClauses: charged.phase18.contractClauses.map((clause) =>
+      ...chargedWithTransfer.phase18,
+      contractClauses: chargedWithTransfer.phase18.contractClauses.map((clause) =>
         clause.partyId === replaced.id && clause.status === 'Active'
           ? { ...clause, status: 'Expired' as const, resolutionNote: 'Contract ended when the specialist was replaced.' }
           : clause,
       ),
     },
-  } : charged;
-  return refreshCharacterFutureIntentions(ensureContractClauses({ ...withReplacementClauses, staff: nextRoster, news: [staffNews, ...charged.news].slice(0, 80) }));
+  } : chargedWithTransfer;
+  const hired = refreshCharacterFutureIntentions(ensureContractClauses({ ...withReplacementClauses, staff: nextRoster, news: [staffNews, ...chargedWithTransfer.news].slice(0, 80) }));
+  return employerTeamId ? recordStaffPoach(hired, employerTeamId, state.selectedTeamId) : hired;
 }
 
 function formatStaffMoney(value: number): string {

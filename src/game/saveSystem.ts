@@ -23,6 +23,7 @@ import { ensureCharacterInitiatives } from '../sim/characterInitiativeEngine';
 import { ensureCharacterMandates } from '../sim/characterMandateEngine';
 import { ensureCharacterBreakingPoints } from '../sim/characterBreakingPointEngine';
 import { ensureCharacterFutureIntentions } from '../sim/characterFutureIntentEngine';
+import { ensureAIStaffRosters } from '../sim/aiStaffRosterEngine';
 
 const SAVE_KEY = 'msm:save:v1';
 const SETTINGS_KEY = 'msm:settings:v1';
@@ -56,6 +57,16 @@ export function migrateGameState(state: GameState): GameState {
   if (patched.driverRelationships) {
     patched.driverRelationships = migrateRelationships(patched.driverRelationships);
   }
+  patched.aiStaff = ensureAIStaffRosters(
+    patched.aiStaff,
+    patched.aiStaffInitialized,
+    patched.teams ?? [],
+    patched.selectedTeamId ?? '',
+    patched.seasonYear ?? state.seasonYear,
+    patched.series ?? state.series,
+    patched.staff ?? [],
+  );
+  patched.aiStaffInitialized = true;
   if (!patched.driverPromises) {
     patched.driverPromises = [];
   }

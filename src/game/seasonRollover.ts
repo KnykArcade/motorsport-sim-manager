@@ -113,6 +113,7 @@ import type { DriverRelationship } from '../types/relationshipTypes';
 import { carForTeam, type GameState } from './careerState';
 import { ensureCharacterFutureIntentions } from '../sim/characterFutureIntentEngine';
 import { executePersonnelMoves } from '../sim/personnelMoveEngine';
+import { rolloverAIStaffRosters } from '../sim/aiStaffRosterEngine';
 
 // Annual sponsorship the player's team earns, driven by reputation and the
 // appeal (overall rating) of its driver line-up. Invented but ties sponsorship
@@ -1129,6 +1130,14 @@ export function advanceSeason(state: GameState, nextBundle?: SeasonBundle): Game
       attributes: createAIPrincipalAttributes(`${state.randomSeed}-${team.id}`, team.reputation),
     };
   }
+  const rolledAIStaff = rolloverAIStaffRosters(
+    state.aiStaff,
+    rosterTeams,
+    state.selectedTeamId,
+    nextYear,
+    state.series,
+    nextStaff,
+  );
   const aiOffseason = runAIOffseason({
     nextYear,
     seed: state.randomSeed,
@@ -1140,10 +1149,12 @@ export function advanceSeason(state: GameState, nextBundle?: SeasonBundle): Game
     aiTeamStates: aiRollover.states,
     aiPrincipals: aiPrincipalsForOffseason,
     aiAcademies: state.aiAcademies ?? {},
+    aiStaff: rolledAIStaff,
     orgRatings: state.teamOrgRatings ?? {},
     market: aiMarket,
     signedMarketIds: finalSignedMarketIds,
     reservedNames: aiReservedNames,
+    reservedStaffIds: new Set(nextStaff.map((member) => member.id)),
     constructorStandings: state.constructorStandings,
     regulationShakeup,
     regulationAffectedAreas,
@@ -1169,6 +1180,7 @@ export function advanceSeason(state: GameState, nextBundle?: SeasonBundle): Game
     aiOffseason.teams,
     nextYear,
     progressedMoveDrivers,
+    aiOffseason.aiStaff,
   );
 
   const champion = state.driverStandings[0];
@@ -1543,6 +1555,7 @@ export function advanceSeason(state: GameState, nextBundle?: SeasonBundle): Game
     academy: nextAcademy,
     staff: nextStaff,
     aiStaff: personnelMoveExecution.aiStaff,
+    aiStaffInitialized: true,
     pendingSignings: [],
     academyDecisions: [],
     signedMarketIds: aiOffseason.signedMarketIds,

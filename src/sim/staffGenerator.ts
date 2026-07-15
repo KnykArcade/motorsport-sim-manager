@@ -6,8 +6,10 @@
 import { createSeededRandom, deriveSeed, type Rng } from './random';
 import { STAFF_ROLES, type StaffMember, type StaffRole } from '../types/staffTypes';
 
-// How many candidates to generate per role. Four roles -> ~48 hireable staff.
-const PER_ROLE = 12;
+// Enough candidates to staff even the largest historical grids while leaving
+// a genuine free-agent market. The largest NASCAR files exceed 90 entrants,
+// so four roles produce 512 unique specialists.
+const PER_ROLE = 128;
 
 const FIRST_NAMES: { name: string; nat: string }[] = [
   { name: 'Adrian', nat: 'GB' }, { name: 'Ross', nat: 'GB' }, { name: 'Pat', nat: 'GB' },
