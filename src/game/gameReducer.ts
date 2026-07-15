@@ -109,6 +109,7 @@ import { applyFailureRiskModifier, investigateFailure, recordFailureInvestigatio
 import { evolveRivalRelationshipsAfterRace, recordRegulationVoteRelationships, takeRivalAction } from '../sim/phase18RivalRelationshipEngine';
 import { recordRaceLegacy } from '../sim/phase18LegacyEngine';
 import { syncNarratives } from '../sim/phase18NarrativeEngine';
+import { applyNarrativeAIReactions, resolveNarrativeResponse } from '../sim/phase18NarrativeResponseEngine';
 import { createSeededRandom, deriveSeed } from '../sim/random';
 import type { AcademyDecision, FirstOptionDecision, SeatSigning } from '../types/marketTypes';
 import type { FinanceTransaction } from '../types/financeTypes';
@@ -868,13 +869,18 @@ export function gameReducer(state: GameState | null, action: GameAction): GameSt
       const paddockNews = generateCareerPaddockNews(paddockCtx);
       const dedupedPaddockNews = deduplicateNews(state.news, paddockNews);
       state = { ...state, news: [...dedupedPaddockNews, ...state.news].slice(0, 80) };
+      state = applyNarrativeAIReactions(syncNarratives(state));
       return syncNarratives(generateAndStorePaddockEvents(state));
     }
 
     case 'RESOLVE_PADDOCK_EVENT': {
       if (!state) return state;
       if (getCareerPhase(state) !== 'paddock_week') return state;
-      return syncNarratives(resolvePaddockEvent(state, action.eventId, action.optionId));
+      const event = state.careerPhase?.paddockEvents.find((entry) => entry.id === action.eventId);
+      const alreadyApplied = event?.effectsApplied ?? false;
+      let resolved = resolvePaddockEvent(state, action.eventId, action.optionId);
+      if (event?.narrativeStoryId && !alreadyApplied) resolved = resolveNarrativeResponse(resolved, event.narrativeStoryId, action.optionId);
+      return syncNarratives(resolved);
     }
 
     case 'TOGGLE_PRESEASON_CHECKLIST_ITEM': {

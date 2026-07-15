@@ -87,6 +87,7 @@ export function PaddockWeek() {
     if (!phaseState) return {};
     const map: Record<string, PaddockEvent[]> = {};
     for (const e of phaseState.paddockEvents) {
+      if (e.narrativeStoryId) continue;
       if (!map[e.category]) map[e.category] = [];
       map[e.category].push(e);
     }
@@ -115,6 +116,9 @@ export function PaddockWeek() {
     (recommendation) => recommendation.decisionId
       && resolvedDecisionIds.has(recommendation.decisionId)
       && (recommendation.status === 'Accepted' || recommendation.status === 'Overruled'),
+  );
+  const storyDecisions = phaseState.paddockEvents.filter(
+    (event) => !!event.narrativeStoryId && !event.resolvedOptionId,
   );
 
   const advanceToBriefing = () => {
@@ -202,6 +206,24 @@ export function PaddockWeek() {
                   }
                 />
               ))}
+          </div>
+        </Panel>
+      )}
+
+      {storyDecisions.length > 0 && (
+        <Panel title="Paddock Story Decisions" className="border-violet-700/30">
+          <p className="mb-3 text-xs text-neutral-500">
+            These responses are optional. Unanswered stories remain active and the paddock may continue applying pressure.
+          </p>
+          <div className="grid gap-3 xl:grid-cols-2">
+            {storyDecisions.map((event) => (
+              <DecisionCard
+                key={event.id}
+                event={event}
+                recommendations={advisorRecommendationsForDecision(state, event.id)}
+                onResolve={(optionId) => dispatch({ type: 'RESOLVE_PADDOCK_EVENT', eventId: event.id, optionId })}
+              />
+            ))}
           </div>
         </Panel>
       )}

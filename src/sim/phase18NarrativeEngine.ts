@@ -41,7 +41,7 @@ function candidateStories(state: GameState): StoryCandidate[] {
   for (const clause of phase18.contractClauses.filter((entry) => entry.status === 'Breached' || entry.risk === 'AtRisk' || entry.risk === 'Triggered')) {
     const partyName = clause.partyType === 'Driver' ? driverName(clause.partyId) : clause.partyType === 'TeamPrincipal' ? state.principal?.name ?? clause.partyId : clause.partyId;
     const urgency = clause.status === 'Breached' || clause.risk === 'Triggered' ? 'Critical' : 'Important';
-    candidates.push({ threadId: `contract-${clause.id}`, category: clause.partyType === 'Driver' ? 'Driver' : 'Staff', headline: `${partyName} contract situation escalates`, summary: clause.resolutionNote ?? clause.description, urgency, confidence: 100, status: 'Active', linkedTeamIds: [clause.teamId], linkedDriverIds: clause.partyType === 'Driver' ? [clause.partyId] : [], linkedStaffIds: clause.partyType === 'Staff' ? [clause.partyId] : [], actionRoute: clause.partyType === 'Driver' ? '/relationships' : '/principal', sourceEventIds: [clause.id], consequenceSummary: clause.breachConsequence ?? 'Trust, retention, and future negotiations are at risk.', aiReaction: clause.aiRelevant ? 'Rival teams are aware of the contractual vulnerability.' : undefined });
+    candidates.push({ threadId: `contract-${clause.id}`, category: clause.partyType === 'Driver' ? 'Driver' : 'Staff', headline: `${partyName} contract situation escalates`, summary: clause.resolutionNote ?? clause.description, urgency, confidence: 100, status: 'Active', linkedTeamIds: [clause.teamId], linkedDriverIds: clause.partyType === 'Driver' ? [clause.partyId] : [], linkedStaffIds: clause.partyType === 'Staff' ? [clause.partyId] : [], actionRoute: clause.partyType === 'Driver' ? '/relationships' : clause.partyType === 'Staff' ? '/staff' : '/principal', sourceEventIds: [clause.id], consequenceSummary: clause.breachConsequence ?? 'Trust, retention, and future negotiations are at risk.', aiReaction: clause.aiRelevant ? 'Rival teams are aware of the contractual vulnerability.' : undefined });
   }
 
   for (const [departmentId, mood] of Object.entries(phase18.departmentMoods[state.selectedTeamId] ?? {}).filter(([, entry]) => entry.morale <= 35 || entry.trustInPrincipal <= 35)) {
@@ -85,8 +85,10 @@ export function syncNarratives(state: GameState): GameState {
   for (const candidate of candidates) {
     const id = `narrative-${state.seasonYear}-${candidate.threadId}`;
     const existing = stories.find((story) => story.id === id);
+    const escalated = !!existing && urgencyRank[candidate.urgency] > urgencyRank[existing.urgency];
     const urgency = existing && urgencyRank[existing.urgency] > urgencyRank[candidate.urgency] ? existing.urgency : candidate.urgency;
     const story: NarrativeStory = {
+      ...existing,
       ...candidate,
       id,
       urgency,
@@ -97,6 +99,12 @@ export function syncNarratives(state: GameState): GameState {
       updatedSeasonYear: state.seasonYear,
       updatedRound: round,
       sourceEventIds: [...new Set([...(existing?.sourceEventIds ?? []), ...candidate.sourceEventIds])].slice(-20),
+      responseStatus: candidate.status !== 'Active'
+        ? existing?.responseStatus ?? 'Observed'
+        : escalated || !existing?.responseStatus
+          ? urgencyRank[urgency] >= urgencyRank.Important ? 'AwaitingResponse' : 'Observed'
+          : existing.responseStatus,
+      responseHistory: existing?.responseHistory ?? [],
     };
     stories = [...stories.filter((entry) => entry.id !== id), story];
   }
