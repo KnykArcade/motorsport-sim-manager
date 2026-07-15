@@ -62,7 +62,7 @@ export function ensureCharacterInteractionState(
   interactionState?: CharacterInteractionState,
 ): CharacterInteractionState {
   return {
-    version: 10,
+    version: 11,
     history: interactionState?.history ?? [],
     lastInteractionByTarget: interactionState?.lastInteractionByTarget ?? {},
     recruitmentInterest: interactionState?.recruitmentInterest ?? {},
@@ -77,6 +77,8 @@ export function ensureCharacterInteractionState(
     influence: interactionState?.influence ?? [],
     initiatives: interactionState?.initiatives ?? [],
     mandates: interactionState?.mandates ?? [],
+    stability: interactionState?.stability ?? [],
+    breakingPoints: interactionState?.breakingPoints ?? [],
   };
 }
 
