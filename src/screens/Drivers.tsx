@@ -16,6 +16,8 @@ import {
 } from '../game/careerState';
 import { contractClauseLabel, DRIVER_NEGOTIATION_CLAUSES } from '../sim/phase18ContractClauseEngine';
 import type { ContractClause, ContractClauseType } from '../types/phase18Types';
+import type { CharacterFutureIntent } from '../types/characterInteractionTypes';
+import { characterFutureIntentLabel, futureIntentForTarget } from '../sim/characterFutureIntentEngine';
 
 export function Drivers() {
   const { state, dispatch } = useGame();
@@ -87,6 +89,7 @@ export function Drivers() {
                         extensionCost={extensionCost}
                         latestOffer={latestContractOffer(driver.id)}
                         currentClause={activeClause(driver.id)}
+                        futureIntent={futureIntentForTarget(state, { type: 'Driver', id: driver.id, name: driver.name, teamId: driver.teamId })}
                         onExtend={extendDriver}
                       />
                     </>
@@ -166,6 +169,7 @@ export function Drivers() {
                       extensionCost={extensionCost}
                       latestOffer={latestContractOffer(r.id)}
                       currentClause={activeClause(r.id)}
+                      futureIntent={futureIntentForTarget(state, { type: 'Driver', id: r.id, name: r.name, teamId: r.teamId })}
                       onExtend={extendDriver}
                     />
                   </div>
@@ -231,6 +235,7 @@ function ContractExtensionControls({
   extensionCost,
   latestOffer,
   currentClause,
+  futureIntent,
   onExtend,
 }: {
   driver: NonNullable<ReturnType<typeof useGame>['state']>['drivers'][number];
@@ -239,6 +244,7 @@ function ContractExtensionControls({
   extensionCost: (driver: NonNullable<ReturnType<typeof useGame>['state']>['drivers'][number], years: number, offerMultiplier?: number) => number;
   latestOffer?: NonNullable<ReturnType<typeof useGame>['state']>['news'][number];
   currentClause?: ContractClause;
+  futureIntent?: CharacterFutureIntent;
   onExtend: (driverId: string, years: number, offerMultiplier: number, clauseType?: ContractClauseType) => void;
 }) {
   const [clauseType, setClauseType] = useState<ContractClauseType>(currentClause?.clauseType ?? 'EqualTreatment');
@@ -257,6 +263,12 @@ function ContractExtensionControls({
   const accepted = latestOffer?.id.includes('-accepted-') ?? false;
   return (
     <div className="mt-2 border-t border-neutral-800 pt-2 text-[11px]">
+      {futureIntent && (
+        <div className={`mb-2 rounded border px-2 py-1.5 ${futureIntent.status === 'WantsExit' ? 'border-red-500/35 bg-red-500/10' : futureIntent.status === 'TestingMarket' ? 'border-amber-500/35 bg-amber-500/10' : 'border-emerald-500/25 bg-emerald-500/5'}`}>
+          <div className="flex items-center justify-between gap-2"><span className="font-semibold text-neutral-200">{characterFutureIntentLabel(futureIntent.target, futureIntent.status)}</span><span className="text-neutral-500">Leverage {futureIntent.leverage}</span></div>
+          <div className="mt-0.5 text-neutral-400">Renewal willingness {futureIntent.negotiationModifier > 0 ? '+' : ''}{futureIntent.negotiationModifier}. {futureIntent.reason}</div>
+        </div>
+      )}
       {currentClause && (
         <div className="mb-2 rounded border border-sky-500/25 bg-sky-500/5 px-2 py-1.5">
           <div className="flex items-center justify-between gap-2">

@@ -87,7 +87,7 @@ describe('character mandate engine', () => {
     expect(failed.driverRelationships![target.id].teamTrustInDriver).toBeLessThan(trustBefore + 2);
   });
 
-  it('revokes a mandate when the character leaves and migrates old saves to version 10', () => {
+  it('revokes a mandate when the character leaves and migrates older saves', () => {
     const { state, target } = delegatedDriverMandate();
     const mandate = mandatesForTarget(state, target)[0];
     const departed = { ...state, drivers: state.drivers.map((driver) => driver.id === target.id ? { ...driver, teamId: 'free-agent' } : driver) };
@@ -97,7 +97,7 @@ describe('character mandate engine', () => {
     const legacy = structuredClone(freshState());
     delete (legacy.characterInteractions as Partial<typeof legacy.characterInteractions>)?.mandates;
     const migrated = migrateGameState(legacy);
-    expect(migrated.characterInteractions!.version).toBe(11);
+    expect(migrated.characterInteractions!.version).toBe(12);
     expect(migrated.characterInteractions!.mandates).toEqual([]);
   });
 });

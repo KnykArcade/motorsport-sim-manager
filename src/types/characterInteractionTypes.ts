@@ -299,8 +299,21 @@ export type CharacterBreakingPoint = {
   resolvedRound?: number;
 };
 
+export type CharacterFutureIntentStatus = 'Committed' | 'OpenToTalk' | 'TestingMarket' | 'WantsExit';
+
+export type CharacterFutureIntent = {
+  target: CharacterInteractionTarget;
+  status: CharacterFutureIntentStatus;
+  leverage: number;
+  reason: string;
+  negotiationModifier: number;
+  lastReportedStatus: CharacterFutureIntentStatus;
+  lastUpdatedSeason: number;
+  lastUpdatedRound: number;
+};
+
 export type CharacterInteractionState = {
-  version: 11;
+  version: 12;
   history: CharacterInteractionRecord[];
   lastInteractionByTarget: Record<string, { seasonYear: number; round: number }>;
   recruitmentInterest: Record<string, number>;
@@ -317,6 +330,7 @@ export type CharacterInteractionState = {
   mandates: CharacterMandate[];
   stability: CharacterStabilityProfile[];
   breakingPoints: CharacterBreakingPoint[];
+  futureIntentions: CharacterFutureIntent[];
 };
 
 export type CharacterRequestKind =
