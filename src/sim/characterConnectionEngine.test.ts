@@ -45,7 +45,7 @@ describe('character connection engine', () => {
   it('seeds persistent working relationships and influential factions', () => {
     const state = ensureCharacterConnections(freshState());
     const [first, second] = driverTargets(state);
-    expect(state.characterInteractions!.version).toBe(7);
+    expect(state.characterInteractions!.version).toBe(8);
     expect(state.characterInteractions!.connections.some((connection) => {
       const ids = new Set([connection.characterA.id, connection.characterB.id]);
       return ids.has(first.id) && ids.has(second.id);

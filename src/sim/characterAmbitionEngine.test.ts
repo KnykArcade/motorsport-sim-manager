@@ -132,7 +132,7 @@ describe('character ambition engine', () => {
     const state = freshState();
     const existingIds = state.characterInteractions!.ambitions.map((entry) => entry.id);
     const migrated = migrateGameState(structuredClone(state));
-    expect(migrated.characterInteractions?.version).toBe(7);
+    expect(migrated.characterInteractions?.version).toBe(8);
     expect(migrated.characterInteractions?.ambitions.map((entry) => entry.id)).toEqual(existingIds);
 
     const legacy = structuredClone(state) as GameState;

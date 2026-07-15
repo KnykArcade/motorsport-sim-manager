@@ -29,6 +29,7 @@ import type { AdvisorRecommendation } from '../types/phase18Types';
 import { RaceWeekendPackageSelection } from './RaceWeekendPackageSelection';
 import { CharacterDossierButton } from '../components/characterCards/CharacterDossier';
 import { DriverDossierButton } from '../components/driverCards/DriverDossier';
+import { internalCharacterInfluence } from '../sim/characterInfluenceEngine';
 
 const CATEGORY_LABELS: Record<PaddockEventCategory, string> = {
   development: 'Development / Factory',
@@ -66,6 +67,14 @@ const SEVERITY_COLORS: Record<string, string> = {
   major: 'text-orange-400',
   critical: 'text-red-400',
 };
+
+const INFLUENCE_STANCE_COLORS = {
+  Champion: 'bg-emerald-500/10 text-emerald-300',
+  Supportive: 'bg-sky-500/10 text-sky-300',
+  Neutral: 'bg-neutral-800 text-neutral-300',
+  Resistant: 'bg-amber-500/10 text-amber-300',
+  Obstructive: 'bg-red-500/10 text-red-300',
+} as const;
 
 type PaddockTab = 'overview' | 'people' | 'decisions' | 'updates' | 'debrief';
 
@@ -142,6 +151,7 @@ export function PaddockWeek() {
     ? updateCategory
     : populatedCategories[0] ?? 'next_race';
   const updateCount = populatedCategories.reduce((total, category) => total + (eventsByCategory[category]?.length ?? 0), 0);
+  const internalInfluence = internalCharacterInfluence(state).slice(0, 8);
 
   const advanceToBriefing = () => {
     dispatch({ type: 'ADVANCE_TO_PRE_RACE_BRIEFING' });
@@ -212,6 +222,29 @@ export function PaddockWeek() {
       </div>}
 
       {tab === 'people' && <div className="space-y-4">
+        {internalInfluence.length > 0 && (
+          <Panel title="Internal Support Map">
+            <p className="mb-3 text-xs text-neutral-500">Power shows how much leverage a person has. Support shows whether they are helping or resisting your leadership; that stance now applies a small weekly effect to their driver, department, or ownership relationship.</p>
+            <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-4">
+              {internalInfluence.map((profile) => (
+                <article key={`${profile.target.type}-${profile.target.id}`} className="rounded-lg border border-neutral-800 bg-neutral-900/50 p-2.5">
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="min-w-0">
+                      <strong className="block truncate text-xs text-neutral-200">{profile.target.name}</strong>
+                      <span className="text-[10px] text-neutral-500">{profile.target.type}</span>
+                    </div>
+                    <span className={`rounded px-1.5 py-0.5 text-[10px] font-bold ${INFLUENCE_STANCE_COLORS[profile.stance]}`}>{profile.stance}</span>
+                  </div>
+                  <div className="mt-2 grid grid-cols-2 gap-1 text-center text-[10px]">
+                    <div className="rounded bg-neutral-950/70 px-1.5 py-1 text-neutral-500">Power <strong className="text-neutral-200">{profile.power}</strong></div>
+                    <div className="rounded bg-neutral-950/70 px-1.5 py-1 text-neutral-500">Support <strong className="text-neutral-200">{profile.support > 0 ? '+' : ''}{profile.support}</strong></div>
+                  </div>
+                  <p className="mt-2 line-clamp-2 text-[10px] leading-relaxed text-neutral-400">{profile.effectLabel}</p>
+                </article>
+              ))}
+            </div>
+          </Panel>
+        )}
         {unresolvedCharacterDisputes.length > 0 && (
           <Panel title="Conflicts Requiring Management" className="border-red-700/30">
             <p className="mb-3 text-xs text-neutral-500">Persistent tensions can become active disputes. Your intervention affects both people, their connection, and the camps around them.</p>
@@ -252,7 +285,7 @@ export function PaddockWeek() {
           </Panel>
         )}
         {resolvedCharacterDisputes.length > 0 && <Panel title="Disputes Addressed This Week"><div className="grid gap-3 xl:grid-cols-2">{resolvedCharacterDisputes.map((event) => <article key={event.id} className="rounded-lg border border-neutral-800 bg-neutral-900/40 p-3"><div className="flex items-center justify-between gap-3"><strong className="text-sm text-neutral-200">{event.characterDispute?.characterA.name} / {event.characterDispute?.characterB.name}</strong><span className="rounded bg-emerald-500/10 px-2 py-1 text-[10px] font-semibold uppercase text-emerald-300">Addressed</span></div><div className="mt-1 text-xs font-semibold text-amber-300">{event.options?.find((option) => option.id === event.resolvedOptionId)?.label}</div><p className="mt-1 text-xs text-neutral-400">The decision is now part of both characters' persistent history.</p></article>)}</div></Panel>}
-        {characterRequests.length === 0 && characterDisputes.length === 0 && <Panel title="People"><p className="text-sm text-neutral-500">No character needs your attention this week.</p></Panel>}
+        {characterRequests.length === 0 && characterDisputes.length === 0 && internalInfluence.length === 0 && <Panel title="People"><p className="text-sm text-neutral-500">No character needs your attention this week.</p></Panel>}
       </div>}
 
       {/* Required Decisions */}

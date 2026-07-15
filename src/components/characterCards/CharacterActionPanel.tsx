@@ -18,6 +18,7 @@ import { activeAmbitionForTarget } from '../../sim/characterAmbitionEngine';
 import { connectedCharacter, connectionsForTarget, factionsForTarget } from '../../sim/characterConnectionEngine';
 import { disputesForTarget } from '../../sim/characterDisputeEngine';
 import { commitmentsForTarget } from '../../sim/characterCommitmentEngine';
+import { influenceForTarget } from '../../sim/characterInfluenceEngine';
 
 type Props = {
   state: GameState;
@@ -36,6 +37,14 @@ const PRESSURE_CLASS = {
   Watchful: 'text-sky-300',
   Pressing: 'text-amber-300',
   Ultimatum: 'text-red-300',
+} as const;
+
+const INFLUENCE_CLASS = {
+  Champion: 'border-emerald-700/60 bg-emerald-950/30 text-emerald-300',
+  Supportive: 'border-sky-700/60 bg-sky-950/30 text-sky-300',
+  Neutral: 'border-neutral-700 bg-neutral-900 text-neutral-300',
+  Resistant: 'border-amber-700/60 bg-amber-950/30 text-amber-300',
+  Obstructive: 'border-red-700/60 bg-red-950/30 text-red-300',
 } as const;
 
 export function CharacterActionPanel({ state, target }: Props) {
@@ -59,6 +68,7 @@ export function CharacterActionPanel({ state, target }: Props) {
   const commitments = commitmentsForTarget(state, target);
   const activeCommitments = commitments.filter((commitment) => commitment.status === 'Active').slice(0, 2);
   const resolvedCommitments = commitments.filter((commitment) => commitment.status !== 'Active').slice(0, 3);
+  const influence = influenceForTarget(state, target);
 
   return (
     <div className="space-y-4">
@@ -99,6 +109,22 @@ export function CharacterActionPanel({ state, target }: Props) {
             <span className="rounded bg-amber-950/60 px-2 py-1 text-amber-200">Agenda: {characterAgendaLabel(opinion.agenda)}</span>
             {opinion.traits.map((trait) => <span key={trait} className="rounded bg-neutral-900 px-2 py-1 text-neutral-400">{trait}</span>)}
           </div>
+          {influence && (
+            <div className={`mt-3 rounded border p-2.5 ${INFLUENCE_CLASS[influence.stance]}`}>
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <div>
+                  <div className="text-[10px] font-bold uppercase tracking-[0.14em] opacity-70">Internal influence</div>
+                  <strong className="mt-0.5 block text-xs">{influence.stance}</strong>
+                </div>
+                <div className="flex gap-3 text-[10px]">
+                  <span>Power <strong>{influence.power}</strong></span>
+                  <span>Support <strong>{influence.support > 0 ? '+' : ''}{influence.support}</strong></span>
+                </div>
+              </div>
+              <p className="mt-1 text-[10px] leading-relaxed text-neutral-300">{influence.effectLabel}</p>
+              <div className="mt-1 line-clamp-1 text-[10px] text-neutral-500">{influence.basis.join(' · ')}</div>
+            </div>
+          )}
           {ambition && (
             <div className="mt-3 rounded border border-neutral-800 bg-neutral-900/70 p-2.5">
               <div className="flex flex-wrap items-start justify-between gap-2">

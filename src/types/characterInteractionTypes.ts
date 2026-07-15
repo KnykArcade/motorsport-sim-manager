@@ -196,8 +196,29 @@ export type CharacterCommitment = {
   resolvedRound?: number;
 };
 
+export type CharacterInfluenceStance =
+  | 'Champion'
+  | 'Supportive'
+  | 'Neutral'
+  | 'Resistant'
+  | 'Obstructive';
+
+export type CharacterInfluenceProfile = {
+  target: CharacterInteractionTarget;
+  power: number;
+  support: number;
+  stance: CharacterInfluenceStance;
+  basis: string[];
+  effectLabel: string;
+  lastReportedStance: CharacterInfluenceStance;
+  lastUpdatedSeason: number;
+  lastUpdatedRound: number;
+  lastAppliedSeason?: number;
+  lastAppliedRound?: number;
+};
+
 export type CharacterInteractionState = {
-  version: 7;
+  version: 8;
   history: CharacterInteractionRecord[];
   lastInteractionByTarget: Record<string, { seasonYear: number; round: number }>;
   recruitmentInterest: Record<string, number>;
@@ -209,6 +230,7 @@ export type CharacterInteractionState = {
   factions: CharacterFaction[];
   disputes: CharacterDispute[];
   commitments: CharacterCommitment[];
+  influence: CharacterInfluenceProfile[];
 };
 
 export type CharacterRequestKind =
