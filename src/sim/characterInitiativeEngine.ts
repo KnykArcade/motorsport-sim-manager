@@ -14,6 +14,7 @@ import { propagateCharacterReaction } from './characterConnectionEngine';
 import { recordCharacterMemory } from './characterOpinionEngine';
 import { ensurePhase18FoundationState } from './phase18FoundationEngine';
 import { addRivalRelationshipEvent } from './phase18RivalRelationshipEngine';
+import { createCharacterMandateFromInitiative } from './characterMandateEngine';
 
 const STAFF_DEPARTMENT: Record<StaffRole, DepartmentId> = {
   'Technical Director': 'Technical',
@@ -348,7 +349,8 @@ export function resolveCharacterInitiative(state: GameState, event: PaddockEvent
     tone: resolution.tone,
     effects: resolution.effects,
   });
-  return propagateCharacterReaction(remembered, initiative.target, resolution.tone, initiative.title);
+  const mandated = createCharacterMandateFromInitiative(remembered, initiative, optionId);
+  return propagateCharacterReaction(mandated, initiative.target, resolution.tone, initiative.title);
 }
 
 export function initiativesForTarget(state: GameState, target: CharacterInteractionTarget): CharacterInitiative[] {

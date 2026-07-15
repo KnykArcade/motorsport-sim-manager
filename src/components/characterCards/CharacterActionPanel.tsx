@@ -20,6 +20,7 @@ import { disputesForTarget } from '../../sim/characterDisputeEngine';
 import { commitmentsForTarget } from '../../sim/characterCommitmentEngine';
 import { influenceForTarget } from '../../sim/characterInfluenceEngine';
 import { initiativesForTarget } from '../../sim/characterInitiativeEngine';
+import { mandatesForTarget } from '../../sim/characterMandateEngine';
 
 type Props = {
   state: GameState;
@@ -73,6 +74,9 @@ export function CharacterActionPanel({ state, target }: Props) {
   const initiatives = initiativesForTarget(state, target);
   const activeInitiative = initiatives.find((initiative) => initiative.status === 'Active');
   const recentInitiatives = initiatives.filter((initiative) => initiative.status !== 'Active').slice(0, 3);
+  const mandates = mandatesForTarget(state, target);
+  const activeMandate = mandates.find((mandate) => mandate.status === 'Active');
+  const recentMandates = mandates.filter((mandate) => mandate.status !== 'Active').slice(0, 3);
 
   return (
     <div className="space-y-4">
@@ -136,6 +140,16 @@ export function CharacterActionPanel({ state, target }: Props) {
                 <span className="text-[10px] font-semibold text-amber-300">R{activeInitiative.startedRound}</span>
               </div>
               <p className="mt-1 text-[10px] leading-relaxed text-neutral-400">{activeInitiative.motive}</p>
+            </div>
+          )}
+          {activeMandate && (
+            <div className="mt-3 rounded border border-cyan-800/60 bg-cyan-950/20 p-2.5">
+              <div className="flex items-start justify-between gap-2">
+                <div><div className="text-[10px] font-bold uppercase tracking-[0.14em] text-cyan-300">Delegated mandate · {activeMandate.authority}</div><strong className="mt-1 block text-xs text-neutral-200">{activeMandate.title}</strong></div>
+                <span className="text-[10px] font-semibold text-amber-300">Due R{activeMandate.dueRound}</span>
+              </div>
+              <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-neutral-800"><div className="h-full rounded-full bg-cyan-500" style={{ width: `${Math.min(100, Math.round((activeMandate.currentValue / Math.max(1, activeMandate.targetValue)) * 100))}%` }} /></div>
+              <div className="mt-1 flex justify-between gap-2 text-[10px] text-neutral-500"><span>{activeMandate.measureLabel}</span><span>{activeMandate.currentValue}/{activeMandate.targetValue}</span></div>
             </div>
           )}
           {ambition && (
@@ -290,6 +304,7 @@ export function CharacterActionPanel({ state, target }: Props) {
           ) : <p className="mt-2 text-xs text-neutral-500">No character-request decisions have been recorded with {target.name} yet.</p>}
           {resolvedCommitments.length > 0 && <div className="mt-3 border-t border-neutral-800 pt-3"><div className="text-[10px] font-bold uppercase tracking-[0.16em] text-neutral-500">Commitment outcomes</div><div className="mt-2 grid gap-2 lg:grid-cols-3">{resolvedCommitments.map((commitment) => <article key={commitment.id} className={`rounded border p-2.5 ${commitment.status === 'Fulfilled' ? 'border-emerald-900/70 bg-emerald-950/20' : 'border-red-900/70 bg-red-950/20'}`}><div className="flex items-center justify-between gap-2"><strong className="text-xs text-neutral-200">{commitment.title}</strong><span className={`text-[10px] font-bold ${commitment.status === 'Fulfilled' ? 'text-emerald-300' : 'text-red-300'}`}>{commitment.status}</span></div><p className="mt-1 text-[10px] text-neutral-500">{commitment.measureLabel}: {commitment.currentValue}/{commitment.targetValue}</p></article>)}</div></div>}
           {recentInitiatives.length > 0 && <div className="mt-3 border-t border-neutral-800 pt-3"><div className="text-[10px] font-bold uppercase tracking-[0.16em] text-neutral-500">Initiative outcomes</div><div className="mt-2 grid gap-2 lg:grid-cols-3">{recentInitiatives.map((initiative) => <article key={initiative.id} className="rounded border border-fuchsia-900/50 bg-fuchsia-950/10 p-2.5"><div className="flex items-center justify-between gap-2"><strong className="text-xs text-neutral-200">{initiative.title}</strong><span className="text-[10px] font-bold text-fuchsia-300">{initiative.status}</span></div><p className="mt-1 line-clamp-2 text-[10px] text-neutral-500">{initiative.outcome ?? initiative.motive}</p></article>)}</div></div>}
+          {recentMandates.length > 0 && <div className="mt-3 border-t border-neutral-800 pt-3"><div className="text-[10px] font-bold uppercase tracking-[0.16em] text-neutral-500">Mandate accountability</div><div className="mt-2 grid gap-2 lg:grid-cols-3">{recentMandates.map((mandate) => <article key={mandate.id} className={`rounded border p-2.5 ${mandate.status === 'Succeeded' ? 'border-emerald-900/60 bg-emerald-950/15' : 'border-red-900/60 bg-red-950/15'}`}><div className="flex items-center justify-between gap-2"><strong className="text-xs text-neutral-200">{mandate.title}</strong><span className={`text-[10px] font-bold ${mandate.status === 'Succeeded' ? 'text-emerald-300' : 'text-red-300'}`}>{mandate.status}</span></div><p className="mt-1 line-clamp-2 text-[10px] text-neutral-500">{mandate.outcome}</p></article>)}</div></div>}
         </section>
       )}
     </div>

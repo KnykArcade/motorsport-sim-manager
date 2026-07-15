@@ -109,7 +109,7 @@ describe('character initiative engine', () => {
     const legacy = structuredClone(base);
     delete (legacy.characterInteractions as Partial<typeof legacy.characterInteractions>)?.initiatives;
     const migrated = migrateGameState(legacy);
-    expect(migrated.characterInteractions!.version).toBe(9);
+    expect(migrated.characterInteractions!.version).toBe(10);
     expect(migrated.characterInteractions!.initiatives).toEqual([]);
   });
 });
