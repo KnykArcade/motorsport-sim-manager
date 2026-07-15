@@ -71,6 +71,9 @@ export type PaddockEvent = {
     targetId: string;
     targetName: string;
     teamId?: string;
+    rivalTeamId?: string;
+    rivalTeamName?: string;
+    counterofferCost?: number;
   };
   characterDispute?: {
     disputeId: string;

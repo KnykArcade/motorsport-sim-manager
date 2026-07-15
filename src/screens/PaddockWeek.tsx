@@ -367,8 +367,8 @@ export function PaddockWeek() {
           </Panel>
         )}
         {peopleSection === 'attention' && unresolvedCharacterRequests.length > 0 && (
-          <Panel title="Conversations Waiting for You" className="border-violet-600/30">
-            <p className="mb-3 text-xs text-neutral-500">Characters can now bring their own concerns, requests, and political approaches to you. Required conversations must be answered before the week can advance.</p>
+          <Panel title="Conversations & Market Decisions" className="border-violet-600/30">
+            <p className="mb-3 text-xs text-neutral-500">Characters can bring concerns, requests, political approaches, and concrete rival offers to you. Required conversations must be answered before the week can advance.</p>
             <div className="grid gap-3 xl:grid-cols-2">
               {unresolvedCharacterRequests.map((event) => (
                 <CharacterDecisionCard
