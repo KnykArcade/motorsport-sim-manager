@@ -108,6 +108,7 @@ import { applyPreseasonCarModifier, completeCarLaunch, completePreseasonTesting,
 import { applyFailureRiskModifier, investigateFailure, recordFailureInvestigations, respondToFailure } from '../sim/phase18FailureInvestigationEngine';
 import { evolveRivalRelationshipsAfterRace, recordRegulationVoteRelationships, takeRivalAction } from '../sim/phase18RivalRelationshipEngine';
 import { recordRaceLegacy } from '../sim/phase18LegacyEngine';
+import { syncNarratives } from '../sim/phase18NarrativeEngine';
 import { createSeededRandom, deriveSeed } from '../sim/random';
 import type { AcademyDecision, FirstOptionDecision, SeatSigning } from '../types/marketTypes';
 import type { FinanceTransaction } from '../types/financeTypes';
@@ -867,13 +868,13 @@ export function gameReducer(state: GameState | null, action: GameAction): GameSt
       const paddockNews = generateCareerPaddockNews(paddockCtx);
       const dedupedPaddockNews = deduplicateNews(state.news, paddockNews);
       state = { ...state, news: [...dedupedPaddockNews, ...state.news].slice(0, 80) };
-      return generateAndStorePaddockEvents(state);
+      return syncNarratives(generateAndStorePaddockEvents(state));
     }
 
     case 'RESOLVE_PADDOCK_EVENT': {
       if (!state) return state;
       if (getCareerPhase(state) !== 'paddock_week') return state;
-      return resolvePaddockEvent(state, action.eventId, action.optionId);
+      return syncNarratives(resolvePaddockEvent(state, action.eventId, action.optionId));
     }
 
     case 'TOGGLE_PRESEASON_CHECKLIST_ITEM': {
@@ -2035,12 +2036,12 @@ function applyRaceResults(
     currentRaceIndex: seasonComplete ? state.currentRaceIndex : nextIndex,
     seasonComplete,
   };
-  return recordRaceLegacy(
+  return syncNarratives(recordRaceLegacy(
     evolveRivalRelationshipsAfterRace(recordFailureInvestigations(completedState, race.id, race.round, results), race.round, results),
     race.id,
     race.round,
     results,
-  );
+  ));
 }
 
 function partsRound(state: GameState): number {

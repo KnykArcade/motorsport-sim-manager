@@ -29,6 +29,7 @@ const EngineSupplier = lazy(() => import('../screens/EngineSupplier').then((m) =
 const TeamPrincipal = lazy(() => import('../screens/TeamPrincipal').then((m) => ({ default: m.TeamPrincipal })));
 const Relationships = lazy(() => import('../screens/Relationships').then((m) => ({ default: m.Relationships })));
 const RivalRelationships = lazy(() => import('../screens/RivalRelationships').then((m) => ({ default: m.RivalRelationships })));
+const PaddockStories = lazy(() => import('../screens/PaddockStories').then((m) => ({ default: m.PaddockStories })));
 const Politics = lazy(() => import('../screens/Politics').then((m) => ({ default: m.Politics })));
 const DriverCurves = lazy(() => import('../screens/DriverCurves').then((m) => ({ default: m.DriverCurves })));
 const UniverseHistory = lazy(() => import('../screens/UniverseHistory').then((m) => ({ default: m.UniverseHistory })));
@@ -266,6 +267,7 @@ export default function App() {
           <Route path="/principal" element={<InGame><TeamPrincipal /></InGame>} />
           <Route path="/relationships" element={<InGame><Relationships /></InGame>} />
           <Route path="/rivals" element={<InGame><RivalRelationships /></InGame>} />
+          <Route path="/stories" element={<InGame><PaddockStories /></InGame>} />
           <Route path="/politics" element={<ModeGuard route="/politics"><Politics /></ModeGuard>} />
           <Route path="/scouting" element={<ModeGuard route="/scouting"><Scouting /></ModeGuard>} />
           <Route path="/curves" element={<ModeGuard route="/curves"><DriverCurves /></ModeGuard>} />
