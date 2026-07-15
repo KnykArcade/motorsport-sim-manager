@@ -10,12 +10,14 @@ import type {
   UniverseDriverMovement,
 } from '../types/universeTypes';
 import type { Series } from '../types/gameTypes';
+import { LegacyArchive } from '../components/history/LegacyArchive';
 
-type Tab = 'records' | 'drivers' | 'teams' | 'seasons' | 'world' | 'grid';
+type Tab = 'records' | 'legacy' | 'drivers' | 'teams' | 'seasons' | 'world' | 'grid';
 
 export function UniverseHistory() {
   const { state } = useGame();
   const [tab, setTab] = useState<Tab>('records');
+  const [recordView, setRecordView] = useState<'drivers' | 'teams'>('drivers');
 
   const history = state?.universeHistory;
 
@@ -64,6 +66,9 @@ export function UniverseHistory() {
           <TabButton active={tab === 'records'} onClick={() => setTab('records')}>
             Records
           </TabButton>
+          <TabButton active={tab === 'legacy'} onClick={() => setTab('legacy')}>
+            Legacy
+          </TabButton>
           <TabButton active={tab === 'drivers'} onClick={() => setTab('drivers')}>
             Drivers
           </TabButton>
@@ -83,7 +88,13 @@ export function UniverseHistory() {
       </div>
 
       {tab === 'records' && (
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="space-y-3">
+          <div className="flex gap-1 rounded-lg border border-neutral-800 bg-neutral-950/70 p-1">
+            <TabButton active={recordView === 'drivers'} onClick={() => setRecordView('drivers')}>Driver Records</TabButton>
+            <TabButton active={recordView === 'teams'} onClick={() => setRecordView('teams')}>Team Records</TabButton>
+          </div>
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          {recordView === 'drivers' ? <>
           <RecordCard
             label="Most Race Wins"
             holder={nameOfDriver(history?.records.mostWinsDriverId)}
@@ -99,6 +110,10 @@ export function UniverseHistory() {
             holder={nameOfDriver(history?.records.mostPolesDriverId)}
             value={drivers.find((d) => d.driverId === history?.records.mostPolesDriverId)?.poles}
           />
+          <RecordCard label="Most Podiums" holder={nameOfDriver(history?.records.mostPodiumsDriverId)} value={drivers.find((d) => d.driverId === history?.records.mostPodiumsDriverId)?.podiums} />
+          <RecordCard label="Most Fastest Laps" holder={nameOfDriver(history?.records.mostFastestLapsDriverId)} value={drivers.find((d) => d.driverId === history?.records.mostFastestLapsDriverId)?.fastestLaps} />
+          <RecordCard label="Most Career Points" holder={nameOfDriver(history?.records.mostPointsDriverId)} value={drivers.find((d) => d.driverId === history?.records.mostPointsDriverId)?.points} />
+          </> : <>
           <RecordCard
             label="Most Constructor Wins"
             holder={nameOfTeam(history?.records.mostWinsTeamId)}
@@ -109,8 +124,15 @@ export function UniverseHistory() {
             holder={nameOfTeam(history?.records.mostTitlesTeamId)}
             value={teams.find((t) => t.teamId === history?.records.mostTitlesTeamId)?.constructorTitles}
           />
+          <RecordCard label="Most Team Podiums" holder={nameOfTeam(history?.records.mostPodiumsTeamId)} value={teams.find((t) => t.teamId === history?.records.mostPodiumsTeamId)?.podiums} />
+          <RecordCard label="Most Team Poles" holder={nameOfTeam(history?.records.mostPolesTeamId)} value={teams.find((t) => t.teamId === history?.records.mostPolesTeamId)?.poles} />
+          <RecordCard label="Most Team Points" holder={nameOfTeam(history?.records.mostPointsTeamId)} value={teams.find((t) => t.teamId === history?.records.mostPointsTeamId)?.points} />
+          </>}
+          </div>
         </div>
       )}
+
+      {tab === 'legacy' && <LegacyArchive legacy={state.phase18!.legacy} />}
 
       {tab === 'drivers' && <DriverTable drivers={drivers} />}
       {tab === 'teams' && <TeamTable teams={teams} />}

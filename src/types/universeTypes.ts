@@ -125,8 +125,14 @@ export type UniverseRecords = {
   mostWinsDriverId?: string;
   mostTitlesDriverId?: string;
   mostPolesDriverId?: string;
+  mostPodiumsDriverId?: string;
+  mostFastestLapsDriverId?: string;
+  mostPointsDriverId?: string;
   mostWinsTeamId?: string;
   mostTitlesTeamId?: string;
+  mostPodiumsTeamId?: string;
+  mostPolesTeamId?: string;
+  mostPointsTeamId?: string;
 };
 
 export type UniverseHistory = {

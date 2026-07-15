@@ -107,6 +107,7 @@ import { generatePaddockIntelligence, resolveIntelligenceAction } from '../sim/p
 import { applyPreseasonCarModifier, completeCarLaunch, completePreseasonTesting, ensurePreseasonHubState, resolvePreseasonFlaw } from '../sim/phase18PreseasonEngine';
 import { applyFailureRiskModifier, investigateFailure, recordFailureInvestigations, respondToFailure } from '../sim/phase18FailureInvestigationEngine';
 import { evolveRivalRelationshipsAfterRace, recordRegulationVoteRelationships, takeRivalAction } from '../sim/phase18RivalRelationshipEngine';
+import { recordRaceLegacy } from '../sim/phase18LegacyEngine';
 import { createSeededRandom, deriveSeed } from '../sim/random';
 import type { AcademyDecision, FirstOptionDecision, SeatSigning } from '../types/marketTypes';
 import type { FinanceTransaction } from '../types/financeTypes';
@@ -2034,7 +2035,12 @@ function applyRaceResults(
     currentRaceIndex: seasonComplete ? state.currentRaceIndex : nextIndex,
     seasonComplete,
   };
-  return evolveRivalRelationshipsAfterRace(recordFailureInvestigations(completedState, race.id, race.round, results), race.round, results);
+  return recordRaceLegacy(
+    evolveRivalRelationshipsAfterRace(recordFailureInvestigations(completedState, race.id, race.round, results), race.round, results),
+    race.id,
+    race.round,
+    results,
+  );
 }
 
 function partsRound(state: GameState): number {
