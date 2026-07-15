@@ -5,6 +5,9 @@ import { getStaffPool } from '../data';
 import { toMoney } from '../sim/financeEngine';
 import {
   developmentSuccessBonus,
+  staffExtensionSigningFee,
+  staffRatingOutOfTen,
+  staffReleaseCost,
   setupConfidenceBonus,
   staffByRole,
 } from '../sim/staffEngine';
@@ -17,6 +20,7 @@ import { ADVISOR_ROLE_LABELS } from '../sim/phase18AdvisorEngine';
 import { contractClauseLabel } from '../sim/phase18ContractClauseEngine';
 import { CharacterDossierButton } from '../components/characterCards/CharacterDossier';
 import type { GameState } from '../game/careerState';
+import { characterFutureIntentLabel } from '../sim/characterFutureIntentEngine';
 
 export function Staff() {
   const { state, dispatch } = useGame();
@@ -28,6 +32,8 @@ export function Staff() {
   const hiredById = new Set(roster.map((s) => s.id));
   const byRole = staffByRole(roster);
   const pool = getStaffPool(state.seasonYear, state.series);
+  const contractOfferNews = state.news.filter((item) => item.id.startsWith('news-staff-contract-offer-'));
+  const racesRemaining = Math.max(1, state.calendar.length - state.currentRaceIndex);
 
   const devBonus = developmentSuccessBonus(roster);
   const setupBonus = setupConfidenceBonus(roster);
@@ -40,9 +46,13 @@ export function Staff() {
   );
 
   const current = byRole[activeRole];
-  const candidates = pool
+  const roleCandidates = pool
     .filter((s) => s.role === activeRole)
-    .sort((a, b) => b.rating - a.rating);
+    .map((s) => current?.id === s.id ? current : s);
+  const candidates = [
+    ...(current && !roleCandidates.some((candidate) => candidate.id === current.id) ? [current] : []),
+    ...roleCandidates,
+  ].sort((a, b) => b.rating - a.rating);
 
   return (
     <div className="space-y-6">
@@ -150,9 +160,14 @@ export function Staff() {
               s={s}
               hired={hiredById.has(s.id)}
               current={current?.id === s.id}
-              affordable={toMoney(s.signingFee) <= budget}
+              affordable={toMoney(s.signingFee) + (current && current.id !== s.id ? staffReleaseCost(current) : 0) <= budget}
+              replacementCost={current && current.id !== s.id ? staffReleaseCost(current) : 0}
+              extensionCost={(member, years, multiplier) => staffExtensionSigningFee(member, years, racesRemaining, state.calendar.length, multiplier)}
+              latestOffer={contractOfferNews.find((item) => item.id.includes(`-${s.id}-`))}
+              futureIntent={state.characterInteractions?.futureIntentions.find((entry) => entry.target.type === 'Staff' && entry.target.id === s.id)}
               onHire={() => dispatch({ type: 'HIRE_STAFF', staffId: s.id })}
               onFire={() => dispatch({ type: 'FIRE_STAFF', staffId: s.id })}
+              onExtend={(years, offerMultiplier) => dispatch({ type: 'EXTEND_STAFF_CONTRACT', staffId: s.id, years, offerMultiplier })}
             />
           ))}
         </div>
@@ -167,17 +182,32 @@ function StaffCard({
   hired,
   current,
   affordable,
+  replacementCost,
+  extensionCost,
+  latestOffer,
+  futureIntent,
   onHire,
   onFire,
+  onExtend,
 }: {
   state: GameState;
   s: StaffMember;
   hired: boolean;
   current: boolean;
   affordable: boolean;
+  replacementCost: number;
+  extensionCost: (member: StaffMember, years: number, offerMultiplier: number) => number;
+  latestOffer?: GameState['news'][number];
+  futureIntent?: NonNullable<GameState['characterInteractions']>['futureIntentions'][number];
   onHire: () => void;
   onFire: () => void;
+  onExtend: (years: number, offerMultiplier: number) => void;
 }) {
+  const yearsLeft = s.contractYearsRemaining ?? 2;
+  const oneYearCost = extensionCost(s, 1, 1);
+  const strongOneYearCost = extensionCost(s, 1, 1.35);
+  const twoYearCost = extensionCost(s, 2, 1.2);
+  const accepted = latestOffer?.id.includes('-accepted-') ?? false;
   return (
     <div
       className={`rounded-lg border p-3 ${
@@ -196,11 +226,11 @@ function StaffCard({
         )}
       </div>
       <div className="mb-2">
-        <StatBar label="Rating" value={s.rating} max={10} />
+        <StatBar label="Rating" value={staffRatingOutOfTen(s.rating)} max={10} />
       </div>
       <div className="grid grid-cols-2 gap-2 text-xs">
         <Stat label="Salary/yr">{formatMoney(toMoney(s.salary))}</Stat>
-        <Stat label="Signing">{formatMoney(toMoney(s.signingFee))}</Stat>
+        <Stat label={current ? 'Contract' : 'Signing'}>{current ? `${yearsLeft} yr${yearsLeft === 1 ? '' : 's'} left` : formatMoney(toMoney(s.signingFee))}</Stat>
       </div>
       <p className="mt-2 text-[11px] italic text-neutral-500">{s.bio}</p>
       <CharacterDossierButton state={state} subject={{ type: 'staff', staff: s }} className="mt-2 w-full">
@@ -208,9 +238,18 @@ function StaffCard({
       </CharacterDossierButton>
       <div className="mt-3 border-t border-neutral-800 pt-2">
         {hired ? (
-          <Button variant="danger" className="w-full px-2 py-1 text-xs" onClick={onFire}>
-            Release
-          </Button>
+          <div className="space-y-2">
+            {futureIntent && <div className={`rounded border px-2 py-1.5 text-[10px] ${futureIntent.status === 'WantsExit' ? 'border-red-500/35 bg-red-500/10' : futureIntent.status === 'TestingMarket' ? 'border-amber-500/35 bg-amber-500/10' : 'border-emerald-500/25 bg-emerald-500/5'}`}><div className="flex justify-between gap-2"><strong className="text-neutral-200">{characterFutureIntentLabel(futureIntent.target, futureIntent.status)}</strong><span className="text-neutral-500">Renewal {futureIntent.negotiationModifier > 0 ? '+' : ''}{futureIntent.negotiationModifier}</span></div><p className="mt-1 text-neutral-400">{futureIntent.reason}</p></div>}
+            {state.gameMode !== 'SingleSeason' && !state.seasonComplete && yearsLeft < 5 && <div className="flex flex-wrap gap-1.5">
+              {yearsLeft <= 3 && <Button variant="ghost" className="px-2 py-1 text-[10px]" disabled={twoYearCost > teamById(state, state.selectedTeamId)!.budget} onClick={() => onExtend(2, 1.2)}>Preferred +2 ({formatMoney(twoYearCost)})</Button>}
+              <Button variant="ghost" className="px-2 py-1 text-[10px]" disabled={strongOneYearCost > teamById(state, state.selectedTeamId)!.budget} onClick={() => onExtend(1, 1.35)}>Better +1 ({formatMoney(strongOneYearCost)})</Button>
+              <Button variant="ghost" className="px-2 py-1 text-[10px]" disabled={oneYearCost > teamById(state, state.selectedTeamId)!.budget} onClick={() => onExtend(1, 1)}>Offer +1 ({formatMoney(oneYearCost)})</Button>
+            </div>}
+            {latestOffer && <div className={`rounded border px-2 py-1 text-[10px] ${accepted ? 'border-green-500/35 bg-green-500/10 text-green-300' : 'border-red-500/35 bg-red-500/10 text-red-300'}`}><strong>{accepted ? 'Accepted' : 'Refused'}:</strong> {latestOffer.headline}<p className="mt-0.5 text-neutral-400">{latestOffer.body}</p></div>}
+            <Button variant="danger" className="w-full px-2 py-1 text-xs" disabled={staffReleaseCost(s) > teamById(state, state.selectedTeamId)!.budget} onClick={onFire}>
+              Release ({formatMoney(staffReleaseCost(s))} compensation)
+            </Button>
+          </div>
         ) : (
           <Button
             variant="primary"
@@ -218,7 +257,7 @@ function StaffCard({
             disabled={!affordable}
             onClick={onHire}
           >
-            {affordable ? 'Hire' : 'Insufficient budget'}
+            {affordable ? `Hire${replacementCost > 0 ? ` + ${formatMoney(replacementCost)} replacement cost` : ''}` : 'Insufficient budget'}
           </Button>
         )}
       </div>

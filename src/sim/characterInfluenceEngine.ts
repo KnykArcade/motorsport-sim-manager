@@ -10,6 +10,7 @@ import type { StaffRole } from '../types/staffTypes';
 import { ensureCharacterConnections, factionsForTarget } from './characterConnectionEngine';
 import { characterOpinionFor, characterOpinionKey, currentCharacterTargets } from './characterOpinionEngine';
 import { ensurePhase18FoundationState } from './phase18FoundationEngine';
+import { staffRatingOutOfTen } from './staffEngine';
 
 const STAFF_DEPARTMENT: Record<StaffRole, DepartmentId> = {
   'Technical Director': 'Technical',
@@ -37,7 +38,7 @@ function stanceFor(support: number): CharacterInfluenceStance {
 function rolePower(state: GameState, target: CharacterInteractionTarget): number {
   if (target.type === 'Owner') return 95;
   if (target.type === 'Staff') {
-    const rating = state.staff?.find((entry) => entry.id === target.id)?.rating ?? 5;
+    const rating = staffRatingOutOfTen(state.staff?.find((entry) => entry.id === target.id)?.rating ?? 5);
     return clamp(45 + rating * 5);
   }
   if (target.type === 'Driver') {

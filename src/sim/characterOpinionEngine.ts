@@ -13,6 +13,7 @@ import type { DepartmentId, PrincipalIdentity } from '../types/phase18Types';
 import { PRINCIPAL_IDENTITY_LABELS } from './phase18IdentityCultureEngine';
 import { ensurePhase18FoundationState } from './phase18FoundationEngine';
 import { rivalRelationship } from './phase18RivalRelationshipEngine';
+import { staffRatingOutOfTen } from './staffEngine';
 
 const STAFF_DEPARTMENT: Record<StaffRole, DepartmentId> = {
   'Technical Director': 'Technical',
@@ -123,8 +124,8 @@ function opinionBase(
       return {
         targetType: target.type, targetId: target.id, targetName: target.name, teamId: target.teamId,
         score: clamp(mood.trustInPrincipal - 50, -100, 100), trust: mood.trustInPrincipal,
-        respect: clamp((mood.strategicAlignment + member.rating * 10) / 2, 0, 100),
-        agenda: staffAgenda(member.role, mood.workload), traits: [member.role, member.rating >= 8 ? 'Elite specialist' : 'Team specialist'],
+        respect: clamp((mood.strategicAlignment + staffRatingOutOfTen(member.rating) * 10) / 2, 0, 100),
+        agenda: staffAgenda(member.role, mood.workload), traits: [member.role, staffRatingOutOfTen(member.rating) >= 8 ? 'Elite specialist' : 'Team specialist'],
         lastUpdatedSeason: state.seasonYear, lastUpdatedRound: round,
       };
     }

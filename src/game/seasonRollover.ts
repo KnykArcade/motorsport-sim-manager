@@ -446,6 +446,25 @@ export function advanceSeason(state: GameState, nextBundle?: SeasonBundle): Game
         : `${driver.name}'s contract expired without an extension, so they left the team.`);
   }
 
+  const staffDepartures = (state.staff ?? []).filter(
+    (member) => Math.max(0, (member.contractYearsRemaining ?? 2) - 1) === 0,
+  );
+  const departingStaffIds = new Set(staffDepartures.map((member) => member.id));
+  const nextStaff = (state.staff ?? [])
+    .map((member) => ({
+      ...member,
+      contractYearsRemaining: Math.max(0, (member.contractYearsRemaining ?? 2) - 1),
+    }))
+    .filter((member) => !departingStaffIds.has(member.id));
+  for (const member of staffDepartures) {
+    const intent = state.characterInteractions?.futureIntentions.find((entry) => entry.target.type === 'Staff' && entry.target.id === member.id);
+    departureNotes.push(intent?.status === 'WantsExit'
+      ? `${member.name} left the ${member.role} role at contract expiry after making clear they wanted to leave.`
+      : intent?.status === 'TestingMarket'
+        ? `${member.name} left the ${member.role} role after listening to outside offers.`
+        : `${member.name}'s ${member.role} contract expired without an extension; the position is now vacant.`);
+  }
+
   // Build next season's driver list: apply replacements, promote reserves
   // (dropping the displaced seat driver), then remove departures.
   const promotedSeatIds = new Set(reservePromotions.map((p) => p.seatDriverId));
@@ -640,7 +659,7 @@ export function advanceSeason(state: GameState, nextBundle?: SeasonBundle): Game
       txns.push(makeTransaction(nextYear, 'Academy', `Academy fees: ${a.name}`, -toMoney(yearly)));
     }
   }
-  for (const s of state.staff ?? []) {
+  for (const s of nextStaff) {
     txns.push(makeTransaction(nextYear, 'Staff', `Salary: ${s.name} (${s.role})`, -toMoney(s.salary)));
   }
 
@@ -1210,6 +1229,22 @@ export function advanceSeason(state: GameState, nextBundle?: SeasonBundle): Game
       driverId: driver.id,
     });
   }
+  for (const member of staffDepartures) {
+    const intent = state.characterInteractions?.futureIntentions.find((entry) => entry.target.type === 'Staff' && entry.target.id === member.id);
+    rolloverNews.push({
+      id: `news-staff-contract-expiry-${nextYear}-${member.id}`,
+      headline: `${member.name} leaves the ${member.role} position`,
+      body: intent?.status === 'WantsExit'
+        ? `${member.name} completed the contract and departed after the working relationship became unsustainable.`
+        : intent?.status === 'TestingMarket'
+          ? `${member.name} completed the contract and accepted an opportunity elsewhere after listening to outside offers.`
+          : `${member.name}'s contract ended without an extension. The ${member.role} position is now vacant until the team recruits a replacement.`,
+      timestamp: new Date(Date.UTC(nextYear, 0, 1)).toISOString(),
+      category: 'career_event',
+      priority: 'high',
+      teamId: state.selectedTeamId,
+    });
+  }
 
   // Driver market drama news: signings, bidding losses, refusals.
   const playerTeamName = playerTeam?.name ?? 'Your team';
@@ -1472,6 +1507,7 @@ export function advanceSeason(state: GameState, nextBundle?: SeasonBundle): Game
     aiTeamMemory: updatedMemory,
     carSetups,
     academy: nextAcademy,
+    staff: nextStaff,
     pendingSignings: [],
     academyDecisions: [],
     signedMarketIds: aiOffseason.signedMarketIds,
@@ -1513,6 +1549,14 @@ export function advanceSeason(state: GameState, nextBundle?: SeasonBundle): Game
       ...state.news,
     ].slice(0, 80),
     careerPhase: defaultCareerPhaseState(),
+    phase18: state.phase18 ? {
+      ...state.phase18,
+      contractClauses: state.phase18.contractClauses.map((clause) =>
+        departingStaffIds.has(clause.partyId) && clause.status === 'Active'
+          ? { ...clause, status: 'Expired' as const, resolutionNote: 'Contract completed and the staff member left the team.' }
+          : clause,
+      ),
+    } : state.phase18,
   };
   nextState.motorsportUniverse = advanceMotorsportUniverse(
     state,

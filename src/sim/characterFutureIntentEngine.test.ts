@@ -13,9 +13,11 @@ import {
   futureIntentForTarget,
   generateCharacterFutureIntentEvents,
   generateExpiringDriverContractEvents,
+  generateExpiringStaffContractEvents,
   refreshCharacterFutureIntentions,
 } from './characterFutureIntentEngine';
 import { characterOpinionKey, currentCharacterTargets } from './characterOpinionEngine';
+import { getStaffPool } from '../data';
 
 function freshState(): GameState {
   return createNewGame({ gameMode: 'Career', seasonYear: 1995, series: 'F1', teamId: 't-benetton', seed: 'character-future-intent-test' });
@@ -77,6 +79,21 @@ describe('character future intent engine', () => {
     expect(generateExpiringDriverContractEvents({ ...finalStretch, currentRaceIndex: 0 })).toHaveLength(0);
   });
 
+  it('warns about expiring staff contracts during the final three races', () => {
+    const base = freshState();
+    const candidate = getStaffPool(base.seasonYear, base.series)[0];
+    const hired = gameReducer(base, { type: 'HIRE_STAFF', staffId: candidate.id })!;
+    const finalStretch: GameState = {
+      ...hired,
+      currentRaceIndex: hired.calendar.length - 2,
+      staff: hired.staff!.map((member) => ({ ...member, contractYearsRemaining: 1 })),
+    };
+    const events = generateExpiringStaffContractEvents(finalStretch);
+    expect(events.some((event) => event.title.includes(candidate.name))).toBe(true);
+    expect(events[0].description).toContain('expires at season rollover');
+    expect(generateExpiringStaffContractEvents({ ...finalStretch, currentRaceIndex: 0 })).toHaveLength(0);
+  });
+
   it('lets the same standard renewal succeed or fail based on future intent leverage', () => {
     const base = freshState();
     const driver = activeDriversForTeam(base, base.selectedTeamId)[0];
@@ -109,5 +126,14 @@ describe('character future intent engine', () => {
     const migrated = migrateGameState(legacy);
     expect(migrated.characterInteractions!.version).toBe(12);
     expect(migrated.characterInteractions!.futureIntentions.length).toBeGreaterThan(0);
+  });
+
+  it('backfills staff contract terms when loading an older save', () => {
+    const base = freshState();
+    const candidate = getStaffPool(base.seasonYear, base.series)[0];
+    const hired = gameReducer(base, { type: 'HIRE_STAFF', staffId: candidate.id })!;
+    const legacy = structuredClone(hired);
+    delete legacy.staff![0].contractYearsRemaining;
+    expect(migrateGameState(legacy).staff![0].contractYearsRemaining).toBe(2);
   });
 });

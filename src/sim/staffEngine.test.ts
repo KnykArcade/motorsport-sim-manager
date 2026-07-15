@@ -3,6 +3,7 @@ import {
   developmentSuccessBonus,
   setupConfidenceBonus,
   staffByRole,
+  staffRatingOutOfTen,
   totalStaffSalary,
 } from './staffEngine';
 import { toMoney } from './financeEngine';
@@ -35,6 +36,12 @@ describe('staffByRole', () => {
 });
 
 describe('bonuses', () => {
+  it('normalizes generated 0-100 ratings without changing legacy 1-10 ratings', () => {
+    expect(staffRatingOutOfTen(90)).toBe(9);
+    expect(staffRatingOutOfTen(9)).toBe(9);
+    expect(developmentSuccessBonus([member({ role: 'Technical Director', rating: 90 })])).toBeCloseTo(0.12, 5);
+  });
+
   it('scale around a neutral rating of 5 and are capped', () => {
     expect(developmentSuccessBonus([])).toBe(0);
     expect(developmentSuccessBonus([member({ role: 'Technical Director', rating: 5 })])).toBe(0);

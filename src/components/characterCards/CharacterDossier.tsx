@@ -13,6 +13,7 @@ import {
   PRINCIPAL_IDENTITY_LABELS,
 } from '../../sim/phase18IdentityCultureEngine';
 import { contractClauseLabel } from '../../sim/phase18ContractClauseEngine';
+import { staffRatingOutOfTen } from '../../sim/staffEngine';
 import type { CharacterInteractionTarget } from '../../types/characterInteractionTypes';
 import { interactionHistoryForTarget } from '../../sim/characterInteractionEngine';
 import { CharacterActionPanel } from './CharacterActionPanel';
@@ -277,6 +278,7 @@ export function buildCharacterDossier(
   const recommendations = (state.phase18?.advisorRecommendations ?? []).filter(
     (recommendation) => recommendation.advisorId === staff.id || recommendation.advisorName === staff.name,
   );
+  const roleRating = staffRatingOutOfTen(staff.rating);
   return {
     id: staff.id,
     name: staff.name,
@@ -296,9 +298,10 @@ export function buildCharacterDossier(
       { label: 'Salary', value: formatMoney(staff.salary * 1_000_000) },
       { label: 'Signing fee', value: formatMoney(staff.signingFee * 1_000_000) },
       { label: 'Status', value: active ? 'Under contract' : 'Available' },
+      ...(active ? [{ label: 'Contract', value: `${staff.contractYearsRemaining ?? 2} year${(staff.contractYearsRemaining ?? 2) === 1 ? '' : 's'} remaining` }] : []),
     ],
     traits: [staff.role, active ? 'Integrated with team' : 'Available to hire'],
-    metrics: [{ label: 'Role Rating', value: `${staff.rating}/10`, score: staff.rating * 10 }],
+    metrics: [{ label: 'Role Rating', value: `${roleRating.toFixed(1)}/10`, score: roleRating * 10 }],
     commitments: clauses.map((clause) => `${contractClauseLabel(clause.clauseType)} — ${clause.status}`),
     history: recommendations.slice(-10).reverse().map((recommendation) => ({
       key: recommendation.id,
@@ -307,8 +310,8 @@ export function buildCharacterDossier(
       meta: `${recommendation.createdSeasonYear}${recommendation.createdRound ? ` · Round ${recommendation.createdRound}` : ''} · ${recommendation.status}`,
     })),
     playerRead: active
-      ? `${staff.name} is your ${staff.role.toLowerCase()} and has a ${staff.rating}/10 role rating.`
-      : `${staff.name} is available with a ${staff.rating}/10 role rating and a ${formatMoney(staff.signingFee * 1_000_000)} signing fee.`,
+      ? `${staff.name} is your ${staff.role.toLowerCase()} and has a ${roleRating.toFixed(1)}/10 role rating.`
+      : `${staff.name} is available with a ${roleRating.toFixed(1)}/10 role rating and a ${formatMoney(staff.signingFee * 1_000_000)} signing fee.`,
     route: '/staff',
   };
 }

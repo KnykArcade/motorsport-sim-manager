@@ -12,9 +12,12 @@ export type StaffMember = {
   name: string;
   role: StaffRole;
   nationality: string;
-  rating: number; // 1-10 competence
+  rating: number; // legacy 1-10 or generated 0-100; normalized by staffEngine
   salary: number; // $M / year
   signingFee: number; // $M one-off
+  // Optional for save compatibility. Hired specialists receive a two-year
+  // deal; older saves are migrated to the same default.
+  contractYearsRemaining?: number;
   bio: string;
 };
 

@@ -16,6 +16,8 @@ import { youthProspects1995 } from '../data/market/youthProspects1995';
 import { bidToWin, competingBidFor } from '../sim/driverBiddingEngine';
 import { activeDriversForTeam, isReserveContract, type GameState } from './careerState';
 import type { AcademyMember } from '../types/marketTypes';
+import { getStaffPool } from '../data';
+import { gameReducer } from './gameReducer';
 
 function newOffseasonState(): GameState {
   const teamId = 't-benetton';
@@ -54,6 +56,44 @@ describe('academy progression', () => {
 });
 
 describe('advanceSeason', () => {
+  it('ages retained staff contracts and pays only retained specialists', () => {
+    const base = newOffseasonState();
+    const candidate = getStaffPool(base.seasonYear, base.series)[0];
+    const hired = gameReducer({ ...base, seasonComplete: false }, { type: 'HIRE_STAFF', staffId: candidate.id })!;
+    const state: GameState = {
+      ...hired,
+      seasonComplete: true,
+      drivers: hired.drivers.map((driver) => driver.teamId === hired.selectedTeamId ? { ...driver, contractYearsRemaining: 2 } : driver),
+    };
+    const next = advanceSeason(state);
+    expect(next.staff![0].contractYearsRemaining).toBe(1);
+    expect(next.finance?.some((entry) => entry.label.includes(`Salary: ${candidate.name}`))).toBe(true);
+  });
+
+  it('executes an expiring staff departure and leaves the role vacant', () => {
+    const base = newOffseasonState();
+    const candidate = getStaffPool(base.seasonYear, base.series)[0];
+    const hired = gameReducer({ ...base, seasonComplete: false }, { type: 'HIRE_STAFF', staffId: candidate.id })!;
+    const state: GameState = {
+      ...hired,
+      seasonComplete: true,
+      staff: hired.staff!.map((member) => ({ ...member, contractYearsRemaining: 1 })),
+      drivers: hired.drivers.map((driver) => driver.teamId === hired.selectedTeamId ? { ...driver, contractYearsRemaining: 2 } : driver),
+      characterInteractions: {
+        ...hired.characterInteractions!,
+        futureIntentions: hired.characterInteractions!.futureIntentions.map((entry) => entry.target.type === 'Staff' && entry.target.id === candidate.id
+          ? { ...entry, status: 'WantsExit' as const, negotiationModifier: -22 }
+          : entry),
+      },
+    };
+    const next = advanceSeason(state);
+    expect(next.staff).toHaveLength(0);
+    expect(next.offseasonHistory.at(-1)?.notes.some((note) => note.includes(candidate.name) && note.includes('wanted to leave'))).toBe(true);
+    expect(next.news.some((item) => item.id.includes('staff-contract-expiry'))).toBe(true);
+    expect(next.finance?.some((entry) => entry.season === next.seasonYear && entry.label.includes(`Salary: ${candidate.name}`))).toBe(false);
+    expect(next.characterInteractions!.futureIntentions.some((entry) => entry.target.id === candidate.id)).toBe(false);
+  });
+
   it('ages retained player contracts by one year at rollover', () => {
     const base = newOffseasonState();
     const driver = activeDriversForTeam(base, base.selectedTeamId)[0];
