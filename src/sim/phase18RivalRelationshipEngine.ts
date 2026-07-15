@@ -12,7 +12,10 @@ export const RIVAL_ACTION_COST: Record<RivalAction, number> = {
   FileProtest: 400_000,
 };
 
-function clamp(value: number, low = -100, high = 100): number { return Math.max(low, Math.min(high, Math.round(value))); }
+function clamp(value: number, low = -100, high = 100): number {
+  const clamped = Math.max(low, Math.min(high, Math.round(value)));
+  return Object.is(clamped, -0) ? 0 : clamped;
+}
 function tagSet(tags: RivalRelationshipTag[], ...add: RivalRelationshipTag[]): RivalRelationshipTag[] { return [...new Set([...tags, ...add])]; }
 
 function seedRelationship(state: GameState, teamAId: string, teamBId: string): RivalRelationship {
@@ -34,8 +37,8 @@ function seedRelationship(state: GameState, teamAId: string, teamBId: string): R
 }
 
 export function ensureRivalRelationships(state: GameState): GameState {
-  const phase18 = ensurePhase18FoundationState(state.phase18, state);
-  const relationships = { ...phase18.rivalRelationships };
+  const phase18 = state.phase18 ?? ensurePhase18FoundationState(undefined, state);
+  const relationships = { ...(phase18.rivalRelationships ?? {}) };
   for (let i = 0; i < state.teams.length; i += 1) {
     for (let j = i + 1; j < state.teams.length; j += 1) {
       const id = rivalRelationshipId(state.teams[i].id, state.teams[j].id);
