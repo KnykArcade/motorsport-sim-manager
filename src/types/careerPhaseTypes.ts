@@ -1,5 +1,10 @@
 // Career phase system types for the between-race management flow.
 
+import type {
+  CharacterInteractionTargetType,
+  CharacterRequestKind,
+} from './characterInteractionTypes';
+
 export type CareerPhase =
   | 'pre_season_setup'
   | 'pre_race_briefing'
@@ -59,6 +64,13 @@ export type PaddockEvent = {
   effectsApplied: boolean;
   createdAt: string;
   narrativeStoryId?: string;
+  characterRequest?: {
+    requestKind: CharacterRequestKind;
+    targetType: CharacterInteractionTargetType;
+    targetId: string;
+    targetName: string;
+    teamId?: string;
+  };
 };
 
 export type PreseasonChecklistItem = {

@@ -45,8 +45,32 @@ export type CharacterInteractionRecord = {
 };
 
 export type CharacterInteractionState = {
-  version: 1;
+  version: 2;
   history: CharacterInteractionRecord[];
   lastInteractionByTarget: Record<string, { seasonYear: number; round: number }>;
   recruitmentInterest: Record<string, number>;
+  requestHistory: CharacterRequestResolution[];
+};
+
+export type CharacterRequestKind =
+  | 'DriverConcern'
+  | 'StaffSupport'
+  | 'OwnerReview'
+  | 'RivalApproach';
+
+export type CharacterRequestResolution = {
+  id: string;
+  eventId: string;
+  requestKind: CharacterRequestKind;
+  targetType: CharacterInteractionTargetType;
+  targetId: string;
+  targetName: string;
+  teamId?: string;
+  seasonYear: number;
+  round: number;
+  optionId: string;
+  optionLabel: string;
+  outcome: string;
+  tone: CharacterInteractionRecord['tone'];
+  effects: string[];
 };
