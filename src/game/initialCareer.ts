@@ -46,6 +46,7 @@ import { ensureCharacterInfluence } from '../sim/characterInfluenceEngine';
 import { ensureCharacterInitiatives } from '../sim/characterInitiativeEngine';
 import { ensureCharacterMandates } from '../sim/characterMandateEngine';
 import { ensureCharacterBreakingPoints } from '../sim/characterBreakingPointEngine';
+import { ensureCharacterFutureIntentions } from '../sim/characterFutureIntentEngine';
 
 // Deep clone via structuredClone (available in modern browsers / Node 18+).
 function clone<T>(value: T): T {
@@ -323,8 +324,8 @@ export function createNewGame(options: NewGameOptions): GameState {
   // brain (archetype, budget, financial health, goal).
   const stateWithAI = { ...stateWithUniverse, aiTeamStates: buildAllAITeamStates(stateWithUniverse) };
   const stateWithTechnicalPrograms = planAITechnicalPrograms(stateWithAI);
-  return ensureCharacterBreakingPoints(ensureCharacterMandates(ensureCharacterInitiatives(ensureCharacterInfluence(ensureCharacterConnections(ensureCharacterAmbitions(ensureCharacterOpinions(syncNarratives(ensureRivalRelationships(ensureFailureInvestigationState(ensurePreseasonHubState(ensureContractClauses({
+  return ensureCharacterFutureIntentions(ensureCharacterBreakingPoints(ensureCharacterMandates(ensureCharacterInitiatives(ensureCharacterInfluence(ensureCharacterConnections(ensureCharacterAmbitions(ensureCharacterOpinions(syncNarratives(ensureRivalRelationships(ensureFailureInvestigationState(ensurePreseasonHubState(ensureContractClauses({
     ...stateWithTechnicalPrograms,
     phase18: createInitialPhase18FoundationState(stateWithTechnicalPrograms),
-  }))))))))))));
+  })))))))))))));
 }

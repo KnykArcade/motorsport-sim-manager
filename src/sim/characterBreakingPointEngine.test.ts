@@ -95,7 +95,7 @@ describe('character breaking point engine', () => {
     expect(breakingPointsForTarget(resolved, target)[0].status).toBe('Escalated');
   });
 
-  it('does not duplicate active crises and migrates older saves to version 11', () => {
+  it('does not duplicate active crises and migrates older saves to the current version', () => {
     const { state } = hostileDriverState();
     const once = advanceCharacterBreakingPoints(state);
     expect(advanceCharacterBreakingPoints(once).characterInteractions!.breakingPoints).toHaveLength(1);
@@ -104,7 +104,7 @@ describe('character breaking point engine', () => {
     delete (legacy.characterInteractions as Partial<typeof legacy.characterInteractions>)?.stability;
     delete (legacy.characterInteractions as Partial<typeof legacy.characterInteractions>)?.breakingPoints;
     const migrated = migrateGameState(legacy);
-    expect(migrated.characterInteractions!.version).toBe(11);
+    expect(migrated.characterInteractions!.version).toBe(12);
     expect(migrated.characterInteractions!.stability.length).toBeGreaterThan(0);
     expect(migrated.characterInteractions!.breakingPoints).toEqual([]);
   });

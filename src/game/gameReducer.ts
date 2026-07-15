@@ -215,6 +215,7 @@ import { resolveCharacterRequest } from '../sim/characterRequestEngine';
 import { resolveCharacterDispute } from '../sim/characterDisputeEngine';
 import { resolveCharacterInitiative } from '../sim/characterInitiativeEngine';
 import { resolveCharacterBreakingPoint } from '../sim/characterBreakingPointEngine';
+import { driverFutureIntentContractModifier, refreshCharacterFutureIntentions } from '../sim/characterFutureIntentEngine';
 
 export type GameAction =
   | { type: 'NEW_GAME'; options: NewGameOptions }
@@ -900,7 +901,7 @@ export function gameReducer(state: GameState | null, action: GameAction): GameSt
       if (event?.characterRequest && !alreadyApplied) resolved = resolveCharacterRequest(resolved, event, action.optionId);
       if (event?.characterDispute && !alreadyApplied) resolved = resolveCharacterDispute(resolved, event, action.optionId);
       if (event?.characterInitiative && !alreadyApplied) resolved = resolveCharacterInitiative(resolved, event, action.optionId);
-      if (event?.characterBreakingPoint && !alreadyApplied) resolved = resolveCharacterBreakingPoint(resolved, event, action.optionId);
+      if (event?.characterBreakingPoint && !alreadyApplied) resolved = refreshCharacterFutureIntentions(resolveCharacterBreakingPoint(resolved, event, action.optionId));
       if (event?.narrativeStoryId && !alreadyApplied) resolved = resolveNarrativeResponse(resolved, event.narrativeStoryId, action.optionId);
       return syncNarratives(resolved);
     }
@@ -1131,7 +1132,8 @@ function evaluateExtensionOffer(
   const securityBoost = (appliedYears >= 2 ? 9 + appliedYears * 7 : seatInsecure ? 5 : 1) + (offerMultiplier - 1) * 44;
   const expiringBoost = (driver.contractYearsRemaining ?? 1) <= 1 ? 4 : 0;
   const clauseBoost = negotiationClauseScore(state, driver, clauseType);
-  const score = Math.round(22 + relationshipScore + driverMood + teamPull + securityBoost + expiringBoost + clauseBoost - ambitionPenalty - shortTermPenalty);
+  const futureIntentModifier = driverFutureIntentContractModifier(state, driver.id);
+  const score = Math.round(22 + relationshipScore + driverMood + teamPull + securityBoost + expiringBoost + clauseBoost + futureIntentModifier - ambitionPenalty - shortTermPenalty);
   return { accepted: score >= 58, score };
 }
 

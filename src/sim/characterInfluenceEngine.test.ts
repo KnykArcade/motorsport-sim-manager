@@ -92,7 +92,7 @@ describe('character influence engine', () => {
     expect(profile.basis.some((entry) => entry.includes('conflict'))).toBe(true);
   });
 
-  it('reports a stance transition once and backfills old saves at version 8', () => {
+  it('reports a stance transition once and backfills older saves', () => {
     const base = freshState();
     const target = currentCharacterTargets(base).find((entry) => entry.type === 'Owner')!;
     const changed = refreshCharacterInfluence(withOpinion(base, target, -90));
@@ -102,7 +102,7 @@ describe('character influence engine', () => {
     const legacy = structuredClone(base);
     delete (legacy.characterInteractions as Partial<typeof legacy.characterInteractions>)?.influence;
     const migrated = migrateGameState(legacy);
-    expect(migrated.characterInteractions!.version).toBe(11);
+    expect(migrated.characterInteractions!.version).toBe(12);
     expect(migrated.characterInteractions!.influence.length).toBeGreaterThan(0);
   });
 });
