@@ -19,6 +19,7 @@ import { connectedCharacter, connectionsForTarget, factionsForTarget } from '../
 import { disputesForTarget } from '../../sim/characterDisputeEngine';
 import { commitmentsForTarget } from '../../sim/characterCommitmentEngine';
 import { influenceForTarget } from '../../sim/characterInfluenceEngine';
+import { initiativesForTarget } from '../../sim/characterInitiativeEngine';
 
 type Props = {
   state: GameState;
@@ -69,6 +70,9 @@ export function CharacterActionPanel({ state, target }: Props) {
   const activeCommitments = commitments.filter((commitment) => commitment.status === 'Active').slice(0, 2);
   const resolvedCommitments = commitments.filter((commitment) => commitment.status !== 'Active').slice(0, 3);
   const influence = influenceForTarget(state, target);
+  const initiatives = initiativesForTarget(state, target);
+  const activeInitiative = initiatives.find((initiative) => initiative.status === 'Active');
+  const recentInitiatives = initiatives.filter((initiative) => initiative.status !== 'Active').slice(0, 3);
 
   return (
     <div className="space-y-4">
@@ -123,6 +127,15 @@ export function CharacterActionPanel({ state, target }: Props) {
               </div>
               <p className="mt-1 text-[10px] leading-relaxed text-neutral-300">{influence.effectLabel}</p>
               <div className="mt-1 line-clamp-1 text-[10px] text-neutral-500">{influence.basis.join(' · ')}</div>
+            </div>
+          )}
+          {activeInitiative && (
+            <div className="mt-3 rounded border border-fuchsia-800/60 bg-fuchsia-950/20 p-2.5">
+              <div className="flex items-start justify-between gap-2">
+                <div><div className="text-[10px] font-bold uppercase tracking-[0.14em] text-fuchsia-300">Active initiative</div><strong className="mt-1 block text-xs text-neutral-200">{activeInitiative.title}</strong></div>
+                <span className="text-[10px] font-semibold text-amber-300">R{activeInitiative.startedRound}</span>
+              </div>
+              <p className="mt-1 text-[10px] leading-relaxed text-neutral-400">{activeInitiative.motive}</p>
             </div>
           )}
           {ambition && (
@@ -276,6 +289,7 @@ export function CharacterActionPanel({ state, target }: Props) {
             </div>
           ) : <p className="mt-2 text-xs text-neutral-500">No character-request decisions have been recorded with {target.name} yet.</p>}
           {resolvedCommitments.length > 0 && <div className="mt-3 border-t border-neutral-800 pt-3"><div className="text-[10px] font-bold uppercase tracking-[0.16em] text-neutral-500">Commitment outcomes</div><div className="mt-2 grid gap-2 lg:grid-cols-3">{resolvedCommitments.map((commitment) => <article key={commitment.id} className={`rounded border p-2.5 ${commitment.status === 'Fulfilled' ? 'border-emerald-900/70 bg-emerald-950/20' : 'border-red-900/70 bg-red-950/20'}`}><div className="flex items-center justify-between gap-2"><strong className="text-xs text-neutral-200">{commitment.title}</strong><span className={`text-[10px] font-bold ${commitment.status === 'Fulfilled' ? 'text-emerald-300' : 'text-red-300'}`}>{commitment.status}</span></div><p className="mt-1 text-[10px] text-neutral-500">{commitment.measureLabel}: {commitment.currentValue}/{commitment.targetValue}</p></article>)}</div></div>}
+          {recentInitiatives.length > 0 && <div className="mt-3 border-t border-neutral-800 pt-3"><div className="text-[10px] font-bold uppercase tracking-[0.16em] text-neutral-500">Initiative outcomes</div><div className="mt-2 grid gap-2 lg:grid-cols-3">{recentInitiatives.map((initiative) => <article key={initiative.id} className="rounded border border-fuchsia-900/50 bg-fuchsia-950/10 p-2.5"><div className="flex items-center justify-between gap-2"><strong className="text-xs text-neutral-200">{initiative.title}</strong><span className="text-[10px] font-bold text-fuchsia-300">{initiative.status}</span></div><p className="mt-1 line-clamp-2 text-[10px] text-neutral-500">{initiative.outcome ?? initiative.motive}</p></article>)}</div></div>}
         </section>
       )}
     </div>

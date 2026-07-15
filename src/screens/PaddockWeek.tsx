@@ -103,7 +103,7 @@ export function PaddockWeek() {
     if (!phaseState) return {};
     const map: Record<string, PaddockEvent[]> = {};
     for (const e of phaseState.paddockEvents) {
-      if (e.narrativeStoryId || e.characterRequest || e.characterDispute) continue;
+      if (e.narrativeStoryId || e.characterRequest || e.characterDispute || e.characterInitiative) continue;
       if (!map[e.category]) map[e.category] = [];
       map[e.category].push(e);
     }
@@ -128,8 +128,11 @@ export function PaddockWeek() {
   const characterDisputes = phaseState.paddockEvents.filter((event) => !!event.characterDispute);
   const unresolvedCharacterDisputes = characterDisputes.filter((event) => !event.resolvedOptionId);
   const resolvedCharacterDisputes = characterDisputes.filter((event) => !!event.resolvedOptionId);
+  const characterInitiatives = phaseState.paddockEvents.filter((event) => !!event.characterInitiative);
+  const unresolvedCharacterInitiatives = characterInitiatives.filter((event) => !event.resolvedOptionId);
+  const resolvedCharacterInitiatives = characterInitiatives.filter((event) => !!event.resolvedOptionId);
   const nonCharacterUnresolved = phaseState.paddockEvents.filter(
-    (event) => event.isRequiredDecision && !event.resolvedOptionId && !event.characterRequest && !event.characterDispute,
+    (event) => event.isRequiredDecision && !event.resolvedOptionId && !event.characterRequest && !event.characterDispute && !event.characterInitiative,
   );
   const pendingCount = unresolvedCount + (packageSelected ? 0 : 1);
 
@@ -145,7 +148,7 @@ export function PaddockWeek() {
   const storyDecisions = phaseState.paddockEvents.filter(
     (event) => !!event.narrativeStoryId && !event.resolvedOptionId,
   );
-  const resolvedDecisions = phaseState.paddockEvents.filter((event) => !!event.resolvedOptionId && !event.characterRequest && !event.characterDispute);
+  const resolvedDecisions = phaseState.paddockEvents.filter((event) => !!event.resolvedOptionId && !event.characterRequest && !event.characterDispute && !event.characterInitiative);
   const populatedCategories = CATEGORY_ORDER.filter((category) => (eventsByCategory[category]?.length ?? 0) > 0);
   const visibleUpdateCategory = populatedCategories.includes(updateCategory)
     ? updateCategory
@@ -196,7 +199,7 @@ export function PaddockWeek() {
 
       <div className="flex flex-wrap gap-1 rounded-lg border border-neutral-800 bg-neutral-950/70 p-1" aria-label="Paddock Week sections">
         <PaddockTabButton active={tab === 'overview'} onClick={() => setTab('overview')} label="Overview" />
-        <PaddockTabButton active={tab === 'people'} onClick={() => setTab('people')} label="People" count={characterRequests.length + characterDisputes.length} attention={[...unresolvedCharacterRequests, ...unresolvedCharacterDisputes].some((event) => event.isRequiredDecision)} />
+        <PaddockTabButton active={tab === 'people'} onClick={() => setTab('people')} label="People" count={characterRequests.length + characterDisputes.length + characterInitiatives.length} attention={[...unresolvedCharacterRequests, ...unresolvedCharacterDisputes, ...unresolvedCharacterInitiatives].some((event) => event.isRequiredDecision)} />
         <PaddockTabButton active={tab === 'decisions'} onClick={() => setTab('decisions')} label="Operations" count={nonCharacterUnresolved.length + (packageSelected ? 0 : 1) + storyDecisions.length} attention={nonCharacterUnresolved.length > 0 || !packageSelected} />
         <PaddockTabButton active={tab === 'updates'} onClick={() => setTab('updates')} label="Team Updates" count={updateCount} />
         <PaddockTabButton active={tab === 'debrief'} onClick={() => setTab('debrief')} label="Decision Debrief" count={resolvedDecisions.length} />
@@ -245,6 +248,16 @@ export function PaddockWeek() {
             </div>
           </Panel>
         )}
+        {unresolvedCharacterInitiatives.length > 0 && (
+          <Panel title="Character Initiatives" className="border-fuchsia-700/30">
+            <p className="mb-3 text-xs text-neutral-500">People with enough power and conviction now act on their own. The stated motive, power, and support explain why this maneuver surfaced and what is at stake.</p>
+            <div className="grid gap-3 xl:grid-cols-2">
+              {unresolvedCharacterInitiatives.map((event) => (
+                <CharacterInitiativeCard key={event.id} state={state} event={event} recommendations={advisorRecommendationsForDecision(state, event.id)} onResolve={(optionId) => dispatch({ type: 'RESOLVE_PADDOCK_EVENT', eventId: event.id, optionId })} />
+              ))}
+            </div>
+          </Panel>
+        )}
         {unresolvedCharacterDisputes.length > 0 && (
           <Panel title="Conflicts Requiring Management" className="border-red-700/30">
             <p className="mb-3 text-xs text-neutral-500">Persistent tensions can become active disputes. Your intervention affects both people, their connection, and the camps around them.</p>
@@ -285,7 +298,8 @@ export function PaddockWeek() {
           </Panel>
         )}
         {resolvedCharacterDisputes.length > 0 && <Panel title="Disputes Addressed This Week"><div className="grid gap-3 xl:grid-cols-2">{resolvedCharacterDisputes.map((event) => <article key={event.id} className="rounded-lg border border-neutral-800 bg-neutral-900/40 p-3"><div className="flex items-center justify-between gap-3"><strong className="text-sm text-neutral-200">{event.characterDispute?.characterA.name} / {event.characterDispute?.characterB.name}</strong><span className="rounded bg-emerald-500/10 px-2 py-1 text-[10px] font-semibold uppercase text-emerald-300">Addressed</span></div><div className="mt-1 text-xs font-semibold text-amber-300">{event.options?.find((option) => option.id === event.resolvedOptionId)?.label}</div><p className="mt-1 text-xs text-neutral-400">The decision is now part of both characters' persistent history.</p></article>)}</div></Panel>}
-        {characterRequests.length === 0 && characterDisputes.length === 0 && internalInfluence.length === 0 && <Panel title="People"><p className="text-sm text-neutral-500">No character needs your attention this week.</p></Panel>}
+        {resolvedCharacterInitiatives.length > 0 && <Panel title="Initiatives Answered This Week"><div className="grid gap-3 xl:grid-cols-2">{resolvedCharacterInitiatives.map((event) => { const initiative = state.characterInteractions?.initiatives.find((entry) => entry.id === event.characterInitiative?.initiativeId); return <article key={event.id} className="rounded-lg border border-fuchsia-900/40 bg-fuchsia-950/10 p-3"><div className="flex items-center justify-between gap-3"><strong className="text-sm text-neutral-200">{event.characterInitiative?.target.name}</strong><span className="rounded bg-fuchsia-500/10 px-2 py-1 text-[10px] font-semibold uppercase text-fuchsia-300">{initiative?.status ?? 'Resolved'}</span></div><div className="mt-1 text-xs font-semibold text-amber-300">{initiative?.optionLabel}</div><p className="mt-1 text-xs text-neutral-400">{initiative?.outcome}</p></article>; })}</div></Panel>}
+        {characterRequests.length === 0 && characterDisputes.length === 0 && characterInitiatives.length === 0 && internalInfluence.length === 0 && <Panel title="People"><p className="text-sm text-neutral-500">No character needs your attention this week.</p></Panel>}
       </div>}
 
       {/* Required Decisions */}
@@ -303,7 +317,7 @@ export function PaddockWeek() {
               </div>
             )}
             {phaseState.paddockEvents
-              .filter((e) => e.isRequiredDecision && !e.resolvedOptionId && !e.characterRequest && !e.characterDispute)
+              .filter((e) => e.isRequiredDecision && !e.resolvedOptionId && !e.characterRequest && !e.characterDispute && !e.characterInitiative)
               .map((event) => (
                 <DecisionCard
                   key={event.id}
@@ -344,11 +358,11 @@ export function PaddockWeek() {
 
       {/* Resolved Decisions */}
       {tab === 'debrief' && <div className="grid gap-4 xl:grid-cols-2">
-      {phaseState.paddockEvents.some((e) => e.isRequiredDecision && e.resolvedOptionId && !e.characterRequest && !e.characterDispute) && (
+      {phaseState.paddockEvents.some((e) => e.isRequiredDecision && e.resolvedOptionId && !e.characterRequest && !e.characterDispute && !e.characterInitiative) && (
         <Panel title="Resolved Decisions">
           <ul className="space-y-2">
             {phaseState.paddockEvents
-              .filter((e) => e.isRequiredDecision && e.resolvedOptionId && !e.characterRequest && !e.characterDispute)
+              .filter((e) => e.isRequiredDecision && e.resolvedOptionId && !e.characterRequest && !e.characterDispute && !e.characterInitiative)
               .map((event) => {
                 const option = event.options?.find((o) => o.id === event.resolvedOptionId);
                 return (
@@ -472,6 +486,35 @@ function CharacterDecisionCard({
         {staff && <CharacterDossierButton state={state} subject={{ type: 'staff', staff }}>Open Character Card</CharacterDossierButton>}
         {character.targetType === 'Owner' && character.teamId && <CharacterDossierButton state={state} subject={{ type: 'owner', teamId: character.teamId }}>Open Character Card</CharacterDossierButton>}
         {character.targetType === 'RivalPrincipal' && character.teamId && <CharacterDossierButton state={state} subject={{ type: 'aiPrincipal', teamId: character.teamId }}>Open Character Card</CharacterDossierButton>}
+      </div>
+      <DecisionCard event={event} recommendations={recommendations} onResolve={onResolve} />
+    </div>
+  );
+}
+
+function CharacterInitiativeCard({
+  state,
+  event,
+  recommendations,
+  onResolve,
+}: {
+  state: GameState;
+  event: PaddockEvent;
+  recommendations: AdvisorRecommendation[];
+  onResolve: (optionId: string) => void;
+}) {
+  const target = event.characterInitiative?.target;
+  if (!target) return null;
+  const driver = target.type === 'Driver' ? state.drivers.find((candidate) => candidate.id === target.id) : undefined;
+  const staff = target.type === 'Staff' ? (state.staff ?? []).find((candidate) => candidate.id === target.id) : undefined;
+  return (
+    <div className="rounded-xl border border-fuchsia-900/60 bg-fuchsia-950/10 p-3">
+      <div className="mb-3 flex items-center justify-between gap-3 border-b border-fuchsia-900/50 pb-2">
+        <div><div className="text-[10px] font-bold uppercase tracking-[0.16em] text-fuchsia-300">Autonomous initiative</div><div className="text-sm font-semibold text-neutral-100">{target.name}</div></div>
+        {driver && <DriverDossierButton state={state} subject={{ type: 'driver', driver }} context="Paddock Week initiative">Open Driver Card</DriverDossierButton>}
+        {staff && <CharacterDossierButton state={state} subject={{ type: 'staff', staff }}>Open Character Card</CharacterDossierButton>}
+        {target.type === 'Owner' && target.teamId && <CharacterDossierButton state={state} subject={{ type: 'owner', teamId: target.teamId }}>Open Character Card</CharacterDossierButton>}
+        {target.type === 'RivalPrincipal' && target.teamId && <CharacterDossierButton state={state} subject={{ type: 'aiPrincipal', teamId: target.teamId }}>Open Character Card</CharacterDossierButton>}
       </div>
       <DecisionCard event={event} recommendations={recommendations} onResolve={onResolve} />
     </div>
