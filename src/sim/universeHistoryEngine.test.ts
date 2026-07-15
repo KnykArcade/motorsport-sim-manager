@@ -109,6 +109,11 @@ describe('universeHistoryEngine — finalize', () => {
     expect(h2.driverCareerStats['a'].seasonsContested).toEqual([1995, 1996]);
     expect(h2.records.mostWinsDriverId).toBe('a');
     expect(h2.records.mostTitlesDriverId).toBe('a');
+    expect(h2.records.mostPodiumsDriverId).toBe('a');
+    expect(h2.records.mostFastestLapsDriverId).toBe('a');
+    expect(h2.records.mostPointsDriverId).toBe('a');
+    expect(h2.records.mostPodiumsTeamId).toBe('ta');
+    expect(h2.records.mostPointsTeamId).toBe('ta');
   });
 
   it('generates champion storylines', () => {

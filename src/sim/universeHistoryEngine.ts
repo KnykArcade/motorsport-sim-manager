@@ -225,7 +225,13 @@ export function computeUniverseRecords(
     mostWinsDriverId: leader(drivers, (d) => d.wins, (d) => d.driverId),
     mostTitlesDriverId: leader(drivers, (d) => d.driverTitles, (d) => d.driverId),
     mostPolesDriverId: leader(drivers, (d) => d.poles, (d) => d.driverId),
+    mostPodiumsDriverId: leader(drivers, (d) => d.podiums, (d) => d.driverId),
+    mostFastestLapsDriverId: leader(drivers, (d) => d.fastestLaps, (d) => d.driverId),
+    mostPointsDriverId: leader(drivers, (d) => d.points, (d) => d.driverId),
     mostWinsTeamId: leader(teams, (t) => t.wins, (t) => t.teamId),
     mostTitlesTeamId: leader(teams, (t) => t.constructorTitles, (t) => t.teamId),
+    mostPodiumsTeamId: leader(teams, (t) => t.podiums, (t) => t.teamId),
+    mostPolesTeamId: leader(teams, (t) => t.poles, (t) => t.teamId),
+    mostPointsTeamId: leader(teams, (t) => t.points, (t) => t.teamId),
   };
 }

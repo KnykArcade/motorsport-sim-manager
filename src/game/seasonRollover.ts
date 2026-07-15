@@ -80,6 +80,7 @@ import { rolloverIntelligenceReports } from '../sim/phase18IntelligenceEngine';
 import { ensurePreseasonHubState } from '../sim/phase18PreseasonEngine';
 import { ensureFailureInvestigationState } from '../sim/phase18FailureInvestigationEngine';
 import { ensureRivalRelationships, recordStaffPoach } from '../sim/phase18RivalRelationshipEngine';
+import { inductLegacyHallOfFame } from '../sim/phase18LegacyEngine';
 import { updateTeamMemory } from '../sim/teamIdentityEngine';
 import type { TeamMemoryEntry } from '../types/aiTeamTypes';
 import { runAIOffseason, makeRookieDriver } from '../sim/aiOffseasonEngine';
@@ -1477,6 +1478,7 @@ export function advanceSeason(state: GameState, nextBundle?: SeasonBundle): Game
     nextState.drivers,
   );
   nextState.phase18 = ensurePhase18FoundationState(nextState.phase18, nextState);
+  nextState.phase18 = inductLegacyHallOfFame(nextState, nextUniverseHistory, state.seasonYear).phase18;
   nextState.phase18 = rolloverIntelligenceReports(nextState).phase18;
   nextState.phase18 = ensureContractClauses(nextState).phase18;
 
