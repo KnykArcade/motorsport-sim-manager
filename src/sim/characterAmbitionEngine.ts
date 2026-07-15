@@ -17,6 +17,7 @@ import {
 } from './characterOpinionEngine';
 import { ensurePhase18FoundationState } from './phase18FoundationEngine';
 import { addRivalRelationshipEvent, rivalRelationship } from './phase18RivalRelationshipEngine';
+import { propagateCharacterReaction } from './characterConnectionEngine';
 
 const STAFF_DEPARTMENT: Record<StaffRole, DepartmentId> = {
   'Technical Director': 'Technical',
@@ -207,11 +208,12 @@ function applyResolutionEffects(state: GameState, ambition: CharacterAmbition, s
   const outcome = satisfied
     ? `${target.name} believes management delivered meaningful progress on ${characterAgendaLabel(ambition.agenda).toLowerCase()}.`
     : `${target.name} believes management failed to deliver on ${characterAgendaLabel(ambition.agenda).toLowerCase()} before the deadline.`;
-  return recordCharacterMemory(next, target, {
+  const remembered = recordCharacterMemory(next, target, {
     source: 'Ambition', label: satisfied ? `Ambition satisfied: ${ambition.title}` : `Ambition missed: ${ambition.title}`,
     description: outcome, tone: satisfied ? 'Positive' : 'Negative',
     effects: satisfied ? ['+3 relationship trust', '+2 morale or standing'] : ['-5 relationship trust', 'Pressure escalated'],
   });
+  return propagateCharacterReaction(remembered, target, satisfied ? 'Positive' : 'Negative', ambition.title);
 }
 
 export function advanceCharacterAmbitions(state: GameState): GameState {

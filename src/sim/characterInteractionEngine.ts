@@ -11,6 +11,7 @@ import type { DepartmentId } from '../types/phase18Types';
 import { ensurePhase18FoundationState } from './phase18FoundationEngine';
 import { addRivalRelationshipEvent } from './phase18RivalRelationshipEngine';
 import { recordCharacterMemory } from './characterOpinionEngine';
+import { propagateCharacterReaction } from './characterConnectionEngine';
 
 export type CharacterActionSpec = {
   id: CharacterInteractionAction;
@@ -61,7 +62,7 @@ export function ensureCharacterInteractionState(
   interactionState?: CharacterInteractionState,
 ): CharacterInteractionState {
   return {
-    version: 4,
+    version: 5,
     history: interactionState?.history ?? [],
     lastInteractionByTarget: interactionState?.lastInteractionByTarget ?? {},
     recruitmentInterest: interactionState?.recruitmentInterest ?? {},
@@ -69,6 +70,8 @@ export function ensureCharacterInteractionState(
     opinions: interactionState?.opinions ?? {},
     memories: interactionState?.memories ?? [],
     ambitions: interactionState?.ambitions ?? [],
+    connections: interactionState?.connections ?? [],
+    factions: interactionState?.factions ?? [],
   };
 }
 
@@ -358,13 +361,14 @@ export function performCharacterInteraction(
   if (!result) return state;
   const recorded = recordInteraction(result.state, target, action, result.outcome, result.tone, result.effects);
   const actionLabel = CHARACTER_ACTION_SPECS.find((spec) => spec.id === action)?.label ?? action;
-  return recordCharacterMemory(recorded, target, {
+  const remembered = recordCharacterMemory(recorded, target, {
     source: 'Interaction',
     label: actionLabel,
     description: result.outcome,
     tone: result.tone,
     effects: result.effects,
   });
+  return propagateCharacterReaction(remembered, target, result.tone, actionLabel);
 }
 
 export function recruitmentSigningDiscount(state: GameState, staffId: string): number {

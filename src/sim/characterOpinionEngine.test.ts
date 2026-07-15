@@ -95,11 +95,11 @@ describe('character opinion engine', () => {
       source: 'Interaction', label: 'Honest meeting', description: 'The driver felt heard.', tone: 'Positive', effects: ['+3 trust'],
     });
     const legacy = structuredClone(remembered);
-    legacy.characterInteractions!.version = 4;
+    (legacy.characterInteractions!.version as number) = 4;
     delete legacy.characterInteractions!.opinions[characterOpinionKey(target)];
     const migrated = migrateGameState(legacy);
 
-    expect(migrated.characterInteractions?.version).toBe(4);
+    expect(migrated.characterInteractions?.version).toBe(5);
     expect(characterOpinionFor(migrated, target)).toBeTruthy();
     expect(characterMemoriesForTarget(migrated, target)).toHaveLength(1);
   });

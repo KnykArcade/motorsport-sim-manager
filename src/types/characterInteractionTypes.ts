@@ -85,7 +85,7 @@ export type CharacterMemory = {
   teamId?: string;
   seasonYear: number;
   round: number;
-  source: 'Interaction' | 'Request' | 'Ambition';
+  source: 'Interaction' | 'Request' | 'Ambition' | 'Connection';
   label: string;
   description: string;
   tone: CharacterInteractionRecord['tone'];
@@ -120,8 +120,45 @@ export type CharacterAmbition = {
   outcome?: string;
 };
 
+export type CharacterConnectionKind =
+  | 'Alliance'
+  | 'Rivalry'
+  | 'WorkingRelationship'
+  | 'Mentorship'
+  | 'Patronage'
+  | 'PoliticalRelationship';
+
+export type CharacterConnectionBand = 'Allied' | 'Friendly' | 'Neutral' | 'Tense' | 'Hostile';
+
+export type CharacterConnection = {
+  id: string;
+  characterA: CharacterInteractionTarget;
+  characterB: CharacterInteractionTarget;
+  kind: CharacterConnectionKind;
+  affinity: number;
+  strength: number;
+  basis: string;
+  band: CharacterConnectionBand;
+  lastReportedBand: CharacterConnectionBand;
+  lastUpdatedSeason: number;
+  lastUpdatedRound: number;
+};
+
+export type CharacterFaction = {
+  id: string;
+  name: string;
+  kind: 'GarageAlliance' | 'DriverCamp' | 'LeadershipCircle' | 'PaddockBloc';
+  memberKeys: string[];
+  cohesion: number;
+  influence: number;
+  stance: 'Aligned' | 'Uneasy' | 'Fractured';
+  description: string;
+  lastUpdatedSeason: number;
+  lastUpdatedRound: number;
+};
+
 export type CharacterInteractionState = {
-  version: 4;
+  version: 5;
   history: CharacterInteractionRecord[];
   lastInteractionByTarget: Record<string, { seasonYear: number; round: number }>;
   recruitmentInterest: Record<string, number>;
@@ -129,6 +166,8 @@ export type CharacterInteractionState = {
   opinions: Record<string, CharacterOpinion>;
   memories: CharacterMemory[];
   ambitions: CharacterAmbition[];
+  connections: CharacterConnection[];
+  factions: CharacterFaction[];
 };
 
 export type CharacterRequestKind =
