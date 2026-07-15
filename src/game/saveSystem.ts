@@ -11,6 +11,7 @@ import { ensurePhase18FoundationState } from '../sim/phase18FoundationEngine';
 import { ensureContractClauses } from '../sim/phase18ContractClauseEngine';
 import { ensurePreseasonHubState } from '../sim/phase18PreseasonEngine';
 import { ensureFailureInvestigationState } from '../sim/phase18FailureInvestigationEngine';
+import { ensureRivalRelationships } from '../sim/phase18RivalRelationshipEngine';
 import { CURRENT_SAVE_SCHEMA_VERSION } from './saveSchema';
 
 const SAVE_KEY = 'msm:save:v1';
@@ -61,7 +62,7 @@ export function migrateGameState(state: GameState): GameState {
     aiPrincipals: patched.aiPrincipals,
   });
   patched.saveSchemaVersion = CURRENT_SAVE_SCHEMA_VERSION;
-  return ensureFailureInvestigationState(ensurePreseasonHubState(ensureContractClauses(patched as GameState)));
+  return ensureRivalRelationships(ensureFailureInvestigationState(ensurePreseasonHubState(ensureContractClauses(patched as GameState))));
 }
 
 export type GameSettings = {

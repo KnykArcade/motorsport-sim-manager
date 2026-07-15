@@ -93,7 +93,7 @@ import {
   leadershipGameplayModifiers,
 } from '../sim/phase18IdentityCultureEngine';
 import type { TeamOrderDecision, PromiseType } from '../types/relationshipTypes';
-import type { CarLaunchApproach, ContractBreachResponse, ContractClauseType, FailureInvestigationLevel, FailureResponse, IntelligenceAction, PreseasonTestingFocus } from '../types/phase18Types';
+import type { CarLaunchApproach, ContractBreachResponse, ContractClauseType, FailureInvestigationLevel, FailureResponse, IntelligenceAction, PreseasonTestingFocus, RivalAction } from '../types/phase18Types';
 import {
   applyNegotiatedDriverClause,
   ensureContractClauses,
@@ -106,6 +106,7 @@ import {
 import { generatePaddockIntelligence, resolveIntelligenceAction } from '../sim/phase18IntelligenceEngine';
 import { applyPreseasonCarModifier, completeCarLaunch, completePreseasonTesting, ensurePreseasonHubState, resolvePreseasonFlaw } from '../sim/phase18PreseasonEngine';
 import { applyFailureRiskModifier, investigateFailure, recordFailureInvestigations, respondToFailure } from '../sim/phase18FailureInvestigationEngine';
+import { evolveRivalRelationshipsAfterRace, recordRegulationVoteRelationships, takeRivalAction } from '../sim/phase18RivalRelationshipEngine';
 import { createSeededRandom, deriveSeed } from '../sim/random';
 import type { AcademyDecision, FirstOptionDecision, SeatSigning } from '../types/marketTypes';
 import type { FinanceTransaction } from '../types/financeTypes';
@@ -277,6 +278,7 @@ export type GameAction =
   | { type: 'RESOLVE_PRESEASON_FLAW'; flawId: string }
   | { type: 'INVESTIGATE_FAILURE'; caseId: string; level: FailureInvestigationLevel }
   | { type: 'RESPOND_TO_FAILURE'; caseId: string; response: FailureResponse }
+  | { type: 'TAKE_RIVAL_ACTION'; rivalTeamId: string; action: RivalAction }
   | { type: 'SET_FACILITY_SPECIALIZATION'; specialization: FacilitySpecialization };
 
 // Run one practice session for the player's drivers: simulate each assignment,
@@ -732,14 +734,17 @@ export function gameReducer(state: GameState | null, action: GameAction): GameSt
 
     case 'SET_REGULATION_VOTE': {
       if (!state) return state;
-      return {
+      const proposal = (state.regulationProposals ?? []).find((item) => item.id === action.proposalId);
+      const nextVote = proposal?.playerVote === action.vote ? undefined : action.vote;
+      const voted = {
         ...state,
         regulationProposals: (state.regulationProposals ?? []).map((p) =>
           p.id === action.proposalId
-            ? { ...p, playerVote: p.playerVote === action.vote ? undefined : action.vote }
+            ? { ...p, playerVote: nextVote }
             : p,
         ),
       };
+      return nextVote ? recordRegulationVoteRelationships(voted, action.proposalId, nextVote) : voted;
     }
 
     case 'SCOUT_TARGET': {
@@ -968,6 +973,11 @@ export function gameReducer(state: GameState | null, action: GameAction): GameSt
     case 'RESPOND_TO_FAILURE': {
       if (!state) return state;
       return respondToFailure(state, action.caseId, action.response);
+    }
+
+    case 'TAKE_RIVAL_ACTION': {
+      if (!state) return state;
+      return takeRivalAction(state, action.rivalTeamId, action.action);
     }
 
     case 'SET_FACILITY_SPECIALIZATION': {
@@ -2024,7 +2034,7 @@ function applyRaceResults(
     currentRaceIndex: seasonComplete ? state.currentRaceIndex : nextIndex,
     seasonComplete,
   };
-  return recordFailureInvestigations(completedState, race.id, race.round, results);
+  return evolveRivalRelationshipsAfterRace(recordFailureInvestigations(completedState, race.id, race.round, results), race.round, results);
 }
 
 function partsRound(state: GameState): number {

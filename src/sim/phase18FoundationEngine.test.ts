@@ -37,7 +37,7 @@ describe('Phase 18 foundation state', () => {
     expect(foundation.intelligenceReports).toEqual([]);
     expect(foundation.contractClauses.filter((clause) => clause.partyType === 'Driver')).toHaveLength(state.drivers.length);
     expect(foundation.contractClauses.every((clause) => clause.status === 'Active')).toBe(true);
-    expect(foundation.rivalRelationships).toEqual({});
+    expect(Object.keys(foundation.rivalRelationships)).toHaveLength(state.teams.length * (state.teams.length - 1) / 2);
     expect(foundation.legacy.score).toBe(0);
     expect(foundation.narratives).toEqual([]);
   });
