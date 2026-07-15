@@ -85,7 +85,7 @@ export type CharacterMemory = {
   teamId?: string;
   seasonYear: number;
   round: number;
-  source: 'Interaction' | 'Request' | 'Ambition' | 'Connection' | 'Dispute';
+  source: 'Interaction' | 'Request' | 'Ambition' | 'Connection' | 'Dispute' | 'Commitment';
   label: string;
   description: string;
   tone: CharacterInteractionRecord['tone'];
@@ -175,8 +175,29 @@ export type CharacterFaction = {
   lastUpdatedRound: number;
 };
 
+export type CharacterCommitment = {
+  id: string;
+  sourceEventId: string;
+  target: CharacterInteractionTarget;
+  kind: 'DriverPromise' | 'DepartmentSupport' | 'CompetitiveTarget' | 'PrivateChannel';
+  title: string;
+  description: string;
+  measureLabel: string;
+  currentValue: number;
+  targetValue: number;
+  direction: 'AtLeast' | 'AtMost';
+  createdSeason: number;
+  createdRound: number;
+  dueSeason: number;
+  dueRound: number;
+  status: 'Active' | 'Fulfilled' | 'Broken';
+  linkedPromiseId?: string;
+  resolvedSeason?: number;
+  resolvedRound?: number;
+};
+
 export type CharacterInteractionState = {
-  version: 6;
+  version: 7;
   history: CharacterInteractionRecord[];
   lastInteractionByTarget: Record<string, { seasonYear: number; round: number }>;
   recruitmentInterest: Record<string, number>;
@@ -187,6 +208,7 @@ export type CharacterInteractionState = {
   connections: CharacterConnection[];
   factions: CharacterFaction[];
   disputes: CharacterDispute[];
+  commitments: CharacterCommitment[];
 };
 
 export type CharacterRequestKind =
