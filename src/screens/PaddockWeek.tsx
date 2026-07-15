@@ -30,6 +30,7 @@ import { RaceWeekendPackageSelection } from './RaceWeekendPackageSelection';
 import { CharacterDossierButton } from '../components/characterCards/CharacterDossier';
 import { DriverDossierButton } from '../components/driverCards/DriverDossier';
 import { internalCharacterInfluence } from '../sim/characterInfluenceEngine';
+import { activeCharacterMandates } from '../sim/characterMandateEngine';
 
 const CATEGORY_LABELS: Record<PaddockEventCategory, string> = {
   development: 'Development / Factory',
@@ -77,11 +78,13 @@ const INFLUENCE_STANCE_COLORS = {
 } as const;
 
 type PaddockTab = 'overview' | 'people' | 'decisions' | 'updates' | 'debrief';
+type PeopleSection = 'attention' | 'support' | 'resolved';
 
 export function PaddockWeek() {
   const { state, dispatch } = useGame();
   const navigate = useNavigate();
   const [tab, setTab] = useState<PaddockTab>('people');
+  const [peopleSection, setPeopleSection] = useState<PeopleSection>('attention');
   const [updateCategory, setUpdateCategory] = useState<PaddockEventCategory>('next_race');
 
   // Generate paddock events on mount if not already generated.
@@ -155,6 +158,7 @@ export function PaddockWeek() {
     : populatedCategories[0] ?? 'next_race';
   const updateCount = populatedCategories.reduce((total, category) => total + (eventsByCategory[category]?.length ?? 0), 0);
   const internalInfluence = internalCharacterInfluence(state).slice(0, 8);
+  const activeMandates = activeCharacterMandates(state).slice(0, 6);
 
   const advanceToBriefing = () => {
     dispatch({ type: 'ADVANCE_TO_PRE_RACE_BRIEFING' });
@@ -199,7 +203,7 @@ export function PaddockWeek() {
 
       <div className="flex flex-wrap gap-1 rounded-lg border border-neutral-800 bg-neutral-950/70 p-1" aria-label="Paddock Week sections">
         <PaddockTabButton active={tab === 'overview'} onClick={() => setTab('overview')} label="Overview" />
-        <PaddockTabButton active={tab === 'people'} onClick={() => setTab('people')} label="People" count={characterRequests.length + characterDisputes.length + characterInitiatives.length} attention={[...unresolvedCharacterRequests, ...unresolvedCharacterDisputes, ...unresolvedCharacterInitiatives].some((event) => event.isRequiredDecision)} />
+        <PaddockTabButton active={tab === 'people'} onClick={() => setTab('people')} label="People" count={characterRequests.length + characterDisputes.length + characterInitiatives.length + activeMandates.length} attention={[...unresolvedCharacterRequests, ...unresolvedCharacterDisputes, ...unresolvedCharacterInitiatives].some((event) => event.isRequiredDecision)} />
         <PaddockTabButton active={tab === 'decisions'} onClick={() => setTab('decisions')} label="Operations" count={nonCharacterUnresolved.length + (packageSelected ? 0 : 1) + storyDecisions.length} attention={nonCharacterUnresolved.length > 0 || !packageSelected} />
         <PaddockTabButton active={tab === 'updates'} onClick={() => setTab('updates')} label="Team Updates" count={updateCount} />
         <PaddockTabButton active={tab === 'debrief'} onClick={() => setTab('debrief')} label="Decision Debrief" count={resolvedDecisions.length} />
@@ -225,7 +229,12 @@ export function PaddockWeek() {
       </div>}
 
       {tab === 'people' && <div className="space-y-4">
-        {internalInfluence.length > 0 && (
+        <div className="flex gap-1 rounded-lg border border-neutral-800 bg-neutral-950/70 p-1" aria-label="People management sections">
+          <PaddockTabButton active={peopleSection === 'attention'} onClick={() => setPeopleSection('attention')} label="Needs Attention" count={unresolvedCharacterRequests.length + unresolvedCharacterDisputes.length + unresolvedCharacterInitiatives.length} attention={[...unresolvedCharacterRequests, ...unresolvedCharacterDisputes, ...unresolvedCharacterInitiatives].some((event) => event.isRequiredDecision)} />
+          <PaddockTabButton active={peopleSection === 'support'} onClick={() => setPeopleSection('support')} label="Support & Mandates" count={activeMandates.length} />
+          <PaddockTabButton active={peopleSection === 'resolved'} onClick={() => setPeopleSection('resolved')} label="Resolved This Week" count={resolvedCharacterRequests.length + resolvedCharacterDisputes.length + resolvedCharacterInitiatives.length} />
+        </div>
+        {peopleSection === 'support' && internalInfluence.length > 0 && (
           <Panel title="Internal Support Map">
             <p className="mb-3 text-xs text-neutral-500">Power shows how much leverage a person has. Support shows whether they are helping or resisting your leadership; that stance now applies a small weekly effect to their driver, department, or ownership relationship.</p>
             <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-4">
@@ -248,7 +257,22 @@ export function PaddockWeek() {
             </div>
           </Panel>
         )}
-        {unresolvedCharacterInitiatives.length > 0 && (
+        {peopleSection === 'support' && activeMandates.length > 0 && (
+          <Panel title="Delegated Mandates">
+            <p className="mb-3 text-xs text-neutral-500">Authority now comes with accountability. Each character contributes once per round, then succeeds or fails against the measure shown at the deadline.</p>
+            <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
+              {activeMandates.map((mandate) => (
+                <article key={mandate.id} className="rounded-lg border border-cyan-900/50 bg-cyan-950/10 p-3">
+                  <div className="flex items-start justify-between gap-2"><div><strong className="block text-xs text-neutral-200">{mandate.target.name}</strong><span className="text-[10px] text-cyan-300">{mandate.authority} authority</span></div><span className="text-[10px] font-semibold text-amber-300">Due R{mandate.dueRound}</span></div>
+                  <div className="mt-2 text-[10px] text-neutral-500">{mandate.measureLabel}</div>
+                  <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-neutral-800"><div className="h-full rounded-full bg-cyan-500" style={{ width: `${Math.min(100, Math.round((mandate.currentValue / Math.max(1, mandate.targetValue)) * 100))}%` }} /></div>
+                  <div className="mt-1 text-right text-[10px] text-neutral-400">{mandate.currentValue}/{mandate.targetValue}</div>
+                </article>
+              ))}
+            </div>
+          </Panel>
+        )}
+        {peopleSection === 'attention' && unresolvedCharacterInitiatives.length > 0 && (
           <Panel title="Character Initiatives" className="border-fuchsia-700/30">
             <p className="mb-3 text-xs text-neutral-500">People with enough power and conviction now act on their own. The stated motive, power, and support explain why this maneuver surfaced and what is at stake.</p>
             <div className="grid gap-3 xl:grid-cols-2">
@@ -258,7 +282,7 @@ export function PaddockWeek() {
             </div>
           </Panel>
         )}
-        {unresolvedCharacterDisputes.length > 0 && (
+        {peopleSection === 'attention' && unresolvedCharacterDisputes.length > 0 && (
           <Panel title="Conflicts Requiring Management" className="border-red-700/30">
             <p className="mb-3 text-xs text-neutral-500">Persistent tensions can become active disputes. Your intervention affects both people, their connection, and the camps around them.</p>
             <div className="grid gap-3 xl:grid-cols-2">
@@ -271,7 +295,7 @@ export function PaddockWeek() {
             </div>
           </Panel>
         )}
-        {unresolvedCharacterRequests.length > 0 && (
+        {peopleSection === 'attention' && unresolvedCharacterRequests.length > 0 && (
           <Panel title="Conversations Waiting for You" className="border-violet-600/30">
             <p className="mb-3 text-xs text-neutral-500">Characters can now bring their own concerns, requests, and political approaches to you. Required conversations must be answered before the week can advance.</p>
             <div className="grid gap-3 xl:grid-cols-2">
@@ -287,7 +311,7 @@ export function PaddockWeek() {
             </div>
           </Panel>
         )}
-        {resolvedCharacterRequests.length > 0 && (
+        {peopleSection === 'resolved' && resolvedCharacterRequests.length > 0 && (
           <Panel title="This Week's People Decisions">
             <div className="grid gap-3 xl:grid-cols-2">
               {resolvedCharacterRequests.map((event) => {
@@ -297,9 +321,11 @@ export function PaddockWeek() {
             </div>
           </Panel>
         )}
-        {resolvedCharacterDisputes.length > 0 && <Panel title="Disputes Addressed This Week"><div className="grid gap-3 xl:grid-cols-2">{resolvedCharacterDisputes.map((event) => <article key={event.id} className="rounded-lg border border-neutral-800 bg-neutral-900/40 p-3"><div className="flex items-center justify-between gap-3"><strong className="text-sm text-neutral-200">{event.characterDispute?.characterA.name} / {event.characterDispute?.characterB.name}</strong><span className="rounded bg-emerald-500/10 px-2 py-1 text-[10px] font-semibold uppercase text-emerald-300">Addressed</span></div><div className="mt-1 text-xs font-semibold text-amber-300">{event.options?.find((option) => option.id === event.resolvedOptionId)?.label}</div><p className="mt-1 text-xs text-neutral-400">The decision is now part of both characters' persistent history.</p></article>)}</div></Panel>}
-        {resolvedCharacterInitiatives.length > 0 && <Panel title="Initiatives Answered This Week"><div className="grid gap-3 xl:grid-cols-2">{resolvedCharacterInitiatives.map((event) => { const initiative = state.characterInteractions?.initiatives.find((entry) => entry.id === event.characterInitiative?.initiativeId); return <article key={event.id} className="rounded-lg border border-fuchsia-900/40 bg-fuchsia-950/10 p-3"><div className="flex items-center justify-between gap-3"><strong className="text-sm text-neutral-200">{event.characterInitiative?.target.name}</strong><span className="rounded bg-fuchsia-500/10 px-2 py-1 text-[10px] font-semibold uppercase text-fuchsia-300">{initiative?.status ?? 'Resolved'}</span></div><div className="mt-1 text-xs font-semibold text-amber-300">{initiative?.optionLabel}</div><p className="mt-1 text-xs text-neutral-400">{initiative?.outcome}</p></article>; })}</div></Panel>}
-        {characterRequests.length === 0 && characterDisputes.length === 0 && characterInitiatives.length === 0 && internalInfluence.length === 0 && <Panel title="People"><p className="text-sm text-neutral-500">No character needs your attention this week.</p></Panel>}
+        {peopleSection === 'resolved' && resolvedCharacterDisputes.length > 0 && <Panel title="Disputes Addressed This Week"><div className="grid gap-3 xl:grid-cols-2">{resolvedCharacterDisputes.map((event) => <article key={event.id} className="rounded-lg border border-neutral-800 bg-neutral-900/40 p-3"><div className="flex items-center justify-between gap-3"><strong className="text-sm text-neutral-200">{event.characterDispute?.characterA.name} / {event.characterDispute?.characterB.name}</strong><span className="rounded bg-emerald-500/10 px-2 py-1 text-[10px] font-semibold uppercase text-emerald-300">Addressed</span></div><div className="mt-1 text-xs font-semibold text-amber-300">{event.options?.find((option) => option.id === event.resolvedOptionId)?.label}</div><p className="mt-1 text-xs text-neutral-400">The decision is now part of both characters' persistent history.</p></article>)}</div></Panel>}
+        {peopleSection === 'resolved' && resolvedCharacterInitiatives.length > 0 && <Panel title="Initiatives Answered This Week"><div className="grid gap-3 xl:grid-cols-2">{resolvedCharacterInitiatives.map((event) => { const initiative = state.characterInteractions?.initiatives.find((entry) => entry.id === event.characterInitiative?.initiativeId); return <article key={event.id} className="rounded-lg border border-fuchsia-900/40 bg-fuchsia-950/10 p-3"><div className="flex items-center justify-between gap-3"><strong className="text-sm text-neutral-200">{event.characterInitiative?.target.name}</strong><span className="rounded bg-fuchsia-500/10 px-2 py-1 text-[10px] font-semibold uppercase text-fuchsia-300">{initiative?.status ?? 'Resolved'}</span></div><div className="mt-1 text-xs font-semibold text-amber-300">{initiative?.optionLabel}</div><p className="mt-1 text-xs text-neutral-400">{initiative?.outcome}</p></article>; })}</div></Panel>}
+        {peopleSection === 'attention' && unresolvedCharacterRequests.length === 0 && unresolvedCharacterDisputes.length === 0 && unresolvedCharacterInitiatives.length === 0 && <Panel title="Needs Attention"><p className="text-sm text-neutral-500">No character requires a decision this week.</p></Panel>}
+        {peopleSection === 'support' && internalInfluence.length === 0 && activeMandates.length === 0 && <Panel title="Support & Mandates"><p className="text-sm text-neutral-500">No internal support or delegated mandates are currently recorded.</p></Panel>}
+        {peopleSection === 'resolved' && resolvedCharacterRequests.length === 0 && resolvedCharacterDisputes.length === 0 && resolvedCharacterInitiatives.length === 0 && <Panel title="Resolved This Week"><p className="text-sm text-neutral-500">No people decisions have been resolved this week.</p></Panel>}
       </div>}
 
       {/* Required Decisions */}

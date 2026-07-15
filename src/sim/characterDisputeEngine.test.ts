@@ -99,7 +99,7 @@ describe('character dispute engine', () => {
     const legacy = structuredClone(freshState());
     delete (legacy.characterInteractions as Partial<typeof legacy.characterInteractions>)?.disputes;
     const migrated = migrateGameState(legacy);
-    expect(migrated.characterInteractions!.version).toBe(9);
+    expect(migrated.characterInteractions!.version).toBe(10);
     expect(migrated.characterInteractions!.disputes).toEqual([]);
   });
 });

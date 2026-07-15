@@ -38,6 +38,7 @@ import { generateCharacterDisputeEvents, refreshCharacterDisputes } from '../sim
 import { advanceCharacterCommitments, generateCharacterCommitmentEvents } from '../sim/characterCommitmentEngine';
 import { applyCharacterInfluenceEffects, generateCharacterInfluenceEvents, refreshCharacterInfluence } from '../sim/characterInfluenceEngine';
 import { createCharacterInitiative, generateCharacterInitiativeEvents } from '../sim/characterInitiativeEngine';
+import { advanceCharacterMandates, generateCharacterMandateEvents } from '../sim/characterMandateEngine';
 
 export function defaultCareerPhaseState(): CareerPhaseState {
   return {
@@ -1163,7 +1164,8 @@ export function generateAndStorePaddockEvents(state: GameState): GameState {
   const phaseState = getOrCreatePhaseState(state);
   if (phaseState.generatedEventsForCurrentWeek) return state;
 
-  const stateWithConnections = refreshCharacterConnections(state);
+  const stateWithMandates = advanceCharacterMandates(state);
+  const stateWithConnections = refreshCharacterConnections(stateWithMandates);
   const stateWithDisputes = refreshCharacterDisputes(stateWithConnections);
   const stateWithAmbitions = advanceCharacterAmbitions(stateWithDisputes);
   const stateWithCommitments = advanceCharacterCommitments(stateWithAmbitions);
@@ -1179,6 +1181,7 @@ export function generateAndStorePaddockEvents(state: GameState): GameState {
   events.push(...generateCharacterCommitmentEvents(stateWithInitiatives));
   events.push(...generateCharacterInfluenceEvents(stateWithInitiatives));
   events.push(...generateCharacterInitiativeEvents(stateWithInitiatives));
+  events.push(...generateCharacterMandateEvents(stateWithInitiatives));
   events.push(...narrativeResponseEvents(stateWithInitiatives));
 
   // Track newly announced completed projects.
