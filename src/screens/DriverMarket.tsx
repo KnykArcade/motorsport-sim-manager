@@ -32,12 +32,20 @@ import type {
   YouthProspect,
 } from '../types/marketTypes';
 import type { Driver } from '../types/gameTypes';
+import {
+  MARKET_PAGE_SIZE,
+  YOUTH_MARKET_TABS,
+  marketPage,
+  marketPageCount,
+  type YouthMarketTab,
+} from './driverMarketViewModel';
 
 type Tab = 'senior' | 'youth';
 
 export function DriverMarket() {
   const { state, dispatch } = useGame();
   const [tab, setTab] = useState<Tab>('senior');
+  const [seniorPage, setSeniorPage] = useState(0);
 
   const bundle = useMemo(
     () => (state ? careerMarketBundle(state) : undefined),
@@ -47,6 +55,9 @@ export function DriverMarket() {
   // One universe-wide senior market. Series preference changes interest and AI
   // decisions, but never moves a driver into a separate or hidden pool.
   const seniorDrivers = bundle?.drivers ?? [];
+  const seniorPageCount = marketPageCount(seniorDrivers.length);
+  const safeSeniorPage = Math.min(seniorPage, seniorPageCount - 1);
+  const visibleSeniorDrivers = marketPage(seniorDrivers, safeSeniorPage);
 
   if (!state) return null;
 
@@ -154,42 +165,50 @@ export function DriverMarket() {
       )}
 
       {bundle && tab === 'senior' && (
-        <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
-          {seniorDrivers
-            .map((d) => {
+        <div className="space-y-3">
+          <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+            {visibleSeniorDrivers.map((d) => {
               const interest = marketDriverOfferInterest(state, d, orgOverall, carOverall);
               return (
-              <SeniorCard
-                key={d.id}
-                state={state}
-                d={d}
-                offseason={offseason}
-                seats={seats}
-                signed={signedMarketIds.has(d.id)}
-                pending={signingBySource.get(d.id)}
-                potLabel={potLabel(d.id, d.skills, d.potential)}
-                affordable={toMoney(d.buyoutCost) <= budget}
-                canSignThird={canSignThird}
-                canSignRaceDriver={canSignRaceDriver}
-                thirdFee={thirdDriverMidSeasonFee(d.salary, racesRemaining, state.calendar.length)}
-                budget={budget}
-                seatName={seatName}
-                interest={interest}
-                competingBid={competingBidFor(d, state.randomSeed)}
-                suggestedBid={bidToWin(d, orgOverall, state.randomSeed, interest)}
-                teamOverall={orgOverall}
-                seed={state.randomSeed}
-                onSign={(seatDriverId, bid) =>
-                  dispatch({ type: 'SIGN_MARKET_DRIVER', marketId: d.id, seatDriverId, bid })
-                }
-                onSignThird={() => dispatch({ type: 'SIGN_THIRD_DRIVER', marketId: d.id })}
-                onSignRaceDriver={() => dispatch({ type: 'SIGN_RACE_DRIVER', marketId: d.id })}
-                onRelease={(seatDriverId) =>
-                  dispatch({ type: 'RELEASE_SIGNING', seatDriverId })
-                }
-              />
+                <SeniorCard
+                  key={d.id}
+                  state={state}
+                  d={d}
+                  offseason={offseason}
+                  seats={seats}
+                  signed={signedMarketIds.has(d.id)}
+                  pending={signingBySource.get(d.id)}
+                  potLabel={potLabel(d.id, d.skills, d.potential)}
+                  affordable={toMoney(d.buyoutCost) <= budget}
+                  canSignThird={canSignThird}
+                  canSignRaceDriver={canSignRaceDriver}
+                  thirdFee={thirdDriverMidSeasonFee(d.salary, racesRemaining, state.calendar.length)}
+                  budget={budget}
+                  seatName={seatName}
+                  interest={interest}
+                  competingBid={competingBidFor(d, state.randomSeed)}
+                  suggestedBid={bidToWin(d, orgOverall, state.randomSeed, interest)}
+                  teamOverall={orgOverall}
+                  seed={state.randomSeed}
+                  onSign={(seatDriverId, bid) =>
+                    dispatch({ type: 'SIGN_MARKET_DRIVER', marketId: d.id, seatDriverId, bid })
+                  }
+                  onSignThird={() => dispatch({ type: 'SIGN_THIRD_DRIVER', marketId: d.id })}
+                  onSignRaceDriver={() => dispatch({ type: 'SIGN_RACE_DRIVER', marketId: d.id })}
+                  onRelease={(seatDriverId) =>
+                    dispatch({ type: 'RELEASE_SIGNING', seatDriverId })
+                  }
+                />
               );
             })}
+          </div>
+          <MarketPagination
+            label="Senior drivers"
+            total={seniorDrivers.length}
+            page={safeSeniorPage}
+            pageCount={seniorPageCount}
+            onPage={setSeniorPage}
+          />
         </div>
       )}
 
@@ -542,40 +561,70 @@ function YouthTab({
   onPromote: (academyId: string, seatDriverId: string) => void;
   onReleaseSigning: (seatDriverId: string) => void;
 }) {
+  const [youthTab, setYouthTab] = useState<YouthMarketTab>('academy');
+  const [academyPage, setAcademyPage] = useState(0);
+  const [prospectPage, setProspectPage] = useState(0);
   const academyByProspect = new Set(academy.map((a) => a.prospectId));
   const available = prospects.filter((p) => !academyByProspect.has(p.id));
   const academyFull = academy.length >= academyCapacity;
+  const orderedAcademy = [...academy].sort((a, b) => b.potential - a.potential);
+  const academyPageCount = marketPageCount(orderedAcademy.length);
+  const safeAcademyPage = Math.min(academyPage, academyPageCount - 1);
+  const visibleAcademy = marketPage(orderedAcademy, safeAcademyPage);
+  const prospectPageCount = marketPageCount(available.length);
+  const safeProspectPage = Math.min(prospectPage, prospectPageCount - 1);
+  const visibleProspects = marketPage(available, safeProspectPage);
 
   return (
-    <div className="space-y-6">
-      <div>
-        <div className="mb-2 flex items-center justify-between gap-2">
-          <h2 className="text-lg font-semibold text-neutral-100">Your Academy</h2>
-          <span
-            className={`rounded px-2 py-0.5 text-xs font-semibold ${
-              academyFull ? 'bg-amber-500/15 text-amber-300' : 'bg-neutral-800 text-neutral-300'
+    <div className="space-y-3">
+      <nav
+        className="grid grid-cols-2 gap-1 rounded-lg border border-neutral-800 bg-neutral-950/70 p-1"
+        aria-label="Youth market sections"
+      >
+        {YOUTH_MARKET_TABS.map((item) => (
+          <button
+            key={item.id}
+            type="button"
+            onClick={() => setYouthTab(item.id)}
+            aria-current={youthTab === item.id ? 'page' : undefined}
+            className={`rounded px-3 py-2 text-xs font-semibold transition-colors ${
+              youthTab === item.id
+                ? 'bg-sky-500 text-neutral-950'
+                : 'text-neutral-400 hover:bg-neutral-900 hover:text-neutral-100'
             }`}
           >
-            Academy Slots: {academy.length} / {academyCapacity}
-          </span>
-        </div>
-        {academyFull && (
-          <p className="mb-2 rounded-lg border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-xs text-amber-200">
-            Academy Full: Upgrade facilities or improve team rating to expand capacity.
-          </p>
-        )}
-        {academy.length === 0 ? (
-          <Panel>
-            <p className="text-sm text-neutral-400">
-              No academy drivers yet. Sign prospects below; they gain ratings each offseason and can
-              be promoted to a race seat once F1-ready.
+            {item.label} ({item.id === 'academy' ? academy.length : available.length})
+          </button>
+        ))}
+      </nav>
+
+      {youthTab === 'academy' && (
+        <div>
+          <div className="mb-2 flex items-center justify-between gap-2">
+            <h2 className="text-lg font-semibold text-neutral-100">Your Academy</h2>
+            <span
+              className={`rounded px-2 py-0.5 text-xs font-semibold ${
+                academyFull ? 'bg-amber-500/15 text-amber-300' : 'bg-neutral-800 text-neutral-300'
+              }`}
+            >
+              Academy Slots: {academy.length} / {academyCapacity}
+            </span>
+          </div>
+          {academyFull && (
+            <p className="mb-2 rounded-lg border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-xs text-amber-200">
+              Academy Full: Upgrade facilities or improve team rating to expand capacity.
             </p>
-          </Panel>
-        ) : (
-          <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
-            {[...academy]
-              .sort((a, b) => b.potential - a.potential)
-              .map((a) => {
+          )}
+          {academy.length === 0 ? (
+            <Panel>
+              <p className="text-sm text-neutral-400">
+                No academy drivers yet. Sign prospects below; they gain ratings each offseason and can
+                be promoted to a race seat once F1-ready.
+              </p>
+            </Panel>
+          ) : (
+            <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+              {visibleAcademy.map((a) => {
                 const ready = isAcademyReady(a);
                 const pending = signingBySource.get(a.id);
                 return (
@@ -643,19 +692,29 @@ function YouthTab({
                   </Panel>
                 );
               })}
-          </div>
-        )}
-      </div>
+            </div>
+          )}
+          {academy.length > 0 && (
+            <MarketPagination
+              label="Academy drivers"
+              total={orderedAcademy.length}
+              page={safeAcademyPage}
+              pageCount={academyPageCount}
+              onPage={setAcademyPage}
+            />
+          )}
+        </div>
+      )}
 
-      <div>
-        <h2 className="mb-2 text-lg font-semibold text-neutral-100">
-          Youth Prospects ({available.length} open / {prospects.length} total)
-        </h2>
-        <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
-          {prospects.map((y) => {
-            const signed = academyByProspect.has(y.id);
-            const preferred = preferredSeries(y.seriesPreferences);
-            return (
+      {youthTab === 'prospects' && (
+        <div>
+          <h2 className="mb-2 text-lg font-semibold text-neutral-100">
+            Youth Prospects ({available.length} open / {prospects.length} total)
+          </h2>
+          <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+            {visibleProspects.map((y) => {
+              const preferred = preferredSeries(y.seriesPreferences);
+              return (
               <Panel key={y.id}>
                 <div className="mb-1 flex items-start justify-between gap-2">
                   <div>
@@ -674,16 +733,10 @@ function YouthTab({
                   </div>
                 </div>
                 <div className="mb-2 flex flex-wrap gap-1 text-[10px]">
-                  {signed ? (
-                    <Tag tone="good">SIGNED</Tag>
-                  ) : (
-                    <>
-                      {y.academyEligibleNow && <Tag tone="good">Eligible now</Tag>}
-                      {preferred && <Tag tone={preferred === state.series ? 'good' : 'neutral'}>Prefers {preferred}</Tag>}
-                      <Tag>{y.riskLevel} risk</Tag>
-                      <Tag>~{y.yearsUntilF1Ready}y to F1</Tag>
-                    </>
-                  )}
+                  {y.academyEligibleNow && <Tag tone="good">Eligible now</Tag>}
+                  {preferred && <Tag tone={preferred === state.series ? 'good' : 'neutral'}>Prefers {preferred}</Tag>}
+                  <Tag>{y.riskLevel} risk</Tag>
+                  <Tag>~{y.yearsUntilF1Ready}y to F1</Tag>
                 </div>
                 <div className="mb-2">
                   <DriverDossierButton
@@ -706,31 +759,33 @@ function YouthTab({
                   </Stat>
                 </div>
                 <div className="mt-3 border-t border-neutral-800 pt-2">
-                  {signed ? (
-                    <div className="rounded border border-green-500/20 bg-green-500/10 px-2 py-1 text-xs text-green-200">
-                      Already signed to the academy.
-                    </div>
-                  ) : (
-                    <Button
-                      variant="primary"
-                      className="w-full px-2 py-1 text-xs"
-                      disabled={academyFull || toMoney(y.signingCost) > budget}
-                      onClick={() => onSignYouth(y.id)}
-                    >
-                      {academyFull
-                        ? 'Academy full'
-                        : toMoney(y.signingCost) > budget
-                          ? 'Insufficient budget'
-                          : 'Add to Academy'}
-                    </Button>
-                  )}
+                  <Button
+                    variant="primary"
+                    className="w-full px-2 py-1 text-xs"
+                    disabled={academyFull || toMoney(y.signingCost) > budget}
+                    onClick={() => onSignYouth(y.id)}
+                  >
+                    {academyFull
+                      ? 'Academy full'
+                      : toMoney(y.signingCost) > budget
+                        ? 'Insufficient budget'
+                        : 'Add to Academy'}
+                  </Button>
                 </div>
                 <p className="mt-2 text-[11px] text-neutral-400">{y.suggestedPath}</p>
               </Panel>
-            );
-          })}
+              );
+            })}
+          </div>
+          <MarketPagination
+            label="Youth prospects"
+            total={available.length}
+            page={safeProspectPage}
+            pageCount={prospectPageCount}
+            onPage={setProspectPage}
+          />
         </div>
-      </div>
+      )}
     </div>
   );
 }
@@ -748,6 +803,45 @@ function Tag({
     warn: 'bg-amber-500/15 text-amber-300',
   };
   return <span className={`rounded px-1.5 py-0.5 ${tones[tone]}`}>{children}</span>;
+}
+
+function MarketPagination({
+  label,
+  total,
+  page,
+  pageCount,
+  onPage,
+}: {
+  label: string;
+  total: number;
+  page: number;
+  pageCount: number;
+  onPage: (page: number) => void;
+}) {
+  return (
+    <div className="mt-3 flex items-center justify-between gap-3 rounded-lg border border-neutral-800 bg-neutral-950/60 px-3 py-2">
+      <Button
+        variant="secondary"
+        className="px-3 py-1 text-xs"
+        onClick={() => onPage(Math.max(0, page - 1))}
+        disabled={page === 0}
+      >
+        Previous
+      </Button>
+      <span className="text-xs text-neutral-500">
+        {label} {total ? page * MARKET_PAGE_SIZE + 1 : 0}–{Math.min(total, (page + 1) * MARKET_PAGE_SIZE)} of{' '}
+        {total} · Page {page + 1} of {pageCount}
+      </span>
+      <Button
+        variant="secondary"
+        className="px-3 py-1 text-xs"
+        onClick={() => onPage(Math.min(pageCount - 1, page + 1))}
+        disabled={page >= pageCount - 1}
+      >
+        Next
+      </Button>
+    </div>
+  );
 }
 
 function Stat({ label, children }: { label: string; children: React.ReactNode }) {
