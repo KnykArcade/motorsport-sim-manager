@@ -220,10 +220,10 @@ async function liveSeasonTally(bundle: SeasonBundle, runs: number): Promise<Tall
 }
 
 function eraOf(year: number): string {
-  if (year <= 1994) return '1990-1994 F1';
-  if (year <= 2000) return '1995-2000 F1';
-  if (year <= 2005) return '2001-2005 F1';
-  if (year <= 2010) return '2006-2010 F1';
+  if (year <= 1994) return '1990-1994';
+  if (year <= 2000) return '1995-2000';
+  if (year <= 2005) return '2001-2005';
+  if (year <= 2010) return '2006-2010';
   return 'Modern';
 }
 
@@ -295,7 +295,7 @@ ra('retirement audit — Quick Sim vs Live Race', async () => {
     console.log(`${key.padEnd(20)} | QUICK ${fmt(q)}`);
     console.log(`${key.padEnd(20)} | LIVE  ${fmt(l)}`);
 
-    const era = meta.series === 'IndyCar' ? 'Modern IndyCar' : eraOf(meta.year);
+    const era = `${eraOf(meta.year)} ${meta.series}`;
     eraQuick[era] ??= emptyTally();
     eraLive[era] ??= emptyTally();
     mergeTally(eraQuick[era], q);

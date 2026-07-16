@@ -4,6 +4,7 @@ import {
   pickDnfCause,
   eraDnfProfile,
   eraReliabilityScale,
+  liveOtherRisk,
   liveRiskCalibration,
   type DnfCause,
 } from './dnfModel';
@@ -104,5 +105,23 @@ describe('era calibration helpers', () => {
     expect(eraReliabilityScale(2024)).toBeGreaterThan(0);
     expect(liveRiskCalibration(1990, 'F1').mech).toBeGreaterThan(0);
     expect(liveRiskCalibration(2024, 'F1').crash).toBeGreaterThan(0);
+  });
+
+  it('uses series-specific live risk calibration instead of applying F1 multipliers to oval series', () => {
+    expect(liveRiskCalibration(1998, 'NASCAR')).not.toEqual(liveRiskCalibration(1998, 'F1'));
+    expect(liveRiskCalibration(2008, 'IndyCar')).not.toEqual(liveRiskCalibration(2008, 'F1'));
+    expect(liveRiskCalibration(2002, 'CART')).not.toEqual(liveRiskCalibration(2002, 'F1'));
+    expect(liveRiskCalibration(1998, 'NASCAR').crash).toBeLessThan(liveRiskCalibration(1998, 'F1').crash);
+  });
+
+  it('derives other retirement risk from total exposure and the era target share', () => {
+    const risk = liveOtherRisk(1996, 0.001, 0.0005, 0.0001);
+    const total = 0.001 + 0.0005 + 0.0001 + risk;
+    expect(risk / total).toBeCloseTo(eraDnfProfile(1996).other, 6);
+  });
+
+  it('scales with retirement exposure rather than an independent fixed chance', () => {
+    const baseline = liveOtherRisk(2024, 0.0004, 0.0008, 0.0001);
+    expect(liveOtherRisk(2024, 0.0008, 0.0016, 0.0002)).toBeCloseTo(baseline * 2, 10);
   });
 });

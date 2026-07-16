@@ -36,7 +36,7 @@ import {
   tyreFailureRisk,
   DIRTY_AIR_GAP,
 } from './liveRacePace';
-import { mechanicalLabel, crashLabel, tyreLabel, otherLabel } from './dnfModel';
+import { mechanicalLabel, crashLabel, tyreLabel, otherLabel, liveOtherRisk } from './dnfModel';
 import { generateCandidates, cooldownFor, isModeAction, REC_COOLDOWN } from './analyticsEngine';
 import { advanceStint, startStint, longStintNote } from './strategyStint';
 import type { Series, Track } from '../types/gameTypes';
@@ -80,9 +80,6 @@ import {
 
 const MAX_RACE_EVENTS = 3;
 const SECTORS = 3;
-// Baseline "other" (fuel system, illness, debris, etc.) per-lap DNF probability.
-// Tuned to land in the 4-8% cause-share window for 1990s F1.
-const OTHER_PER_LAP = 0.00055;
 const WET_MECH_RISK_MULT = 1.08;
 const WET_CRASH_RISK_MULT = 1.2;
 
@@ -603,8 +600,10 @@ export function stepLiveSector(state: LiveRaceState, meta: LiveRaceMeta): LiveRa
 
     // 3. Tyre failure: rare, only in the high-wear window before a forced pit.
     const tyreFailRisk = tyreFailureRisk(c.tire.wear, weather.wet, meta.year);
-    // 4. Other: fuel system, illness, debris, etc.
-    const otherRisk = OTHER_PER_LAP;
+    // 4. Other: fuel system, illness, debris, etc. This is derived from the
+    // other calibrated buckets so the expected cause share stays stable across
+    // short F1 races and long NASCAR/oval races.
+    const otherRisk = liveOtherRisk(meta.year, mechRisk, crashRisk, tyreFailRisk);
 
     // Independent rolls; the first bucket to fire ends the race and names itself.
     let retired: { label: string; severity: number } | null = null;

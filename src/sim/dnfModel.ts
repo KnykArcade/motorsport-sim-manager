@@ -60,13 +60,36 @@ export type LiveRiskCalibration = { mech: number; crash: number };
 export function liveRiskCalibration(year: number, series: string): LiveRiskCalibration {
   // The raw per-car risks are mechanical-heavy after the scale fix, so live uses
   // these multipliers to land the labelled cause split on the era targets.
-  if (series === 'IndyCar') return { mech: 0.55, crash: 1.35 };
+  if (series === 'IndyCar') return { mech: 0.65, crash: 1.15 };
+  if (series === 'CART' || series === 'Champ Car') return { mech: 0.7, crash: 1.7 };
+  if (series === 'NASCAR') {
+    if (year <= 2000) return { mech: 0.84, crash: 1.2 };
+    if (year <= 2005) return { mech: 0.75, crash: 1.05 };
+    if (year <= 2010) return { mech: 0.68, crash: 1.0 };
+    if (year <= 2013) return { mech: 0.6, crash: 1.0 };
+    return { mech: 0.53, crash: 1.06 };
+  }
   if (year <= 1994) return { mech: 0.87, crash: 2.05 };
   if (year <= 2000) return { mech: 0.84, crash: 1.95 };
   if (year <= 2005) return { mech: 0.85, crash: 1.25 };
   if (year <= 2010) return { mech: 0.78, crash: 1.15 };
   if (year <= 2013) return { mech: 0.65, crash: 1.15 };
   return { mech: 0.42, crash: 1.25 };
+}
+
+// Live "other" retirements must scale with the actual retirement exposure in
+// the race, not with lap count. A fixed per-lap chance badly over-penalises long
+// NASCAR and oval races. Derive the fourth bucket from the already-calibrated
+// mechanical/crash/tyre risks so its expected share matches the era profile.
+export function liveOtherRisk(
+  year: number,
+  mechanicalRisk: number,
+  crashRisk: number,
+  tyreRisk: number,
+): number {
+  const targetShare = eraDnfProfile(year).other;
+  const knownRisk = Math.max(0, mechanicalRisk) + Math.max(0, crashRisk) + Math.max(0, tyreRisk);
+  return knownRisk * targetShare / Math.max(0.01, 1 - targetShare);
 }
 
 // Context that nudges the cause draw away from the flat era profile.

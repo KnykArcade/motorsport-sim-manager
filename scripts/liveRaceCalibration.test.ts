@@ -19,7 +19,7 @@ import type { Series } from '../src/types/gameTypes';
 test('deterministic live race calibration', () => {
   const series = (process.env.CAL_SERIES ?? 'F1') as Series;
   const year = Number(process.env.CAL_YEAR ?? 1995);
-  const sims = Math.max(1, Number(process.env.CAL_SIMS ?? 1));
+  const sims = Math.max(1, Number(process.env.CAL_SIMS ?? 5));
   const seedStart = Number(process.env.CAL_SEED_START ?? 1);
   const bundle = seasonBundles[`${year}-${series}`];
   if (!bundle) throw new Error(`Unknown season ${year}-${series}`);
@@ -90,5 +90,6 @@ test('deterministic live race calibration', () => {
   console.log(JSON.stringify({ season: `${year}-${series}`, track: race.trackName, ...report, targetAssessment }, null, 2));
   expect(report.runs).toBe(sims);
   expect(report.pitCallReconciliationFailures).toBe(0);
+  expect(report.rates.recommendationsPerPlayerCar).toBeGreaterThan(0);
   if (process.env.CAL_ASSERT_TARGETS === '1') expect(targetAssessment.withinTargets).toBe(true);
 }, 120_000);
