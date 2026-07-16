@@ -36,6 +36,8 @@ const RISK_COLORS = {
 export function RDTreePanel() {
   const { state, dispatch } = useGame();
   const [selectedTier, setSelectedTier] = useState(1);
+  const [view, setView] = useState<'tree' | 'activity'>('tree');
+  const [nodePage, setNodePage] = useState(0);
   if (!state) return null;
 
   const team = teamById(state, state.selectedTeamId);
@@ -49,6 +51,9 @@ export function RDTreePanel() {
   const nodes = focus ? rdNodesForBranch(focus) : [];
   const requests = buildRDTreeRequests(nodes, state.series, state.seasonYear);
   const tierNodes = nodes.filter((node) => node.tier === selectedTier);
+  const nodePageCount = Math.max(1, Math.ceil(tierNodes.length / 2));
+  const safeNodePage = Math.min(nodePage, nodePageCount - 1);
+  const visibleTierNodes = tierNodes.slice(safeNodePage * 2, safeNodePage * 2 + 2);
   const completedInBranch = research.completedNodes.filter((node) => node.branchId === focus).length;
   const maxRDProjects = Math.max(0, developmentSlots(state.facilities) - state.activeDevelopmentProjects.length);
   const canChangeFocus = !!research.focus && state.seasonYear > research.focus.lockedThroughSeasonYear;
@@ -62,13 +67,32 @@ export function RDTreePanel() {
         <Metric label="Research Bays" value={`${research.activeProjects.length}/${maxRDProjects}`} />
       </div>
 
-      {singleSeason && (
+      <nav className="mt-4 grid grid-cols-2 gap-1 rounded-lg border border-neutral-800 bg-neutral-950/60 p-1" aria-label="Research sections">
+        <button
+          type="button"
+          onClick={() => setView('tree')}
+          aria-current={view === 'tree' ? 'page' : undefined}
+          className={`rounded px-3 py-2 text-xs font-semibold ${view === 'tree' ? 'bg-amber-600 text-black' : 'text-neutral-400 hover:bg-neutral-800'}`}
+        >
+          Research Tree
+        </button>
+        <button
+          type="button"
+          onClick={() => setView('activity')}
+          aria-current={view === 'activity' ? 'page' : undefined}
+          className={`rounded px-3 py-2 text-xs font-semibold ${view === 'activity' ? 'bg-amber-600 text-black' : 'text-neutral-400 hover:bg-neutral-800'}`}
+        >
+          Activity ({research.projectHistory.length + research.tpp.ledger.length})
+        </button>
+      </nav>
+
+      {view === 'tree' && singleSeason && (
         <div className="mt-4 rounded-lg border border-blue-800 bg-blue-950/30 p-3 text-sm text-blue-300">
           The multi-year R&D tree is available in Career and Sandbox modes. Rapid in-season development remains available below.
         </div>
       )}
 
-      {(!focus || canChangeFocus) && (
+      {view === 'tree' && (!focus || canChangeFocus) && (
         <div className="mt-4">
           <div className="mb-2 text-sm font-semibold text-neutral-200">
             {focus ? 'Change three-season research focus' : 'Choose a three-season research focus'}
@@ -79,7 +103,7 @@ export function RDTreePanel() {
                 key={branch.id}
                 type="button"
                 disabled={singleSeason || focus === branch.id}
-                onClick={() => { setSelectedTier(1); dispatch({ type: 'SET_RESEARCH_FOCUS', branchId: branch.id as RDBranchId }); }}
+                onClick={() => { setSelectedTier(1); setNodePage(0); dispatch({ type: 'SET_RESEARCH_FOCUS', branchId: branch.id as RDBranchId }); }}
                 className="rounded-lg border border-neutral-700 bg-neutral-900/50 p-3 text-left transition hover:border-amber-600 hover:bg-neutral-800/70 disabled:cursor-not-allowed disabled:opacity-50"
               >
                 <div className="text-sm font-semibold text-neutral-100">{rdBranchLabelForSeries(branch.id, state.series)}</div>
@@ -90,7 +114,7 @@ export function RDTreePanel() {
         </div>
       )}
 
-      {focus && focusMetadata && (
+      {view === 'tree' && focus && focusMetadata && (
         <>
           <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-neutral-800 bg-neutral-900/40 p-3">
             <div>
@@ -106,7 +130,7 @@ export function RDTreePanel() {
                   <button
                     key={tier}
                     type="button"
-                    onClick={() => setSelectedTier(tier)}
+                    onClick={() => { setSelectedTier(tier); setNodePage(0); }}
                     className={`rounded px-3 py-1.5 text-xs font-semibold ${selectedTier === tier ? 'bg-amber-600 text-black' : 'bg-neutral-800 text-neutral-300 hover:bg-neutral-700'}`}
                   >
                     Tier {tier} · {completed}
@@ -117,7 +141,7 @@ export function RDTreePanel() {
           </div>
 
           <div className="mt-4 grid gap-3 lg:grid-cols-2">
-            {tierNodes.map((node) => (
+            {visibleTierNodes.map((node) => (
               <RDNodeCard
                 key={node.id}
                 node={node}
@@ -127,10 +151,23 @@ export function RDTreePanel() {
               />
             ))}
           </div>
+          {tierNodes.length > 0 && (
+            <div className="mt-3 flex items-center justify-between rounded-lg border border-neutral-800 bg-neutral-950/50 px-3 py-2">
+              <Button variant="secondary" disabled={safeNodePage === 0} onClick={() => setNodePage(Math.max(0, safeNodePage - 1))}>
+                Previous
+              </Button>
+              <span className="text-xs text-neutral-500">
+                Tier projects {safeNodePage * 2 + 1}–{Math.min(tierNodes.length, safeNodePage * 2 + 2)} of {tierNodes.length} · Page {safeNodePage + 1} of {nodePageCount}
+              </span>
+              <Button variant="secondary" disabled={safeNodePage >= nodePageCount - 1} onClick={() => setNodePage(Math.min(nodePageCount - 1, safeNodePage + 1))}>
+                Next
+              </Button>
+            </div>
+          )}
         </>
       )}
 
-      {research.projectHistory.length > 0 && (
+      {view === 'activity' && research.projectHistory.length > 0 && (
         <div className="mt-4 border-t border-neutral-800 pt-3">
           <div className="mb-2 text-xs font-semibold uppercase tracking-wide text-neutral-500">Recent R&D outcomes</div>
           <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
@@ -145,7 +182,7 @@ export function RDTreePanel() {
         </div>
       )}
 
-      {research.tpp.ledger.length > 0 && (
+      {view === 'activity' && research.tpp.ledger.length > 0 && (
         <div className="mt-4 border-t border-neutral-800 pt-3">
           <div className="mb-2 text-xs font-semibold uppercase tracking-wide text-neutral-500">Recent TPP activity</div>
           <div className="space-y-1">
@@ -158,6 +195,12 @@ export function RDTreePanel() {
               </div>
             ))}
           </div>
+        </div>
+      )}
+
+      {view === 'activity' && research.projectHistory.length === 0 && research.tpp.ledger.length === 0 && (
+        <div className="mt-4 rounded-lg border border-neutral-800 bg-neutral-900/40 p-4 text-sm text-neutral-500">
+          No completed research or TPP activity yet.
         </div>
       )}
     </Panel>
