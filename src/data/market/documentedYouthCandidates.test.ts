@@ -54,6 +54,27 @@ describe('documented shared youth candidates', () => {
     });
   });
 
+  it('restores documented American open-wheel youth continuity for the CART era', () => {
+    expect(documentedYouthForYear(1990).map((entry) => entry.name)).toEqual(expect.arrayContaining([
+      'Tony Kanaan',
+      'Dario Franchitti',
+      'Greg Moore',
+      'Juan Pablo Montoya',
+      'Dan Wheldon',
+    ]));
+    expect(documentedYouthForYear(1994).map((entry) => entry.name)).toEqual(expect.arrayContaining([
+      'Scott Dixon',
+      'Dan Wheldon',
+      'Ryan Hunter-Reay',
+      'AJ Allmendinger',
+    ]));
+    for (let year = 1990; year <= 1998; year += 1) {
+      const openWheelYouth = documentedYouthForYear(year).filter((entry) =>
+        entry.seriesPreferences?.some((preference) => preference.series === 'IndyCar' && preference.weight >= 90));
+      expect(openWheelYouth.length, `${year} documented American open-wheel youth`).toBeGreaterThanOrEqual(3);
+    }
+  });
+
   it('defines each identity once and ages it through eligible seasons', () => {
     expect(documentedYouthForYear(2024).find((entry) => entry.name === 'Noah Baglin')?.age).toBe(12);
     expect(documentedYouthForYear(2026).find((entry) => entry.name === 'Noah Baglin')?.age).toBe(14);
