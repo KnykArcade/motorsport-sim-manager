@@ -26,12 +26,12 @@ import { carPerformanceRating } from '../src/sim/trackFitEngine';
 import { createNewGame } from '../src/game/initialCareer';
 import { advanceSeason } from '../src/game/seasonRollover';
 import { defaultCareerPhaseState, processAITeamActivity } from '../src/game/careerPhaseEngine';
-import { activeDriversForTeam } from '../src/game/careerState';
+import { activeDriversForTeam, minRaceDriversForSeries } from '../src/game/careerState';
 import type { GameState } from '../src/game/careerState';
 import { careerMarketBundle, youthProspectAge, YOUTH_MAX_AGE } from '../src/sim/careerMarketEngine';
 import { normalizeName } from '../src/data/registry/masterRegistry';
 import type { Entrant, RaceContext, QualifyingContext } from '../src/types/simTypes';
-import type { RaceResult } from '../src/types/gameTypes';
+import type { RaceResult, Series } from '../src/types/gameTypes';
 import type { AIFinancialHealth } from '../src/types/aiTeamTypes';
 import { progressAITechnicalProgramsAfterRace } from '../src/sim/aiTechnicalDirectorEngine';
 
@@ -77,7 +77,7 @@ export type SeasonAudit = {
   academyOver21: { memberId: string; name: string; age: number }[];
   youthPoolOverAge: number;
   nameTagLeaks: string[];
-  teamsWithoutTwoSeats: string[];
+  teamsWithoutRequiredSeats: string[];
   reservesRacing: number;
 };
 
@@ -95,6 +95,7 @@ type AuditOptions = {
   seasons?: number;
   seed?: string;
   seasonYear?: number;
+  series?: Series;
 };
 
 // A deliberately non-existent team id. The audit runs with NO privileged player
@@ -174,12 +175,15 @@ function simulateSeason(
     };
     const { results: qResults } = simulateQualifying(qCtx);
 
+    const qualifiedIds = new Set(qResults.filter((result) => !result.dnq).map((result) => result.driverId));
+    const raceEntrants = entrants.filter((entrant) => qualifiedIds.has(entrant.driver.id));
+    const raceQualifyingResults = qResults.filter((result) => !result.dnq);
     const rDecisions: RaceContext['decisions'] = {};
-    entrants.forEach((e) => (rDecisions[e.driver.id] = aiRaceDecision(e.driver.id, track)));
+    raceEntrants.forEach((e) => (rDecisions[e.driver.id] = aiRaceDecision(e.driver.id, track)));
     const rCtx: RaceContext = {
       track,
-      entrants,
-      qualifyingResults: qResults,
+      entrants: raceEntrants,
+      qualifyingResults: raceQualifyingResults,
       decisions: rDecisions,
       setupOptions,
       strategies: raceStrategiesById,
@@ -292,11 +296,12 @@ function auditSeason(
     }
   }
 
-  const teamsWithoutTwoSeats: string[] = [];
+  const requiredSeats = minRaceDriversForSeries(state.series);
+  const teamsWithoutRequiredSeats: string[] = [];
   let reservesRacing = 0;
   for (const team of state.teams) {
     const active = activeDriversForTeam(state, team.id);
-    if (active.length !== 2) teamsWithoutTwoSeats.push(team.id);
+    if (active.length < requiredSeats) teamsWithoutRequiredSeats.push(team.id);
     for (const d of active) {
       if (d.contractType && d.contractType !== 'seat') reservesRacing += 1;
     }
@@ -319,7 +324,7 @@ function auditSeason(
     academyOver21,
     youthPoolOverAge,
     nameTagLeaks,
-    teamsWithoutTwoSeats,
+    teamsWithoutRequiredSeats,
     reservesRacing,
   };
 }
@@ -328,7 +333,7 @@ export function runCareerAudit(opts: AuditOptions = {}): CareerAuditReport {
   const seasonsToRun = opts.seasons ?? 20;
   const seed = opts.seed ?? 'career-audit-1990';
   const seasonYear = opts.seasonYear ?? 1990;
-  const series = 'F1' as const;
+  const series = opts.series ?? 'F1';
 
   let state = createNewGame({
     gameMode: 'career',

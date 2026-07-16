@@ -56,7 +56,7 @@ describe('Career audit — F1 1990, 20 real-race seasons', () => {
     // Season 0 is the raw 1990 bundle (a couple of teams historically ran a
     // single car); every season after the first rollover must be full.
     for (const s of seasons.slice(1)) {
-      expect({ year: s.year, missing: s.teamsWithoutTwoSeats }).toEqual({
+      expect({ year: s.year, missing: s.teamsWithoutRequiredSeats }).toEqual({
         year: s.year,
         missing: [],
       });
