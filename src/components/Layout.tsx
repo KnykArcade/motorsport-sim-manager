@@ -1,47 +1,35 @@
-import type { ReactNode } from 'react';
-import { NavLink, useNavigate } from 'react-router-dom';
+import { useState, type ReactNode } from 'react';
+import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { useGame } from '../game/GameContext';
 import { teamById, currentRace } from '../game/careerState';
 import { formatMoney } from './ui';
 import { getHiddenNavRoutes, getGameModeLabel } from '../game/modeRestrictions';
 import { EraThemeProvider } from '../theme/EraThemeContext';
 import { getEraTheme, getEraThemeConfig } from '../theme/eraTheme';
-
-const NAV = [
-  { to: '/hq', label: 'Team HQ', icon: 'HQ' },
-  { to: '/calendar', label: 'Calendar', icon: 'CA' },
-  { to: '/standings', label: 'Standings', icon: 'ST' },
-  { to: '/news', label: 'News Center', icon: 'NW' },
-  { to: '/teams', label: 'Team Overview', icon: 'TM' },
-  { to: '/history', label: 'Race History', icon: 'RH' },
-  { to: '/records', label: 'Universe History', icon: 'UH' },
-  { to: '/drivers', label: 'Drivers', icon: 'DR' },
-  { to: '/curves', label: 'Dev Curves', icon: 'DC' },
-  { to: '/market', label: 'Driver Market', icon: 'MK' },
-  { to: '/scouting', label: 'Intelligence', icon: 'IN' },
-  { to: '/development', label: 'Development', icon: 'RD' },
-  { to: '/finance', label: 'Finance', icon: '$' },
-  { to: '/sponsors', label: 'Sponsors', icon: 'SP' },
-  { to: '/staff', label: 'Staff', icon: 'SF' },
-  { to: '/facilities', label: 'Facilities', icon: 'FA' },
-  { to: '/engine', label: 'Engine', icon: 'EN' },
-  { to: '/principal', label: 'Principal', icon: 'TP' },
-  { to: '/relationships', label: 'Driver Relations', icon: 'DR' },
-  { to: '/rivals', label: 'Team Rivalries', icon: 'RV' },
-  { to: '/stories', label: 'Paddock Stories', icon: 'PS' },
-  { to: '/politics', label: 'Regulations', icon: 'RG' },
-  { to: '/data', label: 'Data Viewer', icon: 'DT' },
-  { to: '/settings', label: 'Settings', icon: 'SE' },
-];
+import {
+  NAVIGATION_GROUPS,
+  navigationGroupForRoute,
+  navigationItemsForGroup,
+  type NavigationGroupId,
+} from './layoutNavigation';
 
 export function Layout({ children }: { children: ReactNode }) {
   const { state, saveNow } = useGame();
   const navigate = useNavigate();
+  const location = useLocation();
+  const [navigationChoice, setNavigationChoice] = useState<{ pathname: string; group: NavigationGroupId }>(() => ({
+    pathname: location.pathname,
+    group: navigationGroupForRoute(location.pathname),
+  }));
   const team = state ? teamById(state, state.selectedTeamId) : undefined;
   const race = state ? currentRace(state) : undefined;
   const hiddenRoutes = getHiddenNavRoutes(state?.gameMode);
   const era = getEraTheme(state?.series, state?.seasonYear);
   const eraConfig = getEraThemeConfig(era);
+  const navigationGroup = navigationChoice.pathname === location.pathname
+    ? navigationChoice.group
+    : navigationGroupForRoute(location.pathname);
+  const visibleNavigation = navigationItemsForGroup(navigationGroup, hiddenRoutes);
 
   return (
     <EraThemeProvider theme={era}>
@@ -55,8 +43,22 @@ export function Layout({ children }: { children: ReactNode }) {
             </div>
           </div>
 
-          <nav className="flex-1 space-y-0.5 p-2">
-            {NAV.filter((item) => !hiddenRoutes.has(item.to)).map((item) => (
+          <div className="grid grid-cols-3 gap-1 border-b p-2" aria-label="Navigation groups">
+            {NAVIGATION_GROUPS.map((group) => (
+              <button
+                key={group.id}
+                type="button"
+                aria-pressed={navigationGroup === group.id}
+                onClick={() => setNavigationChoice({ pathname: location.pathname, group: group.id })}
+                className={`rounded px-2 py-1.5 text-[11px] font-semibold transition-colors ${navigationGroup === group.id ? 'bg-amber-500 text-neutral-950' : 'text-neutral-400 hover:bg-neutral-800 hover:text-neutral-100'}`}
+              >
+                {group.label}
+              </button>
+            ))}
+          </div>
+
+          <nav className="min-h-0 flex-1 space-y-0.5 overflow-hidden p-2" aria-label={`${navigationGroup} navigation`}>
+            {visibleNavigation.map((item) => (
               <NavLink
                 key={item.to}
                 to={item.to}
