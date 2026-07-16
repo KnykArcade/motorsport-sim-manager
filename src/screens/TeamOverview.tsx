@@ -15,7 +15,6 @@ import {
   type TeamTrend,
 } from '../sim/teamOverviewEngine';
 import type { AIFinancialHealth } from '../types/aiTeamTypes';
-import { ARCHETYPE_SPECS, TRAIT_LABELS } from '../sim/aiTeamEngine';
 import { Button } from '../components/Button';
 import {
   TEAM_DETAIL_TABS,
@@ -329,7 +328,7 @@ function TeamDetail({
           </button>
         </header>
         <nav
-          className="grid grid-cols-2 gap-1 border-b border-neutral-800 bg-neutral-950 p-2 sm:grid-cols-4"
+          className="grid grid-cols-2 gap-1 border-b border-neutral-800 bg-neutral-950 p-2 sm:grid-cols-5"
           aria-label="Team dossier sections"
         >
           {TEAM_DETAIL_TABS.map((item) => (
@@ -396,62 +395,6 @@ function TeamDetail({
             )}
           </div>
 
-          {(row.archetypeLabel || row.goalLabel || row.philosophyLabel) && (
-            <div className="space-y-3">
-              <div className="text-sm text-neutral-400">
-                {row.archetypeLabel && (
-                  <span>
-                    Management: <span className="text-neutral-200">{row.archetypeLabel}</span>
-                  </span>
-                )}
-                {row.goalLabel && (
-                  <span className="ml-3">
-                    Goal: <span className="text-neutral-200">{row.goalLabel}</span>
-                  </span>
-                )}
-                {row.philosophyLabel && (
-                  <span className="ml-3">
-                    Identity: <span className="text-neutral-200">{row.philosophyLabel}</span>
-                  </span>
-                )}
-              </div>
-              {(() => {
-                const ai = state?.aiTeamStates?.[row.teamId];
-                if (!ai) return null;
-                const spec = ARCHETYPE_SPECS[ai.archetype];
-                return (
-                  <div className="rounded-lg border border-neutral-800 bg-neutral-900/40 p-3 space-y-2">
-                    {spec && (
-                      <div className="text-xs text-neutral-400">
-                        <span className="font-semibold text-neutral-300">{spec.label}</span> — {spec.description}
-                      </div>
-                    )}
-                    {ai.philosophy && (
-                      <div className="space-y-1">
-                        <div className="text-[10px] font-semibold uppercase tracking-wide text-neutral-500">Team Philosophy</div>
-                        <div className="text-xs text-neutral-400">{ai.philosophy.description}</div>
-                        {ai.philosophy.traits.length > 0 && (
-                          <div className="flex flex-wrap gap-1 pt-1">
-                            {ai.philosophy.traits.map((trait) => (
-                              <span key={trait} className="rounded bg-neutral-800 px-1.5 py-0.5 text-[10px] text-neutral-300">
-                                {TRAIT_LABELS[trait]}
-                              </span>
-                            ))}
-                          </div>
-                        )}
-                      </div>
-                    )}
-                    {ai.seasonsInTrouble > 0 && (
-                      <div className="text-[11px] text-red-400">
-                        ⚠ {ai.seasonsInTrouble} season{ai.seasonsInTrouble === 1 ? '' : 's'} in financial trouble
-                      </div>
-                    )}
-                  </div>
-                );
-              })()}
-            </div>
-          )}
-
           <div className="grid grid-cols-2 gap-x-6 gap-y-1 text-sm">
             <Line label="Budget" value={formatMoney(row.budget)} />
             <Line label="Sponsor income" value={formatMoney(row.sponsorIncome)} />
@@ -505,6 +448,64 @@ function TeamDetail({
         </div>
             </Panel>
           )}
+
+      {tab === 'identity' && (
+        <Panel title="Identity & Strategy">
+          {detail.identityProfile ? (
+            <div className="grid gap-4 lg:grid-cols-2">
+              <div className="space-y-4">
+                <section className="rounded-lg border border-neutral-800 bg-neutral-900/40 p-4">
+                  <div className="text-[10px] font-semibold uppercase tracking-wide text-neutral-500">Management posture</div>
+                  <h3 className="mt-1 text-lg font-bold text-neutral-100">{detail.identityProfile.archetype}</h3>
+                  <p className="mt-1 text-sm text-neutral-400">{detail.identityProfile.archetypeDescription}</p>
+                  <div className="mt-3 grid grid-cols-2 gap-x-5 gap-y-2 text-sm">
+                    <Line label="Season goal" value={detail.identityProfile.goal} />
+                    <Line label="Risk appetite" value={`${detail.identityProfile.riskLabel} (${detail.identityProfile.riskScore})`} />
+                    <Line label="Projected cash" value={formatMoney(detail.identityProfile.projectedCash)} />
+                    <Line label="Protected reserve" value={formatMoney(detail.identityProfile.reserveTarget)} />
+                  </div>
+                </section>
+                <section className="rounded-lg border border-neutral-800 bg-neutral-900/40 p-4">
+                  <div className="text-[10px] font-semibold uppercase tracking-wide text-neutral-500">Performance memory</div>
+                  <div className="mt-2 grid grid-cols-2 gap-x-5 gap-y-2 text-sm">
+                    <Line label="Long-term trend" value={detail.identityProfile.trendLabel} />
+                    <Line label="Tracked seasons" value={String(detail.identityProfile.seasonsTracked)} />
+                    <Line label="Average finish" value={detail.identityProfile.averageFinish ? `P${detail.identityProfile.averageFinish}` : 'Not established'} />
+                    <Line label="Best finish" value={detail.identityProfile.bestFinish ? `P${detail.identityProfile.bestFinish}` : 'Not established'} />
+                    <Line label="Seasons since win" value={String(detail.identityProfile.seasonsSinceWin)} />
+                    <Line label="Seasons since podium" value={String(detail.identityProfile.seasonsSincePodium)} />
+                  </div>
+                  {detail.identityProfile.latestEvolution && (
+                    <div className="mt-3 rounded border border-amber-900/50 bg-amber-950/15 p-3 text-xs text-neutral-300">
+                      <div className="font-semibold text-amber-300">Latest identity change · {detail.identityProfile.latestEvolution.seasonYear}</div>
+                      <p className="mt-1 text-neutral-400">{detail.identityProfile.latestEvolution.note}</p>
+                    </div>
+                  )}
+                </section>
+              </div>
+              <section className="rounded-lg border border-neutral-800 bg-neutral-900/40 p-4">
+                <div className="text-[10px] font-semibold uppercase tracking-wide text-neutral-500">Team philosophy</div>
+                <p className="mt-2 text-sm text-neutral-300">{detail.identityProfile.philosophyDescription}</p>
+                <div className="mt-4 space-y-3">
+                  {detail.identityProfile.traits.map((trait) => (
+                    <article key={trait.label} className="rounded border border-neutral-800 bg-neutral-950/60 p-3">
+                      <h4 className="text-sm font-semibold text-neutral-100">{trait.label}</h4>
+                      <p className="mt-1 text-xs leading-relaxed text-neutral-400">{trait.effect}</p>
+                    </article>
+                  ))}
+                </div>
+                <p className="mt-4 text-xs leading-relaxed text-neutral-500">
+                  These traits directly influence development targets, driver recruitment, academy investment, spending priorities, and strategic risk. They can evolve after sustained improvement, decline, or stagnation.
+                </p>
+              </section>
+            </div>
+          ) : (
+            <div className="rounded-lg border border-neutral-800 bg-neutral-900/40 p-5 text-sm text-neutral-400">
+              This is your team. Its identity is created by your technical, financial, personnel, and race-weekend decisions.
+            </div>
+          )}
+        </Panel>
+      )}
 
       {tab === 'ratings' && (
         <Panel title="Ratings">

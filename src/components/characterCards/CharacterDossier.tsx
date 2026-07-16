@@ -175,6 +175,20 @@ export function buildCharacterDossier(
     const principal = state.aiPrincipals?.[subject.teamId];
     const identity = state.phase18?.aiPrincipalIdentities[subject.teamId];
     const memory = state.aiTeamMemory?.[subject.teamId];
+    const aiTeam = state.aiTeamStates?.[subject.teamId];
+    const identityChanges = state.offseasonHistory
+      .flatMap((summary) =>
+        summary.notes
+          .filter((note) => note.includes(team?.name ?? subject.teamId) && note.includes('identity'))
+          .map((note, index) => ({
+            key: `team-identity-${summary.seasonYear}-${index}`,
+            title: 'Team identity evolved',
+            detail: note,
+            meta: String(summary.seasonYear),
+          })),
+      )
+      .slice(-6)
+      .reverse();
     const identityLabel = identity
       ? PRINCIPAL_IDENTITY_LABELS[identity.dominantIdentity]
       : 'Unknown Operator';
@@ -196,11 +210,14 @@ export function buildCharacterDossier(
         { label: 'Tenure', value: principal ? `${principal.seasonsAtTeam} season${principal.seasonsAtTeam === 1 ? '' : 's'}` : 'Unknown' },
         { label: 'Team position', value: teamPosition(state, subject.teamId) },
         { label: 'Status', value: principal?.fired ? 'Departing' : statusLabel(pressureStanding) },
+        { label: 'Team objective', value: aiTeam ? splitLabel(aiTeam.goal) : 'Unknown' },
+        { label: 'Financial health', value: aiTeam ? splitLabel(aiTeam.financialHealth) : 'Unknown' },
       ],
       traits: [
         identityLabel,
         identity?.secondaryIdentity ? PRINCIPAL_IDENTITY_LABELS[identity.secondaryIdentity] : undefined,
-        state.aiTeamStates?.[subject.teamId]?.archetype ? splitLabel(state.aiTeamStates[subject.teamId].archetype) : undefined,
+        aiTeam?.archetype ? splitLabel(aiTeam.archetype) : undefined,
+        ...(aiTeam?.philosophy?.traits.map(splitLabel) ?? []),
       ].filter((value): value is string => !!value),
       metrics: principal?.attributes ? [
         { label: 'Pressure Control', value: pressureStanding, score: pressureStanding },
@@ -213,6 +230,7 @@ export function buildCharacterDossier(
       commitments: [],
       history: [
         ...personnelTimeline(state, 'TeamPrincipal', principal?.principalId ?? `principal-${subject.teamId}`),
+        ...identityChanges,
         ...(identity?.history.slice(-8).reverse().map((entry) => ({
           key: entry.id,
           title: `+${entry.amount} ${PRINCIPAL_IDENTITY_LABELS[entry.identity]}`,
@@ -227,7 +245,7 @@ export function buildCharacterDossier(
         }] : []),
       ],
       playerRead: principal
-        ? `${principal.name} is under ${principal.pressure}/100 pressure and projects as a ${identityLabel.toLowerCase()}.`
+        ? `${principal.name} is under ${principal.pressure}/100 pressure and projects as a ${identityLabel.toLowerCase()}.${aiTeam?.philosophy ? ` Their team operates as ${aiTeam.philosophy.description.replace(`${team?.name ?? ''} is known as `, '')}` : ''}`
         : 'Leadership information is limited for this team.',
       route: '/teams',
     };

@@ -1,6 +1,6 @@
 # Known Limitations
 
-Last updated: 2025-07-03 (Final Stability Cleanup Pass)
+Last updated: 2026-07-16 (Phase 19AM AI Team Identity Visibility)
 
 ## Regulation Sets
 
@@ -42,9 +42,15 @@ development focus, driver market preferences, academy investment, spending prior
 and risk appetite. Philosophy traits evolve over seasons and influence regulation
 voting.
 
-**Remaining limitation:** AI team identity exists in the simulation engine with
-philosophy traits that persist across seasons. Gradual trait evolution is not yet
-implemented; traits regenerate only when a team's archetype changes.
+AI team identity persists across seasons and philosophy traits can evolve
+gradually after sustained improvement, decline, or stagnation. These traits
+influence development targets, driver recruitment, academy investment, spending
+priorities, and strategic risk. The Team Universe dossier exposes the current
+identity, behavioral effects, performance memory, and latest identity change.
+
+**Remaining limitation:** Team philosophies are a gameplay model rather than a
+historical claim about real organizations, and their narrative descriptions are
+deliberately concise.
 
 ## Historical Data
 
