@@ -5,11 +5,14 @@ import { getStaffPool } from '../data';
 import { toMoney } from '../sim/financeEngine';
 import {
   developmentSuccessBonus,
+  pitCrewBonus,
   staffExtensionSigningFee,
   staffRatingOutOfTen,
   staffReleaseCost,
   setupConfidenceBonus,
   staffByRole,
+  strategyBonus,
+  totalStaffSalary,
 } from '../sim/staffEngine';
 import { Panel } from '../components/Panel';
 import { Button } from '../components/Button';
@@ -27,6 +30,7 @@ import {
   STAFF_WORKSPACE_TABS,
   staffPage,
   staffPageCount,
+  staffVacancyCount,
   type StaffWorkspaceTab,
 } from './staffViewModel';
 
@@ -55,6 +59,10 @@ export function Staff() {
 
   const devBonus = developmentSuccessBonus(roster);
   const setupBonus = setupConfidenceBonus(roster);
+  const pitBonus = pitCrewBonus(roster);
+  const strategyExecutionBonus = strategyBonus(roster);
+  const payroll = totalStaffSalary(roster);
+  const vacancies = staffVacancyCount(roster);
   const councilActivity = (state.phase18?.advisorRecommendations ?? [])
     .filter((recommendation) => recommendation.teamId === state.selectedTeamId)
     .slice(-6)
@@ -79,18 +87,26 @@ export function Staff() {
 
   return (
     <div className="space-y-3">
-      <div>
-        <h1 className="text-2xl font-bold text-neutral-100">Staff</h1>
-        <p className="text-sm text-neutral-400">
-          Hire specialists to sharpen operations. Budget:{' '}
-          <span className="font-semibold text-neutral-200">{formatMoney(budget)}</span>
-        </p>
+      <div className="flex items-end justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold text-neutral-100">Staff</h1>
+          <p className="text-sm text-neutral-400">
+            Specialists, contracts, advice, and recruitment.
+          </p>
+        </div>
+        <div className="text-right">
+          <div className="text-xs uppercase tracking-wide text-neutral-500">Available budget</div>
+          <div className="text-lg font-bold text-neutral-100">{formatMoney(budget)}</div>
+        </div>
       </div>
 
-      <div className="grid gap-3 sm:grid-cols-3">
-        <Kpi label="Hired" value={`${roster.length} / ${STAFF_ROLES.length}`} />
-        <Kpi label="Dev Success Bonus" value={`${devBonus >= 0 ? '+' : ''}${Math.round(devBonus * 100)}%`} />
-        <Kpi label="Setup Confidence Bonus" value={`${setupBonus >= 0 ? '+' : ''}${setupBonus.toFixed(1)}`} />
+      <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
+        <Kpi label="Positions" value={`${roster.length} / ${STAFF_ROLES.length}`} detail={vacancies === 0 ? 'Fully staffed' : `${vacancies} vacant`} />
+        <Kpi label="Annual Payroll" value={formatMoney(payroll)} detail="Paid at rollover" />
+        <Kpi label="Development" value={`${devBonus >= 0 ? '+' : ''}${Math.round(devBonus * 100)}%`} detail="Project success" />
+        <Kpi label="Setup" value={`${setupBonus >= 0 ? '+' : ''}${setupBonus.toFixed(1)}`} detail="Confidence points" />
+        <Kpi label="Pit Execution" value={`${pitBonus >= 0 ? '+' : ''}${Math.round(pitBonus * 100)}%`} detail="Stop performance" />
+        <Kpi label="Strategy Calls" value={`${strategyExecutionBonus >= 0 ? '+' : ''}${Math.round(strategyExecutionBonus * 100)}%`} detail="Race execution" />
       </div>
 
       <nav className="grid grid-cols-4 gap-1 rounded-lg border border-neutral-800 bg-neutral-950/70 p-1" aria-label="Staff workspaces">
@@ -190,7 +206,7 @@ export function Staff() {
         </Panel>
       )}
 
-      {(tab === 'roster' || tab === 'market') && <div className="flex flex-wrap gap-1 border-b border-neutral-800">
+      {(tab === 'roster' || tab === 'market') && <div className="flex flex-wrap gap-1 border-b border-neutral-800" aria-label="Staff roles">
         {STAFF_ROLES.map((role) => {
           const filled = !!byRole[role];
           const isActive = role === activeRole;
@@ -198,6 +214,7 @@ export function Staff() {
             <button
               key={role}
               type="button"
+              aria-pressed={isActive}
               onClick={() => { setActiveRole(role); setCandidatePage(0); }}
               className={`-mb-px rounded-t-md border-b-2 px-3 py-2 text-sm font-medium transition-colors ${
                 isActive
@@ -407,11 +424,12 @@ function StaffCard({
   );
 }
 
-function Kpi({ label, value }: { label: string; value: string }) {
+function Kpi({ label, value, detail }: { label: string; value: string; detail: string }) {
   return (
     <div className="rounded-xl border border-neutral-800 bg-neutral-900/40 p-3">
       <div className="text-xs uppercase tracking-wide text-neutral-500">{label}</div>
-      <div className="mt-1 text-xl font-bold text-neutral-100">{value}</div>
+      <div className="mt-0.5 truncate text-lg font-bold text-neutral-100" title={value}>{value}</div>
+      <div className="mt-0.5 truncate text-[10px] text-neutral-600" title={detail}>{detail}</div>
     </div>
   );
 }

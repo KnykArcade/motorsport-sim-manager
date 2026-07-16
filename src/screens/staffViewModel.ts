@@ -1,3 +1,5 @@
+import type { StaffMember } from '../types/staffTypes';
+
 export type StaffWorkspaceTab = 'roster' | 'contracts' | 'council' | 'market';
 
 export const STAFF_WORKSPACE_TABS: Array<{ id: StaffWorkspaceTab; label: string }> = [
@@ -17,4 +19,9 @@ export function staffPage<T>(entries: T[], page: number): T[] {
   const pageCount = staffPageCount(entries.length);
   const safePage = Math.max(0, Math.min(pageCount - 1, page));
   return entries.slice(safePage * STAFF_PAGE_SIZE, (safePage + 1) * STAFF_PAGE_SIZE);
+}
+
+export function staffVacancyCount(staff: StaffMember[]): number {
+  const filledRoles = new Set(staff.map((member) => member.role));
+  return Math.max(0, 4 - filledRoles.size);
 }
