@@ -244,8 +244,8 @@ export type CommercialPayout = {
   amount: number; // raw dollars
 };
 
-// Per-race sponsor installment: annual income divided across the season's races,
-// paid each round to create a realistic cashflow instead of a lump sum at year start.
+// Per-race sponsor installment: 75% of annual income divided across the season's
+// races. The other 25% is paid upfront at season rollover.
 export function sponsorInstallmentPayment(
   commercial: CommercialState | undefined,
   totalRaces: number,
@@ -254,7 +254,7 @@ export function sponsorInstallmentPayment(
   const perRace = commercial.sponsors.reduce(
     (sum, s) => sum + toMoney(s.annualValue) / totalRaces,
     0,
-  );
+  ) * 0.75;
   if (perRace <= 0) return [];
   return [{
     sponsorId: 'installment',
