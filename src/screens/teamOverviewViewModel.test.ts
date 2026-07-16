@@ -7,8 +7,8 @@ import {
 } from './teamOverviewViewModel';
 
 describe('Team Overview view model', () => {
-  it('keeps expanded team information in four compact tabs', () => {
-    expect(TEAM_DETAIL_TABS.map((tab) => tab.id)).toEqual(['overview', 'ratings', 'lineup', 'moves']);
+  it('keeps expanded team information in five compact tabs', () => {
+    expect(TEAM_DETAIL_TABS.map((tab) => tab.id)).toEqual(['overview', 'identity', 'ratings', 'lineup', 'moves']);
   });
 
   it('fits a 95-team NASCAR grid into stable eight-row pages', () => {

@@ -83,6 +83,13 @@ describe('character dossier models', () => {
     expect(dossier.name).toBe(state.aiPrincipals?.[rivalTeam.id].name);
     expect(dossier.metrics.some((metric) => metric.label === 'Pressure Control')).toBe(true);
     expect(dossier.identityLabel).toBeTruthy();
+    expect(dossier.facts.some((fact) => fact.label === 'Team objective')).toBe(true);
+    expect(dossier.facts.some((fact) => fact.label === 'Financial health')).toBe(true);
+    expect(
+      state.aiTeamStates?.[rivalTeam.id].philosophy?.traits.every((trait) =>
+        dossier.traits.some((label) => label.replace(/\s/g, '').toLowerCase() === trait.toLowerCase()),
+      ),
+    ).toBe(true);
     expect(dossier.history.some((entry) => entry.title.includes(rivalTeam.name))).toBe(true);
   });
 

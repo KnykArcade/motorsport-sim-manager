@@ -1,7 +1,8 @@
-export type TeamDetailTab = 'overview' | 'ratings' | 'lineup' | 'moves';
+export type TeamDetailTab = 'overview' | 'identity' | 'ratings' | 'lineup' | 'moves';
 
 export const TEAM_DETAIL_TABS: Array<{ id: TeamDetailTab; label: string }> = [
   { id: 'overview', label: 'Overview' },
+  { id: 'identity', label: 'Identity & Strategy' },
   { id: 'ratings', label: 'Ratings' },
   { id: 'lineup', label: 'Lineup & Academy' },
   { id: 'moves', label: 'Recent Moves' },

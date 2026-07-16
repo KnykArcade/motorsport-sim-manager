@@ -121,6 +121,38 @@ describe('buildTeamOverviewDetail', () => {
     expect(detail!.strengths[0].value).toBeGreaterThanOrEqual(detail!.weaknesses[0].value);
   });
 
+  it('explains the management identity and decision effects for an AI team', () => {
+    const s = newGame();
+    const rival = s.teams.find((team) => team.id !== s.selectedTeamId)!;
+    const detail = buildTeamOverviewDetail(s, rival.id)!;
+    expect(detail.identityProfile).toBeDefined();
+    expect(detail.identityProfile!.archetype).toBeTruthy();
+    expect(detail.identityProfile!.goal).toBeTruthy();
+    expect(detail.identityProfile!.riskScore).toBeGreaterThanOrEqual(0);
+    expect(detail.identityProfile!.riskScore).toBeLessThanOrEqual(100);
+    expect(detail.identityProfile!.traits.length).toBeGreaterThan(0);
+    expect(detail.identityProfile!.traits.every((trait) => trait.effect.length > 20)).toBe(true);
+  });
+
+  it('leaves the player team identity under player control', () => {
+    const s = newGame();
+    expect(buildTeamOverviewDetail(s, s.selectedTeamId)!.identityProfile).toBeUndefined();
+  });
+
+  it('surfaces the latest recorded identity evolution from offseason history', () => {
+    const s = newGame();
+    const rival = s.teams.find((team) => team.id !== s.selectedTeamId)!;
+    const note = `${rival.name}'s identity evolves: a more disciplined technical organization.`;
+    const withHistory: GameState = {
+      ...s,
+      offseasonHistory: [{ seasonYear: 1995, notes: [note] }],
+    };
+    expect(buildTeamOverviewDetail(withHistory, rival.id)!.identityProfile!.latestEvolution).toEqual({
+      seasonYear: 1995,
+      note,
+    });
+  });
+
   it('returns undefined for an unknown team', () => {
     expect(buildTeamOverviewDetail(newGame(), 't-nope')).toBeUndefined();
   });

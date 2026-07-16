@@ -9,13 +9,14 @@
 
 import type { Car, Driver, Team } from '../types/gameTypes';
 import type { TeamOrganizationRatings } from '../types/teamRatingsTypes';
-import type { AIFinancialHealth } from '../types/aiTeamTypes';
+import type { AIFinancialHealth, TeamPhilosophyTrait } from '../types/aiTeamTypes';
 import type { GameState } from '../game/careerState';
 import { activeDriversForTeam } from '../game/careerState';
 import { effectiveCarRatings, carPerformanceRating } from './trackFitEngine';
 import { buildTeamOrganizationRatings } from './teamRatingsEngine';
 import { ARCHETYPE_SPECS, GOAL_LABELS, TRAIT_LABELS } from './aiTeamEngine';
 import { aiTechnicalSummary } from './aiTechnicalDirectorEngine';
+import { effectiveRisk } from './teamIdentityEngine';
 
 export type TeamTrend =
   | 'TitlePush'
@@ -251,7 +252,44 @@ export type TeamOverviewDetail = {
   weaknesses: { label: string; value: number }[];
   recentMoves: string[];
   technicalProgram: ReturnType<typeof aiTechnicalSummary>;
+  identityProfile?: {
+    archetype: string;
+    archetypeDescription: string;
+    goal: string;
+    philosophyDescription: string;
+    traits: Array<{ label: string; effect: string }>;
+    riskScore: number;
+    riskLabel: string;
+    trendLabel: string;
+    seasonsTracked: number;
+    averageFinish?: number;
+    bestFinish?: number;
+    seasonsSinceWin: number;
+    seasonsSincePodium: number;
+    reserveTarget: number;
+    projectedCash: number;
+    latestEvolution?: { seasonYear: number; note: string };
+  };
 };
+
+const TRAIT_EFFECTS: Record<TeamPhilosophyTrait, string> = {
+  TechnicalInnovator: 'Leans toward aero and engine experiments, development spending, and high-potential recruits.',
+  Traditionalist: 'Prefers proven methods, reliability, experienced drivers, and established staff.',
+  RiskTaker: 'Accepts bolder development programs, aggressive market choices, and lower safety margins.',
+  PeopleFirst: 'Prioritizes staff quality, driver relationships, pit operations, and academy support.',
+  DataDriven: 'Favors analytical development, reliability work, facilities, and current performance evidence.',
+  Maverick: 'Makes unconventional engine, strategy, and driver-market choices with greater variance.',
+  Disciplined: 'Protects reliability, pit execution, facilities, and repeatable processes.',
+  StarMaker: 'Invests in young drivers, potential, academy recruitment, and long-term development.',
+};
+
+function riskLabel(score: number): string {
+  if (score >= 0.75) return 'Very aggressive';
+  if (score >= 0.55) return 'Assertive';
+  if (score >= 0.35) return 'Balanced';
+  if (score >= 0.2) return 'Cautious';
+  return 'Very cautious';
+}
 
 const RATING_FIELDS: { key: keyof TeamOverviewRow; label: string }[] = [
   { key: 'carRating', label: 'Car' },
@@ -292,6 +330,41 @@ export function buildTeamOverviewDetail(state: GameState, teamId: string): TeamO
 
   const lastSummary = state.offseasonHistory[state.offseasonHistory.length - 1];
   const recentMoves = (lastSummary?.notes ?? []).filter((n) => n.includes(team.name)).slice(0, 6);
+  const ai = state.aiTeamStates?.[teamId];
+  const memory = state.aiTeamMemory?.[teamId];
+  const latestEvolution = [...state.offseasonHistory]
+    .reverse()
+    .flatMap((summary) =>
+      summary.notes
+        .filter((note) =>
+          note.includes(team.name) &&
+          (note.includes('identity') || note.includes('shifts to') || note.includes('Survival Mode') || note.includes('steadies the ship')),
+        )
+        .map((note) => ({ seasonYear: summary.seasonYear, note })),
+    )[0];
+  const identityProfile = ai
+    ? {
+        archetype: ARCHETYPE_SPECS[ai.archetype].label,
+        archetypeDescription: ARCHETYPE_SPECS[ai.archetype].description,
+        goal: GOAL_LABELS[ai.goal],
+        philosophyDescription: ai.philosophy?.description ?? 'This team identity is still being established.',
+        traits: (ai.philosophy?.traits ?? []).map((trait) => ({
+          label: TRAIT_LABELS[trait],
+          effect: TRAIT_EFFECTS[trait],
+        })),
+        riskScore: Math.round(effectiveRisk(ai.philosophy?.traits, ARCHETYPE_SPECS[ai.archetype].risk) * 100),
+        riskLabel: riskLabel(effectiveRisk(ai.philosophy?.traits, ARCHETYPE_SPECS[ai.archetype].risk)),
+        trendLabel: memory?.trendDirection ?? 'stable',
+        seasonsTracked: memory?.seasonsTracked ?? 0,
+        averageFinish: memory?.avgConstructorPosition,
+        bestFinish: memory?.bestConstructorPosition,
+        seasonsSinceWin: memory?.seasonsSinceWin ?? 0,
+        seasonsSincePodium: memory?.seasonsSincePodium ?? 0,
+        reserveTarget: ai.budget.reserveTarget,
+        projectedCash: ai.budget.projectedCash,
+        latestEvolution,
+      }
+    : undefined;
 
   return {
     row,
@@ -304,5 +377,6 @@ export function buildTeamOverviewDetail(state: GameState, teamId: string): TeamO
     weaknesses,
     recentMoves,
     technicalProgram: aiTechnicalSummary(state, teamId),
+    identityProfile,
   };
 }
