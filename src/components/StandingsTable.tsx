@@ -7,6 +7,7 @@ type Props = {
   colorOf?: (entityId: string) => string | undefined;
   highlightId?: string;
   title?: string;
+  positionOffset?: number;
 };
 
 export function StandingsTable({
@@ -16,6 +17,7 @@ export function StandingsTable({
   colorOf,
   highlightId,
   title,
+  positionOffset = 0,
 }: Props) {
   return (
     <div className="overflow-hidden rounded-lg border border-neutral-800">
@@ -44,7 +46,7 @@ export function StandingsTable({
                 key={e.entityId}
                 className={`border-t border-neutral-800/60 ${isPlayer ? 'bg-amber-500/10' : 'hover:bg-neutral-900/40'}`}
               >
-                <td className="px-3 py-1.5 tabular-nums text-neutral-400">{i + 1}</td>
+                <td className="px-3 py-1.5 tabular-nums text-neutral-400">{positionOffset + i + 1}</td>
                 <td className="px-3 py-1.5">
                   <div className="flex items-center gap-2">
                     {colorOf && (

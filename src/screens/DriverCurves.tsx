@@ -11,6 +11,8 @@ import {
 } from '../sim/developmentCurveEngine';
 import type { Driver } from '../types/gameTypes';
 import type { DriverDevelopmentCurve } from '../types/developmentCurveTypes';
+import { CompactPagination } from '../components/CompactPagination';
+import { CURVE_PAGE_SIZE, compactPage, pageCount } from './seasonOverviewViewModel';
 
 type Tab = 'mine' | 'grid';
 
@@ -23,6 +25,7 @@ const PHASE_TONE: Record<DevelopmentPhase, string> = {
 export function DriverCurves() {
   const { state } = useGame();
   const [tab, setTab] = useState<Tab>('mine');
+  const [page, setPage] = useState(0);
 
   const curves = useMemo(() => state?.developmentCurves ?? {}, [state]);
 
@@ -34,9 +37,20 @@ export function DriverCurves() {
 
   const mine = state.drivers.filter((d) => d.teamId === state.selectedTeamId);
   const shown = tab === 'mine' ? mine : state.drivers;
+  const sorted = [...shown]
+    .map((driver) => ({ driver, curve: curveFor(driver), age: driverAge(driver, seed) }))
+    .sort((a, b) => b.driver.ratings.overall - a.driver.ratings.overall);
+  const tabPageCount = pageCount(sorted.length, CURVE_PAGE_SIZE);
+  const safePage = Math.min(page, tabPageCount - 1);
+  const visibleDrivers = compactPage(sorted, safePage, CURVE_PAGE_SIZE);
+
+  function selectTab(nextTab: Tab) {
+    setTab(nextTab);
+    setPage(0);
+  }
 
   return (
-    <div className="space-y-6">
+    <div className="era-feature-screen era-driver-curves-screen space-y-3">
       <div className="flex items-start justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-neutral-100">Development Curves</h1>
@@ -47,23 +61,21 @@ export function DriverCurves() {
           </p>
         </div>
         <div className="flex gap-2">
-          <TabButton active={tab === 'mine'} onClick={() => setTab('mine')}>
+          <TabButton active={tab === 'mine'} onClick={() => selectTab('mine')}>
             Your Drivers ({mine.length})
           </TabButton>
-          <TabButton active={tab === 'grid'} onClick={() => setTab('grid')}>
+          <TabButton active={tab === 'grid'} onClick={() => selectTab('grid')}>
             Grid ({state.drivers.length})
           </TabButton>
         </div>
       </div>
 
       <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
-        {[...shown]
-          .map((d) => ({ d, curve: curveFor(d), age: driverAge(d, seed) }))
-          .sort((a, b) => b.d.ratings.overall - a.d.ratings.overall)
-          .map(({ d, curve, age }) => (
-            <CurveCard key={d.id} driver={d} curve={curve} age={age} />
+        {visibleDrivers.map(({ driver, curve, age }) => (
+            <CurveCard key={driver.id} driver={driver} curve={curve} age={age} />
           ))}
       </div>
+      <CompactPagination noun="drivers" total={sorted.length} page={safePage} pageCount={tabPageCount} pageSize={CURVE_PAGE_SIZE} onPage={setPage} />
     </div>
   );
 }
