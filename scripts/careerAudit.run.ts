@@ -6,11 +6,14 @@
 import { runCareerAudit } from './careerAudit';
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
+import type { Series } from '../src/types/gameTypes';
 
 const seasons = Number(process.env.AUDIT_SEASONS ?? 20);
 const seed = process.env.AUDIT_SEED ?? 'career-audit-1990';
+const series = (process.env.AUDIT_SERIES ?? 'F1') as Series;
+const seasonYear = Number(process.env.AUDIT_START_YEAR ?? 1990);
 
-const report = runCareerAudit({ seasons, seed });
+const report = runCareerAudit({ seasons, seed, series, seasonYear });
 const outputDir = process.env.AUDIT_OUT;
 if (outputDir) {
   mkdirSync(outputDir, { recursive: true });
@@ -18,7 +21,7 @@ if (outputDir) {
     seed,
     startYear: report.seasons[0]?.year,
     endYear: report.seasons.at(-1)?.year,
-    series: 'F1',
+    series,
     ...report,
   }, null, 2)}\n`);
   const lines = [
@@ -40,7 +43,7 @@ if (outputDir) {
 const pad = (s: string, n: number) => s.padEnd(n).slice(0, n);
 const money = (n: number) => `$${(n / 1_000_000).toFixed(0)}M`;
 
-console.log(`\n=== Career audit — F1 1990, ${seasons} seasons (seed ${seed}) ===\n`);
+console.log(`\n=== Career audit — ${series} ${seasonYear}, ${seasons} seasons (seed ${seed}) ===\n`);
 console.log(
   pad('Year', 6) +
     pad('Constructor Champ', 22) +
@@ -72,12 +75,12 @@ const dupYears = report.seasons.filter((s) => s.duplicateNames.length).map((s) =
 const academyYears = report.seasons.filter((s) => s.academyOver21.length).map((s) => s.year);
 const tagYears = report.seasons.filter((s) => s.nameTagLeaks.length).map((s) => s.year);
 const youthYears = report.seasons.filter((s) => s.youthPoolOverAge > 0).map((s) => s.year);
-const seatYears = report.seasons.filter((s) => s.teamsWithoutTwoSeats.length).map((s) => s.year);
+const seatYears = report.seasons.filter((s) => s.teamsWithoutRequiredSeats.length).map((s) => s.year);
 const reserveYears = report.seasons.filter((s) => s.reservesRacing > 0).map((s) => s.year);
 console.log('Years with duplicate driver names:', dupYears);
 console.log('Years with academy-only 21+ drivers:', academyYears);
 console.log('Years with market-tag name leaks:', tagYears);
 console.log('Years with 18+ in youth pool:', youthYears);
-console.log('Years with a team missing two seats:', seatYears);
+console.log('Years with a team below its series-required race seats:', seatYears);
 console.log('Years with a reserve racing:', reserveYears);
 console.log('');

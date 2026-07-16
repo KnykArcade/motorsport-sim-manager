@@ -2,8 +2,8 @@
   "schemaVersion": 1,
   "minimumCounts": {
     "masterDrivers": 1782,
-    "driverHistory": 9620,
-    "activeRosterRecords": 4391,
+    "driverHistory": 9551,
+    "activeRosterRecords": 4322,
     "adultMarketRecords": 4523,
     "youthMarketRecords": 706
   },

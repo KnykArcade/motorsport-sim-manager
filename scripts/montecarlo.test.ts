@@ -137,7 +137,10 @@ function analyzeSeason(key: string, runs: number): SeasonReport {
   const driverNames: Record<string, string> = {};
   drivers.forEach((d) => (driverNames[d.id] = d.name));
   const expectedStanding: Record<string, number> = {};
-  teams.forEach((t) => (expectedStanding[t.id] = t.expectedStanding ?? 99));
+  [...teams]
+    .map((team, index) => ({ team, index }))
+    .sort((a, b) => (a.team.expectedStanding ?? a.index + 1) - (b.team.expectedStanding ?? b.index + 1) || a.index - b.index)
+    .forEach(({ team }, index) => (expectedStanding[team.id] = index + 1));
 
   const constructorTitles: Record<string, number> = {};
   const driverTitles: Record<string, number> = {};

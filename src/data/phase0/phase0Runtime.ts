@@ -567,6 +567,7 @@ function buildRosterPlan(phase0Season: Phase0SeasonBundle, ctx: LegacySeasonCont
     sourceEntriesByLegacyKey.set(`${legacyTeamId}::${entry.carNumber}`, entry);
   }
   const claimedCanonicalIds = new Set<string>();
+  const claimedCanonicalNames = new Set<string>();
   const releasedById = new Map<string, MarketDriver>();
   const teams: Team[] = [];
   const drivers: Driver[] = [];
@@ -591,14 +592,18 @@ function buildRosterPlan(phase0Season: Phase0SeasonBundle, ctx: LegacySeasonCont
     }
 
     const teamSeen = new Set<string>();
+    const teamSeenNames = new Set<string>();
     const activeDrivers: ResolvedLegacyDriver[] = [];
     for (const driver of resolved) {
-      if (teamSeen.has(driver.canonicalId)) continue;
+      const canonicalName = normalizeKey(driver.source?.name ?? driver.legacy.name);
+      if (teamSeen.has(driver.canonicalId) || teamSeenNames.has(canonicalName)) continue;
       teamSeen.add(driver.canonicalId);
-      if (claimedCanonicalIds.has(driver.canonicalId)) continue;
+      teamSeenNames.add(canonicalName);
+      if (claimedCanonicalIds.has(driver.canonicalId) || claimedCanonicalNames.has(canonicalName)) continue;
       if (activeDrivers.length < 2) {
         activeDrivers.push(driver);
         claimedCanonicalIds.add(driver.canonicalId);
+        claimedCanonicalNames.add(canonicalName);
       } else {
         const marketDriver = sourceToMarketDriver(driver.source, phase0Season.season, phase0Season.series, name);
         releasedById.set(marketDriver.id, marketDriver);
