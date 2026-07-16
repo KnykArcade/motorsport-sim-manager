@@ -96,7 +96,8 @@ describe('character future intent engine', () => {
 
   it('lets the same standard renewal succeed or fail based on future intent leverage', () => {
     const base = freshState();
-    const driver = activeDriversForTeam(base, base.selectedTeamId)[0];
+    const driver = [...activeDriversForTeam(base, base.selectedTeamId)]
+      .sort((left, right) => left.ratings.overall - right.ratings.overall)[0];
     const neutralRelationship = {
       ...base.driverRelationships![driver.id],
       morale: 50,

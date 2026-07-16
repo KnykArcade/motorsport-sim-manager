@@ -142,6 +142,7 @@ type LegacyCarSource = {
   id: string;
   teamId: string;
   seasonYear: number;
+  ratings?: Car['ratings'];
 };
 
 type LegacySeasonContext = {
@@ -450,9 +451,31 @@ function resolveDriverSource(
     const byId = sourceById.get(teamEntry.driverId);
     if (byId) return byId;
   }
-  const byLegacyName = sourceByName.get(normalizeKey(legacyDriver.name));
+  const normalizedLegacyName = normalizeKey(legacyDriver.name);
+  const byLegacyName = sourceByName.get(normalizedLegacyName);
   if (byLegacyName?.length === 1) return byLegacyName[0];
-  return byLegacyName?.[0];
+  if (byLegacyName?.[0]) return byLegacyName[0];
+
+  const legacyParts = normalizedLegacyName.split(' ');
+  const legacyGiven = legacyParts[0] ?? '';
+  const legacySurname = legacyParts.slice(1).join(' ');
+  if (!legacyGiven || !legacySurname || legacyGiven.length > 3) return undefined;
+
+  const initialCandidates = new Map<string, Phase0DriverSource>();
+  for (const [candidateName, candidates] of sourceByName) {
+    const candidateParts = candidateName.split(' ');
+    const candidateSurname = candidateParts.slice(1).join(' ');
+    if (candidateSurname !== legacySurname) continue;
+    const requestedInitials = legacyGiven.replace(/[^a-z]/g, '');
+    const candidateInitials = candidateParts
+      .slice(0, Math.max(1, candidateParts.length - legacyParts.length + 1))
+      .map((part) => part[0] ?? '')
+      .join('');
+    if (requestedInitials && candidateInitials.startsWith(requestedInitials)) {
+      for (const candidate of candidates) initialCandidates.set(candidate.driverId, candidate);
+    }
+  }
+  return initialCandidates.size === 1 ? [...initialCandidates.values()][0] : undefined;
 }
 
 function sourceToMarketDriver(source: Phase0DriverSource | undefined, year: number, series: Series, teamName: string): MarketDriver {
@@ -556,9 +579,18 @@ function buildRosterPlan(phase0Season: Phase0SeasonBundle, ctx: LegacySeasonCont
   const sourceByName = new Map<string, Phase0DriverSource[]>();
   for (const source of sourceDrivers) {
     const key = normalizeKey(source.name ?? '');
-    const list = sourceByName.get(key);
-    if (list) list.push(source);
-    else sourceByName.set(key, [source]);
+    const keys = new Set([key]);
+    const parts = key.split(' ');
+    if (parts.length >= 2) {
+      const surname = parts.at(-1)!;
+      const initials = parts.slice(0, -1).map((part) => part[0] ?? '').join('');
+      if (initials) keys.add(`${initials} ${surname}`);
+    }
+    for (const sourceKey of keys) {
+      const list = sourceByName.get(sourceKey);
+      if (list) list.push(source);
+      else sourceByName.set(sourceKey, [source]);
+    }
   }
   const sourceEntriesByLegacyKey = new Map<string, (typeof phase0Season.teamEntries)[number]>();
   for (const entry of phase0Season.teamEntries) {
@@ -643,6 +675,40 @@ function buildCars(phase0Season: Phase0SeasonBundle, ctx: LegacySeasonContext, t
     if (!sourceByTeamId.has(car.teamId)) sourceByTeamId.set(car.teamId, car);
   }
 
+  const normalizeLegacyRatings = (legacyCar?: LegacyCarSource): Car['ratings'] | undefined =>
+    legacyCar?.ratings
+      ? {
+          enginePower: legacyCar.ratings.enginePower <= 10 ? legacyCar.ratings.enginePower * 10 : legacyCar.ratings.enginePower,
+          aeroEfficiency: legacyCar.ratings.aeroEfficiency <= 10 ? legacyCar.ratings.aeroEfficiency * 10 : legacyCar.ratings.aeroEfficiency,
+          mechanicalGrip: legacyCar.ratings.mechanicalGrip <= 10 ? legacyCar.ratings.mechanicalGrip * 10 : legacyCar.ratings.mechanicalGrip,
+          reliability: legacyCar.ratings.reliability <= 10 ? legacyCar.ratings.reliability * 10 : legacyCar.ratings.reliability,
+          pitCrewOperations:
+            legacyCar.ratings.pitCrewOperations <= 10
+              ? legacyCar.ratings.pitCrewOperations * 10
+              : legacyCar.ratings.pitCrewOperations,
+        }
+      : undefined;
+  const sourceRatings = (source: Phase0CarSource): Car['ratings'] => ({
+    enginePower: source.enginePower,
+    aeroEfficiency: source.downforce,
+    mechanicalGrip: source.mechanicalGrip,
+    reliability: source.reliability,
+    pitCrewOperations: source.setupWindow,
+  });
+  const averageRating = (ratings: Car['ratings']) =>
+    Object.values(ratings).reduce((sum, value) => sum + value, 0) / Object.values(ratings).length;
+  // Do not mix two rating scales within one grid. If any generated entry is
+  // severely understated compared with the curated season file, use the
+  // complete curated grid for that season.
+  const useCuratedGridRatings = teamIds.some((teamId) => {
+    const sourceTeamId = ctx.legacyTeamToSourceTeamId.get(teamId) ?? teamId;
+    const source = sourceByTeamId.get(sourceTeamId);
+    const legacyRatings = normalizeLegacyRatings(ctx.legacyCars.find((car) => car.teamId === teamId));
+    return source && legacyRatings
+      ? averageRating(legacyRatings) - averageRating(sourceRatings(source)) >= 25
+      : false;
+  });
+
   return teamIds.map((teamId) => {
     const sourceTeamId = ctx.legacyTeamToSourceTeamId.get(teamId) ?? teamId;
     const legacyCar = ctx.legacyCars.find((car) => car.teamId === teamId);
@@ -663,17 +729,13 @@ function buildCars(phase0Season: Phase0SeasonBundle, ctx: LegacySeasonContext, t
         developmentLevel: { enginePower: 0, aeroEfficiency: 0, mechanicalGrip: 0, reliability: 0, pitCrewOperations: 0 },
       };
     }
+    const legacyRatings = normalizeLegacyRatings(legacyCar);
+    const ratings = useCuratedGridRatings && legacyRatings ? legacyRatings : sourceRatings(source);
     return {
       id: legacyCar?.id ?? source.carId ?? `car-${phase0Season.season}-${teamId.toLowerCase()}`,
       teamId,
       seasonYear: source.seasonYear,
-      ratings: {
-        enginePower: source.enginePower,
-        aeroEfficiency: source.downforce,
-        mechanicalGrip: source.mechanicalGrip,
-        reliability: source.reliability,
-        pitCrewOperations: source.setupWindow,
-      },
+      ratings,
       condition: 100,
       developmentLevel: { enginePower: 0, aeroEfficiency: 0, mechanicalGrip: 0, reliability: 0, pitCrewOperations: 0 },
     };
