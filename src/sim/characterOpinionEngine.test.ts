@@ -72,7 +72,9 @@ describe('character opinion engine', () => {
 
   it('records one lasting memory for direct interactions and character requests', () => {
     const state = freshState();
-    const driver = state.drivers.find((candidate) => candidate.teamId === state.selectedTeamId)!;
+    const request = generateCharacterRequestEvents(state).find((event) => event.characterRequest?.targetType === 'Driver');
+    if (!request?.characterRequest) throw new Error('Expected a driver request');
+    const driver = state.drivers.find((candidate) => candidate.id === request.characterRequest!.targetId)!;
     const target: CharacterInteractionTarget = { type: 'Driver', id: driver.id, name: driver.name, teamId: driver.teamId };
     const before = characterOpinionFor(state, target).score;
     const interacted = performCharacterInteraction(state, target, 'PrivateConversation');
@@ -80,8 +82,6 @@ describe('character opinion engine', () => {
     expect(characterMemoriesForTarget(interacted, target)).toHaveLength(1);
     expect(characterOpinionFor(interacted, target).score).toBeGreaterThan(before);
 
-    const request = generateCharacterRequestEvents(interacted).find((event) => event.characterRequest?.targetId === driver.id);
-    if (!request) throw new Error('Expected a driver request');
     const resolved = resolveCharacterRequest(interacted, request, 'listen-honestly');
     expect(characterMemoriesForTarget(resolved, target)).toHaveLength(2);
     expect(resolveCharacterRequest(resolved, request, 'set-boundary')).toBe(resolved);

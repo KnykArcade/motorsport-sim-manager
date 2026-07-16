@@ -172,6 +172,14 @@ function buildFactions(state: GameState, connections: CharacterConnection[]): Ch
         lastUpdatedSeason: state.seasonYear, lastUpdatedRound: round,
       });
     });
+  } else if (driverLink) {
+    const cohesion = clamp(45 + driverLink.affinity / 4);
+    factions.push({
+      id: `faction-garage-${state.selectedTeamId}`, name: 'Uneasy Garage', kind: 'GarageAlliance',
+      memberKeys: [...drivers, ...staff].map(characterOpinionKey), cohesion, influence: 62,
+      stance: 'Uneasy', description: 'The drivers share the same garage, but their working alliance has not yet become a united bloc.',
+      lastUpdatedSeason: state.seasonYear, lastUpdatedRound: round,
+    });
   }
 
   if (owner && staff.length) {
