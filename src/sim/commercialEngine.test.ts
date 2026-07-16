@@ -147,9 +147,9 @@ describe('commercialEngine', () => {
     const installments = sponsorInstallmentPayment(c, 16);
     expect(installments).toHaveLength(1);
     const perRace = installments[0].amount;
-    // 16 races * perRace should approximate 75% of annual (the installment portion).
-    expect(perRace * 16).toBeGreaterThan(annual * 0.7);
-    expect(perRace * 16).toBeLessThanOrEqual(annual);
+    // Rounding each installment to a whole dollar may move the season total by
+    // a few dollars, but it must remain the intended 75% installment portion.
+    expect(perRace * 16).toBeCloseTo(annual * 0.75, -1);
   });
 
   it('installment payment returns empty for undefined commercial or zero races', () => {
