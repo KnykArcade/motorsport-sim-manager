@@ -22,15 +22,24 @@ import { CharacterDossierButton } from '../components/characterCards/CharacterDo
 import type { GameState } from '../game/careerState';
 import { characterFutureIntentLabel } from '../sim/characterFutureIntentEngine';
 import { staffEmployer, staffPoachingCompensation } from '../sim/aiStaffRosterEngine';
+import {
+  STAFF_PAGE_SIZE,
+  STAFF_WORKSPACE_TABS,
+  staffPage,
+  staffPageCount,
+  type StaffWorkspaceTab,
+} from './staffViewModel';
 
 type StaffMarketView = 'available' | 'rivals';
-const STAFF_PAGE_SIZE = 9;
 
 export function Staff() {
   const { state, dispatch } = useGame();
+  const [tab, setTab] = useState<StaffWorkspaceTab>('roster');
   const [activeRole, setActiveRole] = useState<StaffRole>(STAFF_ROLES[0]);
   const [marketView, setMarketView] = useState<StaffMarketView>('available');
   const [candidatePage, setCandidatePage] = useState(0);
+  const [councilPage, setCouncilPage] = useState(0);
+  const [contractPage, setContractPage] = useState(0);
   if (!state) return null;
 
   const budget = teamById(state, state.selectedTeamId)?.budget ?? 0;
@@ -56,18 +65,20 @@ export function Staff() {
 
   const current = byRole[activeRole];
   const roleCandidates = pool
-    .filter((s) => s.role === activeRole && (marketView === 'rivals' ? employerByStaffId.has(s.id) : !employerByStaffId.has(s.id)))
-    .map((s) => current?.id === s.id ? current : s);
-  const candidates = [
-    ...(marketView === 'available' && current && !roleCandidates.some((candidate) => candidate.id === current.id) ? [current] : []),
-    ...roleCandidates,
-  ].sort((a, b) => b.rating - a.rating);
-  const pageCount = Math.max(1, Math.ceil(candidates.length / STAFF_PAGE_SIZE));
+    .filter((s) => !hiredById.has(s.id) && s.role === activeRole && (marketView === 'rivals' ? employerByStaffId.has(s.id) : !employerByStaffId.has(s.id)));
+  const candidates = [...roleCandidates].sort((a, b) => b.rating - a.rating);
+  const pageCount = staffPageCount(candidates.length);
   const page = Math.min(candidatePage, pageCount - 1);
-  const visibleCandidates = candidates.slice(page * STAFF_PAGE_SIZE, (page + 1) * STAFF_PAGE_SIZE);
+  const visibleCandidates = staffPage(candidates, page);
+  const councilPageCount = staffPageCount(councilActivity.length);
+  const safeCouncilPage = Math.min(councilPage, councilPageCount - 1);
+  const visibleCouncilActivity = staffPage(councilActivity, safeCouncilPage);
+  const contractPageCount = staffPageCount(roster.length);
+  const safeContractPage = Math.min(contractPage, contractPageCount - 1);
+  const visibleContractStaff = staffPage(roster, safeContractPage);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-3">
       <div>
         <h1 className="text-2xl font-bold text-neutral-100">Staff</h1>
         <p className="text-sm text-neutral-400">
@@ -82,60 +93,104 @@ export function Staff() {
         <Kpi label="Setup Confidence Bonus" value={`${setupBonus >= 0 ? '+' : ''}${setupBonus.toFixed(1)}`} />
       </div>
 
-      <Panel title="Advisor Council Activity">
-        {councilActivity.length === 0 ? (
-          <p className="text-sm text-neutral-500">
-            The council will issue recommendations when management decisions reach the paddock agenda.
-          </p>
-        ) : (
-          <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
-            {councilActivity.map((recommendation) => (
-              <div key={recommendation.id} className="rounded-lg border border-neutral-800 bg-neutral-900/40 p-3">
-                <div className="flex items-start justify-between gap-2">
-                  <div>
-                    <div className="text-sm font-semibold text-neutral-100">
-                      {recommendation.advisorName ?? ADVISOR_ROLE_LABELS[recommendation.advisorRole]}
+      <nav className="grid grid-cols-4 gap-1 rounded-lg border border-neutral-800 bg-neutral-950/70 p-1" aria-label="Staff workspaces">
+        {STAFF_WORKSPACE_TABS.map((item) => {
+          const count = item.id === 'roster'
+            ? roster.length
+            : item.id === 'contracts'
+              ? roster.length
+              : item.id === 'council'
+                ? councilActivity.length
+                : undefined;
+          return (
+            <button
+              key={item.id}
+              type="button"
+              onClick={() => setTab(item.id)}
+              aria-current={tab === item.id ? 'page' : undefined}
+              className={`rounded px-3 py-2 text-xs font-semibold ${tab === item.id ? 'bg-amber-500 text-neutral-950' : 'text-neutral-400 hover:bg-neutral-900 hover:text-neutral-100'}`}
+            >
+              {item.label}{count === undefined ? '' : ` (${count})`}
+            </button>
+          );
+        })}
+      </nav>
+
+      {tab === 'council' && (
+        <Panel title="Advisor Council Activity">
+          {councilActivity.length === 0 ? (
+            <p className="text-sm text-neutral-500">
+              The council will issue recommendations when management decisions reach the paddock agenda.
+            </p>
+          ) : (
+            <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+              {visibleCouncilActivity.map((recommendation) => (
+                <div key={recommendation.id} className="rounded-lg border border-neutral-800 bg-neutral-900/40 p-3">
+                  <div className="flex items-start justify-between gap-2">
+                    <div>
+                      <div className="text-sm font-semibold text-neutral-100">
+                        {recommendation.advisorName ?? ADVISOR_ROLE_LABELS[recommendation.advisorRole]}
+                      </div>
+                      <div className="text-[10px] text-neutral-500">{ADVISOR_ROLE_LABELS[recommendation.advisorRole]}</div>
                     </div>
-                    <div className="text-[10px] text-neutral-500">{ADVISOR_ROLE_LABELS[recommendation.advisorRole]}</div>
-                  </div>
-                  <span className={`rounded px-1.5 py-0.5 text-[10px] font-semibold uppercase ${advisorStatusTone(recommendation.status)}`}>
-                    {recommendation.status}
-                  </span>
-                </div>
-                <div className="mt-2 text-xs font-semibold text-sky-300">{recommendation.recommendation}</div>
-                <p className="mt-1 text-[11px] text-neutral-400">{recommendation.rationale}</p>
-                <div className="mt-2 flex justify-between text-[10px] text-neutral-500">
-                  <span>Confidence {recommendation.confidence}%</span>
-                  {recommendation.trustChange != null && (
-                    <span className={recommendation.trustChange >= 0 ? 'text-emerald-400' : 'text-red-400'}>
-                      Trust {recommendation.trustChange > 0 ? '+' : ''}{recommendation.trustChange}
+                    <span className={`rounded px-1.5 py-0.5 text-[10px] font-semibold uppercase ${advisorStatusTone(recommendation.status)}`}>
+                      {recommendation.status}
                     </span>
-                  )}
+                  </div>
+                  <div className="mt-2 text-xs font-semibold text-sky-300">{recommendation.recommendation}</div>
+                  <p className="mt-1 text-[11px] text-neutral-400">{recommendation.rationale}</p>
+                  <div className="mt-2 flex justify-between text-[10px] text-neutral-500">
+                    <span>Confidence {recommendation.confidence}%</span>
+                    {recommendation.trustChange != null && (
+                      <span className={recommendation.trustChange >= 0 ? 'text-emerald-400' : 'text-red-400'}>
+                        Trust {recommendation.trustChange > 0 ? '+' : ''}{recommendation.trustChange}
+                      </span>
+                    )}
+                  </div>
                 </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </Panel>
+              ))}
+            </div>
+          )}
+          {councilActivity.length > 0 && (
+            <StaffPagination label="Council items" total={councilActivity.length} page={safeCouncilPage} pageCount={councilPageCount} onPage={setCouncilPage} />
+          )}
+        </Panel>
+      )}
 
-      <Panel title="Staff Contract Commitments">
-        {staffClauses.length === 0 ? <p className="text-sm text-neutral-500">Staff clauses appear when specialists join the team.</p> : (
-          <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
-            {staffClauses.map((clause) => {
-              const member = roster.find((staff) => staff.id === clause.partyId);
-              return <div key={clause.id} className="rounded-lg border border-sky-500/25 bg-neutral-900/40 p-3">
-                <div className="flex justify-between gap-2"><span className="font-semibold text-neutral-100">{member?.name ?? clause.partyId}</span><span className="text-[10px] uppercase text-sky-300">{clause.risk ?? 'Secure'}</span></div>
-                <div className="mt-1 text-xs font-semibold text-sky-300">{contractClauseLabel(clause.clauseType)}</div>
-                <p className="mt-1 text-[11px] text-neutral-400">{clause.description}</p>
-                <div className="mt-2 text-[10px] text-amber-200">Reviewed: {clause.triggerDescription}</div>
-                <div className="mt-1 text-[10px] text-red-300">Risk: {clause.breachConsequence}</div>
-              </div>;
-            })}
-          </div>
-        )}
-      </Panel>
+      {tab === 'contracts' && (
+        <Panel title="Staff Contracts & Commitments">
+          {roster.length === 0 ? <p className="text-sm text-neutral-500">No staff contracts are currently active.</p> : (
+            <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+              {visibleContractStaff.map((member) => {
+                const clause = staffClauses.find((entry) => entry.partyId === member.id);
+                const futureIntent = state.characterInteractions?.futureIntentions.find((entry) => entry.target.type === 'Staff' && entry.target.id === member.id);
+                return <div key={member.id} className="rounded-lg border border-sky-500/25 bg-neutral-900/40 p-3">
+                  <div className="flex justify-between gap-2">
+                    <div><span className="font-semibold text-neutral-100">{member.name}</span><div className="text-[10px] text-neutral-500">{member.role}</div></div>
+                    <span className="text-[10px] uppercase text-sky-300">{member.contractYearsRemaining ?? 2} yr{(member.contractYearsRemaining ?? 2) === 1 ? '' : 's'} left</span>
+                  </div>
+                  <div className="mt-2 grid grid-cols-2 gap-2 text-xs">
+                    <Stat label="Salary/yr">{formatMoney(toMoney(member.salary))}</Stat>
+                    <Stat label="Release">{formatMoney(staffReleaseCost(member))}</Stat>
+                  </div>
+                  {clause ? <>
+                    <div className="mt-2 text-xs font-semibold text-sky-300">{contractClauseLabel(clause.clauseType)}</div>
+                    <p className="mt-1 text-[11px] text-neutral-400">{clause.description}</p>
+                    <div className="mt-1 text-[10px] text-red-300">Risk: {clause.breachConsequence}</div>
+                  </> : <div className="mt-2 text-[11px] text-neutral-500">Standard employment terms · no special clause.</div>}
+                  {futureIntent && <div className="mt-2 text-[10px] text-amber-300">{characterFutureIntentLabel(futureIntent.target, futureIntent.status)} · renewal modifier {futureIntent.negotiationModifier > 0 ? '+' : ''}{futureIntent.negotiationModifier}</div>}
+                  <CharacterDossierButton state={state} subject={{ type: 'staff', staff: member }} className="mt-2 w-full">Open Personnel File</CharacterDossierButton>
+                </div>;
+              })}
+            </div>
+          )}
+          {roster.length > 0 && (
+            <StaffPagination label="Staff contracts" total={roster.length} page={safeContractPage} pageCount={contractPageCount} onPage={setContractPage} />
+          )}
+        </Panel>
+      )}
 
-      <div className="flex flex-wrap gap-1 border-b border-neutral-800">
+      {(tab === 'roster' || tab === 'market') && <div className="flex flex-wrap gap-1 border-b border-neutral-800">
         {STAFF_ROLES.map((role) => {
           const filled = !!byRole[role];
           const isActive = role === activeRole;
@@ -160,14 +215,43 @@ export function Staff() {
             </button>
           );
         })}
-      </div>
+      </div>}
 
-      <div className="flex gap-1 rounded-lg border border-neutral-800 bg-neutral-950/70 p-1" aria-label="Staff market sections">
+      {tab === 'roster' && (
+        <Panel title={`${activeRole} · Current Appointment`}>
+          <p className="mb-3 text-xs text-neutral-500">{ROLE_EFFECT[activeRole]}</p>
+          {current ? (
+            <div className="grid gap-3 xl:grid-cols-3">
+              <StaffCard
+                state={state}
+                s={current}
+                hired
+                current
+                affordable
+                replacementCost={0}
+                poachingCost={0}
+                extensionCost={(member, years, multiplier) => staffExtensionSigningFee(member, years, racesRemaining, state.calendar.length, multiplier)}
+                latestOffer={contractOfferNews.find((item) => item.id.includes(`-${current.id}-`))}
+                futureIntent={state.characterInteractions?.futureIntentions.find((entry) => entry.target.type === 'Staff' && entry.target.id === current.id)}
+                onHire={() => undefined}
+                onFire={() => dispatch({ type: 'FIRE_STAFF', staffId: current.id })}
+                onExtend={(years, offerMultiplier) => dispatch({ type: 'EXTEND_STAFF_CONTRACT', staffId: current.id, years, offerMultiplier })}
+              />
+            </div>
+          ) : (
+            <div className="rounded-lg border border-dashed border-neutral-700 bg-neutral-950/30 p-5 text-sm text-neutral-500">
+              This position is vacant. Open Recruitment to hire a {activeRole.toLowerCase()}.
+            </div>
+          )}
+        </Panel>
+      )}
+
+      {tab === 'market' && <div className="flex gap-1 rounded-lg border border-neutral-800 bg-neutral-950/70 p-1" aria-label="Staff market sections">
         <button type="button" onClick={() => { setMarketView('available'); setCandidatePage(0); }} className={`flex-1 rounded px-3 py-2 text-xs font-semibold ${marketView === 'available' ? 'bg-emerald-500/15 text-emerald-300' : 'text-neutral-500 hover:text-neutral-200'}`}>Available Market</button>
         <button type="button" onClick={() => { setMarketView('rivals'); setCandidatePage(0); }} className={`flex-1 rounded px-3 py-2 text-xs font-semibold ${marketView === 'rivals' ? 'bg-orange-500/15 text-orange-300' : 'text-neutral-500 hover:text-neutral-200'}`}>Rival Team Staff</button>
-      </div>
+      </div>}
 
-      <Panel title={`${activeRole} · ${marketView === 'available' ? 'Available' : 'Employed by Rivals'}`}>
+      {tab === 'market' && <Panel title={`${activeRole} · ${marketView === 'available' ? 'Available' : 'Employed by Rivals'}`}>
         <p className="mb-3 text-xs text-neutral-500">{marketView === 'available' ? ROLE_EFFECT[activeRole] : 'These specialists are under contract. Hiring one pays their employer compensation and will affect the relationship between the teams.'}</p>
         <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
           {visibleCandidates.map((s) => {
@@ -195,8 +279,36 @@ export function Staff() {
           );})}
         </div>
         {visibleCandidates.length === 0 && <p className="text-sm text-neutral-500">No {activeRole.toLowerCase()} candidates are listed in this section.</p>}
-        {pageCount > 1 && <div className="mt-4 flex items-center justify-center gap-3 border-t border-neutral-800 pt-3"><Button variant="ghost" disabled={page === 0} onClick={() => setCandidatePage(Math.max(0, page - 1))}>Previous</Button><span className="text-xs text-neutral-500">Page {page + 1} of {pageCount} · {candidates.length} candidates</span><Button variant="ghost" disabled={page >= pageCount - 1} onClick={() => setCandidatePage(Math.min(pageCount - 1, page + 1))}>Next</Button></div>}
-      </Panel>
+        {candidates.length > 0 && <StaffPagination label="Candidates" total={candidates.length} page={page} pageCount={pageCount} onPage={setCandidatePage} />}
+      </Panel>}
+    </div>
+  );
+}
+
+function StaffPagination({
+  label,
+  total,
+  page,
+  pageCount,
+  onPage,
+}: {
+  label: string;
+  total: number;
+  page: number;
+  pageCount: number;
+  onPage: (page: number) => void;
+}) {
+  return (
+    <div className="mt-3 flex items-center justify-between gap-3 rounded-lg border border-neutral-800 bg-neutral-950/60 px-3 py-2">
+      <Button variant="secondary" disabled={page === 0} onClick={() => onPage(Math.max(0, page - 1))}>
+        Previous
+      </Button>
+      <span className="text-xs text-neutral-500">
+        {label} {page * STAFF_PAGE_SIZE + 1}–{Math.min(total, (page + 1) * STAFF_PAGE_SIZE)} of {total} · Page {page + 1} of {pageCount}
+      </span>
+      <Button variant="secondary" disabled={page >= pageCount - 1} onClick={() => onPage(Math.min(pageCount - 1, page + 1))}>
+        Next
+      </Button>
     </div>
   );
 }
@@ -297,9 +409,9 @@ function StaffCard({
 
 function Kpi({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-xl border border-neutral-800 bg-neutral-900/40 p-4">
+    <div className="rounded-xl border border-neutral-800 bg-neutral-900/40 p-3">
       <div className="text-xs uppercase tracking-wide text-neutral-500">{label}</div>
-      <div className="mt-1 text-2xl font-bold text-neutral-100">{value}</div>
+      <div className="mt-1 text-xl font-bold text-neutral-100">{value}</div>
     </div>
   );
 }
