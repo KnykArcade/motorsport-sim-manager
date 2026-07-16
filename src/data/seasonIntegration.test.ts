@@ -486,4 +486,30 @@ describe('historical season integration', () => {
       }
     });
   });
+
+  describe('2026 IndyCar balance calibration', () => {
+    it('loads the curated spec-series grid instead of the overstretched generated ratings', () => {
+      const bundle = getSeasonBundle(2026, 'IndyCar')!;
+      const carsByTeam = new Map(bundle.cars.map((car) => [car.teamId, car]));
+      const ganassi = carsByTeam.get('t-chip-ganassi-racing')!;
+      const penske = carsByTeam.get('t-team-penske')!;
+      const allRatings = bundle.cars.flatMap((car) => Object.values(car.ratings));
+
+      expect(ganassi.ratings).toEqual({
+        enginePower: 98,
+        aeroEfficiency: 98,
+        mechanicalGrip: 96,
+        reliability: 92,
+        pitCrewOperations: 92,
+      });
+      expect(penske.ratings).toEqual({
+        enginePower: 97,
+        aeroEfficiency: 95,
+        mechanicalGrip: 97,
+        reliability: 90,
+        pitCrewOperations: 94,
+      });
+      expect(Math.max(...allRatings) - Math.min(...allRatings)).toBeLessThanOrEqual(24);
+    });
+  });
 });
