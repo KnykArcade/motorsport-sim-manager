@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useGame } from '../game/GameContext';
 import { teamById } from '../game/careerState';
 import { isSingleSeasonMode, isDevelopmentProjectAllowedForMode } from '../game/modeRestrictions';
@@ -23,6 +24,13 @@ import { developmentSuccessBonus } from '../sim/staffEngine';
 import { facilityDevelopmentSuccessBonus } from '../sim/facilityEngine';
 import { leadershipGameplayModifiers } from '../sim/phase18IdentityCultureEngine';
 import type { Facility, FacilityType } from '../types/facilityTypes';
+import {
+  DEVELOPMENT_PAGE_SIZES,
+  developmentPage,
+  developmentPageCount,
+  developmentTabs,
+  type DevelopmentTab,
+} from './developmentViewModel';
 
 const RISK_COLORS: Record<string, string> = {
   Safe: 'text-green-400',
@@ -49,6 +57,10 @@ const OUTCOME_COLORS: Record<DevelopmentOutcome, string> = {
 
 export function Development() {
   const { state, dispatch } = useGame();
+  const [tab, setTab] = useState<DevelopmentTab>('active');
+  const [activePage, setActivePage] = useState(0);
+  const [resultsPage, setResultsPage] = useState(0);
+  const [catalogPage, setCatalogPage] = useState(0);
   if (!state) return null;
   const team = teamById(state, state.selectedTeamId);
   const budget = team?.budget ?? 0;
@@ -61,6 +73,17 @@ export function Development() {
   const cultureBonus = leadershipGameplayModifiers(state).developmentSuccessBonus;
   const totalSuccessBonus = staffBonus + facSuccessBonus + cultureBonus;
   const isF11990sFactory = state.series === 'F1' && state.seasonYear >= 1990 && state.seasonYear < 2000;
+  const tabs = developmentTabs(isF11990sFactory);
+  const completedProjects = [...state.completedDevelopmentProjects].reverse();
+  const activePageCount = developmentPageCount(state.activeDevelopmentProjects.length, DEVELOPMENT_PAGE_SIZES.active);
+  const safeActivePage = Math.min(activePage, activePageCount - 1);
+  const visibleActiveProjects = developmentPage(state.activeDevelopmentProjects, safeActivePage, DEVELOPMENT_PAGE_SIZES.active);
+  const resultsPageCount = developmentPageCount(completedProjects.length, DEVELOPMENT_PAGE_SIZES.results);
+  const safeResultsPage = Math.min(resultsPage, resultsPageCount - 1);
+  const visibleResults = developmentPage(completedProjects, safeResultsPage, DEVELOPMENT_PAGE_SIZES.results);
+  const catalogPageCount = developmentPageCount(developmentProjectCatalog.length, DEVELOPMENT_PAGE_SIZES.catalog);
+  const safeCatalogPage = Math.min(catalogPage, catalogPageCount - 1);
+  const visibleCatalogProjects = developmentPage(developmentProjectCatalog, safeCatalogPage, DEVELOPMENT_PAGE_SIZES.catalog);
 
   const effectSummary = (p: DevelopmentProject) => {
     const parts: string[] = [];
@@ -105,17 +128,47 @@ export function Development() {
         </div>
       )}
 
-      <RDTreePanel />
-
-      <PartsInventoryPanel />
-
       {usedSlots >= slots && (
         <div className="rounded-lg border border-orange-800 bg-orange-900/20 p-3 text-sm text-orange-300">
           All development slots are in use. Upgrade facilities to increase slots.
         </div>
       )}
 
-      {isF11990sFactory && (
+      <nav
+        className={`grid gap-1 rounded-lg border border-neutral-800 bg-neutral-950/70 p-1 ${isF11990sFactory ? 'grid-cols-6' : 'grid-cols-5'}`}
+        aria-label="Development sections"
+      >
+        {tabs.map((item) => {
+          const count = item.id === 'active'
+            ? state.activeDevelopmentProjects.length
+            : item.id === 'results'
+              ? completedProjects.length
+              : item.id === 'catalog'
+                ? developmentProjectCatalog.length
+                : undefined;
+          return (
+            <button
+              key={item.id}
+              type="button"
+              onClick={() => setTab(item.id)}
+              aria-current={tab === item.id ? 'page' : undefined}
+              className={`rounded px-2 py-2 text-xs font-semibold transition-colors ${
+                tab === item.id
+                  ? 'bg-amber-500 text-neutral-950'
+                  : 'text-neutral-400 hover:bg-neutral-900 hover:text-neutral-100'
+              }`}
+            >
+              {item.label}{count === undefined ? '' : ` (${count})`}
+            </button>
+          );
+        })}
+      </nav>
+
+      {tab === 'research' && <RDTreePanel />}
+
+      {tab === 'parts' && <PartsInventoryPanel />}
+
+      {tab === 'factory' && isF11990sFactory && (
         <FactoryFloor
           facilities={state.facilities?.facilities ?? []}
           projects={state.activeDevelopmentProjects}
@@ -125,12 +178,13 @@ export function Development() {
         />
       )}
 
-      <Panel title="Active Projects">
-        {state.activeDevelopmentProjects.length === 0 ? (
-          <p className="text-sm text-neutral-500">No active projects. Start one below.</p>
-        ) : (
-          <div className="space-y-2">
-            {state.activeDevelopmentProjects.map((p) => {
+      {tab === 'active' && (
+        <Panel title="Active Projects">
+          {state.activeDevelopmentProjects.length === 0 ? (
+            <p className="text-sm text-neutral-500">No active projects. Start one below.</p>
+          ) : (
+            <div className="space-y-2">
+              {visibleActiveProjects.map((p) => {
               const effectiveDuration = p.adjustedDurationRaces ?? p.durationRaces;
               const progressPct = (p.progressRaces / effectiveDuration) * 100;
               return (
@@ -173,15 +227,30 @@ export function Development() {
                   )}
                 </div>
               );
-            })}
-          </div>
-        )}
-      </Panel>
+              })}
+            </div>
+          )}
+          {state.activeDevelopmentProjects.length > 0 && (
+            <DevelopmentPagination
+              label="Active projects"
+              total={state.activeDevelopmentProjects.length}
+              page={safeActivePage}
+              pageCount={activePageCount}
+              pageSize={DEVELOPMENT_PAGE_SIZES.active}
+              onPage={setActivePage}
+            />
+          )}
+        </Panel>
+      )}
 
-      {state.completedDevelopmentProjects.length > 0 && (
+      {tab === 'results' && (
         <Panel title="Recent Results">
-          <div className="space-y-2">
-            {state.completedDevelopmentProjects.slice(-5).reverse().map((p) => {
+          {completedProjects.length === 0 ? (
+            <p className="text-sm text-neutral-500">No completed development projects yet.</p>
+          ) : (
+            <>
+              <div className="space-y-2">
+                {visibleResults.map((p) => {
               const result = p.outcomeResult;
               return (
                 <div key={p.id} className="rounded-lg border border-neutral-800 bg-neutral-900/40 p-3">
@@ -204,14 +273,25 @@ export function Development() {
                   {result && <div className="mt-0.5 text-xs text-neutral-500">{result.description}</div>}
                 </div>
               );
-            })}
-          </div>
+                })}
+              </div>
+              <DevelopmentPagination
+                label="Completed projects"
+                total={completedProjects.length}
+                page={safeResultsPage}
+                pageCount={resultsPageCount}
+                pageSize={DEVELOPMENT_PAGE_SIZES.results}
+                onPage={setResultsPage}
+              />
+            </>
+          )}
         </Panel>
       )}
 
-      <Panel title="Available Projects">
-        <div className="grid gap-3 md:grid-cols-2">
-          {developmentProjectCatalog.map((p) => {
+      {tab === 'catalog' && (
+        <Panel title="Available Projects">
+          <div className="grid gap-3 md:grid-cols-2">
+            {visibleCatalogProjects.map((p) => {
             const facLevel = relevantFacilityLevel(state.facilities, p.category);
             const riskLevel = p.riskLevel ?? 'Standard';
             const projectSize = p.projectSize ?? 'Medium';
@@ -279,9 +359,58 @@ export function Development() {
                 </div>
               </div>
             );
-          })}
-        </div>
-      </Panel>
+            })}
+          </div>
+          <DevelopmentPagination
+            label="Available projects"
+            total={developmentProjectCatalog.length}
+            page={safeCatalogPage}
+            pageCount={catalogPageCount}
+            pageSize={DEVELOPMENT_PAGE_SIZES.catalog}
+            onPage={setCatalogPage}
+          />
+        </Panel>
+      )}
+    </div>
+  );
+}
+
+function DevelopmentPagination({
+  label,
+  total,
+  page,
+  pageCount,
+  pageSize,
+  onPage,
+}: {
+  label: string;
+  total: number;
+  page: number;
+  pageCount: number;
+  pageSize: number;
+  onPage: (page: number) => void;
+}) {
+  return (
+    <div className="mt-3 flex items-center justify-between gap-3 rounded-lg border border-neutral-800 bg-neutral-950/60 px-3 py-2">
+      <Button
+        variant="secondary"
+        className="px-3 py-1 text-xs"
+        onClick={() => onPage(Math.max(0, page - 1))}
+        disabled={page === 0}
+      >
+        Previous
+      </Button>
+      <span className="text-xs text-neutral-500">
+        {label} {total ? page * pageSize + 1 : 0}–{Math.min(total, (page + 1) * pageSize)} of {total} · Page {page + 1} of {pageCount}
+      </span>
+      <Button
+        variant="secondary"
+        className="px-3 py-1 text-xs"
+        onClick={() => onPage(Math.min(pageCount - 1, page + 1))}
+        disabled={page >= pageCount - 1}
+      >
+        Next
+      </Button>
     </div>
   );
 }
