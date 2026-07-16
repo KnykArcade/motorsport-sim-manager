@@ -10,6 +10,7 @@ import {
   isMajorStory,
 } from '../sim/careerNewsEngine';
 import { useGame } from '../game/GameContext';
+import { buildNewsStorylines, storylineChapterCounts, type NewsStoryline } from './newsCenterViewModel';
 
 const ALL_CATEGORIES: (NewsCategory | 'all')[] = [
   'all',
@@ -35,6 +36,7 @@ const ALL_PRIORITIES: (NewsPriority | 'all')[] = ['all', 'critical', 'high', 'no
 
 export function NewsCenter() {
   const { state } = useGame();
+  const [view, setView] = useState<'feed' | 'storylines'>('feed');
   const [categoryFilter, setCategoryFilter] = useState<NewsCategory | 'all'>('all');
   const [priorityFilter, setPriorityFilter] = useState<NewsPriority | 'all'>('all');
   const [teamFilter, setTeamFilter] = useState<'all' | 'myTeam'>('all');
@@ -101,6 +103,13 @@ export function NewsCenter() {
   }, [allNews]);
 
   const archiveCount = state?.newsArchive?.length ?? 0;
+  const storylines = useMemo(() => {
+    const items = [...(state?.newsArchive ?? []), ...(state?.news ?? [])];
+    const teamNames = Object.fromEntries((state?.teams ?? []).map((team) => [team.id, team.name]));
+    const driverNames = Object.fromEntries((state?.drivers ?? []).map((driver) => [driver.id, driver.name]));
+    return buildNewsStorylines(items, teamNames, driverNames);
+  }, [state?.newsArchive, state?.news, state?.teams, state?.drivers]);
+  const chapterCounts = useMemo(() => storylineChapterCounts(storylines), [storylines]);
 
   const hasActiveFilters =
     categoryFilter !== 'all' ||
@@ -123,11 +132,14 @@ export function NewsCenter() {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <h2 className="text-xl font-bold text-neutral-100">News Center</h2>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <h2 className="text-xl font-bold text-neutral-100">News Center</h2>
+          <p className="text-xs text-neutral-500">Follow individual reports or trace the paddock stories developing across multiple weeks.</p>
+        </div>
         <div className="flex items-center gap-2">
           <span className="text-xs text-neutral-500">
-            {filteredNews.length} {filteredNews.length === 1 ? 'story' : 'stories'}
+            {view === 'feed' ? `${filteredNews.length} reports` : `${storylines.length} active storylines`}
           </span>
           {archiveCount > 0 && (
             <span className="text-xs text-neutral-500">
@@ -137,8 +149,25 @@ export function NewsCenter() {
         </div>
       </div>
 
+      <div className="grid grid-cols-2 gap-1 rounded-lg border border-neutral-800 bg-neutral-950 p-1" aria-label="News Center sections">
+        <button
+          type="button"
+          onClick={() => setView('feed')}
+          className={`rounded px-3 py-2 text-xs font-semibold ${view === 'feed' ? 'bg-amber-500 text-neutral-950' : 'text-neutral-400 hover:bg-neutral-900 hover:text-neutral-100'}`}
+        >
+          News Feed
+        </button>
+        <button
+          type="button"
+          onClick={() => setView('storylines')}
+          className={`rounded px-3 py-2 text-xs font-semibold ${view === 'storylines' ? 'bg-amber-500 text-neutral-950' : 'text-neutral-400 hover:bg-neutral-900 hover:text-neutral-100'}`}
+        >
+          Storylines
+        </button>
+      </div>
+
       {/* Filter Controls */}
-      <div className="space-y-3 rounded-lg border border-neutral-800 bg-neutral-900/50 p-3">
+      {view === 'feed' && <div className="space-y-3 rounded-lg border border-neutral-800 bg-neutral-900/50 p-3">
         {/* Search + Quick Toggles */}
         <div className="flex flex-wrap items-center gap-2">
           <input
@@ -276,17 +305,17 @@ export function NewsCenter() {
             </label>
           </div>
         </div>
-      </div>
+      </div>}
 
       {/* News List */}
-      <div className="space-y-2">
+      {view === 'feed' ? <div className="space-y-2">
         {filteredNews.length === 0 && (
           <div className="py-8 text-center text-neutral-500">
             No news stories match the current filters.
           </div>
         )}
         {filteredNews.slice(0, displayLimit).map((item) => (
-          <NewsCard key={item.id} item={item} />
+          <NewsCard key={item.id} item={item} chapter={chapterCounts.get(item.id)} />
         ))}
         {filteredNews.length > displayLimit && (
           <div className="py-3 text-center">
@@ -298,7 +327,7 @@ export function NewsCenter() {
             </button>
           </div>
         )}
-      </div>
+      </div> : <StorylineList storylines={storylines} />}
     </div>
   );
 }
@@ -313,7 +342,7 @@ function sortNewsNewestFirst(items: NewsItem[]): NewsItem[] {
   });
 }
 
-function NewsCard({ item }: { item: NewsItem }) {
+function NewsCard({ item, chapter }: { item: NewsItem; chapter?: { chapter: number; total: number } }) {
   const priColor = priorityColor(item.priority);
   const catLabel = categoryLabel(item.category);
 
@@ -339,11 +368,68 @@ function NewsCard({ item }: { item: NewsItem }) {
               {item.priority}
             </span>
           )}
+          {chapter && (
+            <span className="rounded bg-amber-950/50 px-1.5 py-0.5 text-[10px] text-amber-300">
+              Chapter {chapter.chapter}/{chapter.total}
+            </span>
+          )}
         </div>
       </div>
       {item.round != null && (
         <div className="mt-1 text-[10px] text-neutral-600">Round {item.round}</div>
       )}
+    </div>
+  );
+}
+
+function StorylineList({ storylines }: { storylines: NewsStoryline[] }) {
+  if (storylines.length === 0) {
+    return (
+      <div className="rounded-lg border border-neutral-800 bg-neutral-900/40 py-10 text-center text-sm text-neutral-500">
+        Continuing storylines will appear after a driver or team generates multiple connected reports.
+      </div>
+    );
+  }
+  return (
+    <div className="grid gap-3 lg:grid-cols-2">
+      {storylines.map((storyline) => (
+        <article key={storyline.id} className="rounded-lg border border-neutral-800 bg-neutral-900/50 p-4">
+          <div className="flex items-start justify-between gap-3">
+            <div>
+              <div className="text-[10px] font-semibold uppercase tracking-[0.16em] text-neutral-500">
+                {storyline.subjectType} storyline{storyline.latestRound ? ` · Through round ${storyline.latestRound}` : ''}
+              </div>
+              <h3 className="mt-1 text-base font-bold text-neutral-100">{storyline.title}</h3>
+            </div>
+            <span className={`rounded px-2 py-1 text-[10px] font-semibold ${
+              storyline.status === 'Escalating'
+                ? 'bg-red-950/60 text-red-300'
+                : storyline.status === 'Developing'
+                  ? 'bg-amber-950/60 text-amber-300'
+                  : 'bg-blue-950/60 text-blue-300'
+            }`}>
+              {storyline.status}
+            </span>
+          </div>
+          <p className="mt-2 text-xs leading-relaxed text-neutral-400">{storyline.summary}</p>
+          <div className="mt-4 space-y-2">
+            {storyline.chapters.slice(0, 4).map((chapter, index) => (
+              <div key={chapter.id} className="rounded border border-neutral-800 bg-neutral-950/55 p-3">
+                <div className="flex items-center justify-between gap-3">
+                  <div className="text-xs font-semibold text-neutral-200">{chapter.headline}</div>
+                  <span className="shrink-0 text-[10px] text-neutral-600">
+                    Chapter {storyline.chapters.length - index}{chapter.round != null ? ` · R${chapter.round}` : ''}
+                  </span>
+                </div>
+                {chapter.body && <p className="mt-1 text-[11px] leading-relaxed text-neutral-500">{chapter.body}</p>}
+              </div>
+            ))}
+          </div>
+          {storyline.chapters.length > 4 && (
+            <div className="mt-2 text-[10px] text-neutral-600">{storyline.chapters.length - 4} earlier chapters remain in the searchable feed.</div>
+          )}
+        </article>
+      ))}
     </div>
   );
 }

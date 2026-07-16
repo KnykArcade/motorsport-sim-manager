@@ -1,6 +1,6 @@
 # Known Limitations
 
-Last updated: 2026-07-16 (Phase 19AM AI Team Identity Visibility)
+Last updated: 2026-07-16 (Phase 19AN News Storyline Continuity)
 
 ## Regulation Sets
 
@@ -32,8 +32,12 @@ The News Center uses a template-driven engine with driver drama hooks (confidenc
 trust, ego, promises, teammate rivalry, contract tension). News items are generated
 deterministically from race results and relationship state.
 
-**Remaining limitation:** News content is template-driven and may still need tuning
-for variety and narrative depth.
+Related team and driver reports are also grouped into continuing storylines, with
+chapter order, urgency, and summaries that connect events across race weekends and
+archived seasons.
+
+**Remaining limitation:** Individual article prose remains template-driven and is
+designed to be concise rather than simulate full-length journalism.
 
 ## AI Team Identity
 
