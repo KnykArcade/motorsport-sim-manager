@@ -89,8 +89,22 @@ describe('youth market costs', () => {
   it('never exposes generated or synthetic entries in the shared market', () => {
     const bundle = getMarketBundle(1998, 'F1')!;
     expect([...bundle.drivers, ...bundle.youth].every(
-      (entry) => !/generated|synthetic|filler|placeholder/i.test(`${entry.name} ${entry.notes ?? ''}`),
+      (entry) => !/generated|synthetic|filler|placeholder|derived youth stand-in/i.test(`${entry.name} ${entry.notes ?? ''}`),
     )).toBe(true);
+  });
+
+  it('loads documented future CART and IndyCar drivers as shared youth prospects', () => {
+    const expectedByYear = new Map([
+      [1990, ['Tony Kanaan', 'Dario Franchitti', 'Greg Moore', 'Juan Pablo Montoya', 'Dan Wheldon']],
+      [1994, ['Scott Dixon', 'Dan Wheldon', 'Ryan Hunter-Reay', 'AJ Allmendinger']],
+    ]);
+    for (const [year, expected] of expectedByYear) {
+      const bundle = getMarketBundle(year, 'F1')!;
+      expect(bundle.youth.map((prospect) => prospect.name)).toEqual(expect.arrayContaining(expected));
+      expect(bundle.youth
+        .filter((prospect) => expected.includes(prospect.name))
+        .every((prospect) => prospect.notes.includes('Source: https://'))).toBe(true);
+    }
   });
 
   it('removes audited active NASCAR drivers from the 2026 shared market', async () => {

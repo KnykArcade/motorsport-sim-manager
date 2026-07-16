@@ -1,6 +1,6 @@
 # Known Limitations
 
-Last updated: 2026-07-16 (Phase 19AN News Storyline Continuity)
+Last updated: 2026-07-16 (Phase 19AO American Open-Wheel Youth Continuity)
 
 ## Regulation Sets
 
@@ -61,6 +61,10 @@ deliberately concise.
 Season data (tracks, teams, drivers, cars) exists for F1 1990–2026 and IndyCar
 2008–2026. A lazy-loading system (`lazySeasonData.ts`) provides async access to
 season bundles for informational screens.
+
+The shared youth market now carries documented future CART/IndyCar drivers through
+their real junior years, including the thin early-1990s classes. Synthetic CART and
+IndyCar stand-ins remain excluded from every playable market.
 
 **Remaining limitation:** Historical sponsor and engine details may use fictionalized
 or gameplay-safe equivalents where exact data is unavailable. The lazy-loading system

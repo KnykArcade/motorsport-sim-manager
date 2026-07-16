@@ -107,6 +107,9 @@ function mergeUniverseEntries<T extends MarketDriver | YouthProspect>(entries: A
       continue;
     }
     existing.seriesPreferences = mergePreferences(existing.seriesPreferences ?? [], preference);
+    if (!existing.notes?.includes('Source: https://') && entry.notes?.includes('Source: https://')) {
+      existing.notes = entry.notes;
+    }
   }
   return [...byName.values()];
 }
@@ -137,7 +140,8 @@ function applyCuratorMarketExclusions<T extends MarketDriver | YouthProspect>(ye
 // Real-driver migration guard: historical seed files can still contain openly
 // generated filler. Such entries are never eligible for the shared universe.
 function applyDocumentedOnlyFilter<T extends MarketDriver | YouthProspect>(entries: T[]): T[] {
-  return entries.filter((entry) => !/generated|synthetic|filler|placeholder/i.test(`${entry.name} ${entry.notes ?? ''}`));
+  return entries.filter((entry) =>
+    !/generated|synthetic|filler|placeholder|derived youth stand-in/i.test(`${entry.name} ${entry.notes ?? ''}`));
 }
 
 function makeMarketLoader(year: number, series: Series) {

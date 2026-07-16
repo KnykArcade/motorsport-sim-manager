@@ -7,7 +7,7 @@ import { availableSeasons } from '../data/seasonCatalog';
 import { createNewGame } from '../game/initialCareer';
 import { careerMarketBundle } from './careerMarketEngine';
 
-const generatedMarker = /generated|synthetic|filler|placeholder|gen-(?:drv|yth)|reserve [a-e]$|prospect [a-e]$/i;
+const generatedMarker = /generated|synthetic|filler|placeholder|derived youth stand-in|gen-(?:drv|yth)|reserve [a-e]$|prospect [a-e]$/i;
 
 it('keeps every 1990-2026 career market shared, real, unique, age-valid, and roster-safe', async () => {
   await initializeMasterRegistry(1990, 'F1');
