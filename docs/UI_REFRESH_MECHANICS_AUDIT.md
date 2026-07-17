@@ -24,6 +24,10 @@ behind a visual redesign and new controls do not imply behavior they lack.
 | Continue | `careerPhase.currentPhase`; navigation only |
 | Team HQ metrics | Current team budget, morale, reputation, and active development projects |
 | Team HQ tabs and actions | Existing screen state, routes, dossiers, development, regulations, news, and standings |
+| Organization Profile universe metrics | Current team count, player championship position, championship leader, financial-health states, and calculated field rating |
+| Organization Profile filters and sorting | Existing deterministic team-overview rows; no roster or simulation mutation |
+| Organization Profile dossiers | Existing principal, owner, and driver dossier subjects |
+| Organization Profile management tabs | Existing lineup, academy, technical program, engine deal, finance, identity memory, ratings, and offseason-move data |
 
 No decorative button or fabricated metric was added in the foundation phase.
 
@@ -37,7 +41,7 @@ explicit as their screens are migrated.
 | --- | --- | --- |
 | Team morale | Current score on HQ and Paddock Week | Trend, recent causes, active modifiers, and which personnel or performance outcomes it affects |
 | Team reputation | Current score on HQ and team views | Recent change history and its effects on sponsor income, operating expectations, hiring, and market interest |
-| Organization ratings | Ratings on the Organization tab | “Affects” links for driver bids, academy capacity, development success, and related systems |
+| Organization ratings | Ratings on the Organization tab and Team Universe profiles | Team profiles now explain the overall-rating weights and the effects of performance, personnel, operations, and finance. Driver bids and academy-capacity explanations still belong on their action screens. |
 | Race preparation focus | Detailed in Pre-Race Briefing | A compact active-effect summary on HQ/Race Desk so the chosen pace, qualifying, reliability, mistake-risk, or budget tradeoff is not forgotten |
 | Character ambitions, influence, disputes, initiatives, mandates, breaking points, commitments, and future intentions | Available primarily in Paddock Week and character dossiers | Shell-level attention counts and direct links to unresolved people matters, without duplicating the decision controls |
 | Scouting fog and network accuracy | Visible inside Scouting and Market | Consistent knowledge/confidence language anywhere a driver rating or potential is shown |
@@ -52,3 +56,13 @@ explicit as their screens are migrated.
 5. Any rating affected by another system should expose an `Affects` or `Why` explanation.
 6. Mode-restricted systems remain filtered through the central restriction helpers.
 7. Live Race remains outside this UI refresh until separately approved.
+
+## Team Command Center findings
+
+| Finding | Status | Resolution |
+| --- | --- | --- |
+| Rival sponsor income is derived by the overview simulation but previously looked like a disclosed exact contract value. | Fixed | Rival values are now labeled `Estimated sponsor income`; the Finance tab explains the distinction. |
+| Team ratings were visible without revealing how the overall organization score was built. | Fixed | The Performance tab states the exact category weights and the lead-driver/second-driver split used by the engine. |
+| Team operational ratings did not explain their downstream purpose. | Fixed | Performance, Personnel, Operations, and Finance tabs now include concise `Affects` explanations tied to implemented systems. |
+| The large team comparison page required document scrolling and the five-tab dossier mixed unrelated information. | Fixed | The screen now uses the fixed workspace shell with an internally scrolling table and seven focused organization-profile tabs. |
+| Team identity memory appeared separately from recent offseason history. | Improved | Identity keeps current posture and philosophy; History consolidates tracked performance memory with recorded offseason moves. |
