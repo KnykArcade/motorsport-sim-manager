@@ -150,4 +150,12 @@ explicit as their screens are migrated.
 | Job offers could look like immediate team switches. | Preserved | Offer controls retain explicit next-season wording; accepted approaches remain cancellable before rollover. Rumors remain informational only. |
 | Driver trust, confidence, ego, wants, promises, clauses, and team-order effects could be reduced to one relationship score. | Prevented | The driver workspace keeps the distinct implemented dimensions, explanatory text, promise progress, dossier links, and action consequences. |
 | Rival action cards could become decorative relationship flavor. | Prevented | Every action continues to use the existing budget cost, finance transaction, relationship deltas, news generation, and protest-success rules. |
-| Open Dialogue, Technical Exchange, and Scout Personnel currently have no per-round cooldown; only repeated formal protests are rejected in the same round. | Exposed gap | The refresh does not claim a cooldown exists. A future gameplay pass should add an engine-level cadence rule before presenting these actions as limited weekly diplomacy. |
+| Rival management actions could be repeated against the same team throughout one round; only formal protests had partial duplicate protection. | Fixed | Each action now has an engine-enforced per-rival, per-round cooldown. Different actions remain available in the same round, cooldowns reset next round and season, and the dossier visibly marks used actions. |
+
+## Season Review findings
+
+| Finding | Status | Resolution |
+| --- | --- | --- |
+| The season-complete screen used a separate page structure and required document-level scrolling on shorter displays. | Fixed | Season Review now uses the shared FM-style workspace with persistent honours and team context, focused tabs, and one internally scrolling work area. |
+| Switching between final standings could hide the champions and the player's final result. | Fixed | Driver champion, constructors' champion, player-team position, points, and season size remain visible above every tab. |
+| A visual refresh could disconnect the career rollover and Single Season conversion rules. | Prevented | Existing replay, conversion, offseason, and main-menu actions retain their original dispatch and routing behavior, including the Single Season explanation. |
