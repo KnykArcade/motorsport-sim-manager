@@ -13,6 +13,14 @@ import type { Driver } from '../types/gameTypes';
 import type { DriverDevelopmentCurve } from '../types/developmentCurveTypes';
 import { CompactPagination } from '../components/CompactPagination';
 import { CURVE_PAGE_SIZE, compactPage, pageCount } from './seasonOverviewViewModel';
+import {
+  MetricStrip,
+  WorkspaceBody,
+  WorkspaceHeader,
+  WorkspaceMetric,
+  WorkspaceScreen,
+  WorkspaceTabs,
+} from '../components/workspace/Workspace';
 
 type Tab = 'mine' | 'grid';
 
@@ -43,6 +51,13 @@ export function DriverCurves() {
   const tabPageCount = pageCount(sorted.length, CURVE_PAGE_SIZE);
   const safePage = Math.min(page, tabPageCount - 1);
   const visibleDrivers = compactPage(sorted, safePage, CURVE_PAGE_SIZE);
+  const phaseCounts = sorted.reduce(
+    (counts, item) => {
+      counts[developmentPhase(item.curve, item.age)] += 1;
+      return counts;
+    },
+    { Developing: 0, Peak: 0, Declining: 0 } as Record<DevelopmentPhase, number>,
+  );
 
   function selectTab(nextTab: Tab) {
     setTab(nextTab);
@@ -50,33 +65,36 @@ export function DriverCurves() {
   }
 
   return (
-    <div className="era-feature-screen era-driver-curves-screen space-y-3">
-      <div className="flex items-start justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-neutral-100">Development Curves</h1>
-          <p className="text-sm text-neutral-400">
-            Drivers improve toward a ceiling while young, plateau through their peak years, then
-            decline with age. Ratings shift each offseason — your Driver Academy speeds up your own
-            youngsters.
-          </p>
-        </div>
-        <div className="flex gap-2">
-          <TabButton active={tab === 'mine'} onClick={() => selectTab('mine')}>
-            Your Drivers ({mine.length})
-          </TabButton>
-          <TabButton active={tab === 'grid'} onClick={() => selectTab('grid')}>
-            Grid ({state.drivers.length})
-          </TabButton>
-        </div>
-      </div>
-
+    <WorkspaceScreen className="era-feature-screen era-driver-curves-screen">
+      <WorkspaceHeader
+        eyebrow="Driver intelligence"
+        title="Development Curves"
+        subtitle="Track current ability, projected ceilings, and the age curve shaping every driver."
+      />
+      <MetricStrip>
+        <WorkspaceMetric label="Your drivers" value={mine.length} detail="Team development dossiers" />
+        <WorkspaceMetric label="Grid tracked" value={state.drivers.length} detail="Current driver pool" />
+        <WorkspaceMetric label="Developing" value={phaseCounts.Developing} detail="Still climbing toward peak" />
+        <WorkspaceMetric label="Peak / declining" value={`${phaseCounts.Peak} / ${phaseCounts.Declining}`} detail="Mature and late-career profiles" />
+      </MetricStrip>
+      <WorkspaceTabs
+        items={[
+          { id: 'mine' as const, label: `Your Drivers · ${mine.length}` },
+          { id: 'grid' as const, label: `Grid · ${state.drivers.length}` },
+        ]}
+        active={tab}
+        onChange={selectTab}
+        ariaLabel="Driver development views"
+      />
+      <WorkspaceBody className="space-y-3">
       <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
         {visibleDrivers.map(({ driver, curve, age }) => (
             <CurveCard key={driver.id} driver={driver} curve={curve} age={age} />
           ))}
       </div>
       <CompactPagination noun="drivers" total={sorted.length} page={safePage} pageCount={tabPageCount} pageSize={CURVE_PAGE_SIZE} onPage={setPage} />
-    </div>
+      </WorkspaceBody>
+    </WorkspaceScreen>
   );
 }
 
@@ -157,28 +175,5 @@ function Stat({ label, children }: { label: string; children: React.ReactNode })
       <div className="text-[10px] uppercase tracking-wide text-neutral-500">{label}</div>
       <div className="font-semibold tabular-nums text-neutral-200">{children}</div>
     </div>
-  );
-}
-
-function TabButton({
-  active,
-  onClick,
-  children,
-}: {
-  active: boolean;
-  onClick: () => void;
-  children: React.ReactNode;
-}) {
-  return (
-    <button
-      onClick={onClick}
-      className={`rounded-md px-3 py-1.5 text-sm ${
-        active
-          ? 'bg-amber-500 font-semibold text-neutral-950'
-          : 'bg-neutral-800 text-neutral-300 hover:bg-neutral-700'
-      }`}
-    >
-      {children}
-    </button>
   );
 }

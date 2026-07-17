@@ -3,6 +3,13 @@ import { useGame } from '../game/GameContext';
 import { Panel } from '../components/Panel';
 import { Button } from '../components/Button';
 import { deleteSave, hasSave } from '../game/saveSystem';
+import {
+  MetricStrip,
+  WorkspaceBody,
+  WorkspaceHeader,
+  WorkspaceMetric,
+  WorkspaceScreen,
+} from '../components/workspace/Workspace';
 
 export function Settings() {
   const { state, dispatch, settings, setSettings } = useGame();
@@ -11,11 +18,20 @@ export function Settings() {
   const mobilityMode = state?.careerMobilityMode ?? 'StandardCareer';
 
   return (
-    <div className="mx-auto max-w-2xl space-y-6 p-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-neutral-100">Settings</h1>
-        <Button variant="ghost" onClick={() => navigate(-1)}>← Back</Button>
-      </div>
+    <WorkspaceScreen className="era-feature-screen era-settings-screen">
+      <WorkspaceHeader
+        eyebrow="System control"
+        title="Settings"
+        subtitle="Tune simulation presentation, damage realism, career pressure, and local save data."
+        actions={<Button variant="ghost" onClick={() => navigate(-1)}>← Back</Button>}
+      />
+      <MetricStrip>
+        <WorkspaceMetric label="Debug mode" value={settings.debugMode ? 'On' : 'Off'} detail="Simulation breakdown visibility" />
+        <WorkspaceMetric label="Damage profile" value={`${settings.damageFrequency.toFixed(2)}×`} detail={`${settings.damageSeverity.toFixed(2)}× severity`} />
+        <WorkspaceMetric label="Reliability" value={`${settings.reliabilityStrictness.toFixed(2)}×`} detail="Mechanical stress strictness" />
+        <WorkspaceMetric label="Save data" value={hasSave() ? 'Available' : 'Empty'} detail={state ? 'Active career loaded' : 'Main menu only'} />
+      </MetricStrip>
+      <WorkspaceBody className="mx-auto w-full max-w-3xl space-y-4">
 
       <Panel title="Gameplay">
         <label className="flex items-center justify-between">
@@ -94,7 +110,7 @@ export function Settings() {
                   key={mode}
                   className={`flex cursor-pointer items-start gap-3 rounded-lg border p-3 transition-colors ${
                     mobilityMode === mode
-                      ? 'border-blue-600 bg-blue-900/20'
+                      ? 'border-[var(--era-accent)] bg-[var(--era-accent-soft)]'
                       : 'border-neutral-800 hover:bg-neutral-900/50'
                   }`}
                 >
@@ -103,7 +119,7 @@ export function Settings() {
                     name="mobility"
                     checked={mobilityMode === mode}
                     onChange={() => dispatch({ type: 'SET_CAREER_MOBILITY', mode })}
-                    className="mt-1 accent-blue-600"
+                    className="mt-1 accent-[var(--era-accent)]"
                   />
                   <div>
                     <div className="text-sm font-medium text-neutral-100">{label}</div>
@@ -135,6 +151,7 @@ export function Settings() {
           </Button>
         </div>
       </Panel>
-    </div>
+      </WorkspaceBody>
+    </WorkspaceScreen>
   );
 }
