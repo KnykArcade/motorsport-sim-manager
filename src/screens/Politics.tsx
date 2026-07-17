@@ -12,6 +12,14 @@ import {
   resolveProposal,
 } from '../sim/politicsEngine';
 import type { RegulationProposal, RegulationVote } from '../types/politicsTypes';
+import {
+  MetricStrip,
+  WorkspaceBody,
+  WorkspaceHeader,
+  WorkspaceMetric,
+  WorkspaceScreen,
+  WorkspaceTabs,
+} from '../components/workspace/Workspace';
 
 const VOTES: RegulationVote[] = ['Support', 'Oppose', 'Abstain'];
 
@@ -54,35 +62,28 @@ export function Politics() {
   const history = (state.regulationVoteHistory ?? []).slice().reverse();
 
   const regSet = getRegulationSet(state.regulationSetId);
+  const votedCount = proposals.filter((proposal) => proposal.playerVote).length;
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-neutral-100">Regulations &amp; Politics</h1>
-        <p className="text-sm text-neutral-400">
-          Teams lobby and vote on next season's rules. Your political weight depends on your prestige
-          and engine deal. Cast your vote — the result is settled at the season rollover and shapes
-          the {effectiveYear} regulations.
-        </p>
-      </div>
-
-      <div className="rounded-lg border border-neutral-800 bg-[#0b0f17] p-1">
-        <div className="flex flex-wrap gap-1">
-          {TABS.map((tab) => (
-            <button
-              key={tab.key}
-              onClick={() => setActiveTab(tab.key)}
-              className={`rounded-md px-3 py-1.5 text-xs font-semibold transition-colors ${
-                activeTab === tab.key
-                  ? 'bg-amber-500 text-neutral-950'
-                  : 'text-neutral-400 hover:bg-neutral-800 hover:text-neutral-200'
-              }`}
-            >
-              {tab.label}
-            </button>
-          ))}
-        </div>
-      </div>
+    <WorkspaceScreen>
+      <WorkspaceHeader
+        eyebrow="Technical governance"
+        title="Regulations & Politics"
+        subtitle={`Lobby and vote on the rules taking effect in ${effectiveYear}; results settle at season rollover`}
+      />
+      <MetricStrip>
+        <WorkspaceMetric label="Political influence" value={playerInfluence} detail={playerRank > 0 ? `Rank ${playerRank} of ${ranked.length}` : 'No grid rank'} />
+        <WorkspaceMetric label="Open proposals" value={proposals.length} detail={`${votedCount} votes currently set`} />
+        <WorkspaceMetric label="Effective season" value={effectiveYear} detail="Next regulation settlement" />
+        <WorkspaceMetric label="Recorded votes" value={history.length} detail={`${history.filter((result) => result.passed).length} proposals passed`} />
+      </MetricStrip>
+      <WorkspaceTabs
+        items={TABS.map((tab) => ({ id: tab.key, label: `${tab.label}${tab.key === 'proposals' ? ` (${proposals.length})` : ''}` }))}
+        active={activeTab}
+        onChange={setActiveTab}
+        ariaLabel="Regulations and politics sections"
+      />
+      <WorkspaceBody className="space-y-4">
 
       {activeTab === 'regulations' && regSet && (
         <RegulationPanel regulationSet={regSet} seasonYear={state.seasonYear} />
@@ -168,7 +169,8 @@ export function Politics() {
           )}
         </Panel>
       )}
-    </div>
+      </WorkspaceBody>
+    </WorkspaceScreen>
   );
 }
 

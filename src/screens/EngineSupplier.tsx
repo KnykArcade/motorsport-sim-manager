@@ -21,6 +21,14 @@ import {
   groupEngineOffers,
   type EngineWorkspaceTab,
 } from './engineSupplierViewModel';
+import {
+  MetricStrip,
+  WorkspaceBody,
+  WorkspaceHeader,
+  WorkspaceMetric,
+  WorkspaceScreen,
+  WorkspaceTabs,
+} from '../components/workspace/Workspace';
 
 function moneyMillions(value: number): string {
   return `$${value.toFixed(value % 1 === 0 ? 0 : 2)}M`;
@@ -64,40 +72,25 @@ export function EngineSupplier() {
   }
 
   return (
-    <div className="era-feature-screen era-engine-screen space-y-3">
-      <div className="flex items-end justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-neutral-100">Engine Supplier</h1>
-          <p className="text-sm text-neutral-400">
-            Manage this season's package, factory expectations, and next-season supply.
-          </p>
-        </div>
-        <div className="text-right">
-          <div className="text-xs uppercase tracking-wide text-neutral-500">Available budget</div>
-          <div className="text-lg font-bold text-neutral-100">{moneyMillions(team.budget / 1_000_000)}</div>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-2 gap-2 lg:grid-cols-4">
-        <Kpi label="Current Supplier" value={current?.supplierName ?? 'None'} detail={currentSpec?.label ?? 'No active deal'} />
-        <Kpi label="Annual Cost" value={current ? moneyMillions(current.annualCost) : '—'} detail="Billed at season rollover" />
-        <Kpi label="Package" value={current ? `${current.powerRating.toFixed(1)} PWR` : '—'} detail={current ? `${current.reliabilityRating.toFixed(1)} reliability` : 'No package'} />
-        <Kpi label="Next Season" value={pending?.supplierName ?? 'No change'} detail={pending ? ENGINE_DEAL_SPECS[pending.dealType].label : 'Current deal continues'} tone={pending ? 'pending' : undefined} />
-      </div>
-
-      <nav className="grid grid-cols-3 gap-1 rounded-lg border border-neutral-800 bg-neutral-950/70 p-1" aria-label="Engine workspaces">
-        {ENGINE_WORKSPACE_TABS.map((workspace) => (
-          <button
-            key={workspace.id}
-            type="button"
-            onClick={() => setTab(workspace.id)}
-            aria-current={tab === workspace.id ? 'page' : undefined}
-            className={`rounded px-3 py-2 text-xs font-semibold transition-colors ${tab === workspace.id ? 'bg-amber-500 text-neutral-950' : 'text-neutral-400 hover:bg-neutral-900 hover:text-neutral-100'}`}
-          >
-            {workspace.label}{workspace.id === 'market' ? ` (${supplierGroups.length})` : ''}
-          </button>
-        ))}
-      </nav>
+    <WorkspaceScreen className="era-feature-screen era-engine-screen">
+      <WorkspaceHeader
+        eyebrow="Technical center"
+        title="Engine Supplier"
+        subtitle="Manage the current package, manufacturer expectations, and next-season supply"
+      />
+      <MetricStrip>
+        <WorkspaceMetric label="Current supplier" value={current?.supplierName ?? 'None'} detail={currentSpec?.label ?? 'No active deal'} />
+        <WorkspaceMetric label="Annual cost" value={current ? moneyMillions(current.annualCost) : '—'} detail={`Budget ${moneyMillions(team.budget / 1_000_000)}`} />
+        <WorkspaceMetric label="Power unit" value={current ? `${current.powerRating.toFixed(1)} power` : '—'} detail={current ? `${current.reliabilityRating.toFixed(1)} reliability` : 'No active package'} />
+        <WorkspaceMetric label="Next season" value={pending?.supplierName ?? 'No change'} detail={pending ? ENGINE_DEAL_SPECS[pending.dealType].label : 'Current deal continues'} />
+      </MetricStrip>
+      <WorkspaceTabs
+        items={ENGINE_WORKSPACE_TABS.map((workspace) => ({ id: workspace.id, label: `${workspace.label}${workspace.id === 'market' ? ` (${supplierGroups.length})` : ''}` }))}
+        active={tab}
+        onChange={setTab}
+        ariaLabel="Engine workspaces"
+      />
+      <WorkspaceBody className="space-y-4">
 
       {tab === 'package' && <CurrentPackagePanel current={current} pending={pending} pendingFee={engine.pendingDealFee} />}
       {tab === 'manufacturer' && <ManufacturerPanel engine={engine} />}
@@ -120,7 +113,8 @@ export function EngineSupplier() {
           onSign={(offer) => dispatch({ type: 'SIGN_ENGINE_DEAL', supplierId: offer.supplier.id, dealType: offer.dealType })}
         />
       )}
-    </div>
+      </WorkspaceBody>
+    </WorkspaceScreen>
   );
 }
 
@@ -413,16 +407,6 @@ function ManufacturerPanel({ engine }: { engine: EngineState }) {
         </div>
       </div>
     </Panel>
-  );
-}
-
-function Kpi({ label, value, detail, tone }: { label: string; value: string; detail: string; tone?: 'pending' }) {
-  return (
-    <div className={`rounded-xl border p-3 ${tone === 'pending' ? 'border-sky-500/30 bg-sky-500/5' : 'border-neutral-800 bg-neutral-900/40'}`}>
-      <div className="text-[10px] uppercase tracking-wide text-neutral-500">{label}</div>
-      <div className="mt-0.5 truncate text-lg font-bold text-neutral-100" title={value}>{value}</div>
-      <div className="truncate text-[10px] text-neutral-600" title={detail}>{detail}</div>
-    </div>
   );
 }
 
