@@ -4,6 +4,14 @@ import { teamById } from '../game/careerState';
 import { careerMarketBundle } from '../sim/careerMarketEngine';
 import { Panel } from '../components/Panel';
 import { Button } from '../components/Button';
+import {
+  MetricStrip,
+  WorkspaceBody,
+  WorkspaceHeader,
+  WorkspaceMetric,
+  WorkspaceScreen,
+  WorkspaceTabs,
+} from '../components/workspace/Workspace';
 import { fogView, scoutingCost, type FogView, type ScoutTarget } from '../sim/scoutingEngine';
 import { formatMoney, ratingColor } from '../components/ui';
 import type { ScoutedEntityType, VisibleRating } from '../types/scoutingTypes';
@@ -34,12 +42,14 @@ export function Scouting() {
   const scouting = state.scouting;
   if (!scouting) {
     return (
-      <div className="space-y-6">
-        <h1 className="text-2xl font-bold text-neutral-100">Scouting</h1>
-        <Panel title="Scouting">
-          <p className="text-sm text-neutral-400">Scouting is available in Career Mode.</p>
-        </Panel>
-      </div>
+      <WorkspaceScreen className="era-feature-screen era-scouting">
+        <WorkspaceHeader eyebrow="Recruitment center" title="Intelligence" subtitle="Scouting is available in Career Mode." />
+        <WorkspaceBody>
+          <Panel title="Scouting">
+            <p className="text-sm text-neutral-400">Scouting is available in Career Mode.</p>
+          </Panel>
+        </WorkspaceBody>
+      </WorkspaceScreen>
     );
   }
 
@@ -51,29 +61,34 @@ export function Scouting() {
 
   const costOf = (entityId: string, entityType: ScoutedEntityType): number =>
     scoutingCost(entityType, scouting.reports[entityId]?.scoutingLevel ?? 0);
+  const intelligenceReports = state.phase18?.intelligenceReports ?? [];
+  const activeIntelligence = intelligenceReports.filter(
+    (report) => (report.status ?? 'Active') === 'Active',
+  ).length;
+  const scoutingTabs: Array<{ id: Tab; label: string }> = [
+    { id: 'intelligence', label: `Paddock Intelligence (${activeIntelligence})` },
+    { id: 'senior', label: `Senior Targets (${bundle?.drivers.length ?? 0})` },
+    { id: 'youth', label: `Youth Targets (${bundle?.youth.length ?? 0})` },
+  ];
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-start justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-neutral-100">Scouting</h1>
-          <p className="text-sm text-neutral-400">
-            A driver's true ceiling is hidden by fog. Assign scouts to a target to sharpen the
-            estimate — a stronger Scouting Network reveals more, faster.
-          </p>
-        </div>
-        <div className="flex gap-2">
-          <TabButton active={tab === 'intelligence'} onClick={() => setTab('intelligence')}>
-            Paddock Intelligence
-          </TabButton>
-          <TabButton active={tab === 'senior'} onClick={() => setTab('senior')}>
-            Senior{bundle ? ` (${bundle.drivers.length})` : ''}
-          </TabButton>
-          <TabButton active={tab === 'youth'} onClick={() => setTab('youth')}>
-            Youth{bundle ? ` (${bundle.youth.length})` : ''}
-          </TabButton>
-        </div>
-      </div>
+    <WorkspaceScreen className="era-feature-screen era-scouting">
+      <WorkspaceHeader
+        eyebrow="Recruitment center"
+        title="Intelligence"
+        subtitle="Ratings and potential remain estimates until your scouting network builds sufficient knowledge."
+      />
+
+      <MetricStrip>
+        <WorkspaceMetric label="Network accuracy" value={`${networkPct}%`} detail="Baseline confidence" />
+        <WorkspaceMetric label="Active intelligence" value={activeIntelligence} detail="Paddock claims under review" />
+        <WorkspaceMetric label="Scouting budget" value={formatMoney(budget)} detail="Available team balance" />
+        <WorkspaceMetric label="Investigation cost" value={formatMoney(INTELLIGENCE_INVESTIGATION_COST)} detail="Per paddock report" />
+      </MetricStrip>
+
+      <WorkspaceTabs items={scoutingTabs} active={tab} onChange={setTab} ariaLabel="Recruitment intelligence sections" />
+
+      <WorkspaceBody>
 
       {tab === 'intelligence' && (
         <IntelligenceDashboard
@@ -152,7 +167,8 @@ export function Scouting() {
             ))}
         </div>
       )}
-    </div>
+      </WorkspaceBody>
+    </WorkspaceScreen>
   );
 }
 

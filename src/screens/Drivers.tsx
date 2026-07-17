@@ -3,6 +3,14 @@ import { useGame } from '../game/GameContext';
 import { Panel } from '../components/Panel';
 import { StatBar } from '../components/StatBar';
 import { Button } from '../components/Button';
+import {
+  MetricStrip,
+  WorkspaceBody,
+  WorkspaceHeader,
+  WorkspaceMetric,
+  WorkspaceScreen,
+  WorkspaceTabs,
+} from '../components/workspace/Workspace';
 import { DriverDossierButton } from '../components/driverCards/DriverDossier';
 import { ScoutingWidget } from '../components/scouting/ScoutingWidget';
 import { formatMoney } from '../components/ui';
@@ -55,31 +63,36 @@ export function Drivers() {
   );
   const contractOfferNews = state.news.filter((item) => item.id.startsWith('news-contract-offer-'));
   const latestContractOffer = (driverId: string) => contractOfferNews.find((item) => item.driverId === driverId);
+  const expiringContracts = [...raceSeats, ...reserves].filter(
+    (driver) => (driver.contractYearsRemaining ?? 1) <= 1,
+  ).length;
+  const driverTabs = DRIVERS_TABS.map((item) => ({
+    ...item,
+    label: item.id === 'lineup'
+      ? `${item.label} (${raceSeats.length})`
+      : item.id === 'reserves'
+        ? `${item.label} (${reserves.length})`
+        : `${item.label} (${ordered.length})`,
+  }));
 
   return (
-    <div className="space-y-6">
-      <h1 className="text-2xl font-bold text-neutral-100">Drivers</h1>
+    <WorkspaceScreen className="era-feature-screen era-drivers">
+      <WorkspaceHeader
+        eyebrow="Recruitment center"
+        title="Drivers"
+        subtitle={`${playerTeam?.name ?? 'Team'} · lineup, contracts, reserves, and grid directory`}
+      />
 
-      <nav
-        className="grid grid-cols-3 gap-1 rounded-lg border border-neutral-800 bg-neutral-950/70 p-1"
-        aria-label="Driver roster sections"
-      >
-        {DRIVERS_TABS.map((item) => (
-          <button
-            key={item.id}
-            type="button"
-            onClick={() => setTab(item.id)}
-            aria-current={tab === item.id ? 'page' : undefined}
-            className={`rounded px-3 py-2 text-xs font-semibold transition-colors ${
-              tab === item.id
-                ? 'bg-amber-500 text-neutral-950'
-                : 'text-neutral-400 hover:bg-neutral-900 hover:text-neutral-100'
-            }`}
-          >
-            {item.label}
-          </button>
-        ))}
-      </nav>
+      <MetricStrip>
+        <WorkspaceMetric label="Race seats" value={`${raceSeats.length} / 2`} detail={raceSeats.length >= 2 ? 'Lineup complete' : 'Action required'} />
+        <WorkspaceMetric label="Reserve drivers" value={reserves.length} detail="Third, reserve, and test roles" />
+        <WorkspaceMetric label="Expiring contracts" value={expiringContracts} detail="One season or less remaining" />
+        <WorkspaceMetric label="Driver budget" value={formatMoney(teamBudget)} detail="Available team balance" />
+      </MetricStrip>
+
+      <WorkspaceTabs items={driverTabs} active={tab} onChange={setTab} ariaLabel="Driver roster sections" />
+
+      <WorkspaceBody>
 
       {tab === 'lineup' && playerTeam && (
         <Panel className="ring-1 ring-amber-500/60">
@@ -286,7 +299,8 @@ export function Drivers() {
           </div>
         </>
       )}
-    </div>
+      </WorkspaceBody>
+    </WorkspaceScreen>
   );
 }
 
