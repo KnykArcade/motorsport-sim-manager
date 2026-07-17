@@ -8,6 +8,7 @@ import {
   ensureRivalRelationships,
   evolveRivalRelationshipsAfterRace,
   recordStaffPoach,
+  rivalActionUsedThisRound,
   rivalRelationship,
   takeRivalAction,
 } from './phase18RivalRelationshipEngine';
@@ -68,7 +69,7 @@ describe('rival relationship engine', () => {
     expect(updated.history.at(-1)?.category).toBe('Sporting');
   });
 
-  it('charges management actions and prevents duplicate same-round protests', () => {
+  it('charges management actions and prevents repeating an action against the same rival in one round', () => {
     const state = freshState('action-rivals');
     const rival = state.teams.find((team) => team.id !== state.selectedTeamId)!;
     const playerBudget = state.teams.find((team) => team.id === state.selectedTeamId)!.budget;
@@ -78,8 +79,34 @@ describe('rival relationship engine', () => {
 
     expect(protested.teams.find((team) => team.id === state.selectedTeamId)!.budget).toBe(playerBudget - 400_000);
     expect(relation.history.at(-1)?.reason).toContain('formal protest');
+    expect(relation.history.at(-1)?.action).toBe('FileProtest');
+    expect(rivalActionUsedThisRound(protested, rival.id, 'FileProtest')).toBe(true);
     expect(protested.news[0].headline).toContain('protest');
     expect(repeated).toEqual(protested);
+  });
+
+  it('allows a different rival action in the same round and resets the action cooldown next round', () => {
+    const state = freshState('action-cadence');
+    const rival = state.teams.find((team) => team.id !== state.selectedTeamId)!;
+    const dialogue = takeRivalAction(state, rival.id, 'OpenDialogue');
+    const repeatedDialogue = takeRivalAction(dialogue, rival.id, 'OpenDialogue');
+    const exchange = takeRivalAction(repeatedDialogue, rival.id, 'TechnicalExchange');
+    const nextRound = { ...exchange, currentRaceIndex: exchange.currentRaceIndex + 1, careerPhase: exchange.careerPhase ? { ...exchange.careerPhase, currentRound: exchange.careerPhase.currentRound + 1 } : exchange.careerPhase };
+    const nextDialogue = takeRivalAction(nextRound, rival.id, 'OpenDialogue');
+
+    expect(repeatedDialogue).toEqual(dialogue);
+    expect(rivalRelationship(exchange, state.selectedTeamId, rival.id)!.history).toHaveLength(2);
+    expect(rivalRelationship(nextDialogue, state.selectedTeamId, rival.id)!.history).toHaveLength(3);
+  });
+
+  it('does not carry a rival action cooldown into the same round number of a later season', () => {
+    const state = freshState('action-new-season');
+    const rival = state.teams.find((team) => team.id !== state.selectedTeamId)!;
+    const dialogue = takeRivalAction(state, rival.id, 'OpenDialogue');
+    const followingSeason = { ...dialogue, seasonYear: dialogue.seasonYear + 1 };
+    const nextDialogue = takeRivalAction(followingSeason, rival.id, 'OpenDialogue');
+
+    expect(rivalRelationship(nextDialogue, state.selectedTeamId, rival.id)!.history).toHaveLength(2);
   });
 
   it('records staff poaching as a durable team rivalry event', () => {

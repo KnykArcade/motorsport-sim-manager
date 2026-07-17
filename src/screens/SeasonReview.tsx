@@ -5,6 +5,14 @@ import { Panel } from '../components/Panel';
 import { Button } from '../components/Button';
 import { StandingsTable } from '../components/StandingsTable';
 import { CompactPagination } from '../components/CompactPagination';
+import {
+  MetricStrip,
+  WorkspaceBody,
+  WorkspaceHeader,
+  WorkspaceMetric,
+  WorkspaceScreen,
+  WorkspaceTabs,
+} from '../components/workspace/Workspace';
 import { isSingleSeasonMode } from '../game/modeRestrictions';
 import { ARCHETYPE_SPECS, TRAIT_LABELS } from '../sim/aiTeamEngine';
 import {
@@ -58,31 +66,21 @@ export function SeasonReview() {
   }
 
   return (
-    <div className="era-feature-screen era-season-review-screen space-y-3">
-      <div className="text-center">
-        <div className="text-sm font-semibold uppercase tracking-[0.3em] text-amber-500">Season Complete</div>
-        <h1 className="mt-1 text-3xl font-black text-neutral-50">{state.seasonYear} {state.series} — Final Review</h1>
-      </div>
-
-      <div className="grid gap-2 sm:grid-cols-3">
-        <Kpi label="World Champion" value={champion ? driverName(champion.entityId) : '—'} />
-        <Kpi label="Constructors’ Champion" value={constructorChampion ? teamName(constructorChampion.entityId) : '—'} />
-        <Kpi label="Your Team" value={playerTeamPosition > 0 ? `P${playerTeamPosition} · ${playerStanding?.points ?? 0} pts` : '—'} />
-      </div>
-
-      <nav className="grid grid-cols-4 gap-1 rounded-lg border border-neutral-800 bg-neutral-950/70 p-1" aria-label="Season review sections">
-        {SEASON_REVIEW_TABS.map((item) => (
-          <button
-            key={item.id}
-            type="button"
-            onClick={() => selectTab(item.id)}
-            aria-current={tab === item.id ? 'page' : undefined}
-            className={`rounded px-3 py-2 text-xs font-semibold ${tab === item.id ? 'bg-amber-500 text-neutral-950' : 'text-neutral-400 hover:bg-neutral-900 hover:text-neutral-100'}`}
-          >
-            {item.label}
-          </button>
-        ))}
-      </nav>
+    <WorkspaceScreen className="era-feature-screen era-season-review-screen">
+      <WorkspaceHeader
+        eyebrow="Season complete"
+        title={`${state.seasonYear} ${state.series} Final Review`}
+        subtitle="Honours, final classifications, team outcome, and the route into next season"
+        actions={<Button variant="ghost" onClick={() => navigate('/')}>Main Menu</Button>}
+      />
+      <MetricStrip>
+        <WorkspaceMetric label="World champion" value={champion ? driverName(champion.entityId) : '—'} detail={champion ? `${champion.points} pts · ${champion.wins} wins` : undefined} />
+        <WorkspaceMetric label="Constructors' champion" value={constructorChampion ? teamName(constructorChampion.entityId) : '—'} detail={constructorChampion ? `${constructorChampion.points} pts · ${constructorChampion.wins} wins` : undefined} />
+        <WorkspaceMetric label="Your team" value={playerTeamPosition > 0 ? `P${playerTeamPosition}` : '—'} detail={`${playerStanding?.points ?? 0} championship points`} />
+        <WorkspaceMetric label="Season record" value={`${state.calendar.length} rounds`} detail={`${state.driverStandings.length} drivers classified`} />
+      </MetricStrip>
+      <WorkspaceTabs items={SEASON_REVIEW_TABS} active={tab} onChange={selectTab} ariaLabel="Season review sections" />
+      <WorkspaceBody className="space-y-3">
 
       {tab === 'honours' && (
         <div className="grid gap-3 lg:grid-cols-2">
@@ -160,7 +158,8 @@ export function SeasonReview() {
           onPage={setPage}
         />
       )}
-    </div>
+      </WorkspaceBody>
+    </WorkspaceScreen>
   );
 
   function ChampionIdentity({ teamId }: { teamId?: string }) {
@@ -174,8 +173,4 @@ export function SeasonReview() {
       </div>
     );
   }
-}
-
-function Kpi({ label, value }: { label: string; value: string }) {
-  return <div className="rounded-xl border border-neutral-800 bg-neutral-900/40 p-3"><div className="text-[10px] uppercase tracking-wide text-neutral-500">{label}</div><div className="mt-0.5 truncate text-lg font-bold text-neutral-100" title={value}>{value}</div></div>;
 }

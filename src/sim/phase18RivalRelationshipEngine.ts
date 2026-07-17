@@ -12,6 +12,13 @@ export const RIVAL_ACTION_COST: Record<RivalAction, number> = {
   FileProtest: 400_000,
 };
 
+const RIVAL_ACTION_HISTORY_MARKER: Record<RivalAction, string> = {
+  OpenDialogue: 'opened direct dialogue',
+  TechnicalExchange: 'limited technical and safety exchange',
+  ScoutPersonnel: 'monitoring of rival personnel',
+  FileProtest: 'formal protest',
+};
+
 function clamp(value: number, low = -100, high = 100): number {
   const clamped = Math.max(low, Math.min(high, Math.round(value)));
   return Object.is(clamped, -0) ? 0 : clamped;
@@ -70,7 +77,7 @@ export function addRivalRelationshipEvent(
   const id = rivalRelationshipId(teamAId, teamBId);
   const current = ensured.phase18!.rivalRelationships[id];
   if (!current) return ensured;
-  const historyEvent: RivalRelationshipEvent = { id: `${id}-${ensured.seasonYear}-${event.round ?? 0}-${current.history.length + 1}`, seasonYear: ensured.seasonYear, round: event.round, amount: event.amount, reason: event.reason, category: event.category };
+  const historyEvent: RivalRelationshipEvent = { id: `${id}-${ensured.seasonYear}-${event.round ?? 0}-${current.history.length + 1}`, seasonYear: ensured.seasonYear, round: event.round, action: event.action, amount: event.amount, reason: event.reason, category: event.category };
   const updated: RivalRelationship = {
     ...current,
     score: clamp(current.score + event.amount),
@@ -149,27 +156,38 @@ export function takeRivalAction(state: GameState, rivalTeamId: string, action: R
   if (!team || !rival || rival.id === team.id || team.budget < cost) return ensured;
   const relation = rivalRelationship(ensured, team.id, rival.id)!;
   const round = ensured.careerPhase?.currentRound ?? ensured.currentRaceIndex + 1;
-  if (action === 'FileProtest' && relation.history.some((entry) => entry.round === round && entry.reason.includes('formal protest'))) return ensured;
+  if (rivalActionUsedThisRound(ensured, rivalTeamId, action)) return ensured;
   let event: Parameters<typeof addRivalRelationshipEvent>[3];
   let headline: string;
   if (action === 'OpenDialogue') {
-    event = { round, amount: 5, alignmentDelta: 3, trustDelta: 4, suspicionDelta: -2, reason: 'Leadership opened direct dialogue to lower paddock tension.', category: 'Political' };
+    event = { round, action, amount: 5, alignmentDelta: 3, trustDelta: 4, suspicionDelta: -2, reason: 'Leadership opened direct dialogue to lower paddock tension.', category: 'Political' };
     headline = `${team.name} opens dialogue with ${rival.name}`;
   } else if (action === 'TechnicalExchange') {
-    event = { round, amount: 4, trustDelta: 6, suspicionDelta: -7, reason: 'A limited technical and safety exchange improved trust.', category: 'Technical', tags: ['CommercialAlly'] };
+    event = { round, action, amount: 4, trustDelta: 6, suspicionDelta: -7, reason: 'A limited technical and safety exchange improved trust.', category: 'Technical', tags: ['CommercialAlly'] };
     headline = `${team.name} and ${rival.name} agree limited technical exchange`;
   } else if (action === 'ScoutPersonnel') {
-    event = { round, amount: -4, trustDelta: -3, suspicionDelta: 4, reason: 'Targeted monitoring of rival personnel intensified market competition.', category: 'Staff', tags: ['StaffPoachingRival', 'DriverMarketRival'] };
+    event = { round, action, amount: -4, trustDelta: -3, suspicionDelta: 4, reason: 'Targeted monitoring of rival personnel intensified market competition.', category: 'Staff', tags: ['StaffPoachingRival', 'DriverMarketRival'] };
     headline = `${team.name} steps up monitoring of ${rival.name} personnel`;
   } else {
     const rng = createSeededRandom(deriveSeed(ensured.randomSeed, rival.id, round, relation.technicalSuspicion, 'rival-protest'));
     const success = rng.chance(Math.min(0.85, 0.25 + relation.technicalSuspicion / 140));
-    event = { round, amount: -12, alignmentDelta: -8, trustDelta: -10, suspicionDelta: success ? -8 : 5, respectDelta: -3, reason: `A formal protest against ${rival.name} was ${success ? 'upheld by scrutineers' : 'dismissed for insufficient evidence'}.`, category: 'Political', tags: ['HistoricRival'] };
+    event = { round, action, amount: -12, alignmentDelta: -8, trustDelta: -10, suspicionDelta: success ? -8 : 5, respectDelta: -3, reason: `A formal protest against ${rival.name} was ${success ? 'upheld by scrutineers' : 'dismissed for insufficient evidence'}.`, category: 'Political', tags: ['HistoricRival'] };
     headline = `${team.name} protest against ${rival.name} ${success ? 'is upheld' : 'is dismissed'}`;
   }
   ensured = addRivalRelationshipEvent(ensured, team.id, rival.id, event);
   const news: NewsItem = { id: `news-rival-${ensured.seasonYear}-${round}-${rival.id}-${action}`, headline, body: event.reason, timestamp: new Date().toISOString(), category: 'paddock', priority: action === 'FileProtest' ? 'high' : 'normal', careerPhase: ensured.careerPhase?.currentPhase, teamId: team.id };
   return { ...ensured, teams: cost ? ensured.teams.map((entry) => entry.id === team.id ? { ...entry, budget: entry.budget - cost } : entry) : ensured.teams, finance: cost ? [...(ensured.finance ?? []), makeTransaction(ensured.seasonYear, action === 'ScoutPersonnel' ? 'Scouting' : 'Operations', `${action}: ${rival.name}`, -cost, round)] : ensured.finance, news: [news, ...ensured.news].slice(0, 80) };
+}
+
+export function rivalActionUsedThisRound(state: GameState, rivalTeamId: string, action: RivalAction): boolean {
+  const relation = rivalRelationship(state, state.selectedTeamId, rivalTeamId);
+  if (!relation) return false;
+  const round = state.careerPhase?.currentRound ?? state.currentRaceIndex + 1;
+  return relation.history.some((entry) =>
+    entry.seasonYear === state.seasonYear
+    && entry.round === round
+    && (entry.action === action || (!entry.action && entry.reason.includes(RIVAL_ACTION_HISTORY_MARKER[action])))
+  );
 }
 
 export function recordStaffPoach(state: GameState, sourceTeamId: string, destinationTeamId: string, round?: number): GameState {

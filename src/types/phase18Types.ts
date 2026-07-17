@@ -350,6 +350,7 @@ export type RivalRelationshipEvent = {
   id: string;
   seasonYear: number;
   round?: number;
+  action?: RivalAction;
   amount: number;
   reason: string;
   category: 'Sporting' | 'Technical' | 'Political' | 'Commercial' | 'Staff' | 'Driver';
