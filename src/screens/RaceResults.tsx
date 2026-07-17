@@ -16,6 +16,14 @@ import {
   transitionPageCount,
   type RaceResultsTab,
 } from './raceTransitionViewModel';
+import {
+  MetricStrip,
+  WorkspaceBody,
+  WorkspaceHeader,
+  WorkspaceMetric,
+  WorkspaceScreen,
+  WorkspaceTabs,
+} from '../components/workspace/Workspace';
 
 export function RaceResults() {
   const { raceId } = useParams();
@@ -60,42 +68,29 @@ export function RaceResults() {
   }
 
   return (
-    <div className="era-feature-screen era-race-results-screen space-y-3">
-      <div className="flex items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-neutral-100">{race.gpName} — Result</h1>
-          <p className="text-sm text-neutral-400">{race.trackName} · Round {race.round}</p>
-        </div>
-        {state.seasonComplete ? (
+    <WorkspaceScreen className="era-feature-screen era-race-results-screen">
+      <WorkspaceHeader
+        eyebrow="Race archive"
+        title={`${race.gpName} Result`}
+        subtitle={`${race.trackName} · Round ${race.round} of ${state.calendar.length}`}
+        actions={state.seasonComplete ? (
           <Button variant="primary" onClick={() => navigate('/season-review')}>Season Review →</Button>
         ) : (
           <Button variant="primary" onClick={() => navigate('/hq')}>Back to HQ →</Button>
         )}
-      </div>
-
-      <div className="grid gap-2 sm:grid-cols-3">
-        <Kpi label="Winner" value={winner ? driverName(winner.driverId) : '—'} />
-        <Kpi label="Winning Team" value={winner ? teamName(winner.teamId) : '—'} />
-        <Kpi
-          label="Your Best Finish"
-          value={playerResults[0]?.position ? `P${playerResults[0].position} · ${driverName(playerResults[0].driverId)}` : 'No classified finish'}
+      />
+      <MetricStrip>
+        <WorkspaceMetric label="Winner" value={winner ? driverName(winner.driverId) : '—'} detail={winner ? teamName(winner.teamId) : undefined} />
+        <WorkspaceMetric label="Winning team" value={winner ? teamName(winner.teamId) : '—'} detail={winner ? `${winner.points} points scored` : undefined} />
+        <WorkspaceMetric
+          label="Your best finish"
+          value={playerResults[0]?.position ? `P${playerResults[0].position}` : 'No classified finish'}
+          detail={playerResults[0] ? driverName(playerResults[0].driverId) : 'No team result recorded'}
         />
-      </div>
-
-      <nav className="grid grid-cols-4 gap-1 rounded-lg border border-neutral-800 bg-neutral-950/70 p-1" aria-label="Race result sections">
-        {RACE_RESULTS_TABS.map((item) => (
-          <button
-            key={item.id}
-            type="button"
-            onClick={() => selectTab(item.id)}
-            aria-current={tab === item.id ? 'page' : undefined}
-            className={`rounded px-3 py-2 text-xs font-semibold ${tab === item.id ? 'bg-amber-500 text-neutral-950' : 'text-neutral-400 hover:bg-neutral-900 hover:text-neutral-100'}`}
-          >
-            {item.label}
-          </button>
-        ))}
-      </nav>
-
+        <WorkspaceMetric label="Race story" value={events.length} detail={events.length === 1 ? 'Recorded event' : 'Recorded events'} />
+      </MetricStrip>
+      <WorkspaceTabs items={RACE_RESULTS_TABS} active={tab} onChange={selectTab} ariaLabel="Race result sections" />
+      <WorkspaceBody className="space-y-3">
       {tab === 'summary' && (
         <div className="grid gap-3 lg:grid-cols-2">
           <Panel title="Your Team">
@@ -177,12 +172,9 @@ export function RaceResults() {
           onPage={setPage}
         />
       )}
-    </div>
+      </WorkspaceBody>
+    </WorkspaceScreen>
   );
-}
-
-function Kpi({ label, value }: { label: string; value: string }) {
-  return <div className="rounded-xl border border-neutral-800 bg-neutral-900/40 p-3"><div className="text-[10px] uppercase tracking-wide text-neutral-500">{label}</div><div className="mt-0.5 truncate text-lg font-bold text-neutral-100" title={value}>{value}</div></div>;
 }
 
 function SubTab({ active, onClick, children }: { active: boolean; onClick: () => void; children: React.ReactNode }) {

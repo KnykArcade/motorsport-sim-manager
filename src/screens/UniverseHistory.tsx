@@ -11,6 +11,14 @@ import type {
 } from '../types/universeTypes';
 import type { Series } from '../types/gameTypes';
 import { LegacyArchive } from '../components/history/LegacyArchive';
+import {
+  MetricStrip,
+  WorkspaceBody,
+  WorkspaceHeader,
+  WorkspaceMetric,
+  WorkspaceScreen,
+  WorkspaceTabs,
+} from '../components/workspace/Workspace';
 
 type Tab = 'records' | 'legacy' | 'drivers' | 'teams' | 'seasons' | 'world' | 'grid';
 
@@ -46,46 +54,49 @@ export function UniverseHistory() {
 
   if (seasons.length === 0 && worldSeasons.length === 0 && worldSeatCount === 0) {
     return (
-      <div className="space-y-6">
-        <Header />
-        <Panel>
-          <p className="text-sm text-neutral-400">
-            No seasons recorded yet. Finish a season to start building your universe's record book —
-            champions, race winners, poles and career stats are archived at each offseason.
-          </p>
-        </Panel>
-      </div>
+      <WorkspaceScreen className="era-feature-screen era-universe-history-screen">
+        <WorkspaceHeader
+          eyebrow="World archive"
+          title="Universe History"
+          subtitle={`${state.seasonYear} ${state.series} · Your alternate history record book`}
+        />
+        <WorkspaceBody className="space-y-3">
+          <Panel>
+            <p className="text-sm text-neutral-400">
+              No seasons recorded yet. Finish a season to start building your universe's record book —
+              champions, race winners, poles and career stats are archived at each offseason.
+            </p>
+          </Panel>
+        </WorkspaceBody>
+      </WorkspaceScreen>
     );
   }
 
+  const tabs = [
+    { id: 'records' as const, label: 'Records' },
+    { id: 'legacy' as const, label: 'Legacy' },
+    { id: 'drivers' as const, label: `Drivers · ${drivers.length}` },
+    { id: 'teams' as const, label: `Teams · ${teams.length}` },
+    { id: 'seasons' as const, label: `Seasons · ${seasons.length}` },
+    { id: 'world' as const, label: `Championships · ${worldSeasons.length}` },
+    { id: 'grid' as const, label: `World Grid · ${worldSeatCount}` },
+  ];
+
   return (
-    <div className="space-y-6">
-      <div className="flex items-start justify-between gap-4">
-        <Header />
-        <div className="flex flex-wrap gap-2">
-          <TabButton active={tab === 'records'} onClick={() => setTab('records')}>
-            Records
-          </TabButton>
-          <TabButton active={tab === 'legacy'} onClick={() => setTab('legacy')}>
-            Legacy
-          </TabButton>
-          <TabButton active={tab === 'drivers'} onClick={() => setTab('drivers')}>
-            Drivers
-          </TabButton>
-          <TabButton active={tab === 'teams'} onClick={() => setTab('teams')}>
-            Teams
-          </TabButton>
-          <TabButton active={tab === 'seasons'} onClick={() => setTab('seasons')}>
-            Seasons ({seasons.length})
-          </TabButton>
-          <TabButton active={tab === 'world'} onClick={() => setTab('world')}>
-            World Championships ({worldSeasons.length})
-          </TabButton>
-          <TabButton active={tab === 'grid'} onClick={() => setTab('grid')}>
-            World Grid ({worldSeatCount})
-          </TabButton>
-        </div>
-      </div>
+    <WorkspaceScreen className="era-feature-screen era-universe-history-screen">
+      <WorkspaceHeader
+        eyebrow="World archive"
+        title="Universe History"
+        subtitle={`${state.seasonYear} ${state.series} · Champions, records, movements, and legacy`}
+      />
+      <MetricStrip>
+        <WorkspaceMetric label="Archived seasons" value={seasons.length} detail="Player career seasons" />
+        <WorkspaceMetric label="Drivers tracked" value={drivers.length} detail="Career records in archive" />
+        <WorkspaceMetric label="Teams tracked" value={teams.length} detail="Team records in archive" />
+        <WorkspaceMetric label="World history" value={worldSeasons.length} detail={`${worldSeatCount} current grid seats`} />
+      </MetricStrip>
+      <WorkspaceTabs items={tabs} active={tab} onChange={setTab} ariaLabel="Universe history sections" />
+      <WorkspaceBody className="space-y-3">
 
       {tab === 'records' && (
         <div className="space-y-3">
@@ -166,7 +177,8 @@ export function UniverseHistory() {
         </div>
       )}
       {tab === 'grid' && <WorldGrid championships={worldChampionships} />}
-    </div>
+      </WorkspaceBody>
+    </WorkspaceScreen>
   );
 }
 
@@ -296,18 +308,6 @@ export function WorldSeasonCard({ season }: { season: UniverseChampionshipSeason
         </table>
       </div>
     </Panel>
-  );
-}
-
-function Header() {
-  return (
-    <div>
-      <h1 className="text-2xl font-bold text-neutral-100">Universe History</h1>
-      <p className="text-sm text-neutral-400">
-        Your alternate-history record book — champions, race winners, all-time records and career
-        stats accumulated across every season you've played.
-      </p>
-    </div>
   );
 }
 

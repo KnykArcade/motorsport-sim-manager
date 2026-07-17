@@ -213,7 +213,22 @@ export function PaddockWeek() {
         <WorkspaceMetric label="Required actions" value={pendingCount} detail={packageSelected ? `${unresolvedCount} decisions unresolved` : 'Race package still required'} />
       </MetricStrip>
 
-      <div className="flex flex-wrap gap-1 rounded-lg border border-neutral-800 bg-neutral-950/70 p-1" aria-label="Paddock Week sections">
+      {(!canAdvance || pendingCount > 0) && (
+        <div className="ui-decision-strip flex flex-wrap items-center justify-between gap-2 rounded-lg border px-3 py-2">
+          <div className="flex items-center gap-2 text-xs">
+            <span className="ui-decision-strip-pulse" aria-hidden="true" />
+            <span className="font-semibold text-neutral-100">Operations desk</span>
+            <span className="text-neutral-400">
+              {!packageSelected ? 'Select the race package before advancing.' : `${pendingCount} decision${pendingCount === 1 ? '' : 's'} remain before briefing.`}
+            </span>
+          </div>
+          <span className="text-[10px] font-semibold uppercase tracking-wide text-neutral-500">
+            {packageSelected ? `Race package selected · ${unresolvedCount} unresolved` : 'Package required'}
+          </span>
+        </div>
+      )}
+
+      <div className="ui-workspace-tabs flex flex-wrap" aria-label="Paddock Week sections">
         <PaddockTabButton active={tab === 'overview'} onClick={() => setTab('overview')} label="Overview" />
         <PaddockTabButton active={tab === 'people'} onClick={() => setTab('people')} label="People" count={characterRequests.length + characterDisputes.length + characterInitiatives.length + characterBreakingPoints.length + activeMandates.length + pendingPersonnelMoves.length} attention={[...unresolvedCharacterRequests, ...unresolvedCharacterDisputes, ...unresolvedCharacterInitiatives, ...unresolvedCharacterBreakingPoints].some((event) => event.isRequiredDecision)} />
         <PaddockTabButton active={tab === 'decisions'} onClick={() => setTab('decisions')} label="Operations" count={nonCharacterUnresolved.length + (packageSelected ? 0 : 1) + storyDecisions.length} attention={nonCharacterUnresolved.length > 0 || !packageSelected} />
@@ -242,7 +257,7 @@ export function PaddockWeek() {
       </div>}
 
       {tab === 'people' && <div className="space-y-4">
-        <div className="flex gap-1 rounded-lg border border-neutral-800 bg-neutral-950/70 p-1" aria-label="People management sections">
+        <div className="ui-workspace-tabs flex flex-wrap" aria-label="People management sections">
           <PaddockTabButton active={peopleSection === 'attention'} onClick={() => setPeopleSection('attention')} label="Needs Attention" count={unresolvedCharacterRequests.length + unresolvedCharacterDisputes.length + unresolvedCharacterInitiatives.length + unresolvedCharacterBreakingPoints.length} attention={[...unresolvedCharacterRequests, ...unresolvedCharacterDisputes, ...unresolvedCharacterInitiatives, ...unresolvedCharacterBreakingPoints].some((event) => event.isRequiredDecision)} />
           <PaddockTabButton active={peopleSection === 'support'} onClick={() => setPeopleSection('support')} label="Support & Mandates" count={activeMandates.length + unstableCharacters.length + atRiskIntentions.length + expiringDrivers.length + expiringStaff.length + pendingPersonnelMoves.length} />
           <PaddockTabButton active={peopleSection === 'resolved'} onClick={() => setPeopleSection('resolved')} label="Resolved This Week" count={resolvedCharacterRequests.length + resolvedCharacterDisputes.length + resolvedCharacterInitiatives.length + resolvedCharacterBreakingPoints.length} />
@@ -748,11 +763,11 @@ function PaddockTabButton({
     <button
       type="button"
       onClick={onClick}
-      className={`flex items-center gap-2 rounded px-3 py-2 text-xs font-semibold ${active ? 'bg-amber-500 text-neutral-950' : 'text-neutral-400 hover:bg-neutral-800 hover:text-neutral-100'}`}
+      className={`flex items-center gap-2 ${active ? 'is-active' : ''}`}
     >
       <span>{label}</span>
       {count != null && count > 0 && (
-        <span className={`rounded-full px-1.5 py-0.5 text-[9px] tabular-nums ${active ? 'bg-neutral-950/20 text-neutral-950' : attention ? 'bg-orange-500/20 text-orange-300' : 'bg-neutral-800 text-neutral-300'}`}>
+        <span className={`rounded-full px-1.5 py-0.5 text-[9px] tabular-nums ${attention && !active ? 'bg-orange-500/20 text-orange-300' : 'bg-neutral-800 text-neutral-300'}`}>
           {count}
         </span>
       )}
