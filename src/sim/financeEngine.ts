@@ -5,6 +5,7 @@ import type { Driver } from '../types/gameTypes';
 import type { FinanceCategory, FinanceTransaction } from '../types/financeTypes';
 
 export const MILLION = 1_000_000;
+export const PRIZE_MONEY_PER_POINT = 500_000;
 
 // Market/academy data stores costs in $M; convert to raw dollars.
 export function toMoney(millions: number): number {
