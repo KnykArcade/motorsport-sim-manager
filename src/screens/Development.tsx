@@ -48,16 +48,16 @@ const RISK_COLORS: Record<string, string> = {
 };
 
 const SIZE_COLORS: Record<string, string> = {
-  Small: 'text-blue-400',
+  Small: 'text-[var(--era-accent-strong)]',
   Medium: 'text-neutral-300',
-  Major: 'text-purple-400',
+  Major: 'text-[var(--era-accent)]',
   Experimental: 'text-red-400',
 };
 
 const OUTCOME_COLORS: Record<DevelopmentOutcome, string> = {
   GreatSuccess: 'text-green-400',
-  FullSuccess: 'text-blue-400',
-  PartialSuccess: 'text-yellow-400',
+  FullSuccess: 'text-[var(--era-accent-strong)]',
+  PartialSuccess: 'text-amber-300',
   MinorSuccess: 'text-orange-400',
   Failed: 'text-red-400',
   RareBackfire: 'text-red-500',
@@ -92,6 +92,11 @@ export function Development() {
   const catalogPageCount = developmentPageCount(developmentProjectCatalog.length, DEVELOPMENT_PAGE_SIZES.catalog);
   const safeCatalogPage = Math.min(catalogPage, catalogPageCount - 1);
   const visibleCatalogProjects = developmentPage(developmentProjectCatalog, safeCatalogPage, DEVELOPMENT_PAGE_SIZES.catalog);
+  const operationsMessage = usedSlots >= slots
+    ? 'All development capacity is committed. Review active projects or upgrade facilities before starting new work.'
+    : state.activeDevelopmentProjects.length === 0
+      ? 'No active project is running. Open the catalog to choose the next technical priority.'
+      : `${state.activeDevelopmentProjects.length} active project${state.activeDevelopmentProjects.length === 1 ? '' : 's'} in the technical pipeline.`;
 
   const effectSummary = (p: DevelopmentProject) => {
     const parts: string[] = [];
@@ -132,14 +137,26 @@ export function Development() {
         ariaLabel="Development sections"
       />
       <WorkspaceBody className="space-y-4">
+      <div className="ui-decision-strip flex flex-wrap items-center justify-between gap-2 rounded-lg border px-3 py-2.5">
+        <div className="flex min-w-0 items-center gap-2 text-xs">
+          <span className="ui-decision-strip-pulse" aria-hidden="true" />
+          <div className="min-w-0">
+            <div className="font-semibold text-neutral-100">Technical operations desk</div>
+            <div className="truncate text-neutral-400">{operationsMessage}</div>
+          </div>
+        </div>
+        <span className="shrink-0 text-[10px] font-semibold uppercase tracking-wide text-neutral-500">
+          {usedSlots}/{slots} slots committed
+        </span>
+      </div>
       {singleSeason && (
-        <div className="rounded-lg border border-blue-800 bg-blue-900/20 p-3 text-sm text-blue-300">
+        <div className="rounded-lg border border-[var(--era-border-strong)] bg-[var(--era-accent-soft)] p-3 text-sm text-[var(--era-accent-strong)]">
           Single Season Mode only allows development that affects the selected historical season. Next-year development is disabled.
         </div>
       )}
 
       {usedSlots >= slots && (
-        <div className="rounded-lg border border-orange-800 bg-orange-900/20 p-3 text-sm text-orange-300">
+        <div className="rounded-lg border border-orange-500/30 bg-orange-500/5 p-3 text-sm text-orange-300">
           All development slots are in use. Upgrade facilities to increase slots.
         </div>
       )}
