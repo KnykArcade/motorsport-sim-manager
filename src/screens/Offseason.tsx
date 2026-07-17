@@ -4,6 +4,14 @@ import { useGame } from '../game/GameContext';
 import { Panel } from '../components/Panel';
 import { Button } from '../components/Button';
 import { DriverDossierButton } from '../components/driverCards/DriverDossier';
+import {
+  MetricStrip,
+  WorkspaceBody,
+  WorkspaceHeader,
+  WorkspaceMetric,
+  WorkspaceScreen,
+  WorkspaceTabs,
+} from '../components/workspace/Workspace';
 import { activeDriversForTeam } from '../game/careerState';
 import { thirdDriverAmbitions } from '../sim/contractEngine';
 import { marketRolloverChanges } from '../sim/careerMarketEngine';
@@ -14,10 +22,13 @@ import { loadSeasonBundle, preloadMarketBundle } from '../data';
 import type { FirstOptionDecision } from '../types/marketTypes';
 import type { MasterDriverEntry } from '../types/registryTypes';
 
+type OffseasonTab = 'overview' | 'lineup' | 'academy' | 'market' | 'advance';
+
 export function Offseason() {
   const { state, dispatch } = useGame();
   const navigate = useNavigate();
   const [advancing, setAdvancing] = useState(false);
+  const [tab, setTab] = useState<OffseasonTab>('overview');
   if (!state) return null;
 
   const nextYear = state.seasonYear + 1;
@@ -37,6 +48,19 @@ export function Offseason() {
   const promotionEligible = academy.filter((a) => isPromotionEligible(a, nextYear));
   const decisionFor = (academyId: string) =>
     academyDecisions.find((d) => d.academyId === academyId);
+  const academyDecisionCount = promotionEligible.filter((driver) => decisionFor(driver.id)).length;
+  const unresolvedAcademyRights = promotionEligible.length - academyDecisionCount;
+  const atRiskReserves = ambitions.filter((driver) => driver.wantsSeat && !reservePromotionFor(driver.driverId));
+  const marketMovement = rollover.newAdults.length + rollover.newYouth.length + rollover.promotedYouth.length + rollover.retirements.length + crossover.length;
+  const canAdvance = state.seasonComplete && !advancing;
+  const advanceBlockedReason = !state.seasonComplete ? 'Finish the current season first' : advancing ? 'Loading next season data' : undefined;
+  const tabs: ReadonlyArray<{ id: OffseasonTab; label: string }> = [
+    { id: 'overview', label: 'Transition Overview' },
+    { id: 'lineup', label: `Line-up (${signings.length})` },
+    { id: 'academy', label: `Academy (${academy.length})` },
+    { id: 'market', label: `Market Outlook (${marketMovement})` },
+    { id: 'advance', label: 'Advance Season' },
+  ];
 
   const advance = () => {
     setAdvancing(true);
@@ -55,17 +79,47 @@ export function Offseason() {
   };
 
   return (
-    <div className="mx-auto max-w-3xl space-y-6 p-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-neutral-100">Offseason</h1>
-          <p className="text-sm text-neutral-400">
-            Prepare for {nextYear}. Confirm your driver line-up, then advance the season.
-          </p>
-        </div>
-        <Button variant="ghost" onClick={() => navigate('/')}>Main Menu</Button>
-      </div>
+    <WorkspaceScreen className="era-feature-screen era-offseason-screen">
+      <WorkspaceHeader
+        eyebrow="Season transition"
+        title={`${state.seasonYear} → ${nextYear} Offseason`}
+        subtitle="Set the next-year line-up, resolve academy rights, review market movement, and roll the universe forward"
+        actions={<>
+          <Button variant="ghost" onClick={() => navigate('/')}>Main Menu</Button>
+          <Button variant="primary" onClick={advance} disabled={!canAdvance} title={advanceBlockedReason}>
+            {advancing ? 'Loading…' : `Advance to ${nextYear} →`}
+          </Button>
+        </>}
+      />
+      <MetricStrip>
+        <WorkspaceMetric label="Next season" value={`${nextYear} ${state.series}`} detail={`${state.calendar.length} current-year calendar rounds`} />
+        <WorkspaceMetric label="Queued seat changes" value={signings.length} detail={signings.length ? 'Applied at season rollover' : 'Current race line-up retained'} />
+        <WorkspaceMetric label="Academy rights" value={`${academyDecisionCount}/${promotionEligible.length}`} detail={unresolvedAcademyRights ? `${unresolvedAcademyRights} optional choice${unresolvedAcademyRights === 1 ? '' : 's'} unresolved` : 'All eligible drivers resolved'} />
+        <WorkspaceMetric label="Market movement" value={marketMovement} detail={`${atRiskReserves.length} reserve driver${atRiskReserves.length === 1 ? '' : 's'} at risk`} />
+      </MetricStrip>
+      <WorkspaceTabs items={tabs} active={tab} onChange={setTab} ariaLabel="Offseason management sections" />
+      <WorkspaceBody className="space-y-4">
 
+      {tab === 'overview' && <>
+        <Panel title="Transition Readiness">
+          <div className="grid gap-3 md:grid-cols-2">
+            <ReadinessItem label="Season status" value={state.seasonComplete ? 'Complete' : 'In progress'} detail={state.seasonComplete ? `The ${nextYear} rollover is unlocked.` : 'Finish the current championship before advancing.'} tone={state.seasonComplete ? 'good' : 'warning'} />
+            <ReadinessItem label="Race line-up" value={signings.length ? `${signings.length} change${signings.length === 1 ? '' : 's'} queued` : 'No changes queued'} detail={signings.length ? 'Queued signings replace their assigned seat drivers at rollover.' : 'The current race line-up will carry into next season.'} />
+            <ReadinessItem label="Academy first options" value={unresolvedAcademyRights ? `${unresolvedAcademyRights} unresolved` : 'No unresolved choices'} detail={unresolvedAcademyRights ? 'These choices are optional; undecided drivers remain under academy rights and return next year.' : 'Every promotion-eligible academy driver has a recorded plan.'} tone={unresolvedAcademyRights ? 'warning' : 'good'} />
+            <ReadinessItem label="Reserve ambitions" value={atRiskReserves.length ? `${atRiskReserves.length} at risk` : 'Stable'} detail={atRiskReserves.length ? 'Unpromoted out-performers may leave for a rival during rollover.' : 'No reserve driver is currently threatening to leave.'} tone={atRiskReserves.length ? 'danger' : 'good'} />
+          </div>
+        </Panel>
+        <Panel title="What Advances with the Universe">
+          <div className="grid gap-2 text-xs text-neutral-400 sm:grid-cols-2 xl:grid-cols-4">
+            <div className="rounded border border-neutral-800 bg-neutral-900/40 p-3"><b className="block text-neutral-200">People</b>Queued signings, academy decisions, reserve ambitions, contracts, development, aging, and retirements settle.</div>
+            <div className="rounded border border-neutral-800 bg-neutral-900/40 p-3"><b className="block text-neutral-200">Technical</b>Car carryover, active research, supplier agreements, facility progress, and regulation changes move into {nextYear}.</div>
+            <div className="rounded border border-neutral-800 bg-neutral-900/40 p-3"><b className="block text-neutral-200">Commercial</b>Sponsor objectives, owner review, annual commitments, and next-season finances are processed by the rollover engine.</div>
+            <div className="rounded border border-neutral-800 bg-neutral-900/40 p-3"><b className="block text-neutral-200">Rival teams</b>AI teams resolve their own seats, staff, development, engine, facilities, and strategic offseason choices.</div>
+          </div>
+        </Panel>
+      </>}
+
+      {tab === 'lineup' && <>
       <Panel title={`Driver Line-up for ${nextYear}`}>
         {signings.length === 0 ? (
           <p className="text-sm text-neutral-400">
@@ -100,11 +154,13 @@ export function Offseason() {
         )}
       </Panel>
 
+      </>}
+      {tab === 'academy' && <>
       <Panel title={`Academy (${academy.length})`}>
         {academy.length === 0 ? (
           <p className="text-sm text-neutral-400">
             No academy drivers. Sign youth prospects in the Driver Market — they develop each
-            offseason toward F1-readiness.
+            offseason toward senior-series readiness.
           </p>
         ) : (
           <ul className="space-y-1 text-sm">
@@ -125,7 +181,7 @@ export function Offseason() {
                     )}
                   </span>
                   <span className="text-xs text-neutral-500">
-                    <span className="mr-2">{a.yearsUntilF1Ready <= 0 ? 'F1-ready' : `~${a.yearsUntilF1Ready}y to F1`}</span>
+                    <span className="mr-2">{a.yearsUntilF1Ready <= 0 ? 'race-seat ready' : `~${a.yearsUntilF1Ready}y to senior seat`}</span>
                     <DriverDossierButton
                       state={state}
                       subject={{ type: 'academy', driver: a }}
@@ -170,7 +226,7 @@ export function Offseason() {
                       <span className="text-xs font-normal text-neutral-500">
                         (age {academyMemberAge(a, nextYear)} · {a.overall.toFixed(1)} ovr →{' '}
                         {a.potential.toFixed(1)} pot ·{' '}
-                        {a.yearsUntilF1Ready <= 0 ? 'F1-ready' : `~${a.yearsUntilF1Ready}y to F1`})
+                        {a.yearsUntilF1Ready <= 0 ? 'race-seat ready' : `~${a.yearsUntilF1Ready}y to senior seat`})
                       </span>
                     </span>
                     <DriverDossierButton
@@ -230,7 +286,9 @@ export function Offseason() {
         </Panel>
       )}
 
-      {ambitions.length > 0 && (
+      </>}
+
+      {tab === 'lineup' && ambitions.length > 0 && (
         <Panel title="3rd Driver Contracts">
           <p className="mb-3 text-sm text-neutral-400">
             Your reserve drivers want to talk about their future. Promote one into a race seat for{' '}
@@ -303,7 +361,7 @@ export function Offseason() {
         </Panel>
       )}
 
-      <Panel title={`Market Outlook for ${nextYear}`}>
+      {tab === 'market' && <Panel title={`Market Outlook for ${nextYear}`}>
         <p className="mb-3 text-sm text-neutral-400">
           How the living driver market changes when you advance — drawn from the Master Driver
           Registry. Your current line-up and contracts are unaffected.
@@ -338,15 +396,21 @@ export function Offseason() {
             }))}
           />
         </div>
-      </Panel>
+      </Panel>}
 
-      <Panel title="Advance the Season">
+      {tab === 'advance' && <Panel title="Advance the Season">
         <p className="text-sm text-neutral-300">
           Advancing rolls the team into {nextYear}: queued signings take their seats, academy drivers
-          develop, your car's progress carries over, and a fresh championship begins.
+          develop, commercial and owner reviews settle, facilities and regulations resolve, your car's
+          progress carries over, rival teams make their moves, and a fresh championship begins.
         </p>
+        <div className="mt-3 grid gap-2 sm:grid-cols-3">
+          <ReadinessItem label="Season gate" value={state.seasonComplete ? 'Ready' : 'Blocked'} detail={state.seasonComplete ? 'The completed season can roll forward.' : 'The current season must be completed first.'} tone={state.seasonComplete ? 'good' : 'danger'} />
+          <ReadinessItem label="Optional choices" value={unresolvedAcademyRights + atRiskReserves.length} detail="Unresolved academy rights do not block rollover; at-risk reserves may leave." tone={unresolvedAcademyRights + atRiskReserves.length ? 'warning' : 'good'} />
+          <ReadinessItem label="Queued changes" value={signings.length} detail="Seat changes are applied only when the season advances." />
+        </div>
         <div className="mt-4 flex flex-wrap gap-3">
-          <Button variant="primary" onClick={advance} disabled={!state.seasonComplete || advancing}>
+          <Button variant="primary" onClick={advance} disabled={!canAdvance} title={advanceBlockedReason}>
             {advancing ? 'Loading…' : `Advance to ${nextYear} Season →`}
           </Button>
           {!state.seasonComplete && (
@@ -355,16 +419,15 @@ export function Offseason() {
             </span>
           )}
         </div>
-      </Panel>
-
-      <Panel title="Coming in Later Phases">
-        <p className="text-sm text-neutral-400">
-          Budget allocation, regulation changes, staff decisions, new car design and AI driver-market
-          activity arrive with the management systems (Phase D) and multi-year data (Phase E).
-        </p>
-      </Panel>
-    </div>
+      </Panel>}
+      </WorkspaceBody>
+    </WorkspaceScreen>
   );
+}
+
+function ReadinessItem({ label, value, detail, tone = 'neutral' }: { label: string; value: string | number; detail: string; tone?: 'neutral' | 'good' | 'warning' | 'danger' }) {
+  const color = tone === 'good' ? 'text-emerald-300' : tone === 'warning' ? 'text-amber-300' : tone === 'danger' ? 'text-red-300' : 'text-neutral-100';
+  return <div className="rounded border border-neutral-800 bg-neutral-900/40 p-3"><div className="text-[10px] font-semibold uppercase tracking-wide text-neutral-500">{label}</div><div className={`mt-1 text-sm font-bold ${color}`}>{value}</div><p className="mt-1 text-xs text-neutral-500">{detail}</p></div>;
 }
 
 // Short label for a queued first-option decision.
