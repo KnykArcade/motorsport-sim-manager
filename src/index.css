@@ -139,6 +139,190 @@ body {
   color: var(--era-heading);
 }
 
+/* FM-style management workspace foundation. Era themes continue to own color
+   and atmosphere; these rules keep hierarchy and interaction locations stable. */
+.ui-sidebar {
+  box-shadow: inset -1px 0 0 var(--era-inner-line), 10px 0 30px rgba(0, 0, 0, 0.18);
+}
+
+.ui-sidebar-navigation {
+  overscroll-behavior: contain;
+}
+
+.ui-sidebar-group + .ui-sidebar-group {
+  margin-top: 0.7rem;
+  border-top: 1px solid var(--era-border);
+  padding-top: 0.55rem;
+}
+
+.ui-sidebar-group > h2 {
+  margin: 0 0 0.25rem;
+  padding: 0 0.65rem;
+  color: var(--era-text-muted);
+  font-size: 0.58rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.ui-topbar {
+  box-shadow: 0 1px 0 var(--era-inner-line), 0 8px 24px rgba(0, 0, 0, 0.14);
+}
+
+.ui-history-button {
+  display: inline-flex;
+  height: 1.8rem;
+  width: 1.8rem;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--era-border);
+  border-radius: var(--era-button-radius);
+  color: var(--era-text-muted);
+  font-size: 1.25rem;
+  line-height: 1;
+}
+
+.ui-history-button:hover {
+  border-color: var(--era-border-strong);
+  background: var(--era-accent-soft);
+  color: var(--era-heading);
+}
+
+.ui-continue-button {
+  display: flex;
+  min-height: 2.35rem;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid color-mix(in srgb, var(--era-accent) 76%, white 8%);
+  border-radius: var(--era-button-radius);
+  background: linear-gradient(180deg, var(--era-accent-strong), var(--era-accent));
+  color: var(--era-accent-contrast);
+  font-size: 0.72rem;
+  font-weight: 900;
+  line-height: 1.1;
+  text-transform: uppercase;
+}
+
+.ui-continue-button:hover {
+  filter: brightness(1.08);
+}
+
+.ui-main-content {
+  overscroll-behavior: contain;
+}
+
+.ui-workspace-screen {
+  max-width: 100%;
+}
+
+.ui-workspace-header {
+  min-height: 2.8rem;
+}
+
+.ui-workspace-eyebrow {
+  color: var(--era-accent-strong);
+  font-size: 0.58rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.ui-workspace-tabs {
+  min-height: 2.25rem;
+  border: 1px solid var(--era-border);
+  border-radius: var(--era-radius);
+  background: var(--era-panel-bg-strong);
+  padding: 0 0.35rem;
+  scrollbar-width: none;
+}
+
+.ui-workspace-tabs::-webkit-scrollbar {
+  display: none;
+}
+
+.ui-workspace-tabs button {
+  align-self: stretch;
+  border-bottom: 2px solid transparent;
+  padding: 0.45rem 0.9rem 0.35rem;
+  color: var(--era-text-muted);
+  font-size: 0.68rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.ui-workspace-tabs button:hover {
+  color: var(--era-heading);
+}
+
+.ui-workspace-tabs button.is-active {
+  border-bottom-color: var(--era-accent);
+  color: var(--era-accent-strong);
+}
+
+.ui-metric-strip {
+  overflow: hidden;
+  border: 1px solid var(--era-border);
+  border-radius: var(--era-radius);
+  background: var(--era-panel-bg);
+}
+
+.ui-workspace-metric {
+  padding: 0.55rem 0.8rem;
+}
+
+.ui-workspace-metric + .ui-workspace-metric {
+  border-left: 1px solid var(--era-border);
+}
+
+.ui-workspace-metric-label {
+  color: var(--era-text-muted);
+  font-size: 0.56rem;
+  font-weight: 800;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+}
+
+.ui-workspace-metric-value {
+  margin-top: 0.1rem;
+  color: var(--era-heading);
+  font-size: 1rem;
+  font-weight: 900;
+}
+
+.ui-workspace-metric-detail {
+  margin-top: 0.05rem;
+  color: var(--era-text-muted);
+  font-size: 0.6rem;
+}
+
+.ui-workspace-body {
+  overscroll-behavior: contain;
+  padding-right: 0.15rem;
+}
+
+@media (min-width: 1024px) and (min-height: 720px) {
+  .ui-main-content:has(.ui-workspace-screen) {
+    overflow: hidden;
+  }
+
+  .ui-workspace-screen {
+    height: 100%;
+    min-height: 0;
+  }
+}
+
+@media (max-width: 767px) {
+  .ui-workspace-metric:nth-child(3) {
+    border-left: 0;
+    border-top: 1px solid var(--era-border);
+  }
+
+  .ui-workspace-metric:nth-child(4) {
+    border-top: 1px solid var(--era-border);
+  }
+}
+
 .era-panel {
   border-color: var(--era-border) !important;
   border-radius: var(--era-radius) !important;

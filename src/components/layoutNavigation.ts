@@ -49,3 +49,10 @@ export function navigationGroupForRoute(pathname: string): NavigationGroupId {
 export function navigationItemsForGroup(group: NavigationGroupId, hiddenRoutes: Set<string>) {
   return NAVIGATION_ITEMS.filter((item) => item.group === group && !hiddenRoutes.has(item.to));
 }
+
+export function visibleNavigationGroups(hiddenRoutes: Set<string>) {
+  return NAVIGATION_GROUPS.map((group) => ({
+    ...group,
+    items: navigationItemsForGroup(group.id, hiddenRoutes),
+  })).filter((group) => group.items.length > 0);
+}

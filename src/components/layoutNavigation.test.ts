@@ -4,6 +4,7 @@ import {
   NAVIGATION_ITEMS,
   navigationGroupForRoute,
   navigationItemsForGroup,
+  visibleNavigationGroups,
 } from './layoutNavigation';
 
 describe('compact layout navigation', () => {
@@ -26,5 +27,17 @@ describe('compact layout navigation', () => {
     const visibleTeam = navigationItemsForGroup('team', new Set(['/engine', '/scouting']));
     expect(visibleTeam.some((item) => item.to === '/engine')).toBe(false);
     expect(visibleTeam.some((item) => item.to === '/drivers')).toBe(true);
+  });
+
+  it('exposes every allowed destination in the persistent grouped navigation', () => {
+    const hidden = new Set(['/engine', '/scouting']);
+    const groups = visibleNavigationGroups(hidden);
+    const visibleRoutes = groups.flatMap((group) => group.items.map((item) => item.to));
+
+    expect(groups.map((group) => group.id)).toEqual(['race', 'team', 'world']);
+    expect(visibleRoutes).not.toContain('/engine');
+    expect(visibleRoutes).not.toContain('/scouting');
+    expect(visibleRoutes).toContain('/relationships');
+    expect(visibleRoutes.length).toBe(NAVIGATION_ITEMS.length - hidden.size);
   });
 });
