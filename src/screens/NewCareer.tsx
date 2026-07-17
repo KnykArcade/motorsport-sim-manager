@@ -144,11 +144,25 @@ export function NewCareer() {
   };
 
   return (
-    <div className="min-h-screen bg-[#0a0c10] px-6 py-10">
-      <div className="mx-auto max-w-5xl">
-        <button onClick={() => navigate('/')} className="mb-6 text-sm text-neutral-500 hover:text-neutral-300">
+    <div className="ui-new-career min-h-screen px-4 py-6 sm:px-6 sm:py-10">
+      <div className="mx-auto max-w-6xl">
+        <button onClick={() => navigate('/')} className="mb-6 text-xs font-semibold uppercase tracking-wide text-neutral-500 hover:text-neutral-300">
           ← Main Menu
         </button>
+
+        <div className="ui-new-career-header mb-6 rounded-lg border px-4 py-4 sm:px-5">
+          <div className="text-[10px] font-black uppercase tracking-[0.18em] text-amber-400">New career setup</div>
+          <div className="mt-1 flex flex-wrap items-end justify-between gap-3">
+            <div>
+              <h1 className="text-2xl font-black tracking-tight text-neutral-100">Build your paddock</h1>
+              <p className="mt-1 text-xs text-neutral-400">Choose the universe, organisation, and principal you want to lead.</p>
+            </div>
+            <div className="text-right text-xs text-neutral-500">
+              <div className="font-semibold text-neutral-300">{year} {series}</div>
+              <div>{mode === 'SingleSeason' ? 'Single season' : mode === 'Career' ? 'Career mode' : 'Sandbox mode'}</div>
+            </div>
+          </div>
+        </div>
 
         <Steps step={step} />
 
@@ -396,7 +410,8 @@ export function NewCareer() {
                 ← Back
               </Button>
               <Button variant="primary" disabled={!selectedTeamId} onClick={() => setStep('principal')}>
-                Create Principal`n              </Button>
+                Create Principal
+              </Button>
             </div>
           </div>
         )}
@@ -431,11 +446,11 @@ function Steps({ step }: { step: Step }) {
     principal: 'Principal',
   };
   return (
-    <div className="mb-8 flex items-center gap-2 text-sm">
+    <div className="ui-stepper mb-8 flex items-center gap-2 overflow-x-auto rounded-lg border px-3 py-2 text-xs">
       {order.map((s, i) => (
         <div key={s} className="flex items-center gap-2">
           <span
-            className={`flex h-6 w-6 items-center justify-center rounded-full text-xs font-bold ${
+            className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-xs font-bold ${
               step === s ? 'bg-amber-500 text-neutral-950' : 'bg-neutral-800 text-neutral-400'
             }`}
           >
@@ -465,8 +480,8 @@ function ModeCard({
   return (
     <button
       onClick={onClick}
-      className={`rounded-xl border p-5 text-left transition-colors ${
-        selected ? 'border-amber-500 bg-amber-500/10' : 'border-neutral-800 bg-neutral-900/40 hover:border-neutral-600'
+      className={`ui-mode-card rounded-xl border p-5 text-left transition-colors ${
+        selected ? 'is-selected' : ''
       }`}
     >
       <h3 className="text-lg font-bold text-neutral-100">{title}</h3>
@@ -482,7 +497,6 @@ function ModeCard({
     </button>
   );
 }
-
 
 
 

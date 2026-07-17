@@ -19,6 +19,91 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
+.ui-menu-shell {
+  background:
+    radial-gradient(circle at 14% 8%, rgba(245, 158, 11, 0.1), transparent 28%),
+    radial-gradient(circle at 88% 82%, rgba(56, 189, 248, 0.08), transparent 24%),
+    linear-gradient(135deg, #07090d, #0b1018 54%, #080a0f);
+}
+
+.ui-menu-brand,
+.ui-menu-actions {
+  border-color: rgba(148, 163, 184, 0.2);
+}
+
+.ui-menu-kicker,
+.ui-menu-panel-label {
+  color: #fbbf24;
+  font-size: 0.65rem;
+  font-weight: 900;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+.ui-menu-chip {
+  border: 1px solid rgba(148, 163, 184, 0.24);
+  border-radius: 999px;
+  background: rgba(15, 23, 42, 0.62);
+  padding: 0.35rem 0.55rem;
+}
+
+.ui-menu-actions {
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  border-radius: 10px;
+  background: rgba(15, 23, 42, 0.62);
+  padding: 1.1rem;
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.28), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+.ui-menu-button {
+  border-radius: 6px;
+  font-weight: 800;
+}
+
+.ui-menu-button-primary {
+  background: linear-gradient(180deg, #fbbf24, #f59e0b);
+  color: #111827;
+}
+
+.ui-menu-button-primary:hover {
+  filter: brightness(1.08);
+}
+
+.ui-menu-button-secondary {
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  background: rgba(15, 23, 42, 0.64);
+  color: #e5e7eb;
+}
+
+.ui-menu-button-secondary:hover {
+  border-color: rgba(251, 191, 36, 0.62);
+  background: rgba(30, 41, 59, 0.82);
+}
+
+.ui-new-career {
+  background:
+    radial-gradient(circle at 85% 0%, rgba(56, 189, 248, 0.08), transparent 28%),
+    linear-gradient(180deg, #080b10, #0a0c10);
+}
+
+.ui-new-career-header,
+.ui-stepper {
+  border-color: rgba(148, 163, 184, 0.22);
+  background: rgba(15, 23, 42, 0.54);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+
+.ui-mode-card {
+  border-color: var(--era-border);
+  background: var(--era-panel-bg);
+}
+
+.ui-mode-card:hover,
+.ui-mode-card.is-selected {
+  border-color: var(--era-accent);
+  background: var(--era-accent-soft);
+}
+
 /* Thin dashboard scrollbars */
 * {
   scrollbar-width: thin;
@@ -310,6 +395,51 @@ body {
   padding-right: 0.15rem;
 }
 
+.ui-decision-strip {
+  border-color: color-mix(in srgb, var(--era-accent) 38%, var(--era-border));
+  background: linear-gradient(90deg, var(--era-accent-soft), var(--era-panel-bg));
+}
+
+.ui-decision-strip-pulse {
+  width: 0.55rem;
+  height: 0.55rem;
+  flex: 0 0 auto;
+  border-radius: 999px;
+  background: var(--era-accent);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--era-accent) 16%, transparent), 0 0 14px var(--era-accent);
+}
+
+.ui-inline-action {
+  border-color: var(--era-border);
+  background: var(--era-panel-bg-strong);
+  color: var(--era-text);
+}
+
+.ui-inline-action:hover {
+  border-color: var(--era-accent);
+  color: var(--era-accent-strong);
+}
+
+.ui-news-filter-panel {
+  border-color: var(--era-border);
+  background: var(--era-panel-bg);
+}
+
+.ui-news-search {
+  border-color: var(--era-border);
+  background: var(--era-panel-bg-strong);
+}
+
+.ui-news-search:focus {
+  border-color: var(--era-accent);
+  outline: 1px solid color-mix(in srgb, var(--era-accent) 36%, transparent);
+}
+
+.ui-news-card {
+  background: linear-gradient(90deg, var(--era-panel-bg), color-mix(in srgb, var(--era-panel-bg) 70%, transparent));
+  box-shadow: inset 0 1px 0 var(--era-inner-line);
+}
+
 @media (min-width: 1024px) and (min-height: 720px) {
   .ui-main-content:has(.ui-workspace-screen) {
     overflow: hidden;
@@ -346,6 +476,15 @@ body {
 
 .era-panel-header h2 {
   letter-spacing: 0.055em;
+}
+
+.era-panel-marker {
+  width: 0.28rem;
+  height: 0.8rem;
+  flex: 0 0 auto;
+  border-radius: 999px;
+  background: var(--era-accent);
+  box-shadow: 0 0 12px color-mix(in srgb, var(--era-accent) 50%, transparent);
 }
 
 .era-button {
