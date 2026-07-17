@@ -1,4 +1,4 @@
-import { useMemo, useState, type ReactNode } from 'react';
+import { useEffect, useMemo, useState, type ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useGame } from '../game/GameContext';
 import { activeDriversForTeam, carForTeam, currentRace } from '../game/careerState';
@@ -42,38 +42,35 @@ import { Panel } from '../components/Panel';
 import { Button } from '../components/Button';
 import { TrackDemandBars } from '../components/TrackDemandBars';
 import { SetupWorkshop, type WorkshopPractice } from '../components/SetupWorkshop';
-import { F11990sRaceWeekendHub } from '../components/raceWeekend/eraThemes/F11990sRaceWeekendHub';
-import { getRaceWeekendEraTheme, shouldUseF11990sRaceWeekendHub } from '../components/raceWeekend/eraThemes/getRaceWeekendEraTheme';
+import {
+  MetricStrip,
+  WorkspaceBody,
+  WorkspaceHeader,
+  WorkspaceMetric,
+  WorkspaceScreen,
+  WorkspaceTabs,
+} from '../components/workspace/Workspace';
+import {
+  RACE_WEEKEND_PHASES,
+  canOpenRaceWeekendPhase,
+  raceWeekendPhaseIndex,
+  visibleRaceWeekendPhases,
+  type RaceWeekendPhase,
+} from './raceTransitionViewModel';
 import type { Driver, Track, StandingsEntry } from '../types/gameTypes';
 import type { WeatherState } from '../types/liveTypes';
 import type { CarSetup } from '../types/setupTypes';
 import type { QualifyingDecision, QualifyingFormat, RaceDecision } from '../types/simTypes';
 
-type Phase =
-  | 'hub'
-  | 'briefing'
-  | 'practice'
-  | 'setup'
-  | 'quali-run'
-  | 'quali-review'
-  | 'race-strategy'
-  | 'race-instructions';
+type Phase = RaceWeekendPhase;
 
-const PHASE_ORDER: { id: Phase; label: string }[] = [
-  { id: 'hub', label: 'Weekend Hub' },
-  { id: 'briefing', label: 'Pre-Race Brief' },
-  { id: 'practice', label: 'Practice' },
-  { id: 'setup', label: 'Car Setup' },
-  { id: 'quali-run', label: 'Qualifying Run Strategy' },
-  { id: 'quali-review', label: 'Qualifying Review' },
-  { id: 'race-strategy', label: 'Pre-Race Strategy' },
-  { id: 'race-instructions', label: 'Driver Instructions' },
-];
+const PHASE_ORDER = RACE_WEEKEND_PHASES;
 
 export function RaceWeekend() {
   const { state, dispatch, settings } = useGame();
   const navigate = useNavigate();
   const [phase, setPhase] = useState<Phase>('hub');
+  const [furthestPhase, setFurthestPhase] = useState<Phase>('hub');
 
   const race = state ? currentRace(state) : undefined;
   const track = race ? getTrackById(race.trackId) : undefined;
@@ -85,6 +82,11 @@ export function RaceWeekend() {
     () => (state ? activeDriversForTeam(state, state.selectedTeamId) : []),
     [state],
   );
+  const qualifyingResults = state && race ? state.qualifyingResults[race.id] : undefined;
+
+  useEffect(() => {
+    if (qualifyingResults) setFurthestPhase('quali-review');
+  }, [qualifyingResults]);
 
   const autoSetups = useMemo(
     () => (track ? autoSetupsForTrack(track) : undefined),
@@ -162,14 +164,20 @@ export function RaceWeekend() {
   if (!state || !race || !track || !autoSetups) return null;
 
   const isMinPackage = state.raceWeekendPackage?.packageType === 'MandatoryMinimum';
-  const eraTheme = getRaceWeekendEraTheme(state.series, state.seasonYear);
-  const usesF1WeekendHub = shouldUseF11990sRaceWeekendHub(state.series, state.seasonYear);
-
-  const qualifyingResults = state.qualifyingResults[race.id];
+  const visiblePhases = visibleRaceWeekendPhases(isMinPackage);
+  const moveTo = (next: Phase) => {
+    if (raceWeekendPhaseIndex(next, isMinPackage) < 0) return;
+    setPhase(next);
+    setFurthestPhase((current) => (
+      raceWeekendPhaseIndex(next, isMinPackage) > raceWeekendPhaseIndex(current, isMinPackage)
+        ? next
+        : current
+    ));
+  };
 
   const runQualifying = () => {
     dispatch({ type: 'RUN_QUALIFYING', decisions: playerDrivers.map((d) => qualiFor(d.id)) });
-    setPhase('quali-review');
+    moveTo('quali-review');
   };
 
   const startLiveRace = () => {
@@ -183,6 +191,39 @@ export function RaceWeekend() {
   // panels scroll. Other phases flow normally inside the scroll wrapper.
   const fullHeightPhase = phase === 'practice' || phase === 'setup';
   const phaseTitle = PHASE_ORDER.find((p) => p.id === phase)?.label ?? 'Weekend Hub';
+  const completedPracticeSessions = state.weekendPractice?.raceId === race.id
+    ? state.weekendPractice.sessions.filter((session) => session.completed).length
+    : 0;
+  const totalPracticeSessions = isMinPackage ? 0 : weekendSessionKinds(state.seasonYear, state.series).length;
+  const bestPlayerGrid = qualifyingResults
+    ?.filter((result) => result.teamId === state.selectedTeamId)
+    .reduce<number | undefined>((best, result) => best === undefined ? result.position : Math.min(best, result.position), undefined);
+  const tabs = visiblePhases.map((item) => ({
+    ...item,
+    disabled: !canOpenRaceWeekendPhase(item.id, furthestPhase, isMinPackage),
+    disabledReason: `Complete ${phaseTitle} before opening this stage`,
+  }));
+
+  const advanceFromCurrent = () => {
+    if (phase === 'hub') moveTo('briefing');
+    else if (phase === 'briefing') moveTo(isMinPackage ? 'quali-run' : 'practice');
+    else if (phase === 'practice') moveTo('setup');
+    else if (phase === 'setup') {
+      commitSetups();
+      moveTo(qualifyingResults ? 'race-strategy' : 'quali-run');
+    } else if (phase === 'quali-run') runQualifying();
+    else if (phase === 'quali-review') moveTo(isMinPackage ? 'race-strategy' : 'setup');
+    else if (phase === 'race-strategy') moveTo('race-instructions');
+    else startLiveRace();
+  };
+  const advanceLabel = phase === 'hub' ? 'Open Briefing'
+    : phase === 'briefing' ? (isMinPackage ? 'Prepare Qualifying' : 'Open Practice')
+      : phase === 'practice' ? 'Open Car Setup'
+        : phase === 'setup' ? (qualifyingResults ? 'Choose Strategy' : 'Plan Qualifying')
+          : phase === 'quali-run' ? 'Simulate Qualifying'
+            : phase === 'quali-review' ? (isMinPackage ? 'Choose Strategy' : 'Finalise Setup')
+              : phase === 'race-strategy' ? 'Set Instructions'
+                : 'Start Live Race';
   const phaseContent = (
     <>
       {phase === 'hub' && forecast && (
@@ -191,12 +232,12 @@ export function RaceWeekend() {
           race={race}
           track={track}
           forecast={forecast}
-          onNext={() => setPhase('briefing')}
+          onNext={() => moveTo('briefing')}
         />
       )}
 
       {phase === 'briefing' && (
-        <Briefing track={track} race={race} isMinPackage={isMinPackage} onNext={() => setPhase(isMinPackage ? 'quali-run' : 'practice')} />
+        <Briefing track={track} race={race} isMinPackage={isMinPackage} onNext={() => moveTo(isMinPackage ? 'quali-run' : 'practice')} />
       )}
 
       {phase === 'practice' && !isMinPackage && (
@@ -205,8 +246,8 @@ export function RaceWeekend() {
           dispatch={dispatch}
           track={track}
           forecast={forecast}
-          onBack={() => setPhase('briefing')}
-          onNext={() => setPhase('setup')}
+          onBack={() => moveTo('briefing')}
+          onNext={() => moveTo('setup')}
         />
       )}
 
@@ -233,8 +274,8 @@ export function RaceWeekend() {
             const practiced = workshopPractice?.practicedSetupByDriver?.[driverId];
             if (practiced) setSetupDraft((p) => ({ ...p, [driverId]: sanitizeSetupProfile(practiced) }));
           }}
-          onBack={() => { commitSetups(); setPhase(qualifyingResults ? 'quali-review' : 'practice'); }}
-          onConfirm={() => { commitSetups(); setPhase(qualifyingResults ? 'race-strategy' : 'quali-run'); }}
+          onBack={() => { commitSetups(); moveTo(qualifyingResults ? 'quali-review' : 'practice'); }}
+          onConfirm={() => { commitSetups(); moveTo(qualifyingResults ? 'race-strategy' : 'quali-run'); }}
         />
       )}
 
@@ -267,7 +308,7 @@ export function RaceWeekend() {
               }
             />
           )}
-          onBack={() => setPhase(isMinPackage ? 'briefing' : 'setup')}
+          onBack={() => moveTo(isMinPackage ? 'briefing' : 'setup')}
           onNext={runQualifying}
           nextLabel="Simulate Qualifying ->"
         />
@@ -279,7 +320,7 @@ export function RaceWeekend() {
           raceId={race.id}
           debug={settings.debugMode}
           weather={forecast?.Qualifying}
-          onNext={() => setPhase(isMinPackage ? 'race-strategy' : 'setup')}
+          onNext={() => moveTo(isMinPackage ? 'race-strategy' : 'setup')}
         />
       )}
 
@@ -295,8 +336,8 @@ export function RaceWeekend() {
           }
           recommendedId={recommendedRaceStrategy(track, forecast?.Race).optionId}
           recommendedReason={recommendedRaceStrategy(track, forecast?.Race).reason}
-          onBack={() => setPhase('quali-review')}
-          onNext={() => setPhase('race-instructions')}
+          onBack={() => moveTo('quali-review')}
+          onNext={() => moveTo('race-instructions')}
         />
       )}
 
@@ -312,7 +353,7 @@ export function RaceWeekend() {
           }
           recommendedId={recommendedInstruction(track, forecast?.Race).optionId}
           recommendedReason={recommendedInstruction(track, forecast?.Race).reason}
-          onBack={() => setPhase('race-strategy')}
+          onBack={() => moveTo('race-strategy')}
           onNext={startLiveRace}
           nextLabel="Start Live Race ->"
         />
@@ -320,62 +361,33 @@ export function RaceWeekend() {
     </>
   );
 
-  if (usesF1WeekendHub && forecast) {
-    return (
-      <F11990sRaceWeekendHub
-        state={state}
-        race={race}
-        track={track}
-        forecast={forecast}
-        isMinPackage={isMinPackage}
-        hasQualifyingResults={!!qualifyingResults}
-        activePhase={phase}
-        moduleTitle={phaseTitle}
-        moduleContent={
-          phase === 'hub' ? undefined : (
-            <div className={fullHeightPhase ? 'flex min-h-[460px] flex-col gap-3' : 'space-y-4'}>
-              <ForecastBanner
-                forecast={forecast}
-                highlight={
-                  phase === 'practice' || phase === 'setup'
-                    ? 'Practice'
-                    : phase === 'quali-run' || phase === 'quali-review'
-                    ? 'Qualifying'
-                    : 'Race'
-                }
-              />
-              {phaseContent}
-            </div>
-          )
-        }
-        onPhase={setPhase}
-        onRoute={(to) => navigate(to)}
-        onExit={() => navigate('/hq')}
-      />
-    );
-  }
-
   return (
-    <div
-      className={`era-race-weekend flex h-full min-h-0 flex-col gap-4 ${
-        usesF1WeekendHub
-          ? 'rounded-lg border border-amber-500/25 bg-[radial-gradient(circle_at_50%_0%,rgba(245,158,11,0.10),transparent_34%),linear-gradient(180deg,rgba(10,10,10,0.96),rgba(5,5,5,0.99))] p-3 font-mono shadow-[inset_0_0_80px_rgba(0,0,0,0.45)]'
-          : ''
-      }`}
-      data-era={eraTheme}
-    >
-      <div className={`flex shrink-0 items-center justify-between ${usesF1WeekendHub ? 'border-b border-amber-500/25 pb-3' : ''}`}>
-        <div>
-          {usesF1WeekendHub && <div className="text-xs font-bold uppercase tracking-wide text-amber-400">F1 Era Weekend Control</div>}
-          <h1 className="text-2xl font-bold text-neutral-100">{race.gpName}</h1>
-          <p className="text-sm text-neutral-400">{race.trackName} · Round {race.round}</p>
-        </div>
-        <Button variant="ghost" onClick={() => navigate('/hq')}>Exit to HQ</Button>
-      </div>
+    <WorkspaceScreen className="era-feature-screen era-race-weekend">
+      <WorkspaceHeader
+        eyebrow="Race operations"
+        title={race.gpName}
+        subtitle={`${race.trackName} · Round ${race.round} of ${state.calendar.length} · ${phaseTitle}`}
+        actions={<>
+          <Button variant="ghost" onClick={() => navigate('/hq')}>Exit to HQ</Button>
+          <Button variant="primary" onClick={advanceFromCurrent}>{advanceLabel} →</Button>
+        </>}
+      />
 
-      <div className="shrink-0">
-        <PhaseStepper phase={phase} hasQuali={!!qualifyingResults} isMinPackage={isMinPackage} />
-      </div>
+      <MetricStrip>
+        <WorkspaceMetric label="Weekend stage" value={`${raceWeekendPhaseIndex(phase, isMinPackage) + 1}/${visiblePhases.length}`} detail={phaseTitle} />
+        <WorkspaceMetric label="Practice" value={isMinPackage ? 'Package skip' : `${completedPracticeSessions}/${totalPracticeSessions}`} detail={isMinPackage ? 'Baseline setup enforced' : 'Sessions completed'} />
+        <WorkspaceMetric label="Qualifying" value={qualifyingResults ? 'Complete' : 'Pending'} detail={bestPlayerGrid ? `Best player car P${bestPlayerGrid}` : 'Grid not set'} />
+        <WorkspaceMetric label="Race gate" value={phase === 'race-instructions' ? 'Ready' : 'In progress'} detail={state.raceWeekendPackage?.packageType ?? 'No package'} />
+      </MetricStrip>
+
+      <WorkspaceTabs
+        items={tabs}
+        active={phase}
+        onChange={(next) => {
+          if (canOpenRaceWeekendPhase(next, furthestPhase, isMinPackage)) moveTo(next);
+        }}
+        ariaLabel="Race weekend stages"
+      />
 
       {forecast && phase !== 'hub' && (
         <div className="shrink-0">
@@ -392,176 +404,10 @@ export function RaceWeekend() {
         </div>
       )}
 
-      <div
-        className={
-          fullHeightPhase
-            ? 'flex min-h-0 flex-1 flex-col'
-            : 'min-h-0 flex-1 space-y-6 overflow-y-auto'
-        }
-      >
-      {phase === 'hub' && forecast && (
-        <WeekendHub
-          state={state}
-          race={race}
-          track={track}
-          forecast={forecast}
-          onNext={() => setPhase('briefing')}
-        />
-      )}
-
-      {phase === 'briefing' && (
-        <Briefing track={track} race={race} isMinPackage={isMinPackage} onNext={() => setPhase(isMinPackage ? 'quali-run' : 'practice')} />
-      )}
-
-      {phase === 'practice' && !isMinPackage && (
-        <PracticePhase
-          state={state}
-          dispatch={dispatch}
-          track={track}
-          forecast={forecast}
-          onBack={() => setPhase('briefing')}
-          onNext={() => setPhase('setup')}
-        />
-      )}
-
-      {phase === 'setup' && !isMinPackage && (
-        <SetupWorkshop
-          track={track}
-          drivers={playerDrivers}
-          setups={resolvedSetups}
-          car={carForTeam(state, state.selectedTeamId)}
-          practice={workshopPractice}
-          onChangeParam={(driverId, key, value) =>
-            // Spread over the COMPLETE resolved setup (not the possibly-undefined
-            // draft) so a single-slider edit keeps every other field valid.
-            setSetupDraft((p) => ({
-              ...p,
-              [driverId]: sanitizeSetupProfile({ ...resolvedSetups[driverId], [key]: value }),
-            }))
-          }
-          onApplySetup={(driverId, setup) =>
-            setSetupDraft((p) => ({ ...p, [driverId]: sanitizeSetupProfile(setup) }))
-          }
-          onCopy={(fromId, toId) =>
-            setSetupDraft((p) => ({ ...p, [toId]: sanitizeSetupProfile(resolvedSetups[fromId]) }))
-          }
-          onResetDriver={(driverId) => {
-            const practiced = workshopPractice?.practicedSetupByDriver?.[driverId];
-            if (practiced) setSetupDraft((p) => ({ ...p, [driverId]: sanitizeSetupProfile(practiced) }));
-          }}
-          onBack={() => { commitSetups(); setPhase(qualifyingResults ? 'quali-review' : 'practice'); }}
-          onConfirm={() => { commitSetups(); setPhase(qualifyingResults ? 'race-strategy' : 'quali-run'); }}
-        />
-      )}
-
-      {phase === 'quali-run' && (
-        <DecisionPhase
-          title="Qualifying Run Plan"
-          subtitle="How should each driver approach the session? Aggression here does NOT carry into the race."
-          drivers={playerDrivers}
-          options={qualifyingRunPlans.map((p) => ({ id: p.id, name: p.name, description: p.description }))}
-          valueFor={(id) => qualiFor(id).runPlanId}
-          onSelect={(driverId, optId) =>
-            setQualiOverrides((p) => ({ ...p, [driverId]: { ...p[driverId], runPlanId: optId as QualifyingDecision['runPlanId'] } }))
-          }
-          recommendedId={recommendedQualiRunPlan(track, forecast?.Qualifying).optionId}
-          recommendedReason={recommendedQualiRunPlan(track, forecast?.Qualifying).reason}
-          headerExtra={
-            <QualifyingSessionInfo
-              format={qualifyingFormatFor(state.seasonYear, state.series)}
-              weather={forecast?.Qualifying}
-            />
-          }
-          extraControls={(driverId) => (
-            <QualifyingRunControls
-              decision={qualiFor(driverId)}
-              onRuns={(runs) =>
-                setQualiOverrides((p) => ({ ...p, [driverId]: { ...p[driverId], runs } }))
-              }
-              onTyre={(tyreApproach) =>
-                setQualiOverrides((p) => ({ ...p, [driverId]: { ...p[driverId], tyreApproach } }))
-              }
-            />
-          )}
-          onBack={() => setPhase(isMinPackage ? 'briefing' : 'setup')}
-          onNext={runQualifying}
-          nextLabel="Simulate Qualifying →"
-        />
-      )}
-
-      {phase === 'quali-review' && qualifyingResults && (
-        <QualifyingReview
-          state={state}
-          raceId={race.id}
-          debug={settings.debugMode}
-          weather={forecast?.Qualifying}
-          onNext={() => setPhase(isMinPackage ? 'race-strategy' : 'setup')}
-        />
-      )}
-
-      {phase === 'race-strategy' && (
-        <DecisionPhase
-          title="Pre-Race Strategy Selection"
-          subtitle="The grid is set. Pick a pit/tyre strategy for each driver — you can still adapt live during the race."
-          drivers={playerDrivers}
-          options={raceStrategies.map((s) => ({ id: s.id, name: s.name, description: s.description }))}
-          valueFor={(id) => raceFor(id).strategyId}
-          onSelect={(driverId, optId) =>
-            setRaceOverrides((p) => ({ ...p, [driverId]: { ...p[driverId], strategyId: optId as RaceDecision['strategyId'] } }))
-          }
-          recommendedId={recommendedRaceStrategy(track, forecast?.Race).optionId}
-          recommendedReason={recommendedRaceStrategy(track, forecast?.Race).reason}
-          onBack={() => setPhase('quali-review')}
-          onNext={() => setPhase('race-instructions')}
-        />
-      )}
-
-      {phase === 'race-instructions' && (
-        <DecisionPhase
-          title="Driver Race Instructions"
-          subtitle="Set how hard each driver pushes during the race."
-          drivers={playerDrivers}
-          options={driverInstructions.map((s) => ({ id: s.id, name: s.name, description: s.description }))}
-          valueFor={(id) => raceFor(id).instructionId}
-          onSelect={(driverId, optId) =>
-            setRaceOverrides((p) => ({ ...p, [driverId]: { ...p[driverId], instructionId: optId as RaceDecision['instructionId'] } }))
-          }
-          recommendedId={recommendedInstruction(track, forecast?.Race).optionId}
-          recommendedReason={recommendedInstruction(track, forecast?.Race).reason}
-          onBack={() => setPhase('race-strategy')}
-          onNext={startLiveRace}
-          nextLabel="Start Live Race →"
-        />
-      )}
-      </div>
-    </div>
-  );
-}
-
-function PhaseStepper({ phase, hasQuali, isMinPackage }: { phase: Phase; hasQuali: boolean; isMinPackage: boolean }) {
-  const visiblePhases = isMinPackage
-    ? PHASE_ORDER.filter((p) => p.id !== 'practice' && p.id !== 'setup')
-    : PHASE_ORDER;
-  const currentIdx = visiblePhases.findIndex((p) => p.id === phase);
-  return (
-    <div className="flex flex-wrap items-center gap-1.5 text-xs">
-      {visiblePhases.map((p, i) => {
-        const done = i < currentIdx || (p.id === 'quali-review' && hasQuali && phase !== 'quali-review');
-        const active = p.id === phase;
-        return (
-          <div key={p.id} className="flex items-center gap-1.5">
-            <span
-              className={`rounded px-2 py-1 ${
-                active ? 'bg-amber-500 font-semibold text-neutral-950' : done ? 'bg-green-500/15 text-green-300' : 'bg-neutral-800 text-neutral-500'
-              }`}
-            >
-              {i + 1}. {p.label}
-            </span>
-            {i < visiblePhases.length - 1 && <span className="text-neutral-700">›</span>}
-          </div>
-        );
-      })}
-    </div>
+      <WorkspaceBody className={fullHeightPhase ? 'flex flex-col' : 'space-y-4'}>
+        {phaseContent}
+      </WorkspaceBody>
+    </WorkspaceScreen>
   );
 }
 
@@ -1505,4 +1351,3 @@ function QualifyingReview({
     </div>
   );
 }
-

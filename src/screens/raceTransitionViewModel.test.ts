@@ -5,6 +5,8 @@ import {
   RACE_RESULTS_TABS,
   RESULT_PAGE_SIZE,
   SEASON_REVIEW_TABS,
+  canOpenRaceWeekendPhase,
+  visibleRaceWeekendPhases,
   transitionPage,
   transitionPageCount,
 } from './raceTransitionViewModel';
@@ -21,6 +23,25 @@ describe('race transition view model', () => {
     expect(EVENT_PAGE_SIZE).toBe(8);
     expect(transitionPageCount(24, RESULT_PAGE_SIZE)).toBe(3);
     expect(transitionPageCount(0, RESULT_PAGE_SIZE)).toBe(1);
+  });
+
+  it('keeps race-weekend tabs behind the reached workflow stage', () => {
+    expect(canOpenRaceWeekendPhase('practice', 'practice', false)).toBe(true);
+    expect(canOpenRaceWeekendPhase('setup', 'practice', false)).toBe(false);
+    expect(canOpenRaceWeekendPhase('race-strategy', 'quali-review', false)).toBe(false);
+    expect(canOpenRaceWeekendPhase('briefing', 'quali-review', false)).toBe(true);
+  });
+
+  it('removes practice and setup only for the minimum operations package', () => {
+    expect(visibleRaceWeekendPhases(true).map((phase) => phase.id)).toEqual([
+      'hub',
+      'briefing',
+      'quali-run',
+      'quali-review',
+      'race-strategy',
+      'race-instructions',
+    ]);
+    expect(canOpenRaceWeekendPhase('practice', 'briefing', true)).toBe(false);
   });
 
   it('clamps requested pages without changing source order', () => {

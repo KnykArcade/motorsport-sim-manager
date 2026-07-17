@@ -1,6 +1,15 @@
 export type PreRaceBriefingTab = 'overview' | 'preparation' | 'team' | 'paddock';
 export type RaceResultsTab = 'summary' | 'classification' | 'story' | 'championships';
 export type SeasonReviewTab = 'honours' | 'drivers' | 'constructors' | 'next';
+export type RaceWeekendPhase =
+  | 'hub'
+  | 'briefing'
+  | 'practice'
+  | 'setup'
+  | 'quali-run'
+  | 'quali-review'
+  | 'race-strategy'
+  | 'race-instructions';
 
 export const PRE_RACE_BRIEFING_TABS: ReadonlyArray<{ id: PreRaceBriefingTab; label: string }> = [
   { id: 'overview', label: 'Race Overview' },
@@ -22,6 +31,37 @@ export const SEASON_REVIEW_TABS: ReadonlyArray<{ id: SeasonReviewTab; label: str
   { id: 'constructors', label: 'Constructors' },
   { id: 'next', label: 'What’s Next' },
 ];
+
+export const RACE_WEEKEND_PHASES: ReadonlyArray<{ id: RaceWeekendPhase; label: string }> = [
+  { id: 'hub', label: 'Weekend Hub' },
+  { id: 'briefing', label: 'Briefing' },
+  { id: 'practice', label: 'Practice' },
+  { id: 'setup', label: 'Car Setup' },
+  { id: 'quali-run', label: 'Qualifying Plan' },
+  { id: 'quali-review', label: 'Qualifying Review' },
+  { id: 'race-strategy', label: 'Race Strategy' },
+  { id: 'race-instructions', label: 'Instructions' },
+];
+
+export function visibleRaceWeekendPhases(minimumPackage: boolean) {
+  return minimumPackage
+    ? RACE_WEEKEND_PHASES.filter((phase) => phase.id !== 'practice' && phase.id !== 'setup')
+    : [...RACE_WEEKEND_PHASES];
+}
+
+export function raceWeekendPhaseIndex(phase: RaceWeekendPhase, minimumPackage: boolean): number {
+  return visibleRaceWeekendPhases(minimumPackage).findIndex((item) => item.id === phase);
+}
+
+export function canOpenRaceWeekendPhase(
+  candidate: RaceWeekendPhase,
+  furthest: RaceWeekendPhase,
+  minimumPackage: boolean,
+): boolean {
+  const candidateIndex = raceWeekendPhaseIndex(candidate, minimumPackage);
+  const furthestIndex = raceWeekendPhaseIndex(furthest, minimumPackage);
+  return candidateIndex >= 0 && furthestIndex >= 0 && candidateIndex <= furthestIndex;
+}
 
 export const RESULT_PAGE_SIZE = 10;
 export const EVENT_PAGE_SIZE = 8;
