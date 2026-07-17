@@ -204,6 +204,24 @@ export function Relationships() {
         ariaLabel="Driver relationship sections"
       />
       <WorkspaceBody className="space-y-4">
+      <div className="ui-decision-strip flex flex-wrap items-center justify-between gap-2 rounded-lg border px-3 py-2.5">
+        <div className="flex min-w-0 items-center gap-2 text-xs">
+          <span className="ui-decision-strip-pulse" aria-hidden="true" />
+          <div className="min-w-0">
+            <div className="font-semibold text-neutral-100">People operations desk</div>
+            <div className="truncate text-neutral-400">
+              {breachedClauseCount > 0
+                ? `${breachedClauseCount} contract breach${breachedClauseCount === 1 ? '' : 'es'} require a management response.`
+                : activePromiseCount > 0
+                  ? `${activePromiseCount} active promise${activePromiseCount === 1 ? '' : 's'} remain visible across the driver group.`
+                  : 'No immediate relationship response is required.'}
+            </div>
+          </div>
+        </div>
+        <span className="shrink-0 text-[10px] font-semibold uppercase tracking-wide text-neutral-500">
+          {activePromiseCount} active commitments
+        </span>
+      </div>
 
       {/* Race Drivers Section */}
       {activeSection === 'race' && <div>
@@ -215,7 +233,7 @@ export function Relationships() {
               return (
                 <Panel key={d.id} title={driverName(d.id)}>
                   <div className="mb-2 flex items-center gap-2">
-                    <span className="rounded bg-blue-950/60 px-1.5 py-0.5 text-[10px] uppercase tracking-wide text-blue-300">
+                    <span className="rounded bg-[var(--era-accent-soft)] px-1.5 py-0.5 text-[10px] uppercase tracking-wide text-[var(--era-accent-strong)]">
                       Race Driver
                     </span>
                     <span className="text-[11px] text-neutral-500">Relationship data initializing...</span>
