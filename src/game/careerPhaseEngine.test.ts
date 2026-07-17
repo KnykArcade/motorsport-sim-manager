@@ -82,6 +82,22 @@ describe('careerPhaseEngine', () => {
     expect(getCareerPhase(state)).toBe('race_weekend');
   });
 
+  it('pre-race briefing cannot enter the race weekend with an incomplete active lineup', () => {
+    let state = newCareerState();
+    state = completeChecklist(state);
+    state = dispatch(state, { type: 'COMPLETE_PRESEASON_SETUP' });
+    const active = activeDriversForTeam(state, state.selectedTeamId);
+    state = {
+      ...state,
+      drivers: state.drivers.map((driver) => driver.id === active[0].id ? { ...driver, contractType: 'reserve' as const } : driver),
+    };
+
+    state = dispatch(state, { type: 'ADVANCE_TO_RACE_WEEKEND' });
+
+    expect(activeDriversForTeam(state, state.selectedTeamId)).toHaveLength(1);
+    expect(getCareerPhase(state)).toBe('pre_race_briefing');
+  });
+
   it('completing a race (RUN_RACE) moves to post_race_review', () => {
     let state = newCareerState();
     state = completeChecklist(state);

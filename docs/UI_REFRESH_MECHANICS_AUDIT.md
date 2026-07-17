@@ -181,3 +181,13 @@ explicit as their screens are migrated.
 | Disabled testing and flaw-correction controls did not explain whether launch order or budget caused the block. | Fixed | Testing cards and correction actions now show the exact prerequisite or required budget while retaining the existing engine guards. |
 | The header described all Single Season team setup as locked even though launch/testing decisions still operate under specific mode restrictions. | Fixed | The subtitle now accurately states that management choices follow mode restrictions; sponsor and engine sections retain their specific historical-lock explanations. |
 | Moving the advance action into persistent context could bypass the checklist. | Prevented | The header action continues to use the engine-backed seven-approval gate and reports the number of reviews remaining. |
+
+## Pre-Race Briefing findings
+
+| Finding | Status | Resolution |
+| --- | --- | --- |
+| Event, preparation, team, and paddock information used a separate page shell and could require document-level scrolling. | Fixed | Pre-Race Briefing now uses the shared FM-style workspace with persistent event context, four focused tabs, and one internally scrolling work area. |
+| The screen warned about an incomplete active lineup but still enabled weekend entry whenever a race package existed. | Fixed | Weekend entry now requires both the current-race package and the series-specific minimum active-driver count in the UI and reducer, with regression coverage. |
+| A disabled weekend action did not keep its blocking reason visible outside the Preparation or Team tab. | Fixed | Persistent gate status and an explicit blocker notice identify the missing package or driver count above every tab. |
+| Key-rival positions were recalculated after filtering out the player, which could label the actual P2 team as P1. | Fixed | Rival cards now retain their real position from the full constructor standings. |
+| Moving the weekend action into the persistent header could bypass phase rules. | Prevented | The action retains the current-package requirement, adds the lineup requirement, and the reducer remains the final authority on phase, package, and roster validity. |

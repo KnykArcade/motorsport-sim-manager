@@ -45,6 +45,7 @@ import {
   currentRace,
   driversForTeam,
   maxRaceDriversForSeries,
+  minRaceDriversForSeries,
   type GameState,
 } from './careerState';
 import { buildRaceContext, playerTunedSetups } from './raceSetup';
@@ -842,6 +843,7 @@ export function gameReducer(state: GameState | null, action: GameAction): GameSt
       if (!state) return state;
       if (getCareerPhase(state) !== 'pre_race_briefing') return state;
       if (!hasPackageForCurrentRace(state)) return state;
+      if (activeDriversForTeam(state, state.selectedTeamId).length < minRaceDriversForSeries(state.series)) return state;
       return enterRaceWeekend(state);
     }
 
