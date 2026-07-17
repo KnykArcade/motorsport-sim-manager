@@ -15,6 +15,14 @@ import { preferredSeries } from '../sim/seriesPreferenceEngine';
 import { Panel } from '../components/Panel';
 import { StatBar } from '../components/StatBar';
 import { Button } from '../components/Button';
+import {
+  MetricStrip,
+  WorkspaceBody,
+  WorkspaceHeader,
+  WorkspaceMetric,
+  WorkspaceScreen,
+  WorkspaceTabs,
+} from '../components/workspace/Workspace';
 import { DriverDossierButton } from '../components/driverCards/DriverDossier';
 import { ScoutingWidget } from '../components/scouting/ScoutingWidget';
 import {
@@ -81,34 +89,35 @@ export function DriverMarket() {
   const signedMarketIds = new Set(state.signedMarketIds ?? []);
   const signingBySource = new Map(signings.map((s) => [s.sourceId, s]));
   const seatName = (id: string) => state.drivers.find((d) => d.id === id)?.name ?? id;
+  const marketTabs: Array<{ id: Tab; label: string }> = [
+    { id: 'senior', label: `Senior Market (${seniorDrivers.length})` },
+    ...(!singleSeason && bundle ? [{ id: 'youth' as const, label: `Youth Academy (${bundle.youth.length})` }] : []),
+  ];
 
   // Fogged potential label: scouting narrows the range without confirming truth.
   const potLabel = (id: string, skills: MarketSkillRatings, potential: number, entityType: ScoutedEntityType = 'Driver'): string =>
     readoutForPotential(state, id, skills, potential, entityType).label;
 
   return (
-    <div className="era-feature-screen era-driver-market space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-neutral-100">Driver Market</h1>
-          <p className="text-sm text-neutral-400">
-            {singleSeason
-              ? `Current-season driver management for ${state.seasonYear}.`
-              : `Scout senior drivers for ${state.seasonYear + 1} and grow under-18 talent in your academy.`}
-            {' '}Budget: <span className="font-semibold text-neutral-200">{formatMoney(budget)}</span>
-          </p>
-        </div>
-        <div className="flex gap-2">
-          <TabButton active={tab === 'senior'} onClick={() => setTab('senior')}>
-            Senior Market{bundle ? ` (${seniorDrivers.length})` : ''}
-          </TabButton>
-          {!singleSeason && (
-            <TabButton active={tab === 'youth'} onClick={() => setTab('youth')}>
-              Youth Academy{bundle ? ` (${bundle.youth.length})` : ''}
-            </TabButton>
-          )}
-        </div>
-      </div>
+    <WorkspaceScreen className="era-feature-screen era-driver-market">
+      <WorkspaceHeader
+        eyebrow="Recruitment center"
+        title="Driver Market"
+        subtitle={singleSeason
+          ? `Current-season driver management for ${state.seasonYear}.`
+          : `One shared universe market · recruit for ${state.seasonYear + 1} and develop under-18 talent.`}
+      />
+
+      <MetricStrip>
+        <WorkspaceMetric label="Available budget" value={formatMoney(budget)} detail="Team balance" />
+        <WorkspaceMetric label="Open race seats" value={Math.max(0, openRaceSeats)} detail={preseason ? 'Preseason requirement' : 'Next signing window'} />
+        <WorkspaceMetric label="Academy" value={`${academy.length} / ${academyCapacity}`} detail="Current prospects · capacity" />
+        <WorkspaceMetric label="Scouting accuracy" value={`${Math.round((state.scouting?.networkAccuracy ?? 0) * 100)}%`} detail="Controls rating uncertainty" />
+      </MetricStrip>
+
+      <WorkspaceTabs items={marketTabs} active={tab} onChange={setTab} ariaLabel="Driver market sections" />
+
+      <WorkspaceBody>
 
       <div
         className={`rounded-md border px-4 py-2 text-sm ${
@@ -234,30 +243,8 @@ export function DriverMarket() {
           }
         />
       )}
-    </div>
-  );
-}
-
-function TabButton({
-  active,
-  onClick,
-  children,
-}: {
-  active: boolean;
-  onClick: () => void;
-  children: React.ReactNode;
-}) {
-  return (
-    <button
-      onClick={onClick}
-      className={`rounded-md px-3 py-1.5 text-sm ${
-        active
-          ? 'bg-amber-500 font-semibold text-neutral-950'
-          : 'bg-neutral-800 text-neutral-300 hover:bg-neutral-700'
-      }`}
-    >
-      {children}
-    </button>
+      </WorkspaceBody>
+    </WorkspaceScreen>
   );
 }
 

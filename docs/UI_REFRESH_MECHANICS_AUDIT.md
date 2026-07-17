@@ -31,6 +31,9 @@ behind a visual redesign and new controls do not imply behavior they lack.
 | Finance workspace | Existing season ledger, category summaries, annual commitments, season filter, transaction filters, and pagination |
 | Facilities workspace | Existing infrastructure effects, upgrade dispatches, affordability checks, pending construction, portfolio groups, and specialization dispatches |
 | Staff workspace | Existing roster, contracts, advisor council, real staff pool, rival poaching, dossiers, hiring, firing, renewal, role filters, and pagination |
+| Drivers workspace | Existing race seats, reserves, swaps, extensions, clauses, future intentions, scouting readouts, dossiers, directory, and pagination |
+| Driver Market workspace | Existing shared-universe market, series interest, availability rules, bidding, third-driver and race-seat signings, pending signings, academy actions, scouting fog, and pagination |
+| Intelligence workspace | Existing scouting network accuracy, fogged driver and potential ranges, scout assignments, investigation actions, paddock reports, confidence, and report history |
 
 No decorative button or fabricated metric was added in the foundation phase.
 
@@ -78,3 +81,13 @@ explicit as their screens are migrated.
 | Six separate Staff metric cards consumed too much vertical space. | Fixed | The same real values are consolidated into four management metrics: staffing, payroll, development/setup, and race execution. |
 | A visual migration could accidentally turn active management controls into decorative UI. | Prevented | Every existing facility upgrade/specialization and staff hire/fire/renewal/poaching control is preserved and still dispatches its original game action. |
 | Finance coverage could be mistaken for a full forecast. | Preserved | The commitments workspace retains its explicit warning that coverage excludes variable engine, development, repair, facility, and future-income effects. |
+
+## Recruitment Center findings
+
+| Finding | Status | Resolution |
+| --- | --- | --- |
+| Drivers, Driver Market, and Scouting behaved as connected systems but presented separate page structures. | Fixed | All three now share an FM-style Recruitment Center hierarchy with persistent context, compact metrics, primary tabs, and internally scrolling work areas. |
+| Roster and market priorities were easy to lose while browsing long card lists. | Fixed | Race-seat status, reserve count, expiring contracts, budget, academy capacity, and scouting accuracy remain visible above the active workspace. |
+| A UI refresh could accidentally imply that fogged ratings are exact. | Prevented | Recruitment metrics explicitly identify scouting accuracy as the control on uncertainty, and the existing knowledge-aware rating readouts remain unchanged. |
+| The single shared driver universe could look like separate series-specific markets. | Clarified | Driver Market now states that it is one shared universe market; series preference still affects interest and AI decisions without creating hidden pools. |
+| Market or profile styling could expose actions that bypass availability rules. | Prevented | Existing preseason, offseason, open-seat, third-driver, academy-capacity, affordability, competing-bid, and game-mode checks remain the source of action availability. |
