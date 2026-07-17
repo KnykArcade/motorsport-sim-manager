@@ -19,6 +19,14 @@ import { TrackDemandBars } from '../components/TrackDemandBars';
 import { NewsPanel } from '../components/NewsPanel';
 import { formatMoney } from '../components/ui';
 import {
+  MetricStrip,
+  WorkspaceBody,
+  WorkspaceHeader,
+  WorkspaceMetric,
+  WorkspaceScreen,
+  WorkspaceTabs,
+} from '../components/workspace/Workspace';
+import {
   PRE_RACE_BRIEFING_TABS,
   type PreRaceBriefingTab,
 } from './raceTransitionViewModel';
@@ -54,52 +62,50 @@ export function PreRaceBriefing() {
   const regulationSet = getRegulationSet(state.regulationSetId);
   const playerStanding = state.constructorStandings.find((entry) => entry.entityId === state.selectedTeamId);
   const playerPosition = state.constructorStandings.findIndex((entry) => entry.entityId === state.selectedTeamId) + 1;
-  const rivals = state.constructorStandings.filter((entry) => entry.entityId !== state.selectedTeamId).slice(0, 3);
+  const rivals = state.constructorStandings
+    .map((entry, index) => ({ ...entry, position: index + 1 }))
+    .filter((entry) => entry.entityId !== state.selectedTeamId)
+    .slice(0, 3);
   const sponsors = state.commercial?.sponsors ?? [];
   const strategySuggestion = strategyForTrack(track);
+  const hasValidLineup = activeDrivers.length >= minDrivers;
+  const canEnterWeekend = !!selectedPackage && hasValidLineup;
+  const weekendBlockedReason = !selectedPackage
+    ? 'Select a race package in Paddock Week first'
+    : !hasValidLineup
+      ? `Sign ${minDrivers - activeDrivers.length} more active race driver${minDrivers - activeDrivers.length === 1 ? '' : 's'}`
+      : undefined;
 
   const enterRaceWeekend = () => {
+    if (!canEnterWeekend) return;
     dispatch({ type: 'ADVANCE_TO_RACE_WEEKEND' });
     navigate('/weekend');
   };
 
   return (
-    <div className="era-feature-screen era-pre-race-briefing-screen space-y-3">
-      <div className="flex items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-neutral-100">Pre-Race Briefing</h1>
-          <p className="text-sm text-neutral-400">{race.gpName} · {race.trackName} · Round {race.round}</p>
-        </div>
-        <Button
+    <WorkspaceScreen className="era-feature-screen era-pre-race-briefing-screen">
+      <WorkspaceHeader
+        eyebrow="Race operations"
+        title={`${race.gpName} Briefing`}
+        subtitle={`${race.trackName} · Round ${race.round} of ${state.calendar.length} · ${track.archetype}`}
+        actions={<Button
           variant="primary"
           onClick={enterRaceWeekend}
-          disabled={!selectedPackage}
-          title={selectedPackage ? 'Enter Race Weekend' : 'Select a race package before the pre-race briefing'}
+          disabled={!canEnterWeekend}
+          title={weekendBlockedReason ?? 'Enter Race Weekend'}
         >
           Enter Race Weekend →
-        </Button>
-      </div>
-
-      <div className="grid gap-2 sm:grid-cols-4">
-        <Kpi label="Championship" value={playerPosition > 0 ? `P${playerPosition} · ${playerStanding?.points ?? 0} pts` : 'Opening round'} />
-        <Kpi label="Preparation" value={prepFocus.label} />
-        <Kpi label="Race Package" value={selectedPackageDef?.label ?? 'Not selected'} warning={!selectedPackageDef} />
-        <Kpi label="Budget" value={team ? formatMoney(team.budget) : '—'} />
-      </div>
-
-      <nav className="grid grid-cols-4 gap-1 rounded-lg border border-neutral-800 bg-neutral-950/70 p-1" aria-label="Pre-race briefing sections">
-        {PRE_RACE_BRIEFING_TABS.map((item) => (
-          <button
-            key={item.id}
-            type="button"
-            onClick={() => setTab(item.id)}
-            aria-current={tab === item.id ? 'page' : undefined}
-            className={`rounded px-3 py-2 text-xs font-semibold ${tab === item.id ? 'bg-amber-500 text-neutral-950' : 'text-neutral-400 hover:bg-neutral-900 hover:text-neutral-100'}`}
-          >
-            {item.label}
-          </button>
-        ))}
-      </nav>
+        </Button>}
+      />
+      <MetricStrip>
+        <WorkspaceMetric label="Championship" value={playerPosition > 0 ? `P${playerPosition}` : 'Opening round'} detail={playerPosition > 0 ? `${playerStanding?.points ?? 0} constructor points` : 'No standings position yet'} />
+        <WorkspaceMetric label="Preparation" value={prepFocus.label} detail="Applies to this race only" />
+        <WorkspaceMetric label="Race package" value={selectedPackageDef?.label ?? 'Not selected'} detail={selectedPackage ? formatMoney(selectedPackage.cost) : 'Required before weekend entry'} />
+        <WorkspaceMetric label="Weekend gate" value={canEnterWeekend ? 'Ready' : 'Blocked'} detail={weekendBlockedReason ?? `${activeDrivers.length}/${minDrivers} active drivers · ${team ? formatMoney(team.budget) : '—'}`} />
+      </MetricStrip>
+      {!canEnterWeekend && <div className="shrink-0 rounded border border-orange-500/25 bg-orange-500/5 px-3 py-2 text-[11px] text-orange-200">Weekend entry is blocked: {weekendBlockedReason}.</div>}
+      <WorkspaceTabs items={PRE_RACE_BRIEFING_TABS} active={tab} onChange={setTab} ariaLabel="Pre-race briefing sections" />
+      <WorkspaceBody className="space-y-3">
 
       {tab === 'overview' && (
         <div className="grid gap-3 lg:grid-cols-[1.4fr_1fr]">
@@ -187,12 +193,12 @@ export function PreRaceBriefing() {
           </Panel>
           <Panel title="Key Rivals">
             <div className="space-y-2">
-              {rivals.map((rival, index) => {
+              {rivals.map((rival) => {
                 const ai = state.aiTeamStates?.[rival.entityId];
                 const spec = ai ? ARCHETYPE_SPECS[ai.archetype] : undefined;
                 return (
                   <div key={rival.entityId} className="rounded border border-neutral-800 bg-neutral-950/40 px-3 py-2">
-                    <div className="flex justify-between text-sm"><span className="font-medium text-neutral-200">P{index + 1} {state.teams.find((entry) => entry.id === rival.entityId)?.name ?? rival.entityId}</span><span className="text-neutral-400">{rival.points} pts</span></div>
+                    <div className="flex justify-between text-sm"><span className="font-medium text-neutral-200">P{rival.position} {state.teams.find((entry) => entry.id === rival.entityId)?.name ?? rival.entityId}</span><span className="text-neutral-400">{rival.points} pts</span></div>
                     {spec && <div className="mt-1 text-[11px] text-neutral-500">{spec.label} · {spec.description.split(';')[0]}.</div>}
                   </div>
                 );
@@ -223,7 +229,8 @@ export function PreRaceBriefing() {
           </div>
         </div>
       )}
-    </div>
+      </WorkspaceBody>
+    </WorkspaceScreen>
   );
 }
 
@@ -241,10 +248,6 @@ function strategyForTrack(track: NonNullable<ReturnType<typeof getTrackById>>): 
 
 function signed(value: number, digits: number): string {
   return `${value > 0 ? '+' : ''}${value.toFixed(digits)}`;
-}
-
-function Kpi({ label, value, warning = false }: { label: string; value: string; warning?: boolean }) {
-  return <div className="rounded-xl border border-neutral-800 bg-neutral-900/40 p-3"><div className="text-[10px] uppercase tracking-wide text-neutral-500">{label}</div><div className={`mt-0.5 truncate text-sm font-bold ${warning ? 'text-orange-300' : 'text-neutral-100'}`} title={value}>{value}</div></div>;
 }
 
 function Detail({ label, value }: { label: string; value: string }) {
