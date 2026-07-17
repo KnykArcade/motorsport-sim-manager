@@ -139,3 +139,15 @@ explicit as their screens are migrated.
 | Sponsor actions could bypass portfolio or mode rules. | Preserved | Opportunity signing still uses the existing generated offer IDs and slot-capacity gate, while central mode restrictions continue to keep sponsor management out of locked historical Single Season careers. |
 | Dropping a sponsor might imply a modeled termination fee or negotiation process. | Clarified | The current simulation removes the sponsor immediately and does not model a termination fee. The refresh does not invent a charge or negotiation state. |
 | Commercial cards could imply rival financial figures are disclosed. | Prevented | This workspace only shows the player team's persisted sponsor contracts; rival sponsor values remain labeled as estimates on the organization screens. |
+
+## People and Relationships Center findings
+
+| Finding | Status | Resolution |
+| --- | --- | --- |
+| Principal standing, driver relationships, and rival relationships used different page structures despite forming the game's people-management layer. | Fixed | All three now use the shared People Center hierarchy with persistent metrics, focused tabs, and internally scrolling work areas. |
+| The optional Due Round field created a promise with no due season, but round expiry required both values. The progress UI showed a deadline that the engine would not enforce. | Fixed | Promise creation now binds a round-only deadline to the season in which the promise was made, with regression coverage for expiry. |
+| Clause compensation remained clickable without enough budget even though the reducer silently rejected it. | Fixed | Compensation is now visibly disabled with an insufficient-budget reason whenever the recorded renegotiation cost cannot be paid. |
+| Job offers could look like immediate team switches. | Preserved | Offer controls retain explicit next-season wording; accepted approaches remain cancellable before rollover. Rumors remain informational only. |
+| Driver trust, confidence, ego, wants, promises, clauses, and team-order effects could be reduced to one relationship score. | Prevented | The driver workspace keeps the distinct implemented dimensions, explanatory text, promise progress, dossier links, and action consequences. |
+| Rival action cards could become decorative relationship flavor. | Prevented | Every action continues to use the existing budget cost, finance transaction, relationship deltas, news generation, and protest-success rules. |
+| Open Dialogue, Technical Exchange, and Scout Personnel currently have no per-round cooldown; only repeated formal protests are rejected in the same round. | Exposed gap | The refresh does not claim a cooldown exists. A future gameplay pass should add an engine-level cadence rule before presenting these actions as limited weekly diplomacy. |

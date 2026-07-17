@@ -24,6 +24,14 @@ import type {
 } from '../types/relationshipTypes';
 import { contractClauseLabel } from '../sim/phase18ContractClauseEngine';
 import type { ContractBreachResponse } from '../types/phase18Types';
+import {
+  MetricStrip,
+  WorkspaceBody,
+  WorkspaceHeader,
+  WorkspaceMetric,
+  WorkspaceScreen,
+  WorkspaceTabs,
+} from '../components/workspace/Workspace';
 
 const ORDER_LABEL: Record<TeamOrder, string> = Object.fromEntries(
   TEAM_ORDER_SPECS.map((s) => [s.order, s.label]),
@@ -149,6 +157,7 @@ export function Relationships() {
 
   const driverName = (id: string) => state.drivers.find((d) => d.id === id)?.name ?? id;
   const teamId = state.selectedTeamId;
+  const teamBudget = state.teams.find((team) => team.id === teamId)?.budget ?? 0;
   const teamDrivers = driversForTeam(state, teamId);
   const activeDrivers = activeDriversForTeam(state, teamId);
   const reserveDrivers = teamDrivers.filter((d) => !activeDrivers.some((ad) => ad.id === d.id));
@@ -157,6 +166,12 @@ export function Relationships() {
   const contractClauses = (state.phase18?.contractClauses ?? []).filter((clause) =>
     clause.teamId === teamId && clause.partyType === 'Driver' && teamDrivers.some((driver) => driver.id === clause.partyId),
   );
+  const activePromiseCount = allPromises.filter((promise) => promise.status === 'active' && teamDrivers.some((driver) => driver.id === promise.driverId)).length;
+  const breachedClauseCount = contractClauses.filter((clause) => clause.status === 'Breached' && !clause.resolutionNote?.startsWith('Management response:')).length;
+  const relationshipRecords = teamDrivers.map((driver) => rels[driver.id]).filter((relationship): relationship is DriverRelationship => Boolean(relationship));
+  const averagePrincipalTrust = relationshipRecords.length
+    ? Math.round(relationshipRecords.reduce((sum, relationship) => sum + relationship.trustInPrincipal, 0) / relationshipRecords.length)
+    : 0;
   const driverContractYears = (id: string) =>
     state.drivers.find((d) => d.id === id)?.contractYearsRemaining ?? 0;
 
@@ -165,18 +180,30 @@ export function Relationships() {
   };
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-neutral-100">Driver Relationships</h1>
-        <p className="text-sm text-neutral-400">
-          The human side of your garage. Team orders during a race move morale, loyalty and the
-          teammate relationship — and a number-one driver asked to yield will not forget it.
-        </p>
-      </div>
-
-      <div className="flex flex-wrap gap-1 rounded-lg border border-neutral-800 bg-neutral-950/70 p-1">
-        {([['race', 'Race Drivers'], ['reserve', `Reserve (${reserveDrivers.length})`], ['clauses', `Clauses & Promises (${contractClauses.length})`], ['orders', `Team Orders (${orders.length})`]] as const).map(([id, label]) => <button key={id} type="button" onClick={() => setActiveSection(id)} className={`rounded px-3 py-2 text-xs font-semibold ${activeSection === id ? 'bg-amber-500 text-neutral-950' : 'text-neutral-400 hover:bg-neutral-800 hover:text-neutral-100'}`}>{label}</button>)}
-      </div>
+    <WorkspaceScreen>
+      <WorkspaceHeader
+        eyebrow="People center"
+        title="Driver Relationships"
+        subtitle="Trust, confidence, promises, contract commitments, and team-order consequences"
+      />
+      <MetricStrip>
+        <WorkspaceMetric label="Race lineup" value={`${activeDrivers.length}/2`} detail={`${reserveDrivers.length} reserve or third drivers`} />
+        <WorkspaceMetric label="Principal trust" value={`${averagePrincipalTrust}/100`} detail="Average across signed drivers" />
+        <WorkspaceMetric label="Active promises" value={activePromiseCount} detail="Binding management commitments" />
+        <WorkspaceMetric label="Contract attention" value={breachedClauseCount} detail={`${contractClauses.length} tracked clauses`} />
+      </MetricStrip>
+      <WorkspaceTabs
+        items={[
+          { id: 'race', label: 'Race Drivers' },
+          { id: 'reserve', label: `Reserve (${reserveDrivers.length})` },
+          { id: 'clauses', label: `Clauses & Promises (${contractClauses.length + activePromiseCount})` },
+          { id: 'orders', label: `Team Orders (${orders.length})` },
+        ]}
+        active={activeSection}
+        onChange={setActiveSection}
+        ariaLabel="Driver relationship sections"
+      />
+      <WorkspaceBody className="space-y-4">
 
       {/* Race Drivers Section */}
       {activeSection === 'race' && <div>
@@ -274,7 +301,14 @@ export function Relationships() {
                 {clause.status === 'Breached' && !clause.resolutionNote?.startsWith('Management response:') && (
                   <div className="mt-3 flex flex-wrap gap-1.5">
                     {(['Apologize', 'Compensate', 'PromiseCorrection', 'AcceptDamage'] as ContractBreachResponse[]).map((response) => (
-                      <Button key={response} variant="ghost" className="px-2 py-1 text-[10px]" onClick={() => dispatch({ type: 'RESPOND_TO_CONTRACT_BREACH', clauseId: clause.id, response })}>
+                      <Button
+                        key={response}
+                        variant="ghost"
+                        className="px-2 py-1 text-[10px]"
+                        disabled={response === 'Compensate' && (clause.renegotiationCost ?? 0) > teamBudget}
+                        title={response === 'Compensate' && (clause.renegotiationCost ?? 0) > teamBudget ? 'Insufficient budget for compensation' : undefined}
+                        onClick={() => dispatch({ type: 'RESPOND_TO_CONTRACT_BREACH', clauseId: clause.id, response })}
+                      >
                         {response === 'PromiseCorrection' ? 'Promise correction' : response}{response === 'Compensate' && clause.renegotiationCost ? ` ($${(clause.renegotiationCost / 1_000_000).toFixed(1)}M)` : ''}
                       </Button>
                     ))}
@@ -310,7 +344,8 @@ export function Relationships() {
           </ul>
         )}
       </Panel>}
-    </div>
+      </WorkspaceBody>
+    </WorkspaceScreen>
   );
 }
 

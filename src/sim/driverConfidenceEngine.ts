@@ -392,7 +392,7 @@ export function makePromise(
     madeRound: round,
     madeSeason: season,
     dueRound,
-    dueSeason,
+    dueSeason: dueRound !== undefined ? (dueSeason ?? season) : dueSeason,
     status: 'active',
     trustImpact: 8,
     moraleImpact: 5,

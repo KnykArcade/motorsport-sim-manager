@@ -5,6 +5,14 @@ import { formatMoney } from '../components/ui';
 import { useGame } from '../game/GameContext';
 import { RIVAL_ACTION_COST, rivalRelationshipLabel } from '../sim/phase18RivalRelationshipEngine';
 import type { RivalAction, RivalRelationship } from '../types/phase18Types';
+import {
+  MetricStrip,
+  WorkspaceBody,
+  WorkspaceHeader,
+  WorkspaceMetric,
+  WorkspaceScreen,
+  WorkspaceTabs,
+} from '../components/workspace/Workspace';
 
 type RivalTab = 'matrix' | 'dossier' | 'activity';
 const PAGE_SIZE = 6;
@@ -28,10 +36,21 @@ export function RivalRelationships() {
   const closestAlly = [...relationships].sort((a, b) => b.score - a.score)[0];
   const bitterestRival = relationships[0];
 
-  return <div className="space-y-5">
-    <div><h1 className="text-2xl font-bold text-neutral-100">Rival Relationships</h1><p className="text-sm text-neutral-400">Sporting respect, political alliances, commercial trust, and technical suspicion across the paddock.</p></div>
-    <div className="grid gap-3 sm:grid-cols-4"><Kpi label="Closest ally" value={closestAlly ? teamName(rivalIdOf(closestAlly)) : '—'} /><Kpi label="Bitterest rival" value={bitterestRival ? teamName(rivalIdOf(bitterestRival)) : '—'} /><Kpi label="Technical rivals" value={String(relationships.filter((item) => item.tags.includes('TechnicalRival')).length)} /><Kpi label="Open tensions" value={String(relationships.filter((item) => item.score <= -15).length)} /></div>
-    <div className="flex flex-wrap gap-1 rounded-lg border border-neutral-800 bg-neutral-950/70 p-1">{([['matrix', 'Relationship Matrix'], ['dossier', 'Rival Dossier & Actions'], ['activity', 'Activity History']] as Array<[RivalTab, string]>).map(([id, label]) => <button key={id} type="button" onClick={() => setTab(id)} className={`rounded px-3 py-2 text-xs font-semibold ${tab === id ? 'bg-amber-500 text-neutral-950' : 'text-neutral-400 hover:bg-neutral-800 hover:text-neutral-100'}`}>{label}</button>)}</div>
+  return <WorkspaceScreen>
+    <WorkspaceHeader eyebrow="People center" title="Rival Relationships" subtitle="Sporting respect, political alignment, commercial trust, and technical suspicion across the paddock" />
+    <MetricStrip>
+      <WorkspaceMetric label="Closest ally" value={closestAlly ? teamName(rivalIdOf(closestAlly)) : '—'} detail="Highest overall relationship" />
+      <WorkspaceMetric label="Bitterest rival" value={bitterestRival ? teamName(rivalIdOf(bitterestRival)) : '—'} detail="Lowest overall relationship" />
+      <WorkspaceMetric label="Technical rivals" value={relationships.filter((item) => item.tags.includes('TechnicalRival')).length} detail={`${relationships.length} tracked teams`} />
+      <WorkspaceMetric label="Open tensions" value={relationships.filter((item) => item.score <= -15).length} detail={`Action budget ${formatMoney(budget)}`} />
+    </MetricStrip>
+    <WorkspaceTabs
+      items={[{ id: 'matrix', label: 'Relationship Matrix' }, { id: 'dossier', label: 'Rival Dossier & Actions' }, { id: 'activity', label: `Activity History (${activity.length})` }]}
+      active={tab}
+      onChange={setTab}
+      ariaLabel="Rival relationship sections"
+    />
+    <WorkspaceBody className="space-y-4">
 
     {tab === 'matrix' && <Panel title="Team-to-Team Matrix">
       <div className="grid gap-2 md:grid-cols-2 xl:grid-cols-3">{visible.map((item) => { const rivalId = rivalIdOf(item); return <button key={item.id} type="button" onClick={() => { setSelectedId(rivalId); setTab('dossier'); }} className="rounded-lg border border-neutral-800 bg-neutral-900/45 p-3 text-left hover:border-amber-500/45"><div className="flex items-center justify-between"><span className="font-semibold text-neutral-100">{teamName(rivalId)}</span><Score value={item.score} /></div><div className="mt-1 text-xs text-neutral-500">{rivalRelationshipLabel(item.score)}</div><div className="mt-3 grid grid-cols-2 gap-x-3 gap-y-1 text-[11px] text-neutral-400"><span>Respect <b className="text-neutral-200">{item.sportingRespect}</b></span><span>Politics <b className="text-neutral-200">{item.politicalAlignment}</b></span><span>Trust <b className="text-neutral-200">{item.commercialTrust}</b></span><span>Suspicion <b className="text-neutral-200">{item.technicalSuspicion}</b></span></div><div className="mt-2 flex flex-wrap gap-1">{item.tags.slice(0, 3).map((tag) => <span key={tag} className="rounded bg-neutral-800 px-1.5 py-0.5 text-[9px] text-neutral-400">{splitLabel(tag)}</span>)}</div></button>; })}</div>
@@ -45,11 +64,11 @@ export function RivalRelationships() {
     </Panel>}
 
     {tab === 'activity' && <Panel title="Relationship Activity">{activity.length === 0 ? <p className="text-sm text-neutral-500">No major relationship events have occurred yet.</p> : <div className="grid gap-2 md:grid-cols-2">{activity.map((event) => <div key={event.id} className="rounded border border-neutral-800 bg-neutral-900/40 p-3"><div className="flex justify-between text-[10px] uppercase text-neutral-500"><span>{teamName(event.rivalId)} · {event.category}</span><span>{event.seasonYear}{event.round ? ` R${event.round}` : ''}</span></div><p className="mt-1 text-xs text-neutral-300">{event.reason}</p><div className={`mt-1 text-[10px] ${event.amount >= 0 ? 'text-emerald-300' : 'text-red-300'}`}>{event.amount >= 0 ? '+' : ''}{event.amount} relationship</div></div>)}</div>}</Panel>}
-  </div>;
+    </WorkspaceBody>
+  </WorkspaceScreen>;
 }
 
 function splitLabel(value: string): string { return value.replace(/([A-Z])/g, ' $1').trim(); }
 function actionDescription(action: RivalAction): string { if (action === 'OpenDialogue') return 'Lower tension and improve political alignment.'; if (action === 'TechnicalExchange') return 'Build trust and reduce copying suspicion.'; if (action === 'ScoutPersonnel') return 'Monitor staff and drivers, increasing market tension.'; return 'Challenge suspected illegality; success depends on technical suspicion.'; }
 function Score({ value }: { value: number }) { const tone = value >= 15 ? 'text-emerald-300' : value <= -15 ? 'text-red-300' : 'text-amber-300'; return <span className={`text-lg font-bold tabular-nums ${tone}`}>{value > 0 ? '+' : ''}{value}</span>; }
-function Kpi({ label, value }: { label: string; value: string }) { return <div className="rounded border border-neutral-800 bg-neutral-900/40 px-3 py-2"><div className="text-[10px] uppercase text-neutral-500">{label}</div><div className="mt-1 truncate font-semibold text-neutral-100">{value || '—'}</div></div>; }
 function Meter({ label, value, display, danger }: { label: string; value: number; display?: number; danger?: boolean }) { const pct = Math.max(0, Math.min(100, value)); return <div><div className="flex justify-between text-[10px] text-neutral-500"><span>{label}</span><span>{display ?? Math.round(value)}</span></div><div className="mt-1 h-1.5 overflow-hidden rounded bg-neutral-800"><div className={`h-full ${danger ? 'bg-orange-500' : 'bg-sky-500'}`} style={{ width: `${pct}%` }} /></div></div>; }
