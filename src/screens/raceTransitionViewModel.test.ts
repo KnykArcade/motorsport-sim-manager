@@ -1,11 +1,13 @@
 import { describe, expect, it } from 'vitest';
 import {
   EVENT_PAGE_SIZE,
+  POST_RACE_REVIEW_TABS,
   PRE_RACE_BRIEFING_TABS,
   RACE_RESULTS_TABS,
   RESULT_PAGE_SIZE,
   SEASON_REVIEW_TABS,
   canOpenRaceWeekendPhase,
+  postRaceReviewRisk,
   visibleRaceWeekendPhases,
   transitionPage,
   transitionPageCount,
@@ -14,6 +16,7 @@ import {
 describe('race transition view model', () => {
   it('exposes bounded tab groups for each transition screen', () => {
     expect(PRE_RACE_BRIEFING_TABS.map((tab) => tab.id)).toEqual(['overview', 'preparation', 'team', 'paddock']);
+    expect(POST_RACE_REVIEW_TABS.map((tab) => tab.id)).toEqual(['overview', 'classification', 'incidents', 'investigation', 'championships']);
     expect(RACE_RESULTS_TABS.map((tab) => tab.id)).toEqual(['summary', 'classification', 'story', 'championships']);
     expect(SEASON_REVIEW_TABS.map((tab) => tab.id)).toEqual(['honours', 'drivers', 'constructors', 'next']);
   });
@@ -42,6 +45,14 @@ describe('race transition view model', () => {
       'race-instructions',
     ]);
     expect(canOpenRaceWeekendPhase('practice', 'briefing', true)).toBe(false);
+  });
+
+  it('keeps unresolved post-race technical risk visible without treating resolved cases as active', () => {
+    expect(postRaceReviewRisk([
+      { teamId: 'player', status: 'AwaitingInvestigation', unresolvedRisk: 5 },
+      { teamId: 'player', status: 'Resolved', unresolvedRisk: 0 },
+      { teamId: 'rival', status: 'FindingsReady', unresolvedRisk: 7 },
+    ], 'player')).toEqual({ caseCount: 2, unresolvedCount: 1, unresolvedRisk: 5 });
   });
 
   it('clamps requested pages without changing source order', () => {

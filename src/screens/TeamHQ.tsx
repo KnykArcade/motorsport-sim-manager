@@ -68,6 +68,7 @@ export function TeamHQ() {
   const teamName = (id: string) => state.teams.find((t) => t.id === id)?.name ?? id;
   const teamColor = (id: string) => state.teams.find((t) => t.id === id)?.color;
   const workflow = workflowDestination(state);
+  const attentionCount = state.news.filter((item) => item.priority === 'critical' || item.priority === 'high').length;
 
   return (
     <WorkspaceScreen className="era-feature-screen era-team-hq">
@@ -90,6 +91,28 @@ export function TeamHQ() {
         <WorkspaceMetric label="Reputation" value={Math.round(team?.reputation ?? 0)} detail="Market standing" />
         <WorkspaceMetric label="Active projects" value={state.activeDevelopmentProjects.length} detail="Development in progress" />
       </MetricStrip>
+
+      <section className="ui-decision-strip flex flex-wrap items-center justify-between gap-3 rounded-lg border px-3 py-2.5">
+        <div className="flex min-w-0 items-center gap-3">
+          <span className="ui-decision-strip-pulse" aria-hidden="true" />
+          <div className="min-w-0">
+            <div className="text-[10px] font-black uppercase tracking-[0.14em] text-neutral-400">Decision desk</div>
+            <div className="truncate text-sm font-semibold text-neutral-100">
+              {workflow ? `${workflow.context} is ready` : 'Team management is up to date'}
+            </div>
+          </div>
+        </div>
+        <div className="flex flex-wrap items-center gap-3 text-xs text-neutral-400">
+          <span>{attentionCount} priority report{attentionCount === 1 ? '' : 's'}</span>
+          <span>{activeDrivers.length}/{minDrivers} race seats filled</span>
+          {race && <span>Next: {race.gpName}</span>}
+          {workflow && (
+            <Button variant="primary" className="px-3 py-1.5 text-xs" onClick={() => navigate(workflow.to)}>
+              {workflow.label} →
+            </Button>
+          )}
+        </div>
+      </section>
 
       <WorkspaceTabs items={TEAM_HQ_TABS} active={tab} onChange={setTab} ariaLabel="Team HQ command center" />
 

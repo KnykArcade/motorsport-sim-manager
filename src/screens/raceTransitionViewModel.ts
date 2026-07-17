@@ -1,4 +1,5 @@
 export type PreRaceBriefingTab = 'overview' | 'preparation' | 'team' | 'paddock';
+export type PostRaceReviewTab = 'overview' | 'classification' | 'incidents' | 'investigation' | 'championships';
 export type RaceResultsTab = 'summary' | 'classification' | 'story' | 'championships';
 export type SeasonReviewTab = 'honours' | 'drivers' | 'constructors' | 'next';
 export type RaceWeekendPhase =
@@ -16,6 +17,14 @@ export const PRE_RACE_BRIEFING_TABS: ReadonlyArray<{ id: PreRaceBriefingTab; lab
   { id: 'preparation', label: 'Preparation' },
   { id: 'team', label: 'Team Status' },
   { id: 'paddock', label: 'Paddock' },
+];
+
+export const POST_RACE_REVIEW_TABS: ReadonlyArray<{ id: PostRaceReviewTab; label: string }> = [
+  { id: 'overview', label: 'Overview' },
+  { id: 'classification', label: 'Classification' },
+  { id: 'incidents', label: 'Race Story' },
+  { id: 'investigation', label: 'Technical Review' },
+  { id: 'championships', label: 'Championships' },
 ];
 
 export const RACE_RESULTS_TABS: ReadonlyArray<{ id: RaceResultsTab; label: string }> = [
@@ -61,6 +70,19 @@ export function canOpenRaceWeekendPhase(
   const candidateIndex = raceWeekendPhaseIndex(candidate, minimumPackage);
   const furthestIndex = raceWeekendPhaseIndex(furthest, minimumPackage);
   return candidateIndex >= 0 && furthestIndex >= 0 && candidateIndex <= furthestIndex;
+}
+
+export function postRaceReviewRisk(
+  cases: ReadonlyArray<{ teamId: string; status: string; unresolvedRisk: number }>,
+  teamId: string,
+): { caseCount: number; unresolvedCount: number; unresolvedRisk: number } {
+  const teamCases = cases.filter((item) => item.teamId === teamId);
+  const unresolved = teamCases.filter((item) => item.status !== 'Resolved');
+  return {
+    caseCount: teamCases.length,
+    unresolvedCount: unresolved.length,
+    unresolvedRisk: unresolved.reduce((sum, item) => sum + item.unresolvedRisk, 0),
+  };
 }
 
 export const RESULT_PAGE_SIZE = 10;

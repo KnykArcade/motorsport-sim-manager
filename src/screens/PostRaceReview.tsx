@@ -9,15 +9,26 @@ import { RaceResultTable } from '../components/RaceResultTable';
 import { StandingsTable } from '../components/StandingsTable';
 import { NewsPanel } from '../components/NewsPanel';
 import { formatMoney } from '../components/ui';
+import {
+  MetricStrip,
+  WorkspaceBody,
+  WorkspaceHeader,
+  WorkspaceMetric,
+  WorkspaceScreen,
+  WorkspaceTabs,
+} from '../components/workspace/Workspace';
+import {
+  POST_RACE_REVIEW_TABS,
+  postRaceReviewRisk,
+  type PostRaceReviewTab,
+} from './raceTransitionViewModel';
 import type { GameState } from '../game/careerState';
 import type { GameAction } from '../game/gameReducer';
 import type { FailureInvestigationLevel, FailureResponse } from '../types/phase18Types';
 import { FAILURE_INVESTIGATION_COST, FAILURE_RESPONSE_COST, confidenceLabel, failureCasesForRace } from '../sim/phase18FailureInvestigationEngine';
 
-type ReviewTab = 'overview' | 'classification' | 'incidents' | 'investigation' | 'championships';
-
 export function PostRaceReview() {
-  const [activeTab, setActiveTab] = useState<ReviewTab>('overview');
+  const [activeTab, setActiveTab] = useState<PostRaceReviewTab>('overview');
   const { raceId } = useParams();
   const { state, dispatch } = useGame();
   const navigate = useNavigate();
@@ -60,46 +71,44 @@ export function PostRaceReview() {
   // buildPostRaceSummary is only available for the active review.
   const historicalPoints = isActiveReview ? null : playerResults.reduce((sum, r) => sum + r.points, 0);
   const failureCases = failureCasesForRace(state, raceId);
+  const technicalRisk = postRaceReviewRisk(failureCases, state.selectedTeamId);
+  const tabs = POST_RACE_REVIEW_TABS.map((item) => item.id === 'investigation' && technicalRisk.unresolvedCount > 0
+    ? { ...item, label: `${item.label} · ${technicalRisk.unresolvedCount}` }
+    : item);
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-neutral-100">Post-Race Review</h1>
-          <p className="text-sm text-neutral-400">
-            {race.gpName} · {race.trackName} · Round {race.round}
-            {!isActiveReview && <span className="ml-2 text-xs text-neutral-500">· Historical (read-only)</span>}
-          </p>
-        </div>
-        {isActiveReview && (
+    <WorkspaceScreen className="era-feature-screen era-post-race-review-screen">
+      <WorkspaceHeader
+        eyebrow={isActiveReview ? 'Race operations' : 'Race archive'}
+        title={`${race.gpName} Review`}
+        subtitle={<>{race.trackName} · Round {race.round} of {state.calendar.length}{!isActiveReview && ' · Historical (read-only)'}</>}
+        actions={isActiveReview && (
           state.seasonComplete ? (
             <Button variant="primary" onClick={() => navigate('/season-review')}>Season Review →</Button>
           ) : (
-            <Button variant="primary" onClick={continueToPaddock}>Continue to Paddock Week →</Button>
+            <Button
+              variant="primary"
+              onClick={continueToPaddock}
+              title={technicalRisk.unresolvedCount > 0 ? `Continue with ${technicalRisk.unresolvedCount} unresolved technical case(s)` : 'Continue to Paddock Week'}
+            >
+              {technicalRisk.unresolvedCount > 0 ? 'Continue with unresolved risk →' : 'Continue to Paddock Week →'}
+            </Button>
           )
         )}
-      </div>
-
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        <KpiCard label="Points Scored" value={String(isActiveReview ? (summary?.pointsGained ?? 0) : (historicalPoints ?? 0))} />
-        <KpiCard label="Best Finish" value={bestFinish !== null ? `P${bestFinish}` : '—'} />
-        {isActiveReview && (
-          <KpiCard label="Budget Impact" value={formatMoney(summary?.budgetImpact ?? 0)} />
-        )}
-        {isActiveReview && (
-          <KpiCard label="Car Condition" value={`${Math.round(summary?.carCondition ?? 0)}%`} />
-        )}
-      </div>
-
-      <div className="flex flex-wrap gap-1 rounded-lg border border-neutral-800 bg-neutral-950/70 p-1">
-        {([
-          ['overview', 'Overview'], ['classification', 'Classification'], ['incidents', 'Incidents'],
-          ['investigation', `Investigation${failureCases.some((item) => item.teamId === state.selectedTeamId && item.status !== 'Resolved') ? ' •' : ''}`],
-          ['championships', 'Championships'],
-        ] as Array<[ReviewTab, string]>).map(([id, label]) => (
-          <button key={id} type="button" onClick={() => setActiveTab(id)} className={`rounded px-3 py-2 text-xs font-semibold transition ${activeTab === id ? 'bg-amber-500 text-neutral-950' : 'text-neutral-400 hover:bg-neutral-800 hover:text-neutral-100'}`}>{label}</button>
-        ))}
-      </div>
+      />
+      <MetricStrip>
+        <WorkspaceMetric label="Team result" value={bestFinish !== null ? `P${bestFinish}` : 'No finish'} detail={`${isActiveReview ? (summary?.pointsGained ?? 0) : (historicalPoints ?? 0)} points scored`} />
+        <WorkspaceMetric label="Budget impact" value={isActiveReview ? formatMoney(summary?.budgetImpact ?? 0) : 'Historical'} detail={isActiveReview ? 'Recorded race-round transactions' : 'Current finances unchanged'} />
+        <WorkspaceMetric label="Car condition" value={isActiveReview ? `${Math.round(summary?.carCondition ?? 0)}%` : 'Read only'} detail={isActiveReview ? 'Current team car condition' : `${results.length} classified records`} />
+        <WorkspaceMetric label="Technical risk" value={technicalRisk.unresolvedCount > 0 ? `${technicalRisk.unresolvedCount} unresolved` : 'Clear'} detail={technicalRisk.unresolvedCount > 0 ? `${technicalRisk.unresolvedRisk} active risk points` : `${technicalRisk.caseCount} case(s) recorded`} />
+      </MetricStrip>
+      {isActiveReview && technicalRisk.unresolvedCount > 0 && (
+        <div className="shrink-0 rounded border border-orange-500/30 bg-orange-500/5 px-3 py-2 text-[11px] text-orange-200">
+          Technical review is optional, but continuing with {technicalRisk.unresolvedCount} unresolved case{technicalRisk.unresolvedCount === 1 ? '' : 's'} keeps a reliability penalty active for future races.
+        </div>
+      )}
+      <WorkspaceTabs items={tabs} active={activeTab} onChange={setActiveTab} ariaLabel="Post-race review sections" />
+      <WorkspaceBody className="space-y-3">
 
       {activeTab === 'investigation' && (
         <FailureInvestigationPanel state={state} raceId={raceId} isActiveReview={isActiveReview} dispatch={dispatch} />
@@ -231,7 +240,8 @@ export function PostRaceReview() {
           </div>}
         </div>}
       </div>}
-    </div>
+      </WorkspaceBody>
+    </WorkspaceScreen>
   );
 }
 
@@ -270,15 +280,6 @@ function FailureInvestigationPanel({ state, raceId, isActiveReview, dispatch }: 
 
 function InvestigationFact({ label, value }: { label: string; value: string }) {
   return <div className="rounded bg-neutral-950/45 p-2"><div className="text-[9px] uppercase text-neutral-600">{label}</div><div className="mt-1 text-neutral-300">{value}</div></div>;
-}
-
-function KpiCard({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="rounded-lg border border-neutral-800 bg-neutral-900/40 px-4 py-3">
-      <div className="text-xs font-semibold uppercase tracking-wide text-neutral-500">{label}</div>
-      <div className="mt-1 text-lg font-bold text-neutral-100">{value}</div>
-    </div>
-  );
 }
 
 function topDemand(track: NonNullable<ReturnType<typeof getTrackById>>): string {

@@ -148,7 +148,7 @@ export function NewsCenter() {
         eyebrow="Media & intelligence"
         title="News Center"
         subtitle={`Season ${state?.seasonYear ?? '—'} · Round ${state?.careerPhase?.currentRound ?? '—'} · Reports and developing stories from the shared universe`}
-        actions={<button type="button" onClick={() => navigate('/stories')} className="rounded border border-neutral-700 bg-neutral-900 px-3 py-1.5 text-xs font-semibold text-neutral-200 hover:border-amber-500 hover:text-amber-300">Open Paddock Stories</button>}
+        actions={<button type="button" onClick={() => navigate('/stories')} className="ui-inline-action rounded border px-3 py-1.5 text-xs font-semibold">Open Paddock Stories</button>}
       />
       <MetricStrip>
         <WorkspaceMetric label="Current reports" value={state?.news?.length ?? 0} detail={`${filteredNews.length} match this view`} />
@@ -165,7 +165,7 @@ export function NewsCenter() {
       <WorkspaceBody className="space-y-3">
 
       {/* Filter Controls */}
-      {view === 'feed' && <div className="space-y-3 rounded-lg border border-neutral-800 bg-neutral-900/50 p-3">
+      {view === 'feed' && <div className="ui-news-filter-panel space-y-3 rounded-lg border p-3">
         {/* Search + Quick Toggles */}
         <div className="flex flex-wrap items-center gap-2">
           <input
@@ -173,7 +173,7 @@ export function NewsCenter() {
             placeholder="Search headlines..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="flex-1 min-w-[180px] rounded bg-neutral-800 px-3 py-1 text-sm text-neutral-200 placeholder:text-neutral-600"
+            className="ui-news-search flex-1 min-w-[180px] rounded border px-3 py-1.5 text-sm text-neutral-200 placeholder:text-neutral-600"
           />
           <label className="flex items-center gap-1 text-xs text-neutral-400">
             <input
@@ -346,7 +346,7 @@ function NewsCard({ item, chapter }: { item: NewsItem; chapter?: { chapter: numb
   const catLabel = categoryLabel(item.category);
 
   return (
-    <div className={`rounded-lg border bg-neutral-900/50 p-3 ${
+    <article className={`ui-news-card rounded-lg border p-3 ${
       item.priority === 'critical' ? 'border-red-600/40' :
       item.priority === 'high' ? 'border-amber-600/30' :
       'border-neutral-800'
@@ -377,7 +377,7 @@ function NewsCard({ item, chapter }: { item: NewsItem; chapter?: { chapter: numb
       {item.round != null && (
         <div className="mt-1 text-[10px] text-neutral-600">Round {item.round}</div>
       )}
-    </div>
+    </article>
   );
 }
 
