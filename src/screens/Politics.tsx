@@ -63,6 +63,7 @@ export function Politics() {
 
   const regSet = getRegulationSet(state.regulationSetId);
   const votedCount = proposals.filter((proposal) => proposal.playerVote).length;
+  const unvotedCount = proposals.length - votedCount;
 
   return (
     <WorkspaceScreen>
@@ -84,6 +85,22 @@ export function Politics() {
         ariaLabel="Regulations and politics sections"
       />
       <WorkspaceBody className="space-y-4">
+      <div className="ui-decision-strip flex flex-wrap items-center justify-between gap-2 rounded-lg border px-3 py-2.5">
+        <div className="flex min-w-0 items-center gap-2 text-xs">
+          <span className="ui-decision-strip-pulse" aria-hidden="true" />
+          <div className="min-w-0">
+            <div className="font-semibold text-neutral-100">Governance operations desk</div>
+            <div className="truncate text-neutral-400">
+              {unvotedCount > 0
+                ? `${unvotedCount} regulation proposal${unvotedCount === 1 ? '' : 's'} still need your vote.`
+                : 'All current regulation proposals have a recorded vote.'}
+            </div>
+          </div>
+        </div>
+        <span className="shrink-0 text-[10px] font-semibold uppercase tracking-wide text-neutral-500">
+          {playerInfluence} influence · rank {playerRank > 0 ? playerRank : '—'}
+        </span>
+      </div>
 
       {activeTab === 'regulations' && regSet && (
         <RegulationPanel regulationSet={regSet} seasonYear={state.seasonYear} />
@@ -110,10 +127,10 @@ export function Politics() {
                     <div className="h-2 flex-1 overflow-hidden rounded-full bg-neutral-800">
                       <div
                         className="h-full"
-                        style={{ width: `${r.influence}%`, backgroundColor: r.teamId === playerId ? '#f59e0b' : ratingColor(r.influence) }}
+                        style={{ width: `${r.influence}%`, backgroundColor: r.teamId === playerId ? 'var(--era-accent)' : ratingColor(r.influence) }}
                       />
                     </div>
-                    <span className="w-6 text-right tabular-nums" style={{ color: r.teamId === playerId ? '#f59e0b' : ratingColor(r.influence) }}>{r.influence}</span>
+                    <span className="w-6 text-right tabular-nums" style={{ color: r.teamId === playerId ? 'var(--era-accent-strong)' : ratingColor(r.influence) }}>{r.influence}</span>
                   </div>
                 ))}
               </div>

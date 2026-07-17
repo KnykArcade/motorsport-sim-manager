@@ -127,6 +127,24 @@ export function Staff() {
       <WorkspaceTabs items={staffTabs} active={tab} onChange={setTab} ariaLabel="Staff workspaces" />
 
       <WorkspaceBody>
+      <div className="ui-decision-strip flex flex-wrap items-center justify-between gap-2 rounded-lg border px-3 py-2.5">
+        <div className="flex min-w-0 items-center gap-2 text-xs">
+          <span className="ui-decision-strip-pulse" aria-hidden="true" />
+          <div className="min-w-0">
+            <div className="font-semibold text-neutral-100">People operations desk</div>
+            <div className="truncate text-neutral-400">
+              {vacancies > 0
+                ? `${vacancies} staff position${vacancies === 1 ? '' : 's'} remain vacant. Review the market before the next race phase.`
+                : councilActivity.length > 0
+                  ? `${councilActivity.length} advisor recommendation${councilActivity.length === 1 ? '' : 's'} are available for review.`
+                  : 'Staffing is complete and no advisor action is currently queued.'}
+            </div>
+          </div>
+        </div>
+        <span className="shrink-0 text-[10px] font-semibold uppercase tracking-wide text-neutral-500">
+          {formatMoney(budget)} available
+        </span>
+      </div>
       {tab === 'council' && (
         <Panel title="Advisor Council Activity">
           {councilActivity.length === 0 ? (
@@ -148,7 +166,7 @@ export function Staff() {
                       {recommendation.status}
                     </span>
                   </div>
-                  <div className="mt-2 text-xs font-semibold text-sky-300">{recommendation.recommendation}</div>
+                  <div className="mt-2 text-xs font-semibold text-[var(--era-accent-strong)]">{recommendation.recommendation}</div>
                   <p className="mt-1 text-[11px] text-neutral-400">{recommendation.rationale}</p>
                   <div className="mt-2 flex justify-between text-[10px] text-neutral-500">
                     <span>Confidence {recommendation.confidence}%</span>
@@ -175,17 +193,17 @@ export function Staff() {
               {visibleContractStaff.map((member) => {
                 const clause = staffClauses.find((entry) => entry.partyId === member.id);
                 const futureIntent = state.characterInteractions?.futureIntentions.find((entry) => entry.target.type === 'Staff' && entry.target.id === member.id);
-                return <div key={member.id} className="rounded-lg border border-sky-500/25 bg-neutral-900/40 p-3">
+                return <div key={member.id} className="rounded-lg border border-[var(--era-accent)]/35 bg-neutral-900/40 p-3">
                   <div className="flex justify-between gap-2">
                     <div><span className="font-semibold text-neutral-100">{member.name}</span><div className="text-[10px] text-neutral-500">{member.role}</div></div>
-                    <span className="text-[10px] uppercase text-sky-300">{member.contractYearsRemaining ?? 2} yr{(member.contractYearsRemaining ?? 2) === 1 ? '' : 's'} left</span>
+                    <span className="text-[10px] uppercase text-[var(--era-accent-strong)]">{member.contractYearsRemaining ?? 2} yr{(member.contractYearsRemaining ?? 2) === 1 ? '' : 's'} left</span>
                   </div>
                   <div className="mt-2 grid grid-cols-2 gap-2 text-xs">
                     <Stat label="Salary/yr">{formatMoney(toMoney(member.salary))}</Stat>
                     <Stat label="Release">{formatMoney(staffReleaseCost(member))}</Stat>
                   </div>
                   {clause ? <>
-                    <div className="mt-2 text-xs font-semibold text-sky-300">{contractClauseLabel(clause.clauseType)}</div>
+                    <div className="mt-2 text-xs font-semibold text-[var(--era-accent-strong)]">{contractClauseLabel(clause.clauseType)}</div>
                     <p className="mt-1 text-[11px] text-neutral-400">{clause.description}</p>
                     <div className="mt-1 text-[10px] text-red-300">Risk: {clause.breachConsequence}</div>
                   </> : <div className="mt-2 text-[11px] text-neutral-500">Standard employment terms · no special clause.</div>}
@@ -433,5 +451,5 @@ function advisorStatusTone(status: string): string {
   if (status === 'Accepted') return 'bg-emerald-500/10 text-emerald-300';
   if (status === 'Overruled' || status === 'Rejected') return 'bg-orange-500/10 text-orange-300';
   if (status === 'Expired') return 'bg-neutral-800 text-neutral-500';
-  return 'bg-sky-500/10 text-sky-300';
+  return 'bg-[var(--era-accent-soft)] text-[var(--era-accent-strong)]';
 }
