@@ -7,8 +7,16 @@ import {
 } from './teamOverviewViewModel';
 
 describe('Team Overview view model', () => {
-  it('keeps expanded team information in five compact tabs', () => {
-    expect(TEAM_DETAIL_TABS.map((tab) => tab.id)).toEqual(['overview', 'identity', 'ratings', 'lineup', 'moves']);
+  it('keeps the organization profile in focused management tabs', () => {
+    expect(TEAM_DETAIL_TABS.map((tab) => tab.id)).toEqual([
+      'overview',
+      'personnel',
+      'performance',
+      'operations',
+      'finance',
+      'identity',
+      'history',
+    ]);
   });
 
   it('fits a 95-team NASCAR grid into stable eight-row pages', () => {

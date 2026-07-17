@@ -1,11 +1,20 @@
-export type TeamDetailTab = 'overview' | 'identity' | 'ratings' | 'lineup' | 'moves';
+export type TeamDetailTab =
+  | 'overview'
+  | 'personnel'
+  | 'performance'
+  | 'operations'
+  | 'finance'
+  | 'identity'
+  | 'history';
 
 export const TEAM_DETAIL_TABS: Array<{ id: TeamDetailTab; label: string }> = [
   { id: 'overview', label: 'Overview' },
-  { id: 'identity', label: 'Identity & Strategy' },
-  { id: 'ratings', label: 'Ratings' },
-  { id: 'lineup', label: 'Lineup & Academy' },
-  { id: 'moves', label: 'Recent Moves' },
+  { id: 'personnel', label: 'Personnel' },
+  { id: 'performance', label: 'Performance' },
+  { id: 'operations', label: 'Operations' },
+  { id: 'finance', label: 'Finance' },
+  { id: 'identity', label: 'Identity' },
+  { id: 'history', label: 'History' },
 ];
 
 export const TEAM_OVERVIEW_PAGE_SIZE = 8;

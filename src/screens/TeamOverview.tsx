@@ -17,6 +17,14 @@ import {
 import type { AIFinancialHealth } from '../types/aiTeamTypes';
 import { Button } from '../components/Button';
 import {
+  MetricStrip,
+  WorkspaceBody,
+  WorkspaceHeader,
+  WorkspaceMetric,
+  WorkspaceScreen,
+  WorkspaceTabs,
+} from '../components/workspace/Workspace';
+import {
   TEAM_DETAIL_TABS,
   TEAM_OVERVIEW_PAGE_SIZE,
   teamOverviewPage,
@@ -111,25 +119,63 @@ export function TeamOverview() {
   const pageCount = teamOverviewPageCount(sorted.length);
   const safePage = Math.min(page, pageCount - 1);
   const visibleRows = teamOverviewPage(sorted, safePage);
+  const playerRow = rows.find((row) => row.isPlayer);
+  const fieldAverage = rows.length
+    ? rows.reduce((total, row) => total + row.overallRating, 0) / rows.length
+    : 0;
+  const financiallyPressed = rows.filter(
+    (row) => row.financialHealth === 'AtRisk' || row.financialHealth === 'Critical',
+  ).length;
+  const leader = rows.find((row) => row.championshipPosition === 1) ?? rows[0];
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h1 className="text-2xl font-bold text-neutral-100">Team Overview</h1>
-          <p className="text-sm text-neutral-500">
-            Compare every {state.series} team across finances, car, staff and form.
-          </p>
-        </div>
-        <div className="flex flex-wrap items-center gap-2">
-          <FilterTabs
-            filter={filter}
-            onChange={(next) => {
-              setFilter(next);
-              setPage(0);
-              setSelectedId(null);
-            }}
-          />
+    <WorkspaceScreen className="era-feature-screen era-team-overview">
+      <WorkspaceHeader
+        eyebrow="Team universe"
+        title="Organization Profiles"
+        subtitle={`Compare every ${state.series} team across performance, personnel, operations and finance.`}
+      />
+
+      <MetricStrip>
+        <WorkspaceMetric label="Organizations" value={rows.length} detail={`${state.seasonYear} ${state.series}`} />
+        <WorkspaceMetric
+          label="My team"
+          value={playerRow?.championshipPosition ? `P${playerRow.championshipPosition}` : 'Not ranked'}
+          detail={playerRow ? `${playerRow.overallRating.toFixed(1)} overall` : 'No selected team'}
+        />
+        <WorkspaceMetric
+          label="Championship leader"
+          value={leader?.name ?? 'Not established'}
+          detail={leader ? `${leader.points} points · ${leader.wins} wins` : undefined}
+        />
+        <WorkspaceMetric
+          label="Field health"
+          value={`${financiallyPressed} under pressure`}
+          detail={`${fieldAverage.toFixed(1)} average rating`}
+        />
+      </MetricStrip>
+
+      <WorkspaceTabs
+        items={[
+          { id: 'all' as const, label: 'All Teams' },
+          { id: 'rivals' as const, label: 'Rivals' },
+          { id: 'player' as const, label: 'My Team' },
+        ]}
+        active={filter}
+        onChange={(next) => {
+          setFilter(next);
+          setPage(0);
+          setSelectedId(null);
+        }}
+        ariaLabel="Organization list filters"
+      />
+
+      <WorkspaceBody className="flex flex-col overflow-hidden">
+        <Panel className="flex min-h-0 flex-1 flex-col overflow-hidden">
+          <div className="flex shrink-0 flex-wrap items-center justify-between gap-3 border-b border-neutral-800 px-3 py-2">
+            <div className="text-xs text-neutral-500">
+              Select an organization to open its full management profile.
+            </div>
           <label className="flex items-center gap-2 text-xs text-neutral-400">
             Sort by
             <select
@@ -156,11 +202,8 @@ export function TeamOverview() {
               <option value="sponsorIncome">Sponsor Income</option>
             </select>
           </label>
-        </div>
-      </div>
-
-      <Panel className="overflow-hidden">
-        <div className="overflow-x-auto">
+          </div>
+        <div className="min-h-0 flex-1 overflow-auto">
           <table className="w-full min-w-[1100px] border-collapse text-sm">
             <thead>
               <tr className="border-b border-neutral-800 text-left text-[11px] uppercase tracking-wide text-neutral-500">
@@ -241,7 +284,7 @@ export function TeamOverview() {
             </tbody>
           </table>
         </div>
-        <div className="flex items-center justify-between gap-3 border-t border-neutral-800 px-3 py-2">
+        <div className="flex shrink-0 items-center justify-between gap-3 border-t border-neutral-800 px-3 py-2">
           <Button
             variant="secondary"
             className="px-3 py-1 text-xs"
@@ -264,32 +307,10 @@ export function TeamOverview() {
             Next
           </Button>
         </div>
-      </Panel>
+        </Panel>
+      </WorkspaceBody>
       {selectedId && detail && <TeamDetail detail={detail} onClose={() => setSelectedId(null)} />}
-    </div>
-  );
-}
-
-function FilterTabs({ filter, onChange }: { filter: Filter; onChange: (f: Filter) => void }) {
-  const tabs: { id: Filter; label: string }[] = [
-    { id: 'all', label: 'All' },
-    { id: 'rivals', label: 'Rivals' },
-    { id: 'player', label: 'My Team' },
-  ];
-  return (
-    <div className="flex rounded-md border border-neutral-700 p-0.5">
-      {tabs.map((t) => (
-        <button
-          key={t.id}
-          onClick={() => onChange(t.id)}
-          className={`rounded px-3 py-1 text-xs font-medium transition-colors ${
-            filter === t.id ? 'bg-neutral-700 text-neutral-100' : 'text-neutral-400 hover:text-neutral-200'
-          }`}
-        >
-          {t.label}
-        </button>
-      ))}
-    </div>
+    </WorkspaceScreen>
   );
 }
 
@@ -328,7 +349,7 @@ function TeamDetail({
           </button>
         </header>
         <nav
-          className="grid grid-cols-2 gap-1 border-b border-neutral-800 bg-neutral-950 p-2 sm:grid-cols-5"
+          className="flex shrink-0 gap-1 overflow-x-auto border-b border-neutral-800 bg-neutral-950 p-2"
           aria-label="Team dossier sections"
         >
           {TEAM_DETAIL_TABS.map((item) => (
@@ -337,7 +358,7 @@ function TeamDetail({
               type="button"
               onClick={() => setTab(item.id)}
               aria-current={tab === item.id ? 'page' : undefined}
-              className={`rounded px-3 py-2 text-xs font-semibold ${
+              className={`shrink-0 rounded px-3 py-2 text-xs font-semibold ${
                 tab === item.id
                   ? 'bg-amber-500 text-neutral-950'
                   : 'text-neutral-400 hover:bg-neutral-900 hover:text-neutral-100'
@@ -397,7 +418,7 @@ function TeamDetail({
 
           <div className="grid grid-cols-2 gap-x-6 gap-y-1 text-sm">
             <Line label="Budget" value={formatMoney(row.budget)} />
-            <Line label="Sponsor income" value={formatMoney(row.sponsorIncome)} />
+            <Line label={row.isPlayer ? 'Sponsor income' : 'Estimated sponsor income'} value={formatMoney(row.sponsorIncome)} />
             <Line label="Points" value={String(row.points)} />
             <Line label="Wins" value={String(row.wins)} />
             {detail.engineSupplier && (
@@ -507,27 +528,40 @@ function TeamDetail({
         </Panel>
       )}
 
-      {tab === 'ratings' && (
-        <Panel title="Ratings">
+      {tab === 'performance' && (
+        <Panel title="Competitive Performance">
           <div className="grid grid-cols-2 gap-x-6 gap-y-2 sm:grid-cols-3">
+            <RatingRow label="Overall" value={row.overallRating} />
             <RatingRow label="Car" value={row.carRating} />
             <RatingRow label="Drivers" value={row.driverRating} />
             <RatingRow label="Development" value={row.developmentRating} />
-            <RatingRow label="Facilities" value={row.facilitiesRating} />
-            <RatingRow label="Staff" value={row.staffRating} />
-            <RatingRow label="Engine" value={row.engineRating} />
-            <RatingRow label="Academy" value={row.academyRating} />
             <RatingRow label="Race Ops" value={row.raceOpsRating} />
-            <RatingRow label="Pit Crew" value={row.pitCrewRating} />
             <RatingRow label="Reliability" value={row.reliabilityRating} />
-            <RatingRow label="Finance" value={row.financeRating} />
             <RatingRow label="Reputation" value={row.reputationRating} />
           </div>
+          <MechanicImpact>
+            Overall combines car (28%), drivers (16%), development (12%), facilities (10%), staff (10%), finance (9%), race operations (8%), and reliability (7%). Driver strength weights the lead seat 60% and the second seat 40%.
+          </MechanicImpact>
         </Panel>
       )}
 
-      {tab === 'lineup' && (
-        <Panel title="Lineup & Academy">
+      {tab === 'personnel' && (
+        <Panel
+          title="Personnel & Driver Pathway"
+          actions={state && (
+            <div className="flex items-center gap-1">
+              <CharacterDossierButton
+                state={state}
+                subject={row.isPlayer ? { type: 'playerPrincipal' } : { type: 'aiPrincipal', teamId: row.teamId }}
+              >
+                Principal Card
+              </CharacterDossierButton>
+              <CharacterDossierButton state={state} subject={{ type: 'owner', teamId: row.teamId }}>
+                Owner Card
+              </CharacterDossierButton>
+            </div>
+          )}
+        >
           <div className="space-y-3 text-sm">
             <div>
               <div className="text-xs uppercase tracking-wide text-neutral-500">Race drivers</div>
@@ -586,12 +620,84 @@ function TeamDetail({
                 <div className="text-neutral-600">No academy prospects.</div>
               )}
             </div>
+            <MechanicImpact>
+              Driver strength feeds the competitive rating. Academy strength represents the organization’s prospect pipeline; development and facilities determine how effectively that potential can be converted into future performance.
+            </MechanicImpact>
           </div>
         </Panel>
       )}
 
-      {tab === 'moves' && (
-        <Panel title="Recent Offseason Moves">
+      {tab === 'operations' && (
+        <Panel title="Facilities & Operations">
+          <div className="grid gap-4 lg:grid-cols-2">
+            <div className="grid grid-cols-2 gap-x-6 gap-y-2">
+              <RatingRow label="Facilities" value={row.facilitiesRating} />
+              <RatingRow label="Staff" value={row.staffRating} />
+              <RatingRow label="Engine" value={row.engineRating} />
+              <RatingRow label="Academy" value={row.academyRating} />
+              <RatingRow label="Race Ops" value={row.raceOpsRating} />
+              <RatingRow label="Pit Crew" value={row.pitCrewRating} />
+              <RatingRow label="Reliability" value={row.reliabilityRating} />
+            </div>
+            <div className="space-y-2 text-sm">
+              <Line
+                label="Engine agreement"
+                value={detail.engineSupplier ? `${detail.engineSupplier}${detail.engineDealType ? ` (${detail.engineDealType})` : ''}` : 'Not recorded'}
+              />
+              <Line label="R&D focus" value={detail.technicalProgram.focus?.replace('_', ' ') ?? 'Not selected'} />
+              <Line label="Active projects" value={String(detail.technicalProgram.activeProjects)} />
+              <Line label="Completed projects" value={String(detail.technicalProgram.completedProjects)} />
+              <Line label="Factory orders" value={String(detail.technicalProgram.factoryOrders)} />
+              <Line label="Technical spend" value={formatMoney(detail.technicalProgram.spend)} />
+            </div>
+          </div>
+          <MechanicImpact>
+            Facilities and staff support development success. Race operations and pit crew influence weekend execution, while engine strength and reliability determine available performance and mechanical risk.
+          </MechanicImpact>
+        </Panel>
+      )}
+
+      {tab === 'finance' && (
+        <Panel title="Financial Position">
+          <div className="grid gap-4 lg:grid-cols-2">
+            <div className="space-y-2 text-sm">
+              <Line label="Financial health" value={HEALTH_LABELS[row.financialHealth]} />
+              <Line label="Budget" value={formatMoney(row.budget)} />
+              <Line
+                label={row.isPlayer ? 'Sponsor income' : 'Estimated sponsor income'}
+                value={formatMoney(row.sponsorIncome)}
+              />
+              <Line label="Finance rating" value={row.financeRating.toFixed(1)} />
+              <Line label="Sponsor rating" value={row.sponsorRating.toFixed(1)} />
+            </div>
+            <div className="space-y-2 text-sm">
+              <Line label="Technical spend" value={formatMoney(detail.technicalProgram.spend)} />
+              {detail.identityProfile && (
+                <>
+                  <Line label="Projected cash" value={formatMoney(detail.identityProfile.projectedCash)} />
+                  <Line label="Protected reserve" value={formatMoney(detail.identityProfile.reserveTarget)} />
+                </>
+              )}
+            </div>
+          </div>
+          <MechanicImpact>
+            Finance contributes 9% of the overall organization rating and constrains hiring, development, facilities, and technical spending. Rival sponsor income is an estimate derived by the simulation, not a disclosed contract figure.
+          </MechanicImpact>
+        </Panel>
+      )}
+
+      {tab === 'history' && (
+        <Panel title="Organization History">
+          {detail.identityProfile && (
+            <div className="mb-4 grid grid-cols-2 gap-x-6 gap-y-2 text-sm sm:grid-cols-3">
+              <Line label="Tracked seasons" value={String(detail.identityProfile.seasonsTracked)} />
+              <Line label="Average finish" value={detail.identityProfile.averageFinish ? `P${detail.identityProfile.averageFinish}` : 'Not established'} />
+              <Line label="Best finish" value={detail.identityProfile.bestFinish ? `P${detail.identityProfile.bestFinish}` : 'Not established'} />
+              <Line label="Seasons since win" value={String(detail.identityProfile.seasonsSinceWin)} />
+              <Line label="Seasons since podium" value={String(detail.identityProfile.seasonsSincePodium)} />
+              <Line label="Long-term trend" value={detail.identityProfile.trendLabel} />
+            </div>
+          )}
           {detail.recentMoves.length > 0 ? (
             <ul className="space-y-1 text-sm text-neutral-300">
               {detail.recentMoves.map((m, i) => (
@@ -626,6 +732,15 @@ function RatingRow({ label, value }: { label: string; value: number }) {
     <div className="flex items-center justify-between">
       <span className="text-neutral-400">{label}</span>
       <RatingBadge value={value} />
+    </div>
+  );
+}
+
+function MechanicImpact({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="mt-4 rounded border border-sky-900/60 bg-sky-950/20 px-3 py-2 text-xs leading-relaxed text-neutral-400">
+      <span className="mr-1 font-semibold uppercase tracking-wide text-sky-300">Affects</span>
+      {children}
     </div>
   );
 }
