@@ -93,6 +93,24 @@ export function Drivers() {
       <WorkspaceTabs items={driverTabs} active={tab} onChange={setTab} ariaLabel="Driver roster sections" />
 
       <WorkspaceBody>
+      <div className="ui-decision-strip flex flex-wrap items-center justify-between gap-2 rounded-lg border px-3 py-2.5">
+        <div className="flex min-w-0 items-center gap-2 text-xs">
+          <span className="ui-decision-strip-pulse" aria-hidden="true" />
+          <div className="min-w-0">
+            <div className="font-semibold text-neutral-100">Roster operations desk</div>
+            <div className="truncate text-neutral-400">
+              {raceSeats.length < 2
+                ? `Action required: ${2 - raceSeats.length} race seat${2 - raceSeats.length === 1 ? '' : 's'} still open.`
+                : expiringContracts > 0
+                  ? `${expiringContracts} contract${expiringContracts === 1 ? '' : 's'} need attention before the next signing window.`
+                  : 'Race lineup is complete and no immediate contract review is due.'}
+            </div>
+          </div>
+        </div>
+        <span className="shrink-0 text-[10px] font-semibold uppercase tracking-wide text-neutral-500">
+          {raceSeats.length}/2 race seats filled
+        </span>
+      </div>
 
       {tab === 'lineup' && playerTeam && (
         <Panel className="ring-1 ring-amber-500/60">
