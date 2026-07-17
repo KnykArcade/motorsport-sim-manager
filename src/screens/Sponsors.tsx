@@ -19,6 +19,14 @@ import {
   sponsorPageCount,
   type SponsorsWorkspaceTab,
 } from './sponsorsViewModel';
+import {
+  MetricStrip,
+  WorkspaceBody,
+  WorkspaceHeader,
+  WorkspaceMetric,
+  WorkspaceScreen,
+  WorkspaceTabs,
+} from '../components/workspace/Workspace';
 
 const TYPE_LABEL: Record<Sponsor['type'], string> = {
   Title: 'Title',
@@ -80,60 +88,39 @@ export function Sponsors() {
   }
 
   return (
-    <div className="era-feature-screen era-sponsors-screen space-y-3">
-      <div className="flex items-end justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-neutral-100">Sponsors &amp; Commercial</h1>
-          <p className="text-sm text-neutral-400">
-            {team?.name} · partnerships, targets, bonuses, and owner pressure
-          </p>
-        </div>
-        <div className="text-right">
-          <div className="text-xs uppercase tracking-wide text-neutral-500">Commercial reputation</div>
-          <div className="text-lg font-bold text-neutral-100">{commercial?.commercialReputation ?? 0} / 100</div>
-        </div>
-      </div>
+    <WorkspaceScreen className="era-feature-screen era-sponsors-screen">
+      <WorkspaceHeader
+        eyebrow="Commercial center"
+        title="Sponsors & Commercial"
+        subtitle={`${team?.name ?? 'Team'} · Partnerships, targets, bonuses, and owner pressure`}
+      />
 
       {!commercial ? (
-        <Panel title="Commercial">
-          <p className="text-sm text-neutral-500">
-            No commercial data on this save. Start a new career to generate a sponsor portfolio.
-          </p>
-        </Panel>
+        <WorkspaceBody>
+          <Panel title="Commercial">
+            <p className="text-sm text-neutral-500">
+              No commercial data on this save. Start a new career to generate a sponsor portfolio.
+            </p>
+          </Panel>
+        </WorkspaceBody>
       ) : (
         <>
-          <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
-            <Kpi label="Sponsor Slots" value={`${used} / ${capacity}`} tone={slotsFull ? 'bad' : undefined} />
-            <Kpi label="Guaranteed / Year" value={formatMoney(annual)} tone="good" />
-            <Kpi label="Race Installment" value={formatMoney(nextRaceInstallment)} />
-            <Kpi
-              label="Average Confidence"
-              value={`${averageConfidence} / 100`}
-              tone={averageConfidence >= 60 ? 'good' : averageConfidence < 45 ? 'bad' : undefined}
-            />
-          </div>
-
-          <nav
-            aria-label="Sponsor workspaces"
-            className="flex gap-1 rounded-xl border border-neutral-800 bg-neutral-900/50 p-1"
-          >
-            {SPONSORS_WORKSPACE_TABS.map((workspace) => (
-              <button
-                key={workspace.id}
-                type="button"
-                aria-current={tab === workspace.id ? 'page' : undefined}
-                onClick={() => selectTab(workspace.id)}
-                className={`flex-1 rounded-lg px-3 py-1.5 text-sm font-semibold transition-colors ${
-                  tab === workspace.id
-                    ? 'bg-sky-500/20 text-sky-200'
-                    : 'text-neutral-400 hover:bg-neutral-800 hover:text-neutral-200'
-                }`}
-              >
-                {workspace.label}
-                {workspace.id === 'opportunities' ? ` (${offers.length})` : ''}
-              </button>
-            ))}
-          </nav>
+          <MetricStrip>
+            <WorkspaceMetric label="Sponsor capacity" value={`${used}/${capacity}`} detail={slotsFull ? 'Portfolio full' : `${capacity - used} slots available`} />
+            <WorkspaceMetric label="Guaranteed income" value={formatMoney(annual)} detail="Annual contracted value" />
+            <WorkspaceMetric label="Race installment" value={formatMoney(nextRaceInstallment)} detail="75% paid across the calendar" />
+            <WorkspaceMetric label="Commercial standing" value={`${commercial.commercialReputation}/100`} detail={`${averageConfidence}/100 average confidence`} />
+          </MetricStrip>
+          <WorkspaceTabs
+            items={SPONSORS_WORKSPACE_TABS.map((workspace) => ({
+              id: workspace.id,
+              label: `${workspace.label}${workspace.id === 'opportunities' ? ` (${offers.length})` : workspace.id === 'objectives' ? ` (${objectiveSummary.Pending})` : ''}`,
+            }))}
+            active={tab}
+            onChange={selectTab}
+            ariaLabel="Sponsor workspaces"
+          />
+          <WorkspaceBody className="space-y-4">
 
           {tab === 'portfolio' && (
             <Panel
@@ -210,6 +197,9 @@ export function Sponsors() {
                 </div>
               }
             >
+              <p className="mb-3 text-xs text-neutral-500">
+                Objectives currently settle at season end. A recorded midseason deadline is descriptive until an in-season sponsor checkpoint is implemented.
+              </p>
               {sponsors.length === 0 ? (
                 <p className="text-sm text-neutral-500">Sign a sponsor to receive objectives and bonuses.</p>
               ) : (
@@ -285,9 +275,10 @@ export function Sponsors() {
               </Panel>
             </div>
           )}
+          </WorkspaceBody>
         </>
       )}
-    </div>
+    </WorkspaceScreen>
   );
 }
 
@@ -316,6 +307,7 @@ function SponsorPortfolioCard({
       <button
         type="button"
         onClick={onDrop}
+        title="Ends this sponsor relationship immediately. No termination fee is modeled."
         className="mt-3 w-full rounded border border-neutral-700 px-2 py-1 text-xs font-semibold text-red-300 hover:border-red-500/60 hover:bg-red-500/10"
       >
         Drop sponsor
@@ -346,7 +338,11 @@ function SponsorOfferCard({
       </div>
       <div className="mt-2 space-y-1 text-[11px] leading-snug text-neutral-400">
         <div>{offer.contractYearsRemaining} year term · confidence {offer.confidence}</div>
-        <div className="min-h-7 text-neutral-500">{objective ? `Target: ${objective.description}` : 'No performance objective'}</div>
+        <div className="min-h-7 text-neutral-500">
+          {objective
+            ? `Target: ${objective.description}${objective.reward ? ` · +$${objective.reward}M` : ''}${objective.penalty ? ` / -$${objective.penalty}M` : ''}`
+            : 'No performance objective'}
+        </div>
         <div className="min-h-7 text-neutral-500">{bonus ? `Bonus: ${bonus.description}` : 'No performance bonus'}</div>
       </div>
       <button
@@ -376,9 +372,16 @@ function SponsorTermsCard({ sponsor }: { sponsor: Sponsor }) {
           {sponsor.objectives.length === 0 ? (
             <div className="text-xs text-neutral-600">No objectives</div>
           ) : sponsor.objectives.map((objective) => (
-            <div key={objective.id} className="flex items-start justify-between gap-2 text-xs">
-              <span className="text-neutral-300">{objective.description}</span>
-              <ObjectiveStatus status={objective.status} />
+            <div key={objective.id} className="border-b border-neutral-800/70 py-1.5 last:border-0">
+              <div className="flex items-start justify-between gap-2 text-xs">
+                <span className="text-neutral-300">{objective.description}</span>
+                <ObjectiveStatus status={objective.status} />
+              </div>
+              <div className="mt-0.5 text-[10px] text-neutral-500">
+                {objective.deadline ? `Deadline: ${objective.deadline}` : 'No deadline'}
+                {objective.reward ? ` · Reward +$${objective.reward}M` : ''}
+                {objective.penalty ? ` · Miss -$${objective.penalty}M and confidence` : ''}
+              </div>
             </div>
           ))}
         </div>
@@ -474,16 +477,6 @@ function CompactPagination({
           Next
         </button>
       </div>
-    </div>
-  );
-}
-
-function Kpi({ label, value, tone }: { label: string; value: string; tone?: 'good' | 'bad' }) {
-  const color = tone === 'good' ? 'text-green-300' : tone === 'bad' ? 'text-red-300' : 'text-neutral-100';
-  return (
-    <div className="rounded-xl border border-neutral-800 bg-neutral-900/40 p-3">
-      <div className="text-xs uppercase tracking-wide text-neutral-500">{label}</div>
-      <div className={`mt-0.5 truncate text-xl font-bold ${color}`} title={value}>{value}</div>
     </div>
   );
 }
