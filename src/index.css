@@ -255,6 +255,15 @@ body {
   color: var(--era-heading);
 }
 
+.ui-workspace-tabs button:disabled {
+  cursor: not-allowed;
+  color: color-mix(in srgb, var(--era-text-muted) 48%, transparent);
+}
+
+.ui-workspace-tabs button:disabled:hover {
+  color: color-mix(in srgb, var(--era-text-muted) 48%, transparent);
+}
+
 .ui-workspace-tabs button.is-active {
   border-bottom-color: var(--era-accent);
   color: var(--era-accent-strong);

@@ -33,7 +33,7 @@ export function WorkspaceTabs<T extends string>({
   onChange,
   ariaLabel,
 }: {
-  items: ReadonlyArray<{ id: T; label: string }>;
+  items: ReadonlyArray<{ id: T; label: string; disabled?: boolean; disabledReason?: string }>;
   active: T;
   onChange: (id: T) => void;
   ariaLabel: string;
@@ -45,6 +45,8 @@ export function WorkspaceTabs<T extends string>({
           key={item.id}
           type="button"
           onClick={() => onChange(item.id)}
+          disabled={item.disabled}
+          title={item.disabled ? item.disabledReason : undefined}
           aria-current={active === item.id ? 'page' : undefined}
           className={active === item.id ? 'is-active' : ''}
         >

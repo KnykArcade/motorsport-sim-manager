@@ -191,3 +191,13 @@ explicit as their screens are migrated.
 | A disabled weekend action did not keep its blocking reason visible outside the Preparation or Team tab. | Fixed | Persistent gate status and an explicit blocker notice identify the missing package or driver count above every tab. |
 | Key-rival positions were recalculated after filtering out the player, which could label the actual P2 team as P1. | Fixed | Rival cards now retain their real position from the full constructor standings. |
 | Moving the weekend action into the persistent header could bypass phase rules. | Prevented | The action retains the current-package requirement, adds the lineup requirement, and the reducer remains the final authority on phase, package, and roster validity. |
+
+## Race Weekend findings
+
+| Finding | Status | Resolution |
+| --- | --- | --- |
+| Weekend preparation used a different shell from the rest of management, and long phases could push the primary next action below the viewport. | Fixed | Race Weekend now uses the shared workspace header, metric strip, stage tabs, and one contained work area. The current valid next action remains persistent in the header and each existing phase retains its in-context control. |
+| A tabbed race-weekend shell could let a player skip practice, car setup, qualifying, or the post-qualifying setup pass. | Prevented | Stage tabs open only through the furthest legitimately reached phase. Qualifying results unlock review, not race strategy; strategy unlocks only after the existing post-qualifying setup confirmation. The minimum operations package remains the sole explicit practice/setup skip. |
+| Practice completion, qualifying status, and the active race package were spread across separate phases. | Improved | Persistent metrics now identify the current stage, completed practice sessions, qualifying result/best player grid, and package-backed race readiness without creating new simulation values. |
+| The early-1990s F1 garage was a separate navigation shell, which conflicted with the stable cross-era layout rule. | Fixed | The garage-specific presentation no longer replaces the management workspace. Series and era themes continue to supply visual flavor through the shared shell, while the same connected weekend controls appear in the same locations for every era. |
+| A compact weekend dashboard could make recommendations or weather look like direct game effects. | Prevented | Forecasts and engineer recommendations remain informational. Only the existing practice programs, setup commits, qualifying decisions, race strategy, driver instructions, and live-race handoff mutate or pass connected state. |
