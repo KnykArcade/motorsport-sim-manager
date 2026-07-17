@@ -31,6 +31,14 @@ import {
   developmentTabs,
   type DevelopmentTab,
 } from './developmentViewModel';
+import {
+  MetricStrip,
+  WorkspaceBody,
+  WorkspaceHeader,
+  WorkspaceMetric,
+  WorkspaceScreen,
+  WorkspaceTabs,
+} from '../components/workspace/Workspace';
 
 const RISK_COLORS: Record<string, string> = {
   Safe: 'text-green-400',
@@ -102,26 +110,28 @@ export function Development() {
   };
 
   return (
-    <div className={`era-feature-screen era-development-screen space-y-6 ${isF11990sFactory ? 'rounded-xl border border-zinc-700 bg-[radial-gradient(circle_at_top_left,rgba(180,83,9,0.16),transparent_32%),linear-gradient(135deg,rgba(24,24,27,0.98),rgba(39,39,42,0.92))] p-4 shadow-2xl shadow-black/30' : ''}`}>
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-neutral-100">Development</h1>
-          {isF11990sFactory && (
-            <p className="mt-1 text-xs uppercase tracking-[0.18em] text-amber-300/80">
-              {team?.name ?? 'Team'} factory floor - 1990s works program
-            </p>
-          )}
-        </div>
-        <div className="flex items-center gap-4">
-          <div className="text-sm text-neutral-400">
-            Slots: <span className={`font-semibold ${usedSlots >= slots ? 'text-red-400' : 'text-neutral-100'}`}>{usedSlots}/{slots}</span>
-          </div>
-          <div className="text-sm text-neutral-400">
-            Budget: <span className="font-semibold text-neutral-100">{formatMoney(budget)}</span>
-          </div>
-        </div>
-      </div>
-
+    <WorkspaceScreen className={`era-feature-screen era-development-screen ${isF11990sFactory ? 'rounded-xl border border-zinc-700 bg-[radial-gradient(circle_at_top_left,rgba(180,83,9,0.16),transparent_32%),linear-gradient(135deg,rgba(24,24,27,0.98),rgba(39,39,42,0.92))] p-3 shadow-2xl shadow-black/30' : ''}`}>
+      <WorkspaceHeader
+        eyebrow="Technical center"
+        title="Development"
+        subtitle={`${team?.name ?? 'Team'} · ${state.seasonYear} ${state.series}${isF11990sFactory ? ' · 1990s works program' : ''}`}
+      />
+      <MetricStrip>
+        <WorkspaceMetric label="Project capacity" value={`${usedSlots}/${slots}`} detail={usedSlots >= slots ? 'All slots in use' : `${slots - usedSlots} slots available`} />
+        <WorkspaceMetric label="Technical budget" value={formatMoney(budget)} detail="Available team funds" />
+        <WorkspaceMetric label="Success modifiers" value={`${totalSuccessBonus >= 0 ? '+' : ''}${Math.round(totalSuccessBonus * 100)}%`} detail="Staff, facilities, and culture" />
+        <WorkspaceMetric label="Completed work" value={completedProjects.length} detail={`${developmentProjectCatalog.length} catalog projects`} />
+      </MetricStrip>
+      <WorkspaceTabs
+        items={tabs.map((item) => ({
+          id: item.id,
+          label: `${item.label}${item.id === 'active' ? ` (${state.activeDevelopmentProjects.length})` : item.id === 'results' ? ` (${completedProjects.length})` : item.id === 'catalog' ? ` (${developmentProjectCatalog.length})` : ''}`,
+        }))}
+        active={tab}
+        onChange={setTab}
+        ariaLabel="Development sections"
+      />
+      <WorkspaceBody className="space-y-4">
       {singleSeason && (
         <div className="rounded-lg border border-blue-800 bg-blue-900/20 p-3 text-sm text-blue-300">
           Single Season Mode only allows development that affects the selected historical season. Next-year development is disabled.
@@ -133,36 +143,6 @@ export function Development() {
           All development slots are in use. Upgrade facilities to increase slots.
         </div>
       )}
-
-      <nav
-        className={`grid gap-1 rounded-lg border border-neutral-800 bg-neutral-950/70 p-1 ${isF11990sFactory ? 'grid-cols-6' : 'grid-cols-5'}`}
-        aria-label="Development sections"
-      >
-        {tabs.map((item) => {
-          const count = item.id === 'active'
-            ? state.activeDevelopmentProjects.length
-            : item.id === 'results'
-              ? completedProjects.length
-              : item.id === 'catalog'
-                ? developmentProjectCatalog.length
-                : undefined;
-          return (
-            <button
-              key={item.id}
-              type="button"
-              onClick={() => setTab(item.id)}
-              aria-current={tab === item.id ? 'page' : undefined}
-              className={`rounded px-2 py-2 text-xs font-semibold transition-colors ${
-                tab === item.id
-                  ? 'bg-amber-500 text-neutral-950'
-                  : 'text-neutral-400 hover:bg-neutral-900 hover:text-neutral-100'
-              }`}
-            >
-              {item.label}{count === undefined ? '' : ` (${count})`}
-            </button>
-          );
-        })}
-      </nav>
 
       {tab === 'research' && <RDTreePanel />}
 
@@ -371,7 +351,8 @@ export function Development() {
           />
         </Panel>
       )}
-    </div>
+      </WorkspaceBody>
+    </WorkspaceScreen>
   );
 }
 

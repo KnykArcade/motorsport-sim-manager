@@ -115,3 +115,15 @@ explicit as their screens are migrated.
 | Long report and story lists required document-level scrolling. | Fixed | News Center, Paddock Stories, and Paddock Week now use fixed workspace framing with internally scrolling work areas. |
 | Paddock Week tabs could hide required decisions and the race-package gate. | Preserved | Existing attention counts, required-action notices, disabled advancement reason, decision controls, and package selection remain above or inside the correct work area. |
 | A summary view could imply that news changes game state by itself. | Prevented | Report cards and storyline summaries remain informational. Only existing Paddock Week options and related-screen actions mutate or route into connected systems. |
+
+## Development and Technical Center findings
+
+| Finding | Status | Resolution |
+| --- | --- | --- |
+| Development, engine supply, and regulation politics affect the same technical strategy but used three unrelated page structures. | Fixed | All three now use the shared Technical Center hierarchy with persistent metrics, focused tabs, and internally scrolling work areas while retaining their separate simulation responsibilities. |
+| Project outcome chances could look like base probabilities unrelated to the organization. | Clarified | Development keeps the calculated outcome distribution on every catalog project and now keeps the combined staff, facility, and culture success modifier in persistent context. |
+| Project actions could hide why they were unavailable. | Preserved | Budget, slot capacity, facility level, duration, risk, effect, carryover, Single Season restrictions, and disabled-action reasons remain connected to the existing project rules. |
+| Engine annual cost and an immediate supplier-switch payment could be mistaken for the same charge. | Clarified | Persistent metrics identify annual cost, while supplier offers retain their net cash-due/refund explanation and next-season billing language. |
+| A supplier comparison could imply every package was immediately active. | Prevented | Current and pending packages remain distinct; signing still uses the existing affordability, mode, preseason, buyout, and next-season activation rules. |
+| Manufacturer confidence and politics influence were visible but their downstream timing was easy to miss. | Clarified | Manufacturer reviews retain support-tier consequences, and Regulations now keeps influence rank, proposal votes, effective season, and season-rollover settlement visible above every tab. |
+| Compact technical summaries could become decorative dashboards. | Prevented | Every metric is derived from current game state; project, supplier, and regulation controls continue to dispatch their original actions. |
