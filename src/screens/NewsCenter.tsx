@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import type { NewsItem, NewsCategory, NewsPriority } from '../types/gameTypes';
 import {
   categoryLabel,
@@ -11,6 +12,14 @@ import {
 } from '../sim/careerNewsEngine';
 import { useGame } from '../game/GameContext';
 import { buildNewsStorylines, storylineChapterCounts, type NewsStoryline } from './newsCenterViewModel';
+import {
+  MetricStrip,
+  WorkspaceBody,
+  WorkspaceHeader,
+  WorkspaceMetric,
+  WorkspaceScreen,
+  WorkspaceTabs,
+} from '../components/workspace/Workspace';
 
 const ALL_CATEGORIES: (NewsCategory | 'all')[] = [
   'all',
@@ -36,6 +45,7 @@ const ALL_PRIORITIES: (NewsPriority | 'all')[] = ['all', 'critical', 'high', 'no
 
 export function NewsCenter() {
   const { state } = useGame();
+  const navigate = useNavigate();
   const [view, setView] = useState<'feed' | 'storylines'>('feed');
   const [categoryFilter, setCategoryFilter] = useState<NewsCategory | 'all'>('all');
   const [priorityFilter, setPriorityFilter] = useState<NewsPriority | 'all'>('all');
@@ -110,6 +120,8 @@ export function NewsCenter() {
     return buildNewsStorylines(items, teamNames, driverNames);
   }, [state?.newsArchive, state?.news, state?.teams, state?.drivers]);
   const chapterCounts = useMemo(() => storylineChapterCounts(storylines), [storylines]);
+  const attentionCount = (state?.news ?? []).filter((item) => item.priority === 'critical' || item.priority === 'high').length;
+  const teamReportCount = filterNewsByTeam(state?.news ?? [], state?.selectedTeamId).length;
 
   const hasActiveFilters =
     categoryFilter !== 'all' ||
@@ -131,40 +143,26 @@ export function NewsCenter() {
   };
 
   return (
-    <div className="space-y-4">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h2 className="text-xl font-bold text-neutral-100">News Center</h2>
-          <p className="text-xs text-neutral-500">Follow individual reports or trace the paddock stories developing across multiple weeks.</p>
-        </div>
-        <div className="flex items-center gap-2">
-          <span className="text-xs text-neutral-500">
-            {view === 'feed' ? `${filteredNews.length} reports` : `${storylines.length} active storylines`}
-          </span>
-          {archiveCount > 0 && (
-            <span className="text-xs text-neutral-500">
-              ({archiveCount} archived)
-            </span>
-          )}
-        </div>
-      </div>
-
-      <div className="grid grid-cols-2 gap-1 rounded-lg border border-neutral-800 bg-neutral-950 p-1" aria-label="News Center sections">
-        <button
-          type="button"
-          onClick={() => setView('feed')}
-          className={`rounded px-3 py-2 text-xs font-semibold ${view === 'feed' ? 'bg-amber-500 text-neutral-950' : 'text-neutral-400 hover:bg-neutral-900 hover:text-neutral-100'}`}
-        >
-          News Feed
-        </button>
-        <button
-          type="button"
-          onClick={() => setView('storylines')}
-          className={`rounded px-3 py-2 text-xs font-semibold ${view === 'storylines' ? 'bg-amber-500 text-neutral-950' : 'text-neutral-400 hover:bg-neutral-900 hover:text-neutral-100'}`}
-        >
-          Storylines
-        </button>
-      </div>
+    <WorkspaceScreen>
+      <WorkspaceHeader
+        eyebrow="Media & intelligence"
+        title="News Center"
+        subtitle={`Season ${state?.seasonYear ?? '—'} · Round ${state?.careerPhase?.currentRound ?? '—'} · Reports and developing stories from the shared universe`}
+        actions={<button type="button" onClick={() => navigate('/stories')} className="rounded border border-neutral-700 bg-neutral-900 px-3 py-1.5 text-xs font-semibold text-neutral-200 hover:border-amber-500 hover:text-amber-300">Open Paddock Stories</button>}
+      />
+      <MetricStrip>
+        <WorkspaceMetric label="Current reports" value={state?.news?.length ?? 0} detail={`${filteredNews.length} match this view`} />
+        <WorkspaceMetric label="Priority reports" value={attentionCount} detail="Critical or high priority" />
+        <WorkspaceMetric label="My team" value={teamReportCount} detail="Current team reports" />
+        <WorkspaceMetric label="Story archive" value={archiveCount} detail={`${storylines.length} connected storylines`} />
+      </MetricStrip>
+      <WorkspaceTabs
+        items={[{ id: 'feed', label: 'News Feed' }, { id: 'storylines', label: 'Storylines' }]}
+        active={view}
+        onChange={setView}
+        ariaLabel="News Center sections"
+      />
+      <WorkspaceBody className="space-y-3">
 
       {/* Filter Controls */}
       {view === 'feed' && <div className="space-y-3 rounded-lg border border-neutral-800 bg-neutral-900/50 p-3">
@@ -328,7 +326,8 @@ export function NewsCenter() {
           </div>
         )}
       </div> : <StorylineList storylines={storylines} />}
-    </div>
+      </WorkspaceBody>
+    </WorkspaceScreen>
   );
 }
 
