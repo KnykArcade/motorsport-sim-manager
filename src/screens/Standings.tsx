@@ -3,6 +3,14 @@ import { useGame } from '../game/GameContext';
 import { StandingsTable } from '../components/StandingsTable';
 import { CompactPagination } from '../components/CompactPagination';
 import {
+  MetricStrip,
+  WorkspaceBody,
+  WorkspaceHeader,
+  WorkspaceMetric,
+  WorkspaceScreen,
+  WorkspaceTabs,
+} from '../components/workspace/Workspace';
+import {
   STANDINGS_PAGE_SIZE,
   pageCount,
   standingsPage,
@@ -25,6 +33,13 @@ export function Standings() {
   const safePage = Math.min(page, tabPageCount - 1);
   const visibleEntries = standingsPage(entries, safePage);
   const leader = entries[0];
+  const runnerUp = entries[1];
+  const playerTeamPosition = state.constructorStandings.findIndex(
+    (entry) => entry.entityId === state.selectedTeamId,
+  ) + 1;
+  const playerTeamPoints = state.constructorStandings.find(
+    (entry) => entry.entityId === state.selectedTeamId,
+  )?.points ?? 0;
 
   function selectTab(nextTab: StandingsTab) {
     setTab(nextTab);
@@ -32,24 +47,31 @@ export function Standings() {
   }
 
   return (
-    <div className="era-feature-screen era-standings-screen space-y-3">
-      <div className="flex items-end justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-neutral-100">Championship Standings</h1>
-          <p className="text-sm text-neutral-400">Drivers and constructors after round {Math.min(state.currentRaceIndex, state.calendar.length)}.</p>
-        </div>
-        <div className="text-right">
-          <div className="text-[10px] uppercase tracking-wide text-neutral-500">Championship leader</div>
-          <div className="text-lg font-bold text-neutral-100">{leader ? (tab === 'drivers' ? driverName(leader.entityId) : teamName(leader.entityId)) : 'No results'}</div>
-          <div className="text-xs text-amber-300">{leader?.points ?? 0} points</div>
-        </div>
-      </div>
+    <WorkspaceScreen className="era-feature-screen era-standings-screen">
+      <WorkspaceHeader
+        eyebrow="Competition center"
+        title="Championship Standings"
+        subtitle={`Drivers and constructors after round ${Math.min(state.currentRaceIndex, state.calendar.length)} of ${state.calendar.length}.`}
+      />
 
-      <nav className="grid grid-cols-2 gap-1 rounded-lg border border-neutral-800 bg-neutral-950/70 p-1" aria-label="Championship sections">
-        <StandingsTabButton active={tab === 'drivers'} onClick={() => selectTab('drivers')}>Drivers ({state.driverStandings.length})</StandingsTabButton>
-        <StandingsTabButton active={tab === 'constructors'} onClick={() => selectTab('constructors')}>Constructors ({state.constructorStandings.length})</StandingsTabButton>
-      </nav>
+      <MetricStrip>
+        <WorkspaceMetric label={`${tab === 'drivers' ? 'Driver' : 'Constructor'} leader`} value={leader ? (tab === 'drivers' ? driverName(leader.entityId) : teamName(leader.entityId)) : 'No results'} detail={`${leader?.points ?? 0} points`} />
+        <WorkspaceMetric label="Lead margin" value={leader && runnerUp ? `${leader.points - runnerUp.points} pts` : '—'} detail={runnerUp ? `over ${tab === 'drivers' ? driverName(runnerUp.entityId) : teamName(runnerUp.entityId)}` : 'Not established'} />
+        <WorkspaceMetric label="My team" value={playerTeamPosition > 0 ? `P${playerTeamPosition}` : 'Not ranked'} detail={`${playerTeamPoints} constructor points`} />
+        <WorkspaceMetric label="Season progress" value={`${Math.min(state.currentRaceIndex, state.calendar.length)} / ${state.calendar.length}`} detail={state.seasonComplete ? 'Season complete' : 'Rounds completed'} />
+      </MetricStrip>
 
+      <WorkspaceTabs
+        items={[
+          { id: 'drivers' as const, label: `Drivers (${state.driverStandings.length})` },
+          { id: 'constructors' as const, label: `Constructors (${state.constructorStandings.length})` },
+        ]}
+        active={tab}
+        onChange={selectTab}
+        ariaLabel="Championship sections"
+      />
+
+      <WorkspaceBody>
       <StandingsTable
         title={tab === 'drivers' ? "Drivers' Championship" : "Constructors' Championship"}
         entries={visibleEntries}
@@ -60,10 +82,7 @@ export function Standings() {
         positionOffset={safePage * STANDINGS_PAGE_SIZE}
       />
       <CompactPagination noun={tab} total={entries.length} page={safePage} pageCount={tabPageCount} pageSize={STANDINGS_PAGE_SIZE} onPage={setPage} />
-    </div>
+      </WorkspaceBody>
+    </WorkspaceScreen>
   );
-}
-
-function StandingsTabButton({ active, onClick, children }: { active: boolean; onClick: () => void; children: React.ReactNode }) {
-  return <button type="button" onClick={onClick} aria-pressed={active} className={`rounded px-3 py-2 text-xs font-semibold ${active ? 'bg-amber-500 text-neutral-950' : 'text-neutral-400 hover:bg-neutral-900 hover:text-neutral-100'}`}>{children}</button>;
 }
