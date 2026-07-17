@@ -121,6 +121,26 @@ export function Sponsors() {
             ariaLabel="Sponsor workspaces"
           />
           <WorkspaceBody className="space-y-4">
+          <div className="ui-decision-strip flex flex-wrap items-center justify-between gap-2 rounded-lg border px-3 py-2.5">
+            <div className="flex min-w-0 items-center gap-2 text-xs">
+              <span className="ui-decision-strip-pulse" aria-hidden="true" />
+              <div className="min-w-0">
+                <div className="font-semibold text-neutral-100">Commercial operations desk</div>
+                <div className="truncate text-neutral-400">
+                  {objectiveSummary.Pending > 0
+                    ? `${objectiveSummary.Pending} sponsor objective${objectiveSummary.Pending === 1 ? '' : 's'} need monitoring.`
+                    : !slotsFull && offers.length > 0
+                      ? `${offers.length} commercial opportunit${offers.length === 1 ? 'y is' : 'ies are'} available for review.`
+                      : slotsFull
+                        ? 'Sponsor portfolio is full. Review current commitments before signing another deal.'
+                        : 'No immediate commercial decision is required.'}
+                </div>
+              </div>
+            </div>
+            <span className="shrink-0 text-[10px] font-semibold uppercase tracking-wide text-neutral-500">
+              {used}/{capacity} sponsor slots used
+            </span>
+          </div>
 
           {tab === 'portfolio' && (
             <Panel
