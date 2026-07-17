@@ -127,3 +127,15 @@ explicit as their screens are migrated.
 | A supplier comparison could imply every package was immediately active. | Prevented | Current and pending packages remain distinct; signing still uses the existing affordability, mode, preseason, buyout, and next-season activation rules. |
 | Manufacturer confidence and politics influence were visible but their downstream timing was easy to miss. | Clarified | Manufacturer reviews retain support-tier consequences, and Regulations now keeps influence rank, proposal votes, effective season, and season-rollover settlement visible above every tab. |
 | Compact technical summaries could become decorative dashboards. | Prevented | Every metric is derived from current game state; project, supplier, and regulation controls continue to dispatch their original actions. |
+
+## Sponsorship and Commercial Center findings
+
+| Finding | Status | Resolution |
+| --- | --- | --- |
+| Guaranteed contract value, race installments, and performance bonuses could be mistaken for the same income stream. | Clarified | Persistent metrics separate annual guaranteed value from the per-race installment, while the Portfolio and Objectives tabs retain the 25% upfront / 75% installment rule and every conditional bonus term. |
+| Commercial reputation and sponsor confidence appeared as separate ratings without enough context. | Clarified | Commercial reputation remains identified as the driver of offer quality; average confidence stays visible as the relationship-health measure governing renewal prospects. |
+| A compact sponsor list could hide objective failures and owner pressure. | Prevented | Pending objective count remains in the primary tabs, full reward/penalty terms remain visible, and owner expectations and reviews retain their dedicated workspace. |
+| Some objectives store a `midseason` deadline even though the current engine evaluates every unresolved sponsor objective at season end. | Exposed gap | The Objectives workspace states the real settlement timing instead of implying an in-season checkpoint exists. A future gameplay phase can implement the missing midseason evaluation. |
+| Sponsor actions could bypass portfolio or mode rules. | Preserved | Opportunity signing still uses the existing generated offer IDs and slot-capacity gate, while central mode restrictions continue to keep sponsor management out of locked historical Single Season careers. |
+| Dropping a sponsor might imply a modeled termination fee or negotiation process. | Clarified | The current simulation removes the sponsor immediately and does not model a termination fee. The refresh does not invent a charge or negotiation state. |
+| Commercial cards could imply rival financial figures are disclosed. | Prevented | This workspace only shows the player team's persisted sponsor contracts; rival sponsor values remain labeled as estimates on the organization screens. |
