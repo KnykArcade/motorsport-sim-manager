@@ -159,3 +159,14 @@ explicit as their screens are migrated.
 | The season-complete screen used a separate page structure and required document-level scrolling on shorter displays. | Fixed | Season Review now uses the shared FM-style workspace with persistent honours and team context, focused tabs, and one internally scrolling work area. |
 | Switching between final standings could hide the champions and the player's final result. | Fixed | Driver champion, constructors' champion, player-team position, points, and season size remain visible above every tab. |
 | A visual refresh could disconnect the career rollover and Single Season conversion rules. | Prevented | Existing replay, conversion, offseason, and main-menu actions retain their original dispatch and routing behavior, including the Single Season explanation. |
+
+## Offseason findings
+
+| Finding | Status | Resolution |
+| --- | --- | --- |
+| Line-up, academy, reserve-contract, market-outlook, and advance controls appeared in one long page. | Fixed | Offseason now uses the shared FM-style workspace with five focused tabs, persistent rollover metrics, and one internally scrolling work area. |
+| The screen claimed that budget, regulation, staff, car-design, and AI market systems were still planned even though the rollover engine already processes them. | Fixed | The stale future-phase panel is removed. Transition Overview now describes the real people, technical, commercial, and rival-team systems advanced by the existing rollover engine. |
+| Unresolved academy rights could look like a hard blocker even though the engine retains undecided drivers for another first-option window. | Clarified | Academy decisions are explicitly labeled optional, unresolved counts remain visible, and only season completion controls the advance gate. |
+| Reserve-driver ambition consequences were buried below the academy list. | Improved | At-risk reserve count is persistent, the overview explains the departure risk, and the Line-up tab retains the original promotion controls and points comparison. |
+| Academy readiness used F1-specific labels in every championship. | Fixed | Offseason now describes the shared progression as senior-series and race-seat readiness without changing the underlying development calculation. |
+| A prominent advance action could bypass the real season-completion rule. | Prevented | Header and Advance-tab actions share the existing completion/loading gate and visibly explain why advancement is unavailable. |
