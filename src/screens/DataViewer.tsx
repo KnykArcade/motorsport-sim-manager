@@ -16,6 +16,14 @@ import { useGame } from '../game/GameContext';
 import { Button } from '../components/Button';
 import { RatingBadge } from '../components/RatingBadge';
 import type { Car, Driver, Series, Team, Track } from '../types/gameTypes';
+import {
+  MetricStrip,
+  WorkspaceBody,
+  WorkspaceHeader,
+  WorkspaceMetric,
+  WorkspaceScreen,
+  WorkspaceTabs,
+} from '../components/workspace/Workspace';
 
 type Tab =
   | 'calendar'
@@ -107,46 +115,40 @@ export function DataViewer() {
   const activeBundle = cachedBundle ?? asyncState.bundle;
 
   return (
-    <div className="min-h-screen bg-[#0a0c10] p-6">
-      <div className="mx-auto max-w-7xl space-y-4">
-        <div className="flex items-center justify-between">
-          <h1 className="text-2xl font-bold text-neutral-100">Data Viewer</h1>
-          <Button variant="ghost" onClick={() => navigate(-1)}>← Back</Button>
-        </div>
-        <div className="flex flex-wrap items-center gap-3">
-          <label className="text-sm text-neutral-400">Season</label>
-          <select
-            value={selected}
-            onChange={(e) => setSelected(e.target.value)}
-            className="rounded-md border border-neutral-700 bg-neutral-900 px-3 py-1.5 text-sm text-neutral-200"
-          >
-            {availableSeasons.map((s) => (
-              <option key={seasonKey(s.year, s.series)} value={seasonKey(s.year, s.series)}>
-                {s.label}
-              </option>
-            ))}
-          </select>
-          <p className="text-sm text-neutral-500">
-            Raw seed database, auto-generated from the source spreadsheets. Edit values in{' '}
-            <code className="rounded bg-neutral-800 px-1 py-0.5 text-xs">src/data/</code>.
-          </p>
-        </div>
-
-        <div className="flex flex-wrap gap-2">
-          {TABS.map((t) => (
-            <button
-              key={t.id}
-              onClick={() => setTab(t.id)}
-              className={`rounded-md px-3 py-1.5 text-sm ${
-                tab === t.id ? 'bg-amber-500 font-semibold text-neutral-950' : 'bg-neutral-800 text-neutral-300 hover:bg-neutral-700'
-              }`}
-            >
-              {t.label}
-            </button>
+    <WorkspaceScreen className="era-feature-screen era-data-viewer-screen">
+      <WorkspaceHeader
+        eyebrow="Archive lab"
+        title="Data Viewer"
+        subtitle={`${choice.label} · Read-only source data and simulation reference tables`}
+        actions={<Button variant="ghost" onClick={() => navigate(-1)}>← Back</Button>}
+      />
+      <div className="flex flex-wrap items-center gap-3">
+        <label className="text-[10px] font-bold uppercase tracking-[0.14em] text-neutral-500" htmlFor="data-viewer-season">Season dataset</label>
+        <select
+          id="data-viewer-season"
+          value={selected}
+          onChange={(e) => setSelected(e.target.value)}
+          className="rounded-md border border-neutral-700 bg-neutral-900 px-3 py-1.5 text-sm text-neutral-200"
+        >
+          {availableSeasons.map((s) => (
+            <option key={seasonKey(s.year, s.series)} value={seasonKey(s.year, s.series)}>
+              {s.label}
+            </option>
           ))}
-        </div>
-
-        <div className="overflow-x-auto rounded-lg border border-neutral-800">
+        </select>
+        <p className="text-xs text-neutral-500">
+          Read-only seed data from <code className="rounded bg-neutral-800 px-1 py-0.5 text-[10px]">src/data/</code>.
+        </p>
+      </div>
+      <MetricStrip>
+        <WorkspaceMetric label="Calendar rounds" value={activeBundle?.season.calendar.length ?? '—'} detail="Selected season schedule" />
+        <WorkspaceMetric label="Teams" value={activeBundle?.teams.length ?? '—'} detail="Loaded entries" />
+        <WorkspaceMetric label="Drivers" value={activeBundle?.drivers.length ?? '—'} detail="Loaded entries" />
+        <WorkspaceMetric label="Registry" value={registryReady ? 'Ready' : 'Loading'} detail="Master data index" />
+      </MetricStrip>
+      <WorkspaceTabs items={TABS} active={tab} onChange={setTab} ariaLabel="Data viewer sections" />
+      <WorkspaceBody>
+        <div className="overflow-x-auto rounded-lg border border-neutral-800 bg-[var(--era-panel-bg)]">
           {tab === 'registry' ? (
             registryReady ? <RegistryTable /> : <p className="p-6 text-sm text-neutral-400">Loading registry data...</p>
           ) : loadingBundle ? (
@@ -166,8 +168,8 @@ export function DataViewer() {
             </>
           )}
         </div>
-      </div>
-    </div>
+      </WorkspaceBody>
+    </WorkspaceScreen>
   );
 }
 
