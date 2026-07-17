@@ -21,6 +21,15 @@ import { NewsFeed } from '../components/NewsFeed';
 import { NewsPanel } from '../components/NewsPanel';
 import { TrackDemandBars } from '../components/TrackDemandBars';
 import { DriverDossierButton } from '../components/driverCards/DriverDossier';
+import { workflowDestination } from '../components/layoutWorkflow';
+import {
+  MetricStrip,
+  WorkspaceBody,
+  WorkspaceHeader,
+  WorkspaceMetric,
+  WorkspaceScreen,
+  WorkspaceTabs,
+} from '../components/workspace/Workspace';
 import { formatMoney, ratingColor } from '../components/ui';
 import {
   BACKGROUNDS,
@@ -58,65 +67,35 @@ export function TeamHQ() {
   const driverName = (id: string) => state.drivers.find((d) => d.id === id)?.name ?? id;
   const teamName = (id: string) => state.teams.find((t) => t.id === id)?.name ?? id;
   const teamColor = (id: string) => state.teams.find((t) => t.id === id)?.color;
+  const workflow = workflowDestination(state);
 
   return (
-    <div className="era-feature-screen era-team-hq space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-neutral-100">{team?.name} — Team HQ</h1>
-          <p className="text-sm text-neutral-400">{state.seasonYear} {state.series} · {getGameModeLabel(state.gameMode)}</p>
-        </div>
-        <div className="flex flex-col items-end gap-1">
-          {state.seasonComplete ? (
-            <Button variant="primary" onClick={() => navigate('/season-review')}>
-              Season Review →
-            </Button>
-          ) : hasEnoughDrivers ? (
-            <Button variant="primary" onClick={() => navigate('/briefing')}>
-              Go to Next Race: {race?.gpName} →
-            </Button>
-          ) : (
-            <Button variant="primary" onClick={() => navigate('/market')}>
-              Sign Race Drivers ({activeDrivers.length}/{minDrivers}) →
-            </Button>
-          )}
-          {race && !state.seasonComplete && (
-            <span className="text-xs text-amber-400">
-              Round {race.round} of {state.calendar.length} · {state.calendar.length - state.currentRaceIndex} races remaining
-            </span>
-          )}
-        </div>
-      </div>
+    <WorkspaceScreen className="era-feature-screen era-team-hq">
+      <WorkspaceHeader
+        eyebrow="Weekly command center"
+        title={`${team?.name ?? 'Team'} — Team HQ`}
+        subtitle={`${state.seasonYear} ${state.series} · ${getGameModeLabel(state.gameMode)}${race ? ` · Round ${race.round} of ${state.calendar.length}` : ''}`}
+        actions={state.seasonComplete ? (
+          <Button variant="primary" onClick={() => navigate('/season-review')}>Season Review →</Button>
+        ) : hasEnoughDrivers ? (
+          <Button variant="primary" onClick={() => navigate(workflow.to)}>Open {workflow.context} →</Button>
+        ) : (
+          <Button variant="primary" onClick={() => navigate('/market')}>Fill Race Seats ({activeDrivers.length}/{minDrivers}) →</Button>
+        )}
+      />
 
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        <KpiCard label="Budget" value={team ? formatMoney(team.budget) : '—'} />
-        <KpiCard label="Team Morale" value={`${Math.round(team?.morale ?? 0)}%`} />
-        <KpiCard label="Reputation" value={`${Math.round(team?.reputation ?? 0)}`} />
-        <KpiCard label="Active Projects" value={String(state.activeDevelopmentProjects.length)} />
-      </div>
+      <MetricStrip>
+        <WorkspaceMetric label="Budget" value={team ? formatMoney(team.budget) : '—'} detail="Available team balance" />
+        <WorkspaceMetric label="Team morale" value={`${Math.round(team?.morale ?? 0)}%`} detail="Current organization mood" />
+        <WorkspaceMetric label="Reputation" value={Math.round(team?.reputation ?? 0)} detail="Market standing" />
+        <WorkspaceMetric label="Active projects" value={state.activeDevelopmentProjects.length} detail="Development in progress" />
+      </MetricStrip>
 
-      <nav
-        className="grid grid-cols-2 gap-1 rounded-lg border border-neutral-800 bg-neutral-950/70 p-1 sm:grid-cols-3 xl:grid-cols-6"
-        aria-label="Team HQ command center"
-      >
-        {TEAM_HQ_TABS.map((item) => (
-          <button
-            key={item.id}
-            type="button"
-            onClick={() => setTab(item.id)}
-            aria-current={tab === item.id ? 'page' : undefined}
-            className={`rounded px-3 py-2 text-xs font-semibold transition-colors ${
-              tab === item.id
-                ? 'bg-amber-500 text-neutral-950'
-                : 'text-neutral-400 hover:bg-neutral-900 hover:text-neutral-100'
-            }`}
-          >
-            {item.label}
-          </button>
-        ))}
-      </nav>
+      <WorkspaceTabs items={TEAM_HQ_TABS} active={tab} onChange={setTab} ariaLabel="Team HQ command center" />
 
-      <div className="grid gap-4 lg:grid-cols-2">
+      <WorkspaceBody>
+        <div className="space-y-4">
+          <div className="grid gap-4 lg:grid-cols-2">
         <div className={`space-y-4 ${tab === 'organization' ? 'lg:col-span-2' : ''}`}>
           {/* Next race briefing */}
           {tab === 'race' && race && track && !state.seasonComplete && (
@@ -290,16 +269,9 @@ export function TeamHQ() {
           />
         </div>
       )}
-    </div>
-  );
-}
-
-function KpiCard({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="rounded-xl border border-neutral-800 bg-neutral-900/40 p-4">
-      <div className="text-xs uppercase tracking-wide text-neutral-500">{label}</div>
-      <div className="mt-1 text-2xl font-bold text-neutral-100">{value}</div>
-    </div>
+        </div>
+      </WorkspaceBody>
+    </WorkspaceScreen>
   );
 }
 
