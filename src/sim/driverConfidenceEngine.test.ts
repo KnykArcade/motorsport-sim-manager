@@ -265,6 +265,12 @@ describe('driverConfidenceEngine — promises', () => {
     expect(checked[1].status).toBe('active');
   });
 
+  it('ties a round-only deadline to the season in which the promise is made', () => {
+    const promise = makePromise('d1', 'equal_treatment', 1995, 3, undefined, 6);
+    expect(promise.dueSeason).toBe(1995);
+    expect(checkExpiredPromises([promise], 1995, 7).expired).toHaveLength(1);
+  });
+
   it('expirePromise sets status and negative impact', () => {
     const p = makePromise('d1', 'equal_treatment', 1995, 3);
     const expired = expirePromise(p);

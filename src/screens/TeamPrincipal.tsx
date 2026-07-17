@@ -20,6 +20,14 @@ import {
   principalJobOfferPage,
   type PrincipalCommandTab,
 } from './teamPrincipalViewModel';
+import {
+  MetricStrip,
+  WorkspaceBody,
+  WorkspaceHeader,
+  WorkspaceMetric,
+  WorkspaceScreen,
+  WorkspaceTabs,
+} from '../components/workspace/Workspace';
 
 export function TeamPrincipal() {
   const { state, dispatch } = useGame();
@@ -51,34 +59,26 @@ export function TeamPrincipal() {
   const visibleOffers = principalJobOfferPage(offers, safeOfferPage);
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-neutral-100">Team Principal</h1>
-        <p className="text-sm text-neutral-400">
-          Your reputation, contract and job security as a manager. Perform to expectations to stay in
-          the seat — or accept a rival's approach to move on. Moves take effect next season.
-        </p>
-      </div>
-
-      <div className="rounded-xl border border-neutral-800 bg-neutral-950/80 p-1.5">
-        <nav className="grid grid-cols-2 gap-1 sm:grid-cols-5" aria-label="Team Principal command center sections">
-          {PRINCIPAL_COMMAND_TABS.map((tab) => (
-            <button
-              key={tab.id}
-              type="button"
-              onClick={() => setActiveTab(tab.id)}
-              title={tab.description}
-              aria-current={activeTab === tab.id ? 'page' : undefined}
-              className={`rounded-lg px-3 py-2 text-xs font-semibold transition-colors ${activeTab === tab.id ? 'bg-amber-500 text-neutral-950' : 'text-neutral-400 hover:bg-neutral-900 hover:text-neutral-100'}`}
-            >
-              {tab.label}
-            </button>
-          ))}
-        </nav>
-        <p className="px-2 pb-1 pt-2 text-[11px] text-neutral-500">
-          {PRINCIPAL_COMMAND_TABS.find((tab) => tab.id === activeTab)?.description}
-        </p>
-      </div>
+    <WorkspaceScreen>
+      <WorkspaceHeader
+        eyebrow="People center"
+        title="Team Principal"
+        subtitle={`${principal.name} · ${currentTeam?.name ?? 'Between teams'} · Reputation, leadership identity, and career standing`}
+      />
+      <MetricStrip>
+        <WorkspaceMetric label="Reputation" value={principal.reputation} detail={`${principal.careerStats.seasonsCompleted} seasons completed`} />
+        <WorkspaceMetric label="Job security" value={`${principal.jobSecurity}/100`} detail={principal.jobSecurity < SACK_THRESHOLD ? 'Position at immediate risk' : principal.jobSecurity < RENEW_THRESHOLD ? 'Board expects improvement' : 'Board backing is secure'} />
+        <WorkspaceMetric label="Contract" value={`${principal.contractYearsRemaining} yr`} detail="Current managerial agreement" />
+        <WorkspaceMetric label="Career market" value={offers.length} detail={accepted ? 'Next-season move accepted' : 'Active rival approaches'} />
+      </MetricStrip>
+      <WorkspaceTabs
+        items={PRINCIPAL_COMMAND_TABS.map((item) => ({ id: item.id, label: `${item.label}${item.id === 'career' && offers.length ? ` (${offers.length})` : ''}` }))}
+        active={activeTab}
+        onChange={setActiveTab}
+        ariaLabel="Team Principal command center sections"
+      />
+      <WorkspaceBody className="space-y-4">
+      <p className="text-[11px] text-neutral-500">{PRINCIPAL_COMMAND_TABS.find((item) => item.id === activeTab)?.description}</p>
 
       {activeTab === 'standing' && (
         <div className="grid gap-4 xl:grid-cols-[1.05fr_0.95fr]">
@@ -253,7 +253,8 @@ export function TeamPrincipal() {
           </Panel>
         </div>
       )}
-    </div>
+      </WorkspaceBody>
+    </WorkspaceScreen>
   );
 }
 
