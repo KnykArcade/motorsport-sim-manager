@@ -91,6 +91,22 @@ export function EngineSupplier() {
         ariaLabel="Engine workspaces"
       />
       <WorkspaceBody className="space-y-4">
+      <div className="ui-decision-strip flex flex-wrap items-center justify-between gap-2 rounded-lg border px-3 py-2.5">
+        <div className="flex min-w-0 items-center gap-2 text-xs">
+          <span className="ui-decision-strip-pulse" aria-hidden="true" />
+          <div className="min-w-0">
+            <div className="font-semibold text-neutral-100">Power unit operations desk</div>
+            <div className="truncate text-neutral-400">
+              {pending
+                ? `Next-season supply is committed to ${pending.supplierName}. Review the package before rollover.`
+                : 'No next-season engine change is queued. Compare suppliers before the next signing window.'}
+            </div>
+          </div>
+        </div>
+        <span className="shrink-0 text-[10px] font-semibold uppercase tracking-wide text-neutral-500">
+          {moneyMillions(team.budget / 1_000_000)} available
+        </span>
+      </div>
 
       {tab === 'package' && <CurrentPackagePanel current={current} pending={pending} pendingFee={engine.pendingDealFee} />}
       {tab === 'manufacturer' && <ManufacturerPanel engine={engine} />}
@@ -165,12 +181,12 @@ function DealSummary({
 }) {
   const spec = ENGINE_DEAL_SPECS[deal.dealType];
   return (
-    <div className={`rounded-xl border p-4 ${pending ? 'border-sky-500/35 bg-sky-500/5' : 'border-neutral-800 bg-neutral-900/40'}`}>
+    <div className={`rounded-xl border p-4 ${pending ? 'border-[var(--era-accent)] bg-[var(--era-accent-soft)]' : 'border-neutral-800 bg-neutral-900/40'}`}>
       <div className="flex items-start justify-between gap-3">
         <div>
           <div className="text-xs font-semibold uppercase tracking-wide text-neutral-500">{label}</div>
           <div className="mt-1 text-xl font-bold text-neutral-100">{deal.supplierName}</div>
-          <div className={pending ? 'text-sm text-sky-300' : 'text-sm text-amber-300'}>{spec.label}</div>
+          <div className={pending ? 'text-sm text-[var(--era-accent-strong)]' : 'text-sm text-amber-300'}>{spec.label}</div>
         </div>
         <div className="text-right">
           <div className="text-xl font-bold text-neutral-100">{moneyMillions(deal.annualCost)}</div>
@@ -186,7 +202,7 @@ function DealSummary({
       </div>
       <div className="mt-3 flex items-center justify-between text-xs text-neutral-500">
         <span>{deal.contractYearsRemaining} year{deal.contractYearsRemaining === 1 ? '' : 's'} remaining{deal.exclusivity ? ' · exclusive supply' : ''}</span>
-        {pending && <span className="text-sky-300">{fee > 0 ? `${moneyMillions(fee)} buyout paid` : 'No buyout charged'}</span>}
+        {pending && <span className="text-[var(--era-accent-strong)]">{fee > 0 ? `${moneyMillions(fee)} buyout paid` : 'No buyout charged'}</span>}
       </div>
     </div>
   );
@@ -315,7 +331,7 @@ function EngineOfferCard({
   const finalReliability = offer.supplier.baseReliability + offer.bonus.reliability;
 
   return (
-    <div className={`rounded-lg border p-3 ${isPending ? 'border-sky-500/50 bg-sky-500/5' : isCurrent ? 'border-emerald-500/40 bg-emerald-500/5' : 'border-neutral-800 bg-neutral-900/40'}`}>
+    <div className={`rounded-lg border p-3 ${isPending ? 'border-[var(--era-accent)] bg-[var(--era-accent-soft)]' : isCurrent ? 'border-emerald-500/40 bg-emerald-500/5' : 'border-neutral-800 bg-neutral-900/40'}`}>
       <div className="text-sm font-bold text-neutral-100">{ENGINE_DEAL_SPECS[offer.dealType].label}</div>
       <div className="text-xs font-semibold text-amber-300">{moneyMillions(offer.annualCost)} / season</div>
       <div className="mt-2 grid grid-cols-2 gap-1 text-[10px]">
@@ -430,7 +446,7 @@ function OfferStat({ label, value }: { label: string; value: string }) {
 
 function StatusLabel({ children, tone }: { children: React.ReactNode; tone: 'current' | 'pending' }) {
   return (
-    <div className={`rounded px-2 py-1.5 text-center text-xs font-semibold ${tone === 'current' ? 'bg-emerald-500/10 text-emerald-300' : 'bg-sky-500/10 text-sky-300'}`}>
+    <div className={`rounded px-2 py-1.5 text-center text-xs font-semibold ${tone === 'current' ? 'bg-emerald-500/10 text-emerald-300' : 'bg-[var(--era-accent-soft)] text-[var(--era-accent-strong)]'}`}>
       {children}
     </div>
   );
