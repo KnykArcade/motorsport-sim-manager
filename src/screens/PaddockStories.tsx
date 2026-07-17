@@ -3,6 +3,14 @@ import { useNavigate } from 'react-router-dom';
 import { Panel } from '../components/Panel';
 import { useGame } from '../game/GameContext';
 import type { NarrativeStory } from '../types/phase18Types';
+import {
+  MetricStrip,
+  WorkspaceBody,
+  WorkspaceHeader,
+  WorkspaceMetric,
+  WorkspaceScreen,
+  WorkspaceTabs,
+} from '../components/workspace/Workspace';
 
 type StoryTab = 'active' | 'developing' | 'resolved';
 const PAGE_SIZE = 6;
@@ -33,27 +41,36 @@ export function PaddockStories() {
   const selectTab = (next: StoryTab) => { setTab(next); setPage(0); };
   const selectCategory = (next: NarrativeStory['category'] | 'All') => { setCategory(next); setPage(0); };
 
-  return <div className="space-y-4">
-    <div>
-      <h1 className="text-2xl font-bold text-neutral-100">Paddock Stories</h1>
-      <p className="text-sm text-neutral-400">Persistent storylines that connect the decisions, pressure, people, and politics shaping your career.</p>
-    </div>
-    <div className="grid gap-3 sm:grid-cols-4">
-      <Kpi label="Awaiting response" value={stories.filter((story) => story.status === 'Active' && story.responseStatus === 'AwaitingResponse').length} />
-      <Kpi label="Critical" value={stories.filter((story) => story.status === 'Active' && story.urgency === 'Critical').length} />
-      <Kpi label="Developing" value={stories.filter((story) => story.status === 'Active' && (story.urgency === 'Developing' || story.urgency === 'Background')).length} />
-      <Kpi label="Resolved" value={stories.filter((story) => story.status !== 'Active').length} />
-    </div>
-    <div className="flex flex-wrap gap-1 rounded-lg border border-neutral-800 bg-neutral-950/70 p-1">
-      <Tab active={tab === 'active'} onClick={() => selectTab('active')}>Active</Tab>
-      <Tab active={tab === 'developing'} onClick={() => selectTab('developing')}>Developing</Tab>
-      <Tab active={tab === 'resolved'} onClick={() => selectTab('resolved')}>Resolved History</Tab>
-    </div>
-    <div className="flex flex-wrap gap-1">
+  const awaitingCount = stories.filter((story) => story.status === 'Active' && story.responseStatus === 'AwaitingResponse').length;
+  const criticalCount = stories.filter((story) => story.status === 'Active' && story.urgency === 'Critical').length;
+  const developingCount = stories.filter((story) => story.status === 'Active' && (story.urgency === 'Developing' || story.urgency === 'Background')).length;
+  const resolvedCount = stories.filter((story) => story.status !== 'Active').length;
+
+  return <WorkspaceScreen>
+    <WorkspaceHeader
+      eyebrow="Living paddock"
+      title="Paddock Stories"
+      subtitle="Persistent storylines connecting decisions, pressure, people, and politics across your career"
+      actions={<button type="button" onClick={() => navigate('/news')} className="rounded border border-neutral-700 bg-neutral-900 px-3 py-1.5 text-xs font-semibold text-neutral-200 hover:border-amber-500 hover:text-amber-300">Open News Center</button>}
+    />
+    <MetricStrip>
+      <WorkspaceMetric label="Awaiting response" value={awaitingCount} detail={state.careerPhase?.currentPhase === 'paddock_week' ? 'Responses available now' : 'Handled during Paddock Week'} />
+      <WorkspaceMetric label="Critical" value={criticalCount} detail="Active high-pressure stories" />
+      <WorkspaceMetric label="Developing" value={developingCount} detail="Background and developing" />
+      <WorkspaceMetric label="Resolved" value={resolvedCount} detail="Recorded story history" />
+    </MetricStrip>
+    <WorkspaceTabs
+      items={[{ id: 'active', label: 'Needs Attention' }, { id: 'developing', label: 'Developing' }, { id: 'resolved', label: 'Resolved History' }]}
+      active={tab}
+      onChange={selectTab}
+      ariaLabel="Paddock story sections"
+    />
+    <WorkspaceBody className="space-y-3">
+      <div className="flex flex-wrap gap-1">
       <Filter active={category === 'All'} onClick={() => selectCategory('All')}>All</Filter>
       {categories.map((item) => <Filter key={item} active={category === item} onClick={() => selectCategory(item)}>{item}</Filter>)}
-    </div>
-    <Panel title={tab === 'active' ? 'Active Storylines' : tab === 'developing' ? 'Developing Threads' : 'Resolved Story History'}>
+      </div>
+      <Panel title={tab === 'active' ? 'Storylines Needing Attention' : tab === 'developing' ? 'Developing Threads' : 'Resolved Story History'}>
       {visible.length === 0
         ? <p className="text-sm text-neutral-500">No stories match this view yet.</p>
         : <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">{visible.map((story) => <StoryCard key={story.id} story={story} canRespondNow={state.careerPhase?.currentPhase === 'paddock_week'} onNavigate={navigate} />)}</div>}
@@ -62,8 +79,9 @@ export function PaddockStories() {
         <span className="text-xs text-neutral-500">Page {safePage + 1} of {pageCount}</span>
         <Page disabled={safePage >= pageCount - 1} onClick={() => setPage((value) => Math.min(pageCount - 1, value + 1))}>Next</Page>
       </div>}
-    </Panel>
-  </div>;
+      </Panel>
+    </WorkspaceBody>
+  </WorkspaceScreen>;
 }
 
 function StoryCard({ story, canRespondNow, onNavigate }: { story: NarrativeStory; canRespondNow: boolean; onNavigate: (route: string) => void }) {
@@ -91,7 +109,5 @@ function StoryCard({ story, canRespondNow, onNavigate }: { story: NarrativeStory
 
 function urgencyRank(value: NarrativeStory['urgency']): number { return value === 'Critical' ? 3 : value === 'Important' ? 2 : value === 'Developing' ? 1 : 0; }
 function urgencyTone(value: NarrativeStory['urgency']): string { return value === 'Critical' ? 'text-red-300' : value === 'Important' ? 'text-amber-300' : 'text-sky-300'; }
-function Kpi({ label, value }: { label: string; value: number }) { return <div className="rounded border border-neutral-800 bg-neutral-900/40 px-3 py-2"><div className="text-[10px] uppercase text-neutral-500">{label}</div><div className="mt-1 text-xl font-bold tabular-nums text-neutral-100">{value}</div></div>; }
-function Tab({ active, onClick, children }: { active: boolean; onClick: () => void; children: React.ReactNode }) { return <button type="button" onClick={onClick} className={`rounded px-3 py-2 text-xs font-semibold ${active ? 'bg-amber-500 text-neutral-950' : 'text-neutral-400 hover:bg-neutral-800 hover:text-neutral-100'}`}>{children}</button>; }
 function Filter({ active, onClick, children }: { active: boolean; onClick: () => void; children: React.ReactNode }) { return <button type="button" onClick={onClick} className={`rounded px-2 py-1 text-[10px] ${active ? 'bg-violet-500/20 text-violet-200' : 'bg-neutral-900 text-neutral-500 hover:text-neutral-200'}`}>{children}</button>; }
 function Page({ disabled, onClick, children }: { disabled: boolean; onClick: () => void; children: React.ReactNode }) { return <button type="button" disabled={disabled} onClick={onClick} className="rounded bg-neutral-800 px-3 py-1.5 text-xs text-neutral-300 enabled:hover:bg-neutral-700 disabled:opacity-40">{children}</button>; }

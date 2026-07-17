@@ -104,3 +104,14 @@ explicit as their screens are migrated.
 | Standings browsing required reading the table to recover basic championship context. | Fixed | Leader, lead margin, player-team position/points, and season progress remain visible while switching championships or pages. |
 | Race archive tabs repeated winner/pole/fastest-lap context inside scrollable content. | Fixed | Selected-race archive count, winner, pole, and fastest lap now remain in the persistent metric strip. |
 | A compact competition UI could replace detailed historical data with summaries. | Prevented | Circuit demand, winners, full classifications, qualifying, lap pace, race stories, filters, player highlighting, and pagination remain connected to their original data. |
+
+## Inbox and News Center findings
+
+| Finding | Status | Resolution |
+| --- | --- | --- |
+| News reports, connected news storylines, persistent narrative stories, and weekly decisions could look like one duplicated system. | Clarified | News Center remains the searchable report archive, Paddock Stories remains the persistent narrative tracker, and Paddock Week remains the only place that resolves guarded weekly decisions. Direct links connect the layers. |
+| The game does not store read/unread state for news reports. | Preserved | The refresh does not invent unread badges. It surfaces real current-report, priority, team-report, archive, and storyline counts instead. |
+| Narrative responses appeared available even outside their valid weekly phase. | Clarified | Paddock Stories now keeps response timing in persistent context and only offers the response route during Paddock Week. |
+| Long report and story lists required document-level scrolling. | Fixed | News Center, Paddock Stories, and Paddock Week now use fixed workspace framing with internally scrolling work areas. |
+| Paddock Week tabs could hide required decisions and the race-package gate. | Preserved | Existing attention counts, required-action notices, disabled advancement reason, decision controls, and package selection remain above or inside the correct work area. |
+| A summary view could imply that news changes game state by itself. | Prevented | Report cards and storyline summaries remain informational. Only existing Paddock Week options and related-screen actions mutate or route into connected systems. |

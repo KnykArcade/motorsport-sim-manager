@@ -33,6 +33,13 @@ import { internalCharacterInfluence } from '../sim/characterInfluenceEngine';
 import { activeCharacterMandates } from '../sim/characterMandateEngine';
 import { unstableCharacterStability } from '../sim/characterBreakingPointEngine';
 import { atRiskFutureIntentions, characterFutureIntentLabel } from '../sim/characterFutureIntentEngine';
+import {
+  MetricStrip,
+  WorkspaceBody,
+  WorkspaceHeader,
+  WorkspaceMetric,
+  WorkspaceScreen,
+} from '../components/workspace/Workspace';
 
 const CATEGORY_LABELS: Record<PaddockEventCategory, string> = {
   development: 'Development / Factory',
@@ -177,18 +184,14 @@ export function PaddockWeek() {
   };
 
   return (
-    <div className="era-feature-screen era-paddock-week space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-neutral-100">Paddock Week</h1>
-          <p className="text-sm text-neutral-400">
-            {state.seasonYear} {state.series} · Between Rounds {phaseState.currentRound} & {phaseState.currentRound + 1}
-            {' · ' + getGameModeLabel(state.gameMode)}
-          </p>
-        </div>
-        <div className="flex items-center gap-3">
+    <WorkspaceScreen className="era-feature-screen era-paddock-week">
+      <WorkspaceHeader
+        eyebrow="Weekly management"
+        title="Paddock Week"
+        subtitle={`${state.seasonYear} ${state.series} · Between rounds ${phaseState.currentRound} and ${phaseState.currentRound + 1} · ${getGameModeLabel(state.gameMode)}`}
+        actions={<>
           {pendingCount > 0 && (
-            <span className="text-sm text-orange-400">
+            <span className="text-xs font-semibold text-orange-400">
               {pendingCount} required decision{pendingCount > 1 ? 's' : ''} pending
             </span>
           )}
@@ -198,19 +201,17 @@ export function PaddockWeek() {
             disabled={!canAdvance}
             title={canAdvance ? 'Advance to Pre-Race Briefing' : 'Resolve required decisions and select a race package first'}
           >
-            Advance to Pre-Race Briefing →
+            Advance to Briefing →
           </Button>
-        </div>
-      </div>
+        </>}
+      />
 
-      {/* KPI Strip */}
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
-        <KpiCard label="Budget" value={team ? formatMoney(team.budget) : '—'} />
-        <KpiCard label="Team Morale" value={`${Math.round(team?.morale ?? 0)}%`} />
-        <KpiCard label="Car Condition" value={`${Math.round(car?.condition ?? 0)}%`} />
-        <KpiCard label="Dev Slots" value={`${state.activeDevelopmentProjects.length}/${slots}`} />
-        <KpiCard label="Active Drivers" value={`${activeDrivers.length}/2`} />
-      </div>
+      <MetricStrip>
+        <WorkspaceMetric label="Budget" value={team ? formatMoney(team.budget) : '—'} detail={`${activeDrivers.length}/2 active drivers`} />
+        <WorkspaceMetric label="Team readiness" value={`${Math.round(team?.morale ?? 0)}% morale`} detail={`${Math.round(car?.condition ?? 0)}% car condition`} />
+        <WorkspaceMetric label="Development" value={`${state.activeDevelopmentProjects.length}/${slots} slots`} detail="Active technical projects" />
+        <WorkspaceMetric label="Required actions" value={pendingCount} detail={packageSelected ? `${unresolvedCount} decisions unresolved` : 'Race package still required'} />
+      </MetricStrip>
 
       <div className="flex flex-wrap gap-1 rounded-lg border border-neutral-800 bg-neutral-950/70 p-1" aria-label="Paddock Week sections">
         <PaddockTabButton active={tab === 'overview'} onClick={() => setTab('overview')} label="Overview" />
@@ -220,6 +221,7 @@ export function PaddockWeek() {
         <PaddockTabButton active={tab === 'debrief'} onClick={() => setTab('debrief')} label="Decision Debrief" count={resolvedDecisions.length} />
       </div>
 
+      <WorkspaceBody className="space-y-4">
       {/* Paddock News */}
       {tab === 'overview' && <div className="grid gap-4 lg:grid-cols-2">
         <NewsPanel
@@ -537,7 +539,8 @@ export function PaddockWeek() {
           <HubSection title={CATEGORY_LABELS[visibleUpdateCategory]} events={eventsByCategory[visibleUpdateCategory] ?? []} />
         </> : <Panel title="Team Updates"><p className="text-sm text-neutral-500">No major updates this week.</p></Panel>}
       </div>}
-    </div>
+      </WorkspaceBody>
+    </WorkspaceScreen>
   );
 }
 
@@ -725,15 +728,6 @@ function DecisionOptionButton({
         <div className="mt-0.5 text-[10px] text-neutral-500">{preview.cultureChanges.join(' · ')}</div>
       )}
     </button>
-  );
-}
-
-function KpiCard({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="rounded-lg border border-neutral-800 bg-neutral-900/40 px-4 py-3">
-      <div className="text-xs font-semibold uppercase tracking-wide text-neutral-500">{label}</div>
-      <div className="mt-1 text-lg font-bold text-neutral-100">{value}</div>
-    </div>
   );
 }
 
