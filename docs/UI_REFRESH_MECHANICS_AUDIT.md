@@ -28,6 +28,9 @@ behind a visual redesign and new controls do not imply behavior they lack.
 | Organization Profile filters and sorting | Existing deterministic team-overview rows; no roster or simulation mutation |
 | Organization Profile dossiers | Existing principal, owner, and driver dossier subjects |
 | Organization Profile management tabs | Existing lineup, academy, technical program, engine deal, finance, identity memory, ratings, and offseason-move data |
+| Finance workspace | Existing season ledger, category summaries, annual commitments, season filter, transaction filters, and pagination |
+| Facilities workspace | Existing infrastructure effects, upgrade dispatches, affordability checks, pending construction, portfolio groups, and specialization dispatches |
+| Staff workspace | Existing roster, contracts, advisor council, real staff pool, rival poaching, dossiers, hiring, firing, renewal, role filters, and pagination |
 
 No decorative button or fabricated metric was added in the foundation phase.
 
@@ -66,3 +69,12 @@ explicit as their screens are migrated.
 | Team operational ratings did not explain their downstream purpose. | Fixed | Performance, Personnel, Operations, and Finance tabs now include concise `Affects` explanations tied to implemented systems. |
 | The large team comparison page required document scrolling and the five-tab dossier mixed unrelated information. | Fixed | The screen now uses the fixed workspace shell with an internally scrolling table and seven focused organization-profile tabs. |
 | Team identity memory appeared separately from recent offseason history. | Improved | Identity keeps current posture and philosophy; History consolidates tracked performance memory with recorded offseason moves. |
+
+## Operations Center findings
+
+| Finding | Status | Resolution |
+| --- | --- | --- |
+| Finance, Facilities, and Staff had working tabs but each used a separate header, metric-card, and tab treatment. | Fixed | All three now use the shared compact workspace header, metric strip, tabs, and internally scrolling content body. |
+| Six separate Staff metric cards consumed too much vertical space. | Fixed | The same real values are consolidated into four management metrics: staffing, payroll, development/setup, and race execution. |
+| A visual migration could accidentally turn active management controls into decorative UI. | Prevented | Every existing facility upgrade/specialization and staff hire/fire/renewal/poaching control is preserved and still dispatches its original game action. |
+| Finance coverage could be mistaken for a full forecast. | Preserved | The commitments workspace retains its explicit warning that coverage excludes variable engine, development, repair, facility, and future-income effects. |

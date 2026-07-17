@@ -16,6 +16,14 @@ import {
 } from '../sim/staffEngine';
 import { Panel } from '../components/Panel';
 import { Button } from '../components/Button';
+import {
+  MetricStrip,
+  WorkspaceBody,
+  WorkspaceHeader,
+  WorkspaceMetric,
+  WorkspaceScreen,
+  WorkspaceTabs,
+} from '../components/workspace/Workspace';
 import { StatBar } from '../components/StatBar';
 import { formatMoney } from '../components/ui';
 import { ROLE_EFFECT, STAFF_ROLES, type StaffMember, type StaffRole } from '../types/staffTypes';
@@ -84,54 +92,41 @@ export function Staff() {
   const contractPageCount = staffPageCount(roster.length);
   const safeContractPage = Math.min(contractPage, contractPageCount - 1);
   const visibleContractStaff = staffPage(roster, safeContractPage);
+  const staffTabs = STAFF_WORKSPACE_TABS.map((item) => {
+    const count = item.id === 'roster'
+      ? roster.length
+      : item.id === 'contracts'
+        ? roster.length
+        : item.id === 'council'
+          ? councilActivity.length
+          : undefined;
+    return { ...item, label: count === undefined ? item.label : `${item.label} (${count})` };
+  });
 
   return (
-    <div className="space-y-3">
-      <div className="flex items-end justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-neutral-100">Staff</h1>
-          <p className="text-sm text-neutral-400">
-            Specialists, contracts, advice, and recruitment.
-          </p>
-        </div>
+    <WorkspaceScreen className="era-feature-screen era-staff">
+      <WorkspaceHeader
+        eyebrow="Operations center"
+        title="Staff"
+        subtitle="Specialists, contracts, advice, and recruitment."
+        actions={
         <div className="text-right">
-          <div className="text-xs uppercase tracking-wide text-neutral-500">Available budget</div>
-          <div className="text-lg font-bold text-neutral-100">{formatMoney(budget)}</div>
+          <div className="text-[10px] font-semibold uppercase tracking-wide text-neutral-500">Available budget</div>
+          <div className="text-base font-bold text-neutral-100">{formatMoney(budget)}</div>
         </div>
-      </div>
+        }
+      />
 
-      <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
-        <Kpi label="Positions" value={`${roster.length} / ${STAFF_ROLES.length}`} detail={vacancies === 0 ? 'Fully staffed' : `${vacancies} vacant`} />
-        <Kpi label="Annual Payroll" value={formatMoney(payroll)} detail="Paid at rollover" />
-        <Kpi label="Development" value={`${devBonus >= 0 ? '+' : ''}${Math.round(devBonus * 100)}%`} detail="Project success" />
-        <Kpi label="Setup" value={`${setupBonus >= 0 ? '+' : ''}${setupBonus.toFixed(1)}`} detail="Confidence points" />
-        <Kpi label="Pit Execution" value={`${pitBonus >= 0 ? '+' : ''}${Math.round(pitBonus * 100)}%`} detail="Stop performance" />
-        <Kpi label="Strategy Calls" value={`${strategyExecutionBonus >= 0 ? '+' : ''}${Math.round(strategyExecutionBonus * 100)}%`} detail="Race execution" />
-      </div>
+      <MetricStrip>
+        <WorkspaceMetric label="Positions" value={`${roster.length} / ${STAFF_ROLES.length}`} detail={vacancies === 0 ? 'Fully staffed' : `${vacancies} vacant`} />
+        <WorkspaceMetric label="Annual payroll" value={formatMoney(payroll)} detail="Paid at season rollover" />
+        <WorkspaceMetric label="Development / setup" value={`${devBonus >= 0 ? '+' : ''}${Math.round(devBonus * 100)}% · ${setupBonus >= 0 ? '+' : ''}${setupBonus.toFixed(1)}`} detail="Project success · confidence" />
+        <WorkspaceMetric label="Race execution" value={`Pit ${pitBonus >= 0 ? '+' : ''}${Math.round(pitBonus * 100)}%`} detail={`Strategy ${strategyExecutionBonus >= 0 ? '+' : ''}${Math.round(strategyExecutionBonus * 100)}%`} />
+      </MetricStrip>
 
-      <nav className="grid grid-cols-4 gap-1 rounded-lg border border-neutral-800 bg-neutral-950/70 p-1" aria-label="Staff workspaces">
-        {STAFF_WORKSPACE_TABS.map((item) => {
-          const count = item.id === 'roster'
-            ? roster.length
-            : item.id === 'contracts'
-              ? roster.length
-              : item.id === 'council'
-                ? councilActivity.length
-                : undefined;
-          return (
-            <button
-              key={item.id}
-              type="button"
-              onClick={() => setTab(item.id)}
-              aria-current={tab === item.id ? 'page' : undefined}
-              className={`rounded px-3 py-2 text-xs font-semibold ${tab === item.id ? 'bg-amber-500 text-neutral-950' : 'text-neutral-400 hover:bg-neutral-900 hover:text-neutral-100'}`}
-            >
-              {item.label}{count === undefined ? '' : ` (${count})`}
-            </button>
-          );
-        })}
-      </nav>
+      <WorkspaceTabs items={staffTabs} active={tab} onChange={setTab} ariaLabel="Staff workspaces" />
 
+      <WorkspaceBody>
       {tab === 'council' && (
         <Panel title="Advisor Council Activity">
           {councilActivity.length === 0 ? (
@@ -298,7 +293,8 @@ export function Staff() {
         {visibleCandidates.length === 0 && <p className="text-sm text-neutral-500">No {activeRole.toLowerCase()} candidates are listed in this section.</p>}
         {candidates.length > 0 && <StaffPagination label="Candidates" total={candidates.length} page={page} pageCount={pageCount} onPage={setCandidatePage} />}
       </Panel>}
-    </div>
+      </WorkspaceBody>
+    </WorkspaceScreen>
   );
 }
 
@@ -420,16 +416,6 @@ function StaffCard({
           </Button>
         )}
       </div>
-    </div>
-  );
-}
-
-function Kpi({ label, value, detail }: { label: string; value: string; detail: string }) {
-  return (
-    <div className="rounded-xl border border-neutral-800 bg-neutral-900/40 p-3">
-      <div className="text-xs uppercase tracking-wide text-neutral-500">{label}</div>
-      <div className="mt-0.5 truncate text-lg font-bold text-neutral-100" title={value}>{value}</div>
-      <div className="mt-0.5 truncate text-[10px] text-neutral-600" title={detail}>{detail}</div>
     </div>
   );
 }

@@ -17,6 +17,14 @@ import {
 } from '../sim/facilityEngine';
 import { Panel } from '../components/Panel';
 import { Button } from '../components/Button';
+import {
+  MetricStrip,
+  WorkspaceBody,
+  WorkspaceHeader,
+  WorkspaceMetric,
+  WorkspaceScreen,
+  WorkspaceTabs,
+} from '../components/workspace/Workspace';
 import { formatMoney, ratingColor } from '../components/ui';
 import type { Facility, FacilitySpecialization } from '../types/facilityTypes';
 import {
@@ -62,12 +70,19 @@ export function Facilities() {
 
   if (!facilitiesState) {
     return (
-      <div className="space-y-3">
-        <FacilitiesHeader budget={budget} />
-        <Panel title="Facilities">
-          <p className="text-sm text-neutral-400">Facilities are available in Career Mode.</p>
-        </Panel>
-      </div>
+      <WorkspaceScreen className="era-feature-screen era-facilities">
+        <WorkspaceHeader
+          eyebrow="Operations center"
+          title="Facilities"
+          subtitle="Long-term infrastructure for development, race operations, and talent."
+          actions={<HeaderBudget budget={budget} />}
+        />
+        <WorkspaceBody>
+          <Panel title="Facilities">
+            <p className="text-sm text-neutral-400">Facilities are available in Career Mode.</p>
+          </Panel>
+        </WorkspaceBody>
+      </WorkspaceScreen>
     );
   }
 
@@ -128,40 +143,34 @@ export function Facilities() {
   ];
 
   return (
-    <div className="space-y-3">
-      <FacilitiesHeader budget={budget} />
+    <WorkspaceScreen className="era-feature-screen era-facilities">
+      <WorkspaceHeader
+        eyebrow="Operations center"
+        title="Facilities"
+        subtitle="Long-term infrastructure for development, race operations, and talent."
+        actions={<HeaderBudget budget={budget} />}
+      />
 
-      <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
-        <Kpi label="Average Level" value={`${averageLevel.toFixed(1)} / 5`} />
-        <Kpi label="Development Slots" value={String(developmentSlots(facilitiesState))} />
-        <Kpi label="Specialization" value={FACILITY_SPECIALIZATION_LABELS[specialization]} />
-        <Kpi label="Pending Upgrades" value={String(facilitiesState.pendingUpgrades.length)} />
-      </div>
+      <MetricStrip>
+        <WorkspaceMetric label="Average level" value={`${averageLevel.toFixed(1)} / 5`} detail="Entire portfolio" />
+        <WorkspaceMetric label="Development slots" value={String(developmentSlots(facilitiesState))} detail="Concurrent projects" />
+        <WorkspaceMetric label="Specialization" value={FACILITY_SPECIALIZATION_LABELS[specialization]} detail="Active focus" />
+        <WorkspaceMetric label="Pending upgrades" value={String(facilitiesState.pendingUpgrades.length)} detail="Construction queue" />
+      </MetricStrip>
 
-      <nav
-        aria-label="Facilities workspaces"
-        className="flex gap-1 rounded-xl border border-neutral-800 bg-neutral-900/50 p-1"
-      >
-        {FACILITIES_WORKSPACE_TABS.map((workspace) => (
-          <button
-            key={workspace.id}
-            type="button"
-            aria-current={tab === workspace.id ? 'page' : undefined}
-            onClick={() => setTab(workspace.id)}
-            className={`flex-1 rounded-lg px-3 py-1.5 text-sm font-semibold transition-colors ${
-              tab === workspace.id
-                ? 'bg-sky-500/20 text-sky-200'
-                : 'text-neutral-400 hover:bg-neutral-800 hover:text-neutral-200'
-            }`}
-          >
-            {workspace.label}
-            {workspace.id === 'planner' && facilitiesState.pendingUpgrades.length > 0
-              ? ` (${facilitiesState.pendingUpgrades.length})`
-              : ''}
-          </button>
-        ))}
-      </nav>
+      <WorkspaceTabs
+        items={FACILITIES_WORKSPACE_TABS.map((workspace) => ({
+          ...workspace,
+          label: workspace.id === 'planner' && facilitiesState.pendingUpgrades.length > 0
+            ? `${workspace.label} (${facilitiesState.pendingUpgrades.length})`
+            : workspace.label,
+        }))}
+        active={tab}
+        onChange={setTab}
+        ariaLabel="Facilities workspaces"
+      />
 
+      <WorkspaceBody>
       {tab === 'impacts' && (
         <Panel title="Current Infrastructure Impact">
           <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
@@ -277,23 +286,16 @@ export function Facilities() {
           </div>
         </Panel>
       )}
-    </div>
+      </WorkspaceBody>
+    </WorkspaceScreen>
   );
 }
 
-function FacilitiesHeader({ budget }: { budget: number }) {
+function HeaderBudget({ budget }: { budget: number }) {
   return (
-    <div className="flex items-end justify-between gap-4">
-      <div>
-        <h1 className="text-2xl font-bold text-neutral-100">Facilities</h1>
-        <p className="text-sm text-neutral-400">
-          Long-term infrastructure for development, race operations, and talent.
-        </p>
-      </div>
-      <div className="text-right">
-        <div className="text-xs uppercase tracking-wide text-neutral-500">Available budget</div>
-        <div className="text-lg font-bold text-neutral-100">{formatMoney(budget)}</div>
-      </div>
+    <div className="text-right">
+      <div className="text-[10px] font-semibold uppercase tracking-wide text-neutral-500">Available budget</div>
+      <div className="text-base font-bold text-neutral-100">{formatMoney(budget)}</div>
     </div>
   );
 }
@@ -380,17 +382,6 @@ function ImpactCard({ label, value, detail }: { label: string; value: string; de
       <div className="text-xs uppercase tracking-wide text-neutral-500">{label}</div>
       <div className="mt-0.5 text-xl font-bold text-neutral-100">{value}</div>
       <div className="mt-1 text-[11px] leading-snug text-neutral-600">{detail}</div>
-    </div>
-  );
-}
-
-function Kpi({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="rounded-xl border border-neutral-800 bg-neutral-900/40 p-3">
-      <div className="text-xs uppercase tracking-wide text-neutral-500">{label}</div>
-      <div className="mt-0.5 truncate text-xl font-bold text-neutral-100" title={value}>
-        {value}
-      </div>
     </div>
   );
 }
