@@ -118,6 +118,24 @@ export function DriverMarket() {
       <WorkspaceTabs items={marketTabs} active={tab} onChange={setTab} ariaLabel="Driver market sections" />
 
       <WorkspaceBody>
+      <div className="ui-decision-strip flex flex-wrap items-center justify-between gap-2 rounded-lg border px-3 py-2.5">
+        <div className="flex min-w-0 items-center gap-2 text-xs">
+          <span className="ui-decision-strip-pulse" aria-hidden="true" />
+          <div className="min-w-0">
+            <div className="font-semibold text-neutral-100">Recruitment operations desk</div>
+            <div className="truncate text-neutral-400">
+              {preseason && openRaceSeats > 0
+                ? `${openRaceSeats} race seat${openRaceSeats === 1 ? '' : 's'} must be filled before Round 1.`
+                : signings.length > 0
+                  ? `${signings.length} pending signing${signings.length === 1 ? '' : 's'} await confirmation in Offseason.`
+                  : 'Review senior targets, youth prospects, and scouting confidence before committing budget.'}
+            </div>
+          </div>
+        </div>
+        <span className="shrink-0 text-[10px] font-semibold uppercase tracking-wide text-neutral-500">
+          {formatMoney(budget)} available
+        </span>
+      </div>
 
       <div
         className={`rounded-md border px-4 py-2 text-sm ${
