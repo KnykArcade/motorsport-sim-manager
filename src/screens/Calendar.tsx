@@ -5,6 +5,14 @@ import { Panel } from '../components/Panel';
 import { RatingBadge } from '../components/RatingBadge';
 import { CompactPagination } from '../components/CompactPagination';
 import {
+  MetricStrip,
+  WorkspaceBody,
+  WorkspaceHeader,
+  WorkspaceMetric,
+  WorkspaceScreen,
+  WorkspaceTabs,
+} from '../components/workspace/Workspace';
+import {
   CALENDAR_PAGE_SIZE,
   calendarEntriesForTab,
   compactPage,
@@ -26,6 +34,7 @@ export function Calendar() {
   const visibleEntries = compactPage(entries, safePage, CALENDAR_PAGE_SIZE);
   const completedCount = state.calendar.filter((race) => race.completed).length;
   const remainingCount = state.calendar.length - completedCount;
+  const nextRace = state.calendar.find((race) => !race.completed);
 
   function selectTab(nextTab: CalendarTab) {
     setTab(nextTab);
@@ -33,26 +42,32 @@ export function Calendar() {
   }
 
   return (
-    <div className="era-feature-screen era-calendar-screen space-y-3">
-      <div className="flex items-end justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-neutral-100">{state.seasonYear} Calendar</h1>
-          <p className="text-sm text-neutral-400">Season schedule, circuit demands, and completed winners.</p>
-        </div>
-        {regSet && <span className="rounded-md bg-neutral-800 px-3 py-1 text-xs font-medium text-neutral-300">{regSet.eraLabel}</span>}
-      </div>
+    <WorkspaceScreen className="era-feature-screen era-calendar-screen">
+      <WorkspaceHeader
+        eyebrow="Competition center"
+        title={`${state.seasonYear} Calendar`}
+        subtitle="Season schedule, circuit demands, and completed winners."
+        actions={regSet ? <span className="rounded-md bg-neutral-800 px-3 py-1 text-xs font-medium text-neutral-300">{regSet.eraLabel}</span> : undefined}
+      />
 
-      <div className="grid grid-cols-3 gap-2">
-        <Kpi label="Rounds" value={String(state.calendar.length)} />
-        <Kpi label="Completed" value={String(completedCount)} />
-        <Kpi label="Remaining" value={String(remainingCount)} />
-      </div>
+      <MetricStrip>
+        <WorkspaceMetric label="Rounds" value={state.calendar.length} detail={`${state.series} season`} />
+        <WorkspaceMetric label="Completed" value={completedCount} detail={`${Math.round((completedCount / Math.max(1, state.calendar.length)) * 100)}% complete`} />
+        <WorkspaceMetric label="Remaining" value={remainingCount} detail={state.seasonComplete ? 'Season complete' : 'Still to run'} />
+        <WorkspaceMetric label="Next event" value={nextRace?.gpName ?? 'Season complete'} detail={nextRace ? `Round ${nextRace.round} · ${nextRace.trackName}` : undefined} />
+      </MetricStrip>
 
-      <nav className="grid grid-cols-2 gap-1 rounded-lg border border-neutral-800 bg-neutral-950/70 p-1" aria-label="Calendar sections">
-        <CalendarTabButton active={tab === 'schedule'} onClick={() => selectTab('schedule')}>Remaining Schedule ({remainingCount})</CalendarTabButton>
-        <CalendarTabButton active={tab === 'results'} onClick={() => selectTab('results')}>Completed Results ({completedCount})</CalendarTabButton>
-      </nav>
+      <WorkspaceTabs
+        items={[
+          { id: 'schedule' as const, label: `Remaining Schedule (${remainingCount})` },
+          { id: 'results' as const, label: `Completed Results (${completedCount})` },
+        ]}
+        active={tab}
+        onChange={selectTab}
+        ariaLabel="Calendar sections"
+      />
 
+      <WorkspaceBody>
       <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
         {visibleEntries.map((race) => {
           const track = getTrackById(race.trackId);
@@ -90,16 +105,9 @@ export function Calendar() {
       </div>
       {visibleEntries.length === 0 && <Panel><p className="text-sm text-neutral-500">No races are listed in this section.</p></Panel>}
       <CompactPagination noun="races" total={entries.length} page={safePage} pageCount={tabPageCount} pageSize={CALENDAR_PAGE_SIZE} onPage={setPage} />
-    </div>
+      </WorkspaceBody>
+    </WorkspaceScreen>
   );
-}
-
-function CalendarTabButton({ active, onClick, children }: { active: boolean; onClick: () => void; children: React.ReactNode }) {
-  return <button type="button" onClick={onClick} aria-pressed={active} className={`rounded px-3 py-2 text-xs font-semibold ${active ? 'bg-amber-500 text-neutral-950' : 'text-neutral-400 hover:bg-neutral-900 hover:text-neutral-100'}`}>{children}</button>;
-}
-
-function Kpi({ label, value }: { label: string; value: string }) {
-  return <div className="rounded-xl border border-neutral-800 bg-neutral-900/40 p-3"><div className="text-[10px] uppercase tracking-wide text-neutral-500">{label}</div><div className="text-lg font-bold text-neutral-100">{value}</div></div>;
 }
 
 function Badge({ children, tone }: { children: React.ReactNode; tone: 'next' | 'done' }) {

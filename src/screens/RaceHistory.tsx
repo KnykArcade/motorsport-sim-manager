@@ -7,6 +7,14 @@ import { RaceResultTable } from '../components/RaceResultTable';
 import { CompactPagination } from '../components/CompactPagination';
 import { Button } from '../components/Button';
 import {
+  MetricStrip,
+  WorkspaceBody,
+  WorkspaceHeader,
+  WorkspaceMetric,
+  WorkspaceScreen,
+  WorkspaceTabs,
+} from '../components/workspace/Workspace';
+import {
   RACE_HISTORY_PAGE_SIZE,
   RACE_HISTORY_TABS,
   RACE_STORY_PAGE_SIZE,
@@ -36,12 +44,14 @@ export function RaceHistory() {
 
   if (archive.length === 0) {
     return (
-      <div className="space-y-3">
-        <h1 className="text-2xl font-bold text-neutral-100">Race History</h1>
-        <Panel>
-          <p className="text-sm text-neutral-400">No races completed yet. Run a race weekend to build the archive.</p>
-        </Panel>
-      </div>
+      <WorkspaceScreen className="era-feature-screen era-race-history-screen">
+        <WorkspaceHeader eyebrow="Competition center" title="Race History" subtitle="Classification, qualifying, pace, and race stories." />
+        <WorkspaceBody>
+          <Panel>
+            <p className="text-sm text-neutral-400">No races completed yet. Run a race weekend to build the archive.</p>
+          </Panel>
+        </WorkspaceBody>
+      </WorkspaceScreen>
     );
   }
 
@@ -77,17 +87,23 @@ export function RaceHistory() {
   }
 
   return (
-    <div className="era-feature-screen era-race-history-screen space-y-3">
-      <div className="flex items-end justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-neutral-100">Race History</h1>
-          <p className="text-sm text-neutral-400">Classification, qualifying, pace, and the story of every completed race.</p>
-        </div>
-        <div className="text-right">
-          <div className="text-[10px] uppercase tracking-wide text-neutral-500">Archive</div>
-          <div className="text-lg font-bold text-neutral-100">{archive.length} race{archive.length === 1 ? '' : 's'}</div>
-        </div>
-      </div>
+    <WorkspaceScreen className="era-feature-screen era-race-history-screen">
+      <WorkspaceHeader
+        eyebrow="Competition center"
+        title="Race History"
+        subtitle="Classification, qualifying, pace, and the story of every completed race."
+      />
+
+      <MetricStrip>
+        <WorkspaceMetric label="Archive" value={`${archive.length} race${archive.length === 1 ? '' : 's'}`} detail={`${selected.season} · Round ${selected.round}`} />
+        <WorkspaceMetric label="Winner" value={selected.winnerDriverId ? nameOf(selected.winnerDriverId) : '—'} detail={selected.gpName} />
+        <WorkspaceMetric label="Pole" value={selected.poleDriverId ? nameOf(selected.poleDriverId) : '—'} detail="Qualifying benchmark" />
+        <WorkspaceMetric label="Fastest lap" value={fastest ? nameOf(fastest.driverId) : '—'} detail={fastest ? formatLapTime(fastest.timeSec) : 'No archived time'} />
+      </MetricStrip>
+
+      <WorkspaceTabs items={RACE_HISTORY_TABS} active={tab} onChange={selectTab} ariaLabel="Race history sections" />
+
+      <WorkspaceBody>
 
       <div className="grid gap-2 lg:grid-cols-[auto_minmax(260px,1fr)_auto]">
         <Button
@@ -119,26 +135,6 @@ export function RaceHistory() {
           Newer race
         </Button>
       </div>
-
-      <div className="grid gap-2 sm:grid-cols-3">
-        <Kpi label="Winner" value={selected.winnerDriverId ? nameOf(selected.winnerDriverId) : '—'} />
-        <Kpi label="Pole" value={selected.poleDriverId ? nameOf(selected.poleDriverId) : '—'} />
-        <Kpi label="Fastest Lap" value={fastest ? `${nameOf(fastest.driverId)} · ${formatLapTime(fastest.timeSec)}` : '—'} />
-      </div>
-
-      <nav className="grid grid-cols-4 gap-1 rounded-lg border border-neutral-800 bg-neutral-950/70 p-1" aria-label="Race history sections">
-        {RACE_HISTORY_TABS.map((item) => (
-          <button
-            key={item.id}
-            type="button"
-            onClick={() => selectTab(item.id)}
-            aria-current={tab === item.id ? 'page' : undefined}
-            className={`rounded px-3 py-2 text-xs font-semibold ${tab === item.id ? 'bg-amber-500 text-neutral-950' : 'text-neutral-400 hover:bg-neutral-900 hover:text-neutral-100'}`}
-          >
-            {item.label}
-          </button>
-        ))}
-      </nav>
 
       {tab === 'classification' && (
         <Panel title={`${selected.gpName} · Race Classification`} actions={<span className="text-xs text-neutral-500">{selected.trackName}</span>}>
@@ -249,16 +245,8 @@ export function RaceHistory() {
         pageSize={activePageSize}
         onPage={setPage}
       />
-    </div>
-  );
-}
-
-function Kpi({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="rounded-xl border border-neutral-800 bg-neutral-900/40 p-3">
-      <div className="text-[10px] uppercase tracking-wide text-neutral-500">{label}</div>
-      <div className="mt-0.5 truncate text-lg font-bold text-neutral-100" title={value}>{value}</div>
-    </div>
+      </WorkspaceBody>
+    </WorkspaceScreen>
   );
 }
 

@@ -34,6 +34,9 @@ behind a visual redesign and new controls do not imply behavior they lack.
 | Drivers workspace | Existing race seats, reserves, swaps, extensions, clauses, future intentions, scouting readouts, dossiers, directory, and pagination |
 | Driver Market workspace | Existing shared-universe market, series interest, availability rules, bidding, third-driver and race-seat signings, pending signings, academy actions, scouting fog, and pagination |
 | Intelligence workspace | Existing scouting network accuracy, fogged driver and potential ranges, scout assignments, investigation actions, paddock reports, confidence, and report history |
+| Calendar workspace | Existing season calendar, current round, regulation era, circuit demands, completed winners, schedule/results tabs, and pagination |
+| Standings workspace | Existing driver and constructor standings, player-team highlighting, leader points, team colors, and pagination |
+| Race History workspace | Existing race archive selection, classification, qualifying, lap pace, event stories, filters, fastest laps, and pagination |
 
 No decorative button or fabricated metric was added in the foundation phase.
 
@@ -91,3 +94,13 @@ explicit as their screens are migrated.
 | A UI refresh could accidentally imply that fogged ratings are exact. | Prevented | Recruitment metrics explicitly identify scouting accuracy as the control on uncertainty, and the existing knowledge-aware rating readouts remain unchanged. |
 | The single shared driver universe could look like separate series-specific markets. | Clarified | Driver Market now states that it is one shared universe market; series preference still affects interest and AI decisions without creating hidden pools. |
 | Market or profile styling could expose actions that bypass availability rules. | Prevented | Existing preseason, offseason, open-seat, third-driver, academy-capacity, affordability, competing-bid, and game-mode checks remain the source of action availability. |
+
+## Competition Center findings
+
+| Finding | Status | Resolution |
+| --- | --- | --- |
+| Schedule, standings, and race archive information used separate pre-refresh page structures. | Fixed | All three now use the FM-style Competition Center hierarchy with persistent season context, compact metrics, tabs, and internal work areas. |
+| Calendar browsing could hide overall season progress and the next event. | Fixed | Total, completed, remaining, completion percentage, and next-race context stay visible above Schedule and Results. |
+| Standings browsing required reading the table to recover basic championship context. | Fixed | Leader, lead margin, player-team position/points, and season progress remain visible while switching championships or pages. |
+| Race archive tabs repeated winner/pole/fastest-lap context inside scrollable content. | Fixed | Selected-race archive count, winner, pole, and fastest lap now remain in the persistent metric strip. |
+| A compact competition UI could replace detailed historical data with summaries. | Prevented | Circuit demand, winners, full classifications, qualifying, lap pace, race stories, filters, player highlighting, and pagination remain connected to their original data. |
