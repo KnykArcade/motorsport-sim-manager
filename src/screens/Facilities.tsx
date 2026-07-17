@@ -171,6 +171,22 @@ export function Facilities() {
       />
 
       <WorkspaceBody>
+      <div className="ui-decision-strip flex flex-wrap items-center justify-between gap-2 rounded-lg border px-3 py-2.5">
+        <div className="flex min-w-0 items-center gap-2 text-xs">
+          <span className="ui-decision-strip-pulse" aria-hidden="true" />
+          <div className="min-w-0">
+            <div className="font-semibold text-neutral-100">Infrastructure operations desk</div>
+            <div className="truncate text-neutral-400">
+              {facilitiesState.pendingUpgrades.length > 0
+                ? `${facilitiesState.pendingUpgrades.length} upgrade${facilitiesState.pendingUpgrades.length === 1 ? '' : 's'} are in the construction queue.`
+                : 'No construction is queued. Review the planner for the next technical priority.'}
+            </div>
+          </div>
+        </div>
+        <span className="shrink-0 text-[10px] font-semibold uppercase tracking-wide text-neutral-500">
+          {formatMoney(budget)} available
+        </span>
+      </div>
       {tab === 'impacts' && (
         <Panel title="Current Infrastructure Impact">
           <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
@@ -203,7 +219,7 @@ export function Facilities() {
                 onClick={() => setPortfolioGroup(group.id)}
                 className={`flex-1 rounded-md px-2 py-1.5 text-xs font-semibold ${
                   portfolioGroup === group.id
-                    ? 'bg-sky-500/20 text-sky-200'
+                    ? 'bg-[var(--era-accent-soft)] text-[var(--era-accent-strong)]'
                     : 'bg-neutral-950/30 text-neutral-500 hover:bg-neutral-800 hover:text-neutral-300'
                 }`}
               >

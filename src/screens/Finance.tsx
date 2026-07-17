@@ -149,6 +149,24 @@ export function Finance() {
       />
 
       <WorkspaceBody>
+        <div className="ui-decision-strip flex flex-wrap items-center justify-between gap-2 rounded-lg border px-3 py-2.5">
+          <div className="flex min-w-0 items-center gap-2 text-xs">
+            <span className="ui-decision-strip-pulse" aria-hidden="true" />
+            <div className="min-w-0">
+              <div className="font-semibold text-neutral-100">Financial operations desk</div>
+              <div className="truncate text-neutral-400">
+                {summary.net < 0
+                  ? `${activeSeason} is running at a ${formatMoney(Math.abs(summary.net))} net deficit. Review commitments before the next major spend.`
+                  : annualCoverage !== null && annualCoverage < 1
+                    ? 'Known annual commitments exceed one season of available cash coverage.'
+                    : 'Cash position and known annual commitments are currently within operating range.'}
+              </div>
+            </div>
+          </div>
+          <span className="shrink-0 text-[10px] font-semibold uppercase tracking-wide text-neutral-500">
+            {annualCoverage === null ? 'No recurring commitments' : `${annualCoverage.toFixed(1)} seasons covered`}
+          </span>
+        </div>
         {tab === 'overview' && (
         <Panel title={`${activeSeason} Income and Expenses`}>
           {transactions.length === 0 ? (
@@ -210,7 +228,7 @@ export function Finance() {
                   onClick={() => selectTransactionFilter(filter)}
                   className={`rounded-md px-2 py-1 text-xs font-semibold capitalize ${
                     transactionFilter === filter
-                      ? 'bg-sky-500/20 text-sky-200'
+                      ? 'bg-[var(--era-accent-soft)] text-[var(--era-accent-strong)]'
                       : 'text-neutral-500 hover:bg-neutral-800 hover:text-neutral-300'
                   }`}
                 >
