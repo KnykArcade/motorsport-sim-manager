@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type ReactNode } from 'react';
+import { useMemo, useState, type ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useGame } from '../game/GameContext';
 import { activeDriversForTeam, carForTeam, currentRace } from '../game/careerState';
@@ -84,10 +84,6 @@ export function RaceWeekend() {
   );
   const qualifyingResults = state && race ? state.qualifyingResults[race.id] : undefined;
 
-  useEffect(() => {
-    if (qualifyingResults) setFurthestPhase('quali-review');
-  }, [qualifyingResults]);
-
   const autoSetups = useMemo(
     () => (track ? autoSetupsForTrack(track) : undefined),
     [track],
@@ -165,6 +161,10 @@ export function RaceWeekend() {
 
   const isMinPackage = state.raceWeekendPackage?.packageType === 'MandatoryMinimum';
   const visiblePhases = visibleRaceWeekendPhases(isMinPackage);
+  const unlockedPhase = qualifyingResults
+    && raceWeekendPhaseIndex('quali-review', isMinPackage) > raceWeekendPhaseIndex(furthestPhase, isMinPackage)
+    ? 'quali-review'
+    : furthestPhase;
   const moveTo = (next: Phase) => {
     if (raceWeekendPhaseIndex(next, isMinPackage) < 0) return;
     setPhase(next);
@@ -200,7 +200,7 @@ export function RaceWeekend() {
     .reduce<number | undefined>((best, result) => best === undefined ? result.position : Math.min(best, result.position), undefined);
   const tabs = visiblePhases.map((item) => ({
     ...item,
-    disabled: !canOpenRaceWeekendPhase(item.id, furthestPhase, isMinPackage),
+    disabled: !canOpenRaceWeekendPhase(item.id, unlockedPhase, isMinPackage),
     disabledReason: `Complete ${phaseTitle} before opening this stage`,
   }));
 
@@ -384,7 +384,7 @@ export function RaceWeekend() {
         items={tabs}
         active={phase}
         onChange={(next) => {
-          if (canOpenRaceWeekendPhase(next, furthestPhase, isMinPackage)) moveTo(next);
+          if (canOpenRaceWeekendPhase(next, unlockedPhase, isMinPackage)) moveTo(next);
         }}
         ariaLabel="Race weekend stages"
       />
