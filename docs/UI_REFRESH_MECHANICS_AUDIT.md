@@ -170,3 +170,14 @@ explicit as their screens are migrated.
 | Reserve-driver ambition consequences were buried below the academy list. | Improved | At-risk reserve count is persistent, the overview explains the departure risk, and the Line-up tab retains the original promotion controls and points comparison. |
 | Academy readiness used F1-specific labels in every championship. | Fixed | Offseason now describes the shared progression as senior-series and race-seat readiness without changing the underlying development calculation. |
 | A prominent advance action could bypass the real season-completion rule. | Prevented | Header and Advance-tab actions share the existing completion/loading gate and visibly explain why advancement is unavailable. |
+
+## Preseason Setup findings
+
+| Finding | Status | Resolution |
+| --- | --- | --- |
+| The seven-step review already used tabs, but persistent news panels and a footer action made the screen vertically long and hid overall readiness while switching sections. | Fixed | Preseason Setup now uses the shared FM-style workspace with persistent progress, budget, line-up, and Race 1 readiness metrics plus one internally scrolling work area. |
+| Review confirmations could look like seven independent gameplay decisions. | Clarified | Persistent guidance distinguishes checklist acknowledgements from the connected choices that mutate state: launch approach, testing focus, technical corrections, and actions on linked management screens. |
+| The Budget tab stated prize income was $250K per point while the race settlement engine paid $500K. | Fixed | Prize money per point now comes from one shared finance constant used by both race settlement and the Preseason UI. |
+| Disabled testing and flaw-correction controls did not explain whether launch order or budget caused the block. | Fixed | Testing cards and correction actions now show the exact prerequisite or required budget while retaining the existing engine guards. |
+| The header described all Single Season team setup as locked even though launch/testing decisions still operate under specific mode restrictions. | Fixed | The subtitle now accurately states that management choices follow mode restrictions; sponsor and engine sections retain their specific historical-lock explanations. |
+| Moving the advance action into persistent context could bypass the checklist. | Prevented | The header action continues to use the engine-backed seven-approval gate and reports the number of reviews remaining. |

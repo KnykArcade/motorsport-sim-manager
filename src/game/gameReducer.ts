@@ -60,7 +60,7 @@ import { getMaxQualifiers, getStaffPool } from '../data';
 import { careerMarketBundle } from '../sim/careerMarketEngine';
 import { marketDriverToDriver, signProspectToAcademy } from '../sim/driverMarketEngine';
 import { academyCapacityFor } from '../sim/teamRatingsEngine';
-import { makeTransaction, toMoney } from '../sim/financeEngine';
+import { makeTransaction, PRIZE_MONEY_PER_POINT, toMoney } from '../sim/financeEngine';
 import { driverExtensionSigningFee, extendedDriverSalaryMillions, thirdDriverMidSeasonFee, thirdDriverSalary } from '../sim/contractEngine';
 import {
   generateSponsorOffers,
@@ -1913,7 +1913,7 @@ function applyRaceResults(
   for (const r of results) {
     const team = teams.find((t) => t.id === r.teamId);
     if (!team) continue;
-    const prize = r.points * 500_000; // prize money per point
+    const prize = r.points * PRIZE_MONEY_PER_POINT;
     team.budget += prize;
     const roll = createSeededRandom(deriveSeed(state.randomSeed, 'damage', race.round, r.driverId)).next();
     const severity = classifyCrashDamage(r.status, r.incidents, roll);

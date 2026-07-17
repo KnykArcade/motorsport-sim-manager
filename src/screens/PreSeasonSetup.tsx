@@ -18,11 +18,22 @@ import { RegulationPanel } from '../components/RegulationPanel';
 import { TrackDemandBars } from '../components/TrackDemandBars';
 import { NewsPanel } from '../components/NewsPanel';
 import { formatMoney } from '../components/ui';
+import {
+  MetricStrip,
+  WorkspaceBody,
+  WorkspaceHeader,
+  WorkspaceMetric,
+  WorkspaceScreen,
+  WorkspaceTabs,
+} from '../components/workspace/Workspace';
 import { isPreseasonChecklistComplete, getPreseasonApprovals } from '../game/careerPhaseEngine';
 import { getGameModeLabel } from '../game/modeRestrictions';
 import { OWNER_PERSONALITY_LABELS, OWNER_PERSONALITY_DESCRIPTIONS } from '../types/expectationTypes';
 import type { CarLaunchApproach, PreseasonTestingFocus } from '../types/phase18Types';
 import { PRESEASON_FLAW_FIX_COST, PRESEASON_TESTING_COST, preseasonProgramFor } from '../sim/phase18PreseasonEngine';
+import { PRIZE_MONEY_PER_POINT } from '../sim/financeEngine';
+
+type PreseasonTab = 'teamOverview' | 'budget' | 'driverLineup' | 'carDevelopment' | 'sponsorsEngine' | 'seasonObjectives' | 'roundOnePreview';
 
 const LAUNCH_OPTIONS: Array<{ id: CarLaunchApproach; label: string; description: string }> = [
   { id: 'Measured', label: 'Measured Reveal', description: 'Protect expectations and give engineers a calm start.' },
@@ -41,7 +52,7 @@ const TESTING_OPTIONS: Array<{ id: PreseasonTestingFocus; label: string; descrip
 export function PreSeasonSetup() {
   const { state, dispatch } = useGame();
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState('teamOverview' as string);
+  const [activeTab, setActiveTab] = useState<PreseasonTab>('teamOverview');
 
   if (!state) return null;
 
@@ -74,7 +85,7 @@ export function PreSeasonSetup() {
     navigate('/briefing');
   };
 
-  const approveTab = (tabId: 'teamOverview' | 'budget' | 'driverLineup' | 'carDevelopment' | 'sponsorsEngine' | 'seasonObjectives' | 'roundOnePreview') => {
+  const approveTab = (tabId: PreseasonTab) => {
     dispatch({ type: 'APPROVE_PRESEASON_TAB', tabId });
     const currentIndex = tabs.findIndex((tab) => tab.id === tabId);
     const nextTab = tabs[currentIndex + 1];
@@ -91,67 +102,48 @@ export function PreSeasonSetup() {
   const expectation = state.teamExpectations?.[state.selectedTeamId];
 
   // Tab definitions.
-  const tabs = [
-    { id: 'teamOverview', label: 'Team Overview' },
-    { id: 'budget', label: 'Budget / Finance' },
-    { id: 'driverLineup', label: 'Driver Lineup' },
-    { id: 'carDevelopment', label: 'Car & Development' },
-    { id: 'sponsorsEngine', label: 'Sponsors / Engine' },
-    { id: 'seasonObjectives', label: 'Season Objectives' },
-    { id: 'roundOnePreview', label: 'Round 1 Preview' },
+  const tabs: ReadonlyArray<{ id: PreseasonTab; label: string }> = [
+    { id: 'teamOverview', label: `${approvals.teamOverview ? '✓ ' : ''}Team Overview` },
+    { id: 'budget', label: `${approvals.budget ? '✓ ' : ''}Budget / Finance` },
+    { id: 'driverLineup', label: `${approvals.driverLineup ? '✓ ' : ''}Driver Line-up` },
+    { id: 'carDevelopment', label: `${approvals.carDevelopment ? '✓ ' : ''}Car & Development` },
+    { id: 'sponsorsEngine', label: `${approvals.sponsorsEngine ? '✓ ' : ''}Sponsors / Engine` },
+    { id: 'seasonObjectives', label: `${approvals.seasonObjectives ? '✓ ' : ''}Season Objectives` },
+    { id: 'roundOnePreview', label: `${approvals.roundOnePreview ? '✓ ' : ''}Round 1 Preview` },
   ];
 
   // Driver lineup validation: NASCAR requires 1 race driver, all other series 2.
   const hasValidLineup = activeDrivers.length >= minDrivers;
+  const remainingApprovals = totalTabs - approvedCount;
+  const advanceBlockedReason = checklistComplete ? undefined : `${remainingApprovals} review${remainingApprovals === 1 ? '' : 's'} remaining`;
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-neutral-100">Pre-Season Setup</h1>
-          <p className="text-sm text-neutral-400">
-            {state.seasonYear} {state.series} · {getGameModeLabel(state.gameMode)}
-            {isSingleSeason && ' · Historical replay — team setup is locked'}
-          </p>
-        </div>
-        <div className="text-sm text-neutral-400">
-          Approval Progress: {approvedCount} / {totalTabs}
-        </div>
+    <WorkspaceScreen className="era-feature-screen era-preseason-setup-screen">
+      <WorkspaceHeader
+        eyebrow="Season preparation"
+        title={`${state.seasonYear} ${state.series} Preseason Setup`}
+        subtitle={<>{getGameModeLabel(state.gameMode)}{isSingleSeason && ' · Historical replay — management choices follow mode restrictions'}</>}
+        actions={<Button variant="primary" onClick={advanceToBriefing} disabled={!checklistComplete} title={advanceBlockedReason}>
+          {checklistComplete ? 'Advance to Race 1 Briefing →' : `${remainingApprovals} reviews remaining`}
+        </Button>}
+      />
+      <MetricStrip>
+        <WorkspaceMetric label="Review progress" value={`${approvedCount}/${totalTabs}`} detail={checklistComplete ? 'Preseason checklist complete' : `${remainingApprovals} confirmations required`} />
+        <WorkspaceMetric label="Available budget" value={team ? formatMoney(team.budget) : '—'} detail={preseasonProgram?.testingCompleted ? `${preseasonProgram.testingFocus} testing complete` : 'Testing programme not complete'} />
+        <WorkspaceMetric label="Race line-up" value={`${activeDrivers.length}/${minDrivers}`} detail={hasValidLineup ? 'Required seats filled' : 'Driver signing required'} />
+        <WorkspaceMetric label="Race 1 readiness" value={preseasonProgram?.testingCompleted ? `${preseasonProgram.readiness.overall}%` : 'Pending'} detail={race?.gpName ?? 'Opening event unavailable'} />
+      </MetricStrip>
+      <div className="shrink-0 rounded border border-sky-500/20 bg-sky-500/5 px-3 py-2 text-[11px] text-sky-200">
+        Review confirmations acknowledge the current plan. Car launch, testing focus, technical corrections, and external management-screen actions are the choices that change game state.
       </div>
-
-      {/* Tab Navigation */}
-      <div className="flex gap-2 overflow-x-auto border-b border-neutral-800 pb-2">
-        {tabs.map((tab) => {
-          const isApproved = approvals[tab.id as keyof typeof approvals];
-          const isActive = activeTab === tab.id;
-          return (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              className={`flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
-                isActive
-                  ? 'bg-neutral-800 text-neutral-100'
-                  : 'text-neutral-400 hover:bg-neutral-900/50 hover:text-neutral-300'
-              }`}
-            >
-              <span
-                className={`flex h-4 w-4 items-center justify-center rounded-full text-[10px] font-bold ${
-                  isApproved ? 'bg-green-600 text-white' : 'bg-neutral-700 text-neutral-400'
-                }`}
-              >
-                {isApproved ? '✓' : '○'}
-              </span>
-              {tab.label}
-            </button>
-          );
-        })}
-      </div>
+      <WorkspaceTabs items={tabs} active={activeTab} onChange={setActiveTab} ariaLabel="Preseason review sections" />
+      <WorkspaceBody className="space-y-4">
 
       {/* Tab Content */}
       <div className="space-y-6">
 
         {/* Season Preview News */}
-        <div className="grid gap-4 lg:grid-cols-2">
+        {activeTab === 'teamOverview' && <div className="grid gap-4 lg:grid-cols-2">
           <NewsPanel
             news={state.news}
             title="Season Preview"
@@ -166,7 +158,7 @@ export function PreSeasonSetup() {
             categoryFilter={['youth_academy']}
             emptyMessage="No youth academy news this season."
           />
-        </div>
+        </div>}
         {activeTab === 'teamOverview' && (
           <Panel title="Team Overview">
             <div className="grid gap-4 sm:grid-cols-2">
@@ -212,7 +204,7 @@ export function PreSeasonSetup() {
           <Panel title="Budget / Financial Review">
             <div className="text-sm text-neutral-200">{team ? formatMoney(team.budget) : '—'}</div>
             <div className="mt-2 text-xs text-neutral-500">
-              Prize money per point: $250K. Budget is used for development, staff, facilities, and race packages.
+              Race points generate {formatMoney(PRIZE_MONEY_PER_POINT)} in prize money per point. Budget is used for development, staff, facilities, and race packages.
             </div>
             <div className="mt-4 flex justify-end">
               <Button
@@ -299,7 +291,9 @@ export function PreSeasonSetup() {
                 {!preseasonProgram?.testingCompleted && <div className="mt-3 grid gap-2 md:grid-cols-2 xl:grid-cols-5">
                   {TESTING_OPTIONS.map((option) => {
                     const cost = isSingleSeason ? 0 : PRESEASON_TESTING_COST[option.id];
-                    return <button key={option.id} type="button" disabled={!preseasonProgram?.launchCompleted || (team?.budget ?? 0) < cost} onClick={() => dispatch({ type: 'COMPLETE_PRESEASON_TESTING', focus: option.id })} className="rounded-lg border border-neutral-700 bg-neutral-900/50 p-3 text-left enabled:hover:border-amber-500/60 disabled:cursor-not-allowed disabled:opacity-40"><div className="text-xs font-semibold text-amber-300">{option.label}</div><p className="mt-1 text-[11px] text-neutral-400">{option.description}</p><div className="mt-2 text-[10px] text-neutral-500">{cost ? formatMoney(cost) : 'Included'}</div></button>;
+                    const insufficientBudget = (team?.budget ?? 0) < cost;
+                    const blockedReason = !preseasonProgram?.launchCompleted ? 'Complete the car launch first' : insufficientBudget ? `Needs ${formatMoney(cost)}` : undefined;
+                    return <button key={option.id} type="button" disabled={!preseasonProgram?.launchCompleted || insufficientBudget} title={blockedReason} onClick={() => dispatch({ type: 'COMPLETE_PRESEASON_TESTING', focus: option.id })} className="rounded-lg border border-neutral-700 bg-neutral-900/50 p-3 text-left enabled:hover:border-amber-500/60 disabled:cursor-not-allowed disabled:opacity-40"><div className="text-xs font-semibold text-amber-300">{option.label}</div><p className="mt-1 text-[11px] text-neutral-400">{option.description}</p><div className={`mt-2 text-[10px] ${insufficientBudget ? 'text-red-300' : 'text-neutral-500'}`}>{blockedReason ?? (cost ? formatMoney(cost) : 'Included')}</div></button>;
                   })}
                 </div>}
                 {preseasonProgram?.testingCompleted && <div className="mt-3 grid gap-2 md:grid-cols-3">
@@ -320,7 +314,7 @@ export function PreSeasonSetup() {
 
               {preseasonProgram?.hiddenFlaws.some((flaw) => flaw.discovered) && <div className="rounded-lg border border-orange-500/35 bg-orange-500/5 p-3">
                 <h3 className="text-sm font-semibold text-orange-200">Discovered Technical Issues</h3>
-                <div className="mt-2 space-y-2">{preseasonProgram.hiddenFlaws.filter((flaw) => flaw.discovered).map((flaw) => <div key={flaw.id} className="flex flex-wrap items-center justify-between gap-2 text-xs"><div><span className="font-semibold text-neutral-200">{flaw.area}</span><span className="ml-2 text-neutral-400">{flaw.description}</span></div>{flaw.resolved ? <span className="text-emerald-300">Corrected</span> : <Button variant="ghost" className="px-2 py-1 text-[11px]" disabled={(team?.budget ?? 0) < PRESEASON_FLAW_FIX_COST} onClick={() => dispatch({ type: 'RESOLVE_PRESEASON_FLAW', flawId: flaw.id })}>Correct before Race 1 ({formatMoney(PRESEASON_FLAW_FIX_COST)})</Button>}</div>)}</div>
+                <div className="mt-2 space-y-2">{preseasonProgram.hiddenFlaws.filter((flaw) => flaw.discovered).map((flaw) => { const insufficientBudget = (team?.budget ?? 0) < PRESEASON_FLAW_FIX_COST; return <div key={flaw.id} className="flex flex-wrap items-center justify-between gap-2 text-xs"><div><span className="font-semibold text-neutral-200">{flaw.area}</span><span className="ml-2 text-neutral-400">{flaw.description}</span></div>{flaw.resolved ? <span className="text-emerald-300">Corrected</span> : <Button variant="ghost" className="px-2 py-1 text-[11px]" disabled={insufficientBudget} title={insufficientBudget ? `Needs ${formatMoney(PRESEASON_FLAW_FIX_COST)}` : undefined} onClick={() => dispatch({ type: 'RESOLVE_PRESEASON_FLAW', flawId: flaw.id })}>{insufficientBudget ? `Insufficient budget · ${formatMoney(PRESEASON_FLAW_FIX_COST)}` : `Correct before Race 1 (${formatMoney(PRESEASON_FLAW_FIX_COST)})`}</Button>}</div>; })}</div>
               </div>}
             </div>
             <div className="mt-3 text-sm text-neutral-400">
@@ -485,14 +479,8 @@ export function PreSeasonSetup() {
           </Panel>
         )}
       </div>
-
-      {/* Footer */}
-      <div className="flex justify-end">
-        <Button variant="primary" onClick={advanceToBriefing} disabled={!checklistComplete}>
-          {checklistComplete ? 'Advance to Pre-Race Briefing →' : `Complete all ${totalTabs} approvals to continue`}
-        </Button>
-      </div>
-    </div>
+      </WorkspaceBody>
+    </WorkspaceScreen>
   );
 }
 
