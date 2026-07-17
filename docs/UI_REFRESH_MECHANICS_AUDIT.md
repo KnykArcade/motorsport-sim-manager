@@ -201,3 +201,13 @@ explicit as their screens are migrated.
 | Practice completion, qualifying status, and the active race package were spread across separate phases. | Improved | Persistent metrics now identify the current stage, completed practice sessions, qualifying result/best player grid, and package-backed race readiness without creating new simulation values. |
 | The early-1990s F1 garage was a separate navigation shell, which conflicted with the stable cross-era layout rule. | Fixed | The garage-specific presentation no longer replaces the management workspace. Series and era themes continue to supply visual flavor through the shared shell, while the same connected weekend controls appear in the same locations for every era. |
 | A compact weekend dashboard could make recommendations or weather look like direct game effects. | Prevented | Forecasts and engineer recommendations remain informational. Only the existing practice programs, setup commits, qualifying decisions, race strategy, driver instructions, and live-race handoff mutate or pass connected state. |
+
+## Post-Race Review findings
+
+| Finding | Status | Resolution |
+| --- | --- | --- |
+| Results, championship impact, news, incidents, and technical cases used a long standalone page that could push progression below the viewport. | Fixed | Post-Race Review now uses the shared workspace header, compact metrics, five focused tabs, and one internally scrolling work area with the valid next action kept in persistent context. |
+| Failure investigations could appear mandatory even though the phase engine allows the player to continue without resolving them. | Clarified | Technical review remains optional. The persistent warning and Continue label state that unresolved cases carry forward instead of presenting a false progression gate. |
+| The consequence of skipping a failure investigation was buried inside the investigation card. | Exposed | Unresolved case count and risk points remain visible above every tab, and the screen explains that unresolved risk feeds the implemented reliability penalty applied to future races. |
+| A technical-review tab could become a decorative incident summary. | Prevented | Investigation depth, budget costs, findings, response costs, reliability changes, driver morale, sponsor confidence, finance transactions, and AI activity retain their existing engine-backed actions and data. |
+| Historical reviews could expose current-state actions or imply that old budget and car-condition values were preserved snapshots. | Prevented | Historical reviews remain read-only. Their metrics explicitly identify current finance and condition values as unavailable rather than presenting current state as historical data. |
