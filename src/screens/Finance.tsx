@@ -5,6 +5,14 @@ import { careerMarketBundle } from '../sim/careerMarketEngine';
 import { projectedAnnualCosts, summarize } from '../sim/financeEngine';
 import { totalStaffSalary } from '../sim/staffEngine';
 import { Panel } from '../components/Panel';
+import {
+  MetricStrip,
+  WorkspaceBody,
+  WorkspaceHeader,
+  WorkspaceMetric,
+  WorkspaceScreen,
+  WorkspaceTabs,
+} from '../components/workspace/Workspace';
 import { formatMoney } from '../components/ui';
 import type { FinanceCategory } from '../types/financeTypes';
 import {
@@ -95,13 +103,12 @@ export function Finance() {
   }
 
   return (
-    <div className="space-y-3">
-      <div className="flex items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-neutral-100">Finance</h1>
-          <p className="text-sm text-neutral-400">{team?.name} · budget and ledger</p>
-        </div>
-        {seasons.length > 1 && (
+    <WorkspaceScreen className="era-feature-screen era-finance">
+      <WorkspaceHeader
+        eyebrow="Operations center"
+        title="Finance"
+        subtitle={`${team?.name ?? 'Team'} · budget, commitments, and ledger`}
+        actions={seasons.length > 1 ? (
           <select
             aria-label="Finance season"
             value={activeSeason}
@@ -117,40 +124,32 @@ export function Finance() {
               </option>
             ))}
           </select>
-        )}
-      </div>
+        ) : undefined}
+      />
 
-      <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
-        <Kpi label="Balance" value={formatMoney(team?.budget ?? 0)} />
-        <Kpi label={`${activeSeason} Income`} value={formatMoney(summary.income)} tone="good" />
-        <Kpi label={`${activeSeason} Expenses`} value={formatMoney(summary.expense)} tone="bad" />
-        <Kpi
+      <MetricStrip>
+        <WorkspaceMetric label="Balance" value={formatMoney(team?.budget ?? 0)} detail="Available cash" />
+        <WorkspaceMetric label={`${activeSeason} income`} value={formatMoney(summary.income)} detail="Recorded transactions" />
+        <WorkspaceMetric label={`${activeSeason} expenses`} value={formatMoney(summary.expense)} detail="Recorded transactions" />
+        <WorkspaceMetric
           label={`${activeSeason} Net`}
           value={formatMoney(summary.net)}
-          tone={summary.net >= 0 ? 'good' : 'bad'}
+          detail={summary.net >= 0 ? 'Positive season balance' : 'Negative season balance'}
         />
-      </div>
+      </MetricStrip>
 
-      <nav aria-label="Finance workspaces" className="flex gap-1 rounded-xl border border-neutral-800 bg-neutral-900/50 p-1">
-        {FINANCE_WORKSPACE_TABS.map((workspace) => (
-          <button
-            key={workspace.id}
-            type="button"
-            aria-current={tab === workspace.id ? 'page' : undefined}
-            onClick={() => setTab(workspace.id)}
-            className={`flex-1 rounded-lg px-3 py-1.5 text-sm font-semibold transition-colors ${
-              tab === workspace.id
-                ? 'bg-sky-500/20 text-sky-200'
-                : 'text-neutral-400 hover:bg-neutral-800 hover:text-neutral-200'
-            }`}
-          >
-            {workspace.label}
-            {workspace.id === 'transactions' ? ` (${transactions.length})` : ''}
-          </button>
-        ))}
-      </nav>
+      <WorkspaceTabs
+        items={FINANCE_WORKSPACE_TABS.map((workspace) => ({
+          ...workspace,
+          label: workspace.id === 'transactions' ? `${workspace.label} (${transactions.length})` : workspace.label,
+        }))}
+        active={tab}
+        onChange={setTab}
+        ariaLabel="Finance workspaces"
+      />
 
-      {tab === 'overview' && (
+      <WorkspaceBody>
+        {tab === 'overview' && (
         <Panel title={`${activeSeason} Income and Expenses`}>
           {transactions.length === 0 ? (
             <p className="text-sm text-neutral-500">No transactions recorded for {activeSeason} yet.</p>
@@ -171,7 +170,7 @@ export function Finance() {
         </Panel>
       )}
 
-      {tab === 'commitments' && (
+        {tab === 'commitments' && (
         <Panel title="Projected Annual Commitments">
           <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(250px,0.75fr)]">
             <div className="space-y-1.5 text-sm">
@@ -198,7 +197,7 @@ export function Finance() {
         </Panel>
       )}
 
-      {tab === 'transactions' && (
+        {tab === 'transactions' && (
         <Panel
           title={`${activeSeason} Transactions`}
           actions={
@@ -265,18 +264,9 @@ export function Finance() {
             </>
           )}
         </Panel>
-      )}
-    </div>
-  );
-}
-
-function Kpi({ label, value, tone }: { label: string; value: string; tone?: 'good' | 'bad' }) {
-  const color = tone === 'good' ? 'text-green-300' : tone === 'bad' ? 'text-red-300' : 'text-neutral-100';
-  return (
-    <div className="rounded-xl border border-neutral-800 bg-neutral-900/40 p-3">
-      <div className="text-xs uppercase tracking-wide text-neutral-500">{label}</div>
-      <div className={`mt-0.5 text-xl font-bold ${color}`}>{value}</div>
-    </div>
+        )}
+      </WorkspaceBody>
+    </WorkspaceScreen>
   );
 }
 
