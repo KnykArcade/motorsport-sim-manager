@@ -35,15 +35,25 @@ function stanceFor(support: number): CharacterInfluenceStance {
   return 'Obstructive';
 }
 
-function rolePower(state: GameState, target: CharacterInteractionTarget): number {
+export function characterRolePower(state: GameState, target: CharacterInteractionTarget): number {
   if (target.type === 'Owner') return 95;
   if (target.type === 'Staff') {
     const rating = staffRatingOutOfTen(state.staff?.find((entry) => entry.id === target.id)?.rating ?? 5);
     return clamp(45 + rating * 5);
   }
   if (target.type === 'Driver') {
-    const rating = state.drivers.find((entry) => entry.id === target.id)?.ratings.overall ?? 5;
-    return clamp(45 + rating * 5);
+    const driver = state.drivers.find((entry) => entry.id === target.id);
+    const relationship = state.driverRelationships?.[target.id];
+    const rating = clamp(driver?.ratings.overall ?? 50);
+    const roleBonus = relationship?.numberOneExpectation ? 4 : 0;
+    const leadershipBonus = relationship?.personalityTraits.includes('Team Leader') ? 3 : 0;
+    const commercialBonus = state.commercial?.sponsors.some((sponsor) => sponsor.linkedDriverId === target.id) ? 3 : 0;
+    const championshipBonus = state.driverStandings[0]?.entityId === target.id ? 3 : 0;
+
+    // Driver ratings use the shared 1-100 scale. Keep an ordinary race driver
+    // below ownership authority while allowing a genuine team-leading superstar
+    // with sporting and commercial leverage to reach the top of the power map.
+    return clamp(45 + rating * 0.5 + roleBonus + leadershipBonus + commercialBonus + championshipBonus);
   }
   if (target.type === 'RivalPrincipal') return 70;
   return 35;
@@ -99,7 +109,7 @@ function calculateProfile(state: GameState, target: CharacterInteractionTarget):
   const stance = stanceFor(normalizedSupport);
   return {
     target,
-    power: rolePower(state, target),
+    power: characterRolePower(state, target),
     support: normalizedSupport,
     stance,
     basis: basis.slice(0, 4),
