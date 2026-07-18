@@ -97,6 +97,28 @@ export function Offseason() {
         <WorkspaceMetric label="Academy rights" value={`${academyDecisionCount}/${promotionEligible.length}`} detail={unresolvedAcademyRights ? `${unresolvedAcademyRights} optional choice${unresolvedAcademyRights === 1 ? '' : 's'} unresolved` : 'All eligible drivers resolved'} />
         <WorkspaceMetric label="Market movement" value={marketMovement} detail={`${atRiskReserves.length} reserve driver${atRiskReserves.length === 1 ? '' : 's'} at risk`} />
       </MetricStrip>
+      <div className="ui-decision-strip flex flex-wrap items-center justify-between gap-2 rounded-lg border px-3 py-2.5">
+        <div className="flex min-w-0 items-center gap-2 text-xs">
+          <span className="ui-decision-strip-pulse" aria-hidden="true" />
+          <div className="min-w-0">
+            <div className="font-semibold text-neutral-100">Season transition desk</div>
+            <div className="truncate text-neutral-400">
+              {!state.seasonComplete
+                ? 'Finish the current championship before the universe can roll into the next season.'
+                : unresolvedAcademyRights > 0
+                  ? `${unresolvedAcademyRights} academy right${unresolvedAcademyRights === 1 ? '' : 's'} still await a recorded plan.`
+                  : atRiskReserves.length > 0
+                    ? `${atRiskReserves.length} reserve driver${atRiskReserves.length === 1 ? '' : 's'} may leave unless the line-up plan changes.`
+                    : signings.length > 0
+                      ? `${signings.length} seat change${signings.length === 1 ? '' : 's'} queued for rollover.`
+                      : 'Transition planning is clear. Review the market outlook before advancing.'}
+            </div>
+          </div>
+        </div>
+        <span className="shrink-0 text-[10px] font-semibold uppercase tracking-wide text-neutral-500">
+          {state.seasonComplete ? `${nextYear} rollover ${canAdvance ? 'ready' : 'review'}` : 'Season in progress'}
+        </span>
+      </div>
       <WorkspaceTabs items={tabs} active={tab} onChange={setTab} ariaLabel="Offseason management sections" />
       <WorkspaceBody className="space-y-4">
 
@@ -137,7 +159,7 @@ export function Offseason() {
                   <span className="font-semibold">{s.name}</span>{' '}
                   <span className="text-neutral-500">replaces {driverName(s.seatDriverId)}</span>
                   {s.source === 'academy' && (
-                    <span className="ml-2 rounded bg-sky-500/15 px-1.5 py-0.5 text-[10px] text-sky-300">
+                    <span className="ml-2 rounded bg-[var(--era-accent-soft)] px-1.5 py-0.5 text-[10px] text-[var(--era-accent-strong)]">
                       academy promotion
                     </span>
                   )}
@@ -374,7 +396,7 @@ export function Offseason() {
           />
           <OutlookGroup
             label="New youth prospects"
-            accent="text-sky-300"
+            accent="text-[var(--era-accent-strong)]"
             entries={rollover.newYouth}
           />
           <OutlookGroup
