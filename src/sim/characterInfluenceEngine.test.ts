@@ -6,6 +6,7 @@ import { migrateGameState } from '../game/saveSystem';
 import type { CharacterInteractionTarget } from '../types/characterInteractionTypes';
 import {
   applyCharacterInfluenceEffects,
+  characterRolePower,
   ensureCharacterInfluence,
   generateCharacterInfluenceEvents,
   influenceForTarget,
@@ -40,6 +41,57 @@ describe('character influence engine', () => {
     expect(internal.find((profile) => profile.target.type === 'Owner')?.power).toBe(95);
     expect(internal.every((profile) => profile.power <= 100)).toBe(true);
     expect(internal.every((profile) => profile.effectLabel.length > 0 && profile.basis.length > 0)).toBe(true);
+  });
+
+  it('keeps an ordinary driver below ownership authority on the shared 1-100 rating scale', () => {
+    const base = freshState();
+    const target = currentCharacterTargets(base).find((entry) => entry.type === 'Driver')!;
+    const relationship = base.driverRelationships![target.id];
+    const ordinary: GameState = {
+      ...base,
+      drivers: base.drivers.map((driver) => driver.id === target.id
+        ? { ...driver, ratings: { ...driver.ratings, overall: 70 } }
+        : driver),
+      driverRelationships: {
+        ...base.driverRelationships!,
+        [target.id]: {
+          ...relationship,
+          numberOneExpectation: false,
+          personalityTraits: relationship.personalityTraits.filter((trait) => trait !== 'Team Leader'),
+        },
+      },
+      commercial: undefined,
+      driverStandings: [],
+    };
+    const owner = currentCharacterTargets(ordinary).find((entry) => entry.type === 'Owner')!;
+
+    expect(characterRolePower(ordinary, target)).toBe(80);
+    expect(characterRolePower(ordinary, target)).toBeLessThan(characterRolePower(ordinary, owner));
+  });
+
+  it('allows an exceptional team-leading superstar to exceed the owner power baseline', () => {
+    const base = freshState();
+    const target = currentCharacterTargets(base).find((entry) => entry.type === 'Driver')!;
+    const relationship = base.driverRelationships![target.id];
+    const superstar: GameState = {
+      ...base,
+      drivers: base.drivers.map((driver) => driver.id === target.id
+        ? { ...driver, ratings: { ...driver.ratings, overall: 100 } }
+        : driver),
+      driverRelationships: {
+        ...base.driverRelationships!,
+        [target.id]: {
+          ...relationship,
+          numberOneExpectation: true,
+          personalityTraits: [...new Set([...relationship.personalityTraits, 'Team Leader' as const])],
+        },
+      },
+      driverStandings: [{ entityId: target.id, points: 100, wins: 3, podiums: 5, dnfs: 0 }],
+    };
+    const owner = currentCharacterTargets(superstar).find((entry) => entry.type === 'Owner')!;
+
+    expect(characterRolePower(superstar, target)).toBe(100);
+    expect(characterRolePower(superstar, target)).toBeGreaterThan(characterRolePower(superstar, owner));
   });
 
   it('turns strong driver backing into a bounded weekly trust effect applied only once', () => {
