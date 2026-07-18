@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useGame } from '../game/GameContext';
 import { activeDriversForTeam, driversForTeam } from '../game/careerState';
 import type { GameState } from '../game/careerState';
@@ -23,7 +24,16 @@ import type {
   PromiseType,
 } from '../types/relationshipTypes';
 import { contractClauseLabel } from '../sim/phase18ContractClauseEngine';
+import {
+  currentRelationshipAttention,
+  type RelationshipAttentionProfile,
+} from '../sim/relationshipAttentionEngine';
 import type { ContractBreachResponse } from '../types/phase18Types';
+import { RelationshipPriorityBoard } from './relationships/RelationshipPriorityBoard';
+import {
+  relationshipPrioritySummary,
+  relationshipStatusLabel,
+} from './relationships/relationshipPriorityViewModel';
 import {
   MetricStrip,
   WorkspaceBody,
@@ -139,8 +149,9 @@ function loyaltyRiskText(modifier: number): string {
 }
 
 export function Relationships() {
-  const [activeSection, setActiveSection] = useState<'race' | 'reserve' | 'clauses' | 'orders'>('race');
+  const [activeSection, setActiveSection] = useState<'overview' | 'race' | 'reserve' | 'clauses' | 'orders'>('overview');
   const { state, dispatch } = useGame();
+  const navigate = useNavigate();
   if (!state) return null;
 
   const rels = state.driverRelationships;
@@ -167,11 +178,10 @@ export function Relationships() {
     clause.teamId === teamId && clause.partyType === 'Driver' && teamDrivers.some((driver) => driver.id === clause.partyId),
   );
   const activePromiseCount = allPromises.filter((promise) => promise.status === 'active' && teamDrivers.some((driver) => driver.id === promise.driverId)).length;
-  const breachedClauseCount = contractClauses.filter((clause) => clause.status === 'Breached' && !clause.resolutionNote?.startsWith('Management response:')).length;
-  const relationshipRecords = teamDrivers.map((driver) => rels[driver.id]).filter((relationship): relationship is DriverRelationship => Boolean(relationship));
-  const averagePrincipalTrust = relationshipRecords.length
-    ? Math.round(relationshipRecords.reduce((sum, relationship) => sum + relationship.trustInPrincipal, 0) / relationshipRecords.length)
-    : 0;
+  const relationshipPriorities = currentRelationshipAttention(state);
+  const prioritySummary = relationshipPrioritySummary(relationshipPriorities);
+  const topPriority = relationshipPriorities[0];
+  const ownerPriority = relationshipPriorities.find((profile) => profile.target.type === 'Owner');
   const driverContractYears = (id: string) =>
     state.drivers.find((d) => d.id === id)?.contractYearsRemaining ?? 0;
 
@@ -179,21 +189,43 @@ export function Relationships() {
     dispatch({ type: 'MAKE_PROMISE', driverId, promiseType, dueSeason, dueRound });
   };
 
+  const handleReviewRelationship = (profile: RelationshipAttentionProfile) => {
+    if (profile.target.type === 'Driver') {
+      setActiveSection(activeDrivers.some((driver) => driver.id === profile.target.id) ? 'race' : 'reserve');
+      return;
+    }
+    if (profile.target.type === 'RivalPrincipal') {
+      navigate('/rivals');
+      return;
+    }
+    if (profile.target.type === 'Owner') {
+      navigate('/teams');
+      return;
+    }
+    navigate('/staff');
+  };
+
   return (
     <WorkspaceScreen>
       <WorkspaceHeader
         eyebrow="People center"
-        title="Driver Relationships"
-        subtitle="Trust, confidence, promises, contract commitments, and team-order consequences"
+        title="Relationship Command Center"
+        subtitle="Who holds authority, who has influence, and which relationship needs attention now"
+        actions={<Button variant="ghost" onClick={() => navigate('/rivals')}>Rival Matrix</Button>}
       />
       <MetricStrip>
-        <WorkspaceMetric label="Race lineup" value={`${activeDrivers.length}/2`} detail={`${reserveDrivers.length} reserve or third drivers`} />
-        <WorkspaceMetric label="Principal trust" value={`${averagePrincipalTrust}/100`} detail="Average across signed drivers" />
+        <WorkspaceMetric label="Must act now" value={prioritySummary.mustActNow} detail="Deadline or relationship crisis" />
+        <WorkspaceMetric label="Watch closely" value={prioritySummary.watchClosely} detail="Pressure is building" />
+        <WorkspaceMetric
+          label="Owner standing"
+          value={ownerPriority ? relationshipStatusLabel(ownerPriority.status) : 'Unavailable'}
+          detail={ownerPriority ? `Authority #1 · influence ${ownerPriority.influence}` : 'No owner profile'}
+        />
         <WorkspaceMetric label="Active promises" value={activePromiseCount} detail="Binding management commitments" />
-        <WorkspaceMetric label="Contract attention" value={breachedClauseCount} detail={`${contractClauses.length} tracked clauses`} />
       </MetricStrip>
       <WorkspaceTabs
         items={[
+          { id: 'overview', label: `Priority Board (${prioritySummary.mustActNow + prioritySummary.watchClosely})` },
           { id: 'race', label: 'Race Drivers' },
           { id: 'reserve', label: `Reserve (${reserveDrivers.length})` },
           { id: 'clauses', label: `Clauses & Promises (${contractClauses.length + activePromiseCount})` },
@@ -210,18 +242,22 @@ export function Relationships() {
           <div className="min-w-0">
             <div className="font-semibold text-neutral-100">People operations desk</div>
             <div className="truncate text-neutral-400">
-              {breachedClauseCount > 0
-                ? `${breachedClauseCount} contract breach${breachedClauseCount === 1 ? '' : 'es'} require a management response.`
-                : activePromiseCount > 0
-                  ? `${activePromiseCount} active promise${activePromiseCount === 1 ? '' : 's'} remain visible across the driver group.`
-                  : 'No immediate relationship response is required.'}
+              {topPriority?.status === 'MustActNow' || topPriority?.status === 'WatchClosely'
+                ? `${topPriority.target.name}: ${topPriority.reasons[0]}`
+                : 'No immediate relationship response is required. Keep the owner and core team aligned.'}
             </div>
           </div>
         </div>
         <span className="shrink-0 text-[10px] font-semibold uppercase tracking-wide text-neutral-500">
-          {activePromiseCount} active commitments
+          {topPriority
+            ? `${relationshipStatusLabel(topPriority.status)} · Authority #${topPriority.authorityRank}`
+            : 'No active profiles'}
         </span>
       </div>
+
+      {activeSection === 'overview' && (
+        <RelationshipPriorityBoard profiles={relationshipPriorities} onReview={handleReviewRelationship} />
+      )}
 
       {/* Race Drivers Section */}
       {activeSection === 'race' && <div>
