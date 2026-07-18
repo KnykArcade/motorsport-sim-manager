@@ -18,14 +18,12 @@ const Standings = lazy(() => import('../screens/Standings').then((m) => ({ defau
 const TeamOverview = lazy(() => import('../screens/TeamOverview').then((m) => ({ default: m.TeamOverview })));
 const Drivers = lazy(() => import('../screens/Drivers').then((m) => ({ default: m.Drivers })));
 const DriverMarket = lazy(() => import('../screens/DriverMarket').then((m) => ({ default: m.DriverMarket })));
-const Development = lazy(() => import('../screens/Development').then((m) => ({ default: m.Development })));
+const TechnicalCenter = lazy(() => import('../screens/TechnicalCenter').then((m) => ({ default: m.TechnicalCenter })));
 const Finance = lazy(() => import('../screens/Finance').then((m) => ({ default: m.Finance })));
 const Sponsors = lazy(() => import('../screens/Sponsors').then((m) => ({ default: m.Sponsors })));
 const Staff = lazy(() => import('../screens/Staff').then((m) => ({ default: m.Staff })));
 const RaceHistory = lazy(() => import('../screens/RaceHistory').then((m) => ({ default: m.RaceHistory })));
 const DataViewer = lazy(() => import('../screens/DataViewer').then((m) => ({ default: m.DataViewer })));
-const Facilities = lazy(() => import('../screens/Facilities').then((m) => ({ default: m.Facilities })));
-const EngineSupplier = lazy(() => import('../screens/EngineSupplier').then((m) => ({ default: m.EngineSupplier })));
 const TeamPrincipal = lazy(() => import('../screens/TeamPrincipal').then((m) => ({ default: m.TeamPrincipal })));
 const Relationships = lazy(() => import('../screens/Relationships').then((m) => ({ default: m.Relationships })));
 const RivalRelationships = lazy(() => import('../screens/RivalRelationships').then((m) => ({ default: m.RivalRelationships })));
@@ -79,7 +77,7 @@ function ModeGuard({ route, children }: { route: string; children: ReactNode }) 
           <div className="flex flex-wrap gap-2 pt-2">
             <button onClick={() => navigate('/hq')} className="rounded-lg bg-neutral-800 px-4 py-2 text-sm text-neutral-200 hover:bg-neutral-700">← Back to Team HQ</button>
             <button onClick={() => navigate('/calendar')} className="rounded-lg bg-neutral-800 px-4 py-2 text-sm text-neutral-200 hover:bg-neutral-700">Calendar</button>
-            <button onClick={() => navigate('/development')} className="rounded-lg bg-neutral-800 px-4 py-2 text-sm text-neutral-200 hover:bg-neutral-700">Development</button>
+            <button onClick={() => navigate('/technical')} className="rounded-lg bg-neutral-800 px-4 py-2 text-sm text-neutral-200 hover:bg-neutral-700">Technical Center</button>
             <button onClick={() => navigate('/standings')} className="rounded-lg bg-neutral-800 px-4 py-2 text-sm text-neutral-200 hover:bg-neutral-700">Standings</button>
           </div>
         </div>
@@ -258,12 +256,13 @@ export default function App() {
           <Route path="/teams" element={<InGame><TeamOverview /></InGame>} />
           <Route path="/drivers" element={<InGame><Drivers /></InGame>} />
           <Route path="/market" element={<InGame><DriverMarket /></InGame>} />
-          <Route path="/development" element={<InGame><Development /></InGame>} />
+          <Route path="/technical" element={<InGame><TechnicalCenter /></InGame>} />
+          <Route path="/development" element={<Navigate to="/technical" replace />} />
           <Route path="/finance" element={<InGame><Finance /></InGame>} />
           <Route path="/sponsors" element={<ModeGuard route="/sponsors"><Sponsors /></ModeGuard>} />
           <Route path="/staff" element={<InGame><Staff /></InGame>} />
-          <Route path="/facilities" element={<InGame><Facilities /></InGame>} />
-          <Route path="/engine" element={<ModeGuard route="/engine"><EngineSupplier /></ModeGuard>} />
+          <Route path="/facilities" element={<Navigate to="/technical" replace />} />
+          <Route path="/engine" element={<Navigate to="/technical" replace />} />
           <Route path="/principal" element={<InGame><TeamPrincipal /></InGame>} />
           <Route path="/relationships" element={<InGame><Relationships /></InGame>} />
           <Route path="/rivals" element={<InGame><RivalRelationships /></InGame>} />

@@ -245,11 +245,9 @@ export function TeamHQ() {
               <Button onClick={() => navigate('/standings')}>Standings</Button>
               <Button onClick={() => navigate('/history')}>Race History</Button>
               <Button onClick={() => navigate('/drivers')}>Drivers</Button>
-              <Button onClick={() => navigate('/development')}>Development</Button>
+              <Button onClick={() => navigate('/technical')}>Technical Center</Button>
               <Button onClick={() => navigate('/finance')}>Finance</Button>
               <Button onClick={() => navigate('/staff')}>Staff</Button>
-              <Button onClick={() => navigate('/facilities')}>Facilities</Button>
-              <QuickActionButton label="Engine" route="/engine" navigate={navigate} mode={state.gameMode} />
               <Button onClick={() => navigate('/principal')}>Principal</Button>
               <Button onClick={() => navigate('/relationships')}>Relationships</Button>
               <QuickActionButton label="Regulations" route="/politics" navigate={navigate} mode={state.gameMode} />

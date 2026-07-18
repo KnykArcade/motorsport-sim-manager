@@ -18,24 +18,24 @@ describe('compact layout navigation', () => {
 
   it('opens the group containing the current route', () => {
     expect(navigationGroupForRoute('/calendar')).toBe('race');
-    expect(navigationGroupForRoute('/engine')).toBe('team');
+    expect(navigationGroupForRoute('/technical')).toBe('team');
     expect(navigationGroupForRoute('/relationships')).toBe('world');
     expect(navigationGroupForRoute('/unknown')).toBe('race');
   });
 
   it('removes mode-restricted routes without changing other groups', () => {
-    const visibleTeam = navigationItemsForGroup('team', new Set(['/engine', '/scouting']));
-    expect(visibleTeam.some((item) => item.to === '/engine')).toBe(false);
+    const visibleTeam = navigationItemsForGroup('team', new Set(['/technical', '/scouting']));
+    expect(visibleTeam.some((item) => item.to === '/technical')).toBe(false);
     expect(visibleTeam.some((item) => item.to === '/drivers')).toBe(true);
   });
 
   it('exposes every allowed destination in the persistent grouped navigation', () => {
-    const hidden = new Set(['/engine', '/scouting']);
+    const hidden = new Set(['/technical', '/scouting']);
     const groups = visibleNavigationGroups(hidden);
     const visibleRoutes = groups.flatMap((group) => group.items.map((item) => item.to));
 
     expect(groups.map((group) => group.id)).toEqual(['race', 'team', 'world']);
-    expect(visibleRoutes).not.toContain('/engine');
+    expect(visibleRoutes).not.toContain('/technical');
     expect(visibleRoutes).not.toContain('/scouting');
     expect(visibleRoutes).toContain('/relationships');
     expect(visibleRoutes.length).toBe(NAVIGATION_ITEMS.length - hidden.size);
