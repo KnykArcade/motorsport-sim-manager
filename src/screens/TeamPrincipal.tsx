@@ -71,6 +71,28 @@ export function TeamPrincipal() {
         <WorkspaceMetric label="Contract" value={`${principal.contractYearsRemaining} yr`} detail="Current managerial agreement" />
         <WorkspaceMetric label="Career market" value={offers.length} detail={accepted ? 'Next-season move accepted' : 'Active rival approaches'} />
       </MetricStrip>
+      <div className="ui-decision-strip flex flex-wrap items-center justify-between gap-2 rounded-lg border px-3 py-2.5">
+        <div className="flex min-w-0 items-center gap-2 text-xs">
+          <span className="ui-decision-strip-pulse" aria-hidden="true" />
+          <div className="min-w-0">
+            <div className="font-semibold text-neutral-100">Principal command desk</div>
+            <div className="truncate text-neutral-400">
+              {principal.jobSecurity < SACK_THRESHOLD
+                ? 'Job security is at immediate risk. Board confidence and results require urgent attention.'
+                : accepted
+                  ? 'A next-season career move is accepted. Review the transition before the current contract closes.'
+                  : offers.length > 0
+                    ? `${offers.length} career approach${offers.length === 1 ? '' : 'es'} are available for review.`
+                    : principal.jobSecurity < RENEW_THRESHOLD
+                      ? 'The board expects improvement before contract renewal becomes secure.'
+                      : 'Your current position is stable. Continue building reputation and leadership identity.'}
+            </div>
+          </div>
+        </div>
+        <span className="shrink-0 text-[10px] font-semibold uppercase tracking-wide text-neutral-500">
+          {principal.jobSecurity}/100 job security
+        </span>
+      </div>
       <WorkspaceTabs
         items={PRINCIPAL_COMMAND_TABS.map((item) => ({ id: item.id, label: `${item.label}${item.id === 'career' && offers.length ? ` (${offers.length})` : ''}` }))}
         active={activeTab}
@@ -303,7 +325,7 @@ function OfferCard({
         <span className="font-bold text-neutral-100">{teamName}</span>
         <span
           className={`rounded px-1.5 py-0.5 text-[10px] uppercase tracking-wide ${
-            firm ? 'bg-sky-950/60 text-sky-300' : 'bg-neutral-800 text-neutral-400'
+            firm ? 'bg-[var(--era-accent-soft)] text-[var(--era-accent-strong)]' : 'bg-neutral-800 text-neutral-400'
           }`}
         >
           {firm ? 'Firm Offer' : 'Rumor'}
