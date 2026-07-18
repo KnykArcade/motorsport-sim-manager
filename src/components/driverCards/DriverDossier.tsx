@@ -274,6 +274,7 @@ function DriverDossierModal({
   onClose: () => void;
 }) {
   const navigate = useNavigate();
+  const [activeTab, setActiveTab] = useState<DossierFocus>(focus);
   const rel = profile.rel as DriverRelationship | undefined;
   const confidence = rel ? computeConfidenceState(rel) : undefined;
   const confidenceScore = rel ? overallConfidenceScore(rel) : undefined;
@@ -283,6 +284,7 @@ function DriverDossierModal({
   const nineties = eraTheme === 'f1-1990s';
   const shellClass = `driver-dossier ${dossierClassFor(eraTheme)}`;
   const coreRatings = dossierRatingRows(state, subject, profile.ratings);
+  const showsIn = (...tabs: DossierFocus[]) => tabs.includes(activeTab);
 
   return (
     <div className="driver-dossier-overlay" role="dialog" aria-modal="true" aria-label={`${profile.name} driver card`}>
@@ -299,9 +301,18 @@ function DriverDossierModal({
           </div>
         </div>
 
-        <div className="driver-dossier-tabs" aria-label="Driver card sections">
+        <div className="driver-dossier-tabs" role="tablist" aria-label="Driver card sections">
           {(['identity', 'relationship', 'development', 'market', 'career'] as DossierFocus[]).map((tab) => (
-            <span key={tab} className={focus === tab ? 'active' : ''}>{tab}</span>
+            <button
+              key={tab}
+              type="button"
+              role="tab"
+              aria-selected={activeTab === tab}
+              className={activeTab === tab ? 'active' : ''}
+              onClick={() => setActiveTab(tab)}
+            >
+              {tab === 'identity' ? 'overview' : tab}
+            </button>
           ))}
         </div>
 
@@ -331,13 +342,16 @@ function DriverDossierModal({
             </div>
 
             <div className="driver-dossier-grid">
-              <DossierPanel title="Core Ratings" emphasis={focus === 'identity'}>
+              {showsIn('identity', 'development', 'market') && (
+              <DossierPanel title="Core Ratings" emphasis={activeTab === 'identity'}>
                 {coreRatings.map(([label, readout]) => (
                   <RatingLine key={label} label={label} readout={readout} />
                 ))}
               </DossierPanel>
+              )}
 
-              <DossierPanel title="Relationship File" emphasis={focus === 'relationship'}>
+              {showsIn('identity', 'relationship') && (
+              <DossierPanel title="Relationship File" emphasis={activeTab === 'relationship'}>
                 {rel ? (
                   <>
                     <MetricPill label="State" value={confidence ?? 'Unknown'} tone={scoreTone(confidenceScore ?? 0)} />
@@ -351,8 +365,10 @@ function DriverDossierModal({
                   <p className="driver-dossier-note">Relationship data appears after the driver joins a team.</p>
                 )}
               </DossierPanel>
+              )}
 
-              <DossierPanel title="Personality & Wants" emphasis={focus === 'relationship'}>
+              {showsIn('identity', 'relationship') && (
+              <DossierPanel title="Personality & Wants" emphasis={activeTab === 'relationship'}>
                 <div className="driver-dossier-tags">
                   {profile.traits.length > 0 ? profile.traits.slice(0, 6).map((trait) => <span key={trait}>{trait}</span>) : <span>Balanced</span>}
                 </div>
@@ -364,21 +380,26 @@ function DriverDossierModal({
                   <p className="driver-dossier-note">No active wants recorded.</p>
                 )}
               </DossierPanel>
+              )}
 
-              <DossierPanel title="Development Sheet" emphasis={focus === 'development'}>
+              {showsIn('identity', 'development') && (
+              <DossierPanel title="Development Sheet" emphasis={activeTab === 'development'}>
                 <p className="driver-dossier-note">{profile.developmentLine}</p>
                 <MetricPill label="Potential" value={potentialReadout(state, subject, profile).label} tone="watch" />
                 <MetricPill label="Best fit" value={bestFitReadout(coreRatings)} tone="good" />
               </DossierPanel>
+              )}
 
-              <DossierPanel title="Market / Contract Folder" emphasis={focus === 'market'}>
+              {showsIn('identity', 'market') && (
+              <DossierPanel title="Market / Contract Folder" emphasis={activeTab === 'market'}>
                 <p className="driver-dossier-note">{profile.marketLine}</p>
                 {profile.salary && <MetricPill label="Salary" value={formatMoney(profile.salary)} tone="watch" />}
                 {activePromises > 0 && <MetricPill label="Active promises" value={activePromises} tone="risk" />}
               </DossierPanel>
+              )}
 
-              {subject.type === 'driver' && subject.driver.teamId === state.selectedTeamId && (
-                <DossierPanel title="Management Actions" emphasis={focus === 'relationship'}>
+              {subject.type === 'driver' && subject.driver.teamId === state.selectedTeamId && showsIn('identity', 'relationship') && (
+                <DossierPanel title="Management Actions" emphasis={activeTab === 'relationship'}>
                   <CharacterActionPanel
                     state={state}
                     target={{
@@ -391,7 +412,8 @@ function DriverDossierModal({
                 </DossierPanel>
               )}
 
-              <DossierPanel title="Career Notes" emphasis={focus === 'career'}>
+              {showsIn('identity', 'career') && (
+              <DossierPanel title="Career Notes" emphasis={activeTab === 'career'}>
                 {profile.seasonStats ? (
                   <SeasonStats stats={profile.seasonStats} />
                 ) : (
@@ -400,6 +422,7 @@ function DriverDossierModal({
                   </p>
                 )}
               </DossierPanel>
+              )}
             </div>
           </section>
 
