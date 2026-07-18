@@ -11,6 +11,7 @@
 
 import type { NewsItem, NewsCategory, NewsPriority, QualifyingResult, RaceResult } from '../types/gameTypes';
 import type { GameState } from '../game/careerState';
+import { completedUpgradePrograms } from './technicalAdapters';
 import type { CareerPhase } from '../types/careerPhaseTypes';
 import { biggestGainer, biggestLoser } from './positionDelta';
 import { createSeededRandom, deriveSeed } from './random';
@@ -470,7 +471,7 @@ export function generatePaddockNews(ctx: CareerNewsContext): NewsItem[] {
   if (!team) return items;
 
   // Development project completion news.
-  const completedProjects = state.completedDevelopmentProjects ?? [];
+  const completedProjects = completedUpgradePrograms(state);
   const recentProjects = completedProjects.filter(
     (p) => !state.careerPhase?.announcedCompletedProjectIds?.includes(p.id),
   );

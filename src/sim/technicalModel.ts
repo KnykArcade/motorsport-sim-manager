@@ -35,7 +35,7 @@ export function toUnifiedTechnical(state: GameState): TeamTechnicalMap {
 
     if (team.id === playerTeamId) {
       activeProjects.unshift(
-        ...state.activeDevelopmentProjects.map((project) => ({
+        ...(state.activeDevelopmentProjects ?? []).map((project) => ({
           kind: 'upgrade' as const,
           id: project.id,
           teamId: team.id,
@@ -84,7 +84,7 @@ export function toUnifiedTechnical(state: GameState): TeamTechnicalMap {
 
     if (team.id === playerTeamId) {
       completedPrograms.unshift(
-        ...state.completedDevelopmentProjects.map((project) => ({
+        ...(state.completedDevelopmentProjects ?? []).map((project) => ({
           kind: 'upgrade' as const,
           id: project.id,
           teamId: team.id,

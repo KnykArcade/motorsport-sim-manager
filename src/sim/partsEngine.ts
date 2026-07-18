@@ -10,6 +10,8 @@ import type {
 } from '../types/partsTypes';
 import { PART_TYPES } from '../types/partsTypes';
 import type { RDBranchId, TeamResearchState } from '../types/rdTypes';
+import type { TeamTechnicalState } from '../types/technicalTypes';
+import { researchStateFromTechnical } from './technicalAdapters';
 
 export const PART_SPECS: Record<PartType, {
   label: string;
@@ -163,15 +165,18 @@ export function rolloverTeamPartsMap(
 
 export function latestPartDesign(
   type: PartType,
-  research: TeamResearchState | undefined,
+  research: TeamResearchState | TeamTechnicalState | undefined,
 ): Pick<PartManufacturingOrder, 'designGeneration' | 'sourceNodeIds' | 'ratingDeltas'> {
   const spec = PART_SPECS[type];
-  const relevant = (research?.completedNodes ?? [])
+  const normalizedResearch = research && 'completedPrograms' in research
+    ? researchStateFromTechnical(research)
+    : research;
+  const relevant = (normalizedResearch?.completedNodes ?? [])
     .filter((node) => node.branchId && spec.researchBranches.includes(node.branchId))
     .sort((a, b) => (b.tier ?? 0) - (a.tier ?? 0));
   const generation = relevant.reduce((best, node) => Math.max(best, node.tier ?? 0), 0);
   const sourceNodeIds = relevant.slice(0, 4).map((node) => node.nodeId);
-  const factoryQuality = (research?.modifiers ?? [])
+  const factoryQuality = (normalizedResearch?.modifiers ?? [])
     .filter((modifier) => modifier.scope === 'department' && modifier.target === 'manufacturingQuality')
     .reduce((total, modifier) => total + modifier.value, 0);
   const designGain = Math.min(2.5, generation * 0.3 + Math.max(0, factoryQuality) * 2);
@@ -186,13 +191,16 @@ export function manufacturingQuote(
   state: TeamPartsState,
   type: PartType,
   quantity: number,
-  research: TeamResearchState | undefined,
+  research: TeamResearchState | TeamTechnicalState | undefined,
   seasonYear: number,
   round: number,
 ): PartManufacturingOrder {
   const spec = PART_SPECS[type];
   const design = latestPartDesign(type, research);
-  const factoryQuality = (research?.modifiers ?? [])
+  const normalizedResearch = research && 'completedPrograms' in research
+    ? researchStateFromTechnical(research)
+    : research;
+  const factoryQuality = (normalizedResearch?.modifiers ?? [])
     .filter((modifier) => modifier.scope === 'department' && modifier.target === 'manufacturingQuality')
     .reduce((total, modifier) => total + modifier.value, 0);
   const totalRounds = Math.max(1, Math.ceil(spec.buildRounds * (1 - clamp(factoryQuality, 0, 0.35))));

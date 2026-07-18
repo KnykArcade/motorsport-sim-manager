@@ -6,6 +6,13 @@ import { activeDriversForTeam, carForTeam, minRaceDriversForSeries } from './car
 import { getTrackById } from '../data';
 import { effectiveCarRatings } from '../sim/trackFitEngine';
 import { developmentSlots } from '../sim/facilityEngine';
+import {
+  activeUpgradePrograms,
+  completedUpgradePrograms,
+  fromUnifiedTechnical,
+  researchStateForTeam,
+  withUnifiedTechnical,
+} from '../sim/technicalAdapters';
 import type {
   CareerPhase,
   CareerPhaseState,
@@ -314,10 +321,10 @@ export function processAITeamActivity(state: GameState): GameState {
   const aiNews: typeof state.news = [];
 
   if (aiTeams.length === 0) {
-    return {
+    return withUnifiedTechnical({
       ...state,
       careerPhase: { ...phaseState, aiActionsProcessedForCurrentWeek: true },
-    };
+    }, fromUnifiedTechnical(state));
   }
 
   // Seeded RNG based on save seed, season year, round, and paddock week ID.
@@ -339,7 +346,15 @@ export function processAITeamActivity(state: GameState): GameState {
     teamsToProcess.push(aiTeams[idx]);
   }
 
-  const planned = planAITechnicalPrograms(state, teamsToProcess.map((team) => team.id));
+  const plannedLegacy = fromUnifiedTechnical(state);
+  const plannedRaw = planAITechnicalPrograms(
+    { ...state, teamResearch: plannedLegacy.teamResearch },
+    teamsToProcess.map((team) => team.id),
+  );
+  const planned = withUnifiedTechnical(plannedRaw, {
+    ...plannedLegacy,
+    teamResearch: plannedRaw.teamResearch ?? plannedLegacy.teamResearch,
+  });
   const aiStates = planned.aiTeamStates ?? {};
   const cars = [...planned.cars];
 
@@ -369,7 +384,7 @@ export function processAITeamActivity(state: GameState): GameState {
       // The technical director has already committed budget through the shared
       // R&D/parts systems above. Paddock-week activity reports that decision;
       // performance only changes when the project actually completes.
-      const activeProject = planned.teamResearch?.[aiTeam.id]?.activeProjects.at(-1);
+      const activeProject = researchStateForTeam(planned, aiTeam.id)?.activeProjects.at(-1);
       isRealChange = true;
       newsHeadline = `${aiTeam.name} advances its technical program`;
       newsBody = activeProject
@@ -430,7 +445,7 @@ export function processAITeamActivity(state: GameState): GameState {
     );
   }
 
-  return {
+  return withUnifiedTechnical({
     ...culturallyEvolved,
     cars,
     news: [...aiNews, ...planned.news].slice(0, 80),
@@ -438,7 +453,7 @@ export function processAITeamActivity(state: GameState): GameState {
       ...phaseState,
       aiActionsProcessedForCurrentWeek: true,
     },
-  };
+  }, fromUnifiedTechnical(culturallyEvolved));
 }
 
 // --- Required decisions ------------------------------------------------------
@@ -817,7 +832,7 @@ export function generatePaddockWeekEvents(state: GameState): PaddockEvent[] {
 
   // --- Development / Factory ---
   const slots = developmentSlots(state.facilities);
-  const activeProjects = state.activeDevelopmentProjects;
+  const activeProjects = activeUpgradePrograms(state);
   if (activeProjects.length > 0) {
     const projectNames = activeProjects.map((p) => p.name).join(', ');
     events.push(
@@ -843,7 +858,7 @@ export function generatePaddockWeekEvents(state: GameState): PaddockEvent[] {
 
   // Completed projects — only announce those not yet announced.
   const announced = new Set(phaseState.announcedCompletedProjectIds);
-  const recentCompleted = state.completedDevelopmentProjects.filter(
+  const recentCompleted = completedUpgradePrograms(state).filter(
     (p) => !announced.has(p.id),
   );
   for (const proj of recentCompleted.slice(-2)) {
@@ -1199,7 +1214,7 @@ export function generateAndStorePaddockEvents(state: GameState): GameState {
   for (const e of events) {
     if (e.category === 'development' && e.title.startsWith('Upgrade completed: ')) {
       const projName = e.title.replace('Upgrade completed: ', '');
-      const proj = stateWithInitiatives.completedDevelopmentProjects.find((p) => p.name === projName);
+      const proj = completedUpgradePrograms(stateWithInitiatives).find((p) => p.name === projName);
       if (proj) announced.add(proj.id);
     }
   }

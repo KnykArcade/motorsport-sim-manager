@@ -17,6 +17,7 @@ import {
   seriesPartLabel,
 } from '../../sim/partsEngine';
 import { createInitialTeamResearch } from '../../sim/rdEngine';
+import { researchStateForTeam } from '../../sim/technicalAdapters';
 import { PART_TYPES, type CarPart, type PartType } from '../../types/partsTypes';
 
 const CONDITION_TONES = {
@@ -36,7 +37,7 @@ export function PartsInventoryPanel() {
   const drivers = activeDriversForTeam(state, team.id);
   const parts = state.teamParts?.[team.id]
     ?? createInitialTeamPartsState(team, state.drivers, state.seasonYear);
-  const research = state.teamResearch?.[team.id]
+  const research = researchStateForTeam(state, team.id)
     ?? createInitialTeamResearch(team.id, state.seasonYear);
   const currentRound = state.calendar[state.currentRaceIndex]?.round ?? state.currentRaceIndex + 1;
   const fittedCount = parts.inventory.filter((part) => part.status === 'fitted').length;
