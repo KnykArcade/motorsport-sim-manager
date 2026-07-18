@@ -166,6 +166,16 @@ export function hasAdvisorDisagreement(recommendations: AdvisorRecommendation[])
   ).size > 1;
 }
 
+export function advisorTrustChangeForChoice(
+  recommendation: Pick<AdvisorRecommendation, 'confidence' | 'recommendedOptionId'>,
+  selectedOptionId: string,
+): number {
+  const accepted = recommendation.recommendedOptionId === selectedOptionId;
+  return accepted
+    ? Math.max(1, Math.round(recommendation.confidence / 35))
+    : recommendation.confidence >= 75 ? -2 : -1;
+}
+
 export function resolveAdvisorRecommendations(
   state: GameState,
   event: PaddockEvent,
@@ -182,9 +192,7 @@ export function resolveAdvisorRecommendations(
   const updated = phase18.advisorRecommendations.map((recommendation) => {
     if (!relevant.some((candidate) => candidate.id === recommendation.id)) return recommendation;
     const accepted = recommendation.recommendedOptionId === selectedOption.id;
-    const trustChange = accepted
-      ? Math.max(1, Math.round(recommendation.confidence / 35))
-      : recommendation.confidence >= 75 ? -2 : -1;
+    const trustChange = advisorTrustChangeForChoice(recommendation, selectedOption.id);
     if (recommendation.departmentId) {
       const mood = teamDepartments[recommendation.departmentId];
       teamDepartments[recommendation.departmentId] = {
