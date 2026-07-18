@@ -39,6 +39,7 @@ import {
   WorkspaceHeader,
   WorkspaceMetric,
   WorkspaceScreen,
+  WorkspaceTabs,
 } from '../components/workspace/Workspace';
 
 const CATEGORY_LABELS: Record<PaddockEventCategory, string> = {
@@ -73,14 +74,14 @@ const CATEGORY_ORDER: PaddockEventCategory[] = [
 
 const SEVERITY_COLORS: Record<string, string> = {
   info: 'text-neutral-400',
-  minor: 'text-blue-400',
+  minor: 'text-[var(--era-accent-strong)]',
   major: 'text-orange-400',
   critical: 'text-red-400',
 };
 
 const INFLUENCE_STANCE_COLORS = {
   Champion: 'bg-emerald-500/10 text-emerald-300',
-  Supportive: 'bg-sky-500/10 text-sky-300',
+  Supportive: 'bg-[var(--era-accent-soft)] text-[var(--era-accent-strong)]',
   Neutral: 'bg-neutral-800 text-neutral-300',
   Resistant: 'bg-amber-500/10 text-amber-300',
   Obstructive: 'bg-red-500/10 text-red-300',
@@ -177,6 +178,11 @@ export function PaddockWeek() {
   const expiringStaff = state.gameMode === 'SingleSeason' ? [] : (state.staff ?? []).filter((member) => (member.contractYearsRemaining ?? 2) <= 1);
   const pendingPersonnelMoves = (state.characterInteractions?.personnelMoves ?? [])
     .filter((move) => move.status === 'Pending' && move.effectiveSeason === state.seasonYear + 1);
+  const peopleAttentionCount = unresolvedCharacterRequests.length
+    + unresolvedCharacterDisputes.length
+    + unresolvedCharacterInitiatives.length
+    + unresolvedCharacterBreakingPoints.length;
+  const operationsAttentionCount = nonCharacterUnresolved.length + (packageSelected ? 0 : 1) + storyDecisions.length;
 
   const advanceToBriefing = () => {
     dispatch({ type: 'ADVANCE_TO_PRE_RACE_BRIEFING' });
@@ -213,28 +219,37 @@ export function PaddockWeek() {
         <WorkspaceMetric label="Required actions" value={pendingCount} detail={packageSelected ? `${unresolvedCount} decisions unresolved` : 'Race package still required'} />
       </MetricStrip>
 
-      {(!canAdvance || pendingCount > 0) && (
-        <div className="ui-decision-strip flex flex-wrap items-center justify-between gap-2 rounded-lg border px-3 py-2">
+      <div className="ui-decision-strip flex flex-wrap items-center justify-between gap-2 rounded-lg border px-3 py-2">
           <div className="flex items-center gap-2 text-xs">
             <span className="ui-decision-strip-pulse" aria-hidden="true" />
-            <span className="font-semibold text-neutral-100">Operations desk</span>
+            <span className="font-semibold text-neutral-100">Paddock operations desk</span>
             <span className="text-neutral-400">
-              {!packageSelected ? 'Select the race package before advancing.' : `${pendingCount} decision${pendingCount === 1 ? '' : 's'} remain before briefing.`}
+              {!packageSelected
+                ? 'Select the race package before advancing.'
+                : pendingCount > 0
+                  ? `${pendingCount} decision${pendingCount === 1 ? '' : 's'} remain before briefing.`
+                  : 'All required decisions are complete. Review the debrief before briefing.'}
             </span>
           </div>
           <span className="text-[10px] font-semibold uppercase tracking-wide text-neutral-500">
-            {packageSelected ? `Race package selected · ${unresolvedCount} unresolved` : 'Package required'}
+            {operationsAttentionCount + peopleAttentionCount > 0
+              ? `${operationsAttentionCount + peopleAttentionCount} attention item${operationsAttentionCount + peopleAttentionCount === 1 ? '' : 's'}`
+              : 'Ready for briefing'}
           </span>
-        </div>
-      )}
-
-      <div className="ui-workspace-tabs flex flex-wrap" aria-label="Paddock Week sections">
-        <PaddockTabButton active={tab === 'overview'} onClick={() => setTab('overview')} label="Overview" />
-        <PaddockTabButton active={tab === 'people'} onClick={() => setTab('people')} label="People" count={characterRequests.length + characterDisputes.length + characterInitiatives.length + characterBreakingPoints.length + activeMandates.length + pendingPersonnelMoves.length} attention={[...unresolvedCharacterRequests, ...unresolvedCharacterDisputes, ...unresolvedCharacterInitiatives, ...unresolvedCharacterBreakingPoints].some((event) => event.isRequiredDecision)} />
-        <PaddockTabButton active={tab === 'decisions'} onClick={() => setTab('decisions')} label="Operations" count={nonCharacterUnresolved.length + (packageSelected ? 0 : 1) + storyDecisions.length} attention={nonCharacterUnresolved.length > 0 || !packageSelected} />
-        <PaddockTabButton active={tab === 'updates'} onClick={() => setTab('updates')} label="Team Updates" count={updateCount} />
-        <PaddockTabButton active={tab === 'debrief'} onClick={() => setTab('debrief')} label="Decision Debrief" count={resolvedDecisions.length} />
       </div>
+
+      <WorkspaceTabs
+        items={[
+          { id: 'overview' as const, label: 'Overview' },
+          { id: 'people' as const, label: `People (${characterRequests.length + characterDisputes.length + characterInitiatives.length + characterBreakingPoints.length + activeMandates.length + pendingPersonnelMoves.length})` },
+          { id: 'decisions' as const, label: `Operations (${operationsAttentionCount})` },
+          { id: 'updates' as const, label: `Team Updates (${updateCount})` },
+          { id: 'debrief' as const, label: `Decision Debrief (${resolvedDecisions.length})` },
+        ]}
+        active={tab}
+        onChange={setTab}
+        ariaLabel="Paddock Week sections"
+      />
 
       <WorkspaceBody className="space-y-4">
       {/* Paddock News */}
@@ -257,11 +272,16 @@ export function PaddockWeek() {
       </div>}
 
       {tab === 'people' && <div className="space-y-4">
-        <div className="ui-workspace-tabs flex flex-wrap" aria-label="People management sections">
-          <PaddockTabButton active={peopleSection === 'attention'} onClick={() => setPeopleSection('attention')} label="Needs Attention" count={unresolvedCharacterRequests.length + unresolvedCharacterDisputes.length + unresolvedCharacterInitiatives.length + unresolvedCharacterBreakingPoints.length} attention={[...unresolvedCharacterRequests, ...unresolvedCharacterDisputes, ...unresolvedCharacterInitiatives, ...unresolvedCharacterBreakingPoints].some((event) => event.isRequiredDecision)} />
-          <PaddockTabButton active={peopleSection === 'support'} onClick={() => setPeopleSection('support')} label="Support & Mandates" count={activeMandates.length + unstableCharacters.length + atRiskIntentions.length + expiringDrivers.length + expiringStaff.length + pendingPersonnelMoves.length} />
-          <PaddockTabButton active={peopleSection === 'resolved'} onClick={() => setPeopleSection('resolved')} label="Resolved This Week" count={resolvedCharacterRequests.length + resolvedCharacterDisputes.length + resolvedCharacterInitiatives.length + resolvedCharacterBreakingPoints.length} />
-        </div>
+        <WorkspaceTabs
+          items={[
+            { id: 'attention' as const, label: `Needs Attention (${peopleAttentionCount})` },
+            { id: 'support' as const, label: `Support & Mandates (${activeMandates.length + unstableCharacters.length + atRiskIntentions.length + expiringDrivers.length + expiringStaff.length + pendingPersonnelMoves.length})` },
+            { id: 'resolved' as const, label: `Resolved This Week (${resolvedCharacterRequests.length + resolvedCharacterDisputes.length + resolvedCharacterInitiatives.length + resolvedCharacterBreakingPoints.length})` },
+          ]}
+          active={peopleSection}
+          onChange={setPeopleSection}
+          ariaLabel="People management sections"
+        />
         {peopleSection === 'support' && internalInfluence.length > 0 && (
           <Panel title="Internal Support Map">
             <p className="mb-3 text-xs text-neutral-500">Power shows how much leverage a person has. Support shows whether they are helping or resisting your leadership; that stance now applies a small weekly effect to their driver, department, or ownership relationship.</p>
@@ -546,7 +566,7 @@ export function PaddockWeek() {
         {populatedCategories.length > 0 ? <>
           <div className="flex flex-wrap gap-1">
             {populatedCategories.map((category) => (
-              <button key={category} type="button" onClick={() => setUpdateCategory(category)} className={`rounded px-2.5 py-1.5 text-[11px] font-semibold ${visibleUpdateCategory === category ? 'bg-sky-500 text-neutral-950' : 'bg-neutral-900 text-neutral-400 hover:bg-neutral-800 hover:text-neutral-100'}`}>
+              <button key={category} type="button" onClick={() => setUpdateCategory(category)} className={`rounded px-2.5 py-1.5 text-[11px] font-semibold ${visibleUpdateCategory === category ? 'bg-[var(--era-accent)] text-neutral-950' : 'bg-neutral-900 text-neutral-400 hover:bg-neutral-800 hover:text-neutral-100'}`}>
                 {CATEGORY_LABELS[category]} ({eventsByCategory[category]?.length ?? 0})
               </button>
             ))}
@@ -701,9 +721,9 @@ function DecisionCard({
 function AdvisorCard({ recommendation }: { recommendation: AdvisorRecommendation }) {
   const confidenceTone = recommendation.confidence >= 75
     ? 'text-emerald-300'
-    : recommendation.confidence >= 55 ? 'text-sky-300' : 'text-neutral-400';
+    : recommendation.confidence >= 55 ? 'text-[var(--era-accent-strong)]' : 'text-neutral-400';
   return (
-    <div className="rounded border border-sky-900/60 bg-neutral-950/40 p-2.5">
+    <div className="rounded border border-[var(--era-accent)]/35 bg-neutral-950/40 p-2.5">
       <div className="flex items-start justify-between gap-2">
         <div>
           <div className="text-xs font-semibold text-neutral-100">
@@ -713,7 +733,7 @@ function AdvisorCard({ recommendation }: { recommendation: AdvisorRecommendation
         </div>
         <div className={`text-[10px] font-semibold ${confidenceTone}`}>{recommendation.confidence}%</div>
       </div>
-      <div className="mt-2 text-xs font-semibold text-sky-300">Recommends: {recommendation.recommendation}</div>
+      <div className="mt-2 text-xs font-semibold text-[var(--era-accent-strong)]">Recommends: {recommendation.recommendation}</div>
       <p className="mt-1 text-[11px] leading-relaxed text-neutral-400">{recommendation.rationale}</p>
     </div>
   );
@@ -741,35 +761,6 @@ function DecisionOptionButton({
       </div>
       {preview.cultureChanges.length > 0 && (
         <div className="mt-0.5 text-[10px] text-neutral-500">{preview.cultureChanges.join(' · ')}</div>
-      )}
-    </button>
-  );
-}
-
-function PaddockTabButton({
-  active,
-  onClick,
-  label,
-  count,
-  attention = false,
-}: {
-  active: boolean;
-  onClick: () => void;
-  label: string;
-  count?: number;
-  attention?: boolean;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={`flex items-center gap-2 ${active ? 'is-active' : ''}`}
-    >
-      <span>{label}</span>
-      {count != null && count > 0 && (
-        <span className={`rounded-full px-1.5 py-0.5 text-[9px] tabular-nums ${attention && !active ? 'bg-orange-500/20 text-orange-300' : 'bg-neutral-800 text-neutral-300'}`}>
-          {count}
-        </span>
       )}
     </button>
   );
