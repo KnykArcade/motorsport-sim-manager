@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { useGame } from '../game/GameContext';
 import { Panel } from '../components/Panel';
-import { StatBar } from '../components/StatBar';
 import { Button } from '../components/Button';
 import {
   MetricStrip,
@@ -13,7 +12,7 @@ import {
 } from '../components/workspace/Workspace';
 import { DriverDossierButton } from '../components/driverCards/DriverDossier';
 import { ScoutingWidget } from '../components/scouting/ScoutingWidget';
-import { formatMoney } from '../components/ui';
+import { formatMoney, ratingColor } from '../components/ui';
 import { readoutForDriverRating } from '../components/scouting/ratingDisplay';
 import { driverExtensionSigningFee } from '../sim/contractEngine';
 import { driverScoutTarget } from '../sim/scoutingEngine';
@@ -252,46 +251,63 @@ export function Drivers() {
 
       {tab === 'directory' && (
         <>
-          <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
-            {visibleDirectoryDrivers.map((d) => {
-              const isPlayer = d.teamId === state.selectedTeamId;
-              const overall = readoutForDriverRating(state, d, 'overall');
-              const stat = (key: keyof typeof d.ratings) => readoutForDriverRating(state, d, key);
-              return (
-                <Panel key={d.id} className={isPlayer ? 'ring-1 ring-amber-500/60' : ''}>
-                  <div className="mb-2 flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <span className="h-5 w-1.5 rounded-sm" style={{ backgroundColor: teamColor(d.teamId) }} />
-                      <span className="font-bold text-neutral-100">#{d.number} {d.name}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <span className="rounded bg-neutral-800 px-2 py-0.5 text-xs font-semibold text-amber-300">
-                        {overall.label}
-                      </span>
-                      <DriverDossierButton
-                        state={state}
-                        subject={{ type: 'driver', driver: d }}
-                        context={teamName(d.teamId)}
-                        focus={isPlayer ? 'relationship' : 'identity'}
-                      />
-                    </div>
-                  </div>
-                  <div className="mb-2 text-xs text-neutral-500">{teamName(d.teamId)}</div>
-                  {!isPlayer && (
-                    <div className="mb-2">
-                      <ScoutingWidget target={driverScoutTarget(d)} entityType="Driver" compact />
-                    </div>
-                  )}
-                  <div className="grid grid-cols-1 gap-1">
-                    <StatBar label="Qualifying" value={stat('qualifying').value ?? 0} max={100} valueLabel={stat('qualifying').label} />
-                    <StatBar label="Race Pace" value={stat('racePace').value ?? 0} max={100} valueLabel={stat('racePace').label} />
-                    <StatBar label="Morale" value={d.morale} max={100} valueLabel={`${d.morale.toFixed(1)}`} />
-                    <StatBar label="Confidence" value={d.confidence} max={100} valueLabel={`${d.confidence.toFixed(1)}`} />
-                  </div>
-                </Panel>
-              );
-            })}
-          </div>
+          <Panel title="Grid Directory" className="mb-3">
+            <div className="overflow-x-auto">
+              <table className="w-full border-collapse text-sm">
+                <thead>
+                  <tr className="border-b border-neutral-800">
+                    <th className="px-2 py-1.5 text-left">#</th>
+                    <th className="px-2 py-1.5 text-left">Driver</th>
+                    <th className="px-2 py-1.5 text-left">Team</th>
+                    <th className="px-2 py-1.5 text-right">OVR</th>
+                    <th className="px-2 py-1.5 text-right">Qual</th>
+                    <th className="px-2 py-1.5 text-right">Pace</th>
+                    <th className="px-2 py-1.5 text-right">Mor</th>
+                    <th className="px-2 py-1.5 text-right">Con</th>
+                    <th className="px-2 py-1.5 text-left">Intel</th>
+                    <th className="px-2 py-1.5 text-right">Card</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {visibleDirectoryDrivers.map((d) => {
+                    const isPlayer = d.teamId === state.selectedTeamId;
+                    return (
+                      <tr key={d.id} className={`border-b border-neutral-900 ${isPlayer ? 'bg-amber-500/5' : ''}`}>
+                        <td className="px-2 py-1.5 text-left tabular-nums text-neutral-400">
+                          <span className="inline-flex items-center gap-2">
+                            <span className="h-4 w-1 shrink-0 rounded-sm" style={{ backgroundColor: teamColor(d.teamId) }} />
+                            {d.number}
+                          </span>
+                        </td>
+                        <td className="px-2 py-1.5 text-left font-semibold text-neutral-100">{d.name}</td>
+                        <td className="px-2 py-1.5 text-left text-xs text-neutral-400">{teamName(d.teamId)}</td>
+                        <RatingCell readout={readoutForDriverRating(state, d, 'overall')} />
+                        <RatingCell readout={readoutForDriverRating(state, d, 'qualifying')} />
+                        <RatingCell readout={readoutForDriverRating(state, d, 'racePace')} />
+                        <td className="px-2 py-1.5 text-right tabular-nums font-semibold" style={{ color: ratingColor(d.morale) }}>{d.morale.toFixed(0)}</td>
+                        <td className="px-2 py-1.5 text-right tabular-nums font-semibold" style={{ color: ratingColor(d.confidence) }}>{d.confidence.toFixed(0)}</td>
+                        <td className="px-2 py-1.5 text-left">
+                          {isPlayer ? (
+                            <span className="text-xs text-neutral-600">—</span>
+                          ) : (
+                            <ScoutingWidget target={driverScoutTarget(d)} entityType="Driver" compact />
+                          )}
+                        </td>
+                        <td className="px-2 py-1.5 text-right">
+                          <DriverDossierButton
+                            state={state}
+                            subject={{ type: 'driver', driver: d }}
+                            context={teamName(d.teamId)}
+                            focus={isPlayer ? 'relationship' : 'identity'}
+                          />
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </Panel>
           <div className="flex items-center justify-between gap-3 rounded-lg border border-neutral-800 bg-neutral-950/60 px-3 py-2">
             <Button
               variant="secondary"
@@ -319,6 +335,15 @@ export function Drivers() {
       )}
       </WorkspaceBody>
     </WorkspaceScreen>
+  );
+}
+
+function RatingCell({ readout }: { readout: ReturnType<typeof readoutForDriverRating> }) {
+  const color = readout.value != null ? ratingColor(readout.value) : '#6b7280';
+  return (
+    <td className="px-2 py-1.5 text-right tabular-nums font-semibold" style={{ color }}>
+      {readout.label}
+    </td>
   );
 }
 
