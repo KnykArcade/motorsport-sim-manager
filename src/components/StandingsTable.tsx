@@ -1,4 +1,12 @@
 import type { StandingsEntry } from '../types/gameTypes';
+import { ratingColor } from './ui';
+
+function positionBadgeClass(position: number): string {
+  if (position === 1) return 'bg-amber-400/90 text-neutral-900';
+  if (position === 2) return 'bg-slate-300/80 text-neutral-900';
+  if (position === 3) return 'bg-orange-700/80 text-orange-50';
+  return 'bg-neutral-800 text-neutral-300';
+}
 
 type Props = {
   entries: StandingsEntry[];
@@ -19,6 +27,7 @@ export function StandingsTable({
   title,
   positionOffset = 0,
 }: Props) {
+  const leaderPoints = entries.reduce((max, e) => Math.max(max, e.points), 0);
   return (
     <div className="overflow-hidden rounded-lg border border-neutral-800">
       {title && (
@@ -41,12 +50,18 @@ export function StandingsTable({
           {entries.map((e, i) => {
             const isPlayer = e.entityId === highlightId;
             const subtitle = subtitleOf?.(e.entityId);
+            const position = positionOffset + i + 1;
+            const pointsColor = leaderPoints > 0 && e.points > 0 ? ratingColor((e.points / leaderPoints) * 100) : undefined;
             return (
               <tr
                 key={e.entityId}
                 className={`border-t border-neutral-800/60 ${isPlayer ? 'bg-amber-500/10' : 'hover:bg-neutral-900/40'}`}
               >
-                <td className="px-3 py-1.5 tabular-nums text-neutral-400">{positionOffset + i + 1}</td>
+                <td className="px-3 py-1.5">
+                  <span className={`inline-flex h-5 min-w-[1.25rem] items-center justify-center rounded px-1 text-xs font-bold tabular-nums ${positionBadgeClass(position)}`}>
+                    {position}
+                  </span>
+                </td>
                 <td className="px-3 py-1.5">
                   <div className="flex items-center gap-2">
                     {colorOf && (
@@ -59,9 +74,9 @@ export function StandingsTable({
                     {subtitle && <span className="text-xs text-neutral-500">{subtitle}</span>}
                   </div>
                 </td>
-                <td className="px-2 py-1.5 text-right font-semibold tabular-nums text-neutral-100">{e.points}</td>
-                <td className="px-2 py-1.5 text-right tabular-nums text-neutral-300">{e.wins}</td>
-                <td className="px-2 py-1.5 text-right tabular-nums text-neutral-300">{e.podiums}</td>
+                <td className="px-2 py-1.5 text-right font-semibold tabular-nums" style={{ color: pointsColor ?? '#e5e7eb' }}>{e.points}</td>
+                <td className={`px-2 py-1.5 text-right tabular-nums ${e.wins > 0 ? 'font-semibold text-emerald-400' : 'text-neutral-500'}`}>{e.wins}</td>
+                <td className={`px-2 py-1.5 text-right tabular-nums ${e.podiums > 0 ? 'text-neutral-200' : 'text-neutral-500'}`}>{e.podiums}</td>
                 <td className="px-2 py-1.5 text-right tabular-nums text-neutral-500">{e.dnfs}</td>
               </tr>
             );
