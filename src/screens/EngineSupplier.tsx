@@ -11,13 +11,11 @@ import { toMoney } from '../sim/financeEngine';
 import { Panel } from '../components/Panel';
 import { ratingColor } from '../components/ui';
 import { Button } from '../components/Button';
+import { TechnicalTable, TechnicalTableCell, TechnicalTableHead, TechnicalTableRow } from '../components/TechnicalTable';
 import type { EngineState, EngineSupplierDeal } from '../types/engineTypes';
 import {
-  ENGINE_SUPPLIER_PAGE_SIZE,
   ENGINE_WORKSPACE_TABS,
   engineCashMovementNow,
-  engineSupplierPage,
-  engineSupplierPageCount,
   groupEngineOffers,
   type EngineWorkspaceTab,
 } from './engineSupplierViewModel';
@@ -33,8 +31,8 @@ function moneyMillions(value: number): string {
 export function EngineSupplierBody() {
   const { state, dispatch } = useGame();
   const [tab, setTab] = useState<EngineWorkspaceTab>('package');
-  const [supplierPage, setSupplierPage] = useState(0);
   const [selectedSupplier, setSelectedSupplier] = useState('');
+  const [supplierFilter, setSupplierFilter] = useState('');
   if (!state) return null;
 
   const team = teamById(state, state.selectedTeamId);
@@ -54,17 +52,9 @@ export function EngineSupplierBody() {
   const pending = engine.pendingDeal;
   const offers = availableEngineOffers(engine, team);
   const supplierGroups = groupEngineOffers(offers);
-  const supplierPageCount = engineSupplierPageCount(supplierGroups.length);
-  const safeSupplierPage = Math.min(supplierPage, supplierPageCount - 1);
-  const visibleSuppliers = engineSupplierPage(supplierGroups, safeSupplierPage);
-  const selectedGroup = visibleSuppliers.find((group) => group.supplierName === selectedSupplier)
-    ?? visibleSuppliers[0];
-
-  function changeSupplierPage(nextPage: number) {
-    const safePage = Math.max(0, Math.min(supplierPageCount - 1, nextPage));
-    setSupplierPage(safePage);
-    setSelectedSupplier(engineSupplierPage(supplierGroups, safePage)[0]?.supplierName ?? '');
-  }
+  const filteredSupplierGroups = supplierGroups.filter((group) => group.supplierName.toLowerCase().includes(supplierFilter.toLowerCase()));
+  const selectedGroup = filteredSupplierGroups.find((group) => group.supplierName === selectedSupplier)
+    ?? filteredSupplierGroups[0];
 
   return (
     <div className="space-y-4">
@@ -75,23 +65,6 @@ export function EngineSupplierBody() {
         ariaLabel="Engine workspaces"
       />
       <WorkspaceBody className="space-y-4">
-      <div className="ui-decision-strip flex flex-wrap items-center justify-between gap-2 rounded-lg border px-3 py-2.5">
-        <div className="flex min-w-0 items-center gap-2 text-xs">
-          <span className="ui-decision-strip-pulse" aria-hidden="true" />
-          <div className="min-w-0">
-            <div className="font-semibold text-neutral-100">Power unit operations desk</div>
-            <div className="truncate text-neutral-400">
-              {pending
-                ? `Next-season supply is committed to ${pending.supplierName}. Review the package before rollover.`
-                : 'No next-season engine change is queued. Compare suppliers before the next signing window.'}
-            </div>
-          </div>
-        </div>
-        <span className="shrink-0 text-[10px] font-semibold uppercase tracking-wide text-neutral-500">
-          {moneyMillions(team.budget / 1_000_000)} available
-        </span>
-      </div>
-
       {tab === 'package' && <CurrentPackagePanel current={current} pending={pending} pendingFee={engine.pendingDealFee} />}
       {tab === 'manufacturer' && <ManufacturerPanel engine={engine} />}
       {tab === 'market' && (
@@ -102,14 +75,13 @@ export function EngineSupplierBody() {
           budget={team.budget}
           inPreseasonSetup={state.careerPhase?.currentPhase === 'pre_season_setup'}
           singleSeason={state.gameMode === 'SingleSeason'}
-          visibleSuppliers={visibleSuppliers}
+          visibleSuppliers={filteredSupplierGroups}
           selectedGroup={selectedGroup}
           selectedSupplier={selectedSupplier}
-          supplierPage={safeSupplierPage}
-          supplierPageCount={supplierPageCount}
-          totalSuppliers={supplierGroups.length}
+          totalSuppliers={filteredSupplierGroups.length}
+          supplierFilter={supplierFilter}
+          onSupplierFilter={setSupplierFilter}
           onSelectSupplier={setSelectedSupplier}
-          onPage={changeSupplierPage}
           onSign={(offer) => dispatch({ type: 'SIGN_ENGINE_DEAL', supplierId: offer.supplier.id, dealType: offer.dealType })}
         />
       )}
@@ -206,11 +178,10 @@ function SupplierMarket({
   visibleSuppliers,
   selectedGroup,
   selectedSupplier,
-  supplierPage,
-  supplierPageCount,
   totalSuppliers,
+  supplierFilter,
+  onSupplierFilter,
   onSelectSupplier,
-  onPage,
   onSign,
 }: {
   current?: EngineSupplierDeal;
@@ -219,14 +190,13 @@ function SupplierMarket({
   budget: number;
   inPreseasonSetup: boolean;
   singleSeason: boolean;
-  visibleSuppliers: ReturnType<typeof engineSupplierPage>;
-  selectedGroup?: ReturnType<typeof engineSupplierPage>[number];
+  visibleSuppliers: ReturnType<typeof groupEngineOffers>;
+  selectedGroup?: ReturnType<typeof groupEngineOffers>[number];
   selectedSupplier: string;
-  supplierPage: number;
-  supplierPageCount: number;
   totalSuppliers: number;
+  supplierFilter: string;
+  onSupplierFilter: (value: string) => void;
   onSelectSupplier: (supplierName: string) => void;
-  onPage: (page: number) => void;
   onSign: (offer: EngineOffer) => void;
 }) {
   return (
@@ -239,28 +209,20 @@ function SupplierMarket({
           Engine negotiations are disabled in Single Season mode because agreements begin next season.
         </div>
       )}
-      <div className="grid grid-cols-3 gap-2">
+      <label className="mb-3 flex items-center gap-2 text-xs text-neutral-500">
+        Filter suppliers
+        <input value={supplierFilter} onChange={(event) => onSupplierFilter(event.target.value)} placeholder="Search supplier…" className="rounded border border-neutral-700 bg-neutral-900 px-2 py-1 text-neutral-200 placeholder:text-neutral-600" />
+      </label>
+      <TechnicalTable>
+        <TechnicalTableHead><TechnicalTableRow><TechnicalTableCell header>Supplier</TechnicalTableCell><TechnicalTableCell header>Base power</TechnicalTableCell><TechnicalTableCell header>Reliability</TechnicalTableCell><TechnicalTableCell header>Prestige</TechnicalTableCell><TechnicalTableCell header>Tiers</TechnicalTableCell><TechnicalTableCell header>Compare</TechnicalTableCell></TechnicalTableRow></TechnicalTableHead>
+        <tbody>
         {visibleSuppliers.map((group) => {
           const supplier = group.offers[0]?.supplier;
           const active = (selectedSupplier || visibleSuppliers[0]?.supplierName) === group.supplierName;
-          return (
-            <button
-              key={group.supplierName}
-              type="button"
-              onClick={() => onSelectSupplier(group.supplierName)}
-              className={`rounded-lg border px-3 py-2 text-left transition-colors ${active ? 'border-sky-500/60 bg-sky-500/10' : 'border-neutral-800 bg-neutral-950/40 hover:border-neutral-700'}`}
-            >
-              <div className="flex items-center justify-between gap-2">
-                <span className="text-sm font-bold text-neutral-100">{group.supplierName}</span>
-                <span className="text-[10px] text-neutral-500">{group.offers.length} tiers</span>
-              </div>
-              <div className="mt-1 text-[10px] uppercase tracking-wide text-neutral-500">
-                Base power {supplier?.basePower} · reliability {supplier?.baseReliability} · prestige {supplier?.prestige}
-              </div>
-            </button>
-          );
+          return <TechnicalTableRow key={group.supplierName} className={active ? 'bg-sky-500/10' : ''}><TechnicalTableCell className="font-bold text-neutral-100">{group.supplierName}</TechnicalTableCell><TechnicalTableCell>{supplier?.basePower}</TechnicalTableCell><TechnicalTableCell>{supplier?.baseReliability}</TechnicalTableCell><TechnicalTableCell>{supplier?.prestige}</TechnicalTableCell><TechnicalTableCell>{group.offers.length}</TechnicalTableCell><TechnicalTableCell><Button className="px-2 py-1 text-xs" variant={active ? 'primary' : 'secondary'} onClick={() => onSelectSupplier(group.supplierName)}>{active ? 'Selected' : 'Compare tiers'}</Button></TechnicalTableCell></TechnicalTableRow>;
         })}
-      </div>
+        </tbody>
+      </TechnicalTable>
 
       {selectedGroup ? (
         <div className="mt-3 grid gap-2 md:grid-cols-3 xl:grid-cols-5">
@@ -280,13 +242,7 @@ function SupplierMarket({
         </div>
       ) : <p className="mt-3 text-sm text-neutral-500">No engine offers are available.</p>}
 
-      <div className="mt-3 flex items-center justify-between gap-3 rounded-lg border border-neutral-800 bg-neutral-950/60 px-3 py-2">
-        <Button variant="secondary" className="px-3 py-1 text-xs" disabled={supplierPage === 0} onClick={() => onPage(supplierPage - 1)}>Previous suppliers</Button>
-        <span className="text-xs text-neutral-500">
-          Suppliers {supplierPage * ENGINE_SUPPLIER_PAGE_SIZE + 1}–{Math.min(totalSuppliers, (supplierPage + 1) * ENGINE_SUPPLIER_PAGE_SIZE)} of {totalSuppliers} · Page {supplierPage + 1} of {supplierPageCount}
-        </span>
-        <Button variant="secondary" className="px-3 py-1 text-xs" disabled={supplierPage >= supplierPageCount - 1} onClick={() => onPage(supplierPage + 1)}>Next suppliers</Button>
-      </div>
+      <div className="mt-2 text-xs text-neutral-500">{totalSuppliers} suppliers available · select a row to compare deal tiers.</div>
     </Panel>
   );
 }

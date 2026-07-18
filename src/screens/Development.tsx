@@ -5,7 +5,8 @@ import { isSingleSeasonMode, isDevelopmentProjectAllowedForMode } from '../game/
 import { developmentProjectCatalog } from '../data/development/developmentProjects';
 import { Panel } from '../components/Panel';
 import { Button } from '../components/Button';
-import { formatMoney, ratingColor } from '../components/ui';
+import { TechnicalTable, TechnicalTableCell, TechnicalTableHead, TechnicalTableRow } from '../components/TechnicalTable';
+import { formatMoney } from '../components/ui';
 import type { DevelopmentProject, DevelopmentOutcome } from '../types/gameTypes';
 import {
   developmentSlots,
@@ -22,9 +23,6 @@ import { developmentSuccessBonus } from '../sim/staffEngine';
 import { facilityDevelopmentSuccessBonus } from '../sim/facilityEngine';
 import { leadershipGameplayModifiers } from '../sim/phase18IdentityCultureEngine';
 import {
-  DEVELOPMENT_PAGE_SIZES,
-  developmentPage,
-  developmentPageCount,
   developmentTabs,
   type DevelopmentTab,
 } from './developmentViewModel';
@@ -59,9 +57,10 @@ const OUTCOME_COLORS: Record<DevelopmentOutcome, string> = {
 export function DevelopmentBody() {
   const { state, dispatch } = useGame();
   const [tab, setTab] = useState<DevelopmentTab>('active');
-  const [activePage, setActivePage] = useState(0);
-  const [resultsPage, setResultsPage] = useState(0);
-  const [catalogPage, setCatalogPage] = useState(0);
+  const [catalogCategory, setCatalogCategory] = useState('All');
+  const [catalogHorizon, setCatalogHorizon] = useState('All');
+  const [catalogRisk, setCatalogRisk] = useState('All');
+  const [catalogSort, setCatalogSort] = useState<'cost' | 'duration'>('cost');
   if (!state) return null;
   const team = teamById(state, state.selectedTeamId);
   const budget = team?.budget ?? 0;
@@ -75,15 +74,14 @@ export function DevelopmentBody() {
   const totalSuccessBonus = staffBonus + facSuccessBonus + cultureBonus;
   const tabs = developmentTabs();
   const completedProjects = [...state.completedDevelopmentProjects].reverse();
-  const activePageCount = developmentPageCount(state.activeDevelopmentProjects.length, DEVELOPMENT_PAGE_SIZES.active);
-  const safeActivePage = Math.min(activePage, activePageCount - 1);
-  const visibleActiveProjects = developmentPage(state.activeDevelopmentProjects, safeActivePage, DEVELOPMENT_PAGE_SIZES.active);
-  const resultsPageCount = developmentPageCount(completedProjects.length, DEVELOPMENT_PAGE_SIZES.results);
-  const safeResultsPage = Math.min(resultsPage, resultsPageCount - 1);
-  const visibleResults = developmentPage(completedProjects, safeResultsPage, DEVELOPMENT_PAGE_SIZES.results);
-  const catalogPageCount = developmentPageCount(developmentProjectCatalog.length, DEVELOPMENT_PAGE_SIZES.catalog);
-  const safeCatalogPage = Math.min(catalogPage, catalogPageCount - 1);
-  const visibleCatalogProjects = developmentPage(developmentProjectCatalog, safeCatalogPage, DEVELOPMENT_PAGE_SIZES.catalog);
+  const categories = [...new Set(developmentProjectCatalog.map((project) => project.category))];
+  const horizons = [...new Set(developmentProjectCatalog.map((project) => project.horizon))];
+  const risks = [...new Set(developmentProjectCatalog.map((project) => project.riskLevel ?? 'Standard'))];
+  const visibleCatalogProjects = developmentProjectCatalog
+    .filter((project) => catalogCategory === 'All' || project.category === catalogCategory)
+    .filter((project) => catalogHorizon === 'All' || project.horizon === catalogHorizon)
+    .filter((project) => catalogRisk === 'All' || (project.riskLevel ?? 'Standard') === catalogRisk)
+    .sort((a, b) => catalogSort === 'cost' ? a.cost - b.cost : a.durationRaces - b.durationRaces);
   const operationsMessage = usedSlots >= slots
     ? 'All development capacity is committed. Review active projects or upgrade facilities before starting new work.'
     : state.activeDevelopmentProjects.length === 0
@@ -146,62 +144,14 @@ export function DevelopmentBody() {
           {state.activeDevelopmentProjects.length === 0 ? (
             <p className="text-sm text-neutral-500">No active projects. Start one below.</p>
           ) : (
-            <div className="space-y-2">
-              {visibleActiveProjects.map((p) => {
-              const effectiveDuration = p.adjustedDurationRaces ?? p.durationRaces;
-              const progressPct = (p.progressRaces / effectiveDuration) * 100;
-              return (
-                <div key={p.id} className="rounded-lg border border-neutral-800 bg-neutral-900/40 p-3">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <span className="font-semibold text-neutral-100">{p.name}</span>
-                      {p.rushed && (
-                        <span className="rounded bg-red-900/60 px-1.5 py-0.5 text-[10px] font-semibold text-red-300">RUSHED</span>
-                      )}
-                    </div>
-                    <span className="text-xs text-neutral-500">
-                      {p.progressRaces}/{effectiveDuration} races
-                    </span>
-                  </div>
-                  <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-neutral-800">
-                    <div
-                      className="h-full"
-                      style={{ width: `${progressPct}%`, backgroundColor: p.rushed ? '#ef4444' : ratingColor(progressPct) }}
-                    />
-                  </div>
-                  <div className="mt-1 flex items-center justify-between">
-                    <span className="text-xs text-neutral-500">{effectSummary(p)}</span>
-                    {!p.rushed && (
-                      <button
-                        className="text-[10px] text-orange-400 hover:text-orange-300"
-                        onClick={() => dispatch({ type: 'RUSH_DEVELOPMENT', projectId: p.id })}
-                      >
-                        Rush ({formatMoney(Math.round(p.cost * 0.5))})
-                      </button>
-                    )}
-                  </div>
-                  {p.riskLevel && (
-                    <div className="mt-1 flex gap-1.5">
-                      <span className={`text-[10px] font-semibold ${RISK_COLORS[p.riskLevel] ?? 'text-neutral-400'}`}>{p.riskLevel}</span>
-                      {p.projectSize && (
-                        <span className={`text-[10px] font-semibold ${SIZE_COLORS[p.projectSize] ?? 'text-neutral-400'}`}>{p.projectSize}</span>
-                      )}
-                    </div>
-                  )}
-                </div>
-              );
-              })}
-            </div>
-          )}
-          {state.activeDevelopmentProjects.length > 0 && (
-            <DevelopmentPagination
-              label="Active projects"
-              total={state.activeDevelopmentProjects.length}
-              page={safeActivePage}
-              pageCount={activePageCount}
-              pageSize={DEVELOPMENT_PAGE_SIZES.active}
-              onPage={setActivePage}
-            />
+            <TechnicalTable>
+              <TechnicalTableHead><TechnicalTableRow><TechnicalTableCell header>Project</TechnicalTableCell><TechnicalTableCell header>Progress</TechnicalTableCell><TechnicalTableCell header>Risk / size</TechnicalTableCell><TechnicalTableCell header>Effects</TechnicalTableCell><TechnicalTableCell header>Action</TechnicalTableCell></TechnicalTableRow></TechnicalTableHead>
+              <tbody>{state.activeDevelopmentProjects.map((p) => {
+                const duration = p.adjustedDurationRaces ?? p.durationRaces;
+                const progress = Math.min(100, p.progressRaces / duration * 100);
+                return <TechnicalTableRow key={p.id}><TechnicalTableCell><span className="font-semibold text-neutral-100">{p.name}</span>{p.rushed && <span className="ml-2 text-red-300">Rushed</span>}</TechnicalTableCell><TechnicalTableCell><div className="min-w-32"><div className="mb-1 flex justify-between text-neutral-500"><span>{p.progressRaces}/{duration} races</span><span>{Math.round(progress)}%</span></div><div className="h-1.5 rounded bg-neutral-800"><div className="h-full rounded bg-[var(--era-accent)]" style={{ width: `${progress}%` }} /></div></div></TechnicalTableCell><TechnicalTableCell>{p.riskLevel ?? 'Standard'} · {p.projectSize ?? 'Medium'}</TechnicalTableCell><TechnicalTableCell className="max-w-xs text-neutral-400">{effectSummary(p)}</TechnicalTableCell><TechnicalTableCell>{!p.rushed && <button className="text-orange-400 hover:text-orange-300" onClick={() => dispatch({ type: 'RUSH_DEVELOPMENT', projectId: p.id })}>Rush {formatMoney(Math.round(p.cost * 0.5))}</button>}</TechnicalTableCell></TechnicalTableRow>;
+              })}</tbody>
+            </TechnicalTable>
           )}
         </Panel>
       )}
@@ -211,49 +161,28 @@ export function DevelopmentBody() {
           {completedProjects.length === 0 ? (
             <p className="text-sm text-neutral-500">No completed development projects yet.</p>
           ) : (
-            <>
-              <div className="space-y-2">
-                {visibleResults.map((p) => {
-              const result = p.outcomeResult;
-              return (
-                <div key={p.id} className="rounded-lg border border-neutral-800 bg-neutral-900/40 p-3">
-                  <div className="flex items-center justify-between">
-                    <span className="font-semibold text-neutral-100">{p.name}</span>
-                    {result && (
-                      <span className={`text-sm font-semibold ${OUTCOME_COLORS[result.outcome]}`}>
-                        {result.label}
-                      </span>
-                    )}
-                  </div>
-                  {result && (
-                    <div className="mt-1 text-xs text-neutral-400">
-                      <span className="text-neutral-500">Expected: </span>
-                      {Object.entries(result.expectedGain).map(([k, v]) => `+${v} ${k}`).join(', ') || 'N/A'}
-                      <span className="ml-2 text-neutral-500">Actual: </span>
-                      {Object.entries(result.actualGain).map(([k, v]) => `${v >= 0 ? '+' : ''}${v} ${k}`).join(', ') || 'No gain'}
-                    </div>
-                  )}
-                  {result && <div className="mt-0.5 text-xs text-neutral-500">{result.description}</div>}
-                </div>
-              );
-                })}
-              </div>
-              <DevelopmentPagination
-                label="Completed projects"
-                total={completedProjects.length}
-                page={safeResultsPage}
-                pageCount={resultsPageCount}
-                pageSize={DEVELOPMENT_PAGE_SIZES.results}
-                onPage={setResultsPage}
-              />
-            </>
+            <TechnicalTable>
+              <TechnicalTableHead><TechnicalTableRow><TechnicalTableCell header>Project</TechnicalTableCell><TechnicalTableCell header>Outcome</TechnicalTableCell><TechnicalTableCell header>Expected gain</TechnicalTableCell><TechnicalTableCell header>Actual gain</TechnicalTableCell><TechnicalTableCell header>Description</TechnicalTableCell></TechnicalTableRow></TechnicalTableHead>
+              <tbody>{completedProjects.map((p) => {
+                const result = p.outcomeResult;
+                return <TechnicalTableRow key={p.id}><TechnicalTableCell className="font-semibold text-neutral-100">{p.name}</TechnicalTableCell><TechnicalTableCell className={result ? OUTCOME_COLORS[result.outcome] : 'text-neutral-500'}>{result?.label ?? 'No result'}</TechnicalTableCell><TechnicalTableCell className="text-neutral-400">{result ? Object.entries(result.expectedGain).map(([k, v]) => `+${v} ${k}`).join(', ') || 'N/A' : 'N/A'}</TechnicalTableCell><TechnicalTableCell className="text-neutral-400">{result ? Object.entries(result.actualGain).map(([k, v]) => `${v >= 0 ? '+' : ''}${v} ${k}`).join(', ') || 'No gain' : 'N/A'}</TechnicalTableCell><TechnicalTableCell className="max-w-md text-neutral-500">{result?.description ?? '—'}</TechnicalTableCell></TechnicalTableRow>;
+              })}</tbody>
+            </TechnicalTable>
           )}
         </Panel>
       )}
 
       {tab === 'catalog' && (
         <Panel title="Available Projects">
-          <div className="grid gap-3 md:grid-cols-2">
+          <div className="mb-3 flex flex-wrap gap-2">
+            <FilterSelect label="Category" value={catalogCategory} options={categories} onChange={setCatalogCategory} />
+            <FilterSelect label="Horizon" value={catalogHorizon} options={horizons} onChange={setCatalogHorizon} />
+            <FilterSelect label="Risk" value={catalogRisk} options={risks} onChange={setCatalogRisk} />
+            <FilterSelect label="Sort" value={catalogSort} options={['cost', 'duration']} onChange={(value) => setCatalogSort(value as 'cost' | 'duration')} />
+          </div>
+          <TechnicalTable>
+            <TechnicalTableHead><TechnicalTableRow><TechnicalTableCell header>Project</TechnicalTableCell><TechnicalTableCell header>Category</TechnicalTableCell><TechnicalTableCell header>Risk / size</TechnicalTableCell><TechnicalTableCell header>Cost</TechnicalTableCell><TechnicalTableCell header>Duration</TechnicalTableCell><TechnicalTableCell header>Facility / impact</TechnicalTableCell><TechnicalTableCell header>Outcomes / detail</TechnicalTableCell><TechnicalTableCell header>Actions</TechnicalTableCell></TechnicalTableRow></TechnicalTableHead>
+            <tbody>
             {visibleCatalogProjects.map((p) => {
             const facLevel = relevantFacilityLevel(state.facilities, p.category);
             const riskLevel = p.riskLevel ?? 'Standard';
@@ -269,69 +198,19 @@ export function DevelopmentBody() {
             const canStart = affordable && slotAvailable && modeAllowed;
             const canRush = rushAffordable && slotAvailable && modeAllowed;
 
-            return (
-              <div key={p.id} className="rounded-lg border border-neutral-800 bg-neutral-900/40 p-4">
-                <div className="flex items-start justify-between">
-                  <div>
-                    <div className="font-semibold text-neutral-100">{p.name}</div>
-                    <div className="mt-0.5 flex flex-wrap gap-1.5">
-                      <span className="rounded bg-neutral-800 px-1.5 py-0.5 text-[10px] text-neutral-400">{p.category}</span>
-                      <span className="rounded bg-neutral-800 px-1.5 py-0.5 text-[10px] text-neutral-400">{p.horizon}</span>
-                      {p.riskLevel && (
-                        <span className={`rounded bg-neutral-800 px-1.5 py-0.5 text-[10px] font-semibold ${RISK_COLORS[p.riskLevel]}`}>{p.riskLevel}</span>
-                      )}
-                      {p.projectSize && (
-                        <span className={`rounded bg-neutral-800 px-1.5 py-0.5 text-[10px] font-semibold ${SIZE_COLORS[p.projectSize]}`}>{p.projectSize}</span>
-                      )}
-                    </div>
-                  </div>
-                  <span className="text-sm font-semibold text-neutral-100">{formatMoney(p.cost)}</span>
-                </div>
-                <div className="mt-2 text-xs text-neutral-400">{effectSummary(p)}</div>
-                <div className="mt-1 text-xs text-neutral-500">
-                  {adjustedDuration} races (base {p.durationRaces}) · Facility L{Math.round(facLevel)} · Impact x{impactMult.toFixed(1)}{!singleSeason ? ` · ${Math.round(p.carryoverRate * 100)}% carryover` : ''}
-                </div>
-                <div className="mt-1.5 text-xs text-neutral-400">
-                  <span className="text-neutral-500">Outcomes: </span>
-                  {formatOutcomeChances(chances).join(' · ')}
-                </div>
-                {p.risk && <div className="mt-1 text-xs text-orange-400/80">⚠ {p.risk}</div>}
-                {!modeAllowed && (
-                  <div className="mt-1 text-xs text-amber-400">Disabled in Single Season: this project only affects future seasons.</div>
-                )}
-                {!slotAvailable && modeAllowed && (
-                  <div className="mt-1 text-xs text-red-400">No slots available — upgrade facilities.</div>
-                )}
-                <div className="mt-3 flex gap-2">
-                  <Button
-                    className="flex-1"
-                    variant={canStart ? 'primary' : 'secondary'}
-                    disabled={!canStart}
-                    onClick={() => dispatch({ type: 'START_DEVELOPMENT', projectId: p.id })}
-                  >
-                    {!modeAllowed ? 'Future-Only' : affordable ? (slotAvailable ? 'Start' : 'No Slots') : 'Insufficient Budget'}
-                  </Button>
-                  <Button
-                    className="flex-1"
-                    variant={canRush ? 'primary' : 'secondary'}
-                    disabled={!canRush}
-                    onClick={() => dispatch({ type: 'START_DEVELOPMENT', projectId: p.id, rushed: true })}
-                  >
-                    {!modeAllowed ? 'Future-Only' : rushAffordable ? (slotAvailable ? `Rush (${formatMoney(rushCost)})` : 'No Slots') : 'Cannot Rush'}
-                  </Button>
-                </div>
-              </div>
-            );
+            return <TechnicalTableRow key={p.id}>
+              <TechnicalTableCell><div className="font-semibold text-neutral-100">{p.name}</div><div className="text-neutral-500">{p.horizon}</div></TechnicalTableCell>
+              <TechnicalTableCell>{p.category}</TechnicalTableCell>
+              <TechnicalTableCell><span className={RISK_COLORS[riskLevel]}>{riskLevel}</span><div className={SIZE_COLORS[projectSize]}>{projectSize}</div></TechnicalTableCell>
+              <TechnicalTableCell className="font-semibold tabular-nums">{formatMoney(p.cost)}</TechnicalTableCell>
+              <TechnicalTableCell>{adjustedDuration} races<div className="text-neutral-500">Base {p.durationRaces}</div></TechnicalTableCell>
+              <TechnicalTableCell>Facility L{Math.round(facLevel)}<div className="text-neutral-500">Impact x{impactMult.toFixed(1)} · {Math.round(p.carryoverRate * 100)}% carryover</div></TechnicalTableCell>
+              <TechnicalTableCell className="max-w-xs"><div className="text-neutral-300">{formatOutcomeChances(chances).join(' · ')}</div><div className="text-neutral-500">{effectSummary(p)}</div>{p.risk && <div className="text-orange-400/80">⚠ {p.risk}</div>}{!modeAllowed && <div className="text-amber-400">Future-only in Single Season</div>}{!slotAvailable && modeAllowed && <div className="text-red-400">No slots available</div>}</TechnicalTableCell>
+              <TechnicalTableCell><div className="flex flex-col gap-1"><Button className="px-2 py-1 text-xs" variant={canStart ? 'primary' : 'secondary'} disabled={!canStart} onClick={() => dispatch({ type: 'START_DEVELOPMENT', projectId: p.id })}>{!modeAllowed ? 'Future-only' : affordable ? (slotAvailable ? 'Start' : 'No slots') : 'No budget'}</Button><Button className="px-2 py-1 text-xs" variant={canRush ? 'primary' : 'secondary'} disabled={!canRush} onClick={() => dispatch({ type: 'START_DEVELOPMENT', projectId: p.id, rushed: true })}>{!modeAllowed ? 'Future-only' : rushAffordable ? (slotAvailable ? `Rush ${formatMoney(rushCost)}` : 'No slots') : 'Cannot rush'}</Button></div></TechnicalTableCell>
+            </TechnicalTableRow>;
             })}
-          </div>
-          <DevelopmentPagination
-            label="Available projects"
-            total={developmentProjectCatalog.length}
-            page={safeCatalogPage}
-            pageCount={catalogPageCount}
-            pageSize={DEVELOPMENT_PAGE_SIZES.catalog}
-            onPage={setCatalogPage}
-          />
+            </tbody>
+          </TechnicalTable>
         </Panel>
       )}
     </WorkspaceBody>
@@ -342,42 +221,6 @@ export function Development() {
   return <DevelopmentBody />;
 }
 
-function DevelopmentPagination({
-  label,
-  total,
-  page,
-  pageCount,
-  pageSize,
-  onPage,
-}: {
-  label: string;
-  total: number;
-  page: number;
-  pageCount: number;
-  pageSize: number;
-  onPage: (page: number) => void;
-}) {
-  return (
-    <div className="mt-3 flex items-center justify-between gap-3 rounded-lg border border-neutral-800 bg-neutral-950/60 px-3 py-2">
-      <Button
-        variant="secondary"
-        className="px-3 py-1 text-xs"
-        onClick={() => onPage(Math.max(0, page - 1))}
-        disabled={page === 0}
-      >
-        Previous
-      </Button>
-      <span className="text-xs text-neutral-500">
-        {label} {total ? page * pageSize + 1 : 0}–{Math.min(total, (page + 1) * pageSize)} of {total} · Page {page + 1} of {pageCount}
-      </span>
-      <Button
-        variant="secondary"
-        className="px-3 py-1 text-xs"
-        onClick={() => onPage(Math.min(pageCount - 1, page + 1))}
-        disabled={page >= pageCount - 1}
-      >
-        Next
-      </Button>
-    </div>
-  );
+function FilterSelect({ label, value, options, onChange }: { label: string; value: string; options: string[]; onChange: (value: string) => void }) {
+  return <label className="flex items-center gap-2 text-xs text-neutral-500">{label}<select value={value} onChange={(event) => onChange(event.target.value)} className="rounded border border-neutral-700 bg-neutral-900 px-2 py-1 text-neutral-200"><option value="All">All</option>{options.map((option) => <option key={option} value={option}>{option}</option>)}</select></label>;
 }
