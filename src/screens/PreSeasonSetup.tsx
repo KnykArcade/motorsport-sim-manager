@@ -133,8 +133,21 @@ export function PreSeasonSetup() {
         <WorkspaceMetric label="Race line-up" value={`${activeDrivers.length}/${minDrivers}`} detail={hasValidLineup ? 'Required seats filled' : 'Driver signing required'} />
         <WorkspaceMetric label="Race 1 readiness" value={preseasonProgram?.testingCompleted ? `${preseasonProgram.readiness.overall}%` : 'Pending'} detail={race?.gpName ?? 'Opening event unavailable'} />
       </MetricStrip>
-      <div className="shrink-0 rounded border border-sky-500/20 bg-sky-500/5 px-3 py-2 text-[11px] text-sky-200">
-        Review confirmations acknowledge the current plan. Car launch, testing focus, technical corrections, and external management-screen actions are the choices that change game state.
+      <div className="ui-decision-strip flex flex-wrap items-center justify-between gap-2 rounded-lg border px-3 py-2.5">
+        <div className="flex min-w-0 items-center gap-2 text-xs">
+          <span className="ui-decision-strip-pulse" aria-hidden="true" />
+          <div className="min-w-0">
+            <div className="font-semibold text-neutral-100">Preseason operations desk</div>
+            <div className="truncate text-neutral-400">
+              {checklistComplete
+                ? 'All preseason reviews are confirmed. The Race 1 briefing is ready to open.'
+                : `${remainingApprovals} review${remainingApprovals === 1 ? '' : 's'} still need confirmation before the Race 1 briefing.`}
+            </div>
+          </div>
+        </div>
+        <span className="shrink-0 text-[10px] font-semibold uppercase tracking-wide text-neutral-500">
+          {preseasonProgram?.testingCompleted ? `${preseasonProgram.readiness.overall}% readiness` : 'Testing not complete'}
+        </span>
       </div>
       <WorkspaceTabs items={tabs} active={activeTab} onChange={setActiveTab} ariaLabel="Preseason review sections" />
       <WorkspaceBody className="space-y-4">
@@ -279,7 +292,7 @@ export function PreSeasonSetup() {
                 </div>
                 <p className="mt-1 text-xs text-neutral-500">The launch sets sponsor expectations, team morale, and the public tone before testing.</p>
                 {!preseasonProgram?.launchCompleted && <div className="mt-3 grid gap-2 md:grid-cols-3">
-                  {LAUNCH_OPTIONS.map((option) => <button key={option.id} type="button" onClick={() => dispatch({ type: 'COMPLETE_CAR_LAUNCH', approach: option.id })} className="rounded-lg border border-neutral-700 bg-neutral-900/50 p-3 text-left hover:border-sky-500/60"><div className="text-xs font-semibold text-sky-300">{option.label}</div><p className="mt-1 text-[11px] text-neutral-400">{option.description}</p></button>)}
+                  {LAUNCH_OPTIONS.map((option) => <button key={option.id} type="button" onClick={() => dispatch({ type: 'COMPLETE_CAR_LAUNCH', approach: option.id })} className="rounded-lg border border-neutral-700 bg-neutral-900/50 p-3 text-left hover:border-[var(--era-accent)]"><div className="text-xs font-semibold text-[var(--era-accent-strong)]">{option.label}</div><p className="mt-1 text-[11px] text-neutral-400">{option.description}</p></button>)}
                 </div>}
               </div>
 
@@ -454,8 +467,8 @@ export function PreSeasonSetup() {
                 <div className="mt-3">
                   <TrackDemandBars track={track} />
                 </div>
-                {preseasonProgram?.testingCompleted && <div className="mt-4 rounded-lg border border-sky-500/25 bg-sky-500/5 p-3">
-                  <div className="flex items-center justify-between"><span className="text-sm font-semibold text-sky-200">Your Race 1 readiness</span><span className="text-lg font-bold text-neutral-100">{preseasonProgram.readiness.overall}%</span></div>
+                {preseasonProgram?.testingCompleted && <div className="mt-4 rounded-lg border border-[var(--era-accent)]/35 bg-[var(--era-accent-soft)] p-3">
+                  <div className="flex items-center justify-between"><span className="text-sm font-semibold text-[var(--era-accent-strong)]">Your Race 1 readiness</span><span className="text-lg font-bold text-neutral-100">{preseasonProgram.readiness.overall}%</span></div>
                   <p className="mt-1 text-xs text-neutral-400">Testing readiness modifies the opening-round car baseline. Any unresolved hidden flaw can reduce reliability.</p>
                 </div>}
                 {(preseasonHub?.rivalReports.length ?? 0) > 0 && <div className="mt-4">
@@ -494,6 +507,6 @@ function StatChip({ label, value }: { label: string; value: string }) {
 }
 
 function ReadinessChip({ label, value }: { label: string; value: number }) {
-  const tone = value >= 75 ? 'text-emerald-300' : value >= 60 ? 'text-sky-300' : value >= 45 ? 'text-amber-300' : 'text-red-300';
+  const tone = value >= 75 ? 'text-emerald-300' : value >= 60 ? 'text-[var(--era-accent-strong)]' : value >= 45 ? 'text-amber-300' : 'text-red-300';
   return <div className="rounded border border-neutral-800 bg-neutral-900/45 px-3 py-2 text-center"><div className="text-[10px] uppercase text-neutral-500">{label}</div><div className={`mt-1 text-lg font-bold ${tone}`}>{value}</div></div>;
 }
