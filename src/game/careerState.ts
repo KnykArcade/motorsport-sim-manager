@@ -35,6 +35,7 @@ import type { RegulationProposal, RegulationVoteResult } from '../types/politics
 import type { HistoricalEventHook, FiredEvent } from '../types/eventHookTypes';
 import type { ScoutingState } from '../types/scoutingTypes';
 import type { DriverDevelopmentCurve } from '../types/developmentCurveTypes';
+import type { TeamTechnicalMap } from '../types/technicalTypes';
 import type { MotorsportUniverseState, UniverseHistory } from '../types/universeTypes';
 import type { AITeamState, TeamMemoryEntry } from '../types/aiTeamTypes';
 import type { RaceWeekendPackageSelection, FinancialDistressMap } from '../types/raceWeekendPackageTypes';
@@ -111,6 +112,10 @@ export type GameState = {
   // development projects so the full R&D tree can be introduced incrementally.
   // Optional for save compatibility; the save migration backfills every team.
   teamResearch?: TeamResearchMap;
+
+  // Derived unified technical projection. The legacy development and R&D
+  // fields remain authoritative during the Phase 4 migration foundation.
+  teamTechnical?: TeamTechnicalMap;
 
   // Driver-specific fitted components, spare inventory, repairs, and factory
   // manufacturing queues. Optional so saves from before the parts phase can be

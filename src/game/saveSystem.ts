@@ -25,6 +25,7 @@ import { ensureCharacterBreakingPoints } from '../sim/characterBreakingPointEngi
 import { ensureCharacterFutureIntentions } from '../sim/characterFutureIntentEngine';
 import { ensureAIStaffRosters } from '../sim/aiStaffRosterEngine';
 import { ensurePersonnelCareerLedger } from '../sim/personnelCareerLedgerEngine';
+import { toUnifiedTechnical } from '../sim/technicalModel';
 
 const SAVE_KEY = 'msm:save:v1';
 const SETTINGS_KEY = 'msm:settings:v1';
@@ -92,7 +93,11 @@ export function migrateGameState(state: GameState): GameState {
   patched.characterInteractions = ensureCharacterInteractionState(patched.characterInteractions);
   patched.saveSchemaVersion = CURRENT_SAVE_SCHEMA_VERSION;
   const migrated = ensureCharacterFutureIntentions(ensureCharacterBreakingPoints(ensureCharacterMandates(ensureCharacterInitiatives(ensureCharacterInfluence(ensureCharacterConnections(ensureCharacterAmbitions(ensureCharacterOpinions(syncNarratives(ensureRivalRelationships(ensureFailureInvestigationState(ensurePreseasonHubState(ensureContractClauses(patched as GameState)))))))))))));
-  return ensurePersonnelCareerLedger(migrated);
+  const finalized = ensurePersonnelCareerLedger(migrated);
+  return {
+    ...finalized,
+    teamTechnical: toUnifiedTechnical(finalized),
+  };
 }
 
 export type GameSettings = {

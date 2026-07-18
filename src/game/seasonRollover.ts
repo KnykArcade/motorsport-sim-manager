@@ -17,6 +17,7 @@ import {
 import { BALANCED_SETUP } from '../data/setup/setupComponents';
 import { applyOffseasonDecay, calculateOffseasonCarryover } from '../sim/developmentEngine';
 import { allocateSeasonTPP, ensureTeamResearchMap } from '../sim/rdEngine';
+import { toUnifiedTechnical } from '../sim/technicalModel';
 import { rolloverTeamPartsMap } from '../sim/partsEngine';
 import {
   academyMemberAge,
@@ -1652,12 +1653,20 @@ export function advanceSeason(state: GameState, nextBundle?: SeasonBundle): Game
       movedState.phase18 = { ...movedState.phase18!, preseason: undefined };
       let finalized = ensureRivalRelationships(ensureFailureInvestigationState(ensurePreseasonHubState(movedState)));
       for (const pair of principalPoachPairs) finalized = recordStaffPoach(finalized, pair.sourceTeamId, pair.destinationTeamId);
-      return reconcilePersonnelCareerLedger(state, ensureCharacterFutureIntentions(finalized), nextYear, 'Season rollover');
+      const result = reconcilePersonnelCareerLedger(state, ensureCharacterFutureIntentions(finalized), nextYear, 'Season rollover');
+      return {
+        ...result,
+        teamTechnical: toUnifiedTechnical(result),
+      };
     }
   }
   let finalized = ensureRivalRelationships(ensureFailureInvestigationState(ensurePreseasonHubState(nextState)));
   for (const pair of principalPoachPairs) finalized = recordStaffPoach(finalized, pair.sourceTeamId, pair.destinationTeamId);
-  return reconcilePersonnelCareerLedger(state, ensureCharacterFutureIntentions(finalized), nextYear, 'Season rollover');
+  const result = reconcilePersonnelCareerLedger(state, ensureCharacterFutureIntentions(finalized), nextYear, 'Season rollover');
+  return {
+    ...result,
+    teamTechnical: toUnifiedTechnical(result),
+  };
 }
 
 // Switch the player to a new team after a principal move: rebuild the
