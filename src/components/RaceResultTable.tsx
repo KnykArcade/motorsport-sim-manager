@@ -1,4 +1,13 @@
 import type { RaceResult } from '../types/gameTypes';
+import { ratingColor } from './ui';
+
+function positionBadgeClass(position: number | null, dnf: boolean): string {
+  if (dnf || position == null) return 'bg-neutral-800 text-neutral-500';
+  if (position === 1) return 'bg-amber-400/90 text-neutral-900';
+  if (position === 2) return 'bg-slate-300/80 text-neutral-900';
+  if (position === 3) return 'bg-orange-700/80 text-orange-50';
+  return 'bg-neutral-800 text-neutral-300';
+}
 
 type Props = {
   results: RaceResult[];
@@ -38,8 +47,10 @@ export function RaceResultTable({
                 key={r.driverId}
                 className={`border-t border-neutral-800/60 ${isPlayer ? 'bg-amber-500/10' : ''}`}
               >
-                <td className="px-3 py-1.5 font-semibold tabular-nums text-neutral-200">
-                  {r.position ?? '—'}
+                <td className="px-3 py-1.5">
+                  <span className={`inline-flex h-5 min-w-[1.25rem] items-center justify-center rounded px-1 text-xs font-bold tabular-nums ${positionBadgeClass(r.position ?? null, dnf)}`}>
+                    {r.position ?? '—'}
+                  </span>
                 </td>
                 <td className="px-3 py-1.5">
                   <div className="flex items-center gap-2">
@@ -55,7 +66,10 @@ export function RaceResultTable({
                 <td className="px-2 py-1.5 text-right font-semibold tabular-nums text-neutral-100">
                   {r.points || ''}
                 </td>
-                <td className="px-2 py-1.5 text-right tabular-nums text-neutral-400">
+                <td
+                  className="px-2 py-1.5 text-right font-semibold tabular-nums"
+                  style={{ color: r.rating != null ? ratingColor((r.rating / 10) * 100) : '#9ca3af' }}
+                >
                   {r.rating?.toFixed(1) ?? ''}
                 </td>
               </tr>

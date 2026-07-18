@@ -85,6 +85,13 @@ const RATING_COLUMNS: { key: SortKey; label: string; field: keyof TeamOverviewRo
   { key: 'reputationRating', label: 'Rep.', field: 'reputationRating' },
 ];
 
+function teamPositionBadgeClass(position: number): string {
+  if (position === 1) return 'bg-amber-400/90 text-neutral-900';
+  if (position === 2) return 'bg-slate-300/80 text-neutral-900';
+  if (position === 3) return 'bg-orange-700/80 text-orange-50';
+  return 'bg-neutral-800 text-neutral-300';
+}
+
 function sortValue(row: TeamOverviewRow, key: SortKey): number {
   if (key === 'championshipPosition') return row.championshipPosition ?? 999;
   if (key === 'financialHealth') return HEALTH_ORDER.indexOf(row.financialHealth);
@@ -236,8 +243,15 @@ export function TeamOverview() {
                     row.isPlayer ? 'bg-amber-500/5' : ''
                   } ${selectedId === row.teamId ? 'bg-neutral-800/60' : ''}`}
                 >
-                    <td className="px-2 py-2 tabular-nums text-neutral-500">
-                      {row.championshipPosition ?? safePage * TEAM_OVERVIEW_PAGE_SIZE + i + 1}
+                    <td className="px-2 py-2">
+                      {(() => {
+                        const position = row.championshipPosition ?? safePage * TEAM_OVERVIEW_PAGE_SIZE + i + 1;
+                        return (
+                          <span className={`inline-flex h-5 min-w-[1.25rem] items-center justify-center rounded px-1 text-xs font-bold tabular-nums ${teamPositionBadgeClass(position)}`}>
+                            {position}
+                          </span>
+                        );
+                      })()}
                     </td>
                     <td className="px-2 py-2">
                       <div className="flex items-center gap-2">
@@ -564,7 +578,7 @@ function TeamDetail({
                   <div key={d.id} className="flex items-center justify-between gap-2">
                     <span className="text-neutral-200">{d.name}</span>
                     <span className="flex items-center gap-2">
-                      <span className="tabular-nums text-neutral-400">{d.ratings.overall.toFixed(1)}</span>
+                      <span className="font-semibold tabular-nums" style={{ color: ratingColor(d.ratings.overall) }}>{d.ratings.overall.toFixed(1)}</span>
                       {state && (
                         <DriverDossierButton
                           state={state}
@@ -592,7 +606,7 @@ function TeamDetail({
                       )}
                     </span>
                     <span className="flex items-center gap-2">
-                      <span className="tabular-nums text-neutral-500">{d.ratings.overall.toFixed(1)}</span>
+                      <span className="font-semibold tabular-nums" style={{ color: ratingColor(d.ratings.overall) }}>{d.ratings.overall.toFixed(1)}</span>
                       {state && (
                         <DriverDossierButton
                           state={state}
