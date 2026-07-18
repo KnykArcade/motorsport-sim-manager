@@ -112,6 +112,7 @@ import { staffEmployer, staffPoachingCompensation } from '../sim/aiStaffRosterEn
 import { reconcilePersonnelCareerLedger } from '../sim/personnelCareerLedgerEngine';
 import { recordRaceLegacy } from '../sim/phase18LegacyEngine';
 import { syncNarratives } from '../sim/phase18NarrativeEngine';
+import { toUnifiedTechnical } from '../sim/technicalModel';
 import { applyNarrativeAIReactions, resolveNarrativeResponse } from '../sim/phase18NarrativeResponseEngine';
 import { createSeededRandom, deriveSeed } from '../sim/random';
 import type { AcademyDecision, FirstOptionDecision, SeatSigning } from '../types/marketTypes';
@@ -589,22 +590,22 @@ export function gameReducer(state: GameState | null, action: GameAction): GameSt
 
     case 'START_DEVELOPMENT': {
       if (!state) return state;
-      return startDevelopment(state, action.projectId, action.rushed ?? false);
+      return withTechnicalProjection(startDevelopment(state, action.projectId, action.rushed ?? false));
     }
 
     case 'RUSH_DEVELOPMENT': {
       if (!state) return state;
-      return rushDevelopment(state, action.projectId);
+      return withTechnicalProjection(rushDevelopment(state, action.projectId));
     }
 
     case 'SET_RESEARCH_FOCUS': {
       if (!state || isSingleSeasonMode(state.gameMode)) return state;
-      return setResearchFocusAction(state, action.branchId);
+      return withTechnicalProjection(setResearchFocusAction(state, action.branchId));
     }
 
     case 'START_RD_PROJECT': {
       if (!state || isSingleSeasonMode(state.gameMode)) return state;
-      return startRDProject(state, action.request);
+      return withTechnicalProjection(startRDProject(state, action.request));
     }
 
     case 'START_PART_MANUFACTURING': {
@@ -2192,16 +2193,27 @@ function applyRaceResults(
     currentRaceIndex: seasonComplete ? state.currentRaceIndex : nextIndex,
     seasonComplete,
   };
-  return syncNarratives(recordRaceLegacy(
+  const finalized = syncNarratives(recordRaceLegacy(
     evolveRivalRelationshipsAfterRace(recordFailureInvestigations(completedState, race.id, race.round, results), race.round, results),
     race.id,
     race.round,
     results,
   ));
+  return {
+    ...finalized,
+    teamTechnical: toUnifiedTechnical(finalized),
+  };
 }
 
 function partsRound(state: GameState): number {
   return currentRace(state)?.round ?? state.currentRaceIndex + 1;
+}
+
+function withTechnicalProjection(state: GameState): GameState {
+  return {
+    ...state,
+    teamTechnical: toUnifiedTechnical(state),
+  };
 }
 
 function startPartManufacturingAction(state: GameState, partType: PartType, quantity: number): GameState {
