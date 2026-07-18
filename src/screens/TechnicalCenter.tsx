@@ -7,10 +7,9 @@ import { developmentSlots } from '../sim/facilityEngine';
 import { formatMoney } from '../components/ui';
 import { Panel } from '../components/Panel';
 import { WorkspaceBody, WorkspaceHeader, WorkspaceMetric, WorkspaceScreen, WorkspaceTabs, MetricStrip } from '../components/workspace/Workspace';
-import { DevelopmentBody } from './Development';
+import { UnifiedDevelopmentBody } from './UnifiedDevelopment';
 import { FacilitiesBody } from './Facilities';
 import { EngineSupplierBody } from './EngineSupplier';
-import { RDTreePanel } from '../components/development/RDTreePanel';
 import { PartsInventoryPanel } from '../components/development/PartsInventoryPanel';
 import { TechnicalTable, TechnicalTableCell, TechnicalTableHead, TechnicalTableRow } from '../components/TechnicalTable';
 import { activeDriversForTeam } from '../game/careerState';
@@ -18,12 +17,11 @@ import { carWithFittedParts } from '../sim/partsEngine';
 import { carPerformanceRating, effectiveCarRatings } from '../sim/trackFitEngine';
 import { ratingColor } from '../components/ui';
 
-type TechnicalSection = 'command' | 'development' | 'research' | 'parts' | 'facilities' | 'engine';
+type TechnicalSection = 'command' | 'development' | 'parts' | 'facilities' | 'engine';
 
 const sections: ReadonlyArray<{ id: TechnicalSection; label: string }> = [
   { id: 'command', label: 'Command' },
   { id: 'development', label: 'Development' },
-  { id: 'research', label: 'R&D' },
   { id: 'parts', label: 'Parts & Factory' },
   { id: 'facilities', label: 'Facilities' },
   { id: 'engine', label: 'Engine' },
@@ -56,8 +54,7 @@ export function TechnicalCenter() {
       <WorkspaceTabs items={sections} active={section} onChange={setSection} ariaLabel="Technical Center sections" />
       <WorkspaceBody className="space-y-4">
         {section === 'command' && <CommandPanel state={state} onNavigate={setSection} />}
-        {section === 'development' && <DevelopmentBody />}
-        {section === 'research' && <RDTreePanel />}
+        {section === 'development' && <UnifiedDevelopmentBody />}
         {section === 'parts' && <PartsInventoryPanel />}
         {section === 'facilities' && <FacilitiesBody />}
         {section === 'engine' && (lockInfo ? <LockedEnginePanel title={lockInfo.title} reason={lockInfo.reason} focus={lockInfo.focus} /> : <EngineSupplierBody />)}
@@ -95,7 +92,7 @@ function CommandPanel({ state, onNavigate }: { state: GameState; onNavigate: (se
           <TechnicalTableHead><TechnicalTableRow><TechnicalTableCell header>Workstream</TechnicalTableCell><TechnicalTableCell header>Item</TechnicalTableCell><TechnicalTableCell header>ETA</TechnicalTableCell><TechnicalTableCell header>Open</TechnicalTableCell></TechnicalTableRow></TechnicalTableHead>
           <tbody>
             {state.activeDevelopmentProjects.map((project) => <TechnicalTableRow key={`dev-${project.id}`}><TechnicalTableCell>Development</TechnicalTableCell><TechnicalTableCell className="font-semibold text-neutral-100">{project.name}</TechnicalTableCell><TechnicalTableCell>{Math.max(0, (project.adjustedDurationRaces ?? project.durationRaces) - project.progressRaces)} races</TechnicalTableCell><TechnicalTableCell><JumpButton onClick={() => onNavigate('development')} /></TechnicalTableCell></TechnicalTableRow>)}
-            {activeResearch.map((project) => <TechnicalTableRow key={`rd-${project.id}`}><TechnicalTableCell>R&D</TechnicalTableCell><TechnicalTableCell className="font-semibold text-neutral-100">{project.nodeName ?? 'Research node'}</TechnicalTableCell><TechnicalTableCell>{Math.max(0, project.durationRounds - project.progressRounds)} rounds</TechnicalTableCell><TechnicalTableCell><JumpButton onClick={() => onNavigate('research')} /></TechnicalTableCell></TechnicalTableRow>)}
+            {activeResearch.map((project) => <TechnicalTableRow key={`rd-${project.id}`}><TechnicalTableCell>Research</TechnicalTableCell><TechnicalTableCell className="font-semibold text-neutral-100">{project.nodeName ?? 'Research node'}</TechnicalTableCell><TechnicalTableCell>{Math.max(0, project.durationRounds - project.progressRounds)} rounds</TechnicalTableCell><TechnicalTableCell><JumpButton onClick={() => onNavigate('development')} /></TechnicalTableCell></TechnicalTableRow>)}
             {(parts?.manufacturingQueue ?? []).map((order) => <TechnicalTableRow key={`factory-${order.id}`}><TechnicalTableCell>Factory</TechnicalTableCell><TechnicalTableCell className="font-semibold text-neutral-100">{order.quantity}x {order.type}</TechnicalTableCell><TechnicalTableCell>{order.roundsRemaining} rounds</TechnicalTableCell><TechnicalTableCell><JumpButton onClick={() => onNavigate('parts')} /></TechnicalTableCell></TechnicalTableRow>)}
             {(state.facilities?.pendingUpgrades ?? []).map((upgrade) => <TechnicalTableRow key={`facility-${upgrade.facilityId}`}><TechnicalTableCell>Facilities</TechnicalTableCell><TechnicalTableCell className="font-semibold text-neutral-100">{facilities.find((facility) => facility.id === upgrade.facilityId)?.type ?? upgrade.facilityId} → L{upgrade.toLevel}</TechnicalTableCell><TechnicalTableCell>{upgrade.weeksRemaining} weeks</TechnicalTableCell><TechnicalTableCell><JumpButton onClick={() => onNavigate('facilities')} /></TechnicalTableCell></TechnicalTableRow>)}
           </tbody>

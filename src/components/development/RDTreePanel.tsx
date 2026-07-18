@@ -30,7 +30,7 @@ const OUTCOME_COLORS: Record<DevelopmentOutcome, string> = {
   MinorSuccess: 'text-orange-300', Failed: 'text-red-300', RareBackfire: 'text-red-400',
 };
 
-export function RDTreePanel() {
+export function RDTreePanel({ compactTree = false }: { compactTree?: boolean }) {
   const { state, dispatch } = useGame();
   const [selectedTier, setSelectedTier] = useState(1);
   const [view, setView] = useState<'tree' | 'activity'>('tree');
@@ -55,10 +55,10 @@ export function RDTreePanel() {
     <Panel title="Research & Development Tree">
       <div className="mb-3 flex flex-wrap items-center justify-between gap-2 text-xs text-neutral-500">
         <span>{focusLabel ?? 'No research program selected'} · {completedInBranch}/{nodes.length || 43} nodes complete</span>
-        <span>{research.activeProjects.length}/{maxRDProjects} research capacity</span>
+        {!compactTree && <span>{research.activeProjects.length}/{maxRDProjects} research capacity</span>}
       </div>
 
-      <nav className="mt-4 grid grid-cols-2 gap-1 rounded-lg border border-neutral-800 bg-neutral-950/60 p-1" aria-label="Research sections">
+      {!compactTree && <nav className="mt-4 grid grid-cols-2 gap-1 rounded-lg border border-neutral-800 bg-neutral-950/60 p-1" aria-label="Research sections">
         <button
           type="button"
           onClick={() => setView('tree')}
@@ -75,15 +75,15 @@ export function RDTreePanel() {
         >
           Activity ({research.projectHistory.length + research.tpp.ledger.length})
         </button>
-      </nav>
+      </nav>}
 
-      {view === 'tree' && singleSeason && (
+      {(compactTree || view === 'tree') && singleSeason && (
         <div className="mt-4 rounded-lg border border-blue-800 bg-blue-950/30 p-3 text-sm text-blue-300">
           The multi-year R&D tree is available in Career and Sandbox modes. Rapid in-season development remains available below.
         </div>
       )}
 
-      {view === 'tree' && (!focus || canChangeFocus) && (
+      {(compactTree || view === 'tree') && (!focus || canChangeFocus) && (
         <div className="mt-4">
           <div className="mb-2 text-sm font-semibold text-neutral-200">
             {focus ? 'Change three-season research focus' : 'Choose a three-season research focus'}
@@ -105,7 +105,7 @@ export function RDTreePanel() {
         </div>
       )}
 
-      {view === 'tree' && focus && focusMetadata && (
+      {(compactTree || view === 'tree') && focus && focusMetadata && (
         <>
           <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-neutral-800 bg-neutral-900/40 p-3">
             <div>
@@ -138,7 +138,7 @@ export function RDTreePanel() {
         </>
       )}
 
-      {view === 'activity' && research.projectHistory.length > 0 && (
+      {!compactTree && view === 'activity' && research.projectHistory.length > 0 && (
         <div className="mt-4 border-t border-neutral-800 pt-3">
           <div className="mb-2 text-xs font-semibold uppercase tracking-wide text-neutral-500">Recent R&D outcomes</div>
           <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
@@ -153,7 +153,7 @@ export function RDTreePanel() {
         </div>
       )}
 
-      {view === 'activity' && research.tpp.ledger.length > 0 && (
+      {!compactTree && view === 'activity' && research.tpp.ledger.length > 0 && (
         <div className="mt-4 border-t border-neutral-800 pt-3">
           <div className="mb-2 text-xs font-semibold uppercase tracking-wide text-neutral-500">Recent TPP activity</div>
           <div className="space-y-1">
@@ -169,7 +169,7 @@ export function RDTreePanel() {
         </div>
       )}
 
-      {view === 'activity' && research.projectHistory.length === 0 && research.tpp.ledger.length === 0 && (
+      {!compactTree && view === 'activity' && research.projectHistory.length === 0 && research.tpp.ledger.length === 0 && (
         <div className="mt-4 rounded-lg border border-neutral-800 bg-neutral-900/40 p-4 text-sm text-neutral-500">
           No completed research or TPP activity yet.
         </div>
