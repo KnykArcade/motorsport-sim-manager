@@ -7,11 +7,11 @@ import {
 } from './developmentViewModel';
 
 describe('development view model', () => {
-  it('shows the era-specific factory tab only for supported seasons', () => {
-    expect(developmentTabs(false).map((tab) => tab.id)).toEqual([
-      'active', 'results', 'catalog', 'research', 'parts',
+  it('exposes the conventional development sections', () => {
+    expect(developmentTabs().map((tab) => tab.id)).toEqual([
+      'active', 'results', 'catalog',
     ]);
-    expect(developmentTabs(true).at(-1)?.id).toBe('factory');
+    expect(developmentTabs().at(-1)?.id).toBe('catalog');
   });
 
   it('paginates the project catalog without dropping the final entry', () => {

@@ -25,12 +25,10 @@ export const NAVIGATION_ITEMS: ReadonlyArray<NavigationItem> = [
   { to: '/drivers', label: 'Drivers', icon: 'DR', group: 'team' },
   { to: '/market', label: 'Driver Market', icon: 'MK', group: 'team' },
   { to: '/scouting', label: 'Intelligence', icon: 'IN', group: 'team' },
-  { to: '/development', label: 'Development', icon: 'RD', group: 'team' },
+  { to: '/technical', label: 'Technical', icon: 'RD', group: 'team' },
   { to: '/finance', label: 'Finance', icon: '$', group: 'team' },
   { to: '/sponsors', label: 'Sponsors', icon: 'SP', group: 'team' },
   { to: '/staff', label: 'Staff', icon: 'SF', group: 'team' },
-  { to: '/facilities', label: 'Facilities', icon: 'FA', group: 'team' },
-  { to: '/engine', label: 'Engine', icon: 'EN', group: 'team' },
 
   { to: '/principal', label: 'Principal', icon: 'TP', group: 'world' },
   { to: '/relationships', label: 'Driver Relations', icon: 'DR', group: 'world' },

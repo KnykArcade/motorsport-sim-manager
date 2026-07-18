@@ -1,13 +1,12 @@
 import type { Facility, FacilityType } from '../types/facilityTypes';
 
-export type FacilitiesWorkspaceTab = 'impacts' | 'planner' | 'specialization';
+export type FacilitiesWorkspaceTab = 'planner' | 'specialization';
 export type FacilityPortfolioGroupId = 'development' | 'operations' | 'talent';
 
 export const FACILITIES_WORKSPACE_TABS: ReadonlyArray<{
   id: FacilitiesWorkspaceTab;
   label: string;
 }> = [
-  { id: 'impacts', label: 'Impacts' },
   { id: 'planner', label: 'Upgrade Planner' },
   { id: 'specialization', label: 'Specialization' },
 ];

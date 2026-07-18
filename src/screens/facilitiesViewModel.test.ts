@@ -22,9 +22,8 @@ function facility(type: Facility['type'], level: number): Facility {
 }
 
 describe('facilities view model', () => {
-  it('exposes three focused facilities workspaces', () => {
+  it('exposes the focused facilities workspaces', () => {
     expect(FACILITIES_WORKSPACE_TABS.map((tab) => tab.id)).toEqual([
-      'impacts',
       'planner',
       'specialization',
     ]);

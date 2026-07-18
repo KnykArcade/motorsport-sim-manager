@@ -66,7 +66,7 @@ const ICON_PATHS: Record<string, ReactNode> = {
       <path d="M20 20l-4.5-4.5" />
     </>
   ),
-  '/development': (
+  '/technical': (
     <>
       <path d="M4 20l5-5M14.5 4.5l5 5-9 9H5.5v-5z" />
       <path d="M13 6l5 5" />

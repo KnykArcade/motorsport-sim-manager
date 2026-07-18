@@ -1,4 +1,4 @@
-export type DevelopmentTab = 'active' | 'results' | 'catalog' | 'research' | 'parts' | 'factory';
+export type DevelopmentTab = 'active' | 'results' | 'catalog';
 
 export const DEVELOPMENT_PAGE_SIZES = {
   active: 3,
@@ -6,15 +6,12 @@ export const DEVELOPMENT_PAGE_SIZES = {
   catalog: 2,
 } as const;
 
-export function developmentTabs(showFactory: boolean) {
+export function developmentTabs() {
   const tabs: Array<{ id: DevelopmentTab; label: string }> = [
     { id: 'active', label: 'Active' },
     { id: 'results', label: 'Results' },
     { id: 'catalog', label: 'Project Catalog' },
-    { id: 'research', label: 'R&D Tree' },
-    { id: 'parts', label: 'Parts' },
   ];
-  if (showFactory) tabs.push({ id: 'factory', label: 'Factory Floor' });
   return tabs;
 }
 

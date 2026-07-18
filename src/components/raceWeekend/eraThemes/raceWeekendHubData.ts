@@ -417,7 +417,7 @@ export function buildQuickActions(state: GameState): QuickAction[] {
     { id: 'sponsorship', label: 'Sponsorship', action: { type: 'route', to: '/sponsors' }, route: '/sponsors' },
     { id: 'regulations', label: 'Regulation Updates', action: { type: 'route', to: '/politics' }, route: '/politics' },
     { id: 'calendar', label: 'Calendar', action: { type: 'route', to: '/calendar' }, route: '/calendar' },
-    { id: 'development', label: 'Car Development', action: { type: 'route', to: '/development' }, route: '/development' },
+    { id: 'development', label: 'Car Development', action: { type: 'route', to: '/technical' }, route: '/technical' },
     { id: 'menu', label: 'Open Menu', action: { type: 'route', to: '/hq' }, route: '/hq' },
   ];
 

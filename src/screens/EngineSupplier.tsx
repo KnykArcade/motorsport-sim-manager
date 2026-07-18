@@ -22,11 +22,7 @@ import {
   type EngineWorkspaceTab,
 } from './engineSupplierViewModel';
 import {
-  MetricStrip,
   WorkspaceBody,
-  WorkspaceHeader,
-  WorkspaceMetric,
-  WorkspaceScreen,
   WorkspaceTabs,
 } from '../components/workspace/Workspace';
 
@@ -34,7 +30,7 @@ function moneyMillions(value: number): string {
   return `$${value.toFixed(value % 1 === 0 ? 0 : 2)}M`;
 }
 
-export function EngineSupplier() {
+export function EngineSupplierBody() {
   const { state, dispatch } = useGame();
   const [tab, setTab] = useState<EngineWorkspaceTab>('package');
   const [supplierPage, setSupplierPage] = useState(0);
@@ -63,7 +59,6 @@ export function EngineSupplier() {
   const visibleSuppliers = engineSupplierPage(supplierGroups, safeSupplierPage);
   const selectedGroup = visibleSuppliers.find((group) => group.supplierName === selectedSupplier)
     ?? visibleSuppliers[0];
-  const currentSpec = current ? ENGINE_DEAL_SPECS[current.dealType] : undefined;
 
   function changeSupplierPage(nextPage: number) {
     const safePage = Math.max(0, Math.min(supplierPageCount - 1, nextPage));
@@ -72,18 +67,7 @@ export function EngineSupplier() {
   }
 
   return (
-    <WorkspaceScreen className="era-feature-screen era-engine-screen">
-      <WorkspaceHeader
-        eyebrow="Technical center"
-        title="Engine Supplier"
-        subtitle="Manage the current package, manufacturer expectations, and next-season supply"
-      />
-      <MetricStrip>
-        <WorkspaceMetric label="Current supplier" value={current?.supplierName ?? 'None'} detail={currentSpec?.label ?? 'No active deal'} />
-        <WorkspaceMetric label="Annual cost" value={current ? moneyMillions(current.annualCost) : '—'} detail={`Budget ${moneyMillions(team.budget / 1_000_000)}`} />
-        <WorkspaceMetric label="Power unit" value={current ? `${current.powerRating.toFixed(1)} power` : '—'} detail={current ? `${current.reliabilityRating.toFixed(1)} reliability` : 'No active package'} />
-        <WorkspaceMetric label="Next season" value={pending?.supplierName ?? 'No change'} detail={pending ? ENGINE_DEAL_SPECS[pending.dealType].label : 'Current deal continues'} />
-      </MetricStrip>
+    <div className="space-y-4">
       <WorkspaceTabs
         items={ENGINE_WORKSPACE_TABS.map((workspace) => ({ id: workspace.id, label: `${workspace.label}${workspace.id === 'market' ? ` (${supplierGroups.length})` : ''}` }))}
         active={tab}
@@ -130,8 +114,12 @@ export function EngineSupplier() {
         />
       )}
       </WorkspaceBody>
-    </WorkspaceScreen>
+    </div>
   );
+}
+
+export function EngineSupplier() {
+  return <EngineSupplierBody />;
 }
 
 function CurrentPackagePanel({

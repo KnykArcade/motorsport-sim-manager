@@ -51,7 +51,7 @@ export function PartsInventoryPanel() {
   const visibleSpareParts = spareAndRepairParts.slice(safeSparePage * 4, safeSparePage * 4 + 4);
 
   return (
-    <Panel title="Parts Inventory & Component Lifecycle">
+    <Panel title="Parts & Factory">
       <div className="grid gap-3 sm:grid-cols-4">
         <Metric label="Fitted Components" value={`${fittedCount}/${drivers.length * PART_TYPES.length}`} />
         <Metric label="Usable Spares" value={String(spareCount)} />
@@ -66,8 +66,8 @@ export function PartsInventoryPanel() {
 
       <nav className="mt-4 grid grid-cols-3 gap-1 rounded-lg border border-neutral-800 bg-neutral-950/60 p-1" aria-label="Parts inventory sections">
         {([
-          ['fitted', 'Fitted Components'],
-          ['manufacturing', `Manufacturing (${parts.manufacturingQueue.length})`],
+          ['fitted', 'Garage'],
+          ['manufacturing', `Factory (${parts.manufacturingQueue.length})`],
           ['spares', `Spares & Repairs (${spareAndRepairParts.length})`],
         ] as const).map(([id, label]) => (
           <button

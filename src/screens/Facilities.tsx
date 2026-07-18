@@ -6,7 +6,6 @@ import {
   FACILITY_SPECS,
   SPECIALIZATION_FACILITIES,
   canUpgrade,
-  developmentSlots,
   effectiveFacilityEffects,
   facilityDevelopmentSuccessBonus,
   facilityEffect,
@@ -18,11 +17,7 @@ import {
 import { Panel } from '../components/Panel';
 import { Button } from '../components/Button';
 import {
-  MetricStrip,
   WorkspaceBody,
-  WorkspaceHeader,
-  WorkspaceMetric,
-  WorkspaceScreen,
   WorkspaceTabs,
 } from '../components/workspace/Workspace';
 import { formatMoney, ratingColor } from '../components/ui';
@@ -34,7 +29,6 @@ import {
 import {
   FACILITIES_WORKSPACE_TABS,
   FACILITY_PORTFOLIO_GROUPS,
-  averageFacilityLevel,
   facilitiesForPortfolioGroup,
   type FacilitiesWorkspaceTab,
   type FacilityPortfolioGroupId,
@@ -58,9 +52,9 @@ function formatEffect(key: string, value: number): string {
   return `+${Math.round(value * 100)}%`;
 }
 
-export function Facilities() {
+export function FacilitiesBody() {
   const { state, dispatch } = useGame();
-  const [tab, setTab] = useState<FacilitiesWorkspaceTab>('impacts');
+  const [tab, setTab] = useState<FacilitiesWorkspaceTab>('planner');
   const [portfolioGroup, setPortfolioGroup] = useState<FacilityPortfolioGroupId>('development');
 
   if (!state) return null;
@@ -69,27 +63,12 @@ export function Facilities() {
   const facilitiesState = state.facilities;
 
   if (!facilitiesState) {
-    return (
-      <WorkspaceScreen className="era-feature-screen era-facilities">
-        <WorkspaceHeader
-          eyebrow="Operations center"
-          title="Facilities"
-          subtitle="Long-term infrastructure for development, race operations, and talent."
-          actions={<HeaderBudget budget={budget} />}
-        />
-        <WorkspaceBody>
-          <Panel title="Facilities">
-            <p className="text-sm text-neutral-400">Facilities are available in Career Mode.</p>
-          </Panel>
-        </WorkspaceBody>
-      </WorkspaceScreen>
-    );
+    return <Panel title="Facilities"><p className="text-sm text-neutral-400">Facilities are available in Career Mode.</p></Panel>;
   }
 
   const pendingIds = new Set(
     facilitiesState.pendingUpgrades.map((upgrade) => upgrade.facilityId),
   );
-  const averageLevel = averageFacilityLevel(facilitiesState.facilities);
   const specialization = facilitiesState.specialization ?? 'Balanced';
   const selectedGroup =
     FACILITY_PORTFOLIO_GROUPS.find((group) => group.id === portfolioGroup) ??
@@ -143,21 +122,7 @@ export function Facilities() {
   ];
 
   return (
-    <WorkspaceScreen className="era-feature-screen era-facilities">
-      <WorkspaceHeader
-        eyebrow="Operations center"
-        title="Facilities"
-        subtitle="Long-term infrastructure for development, race operations, and talent."
-        actions={<HeaderBudget budget={budget} />}
-      />
-
-      <MetricStrip>
-        <WorkspaceMetric label="Average level" value={`${averageLevel.toFixed(1)} / 5`} detail="Entire portfolio" />
-        <WorkspaceMetric label="Development slots" value={String(developmentSlots(facilitiesState))} detail="Concurrent projects" />
-        <WorkspaceMetric label="Specialization" value={FACILITY_SPECIALIZATION_LABELS[specialization]} detail="Active focus" />
-        <WorkspaceMetric label="Pending upgrades" value={String(facilitiesState.pendingUpgrades.length)} detail="Construction queue" />
-      </MetricStrip>
-
+    <div className="space-y-4">
       <WorkspaceTabs
         items={FACILITIES_WORKSPACE_TABS.map((workspace) => ({
           ...workspace,
@@ -187,19 +152,13 @@ export function Facilities() {
           {formatMoney(budget)} available
         </span>
       </div>
-      {tab === 'impacts' && (
-        <Panel title="Current Infrastructure Impact">
-          <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
-            {impacts.map((impact) => (
-              <ImpactCard key={impact.label} {...impact} />
-            ))}
-          </div>
-          <p className="mt-3 text-xs text-neutral-500">
-            Values include the active {FACILITY_SPECIALIZATION_LABELS[specialization]} focus.
-            Development slots are based on the average level of the entire facility portfolio.
-          </p>
-        </Panel>
-      )}
+      <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
+        {impacts.map((impact) => <ImpactCard key={impact.label} {...impact} />)}
+      </div>
+      <p className="text-xs text-neutral-500">
+        Values include the active {FACILITY_SPECIALIZATION_LABELS[specialization]} focus.
+        Development slots are based on the average level of the entire facility portfolio.
+      </p>
 
       {tab === 'planner' && (
         <Panel
@@ -303,17 +262,12 @@ export function Facilities() {
         </Panel>
       )}
       </WorkspaceBody>
-    </WorkspaceScreen>
+    </div>
   );
 }
 
-function HeaderBudget({ budget }: { budget: number }) {
-  return (
-    <div className="text-right">
-      <div className="text-[10px] font-semibold uppercase tracking-wide text-neutral-500">Available budget</div>
-      <div className="text-base font-bold text-neutral-100">{formatMoney(budget)}</div>
-    </div>
-  );
+export function Facilities() {
+  return <FacilitiesBody />;
 }
 
 function FacilityCard({
