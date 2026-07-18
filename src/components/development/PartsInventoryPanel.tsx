@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Button } from '../Button';
 import { Panel } from '../Panel';
+import { TechnicalTable, TechnicalTableCell, TechnicalTableHead, TechnicalTableRow } from '../TechnicalTable';
 import { formatMoney } from '../ui';
 import { activeDriversForTeam, teamById } from '../../game/careerState';
 import { useGame } from '../../game/GameContext';
@@ -29,7 +30,6 @@ export function PartsInventoryPanel() {
   const { state, dispatch } = useGame();
   const [view, setView] = useState<'fitted' | 'manufacturing' | 'spares'>('fitted');
   const [selectedDriverId, setSelectedDriverId] = useState<string>();
-  const [sparePage, setSparePage] = useState(0);
   if (!state) return null;
   const team = teamById(state, state.selectedTeamId);
   if (!team) return null;
@@ -46,17 +46,14 @@ export function PartsInventoryPanel() {
   const spareAndRepairParts = parts.inventory
     .filter((part) => part.status === 'spare' || part.status === 'repairing')
     .sort((a, b) => PART_TYPES.indexOf(a.type) - PART_TYPES.indexOf(b.type) || b.condition - a.condition);
-  const sparePageCount = Math.max(1, Math.ceil(spareAndRepairParts.length / 4));
-  const safeSparePage = Math.min(sparePage, sparePageCount - 1);
-  const visibleSpareParts = spareAndRepairParts.slice(safeSparePage * 4, safeSparePage * 4 + 4);
 
   return (
     <Panel title="Parts & Factory">
-      <div className="grid gap-3 sm:grid-cols-4">
-        <Metric label="Fitted Components" value={`${fittedCount}/${drivers.length * PART_TYPES.length}`} />
-        <Metric label="Usable Spares" value={String(spareCount)} />
-        <Metric label="Under Repair" value={String(repairCount)} />
-        <Metric label="Factory Queue" value={`${parts.manufacturingQueue.length}/3`} />
+      <div className="mb-3 flex flex-wrap gap-3 text-xs text-neutral-500">
+        <span>Garage {fittedCount}/{drivers.length * PART_TYPES.length}</span>
+        <span>Spares {spareCount}</span>
+        <span>Repair {repairCount}</span>
+        <span>Factory {parts.manufacturingQueue.length}/3</span>
       </div>
 
       <div className="mt-4 rounded-lg border border-neutral-800 bg-neutral-950/40 p-3 text-xs leading-5 text-neutral-400">
@@ -185,54 +182,14 @@ export function PartsInventoryPanel() {
               No spare or repairing components.
             </div>
           ) : (
-            <>
-              <div className="grid gap-2 lg:grid-cols-2">
-                {visibleSpareParts.map((part) => {
+            <TechnicalTable>
+              <TechnicalTableHead><TechnicalTableRow><TechnicalTableCell header>Component</TechnicalTableCell><TechnicalTableCell header>Type / generation</TechnicalTableCell><TechnicalTableCell header>Usage / condition</TechnicalTableCell><TechnicalTableCell header>Status / action</TechnicalTableCell></TechnicalTableRow></TechnicalTableHead>
+              <tbody>{spareAndRepairParts.map((part) => {
               const quote = repairQuote(part);
               const canRepair = part.status === 'spare' && part.condition < part.maximumCondition - 1 && team.budget >= quote.cost;
-              return (
-                <div key={part.id} className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-neutral-800 bg-neutral-900/30 p-3">
-                  <div className="min-w-0">
-                    <div className="text-sm text-neutral-100">{part.name}</div>
-                    <div className="text-xs text-neutral-500">
-                      {seriesPartLabel(part.type, state.series)} · Generation {part.designGeneration} · {part.racesUsed} races · {Math.round(part.condition)}%
-                    </div>
-                  </div>
-                  <div className="flex gap-2">
-                    {part.status === 'repairing' ? (
-                      <span className="rounded bg-amber-950/50 px-2 py-1 text-xs text-amber-300">
-                        Repair: {part.repairRoundsRemaining} round{part.repairRoundsRemaining === 1 ? '' : 's'}
-                      </span>
-                    ) : (
-                      <>
-                        <Button
-                          disabled={!canRepair}
-                          onClick={() => dispatch({ type: 'REPAIR_PART', partId: part.id })}
-                        >
-                          Repair {formatMoney(quote.cost)}
-                        </Button>
-                        <Button variant="danger" onClick={() => dispatch({ type: 'RETIRE_PART', partId: part.id })}>
-                          Retire
-                        </Button>
-                      </>
-                    )}
-                  </div>
-                </div>
-              );
-                })}
-              </div>
-              <div className="mt-3 flex items-center justify-between rounded-lg border border-neutral-800 bg-neutral-950/50 px-3 py-2">
-                <Button variant="secondary" disabled={safeSparePage === 0} onClick={() => setSparePage(Math.max(0, safeSparePage - 1))}>
-                  Previous
-                </Button>
-                <span className="text-xs text-neutral-500">
-                  Components {safeSparePage * 4 + 1}–{Math.min(spareAndRepairParts.length, safeSparePage * 4 + 4)} of {spareAndRepairParts.length} · Page {safeSparePage + 1} of {sparePageCount}
-                </span>
-                <Button variant="secondary" disabled={safeSparePage >= sparePageCount - 1} onClick={() => setSparePage(Math.min(sparePageCount - 1, safeSparePage + 1))}>
-                  Next
-                </Button>
-              </div>
-            </>
+              return <TechnicalTableRow key={part.id}><TechnicalTableCell className="font-semibold text-neutral-100">{part.name}</TechnicalTableCell><TechnicalTableCell>{seriesPartLabel(part.type, state.series)}<div className="text-neutral-500">Generation {part.designGeneration}</div></TechnicalTableCell><TechnicalTableCell>{part.racesUsed} races<div className={part.condition < 30 ? 'text-red-300' : 'text-neutral-400'}>{Math.round(part.condition)}% condition</div></TechnicalTableCell><TechnicalTableCell>{part.status === 'repairing' ? <span className="text-amber-300">Repair: {part.repairRoundsRemaining} round{part.repairRoundsRemaining === 1 ? '' : 's'}</span> : <div className="flex gap-2"><Button className="px-2 py-1 text-xs" disabled={!canRepair} onClick={() => dispatch({ type: 'REPAIR_PART', partId: part.id })}>Repair {formatMoney(quote.cost)}</Button><Button className="px-2 py-1 text-xs" variant="danger" onClick={() => dispatch({ type: 'RETIRE_PART', partId: part.id })}>Retire</Button></div>}</TechnicalTableCell></TechnicalTableRow>;
+                })}</tbody>
+            </TechnicalTable>
           )}
         </div>
       )}
@@ -281,15 +238,6 @@ function FittedPartRow({
         <div className={`h-full ${tone.split(' ')[0]}`} style={{ width: `${part.condition}%` }} />
       </div>
       <div className="mt-1 text-[11px] text-neutral-600">{PART_SPECS[type].label} · {part.racesUsed} races used</div>
-    </div>
-  );
-}
-
-function Metric({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="rounded-lg border border-neutral-800 bg-neutral-900/50 p-3">
-      <div className="text-[11px] uppercase tracking-wide text-neutral-500">{label}</div>
-      <div className="mt-1 text-lg font-semibold text-neutral-100">{value}</div>
     </div>
   );
 }

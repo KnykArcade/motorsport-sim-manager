@@ -1,11 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import type { EngineOffer } from '../sim/engineSupplierEngine';
 import {
-  ENGINE_SUPPLIER_PAGE_SIZE,
   ENGINE_WORKSPACE_TABS,
   engineCashMovementNow,
-  engineSupplierPage,
-  engineSupplierPageCount,
   groupEngineOffers,
 } from './engineSupplierViewModel';
 
@@ -33,7 +30,7 @@ describe('engine supplier view model', () => {
     ]);
   });
 
-  it('groups deal tiers by supplier and pages three suppliers at a time', () => {
+  it('groups deal tiers by supplier', () => {
     const groups = groupEngineOffers([
       offer('Renault', 'PreferredCustomer'),
       offer('Ferrari'),
@@ -42,12 +39,8 @@ describe('engine supplier view model', () => {
       offer('Honda'),
     ]);
 
-    expect(ENGINE_SUPPLIER_PAGE_SIZE).toBe(3);
     expect(groups.map((group) => group.supplierName)).toEqual(['Renault', 'Ferrari', 'Mercedes', 'Honda']);
     expect(groups[0].offers).toHaveLength(2);
-    expect(engineSupplierPageCount(groups.length)).toBe(2);
-    expect(engineSupplierPage(groups, 0).map((group) => group.supplierName)).toEqual(['Renault', 'Ferrari', 'Mercedes']);
-    expect(engineSupplierPage(groups, 99).map((group) => group.supplierName)).toEqual(['Honda']);
   });
 
   it('shows the net cash movement when replacing a queued agreement', () => {
