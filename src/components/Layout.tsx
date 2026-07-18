@@ -8,6 +8,7 @@ import { EraThemeProvider } from '../theme/EraThemeContext';
 import { getEraTheme, getEraThemeConfig } from '../theme/eraTheme';
 import { visibleNavigationGroups } from './layoutNavigation';
 import { workflowDestination } from './layoutWorkflow';
+import { NavIcon } from './NavIcon';
 
 export function Layout({ children }: { children: ReactNode }) {
   const { state, saveNow } = useGame();
@@ -64,10 +65,10 @@ export function Layout({ children }: { children: ReactNode }) {
                       to={item.to}
                       onClick={() => setMobileNavigationOpen(false)}
                       className={({ isActive }) =>
-                        `era-nav-link flex items-center gap-2 rounded px-2.5 py-1.5 text-xs transition-colors ${isActive ? 'is-active font-semibold' : ''}`
+                        `era-nav-link flex items-center gap-2.5 rounded px-2.5 py-1.5 text-xs transition-colors ${isActive ? 'is-active font-semibold' : ''}`
                       }
                     >
-                      <span className="era-nav-icon w-5 shrink-0 text-center text-[9px] font-black">{item.icon}</span>
+                      <NavIcon to={item.to} className="era-nav-icon h-4 w-4 shrink-0" />
                       <span className="truncate">{item.label}</span>
                     </NavLink>
                   ))}
@@ -102,8 +103,10 @@ export function Layout({ children }: { children: ReactNode }) {
             </div>
 
             {team && (
-              <div className="flex min-w-0 flex-1 items-center gap-2">
-                <span className="h-7 w-1.5 shrink-0 rounded-sm" style={{ backgroundColor: team.color }} />
+              <div className="flex min-w-0 flex-1 items-center gap-2.5">
+                <span className="ui-team-badge shrink-0" style={{ backgroundColor: team.color }} aria-hidden="true">
+                  {team.name.slice(0, 2).toUpperCase()}
+                </span>
                 <div className="min-w-0">
                   <div className="truncate text-sm font-bold text-neutral-100">{team.name}</div>
                   <div className="truncate text-[10px] uppercase tracking-wide text-neutral-500">{state?.series} · {getGameModeLabel(state?.gameMode)}</div>
@@ -111,7 +114,7 @@ export function Layout({ children }: { children: ReactNode }) {
               </div>
             )}
 
-            <div className="hidden shrink-0 items-center gap-5 md:flex">
+            <div className="ui-topbar-metrics hidden shrink-0 items-center md:flex">
               {state && <TopbarMetric label="Season" value={String(state.seasonYear)} />}
               {state && <TopbarMetric label="Round" value={`${Math.min(state.currentRaceIndex + 1, state.calendar.length)} / ${state.calendar.length}`} />}
               {team && <TopbarMetric label="Budget" value={formatMoney(team.budget)} />}

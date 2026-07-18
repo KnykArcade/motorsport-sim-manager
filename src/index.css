@@ -120,13 +120,13 @@ body {
 
 /* Shared era design system */
 :root {
-  --era-app-bg: #0a0c10;
-  --era-sidebar-bg: rgba(2, 6, 23, 0.86);
-  --era-topbar-bg: rgba(2, 6, 23, 0.78);
+  --era-app-bg: linear-gradient(180deg, #12151d, #0d1017 60%, #0b0e14);
+  --era-sidebar-bg: rgba(15, 19, 28, 0.94);
+  --era-topbar-bg: rgba(17, 21, 30, 0.9);
   --era-content-bg: transparent;
-  --era-panel-bg: rgba(17, 24, 39, 0.5);
-  --era-panel-bg-strong: rgba(15, 23, 42, 0.92);
-  --era-panel-header-bg: rgba(2, 6, 23, 0.22);
+  --era-panel-bg: rgba(24, 29, 40, 0.66);
+  --era-panel-bg-strong: rgba(20, 25, 35, 0.94);
+  --era-panel-header-bg: rgba(30, 37, 52, 0.5);
   --era-border: rgba(71, 85, 105, 0.72);
   --era-border-strong: rgba(148, 163, 184, 0.56);
   --era-text: #e5e7eb;
@@ -201,14 +201,23 @@ body {
 }
 
 .era-nav-link.is-active {
-  background: var(--era-accent-soft);
-  color: var(--era-accent-strong);
+  background: linear-gradient(90deg, var(--era-accent-soft), transparent 92%);
+  color: var(--era-heading);
   box-shadow: inset 3px 0 0 var(--era-accent);
 }
 
 .era-nav-icon {
-  color: var(--era-accent);
-  opacity: 0.78;
+  color: var(--era-text-muted);
+  opacity: 0.92;
+}
+
+.era-nav-link:hover .era-nav-icon {
+  color: var(--era-heading);
+}
+
+.era-nav-link.is-active .era-nav-icon {
+  color: var(--era-accent-strong);
+  opacity: 1;
 }
 
 .era-topbar {
@@ -271,6 +280,33 @@ body {
   border-color: var(--era-border-strong);
   background: var(--era-accent-soft);
   color: var(--era-heading);
+}
+
+.ui-team-badge {
+  display: inline-flex;
+  height: 2rem;
+  width: 2rem;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--era-button-radius);
+  color: #fff;
+  font-size: 0.68rem;
+  font-weight: 900;
+  letter-spacing: 0.02em;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.55);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.18), 0 1px 3px rgba(0, 0, 0, 0.35);
+}
+
+.ui-topbar-metrics {
+  gap: 0;
+}
+
+.ui-topbar-metrics > * {
+  padding: 0 0.85rem;
+}
+
+.ui-topbar-metrics > * + * {
+  border-left: 1px solid var(--era-border);
 }
 
 .ui-continue-button {
@@ -471,20 +507,40 @@ body {
 
 .era-panel-header {
   border-color: var(--era-border) !important;
-  background: var(--era-panel-header-bg);
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--era-accent) 6%, transparent), transparent),
+    var(--era-panel-bg-strong);
 }
 
 .era-panel-header h2 {
-  letter-spacing: 0.055em;
+  letter-spacing: 0.075em;
+  font-size: 0.72rem;
 }
 
 .era-panel-marker {
-  width: 0.28rem;
-  height: 0.8rem;
+  width: 0.3rem;
+  height: 0.85rem;
   flex: 0 0 auto;
-  border-radius: 999px;
+  border-radius: 2px;
   background: var(--era-accent);
-  box-shadow: 0 0 12px color-mix(in srgb, var(--era-accent) 50%, transparent);
+  box-shadow: 0 0 10px color-mix(in srgb, var(--era-accent) 45%, transparent);
+}
+
+/* FM-style dense table treatment applied across management workspaces. */
+.era-app table thead th {
+  color: var(--era-text-muted);
+  font-size: 0.64rem;
+  font-weight: 800;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+}
+
+.era-app table tbody tr {
+  transition: background-color 0.12s ease;
+}
+
+.era-app table tbody tr:hover {
+  background: var(--era-accent-soft);
 }
 
 .era-button {
