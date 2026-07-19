@@ -41,6 +41,7 @@ import {
   currentCollectiveStakeholders,
   type CollectiveStakeholderProfile,
 } from './relationships/relationshipStakeholderViewModel';
+import { currentPotentialEmployerStanding } from './relationships/relationshipEmployerViewModel';
 import {
   MetricStrip,
   WorkspaceBody,
@@ -192,11 +193,15 @@ export function Relationships() {
   const collectiveSummary = collectiveStakeholderAttentionCount(collectiveStakeholders);
   const topPriority = relationshipPriorities[0];
   const topCollectivePriority = collectiveStakeholders[0];
-  const collectiveLeads = !!topCollectivePriority && (
-    !topPriority
-    || topPriority.status === 'Stable' && topCollectivePriority.status !== 'Stable'
-    || topPriority.status === 'WatchClosely' && topCollectivePriority.status === 'MustActNow'
-  );
+  const employerStanding = currentPotentialEmployerStanding(state);
+  const attentionOrder = { MustActNow: 0, WatchClosely: 1, Stable: 2 } as const;
+  const deskSignal = [
+    topPriority && { status: topPriority.status, rank: topPriority.authorityRank, title: topPriority.target.name, reason: topPriority.reasons[0] },
+    topCollectivePriority && { status: topCollectivePriority.status, rank: topCollectivePriority.authorityRank, title: topCollectivePriority.title, reason: topCollectivePriority.reasons[0] },
+    employerStanding && { status: employerStanding.status, rank: employerStanding.authorityRank, title: 'Potential employers', reason: employerStanding.reasons[0] },
+  ].filter((signal): signal is NonNullable<typeof signal> => !!signal)
+    .sort((a, b) => attentionOrder[a.status] - attentionOrder[b.status] || a.rank - b.rank)[0];
+  const employerAttentionCount = employerStanding?.status === 'WatchClosely' || employerStanding?.status === 'MustActNow' ? 1 : 0;
   const ownerPriority = relationshipPriorities.find((profile) => profile.target.type === 'Owner');
   const driverContractYears = (id: string) =>
     state.drivers.find((d) => d.id === id)?.contractYearsRemaining ?? 0;
@@ -245,7 +250,7 @@ export function Relationships() {
       </MetricStrip>
       <WorkspaceTabs
         items={[
-          { id: 'overview', label: `Priority Board (${prioritySummary.mustActNow + prioritySummary.watchClosely + collectiveSummary.mustActNow + collectiveSummary.watchClosely})` },
+          { id: 'overview', label: `Priority Board (${prioritySummary.mustActNow + prioritySummary.watchClosely + collectiveSummary.mustActNow + collectiveSummary.watchClosely + employerAttentionCount})` },
           { id: 'activity', label: `Activity (${relationshipActivityCount})` },
           { id: 'race', label: 'Race Drivers' },
           { id: 'reserve', label: `Reserve (${reserveDrivers.length})` },
@@ -263,19 +268,15 @@ export function Relationships() {
           <div className="min-w-0">
             <div className="font-semibold text-neutral-100">People operations desk</div>
             <div className="truncate text-neutral-400">
-              {collectiveLeads
-                ? `${topCollectivePriority.title}: ${topCollectivePriority.reasons[0]}`
-                : topPriority?.status === 'MustActNow' || topPriority?.status === 'WatchClosely'
-                  ? `${topPriority.target.name}: ${topPriority.reasons[0]}`
+              {deskSignal?.status === 'MustActNow' || deskSignal?.status === 'WatchClosely'
+                  ? `${deskSignal.title}: ${deskSignal.reason}`
                 : 'No immediate relationship response is required. Keep the owner and core team aligned.'}
             </div>
           </div>
         </div>
         <span className="shrink-0 text-[10px] font-semibold uppercase tracking-wide text-neutral-500">
-          {collectiveLeads
-            ? `${relationshipStatusLabel(topCollectivePriority.status)} · Authority #${topCollectivePriority.authorityRank}`
-            : topPriority
-              ? `${relationshipStatusLabel(topPriority.status)} · Authority #${topPriority.authorityRank}`
+          {deskSignal
+              ? `${relationshipStatusLabel(deskSignal.status)} · Authority #${deskSignal.rank}`
             : 'No active profiles'}
         </span>
       </div>
@@ -286,6 +287,8 @@ export function Relationships() {
           onReview={handleReviewRelationship}
           collectiveProfiles={collectiveStakeholders}
           onReviewCollective={handleReviewCollective}
+          employerStanding={employerStanding}
+          onReviewEmployers={() => navigate('/principal?tab=career')}
         />
       )}
 

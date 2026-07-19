@@ -40,7 +40,7 @@ export const RELATIONSHIP_HIERARCHY: RelationshipHierarchyRow[] = [
     rank: '6',
     title: 'Other team owners',
     motivation: 'Your reputation with potential future employers matters most when your position or ambition changes.',
-    coverage: 'Paddock reputation',
+    coverage: 'Live career-market standing',
   },
   {
     rank: '7',
