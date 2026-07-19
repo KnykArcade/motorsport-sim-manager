@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { lazy, Suspense, useState } from 'react';
 import { useGame } from '../game/GameContext';
 import { teamById } from '../game/careerState';
 import type { GameState } from '../game/careerState';
@@ -7,16 +7,17 @@ import { developmentSlots } from '../sim/facilityEngine';
 import { formatMoney } from '../components/ui';
 import { Panel } from '../components/Panel';
 import { WorkspaceBody, WorkspaceHeader, WorkspaceMetric, WorkspaceScreen, WorkspaceTabs, MetricStrip } from '../components/workspace/Workspace';
-import { UnifiedDevelopmentBody } from './UnifiedDevelopment';
-import { FacilitiesBody } from './Facilities';
-import { EngineSupplierBody } from './EngineSupplier';
-import { PartsInventoryPanel } from '../components/development/PartsInventoryPanel';
 import { TechnicalTable, TechnicalTableCell, TechnicalTableHead, TechnicalTableRow } from '../components/TechnicalTable';
 import { activeDriversForTeam } from '../game/careerState';
 import { carWithFittedParts } from '../sim/partsEngine';
 import { carPerformanceRating, effectiveCarRatings } from '../sim/trackFitEngine';
 import { ratingColor } from '../components/ui';
 import { activeUpgradePrograms, researchStateForTeam } from '../sim/technicalAdapters';
+
+const UnifiedDevelopmentBody = lazy(() => import('./UnifiedDevelopment').then((m) => ({ default: m.UnifiedDevelopmentBody })));
+const FacilitiesBody = lazy(() => import('./Facilities').then((m) => ({ default: m.FacilitiesBody })));
+const EngineSupplierBody = lazy(() => import('./EngineSupplier').then((m) => ({ default: m.EngineSupplierBody })));
+const PartsInventoryPanel = lazy(() => import('../components/development/PartsInventoryPanel').then((m) => ({ default: m.PartsInventoryPanel })));
 
 type TechnicalSection = 'command' | 'development' | 'parts' | 'facilities' | 'engine';
 
@@ -55,11 +56,13 @@ export function TechnicalCenter() {
       </MetricStrip>
       <WorkspaceTabs items={sections} active={section} onChange={setSection} ariaLabel="Technical Center sections" />
       <WorkspaceBody className="space-y-4">
-        {section === 'command' && <CommandPanel state={state} onNavigate={setSection} />}
-        {section === 'development' && <UnifiedDevelopmentBody />}
-        {section === 'parts' && <PartsInventoryPanel />}
-        {section === 'facilities' && <FacilitiesBody />}
-        {section === 'engine' && (lockInfo ? <LockedEnginePanel title={lockInfo.title} reason={lockInfo.reason} focus={lockInfo.focus} /> : <EngineSupplierBody />)}
+        <Suspense fallback={<div className="py-8 text-center text-sm text-neutral-500">Loading…</div>}>
+          {section === 'command' && <CommandPanel state={state} onNavigate={setSection} />}
+          {section === 'development' && <UnifiedDevelopmentBody />}
+          {section === 'parts' && <PartsInventoryPanel />}
+          {section === 'facilities' && <FacilitiesBody />}
+          {section === 'engine' && (lockInfo ? <LockedEnginePanel title={lockInfo.title} reason={lockInfo.reason} focus={lockInfo.focus} /> : <EngineSupplierBody />)}
+        </Suspense>
       </WorkspaceBody>
     </WorkspaceScreen>
   );

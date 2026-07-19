@@ -1,5 +1,5 @@
 import '../testDataSetup';
-import { readFileSync } from 'node:fs';
+import { readFileSync, writeFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { approvePreseasonTab } from './careerPhaseEngine';
 import { gameReducer, type GameAction } from './gameReducer';
@@ -33,9 +33,14 @@ function snapshot(state: GameState) {
   };
 }
 
+const FIXTURE_PATH = 'src/game/fixtures/p4b-golden-baseline.json';
+
+// The fixture pins current balance/formula behavior. After an INTENTIONAL
+// balance change, regenerate it with `npm run golden:update` and review the
+// fixture diff to confirm only the expected outputs moved.
 describe('P4b golden parity', () => {
   it('reproduces the pre-cutover season and rollover fixture byte-for-byte', () => {
-    const expected = JSON.parse(readFileSync('src/game/fixtures/p4b-golden-baseline.json', 'utf8')) as {
+    const expected = JSON.parse(readFileSync(FIXTURE_PATH, 'utf8')) as {
       races: Array<{ raceId: string } & ReturnType<typeof snapshot>>;
       rollover: ReturnType<typeof snapshot> & { seasonYear: number };
       seed: string;
@@ -65,7 +70,12 @@ describe('P4b golden parity', () => {
     }
 
     const rolled = advanceSeason({ ...state, seasonComplete: true });
+    const actualRollover = { seasonYear: rolled.seasonYear, ...snapshot(rolled) };
+    if (process.env.UPDATE_GOLDEN === '1') {
+      writeFileSync(FIXTURE_PATH, `${JSON.stringify({ seed: expected.seed, races: actualRaces, rollover: actualRollover }, null, 2)}\n`);
+      return;
+    }
     expect(actualRaces).toEqual(expected.races);
-    expect({ seasonYear: rolled.seasonYear, ...snapshot(rolled) }).toEqual(expected.rollover);
+    expect(actualRollover).toEqual(expected.rollover);
   });
 });

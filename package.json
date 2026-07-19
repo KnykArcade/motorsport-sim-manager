@@ -13,6 +13,7 @@
     "test": "node scripts/runTestShards.mjs",
     "test:single": "vitest run --maxWorkers=2",
     "test:season-loop": "vitest run src/game/seasonLoop.e2e.test.ts",
+    "golden:update": "UPDATE_GOLDEN=1 vitest run src/game/p4bGoldenBaseline.test.ts",
     "archive:data": "vitest run scripts/masterArchive/exportMasterArchive.test.ts --reporter=dot --disable-console-intercept",
     "archive:workbook": "powershell -ExecutionPolicy Bypass -File scripts/masterArchive/runWorkbookBuilder.ps1",
     "calibrate:live": "node scripts/runLiveRaceCalibration.mjs",
