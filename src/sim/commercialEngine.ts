@@ -375,7 +375,7 @@ export function rollSponsorRenewals(
       continue;
     }
     // Contract up: renewal chance blends the base chance with confidence.
-    const chance = Math.min(0.97, s.renewalChance * 0.5 + s.confidence / 150);
+    const chance = sponsorRenewalProbability(s);
     if (rng.chance(chance)) {
       kept.push({
         ...s,
@@ -415,6 +415,12 @@ export function rollSponsorRenewals(
     },
     notes,
   };
+}
+
+export function sponsorRenewalProbability(
+  sponsor: Pick<Sponsor, 'renewalChance' | 'confidence'>,
+): number {
+  return Math.min(0.97, sponsor.renewalChance * 0.5 + sponsor.confidence / 150);
 }
 
 function resetObjectives(objectives: SponsorObjective[]): SponsorObjective[] {

@@ -30,6 +30,7 @@ function collective(status: CollectiveStakeholderProfile['status'], rank: 4 | 5)
     health: 50,
     reasons: [`Collective rank ${rank} reason.`],
     metrics: [],
+    gameplayEffect: { label: 'Effect', value: 'Neutral', detail: 'Test effect.' },
     actionLabel: 'Review',
   };
 }

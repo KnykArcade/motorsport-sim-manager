@@ -14,6 +14,7 @@ import {
 } from '../types/phase18Types';
 import { ensurePhase18FoundationState } from './phase18FoundationEngine';
 import { advisorPreparationEffectMultiplier } from './phase18AdvisorEngine';
+import { departmentPreparationMultiplier } from './relationshipGameplayEffectEngine';
 
 export const PRINCIPAL_IDENTITY_LABELS: Record<PrincipalIdentity, string> = {
   BalancedLeader: 'Balanced Leader',
@@ -274,7 +275,8 @@ export function applyLeadershipPreparationModifier(
   effect: RacePrepFocusEffect,
 ): RacePrepFocusEffect {
   const multiplier = leadershipGameplayModifiers(state).preparationEffectMultiplier
-    * advisorPreparationEffectMultiplier(state);
+    * advisorPreparationEffectMultiplier(state)
+    * departmentPreparationMultiplier(state);
   return {
     ...effect,
     paceModifier: effect.paceModifier * multiplier,

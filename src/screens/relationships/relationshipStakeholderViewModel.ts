@@ -1,6 +1,11 @@
 import type { GameState } from '../../game/careerState';
 import type { RelationshipAttentionStatus } from '../../sim/relationshipAttentionEngine';
 import type { DepartmentId, DepartmentMood } from '../../types/phase18Types';
+import {
+  departmentPreparationMultiplierFromMoods,
+  signedRelationshipEffectPercent,
+} from '../../sim/relationshipGameplayEffectEngine';
+import { sponsorRenewalProbability } from '../../sim/commercialEngine';
 
 export type CollectiveStakeholderKind = 'Departments' | 'Commercial';
 
@@ -18,6 +23,11 @@ export type CollectiveStakeholderProfile = {
   health: number;
   reasons: string[];
   metrics: CollectiveStakeholderMetric[];
+  gameplayEffect: {
+    label: string;
+    value: string;
+    detail: string;
+  };
   actionLabel: string;
 };
 
@@ -95,6 +105,11 @@ export function departmentStakeholderProfile(
       { label: 'Alignment', value: `${alignment}` },
       { label: 'Peak workload', value: `${peakWorkload}` },
     ],
+    gameplayEffect: {
+      label: 'Race preparation execution',
+      value: signedRelationshipEffectPercent(departmentPreparationMultiplierFromMoods(departments)),
+      detail: 'A small modifier from Technical, Engineering, Race Operations, and Driver Management trust, morale, alignment, and overload.',
+    },
     actionLabel: 'Review staff & departments',
   };
 }
@@ -113,6 +128,9 @@ export function commercialStakeholderProfile(
   const fanSupport = organization?.fanSupport ?? 50;
   const failedObjectives = sponsors.flatMap((sponsor) => sponsor.objectives)
     .filter((objective) => objective.status === 'Failed').length;
+  const renewalOutlook = sponsors.length > 0
+    ? Math.round((sponsors.reduce((sum, sponsor) => sum + sponsorRenewalProbability(sponsor), 0) / sponsors.length) * 100)
+    : 0;
   const health = clamp(average([
     sponsors.length > 0 ? confidence : 35,
     reputation,
@@ -151,6 +169,11 @@ export function commercialStakeholderProfile(
       { label: 'Reputation', value: `${reputation}` },
       { label: 'Fan support', value: `${fanSupport}` },
     ],
+    gameplayEffect: {
+      label: 'Average renewal outlook',
+      value: sponsors.length > 0 ? `${renewalOutlook}%` : 'No active deal',
+      detail: 'Sponsor confidence directly affects each expiring partner’s renewal probability at season rollover.',
+    },
     actionLabel: 'Review sponsors & commercial',
   };
 }
