@@ -17,7 +17,12 @@ import {
 import { BALANCED_SETUP } from '../data/setup/setupComponents';
 import { applyOffseasonDecay, calculateOffseasonCarryover } from '../sim/developmentEngine';
 import { allocateSeasonTPP, ensureTeamResearchMap } from '../sim/rdEngine';
-import { fromUnifiedTechnical, withUnifiedTechnical } from '../sim/technicalAdapters';
+import {
+  fromUnifiedTechnical,
+  researchMapFromTechnical,
+  withResearchMap,
+  withUnifiedTechnical,
+} from '../sim/technicalAdapters';
 import { rolloverTeamPartsMap } from '../sim/partsEngine';
 import {
   academyMemberAge,
@@ -1520,7 +1525,7 @@ export function advanceSeason(state: GameState, nextBundle?: SeasonBundle): Game
   // Research belongs to the team, not the principal. Preserve every team's
   // projects/focus/modifiers through rollover and issue the annual leadership
   // allocation regardless of whether the player changed jobs.
-  const ensuredTeamResearch = ensureTeamResearchMap(legacyTechnical.teamResearch, teamsWithOpsSync, state.seasonYear);
+  const ensuredTeamResearch = ensureTeamResearchMap(researchMapFromTechnical(state), teamsWithOpsSync, state.seasonYear);
   const nextTeamResearch = Object.fromEntries(
     Object.entries(ensuredTeamResearch).map(([teamId, research]) => [
       teamId,
@@ -1582,7 +1587,6 @@ export function advanceSeason(state: GameState, nextBundle?: SeasonBundle): Game
     constructorStandings: [],
     activeDevelopmentProjects: [],
     completedDevelopmentProjects: [],
-    teamResearch: nextTeamResearch,
     teamParts: rolloverTeamPartsMap(
       state.teamParts,
       teamsWithOpsSync,
@@ -1655,20 +1659,18 @@ export function advanceSeason(state: GameState, nextBundle?: SeasonBundle): Game
       let finalized = ensureRivalRelationships(ensureFailureInvestigationState(ensurePreseasonHubState(movedState)));
       for (const pair of principalPoachPairs) finalized = recordStaffPoach(finalized, pair.sourceTeamId, pair.destinationTeamId);
       const result = reconcilePersonnelCareerLedger(state, ensureCharacterFutureIntentions(finalized), nextYear, 'Season rollover');
-      return withUnifiedTechnical(result, {
+      return withUnifiedTechnical(withResearchMap(result, nextTeamResearch), {
         activeDevelopmentProjects: result.activeDevelopmentProjects,
         completedDevelopmentProjects: result.completedDevelopmentProjects,
-        teamResearch: result.teamResearch ?? legacyTechnical.teamResearch,
       });
     }
   }
   let finalized = ensureRivalRelationships(ensureFailureInvestigationState(ensurePreseasonHubState(nextState)));
   for (const pair of principalPoachPairs) finalized = recordStaffPoach(finalized, pair.sourceTeamId, pair.destinationTeamId);
   const result = reconcilePersonnelCareerLedger(state, ensureCharacterFutureIntentions(finalized), nextYear, 'Season rollover');
-  return withUnifiedTechnical(result, {
+  return withUnifiedTechnical(withResearchMap(result, nextTeamResearch), {
     activeDevelopmentProjects: result.activeDevelopmentProjects,
     completedDevelopmentProjects: result.completedDevelopmentProjects,
-    teamResearch: result.teamResearch ?? legacyTechnical.teamResearch,
   });
 }
 

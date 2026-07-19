@@ -10,6 +10,7 @@ import type {
   TechnicalUpgradeProgram,
 } from '../types/technicalTypes';
 import { toUnifiedTechnical } from './technicalModel';
+import { ensureTeamResearchMap } from './rdEngine';
 
 function upgradeFromProgram(program: TechnicalUpgradeProgram): DevelopmentProject {
   return {
@@ -67,35 +68,10 @@ export function fromUnifiedTechnical(state: GameState): LegacyTechnicalFields {
   const technical = state.teamTechnical ?? toUnifiedTechnical(state);
   const activeDevelopmentProjects: DevelopmentProject[] = [];
   const completedDevelopmentProjects: DevelopmentProject[] = [];
-  const teamResearch: TeamResearchMap = {};
 
   for (const team of state.teams) {
     const teamTechnical = technical[team.id];
     const activeProjects = activeProgramsForTeam(technical, team.id);
-    const activeResearchProjects = activeProjects
-      .filter((program): program is TechnicalResearchProgram => program.kind === 'research')
-      .map(researchFromProgram);
-    const completedNodes = teamTechnical?.completedPrograms
-      .filter((program) => program.kind === 'research' && program.node)
-      .map((program) => program.kind === 'research' ? program.node! : undefined)
-      .filter((node): node is NonNullable<typeof node> => !!node)
-      ?? [];
-    const projectHistory = teamTechnical?.completedPrograms
-      .filter((program) => program.kind === 'research' && program.historyEntry)
-      .map((program) => program.kind === 'research' ? program.historyEntry! : undefined)
-      .filter((entry): entry is NonNullable<typeof entry> => !!entry)
-      ?? [];
-
-    teamResearch[team.id] = {
-      teamId: team.id,
-      focus: teamTechnical?.focus,
-      tpp: teamTechnical?.tpp ?? { balance: 0, lifetimeEarned: 0, lifetimeSpent: 0, ledger: [] },
-      activeProjects: activeResearchProjects,
-      completedNodes,
-      modifiers: teamTechnical?.modifiers ?? [],
-      projectHistory,
-    };
-
     if (team.id !== state.selectedTeamId) continue;
     activeDevelopmentProjects.push(
       ...activeProjects
@@ -110,19 +86,26 @@ export function fromUnifiedTechnical(state: GameState): LegacyTechnicalFields {
     );
   }
 
-  return { activeDevelopmentProjects, completedDevelopmentProjects, teamResearch };
+  return { activeDevelopmentProjects, completedDevelopmentProjects };
 }
 
 export function withUnifiedTechnical(
   state: GameState,
   legacy: LegacyTechnicalFields,
 ): GameState {
+  const researchMap = state.teamTechnical
+    ? Object.fromEntries(
+      Object.entries(state.teamTechnical).map(([teamId, technical]) => [
+        teamId,
+        researchStateFromTechnical(technical),
+      ]),
+    ) as TeamResearchMap
+    : ensureTeamResearchMap(undefined, state.teams, state.seasonYear);
   const projected = toUnifiedTechnical({
     ...state,
     activeDevelopmentProjects: legacy.activeDevelopmentProjects,
     completedDevelopmentProjects: legacy.completedDevelopmentProjects,
-    teamResearch: legacy.teamResearch,
-  });
+  }, researchMap);
   const legacyWithoutResearchCompat: Partial<LegacyTechnicalFields> = { ...legacy };
   const result = {
     ...state,
@@ -153,7 +136,16 @@ export function completedUpgradePrograms(state: GameState, teamId = state.select
 }
 
 export function researchStateForTeam(state: GameState, teamId: string) {
-  return fromUnifiedTechnical(state).teamResearch[teamId];
+  return researchStateFromTechnical(state.teamTechnical?.[teamId]);
+}
+
+export function researchMapFromTechnical(state: GameState): TeamResearchMap {
+  return Object.fromEntries(
+    Object.keys(state.teamTechnical ?? {}).map((teamId) => [
+      teamId,
+      researchStateFromTechnical(state.teamTechnical?.[teamId]),
+    ]),
+  ) as TeamResearchMap;
 }
 
 export function researchStateFromTechnical(
@@ -179,4 +171,72 @@ export function researchStateFromTechnical(
     modifiers: technical.modifiers,
     projectHistory,
   };
+}
+
+function researchProgramFromNative(project: RDActiveProject): TechnicalResearchProgram {
+  return {
+    kind: 'research',
+    id: project.id,
+    teamId: project.teamId,
+    progressTicks: project.progressRounds,
+    durationTicks: project.durationRounds,
+    cashCost: project.cashCost,
+    tppCost: project.tppCost,
+    nodeId: project.nodeId,
+    startedSeasonYear: project.startedSeasonYear,
+    startedRound: project.startedRound,
+    nodeName: project.nodeName,
+    sourceId: project.sourceId,
+    branchId: project.branchId,
+    tier: project.tier,
+    path: project.path,
+    riskLevel: project.riskLevel,
+    seriesWeight: project.seriesWeight,
+    modifierTemplates: project.modifierTemplates,
+  };
+}
+
+export function technicalStateWithResearch(
+  technical: TeamTechnicalState,
+  research: TeamResearchState,
+): TeamTechnicalState {
+  const completedPrograms = [
+    ...research.completedNodes.map((node) => ({
+      kind: 'research' as const,
+      id: `node:${node.nodeId}:${node.completedSeasonYear}:${node.completedRound}`,
+      teamId: technical.teamId,
+      completedTicks: node.completedRound,
+      node,
+    })),
+    ...research.projectHistory.map((entry) => ({
+      kind: 'research' as const,
+      id: `history:${entry.projectId}`,
+      teamId: technical.teamId,
+      completedTicks: entry.round,
+      historyEntry: entry,
+    })),
+  ];
+  return {
+    ...technical,
+    tpp: research.tpp,
+    focus: research.focus,
+    modifiers: research.modifiers,
+    activeProjects: [
+      ...technical.activeProjects.filter((program) => program.kind === 'upgrade'),
+      ...research.activeProjects.map(researchProgramFromNative),
+    ],
+    completedPrograms: [
+      ...technical.completedPrograms.filter((program) => program.kind === 'upgrade'),
+      ...completedPrograms,
+    ],
+  };
+}
+
+export function withResearchMap(state: GameState, researchMap: TeamResearchMap): GameState {
+  const teamTechnical = { ...(state.teamTechnical ?? {}) };
+  for (const [teamId, research] of Object.entries(researchMap)) {
+    const technical = teamTechnical[teamId];
+    if (technical) teamTechnical[teamId] = technicalStateWithResearch(technical, research);
+  }
+  return { ...state, teamTechnical };
 }

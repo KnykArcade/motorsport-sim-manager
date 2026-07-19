@@ -26,6 +26,8 @@ import { ensureCharacterFutureIntentions } from '../sim/characterFutureIntentEng
 import { ensureAIStaffRosters } from '../sim/aiStaffRosterEngine';
 import { ensurePersonnelCareerLedger } from '../sim/personnelCareerLedgerEngine';
 import { withLegacyTechnicalCompat } from '../sim/technicalAdapters';
+import { toUnifiedTechnical } from '../sim/technicalModel';
+import type { TeamResearchMap } from '../types/rdTypes';
 
 const SAVE_KEY = 'msm:save:v1';
 const SETTINGS_KEY = 'msm:settings:v1';
@@ -74,11 +76,12 @@ export function migrateGameState(state: GameState): GameState {
   }
   patched.activeDevelopmentProjects ??= [];
   patched.completedDevelopmentProjects ??= [];
-  patched.teamResearch = ensureTeamResearchMap(
-    patched.teamResearch,
+  const legacyResearch = (state as GameState & { teamResearch?: TeamResearchMap }).teamResearch;
+  patched.teamTechnical ??= toUnifiedTechnical(patched as GameState, ensureTeamResearchMap(
+    legacyResearch,
     patched.teams ?? [],
     state.seasonYear,
-  );
+  ));
   patched.teamParts = ensureTeamPartsMap(
     patched.teamParts,
     patched.teams ?? [],
@@ -119,7 +122,6 @@ export function saveGame(state: GameState): void {
   const persistedState: Partial<GameState> = { ...state };
   delete persistedState.activeDevelopmentProjects;
   delete persistedState.completedDevelopmentProjects;
-  delete persistedState.teamResearch;
   const toStore = {
     ...persistedState,
     saveSchemaVersion: CURRENT_SAVE_SCHEMA_VERSION,

@@ -5,6 +5,7 @@ import type { GameState } from './careerState';
 import type { CommercialState } from '../types/sponsorTypes';
 import { deleteSave, loadGame, migrateGameState, saveGame } from './saveSystem';
 import { CURRENT_SAVE_SCHEMA_VERSION } from './saveSchema';
+import { researchStateForTeam } from '../sim/technicalAdapters';
 
 function freshState(): GameState {
   return createNewGame({
@@ -50,8 +51,8 @@ describe('save model', () => {
     // Phase 11: universe history / records is seeded on a new career.
     expect(s.universeHistory).toBeDefined();
     // R&D foundation: every team owns its own research state and TPP ledger.
-    expect(Object.keys(s.teamResearch ?? {})).toHaveLength(s.teams.length);
-    expect(s.teamResearch?.[s.selectedTeamId].tpp.balance).toBe(30);
+    expect(Object.keys(s.teamTechnical ?? {})).toHaveLength(s.teams.length);
+    expect(researchStateForTeam(s, s.selectedTeamId)?.tpp.balance).toBe(30);
     // Parts lifecycle: fitted components and factory inventory are persisted.
     expect(Object.keys(s.teamParts ?? {})).toHaveLength(s.teams.length);
     expect(s.teamParts?.[s.selectedTeamId].inventory.length).toBeGreaterThan(0);
@@ -102,7 +103,7 @@ describe('save model', () => {
     expect(migrated.saveSchemaVersion).toBe(CURRENT_SAVE_SCHEMA_VERSION);
     expect(migrated.phase18?.principalIdentity.principalId).toBe(current.principal?.id);
     expect(Object.keys(migrated.phase18?.departmentMoods ?? {})).toHaveLength(current.teams.length);
-    expect(migrated.teamResearch).toEqual(current.teamResearch);
+    expect(migrated.teamTechnical).toEqual(current.teamTechnical);
     expect(migrated.teamParts).toEqual(current.teamParts);
     expect(migrated.personnelCareerHistory?.some((tenure) => tenure.personId === current.principal?.id)).toBe(true);
   });

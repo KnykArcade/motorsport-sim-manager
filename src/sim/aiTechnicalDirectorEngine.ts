@@ -16,14 +16,17 @@ import type {
 } from '../types/rdTypes';
 import { createSeededRandom, deriveSeed } from './random';
 import { diminishingGainMultiplier } from './developmentEngine';
-import { fromUnifiedTechnical, researchStateForTeam, withUnifiedTechnical } from './technicalAdapters';
+import {
+  researchStateFromTechnical,
+  researchStateForTeam,
+  technicalStateWithResearch,
+} from './technicalAdapters';
 import {
   adjustedResearchCashCost,
   adjustedResearchDuration,
   canStartResearchProject,
   cashCostForBand,
   durationRoundsForBand,
-  ensureTeamResearchMap,
   progressTeamResearch,
   selectResearchFocus,
   startResearchProject,
@@ -316,12 +319,7 @@ function manageAIParts(
 export function planAITechnicalPrograms(state: GameState, teamIds?: readonly string[]): GameState {
   const allowed = teamIds ? new Set(teamIds) : undefined;
   let teams = [...state.teams];
-  const legacyTechnical = fromUnifiedTechnical(state);
-  const teamResearch = ensureTeamResearchMap(
-    state.teamResearch ?? legacyTechnical.teamResearch,
-    teams,
-    state.seasonYear,
-  );
+  const teamTechnical = { ...(state.teamTechnical ?? {}) };
   const teamParts = ensureTeamPartsMap(state.teamParts, teams, state.drivers, state.seasonYear);
   const aiTeamStates = { ...(state.aiTeamStates ?? {}) };
   const round = state.calendar[state.currentRaceIndex]?.round ?? state.currentRaceIndex + 1;
@@ -329,7 +327,7 @@ export function planAITechnicalPrograms(state: GameState, teamIds?: readonly str
   for (const originalTeam of teams) {
     if (originalTeam.id === state.selectedTeamId || (allowed && !allowed.has(originalTeam.id))) continue;
     let team = teams.find((candidate) => candidate.id === originalTeam.id)!;
-    let research = teamResearch[team.id];
+    let research = researchStateFromTechnical(teamTechnical[team.id]);
     let ai = aiTeamStates[team.id];
     if (!research || !ai) continue;
     const focus = chooseAIResearchFocus({ ...state, teams }, team, research, ai);
@@ -337,7 +335,7 @@ export function planAITechnicalPrograms(state: GameState, teamIds?: readonly str
 
     const maxActive = maxActiveProjects(ai);
     while (research.activeProjects.length < maxActive) {
-      const request = chooseAIResearchRequest({ ...state, teams, teamResearch }, team, research);
+      const request = chooseAIResearchRequest({ ...state, teams }, team, research);
       if (!request) break;
       const baseCost = cashCostForBand(request.cashCostBand, team.budget, state.series, state.seasonYear);
       const cashCost = adjustedResearchCashCost(baseCost, research);
@@ -351,7 +349,7 @@ export function planAITechnicalPrograms(state: GameState, teamIds?: readonly str
       teams = teams.map((candidate) => candidate.id === team.id ? team : candidate);
     }
 
-    const partsDecision = manageAIParts({ ...state, teams, teamResearch, teamParts }, team, teamParts[team.id], research, ai, round);
+    const partsDecision = manageAIParts({ ...state, teams, teamParts }, team, teamParts[team.id], research, ai, round);
     if (partsDecision.spend > 0 || partsDecision.decisions.length > 0) {
       team = { ...team, budget: team.budget - partsDecision.spend };
       ai = recordTechnicalDecision(
@@ -362,12 +360,13 @@ export function planAITechnicalPrograms(state: GameState, teamIds?: readonly str
       );
       teams = teams.map((candidate) => candidate.id === team.id ? team : candidate);
     }
-    teamResearch[team.id] = research;
+    const currentTechnical = teamTechnical[team.id];
+    if (currentTechnical) teamTechnical[team.id] = technicalStateWithResearch(currentTechnical, research);
     teamParts[team.id] = partsDecision.parts;
     aiTeamStates[team.id] = ai;
   }
 
-  return { ...state, teams, teamResearch, teamParts, aiTeamStates };
+  return { ...state, teams, teamTechnical, teamParts, aiTeamStates };
 }
 
 function applyCarDeltas(
@@ -405,17 +404,13 @@ export function progressAITechnicalProgramsAfterRace(
 ): AITechnicalProgressResult {
   let working: GameState = {
     ...state,
-    teamResearch: ensureTeamResearchMap(
-      state.teamResearch ?? fromUnifiedTechnical(state).teamResearch,
-      state.teams,
-      state.seasonYear,
-    ),
     teamParts: ensureTeamPartsMap(state.teamParts, state.teams, state.drivers, state.seasonYear),
   };
   const messages: string[] = [];
   for (const team of working.teams) {
     if (team.id === working.selectedTeamId) continue;
-    const research = working.teamResearch![team.id];
+    const research = researchStateFromTechnical(working.teamTechnical?.[team.id]);
+    if (!research) continue;
     if (research.activeProjects.length > 0) {
       const ai = working.aiTeamStates?.[team.id];
       const support = ((working.teamOrgRatings?.[team.id]?.research ?? 50) - 50) / 500
@@ -424,7 +419,12 @@ export function progressAITechnicalProgramsAfterRace(
       working = {
         ...working,
         cars: applyCarDeltas(working, team.id, tick.carRatingDeltas),
-        teamResearch: { ...working.teamResearch, [team.id]: tick.teamResearch },
+        teamTechnical: working.teamTechnical
+          ? {
+            ...working.teamTechnical,
+            [team.id]: technicalStateWithResearch(working.teamTechnical[team.id], tick.teamResearch),
+          }
+          : working.teamTechnical,
       };
       if (tick.completedNodeIds.length > 0) {
         messages.push(`${team.name} completes ${tick.completedNodeIds.length === 1 ? tick.teamResearch.projectHistory.at(-1)?.nodeName ?? 'an R&D project' : `${tick.completedNodeIds.length} R&D projects`}.`);
@@ -435,12 +435,8 @@ export function progressAITechnicalProgramsAfterRace(
     working = { ...working, teamParts: { ...working.teamParts, [team.id]: partsTick.state } };
   }
   working = planAITechnicalPrograms(working);
-  const legacyTechnical = fromUnifiedTechnical(state);
   return {
-    state: withUnifiedTechnical(working, {
-      ...legacyTechnical,
-      teamResearch: working.teamResearch ?? legacyTechnical.teamResearch,
-    }),
+    state: working,
     messages: messages.slice(0, 5),
   };
 }

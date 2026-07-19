@@ -346,15 +346,10 @@ export function processAITeamActivity(state: GameState): GameState {
     teamsToProcess.push(aiTeams[idx]);
   }
 
-  const plannedLegacy = fromUnifiedTechnical(state);
-  const plannedRaw = planAITechnicalPrograms(
-    { ...state, teamResearch: plannedLegacy.teamResearch },
+  const planned = planAITechnicalPrograms(
+    state,
     teamsToProcess.map((team) => team.id),
   );
-  const planned = withUnifiedTechnical(plannedRaw, {
-    ...plannedLegacy,
-    teamResearch: plannedRaw.teamResearch ?? plannedLegacy.teamResearch,
-  });
   const aiStates = planned.aiTeamStates ?? {};
   const cars = [...planned.cars];
 

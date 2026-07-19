@@ -17,6 +17,7 @@ import {
   startPartRepair,
 } from './partsEngine';
 import { createInitialTeamResearch } from './rdEngine';
+import { researchStateForTeam } from './technicalAdapters';
 import { effectiveCarRatings } from './trackFitEngine';
 
 function career() {
@@ -56,7 +57,7 @@ describe('parts inventory and lifecycle', () => {
   it('completes factory orders after their deterministic round duration', () => {
     const state = career();
     const parts = state.teamParts![state.selectedTeamId];
-    const order = manufacturingQuote(parts, 'power_unit', 1, state.teamResearch?.[state.selectedTeamId], 1995, 1);
+    const order = manufacturingQuote(parts, 'power_unit', 1, researchStateForTeam(state, state.selectedTeamId), 1995, 1);
     let working = startPartManufacturing(parts, order);
     const track = getTrackById(state.calendar[0].trackId)!;
     for (let round = 1; round <= order.totalRounds; round += 1) {
