@@ -6,6 +6,8 @@ import {
   relationshipTargetLabel,
   visibleRelationshipPriorities,
 } from './relationshipPriorityViewModel';
+import { CollectiveStakeholderBoard } from './CollectiveStakeholderBoard';
+import type { CollectiveStakeholderProfile } from './relationshipStakeholderViewModel';
 
 const STATUS_STYLES: Record<RelationshipAttentionProfile['status'], string> = {
   MustActNow: 'border-red-500/45 bg-red-500/5 text-red-200',
@@ -16,9 +18,11 @@ const STATUS_STYLES: Record<RelationshipAttentionProfile['status'], string> = {
 type Props = {
   profiles: RelationshipAttentionProfile[];
   onReview: (profile: RelationshipAttentionProfile) => void;
+  collectiveProfiles: CollectiveStakeholderProfile[];
+  onReviewCollective: (profile: CollectiveStakeholderProfile) => void;
 };
 
-export function RelationshipPriorityBoard({ profiles, onReview }: Props) {
+export function RelationshipPriorityBoard({ profiles, onReview, collectiveProfiles, onReviewCollective }: Props) {
   const visible = visibleRelationshipPriorities(profiles);
 
   return (
@@ -87,6 +91,8 @@ export function RelationshipPriorityBoard({ profiles, onReview }: Props) {
           Stable rival principals stay in the Rival Matrix so the board remains focused. Any active rival tension will appear here automatically.
         </p>
       </Panel>
+
+      <CollectiveStakeholderBoard profiles={collectiveProfiles} onReview={onReviewCollective} />
 
       <Panel title="Relationship Management Hierarchy">
         <div className="grid gap-2 lg:grid-cols-2">
