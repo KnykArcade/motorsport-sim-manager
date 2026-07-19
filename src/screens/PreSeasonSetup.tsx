@@ -12,6 +12,7 @@ import {
 import { getTrackById, getRegulationSet } from '../data';
 import { effectiveCarRatings } from '../sim/trackFitEngine';
 import { developmentSlots } from '../sim/facilityEngine';
+import { activeUpgradePrograms } from '../sim/technicalAdapters';
 import { Panel } from '../components/Panel';
 import { Button } from '../components/Button';
 import { RegulationPanel } from '../components/RegulationPanel';
@@ -335,8 +336,8 @@ export function PreSeasonSetup() {
             </div>
             <div className="mt-4 text-sm text-neutral-300">
               <span className="text-neutral-200">{slots}</span> development slot(s) available.
-              {state.activeDevelopmentProjects.length > 0 && (
-                <span className="text-neutral-500"> · {state.activeDevelopmentProjects.length} project(s) active.</span>
+              {activeUpgradePrograms(state).length > 0 && (
+                <span className="text-neutral-500"> · {activeUpgradePrograms(state).length} project(s) active.</span>
               )}
             </div>
             {isCareer && (

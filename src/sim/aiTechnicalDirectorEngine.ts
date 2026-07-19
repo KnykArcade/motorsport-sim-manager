@@ -16,6 +16,7 @@ import type {
 } from '../types/rdTypes';
 import { createSeededRandom, deriveSeed } from './random';
 import { diminishingGainMultiplier } from './developmentEngine';
+import { fromUnifiedTechnical, researchStateForTeam, withUnifiedTechnical } from './technicalAdapters';
 import {
   adjustedResearchCashCost,
   adjustedResearchDuration,
@@ -315,7 +316,12 @@ function manageAIParts(
 export function planAITechnicalPrograms(state: GameState, teamIds?: readonly string[]): GameState {
   const allowed = teamIds ? new Set(teamIds) : undefined;
   let teams = [...state.teams];
-  const teamResearch = ensureTeamResearchMap(state.teamResearch, teams, state.seasonYear);
+  const legacyTechnical = fromUnifiedTechnical(state);
+  const teamResearch = ensureTeamResearchMap(
+    state.teamResearch ?? legacyTechnical.teamResearch,
+    teams,
+    state.seasonYear,
+  );
   const teamParts = ensureTeamPartsMap(state.teamParts, teams, state.drivers, state.seasonYear);
   const aiTeamStates = { ...(state.aiTeamStates ?? {}) };
   const round = state.calendar[state.currentRaceIndex]?.round ?? state.currentRaceIndex + 1;
@@ -399,7 +405,11 @@ export function progressAITechnicalProgramsAfterRace(
 ): AITechnicalProgressResult {
   let working: GameState = {
     ...state,
-    teamResearch: ensureTeamResearchMap(state.teamResearch, state.teams, state.seasonYear),
+    teamResearch: ensureTeamResearchMap(
+      state.teamResearch ?? fromUnifiedTechnical(state).teamResearch,
+      state.teams,
+      state.seasonYear,
+    ),
     teamParts: ensureTeamPartsMap(state.teamParts, state.teams, state.drivers, state.seasonYear),
   };
   const messages: string[] = [];
@@ -425,7 +435,14 @@ export function progressAITechnicalProgramsAfterRace(
     working = { ...working, teamParts: { ...working.teamParts, [team.id]: partsTick.state } };
   }
   working = planAITechnicalPrograms(working);
-  return { state: working, messages: messages.slice(0, 5) };
+  const legacyTechnical = fromUnifiedTechnical(state);
+  return {
+    state: withUnifiedTechnical(working, {
+      ...legacyTechnical,
+      teamResearch: working.teamResearch ?? legacyTechnical.teamResearch,
+    }),
+    messages: messages.slice(0, 5),
+  };
 }
 
 export function aiTechnicalSummary(state: GameState, teamId: string): {
@@ -437,7 +454,7 @@ export function aiTechnicalSummary(state: GameState, teamId: string): {
   spend: number;
   lastDecision?: string;
 } {
-  const research = state.teamResearch?.[teamId];
+  const research = researchStateForTeam(state, teamId);
   const parts = state.teamParts?.[teamId];
   return {
     focus: research?.focus?.branchId,

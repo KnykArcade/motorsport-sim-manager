@@ -25,7 +25,7 @@ import { ensureCharacterBreakingPoints } from '../sim/characterBreakingPointEngi
 import { ensureCharacterFutureIntentions } from '../sim/characterFutureIntentEngine';
 import { ensureAIStaffRosters } from '../sim/aiStaffRosterEngine';
 import { ensurePersonnelCareerLedger } from '../sim/personnelCareerLedgerEngine';
-import { toUnifiedTechnical } from '../sim/technicalModel';
+import { withLegacyTechnicalCompat } from '../sim/technicalAdapters';
 
 const SAVE_KEY = 'msm:save:v1';
 const SETTINGS_KEY = 'msm:settings:v1';
@@ -72,6 +72,8 @@ export function migrateGameState(state: GameState): GameState {
   if (!patched.driverPromises) {
     patched.driverPromises = [];
   }
+  patched.activeDevelopmentProjects ??= [];
+  patched.completedDevelopmentProjects ??= [];
   patched.teamResearch = ensureTeamResearchMap(
     patched.teamResearch,
     patched.teams ?? [],
@@ -94,10 +96,7 @@ export function migrateGameState(state: GameState): GameState {
   patched.saveSchemaVersion = CURRENT_SAVE_SCHEMA_VERSION;
   const migrated = ensureCharacterFutureIntentions(ensureCharacterBreakingPoints(ensureCharacterMandates(ensureCharacterInitiatives(ensureCharacterInfluence(ensureCharacterConnections(ensureCharacterAmbitions(ensureCharacterOpinions(syncNarratives(ensureRivalRelationships(ensureFailureInvestigationState(ensurePreseasonHubState(ensureContractClauses(patched as GameState)))))))))))));
   const finalized = ensurePersonnelCareerLedger(migrated);
-  return {
-    ...finalized,
-    teamTechnical: toUnifiedTechnical(finalized),
-  };
+  return withLegacyTechnicalCompat(finalized);
 }
 
 export type GameSettings = {
@@ -117,11 +116,15 @@ export const defaultSettings: GameSettings = {
 };
 
 export function saveGame(state: GameState): void {
-  const toStore: GameState = {
-    ...state,
+  const persistedState: Partial<GameState> = { ...state };
+  delete persistedState.activeDevelopmentProjects;
+  delete persistedState.completedDevelopmentProjects;
+  delete persistedState.teamResearch;
+  const toStore = {
+    ...persistedState,
     saveSchemaVersion: CURRENT_SAVE_SCHEMA_VERSION,
     updatedAt: new Date().toISOString(),
-  };
+  } as GameState;
   try {
     localStorage.setItem(SAVE_KEY, JSON.stringify(toStore));
   } catch (err) {

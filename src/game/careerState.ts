@@ -105,12 +105,15 @@ export type GameState = {
   driverStandings: StandingsEntry[];
   constructorStandings: StandingsEntry[];
 
+  // Deprecated compatibility projections. `teamTechnical` is authoritative;
+  // these are rebuilt from it for legacy relationship/UI paths during cutover.
   activeDevelopmentProjects: DevelopmentProject[];
   completedDevelopmentProjects: DevelopmentProject[];
 
   // Team-owned research state for every entrant. Kept separate from the legacy
   // development projects so the full R&D tree can be introduced incrementally.
   // Optional for save compatibility; the save migration backfills every team.
+  /** @deprecated Derived compatibility projection; never mutate directly. */
   teamResearch?: TeamResearchMap;
 
   // Derived unified technical projection. The legacy development and R&D

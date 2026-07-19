@@ -8,6 +8,7 @@ import type { StaffMember } from '../types/staffTypes';
 import {
   advisorPreparationEffectMultiplier,
   advisorRecommendationsForDecision,
+  advisorTrustChangeForChoice,
   generateAdvisorRecommendations,
   hasAdvisorDisagreement,
   resolveAdvisorRecommendations,
@@ -96,6 +97,8 @@ describe('Phase 18 advisor council', () => {
     const state = withPaddockEvent(freshState('advisor-consequences'), event);
     const generated = generateAdvisorRecommendations(state, [event]);
     const selected = event.options!.find((option) => option.id === 'race')!;
+    const predictedTrustChange = advisorRecommendationsForDecision(generated, event.id)
+      .reduce((sum, recommendation) => sum + advisorTrustChangeForChoice(recommendation, selected.id), 0);
     const resolved = resolveAdvisorRecommendations(generated, event, selected);
     const recommendations = advisorRecommendationsForDecision(resolved, event.id);
 
@@ -105,6 +108,7 @@ describe('Phase 18 advisor council', () => {
     expect(resolved.phase18!.departmentMoods[state.selectedTeamId].Engineering.trustInPrincipal).toBeGreaterThan(50);
     expect(resolved.phase18!.departmentMoods[state.selectedTeamId].Technical.trustInPrincipal).toBeLessThan(50);
     expect(resolved.phase18!.departmentMoods[state.selectedTeamId].Technical.conflictReasons.at(-1)).toContain('Advice overruled');
+    expect(recommendations.reduce((sum, recommendation) => sum + (recommendation.trustChange ?? 0), 0)).toBe(predictedTrustChange);
   });
 
   it('expires unresolved advice when the decision leaves the active paddock week', () => {

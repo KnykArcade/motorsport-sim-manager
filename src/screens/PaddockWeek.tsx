@@ -13,6 +13,7 @@ import {
   type GameState,
 } from '../game/careerState';
 import { developmentSlots } from '../sim/facilityEngine';
+import { activeUpgradePrograms } from '../sim/technicalAdapters';
 import { leadershipDecisionPreview } from '../sim/phase18IdentityCultureEngine';
 import {
   ADVISOR_ROLE_LABELS,
@@ -33,6 +34,14 @@ import { internalCharacterInfluence } from '../sim/characterInfluenceEngine';
 import { activeCharacterMandates } from '../sim/characterMandateEngine';
 import { unstableCharacterStability } from '../sim/characterBreakingPointEngine';
 import { atRiskFutureIntentions, characterFutureIntentLabel } from '../sim/characterFutureIntentEngine';
+import {
+  advisorOptionImpactPreview,
+  relationshipStakeholdersForDecision,
+} from './paddock/relationshipDecisionViewModel';
+import {
+  relationshipStatusLabel,
+  relationshipTargetLabel,
+} from './relationships/relationshipPriorityViewModel';
 import {
   MetricStrip,
   WorkspaceBody,
@@ -215,7 +224,7 @@ export function PaddockWeek() {
       <MetricStrip>
         <WorkspaceMetric label="Budget" value={team ? formatMoney(team.budget) : '—'} detail={`${activeDrivers.length}/2 active drivers`} />
         <WorkspaceMetric label="Team readiness" value={`${Math.round(team?.morale ?? 0)}% morale`} detail={`${Math.round(car?.condition ?? 0)}% car condition`} />
-        <WorkspaceMetric label="Development" value={`${state.activeDevelopmentProjects.length}/${slots} slots`} detail="Active technical projects" />
+        <WorkspaceMetric label="Development" value={`${activeUpgradePrograms(state).length}/${slots} slots`} detail="Active technical projects" />
         <WorkspaceMetric label="Required actions" value={pendingCount} detail={packageSelected ? `${unresolvedCount} decisions unresolved` : 'Race package still required'} />
       </MetricStrip>
 
@@ -390,7 +399,7 @@ export function PaddockWeek() {
               {unresolvedCharacterBreakingPoints.map((event) => (
                 <div key={event.id} className="rounded-xl border border-red-900/70 bg-red-950/15 p-3">
                   <div className="mb-2 text-[10px] font-bold uppercase tracking-[0.16em] text-red-300">Breaking point · {event.characterBreakingPoint?.target.name}</div>
-                  <DecisionCard event={event} recommendations={advisorRecommendationsForDecision(state, event.id)} onResolve={(optionId) => dispatch({ type: 'RESOLVE_PADDOCK_EVENT', eventId: event.id, optionId })} />
+                  <DecisionCard state={state} event={event} recommendations={advisorRecommendationsForDecision(state, event.id)} onResolve={(optionId) => dispatch({ type: 'RESOLVE_PADDOCK_EVENT', eventId: event.id, optionId })} />
                 </div>
               ))}
             </div>
@@ -413,7 +422,7 @@ export function PaddockWeek() {
               {unresolvedCharacterDisputes.map((event) => (
                 <div key={event.id} className="rounded-xl border border-red-900/60 bg-red-950/10 p-3">
                   <div className="mb-2 text-[10px] font-bold uppercase tracking-[0.16em] text-red-300">Character dispute · {event.characterDispute?.characterA.name} vs {event.characterDispute?.characterB.name}</div>
-                  <DecisionCard event={event} recommendations={advisorRecommendationsForDecision(state, event.id)} onResolve={(optionId) => dispatch({ type: 'RESOLVE_PADDOCK_EVENT', eventId: event.id, optionId })} />
+                  <DecisionCard state={state} event={event} recommendations={advisorRecommendationsForDecision(state, event.id)} onResolve={(optionId) => dispatch({ type: 'RESOLVE_PADDOCK_EVENT', eventId: event.id, optionId })} />
                 </div>
               ))}
             </div>
@@ -472,6 +481,7 @@ export function PaddockWeek() {
               .map((event) => (
                 <DecisionCard
                   key={event.id}
+                  state={state}
                   event={event}
                   recommendations={advisorRecommendationsForDecision(state, event.id)}
                   onResolve={(optionId) =>
@@ -492,6 +502,7 @@ export function PaddockWeek() {
             {storyDecisions.map((event) => (
               <DecisionCard
                 key={event.id}
+                state={state}
                 event={event}
                 recommendations={advisorRecommendationsForDecision(state, event.id)}
                 onResolve={(optionId) => dispatch({ type: 'RESOLVE_PADDOCK_EVENT', eventId: event.id, optionId })}
@@ -639,7 +650,7 @@ function CharacterDecisionCard({
         {character.targetType === 'Owner' && character.teamId && <CharacterDossierButton state={state} subject={{ type: 'owner', teamId: character.teamId }}>Open Character Card</CharacterDossierButton>}
         {character.targetType === 'RivalPrincipal' && character.teamId && <CharacterDossierButton state={state} subject={{ type: 'aiPrincipal', teamId: character.teamId }}>Open Character Card</CharacterDossierButton>}
       </div>
-      <DecisionCard event={event} recommendations={recommendations} onResolve={onResolve} />
+      <DecisionCard state={state} event={event} recommendations={recommendations} onResolve={onResolve} />
     </div>
   );
 }
@@ -668,25 +679,60 @@ function CharacterInitiativeCard({
         {target.type === 'Owner' && target.teamId && <CharacterDossierButton state={state} subject={{ type: 'owner', teamId: target.teamId }}>Open Character Card</CharacterDossierButton>}
         {target.type === 'RivalPrincipal' && target.teamId && <CharacterDossierButton state={state} subject={{ type: 'aiPrincipal', teamId: target.teamId }}>Open Character Card</CharacterDossierButton>}
       </div>
-      <DecisionCard event={event} recommendations={recommendations} onResolve={onResolve} />
+      <DecisionCard state={state} event={event} recommendations={recommendations} onResolve={onResolve} />
     </div>
   );
 }
 
 function DecisionCard({
+  state,
   event,
   recommendations,
   onResolve,
 }: {
+  state: GameState;
   event: PaddockEvent;
   recommendations: AdvisorRecommendation[];
   onResolve: (optionId: string) => void;
 }) {
   const disagreement = hasAdvisorDisagreement(recommendations);
+  const stakeholders = relationshipStakeholdersForDecision(state, event);
   return (
     <div className="rounded-lg border border-amber-600/30 bg-amber-500/5 p-4">
       <div className="text-sm font-semibold text-amber-300">{event.title}</div>
       <p className="mt-1 text-sm text-neutral-300">{event.description}</p>
+      {stakeholders.length > 0 && (
+        <div className="mt-3 rounded-lg border border-violet-800/50 bg-violet-950/15 p-3">
+          <div className="text-xs font-semibold uppercase tracking-wide text-violet-300">Relationship stakes</div>
+          <div className="mt-2 grid gap-2 lg:grid-cols-2">
+            {stakeholders.map((profile) => (
+              <div key={`${profile.target.type}:${profile.target.id}`} className="rounded border border-neutral-800 bg-neutral-950/35 p-2.5">
+                <div className="flex items-start justify-between gap-2">
+                  <div>
+                    <div className="text-xs font-semibold text-neutral-100">{profile.target.name}</div>
+                    <div className="text-[10px] text-neutral-500">
+                      {relationshipTargetLabel(profile.target.type)} · Authority #{profile.authorityRank} · Influence {profile.influence}
+                    </div>
+                  </div>
+                  <span className={`shrink-0 rounded px-1.5 py-0.5 text-[9px] font-bold uppercase ${
+                    profile.status === 'MustActNow'
+                      ? 'bg-red-500/15 text-red-300'
+                      : profile.status === 'WatchClosely'
+                        ? 'bg-amber-500/15 text-amber-300'
+                        : 'bg-emerald-500/10 text-emerald-300'
+                  }`}>
+                    {relationshipStatusLabel(profile.status)}
+                  </span>
+                </div>
+                <p className="mt-1.5 text-[10px] leading-relaxed text-neutral-400">{profile.reasons[0]}</p>
+              </div>
+            ))}
+          </div>
+          <p className="mt-2 text-[10px] text-neutral-500">
+            Authority is permanent; the attention status explains why this decision can temporarily move the relationship up your queue.
+          </p>
+        </div>
+      )}
       {recommendations.length > 0 && (
         <div className="mt-3 rounded-lg border border-sky-800/60 bg-sky-950/20 p-3">
           <div className="flex items-center justify-between gap-3">
@@ -710,7 +756,13 @@ function DecisionCard({
       {event.options && event.options.length > 0 && (
         <div className="mt-3 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
           {event.options.map((option) => (
-            <DecisionOptionButton key={option.id} event={event} option={option} onResolve={onResolve} />
+            <DecisionOptionButton
+              key={option.id}
+              event={event}
+              option={option}
+              recommendations={recommendations}
+              onResolve={onResolve}
+            />
           ))}
         </div>
       )}
@@ -742,13 +794,16 @@ function AdvisorCard({ recommendation }: { recommendation: AdvisorRecommendation
 function DecisionOptionButton({
   event,
   option,
+  recommendations,
   onResolve,
 }: {
   event: PaddockEvent;
   option: NonNullable<PaddockEvent['options']>[number];
+  recommendations: AdvisorRecommendation[];
   onResolve: (optionId: string) => void;
 }) {
   const preview = leadershipDecisionPreview(event, option);
+  const advisorImpact = advisorOptionImpactPreview(recommendations, option.id);
   return (
     <button
       onClick={() => onResolve(option.id)}
@@ -761,6 +816,19 @@ function DecisionOptionButton({
       </div>
       {preview.cultureChanges.length > 0 && (
         <div className="mt-0.5 text-[10px] text-neutral-500">{preview.cultureChanges.join(' · ')}</div>
+      )}
+      {recommendations.length > 0 && (
+        <div className="mt-2 border-t border-neutral-800 pt-2 text-[10px] text-neutral-400">
+          <div>
+            Council: {advisorImpact.supporting} support · {advisorImpact.overruled} overruled
+          </div>
+          <div className={advisorImpact.netTrustChange >= 0 ? 'text-emerald-400' : 'text-red-400'}>
+            Projected department trust {advisorImpact.netTrustChange > 0 ? '+' : ''}{advisorImpact.netTrustChange}
+            {advisorImpact.highConfidenceObjections > 0
+              ? ` · ${advisorImpact.highConfidenceObjections} strong objection${advisorImpact.highConfidenceObjections === 1 ? '' : 's'}`
+              : ''}
+          </div>
+        </div>
       )}
     </button>
   );

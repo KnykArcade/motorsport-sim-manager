@@ -24,6 +24,7 @@ import {
 } from '../../sim/rdNodeRules';
 import type { DevelopmentOutcome } from '../../types/gameTypes';
 import type { RDBranchId, RDNodeDefinition } from '../../types/rdTypes';
+import { researchStateForTeam, technicalStateForTeam } from '../../sim/technicalAdapters';
 
 const OUTCOME_COLORS: Record<DevelopmentOutcome, string> = {
   GreatSuccess: 'text-emerald-300', FullSuccess: 'text-blue-300', PartialSuccess: 'text-yellow-300',
@@ -39,7 +40,7 @@ export function RDTreePanel({ compactTree = false }: { compactTree?: boolean }) 
   const team = teamById(state, state.selectedTeamId);
   const budget = team?.budget ?? 0;
   const singleSeason = isSingleSeasonMode(state.gameMode);
-  const research = state.teamResearch?.[state.selectedTeamId]
+  const research = researchStateForTeam(state, state.selectedTeamId)
     ?? createInitialTeamResearch(state.selectedTeamId, state.seasonYear);
   const focus = research.focus?.branchId;
   const focusMetadata = focus ? rdBranchMetadata.find((branch) => branch.id === focus) : undefined;
@@ -48,7 +49,9 @@ export function RDTreePanel({ compactTree = false }: { compactTree?: boolean }) 
   const requests = buildRDTreeRequests(nodes, state.series, state.seasonYear);
   const tierNodes = nodes.filter((node) => node.tier === selectedTier);
   const completedInBranch = research.completedNodes.filter((node) => node.branchId === focus).length;
-  const maxRDProjects = Math.max(0, developmentSlots(state.facilities) - state.activeDevelopmentProjects.length);
+  const conventionalActive = technicalStateForTeam(state, state.selectedTeamId)?.activeProjects
+    .filter((project) => project.kind === 'upgrade').length ?? 0;
+  const maxRDProjects = Math.max(0, developmentSlots(state.facilities) - conventionalActive);
   const canChangeFocus = !!research.focus && state.seasonYear > research.focus.lockedThroughSeasonYear;
 
   return (
@@ -181,7 +184,7 @@ export function RDTreePanel({ compactTree = false }: { compactTree?: boolean }) 
 function RDNodeRow({ node, request, budget, maxActiveProjects }: { node: RDNodeDefinition; request: ReturnType<typeof buildRDTreeRequests>[string]; budget: number; maxActiveProjects: number }) {
   const { state, dispatch } = useGame();
   if (!state) return null;
-  const research = state.teamResearch?.[state.selectedTeamId] ?? createInitialTeamResearch(state.selectedTeamId, state.seasonYear);
+  const research = researchStateForTeam(state, state.selectedTeamId) ?? createInitialTeamResearch(state.selectedTeamId, state.seasonYear);
   const unlock = evaluateRDRequestUnlock(request, research);
   const cashCost = adjustedResearchCashCost(cashCostForBand(node.cashCostBand, budget, state.series, state.seasonYear), research);
   const tppCost = tppCostForBand(node.tppCostBand);

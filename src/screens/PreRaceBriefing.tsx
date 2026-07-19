@@ -18,6 +18,7 @@ import { Button } from '../components/Button';
 import { TrackDemandBars } from '../components/TrackDemandBars';
 import { NewsPanel } from '../components/NewsPanel';
 import { formatMoney } from '../components/ui';
+import { activeUpgradePrograms, completedUpgradePrograms } from '../sim/technicalAdapters';
 import {
   MetricStrip,
   WorkspaceBody,
@@ -163,10 +164,10 @@ export function PreRaceBriefing() {
           </Panel>
           <div className="lg:col-span-2">
             <Panel title="Development Status">
-              <div className="text-sm text-neutral-300">{state.activeDevelopmentProjects.length} active project(s) · {state.completedDevelopmentProjects.length} completed this season</div>
-              {state.activeDevelopmentProjects.length > 0 && (
+              <div className="text-sm text-neutral-300">{activeUpgradePrograms(state).length} active project(s) · {completedUpgradePrograms(state).length} completed this season</div>
+              {activeUpgradePrograms(state).length > 0 && (
                 <div className="mt-3 grid gap-2 md:grid-cols-2">
-                  {state.activeDevelopmentProjects.slice(0, 6).map((project) => (
+                  {activeUpgradePrograms(state).slice(0, 6).map((project) => (
                     <div key={project.id} className="rounded border border-neutral-800 bg-neutral-950/40 px-3 py-2 text-sm text-neutral-400">
                       <span className="font-medium text-neutral-200">{project.name}</span> · {project.progressRaces}/{project.adjustedDurationRaces ?? project.durationRaces} races
                     </div>

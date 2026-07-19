@@ -16,6 +16,7 @@ import { activeDriversForTeam } from '../game/careerState';
 import { carWithFittedParts } from '../sim/partsEngine';
 import { carPerformanceRating, effectiveCarRatings } from '../sim/trackFitEngine';
 import { ratingColor } from '../components/ui';
+import { activeUpgradePrograms, researchStateForTeam } from '../sim/technicalAdapters';
 
 type TechnicalSection = 'command' | 'development' | 'parts' | 'facilities' | 'engine';
 
@@ -33,7 +34,8 @@ export function TechnicalCenter() {
   if (!state) return null;
 
   const team = teamById(state, state.selectedTeamId);
-  const research = state.teamResearch?.[state.selectedTeamId];
+  const research = researchStateForTeam(state, state.selectedTeamId);
+  const activeUpgrades = activeUpgradePrograms(state);
   const parts = state.teamParts?.[state.selectedTeamId];
   const slots = developmentSlots(state.facilities);
   const lockInfo = getRouteRestrictionInfo('/engine', state.gameMode);
@@ -46,9 +48,9 @@ export function TechnicalCenter() {
         subtitle={`${team?.name ?? 'Team'} · ${state.seasonYear} ${state.series}`}
       />
       <MetricStrip>
-        <WorkspaceMetric label="Technical capacity" value={`${state.activeDevelopmentProjects.length + (research?.activeProjects.length ?? 0)}/${slots}`} detail="Development + research slots in use" />
+        <WorkspaceMetric label="Technical capacity" value={`${activeUpgrades.length + (research?.activeProjects.length ?? 0)}/${slots}`} detail="Development + research slots in use" />
         <WorkspaceMetric label="Technical budget" value={formatMoney(team?.budget ?? 0)} detail={`${research?.tpp.balance ?? 0} TPP · cash funds operations`} />
-        <WorkspaceMetric label="Technical pipeline" value={`${state.activeDevelopmentProjects.length + (research?.activeProjects.length ?? 0)}`} detail={`${state.activeDevelopmentProjects.length} development · ${research?.activeProjects.length ?? 0} research`} />
+        <WorkspaceMetric label="Technical pipeline" value={`${activeUpgrades.length + (research?.activeProjects.length ?? 0)}`} detail={`${activeUpgrades.length} development · ${research?.activeProjects.length ?? 0} research`} />
         <WorkspaceMetric label="Operations queue" value={`${parts?.manufacturingQueue.length ?? 0} factory`} detail={`${state.facilities?.pendingUpgrades.length ?? 0} facility upgrades pending`} />
       </MetricStrip>
       <WorkspaceTabs items={sections} active={section} onChange={setSection} ariaLabel="Technical Center sections" />
@@ -65,14 +67,15 @@ export function TechnicalCenter() {
 
 function CommandPanel({ state, onNavigate }: { state: GameState; onNavigate: (section: TechnicalSection) => void }) {
   const team = teamById(state, state.selectedTeamId);
-  const research = state.teamResearch?.[state.selectedTeamId];
+  const research = researchStateForTeam(state, state.selectedTeamId);
+  const activeUpgrades = activeUpgradePrograms(state);
   const parts = state.teamParts?.[state.selectedTeamId];
   const drivers = activeDriversForTeam(state, state.selectedTeamId);
   const baseCar = state.cars.find((car) => car.id === team?.carId);
   const effectiveCars = baseCar ? drivers.map((driver) => ({ driver, car: carWithFittedParts(baseCar, parts, driver.id) })) : [];
   const facilities = state.facilities?.facilities ?? [];
   const activeResearch = research?.activeProjects ?? [];
-  const totalCommitted = state.activeDevelopmentProjects.length + activeResearch.length;
+  const totalCommitted = activeUpgrades.length + activeResearch.length;
   const alerts = [
     totalCommitted >= developmentSlots(state.facilities) ? 'All technical capacity is committed.' : undefined,
     effectiveCars.some(({ car }) => Object.values(car.componentCondition ?? {}).some((condition) => condition !== undefined && condition < 30)) ? 'A fitted component is at critical condition.' : undefined,
@@ -91,7 +94,7 @@ function CommandPanel({ state, onNavigate }: { state: GameState; onNavigate: (se
         <TechnicalTable>
           <TechnicalTableHead><TechnicalTableRow><TechnicalTableCell header>Workstream</TechnicalTableCell><TechnicalTableCell header>Item</TechnicalTableCell><TechnicalTableCell header>ETA</TechnicalTableCell><TechnicalTableCell header>Open</TechnicalTableCell></TechnicalTableRow></TechnicalTableHead>
           <tbody>
-            {state.activeDevelopmentProjects.map((project) => <TechnicalTableRow key={`dev-${project.id}`}><TechnicalTableCell>Development</TechnicalTableCell><TechnicalTableCell className="font-semibold text-neutral-100">{project.name}</TechnicalTableCell><TechnicalTableCell>{Math.max(0, (project.adjustedDurationRaces ?? project.durationRaces) - project.progressRaces)} races</TechnicalTableCell><TechnicalTableCell><JumpButton onClick={() => onNavigate('development')} /></TechnicalTableCell></TechnicalTableRow>)}
+            {activeUpgrades.map((project) => <TechnicalTableRow key={`dev-${project.id}`}><TechnicalTableCell>Development</TechnicalTableCell><TechnicalTableCell className="font-semibold text-neutral-100">{project.name}</TechnicalTableCell><TechnicalTableCell>{Math.max(0, (project.adjustedDurationRaces ?? project.durationRaces) - project.progressRaces)} races</TechnicalTableCell><TechnicalTableCell><JumpButton onClick={() => onNavigate('development')} /></TechnicalTableCell></TechnicalTableRow>)}
             {activeResearch.map((project) => <TechnicalTableRow key={`rd-${project.id}`}><TechnicalTableCell>Research</TechnicalTableCell><TechnicalTableCell className="font-semibold text-neutral-100">{project.nodeName ?? 'Research node'}</TechnicalTableCell><TechnicalTableCell>{Math.max(0, project.durationRounds - project.progressRounds)} rounds</TechnicalTableCell><TechnicalTableCell><JumpButton onClick={() => onNavigate('development')} /></TechnicalTableCell></TechnicalTableRow>)}
             {(parts?.manufacturingQueue ?? []).map((order) => <TechnicalTableRow key={`factory-${order.id}`}><TechnicalTableCell>Factory</TechnicalTableCell><TechnicalTableCell className="font-semibold text-neutral-100">{order.quantity}x {order.type}</TechnicalTableCell><TechnicalTableCell>{order.roundsRemaining} rounds</TechnicalTableCell><TechnicalTableCell><JumpButton onClick={() => onNavigate('parts')} /></TechnicalTableCell></TechnicalTableRow>)}
             {(state.facilities?.pendingUpgrades ?? []).map((upgrade) => <TechnicalTableRow key={`facility-${upgrade.facilityId}`}><TechnicalTableCell>Facilities</TechnicalTableCell><TechnicalTableCell className="font-semibold text-neutral-100">{facilities.find((facility) => facility.id === upgrade.facilityId)?.type ?? upgrade.facilityId} → L{upgrade.toLevel}</TechnicalTableCell><TechnicalTableCell>{upgrade.weeksRemaining} weeks</TechnicalTableCell><TechnicalTableCell><JumpButton onClick={() => onNavigate('facilities')} /></TechnicalTableCell></TechnicalTableRow>)}
