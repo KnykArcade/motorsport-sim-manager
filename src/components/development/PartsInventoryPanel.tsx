@@ -18,7 +18,8 @@ import {
 } from '../../sim/partsEngine';
 import { createInitialTeamResearch } from '../../sim/rdEngine';
 import { researchStateForTeam } from '../../sim/technicalAdapters';
-import { PART_TYPES, type CarPart, type PartType } from '../../types/partsTypes';
+import { PART_TYPES, type CarPart, type PartType, type PartsAutomationSettings } from '../../types/partsTypes';
+import { AUTO_REPAIR_CONDITION_THRESHOLD } from '../../sim/partsAutomationEngine';
 
 const CONDITION_TONES = {
   Fresh: 'bg-emerald-500 text-emerald-300',
@@ -40,6 +41,7 @@ export function PartsInventoryPanel() {
   const research = researchStateForTeam(state, team.id)
     ?? createInitialTeamResearch(team.id, state.seasonYear);
   const currentRound = state.calendar[state.currentRaceIndex]?.round ?? state.currentRaceIndex + 1;
+  const automation: PartsAutomationSettings = state.partsAutomation ?? { autoRepair: false, autoRestock: false, autoFit: false };
   const fittedCount = parts.inventory.filter((part) => part.status === 'fitted').length;
   const spareCount = parts.inventory.filter((part) => part.status === 'spare').length;
   const repairCount = parts.inventory.filter((part) => part.status === 'repairing').length;
@@ -60,6 +62,35 @@ export function PartsInventoryPanel() {
       <div className="mt-4 rounded-lg border border-neutral-800 bg-neutral-950/40 p-3 text-xs leading-5 text-neutral-400">
         Components are fitted to each driver's car. Wear now affects pace and mechanical risk; demanding tracks,
         crashes, and mechanical retirements accelerate damage. Completed R&D tiers define the specification of newly manufactured parts.
+      </div>
+
+      <div className="mt-4 rounded-lg border border-neutral-800 bg-neutral-950/60 p-3">
+        <div className="mb-2 flex items-center justify-between gap-3">
+          <div>
+            <div className="text-xs font-semibold uppercase tracking-wide text-neutral-300">Factory auto-manage</div>
+            <div className="text-xs text-neutral-500">The factory acts after each race using the same costs and queue limits as the buttons below.</div>
+          </div>
+        </div>
+        <div className="flex flex-wrap gap-4">
+          {([
+            ['autoFit', 'Auto-fit', `Swap in the best spare when a slot is empty or a fitted part drops below ${AUTO_REPAIR_CONDITION_THRESHOLD}%`],
+            ['autoRepair', 'Auto-repair', `Send spares below ${AUTO_REPAIR_CONDITION_THRESHOLD}% condition for repair`],
+            ['autoRestock', 'Auto-restock', 'Order a replacement when a part type has no spares'],
+          ] as const).map(([key, label, hint]) => (
+            <label key={key} className="flex items-start gap-2 text-xs text-neutral-300" title={hint}>
+              <input
+                type="checkbox"
+                className="mt-0.5 accent-amber-500"
+                checked={automation[key]}
+                onChange={(event) => dispatch({ type: 'SET_PARTS_AUTOMATION', settings: { ...automation, [key]: event.target.checked } })}
+              />
+              <span>
+                <span className="font-semibold">{label}</span>
+                <span className="block text-neutral-500">{hint}</span>
+              </span>
+            </label>
+          ))}
+        </div>
       </div>
 
       <nav className="mt-4 grid grid-cols-3 gap-1 rounded-lg border border-neutral-800 bg-neutral-950/60 p-1" aria-label="Parts inventory sections">

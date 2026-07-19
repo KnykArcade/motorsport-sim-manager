@@ -201,7 +201,8 @@ import {
   approvePreseasonTab,
 } from './careerPhaseEngine';
 import { isActionBlocked, isSingleSeasonMode } from './modeRestrictions';
-import type { PartType } from '../types/partsTypes';
+import type { PartType, PartsAutomationSettings } from '../types/partsTypes';
+import { runPartsAutomation } from '../sim/partsAutomationEngine';
 import {
   carWithFittedParts,
   ensureTeamPartsMap,
@@ -249,6 +250,7 @@ export type GameAction =
   | { type: 'START_PART_MANUFACTURING'; partType: PartType; quantity?: number }
   | { type: 'FIT_PART'; partId: string; driverId: string }
   | { type: 'REPAIR_PART'; partId: string }
+  | { type: 'SET_PARTS_AUTOMATION'; settings: PartsAutomationSettings }
   | { type: 'RETIRE_PART'; partId: string }
   | { type: 'SET_CAR_SETUP'; driverId: string; setup: CarSetup }
   | {
@@ -628,6 +630,11 @@ export function gameReducer(state: GameState | null, action: GameAction): GameSt
     case 'REPAIR_PART': {
       if (!state) return state;
       return repairPartAction(state, action.partId);
+    }
+
+    case 'SET_PARTS_AUTOMATION': {
+      if (!state) return state;
+      return { ...state, partsAutomation: action.settings };
     }
 
     case 'RETIRE_PART': {
@@ -2082,6 +2089,30 @@ function applyRaceResults(
     );
     teamParts = { ...teamParts, [state.selectedTeamId]: partsTick.state };
     devMessages.push(...partsTick.messages);
+
+    // Opt-in factory delegation: enabled toggles act right after the player's
+    // inventory ticks, using the same engine functions as the manual buttons.
+    const automation = state.partsAutomation;
+    if (automation && (automation.autoRepair || automation.autoRestock || automation.autoFit)) {
+      const playerTeam = teams.find((t) => t.id === state.selectedTeamId);
+      if (playerTeam) {
+        const auto = runPartsAutomation({
+          settings: automation,
+          parts: teamParts[state.selectedTeamId],
+          drivers: activeDriversForTeam({ ...state, teams }, state.selectedTeamId),
+          technical: state.teamTechnical?.[state.selectedTeamId],
+          budget: playerTeam.budget,
+          seasonYear: state.seasonYear,
+          round: race.round,
+        });
+        teamParts = { ...teamParts, [state.selectedTeamId]: auto.parts };
+        if (auto.spend > 0) {
+          teams = teams.map((t) => t.id === playerTeam.id ? { ...t, budget: t.budget - auto.spend } : t);
+          financeTxns.push(makeTransaction(state.seasonYear, 'Development', 'Factory automation (repairs & orders)', -auto.spend, race.round));
+        }
+        devMessages.push(...auto.decisions);
+      }
+    }
   }
 
   // Every non-player team now progresses the same research and component
