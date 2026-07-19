@@ -192,8 +192,16 @@ describe('unified technical projection', () => {
 
   it('migrates a pre-v2 state into an equivalent projection without changing authoritative outputs', () => {
     const state = career('technical-migration');
+    const legacySource = structuredClone(state);
+    for (const team of legacySource.teams) {
+      if (team.id === legacySource.selectedTeamId) continue;
+      const technical = legacySource.teamTechnical?.[team.id];
+      if (!technical) continue;
+      technical.activeProjects = technical.activeProjects.filter((project) => project.kind === 'research');
+      technical.completedPrograms = technical.completedPrograms.filter((program) => program.kind === 'research');
+    }
     const legacy = {
-      ...structuredClone(state),
+      ...legacySource,
       teamResearch: researchMapFromTechnical(state),
     } as GameState & { teamResearch: ReturnType<typeof researchMapFromTechnical> };
     delete legacy.saveSchemaVersion;
@@ -202,7 +210,7 @@ describe('unified technical projection', () => {
 
     expect(migrated.teamTechnical).toEqual(toUnifiedTechnical(legacy, legacy.teamResearch));
     expect(migrated.cars).toEqual(state.cars);
-    expect(migrated.teamTechnical).toEqual(state.teamTechnical);
+    expect(migrated.teamTechnical).toEqual(legacySource.teamTechnical);
     expect(migrated.teamTechnical?.[state.selectedTeamId].tpp).toEqual(
       researchStateForTeam(state, state.selectedTeamId)?.tpp,
     );
