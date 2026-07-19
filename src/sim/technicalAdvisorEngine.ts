@@ -61,26 +61,47 @@ function repairProposals(state: GameState, budget: number): TechnicalProposal[] 
   if (!parts) return [];
   const drivers = activeDriversForTeam(state, state.selectedTeamId);
   const driverName = (driverId: string | undefined) => drivers.find((driver) => driver.id === driverId)?.name;
-  return parts.inventory
-    .filter((part) => part.status === 'fitted' && part.condition < REPAIR_CONDITION_THRESHOLD)
+  // Worn fitted parts cannot be repaired directly — parts are only repairable
+  // as spares — so propose swapping in a fresher spare instead; the worn part
+  // returns to the pool where a repair can then be proposed.
+  const swaps = parts.inventory
+    .filter((part) => part.status === 'fitted' && part.fittedDriverId && part.condition < REPAIR_CONDITION_THRESHOLD)
     .sort((a, b) => a.condition - b.condition)
-    .slice(0, 2)
+    .map((part) => {
+      const spare = availableSpareParts(parts, part.type).find((candidate) => candidate.condition >= part.condition + 8);
+      if (!spare) return undefined;
+      const fittedTo = driverName(part.fittedDriverId);
+      return {
+        id: `advisor-swap-${part.id}`,
+        kind: 'repair' as const,
+        title: `Fit ${spare.name}${fittedTo ? ` to ${fittedTo}'s car` : ''}`,
+        reason: `${part.name} is at ${Math.round(part.condition)}% condition — swap it out before it fails; it can be repaired once off the car.`,
+        costLabel: 'Free',
+        durationLabel: 'Immediate',
+        section: 'parts' as const,
+        action: { type: 'FIT_PART', partId: spare.id, driverId: part.fittedDriverId! } satisfies GameAction,
+      };
+    });
+  const repairs = parts.inventory
+    .filter((part) => part.status === 'spare' && part.condition < REPAIR_CONDITION_THRESHOLD)
+    .sort((a, b) => a.condition - b.condition)
     .map((part) => {
       const quote = repairQuote(part);
       if (quote.cost > budget) return undefined;
-      const fittedTo = driverName(part.fittedDriverId);
       return {
         id: `advisor-repair-${part.id}`,
         kind: 'repair' as const,
         title: `Repair ${part.name}`,
-        reason: `At ${Math.round(part.condition)}% condition${fittedTo ? ` on ${fittedTo}'s car` : ''} — a failure risk if left on the car.`,
+        reason: `Spare at ${Math.round(part.condition)}% condition — worth restoring before it's needed.`,
         costLabel: money(quote.cost),
         durationLabel: `${quote.rounds} round${quote.rounds === 1 ? '' : 's'}`,
         section: 'parts' as const,
         action: { type: 'REPAIR_PART', partId: part.id } satisfies GameAction,
       };
-    })
-    .filter((proposal): proposal is NonNullable<typeof proposal> => !!proposal);
+    });
+  return [...swaps, ...repairs]
+    .filter((proposal): proposal is NonNullable<(typeof swaps)[number]> => !!proposal)
+    .slice(0, 2);
 }
 
 function developmentProposal(state: GameState, budget: number, freeSlots: number): TechnicalProposal | undefined {

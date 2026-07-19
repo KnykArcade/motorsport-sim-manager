@@ -62,6 +62,13 @@ export type TeamPartsState = {
 
 export type TeamPartsMap = Record<string, TeamPartsState>;
 
+// Player factory delegation toggles. All default to off.
+export type PartsAutomationSettings = {
+  autoRepair: boolean;
+  autoRestock: boolean;
+  autoFit: boolean;
+};
+
 export type PartsProgressResult = {
   state: TeamPartsState;
   messages: string[];

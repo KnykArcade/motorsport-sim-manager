@@ -75,11 +75,38 @@ describe('technicalDirectorProposals', () => {
     }
   });
 
-  it('proposes repairing a critically worn fitted part', () => {
+  it('proposes repairing a critically worn spare part', () => {
     const base = newSeasonState();
     const parts = base.teamParts?.[base.selectedTeamId];
     expect(parts).toBeDefined();
-    const fitted = parts!.inventory.find((part) => part.status === 'fitted');
+    const spare = parts!.inventory.find((part) => part.status === 'spare');
+    expect(spare).toBeDefined();
+    const state: GameState = {
+      ...base,
+      teamParts: {
+        ...base.teamParts!,
+        [base.selectedTeamId]: {
+          ...parts!,
+          inventory: parts!.inventory.map((part) =>
+            part.id === spare!.id ? { ...part, condition: 20 } : part,
+          ),
+        },
+      },
+    };
+    const repair = technicalDirectorProposals(state).find(
+      (proposal) => proposal.kind === 'repair' && proposal.action.type === 'REPAIR_PART',
+    );
+    expect(repair).toBeDefined();
+    expect(repair?.action).toEqual({ type: 'REPAIR_PART', partId: spare!.id });
+  });
+
+  it('proposes swapping a worn fitted part for a fresher spare', () => {
+    const base = newSeasonState();
+    const parts = base.teamParts?.[base.selectedTeamId];
+    expect(parts).toBeDefined();
+    const fitted = parts!.inventory.find(
+      (part) => part.status === 'fitted' && parts!.inventory.some((candidate) => candidate.status === 'spare' && candidate.type === part.type),
+    );
     expect(fitted).toBeDefined();
     const state: GameState = {
       ...base,
@@ -93,9 +120,11 @@ describe('technicalDirectorProposals', () => {
         },
       },
     };
-    const repair = technicalDirectorProposals(state).find((proposal) => proposal.kind === 'repair');
-    expect(repair).toBeDefined();
-    expect(repair?.action).toEqual({ type: 'REPAIR_PART', partId: fitted!.id });
+    const swap = technicalDirectorProposals(state).find(
+      (proposal) => proposal.kind === 'repair' && proposal.action.type === 'FIT_PART',
+    );
+    expect(swap).toBeDefined();
+    expect(swap?.action.type === 'FIT_PART' && swap.action.driverId).toBe(fitted!.fittedDriverId);
   });
 
   it('never proposes actions the team cannot afford', () => {

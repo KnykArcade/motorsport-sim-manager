@@ -39,7 +39,7 @@ import type { MotorsportUniverseState, UniverseHistory } from '../types/universe
 import type { AITeamState, TeamMemoryEntry } from '../types/aiTeamTypes';
 import type { RaceWeekendPackageSelection, FinancialDistressMap } from '../types/raceWeekendPackageTypes';
 import type { CareerPhaseState } from '../types/careerPhaseTypes';
-import type { TeamPartsMap } from '../types/partsTypes';
+import type { TeamPartsMap, PartsAutomationSettings } from '../types/partsTypes';
 import type { Phase18FoundationState } from '../types/phase18Types';
 import type { CharacterInteractionState } from '../types/characterInteractionTypes';
 import type { PersonnelCareerTenure } from '../types/personnelCareerTypes';
@@ -111,6 +111,10 @@ export type GameState = {
   // manufacturing queues. Optional so saves from before the parts phase can be
   // migrated by seeding a standard component set for every entrant.
   teamParts?: TeamPartsMap;
+
+  // Player factory delegation toggles (auto-fit / auto-repair / auto-restock).
+  // Optional for save compat; all automation defaults to off.
+  partsAutomation?: PartsAutomationSettings;
 
   news: NewsItem[];
   regulationHistory: RegulationChangeEvent[];
