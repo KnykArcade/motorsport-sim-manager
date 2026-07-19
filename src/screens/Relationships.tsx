@@ -33,16 +33,15 @@ import { RelationshipPriorityBoard } from './relationships/RelationshipPriorityB
 import { RelationshipActivityPanel } from './relationships/RelationshipActivityPanel';
 import { currentRelationshipActivity } from './relationships/relationshipActivityViewModel';
 import {
-  relationshipPrioritySummary,
   relationshipStatusLabel,
 } from './relationships/relationshipPriorityViewModel';
 import {
-  collectiveStakeholderAttentionCount,
   currentCollectiveStakeholders,
   type CollectiveStakeholderProfile,
 } from './relationships/relationshipStakeholderViewModel';
 import { currentPotentialEmployerStanding } from './relationships/relationshipEmployerViewModel';
 import { currentExternalTalentContext } from './relationships/relationshipTalentViewModel';
+import { relationshipCommandSummary } from './relationships/relationshipCommandViewModel';
 import {
   MetricStrip,
   WorkspaceBody,
@@ -189,23 +188,16 @@ export function Relationships() {
   const activePromiseCount = allPromises.filter((promise) => promise.status === 'active' && teamDrivers.some((driver) => driver.id === promise.driverId)).length;
   const relationshipPriorities = currentRelationshipAttention(state);
   const relationshipActivityCount = currentRelationshipActivity(state).length;
-  const prioritySummary = relationshipPrioritySummary(relationshipPriorities);
   const collectiveStakeholders = currentCollectiveStakeholders(state);
-  const collectiveSummary = collectiveStakeholderAttentionCount(collectiveStakeholders);
-  const topPriority = relationshipPriorities[0];
-  const topCollectivePriority = collectiveStakeholders[0];
   const employerStanding = currentPotentialEmployerStanding(state);
   const externalTalent = currentExternalTalentContext(state);
-  const attentionOrder = { MustActNow: 0, WatchClosely: 1, Stable: 2 } as const;
-  const deskSignal = [
-    topPriority && { status: topPriority.status, rank: topPriority.authorityRank, title: topPriority.target.name, reason: topPriority.reasons[0] },
-    topCollectivePriority && { status: topCollectivePriority.status, rank: topCollectivePriority.authorityRank, title: topCollectivePriority.title, reason: topCollectivePriority.reasons[0] },
-    employerStanding && { status: employerStanding.status, rank: employerStanding.authorityRank, title: 'Potential employers', reason: employerStanding.reasons[0] },
-    { status: externalTalent.status, rank: externalTalent.authorityRank, title: 'External talent', reason: externalTalent.reasons[0] },
-  ].filter((signal): signal is NonNullable<typeof signal> => !!signal)
-    .sort((a, b) => attentionOrder[a.status] - attentionOrder[b.status] || a.rank - b.rank)[0];
-  const employerAttentionCount = employerStanding?.status === 'WatchClosely' || employerStanding?.status === 'MustActNow' ? 1 : 0;
-  const externalTalentAttentionCount = externalTalent.status === 'WatchClosely' || externalTalent.status === 'MustActNow' ? 1 : 0;
+  const commandSummary = relationshipCommandSummary({
+    characterProfiles: relationshipPriorities,
+    collectiveProfiles: collectiveStakeholders,
+    employerStanding,
+    externalTalent,
+  });
+  const deskSignal = commandSummary.topSignal;
   const ownerPriority = relationshipPriorities.find((profile) => profile.target.type === 'Owner');
   const driverContractYears = (id: string) =>
     state.drivers.find((d) => d.id === id)?.contractYearsRemaining ?? 0;
@@ -243,8 +235,8 @@ export function Relationships() {
         actions={<Button variant="ghost" onClick={() => navigate('/rivals')}>Rival Matrix</Button>}
       />
       <MetricStrip>
-        <WorkspaceMetric label="Must act now" value={prioritySummary.mustActNow + collectiveSummary.mustActNow} detail="Deadline or relationship crisis" />
-        <WorkspaceMetric label="Watch closely" value={prioritySummary.watchClosely + collectiveSummary.watchClosely} detail="Pressure is building" />
+        <WorkspaceMetric label="Must act now" value={commandSummary.mustActNow} detail="Across all hierarchy tiers" />
+        <WorkspaceMetric label="Watch closely" value={commandSummary.watchClosely} detail="Across all hierarchy tiers" />
         <WorkspaceMetric
           label="Owner standing"
           value={ownerPriority ? relationshipStatusLabel(ownerPriority.status) : 'Unavailable'}
@@ -254,7 +246,7 @@ export function Relationships() {
       </MetricStrip>
       <WorkspaceTabs
         items={[
-          { id: 'overview', label: `Priority Board (${prioritySummary.mustActNow + prioritySummary.watchClosely + collectiveSummary.mustActNow + collectiveSummary.watchClosely + employerAttentionCount + externalTalentAttentionCount})` },
+          { id: 'overview', label: `Priority Board (${commandSummary.active})` },
           { id: 'activity', label: `Activity (${relationshipActivityCount})` },
           { id: 'race', label: 'Race Drivers' },
           { id: 'reserve', label: `Reserve (${reserveDrivers.length})` },
