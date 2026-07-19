@@ -1,13 +1,16 @@
 import type { GameState } from '../game/careerState';
 import { ensureTeamResearchMap } from './rdEngine';
+import type { TeamResearchMap } from '../types/rdTypes';
 import type {
   CompletedProgram,
   TeamTechnicalMap,
   TechnicalProgram,
 } from '../types/technicalTypes';
 
-export function toUnifiedTechnical(state: GameState): TeamTechnicalMap {
-  const researchMap = ensureTeamResearchMap(state.teamResearch, state.teams, state.seasonYear);
+export function toUnifiedTechnical(state: GameState, legacyResearch?: TeamResearchMap): TeamTechnicalMap {
+  if (!legacyResearch && state.teamTechnical) return state.teamTechnical;
+  const researchMap = legacyResearch
+    ?? ensureTeamResearchMap(undefined, state.teams, state.seasonYear);
   const playerTeamId = state.selectedTeamId;
 
   return Object.fromEntries(state.teams.map((team) => {

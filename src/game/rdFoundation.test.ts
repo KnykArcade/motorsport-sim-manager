@@ -4,6 +4,7 @@ import { createNewGame } from './initialCareer';
 import { gameReducer } from './gameReducer';
 import { rdNodesById } from '../data/rd/rdCatalog';
 import { buildRDProjectStartRequest } from '../sim/rdNodeRules';
+import { researchStateForTeam } from '../sim/technicalAdapters';
 
 describe('R&D foundation reducer integration', () => {
   it('initializes every team and starts the focused foundation node', () => {
@@ -14,13 +15,13 @@ describe('R&D foundation reducer integration', () => {
       teamId: 't-benetton',
       seed: 'rd-foundation',
     });
-    expect(Object.keys(initial.teamResearch ?? {})).toHaveLength(initial.teams.length);
+    expect(Object.keys(initial.teamTechnical ?? {})).toHaveLength(initial.teams.length);
 
     const focused = gameReducer(initial, { type: 'SET_RESEARCH_FOCUS', branchId: 'engine' })!;
     const beforeBudget = focused.teams.find((team) => team.id === focused.selectedTeamId)!.budget;
     const request = buildRDProjectStartRequest(rdNodesById['engine:E1'], focused.series, focused.seasonYear);
     const started = gameReducer(focused, { type: 'START_RD_PROJECT', request })!;
-    const research = started.teamResearch?.[started.selectedTeamId];
+    const research = researchStateForTeam(started, started.selectedTeamId);
     expect(research?.focus?.lockedThroughSeasonYear).toBe(1997);
     expect(research?.activeProjects[0].nodeId).toBe('engine:E1');
     expect(research?.tpp.balance).toBe(25);
@@ -36,6 +37,6 @@ describe('R&D foundation reducer integration', () => {
       seed: 'rd-single-season',
     });
     const unchanged = gameReducer(initial, { type: 'SET_RESEARCH_FOCUS', branchId: 'engine' })!;
-    expect(unchanged.teamResearch?.[unchanged.selectedTeamId].focus).toBeUndefined();
+    expect(researchStateForTeam(unchanged, unchanged.selectedTeamId)?.focus).toBeUndefined();
   });
 });

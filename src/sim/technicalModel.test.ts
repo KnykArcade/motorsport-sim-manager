@@ -10,6 +10,7 @@ import { advanceSeason } from '../game/seasonRollover';
 import { createInitialTeamResearch } from './rdEngine';
 import { latestPartDesign } from './partsEngine';
 import { toUnifiedTechnical } from './technicalModel';
+import { researchStateForTeam, researchMapFromTechnical } from './technicalAdapters';
 import type { DevelopmentProject } from '../types/gameTypes';
 
 const preseasonTabs = [
@@ -156,8 +157,7 @@ describe('unified technical projection', () => {
       ...state,
       activeDevelopmentProjects: [activeUpgrade],
       completedDevelopmentProjects: [completedUpgrade],
-      teamResearch: { ...state.teamResearch, [teamId]: research },
-    });
+    }, { ...researchMapFromTechnical(state), [teamId]: research });
     const team = projected[teamId];
 
     expect(team.activeProjects).toEqual(expect.arrayContaining([
@@ -192,16 +192,19 @@ describe('unified technical projection', () => {
 
   it('migrates a pre-v2 state into an equivalent projection without changing authoritative outputs', () => {
     const state = career('technical-migration');
-    const legacy = structuredClone(state);
+    const legacy = {
+      ...structuredClone(state),
+      teamResearch: researchMapFromTechnical(state),
+    } as GameState & { teamResearch: ReturnType<typeof researchMapFromTechnical> };
     delete legacy.saveSchemaVersion;
     delete legacy.teamTechnical;
     const migrated = migrateGameState(legacy);
 
-    expect(migrated.teamTechnical).toEqual(toUnifiedTechnical(legacy));
+    expect(migrated.teamTechnical).toEqual(toUnifiedTechnical(legacy, legacy.teamResearch));
     expect(migrated.cars).toEqual(state.cars);
-    expect(migrated.teamResearch).toEqual(state.teamResearch);
+    expect(migrated.teamTechnical).toEqual(state.teamTechnical);
     expect(migrated.teamTechnical?.[state.selectedTeamId].tpp).toEqual(
-      state.teamResearch?.[state.selectedTeamId].tpp,
+      researchStateForTeam(state, state.selectedTeamId)?.tpp,
     );
   });
 
@@ -216,7 +219,7 @@ describe('unified technical projection', () => {
       bundle,
     });
     let withProjection = initial;
-    let withoutProjection: GameState = { ...initial, teamTechnical: undefined };
+    let withoutProjection: GameState = structuredClone(initial);
     for (const tab of preseasonTabs) {
       withProjection = approvePreseasonTab(withProjection, tab);
       withoutProjection = approvePreseasonTab(withoutProjection, tab);
@@ -229,7 +232,7 @@ describe('unified technical projection', () => {
     ];
     for (const action of setupActions) {
       withProjection = dispatch(withProjection, action);
-      withoutProjection = dispatch({ ...withoutProjection, teamTechnical: undefined }, action);
+      withoutProjection = dispatch(withoutProjection, action);
     }
 
     const race = currentRace(withProjection);
@@ -237,10 +240,10 @@ describe('unified technical projection', () => {
     expect(withProjection.driverStandings).toEqual(withoutProjection.driverStandings);
     expect(withProjection.constructorStandings).toEqual(withoutProjection.constructorStandings);
     expect(withProjection.cars).toEqual(withoutProjection.cars);
-    expect(withProjection.teamResearch).toEqual(withoutProjection.teamResearch);
+    expect(withProjection.teamTechnical).toEqual(withoutProjection.teamTechnical);
     expect(withProjection.teamParts).toEqual(withoutProjection.teamParts);
-    expect(latestPartDesign('power_unit', withProjection.teamResearch![withProjection.selectedTeamId]))
-      .toEqual(latestPartDesign('power_unit', withoutProjection.teamResearch![withoutProjection.selectedTeamId]));
+    expect(latestPartDesign('power_unit', withProjection.teamTechnical?.[withProjection.selectedTeamId]))
+      .toEqual(latestPartDesign('power_unit', withoutProjection.teamTechnical?.[withoutProjection.selectedTeamId]));
     expect(race).toBeDefined();
     expect(withProjection.teamTechnical).toEqual(toUnifiedTechnical(withProjection));
     expect(withoutProjection.teamTechnical).toEqual(toUnifiedTechnical(withoutProjection));

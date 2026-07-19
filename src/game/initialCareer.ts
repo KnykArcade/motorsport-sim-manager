@@ -31,6 +31,7 @@ import type { TeamPrincipal } from '../types/principalTypes';
 import { createMotorsportUniverse } from '../sim/motorsportUniverseEngine';
 import { planAITechnicalPrograms } from '../sim/aiTechnicalDirectorEngine';
 import { withUnifiedTechnical } from '../sim/technicalAdapters';
+import { toUnifiedTechnical } from '../sim/technicalModel';
 import { createInitialPhase18FoundationState } from '../sim/phase18FoundationEngine';
 import { ensureContractClauses } from '../sim/phase18ContractClauseEngine';
 import { ensurePreseasonHubState } from '../sim/phase18PreseasonEngine';
@@ -247,6 +248,7 @@ export function createNewGame(options: NewGameOptions): GameState {
     options.series,
   );
 
+  const initialResearch = createInitialTeamResearchMap(bundle.teams, options.seasonYear);
   const baseState: GameState = {
     id: `save-${Date.now()}`,
     createdAt: now,
@@ -271,7 +273,6 @@ export function createNewGame(options: NewGameOptions): GameState {
     constructorStandings: [],
     activeDevelopmentProjects: [],
     completedDevelopmentProjects: [],
-    teamResearch: createInitialTeamResearchMap(bundle.teams, options.seasonYear),
     news: [
       {
         id: 'news-welcome',
@@ -306,13 +307,17 @@ export function createNewGame(options: NewGameOptions): GameState {
   };
 
   const normalizedState = enforceRosters(baseState).state;
-  const stateWithUniverse: GameState = {
+  const stateWithTechnical: GameState = {
     ...normalizedState,
-    aiStaff: ensureAIStaffRosters(undefined, false, normalizedState.teams, normalizedState.selectedTeamId, normalizedState.seasonYear, normalizedState.series),
+    teamTechnical: toUnifiedTechnical(normalizedState, initialResearch),
+  };
+  const stateWithUniverse: GameState = {
+    ...stateWithTechnical,
+    aiStaff: ensureAIStaffRosters(undefined, false, stateWithTechnical.teams, stateWithTechnical.selectedTeamId, stateWithTechnical.seasonYear, stateWithTechnical.series),
     aiStaffInitialized: true,
     teamParts: createInitialTeamPartsMap(
-      normalizedState.teams,
-      normalizedState.drivers,
+      stateWithTechnical.teams,
+      stateWithTechnical.drivers,
       options.seasonYear,
     ),
     motorsportUniverse: createMotorsportUniverse(
@@ -320,8 +325,8 @@ export function createNewGame(options: NewGameOptions): GameState {
       options.series,
       bundle,
       seed,
-      normalizedState.teams,
-      normalizedState.drivers,
+      stateWithTechnical.teams,
+      stateWithTechnical.drivers,
     ),
   };
 
@@ -337,6 +342,5 @@ export function createNewGame(options: NewGameOptions): GameState {
   return withUnifiedTechnical(withTechnicalProjection, {
     activeDevelopmentProjects: withTechnicalProjection.activeDevelopmentProjects,
     completedDevelopmentProjects: withTechnicalProjection.completedDevelopmentProjects,
-    teamResearch: withTechnicalProjection.teamResearch!,
   });
 }

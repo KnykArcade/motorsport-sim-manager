@@ -30,6 +30,8 @@ import {
 } from '../sim/relationshipAttentionEngine';
 import type { ContractBreachResponse } from '../types/phase18Types';
 import { RelationshipPriorityBoard } from './relationships/RelationshipPriorityBoard';
+import { RelationshipActivityPanel } from './relationships/RelationshipActivityPanel';
+import { currentRelationshipActivity } from './relationships/relationshipActivityViewModel';
 import {
   relationshipPrioritySummary,
   relationshipStatusLabel,
@@ -149,7 +151,7 @@ function loyaltyRiskText(modifier: number): string {
 }
 
 export function Relationships() {
-  const [activeSection, setActiveSection] = useState<'overview' | 'race' | 'reserve' | 'clauses' | 'orders'>('overview');
+  const [activeSection, setActiveSection] = useState<'overview' | 'activity' | 'race' | 'reserve' | 'clauses' | 'orders'>('overview');
   const { state, dispatch } = useGame();
   const navigate = useNavigate();
   if (!state) return null;
@@ -179,6 +181,7 @@ export function Relationships() {
   );
   const activePromiseCount = allPromises.filter((promise) => promise.status === 'active' && teamDrivers.some((driver) => driver.id === promise.driverId)).length;
   const relationshipPriorities = currentRelationshipAttention(state);
+  const relationshipActivityCount = currentRelationshipActivity(state).length;
   const prioritySummary = relationshipPrioritySummary(relationshipPriorities);
   const topPriority = relationshipPriorities[0];
   const ownerPriority = relationshipPriorities.find((profile) => profile.target.type === 'Owner');
@@ -226,6 +229,7 @@ export function Relationships() {
       <WorkspaceTabs
         items={[
           { id: 'overview', label: `Priority Board (${prioritySummary.mustActNow + prioritySummary.watchClosely})` },
+          { id: 'activity', label: `Activity (${relationshipActivityCount})` },
           { id: 'race', label: 'Race Drivers' },
           { id: 'reserve', label: `Reserve (${reserveDrivers.length})` },
           { id: 'clauses', label: `Clauses & Promises (${contractClauses.length + activePromiseCount})` },
@@ -233,7 +237,7 @@ export function Relationships() {
         ]}
         active={activeSection}
         onChange={setActiveSection}
-        ariaLabel="Driver relationship sections"
+        ariaLabel="Relationship management sections"
       />
       <WorkspaceBody className="space-y-4">
       <div className="ui-decision-strip flex flex-wrap items-center justify-between gap-2 rounded-lg border px-3 py-2.5">
@@ -258,6 +262,8 @@ export function Relationships() {
       {activeSection === 'overview' && (
         <RelationshipPriorityBoard profiles={relationshipPriorities} onReview={handleReviewRelationship} />
       )}
+
+      {activeSection === 'activity' && <RelationshipActivityPanel state={state} />}
 
       {/* Race Drivers Section */}
       {activeSection === 'race' && <div>

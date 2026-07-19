@@ -10,6 +10,7 @@ import {
   planAITechnicalPrograms,
   progressAITechnicalProgramsAfterRace,
 } from './aiTechnicalDirectorEngine';
+import { researchStateForTeam, technicalStateWithResearch } from './technicalAdapters';
 
 function newState(seed = 'ai-technical-test'): GameState {
   return createNewGame({
@@ -33,9 +34,9 @@ describe('AI technical director', () => {
     const second = newState();
     const aiTeamIds = first.teams.filter((team) => team.id !== first.selectedTeamId).map((team) => team.id);
 
-    expect(first.teamResearch?.[first.selectedTeamId]?.activeProjects).toHaveLength(0);
-    expect(aiTeamIds.every((teamId) => Boolean(first.teamResearch?.[teamId]?.focus))).toBe(true);
-    expect(aiTeamIds.some((teamId) => (first.teamResearch?.[teamId]?.activeProjects.length ?? 0) > 0)).toBe(true);
+    expect(researchStateForTeam(first, first.selectedTeamId)?.activeProjects).toHaveLength(0);
+    expect(aiTeamIds.every((teamId) => Boolean(researchStateForTeam(first, teamId)?.focus))).toBe(true);
+    expect(aiTeamIds.some((teamId) => (researchStateForTeam(first, teamId)?.activeProjects.length ?? 0) > 0)).toBe(true);
     expect(aiTeamIds.map((teamId) => aiTechnicalSummary(first, teamId)))
       .toEqual(aiTeamIds.map((teamId) => aiTechnicalSummary(second, teamId)));
   });
@@ -50,15 +51,18 @@ describe('AI technical director', () => {
         ...initial.aiTeamStates,
         [team.id]: { ...ai, financialHealth: 'Critical', technicalSpendThisSeason: 0 },
       },
-      teamResearch: {
-        ...initial.teamResearch,
-        [team.id]: { ...initial.teamResearch![team.id], activeProjects: [] },
+      teamTechnical: {
+        ...initial.teamTechnical,
+        [team.id]: technicalStateWithResearch(
+          initial.teamTechnical![team.id],
+          { ...researchStateForTeam(initial, team.id)!, activeProjects: [] },
+        ),
       },
     };
     const budgetBefore = team.budget;
     const planned = planAITechnicalPrograms(state, [team.id]);
 
-    expect(planned.teamResearch?.[team.id].activeProjects).toHaveLength(0);
+    expect(researchStateForTeam(planned, team.id)?.activeProjects).toHaveLength(0);
     expect(planned.teams.find((candidate) => candidate.id === team.id)?.budget).toBeGreaterThanOrEqual(ai.budget.reserveTarget);
     expect(planned.teams.find((candidate) => candidate.id === team.id)?.budget).toBeLessThanOrEqual(budgetBefore);
   });
@@ -68,16 +72,16 @@ describe('AI technical director', () => {
     const race = state.calendar[0];
     const track = getTrackById(race.trackId)!;
     const aiTeam = state.teams.find((team) =>
-      team.id !== state.selectedTeamId && (state.teamResearch?.[team.id]?.activeProjects.length ?? 0) > 0)!;
-    const playerBefore = state.teamResearch?.[state.selectedTeamId];
-    const projectBefore = state.teamResearch![aiTeam.id].activeProjects[0];
+      team.id !== state.selectedTeamId && (researchStateForTeam(state, team.id)?.activeProjects.length ?? 0) > 0)!;
+    const playerBefore = researchStateForTeam(state, state.selectedTeamId);
+    const projectBefore = researchStateForTeam(state, aiTeam.id)!.activeProjects[0];
 
     const progressed = progressAITechnicalProgramsAfterRace(state, race, [], track).state;
-    const researchAfter = progressed.teamResearch![aiTeam.id];
+    const researchAfter = researchStateForTeam(progressed, aiTeam.id)!;
     const sameProject = researchAfter.activeProjects.find((project) => project.id === projectBefore.id);
     const completed = researchAfter.projectHistory.some((project) => project.projectId === projectBefore.id);
 
     expect((sameProject?.progressRounds ?? 0) > projectBefore.progressRounds || completed).toBe(true);
-    expect(progressed.teamResearch?.[state.selectedTeamId]).toEqual(playerBefore);
+    expect(researchStateForTeam(progressed, state.selectedTeamId)).toEqual(playerBefore);
   });
 });

@@ -26,6 +26,7 @@ import { carPerformanceRating } from '../src/sim/trackFitEngine';
 import { createNewGame } from '../src/game/initialCareer';
 import { advanceSeason } from '../src/game/seasonRollover';
 import { defaultCareerPhaseState, processAITeamActivity } from '../src/game/careerPhaseEngine';
+import { researchStateForTeam } from '../src/sim/technicalAdapters';
 import { activeDriversForTeam, minRaceDriversForSeries } from '../src/game/careerState';
 import type { GameState } from '../src/game/careerState';
 import { careerMarketBundle, youthProspectAge, YOUTH_MAX_AGE } from '../src/sim/careerMarketEngine';
@@ -196,16 +197,16 @@ function simulateSeason(
     };
     const { results } = simulateRace(rCtx);
     byRace[race.id] = results;
-    const completedBefore = Object.values(workingState.teamResearch ?? {})
-      .reduce((sum, research) => sum + research.completedNodes.length, 0);
+    const completedBefore = workingState.teams
+      .reduce((sum, team) => sum + (researchStateForTeam(workingState, team.id)?.completedNodes.length ?? 0), 0);
     workingState = progressAITechnicalProgramsAfterRace(
       workingState,
       race,
       results,
       track,
     ).state;
-    const completedAfter = Object.values(workingState.teamResearch ?? {})
-      .reduce((sum, research) => sum + research.completedNodes.length, 0);
+    const completedAfter = workingState.teams
+      .reduce((sum, team) => sum + (researchStateForTeam(workingState, team.id)?.completedNodes.length ?? 0), 0);
     upgrades += Math.max(0, completedAfter - completedBefore);
   }
   return { results: byRace, state: workingState, activity: { upgrades, reliabilityFixes, setbacks } };

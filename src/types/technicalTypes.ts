@@ -17,7 +17,6 @@ import type {
   ResearchFocusState,
   TeamPrincipalPointsState,
 } from './rdTypes';
-import type { TeamResearchMap } from './rdTypes';
 
 export type TechnicalUpgradeProgram = {
   kind: 'upgrade';
@@ -102,5 +101,4 @@ export type TeamTechnicalMap = Record<string, TeamTechnicalState>;
 export type LegacyTechnicalFields = {
   activeDevelopmentProjects: DevelopmentProject[];
   completedDevelopmentProjects: DevelopmentProject[];
-  teamResearch: TeamResearchMap;
 };
