@@ -1,4 +1,5 @@
 import { lazy, Suspense, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { useGame } from '../game/GameContext';
 import { teamById } from '../game/careerState';
 import type { GameState } from '../game/careerState';
@@ -33,9 +34,21 @@ const sections: ReadonlyArray<{ id: TechnicalSection; label: string }> = [
   { id: 'engine', label: 'Engine' },
 ];
 
+function sectionFromQuery(value: string | null): TechnicalSection {
+  return sections.some((section) => section.id === value)
+    ? value as TechnicalSection
+    : 'command';
+}
+
 export function TechnicalCenter() {
   const { state } = useGame();
-  const [section, setSection] = useState<TechnicalSection>('command');
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [section, setSection] = useState<TechnicalSection>(() => sectionFromQuery(searchParams.get('section')));
+  const activeSection = searchParams.has('section') ? sectionFromQuery(searchParams.get('section')) : section;
+  const navigateTechnicalSection = (next: TechnicalSection) => {
+    setSection(next);
+    setSearchParams(next === 'command' ? {} : { section: next });
+  };
   if (!state) return null;
 
   const team = teamById(state, state.selectedTeamId);
@@ -58,14 +71,19 @@ export function TechnicalCenter() {
         <WorkspaceMetric label="Technical pipeline" value={`${activeUpgrades.length + (research?.activeProjects.length ?? 0)}`} detail={`${activeUpgrades.length} development · ${research?.activeProjects.length ?? 0} research`} />
         <WorkspaceMetric label="Operations queue" value={`${parts?.manufacturingQueue.length ?? 0} factory`} detail={`${state.facilities?.pendingUpgrades.length ?? 0} facility upgrades pending`} />
       </MetricStrip>
-      <WorkspaceTabs items={sections} active={section} onChange={setSection} ariaLabel="Technical Center sections" />
+      <WorkspaceTabs
+        items={sections}
+        active={activeSection}
+        onChange={navigateTechnicalSection}
+        ariaLabel="Technical Center sections"
+      />
       <WorkspaceBody className="space-y-4">
         <Suspense fallback={<div className="py-8 text-center text-sm text-neutral-500">Loading…</div>}>
-          {section === 'command' && <CommandPanel state={state} onNavigate={setSection} />}
-          {section === 'development' && <UnifiedDevelopmentBody />}
-          {section === 'parts' && <PartsInventoryPanel />}
-          {section === 'facilities' && <FacilitiesBody />}
-          {section === 'engine' && (lockInfo ? <LockedEnginePanel title={lockInfo.title} reason={lockInfo.reason} focus={lockInfo.focus} /> : <EngineSupplierBody />)}
+          {activeSection === 'command' && <CommandPanel state={state} onNavigate={navigateTechnicalSection} />}
+          {activeSection === 'development' && <UnifiedDevelopmentBody />}
+          {activeSection === 'parts' && <PartsInventoryPanel />}
+          {activeSection === 'facilities' && <FacilitiesBody />}
+          {activeSection === 'engine' && (lockInfo ? <LockedEnginePanel title={lockInfo.title} reason={lockInfo.reason} focus={lockInfo.focus} /> : <EngineSupplierBody />)}
         </Suspense>
       </WorkspaceBody>
     </WorkspaceScreen>

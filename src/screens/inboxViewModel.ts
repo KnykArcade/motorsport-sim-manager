@@ -73,7 +73,7 @@ function technicalMessages(state: GameState): InboxMessage[] {
       category: 'technical',
       title: `${criticalParts.length} fitted component${criticalParts.length === 1 ? ' is' : 's are'} at critical condition`,
       body: criticalParts.map((part) => `${part.name} (${Math.round(part.condition)}%)`).join(' · '),
-      route: '/technical',
+      route: '/technical?section=parts',
       routeLabel: 'Open Parts & Factory',
       actionable: true,
     });
@@ -86,7 +86,7 @@ function technicalMessages(state: GameState): InboxMessage[] {
       category: 'technical',
       title: 'All technical capacity is committed',
       body: `${active}/${slots} development and research slots in use.`,
-      route: '/technical',
+      route: '/technical?section=development',
       routeLabel: 'Open Technical Center',
       actionable: false,
     });
