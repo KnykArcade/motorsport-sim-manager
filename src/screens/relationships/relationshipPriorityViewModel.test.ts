@@ -53,5 +53,6 @@ describe('relationship priority view model', () => {
   it('documents the complete management hierarchy including collective relationships', () => {
     expect(RELATIONSHIP_HIERARCHY.map((row) => row.rank)).toEqual(['1', '2–3', '4', '5', '6', '7', '8']);
     expect(RELATIONSHIP_HIERARCHY.find((row) => row.rank === '5')?.coverage).toBe('Collective team systems');
+    expect(RELATIONSHIP_HIERARCHY.find((row) => row.rank === '6')?.coverage).toBe('Live career-market standing');
   });
 });

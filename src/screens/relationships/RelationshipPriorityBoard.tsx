@@ -8,6 +8,8 @@ import {
 } from './relationshipPriorityViewModel';
 import { CollectiveStakeholderBoard } from './CollectiveStakeholderBoard';
 import type { CollectiveStakeholderProfile } from './relationshipStakeholderViewModel';
+import { PotentialEmployerBoard } from './PotentialEmployerBoard';
+import type { PotentialEmployerStanding } from './relationshipEmployerViewModel';
 
 const STATUS_STYLES: Record<RelationshipAttentionProfile['status'], string> = {
   MustActNow: 'border-red-500/45 bg-red-500/5 text-red-200',
@@ -20,9 +22,11 @@ type Props = {
   onReview: (profile: RelationshipAttentionProfile) => void;
   collectiveProfiles: CollectiveStakeholderProfile[];
   onReviewCollective: (profile: CollectiveStakeholderProfile) => void;
+  employerStanding?: PotentialEmployerStanding;
+  onReviewEmployers: () => void;
 };
 
-export function RelationshipPriorityBoard({ profiles, onReview, collectiveProfiles, onReviewCollective }: Props) {
+export function RelationshipPriorityBoard({ profiles, onReview, collectiveProfiles, onReviewCollective, employerStanding, onReviewEmployers }: Props) {
   const visible = visibleRelationshipPriorities(profiles);
 
   return (
@@ -93,6 +97,8 @@ export function RelationshipPriorityBoard({ profiles, onReview, collectiveProfil
       </Panel>
 
       <CollectiveStakeholderBoard profiles={collectiveProfiles} onReview={onReviewCollective} />
+
+      <PotentialEmployerBoard standing={employerStanding} onReview={onReviewEmployers} />
 
       <Panel title="Relationship Management Hierarchy">
         <div className="grid gap-2 lg:grid-cols-2">

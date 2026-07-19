@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { useGame } from '../game/GameContext';
 import { teamById } from '../game/careerState';
 import { Panel } from '../components/Panel';
@@ -31,7 +32,9 @@ import {
 
 export function TeamPrincipal() {
   const { state, dispatch } = useGame();
-  const [activeTab, setActiveTab] = useState<PrincipalCommandTab>('standing');
+  const [searchParams] = useSearchParams();
+  const [activeTab, setActiveTab] = useState<PrincipalCommandTab>(() =>
+    searchParams.get('tab') === 'career' ? 'career' : 'standing');
   const [offerPage, setOfferPage] = useState(0);
   if (!state) return null;
 
