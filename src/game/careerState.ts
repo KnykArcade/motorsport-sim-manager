@@ -117,6 +117,8 @@ export type GameState = {
   partsAutomation?: PartsAutomationSettings;
 
   news: NewsItem[];
+  // Inbox message ids the player has read. Optional for save compat.
+  inboxRead?: string[];
   regulationHistory: RegulationChangeEvent[];
   offseasonHistory: OffseasonSummary[];
 

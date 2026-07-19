@@ -42,6 +42,7 @@ const PaddockWeek = lazy(() => import('../screens/PaddockWeek').then((m) => ({ d
 const PreRaceBriefing = lazy(() => import('../screens/PreRaceBriefing').then((m) => ({ default: m.PreRaceBriefing })));
 const PreSeasonSetup = lazy(() => import('../screens/PreSeasonSetup').then((m) => ({ default: m.PreSeasonSetup })));
 const NewsCenter = lazy(() => import('../screens/NewsCenter').then((m) => ({ default: m.NewsCenter })));
+const Inbox = lazy(() => import('../screens/Inbox').then((m) => ({ default: m.Inbox })));
 const Scouting = lazy(() => import('../screens/Scouting').then((m) => ({ default: m.Scouting })));
 
 // Wrap in-game screens with the dashboard layout and redirect to the menu when
@@ -251,6 +252,7 @@ export default function App() {
           <Route path="/paddock" element={<PaddockWeekGuard><PaddockWeek /></PaddockWeekGuard>} />
           <Route path="/briefing" element={<PreRaceBriefingGuard><PreRaceBriefing /></PreRaceBriefingGuard>} />
           <Route path="/post-race/:raceId" element={<PostRaceReviewGuard><PostRaceReview /></PostRaceReviewGuard>} />
+          <Route path="/inbox" element={<InGame><Inbox /></InGame>} />
           <Route path="/calendar" element={<InGame><Calendar /></InGame>} />
           <Route path="/standings" element={<InGame><Standings /></InGame>} />
           <Route path="/teams" element={<InGame><TeamOverview /></InGame>} />

@@ -1,4 +1,4 @@
-import { useState, type ReactNode } from 'react';
+import { useMemo, useState, type ReactNode } from 'react';
 import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { useGame } from '../game/GameContext';
 import { teamById, currentRace } from '../game/careerState';
@@ -9,6 +9,7 @@ import { getEraTheme, getEraThemeConfig } from '../theme/eraTheme';
 import { visibleNavigationGroups } from './layoutNavigation';
 import { workflowDestination } from './layoutWorkflow';
 import { NavIcon } from './NavIcon';
+import { unreadInboxCount } from '../screens/inboxViewModel';
 
 export function Layout({ children }: { children: ReactNode }) {
   const { state, saveNow } = useGame();
@@ -22,6 +23,7 @@ export function Layout({ children }: { children: ReactNode }) {
   const era = getEraTheme(state?.series, state?.seasonYear);
   const eraConfig = getEraThemeConfig(era);
   const workflow = state ? workflowDestination(state) : undefined;
+  const inboxUnread = useMemo(() => (state ? unreadInboxCount(state) : 0), [state]);
 
   const goTo = (to: string) => {
     setMobileNavigationOpen(false);
@@ -70,6 +72,11 @@ export function Layout({ children }: { children: ReactNode }) {
                     >
                       <NavIcon to={item.to} className="era-nav-icon h-4 w-4 shrink-0" />
                       <span className="truncate">{item.label}</span>
+                      {item.to === '/inbox' && inboxUnread > 0 && (
+                        <span className="ml-auto rounded-full bg-[var(--era-accent-strong)] px-1.5 py-0.5 text-[9px] font-bold leading-none text-black">
+                          {inboxUnread > 99 ? '99+' : inboxUnread}
+                        </span>
+                      )}
                     </NavLink>
                   ))}
                 </div>
