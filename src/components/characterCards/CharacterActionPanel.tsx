@@ -27,7 +27,10 @@ import { characterFutureIntentLabel, futureIntentForTarget } from '../../sim/cha
 type Props = {
   state: GameState;
   target?: CharacterInteractionTarget;
+  initialSection?: CharacterActionSection;
 };
+
+type CharacterActionSection = 'overview' | 'interact' | 'connections' | 'recent';
 
 const TONE_CLASS = {
   Positive: 'border-emerald-800/70 bg-emerald-950/30 text-emerald-200',
@@ -51,9 +54,9 @@ const INFLUENCE_CLASS = {
   Obstructive: 'border-red-700/60 bg-red-950/30 text-red-300',
 } as const;
 
-export function CharacterActionPanel({ state, target }: Props) {
+export function CharacterActionPanel({ state, target, initialSection = 'overview' }: Props) {
   const { dispatch } = useGame();
-  const [section, setSection] = useState<'overview' | 'interact' | 'connections' | 'recent'>('overview');
+  const [section, setSection] = useState<CharacterActionSection>(initialSection);
   if (!target) {
     return <p className="text-sm text-neutral-500">This is your own management dossier. Actions are taken with the people around you.</p>;
   }

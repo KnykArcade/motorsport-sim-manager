@@ -369,6 +369,7 @@ type ButtonProps = {
   subject: CharacterDossierSubject;
   children?: ReactNode;
   className?: string;
+  initialTab?: DossierTab;
 };
 
 function interactionTargetFor(
@@ -393,7 +394,7 @@ function interactionTargetFor(
   };
 }
 
-export function CharacterDossierButton({ state, subject, children, className = '' }: ButtonProps) {
+export function CharacterDossierButton({ state, subject, children, className = '', initialTab = 'profile' }: ButtonProps) {
   const [open, setOpen] = useState(false);
   const model = useMemo(() => buildCharacterDossier(state, subject), [state, subject]);
   return (
@@ -408,13 +409,13 @@ export function CharacterDossierButton({ state, subject, children, className = '
       >
         {children ?? 'Character Card'}
       </Button>
-      {open && <CharacterDossierModal state={state} subject={subject} model={model} onClose={() => setOpen(false)} />}
+      {open && <CharacterDossierModal state={state} subject={subject} model={model} initialTab={initialTab} onClose={() => setOpen(false)} />}
     </>
   );
 }
 
-function CharacterDossierModal({ state, subject, model, onClose }: { state: GameState; subject: CharacterDossierSubject; model: CharacterDossierModel; onClose: () => void }) {
-  const [tab, setTab] = useState<DossierTab>('profile');
+function CharacterDossierModal({ state, subject, model, initialTab, onClose }: { state: GameState; subject: CharacterDossierSubject; model: CharacterDossierModel; initialTab: DossierTab; onClose: () => void }) {
+  const [tab, setTab] = useState<DossierTab>(initialTab);
   const navigate = useNavigate();
   const interactionTarget = interactionTargetFor(state, subject, model);
   const interactionHistory = interactionTarget ? interactionHistoryForTarget(state, interactionTarget) : [];
@@ -468,7 +469,7 @@ function CharacterDossierModal({ state, subject, model, onClose }: { state: Game
 
           {tab === 'actions' && (
             <DossierSection title="Management Actions">
-              <CharacterActionPanel state={state} target={interactionTarget} />
+              <CharacterActionPanel state={state} target={interactionTarget} initialSection={initialTab === 'actions' ? 'interact' : 'overview'} />
             </DossierSection>
           )}
 

@@ -267,6 +267,7 @@ export function Relationships() {
 
       {activeSection === 'overview' && (
         <RelationshipPriorityBoard
+          state={state}
           profiles={relationshipPriorities}
           onReview={handleReviewRelationship}
           collectiveProfiles={collectiveStakeholders}
