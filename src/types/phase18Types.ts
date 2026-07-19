@@ -117,6 +117,26 @@ export type DepartmentMood = {
   lastUpdatedRound?: number;
 };
 
+export type CollectiveStakeholderId = 'Departments' | 'Commercial';
+
+export type CollectiveStakeholderAction =
+  | 'ReviewWorkload'
+  | 'ClarifyPriorities'
+  | 'BriefSponsors'
+  | 'EngageSupporters';
+
+export type CollectiveStakeholderActionRecord = {
+  id: string;
+  stakeholderId: CollectiveStakeholderId;
+  action: CollectiveStakeholderAction;
+  label: string;
+  outcome: string;
+  seasonYear: number;
+  round: number;
+  cost: number;
+  effects: string[];
+};
+
 export type IntelligenceSubjectType =
   | 'Team'
   | 'Driver'
@@ -465,6 +485,7 @@ export type Phase18FoundationState = {
   aiPrincipalIdentities: Record<string, PrincipalIdentityState>;
   advisorRecommendations: AdvisorRecommendation[];
   departmentMoods: Record<string, Record<DepartmentId, DepartmentMood>>;
+  collectiveStakeholderActions?: CollectiveStakeholderActionRecord[];
   intelligenceReports: IntelligenceReport[];
   preseason?: PreseasonHubState;
   failureInvestigations?: FailureInvestigationState;

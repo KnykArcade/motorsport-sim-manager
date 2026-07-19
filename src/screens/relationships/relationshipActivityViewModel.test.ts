@@ -51,6 +51,7 @@ describe('relationship activity view model', () => {
     const activity = relationshipActivityFromSources(
       [memory()],
       [recommendation()],
+      [],
       'team-1',
     );
 
@@ -78,6 +79,7 @@ describe('relationship activity view model', () => {
         recommendation({ id: 'pending', status: 'Pending' }),
         recommendation({ id: 'other-team', teamId: 'team-2' }),
       ],
+      [],
       'team-1',
     );
 
@@ -90,9 +92,32 @@ describe('relationship activity view model', () => {
 
   it('does not duplicate a memory when the same record appears twice', () => {
     const repeated = memory();
-    const activity = relationshipActivityFromSources([repeated, repeated], [], 'team-1');
+    const activity = relationshipActivityFromSources([repeated, repeated], [], [], 'team-1');
 
     expect(activity).toHaveLength(1);
     expect(activity[0].id).toBe('memory:memory-1');
+  });
+
+  it('includes visible committee action outcomes', () => {
+    const activity = relationshipActivityFromSources([], [], [{
+      id: 'collective-1',
+      stakeholderId: 'Departments',
+      action: 'ReviewWorkload',
+      label: 'Review workload',
+      outcome: 'Technical received workload relief.',
+      seasonYear: 2026,
+      round: 4,
+      cost: 200_000,
+      effects: ['Technical workload -12', 'Technical morale +4'],
+    }], 'team-1');
+
+    expect(activity[0]).toMatchObject({
+      id: 'collective:collective-1',
+      targetName: 'Team & departments',
+      targetType: 'Collective',
+      source: 'CommitteeAction',
+      tone: 'Positive',
+      effects: ['Technical workload -12', 'Technical morale +4'],
+    });
   });
 });

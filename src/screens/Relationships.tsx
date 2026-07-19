@@ -272,6 +272,7 @@ export function Relationships() {
           onReview={handleReviewRelationship}
           collectiveProfiles={collectiveStakeholders}
           onReviewCollective={handleReviewCollective}
+          onTakeCollectiveAction={(action) => dispatch({ type: 'TAKE_COLLECTIVE_STAKEHOLDER_ACTION', action })}
           employerStanding={employerStanding}
           onReviewEmployers={() => navigate('/principal?tab=career')}
           externalTalent={externalTalent}

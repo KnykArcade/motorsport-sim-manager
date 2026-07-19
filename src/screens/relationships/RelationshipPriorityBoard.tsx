@@ -18,6 +18,7 @@ import { characterManagementMove } from './relationshipActionViewModel';
 import type { GameState } from '../../game/careerState';
 import { CharacterDossierButton } from '../../components/characterCards/CharacterDossier';
 import { DriverDossierButton } from '../../components/driverCards/DriverDossier';
+import type { CollectiveStakeholderAction } from '../../types/phase18Types';
 
 const STATUS_STYLES: Record<RelationshipAttentionProfile['status'], string> = {
   MustActNow: 'border-red-500/45 bg-red-500/5 text-red-200',
@@ -31,6 +32,7 @@ type Props = {
   onReview: (profile: RelationshipAttentionProfile) => void;
   collectiveProfiles: CollectiveStakeholderProfile[];
   onReviewCollective: (profile: CollectiveStakeholderProfile) => void;
+  onTakeCollectiveAction: (action: CollectiveStakeholderAction) => void;
   employerStanding?: PotentialEmployerStanding;
   onReviewEmployers: () => void;
   externalTalent: ExternalTalentContext;
@@ -38,7 +40,7 @@ type Props = {
   onReviewStaffMarket: () => void;
 };
 
-export function RelationshipPriorityBoard({ state, profiles, onReview, collectiveProfiles, onReviewCollective, employerStanding, onReviewEmployers, externalTalent, onReviewDriverMarket, onReviewStaffMarket }: Props) {
+export function RelationshipPriorityBoard({ state, profiles, onReview, collectiveProfiles, onReviewCollective, onTakeCollectiveAction, employerStanding, onReviewEmployers, externalTalent, onReviewDriverMarket, onReviewStaffMarket }: Props) {
   const visible = visibleRelationshipPriorities(profiles);
 
   return (
@@ -78,7 +80,7 @@ export function RelationshipPriorityBoard({ state, profiles, onReview, collectiv
         </p>
       </Panel>
 
-      <CollectiveStakeholderBoard profiles={collectiveProfiles} onReview={onReviewCollective} />
+      <CollectiveStakeholderBoard state={state} profiles={collectiveProfiles} onReview={onReviewCollective} onTakeAction={onTakeCollectiveAction} />
 
       <PotentialEmployerBoard standing={employerStanding} onReview={onReviewEmployers} />
 
