@@ -5,6 +5,8 @@ import { formatMoney } from '../components/ui';
 import { useGame } from '../game/GameContext';
 import { RIVAL_ACTION_COST, rivalActionUsedThisRound, rivalRelationshipLabel } from '../sim/phase18RivalRelationshipEngine';
 import type { RivalAction, RivalRelationship } from '../types/phase18Types';
+import { RivalPrincipalBriefing } from './rivals/RivalPrincipalBriefing';
+import { rivalPrincipalBrief } from './rivals/rivalPrincipalBriefViewModel';
 import {
   MetricStrip,
   WorkspaceBody,
@@ -36,6 +38,9 @@ export function RivalRelationships() {
   const activity = relationships.flatMap((relationship) => relationship.history.map((event) => ({ ...event, rivalId: rivalIdOf(relationship) }))).sort((a, b) => b.seasonYear - a.seasonYear || (b.round ?? 0) - (a.round ?? 0)).slice(0, 10);
   const closestAlly = [...relationships].sort((a, b) => b.score - a.score)[0];
   const bitterestRival = relationships[0];
+  const selectedBrief = selected && selectedRivalId
+    ? rivalPrincipalBrief(state, selected, selectedRivalId)
+    : undefined;
 
   return <WorkspaceScreen>
     <WorkspaceHeader eyebrow="People center" title="Rival Relationships" subtitle="Sporting respect, political alignment, commercial trust, and technical suspicion across the paddock" />
@@ -88,6 +93,7 @@ export function RivalRelationships() {
         const disabledReason = used ? `Already used against this rival in round ${currentRound}` : insufficientBudget ? 'Insufficient budget' : undefined;
         return <button key={action} type="button" disabled={used || insufficientBudget} title={disabledReason} onClick={() => dispatch({ type: 'TAKE_RIVAL_ACTION', rivalTeamId: selectedRivalId, action })} className="rounded border border-neutral-700 bg-neutral-950/50 p-3 text-left enabled:hover:border-amber-500/50 disabled:opacity-40"><div className="flex items-center justify-between gap-2"><span className="text-xs font-semibold text-amber-300">{splitLabel(action)}</span>{used && <span className="rounded bg-neutral-800 px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wide text-neutral-400">Used R{currentRound}</span>}</div><p className="mt-1 text-[10px] text-neutral-500">{actionDescription(action)}</p><div className={`mt-2 text-[10px] ${insufficientBudget && !used ? 'text-red-300' : 'text-neutral-400'}`}>{used ? `Available again in round ${currentRound + 1}` : insufficientBudget ? `Needs ${formatMoney(RIVAL_ACTION_COST[action])}` : RIVAL_ACTION_COST[action] ? formatMoney(RIVAL_ACTION_COST[action]) : 'No cost'}</div></button>;
       })}</div></div></div>
+      {selectedBrief && <RivalPrincipalBriefing brief={selectedBrief} />}
     </Panel>}
 
     {tab === 'activity' && <Panel title="Relationship Activity">{activity.length === 0 ? <p className="text-sm text-neutral-500">No major relationship events have occurred yet.</p> : <div className="grid gap-2 md:grid-cols-2">{activity.map((event) => <div key={event.id} className="rounded border border-neutral-800 bg-neutral-900/40 p-3"><div className="flex justify-between text-[10px] uppercase text-neutral-500"><span>{teamName(event.rivalId)} · {event.category}</span><span>{event.seasonYear}{event.round ? ` R${event.round}` : ''}</span></div><p className="mt-1 text-xs text-neutral-300">{event.reason}</p><div className={`mt-1 text-[10px] ${event.amount >= 0 ? 'text-emerald-300' : 'text-red-300'}`}>{event.amount >= 0 ? '+' : ''}{event.amount} relationship</div></div>)}</div>}</Panel>}

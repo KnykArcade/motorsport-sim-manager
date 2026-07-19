@@ -13,6 +13,9 @@ import { carWithFittedParts } from '../sim/partsEngine';
 import { carPerformanceRating, effectiveCarRatings } from '../sim/trackFitEngine';
 import { ratingColor } from '../components/ui';
 import { activeUpgradePrograms, researchStateForTeam } from '../sim/technicalAdapters';
+import { technicalDirectorProposals } from '../sim/technicalAdvisorEngine';
+import { staffByRole } from '../sim/staffEngine';
+import { Button } from '../components/Button';
 
 const UnifiedDevelopmentBody = lazy(() => import('./UnifiedDevelopment').then((m) => ({ default: m.UnifiedDevelopmentBody })));
 const FacilitiesBody = lazy(() => import('./Facilities').then((m) => ({ default: m.FacilitiesBody })));
@@ -86,6 +89,7 @@ function CommandPanel({ state, onNavigate }: { state: GameState; onNavigate: (se
   ].filter((alert): alert is string => !!alert);
   return (
     <div className="space-y-4">
+      <TechnicalBriefingPanel state={state} onNavigate={onNavigate} />
       <Panel title="Car performance snapshot">
         {effectiveCars.length === 0 ? <p className="text-sm text-neutral-500">Current car ratings are not available yet.</p> : <TechnicalTable>
           <TechnicalTableHead><TechnicalTableRow><TechnicalTableCell header>Driver / car</TechnicalTableCell><TechnicalTableCell header>Overall</TechnicalTableCell><TechnicalTableCell header>Power unit</TechnicalTableCell><TechnicalTableCell header>Aero</TechnicalTableCell><TechnicalTableCell header>Mechanical</TechnicalTableCell><TechnicalTableCell header>Reliability</TechnicalTableCell><TechnicalTableCell header>Parts condition</TechnicalTableCell></TechnicalTableRow></TechnicalTableHead>
@@ -108,6 +112,41 @@ function CommandPanel({ state, onNavigate }: { state: GameState; onNavigate: (se
         {alerts.length === 0 ? <p className="text-sm text-neutral-500">No immediate technical actions.</p> : <ul className="space-y-2">{alerts.map((alert) => <li key={alert} className="border-l-2 border-amber-500 px-3 py-1 text-sm text-amber-200">{alert}</li>)}</ul>}
       </Panel>
     </div>
+  );
+}
+
+function TechnicalBriefingPanel({ state, onNavigate }: { state: GameState; onNavigate: (section: TechnicalSection) => void }) {
+  const { dispatch } = useGame();
+  const [dismissed, setDismissed] = useState<ReadonlySet<string>>(new Set());
+  const director = staffByRole(state.staff ?? [])['Technical Director'];
+  const proposals = technicalDirectorProposals(state).filter((proposal) => !dismissed.has(proposal.id));
+  const dismiss = (id: string) => setDismissed((prev) => new Set([...prev, id]));
+  return (
+    <Panel
+      title="Technical Director's briefing"
+      actions={<span className="text-xs text-neutral-500">{director ? `${director.name} · Technical Director` : 'No Technical Director hired — baseline recommendations'}</span>}
+    >
+      {proposals.length === 0 ? (
+        <p className="text-sm text-neutral-500">No recommendations this round — the technical programme is in good shape.</p>
+      ) : (
+        <ul className="space-y-2">
+          {proposals.map((proposal) => (
+            <li key={proposal.id} className="flex flex-wrap items-center gap-3 rounded border border-neutral-800 bg-neutral-900/40 px-3 py-2">
+              <div className="min-w-0 flex-1">
+                <div className="text-sm font-semibold text-neutral-100">{proposal.title}</div>
+                <div className="text-xs text-neutral-400">{proposal.reason}</div>
+              </div>
+              <div className="text-xs tabular-nums text-neutral-300">{proposal.costLabel}<div className="text-neutral-500">{proposal.durationLabel}</div></div>
+              <div className="flex items-center gap-2">
+                <Button variant="primary" onClick={() => { dispatch(proposal.action); dismiss(proposal.id); }}>Approve</Button>
+                <button type="button" className="text-xs text-[var(--era-accent-strong)] hover:underline" onClick={() => onNavigate(proposal.section)}>Open →</button>
+                <button type="button" className="text-xs text-neutral-500 hover:text-neutral-300" onClick={() => dismiss(proposal.id)} aria-label={`Dismiss ${proposal.title}`}>✕</button>
+              </div>
+            </li>
+          ))}
+        </ul>
+      )}
+    </Panel>
   );
 }
 
