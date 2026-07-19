@@ -107,13 +107,10 @@ export function withUnifiedTechnical(
     activeDevelopmentProjects: legacy.activeDevelopmentProjects,
     completedDevelopmentProjects: legacy.completedDevelopmentProjects,
   }, researchMap);
-  const legacyWithoutResearchCompat: Partial<LegacyTechnicalFields> = { ...legacy };
-  const result = {
+  return {
     ...state,
-    ...legacyWithoutResearchCompat,
     teamTechnical: projected,
   };
-  return result;
 }
 
 export function withLegacyTechnicalCompat(state: GameState): GameState {

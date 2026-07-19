@@ -4,7 +4,6 @@
 
 import type {
   Car,
-  DevelopmentProject,
   Driver,
   GameMode,
   NewsItem,
@@ -104,13 +103,8 @@ export type GameState = {
   driverStandings: StandingsEntry[];
   constructorStandings: StandingsEntry[];
 
-  // Deprecated compatibility projections. `teamTechnical` is authoritative;
-  // these are rebuilt from it for legacy relationship/UI paths during cutover.
-  activeDevelopmentProjects: DevelopmentProject[];
-  completedDevelopmentProjects: DevelopmentProject[];
-
-  // Derived unified technical projection. This is the authoritative technical
-  // store; native views are materialized transiently for existing formulas.
+  // Authoritative unified technical store; native views are materialized
+  // transiently for existing formulas.
   teamTechnical?: TeamTechnicalMap;
 
   // Driver-specific fitted components, spare inventory, repairs, and factory

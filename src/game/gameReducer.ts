@@ -2205,8 +2205,6 @@ function applyRaceResults(
     raceEvents: { ...state.raceEvents, [race.id]: events },
     driverStandings,
     constructorStandings,
-    activeDevelopmentProjects,
-    completedDevelopmentProjects,
     teamParts,
     aiTeamStates,
     finance: [...(state.finance ?? []), ...financeTxns],

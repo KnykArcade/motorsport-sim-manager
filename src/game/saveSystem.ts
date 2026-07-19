@@ -74,8 +74,6 @@ export function migrateGameState(state: GameState): GameState {
   if (!patched.driverPromises) {
     patched.driverPromises = [];
   }
-  patched.activeDevelopmentProjects ??= [];
-  patched.completedDevelopmentProjects ??= [];
   const legacyResearch = (state as GameState & { teamResearch?: TeamResearchMap }).teamResearch;
   patched.teamTechnical ??= toUnifiedTechnical(patched as GameState, ensureTeamResearchMap(
     legacyResearch,
@@ -120,8 +118,6 @@ export const defaultSettings: GameSettings = {
 
 export function saveGame(state: GameState): void {
   const persistedState: Partial<GameState> = { ...state };
-  delete persistedState.activeDevelopmentProjects;
-  delete persistedState.completedDevelopmentProjects;
   const toStore = {
     ...persistedState,
     saveSchemaVersion: CURRENT_SAVE_SCHEMA_VERSION,

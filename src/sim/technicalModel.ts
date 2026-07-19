@@ -7,7 +7,12 @@ import type {
   TechnicalProgram,
 } from '../types/technicalTypes';
 
-export function toUnifiedTechnical(state: GameState, legacyResearch?: TeamResearchMap): TeamTechnicalMap {
+type LegacyDevelopmentFields = {
+  activeDevelopmentProjects?: import('../types/gameTypes').DevelopmentProject[];
+  completedDevelopmentProjects?: import('../types/gameTypes').DevelopmentProject[];
+};
+
+export function toUnifiedTechnical(state: GameState & LegacyDevelopmentFields, legacyResearch?: TeamResearchMap): TeamTechnicalMap {
   if (!legacyResearch && state.teamTechnical) return state.teamTechnical;
   const researchMap = legacyResearch
     ?? ensureTeamResearchMap(undefined, state.teams, state.seasonYear);
