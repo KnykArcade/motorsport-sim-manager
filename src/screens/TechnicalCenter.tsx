@@ -18,6 +18,7 @@ import { technicalDirectorProposals } from '../sim/technicalAdvisorEngine';
 import { staffByRole } from '../sim/staffEngine';
 import { Button } from '../components/Button';
 import { TppExplainer } from '../components/development/TppExplainer';
+import type { TechnicalManagementMode } from '../types/partsTypes';
 
 const UnifiedDevelopmentBody = lazy(() => import('./UnifiedDevelopment').then((m) => ({ default: m.UnifiedDevelopmentBody })));
 const FacilitiesBody = lazy(() => import('./Facilities').then((m) => ({ default: m.FacilitiesBody })));
@@ -108,6 +109,7 @@ function CommandPanel({ state, onNavigate }: { state: GameState; onNavigate: (se
   ].filter((alert): alert is string => !!alert);
   return (
     <div className="space-y-4">
+      <ManagementModePanel state={state} />
       <TechnicalBriefingPanel state={state} onNavigate={onNavigate} />
       <Panel title="Car performance snapshot">
         {effectiveCars.length === 0 ? <p className="text-sm text-neutral-500">Current car ratings are not available yet.</p> : <TechnicalTable>
@@ -131,6 +133,40 @@ function CommandPanel({ state, onNavigate }: { state: GameState; onNavigate: (se
         {alerts.length === 0 ? <p className="text-sm text-neutral-500">No immediate technical actions.</p> : <ul className="space-y-2">{alerts.map((alert) => <li key={alert} className="border-l-2 border-amber-500 px-3 py-1 text-sm text-amber-200">{alert}</li>)}</ul>}
       </Panel>
     </div>
+  );
+}
+
+function ManagementModePanel({ state }: { state: GameState }) {
+  const { dispatch } = useGame();
+  const automation = state.partsAutomation ?? { autoRepair: false, autoRestock: false, autoFit: false };
+  const mode: TechnicalManagementMode = state.technicalManagementMode
+    ?? (automation.autoRepair && automation.autoRestock && automation.autoFit ? 'assisted' : 'player_led');
+  return (
+    <Panel title="Technical management mode" actions={<span className="text-xs text-neutral-500">Applies existing factory controls only</span>}>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="max-w-2xl text-sm text-neutral-400">
+          Choose how much of the routine factory work you want to handle. The Technical Director remains advisory in both modes; approvals are never automatic.
+        </div>
+        <div className="flex shrink-0 gap-2">
+          {([
+            ['player_led', 'Player-led', 'You fit, repair, and restock parts manually.'],
+            ['assisted', 'Assisted', 'The factory auto-fits, auto-repairs, and auto-restocks after races.'],
+          ] as const).map(([value, label, description]) => (
+            <button
+              key={value}
+              type="button"
+              className={`rounded border px-3 py-2 text-left ${mode === value ? 'border-amber-500/70 bg-amber-500/10 text-amber-200' : 'border-neutral-700 bg-neutral-900/40 text-neutral-400 hover:border-neutral-500'}`}
+              onClick={() => dispatch({ type: 'SET_TECHNICAL_MANAGEMENT_MODE', mode: value })}
+              aria-pressed={mode === value}
+              title={description}
+            >
+              <span className="block text-xs font-semibold">{label}</span>
+              <span className="mt-0.5 block max-w-56 text-[10px] leading-4 opacity-75">{description}</span>
+            </button>
+          ))}
+        </div>
+      </div>
+    </Panel>
   );
 }
 
