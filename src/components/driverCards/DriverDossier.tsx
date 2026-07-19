@@ -42,6 +42,7 @@ type Props = {
   subject: DriverSubject;
   context?: string;
   focus?: DossierFocus;
+  actionIntent?: boolean;
   children?: ReactNode;
   className?: string;
 };
@@ -228,7 +229,7 @@ function buildDriverSeasonStats(state: GameState, driverId: string): DriverSeaso
   };
 }
 
-export function DriverDossierButton({ state, subject, context, focus, children, className = '' }: Props) {
+export function DriverDossierButton({ state, subject, context, focus, actionIntent = false, children, className = '' }: Props) {
   const [open, setOpen] = useState(false);
   const profile = useMemo(() => getSubjectProfile(state, subject), [state, subject]);
 
@@ -251,6 +252,7 @@ export function DriverDossierButton({ state, subject, context, focus, children, 
           subject={subject}
           context={context}
           focus={focus}
+          actionIntent={actionIntent}
           onClose={() => setOpen(false)}
         />
       )}
@@ -264,6 +266,7 @@ function DriverDossierModal({
   subject,
   context,
   focus = 'identity',
+  actionIntent = false,
   onClose,
 }: {
   state: GameState;
@@ -271,6 +274,7 @@ function DriverDossierModal({
   subject: DriverSubject;
   context?: string;
   focus?: DossierFocus;
+  actionIntent?: boolean;
   onClose: () => void;
 }) {
   const navigate = useNavigate();
@@ -402,6 +406,7 @@ function DriverDossierModal({
                 <DossierPanel title="Management Actions" emphasis={activeTab === 'relationship'}>
                   <CharacterActionPanel
                     state={state}
+                    initialSection={actionIntent ? 'interact' : 'overview'}
                     target={{
                       type: 'Driver',
                       id: subject.driver.id,

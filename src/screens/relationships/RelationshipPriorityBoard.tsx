@@ -15,6 +15,9 @@ import type { ExternalTalentContext } from './relationshipTalentViewModel';
 import { RelationshipRiskNote } from './RelationshipRiskNote';
 import { characterRiskIfIgnored } from './relationshipRiskViewModel';
 import { characterManagementMove } from './relationshipActionViewModel';
+import type { GameState } from '../../game/careerState';
+import { CharacterDossierButton } from '../../components/characterCards/CharacterDossier';
+import { DriverDossierButton } from '../../components/driverCards/DriverDossier';
 
 const STATUS_STYLES: Record<RelationshipAttentionProfile['status'], string> = {
   MustActNow: 'border-red-500/45 bg-red-500/5 text-red-200',
@@ -23,6 +26,7 @@ const STATUS_STYLES: Record<RelationshipAttentionProfile['status'], string> = {
 };
 
 type Props = {
+  state: GameState;
   profiles: RelationshipAttentionProfile[];
   onReview: (profile: RelationshipAttentionProfile) => void;
   collectiveProfiles: CollectiveStakeholderProfile[];
@@ -34,7 +38,7 @@ type Props = {
   onReviewStaffMarket: () => void;
 };
 
-export function RelationshipPriorityBoard({ profiles, onReview, collectiveProfiles, onReviewCollective, employerStanding, onReviewEmployers, externalTalent, onReviewDriverMarket, onReviewStaffMarket }: Props) {
+export function RelationshipPriorityBoard({ state, profiles, onReview, collectiveProfiles, onReviewCollective, employerStanding, onReviewEmployers, externalTalent, onReviewDriverMarket, onReviewStaffMarket }: Props) {
   const visible = visibleRelationshipPriorities(profiles);
 
   return (
@@ -62,6 +66,7 @@ export function RelationshipPriorityBoard({ profiles, onReview, collectiveProfil
             {visible.map((profile) => (
               <RelationshipPriorityCard
                 key={`${profile.target.type}:${profile.target.id}`}
+                state={state}
                 profile={profile}
                 onReview={onReview}
               />
@@ -108,7 +113,7 @@ function SignalExplanation({ title, detail }: { title: string; detail: string })
   );
 }
 
-function RelationshipPriorityCard({ profile, onReview }: { profile: RelationshipAttentionProfile; onReview: (profile: RelationshipAttentionProfile) => void }) {
+function RelationshipPriorityCard({ state, profile, onReview }: { state: GameState; profile: RelationshipAttentionProfile; onReview: (profile: RelationshipAttentionProfile) => void }) {
   const move = characterManagementMove(profile);
 
   return (
@@ -146,13 +151,35 @@ function RelationshipPriorityCard({ profile, onReview }: { profile: Relationship
 
       <RelationshipRiskNote>{characterRiskIfIgnored(profile)}</RelationshipRiskNote>
 
-      <button
-        type="button"
-        onClick={() => onReview(profile)}
-        className="mt-3 text-[11px] font-semibold text-[var(--era-accent-strong)] hover:underline"
-      >
-        Review relationship →
-      </button>
+      <div className="mt-3 flex flex-wrap items-center gap-2">
+        <ManagementActionButton state={state} profile={profile} onReview={onReview} />
+        <button
+          type="button"
+          onClick={() => onReview(profile)}
+          className="px-1 text-[11px] font-semibold text-neutral-400 hover:text-neutral-200 hover:underline"
+        >
+          Review full file →
+        </button>
+      </div>
     </article>
   );
+}
+
+function ManagementActionButton({ state, profile, onReview }: { state: GameState; profile: RelationshipAttentionProfile; onReview: (profile: RelationshipAttentionProfile) => void }) {
+  const sharedClass = 'border border-amber-500/35 bg-amber-500/10 text-amber-200 hover:bg-amber-500/20';
+  if (profile.target.type === 'Owner' && profile.target.teamId) {
+    return <CharacterDossierButton state={state} subject={{ type: 'owner', teamId: profile.target.teamId }} initialTab="actions" className={sharedClass}>Take owner action →</CharacterDossierButton>;
+  }
+  if (profile.target.type === 'Driver') {
+    const driver = state.drivers.find((entry) => entry.id === profile.target.id);
+    if (driver) return <DriverDossierButton state={state} subject={{ type: 'driver', driver }} focus="relationship" actionIntent className={sharedClass}>Take driver action →</DriverDossierButton>;
+  }
+  if (profile.target.type === 'Staff') {
+    const staff = state.staff?.find((entry) => entry.id === profile.target.id);
+    if (staff) return <CharacterDossierButton state={state} subject={{ type: 'staff', staff }} initialTab="actions" className={sharedClass}>Take staff action →</CharacterDossierButton>;
+  }
+  if (profile.target.type === 'RivalPrincipal' && profile.target.teamId) {
+    return <CharacterDossierButton state={state} subject={{ type: 'aiPrincipal', teamId: profile.target.teamId }} initialTab="actions" className={sharedClass}>Choose paddock action →</CharacterDossierButton>;
+  }
+  return <button type="button" onClick={() => onReview(profile)} className={`rounded px-2 py-1 text-xs font-semibold ${sharedClass}`}>Open management options →</button>;
 }
