@@ -1,6 +1,8 @@
 import { Panel } from '../../components/Panel';
 import type { CollectiveStakeholderProfile } from './relationshipStakeholderViewModel';
 import { relationshipStatusLabel } from './relationshipPriorityViewModel';
+import { RelationshipRiskNote } from './RelationshipRiskNote';
+import { collectiveRiskIfIgnored } from './relationshipRiskViewModel';
 
 const STATUS_STYLES: Record<CollectiveStakeholderProfile['status'], string> = {
   MustActNow: 'border-red-500/45 bg-red-500/5 text-red-200',
@@ -55,6 +57,7 @@ export function CollectiveStakeholderBoard({ profiles, onReview }: Props) {
               <ul className="mt-2 space-y-1 text-[11px] text-neutral-300">
                 {profile.reasons.slice(0, 2).map((reason) => <li key={reason}>• {reason}</li>)}
               </ul>
+              <RelationshipRiskNote>{collectiveRiskIfIgnored(profile)}</RelationshipRiskNote>
               <button
                 type="button"
                 onClick={() => onReview(profile)}
