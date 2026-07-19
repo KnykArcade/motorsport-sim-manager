@@ -11,6 +11,7 @@ import {
   progressAITechnicalProgramsAfterRace,
 } from './aiTechnicalDirectorEngine';
 import { researchStateForTeam, technicalStateWithResearch } from './technicalAdapters';
+import { developmentSlots } from './facilityEngine';
 
 function newState(seed = 'ai-technical-test'): GameState {
   return createNewGame({
@@ -36,9 +37,22 @@ describe('AI technical director', () => {
 
     expect(researchStateForTeam(first, first.selectedTeamId)?.activeProjects).toHaveLength(0);
     expect(aiTeamIds.every((teamId) => Boolean(researchStateForTeam(first, teamId)?.focus))).toBe(true);
-    expect(aiTeamIds.some((teamId) => (researchStateForTeam(first, teamId)?.activeProjects.length ?? 0) > 0)).toBe(true);
+    expect(aiTeamIds.some((teamId) => (first.teamTechnical?.[teamId]?.activeProjects.length ?? 0) > 0)).toBe(true);
     expect(aiTeamIds.map((teamId) => aiTechnicalSummary(first, teamId)))
       .toEqual(aiTeamIds.map((teamId) => aiTechnicalSummary(second, teamId)));
+  });
+
+  it('can mix quick upgrades with research without exceeding shared capacity', () => {
+    const state = newState('quick-upgrade-capacity');
+    const aiTeams = state.teams.filter((team) => team.id !== state.selectedTeamId);
+    const upgrades = aiTeams.flatMap((team) =>
+      state.teamTechnical?.[team.id]?.activeProjects.filter((project) => project.kind === 'upgrade') ?? []);
+
+    expect(upgrades.length).toBeGreaterThan(0);
+    for (const team of aiTeams) {
+      expect(state.teamTechnical?.[team.id]?.activeProjects.length ?? 0)
+        .toBeLessThanOrEqual(developmentSlots(state.facilities));
+    }
   });
 
   it('protects the reserve and blocks new research for a critical team', () => {
@@ -72,16 +86,44 @@ describe('AI technical director', () => {
     const race = state.calendar[0];
     const track = getTrackById(race.trackId)!;
     const aiTeam = state.teams.find((team) =>
-      team.id !== state.selectedTeamId && (researchStateForTeam(state, team.id)?.activeProjects.length ?? 0) > 0)!;
+      team.id !== state.selectedTeamId && (state.teamTechnical?.[team.id]?.activeProjects.length ?? 0) > 0)!;
     const playerBefore = researchStateForTeam(state, state.selectedTeamId);
-    const projectBefore = researchStateForTeam(state, aiTeam.id)!.activeProjects[0];
+    const technicalBefore = state.teamTechnical![aiTeam.id];
+    const projectBefore = technicalBefore.activeProjects[0];
 
     const progressed = progressAITechnicalProgramsAfterRace(state, race, [], track).state;
-    const researchAfter = researchStateForTeam(progressed, aiTeam.id)!;
-    const sameProject = researchAfter.activeProjects.find((project) => project.id === projectBefore.id);
-    const completed = researchAfter.projectHistory.some((project) => project.projectId === projectBefore.id);
+    const technicalAfter = progressed.teamTechnical![aiTeam.id];
+    const sameProject = technicalAfter.activeProjects.find((project) => project.id === projectBefore.id);
+    const completed = technicalAfter.completedPrograms.some((project) => project.id === projectBefore.id);
 
-    expect((sameProject?.progressRounds ?? 0) > projectBefore.progressRounds || completed).toBe(true);
+    expect((sameProject?.progressTicks ?? 0) > projectBefore.progressTicks || completed).toBe(true);
     expect(researchStateForTeam(progressed, state.selectedTeamId)).toEqual(playerBefore);
+  });
+
+  it('keeps a deterministic three-race quick-upgrade balance harness', () => {
+    const run = (seed: string) => {
+      let state = newState(seed);
+      for (let index = 0; index < 3; index += 1) {
+        const race = state.calendar[index];
+        const track = getTrackById(race.trackId)!;
+        state = progressAITechnicalProgramsAfterRace(state, race, [], track).state;
+      }
+      return state;
+    };
+    const first = run('quick-upgrade-balance');
+    const second = run('quick-upgrade-balance');
+
+    expect(first.cars).toEqual(second.cars);
+    expect(first.teamTechnical).toEqual(second.teamTechnical);
+    for (const team of first.teams.filter((candidate) => candidate.id !== first.selectedTeamId)) {
+      const technical = first.teamTechnical?.[team.id];
+      const ai = first.aiTeamStates?.[team.id];
+      expect(technical?.activeProjects.length ?? 0).toBeLessThanOrEqual(developmentSlots(first.facilities));
+      expect(team.budget).toBeGreaterThanOrEqual(0);
+      expect(ai?.technicalSpendThisSeason ?? 0).toBeLessThanOrEqual(ai?.budget.developmentSpend ?? 0);
+      for (const car of first.cars.filter((candidate) => candidate.teamId === team.id)) {
+        expect(Object.values(car.developmentLevel).every((value) => Number.isFinite(value))).toBe(true);
+      }
+    }
   });
 });

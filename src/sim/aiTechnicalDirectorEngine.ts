@@ -1,7 +1,8 @@
+import { developmentProjectCatalog } from '../data/development/developmentProjects';
 import { AI_RD_NODE_INDEX } from '../data/rd/rdAIIndex.generated';
 import type { GameState } from '../game/careerState';
 import { activeDriversForTeam, carForTeam } from '../game/careerState';
-import type { CarRatings, Race, RaceResult, Team, Track } from '../types/gameTypes';
+import type { CarRatings, DevelopmentProject, Race, RaceResult, Team, Track } from '../types/gameTypes';
 import type { AITeamArchetype, AITeamState } from '../types/aiTeamTypes';
 import type { CarPart, TeamPartsState } from '../types/partsTypes';
 import { PART_TYPES } from '../types/partsTypes';
@@ -14,9 +15,16 @@ import type {
   RDProjectStartRequest,
   TeamResearchState,
 } from '../types/rdTypes';
+import type { TechnicalUpgradeProgram } from '../types/technicalTypes';
 import { createSeededRandom, deriveSeed } from './random';
-import { diminishingGainMultiplier } from './developmentEngine';
 import {
+  applyDevelopmentProgress,
+  computeAdjustedDuration,
+  diminishingGainMultiplier,
+} from './developmentEngine';
+import { developmentSlots, relevantFacilityLevel } from './facilityEngine';
+import {
+  upgradeFromProgram,
   researchStateFromTechnical,
   researchStateForTeam,
   technicalStateWithResearch,
@@ -51,6 +59,7 @@ type CompactAINode = (typeof AI_RD_NODE_INDEX)[number];
 
 const CAR_GAIN_BY_TIER = [0, 0.12, 0.18, 0.24, 0.32, 0.42];
 const SUPPORT_GAIN_BY_TIER = [0, 0.008, 0.012, 0.018, 0.025, 0.035];
+export const AI_QUICK_UPGRADE_CATCH_UP_SCALE = 0.25;
 const COST_BY_TIER: Record<number, RDCostBand> = { 1: 'Low', 2: 'Medium', 3: 'High', 4: 'Very High', 5: 'Extreme' };
 const DURATION_BY_TIER: Record<number, RDDurationBand> = { 1: 'Short', 2: 'Medium', 3: 'Long', 4: 'Very Long', 5: 'Season Project' };
 const RISK_BY_TIER: Record<number, RDProjectRiskLevel> = { 1: 'Safe', 2: 'Standard', 3: 'Aggressive', 4: 'Aggressive', 5: 'Experimental' };
@@ -234,6 +243,125 @@ function spendableCash(team: Team, ai: AITeamState | undefined): number {
   return Math.max(0, Math.min(team.budget - (ai?.budget.reserveTarget ?? 0), remainingTechnicalAllocation(ai)));
 }
 
+function upgradeRating(project: DevelopmentProject): keyof CarRatings | undefined {
+  const effect = Object.keys(project.currentSeasonEffects ?? {})[0]
+    ?? Object.keys(project.nextSeasonEffects ?? {})[0];
+  if (effect === 'enginePower' || effect === 'aeroEfficiency' || effect === 'mechanicalGrip'
+    || effect === 'reliability' || effect === 'pitCrewOperations') return effect;
+  return undefined;
+}
+
+function upgradeAllowedForArchetype(
+  project: DevelopmentProject,
+  archetype: AITeamArchetype | undefined,
+): boolean {
+  if (project.horizon !== 'CurrentSeason') return false;
+  if (archetype === 'SurvivalMode') return project.riskLevel === 'Safe';
+  if (archetype === 'FinanciallyConservative') {
+    return project.riskLevel !== 'Aggressive' && project.riskLevel !== 'Experimental';
+  }
+  return project.riskLevel !== 'Experimental' || archetype === 'AggressiveSpender';
+}
+
+function chooseAIUpgrade(
+  state: GameState,
+  team: Team,
+  ai: AITeamState | undefined,
+  activeProjects: readonly TechnicalUpgradeProgram[],
+): DevelopmentProject | undefined {
+  const car = carForTeam(state, team.id);
+  if (!car) return undefined;
+  const ratings = effectiveCarRatings(car);
+  const activeNames = new Set(activeProjects.map((project) => project.name));
+  return developmentProjectCatalog
+    .filter((project) => upgradeAllowedForArchetype(project, ai?.archetype))
+    .filter((project) => !activeNames.has(project.name))
+    .map((project) => {
+      const rating = upgradeRating(project);
+      return { project, rating, deficit: rating ? 100 - ratings[rating] : -1 };
+    })
+    .filter((candidate): candidate is {
+      project: DevelopmentProject;
+      rating: keyof CarRatings;
+      deficit: number;
+    } => !!candidate.rating)
+    .sort((a, b) => b.deficit - a.deficit
+      || a.project.cost - b.project.cost
+      || a.project.id.localeCompare(b.project.id))[0]?.project;
+}
+
+function quickUpgradeChance(archetype: AITeamArchetype | undefined): number {
+  if (archetype === 'AggressiveSpender' || archetype === 'ChampionshipContender') return 0.45;
+  if (archetype === 'AmbitiousBuilder' || archetype === 'DevelopmentFocused') return 0.35;
+  if (archetype === 'SurvivalMode' || archetype === 'FinanciallyConservative') return 0.15;
+  return 0.25;
+}
+
+function upgradeProgramFor(
+  state: GameState,
+  team: Team,
+  project: DevelopmentProject,
+  round: number,
+): TechnicalUpgradeProgram {
+  const facilityLevel = relevantFacilityLevel(state.facilities, project.category);
+  return {
+    kind: 'upgrade',
+    id: `ai-upgrade:${team.id}:${state.seasonYear}:${round}:${project.id}`,
+    teamId: team.id,
+    progressTicks: 0,
+    durationTicks: computeAdjustedDuration(project.durationRaces, facilityLevel, project.projectSize),
+    baseDurationTicks: project.durationRaces,
+    cashCost: project.cost,
+    tppCost: 0,
+    name: project.name,
+    category: project.category,
+    horizon: project.horizon,
+    successChance: project.successChance,
+    size: project.projectSize,
+    risk: project.risk,
+    riskLevel: project.riskLevel,
+    carryoverRate: project.carryoverRate,
+    regulationSensitivity: project.regulationSensitivity,
+    currentSeasonEffects: project.currentSeasonEffects,
+    nextSeasonEffects: project.nextSeasonEffects,
+    facilityEffects: project.facilityEffects,
+    relevantFacilityTypes: project.relevantFacilityTypes,
+    facilityLevelAtStart: facilityLevel,
+  };
+}
+
+function upgradeProgramFromProject(
+  project: DevelopmentProject,
+  teamId: string,
+): TechnicalUpgradeProgram {
+  return {
+    kind: 'upgrade',
+    id: project.id,
+    teamId,
+    progressTicks: project.progressRaces,
+    durationTicks: project.adjustedDurationRaces ?? project.durationRaces,
+    baseDurationTicks: project.durationRaces,
+    cashCost: project.cost,
+    tppCost: 0,
+    name: project.name,
+    category: project.category,
+    horizon: project.horizon,
+    successChance: project.successChance,
+    size: project.projectSize,
+    risk: project.risk,
+    riskLevel: project.riskLevel,
+    carryoverRate: project.carryoverRate,
+    regulationSensitivity: project.regulationSensitivity,
+    currentSeasonEffects: project.currentSeasonEffects,
+    nextSeasonEffects: project.nextSeasonEffects,
+    facilityEffects: project.facilityEffects,
+    relevantFacilityTypes: project.relevantFacilityTypes,
+    outcomeResult: project.outcomeResult,
+    rushed: project.rushed,
+    facilityLevelAtStart: project.facilityLevelAtStart,
+  };
+}
+
 function recordTechnicalDecision(ai: AITeamState, spend: number, round: number, decision: string): AITeamState {
   return {
     ...ai,
@@ -334,7 +462,37 @@ export function planAITechnicalPrograms(state: GameState, teamIds?: readonly str
     research = selectResearchFocus(research, focus, state.seasonYear);
 
     const maxActive = maxActiveProjects(ai);
-    while (research.activeProjects.length < maxActive) {
+    const currentTechnical = teamTechnical[team.id];
+    const activeUpgrades = (currentTechnical?.activeProjects ?? [])
+      .filter((program): program is TechnicalUpgradeProgram => program.kind === 'upgrade');
+    const upgradeRoll = createSeededRandom(
+      deriveSeed(state.randomSeed, 'ai-quick-upgrade', team.id, state.seasonYear),
+    ).next();
+    const upgrade = upgradeRoll < quickUpgradeChance(ai?.archetype)
+      ? chooseAIUpgrade({ ...state, teams }, team, ai, activeUpgrades)
+      : undefined;
+    if (upgrade && (currentTechnical?.activeProjects.length ?? 0) < Math.min(maxActive, developmentSlots(state.facilities))
+      && upgrade.cost <= spendableCash(team, ai)) {
+      const program = upgradeProgramFor({ ...state, teams }, team, upgrade, round);
+      teamTechnical[team.id] = {
+        ...(currentTechnical ?? {
+          teamId: team.id,
+          tpp: research.tpp,
+          focus: research.focus,
+          activeProjects: [],
+          completedPrograms: [],
+          modifiers: research.modifiers,
+        }),
+        activeProjects: [...(currentTechnical?.activeProjects ?? []), program],
+      };
+      team = { ...team, budget: team.budget - upgrade.cost };
+      ai = recordTechnicalDecision(ai, upgrade.cost, round, `Started ${upgrade.name}`);
+      teams = teams.map((candidate) => candidate.id === team.id ? team : candidate);
+    }
+
+    const upgradeCount = teamTechnical[team.id]?.activeProjects
+      .filter((program) => program.kind === 'upgrade').length ?? 0;
+    while (research.activeProjects.length + upgradeCount < maxActive) {
       const request = chooseAIResearchRequest({ ...state, teams }, team, research);
       if (!request) break;
       const baseCost = cashCostForBand(request.cashCostBand, team.budget, state.series, state.seasonYear);
@@ -360,8 +518,8 @@ export function planAITechnicalPrograms(state: GameState, teamIds?: readonly str
       );
       teams = teams.map((candidate) => candidate.id === team.id ? team : candidate);
     }
-    const currentTechnical = teamTechnical[team.id];
-    if (currentTechnical) teamTechnical[team.id] = technicalStateWithResearch(currentTechnical, research);
+    const updatedTechnical = teamTechnical[team.id];
+    if (updatedTechnical) teamTechnical[team.id] = technicalStateWithResearch(updatedTechnical, research);
     teamParts[team.id] = partsDecision.parts;
     aiTeamStates[team.id] = ai;
   }
@@ -373,6 +531,7 @@ function applyCarDeltas(
   state: GameState,
   teamId: string,
   deltas: Partial<CarRatings>,
+  catchUpScale = 1,
 ): GameState['cars'] {
   const priorPosition = state.aiTeamStates?.[teamId]?.lastConstructorPosition;
   const gridFraction = priorPosition == null || state.teams.length <= 1
@@ -390,7 +549,7 @@ function applyCarDeltas(
       const rating = key as keyof CarRatings;
       const current = car.ratings[rating] + (developmentLevel[rating] ?? 0);
       developmentLevel[rating] = (developmentLevel[rating] ?? 0)
-        + (value ?? 0) * catchUpMultiplier * diminishingGainMultiplier(current);
+        + (value ?? 0) * catchUpMultiplier * catchUpScale * diminishingGainMultiplier(current);
     }
     return { ...car, developmentLevel };
   });
@@ -411,6 +570,61 @@ export function progressAITechnicalProgramsAfterRace(
     if (team.id === working.selectedTeamId) continue;
     const research = researchStateFromTechnical(working.teamTechnical?.[team.id]);
     if (!research) continue;
+    const technical = working.teamTechnical?.[team.id];
+    const upgradePrograms = (technical?.activeProjects ?? [])
+      .filter((program): program is TechnicalUpgradeProgram => program.kind === 'upgrade');
+    if (upgradePrograms.length > 0) {
+      const car = carForTeam(working, team.id);
+      if (car) {
+        const upgradeTick = applyDevelopmentProgress(
+          upgradePrograms.map((program) => upgradeFromProgram(program)),
+          car,
+          working.randomSeed,
+          race.round,
+        );
+        if (Object.keys(upgradeTick.carRatingDeltas).length > 0) {
+          working = {
+            ...working,
+            cars: applyCarDeltas(
+              working,
+              team.id,
+              upgradeTick.carRatingDeltas,
+              AI_QUICK_UPGRADE_CATCH_UP_SCALE,
+            ),
+          };
+        }
+        const activeUpgrades = upgradeTick.active.map((project) => upgradeProgramFromProject(project, team.id));
+        const completedUpgrades = upgradeTick.completed.map((project) => ({
+          kind: 'upgrade' as const,
+          id: project.id,
+          teamId: team.id,
+          completedTicks: project.progressRaces,
+          program: upgradeProgramFromProject(project, team.id),
+        }));
+        working = {
+          ...working,
+          teamTechnical: {
+            ...working.teamTechnical,
+            [team.id]: {
+              ...working.teamTechnical![team.id],
+              activeProjects: [
+                ...working.teamTechnical![team.id].activeProjects.filter((program) => program.kind === 'research'),
+                ...activeUpgrades,
+              ],
+              completedPrograms: [
+                ...working.teamTechnical![team.id].completedPrograms.filter((program) => program.kind === 'research'),
+                ...completedUpgrades,
+              ],
+            },
+          },
+        };
+        if (upgradeTick.completed.length > 0) {
+          messages.push(`${team.name} completes ${upgradeTick.completed.length === 1
+            ? upgradeTick.completed[0].name
+            : `${upgradeTick.completed.length} quick upgrades`}.`);
+        }
+      }
+    }
     if (research.activeProjects.length > 0) {
       const ai = working.aiTeamStates?.[team.id];
       const support = ((working.teamOrgRatings?.[team.id]?.research ?? 50) - 50) / 500

@@ -107,6 +107,22 @@ export function withUnifiedTechnical(
     activeDevelopmentProjects: legacy.activeDevelopmentProjects,
     completedDevelopmentProjects: legacy.completedDevelopmentProjects,
   }, researchMap);
+  for (const team of state.teams) {
+    if (team.id === state.selectedTeamId) continue;
+    const prior = state.teamTechnical?.[team.id];
+    if (!prior) continue;
+    projected[team.id] = {
+      ...projected[team.id],
+      activeProjects: [
+        ...projected[team.id].activeProjects.filter((program) => program.kind === 'research'),
+        ...prior.activeProjects.filter((program) => program.kind === 'upgrade'),
+      ],
+      completedPrograms: [
+        ...projected[team.id].completedPrograms.filter((program) => program.kind === 'research'),
+        ...prior.completedPrograms.filter((program) => program.kind === 'upgrade'),
+      ],
+    };
+  }
   return {
     ...state,
     teamTechnical: projected,
