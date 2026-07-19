@@ -202,7 +202,7 @@ import {
   approvePreseasonTab,
 } from './careerPhaseEngine';
 import { isActionBlocked, isSingleSeasonMode } from './modeRestrictions';
-import type { PartType, PartsAutomationSettings } from '../types/partsTypes';
+import type { PartType, PartsAutomationSettings, TechnicalManagementMode } from '../types/partsTypes';
 import { runPartsAutomation } from '../sim/partsAutomationEngine';
 import {
   carWithFittedParts,
@@ -252,6 +252,7 @@ export type GameAction =
   | { type: 'FIT_PART'; partId: string; driverId: string }
   | { type: 'REPAIR_PART'; partId: string }
   | { type: 'SET_PARTS_AUTOMATION'; settings: PartsAutomationSettings }
+  | { type: 'SET_TECHNICAL_MANAGEMENT_MODE'; mode: TechnicalManagementMode }
   | { type: 'MARK_INBOX_READ'; messageIds: string[] }
   | { type: 'RETIRE_PART'; partId: string }
   | { type: 'SET_CAR_SETUP'; driverId: string; setup: CarSetup }
@@ -637,7 +638,24 @@ export function gameReducer(state: GameState | null, action: GameAction): GameSt
 
     case 'SET_PARTS_AUTOMATION': {
       if (!state) return state;
-      return { ...state, partsAutomation: action.settings };
+      return {
+        ...state,
+        partsAutomation: action.settings,
+        technicalManagementMode: action.settings.autoRepair && action.settings.autoRestock && action.settings.autoFit
+          ? 'assisted'
+          : 'player_led',
+      };
+    }
+
+    case 'SET_TECHNICAL_MANAGEMENT_MODE': {
+      if (!state) return state;
+      return {
+        ...state,
+        technicalManagementMode: action.mode,
+        partsAutomation: action.mode === 'assisted'
+          ? { autoRepair: true, autoRestock: true, autoFit: true }
+          : { autoRepair: false, autoRestock: false, autoFit: false },
+      };
     }
 
     case 'MARK_INBOX_READ': {
