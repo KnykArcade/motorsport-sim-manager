@@ -69,8 +69,6 @@ export type PartsAutomationSettings = {
   autoFit: boolean;
 };
 
-export type TechnicalManagementMode = 'player_led' | 'assisted';
-
 export type PartsProgressResult = {
   state: TeamPartsState;
   messages: string[];

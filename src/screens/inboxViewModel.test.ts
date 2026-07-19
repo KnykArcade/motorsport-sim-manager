@@ -110,17 +110,6 @@ describe('inboxViewModel', () => {
     expect(unreadInboxCount(next as GameState)).toBe(before - ids.length);
   });
 
-  it('applies technical management presets to factory automation', () => {
-    const state = newState();
-    const assisted = gameReducer(state, { type: 'SET_TECHNICAL_MANAGEMENT_MODE', mode: 'assisted' }) as GameState;
-    expect(assisted.technicalManagementMode).toBe('assisted');
-    expect(assisted.partsAutomation).toEqual({ autoRepair: true, autoRestock: true, autoFit: true });
-
-    const playerLed = gameReducer(assisted, { type: 'SET_TECHNICAL_MANAGEMENT_MODE', mode: 'player_led' }) as GameState;
-    expect(playerLed.technicalManagementMode).toBe('player_led');
-    expect(playerLed.partsAutomation).toEqual({ autoRepair: false, autoRestock: false, autoFit: false });
-  });
-
   it('counts actionable items', () => {
     const state = newState();
     const messages = inboxMessages(state);
