@@ -10,6 +10,8 @@ import { CollectiveStakeholderBoard } from './CollectiveStakeholderBoard';
 import type { CollectiveStakeholderProfile } from './relationshipStakeholderViewModel';
 import { PotentialEmployerBoard } from './PotentialEmployerBoard';
 import type { PotentialEmployerStanding } from './relationshipEmployerViewModel';
+import { ExternalTalentBoard } from './ExternalTalentBoard';
+import type { ExternalTalentContext } from './relationshipTalentViewModel';
 
 const STATUS_STYLES: Record<RelationshipAttentionProfile['status'], string> = {
   MustActNow: 'border-red-500/45 bg-red-500/5 text-red-200',
@@ -24,9 +26,12 @@ type Props = {
   onReviewCollective: (profile: CollectiveStakeholderProfile) => void;
   employerStanding?: PotentialEmployerStanding;
   onReviewEmployers: () => void;
+  externalTalent: ExternalTalentContext;
+  onReviewDriverMarket: () => void;
+  onReviewStaffMarket: () => void;
 };
 
-export function RelationshipPriorityBoard({ profiles, onReview, collectiveProfiles, onReviewCollective, employerStanding, onReviewEmployers }: Props) {
+export function RelationshipPriorityBoard({ profiles, onReview, collectiveProfiles, onReviewCollective, employerStanding, onReviewEmployers, externalTalent, onReviewDriverMarket, onReviewStaffMarket }: Props) {
   const visible = visibleRelationshipPriorities(profiles);
 
   return (
@@ -99,6 +104,8 @@ export function RelationshipPriorityBoard({ profiles, onReview, collectiveProfil
       <CollectiveStakeholderBoard profiles={collectiveProfiles} onReview={onReviewCollective} />
 
       <PotentialEmployerBoard standing={employerStanding} onReview={onReviewEmployers} />
+
+      <ExternalTalentBoard context={externalTalent} onReviewDrivers={onReviewDriverMarket} onReviewStaff={onReviewStaffMarket} />
 
       <Panel title="Relationship Management Hierarchy">
         <div className="grid gap-2 lg:grid-cols-2">
