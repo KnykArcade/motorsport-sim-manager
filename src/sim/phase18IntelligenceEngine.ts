@@ -1,4 +1,5 @@
 import type { GameState } from '../game/careerState';
+import { researchStateForTeam } from './technicalAdapters';
 import type { NewsItem } from '../types/gameTypes';
 import type { IntelligenceAction, IntelligenceReport } from '../types/phase18Types';
 import { createSeededRandom, deriveSeed } from './random';
@@ -100,7 +101,7 @@ function baseReport(state: GameState, index: number): IntelligenceReport {
   const mode = (round + index) % 5;
   let report: IntelligenceReport;
   if (mode === 0) {
-    const research = target ? state.teamResearch?.[target.id] : undefined;
+    const research = target ? researchStateForTeam(state, target.id) : undefined;
     const branch = research?.activeProjects[0]?.branchId ?? research?.focus?.branchId ?? rng.pick(['aero', 'engine', 'reliability', 'operations']);
     report = { ...common, subjectType: 'Research', subjectId: research?.activeProjects[0]?.id ?? `${target?.id}-research`, category: 'Development', gameplayRelevance: 'High', title: `${target?.name ?? 'Rival'} development direction`, summary: `Paddock sources believe ${target?.name ?? 'the rival'} is concentrating resources on ${branch}. The timing and scale remain uncertain.` };
   } else if (mode === 1) {
@@ -118,7 +119,7 @@ function baseReport(state: GameState, index: number): IntelligenceReport {
   }
   if (!misleading && !mixed) {
     if (mode === 0) {
-      const research = target ? state.teamResearch?.[target.id] : undefined;
+      const research = target ? researchStateForTeam(state, target.id) : undefined;
       truth = research?.activeProjects.length || research?.focus ? 'True' : 'False';
     } else if (mode === 1) {
       const reliability = state.cars.find((entry) => entry.teamId === target?.id)?.ratings.reliability ?? 65;

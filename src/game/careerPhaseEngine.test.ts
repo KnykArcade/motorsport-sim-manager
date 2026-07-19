@@ -15,6 +15,7 @@ import {
 } from './careerPhaseEngine';
 import { carForTeam, driversForTeam, activeDriversForTeam } from './careerState';
 import { syncDriverRelationshipsForTeam } from '../sim/relationshipEngine';
+import { fromUnifiedTechnical, withUnifiedTechnical } from '../sim/technicalAdapters';
 import type { GameState } from './careerState';
 
 function newCareerState(): GameState {
@@ -461,10 +462,11 @@ describe('careerPhaseEngine', () => {
       carryoverRate: 0.5,
       regulationSensitivity: 0.3,
     };
-    state = {
-      ...state,
-      completedDevelopmentProjects: [...state.completedDevelopmentProjects, fakeProject],
-    };
+    const legacyTechnical = fromUnifiedTechnical(state);
+    state = withUnifiedTechnical(state, {
+      ...legacyTechnical,
+      completedDevelopmentProjects: [...legacyTechnical.completedDevelopmentProjects, fakeProject],
+    });
 
     // Re-generate events with the new project — need to reset the flag.
     const phaseState = getOrCreatePhaseState(state);

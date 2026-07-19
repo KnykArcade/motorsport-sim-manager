@@ -13,6 +13,7 @@ import {
   type GameState,
 } from '../game/careerState';
 import { developmentSlots } from '../sim/facilityEngine';
+import { activeUpgradePrograms } from '../sim/technicalAdapters';
 import { leadershipDecisionPreview } from '../sim/phase18IdentityCultureEngine';
 import {
   ADVISOR_ROLE_LABELS,
@@ -223,7 +224,7 @@ export function PaddockWeek() {
       <MetricStrip>
         <WorkspaceMetric label="Budget" value={team ? formatMoney(team.budget) : '—'} detail={`${activeDrivers.length}/2 active drivers`} />
         <WorkspaceMetric label="Team readiness" value={`${Math.round(team?.morale ?? 0)}% morale`} detail={`${Math.round(car?.condition ?? 0)}% car condition`} />
-        <WorkspaceMetric label="Development" value={`${state.activeDevelopmentProjects.length}/${slots} slots`} detail="Active technical projects" />
+        <WorkspaceMetric label="Development" value={`${activeUpgradePrograms(state).length}/${slots} slots`} detail="Active technical projects" />
         <WorkspaceMetric label="Required actions" value={pendingCount} detail={packageSelected ? `${unresolvedCount} decisions unresolved` : 'Race package still required'} />
       </MetricStrip>
 

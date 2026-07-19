@@ -1,0 +1,2751 @@
+{
+  "seed": "p4b-golden-baseline",
+  "races": [
+    {
+      "raceId": "1995-F1-1",
+      "cars": [
+        {
+          "id": "car-williams-1995",
+          "teamId": "t-williams",
+          "ratings": {
+            "enginePower": 94,
+            "aeroEfficiency": 94,
+            "mechanicalGrip": 82,
+            "reliability": 82,
+            "pitCrewOperations": 94
+          },
+          "developmentLevel": {
+            "enginePower": 0,
+            "aeroEfficiency": 0,
+            "mechanicalGrip": 0,
+            "reliability": 0,
+            "pitCrewOperations": 0
+          }
+        },
+        {
+          "id": "car-benetton-1995",
+          "teamId": "t-benetton",
+          "ratings": {
+            "enginePower": 92,
+            "aeroEfficiency": 92,
+            "mechanicalGrip": 80,
+            "reliability": 80,
+            "pitCrewOperations": 80
+          },
+          "developmentLevel": {
+            "enginePower": 0,
+            "aeroEfficiency": 0,
+            "mechanicalGrip": 0,
+            "reliability": 0,
+            "pitCrewOperations": 0
+          }
+        },
+        {
+          "id": "car-ferrari-1995",
+          "teamId": "t-ferrari",
+          "ratings": {
+            "enginePower": 85,
+            "aeroEfficiency": 85,
+            "mechanicalGrip": 85,
+            "reliability": 73,
+            "pitCrewOperations": 73
+          },
+          "developmentLevel": {
+            "enginePower": 0,
+            "aeroEfficiency": 0,
+            "mechanicalGrip": 0,
+            "reliability": 0,
+            "pitCrewOperations": 0
+          }
+        },
+        {
+          "id": "car-mclaren-1995",
+          "teamId": "t-mclaren",
+          "ratings": {
+            "enginePower": 72,
+            "aeroEfficiency": 72,
+            "mechanicalGrip": 72,
+            "reliability": 72,
+            "pitCrewOperations": 83
+          },
+          "developmentLevel": {
+            "enginePower": 0,
+            "aeroEfficiency": 0,
+            "mechanicalGrip": 0,
+            "reliability": 0,
+            "pitCrewOperations": 0
+          }
+        },
+        {
+          "id": "car-ligier-1995",
+          "teamId": "t-ligier",
+          "ratings": {
+            "enginePower": 57,
+            "aeroEfficiency": 57,
+            "mechanicalGrip": 57,
+            "reliability": 64,
+            "pitCrewOperations": 57
+          },
+          "developmentLevel": {
+            "enginePower": 0,
+            "aeroEfficiency": 0,
+            "mechanicalGrip": 0,
+            "reliability": 0,
+            "pitCrewOperations": 0
+          }
+        },
+        {
+          "id": "car-sauber-1995",
+          "teamId": "t-sauber",
+          "ratings": {
+            "enginePower": 54,
+            "aeroEfficiency": 54,
+            "mechanicalGrip": 54,
+            "reliability": 54,
+            "pitCrewOperations": 54
+          },
+          "developmentLevel": {
+            "enginePower": 0,
+            "aeroEfficiency": 0,
+            "mechanicalGrip": 0,
+            "reliability": 0,
+            "pitCrewOperations": 0
+          }
+        },
+        {
+          "id": "car-jordan-1995",
+          "teamId": "t-jordan",
+          "ratings": {
+            "enginePower": 50,
+            "aeroEfficiency": 50,
+            "mechanicalGrip": 50,
+            "reliability": 50,
+            "pitCrewOperations": 50
+          },
+          "developmentLevel": {
+            "enginePower": 0,
+            "aeroEfficiency": 0,
+            "mechanicalGrip": 0,
+            "reliability": 0,
+            "pitCrewOperations": 0
+          }
+        },
+        {
+          "id": "car-tyrrell-1995",
+          "teamId": "t-tyrrell",
+          "ratings": {
+            "enginePower": 46,
+            "aeroEfficiency": 46,
+            "mechanicalGrip": 46,
+            "reliability": 51,
+            "pitCrewOperations": 46
+          },
+          "developmentLevel": {
+            "enginePower": 0,
+            "aeroEfficiency": 0,
+            "mechanicalGrip": 0,
+            "reliability": 0,
+            "pitCrewOperations": 0
+          }
+        },
+        {
+          "id": "car-footwork-1995",
+          "teamId": "t-footwork",
+          "ratings": {
+            "enginePower": 43,
+            "aeroEfficiency": 43,
+            "mechanicalGrip": 43,
+            "reliability": 43,
+            "pitCrewOperations": 43
+          },
+          "developmentLevel": {
+            "enginePower": 0,
+            "aeroEfficiency": 0,
+            "mechanicalGrip": 0,
+            "reliability": 0,
+            "pitCrewOperations": 0
+          }
+        },
+        {
+          "id": "car-minardi-1995",
+          "teamId": "t-minardi",
+          "ratings": {
+            "enginePower": 34,
+            "aeroEfficiency": 34,
+            "mechanicalGrip": 44,
+            "reliability": 44,
+            "pitCrewOperations": 44
+          },
+          "developmentLevel": {
+            "enginePower": 0,
+            "aeroEfficiency": 0,
+            "mechanicalGrip": 0,
+            "reliability": 0,
+            "pitCrewOperations": 0
+          }
+        },
+        {
+          "id": "car-forti-1995",
+          "teamId": "t-forti",
+          "ratings": {
+            "enginePower": 31,
+            "aeroEfficiency": 31,
+            "mechanicalGrip": 41,
+            "reliability": 41,
+            "pitCrewOperations": 41
+          },
+          "developmentLevel": {
+            "enginePower": 0,
+            "aeroEfficiency": 0,
+            "mechanicalGrip": 0,
+            "reliability": 0,
+            "pitCrewOperations": 0
+          }
+        },
+        {
+          "id": "car-pacific-1995",
+          "teamId": "t-pacific",
+          "ratings": {
+            "enginePower": 29,
+            "aeroEfficiency": 29,
+            "mechanicalGrip": 38,
+            "reliability": 38,
+            "pitCrewOperations": 38
+          },
+          "developmentLevel": {
+            "enginePower": 0,
+            "aeroEfficiency": 0,
+            "mechanicalGrip": 0,
+            "reliability": 0,
+            "pitCrewOperations": 0
+          }
+        }
+      ],
+      "driverStandings": [
+        {
+          "entityId": "DRV_0121",
+          "points": 10,
+          "wins": 1,
+          "podiums": 1,
+          "dnfs": 0
+        },
+        {
+          "entityId": "DRV_0063",
+          "points": 6,
+          "wins": 0,
+          "podiums": 1,
+          "dnfs": 0
+        },
+        {
+          "entityId": "DRV_0219",
+          "points": 4,
+          "wins": 0,
+          "podiums": 1,
+          "dnfs": 0
+        },
+        {
+          "entityId": "DRV_0073",
+          "points": 3,
+          "wins": 0,
+          "podiums": 0,
+          "dnfs": 0
+        },
+        {
+          "entityId": "DRV_0222",
+          "points": 2,
+          "wins": 0,
+          "podiums": 0,
+          "dnfs": 0
+        },
+        {
+          "entityId": "DRV_0239",
+          "points": 1,
+          "wins": 0,
+          "podiums": 0,
+          "dnfs": 0
+        },
+        {
+          "entityId": "DRV_0207",
+          "points": 0,
+          "wins": 0,
+          "podiums": 0,
+          "dnfs": 0
+        },
+        {
+          "entityId": "DRV_0131",
+          "points": 0,
+          "wins": 0,
+          "podiums": 0,
+          "dnfs": 0
+        },
+        {
+          "entityId": "DRV_0163",
+          "points": 0,
+          "wins": 0,
+          "podiums": 0,
+          "dnfs": 0
+        },
+        {
+          "entityId": "DRV_0349",
+          "points": 0,
+          "wins": 0,
+          "podiums": 0,
+          "dnfs": 0
+        },
+        {
+          "entityId": "DRV_0173",
+          "points": 0,
+          "wins": 0,
+          "podiums": 0,
+          "dnfs": 0
+        },
+        {
+          "entityId": "DRV_0124",
+          "points": 0,
+          "wins": 0,
+          "podiums": 0,
+          "dnfs": 0
+        },
+        {
+          "entityId": "DRV_0265",
+          "points": 0,
+          "wins": 0,
+          "podiums": 0,
+          "dnfs": 0
+        },
+        {
+          "entityId": "driver-p-moreno",
+          "points": 0,
+          "wins": 0,
+          "podiums": 0,
+          "dnfs": 0
+        },
+        {
+          "entityId": "DRV_0161",
+          "points": 0,
+          "wins": 0,
+          "podiums": 0,
+          "dnfs": 1
+        },
+        {
+          "entityId": "DRV_0191",
+          "points": 0,
+          "wins": 0,
+          "podiums": 0,
+          "dnfs": 1
+        },
+        {
+          "entityId": "DRV_0155",
+          "points": 0,
+          "wins": 0,
+          "podiums": 0,
+          "dnfs": 1
+        },
+        {
+          "entityId": "DRV_0334",
+          "points": 0,
+          "wins": 0,
+          "podiums": 0,
+          "dnfs": 1
+        },
+        {
+          "entityId": "DRV_0032",
+          "points": 0,
+          "wins": 0,
+          "podiums": 0,
+          "dnfs": 1
+        },
+        {
+          "entityId": "DRV_0251",
+          "points": 0,
+          "wins": 0,
+          "podiums": 0,
+          "dnfs": 1
+        },
+        {
+          "entityId": "DRV_0268",
+          "points": 0,
+          "wins": 0,
+          "podiums": 0,
+          "dnfs": 1
+        },
+        {
+          "entityId": "driver-jd-deletraz",
+          "points": 0,
+          "wins": 0,
+          "podiums": 0,
+          "dnfs": 1
+        },
+        {
+          "entityId": "DRV_0223",
+          "points": 0,
+          "wins": 0,
+          "podiums": 0,
+          "dnfs": 1
+        },
+        {
+          "entityId": "DRV_0079",
+          "points": 0,
+          "wins": 0,
+          "podiums": 0,
+          "dnfs": 1
+        }
+      ],
+      "constructorStandings": [
+        {
+          "entityId": "t-ferrari",
+          "points": 10,
+          "wins": 1,
+          "podiums": 1,
+          "dnfs": 1
+        },
+        {
+          "entityId": "t-williams",
+          "points": 9,
+          "wins": 0,
+          "podiums": 1,
+          "dnfs": 0
+        },
+        {
+          "entityId": "t-benetton",
+          "points": 4,
+          "wins": 0,
+          "podiums": 1,
+          "dnfs": 1
+        },
+        {
+          "entityId": "t-mclaren",
+          "points": 3,
+          "wins": 0,
+          "podiums": 0,
+          "dnfs": 0
+        },
+        {
+          "entityId": "t-ligier",
+          "points": 0,
+          "wins": 0,
+          "podiums": 0,
+          "dnfs": 1
+        },
+        {
+          "entityId": "t-sauber",
+          "points": 0,
+          "wins": 0,
+          "podiums": 0,
+          "dnfs": 0
+        },
+        {
+          "entityId": "t-jordan",
+          "points": 0,
+          "wins": 0,
+          "podiums": 0,
+          "dnfs": 1
+        },
+        {
+          "entityId": "t-tyrrell",
+          "points": 0,
+          "wins": 0,
+          "podiums": 0,
+          "dnfs": 1
+        },
+        {
+          "entityId": "t-footwork",
+          "points": 0,
+          "wins": 0,
+          "podiums": 0,
+          "dnfs": 1
+        },
+        {
+          "entityId": "t-forti",
+          "points": 0,
+          "wins": 0,
+          "podiums": 0,
+          "dnfs": 0
+        },
+        {
+          "entityId": "t-minardi",
+          "points": 0,
+          "wins": 0,
+          "podiums": 0,
+          "dnfs": 2
+        },
+        {
+          "entityId": "t-pacific",
+          "points": 0,
+          "wins": 0,
+          "podiums": 0,
+          "dnfs": 2
+        }
+      ],
+      "tpp": {
+        "t-williams": {
+          "balance": 25,
+          "lifetimeEarned": 30,
+          "lifetimeSpent": 5,
+          "ledger": [
+            {
+              "id": "t-williams:1995:0:initial_allocation:0",
+              "seasonYear": 1995,
+              "round": 0,
+              "amount": 30,
+              "balanceAfter": 30,
+              "reason": "initial_allocation",
+              "description": "Initial team leadership allocation"
+            },
+            {
+              "id": "t-williams:1995:1:research_project:1",
+              "seasonYear": 1995,
+              "round": 1,
+              "amount": -5,
+              "balanceAfter": 25,
+              "reason": "research_project",
+              "description": "Spare Parts Inventory Basics",
+              "nodeId": "manufacturing:MF3"
+            }
+          ]
+        },
+        "t-benetton": {
+          "balance": 30,
+          "lifetimeEarned": 30,
+          "lifetimeSpent": 0,
+          "ledger": [
+            {
+              "id": "t-benetton:1995:0:initial_allocation:0",
+              "seasonYear": 1995,
+              "round": 0,
+              "amount": 30,
+              "balanceAfter": 30,
+              "reason": "initial_allocation",
+              "description": "Initial team leadership allocation"
+            }
+          ]
+        },
+        "t-ferrari": {
+          "balance": 30,
+          "lifetimeEarned": 30,
+          "lifetimeSpent": 0,
+          "ledger": [
+            {
+              "id": "t-ferrari:1995:0:initial_allocation:0",
+              "seasonYear": 1995,
+              "round": 0,
+              "amount": 30,
+              "balanceAfter": 30,
+              "reason": "initial_allocation",
+              "description": "Initial team leadership allocation"
+            }
+          ]
+        },
+        "t-mclaren": {
+          "balance": 30,
+          "lifetimeEarned": 30,
+          "lifetimeSpent": 0,
+          "ledger": [
+            {
+              "id": "t-mclaren:1995:0:initial_allocation:0",
+              "seasonYear": 1995,
+              "round": 0,
+              "amount": 30,
+              "balanceAfter": 30,
+              "reason": "initial_allocation",
+              "description": "Initial team leadership allocation"
+            }
+          ]
+        },
+        "t-ligier": {
+          "balance": 30,
+          "lifetimeEarned": 30,
+          "lifetimeSpent": 0,
+          "ledger": [
+            {
+              "id": "t-ligier:1995:0:initial_allocation:0",
+              "seasonYear": 1995,
+              "round": 0,
+              "amount": 30,
+              "balanceAfter": 30,
+              "reason": "initial_allocation",
+              "description": "Initial team leadership allocation"
+            }
+          ]
+        },
+        "t-sauber": {
+          "balance": 30,
+          "lifetimeEarned": 30,
+          "lifetimeSpent": 0,
+          "ledger": [
+            {
+              "id": "t-sauber:1995:0:initial_allocation:0",
+              "seasonYear": 1995,
+              "round": 0,
+              "amount": 30,
+              "balanceAfter": 30,
+              "reason": "initial_allocation",
+              "description": "Initial team leadership allocation"
+            }
+          ]
+        },
+        "t-jordan": {
+          "balance": 30,
+          "lifetimeEarned": 30,
+          "lifetimeSpent": 0,
+          "ledger": [
+            {
+              "id": "t-jordan:1995:0:initial_allocation:0",
+              "seasonYear": 1995,
+              "round": 0,
+              "amount": 30,
+              "balanceAfter": 30,
+              "reason": "initial_allocation",
+              "description": "Initial team leadership allocation"
+            }
+          ]
+        },
+        "t-tyrrell": {
+          "balance": 30,
+          "lifetimeEarned": 30,
+          "lifetimeSpent": 0,
+          "ledger": [
+            {
+              "id": "t-tyrrell:1995:0:initial_allocation:0",
+              "seasonYear": 1995,
+              "round": 0,
+              "amount": 30,
+              "balanceAfter": 30,
+              "reason": "initial_allocation",
+              "description": "Initial team leadership allocation"
+            }
+          ]
+        },
+        "t-footwork": {
+          "balance": 25,
+          "lifetimeEarned": 30,
+          "lifetimeSpent": 5,
+          "ledger": [
+            {
+              "id": "t-footwork:1995:0:initial_allocation:0",
+              "seasonYear": 1995,
+              "round": 0,
+              "amount": 30,
+              "balanceAfter": 30,
+              "reason": "initial_allocation",
+              "description": "Initial team leadership allocation"
+            },
+            {
+              "id": "t-footwork:1995:1:research_project:1",
+              "seasonYear": 1995,
+              "round": 1,
+              "amount": -5,
+              "balanceAfter": 25,
+              "reason": "research_project",
+              "description": "Assembly Process Standardization",
+              "nodeId": "reliability:R5"
+            }
+          ]
+        },
+        "t-minardi": {
+          "balance": 25,
+          "lifetimeEarned": 30,
+          "lifetimeSpent": 5,
+          "ledger": [
+            {
+              "id": "t-minardi:1995:0:initial_allocation:0",
+              "seasonYear": 1995,
+              "round": 0,
+              "amount": 30,
+              "balanceAfter": 30,
+              "reason": "initial_allocation",
+              "description": "Initial team leadership allocation"
+            },
+            {
+              "id": "t-minardi:1995:1:research_project:1",
+              "seasonYear": 1995,
+              "round": 1,
+              "amount": -5,
+              "balanceAfter": 25,
+              "reason": "research_project",
+              "description": "Drivability Calibration",
+              "nodeId": "engine:E4"
+            }
+          ]
+        },
+        "t-forti": {
+          "balance": 30,
+          "lifetimeEarned": 30,
+          "lifetimeSpent": 0,
+          "ledger": [
+            {
+              "id": "t-forti:1995:0:initial_allocation:0",
+              "seasonYear": 1995,
+              "round": 0,
+              "amount": 30,
+              "balanceAfter": 30,
+              "reason": "initial_allocation",
+              "description": "Initial team leadership allocation"
+            }
+          ]
+        },
+        "t-pacific": {
+          "balance": 30,
+          "lifetimeEarned": 30,
+          "lifetimeSpent": 0,
+          "ledger": [
+            {
+              "id": "t-pacific:1995:0:initial_allocation:0",
+              "seasonYear": 1995,
+              "round": 0,
+              "amount": 30,
+              "balanceAfter": 30,
+              "reason": "initial_allocation",
+              "description": "Initial team leadership allocation"
+            }
+          ]
+        }
+      },
+      "completedNodeIds": {
+        "t-williams": [],
+        "t-benetton": [],
+        "t-ferrari": [],
+        "t-mclaren": [],
+        "t-ligier": [],
+        "t-sauber": [],
+        "t-jordan": [],
+        "t-tyrrell": [],
+        "t-footwork": [],
+        "t-minardi": [],
+        "t-forti": [],
+        "t-pacific": []
+      },
+      "parts": {
+        "designGeneration": 0,
+        "sourceNodeIds": [],
+        "ratingDeltas": {
+          "enginePower": 0,
+          "reliability": 0
+        }
+      }
+    },
+    {
+      "raceId": "1995-F1-2",
+      "cars": [
+        {
+          "id": "car-williams-1995",
+          "teamId": "t-williams",
+          "ratings": {
+            "enginePower": 94,
+            "aeroEfficiency": 94,
+            "mechanicalGrip": 82,
+            "reliability": 82,
+            "pitCrewOperations": 94
+          },
+          "developmentLevel": {
+            "enginePower": 0,
+            "aeroEfficiency": 0,
+            "mechanicalGrip": 0,
+            "reliability": 0,
+            "pitCrewOperations": 0
+          }
+        },
+        {
+          "id": "car-benetton-1995",
+          "teamId": "t-benetton",
+          "ratings": {
+            "enginePower": 92,
+            "aeroEfficiency": 92,
+            "mechanicalGrip": 80,
+            "reliability": 80,
+            "pitCrewOperations": 80
+          },
+          "developmentLevel": {
+            "enginePower": 0,
+            "aeroEfficiency": 0,
+            "mechanicalGrip": 0,
+            "reliability": 0,
+            "pitCrewOperations": 0
+          }
+        },
+        {
+          "id": "car-ferrari-1995",
+          "teamId": "t-ferrari",
+          "ratings": {
+            "enginePower": 85,
+            "aeroEfficiency": 85,
+            "mechanicalGrip": 85,
+            "reliability": 73,
+            "pitCrewOperations": 73
+          },
+          "developmentLevel": {
+            "enginePower": 0,
+            "aeroEfficiency": 0,
+            "mechanicalGrip": 0,
+            "reliability": 0,
+            "pitCrewOperations": 0
+          }
+        },
+        {
+          "id": "car-mclaren-1995",
+          "teamId": "t-mclaren",
+          "ratings": {
+            "enginePower": 72,
+            "aeroEfficiency": 72,
+            "mechanicalGrip": 72,
+            "reliability": 72,
+            "pitCrewOperations": 83
+          },
+          "developmentLevel": {
+            "enginePower": 0,
+            "aeroEfficiency": 0,
+            "mechanicalGrip": 0,
+            "reliability": 0,
+            "pitCrewOperations": 0
+          }
+        },
+        {
+          "id": "car-ligier-1995",
+          "teamId": "t-ligier",
+          "ratings": {
+            "enginePower": 57,
+            "aeroEfficiency": 57,
+            "mechanicalGrip": 57,
+            "reliability": 64,
+            "pitCrewOperations": 57
+          },
+          "developmentLevel": {
+            "enginePower": 0,
+            "aeroEfficiency": 0,
+            "mechanicalGrip": 0,
+            "reliability": 0,
+            "pitCrewOperations": 0
+          }
+        },
+        {
+          "id": "car-sauber-1995",
+          "teamId": "t-sauber",
+          "ratings": {
+            "enginePower": 54,
+            "aeroEfficiency": 54,
+            "mechanicalGrip": 54,
+            "reliability": 54,
+            "pitCrewOperations": 54
+          },
+          "developmentLevel": {
+            "enginePower": 0,
+            "aeroEfficiency": 0,
+            "mechanicalGrip": 0,
+            "reliability": 0,
+            "pitCrewOperations": 0
+          }
+        },
+        {
+          "id": "car-jordan-1995",
+          "teamId": "t-jordan",
+          "ratings": {
+            "enginePower": 50,
+            "aeroEfficiency": 50,
+            "mechanicalGrip": 50,
+            "reliability": 50,
+            "pitCrewOperations": 50
+          },
+          "developmentLevel": {
+            "enginePower": 0,
+            "aeroEfficiency": 0,
+            "mechanicalGrip": 0,
+            "reliability": 0,
+            "pitCrewOperations": 0
+          }
+        },
+        {
+          "id": "car-tyrrell-1995",
+          "teamId": "t-tyrrell",
+          "ratings": {
+            "enginePower": 46,
+            "aeroEfficiency": 46,
+            "mechanicalGrip": 46,
+            "reliability": 51,
+            "pitCrewOperations": 46
+          },
+          "developmentLevel": {
+            "enginePower": 0,
+            "aeroEfficiency": 0,
+            "mechanicalGrip": 0,
+            "reliability": 0,
+            "pitCrewOperations": 0
+          }
+        },
+        {
+          "id": "car-footwork-1995",
+          "teamId": "t-footwork",
+          "ratings": {
+            "enginePower": 43,
+            "aeroEfficiency": 43,
+            "mechanicalGrip": 43,
+            "reliability": 43,
+            "pitCrewOperations": 43
+          },
+          "developmentLevel": {
+            "enginePower": 0,
+            "aeroEfficiency": 0,
+            "mechanicalGrip": 0,
+            "reliability": 0,
+            "pitCrewOperations": 0
+          }
+        },
+        {
+          "id": "car-minardi-1995",
+          "teamId": "t-minardi",
+          "ratings": {
+            "enginePower": 34,
+            "aeroEfficiency": 34,
+            "mechanicalGrip": 44,
+            "reliability": 44,
+            "pitCrewOperations": 44
+          },
+          "developmentLevel": {
+            "enginePower": 0,
+            "aeroEfficiency": 0,
+            "mechanicalGrip": 0,
+            "reliability": 0,
+            "pitCrewOperations": 0
+          }
+        },
+        {
+          "id": "car-forti-1995",
+          "teamId": "t-forti",
+          "ratings": {
+            "enginePower": 31,
+            "aeroEfficiency": 31,
+            "mechanicalGrip": 41,
+            "reliability": 41,
+            "pitCrewOperations": 41
+          },
+          "developmentLevel": {
+            "enginePower": 0,
+            "aeroEfficiency": 0,
+            "mechanicalGrip": 0,
+            "reliability": 0,
+            "pitCrewOperations": 0
+          }
+        },
+        {
+          "id": "car-pacific-1995",
+          "teamId": "t-pacific",
+          "ratings": {
+            "enginePower": 29,
+            "aeroEfficiency": 29,
+            "mechanicalGrip": 38,
+            "reliability": 38,
+            "pitCrewOperations": 38
+          },
+          "developmentLevel": {
+            "enginePower": 0,
+            "aeroEfficiency": 0,
+            "mechanicalGrip": 0,
+            "reliability": 0,
+            "pitCrewOperations": 0
+          }
+        }
+      ],
+      "driverStandings": [
+        {
+          "entityId": "DRV_0121",
+          "points": 10,
+          "wins": 1,
+          "podiums": 1,
+          "dnfs": 0
+        },
+        {
+          "entityId": "DRV_0063",
+          "points": 6,
+          "wins": 0,
+          "podiums": 1,
+          "dnfs": 0
+        },
+        {
+          "entityId": "DRV_0219",
+          "points": 4,
+          "wins": 0,
+          "podiums": 1,
+          "dnfs": 0
+        },
+        {
+          "entityId": "DRV_0073",
+          "points": 3,
+          "wins": 0,
+          "podiums": 0,
+          "dnfs": 0
+        },
+        {
+          "entityId": "DRV_0222",
+          "points": 2,
+          "wins": 0,
+          "podiums": 0,
+          "dnfs": 0
+        },
+        {
+          "entityId": "DRV_0239",
+          "points": 1,
+          "wins": 0,
+          "podiums": 0,
+          "dnfs": 0
+        },
+        {
+          "entityId": "DRV_0207",
+          "points": 0,
+          "wins": 0,
+          "podiums": 0,
+          "dnfs": 0
+        },
+        {
+          "entityId": "DRV_0131",
+          "points": 0,
+          "wins": 0,
+          "podiums": 0,
+          "dnfs": 0
+        },
+        {
+          "entityId": "DRV_0163",
+          "points": 0,
+          "wins": 0,
+          "podiums": 0,
+          "dnfs": 0
+        },
+        {
+          "entityId": "DRV_0349",
+          "points": 0,
+          "wins": 0,
+          "podiums": 0,
+          "dnfs": 0
+        },
+        {
+          "entityId": "DRV_0173",
+          "points": 0,
+          "wins": 0,
+          "podiums": 0,
+          "dnfs": 0
+        },
+        {
+          "entityId": "DRV_0124",
+          "points": 0,
+          "wins": 0,
+          "podiums": 0,
+          "dnfs": 0
+        },
+        {
+          "entityId": "DRV_0265",
+          "points": 0,
+          "wins": 0,
+          "podiums": 0,
+          "dnfs": 0
+        },
+        {
+          "entityId": "driver-p-moreno",
+          "points": 0,
+          "wins": 0,
+          "podiums": 0,
+          "dnfs": 0
+        },
+        {
+          "entityId": "DRV_0161",
+          "points": 0,
+          "wins": 0,
+          "podiums": 0,
+          "dnfs": 1
+        },
+        {
+          "entityId": "DRV_0191",
+          "points": 0,
+          "wins": 0,
+          "podiums": 0,
+          "dnfs": 1
+        },
+        {
+          "entityId": "DRV_0155",
+          "points": 0,
+          "wins": 0,
+          "podiums": 0,
+          "dnfs": 1
+        },
+        {
+          "entityId": "DRV_0334",
+          "points": 0,
+          "wins": 0,
+          "podiums": 0,
+          "dnfs": 1
+        },
+        {
+          "entityId": "DRV_0032",
+          "points": 0,
+          "wins": 0,
+          "podiums": 0,
+          "dnfs": 1
+        },
+        {
+          "entityId": "DRV_0251",
+          "points": 0,
+          "wins": 0,
+          "podiums": 0,
+          "dnfs": 1
+        },
+        {
+          "entityId": "DRV_0268",
+          "points": 0,
+          "wins": 0,
+          "podiums": 0,
+          "dnfs": 1
+        },
+        {
+          "entityId": "driver-jd-deletraz",
+          "points": 0,
+          "wins": 0,
+          "podiums": 0,
+          "dnfs": 1
+        },
+        {
+          "entityId": "DRV_0223",
+          "points": 0,
+          "wins": 0,
+          "podiums": 0,
+          "dnfs": 1
+        },
+        {
+          "entityId": "DRV_0079",
+          "points": 0,
+          "wins": 0,
+          "podiums": 0,
+          "dnfs": 1
+        }
+      ],
+      "constructorStandings": [
+        {
+          "entityId": "t-ferrari",
+          "points": 10,
+          "wins": 1,
+          "podiums": 1,
+          "dnfs": 1
+        },
+        {
+          "entityId": "t-williams",
+          "points": 9,
+          "wins": 0,
+          "podiums": 1,
+          "dnfs": 0
+        },
+        {
+          "entityId": "t-benetton",
+          "points": 4,
+          "wins": 0,
+          "podiums": 1,
+          "dnfs": 1
+        },
+        {
+          "entityId": "t-mclaren",
+          "points": 3,
+          "wins": 0,
+          "podiums": 0,
+          "dnfs": 0
+        },
+        {
+          "entityId": "t-ligier",
+          "points": 0,
+          "wins": 0,
+          "podiums": 0,
+          "dnfs": 1
+        },
+        {
+          "entityId": "t-sauber",
+          "points": 0,
+          "wins": 0,
+          "podiums": 0,
+          "dnfs": 0
+        },
+        {
+          "entityId": "t-jordan",
+          "points": 0,
+          "wins": 0,
+          "podiums": 0,
+          "dnfs": 1
+        },
+        {
+          "entityId": "t-tyrrell",
+          "points": 0,
+          "wins": 0,
+          "podiums": 0,
+          "dnfs": 1
+        },
+        {
+          "entityId": "t-footwork",
+          "points": 0,
+          "wins": 0,
+          "podiums": 0,
+          "dnfs": 1
+        },
+        {
+          "entityId": "t-forti",
+          "points": 0,
+          "wins": 0,
+          "podiums": 0,
+          "dnfs": 0
+        },
+        {
+          "entityId": "t-minardi",
+          "points": 0,
+          "wins": 0,
+          "podiums": 0,
+          "dnfs": 2
+        },
+        {
+          "entityId": "t-pacific",
+          "points": 0,
+          "wins": 0,
+          "podiums": 0,
+          "dnfs": 2
+        }
+      ],
+      "tpp": {
+        "t-williams": {
+          "balance": 25,
+          "lifetimeEarned": 30,
+          "lifetimeSpent": 5,
+          "ledger": [
+            {
+              "id": "t-williams:1995:0:initial_allocation:0",
+              "seasonYear": 1995,
+              "round": 0,
+              "amount": 30,
+              "balanceAfter": 30,
+              "reason": "initial_allocation",
+              "description": "Initial team leadership allocation"
+            },
+            {
+              "id": "t-williams:1995:1:research_project:1",
+              "seasonYear": 1995,
+              "round": 1,
+              "amount": -5,
+              "balanceAfter": 25,
+              "reason": "research_project",
+              "description": "Spare Parts Inventory Basics",
+              "nodeId": "manufacturing:MF3"
+            }
+          ]
+        },
+        "t-benetton": {
+          "balance": 30,
+          "lifetimeEarned": 30,
+          "lifetimeSpent": 0,
+          "ledger": [
+            {
+              "id": "t-benetton:1995:0:initial_allocation:0",
+              "seasonYear": 1995,
+              "round": 0,
+              "amount": 30,
+              "balanceAfter": 30,
+              "reason": "initial_allocation",
+              "description": "Initial team leadership allocation"
+            }
+          ]
+        },
+        "t-ferrari": {
+          "balance": 30,
+          "lifetimeEarned": 30,
+          "lifetimeSpent": 0,
+          "ledger": [
+            {
+              "id": "t-ferrari:1995:0:initial_allocation:0",
+              "seasonYear": 1995,
+              "round": 0,
+              "amount": 30,
+              "balanceAfter": 30,
+              "reason": "initial_allocation",
+              "description": "Initial team leadership allocation"
+            }
+          ]
+        },
+        "t-mclaren": {
+          "balance": 30,
+          "lifetimeEarned": 30,
+          "lifetimeSpent": 0,
+          "ledger": [
+            {
+              "id": "t-mclaren:1995:0:initial_allocation:0",
+              "seasonYear": 1995,
+              "round": 0,
+              "amount": 30,
+              "balanceAfter": 30,
+              "reason": "initial_allocation",
+              "description": "Initial team leadership allocation"
+            }
+          ]
+        },
+        "t-ligier": {
+          "balance": 30,
+          "lifetimeEarned": 30,
+          "lifetimeSpent": 0,
+          "ledger": [
+            {
+              "id": "t-ligier:1995:0:initial_allocation:0",
+              "seasonYear": 1995,
+              "round": 0,
+              "amount": 30,
+              "balanceAfter": 30,
+              "reason": "initial_allocation",
+              "description": "Initial team leadership allocation"
+            }
+          ]
+        },
+        "t-sauber": {
+          "balance": 30,
+          "lifetimeEarned": 30,
+          "lifetimeSpent": 0,
+          "ledger": [
+            {
+              "id": "t-sauber:1995:0:initial_allocation:0",
+              "seasonYear": 1995,
+              "round": 0,
+              "amount": 30,
+              "balanceAfter": 30,
+              "reason": "initial_allocation",
+              "description": "Initial team leadership allocation"
+            }
+          ]
+        },
+        "t-jordan": {
+          "balance": 30,
+          "lifetimeEarned": 30,
+          "lifetimeSpent": 0,
+          "ledger": [
+            {
+              "id": "t-jordan:1995:0:initial_allocation:0",
+              "seasonYear": 1995,
+              "round": 0,
+              "amount": 30,
+              "balanceAfter": 30,
+              "reason": "initial_allocation",
+              "description": "Initial team leadership allocation"
+            }
+          ]
+        },
+        "t-tyrrell": {
+          "balance": 30,
+          "lifetimeEarned": 30,
+          "lifetimeSpent": 0,
+          "ledger": [
+            {
+              "id": "t-tyrrell:1995:0:initial_allocation:0",
+              "seasonYear": 1995,
+              "round": 0,
+              "amount": 30,
+              "balanceAfter": 30,
+              "reason": "initial_allocation",
+              "description": "Initial team leadership allocation"
+            }
+          ]
+        },
+        "t-footwork": {
+          "balance": 25,
+          "lifetimeEarned": 30,
+          "lifetimeSpent": 5,
+          "ledger": [
+            {
+              "id": "t-footwork:1995:0:initial_allocation:0",
+              "seasonYear": 1995,
+              "round": 0,
+              "amount": 30,
+              "balanceAfter": 30,
+              "reason": "initial_allocation",
+              "description": "Initial team leadership allocation"
+            },
+            {
+              "id": "t-footwork:1995:1:research_project:1",
+              "seasonYear": 1995,
+              "round": 1,
+              "amount": -5,
+              "balanceAfter": 25,
+              "reason": "research_project",
+              "description": "Assembly Process Standardization",
+              "nodeId": "reliability:R5"
+            }
+          ]
+        },
+        "t-minardi": {
+          "balance": 25,
+          "lifetimeEarned": 30,
+          "lifetimeSpent": 5,
+          "ledger": [
+            {
+              "id": "t-minardi:1995:0:initial_allocation:0",
+              "seasonYear": 1995,
+              "round": 0,
+              "amount": 30,
+              "balanceAfter": 30,
+              "reason": "initial_allocation",
+              "description": "Initial team leadership allocation"
+            },
+            {
+              "id": "t-minardi:1995:1:research_project:1",
+              "seasonYear": 1995,
+              "round": 1,
+              "amount": -5,
+              "balanceAfter": 25,
+              "reason": "research_project",
+              "description": "Drivability Calibration",
+              "nodeId": "engine:E4"
+            }
+          ]
+        },
+        "t-forti": {
+          "balance": 30,
+          "lifetimeEarned": 30,
+          "lifetimeSpent": 0,
+          "ledger": [
+            {
+              "id": "t-forti:1995:0:initial_allocation:0",
+              "seasonYear": 1995,
+              "round": 0,
+              "amount": 30,
+              "balanceAfter": 30,
+              "reason": "initial_allocation",
+              "description": "Initial team leadership allocation"
+            }
+          ]
+        },
+        "t-pacific": {
+          "balance": 30,
+          "lifetimeEarned": 30,
+          "lifetimeSpent": 0,
+          "ledger": [
+            {
+              "id": "t-pacific:1995:0:initial_allocation:0",
+              "seasonYear": 1995,
+              "round": 0,
+              "amount": 30,
+              "balanceAfter": 30,
+              "reason": "initial_allocation",
+              "description": "Initial team leadership allocation"
+            }
+          ]
+        }
+      },
+      "completedNodeIds": {
+        "t-williams": [],
+        "t-benetton": [],
+        "t-ferrari": [],
+        "t-mclaren": [],
+        "t-ligier": [],
+        "t-sauber": [],
+        "t-jordan": [],
+        "t-tyrrell": [],
+        "t-footwork": [],
+        "t-minardi": [],
+        "t-forti": [],
+        "t-pacific": []
+      },
+      "parts": {
+        "designGeneration": 0,
+        "sourceNodeIds": [],
+        "ratingDeltas": {
+          "enginePower": 0,
+          "reliability": 0
+        }
+      }
+    },
+    {
+      "raceId": "1995-F1-2",
+      "cars": [
+        {
+          "id": "car-williams-1995",
+          "teamId": "t-williams",
+          "ratings": {
+            "enginePower": 94,
+            "aeroEfficiency": 94,
+            "mechanicalGrip": 82,
+            "reliability": 82,
+            "pitCrewOperations": 94
+          },
+          "developmentLevel": {
+            "enginePower": 0,
+            "aeroEfficiency": 0,
+            "mechanicalGrip": 0,
+            "reliability": 0,
+            "pitCrewOperations": 0
+          }
+        },
+        {
+          "id": "car-benetton-1995",
+          "teamId": "t-benetton",
+          "ratings": {
+            "enginePower": 92,
+            "aeroEfficiency": 92,
+            "mechanicalGrip": 80,
+            "reliability": 80,
+            "pitCrewOperations": 80
+          },
+          "developmentLevel": {
+            "enginePower": 0,
+            "aeroEfficiency": 0,
+            "mechanicalGrip": 0,
+            "reliability": 0,
+            "pitCrewOperations": 0
+          }
+        },
+        {
+          "id": "car-ferrari-1995",
+          "teamId": "t-ferrari",
+          "ratings": {
+            "enginePower": 85,
+            "aeroEfficiency": 85,
+            "mechanicalGrip": 85,
+            "reliability": 73,
+            "pitCrewOperations": 73
+          },
+          "developmentLevel": {
+            "enginePower": 0,
+            "aeroEfficiency": 0,
+            "mechanicalGrip": 0,
+            "reliability": 0,
+            "pitCrewOperations": 0
+          }
+        },
+        {
+          "id": "car-mclaren-1995",
+          "teamId": "t-mclaren",
+          "ratings": {
+            "enginePower": 72,
+            "aeroEfficiency": 72,
+            "mechanicalGrip": 72,
+            "reliability": 72,
+            "pitCrewOperations": 83
+          },
+          "developmentLevel": {
+            "enginePower": 0,
+            "aeroEfficiency": 0,
+            "mechanicalGrip": 0,
+            "reliability": 0,
+            "pitCrewOperations": 0
+          }
+        },
+        {
+          "id": "car-ligier-1995",
+          "teamId": "t-ligier",
+          "ratings": {
+            "enginePower": 57,
+            "aeroEfficiency": 57,
+            "mechanicalGrip": 57,
+            "reliability": 64,
+            "pitCrewOperations": 57
+          },
+          "developmentLevel": {
+            "enginePower": 0,
+            "aeroEfficiency": 0,
+            "mechanicalGrip": 0,
+            "reliability": 0,
+            "pitCrewOperations": 0
+          }
+        },
+        {
+          "id": "car-sauber-1995",
+          "teamId": "t-sauber",
+          "ratings": {
+            "enginePower": 54,
+            "aeroEfficiency": 54,
+            "mechanicalGrip": 54,
+            "reliability": 54,
+            "pitCrewOperations": 54
+          },
+          "developmentLevel": {
+            "enginePower": 0,
+            "aeroEfficiency": 0,
+            "mechanicalGrip": 0,
+            "reliability": 0,
+            "pitCrewOperations": 0
+          }
+        },
+        {
+          "id": "car-jordan-1995",
+          "teamId": "t-jordan",
+          "ratings": {
+            "enginePower": 50,
+            "aeroEfficiency": 50,
+            "mechanicalGrip": 50,
+            "reliability": 50,
+            "pitCrewOperations": 50
+          },
+          "developmentLevel": {
+            "enginePower": 0,
+            "aeroEfficiency": 0,
+            "mechanicalGrip": 0,
+            "reliability": 0,
+            "pitCrewOperations": 0
+          }
+        },
+        {
+          "id": "car-tyrrell-1995",
+          "teamId": "t-tyrrell",
+          "ratings": {
+            "enginePower": 46,
+            "aeroEfficiency": 46,
+            "mechanicalGrip": 46,
+            "reliability": 51,
+            "pitCrewOperations": 46
+          },
+          "developmentLevel": {
+            "enginePower": 0,
+            "aeroEfficiency": 0,
+            "mechanicalGrip": 0,
+            "reliability": 0,
+            "pitCrewOperations": 0
+          }
+        },
+        {
+          "id": "car-footwork-1995",
+          "teamId": "t-footwork",
+          "ratings": {
+            "enginePower": 43,
+            "aeroEfficiency": 43,
+            "mechanicalGrip": 43,
+            "reliability": 43,
+            "pitCrewOperations": 43
+          },
+          "developmentLevel": {
+            "enginePower": 0,
+            "aeroEfficiency": 0,
+            "mechanicalGrip": 0,
+            "reliability": 0,
+            "pitCrewOperations": 0
+          }
+        },
+        {
+          "id": "car-minardi-1995",
+          "teamId": "t-minardi",
+          "ratings": {
+            "enginePower": 34,
+            "aeroEfficiency": 34,
+            "mechanicalGrip": 44,
+            "reliability": 44,
+            "pitCrewOperations": 44
+          },
+          "developmentLevel": {
+            "enginePower": 0,
+            "aeroEfficiency": 0,
+            "mechanicalGrip": 0,
+            "reliability": 0,
+            "pitCrewOperations": 0
+          }
+        },
+        {
+          "id": "car-forti-1995",
+          "teamId": "t-forti",
+          "ratings": {
+            "enginePower": 31,
+            "aeroEfficiency": 31,
+            "mechanicalGrip": 41,
+            "reliability": 41,
+            "pitCrewOperations": 41
+          },
+          "developmentLevel": {
+            "enginePower": 0,
+            "aeroEfficiency": 0,
+            "mechanicalGrip": 0,
+            "reliability": 0,
+            "pitCrewOperations": 0
+          }
+        },
+        {
+          "id": "car-pacific-1995",
+          "teamId": "t-pacific",
+          "ratings": {
+            "enginePower": 29,
+            "aeroEfficiency": 29,
+            "mechanicalGrip": 38,
+            "reliability": 38,
+            "pitCrewOperations": 38
+          },
+          "developmentLevel": {
+            "enginePower": 0,
+            "aeroEfficiency": 0,
+            "mechanicalGrip": 0,
+            "reliability": 0,
+            "pitCrewOperations": 0
+          }
+        }
+      ],
+      "driverStandings": [
+        {
+          "entityId": "DRV_0121",
+          "points": 10,
+          "wins": 1,
+          "podiums": 1,
+          "dnfs": 0
+        },
+        {
+          "entityId": "DRV_0063",
+          "points": 6,
+          "wins": 0,
+          "podiums": 1,
+          "dnfs": 0
+        },
+        {
+          "entityId": "DRV_0219",
+          "points": 4,
+          "wins": 0,
+          "podiums": 1,
+          "dnfs": 0
+        },
+        {
+          "entityId": "DRV_0073",
+          "points": 3,
+          "wins": 0,
+          "podiums": 0,
+          "dnfs": 0
+        },
+        {
+          "entityId": "DRV_0222",
+          "points": 2,
+          "wins": 0,
+          "podiums": 0,
+          "dnfs": 0
+        },
+        {
+          "entityId": "DRV_0239",
+          "points": 1,
+          "wins": 0,
+          "podiums": 0,
+          "dnfs": 0
+        },
+        {
+          "entityId": "DRV_0207",
+          "points": 0,
+          "wins": 0,
+          "podiums": 0,
+          "dnfs": 0
+        },
+        {
+          "entityId": "DRV_0131",
+          "points": 0,
+          "wins": 0,
+          "podiums": 0,
+          "dnfs": 0
+        },
+        {
+          "entityId": "DRV_0163",
+          "points": 0,
+          "wins": 0,
+          "podiums": 0,
+          "dnfs": 0
+        },
+        {
+          "entityId": "DRV_0349",
+          "points": 0,
+          "wins": 0,
+          "podiums": 0,
+          "dnfs": 0
+        },
+        {
+          "entityId": "DRV_0173",
+          "points": 0,
+          "wins": 0,
+          "podiums": 0,
+          "dnfs": 0
+        },
+        {
+          "entityId": "DRV_0124",
+          "points": 0,
+          "wins": 0,
+          "podiums": 0,
+          "dnfs": 0
+        },
+        {
+          "entityId": "DRV_0265",
+          "points": 0,
+          "wins": 0,
+          "podiums": 0,
+          "dnfs": 0
+        },
+        {
+          "entityId": "driver-p-moreno",
+          "points": 0,
+          "wins": 0,
+          "podiums": 0,
+          "dnfs": 0
+        },
+        {
+          "entityId": "DRV_0161",
+          "points": 0,
+          "wins": 0,
+          "podiums": 0,
+          "dnfs": 1
+        },
+        {
+          "entityId": "DRV_0191",
+          "points": 0,
+          "wins": 0,
+          "podiums": 0,
+          "dnfs": 1
+        },
+        {
+          "entityId": "DRV_0155",
+          "points": 0,
+          "wins": 0,
+          "podiums": 0,
+          "dnfs": 1
+        },
+        {
+          "entityId": "DRV_0334",
+          "points": 0,
+          "wins": 0,
+          "podiums": 0,
+          "dnfs": 1
+        },
+        {
+          "entityId": "DRV_0032",
+          "points": 0,
+          "wins": 0,
+          "podiums": 0,
+          "dnfs": 1
+        },
+        {
+          "entityId": "DRV_0251",
+          "points": 0,
+          "wins": 0,
+          "podiums": 0,
+          "dnfs": 1
+        },
+        {
+          "entityId": "DRV_0268",
+          "points": 0,
+          "wins": 0,
+          "podiums": 0,
+          "dnfs": 1
+        },
+        {
+          "entityId": "driver-jd-deletraz",
+          "points": 0,
+          "wins": 0,
+          "podiums": 0,
+          "dnfs": 1
+        },
+        {
+          "entityId": "DRV_0223",
+          "points": 0,
+          "wins": 0,
+          "podiums": 0,
+          "dnfs": 1
+        },
+        {
+          "entityId": "DRV_0079",
+          "points": 0,
+          "wins": 0,
+          "podiums": 0,
+          "dnfs": 1
+        }
+      ],
+      "constructorStandings": [
+        {
+          "entityId": "t-ferrari",
+          "points": 10,
+          "wins": 1,
+          "podiums": 1,
+          "dnfs": 1
+        },
+        {
+          "entityId": "t-williams",
+          "points": 9,
+          "wins": 0,
+          "podiums": 1,
+          "dnfs": 0
+        },
+        {
+          "entityId": "t-benetton",
+          "points": 4,
+          "wins": 0,
+          "podiums": 1,
+          "dnfs": 1
+        },
+        {
+          "entityId": "t-mclaren",
+          "points": 3,
+          "wins": 0,
+          "podiums": 0,
+          "dnfs": 0
+        },
+        {
+          "entityId": "t-ligier",
+          "points": 0,
+          "wins": 0,
+          "podiums": 0,
+          "dnfs": 1
+        },
+        {
+          "entityId": "t-sauber",
+          "points": 0,
+          "wins": 0,
+          "podiums": 0,
+          "dnfs": 0
+        },
+        {
+          "entityId": "t-jordan",
+          "points": 0,
+          "wins": 0,
+          "podiums": 0,
+          "dnfs": 1
+        },
+        {
+          "entityId": "t-tyrrell",
+          "points": 0,
+          "wins": 0,
+          "podiums": 0,
+          "dnfs": 1
+        },
+        {
+          "entityId": "t-footwork",
+          "points": 0,
+          "wins": 0,
+          "podiums": 0,
+          "dnfs": 1
+        },
+        {
+          "entityId": "t-forti",
+          "points": 0,
+          "wins": 0,
+          "podiums": 0,
+          "dnfs": 0
+        },
+        {
+          "entityId": "t-minardi",
+          "points": 0,
+          "wins": 0,
+          "podiums": 0,
+          "dnfs": 2
+        },
+        {
+          "entityId": "t-pacific",
+          "points": 0,
+          "wins": 0,
+          "podiums": 0,
+          "dnfs": 2
+        }
+      ],
+      "tpp": {
+        "t-williams": {
+          "balance": 25,
+          "lifetimeEarned": 30,
+          "lifetimeSpent": 5,
+          "ledger": [
+            {
+              "id": "t-williams:1995:0:initial_allocation:0",
+              "seasonYear": 1995,
+              "round": 0,
+              "amount": 30,
+              "balanceAfter": 30,
+              "reason": "initial_allocation",
+              "description": "Initial team leadership allocation"
+            },
+            {
+              "id": "t-williams:1995:1:research_project:1",
+              "seasonYear": 1995,
+              "round": 1,
+              "amount": -5,
+              "balanceAfter": 25,
+              "reason": "research_project",
+              "description": "Spare Parts Inventory Basics",
+              "nodeId": "manufacturing:MF3"
+            }
+          ]
+        },
+        "t-benetton": {
+          "balance": 30,
+          "lifetimeEarned": 30,
+          "lifetimeSpent": 0,
+          "ledger": [
+            {
+              "id": "t-benetton:1995:0:initial_allocation:0",
+              "seasonYear": 1995,
+              "round": 0,
+              "amount": 30,
+              "balanceAfter": 30,
+              "reason": "initial_allocation",
+              "description": "Initial team leadership allocation"
+            }
+          ]
+        },
+        "t-ferrari": {
+          "balance": 30,
+          "lifetimeEarned": 30,
+          "lifetimeSpent": 0,
+          "ledger": [
+            {
+              "id": "t-ferrari:1995:0:initial_allocation:0",
+              "seasonYear": 1995,
+              "round": 0,
+              "amount": 30,
+              "balanceAfter": 30,
+              "reason": "initial_allocation",
+              "description": "Initial team leadership allocation"
+            }
+          ]
+        },
+        "t-mclaren": {
+          "balance": 30,
+          "lifetimeEarned": 30,
+          "lifetimeSpent": 0,
+          "ledger": [
+            {
+              "id": "t-mclaren:1995:0:initial_allocation:0",
+              "seasonYear": 1995,
+              "round": 0,
+              "amount": 30,
+              "balanceAfter": 30,
+              "reason": "initial_allocation",
+              "description": "Initial team leadership allocation"
+            }
+          ]
+        },
+        "t-ligier": {
+          "balance": 30,
+          "lifetimeEarned": 30,
+          "lifetimeSpent": 0,
+          "ledger": [
+            {
+              "id": "t-ligier:1995:0:initial_allocation:0",
+              "seasonYear": 1995,
+              "round": 0,
+              "amount": 30,
+              "balanceAfter": 30,
+              "reason": "initial_allocation",
+              "description": "Initial team leadership allocation"
+            }
+          ]
+        },
+        "t-sauber": {
+          "balance": 30,
+          "lifetimeEarned": 30,
+          "lifetimeSpent": 0,
+          "ledger": [
+            {
+              "id": "t-sauber:1995:0:initial_allocation:0",
+              "seasonYear": 1995,
+              "round": 0,
+              "amount": 30,
+              "balanceAfter": 30,
+              "reason": "initial_allocation",
+              "description": "Initial team leadership allocation"
+            }
+          ]
+        },
+        "t-jordan": {
+          "balance": 30,
+          "lifetimeEarned": 30,
+          "lifetimeSpent": 0,
+          "ledger": [
+            {
+              "id": "t-jordan:1995:0:initial_allocation:0",
+              "seasonYear": 1995,
+              "round": 0,
+              "amount": 30,
+              "balanceAfter": 30,
+              "reason": "initial_allocation",
+              "description": "Initial team leadership allocation"
+            }
+          ]
+        },
+        "t-tyrrell": {
+          "balance": 30,
+          "lifetimeEarned": 30,
+          "lifetimeSpent": 0,
+          "ledger": [
+            {
+              "id": "t-tyrrell:1995:0:initial_allocation:0",
+              "seasonYear": 1995,
+              "round": 0,
+              "amount": 30,
+              "balanceAfter": 30,
+              "reason": "initial_allocation",
+              "description": "Initial team leadership allocation"
+            }
+          ]
+        },
+        "t-footwork": {
+          "balance": 25,
+          "lifetimeEarned": 30,
+          "lifetimeSpent": 5,
+          "ledger": [
+            {
+              "id": "t-footwork:1995:0:initial_allocation:0",
+              "seasonYear": 1995,
+              "round": 0,
+              "amount": 30,
+              "balanceAfter": 30,
+              "reason": "initial_allocation",
+              "description": "Initial team leadership allocation"
+            },
+            {
+              "id": "t-footwork:1995:1:research_project:1",
+              "seasonYear": 1995,
+              "round": 1,
+              "amount": -5,
+              "balanceAfter": 25,
+              "reason": "research_project",
+              "description": "Assembly Process Standardization",
+              "nodeId": "reliability:R5"
+            }
+          ]
+        },
+        "t-minardi": {
+          "balance": 25,
+          "lifetimeEarned": 30,
+          "lifetimeSpent": 5,
+          "ledger": [
+            {
+              "id": "t-minardi:1995:0:initial_allocation:0",
+              "seasonYear": 1995,
+              "round": 0,
+              "amount": 30,
+              "balanceAfter": 30,
+              "reason": "initial_allocation",
+              "description": "Initial team leadership allocation"
+            },
+            {
+              "id": "t-minardi:1995:1:research_project:1",
+              "seasonYear": 1995,
+              "round": 1,
+              "amount": -5,
+              "balanceAfter": 25,
+              "reason": "research_project",
+              "description": "Drivability Calibration",
+              "nodeId": "engine:E4"
+            }
+          ]
+        },
+        "t-forti": {
+          "balance": 30,
+          "lifetimeEarned": 30,
+          "lifetimeSpent": 0,
+          "ledger": [
+            {
+              "id": "t-forti:1995:0:initial_allocation:0",
+              "seasonYear": 1995,
+              "round": 0,
+              "amount": 30,
+              "balanceAfter": 30,
+              "reason": "initial_allocation",
+              "description": "Initial team leadership allocation"
+            }
+          ]
+        },
+        "t-pacific": {
+          "balance": 30,
+          "lifetimeEarned": 30,
+          "lifetimeSpent": 0,
+          "ledger": [
+            {
+              "id": "t-pacific:1995:0:initial_allocation:0",
+              "seasonYear": 1995,
+              "round": 0,
+              "amount": 30,
+              "balanceAfter": 30,
+              "reason": "initial_allocation",
+              "description": "Initial team leadership allocation"
+            }
+          ]
+        }
+      },
+      "completedNodeIds": {
+        "t-williams": [],
+        "t-benetton": [],
+        "t-ferrari": [],
+        "t-mclaren": [],
+        "t-ligier": [],
+        "t-sauber": [],
+        "t-jordan": [],
+        "t-tyrrell": [],
+        "t-footwork": [],
+        "t-minardi": [],
+        "t-forti": [],
+        "t-pacific": []
+      },
+      "parts": {
+        "designGeneration": 0,
+        "sourceNodeIds": [],
+        "ratingDeltas": {
+          "enginePower": 0,
+          "reliability": 0
+        }
+      }
+    }
+  ],
+  "rollover": {
+    "seasonYear": 1996,
+    "cars": [
+      {
+        "id": "car-williams-1995",
+        "teamId": "t-williams",
+        "ratings": {
+          "enginePower": 78,
+          "aeroEfficiency": 76.6,
+          "mechanicalGrip": 70.5,
+          "reliability": 70.5,
+          "pitCrewOperations": 83
+        },
+        "developmentLevel": {
+          "enginePower": 0,
+          "aeroEfficiency": 0,
+          "mechanicalGrip": 0,
+          "reliability": 0,
+          "pitCrewOperations": 0
+        }
+      },
+      {
+        "id": "car-benetton-1995",
+        "teamId": "t-benetton",
+        "ratings": {
+          "enginePower": 10,
+          "aeroEfficiency": 10,
+          "mechanicalGrip": 10,
+          "reliability": 10,
+          "pitCrewOperations": 60
+        },
+        "developmentLevel": {
+          "enginePower": 0,
+          "aeroEfficiency": 0,
+          "mechanicalGrip": 0,
+          "reliability": 0,
+          "pitCrewOperations": 0
+        }
+      },
+      {
+        "id": "car-ferrari-1995",
+        "teamId": "t-ferrari",
+        "ratings": {
+          "enginePower": 86.4,
+          "aeroEfficiency": 86.4,
+          "mechanicalGrip": 86.4,
+          "reliability": 80,
+          "pitCrewOperations": 74
+        },
+        "developmentLevel": {
+          "enginePower": 0,
+          "aeroEfficiency": 0,
+          "mechanicalGrip": 0,
+          "reliability": 0,
+          "pitCrewOperations": 0
+        }
+      },
+      {
+        "id": "car-mclaren-1995",
+        "teamId": "t-mclaren",
+        "ratings": {
+          "enginePower": 63.1,
+          "aeroEfficiency": 63.1,
+          "mechanicalGrip": 63.1,
+          "reliability": 66,
+          "pitCrewOperations": 79
+        },
+        "developmentLevel": {
+          "enginePower": 0,
+          "aeroEfficiency": 0,
+          "mechanicalGrip": 0,
+          "reliability": 0,
+          "pitCrewOperations": 0
+        }
+      },
+      {
+        "id": "car-ligier-1995",
+        "teamId": "t-ligier",
+        "ratings": {
+          "enginePower": 54.4,
+          "aeroEfficiency": 54.4,
+          "mechanicalGrip": 54.4,
+          "reliability": 62,
+          "pitCrewOperations": 60
+        },
+        "developmentLevel": {
+          "enginePower": 0,
+          "aeroEfficiency": 0,
+          "mechanicalGrip": 0,
+          "reliability": 0,
+          "pitCrewOperations": 0
+        }
+      },
+      {
+        "id": "car-sauber-1995",
+        "teamId": "t-sauber",
+        "ratings": {
+          "enginePower": 57.3,
+          "aeroEfficiency": 57.3,
+          "mechanicalGrip": 57.3,
+          "reliability": 58,
+          "pitCrewOperations": 59
+        },
+        "developmentLevel": {
+          "enginePower": 0,
+          "aeroEfficiency": 0,
+          "mechanicalGrip": 0,
+          "reliability": 0,
+          "pitCrewOperations": 0
+        }
+      },
+      {
+        "id": "car-jordan-1995",
+        "teamId": "t-jordan",
+        "ratings": {
+          "enginePower": 53.4,
+          "aeroEfficiency": 53.4,
+          "mechanicalGrip": 53.4,
+          "reliability": 54,
+          "pitCrewOperations": 57
+        },
+        "developmentLevel": {
+          "enginePower": 0,
+          "aeroEfficiency": 0,
+          "mechanicalGrip": 0,
+          "reliability": 0,
+          "pitCrewOperations": 0
+        }
+      },
+      {
+        "id": "car-tyrrell-1995",
+        "teamId": "t-tyrrell",
+        "ratings": {
+          "enginePower": 45.8,
+          "aeroEfficiency": 45.8,
+          "mechanicalGrip": 45.8,
+          "reliability": 50.3,
+          "pitCrewOperations": 54
+        },
+        "developmentLevel": {
+          "enginePower": 0,
+          "aeroEfficiency": 0,
+          "mechanicalGrip": 0,
+          "reliability": 0,
+          "pitCrewOperations": 0
+        }
+      },
+      {
+        "id": "car-footwork-1995",
+        "teamId": "t-footwork",
+        "ratings": {
+          "enginePower": 42.8,
+          "aeroEfficiency": 42.8,
+          "mechanicalGrip": 42.8,
+          "reliability": 45,
+          "pitCrewOperations": 48
+        },
+        "developmentLevel": {
+          "enginePower": 0,
+          "aeroEfficiency": 0,
+          "mechanicalGrip": 0,
+          "reliability": 0,
+          "pitCrewOperations": 0
+        }
+      },
+      {
+        "id": "car-minardi-1995",
+        "teamId": "t-minardi",
+        "ratings": {
+          "enginePower": 33.8,
+          "aeroEfficiency": 33.8,
+          "mechanicalGrip": 43.8,
+          "reliability": 43.8,
+          "pitCrewOperations": 49
+        },
+        "developmentLevel": {
+          "enginePower": 0,
+          "aeroEfficiency": 0,
+          "mechanicalGrip": 0,
+          "reliability": 0,
+          "pitCrewOperations": 0
+        }
+      },
+      {
+        "id": "car-forti-1995",
+        "teamId": "t-forti",
+        "ratings": {
+          "enginePower": 33,
+          "aeroEfficiency": 30.7,
+          "mechanicalGrip": 40.7,
+          "reliability": 40.7,
+          "pitCrewOperations": 42
+        },
+        "developmentLevel": {
+          "enginePower": 0,
+          "aeroEfficiency": 0,
+          "mechanicalGrip": 0,
+          "reliability": 0,
+          "pitCrewOperations": 0
+        }
+      },
+      {
+        "id": "car-pacific-1995",
+        "teamId": "t-pacific",
+        "ratings": {
+          "enginePower": 28.7,
+          "aeroEfficiency": 28.7,
+          "mechanicalGrip": 37.7,
+          "reliability": 37.7,
+          "pitCrewOperations": 38
+        },
+        "developmentLevel": {
+          "enginePower": 0,
+          "aeroEfficiency": 0,
+          "mechanicalGrip": 0,
+          "reliability": 0,
+          "pitCrewOperations": 0
+        }
+      }
+    ],
+    "driverStandings": [],
+    "constructorStandings": [],
+    "tpp": {
+      "t-williams": {
+        "balance": 45,
+        "lifetimeEarned": 50,
+        "lifetimeSpent": 5,
+        "ledger": [
+          {
+            "id": "t-williams:1995:0:initial_allocation:0",
+            "seasonYear": 1995,
+            "round": 0,
+            "amount": 30,
+            "balanceAfter": 30,
+            "reason": "initial_allocation",
+            "description": "Initial team leadership allocation"
+          },
+          {
+            "id": "t-williams:1995:1:research_project:1",
+            "seasonYear": 1995,
+            "round": 1,
+            "amount": -5,
+            "balanceAfter": 25,
+            "reason": "research_project",
+            "description": "Spare Parts Inventory Basics",
+            "nodeId": "manufacturing:MF3"
+          },
+          {
+            "id": "t-williams:1996:0:season_allocation:2",
+            "seasonYear": 1996,
+            "round": 0,
+            "amount": 20,
+            "balanceAfter": 45,
+            "reason": "season_allocation",
+            "description": "1996 leadership allocation"
+          }
+        ]
+      },
+      "t-benetton": {
+        "balance": 50,
+        "lifetimeEarned": 50,
+        "lifetimeSpent": 0,
+        "ledger": [
+          {
+            "id": "t-benetton:1995:0:initial_allocation:0",
+            "seasonYear": 1995,
+            "round": 0,
+            "amount": 30,
+            "balanceAfter": 30,
+            "reason": "initial_allocation",
+            "description": "Initial team leadership allocation"
+          },
+          {
+            "id": "t-benetton:1996:0:season_allocation:1",
+            "seasonYear": 1996,
+            "round": 0,
+            "amount": 20,
+            "balanceAfter": 50,
+            "reason": "season_allocation",
+            "description": "1996 leadership allocation"
+          }
+        ]
+      },
+      "t-ferrari": {
+        "balance": 50,
+        "lifetimeEarned": 50,
+        "lifetimeSpent": 0,
+        "ledger": [
+          {
+            "id": "t-ferrari:1995:0:initial_allocation:0",
+            "seasonYear": 1995,
+            "round": 0,
+            "amount": 30,
+            "balanceAfter": 30,
+            "reason": "initial_allocation",
+            "description": "Initial team leadership allocation"
+          },
+          {
+            "id": "t-ferrari:1996:0:season_allocation:1",
+            "seasonYear": 1996,
+            "round": 0,
+            "amount": 20,
+            "balanceAfter": 50,
+            "reason": "season_allocation",
+            "description": "1996 leadership allocation"
+          }
+        ]
+      },
+      "t-mclaren": {
+        "balance": 50,
+        "lifetimeEarned": 50,
+        "lifetimeSpent": 0,
+        "ledger": [
+          {
+            "id": "t-mclaren:1995:0:initial_allocation:0",
+            "seasonYear": 1995,
+            "round": 0,
+            "amount": 30,
+            "balanceAfter": 30,
+            "reason": "initial_allocation",
+            "description": "Initial team leadership allocation"
+          },
+          {
+            "id": "t-mclaren:1996:0:season_allocation:1",
+            "seasonYear": 1996,
+            "round": 0,
+            "amount": 20,
+            "balanceAfter": 50,
+            "reason": "season_allocation",
+            "description": "1996 leadership allocation"
+          }
+        ]
+      },
+      "t-ligier": {
+        "balance": 50,
+        "lifetimeEarned": 50,
+        "lifetimeSpent": 0,
+        "ledger": [
+          {
+            "id": "t-ligier:1995:0:initial_allocation:0",
+            "seasonYear": 1995,
+            "round": 0,
+            "amount": 30,
+            "balanceAfter": 30,
+            "reason": "initial_allocation",
+            "description": "Initial team leadership allocation"
+          },
+          {
+            "id": "t-ligier:1996:0:season_allocation:1",
+            "seasonYear": 1996,
+            "round": 0,
+            "amount": 20,
+            "balanceAfter": 50,
+            "reason": "season_allocation",
+            "description": "1996 leadership allocation"
+          }
+        ]
+      },
+      "t-sauber": {
+        "balance": 50,
+        "lifetimeEarned": 50,
+        "lifetimeSpent": 0,
+        "ledger": [
+          {
+            "id": "t-sauber:1995:0:initial_allocation:0",
+            "seasonYear": 1995,
+            "round": 0,
+            "amount": 30,
+            "balanceAfter": 30,
+            "reason": "initial_allocation",
+            "description": "Initial team leadership allocation"
+          },
+          {
+            "id": "t-sauber:1996:0:season_allocation:1",
+            "seasonYear": 1996,
+            "round": 0,
+            "amount": 20,
+            "balanceAfter": 50,
+            "reason": "season_allocation",
+            "description": "1996 leadership allocation"
+          }
+        ]
+      },
+      "t-jordan": {
+        "balance": 50,
+        "lifetimeEarned": 50,
+        "lifetimeSpent": 0,
+        "ledger": [
+          {
+            "id": "t-jordan:1995:0:initial_allocation:0",
+            "seasonYear": 1995,
+            "round": 0,
+            "amount": 30,
+            "balanceAfter": 30,
+            "reason": "initial_allocation",
+            "description": "Initial team leadership allocation"
+          },
+          {
+            "id": "t-jordan:1996:0:season_allocation:1",
+            "seasonYear": 1996,
+            "round": 0,
+            "amount": 20,
+            "balanceAfter": 50,
+            "reason": "season_allocation",
+            "description": "1996 leadership allocation"
+          }
+        ]
+      },
+      "t-tyrrell": {
+        "balance": 50,
+        "lifetimeEarned": 50,
+        "lifetimeSpent": 0,
+        "ledger": [
+          {
+            "id": "t-tyrrell:1995:0:initial_allocation:0",
+            "seasonYear": 1995,
+            "round": 0,
+            "amount": 30,
+            "balanceAfter": 30,
+            "reason": "initial_allocation",
+            "description": "Initial team leadership allocation"
+          },
+          {
+            "id": "t-tyrrell:1996:0:season_allocation:1",
+            "seasonYear": 1996,
+            "round": 0,
+            "amount": 20,
+            "balanceAfter": 50,
+            "reason": "season_allocation",
+            "description": "1996 leadership allocation"
+          }
+        ]
+      },
+      "t-footwork": {
+        "balance": 45,
+        "lifetimeEarned": 50,
+        "lifetimeSpent": 5,
+        "ledger": [
+          {
+            "id": "t-footwork:1995:0:initial_allocation:0",
+            "seasonYear": 1995,
+            "round": 0,
+            "amount": 30,
+            "balanceAfter": 30,
+            "reason": "initial_allocation",
+            "description": "Initial team leadership allocation"
+          },
+          {
+            "id": "t-footwork:1995:1:research_project:1",
+            "seasonYear": 1995,
+            "round": 1,
+            "amount": -5,
+            "balanceAfter": 25,
+            "reason": "research_project",
+            "description": "Assembly Process Standardization",
+            "nodeId": "reliability:R5"
+          },
+          {
+            "id": "t-footwork:1996:0:season_allocation:2",
+            "seasonYear": 1996,
+            "round": 0,
+            "amount": 20,
+            "balanceAfter": 45,
+            "reason": "season_allocation",
+            "description": "1996 leadership allocation"
+          }
+        ]
+      },
+      "t-minardi": {
+        "balance": 45,
+        "lifetimeEarned": 50,
+        "lifetimeSpent": 5,
+        "ledger": [
+          {
+            "id": "t-minardi:1995:0:initial_allocation:0",
+            "seasonYear": 1995,
+            "round": 0,
+            "amount": 30,
+            "balanceAfter": 30,
+            "reason": "initial_allocation",
+            "description": "Initial team leadership allocation"
+          },
+          {
+            "id": "t-minardi:1995:1:research_project:1",
+            "seasonYear": 1995,
+            "round": 1,
+            "amount": -5,
+            "balanceAfter": 25,
+            "reason": "research_project",
+            "description": "Drivability Calibration",
+            "nodeId": "engine:E4"
+          },
+          {
+            "id": "t-minardi:1996:0:season_allocation:2",
+            "seasonYear": 1996,
+            "round": 0,
+            "amount": 20,
+            "balanceAfter": 45,
+            "reason": "season_allocation",
+            "description": "1996 leadership allocation"
+          }
+        ]
+      },
+      "t-forti": {
+        "balance": 50,
+        "lifetimeEarned": 50,
+        "lifetimeSpent": 0,
+        "ledger": [
+          {
+            "id": "t-forti:1995:0:initial_allocation:0",
+            "seasonYear": 1995,
+            "round": 0,
+            "amount": 30,
+            "balanceAfter": 30,
+            "reason": "initial_allocation",
+            "description": "Initial team leadership allocation"
+          },
+          {
+            "id": "t-forti:1996:0:season_allocation:1",
+            "seasonYear": 1996,
+            "round": 0,
+            "amount": 20,
+            "balanceAfter": 50,
+            "reason": "season_allocation",
+            "description": "1996 leadership allocation"
+          }
+        ]
+      },
+      "t-pacific": {
+        "balance": 50,
+        "lifetimeEarned": 50,
+        "lifetimeSpent": 0,
+        "ledger": [
+          {
+            "id": "t-pacific:1995:0:initial_allocation:0",
+            "seasonYear": 1995,
+            "round": 0,
+            "amount": 30,
+            "balanceAfter": 30,
+            "reason": "initial_allocation",
+            "description": "Initial team leadership allocation"
+          },
+          {
+            "id": "t-pacific:1996:0:season_allocation:1",
+            "seasonYear": 1996,
+            "round": 0,
+            "amount": 20,
+            "balanceAfter": 50,
+            "reason": "season_allocation",
+            "description": "1996 leadership allocation"
+          }
+        ]
+      }
+    },
+    "completedNodeIds": {
+      "t-williams": [],
+      "t-benetton": [],
+      "t-ferrari": [],
+      "t-mclaren": [],
+      "t-ligier": [],
+      "t-sauber": [],
+      "t-jordan": [],
+      "t-tyrrell": [],
+      "t-footwork": [],
+      "t-minardi": [],
+      "t-forti": [],
+      "t-pacific": []
+    },
+    "parts": {
+      "designGeneration": 0,
+      "sourceNodeIds": [],
+      "ratingDeltas": {
+        "enginePower": 0,
+        "reliability": 0
+      }
+    }
+  }
+}

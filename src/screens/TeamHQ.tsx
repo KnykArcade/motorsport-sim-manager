@@ -31,6 +31,7 @@ import {
   WorkspaceTabs,
 } from '../components/workspace/Workspace';
 import { formatMoney, ratingColor } from '../components/ui';
+import { activeUpgradePrograms } from '../sim/technicalAdapters';
 import {
   BACKGROUNDS,
   MANAGEMENT_STYLES,
@@ -89,7 +90,7 @@ export function TeamHQ() {
         <WorkspaceMetric label="Budget" value={team ? formatMoney(team.budget) : '—'} detail="Available team balance" />
         <WorkspaceMetric label="Team morale" value={`${Math.round(team?.morale ?? 0)}%`} detail="Current organization mood" />
         <WorkspaceMetric label="Reputation" value={Math.round(team?.reputation ?? 0)} detail="Market standing" />
-        <WorkspaceMetric label="Active projects" value={state.activeDevelopmentProjects.length} detail="Development in progress" />
+        <WorkspaceMetric label="Active projects" value={activeUpgradePrograms(state).length} detail="Development in progress" />
       </MetricStrip>
 
       <section className="ui-decision-strip flex flex-wrap items-center justify-between gap-3 rounded-lg border px-3 py-2.5">

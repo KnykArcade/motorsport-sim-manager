@@ -16,7 +16,6 @@ import {
   canStartResearchProject,
   cashCostForBand,
   durationRoundsForBand,
-  ensureTeamResearchMap,
   progressTeamResearch,
   selectResearchFocus,
   researchModifierTotal,
@@ -112,7 +111,7 @@ import { staffEmployer, staffPoachingCompensation } from '../sim/aiStaffRosterEn
 import { reconcilePersonnelCareerLedger } from '../sim/personnelCareerLedgerEngine';
 import { recordRaceLegacy } from '../sim/phase18LegacyEngine';
 import { syncNarratives } from '../sim/phase18NarrativeEngine';
-import { toUnifiedTechnical } from '../sim/technicalModel';
+import { fromUnifiedTechnical, technicalStateForTeam, withUnifiedTechnical } from '../sim/technicalAdapters';
 import { applyNarrativeAIReactions, resolveNarrativeResponse } from '../sim/phase18NarrativeResponseEngine';
 import { createSeededRandom, deriveSeed } from '../sim/random';
 import type { AcademyDecision, FirstOptionDecision, SeatSigning } from '../types/marketTypes';
@@ -1761,6 +1760,7 @@ function applyRaceResults(
   teamOrders: TeamOrderDecision[] = [],
   strategyRiskByDriver?: Record<string, 'conservative' | 'balanced' | 'aggressive'>,
 ): GameState {
+  const legacyTechnical = fromUnifiedTechnical(state);
   const qualifying = state.qualifyingResults[race.id] ?? [];
 
   lastBreakdowns.race = breakdowns;
@@ -1983,8 +1983,8 @@ function applyRaceResults(
 
   // Development progress (player team only, for MVP).
   const playerCar = carForTeam(state, state.selectedTeamId);
-  let activeDevelopmentProjects = state.activeDevelopmentProjects;
-  let completedDevelopmentProjects = state.completedDevelopmentProjects;
+  let activeDevelopmentProjects = legacyTechnical.activeDevelopmentProjects;
+  let completedDevelopmentProjects = legacyTechnical.completedDevelopmentProjects;
   const devMessages: string[] = [];
   if (playerCar && activeDevelopmentProjects.length > 0) {
     const playerTeamData = state.teams.find((t) => t.id === state.selectedTeamId);
@@ -2016,7 +2016,7 @@ function applyRaceResults(
   // Team-owned R&D foundation projects progress on the same authoritative race
   // completion boundary as legacy development. Only the player's team acts in
   // this vertical slice; the map already holds every team for the AI phase.
-  let teamResearch = ensureTeamResearchMap(state.teamResearch, state.teams, state.seasonYear);
+  let teamResearch = legacyTechnical.teamResearch;
   const playerResearch = teamResearch[state.selectedTeamId];
   if (playerResearch?.activeProjects.length) {
     const rdSupportBonus = researchModifierTotal(playerResearch, 'department', 'driverFeedback')
@@ -2199,10 +2199,11 @@ function applyRaceResults(
     race.round,
     results,
   ));
-  return {
-    ...finalized,
-    teamTechnical: toUnifiedTechnical(finalized),
-  };
+  return withUnifiedTechnical(finalized, {
+    activeDevelopmentProjects,
+    completedDevelopmentProjects,
+    teamResearch,
+  });
 }
 
 function partsRound(state: GameState): number {
@@ -2210,10 +2211,7 @@ function partsRound(state: GameState): number {
 }
 
 function withTechnicalProjection(state: GameState): GameState {
-  return {
-    ...state,
-    teamTechnical: toUnifiedTechnical(state),
-  };
+  return withUnifiedTechnical(state, fromUnifiedTechnical(state));
 }
 
 function startPartManufacturingAction(state: GameState, partType: PartType, quantity: number): GameState {
@@ -2222,7 +2220,7 @@ function startPartManufacturingAction(state: GameState, partType: PartType, quan
   const teamParts = ensureTeamPartsMap(state.teamParts, state.teams, state.drivers, state.seasonYear);
   const parts = teamParts[state.selectedTeamId];
   if (!parts || parts.manufacturingQueue.length >= 3) return state;
-  const research = ensureTeamResearchMap(state.teamResearch, state.teams, state.seasonYear)[state.selectedTeamId];
+  const research = technicalStateForTeam(state, state.selectedTeamId);
   const order = manufacturingQuote(parts, partType, quantity, research, state.seasonYear, partsRound(state));
   if (team.budget < order.cost) return state;
   const updated = startPartManufacturing(parts, order);
@@ -2291,6 +2289,7 @@ function retirePartAction(state: GameState, partId: string): GameState {
 }
 
 function startDevelopment(state: GameState, projectId: string, rushed: boolean): GameState {
+  const legacyTechnical = fromUnifiedTechnical(state);
   const template = developmentProjectsById[projectId];
   if (!template) return state;
   const team = state.teams.find((t) => t.id === state.selectedTeamId);
@@ -2305,7 +2304,9 @@ function startDevelopment(state: GameState, projectId: string, rushed: boolean):
 
   // Check development slots (facility-based).
   const slots = developmentSlots(state.facilities);
-  if (state.activeDevelopmentProjects.length >= slots) return state;
+  const activeCount = state.teamTechnical?.[state.selectedTeamId]?.activeProjects.length
+    ?? legacyTechnical.activeDevelopmentProjects.length;
+  if (activeCount >= slots) return state;
 
   // Compute facility level for this project category.
   const facLevel = relevantFacilityLevel(state.facilities, template.category);
@@ -2336,33 +2337,40 @@ function startDevelopment(state: GameState, projectId: string, rushed: boolean):
     t.id === team.id ? { ...t, budget: t.budget - cost } : t,
   );
 
-  return {
+  return withUnifiedTechnical({
     ...state,
     teams,
     finance: [
       ...(state.finance ?? []),
       makeTransaction(state.seasonYear, 'Development', `${template.name}${rushed ? ' (Rushed)' : ''}`, -cost),
     ],
-    activeDevelopmentProjects: [...state.activeDevelopmentProjects, instance],
-  };
+  }, {
+    ...legacyTechnical,
+    activeDevelopmentProjects: [...legacyTechnical.activeDevelopmentProjects, instance],
+  });
 }
 
 function setResearchFocusAction(state: GameState, branchId: RDBranchId): GameState {
-  const teamResearch = ensureTeamResearchMap(state.teamResearch, state.teams, state.seasonYear);
+  const legacyTechnical = fromUnifiedTechnical(state);
+  const teamResearch = legacyTechnical.teamResearch;
   const research = teamResearch[state.selectedTeamId];
   if (!research) return state;
   const updated = selectResearchFocus(research, branchId, state.seasonYear);
   if (updated === research) return state;
-  return { ...state, teamResearch: { ...teamResearch, [state.selectedTeamId]: updated } };
+  return withUnifiedTechnical(state, {
+    ...legacyTechnical,
+    teamResearch: { ...teamResearch, [state.selectedTeamId]: updated },
+  });
 }
 
 function startRDProject(state: GameState, request: RDProjectStartRequest): GameState {
+  const legacyTechnical = fromUnifiedTechnical(state);
   const team = state.teams.find((candidate) => candidate.id === state.selectedTeamId);
   if (!team) return state;
   if (request.contextSeries && request.contextSeries !== state.series) return state;
   if (request.contextSeasonYear && request.contextSeasonYear !== state.seasonYear) return state;
 
-  const teamResearch = ensureTeamResearchMap(state.teamResearch, state.teams, state.seasonYear);
+  const teamResearch = legacyTechnical.teamResearch;
   const research = teamResearch[state.selectedTeamId];
   if (!research) return state;
   const baseCashCost = cashCostForBand(request.cashCostBand, team.budget, state.series, state.seasonYear);
@@ -2370,8 +2378,10 @@ function startRDProject(state: GameState, request: RDProjectStartRequest): GameS
   const tppCost = tppCostForBand(request.tppCostBand);
   const baseDuration = durationRoundsForBand(request.durationBand, state.calendar.length);
   const durationRounds = adjustedResearchDuration(baseDuration, research);
-  const maxActiveProjects = Math.max(0, developmentSlots(state.facilities) - state.activeDevelopmentProjects.length);
-  if (!canStartResearchProject(research, request, team.budget, cashCost, tppCost, maxActiveProjects)) return state;
+  const activeCount = state.teamTechnical?.[state.selectedTeamId]?.activeProjects.length
+    ?? (legacyTechnical.activeDevelopmentProjects.length + research.activeProjects.length);
+  if (activeCount >= developmentSlots(state.facilities)) return state;
+  if (!canStartResearchProject(research, request, team.budget, cashCost, tppCost, Number.MAX_SAFE_INTEGER)) return state;
 
   const round = state.calendar[state.currentRaceIndex]?.round ?? state.currentRaceIndex + 1;
   const updated = startResearchProject(
@@ -2383,7 +2393,7 @@ function startRDProject(state: GameState, request: RDProjectStartRequest): GameS
     durationRounds,
     tppCost,
   );
-  return {
+  return withUnifiedTechnical({
     ...state,
     teams: state.teams.map((candidate) => candidate.id === team.id
       ? { ...candidate, budget: candidate.budget - cashCost }
@@ -2392,12 +2402,15 @@ function startRDProject(state: GameState, request: RDProjectStartRequest): GameS
       ...(state.finance ?? []),
       makeTransaction(state.seasonYear, 'Development', `${request.displayName} (R&D)`, -cashCost, round),
     ],
+  }, {
+    ...legacyTechnical,
     teamResearch: { ...teamResearch, [state.selectedTeamId]: updated },
-  };
+  });
 }
 
 function rushDevelopment(state: GameState, projectId: string): GameState {
-  const project = state.activeDevelopmentProjects.find((p) => p.id === projectId);
+  const legacyTechnical = fromUnifiedTechnical(state);
+  const project = legacyTechnical.activeDevelopmentProjects.find((p) => p.id === projectId);
   if (!project || project.rushed) return state;
 
   const team = state.teams.find((t) => t.id === state.selectedTeamId);
@@ -2420,7 +2433,7 @@ function rushDevelopment(state: GameState, projectId: string): GameState {
     t.id === team.id ? { ...t, budget: t.budget - rushCost } : t,
   );
 
-  const activeDevelopmentProjects = state.activeDevelopmentProjects.map((p) =>
+  const activeDevelopmentProjects = legacyTechnical.activeDevelopmentProjects.map((p) =>
     p.id === projectId
       ? {
           ...p,
@@ -2430,15 +2443,17 @@ function rushDevelopment(state: GameState, projectId: string): GameState {
       : p,
   );
 
-  return {
+  return withUnifiedTechnical({
     ...state,
     teams,
     finance: [
       ...(state.finance ?? []),
       makeTransaction(state.seasonYear, 'Development', `${project.name} (Rush Fee)`, -rushCost),
     ],
+  }, {
+    ...legacyTechnical,
     activeDevelopmentProjects,
-  };
+  });
 }
 
 function hasPackageForCurrentRace(state: GameState): boolean {

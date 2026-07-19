@@ -17,7 +17,7 @@ import {
 import { BALANCED_SETUP } from '../data/setup/setupComponents';
 import { applyOffseasonDecay, calculateOffseasonCarryover } from '../sim/developmentEngine';
 import { allocateSeasonTPP, ensureTeamResearchMap } from '../sim/rdEngine';
-import { toUnifiedTechnical } from '../sim/technicalModel';
+import { fromUnifiedTechnical, withUnifiedTechnical } from '../sim/technicalAdapters';
 import { rolloverTeamPartsMap } from '../sim/partsEngine';
 import {
   academyMemberAge,
@@ -308,6 +308,7 @@ function fillEmptyRaceSeats(
 }
 
 export function advanceSeason(state: GameState, nextBundle?: SeasonBundle): GameState {
+  const legacyTechnical = fromUnifiedTechnical(state);
   const nextYear = state.seasonYear + 1;
   const mobilityMode: CareerMobilityMode = state.careerMobilityMode ?? 'StandardCareer';
   // Living career market: the curated season file plus registry free agents /
@@ -612,7 +613,7 @@ export function advanceSeason(state: GameState, nextBundle?: SeasonBundle): Game
     if (playerCar && c.id === playerCar.id) {
       const carried = calculateOffseasonCarryover(
         c,
-        state.completedDevelopmentProjects,
+        legacyTechnical.completedDevelopmentProjects,
         regulationHistoryWithVotes,
       );
       const ratings = applyOffseasonDecay(carried, {
@@ -1519,7 +1520,7 @@ export function advanceSeason(state: GameState, nextBundle?: SeasonBundle): Game
   // Research belongs to the team, not the principal. Preserve every team's
   // projects/focus/modifiers through rollover and issue the annual leadership
   // allocation regardless of whether the player changed jobs.
-  const ensuredTeamResearch = ensureTeamResearchMap(state.teamResearch, teamsWithOpsSync, state.seasonYear);
+  const ensuredTeamResearch = ensureTeamResearchMap(legacyTechnical.teamResearch, teamsWithOpsSync, state.seasonYear);
   const nextTeamResearch = Object.fromEntries(
     Object.entries(ensuredTeamResearch).map(([teamId, research]) => [
       teamId,
@@ -1654,19 +1655,21 @@ export function advanceSeason(state: GameState, nextBundle?: SeasonBundle): Game
       let finalized = ensureRivalRelationships(ensureFailureInvestigationState(ensurePreseasonHubState(movedState)));
       for (const pair of principalPoachPairs) finalized = recordStaffPoach(finalized, pair.sourceTeamId, pair.destinationTeamId);
       const result = reconcilePersonnelCareerLedger(state, ensureCharacterFutureIntentions(finalized), nextYear, 'Season rollover');
-      return {
-        ...result,
-        teamTechnical: toUnifiedTechnical(result),
-      };
+      return withUnifiedTechnical(result, {
+        activeDevelopmentProjects: result.activeDevelopmentProjects,
+        completedDevelopmentProjects: result.completedDevelopmentProjects,
+        teamResearch: result.teamResearch ?? legacyTechnical.teamResearch,
+      });
     }
   }
   let finalized = ensureRivalRelationships(ensureFailureInvestigationState(ensurePreseasonHubState(nextState)));
   for (const pair of principalPoachPairs) finalized = recordStaffPoach(finalized, pair.sourceTeamId, pair.destinationTeamId);
   const result = reconcilePersonnelCareerLedger(state, ensureCharacterFutureIntentions(finalized), nextYear, 'Season rollover');
-  return {
-    ...result,
-    teamTechnical: toUnifiedTechnical(result),
-  };
+  return withUnifiedTechnical(result, {
+    activeDevelopmentProjects: result.activeDevelopmentProjects,
+    completedDevelopmentProjects: result.completedDevelopmentProjects,
+    teamResearch: result.teamResearch ?? legacyTechnical.teamResearch,
+  });
 }
 
 // Switch the player to a new team after a principal move: rebuild the

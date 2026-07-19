@@ -1,4 +1,5 @@
 import type { GameState } from '../game/careerState';
+import { researchStateForTeam } from './technicalAdapters';
 import type { NewsItem, RaceResult } from '../types/gameTypes';
 import type { RivalAction, RivalRelationship, RivalRelationshipEvent, RivalRelationshipTag } from '../types/phase18Types';
 import { makeTransaction } from './financeEngine';
@@ -100,9 +101,9 @@ export function evolveRivalRelationshipsAfterRace(state: GameState, round: numbe
   if (nearest) {
     next = addRivalRelationshipEvent(next, state.selectedTeamId, nearest.teamId, { round, amount: 2, respectDelta: 3, suspicionDelta: 1, reason: `Close competition in round ${round} increased sporting respect and technical attention.`, category: 'Sporting', tags: ['TechnicalRival'] });
   }
-  const playerResearch = state.teamResearch?.[state.selectedTeamId];
+  const playerResearch = researchStateForTeam(state, state.selectedTeamId);
   for (const rival of state.teams.filter((team) => team.id !== state.selectedTeamId)) {
-    const rivalResearch = state.teamResearch?.[rival.id];
+    const rivalResearch = researchStateForTeam(state, rival.id);
     const sameBranch = playerResearch?.focus?.branchId && playerResearch.focus.branchId === rivalResearch?.focus?.branchId;
     if (sameBranch) next = addRivalRelationshipEvent(next, state.selectedTeamId, rival.id, { round, amount: -1, suspicionDelta: 3, reason: `Both teams concentrated development on ${playerResearch!.focus!.branchId}, increasing copying suspicion.`, category: 'Technical', tags: ['TechnicalRival'] });
     const relation = rivalRelationship(next, state.selectedTeamId, rival.id);
