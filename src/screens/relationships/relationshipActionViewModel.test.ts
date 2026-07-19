@@ -33,6 +33,7 @@ function collective(id: CollectiveStakeholderProfile['id'], status: CollectiveSt
     health: 30,
     reasons: ['Trust is under pressure.'],
     metrics: [],
+    gameplayEffect: { label: 'Effect', value: 'Neutral', detail: 'Test effect.' },
     actionLabel: 'Review',
   };
 }

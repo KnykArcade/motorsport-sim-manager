@@ -36,11 +36,11 @@ describe('relationship risk guidance', () => {
   it('keeps collective consequences tied to the system the committee represents', () => {
     expect(collectiveRiskIfIgnored({
       id: 'Departments', title: 'Departments', authorityRank: 4, authorityLabel: 'Internal',
-      status: 'WatchClosely', health: 35, reasons: ['Low trust.'], metrics: [], actionLabel: 'Review',
+      status: 'WatchClosely', health: 35, reasons: ['Low trust.'], metrics: [], gameplayEffect: { label: 'Effect', value: 'Neutral', detail: 'Test effect.' }, actionLabel: 'Review',
     })).toContain('departmental productivity');
     expect(collectiveRiskIfIgnored({
       id: 'Commercial', title: 'Commercial', authorityRank: 5, authorityLabel: 'Partners',
-      status: 'MustActNow', health: 20, reasons: ['Low confidence.'], metrics: [], actionLabel: 'Review',
+      status: 'MustActNow', health: 20, reasons: ['Low confidence.'], metrics: [], gameplayEffect: { label: 'Effect', value: 'Neutral', detail: 'Test effect.' }, actionLabel: 'Review',
     })).toContain('renewals');
   });
 

@@ -69,6 +69,10 @@ describe('collective stakeholder priorities', () => {
       id: 'Departments',
       authorityRank: 4,
       status: 'Stable',
+      gameplayEffect: {
+        label: 'Race preparation execution',
+        value: '+2.0%',
+      },
     });
     expect(profile?.reasons[0]).toContain('All 8 department committees are aligned');
   });
@@ -96,7 +100,9 @@ describe('collective stakeholder priorities', () => {
 
     expect(critical?.status).toBe('MustActNow');
     expect(critical?.reasons.some((reason) => reason.includes('Partner One confidence is 14'))).toBe(true);
+    expect(critical?.gameplayEffect.value).toBe('44%');
     expect(stableLowFanBase?.status).toBe('Stable');
+    expect(stableLowFanBase?.gameplayEffect.value).toBe('85%');
     expect(stableLowFanBase?.metrics.find((metric) => metric.label === 'Fan support')?.value).toBe('20');
   });
 

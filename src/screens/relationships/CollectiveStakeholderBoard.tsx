@@ -79,6 +79,14 @@ function CollectiveStakeholderCard({ state, profile, onReview, onTakeAction }: {
         ))}
       </div>
 
+      <div className="mt-2 flex flex-wrap items-center justify-between gap-2 rounded border border-current/15 bg-neutral-950/25 px-2.5 py-2">
+        <div>
+          <div className="text-[9px] font-bold uppercase tracking-wide text-neutral-500">Current gameplay effect · {profile.gameplayEffect.label}</div>
+          <p className="mt-0.5 text-[9px] leading-relaxed text-neutral-500">{profile.gameplayEffect.detail}</p>
+        </div>
+        <span className="text-xs font-black tabular-nums text-neutral-100">{profile.gameplayEffect.value}</span>
+      </div>
+
       <ul className="mt-2 space-y-1 text-[11px] text-neutral-300">
         {profile.reasons.slice(0, 2).map((reason) => <li key={reason}>• {reason}</li>)}
       </ul>
