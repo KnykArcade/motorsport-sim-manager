@@ -42,6 +42,7 @@ import {
   type CollectiveStakeholderProfile,
 } from './relationships/relationshipStakeholderViewModel';
 import { currentPotentialEmployerStanding } from './relationships/relationshipEmployerViewModel';
+import { currentExternalTalentContext } from './relationships/relationshipTalentViewModel';
 import {
   MetricStrip,
   WorkspaceBody,
@@ -194,14 +195,17 @@ export function Relationships() {
   const topPriority = relationshipPriorities[0];
   const topCollectivePriority = collectiveStakeholders[0];
   const employerStanding = currentPotentialEmployerStanding(state);
+  const externalTalent = currentExternalTalentContext(state);
   const attentionOrder = { MustActNow: 0, WatchClosely: 1, Stable: 2 } as const;
   const deskSignal = [
     topPriority && { status: topPriority.status, rank: topPriority.authorityRank, title: topPriority.target.name, reason: topPriority.reasons[0] },
     topCollectivePriority && { status: topCollectivePriority.status, rank: topCollectivePriority.authorityRank, title: topCollectivePriority.title, reason: topCollectivePriority.reasons[0] },
     employerStanding && { status: employerStanding.status, rank: employerStanding.authorityRank, title: 'Potential employers', reason: employerStanding.reasons[0] },
+    { status: externalTalent.status, rank: externalTalent.authorityRank, title: 'External talent', reason: externalTalent.reasons[0] },
   ].filter((signal): signal is NonNullable<typeof signal> => !!signal)
     .sort((a, b) => attentionOrder[a.status] - attentionOrder[b.status] || a.rank - b.rank)[0];
   const employerAttentionCount = employerStanding?.status === 'WatchClosely' || employerStanding?.status === 'MustActNow' ? 1 : 0;
+  const externalTalentAttentionCount = externalTalent.status === 'WatchClosely' || externalTalent.status === 'MustActNow' ? 1 : 0;
   const ownerPriority = relationshipPriorities.find((profile) => profile.target.type === 'Owner');
   const driverContractYears = (id: string) =>
     state.drivers.find((d) => d.id === id)?.contractYearsRemaining ?? 0;
@@ -250,7 +254,7 @@ export function Relationships() {
       </MetricStrip>
       <WorkspaceTabs
         items={[
-          { id: 'overview', label: `Priority Board (${prioritySummary.mustActNow + prioritySummary.watchClosely + collectiveSummary.mustActNow + collectiveSummary.watchClosely + employerAttentionCount})` },
+          { id: 'overview', label: `Priority Board (${prioritySummary.mustActNow + prioritySummary.watchClosely + collectiveSummary.mustActNow + collectiveSummary.watchClosely + employerAttentionCount + externalTalentAttentionCount})` },
           { id: 'activity', label: `Activity (${relationshipActivityCount})` },
           { id: 'race', label: 'Race Drivers' },
           { id: 'reserve', label: `Reserve (${reserveDrivers.length})` },
@@ -289,6 +293,9 @@ export function Relationships() {
           onReviewCollective={handleReviewCollective}
           employerStanding={employerStanding}
           onReviewEmployers={() => navigate('/principal?tab=career')}
+          externalTalent={externalTalent}
+          onReviewDriverMarket={() => navigate('/market')}
+          onReviewStaffMarket={() => navigate('/staff')}
         />
       )}
 

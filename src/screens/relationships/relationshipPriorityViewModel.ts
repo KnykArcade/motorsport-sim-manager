@@ -52,7 +52,7 @@ export const RELATIONSHIP_HIERARCHY: RelationshipHierarchyRow[] = [
     rank: '8',
     title: 'External talent',
     motivation: 'Other drivers and staff become priorities when scouting, recruiting, or entering contract negotiations.',
-    coverage: 'Recruitment context',
+    coverage: 'Live recruitment context',
   },
 ];
 
