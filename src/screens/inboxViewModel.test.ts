@@ -64,6 +64,26 @@ describe('inboxViewModel', () => {
     expect(budget?.severity).toBe('critical');
   });
 
+  it('deep-links technical alerts to their owning section', () => {
+    const base = newState();
+    const teamParts = base.teamParts![base.selectedTeamId];
+    const fitted = teamParts.inventory.find((part) => part.status === 'fitted');
+    expect(fitted).toBeDefined();
+    const state: GameState = {
+      ...base,
+      teamParts: {
+        ...base.teamParts,
+        [base.selectedTeamId]: {
+          ...teamParts,
+          inventory: teamParts.inventory.map((part) =>
+            part.id === fitted?.id ? { ...part, condition: 20 } : part),
+        },
+      },
+    };
+    expect(inboxMessages(state).find((message) => message.id === 'inbox-critical-parts')?.route)
+      .toBe('/technical?section=parts');
+  });
+
   it('maps news priority to inbox severity', () => {
     const base = newState();
     const state: GameState = {
