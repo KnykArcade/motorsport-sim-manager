@@ -1585,8 +1585,6 @@ export function advanceSeason(state: GameState, nextBundle?: SeasonBundle): Game
     raceEvents: {},
     driverStandings: [],
     constructorStandings: [],
-    activeDevelopmentProjects: [],
-    completedDevelopmentProjects: [],
     teamParts: rolloverTeamPartsMap(
       state.teamParts,
       teamsWithOpsSync,
@@ -1659,9 +1657,11 @@ export function advanceSeason(state: GameState, nextBundle?: SeasonBundle): Game
       let finalized = ensureRivalRelationships(ensureFailureInvestigationState(ensurePreseasonHubState(movedState)));
       for (const pair of principalPoachPairs) finalized = recordStaffPoach(finalized, pair.sourceTeamId, pair.destinationTeamId);
       const result = reconcilePersonnelCareerLedger(state, ensureCharacterFutureIntentions(finalized), nextYear, 'Season rollover');
+      // Upgrade programs reset with the new season (matching the old per-season
+      // conventional-project wipe); research state carries via nextTeamResearch.
       return withUnifiedTechnical(withResearchMap(result, nextTeamResearch), {
-        activeDevelopmentProjects: result.activeDevelopmentProjects,
-        completedDevelopmentProjects: result.completedDevelopmentProjects,
+        activeDevelopmentProjects: [],
+        completedDevelopmentProjects: [],
       });
     }
   }
@@ -1669,8 +1669,8 @@ export function advanceSeason(state: GameState, nextBundle?: SeasonBundle): Game
   for (const pair of principalPoachPairs) finalized = recordStaffPoach(finalized, pair.sourceTeamId, pair.destinationTeamId);
   const result = reconcilePersonnelCareerLedger(state, ensureCharacterFutureIntentions(finalized), nextYear, 'Season rollover');
   return withUnifiedTechnical(withResearchMap(result, nextTeamResearch), {
-    activeDevelopmentProjects: result.activeDevelopmentProjects,
-    completedDevelopmentProjects: result.completedDevelopmentProjects,
+    activeDevelopmentProjects: [],
+    completedDevelopmentProjects: [],
   });
 }
 

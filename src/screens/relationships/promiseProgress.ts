@@ -1,5 +1,6 @@
 import type { GameState } from '../../game/careerState';
 import type { DriverPromise } from '../../types/relationshipTypes';
+import { activeUpgradePrograms, completedUpgradePrograms } from '../../sim/technicalAdapters';
 
 export type PromiseProgressInfo = {
   percent: number;
@@ -41,8 +42,8 @@ export function promiseProgress(promise: DriverPromise, state: GameState): Promi
   const disadvantagedOrders = orders.filter((order) => order.disadvantagedDriverId === promise.driverId).length;
   const car = state.cars.find((c) => c.teamId === state.selectedTeamId);
   const reliabilityScore = car ? Math.round((car.ratings.reliability / 10) * 70 + (car.condition / 100) * 30) : 50;
-  const relevantDevelopment = state.activeDevelopmentProjects.filter((project) => project.category === 'Driver' || project.category === 'Reliability' || project.category === 'Strategy');
-  const completedDevelopment = state.completedDevelopmentProjects.filter((project) => project.category === 'Driver' || project.category === 'Reliability' || project.category === 'Strategy');
+  const relevantDevelopment = activeUpgradePrograms(state).filter((project) => project.category === 'Driver' || project.category === 'Reliability' || project.category === 'Strategy');
+  const completedDevelopment = completedUpgradePrograms(state).filter((project) => project.category === 'Driver' || project.category === 'Reliability' || project.category === 'Strategy');
   const deadline = promiseDeadlineProgress(promise, state);
 
   switch (promise.promiseType) {

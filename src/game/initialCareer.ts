@@ -30,7 +30,7 @@ import { enforceRosters } from './rosterEnforcement';
 import type { TeamPrincipal } from '../types/principalTypes';
 import { createMotorsportUniverse } from '../sim/motorsportUniverseEngine';
 import { planAITechnicalPrograms } from '../sim/aiTechnicalDirectorEngine';
-import { withUnifiedTechnical } from '../sim/technicalAdapters';
+import { fromUnifiedTechnical, withUnifiedTechnical } from '../sim/technicalAdapters';
 import { toUnifiedTechnical } from '../sim/technicalModel';
 import { createInitialPhase18FoundationState } from '../sim/phase18FoundationEngine';
 import { ensureContractClauses } from '../sim/phase18ContractClauseEngine';
@@ -271,8 +271,6 @@ export function createNewGame(options: NewGameOptions): GameState {
     carSetups,
     driverStandings: [],
     constructorStandings: [],
-    activeDevelopmentProjects: [],
-    completedDevelopmentProjects: [],
     news: [
       {
         id: 'news-welcome',
@@ -339,8 +337,5 @@ export function createNewGame(options: NewGameOptions): GameState {
     phase18: createInitialPhase18FoundationState(stateWithTechnicalPrograms),
   })))))))))))));
   const withTechnicalProjection = ensurePersonnelCareerLedger(initialized);
-  return withUnifiedTechnical(withTechnicalProjection, {
-    activeDevelopmentProjects: withTechnicalProjection.activeDevelopmentProjects,
-    completedDevelopmentProjects: withTechnicalProjection.completedDevelopmentProjects,
-  });
+  return withUnifiedTechnical(withTechnicalProjection, fromUnifiedTechnical(withTechnicalProjection));
 }
