@@ -34,6 +34,7 @@ import { leadershipGameplayModifiers } from '../sim/phase18IdentityCultureEngine
 import { buildRDTreeRequests, evaluateRDRequestUnlock, rdBranchLabelForSeries } from '../sim/rdNodeRules';
 import { activeUpgradePrograms, completedUpgradePrograms, researchStateFromTechnical, technicalStateForTeam } from '../sim/technicalAdapters';
 import { RDTreePanel } from '../components/development/RDTreePanel';
+import { TppExplainer } from '../components/development/TppExplainer';
 import { WorkspaceBody, WorkspaceTabs } from '../components/workspace/Workspace';
 
 type UnifiedTab = 'programs' | 'in-progress' | 'tree' | 'history';
@@ -162,7 +163,7 @@ export function UnifiedDevelopmentBody() {
       {capacityFull && <div className="rounded-lg border border-orange-500/30 bg-orange-500/5 p-3 text-sm text-orange-300">All technical capacity is in use. Start actions are disabled until capacity is freed.</div>}
 
       {tab === 'programs' && (
-        <Panel title="Technical programs" actions={<span className="text-xs text-neutral-500">Cash = operations · TPP = long-term research currency</span>}>
+        <Panel title="Technical programs" actions={<TppExplainer />}>
           <div className="mb-3 flex flex-wrap gap-2">
             <FilterSelect label="Horizon" value={horizon} options={['Quick Upgrade', 'Research']} onChange={(value) => setHorizon(value as ProgramFilter)} />
             <FilterSelect label="Branch / category" value={area} options={areas} onChange={setArea} />

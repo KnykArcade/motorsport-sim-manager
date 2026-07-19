@@ -1,6 +1,8 @@
 import { Panel } from '../../components/Panel';
 import { relationshipStatusLabel } from './relationshipPriorityViewModel';
 import type { ExternalTalentContext } from './relationshipTalentViewModel';
+import { RelationshipRiskNote } from './RelationshipRiskNote';
+import { externalTalentRiskIfIgnored } from './relationshipRiskViewModel';
 
 const STATUS_STYLES: Record<ExternalTalentContext['status'], string> = {
   MustActNow: 'border-red-500/45 bg-red-500/5 text-red-200',
@@ -43,6 +45,8 @@ export function ExternalTalentBoard({ context, onReviewDrivers, onReviewStaff }:
         <ul className="mt-3 space-y-1 text-[11px] text-neutral-300">
           {context.reasons.slice(0, 3).map((reason) => <li key={reason}>• {reason}</li>)}
         </ul>
+
+        <RelationshipRiskNote>{externalTalentRiskIfIgnored(context)}</RelationshipRiskNote>
 
         {context.targets.length > 0 && (
           <div className="mt-3 grid gap-2 lg:grid-cols-2">

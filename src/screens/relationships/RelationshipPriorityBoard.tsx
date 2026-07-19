@@ -12,6 +12,8 @@ import { PotentialEmployerBoard } from './PotentialEmployerBoard';
 import type { PotentialEmployerStanding } from './relationshipEmployerViewModel';
 import { ExternalTalentBoard } from './ExternalTalentBoard';
 import type { ExternalTalentContext } from './relationshipTalentViewModel';
+import { RelationshipRiskNote } from './RelationshipRiskNote';
+import { characterRiskIfIgnored } from './relationshipRiskViewModel';
 
 const STATUS_STYLES: Record<RelationshipAttentionProfile['status'], string> = {
   MustActNow: 'border-red-500/45 bg-red-500/5 text-red-200',
@@ -84,6 +86,8 @@ export function RelationshipPriorityBoard({ profiles, onReview, collectiveProfil
                 <ul className="mt-2 space-y-1 text-[11px] text-neutral-300">
                   {profile.reasons.slice(0, 2).map((reason) => <li key={reason}>• {reason}</li>)}
                 </ul>
+
+                <RelationshipRiskNote>{characterRiskIfIgnored(profile)}</RelationshipRiskNote>
 
                 <button
                   type="button"
