@@ -3,6 +3,7 @@ import { relationshipStatusLabel } from './relationshipPriorityViewModel';
 import type { PotentialEmployerStanding } from './relationshipEmployerViewModel';
 import { RelationshipRiskNote } from './RelationshipRiskNote';
 import { employerRiskIfIgnored } from './relationshipRiskViewModel';
+import { employerManagementMove } from './relationshipActionViewModel';
 
 const STATUS_STYLES: Record<PotentialEmployerStanding['status'], string> = {
   MustActNow: 'border-red-500/45 bg-red-500/5 text-red-200',
@@ -17,6 +18,7 @@ type Props = {
 
 export function PotentialEmployerBoard({ standing, onReview }: Props) {
   if (!standing) return null;
+  const move = employerManagementMove(standing);
 
   return (
     <Panel title="Potential Employers · Authority #6">
@@ -47,6 +49,13 @@ export function PotentialEmployerBoard({ standing, onReview }: Props) {
         </ul>
 
         <RelationshipRiskNote>{employerRiskIfIgnored(standing)}</RelationshipRiskNote>
+
+        <div className="mt-3 rounded border border-neutral-700/70 bg-neutral-950/45 p-2.5">
+          <div className="text-[9px] font-bold uppercase tracking-wide text-[var(--era-accent-strong)]">Management move</div>
+          <div className="mt-1 text-xs font-semibold text-neutral-100">{move.title}</div>
+          <p className="mt-1 text-[11px] leading-relaxed text-neutral-400">{move.rationale}</p>
+          <p className="mt-1 text-[10px] leading-relaxed text-neutral-500">{move.expectedEffect}</p>
+        </div>
 
         {standing.opportunities.length > 0 && (
           <div className="mt-3 grid gap-2 lg:grid-cols-3">

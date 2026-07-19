@@ -16,6 +16,7 @@ import {
   type InboxMessage,
   type InboxSeverity,
 } from './inboxViewModel';
+import { workflowDestination } from '../components/layoutWorkflow';
 
 type InboxFilter = 'all' | 'action' | InboxCategory;
 
@@ -49,6 +50,7 @@ export function Inbox() {
   const unread = messages.filter((message) => !read.has(message.id));
   const actionable = messages.filter((message) => message.actionable);
   const round = state.calendar[state.currentRaceIndex]?.round ?? state.currentRaceIndex + 1;
+  const workflow = workflowDestination(state);
 
   const openMessage = (message: InboxMessage) => {
     if (!read.has(message.id)) dispatch({ type: 'MARK_INBOX_READ', messageIds: [message.id] });
@@ -61,6 +63,11 @@ export function Inbox() {
         eyebrow="Inbox"
         title="Inbox"
         subtitle={`${state.seasonYear} ${state.series} · Round ${round}`}
+        actions={(
+          <Button variant="primary" onClick={() => navigate(workflow.to)}>
+            {workflow.label} →
+          </Button>
+        )}
       />
       <MetricStrip>
         <WorkspaceMetric label="Needs attention" value={`${actionable.length}`} detail="Decisions waiting on you" />
