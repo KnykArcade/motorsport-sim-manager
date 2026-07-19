@@ -3,6 +3,7 @@ import { relationshipStatusLabel } from './relationshipPriorityViewModel';
 import type { ExternalTalentContext } from './relationshipTalentViewModel';
 import { RelationshipRiskNote } from './RelationshipRiskNote';
 import { externalTalentRiskIfIgnored } from './relationshipRiskViewModel';
+import { externalTalentManagementMove } from './relationshipActionViewModel';
 
 const STATUS_STYLES: Record<ExternalTalentContext['status'], string> = {
   MustActNow: 'border-red-500/45 bg-red-500/5 text-red-200',
@@ -19,6 +20,7 @@ type Props = {
 export function ExternalTalentBoard({ context, onReviewDrivers, onReviewStaff }: Props) {
   const hasDriverContext = context.openRaceSeats > 0 || context.targets.some((target) => target.kind === 'Driver');
   const hasStaffContext = context.staffVacancies > 0 || context.targets.some((target) => target.kind === 'Staff');
+  const move = externalTalentManagementMove(context);
 
   return (
     <Panel title="External Talent · Authority #8">
@@ -47,6 +49,13 @@ export function ExternalTalentBoard({ context, onReviewDrivers, onReviewStaff }:
         </ul>
 
         <RelationshipRiskNote>{externalTalentRiskIfIgnored(context)}</RelationshipRiskNote>
+
+        <div className="mt-3 rounded border border-neutral-700/70 bg-neutral-950/45 p-2.5">
+          <div className="text-[9px] font-bold uppercase tracking-wide text-[var(--era-accent-strong)]">Management move</div>
+          <div className="mt-1 text-xs font-semibold text-neutral-100">{move.title}</div>
+          <p className="mt-1 text-[11px] leading-relaxed text-neutral-400">{move.rationale}</p>
+          <p className="mt-1 text-[10px] leading-relaxed text-neutral-500">{move.expectedEffect}</p>
+        </div>
 
         {context.targets.length > 0 && (
           <div className="mt-3 grid gap-2 lg:grid-cols-2">
