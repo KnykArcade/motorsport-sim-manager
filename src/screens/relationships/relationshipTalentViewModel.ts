@@ -109,29 +109,37 @@ export function externalTalentContext(input: TalentContextInput): ExternalTalent
 }
 
 export function currentExternalTalentContext(state: GameState): ExternalTalentContext {
-  const market = careerMarketBundle(state);
-  const driverById = new Map([
-    ...market.drivers.map((driver) => [driver.id, driver.name] as const),
-    ...market.youth.map((driver) => [driver.id, driver.name] as const),
-  ]);
-  const staffById = new Map([
-    ...getStaffPool(state.seasonYear, state.series).map((staff) => [staff.id, staff.name] as const),
-    ...Object.values(state.aiStaff ?? {}).flat().map((staff) => [staff.id, staff.name] as const),
-  ]);
   const currentStaffIds = new Set((state.staff ?? []).map((staff) => staff.id));
   const pendingDrivers = (state.pendingSignings ?? [])
     .filter((signing) => signing.source === 'market')
     .map((signing) => ({ id: signing.sourceId, name: signing.name }));
-  const scoutedDrivers = Object.values(state.scouting?.reports ?? {})
-    .filter((report) => report.entityType === 'Driver' || report.entityType === 'YouthProspect')
+  const driverReports = Object.values(state.scouting?.reports ?? {})
+    .filter((report) => report.entityType === 'Driver' || report.entityType === 'YouthProspect');
+  const driverById = driverReports.length > 0
+    ? (() => {
+      const market = careerMarketBundle(state);
+      return new Map([
+        ...market.drivers.map((driver) => [driver.id, driver.name] as const),
+        ...market.youth.map((driver) => [driver.id, driver.name] as const),
+      ]);
+    })()
+    : new Map<string, string>();
+  const scoutedDrivers = driverReports
     .map((report) => ({
       id: report.entityId,
       name: driverById.get(report.entityId) ?? report.entityId,
       scoutingLevel: report.scoutingLevel,
       accuracy: report.accuracy,
     }));
-  const approachedStaff = Object.entries(state.characterInteractions?.recruitmentInterest ?? {})
-    .filter(([id, interest]) => interest > 0 && !currentStaffIds.has(id))
+  const staffInterest = Object.entries(state.characterInteractions?.recruitmentInterest ?? {})
+    .filter(([id, interest]) => interest > 0 && !currentStaffIds.has(id));
+  const staffById = staffInterest.length > 0
+    ? new Map([
+      ...getStaffPool(state.seasonYear, state.series).map((staff) => [staff.id, staff.name] as const),
+      ...Object.values(state.aiStaff ?? {}).flat().map((staff) => [staff.id, staff.name] as const),
+    ])
+    : new Map<string, string>();
+  const approachedStaff = staffInterest
     .map(([id, interest]) => ({ id, name: staffById.get(id) ?? id, interest }));
   const filledStaffRoles = new Set((state.staff ?? []).map((staff) => staff.role));
 

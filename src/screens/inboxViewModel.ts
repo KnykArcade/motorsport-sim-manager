@@ -8,6 +8,8 @@ import { developmentSlots } from '../sim/facilityEngine';
 import { technicalDirectorProposals } from '../sim/technicalAdvisorEngine';
 import { technicalStateForTeam } from '../sim/technicalAdapters';
 import type { NewsItem } from '../types/gameTypes';
+import { currentRelationshipCommandSnapshot } from './relationships/relationshipCommandViewModel';
+import { relationshipInboxMessage } from './relationshipInboxViewModel';
 
 export type InboxSeverity = 'critical' | 'action' | 'info';
 
@@ -254,10 +256,16 @@ function newsMessages(state: GameState): InboxMessage[] {
  * then the news/stories stream, newest first within each band.
  */
 export function inboxMessages(state: GameState): InboxMessage[] {
+  const people = peopleMessages(state);
+  const relationship = relationshipInboxMessage(currentRelationshipCommandSnapshot(state).summary, {
+    duePromise: people.some((message) => message.id.startsWith('inbox-promise-')),
+    jobOpportunity: people.some((message) => message.id.startsWith('inbox-job-')),
+  });
   const actionItems = [
     ...technicalMessages(state),
     ...paddockMessages(state),
-    ...peopleMessages(state),
+    ...people,
+    ...(relationship ? [relationship] : []),
     ...businessMessages(state),
   ].sort((a, b) => SEVERITY_ORDER[a.severity] - SEVERITY_ORDER[b.severity] || (b.round ?? 0) - (a.round ?? 0) || a.id.localeCompare(b.id));
   return [...actionItems, ...newsMessages(state)];
