@@ -16,6 +16,7 @@ import { activeUpgradePrograms, researchStateForTeam } from '../sim/technicalAda
 import { technicalDirectorProposals } from '../sim/technicalAdvisorEngine';
 import { staffByRole } from '../sim/staffEngine';
 import { Button } from '../components/Button';
+import { TppExplainer } from '../components/development/TppExplainer';
 
 const UnifiedDevelopmentBody = lazy(() => import('./UnifiedDevelopment').then((m) => ({ default: m.UnifiedDevelopmentBody })));
 const FacilitiesBody = lazy(() => import('./Facilities').then((m) => ({ default: m.FacilitiesBody })));
@@ -97,7 +98,7 @@ function CommandPanel({ state, onNavigate }: { state: GameState; onNavigate: (se
         </TechnicalTable>}
         <p className="mt-2 text-xs text-neutral-500">Effective ratings include development, fitted-part effects, engine contribution, and the canonical 100-point clamp. The sub-line shows each rating&apos;s base value and net effective delta.</p>
       </Panel>
-      <Panel title="Technical pipeline" actions={<span className="text-xs text-neutral-500">Cash = operations · TPP = long-term research currency</span>}>
+      <Panel title="Technical pipeline" actions={<TppExplainer />}>
         <TechnicalTable>
           <TechnicalTableHead><TechnicalTableRow><TechnicalTableCell header>Workstream</TechnicalTableCell><TechnicalTableCell header>Item</TechnicalTableCell><TechnicalTableCell header>ETA</TechnicalTableCell><TechnicalTableCell header>Open</TechnicalTableCell></TechnicalTableRow></TechnicalTableHead>
           <tbody>

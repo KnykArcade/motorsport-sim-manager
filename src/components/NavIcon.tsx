@@ -11,6 +11,12 @@ const ICON_PATHS: Record<string, ReactNode> = {
       <path d="M18 20V6l3 2v12" />
     </>
   ),
+  '/inbox': (
+    <>
+      <path d="M3 12l3-7h12l3 7v7H3z" />
+      <path d="M3 12h5l2 3h4l2-3h5" />
+    </>
+  ),
   '/calendar': (
     <>
       <rect x="3" y="4.5" width="18" height="16" rx="2" />

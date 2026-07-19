@@ -1,6 +1,8 @@
 import { Panel } from '../../components/Panel';
 import { relationshipStatusLabel } from './relationshipPriorityViewModel';
 import type { PotentialEmployerStanding } from './relationshipEmployerViewModel';
+import { RelationshipRiskNote } from './RelationshipRiskNote';
+import { employerRiskIfIgnored } from './relationshipRiskViewModel';
 
 const STATUS_STYLES: Record<PotentialEmployerStanding['status'], string> = {
   MustActNow: 'border-red-500/45 bg-red-500/5 text-red-200',
@@ -43,6 +45,8 @@ export function PotentialEmployerBoard({ standing, onReview }: Props) {
         <ul className="mt-3 space-y-1 text-[11px] text-neutral-300">
           {standing.reasons.slice(0, 3).map((reason) => <li key={reason}>• {reason}</li>)}
         </ul>
+
+        <RelationshipRiskNote>{employerRiskIfIgnored(standing)}</RelationshipRiskNote>
 
         {standing.opportunities.length > 0 && (
           <div className="mt-3 grid gap-2 lg:grid-cols-3">

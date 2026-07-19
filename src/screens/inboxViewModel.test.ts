@@ -1,0 +1,98 @@
+import '../testDataSetup';
+import { describe, expect, it } from 'vitest';
+import { createNewGame } from '../game/initialCareer';
+import type { GameState } from '../game/careerState';
+import { gameReducer } from '../game/gameReducer';
+import { actionableInboxCount, inboxMessages, unreadInboxCount } from './inboxViewModel';
+
+function newState(): GameState {
+  return createNewGame({
+    gameMode: 'Career',
+    seasonYear: 1995,
+    series: 'F1',
+    teamId: 't-benetton',
+    seed: 'inbox-test',
+  });
+}
+
+describe('inboxViewModel', () => {
+  it('pins actionable items ahead of news, criticals first', () => {
+    const state = newState();
+    const messages = inboxMessages(state);
+    const firstNews = messages.findIndex((message) => message.category === 'news');
+    if (firstNews >= 0) {
+      expect(messages.slice(firstNews).every((message) => message.category === 'news')).toBe(true);
+    }
+    const actionables = messages.filter((message) => message.actionable);
+    const severities = actionables.map((message) => message.severity);
+    const sorted = [...severities].sort((a, b) => ({ critical: 0, action: 1, info: 2 }[a] - { critical: 0, action: 1, info: 2 }[b]));
+    expect(severities).toEqual(sorted);
+  });
+
+  it('surfaces expiring driver contracts as an action item', () => {
+    const base = newState();
+    const state: GameState = {
+      ...base,
+      drivers: base.drivers.map((driver) =>
+        driver.teamId === base.selectedTeamId ? { ...driver, contractYearsRemaining: 1 } : driver),
+    };
+    const item = inboxMessages(state).find((message) => message.id === 'inbox-contracts-expiring');
+    expect(item).toBeDefined();
+    expect(item?.actionable).toBe(true);
+    expect(item?.route).toBe('/drivers');
+  });
+
+  it('surfaces open regulation votes and low budget', () => {
+    const base = newState();
+    const state: GameState = {
+      ...base,
+      regulationProposals: [{
+        id: 'prop-1',
+        seasonYearEffective: base.seasonYear + 1,
+        title: 'Ban active suspension',
+        description: 'Test proposal',
+        category: 'Aero',
+        effects: {},
+        supportByTeam: {},
+      }],
+      teams: base.teams.map((team) =>
+        team.id === base.selectedTeamId ? { ...team, budget: 1_000_000 } : team),
+    };
+    const messages = inboxMessages(state);
+    expect(messages.some((message) => message.id === 'inbox-regulation-votes')).toBe(true);
+    const budget = messages.find((message) => message.id === 'inbox-low-budget');
+    expect(budget?.severity).toBe('critical');
+  });
+
+  it('maps news priority to inbox severity', () => {
+    const base = newState();
+    const state: GameState = {
+      ...base,
+      news: [
+        { id: 'n1', headline: 'Critical story', timestamp: '2026-01-01', priority: 'critical' },
+        { id: 'n2', headline: 'Normal story', timestamp: '2026-01-01', priority: 'normal' },
+      ],
+    };
+    const messages = inboxMessages(state).filter((message) => message.category === 'news');
+    expect(messages.find((message) => message.id === 'inbox-news-n1')?.severity).toBe('critical');
+    expect(messages.find((message) => message.id === 'inbox-news-n2')?.severity).toBe('info');
+    expect(messages.every((message) => !message.actionable)).toBe(true);
+  });
+
+  it('tracks read state through MARK_INBOX_READ', () => {
+    const state = newState();
+    const before = unreadInboxCount(state);
+    expect(before).toBe(inboxMessages(state).length);
+
+    const ids = inboxMessages(state).slice(0, 2).map((message) => message.id);
+    const next = gameReducer(state, { type: 'MARK_INBOX_READ', messageIds: ids });
+    expect(next).not.toBeNull();
+    expect(unreadInboxCount(next as GameState)).toBe(before - ids.length);
+  });
+
+  it('counts actionable items', () => {
+    const state = newState();
+    const messages = inboxMessages(state);
+    expect(actionableInboxCount(state)).toBe(messages.filter((message) => message.actionable).length);
+  });
+});

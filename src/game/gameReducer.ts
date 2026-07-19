@@ -251,6 +251,7 @@ export type GameAction =
   | { type: 'FIT_PART'; partId: string; driverId: string }
   | { type: 'REPAIR_PART'; partId: string }
   | { type: 'SET_PARTS_AUTOMATION'; settings: PartsAutomationSettings }
+  | { type: 'MARK_INBOX_READ'; messageIds: string[] }
   | { type: 'RETIRE_PART'; partId: string }
   | { type: 'SET_CAR_SETUP'; driverId: string; setup: CarSetup }
   | {
@@ -635,6 +636,14 @@ export function gameReducer(state: GameState | null, action: GameAction): GameSt
     case 'SET_PARTS_AUTOMATION': {
       if (!state) return state;
       return { ...state, partsAutomation: action.settings };
+    }
+
+    case 'MARK_INBOX_READ': {
+      if (!state) return state;
+      const read = new Set(state.inboxRead ?? []);
+      for (const id of action.messageIds) read.add(id);
+      // Cap so the read-set cannot grow unboundedly across a long career.
+      return { ...state, inboxRead: [...read].slice(-400) };
     }
 
     case 'RETIRE_PART': {
