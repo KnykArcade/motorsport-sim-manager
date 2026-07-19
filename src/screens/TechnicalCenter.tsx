@@ -19,6 +19,7 @@ import { staffByRole } from '../sim/staffEngine';
 import { Button } from '../components/Button';
 import { TppExplainer } from '../components/development/TppExplainer';
 import type { TechnicalManagementMode } from '../types/partsTypes';
+import type { TechnicalAdvisorPriority } from '../types/technicalTypes';
 
 const UnifiedDevelopmentBody = lazy(() => import('./UnifiedDevelopment').then((m) => ({ default: m.UnifiedDevelopmentBody })));
 const FacilitiesBody = lazy(() => import('./Facilities').then((m) => ({ default: m.FacilitiesBody })));
@@ -110,6 +111,7 @@ function CommandPanel({ state, onNavigate }: { state: GameState; onNavigate: (se
   return (
     <div className="space-y-4">
       <ManagementModePanel state={state} />
+      <AdvisorPriorityPanel state={state} />
       <TechnicalBriefingPanel state={state} onNavigate={onNavigate} />
       <Panel title="Car performance snapshot">
         {effectiveCars.length === 0 ? <p className="text-sm text-neutral-500">Current car ratings are not available yet.</p> : <TechnicalTable>
@@ -165,6 +167,36 @@ function ManagementModePanel({ state }: { state: GameState }) {
             </button>
           ))}
         </div>
+      </div>
+    </Panel>
+  );
+}
+
+function AdvisorPriorityPanel({ state }: { state: GameState }) {
+  const { dispatch } = useGame();
+  const priority = state.technicalAdvisorPriority ?? 'balanced';
+  const options: ReadonlyArray<{ value: TechnicalAdvisorPriority; label: string; description: string }> = [
+    { value: 'balanced', label: 'Balanced', description: 'Keep the normal urgency order.' },
+    { value: 'performance', label: 'Performance push', description: 'Surface development and research first.' },
+    { value: 'reliability', label: 'Reliability first', description: 'Surface repairs and dependable upgrades first.' },
+    { value: 'factory', label: 'Factory resilience', description: 'Surface spares, repairs, and facilities first.' },
+  ];
+  return (
+    <Panel title="Technical Director priority" actions={<span className="text-xs text-neutral-500">Changes recommendation order only</span>}>
+      <div className="flex flex-wrap gap-2">
+        {options.map((option) => (
+          <button
+            key={option.value}
+            type="button"
+            className={`rounded border px-3 py-2 text-left ${priority === option.value ? 'border-sky-500/70 bg-sky-500/10 text-sky-200' : 'border-neutral-700 bg-neutral-900/40 text-neutral-400 hover:border-neutral-500'}`}
+            onClick={() => dispatch({ type: 'SET_TECHNICAL_ADVISOR_PRIORITY', priority: option.value })}
+            aria-pressed={priority === option.value}
+            title={option.description}
+          >
+            <span className="block text-xs font-semibold">{option.label}</span>
+            <span className="mt-0.5 block text-[10px] leading-4 opacity-75">{option.description}</span>
+          </button>
+        ))}
       </div>
     </Panel>
   );

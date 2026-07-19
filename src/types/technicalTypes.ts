@@ -68,6 +68,8 @@ export type TechnicalResearchProgram = {
 
 export type TechnicalProgram = TechnicalUpgradeProgram | TechnicalResearchProgram;
 
+export type TechnicalAdvisorPriority = 'balanced' | 'performance' | 'reliability' | 'factory';
+
 export type CompletedUpgradeProgram = {
   kind: 'upgrade';
   id: string;

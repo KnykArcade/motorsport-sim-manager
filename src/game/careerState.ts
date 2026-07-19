@@ -34,7 +34,7 @@ import type { RegulationProposal, RegulationVoteResult } from '../types/politics
 import type { HistoricalEventHook, FiredEvent } from '../types/eventHookTypes';
 import type { ScoutingState } from '../types/scoutingTypes';
 import type { DriverDevelopmentCurve } from '../types/developmentCurveTypes';
-import type { TeamTechnicalMap } from '../types/technicalTypes';
+import type { TeamTechnicalMap, TechnicalAdvisorPriority } from '../types/technicalTypes';
 import type { MotorsportUniverseState, UniverseHistory } from '../types/universeTypes';
 import type { AITeamState, TeamMemoryEntry } from '../types/aiTeamTypes';
 import type { RaceWeekendPackageSelection, FinancialDistressMap } from '../types/raceWeekendPackageTypes';
@@ -106,6 +106,7 @@ export type GameState = {
   // Authoritative unified technical store; native views are materialized
   // transiently for existing formulas.
   teamTechnical?: TeamTechnicalMap;
+  technicalAdvisorPriority?: TechnicalAdvisorPriority;
 
   // Driver-specific fitted components, spare inventory, repairs, and factory
   // manufacturing queues. Optional so saves from before the parts phase can be

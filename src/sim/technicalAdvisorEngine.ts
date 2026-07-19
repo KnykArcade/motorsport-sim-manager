@@ -16,6 +16,7 @@ import { activeUpgradePrograms, researchStateForTeam, technicalStateForTeam } fr
 import { chooseAIResearchRequest } from './aiTechnicalDirectorEngine';
 import { adjustedResearchCashCost, adjustedResearchDuration, cashCostForBand, durationRoundsForBand, tppCostForBand } from './rdEngine';
 import { activeDriversForTeam } from '../game/careerState';
+import type { TechnicalAdvisorPriority } from '../types/technicalTypes';
 
 export type TechnicalProposalKind = 'repair' | 'development' | 'research' | 'manufacture' | 'facility';
 
@@ -43,6 +44,13 @@ const RATING_LABELS: Record<RatingKey, string> = {
 
 const REPAIR_CONDITION_THRESHOLD = 40;
 const MAX_PROPOSALS = 5;
+
+const PRIORITY_SCORES: Record<TechnicalAdvisorPriority, Record<TechnicalProposalKind, number>> = {
+  balanced: { repair: 0, development: 1, research: 2, manufacture: 3, facility: 4 },
+  performance: { development: 0, research: 1, facility: 2, manufacture: 3, repair: 4 },
+  reliability: { repair: 0, development: 1, research: 2, manufacture: 3, facility: 4 },
+  factory: { manufacture: 0, repair: 1, facility: 2, development: 3, research: 4 },
+};
 
 function money(amount: number): string {
   return `$${(amount / 1_000_000).toFixed(1)}M`;
@@ -224,5 +232,8 @@ export function technicalDirectorProposals(state: GameState): TechnicalProposal[
     manufactureProposal(state, budget),
     facilityProposal(state, budget),
   ].filter((proposal): proposal is TechnicalProposal => !!proposal);
-  return proposals.slice(0, MAX_PROPOSALS);
+  const priority = state.technicalAdvisorPriority ?? 'balanced';
+  return proposals
+    .sort((a, b) => PRIORITY_SCORES[priority][a.kind] - PRIORITY_SCORES[priority][b.kind])
+    .slice(0, MAX_PROPOSALS);
 }
