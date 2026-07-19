@@ -37,6 +37,11 @@ import {
   relationshipStatusLabel,
 } from './relationships/relationshipPriorityViewModel';
 import {
+  collectiveStakeholderAttentionCount,
+  currentCollectiveStakeholders,
+  type CollectiveStakeholderProfile,
+} from './relationships/relationshipStakeholderViewModel';
+import {
   MetricStrip,
   WorkspaceBody,
   WorkspaceHeader,
@@ -183,7 +188,15 @@ export function Relationships() {
   const relationshipPriorities = currentRelationshipAttention(state);
   const relationshipActivityCount = currentRelationshipActivity(state).length;
   const prioritySummary = relationshipPrioritySummary(relationshipPriorities);
+  const collectiveStakeholders = currentCollectiveStakeholders(state);
+  const collectiveSummary = collectiveStakeholderAttentionCount(collectiveStakeholders);
   const topPriority = relationshipPriorities[0];
+  const topCollectivePriority = collectiveStakeholders[0];
+  const collectiveLeads = !!topCollectivePriority && (
+    !topPriority
+    || topPriority.status === 'Stable' && topCollectivePriority.status !== 'Stable'
+    || topPriority.status === 'WatchClosely' && topCollectivePriority.status === 'MustActNow'
+  );
   const ownerPriority = relationshipPriorities.find((profile) => profile.target.type === 'Owner');
   const driverContractYears = (id: string) =>
     state.drivers.find((d) => d.id === id)?.contractYearsRemaining ?? 0;
@@ -208,6 +221,10 @@ export function Relationships() {
     navigate('/staff');
   };
 
+  const handleReviewCollective = (profile: CollectiveStakeholderProfile) => {
+    navigate(profile.id === 'Commercial' ? '/sponsors' : '/staff');
+  };
+
   return (
     <WorkspaceScreen>
       <WorkspaceHeader
@@ -217,8 +234,8 @@ export function Relationships() {
         actions={<Button variant="ghost" onClick={() => navigate('/rivals')}>Rival Matrix</Button>}
       />
       <MetricStrip>
-        <WorkspaceMetric label="Must act now" value={prioritySummary.mustActNow} detail="Deadline or relationship crisis" />
-        <WorkspaceMetric label="Watch closely" value={prioritySummary.watchClosely} detail="Pressure is building" />
+        <WorkspaceMetric label="Must act now" value={prioritySummary.mustActNow + collectiveSummary.mustActNow} detail="Deadline or relationship crisis" />
+        <WorkspaceMetric label="Watch closely" value={prioritySummary.watchClosely + collectiveSummary.watchClosely} detail="Pressure is building" />
         <WorkspaceMetric
           label="Owner standing"
           value={ownerPriority ? relationshipStatusLabel(ownerPriority.status) : 'Unavailable'}
@@ -228,7 +245,7 @@ export function Relationships() {
       </MetricStrip>
       <WorkspaceTabs
         items={[
-          { id: 'overview', label: `Priority Board (${prioritySummary.mustActNow + prioritySummary.watchClosely})` },
+          { id: 'overview', label: `Priority Board (${prioritySummary.mustActNow + prioritySummary.watchClosely + collectiveSummary.mustActNow + collectiveSummary.watchClosely})` },
           { id: 'activity', label: `Activity (${relationshipActivityCount})` },
           { id: 'race', label: 'Race Drivers' },
           { id: 'reserve', label: `Reserve (${reserveDrivers.length})` },
@@ -246,21 +263,30 @@ export function Relationships() {
           <div className="min-w-0">
             <div className="font-semibold text-neutral-100">People operations desk</div>
             <div className="truncate text-neutral-400">
-              {topPriority?.status === 'MustActNow' || topPriority?.status === 'WatchClosely'
-                ? `${topPriority.target.name}: ${topPriority.reasons[0]}`
+              {collectiveLeads
+                ? `${topCollectivePriority.title}: ${topCollectivePriority.reasons[0]}`
+                : topPriority?.status === 'MustActNow' || topPriority?.status === 'WatchClosely'
+                  ? `${topPriority.target.name}: ${topPriority.reasons[0]}`
                 : 'No immediate relationship response is required. Keep the owner and core team aligned.'}
             </div>
           </div>
         </div>
         <span className="shrink-0 text-[10px] font-semibold uppercase tracking-wide text-neutral-500">
-          {topPriority
-            ? `${relationshipStatusLabel(topPriority.status)} · Authority #${topPriority.authorityRank}`
+          {collectiveLeads
+            ? `${relationshipStatusLabel(topCollectivePriority.status)} · Authority #${topCollectivePriority.authorityRank}`
+            : topPriority
+              ? `${relationshipStatusLabel(topPriority.status)} · Authority #${topPriority.authorityRank}`
             : 'No active profiles'}
         </span>
       </div>
 
       {activeSection === 'overview' && (
-        <RelationshipPriorityBoard profiles={relationshipPriorities} onReview={handleReviewRelationship} />
+        <RelationshipPriorityBoard
+          profiles={relationshipPriorities}
+          onReview={handleReviewRelationship}
+          collectiveProfiles={collectiveStakeholders}
+          onReviewCollective={handleReviewCollective}
+        />
       )}
 
       {activeSection === 'activity' && <RelationshipActivityPanel state={state} />}
