@@ -26,6 +26,7 @@ import type { GameState } from '../game/careerState';
 import type { GameAction } from '../game/gameReducer';
 import type { FailureInvestigationLevel, FailureResponse } from '../types/phase18Types';
 import { FAILURE_INVESTIGATION_COST, FAILURE_RESPONSE_COST, confidenceLabel, failureCasesForRace } from '../sim/phase18FailureInvestigationEngine';
+import { actionableInboxCount } from './inboxViewModel';
 
 export function PostRaceReview() {
   const [activeTab, setActiveTab] = useState<PostRaceReviewTab>('overview');
@@ -75,6 +76,7 @@ export function PostRaceReview() {
   const tabs = POST_RACE_REVIEW_TABS.map((item) => item.id === 'investigation' && technicalRisk.unresolvedCount > 0
     ? { ...item, label: `${item.label} · ${technicalRisk.unresolvedCount}` }
     : item);
+  const inboxActions = actionableInboxCount(state);
 
   return (
     <WorkspaceScreen className="era-feature-screen era-post-race-review-screen">
@@ -86,13 +88,18 @@ export function PostRaceReview() {
           state.seasonComplete ? (
             <Button variant="primary" onClick={() => navigate('/season-review')}>Season Review →</Button>
           ) : (
-            <Button
-              variant="primary"
-              onClick={continueToPaddock}
-              title={technicalRisk.unresolvedCount > 0 ? `Continue with ${technicalRisk.unresolvedCount} unresolved technical case(s)` : 'Continue to Paddock Week'}
-            >
-              {technicalRisk.unresolvedCount > 0 ? 'Continue with unresolved risk →' : 'Continue to Paddock Week →'}
-            </Button>
+            <div className="flex flex-wrap justify-end gap-2">
+              {inboxActions > 0 && (
+                <Button onClick={() => navigate('/inbox')}>Review Inbox ({inboxActions}) →</Button>
+              )}
+              <Button
+                variant="primary"
+                onClick={continueToPaddock}
+                title={technicalRisk.unresolvedCount > 0 ? `Continue with ${technicalRisk.unresolvedCount} unresolved technical case(s)` : 'Continue to Paddock Week'}
+              >
+                {technicalRisk.unresolvedCount > 0 ? 'Continue with unresolved risk →' : 'Continue to Paddock Week →'}
+              </Button>
+            </div>
           )
         )}
       />

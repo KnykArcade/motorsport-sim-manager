@@ -32,6 +32,7 @@ import {
 } from '../components/workspace/Workspace';
 import { formatMoney, ratingColor } from '../components/ui';
 import { activeUpgradePrograms } from '../sim/technicalAdapters';
+import { actionableInboxCount, unreadInboxCount } from './inboxViewModel';
 import {
   BACKGROUNDS,
   MANAGEMENT_STYLES,
@@ -69,7 +70,8 @@ export function TeamHQ() {
   const teamName = (id: string) => state.teams.find((t) => t.id === id)?.name ?? id;
   const teamColor = (id: string) => state.teams.find((t) => t.id === id)?.color;
   const workflow = workflowDestination(state);
-  const attentionCount = state.news.filter((item) => item.priority === 'critical' || item.priority === 'high').length;
+  const inboxUnread = unreadInboxCount(state);
+  const inboxActionable = actionableInboxCount(state);
 
   return (
     <WorkspaceScreen className="era-feature-screen era-team-hq">
@@ -99,12 +101,15 @@ export function TeamHQ() {
           <div className="min-w-0">
             <div className="text-[10px] font-black uppercase tracking-[0.14em] text-neutral-400">Decision desk</div>
             <div className="truncate text-sm font-semibold text-neutral-100">
-              {workflow ? `${workflow.context} is ready` : 'Team management is up to date'}
+              {inboxActionable > 0 ? `${inboxActionable} decision${inboxActionable === 1 ? '' : 's'} waiting in the Inbox` : workflow ? `${workflow.context} is ready` : 'Team management is up to date'}
             </div>
           </div>
         </div>
         <div className="flex flex-wrap items-center gap-3 text-xs text-neutral-400">
-          <span>{attentionCount} priority report{attentionCount === 1 ? '' : 's'}</span>
+          <span>{inboxUnread} unread Inbox item{inboxUnread === 1 ? '' : 's'}</span>
+          <Button className="px-3 py-1.5 text-xs" onClick={() => navigate('/inbox')}>
+            Open Inbox →
+          </Button>
           <span>{activeDrivers.length}/{minDrivers} race seats filled</span>
           {race && <span>Next: {race.gpName}</span>}
           {workflow && (
@@ -247,6 +252,7 @@ export function TeamHQ() {
               <Button onClick={() => navigate('/history')}>Race History</Button>
               <Button onClick={() => navigate('/drivers')}>Drivers</Button>
               <Button onClick={() => navigate('/technical')}>Technical Center</Button>
+              <Button onClick={() => navigate('/inbox')}>Inbox</Button>
               <Button onClick={() => navigate('/finance')}>Finance</Button>
               <Button onClick={() => navigate('/staff')}>Staff</Button>
               <Button onClick={() => navigate('/principal')}>Principal</Button>
