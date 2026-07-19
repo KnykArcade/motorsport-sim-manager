@@ -5,6 +5,7 @@ import type {
   TeamTechnicalState,
   LegacyTechnicalFields,
   TeamTechnicalMap,
+  CompletedUpgradeProgram,
   TechnicalProgram,
   TechnicalResearchProgram,
   TechnicalUpgradeProgram,
@@ -12,7 +13,7 @@ import type {
 import { toUnifiedTechnical } from './technicalModel';
 import { ensureTeamResearchMap } from './rdEngine';
 
-function upgradeFromProgram(program: TechnicalUpgradeProgram): DevelopmentProject {
+export function upgradeFromProgram(program: TechnicalUpgradeProgram): DevelopmentProject {
   return {
     id: program.id,
     name: program.name,
@@ -124,15 +125,15 @@ export function technicalStateForTeam(state: GameState, teamId: string): TeamTec
 }
 
 export function activeUpgradePrograms(state: GameState, teamId = state.selectedTeamId): DevelopmentProject[] {
-  return teamId === state.selectedTeamId
-    ? fromUnifiedTechnical(state).activeDevelopmentProjects
-    : [];
+  return (state.teamTechnical?.[teamId]?.activeProjects ?? [])
+    .filter((program): program is TechnicalUpgradeProgram => program.kind === 'upgrade')
+    .map(upgradeFromProgram);
 }
 
 export function completedUpgradePrograms(state: GameState, teamId = state.selectedTeamId): DevelopmentProject[] {
-  return teamId === state.selectedTeamId
-    ? fromUnifiedTechnical(state).completedDevelopmentProjects
-    : [];
+  return (state.teamTechnical?.[teamId]?.completedPrograms ?? [])
+    .filter((program): program is CompletedUpgradeProgram => program.kind === 'upgrade')
+    .map((program) => upgradeFromProgram(program.program));
 }
 
 export function researchStateForTeam(state: GameState, teamId: string) {
