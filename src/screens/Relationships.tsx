@@ -24,10 +24,7 @@ import type {
   PromiseType,
 } from '../types/relationshipTypes';
 import { contractClauseLabel } from '../sim/phase18ContractClauseEngine';
-import {
-  currentRelationshipAttention,
-  type RelationshipAttentionProfile,
-} from '../sim/relationshipAttentionEngine';
+import type { RelationshipAttentionProfile } from '../sim/relationshipAttentionEngine';
 import type { ContractBreachResponse } from '../types/phase18Types';
 import { RelationshipPriorityBoard } from './relationships/RelationshipPriorityBoard';
 import { RelationshipActivityPanel } from './relationships/RelationshipActivityPanel';
@@ -35,13 +32,8 @@ import { currentRelationshipActivity } from './relationships/relationshipActivit
 import {
   relationshipStatusLabel,
 } from './relationships/relationshipPriorityViewModel';
-import {
-  currentCollectiveStakeholders,
-  type CollectiveStakeholderProfile,
-} from './relationships/relationshipStakeholderViewModel';
-import { currentPotentialEmployerStanding } from './relationships/relationshipEmployerViewModel';
-import { currentExternalTalentContext } from './relationships/relationshipTalentViewModel';
-import { relationshipCommandSummary } from './relationships/relationshipCommandViewModel';
+import type { CollectiveStakeholderProfile } from './relationships/relationshipStakeholderViewModel';
+import { currentRelationshipCommandSnapshot } from './relationships/relationshipCommandViewModel';
 import {
   MetricStrip,
   WorkspaceBody,
@@ -186,17 +178,13 @@ export function Relationships() {
     clause.teamId === teamId && clause.partyType === 'Driver' && teamDrivers.some((driver) => driver.id === clause.partyId),
   );
   const activePromiseCount = allPromises.filter((promise) => promise.status === 'active' && teamDrivers.some((driver) => driver.id === promise.driverId)).length;
-  const relationshipPriorities = currentRelationshipAttention(state);
+  const commandSnapshot = currentRelationshipCommandSnapshot(state);
+  const relationshipPriorities = commandSnapshot.characterProfiles;
   const relationshipActivityCount = currentRelationshipActivity(state).length;
-  const collectiveStakeholders = currentCollectiveStakeholders(state);
-  const employerStanding = currentPotentialEmployerStanding(state);
-  const externalTalent = currentExternalTalentContext(state);
-  const commandSummary = relationshipCommandSummary({
-    characterProfiles: relationshipPriorities,
-    collectiveProfiles: collectiveStakeholders,
-    employerStanding,
-    externalTalent,
-  });
+  const collectiveStakeholders = commandSnapshot.collectiveProfiles;
+  const employerStanding = commandSnapshot.employerStanding;
+  const externalTalent = commandSnapshot.externalTalent;
+  const commandSummary = commandSnapshot.summary;
   const deskSignal = commandSummary.topSignal;
   const ownerPriority = relationshipPriorities.find((profile) => profile.target.type === 'Owner');
   const driverContractYears = (id: string) =>

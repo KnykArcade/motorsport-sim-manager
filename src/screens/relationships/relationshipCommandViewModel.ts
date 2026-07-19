@@ -5,6 +5,11 @@ import type {
 import type { PotentialEmployerStanding } from './relationshipEmployerViewModel';
 import type { CollectiveStakeholderProfile } from './relationshipStakeholderViewModel';
 import type { ExternalTalentContext } from './relationshipTalentViewModel';
+import type { GameState } from '../../game/careerState';
+import { currentRelationshipAttention } from '../../sim/relationshipAttentionEngine';
+import { currentPotentialEmployerStanding } from './relationshipEmployerViewModel';
+import { currentCollectiveStakeholders } from './relationshipStakeholderViewModel';
+import { currentExternalTalentContext } from './relationshipTalentViewModel';
 
 export type RelationshipDeskSignal = {
   id: string;
@@ -24,6 +29,14 @@ export type RelationshipCommandSummary = {
   topSignal?: RelationshipDeskSignal;
 };
 
+export type RelationshipCommandSnapshot = {
+  characterProfiles: RelationshipAttentionProfile[];
+  collectiveProfiles: CollectiveStakeholderProfile[];
+  employerStanding?: PotentialEmployerStanding;
+  externalTalent: ExternalTalentContext;
+  summary: RelationshipCommandSummary;
+};
+
 type RelationshipCommandInput = {
   characterProfiles: RelationshipAttentionProfile[];
   collectiveProfiles: CollectiveStakeholderProfile[];
@@ -36,6 +49,8 @@ const ATTENTION_ORDER: Record<RelationshipAttentionStatus, number> = {
   WatchClosely: 1,
   Stable: 2,
 };
+
+const snapshotCache = new WeakMap<GameState, RelationshipCommandSnapshot>();
 
 export function relationshipCommandSummary({
   characterProfiles,
@@ -93,4 +108,27 @@ export function relationshipCommandSummary({
     total: signals.length,
     topSignal: signals[0],
   };
+}
+
+export function currentRelationshipCommandSnapshot(state: GameState): RelationshipCommandSnapshot {
+  const cached = snapshotCache.get(state);
+  if (cached) return cached;
+  const characterProfiles = currentRelationshipAttention(state);
+  const collectiveProfiles = currentCollectiveStakeholders(state);
+  const employerStanding = currentPotentialEmployerStanding(state);
+  const externalTalent = currentExternalTalentContext(state);
+  const snapshot = {
+    characterProfiles,
+    collectiveProfiles,
+    employerStanding,
+    externalTalent,
+    summary: relationshipCommandSummary({
+      characterProfiles,
+      collectiveProfiles,
+      employerStanding,
+      externalTalent,
+    }),
+  };
+  snapshotCache.set(state, snapshot);
+  return snapshot;
 }
