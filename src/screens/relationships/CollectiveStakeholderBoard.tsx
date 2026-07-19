@@ -4,6 +4,13 @@ import { relationshipStatusLabel } from './relationshipPriorityViewModel';
 import { RelationshipRiskNote } from './RelationshipRiskNote';
 import { collectiveRiskIfIgnored } from './relationshipRiskViewModel';
 import { collectiveManagementMove } from './relationshipActionViewModel';
+import type { GameState } from '../../game/careerState';
+import type { CollectiveStakeholderAction } from '../../types/phase18Types';
+import { formatMoney } from '../../components/ui';
+import {
+  COLLECTIVE_STAKEHOLDER_ACTIONS,
+  collectiveStakeholderActionUnavailableReason,
+} from '../../sim/collectiveStakeholderActionEngine';
 
 const STATUS_STYLES: Record<CollectiveStakeholderProfile['status'], string> = {
   MustActNow: 'border-red-500/45 bg-red-500/5 text-red-200',
@@ -12,11 +19,13 @@ const STATUS_STYLES: Record<CollectiveStakeholderProfile['status'], string> = {
 };
 
 type Props = {
+  state: GameState;
   profiles: CollectiveStakeholderProfile[];
   onReview: (profile: CollectiveStakeholderProfile) => void;
+  onTakeAction: (action: CollectiveStakeholderAction) => void;
 };
 
-export function CollectiveStakeholderBoard({ profiles, onReview }: Props) {
+export function CollectiveStakeholderBoard({ state, profiles, onReview, onTakeAction }: Props) {
   return (
     <Panel title="Collective Stakeholders · Authority #4–5">
       <p className="mb-3 text-xs text-neutral-400">
@@ -27,7 +36,7 @@ export function CollectiveStakeholderBoard({ profiles, onReview }: Props) {
       ) : (
         <div className="grid gap-3 lg:grid-cols-2">
           {profiles.map((profile) => (
-            <CollectiveStakeholderCard key={profile.id} profile={profile} onReview={onReview} />
+            <CollectiveStakeholderCard key={profile.id} state={state} profile={profile} onReview={onReview} onTakeAction={onTakeAction} />
           ))}
         </div>
       )}
@@ -35,8 +44,9 @@ export function CollectiveStakeholderBoard({ profiles, onReview }: Props) {
   );
 }
 
-function CollectiveStakeholderCard({ profile, onReview }: { profile: CollectiveStakeholderProfile; onReview: (profile: CollectiveStakeholderProfile) => void }) {
+function CollectiveStakeholderCard({ state, profile, onReview, onTakeAction }: { state: GameState; profile: CollectiveStakeholderProfile; onReview: (profile: CollectiveStakeholderProfile) => void; onTakeAction: (action: CollectiveStakeholderAction) => void }) {
   const move = collectiveManagementMove(profile);
+  const actions = COLLECTIVE_STAKEHOLDER_ACTIONS.filter((action) => action.stakeholderId === profile.id);
 
   return (
     <article className={`rounded-lg border p-3 ${STATUS_STYLES[profile.status]}`}>
@@ -81,6 +91,32 @@ function CollectiveStakeholderCard({ profile, onReview }: { profile: CollectiveS
       </div>
 
       <RelationshipRiskNote>{collectiveRiskIfIgnored(profile)}</RelationshipRiskNote>
+
+      <div className="mt-3 border-t border-current/15 pt-3">
+        <div className="mb-2 text-[9px] font-bold uppercase tracking-wide text-neutral-500">Committee action · one per round</div>
+        <div className="grid gap-2 sm:grid-cols-2">
+          {actions.map((action) => {
+            const unavailableReason = collectiveStakeholderActionUnavailableReason(state, action);
+            return (
+              <button
+                key={action.id}
+                type="button"
+                disabled={!!unavailableReason}
+                title={unavailableReason}
+                onClick={() => onTakeAction(action.id)}
+                className="rounded border border-neutral-700 bg-neutral-950/45 p-2.5 text-left enabled:hover:border-[var(--era-accent)] disabled:cursor-not-allowed disabled:opacity-40"
+              >
+                <div className="flex items-start justify-between gap-2">
+                  <span className="text-[11px] font-bold text-neutral-100">{action.label}</span>
+                  <span className="shrink-0 text-[9px] font-semibold text-[var(--era-accent-strong)]">{action.cost ? formatMoney(action.cost) : 'No cost'}</span>
+                </div>
+                <p className="mt-1 text-[10px] leading-relaxed text-neutral-400">{action.description}</p>
+                <p className="mt-1 text-[9px] leading-relaxed text-neutral-500">{unavailableReason ?? action.effectPreview}</p>
+              </button>
+            );
+          })}
+        </div>
+      </div>
 
       <button
         type="button"

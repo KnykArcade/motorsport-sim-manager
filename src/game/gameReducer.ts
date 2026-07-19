@@ -93,7 +93,7 @@ import {
   leadershipGameplayModifiers,
 } from '../sim/phase18IdentityCultureEngine';
 import type { TeamOrderDecision, PromiseType } from '../types/relationshipTypes';
-import type { CarLaunchApproach, ContractBreachResponse, ContractClauseType, FailureInvestigationLevel, FailureResponse, IntelligenceAction, PreseasonTestingFocus, RivalAction } from '../types/phase18Types';
+import type { CarLaunchApproach, CollectiveStakeholderAction, ContractBreachResponse, ContractClauseType, FailureInvestigationLevel, FailureResponse, IntelligenceAction, PreseasonTestingFocus, RivalAction } from '../types/phase18Types';
 import {
   applyNegotiatedDriverClause,
   ensureContractClauses,
@@ -107,6 +107,7 @@ import { generatePaddockIntelligence, resolveIntelligenceAction } from '../sim/p
 import { applyPreseasonCarModifier, completeCarLaunch, completePreseasonTesting, ensurePreseasonHubState, resolvePreseasonFlaw } from '../sim/phase18PreseasonEngine';
 import { applyFailureRiskModifier, investigateFailure, recordFailureInvestigations, respondToFailure } from '../sim/phase18FailureInvestigationEngine';
 import { evolveRivalRelationshipsAfterRace, recordRegulationVoteRelationships, recordStaffPoach, takeRivalAction } from '../sim/phase18RivalRelationshipEngine';
+import { takeCollectiveStakeholderAction } from '../sim/collectiveStakeholderActionEngine';
 import { staffEmployer, staffPoachingCompensation } from '../sim/aiStaffRosterEngine';
 import { reconcilePersonnelCareerLedger } from '../sim/personnelCareerLedgerEngine';
 import { recordRaceLegacy } from '../sim/phase18LegacyEngine';
@@ -312,6 +313,7 @@ export type GameAction =
   | { type: 'INVESTIGATE_FAILURE'; caseId: string; level: FailureInvestigationLevel }
   | { type: 'RESPOND_TO_FAILURE'; caseId: string; response: FailureResponse }
   | { type: 'TAKE_RIVAL_ACTION'; rivalTeamId: string; action: RivalAction }
+  | { type: 'TAKE_COLLECTIVE_STAKEHOLDER_ACTION'; action: CollectiveStakeholderAction }
   | { type: 'SET_FACILITY_SPECIALIZATION'; specialization: FacilitySpecialization };
 
 // Run one practice session for the player's drivers: simulate each assignment,
@@ -1033,6 +1035,11 @@ export function gameReducer(state: GameState | null, action: GameAction): GameSt
     case 'TAKE_RIVAL_ACTION': {
       if (!state) return state;
       return takeRivalAction(state, action.rivalTeamId, action.action);
+    }
+
+    case 'TAKE_COLLECTIVE_STAKEHOLDER_ACTION': {
+      if (!state) return state;
+      return takeCollectiveStakeholderAction(state, action.action);
     }
 
     case 'SET_FACILITY_SPECIALIZATION': {

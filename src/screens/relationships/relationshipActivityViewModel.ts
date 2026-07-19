@@ -3,7 +3,7 @@ import type {
   CharacterInteractionTargetType,
   CharacterMemory,
 } from '../../types/characterInteractionTypes';
-import type { AdvisorRecommendation } from '../../types/phase18Types';
+import type { AdvisorRecommendation, CollectiveStakeholderActionRecord } from '../../types/phase18Types';
 
 export type RelationshipActivityTone = CharacterMemory['tone'];
 
@@ -12,8 +12,8 @@ export type RelationshipActivityItem = {
   seasonYear: number;
   round: number;
   targetName: string;
-  targetType: CharacterInteractionTargetType | 'Department';
-  source: CharacterMemory['source'] | 'AdvisorCouncil';
+  targetType: CharacterInteractionTargetType | 'Department' | 'Collective';
+  source: CharacterMemory['source'] | 'AdvisorCouncil' | 'CommitteeAction';
   title: string;
   detail: string;
   tone: RelationshipActivityTone;
@@ -24,6 +24,7 @@ export type RelationshipActivityItem = {
 export function relationshipActivityFromSources(
   memories: CharacterMemory[],
   recommendations: AdvisorRecommendation[],
+  collectiveActions: CollectiveStakeholderActionRecord[],
   selectedTeamId: string,
 ): RelationshipActivityItem[] {
   const items = new Map<string, RelationshipActivityItem>();
@@ -66,6 +67,21 @@ export function relationshipActivityFromSources(
     });
   }
 
+  for (const action of collectiveActions) {
+    items.set(`collective:${action.id}`, {
+      id: `collective:${action.id}`,
+      seasonYear: action.seasonYear,
+      round: action.round,
+      targetName: action.stakeholderId === 'Departments' ? 'Team & departments' : 'Commercial partners & supporters',
+      targetType: 'Collective',
+      source: 'CommitteeAction',
+      title: action.label,
+      detail: action.outcome,
+      tone: 'Positive',
+      effects: action.effects,
+    });
+  }
+
   return [...items.values()].sort((a, b) =>
     b.seasonYear - a.seasonYear
       || b.round - a.round
@@ -78,6 +94,7 @@ export function currentRelationshipActivity(
   return relationshipActivityFromSources(
     state.characterInteractions?.memories ?? [],
     state.phase18?.advisorRecommendations ?? [],
+    state.phase18?.collectiveStakeholderActions ?? [],
     state.selectedTeamId,
   );
 }
