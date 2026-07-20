@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import type { RelationshipActionWindow } from '../sim/relationshipAttentionEngine';
 import type { RelationshipCommandSummary } from './relationships/relationshipCommandViewModel';
 import { relationshipInboxMessage } from './relationshipInboxViewModel';
 
@@ -7,6 +8,7 @@ function summary(
   status: NonNullable<RelationshipCommandSummary['topSignal']>['status'],
   title = 'Target',
   reason = 'An active relationship issue needs attention.',
+  actionWindow: RelationshipActionWindow = status === 'MustActNow' ? 'Immediate' : status === 'WatchClosely' ? 'Soon' : 'Background',
 ): RelationshipCommandSummary {
   return {
     mustActNow: status === 'MustActNow' ? 1 : 0,
@@ -14,7 +16,7 @@ function summary(
     active: status === 'Stable' ? 0 : 1,
     stable: status === 'Stable' ? 1 : 0,
     total: 1,
-    topSignal: { id, status, rank: 1, title, reason, influence: 80 },
+    topSignal: { id, status, actionWindow, rank: 1, title, reason, influence: 80 },
   };
 }
 
@@ -33,6 +35,8 @@ describe('relationship Inbox alert', () => {
       actionable: true,
     });
     expect(message?.body).toContain('risk if ignored');
+    expect(message?.body).toContain('Act before advancing');
+    expect(message?.whyItMatters).toContain('decision, deadline, or crisis');
   });
 
   it('does not add noise when every relationship is stable', () => {
@@ -62,5 +66,16 @@ describe('relationship Inbox alert', () => {
       summary('Collective:Commercial', 'WatchClosely'),
       { duePromise: false, jobOpportunity: false },
     )?.category).toBe('business');
+  });
+
+  it('keeps near-term relationship timing visible before opening the command center', () => {
+    const message = relationshipInboxMessage(
+      summary('Driver:driver-1', 'WatchClosely', 'Driver', 'A promise is due within 1 round.', 'NextRound'),
+      { duePromise: false, jobOpportunity: false },
+    );
+
+    expect(message?.severity).toBe('action');
+    expect(message?.body).toContain('Handle next round');
+    expect(message?.whyItMatters).toContain('waiting risks escalation');
   });
 });

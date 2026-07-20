@@ -96,6 +96,7 @@ describe('relationship command summary', () => {
     });
 
     expect(summary.topSignal).toMatchObject({ title: 'External talent', status: 'MustActNow', rank: 8 });
+    expect(summary.topSignal?.actionWindow).toBe('Immediate');
   });
 
   it('uses authority to break ties at the same attention level', () => {
@@ -106,6 +107,40 @@ describe('relationship command summary', () => {
     });
 
     expect(summary.topSignal).toMatchObject({ title: 'Owner', rank: 1 });
+    expect(summary.topSignal?.actionWindow).toBe('Soon');
+  });
+
+  it('infers near-term timing for collective, employer, and external signals', () => {
+    expect(relationshipCommandSummary({
+      characterProfiles: [],
+      collectiveProfiles: [{
+        ...collective('WatchClosely', 4),
+        reasons: ['Department commitment is due within 1 round.'],
+      }],
+      externalTalent: externalTalent('Stable'),
+    }).topSignal?.actionWindow).toBe('NextRound');
+
+    expect(relationshipCommandSummary({
+      characterProfiles: [],
+      collectiveProfiles: [],
+      employerStanding: {
+        authorityRank: 6,
+        authorityLabel: 'Potential employers',
+        status: 'WatchClosely',
+        marketStanding: 65,
+        firmOffers: 1,
+        rumors: 0,
+        reasons: ['A rival owner has made a firm offer.'],
+        opportunities: [],
+      },
+      externalTalent: externalTalent('Stable'),
+    }).topSignal?.actionWindow).toBe('NextRound');
+
+    expect(relationshipCommandSummary({
+      characterProfiles: [],
+      collectiveProfiles: [],
+      externalTalent: externalTalent('WatchClosely'),
+    }).topSignal?.actionWindow).toBe('Soon');
   });
 
   it('keeps an owner confidence crisis ahead of a same-urgency driver promise', () => {
