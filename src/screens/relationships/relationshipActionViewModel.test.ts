@@ -45,11 +45,20 @@ describe('relationship management moves', () => {
       title: 'Hold an owner review before the next race',
       priorityLabel: 'Immediate action',
       expectedEffect: expect.stringContaining('job security'),
+      preview: {
+        target: 'Owner',
+        expectedChange: expect.stringContaining('Owner confidence'),
+        constraint: expect.stringContaining('on-track results'),
+      },
     });
     expect(characterManagementMove(character('Driver', 'WatchClosely', 'A promise is due within 2 rounds.'))).toMatchObject({
       title: 'Resolve the driver commitment',
       priorityLabel: 'Next management window',
       expectedEffect: expect.stringContaining('trust in principal'),
+      preview: {
+        target: 'Driver',
+        expectedChange: expect.stringContaining('Trust/morale fallout'),
+      },
     });
   });
 
@@ -58,11 +67,18 @@ describe('relationship management moves', () => {
       title: 'Rebalance department workload now',
       priorityLabel: 'Immediate action',
       expectedEffect: expect.stringContaining('upgrade delivery'),
+      preview: {
+        target: 'Departments',
+        constraint: expect.stringContaining('budget'),
+      },
     });
     expect(collectiveManagementMove(collective('Commercial', 'WatchClosely'))).toMatchObject({
       title: 'Review commercial expectations',
       priorityLabel: 'Next management window',
       expectedEffect: expect.stringContaining('sponsorship income'),
+      preview: {
+        expectedChange: expect.stringContaining('Sponsor confidence'),
+      },
     });
   });
 
@@ -80,6 +96,10 @@ describe('relationship management moves', () => {
       title: 'Review active job offer leverage',
       priorityLabel: 'Next management window',
       expectedEffect: expect.stringContaining('career options'),
+      preview: {
+        target: 'Potential employers',
+        constraint: expect.stringContaining('Current owner'),
+      },
     });
 
     expect(externalTalentManagementMove({
@@ -94,6 +114,10 @@ describe('relationship management moves', () => {
       title: 'Fill the open race seat',
       priorityLabel: 'Immediate action',
       expectedEffect: expect.stringContaining('lineup completeness'),
+      preview: {
+        target: 'Open race seat',
+        expectedChange: expect.stringContaining('Lineup completeness'),
+      },
     });
   });
 
@@ -101,6 +125,10 @@ describe('relationship management moves', () => {
     expect(characterManagementMove(character('Owner', 'Stable', 'No issue.'))).toMatchObject({
       title: 'Maintain rhythm',
       priorityLabel: 'Background cadence',
+      preview: {
+        target: 'Owner',
+        constraint: 'No urgent action required.',
+      },
     });
   });
 });

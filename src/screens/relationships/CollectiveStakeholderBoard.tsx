@@ -4,6 +4,7 @@ import { relationshipStatusLabel } from './relationshipPriorityViewModel';
 import { RelationshipRiskNote } from './RelationshipRiskNote';
 import { collectiveRiskIfIgnored, relationshipRiskPriorityContext } from './relationshipRiskViewModel';
 import { collectiveManagementMove } from './relationshipActionViewModel';
+import { RelationshipActionPreview } from './RelationshipActionPreview';
 import type { GameState } from '../../game/careerState';
 import type { CollectiveStakeholderAction } from '../../types/phase18Types';
 import { formatMoney } from '../../components/ui';
@@ -100,6 +101,7 @@ function CollectiveStakeholderCard({ state, profile, onReview, onTakeAction }: {
         <div className="mt-1 text-xs font-semibold text-neutral-100">{move.title}</div>
         <p className="mt-1 text-[11px] leading-relaxed text-neutral-400">{move.rationale}</p>
         <p className="mt-1 text-[10px] leading-relaxed text-neutral-500">{move.expectedEffect}</p>
+        <RelationshipActionPreview preview={move.preview} />
       </div>
 
       <RelationshipRiskNote priorityContext={relationshipRiskPriorityContext(profile)}>{collectiveRiskIfIgnored(profile)}</RelationshipRiskNote>
