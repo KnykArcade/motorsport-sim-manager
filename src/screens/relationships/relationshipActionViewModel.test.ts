@@ -19,6 +19,7 @@ function character(
     authorityLabel: 'Authority label',
     influence: 75,
     status,
+    actionWindow: status === 'MustActNow' ? 'Immediate' : status === 'WatchClosely' ? 'Soon' : 'Background',
     reasons: [reason],
   };
 }
