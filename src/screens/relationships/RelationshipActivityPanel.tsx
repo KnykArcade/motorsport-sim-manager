@@ -3,11 +3,12 @@ import type { GameState } from '../../game/careerState';
 import { Panel } from '../../components/Panel';
 import {
   currentRelationshipActivity,
+  relationshipActivitySummary,
   type RelationshipActivityItem,
   type RelationshipActivityTone,
 } from './relationshipActivityViewModel';
 
-type ActivityFilter = 'All' | 'Positive' | 'Negative';
+type ActivityFilter = 'All' | RelationshipActivityTone;
 
 const TONE_STYLES: Record<RelationshipActivityTone, string> = {
   Positive: 'bg-emerald-500/10 text-emerald-300',
@@ -19,18 +20,47 @@ const TONE_STYLES: Record<RelationshipActivityTone, string> = {
 export function RelationshipActivityPanel({ state }: { state: GameState }) {
   const [filter, setFilter] = useState<ActivityFilter>('All');
   const activity = currentRelationshipActivity(state);
+  const summary = relationshipActivitySummary(activity);
   const visible = activity
     .filter((item) => filter === 'All' || item.tone === filter)
     .slice(0, 60);
 
   return (
     <Panel title="Relationship Change History">
+      {summary.latest && (
+        <div className="mb-3 rounded-lg border border-[var(--era-accent)]/35 bg-[var(--era-accent-soft)] p-3">
+          <div className="flex flex-wrap items-start justify-between gap-2">
+            <div>
+              <div className="text-[9px] font-bold uppercase tracking-wide text-[var(--era-accent-strong)]">Latest recorded outcome</div>
+              <div className="mt-1 text-sm font-semibold text-neutral-100">{summary.latest.targetName} · {summary.latest.title}</div>
+            </div>
+            <span className={`rounded px-1.5 py-0.5 text-[9px] font-bold uppercase ${TONE_STYLES[summary.latest.tone]}`}>
+              {summary.latest.tone}
+            </span>
+          </div>
+          <p className="mt-1 text-[11px] leading-relaxed text-neutral-400">{summary.latest.detail}</p>
+          <div className="mt-1.5 text-[10px] text-neutral-500">Season {summary.latest.seasonYear} · Round {summary.latest.round}</div>
+        </div>
+      )}
+
+      <div className="mb-3 grid grid-cols-2 gap-2 lg:grid-cols-4">
+        <OutcomeMetric label="Recorded changes" value={summary.total} detail="Decision outcomes in this save" />
+        <OutcomeMetric label="Positive" value={summary.positive} detail="Favorable reactions" tone="positive" />
+        <OutcomeMetric label="Negative" value={summary.negative} detail="Relationships needing context" tone="negative" />
+        <OutcomeMetric
+          label="Direct opinion"
+          value={`${summary.netOpinionDelta > 0 ? '+' : ''}${summary.netOpinionDelta}`}
+          detail="Net of recorded character reactions"
+          tone={summary.netOpinionDelta > 0 ? 'positive' : summary.netOpinionDelta < 0 ? 'negative' : undefined}
+        />
+      </div>
+
       <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
         <p className="text-xs text-neutral-400">
           A decision ledger showing who reacted, why they reacted, and the recorded relationship effect.
         </p>
-        <div className="flex rounded border border-neutral-800 bg-neutral-950/50 p-1">
-          {(['All', 'Positive', 'Negative'] as ActivityFilter[]).map((option) => (
+        <div className="flex flex-wrap rounded border border-neutral-800 bg-neutral-950/50 p-1">
+          {(['All', 'Positive', 'Negative', 'Mixed', 'Informational'] as ActivityFilter[]).map((option) => (
             <button
               key={option}
               type="button"
@@ -62,6 +92,17 @@ export function RelationshipActivityPanel({ state }: { state: GameState }) {
         <p className="mt-3 text-[10px] text-neutral-600">Showing the 60 most recent of {activity.length} recorded changes.</p>
       )}
     </Panel>
+  );
+}
+
+function OutcomeMetric({ label, value, detail, tone }: { label: string; value: string | number; detail: string; tone?: 'positive' | 'negative' }) {
+  const valueColor = tone === 'positive' ? 'text-emerald-300' : tone === 'negative' ? 'text-red-300' : 'text-neutral-100';
+  return (
+    <div className="rounded-lg border border-neutral-800 bg-neutral-900/35 p-3">
+      <div className="text-[9px] font-bold uppercase tracking-wide text-neutral-500">{label}</div>
+      <div className={`mt-1 text-xl font-black tabular-nums ${valueColor}`}>{value}</div>
+      <div className="mt-0.5 text-[10px] text-neutral-600">{detail}</div>
+    </div>
   );
 }
 
