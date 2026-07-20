@@ -20,6 +20,8 @@ export type InboxCategory =
   | 'business'
   | 'news';
 
+export type InboxMessageKind = 'must_respond' | 'recommended' | 'news';
+
 export type InboxMessage = {
   id: string;
   severity: InboxSeverity;
@@ -31,12 +33,35 @@ export type InboxMessage = {
   routeLabel: string;
   /** True while the underlying item still needs a decision; pinned on top. */
   actionable: boolean;
+  /** Whether this item blocks the current phase from advancing. */
+  blocking?: boolean;
+  /** High-level work classification used by the Manager Office sections. */
+  kind?: InboxMessageKind;
+  /** Owning department or source of the item. */
+  source?: string;
+  /** Short explanation of the strategic relevance of the item. */
+  whyItMatters?: string;
   /** Sort key within a severity band: newer first. Round-based where known. */
   round?: number;
   timestamp?: string;
 };
 
 const SEVERITY_ORDER: Record<InboxSeverity, number> = { critical: 0, action: 1, info: 2 };
+const SOURCE_LABELS: Record<InboxCategory, string> = {
+  technical: 'Technical team',
+  paddock: 'Paddock',
+  people: 'People',
+  business: 'Team leadership',
+  news: 'Motorsport world',
+};
+
+const WHY_IT_MATTERS: Record<InboxCategory, string> = {
+  technical: 'Technical choices can change pace, reliability, and future capacity.',
+  paddock: 'Paddock decisions can change morale, trust, finances, and the next race.',
+  people: 'People decisions can change performance, stability, and future options.',
+  business: 'Business decisions can change cash flow, objectives, and team security.',
+  news: 'This story gives context for the world around your team.',
+};
 
 function newsSeverity(item: NewsItem): InboxSeverity {
   if (item.priority === 'critical') return 'critical';
@@ -251,6 +276,24 @@ function newsMessages(state: GameState): InboxMessage[] {
   }));
 }
 
+function withTaskSemantics(message: InboxMessage): InboxMessage {
+  const kind: InboxMessageKind = message.category === 'news'
+    ? 'news'
+    : message.id.startsWith('inbox-paddock-') && message.severity === 'critical'
+      ? 'must_respond'
+      : message.actionable
+        ? 'recommended'
+        : 'news';
+
+  return {
+    ...message,
+    kind,
+    blocking: kind === 'must_respond',
+    source: message.source ?? SOURCE_LABELS[message.category],
+    whyItMatters: message.whyItMatters ?? WHY_IT_MATTERS[message.category],
+  };
+}
+
 /**
  * The full inbox feed: pinned action items first (critical, then action),
  * then the news/stories stream, newest first within each band.
@@ -268,7 +311,7 @@ export function inboxMessages(state: GameState): InboxMessage[] {
     ...(relationship ? [relationship] : []),
     ...businessMessages(state),
   ].sort((a, b) => SEVERITY_ORDER[a.severity] - SEVERITY_ORDER[b.severity] || (b.round ?? 0) - (a.round ?? 0) || a.id.localeCompare(b.id));
-  return [...actionItems, ...newsMessages(state)];
+  return [...actionItems, ...newsMessages(state)].map(withTaskSemantics);
 }
 
 export function unreadInboxCount(state: GameState): number {
@@ -278,4 +321,12 @@ export function unreadInboxCount(state: GameState): number {
 
 export function actionableInboxCount(state: GameState): number {
   return inboxMessages(state).filter((message) => message.actionable).length;
+}
+
+export function mustRespondInboxCount(state: GameState): number {
+  return inboxMessages(state).filter((message) => message.kind === 'must_respond').length;
+}
+
+export function recommendedInboxCount(state: GameState): number {
+  return inboxMessages(state).filter((message) => message.kind === 'recommended').length;
 }

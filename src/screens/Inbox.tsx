@@ -12,13 +12,17 @@ import {
 } from '../components/workspace/Workspace';
 import {
   inboxMessages,
+  mustRespondInboxCount,
+  recommendedInboxCount,
   type InboxCategory,
   type InboxMessage,
+  type InboxMessageKind,
   type InboxSeverity,
 } from './inboxViewModel';
 import { workflowDestination } from '../components/layoutWorkflow';
 
 type InboxFilter = 'all' | 'action' | InboxCategory;
+type InboxSection = 'all' | InboxMessageKind;
 
 const FILTERS: ReadonlyArray<{ id: InboxFilter; label: string }> = [
   { id: 'all', label: 'All' },
@@ -30,14 +34,31 @@ const FILTERS: ReadonlyArray<{ id: InboxFilter; label: string }> = [
   { id: 'news', label: 'News & stories' },
 ];
 
+const SECTIONS: ReadonlyArray<{ id: InboxSection; label: string }> = [
+  { id: 'all', label: 'All items' },
+  { id: 'must_respond', label: 'Must Respond' },
+  { id: 'recommended', label: 'Recommended' },
+  { id: 'news', label: 'News & stories' },
+];
+
 function filterFromQuery(value: string | null): InboxFilter {
   return FILTERS.some((filter) => filter.id === value) ? value as InboxFilter : 'all';
+}
+
+function sectionFromQuery(value: string | null): InboxSection {
+  return SECTIONS.some((section) => section.id === value) ? value as InboxSection : 'all';
 }
 
 const SEVERITY_BADGES: Record<InboxSeverity, { label: string; className: string }> = {
   critical: { label: 'Critical', className: 'bg-red-500/20 text-red-300 border-red-500/40' },
   action: { label: 'Action', className: 'bg-amber-500/20 text-amber-300 border-amber-500/40' },
   info: { label: 'FYI', className: 'bg-neutral-700/40 text-neutral-400 border-neutral-600/40' },
+};
+
+const KIND_BADGES: Record<InboxMessageKind, { label: string; className: string }> = {
+  must_respond: { label: 'Must Respond', className: 'bg-red-500/20 text-red-300 border-red-500/40' },
+  recommended: { label: 'Recommended', className: 'bg-amber-500/20 text-amber-300 border-amber-500/40' },
+  news: { label: 'News', className: 'bg-neutral-700/40 text-neutral-400 border-neutral-600/40' },
 };
 
 export function Inbox() {
@@ -48,14 +69,21 @@ export function Inbox() {
   if (!state) return null;
 
   const filter = filterFromQuery(searchParams.get('category'));
+  const section = sectionFromQuery(searchParams.get('section'));
   const messages = inboxMessages(state);
   const read = new Set(state.inboxRead ?? []);
   const filtered = messages.filter((message) =>
-    filter === 'all' ? true : filter === 'action' ? message.actionable : message.category === filter);
+    (filter === 'all' ? true : filter === 'action' ? message.actionable : message.category === filter)
+    && (section === 'all' || message.kind === section));
   const unread = messages.filter((message) => !read.has(message.id));
-  const actionable = messages.filter((message) => message.actionable);
   const round = state.calendar[state.currentRaceIndex]?.round ?? state.currentRaceIndex + 1;
   const workflow = workflowDestination(state);
+  const setInboxQuery = (key: 'category' | 'section', value: string) => {
+    const next = new URLSearchParams(searchParams);
+    if (value === 'all') next.delete(key);
+    else next.set(key, value);
+    setSearchParams(next);
+  };
 
   const openMessage = (message: InboxMessage) => {
     if (!read.has(message.id)) dispatch({ type: 'MARK_INBOX_READ', messageIds: [message.id] });
@@ -75,15 +103,22 @@ export function Inbox() {
         )}
       />
       <MetricStrip>
-        <WorkspaceMetric label="Needs attention" value={`${actionable.length}`} detail="Decisions waiting on you" />
+        <WorkspaceMetric label="Must Respond" value={`${mustRespondInboxCount(state)}`} detail="Blocks phase progression" />
+        <WorkspaceMetric label="Recommended" value={`${recommendedInboxCount(state)}`} detail="Decisions worth reviewing" />
+        <WorkspaceMetric label="News" value={`${messages.filter((message) => message.kind === 'news').length}`} detail="Stories in your feed" />
         <WorkspaceMetric label="Unread" value={`${unread.length}`} detail="Messages you haven't opened" />
-        <WorkspaceMetric label="This week" value={`${messages.length}`} detail="Items in your feed" />
       </MetricStrip>
+      <WorkspaceTabs
+        items={SECTIONS}
+        active={section}
+        onChange={(nextSection) => setInboxQuery('section', nextSection)}
+        ariaLabel="Inbox sections"
+      />
       <WorkspaceTabs
         items={FILTERS}
         active={filter}
-        onChange={(nextFilter) => setSearchParams(nextFilter === 'all' ? {} : { category: nextFilter })}
-        ariaLabel="Inbox filters"
+        onChange={(nextFilter) => setInboxQuery('category', nextFilter)}
+        ariaLabel="Inbox category filters"
       />
       <WorkspaceBody className="space-y-2">
         <div className="flex justify-end">
@@ -97,9 +132,22 @@ export function Inbox() {
         {filtered.length === 0 ? (
           <p className="py-8 text-center text-sm text-neutral-500">Nothing here — enjoy the quiet week.</p>
         ) : (
-          <ul className="space-y-1.5">
-            {filtered.map((message) => {
+          <div className="space-y-5">
+            {SECTIONS.filter((item) => item.id !== 'all' && (section === 'all' || item.id === section)).map((item) => {
+              const sectionMessages = filtered.filter((message) => message.kind === item.id);
+              if (sectionMessages.length === 0) return null;
+              return (
+                <section key={item.id} aria-labelledby={`inbox-section-${item.id}`}>
+                  <div className="mb-2 flex items-center justify-between gap-3">
+                    <h2 id={`inbox-section-${item.id}`} className="text-xs font-black uppercase tracking-[0.14em] text-neutral-400">
+                      {item.label}
+                    </h2>
+                    <span className="text-[10px] uppercase tracking-wide text-neutral-600">{sectionMessages.length} item{sectionMessages.length === 1 ? '' : 's'}</span>
+                  </div>
+                  <ul className="space-y-1.5">
+                    {sectionMessages.map((message) => {
               const badge = SEVERITY_BADGES[message.severity];
+              const kindBadge = KIND_BADGES[message.kind ?? 'news'];
               const isRead = read.has(message.id);
               const expanded = expandedId === message.id;
               return (
@@ -111,13 +159,19 @@ export function Inbox() {
                     aria-expanded={expanded}
                   >
                     <span className={`rounded border px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide ${badge.className}`}>{badge.label}</span>
+                    <span className={`rounded border px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide ${kindBadge.className}`}>{kindBadge.label}</span>
                     <span className={`min-w-0 flex-1 text-sm ${isRead ? 'text-neutral-400' : 'font-semibold text-neutral-100'}`}>{message.title}</span>
                     <span className="text-[10px] uppercase tracking-wide text-neutral-600">{message.category}</span>
                     {!isRead && <span aria-label="Unread" className="h-2 w-2 rounded-full bg-[var(--era-accent-strong)]" />}
                   </button>
                   {expanded && (
                     <div className="border-t border-neutral-800/60 px-3 py-2">
+                      <div className="mb-2 flex flex-wrap gap-x-4 gap-y-1 text-[10px] uppercase tracking-wide text-neutral-500">
+                        <span>Owner: {message.source}</span>
+                        {message.blocking && <span className="text-red-300">Blocks advancement</span>}
+                      </div>
                       {message.body && <p className="text-sm leading-6 text-neutral-300">{message.body}</p>}
+                      {message.whyItMatters && <p className="mt-2 text-xs leading-5 text-neutral-500">Why it matters: {message.whyItMatters}</p>}
                       <div className="mt-2">
                         <Button className="px-2 py-1 text-xs" variant="primary" onClick={() => navigate(message.route)}>
                           {message.routeLabel} →
@@ -127,8 +181,12 @@ export function Inbox() {
                   )}
                 </li>
               );
+                    })}
+                  </ul>
+                </section>
+              );
             })}
-          </ul>
+          </div>
         )}
       </WorkspaceBody>
     </WorkspaceScreen>

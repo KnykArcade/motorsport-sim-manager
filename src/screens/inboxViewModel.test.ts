@@ -3,7 +3,13 @@ import { describe, expect, it } from 'vitest';
 import { createNewGame } from '../game/initialCareer';
 import type { GameState } from '../game/careerState';
 import { gameReducer } from '../game/gameReducer';
-import { actionableInboxCount, inboxMessages, unreadInboxCount } from './inboxViewModel';
+import {
+  actionableInboxCount,
+  inboxMessages,
+  mustRespondInboxCount,
+  recommendedInboxCount,
+  unreadInboxCount,
+} from './inboxViewModel';
 
 function newState(): GameState {
   return createNewGame({
@@ -27,6 +33,40 @@ describe('inboxViewModel', () => {
     const severities = actionables.map((message) => message.severity);
     const sorted = [...severities].sort((a, b) => ({ critical: 0, action: 1, info: 2 }[a] - { critical: 0, action: 1, info: 2 }[b]));
     expect(severities).toEqual(sorted);
+  });
+
+  it('classifies required paddock decisions as blockers and other actions as recommendations', () => {
+    const base = newState();
+    const state: GameState = {
+      ...base,
+      careerPhase: {
+        ...base.careerPhase!,
+        currentPhase: 'paddock_week',
+        paddockEvents: [{
+          id: 'event-required',
+          weekId: 'week-1',
+          season: base.seasonYear,
+          series: base.series,
+          round: 1,
+          category: 'general_team',
+          title: 'Required team decision',
+          description: 'A decision must be made.',
+          severity: 'critical',
+          isRequiredDecision: true,
+          options: [{ id: 'option-a', label: 'Approve', description: 'Approve the plan.' }],
+          effectsApplied: false,
+          createdAt: '2026-01-01T00:00:00.000Z',
+        }],
+      },
+    };
+    const messages = inboxMessages(state);
+    const blocker = messages.find((message) => message.id === 'inbox-paddock-event-required');
+    expect(blocker?.kind).toBe('must_respond');
+    expect(blocker?.blocking).toBe(true);
+    expect(blocker?.source).toBe('Paddock');
+    expect(blocker?.whyItMatters).toContain('morale');
+    expect(mustRespondInboxCount(state)).toBe(1);
+    expect(recommendedInboxCount(state)).toBe(messages.filter((message) => message.kind === 'recommended').length);
   });
 
   it('surfaces expiring driver contracts as an action item', () => {
