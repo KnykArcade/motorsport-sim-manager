@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Panel } from '../../components/Panel';
 import type { RelationshipAttentionProfile } from '../../sim/relationshipAttentionEngine';
 import {
-  RELATIONSHIP_HIERARCHY,
+  relationshipHierarchyDashboard,
   relationshipActionWindowDetail,
   relationshipActionWindowLabel,
   relationshipStatusLabel,
@@ -32,6 +32,12 @@ const STATUS_STYLES: Record<RelationshipAttentionProfile['status'], string> = {
   Stable: 'border-emerald-500/30 bg-emerald-500/5 text-emerald-200',
 };
 
+const HIERARCHY_STATUS_STYLES: Record<RelationshipAttentionProfile['status'], string> = {
+  MustActNow: 'border-red-500/40 bg-red-950/20 text-red-200',
+  WatchClosely: 'border-amber-500/35 bg-amber-950/15 text-amber-200',
+  Stable: 'border-neutral-800 bg-neutral-900/35 text-neutral-300',
+};
+
 type Props = {
   state: GameState;
   profiles: RelationshipAttentionProfile[];
@@ -52,6 +58,7 @@ export function RelationshipPriorityBoard({ state, profiles, onReview, collectiv
   const stableInternal = stableInternalRelationships(profiles);
   const stableCore = stableInternal.filter((profile) => profile.target.type === 'Owner' || profile.target.type === 'Driver');
   const stableStaff = stableInternal.filter((profile) => profile.target.type === 'Staff');
+  const hierarchyDashboard = relationshipHierarchyDashboard(profiles, collectiveProfiles, employerStanding, externalTalent);
 
   return (
     <div className="space-y-4">
@@ -131,14 +138,25 @@ export function RelationshipPriorityBoard({ state, profiles, onReview, collectiv
 
       <Panel title="Relationship Management Hierarchy">
         <div className="grid gap-2 lg:grid-cols-2">
-          {RELATIONSHIP_HIERARCHY.map((row) => (
-            <div key={row.rank} className="flex gap-3 rounded-lg border border-neutral-800 bg-neutral-900/35 p-3">
+          {hierarchyDashboard.map((row) => (
+            <div key={row.rank} className={`flex gap-3 rounded-lg border p-3 ${HIERARCHY_STATUS_STYLES[row.status]}`}>
               <div className="flex h-9 w-12 shrink-0 items-center justify-center rounded bg-neutral-950/70 text-sm font-black text-[var(--era-accent-strong)]">
                 #{row.rank}
               </div>
               <div className="min-w-0">
-                <div className="text-xs font-bold text-neutral-100">{row.title}</div>
+                <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1">
+                  <div className="text-xs font-bold text-neutral-100">{row.title}</div>
+                  <div className="text-[9px] font-bold uppercase tracking-wide text-current">
+                    {relationshipStatusLabel(row.status)}
+                    {row.totalCount > 0 ? ` · ${row.activeCount}/${row.totalCount} active` : ' · no live source'}
+                  </div>
+                </div>
                 <p className="mt-1 text-[11px] leading-relaxed text-neutral-400">{row.motivation}</p>
+                <div className="mt-2 rounded border border-neutral-700/60 bg-neutral-950/35 px-2 py-1.5">
+                  <div className="text-[9px] font-bold uppercase tracking-wide text-neutral-500">Current signal</div>
+                  <p className="mt-0.5 text-[10px] leading-relaxed text-neutral-400">{row.signal}</p>
+                </div>
+                <p className="mt-1.5 text-[10px] leading-relaxed text-neutral-500">{row.jumpCondition}</p>
                 <div className="mt-1.5 text-[9px] font-semibold uppercase tracking-wide text-neutral-600">{row.coverage}</div>
               </div>
             </div>
