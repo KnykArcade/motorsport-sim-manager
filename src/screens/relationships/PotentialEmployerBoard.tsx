@@ -4,6 +4,7 @@ import type { PotentialEmployerStanding } from './relationshipEmployerViewModel'
 import { RelationshipRiskNote } from './RelationshipRiskNote';
 import { employerRiskIfIgnored, relationshipRiskPriorityContext } from './relationshipRiskViewModel';
 import { employerManagementMove } from './relationshipActionViewModel';
+import { RelationshipActionPreview } from './RelationshipActionPreview';
 
 const STATUS_STYLES: Record<PotentialEmployerStanding['status'], string> = {
   MustActNow: 'border-red-500/45 bg-red-500/5 text-red-200',
@@ -58,6 +59,7 @@ export function PotentialEmployerBoard({ standing, onReview }: Props) {
           <div className="mt-1 text-xs font-semibold text-neutral-100">{move.title}</div>
           <p className="mt-1 text-[11px] leading-relaxed text-neutral-400">{move.rationale}</p>
           <p className="mt-1 text-[10px] leading-relaxed text-neutral-500">{move.expectedEffect}</p>
+          <RelationshipActionPreview preview={move.preview} />
         </div>
 
         {standing.opportunities.length > 0 && (
