@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import type { CharacterMemory } from '../../types/characterInteractionTypes';
 import type { AdvisorRecommendation } from '../../types/phase18Types';
 import {
+  relationshipActivityFollowUp,
   relationshipActivityFromSources,
   relationshipActivityHierarchy,
   relationshipActivitySummary,
@@ -68,6 +69,10 @@ describe('relationship activity view model', () => {
       source: 'AdvisorCouncil',
       tone: 'Positive',
       effects: ['Technical trust +2'],
+      followUp: {
+        cadence: 'Monitor',
+        label: 'Let the operating gain settle',
+      },
     });
     expect(activity[1]).toMatchObject({
       tone: 'Mixed',
@@ -75,6 +80,10 @@ describe('relationship activity view model', () => {
       hierarchyLabel: 'Driver relationship',
       opinionDelta: -2,
       effects: ['Trust -2'],
+      followUp: {
+        cadence: 'NextRound',
+        label: 'Watch for second-order effects',
+      },
     });
   });
 
@@ -95,6 +104,10 @@ describe('relationship activity view model', () => {
     expect(activity.find((item) => item.id === 'advisor:overruled')).toMatchObject({
       tone: 'Negative',
       effects: ['Technical trust -2'],
+      followUp: {
+        cadence: 'NextRound',
+        label: 'Review department impact',
+      },
     });
   });
 
@@ -128,6 +141,44 @@ describe('relationship activity view model', () => {
       source: 'CommitteeAction',
       tone: 'Positive',
       effects: ['Technical workload -12', 'Technical morale +4'],
+      followUp: {
+        cadence: 'Monitor',
+        label: 'Let the operating gain settle',
+      },
+    });
+  });
+
+  it('derives follow-up cadence from relationship outcome context', () => {
+    expect(relationshipActivityFollowUp({
+      targetType: 'Owner',
+      tone: 'Negative',
+      opinionDelta: -4,
+      effects: ['Patience -4'],
+      source: 'Interaction',
+    })).toMatchObject({
+      cadence: 'Immediate',
+      label: 'Repair before next race',
+    });
+
+    expect(relationshipActivityFollowUp({
+      targetType: 'Driver',
+      tone: 'Positive',
+      opinionDelta: 3,
+      effects: ['Trust +3'],
+      source: 'Interaction',
+    })).toMatchObject({
+      cadence: 'Monitor',
+      label: 'Convert trust into performance',
+    });
+
+    expect(relationshipActivityFollowUp({
+      targetType: 'RivalPrincipal',
+      tone: 'Informational',
+      effects: [],
+      source: 'Interaction',
+    })).toMatchObject({
+      cadence: 'Background',
+      label: 'No follow-up needed',
     });
   });
 
