@@ -13,6 +13,12 @@ export const RIVAL_ACTION_COST: Record<RivalAction, number> = {
   FileProtest: 400_000,
 };
 
+export type RivalActionContext = {
+  fit: 'Favored' | 'Neutral' | 'Risky';
+  reason: string;
+  effectPreview: string;
+};
+
 const RIVAL_ACTION_HISTORY_MARKER: Record<RivalAction, string> = {
   OpenDialogue: 'opened direct dialogue',
   TechnicalExchange: 'limited technical and safety exchange',
@@ -66,6 +72,50 @@ export function rivalRelationshipLabel(score: number): string {
   if (score > -15) return 'Competitive neutral';
   if (score > -35) return 'Hostile rival';
   return 'Bitter rival';
+}
+
+export function rivalActionContext(state: GameState, rivalTeamId: string, action: RivalAction): RivalActionContext | undefined {
+  const ensured = ensureRivalRelationships(state);
+  const relationship = rivalRelationship(ensured, ensured.selectedTeamId, rivalTeamId);
+  if (!relationship) return undefined;
+
+  if (action === 'OpenDialogue') {
+    if ((relationship.score <= -15 || relationship.technicalSuspicion >= 60) && relationship.sportingRespect >= 35) {
+      return { fit: 'Favored', reason: `Tension is actionable: relationship ${relationship.score}, suspicion ${relationship.technicalSuspicion}/100, respect ${relationship.sportingRespect}/100.`, effectPreview: 'Stronger trust gain and suspicion reduction because there is still enough sporting respect to talk.' };
+    }
+    if (relationship.sportingRespect <= 25 && relationship.politicalAlignment <= -35) {
+      return { fit: 'Risky', reason: `Low respect (${relationship.sportingRespect}/100) and opposed politics (${relationship.politicalAlignment}) limit private diplomacy.`, effectPreview: 'Dialogue can still help, but the improvement is reduced.' };
+    }
+    return { fit: 'Neutral', reason: `Relationship is ${relationship.score}; no urgent tension modifier applies.`, effectPreview: 'Standard private channel to improve alignment, trust, and technical temperature.' };
+  }
+
+  if (action === 'TechnicalExchange') {
+    if (relationship.technicalSuspicion >= 75 || (relationship.tags.includes('TechnicalRival') && relationship.commercialTrust <= 35)) {
+      return { fit: 'Risky', reason: `Technical suspicion is ${relationship.technicalSuspicion}/100 and trust is ${relationship.commercialTrust}/100.`, effectPreview: 'Exchange still lowers suspicion, but rival trust gains are limited.' };
+    }
+    if (relationship.commercialTrust >= 55 || relationship.politicalAlignment >= 20 || relationship.tags.includes('CommercialAlly')) {
+      return { fit: 'Favored', reason: `Trust ${relationship.commercialTrust}/100 and politics ${relationship.politicalAlignment} create room for controlled cooperation.`, effectPreview: 'Stronger trust gain and suspicion reduction from a credible limited exchange.' };
+    }
+    return { fit: 'Neutral', reason: `Trust is ${relationship.commercialTrust}/100 and suspicion is ${relationship.technicalSuspicion}/100.`, effectPreview: 'Standard cooperation play: useful, but not strongly supported by the current relationship.' };
+  }
+
+  if (action === 'ScoutPersonnel') {
+    if (relationship.score >= 15 || relationship.commercialTrust >= 65 || relationship.tags.includes('PoliticalBlocAlly')) {
+      return { fit: 'Risky', reason: `This relationship has cooperative value: score ${relationship.score}, trust ${relationship.commercialTrust}/100.`, effectPreview: 'Market pressure may damage a useful paddock channel.' };
+    }
+    if (relationship.tags.includes('DriverMarketRival') || relationship.tags.includes('StaffPoachingRival') || relationship.score <= -20) {
+      return { fit: 'Favored', reason: 'Existing driver/staff-market rivalry means personnel monitoring matches the actual conflict.', effectPreview: 'Sharper market intelligence, with expected relationship damage.' };
+    }
+    return { fit: 'Neutral', reason: `Relationship is ${relationship.score}; no market-rival tag is active.`, effectPreview: 'Creates useful pressure but will still increase rivalry.' };
+  }
+
+  if (relationship.technicalSuspicion >= 70) {
+    return { fit: 'Favored', reason: `Technical suspicion is high at ${relationship.technicalSuspicion}/100.`, effectPreview: 'Higher chance of an upheld protest and less blowback if it succeeds.' };
+  }
+  if (relationship.technicalSuspicion <= 45 || relationship.sportingRespect >= 70) {
+    return { fit: 'Risky', reason: `Suspicion is ${relationship.technicalSuspicion}/100 and sporting respect is ${relationship.sportingRespect}/100.`, effectPreview: 'Weak evidence or a respected rival makes a formal protest likely to backfire.' };
+  }
+  return { fit: 'Neutral', reason: `Technical suspicion is ${relationship.technicalSuspicion}/100.`, effectPreview: 'A formal escalation with meaningful cost and uncertain political consequences.' };
 }
 
 export function addRivalRelationshipEvent(
@@ -161,18 +211,25 @@ export function takeRivalAction(state: GameState, rivalTeamId: string, action: R
   let event: Parameters<typeof addRivalRelationshipEvent>[3];
   let headline: string;
   if (action === 'OpenDialogue') {
-    event = { round, action, amount: 5, alignmentDelta: 3, trustDelta: 4, suspicionDelta: -2, reason: 'Leadership opened direct dialogue to lower paddock tension.', category: 'Political' };
+    const strong = (relation.score <= -15 || relation.technicalSuspicion >= 60) && relation.sportingRespect >= 35;
+    const limited = relation.sportingRespect <= 25 && relation.politicalAlignment <= -35;
+    event = { round, action, amount: strong ? 7 : limited ? 3 : 5, alignmentDelta: strong ? 5 : limited ? 1 : 3, trustDelta: strong ? 6 : limited ? 2 : 4, suspicionDelta: strong ? -4 : limited ? -1 : -2, reason: strong ? 'Leadership used existing sporting respect to cool a live paddock tension.' : limited ? 'Leadership opened dialogue, but low respect and opposed politics limited the breakthrough.' : 'Leadership opened direct dialogue to lower paddock tension.', category: 'Political' };
     headline = `${team.name} opens dialogue with ${rival.name}`;
   } else if (action === 'TechnicalExchange') {
-    event = { round, action, amount: 4, trustDelta: 6, suspicionDelta: -7, reason: 'A limited technical and safety exchange improved trust.', category: 'Technical', tags: ['CommercialAlly'] };
+    const risky = relation.technicalSuspicion >= 75 || (relation.tags.includes('TechnicalRival') && relation.commercialTrust <= 35);
+    const favored = !risky && (relation.commercialTrust >= 55 || relation.politicalAlignment >= 20 || relation.tags.includes('CommercialAlly'));
+    event = { round, action, amount: favored ? 6 : risky ? 1 : 4, trustDelta: favored ? 8 : risky ? 2 : 6, suspicionDelta: favored ? -9 : risky ? -3 : -7, reason: favored ? 'A credible limited technical and safety exchange strengthened a useful paddock channel.' : risky ? 'A technical exchange lowered some suspicion, but mistrust kept cooperation narrow.' : 'A limited technical and safety exchange improved trust.', category: 'Technical', tags: ['CommercialAlly'] };
     headline = `${team.name} and ${rival.name} agree limited technical exchange`;
   } else if (action === 'ScoutPersonnel') {
-    event = { round, action, amount: -4, trustDelta: -3, suspicionDelta: 4, reason: 'Targeted monitoring of rival personnel intensified market competition.', category: 'Staff', tags: ['StaffPoachingRival', 'DriverMarketRival'] };
+    const risky = relation.score >= 15 || relation.commercialTrust >= 65 || relation.tags.includes('PoliticalBlocAlly');
+    const favored = !risky && (relation.tags.includes('DriverMarketRival') || relation.tags.includes('StaffPoachingRival') || relation.score <= -20);
+    event = { round, action, amount: risky ? -7 : favored ? -3 : -4, trustDelta: risky ? -6 : favored ? -2 : -3, suspicionDelta: risky ? 6 : favored ? 3 : 4, reason: risky ? 'Targeted personnel monitoring damaged a relationship that still had cooperative paddock value.' : favored ? 'Targeted personnel monitoring matched an existing market rivalry and sharpened competitive pressure.' : 'Targeted monitoring of rival personnel intensified market competition.', category: 'Staff', tags: ['StaffPoachingRival', 'DriverMarketRival'] };
     headline = `${team.name} steps up monitoring of ${rival.name} personnel`;
   } else {
     const rng = createSeededRandom(deriveSeed(ensured.randomSeed, rival.id, round, relation.technicalSuspicion, 'rival-protest'));
     const success = rng.chance(Math.min(0.85, 0.25 + relation.technicalSuspicion / 140));
-    event = { round, action, amount: -12, alignmentDelta: -8, trustDelta: -10, suspicionDelta: success ? -8 : 5, respectDelta: -3, reason: `A formal protest against ${rival.name} was ${success ? 'upheld by scrutineers' : 'dismissed for insufficient evidence'}.`, category: 'Political', tags: ['HistoricRival'] };
+    const weakCase = relation.technicalSuspicion <= 45 || relation.sportingRespect >= 70;
+    event = { round, action, amount: success ? -6 : weakCase ? -16 : -12, alignmentDelta: success ? -5 : weakCase ? -10 : -8, trustDelta: success ? -6 : weakCase ? -13 : -10, suspicionDelta: success ? -10 : weakCase ? 8 : 5, respectDelta: success ? -2 : weakCase ? -5 : -3, reason: `A formal protest against ${rival.name} was ${success ? 'upheld by scrutineers' : 'dismissed for insufficient evidence'}.`, category: 'Political', tags: ['HistoricRival'] };
     headline = `${team.name} protest against ${rival.name} ${success ? 'is upheld' : 'is dismissed'}`;
   }
   ensured = addRivalRelationshipEvent(ensured, team.id, rival.id, event);
