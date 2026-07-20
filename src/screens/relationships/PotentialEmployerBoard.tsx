@@ -2,7 +2,7 @@ import { Panel } from '../../components/Panel';
 import { relationshipStatusLabel } from './relationshipPriorityViewModel';
 import type { PotentialEmployerStanding } from './relationshipEmployerViewModel';
 import { RelationshipRiskNote } from './RelationshipRiskNote';
-import { employerRiskIfIgnored } from './relationshipRiskViewModel';
+import { employerRiskIfIgnored, relationshipRiskPriorityContext } from './relationshipRiskViewModel';
 import { employerManagementMove } from './relationshipActionViewModel';
 
 const STATUS_STYLES: Record<PotentialEmployerStanding['status'], string> = {
@@ -48,7 +48,7 @@ export function PotentialEmployerBoard({ standing, onReview }: Props) {
           {standing.reasons.slice(0, 3).map((reason) => <li key={reason}>• {reason}</li>)}
         </ul>
 
-        <RelationshipRiskNote>{employerRiskIfIgnored(standing)}</RelationshipRiskNote>
+        <RelationshipRiskNote priorityContext={relationshipRiskPriorityContext(standing)}>{employerRiskIfIgnored(standing)}</RelationshipRiskNote>
 
         <div className="mt-3 rounded border border-neutral-700/70 bg-neutral-950/45 p-2.5">
           <div className="text-[9px] font-bold uppercase tracking-wide text-[var(--era-accent-strong)]">Management move</div>
