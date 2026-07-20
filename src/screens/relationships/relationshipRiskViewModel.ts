@@ -3,6 +3,15 @@ import type { PotentialEmployerStanding } from './relationshipEmployerViewModel'
 import type { CollectiveStakeholderProfile } from './relationshipStakeholderViewModel';
 import type { ExternalTalentContext } from './relationshipTalentViewModel';
 
+type RelationshipPrioritySource = {
+  authorityRank: number;
+  authorityLabel: string;
+};
+
+export function relationshipRiskPriorityContext(source: RelationshipPrioritySource): string {
+  return `Authority #${source.authorityRank} · ${source.authorityLabel}`;
+}
+
 export function characterRiskIfIgnored(profile: RelationshipAttentionProfile): string | undefined {
   if (profile.status === 'Stable') return undefined;
   const reasons = profile.reasons.join(' ').toLowerCase();
