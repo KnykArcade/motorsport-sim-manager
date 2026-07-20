@@ -4,6 +4,7 @@ import { useGame } from '../../game/GameContext';
 import {
   availableCharacterActions,
   characterRequestHistoryForTarget,
+  driverActionRelationshipContext,
   interactionHistoryForTarget,
   isCharacterInteractionAvailable,
   ownerActionPersonalityContext,
@@ -235,7 +236,7 @@ export function CharacterActionPanel({ state, target, initialSection = 'overview
                     <h4 className="text-sm font-semibold text-neutral-100">{action.label}</h4>
                     <p className="mt-1 flex-1 text-xs leading-relaxed text-neutral-400">{action.description}</p>
                     <p className="mt-2 text-[11px] text-amber-300/80">Likely effect: {action.effectPreview}</p>
-                    {target.type === 'Owner' && <OwnerPersonalityFit context={ownerActionPersonalityContext(state, action.id)} />}
+                    <CharacterActionFit state={state} target={target} action={action.id} />
                     <button
                       type="button"
                       disabled={!available}
@@ -338,16 +339,20 @@ export function CharacterActionPanel({ state, target, initialSection = 'overview
   );
 }
 
-function OwnerPersonalityFit({ context }: { context: ReturnType<typeof ownerActionPersonalityContext> }) {
+function CharacterActionFit({ state, target, action }: { state: GameState; target: CharacterInteractionTarget; action: Parameters<typeof ownerActionPersonalityContext>[1] }) {
+  const context = target.type === 'Owner'
+    ? ownerActionPersonalityContext(state, action)
+    : driverActionRelationshipContext(state, target, action);
   if (!context) return null;
   const style = context.fit === 'Favored'
     ? 'border-emerald-800/60 bg-emerald-950/20 text-emerald-200'
-    : context.fit === 'Skeptical'
+    : context.fit === 'Skeptical' || context.fit === 'Risky'
       ? 'border-amber-800/60 bg-amber-950/20 text-amber-200'
       : 'border-neutral-800 bg-neutral-950/40 text-neutral-300';
+  const label = 'ownerLabel' in context ? context.ownerLabel : 'Current driver read';
   return (
     <div className={`mt-2 rounded border p-2 ${style}`}>
-      <div className="text-[9px] font-bold uppercase tracking-wide">{context.ownerLabel} · {context.fit} fit</div>
+      <div className="text-[9px] font-bold uppercase tracking-wide">{label} · {context.fit} fit</div>
       <p className="mt-1 text-[10px] leading-relaxed text-neutral-400">{context.explanation}</p>
     </div>
   );
