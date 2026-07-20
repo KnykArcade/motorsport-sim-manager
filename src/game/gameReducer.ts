@@ -203,6 +203,7 @@ import {
 } from './careerPhaseEngine';
 import { isActionBlocked, isSingleSeasonMode } from './modeRestrictions';
 import type { PartType, PartsAutomationSettings, TechnicalManagementMode } from '../types/partsTypes';
+import type { TechnicalAdvisorPriority } from '../types/technicalTypes';
 import { runPartsAutomation } from '../sim/partsAutomationEngine';
 import {
   carWithFittedParts,
@@ -253,6 +254,7 @@ export type GameAction =
   | { type: 'REPAIR_PART'; partId: string }
   | { type: 'SET_PARTS_AUTOMATION'; settings: PartsAutomationSettings }
   | { type: 'SET_TECHNICAL_MANAGEMENT_MODE'; mode: TechnicalManagementMode }
+  | { type: 'SET_TECHNICAL_ADVISOR_PRIORITY'; priority: TechnicalAdvisorPriority }
   | { type: 'MARK_INBOX_READ'; messageIds: string[] }
   | { type: 'RETIRE_PART'; partId: string }
   | { type: 'SET_CAR_SETUP'; driverId: string; setup: CarSetup }
@@ -656,6 +658,11 @@ export function gameReducer(state: GameState | null, action: GameAction): GameSt
           ? { autoRepair: true, autoRestock: true, autoFit: true }
           : { autoRepair: false, autoRestock: false, autoFit: false },
       };
+    }
+
+    case 'SET_TECHNICAL_ADVISOR_PRIORITY': {
+      if (!state) return state;
+      return { ...state, technicalAdvisorPriority: action.priority };
     }
 
     case 'MARK_INBOX_READ': {

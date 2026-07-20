@@ -100,6 +100,28 @@ describe('technicalDirectorProposals', () => {
     expect(repair?.action).toEqual({ type: 'REPAIR_PART', partId: spare!.id });
   });
 
+  it('reorders proposals according to the selected technical priority', () => {
+    const base = newSeasonState();
+    const parts = base.teamParts?.[base.selectedTeamId];
+    expect(parts).toBeDefined();
+    const spare = parts!.inventory.find((part) => part.status === 'spare');
+    expect(spare).toBeDefined();
+    const state: GameState = {
+      ...base,
+      technicalAdvisorPriority: 'factory',
+      teamParts: {
+        ...base.teamParts!,
+        [base.selectedTeamId]: {
+          ...parts!,
+          inventory: parts!.inventory.map((part) =>
+            part.id === spare!.id ? { ...part, condition: 20 } : part,
+          ),
+        },
+      },
+    };
+    expect(technicalDirectorProposals(state)[0]?.kind).toBe('repair');
+  });
+
   it('proposes swapping a worn fitted part for a fresher spare', () => {
     const base = newSeasonState();
     const parts = base.teamParts?.[base.selectedTeamId];
