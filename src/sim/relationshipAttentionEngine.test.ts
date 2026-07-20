@@ -38,6 +38,7 @@ describe('relationship attention engine', () => {
     expect(relationshipAuthorityFor(driver).rank).toBe(2);
     expect(relationshipAttentionForTarget(state, owner).influence).toBe(95);
     expect(relationshipAttentionForTarget(state, owner).status).toBe('Stable');
+    expect(relationshipAttentionForTarget(state, owner).actionWindow).toBe('Background');
     expect(relationshipAttentionForTarget(state, owner).reasons[0]).toContain('No active deadline');
   });
 
@@ -73,6 +74,7 @@ describe('relationship attention engine', () => {
 
     const attention = relationshipAttentionForTarget(state, driver);
     expect(attention.status).toBe('MustActNow');
+    expect(attention.actionWindow).toBe('Immediate');
     expect(attention.reasons[0]).toContain('Driver contract response required');
   });
 
@@ -100,6 +102,7 @@ describe('relationship attention engine', () => {
     const queue = currentRelationshipAttention(state);
     expect(queue[0].target.id).toBe(driver.id);
     expect(queue[0].status).toBe('MustActNow');
+    expect(queue[0].actionWindow).toBe('Immediate');
     expect(queue[0].authorityRank).toBe(2);
     expect(queue.find((entry) => entry.target.id === owner.id)?.authorityRank).toBe(1);
   });
@@ -120,6 +123,39 @@ describe('relationship attention engine', () => {
 
     const attention = relationshipAttentionForTarget(state, driver);
     expect(attention.status).toBe('WatchClosely');
+    expect(attention.actionWindow).toBe('Soon');
     expect(attention.reasons.some((reason) => reason.includes('testing alternatives'))).toBe(true);
+  });
+
+  it('flags one-round pressure as the next relationship window', () => {
+    const base = freshState();
+    const driver = targetOf(base, 'Driver');
+    const state: GameState = {
+      ...base,
+      characterInteractions: {
+        ...base.characterInteractions!,
+        commitments: [{
+          id: 'driver-next-round-commitment',
+          sourceEventId: 'test-event',
+          target: driver,
+          kind: 'DriverPromise',
+          title: 'Clarify number-one status',
+          description: 'A short-term driver management commitment.',
+          measureLabel: 'Driver clarity',
+          currentValue: 0,
+          targetValue: 1,
+          direction: 'AtLeast',
+          createdSeason: base.seasonYear,
+          createdRound: base.careerPhase!.currentRound,
+          dueSeason: base.seasonYear,
+          dueRound: base.careerPhase!.currentRound + 1,
+          status: 'Active',
+        }],
+      },
+    };
+
+    const attention = relationshipAttentionForTarget(state, driver);
+    expect(attention.status).toBe('WatchClosely');
+    expect(attention.actionWindow).toBe('NextRound');
   });
 });

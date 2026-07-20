@@ -2,6 +2,8 @@ import { describe, expect, it } from 'vitest';
 import type { RelationshipAttentionProfile } from '../../sim/relationshipAttentionEngine';
 import {
   RELATIONSHIP_HIERARCHY,
+  relationshipActionWindowDetail,
+  relationshipActionWindowLabel,
   relationshipPrioritySummary,
   stableInternalRelationships,
   visibleRelationshipPriorities,
@@ -19,6 +21,7 @@ function profile(
     authorityLabel: `${type} authority`,
     influence: 50,
     status,
+    actionWindow: status === 'MustActNow' ? 'Immediate' : status === 'WatchClosely' ? 'Soon' : 'Background',
     reasons: ['Test reason.'],
   };
 }
@@ -68,5 +71,12 @@ describe('relationship priority view model', () => {
     expect(RELATIONSHIP_HIERARCHY.find((row) => row.rank === '5')?.coverage).toBe('Collective team systems');
     expect(RELATIONSHIP_HIERARCHY.find((row) => row.rank === '6')?.coverage).toBe('Live career-market standing');
     expect(RELATIONSHIP_HIERARCHY.find((row) => row.rank === '8')?.coverage).toBe('Live recruitment context');
+  });
+
+  it('turns action windows into clear player-facing timing labels', () => {
+    expect(relationshipActionWindowLabel('Immediate')).toBe('Act before advancing');
+    expect(relationshipActionWindowLabel('NextRound')).toBe('Handle next round');
+    expect(relationshipActionWindowDetail('Soon')).toContain('Schedule attention soon');
+    expect(relationshipActionWindowDetail('Background')).toContain('No active intervention');
   });
 });

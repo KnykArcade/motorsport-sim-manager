@@ -16,6 +16,7 @@ function character(status: RelationshipAttentionProfile['status'], rank: Relatio
     authorityLabel: 'Test authority',
     influence: 70,
     status,
+    actionWindow: status === 'MustActNow' ? 'Immediate' : status === 'WatchClosely' ? 'Soon' : 'Background',
     reasons: [`Character rank ${rank} reason.`],
   };
 }

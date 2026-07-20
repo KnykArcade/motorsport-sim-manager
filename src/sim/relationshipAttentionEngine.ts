@@ -13,12 +13,15 @@ export type RelationshipAttentionStatus = 'MustActNow' | 'WatchClosely' | 'Stabl
 
 export type RelationshipAuthorityRank = 1 | 2 | 4 | 7 | 8;
 
+export type RelationshipActionWindow = 'Immediate' | 'NextRound' | 'Soon' | 'Background';
+
 export type RelationshipAttentionProfile = {
   target: CharacterInteractionTarget;
   authorityRank: RelationshipAuthorityRank;
   authorityLabel: string;
   influence: number;
   status: RelationshipAttentionStatus;
+  actionWindow: RelationshipActionWindow;
   reasons: string[];
 };
 
@@ -66,6 +69,17 @@ function eventTargetsCharacter(event: PaddockEvent, target: CharacterInteraction
 
 function uniqueReasons(reasons: string[]): string[] {
   return [...new Set(reasons)].slice(0, 4);
+}
+
+function relationshipActionWindow(
+  status: RelationshipAttentionStatus,
+  reasons: string[],
+): RelationshipActionWindow {
+  if (status === 'MustActNow') return 'Immediate';
+  if (status === 'Stable') return 'Background';
+  const joined = reasons.join(' ');
+  if (/due within 1 round|ultimatum|critical|breaking point/i.test(joined)) return 'NextRound';
+  return 'Soon';
 }
 
 export function relationshipAuthorityFor(target: CharacterInteractionTarget): {
@@ -179,6 +193,7 @@ export function relationshipAttentionForTarget(
     authorityLabel: authority.label,
     influence: influence?.power ?? characterRolePower(state, target),
     status,
+    actionWindow: relationshipActionWindow(status, reasons),
     reasons,
   };
 }
