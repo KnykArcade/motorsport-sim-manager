@@ -2,6 +2,7 @@ import '../testDataSetup';
 import { describe, expect, it } from 'vitest';
 import { createNewGame } from '../game/initialCareer';
 import type { GameState } from '../game/careerState';
+import type { StaffMember } from '../types/staffTypes';
 import { gameReducer } from '../game/gameReducer';
 import {
   actionableInboxCount,
@@ -80,6 +81,37 @@ describe('inboxViewModel', () => {
     expect(item).toBeDefined();
     expect(item?.actionable).toBe(true);
     expect(item?.route).toBe('/drivers');
+  });
+
+  it('surfaces vacant and expiring staff roles as people actions', () => {
+    const base = newState();
+    const vacant = inboxMessages({ ...base, staff: [] }).find((message) => message.id === 'inbox-staff-vacancies');
+    expect(vacant).toMatchObject({
+      actionable: true,
+      route: '/staff',
+      body: expect.stringContaining('Technical Director'),
+    });
+
+    const staffMember: StaffMember = {
+      id: 'staff-td',
+      name: 'Test Director',
+      role: 'Technical Director',
+      nationality: 'GBR',
+      rating: 8,
+      salary: 1,
+      signingFee: 1,
+      contractYearsRemaining: 1,
+      bio: 'Test staff member',
+    };
+    const expiring = inboxMessages({
+      ...base,
+      staff: [staffMember],
+    }).find((message) => message.id === 'inbox-staff-contracts-expiring');
+    expect(expiring).toMatchObject({
+      actionable: true,
+      route: '/staff',
+    });
+    expect(expiring?.body).toContain(staffMember?.name);
   });
 
   it('surfaces open regulation votes and low budget', () => {
