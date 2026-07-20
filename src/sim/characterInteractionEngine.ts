@@ -7,7 +7,7 @@ import type {
   CharacterInteractionTarget,
   CharacterInteractionTargetType,
 } from '../types/characterInteractionTypes';
-import type { DepartmentId } from '../types/phase18Types';
+import type { DepartmentId, DepartmentMood } from '../types/phase18Types';
 import {
   OWNER_PERSONALITY_LABELS,
   type OwnerPersonality,
@@ -33,6 +33,12 @@ export type OwnerActionPersonalityContext = {
 
 export type DriverActionRelationshipContext = {
   fit: 'Favored' | 'Neutral' | 'Risky';
+  explanation: string;
+};
+
+export type StaffActionDepartmentContext = {
+  fit: 'Favored' | 'Neutral' | 'Risky';
+  departmentLabel: string;
   explanation: string;
 };
 
@@ -150,6 +156,60 @@ export function driverActionRelationshipContext(
     return futureConcern
       ? { fit: 'Favored', explanation: 'An active contract, role, salary, or seat concern makes an honest future discussion especially important.' }
       : { fit: 'Neutral', explanation: 'The driver has no urgent future-status concern, so this mainly provides general clarity.' };
+  }
+
+  return undefined;
+}
+
+function staffDepartmentContext(
+  state: GameState,
+  target: CharacterInteractionTarget,
+): { departmentId: DepartmentId; departmentLabel: string; mood: DepartmentMood } | undefined {
+  const member = (state.staff ?? []).find((candidate) => candidate.id === target.id);
+  if (!member) return undefined;
+  const departmentId = STAFF_DEPARTMENT[member.role];
+  const phase18 = ensurePhase18FoundationState(state.phase18, state);
+  return {
+    departmentId,
+    departmentLabel: departmentId.replace(/([a-z])([A-Z])/g, '$1 $2'),
+    mood: phase18.departmentMoods[state.selectedTeamId][departmentId],
+  };
+}
+
+export function staffActionDepartmentContext(
+  state: GameState,
+  target: CharacterInteractionTarget,
+  action: CharacterInteractionAction,
+): StaffActionDepartmentContext | undefined {
+  if (target.type !== 'Staff') return undefined;
+  const department = staffDepartmentContext(state, target);
+  if (!department) return undefined;
+  const { mood, departmentLabel } = department;
+
+  if (action === 'SeekAdvice') {
+    const needsConsultation = mood.strategicAlignment <= 50
+      || mood.trustInPrincipal <= 45
+      || mood.conflictReasons.length > 0;
+    return needsConsultation
+      ? { fit: 'Favored', departmentLabel, explanation: 'Low alignment, trust concerns, or an active disagreement makes consultation especially useful.' }
+      : { fit: 'Neutral', departmentLabel, explanation: 'Consultation remains constructive, but the department is already broadly aligned.' };
+  }
+
+  if (action === 'PraiseStaffWork') {
+    const needsRecognition = mood.morale <= 50 || mood.trustInPrincipal <= 45;
+    return needsRecognition
+      ? { fit: 'Favored', departmentLabel, explanation: 'Current morale or trust makes specific recognition more meaningful to this department.' }
+      : { fit: 'Neutral', departmentLabel, explanation: 'Recognition will help, though morale and trust are not currently under pressure.' };
+  }
+
+  if (action === 'SetExpectations') {
+    if (mood.workload >= 75 || mood.trustInPrincipal <= 35) {
+      return { fit: 'Risky', departmentLabel, explanation: 'High workload or low trust means additional pressure is likely to damage the working relationship.' };
+    }
+    if (mood.strategicAlignment <= 45 && mood.workload <= 65) {
+      return { fit: 'Favored', departmentLabel, explanation: 'Alignment needs clarity and current workload leaves room to absorb firmer expectations.' };
+    }
+    return { fit: 'Neutral', departmentLabel, explanation: 'Clear expectations improve alignment but still add workload and some relationship pressure.' };
   }
 
   return undefined;
@@ -384,27 +444,48 @@ function performStaffAction(
   const phase18 = ensurePhase18FoundationState(state.phase18, state);
   const departmentId = STAFF_DEPARTMENT[member.role];
   const current = phase18.departmentMoods[state.selectedTeamId][departmentId];
+  const context = staffActionDepartmentContext(state, target, action);
+  const fit = context?.fit ?? 'Neutral';
   const mood = { ...current };
   let outcome: string;
   let tone: CharacterInteractionRecord['tone'] = 'Positive';
   const effects: string[] = [];
   if (action === 'SeekAdvice') {
-    mood.trustInPrincipal = clamp(mood.trustInPrincipal + 2);
-    mood.strategicAlignment = clamp(mood.strategicAlignment + 2);
-    outcome = `${target.name} valued being consulted and offered a clearer view of the department’s priorities.`;
-    effects.push('+2 department trust', '+2 strategic alignment');
+    const trustDelta = fit === 'Favored' ? 3 : 2;
+    const alignmentDelta = fit === 'Favored' ? 3 : 2;
+    mood.trustInPrincipal = clamp(mood.trustInPrincipal + trustDelta);
+    mood.strategicAlignment = clamp(mood.strategicAlignment + alignmentDelta);
+    outcome = fit === 'Favored'
+      ? `${target.name} welcomed being consulted at the right moment and clarified the department’s underlying concerns.`
+      : `${target.name} valued being consulted and offered a clearer view of the department’s priorities.`;
+    effects.push(`+${trustDelta} department trust`, `+${alignmentDelta} strategic alignment`);
   } else if (action === 'PraiseStaffWork') {
-    mood.trustInPrincipal = clamp(mood.trustInPrincipal + 2);
-    mood.morale = clamp(mood.morale + 3);
-    outcome = `${target.name} shared the recognition with the department, lifting confidence in the current direction.`;
-    effects.push('+2 department trust', '+3 department morale');
+    const trustDelta = fit === 'Favored' ? 3 : 2;
+    const moraleDelta = fit === 'Favored' ? 4 : 3;
+    mood.trustInPrincipal = clamp(mood.trustInPrincipal + trustDelta);
+    mood.morale = clamp(mood.morale + moraleDelta);
+    outcome = fit === 'Favored'
+      ? `${target.name} shared the timely recognition with a department that needed it, lifting morale and trust.`
+      : `${target.name} shared the recognition with the department, lifting confidence in the current direction.`;
+    effects.push(`+${trustDelta} department trust`, `+${moraleDelta} department morale`);
   } else if (action === 'SetExpectations') {
-    mood.strategicAlignment = clamp(mood.strategicAlignment + 3);
-    mood.workload = clamp(mood.workload + 2);
-    mood.trustInPrincipal = clamp(mood.trustInPrincipal - 1);
-    outcome = `${target.name} understands the target, but the extra pressure will increase the department’s workload.`;
-    tone = 'Mixed';
-    effects.push('+3 strategic alignment', '+2 workload', '-1 department trust');
+    const alignmentDelta = fit === 'Favored' ? 4 : fit === 'Risky' ? 2 : 3;
+    const workloadDelta = fit === 'Risky' ? 4 : 2;
+    const trustDelta = fit === 'Favored' ? 0 : fit === 'Risky' ? -3 : -1;
+    mood.strategicAlignment = clamp(mood.strategicAlignment + alignmentDelta);
+    mood.workload = clamp(mood.workload + workloadDelta);
+    mood.trustInPrincipal = clamp(mood.trustInPrincipal + trustDelta);
+    outcome = fit === 'Favored'
+      ? `${target.name} welcomed the clarity and aligned the department around a manageable target.`
+      : fit === 'Risky'
+        ? `${target.name} understood the target, but the overloaded or distrustful department saw it as additional pressure.`
+        : `${target.name} understands the target, but the extra pressure will increase the department’s workload.`;
+    tone = fit === 'Risky' ? 'Negative' : 'Mixed';
+    effects.push(
+      `+${alignmentDelta} strategic alignment`,
+      `+${workloadDelta} workload`,
+      ...(trustDelta ? [`${trustDelta} department trust`] : []),
+    );
   } else return undefined;
   return {
     state: {
