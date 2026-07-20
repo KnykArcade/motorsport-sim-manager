@@ -6,6 +6,7 @@ import {
   relationshipActivityFromSources,
   relationshipActivityHierarchy,
   relationshipActivitySummary,
+  relationshipFollowUpAgenda,
 } from './relationshipActivityViewModel';
 
 function memory(overrides: Partial<CharacterMemory> = {}): CharacterMemory {
@@ -199,9 +200,33 @@ describe('relationship activity view model', () => {
       negative: 1,
       mixed: 1,
       informational: 0,
+      immediateFollowUps: 1,
+      nextRoundFollowUps: 1,
+      activeFollowUps: 2,
       netOpinionDelta: -3,
       latest: { id: 'memory:negative' },
     });
+  });
+
+  it('builds a follow-up agenda with immediate items before next-round items', () => {
+    const activity = relationshipActivityFromSources(
+      [
+        memory({ id: 'driver-next', tone: 'Mixed', opinionDelta: -1, round: 7 }),
+        memory({ id: 'owner-now', targetType: 'Owner', targetName: 'Owner', tone: 'Negative', opinionDelta: -5, round: 4 }),
+        memory({ id: 'driver-now', tone: 'Negative', opinionDelta: -4, round: 6 }),
+        memory({ id: 'background', targetType: 'RivalPrincipal', targetName: 'Rival', tone: 'Informational', opinionDelta: 0, effects: [], round: 8 }),
+      ],
+      [],
+      [],
+      'team-1',
+    );
+
+    expect(relationshipFollowUpAgenda(activity).map((item) => item.id)).toEqual([
+      'memory:driver-now',
+      'memory:owner-now',
+      'memory:driver-next',
+    ]);
+    expect(relationshipFollowUpAgenda(activity, 2)).toHaveLength(2);
   });
 
   it('maps activity targets back to the relationship management hierarchy', () => {
@@ -220,6 +245,9 @@ describe('relationship activity view model', () => {
       negative: 0,
       mixed: 0,
       informational: 0,
+      immediateFollowUps: 0,
+      nextRoundFollowUps: 0,
+      activeFollowUps: 0,
       netOpinionDelta: 0,
     });
   });
