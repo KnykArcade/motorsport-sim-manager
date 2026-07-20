@@ -1,5 +1,9 @@
 import type { InboxMessage } from './inboxViewModel';
 import type { RelationshipCommandSummary } from './relationships/relationshipCommandViewModel';
+import {
+  relationshipActionWindowDetail,
+  relationshipActionWindowLabel,
+} from './relationships/relationshipPriorityViewModel';
 
 type DirectRelationshipCoverage = {
   duePromise: boolean;
@@ -20,14 +24,16 @@ export function relationshipInboxMessage(
     : signal.id === 'Collective:Commercial'
       ? 'business'
       : 'people';
+  const timing = relationshipActionWindowLabel(signal.actionWindow);
   return {
     id: `inbox-relationship-${signal.id}`,
     severity: signal.status === 'MustActNow' ? 'critical' : 'action',
     category,
     title: `Relationship priority: ${signal.title}`,
-    body: `${signal.reason} Review the Relationship Command Center for the risk if ignored.`,
+    body: `${timing}: ${signal.reason} Review the Relationship Command Center for the risk if ignored.`,
     route: '/relationships',
     routeLabel: 'Open Relationships',
     actionable: true,
+    whyItMatters: relationshipActionWindowDetail(signal.actionWindow),
   };
 }
