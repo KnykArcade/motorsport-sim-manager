@@ -3,11 +3,13 @@ import { describe, expect, it } from 'vitest';
 import type { GameState } from '../game/careerState';
 import { createNewGame } from '../game/initialCareer';
 import type { RaceResult } from '../types/gameTypes';
+import type { RivalRelationship } from '../types/phase18Types';
 import {
   addRivalRelationshipEvent,
   ensureRivalRelationships,
   evolveRivalRelationshipsAfterRace,
   recordStaffPoach,
+  rivalActionContext,
   rivalActionUsedThisRound,
   rivalRelationship,
   takeRivalAction,
@@ -19,6 +21,20 @@ function freshState(seed = 'phase18-rivals'): GameState {
 
 function result(teamId: string, driverId: string, position: number): RaceResult {
   return { teamId, driverId, position, gridPosition: position, status: 'Finished', lapsCompleted: 60, points: 0, raceScore: 70, gapText: '', incidents: [] };
+}
+
+function prepareRival(state: GameState, rivalId: string, overrides: Partial<RivalRelationship>): GameState {
+  const relationship = rivalRelationship(state, state.selectedTeamId, rivalId)!;
+  return {
+    ...state,
+    phase18: {
+      ...state.phase18!,
+      rivalRelationships: {
+        ...state.phase18!.rivalRelationships,
+        [relationship.id]: { ...relationship, ...overrides },
+      },
+    },
+  };
 }
 
 describe('rival relationship engine', () => {
@@ -97,6 +113,68 @@ describe('rival relationship engine', () => {
     expect(repeatedDialogue).toEqual(dialogue);
     expect(rivalRelationship(exchange, state.selectedTeamId, rival.id)!.history).toHaveLength(2);
     expect(rivalRelationship(nextDialogue, state.selectedTeamId, rival.id)!.history).toHaveLength(3);
+  });
+
+  it('explains and amplifies dialogue when tension is high but sporting respect remains', () => {
+    const state = freshState('rival-dialogue-context');
+    const rival = state.teams.find((team) => team.id !== state.selectedTeamId)!;
+    const prepared = prepareRival(state, rival.id, { score: -25, technicalSuspicion: 68, sportingRespect: 62 });
+    const context = rivalActionContext(prepared, rival.id, 'OpenDialogue');
+    const after = takeRivalAction(prepared, rival.id, 'OpenDialogue');
+    const updated = rivalRelationship(after, state.selectedTeamId, rival.id)!;
+
+    expect(context?.fit).toBe('Favored');
+    expect(updated.score).toBe(-18);
+    expect(updated.commercialTrust).toBe(rivalRelationship(prepared, state.selectedTeamId, rival.id)!.commercialTrust + 6);
+    expect(updated.technicalSuspicion).toBe(64);
+  });
+
+  it('limits technical exchange upside when suspicion and mistrust are severe', () => {
+    const state = freshState('rival-exchange-context');
+    const rival = state.teams.find((team) => team.id !== state.selectedTeamId)!;
+    const prepared = prepareRival(state, rival.id, {
+      score: -28,
+      commercialTrust: 25,
+      technicalSuspicion: 82,
+      tags: ['TechnicalRival'],
+    });
+    const context = rivalActionContext(prepared, rival.id, 'TechnicalExchange');
+    const after = takeRivalAction(prepared, rival.id, 'TechnicalExchange');
+    const updated = rivalRelationship(after, state.selectedTeamId, rival.id)!;
+
+    expect(context?.fit).toBe('Risky');
+    expect(updated.score).toBe(-27);
+    expect(updated.commercialTrust).toBe(27);
+    expect(updated.technicalSuspicion).toBe(79);
+  });
+
+  it('flags personnel scouting as risky when it would damage a useful ally', () => {
+    const state = freshState('rival-scout-context');
+    const rival = state.teams.find((team) => team.id !== state.selectedTeamId)!;
+    const prepared = prepareRival(state, rival.id, {
+      score: 24,
+      commercialTrust: 70,
+      technicalSuspicion: 35,
+      tags: ['PoliticalBlocAlly'],
+    });
+    const context = rivalActionContext(prepared, rival.id, 'ScoutPersonnel');
+    const after = takeRivalAction(prepared, rival.id, 'ScoutPersonnel');
+    const updated = rivalRelationship(after, state.selectedTeamId, rival.id)!;
+
+    expect(context?.fit).toBe('Risky');
+    expect(updated.score).toBe(17);
+    expect(updated.commercialTrust).toBe(64);
+    expect(updated.technicalSuspicion).toBe(41);
+  });
+
+  it('marks a formal protest as favored only when technical suspicion supports it', () => {
+    const state = freshState('rival-protest-context');
+    const rival = state.teams.find((team) => team.id !== state.selectedTeamId)!;
+    const favored = prepareRival(state, rival.id, { technicalSuspicion: 78, sportingRespect: 45 });
+    const risky = prepareRival(state, rival.id, { technicalSuspicion: 35, sportingRespect: 75 });
+
+    expect(rivalActionContext(favored, rival.id, 'FileProtest')?.fit).toBe('Favored');
+    expect(rivalActionContext(risky, rival.id, 'FileProtest')?.fit).toBe('Risky');
   });
 
   it('does not carry a rival action cooldown into the same round number of a later season', () => {
