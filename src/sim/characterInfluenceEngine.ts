@@ -143,7 +143,7 @@ export function refreshCharacterInfluence(state: GameState): GameState {
   return { ...seeded, characterInteractions: { ...seeded.characterInteractions!, influence } };
 }
 
-function stanceEffect(stance: CharacterInfluenceStance): number {
+export function characterInfluenceRoundDelta(stance: CharacterInfluenceStance): number {
   if (stance === 'Champion' || stance === 'Supportive') return 1;
   if (stance === 'Resistant') return -1;
   if (stance === 'Obstructive') return -2;
@@ -165,7 +165,7 @@ export function applyCharacterInfluenceEffects(state: GameState): GameState {
   let ownerDelta = 0;
 
   for (const profile of due) {
-    const delta = stanceEffect(profile.stance);
+    const delta = characterInfluenceRoundDelta(profile.stance);
     if (profile.target.type === 'Driver' && driverRelationships?.[profile.target.id] && delta !== 0) {
       const relationship = driverRelationships[profile.target.id];
       const updated = {
