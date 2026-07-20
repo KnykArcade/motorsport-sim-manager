@@ -2,7 +2,7 @@ import { Panel } from '../../components/Panel';
 import { relationshipStatusLabel } from './relationshipPriorityViewModel';
 import type { ExternalTalentContext } from './relationshipTalentViewModel';
 import { RelationshipRiskNote } from './RelationshipRiskNote';
-import { externalTalentRiskIfIgnored } from './relationshipRiskViewModel';
+import { externalTalentRiskIfIgnored, relationshipRiskPriorityContext } from './relationshipRiskViewModel';
 import { externalTalentManagementMove } from './relationshipActionViewModel';
 
 const STATUS_STYLES: Record<ExternalTalentContext['status'], string> = {
@@ -48,7 +48,7 @@ export function ExternalTalentBoard({ context, onReviewDrivers, onReviewStaff }:
           {context.reasons.slice(0, 3).map((reason) => <li key={reason}>• {reason}</li>)}
         </ul>
 
-        <RelationshipRiskNote>{externalTalentRiskIfIgnored(context)}</RelationshipRiskNote>
+        <RelationshipRiskNote priorityContext={relationshipRiskPriorityContext(context)}>{externalTalentRiskIfIgnored(context)}</RelationshipRiskNote>
 
         <div className="mt-3 rounded border border-neutral-700/70 bg-neutral-950/45 p-2.5">
           <div className="text-[9px] font-bold uppercase tracking-wide text-[var(--era-accent-strong)]">Management move</div>

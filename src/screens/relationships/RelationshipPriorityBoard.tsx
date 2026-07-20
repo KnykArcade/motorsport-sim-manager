@@ -17,7 +17,7 @@ import type { PotentialEmployerStanding } from './relationshipEmployerViewModel'
 import { ExternalTalentBoard } from './ExternalTalentBoard';
 import type { ExternalTalentContext } from './relationshipTalentViewModel';
 import { RelationshipRiskNote } from './RelationshipRiskNote';
-import { characterRiskIfIgnored } from './relationshipRiskViewModel';
+import { characterRiskIfIgnored, relationshipRiskPriorityContext } from './relationshipRiskViewModel';
 import { characterManagementMove } from './relationshipActionViewModel';
 import type { GameState } from '../../game/careerState';
 import { CharacterDossierButton } from '../../components/characterCards/CharacterDossier';
@@ -236,7 +236,7 @@ function RelationshipPriorityCard({ state, profile, onReview }: { state: GameSta
         <p className="mt-1 text-[10px] leading-relaxed text-neutral-500">{move.expectedEffect}</p>
       </div>
 
-      <RelationshipRiskNote>{characterRiskIfIgnored(profile)}</RelationshipRiskNote>
+      <RelationshipRiskNote priorityContext={relationshipRiskPriorityContext(profile)}>{characterRiskIfIgnored(profile)}</RelationshipRiskNote>
 
       <div className="mt-3 flex flex-wrap items-center gap-2">
         <ManagementActionButton state={state} profile={profile} onReview={onReview} />

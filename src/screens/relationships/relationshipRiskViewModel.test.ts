@@ -6,6 +6,7 @@ import {
   collectiveRiskIfIgnored,
   employerRiskIfIgnored,
   externalTalentRiskIfIgnored,
+  relationshipRiskPriorityContext,
 } from './relationshipRiskViewModel';
 
 function character(
@@ -25,6 +26,12 @@ function character(
 }
 
 describe('relationship risk guidance', () => {
+  it('summarizes the hierarchy reason shown on visible risk notes', () => {
+    expect(relationshipRiskPriorityContext(character('Owner', 'MustActNow', 'Owner confidence is falling.'))).toBe(
+      'Authority #1 · Test authority',
+    );
+  });
+
   it('does not add management noise to stable relationships', () => {
     expect(characterRiskIfIgnored(character('Owner', 'Stable', 'No concern.'))).toBeUndefined();
   });

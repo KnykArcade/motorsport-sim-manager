@@ -2,7 +2,7 @@ import { Panel } from '../../components/Panel';
 import type { CollectiveStakeholderProfile } from './relationshipStakeholderViewModel';
 import { relationshipStatusLabel } from './relationshipPriorityViewModel';
 import { RelationshipRiskNote } from './RelationshipRiskNote';
-import { collectiveRiskIfIgnored } from './relationshipRiskViewModel';
+import { collectiveRiskIfIgnored, relationshipRiskPriorityContext } from './relationshipRiskViewModel';
 import { collectiveManagementMove } from './relationshipActionViewModel';
 import type { GameState } from '../../game/careerState';
 import type { CollectiveStakeholderAction } from '../../types/phase18Types';
@@ -99,7 +99,7 @@ function CollectiveStakeholderCard({ state, profile, onReview, onTakeAction }: {
         <p className="mt-1 text-[10px] leading-relaxed text-neutral-500">{move.expectedEffect}</p>
       </div>
 
-      <RelationshipRiskNote>{collectiveRiskIfIgnored(profile)}</RelationshipRiskNote>
+      <RelationshipRiskNote priorityContext={relationshipRiskPriorityContext(profile)}>{collectiveRiskIfIgnored(profile)}</RelationshipRiskNote>
 
       <div className="mt-3 border-t border-current/15 pt-3">
         <div className="mb-2 text-[9px] font-bold uppercase tracking-wide text-neutral-500">Committee action · one per round</div>
