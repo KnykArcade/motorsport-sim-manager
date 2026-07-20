@@ -14,6 +14,7 @@ import {
   ownerActionPersonalityContext,
   performCharacterInteraction,
   recruitmentSigningDiscount,
+  staffActionDepartmentContext,
 } from './characterInteractionEngine';
 
 function freshState(): GameState {
@@ -98,8 +99,65 @@ describe('character interaction engine', () => {
     const before = staffed.phase18!.departmentMoods[state.selectedTeamId][department];
     const after = performCharacterInteraction(staffed, target, 'PraiseStaffWork');
 
-    expect(after.phase18!.departmentMoods[state.selectedTeamId][department].morale).toBe(before.morale + 3);
-    expect(after.phase18!.departmentMoods[state.selectedTeamId][department].trustInPrincipal).toBe(before.trustInPrincipal + 2);
+    expect(after.phase18!.departmentMoods[state.selectedTeamId][department].morale).toBe(before.morale + 4);
+    expect(after.phase18!.departmentMoods[state.selectedTeamId][department].trustInPrincipal).toBe(before.trustInPrincipal + 3);
+  });
+
+  it('warns against adding expectations to an overloaded department', () => {
+    const state = freshState();
+    const member = getStaffPool(state.seasonYear, state.series)[0];
+    const department = member.role === 'Technical Director' ? 'Technical' : member.role === 'Race Engineer' ? 'Engineering' : 'RaceOperations';
+    const mood = state.phase18!.departmentMoods[state.selectedTeamId][department];
+    const overloaded: GameState = {
+      ...state,
+      staff: [member],
+      phase18: {
+        ...state.phase18!,
+        departmentMoods: {
+          ...state.phase18!.departmentMoods,
+          [state.selectedTeamId]: {
+            ...state.phase18!.departmentMoods[state.selectedTeamId],
+            [department]: { ...mood, workload: 82, trustInPrincipal: 32 },
+          },
+        },
+      },
+    };
+    const target: CharacterInteractionTarget = { type: 'Staff', id: member.id, name: member.name, teamId: state.selectedTeamId };
+
+    expect(staffActionDepartmentContext(overloaded, target, 'SetExpectations')).toMatchObject({ fit: 'Risky' });
+    const result = performCharacterInteraction(overloaded, target, 'SetExpectations');
+    expect(result.phase18!.departmentMoods[state.selectedTeamId][department]).toMatchObject({
+      strategicAlignment: mood.strategicAlignment + 2,
+      workload: 86,
+      trustInPrincipal: 29,
+    });
+    expect(interactionHistoryForTarget(result, target)[0].tone).toBe('Negative');
+  });
+
+  it('makes recognition more effective when department morale is low', () => {
+    const state = freshState();
+    const member = getStaffPool(state.seasonYear, state.series)[0];
+    const department = member.role === 'Technical Director' ? 'Technical' : member.role === 'Race Engineer' ? 'Engineering' : 'RaceOperations';
+    const mood = state.phase18!.departmentMoods[state.selectedTeamId][department];
+    const lowMorale: GameState = {
+      ...state,
+      staff: [member],
+      phase18: {
+        ...state.phase18!,
+        departmentMoods: {
+          ...state.phase18!.departmentMoods,
+          [state.selectedTeamId]: {
+            ...state.phase18!.departmentMoods[state.selectedTeamId],
+            [department]: { ...mood, morale: 38 },
+          },
+        },
+      },
+    };
+    const target: CharacterInteractionTarget = { type: 'Staff', id: member.id, name: member.name, teamId: state.selectedTeamId };
+
+    expect(staffActionDepartmentContext(lowMorale, target, 'PraiseStaffWork')).toMatchObject({ fit: 'Favored' });
+    const result = performCharacterInteraction(lowMorale, target, 'PraiseStaffWork');
+    expect(result.phase18!.departmentMoods[state.selectedTeamId][department].morale).toBe(42);
   });
 
   it('turns owner and rival-principal conversations into persistent management consequences', () => {
