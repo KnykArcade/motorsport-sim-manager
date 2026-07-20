@@ -6,7 +6,9 @@ import { gameReducer } from '../game/gameReducer';
 import { migrateGameState } from '../game/saveSystem';
 import type { GameState } from '../game/careerState';
 import type { CharacterInteractionTarget } from '../types/characterInteractionTypes';
+import type { DriverRelationship } from '../types/relationshipTypes';
 import {
+  driverActionRelationshipContext,
   interactionHistoryForTarget,
   isCharacterInteractionAvailable,
   ownerActionPersonalityContext,
@@ -43,6 +45,48 @@ describe('character interaction engine', () => {
     const nextRound = { ...after, currentRaceIndex: after.currentRaceIndex + 1 };
     expect(isCharacterInteractionAvailable(nextRound, target)).toBe(true);
     expect(interactionHistoryForTarget(performCharacterInteraction(nextRound, target, 'PraisePerformance'), target)).toHaveLength(2);
+  });
+
+  it('warns when challenging a vulnerable driver and records the stronger negative reaction', () => {
+    const state = freshState();
+    const driver = state.drivers.find((candidate) => candidate.teamId === state.selectedTeamId)!;
+    const target: CharacterInteractionTarget = { type: 'Driver', id: driver.id, name: driver.name, teamId: driver.teamId };
+    const relationship = state.driverRelationships![driver.id];
+    const vulnerable = {
+      ...state,
+      driverRelationships: {
+        ...state.driverRelationships!,
+        [driver.id]: { ...relationship, selfConfidence: 35, morale: 38, personalityTraits: ['Pressure Sensitive'] as DriverRelationship['personalityTraits'] },
+      },
+    };
+
+    expect(driverActionRelationshipContext(vulnerable, target, 'ChallengePerformance')).toMatchObject({ fit: 'Risky' });
+    const result = performCharacterInteraction(vulnerable, target, 'ChallengePerformance');
+    expect(result.driverRelationships![driver.id]).toMatchObject({
+      morale: 34,
+      frustration: relationship.frustration + 4,
+      trustInPrincipal: relationship.trustInPrincipal - 3,
+    });
+    expect(interactionHistoryForTarget(result, target)[0].tone).toBe('Negative');
+  });
+
+  it('rewards a future discussion when the driver has an active status concern', () => {
+    const state = freshState();
+    const driver = state.drivers.find((candidate) => candidate.teamId === state.selectedTeamId)!;
+    const target: CharacterInteractionTarget = { type: 'Driver', id: driver.id, name: driver.name, teamId: driver.teamId };
+    const relationship = state.driverRelationships![driver.id];
+    const concerned = {
+      ...state,
+      driverRelationships: {
+        ...state.driverRelationships!,
+        [driver.id]: { ...relationship, wants: ['contract_renewal'] as DriverRelationship['wants'] },
+      },
+    };
+
+    expect(driverActionRelationshipContext(concerned, target, 'DiscussFuture')).toMatchObject({ fit: 'Favored' });
+    const result = performCharacterInteraction(concerned, target, 'DiscussFuture');
+    expect(result.driverRelationships![driver.id].trustInPrincipal).toBe(relationship.trustInPrincipal + 4);
+    expect(result.driverRelationships![driver.id].frustration).toBe(Math.max(0, relationship.frustration - 3));
   });
 
   it('lets staff conversations affect their department mood', () => {

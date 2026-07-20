@@ -31,6 +31,11 @@ export type OwnerActionPersonalityContext = {
   explanation: string;
 };
 
+export type DriverActionRelationshipContext = {
+  fit: 'Favored' | 'Neutral' | 'Risky';
+  explanation: string;
+};
+
 const OWNER_ACTION_FIT: Record<OwnerPersonality, Record<'PresentLongTermPlan' | 'RequestOwnerBacking' | 'ReviewBudgetDiscipline', OwnerActionPersonalityContext['fit']>> = {
   PatientBuilder: { PresentLongTermPlan: 'Favored', RequestOwnerBacking: 'Neutral', ReviewBudgetDiscipline: 'Neutral' },
   WinNowTycoon: { PresentLongTermPlan: 'Skeptical', RequestOwnerBacking: 'Favored', ReviewBudgetDiscipline: 'Skeptical' },
@@ -85,6 +90,69 @@ export function ownerActionPersonalityContext(
     ownerLabel: OWNER_PERSONALITY_LABELS[personality],
     explanation: OWNER_FIT_EXPLANATION[personality][fit],
   };
+}
+
+export function driverActionRelationshipContext(
+  state: GameState,
+  target: CharacterInteractionTarget,
+  action: CharacterInteractionAction,
+): DriverActionRelationshipContext | undefined {
+  if (target.type !== 'Driver') return undefined;
+  const relationship = state.driverRelationships?.[target.id];
+  if (!relationship) return undefined;
+  const traits = relationship.personalityTraits;
+
+  if (action === 'PrivateConversation') {
+    const needsListening = relationship.frustration >= 45
+      || relationship.trustInPrincipal < 50
+      || traits.some((trait) => trait === 'Pressure Sensitive' || trait === 'Demanding' || trait === 'Political');
+    return needsListening
+      ? { fit: 'Favored', explanation: 'Current frustration, trust, or personality makes a private listening session especially valuable.' }
+      : { fit: 'Neutral', explanation: 'A safe trust-building conversation, but no urgent personal concern increases its effect.' };
+  }
+
+  if (action === 'PraisePerformance') {
+    const valuesRecognition = relationship.selfConfidence < 50
+      || traits.some((trait) => trait === 'High Ego' || trait === 'Confidence Driven' || trait === 'Media Friendly');
+    return valuesRecognition
+      ? { fit: 'Favored', explanation: 'This driver currently needs confidence or has traits that respond strongly to recognition.' }
+      : { fit: 'Neutral', explanation: 'Recognition should help, though this driver has no strong current need for it.' };
+  }
+
+  if (action === 'ChallengePerformance') {
+    const vulnerable = relationship.selfConfidence < 40
+      || relationship.morale < 40
+      || traits.includes('Pressure Sensitive');
+    if (vulnerable) return { fit: 'Risky', explanation: 'Low confidence, low morale, or pressure sensitivity makes a direct challenge likely to backfire.' };
+    const receptive = relationship.teamTrustInDriver >= 55
+      && traits.some((trait) => trait === 'Resilient' || trait === 'Calm Under Pressure' || trait === 'Ambitious');
+    return receptive
+      ? { fit: 'Favored', explanation: 'Strong internal standing and a resilient or ambitious temperament make this driver receptive to a challenge.' }
+      : { fit: 'Neutral', explanation: 'The driver may accept the standard, but their current profile offers no clear advantage.' };
+  }
+
+  if (action === 'MediateConflict') {
+    const needsMediation = relationship.teammateRelationship < 55
+      || traits.includes('Rivalry Prone')
+      || relationship.wants.includes('better_teammate_treatment');
+    return needsMediation
+      ? { fit: 'Favored', explanation: 'Teammate tension, rivalry traits, or an active fairness concern makes mediation timely.' }
+      : { fit: 'Neutral', explanation: 'The garage relationship is not currently tense enough to amplify the intervention.' };
+  }
+
+  if (action === 'DiscussFuture') {
+    const futureConcern = relationship.wants.some((want) =>
+      want === 'contract_renewal'
+      || want === 'race_seat_security'
+      || want === 'number_one_status'
+      || want === 'better_salary'
+      || want === 'academy_promotion');
+    return futureConcern
+      ? { fit: 'Favored', explanation: 'An active contract, role, salary, or seat concern makes an honest future discussion especially important.' }
+      : { fit: 'Neutral', explanation: 'The driver has no urgent future-status concern, so this mainly provides general clarity.' };
+  }
+
+  return undefined;
 }
 
 export const CHARACTER_ACTION_SPECS: CharacterActionSpec[] = [
@@ -219,47 +287,74 @@ function performDriverAction(
   const relationship = state.driverRelationships?.[target.id];
   if (!relationship) return undefined;
   const next = { ...relationship };
+  const context = driverActionRelationshipContext(state, target, action);
+  const fit = context?.fit ?? 'Neutral';
   let outcome: string;
   let tone: CharacterInteractionRecord['tone'] = 'Positive';
   const effects: string[] = [];
   if (action === 'PrivateConversation') {
-    next.trustInPrincipal = clamp(next.trustInPrincipal + 3);
-    next.morale = clamp(next.morale + 1);
-    next.frustration = clamp(next.frustration - 2);
-    outcome = `${target.name} appreciated being heard without being given an empty promise.`;
-    effects.push('+3 principal trust', '+1 morale', '-2 frustration');
+    const trustDelta = fit === 'Favored' ? 4 : 3;
+    const moraleDelta = fit === 'Favored' ? 2 : 1;
+    const frustrationDelta = fit === 'Favored' ? -3 : -2;
+    next.trustInPrincipal = clamp(next.trustInPrincipal + trustDelta);
+    next.morale = clamp(next.morale + moraleDelta);
+    next.frustration = clamp(next.frustration + frustrationDelta);
+    outcome = fit === 'Favored'
+      ? `${target.name} needed the private channel and responded strongly to being heard without an empty promise.`
+      : `${target.name} appreciated being heard without being given an empty promise.`;
+    effects.push(`+${trustDelta} principal trust`, `+${moraleDelta} morale`, `${frustrationDelta} frustration`);
   } else if (action === 'PraisePerformance') {
+    const moraleDelta = fit === 'Favored' ? 4 : 3;
+    const confidenceDelta = fit === 'Favored' ? 4 : 3;
+    const egoDelta = next.personalityTraits.includes('High Ego') ? 2 : 1;
     next.trustInPrincipal = clamp(next.trustInPrincipal + 1);
-    next.morale = clamp(next.morale + 3);
-    next.selfConfidence = clamp(next.selfConfidence + 3);
-    next.ego = clamp(next.ego + 1);
-    outcome = `${target.name} responded well to the recognition and carries more confidence into the next round.`;
-    effects.push('+3 morale', '+3 confidence', '+1 principal trust', '+1 ego');
+    next.morale = clamp(next.morale + moraleDelta);
+    next.selfConfidence = clamp(next.selfConfidence + confidenceDelta);
+    next.ego = clamp(next.ego + egoDelta);
+    outcome = fit === 'Favored'
+      ? `${target.name} strongly valued the recognition and carries a larger confidence lift into the next round.`
+      : `${target.name} responded well to the recognition and carries more confidence into the next round.`;
+    effects.push(`+${moraleDelta} morale`, `+${confidenceDelta} confidence`, '+1 principal trust', `+${egoDelta} ego`);
   } else if (action === 'ChallengePerformance') {
-    const receptive = next.teamTrustInDriver >= 55 || next.personalityTraits.includes('Resilient');
+    const trustDelta = fit === 'Favored' ? 1 : fit === 'Risky' ? -3 : 0;
+    const moraleDelta = fit === 'Favored' ? -1 : fit === 'Risky' ? -4 : -2;
+    const frustrationDelta = fit === 'Favored' ? 1 : fit === 'Risky' ? 4 : 2;
     next.teamTrustInDriver = clamp(next.teamTrustInDriver + 2);
-    next.morale = clamp(next.morale - (receptive ? 1 : 3));
-    next.frustration = clamp(next.frustration + (receptive ? 1 : 3));
-    next.trustInPrincipal = clamp(next.trustInPrincipal + (receptive ? 1 : -2));
-    outcome = receptive
+    next.morale = clamp(next.morale + moraleDelta);
+    next.frustration = clamp(next.frustration + frustrationDelta);
+    next.trustInPrincipal = clamp(next.trustInPrincipal + trustDelta);
+    outcome = fit === 'Favored'
       ? `${target.name} accepted the challenge and understood the standard being demanded.`
-      : `${target.name} felt singled out and left the meeting more defensive than motivated.`;
-    tone = receptive ? 'Mixed' : 'Negative';
-    effects.push('+2 team performance expectation', receptive ? '-1 morale, +1 trust' : '-3 morale, -2 trust');
+      : fit === 'Risky'
+        ? `${target.name} felt singled out at a vulnerable moment and left the meeting more defensive than motivated.`
+        : `${target.name} understood the standard but left the meeting under additional pressure.`;
+    tone = fit === 'Risky' ? 'Negative' : 'Mixed';
+    effects.push(
+      '+2 team trust in driver',
+      `${moraleDelta} morale`,
+      `+${frustrationDelta} frustration`,
+      ...(trustDelta ? [`${trustDelta > 0 ? '+' : ''}${trustDelta} principal trust`] : []),
+    );
   } else if (action === 'MediateConflict') {
-    next.teammateRelationship = clamp(next.teammateRelationship + 4);
-    next.frustration = clamp(next.frustration - 2);
-    next.trustInPrincipal = clamp(next.trustInPrincipal + 1);
-    outcome = `${target.name} accepted the intervention and agreed to reset the working relationship inside the garage.`;
-    effects.push('+4 teammate relationship', '-2 frustration', '+1 principal trust');
+    const teammateDelta = fit === 'Favored' ? 5 : 4;
+    const frustrationDelta = fit === 'Favored' ? -3 : -2;
+    const trustDelta = fit === 'Favored' ? 2 : 1;
+    next.teammateRelationship = clamp(next.teammateRelationship + teammateDelta);
+    next.frustration = clamp(next.frustration + frustrationDelta);
+    next.trustInPrincipal = clamp(next.trustInPrincipal + trustDelta);
+    outcome = fit === 'Favored'
+      ? `${target.name} accepted the timely intervention and made meaningful progress toward resetting the garage relationship.`
+      : `${target.name} accepted the intervention and agreed to reset the working relationship inside the garage.`;
+    effects.push(`+${teammateDelta} teammate relationship`, `${frustrationDelta} frustration`, `+${trustDelta} principal trust`);
   } else if (action === 'DiscussFuture') {
-    const contractConcern = next.wants.includes('contract_renewal') || next.wants.includes('race_seat_security');
-    next.trustInPrincipal = clamp(next.trustInPrincipal + (contractConcern ? 3 : 2));
-    next.frustration = clamp(next.frustration - (contractConcern ? 2 : 1));
-    outcome = contractConcern
+    const trustDelta = fit === 'Favored' ? 4 : 2;
+    const frustrationDelta = fit === 'Favored' ? -3 : -1;
+    next.trustInPrincipal = clamp(next.trustInPrincipal + trustDelta);
+    next.frustration = clamp(next.frustration + frustrationDelta);
+    outcome = fit === 'Favored'
       ? `${target.name} still wants a formal commitment, but valued the direct discussion about their future.`
       : `${target.name} left with a clearer understanding of their place in the team.`;
-    effects.push(contractConcern ? '+3 principal trust' : '+2 principal trust', contractConcern ? '-2 frustration' : '-1 frustration');
+    effects.push(`+${trustDelta} principal trust`, `${frustrationDelta} frustration`);
   } else return undefined;
   return {
     state: { ...state, driverRelationships: { ...state.driverRelationships!, [target.id]: next } },
