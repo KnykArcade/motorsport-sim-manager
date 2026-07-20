@@ -3,7 +3,7 @@ import { Button } from '../components/Button';
 import { Panel } from '../components/Panel';
 import { formatMoney } from '../components/ui';
 import { useGame } from '../game/GameContext';
-import { RIVAL_ACTION_COST, rivalActionUsedThisRound, rivalRelationshipLabel } from '../sim/phase18RivalRelationshipEngine';
+import { RIVAL_ACTION_COST, rivalActionContext, rivalActionUsedThisRound, rivalRelationshipLabel } from '../sim/phase18RivalRelationshipEngine';
 import type { RivalAction, RivalRelationship } from '../types/phase18Types';
 import { RivalPrincipalBriefing } from './rivals/RivalPrincipalBriefing';
 import { rivalPrincipalBrief } from './rivals/rivalPrincipalBriefViewModel';
@@ -91,7 +91,8 @@ export function RivalRelationships() {
         const used = rivalActionUsedThisRound(state, selectedRivalId, action);
         const insufficientBudget = budget < RIVAL_ACTION_COST[action];
         const disabledReason = used ? `Already used against this rival in round ${currentRound}` : insufficientBudget ? 'Insufficient budget' : undefined;
-        return <button key={action} type="button" disabled={used || insufficientBudget} title={disabledReason} onClick={() => dispatch({ type: 'TAKE_RIVAL_ACTION', rivalTeamId: selectedRivalId, action })} className="rounded border border-neutral-700 bg-neutral-950/50 p-3 text-left enabled:hover:border-amber-500/50 disabled:opacity-40"><div className="flex items-center justify-between gap-2"><span className="text-xs font-semibold text-amber-300">{splitLabel(action)}</span>{used && <span className="rounded bg-neutral-800 px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wide text-neutral-400">Used R{currentRound}</span>}</div><p className="mt-1 text-[10px] text-neutral-500">{actionDescription(action)}</p><div className={`mt-2 text-[10px] ${insufficientBudget && !used ? 'text-red-300' : 'text-neutral-400'}`}>{used ? `Available again in round ${currentRound + 1}` : insufficientBudget ? `Needs ${formatMoney(RIVAL_ACTION_COST[action])}` : RIVAL_ACTION_COST[action] ? formatMoney(RIVAL_ACTION_COST[action]) : 'No cost'}</div></button>;
+        const context = rivalActionContext(state, selectedRivalId, action);
+        return <button key={action} type="button" disabled={used || insufficientBudget} title={disabledReason} onClick={() => dispatch({ type: 'TAKE_RIVAL_ACTION', rivalTeamId: selectedRivalId, action })} className="rounded border border-neutral-700 bg-neutral-950/50 p-3 text-left enabled:hover:border-amber-500/50 disabled:opacity-40"><div className="flex items-start justify-between gap-2"><span className="text-xs font-semibold text-amber-300">{splitLabel(action)}</span><span className="shrink-0 text-right">{used && <span className="block rounded bg-neutral-800 px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wide text-neutral-400">Used R{currentRound}</span>}{context && <span className={`mt-0.5 block text-[8px] font-black uppercase tracking-wide ${context.fit === 'Favored' ? 'text-emerald-300' : context.fit === 'Risky' ? 'text-red-300' : 'text-neutral-400'}`}>{context.fit}</span>}</span></div><p className="mt-1 text-[10px] text-neutral-500">{actionDescription(action)}</p>{context && <p className="mt-1 text-[9px] leading-relaxed text-neutral-500">{context.effectPreview} {context.reason}</p>}<div className={`mt-2 text-[10px] ${insufficientBudget && !used ? 'text-red-300' : 'text-neutral-400'}`}>{used ? `Available again in round ${currentRound + 1}` : insufficientBudget ? `Needs ${formatMoney(RIVAL_ACTION_COST[action])}` : RIVAL_ACTION_COST[action] ? formatMoney(RIVAL_ACTION_COST[action]) : 'No cost'}</div></button>;
       })}</div></div></div>
       {selectedBrief && <RivalPrincipalBriefing brief={selectedBrief} />}
     </Panel>}
