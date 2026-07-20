@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useGame } from '../game/GameContext';
 import { Button } from '../components/Button';
+import { Panel } from '../components/Panel';
 import {
   MetricStrip,
   WorkspaceBody,
@@ -20,6 +21,7 @@ import {
   type InboxSeverity,
 } from './inboxViewModel';
 import { workflowDestination } from '../components/layoutWorkflow';
+import { buildManagerOfficeFollowUps } from './managerOfficeFollowUpViewModel';
 
 type InboxFilter = 'all' | 'action' | InboxCategory;
 type InboxSection = 'all' | InboxMessageKind;
@@ -78,6 +80,19 @@ export function Inbox() {
   const unread = messages.filter((message) => !read.has(message.id));
   const round = state.calendar[state.currentRaceIndex]?.round ?? state.currentRaceIndex + 1;
   const workflow = workflowDestination(state);
+  const activeReviewRace = state.careerPhase?.currentPhase === 'post_race_review'
+    && state.careerPhase.lastCompletedRaceId
+    ? state.calendar.find((race) => race.id === state.careerPhase?.lastCompletedRaceId)
+    : undefined;
+  const followUps = activeReviewRace
+    ? buildManagerOfficeFollowUps({
+      raceId: activeReviewRace.id,
+      raceLabel: activeReviewRace.gpName,
+      round: activeReviewRace.round,
+      news: state.news,
+      actionMessages: messages.filter((message) => message.kind !== 'news'),
+    })
+    : undefined;
   const setInboxQuery = (key: 'category' | 'section', value: string) => {
     const next = new URLSearchParams(searchParams);
     if (value === 'all') next.delete(key);
@@ -121,6 +136,15 @@ export function Inbox() {
         ariaLabel="Inbox category filters"
       />
       <WorkspaceBody className="space-y-2">
+        {followUps && (
+          <Panel title={`Manager Office · ${followUps.raceLabel}`}>
+            <p className="mb-3 text-xs text-neutral-500">What changed in the race and what still needs your attention.</p>
+            <div className="grid gap-3 lg:grid-cols-2">
+              <FollowUpColumn title="What changed" items={followUps.changed} navigate={navigate} />
+              <FollowUpColumn title="What needs action" items={followUps.action} navigate={navigate} />
+            </div>
+          </Panel>
+        )}
         <div className="flex justify-end">
           <Button
             className="px-2 py-1 text-xs"
@@ -190,5 +214,34 @@ export function Inbox() {
         )}
       </WorkspaceBody>
     </WorkspaceScreen>
+  );
+}
+
+function FollowUpColumn({
+  title,
+  items,
+  navigate,
+}: {
+  title: string;
+  items: ReturnType<typeof buildManagerOfficeFollowUps>['changed'];
+  navigate: (to: string) => void;
+}) {
+  return (
+    <div>
+      <h2 className="mb-2 text-xs font-black uppercase tracking-[0.14em] text-neutral-400">{title}</h2>
+      {items.length === 0 ? (
+        <p className="rounded border border-neutral-800 bg-neutral-950/30 p-3 text-xs text-neutral-500">Nothing new here.</p>
+      ) : (
+        <div className="space-y-1.5">
+          {items.map((item) => (
+            <div key={item.id} className="rounded border border-neutral-800 bg-neutral-950/30 p-3">
+              <div className="text-sm font-semibold text-neutral-200">{item.title}</div>
+              <p className="mt-1 text-xs leading-5 text-neutral-500">{item.detail}</p>
+              <Button className="mt-2 px-2 py-1 text-xs" variant="ghost" onClick={() => navigate(item.route)}>{item.routeLabel} →</Button>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
   );
 }
