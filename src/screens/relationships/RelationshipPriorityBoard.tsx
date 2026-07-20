@@ -19,6 +19,7 @@ import type { GameState } from '../../game/careerState';
 import { CharacterDossierButton } from '../../components/characterCards/CharacterDossier';
 import { DriverDossierButton } from '../../components/driverCards/DriverDossier';
 import type { CollectiveStakeholderAction } from '../../types/phase18Types';
+import { characterGameplayEffect } from './relationshipCharacterEffectViewModel';
 
 const STATUS_STYLES: Record<RelationshipAttentionProfile['status'], string> = {
   MustActNow: 'border-red-500/45 bg-red-500/5 text-red-200',
@@ -117,6 +118,7 @@ function SignalExplanation({ title, detail }: { title: string; detail: string })
 
 function RelationshipPriorityCard({ state, profile, onReview }: { state: GameState; profile: RelationshipAttentionProfile; onReview: (profile: RelationshipAttentionProfile) => void }) {
   const move = characterManagementMove(profile);
+  const gameplayEffect = characterGameplayEffect(state, profile);
 
   return (
     <article className={`rounded-lg border p-3 ${STATUS_STYLES[profile.status]}`}>
@@ -139,6 +141,18 @@ function RelationshipPriorityCard({ state, profile, onReview }: { state: GameSta
           <div className="text-[9px] uppercase tracking-wide text-neutral-500">Influence</div>
         </div>
       </div>
+
+      {gameplayEffect && (
+        <div className={`mt-2 rounded border px-2.5 py-2 ${gameplayEffect.tone === 'Positive' ? 'border-emerald-700/45 bg-emerald-950/20' : gameplayEffect.tone === 'Negative' ? 'border-red-700/45 bg-red-950/20' : 'border-neutral-700/70 bg-neutral-950/35'}`}>
+          <div className="flex items-center justify-between gap-3">
+            <div className="text-[9px] font-bold uppercase tracking-wide text-neutral-500">Current gameplay effect · {gameplayEffect.label}</div>
+            <div className={`shrink-0 text-xs font-bold tabular-nums ${gameplayEffect.tone === 'Positive' ? 'text-emerald-300' : gameplayEffect.tone === 'Negative' ? 'text-red-300' : 'text-neutral-300'}`}>
+              {gameplayEffect.value}
+            </div>
+          </div>
+          <p className="mt-1 text-[10px] leading-relaxed text-neutral-400">{gameplayEffect.detail}</p>
+        </div>
+      )}
 
       <ul className="mt-2 space-y-1 text-[11px] text-neutral-300">
         {profile.reasons.slice(0, 2).map((reason) => <li key={reason}>• {reason}</li>)}
