@@ -21,6 +21,7 @@ export type RelationshipActivityItem = {
   tone: RelationshipActivityTone;
   effects: string[];
   opinionDelta?: number;
+  followUp: RelationshipActivityFollowUp;
 };
 
 export type RelationshipActivitySummary = {
@@ -32,6 +33,100 @@ export type RelationshipActivitySummary = {
   netOpinionDelta: number;
   latest?: RelationshipActivityItem;
 };
+
+export type RelationshipActivityFollowUp = {
+  cadence: 'Immediate' | 'NextRound' | 'Monitor' | 'Background';
+  label: string;
+  detail: string;
+};
+
+export function relationshipActivityFollowUp(
+  item: Pick<RelationshipActivityItem, 'targetType' | 'tone' | 'opinionDelta' | 'effects' | 'source'>,
+): RelationshipActivityFollowUp {
+  const effectText = item.effects.join(' ');
+  const hasSevereNegative = item.tone === 'Negative' || (item.opinionDelta ?? 0) <= -3;
+  const hasPositive = item.tone === 'Positive' || (item.opinionDelta ?? 0) > 0 || /\+\d/.test(effectText);
+
+  if (hasSevereNegative) {
+    if (item.targetType === 'Owner') {
+      return {
+        cadence: 'Immediate',
+        label: 'Repair before next race',
+        detail: 'Owner confidence damage can become job-security pressure if it is left unaddressed.',
+      };
+    }
+    if (item.targetType === 'Driver') {
+      return {
+        cadence: 'Immediate',
+        label: 'Recheck driver mood',
+        detail: 'Driver trust or morale fallout should be reviewed before it reaches performance or contract leverage.',
+      };
+    }
+    if (item.targetType === 'Department' || item.targetType === 'Collective') {
+      return {
+        cadence: 'NextRound',
+        label: 'Review department impact',
+        detail: 'Committee trust or workload damage should be checked next round before it becomes productivity loss.',
+      };
+    }
+    return {
+      cadence: 'NextRound',
+      label: 'Control the fallout',
+      detail: 'Negative relationship movement should be monitored before it becomes a wider political or market problem.',
+    };
+  }
+
+  if (item.tone === 'Mixed') {
+    return {
+      cadence: 'NextRound',
+      label: 'Watch for second-order effects',
+      detail: 'Mixed reactions can still become useful if the next communication matches the character or committee agenda.',
+    };
+  }
+
+  if (hasPositive) {
+    if (item.targetType === 'Owner') {
+      return {
+        cadence: 'Monitor',
+        label: 'Bank the confidence',
+        detail: 'This buys patience, but ownership will still judge the next visible result or financial signal.',
+      };
+    }
+    if (item.targetType === 'Driver') {
+      return {
+        cadence: 'Monitor',
+        label: 'Convert trust into performance',
+        detail: 'Positive driver movement should be protected through race-week focus and promise discipline.',
+      };
+    }
+    if (item.targetType === 'Department' || item.targetType === 'Collective') {
+      return {
+        cadence: 'Monitor',
+        label: 'Let the operating gain settle',
+        detail: 'The benefit should be allowed to show in morale, trust, workload, or commercial confidence before another intervention.',
+      };
+    }
+    return {
+      cadence: 'Monitor',
+      label: 'Keep the channel warm',
+      detail: 'The relationship has moved in the right direction; avoid over-managing unless a new pressure appears.',
+    };
+  }
+
+  if (item.source === 'AdvisorCouncil') {
+    return {
+      cadence: 'Monitor',
+      label: 'Track advisor trust',
+      detail: 'No direct opinion swing was recorded, but the advice history still shapes future department confidence.',
+    };
+  }
+
+  return {
+    cadence: 'Background',
+    label: 'No follow-up needed',
+    detail: 'This is recorded for context and does not require a dedicated management action.',
+  };
+}
 
 export function relationshipActivityHierarchy(
   targetType: RelationshipActivityItem['targetType'],
@@ -85,6 +180,13 @@ export function relationshipActivityFromSources(
 
   for (const memory of memories) {
     const hierarchy = relationshipActivityHierarchy(memory.targetType, memory.targetName);
+    const activity = {
+      targetType: memory.targetType,
+      tone: memory.tone,
+      opinionDelta: memory.opinionDelta,
+      effects: memory.effects,
+      source: memory.source,
+    };
     items.set(`memory:${memory.id}`, {
       id: `memory:${memory.id}`,
       seasonYear: memory.seasonYear,
@@ -98,6 +200,7 @@ export function relationshipActivityFromSources(
       tone: memory.tone,
       effects: memory.effects,
       opinionDelta: memory.opinionDelta,
+      followUp: relationshipActivityFollowUp(activity),
     });
   }
 
@@ -106,6 +209,10 @@ export function relationshipActivityFromSources(
     if (recommendation.status !== 'Accepted' && recommendation.status !== 'Overruled') continue;
     const trustChange = recommendation.trustChange ?? 0;
     const hierarchy = relationshipActivityHierarchy('Department');
+    const tone = trustChange > 0 ? 'Positive' : trustChange < 0 ? 'Negative' : 'Informational';
+    const effects = recommendation.trustChange == null
+      ? []
+      : [`${recommendation.departmentId ?? 'Department'} trust ${trustChange > 0 ? '+' : ''}${trustChange}`];
     items.set(`advisor:${recommendation.id}`, {
       id: `advisor:${recommendation.id}`,
       seasonYear: recommendation.createdSeasonYear,
@@ -118,16 +225,21 @@ export function relationshipActivityFromSources(
         ? `Advice followed: ${recommendation.recommendation}`
         : `Advice overruled: ${recommendation.recommendation}`,
       detail: recommendation.resolutionNote ?? recommendation.rationale,
-      tone: trustChange > 0 ? 'Positive' : trustChange < 0 ? 'Negative' : 'Informational',
-      effects: recommendation.trustChange == null
-        ? []
-        : [`${recommendation.departmentId ?? 'Department'} trust ${trustChange > 0 ? '+' : ''}${trustChange}`],
+      tone,
+      effects,
+      followUp: relationshipActivityFollowUp({
+        targetType: 'Department',
+        tone,
+        effects,
+        source: 'AdvisorCouncil',
+      }),
     });
   }
 
   for (const action of collectiveActions) {
     const targetName = action.stakeholderId === 'Departments' ? 'Team & departments' : 'Commercial partners & supporters';
     const hierarchy = relationshipActivityHierarchy('Collective', targetName);
+    const tone = 'Positive';
     items.set(`collective:${action.id}`, {
       id: `collective:${action.id}`,
       seasonYear: action.seasonYear,
@@ -138,8 +250,14 @@ export function relationshipActivityFromSources(
       source: 'CommitteeAction',
       title: action.label,
       detail: action.outcome,
-      tone: 'Positive',
+      tone,
       effects: action.effects,
+      followUp: relationshipActivityFollowUp({
+        targetType: 'Collective',
+        tone,
+        effects: action.effects,
+        source: 'CommitteeAction',
+      }),
     });
   }
 
