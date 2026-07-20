@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useGame } from '../game/GameContext';
 import {
   getOrCreatePhaseState,
@@ -28,6 +28,7 @@ import { formatMoney } from '../components/ui';
 import type { PaddockEvent, PaddockEventCategory } from '../types/careerPhaseTypes';
 import type { AdvisorRecommendation } from '../types/phase18Types';
 import { RaceWeekendPackageSelection } from './RaceWeekendPackageSelection';
+import { defaultPaddockTab, type PaddockAgendaTab, type PaddockPeopleSection } from './paddockAgendaViewModel';
 import { CharacterDossierButton } from '../components/characterCards/CharacterDossier';
 import { DriverDossierButton } from '../components/driverCards/DriverDossier';
 import { internalCharacterInfluence } from '../sim/characterInfluenceEngine';
@@ -96,12 +97,13 @@ const INFLUENCE_STANCE_COLORS = {
   Obstructive: 'bg-red-500/10 text-red-300',
 } as const;
 
-type PaddockTab = 'overview' | 'people' | 'decisions' | 'updates' | 'debrief';
-type PeopleSection = 'attention' | 'support' | 'resolved';
+type PaddockTab = PaddockAgendaTab;
+type PeopleSection = PaddockPeopleSection;
 
 export function PaddockWeek() {
   const { state, dispatch } = useGame();
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [tab, setTab] = useState<PaddockTab>('people');
   const [peopleSection, setPeopleSection] = useState<PeopleSection>('attention');
   const [updateCategory, setUpdateCategory] = useState<PaddockEventCategory>('next_race');
@@ -131,6 +133,14 @@ export function PaddockWeek() {
     }
     return map;
   }, [phaseState]);
+
+  const focusedEventId = searchParams.get('focus');
+  useEffect(() => {
+    if (!focusedEventId) return;
+    const element = Array.from(document.querySelectorAll<HTMLElement>('[data-paddock-event-id]'))
+      .find((candidate) => candidate.dataset.paddockEventId === focusedEventId);
+    element?.scrollIntoView({ block: 'center', behavior: 'smooth' });
+  }, [focusedEventId, searchParams]);
 
   if (!state || !phaseState) return null;
 
@@ -192,6 +202,26 @@ export function PaddockWeek() {
     + unresolvedCharacterInitiatives.length
     + unresolvedCharacterBreakingPoints.length;
   const operationsAttentionCount = nonCharacterUnresolved.length + (packageSelected ? 0 : 1) + storyDecisions.length;
+  const requestedTab = searchParams.get('tab');
+  const requestedPeopleSection = searchParams.get('section');
+  const hasRequiredDecision = phaseState.paddockEvents.some(
+    (event) => event.isRequiredDecision && !event.resolvedOptionId,
+  );
+  const activeTab: PaddockTab = requestedTab && ['overview', 'people', 'decisions', 'updates', 'debrief'].includes(requestedTab)
+    ? requestedTab as PaddockTab
+    : !searchParams.has('tab') && (hasRequiredDecision || !packageSelected)
+      ? defaultPaddockTab(hasRequiredDecision, packageSelected)
+      : tab;
+  const activePeopleSection: PeopleSection = requestedPeopleSection && ['attention', 'support', 'resolved'].includes(requestedPeopleSection)
+    ? requestedPeopleSection as PeopleSection
+    : peopleSection;
+
+  const updatePaddockQuery = (key: 'tab' | 'section', value: string) => {
+    const next = new URLSearchParams(searchParams);
+    next.set(key, value);
+    next.delete('focus');
+    setSearchParams(next);
+  };
 
   const advanceToBriefing = () => {
     dispatch({ type: 'ADVANCE_TO_PRE_RACE_BRIEFING' });
@@ -255,14 +285,17 @@ export function PaddockWeek() {
           { id: 'updates' as const, label: `Team Updates (${updateCount})` },
           { id: 'debrief' as const, label: `Decision Debrief (${resolvedDecisions.length})` },
         ]}
-        active={tab}
-        onChange={setTab}
+        active={activeTab}
+        onChange={(nextTab) => {
+          setTab(nextTab);
+          updatePaddockQuery('tab', nextTab);
+        }}
         ariaLabel="Paddock Week sections"
       />
 
       <WorkspaceBody className="space-y-4">
       {/* Paddock News */}
-      {tab === 'overview' && <div className="grid gap-4 lg:grid-cols-2">
+      {activeTab === 'overview' && <div className="grid gap-4 lg:grid-cols-2">
         <NewsPanel
           news={state.news}
           title="Paddock Headlines"
@@ -280,18 +313,21 @@ export function PaddockWeek() {
         />
       </div>}
 
-      {tab === 'people' && <div className="space-y-4">
+      {activeTab === 'people' && <div className="space-y-4">
         <WorkspaceTabs
           items={[
             { id: 'attention' as const, label: `Needs Attention (${peopleAttentionCount})` },
             { id: 'support' as const, label: `Support & Mandates (${activeMandates.length + unstableCharacters.length + atRiskIntentions.length + expiringDrivers.length + expiringStaff.length + pendingPersonnelMoves.length})` },
             { id: 'resolved' as const, label: `Resolved This Week (${resolvedCharacterRequests.length + resolvedCharacterDisputes.length + resolvedCharacterInitiatives.length + resolvedCharacterBreakingPoints.length})` },
           ]}
-          active={peopleSection}
-          onChange={setPeopleSection}
+          active={activePeopleSection}
+          onChange={(nextSection) => {
+            setPeopleSection(nextSection);
+            updatePaddockQuery('section', nextSection);
+          }}
           ariaLabel="People management sections"
         />
-        {peopleSection === 'support' && internalInfluence.length > 0 && (
+        {activePeopleSection === 'support' && internalInfluence.length > 0 && (
           <Panel title="Internal Support Map">
             <p className="mb-3 text-xs text-neutral-500">Power shows how much leverage a person has. Support shows whether they are helping or resisting your leadership; that stance now applies a small weekly effect to their driver, department, or ownership relationship.</p>
             <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-4">
@@ -314,7 +350,7 @@ export function PaddockWeek() {
             </div>
           </Panel>
         )}
-        {peopleSection === 'support' && activeMandates.length > 0 && (
+        {activePeopleSection === 'support' && activeMandates.length > 0 && (
           <Panel title="Delegated Mandates">
             <p className="mb-3 text-xs text-neutral-500">Authority now comes with accountability. Each character contributes once per round, then succeeds or fails against the measure shown at the deadline.</p>
             <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
@@ -329,7 +365,7 @@ export function PaddockWeek() {
             </div>
           </Panel>
         )}
-        {peopleSection === 'support' && pendingPersonnelMoves.length > 0 && (
+        {activePeopleSection === 'support' && pendingPersonnelMoves.length > 0 && (
           <Panel title="Planned Personnel Moves">
             <p className="mb-3 text-xs text-neutral-500">These departures are agreed, not rumors. The person will finish the current contract and join the named team at season rollover.</p>
             <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
@@ -343,7 +379,7 @@ export function PaddockWeek() {
             </div>
           </Panel>
         )}
-        {peopleSection === 'support' && unstableCharacters.length > 0 && (
+        {activePeopleSection === 'support' && unstableCharacters.length > 0 && (
           <Panel title="Relationship Stability">
             <p className="mb-3 text-xs text-neutral-500">This combines trust, recent memories, promises, ambitions, disputes, support, and mandate results. A breaking point will become a required decision.</p>
             <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
@@ -356,7 +392,7 @@ export function PaddockWeek() {
             </div>
           </Panel>
         )}
-        {peopleSection === 'support' && atRiskIntentions.length > 0 && (
+        {activePeopleSection === 'support' && atRiskIntentions.length > 0 && (
           <Panel title="Future Intentions & Retention Risk">
             <p className="mb-3 text-xs text-neutral-500">Intentions translate relationship stability into likely future behavior. Driver and staff status directly affects renewal willingness; movement still follows the existing contract and offseason rules.</p>
             <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
@@ -370,7 +406,7 @@ export function PaddockWeek() {
             </div>
           </Panel>
         )}
-        {peopleSection === 'support' && expiringDrivers.length > 0 && (
+        {activePeopleSection === 'support' && expiringDrivers.length > 0 && (
           <Panel title="Expiring Driver Contracts">
             <p className="mb-3 text-xs text-neutral-500">These deals end at season rollover. Agree an extension in the Drivers screen or prepare a replacement; otherwise the driver leaves and the reserve/rookie fallback fills any empty race seat.</p>
             <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
@@ -381,7 +417,7 @@ export function PaddockWeek() {
             </div>
           </Panel>
         )}
-        {peopleSection === 'support' && expiringStaff.length > 0 && (
+        {activePeopleSection === 'support' && expiringStaff.length > 0 && (
           <Panel title="Expiring Staff Contracts">
             <p className="mb-3 text-xs text-neutral-500">These specialists leave at season rollover unless an extension is accepted. Renew them in the Staff screen or plan to recruit from the real era and series staff pool; an expired role remains vacant.</p>
             <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
@@ -392,43 +428,43 @@ export function PaddockWeek() {
             </div>
           </Panel>
         )}
-        {peopleSection === 'attention' && unresolvedCharacterBreakingPoints.length > 0 && (
+        {activePeopleSection === 'attention' && unresolvedCharacterBreakingPoints.length > 0 && (
           <Panel title="Character Breaking Point" className="border-red-700/40">
             <p className="mb-3 text-xs text-neutral-500">Repeated decisions have pushed this relationship beyond ordinary weekly pressure. Your response is required and will be remembered.</p>
             <div className="grid gap-3 xl:grid-cols-2">
               {unresolvedCharacterBreakingPoints.map((event) => (
                 <div key={event.id} className="rounded-xl border border-red-900/70 bg-red-950/15 p-3">
                   <div className="mb-2 text-[10px] font-bold uppercase tracking-[0.16em] text-red-300">Breaking point · {event.characterBreakingPoint?.target.name}</div>
-                  <DecisionCard state={state} event={event} recommendations={advisorRecommendationsForDecision(state, event.id)} onResolve={(optionId) => dispatch({ type: 'RESOLVE_PADDOCK_EVENT', eventId: event.id, optionId })} />
+                  <DecisionCard focused={focusedEventId === event.id} state={state} event={event} recommendations={advisorRecommendationsForDecision(state, event.id)} onResolve={(optionId) => dispatch({ type: 'RESOLVE_PADDOCK_EVENT', eventId: event.id, optionId })} />
                 </div>
               ))}
             </div>
           </Panel>
         )}
-        {peopleSection === 'attention' && unresolvedCharacterInitiatives.length > 0 && (
+        {activePeopleSection === 'attention' && unresolvedCharacterInitiatives.length > 0 && (
           <Panel title="Character Initiatives" className="border-fuchsia-700/30">
             <p className="mb-3 text-xs text-neutral-500">People with enough power and conviction now act on their own. The stated motive, power, and support explain why this maneuver surfaced and what is at stake.</p>
             <div className="grid gap-3 xl:grid-cols-2">
               {unresolvedCharacterInitiatives.map((event) => (
-                <CharacterInitiativeCard key={event.id} state={state} event={event} recommendations={advisorRecommendationsForDecision(state, event.id)} onResolve={(optionId) => dispatch({ type: 'RESOLVE_PADDOCK_EVENT', eventId: event.id, optionId })} />
+                <CharacterInitiativeCard key={event.id} focused={focusedEventId === event.id} state={state} event={event} recommendations={advisorRecommendationsForDecision(state, event.id)} onResolve={(optionId) => dispatch({ type: 'RESOLVE_PADDOCK_EVENT', eventId: event.id, optionId })} />
               ))}
             </div>
           </Panel>
         )}
-        {peopleSection === 'attention' && unresolvedCharacterDisputes.length > 0 && (
+        {activePeopleSection === 'attention' && unresolvedCharacterDisputes.length > 0 && (
           <Panel title="Conflicts Requiring Management" className="border-red-700/30">
             <p className="mb-3 text-xs text-neutral-500">Persistent tensions can become active disputes. Your intervention affects both people, their connection, and the camps around them.</p>
             <div className="grid gap-3 xl:grid-cols-2">
               {unresolvedCharacterDisputes.map((event) => (
                 <div key={event.id} className="rounded-xl border border-red-900/60 bg-red-950/10 p-3">
                   <div className="mb-2 text-[10px] font-bold uppercase tracking-[0.16em] text-red-300">Character dispute · {event.characterDispute?.characterA.name} vs {event.characterDispute?.characterB.name}</div>
-                  <DecisionCard state={state} event={event} recommendations={advisorRecommendationsForDecision(state, event.id)} onResolve={(optionId) => dispatch({ type: 'RESOLVE_PADDOCK_EVENT', eventId: event.id, optionId })} />
+                  <DecisionCard focused={focusedEventId === event.id} state={state} event={event} recommendations={advisorRecommendationsForDecision(state, event.id)} onResolve={(optionId) => dispatch({ type: 'RESOLVE_PADDOCK_EVENT', eventId: event.id, optionId })} />
                 </div>
               ))}
             </div>
           </Panel>
         )}
-        {peopleSection === 'attention' && unresolvedCharacterRequests.length > 0 && (
+        {activePeopleSection === 'attention' && unresolvedCharacterRequests.length > 0 && (
           <Panel title="Conversations & Market Decisions" className="border-violet-600/30">
             <p className="mb-3 text-xs text-neutral-500">Characters can bring concerns, requests, political approaches, and concrete rival offers to you. Required conversations must be answered before the week can advance.</p>
             <div className="grid gap-3 xl:grid-cols-2">
@@ -437,6 +473,7 @@ export function PaddockWeek() {
                   key={event.id}
                   state={state}
                   event={event}
+                  focused={focusedEventId === event.id}
                   recommendations={advisorRecommendationsForDecision(state, event.id)}
                   onResolve={(optionId) => dispatch({ type: 'RESOLVE_PADDOCK_EVENT', eventId: event.id, optionId })}
                 />
@@ -444,7 +481,7 @@ export function PaddockWeek() {
             </div>
           </Panel>
         )}
-        {peopleSection === 'resolved' && resolvedCharacterRequests.length > 0 && (
+        {activePeopleSection === 'resolved' && resolvedCharacterRequests.length > 0 && (
           <Panel title="This Week's People Decisions">
             <div className="grid gap-3 xl:grid-cols-2">
               {resolvedCharacterRequests.map((event) => {
@@ -454,16 +491,16 @@ export function PaddockWeek() {
             </div>
           </Panel>
         )}
-        {peopleSection === 'resolved' && resolvedCharacterDisputes.length > 0 && <Panel title="Disputes Addressed This Week"><div className="grid gap-3 xl:grid-cols-2">{resolvedCharacterDisputes.map((event) => <article key={event.id} className="rounded-lg border border-neutral-800 bg-neutral-900/40 p-3"><div className="flex items-center justify-between gap-3"><strong className="text-sm text-neutral-200">{event.characterDispute?.characterA.name} / {event.characterDispute?.characterB.name}</strong><span className="rounded bg-emerald-500/10 px-2 py-1 text-[10px] font-semibold uppercase text-emerald-300">Addressed</span></div><div className="mt-1 text-xs font-semibold text-amber-300">{event.options?.find((option) => option.id === event.resolvedOptionId)?.label}</div><p className="mt-1 text-xs text-neutral-400">The decision is now part of both characters' persistent history.</p></article>)}</div></Panel>}
-        {peopleSection === 'resolved' && resolvedCharacterInitiatives.length > 0 && <Panel title="Initiatives Answered This Week"><div className="grid gap-3 xl:grid-cols-2">{resolvedCharacterInitiatives.map((event) => { const initiative = state.characterInteractions?.initiatives.find((entry) => entry.id === event.characterInitiative?.initiativeId); return <article key={event.id} className="rounded-lg border border-fuchsia-900/40 bg-fuchsia-950/10 p-3"><div className="flex items-center justify-between gap-3"><strong className="text-sm text-neutral-200">{event.characterInitiative?.target.name}</strong><span className="rounded bg-fuchsia-500/10 px-2 py-1 text-[10px] font-semibold uppercase text-fuchsia-300">{initiative?.status ?? 'Resolved'}</span></div><div className="mt-1 text-xs font-semibold text-amber-300">{initiative?.optionLabel}</div><p className="mt-1 text-xs text-neutral-400">{initiative?.outcome}</p></article>; })}</div></Panel>}
-        {peopleSection === 'resolved' && resolvedCharacterBreakingPoints.length > 0 && <Panel title="Breaking Points Addressed"><div className="grid gap-3 xl:grid-cols-2">{resolvedCharacterBreakingPoints.map((event) => { const entry = state.characterInteractions?.breakingPoints.find((item) => item.id === event.characterBreakingPoint?.breakingPointId); return <article key={event.id} className="rounded-lg border border-red-900/40 bg-red-950/10 p-3"><div className="flex items-center justify-between gap-3"><strong className="text-sm text-neutral-200">{event.characterBreakingPoint?.target.name}</strong><span className="rounded bg-red-500/10 px-2 py-1 text-[10px] font-semibold uppercase text-red-300">{entry?.status ?? 'Addressed'}</span></div><div className="mt-1 text-xs font-semibold text-amber-300">{entry?.optionLabel}</div><p className="mt-1 text-xs text-neutral-400">{entry?.outcome}</p></article>; })}</div></Panel>}
-        {peopleSection === 'attention' && unresolvedCharacterRequests.length === 0 && unresolvedCharacterDisputes.length === 0 && unresolvedCharacterInitiatives.length === 0 && unresolvedCharacterBreakingPoints.length === 0 && <Panel title="Needs Attention"><p className="text-sm text-neutral-500">No character requires a decision this week.</p></Panel>}
-        {peopleSection === 'support' && internalInfluence.length === 0 && activeMandates.length === 0 && unstableCharacters.length === 0 && atRiskIntentions.length === 0 && expiringDrivers.length === 0 && expiringStaff.length === 0 && pendingPersonnelMoves.length === 0 && <Panel title="Support & Mandates"><p className="text-sm text-neutral-500">No internal support, delegated mandates, unstable relationships, retention risks, planned moves, or expiring contracts are currently recorded.</p></Panel>}
-        {peopleSection === 'resolved' && resolvedCharacterRequests.length === 0 && resolvedCharacterDisputes.length === 0 && resolvedCharacterInitiatives.length === 0 && resolvedCharacterBreakingPoints.length === 0 && <Panel title="Resolved This Week"><p className="text-sm text-neutral-500">No people decisions have been resolved this week.</p></Panel>}
+        {activePeopleSection === 'resolved' && resolvedCharacterDisputes.length > 0 && <Panel title="Disputes Addressed This Week"><div className="grid gap-3 xl:grid-cols-2">{resolvedCharacterDisputes.map((event) => <article key={event.id} className="rounded-lg border border-neutral-800 bg-neutral-900/40 p-3"><div className="flex items-center justify-between gap-3"><strong className="text-sm text-neutral-200">{event.characterDispute?.characterA.name} / {event.characterDispute?.characterB.name}</strong><span className="rounded bg-emerald-500/10 px-2 py-1 text-[10px] font-semibold uppercase text-emerald-300">Addressed</span></div><div className="mt-1 text-xs font-semibold text-amber-300">{event.options?.find((option) => option.id === event.resolvedOptionId)?.label}</div><p className="mt-1 text-xs text-neutral-400">The decision is now part of both characters' persistent history.</p></article>)}</div></Panel>}
+        {activePeopleSection === 'resolved' && resolvedCharacterInitiatives.length > 0 && <Panel title="Initiatives Answered This Week"><div className="grid gap-3 xl:grid-cols-2">{resolvedCharacterInitiatives.map((event) => { const initiative = state.characterInteractions?.initiatives.find((entry) => entry.id === event.characterInitiative?.initiativeId); return <article key={event.id} className="rounded-lg border border-fuchsia-900/40 bg-fuchsia-950/10 p-3"><div className="flex items-center justify-between gap-3"><strong className="text-sm text-neutral-200">{event.characterInitiative?.target.name}</strong><span className="rounded bg-fuchsia-500/10 px-2 py-1 text-[10px] font-semibold uppercase text-fuchsia-300">{initiative?.status ?? 'Resolved'}</span></div><div className="mt-1 text-xs font-semibold text-amber-300">{initiative?.optionLabel}</div><p className="mt-1 text-xs text-neutral-400">{initiative?.outcome}</p></article>; })}</div></Panel>}
+        {activePeopleSection === 'resolved' && resolvedCharacterBreakingPoints.length > 0 && <Panel title="Breaking Points Addressed"><div className="grid gap-3 xl:grid-cols-2">{resolvedCharacterBreakingPoints.map((event) => { const entry = state.characterInteractions?.breakingPoints.find((item) => item.id === event.characterBreakingPoint?.breakingPointId); return <article key={event.id} className="rounded-lg border border-red-900/40 bg-red-950/10 p-3"><div className="flex items-center justify-between gap-3"><strong className="text-sm text-neutral-200">{event.characterBreakingPoint?.target.name}</strong><span className="rounded bg-red-500/10 px-2 py-1 text-[10px] font-semibold uppercase text-red-300">{entry?.status ?? 'Addressed'}</span></div><div className="mt-1 text-xs font-semibold text-amber-300">{entry?.optionLabel}</div><p className="mt-1 text-xs text-neutral-400">{entry?.outcome}</p></article>; })}</div></Panel>}
+        {activePeopleSection === 'attention' && unresolvedCharacterRequests.length === 0 && unresolvedCharacterDisputes.length === 0 && unresolvedCharacterInitiatives.length === 0 && unresolvedCharacterBreakingPoints.length === 0 && <Panel title="Needs Attention"><p className="text-sm text-neutral-500">No character requires a decision this week.</p></Panel>}
+        {activePeopleSection === 'support' && internalInfluence.length === 0 && activeMandates.length === 0 && unstableCharacters.length === 0 && atRiskIntentions.length === 0 && expiringDrivers.length === 0 && expiringStaff.length === 0 && pendingPersonnelMoves.length === 0 && <Panel title="Support & Mandates"><p className="text-sm text-neutral-500">No internal support, delegated mandates, unstable relationships, retention risks, planned moves, or expiring contracts are currently recorded.</p></Panel>}
+        {activePeopleSection === 'resolved' && resolvedCharacterRequests.length === 0 && resolvedCharacterDisputes.length === 0 && resolvedCharacterInitiatives.length === 0 && resolvedCharacterBreakingPoints.length === 0 && <Panel title="Resolved This Week"><p className="text-sm text-neutral-500">No people decisions have been resolved this week.</p></Panel>}
       </div>}
 
       {/* Required Decisions */}
-      {tab === 'decisions' && <>
+      {activeTab === 'decisions' && <>
       {(nonCharacterUnresolved.length > 0 || !packageSelected) && (
         <Panel title="Required Decisions" className="border-amber-600/30">
           <div className="space-y-4">
@@ -480,6 +517,7 @@ export function PaddockWeek() {
               .filter((e) => e.isRequiredDecision && !e.resolvedOptionId && !e.characterRequest && !e.characterDispute && !e.characterInitiative && !e.characterBreakingPoint)
               .map((event) => (
                 <DecisionCard
+                  focused={focusedEventId === event.id}
                   key={event.id}
                   state={state}
                   event={event}
@@ -502,6 +540,7 @@ export function PaddockWeek() {
             {storyDecisions.map((event) => (
               <DecisionCard
                 key={event.id}
+                focused={focusedEventId === event.id}
                 state={state}
                 event={event}
                 recommendations={advisorRecommendationsForDecision(state, event.id)}
@@ -519,7 +558,7 @@ export function PaddockWeek() {
       </>}
 
       {/* Resolved Decisions */}
-      {tab === 'debrief' && <div className="grid gap-4 xl:grid-cols-2">
+      {activeTab === 'debrief' && <div className="grid gap-4 xl:grid-cols-2">
       {phaseState.paddockEvents.some((e) => e.isRequiredDecision && e.resolvedOptionId && !e.characterRequest && !e.characterDispute && !e.characterInitiative && !e.characterBreakingPoint) && (
         <Panel title="Resolved Decisions">
           <ul className="space-y-2">
@@ -573,7 +612,7 @@ export function PaddockWeek() {
       </div>}
 
       {/* Hub Sections */}
-      {tab === 'updates' && <div className="space-y-4">
+      {activeTab === 'updates' && <div className="space-y-4">
         {populatedCategories.length > 0 ? <>
           <div className="flex flex-wrap gap-1">
             {populatedCategories.map((category) => (
@@ -622,11 +661,13 @@ function HubSection({ title, events }: { title: string; events: PaddockEvent[] }
 function CharacterDecisionCard({
   state,
   event,
+  focused,
   recommendations,
   onResolve,
 }: {
   state: GameState;
   event: PaddockEvent;
+  focused: boolean;
   recommendations: AdvisorRecommendation[];
   onResolve: (optionId: string) => void;
 }) {
@@ -639,7 +680,7 @@ function CharacterDecisionCard({
     ? (state.staff ?? []).find((candidate) => candidate.id === character.targetId)
     : undefined;
   return (
-    <div className="rounded-xl border border-violet-800/60 bg-violet-950/10 p-3">
+    <div data-paddock-event-id={event.id} className={`rounded-xl border border-violet-800/60 bg-violet-950/10 p-3 ${focused ? 'ring-2 ring-[var(--era-accent-strong)]' : ''}`}>
       <div className="mb-3 flex items-center justify-between gap-3 border-b border-violet-900/50 pb-2">
         <div>
           <div className="text-[10px] font-bold uppercase tracking-[0.16em] text-violet-300">{character.requestKind.replace(/([a-z])([A-Z])/g, '$1 $2')}</div>
@@ -650,7 +691,7 @@ function CharacterDecisionCard({
         {character.targetType === 'Owner' && character.teamId && <CharacterDossierButton state={state} subject={{ type: 'owner', teamId: character.teamId }}>Open Character Card</CharacterDossierButton>}
         {character.targetType === 'RivalPrincipal' && character.teamId && <CharacterDossierButton state={state} subject={{ type: 'aiPrincipal', teamId: character.teamId }}>Open Character Card</CharacterDossierButton>}
       </div>
-      <DecisionCard state={state} event={event} recommendations={recommendations} onResolve={onResolve} />
+      <DecisionCard focused={focused} state={state} event={event} recommendations={recommendations} onResolve={onResolve} />
     </div>
   );
 }
@@ -658,11 +699,13 @@ function CharacterDecisionCard({
 function CharacterInitiativeCard({
   state,
   event,
+  focused,
   recommendations,
   onResolve,
 }: {
   state: GameState;
   event: PaddockEvent;
+  focused: boolean;
   recommendations: AdvisorRecommendation[];
   onResolve: (optionId: string) => void;
 }) {
@@ -671,7 +714,7 @@ function CharacterInitiativeCard({
   const driver = target.type === 'Driver' ? state.drivers.find((candidate) => candidate.id === target.id) : undefined;
   const staff = target.type === 'Staff' ? (state.staff ?? []).find((candidate) => candidate.id === target.id) : undefined;
   return (
-    <div className="rounded-xl border border-fuchsia-900/60 bg-fuchsia-950/10 p-3">
+    <div data-paddock-event-id={event.id} className={`rounded-xl border border-fuchsia-900/60 bg-fuchsia-950/10 p-3 ${focused ? 'ring-2 ring-[var(--era-accent-strong)]' : ''}`}>
       <div className="mb-3 flex items-center justify-between gap-3 border-b border-fuchsia-900/50 pb-2">
         <div><div className="text-[10px] font-bold uppercase tracking-[0.16em] text-fuchsia-300">Autonomous initiative</div><div className="text-sm font-semibold text-neutral-100">{target.name}</div></div>
         {driver && <DriverDossierButton state={state} subject={{ type: 'driver', driver }} context="Paddock Week initiative">Open Driver Card</DriverDossierButton>}
@@ -679,7 +722,7 @@ function CharacterInitiativeCard({
         {target.type === 'Owner' && target.teamId && <CharacterDossierButton state={state} subject={{ type: 'owner', teamId: target.teamId }}>Open Character Card</CharacterDossierButton>}
         {target.type === 'RivalPrincipal' && target.teamId && <CharacterDossierButton state={state} subject={{ type: 'aiPrincipal', teamId: target.teamId }}>Open Character Card</CharacterDossierButton>}
       </div>
-      <DecisionCard state={state} event={event} recommendations={recommendations} onResolve={onResolve} />
+      <DecisionCard focused={focused} state={state} event={event} recommendations={recommendations} onResolve={onResolve} />
     </div>
   );
 }
@@ -687,18 +730,20 @@ function CharacterInitiativeCard({
 function DecisionCard({
   state,
   event,
+  focused,
   recommendations,
   onResolve,
 }: {
   state: GameState;
   event: PaddockEvent;
+  focused: boolean;
   recommendations: AdvisorRecommendation[];
   onResolve: (optionId: string) => void;
 }) {
   const disagreement = hasAdvisorDisagreement(recommendations);
   const stakeholders = relationshipStakeholdersForDecision(state, event);
   return (
-    <div className="rounded-lg border border-amber-600/30 bg-amber-500/5 p-4">
+    <div data-paddock-event-id={event.id} className={`rounded-lg border border-amber-600/30 bg-amber-500/5 p-4 ${focused ? 'ring-2 ring-[var(--era-accent-strong)]' : ''}`}>
       <div className="text-sm font-semibold text-amber-300">{event.title}</div>
       <p className="mt-1 text-sm text-neutral-300">{event.description}</p>
       {stakeholders.length > 0 && (

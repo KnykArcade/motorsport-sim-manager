@@ -10,6 +10,7 @@ import { technicalStateForTeam } from '../sim/technicalAdapters';
 import type { NewsItem } from '../types/gameTypes';
 import { currentRelationshipCommandSnapshot } from './relationships/relationshipCommandViewModel';
 import { relationshipInboxMessage } from './relationshipInboxViewModel';
+import { paddockEventDestination } from './paddockAgendaViewModel';
 
 export type InboxSeverity = 'critical' | 'action' | 'info';
 
@@ -123,14 +124,15 @@ function paddockMessages(state: GameState): InboxMessage[] {
   const messages: InboxMessage[] = [];
   const unresolved = (state.careerPhase?.paddockEvents ?? []).filter((event) => !event.resolvedOptionId && (event.options?.length ?? 0) > 0);
   for (const event of unresolved) {
+    const destination = paddockEventDestination(event);
     messages.push({
       id: `inbox-paddock-${event.id}`,
       severity: event.isRequiredDecision ? 'critical' : 'action',
       category: 'paddock',
       title: event.title,
       body: event.description,
-      route: '/paddock',
-      routeLabel: 'Open Paddock Week',
+      route: destination.route,
+      routeLabel: destination.routeLabel,
       actionable: true,
       round: event.round,
     });
