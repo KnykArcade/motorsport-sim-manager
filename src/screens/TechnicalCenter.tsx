@@ -149,7 +149,7 @@ function TechnicalInboxHandoff({ state, hasLocalAlerts }: { state: GameState; ha
               ? 'Technical status needs review in the Inbox.'
               : 'No immediate technical actions; the pipeline is up to date.'}
         </div>
-        <Button className="px-3 py-1.5 text-xs" onClick={() => navigate('/inbox')}>Open Inbox →</Button>
+        <Button className="px-3 py-1.5 text-xs" onClick={() => navigate('/inbox?category=technical')}>Open Inbox →</Button>
       </div>
     </Panel>
   );
