@@ -110,8 +110,7 @@ function CommandPanel({ state, onNavigate }: { state: GameState; onNavigate: (se
   ].filter((alert): alert is string => !!alert);
   return (
     <div className="space-y-4">
-      <ManagementModePanel state={state} />
-      <AdvisorPriorityPanel state={state} />
+      <OperatingPlanPanel state={state} />
       <TechnicalBriefingPanel state={state} onNavigate={onNavigate} />
       <Panel title="Car performance snapshot">
         {effectiveCars.length === 0 ? <p className="text-sm text-neutral-500">Current car ratings are not available yet.</p> : <TechnicalTable>
@@ -138,65 +137,63 @@ function CommandPanel({ state, onNavigate }: { state: GameState; onNavigate: (se
   );
 }
 
-function ManagementModePanel({ state }: { state: GameState }) {
+function OperatingPlanPanel({ state }: { state: GameState }) {
   const { dispatch } = useGame();
   const automation = state.partsAutomation ?? { autoRepair: false, autoRestock: false, autoFit: false };
   const mode: TechnicalManagementMode = state.technicalManagementMode
     ?? (automation.autoRepair && automation.autoRestock && automation.autoFit ? 'assisted' : 'player_led');
-  return (
-    <Panel title="Technical management mode" actions={<span className="text-xs text-neutral-500">Applies existing factory controls only</span>}>
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div className="max-w-2xl text-sm text-neutral-400">
-          Choose how much of the routine factory work you want to handle. The Technical Director remains advisory in both modes; approvals are never automatic.
-        </div>
-        <div className="flex shrink-0 gap-2">
-          {([
-            ['player_led', 'Player-led', 'You fit, repair, and restock parts manually.'],
-            ['assisted', 'Assisted', 'The factory auto-fits, auto-repairs, and auto-restocks after races.'],
-          ] as const).map(([value, label, description]) => (
-            <button
-              key={value}
-              type="button"
-              className={`rounded border px-3 py-2 text-left ${mode === value ? 'border-amber-500/70 bg-amber-500/10 text-amber-200' : 'border-neutral-700 bg-neutral-900/40 text-neutral-400 hover:border-neutral-500'}`}
-              onClick={() => dispatch({ type: 'SET_TECHNICAL_MANAGEMENT_MODE', mode: value })}
-              aria-pressed={mode === value}
-              title={description}
-            >
-              <span className="block text-xs font-semibold">{label}</span>
-              <span className="mt-0.5 block max-w-56 text-[10px] leading-4 opacity-75">{description}</span>
-            </button>
-          ))}
-        </div>
-      </div>
-    </Panel>
-  );
-}
-
-function AdvisorPriorityPanel({ state }: { state: GameState }) {
-  const { dispatch } = useGame();
   const priority = state.technicalAdvisorPriority ?? 'balanced';
-  const options: ReadonlyArray<{ value: TechnicalAdvisorPriority; label: string; description: string }> = [
+  const priorityOptions: ReadonlyArray<{ value: TechnicalAdvisorPriority; label: string; description: string }> = [
     { value: 'balanced', label: 'Balanced', description: 'Keep the normal urgency order.' },
     { value: 'performance', label: 'Performance push', description: 'Surface development and research first.' },
     { value: 'reliability', label: 'Reliability first', description: 'Surface repairs and dependable upgrades first.' },
     { value: 'factory', label: 'Factory resilience', description: 'Surface spares, repairs, and facilities first.' },
   ];
   return (
-    <Panel title="Technical Director priority" actions={<span className="text-xs text-neutral-500">Changes recommendation order only</span>}>
-      <div className="flex flex-wrap gap-2">
-        {options.map((option) => (
-          <button
-            key={option.value}
-            type="button"
-            className={`rounded border px-3 py-2 text-left ${priority === option.value ? 'border-sky-500/70 bg-sky-500/10 text-sky-200' : 'border-neutral-700 bg-neutral-900/40 text-neutral-400 hover:border-neutral-500'}`}
-            onClick={() => dispatch({ type: 'SET_TECHNICAL_ADVISOR_PRIORITY', priority: option.value })}
-            aria-pressed={priority === option.value}
-            title={option.description}
-          >
-            <span className="block text-xs font-semibold">{option.label}</span>
-            <span className="mt-0.5 block text-[10px] leading-4 opacity-75">{option.description}</span>
-          </button>
-        ))}
+    <Panel title="Technical operating plan" actions={<span className="text-xs text-neutral-500">Routine controls only · TD approvals remain manual</span>}>
+      <div className="grid gap-4 lg:grid-cols-2">
+        <div>
+          <div className="text-xs font-semibold uppercase tracking-wide text-neutral-300">Factory management</div>
+          <p className="mt-1 text-xs leading-5 text-neutral-500">Choose how much routine parts work the factory handles after races.</p>
+          <div className="mt-2 flex flex-wrap gap-2">
+            {([
+              ['player_led', 'Player-led', 'You fit, repair, and restock parts manually.'],
+              ['assisted', 'Assisted', 'The factory auto-fits, auto-repairs, and auto-restocks after races.'],
+            ] as const).map(([value, label, description]) => (
+              <button
+                key={value}
+                type="button"
+                className={`rounded border px-3 py-2 text-left ${mode === value ? 'border-amber-500/70 bg-amber-500/10 text-amber-200' : 'border-neutral-700 bg-neutral-900/40 text-neutral-400 hover:border-neutral-500'}`}
+                onClick={() => dispatch({ type: 'SET_TECHNICAL_MANAGEMENT_MODE', mode: value })}
+                aria-pressed={mode === value}
+                title={description}
+              >
+                <span className="block text-xs font-semibold">{label}</span>
+              </button>
+            ))}
+          </div>
+          <div className="mt-2 text-[10px] leading-4 text-neutral-500">
+            {mode === 'assisted' ? 'Auto-fit, auto-repair, and auto-restock are enabled.' : 'All factory automation is off; manual controls remain available.'}
+          </div>
+        </div>
+        <div>
+          <div className="text-xs font-semibold uppercase tracking-wide text-neutral-300">Technical Director priority</div>
+          <p className="mt-1 text-xs leading-5 text-neutral-500">Change which existing recommendations appear first; costs and actions do not change.</p>
+          <div className="mt-2 flex flex-wrap gap-2">
+            {priorityOptions.map((option) => (
+              <button
+                key={option.value}
+                type="button"
+                className={`rounded border px-2.5 py-1.5 text-left text-xs ${priority === option.value ? 'border-sky-500/70 bg-sky-500/10 text-sky-200' : 'border-neutral-700 bg-neutral-900/40 text-neutral-400 hover:border-neutral-500'}`}
+                onClick={() => dispatch({ type: 'SET_TECHNICAL_ADVISOR_PRIORITY', priority: option.value })}
+                aria-pressed={priority === option.value}
+                title={option.description}
+              >
+                {option.label}
+              </button>
+            ))}
+          </div>
+        </div>
       </div>
     </Panel>
   );
