@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useGame } from '../game/GameContext';
 import { Button } from '../components/Button';
 import {
@@ -30,6 +30,10 @@ const FILTERS: ReadonlyArray<{ id: InboxFilter; label: string }> = [
   { id: 'news', label: 'News & stories' },
 ];
 
+function filterFromQuery(value: string | null): InboxFilter {
+  return FILTERS.some((filter) => filter.id === value) ? value as InboxFilter : 'all';
+}
+
 const SEVERITY_BADGES: Record<InboxSeverity, { label: string; className: string }> = {
   critical: { label: 'Critical', className: 'bg-red-500/20 text-red-300 border-red-500/40' },
   action: { label: 'Action', className: 'bg-amber-500/20 text-amber-300 border-amber-500/40' },
@@ -39,10 +43,11 @@ const SEVERITY_BADGES: Record<InboxSeverity, { label: string; className: string 
 export function Inbox() {
   const { state, dispatch } = useGame();
   const navigate = useNavigate();
-  const [filter, setFilter] = useState<InboxFilter>('all');
+  const [searchParams, setSearchParams] = useSearchParams();
   const [expandedId, setExpandedId] = useState<string>();
   if (!state) return null;
 
+  const filter = filterFromQuery(searchParams.get('category'));
   const messages = inboxMessages(state);
   const read = new Set(state.inboxRead ?? []);
   const filtered = messages.filter((message) =>
@@ -74,7 +79,12 @@ export function Inbox() {
         <WorkspaceMetric label="Unread" value={`${unread.length}`} detail="Messages you haven't opened" />
         <WorkspaceMetric label="This week" value={`${messages.length}`} detail="Items in your feed" />
       </MetricStrip>
-      <WorkspaceTabs items={FILTERS} active={filter} onChange={setFilter} ariaLabel="Inbox filters" />
+      <WorkspaceTabs
+        items={FILTERS}
+        active={filter}
+        onChange={(nextFilter) => setSearchParams(nextFilter === 'all' ? {} : { category: nextFilter })}
+        ariaLabel="Inbox filters"
+      />
       <WorkspaceBody className="space-y-2">
         <div className="flex justify-end">
           <Button
