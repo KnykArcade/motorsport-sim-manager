@@ -3,6 +3,8 @@ import { describe, expect, it } from 'vitest';
 import { createNewGame } from '../game/initialCareer';
 import type { GameState } from '../game/careerState';
 import {
+  COLLECTIVE_STAKEHOLDER_ACTIONS,
+  collectiveStakeholderActionFit,
   collectiveStakeholderActionUsedThisRound,
   takeCollectiveStakeholderAction,
 } from './collectiveStakeholderActionEngine';
@@ -54,6 +56,50 @@ describe('collective stakeholder actions', () => {
     expect(next.commercial!.commercialReputation).toBe(Math.min(100, reputation + 1));
     expect(next.phase18!.collectiveStakeholderActions).toHaveLength(2);
     expect(next.news[0].headline).toContain('Brief sponsors');
+  });
+
+  it('makes sponsor briefings stronger when commercial partners are under pressure', () => {
+    const state = freshState('collective-commercial-pressure');
+    const sponsors = state.commercial!.sponsors.map((sponsor, index) => ({
+      ...sponsor,
+      confidence: index === 0 ? 24 : 42,
+    }));
+    const prepared: GameState = {
+      ...state,
+      commercial: { ...state.commercial!, commercialReputation: 38, sponsors },
+    };
+    const action = COLLECTIVE_STAKEHOLDER_ACTIONS.find((candidate) => candidate.id === 'BriefSponsors')!;
+    const fit = collectiveStakeholderActionFit(prepared, action);
+    const next = takeCollectiveStakeholderAction(prepared, 'BriefSponsors');
+
+    expect(fit.label).toBe('Favored');
+    expect(next.commercial!.sponsors[0].confidence).toBe(30);
+    expect(next.commercial!.commercialReputation).toBe(40);
+    expect(next.phase18!.collectiveStakeholderActions?.at(-1)?.effects).toEqual([
+      'Sponsor confidence +6',
+      'Commercial reputation +2',
+    ]);
+  });
+
+  it('flags supporter engagement as risky when partner confidence is the real commercial problem', () => {
+    const state = freshState('collective-commercial-risk');
+    const sponsors = state.commercial!.sponsors.map((sponsor) => ({ ...sponsor, confidence: 25 }));
+    const prepared: GameState = {
+      ...state,
+      commercial: { ...state.commercial!, sponsors },
+      teamOrgRatings: {
+        ...state.teamOrgRatings,
+        [state.selectedTeamId]: { ...state.teamOrgRatings![state.selectedTeamId], fanSupport: 72 },
+      },
+    };
+    const action = COLLECTIVE_STAKEHOLDER_ACTIONS.find((candidate) => candidate.id === 'EngageSupporters')!;
+    const fit = collectiveStakeholderActionFit(prepared, action);
+    const next = takeCollectiveStakeholderAction(prepared, 'EngageSupporters');
+
+    expect(fit.label).toBe('Risky');
+    expect(next.teamOrgRatings![next.selectedTeamId].fanSupport).toBe(75);
+    expect(next.commercial!.sponsors[0].confidence).toBe(25);
+    expect(next.phase18!.collectiveStakeholderActions?.at(-1)?.effects).not.toContain('Sponsor confidence +1');
   });
 
   it('resets committee availability next round and survives a save round trip', () => {

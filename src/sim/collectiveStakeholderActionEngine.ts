@@ -18,6 +18,12 @@ export type CollectiveStakeholderActionSpec = {
   cost: number;
 };
 
+export type CollectiveStakeholderActionFit = {
+  label: 'Favored' | 'Neutral' | 'Risky';
+  reason: string;
+  effectPreview: string;
+};
+
 export const COLLECTIVE_STAKEHOLDER_ACTIONS: readonly CollectiveStakeholderActionSpec[] = [
   {
     id: 'ReviewWorkload',
@@ -65,6 +71,11 @@ function departmentLabel(id: DepartmentId): string {
   return id.replace(/([a-z])([A-Z])/g, '$1 $2');
 }
 
+function average(values: number[]): number {
+  if (values.length === 0) return 0;
+  return Math.round(values.reduce((sum, value) => sum + value, 0) / values.length);
+}
+
 export function collectiveStakeholderActionUsedThisRound(
   state: GameState,
   stakeholderId: CollectiveStakeholderId,
@@ -85,6 +96,65 @@ export function collectiveStakeholderActionUnavailableReason(
   if (budget < spec.cost) return 'Insufficient budget';
   if (spec.id === 'BriefSponsors' && (state.commercial?.sponsors.length ?? 0) === 0) return 'No active sponsors to brief';
   return undefined;
+}
+
+export function collectiveStakeholderActionFit(
+  state: GameState,
+  spec: CollectiveStakeholderActionSpec,
+): CollectiveStakeholderActionFit {
+  const phase18 = ensurePhase18FoundationState(state.phase18, state);
+
+  if (spec.id === 'ReviewWorkload' || spec.id === 'ClarifyPriorities') {
+    const moods = Object.values(phase18.departmentMoods[state.selectedTeamId] ?? {});
+    const peakWorkload = Math.max(0, ...moods.map((mood) => mood.workload));
+    const lowestAlignment = Math.min(100, ...moods.map((mood) => mood.strategicAlignment));
+    if (spec.id === 'ReviewWorkload') {
+      if (peakWorkload >= 85) return { label: 'Favored', reason: `Peak workload is ${peakWorkload}/100.`, effectPreview: 'Large relief to the most overloaded committee.' };
+      if (peakWorkload <= 55) return { label: 'Neutral', reason: `Peak workload is only ${peakWorkload}/100.`, effectPreview: 'Modest morale insurance; no urgent overload to solve.' };
+      return { label: 'Favored', reason: `Peak workload is ${peakWorkload}/100.`, effectPreview: spec.effectPreview };
+    }
+    if (lowestAlignment <= 40) return { label: 'Favored', reason: `Lowest department alignment is ${lowestAlignment}/100.`, effectPreview: 'Best used to repair unclear or disputed priorities.' };
+    return { label: 'Neutral', reason: `Lowest department alignment is ${lowestAlignment}/100.`, effectPreview: spec.effectPreview };
+  }
+
+  const commercial = state.commercial;
+  const sponsors = commercial?.sponsors ?? [];
+  const confidence = sponsors.length ? average(sponsors.map((sponsor) => sponsor.confidence)) : 0;
+  const lowestSponsor = sponsors.length ? Math.min(...sponsors.map((sponsor) => sponsor.confidence)) : 0;
+  const reputation = commercial?.commercialReputation ?? state.teamOrgRatings?.[state.selectedTeamId]?.sponsorAppeal ?? 50;
+  const fanSupport = state.teamOrgRatings?.[state.selectedTeamId]?.fanSupport ?? 50;
+  const failedObjectives = sponsors.flatMap((sponsor) => sponsor.objectives).filter((objective) => objective.status === 'Failed').length;
+
+  if (spec.id === 'BriefSponsors') {
+    if (sponsors.length === 0) return { label: 'Risky', reason: 'There are no active sponsor relationships.', effectPreview: 'Unavailable until the team has active partners.' };
+    if (confidence <= 45 || lowestSponsor <= 30 || failedObjectives > 0) {
+      return {
+        label: 'Favored',
+        reason: failedObjectives > 0
+          ? `${failedObjectives} sponsor objective${failedObjectives === 1 ? ' has' : 's have'} failed.`
+          : `Sponsor confidence is ${confidence}/100; weakest partner is ${lowestSponsor}/100.`,
+        effectPreview: 'Stronger confidence recovery because partners need direct reassurance.',
+      };
+    }
+    if (confidence >= 78 && reputation >= 70) return { label: 'Neutral', reason: 'Commercial relationships are already stable.', effectPreview: 'Small maintenance gain; stronger moves may be needed elsewhere.' };
+    return { label: 'Neutral', reason: `Sponsor confidence is ${confidence}/100.`, effectPreview: spec.effectPreview };
+  }
+
+  if (fanSupport <= 45 || reputation <= 45) {
+    return {
+      label: 'Favored',
+      reason: `Fan support is ${fanSupport}/100 and commercial reputation is ${reputation}/100.`,
+      effectPreview: 'Stronger public-standing recovery because the team needs visibility.',
+    };
+  }
+  if (sponsors.length > 0 && confidence <= 30 && fanSupport >= 65) {
+    return {
+      label: 'Risky',
+      reason: `Sponsor confidence is ${confidence}/100 while supporter demand is already strong.`,
+      effectPreview: 'Public activity helps fans, but sponsors may see it as avoiding partner issues.',
+    };
+  }
+  return { label: 'Neutral', reason: `Fan support is ${fanSupport}/100.`, effectPreview: spec.effectPreview };
 }
 
 export function takeCollectiveStakeholderAction(
@@ -145,36 +215,51 @@ export function takeCollectiveStakeholderAction(
   } else if (action === 'BriefSponsors') {
     const commercial = state.commercial;
     if (!commercial) return state;
+    const sponsorConfidence = commercial.sponsors.length ? average(commercial.sponsors.map((sponsor) => sponsor.confidence)) : 0;
+    const lowestSponsor = commercial.sponsors.length ? Math.min(...commercial.sponsors.map((sponsor) => sponsor.confidence)) : 0;
+    const failedObjectives = commercial.sponsors.flatMap((sponsor) => sponsor.objectives).filter((objective) => objective.status === 'Failed').length;
+    const confidenceGain = failedObjectives > 0 || sponsorConfidence <= 45 || lowestSponsor <= 30 ? 6 : sponsorConfidence >= 78 ? 2 : 4;
+    const reputationGain = commercial.commercialReputation <= 45 ? 2 : 1;
     next = {
       ...next,
       commercial: {
         ...commercial,
-        commercialReputation: clamp(commercial.commercialReputation + 1),
-        sponsors: commercial.sponsors.map((sponsor) => ({ ...sponsor, confidence: clamp(sponsor.confidence + 4) })),
+        commercialReputation: clamp(commercial.commercialReputation + reputationGain),
+        sponsors: commercial.sponsors.map((sponsor) => ({ ...sponsor, confidence: clamp(sponsor.confidence + confidenceGain) })),
       },
     };
-    outcome = 'Active partners received a direct progress briefing and clearer expectations.';
-    effects = ['Sponsor confidence +4', 'Commercial reputation +1'];
+    outcome = confidenceGain >= 6
+      ? 'Active partners received a direct recovery briefing after commercial pressure built up.'
+      : 'Active partners received a direct progress briefing and clearer expectations.';
+    effects = [`Sponsor confidence +${confidenceGain}`, `Commercial reputation +${reputationGain}`];
   } else {
     const commercial = state.commercial;
     const organization = state.teamOrgRatings?.[state.selectedTeamId];
+    const fanSupport = organization?.fanSupport ?? 50;
+    const reputation = commercial?.commercialReputation ?? organization?.sponsorAppeal ?? 50;
+    const sponsorConfidence = commercial?.sponsors.length ? average(commercial.sponsors.map((sponsor) => sponsor.confidence)) : 0;
+    const fanGain = fanSupport <= 40 ? 8 : fanSupport <= 60 ? 5 : 3;
+    const reputationGain = reputation <= 45 ? 3 : 2;
+    const sponsorGain = sponsorConfidence > 0 && sponsorConfidence <= 30 && fanSupport >= 65 ? 0 : sponsorConfidence <= 45 ? 2 : 1;
     next = {
       ...next,
       commercial: commercial ? {
         ...commercial,
-        commercialReputation: clamp(commercial.commercialReputation + 2),
-        sponsors: commercial.sponsors.map((sponsor) => ({ ...sponsor, confidence: clamp(sponsor.confidence + 1) })),
+        commercialReputation: clamp(commercial.commercialReputation + reputationGain),
+        sponsors: commercial.sponsors.map((sponsor) => ({ ...sponsor, confidence: clamp(sponsor.confidence + sponsorGain) })),
       } : commercial,
       teamOrgRatings: organization ? {
         ...state.teamOrgRatings,
-        [state.selectedTeamId]: { ...organization, fanSupport: clamp(organization.fanSupport + 5) },
+        [state.selectedTeamId]: { ...organization, fanSupport: clamp(organization.fanSupport + fanGain) },
       } : state.teamOrgRatings,
     };
-    outcome = 'The supporter programme improved public connection and commercial visibility.';
+    outcome = fanGain >= 8
+      ? 'The supporter programme repaired weak public connection and raised commercial visibility.'
+      : 'The supporter programme improved public connection and commercial visibility.';
     effects = [
-      'Fan support +5',
-      ...(commercial ? ['Commercial reputation +2'] : []),
-      ...(commercial?.sponsors.length ? ['Sponsor confidence +1'] : []),
+      `Fan support +${fanGain}`,
+      ...(commercial ? [`Commercial reputation +${reputationGain}`] : []),
+      ...(commercial?.sponsors.length && sponsorGain > 0 ? [`Sponsor confidence +${sponsorGain}`] : []),
     ];
   }
 

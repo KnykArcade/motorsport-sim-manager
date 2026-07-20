@@ -9,6 +9,7 @@ import type { CollectiveStakeholderAction } from '../../types/phase18Types';
 import { formatMoney } from '../../components/ui';
 import {
   COLLECTIVE_STAKEHOLDER_ACTIONS,
+  collectiveStakeholderActionFit,
   collectiveStakeholderActionUnavailableReason,
 } from '../../sim/collectiveStakeholderActionEngine';
 
@@ -105,6 +106,7 @@ function CollectiveStakeholderCard({ state, profile, onReview, onTakeAction }: {
         <div className="grid gap-2 sm:grid-cols-2">
           {actions.map((action) => {
             const unavailableReason = collectiveStakeholderActionUnavailableReason(state, action);
+            const fit = collectiveStakeholderActionFit(state, action);
             return (
               <button
                 key={action.id}
@@ -116,10 +118,15 @@ function CollectiveStakeholderCard({ state, profile, onReview, onTakeAction }: {
               >
                 <div className="flex items-start justify-between gap-2">
                   <span className="text-[11px] font-bold text-neutral-100">{action.label}</span>
-                  <span className="shrink-0 text-[9px] font-semibold text-[var(--era-accent-strong)]">{action.cost ? formatMoney(action.cost) : 'No cost'}</span>
+                  <span className="shrink-0 text-right">
+                    <span className="block text-[9px] font-semibold text-[var(--era-accent-strong)]">{action.cost ? formatMoney(action.cost) : 'No cost'}</span>
+                    <span className={`mt-0.5 block text-[8px] font-black uppercase tracking-wide ${
+                      fit.label === 'Favored' ? 'text-emerald-300' : fit.label === 'Risky' ? 'text-red-300' : 'text-neutral-400'
+                    }`}>{fit.label}</span>
+                  </span>
                 </div>
                 <p className="mt-1 text-[10px] leading-relaxed text-neutral-400">{action.description}</p>
-                <p className="mt-1 text-[9px] leading-relaxed text-neutral-500">{unavailableReason ?? action.effectPreview}</p>
+                <p className="mt-1 text-[9px] leading-relaxed text-neutral-500">{unavailableReason ?? `${fit.effectPreview} ${fit.reason}`}</p>
               </button>
             );
           })}
