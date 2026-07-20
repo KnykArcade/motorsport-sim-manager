@@ -28,7 +28,11 @@ import type { RelationshipAttentionProfile } from '../sim/relationshipAttentionE
 import type { ContractBreachResponse } from '../types/phase18Types';
 import { RelationshipPriorityBoard } from './relationships/RelationshipPriorityBoard';
 import { RelationshipActivityPanel } from './relationships/RelationshipActivityPanel';
-import { currentRelationshipActivity } from './relationships/relationshipActivityViewModel';
+import {
+  currentRelationshipActivity,
+  relationshipActivitySummary,
+  relationshipFollowUpAgenda,
+} from './relationships/relationshipActivityViewModel';
 import {
   relationshipStatusLabel,
 } from './relationships/relationshipPriorityViewModel';
@@ -90,6 +94,11 @@ const PROMISE_TYPE_LABELS: Record<PromiseType, string> = {
   fight_teammate: 'Right to Fight Teammate',
   calmer_risk_approach: 'Calmer Risk Approach',
 };
+
+function followUpTabLabel(activeFollowUps: number, totalActivity: number): string {
+  if (activeFollowUps > 0) return `Activity (${activeFollowUps} follow-up${activeFollowUps === 1 ? '' : 's'})`;
+  return `Activity (${totalActivity})`;
+}
 
 function confidenceStateDescription(state: ConfidenceState): string {
   switch (state) {
@@ -180,7 +189,10 @@ export function Relationships() {
   const activePromiseCount = allPromises.filter((promise) => promise.status === 'active' && teamDrivers.some((driver) => driver.id === promise.driverId)).length;
   const commandSnapshot = currentRelationshipCommandSnapshot(state);
   const relationshipPriorities = commandSnapshot.characterProfiles;
-  const relationshipActivityCount = currentRelationshipActivity(state).length;
+  const relationshipActivity = currentRelationshipActivity(state);
+  const relationshipActivitySummarySnapshot = relationshipActivitySummary(relationshipActivity);
+  const relationshipActivityCount = relationshipActivity.length;
+  const urgentRelationshipFollowUp = relationshipFollowUpAgenda(relationshipActivity, 1)[0];
   const collectiveStakeholders = commandSnapshot.collectiveProfiles;
   const employerStanding = commandSnapshot.employerStanding;
   const externalTalent = commandSnapshot.externalTalent;
@@ -235,7 +247,7 @@ export function Relationships() {
       <WorkspaceTabs
         items={[
           { id: 'overview', label: `Priority Board (${commandSummary.active})` },
-          { id: 'activity', label: `Activity (${relationshipActivityCount})` },
+          { id: 'activity', label: followUpTabLabel(relationshipActivitySummarySnapshot.activeFollowUps, relationshipActivityCount) },
           { id: 'race', label: 'Race Drivers' },
           { id: 'reserve', label: `Reserve (${reserveDrivers.length})` },
           { id: 'clauses', label: `Clauses & Promises (${contractClauses.length + activePromiseCount})` },
@@ -254,6 +266,8 @@ export function Relationships() {
             <div className="truncate text-neutral-400">
               {deskSignal?.status === 'MustActNow' || deskSignal?.status === 'WatchClosely'
                   ? `${deskSignal.title}: ${deskSignal.reason}`
+                : urgentRelationshipFollowUp
+                  ? `Follow-up: ${urgentRelationshipFollowUp.targetName} · ${urgentRelationshipFollowUp.followUp.label}`
                 : 'No immediate relationship response is required. Keep the owner and core team aligned.'}
             </div>
           </div>
@@ -261,6 +275,8 @@ export function Relationships() {
         <span className="shrink-0 text-[10px] font-semibold uppercase tracking-wide text-neutral-500">
           {deskSignal
               ? `${relationshipStatusLabel(deskSignal.status)} · Authority #${deskSignal.rank}`
+            : urgentRelationshipFollowUp
+              ? `${urgentRelationshipFollowUp.followUp.cadence === 'Immediate' ? 'Immediate' : 'Next round'} follow-up`
             : 'No active profiles'}
         </span>
       </div>
