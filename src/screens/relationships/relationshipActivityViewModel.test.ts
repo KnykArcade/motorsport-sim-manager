@@ -3,6 +3,7 @@ import type { CharacterMemory } from '../../types/characterInteractionTypes';
 import type { AdvisorRecommendation } from '../../types/phase18Types';
 import {
   relationshipActivityFromSources,
+  relationshipActivityHierarchy,
   relationshipActivitySummary,
 } from './relationshipActivityViewModel';
 
@@ -62,12 +63,16 @@ describe('relationship activity view model', () => {
     expect(activity[0]).toMatchObject({
       targetName: 'Taylor Technical',
       targetType: 'Department',
+      hierarchyRank: '4',
+      hierarchyLabel: 'Team & department relationship',
       source: 'AdvisorCouncil',
       tone: 'Positive',
       effects: ['Technical trust +2'],
     });
     expect(activity[1]).toMatchObject({
       tone: 'Mixed',
+      hierarchyRank: '2–3',
+      hierarchyLabel: 'Driver relationship',
       opinionDelta: -2,
       effects: ['Trust -2'],
     });
@@ -118,6 +123,8 @@ describe('relationship activity view model', () => {
       id: 'collective:collective-1',
       targetName: 'Team & departments',
       targetType: 'Collective',
+      hierarchyRank: '4',
+      hierarchyLabel: 'Team & department relationship',
       source: 'CommitteeAction',
       tone: 'Positive',
       effects: ['Technical workload -12', 'Technical morale +4'],
@@ -144,6 +151,15 @@ describe('relationship activity view model', () => {
       netOpinionDelta: -3,
       latest: { id: 'memory:negative' },
     });
+  });
+
+  it('maps activity targets back to the relationship management hierarchy', () => {
+    expect(relationshipActivityHierarchy('Owner')).toEqual({ hierarchyRank: '1', hierarchyLabel: 'Owner relationship' });
+    expect(relationshipActivityHierarchy('Driver')).toEqual({ hierarchyRank: '2–3', hierarchyLabel: 'Driver relationship' });
+    expect(relationshipActivityHierarchy('Department')).toEqual({ hierarchyRank: '4', hierarchyLabel: 'Team & department relationship' });
+    expect(relationshipActivityHierarchy('Collective', 'Commercial partners & supporters')).toEqual({ hierarchyRank: '5', hierarchyLabel: 'Commercial relationship' });
+    expect(relationshipActivityHierarchy('RivalPrincipal')).toEqual({ hierarchyRank: '7', hierarchyLabel: 'Rival principal relationship' });
+    expect(relationshipActivityHierarchy('StaffCandidate')).toEqual({ hierarchyRank: '8', hierarchyLabel: 'External talent relationship' });
   });
 
   it('returns an empty summary when no relationship outcome exists', () => {

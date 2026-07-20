@@ -33,6 +33,9 @@ export function RelationshipActivityPanel({ state }: { state: GameState }) {
             <div>
               <div className="text-[9px] font-bold uppercase tracking-wide text-[var(--era-accent-strong)]">Latest recorded outcome</div>
               <div className="mt-1 text-sm font-semibold text-neutral-100">{summary.latest.targetName} · {summary.latest.title}</div>
+              <div className="mt-1 text-[10px] uppercase tracking-wide text-neutral-500">
+                Priority #{summary.latest.hierarchyRank} · {summary.latest.hierarchyLabel}
+              </div>
             </div>
             <span className={`rounded px-1.5 py-0.5 text-[9px] font-bold uppercase ${TONE_STYLES[summary.latest.tone]}`}>
               {summary.latest.tone}
@@ -115,6 +118,9 @@ function ActivityRow({ item }: { item: RelationshipActivityItem }) {
           <div className="flex flex-wrap items-center gap-2">
             <span className="font-semibold text-neutral-100">{item.targetName}</span>
             <span className="text-[10px] uppercase tracking-wide text-neutral-600">{item.targetType} · {sourceLabel}</span>
+            <span className="rounded border border-neutral-700/70 bg-neutral-950/45 px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wide text-neutral-400">
+              #{item.hierarchyRank} {item.hierarchyLabel}
+            </span>
           </div>
           <div className="mt-1 text-xs font-semibold text-[var(--era-accent-strong)]">{item.title}</div>
         </div>

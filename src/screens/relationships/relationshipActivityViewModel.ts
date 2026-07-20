@@ -13,6 +13,8 @@ export type RelationshipActivityItem = {
   round: number;
   targetName: string;
   targetType: CharacterInteractionTargetType | 'Department' | 'Collective';
+  hierarchyRank: string;
+  hierarchyLabel: string;
   source: CharacterMemory['source'] | 'AdvisorCouncil' | 'CommitteeAction';
   title: string;
   detail: string;
@@ -30,6 +32,23 @@ export type RelationshipActivitySummary = {
   netOpinionDelta: number;
   latest?: RelationshipActivityItem;
 };
+
+export function relationshipActivityHierarchy(
+  targetType: RelationshipActivityItem['targetType'],
+  targetName?: string,
+): Pick<RelationshipActivityItem, 'hierarchyRank' | 'hierarchyLabel'> {
+  if (targetType === 'Owner') return { hierarchyRank: '1', hierarchyLabel: 'Owner relationship' };
+  if (targetType === 'Driver') return { hierarchyRank: '2–3', hierarchyLabel: 'Driver relationship' };
+  if (targetType === 'Staff' || targetType === 'Department') return { hierarchyRank: '4', hierarchyLabel: 'Team & department relationship' };
+  if (targetType === 'Collective') {
+    return targetName === 'Commercial partners & supporters'
+      ? { hierarchyRank: '5', hierarchyLabel: 'Commercial relationship' }
+      : { hierarchyRank: '4', hierarchyLabel: 'Team & department relationship' };
+  }
+  if (targetType === 'RivalPrincipal') return { hierarchyRank: '7', hierarchyLabel: 'Rival principal relationship' };
+  if (targetType === 'StaffCandidate') return { hierarchyRank: '8', hierarchyLabel: 'External talent relationship' };
+  return { hierarchyRank: '4', hierarchyLabel: 'Team relationship' };
+}
 
 export function relationshipActivitySummary(
   activity: RelationshipActivityItem[],
@@ -65,12 +84,14 @@ export function relationshipActivityFromSources(
   const items = new Map<string, RelationshipActivityItem>();
 
   for (const memory of memories) {
+    const hierarchy = relationshipActivityHierarchy(memory.targetType, memory.targetName);
     items.set(`memory:${memory.id}`, {
       id: `memory:${memory.id}`,
       seasonYear: memory.seasonYear,
       round: memory.round,
       targetName: memory.targetName,
       targetType: memory.targetType,
+      ...hierarchy,
       source: memory.source,
       title: memory.label,
       detail: memory.description,
@@ -84,12 +105,14 @@ export function relationshipActivityFromSources(
     if (recommendation.teamId !== selectedTeamId) continue;
     if (recommendation.status !== 'Accepted' && recommendation.status !== 'Overruled') continue;
     const trustChange = recommendation.trustChange ?? 0;
+    const hierarchy = relationshipActivityHierarchy('Department');
     items.set(`advisor:${recommendation.id}`, {
       id: `advisor:${recommendation.id}`,
       seasonYear: recommendation.createdSeasonYear,
       round: recommendation.createdRound ?? 0,
       targetName: recommendation.advisorName ?? recommendation.advisorRole,
       targetType: 'Department',
+      ...hierarchy,
       source: 'AdvisorCouncil',
       title: recommendation.status === 'Accepted'
         ? `Advice followed: ${recommendation.recommendation}`
@@ -103,12 +126,15 @@ export function relationshipActivityFromSources(
   }
 
   for (const action of collectiveActions) {
+    const targetName = action.stakeholderId === 'Departments' ? 'Team & departments' : 'Commercial partners & supporters';
+    const hierarchy = relationshipActivityHierarchy('Collective', targetName);
     items.set(`collective:${action.id}`, {
       id: `collective:${action.id}`,
       seasonYear: action.seasonYear,
       round: action.round,
-      targetName: action.stakeholderId === 'Departments' ? 'Team & departments' : 'Commercial partners & supporters',
+      targetName,
       targetType: 'Collective',
+      ...hierarchy,
       source: 'CommitteeAction',
       title: action.label,
       detail: action.outcome,
