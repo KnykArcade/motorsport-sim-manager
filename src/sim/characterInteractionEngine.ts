@@ -8,6 +8,10 @@ import type {
   CharacterInteractionTargetType,
 } from '../types/characterInteractionTypes';
 import type { DepartmentId } from '../types/phase18Types';
+import {
+  OWNER_PERSONALITY_LABELS,
+  type OwnerPersonality,
+} from '../types/expectationTypes';
 import { ensurePhase18FoundationState } from './phase18FoundationEngine';
 import { addRivalRelationshipEvent } from './phase18RivalRelationshipEngine';
 import { recordCharacterMemory } from './characterOpinionEngine';
@@ -20,6 +24,68 @@ export type CharacterActionSpec = {
   effectPreview: string;
   targetTypes: CharacterInteractionTargetType[];
 };
+
+export type OwnerActionPersonalityContext = {
+  fit: 'Favored' | 'Neutral' | 'Skeptical';
+  ownerLabel: string;
+  explanation: string;
+};
+
+const OWNER_ACTION_FIT: Record<OwnerPersonality, Record<'PresentLongTermPlan' | 'RequestOwnerBacking' | 'ReviewBudgetDiscipline', OwnerActionPersonalityContext['fit']>> = {
+  PatientBuilder: { PresentLongTermPlan: 'Favored', RequestOwnerBacking: 'Neutral', ReviewBudgetDiscipline: 'Neutral' },
+  WinNowTycoon: { PresentLongTermPlan: 'Skeptical', RequestOwnerBacking: 'Favored', ReviewBudgetDiscipline: 'Skeptical' },
+  BudgetHawk: { PresentLongTermPlan: 'Neutral', RequestOwnerBacking: 'Skeptical', ReviewBudgetDiscipline: 'Favored' },
+  RacingPurist: { PresentLongTermPlan: 'Favored', RequestOwnerBacking: 'Neutral', ReviewBudgetDiscipline: 'Neutral' },
+  Showman: { PresentLongTermPlan: 'Skeptical', RequestOwnerBacking: 'Favored', ReviewBudgetDiscipline: 'Skeptical' },
+  OldGuard: { PresentLongTermPlan: 'Favored', RequestOwnerBacking: 'Neutral', ReviewBudgetDiscipline: 'Neutral' },
+};
+
+const OWNER_FIT_EXPLANATION: Record<OwnerPersonality, Record<OwnerActionPersonalityContext['fit'], string>> = {
+  PatientBuilder: {
+    Favored: 'Values patient progress and gives credible long-term plans extra room.',
+    Neutral: 'Will judge this on the strength of the evidence rather than personal preference.',
+    Skeptical: 'Prefers patient progress over a short-term presentation.',
+  },
+  WinNowTycoon: {
+    Favored: 'Rewards decisive authority when the principal has the standing to support it.',
+    Neutral: 'Will judge this against immediate competitive results.',
+    Skeptical: 'Wants proof now; planning or control without results carries less weight.',
+  },
+  BudgetHawk: {
+    Favored: 'Financial discipline is a defining ownership priority and is judged strictly.',
+    Neutral: 'Will listen, but remains focused on cost control and financial evidence.',
+    Skeptical: 'Dislikes requests that are not backed by clear financial control.',
+  },
+  RacingPurist: {
+    Favored: 'Supports plans built around sporting development, integrity, and the racing project.',
+    Neutral: 'Will judge this against the team’s sporting identity.',
+    Skeptical: 'Resists arguments that neglect the team’s sporting identity.',
+  },
+  Showman: {
+    Favored: 'Likes visible leadership, bold positioning, and a strong public story.',
+    Neutral: 'Will judge whether the idea creates public or commercial momentum.',
+    Skeptical: 'Routine planning and restraint do little to satisfy a demand for momentum.',
+  },
+  OldGuard: {
+    Favored: 'Values continuity and will give an established plan time to work.',
+    Neutral: 'Will judge this through loyalty, stability, and established practice.',
+    Skeptical: 'Distrusts proposals that discard continuity without a compelling reason.',
+  },
+};
+
+export function ownerActionPersonalityContext(
+  state: GameState,
+  action: CharacterInteractionAction,
+): OwnerActionPersonalityContext | undefined {
+  if (action !== 'PresentLongTermPlan' && action !== 'RequestOwnerBacking' && action !== 'ReviewBudgetDiscipline') return undefined;
+  const personality = state.teamReputations?.[state.selectedTeamId]?.ownerPersonality ?? 'PatientBuilder';
+  const fit = OWNER_ACTION_FIT[personality][action];
+  return {
+    fit,
+    ownerLabel: OWNER_PERSONALITY_LABELS[personality],
+    explanation: OWNER_FIT_EXPLANATION[personality][fit],
+  };
+}
 
 export const CHARACTER_ACTION_SPECS: CharacterActionSpec[] = [
   { id: 'PrivateConversation', label: 'Private Conversation', description: 'Listen without making a formal promise.', effectPreview: 'Builds trust and lowers frustration.', targetTypes: ['Driver'] },
@@ -278,30 +344,47 @@ function performOwnerAction(
   let securityDelta: number;
   let boardDelta: number;
   let outcome: string;
-  let tone: CharacterInteractionRecord['tone'] = 'Positive';
+  let tone: CharacterInteractionRecord['tone'];
+  const context = ownerActionPersonalityContext(state, action);
+  const fit = context?.fit ?? 'Neutral';
   if (action === 'PresentLongTermPlan') {
-    patienceDelta = 2;
-    securityDelta = 2;
+    patienceDelta = fit === 'Favored' ? 3 : fit === 'Skeptical' ? 1 : 2;
+    securityDelta = fit === 'Favored' ? 3 : fit === 'Skeptical' ? 1 : 2;
     boardDelta = 1;
-    outcome = 'Ownership accepted the long-term logic and granted management slightly more room to execute it.';
+    outcome = fit === 'Favored'
+      ? `The ${context?.ownerLabel} strongly backed the long-term logic and granted management more room to execute it.`
+      : fit === 'Skeptical'
+        ? `The ${context?.ownerLabel} accepted parts of the plan but still wants more immediate proof.`
+        : 'Ownership accepted the long-term logic and granted management slightly more room to execute it.';
+    tone = fit === 'Skeptical' ? 'Mixed' : 'Positive';
   } else if (action === 'RequestOwnerBacking') {
     const credible = principal.attributes.boardConfidence >= 55 && principal.reputation >= 40;
-    patienceDelta = credible ? 0 : -2;
-    securityDelta = credible ? 3 : -2;
-    boardDelta = credible ? 1 : -2;
+    patienceDelta = credible ? (fit === 'Favored' ? 1 : fit === 'Skeptical' ? -1 : 0) : fit === 'Favored' ? -1 : fit === 'Skeptical' ? -3 : -2;
+    securityDelta = credible ? (fit === 'Favored' ? 4 : 3) : -2;
+    boardDelta = credible ? (fit === 'Skeptical' ? 0 : 1) : -2;
     outcome = credible
-      ? 'Ownership publicly reinforced your authority after accepting the case you presented.'
-      : 'Ownership felt the request was premature and questioned why public backing was necessary.';
-    tone = credible ? 'Positive' : 'Negative';
+      ? fit === 'Favored'
+        ? `The ${context?.ownerLabel} embraced the visible show of authority and reinforced your position.`
+        : fit === 'Skeptical'
+          ? `The ${context?.ownerLabel} backed your authority but disliked being asked to make it public.`
+          : 'Ownership publicly reinforced your authority after accepting the case you presented.'
+      : `The ${context?.ownerLabel ?? 'owner'} felt the request was premature and questioned why public backing was necessary.`;
+    tone = credible ? (fit === 'Skeptical' ? 'Mixed' : 'Positive') : 'Negative';
   } else if (action === 'ReviewBudgetDiscipline') {
     const disciplined = principal.attributes.financialDiscipline >= 55;
-    patienceDelta = disciplined ? 2 : -1;
+    patienceDelta = disciplined ? (fit === 'Favored' ? 4 : fit === 'Skeptical' ? 1 : 2) : fit === 'Favored' ? -3 : -1;
     securityDelta = 0;
-    boardDelta = disciplined ? 2 : -1;
+    boardDelta = disciplined ? (fit === 'Favored' ? 3 : fit === 'Skeptical' ? 1 : 2) : fit === 'Favored' ? -2 : -1;
     outcome = disciplined
-      ? 'The budget review strengthened ownership’s confidence in your financial control.'
-      : 'The review exposed gaps in financial control and failed to reassure ownership.';
-    tone = disciplined ? 'Positive' : 'Negative';
+      ? fit === 'Favored'
+        ? `The ${context?.ownerLabel} considered the disciplined budget review exactly the evidence ownership wanted.`
+        : fit === 'Skeptical'
+          ? `The ${context?.ownerLabel} accepted the financial control but remains focused on other priorities.`
+          : 'The budget review strengthened ownership’s confidence in your financial control.'
+      : fit === 'Favored'
+        ? `The ${context?.ownerLabel} treated the gaps in financial control as a serious failure of ownership’s core priority.`
+        : 'The review exposed gaps in financial control and failed to reassure ownership.';
+    tone = disciplined ? (fit === 'Skeptical' ? 'Mixed' : 'Positive') : 'Negative';
   } else return undefined;
   const updatedReputation = { ...reputation, ownerPatience: clamp(reputation.ownerPatience + patienceDelta) };
   const updatedPrincipal = {
