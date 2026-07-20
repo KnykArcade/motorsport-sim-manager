@@ -1,5 +1,6 @@
 import type { CharacterInteractionTargetType } from '../../types/characterInteractionTypes';
 import type {
+  RelationshipActionWindow,
   RelationshipAttentionProfile,
   RelationshipAttentionStatus,
 } from '../../sim/relationshipAttentionEngine';
@@ -97,6 +98,20 @@ export function relationshipStatusLabel(status: RelationshipAttentionStatus): st
   if (status === 'MustActNow') return 'Must act now';
   if (status === 'WatchClosely') return 'Watch closely';
   return 'Stable';
+}
+
+export function relationshipActionWindowLabel(window: RelationshipActionWindow): string {
+  if (window === 'Immediate') return 'Act before advancing';
+  if (window === 'NextRound') return 'Handle next round';
+  if (window === 'Soon') return 'Plan within 2–3 rounds';
+  return 'Background rhythm';
+}
+
+export function relationshipActionWindowDetail(window: RelationshipActionWindow): string {
+  if (window === 'Immediate') return 'A decision, deadline, or crisis is already active.';
+  if (window === 'NextRound') return 'Pressure is close enough that waiting risks escalation.';
+  if (window === 'Soon') return 'Schedule attention soon, but do not let it override true emergencies.';
+  return 'No active intervention needed unless strategy changes.';
 }
 
 export function relationshipTargetLabel(type: CharacterInteractionTargetType): string {
