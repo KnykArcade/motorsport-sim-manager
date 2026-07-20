@@ -1,9 +1,11 @@
+import { useState } from 'react';
 import { Panel } from '../../components/Panel';
 import type { RelationshipAttentionProfile } from '../../sim/relationshipAttentionEngine';
 import {
   RELATIONSHIP_HIERARCHY,
   relationshipStatusLabel,
   relationshipTargetLabel,
+  stableInternalRelationships,
   visibleRelationshipPriorities,
 } from './relationshipPriorityViewModel';
 import { CollectiveStakeholderBoard } from './CollectiveStakeholderBoard';
@@ -42,7 +44,11 @@ type Props = {
 };
 
 export function RelationshipPriorityBoard({ state, profiles, onReview, collectiveProfiles, onReviewCollective, onTakeCollectiveAction, employerStanding, onReviewEmployers, externalTalent, onReviewDriverMarket, onReviewStaffMarket }: Props) {
+  const [showStableStaff, setShowStableStaff] = useState(false);
   const visible = visibleRelationshipPriorities(profiles);
+  const stableInternal = stableInternalRelationships(profiles);
+  const stableCore = stableInternal.filter((profile) => profile.target.type === 'Owner' || profile.target.type === 'Driver');
+  const stableStaff = stableInternal.filter((profile) => profile.target.type === 'Staff');
 
   return (
     <div className="space-y-4">
@@ -63,17 +69,50 @@ export function RelationshipPriorityBoard({ state, profiles, onReview, collectiv
         </div>
 
         {visible.length === 0 ? (
-          <p className="text-sm text-neutral-500">No current relationship profiles are available.</p>
+          <div className="rounded-lg border border-emerald-800/40 bg-emerald-950/15 p-3">
+            <div className="text-sm font-semibold text-emerald-200">No relationship needs action</div>
+            <p className="mt-1 text-xs text-neutral-400">Stable owner and driver positions remain summarized below. You do not need to manufacture a weekly interaction.</p>
+          </div>
         ) : (
-          <div className="grid gap-2 lg:grid-cols-2">
-            {visible.map((profile) => (
-              <RelationshipPriorityCard
-                key={`${profile.target.type}:${profile.target.id}`}
-                state={state}
-                profile={profile}
-                onReview={onReview}
-              />
-            ))}
+          <>
+            <div className="mb-2 text-[10px] font-bold uppercase tracking-wide text-amber-300">Active attention · {visible.length}</div>
+            <div className="grid gap-2 lg:grid-cols-2">
+              {visible.map((profile) => (
+                <RelationshipPriorityCard
+                  key={`${profile.target.type}:${profile.target.id}`}
+                  state={state}
+                  profile={profile}
+                  onReview={onReview}
+                />
+              ))}
+            </div>
+          </>
+        )}
+
+        {stableCore.length > 0 && (
+          <div className="mt-3">
+            <div className="mb-2 text-[10px] font-bold uppercase tracking-wide text-neutral-500">Stable core · no action required</div>
+            <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+              {stableCore.map((profile) => <StableRelationshipAnchor key={`${profile.target.type}:${profile.target.id}`} profile={profile} onReview={onReview} />)}
+            </div>
+          </div>
+        )}
+
+        {stableStaff.length > 0 && (
+          <div className="mt-3 border-t border-neutral-800 pt-3">
+            <button
+              type="button"
+              onClick={() => setShowStableStaff((current) => !current)}
+              className="text-[11px] font-semibold text-neutral-400 hover:text-neutral-200 hover:underline"
+              aria-expanded={showStableStaff}
+            >
+              {showStableStaff ? 'Hide' : 'Show'} stable staff relationships ({stableStaff.length})
+            </button>
+            {showStableStaff && (
+              <div className="mt-2 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+                {stableStaff.map((profile) => <StableRelationshipAnchor key={`${profile.target.type}:${profile.target.id}`} profile={profile} onReview={onReview} />)}
+              </div>
+            )}
           </div>
         )}
         <p className="mt-3 text-[10px] text-neutral-500">
@@ -104,6 +143,26 @@ export function RelationshipPriorityBoard({ state, profiles, onReview, collectiv
         </div>
       </Panel>
     </div>
+  );
+}
+
+function StableRelationshipAnchor({ profile, onReview }: { profile: RelationshipAttentionProfile; onReview: (profile: RelationshipAttentionProfile) => void }) {
+  return (
+    <article className="flex items-center justify-between gap-3 rounded-lg border border-neutral-800 bg-neutral-900/35 p-2.5">
+      <div className="min-w-0">
+        <div className="truncate text-xs font-semibold text-neutral-200">{profile.target.name}</div>
+        <div className="mt-0.5 text-[9px] uppercase tracking-wide text-neutral-600">
+          {relationshipTargetLabel(profile.target.type)} · Authority #{profile.authorityRank} · Influence {profile.influence}
+        </div>
+      </div>
+      <button
+        type="button"
+        onClick={() => onReview(profile)}
+        className="shrink-0 text-[10px] font-semibold text-neutral-500 hover:text-neutral-200 hover:underline"
+      >
+        Review
+      </button>
+    </article>
   );
 }
 

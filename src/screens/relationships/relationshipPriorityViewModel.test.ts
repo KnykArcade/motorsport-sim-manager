@@ -3,6 +3,7 @@ import type { RelationshipAttentionProfile } from '../../sim/relationshipAttenti
 import {
   RELATIONSHIP_HIERARCHY,
   relationshipPrioritySummary,
+  stableInternalRelationships,
   visibleRelationshipPriorities,
 } from './relationshipPriorityViewModel';
 
@@ -33,21 +34,33 @@ describe('relationship priority view model', () => {
     expect(summary).toEqual({ mustActNow: 1, watchClosely: 1, stable: 1, total: 3 });
   });
 
-  it('keeps active rival tension visible while hiding stable rival noise', () => {
-    const visible = visibleRelationshipPriorities([
+  it('reserves full priority cards for relationships that need attention', () => {
+    const profiles = [
       profile('rival-urgent', 'RivalPrincipal', 'MustActNow', 7),
       profile('driver-watch', 'Driver', 'WatchClosely', 2),
       profile('owner', 'Owner', 'Stable', 1),
       profile('staff', 'Staff', 'Stable', 4),
       profile('rival-stable', 'RivalPrincipal', 'Stable', 7),
-    ]);
+    ];
+    const visible = visibleRelationshipPriorities(profiles);
 
     expect(visible.map((entry) => entry.target.id)).toEqual([
       'rival-urgent',
       'driver-watch',
-      'owner',
-      'staff',
     ]);
+    expect(stableInternalRelationships(profiles).map((entry) => entry.target.id)).toEqual(['owner', 'staff']);
+  });
+
+  it('keeps stable owners, drivers, and staff accessible without returning stable rivals', () => {
+    const stable = stableInternalRelationships([
+      profile('owner', 'Owner', 'Stable', 1),
+      profile('driver', 'Driver', 'Stable', 2),
+      profile('staff', 'Staff', 'Stable', 4),
+      profile('rival', 'RivalPrincipal', 'Stable', 7),
+      profile('driver-watch', 'Driver', 'WatchClosely', 2),
+    ]);
+
+    expect(stable.map((entry) => entry.target.id)).toEqual(['owner', 'driver', 'staff']);
   });
 
   it('documents the complete management hierarchy including collective relationships', () => {

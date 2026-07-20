@@ -75,19 +75,22 @@ export function relationshipPrioritySummary(
   }, { mustActNow: 0, watchClosely: 0, stable: 0, total: 0 });
 }
 
-const CORE_TYPES = new Set<CharacterInteractionTargetType>(['Owner', 'Driver', 'Staff']);
+const INTERNAL_TYPES = new Set<CharacterInteractionTargetType>(['Owner', 'Driver', 'Staff']);
 
 export function visibleRelationshipPriorities(
   profiles: RelationshipAttentionProfile[],
   limit = 8,
 ): RelationshipAttentionProfile[] {
-  const active = profiles.filter((profile) => profile.status !== 'Stable');
-  const stableCore = profiles.filter((profile) =>
-    profile.status === 'Stable' && CORE_TYPES.has(profile.target.type));
+  // Full-size priority cards are reserved for relationships that need attention.
+  // Stable internal relationships are exposed separately as compact anchors.
+  return profiles.filter((profile) => profile.status !== 'Stable').slice(0, limit);
+}
 
-  // The engine includes every rival principal. Keep active rival concerns visible,
-  // but do not let a long list of stable rivals bury the player's internal team.
-  return [...active, ...stableCore].slice(0, limit);
+export function stableInternalRelationships(
+  profiles: RelationshipAttentionProfile[],
+): RelationshipAttentionProfile[] {
+  return profiles.filter((profile) =>
+    profile.status === 'Stable' && INTERNAL_TYPES.has(profile.target.type));
 }
 
 export function relationshipStatusLabel(status: RelationshipAttentionStatus): string {
