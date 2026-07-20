@@ -51,7 +51,10 @@ export function ExternalTalentBoard({ context, onReviewDrivers, onReviewStaff }:
         <RelationshipRiskNote priorityContext={relationshipRiskPriorityContext(context)}>{externalTalentRiskIfIgnored(context)}</RelationshipRiskNote>
 
         <div className="mt-3 rounded border border-neutral-700/70 bg-neutral-950/45 p-2.5">
-          <div className="text-[9px] font-bold uppercase tracking-wide text-[var(--era-accent-strong)]">Management move</div>
+          <div className="flex items-center justify-between gap-3">
+            <div className="text-[9px] font-bold uppercase tracking-wide text-[var(--era-accent-strong)]">Management move</div>
+            <div className="shrink-0 text-[9px] font-bold uppercase tracking-wide text-neutral-500">{move.priorityLabel}</div>
+          </div>
           <div className="mt-1 text-xs font-semibold text-neutral-100">{move.title}</div>
           <p className="mt-1 text-[11px] leading-relaxed text-neutral-400">{move.rationale}</p>
           <p className="mt-1 text-[10px] leading-relaxed text-neutral-500">{move.expectedEffect}</p>
