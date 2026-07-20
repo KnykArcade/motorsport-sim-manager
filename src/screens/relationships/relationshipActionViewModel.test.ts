@@ -43,10 +43,12 @@ describe('relationship management moves', () => {
   it('turns active owner and driver signals into concrete player moves', () => {
     expect(characterManagementMove(character('Owner', 'MustActNow', 'Ownership confidence is critical.'))).toMatchObject({
       title: 'Hold an owner review before the next race',
+      priorityLabel: 'Immediate action',
       expectedEffect: expect.stringContaining('job security'),
     });
     expect(characterManagementMove(character('Driver', 'WatchClosely', 'A promise is due within 2 rounds.'))).toMatchObject({
       title: 'Resolve the driver commitment',
+      priorityLabel: 'Next management window',
       expectedEffect: expect.stringContaining('trust in principal'),
     });
   });
@@ -54,10 +56,12 @@ describe('relationship management moves', () => {
   it('separates department delivery pressure from commercial resource pressure', () => {
     expect(collectiveManagementMove(collective('Departments', 'MustActNow'))).toMatchObject({
       title: 'Rebalance department workload now',
+      priorityLabel: 'Immediate action',
       expectedEffect: expect.stringContaining('upgrade delivery'),
     });
     expect(collectiveManagementMove(collective('Commercial', 'WatchClosely'))).toMatchObject({
       title: 'Review commercial expectations',
+      priorityLabel: 'Next management window',
       expectedEffect: expect.stringContaining('sponsorship income'),
     });
   });
@@ -74,6 +78,7 @@ describe('relationship management moves', () => {
       opportunities: [],
     })).toMatchObject({
       title: 'Review active job offer leverage',
+      priorityLabel: 'Next management window',
       expectedEffect: expect.stringContaining('career options'),
     });
 
@@ -87,7 +92,15 @@ describe('relationship management moves', () => {
       reasons: ['1 race seat must be filled before the season starts.'],
     })).toMatchObject({
       title: 'Fill the open race seat',
+      priorityLabel: 'Immediate action',
       expectedEffect: expect.stringContaining('lineup completeness'),
+    });
+  });
+
+  it('marks stable moves as background cadence', () => {
+    expect(characterManagementMove(character('Owner', 'Stable', 'No issue.'))).toMatchObject({
+      title: 'Maintain rhythm',
+      priorityLabel: 'Background cadence',
     });
   });
 });
