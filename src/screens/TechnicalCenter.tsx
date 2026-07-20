@@ -1,5 +1,5 @@
 import { lazy, Suspense, useState } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useGame } from '../game/GameContext';
 import { teamById } from '../game/careerState';
 import type { GameState } from '../game/careerState';
@@ -20,6 +20,7 @@ import { Button } from '../components/Button';
 import { TppExplainer } from '../components/development/TppExplainer';
 import type { TechnicalManagementMode } from '../types/partsTypes';
 import type { TechnicalAdvisorPriority } from '../types/technicalTypes';
+import { inboxMessages } from './inboxViewModel';
 
 const UnifiedDevelopmentBody = lazy(() => import('./UnifiedDevelopment').then((m) => ({ default: m.UnifiedDevelopmentBody })));
 const FacilitiesBody = lazy(() => import('./Facilities').then((m) => ({ default: m.FacilitiesBody })));
@@ -130,10 +131,27 @@ function CommandPanel({ state, onNavigate }: { state: GameState; onNavigate: (se
           </tbody>
         </TechnicalTable>
       </Panel>
-      <Panel title="Technical alerts">
-        {alerts.length === 0 ? <p className="text-sm text-neutral-500">No immediate technical actions.</p> : <ul className="space-y-2">{alerts.map((alert) => <li key={alert} className="border-l-2 border-amber-500 px-3 py-1 text-sm text-amber-200">{alert}</li>)}</ul>}
-      </Panel>
+      <TechnicalInboxHandoff state={state} hasLocalAlerts={alerts.length > 0} />
     </div>
+  );
+}
+
+function TechnicalInboxHandoff({ state, hasLocalAlerts }: { state: GameState; hasLocalAlerts: boolean }) {
+  const navigate = useNavigate();
+  const technicalActions = inboxMessages(state).filter((message) => message.category === 'technical' && message.actionable);
+  return (
+    <Panel title="Technical actions" actions={<span className="text-xs text-neutral-500">Inbox is the action list</span>}>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="text-sm text-neutral-400">
+          {technicalActions.length > 0
+            ? `${technicalActions.length} technical decision${technicalActions.length === 1 ? '' : 's'} waiting in the Inbox.`
+            : hasLocalAlerts
+              ? 'Technical status needs review in the Inbox.'
+              : 'No immediate technical actions; the pipeline is up to date.'}
+        </div>
+        <Button className="px-3 py-1.5 text-xs" onClick={() => navigate('/inbox')}>Open Inbox →</Button>
+      </div>
+    </Panel>
   );
 }
 
