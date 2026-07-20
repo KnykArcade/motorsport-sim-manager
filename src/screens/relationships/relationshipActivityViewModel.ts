@@ -21,6 +21,41 @@ export type RelationshipActivityItem = {
   opinionDelta?: number;
 };
 
+export type RelationshipActivitySummary = {
+  total: number;
+  positive: number;
+  negative: number;
+  mixed: number;
+  informational: number;
+  netOpinionDelta: number;
+  latest?: RelationshipActivityItem;
+};
+
+export function relationshipActivitySummary(
+  activity: RelationshipActivityItem[],
+): RelationshipActivitySummary {
+  return activity.reduce<RelationshipActivitySummary>((summary, item, index) => {
+    summary.total += 1;
+    summary[item.tone === 'Positive'
+      ? 'positive'
+      : item.tone === 'Negative'
+        ? 'negative'
+        : item.tone === 'Mixed'
+          ? 'mixed'
+          : 'informational'] += 1;
+    summary.netOpinionDelta += item.opinionDelta ?? 0;
+    if (index === 0) summary.latest = item;
+    return summary;
+  }, {
+    total: 0,
+    positive: 0,
+    negative: 0,
+    mixed: 0,
+    informational: 0,
+    netOpinionDelta: 0,
+  });
+}
+
 export function relationshipActivityFromSources(
   memories: CharacterMemory[],
   recommendations: AdvisorRecommendation[],
