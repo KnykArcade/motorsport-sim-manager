@@ -45,6 +45,7 @@ import type { TeamOrganizationRatings } from '../types/teamRatingsTypes';
 import type { GameMode } from '../types/gameTypes';
 import type { TeamPrincipal } from '../types/principalTypes';
 import { TEAM_HQ_TABS, type TeamHQTab } from './teamHQViewModel';
+import { staffResponsibilities } from './staffResponsibilitiesViewModel';
 
 export function TeamHQ() {
   const { state } = useGame();
@@ -72,6 +73,7 @@ export function TeamHQ() {
   const workflow = workflowDestination(state);
   const inboxUnread = unreadInboxCount(state);
   const inboxActionable = actionableInboxCount(state);
+  const responsibilities = staffResponsibilities(state);
 
   return (
     <WorkspaceScreen className="era-feature-screen era-team-hq">
@@ -120,6 +122,25 @@ export function TeamHQ() {
           )}
         </div>
       </section>
+
+      <Panel title="Staff responsibilities" actions={<span className="text-xs text-neutral-500">Advisory ownership · you retain final control</span>}>
+        <div className="grid gap-2 md:grid-cols-2">
+          {responsibilities.map((responsibility) => (
+            <div key={responsibility.id} className="rounded border border-neutral-800 bg-neutral-950/30 p-3">
+              <div className="flex flex-wrap items-start justify-between gap-2">
+                <div>
+                  <div className="text-[10px] font-black uppercase tracking-[0.14em] text-neutral-500">{responsibility.area}</div>
+                  <div className="mt-1 text-sm font-semibold text-neutral-200">{responsibility.owner}</div>
+                </div>
+                <span className="rounded border border-neutral-700 bg-neutral-900/50 px-2 py-1 text-[10px] uppercase tracking-wide text-neutral-400">{responsibility.role}</span>
+              </div>
+              <div className="mt-2 text-xs font-medium text-sky-300">{responsibility.status}</div>
+              <p className="mt-1 text-xs leading-5 text-neutral-500">{responsibility.detail}</p>
+              <Button className="mt-2 px-2 py-1 text-xs" variant="ghost" onClick={() => navigate(responsibility.route)}>{responsibility.routeLabel} →</Button>
+            </div>
+          ))}
+        </div>
+      </Panel>
 
       <WorkspaceTabs items={TEAM_HQ_TABS} active={tab} onChange={setTab} ariaLabel="Team HQ command center" />
 
