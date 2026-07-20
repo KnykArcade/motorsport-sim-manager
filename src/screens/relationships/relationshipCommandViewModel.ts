@@ -1,4 +1,5 @@
 import type {
+  RelationshipActionWindow,
   RelationshipAttentionProfile,
   RelationshipAttentionStatus,
 } from '../../sim/relationshipAttentionEngine';
@@ -14,6 +15,7 @@ import { currentExternalTalentContext } from './relationshipTalentViewModel';
 export type RelationshipDeskSignal = {
   id: string;
   status: RelationshipAttentionStatus;
+  actionWindow: RelationshipActionWindow;
   rank: number;
   title: string;
   reason: string;
@@ -52,6 +54,16 @@ const ATTENTION_ORDER: Record<RelationshipAttentionStatus, number> = {
 
 const snapshotCache = new WeakMap<GameState, RelationshipCommandSnapshot>();
 
+function inferredActionWindow(
+  status: RelationshipAttentionStatus,
+  reasons: string[],
+): RelationshipActionWindow {
+  if (status === 'MustActNow') return 'Immediate';
+  if (status === 'Stable') return 'Background';
+  if (/due within 1 round|critical|must be filled before|firm offer/i.test(reasons.join(' '))) return 'NextRound';
+  return 'Soon';
+}
+
 export function relationshipCommandSummary({
   characterProfiles,
   collectiveProfiles,
@@ -62,6 +74,7 @@ export function relationshipCommandSummary({
     ...characterProfiles.map((profile) => ({
       id: `${profile.target.type}:${profile.target.id}`,
       status: profile.status,
+      actionWindow: profile.actionWindow,
       rank: profile.authorityRank,
       title: profile.target.name,
       reason: profile.reasons[0],
@@ -70,6 +83,7 @@ export function relationshipCommandSummary({
     ...collectiveProfiles.map((profile) => ({
       id: `Collective:${profile.id}`,
       status: profile.status,
+      actionWindow: inferredActionWindow(profile.status, profile.reasons),
       rank: profile.authorityRank,
       title: profile.title,
       reason: profile.reasons[0],
@@ -78,6 +92,7 @@ export function relationshipCommandSummary({
     ...(employerStanding ? [{
       id: 'PotentialEmployers',
       status: employerStanding.status,
+      actionWindow: inferredActionWindow(employerStanding.status, employerStanding.reasons),
       rank: employerStanding.authorityRank,
       title: 'Potential employers',
       reason: employerStanding.reasons[0],
@@ -86,6 +101,7 @@ export function relationshipCommandSummary({
     {
       id: 'ExternalTalent',
       status: externalTalent.status,
+      actionWindow: inferredActionWindow(externalTalent.status, externalTalent.reasons),
       rank: externalTalent.authorityRank,
       title: 'External talent',
       reason: externalTalent.reasons[0],
