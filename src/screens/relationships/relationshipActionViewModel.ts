@@ -5,6 +5,7 @@ import type { ExternalTalentContext } from './relationshipTalentViewModel';
 
 export type RelationshipManagementMove = {
   title: string;
+  priorityLabel: string;
   rationale: string;
   expectedEffect: string;
 };
@@ -12,9 +13,14 @@ export type RelationshipManagementMove = {
 function stableMove(title: string, expectedEffect: string): RelationshipManagementMove {
   return {
     title,
+    priorityLabel: 'Background cadence',
     rationale: 'No active relationship problem needs immediate intervention.',
     expectedEffect,
   };
+}
+
+function activeMovePriority(status: 'MustActNow' | 'WatchClosely'): string {
+  return status === 'MustActNow' ? 'Immediate action' : 'Next management window';
 }
 
 export function characterManagementMove(profile: RelationshipAttentionProfile): RelationshipManagementMove {
@@ -26,6 +32,7 @@ export function characterManagementMove(profile: RelationshipAttentionProfile): 
   if (profile.target.type === 'Owner') {
     return {
       title: profile.status === 'MustActNow' ? 'Hold an owner review before the next race' : 'Prepare an owner confidence update',
+      priorityLabel: activeMovePriority(profile.status),
       rationale: reason,
       expectedEffect: 'Protects job security, patience, and budget confidence.',
     };
@@ -34,6 +41,7 @@ export function characterManagementMove(profile: RelationshipAttentionProfile): 
     const promiseRelated = /promise|commitment|due/i.test(profile.reasons.join(' '));
     return {
       title: promiseRelated ? 'Resolve the driver commitment' : 'Open the driver relationship file',
+      priorityLabel: activeMovePriority(profile.status),
       rationale: reason,
       expectedEffect: promiseRelated
         ? 'Protects morale, trust in principal, and contract leverage.'
@@ -43,6 +51,7 @@ export function characterManagementMove(profile: RelationshipAttentionProfile): 
   if (profile.target.type === 'Staff') {
     return {
       title: 'Stabilize the staff relationship',
+      priorityLabel: activeMovePriority(profile.status),
       rationale: reason,
       expectedEffect: 'Protects department morale, delivery trust, and future staff retention.',
     };
@@ -50,12 +59,14 @@ export function characterManagementMove(profile: RelationshipAttentionProfile): 
   if (profile.target.type === 'RivalPrincipal') {
     return {
       title: 'Choose a paddock posture',
+      priorityLabel: activeMovePriority(profile.status),
       rationale: reason,
       expectedEffect: 'Protects protest risk, political alignment, and rival escalation control.',
     };
   }
   return {
     title: 'Convert interest into a recruiting step',
+    priorityLabel: activeMovePriority(profile.status),
     rationale: reason,
     expectedEffect: 'Protects shortlist momentum and signing leverage.',
   };
@@ -68,12 +79,14 @@ export function collectiveManagementMove(profile: CollectiveStakeholderProfile):
   if (profile.id === 'Departments') {
     return {
       title: profile.status === 'MustActNow' ? 'Rebalance department workload now' : 'Review department trust signals',
+      priorityLabel: activeMovePriority(profile.status),
       rationale: profile.reasons[0] ?? 'Department alignment is under pressure.',
       expectedEffect: 'Protects productivity, upgrade delivery, and staff confidence.',
     };
   }
   return {
     title: profile.status === 'MustActNow' ? 'Address sponsor confidence now' : 'Review commercial expectations',
+    priorityLabel: activeMovePriority(profile.status),
     rationale: profile.reasons[0] ?? 'Commercial confidence is under pressure.',
     expectedEffect: 'Protects sponsorship income, fan support, and future partner offers.',
   };
@@ -85,6 +98,7 @@ export function employerManagementMove(standing: PotentialEmployerStanding): Rel
   }
   return {
     title: standing.firmOffers > 0 ? 'Review active job offer leverage' : 'Monitor rival-owner interest',
+    priorityLabel: activeMovePriority(standing.status),
     rationale: standing.reasons[0] ?? 'A rival owner is monitoring your standing.',
     expectedEffect: 'Protects career options without treating other owners as current-team bosses.',
   };
@@ -97,6 +111,7 @@ export function externalTalentManagementMove(context: ExternalTalentContext): Re
   if (context.openRaceSeats > 0) {
     return {
       title: context.status === 'MustActNow' ? 'Fill the open race seat' : 'Shortlist race-seat candidates',
+      priorityLabel: activeMovePriority(context.status),
       rationale: context.reasons[0] ?? 'A race seat needs attention.',
       expectedEffect: 'Protects lineup completeness and preseason readiness.',
     };
@@ -104,12 +119,14 @@ export function externalTalentManagementMove(context: ExternalTalentContext): Re
   if (context.staffVacancies > 0) {
     return {
       title: 'Prioritize specialist hiring',
+      priorityLabel: activeMovePriority(context.status),
       rationale: context.reasons[0] ?? 'A specialist role is vacant.',
       expectedEffect: 'Protects staff coverage and department execution.',
     };
   }
   return {
     title: 'Advance the live recruiting target',
+    priorityLabel: activeMovePriority(context.status),
     rationale: context.reasons[0] ?? 'A recruiting target is active.',
     expectedEffect: 'Protects market timing and negotiation leverage.',
   };
