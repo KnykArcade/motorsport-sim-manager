@@ -57,6 +57,7 @@ import {
   visibleRaceWeekendPhases,
   type RaceWeekendPhase,
 } from './raceTransitionViewModel';
+import { buildWeekendPlan } from './weekendPlanViewModel';
 import type { Driver, Track, StandingsEntry } from '../types/gameTypes';
 import type { WeatherState } from '../types/liveTypes';
 import type { CarSetup } from '../types/setupTypes';
@@ -157,7 +158,7 @@ export function RaceWeekend() {
     };
   };
 
-  if (!state || !race || !track || !autoSetups) return null;
+  if (!state || !race || !track || !autoSetups || !forecast) return null;
 
   const isMinPackage = state.raceWeekendPackage?.packageType === 'MandatoryMinimum';
   const visiblePhases = visibleRaceWeekendPhases(isMinPackage);
@@ -195,6 +196,18 @@ export function RaceWeekend() {
     ? state.weekendPractice.sessions.filter((session) => session.completed).length
     : 0;
   const totalPracticeSessions = isMinPackage ? 0 : weekendSessionKinds(state.seasonYear, state.series).length;
+  const knowledgeGaps = teamKnowledgeGaps(
+    state.weekendPractice?.raceId === race.id ? state.weekendPractice.knowledge : undefined,
+    playerDrivers.map((driver) => driver.id),
+  );
+  const weekendPlan = buildWeekendPlan({
+    phase,
+    isMinPackage,
+    qualifyingComplete: !!qualifyingResults,
+    track,
+    forecast,
+    knowledgeGaps,
+  });
   const bestPlayerGrid = qualifyingResults
     ?.filter((result) => result.teamId === state.selectedTeamId)
     .reduce<number | undefined>((best, result) => best === undefined ? result.position : Math.min(best, result.position), undefined);
@@ -232,6 +245,7 @@ export function RaceWeekend() {
           race={race}
           track={track}
           forecast={forecast}
+          plan={weekendPlan}
           onNext={() => moveTo('briefing')}
         />
       )}
@@ -1114,12 +1128,14 @@ function WeekendHub({
   race,
   track,
   forecast,
+  plan,
   onNext,
 }: {
   state: NonNullable<ReturnType<typeof useGame>['state']>;
   race: { gpName: string; trackName: string; round: number; laps: number; distanceKm?: number };
   track: Track;
   forecast: WeekendForecast;
+  plan: ReturnType<typeof buildWeekendPlan>;
   onNext: () => void;
 }) {
   const calendarLength = state.calendar.length;
@@ -1136,6 +1152,26 @@ function WeekendHub({
 
   return (
     <div className="space-y-4">
+      <Panel title="Weekend Plan" className="border-[var(--era-accent)]/40">
+        <div className="grid gap-3 lg:grid-cols-[1.1fr_1fr]">
+          <div>
+            <div className="text-sm font-semibold text-neutral-100">Next: {plan.nextLabel}</div>
+            <p className="mt-1 text-xs leading-5 text-neutral-400">{plan.nextDescription}</p>
+            <div className="mt-3 flex flex-wrap gap-2">
+              <span className="rounded bg-neutral-800 px-2 py-1 text-[10px] text-neutral-300">Knowledge priority: {plan.knowledgePriority}</span>
+              <span className="rounded bg-neutral-800 px-2 py-1 text-[10px] text-neutral-300">Setup {Math.round(plan.knowledgeGaps.setup * 100)}%</span>
+              <span className="rounded bg-neutral-800 px-2 py-1 text-[10px] text-neutral-300">Tyres {Math.round(plan.knowledgeGaps.tire * 100)}%</span>
+              <span className="rounded bg-neutral-800 px-2 py-1 text-[10px] text-neutral-300">Reliability {Math.round(plan.knowledgeGaps.reliability * 100)}%</span>
+            </div>
+          </div>
+          <div className="space-y-1.5 text-xs text-neutral-400">
+            <div><span className="font-semibold text-neutral-200">Qualifying:</span> {plan.qualifyingRecommendation}</div>
+            <div><span className="font-semibold text-neutral-200">Race:</span> {plan.raceRecommendation}</div>
+            <div><span className="font-semibold text-neutral-200">Instructions:</span> {plan.instructionRecommendation}</div>
+          </div>
+        </div>
+      </Panel>
+
       <div className="grid gap-4 lg:grid-cols-3">
         <Panel title="This Weekend">
           <div className="text-xl font-bold text-neutral-100">{race.gpName}</div>
