@@ -8,6 +8,7 @@ import {
   interactionHistoryForTarget,
   isCharacterInteractionAvailable,
   ownerActionPersonalityContext,
+  staffActionDepartmentContext,
 } from '../../sim/characterInteractionEngine';
 import type { CharacterInteractionTarget } from '../../types/characterInteractionTypes';
 import {
@@ -342,14 +343,20 @@ export function CharacterActionPanel({ state, target, initialSection = 'overview
 function CharacterActionFit({ state, target, action }: { state: GameState; target: CharacterInteractionTarget; action: Parameters<typeof ownerActionPersonalityContext>[1] }) {
   const context = target.type === 'Owner'
     ? ownerActionPersonalityContext(state, action)
-    : driverActionRelationshipContext(state, target, action);
+    : target.type === 'Driver'
+      ? driverActionRelationshipContext(state, target, action)
+      : staffActionDepartmentContext(state, target, action);
   if (!context) return null;
   const style = context.fit === 'Favored'
     ? 'border-emerald-800/60 bg-emerald-950/20 text-emerald-200'
     : context.fit === 'Skeptical' || context.fit === 'Risky'
       ? 'border-amber-800/60 bg-amber-950/20 text-amber-200'
       : 'border-neutral-800 bg-neutral-950/40 text-neutral-300';
-  const label = 'ownerLabel' in context ? context.ownerLabel : 'Current driver read';
+  const label = 'ownerLabel' in context
+    ? context.ownerLabel
+    : 'departmentLabel' in context
+      ? `${context.departmentLabel} department read`
+      : 'Current driver read';
   return (
     <div className={`mt-2 rounded border p-2 ${style}`}>
       <div className="text-[9px] font-bold uppercase tracking-wide">{label} · {context.fit} fit</div>
