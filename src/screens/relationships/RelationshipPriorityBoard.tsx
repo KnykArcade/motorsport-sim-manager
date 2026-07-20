@@ -3,6 +3,8 @@ import { Panel } from '../../components/Panel';
 import type { RelationshipAttentionProfile } from '../../sim/relationshipAttentionEngine';
 import {
   RELATIONSHIP_HIERARCHY,
+  relationshipActionWindowDetail,
+  relationshipActionWindowLabel,
   relationshipStatusLabel,
   relationshipTargetLabel,
   stableInternalRelationships,
@@ -199,6 +201,16 @@ function RelationshipPriorityCard({ state, profile, onReview }: { state: GameSta
           <div className="text-base font-black tabular-nums text-neutral-100">{profile.influence}</div>
           <div className="text-[9px] uppercase tracking-wide text-neutral-500">Influence</div>
         </div>
+      </div>
+
+      <div className="mt-2 rounded border border-neutral-700/70 bg-neutral-950/35 px-2.5 py-2">
+        <div className="flex items-center justify-between gap-3">
+          <div className="text-[9px] font-bold uppercase tracking-wide text-neutral-500">Action window</div>
+          <div className="shrink-0 text-[10px] font-bold uppercase tracking-wide text-neutral-200">
+            {relationshipActionWindowLabel(profile.actionWindow)}
+          </div>
+        </div>
+        <p className="mt-1 text-[10px] leading-relaxed text-neutral-500">{relationshipActionWindowDetail(profile.actionWindow)}</p>
       </div>
 
       {gameplayEffect && (
