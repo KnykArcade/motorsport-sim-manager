@@ -27,6 +27,9 @@ import type { GameAction } from '../game/gameReducer';
 import type { FailureInvestigationLevel, FailureResponse } from '../types/phase18Types';
 import { FAILURE_INVESTIGATION_COST, FAILURE_RESPONSE_COST, confidenceLabel, failureCasesForRace } from '../sim/phase18FailureInvestigationEngine';
 import { actionableInboxCount } from './inboxViewModel';
+import { weekendForecast } from '../sim/weatherEngine';
+import { RACE_WEEKEND_PACKAGES } from '../sim/raceWeekendPackageEngine';
+import { buildPostRaceCausalDebrief } from './postRaceDebriefViewModel';
 
 export function PostRaceReview() {
   const [activeTab, setActiveTab] = useState<PostRaceReviewTab>('overview');
@@ -77,6 +80,25 @@ export function PostRaceReview() {
     ? { ...item, label: `${item.label} · ${technicalRisk.unresolvedCount}` }
     : item);
   const inboxActions = actionableInboxCount(state);
+  const weekendPractice = state.weekendPractice?.raceId === raceId ? state.weekendPractice : undefined;
+  const causalDebrief = track ? buildPostRaceCausalDebrief({
+    raceId,
+    playerResults,
+    qualifyingResults: state.qualifyingResults[raceId] ?? [],
+    events,
+    track,
+    raceWeather: weekendForecast(track, `${state.randomSeed}-r${race.round}`).Race,
+    packageLabel: state.raceWeekendPackage?.raceId === raceId
+      ? RACE_WEEKEND_PACKAGES[state.raceWeekendPackage.packageType]?.label
+      : undefined,
+    setupKnowledge: averageKnowledge(weekendPractice?.knowledge.setupKnowledge),
+    tyreKnowledge: averageKnowledge(weekendPractice?.knowledge.tireKnowledge),
+    reliabilityKnowledge: averageKnowledge(weekendPractice?.knowledge.reliabilityKnowledge),
+    unresolvedTechnicalCases: technicalRisk.unresolvedCount,
+    unresolvedPaddockDecisions: (state.careerPhase?.paddockEvents ?? []).filter(
+      (event) => !event.resolvedOptionId && (event.options?.length ?? 0) > 0,
+    ).length,
+  }) : null;
 
   return (
     <WorkspaceScreen className="era-feature-screen era-post-race-review-screen">
@@ -132,6 +154,28 @@ export function PostRaceReview() {
               highlightTeamId={state.selectedTeamId}
             />
           </Panel>}
+
+          {activeTab === 'overview' && track && (
+            causalDebrief && <Panel title={causalDebrief.title}>
+              <p className="text-sm text-neutral-300">{causalDebrief.summary}</p>
+              <div className="mt-3 grid gap-2 md:grid-cols-2">
+                {causalDebrief.evidence.map((item) => (
+                  <div key={item.label} className="rounded border border-neutral-800 bg-neutral-900/40 p-3">
+                    <div className="text-[10px] font-semibold uppercase tracking-wide text-neutral-500">{item.label}</div>
+                    <div className={`mt-1 text-sm font-semibold ${item.tone === 'positive' ? 'text-emerald-300' : item.tone === 'warning' ? 'text-orange-300' : 'text-neutral-200'}`}>{item.value}</div>
+                    <p className="mt-1 text-xs text-neutral-500">{item.detail}</p>
+                  </div>
+                ))}
+              </div>
+              {causalDebrief.followUps.length > 0 && (
+                <div className="mt-4 flex flex-wrap gap-2">
+                  {causalDebrief.followUps.map((item) => (
+                    <Button key={item.route} variant="ghost" onClick={() => navigate(item.route)} title={item.reason}>{item.label} →</Button>
+                  ))}
+                </div>
+              )}
+            </Panel>
+          )}
 
           {activeTab === 'overview' && track && (
             <Panel title="Track Impact">
@@ -309,4 +353,9 @@ function raceRatingText(
   const movement = result.gridPosition - finish;
   const base = 6.4 + movement * 0.18 + (fieldSize - finish) * 0.08;
   return Math.max(1, Math.min(10, base)).toFixed(1);
+}
+
+function averageKnowledge(values: Record<string, number> | undefined): number {
+  const entries = Object.values(values ?? {});
+  return entries.length > 0 ? entries.reduce((sum, value) => sum + value, 0) / entries.length : 0;
 }
