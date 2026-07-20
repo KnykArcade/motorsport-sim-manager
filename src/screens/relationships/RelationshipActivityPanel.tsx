@@ -17,6 +17,13 @@ const TONE_STYLES: Record<RelationshipActivityTone, string> = {
   Informational: 'bg-sky-500/10 text-sky-300',
 };
 
+const FOLLOW_UP_STYLES: Record<RelationshipActivityItem['followUp']['cadence'], string> = {
+  Immediate: 'border-red-700/45 bg-red-950/20 text-red-200',
+  NextRound: 'border-amber-700/45 bg-amber-950/20 text-amber-200',
+  Monitor: 'border-sky-700/45 bg-sky-950/20 text-sky-200',
+  Background: 'border-neutral-800 bg-neutral-950/35 text-neutral-400',
+};
+
 export function RelationshipActivityPanel({ state }: { state: GameState }) {
   const [filter, setFilter] = useState<ActivityFilter>('All');
   const activity = currentRelationshipActivity(state);
@@ -42,6 +49,7 @@ export function RelationshipActivityPanel({ state }: { state: GameState }) {
             </span>
           </div>
           <p className="mt-1 text-[11px] leading-relaxed text-neutral-400">{summary.latest.detail}</p>
+          <FollowUpCallout item={summary.latest} compact />
           <div className="mt-1.5 text-[10px] text-neutral-500">Season {summary.latest.seasonYear} · Round {summary.latest.round}</div>
         </div>
       )}
@@ -132,6 +140,7 @@ function ActivityRow({ item }: { item: RelationshipActivityItem }) {
         </div>
       </div>
       <p className="mt-1.5 text-[11px] leading-relaxed text-neutral-400">{item.detail}</p>
+      <FollowUpCallout item={item} />
       {(item.effects.length > 0 || (item.opinionDelta ?? 0) !== 0) && (
         <div className="mt-2 flex flex-wrap gap-1.5">
           {item.opinionDelta ? (
@@ -145,5 +154,24 @@ function ActivityRow({ item }: { item: RelationshipActivityItem }) {
         </div>
       )}
     </article>
+  );
+}
+
+function FollowUpCallout({ item, compact = false }: { item: RelationshipActivityItem; compact?: boolean }) {
+  const cadenceLabel = item.followUp.cadence === 'Immediate'
+    ? 'Immediate'
+    : item.followUp.cadence === 'NextRound'
+      ? 'Next round'
+      : item.followUp.cadence === 'Monitor'
+        ? 'Monitor'
+        : 'Background';
+  return (
+    <div className={`mt-2 rounded border px-2 py-1.5 ${FOLLOW_UP_STYLES[item.followUp.cadence]}`}>
+      <div className="flex flex-wrap items-center gap-2">
+        <span className="text-[9px] font-bold uppercase tracking-wide opacity-80">Follow-up · {cadenceLabel}</span>
+        <span className="text-[10px] font-semibold">{item.followUp.label}</span>
+      </div>
+      {!compact && <p className="mt-0.5 text-[10px] leading-relaxed opacity-80">{item.followUp.detail}</p>}
+    </div>
   );
 }
