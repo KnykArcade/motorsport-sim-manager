@@ -30,6 +30,9 @@ export type RelationshipActivitySummary = {
   negative: number;
   mixed: number;
   informational: number;
+  immediateFollowUps: number;
+  nextRoundFollowUps: number;
+  activeFollowUps: number;
   netOpinionDelta: number;
   latest?: RelationshipActivityItem;
 };
@@ -157,6 +160,9 @@ export function relationshipActivitySummary(
         : item.tone === 'Mixed'
           ? 'mixed'
           : 'informational'] += 1;
+    if (item.followUp.cadence === 'Immediate') summary.immediateFollowUps += 1;
+    if (item.followUp.cadence === 'NextRound') summary.nextRoundFollowUps += 1;
+    if (item.followUp.cadence === 'Immediate' || item.followUp.cadence === 'NextRound') summary.activeFollowUps += 1;
     summary.netOpinionDelta += item.opinionDelta ?? 0;
     if (index === 0) summary.latest = item;
     return summary;
@@ -166,8 +172,31 @@ export function relationshipActivitySummary(
     negative: 0,
     mixed: 0,
     informational: 0,
+    immediateFollowUps: 0,
+    nextRoundFollowUps: 0,
+    activeFollowUps: 0,
     netOpinionDelta: 0,
   });
+}
+
+export function relationshipFollowUpAgenda(
+  activity: RelationshipActivityItem[],
+  limit = 3,
+): RelationshipActivityItem[] {
+  const cadenceOrder: Record<RelationshipActivityFollowUp['cadence'], number> = {
+    Immediate: 0,
+    NextRound: 1,
+    Monitor: 2,
+    Background: 3,
+  };
+  return activity
+    .filter((item) => item.followUp.cadence === 'Immediate' || item.followUp.cadence === 'NextRound')
+    .sort((a, b) =>
+      cadenceOrder[a.followUp.cadence] - cadenceOrder[b.followUp.cadence]
+        || b.seasonYear - a.seasonYear
+        || b.round - a.round
+        || b.id.localeCompare(a.id))
+    .slice(0, limit);
 }
 
 export function relationshipActivityFromSources(
