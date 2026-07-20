@@ -1,7 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import type { CharacterMemory } from '../../types/characterInteractionTypes';
 import type { AdvisorRecommendation } from '../../types/phase18Types';
-import { relationshipActivityFromSources } from './relationshipActivityViewModel';
+import {
+  relationshipActivityFromSources,
+  relationshipActivitySummary,
+} from './relationshipActivityViewModel';
 
 function memory(overrides: Partial<CharacterMemory> = {}): CharacterMemory {
   return {
@@ -118,6 +121,39 @@ describe('relationship activity view model', () => {
       source: 'CommitteeAction',
       tone: 'Positive',
       effects: ['Technical workload -12', 'Technical morale +4'],
+    });
+  });
+
+  it('summarizes outcomes without treating unlike effects as one score', () => {
+    const activity = relationshipActivityFromSources(
+      [
+        memory({ id: 'negative', tone: 'Negative', opinionDelta: -4, round: 5 }),
+        memory({ id: 'mixed', tone: 'Mixed', opinionDelta: 1, round: 4 }),
+      ],
+      [recommendation({ id: 'positive', trustChange: 2, createdRound: 3 })],
+      [],
+      'team-1',
+    );
+
+    expect(relationshipActivitySummary(activity)).toMatchObject({
+      total: 3,
+      positive: 1,
+      negative: 1,
+      mixed: 1,
+      informational: 0,
+      netOpinionDelta: -3,
+      latest: { id: 'memory:negative' },
+    });
+  });
+
+  it('returns an empty summary when no relationship outcome exists', () => {
+    expect(relationshipActivitySummary([])).toEqual({
+      total: 0,
+      positive: 0,
+      negative: 0,
+      mixed: 0,
+      informational: 0,
+      netOpinionDelta: 0,
     });
   });
 });
