@@ -4,6 +4,7 @@ import { loadSavedGame } from '../game/GameContext';
 import { hasSave } from '../game/saveSystem';
 import { initializeMasterRegistry } from '../data';
 import { ensureMotorsportUniverse } from '../sim/motorsportUniverseEngine';
+import { resumeDestination } from '../components/layoutWorkflow';
 
 export function MainMenu() {
   const navigate = useNavigate();
@@ -16,7 +17,7 @@ export function MainMenu() {
       // Load full season data for the master registry (career market engine).
       await initializeMasterRegistry(saved.seasonYear, saved.series);
       dispatch({ type: 'LOAD_GAME', state: ensureMotorsportUniverse(saved) });
-      navigate('/hq');
+      navigate(resumeDestination(saved));
     }
   };
 

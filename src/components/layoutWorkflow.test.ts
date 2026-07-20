@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { GameState } from '../game/careerState';
-import { workflowDestination } from './layoutWorkflow';
+import { isResumableWorkspace, resumeDestination, workflowDestination } from './layoutWorkflow';
 
 function stateFor(currentPhase: string, overrides: Record<string, unknown> = {}): GameState {
   return {
@@ -21,6 +21,7 @@ describe('layout workflow destination', () => {
     const snapshot = structuredClone(state);
 
     expect(workflowDestination(state).to).toBe(expectedRoute);
+    expect(workflowDestination(state).phase).toBe(phase);
     expect(state).toEqual(snapshot);
   });
 
@@ -34,5 +35,18 @@ describe('layout workflow destination', () => {
 
   it('prioritizes season review after the season is complete', () => {
     expect(workflowDestination(stateFor('race_weekend', { seasonComplete: true })).to).toBe('/season-review');
+  });
+
+  it('resumes the last valid workspace without advancing the career', () => {
+    const state = stateFor('race_weekend', { lastWorkspace: '/technical?section=parts' });
+
+    expect(resumeDestination(state)).toBe('/technical?section=parts');
+    expect(state.careerPhase?.currentPhase).toBe('race_weekend');
+  });
+
+  it('falls back to the phase workspace for non-game routes', () => {
+    expect(resumeDestination(stateFor('race_weekend', { lastWorkspace: '/settings' }))).toBe('/weekend');
+    expect(isResumableWorkspace('/post-race/race-1')).toBe(true);
+    expect(isResumableWorkspace('/live-race/race-1')).toBe(false);
   });
 });

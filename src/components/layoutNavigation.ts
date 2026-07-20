@@ -14,7 +14,7 @@ export const NAVIGATION_GROUPS: ReadonlyArray<{ id: NavigationGroupId; label: st
 ];
 
 export const NAVIGATION_ITEMS: ReadonlyArray<NavigationItem> = [
-  { to: '/hq', label: 'Team HQ', icon: 'HQ', group: 'race' },
+  { to: '/hq', label: 'Manager Office', icon: 'HQ', group: 'race' },
   { to: '/inbox', label: 'Inbox', icon: 'IB', group: 'race' },
   { to: '/calendar', label: 'Calendar', icon: 'CA', group: 'race' },
   { to: '/standings', label: 'Standings', icon: 'ST', group: 'race' },

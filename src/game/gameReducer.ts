@@ -235,6 +235,7 @@ import { driverFutureIntentContractModifier, refreshCharacterFutureIntentions, s
 export type GameAction =
   | { type: 'NEW_GAME'; options: NewGameOptions }
   | { type: 'LOAD_GAME'; state: GameState }
+  | { type: 'SET_LAST_WORKSPACE'; workspace: string }
   | { type: 'RUN_QUALIFYING'; decisions: QualifyingDecision[] }
   | { type: 'RUN_RACE'; decisions: RaceDecision[] }
   | {
@@ -559,6 +560,11 @@ export function gameReducer(state: GameState | null, action: GameAction): GameSt
 
     case 'LOAD_GAME':
       return action.state;
+
+    case 'SET_LAST_WORKSPACE': {
+      if (!state || state.lastWorkspace === action.workspace) return state;
+      return { ...state, lastWorkspace: action.workspace };
+    }
 
     case 'RUN_QUALIFYING': {
       if (!state) return state;

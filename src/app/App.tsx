@@ -1,5 +1,6 @@
-import { HashRouter, Navigate, Route, Routes, useParams, useNavigate } from 'react-router-dom';
+import { HashRouter, Navigate, Route, Routes, useLocation, useParams, useNavigate } from 'react-router-dom';
 import { lazy, Suspense } from 'react';
+import { useEffect } from 'react';
 import type { ReactNode } from 'react';
 import { GameProvider, useGame } from '../game/GameContext';
 import { canEnterRaceWeekend } from '../game/rosterEnforcement';
@@ -51,6 +52,20 @@ function InGame({ children }: { children: ReactNode }) {
   const { state } = useGame();
   if (!state) return <Navigate to="/" replace />;
   return <Layout>{children}</Layout>;
+}
+
+function WorkspaceTracker() {
+  const { state, dispatch } = useGame();
+  const location = useLocation();
+
+  useEffect(() => {
+    if (!state || location.pathname === '/' || location.pathname === '/new') return;
+    const workspace = `${location.pathname}${location.search}`;
+    if (workspace === state.lastWorkspace) return;
+    dispatch({ type: 'SET_LAST_WORKSPACE', workspace });
+  }, [dispatch, location.pathname, location.search, state]);
+
+  return null;
 }
 
 // Guard for routes restricted in Single Season mode. Redirects to HQ with a
@@ -236,6 +251,7 @@ export default function App() {
   return (
     <GameProvider>
       <HashRouter>
+        <WorkspaceTracker />
         <Suspense fallback={
           <div className="flex h-screen items-center justify-center bg-neutral-950 text-neutral-500">
             <div className="text-sm">Loading…</div>

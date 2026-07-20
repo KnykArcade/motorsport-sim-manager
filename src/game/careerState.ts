@@ -57,6 +57,9 @@ export type GameState = {
   seasonYear: number;
   selectedTeamId: string;
   currentRaceIndex: number;
+  // Last in-game workspace visited, used to resume a career at its
+  // meaningful command surface after loading a save.
+  lastWorkspace?: string;
 
   // Mutable copies of the season's entities (diverge from history over time).
   calendar: Race[];
