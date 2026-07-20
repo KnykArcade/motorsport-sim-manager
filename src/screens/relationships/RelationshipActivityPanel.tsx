@@ -3,6 +3,7 @@ import type { GameState } from '../../game/careerState';
 import { Panel } from '../../components/Panel';
 import {
   currentRelationshipActivity,
+  relationshipFollowUpAgenda,
   relationshipActivitySummary,
   type RelationshipActivityItem,
   type RelationshipActivityTone,
@@ -28,6 +29,7 @@ export function RelationshipActivityPanel({ state }: { state: GameState }) {
   const [filter, setFilter] = useState<ActivityFilter>('All');
   const activity = currentRelationshipActivity(state);
   const summary = relationshipActivitySummary(activity);
+  const agenda = relationshipFollowUpAgenda(activity);
   const visible = activity
     .filter((item) => filter === 'All' || item.tone === filter)
     .slice(0, 60);
@@ -56,8 +58,8 @@ export function RelationshipActivityPanel({ state }: { state: GameState }) {
 
       <div className="mb-3 grid grid-cols-2 gap-2 lg:grid-cols-4">
         <OutcomeMetric label="Recorded changes" value={summary.total} detail="Decision outcomes in this save" />
+        <OutcomeMetric label="Follow-ups" value={summary.activeFollowUps} detail={`${summary.immediateFollowUps} immediate · ${summary.nextRoundFollowUps} next round`} tone={summary.immediateFollowUps > 0 ? 'negative' : summary.nextRoundFollowUps > 0 ? 'warning' : undefined} />
         <OutcomeMetric label="Positive" value={summary.positive} detail="Favorable reactions" tone="positive" />
-        <OutcomeMetric label="Negative" value={summary.negative} detail="Relationships needing context" tone="negative" />
         <OutcomeMetric
           label="Direct opinion"
           value={`${summary.netOpinionDelta > 0 ? '+' : ''}${summary.netOpinionDelta}`}
@@ -65,6 +67,8 @@ export function RelationshipActivityPanel({ state }: { state: GameState }) {
           tone={summary.netOpinionDelta > 0 ? 'positive' : summary.netOpinionDelta < 0 ? 'negative' : undefined}
         />
       </div>
+
+      <FollowUpAgenda items={agenda} summary={summary} />
 
       <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
         <p className="text-xs text-neutral-400">
@@ -106,13 +110,56 @@ export function RelationshipActivityPanel({ state }: { state: GameState }) {
   );
 }
 
-function OutcomeMetric({ label, value, detail, tone }: { label: string; value: string | number; detail: string; tone?: 'positive' | 'negative' }) {
-  const valueColor = tone === 'positive' ? 'text-emerald-300' : tone === 'negative' ? 'text-red-300' : 'text-neutral-100';
+function OutcomeMetric({ label, value, detail, tone }: { label: string; value: string | number; detail: string; tone?: 'positive' | 'negative' | 'warning' }) {
+  const valueColor = tone === 'positive' ? 'text-emerald-300' : tone === 'negative' ? 'text-red-300' : tone === 'warning' ? 'text-amber-300' : 'text-neutral-100';
   return (
     <div className="rounded-lg border border-neutral-800 bg-neutral-900/35 p-3">
       <div className="text-[9px] font-bold uppercase tracking-wide text-neutral-500">{label}</div>
       <div className={`mt-1 text-xl font-black tabular-nums ${valueColor}`}>{value}</div>
       <div className="mt-0.5 text-[10px] text-neutral-600">{detail}</div>
+    </div>
+  );
+}
+
+function FollowUpAgenda({ items, summary }: { items: RelationshipActivityItem[]; summary: ReturnType<typeof relationshipActivitySummary> }) {
+  if (items.length === 0) {
+    return (
+      <div className="mb-3 rounded-lg border border-emerald-800/35 bg-emerald-950/15 p-3">
+        <div className="text-[10px] font-bold uppercase tracking-wide text-emerald-300">Follow-up agenda clear</div>
+        <p className="mt-1 text-[11px] leading-relaxed text-neutral-400">
+          No immediate or next-round relationship follow-ups are active. Keep monitoring the ledger for context rather than forcing a new interaction.
+        </p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="mb-3 rounded-lg border border-neutral-800 bg-neutral-950/35 p-3">
+      <div className="flex flex-wrap items-start justify-between gap-2">
+        <div>
+          <div className="text-[10px] font-bold uppercase tracking-wide text-[var(--era-accent-strong)]">Follow-up agenda</div>
+          <p className="mt-1 text-[11px] text-neutral-500">
+            {summary.immediateFollowUps} immediate · {summary.nextRoundFollowUps} next-round follow-ups from recent relationship outcomes.
+          </p>
+        </div>
+        <span className="rounded border border-neutral-700/70 px-2 py-1 text-[10px] font-bold uppercase tracking-wide text-neutral-400">
+          Top {items.length}
+        </span>
+      </div>
+      <div className="mt-2 grid gap-2 lg:grid-cols-3">
+        {items.map((item) => (
+          <div key={item.id} className={`rounded border px-2.5 py-2 ${FOLLOW_UP_STYLES[item.followUp.cadence]}`}>
+            <div className="flex items-center justify-between gap-2">
+              <div className="truncate text-xs font-semibold">{item.targetName}</div>
+              <div className="shrink-0 text-[9px] font-bold uppercase tracking-wide opacity-75">
+                #{item.hierarchyRank}
+              </div>
+            </div>
+            <div className="mt-1 text-[10px] font-bold uppercase tracking-wide opacity-75">{item.followUp.label}</div>
+            <p className="mt-1 text-[10px] leading-relaxed opacity-80">{item.followUp.detail}</p>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
