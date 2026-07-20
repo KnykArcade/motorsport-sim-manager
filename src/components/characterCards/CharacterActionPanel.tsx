@@ -6,6 +6,7 @@ import {
   characterRequestHistoryForTarget,
   interactionHistoryForTarget,
   isCharacterInteractionAvailable,
+  ownerActionPersonalityContext,
 } from '../../sim/characterInteractionEngine';
 import type { CharacterInteractionTarget } from '../../types/characterInteractionTypes';
 import {
@@ -234,6 +235,7 @@ export function CharacterActionPanel({ state, target, initialSection = 'overview
                     <h4 className="text-sm font-semibold text-neutral-100">{action.label}</h4>
                     <p className="mt-1 flex-1 text-xs leading-relaxed text-neutral-400">{action.description}</p>
                     <p className="mt-2 text-[11px] text-amber-300/80">Likely effect: {action.effectPreview}</p>
+                    {target.type === 'Owner' && <OwnerPersonalityFit context={ownerActionPersonalityContext(state, action.id)} />}
                     <button
                       type="button"
                       disabled={!available}
@@ -332,6 +334,21 @@ export function CharacterActionPanel({ state, target, initialSection = 'overview
           {recentBreakingPoints.length > 0 && <div className="mt-3 border-t border-neutral-800 pt-3"><div className="text-[10px] font-bold uppercase tracking-[0.16em] text-neutral-500">Breaking-point decisions</div><div className="mt-2 grid gap-2 lg:grid-cols-3">{recentBreakingPoints.map((entry) => <article key={entry.id} className={`rounded border p-2.5 ${entry.status === 'Defused' ? 'border-emerald-900/60 bg-emerald-950/15' : entry.status === 'Escalated' ? 'border-red-900/60 bg-red-950/15' : 'border-amber-900/60 bg-amber-950/15'}`}><div className="flex items-center justify-between gap-2"><strong className="text-xs text-neutral-200">{entry.optionLabel ?? 'Breaking point resolved'}</strong><span className="text-[10px] font-bold text-neutral-400">{entry.status}</span></div><p className="mt-1 line-clamp-2 text-[10px] text-neutral-500">{entry.outcome}</p></article>)}</div></div>}
         </section>
       )}
+    </div>
+  );
+}
+
+function OwnerPersonalityFit({ context }: { context: ReturnType<typeof ownerActionPersonalityContext> }) {
+  if (!context) return null;
+  const style = context.fit === 'Favored'
+    ? 'border-emerald-800/60 bg-emerald-950/20 text-emerald-200'
+    : context.fit === 'Skeptical'
+      ? 'border-amber-800/60 bg-amber-950/20 text-amber-200'
+      : 'border-neutral-800 bg-neutral-950/40 text-neutral-300';
+  return (
+    <div className={`mt-2 rounded border p-2 ${style}`}>
+      <div className="text-[9px] font-bold uppercase tracking-wide">{context.ownerLabel} · {context.fit} fit</div>
+      <p className="mt-1 text-[10px] leading-relaxed text-neutral-400">{context.explanation}</p>
     </div>
   );
 }

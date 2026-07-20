@@ -9,6 +9,7 @@ import type { CharacterInteractionTarget } from '../types/characterInteractionTy
 import {
   interactionHistoryForTarget,
   isCharacterInteractionAvailable,
+  ownerActionPersonalityContext,
   performCharacterInteraction,
   recruitmentSigningDiscount,
 } from './characterInteractionEngine';
@@ -62,8 +63,8 @@ describe('character interaction engine', () => {
     const owner: CharacterInteractionTarget = { type: 'Owner', id: `owner-${state.selectedTeamId}`, name: 'Ownership', teamId: state.selectedTeamId };
     const ownerBefore = state.teamReputations![state.selectedTeamId].ownerPatience;
     const afterOwner = performCharacterInteraction(state, owner, 'PresentLongTermPlan');
-    expect(afterOwner.teamReputations![state.selectedTeamId].ownerPatience).toBe(ownerBefore + 2);
-    expect(afterOwner.principal!.jobSecurity).toBe(state.principal!.jobSecurity + 2);
+    expect(afterOwner.teamReputations![state.selectedTeamId].ownerPatience).toBe(ownerBefore + 3);
+    expect(afterOwner.principal!.jobSecurity).toBe(state.principal!.jobSecurity + 3);
 
     const rivalTeam = state.teams.find((team) => team.id !== state.selectedTeamId)!;
     const rivalPrincipal = state.aiPrincipals![rivalTeam.id];
@@ -71,6 +72,54 @@ describe('character interaction engine', () => {
     const afterPressure = performCharacterInteraction(state, rival, 'ApplyPublicPressure');
     expect(afterPressure.aiPrincipals![rivalTeam.id].pressure).toBe(rivalPrincipal.pressure + 4);
     expect(interactionHistoryForTarget(afterPressure, rival)[0].tone).toBe('Negative');
+  });
+
+  it('makes owner personality change both the visible fit and the resulting owner response', () => {
+    const base = freshState();
+    const owner: CharacterInteractionTarget = { type: 'Owner', id: `owner-${base.selectedTeamId}`, name: 'Ownership', teamId: base.selectedTeamId };
+    const withPersonality = (ownerPersonality: NonNullable<GameState['teamReputations']>[string]['ownerPersonality']) => ({
+      ...base,
+      teamReputations: {
+        ...base.teamReputations!,
+        [base.selectedTeamId]: { ...base.teamReputations![base.selectedTeamId], ownerPersonality },
+      },
+    });
+
+    const patient = withPersonality('PatientBuilder');
+    const tycoon = withPersonality('WinNowTycoon');
+    expect(ownerActionPersonalityContext(patient, 'PresentLongTermPlan')).toMatchObject({ fit: 'Favored', ownerLabel: 'Patient Builder' });
+    expect(ownerActionPersonalityContext(tycoon, 'PresentLongTermPlan')).toMatchObject({ fit: 'Skeptical', ownerLabel: 'Win-Now Tycoon' });
+
+    const patientResult = performCharacterInteraction(patient, owner, 'PresentLongTermPlan');
+    const tycoonResult = performCharacterInteraction(tycoon, owner, 'PresentLongTermPlan');
+    expect(patientResult.teamReputations![base.selectedTeamId].ownerPatience).toBe(base.teamReputations![base.selectedTeamId].ownerPatience + 3);
+    expect(tycoonResult.teamReputations![base.selectedTeamId].ownerPatience).toBe(base.teamReputations![base.selectedTeamId].ownerPatience + 1);
+    expect(interactionHistoryForTarget(tycoonResult, owner)[0]).toMatchObject({ tone: 'Mixed' });
+  });
+
+  it('makes a Budget Hawk reward proof and punish a weak financial review more strongly', () => {
+    const base = freshState();
+    const owner: CharacterInteractionTarget = { type: 'Owner', id: `owner-${base.selectedTeamId}`, name: 'Ownership', teamId: base.selectedTeamId };
+    const budgetHawk = {
+      ...base,
+      teamReputations: {
+        ...base.teamReputations!,
+        [base.selectedTeamId]: { ...base.teamReputations![base.selectedTeamId], ownerPersonality: 'BudgetHawk' as const },
+      },
+    };
+    const disciplined = {
+      ...budgetHawk,
+      principal: { ...budgetHawk.principal!, attributes: { ...budgetHawk.principal!.attributes, financialDiscipline: 70 } },
+    };
+    const careless = {
+      ...budgetHawk,
+      principal: { ...budgetHawk.principal!, attributes: { ...budgetHawk.principal!.attributes, financialDiscipline: 30 } },
+    };
+
+    expect(performCharacterInteraction(disciplined, owner, 'ReviewBudgetDiscipline').teamReputations![base.selectedTeamId].ownerPatience)
+      .toBe(base.teamReputations![base.selectedTeamId].ownerPatience + 4);
+    expect(performCharacterInteraction(careless, owner, 'ReviewBudgetDiscipline').teamReputations![base.selectedTeamId].ownerPatience)
+      .toBe(base.teamReputations![base.selectedTeamId].ownerPatience - 3);
   });
 
   it('rewards recruitment groundwork with a reduced staff signing fee', () => {
