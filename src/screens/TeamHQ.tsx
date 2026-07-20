@@ -76,8 +76,8 @@ export function TeamHQ() {
   return (
     <WorkspaceScreen className="era-feature-screen era-team-hq">
       <WorkspaceHeader
-        eyebrow="Weekly command center"
-        title={`${team?.name ?? 'Team'} — Team HQ`}
+        eyebrow="Manager Office"
+        title={`${team?.name ?? 'Team'} — Manager Office`}
         subtitle={`${state.seasonYear} ${state.series} · ${getGameModeLabel(state.gameMode)}${race ? ` · Round ${race.round} of ${state.calendar.length}` : ''}`}
         actions={state.seasonComplete ? (
           <Button variant="primary" onClick={() => navigate('/season-review')}>Season Review →</Button>
@@ -99,10 +99,11 @@ export function TeamHQ() {
         <div className="flex min-w-0 items-center gap-3">
           <span className="ui-decision-strip-pulse" aria-hidden="true" />
           <div className="min-w-0">
-            <div className="text-[10px] font-black uppercase tracking-[0.14em] text-neutral-400">Decision desk</div>
+            <div className="text-[10px] font-black uppercase tracking-[0.14em] text-neutral-400">Manager Office · Decision desk</div>
             <div className="truncate text-sm font-semibold text-neutral-100">
               {inboxActionable > 0 ? `${inboxActionable} decision${inboxActionable === 1 ? '' : 's'} waiting in the Inbox` : workflow ? `${workflow.context} is ready` : 'Team management is up to date'}
             </div>
+            <div className="mt-1 text-xs text-neutral-500">{workflow?.reason}</div>
           </div>
         </div>
         <div className="flex flex-wrap items-center gap-3 text-xs text-neutral-400">
