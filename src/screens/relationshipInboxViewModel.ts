@@ -10,6 +10,23 @@ type DirectRelationshipCoverage = {
   jobOpportunity: boolean;
 };
 
+function relationshipAdviceBody(
+  signal: NonNullable<RelationshipCommandSummary['topSignal']>,
+  timing: string,
+): string {
+  const read = signal.managementRead;
+  if (!read) return `${timing}: ${signal.reason} Review the Relationship Command Center for a broader manager read.`;
+  return `${timing}: ${signal.reason} ${read.posture}: ${read.read}`;
+}
+
+function relationshipAdviceDetail(
+  signal: NonNullable<RelationshipCommandSummary['topSignal']>,
+): string {
+  const read = signal.managementRead;
+  if (!read) return relationshipActionWindowDetail(signal.actionWindow);
+  return `Backroom read: ${read.caution} Watch: ${read.watch}`;
+}
+
 export function relationshipInboxMessage(
   summary: RelationshipCommandSummary,
   directCoverage: DirectRelationshipCoverage,
@@ -30,10 +47,11 @@ export function relationshipInboxMessage(
     severity: signal.status === 'MustActNow' ? 'critical' : 'action',
     category,
     title: `Relationship priority: ${signal.title}`,
-    body: `${timing}: ${signal.reason} Review the Relationship Command Center for the risk if ignored.`,
+    body: relationshipAdviceBody(signal, timing),
     route: '/relationships',
     routeLabel: 'Open Relationships',
     actionable: true,
-    whyItMatters: relationshipActionWindowDetail(signal.actionWindow),
+    source: 'Relationship advisor',
+    whyItMatters: relationshipAdviceDetail(signal),
   };
 }
