@@ -5,6 +5,7 @@ import {
   STAFF_WORKSPACE_TABS,
   staffPage,
   staffPageCount,
+  staffRoleFromQuery,
   staffTabFromQuery,
   staffVacancyCount,
 } from './staffViewModel';
@@ -52,5 +53,11 @@ describe('staff view model', () => {
     expect(staffTabFromQuery('contracts')).toBe('contracts');
     expect(staffTabFromQuery('unknown')).toBe('roster');
     expect(staffTabFromQuery(null)).toBe('roster');
+  });
+
+  it('normalizes Staff recruitment role deep links', () => {
+    expect(staffRoleFromQuery('Strategist')).toBe('Strategist');
+    expect(staffRoleFromQuery('unknown')).toBe('Technical Director');
+    expect(staffRoleFromQuery(null)).toBe('Technical Director');
   });
 });

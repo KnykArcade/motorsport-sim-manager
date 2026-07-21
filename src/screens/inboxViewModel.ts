@@ -183,18 +183,18 @@ function peopleMessages(state: GameState): InboxMessage[] {
   const staff = state.staff ?? [];
   const hiredRoles = new Set(staff.map((member) => member.role));
   const vacantRoles = STAFF_ROLES.filter((role) => !hiredRoles.has(role));
-  if (vacantRoles.length > 0) {
+  vacantRoles.forEach((role) => {
     messages.push({
-      id: 'inbox-staff-vacancies',
+      id: `inbox-staff-vacancy-${role.toLowerCase().replaceAll(' ', '-')}`,
       severity: 'action',
       category: 'people',
-      title: `${vacantRoles.length} staff position${vacantRoles.length === 1 ? '' : 's'} vacant`,
-      body: vacantRoles.join(' · '),
-      route: '/staff?tab=market',
+      title: `${role} position vacant`,
+      body: 'Recruitment is available before the next race phase.',
+      route: `/staff?tab=market&role=${encodeURIComponent(role)}`,
       routeLabel: 'Open Recruitment',
       actionable: true,
     });
-  }
+  });
 
   const expiringStaff = staff.filter((member) => (member.contractYearsRemaining ?? 99) <= 1);
   if (expiringStaff.length > 0) {

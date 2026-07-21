@@ -1,4 +1,4 @@
-import type { StaffMember } from '../types/staffTypes';
+import { STAFF_ROLES, type StaffMember, type StaffRole } from '../types/staffTypes';
 
 export type StaffWorkspaceTab = 'roster' | 'contracts' | 'council' | 'market';
 
@@ -13,6 +13,10 @@ export function staffTabFromQuery(value: string | null): StaffWorkspaceTab {
   return STAFF_WORKSPACE_TABS.some((tab) => tab.id === value)
     ? value as StaffWorkspaceTab
     : 'roster';
+}
+
+export function staffRoleFromQuery(value: string | null): StaffRole {
+  return STAFF_ROLES.includes(value as StaffRole) ? value as StaffRole : STAFF_ROLES[0];
 }
 
 export const STAFF_PAGE_SIZE = 3;

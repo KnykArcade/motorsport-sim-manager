@@ -85,11 +85,11 @@ describe('inboxViewModel', () => {
 
   it('surfaces vacant and expiring staff roles as people actions', () => {
     const base = newState();
-    const vacant = inboxMessages({ ...base, staff: [] }).find((message) => message.id === 'inbox-staff-vacancies');
+    const vacant = inboxMessages({ ...base, staff: [] }).find((message) => message.id === 'inbox-staff-vacancy-technical-director');
     expect(vacant).toMatchObject({
       actionable: true,
-      route: '/staff?tab=market',
-      body: expect.stringContaining('Technical Director'),
+      route: '/staff?tab=market&role=Technical%20Director',
+      title: 'Technical Director position vacant',
     });
 
     const staffMember: StaffMember = {

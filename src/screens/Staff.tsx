@@ -39,6 +39,7 @@ import {
   STAFF_WORKSPACE_TABS,
   staffPage,
   staffPageCount,
+  staffRoleFromQuery,
   staffVacancyCount,
   staffTabFromQuery,
   type StaffWorkspaceTab,
@@ -50,7 +51,7 @@ export function Staff() {
   const { state, dispatch } = useGame();
   const [searchParams, setSearchParams] = useSearchParams();
   const tab = staffTabFromQuery(searchParams.get('tab'));
-  const [activeRole, setActiveRole] = useState<StaffRole>(STAFF_ROLES[0]);
+  const activeRole = staffRoleFromQuery(searchParams.get('role'));
   const [marketView, setMarketView] = useState<StaffMarketView>('available');
   const [candidatePage, setCandidatePage] = useState(0);
   const [councilPage, setCouncilPage] = useState(0);
@@ -110,6 +111,12 @@ export function Staff() {
     if (nextTab === 'roster') next.delete('tab');
     else next.set('tab', nextTab);
     setSearchParams(next);
+  };
+  const setActiveRole = (nextRole: StaffRole) => {
+    const next = new URLSearchParams(searchParams);
+    next.set('role', nextRole);
+    setSearchParams(next);
+    setCandidatePage(0);
   };
 
   return (
