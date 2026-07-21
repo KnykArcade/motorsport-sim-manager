@@ -6,9 +6,12 @@ type Props = {
 
 export function RelationshipActionPreview({ preview }: Props) {
   return (
-    <div className="mt-2 grid gap-1.5 text-[9px] text-neutral-500 sm:grid-cols-3">
+    <div className="mt-2 grid gap-1.5 text-[9px] text-neutral-500 sm:grid-cols-2 xl:grid-cols-3">
       <PreviewCell label="Target" value={preview.target} />
       <PreviewCell label="Expected change" value={preview.expectedChange} />
+      <PreviewCell label="Relationship effect" value={preview.relationshipEffect} />
+      <PreviewCell label="Tradeoff / cost" value={preview.tradeoff} />
+      <PreviewCell label="Best use" value={preview.bestUse} />
       <PreviewCell label="Constraint" value={preview.constraint} />
     </div>
   );
