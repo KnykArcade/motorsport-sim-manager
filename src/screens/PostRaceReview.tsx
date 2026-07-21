@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { useGame } from '../game/GameContext';
 import { getTrackById } from '../data';
 import { buildPostRaceSummary, getCareerPhase, getOrCreatePhaseState } from '../game/careerPhaseEngine';
@@ -20,6 +20,7 @@ import {
 import {
   POST_RACE_REVIEW_TABS,
   postRaceReviewRisk,
+  postRaceReviewTabFromQuery,
   type PostRaceReviewTab,
 } from './raceTransitionViewModel';
 import type { GameState } from '../game/careerState';
@@ -32,10 +33,11 @@ import { RACE_WEEKEND_PACKAGES } from '../sim/raceWeekendPackageEngine';
 import { buildPostRaceCausalDebrief } from './postRaceDebriefViewModel';
 
 export function PostRaceReview() {
-  const [activeTab, setActiveTab] = useState<PostRaceReviewTab>('overview');
   const { raceId } = useParams();
   const { state, dispatch } = useGame();
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const activeTab = postRaceReviewTabFromQuery(searchParams.get('tab'));
   if (!state || !raceId) return null;
 
   const race = state.calendar.find((r) => r.id === raceId);
@@ -43,6 +45,12 @@ export function PostRaceReview() {
   const events = state.raceEvents[raceId] ?? [];
   const track = race ? getTrackById(race.trackId) : undefined;
   if (!race || !results) return null;
+  const setActiveTab = (nextTab: PostRaceReviewTab) => {
+    const next = new URLSearchParams(searchParams);
+    if (nextTab === 'overview') next.delete('tab');
+    else next.set('tab', nextTab);
+    setSearchParams(next);
+  };
 
   // Determine if this is the active post-race review (matches lastCompletedRaceId
   // and current phase is post_race_review). Old races are read-only.

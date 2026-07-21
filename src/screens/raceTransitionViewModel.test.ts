@@ -8,6 +8,7 @@ import {
   SEASON_REVIEW_TABS,
   canOpenRaceWeekendPhase,
   postRaceReviewRisk,
+  postRaceReviewTabFromQuery,
   visibleRaceWeekendPhases,
   transitionPage,
   transitionPageCount,
@@ -26,6 +27,13 @@ describe('race transition view model', () => {
     expect(EVENT_PAGE_SIZE).toBe(8);
     expect(transitionPageCount(24, RESULT_PAGE_SIZE)).toBe(3);
     expect(transitionPageCount(0, RESULT_PAGE_SIZE)).toBe(1);
+  });
+
+  it('normalizes post-race review deep-link tabs', () => {
+    expect(postRaceReviewTabFromQuery('investigation')).toBe('investigation');
+    expect(postRaceReviewTabFromQuery('championships')).toBe('championships');
+    expect(postRaceReviewTabFromQuery('unknown')).toBe('overview');
+    expect(postRaceReviewTabFromQuery(null)).toBe('overview');
   });
 
   it('keeps race-weekend tabs behind the reached workflow stage', () => {
