@@ -16,6 +16,7 @@ describe('staffResponsibilitiesViewModel', () => {
     expect(responsibilities[0]).toMatchObject({
       area: 'Technical programme',
       status: 'Assisted factory',
+      effect: 'Raises car development success rate.',
       detail: 'TD recommendations are advisory · Reliability first priority',
       route: '/technical',
     });
