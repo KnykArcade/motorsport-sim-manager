@@ -41,7 +41,58 @@ export type RelationshipActivityFollowUp = {
   cadence: 'Immediate' | 'NextRound' | 'Monitor' | 'Background';
   label: string;
   detail: string;
+  recommendedAction: {
+    label: string;
+    destination: string;
+    rationale: string;
+  };
 };
+
+function recommendedRelationshipAction(
+  targetType: RelationshipActivityItem['targetType'],
+  cadence: RelationshipActivityFollowUp['cadence'],
+): RelationshipActivityFollowUp['recommendedAction'] {
+  if (targetType === 'Owner') {
+    return {
+      label: cadence === 'Immediate' ? 'Open owner review' : 'Prepare owner update',
+      destination: 'Team / owner screen',
+      rationale: 'Owner confidence is the highest authority relationship and can become job-security pressure.',
+    };
+  }
+  if (targetType === 'Driver') {
+    return {
+      label: cadence === 'Immediate' ? 'Open driver relationship file' : 'Schedule driver check-in',
+      destination: 'Driver relationship file',
+      rationale: 'Driver fallout can affect confidence, promises, contract leverage, and race-week focus.',
+    };
+  }
+  if (targetType === 'Department' || targetType === 'Collective') {
+    return {
+      label: cadence === 'Immediate' ? 'Stabilize committee pressure' : 'Review department/commercial signals',
+      destination: targetType === 'Collective' ? 'Stakeholder board' : 'Staff & departments',
+      rationale: 'Committee reactions should be translated into workload, trust, morale, or commercial follow-through.',
+    };
+  }
+  if (targetType === 'RivalPrincipal') {
+    return {
+      label: 'Review paddock posture',
+      destination: 'Rival matrix',
+      rationale: 'Rival tension matters when it creates protest risk, political pressure, or escalation.',
+    };
+  }
+  if (targetType === 'StaffCandidate') {
+    return {
+      label: 'Advance recruitment context',
+      destination: 'Market / staff screen',
+      rationale: 'External relationships matter when scouting, approaches, vacancies, or negotiations are live.',
+    };
+  }
+  return {
+    label: 'Review relationship context',
+    destination: 'Relationship command center',
+    rationale: 'Use the hierarchy and current signal before committing another management action.',
+  };
+}
 
 export function relationshipActivityFollowUp(
   item: Pick<RelationshipActivityItem, 'targetType' | 'tone' | 'opinionDelta' | 'effects' | 'source'>,
@@ -56,6 +107,7 @@ export function relationshipActivityFollowUp(
         cadence: 'Immediate',
         label: 'Repair before next race',
         detail: 'Owner confidence damage can become job-security pressure if it is left unaddressed.',
+        recommendedAction: recommendedRelationshipAction(item.targetType, 'Immediate'),
       };
     }
     if (item.targetType === 'Driver') {
@@ -63,6 +115,7 @@ export function relationshipActivityFollowUp(
         cadence: 'Immediate',
         label: 'Recheck driver mood',
         detail: 'Driver trust or morale fallout should be reviewed before it reaches performance or contract leverage.',
+        recommendedAction: recommendedRelationshipAction(item.targetType, 'Immediate'),
       };
     }
     if (item.targetType === 'Department' || item.targetType === 'Collective') {
@@ -70,12 +123,14 @@ export function relationshipActivityFollowUp(
         cadence: 'NextRound',
         label: 'Review department impact',
         detail: 'Committee trust or workload damage should be checked next round before it becomes productivity loss.',
+        recommendedAction: recommendedRelationshipAction(item.targetType, 'NextRound'),
       };
     }
     return {
       cadence: 'NextRound',
       label: 'Control the fallout',
       detail: 'Negative relationship movement should be monitored before it becomes a wider political or market problem.',
+      recommendedAction: recommendedRelationshipAction(item.targetType, 'NextRound'),
     };
   }
 
@@ -84,6 +139,7 @@ export function relationshipActivityFollowUp(
       cadence: 'NextRound',
       label: 'Watch for second-order effects',
       detail: 'Mixed reactions can still become useful if the next communication matches the character or committee agenda.',
+      recommendedAction: recommendedRelationshipAction(item.targetType, 'NextRound'),
     };
   }
 
@@ -93,6 +149,7 @@ export function relationshipActivityFollowUp(
         cadence: 'Monitor',
         label: 'Bank the confidence',
         detail: 'This buys patience, but ownership will still judge the next visible result or financial signal.',
+        recommendedAction: recommendedRelationshipAction(item.targetType, 'Monitor'),
       };
     }
     if (item.targetType === 'Driver') {
@@ -100,6 +157,7 @@ export function relationshipActivityFollowUp(
         cadence: 'Monitor',
         label: 'Convert trust into performance',
         detail: 'Positive driver movement should be protected through race-week focus and promise discipline.',
+        recommendedAction: recommendedRelationshipAction(item.targetType, 'Monitor'),
       };
     }
     if (item.targetType === 'Department' || item.targetType === 'Collective') {
@@ -107,12 +165,14 @@ export function relationshipActivityFollowUp(
         cadence: 'Monitor',
         label: 'Let the operating gain settle',
         detail: 'The benefit should be allowed to show in morale, trust, workload, or commercial confidence before another intervention.',
+        recommendedAction: recommendedRelationshipAction(item.targetType, 'Monitor'),
       };
     }
     return {
       cadence: 'Monitor',
       label: 'Keep the channel warm',
       detail: 'The relationship has moved in the right direction; avoid over-managing unless a new pressure appears.',
+      recommendedAction: recommendedRelationshipAction(item.targetType, 'Monitor'),
     };
   }
 
@@ -121,6 +181,7 @@ export function relationshipActivityFollowUp(
       cadence: 'Monitor',
       label: 'Track advisor trust',
       detail: 'No direct opinion swing was recorded, but the advice history still shapes future department confidence.',
+      recommendedAction: recommendedRelationshipAction(item.targetType, 'Monitor'),
     };
   }
 
@@ -128,6 +189,7 @@ export function relationshipActivityFollowUp(
     cadence: 'Background',
     label: 'No follow-up needed',
     detail: 'This is recorded for context and does not require a dedicated management action.',
+    recommendedAction: recommendedRelationshipAction(item.targetType, 'Background'),
   };
 }
 
