@@ -2,7 +2,16 @@ import { recommendedInstruction, recommendedQualiRunPlan, recommendedRaceStrateg
 import type { KnowledgeGaps } from '../sim/practiceProgramEngine';
 import type { Track } from '../types/gameTypes';
 import type { WeekendForecast } from '../sim/weatherEngine';
+import { staffRatingOutOfTen } from '../sim/staffEngine';
+import type { StaffMember, StaffResponsibilityPolicy } from '../types/staffTypes';
 import type { RaceWeekendPhase } from './raceTransitionViewModel';
+
+export type StaffWeekendRecommendation = {
+  owner: string;
+  confidence: number;
+  summary: string;
+  approvalBoundary: string;
+};
 
 export type WeekendPlan = {
   nextPhase: RaceWeekendPhase;
@@ -13,6 +22,7 @@ export type WeekendPlan = {
   instructionRecommendation: string;
   knowledgePriority: 'Setup' | 'Tyres' | 'Reliability' | 'Complete';
   knowledgeGaps: KnowledgeGaps;
+  staffRecommendation?: StaffWeekendRecommendation;
 };
 
 const PHASE_LABELS: Record<RaceWeekendPhase, string> = {
@@ -48,6 +58,8 @@ export function buildWeekendPlan(input: {
   track: Track;
   forecast: WeekendForecast;
   knowledgeGaps: KnowledgeGaps;
+  raceEngineer?: StaffMember;
+  racePreparationPolicy?: StaffResponsibilityPolicy;
 }): WeekendPlan {
   const nextPhase = nextWeekendPhase(input.phase, input.isMinPackage, input.qualifyingComplete);
   const gaps = input.knowledgeGaps;
@@ -58,6 +70,15 @@ export function buildWeekendPlan(input: {
   ];
   priorities.sort((a, b) => b[1] - a[1]);
   const knowledgePriority = priorities[0][1] <= 0 ? 'Complete' : priorities[0][0];
+
+  const staffRecommendation = input.raceEngineer && input.racePreparationPolicy === 'staff_prepare_player_approval'
+    ? {
+        owner: `${input.raceEngineer.name} · ${staffRatingOutOfTen(input.raceEngineer.rating).toFixed(1)}/10`,
+        confidence: Math.round(50 + staffRatingOutOfTen(input.raceEngineer.rating) * 5),
+        summary: 'Race Engineer has prepared the weekend recommendations from the forecast and current knowledge gaps.',
+        approvalBoundary: 'You still approve the qualifying run, race strategy, and driver instructions.',
+      }
+    : undefined;
 
   return {
     nextPhase,
@@ -72,5 +93,6 @@ export function buildWeekendPlan(input: {
     instructionRecommendation: recommendedInstruction(input.track, input.forecast.Race).reason,
     knowledgePriority,
     knowledgeGaps: gaps,
+    staffRecommendation,
   };
 }

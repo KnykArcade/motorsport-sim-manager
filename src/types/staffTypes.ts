@@ -7,6 +7,20 @@ export type StaffRole =
   | 'Pit Crew Chief'
   | 'Strategist';
 
+export type StaffResponsibilityId =
+  | 'technical'
+  | 'race-engineering'
+  | 'pit-operations'
+  | 'race-strategy';
+
+export type StaffResponsibilityPolicy =
+  | 'player'
+  | 'staff_advisory'
+  | 'staff_prepare_player_approval'
+  | 'staff_execute_routine';
+
+export type StaffResponsibilityPolicies = Partial<Record<StaffResponsibilityId, StaffResponsibilityPolicy>>;
+
 export type StaffMember = {
   id: string;
   name: string;
