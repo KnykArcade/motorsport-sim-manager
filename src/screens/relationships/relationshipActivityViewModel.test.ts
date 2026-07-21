@@ -69,7 +69,7 @@ describe('relationship activity view model', () => {
       hierarchyLabel: 'Team & department relationship',
       source: 'AdvisorCouncil',
       tone: 'Positive',
-      effects: ['Technical trust +2'],
+      effects: ['Technical confidence may steady'],
       followUp: {
         cadence: 'Monitor',
         label: 'Let the operating gain settle',
@@ -132,7 +132,7 @@ describe('relationship activity view model', () => {
     expect(activity.map((item) => item.id).sort()).toEqual(['advisor:accepted', 'advisor:overruled']);
     expect(activity.find((item) => item.id === 'advisor:overruled')).toMatchObject({
       tone: 'Negative',
-      effects: ['Technical trust -2'],
+      effects: ['Technical confidence may cool'],
       followUp: {
         cadence: 'NextRound',
         label: 'Review department impact',

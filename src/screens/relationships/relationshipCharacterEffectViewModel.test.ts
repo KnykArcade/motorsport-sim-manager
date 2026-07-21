@@ -24,7 +24,7 @@ function withStance(state: GameState, target: CharacterInteractionTarget, stance
 }
 
 describe('character gameplay effect summaries', () => {
-  it('shows the owner dismissal threshold and live negative influence drift', () => {
+  it('summarizes owner pressure without exact thresholds or drift math', () => {
     const base = freshState();
     const target: CharacterInteractionTarget = {
       type: 'Owner',
@@ -43,12 +43,12 @@ describe('character gameplay effect summaries', () => {
 
     const effect = characterGameplayEffect(state, relationshipAttentionForTarget(state, target));
 
-    expect(effect).toMatchObject({ label: 'Career position', value: '21/100 job security', tone: 'Negative' });
-    expect(effect?.detail).toContain('by -1 each round');
-    expect(effect?.detail).toContain('Dismissal threshold: below 22');
+    expect(effect).toMatchObject({ label: 'Career position', value: 'Job looks immediately vulnerable', tone: 'Negative' });
+    expect(`${effect?.value} ${effect?.detail}`).not.toMatch(/\/100|threshold|by [+-]?\d/i);
+    expect(effect?.detail).toContain('patience');
   });
 
-  it('shows the exact driver confidence modifier used by race simulation', () => {
+  it('summarizes driver pace pressure without exact simulation modifiers', () => {
     const base = freshState();
     const driver = base.drivers.find((entry) => entry.teamId === base.selectedTeamId)!;
     const relationship = base.driverRelationships![driver.id];
@@ -71,8 +71,8 @@ describe('character gameplay effect summaries', () => {
 
     const effect = characterGameplayEffect(state, relationshipAttentionForTarget(state, target));
 
-    expect(effect).toMatchObject({ label: 'Qualifying and race pace', value: '+8% pace', tone: 'Positive' });
+    expect(effect).toMatchObject({ label: 'Qualifying and race pace', value: 'Pace may lift if the race weekend starts cleanly', tone: 'Positive' });
     expect(effect?.detail).toContain('Inspired confidence');
-    expect(effect?.detail).toContain('by +1 each round');
+    expect(`${effect?.value} ${effect?.detail}`).not.toMatch(/[+-]\d|% pace|by [+-]?\d/i);
   });
 });

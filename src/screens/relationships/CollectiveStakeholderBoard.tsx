@@ -20,6 +20,13 @@ const STATUS_STYLES: Record<CollectiveStakeholderProfile['status'], string> = {
   Stable: 'border-emerald-500/30 bg-emerald-500/5 text-emerald-200',
 };
 
+function stakeholderHealthRead(health: number): string {
+  if (health >= 75) return 'Strong';
+  if (health >= 55) return 'Stable';
+  if (health >= 35) return 'Fragile';
+  return 'Critical';
+}
+
 type Props = {
   state: GameState;
   profiles: CollectiveStakeholderProfile[];
@@ -67,7 +74,7 @@ function CollectiveStakeholderCard({ state, profile, onReview, onTakeAction }: {
       <div className="mt-3 flex items-center justify-between gap-3 rounded bg-neutral-950/35 px-2.5 py-2">
         <div className="text-[11px] text-neutral-400">{profile.authorityLabel}</div>
         <div className="shrink-0 text-right">
-          <div className="text-base font-black tabular-nums text-neutral-100">{profile.health}</div>
+          <div className="text-base font-black text-neutral-100">{stakeholderHealthRead(profile.health)}</div>
           <div className="text-[9px] uppercase tracking-wide text-neutral-500">Health</div>
         </div>
       </div>

@@ -441,6 +441,15 @@ export function relationshipFollowUpAgenda(
     .slice(0, limit);
 }
 
+function advisorTrustEffectRead(departmentId: string | undefined, trustChange: number): string {
+  const department = departmentId ?? 'Department';
+  if (trustChange >= 3) return `${department} trust may firm up`;
+  if (trustChange > 0) return `${department} confidence may steady`;
+  if (trustChange <= -3) return `${department} trust may need rebuilding`;
+  if (trustChange < 0) return `${department} confidence may cool`;
+  return `${department} reaction looks neutral`;
+}
+
 export function relationshipActivityFromSources(
   memories: CharacterMemory[],
   recommendations: AdvisorRecommendation[],
@@ -484,7 +493,7 @@ export function relationshipActivityFromSources(
     const tone = trustChange > 0 ? 'Positive' : trustChange < 0 ? 'Negative' : 'Informational';
     const effects = recommendation.trustChange == null
       ? []
-      : [`${recommendation.departmentId ?? 'Department'} trust ${trustChange > 0 ? '+' : ''}${trustChange}`];
+      : [advisorTrustEffectRead(recommendation.departmentId, trustChange)];
     items.set(`advisor:${recommendation.id}`, {
       id: `advisor:${recommendation.id}`,
       seasonYear: recommendation.createdSeasonYear,

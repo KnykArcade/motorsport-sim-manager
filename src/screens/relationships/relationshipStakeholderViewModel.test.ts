@@ -71,10 +71,11 @@ describe('collective stakeholder priorities', () => {
       status: 'Stable',
       gameplayEffect: {
         label: 'Race preparation execution',
-        value: '+2.0%',
+        value: 'Preparation may sharpen',
       },
     });
-    expect(profile?.reasons[0]).toContain('All 8 department committees are aligned');
+    expect(profile?.reasons[0]).toContain('All 8 department committees are broadly aligned');
+    expect(JSON.stringify(profile)).not.toMatch(/[+-]\d+\.\d+%/);
   });
 
   it('raises a critical department signal with a specific plain-language reason', () => {
@@ -83,7 +84,8 @@ describe('collective stakeholder priorities', () => {
     }));
 
     expect(profile?.status).toBe('MustActNow');
-    expect(profile?.reasons[0]).toContain('Engineering: trust 18, workload 94');
+    expect(profile?.reasons[0]).toContain('Engineering: trust critical, workload overloaded');
+    expect(profile?.reasons[0]).not.toMatch(/\d/);
   });
 
   it('uses sponsor confidence for urgency while keeping fan support contextual', () => {
@@ -99,11 +101,11 @@ describe('collective stakeholder priorities', () => {
     });
 
     expect(critical?.status).toBe('MustActNow');
-    expect(critical?.reasons.some((reason) => reason.includes('Partner One confidence is 14'))).toBe(true);
-    expect(critical?.gameplayEffect.value).toBe('44%');
+    expect(critical?.reasons.some((reason) => reason.includes('Partner One confidence looks close to breaking'))).toBe(true);
+    expect(critical?.gameplayEffect.value).toBe('Renewal outlook vulnerable');
     expect(stableLowFanBase?.status).toBe('Stable');
-    expect(stableLowFanBase?.gameplayEffect.value).toBe('85%');
-    expect(stableLowFanBase?.metrics.find((metric) => metric.label === 'Fan support')?.value).toBe('20');
+    expect(stableLowFanBase?.gameplayEffect.value).toBe('Renewal outlook strong');
+    expect(stableLowFanBase?.metrics.find((metric) => metric.label === 'Fan support')?.value).toBe('Critical');
   });
 
   it('orders an urgent collective relationship ahead of a stable higher-authority committee', () => {

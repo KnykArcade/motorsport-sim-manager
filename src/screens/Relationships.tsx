@@ -11,7 +11,6 @@ import { TEAM_ORDER_SPECS } from '../sim/relationshipEngine';
 import {
   computeConfidenceState,
   overallConfidenceScore,
-  confidencePerformanceModifier,
   contractLoyaltyModifier,
 } from '../sim/driverConfidenceEngine';
 import { promiseProgress } from './relationships/promiseProgress';
@@ -111,6 +110,39 @@ function confidenceStateDescription(state: ConfidenceState): string {
     case 'Disillusioned': return 'Has largely lost faith — significant performance loss.';
     case 'Checked Out': return 'Mentally gone — only going through the motions.';
   }
+}
+
+function confidenceScoreRead(score: number): string {
+  if (score >= 80) return 'Confidence read: very strong';
+  if (score >= 65) return 'Confidence read: steady';
+  if (score >= 45) return 'Confidence read: mixed';
+  if (score >= 25) return 'Confidence read: fragile';
+  return 'Confidence read: critical';
+}
+
+function confidencePaceRead(state: ConfidenceState): { label: string; className: string } {
+  switch (state) {
+    case 'Inspired':
+    case 'Confident':
+      return { label: 'Pace may lift', className: 'text-green-400' };
+    case 'Settled':
+      return { label: 'Small pace edge possible', className: 'text-emerald-400' };
+    case 'Neutral':
+      return { label: 'Pace effect looks neutral', className: 'text-neutral-500' };
+    case 'Concerned':
+      return { label: 'Small pace drag possible', className: 'text-amber-400' };
+    case 'Frustrated':
+    case 'Disillusioned':
+    case 'Checked Out':
+      return { label: 'Pace may suffer', className: 'text-red-400' };
+  }
+}
+
+function promiseTrustImpactRead(impact: number): string {
+  if (impact >= 8) return 'Major trust damage';
+  if (impact >= 4) return 'Trust damage may linger';
+  if (impact > 0) return 'Minor trust damage';
+  return 'Damage unclear';
 }
 
 function trustLevelDescription(label: string, value: number): string {
@@ -497,7 +529,7 @@ function DriverCard({
 }: DriverCardProps) {
   const confidenceState = computeConfidenceState(rel);
   const confidenceScore = overallConfidenceScore(rel);
-  const perfMod = confidencePerformanceModifier(rel);
+  const paceRead = confidencePaceRead(confidenceState);
   const loyaltyMod = contractLoyaltyModifier(rel);
   const activePromises = promises.filter((p) => p.status === 'active');
   const keptPromises = promises.filter((p) => p.status === 'kept');
@@ -562,10 +594,10 @@ function DriverCard({
             {confidenceState}
           </span>
           <span className="text-[11px] text-neutral-500">
-            Score: {confidenceScore}/100
+            {confidenceScoreRead(confidenceScore)}
           </span>
-          <span className={`text-[11px] tabular-nums ${perfMod >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-            {perfMod >= 0 ? '+' : ''}{(perfMod * 100).toFixed(0)}% pace
+          <span className={`text-[11px] ${paceRead.className}`}>
+            {paceRead.label}
           </span>
         </div>
         <p className="mt-1 text-xs text-neutral-500">{confidenceStateDescription(confidenceState)}</p>
@@ -658,7 +690,7 @@ function DriverCard({
                     <span className="rounded bg-red-950/60 px-1.5 py-0.5 text-red-300">
                       {PROMISE_TYPE_LABELS[p.promiseType]}
                     </span>
-                    <span className="text-neutral-600">Trust impact: {p.trustImpact}</span>
+                    <span className="text-neutral-600">{promiseTrustImpactRead(p.trustImpact)}</span>
                   </li>
                 ))}
               </ul>

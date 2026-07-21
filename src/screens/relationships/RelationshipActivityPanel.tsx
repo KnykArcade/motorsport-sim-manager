@@ -26,6 +26,35 @@ const FOLLOW_UP_STYLES: Record<RelationshipActivityItem['followUp']['cadence'], 
   Background: 'border-neutral-800 bg-neutral-950/35 text-neutral-400',
 };
 
+function opinionRead(delta: number): string {
+  if (delta >= 4) return 'Strong positive reaction';
+  if (delta > 0) return 'Positive reaction';
+  if (delta <= -4) return 'Strong negative reaction';
+  if (delta < 0) return 'Negative reaction';
+  return 'Reaction unclear';
+}
+
+function opinionSummaryRead(delta: number): string {
+  if (delta >= 6) return 'Mostly warmer';
+  if (delta > 0) return 'Slightly warmer';
+  if (delta <= -6) return 'Mostly colder';
+  if (delta < 0) return 'Slightly colder';
+  return 'Balanced';
+}
+
+function effectRead(effect: string): string {
+  const lower = effect.toLowerCase();
+  const negative = /\s-\d/.test(effect);
+  const positive = /\s\+\d/.test(effect);
+  if (lower.includes('workload')) return negative ? 'Workload pressure may ease' : 'Workload pressure may rise';
+  if (lower.includes('morale')) return negative ? 'Morale may cool' : 'Morale may steady';
+  if (lower.includes('trust')) return negative ? 'Trust may need rebuilding' : 'Trust may firm up';
+  if (lower.includes('patience')) return negative ? 'Patience may thin' : 'Patience may improve';
+  if (positive) return 'Relationship effect looks helpful';
+  if (negative) return 'Relationship effect needs watching';
+  return effect;
+}
+
 export function RelationshipActivityPanel({ state }: { state: GameState }) {
   const [filter, setFilter] = useState<ActivityFilter>('All');
   const navigate = useNavigate();
@@ -64,7 +93,7 @@ export function RelationshipActivityPanel({ state }: { state: GameState }) {
         <OutcomeMetric label="Positive" value={summary.positive} detail="Favorable reactions" tone="positive" />
         <OutcomeMetric
           label="Direct opinion"
-          value={`${summary.netOpinionDelta > 0 ? '+' : ''}${summary.netOpinionDelta}`}
+          value={opinionSummaryRead(summary.netOpinionDelta)}
           detail="Net of recorded character reactions"
           tone={summary.netOpinionDelta > 0 ? 'positive' : summary.netOpinionDelta < 0 ? 'negative' : undefined}
         />
@@ -215,11 +244,11 @@ function ActivityRow({ item, onOpenAction }: { item: RelationshipActivityItem; o
         <div className="mt-2 flex flex-wrap gap-1.5">
           {item.opinionDelta ? (
             <span className={`rounded px-2 py-1 text-[10px] ${item.opinionDelta > 0 ? 'bg-emerald-500/10 text-emerald-300' : 'bg-red-500/10 text-red-300'}`}>
-              Opinion {item.opinionDelta > 0 ? '+' : ''}{item.opinionDelta}
+              {opinionRead(item.opinionDelta)}
             </span>
           ) : null}
           {item.effects.map((effect) => (
-            <span key={effect} className="rounded bg-neutral-800 px-2 py-1 text-[10px] text-neutral-300">{effect}</span>
+            <span key={effect} className="rounded bg-neutral-800 px-2 py-1 text-[10px] text-neutral-300">{effectRead(effect)}</span>
           ))}
         </div>
       )}

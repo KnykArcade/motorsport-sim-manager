@@ -97,6 +97,21 @@ const INFLUENCE_STANCE_COLORS = {
   Obstructive: 'bg-red-500/10 text-red-300',
 } as const;
 
+function influencePowerRead(power: number): string {
+  if (power >= 80) return 'Very high leverage';
+  if (power >= 60) return 'High leverage';
+  if (power >= 35) return 'Moderate leverage';
+  return 'Limited leverage';
+}
+
+function influenceSupportRead(support: number): string {
+  if (support >= 25) return 'Strongly helping';
+  if (support > 0) return 'Helping';
+  if (support <= -25) return 'Strongly resisting';
+  if (support < 0) return 'Resisting';
+  return 'Neutral';
+}
+
 type PaddockTab = PaddockAgendaTab;
 type PeopleSection = PaddockPeopleSection;
 
@@ -329,7 +344,7 @@ export function PaddockWeek() {
         />
         {activePeopleSection === 'support' && internalInfluence.length > 0 && (
           <Panel title="Internal Support Map">
-            <p className="mb-3 text-xs text-neutral-500">Power shows how much leverage a person has. Support shows whether they are helping or resisting your leadership; that stance now applies a small weekly effect to their driver, department, or ownership relationship.</p>
+            <p className="mb-3 text-xs text-neutral-500">Power shows the rough leverage a person has. Support shows whether they are helping or resisting your leadership; that stance can nudge their driver, department, or ownership relationship over time.</p>
             <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-4">
               {internalInfluence.map((profile) => (
                 <article key={`${profile.target.type}-${profile.target.id}`} className="rounded-lg border border-neutral-800 bg-neutral-900/50 p-2.5">
@@ -341,8 +356,8 @@ export function PaddockWeek() {
                     <span className={`rounded px-1.5 py-0.5 text-[10px] font-bold ${INFLUENCE_STANCE_COLORS[profile.stance]}`}>{profile.stance}</span>
                   </div>
                   <div className="mt-2 grid grid-cols-2 gap-1 text-center text-[10px]">
-                    <div className="rounded bg-neutral-950/70 px-1.5 py-1 text-neutral-500">Power <strong className="text-neutral-200">{profile.power}</strong></div>
-                    <div className="rounded bg-neutral-950/70 px-1.5 py-1 text-neutral-500">Support <strong className="text-neutral-200">{profile.support > 0 ? '+' : ''}{profile.support}</strong></div>
+                    <div className="rounded bg-neutral-950/70 px-1.5 py-1 text-neutral-500">Power <strong className="text-neutral-200">{influencePowerRead(profile.power)}</strong></div>
+                    <div className="rounded bg-neutral-950/70 px-1.5 py-1 text-neutral-500">Support <strong className="text-neutral-200">{influenceSupportRead(profile.support)}</strong></div>
                   </div>
                   <p className="mt-2 line-clamp-2 text-[10px] leading-relaxed text-neutral-400">{profile.effectLabel}</p>
                 </article>
