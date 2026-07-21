@@ -44,6 +44,7 @@ export type RelationshipActivityFollowUp = {
   recommendedAction: {
     label: string;
     destination: string;
+    route: string;
     rationale: string;
   };
 };
@@ -56,6 +57,7 @@ function recommendedRelationshipAction(
     return {
       label: cadence === 'Immediate' ? 'Open owner review' : 'Prepare owner update',
       destination: 'Team / owner screen',
+      route: '/teams',
       rationale: 'Owner confidence is the highest authority relationship and can become job-security pressure.',
     };
   }
@@ -63,13 +65,23 @@ function recommendedRelationshipAction(
     return {
       label: cadence === 'Immediate' ? 'Open driver relationship file' : 'Schedule driver check-in',
       destination: 'Driver relationship file',
+      route: '/relationships',
       rationale: 'Driver fallout can affect confidence, promises, contract leverage, and race-week focus.',
     };
   }
-  if (targetType === 'Department' || targetType === 'Collective') {
+  if (targetType === 'Staff' || targetType === 'Department') {
+    return {
+      label: cadence === 'Immediate' ? 'Stabilize staff pressure' : 'Review staff/department signals',
+      destination: 'Staff & departments',
+      route: '/staff',
+      rationale: 'Staff and department reactions should be translated into workload, trust, morale, or delivery follow-through.',
+    };
+  }
+  if (targetType === 'Collective') {
     return {
       label: cadence === 'Immediate' ? 'Stabilize committee pressure' : 'Review department/commercial signals',
-      destination: targetType === 'Collective' ? 'Stakeholder board' : 'Staff & departments',
+      destination: 'Stakeholder board',
+      route: '/relationships',
       rationale: 'Committee reactions should be translated into workload, trust, morale, or commercial follow-through.',
     };
   }
@@ -77,6 +89,7 @@ function recommendedRelationshipAction(
     return {
       label: 'Review paddock posture',
       destination: 'Rival matrix',
+      route: '/rivals',
       rationale: 'Rival tension matters when it creates protest risk, political pressure, or escalation.',
     };
   }
@@ -84,12 +97,14 @@ function recommendedRelationshipAction(
     return {
       label: 'Advance recruitment context',
       destination: 'Market / staff screen',
+      route: '/market',
       rationale: 'External relationships matter when scouting, approaches, vacancies, or negotiations are live.',
     };
   }
   return {
     label: 'Review relationship context',
     destination: 'Relationship command center',
+    route: '/relationships',
     rationale: 'Use the hierarchy and current signal before committing another management action.',
   };
 }
