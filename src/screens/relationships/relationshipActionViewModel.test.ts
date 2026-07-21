@@ -48,6 +48,9 @@ describe('relationship management moves', () => {
       preview: {
         target: 'Owner',
         expectedChange: expect.stringContaining('Owner confidence'),
+        relationshipEffect: expect.stringContaining('Owner patience'),
+        tradeoff: expect.stringContaining('budget explanation'),
+        bestUse: expect.stringContaining('owner confidence'),
         constraint: expect.stringContaining('on-track results'),
       },
     });
@@ -58,6 +61,9 @@ describe('relationship management moves', () => {
       preview: {
         target: 'Driver',
         expectedChange: expect.stringContaining('Trust/morale fallout'),
+        relationshipEffect: expect.stringContaining('Trust in principal'),
+        tradeoff: expect.stringContaining('sporting compromise'),
+        bestUse: expect.stringContaining('promise'),
       },
     });
   });
@@ -69,6 +75,9 @@ describe('relationship management moves', () => {
       expectedEffect: expect.stringContaining('upgrade delivery'),
       preview: {
         target: 'Departments',
+        relationshipEffect: expect.stringContaining('Department trust'),
+        tradeoff: expect.stringContaining('budget'),
+        bestUse: expect.stringContaining('overloaded'),
         constraint: expect.stringContaining('budget'),
       },
     });
@@ -78,6 +87,9 @@ describe('relationship management moves', () => {
       expectedEffect: expect.stringContaining('sponsorship income'),
       preview: {
         expectedChange: expect.stringContaining('Sponsor confidence'),
+        relationshipEffect: expect.stringContaining('Sponsor confidence'),
+        tradeoff: expect.stringContaining('objectives'),
+        bestUse: expect.stringContaining('commercial pressure'),
       },
     });
   });
@@ -98,6 +110,9 @@ describe('relationship management moves', () => {
       expectedEffect: expect.stringContaining('career options'),
       preview: {
         target: 'Potential employers',
+        relationshipEffect: expect.stringContaining('Rival-owner interest'),
+        tradeoff: expect.stringContaining('disloyal'),
+        bestUse: expect.stringContaining('career-market decision'),
         constraint: expect.stringContaining('Current owner'),
       },
     });
@@ -117,6 +132,9 @@ describe('relationship management moves', () => {
       preview: {
         target: 'Open race seat',
         expectedChange: expect.stringContaining('Lineup completeness'),
+        relationshipEffect: expect.stringContaining('Candidate interest'),
+        tradeoff: expect.stringContaining('role promises'),
+        bestUse: expect.stringContaining('open race seat'),
       },
     });
   });
@@ -127,6 +145,9 @@ describe('relationship management moves', () => {
       priorityLabel: 'Background cadence',
       preview: {
         target: 'Owner',
+        relationshipEffect: expect.stringContaining('No immediate swing'),
+        tradeoff: expect.stringContaining('attention'),
+        bestUse: expect.stringContaining('stable'),
         constraint: 'No urgent action required.',
       },
     });
