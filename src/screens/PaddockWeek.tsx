@@ -36,7 +36,7 @@ import { activeCharacterMandates } from '../sim/characterMandateEngine';
 import { unstableCharacterStability } from '../sim/characterBreakingPointEngine';
 import { atRiskFutureIntentions, characterFutureIntentLabel } from '../sim/characterFutureIntentEngine';
 import {
-  advisorOptionImpactPreview,
+  advisorCouncilReadForOption,
   relationshipStakeholdersForDecision,
 } from './paddock/relationshipDecisionViewModel';
 import {
@@ -596,10 +596,8 @@ export function PaddockWeek() {
                   </span>
                 </div>
                 <div className="mt-1 text-[11px] text-neutral-400">{recommendation.resolutionNote}</div>
-                <div className={`mt-2 text-[10px] font-semibold ${
-                  (recommendation.trustChange ?? 0) >= 0 ? 'text-emerald-400' : 'text-red-400'
-                }`}>
-                  Department trust {(recommendation.trustChange ?? 0) > 0 ? '+' : ''}{recommendation.trustChange ?? 0}
+                <div className={`mt-2 text-[10px] font-semibold ${advisorDebriefToneClass(recommendation)}`}>
+                  {advisorDebriefRead(recommendation)}
                 </div>
               </div>
             ))}
@@ -794,7 +792,7 @@ function DecisionCard({
             ))}
           </div>
           <p className="mt-2 text-[10px] text-neutral-500">
-            Following advice improves department trust and execution. Overruling strong advice can reduce trust and strategic alignment.
+            Advisor recommendations are directional reads. The room's reaction can shape confidence and alignment after the decision settles.
           </p>
         </div>
       )}
@@ -836,6 +834,18 @@ function AdvisorCard({ recommendation }: { recommendation: AdvisorRecommendation
   );
 }
 
+function advisorDebriefRead(recommendation: AdvisorRecommendation): string {
+  if (recommendation.status === 'Accepted') return 'Department confidence may steady after being heard.';
+  if ((recommendation.trustChange ?? 0) < 0) return 'Some internal trust may need rebuilding after this call.';
+  return 'Advisor reaction looks contained, but worth watching.';
+}
+
+function advisorDebriefToneClass(recommendation: AdvisorRecommendation): string {
+  if (recommendation.status === 'Accepted') return 'text-emerald-400';
+  if ((recommendation.trustChange ?? 0) < 0) return 'text-orange-300';
+  return 'text-neutral-400';
+}
+
 function DecisionOptionButton({
   event,
   option,
@@ -848,7 +858,10 @@ function DecisionOptionButton({
   onResolve: (optionId: string) => void;
 }) {
   const preview = leadershipDecisionPreview(event, option);
-  const advisorImpact = advisorOptionImpactPreview(recommendations, option.id);
+  const councilRead = advisorCouncilReadForOption(recommendations, option.id);
+  const councilToneClass = councilRead.tone === 'positive'
+    ? 'text-emerald-400'
+    : councilRead.tone === 'warning' ? 'text-red-400' : 'text-amber-300';
   return (
     <button
       onClick={() => onResolve(option.id)}
@@ -864,15 +877,9 @@ function DecisionOptionButton({
       )}
       {recommendations.length > 0 && (
         <div className="mt-2 border-t border-neutral-800 pt-2 text-[10px] text-neutral-400">
-          <div>
-            Council: {advisorImpact.supporting} support · {advisorImpact.overruled} overruled
-          </div>
-          <div className={advisorImpact.netTrustChange >= 0 ? 'text-emerald-400' : 'text-red-400'}>
-            Projected department trust {advisorImpact.netTrustChange > 0 ? '+' : ''}{advisorImpact.netTrustChange}
-            {advisorImpact.highConfidenceObjections > 0
-              ? ` · ${advisorImpact.highConfidenceObjections} strong objection${advisorImpact.highConfidenceObjections === 1 ? '' : 's'}`
-              : ''}
-          </div>
+          <div className={`font-semibold ${councilToneClass}`}>{councilRead.label}</div>
+          <div className="mt-0.5 leading-relaxed">{councilRead.read}</div>
+          <div className="mt-0.5 leading-relaxed text-neutral-500">{councilRead.watch}</div>
         </div>
       )}
     </button>

@@ -6,6 +6,7 @@ import { defaultCareerPhaseState } from '../../game/careerPhaseEngine';
 import type { PaddockEvent } from '../../types/careerPhaseTypes';
 import type { AdvisorRecommendation } from '../../types/phase18Types';
 import {
+  advisorCouncilReadForOption,
   advisorOptionImpactPreview,
   relationshipStakeholdersForDecision,
 } from './relationshipDecisionViewModel';
@@ -92,7 +93,7 @@ describe('relationship decision view model', () => {
     expect(profiles[0].reasons[0]).toContain('Driver response required');
   });
 
-  it('previews the exact council support, objections, and net trust effect', () => {
+  it('keeps internal advisor impact available for resolving department trust', () => {
     const recommendations = [
       advisor('strong-a', 'a', 80),
       advisor('normal-b', 'b', 60),
@@ -111,5 +112,25 @@ describe('relationship decision view model', () => {
       netTrustChange: -1,
       highConfidenceObjections: 1,
     });
+  });
+
+  it('turns advisor impact into fuzzy council reads without exact effect hints', () => {
+    const recommendations = [
+      advisor('strong-a', 'a', 80),
+      advisor('normal-b', 'b', 60),
+      advisor('normal-a', 'a', 40),
+    ];
+
+    const supportedRead = advisorCouncilReadForOption(recommendations, 'a');
+    expect(supportedRead.label).toBe('Council split');
+    expect(supportedRead.tone).toBe('caution');
+    expect(`${supportedRead.label} ${supportedRead.read} ${supportedRead.watch}`).not.toMatch(/[+-]\d|trust \d|confidence \d/i);
+    expect(supportedRead.read).toMatch(/enough support|not enough/i);
+
+    const resistedRead = advisorCouncilReadForOption(recommendations, 'b');
+    expect(resistedRead.label).toBe('Strong objection possible');
+    expect(resistedRead.tone).toBe('warning');
+    expect(`${resistedRead.label} ${resistedRead.read} ${resistedRead.watch}`).toMatch(/may|watch/i);
+    expect(`${resistedRead.label} ${resistedRead.read} ${resistedRead.watch}`).not.toMatch(/[+-]\d|trust \d|confidence \d/i);
   });
 });
