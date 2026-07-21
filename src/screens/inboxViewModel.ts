@@ -3,7 +3,7 @@
 // depth. Pure projection of existing state — no new simulation mechanics.
 
 import type { GameState } from '../game/careerState';
-import { activeDriversForTeam } from '../game/careerState';
+import { activeDriversForTeam, currentRace } from '../game/careerState';
 import { developmentSlots } from '../sim/facilityEngine';
 import { technicalDirectorProposals } from '../sim/technicalAdvisorEngine';
 import { technicalStateForTeam } from '../sim/technicalAdapters';
@@ -195,6 +195,24 @@ function peopleMessages(state: GameState): InboxMessage[] {
       actionable: true,
     });
   });
+
+  const race = currentRace(state);
+  const raceEngineer = staff.find((member) => member.role === 'Race Engineer');
+  if (race && !race.completed && raceEngineer && state.staffResponsibilityPolicies?.['race-engineering'] === 'staff_prepare_player_approval') {
+    messages.push({
+      id: `inbox-weekend-plan-${race.id}`,
+      severity: 'action',
+      category: 'people',
+      title: `${raceEngineer.name} prepared the weekend plan`,
+      body: 'Review the staff recommendation before approving qualifying and race decisions.',
+      route: '/weekend',
+      routeLabel: 'Open Weekend Plan',
+      actionable: true,
+      source: 'Race engineering',
+      whyItMatters: 'A prepared recommendation reduces routine workload without taking away your consequential race decisions.',
+      round: race.round,
+    });
+  }
 
   const expiringStaff = staff.filter((member) => (member.contractYearsRemaining ?? 99) <= 1);
   expiringStaff.forEach((member) => {

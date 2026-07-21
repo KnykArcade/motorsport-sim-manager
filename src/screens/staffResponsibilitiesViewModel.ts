@@ -1,6 +1,12 @@
 import { staffByRole, staffRatingOutOfTen } from '../sim/staffEngine';
 import type { GameState } from '../game/careerState';
-import { ROLE_EFFECT, type StaffMember, type StaffRole } from '../types/staffTypes';
+import {
+  ROLE_EFFECT,
+  type StaffMember,
+  type StaffResponsibilityId,
+  type StaffResponsibilityPolicy,
+  type StaffRole,
+} from '../types/staffTypes';
 
 export type StaffResponsibility = {
   id: string;
@@ -10,6 +16,9 @@ export type StaffResponsibility = {
   status: string;
   effect: string;
   detail: string;
+  policy: StaffResponsibilityPolicy;
+  policyLabel: string;
+  approvalBoundary: string;
   route: string;
   routeLabel: string;
 };
@@ -29,6 +38,7 @@ export function staffResponsibilities(state: GameState): StaffResponsibility[] {
       status: mode === 'assisted' ? 'Assisted factory' : 'Player-led factory',
       effect: ROLE_EFFECT['Technical Director'],
       detail: `TD recommendations are advisory · ${priorityLabel(priority)} priority`,
+      ...policyDetails('technical', state),
       route: '/technical',
       routeLabel: 'Open Technical Center',
     },
@@ -40,6 +50,7 @@ export function staffResponsibilities(state: GameState): StaffResponsibility[] {
       'Weekend recommendations remain advisory',
       ROLE_EFFECT['Race Engineer'],
       'Practice setup confidence and weekend guidance',
+      state,
       '/weekend',
       'Open Race Weekend',
     ),
@@ -51,6 +62,7 @@ export function staffResponsibilities(state: GameState): StaffResponsibility[] {
       'Execution support active',
       ROLE_EFFECT['Pit Crew Chief'],
       'Pit-stop execution is influenced by this role',
+      state,
       '/staff',
       'Open Staff',
     ),
@@ -62,6 +74,7 @@ export function staffResponsibilities(state: GameState): StaffResponsibility[] {
       'Strategy calls remain player-controlled',
       ROLE_EFFECT.Strategist,
       'In-race strategy support and recommendation quality',
+      state,
       '/weekend',
       'Open Race Weekend',
     ),
@@ -69,13 +82,14 @@ export function staffResponsibilities(state: GameState): StaffResponsibility[] {
 }
 
 function responsibility(
-  id: string,
+  id: StaffResponsibilityId,
   area: string,
   role: StaffRole,
   owner: StaffMember | undefined,
   status: string,
   effect: string,
   detail: string,
+  state: GameState,
   route: string,
   routeLabel: string,
 ): StaffResponsibility {
@@ -87,8 +101,33 @@ function responsibility(
     status,
     effect,
     detail,
+    ...policyDetails(id, state),
     route,
     routeLabel,
+  };
+}
+
+function policyDetails(id: StaffResponsibilityId, state: GameState): {
+  policy: StaffResponsibilityPolicy;
+  policyLabel: string;
+  approvalBoundary: string;
+} {
+  const policy = state.staffResponsibilityPolicies?.[id] ?? 'player';
+  return {
+    policy,
+    policyLabel: {
+      player: 'Player-led',
+      staff_advisory: 'Staff advisory',
+      staff_prepare_player_approval: 'Staff-prepared · player approval',
+      staff_execute_routine: 'Staff executes routine work',
+    }[policy],
+    approvalBoundary: policy === 'staff_prepare_player_approval'
+      ? 'Staff prepares the recommendation; you approve the decision.'
+      : policy === 'staff_execute_routine'
+        ? 'Routine work is delegated; consequential decisions remain yours.'
+        : policy === 'staff_advisory'
+          ? 'Staff advises; you choose and apply the action.'
+          : 'You retain preparation and final control.',
   };
 }
 

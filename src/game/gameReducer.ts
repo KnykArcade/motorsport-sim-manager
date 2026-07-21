@@ -141,6 +141,7 @@ import type { RegulationVote } from '../types/politicsTypes';
 import type { RDBranchId, RDProjectStartRequest } from '../types/rdTypes';
 import type { ScoutedEntityType } from '../types/scoutingTypes';
 import type { StaffMember } from '../types/staffTypes';
+import type { StaffResponsibilityId, StaffResponsibilityPolicy } from '../types/staffTypes';
 import { driverScoutTarget, recordScouting, scoutingCost, type ScoutTarget } from '../sim/scoutingEngine';
 import type {
   Entrant,
@@ -256,6 +257,7 @@ export type GameAction =
   | { type: 'SET_PARTS_AUTOMATION'; settings: PartsAutomationSettings }
   | { type: 'SET_TECHNICAL_MANAGEMENT_MODE'; mode: TechnicalManagementMode }
   | { type: 'SET_TECHNICAL_ADVISOR_PRIORITY'; priority: TechnicalAdvisorPriority }
+  | { type: 'SET_STAFF_RESPONSIBILITY_POLICY'; responsibility: StaffResponsibilityId; policy: StaffResponsibilityPolicy }
   | { type: 'MARK_INBOX_READ'; messageIds: string[] }
   | { type: 'RETIRE_PART'; partId: string }
   | { type: 'SET_CAR_SETUP'; driverId: string; setup: CarSetup }
@@ -669,6 +671,17 @@ export function gameReducer(state: GameState | null, action: GameAction): GameSt
     case 'SET_TECHNICAL_ADVISOR_PRIORITY': {
       if (!state) return state;
       return { ...state, technicalAdvisorPriority: action.priority };
+    }
+
+    case 'SET_STAFF_RESPONSIBILITY_POLICY': {
+      if (!state) return state;
+      return {
+        ...state,
+        staffResponsibilityPolicies: {
+          ...state.staffResponsibilityPolicies,
+          [action.responsibility]: action.policy,
+        },
+      };
     }
 
     case 'MARK_INBOX_READ': {

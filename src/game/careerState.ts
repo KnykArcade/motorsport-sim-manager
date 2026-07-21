@@ -20,7 +20,7 @@ import type { RaceEvent } from '../types/simTypes';
 import type { CarSetup } from '../types/setupTypes';
 import type { AcademyDecision, AcademyMember, SeatSigning } from '../types/marketTypes';
 import type { FinanceTransaction } from '../types/financeTypes';
-import type { StaffMember } from '../types/staffTypes';
+import type { StaffMember, StaffResponsibilityPolicies } from '../types/staffTypes';
 import type { RaceArchiveEntry } from '../types/historyTypes';
 import type { WeekendPractice } from '../types/practiceTypes';
 import type { CommercialState } from '../types/sponsorTypes';
@@ -98,6 +98,7 @@ export type GameState = {
   // Named specialists who have moved to AI teams. AI departments remain
   // abstract, but these people retain a real, queryable destination.
   aiStaff?: Record<string, StaffMember[]>;
+  staffResponsibilityPolicies?: StaffResponsibilityPolicies;
   aiStaffInitialized?: boolean;
 
   // Per-race history + lap-time archive (Phase D). Optional for save compat.

@@ -207,6 +207,8 @@ export function RaceWeekend() {
     track,
     forecast,
     knowledgeGaps,
+    raceEngineer: state.staff?.find((member) => member.role === 'Race Engineer'),
+    racePreparationPolicy: state.staffResponsibilityPolicies?.['race-engineering'],
   });
   const bestPlayerGrid = qualifyingResults
     ?.filter((result) => result.teamId === state.selectedTeamId)
@@ -1170,6 +1172,16 @@ function WeekendHub({
             <div><span className="font-semibold text-neutral-200">Instructions:</span> {plan.instructionRecommendation}</div>
           </div>
         </div>
+        {plan.staffRecommendation && (
+          <div className="mt-3 rounded border border-sky-900/60 bg-sky-950/20 p-3">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <div className="text-xs font-semibold text-sky-200">Prepared by {plan.staffRecommendation.owner}</div>
+              <span className="rounded bg-sky-950/60 px-2 py-1 text-[10px] text-sky-200">Confidence {plan.staffRecommendation.confidence}%</span>
+            </div>
+            <p className="mt-1 text-xs leading-5 text-neutral-400">{plan.staffRecommendation.summary}</p>
+            <p className="mt-1 text-xs leading-5 text-neutral-500">{plan.staffRecommendation.approvalBoundary}</p>
+          </div>
+        )}
       </Panel>
 
       <div className="grid gap-4 lg:grid-cols-3">
