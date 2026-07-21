@@ -40,6 +40,10 @@ export type RelationshipActivitySummary = {
 export type RelationshipActivityFollowUp = {
   cadence: 'Immediate' | 'NextRound' | 'Monitor' | 'Background';
   label: string;
+  style: {
+    label: string;
+    detail: string;
+  };
   detail: string;
   stakes: {
     priority: string;
@@ -53,6 +57,79 @@ export type RelationshipActivityFollowUp = {
     rationale: string;
   };
 };
+
+function relationshipFollowUpStyle(
+  item: Pick<RelationshipActivityItem, 'targetType' | 'tone' | 'effects' | 'source'> & { targetName?: string },
+  cadence: RelationshipActivityFollowUp['cadence'],
+): RelationshipActivityFollowUp['style'] {
+  if (cadence === 'Background') {
+    return {
+      label: 'Maintenance',
+      detail: 'Keep the outcome visible without forcing another management action.',
+    };
+  }
+  if (item.targetType === 'Owner') {
+    return cadence === 'Immediate'
+      ? {
+        label: 'Damage control',
+        detail: 'Repair authority, patience, and board confidence before pressure escalates.',
+      }
+      : {
+        label: 'Reassurance',
+        detail: 'Bank confidence while keeping ownership aligned with the next visible result.',
+      };
+  }
+  if (item.targetType === 'Driver') {
+    const commitmentRelated = item.source === 'Commitment' || /promise|commitment|contract/i.test(item.effects.join(' '));
+    return commitmentRelated
+      ? {
+        label: 'Negotiation',
+        detail: 'Convert driver fallout into a clear sporting, promise, or contract compromise.',
+      }
+      : {
+        label: 'Reassurance',
+        detail: 'Stabilize confidence, morale, and race focus before the next flashpoint.',
+      };
+  }
+  if (item.targetType === 'Staff' || item.targetType === 'Department') {
+    return {
+      label: 'Operational relief',
+      detail: 'Translate the reaction into workload, trust, morale, or delivery follow-through.',
+    };
+  }
+  if (item.targetType === 'Collective') {
+    return item.targetName === 'Commercial partners & supporters'
+      ? {
+        label: 'Commercial reassurance',
+        detail: 'Keep sponsor and fan confidence aligned without outranking sporting authority.',
+      }
+      : {
+        label: 'Operational relief',
+        detail: 'Turn committee pressure into practical workload, trust, or morale stabilization.',
+      };
+  }
+  if (item.targetType === 'RivalPrincipal') {
+    return {
+      label: 'Political posture',
+      detail: 'Choose whether to cool tension, hold neutral ground, or lean into rivalry.',
+    };
+  }
+  if (item.targetType === 'StaffCandidate') {
+    return cadence === 'Immediate' || cadence === 'NextRound'
+      ? {
+        label: 'Recruiting urgency',
+        detail: 'Protect a live market opportunity before momentum or availability drops.',
+      }
+      : {
+        label: 'Recruiting momentum',
+        detail: 'Keep the external channel warm without overvaluing it above core relationships.',
+      };
+  }
+  return {
+    label: 'Relationship review',
+    detail: 'Read the signal against hierarchy before committing more management attention.',
+  };
+}
 
 function recommendedRelationshipAction(
   targetType: RelationshipActivityItem['targetType'],
@@ -176,7 +253,7 @@ function relationshipFollowUpStakes(
 }
 
 export function relationshipActivityFollowUp(
-  item: Pick<RelationshipActivityItem, 'targetType' | 'tone' | 'opinionDelta' | 'effects' | 'source'>,
+  item: Pick<RelationshipActivityItem, 'targetType' | 'tone' | 'opinionDelta' | 'effects' | 'source'> & { targetName?: string },
 ): RelationshipActivityFollowUp {
   const effectText = item.effects.join(' ');
   const hasSevereNegative = item.tone === 'Negative' || (item.opinionDelta ?? 0) <= -3;
@@ -187,6 +264,7 @@ export function relationshipActivityFollowUp(
       return {
         cadence: 'Immediate',
         label: 'Repair before next race',
+        style: relationshipFollowUpStyle(item, 'Immediate'),
         detail: 'Owner confidence damage can become job-security pressure if it is left unaddressed.',
         stakes: relationshipFollowUpStakes(item.targetType, 'Immediate'),
         recommendedAction: recommendedRelationshipAction(item.targetType, 'Immediate'),
@@ -196,6 +274,7 @@ export function relationshipActivityFollowUp(
       return {
         cadence: 'Immediate',
         label: 'Recheck driver mood',
+        style: relationshipFollowUpStyle(item, 'Immediate'),
         detail: 'Driver trust or morale fallout should be reviewed before it reaches performance or contract leverage.',
         stakes: relationshipFollowUpStakes(item.targetType, 'Immediate'),
         recommendedAction: recommendedRelationshipAction(item.targetType, 'Immediate'),
@@ -205,6 +284,7 @@ export function relationshipActivityFollowUp(
       return {
         cadence: 'NextRound',
         label: 'Review department impact',
+        style: relationshipFollowUpStyle(item, 'NextRound'),
         detail: 'Committee trust or workload damage should be checked next round before it becomes productivity loss.',
         stakes: relationshipFollowUpStakes(item.targetType, 'NextRound'),
         recommendedAction: recommendedRelationshipAction(item.targetType, 'NextRound'),
@@ -213,6 +293,7 @@ export function relationshipActivityFollowUp(
     return {
       cadence: 'NextRound',
       label: 'Control the fallout',
+      style: relationshipFollowUpStyle(item, 'NextRound'),
       detail: 'Negative relationship movement should be monitored before it becomes a wider political or market problem.',
       stakes: relationshipFollowUpStakes(item.targetType, 'NextRound'),
       recommendedAction: recommendedRelationshipAction(item.targetType, 'NextRound'),
@@ -223,6 +304,7 @@ export function relationshipActivityFollowUp(
     return {
       cadence: 'NextRound',
       label: 'Watch for second-order effects',
+      style: relationshipFollowUpStyle(item, 'NextRound'),
       detail: 'Mixed reactions can still become useful if the next communication matches the character or committee agenda.',
       stakes: relationshipFollowUpStakes(item.targetType, 'NextRound'),
       recommendedAction: recommendedRelationshipAction(item.targetType, 'NextRound'),
@@ -234,6 +316,7 @@ export function relationshipActivityFollowUp(
       return {
         cadence: 'Monitor',
         label: 'Bank the confidence',
+        style: relationshipFollowUpStyle(item, 'Monitor'),
         detail: 'This buys patience, but ownership will still judge the next visible result or financial signal.',
         stakes: relationshipFollowUpStakes(item.targetType, 'Monitor'),
         recommendedAction: recommendedRelationshipAction(item.targetType, 'Monitor'),
@@ -243,6 +326,7 @@ export function relationshipActivityFollowUp(
       return {
         cadence: 'Monitor',
         label: 'Convert trust into performance',
+        style: relationshipFollowUpStyle(item, 'Monitor'),
         detail: 'Positive driver movement should be protected through race-week focus and promise discipline.',
         stakes: relationshipFollowUpStakes(item.targetType, 'Monitor'),
         recommendedAction: recommendedRelationshipAction(item.targetType, 'Monitor'),
@@ -252,6 +336,7 @@ export function relationshipActivityFollowUp(
       return {
         cadence: 'Monitor',
         label: 'Let the operating gain settle',
+        style: relationshipFollowUpStyle(item, 'Monitor'),
         detail: 'The benefit should be allowed to show in morale, trust, workload, or commercial confidence before another intervention.',
         stakes: relationshipFollowUpStakes(item.targetType, 'Monitor'),
         recommendedAction: recommendedRelationshipAction(item.targetType, 'Monitor'),
@@ -260,6 +345,7 @@ export function relationshipActivityFollowUp(
     return {
       cadence: 'Monitor',
       label: 'Keep the channel warm',
+      style: relationshipFollowUpStyle(item, 'Monitor'),
       detail: 'The relationship has moved in the right direction; avoid over-managing unless a new pressure appears.',
       stakes: relationshipFollowUpStakes(item.targetType, 'Monitor'),
       recommendedAction: recommendedRelationshipAction(item.targetType, 'Monitor'),
@@ -270,6 +356,7 @@ export function relationshipActivityFollowUp(
     return {
       cadence: 'Monitor',
       label: 'Track advisor trust',
+      style: relationshipFollowUpStyle(item, 'Monitor'),
       detail: 'No direct opinion swing was recorded, but the advice history still shapes future department confidence.',
       stakes: relationshipFollowUpStakes(item.targetType, 'Monitor'),
       recommendedAction: recommendedRelationshipAction(item.targetType, 'Monitor'),
@@ -279,6 +366,7 @@ export function relationshipActivityFollowUp(
   return {
     cadence: 'Background',
     label: 'No follow-up needed',
+    style: relationshipFollowUpStyle(item, 'Background'),
     detail: 'This is recorded for context and does not require a dedicated management action.',
     stakes: relationshipFollowUpStakes(item.targetType, 'Background'),
     recommendedAction: recommendedRelationshipAction(item.targetType, 'Background'),
@@ -369,6 +457,7 @@ export function relationshipActivityFromSources(
       opinionDelta: memory.opinionDelta,
       effects: memory.effects,
       source: memory.source,
+      targetName: memory.targetName,
     };
     items.set(`memory:${memory.id}`, {
       id: `memory:${memory.id}`,
@@ -415,6 +504,7 @@ export function relationshipActivityFromSources(
         tone,
         effects,
         source: 'AdvisorCouncil',
+        targetName: recommendation.advisorName ?? recommendation.advisorRole,
       }),
     });
   }
@@ -440,6 +530,7 @@ export function relationshipActivityFromSources(
         tone,
         effects: action.effects,
         source: 'CommitteeAction',
+        targetName,
       }),
     });
   }
