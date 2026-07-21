@@ -91,6 +91,10 @@ export function Staff() {
   const pageCount = staffPageCount(candidates.length);
   const page = Math.min(candidatePage, pageCount - 1);
   const visibleCandidates = staffPage(candidates, page);
+  const selectedMarketStaff = candidates.find((member) => member.id === selectedStaffId);
+  const marketCandidates = selectedMarketStaff && !visibleCandidates.some((member) => member.id === selectedMarketStaff.id)
+    ? [selectedMarketStaff, ...visibleCandidates]
+    : visibleCandidates;
   const councilPageCount = staffPageCount(councilActivity.length);
   const safeCouncilPage = Math.min(councilPage, councilPageCount - 1);
   const visibleCouncilActivity = staffPage(councilActivity, safeCouncilPage);
@@ -279,6 +283,7 @@ export function Staff() {
                 s={current}
                 hired
                 current
+                highlighted={false}
                 affordable
                 replacementCost={0}
                 poachingCost={0}
@@ -306,7 +311,7 @@ export function Staff() {
       {tab === 'market' && <Panel title={`${activeRole} · ${marketView === 'available' ? 'Available' : 'Employed by Rivals'}`}>
         <p className="mb-3 text-xs text-neutral-500">{marketView === 'available' ? ROLE_EFFECT[activeRole] : 'These specialists are under contract. Hiring one pays their employer compensation and will affect the relationship between the teams.'}</p>
         <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
-          {visibleCandidates.map((s) => {
+          {marketCandidates.map((s) => {
             const employerTeamId = employerByStaffId.get(s.id) ?? staffEmployer(state.aiStaff, s.id);
             const employer = state.teams.find((team) => team.id === employerTeamId);
             const poachingCost = employerTeamId ? staffPoachingCompensation(s) : 0;
@@ -317,6 +322,7 @@ export function Staff() {
               s={s}
               hired={hiredById.has(s.id)}
               current={current?.id === s.id}
+              highlighted={s.id === selectedStaffId}
               affordable={toMoney(s.signingFee) + poachingCost + (current && current.id !== s.id ? staffReleaseCost(current) : 0) <= budget}
               replacementCost={current && current.id !== s.id ? staffReleaseCost(current) : 0}
               employerName={employer?.name}
@@ -371,6 +377,7 @@ function StaffCard({
   s,
   hired,
   current,
+  highlighted,
   affordable,
   replacementCost,
   employerName,
@@ -386,6 +393,7 @@ function StaffCard({
   s: StaffMember;
   hired: boolean;
   current: boolean;
+  highlighted: boolean;
   affordable: boolean;
   replacementCost: number;
   employerName?: string;
@@ -405,7 +413,7 @@ function StaffCard({
   return (
     <div
       className={`rounded-lg border p-3 ${
-        current ? 'border-amber-500/60 bg-amber-500/5' : 'border-neutral-800 bg-neutral-900/40'
+        highlighted ? 'border-amber-400/80 bg-amber-400/10' : current ? 'border-amber-500/60 bg-amber-500/5' : 'border-neutral-800 bg-neutral-900/40'
       }`}
     >
       <div className="mb-1 flex items-start justify-between gap-2">
@@ -419,6 +427,7 @@ function StaffCard({
           </span>
         )}
         {!current && employerName && <span className="rounded bg-orange-500/15 px-1.5 py-0.5 text-[10px] font-semibold text-orange-300">{employerName}</span>}
+        {highlighted && <span className="rounded bg-amber-400/20 px-1.5 py-0.5 text-[10px] font-semibold text-amber-300">Inbox recommendation</span>}
       </div>
       <div className="mb-2">
         <StatBar label="Rating" value={staffRatingOutOfTen(s.rating)} max={10} />

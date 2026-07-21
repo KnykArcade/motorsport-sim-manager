@@ -47,6 +47,7 @@ import type { TeamPrincipal } from '../types/principalTypes';
 import type { StaffResponsibilityPolicy } from '../types/staffTypes';
 import { TEAM_HQ_TABS, type TeamHQTab } from './teamHQViewModel';
 import { staffResponsibilities } from './staffResponsibilitiesViewModel';
+import { staffRecommendations } from './staffRecommendationsViewModel';
 
 export function TeamHQ() {
   const { state, dispatch } = useGame();
@@ -75,6 +76,7 @@ export function TeamHQ() {
   const inboxUnread = unreadInboxCount(state);
   const inboxActionable = actionableInboxCount(state);
   const responsibilities = staffResponsibilities(state);
+  const recommendations = staffRecommendations(state);
 
   return (
     <WorkspaceScreen className="era-feature-screen era-team-hq">
@@ -138,20 +140,20 @@ export function TeamHQ() {
                <div className="mt-2 text-xs font-medium text-sky-300">{responsibility.status}</div>
                <div className="mt-2 flex flex-wrap items-center gap-2">
                  <span className="rounded border border-neutral-700 bg-neutral-900/50 px-2 py-1 text-[10px] uppercase tracking-wide text-neutral-400">{responsibility.policyLabel}</span>
-                 {responsibility.id === 'race-engineering' && (
+                 {(responsibility.id === 'race-engineering' || responsibility.id === 'staff-recruitment' || responsibility.id === 'staff-contracts') && (
                    <select
                      className="rounded border border-neutral-700 bg-neutral-950 px-2 py-1 text-[10px] text-neutral-300"
                      value={responsibility.policy}
-                     aria-label="Race preparation delegation policy"
+                     aria-label={`${responsibility.area} delegation policy`}
                      onChange={(event) => dispatch({
                        type: 'SET_STAFF_RESPONSIBILITY_POLICY',
-                       responsibility: 'race-engineering',
+                       responsibility: responsibility.id as 'race-engineering' | 'staff-recruitment' | 'staff-contracts',
                        policy: event.target.value as StaffResponsibilityPolicy,
                      })}
                    >
                      <option value="player">Player-led</option>
                      <option value="staff_advisory">Staff advisory</option>
-                     <option value="staff_prepare_player_approval">Staff-prepared · player approval</option>
+                     {responsibility.id === 'race-engineering' && <option value="staff_prepare_player_approval">Staff-prepared · player approval</option>}
                    </select>
                  )}
                </div>
@@ -160,9 +162,31 @@ export function TeamHQ() {
                <p className="mt-1 text-xs leading-5 text-neutral-500">{responsibility.approvalBoundary}</p>
               <Button className="mt-2 px-2 py-1 text-xs" variant="ghost" onClick={() => navigate(responsibility.route)}>{responsibility.routeLabel} →</Button>
             </div>
-          ))}
-        </div>
+         ))}
+       </div>
       </Panel>
+      {recommendations.length > 0 && (
+        <Panel title="Staff recommendations" actions={<span className="text-xs text-neutral-500">Advisory only · personnel decisions remain yours</span>}>
+          <div className="grid gap-3 md:grid-cols-2">
+            {recommendations.map((recommendation) => (
+              <div key={recommendation.id} className="rounded border border-amber-900/60 bg-amber-950/10 p-3">
+                <div className="flex flex-wrap items-start justify-between gap-2">
+                  <div>
+                    <div className="text-[10px] font-black uppercase tracking-[0.14em] text-neutral-500">{recommendation.kind === 'recruitment' ? 'Recruitment priority' : 'Renewal priority'}</div>
+                    <div className="mt-1 text-sm font-semibold text-neutral-200">{recommendation.target}</div>
+                  </div>
+                  <span className="rounded border border-neutral-700 bg-neutral-900/50 px-2 py-1 text-[10px] uppercase tracking-wide text-neutral-400">{recommendation.confidence} confidence</span>
+                </div>
+                <p className="mt-2 text-xs font-medium text-amber-300">{recommendation.recommendation}</p>
+                <p className="mt-1 text-xs leading-5 text-neutral-400"><span className="font-semibold text-neutral-200">Why:</span> {recommendation.whyItMatters}</p>
+                <p className="mt-1 text-xs leading-5 text-neutral-400"><span className="font-semibold text-neutral-200">Benefit:</span> {recommendation.expectedBenefit}</p>
+                <p className="mt-1 text-xs leading-5 text-neutral-500"><span className="font-semibold text-neutral-300">Boundary:</span> {recommendation.consequence}</p>
+                <Button className="mt-2 px-2 py-1 text-xs" variant="ghost" onClick={() => navigate(recommendation.route)}>{recommendation.routeLabel} →</Button>
+              </div>
+            ))}
+          </div>
+        </Panel>
+      )}
 
       <WorkspaceTabs items={TEAM_HQ_TABS} active={tab} onChange={setTab} ariaLabel="Team HQ command center" />
 
