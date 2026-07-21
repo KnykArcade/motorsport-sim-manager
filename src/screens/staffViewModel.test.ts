@@ -5,6 +5,7 @@ import {
   STAFF_WORKSPACE_TABS,
   staffPage,
   staffPageCount,
+  staffTabFromQuery,
   staffVacancyCount,
 } from './staffViewModel';
 
@@ -44,5 +45,12 @@ describe('staff view model', () => {
       member('technical-a', 'Technical Director'),
       member('technical-b', 'Technical Director'),
     ])).toBe(3);
+  });
+
+  it('normalizes Staff deep-link tabs', () => {
+    expect(staffTabFromQuery('market')).toBe('market');
+    expect(staffTabFromQuery('contracts')).toBe('contracts');
+    expect(staffTabFromQuery('unknown')).toBe('roster');
+    expect(staffTabFromQuery(null)).toBe('roster');
   });
 });
