@@ -73,6 +73,10 @@ describe('relationship activity view model', () => {
       followUp: {
         cadence: 'Monitor',
         label: 'Let the operating gain settle',
+        recommendedAction: {
+          label: 'Review department/commercial signals',
+          destination: 'Staff & departments',
+        },
       },
     });
     expect(activity[1]).toMatchObject({
@@ -84,6 +88,10 @@ describe('relationship activity view model', () => {
       followUp: {
         cadence: 'NextRound',
         label: 'Watch for second-order effects',
+        recommendedAction: {
+          label: 'Schedule driver check-in',
+          destination: 'Driver relationship file',
+        },
       },
     });
   });
@@ -108,6 +116,9 @@ describe('relationship activity view model', () => {
       followUp: {
         cadence: 'NextRound',
         label: 'Review department impact',
+        recommendedAction: {
+          label: 'Review department/commercial signals',
+        },
       },
     });
   });
@@ -145,6 +156,9 @@ describe('relationship activity view model', () => {
       followUp: {
         cadence: 'Monitor',
         label: 'Let the operating gain settle',
+        recommendedAction: {
+          destination: 'Stakeholder board',
+        },
       },
     });
   });
@@ -159,6 +173,10 @@ describe('relationship activity view model', () => {
     })).toMatchObject({
       cadence: 'Immediate',
       label: 'Repair before next race',
+      recommendedAction: {
+        label: 'Open owner review',
+        destination: 'Team / owner screen',
+      },
     });
 
     expect(relationshipActivityFollowUp({
@@ -170,6 +188,9 @@ describe('relationship activity view model', () => {
     })).toMatchObject({
       cadence: 'Monitor',
       label: 'Convert trust into performance',
+      recommendedAction: {
+        label: 'Schedule driver check-in',
+      },
     });
 
     expect(relationshipActivityFollowUp({
@@ -180,6 +201,9 @@ describe('relationship activity view model', () => {
     })).toMatchObject({
       cadence: 'Background',
       label: 'No follow-up needed',
+      recommendedAction: {
+        destination: 'Rival matrix',
+      },
     });
   });
 

@@ -157,6 +157,11 @@ function FollowUpAgenda({ items, summary }: { items: RelationshipActivityItem[];
             </div>
             <div className="mt-1 text-[10px] font-bold uppercase tracking-wide opacity-75">{item.followUp.label}</div>
             <p className="mt-1 text-[10px] leading-relaxed opacity-80">{item.followUp.detail}</p>
+            <div className="mt-2 rounded border border-current/20 bg-neutral-950/25 px-2 py-1.5">
+              <div className="text-[9px] font-bold uppercase tracking-wide opacity-70">Recommended move</div>
+              <div className="mt-0.5 text-[10px] font-semibold">{item.followUp.recommendedAction.label}</div>
+              <div className="mt-0.5 text-[9px] opacity-70">{item.followUp.recommendedAction.destination}</div>
+            </div>
           </div>
         ))}
       </div>
@@ -218,7 +223,19 @@ function FollowUpCallout({ item, compact = false }: { item: RelationshipActivity
         <span className="text-[9px] font-bold uppercase tracking-wide opacity-80">Follow-up · {cadenceLabel}</span>
         <span className="text-[10px] font-semibold">{item.followUp.label}</span>
       </div>
-      {!compact && <p className="mt-0.5 text-[10px] leading-relaxed opacity-80">{item.followUp.detail}</p>}
+      {!compact && (
+        <>
+          <p className="mt-0.5 text-[10px] leading-relaxed opacity-80">{item.followUp.detail}</p>
+          <div className="mt-1.5 rounded border border-current/20 bg-neutral-950/25 px-2 py-1">
+            <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5">
+              <span className="text-[9px] font-bold uppercase tracking-wide opacity-70">Recommended move</span>
+              <span className="text-[10px] font-semibold">{item.followUp.recommendedAction.label}</span>
+              <span className="text-[9px] opacity-65">→ {item.followUp.recommendedAction.destination}</span>
+            </div>
+            <p className="mt-0.5 text-[9px] leading-relaxed opacity-70">{item.followUp.recommendedAction.rationale}</p>
+          </div>
+        </>
+      )}
     </div>
   );
 }
