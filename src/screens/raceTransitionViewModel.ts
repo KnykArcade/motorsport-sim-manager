@@ -27,6 +27,12 @@ export const POST_RACE_REVIEW_TABS: ReadonlyArray<{ id: PostRaceReviewTab; label
   { id: 'championships', label: 'Championships' },
 ];
 
+export function postRaceReviewTabFromQuery(value: string | null): PostRaceReviewTab {
+  return POST_RACE_REVIEW_TABS.some((tab) => tab.id === value)
+    ? value as PostRaceReviewTab
+    : 'overview';
+}
+
 export const RACE_RESULTS_TABS: ReadonlyArray<{ id: RaceResultsTab; label: string }> = [
   { id: 'summary', label: 'Summary' },
   { id: 'classification', label: 'Classification' },
