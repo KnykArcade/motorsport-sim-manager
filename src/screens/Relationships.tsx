@@ -198,6 +198,8 @@ export function Relationships() {
   const externalTalent = commandSnapshot.externalTalent;
   const commandSummary = commandSnapshot.summary;
   const deskSignal = commandSummary.topSignal;
+  const activeDeskSignal = deskSignal?.status === 'MustActNow' || deskSignal?.status === 'WatchClosely' ? deskSignal : undefined;
+  const activeManagementRead = activeDeskSignal?.managementRead;
   const ownerPriority = relationshipPriorities.find((profile) => profile.target.type === 'Owner');
   const driverContractYears = (id: string) =>
     state.drivers.find((d) => d.id === id)?.contractYearsRemaining ?? 0;
@@ -258,28 +260,44 @@ export function Relationships() {
         ariaLabel="Relationship management sections"
       />
       <WorkspaceBody className="space-y-4">
-      <div className="ui-decision-strip flex flex-wrap items-center justify-between gap-2 rounded-lg border px-3 py-2.5">
-        <div className="flex min-w-0 items-center gap-2 text-xs">
-          <span className="ui-decision-strip-pulse" aria-hidden="true" />
-          <div className="min-w-0">
-            <div className="font-semibold text-neutral-100">People operations desk</div>
-            <div className="truncate text-neutral-400">
-              {deskSignal?.status === 'MustActNow' || deskSignal?.status === 'WatchClosely'
-                  ? `${deskSignal.title}: ${deskSignal.reason}`
-                : urgentRelationshipFollowUp
-                  ? `Follow-up: ${urgentRelationshipFollowUp.targetName} · ${urgentRelationshipFollowUp.followUp.label}`
-                : 'No immediate relationship response is required. Keep the owner and core team aligned.'}
+        <div className="ui-decision-strip flex flex-wrap items-start justify-between gap-3 rounded-lg border px-3 py-2.5">
+          <div className="flex min-w-0 flex-1 items-start gap-2 text-xs">
+            <span className="ui-decision-strip-pulse mt-1" aria-hidden="true" />
+            <div className="min-w-0 space-y-1">
+              <div className="font-semibold text-neutral-100">People operations desk</div>
+              <div className="text-neutral-400">
+                {activeDeskSignal
+                  ? `${activeDeskSignal.title}: ${activeDeskSignal.reason}`
+                  : urgentRelationshipFollowUp
+                    ? `Follow-up: ${urgentRelationshipFollowUp.targetName} · ${urgentRelationshipFollowUp.followUp.label}`
+                    : 'No immediate relationship response is required. Keep the owner and core team aligned.'}
+              </div>
+              {activeManagementRead && (
+                <div className="grid gap-1 text-[11px] text-neutral-500 md:grid-cols-2">
+                  <div>
+                    <span className="font-semibold text-neutral-300">{activeManagementRead.posture}:</span>{' '}
+                    {activeManagementRead.read}
+                  </div>
+                  <div>
+                    <span className="font-semibold text-neutral-300">Watch:</span>{' '}
+                    {activeManagementRead.watch}
+                  </div>
+                  <div className="md:col-span-2">
+                    <span className="font-semibold text-neutral-300">Caution:</span>{' '}
+                    {activeManagementRead.caution}
+                  </div>
+                </div>
+              )}
             </div>
           </div>
-        </div>
-        <span className="shrink-0 text-[10px] font-semibold uppercase tracking-wide text-neutral-500">
-          {deskSignal
+          <span className="shrink-0 text-[10px] font-semibold uppercase tracking-wide text-neutral-500">
+            {deskSignal
               ? `${relationshipStatusLabel(deskSignal.status)} · Authority #${deskSignal.rank}`
-            : urgentRelationshipFollowUp
-              ? `${urgentRelationshipFollowUp.followUp.cadence === 'Immediate' ? 'Immediate' : 'Next round'} follow-up`
-            : 'No active profiles'}
-        </span>
-      </div>
+              : urgentRelationshipFollowUp
+                ? `${urgentRelationshipFollowUp.followUp.cadence === 'Immediate' ? 'Immediate' : 'Next round'} follow-up`
+                : 'No active profiles'}
+          </span>
+        </div>
 
       {activeSection === 'overview' && (
         <RelationshipPriorityBoard

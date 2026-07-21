@@ -20,6 +20,14 @@ export type RelationshipDeskSignal = {
   title: string;
   reason: string;
   influence: number;
+  managementRead?: RelationshipManagementRead;
+};
+
+export type RelationshipManagementRead = {
+  posture: string;
+  read: string;
+  caution: string;
+  watch: string;
 };
 
 export type RelationshipCommandSummary = {
@@ -64,13 +72,81 @@ function inferredActionWindow(
   return 'Soon';
 }
 
+function relationshipManagementRead(signal: Omit<RelationshipDeskSignal, 'managementRead'>): RelationshipManagementRead {
+  const urgentPrefix = signal.status === 'MustActNow' ? 'Likely needs visible attention now' : 'May reward a measured check-in';
+
+  if (signal.id.startsWith('Owner:')) {
+    return {
+      posture: 'Protect the mandate',
+      read: `${urgentPrefix}; ownership usually wants to see control before patience frays.`,
+      caution: 'A heavy-handed response could still unsettle drivers or staff if it looks purely political.',
+      watch: 'Owner confidence, board patience, and whether the next result changes the room.',
+    };
+  }
+  if (signal.id.startsWith('Driver:')) {
+    return {
+      posture: 'Reassure the driver',
+      read: `${urgentPrefix}; a clear message may steady confidence without promising too much.`,
+      caution: 'Too much favoritism can create noise with the other side of the garage.',
+      watch: 'Driver trust, promise pressure, and any signs the teammate dynamic is heating up.',
+    };
+  }
+  if (signal.id.startsWith('Staff:') || signal.id === 'Collective:Departments') {
+    return {
+      posture: 'Ease operational pressure',
+      read: `${urgentPrefix}; the group may respond better to relief and clarity than a grand speech.`,
+      caution: 'Pushing harder could work short term, but it may store up fatigue or resentment.',
+      watch: 'Department workload, staff trust, and whether small issues start repeating.',
+    };
+  }
+  if (signal.id.startsWith('RivalPrincipal:')) {
+    return {
+      posture: 'Manage the politics',
+      read: `${urgentPrefix}; a careful public stance may cool the paddock narrative.`,
+      caution: 'Escalating the tone could make the rivalry useful, or turn it into a distraction.',
+      watch: 'Media temperature, rival reactions, and whether sponsors enjoy or dislike the noise.',
+    };
+  }
+  if (signal.id === 'Collective:Commercial') {
+    return {
+      posture: 'Reassure commercial partners',
+      read: `${urgentPrefix}; sponsors tend to value a calm plan more than exact guarantees.`,
+      caution: 'Over-selling the response may backfire if the next race weekend is messy.',
+      watch: 'Sponsor confidence, supporter patience, and how results shape the story.',
+    };
+  }
+  if (signal.id === 'PotentialEmployers') {
+    return {
+      posture: 'Keep career leverage alive',
+      read: `${urgentPrefix}; the market may stay warmer if you look composed and selective.`,
+      caution: 'Chasing every rumor could make the current team question your focus.',
+      watch: 'Firm offers, owner mood, and whether rival interest keeps building.',
+    };
+  }
+  if (signal.id === 'ExternalTalent') {
+    return {
+      posture: 'Read the market',
+      read: `${urgentPrefix}; early movement may keep options open before the market tightens.`,
+      caution: 'Moving too early can commit resources before the right target is clear.',
+      watch: 'Open seats, staff vacancies, and whether preferred targets start disappearing.',
+    };
+  }
+
+  return {
+    posture: 'Take the temperature',
+    read: `${urgentPrefix}; this relationship looks worth checking before it becomes louder.`,
+    caution: 'The signal may be noise, but ignoring it could let the mood drift.',
+    watch: 'Tone, timing, and whether the same concern appears again next round.',
+  };
+}
+
 export function relationshipCommandSummary({
   characterProfiles,
   collectiveProfiles,
   employerStanding,
   externalTalent,
 }: RelationshipCommandInput): RelationshipCommandSummary {
-  const signals: RelationshipDeskSignal[] = [
+  const signals = [
     ...characterProfiles.map((profile) => ({
       id: `${profile.target.type}:${profile.target.id}`,
       status: profile.status,
@@ -107,7 +183,10 @@ export function relationshipCommandSummary({
       reason: externalTalent.reasons[0],
       influence: externalTalent.targets.length,
     },
-  ].sort((a, b) => ATTENTION_ORDER[a.status] - ATTENTION_ORDER[b.status]
+  ].map((signal) => ({
+    ...signal,
+    managementRead: relationshipManagementRead(signal),
+  })).sort((a, b) => ATTENTION_ORDER[a.status] - ATTENTION_ORDER[b.status]
     || a.rank - b.rank
     || b.influence - a.influence
     || a.title.localeCompare(b.title));
