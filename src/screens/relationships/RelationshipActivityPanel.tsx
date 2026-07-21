@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import type { GameState } from '../../game/careerState';
 import { Panel } from '../../components/Panel';
 import {
@@ -27,6 +28,7 @@ const FOLLOW_UP_STYLES: Record<RelationshipActivityItem['followUp']['cadence'], 
 
 export function RelationshipActivityPanel({ state }: { state: GameState }) {
   const [filter, setFilter] = useState<ActivityFilter>('All');
+  const navigate = useNavigate();
   const activity = currentRelationshipActivity(state);
   const summary = relationshipActivitySummary(activity);
   const agenda = relationshipFollowUpAgenda(activity);
@@ -68,7 +70,7 @@ export function RelationshipActivityPanel({ state }: { state: GameState }) {
         />
       </div>
 
-      <FollowUpAgenda items={agenda} summary={summary} />
+      <FollowUpAgenda items={agenda} summary={summary} onOpenAction={(item) => navigate(item.followUp.recommendedAction.route)} />
 
       <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
         <p className="text-xs text-neutral-400">
@@ -100,7 +102,7 @@ export function RelationshipActivityPanel({ state }: { state: GameState }) {
         </p>
       ) : (
         <div className="space-y-2">
-          {visible.map((item) => <ActivityRow key={item.id} item={item} />)}
+          {visible.map((item) => <ActivityRow key={item.id} item={item} onOpenAction={() => navigate(item.followUp.recommendedAction.route)} />)}
         </div>
       )}
       {activity.length > 60 && filter === 'All' && (
@@ -121,7 +123,7 @@ function OutcomeMetric({ label, value, detail, tone }: { label: string; value: s
   );
 }
 
-function FollowUpAgenda({ items, summary }: { items: RelationshipActivityItem[]; summary: ReturnType<typeof relationshipActivitySummary> }) {
+function FollowUpAgenda({ items, summary, onOpenAction }: { items: RelationshipActivityItem[]; summary: ReturnType<typeof relationshipActivitySummary>; onOpenAction: (item: RelationshipActivityItem) => void }) {
   if (items.length === 0) {
     return (
       <div className="mb-3 rounded-lg border border-emerald-800/35 bg-emerald-950/15 p-3">
@@ -161,6 +163,13 @@ function FollowUpAgenda({ items, summary }: { items: RelationshipActivityItem[];
               <div className="text-[9px] font-bold uppercase tracking-wide opacity-70">Recommended move</div>
               <div className="mt-0.5 text-[10px] font-semibold">{item.followUp.recommendedAction.label}</div>
               <div className="mt-0.5 text-[9px] opacity-70">{item.followUp.recommendedAction.destination}</div>
+              <button
+                type="button"
+                onClick={() => onOpenAction(item)}
+                className="mt-1 text-[9px] font-bold uppercase tracking-wide underline-offset-2 hover:underline"
+              >
+                Open destination →
+              </button>
             </div>
           </div>
         ))}
@@ -169,7 +178,7 @@ function FollowUpAgenda({ items, summary }: { items: RelationshipActivityItem[];
   );
 }
 
-function ActivityRow({ item }: { item: RelationshipActivityItem }) {
+function ActivityRow({ item, onOpenAction }: { item: RelationshipActivityItem; onOpenAction: () => void }) {
   const sourceLabel = item.source.replace(/([a-z])([A-Z])/g, '$1 $2');
   return (
     <article className="rounded-lg border border-neutral-800 bg-neutral-900/35 p-3">
@@ -192,7 +201,7 @@ function ActivityRow({ item }: { item: RelationshipActivityItem }) {
         </div>
       </div>
       <p className="mt-1.5 text-[11px] leading-relaxed text-neutral-400">{item.detail}</p>
-      <FollowUpCallout item={item} />
+      <FollowUpCallout item={item} onOpenAction={onOpenAction} />
       {(item.effects.length > 0 || (item.opinionDelta ?? 0) !== 0) && (
         <div className="mt-2 flex flex-wrap gap-1.5">
           {item.opinionDelta ? (
@@ -209,7 +218,7 @@ function ActivityRow({ item }: { item: RelationshipActivityItem }) {
   );
 }
 
-function FollowUpCallout({ item, compact = false }: { item: RelationshipActivityItem; compact?: boolean }) {
+function FollowUpCallout({ item, compact = false, onOpenAction }: { item: RelationshipActivityItem; compact?: boolean; onOpenAction?: () => void }) {
   const cadenceLabel = item.followUp.cadence === 'Immediate'
     ? 'Immediate'
     : item.followUp.cadence === 'NextRound'
@@ -233,6 +242,15 @@ function FollowUpCallout({ item, compact = false }: { item: RelationshipActivity
               <span className="text-[9px] opacity-65">→ {item.followUp.recommendedAction.destination}</span>
             </div>
             <p className="mt-0.5 text-[9px] leading-relaxed opacity-70">{item.followUp.recommendedAction.rationale}</p>
+            {onOpenAction && (
+              <button
+                type="button"
+                onClick={onOpenAction}
+                className="mt-1 text-[9px] font-bold uppercase tracking-wide underline-offset-2 hover:underline"
+              >
+                Open destination →
+              </button>
+            )}
           </div>
         </>
       )}
