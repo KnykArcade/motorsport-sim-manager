@@ -3,7 +3,6 @@ import type { RelationshipAttentionStatus } from '../../sim/relationshipAttentio
 import type { DepartmentId, DepartmentMood } from '../../types/phase18Types';
 import {
   departmentPreparationMultiplierFromMoods,
-  signedRelationshipEffectPercent,
 } from '../../sim/relationshipGameplayEffectEngine';
 import { sponsorRenewalProbability } from '../../sim/commercialEngine';
 
@@ -58,12 +57,47 @@ function departmentConcern(mood: DepartmentMood): 0 | 1 | 2 {
 
 function departmentReason(mood: DepartmentMood): string {
   const signals: string[] = [];
-  if (mood.trustInPrincipal <= 40) signals.push(`trust ${mood.trustInPrincipal}`);
-  if (mood.morale <= 40) signals.push(`morale ${mood.morale}`);
-  if (mood.strategicAlignment <= 40) signals.push(`alignment ${mood.strategicAlignment}`);
-  if (mood.workload >= 75) signals.push(`workload ${mood.workload}`);
+  if (mood.trustInPrincipal <= 20) signals.push('trust critical');
+  else if (mood.trustInPrincipal <= 40) signals.push('trust fragile');
+  if (mood.morale <= 20) signals.push('morale critical');
+  else if (mood.morale <= 40) signals.push('morale fragile');
+  if (mood.strategicAlignment <= 20) signals.push('alignment critical');
+  else if (mood.strategicAlignment <= 40) signals.push('alignment drifting');
+  if (mood.workload >= 90) signals.push('workload overloaded');
+  else if (mood.workload >= 75) signals.push('workload heavy');
   if (signals.length === 0 && mood.conflictReasons.length > 0) signals.push(mood.conflictReasons.at(-1)!);
   return `${departmentLabel(mood.departmentId)}: ${signals.join(', ')}.`;
+}
+
+function relationshipHealthRead(value: number): string {
+  if (value >= 75) return 'Strong';
+  if (value >= 55) return 'Stable';
+  if (value >= 35) return 'Fragile';
+  return 'Critical';
+}
+
+function workloadRead(value: number): string {
+  if (value >= 90) return 'Overloaded';
+  if (value >= 75) return 'Heavy';
+  if (value >= 45) return 'Manageable';
+  return 'Light';
+}
+
+function preparationRead(departments: Record<DepartmentId, DepartmentMood> | undefined): string {
+  const multiplier = departmentPreparationMultiplierFromMoods(departments);
+  if (multiplier >= 1.015) return 'Preparation may sharpen';
+  if (multiplier > 1) return 'Preparation looks supported';
+  if (multiplier <= 0.985) return 'Preparation may suffer';
+  if (multiplier < 1) return 'Preparation needs watching';
+  return 'Preparation effect looks neutral';
+}
+
+function renewalOutlookRead(outlook: number, hasSponsors: boolean): string {
+  if (!hasSponsors) return 'No active deal';
+  if (outlook >= 75) return 'Renewal outlook strong';
+  if (outlook >= 55) return 'Renewal outlook workable';
+  if (outlook >= 35) return 'Renewal outlook vulnerable';
+  return 'Renewal outlook at risk';
 }
 
 export function departmentStakeholderProfile(
@@ -89,7 +123,7 @@ export function departmentStakeholderProfile(
     : concerns.length > 0 ? 'WatchClosely' : 'Stable';
   const reasons = concerns.length > 0
     ? concerns.slice(0, 3).map((entry) => departmentReason(entry.mood))
-    : [`All ${moods.length} department committees are aligned; average trust ${trust} and morale ${morale}.`];
+    : [`All ${moods.length} department committees are broadly aligned.`];
 
   return {
     id: 'Departments',
@@ -100,15 +134,15 @@ export function departmentStakeholderProfile(
     health,
     reasons,
     metrics: [
-      { label: 'Trust', value: `${trust}` },
-      { label: 'Morale', value: `${morale}` },
-      { label: 'Alignment', value: `${alignment}` },
-      { label: 'Peak workload', value: `${peakWorkload}` },
+      { label: 'Trust', value: relationshipHealthRead(trust) },
+      { label: 'Morale', value: relationshipHealthRead(morale) },
+      { label: 'Alignment', value: relationshipHealthRead(alignment) },
+      { label: 'Peak workload', value: workloadRead(peakWorkload) },
     ],
     gameplayEffect: {
       label: 'Race preparation execution',
-      value: signedRelationshipEffectPercent(departmentPreparationMultiplierFromMoods(departments)),
-      detail: 'A small modifier from Technical, Engineering, Race Operations, and Driver Management trust, morale, alignment, and overload.',
+      value: preparationRead(departments),
+      detail: 'Technical, Engineering, Race Operations, and Driver Management can slightly help or hurt preparation when trust, morale, alignment, or overload swings.',
     },
     actionLabel: 'Review staff & departments',
   };
@@ -149,9 +183,11 @@ export function commercialStakeholderProfile(
   const reasons: string[] = [];
 
   if (sponsors.length === 0) reasons.push('No active sponsor relationships are supporting the team.');
-  else if (confidence <= 45) reasons.push(`Average sponsor confidence is ${confidence}/100.`);
-  if (lowestSponsor && lowestSponsor.confidence <= 30) reasons.push(`${lowestSponsor.name} confidence is ${lowestSponsor.confidence}/100.`);
-  if (reputation <= 40) reasons.push(`Commercial reputation is ${reputation}/100, limiting partner confidence and future offers.`);
+  else if (confidence <= 25) reasons.push('Average sponsor confidence looks critical.');
+  else if (confidence <= 45) reasons.push('Average sponsor confidence looks vulnerable.');
+  if (lowestSponsor && lowestSponsor.confidence <= 15) reasons.push(`${lowestSponsor.name} confidence looks close to breaking.`);
+  else if (lowestSponsor && lowestSponsor.confidence <= 30) reasons.push(`${lowestSponsor.name} confidence looks fragile.`);
+  if (reputation <= 40) reasons.push('Commercial reputation is limiting partner confidence and future offers.');
   if (failedObjectives > 0) reasons.push(`${failedObjectives} sponsor objective${failedObjectives === 1 ? ' has' : 's have'} failed.`);
   if (reasons.length === 0) reasons.push('Sponsor confidence and commercial standing are stable; supporters do not require direct intervention.');
 
@@ -165,14 +201,14 @@ export function commercialStakeholderProfile(
     reasons: reasons.slice(0, 3),
     metrics: [
       { label: 'Sponsors', value: `${sponsors.length}` },
-      { label: 'Confidence', value: sponsors.length > 0 ? `${confidence}` : '—' },
-      { label: 'Reputation', value: `${reputation}` },
-      { label: 'Fan support', value: `${fanSupport}` },
+      { label: 'Confidence', value: sponsors.length > 0 ? relationshipHealthRead(confidence) : '—' },
+      { label: 'Reputation', value: relationshipHealthRead(reputation) },
+      { label: 'Fan support', value: relationshipHealthRead(fanSupport) },
     ],
     gameplayEffect: {
       label: 'Average renewal outlook',
-      value: sponsors.length > 0 ? `${renewalOutlook}%` : 'No active deal',
-      detail: 'Sponsor confidence directly affects each expiring partner’s renewal probability at season rollover.',
+      value: renewalOutlookRead(renewalOutlook, sponsors.length > 0),
+      detail: 'Sponsor confidence shapes expiring partner renewal posture at season rollover.',
     },
     actionLabel: 'Review sponsors & commercial',
   };
