@@ -15,6 +15,14 @@ export type AdvisorOptionImpactPreview = {
   highConfidenceObjections: number;
 };
 
+export type AdvisorCouncilRead = {
+  alignment: 'BroadlyAligned' | 'MixedRoom' | 'InternalResistance' | 'StrongObjection';
+  label: string;
+  tone: 'positive' | 'caution' | 'warning';
+  read: string;
+  watch: string;
+};
+
 function eventTargets(event: PaddockEvent): CharacterInteractionTarget[] {
   if (event.characterRequest) {
     return [{
@@ -62,4 +70,45 @@ export function advisorOptionImpactPreview(
     preview.netTrustChange += advisorTrustChangeForChoice(recommendation, selectedOptionId);
     return preview;
   }, { supporting: 0, overruled: 0, netTrustChange: 0, highConfidenceObjections: 0 });
+}
+
+export function advisorCouncilReadForOption(
+  recommendations: AdvisorRecommendation[],
+  selectedOptionId: string,
+): AdvisorCouncilRead {
+  const preview = advisorOptionImpactPreview(recommendations, selectedOptionId);
+  if (preview.supporting > 0 && preview.overruled === 0) {
+    return {
+      alignment: 'BroadlyAligned',
+      label: 'Council broadly aligned',
+      tone: 'positive',
+      read: 'This looks like the room would mostly understand the call.',
+      watch: 'Still watch whether expectations rise after you follow the advice.',
+    };
+  }
+  if (preview.highConfidenceObjections > 0) {
+    return {
+      alignment: 'StrongObjection',
+      label: 'Strong objection possible',
+      tone: 'warning',
+      read: 'A senior voice may feel overruled if you choose this path.',
+      watch: 'Watch for internal trust or strategic alignment to become more fragile.',
+    };
+  }
+  if (preview.overruled > preview.supporting) {
+    return {
+      alignment: 'InternalResistance',
+      label: 'Some internal resistance likely',
+      tone: 'caution',
+      read: 'The council may need extra reassurance before this feels settled.',
+      watch: 'Watch for department confidence if results or execution dip.',
+    };
+  }
+  return {
+    alignment: 'MixedRoom',
+    label: 'Council split',
+    tone: 'caution',
+    read: 'There is enough support to justify the call, but not enough to silence debate.',
+    watch: 'Watch which department owns the follow-through after the decision.',
+  };
 }
