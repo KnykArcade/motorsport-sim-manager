@@ -9,6 +9,12 @@ export const STAFF_WORKSPACE_TABS: Array<{ id: StaffWorkspaceTab; label: string 
   { id: 'market', label: 'Recruitment' },
 ];
 
+export function staffTabFromQuery(value: string | null): StaffWorkspaceTab {
+  return STAFF_WORKSPACE_TABS.some((tab) => tab.id === value)
+    ? value as StaffWorkspaceTab
+    : 'roster';
+}
+
 export const STAFF_PAGE_SIZE = 3;
 
 export function staffPageCount(totalEntries: number): number {

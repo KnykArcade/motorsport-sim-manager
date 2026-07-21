@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { useGame } from '../game/GameContext';
 import { teamById } from '../game/careerState';
 import { getStaffPool } from '../data';
@@ -39,6 +40,7 @@ import {
   staffPage,
   staffPageCount,
   staffVacancyCount,
+  staffTabFromQuery,
   type StaffWorkspaceTab,
 } from './staffViewModel';
 
@@ -46,7 +48,8 @@ type StaffMarketView = 'available' | 'rivals';
 
 export function Staff() {
   const { state, dispatch } = useGame();
-  const [tab, setTab] = useState<StaffWorkspaceTab>('roster');
+  const [searchParams, setSearchParams] = useSearchParams();
+  const tab = staffTabFromQuery(searchParams.get('tab'));
   const [activeRole, setActiveRole] = useState<StaffRole>(STAFF_ROLES[0]);
   const [marketView, setMarketView] = useState<StaffMarketView>('available');
   const [candidatePage, setCandidatePage] = useState(0);
@@ -102,6 +105,12 @@ export function Staff() {
           : undefined;
     return { ...item, label: count === undefined ? item.label : `${item.label} (${count})` };
   });
+  const setTab = (nextTab: StaffWorkspaceTab) => {
+    const next = new URLSearchParams(searchParams);
+    if (nextTab === 'roster') next.delete('tab');
+    else next.set('tab', nextTab);
+    setSearchParams(next);
+  };
 
   return (
     <WorkspaceScreen className="era-feature-screen era-staff">

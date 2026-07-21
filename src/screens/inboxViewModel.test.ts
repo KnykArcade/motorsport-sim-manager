@@ -88,7 +88,7 @@ describe('inboxViewModel', () => {
     const vacant = inboxMessages({ ...base, staff: [] }).find((message) => message.id === 'inbox-staff-vacancies');
     expect(vacant).toMatchObject({
       actionable: true,
-      route: '/staff',
+      route: '/staff?tab=market',
       body: expect.stringContaining('Technical Director'),
     });
 
@@ -109,7 +109,7 @@ describe('inboxViewModel', () => {
     }).find((message) => message.id === 'inbox-staff-contracts-expiring');
     expect(expiring).toMatchObject({
       actionable: true,
-      route: '/staff',
+      route: '/staff?tab=contracts',
     });
     expect(expiring?.body).toContain(staffMember?.name);
   });

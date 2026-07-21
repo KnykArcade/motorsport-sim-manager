@@ -190,8 +190,8 @@ function peopleMessages(state: GameState): InboxMessage[] {
       category: 'people',
       title: `${vacantRoles.length} staff position${vacantRoles.length === 1 ? '' : 's'} vacant`,
       body: vacantRoles.join(' · '),
-      route: '/staff',
-      routeLabel: 'Open Staff',
+      route: '/staff?tab=market',
+      routeLabel: 'Open Recruitment',
       actionable: true,
     });
   }
@@ -204,8 +204,8 @@ function peopleMessages(state: GameState): InboxMessage[] {
       category: 'people',
       title: `${expiringStaff.length} staff contract${expiringStaff.length === 1 ? '' : 's'} expiring after this season`,
       body: expiringStaff.map((member) => `${member.name} · ${member.role}`).join(' · '),
-      route: '/staff',
-      routeLabel: 'Open Staff',
+      route: '/staff?tab=contracts',
+      routeLabel: 'Open Contracts',
       actionable: true,
     });
   }
