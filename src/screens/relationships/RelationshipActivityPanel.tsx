@@ -160,9 +160,13 @@ function FollowUpAgenda({ items, summary, onOpenAction }: { items: RelationshipA
             <div className="mt-1 text-[10px] font-bold uppercase tracking-wide opacity-75">{item.followUp.label}</div>
             <p className="mt-1 text-[10px] leading-relaxed opacity-80">{item.followUp.detail}</p>
             <div className="mt-2 rounded border border-current/20 bg-neutral-950/25 px-2 py-1.5">
-              <div className="text-[9px] font-bold uppercase tracking-wide opacity-70">Recommended move</div>
+              <div className="flex flex-wrap items-center gap-1.5">
+                <div className="text-[9px] font-bold uppercase tracking-wide opacity-70">Recommended move</div>
+                <span className="rounded border border-current/20 bg-neutral-950/20 px-1.5 py-0.5 text-[8px] font-bold uppercase tracking-wide opacity-80">{item.followUp.style.label}</span>
+              </div>
               <div className="mt-0.5 text-[10px] font-semibold">{item.followUp.recommendedAction.label}</div>
               <div className="mt-0.5 text-[9px] opacity-70">{item.followUp.recommendedAction.destination}</div>
+              <p className="mt-1 text-[9px] leading-relaxed opacity-75">{item.followUp.style.detail}</p>
               <div className="mt-1 rounded border border-current/15 bg-neutral-950/20 px-2 py-1">
                 <div className="text-[8px] font-bold uppercase tracking-wide opacity-65">Why it matters</div>
                 <div className="mt-0.5 text-[9px] leading-relaxed opacity-75">{item.followUp.stakes.priority}</div>
@@ -235,14 +239,17 @@ function FollowUpCallout({ item, compact = false, onOpenAction }: { item: Relati
     <div className={`mt-2 rounded border px-2 py-1.5 ${FOLLOW_UP_STYLES[item.followUp.cadence]}`}>
       <div className="flex flex-wrap items-center gap-2">
         <span className="text-[9px] font-bold uppercase tracking-wide opacity-80">Follow-up · {cadenceLabel}</span>
+        <span className="rounded border border-current/20 bg-neutral-950/20 px-1.5 py-0.5 text-[8px] font-bold uppercase tracking-wide opacity-80">{item.followUp.style.label}</span>
         <span className="text-[10px] font-semibold">{item.followUp.label}</span>
       </div>
       {!compact && (
         <>
+          <p className="mt-0.5 text-[10px] leading-relaxed opacity-75">{item.followUp.style.detail}</p>
           <p className="mt-0.5 text-[10px] leading-relaxed opacity-80">{item.followUp.detail}</p>
           <div className="mt-1.5 rounded border border-current/20 bg-neutral-950/25 px-2 py-1">
             <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5">
               <span className="text-[9px] font-bold uppercase tracking-wide opacity-70">Recommended move</span>
+              <span className="rounded border border-current/20 bg-neutral-950/20 px-1.5 py-0.5 text-[8px] font-bold uppercase tracking-wide opacity-80">{item.followUp.style.label}</span>
               <span className="text-[10px] font-semibold">{item.followUp.recommendedAction.label}</span>
               <span className="text-[9px] opacity-65">→ {item.followUp.recommendedAction.destination}</span>
             </div>
