@@ -57,4 +57,35 @@ describe('managerOfficeFollowUpViewModel', () => {
       route: '/technical?section=parts',
     });
   });
+
+  it('carries fuzzy relationship advice into office follow-ups', () => {
+    const followUps = buildManagerOfficeFollowUps({
+      raceId: 'race-2',
+      raceLabel: 'Canadian Grand Prix',
+      round: 4,
+      news: [],
+      actionMessages: [
+        {
+          id: 'inbox-relationship-owner',
+          severity: 'critical',
+          category: 'people',
+          title: 'Relationship priority: Team Owner',
+          body: 'Act before advancing: Ownership confidence is critical. Protect the mandate: Likely needs visible attention now.',
+          route: '/relationships',
+          routeLabel: 'Open Relationships',
+          actionable: true,
+          source: 'Relationship advisor',
+          whyItMatters: 'Backroom read: A heavy-handed response could still unsettle drivers or staff. Watch: Owner confidence and board patience.',
+        },
+      ],
+    });
+
+    expect(followUps.action[0]).toMatchObject({
+      title: 'Relationship priority: Team Owner',
+      detail: expect.stringContaining('Backroom read'),
+      route: '/relationships',
+    });
+    expect(followUps.action[0].detail).toContain('could');
+    expect(followUps.action[0].detail).not.toMatch(/\+\d|-\d|trust \d|morale \d|best answer/i);
+  });
 });

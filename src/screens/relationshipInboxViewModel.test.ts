@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { RelationshipActionWindow } from '../sim/relationshipAttentionEngine';
-import type { RelationshipCommandSummary } from './relationships/relationshipCommandViewModel';
+import type { RelationshipCommandSummary, RelationshipManagementRead } from './relationships/relationshipCommandViewModel';
 import { relationshipInboxMessage } from './relationshipInboxViewModel';
 
 function summary(
@@ -9,6 +9,7 @@ function summary(
   title = 'Target',
   reason = 'An active relationship issue needs attention.',
   actionWindow: RelationshipActionWindow = status === 'MustActNow' ? 'Immediate' : status === 'WatchClosely' ? 'Soon' : 'Background',
+  managementRead?: RelationshipManagementRead,
 ): RelationshipCommandSummary {
   return {
     mustActNow: status === 'MustActNow' ? 1 : 0,
@@ -16,7 +17,7 @@ function summary(
     active: status === 'Stable' ? 0 : 1,
     stable: status === 'Stable' ? 1 : 0,
     total: 1,
-    topSignal: { id, status, actionWindow, rank: 1, title, reason, influence: 80 },
+    topSignal: { id, status, actionWindow, rank: 1, title, reason, influence: 80, managementRead },
   };
 }
 
@@ -34,9 +35,28 @@ describe('relationship Inbox alert', () => {
       route: '/relationships',
       actionable: true,
     });
-    expect(message?.body).toContain('risk if ignored');
+    expect(message?.source).toBe('Relationship advisor');
+    expect(message?.body).toContain('broader manager read');
     expect(message?.body).toContain('Act before advancing');
     expect(message?.whyItMatters).toContain('decision, deadline, or crisis');
+  });
+
+  it('turns the command center read into fuzzy backroom advice', () => {
+    const message = relationshipInboxMessage(
+      summary('Owner:owner', 'MustActNow', 'Team Owner', 'Ownership confidence is critical.', 'Immediate', {
+        posture: 'Protect the mandate',
+        read: 'Likely needs visible attention now; ownership usually wants to see control before patience frays.',
+        caution: 'A heavy-handed response could still unsettle drivers or staff if it looks purely political.',
+        watch: 'Owner confidence, board patience, and whether the next result changes the room.',
+      }),
+      { duePromise: false, jobOpportunity: false },
+    );
+
+    expect(message?.body).toContain('Protect the mandate');
+    expect(message?.body).toContain('Likely needs visible attention');
+    expect(message?.whyItMatters).toContain('Backroom read');
+    expect(message?.whyItMatters).toContain('could');
+    expect(`${message?.body ?? ''} ${message?.whyItMatters ?? ''}`).not.toMatch(/\+\d|-\d|trust \d|morale \d|best answer/i);
   });
 
   it('does not add noise when every relationship is stable', () => {
