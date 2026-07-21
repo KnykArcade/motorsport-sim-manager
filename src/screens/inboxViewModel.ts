@@ -197,18 +197,18 @@ function peopleMessages(state: GameState): InboxMessage[] {
   });
 
   const expiringStaff = staff.filter((member) => (member.contractYearsRemaining ?? 99) <= 1);
-  if (expiringStaff.length > 0) {
+  expiringStaff.forEach((member) => {
     messages.push({
-      id: 'inbox-staff-contracts-expiring',
+      id: `inbox-staff-contract-${member.id}`,
       severity: 'action',
       category: 'people',
-      title: `${expiringStaff.length} staff contract${expiringStaff.length === 1 ? '' : 's'} expiring after this season`,
-      body: expiringStaff.map((member) => `${member.name} · ${member.role}`).join(' · '),
-      route: '/staff?tab=contracts',
+      title: `${member.name}'s contract expires after this season`,
+      body: `${member.role} · Review renewal terms before the next season.`,
+      route: `/staff?tab=contracts&staffId=${encodeURIComponent(member.id)}`,
       routeLabel: 'Open Contracts',
       actionable: true,
     });
-  }
+  });
 
   const duePromises = (state.driverPromises ?? []).filter((promise) =>
     promise.status === 'active'

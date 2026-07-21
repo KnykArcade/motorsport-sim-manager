@@ -106,12 +106,12 @@ describe('inboxViewModel', () => {
     const expiring = inboxMessages({
       ...base,
       staff: [staffMember],
-    }).find((message) => message.id === 'inbox-staff-contracts-expiring');
+    }).find((message) => message.id === 'inbox-staff-contract-staff-td');
     expect(expiring).toMatchObject({
       actionable: true,
-      route: '/staff?tab=contracts',
+      route: '/staff?tab=contracts&staffId=staff-td',
     });
-    expect(expiring?.body).toContain(staffMember?.name);
+    expect(expiring?.title).toContain(staffMember.name);
   });
 
   it('surfaces open regulation votes and low budget', () => {
