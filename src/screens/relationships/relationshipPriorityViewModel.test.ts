@@ -4,10 +4,13 @@ import {
   RELATIONSHIP_HIERARCHY,
   relationshipActionWindowDetail,
   relationshipActionWindowLabel,
+  relationshipHierarchyDashboard,
   relationshipPrioritySummary,
   stableInternalRelationships,
   visibleRelationshipPriorities,
 } from './relationshipPriorityViewModel';
+import type { CollectiveStakeholderProfile } from './relationshipStakeholderViewModel';
+import type { ExternalTalentContext } from './relationshipTalentViewModel';
 
 function profile(
   id: string,
@@ -71,6 +74,51 @@ describe('relationship priority view model', () => {
     expect(RELATIONSHIP_HIERARCHY.find((row) => row.rank === '5')?.coverage).toBe('Collective team systems');
     expect(RELATIONSHIP_HIERARCHY.find((row) => row.rank === '6')?.coverage).toBe('Live career-market standing');
     expect(RELATIONSHIP_HIERARCHY.find((row) => row.rank === '8')?.coverage).toBe('Live recruitment context');
+    expect(RELATIONSHIP_HIERARCHY.find((row) => row.rank === '2–3')?.jumpCondition).toContain('star influence');
+  });
+
+  it('turns the static hierarchy into a live status dashboard', () => {
+    const departments: CollectiveStakeholderProfile = {
+      id: 'Departments',
+      title: 'Team & departments',
+      authorityRank: 4,
+      authorityLabel: 'Internal committees',
+      status: 'WatchClosely',
+      health: 42,
+      reasons: ['Race Operations: workload 82.'],
+      metrics: [],
+      gameplayEffect: { label: 'Prep', value: '-2%', detail: 'Test effect.' },
+      actionLabel: 'Review staff',
+    };
+    const externalTalent: ExternalTalentContext = {
+      authorityRank: 8,
+      authorityLabel: 'External talent',
+      status: 'Stable',
+      openRaceSeats: 0,
+      staffVacancies: 0,
+      targets: [],
+      reasons: ['No active recruitment priority.'],
+    };
+
+    const dashboard = relationshipHierarchyDashboard([
+      profile('owner', 'Owner', 'Stable', 1),
+      profile('driver', 'Driver', 'MustActNow', 2),
+      profile('rival', 'RivalPrincipal', 'Stable', 7),
+    ], [departments], undefined, externalTalent);
+
+    expect(dashboard.find((row) => row.rank === '2–3')).toMatchObject({
+      status: 'MustActNow',
+      activeCount: 1,
+      totalCount: 1,
+    });
+    expect(dashboard.find((row) => row.rank === '4')).toMatchObject({
+      status: 'WatchClosely',
+      signal: 'Team & departments: Race Operations: workload 82.',
+    });
+    expect(dashboard.find((row) => row.rank === '6')).toMatchObject({
+      status: 'Stable',
+      totalCount: 0,
+    });
   });
 
   it('turns action windows into clear player-facing timing labels', () => {
