@@ -11,6 +11,9 @@ export type RelationshipManagementMove = {
   preview: {
     target: string;
     expectedChange: string;
+    relationshipEffect: string;
+    tradeoff: string;
+    bestUse: string;
     constraint: string;
   };
 };
@@ -24,6 +27,9 @@ function stableMove(title: string, expectedEffect: string, target = 'Stable rela
     preview: {
       target,
       expectedChange: 'Maintenance only; prevents avoidable relationship noise.',
+      relationshipEffect: 'No immediate swing; protects current trust and cadence.',
+      tradeoff: 'Spends attention without creating a major new benefit.',
+      bestUse: 'Use when the relationship is stable but important enough to keep visible.',
       constraint: 'No urgent action required.',
     },
   };
@@ -48,6 +54,9 @@ export function characterManagementMove(profile: RelationshipAttentionProfile): 
       preview: {
         target: profile.target.name,
         expectedChange: 'Owner confidence and patience pressure should stabilize.',
+        relationshipEffect: 'Owner patience protected; job-security pressure should stop worsening.',
+        tradeoff: 'May require a conservative promise, budget explanation, or less aggressive public stance.',
+        bestUse: 'Use when owner confidence is slipping, patience is low, or results need political cover.',
         constraint: 'Does not replace the need for on-track results.',
       },
     };
@@ -66,6 +75,15 @@ export function characterManagementMove(profile: RelationshipAttentionProfile): 
         expectedChange: promiseRelated
           ? 'Trust/morale fallout from the commitment is reduced.'
           : 'Confidence and retention pressure should stabilize.',
+        relationshipEffect: promiseRelated
+          ? 'Trust in principal and morale are protected from promise fallout.'
+          : 'Confidence, morale, and retention posture should become easier to manage.',
+        tradeoff: promiseRelated
+          ? 'May force a sporting compromise, team-order restraint, or development fairness concession.'
+          : 'Can create favoritism perception if the teammate reads the attention as unequal treatment.',
+        bestUse: promiseRelated
+          ? 'Use when a promise, clause, or visible commitment is close to becoming a breach.'
+          : 'Use when driver confidence is fragile before a race, negotiation, or teammate flashpoint.',
         constraint: 'Driver personality and performance context still matter.',
       },
     };
@@ -79,6 +97,9 @@ export function characterManagementMove(profile: RelationshipAttentionProfile): 
       preview: {
         target: profile.target.name,
         expectedChange: 'Staff trust and department alignment pressure should ease.',
+        relationshipEffect: 'Staff trust, morale, and operational alignment should stabilize.',
+        tradeoff: 'Can cost budget, management attention, or create workload pressure elsewhere.',
+        bestUse: 'Use when a key staff member or department signal is dragging execution.',
         constraint: 'Does not alter car development priorities directly.',
       },
     };
@@ -92,6 +113,9 @@ export function characterManagementMove(profile: RelationshipAttentionProfile): 
       preview: {
         target: profile.target.name,
         expectedChange: 'Escalation risk and paddock friction should be easier to control.',
+        relationshipEffect: 'Rival tension, protest risk, or political isolation should become clearer to manage.',
+        tradeoff: 'A conciliatory move may reduce villain leverage; an aggressive posture may invite retaliation.',
+        bestUse: 'Use when you need to choose respect, neutrality, or paddock villain positioning deliberately.',
         constraint: 'A hostile stance can still be a valid strategic choice.',
       },
     };
@@ -104,6 +128,9 @@ export function characterManagementMove(profile: RelationshipAttentionProfile): 
     preview: {
       target: profile.target.name,
       expectedChange: 'Recruiting interest should stay warm.',
+      relationshipEffect: 'Candidate interest and shortlist momentum should remain alive.',
+      tradeoff: 'Can distract from current-team relationships if pursued too visibly.',
+      bestUse: 'Use when a live target, vacancy, or negotiation window is starting to cool.',
       constraint: 'No signing is guaranteed until contract terms are resolved.',
     },
   };
@@ -122,6 +149,9 @@ export function collectiveManagementMove(profile: CollectiveStakeholderProfile):
       preview: {
         target: profile.title,
         expectedChange: 'Workload, trust, or alignment pressure should improve.',
+        relationshipEffect: 'Department trust, morale, or workload pressure should stabilize.',
+        tradeoff: 'Usually costs budget, attention, or prioritization flexibility.',
+        bestUse: 'Use when departments are overloaded or delivery confidence is deteriorating.',
         constraint: 'Committee action availability and budget still apply.',
       },
     };
@@ -134,6 +164,9 @@ export function collectiveManagementMove(profile: CollectiveStakeholderProfile):
     preview: {
       target: profile.title,
       expectedChange: 'Sponsor confidence, fan support, or commercial reputation should improve.',
+      relationshipEffect: 'Sponsor confidence, fan patience, and commercial alignment should stabilize.',
+      tradeoff: 'May require conservative messaging, budget focus, or objectives that compete with sporting purity.',
+      bestUse: 'Use when commercial pressure is visible but should not outrank owner/driver fires.',
       constraint: 'Cannot fully offset missed objectives or poor results.',
     },
   };
@@ -151,6 +184,9 @@ export function employerManagementMove(standing: PotentialEmployerStanding): Rel
     preview: {
       target: 'Potential employers',
       expectedChange: 'Market leverage and offer credibility should be protected.',
+      relationshipEffect: 'Rival-owner interest and career leverage should stay credible.',
+      tradeoff: 'Pushing too hard can look disloyal if current-team authority relationships are fragile.',
+      bestUse: 'Use when an offer, rumor, or expiring deal creates a real career-market decision.',
       constraint: 'Current owner relationship remains the higher authority.',
     },
   };
@@ -169,6 +205,9 @@ export function externalTalentManagementMove(context: ExternalTalentContext): Re
       preview: {
         target: 'Open race seat',
         expectedChange: 'Lineup completeness and negotiation urgency should improve.',
+        relationshipEffect: 'Candidate interest and seat-filling confidence should stabilize.',
+        tradeoff: 'May require budget, role promises, or commitment before the ideal market option appears.',
+        bestUse: 'Use when an open race seat creates immediate credibility or preseason readiness risk.',
         constraint: 'Candidate availability and contract demands still apply.',
       },
     };
@@ -182,6 +221,9 @@ export function externalTalentManagementMove(context: ExternalTalentContext): Re
       preview: {
         target: 'Specialist vacancy',
         expectedChange: 'Operational coverage pressure should ease.',
+        relationshipEffect: 'Staff-market momentum and department confidence should stabilize.',
+        tradeoff: 'May consume budget or settle for a specialist who is available rather than ideal.',
+        bestUse: 'Use when a staff vacancy is visibly hurting operations or department trust.',
         constraint: 'Hiring still depends on available staff and budget.',
       },
     };
@@ -194,6 +236,9 @@ export function externalTalentManagementMove(context: ExternalTalentContext): Re
     preview: {
       target: 'Live recruiting target',
       expectedChange: 'Shortlist momentum and target interest should stay warm.',
+      relationshipEffect: 'Target interest and negotiation leverage should remain active.',
+      tradeoff: 'Can alert rivals or create internal noise if the current lineup/staff sees the move.',
+      bestUse: 'Use when a live target needs contact before rival teams move first.',
       constraint: 'Rivals can still move first if negotiations stall.',
     },
   };
