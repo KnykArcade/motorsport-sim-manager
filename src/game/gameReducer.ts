@@ -259,6 +259,7 @@ export type GameAction =
   | { type: 'SET_TECHNICAL_ADVISOR_PRIORITY'; priority: TechnicalAdvisorPriority }
   | { type: 'SET_STAFF_RESPONSIBILITY_POLICY'; responsibility: StaffResponsibilityId; policy: StaffResponsibilityPolicy }
   | { type: 'MARK_INBOX_READ'; messageIds: string[] }
+  | { type: 'DISMISS_INBOX_MESSAGES'; messageIds: string[] }
   | { type: 'RETIRE_PART'; partId: string }
   | { type: 'SET_CAR_SETUP'; driverId: string; setup: CarSetup }
   | {
@@ -700,6 +701,13 @@ export function gameReducer(state: GameState | null, action: GameAction): GameSt
       for (const id of action.messageIds) read.add(id);
       // Cap so the read-set cannot grow unboundedly across a long career.
       return { ...state, inboxRead: [...read].slice(-400) };
+    }
+
+    case 'DISMISS_INBOX_MESSAGES': {
+      if (!state) return state;
+      const dismissed = new Set(state.inboxDismissed ?? []);
+      for (const id of action.messageIds) dismissed.add(id);
+      return { ...state, inboxDismissed: [...dismissed].slice(-400) };
     }
 
     case 'RETIRE_PART': {

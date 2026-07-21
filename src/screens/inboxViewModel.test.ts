@@ -207,6 +207,43 @@ describe('inboxViewModel', () => {
     expect(messages.every((message) => !message.actionable)).toBe(true);
   });
 
+  it('turns high-priority categorized news into owned recommendations', () => {
+    const state = newState();
+    const messages = inboxMessages({
+      ...state,
+      news: [{
+        id: 'news-finance',
+        headline: 'Cash-flow report',
+        category: 'financial',
+        priority: 'high',
+        timestamp: '1995-01-01T00:00:00.000Z',
+      }],
+    });
+    expect(messages).toContainEqual(expect.objectContaining({
+      id: 'inbox-news-news-finance',
+      actionable: true,
+      kind: 'recommended',
+      route: '/finance',
+      source: 'Team leadership',
+    }));
+  });
+
+  it('removes explicitly dismissed Inbox items without changing the source news', () => {
+    const state = newState();
+    const withNews = {
+      ...state,
+      news: [{
+        id: 'news-dismiss',
+        headline: 'A report to dismiss',
+        timestamp: '2026-01-01',
+      }],
+    };
+    expect(inboxMessages(withNews).some((message) => message.id === 'inbox-news-news-dismiss')).toBe(true);
+    const dismissed = gameReducer(withNews, { type: 'DISMISS_INBOX_MESSAGES', messageIds: ['inbox-news-news-dismiss'] }) as GameState;
+    expect(inboxMessages(dismissed).some((message) => message.id === 'inbox-news-news-dismiss')).toBe(false);
+    expect(dismissed.news).toHaveLength(1);
+  });
+
   it('tracks read state through MARK_INBOX_READ', () => {
     const state = newState();
     const before = unreadInboxCount(state);

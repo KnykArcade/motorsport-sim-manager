@@ -13,6 +13,7 @@ import { currentRelationshipCommandSnapshot } from './relationships/relationship
 import { relationshipInboxMessage } from './relationshipInboxViewModel';
 import { paddockEventDestination } from './paddockAgendaViewModel';
 import { staffRecommendations } from './staffRecommendationsViewModel';
+import { newsTriage } from './newsTriageViewModel';
 
 export type InboxSeverity = 'critical' | 'action' | 'info';
 
@@ -338,23 +339,28 @@ function businessMessages(state: GameState): InboxMessage[] {
 }
 
 function newsMessages(state: GameState): InboxMessage[] {
-  return state.news.slice(0, 40).map((item) => ({
-    id: `inbox-news-${item.id}`,
-    severity: newsSeverity(item),
-    category: 'news' as const,
-    title: item.headline,
-    body: item.body,
-    route: '/news',
-    routeLabel: 'Open News Center',
-    actionable: false,
-    round: item.round,
-    timestamp: item.timestamp,
-  }));
+  return state.news.slice(0, 40).map((item) => {
+    const triage = newsTriage(state, item);
+    return {
+      id: `inbox-news-${item.id}`,
+      severity: newsSeverity(item),
+      category: 'news' as const,
+      title: item.headline,
+      body: triage ? `${triage.recommendation}${item.body ? ` ${item.body}` : ''}` : item.body,
+      route: triage?.route ?? '/news',
+      routeLabel: triage?.routeLabel ?? 'Open News Center',
+      actionable: Boolean(triage),
+      source: triage?.owner,
+      whyItMatters: triage ? `${triage.whyItMatters} ${triage.consequence}` : undefined,
+      round: item.round,
+      timestamp: item.timestamp,
+    };
+  });
 }
 
 function withTaskSemantics(message: InboxMessage): InboxMessage {
   const kind: InboxMessageKind = message.category === 'news'
-    ? 'news'
+    ? message.actionable ? 'recommended' : 'news'
     : message.id.startsWith('inbox-paddock-') && message.severity === 'critical'
       ? 'must_respond'
       : message.actionable
@@ -387,7 +393,15 @@ export function inboxMessages(state: GameState): InboxMessage[] {
     ...(relationship ? [relationship] : []),
     ...businessMessages(state),
   ].sort((a, b) => SEVERITY_ORDER[a.severity] - SEVERITY_ORDER[b.severity] || (b.round ?? 0) - (a.round ?? 0) || a.id.localeCompare(b.id));
-  return [...actionItems, ...newsMessages(state)].map(withTaskSemantics);
+  const dismissed = new Set(state.inboxDismissed ?? []);
+  return [...actionItems, ...newsMessages(state)]
+    .filter((message) => !dismissed.has(message.id))
+    .map(withTaskSemantics)
+    .sort((a, b) =>
+      Number(b.actionable) - Number(a.actionable)
+      || SEVERITY_ORDER[a.severity] - SEVERITY_ORDER[b.severity]
+      || (b.round ?? 0) - (a.round ?? 0)
+      || a.id.localeCompare(b.id));
 }
 
 export function unreadInboxCount(state: GameState): number {
