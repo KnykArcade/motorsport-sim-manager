@@ -73,6 +73,10 @@ describe('relationship activity view model', () => {
       followUp: {
         cadence: 'Monitor',
         label: 'Let the operating gain settle',
+        style: {
+          label: 'Operational relief',
+          detail: expect.stringContaining('workload'),
+        },
         stakes: {
           priority: 'Track without forcing a new intervention · hierarchy #4',
           riskIfIgnored: 'Staff and department frustration can become workload drag, morale loss, or slower delivery.',
@@ -94,6 +98,10 @@ describe('relationship activity view model', () => {
       followUp: {
         cadence: 'NextRound',
         label: 'Watch for second-order effects',
+        style: {
+          label: 'Negotiation',
+          detail: expect.stringContaining('compromise'),
+        },
         stakes: {
           priority: 'Review in the next management window · hierarchy #2–3',
           riskIfIgnored: 'Driver trust can leak into confidence, promise pressure, contract leverage, and race-week focus.',
@@ -128,6 +136,9 @@ describe('relationship activity view model', () => {
       followUp: {
         cadence: 'NextRound',
         label: 'Review department impact',
+        style: {
+          label: 'Operational relief',
+        },
         stakes: {
           priority: 'Review in the next management window · hierarchy #4',
         },
@@ -172,6 +183,9 @@ describe('relationship activity view model', () => {
       followUp: {
         cadence: 'Monitor',
         label: 'Let the operating gain settle',
+        style: {
+          label: 'Operational relief',
+        },
         stakes: {
           priority: 'Track without forcing a new intervention · hierarchy #4–5',
           riskIfIgnored: 'Committee pressure can spread into operations, commercial confidence, or fan/sponsor expectations.',
@@ -194,6 +208,10 @@ describe('relationship activity view model', () => {
     })).toMatchObject({
       cadence: 'Immediate',
       label: 'Repair before next race',
+      style: {
+        label: 'Damage control',
+        detail: expect.stringContaining('authority'),
+      },
       stakes: {
         priority: 'Act before the next race weekend · hierarchy #1',
         riskIfIgnored: 'Owner patience can slide into job-security pressure even when other relationships look healthy.',
@@ -215,6 +233,9 @@ describe('relationship activity view model', () => {
     })).toMatchObject({
       cadence: 'Monitor',
       label: 'Convert trust into performance',
+      style: {
+        label: 'Reassurance',
+      },
       stakes: {
         priority: 'Track without forcing a new intervention · hierarchy #2–3',
       },
@@ -232,6 +253,9 @@ describe('relationship activity view model', () => {
     })).toMatchObject({
       cadence: 'Background',
       label: 'No follow-up needed',
+      style: {
+        label: 'Maintenance',
+      },
       stakes: {
         priority: 'Keep for context only · hierarchy #7',
         riskIfIgnored: 'Paddock friction can harden into protest risk, political isolation, or avoidable escalation.',
