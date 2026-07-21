@@ -12,6 +12,7 @@ import { STAFF_ROLES } from '../types/staffTypes';
 import { currentRelationshipCommandSnapshot } from './relationships/relationshipCommandViewModel';
 import { relationshipInboxMessage } from './relationshipInboxViewModel';
 import { paddockEventDestination } from './paddockAgendaViewModel';
+import { staffRecommendations } from './staffRecommendationsViewModel';
 
 export type InboxSeverity = 'critical' | 'action' | 'info';
 
@@ -181,9 +182,17 @@ function peopleMessages(state: GameState): InboxMessage[] {
   const messages: InboxMessage[] = [];
   const currentRound = state.calendar[state.currentRaceIndex]?.round ?? state.currentRaceIndex + 1;
   const staff = state.staff ?? [];
+  const recommendations = staffRecommendations(state);
+  const recommendedRecruitmentRoles = new Set(
+    recommendations.filter((item) => item.kind === 'recruitment').map((item) => item.role),
+  );
+  const recommendedContractIds = new Set(
+    recommendations.filter((item) => item.kind === 'contract').map((item) => item.id.replace('staff-contract-', '')),
+  );
   const hiredRoles = new Set(staff.map((member) => member.role));
   const vacantRoles = STAFF_ROLES.filter((role) => !hiredRoles.has(role));
   vacantRoles.forEach((role) => {
+    if (recommendedRecruitmentRoles.has(role)) return;
     messages.push({
       id: `inbox-staff-vacancy-${role.toLowerCase().replaceAll(' ', '-')}`,
       severity: 'action',
@@ -214,8 +223,25 @@ function peopleMessages(state: GameState): InboxMessage[] {
     });
   }
 
+  for (const recommendation of recommendations) {
+    messages.push({
+      id: `inbox-${recommendation.id}`,
+      severity: 'action',
+      category: 'people',
+      title: recommendation.recommendation,
+      body: `${recommendation.target} · ${recommendation.expectedBenefit}`,
+      route: recommendation.route,
+      routeLabel: recommendation.routeLabel,
+      actionable: true,
+      source: recommendation.owner,
+      whyItMatters: `${recommendation.whyItMatters} ${recommendation.consequence}`,
+      round: currentRound,
+    });
+  }
+
   const expiringStaff = staff.filter((member) => (member.contractYearsRemaining ?? 99) <= 1);
   expiringStaff.forEach((member) => {
+    if (recommendedContractIds.has(member.id)) return;
     messages.push({
       id: `inbox-staff-contract-${member.id}`,
       severity: 'action',

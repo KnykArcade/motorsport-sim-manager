@@ -11,7 +11,9 @@ export type StaffResponsibilityId =
   | 'technical'
   | 'race-engineering'
   | 'pit-operations'
-  | 'race-strategy';
+  | 'race-strategy'
+  | 'staff-recruitment'
+  | 'staff-contracts';
 
 export type StaffResponsibilityPolicy =
   | 'player'

@@ -11,7 +11,7 @@ import {
 export type StaffResponsibility = {
   id: string;
   area: string;
-  role: StaffRole;
+  role: StaffRole | 'People Operations';
   owner: string;
   status: string;
   effect: string;
@@ -78,13 +78,37 @@ export function staffResponsibilities(state: GameState): StaffResponsibility[] {
       '/weekend',
       'Open Race Weekend',
     ),
+    responsibility(
+      'staff-recruitment',
+      'Staff recruitment',
+      'People Operations',
+      undefined,
+      'Candidate recommendations remain advisory',
+      'Highlights the best available specialist for each vacancy',
+      'Hiring decisions and offers remain player-controlled',
+      state,
+      '/staff?tab=market',
+      'Open Recruitment',
+    ),
+    responsibility(
+      'staff-contracts',
+      'Staff contracts',
+      'People Operations',
+      undefined,
+      'Renewal recommendations remain advisory',
+      'Prioritizes expiring contracts worth reviewing',
+      'Renewal, release, and salary decisions remain player-controlled',
+      state,
+      '/staff?tab=contracts',
+      'Open Contracts',
+    ),
   ];
 }
 
 function responsibility(
   id: StaffResponsibilityId,
   area: string,
-  role: StaffRole,
+  role: StaffRole | 'People Operations',
   owner: StaffMember | undefined,
   status: string,
   effect: string,
@@ -97,7 +121,7 @@ function responsibility(
     id,
     area,
     role,
-    owner: ownerLabel(owner, `No ${role} hired`),
+    owner: role === 'People Operations' ? 'People operations desk' : ownerLabel(owner, `No ${role} hired`),
     status,
     effect,
     detail,

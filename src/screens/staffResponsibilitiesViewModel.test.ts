@@ -12,7 +12,7 @@ describe('staffResponsibilitiesViewModel', () => {
       technicalAdvisorPriority: 'reliability',
     });
 
-    expect(responsibilities).toHaveLength(4);
+    expect(responsibilities).toHaveLength(6);
     expect(responsibilities[0]).toMatchObject({
       area: 'Technical programme',
       status: 'Assisted factory',
