@@ -74,8 +74,9 @@ describe('relationship activity view model', () => {
         cadence: 'Monitor',
         label: 'Let the operating gain settle',
         recommendedAction: {
-          label: 'Review department/commercial signals',
+          label: 'Review staff/department signals',
           destination: 'Staff & departments',
+          route: '/staff',
         },
       },
     });
@@ -91,6 +92,7 @@ describe('relationship activity view model', () => {
         recommendedAction: {
           label: 'Schedule driver check-in',
           destination: 'Driver relationship file',
+          route: '/relationships',
         },
       },
     });
@@ -117,7 +119,8 @@ describe('relationship activity view model', () => {
         cadence: 'NextRound',
         label: 'Review department impact',
         recommendedAction: {
-          label: 'Review department/commercial signals',
+          label: 'Review staff/department signals',
+          route: '/staff',
         },
       },
     });
@@ -158,6 +161,7 @@ describe('relationship activity view model', () => {
         label: 'Let the operating gain settle',
         recommendedAction: {
           destination: 'Stakeholder board',
+          route: '/relationships',
         },
       },
     });
@@ -176,6 +180,7 @@ describe('relationship activity view model', () => {
       recommendedAction: {
         label: 'Open owner review',
         destination: 'Team / owner screen',
+        route: '/teams',
       },
     });
 
@@ -190,6 +195,7 @@ describe('relationship activity view model', () => {
       label: 'Convert trust into performance',
       recommendedAction: {
         label: 'Schedule driver check-in',
+        route: '/relationships',
       },
     });
 
@@ -203,6 +209,7 @@ describe('relationship activity view model', () => {
       label: 'No follow-up needed',
       recommendedAction: {
         destination: 'Rival matrix',
+        route: '/rivals',
       },
     });
   });
