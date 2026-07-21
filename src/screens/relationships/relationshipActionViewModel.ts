@@ -6,6 +6,8 @@ import type { ExternalTalentContext } from './relationshipTalentViewModel';
 export type RelationshipManagementMove = {
   title: string;
   priorityLabel: string;
+  styleLabel: string;
+  styleDetail: string;
   rationale: string;
   expectedEffect: string;
   preview: {
@@ -22,6 +24,8 @@ function stableMove(title: string, expectedEffect: string, target = 'Stable rela
   return {
     title,
     priorityLabel: 'Background cadence',
+    styleLabel: 'Maintenance',
+    styleDetail: 'Low-intervention relationship upkeep.',
     rationale: 'No active relationship problem needs immediate intervention.',
     expectedEffect,
     preview: {
@@ -49,6 +53,8 @@ export function characterManagementMove(profile: RelationshipAttentionProfile): 
     return {
       title: profile.status === 'MustActNow' ? 'Hold an owner review before the next race' : 'Prepare an owner confidence update',
       priorityLabel: activeMovePriority(profile.status),
+      styleLabel: profile.status === 'MustActNow' ? 'Damage control' : 'Reassurance',
+      styleDetail: 'Protect authority, patience, and board confidence before pressure escalates.',
       rationale: reason,
       expectedEffect: 'Protects job security, patience, and budget confidence.',
       preview: {
@@ -66,6 +72,10 @@ export function characterManagementMove(profile: RelationshipAttentionProfile): 
     return {
       title: promiseRelated ? 'Resolve the driver commitment' : 'Open the driver relationship file',
       priorityLabel: activeMovePriority(profile.status),
+      styleLabel: promiseRelated ? 'Negotiation' : 'Reassurance',
+      styleDetail: promiseRelated
+        ? 'Convert a commitment risk into a clear sporting or political compromise.'
+        : 'Stabilize confidence before morale, retention, or race focus deteriorates.',
       rationale: reason,
       expectedEffect: promiseRelated
         ? 'Protects morale, trust in principal, and contract leverage.'
@@ -92,6 +102,8 @@ export function characterManagementMove(profile: RelationshipAttentionProfile): 
     return {
       title: 'Stabilize the staff relationship',
       priorityLabel: activeMovePriority(profile.status),
+      styleLabel: 'Operational relief',
+      styleDetail: 'Reduce execution drag without directly changing development priorities.',
       rationale: reason,
       expectedEffect: 'Protects department morale, delivery trust, and future staff retention.',
       preview: {
@@ -108,6 +120,8 @@ export function characterManagementMove(profile: RelationshipAttentionProfile): 
     return {
       title: 'Choose a paddock posture',
       priorityLabel: activeMovePriority(profile.status),
+      styleLabel: 'Political posture',
+      styleDetail: 'Choose whether to cool tension, hold neutral ground, or lean into rivalry.',
       rationale: reason,
       expectedEffect: 'Protects protest risk, political alignment, and rival escalation control.',
       preview: {
@@ -123,6 +137,8 @@ export function characterManagementMove(profile: RelationshipAttentionProfile): 
   return {
     title: 'Convert interest into a recruiting step',
     priorityLabel: activeMovePriority(profile.status),
+    styleLabel: 'Recruiting momentum',
+    styleDetail: 'Keep an external target warm without overvaluing them above core relationships.',
     rationale: reason,
     expectedEffect: 'Protects shortlist momentum and signing leverage.',
     preview: {
@@ -144,6 +160,8 @@ export function collectiveManagementMove(profile: CollectiveStakeholderProfile):
     return {
       title: profile.status === 'MustActNow' ? 'Rebalance department workload now' : 'Review department trust signals',
       priorityLabel: activeMovePriority(profile.status),
+      styleLabel: 'Operational relief',
+      styleDetail: 'Translate department pressure into workload, trust, or morale stabilization.',
       rationale: profile.reasons[0] ?? 'Department alignment is under pressure.',
       expectedEffect: 'Protects productivity, upgrade delivery, and staff confidence.',
       preview: {
@@ -159,6 +177,8 @@ export function collectiveManagementMove(profile: CollectiveStakeholderProfile):
   return {
     title: profile.status === 'MustActNow' ? 'Address sponsor confidence now' : 'Review commercial expectations',
     priorityLabel: activeMovePriority(profile.status),
+    styleLabel: 'Commercial reassurance',
+    styleDetail: 'Keep sponsor and fan confidence aligned without outranking sporting authority.',
     rationale: profile.reasons[0] ?? 'Commercial confidence is under pressure.',
     expectedEffect: 'Protects sponsorship income, fan support, and future partner offers.',
     preview: {
@@ -179,6 +199,8 @@ export function employerManagementMove(standing: PotentialEmployerStanding): Rel
   return {
     title: standing.firmOffers > 0 ? 'Review active job offer leverage' : 'Monitor rival-owner interest',
     priorityLabel: activeMovePriority(standing.status),
+    styleLabel: 'Career leverage',
+    styleDetail: 'Manage rival-owner interest as market leverage, not current-team authority.',
     rationale: standing.reasons[0] ?? 'A rival owner is monitoring your standing.',
     expectedEffect: 'Protects career options without treating other owners as current-team bosses.',
     preview: {
@@ -200,6 +222,8 @@ export function externalTalentManagementMove(context: ExternalTalentContext): Re
     return {
       title: context.status === 'MustActNow' ? 'Fill the open race seat' : 'Shortlist race-seat candidates',
       priorityLabel: activeMovePriority(context.status),
+      styleLabel: 'Recruiting urgency',
+      styleDetail: 'Turn a lineup gap into a credible candidate path before readiness suffers.',
       rationale: context.reasons[0] ?? 'A race seat needs attention.',
       expectedEffect: 'Protects lineup completeness and preseason readiness.',
       preview: {
@@ -216,6 +240,8 @@ export function externalTalentManagementMove(context: ExternalTalentContext): Re
     return {
       title: 'Prioritize specialist hiring',
       priorityLabel: activeMovePriority(context.status),
+      styleLabel: 'Recruiting urgency',
+      styleDetail: 'Cover an operational gap before staff pressure spreads into departments.',
       rationale: context.reasons[0] ?? 'A specialist role is vacant.',
       expectedEffect: 'Protects staff coverage and department execution.',
       preview: {
@@ -231,6 +257,8 @@ export function externalTalentManagementMove(context: ExternalTalentContext): Re
   return {
     title: 'Advance the live recruiting target',
     priorityLabel: activeMovePriority(context.status),
+    styleLabel: 'Recruiting momentum',
+    styleDetail: 'Keep the target warm while avoiding unnecessary internal noise.',
     rationale: context.reasons[0] ?? 'A recruiting target is active.',
     expectedEffect: 'Protects market timing and negotiation leverage.',
     preview: {

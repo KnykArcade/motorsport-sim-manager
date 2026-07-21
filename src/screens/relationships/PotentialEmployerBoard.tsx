@@ -54,9 +54,13 @@ export function PotentialEmployerBoard({ standing, onReview }: Props) {
         <div className="mt-3 rounded border border-neutral-700/70 bg-neutral-950/45 p-2.5">
           <div className="flex items-center justify-between gap-3">
             <div className="text-[9px] font-bold uppercase tracking-wide text-[var(--era-accent-strong)]">Management move</div>
-            <div className="shrink-0 text-[9px] font-bold uppercase tracking-wide text-neutral-500">{move.priorityLabel}</div>
+            <div className="flex shrink-0 flex-wrap justify-end gap-1">
+              <span className="rounded border border-[var(--era-accent)]/35 bg-[var(--era-accent-soft)] px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wide text-[var(--era-accent-strong)]">{move.styleLabel}</span>
+              <span className="rounded border border-neutral-700/60 bg-neutral-950/35 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wide text-neutral-500">{move.priorityLabel}</span>
+            </div>
           </div>
           <div className="mt-1 text-xs font-semibold text-neutral-100">{move.title}</div>
+          <p className="mt-1 text-[10px] leading-relaxed text-[var(--era-accent-strong)]">{move.styleDetail}</p>
           <p className="mt-1 text-[11px] leading-relaxed text-neutral-400">{move.rationale}</p>
           <p className="mt-1 text-[10px] leading-relaxed text-neutral-500">{move.expectedEffect}</p>
           <RelationshipActionPreview preview={move.preview} />

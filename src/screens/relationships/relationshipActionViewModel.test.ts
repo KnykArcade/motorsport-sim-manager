@@ -44,6 +44,8 @@ describe('relationship management moves', () => {
     expect(characterManagementMove(character('Owner', 'MustActNow', 'Ownership confidence is critical.'))).toMatchObject({
       title: 'Hold an owner review before the next race',
       priorityLabel: 'Immediate action',
+      styleLabel: 'Damage control',
+      styleDetail: expect.stringContaining('authority'),
       expectedEffect: expect.stringContaining('job security'),
       preview: {
         target: 'Owner',
@@ -57,6 +59,8 @@ describe('relationship management moves', () => {
     expect(characterManagementMove(character('Driver', 'WatchClosely', 'A promise is due within 2 rounds.'))).toMatchObject({
       title: 'Resolve the driver commitment',
       priorityLabel: 'Next management window',
+      styleLabel: 'Negotiation',
+      styleDetail: expect.stringContaining('commitment risk'),
       expectedEffect: expect.stringContaining('trust in principal'),
       preview: {
         target: 'Driver',
@@ -72,6 +76,7 @@ describe('relationship management moves', () => {
     expect(collectiveManagementMove(collective('Departments', 'MustActNow'))).toMatchObject({
       title: 'Rebalance department workload now',
       priorityLabel: 'Immediate action',
+      styleLabel: 'Operational relief',
       expectedEffect: expect.stringContaining('upgrade delivery'),
       preview: {
         target: 'Departments',
@@ -84,6 +89,7 @@ describe('relationship management moves', () => {
     expect(collectiveManagementMove(collective('Commercial', 'WatchClosely'))).toMatchObject({
       title: 'Review commercial expectations',
       priorityLabel: 'Next management window',
+      styleLabel: 'Commercial reassurance',
       expectedEffect: expect.stringContaining('sponsorship income'),
       preview: {
         expectedChange: expect.stringContaining('Sponsor confidence'),
@@ -107,6 +113,7 @@ describe('relationship management moves', () => {
     })).toMatchObject({
       title: 'Review active job offer leverage',
       priorityLabel: 'Next management window',
+      styleLabel: 'Career leverage',
       expectedEffect: expect.stringContaining('career options'),
       preview: {
         target: 'Potential employers',
@@ -128,6 +135,7 @@ describe('relationship management moves', () => {
     })).toMatchObject({
       title: 'Fill the open race seat',
       priorityLabel: 'Immediate action',
+      styleLabel: 'Recruiting urgency',
       expectedEffect: expect.stringContaining('lineup completeness'),
       preview: {
         target: 'Open race seat',
@@ -143,6 +151,8 @@ describe('relationship management moves', () => {
     expect(characterManagementMove(character('Owner', 'Stable', 'No issue.'))).toMatchObject({
       title: 'Maintain rhythm',
       priorityLabel: 'Background cadence',
+      styleLabel: 'Maintenance',
+      styleDetail: expect.stringContaining('upkeep'),
       preview: {
         target: 'Owner',
         relationshipEffect: expect.stringContaining('No immediate swing'),
