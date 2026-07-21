@@ -8,6 +8,7 @@ import { developmentSlots } from '../sim/facilityEngine';
 import { technicalDirectorProposals } from '../sim/technicalAdvisorEngine';
 import { technicalStateForTeam } from '../sim/technicalAdapters';
 import type { NewsItem } from '../types/gameTypes';
+import { STAFF_ROLES } from '../types/staffTypes';
 import { currentRelationshipCommandSnapshot } from './relationships/relationshipCommandViewModel';
 import { relationshipInboxMessage } from './relationshipInboxViewModel';
 import { paddockEventDestination } from './paddockAgendaViewModel';
@@ -179,6 +180,35 @@ function paddockMessages(state: GameState): InboxMessage[] {
 function peopleMessages(state: GameState): InboxMessage[] {
   const messages: InboxMessage[] = [];
   const currentRound = state.calendar[state.currentRaceIndex]?.round ?? state.currentRaceIndex + 1;
+  const staff = state.staff ?? [];
+  const hiredRoles = new Set(staff.map((member) => member.role));
+  const vacantRoles = STAFF_ROLES.filter((role) => !hiredRoles.has(role));
+  if (vacantRoles.length > 0) {
+    messages.push({
+      id: 'inbox-staff-vacancies',
+      severity: 'action',
+      category: 'people',
+      title: `${vacantRoles.length} staff position${vacantRoles.length === 1 ? '' : 's'} vacant`,
+      body: vacantRoles.join(' · '),
+      route: '/staff',
+      routeLabel: 'Open Staff',
+      actionable: true,
+    });
+  }
+
+  const expiringStaff = staff.filter((member) => (member.contractYearsRemaining ?? 99) <= 1);
+  if (expiringStaff.length > 0) {
+    messages.push({
+      id: 'inbox-staff-contracts-expiring',
+      severity: 'action',
+      category: 'people',
+      title: `${expiringStaff.length} staff contract${expiringStaff.length === 1 ? '' : 's'} expiring after this season`,
+      body: expiringStaff.map((member) => `${member.name} · ${member.role}`).join(' · '),
+      route: '/staff',
+      routeLabel: 'Open Staff',
+      actionable: true,
+    });
+  }
 
   const duePromises = (state.driverPromises ?? []).filter((promise) =>
     promise.status === 'active'
