@@ -222,11 +222,11 @@ describe('inboxViewModel', () => {
     const state = newState();
     const assisted = gameReducer(state, { type: 'SET_TECHNICAL_MANAGEMENT_MODE', mode: 'assisted' }) as GameState;
     expect(assisted.technicalManagementMode).toBe('assisted');
-    expect(assisted.partsAutomation).toEqual({ autoRepair: true, autoRestock: true, autoFit: true });
+    expect(assisted.partsAutomation).toEqual({ autoRepair: true, autoRestock: true, autoFit: true, budgetCap: 250_000 });
 
     const playerLed = gameReducer(assisted, { type: 'SET_TECHNICAL_MANAGEMENT_MODE', mode: 'player_led' }) as GameState;
     expect(playerLed.technicalManagementMode).toBe('player_led');
-    expect(playerLed.partsAutomation).toEqual({ autoRepair: false, autoRestock: false, autoFit: false });
+    expect(playerLed.partsAutomation).toEqual({ autoRepair: false, autoRestock: false, autoFit: false, budgetCap: 250_000 });
   });
 
   it('counts actionable items', () => {

@@ -205,7 +205,7 @@ import {
 import { isActionBlocked, isSingleSeasonMode } from './modeRestrictions';
 import type { PartType, PartsAutomationSettings, TechnicalManagementMode } from '../types/partsTypes';
 import type { TechnicalAdvisorPriority } from '../types/technicalTypes';
-import { runPartsAutomation } from '../sim/partsAutomationEngine';
+import { DEFAULT_PARTS_AUTOMATION_BUDGET_CAP, runPartsAutomation } from '../sim/partsAutomationEngine';
 import {
   carWithFittedParts,
   ensureTeamPartsMap,
@@ -663,8 +663,18 @@ export function gameReducer(state: GameState | null, action: GameAction): GameSt
         ...state,
         technicalManagementMode: action.mode,
         partsAutomation: action.mode === 'assisted'
-          ? { autoRepair: true, autoRestock: true, autoFit: true }
-          : { autoRepair: false, autoRestock: false, autoFit: false },
+          ? {
+              autoRepair: true,
+              autoRestock: true,
+              autoFit: true,
+              budgetCap: state.partsAutomation?.budgetCap ?? DEFAULT_PARTS_AUTOMATION_BUDGET_CAP,
+            }
+          : {
+              autoRepair: false,
+              autoRestock: false,
+              autoFit: false,
+              budgetCap: state.partsAutomation?.budgetCap ?? DEFAULT_PARTS_AUTOMATION_BUDGET_CAP,
+            },
       };
     }
 
@@ -2162,6 +2172,7 @@ function applyRaceResults(
           drivers: activeDriversForTeam({ ...state, teams }, state.selectedTeamId),
           technical: state.teamTechnical?.[state.selectedTeamId],
           budget: playerTeam.budget,
+          budgetCap: automation.budgetCap ?? DEFAULT_PARTS_AUTOMATION_BUDGET_CAP,
           seasonYear: state.seasonYear,
           round: race.round,
         });
