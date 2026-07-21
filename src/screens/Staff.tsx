@@ -51,6 +51,7 @@ export function Staff() {
   const { state, dispatch } = useGame();
   const [searchParams, setSearchParams] = useSearchParams();
   const tab = staffTabFromQuery(searchParams.get('tab'));
+  const selectedStaffId = searchParams.get('staffId');
   const activeRole = staffRoleFromQuery(searchParams.get('role'));
   const [marketView, setMarketView] = useState<StaffMarketView>('available');
   const [candidatePage, setCandidatePage] = useState(0);
@@ -96,6 +97,10 @@ export function Staff() {
   const contractPageCount = staffPageCount(roster.length);
   const safeContractPage = Math.min(contractPage, contractPageCount - 1);
   const visibleContractStaff = staffPage(roster, safeContractPage);
+  const selectedContractStaff = roster.find((member) => member.id === selectedStaffId);
+  const contractStaff = selectedContractStaff && !visibleContractStaff.some((member) => member.id === selectedContractStaff.id)
+    ? [selectedContractStaff, ...visibleContractStaff]
+    : visibleContractStaff;
   const staffTabs = STAFF_WORKSPACE_TABS.map((item) => {
     const count = item.id === 'roster'
       ? roster.length
@@ -206,12 +211,13 @@ export function Staff() {
         <Panel title="Staff Contracts & Commitments">
           {roster.length === 0 ? <p className="text-sm text-neutral-500">No staff contracts are currently active.</p> : (
             <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
-              {visibleContractStaff.map((member) => {
+              {contractStaff.map((member) => {
                 const clause = staffClauses.find((entry) => entry.partyId === member.id);
                 const futureIntent = state.characterInteractions?.futureIntentions.find((entry) => entry.target.type === 'Staff' && entry.target.id === member.id);
-                return <div key={member.id} className="rounded-lg border border-[var(--era-accent)]/35 bg-neutral-900/40 p-3">
+                const selected = member.id === selectedStaffId;
+                return <div key={member.id} className={`rounded-lg border p-3 ${selected ? 'border-amber-400/80 bg-amber-400/10' : 'border-[var(--era-accent)]/35 bg-neutral-900/40'}`}>
                   <div className="flex justify-between gap-2">
-                    <div><span className="font-semibold text-neutral-100">{member.name}</span><div className="text-[10px] text-neutral-500">{member.role}</div></div>
+                    <div><span className="font-semibold text-neutral-100">{member.name}</span><div className="text-[10px] text-neutral-500">{member.role}</div>{selected && <div className="text-[10px] font-semibold uppercase tracking-wide text-amber-300">Inbox action</div>}</div>
                     <span className="text-[10px] uppercase text-[var(--era-accent-strong)]">{member.contractYearsRemaining ?? 2} yr{(member.contractYearsRemaining ?? 2) === 1 ? '' : 's'} left</span>
                   </div>
                   <div className="mt-2 grid grid-cols-2 gap-2 text-xs">
