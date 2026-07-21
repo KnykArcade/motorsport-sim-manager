@@ -69,6 +69,28 @@ describe('runPartsAutomation', () => {
     expect(broke.parts.inventory.find((part) => part.id === spare!.id)?.status).toBe('spare');
   });
 
+  it('defers paid routine work when the automation ceiling is reached', () => {
+    const state = newState();
+    const base = playerParts(state);
+    const spare = base.inventory.find((part) => part.status === 'spare');
+    expect(spare).toBeDefined();
+    const parts = withCondition(base, spare!.id, 20);
+
+    const result = runPartsAutomation({
+      settings: { autoRepair: true, autoRestock: false, autoFit: false, budgetCap: 0 },
+      parts,
+      drivers: activeDriversForTeam(state, state.selectedTeamId),
+      technical: state.teamTechnical?.[state.selectedTeamId],
+      budget: 100_000_000,
+      seasonYear: state.seasonYear,
+      round: 3,
+    });
+
+    expect(result.spend).toBe(0);
+    expect(result.parts.inventory.find((part) => part.id === spare!.id)?.status).toBe('spare');
+    expect(result.decisions).toContain('Routine factory work deferred at the $0k automation ceiling.');
+  });
+
   it('auto-fits a fresher spare over a worn fitted part', () => {
     const state = newState();
     const base = playerParts(state);

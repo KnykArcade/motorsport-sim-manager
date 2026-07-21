@@ -18,6 +18,7 @@ import {
 } from './partsEngine';
 
 export const AUTO_REPAIR_CONDITION_THRESHOLD = 40;
+export const DEFAULT_PARTS_AUTOMATION_BUDGET_CAP = 250_000;
 
 export type PartsAutomationResult = {
   parts: TeamPartsState;
@@ -36,6 +37,7 @@ export function runPartsAutomation(args: {
   drivers: Driver[];
   technical: TeamTechnicalState | undefined;
   budget: number;
+  budgetCap?: number;
   seasonYear: number;
   round: number;
 }): PartsAutomationResult {
@@ -43,7 +45,9 @@ export function runPartsAutomation(args: {
   let working = args.parts;
   let spend = 0;
   const decisions: string[] = [];
-  const remaining = () => Math.max(0, args.budget - spend);
+  const cap = Math.max(0, args.budgetCap ?? settings.budgetCap ?? args.budget);
+  let deferredByCeiling = false;
+  const remaining = () => Math.max(0, Math.min(args.budget, cap) - spend);
 
   // Fit before repairing: swapping a worn fitted part for a fresher spare
   // returns the worn one to the spares pool where it can then be repaired
@@ -67,7 +71,10 @@ export function runPartsAutomation(args: {
       .sort((a, b) => a.condition - b.condition);
     for (const part of candidates) {
       const quote = repairQuote(part);
-      if (quote.cost > remaining()) continue;
+      if (quote.cost > remaining()) {
+        if (args.budget - spend >= quote.cost && cap - spend < quote.cost) deferredByCeiling = true;
+        continue;
+      }
       const repaired = startPartRepair(working, part.id);
       if (repaired === working) continue;
       working = repaired;
@@ -82,7 +89,10 @@ export function runPartsAutomation(args: {
       if (availableSpareParts(working, type).length > 0) continue;
       if (working.manufacturingQueue.some((order) => order.type === type)) continue;
       const order = manufacturingQuote(working, type, 1, technical, seasonYear, round);
-      if (order.cost > remaining()) continue;
+      if (order.cost > remaining()) {
+        if (args.budget - spend >= order.cost && cap - spend < order.cost) deferredByCeiling = true;
+        continue;
+      }
       const queued = startPartManufacturing(working, order);
       if (queued === working) continue;
       working = queued;
@@ -91,5 +101,6 @@ export function runPartsAutomation(args: {
     }
   }
 
+  if (deferredByCeiling) decisions.push(`Routine factory work deferred at the $${Math.round(cap / 1000)}k automation ceiling.`);
   return { parts: working, spend, decisions };
 }

@@ -67,6 +67,8 @@ export type PartsAutomationSettings = {
   autoRepair: boolean;
   autoRestock: boolean;
   autoFit: boolean;
+  /** Maximum repair/manufacturing spend delegated per race rollover. */
+  budgetCap?: number;
 };
 
 export type TechnicalManagementMode = 'player_led' | 'assisted';

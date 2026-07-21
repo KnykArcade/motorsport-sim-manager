@@ -21,6 +21,7 @@ import { TppExplainer } from '../components/development/TppExplainer';
 import type { TechnicalManagementMode } from '../types/partsTypes';
 import type { TechnicalAdvisorPriority } from '../types/technicalTypes';
 import { inboxMessages } from './inboxViewModel';
+import { DEFAULT_PARTS_AUTOMATION_BUDGET_CAP } from '../sim/partsAutomationEngine';
 
 const UnifiedDevelopmentBody = lazy(() => import('./UnifiedDevelopment').then((m) => ({ default: m.UnifiedDevelopmentBody })));
 const FacilitiesBody = lazy(() => import('./Facilities').then((m) => ({ default: m.FacilitiesBody })));
@@ -158,6 +159,7 @@ function TechnicalInboxHandoff({ state, hasLocalAlerts }: { state: GameState; ha
 function OperatingPlanPanel({ state }: { state: GameState }) {
   const { dispatch } = useGame();
   const automation = state.partsAutomation ?? { autoRepair: false, autoRestock: false, autoFit: false };
+  const budgetCap = automation.budgetCap ?? DEFAULT_PARTS_AUTOMATION_BUDGET_CAP;
   const mode: TechnicalManagementMode = state.technicalManagementMode
     ?? (automation.autoRepair && automation.autoRestock && automation.autoFit ? 'assisted' : 'player_led');
   const priority = state.technicalAdvisorPriority ?? 'balanced';
@@ -173,7 +175,7 @@ function OperatingPlanPanel({ state }: { state: GameState }) {
         <div>
           <div className="text-xs font-semibold uppercase tracking-wide text-neutral-300">Factory management</div>
           <p className="mt-1 text-xs leading-5 text-neutral-500">Choose how much routine parts work the factory handles after races.</p>
-          <div className="mt-2 flex flex-wrap gap-2">
+          <div className="mt-2 flex flex-wrap items-center gap-2">
             {([
               ['player_led', 'Player-led', 'You fit, repair, and restock parts manually.'],
               ['assisted', 'Assisted', 'The factory auto-fits, auto-repairs, and auto-restocks after races.'],
@@ -189,10 +191,32 @@ function OperatingPlanPanel({ state }: { state: GameState }) {
                 <span className="block text-xs font-semibold">{label}</span>
               </button>
             ))}
+            {mode === 'assisted' && (
+              <Button className="px-3 py-1.5 text-xs" onClick={() => dispatch({ type: 'SET_TECHNICAL_MANAGEMENT_MODE', mode: 'player_led' })}>
+                Take control
+              </Button>
+            )}
           </div>
           <div className="mt-2 text-[10px] leading-4 text-neutral-500">
             {mode === 'assisted' ? 'Auto-fit, auto-repair, and auto-restock are enabled.' : 'All factory automation is off; manual controls remain available.'}
           </div>
+          <label className="mt-3 block text-xs text-neutral-400">
+            Routine spend ceiling per race
+            <select
+              className="ml-2 rounded border border-neutral-700 bg-neutral-950 px-2 py-1 text-xs text-neutral-200"
+              value={budgetCap}
+              onChange={(event) => dispatch({
+                type: 'SET_PARTS_AUTOMATION',
+                settings: { ...automation, budgetCap: Number(event.target.value) },
+              })}
+            >
+              <option value={0}>Fit only · $0</option>
+              <option value={250_000}>Conservative · $250k</option>
+              <option value={500_000}>Standard · $500k</option>
+              <option value={1_000_000}>Flexible · $1M</option>
+            </select>
+          </label>
+          <div className="mt-1 text-[10px] leading-4 text-neutral-500">Paid repairs and manufacturing stop at this cap; deferred work stays available for manual review.</div>
         </div>
         <div>
           <div className="text-xs font-semibold uppercase tracking-wide text-neutral-300">Technical Director priority</div>
