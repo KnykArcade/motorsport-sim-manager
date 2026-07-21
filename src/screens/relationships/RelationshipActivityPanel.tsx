@@ -163,6 +163,11 @@ function FollowUpAgenda({ items, summary, onOpenAction }: { items: RelationshipA
               <div className="text-[9px] font-bold uppercase tracking-wide opacity-70">Recommended move</div>
               <div className="mt-0.5 text-[10px] font-semibold">{item.followUp.recommendedAction.label}</div>
               <div className="mt-0.5 text-[9px] opacity-70">{item.followUp.recommendedAction.destination}</div>
+              <div className="mt-1 rounded border border-current/15 bg-neutral-950/20 px-2 py-1">
+                <div className="text-[8px] font-bold uppercase tracking-wide opacity-65">Why it matters</div>
+                <div className="mt-0.5 text-[9px] leading-relaxed opacity-75">{item.followUp.stakes.priority}</div>
+                <div className="mt-0.5 text-[9px] leading-relaxed opacity-75">{item.followUp.stakes.riskIfIgnored}</div>
+              </div>
               <button
                 type="button"
                 onClick={() => onOpenAction(item)}
@@ -242,6 +247,11 @@ function FollowUpCallout({ item, compact = false, onOpenAction }: { item: Relati
               <span className="text-[9px] opacity-65">→ {item.followUp.recommendedAction.destination}</span>
             </div>
             <p className="mt-0.5 text-[9px] leading-relaxed opacity-70">{item.followUp.recommendedAction.rationale}</p>
+            <div className="mt-1 grid gap-1 text-[9px] sm:grid-cols-3">
+              <StakesCell label="Priority" value={item.followUp.stakes.priority} />
+              <StakesCell label="If ignored" value={item.followUp.stakes.riskIfIgnored} />
+              <StakesCell label="If handled" value={item.followUp.stakes.payoffIfHandled} />
+            </div>
             {onOpenAction && (
               <button
                 type="button"
@@ -254,6 +264,15 @@ function FollowUpCallout({ item, compact = false, onOpenAction }: { item: Relati
           </div>
         </>
       )}
+    </div>
+  );
+}
+
+function StakesCell({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="rounded border border-current/15 bg-neutral-950/20 px-2 py-1">
+      <div className="font-bold uppercase tracking-wide opacity-60">{label}</div>
+      <div className="mt-0.5 leading-relaxed opacity-75">{value}</div>
     </div>
   );
 }
