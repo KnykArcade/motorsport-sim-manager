@@ -1,6 +1,6 @@
 import { staffByRole, staffRatingOutOfTen } from '../sim/staffEngine';
 import type { GameState } from '../game/careerState';
-import type { StaffMember, StaffRole } from '../types/staffTypes';
+import { ROLE_EFFECT, type StaffMember, type StaffRole } from '../types/staffTypes';
 
 export type StaffResponsibility = {
   id: string;
@@ -8,6 +8,7 @@ export type StaffResponsibility = {
   role: StaffRole;
   owner: string;
   status: string;
+  effect: string;
   detail: string;
   route: string;
   routeLabel: string;
@@ -26,6 +27,7 @@ export function staffResponsibilities(state: GameState): StaffResponsibility[] {
       role: 'Technical Director',
       owner: ownerLabel(owners['Technical Director'], 'No Technical Director hired'),
       status: mode === 'assisted' ? 'Assisted factory' : 'Player-led factory',
+      effect: ROLE_EFFECT['Technical Director'],
       detail: `TD recommendations are advisory · ${priorityLabel(priority)} priority`,
       route: '/technical',
       routeLabel: 'Open Technical Center',
@@ -36,6 +38,7 @@ export function staffResponsibilities(state: GameState): StaffResponsibility[] {
       'Race Engineer',
       owners['Race Engineer'],
       'Weekend recommendations remain advisory',
+      ROLE_EFFECT['Race Engineer'],
       'Practice setup confidence and weekend guidance',
       '/weekend',
       'Open Race Weekend',
@@ -46,6 +49,7 @@ export function staffResponsibilities(state: GameState): StaffResponsibility[] {
       'Pit Crew Chief',
       owners['Pit Crew Chief'],
       'Execution support active',
+      ROLE_EFFECT['Pit Crew Chief'],
       'Pit-stop execution is influenced by this role',
       '/staff',
       'Open Staff',
@@ -56,6 +60,7 @@ export function staffResponsibilities(state: GameState): StaffResponsibility[] {
       'Strategist',
       owners.Strategist,
       'Strategy calls remain player-controlled',
+      ROLE_EFFECT.Strategist,
       'In-race strategy support and recommendation quality',
       '/weekend',
       'Open Race Weekend',
@@ -69,6 +74,7 @@ function responsibility(
   role: StaffRole,
   owner: StaffMember | undefined,
   status: string,
+  effect: string,
   detail: string,
   route: string,
   routeLabel: string,
@@ -79,6 +85,7 @@ function responsibility(
     role,
     owner: ownerLabel(owner, `No ${role} hired`),
     status,
+    effect,
     detail,
     route,
     routeLabel,

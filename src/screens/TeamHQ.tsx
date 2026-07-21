@@ -133,9 +133,10 @@ export function TeamHQ() {
                   <div className="mt-1 text-sm font-semibold text-neutral-200">{responsibility.owner}</div>
                 </div>
                 <span className="rounded border border-neutral-700 bg-neutral-900/50 px-2 py-1 text-[10px] uppercase tracking-wide text-neutral-400">{responsibility.role}</span>
-              </div>
-              <div className="mt-2 text-xs font-medium text-sky-300">{responsibility.status}</div>
-              <p className="mt-1 text-xs leading-5 text-neutral-500">{responsibility.detail}</p>
+                </div>
+                <div className="mt-2 text-xs font-medium text-sky-300">{responsibility.status}</div>
+                <p className="mt-1 text-xs leading-5 text-neutral-400">{responsibility.effect}</p>
+                <p className="mt-1 text-xs leading-5 text-neutral-500">{responsibility.detail}</p>
               <Button className="mt-2 px-2 py-1 text-xs" variant="ghost" onClick={() => navigate(responsibility.route)}>{responsibility.routeLabel} →</Button>
             </div>
           ))}
