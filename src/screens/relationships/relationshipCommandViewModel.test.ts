@@ -110,6 +110,44 @@ describe('relationship command summary', () => {
     expect(summary.topSignal?.actionWindow).toBe('Soon');
   });
 
+  it('adds a fuzzy management read without exposing exact decision effects', () => {
+    const summary = relationshipCommandSummary({
+      characterProfiles: [character('WatchClosely', 1)],
+      collectiveProfiles: [],
+      externalTalent: externalTalent('Stable'),
+    });
+
+    expect(summary.topSignal?.managementRead).toMatchObject({
+      posture: 'Protect the mandate',
+      read: expect.stringContaining('May reward'),
+      caution: expect.stringContaining('could'),
+      watch: expect.stringContaining('Owner confidence'),
+    });
+    expect(JSON.stringify(summary.topSignal?.managementRead)).not.toMatch(/\+\d|-\d|trust \d|morale \d/i);
+  });
+
+  it('keeps driver and market reads directional instead of certain', () => {
+    expect(relationshipCommandSummary({
+      characterProfiles: [character('MustActNow', 2)],
+      collectiveProfiles: [],
+      externalTalent: externalTalent('Stable'),
+    }).topSignal?.managementRead).toMatchObject({
+      posture: 'Reassure the driver',
+      read: expect.stringContaining('Likely needs'),
+      caution: expect.stringContaining('can'),
+    });
+
+    expect(relationshipCommandSummary({
+      characterProfiles: [],
+      collectiveProfiles: [],
+      externalTalent: externalTalent('MustActNow'),
+    }).topSignal?.managementRead).toMatchObject({
+      posture: 'Read the market',
+      read: expect.stringContaining('may keep options open'),
+      caution: expect.stringContaining('can commit resources'),
+    });
+  });
+
   it('infers near-term timing for collective, employer, and external signals', () => {
     expect(relationshipCommandSummary({
       characterProfiles: [],
