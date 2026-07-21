@@ -73,6 +73,11 @@ describe('relationship activity view model', () => {
       followUp: {
         cadence: 'Monitor',
         label: 'Let the operating gain settle',
+        stakes: {
+          priority: 'Track without forcing a new intervention · hierarchy #4',
+          riskIfIgnored: 'Staff and department frustration can become workload drag, morale loss, or slower delivery.',
+          payoffIfHandled: 'Clarifying priorities protects execution without turning every department signal into a crisis.',
+        },
         recommendedAction: {
           label: 'Review staff/department signals',
           destination: 'Staff & departments',
@@ -89,6 +94,11 @@ describe('relationship activity view model', () => {
       followUp: {
         cadence: 'NextRound',
         label: 'Watch for second-order effects',
+        stakes: {
+          priority: 'Review in the next management window · hierarchy #2–3',
+          riskIfIgnored: 'Driver trust can leak into confidence, promise pressure, contract leverage, and race-week focus.',
+          payoffIfHandled: 'A targeted check-in keeps confidence usable and makes promises or team orders feel explainable.',
+        },
         recommendedAction: {
           label: 'Schedule driver check-in',
           destination: 'Driver relationship file',
@@ -118,6 +128,9 @@ describe('relationship activity view model', () => {
       followUp: {
         cadence: 'NextRound',
         label: 'Review department impact',
+        stakes: {
+          priority: 'Review in the next management window · hierarchy #4',
+        },
         recommendedAction: {
           label: 'Review staff/department signals',
           route: '/staff',
@@ -159,6 +172,10 @@ describe('relationship activity view model', () => {
       followUp: {
         cadence: 'Monitor',
         label: 'Let the operating gain settle',
+        stakes: {
+          priority: 'Track without forcing a new intervention · hierarchy #4–5',
+          riskIfIgnored: 'Committee pressure can spread into operations, commercial confidence, or fan/sponsor expectations.',
+        },
         recommendedAction: {
           destination: 'Stakeholder board',
           route: '/relationships',
@@ -177,6 +194,11 @@ describe('relationship activity view model', () => {
     })).toMatchObject({
       cadence: 'Immediate',
       label: 'Repair before next race',
+      stakes: {
+        priority: 'Act before the next race weekend · hierarchy #1',
+        riskIfIgnored: 'Owner patience can slide into job-security pressure even when other relationships look healthy.',
+        payoffIfHandled: 'A clean owner update buys time, budget confidence, and political cover for the next performance swing.',
+      },
       recommendedAction: {
         label: 'Open owner review',
         destination: 'Team / owner screen',
@@ -193,6 +215,9 @@ describe('relationship activity view model', () => {
     })).toMatchObject({
       cadence: 'Monitor',
       label: 'Convert trust into performance',
+      stakes: {
+        priority: 'Track without forcing a new intervention · hierarchy #2–3',
+      },
       recommendedAction: {
         label: 'Schedule driver check-in',
         route: '/relationships',
@@ -207,6 +232,10 @@ describe('relationship activity view model', () => {
     })).toMatchObject({
       cadence: 'Background',
       label: 'No follow-up needed',
+      stakes: {
+        priority: 'Keep for context only · hierarchy #7',
+        riskIfIgnored: 'Paddock friction can harden into protest risk, political isolation, or avoidable escalation.',
+      },
       recommendedAction: {
         destination: 'Rival matrix',
         route: '/rivals',
