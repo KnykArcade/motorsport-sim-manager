@@ -125,6 +125,8 @@ export type GameState = {
   news: NewsItem[];
   // Inbox message ids the player has read. Optional for save compat.
   inboxRead?: string[];
+  // Inbox items the player explicitly dismissed. Optional for save compat.
+  inboxDismissed?: string[];
   regulationHistory: RegulationChangeEvent[];
   offseasonHistory: OffseasonSummary[];
 

@@ -197,9 +197,20 @@ export function Inbox() {
                       {message.body && <p className="text-sm leading-6 text-neutral-300">{message.body}</p>}
                       {message.whyItMatters && <p className="mt-2 text-xs leading-5 text-neutral-500">Why it matters: {message.whyItMatters}</p>}
                       <div className="mt-2">
-                        <Button className="px-2 py-1 text-xs" variant="primary" onClick={() => navigate(message.route)}>
-                          {message.routeLabel} →
-                        </Button>
+                        <div className="flex flex-wrap gap-2">
+                          <Button className="px-2 py-1 text-xs" variant="primary" onClick={() => navigate(message.route)}>
+                            {message.routeLabel} →
+                          </Button>
+                          <Button
+                            className="px-2 py-1 text-xs"
+                            onClick={() => {
+                              dispatch({ type: 'DISMISS_INBOX_MESSAGES', messageIds: [message.id] });
+                              setExpandedId(undefined);
+                            }}
+                          >
+                            Dismiss
+                          </Button>
+                        </div>
                       </div>
                     </div>
                   )}
