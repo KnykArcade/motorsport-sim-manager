@@ -50,6 +50,7 @@ import {
 } from './driverMarketViewModel';
 import { transferCalendarView } from './transferCalendarViewModel';
 import { recruitmentDecisionDesk } from './recruitmentDecisionViewModel';
+import { RecruitmentPipelineBoard } from '../components/RecruitmentPipelineBoard';
 
 type Tab = 'senior' | 'youth';
 
@@ -166,6 +167,10 @@ export function DriverMarket() {
             <p className="text-sm text-amber-300">This shortlisted target is no longer available in the current market.</p>
           )}
         </Panel>
+      )}
+
+      {!singleSeason && (
+        <RecruitmentPipelineBoard state={state} />
       )}
 
       {!singleSeason && (

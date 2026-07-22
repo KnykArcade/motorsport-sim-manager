@@ -52,6 +52,7 @@ import { staffRecommendations } from './staffRecommendationsViewModel';
 import { commandAgenda } from './commandAgendaViewModel';
 import type { CommandAgendaItem } from './commandAgendaViewModel';
 import { aroundTheWorldEntries, canViewWorldStandings } from './worldStandingsViewModel';
+import { RecruitmentPipelineBoard } from '../components/RecruitmentPipelineBoard';
 
 export function TeamHQ() {
   const { state, dispatch } = useGame();
@@ -204,6 +205,8 @@ export function TeamHQ() {
           </div>
         </section>
       )}
+
+      <RecruitmentPipelineBoard state={state} compact />
 
       {worldEntries.length > 0 && (
         <Panel title="Around the World" actions={<Button className="px-2 py-1 text-xs" variant="ghost" onClick={() => navigate('/standings')}>Open world standings →</Button>}>
