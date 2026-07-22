@@ -250,6 +250,7 @@ export function PaddockWeek() {
         title="Paddock Week"
         subtitle={`${state.seasonYear} ${state.series} · Between rounds ${phaseState.currentRound} and ${phaseState.currentRound + 1} · ${getGameModeLabel(state.gameMode)}`}
         actions={<>
+          <Button variant="ghost" onClick={() => navigate('/hq')}>Manager Office</Button>
           {pendingCount > 0 && (
             <span className="text-xs font-semibold text-orange-400">
               {pendingCount} required decision{pendingCount > 1 ? 's' : ''} pending

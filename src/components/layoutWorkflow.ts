@@ -1,6 +1,7 @@
 import type { GameState } from '../game/careerState';
 import { getCareerPhase } from '../game/careerPhaseEngine';
 import type { CareerPhase } from '../types/careerPhaseTypes';
+import { paddockEventDestination } from '../screens/paddockAgendaViewModel';
 
 export type WorkflowDestination = {
   to: string;
@@ -13,15 +14,14 @@ export type WorkflowDestination = {
 };
 
 /**
- * The global Continue control is intentionally navigation-only. Phase changes
- * remain owned by their workflow screens, where required decisions and roster
- * checks can block progression safely.
+ * The global Continue control routes to the next meaningful workspace or
+ * exact unresolved item. Phase changes remain owned by their workflow screens.
  */
 export function workflowDestination(state: GameState): WorkflowDestination {
   if (state.seasonComplete) {
     return {
       to: '/season-review',
-      label: 'Season Review',
+      label: 'Open Season Review',
       context: 'Season complete',
       phase: 'season_complete',
       blocked: false,
@@ -35,7 +35,7 @@ export function workflowDestination(state: GameState): WorkflowDestination {
     case 'pre_season_setup':
       return {
         to: '/preseason',
-        label: 'Continue',
+        label: 'Open Preseason Review',
         context: 'Preseason setup',
         phase,
         blocked: false,
@@ -47,22 +47,26 @@ export function workflowDestination(state: GameState): WorkflowDestination {
         const unresolvedRequiredDecisions = (state.careerPhase?.paddockEvents ?? []).filter(
           (event) => event.isRequiredDecision && !event.resolvedOptionId,
         );
+        const firstRequiredDecision = unresolvedRequiredDecisions[0];
+        const destination = firstRequiredDecision
+          ? paddockEventDestination(firstRequiredDecision)
+          : undefined;
         return {
-          to: '/paddock',
-          label: 'Continue',
+          to: destination?.route ?? '/paddock',
+          label: destination?.routeLabel ?? 'Review Paddock Week',
           context: 'Paddock week',
           phase,
           blocked: unresolvedRequiredDecisions.length > 0,
           blockerCount: unresolvedRequiredDecisions.length,
           reason: unresolvedRequiredDecisions.length > 0
-            ? 'Resolve the required paddock decisions before the next race briefing.'
+            ? `Resolve ${unresolvedRequiredDecisions.length} required paddock decision${unresolvedRequiredDecisions.length === 1 ? '' : 's'} before the next race briefing.`
             : 'Review the week and choose the race package before briefing.',
         };
       }
     case 'pre_race_briefing':
       return {
         to: '/briefing',
-        label: 'Continue',
+        label: 'Review Race Briefing',
         context: 'Race briefing',
         phase,
         blocked: false,
@@ -72,7 +76,7 @@ export function workflowDestination(state: GameState): WorkflowDestination {
     case 'race_weekend':
       return {
         to: '/weekend',
-        label: 'Continue',
+        label: 'Continue Race Weekend',
         context: 'Race weekend',
         phase,
         blocked: false,
@@ -84,7 +88,7 @@ export function workflowDestination(state: GameState): WorkflowDestination {
       return raceId
         ? {
           to: `/post-race/${raceId}`,
-          label: 'Continue',
+          label: 'Review Race Debrief',
           context: 'Post-race review',
           phase,
           blocked: false,
@@ -93,7 +97,7 @@ export function workflowDestination(state: GameState): WorkflowDestination {
         }
         : {
           to: '/hq',
-          label: 'Manager Office',
+          label: 'Open Manager Office',
           context: 'Post-race review',
           phase,
           blocked: false,

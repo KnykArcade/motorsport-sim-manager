@@ -25,6 +25,36 @@ describe('layout workflow destination', () => {
     expect(state).toEqual(snapshot);
   });
 
+  it('uses action-specific labels for the phase handoff', () => {
+    expect(workflowDestination(stateFor('pre_season_setup')).label).toBe('Open Preseason Review');
+    expect(workflowDestination(stateFor('pre_race_briefing')).label).toBe('Review Race Briefing');
+    expect(workflowDestination(stateFor('race_weekend')).label).toBe('Continue Race Weekend');
+  });
+
+  it('routes Continue to the first required paddock decision', () => {
+    const state = stateFor('paddock_week', {
+      careerPhase: {
+        currentPhase: 'paddock_week',
+        paddockEvents: [{
+          id: 'required-focus',
+          isRequiredDecision: true,
+          resolvedOptionId: undefined,
+          characterRequest: undefined,
+          characterDispute: undefined,
+          characterInitiative: undefined,
+          characterBreakingPoint: undefined,
+        }],
+      },
+    });
+
+    expect(workflowDestination(state)).toMatchObject({
+      to: '/paddock?tab=decisions&focus=required-focus',
+      label: 'Open Operations Agenda',
+      blocked: true,
+      blockerCount: 1,
+    });
+  });
+
   it('opens the active post-race review', () => {
     const state = stateFor('post_race_review', {
       careerPhase: { currentPhase: 'post_race_review', lastCompletedRaceId: 'race-6' },
