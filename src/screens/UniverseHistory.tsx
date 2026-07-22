@@ -184,8 +184,10 @@ export function UniverseHistory() {
 
 export function WorldGrid({
   championships,
+  showMovements = true,
 }: {
   championships: Partial<Record<Series, UniverseChampionshipState>>;
+  showMovements?: boolean;
 }) {
   const entries = Object.values(championships)
     .filter((championship): championship is UniverseChampionshipState => Boolean(championship))
@@ -231,7 +233,7 @@ export function WorldGrid({
         );
       })}
 
-      <Panel>
+      {showMovements && <Panel>
         <div className="font-bold text-neutral-100">Recent Driver Moves</div>
         {movements.length > 0 ? (
           <div className="mt-2 divide-y divide-neutral-800/70">
@@ -242,7 +244,7 @@ export function WorldGrid({
             Driver renewals, releases, transfers and signings will appear after the first offseason.
           </p>
         )}
-      </Panel>
+      </Panel>}
     </div>
   );
 }
