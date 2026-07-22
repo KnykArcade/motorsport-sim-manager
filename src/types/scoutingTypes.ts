@@ -21,10 +21,18 @@ export type ScoutingReport = {
   lastUpdated: string; // ISO date
 };
 
+export type ScoutingTargetReference = {
+  entityId: string;
+  entityType: ScoutedEntityType;
+};
+
 // The player team's scouting state, persisted in career mode.
 export type ScoutingState = {
   teamId: string;
   // Base accuracy from the scouting network, before per-entity effort.
   networkAccuracy: number; // 0-1
   reports: Record<string, ScoutingReport>; // entityId -> report
+  // Optional for saves created before the recruitment workflow was connected.
+  activeAssignments?: ScoutingTargetReference[];
+  shortlist?: ScoutingTargetReference[];
 };

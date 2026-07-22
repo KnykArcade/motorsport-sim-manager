@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { useGame } from '../game/GameContext';
 import { activeDriversForTeam, carForTeam, driversForTeam, teamById, maxRaceDriversForSeries } from '../game/careerState';
 import { isPreseason } from '../game/rosterEnforcement';
@@ -52,8 +53,10 @@ type Tab = 'senior' | 'youth';
 
 export function DriverMarket() {
   const { state, dispatch } = useGame();
+  const [searchParams] = useSearchParams();
   const [tab, setTab] = useState<Tab>('senior');
   const [seniorPage, setSeniorPage] = useState(0);
+  const approachedTargetId = searchParams.get('target');
 
   const bundle = useMemo(
     () => (state ? careerMarketBundle(state) : undefined),
@@ -62,7 +65,9 @@ export function DriverMarket() {
 
   // One universe-wide senior market. Series preference changes interest and AI
   // decisions, but never moves a driver into a separate or hidden pool.
-  const seniorDrivers = bundle?.drivers ?? [];
+  const seniorDrivers = [...(bundle?.drivers ?? [])].sort((a, b) =>
+    Number(b.id === approachedTargetId) - Number(a.id === approachedTargetId),
+  );
   const seniorPageCount = marketPageCount(seniorDrivers.length);
   const safeSeniorPage = Math.min(seniorPage, seniorPageCount - 1);
   const visibleSeniorDrivers = marketPage(seniorDrivers, safeSeniorPage);
@@ -136,6 +141,16 @@ export function DriverMarket() {
           {formatMoney(budget)} available
         </span>
       </div>
+
+      {approachedTargetId && (
+        <Panel title="Scouting handoff">
+          {seniorDrivers.some((driver) => driver.id === approachedTargetId) ? (
+            <p className="text-sm text-neutral-300"><span className="font-semibold">{seniorDrivers.find((driver) => driver.id === approachedTargetId)?.name}</span> is pinned first below. Review the fog-aware report, interest, competing bid, and available contract action before committing.</p>
+          ) : (
+            <p className="text-sm text-amber-300">This shortlisted target is no longer available in the current market.</p>
+          )}
+        </Panel>
+      )}
 
       <div
         className={`rounded-md border px-4 py-2 text-sm ${

@@ -302,6 +302,8 @@ export type GameAction =
   | { type: 'DECLINE_JOB_OFFER'; offerId: string }
   | { type: 'SET_REGULATION_VOTE'; proposalId: string; vote: RegulationVote }
   | { type: 'SCOUT_TARGET'; entityId: string; entityType: ScoutedEntityType }
+  | { type: 'CANCEL_SCOUTING_ASSIGNMENT'; entityId: string; entityType: ScoutedEntityType }
+  | { type: 'TOGGLE_SCOUTING_SHORTLIST'; entityId: string; entityType: ScoutedEntityType }
   | { type: 'SWAP_RACE_DRIVER'; seatIndex: number; reserveDriverId: string }
   | { type: 'SIGN_THIRD_DRIVER'; marketId: string }
   | { type: 'PROMOTE_THIRD_DRIVER'; seatDriverId: string; thirdDriverId: string }
@@ -885,6 +887,36 @@ export function gameReducer(state: GameState | null, action: GameAction): GameSt
     case 'SCOUT_TARGET': {
       if (!state) return state;
       return scoutTargetAction(state, action.entityId, action.entityType);
+    }
+
+    case 'CANCEL_SCOUTING_ASSIGNMENT': {
+      if (!state?.scouting) return state;
+      return {
+        ...state,
+        scouting: {
+          ...state.scouting,
+          activeAssignments: (state.scouting.activeAssignments ?? []).filter(
+            (entry) => entry.entityId !== action.entityId || entry.entityType !== action.entityType,
+          ),
+        },
+      };
+    }
+
+    case 'TOGGLE_SCOUTING_SHORTLIST': {
+      if (!state?.scouting) return state;
+      const shortlist = state.scouting.shortlist ?? [];
+      const listed = shortlist.some(
+        (entry) => entry.entityId === action.entityId && entry.entityType === action.entityType,
+      );
+      return {
+        ...state,
+        scouting: {
+          ...state.scouting,
+          shortlist: listed
+            ? shortlist.filter((entry) => entry.entityId !== action.entityId || entry.entityType !== action.entityType)
+            : [...shortlist, { entityId: action.entityId, entityType: action.entityType }],
+        },
+      };
     }
 
     case 'SWAP_RACE_DRIVER': {
@@ -1585,7 +1617,7 @@ function scoutTargetAction(
   const cost = scoutingCost(entityType, currentLevel);
   if (cost > playerBudget(state)) return state;
 
-  const scouting = recordScouting(
+  let scouting = recordScouting(
     state.scouting,
     target,
     entityType,
@@ -1593,11 +1625,47 @@ function scoutTargetAction(
     state.randomSeed,
     new Date().toISOString(),
   );
+  const activeAssignments = scouting.activeAssignments ?? [];
+  const alreadyAssigned = activeAssignments.some(
+    (entry) => entry.entityId === entityId && entry.entityType === entityType,
+  );
+  scouting = {
+    ...scouting,
+    activeAssignments: scouting.reports[entityId]?.scoutingLevel === 100
+      ? activeAssignments.filter((entry) => entry.entityId !== entityId || entry.entityType !== entityType)
+      : alreadyAssigned ? activeAssignments : [...activeAssignments, { entityId, entityType }],
+  };
   const charged = applyTransaction(
     state,
     makeTransaction(state.seasonYear, 'Scouting', `Scouted ${targetName}`, -cost),
   );
   return { ...charged, scouting };
+}
+
+function progressActiveScoutingAssignments(state: GameState, round: number): GameState {
+  const assignments = state.scouting?.activeAssignments;
+  if (!state.scouting || !assignments?.length) return state;
+  const bundle = careerMarketBundle(state);
+  let scouting = state.scouting;
+  const remaining: typeof assignments = [];
+  for (const assignment of assignments) {
+    const source = assignment.entityType === 'Driver'
+      ? bundle.drivers.find((driver) => driver.id === assignment.entityId)
+      : assignment.entityType === 'YouthProspect'
+        ? bundle.youth.find((prospect) => prospect.id === assignment.entityId)
+        : undefined;
+    if (!source) continue;
+    scouting = recordScouting(
+      scouting,
+      { id: source.id, skills: source.skills, potential: source.potential },
+      assignment.entityType,
+      state.facilities,
+      state.randomSeed,
+      new Date(Date.UTC(state.seasonYear, 0, Math.max(1, round))).toISOString(),
+    );
+    if ((scouting.reports[assignment.entityId]?.scoutingLevel ?? 0) < 100) remaining.push(assignment);
+  }
+  return { ...state, scouting: { ...scouting, activeAssignments: remaining } };
 }
 
 // Negotiate a new engine deal. It's queued as the pending deal and takes effect
@@ -2388,8 +2456,9 @@ function applyRaceResults(
     motorsportUniverse: worldTick.universe,
     news: sortNewsByPriority(capNewsPerRound([...worldTick.news, ...completedState.news]).slice(0, 80)),
   };
+  const completedWithScouting = progressActiveScoutingAssignments(completedState, race.round);
   const finalized = syncNarratives(recordRaceLegacy(
-    evolveRivalRelationshipsAfterRace(recordFailureInvestigations(completedState, race.id, race.round, results), race.round, results),
+    evolveRivalRelationshipsAfterRace(recordFailureInvestigations(completedWithScouting, race.id, race.round, results), race.round, results),
     race.id,
     race.round,
     results,

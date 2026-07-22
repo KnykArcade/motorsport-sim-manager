@@ -1565,7 +1565,7 @@ export function advanceSeason(state: GameState, nextBundle?: SeasonBundle): Game
     regulationProposals: nextProposals,
     regulationVoteHistory: [...(state.regulationVoteHistory ?? []), ...voteResolution.results],
     scouting: state.scouting
-      ? { ...refreshScoutingNetwork(state.scouting, nextFacilities)!, reports: {} }
+      ? { ...refreshScoutingNetwork(state.scouting, nextFacilities)!, reports: {}, activeAssignments: [] }
       : state.scouting,
     developmentCurves: nextCurves,
     universeHistory: nextUniverseHistory,

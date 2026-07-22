@@ -1,6 +1,6 @@
 import type { FogView } from '../sim/scoutingEngine';
 import { effectiveAccuracy } from '../sim/scoutingEngine';
-import type { ScoutedEntityType, ScoutingReport } from '../types/scoutingTypes';
+import type { ScoutedEntityType, ScoutingReport, ScoutingTargetReference } from '../types/scoutingTypes';
 
 export type ScoutingAbilitySummary = {
   currentRange?: [number, number];
@@ -17,6 +17,15 @@ export type ScoutingAssignment = {
   scoutingLevel: number;
   knowledgePercentage: number;
 };
+
+export type ScoutingComparisonTarget = {
+  entityId: string;
+  name: string;
+  entityType: ScoutedEntityType;
+  view: FogView;
+};
+
+export type ScoutingComparisonRow = Omit<ScoutingComparisonTarget, 'view'> & ScoutingAbilitySummary;
 
 function stars(rating: number): number {
   return Math.max(0.5, Math.min(5, Math.round((rating / 20) * 2) / 2));
@@ -47,9 +56,14 @@ export function scoutingAssignments(
   networkAccuracy: number,
   names: Record<string, string>,
   entityType?: ScoutedEntityType,
+  activeAssignments?: readonly ScoutingTargetReference[],
 ): ScoutingAssignment[] {
   return Object.values(reports)
-    .filter((report) => report.scoutingLevel < 100 && (!entityType || report.entityType === entityType))
+    .filter((report) => report.scoutingLevel < 100
+      && (!entityType || report.entityType === entityType)
+      && (!activeAssignments || activeAssignments.some(
+        (entry) => entry.entityId === report.entityId && entry.entityType === report.entityType,
+      )))
     .map((report) => ({
       entityId: report.entityId,
       name: names[report.entityId] ?? report.entityId,
@@ -58,4 +72,11 @@ export function scoutingAssignments(
       knowledgePercentage: Math.round(effectiveAccuracy(report.scoutingLevel, networkAccuracy) * 100),
     }))
     .sort((a, b) => b.scoutingLevel - a.scoutingLevel || a.name.localeCompare(b.name));
+}
+
+export function scoutingComparison(targets: readonly ScoutingComparisonTarget[]): ScoutingComparisonRow[] {
+  return targets.slice(0, 3).map(({ view, ...target }) => ({
+    ...target,
+    ...scoutingAbilitySummary(view),
+  }));
 }
