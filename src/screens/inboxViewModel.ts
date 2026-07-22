@@ -277,10 +277,37 @@ function peopleMessages(state: GameState): InboxMessage[] {
     });
   }
 
+  const activeNegotiation = state.contractNegotiation
+    && state.contractNegotiation.response !== 'demand'
+    && state.contractNegotiation.response !== 'editing'
+    ? state.contractNegotiation
+    : undefined;
+  const negotiationDriver = activeNegotiation
+    ? state.drivers.find((driver) => driver.id === activeNegotiation.driverId && driver.teamId === state.selectedTeamId)
+    : undefined;
+  if (negotiationDriver && activeNegotiation && state.gameMode !== 'SingleSeason' && !state.seasonComplete) {
+    const countered = activeNegotiation.response === 'countered';
+    messages.push({
+      id: `inbox-driver-contract-response-${negotiationDriver.id}`,
+      severity: 'action',
+      category: 'people',
+      title: countered
+        ? `Counter from ${negotiationDriver.name} needs your response`
+        : `${negotiationDriver.name} rejected the extension offer`,
+      body: countered
+        ? `The driver will continue talks at $${activeNegotiation.counterSalary?.toFixed(1) ?? activeNegotiation.askingSalary.toFixed(1)}M per year.`
+        : 'Improve the package or decide whether to move on before the current contract window closes.',
+      route: `/drivers/${encodeURIComponent(negotiationDriver.id)}/negotiate`,
+      routeLabel: countered ? 'Review Counter' : 'Improve Offer',
+      actionable: true,
+    });
+  }
+
   const expiring = activeDriversForTeam(state, state.selectedTeamId)
     .filter((driver) => (driver.contractYearsRemaining ?? 99) <= 1);
   expiring.forEach((driver) => {
     const canNegotiate = state.gameMode !== 'SingleSeason' && !state.seasonComplete;
+    if (negotiationDriver?.id === driver.id) return;
     messages.push({
       id: `inbox-driver-contract-${driver.id}`,
       severity: 'action',

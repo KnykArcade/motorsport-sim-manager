@@ -112,6 +112,64 @@ describe('inboxViewModel', () => {
     });
   });
 
+  it('replaces the generic reminder with an exact counter response action', () => {
+    const base = newState();
+    const driver = base.drivers.find((candidate) => candidate.teamId === base.selectedTeamId);
+    if (!driver) throw new Error('Expected the selected team to have a driver');
+    const state: GameState = {
+      ...base,
+      drivers: base.drivers.map((candidate) =>
+        candidate.id === driver.id ? { ...candidate, contractYearsRemaining: 1 } : candidate),
+      contractNegotiation: {
+        driverId: driver.id,
+        askingSalary: 4,
+        offeredSalary: 3,
+        years: 2,
+        role: driver.contractType ?? 'seat',
+        clauseType: 'EqualTreatment',
+        acceptanceLikelihood: 50,
+        response: 'countered',
+        counterSalary: 4.5,
+      },
+    };
+    const messages = inboxMessages(state);
+
+    expect(messages.find((message) => message.id === `inbox-driver-contract-response-${driver.id}`)).toMatchObject({
+      title: `Counter from ${driver.name} needs your response`,
+      route: `/drivers/${encodeURIComponent(driver.id)}/negotiate`,
+      routeLabel: 'Review Counter',
+    });
+    expect(messages.some((message) => message.id === `inbox-driver-contract-${driver.id}`)).toBe(false);
+  });
+
+  it('routes a refused offer back to the same negotiation without duplicating it', () => {
+    const base = newState();
+    const driver = base.drivers.find((candidate) => candidate.teamId === base.selectedTeamId);
+    if (!driver) throw new Error('Expected the selected team to have a driver');
+    const state: GameState = {
+      ...base,
+      drivers: base.drivers.map((candidate) =>
+        candidate.id === driver.id ? { ...candidate, contractYearsRemaining: 1 } : candidate),
+      contractNegotiation: {
+        driverId: driver.id,
+        askingSalary: 4,
+        offeredSalary: 2,
+        years: 2,
+        role: driver.contractType ?? 'seat',
+        clauseType: 'EqualTreatment',
+        acceptanceLikelihood: 30,
+        response: 'refused',
+      },
+    };
+    const messages = inboxMessages(state);
+
+    expect(messages.find((message) => message.id === `inbox-driver-contract-response-${driver.id}`)).toMatchObject({
+      title: `${driver.name} rejected the extension offer`,
+      routeLabel: 'Improve Offer',
+    });
+    expect(messages.filter((message) => message.route === `/drivers/${encodeURIComponent(driver.id)}/negotiate`)).toHaveLength(1);
+  });
+
   it('surfaces vacant and expiring staff roles as people actions', () => {
     const base = newState();
     const vacant = inboxMessages({ ...base, staff: [] }).find((message) => message.id === 'inbox-staff-vacancy-technical-director');
