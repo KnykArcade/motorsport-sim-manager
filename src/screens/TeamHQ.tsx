@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, type ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useGame } from '../game/GameContext';
 import {
@@ -48,6 +48,8 @@ import type { StaffResponsibilityPolicy } from '../types/staffTypes';
 import { TEAM_HQ_TABS, type TeamHQTab } from './teamHQViewModel';
 import { staffResponsibilities } from './staffResponsibilitiesViewModel';
 import { staffRecommendations } from './staffRecommendationsViewModel';
+import { commandAgenda } from './commandAgendaViewModel';
+import type { CommandAgendaItem } from './commandAgendaViewModel';
 
 export function TeamHQ() {
   const { state, dispatch } = useGame();
@@ -77,6 +79,7 @@ export function TeamHQ() {
   const inboxActionable = actionableInboxCount(state);
   const responsibilities = staffResponsibilities(state);
   const recommendations = staffRecommendations(state);
+  const agenda = commandAgenda(state);
 
   return (
     <WorkspaceScreen className="era-feature-screen era-team-hq">
@@ -100,29 +103,61 @@ export function TeamHQ() {
         <WorkspaceMetric label="Active projects" value={activeUpgradePrograms(state).length} detail="Development in progress" />
       </MetricStrip>
 
-      <section className="ui-decision-strip flex flex-wrap items-center justify-between gap-3 rounded-lg border px-3 py-2.5">
-        <div className="flex min-w-0 items-center gap-3">
-          <span className="ui-decision-strip-pulse" aria-hidden="true" />
-          <div className="min-w-0">
-            <div className="text-[10px] font-black uppercase tracking-[0.14em] text-neutral-400">Manager Office · Decision desk</div>
-            <div className="truncate text-sm font-semibold text-neutral-100">
-              {inboxActionable > 0 ? `${inboxActionable} decision${inboxActionable === 1 ? '' : 's'} waiting in the Inbox` : workflow ? `${workflow.context} is ready` : 'Team management is up to date'}
+      <section className="rounded-lg border border-neutral-800 bg-neutral-950/35 p-3">
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div className="flex min-w-0 items-start gap-3">
+            <span className="ui-decision-strip-pulse mt-1" aria-hidden="true" />
+            <div className="min-w-0">
+              <div className="text-[10px] font-black uppercase tracking-[0.14em] text-neutral-400">Manager Office · Command desk</div>
+              <div className="mt-1 text-lg font-bold text-neutral-100">{agenda.headline}</div>
+              <p className="mt-1 max-w-2xl text-xs leading-5 text-neutral-400">{agenda.subheadline}</p>
             </div>
-            <div className="mt-1 text-xs text-neutral-500">{workflow?.reason}</div>
+          </div>
+          <div className="flex flex-wrap items-center gap-2">
+            <Button className="px-3 py-1.5 text-xs" onClick={() => navigate('/inbox')}>
+              Open Inbox {inboxUnread > 0 ? `(${inboxUnread})` : ''} →
+            </Button>
+            <Button
+              variant="primary"
+              className="px-3 py-1.5 text-xs"
+              onClick={() => navigate(agenda.continueAction.route)}
+              disabled={agenda.continueAction.disabled}
+              title={agenda.continueAction.disabledReason}
+            >
+              {agenda.continueAction.label} →
+            </Button>
           </div>
         </div>
-        <div className="flex flex-wrap items-center gap-3 text-xs text-neutral-400">
-          <span>{inboxUnread} unread Inbox item{inboxUnread === 1 ? '' : 's'}</span>
-          <Button className="px-3 py-1.5 text-xs" onClick={() => navigate('/inbox')}>
-            Open Inbox →
-          </Button>
-          <span>{activeDrivers.length}/{minDrivers} race seats filled</span>
-          {race && <span>Next: {race.gpName}</span>}
-          {workflow && (
-            <Button variant="primary" className="px-3 py-1.5 text-xs" onClick={() => navigate(workflow.to)}>
-              {workflow.label} →
-            </Button>
-          )}
+        <div className="mt-3 grid gap-2 md:grid-cols-3">
+          <CommandDeskColumn title="Next decision">
+            {agenda.nextAction ? (
+              <CommandDeskItem item={agenda.nextAction} onOpen={() => navigate(agenda.nextAction!.route)} />
+            ) : (
+              <p className="text-xs leading-5 text-neutral-500">No unresolved action is waiting. Review the next phase when ready.</p>
+            )}
+          </CommandDeskColumn>
+          <CommandDeskColumn title="This week">
+            {agenda.dueThisWeek.length > 0 ? agenda.dueThisWeek.map((item) => (
+              <CommandDeskItem key={item.id} item={item} onOpen={() => navigate(item.route)} />
+            )) : (
+              <p className="text-xs leading-5 text-neutral-500">No additional blocking decisions are due in this management window.</p>
+            )}
+          </CommandDeskColumn>
+          <CommandDeskColumn title="What changed">
+            {agenda.recentChanges.length > 0 ? agenda.recentChanges.map((change) => (
+              <button key={change.id} type="button" className="block w-full rounded border border-neutral-800 bg-neutral-950/40 p-2 text-left hover:border-neutral-600" onClick={() => navigate(change.route)}>
+                <div className="text-xs font-semibold text-neutral-200">{change.title}</div>
+                <div className="mt-1 text-[11px] leading-4 text-neutral-500">{change.detail}</div>
+                <div className="mt-1 text-[10px] font-semibold text-sky-300">{change.routeLabel} →</div>
+              </button>
+            )) : (
+              <p className="text-xs leading-5 text-neutral-500">No new changes have been added to the command desk.</p>
+            )}
+          </CommandDeskColumn>
+        </div>
+        <div className="mt-3 flex flex-wrap items-center justify-between gap-2 border-t border-neutral-800 pt-2 text-[11px] text-neutral-500">
+          <span>Next event: <strong className="text-neutral-300">{agenda.nextEvent.label}</strong> · {agenda.nextEvent.detail}</span>
+          <span>{inboxActionable} action{inboxActionable === 1 ? '' : 's'} · {activeDrivers.length}/{minDrivers} race seats filled{race ? ` · ${race.gpName}` : ''}</span>
         </div>
       </section>
 
@@ -368,6 +403,29 @@ export function TeamHQ() {
         </div>
       </WorkspaceBody>
     </WorkspaceScreen>
+  );
+}
+
+function CommandDeskColumn({ title, children }: { title: string; children: ReactNode }) {
+  return (
+    <div className="rounded border border-neutral-800 bg-neutral-900/25 p-2.5">
+      <div className="mb-2 text-[10px] font-black uppercase tracking-[0.14em] text-neutral-500">{title}</div>
+      <div className="space-y-2">{children}</div>
+    </div>
+  );
+}
+
+function CommandDeskItem({ item, onOpen }: { item: CommandAgendaItem; onOpen: () => void }) {
+  return (
+    <button type="button" className="block w-full rounded border border-neutral-800 bg-neutral-950/40 p-2 text-left hover:border-neutral-600" onClick={onOpen}>
+      <div className="flex items-start justify-between gap-2">
+        <div className="text-xs font-semibold text-neutral-200">{item.title}</div>
+        {item.blocking && <span className="shrink-0 text-[9px] font-bold uppercase text-red-300">Must respond</span>}
+      </div>
+      <div className="mt-1 text-[10px] text-neutral-500">{item.owner}</div>
+      <div className="mt-1 text-[11px] leading-4 text-neutral-400">{item.whyNow}</div>
+      <div className="mt-1 text-[10px] font-semibold text-sky-300">{item.routeLabel} →</div>
+    </button>
   );
 }
 

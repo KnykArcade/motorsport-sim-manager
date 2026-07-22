@@ -128,20 +128,11 @@ function LiveRaceGuard({ children }: { children: ReactNode }) {
   return <>{children}</>;
 }
 
-// Route guard that redirects to the correct career phase screen when the
-// player navigates to /hq. This ensures the player always lands on the right
-// phase after save/load.
+// Manager Office remains available as the command hub throughout the career.
+// Phase-specific workspaces retain their own guards and own progression.
 function PhaseRedirect({ children }: { children: ReactNode }) {
   const { state } = useGame();
   if (!state) return <Navigate to="/" replace />;
-  const phase = getCareerPhase(state);
-  if (phase === 'pre_season_setup') return <Navigate to="/preseason" replace />;
-  if (phase === 'post_race_review') {
-    const lastRaceId = state.careerPhase?.lastCompletedRaceId;
-    if (lastRaceId) return <Navigate to={`/post-race/${lastRaceId}`} replace />;
-  }
-  if (phase === 'paddock_week') return <Navigate to="/paddock" replace />;
-  if (phase === 'pre_race_briefing') return <Navigate to="/briefing" replace />;
   return <Layout>{children}</Layout>;
 }
 
