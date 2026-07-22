@@ -170,6 +170,91 @@ describe('inboxViewModel', () => {
     expect(messages.filter((message) => message.route === `/drivers/${encodeURIComponent(driver.id)}/negotiate`)).toHaveLength(1);
   });
 
+  it('surfaces scouting assignments with exact target routes', () => {
+    const base = newState();
+    const driver = base.drivers.find((candidate) => candidate.teamId !== base.selectedTeamId);
+    if (!driver || !base.scouting) throw new Error('Expected scouting data and a market driver');
+    const state: GameState = {
+      ...base,
+      scouting: {
+        ...base.scouting,
+        reports: {
+          ...base.scouting.reports,
+          [driver.id]: {
+            entityId: driver.id,
+            entityType: 'Driver',
+            scoutingLevel: 40,
+            accuracy: 0.5,
+            visibleRatings: {},
+            notes: [],
+            lastUpdated: '1995-01-01T00:00:00.000Z',
+          },
+        },
+        activeAssignments: [{ entityId: driver.id, entityType: 'Driver' }],
+      },
+    };
+
+    expect(inboxMessages(state)).toContainEqual(expect.objectContaining({
+      id: `inbox-scouting-assignment-Driver-${driver.id}`,
+      title: expect.stringContaining('Scouting assignment in progress'),
+      route: `/scouting?tab=senior&target=${encodeURIComponent(driver.id)}`,
+      routeLabel: 'Review Scouting',
+    }));
+  });
+
+  it('routes shortlisted senior drivers to the exact market target', () => {
+    const base = newState();
+    const driver = base.drivers.find((candidate) => candidate.teamId !== base.selectedTeamId);
+    if (!driver || !base.scouting) throw new Error('Expected scouting data and a market driver');
+    const state: GameState = {
+      ...base,
+      scouting: {
+        ...base.scouting,
+        shortlist: [{ entityId: driver.id, entityType: 'Driver' }],
+      },
+    };
+
+    expect(inboxMessages(state)).toContainEqual(expect.objectContaining({
+      id: `inbox-scouting-shortlist-Driver-${driver.id}`,
+      route: `/market?target=${encodeURIComponent(driver.id)}`,
+      routeLabel: 'Review Market Target',
+      source: 'Recruitment desk',
+    }));
+  });
+
+  it('surfaces a completed scouting report when it is not assigned or shortlisted', () => {
+    const base = newState();
+    const driver = base.drivers.find((candidate) => candidate.teamId !== base.selectedTeamId);
+    if (!driver || !base.scouting) throw new Error('Expected scouting data and a market driver');
+    const state: GameState = {
+      ...base,
+      scouting: {
+        ...base.scouting,
+        reports: {
+          ...base.scouting.reports,
+          [driver.id]: {
+            entityId: driver.id,
+            entityType: 'Driver',
+            scoutingLevel: 100,
+            accuracy: 1,
+            visibleRatings: {},
+            notes: [],
+            lastUpdated: '1995-01-01T00:00:00.000Z',
+          },
+        },
+        activeAssignments: [],
+        shortlist: [],
+      },
+    };
+
+    expect(inboxMessages(state)).toContainEqual(expect.objectContaining({
+      id: `inbox-scouting-complete-Driver-${driver.id}`,
+      title: expect.stringContaining('Scouting report complete'),
+      route: `/scouting?tab=senior&target=${encodeURIComponent(driver.id)}`,
+      routeLabel: 'Open Scouting Report',
+    }));
+  });
+
   it('surfaces vacant and expiring staff roles as people actions', () => {
     const base = newState();
     const vacant = inboxMessages({ ...base, staff: [] }).find((message) => message.id === 'inbox-staff-vacancy-technical-director');
