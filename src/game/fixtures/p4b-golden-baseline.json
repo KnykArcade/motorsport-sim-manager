@@ -223,21 +223,21 @@
       ],
       "driverStandings": [
         {
-          "entityId": "DRV_0121",
+          "entityId": "DRV_0219",
           "points": 10,
           "wins": 1,
           "podiums": 1,
           "dnfs": 0
         },
         {
-          "entityId": "DRV_0063",
+          "entityId": "DRV_0121",
           "points": 6,
           "wins": 0,
           "podiums": 1,
           "dnfs": 0
         },
         {
-          "entityId": "DRV_0219",
+          "entityId": "DRV_0063",
           "points": 4,
           "wins": 0,
           "podiums": 1,
@@ -307,6 +307,13 @@
           "dnfs": 0
         },
         {
+          "entityId": "DRV_0032",
+          "points": 0,
+          "wins": 0,
+          "podiums": 0,
+          "dnfs": 0
+        },
+        {
           "entityId": "DRV_0265",
           "points": 0,
           "wins": 0,
@@ -315,6 +322,13 @@
         },
         {
           "entityId": "driver-p-moreno",
+          "points": 0,
+          "wins": 0,
+          "podiums": 0,
+          "dnfs": 0
+        },
+        {
+          "entityId": "driver-jd-deletraz",
           "points": 0,
           "wins": 0,
           "podiums": 0,
@@ -349,13 +363,6 @@
           "dnfs": 1
         },
         {
-          "entityId": "DRV_0032",
-          "points": 0,
-          "wins": 0,
-          "podiums": 0,
-          "dnfs": 1
-        },
-        {
           "entityId": "DRV_0251",
           "points": 0,
           "wins": 0,
@@ -364,13 +371,6 @@
         },
         {
           "entityId": "DRV_0268",
-          "points": 0,
-          "wins": 0,
-          "podiums": 0,
-          "dnfs": 1
-        },
-        {
-          "entityId": "driver-jd-deletraz",
           "points": 0,
           "wins": 0,
           "podiums": 0,
@@ -393,7 +393,7 @@
       ],
       "constructorStandings": [
         {
-          "entityId": "t-ferrari",
+          "entityId": "t-benetton",
           "points": 10,
           "wins": 1,
           "podiums": 1,
@@ -401,14 +401,14 @@
         },
         {
           "entityId": "t-williams",
-          "points": 9,
+          "points": 7,
           "wins": 0,
           "podiums": 1,
           "dnfs": 0
         },
         {
-          "entityId": "t-benetton",
-          "points": 4,
+          "entityId": "t-ferrari",
+          "points": 6,
           "wins": 0,
           "podiums": 1,
           "dnfs": 1
@@ -456,6 +456,13 @@
           "dnfs": 1
         },
         {
+          "entityId": "t-pacific",
+          "points": 0,
+          "wins": 0,
+          "podiums": 0,
+          "dnfs": 0
+        },
+        {
           "entityId": "t-forti",
           "points": 0,
           "wins": 0,
@@ -464,13 +471,6 @@
         },
         {
           "entityId": "t-minardi",
-          "points": 0,
-          "wins": 0,
-          "podiums": 0,
-          "dnfs": 2
-        },
-        {
-          "entityId": "t-pacific",
           "points": 0,
           "wins": 0,
           "podiums": 0,
@@ -946,21 +946,21 @@
       ],
       "driverStandings": [
         {
-          "entityId": "DRV_0121",
+          "entityId": "DRV_0219",
           "points": 10,
           "wins": 1,
           "podiums": 1,
           "dnfs": 0
         },
         {
-          "entityId": "DRV_0063",
+          "entityId": "DRV_0121",
           "points": 6,
           "wins": 0,
           "podiums": 1,
           "dnfs": 0
         },
         {
-          "entityId": "DRV_0219",
+          "entityId": "DRV_0063",
           "points": 4,
           "wins": 0,
           "podiums": 1,
@@ -1030,6 +1030,13 @@
           "dnfs": 0
         },
         {
+          "entityId": "DRV_0032",
+          "points": 0,
+          "wins": 0,
+          "podiums": 0,
+          "dnfs": 0
+        },
+        {
           "entityId": "DRV_0265",
           "points": 0,
           "wins": 0,
@@ -1038,6 +1045,13 @@
         },
         {
           "entityId": "driver-p-moreno",
+          "points": 0,
+          "wins": 0,
+          "podiums": 0,
+          "dnfs": 0
+        },
+        {
+          "entityId": "driver-jd-deletraz",
           "points": 0,
           "wins": 0,
           "podiums": 0,
@@ -1072,13 +1086,6 @@
           "dnfs": 1
         },
         {
-          "entityId": "DRV_0032",
-          "points": 0,
-          "wins": 0,
-          "podiums": 0,
-          "dnfs": 1
-        },
-        {
           "entityId": "DRV_0251",
           "points": 0,
           "wins": 0,
@@ -1087,13 +1094,6 @@
         },
         {
           "entityId": "DRV_0268",
-          "points": 0,
-          "wins": 0,
-          "podiums": 0,
-          "dnfs": 1
-        },
-        {
-          "entityId": "driver-jd-deletraz",
           "points": 0,
           "wins": 0,
           "podiums": 0,
@@ -1116,7 +1116,7 @@
       ],
       "constructorStandings": [
         {
-          "entityId": "t-ferrari",
+          "entityId": "t-benetton",
           "points": 10,
           "wins": 1,
           "podiums": 1,
@@ -1124,14 +1124,14 @@
         },
         {
           "entityId": "t-williams",
-          "points": 9,
+          "points": 7,
           "wins": 0,
           "podiums": 1,
           "dnfs": 0
         },
         {
-          "entityId": "t-benetton",
-          "points": 4,
+          "entityId": "t-ferrari",
+          "points": 6,
           "wins": 0,
           "podiums": 1,
           "dnfs": 1
@@ -1179,6 +1179,13 @@
           "dnfs": 1
         },
         {
+          "entityId": "t-pacific",
+          "points": 0,
+          "wins": 0,
+          "podiums": 0,
+          "dnfs": 0
+        },
+        {
           "entityId": "t-forti",
           "points": 0,
           "wins": 0,
@@ -1187,13 +1194,6 @@
         },
         {
           "entityId": "t-minardi",
-          "points": 0,
-          "wins": 0,
-          "podiums": 0,
-          "dnfs": 2
-        },
-        {
-          "entityId": "t-pacific",
           "points": 0,
           "wins": 0,
           "podiums": 0,
@@ -1669,21 +1669,21 @@
       ],
       "driverStandings": [
         {
-          "entityId": "DRV_0121",
+          "entityId": "DRV_0219",
           "points": 10,
           "wins": 1,
           "podiums": 1,
           "dnfs": 0
         },
         {
-          "entityId": "DRV_0063",
+          "entityId": "DRV_0121",
           "points": 6,
           "wins": 0,
           "podiums": 1,
           "dnfs": 0
         },
         {
-          "entityId": "DRV_0219",
+          "entityId": "DRV_0063",
           "points": 4,
           "wins": 0,
           "podiums": 1,
@@ -1753,6 +1753,13 @@
           "dnfs": 0
         },
         {
+          "entityId": "DRV_0032",
+          "points": 0,
+          "wins": 0,
+          "podiums": 0,
+          "dnfs": 0
+        },
+        {
           "entityId": "DRV_0265",
           "points": 0,
           "wins": 0,
@@ -1761,6 +1768,13 @@
         },
         {
           "entityId": "driver-p-moreno",
+          "points": 0,
+          "wins": 0,
+          "podiums": 0,
+          "dnfs": 0
+        },
+        {
+          "entityId": "driver-jd-deletraz",
           "points": 0,
           "wins": 0,
           "podiums": 0,
@@ -1795,13 +1809,6 @@
           "dnfs": 1
         },
         {
-          "entityId": "DRV_0032",
-          "points": 0,
-          "wins": 0,
-          "podiums": 0,
-          "dnfs": 1
-        },
-        {
           "entityId": "DRV_0251",
           "points": 0,
           "wins": 0,
@@ -1810,13 +1817,6 @@
         },
         {
           "entityId": "DRV_0268",
-          "points": 0,
-          "wins": 0,
-          "podiums": 0,
-          "dnfs": 1
-        },
-        {
-          "entityId": "driver-jd-deletraz",
           "points": 0,
           "wins": 0,
           "podiums": 0,
@@ -1839,7 +1839,7 @@
       ],
       "constructorStandings": [
         {
-          "entityId": "t-ferrari",
+          "entityId": "t-benetton",
           "points": 10,
           "wins": 1,
           "podiums": 1,
@@ -1847,14 +1847,14 @@
         },
         {
           "entityId": "t-williams",
-          "points": 9,
+          "points": 7,
           "wins": 0,
           "podiums": 1,
           "dnfs": 0
         },
         {
-          "entityId": "t-benetton",
-          "points": 4,
+          "entityId": "t-ferrari",
+          "points": 6,
           "wins": 0,
           "podiums": 1,
           "dnfs": 1
@@ -1902,6 +1902,13 @@
           "dnfs": 1
         },
         {
+          "entityId": "t-pacific",
+          "points": 0,
+          "wins": 0,
+          "podiums": 0,
+          "dnfs": 0
+        },
+        {
           "entityId": "t-forti",
           "points": 0,
           "wins": 0,
@@ -1910,13 +1917,6 @@
         },
         {
           "entityId": "t-minardi",
-          "points": 0,
-          "wins": 0,
-          "podiums": 0,
-          "dnfs": 2
-        },
-        {
-          "entityId": "t-pacific",
           "points": 0,
           "wins": 0,
           "podiums": 0,
@@ -2214,9 +2214,9 @@
         "id": "car-ferrari-1995",
         "teamId": "t-ferrari",
         "ratings": {
-          "enginePower": 86.4,
-          "aeroEfficiency": 86.4,
-          "mechanicalGrip": 86.4,
+          "enginePower": 86.2,
+          "aeroEfficiency": 86.2,
+          "mechanicalGrip": 86.2,
           "reliability": 80,
           "pitCrewOperations": 74
         },
@@ -2340,10 +2340,10 @@
         "id": "car-minardi-1995",
         "teamId": "t-minardi",
         "ratings": {
-          "enginePower": 33.8,
-          "aeroEfficiency": 33.8,
-          "mechanicalGrip": 43.8,
-          "reliability": 43.8,
+          "enginePower": 33.7,
+          "aeroEfficiency": 33.7,
+          "mechanicalGrip": 43.7,
+          "reliability": 43.7,
           "pitCrewOperations": 49
         },
         "developmentLevel": {
@@ -2358,7 +2358,7 @@
         "id": "car-forti-1995",
         "teamId": "t-forti",
         "ratings": {
-          "enginePower": 33,
+          "enginePower": 30.7,
           "aeroEfficiency": 30.7,
           "mechanicalGrip": 40.7,
           "reliability": 40.7,
@@ -2376,7 +2376,7 @@
         "id": "car-pacific-1995",
         "teamId": "t-pacific",
         "ratings": {
-          "enginePower": 28.7,
+          "enginePower": 32,
           "aeroEfficiency": 28.7,
           "mechanicalGrip": 37.7,
           "reliability": 37.7,
