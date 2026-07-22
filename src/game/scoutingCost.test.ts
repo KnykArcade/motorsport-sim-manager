@@ -42,8 +42,29 @@ describe('scouting costs', () => {
     const after = teamById(state, state.selectedTeamId)!.budget;
     expect(after).toBe(before - cost);
     expect(state.scouting!.reports[driver.id]).toBeDefined();
+    expect(state.scouting!.activeAssignments).toContainEqual({ entityId: driver.id, entityType: 'Driver' });
     // A scouting line item is recorded in the finance ledger.
     expect((state.finance ?? []).some((t) => t.category === 'Scouting')).toBe(true);
+  });
+
+  it('cancels an assignment without deleting the knowledge already purchased', () => {
+    let state = newGame(1_000_000_000);
+    const driver = careerMarketBundle(state).drivers[0];
+    state = gameReducer(state, { type: 'SCOUT_TARGET', entityId: driver.id, entityType: 'Driver' })!;
+    const report = state.scouting!.reports[driver.id];
+    state = gameReducer(state, { type: 'CANCEL_SCOUTING_ASSIGNMENT', entityId: driver.id, entityType: 'Driver' })!;
+    expect(state.scouting!.activeAssignments).not.toContainEqual({ entityId: driver.id, entityType: 'Driver' });
+    expect(state.scouting!.reports[driver.id]).toEqual(report);
+  });
+
+  it('adds and removes targets from the persisted shortlist', () => {
+    let state = newGame();
+    const driver = careerMarketBundle(state).drivers[0];
+    const action = { type: 'TOGGLE_SCOUTING_SHORTLIST' as const, entityId: driver.id, entityType: 'Driver' as const };
+    state = gameReducer(state, action)!;
+    expect(state.scouting!.shortlist).toEqual([{ entityId: driver.id, entityType: 'Driver' }]);
+    state = gameReducer(state, action)!;
+    expect(state.scouting!.shortlist).toEqual([]);
   });
 
   it('blocks scouting when the team cannot afford it', () => {
