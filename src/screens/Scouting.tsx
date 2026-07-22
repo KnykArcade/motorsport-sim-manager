@@ -17,6 +17,7 @@ import { formatMoney, ratingColor } from '../components/ui';
 import type { ScoutedEntityType, VisibleRating } from '../types/scoutingTypes';
 import type { IntelligenceAction, IntelligenceReport } from '../types/phase18Types';
 import { INTELLIGENCE_INVESTIGATION_COST, intelligenceConfidenceLabel } from '../sim/phase18IntelligenceEngine';
+import { scoutingAbilitySummary, scoutingAssignments } from './scoutingViewModel';
 
 type Tab = 'intelligence' | 'senior' | 'youth';
 
@@ -70,6 +71,16 @@ export function Scouting() {
     { id: 'senior', label: `Senior Targets (${bundle?.drivers.length ?? 0})` },
     { id: 'youth', label: `Youth Targets (${bundle?.youth.length ?? 0})` },
   ];
+  const targetNames = Object.fromEntries([
+    ...(bundle?.drivers ?? []).map((driver) => [driver.id, driver.name] as const),
+    ...(bundle?.youth ?? []).map((prospect) => [prospect.id, prospect.name] as const),
+  ]);
+  const assignments = scoutingAssignments(
+    scouting.reports,
+    scouting.networkAccuracy,
+    targetNames,
+    tab === 'senior' ? 'Driver' : tab === 'youth' ? 'YouthProspect' : undefined,
+  );
 
   return (
     <WorkspaceScreen className="era-feature-screen era-scouting">
@@ -137,6 +148,22 @@ export function Scouting() {
           <p className="text-sm text-neutral-400">
             No market data is available for the {state.seasonYear} {state.series} season.
           </p>
+        </Panel>
+      )}
+
+      {tab !== 'intelligence' && (
+        <Panel title={`Scouting Assignments (${assignments.length})`}>
+          {assignments.length > 0 ? (
+            <div className="divide-y divide-neutral-800/70">
+              {assignments.map((assignment) => (
+                <div key={assignment.entityId} className="grid gap-2 py-2 text-xs sm:grid-cols-[1fr_auto_10rem] sm:items-center">
+                  <div><span className="font-semibold text-neutral-200">{assignment.name}</span><span className="ml-2 text-neutral-500">{assignment.entityType === 'YouthProspect' ? 'Youth prospect' : assignment.entityType}</span></div>
+                  <div className="text-neutral-400">Coverage {assignment.scoutingLevel}% · Knowledge {assignment.knowledgePercentage}%</div>
+                  <div className="h-1.5 overflow-hidden rounded-full bg-neutral-800"><div className="h-full bg-[var(--era-accent-strong)]" style={{ width: `${assignment.knowledgePercentage}%` }} /></div>
+                </div>
+              ))}
+            </div>
+          ) : <p className="text-sm text-neutral-500">No outstanding assignments in this target group.</p>}
         </Panel>
       )}
 
@@ -307,7 +334,8 @@ function ScoutCard({
   budget: number;
   onScout: () => void;
 }) {
-  const accPct = Math.round(view.accuracy * 100);
+  const ability = scoutingAbilitySummary(view);
+  const accPct = ability.knowledgePercentage;
   const affordable = cost <= budget;
   return (
     <Panel>
@@ -324,6 +352,11 @@ function ScoutCard({
             POT <span className="text-[var(--era-accent-strong)]">{potentialText(view)}</span>
           </div>
         </div>
+      </div>
+
+      <div className="mb-2 grid grid-cols-2 gap-2 rounded border border-neutral-800 bg-neutral-950/35 p-2 text-xs">
+        <AbilityReadout label="Current ability" stars={ability.currentStars} range={ability.currentRange} />
+        <AbilityReadout label="Potential ability" stars={ability.potentialStars} range={ability.potentialRange} />
       </div>
 
       <div className="mb-2">
@@ -369,6 +402,16 @@ function ScoutCard({
         )}
       </div>
     </Panel>
+  );
+}
+
+function AbilityReadout({ label, stars, range }: { label: string; stars?: [number, number]; range?: [number, number] }) {
+  return (
+    <div>
+      <div className="text-[10px] uppercase tracking-wide text-neutral-500">{label}</div>
+      <div className="mt-0.5 font-semibold text-amber-300">{stars ? `${stars[0].toFixed(1)}–${stars[1].toFixed(1)}★` : 'Unknown'}</div>
+      <div className="text-[10px] text-neutral-500">{range ? `${range[0].toFixed(1)}–${range[1].toFixed(1)}` : 'Insufficient knowledge'}</div>
+    </div>
   );
 }
 
