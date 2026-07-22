@@ -17,6 +17,19 @@ describe('race rule profiles', () => {
     expect(selectRaceRuleProfile('F1', 2026).overtakingAids.drs).toBe(true);
   });
 
+  it('applies parc ferme only to F1 eras where setup locks are modelled', () => {
+    expect(selectRaceRuleProfile('F1', 1995).setupLock.mode).toBe('Unrestricted');
+    expect(selectRaceRuleProfile('F1', 2003).setupLock.mode).toBe('ParcFerme');
+    expect(selectRaceRuleProfile('F1', 2026).setupLock.mode).toBe('ParcFerme');
+  });
+
+  it('keeps IndyCar/CART flexible while modelling NASCAR impound-era restrictions', () => {
+    expect(selectRaceRuleProfile('IndyCar', 2026).setupLock.mode).toBe('Unrestricted');
+    expect(selectRaceRuleProfile('CART', 1995).setupLock.mode).toBe('Unrestricted');
+    expect(selectRaceRuleProfile('NASCAR', 2005).setupLock.mode).toBe('Impound');
+    expect(selectRaceRuleProfile('NASCAR', 2026).setupLock.mode).toBe('PostQualifyingLimited');
+  });
+
   it('uses series-specific caution cadence without retroactive leakage', () => {
     const historicalF1 = selectRaceRuleProfile('F1', 1995).raceControl;
     const modernNascar = selectRaceRuleProfile('NASCAR', 2026).raceControl;

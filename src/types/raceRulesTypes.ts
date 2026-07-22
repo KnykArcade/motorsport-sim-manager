@@ -1,4 +1,5 @@
 import type { Series } from './gameTypes';
+import type { SetupParamKey } from './setupTypes';
 
 export type TrackDiscipline = 'Road' | 'Street' | 'ShortOval' | 'IntermediateOval' | 'Superspeedway' | 'Speedway' | 'Mixed';
 export type StartProcedure = 'Standing' | 'Rolling' | 'SafetyCarStart';
@@ -40,6 +41,18 @@ export type RaceControlRuleProfile = {
   stageRacing: boolean;
 };
 
+export type SetupLockMode = 'Unrestricted' | 'PostQualifyingLimited' | 'ParcFerme' | 'Impound';
+
+export type SetupLockRuleProfile = {
+  mode: SetupLockMode;
+  trigger: 'None' | 'AfterQualifying';
+  allowedPostQualifyingChanges: readonly SetupParamKey[];
+  maxPostQualifyingDelta: number | null;
+  violationConsequence: 'Blocked' | 'PitLaneStart' | 'RearOfField';
+  label: string;
+  description: string;
+};
+
 export type RaceRuleProfile = {
   id: string;
   series: Series;
@@ -52,5 +65,6 @@ export type RaceRuleProfile = {
   overtakingAids: OvertakingAidRuleProfile;
   pitLane: PitLaneRuleProfile;
   raceControl: RaceControlRuleProfile;
+  setupLock: SetupLockRuleProfile;
   notes: string[];
 };

@@ -16,6 +16,7 @@ import {
 import { carForTeam, driversForTeam, activeDriversForTeam } from './careerState';
 import { syncDriverRelationshipsForTeam } from '../sim/relationshipEngine';
 import { fromUnifiedTechnical, withUnifiedTechnical } from '../sim/technicalAdapters';
+import { BALANCED_SETUP } from '../data/setup/setupComponents';
 import type { GameState } from './careerState';
 
 function newCareerState(): GameState {
@@ -1219,6 +1220,36 @@ describe('careerPhaseEngine', () => {
         setup: { wingLevel: 5, tyrePressure: 28, brakeBias: 50 } as never,
       });
       expect(state.carSetups).toEqual(setupsBefore);
+    });
+
+    it('SET_CAR_SETUP enforces parc ferme after qualifying', () => {
+      let state = newCareerState();
+      state = { ...state, seasonYear: 2003 };
+      const driver = activeDriversForTeam(state, state.selectedTeamId)[0];
+      state = completeChecklist(state);
+      state = dispatch(state, { type: 'COMPLETE_PRESEASON_SETUP' });
+      state = dispatch(state, { type: 'ADVANCE_TO_RACE_WEEKEND' });
+      state = dispatch(state, {
+        type: 'SET_CAR_SETUP',
+        driverId: driver.id,
+        setup: { ...BALANCED_SETUP },
+      });
+      state = dispatch(state, { type: 'RUN_QUALIFYING', decisions: [] });
+
+      const lockedSetup = state.carSetups![driver.id];
+      state = dispatch(state, {
+        type: 'SET_CAR_SETUP',
+        driverId: driver.id,
+        setup: { ...lockedSetup, suspensionStiffness: lockedSetup.suspensionStiffness + 1 },
+      });
+      expect(state.carSetups![driver.id]).toEqual(lockedSetup);
+
+      state = dispatch(state, {
+        type: 'SET_CAR_SETUP',
+        driverId: driver.id,
+        setup: { ...lockedSetup, frontWing: lockedSetup.frontWing + 0.5 },
+      });
+      expect(state.carSetups![driver.id].frontWing).toBe(lockedSetup.frontWing + 0.5);
     });
 
     it('SELECT_RACE_WEEKEND_PACKAGE does not mutate before preseason or paddock package selection windows', () => {

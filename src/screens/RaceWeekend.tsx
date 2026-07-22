@@ -4,6 +4,7 @@ import { useGame } from '../game/GameContext';
 import { activeDriversForTeam, carForTeam, currentRace } from '../game/careerState';
 import { lastBreakdowns } from '../game/gameReducer';
 import { getTrackById } from '../data';
+import { selectRaceRuleProfile } from '../data/rules/raceRuleProfiles';
 import { ratingColor } from '../components/ui';
 import { qualifyingRunPlans } from '../data/decisions/qualifyingRunPlans';
 import { raceStrategies } from '../data/decisions/raceStrategies';
@@ -42,6 +43,7 @@ import { Panel } from '../components/Panel';
 import { Button } from '../components/Button';
 import { TrackDemandBars } from '../components/TrackDemandBars';
 import { SetupWorkshop, type WorkshopPractice } from '../components/SetupWorkshop';
+import { setupLockPhase, setupLockStatus } from '../sim/setupLockEngine';
 import {
   MetricStrip,
   WorkspaceBody,
@@ -84,6 +86,11 @@ export function RaceWeekend() {
     [state],
   );
   const qualifyingResults = state && race ? state.qualifyingResults[race.id] : undefined;
+  const setupLock = useMemo(() => {
+    if (!state || !track) return undefined;
+    const profile = selectRaceRuleProfile(state.series, state.seasonYear, track);
+    return setupLockStatus(profile, setupLockPhase(!!qualifyingResults));
+  }, [state, track, qualifyingResults]);
 
   const autoSetups = useMemo(
     () => (track ? autoSetupsForTrack(track) : undefined),
@@ -274,6 +281,7 @@ export function RaceWeekend() {
           setups={resolvedSetups}
           car={carForTeam(state, state.selectedTeamId)}
           practice={workshopPractice}
+          setupLock={setupLock}
           onChangeParam={(driverId, key, value) =>
             setSetupDraft((p) => ({
               ...p,
