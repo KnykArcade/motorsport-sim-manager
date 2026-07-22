@@ -82,4 +82,23 @@ describe('commandAgenda', () => {
       route: `/post-race/${base.calendar[0].id}`,
     });
   });
+
+  it('prioritizes an exact driver negotiation route from the weekly agenda', () => {
+    const base = newState();
+    const driver = base.drivers.find((candidate) => candidate.teamId === base.selectedTeamId);
+    if (!driver) throw new Error('Expected the selected team to have a driver');
+    const state: GameState = {
+      ...base,
+      drivers: base.drivers.map((candidate) =>
+        candidate.teamId === base.selectedTeamId
+          ? { ...candidate, contractYearsRemaining: candidate.id === driver.id ? 1 : 5 }
+          : candidate),
+    };
+
+    expect(commandAgenda(state).nextAction).toMatchObject({
+      id: `inbox-driver-contract-${driver.id}`,
+      route: `/drivers/${encodeURIComponent(driver.id)}/negotiate`,
+      routeLabel: 'Open Negotiation',
+    });
+  });
 });

@@ -279,18 +279,19 @@ function peopleMessages(state: GameState): InboxMessage[] {
 
   const expiring = activeDriversForTeam(state, state.selectedTeamId)
     .filter((driver) => (driver.contractYearsRemaining ?? 99) <= 1);
-  if (expiring.length > 0) {
+  expiring.forEach((driver) => {
+    const canNegotiate = state.gameMode !== 'SingleSeason' && !state.seasonComplete;
     messages.push({
-      id: 'inbox-contracts-expiring',
+      id: `inbox-driver-contract-${driver.id}`,
       severity: 'action',
       category: 'people',
-      title: `${expiring.length} driver contract${expiring.length === 1 ? '' : 's'} expiring after this season`,
-      body: expiring.map((driver) => driver.name).join(' · '),
-      route: '/drivers',
-      routeLabel: 'Open Drivers',
+      title: `${driver.name}'s contract needs attention`,
+      body: `Current term: ${driver.contractYearsRemaining ?? 1} year${(driver.contractYearsRemaining ?? 1) === 1 ? '' : 's'} remaining.`,
+      route: canNegotiate ? `/drivers/${encodeURIComponent(driver.id)}/negotiate` : '/drivers',
+      routeLabel: canNegotiate ? 'Open Negotiation' : 'Open Drivers',
       actionable: true,
     });
-  }
+  });
 
   for (const offer of state.jobOffers ?? []) {
     const team = state.teams.find((candidate) => candidate.id === offer.teamId);
