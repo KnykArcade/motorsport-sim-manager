@@ -25,6 +25,7 @@ import {
 } from '../sim/rdEngine';
 import { updateMorale } from '../sim/moraleEngine';
 import { generateRaceNews } from '../sim/newsEngine';
+import { classifyDnfCause } from '../sim/dnfModel';
 import { advanceOffscreenChampionshipsAfterPlayerRace } from '../sim/motorsportUniverseEngine';
 import { progressTransferCalendar } from '../sim/transferCalendarEngine';
 import {
@@ -48,6 +49,7 @@ import {
   driversForTeam,
   maxRaceDriversForSeries,
   minRaceDriversForSeries,
+  reserveDriversForTeam,
   type GameState,
   type DriverContractRole,
 } from './careerState';
@@ -529,6 +531,87 @@ function swapRaceDriver(state: GameState, seatIndex: number, reserveDriverId: st
   };
   // Sync relationships after roster change.
   return syncDriverRelationshipsForTeam(updated, teamId, state.randomSeed ?? 'sync');
+}
+
+function applyRarePlayerCrashAbsence(
+  state: GameState,
+  round: number,
+  results: RaceResult[],
+): GameState {
+  let next = state;
+  const returning = (state.raceDriverAbsences ?? []).filter(
+    (absence) => absence.expectedReturnRound <= round + 1,
+  );
+  for (const absence of returning) {
+    next = swapRaceDriver(next, absence.seatIndex, absence.driverId);
+    const returnNews: NewsItem = {
+      id: `driver-cleared-${state.seasonYear}-${round}-${absence.driverId}`,
+      round,
+      headline: `${absence.driverName} cleared to return for round ${absence.expectedReturnRound}`,
+      body: `${absence.replacementName}'s automatic reserve duty is complete.`,
+      timestamp: new Date(Date.UTC(state.seasonYear, 0, Math.max(1, round))).toISOString(),
+      category: 'paddock',
+      priority: 'normal',
+      driverId: absence.driverId,
+      teamId: absence.teamId,
+    };
+    next = {
+      ...next,
+      news: [returnNews, ...next.news].slice(0, 80),
+    };
+  }
+  const remaining = (state.raceDriverAbsences ?? []).filter(
+    (absence) => absence.expectedReturnRound > round + 1,
+  );
+  next = { ...next, raceDriverAbsences: remaining };
+  if (remaining.length > 0) return next;
+
+  const activeIds = activeDriversForTeam(state, state.selectedTeamId).map((driver) => driver.id);
+  const crash = results.find((result) => {
+    if (result.teamId !== state.selectedTeamId || result.status !== 'DNF') return false;
+    const damageRoll = createSeededRandom(deriveSeed(state.randomSeed, 'damage', round, result.driverId)).next();
+    return classifyCrashDamage(result.status, result.incidents, damageRoll) === 'Wrecked';
+  });
+  if (!crash) return next;
+  const injuryRate = state.seasonYear < 2000 ? 0.012 : 0.004;
+  const injuryRoll = createSeededRandom(deriveSeed(state.randomSeed, 'rare-crash-injury', round, crash.driverId)).next();
+  if (injuryRoll >= injuryRate) return next;
+  const reserve = reserveDriversForTeam(next, state.selectedTeamId)[0];
+  const driver = state.drivers.find((candidate) => candidate.id === crash.driverId);
+  const seatIndex = activeIds.indexOf(crash.driverId);
+  if (!reserve || !driver || seatIndex < 0) return next;
+  const detailRoll = createSeededRandom(deriveSeed(state.randomSeed, 'rare-crash-injury-detail', round, crash.driverId));
+  const duration = detailRoll.next() < 0.82 ? 1 : 2;
+  const injuryTypes = ['Concussion', 'Hand injury', 'Back injury'] as const;
+  const injuryType = injuryTypes[Math.floor(detailRoll.next() * injuryTypes.length)];
+  next = swapRaceDriver(next, seatIndex, reserve.id);
+  const absence = {
+    driverId: driver.id,
+    driverName: driver.name,
+    teamId: state.selectedTeamId,
+    injuryType,
+    startRound: round + 1,
+    expectedReturnRound: round + duration + 1,
+    replacementDriverId: reserve.id,
+    replacementName: reserve.name,
+    seatIndex,
+  };
+  const absenceNews: NewsItem = {
+    id: `driver-absence-${state.seasonYear}-${round}-${driver.id}`,
+    round,
+    headline: `${driver.name} to miss ${duration} race${duration === 1 ? '' : 's'} after severe crash`,
+    body: `${reserve.name} has been moved automatically from the reserve role into the race seat.`,
+    timestamp: new Date(Date.UTC(state.seasonYear, 0, Math.max(1, round))).toISOString(),
+    category: 'paddock',
+    priority: 'high',
+    driverId: driver.id,
+    teamId: state.selectedTeamId,
+  };
+  return {
+    ...next,
+    raceDriverAbsences: [absence],
+    news: [absenceNews, ...next.news].slice(0, 80),
+  };
 }
 
 // Sign a free-agent market driver mid-season as the player team's 3rd driver.
@@ -2186,7 +2269,9 @@ function applyRaceResults(
       const wasFavored = teamOrders.some((o) => o.favoredDriverId === r.driverId);
       const wasDisadvantaged = teamOrders.some((o) => o.disadvantagedDriverId === r.driverId);
       const isDNF = r.status !== 'Finished' && r.position === null;
-      const hasCrashIncident = r.incidents.some((i) => i.toLowerCase().includes('crash') || i.toLowerCase().includes('collision'));
+      const incidentText = r.incidents.join(' ');
+      const dnfCause = classifyDnfCause(incidentText);
+      const outsideControl = /hit by|collected|racing incident|through no fault|innocent passenger/i.test(incidentText);
       const ctx: RaceEventContext = {
         driverId: r.driverId,
         finishingPosition: r.position ?? 99,
@@ -2198,7 +2283,16 @@ function applyRaceResults(
         teamOrderIssued: teamOrders.length > 0,
         wasFavoredInOrders: wasFavored,
         wasDisadvantagedInOrders: wasDisadvantaged,
-        carReliabilityDNF: isDNF && !hasCrashIncident,
+        carReliabilityDNF: isDNF && dnfCause === 'Mechanical',
+        incidentResponsibility: !isDNF
+          ? 'other'
+          : dnfCause === 'Mechanical' || dnfCause === 'TyreDamage'
+            ? 'car'
+            : dnfCause === 'Crash' && outsideControl
+              ? 'racing'
+              : dnfCause === 'Crash'
+                ? 'driver'
+                : 'other',
         strategyRiskLevel: strategyRiskByDriver?.[r.driverId] ?? 'balanced',
         pointsScored: r.points,
         podium: r.position !== null && r.position <= 3,
@@ -2564,6 +2658,7 @@ function applyRaceResults(
     currentRaceIndex: seasonComplete ? state.currentRaceIndex : nextIndex,
     seasonComplete,
   };
+  completedState = applyRarePlayerCrashAbsence(completedState, race.round, results);
   const worldTick = advanceOffscreenChampionshipsAfterPlayerRace(completedState);
   completedState = {
     ...completedState,
