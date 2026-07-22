@@ -259,6 +259,51 @@ function peopleMessages(state: GameState): InboxMessage[] {
       round: currentRound,
     });
   }
+  const marketStories = state.transferCalendar?.stories ?? [];
+  const pendingMarketIds = new Set(
+    (state.pendingSignings ?? [])
+      .filter((signing) => signing.source === 'market')
+      .map((signing) => signing.sourceId),
+  );
+  for (const story of marketStories.filter((entry) =>
+    entry.targetType === 'MarketDriver' && (entry.stage === 'Offer' || entry.stage === 'Contested'),
+  )) {
+    const contested = story.stage === 'Contested' || pendingMarketIds.has(story.targetId);
+    messages.push({
+      id: `inbox-market-outcome-${story.id}`,
+      severity: contested ? 'critical' : 'action',
+      category: 'people',
+      title: contested ? `Contested signing: ${story.targetName}` : `Rival offer for ${story.targetName}`,
+      body: contested
+        ? `${story.targetName} is attracting a rival bid. Review your queued offer before the deadline.`
+        : `${story.destinationTeamName} has opened an offer before your recruitment decision is locked.`,
+      route: `/market?target=${encodeURIComponent(story.targetId)}`,
+      routeLabel: contested ? 'Review Contested Bid' : 'Review Rival Offer',
+      actionable: true,
+      blocking: false,
+      kind: 'must_respond',
+      source: 'Transfer desk',
+      whyItMatters: 'Market availability can change before you reach the next meaningful recruitment decision.',
+      round: story.deadlineRound,
+      timing: 'before_next_race',
+    });
+  }
+  for (const signing of (state.pendingSignings ?? []).filter((entry) => entry.source === 'market')) {
+    messages.push({
+      id: `inbox-market-signing-${signing.sourceId}`,
+      severity: 'action',
+      category: 'people',
+      title: `Queued signing: ${signing.name}`,
+      body: 'The driver is queued for the next season. Review the lineup before confirming the rollover.',
+      route: '/offseason',
+      routeLabel: 'Confirm Lineup',
+      actionable: true,
+      kind: 'recommended',
+      source: 'Recruitment desk',
+      whyItMatters: 'Queued signings affect next season’s seats and can still be cancelled before rollover.',
+      timing: 'season_end',
+    });
+  }
   const staff = state.staff ?? [];
   const recommendations = staffRecommendations(state);
   const recommendedRecruitmentRoles = new Set(
@@ -472,14 +517,18 @@ function businessMessages(state: GameState): InboxMessage[] {
 function newsMessages(state: GameState): InboxMessage[] {
   return state.news.slice(0, 40).map((item) => {
     const triage = newsTriage(state, item);
+    const transferStory = state.transferCalendar?.stories.find((story) => item.id.endsWith(story.id));
+    const transferRoute = transferStory?.targetType === 'MarketDriver'
+      ? `/market?target=${encodeURIComponent(transferStory.targetId)}`
+      : undefined;
     return {
       id: `inbox-news-${item.id}`,
       severity: newsSeverity(item),
       category: 'news' as const,
       title: item.headline,
       body: triage ? `${triage.recommendation}${item.body ? ` ${item.body}` : ''}` : item.body,
-      route: triage?.route ?? '/news',
-      routeLabel: triage?.routeLabel ?? 'Open News Center',
+      route: transferRoute ?? triage?.route ?? '/news',
+      routeLabel: transferRoute ? 'Review Market Outcome' : triage?.routeLabel ?? 'Open News Center',
       actionable: Boolean(triage),
       source: triage?.owner,
       whyItMatters: triage ? `${triage.whyItMatters} ${triage.consequence}` : undefined,
@@ -492,6 +541,8 @@ function newsMessages(state: GameState): InboxMessage[] {
 function withTaskSemantics(message: InboxMessage): InboxMessage {
   const kind: InboxMessageKind = message.category === 'news'
     ? message.actionable ? 'recommended' : 'news'
+    : message.kind
+      ? message.kind
     : message.id.startsWith('inbox-paddock-') && message.severity === 'critical'
       ? 'must_respond'
       : message.actionable
@@ -523,6 +574,7 @@ export function inboxTimingLabel(timing: InboxTiming): string {
 export function inboxTimingForMessage(state: GameState, message: InboxMessage): InboxTiming {
   const text = `${message.title} ${message.body ?? ''}`.toLowerCase();
   if (message.blocking) return 'due_this_week';
+  if (message.timing) return message.timing;
   if (text.includes('after this season') || text.includes('season end') || text.includes('expiring')) {
     return 'season_end';
   }

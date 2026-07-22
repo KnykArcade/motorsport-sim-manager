@@ -112,6 +112,127 @@ describe('inboxViewModel', () => {
     });
   });
 
+  it('surfaces a rival market offer as an exact target action', () => {
+    const base = newState();
+    const state: GameState = {
+      ...base,
+      transferCalendar: {
+        lastProcessedRound: 1,
+        stories: [{
+          id: 'market-offer-1',
+          targetType: 'MarketDriver',
+          targetId: 'market-driver-1',
+          targetName: 'Market Driver',
+          destinationTeamId: 'rival-team',
+          destinationTeamName: 'Rival GP',
+          outcome: 'RivalOffer',
+          stage: 'Offer',
+          startedRound: 1,
+          deadlineRound: 3,
+          offeredBid: 4.5,
+        }],
+      },
+    };
+
+    expect(inboxMessages(state)).toContainEqual(expect.objectContaining({
+      id: 'inbox-market-outcome-market-offer-1',
+      title: 'Rival offer for Market Driver',
+      route: '/market?target=market-driver-1',
+      routeLabel: 'Review Rival Offer',
+      kind: 'must_respond',
+      timing: 'due_this_week',
+    }));
+  });
+
+  it('marks a queued market signing as a lineup follow-through action', () => {
+    const base = newState();
+    const seat = base.drivers.find((driver) => driver.teamId === base.selectedTeamId);
+    if (!seat) throw new Error('Expected a selected-team driver');
+    const state: GameState = {
+      ...base,
+      pendingSignings: [{
+        seatDriverId: seat.id,
+        source: 'market',
+        sourceId: 'market-driver-2',
+        name: 'Queued Market Driver',
+        bid: 5,
+      }],
+    };
+
+    expect(inboxMessages(state)).toContainEqual(expect.objectContaining({
+      id: 'inbox-market-signing-market-driver-2',
+      title: 'Queued signing: Queued Market Driver',
+      route: '/offseason',
+      routeLabel: 'Confirm Lineup',
+      kind: 'recommended',
+      timing: 'season_end',
+    }));
+  });
+
+  it('elevates a contested market offer above a normal rival offer', () => {
+    const base = newState();
+    const state: GameState = {
+      ...base,
+      transferCalendar: {
+        lastProcessedRound: 1,
+        stories: [{
+          id: 'market-contested-1',
+          targetType: 'MarketDriver',
+          targetId: 'market-driver-3',
+          targetName: 'Contested Driver',
+          destinationTeamId: 'rival-team',
+          destinationTeamName: 'Rival GP',
+          outcome: 'RivalOffer',
+          stage: 'Contested',
+          startedRound: 1,
+          deadlineRound: 2,
+        }],
+      },
+    };
+
+    expect(inboxMessages(state)).toContainEqual(expect.objectContaining({
+      id: 'inbox-market-outcome-market-contested-1',
+      severity: 'critical',
+      title: 'Contested signing: Contested Driver',
+      routeLabel: 'Review Contested Bid',
+    }));
+  });
+
+  it('deep-links confirmed market news back to the target market card', () => {
+    const base = newState();
+    const state: GameState = {
+      ...base,
+      transferCalendar: {
+        lastProcessedRound: 1,
+        stories: [{
+          id: 'market-confirmed-1',
+          targetType: 'MarketDriver',
+          targetId: 'market-driver-4',
+          targetName: 'Confirmed Driver',
+          destinationTeamId: 'rival-team',
+          destinationTeamName: 'Rival GP',
+          outcome: 'RivalOffer',
+          stage: 'Confirmed',
+          startedRound: 1,
+          deadlineRound: 2,
+        }],
+      },
+      news: [{
+        id: 'transfer-confirmed-market-confirmed-1',
+        headline: 'Confirmed Driver agrees Rival GP move',
+        timestamp: '1995-01-01T00:00:00.000Z',
+        category: 'driver_market',
+        priority: 'high',
+      }],
+    };
+
+    expect(inboxMessages(state)).toContainEqual(expect.objectContaining({
+      id: 'inbox-news-transfer-confirmed-market-confirmed-1',
+      route: '/market?target=market-driver-4',
+      routeLabel: 'Review Market Outcome',
+    }));
+  });
+
   it('replaces the generic reminder with an exact counter response action', () => {
     const base = newState();
     const driver = base.drivers.find((candidate) => candidate.teamId === base.selectedTeamId);
