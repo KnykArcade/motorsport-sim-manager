@@ -19,6 +19,8 @@ const Standings = lazy(() => import('../screens/Standings').then((m) => ({ defau
 const TeamOverview = lazy(() => import('../screens/TeamOverview').then((m) => ({ default: m.TeamOverview })));
 const Drivers = lazy(() => import('../screens/Drivers').then((m) => ({ default: m.Drivers })));
 const DriverContractNegotiation = lazy(() => import('../screens/DriverContractNegotiation').then((m) => ({ default: m.DriverContractNegotiation })));
+const MarketContractNegotiation = lazy(() => import('../screens/MarketContractNegotiation').then((m) => ({ default: m.MarketContractNegotiation })));
+const StaffContractNegotiation = lazy(() => import('../screens/StaffContractNegotiation').then((m) => ({ default: m.StaffContractNegotiation })));
 const DriverMarket = lazy(() => import('../screens/DriverMarket').then((m) => ({ default: m.DriverMarket })));
 const TechnicalCenter = lazy(() => import('../screens/TechnicalCenter').then((m) => ({ default: m.TechnicalCenter })));
 const Finance = lazy(() => import('../screens/Finance').then((m) => ({ default: m.Finance })));
@@ -266,6 +268,8 @@ export default function App() {
           <Route path="/teams" element={<InGame><TeamOverview /></InGame>} />
           <Route path="/drivers" element={<InGame><Drivers /></InGame>} />
           <Route path="/drivers/:driverId/negotiate" element={<InGame><DriverContractNegotiation /></InGame>} />
+          <Route path="/market/:marketId/negotiate/:seatDriverId" element={<InGame><MarketContractNegotiation /></InGame>} />
+          <Route path="/staff/:staffId/negotiate" element={<InGame><StaffContractNegotiation /></InGame>} />
           <Route path="/market" element={<InGame><DriverMarket /></InGame>} />
           <Route path="/technical" element={<InGame><TechnicalCenter /></InGame>} />
           <Route path="/development" element={<Navigate to="/technical" replace />} />

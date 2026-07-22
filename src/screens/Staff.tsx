@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useGame } from '../game/GameContext';
 import { teamById } from '../game/careerState';
 import { getStaffPool } from '../data';
@@ -7,7 +7,6 @@ import { toMoney } from '../sim/financeEngine';
 import {
   developmentSuccessBonus,
   pitCrewBonus,
-  staffExtensionSigningFee,
   staffRatingOutOfTen,
   staffReleaseCost,
   setupConfidenceBonus,
@@ -49,6 +48,7 @@ type StaffMarketView = 'available' | 'rivals';
 
 export function Staff() {
   const { state, dispatch } = useGame();
+  const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const tab = staffTabFromQuery(searchParams.get('tab'));
   const selectedStaffId = searchParams.get('staffId');
@@ -68,7 +68,6 @@ export function Staff() {
     Object.entries(state.aiStaff ?? {}).flatMap(([teamId, staff]) => staff.map((member) => [member.id, teamId] as const)),
   );
   const contractOfferNews = state.news.filter((item) => item.id.startsWith('news-staff-contract-offer-'));
-  const racesRemaining = Math.max(1, state.calendar.length - state.currentRaceIndex);
 
   const devBonus = developmentSuccessBonus(roster);
   const setupBonus = setupConfidenceBonus(roster);
@@ -287,12 +286,11 @@ export function Staff() {
                 affordable
                 replacementCost={0}
                 poachingCost={0}
-                extensionCost={(member, years, multiplier) => staffExtensionSigningFee(member, years, racesRemaining, state.calendar.length, multiplier)}
                 latestOffer={contractOfferNews.find((item) => item.id.includes(`-${current.id}-`))}
                 futureIntent={state.characterInteractions?.futureIntentions.find((entry) => entry.target.type === 'Staff' && entry.target.id === current.id)}
                 onHire={() => undefined}
                 onFire={() => dispatch({ type: 'FIRE_STAFF', staffId: current.id })}
-                onExtend={(years, offerMultiplier) => dispatch({ type: 'EXTEND_STAFF_CONTRACT', staffId: current.id, years, offerMultiplier })}
+                onExtend={() => navigate(`/staff/${encodeURIComponent(current.id)}/negotiate`)}
               />
             </div>
           ) : (
@@ -327,12 +325,11 @@ export function Staff() {
               replacementCost={current && current.id !== s.id ? staffReleaseCost(current) : 0}
               employerName={employer?.name}
               poachingCost={poachingCost}
-              extensionCost={(member, years, multiplier) => staffExtensionSigningFee(member, years, racesRemaining, state.calendar.length, multiplier)}
               latestOffer={contractOfferNews.find((item) => item.id.includes(`-${s.id}-`))}
               futureIntent={state.characterInteractions?.futureIntentions.find((entry) => entry.target.type === 'Staff' && entry.target.id === s.id)}
-              onHire={() => dispatch({ type: 'HIRE_STAFF', staffId: s.id })}
+              onHire={() => navigate(`/staff/${encodeURIComponent(s.id)}/negotiate`)}
               onFire={() => dispatch({ type: 'FIRE_STAFF', staffId: s.id })}
-              onExtend={(years, offerMultiplier) => dispatch({ type: 'EXTEND_STAFF_CONTRACT', staffId: s.id, years, offerMultiplier })}
+              onExtend={() => navigate(`/staff/${encodeURIComponent(s.id)}/negotiate`)}
             />
           );})}
         </div>
@@ -382,7 +379,6 @@ function StaffCard({
   replacementCost,
   employerName,
   poachingCost,
-  extensionCost,
   latestOffer,
   futureIntent,
   onHire,
@@ -398,17 +394,13 @@ function StaffCard({
   replacementCost: number;
   employerName?: string;
   poachingCost: number;
-  extensionCost: (member: StaffMember, years: number, offerMultiplier: number) => number;
   latestOffer?: GameState['news'][number];
   futureIntent?: NonNullable<GameState['characterInteractions']>['futureIntentions'][number];
   onHire: () => void;
   onFire: () => void;
-  onExtend: (years: number, offerMultiplier: number) => void;
+  onExtend: () => void;
 }) {
   const yearsLeft = s.contractYearsRemaining ?? 2;
-  const oneYearCost = extensionCost(s, 1, 1);
-  const strongOneYearCost = extensionCost(s, 1, 1.35);
-  const twoYearCost = extensionCost(s, 2, 1.2);
   const accepted = latestOffer?.id.includes('-accepted-') ?? false;
   return (
     <div
@@ -444,11 +436,7 @@ function StaffCard({
         {hired ? (
           <div className="space-y-2">
             {futureIntent && <div className={`rounded border px-2 py-1.5 text-[10px] ${futureIntent.status === 'WantsExit' ? 'border-red-500/35 bg-red-500/10' : futureIntent.status === 'TestingMarket' ? 'border-amber-500/35 bg-amber-500/10' : 'border-emerald-500/25 bg-emerald-500/5'}`}><div className="flex justify-between gap-2"><strong className="text-neutral-200">{characterFutureIntentLabel(futureIntent.target, futureIntent.status)}</strong><span className="text-neutral-500">Renewal {futureIntent.negotiationModifier > 0 ? '+' : ''}{futureIntent.negotiationModifier}</span></div><p className="mt-1 text-neutral-400">{futureIntent.reason}</p></div>}
-            {state.gameMode !== 'SingleSeason' && !state.seasonComplete && yearsLeft < 5 && <div className="flex flex-wrap gap-1.5">
-              {yearsLeft <= 3 && <Button variant="ghost" className="px-2 py-1 text-[10px]" disabled={twoYearCost > teamById(state, state.selectedTeamId)!.budget} onClick={() => onExtend(2, 1.2)}>Preferred +2 ({formatMoney(twoYearCost)})</Button>}
-              <Button variant="ghost" className="px-2 py-1 text-[10px]" disabled={strongOneYearCost > teamById(state, state.selectedTeamId)!.budget} onClick={() => onExtend(1, 1.35)}>Better +1 ({formatMoney(strongOneYearCost)})</Button>
-              <Button variant="ghost" className="px-2 py-1 text-[10px]" disabled={oneYearCost > teamById(state, state.selectedTeamId)!.budget} onClick={() => onExtend(1, 1)}>Offer +1 ({formatMoney(oneYearCost)})</Button>
-            </div>}
+            {state.gameMode !== 'SingleSeason' && !state.seasonComplete && yearsLeft < 5 && <Button variant="ghost" className="w-full px-2 py-1 text-xs" onClick={onExtend}>Open contract negotiation</Button>}
             {latestOffer && <div className={`rounded border px-2 py-1 text-[10px] ${accepted ? 'border-green-500/35 bg-green-500/10 text-green-300' : 'border-red-500/35 bg-red-500/10 text-red-300'}`}><strong>{accepted ? 'Accepted' : 'Refused'}:</strong> {latestOffer.headline}<p className="mt-0.5 text-neutral-400">{latestOffer.body}</p></div>}
             <Button variant="danger" className="w-full px-2 py-1 text-xs" disabled={staffReleaseCost(s) > teamById(state, state.selectedTeamId)!.budget} onClick={onFire}>
               Release ({formatMoney(staffReleaseCost(s))} compensation)

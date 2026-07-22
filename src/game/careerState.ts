@@ -70,6 +70,8 @@ export type GameState = {
   // Optional, save-compatible workspace state for a deterministic driver
   // contract negotiation currently being handled by the player.
   contractNegotiation?: DriverContractNegotiation;
+  marketContractNegotiation?: MarketContractNegotiation;
+  staffContractNegotiation?: StaffContractNegotiation;
 
   pointsSystemId: string;
   regulationSetId: string;
@@ -270,6 +272,33 @@ export type DriverContractNegotiation = {
   acceptanceLikelihood: number;
   response: 'demand' | 'editing' | 'countered' | 'refused';
   counterSalary?: number;
+};
+
+export type MarketContractNegotiation = {
+  marketId: string;
+  seatDriverId: string;
+  offeredBid: number;
+  askingBid: number;
+  offeredSalary: number;
+  askingSalary: number;
+  years: number;
+  clauseType: ContractClauseType;
+  acceptanceLikelihood: number;
+  attemptsRemaining: number;
+  response: 'demand' | 'editing' | 'countered' | 'refused';
+  counterBid?: number;
+};
+
+export type StaffContractNegotiation = {
+  staffId: string;
+  mode: 'hire' | 'extension';
+  offerMultiplier: number;
+  askingMultiplier: number;
+  years: number;
+  acceptanceLikelihood: number;
+  attemptsRemaining: number;
+  response: 'demand' | 'editing' | 'countered' | 'refused';
+  counterMultiplier?: number;
 };
 
 export function minRaceDriversForSeries(series: Series): number {

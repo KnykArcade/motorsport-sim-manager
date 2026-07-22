@@ -73,6 +73,14 @@ import {
   refreshDriverContractNegotiation,
 } from '../sim/driverContractNegotiationEngine';
 import {
+  buildMarketContractNegotiation,
+  buildStaffContractNegotiation,
+  marketNegotiationScore,
+  refreshMarketContractNegotiation,
+  refreshStaffContractNegotiation,
+  staffNegotiationScore,
+} from '../sim/personnelNegotiationEngine';
+import {
   generateSponsorOffers,
   racePerformanceBonuses,
   sponsorInstallmentPayment,
@@ -312,6 +320,14 @@ export type GameAction =
   | { type: 'UPDATE_DRIVER_CONTRACT_NEGOTIATION'; offeredSalary?: number; years?: number; role?: DriverContractRole; clauseType?: ContractClauseType }
   | { type: 'CANCEL_DRIVER_CONTRACT_NEGOTIATION' }
   | { type: 'SUBMIT_DRIVER_CONTRACT_NEGOTIATION' }
+  | { type: 'START_MARKET_CONTRACT_NEGOTIATION'; marketId: string; seatDriverId: string }
+  | { type: 'UPDATE_MARKET_CONTRACT_NEGOTIATION'; offeredBid?: number; offeredSalary?: number; years?: number; clauseType?: ContractClauseType }
+  | { type: 'SUBMIT_MARKET_CONTRACT_NEGOTIATION' }
+  | { type: 'CANCEL_MARKET_CONTRACT_NEGOTIATION' }
+  | { type: 'START_STAFF_CONTRACT_NEGOTIATION'; staffId: string }
+  | { type: 'UPDATE_STAFF_CONTRACT_NEGOTIATION'; offerMultiplier?: number; years?: number }
+  | { type: 'SUBMIT_STAFF_CONTRACT_NEGOTIATION' }
+  | { type: 'CANCEL_STAFF_CONTRACT_NEGOTIATION' }
   | { type: 'ADVANCE_SEASON'; nextBundle?: import('../data/seasonCatalog').SeasonBundle }
   | { type: 'ADVANCE_RACE' }
   | { type: 'SIGN_RACE_DRIVER'; marketId: string }
@@ -980,6 +996,82 @@ export function gameReducer(state: GameState | null, action: GameAction): GameSt
       );
     }
 
+    case 'START_MARKET_CONTRACT_NEGOTIATION': {
+      if (!state || state.gameMode === 'SingleSeason' || !state.seasonComplete) return state;
+      const negotiation = buildMarketContractNegotiation(state, action.marketId, action.seatDriverId);
+      return negotiation ? { ...state, marketContractNegotiation: negotiation } : state;
+    }
+
+    case 'UPDATE_MARKET_CONTRACT_NEGOTIATION': {
+      if (!state?.marketContractNegotiation) return state;
+      return { ...state, marketContractNegotiation: refreshMarketContractNegotiation(state, {
+        ...state.marketContractNegotiation,
+        offeredBid: action.offeredBid ?? state.marketContractNegotiation.offeredBid,
+        offeredSalary: action.offeredSalary ?? state.marketContractNegotiation.offeredSalary,
+        years: action.years ?? state.marketContractNegotiation.years,
+        clauseType: action.clauseType ?? state.marketContractNegotiation.clauseType,
+      }) };
+    }
+
+    case 'CANCEL_MARKET_CONTRACT_NEGOTIATION':
+      return state ? { ...state, marketContractNegotiation: undefined } : state;
+
+    case 'SUBMIT_MARKET_CONTRACT_NEGOTIATION': {
+      if (!state?.marketContractNegotiation) return state;
+      const negotiation = state.marketContractNegotiation;
+      const score = marketNegotiationScore(state, negotiation);
+      if (score >= 58) {
+        const queued = queueSigning(state, negotiation.seatDriverId, 'market', negotiation.marketId, negotiation.offeredBid, {
+          salary: negotiation.offeredSalary, years: negotiation.years, clauseType: negotiation.clauseType,
+        });
+        return { ...queued, marketContractNegotiation: undefined };
+      }
+      const attemptsRemaining = Math.max(0, negotiation.attemptsRemaining - 1);
+      const close = score >= 43 && attemptsRemaining > 0;
+      const counterBid = Math.round(Math.max(negotiation.offeredBid + 0.1, (negotiation.offeredBid + negotiation.askingBid) / 2) * 10) / 10;
+      return { ...state, marketContractNegotiation: {
+        ...negotiation, acceptanceLikelihood: score, attemptsRemaining,
+        response: close ? 'countered' : 'refused', counterBid: close ? counterBid : undefined,
+      } };
+    }
+
+    case 'START_STAFF_CONTRACT_NEGOTIATION': {
+      if (!state || state.gameMode === 'SingleSeason' || state.seasonComplete) return state;
+      const negotiation = buildStaffContractNegotiation(state, action.staffId);
+      return negotiation ? { ...state, staffContractNegotiation: negotiation } : state;
+    }
+
+    case 'UPDATE_STAFF_CONTRACT_NEGOTIATION': {
+      if (!state?.staffContractNegotiation) return state;
+      return { ...state, staffContractNegotiation: refreshStaffContractNegotiation(state, {
+        ...state.staffContractNegotiation,
+        offerMultiplier: action.offerMultiplier ?? state.staffContractNegotiation.offerMultiplier,
+        years: action.years ?? state.staffContractNegotiation.years,
+      }) };
+    }
+
+    case 'CANCEL_STAFF_CONTRACT_NEGOTIATION':
+      return state ? { ...state, staffContractNegotiation: undefined } : state;
+
+    case 'SUBMIT_STAFF_CONTRACT_NEGOTIATION': {
+      if (!state?.staffContractNegotiation) return state;
+      const negotiation = state.staffContractNegotiation;
+      const score = staffNegotiationScore(state, negotiation);
+      if (score >= 58) {
+        const completed = negotiation.mode === 'extension'
+          ? extendStaffContract(state, negotiation.staffId, negotiation.years, negotiation.offerMultiplier)
+          : hireStaff(state, negotiation.staffId, negotiation.offerMultiplier, negotiation.years);
+        return { ...completed, staffContractNegotiation: undefined };
+      }
+      const attemptsRemaining = Math.max(0, negotiation.attemptsRemaining - 1);
+      const close = score >= 43 && attemptsRemaining > 0;
+      const counterMultiplier = Math.round(Math.max(negotiation.offerMultiplier + 0.1, (negotiation.offerMultiplier + negotiation.askingMultiplier) / 2) * 10) / 10;
+      return { ...state, staffContractNegotiation: {
+        ...negotiation, acceptanceLikelihood: score, attemptsRemaining,
+        response: close ? 'countered' : 'refused', counterMultiplier: close ? counterMultiplier : undefined,
+      } };
+    }
+
     case 'ADVANCE_SEASON': {
       if (!state) return state;
       if (!state.seasonComplete) return state;
@@ -1355,6 +1447,7 @@ function queueSigning(
   source: SeatSigning['source'],
   sourceId: string,
   bidM?: number,
+  terms?: { salary: number; years: number; clauseType?: ContractClauseType },
 ): GameState {
   if (!state.seasonComplete) return state;
   const seat = state.drivers.find((d) => d.id === seatDriverId);
@@ -1390,13 +1483,18 @@ function queueSigning(
   );
   return {
     ...state,
-    pendingSignings: [...others, { seatDriverId, source, sourceId, name, bid }],
+    pendingSignings: [...others, {
+      seatDriverId, source, sourceId, name, bid,
+      offeredSalary: terms?.salary,
+      contractYears: terms?.years,
+      clauseType: terms?.clauseType,
+    }],
   };
 }
 
 // Hire a specialist: charge the one-off signing fee (must be affordable) and
 // add them to the roster. One member per role — a new hire replaces the old.
-function hireStaff(state: GameState, staffId: string): GameState {
+function hireStaff(state: GameState, staffId: string, offerMultiplier = 1, contractYears = 2): GameState {
   const roster = state.staff ?? [];
   if (roster.some((s) => s.id === staffId)) return state;
   const recruit = getStaffPool(state.seasonYear, state.series).find((s) => s.id === staffId);
@@ -1405,7 +1503,9 @@ function hireStaff(state: GameState, staffId: string): GameState {
   const employerTeamId = staffEmployer(state.aiStaff, recruit.id);
   const employer = state.teams.find((team) => team.id === employerTeamId);
   const signingDiscount = recruitmentSigningDiscount(state, staffId);
-  const fee = Math.round(toMoney(recruit.signingFee) * (1 - signingDiscount));
+  const appliedMultiplier = Math.max(1, Math.min(2.5, offerMultiplier));
+  const appliedYears = Math.max(1, Math.min(5, Math.round(contractYears)));
+  const fee = Math.round(toMoney(recruit.signingFee) * appliedMultiplier * (1 - signingDiscount));
   const poachingCompensation = employerTeamId ? staffPoachingCompensation(recruit) : 0;
   const severance = replaced ? staffReleaseCost(replaced) : 0;
   if (fee + poachingCompensation + severance > playerBudget(state)) return state;
@@ -1420,15 +1520,15 @@ function hireStaff(state: GameState, staffId: string): GameState {
   );
   const nextRoster = [
     ...roster.filter((s) => s.role !== recruit.role),
-    { ...recruit, contractYearsRemaining: 2 },
+    { ...recruit, contractYearsRemaining: appliedYears, salary: Math.max(recruit.salary, recruit.salary * appliedMultiplier) },
   ];
   const hireTeam = state.teams.find((t) => t.id === state.selectedTeamId);
   const staffNews: NewsItem = {
     id: `news-staff-hire-${recruit.id}-${state.seasonYear}`,
     headline: `${hireTeam?.name ?? 'The team'} appoints ${recruit.name} as ${recruit.role}`,
     body: replaced
-      ? `${recruit.name} replaces ${replaced.name}. The appointment includes a two-year contract and ${formatStaffMoney(severance)} in early-release compensation.${employer ? ` ${employer.name} receives ${formatStaffMoney(poachingCompensation)} in contract compensation.` : ''}`
-      : `The team strengthens its technical department with a new ${recruit.role} on a two-year contract.${employer ? ` ${recruit.name} leaves ${employer.name}, which receives ${formatStaffMoney(poachingCompensation)} in contract compensation.` : ''}`,
+      ? `${recruit.name} replaces ${replaced.name}. The appointment includes a ${appliedYears === 2 ? 'two' : appliedYears}-year contract and ${formatStaffMoney(severance)} in early-release compensation.${employer ? ` ${employer.name} receives ${formatStaffMoney(poachingCompensation)} in contract compensation.` : ''}`
+      : `The team strengthens its technical department with a new ${recruit.role} on a ${appliedYears === 2 ? 'two' : appliedYears}-year contract.${employer ? ` ${recruit.name} leaves ${employer.name}, which receives ${formatStaffMoney(poachingCompensation)} in contract compensation.` : ''}`,
     timestamp: new Date().toISOString(),
     category: 'development',
     priority: 'normal',

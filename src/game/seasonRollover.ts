@@ -392,7 +392,12 @@ export function advanceSeason(state: GameState, nextBundle?: SeasonBundle): Game
       const m = market?.drivers.find((d) => d.id === sign.sourceId);
       if (!m) continue;
       if (!marketBidWon.get(sign.sourceId)) continue; // outbid — seat unchanged
-      replacements.set(sign.seatDriverId, marketDriverToDriver(m, seat));
+      const signedDriver = marketDriverToDriver(m, seat);
+      replacements.set(sign.seatDriverId, {
+        ...signedDriver,
+        salary: sign.offeredSalary ?? signedDriver.salary,
+        contractYearsRemaining: sign.contractYears ?? signedDriver.contractYearsRemaining ?? 2,
+      });
       newSignedMarketIds.push(m.id);
     } else if (sign.source === 'reserve') {
       const r = state.drivers.find((d) => d.id === sign.sourceId && d.teamId === seat.teamId);
