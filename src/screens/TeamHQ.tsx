@@ -211,7 +211,13 @@ export function TeamHQ() {
             {worldEntries.map((entry) => (
               <div key={entry.series} className="rounded border border-neutral-800 bg-neutral-950/40 p-3">
                 <div className="text-[10px] font-black uppercase tracking-[0.14em] text-neutral-500">{entry.seasonYear} {entry.series}</div>
-                {entry.hasCompletedSeason ? (
+                {entry.completedRaces > 0 ? (
+                  <>
+                    <div className="mt-1 text-sm font-semibold text-neutral-200">Leader: {entry.liveLeaderName ?? '—'} · {Math.round(entry.liveLeaderPoints ?? 0)} pts</div>
+                    <div className="mt-0.5 text-xs text-neutral-500">Round {entry.completedRaces}/{entry.totalRaces}{entry.latestWinnerName ? ` · ${entry.latestWinnerName} won ${entry.latestRaceName}` : ''}</div>
+                    <div className="mt-0.5 text-xs text-sky-300">Next: {entry.nextRaceName ?? 'Season complete'}</div>
+                  </>
+                ) : entry.hasCompletedSeason ? (
                   <>
                     <div className="mt-1 text-sm font-semibold text-neutral-200">Reigning champion: {entry.championName}</div>
                     <div className="mt-0.5 text-xs text-neutral-500">Team champion: {entry.teamChampionName ?? '—'}</div>
