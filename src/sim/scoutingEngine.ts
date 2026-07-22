@@ -197,6 +197,8 @@ export function createInitialScoutingState(
     teamId,
     networkAccuracy: scoutingNetworkAccuracy(facilities),
     reports: {},
+    activeAssignments: [],
+    shortlist: [],
   };
 }
 
