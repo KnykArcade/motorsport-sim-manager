@@ -9,6 +9,7 @@
 import type { Driver, DriverRatings } from '../types/gameTypes';
 import type {
   DevelopmentStepResult,
+  DriverDevelopmentFocus,
   DriverDevelopmentCurve,
   YouthTrait,
 } from '../types/developmentCurveTypes';
@@ -113,6 +114,17 @@ export type DevelopmentStepOptions = {
   seasonYear: number;
   // 0-0.6 Driver Academy boost (player's own developing drivers only).
   academyBoost?: number;
+  planEffect?: number;
+  planFocus?: DriverDevelopmentFocus;
+};
+
+const FOCUS_KEYS: Partial<Record<DriverDevelopmentFocus, (keyof DriverRatings)[]>> = {
+  QualifyingPace: ['qualifying', 'cornering', 'braking'],
+  Racecraft: ['racePace', 'overtakingRacecraft', 'tractionAcceleration'],
+  Consistency: ['enduranceConsistency', 'riskManagement'],
+  TechnicalFeedback: ['technical'],
+  WetWeather: ['adaptability', 'surfaceGripBumpiness'],
+  MentalResilience: ['composure', 'riskManagement', 'enduranceConsistency'],
 };
 
 // Trait-based modifiers to development delta and variance.
@@ -216,7 +228,7 @@ export function developmentStep(
   const rng = createSeededRandom(deriveSeed(seed, 'devstep', driver.id, opts.seasonYear));
   const newAge = driverAge(driver, seed) + 1;
   const overallBefore = driver.ratings.overall;
-  const { delta, phase } = overallDelta(
+  const base = overallDelta(
     curve,
     newAge,
     overallBefore,
@@ -224,6 +236,11 @@ export function developmentStep(
     opts.academyBoost ?? 0,
     rng,
   );
+  const phase = base.phase;
+  const planEffect = opts.planEffect ?? 0;
+  const delta = phase === 'Declining'
+    ? base.delta
+    : Math.max(-0.1, Math.min(0.7, base.delta + planEffect * 0.3));
 
   // Mental skills keep maturing and shed less in decline (veteran craft).
   const mentalDelta =
@@ -235,6 +252,9 @@ export function developmentStep(
   const next: DriverRatings = { ...r };
   for (const key of PERFORMANCE_KEYS) next[key] = round1(clampRating(r[key] + delta * 10));
   for (const key of MENTAL_KEYS) next[key] = round1(clampRating(r[key] + mentalDelta * 10));
+  const focusKeys = FOCUS_KEYS[opts.planFocus ?? 'Balanced'] ?? [];
+  const focusGain = Math.max(0, (0.05 + planEffect) * 5);
+  for (const key of focusKeys) next[key] = round1(clampRating(next[key] + focusGain));
   next.aggression = round1(clampRating(r.aggression + curve.aggressionChange * 10));
   next.overall = round1(clampRating(overallBefore + delta * 10));
 
@@ -260,6 +280,9 @@ export function developmentStep(
   }
   if (curve.traits?.includes('LateBloomer') && phase === 'Developing' && change > 0.1) {
     notes.push(`Late bloomer showing signs of growth — ${driver.name} is starting to find their stride.`);
+  }
+  if (opts.planFocus && opts.planFocus !== 'Balanced') {
+    notes.push(`${opts.planFocus.replace(/([a-z])([A-Z])/g, '$1 $2')} plan shaped this year's development.`);
   }
 
   return {

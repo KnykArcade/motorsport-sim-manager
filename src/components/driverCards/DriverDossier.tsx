@@ -18,6 +18,8 @@ import type { AcademyMember, MarketDriver, YouthProspect } from '../../types/mar
 import type { DriverRelationship, DriverWant } from '../../types/relationshipTypes';
 import { getEraTheme, getEraThemeConfig, type MotorsportEraTheme } from '../../theme/eraTheme';
 import { CharacterActionPanel } from '../characterCards/CharacterActionPanel';
+import { DRIVER_DEVELOPMENT_FOCUS_LABELS } from '../../types/developmentCurveTypes';
+import { planForDriver } from '../../sim/driverDevelopmentPlanEngine';
 
 type DriverSubject =
   | { type: 'driver'; driver: Driver }
@@ -101,6 +103,7 @@ function getSubjectProfile(state: GameState, subject: DriverSubject) {
     const promises = (state.driverPromises ?? []).filter((p) => p.driverId === driver.id);
     const teammate = rel?.teammateId ? state.drivers.find((d) => d.id === rel.teammateId) : undefined;
     const seasonStats = buildDriverSeasonStats(state, driver.id);
+    const developmentPlan = driver.teamId === state.selectedTeamId ? planForDriver(state, driver.id) : undefined;
     return {
       name: driver.name,
       number: driver.number,
@@ -124,6 +127,7 @@ function getSubjectProfile(state: GameState, subject: DriverSubject) {
           : 'Development curve requires deeper scouting'
         : 'Development curve not scouted',
       seasonStats,
+      developmentPlan,
     };
   }
 
@@ -151,6 +155,7 @@ function getSubjectProfile(state: GameState, subject: DriverSubject) {
       developmentLine: `Potential ${potential}, current ${current}, F1 readiness ${driver.f1Readiness}/100`,
       notes: driver.notes,
       seasonStats: null,
+      developmentPlan: undefined,
     };
   }
 
@@ -187,6 +192,7 @@ function getSubjectProfile(state: GameState, subject: DriverSubject) {
     developmentLine: `Potential ${potential}, current ${current}`,
     notes: isMember ? undefined : driver.notes,
     seasonStats: null,
+    developmentPlan: isMember ? planForDriver(state, driver.id) : undefined,
   };
 }
 
@@ -391,6 +397,25 @@ function DriverDossierModal({
                 <p className="driver-dossier-note">{profile.developmentLine}</p>
                 <MetricPill label="Potential" value={potentialReadout(state, subject, profile).label} tone="watch" />
                 <MetricPill label="Best fit" value={bestFitReadout(coreRatings)} tone="good" />
+                {profile.developmentPlan && (
+                  <>
+                    <MetricPill label="Plan" value={DRIVER_DEVELOPMENT_FOCUS_LABELS[profile.developmentPlan.focus]} tone="good" />
+                    <MetricPill label="Progress" value={profile.developmentPlan.status} tone={profile.developmentPlan.status === 'Frustrated' ? 'risk' : 'watch'} />
+                    <MetricPill label="Testing" value={`${profile.developmentPlan.testingAllocation}%`} tone="watch" />
+                    <p className="driver-dossier-note">
+                      {profile.developmentPlan.mentorId
+                        ? `Mentored by ${state.drivers.find((driver) => driver.id === profile.developmentPlan?.mentorId)?.name ?? 'a senior teammate'}.`
+                        : 'No mentor assigned.'}
+                    </p>
+                    {profile.developmentPlan.history.length > 0 && (
+                      <ul className="driver-dossier-list">
+                        {profile.developmentPlan.history.slice(-3).reverse().map((entry) => (
+                          <li key={`${entry.seasonYear}-${entry.focus}`}>{entry.seasonYear}: {entry.summary}</li>
+                        ))}
+                      </ul>
+                    )}
+                  </>
+                )}
               </DossierPanel>
               )}
 

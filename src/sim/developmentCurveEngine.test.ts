@@ -112,6 +112,23 @@ describe('developmentCurveEngine — step', () => {
     const without = developmentStep(curve, d, SEED, { seasonYear: 2000, academyBoost: 0 });
     expect(withBoost.result.overallAfter).toBeGreaterThanOrEqual(without.result.overallAfter);
   });
+
+  it('directs additional growth toward the selected individual focus', () => {
+    const d = driver('focused', 60, 20);
+    const curve = createDriverDevelopmentCurve(d, SEED);
+    const focused = developmentStep(curve, d, SEED, {
+      seasonYear: 2000,
+      planEffect: 0.1,
+      planFocus: 'QualifyingPace',
+    });
+    const balanced = developmentStep(curve, d, SEED, {
+      seasonYear: 2000,
+      planEffect: 0.1,
+      planFocus: 'Balanced',
+    });
+    expect(focused.driver.ratings.qualifying).toBeGreaterThan(balanced.driver.ratings.qualifying);
+    expect(focused.driver.ratings.racePace).toBe(balanced.driver.ratings.racePace);
+  });
 });
 
 describe('developmentCurveEngine — projection + seeding', () => {

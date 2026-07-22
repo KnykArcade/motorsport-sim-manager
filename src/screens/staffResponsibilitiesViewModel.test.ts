@@ -12,7 +12,7 @@ describe('staffResponsibilitiesViewModel', () => {
       technicalAdvisorPriority: 'reliability',
     });
 
-    expect(responsibilities).toHaveLength(6);
+    expect(responsibilities).toHaveLength(7);
     expect(responsibilities[0]).toMatchObject({
       area: 'Technical programme',
       status: 'Assisted factory',
@@ -21,6 +21,11 @@ describe('staffResponsibilitiesViewModel', () => {
       route: '/technical',
     });
     expect(responsibilities.find((item) => item.role === 'Race Engineer')?.route).toBe('/weekend');
+    expect(responsibilities.find((item) => item.id === 'driver-development')).toMatchObject({
+      route: '/curves',
+      status: 'Recommendations remain advisory',
+      approvalBoundary: 'You retain preparation and final control.',
+    });
   });
 
   it('defaults to player control and exposes the staff-prepared boundary', () => {

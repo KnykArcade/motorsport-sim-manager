@@ -71,3 +71,58 @@ export type DevelopmentStepResult = {
   phase: 'Developing' | 'Peak' | 'Declining';
   notes: string[];
 };
+
+export type DriverDevelopmentFocus =
+  | 'Balanced'
+  | 'QualifyingPace'
+  | 'Racecraft'
+  | 'Consistency'
+  | 'TechnicalFeedback'
+  | 'WetWeather'
+  | 'MentalResilience';
+
+export type DriverDevelopmentStatus = 'Progressing' | 'Steady' | 'Stalled' | 'Frustrated';
+
+export type DriverDevelopmentHistoryEntry = {
+  seasonYear: number;
+  focus: DriverDevelopmentFocus;
+  status: DriverDevelopmentStatus;
+  summary: string;
+  overallBefore?: number;
+  overallAfter?: number;
+};
+
+// Player-directed development is optional for backwards-compatible saves. A
+// plan can target a contracted driver or an academy member using the same id.
+export type DriverDevelopmentPlan = {
+  driverId: string;
+  focus: DriverDevelopmentFocus;
+  testingAllocation: number; // 0-100 share of the team's finite testing pool
+  mentorId?: string;
+  progress: number; // 0-100 descriptive season progress
+  satisfaction: number; // 0-100, surfaced as a qualitative readout
+  status: DriverDevelopmentStatus;
+  assignedSeason: number;
+  assignedRound: number;
+  history: DriverDevelopmentHistoryEntry[];
+};
+
+export const DRIVER_DEVELOPMENT_FOCUS_LABELS: Record<DriverDevelopmentFocus, string> = {
+  Balanced: 'Balanced development',
+  QualifyingPace: 'Qualifying pace',
+  Racecraft: 'Racecraft',
+  Consistency: 'Consistency',
+  TechnicalFeedback: 'Technical feedback',
+  WetWeather: 'Wet-weather ability',
+  MentalResilience: 'Mental resilience',
+};
+
+export const DRIVER_DEVELOPMENT_FOCUS_DESCRIPTIONS: Record<DriverDevelopmentFocus, string> = {
+  Balanced: 'Spreads work across the complete skill set.',
+  QualifyingPace: 'Prioritizes one-lap execution, braking, and corner entry.',
+  Racecraft: 'Prioritizes race pace, overtaking judgment, and acceleration.',
+  Consistency: 'Prioritizes repeatability, endurance, and risk management.',
+  TechnicalFeedback: 'Prioritizes useful setup and engineering feedback.',
+  WetWeather: 'Prioritizes adaptability and low-grip car control.',
+  MentalResilience: 'Prioritizes composure and recovery after setbacks.',
+};

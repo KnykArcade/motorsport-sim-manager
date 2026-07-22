@@ -131,6 +131,9 @@ const SINGLE_SEASON_BLOCKED_ACTIONS = new Set([
   'SCOUT_TARGET',
   'CANCEL_SCOUTING_ASSIGNMENT',
   'TOGGLE_SCOUTING_SHORTLIST',
+  'SET_DRIVER_DEVELOPMENT_FOCUS',
+  'SET_DRIVER_TESTING_ALLOCATION',
+  'SET_DRIVER_DEVELOPMENT_MENTOR',
 ]);
 
 export function isActionBlocked(actionType: string, mode: GameMode | undefined): boolean {
