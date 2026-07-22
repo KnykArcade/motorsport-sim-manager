@@ -38,6 +38,37 @@ export type UniverseChampionshipSeason = {
   teamNames: Record<string, string>;
   driverStandings: StandingsEntry[];
   teamStandings: StandingsEntry[];
+  raceResults?: UniverseRaceSummary[];
+};
+
+export type UniverseRaceSummary = {
+  round: number;
+  raceId: string;
+  raceName: string;
+  trackName: string;
+  winnerDriverId?: string;
+  winnerDriverName?: string;
+  winnerTeamId?: string;
+  winnerTeamName?: string;
+  podiumDriverIds: string[];
+};
+
+export type UniverseScheduledRace = {
+  round: number;
+  raceId: string;
+  raceName: string;
+  trackName: string;
+  date?: string;
+};
+
+export type UniverseLiveSeason = {
+  seasonYear: number;
+  totalRaces: number;
+  completedRaces: number;
+  driverStandings: StandingsEntry[];
+  teamStandings: StandingsEntry[];
+  raceResults: UniverseRaceSummary[];
+  schedule: UniverseScheduledRace[];
 };
 
 export type UniverseDriverMovement = {
@@ -63,6 +94,8 @@ export type UniverseChampionshipState = {
   seasonHistory?: UniverseChampionshipSeason[];
   // Optional for saves created before world-grid movement tracking.
   movementHistory?: UniverseDriverMovement[];
+  // Optional for saves created before championships advanced round-by-round.
+  liveSeason?: UniverseLiveSeason;
 };
 
 export type MotorsportUniverseState = {
