@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { FogView } from '../sim/scoutingEngine';
 import type { ScoutingReport } from '../types/scoutingTypes';
-import { scoutingAbilitySummary, scoutingAssignments } from './scoutingViewModel';
+import { scoutingAbilitySummary, scoutingAssignments, scoutingComparison } from './scoutingViewModel';
 
 const view: FogView = {
   accuracy: 0.6, revealed: false, maxed: false,
@@ -31,5 +31,18 @@ describe('scouting view model', () => {
     const assignments = scoutingAssignments({ a: report('a', 50), b: report('b', 100) }, 0.3, { a: 'Known Driver' });
     expect(assignments).toHaveLength(1);
     expect(assignments[0]).toMatchObject({ entityId: 'a', name: 'Known Driver', scoutingLevel: 50 });
+  });
+
+  it('limits assignments to active persisted targets when supplied', () => {
+    const report: ScoutingReport = { entityId: 'a', entityType: 'Driver', scoutingLevel: 50, accuracy: 0.5, visibleRatings: {}, notes: [], lastUpdated: '2026-01-01' };
+    expect(scoutingAssignments({ a: report }, 0.3, { a: 'Driver' }, 'Driver', [])).toEqual([]);
+    expect(scoutingAssignments({ a: report }, 0.3, { a: 'Driver' }, 'Driver', [{ entityId: 'a', entityType: 'Driver' }])).toHaveLength(1);
+  });
+
+  it('builds a comparison entirely from each target fog view and caps it at three', () => {
+    const targets = ['a', 'b', 'c', 'd'].map((entityId) => ({ entityId, name: entityId.toUpperCase(), entityType: 'Driver' as const, view }));
+    const comparison = scoutingComparison(targets);
+    expect(comparison).toHaveLength(3);
+    expect(comparison[0]).toMatchObject({ entityId: 'a', knowledgePercentage: 60, potentialStars: [3.5, 4.5] });
   });
 });
