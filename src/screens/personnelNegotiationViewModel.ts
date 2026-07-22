@@ -27,7 +27,6 @@ export function marketNegotiationView(state: GameState, negotiation: MarketContr
   let disabledReason: string | undefined;
   if (!driver) disabledReason = 'This driver is no longer available.';
   else if (!seat) disabledReason = 'The replacement seat is no longer available.';
-  else if (!state.seasonComplete) disabledReason = 'Pre-contract negotiations open after the season.';
   else if (immediateCost > (state.teams.find((team) => team.id === state.selectedTeamId)?.budget ?? 0)) disabledReason = 'The compensation bid exceeds the available budget.';
   else if (negotiation.attemptsRemaining === 0) disabledReason = 'The agent has ended negotiations.';
   return { ...readout(negotiation.acceptanceLikelihood), canSubmit: !disabledReason, disabledReason, immediateCost };

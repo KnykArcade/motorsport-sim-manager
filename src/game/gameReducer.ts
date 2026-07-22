@@ -26,6 +26,7 @@ import {
 import { updateMorale } from '../sim/moraleEngine';
 import { generateRaceNews } from '../sim/newsEngine';
 import { advanceOffscreenChampionshipsAfterPlayerRace } from '../sim/motorsportUniverseEngine';
+import { progressTransferCalendar } from '../sim/transferCalendarEngine';
 import {
   generateCareerRaceNews,
   generateQualifyingNews as generateCareerQualifyingNews,
@@ -997,7 +998,7 @@ export function gameReducer(state: GameState | null, action: GameAction): GameSt
     }
 
     case 'START_MARKET_CONTRACT_NEGOTIATION': {
-      if (!state || state.gameMode === 'SingleSeason' || !state.seasonComplete) return state;
+      if (!state || state.gameMode === 'SingleSeason') return state;
       const negotiation = buildMarketContractNegotiation(state, action.marketId, action.seatDriverId);
       return negotiation ? { ...state, marketContractNegotiation: negotiation } : state;
     }
@@ -1449,7 +1450,7 @@ function queueSigning(
   bidM?: number,
   terms?: { salary: number; years: number; clauseType?: ContractClauseType },
 ): GameState {
-  if (!state.seasonComplete) return state;
+  if (state.gameMode === 'SingleSeason') return state;
   const seat = state.drivers.find((d) => d.id === seatDriverId);
   if (!seat || seat.teamId !== state.selectedTeamId) return state;
 
@@ -2557,8 +2558,9 @@ function applyRaceResults(
     news: sortNewsByPriority(capNewsPerRound([...worldTick.news, ...completedState.news]).slice(0, 80)),
   };
   const completedWithScouting = progressActiveScoutingAssignments(completedState, race.round);
+  const completedWithTransfers = progressTransferCalendar(completedWithScouting, race.round);
   const finalized = syncNarratives(recordRaceLegacy(
-    evolveRivalRelationshipsAfterRace(recordFailureInvestigations(completedWithScouting, race.id, race.round, results), race.round, results),
+    evolveRivalRelationshipsAfterRace(recordFailureInvestigations(completedWithTransfers, race.id, race.round, results), race.round, results),
     race.id,
     race.round,
     results,

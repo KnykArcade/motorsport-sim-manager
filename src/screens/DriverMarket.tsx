@@ -48,6 +48,7 @@ import {
   marketPageCount,
   type YouthMarketTab,
 } from './driverMarketViewModel';
+import { transferCalendarView } from './transferCalendarViewModel';
 
 type Tab = 'senior' | 'youth';
 
@@ -99,6 +100,7 @@ export function DriverMarket() {
     { id: 'senior', label: `Senior Market (${seniorDrivers.length})` },
     ...(!singleSeason && bundle ? [{ id: 'youth' as const, label: `Youth Academy (${bundle.youth.length})` }] : []),
   ];
+  const transferView = transferCalendarView(state);
 
   // Fogged potential label: scouting narrows the range without confirming truth.
   const potLabel = (id: string, skills: MarketSkillRatings, potential: number, entityType: ScoutedEntityType = 'Driver'): string =>
@@ -150,6 +152,23 @@ export function DriverMarket() {
           ) : (
             <p className="text-sm text-amber-300">This shortlisted target is no longer available in the current market.</p>
           )}
+        </Panel>
+      )}
+
+      {!singleSeason && (
+        <Panel title="Transfer & Contract Calendar">
+          <div className="grid gap-3 md:grid-cols-3">
+            <div><div className="text-[10px] font-black uppercase tracking-wide text-neutral-500">Expiring contracts</div><div className="mt-1 text-lg font-bold text-neutral-100">{transferView.expiringDrivers.length}</div><div className="text-xs text-neutral-500">Across the current grid</div></div>
+            <div><div className="text-[10px] font-black uppercase tracking-wide text-neutral-500">Rival offers</div><div className="mt-1 text-lg font-bold text-amber-300">{transferView.rivalOffers.length}</div><div className="text-xs text-neutral-500">Active market deadlines</div></div>
+            <div><div className="text-[10px] font-black uppercase tracking-wide text-neutral-500">Expected free agents</div><div className="mt-1 text-lg font-bold text-neutral-100">{transferView.availableDriverCount}</div><div className="text-xs text-neutral-500">State-backed release decisions</div></div>
+          </div>
+          {transferView.rivalOffers.length > 0 && <div className="mt-3 space-y-2 border-t border-neutral-800 pt-3">{transferView.rivalOffers.slice(0, 4).map((offer) => (
+            <div key={offer.id} className="flex flex-wrap items-center justify-between gap-2 rounded border border-neutral-800 bg-neutral-950/40 p-2 text-xs">
+              <span className="text-neutral-300"><strong>{offer.destinationTeamName}</strong> has offered for {offer.targetName} · deadline R{offer.deadlineRound}</span>
+              {seats[0] && <Button variant="ghost" className="px-2 py-1 text-xs" onClick={() => navigate(`/market/${encodeURIComponent(offer.targetId)}/negotiate/${encodeURIComponent(seats[0].id)}`)}>Improve your offer</Button>}
+            </div>
+          ))}</div>}
+          {transferView.recentStories.length > 0 && <div className="mt-3 text-xs text-neutral-500">Latest: {transferView.recentStories[0].targetName} · {transferView.recentStories[0].stage} · effective {state.seasonYear + 1}</div>}
         </Panel>
       )}
 

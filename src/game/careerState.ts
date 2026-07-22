@@ -43,6 +43,7 @@ import type { TeamPartsMap, PartsAutomationSettings, TechnicalManagementMode } f
 import type { ContractClauseType, Phase18FoundationState } from '../types/phase18Types';
 import type { CharacterInteractionState } from '../types/characterInteractionTypes';
 import type { PersonnelCareerTenure } from '../types/personnelCareerTypes';
+import type { TransferCalendarState } from '../types/transferCalendarTypes';
 
 export type GameState = {
   id: string;
@@ -72,6 +73,7 @@ export type GameState = {
   contractNegotiation?: DriverContractNegotiation;
   marketContractNegotiation?: MarketContractNegotiation;
   staffContractNegotiation?: StaffContractNegotiation;
+  transferCalendar?: TransferCalendarState;
 
   pointsSystemId: string;
   regulationSetId: string;
