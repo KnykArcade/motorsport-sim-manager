@@ -25,6 +25,7 @@ import {
 } from '../sim/rdEngine';
 import { updateMorale } from '../sim/moraleEngine';
 import { generateRaceNews } from '../sim/newsEngine';
+import { advanceOffscreenChampionshipsAfterPlayerRace } from '../sim/motorsportUniverseEngine';
 import {
   generateCareerRaceNews,
   generateQualifyingNews as generateCareerQualifyingNews,
@@ -2360,7 +2361,7 @@ function applyRaceResults(
   const nextIndex = state.currentRaceIndex + 1;
   const seasonComplete = nextIndex >= calendar.length;
 
-  const completedState: GameState = {
+  let completedState: GameState = {
     ...state,
     calendar,
     drivers,
@@ -2380,6 +2381,12 @@ function applyRaceResults(
     news: sortNewsByPriority(capNewsPerRound([...news, ...state.news]).slice(0, 80)),
     currentRaceIndex: seasonComplete ? state.currentRaceIndex : nextIndex,
     seasonComplete,
+  };
+  const worldTick = advanceOffscreenChampionshipsAfterPlayerRace(completedState);
+  completedState = {
+    ...completedState,
+    motorsportUniverse: worldTick.universe,
+    news: sortNewsByPriority(capNewsPerRound([...worldTick.news, ...completedState.news]).slice(0, 80)),
   };
   const finalized = syncNarratives(recordRaceLegacy(
     evolveRivalRelationshipsAfterRace(recordFailureInvestigations(completedState, race.id, race.round, results), race.round, results),
