@@ -111,7 +111,7 @@ export function calculateRacePace(
   const setupFit = calculateSetupFit(setup, track) + setup.racePaceBoost;
   const moraleFactor = (driver.morale - 65) / 15 + confidenceModifier;
   const otherComp = clamp10(
-    5.5 + setupFit * 0.5 + strategy.paceModifier + instruction.paceModifier + moraleFactor,
+    5.5 + setupFit * 0.65 + strategy.paceModifier + instruction.paceModifier + moraleFactor,
   );
 
   const score =
@@ -119,7 +119,8 @@ export function calculateRacePace(
     (PACE_WEIGHTS.car * carComp +
       PACE_WEIGHTS.driver * driverComp +
       PACE_WEIGHTS.team * teamComp +
-      PACE_WEIGHTS.other * otherComp);
+      PACE_WEIGHTS.other * otherComp) +
+    setupFit * 0.65;
 
   const breakdown: ScoreBreakdown = {
     driverId: driver.id,
@@ -232,7 +233,12 @@ export function computeRaceOutcome(context: RaceContext): RaceOutcome {
 
     // Stress to reliability from aggressive choices; the weekend's operations
     // execution (reliability management) shifts the DNF risk up or down.
-    const stress = Math.max(0, instruction.reliabilityStressModifier + setup.riskModifier * 0.2);
+    const stress = Math.max(
+      0,
+      instruction.reliabilityStressModifier +
+        setup.riskModifier * 0.32 +
+        Math.max(0, 5 - setup.reliabilityProtection) * 0.14,
+    );
     // Mechanical-failure risk, era-scaled down to cut reliability retirements.
     // Package reliability prep is already folded into opsForm above.
     const relRisk =
@@ -240,13 +246,21 @@ export function computeRaceOutcome(context: RaceContext): RaceOutcome {
       eraReliabilityScale(context.year);
     // Crash/incident risk, separate from mechanical failure. Package can reduce
     // crash risk (Conservative) or increase it (Budget).
-    const crashRiskBase = calculateCrashRisk(e.driver, context.track, instruction.mistakeModifier);
+    const setupRiskAggression = setup.riskModifier * 0.25;
+    const setupHandlingPressure =
+      Math.max(0, 5 - setup.brakingStability) * 0.12 +
+      Math.max(0, 5 - setup.tirePreservation) * 0.08;
+    const crashRiskBase = calculateCrashRisk(
+      e.driver,
+      context.track,
+      instruction.mistakeModifier + setupRiskAggression,
+    );
     const crashRisk = crashRiskBase * (pkgEffects?.crashRiskMultiplier ?? 1);
     const mistakeRisk = calculateMistakeRisk(
       e.driver,
       context.track,
-      instruction.mistakeModifier,
-      grid <= 6 ? 0.5 : 0,
+      instruction.mistakeModifier + setupRiskAggression,
+      (grid <= 6 ? 0.5 : 0) + setupHandlingPressure,
     ) * prepMistakeMultiplier;
 
     const incidents: string[] = [];

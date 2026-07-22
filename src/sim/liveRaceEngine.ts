@@ -136,7 +136,12 @@ export function createLiveRace(context: RaceContext, options: LiveRaceOptions): 
     // Reliability: per-race risk amplified by quali incidents, spread per lap.
     // The weekend's operations execution shifts the per-race risk up or down.
     // Era-scaled down to cut reliability retirements per the balance brief.
-    const stress = Math.max(0, instruction.reliabilityStressModifier + setup.riskModifier * 0.2);
+    const stress = Math.max(
+      0,
+      instruction.reliabilityStressModifier +
+        setup.riskModifier * 0.32 +
+        Math.max(0, 5 - setup.reliabilityProtection) * 0.14,
+    );
     let perRaceRel = calculateReliabilityRisk(e.car, track, setup, stress, opsForm);
     const qIncident = incidentByDriver[e.driver.id];
     if (qIncident === 'Crash') perRaceRel += 0.06;
@@ -149,15 +154,19 @@ export function createLiveRace(context: RaceContext, options: LiveRaceOptions): 
 
     // Crash/incident risk, kept separate from mechanical failure.
     // Package crash risk multiplier scales the base crash risk.
-    const perRaceCrash = calculateCrashRisk(e.driver, track, instruction.mistakeModifier)
+    const setupRiskAggression = setup.riskModifier * 0.25;
+    const setupHandlingPressure =
+      Math.max(0, 5 - setup.brakingStability) * 0.12 +
+      Math.max(0, 5 - setup.tirePreservation) * 0.08;
+    const perRaceCrash = calculateCrashRisk(e.driver, track, instruction.mistakeModifier + setupRiskAggression)
       * (pkgEffects?.crashRiskMultiplier ?? 1);
     const baseCrashRisk = perLapFailureRisk(perRaceCrash, totalLaps) * cal.crash;
 
     const perRaceMistake = calculateMistakeRisk(
       e.driver,
       track,
-      instruction.mistakeModifier,
-      grid <= 6 ? 0.5 : 0,
+      instruction.mistakeModifier + setupRiskAggression,
+      (grid <= 6 ? 0.5 : 0) + setupHandlingPressure,
     ) * prepMistakeMultiplier * (pkgEffects?.operationalRiskMultiplier ?? 1);
     const baseMistakeRisk = perLapFailureRisk(perRaceMistake * 0.7, totalLaps);
 
@@ -326,7 +335,7 @@ function computeDegRate(
   stintTarget: number,
 ): number {
   let deg = 100 / Math.max(10, stintTarget + 8);
-  deg *= 1 + tireWearModifier * 0.3 + tireDegModifier * 0.3 - (tirePreservation - 5) * 0.04;
+  deg *= 1 + tireWearModifier * 0.3 + tireDegModifier * 0.3 - (tirePreservation - 5) * 0.07;
   return Math.max(0.4, deg);
 }
 

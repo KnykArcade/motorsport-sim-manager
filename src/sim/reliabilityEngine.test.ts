@@ -81,6 +81,12 @@ const safeSetup: SetupOption = {
   riskModifier: -1,
 };
 
+const missedSetup: SetupOption = {
+  ...setup,
+  reliabilityProtection: 1.5,
+  riskModifier: 6,
+};
+
 describe('calculateReliabilityRisk', () => {
   it('produces a spread of risk for 1-100 reliability ratings', () => {
     const low = calculateReliabilityRisk(car(35), track(50, 50), setup, 0, 0);
@@ -120,5 +126,12 @@ describe('calculateReliabilityRisk', () => {
     const stressed = calculateReliabilityRisk(car(65), track(50, 50), setup, 3, 0);
 
     expect(stressed).toBeGreaterThan(calm);
+  });
+
+  it('makes a badly missed setup a real mechanical liability', () => {
+    const baseline = calculateReliabilityRisk(car(65), track(70, 70), setup, 0, 0);
+    const missed = calculateReliabilityRisk(car(65), track(70, 70), missedSetup, 0, 0);
+
+    expect(missed).toBeGreaterThan(baseline + 0.04);
   });
 });
