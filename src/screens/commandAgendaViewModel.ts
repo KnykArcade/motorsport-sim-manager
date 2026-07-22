@@ -3,6 +3,7 @@ import { currentRace } from '../game/careerState';
 import { getCareerPhase } from '../game/careerPhaseEngine';
 import { workflowDestination } from '../components/layoutWorkflow';
 import { inboxMessages, inboxTimingLabel, type InboxMessage } from './inboxViewModel';
+import { buildWeeklyStory, type WeeklyStory } from './weeklyStoryViewModel';
 
 export type CommandAgendaItem = {
   id: string;
@@ -49,6 +50,7 @@ export type CommandAgenda = {
   recentChanges: CommandChange[];
   nextEvent: CommandNextEvent;
   continueAction: CommandContinueAction;
+  weeklyStory: WeeklyStory | null;
 };
 
 function toAgendaItem(message: InboxMessage): CommandAgendaItem {
@@ -166,5 +168,6 @@ export function commandAgenda(state: GameState): CommandAgenda {
     recentChanges: recentChangesFor(state, messages),
     nextEvent: nextEventFor(state, workflow.to),
     continueAction,
+    weeklyStory: buildWeeklyStory(state),
   };
 }

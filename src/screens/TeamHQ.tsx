@@ -160,6 +160,27 @@ export function TeamHQ() {
           <span>{inboxActionable} action{inboxActionable === 1 ? '' : 's'} · {activeDrivers.length}/{minDrivers} race seats filled{race ? ` · ${race.gpName}` : ''}</span>
         </div>
       </section>
+      {agenda.weeklyStory && (
+        <section className="rounded-lg border border-violet-900/50 bg-violet-950/10 p-3">
+          <div className="text-[10px] font-black uppercase tracking-[0.14em] text-violet-300">Manager Office · Returned from last race</div>
+          <div className="mt-1 text-sm font-semibold text-neutral-100">{agenda.weeklyStory.headline}</div>
+          <p className="mt-1 text-xs leading-5 text-neutral-400">{agenda.weeklyStory.summary}</p>
+          <div className="mt-3 grid gap-2 md:grid-cols-2 xl:grid-cols-3">
+            {agenda.weeklyStory.groups.map((group) => (
+              <div key={group.owner} className="rounded border border-neutral-800 bg-neutral-950/35 p-2">
+                <div className="text-[10px] font-black uppercase tracking-wide text-violet-200">{group.owner}</div>
+                {group.items.slice(0, 2).map((item) => (
+                  <button key={item.id} type="button" className="mt-2 block w-full text-left" onClick={() => navigate(item.route)}>
+                    <div className="text-xs font-semibold text-neutral-200">{item.title}</div>
+                    <div className="mt-1 text-[10px] leading-4 text-neutral-500">{item.reason}</div>
+                    <div className="mt-1 text-[10px] font-semibold text-sky-300">{item.routeLabel} →</div>
+                  </button>
+                ))}
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
 
       <Panel title="Staff responsibilities" actions={<span className="text-xs text-neutral-500">Advisory ownership · you retain final control</span>}>
         <div className="grid gap-2 md:grid-cols-2">
