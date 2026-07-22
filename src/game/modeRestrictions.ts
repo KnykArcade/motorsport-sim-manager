@@ -123,6 +123,8 @@ const SINGLE_SEASON_BLOCKED_ACTIONS = new Set([
   'DECLINE_JOB_OFFER',
   'SET_REGULATION_VOTE',
   'SCOUT_TARGET',
+  'CANCEL_SCOUTING_ASSIGNMENT',
+  'TOGGLE_SCOUTING_SHORTLIST',
 ]);
 
 export function isActionBlocked(actionType: string, mode: GameMode | undefined): boolean {
