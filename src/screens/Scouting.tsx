@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useGame } from '../game/GameContext';
 import { teamById } from '../game/careerState';
+import { getStaffPool } from '../data';
 import { careerMarketBundle } from '../sim/careerMarketEngine';
 import { Panel } from '../components/Panel';
 import { Button } from '../components/Button';
@@ -13,14 +14,14 @@ import {
   WorkspaceScreen,
   WorkspaceTabs,
 } from '../components/workspace/Workspace';
-import { fogView, scoutingCost, type FogView, type ScoutTarget } from '../sim/scoutingEngine';
+import { fogView, scoutingCost, staffScoutTarget, type FogView, type ScoutTarget } from '../sim/scoutingEngine';
 import { formatMoney, ratingColor } from '../components/ui';
 import type { ScoutedEntityType, VisibleRating } from '../types/scoutingTypes';
 import type { IntelligenceAction, IntelligenceReport } from '../types/phase18Types';
 import { INTELLIGENCE_INVESTIGATION_COST, intelligenceConfidenceLabel } from '../sim/phase18IntelligenceEngine';
-import { scoutingAbilitySummary, scoutingAssignments, scoutingComparison } from './scoutingViewModel';
+import { scoutingAbilitySummary, scoutingAssignments, scoutingComparison, scoutingReportFreshness } from './scoutingViewModel';
 
-type Tab = 'intelligence' | 'senior' | 'youth';
+type Tab = 'intelligence' | 'senior' | 'youth' | 'staff';
 
 const SKILL_LABELS: { key: string; label: string }[] = [
   { key: 'cornering', label: 'Cornering' },
@@ -73,31 +74,44 @@ export function Scouting() {
     { id: 'intelligence', label: `Paddock Intelligence (${activeIntelligence})` },
     { id: 'senior', label: `Senior Targets (${bundle?.drivers.length ?? 0})` },
     { id: 'youth', label: `Youth Targets (${bundle?.youth.length ?? 0})` },
+    { id: 'staff', label: `Staff Targets (${getStaffPool(state.seasonYear, state.series).length})` },
   ];
+  const staffTargets = getStaffPool(state.seasonYear, state.series);
+  const focus = scouting.recruitmentFocus ?? {};
+  const currentRound = state.calendar[state.currentRaceIndex]?.round ?? state.currentRaceIndex + 1;
+  const updateFocus = (patch: Partial<typeof focus>) => dispatch({ type: 'SET_RECRUITMENT_FOCUS', focus: { ...focus, ...patch } });
   const targetNames = Object.fromEntries([
     ...(bundle?.drivers ?? []).map((driver) => [driver.id, driver.name] as const),
     ...(bundle?.youth ?? []).map((prospect) => [prospect.id, prospect.name] as const),
+    ...staffTargets.map((staff) => [staff.id, staff.name] as const),
   ]);
   const assignments = scoutingAssignments(
     scouting.reports,
     scouting.networkAccuracy,
     targetNames,
-    tab === 'senior' ? 'Driver' : tab === 'youth' ? 'YouthProspect' : undefined,
+    tab === 'senior' ? 'Driver' : tab === 'youth' ? 'YouthProspect' : tab === 'staff' ? 'Staff' : undefined,
     scouting.activeAssignments,
+    state.seasonYear,
+    currentRound,
   );
   const shortlist = (scouting.shortlist ?? []).filter((entry) =>
-    tab === 'senior' ? entry.entityType === 'Driver' : tab === 'youth' ? entry.entityType === 'YouthProspect' : false,
+    tab === 'senior' ? entry.entityType === 'Driver' : tab === 'youth' ? entry.entityType === 'YouthProspect' : tab === 'staff' ? entry.entityType === 'Staff' : false,
   );
   const shortlistTargets = shortlist.flatMap((entry) => {
     const target = entry.entityType === 'Driver'
       ? bundle?.drivers.find((driver) => driver.id === entry.entityId)
-      : bundle?.youth.find((prospect) => prospect.id === entry.entityId);
+      : entry.entityType === 'YouthProspect'
+        ? bundle?.youth.find((prospect) => prospect.id === entry.entityId)
+        : staffTargets.find((staff) => staff.id === entry.entityId);
     if (!target) return [];
+    const scoutTarget = entry.entityType === 'Staff'
+      ? staffScoutTarget(target as (typeof staffTargets)[number])
+      : { id: target.id, skills: (target as (NonNullable<typeof bundle>['drivers'][number])).skills, potential: (target as (NonNullable<typeof bundle>['drivers'][number])).potential };
     return [{
       entityId: target.id,
       name: target.name,
       entityType: entry.entityType,
-      view: view({ id: target.id, skills: target.skills, potential: target.potential }, entry.entityType),
+      view: view(scoutTarget, entry.entityType),
     }];
   });
   const comparisons = scoutingComparison(
@@ -171,6 +185,16 @@ export function Scouting() {
         </div>
       </Panel>}
 
+      {tab !== 'intelligence' && <Panel title="Recruitment Focus">
+        <div className="grid gap-2 md:grid-cols-4">
+          <label className="text-xs text-neutral-400">Name<input className="mt-1 w-full rounded border border-neutral-700 bg-neutral-950 px-2 py-1.5" value={focus.search ?? ''} onChange={(event) => updateFocus({ search: event.target.value })} placeholder="Search targets" /></label>
+          {(tab === 'senior' || tab === 'youth') && <label className="text-xs text-neutral-400">Maximum age<input className="mt-1 w-full rounded border border-neutral-700 bg-neutral-950 px-2 py-1.5" type="number" min={16} max={60} value={focus.maxAge ?? 60} onChange={(event) => updateFocus({ maxAge: Number(event.target.value) })} /></label>}
+          {tab === 'staff' && <label className="text-xs text-neutral-400">Staff role<select className="mt-1 w-full rounded border border-neutral-700 bg-neutral-950 px-2 py-1.5" value={focus.staffRole ?? 'All'} onChange={(event) => updateFocus({ staffRole: event.target.value })}><option>All</option>{[...new Set(staffTargets.map((staff) => staff.role))].map((role) => <option key={role}>{role}</option>)}</select></label>}
+          {tab === 'senior' && <label className="text-xs text-neutral-400">Contract status<select className="mt-1 w-full rounded border border-neutral-700 bg-neutral-950 px-2 py-1.5" value={focus.contractStatus ?? 'All'} onChange={(event) => updateFocus({ contractStatus: event.target.value as 'All' | 'Available' | 'Expiring' })}><option>All</option><option>Available</option><option>Expiring</option></select></label>}
+          <label className="mt-5 flex items-center gap-2 text-xs text-neutral-300"><input type="checkbox" checked={focus.affordableOnly ?? false} onChange={(event) => updateFocus({ affordableOnly: event.target.checked })} />Affordable scouting only</label>
+        </div>
+      </Panel>}
+
       {tab !== 'intelligence' && !bundle && (
         <Panel>
           <p className="text-sm text-neutral-400">
@@ -186,7 +210,7 @@ export function Scouting() {
               {assignments.map((assignment) => (
                 <div key={assignment.entityId} className="grid gap-2 py-2 text-xs sm:grid-cols-[1fr_auto_10rem] sm:items-center">
                   <div><span className="font-semibold text-neutral-200">{assignment.name}</span><span className="ml-2 text-neutral-500">{assignment.entityType === 'YouthProspect' ? 'Youth prospect' : assignment.entityType}</span></div>
-                  <div className="text-neutral-400">Coverage {assignment.scoutingLevel}% · Knowledge {assignment.knowledgePercentage}%</div>
+                  <div className="text-neutral-400">Coverage {assignment.scoutingLevel}% · Knowledge {assignment.knowledgePercentage}% · {assignment.freshness}</div>
                   <div className="h-1.5 overflow-hidden rounded-full bg-neutral-800"><div className="h-full bg-[var(--era-accent-strong)]" style={{ width: `${assignment.knowledgePercentage}%` }} /></div>
                   <button type="button" className="text-left text-red-300 hover:text-red-200 sm:col-span-3" onClick={() => dispatch({ type: 'CANCEL_SCOUTING_ASSIGNMENT', entityId: assignment.entityId, entityType: assignment.entityType })}>Cancel assignment</button>
                 </div>
@@ -205,10 +229,11 @@ export function Scouting() {
                 const limitReached = comparisonIds.length >= 3 && !selected;
                 return (
                   <div key={target.entityId} className="flex flex-wrap items-center justify-between gap-2 rounded border border-neutral-800 bg-neutral-950/35 p-2 text-xs">
-                    <div><span className="font-semibold text-neutral-200">{target.name}</span><span className="ml-2 text-neutral-500">{Math.round(target.view.accuracy * 100)}% knowledge</span></div>
+                    <div><span className="font-semibold text-neutral-200">{target.name}</span><span className="ml-2 text-neutral-500">{Math.round(target.view.accuracy * 100)}% knowledge{scouting.reports[target.entityId] ? ` · ${scoutingReportFreshness(scouting.reports[target.entityId].lastUpdated, state.seasonYear, currentRound)}` : ''}</span></div>
                     <div className="flex gap-2">
                       <Button variant="ghost" className="px-2 py-1 text-xs" disabled={limitReached} title={limitReached ? 'Compare up to three targets at once' : undefined} onClick={() => toggleComparison(target.entityId)}>{selected ? 'Remove comparison' : 'Compare'}</Button>
                       {target.entityType === 'Driver' && <Button variant="primary" className="px-2 py-1 text-xs" onClick={() => navigate(`/market?target=${encodeURIComponent(target.entityId)}`)}>Approach driver →</Button>}
+                      {target.entityType === 'Staff' && <Button variant="primary" className="px-2 py-1 text-xs" onClick={() => navigate(`/staff/${encodeURIComponent(target.entityId)}/negotiate`)}>Approach staff →</Button>}
                       <Button variant="ghost" className="px-2 py-1 text-xs text-red-300" onClick={() => dispatch({ type: 'TOGGLE_SCOUTING_SHORTLIST', entityId: target.entityId, entityType: target.entityType })}>Remove</Button>
                     </div>
                   </div>
@@ -228,6 +253,10 @@ export function Scouting() {
       {bundle && tab === 'senior' && (
         <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
           {[...bundle.drivers]
+            .filter((driver) => !focus.search || driver.name.toLowerCase().includes(focus.search.toLowerCase()))
+            .filter((driver) => !focus.maxAge || driver.age <= focus.maxAge)
+            .filter((driver) => !focus.affordableOnly || costOf(driver.id, 'Driver') <= budget)
+            .filter((driver) => !focus.contractStatus || focus.contractStatus === 'All' || driver.marketStatus.toLowerCase().includes(focus.contractStatus.toLowerCase()))
             .sort(
               (a, b) =>
                 viewMidpoint(view({ id: b.id, skills: b.skills, potential: b.potential }, 'Driver')) -
@@ -246,6 +275,7 @@ export function Scouting() {
                 onScout={() => dispatch({ type: 'SCOUT_TARGET', entityId: d.id, entityType: 'Driver' as ScoutedEntityType })}
                 onToggleShortlist={() => dispatch({ type: 'TOGGLE_SCOUTING_SHORTLIST', entityId: d.id, entityType: 'Driver' })}
                 onApproach={() => navigate(`/market?target=${encodeURIComponent(d.id)}`)}
+                freshness={scouting.reports[d.id] ? scoutingReportFreshness(scouting.reports[d.id].lastUpdated, state.seasonYear, currentRound) : undefined}
               />
             ))}
         </div>
@@ -254,6 +284,9 @@ export function Scouting() {
       {bundle && tab === 'youth' && (
         <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
           {[...bundle.youth]
+            .filter((prospect) => !focus.search || prospect.name.toLowerCase().includes(focus.search.toLowerCase()))
+            .filter((prospect) => !focus.maxAge || prospect.age <= focus.maxAge)
+            .filter((prospect) => !focus.affordableOnly || costOf(prospect.id, 'YouthProspect') <= budget)
             .sort(
               (a, b) =>
                 viewMidpoint(view({ id: b.id, skills: b.skills, potential: b.potential }, 'YouthProspect')) -
@@ -271,8 +304,24 @@ export function Scouting() {
                 shortlisted={shortlist.some((entry) => entry.entityId === y.id)}
                 onScout={() => dispatch({ type: 'SCOUT_TARGET', entityId: y.id, entityType: 'YouthProspect' as ScoutedEntityType })}
                 onToggleShortlist={() => dispatch({ type: 'TOGGLE_SCOUTING_SHORTLIST', entityId: y.id, entityType: 'YouthProspect' })}
+                onApproach={() => navigate('/market')}
+                freshness={scouting.reports[y.id] ? scoutingReportFreshness(scouting.reports[y.id].lastUpdated, state.seasonYear, currentRound) : undefined}
               />
             ))}
+        </div>
+      )}
+
+      {tab === 'staff' && (
+        <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+          {staffTargets
+            .filter((staff) => !focus.search || staff.name.toLowerCase().includes(focus.search.toLowerCase()))
+            .filter((staff) => !focus.staffRole || focus.staffRole === 'All' || staff.role === focus.staffRole)
+            .filter((staff) => !focus.affordableOnly || costOf(staff.id, 'Staff') <= budget)
+            .sort((a, b) => b.rating - a.rating || a.name.localeCompare(b.name))
+            .map((staff) => {
+              const target = staffScoutTarget(staff);
+              return <ScoutCard key={staff.id} title={staff.name} subtitle={`${staff.nationality} · ${staff.role} · ${staff.contractYearsRemaining ?? 2} contract yrs`} view={view(target, 'Staff')} cost={costOf(staff.id, 'Staff')} budget={budget} assigned={(scouting.activeAssignments ?? []).some((entry) => entry.entityId === staff.id && entry.entityType === 'Staff')} shortlisted={shortlist.some((entry) => entry.entityId === staff.id)} onScout={() => dispatch({ type: 'SCOUT_TARGET', entityId: staff.id, entityType: 'Staff' })} onToggleShortlist={() => dispatch({ type: 'TOGGLE_SCOUTING_SHORTLIST', entityId: staff.id, entityType: 'Staff' })} onApproach={() => navigate(`/staff/${encodeURIComponent(staff.id)}/negotiate`)} skillLabels={[{ key: 'technical', label: 'Expertise' }]} freshness={scouting.reports[staff.id] ? scoutingReportFreshness(scouting.reports[staff.id].lastUpdated, state.seasonYear, currentRound) : undefined} />;
+            })}
         </div>
       )}
       </WorkspaceBody>
@@ -395,6 +444,8 @@ function ScoutCard({
   onScout,
   onToggleShortlist,
   onApproach,
+  skillLabels = SKILL_LABELS,
+  freshness,
 }: {
   title: string;
   subtitle: string;
@@ -406,6 +457,8 @@ function ScoutCard({
   onScout: () => void;
   onToggleShortlist: () => void;
   onApproach?: () => void;
+  skillLabels?: { key: string; label: string }[];
+  freshness?: 'Fresh' | 'Current' | 'Stale';
 }) {
   const ability = scoutingAbilitySummary(view);
   const accPct = ability.knowledgePercentage;
@@ -444,9 +497,10 @@ function ScoutCard({
           />
         </div>
       </div>
+      {freshness && <div className={`mb-2 text-[10px] font-semibold uppercase tracking-wide ${freshness === 'Stale' ? 'text-amber-300' : 'text-neutral-500'}`}>Report freshness: {freshness}{freshness === 'Stale' ? ' · knowledge may be outdated' : ''}</div>}
 
       <div className="grid grid-cols-1 gap-1">
-        {SKILL_LABELS.map((s) => (
+        {skillLabels.map((s) => (
           <SkillRow key={s.key} label={s.label} value={view.skills[s.key]} />
         ))}
       </div>

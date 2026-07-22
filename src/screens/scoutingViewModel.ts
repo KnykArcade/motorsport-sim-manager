@@ -16,7 +16,16 @@ export type ScoutingAssignment = {
   entityType: ScoutedEntityType;
   scoutingLevel: number;
   knowledgePercentage: number;
+  freshness: 'Fresh' | 'Current' | 'Stale';
 };
+
+export function scoutingReportFreshness(lastUpdated: string, seasonYear: number, round: number): 'Fresh' | 'Current' | 'Stale' {
+  const updated = Date.parse(lastUpdated);
+  if (!Number.isFinite(updated)) return 'Stale';
+  const current = Date.UTC(seasonYear, 0, Math.max(1, round));
+  const ageInRounds = Math.max(0, Math.round((current - updated) / 86_400_000));
+  return ageInRounds <= 2 ? 'Fresh' : ageInRounds <= 6 ? 'Current' : 'Stale';
+}
 
 export type ScoutingComparisonTarget = {
   entityId: string;
@@ -57,6 +66,8 @@ export function scoutingAssignments(
   names: Record<string, string>,
   entityType?: ScoutedEntityType,
   activeAssignments?: readonly ScoutingTargetReference[],
+  seasonYear?: number,
+  round = 1,
 ): ScoutingAssignment[] {
   return Object.values(reports)
     .filter((report) => report.scoutingLevel < 100
@@ -70,6 +81,7 @@ export function scoutingAssignments(
       entityType: report.entityType,
       scoutingLevel: report.scoutingLevel,
       knowledgePercentage: Math.round(effectiveAccuracy(report.scoutingLevel, networkAccuracy) * 100),
+      freshness: seasonYear == null ? 'Current' : scoutingReportFreshness(report.lastUpdated, seasonYear, round),
     }))
     .sort((a, b) => b.scoutingLevel - a.scoutingLevel || a.name.localeCompare(b.name));
 }

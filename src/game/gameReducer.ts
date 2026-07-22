@@ -157,10 +157,10 @@ import type {
 import type { EngineDealType } from '../types/engineTypes';
 import type { RegulationVote } from '../types/politicsTypes';
 import type { RDBranchId, RDProjectStartRequest } from '../types/rdTypes';
-import type { ScoutedEntityType } from '../types/scoutingTypes';
+import type { RecruitmentFocus, ScoutedEntityType } from '../types/scoutingTypes';
 import type { StaffMember } from '../types/staffTypes';
 import type { StaffResponsibilityId, StaffResponsibilityPolicy } from '../types/staffTypes';
-import { driverScoutTarget, recordScouting, scoutingCost, type ScoutTarget } from '../sim/scoutingEngine';
+import { driverScoutTarget, recordScouting, scoutingCost, staffScoutTarget, type ScoutTarget } from '../sim/scoutingEngine';
 import type {
   Entrant,
   QualifyingDecision,
@@ -313,6 +313,7 @@ export type GameAction =
   | { type: 'SCOUT_TARGET'; entityId: string; entityType: ScoutedEntityType }
   | { type: 'CANCEL_SCOUTING_ASSIGNMENT'; entityId: string; entityType: ScoutedEntityType }
   | { type: 'TOGGLE_SCOUTING_SHORTLIST'; entityId: string; entityType: ScoutedEntityType }
+  | { type: 'SET_RECRUITMENT_FOCUS'; focus: RecruitmentFocus }
   | { type: 'SWAP_RACE_DRIVER'; seatIndex: number; reserveDriverId: string }
   | { type: 'SIGN_THIRD_DRIVER'; marketId: string }
   | { type: 'PROMOTE_THIRD_DRIVER'; seatDriverId: string; thirdDriverId: string }
@@ -935,6 +936,9 @@ export function gameReducer(state: GameState | null, action: GameAction): GameSt
         },
       };
     }
+
+    case 'SET_RECRUITMENT_FOCUS':
+      return state?.scouting ? { ...state, scouting: { ...state.scouting, recruitmentFocus: action.focus } } : state;
 
     case 'SWAP_RACE_DRIVER': {
       if (!state) return state;
@@ -1709,6 +1713,12 @@ function scoutTargetAction(
       target = { id: y.id, skills: y.skills, potential: y.potential };
       targetName = y.name;
     }
+  } else if (entityType === 'Staff') {
+    const staff = [...(state.staff ?? []), ...getStaffPool(state.seasonYear, state.series)].find((entry) => entry.id === entityId);
+    if (staff) {
+      target = staffScoutTarget(staff);
+      targetName = staff.name;
+    }
   }
   if (!target) return state;
 
@@ -1754,11 +1764,14 @@ function progressActiveScoutingAssignments(state: GameState, round: number): Gam
       ? bundle.drivers.find((driver) => driver.id === assignment.entityId)
       : assignment.entityType === 'YouthProspect'
         ? bundle.youth.find((prospect) => prospect.id === assignment.entityId)
-        : undefined;
+        : [...(state.staff ?? []), ...getStaffPool(state.seasonYear, state.series)].find((staff) => staff.id === assignment.entityId);
     if (!source) continue;
+    const target = assignment.entityType === 'Staff'
+      ? staffScoutTarget(source as import('../types/staffTypes').StaffMember)
+      : { id: source.id, skills: (source as import('../types/marketTypes').MarketDriver).skills, potential: (source as import('../types/marketTypes').MarketDriver).potential };
     scouting = recordScouting(
       scouting,
-      { id: source.id, skills: source.skills, potential: source.potential },
+      target,
       assignment.entityType,
       state.facilities,
       state.randomSeed,

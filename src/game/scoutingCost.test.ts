@@ -6,6 +6,7 @@ import { careerMarketBundle } from '../sim/careerMarketEngine';
 import { scoutingCost } from '../sim/scoutingEngine';
 import { teamById } from './careerState';
 import type { GameState } from './careerState';
+import { getStaffPool } from '../data';
 
 function newGame(budget?: number): GameState {
   const state = createNewGame({
@@ -81,5 +82,20 @@ describe('scouting costs', () => {
 
     expect(after.scouting!.reports[driver.id]).toBeUndefined();
     expect(teamById(after, after.selectedTeamId)!.budget).toBe(0);
+  });
+
+  it('scouts, shortlists, and automatically progresses staff targets', () => {
+    let state = newGame(1_000_000_000);
+    const staff = getStaffPool(state.seasonYear, state.series)[0];
+    state = gameReducer(state, { type: 'SCOUT_TARGET', entityId: staff.id, entityType: 'Staff' })!;
+    expect(state.scouting?.reports[staff.id]).toMatchObject({ entityType: 'Staff' });
+    expect(state.scouting?.activeAssignments).toContainEqual({ entityId: staff.id, entityType: 'Staff' });
+    state = gameReducer(state, { type: 'TOGGLE_SCOUTING_SHORTLIST', entityId: staff.id, entityType: 'Staff' })!;
+    expect(state.scouting?.shortlist).toContainEqual({ entityId: staff.id, entityType: 'Staff' });
+  });
+
+  it('persists recruitment focus controls in scouting state', () => {
+    const state = gameReducer(newGame(), { type: 'SET_RECRUITMENT_FOCUS', focus: { maxAge: 28, affordableOnly: true, staffRole: 'Strategist' } })!;
+    expect(state.scouting?.recruitmentFocus).toEqual({ maxAge: 28, affordableOnly: true, staffRole: 'Strategist' });
   });
 });
