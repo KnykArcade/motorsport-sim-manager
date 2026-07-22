@@ -17,7 +17,7 @@ import {
   standingsPage,
   type StandingsTab,
 } from './seasonOverviewViewModel';
-import { WorldGrid, WorldSeasonCard } from './UniverseHistory';
+import { WorldGrid, WorldLiveSeasonCard, WorldSeasonCard } from './UniverseHistory';
 import type { Series } from '../types/gameTypes';
 import { canViewWorldStandings, worldChampionshipOptions } from './worldStandingsViewModel';
 
@@ -92,6 +92,12 @@ export function Standings() {
         <WorkspaceBody className="space-y-4">
           {selectedChampionship?.championship ? (
             <>
+              {selectedChampionship.championship.liveSeason && (
+                <WorldLiveSeasonCard
+                  championship={selectedChampionship.championship}
+                  live={selectedChampionship.championship.liveSeason}
+                />
+              )}
               <WorldGrid championships={{ [activeSeries]: selectedChampionship.championship }} showMovements={false} />
               {selectedChampionship.latestSeason ? (
                 <div>
