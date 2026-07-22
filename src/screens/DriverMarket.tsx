@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useGame } from '../game/GameContext';
 import { activeDriversForTeam, carForTeam, driversForTeam, teamById, maxRaceDriversForSeries } from '../game/careerState';
 import { isPreseason } from '../game/rosterEnforcement';
@@ -11,7 +11,7 @@ import { isAcademyReady } from '../sim/driverMarketEngine';
 import { academyCapacityFor } from '../sim/teamRatingsEngine';
 import { toMoney } from '../sim/financeEngine';
 import { thirdDriverMidSeasonFee } from '../sim/contractEngine';
-import { competingBidFor, bidToWin, resolveDriverBid } from '../sim/driverBiddingEngine';
+import { competingBidFor } from '../sim/driverBiddingEngine';
 import { preferredSeries } from '../sim/seriesPreferenceEngine';
 import { Panel } from '../components/Panel';
 import { StatBar } from '../components/StatBar';
@@ -54,6 +54,7 @@ type Tab = 'senior' | 'youth';
 export function DriverMarket() {
   const { state, dispatch } = useGame();
   const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
   const [tab, setTab] = useState<Tab>('senior');
   const [seniorPage, setSeniorPage] = useState(0);
   const approachedTargetId = searchParams.get('target');
@@ -229,12 +230,7 @@ export function DriverMarket() {
                   seatName={seatName}
                   interest={interest}
                   competingBid={competingBidFor(d, state.randomSeed)}
-                  suggestedBid={bidToWin(d, orgOverall, state.randomSeed, interest)}
-                  teamOverall={orgOverall}
-                  seed={state.randomSeed}
-                  onSign={(seatDriverId, bid) =>
-                    dispatch({ type: 'SIGN_MARKET_DRIVER', marketId: d.id, seatDriverId, bid })
-                  }
+                  onNegotiate={(seatDriverId) => navigate(`/market/${encodeURIComponent(d.id)}/negotiate/${encodeURIComponent(seatDriverId)}`)}
                   onSignThird={() => dispatch({ type: 'SIGN_THIRD_DRIVER', marketId: d.id })}
                   onSignRaceDriver={() => dispatch({ type: 'SIGN_RACE_DRIVER', marketId: d.id })}
                   onRelease={(seatDriverId) =>
@@ -312,10 +308,6 @@ function Money({ m }: { m: number }) {
   return <>{formatMoney(m * 1_000_000)}</>;
 }
 
-function round1(n: number): number {
-  return Math.round(n * 10) / 10;
-}
-
 // A driver's interest in a cross-series move: colour + short label.
 function interestTone(interest: number): string {
   if (interest >= 60) return 'text-green-400';
@@ -367,10 +359,7 @@ function SeniorCard({
   seatName,
   interest,
   competingBid,
-  suggestedBid,
-  teamOverall,
-  seed,
-  onSign,
+  onNegotiate,
   onSignThird,
   onSignRaceDriver,
   onRelease,
@@ -390,17 +379,11 @@ function SeniorCard({
   seatName: (id: string) => string;
   interest?: number;
   competingBid: number;
-  suggestedBid: number;
-  teamOverall: number;
-  seed: string;
-  onSign: (seatDriverId: string, bid: number) => void;
+  onNegotiate: (seatDriverId: string) => void;
   onSignThird: () => void;
   onSignRaceDriver: () => void;
   onRelease: (seatDriverId: string) => void;
 }) {
-  const [bid, setBid] = useState<number>(round1(Math.max(d.buyoutCost, suggestedBid)));
-  const resolution = resolveDriverBid(bid, d, teamOverall, seed, interest);
-  const affordableBid = toMoney(bid) <= budget;
   const overallReadout = readoutForMarketOverall(state, d.id, d.skills, d.potential, d.overall);
   const preferred = preferredSeries(d.seriesPreferences);
   return (
@@ -504,31 +487,13 @@ function SeniorCard({
                 </span>
               </div>
             )}
-            {resolution.refused ? (
+            {interest != null && interest < 20 ? (
               <span className="text-xs text-red-400">
                 Won't switch series — not interested in this move at any price.
               </span>
             ) : (
               <>
-                <div className="flex items-center gap-2">
-                  <label className="text-[11px] text-neutral-500">Your bid ($M)</label>
-                  <input
-                    type="number"
-                    min={d.buyoutCost}
-                    step={0.1}
-                    value={bid}
-                    onChange={(e) => setBid(round1(Math.max(d.buyoutCost, Number(e.target.value) || 0)))}
-                    className="w-20 rounded bg-neutral-800 px-2 py-1 text-xs tabular-nums text-neutral-100"
-                  />
-                  <span className={`text-[11px] font-semibold ${resolution.won ? 'text-green-400' : 'text-red-400'}`}>
-                    {resolution.won ? 'Winning bid' : 'Likely outbid'}
-                  </span>
-                </div>
-                {!affordableBid ? (
-                  <span className="text-xs text-red-400">Bid exceeds budget.</span>
-                ) : (
-                  <SeatButtons seats={seats} label="Bid →" onPick={(seatId) => onSign(seatId, bid)} />
-                )}
+                <SeatButtons seats={seats} label="Negotiate →" onPick={onNegotiate} />
               </>
             )}
           </div>

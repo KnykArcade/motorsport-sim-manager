@@ -6,6 +6,8 @@
 // `Driver` type — a market driver is only converted into a full `Driver` when
 // signed to a race seat.
 
+import type { ContractClauseType } from './phase18Types';
+
 // The ten core driving skills shared by every talent record (1-100 scale).
 export type MarketSkillRatings = {
   cornering: number;
@@ -155,4 +157,7 @@ export type SeatSigning = {
   // For contested market signings: the bid ($M) offered for the driver. Resolved
   // against rival interest at the season rollover. Absent for academy/reserve.
   bid?: number;
+  offeredSalary?: number;
+  contractYears?: number;
+  clauseType?: ContractClauseType;
 };
