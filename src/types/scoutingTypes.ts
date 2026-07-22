@@ -26,6 +26,14 @@ export type ScoutingTargetReference = {
   entityType: ScoutedEntityType;
 };
 
+export type RecruitmentFocus = {
+  search?: string;
+  maxAge?: number;
+  staffRole?: string;
+  affordableOnly?: boolean;
+  contractStatus?: 'All' | 'Available' | 'Expiring';
+};
+
 // The player team's scouting state, persisted in career mode.
 export type ScoutingState = {
   teamId: string;
@@ -35,4 +43,6 @@ export type ScoutingState = {
   // Optional for saves created before the recruitment workflow was connected.
   activeAssignments?: ScoutingTargetReference[];
   shortlist?: ScoutingTargetReference[];
+  // Optional for saves created before recruitment focuses were persisted.
+  recruitmentFocus?: RecruitmentFocus;
 };

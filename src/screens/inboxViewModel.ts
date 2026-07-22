@@ -14,6 +14,8 @@ import { relationshipInboxMessage } from './relationshipInboxViewModel';
 import { paddockEventDestination } from './paddockAgendaViewModel';
 import { staffRecommendations } from './staffRecommendationsViewModel';
 import { newsTriage } from './newsTriageViewModel';
+import { careerMarketBundle } from '../sim/careerMarketEngine';
+import { getStaffPool } from '../data';
 
 export type InboxSeverity = 'critical' | 'action' | 'info';
 
@@ -184,6 +186,22 @@ function paddockMessages(state: GameState): InboxMessage[] {
 function peopleMessages(state: GameState): InboxMessage[] {
   const messages: InboxMessage[] = [];
   const currentRound = state.calendar[state.currentRaceIndex]?.round ?? state.currentRaceIndex + 1;
+  const recruitmentNames = new Map([
+    ...state.drivers.map((driver) => [driver.id, driver.name] as const),
+    ...careerMarketBundle(state).drivers.map((driver) => [driver.id, driver.name] as const),
+    ...careerMarketBundle(state).youth.map((prospect) => [prospect.id, prospect.name] as const),
+    ...getStaffPool(state.seasonYear, state.series).map((staff) => [staff.id, staff.name] as const),
+  ]);
+  for (const report of Object.values(state.scouting?.reports ?? {}).filter((entry) => entry.scoutingLevel >= 100)) {
+    messages.push({
+      id: `inbox-scouting-complete-${report.entityType}-${report.entityId}`,
+      severity: 'action', category: 'people',
+      title: `Scouting report complete: ${recruitmentNames.get(report.entityId) ?? report.entityId}`,
+      body: `${report.entityType} report has reached the best available knowledge. Review, compare, shortlist, or open negotiations.`,
+      route: '/scouting', routeLabel: 'Open Recruitment Centre', actionable: true,
+      round: currentRound,
+    });
+  }
   const staff = state.staff ?? [];
   const recommendations = staffRecommendations(state);
   const recommendedRecruitmentRoles = new Set(
@@ -300,6 +318,32 @@ function peopleMessages(state: GameState): InboxMessage[] {
       route: `/drivers/${encodeURIComponent(negotiationDriver.id)}/negotiate`,
       routeLabel: countered ? 'Review Counter' : 'Improve Offer',
       actionable: true,
+    });
+  }
+
+  if (state.marketContractNegotiation?.response === 'countered' || state.marketContractNegotiation?.response === 'refused') {
+    const negotiation = state.marketContractNegotiation;
+    messages.push({
+      id: `inbox-market-negotiation-${negotiation.marketId}`,
+      severity: 'action', category: 'people',
+      title: negotiation.response === 'countered' ? 'Agent counter requires a response' : 'External driver offer was rejected',
+      body: `${negotiation.attemptsRemaining} negotiation attempt${negotiation.attemptsRemaining === 1 ? '' : 's'} remaining.`,
+      route: `/market/${encodeURIComponent(negotiation.marketId)}/negotiate/${encodeURIComponent(negotiation.seatDriverId)}`,
+      routeLabel: negotiation.response === 'countered' ? 'Review Counter' : 'Improve Offer', actionable: true,
+      round: currentRound,
+    });
+  }
+
+  if (state.staffContractNegotiation?.response === 'countered' || state.staffContractNegotiation?.response === 'refused') {
+    const negotiation = state.staffContractNegotiation;
+    messages.push({
+      id: `inbox-staff-negotiation-${negotiation.staffId}`,
+      severity: 'action', category: 'people',
+      title: negotiation.response === 'countered' ? 'Staff representative counter requires a response' : 'Staff offer was rejected',
+      body: `${negotiation.attemptsRemaining} negotiation attempt${negotiation.attemptsRemaining === 1 ? '' : 's'} remaining.`,
+      route: `/staff/${encodeURIComponent(negotiation.staffId)}/negotiate`,
+      routeLabel: negotiation.response === 'countered' ? 'Review Counter' : 'Improve Offer', actionable: true,
+      round: currentRound,
     });
   }
 

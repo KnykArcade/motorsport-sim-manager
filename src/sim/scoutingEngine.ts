@@ -9,6 +9,7 @@
 
 import type { FacilitiesState } from '../types/facilityTypes';
 import type { Driver, DriverRatings } from '../types/gameTypes';
+import type { StaffMember } from '../types/staffTypes';
 import type { MarketSkillRatings } from '../types/marketTypes';
 import type {
   ScoutedEntityType,
@@ -120,6 +121,12 @@ export function driverScoutTarget(driver: Pick<Driver, 'id' | 'ratings'>): Scout
     skills: driverRatingsToMarketSkills(driver.ratings),
     potential: driver.ratings.overall,
   };
+}
+
+export function staffScoutTarget(staff: Pick<StaffMember, 'id' | 'rating'>): ScoutTarget {
+  const rating = staff.rating <= 10 ? staff.rating * 10 : staff.rating;
+  const skills = Object.fromEntries(SKILL_KEYS.map((key) => [key, rating])) as unknown as MarketSkillRatings;
+  return { id: staff.id, skills, potential: rating };
 }
 
 function driverRatingsToMarketSkills(ratings: DriverRatings): MarketSkillRatings {

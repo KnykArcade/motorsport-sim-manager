@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { FogView } from '../sim/scoutingEngine';
 import type { ScoutingReport } from '../types/scoutingTypes';
-import { scoutingAbilitySummary, scoutingAssignments, scoutingComparison } from './scoutingViewModel';
+import { scoutingAbilitySummary, scoutingAssignments, scoutingComparison, scoutingReportFreshness } from './scoutingViewModel';
 
 const view: FogView = {
   accuracy: 0.6, revealed: false, maxed: false,
@@ -44,5 +44,11 @@ describe('scouting view model', () => {
     const comparison = scoutingComparison(targets);
     expect(comparison).toHaveLength(3);
     expect(comparison[0]).toMatchObject({ entityId: 'a', knowledgePercentage: 60, potentialStars: [3.5, 4.5] });
+  });
+
+  it('derives deterministic report freshness from the stored update and current round', () => {
+    expect(scoutingReportFreshness('2026-01-01T00:00:00.000Z', 2026, 2)).toBe('Fresh');
+    expect(scoutingReportFreshness('2026-01-01T00:00:00.000Z', 2026, 5)).toBe('Current');
+    expect(scoutingReportFreshness('2026-01-01T00:00:00.000Z', 2026, 12)).toBe('Stale');
   });
 });
