@@ -7,7 +7,9 @@ import type { GameState } from '../game/careerState';
 import { careerMarketBundle } from './careerMarketEngine';
 import {
   ensureMotorsportUniverse,
+  advanceOffscreenChampionshipsAfterPlayerRace,
   performanceRenewalProbability,
+  simulateOffscreenChampionshipRound,
   simulateOffscreenChampionshipSeason,
   universeOccupiedNames,
 } from './motorsportUniverseEngine';
@@ -88,6 +90,39 @@ describe('persistent multi-series universe', () => {
     expect(first.driverChampionId).toBe(first.driverStandings[0].entityId);
     expect(first.teamChampionId).toBe(first.teamStandings[0].entityId);
     expect(first.driverStandings.reduce((wins, standing) => wins + standing.wins, 0)).toBe(first.completedRaces);
+  });
+
+  it('advances a live championship one deterministic round at a time', () => {
+    const championship = career().motorsportUniverse!.championships.NASCAR!;
+    const first = simulateOffscreenChampionshipRound(championship, 'live-seed');
+    const repeated = simulateOffscreenChampionshipRound(championship, 'live-seed');
+    const second = simulateOffscreenChampionshipRound(first, 'live-seed');
+    expect(first).toEqual(repeated);
+    expect(first.liveSeason?.completedRaces).toBe(1);
+    expect(first.liveSeason?.raceResults).toHaveLength(1);
+    expect(second.liveSeason?.completedRaces).toBe(2);
+    expect(second.liveSeason?.driverStandings.reduce((wins, standing) => wins + standing.wins, 0)).toBe(2);
+  });
+
+  it('ticks every other active series and creates state-backed world news', () => {
+    const state = career();
+    const tick = advanceOffscreenChampionshipsAfterPlayerRace(state);
+    expect(tick.universe?.championships.F1?.liveSeason).toBeUndefined();
+    expect(tick.universe?.championships.NASCAR?.liveSeason?.completedRaces).toBe(1);
+    expect(tick.universe?.championships.CART?.liveSeason?.completedRaces).toBe(1);
+    expect(tick.news).toHaveLength(3);
+    expect(tick.news.every((item) => item.category === 'championship')).toBe(true);
+  });
+
+  it('finishes a partially simulated season without replaying completed rounds', () => {
+    const championship = career().motorsportUniverse!.championships.CART!;
+    const partial = simulateOffscreenChampionshipRound(
+      simulateOffscreenChampionshipRound(championship, 'partial-seed'),
+      'partial-seed',
+    );
+    const completed = simulateOffscreenChampionshipSeason(partial, 'partial-seed');
+    const direct = simulateOffscreenChampionshipSeason(championship, 'partial-seed');
+    expect(completed).toEqual(direct);
   });
 
   it('gives stronger performers a better renewal chance', () => {
