@@ -6,6 +6,7 @@ import type { StaffMember } from '../types/staffTypes';
 import { gameReducer } from '../game/gameReducer';
 import {
   actionableInboxCount,
+  inboxTimingForMessage,
   inboxMessages,
   mustRespondInboxCount,
   recommendedInboxCount,
@@ -301,5 +302,25 @@ describe('inboxViewModel', () => {
     const state = newState();
     const messages = inboxMessages(state);
     expect(actionableInboxCount(state)).toBe(messages.filter((message) => message.actionable).length);
+  });
+
+  it('projects timing buckets without adding deadline state', () => {
+    const state = newState();
+    const base = {
+      id: 'timing',
+      severity: 'action' as const,
+      category: 'people' as const,
+      title: 'Review staff plan',
+      route: '/staff',
+      routeLabel: 'Open Staff',
+      actionable: true,
+      kind: 'recommended' as const,
+      round: 1,
+    };
+
+    expect(inboxTimingForMessage(state, { ...base, blocking: true })).toBe('due_this_week');
+    expect(inboxTimingForMessage(state, base)).toBe('before_next_race');
+    expect(inboxTimingForMessage(state, { ...base, title: 'Contract expiring after this season' })).toBe('season_end');
+    expect(inboxTimingForMessage(state, { ...base, actionable: false, kind: 'news' })).toBe('monitor');
   });
 });

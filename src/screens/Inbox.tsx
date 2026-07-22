@@ -13,6 +13,7 @@ import {
 } from '../components/workspace/Workspace';
 import {
   inboxMessages,
+  inboxTimingLabel,
   mustRespondInboxCount,
   recommendedInboxCount,
   type InboxCategory,
@@ -192,6 +193,7 @@ export function Inbox() {
                     <div className="border-t border-neutral-800/60 px-3 py-2">
                       <div className="mb-2 flex flex-wrap gap-x-4 gap-y-1 text-[10px] uppercase tracking-wide text-neutral-500">
                         <span>Owner: {message.source}</span>
+                        {message.timing && <span className="text-amber-300">{inboxTimingLabel(message.timing)}</span>}
                         {message.blocking && <span className="text-red-300">Blocks advancement</span>}
                       </div>
                       {message.body && <p className="text-sm leading-6 text-neutral-300">{message.body}</p>}
