@@ -2,6 +2,7 @@
 // Keeping this outside React keeps the simulation testable and deterministic.
 
 import { getTrackById } from '../data';
+import { selectRaceRuleProfile } from '../data/rules/raceRuleProfiles';
 import { setupOptionsById } from '../data/setupOptions/setupOptions';
 import { autoSetupOptionsForTrack } from '../sim/autoSetup';
 import { qualifyingRunPlansById } from '../data/decisions/qualifyingRunPlans';
@@ -167,6 +168,7 @@ import {
   sessionLapCost,
 } from '../sim/practiceProgramEngine';
 import { weekendForecast } from '../sim/weatherEngine';
+import { setupLockPhase, validateSetupChange } from '../sim/setupLockEngine';
 import type { RaceWeekendPackageType, RaceWeekendPackageSelection, RaceWeekendPackageEffects, FinancialDistressMap } from '../types/raceWeekendPackageTypes';
 import type { AIPackageContext } from '../types/raceWeekendPackageTypes';
 import {
@@ -720,6 +722,18 @@ export function gameReducer(state: GameState | null, action: GameAction): GameSt
       if (getCareerPhase(state) !== 'race_weekend') return state;
       // Minimum Package: no setup changes allowed — team runs the locked baseline.
       if (state.raceWeekendPackage?.packageType === 'MandatoryMinimum') return state;
+      const race = currentRace(state);
+      const track = race ? getTrackById(race.trackId) : undefined;
+      if (race && track) {
+        const profile = selectRaceRuleProfile(state.series, state.seasonYear, track);
+        const validation = validateSetupChange(
+          profile,
+          setupLockPhase(!!state.qualifyingResults[race.id]),
+          state.carSetups?.[action.driverId],
+          action.setup,
+        );
+        if (!validation.allowed) return state;
+      }
       return {
         ...state,
         carSetups: { ...(state.carSetups ?? {}), [action.driverId]: action.setup },

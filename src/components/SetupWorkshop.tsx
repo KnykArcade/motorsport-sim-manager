@@ -47,6 +47,12 @@ type Props = {
   onCopy: (fromId: string, toId: string) => void;
   // Reset the driver back to the setup family they actually ran in practice.
   onResetDriver?: (driverId: string) => void;
+  setupLock?: {
+    active: boolean;
+    label: string;
+    description: string;
+    allowedParams: readonly SetupParamKey[];
+  };
   // Fixed-action-bar navigation (rendered inside the workshop so the buttons are
   // always visible without page scroll).
   onBack?: () => void;
@@ -118,6 +124,7 @@ export function SetupWorkshop({
   onApplySetup,
   onCopy,
   onResetDriver,
+  setupLock,
   onBack,
   onConfirm,
 }: Props) {
@@ -187,6 +194,8 @@ export function SetupWorkshop({
     const est = componentFitEstimate(fit, setupKnowledge);
     return (est.low + est.high) / 2;
   };
+  const lockedParam = (key: SetupParamKey): boolean =>
+    !!setupLock?.active && !setupLock.allowedParams.includes(key);
 
   return (
     <div className="flex h-full min-h-0 flex-col gap-3" data-testid="setup-workshop">
@@ -242,6 +251,13 @@ export function SetupWorkshop({
         </div>
       )}
 
+      {setupLock?.active && (
+        <div className="shrink-0 rounded-lg border border-orange-500/40 bg-orange-950/25 px-3 py-2 text-xs text-orange-200">
+          <div className="font-semibold uppercase tracking-wide">{setupLock.label}</div>
+          <div className="mt-1 text-orange-100/80">{setupLock.description}</div>
+        </div>
+      )}
+
       {/* Main dashboard: left controls (internal scroll) + right readout (internal scroll). */}
       <div className="grid min-h-0 flex-1 gap-3 lg:grid-cols-[minmax(0,2fr)_minmax(320px,0.9fr)]">
         {/* Left/Middle: setup controls grouped into component tabs. */}
@@ -288,11 +304,12 @@ export function SetupWorkshop({
             <div className="space-y-4">
               {comp.params.map((key) => {
                 const meta = SETUP_PARAMS[key];
+                const disabled = lockedParam(key);
                 return (
-                  <div key={key}>
+                  <div key={key} className={disabled ? 'opacity-45' : undefined}>
                     <div className="mb-1 flex items-center justify-between text-xs">
                       <span className="font-medium text-neutral-200">{meta.label}</span>
-                      <span className="tabular-nums text-neutral-400">{setup[key].toFixed(1)}/10</span>
+                      <span className="tabular-nums text-neutral-400">{disabled ? 'Locked' : `${setup[key].toFixed(1)}/10`}</span>
                     </div>
                     <input
                       type="range"
@@ -300,8 +317,9 @@ export function SetupWorkshop({
                       max={10}
                       step={0.5}
                       value={setup[key]}
+                      disabled={disabled}
                       onChange={(e) => onChangeParam(driver.id, key, Number(e.target.value))}
-                      className="w-full accent-sky-500"
+                      className="w-full accent-sky-500 disabled:cursor-not-allowed"
                     />
                     <div className="flex justify-between text-[10px] uppercase tracking-wide text-neutral-500">
                       <span>{meta.lowLabel}</span>
@@ -403,16 +421,18 @@ export function SetupWorkshop({
                 <div key={p.id} className="flex overflow-hidden rounded-md border border-neutral-700">
                   <button
                     title={`Apply ${p.name} to ${driver.name}`}
+                    disabled={setupLock?.active}
                     onClick={() => onApplySetup(driver.id, { ...p.setup })}
-                    className="bg-neutral-800/60 px-2.5 py-1 text-xs text-neutral-200 hover:bg-neutral-700"
+                    className="bg-neutral-800/60 px-2.5 py-1 text-xs text-neutral-200 hover:bg-neutral-700 disabled:cursor-not-allowed disabled:opacity-45"
                   >
                     {p.name}
                   </button>
                   {drivers.length > 1 && (
                     <button
                       title={`Apply ${p.name} to both cars`}
+                      disabled={setupLock?.active}
                       onClick={() => drivers.forEach((d) => onApplySetup(d.id, { ...p.setup }))}
-                      className="border-l border-neutral-700 bg-neutral-900/60 px-1.5 text-[10px] text-neutral-400 hover:bg-neutral-700 hover:text-neutral-100"
+                      className="border-l border-neutral-700 bg-neutral-900/60 px-1.5 text-[10px] text-neutral-400 hover:bg-neutral-700 hover:text-neutral-100 disabled:cursor-not-allowed disabled:opacity-45"
                     >
                       ×2
                     </button>
@@ -557,12 +577,12 @@ export function SetupWorkshop({
         </div>
         <div className="flex flex-wrap items-center gap-2">
           {other && (
-            <Button variant="ghost" onClick={() => onCopy(driver.id, other.id)} className="text-xs">
+            <Button variant="ghost" disabled={setupLock?.active} onClick={() => onCopy(driver.id, other.id)} className="text-xs">
               Copy → {other.name}
             </Button>
           )}
           {onResetDriver && (
-            <Button variant="ghost" onClick={() => onResetDriver(driver.id)} className="text-xs">
+            <Button variant="ghost" disabled={setupLock?.active} onClick={() => onResetDriver(driver.id)} className="text-xs">
               Reset to practised
             </Button>
           )}
@@ -650,4 +670,3 @@ function Effect({ label, value, goodHigh }: { label: string; value: number; good
     </div>
   );
 }
-
