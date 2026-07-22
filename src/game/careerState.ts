@@ -40,7 +40,7 @@ import type { AITeamState, TeamMemoryEntry } from '../types/aiTeamTypes';
 import type { RaceWeekendPackageSelection, FinancialDistressMap } from '../types/raceWeekendPackageTypes';
 import type { CareerPhaseState } from '../types/careerPhaseTypes';
 import type { TeamPartsMap, PartsAutomationSettings, TechnicalManagementMode } from '../types/partsTypes';
-import type { Phase18FoundationState } from '../types/phase18Types';
+import type { ContractClauseType, Phase18FoundationState } from '../types/phase18Types';
 import type { CharacterInteractionState } from '../types/characterInteractionTypes';
 import type { PersonnelCareerTenure } from '../types/personnelCareerTypes';
 
@@ -66,6 +66,10 @@ export type GameState = {
   teams: Team[];
   drivers: Driver[];
   cars: Car[];
+
+  // Optional, save-compatible workspace state for a deterministic driver
+  // contract negotiation currently being handled by the player.
+  contractNegotiation?: DriverContractNegotiation;
 
   pointsSystemId: string;
   regulationSetId: string;
@@ -252,6 +256,20 @@ export type GameState = {
   // ClosureRisk. Each entry records the team and season for potential future
   // team sale, merger, or replacement processing.
   closureHooks?: { teamId: string; seasonYear: number; level: string }[];
+};
+
+export type DriverContractRole = NonNullable<Driver['contractType']>;
+
+export type DriverContractNegotiation = {
+  driverId: string;
+  askingSalary: number;
+  offeredSalary: number;
+  years: number;
+  role: DriverContractRole;
+  clauseType: ContractClauseType;
+  acceptanceLikelihood: number;
+  response: 'demand' | 'editing' | 'countered' | 'refused';
+  counterSalary?: number;
 };
 
 export function minRaceDriversForSeries(series: Series): number {

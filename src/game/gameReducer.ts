@@ -47,6 +47,7 @@ import {
   maxRaceDriversForSeries,
   minRaceDriversForSeries,
   type GameState,
+  type DriverContractRole,
 } from './careerState';
 import { buildRaceContext, playerTunedSetups } from './raceSetup';
 import { createNewGame, type NewGameOptions } from './initialCareer';
@@ -63,6 +64,13 @@ import { marketDriverToDriver, signProspectToAcademy } from '../sim/driverMarket
 import { academyCapacityFor } from '../sim/teamRatingsEngine';
 import { makeTransaction, PRIZE_MONEY_PER_POINT, toMoney } from '../sim/financeEngine';
 import { driverExtensionSigningFee, extendedDriverSalaryMillions, thirdDriverMidSeasonFee, thirdDriverSalary } from '../sim/contractEngine';
+import {
+  buildDriverContractNegotiation,
+  deterministicCounterSalary,
+  driverExtensionOfferScore,
+  negotiationOfferMultiplier,
+  refreshDriverContractNegotiation,
+} from '../sim/driverContractNegotiationEngine';
 import {
   generateSponsorOffers,
   racePerformanceBonuses,
@@ -100,7 +108,6 @@ import {
   ensureContractClauses,
   evaluateContractClauses,
   linkPromiseToClause,
-  negotiationClauseScore,
   respondToContractBreach,
   syncClausePromiseResolution,
 } from '../sim/phase18ContractClauseEngine';
@@ -233,7 +240,7 @@ import { resolveCharacterRequest } from '../sim/characterRequestEngine';
 import { resolveCharacterDispute } from '../sim/characterDisputeEngine';
 import { resolveCharacterInitiative } from '../sim/characterInitiativeEngine';
 import { resolveCharacterBreakingPoint } from '../sim/characterBreakingPointEngine';
-import { driverFutureIntentContractModifier, refreshCharacterFutureIntentions, staffFutureIntentContractModifier } from '../sim/characterFutureIntentEngine';
+import { refreshCharacterFutureIntentions, staffFutureIntentContractModifier } from '../sim/characterFutureIntentEngine';
 
 export type GameAction =
   | { type: 'NEW_GAME'; options: NewGameOptions }
@@ -298,6 +305,10 @@ export type GameAction =
   | { type: 'SIGN_THIRD_DRIVER'; marketId: string }
   | { type: 'PROMOTE_THIRD_DRIVER'; seatDriverId: string; thirdDriverId: string }
   | { type: 'EXTEND_DRIVER_CONTRACT'; driverId: string; years: number; offerMultiplier?: number; clauseType?: ContractClauseType }
+  | { type: 'START_DRIVER_CONTRACT_NEGOTIATION'; driverId: string }
+  | { type: 'UPDATE_DRIVER_CONTRACT_NEGOTIATION'; offeredSalary?: number; years?: number; role?: DriverContractRole; clauseType?: ContractClauseType }
+  | { type: 'CANCEL_DRIVER_CONTRACT_NEGOTIATION' }
+  | { type: 'SUBMIT_DRIVER_CONTRACT_NEGOTIATION' }
   | { type: 'ADVANCE_SEASON'; nextBundle?: import('../data/seasonCatalog').SeasonBundle }
   | { type: 'ADVANCE_RACE' }
   | { type: 'SIGN_RACE_DRIVER'; marketId: string }
@@ -895,6 +906,47 @@ export function gameReducer(state: GameState | null, action: GameAction): GameSt
       return extendDriverContract(state, action.driverId, action.years, action.offerMultiplier ?? 1, action.clauseType);
     }
 
+    case 'START_DRIVER_CONTRACT_NEGOTIATION': {
+      if (!state || state.gameMode === 'SingleSeason' || state.seasonComplete) return state;
+      const selectedTeamId = state.selectedTeamId;
+      const driver = state.drivers.find((entry) => entry.id === action.driverId && entry.teamId === selectedTeamId);
+      if (!driver || (driver.contractYearsRemaining ?? 1) >= 5) return state;
+      return { ...state, contractNegotiation: buildDriverContractNegotiation(state, driver) };
+    }
+
+    case 'UPDATE_DRIVER_CONTRACT_NEGOTIATION': {
+      if (!state?.contractNegotiation) return state;
+      return {
+        ...state,
+        contractNegotiation: refreshDriverContractNegotiation(state, {
+          ...state.contractNegotiation,
+          offeredSalary: action.offeredSalary ?? state.contractNegotiation.offeredSalary,
+          years: action.years ?? state.contractNegotiation.years,
+          role: action.role ?? state.contractNegotiation.role,
+          clauseType: action.clauseType ?? state.contractNegotiation.clauseType,
+        }),
+      };
+    }
+
+    case 'CANCEL_DRIVER_CONTRACT_NEGOTIATION':
+      return state ? { ...state, contractNegotiation: undefined } : state;
+
+    case 'SUBMIT_DRIVER_CONTRACT_NEGOTIATION': {
+      if (!state?.contractNegotiation) return state;
+      const negotiation = state.contractNegotiation;
+      const driver = state.drivers.find((entry) => entry.id === negotiation.driverId);
+      if (!driver) return { ...state, contractNegotiation: undefined };
+      return extendDriverContract(
+        state,
+        negotiation.driverId,
+        negotiation.years,
+        negotiationOfferMultiplier(driver, negotiation.years, negotiation.offeredSalary),
+        negotiation.clauseType,
+        negotiation.offeredSalary,
+        negotiation.role,
+      );
+    }
+
     case 'ADVANCE_SEASON': {
       if (!state) return state;
       if (!state.seasonComplete) return state;
@@ -1148,8 +1200,8 @@ function clamp100(n: number): number {
   return Math.max(0, Math.min(100, Math.round(n)));
 }
 
-function extendDriverContract(state: GameState, driverId: string, years: number, offerMultiplier: number, clauseType?: ContractClauseType): GameState {
-  if (state.seasonComplete) return state;
+function extendDriverContract(state: GameState, driverId: string, years: number, offerMultiplier: number, clauseType?: ContractClauseType, offeredSalary?: number, role?: DriverContractRole): GameState {
+  if (state.gameMode === 'SingleSeason' || state.seasonComplete) return state;
   const driver = state.drivers.find((d) => d.id === driverId && d.teamId === state.selectedTeamId);
   if (!driver) return state;
   const addYears = Math.max(1, Math.min(3, Math.round(years)));
@@ -1161,8 +1213,22 @@ function extendDriverContract(state: GameState, driverId: string, years: number,
   const fee = Math.round(driverExtensionSigningFee(driver, appliedYears, racesRemaining, state.calendar.length) * multiplier);
   if (fee > playerBudget(state)) return state;
 
-  const offer = evaluateExtensionOffer(state, driver, appliedYears, multiplier, clauseType);
+  const score = driverExtensionOfferScore(state, driver, appliedYears, multiplier, clauseType);
+  const offer = { accepted: score >= 58, score };
   if (!offer.accepted) {
+    if (state.contractNegotiation?.driverId === driverId && offer.score >= 45) {
+      const counterSalary = deterministicCounterSalary(driver, appliedYears, offeredSalary ?? state.contractNegotiation.offeredSalary, offer.score);
+      return {
+        ...state,
+        contractNegotiation: {
+          ...state.contractNegotiation,
+          askingSalary: counterSalary,
+          counterSalary,
+          acceptanceLikelihood: offer.score,
+          response: 'countered',
+        },
+      };
+    }
     const rel = state.driverRelationships?.[driverId];
     const driverRelationships =
       state.driverRelationships && rel
@@ -1177,7 +1243,14 @@ function extendDriverContract(state: GameState, driverId: string, years: number,
           }
         : state.driverRelationships;
     const refusalNews = contractOfferNews(state, driver, appliedYears, fee, false, offer.score);
-    return { ...state, driverRelationships, news: [refusalNews, ...state.news].slice(0, 80) };
+    return {
+      ...state,
+      contractNegotiation: state.contractNegotiation?.driverId === driverId
+        ? { ...state.contractNegotiation, acceptanceLikelihood: offer.score, response: 'refused' }
+        : state.contractNegotiation,
+      driverRelationships,
+      news: [refusalNews, ...state.news].slice(0, 80),
+    };
   }
 
   const charged = applyTransaction(
@@ -1189,7 +1262,8 @@ function extendDriverContract(state: GameState, driverId: string, years: number,
       ? {
           ...d,
           contractYearsRemaining: currentYears + appliedYears,
-          salary: Math.max(d.salary ?? 0, extendedDriverSalaryMillions(d, appliedYears)),
+          salary: Math.max(d.salary ?? 0, offeredSalary ?? extendedDriverSalaryMillions(d, appliedYears)),
+          contractType: role ?? d.contractType,
         }
       : d,
   );
@@ -1208,40 +1282,7 @@ function extendDriverContract(state: GameState, driverId: string, years: number,
       }
       : charged.driverRelationships;
   const acceptedNews = contractOfferNews(charged, driver, appliedYears, fee, true, offer.score);
-  return applyNegotiatedDriverClause({ ...charged, drivers, driverRelationships, news: [acceptedNews, ...charged.news].slice(0, 80) }, driverId, clauseType);
-}
-
-function evaluateExtensionOffer(
-  state: GameState,
-  driver: Driver,
-  appliedYears: number,
-  offerMultiplier: number,
-  clauseType?: ContractClauseType,
-): { accepted: boolean; score: number } {
-  const rel = state.driverRelationships?.[driver.id];
-  const team = state.teams.find((t) => t.id === state.selectedTeamId);
-  const relationshipScore = rel
-    ? rel.morale * 0.16 + rel.teamLoyalty * 0.16 + rel.trustInPrincipal * 0.14 - rel.frustration * 0.18
-    : driver.morale * 0.18 + driver.confidence * 0.12;
-  const driverMood = driver.morale * 0.12 + driver.confidence * 0.08;
-  const teamPull = Math.max(-8, Math.min(8, (((team as Team | undefined)?.reputation ?? 50) - 50) / 5));
-  const ambitionPenalty = Math.max(0, driver.ratings.overall - 80) * 0.7;
-  const seatInsecure =
-    driver.contractType === 'third' ||
-    driver.contractType === 'reserve' ||
-    driver.contractType === 'test' ||
-    driver.confidence < 40 ||
-    driver.morale < 40 ||
-    (rel?.frustration ?? 0) >= 70;
-  const shortTermPenalty = appliedYears === 1 && !seatInsecure
-    ? Math.max(5, Math.round((driver.ratings.overall - 50) * 0.3 + ((rel?.ego ?? 50) - 50) / 8))
-    : 0;
-  const securityBoost = (appliedYears >= 2 ? 9 + appliedYears * 7 : seatInsecure ? 5 : 1) + (offerMultiplier - 1) * 44;
-  const expiringBoost = (driver.contractYearsRemaining ?? 1) <= 1 ? 4 : 0;
-  const clauseBoost = negotiationClauseScore(state, driver, clauseType);
-  const futureIntentModifier = driverFutureIntentContractModifier(state, driver.id);
-  const score = Math.round(22 + relationshipScore + driverMood + teamPull + securityBoost + expiringBoost + clauseBoost + futureIntentModifier - ambitionPenalty - shortTermPenalty);
-  return { accepted: score >= 58, score };
+  return applyNegotiatedDriverClause({ ...charged, contractNegotiation: undefined, drivers, driverRelationships, news: [acceptedNews, ...charged.news].slice(0, 80) }, driverId, clauseType);
 }
 
 function contractOfferNews(
