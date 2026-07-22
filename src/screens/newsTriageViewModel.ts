@@ -57,8 +57,8 @@ const CATEGORY_TRIAGE: Partial<Record<NewsCategory, Omit<NewsTriage, 'owner'>>> 
     recommendation: 'Review the academy report and decide whether follow-up is needed.',
     whyItMatters: 'Academy signals shape the team’s long-term driver pipeline.',
     consequence: 'Delaying attention can allow a promising option to cool or leave.',
-    route: '/preseason',
-    routeLabel: 'Open Academy',
+    route: '/market',
+    routeLabel: 'Open Driver Market',
   },
 };
 

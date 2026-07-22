@@ -395,8 +395,8 @@ export function inboxMessages(state: GameState): InboxMessage[] {
   ].sort((a, b) => SEVERITY_ORDER[a.severity] - SEVERITY_ORDER[b.severity] || (b.round ?? 0) - (a.round ?? 0) || a.id.localeCompare(b.id));
   const dismissed = new Set(state.inboxDismissed ?? []);
   return [...actionItems, ...newsMessages(state)]
-    .filter((message) => !dismissed.has(message.id))
     .map(withTaskSemantics)
+    .filter((message) => message.blocking || !dismissed.has(message.id))
     .sort((a, b) =>
       Number(b.actionable) - Number(a.actionable)
       || SEVERITY_ORDER[a.severity] - SEVERITY_ORDER[b.severity]

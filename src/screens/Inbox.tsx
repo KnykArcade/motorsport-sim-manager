@@ -201,15 +201,17 @@ export function Inbox() {
                           <Button className="px-2 py-1 text-xs" variant="primary" onClick={() => navigate(message.route)}>
                             {message.routeLabel} →
                           </Button>
-                          <Button
-                            className="px-2 py-1 text-xs"
-                            onClick={() => {
-                              dispatch({ type: 'DISMISS_INBOX_MESSAGES', messageIds: [message.id] });
-                              setExpandedId(undefined);
-                            }}
-                          >
-                            Dismiss
-                          </Button>
+                          {!message.blocking && (
+                            <Button
+                              className="px-2 py-1 text-xs"
+                              onClick={() => {
+                                dispatch({ type: 'DISMISS_INBOX_MESSAGES', messageIds: [message.id] });
+                                setExpandedId(undefined);
+                              }}
+                            >
+                              Dismiss
+                            </Button>
+                          )}
                         </div>
                       </div>
                     </div>
