@@ -384,7 +384,7 @@ export function RaceWeekend() {
         title={race.gpName}
         subtitle={`${race.trackName} · Round ${race.round} of ${state.calendar.length} · ${phaseTitle}`}
         actions={<>
-          <Button variant="ghost" onClick={() => navigate('/hq')}>Exit to HQ</Button>
+          <Button variant="ghost" onClick={() => navigate('/hq')}>Manager Office</Button>
           <Button variant="primary" onClick={advanceFromCurrent}>{advanceLabel} →</Button>
         </>}
       />

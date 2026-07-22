@@ -114,24 +114,27 @@ export function PostRaceReview() {
         eyebrow={isActiveReview ? 'Race operations' : 'Race archive'}
         title={`${race.gpName} Review`}
         subtitle={<>{race.trackName} · Round {race.round} of {state.calendar.length}{!isActiveReview && ' · Historical (read-only)'}</>}
-        actions={isActiveReview && (
-          state.seasonComplete ? (
-            <Button variant="primary" onClick={() => navigate('/season-review')}>Season Review →</Button>
-          ) : (
-            <div className="flex flex-wrap justify-end gap-2">
-              {inboxActions > 0 && (
-                <Button onClick={() => navigate('/inbox')}>Review Inbox ({inboxActions}) →</Button>
-              )}
-              <Button
-                variant="primary"
-                onClick={continueToPaddock}
-                title={technicalRisk.unresolvedCount > 0 ? `Continue with ${technicalRisk.unresolvedCount} unresolved technical case(s)` : 'Continue to Paddock Week'}
-              >
-                {technicalRisk.unresolvedCount > 0 ? 'Continue with unresolved risk →' : 'Continue to Paddock Week →'}
-              </Button>
-            </div>
-          )
-        )}
+        actions={<div className="flex flex-wrap justify-end gap-2">
+          <Button variant="ghost" onClick={() => navigate('/hq')}>Manager Office</Button>
+          {isActiveReview && (
+            state.seasonComplete ? (
+              <Button variant="primary" onClick={() => navigate('/season-review')}>Season Review →</Button>
+            ) : (
+              <>
+                {inboxActions > 0 && (
+                  <Button onClick={() => navigate('/inbox')}>Review Inbox ({inboxActions}) →</Button>
+                )}
+                <Button
+                  variant="primary"
+                  onClick={continueToPaddock}
+                  title={technicalRisk.unresolvedCount > 0 ? `Continue with ${technicalRisk.unresolvedCount} unresolved technical case(s)` : 'Continue to Paddock Week'}
+                >
+                  {technicalRisk.unresolvedCount > 0 ? 'Continue with unresolved risk →' : 'Continue to Paddock Week →'}
+                </Button>
+              </>
+            )
+          )}
+        </div>}
       />
       <MetricStrip>
         <WorkspaceMetric label="Team result" value={bestFinish !== null ? `P${bestFinish}` : 'No finish'} detail={`${isActiveReview ? (summary?.pointsGained ?? 0) : (historicalPoints ?? 0)} points scored`} />

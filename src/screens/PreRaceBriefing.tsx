@@ -89,14 +89,17 @@ export function PreRaceBriefing() {
         eyebrow="Race operations"
         title={`${race.gpName} Briefing`}
         subtitle={`${race.trackName} · Round ${race.round} of ${state.calendar.length} · ${track.archetype}`}
-        actions={<Button
-          variant="primary"
-          onClick={enterRaceWeekend}
-          disabled={!canEnterWeekend}
-          title={weekendBlockedReason ?? 'Enter Race Weekend'}
-        >
-          Enter Race Weekend →
-        </Button>}
+        actions={<>
+          <Button variant="ghost" onClick={() => navigate('/hq')}>Manager Office</Button>
+          <Button
+            variant="primary"
+            onClick={enterRaceWeekend}
+            disabled={!canEnterWeekend}
+            title={weekendBlockedReason ?? 'Enter Race Weekend'}
+          >
+            Enter Race Weekend →
+          </Button>
+        </>}
       />
       <MetricStrip>
         <WorkspaceMetric label="Championship" value={playerPosition > 0 ? `P${playerPosition}` : 'Opening round'} detail={playerPosition > 0 ? `${playerStanding?.points ?? 0} constructor points` : 'No standings position yet'} />

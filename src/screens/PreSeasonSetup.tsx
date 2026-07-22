@@ -124,9 +124,12 @@ export function PreSeasonSetup() {
         eyebrow="Season preparation"
         title={`${state.seasonYear} ${state.series} Preseason Setup`}
         subtitle={<>{getGameModeLabel(state.gameMode)}{isSingleSeason && ' · Historical replay — management choices follow mode restrictions'}</>}
-        actions={<Button variant="primary" onClick={advanceToBriefing} disabled={!checklistComplete} title={advanceBlockedReason}>
-          {checklistComplete ? 'Advance to Race 1 Briefing →' : `${remainingApprovals} reviews remaining`}
-        </Button>}
+        actions={<>
+          <Button variant="ghost" onClick={() => navigate('/hq')}>Manager Office</Button>
+          <Button variant="primary" onClick={advanceToBriefing} disabled={!checklistComplete} title={advanceBlockedReason}>
+            {checklistComplete ? 'Advance to Race 1 Briefing →' : `${remainingApprovals} reviews remaining`}
+          </Button>
+        </>}
       />
       <MetricStrip>
         <WorkspaceMetric label="Review progress" value={`${approvedCount}/${totalTabs}`} detail={checklistComplete ? 'Preseason checklist complete' : `${remainingApprovals} confirmations required`} />
