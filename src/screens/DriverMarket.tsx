@@ -49,6 +49,7 @@ import {
   type YouthMarketTab,
 } from './driverMarketViewModel';
 import { transferCalendarView } from './transferCalendarViewModel';
+import { recruitmentDecisionDesk } from './recruitmentDecisionViewModel';
 
 type Tab = 'senior' | 'youth';
 
@@ -101,6 +102,7 @@ export function DriverMarket() {
     ...(!singleSeason && bundle ? [{ id: 'youth' as const, label: `Youth Academy (${bundle.youth.length})` }] : []),
   ];
   const transferView = transferCalendarView(state);
+  const approachedDecisionDesk = approachedTargetId ? recruitmentDecisionDesk(state, approachedTargetId) : null;
 
   // Fogged potential label: scouting narrows the range without confirming truth.
   const potLabel = (id: string, skills: MarketSkillRatings, potential: number, entityType: ScoutedEntityType = 'Driver'): string =>
@@ -146,9 +148,20 @@ export function DriverMarket() {
       </div>
 
       {approachedTargetId && (
-        <Panel title="Scouting handoff">
-          {seniorDrivers.some((driver) => driver.id === approachedTargetId) ? (
-            <p className="text-sm text-neutral-300"><span className="font-semibold">{seniorDrivers.find((driver) => driver.id === approachedTargetId)?.name}</span> is pinned first below. Review the fog-aware report, interest, competing bid, and available contract action before committing.</p>
+        <Panel title="Recruitment decision desk">
+          {approachedDecisionDesk ? (
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <p className="text-sm text-neutral-300"><span className="font-semibold">{approachedDecisionDesk.name}</span> is pinned first below.</p>
+                <p className="mt-1 text-xs text-neutral-500">{approachedDecisionDesk.recommendation}</p>
+                <p className="mt-1 text-xs text-neutral-500">Status: {approachedDecisionDesk.status} · Estimated knowledge: {approachedDecisionDesk.knowledgePercentage}%</p>
+              </div>
+              {approachedDecisionDesk.nextAction.route !== `/market?target=${encodeURIComponent(approachedTargetId)}` && (
+                <Button variant="ghost" className="px-2 py-1 text-xs" onClick={() => navigate(approachedDecisionDesk.nextAction.route)}>
+                  {approachedDecisionDesk.nextAction.label} →
+                </Button>
+              )}
+            </div>
           ) : (
             <p className="text-sm text-amber-300">This shortlisted target is no longer available in the current market.</p>
           )}

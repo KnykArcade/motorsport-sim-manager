@@ -20,6 +20,7 @@ import type { ScoutedEntityType, VisibleRating } from '../types/scoutingTypes';
 import type { IntelligenceAction, IntelligenceReport } from '../types/phase18Types';
 import { INTELLIGENCE_INVESTIGATION_COST, intelligenceConfidenceLabel } from '../sim/phase18IntelligenceEngine';
 import { scoutingAbilitySummary, scoutingAssignments, scoutingComparison, scoutingReportFreshness } from './scoutingViewModel';
+import { recruitmentDecisionDesk } from './recruitmentDecisionViewModel';
 
 type Tab = 'intelligence' | 'senior' | 'youth' | 'staff';
 
@@ -92,6 +93,7 @@ export function Scouting() {
     ? requestedTab
     : tab;
   const focusedTargetName = focusedTargetId ? targetNames[focusedTargetId] : undefined;
+  const focusedDecisionDesk = focusedTargetId ? recruitmentDecisionDesk(state, focusedTargetId) : null;
   const assignments = scoutingAssignments(
     scouting.reports,
     scouting.networkAccuracy,
@@ -167,14 +169,29 @@ export function Scouting() {
       </div>
 
       {focusedTargetId && (
-        <Panel title="Scouting handoff">
-          {focusedTargetName ? (
-            <p className="text-sm text-neutral-300">
-              <span className="font-semibold">{focusedTargetName}</span> is the focused recruitment target.
-              Review the current report, knowledge level, and next scouting action below.
-            </p>
+        <Panel title="Recruitment decision desk">
+          {focusedDecisionDesk ? (
+            <div className="space-y-3">
+              <div className="flex flex-wrap items-start justify-between gap-3">
+                <div>
+                  <p className="text-sm text-neutral-300">
+                    <span className="font-semibold">{focusedDecisionDesk.name}</span> · {focusedDecisionDesk.entityType}
+                  </p>
+                  <p className="mt-1 text-xs text-neutral-500">{focusedDecisionDesk.recommendation}</p>
+                </div>
+                <span className="rounded border border-neutral-700 px-2 py-1 text-[10px] font-semibold uppercase tracking-wide text-neutral-400">
+                  {focusedDecisionDesk.status}
+                </span>
+              </div>
+              <div className="flex flex-wrap items-center justify-between gap-3 text-xs">
+                <span className="text-neutral-400">Estimated knowledge <strong className="text-neutral-200">{focusedDecisionDesk.knowledgePercentage}%</strong></span>
+                <Button variant="primary" className="px-2 py-1 text-xs" onClick={() => navigate(focusedDecisionDesk.nextAction.route)}>
+                  {focusedDecisionDesk.nextAction.label} →
+                </Button>
+              </div>
+            </div>
           ) : (
-            <p className="text-sm text-amber-300">This target is no longer available in the current scouting market.</p>
+            <p className="text-sm text-amber-300">{focusedTargetName ? 'This target is not available to the current decision desk.' : 'This target is no longer available in the current scouting market.'}</p>
           )}
         </Panel>
       )}
