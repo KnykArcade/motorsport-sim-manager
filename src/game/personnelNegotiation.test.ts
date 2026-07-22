@@ -11,6 +11,18 @@ function career() {
 }
 
 describe('external personnel negotiations', () => {
+  it('opens an in-season pre-contract and preserves the current seat until rollover', () => {
+    let state = career();
+    const market = careerMarketBundle(state).drivers[0];
+    const seat = state.drivers.find((driver) => driver.teamId === state.selectedTeamId)!;
+    state = gameReducer(state, { type: 'START_MARKET_CONTRACT_NEGOTIATION', marketId: market.id, seatDriverId: seat.id })!;
+    expect(state.marketContractNegotiation?.marketId).toBe(market.id);
+    state = gameReducer(state, { type: 'UPDATE_MARKET_CONTRACT_NEGOTIATION', offeredBid: 999, offeredSalary: market.salary * 2.5, years: 5 })!;
+    state = gameReducer(state, { type: 'SUBMIT_MARKET_CONTRACT_NEGOTIATION' })!;
+    expect(state.pendingSignings).toContainEqual(expect.objectContaining({ sourceId: market.id, seatDriverId: seat.id }));
+    expect(state.drivers.find((driver) => driver.id === seat.id)?.teamId).toBe(state.selectedTeamId);
+  });
+
   it('negotiates a market pre-contract and queues accepted terms through the existing signing path', () => {
     let state = { ...career(), seasonComplete: true };
     const market = careerMarketBundle(state).drivers[0];
