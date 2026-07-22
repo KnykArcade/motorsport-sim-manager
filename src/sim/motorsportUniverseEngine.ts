@@ -11,8 +11,11 @@ import type {
   UniverseChampionshipState,
   UniverseDriverContract,
   UniverseDriverMovement,
+  UniverseLiveSeason,
+  UniverseRaceSummary,
   UniverseTeamRoster,
 } from '../types/universeTypes';
+import type { NewsItem } from '../types/gameTypes';
 import type { GameState } from '../game/careerState';
 
 const SERIES_ORDER: readonly Series[] = ['F1', 'CART', 'Champ Car', 'IndyCar', 'NASCAR'];
@@ -273,62 +276,178 @@ function fallbackRaceCount(series: Series): number {
   return 17;
 }
 
+function liveSeasonSchedule(championship: UniverseChampionshipState): UniverseLiveSeason['schedule'] {
+  const bundle = getCachedBundle(championship.seasonYear, championship.series);
+  if (bundle) {
+    return bundle.season.calendar.map((race) => ({
+      round: race.round,
+      raceId: race.id,
+      raceName: race.gpName,
+      trackName: race.trackName,
+      date: race.date,
+    }));
+  }
+  return Array.from({ length: fallbackRaceCount(championship.series) }, (_, index) => ({
+    round: index + 1,
+    raceId: `${championship.series.toLowerCase()}-${championship.seasonYear}-${index + 1}`,
+    raceName: `${championship.series} Round ${index + 1}`,
+    trackName: 'Circuit TBA',
+  }));
+}
+
+function initialLiveSeason(championship: UniverseChampionshipState): UniverseLiveSeason {
+  const schedule = liveSeasonSchedule(championship);
+  return {
+    seasonYear: championship.seasonYear,
+    totalRaces: schedule.length,
+    completedRaces: 0,
+    driverStandings: championship.drivers.map((driver) => emptyStanding(driver.driverId)),
+    teamStandings: championship.teams.map((team) => emptyStanding(team.teamId)),
+    raceResults: [],
+    schedule,
+  };
+}
+
+function standingMap(entries: readonly StandingsEntry[], ids: readonly string[]): Map<string, StandingsEntry> {
+  const existing = new Map(entries.map((entry) => [entry.entityId, { ...entry }]));
+  for (const id of ids) if (!existing.has(id)) existing.set(id, emptyStanding(id));
+  return existing;
+}
+
+/** Advance exactly one off-screen round. The round result depends only on the
+ * persisted championship, round number and save seed, so reloading cannot
+ * change an outcome. */
+export function simulateOffscreenChampionshipRound(
+  championship: UniverseChampionshipState,
+  seed: string,
+): UniverseChampionshipState {
+  const live = championship.liveSeason?.seasonYear === championship.seasonYear
+    ? championship.liveSeason
+    : initialLiveSeason(championship);
+  if (live.completedRaces >= live.totalRaces) return { ...championship, liveSeason: live };
+
+  const round = live.completedRaces + 1;
+  const bundle = getCachedBundle(championship.seasonYear, championship.series);
+  const points = getPointsSystem(bundle?.season.pointsSystemId ?? 'pts-modern').pointsByPosition;
+  const driverTable = standingMap(live.driverStandings, championship.drivers.map((driver) => driver.driverId));
+  const teamTable = standingMap(live.teamStandings, championship.teams.map((team) => team.teamId));
+  const teamById = new Map(championship.teams.map((team) => [team.teamId, team]));
+  const classified = championship.drivers.map((driver) => {
+    const team = teamById.get(driver.teamId);
+    const ability = normalizedOverall(driver, championship.series, championship.seasonYear);
+    const noise = hash01(`${seed}-${championship.seasonYear}-${championship.series}-${round}-${driver.driverId}-pace`);
+    const dnf = hash01(`${seed}-${championship.seasonYear}-${championship.series}-${round}-${driver.driverId}-dnf`)
+      < retirementRate(championship.series, championship.seasonYear);
+    return { driver, dnf, score: ability * 0.58 + (team?.reputation ?? 50) * 0.3 + noise * 24 };
+  }).sort((a, b) => Number(a.dnf) - Number(b.dnf) || b.score - a.score);
+
+  let finishingPosition = 0;
+  const finishers: UniverseDriverContract[] = [];
+  for (const result of classified) {
+    const driverStanding = driverTable.get(result.driver.driverId)!;
+    const teamStanding = teamTable.get(result.driver.teamId)!;
+    if (result.dnf) {
+      driverStanding.dnfs += 1;
+      teamStanding.dnfs += 1;
+      continue;
+    }
+    finishingPosition += 1;
+    finishers.push(result.driver);
+    const scored = points[finishingPosition] ?? 0;
+    driverStanding.points += scored;
+    teamStanding.points += scored;
+    if (finishingPosition === 1) {
+      driverStanding.wins += 1;
+      teamStanding.wins += 1;
+    }
+    if (finishingPosition <= 3) {
+      driverStanding.podiums += 1;
+      teamStanding.podiums += 1;
+    }
+  }
+
+  const scheduled = live.schedule[round - 1];
+  const winner = finishers[0];
+  const winnerTeam = winner ? teamById.get(winner.teamId) : undefined;
+  const raceSummary: UniverseRaceSummary = {
+    round,
+    raceId: scheduled?.raceId ?? `${championship.series}-${championship.seasonYear}-${round}`,
+    raceName: scheduled?.raceName ?? `${championship.series} Round ${round}`,
+    trackName: scheduled?.trackName ?? 'Circuit TBA',
+    winnerDriverId: winner?.driverId,
+    winnerDriverName: winner?.name,
+    winnerTeamId: winner?.teamId,
+    winnerTeamName: winnerTeam?.name,
+    podiumDriverIds: finishers.slice(0, 3).map((driver) => driver.driverId),
+  };
+
+  return {
+    ...championship,
+    liveSeason: {
+      ...live,
+      completedRaces: round,
+      driverStandings: sortedStandings(driverTable),
+      teamStandings: sortedStandings(teamTable),
+      raceResults: [...live.raceResults, raceSummary],
+    },
+  };
+}
+
+export function advanceOffscreenChampionshipsAfterPlayerRace(state: GameState): {
+  universe?: MotorsportUniverseState;
+  news: NewsItem[];
+} {
+  if (state.gameMode === 'SingleSeason' || !state.motorsportUniverse) {
+    return { universe: state.motorsportUniverse, news: [] };
+  }
+  const championships: Partial<Record<Series, UniverseChampionshipState>> = {};
+  const news: NewsItem[] = [];
+  for (const [series, current] of Object.entries(state.motorsportUniverse.championships) as [Series, UniverseChampionshipState][]) {
+    if (!current || series === state.series) {
+      championships[series] = current;
+      continue;
+    }
+    const next = simulateOffscreenChampionshipRound(current, state.randomSeed);
+    championships[series] = next;
+    const latest = next.liveSeason?.raceResults.at(-1);
+    if (latest && next.liveSeason?.completedRaces !== current.liveSeason?.completedRaces) {
+      news.push({
+        id: `world-${state.seasonYear}-${series}-${latest.round}`,
+        round: state.calendar[state.currentRaceIndex]?.round ?? state.currentRaceIndex + 1,
+        headline: `${series}: ${latest.winnerDriverName ?? 'A new winner'} wins ${latest.raceName}`,
+        body: `${latest.winnerTeamName ?? 'An independent entry'} took victory at ${latest.trackName}. ${series} has completed ${next.liveSeason?.completedRaces ?? 0} of ${next.liveSeason?.totalRaces ?? 0} rounds.`,
+        timestamp: new Date(Date.UTC(state.seasonYear, 0, Math.max(1, state.currentRaceIndex + 1))).toISOString(),
+        category: 'championship',
+        priority: 'normal',
+      });
+    }
+  }
+  return {
+    universe: { ...state.motorsportUniverse, championships },
+    news,
+  };
+}
+
 // A lightweight annual simulation for championships the player is not driving.
 // It produces real persisted standings without running every live-race subsystem.
 export function simulateOffscreenChampionshipSeason(
   championship: UniverseChampionshipState,
   seed: string,
 ): UniverseChampionshipSeason {
-  const bundle = getCachedBundle(championship.seasonYear, championship.series);
-  const completedRaces = bundle?.season.calendar.length ?? fallbackRaceCount(championship.series);
-  const points = getPointsSystem(bundle?.season.pointsSystemId ?? 'pts-modern').pointsByPosition;
-  const driverTable = new Map(championship.drivers.map((driver) => [driver.driverId, emptyStanding(driver.driverId)]));
-  const teamTable = new Map(championship.teams.map((team) => [team.teamId, emptyStanding(team.teamId)]));
-  const teamById = new Map(championship.teams.map((team) => [team.teamId, team]));
-
-  for (let round = 1; round <= completedRaces; round += 1) {
-    const classified = championship.drivers.map((driver) => {
-      const team = teamById.get(driver.teamId);
-      const ability = normalizedOverall(driver, championship.series, championship.seasonYear);
-      const teamStrength = team?.reputation ?? 50;
-      const noise = hash01(`${seed}-${championship.seasonYear}-${championship.series}-${round}-${driver.driverId}-pace`);
-      const dnf = hash01(`${seed}-${championship.seasonYear}-${championship.series}-${round}-${driver.driverId}-dnf`)
-        < retirementRate(championship.series, championship.seasonYear);
-      return { driver, dnf, score: ability * 0.58 + teamStrength * 0.3 + noise * 24 };
-    }).sort((a, b) => Number(a.dnf) - Number(b.dnf) || b.score - a.score);
-
-    let finishingPosition = 0;
-    for (const result of classified) {
-      const driverStanding = driverTable.get(result.driver.driverId)!;
-      const teamStanding = teamTable.get(result.driver.teamId)!;
-      if (result.dnf) {
-        driverStanding.dnfs += 1;
-        teamStanding.dnfs += 1;
-        continue;
-      }
-      finishingPosition += 1;
-      const scored = points[finishingPosition] ?? 0;
-      driverStanding.points += scored;
-      teamStanding.points += scored;
-      if (finishingPosition === 1) {
-        driverStanding.wins += 1;
-        teamStanding.wins += 1;
-      }
-      if (finishingPosition <= 3) {
-        driverStanding.podiums += 1;
-        teamStanding.podiums += 1;
-      }
-    }
+  let completed = championship;
+  const target = completed.liveSeason?.totalRaces ?? liveSeasonSchedule(completed).length;
+  while ((completed.liveSeason?.completedRaces ?? 0) < target) {
+    completed = simulateOffscreenChampionshipRound(completed, seed);
   }
-
-  const driverStandings = sortedStandings(driverTable);
-  const teamStandings = sortedStandings(teamTable);
+  const live = completed.liveSeason ?? initialLiveSeason(completed);
+  const driverStandings = live.driverStandings;
+  const teamStandings = live.teamStandings;
   const driverChampionId = driverStandings[0]?.entityId;
   const teamChampionId = teamStandings[0]?.entityId;
   return {
     seasonYear: championship.seasonYear,
     series: championship.series,
-    completedRaces,
+    completedRaces: live.completedRaces,
     driverChampionId,
     driverChampionName: championship.drivers.find((driver) => driver.driverId === driverChampionId)?.name,
     teamChampionId,
@@ -337,6 +456,7 @@ export function simulateOffscreenChampionshipSeason(
     teamNames: Object.fromEntries(championship.teams.map((team) => [team.teamId, team.name])),
     driverStandings,
     teamStandings,
+    raceResults: live.raceResults,
   };
 }
 
