@@ -32,6 +32,31 @@ describe('world standings view model', () => {
     expect(aroundTheWorldEntries('F1', universe)).toEqual([{
       series: 'NASCAR', seasonYear: 2027, championName: 'Champion Driver',
       teamChampionName: 'Champion Team', hasCompletedSeason: true,
+      liveLeaderName: undefined, liveLeaderPoints: undefined,
+      completedRaces: 0, totalRaces: 0,
+      latestWinnerName: undefined, latestRaceName: undefined, nextRaceName: undefined,
     }]);
+  });
+
+  it('surfaces live leader, latest winner, and next round from persisted world state', () => {
+    const liveUniverse: MotorsportUniverseState = {
+      ...universe,
+      championships: {
+        NASCAR: {
+          ...nascar,
+          liveSeason: {
+            seasonYear: 2027, totalRaces: 2, completedRaces: 1,
+            driverStandings: [{ entityId: 'driver', points: 40, wins: 1, podiums: 1, dnfs: 0 }],
+            teamStandings: [{ entityId: 'team', points: 40, wins: 1, podiums: 1, dnfs: 0 }],
+            raceResults: [{ round: 1, raceId: 'r1', raceName: 'Opener', trackName: 'Track', winnerDriverId: 'driver', winnerDriverName: 'Driver', winnerTeamId: 'team', winnerTeamName: 'Team', podiumDriverIds: ['driver'] }],
+            schedule: [{ round: 1, raceId: 'r1', raceName: 'Opener', trackName: 'Track' }, { round: 2, raceId: 'r2', raceName: 'Finale', trackName: 'Track 2' }],
+          },
+        },
+      },
+    };
+    expect(aroundTheWorldEntries('F1', liveUniverse)[0]).toMatchObject({
+      liveLeaderName: 'Driver', liveLeaderPoints: 40, completedRaces: 1,
+      latestWinnerName: 'Driver', latestRaceName: 'Opener', nextRaceName: 'Finale',
+    });
   });
 });
