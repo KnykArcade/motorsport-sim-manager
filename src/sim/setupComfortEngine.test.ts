@@ -5,6 +5,8 @@ import { drivers1995 } from '../data/drivers/drivers1995';
 import { cars1995 } from '../data/cars/cars1995';
 import { BALANCED_SETUP } from '../data/setup/setupComponents';
 import { qualifyingRunPlansById } from '../data/decisions/qualifyingRunPlans';
+import { raceStrategiesById } from '../data/decisions/raceStrategies';
+import { driverInstructionsById } from '../data/decisions/driverInstructions';
 import type { Car, Driver } from '../types/gameTypes';
 import type { CarSetup, DriverComfort, ObjectiveSetupQuality } from '../types/setupTypes';
 import { adjustedSetupTolerance, idealSetup, objectiveSetupQuality } from './setupFitEngine';
@@ -15,6 +17,7 @@ import {
 } from './driverComfortEngine';
 import { deriveSetupOption } from './setupDerive';
 import { calculateQualifyingPace } from './qualifyingEngine';
+import { calculateRacePace } from './raceEngine';
 import {
   canRevealComponentFit,
   reliabilityWarningConfidence,
@@ -259,7 +262,26 @@ describe('Performance formula — quality + comfort, bounded', () => {
     expect(comfyWorse.racePaceBoost).toBeGreaterThanOrEqual(idealUneasy.racePaceBoost);
   });
 
-  it('setup does not overpower car ratings in qualifying pace', () => {
+  it('a nailed setup creates a meaningful qualifying pace gap against a missed setup', () => {
+    const good = deriveSetupOption(BALANCED_SETUP, track, baseDriver, 'qualifying', { quality: q(92), comfort: cm(88) });
+    const poor = deriveSetupOption(BALANCED_SETUP, track, baseDriver, 'qualifying', { quality: q(35), comfort: cm(35) });
+    const plan = qualifyingRunPlansById['StandardPush'];
+    const goodPace = calculateQualifyingPace(baseDriver, car, track, good, plan, 70).score;
+    const poorPace = calculateQualifyingPace(baseDriver, car, track, poor, plan, 70).score;
+    expect(goodPace - poorPace).toBeGreaterThan(7);
+  });
+
+  it('a nailed setup creates a meaningful race pace gap against a missed setup', () => {
+    const good = deriveSetupOption(BALANCED_SETUP, track, baseDriver, 'race', { quality: q(92), comfort: cm(88) });
+    const poor = deriveSetupOption(BALANCED_SETUP, track, baseDriver, 'race', { quality: q(35), comfort: cm(35) });
+    const strategy = raceStrategiesById['BalancedOneStop'];
+    const instruction = driverInstructionsById['Balanced'];
+    const goodPace = calculateRacePace(baseDriver, car, track, good, strategy, instruction, 70).score;
+    const poorPace = calculateRacePace(baseDriver, car, track, poor, strategy, instruction, 70).score;
+    expect(goodPace - poorPace).toBeGreaterThan(6);
+  });
+
+  it('setup is a major tactic layer without completely replacing car ratings', () => {
     const plan = qualifyingRunPlansById['StandardPush'];
     const great = deriveSetupOption(BALANCED_SETUP, track, baseDriver, 'qualifying', { quality: q(95), comfort: cm(95) });
     const awful = deriveSetupOption(BALANCED_SETUP, track, baseDriver, 'qualifying', { quality: q(25), comfort: cm(25) });
@@ -280,6 +302,7 @@ describe('Performance formula — quality + comfort, bounded', () => {
     const carSwing =
       calculateQualifyingPace(baseDriver, strongCar, track, great, plan).score -
       calculateQualifyingPace(baseDriver, weakCar, track, great, plan).score;
-    expect(carSwing).toBeGreaterThan(setupSwing);
+    expect(setupSwing).toBeGreaterThan(8);
+    expect(carSwing).toBeGreaterThan(2);
   });
 });

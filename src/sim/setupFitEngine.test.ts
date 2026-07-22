@@ -81,6 +81,6 @@ describe('setupDerive', () => {
       expect(axis).toBeLessThanOrEqual(10);
     }
     expect(opt.riskModifier).toBeGreaterThanOrEqual(-3);
-    expect(opt.riskModifier).toBeLessThanOrEqual(5);
+    expect(opt.riskModifier).toBeLessThanOrEqual(7);
   });
 });

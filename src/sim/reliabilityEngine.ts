@@ -41,8 +41,12 @@ export function calculateReliabilityRisk(
   const trackStress = (riskDemand + enduranceConsistency) / 2;
   const trackFactor = (trackStress - 5) * 0.012;
 
-  // Setup: low reliability protection raises risk. Setup values remain 1-10.
-  const setupFactor = (5 - setup.reliabilityProtection) * 0.01;
+  // Setup: low reliability protection and nervous/aggressive trim raise risk.
+  // A car that is badly outside the weekend setup window should feel fragile,
+  // especially when the player also asks the driver to push.
+  const setupFactor =
+    (5 - setup.reliabilityProtection) * 0.018 +
+    Math.max(0, setup.riskModifier) * 0.006;
 
   // Car condition: a damaged car (e.g. quali crash) is more fragile.
   const conditionFactor = (100 - car.condition) * 0.0015;

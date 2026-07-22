@@ -60,17 +60,30 @@ export function deriveSetupOption(
   // is actually extracted (execution / consistency) and the mistake risk. When
   // the driver has no practice comfort data, an untested setup carries a small
   // execution penalty and extra risk.
-  const qCeil = (qual + confidenceBonus - 62) / 12; // ~ -5 .. +3
+  const effectiveQuality = clamp(qual + confidenceBonus, 0, 100);
+  const severeMissPenalty = Math.max(0, 50 - effectiveQuality) / 7;
+  const hookedUpBonus = Math.max(0, effectiveQuality - 82) / 18;
+  const qCeil = (effectiveQuality - 62) / 10 - severeMissPenalty + hookedUpBonus; // ~ -9 .. +5
   const exec = comfort ? comfort.effects.execution : -0.4;
   const consistency = comfort ? comfort.effects.consistency : -0.4;
   const mistake = comfort ? comfort.effects.mistakeRisk : 0.6;
   const tyreMgmt = comfort ? comfort.effects.tyreManagement : 0;
 
-  let qualifyingBoost = qCeil + exec * 0.9;
-  let racePaceBoost = qCeil * 0.85 + consistency * 0.9;
-  let tirePreservation = (11 - setup.tyreUsage) * 0.7 + qual / 30 + tyreMgmt;
-  let reliabilityProtection = setup.engineCooling * 0.6 + qual / 40 - quality.effects.reliabilityRisk;
-  let riskModifier = (62 - qual) / 16 + mistake * 3 + (setup.tyreUsage - 5) * 0.15;
+  let qualifyingBoost = qCeil * 1.15 + exec * 1.2;
+  let racePaceBoost = qCeil + consistency * 1.15;
+  let tirePreservation =
+    (11 - setup.tyreUsage) * 0.75 + effectiveQuality / 26 + tyreMgmt * 1.2 - severeMissPenalty * 0.6;
+  let reliabilityProtection =
+    setup.engineCooling * 0.65 +
+    effectiveQuality / 28 -
+    quality.effects.reliabilityRisk -
+    quality.effects.overheatingRisk * 0.45;
+  let riskModifier =
+    (62 - effectiveQuality) / 12 +
+    severeMissPenalty * 1.2 +
+    mistake * 3.4 +
+    (setup.tyreUsage - 5) * 0.18 +
+    Math.max(0, 5 - setup.brakeCooling) * 0.18;
 
   // Apply the automatic session trim bias on top of the tuned base.
   if (trim === 'qualifying') {
@@ -99,10 +112,14 @@ export function deriveSetupOption(
     topSpeed,
     mechanicalGrip,
     brakingStability,
-    tirePreservation: clamp(Math.round(tirePreservation), 1, 10),
-    reliabilityProtection: clamp(Math.round(reliabilityProtection), 1, 10),
-    qualifyingBoost: clamp(Math.round(qualifyingBoost), -5, 5),
-    racePaceBoost: clamp(Math.round(racePaceBoost), -5, 5),
-    riskModifier: clamp(Math.round(riskModifier), -3, 5),
+    tirePreservation: clamp(round1(tirePreservation), 1, 10),
+    reliabilityProtection: clamp(round1(reliabilityProtection), 1, 10),
+    qualifyingBoost: clamp(round1(qualifyingBoost), -7, 6),
+    racePaceBoost: clamp(round1(racePaceBoost), -7, 6),
+    riskModifier: clamp(round1(riskModifier), -4, 7),
   };
+}
+
+function round1(v: number): number {
+  return Math.round(v * 10) / 10;
 }

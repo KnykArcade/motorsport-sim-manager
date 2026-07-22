@@ -7,10 +7,12 @@ import { setupOptionsById } from '../data/setupOptions/setupOptions';
 import { qualifyingRunPlansById } from '../data/decisions/qualifyingRunPlans';
 import { makeWeatherState } from './weatherEngine';
 import {
+  calculateQualifyingRisk,
   qualifyingFormatFor,
   sessionWetness,
   simulateQualifying,
 } from './qualifyingEngine';
+import type { SetupOption } from '../types/gameTypes';
 import type { Entrant, QualifyingContext, QualifyingDecision } from '../types/simTypes';
 
 const track = tracks1995[0];
@@ -151,5 +153,29 @@ describe('multiple runs', () => {
     expect(score(three, target)).toBeGreaterThan(score(one, target));
     // Conserving tyres trades away some of the multi-run pace.
     expect(score(three, target)).toBeGreaterThan(score(conserve, target));
+  });
+});
+
+describe('setup risk in qualifying', () => {
+  const safeSetup: SetupOption = {
+    ...setupOptionsById['setup-balanced'],
+    brakingStability: 8,
+    riskModifier: -2,
+  };
+  const missedSetup: SetupOption = {
+    ...setupOptionsById['setup-balanced'],
+    brakingStability: 2,
+    riskModifier: 6,
+  };
+
+  it('makes a badly missed setup riskier even with the same driver and run plan', () => {
+    const driver = entrants[0].driver;
+    const car = entrants[0].car;
+    const plan = qualifyingRunPlansById.StandardPush;
+    const safe = calculateQualifyingRisk(driver, car, track, plan, safeSetup);
+    const missed = calculateQualifyingRisk(driver, car, track, plan, missedSetup);
+
+    expect(missed.crash).toBeGreaterThan(safe.crash);
+    expect(missed.mistake).toBeGreaterThan(safe.mistake);
   });
 });

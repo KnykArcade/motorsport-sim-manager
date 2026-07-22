@@ -48,11 +48,19 @@ export function calculateQualifyingRisk(
   _car: Car,
   track: Track,
   runPlan: QualifyingRunPlan,
+  setup?: SetupOption,
 ): { crash: number; mistake: number } {
-  const aggression = runPlan.crashModifier; // run plan aggressiveness
+  const setupRisk = setup?.riskModifier ?? 0;
+  const brakingPressure = setup ? Math.max(0, 5 - setup.brakingStability) * 0.15 : 0;
+  const aggression = runPlan.crashModifier + setupRisk * 0.25; // run plan + setup nervousness
   return {
     crash: calculateCrashRisk(driver, track, aggression),
-    mistake: calculateMistakeRisk(driver, track, runPlan.mistakeModifier, 0.5),
+    mistake: calculateMistakeRisk(
+      driver,
+      track,
+      runPlan.mistakeModifier + setupRisk * 0.25,
+      0.5 + brakingPressure,
+    ),
   };
 }
 
@@ -74,14 +82,15 @@ export function calculateQualifyingPace(
   const teamComp = clamp10(toLegacyRating(teamRating));
   const setupFit = calculateQualifyingSetupFit(driver, car, track, setup);
   const confidenceFactor = (driver.confidence - 65) / 15 + confidenceModifier;
-  const otherComp = clamp10(5.5 + setupFit * 0.5 + runPlan.paceModifier + confidenceFactor);
+  const otherComp = clamp10(5.5 + setupFit * 0.65 + runPlan.paceModifier + confidenceFactor);
 
   const score =
     PACE_SPREAD *
     (PACE_WEIGHTS.car * carComp +
       PACE_WEIGHTS.driver * driverComp +
       PACE_WEIGHTS.team * teamComp +
-      PACE_WEIGHTS.other * otherComp);
+      PACE_WEIGHTS.other * otherComp) +
+    setupFit * 0.75;
 
   const breakdown: ScoreBreakdown = {
     driverId: driver.id,
@@ -190,7 +199,7 @@ function simulateLap(
   const variance = rng.variance(1.4 * (1 + wetness));
   let finalScore = base + variance;
 
-  const risk = calculateQualifyingRisk(driver, car, track, runPlan);
+  const risk = calculateQualifyingRisk(driver, car, track, runPlan, setup);
   const riskMult =
     (1 + (entry.runs - 1) * 0.18) * (entry.conserve ? 0.82 : 1) * (1 + wetness * 0.6);
   let crash = risk.crash * riskMult * entry.packageCrashRiskMultiplier;
