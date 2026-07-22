@@ -13,7 +13,8 @@ export type StaffResponsibilityId =
   | 'pit-operations'
   | 'race-strategy'
   | 'staff-recruitment'
-  | 'staff-contracts';
+  | 'staff-contracts'
+  | 'driver-development';
 
 export type StaffResponsibilityPolicy =
   | 'player'

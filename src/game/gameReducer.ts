@@ -162,6 +162,14 @@ import type { RDBranchId, RDProjectStartRequest } from '../types/rdTypes';
 import type { RecruitmentFocus, ScoutedEntityType } from '../types/scoutingTypes';
 import type { StaffMember } from '../types/staffTypes';
 import type { StaffResponsibilityId, StaffResponsibilityPolicy } from '../types/staffTypes';
+import type { DriverDevelopmentFocus } from '../types/developmentCurveTypes';
+import {
+  applyMentalResilienceRecovery,
+  assignDevelopmentFocus,
+  assignDevelopmentMentor,
+  assignTestingAllocation,
+  progressDriverDevelopmentPlans,
+} from '../sim/driverDevelopmentPlanEngine';
 import { driverScoutTarget, recordScouting, scoutingCost, staffScoutTarget, type ScoutTarget } from '../sim/scoutingEngine';
 import type {
   Entrant,
@@ -316,6 +324,9 @@ export type GameAction =
   | { type: 'CANCEL_SCOUTING_ASSIGNMENT'; entityId: string; entityType: ScoutedEntityType }
   | { type: 'TOGGLE_SCOUTING_SHORTLIST'; entityId: string; entityType: ScoutedEntityType }
   | { type: 'SET_RECRUITMENT_FOCUS'; focus: RecruitmentFocus }
+  | { type: 'SET_DRIVER_DEVELOPMENT_FOCUS'; driverId: string; focus: DriverDevelopmentFocus }
+  | { type: 'SET_DRIVER_TESTING_ALLOCATION'; driverId: string; allocation: number }
+  | { type: 'SET_DRIVER_DEVELOPMENT_MENTOR'; driverId: string; mentorId?: string }
   | { type: 'SWAP_RACE_DRIVER'; seatIndex: number; reserveDriverId: string }
   | { type: 'SIGN_THIRD_DRIVER'; marketId: string }
   | { type: 'PROMOTE_THIRD_DRIVER'; seatDriverId: string; thirdDriverId: string }
@@ -1022,6 +1033,15 @@ export function gameReducer(state: GameState | null, action: GameAction): GameSt
 
     case 'SET_RECRUITMENT_FOCUS':
       return state?.scouting ? { ...state, scouting: { ...state.scouting, recruitmentFocus: action.focus } } : state;
+
+    case 'SET_DRIVER_DEVELOPMENT_FOCUS':
+      return state ? assignDevelopmentFocus(state, action.driverId, action.focus) : state;
+
+    case 'SET_DRIVER_TESTING_ALLOCATION':
+      return state ? assignTestingAllocation(state, action.driverId, action.allocation) : state;
+
+    case 'SET_DRIVER_DEVELOPMENT_MENTOR':
+      return state ? assignDevelopmentMentor(state, action.driverId, action.mentorId) : state;
 
     case 'SWAP_RACE_DRIVER': {
       if (!state) return state;
@@ -2322,6 +2342,7 @@ function applyRaceResults(
       }
     }
     driverRelationships = applyConfidenceUpdates(driverRelationships, allUpdates);
+    driverRelationships = applyMentalResilienceRecovery(state, driverRelationships, results);
   }
   // A per-race transport/logistics stipend helps offset the weekend package cost.
   let teams = state.teams.map((t) => ({ ...t, morale: morale.teamMorale[t.id] ?? t.morale }));
@@ -2665,7 +2686,8 @@ function applyRaceResults(
     motorsportUniverse: worldTick.universe,
     news: sortNewsByPriority(capNewsPerRound([...worldTick.news, ...completedState.news]).slice(0, 80)),
   };
-  const completedWithScouting = progressActiveScoutingAssignments(completedState, race.round);
+  const completedWithPlans = progressDriverDevelopmentPlans(completedState, race.round, results);
+  const completedWithScouting = progressActiveScoutingAssignments(completedWithPlans, race.round);
   const completedWithTransfers = progressTransferCalendar(completedWithScouting, race.round);
   const finalized = syncNarratives(recordRaceLegacy(
     evolveRivalRelationshipsAfterRace(recordFailureInvestigations(completedWithTransfers, race.id, race.round, results), race.round, results),

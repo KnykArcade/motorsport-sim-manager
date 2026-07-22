@@ -102,6 +102,18 @@ export function staffResponsibilities(state: GameState): StaffResponsibility[] {
       '/staff?tab=contracts',
       'Open Contracts',
     ),
+    responsibility(
+      'driver-development',
+      'Driver development',
+      'Race Engineer',
+      owners['Race Engineer'],
+      'Recommendations remain advisory',
+      'Assesses individual focuses, testing shares, and mentor fit',
+      'Development plans never change without the player applying the choice',
+      state,
+      '/curves',
+      'Open Development Plans',
+    ),
   ];
 }
 

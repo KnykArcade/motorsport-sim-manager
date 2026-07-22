@@ -78,6 +78,10 @@ import { rolloverConfidence, checkExpiredPromises, applyPromiseResolution, compu
 import { generateRegulationProposals, resolveRegulationVoting } from '../sim/politicsEngine';
 import { refreshScoutingNetwork } from '../sim/scoutingEngine';
 import { createDriverDevelopmentCurve, developmentStep } from '../sim/developmentCurveEngine';
+import {
+  closeDevelopmentPlanSeason,
+  developmentPlanEffect,
+} from '../sim/driverDevelopmentPlanEngine';
 import { finalizeSeasonHistory } from '../sim/universeHistoryEngine';
 import { buildAITeamState, rolloverAITeamStates, constructorPositionOf, updateAIReputation } from '../sim/aiTeamEngine';
 import { ensurePhase18FoundationState } from '../sim/phase18FoundationEngine';
@@ -545,10 +549,20 @@ export function advanceSeason(state: GameState, nextBundle?: SeasonBundle): Game
   // under first option (extended rights / undecided) keep their promotion flag
   // and status so the offseason UI re-prompts next year.
   const youthBoost = facilityYouthDevelopmentBonus(state.facilities);
+  const nextDriverDevelopmentPlans = { ...(state.driverDevelopmentPlans ?? {}) };
   const nextAcademy: AcademyMember[] = academy
     .filter((a) => !usedAcademyIds.has(a.id))
     .map((a) => {
-      const progressed = progressAcademyMember(a, youthBoost);
+      const plan = nextDriverDevelopmentPlans[a.id];
+      const progressed = progressAcademyMember(a, youthBoost, developmentPlanEffect(plan));
+      if (plan) {
+        nextDriverDevelopmentPlans[a.id] = closeDevelopmentPlanSeason(
+          plan,
+          nextYear,
+          a.overall,
+          progressed.overall,
+        );
+      }
       const retained = firstOption.retainedStatus.get(a.id);
       if (retained) {
         // Stamp the first-option window so the deadline persists across seasons.
@@ -1027,11 +1041,14 @@ export function advanceSeason(state: GameState, nextBundle?: SeasonBundle): Game
     const contractRenewed = (retained?.contractYearsRemaining ?? 0) > 0;
     const wasPromoted = d.contractType !== 'reserve' && d.contractType !== 'third' && d.contractType !== 'test';
     const gotPracticeTime = true; // simplified — if the driver was on the team, they got practice
+    const developmentPlan = state.driverDevelopmentPlans?.[d.id];
     const resolutions = evaluatePromisesAtSeasonEnd(seasonEndPromises, d.id, {
       contractRenewed,
       wasReplaced,
       wasPromoted,
       gotPracticeTime,
+      developmentPriorityGiven: !!developmentPlan
+        && (developmentPlan.focus !== 'Balanced' || developmentPlan.testingAllocation >= 20),
     });
     for (const res of resolutions) {
       const resolved = resolvePromise(res.promise, res.fulfilled);
@@ -1092,10 +1109,21 @@ export function advanceSeason(state: GameState, nextBundle?: SeasonBundle): Game
       nextCurves[d.id] = curve;
     }
     const isPlayer = d.teamId === state.selectedTeamId;
+    const plan = isPlayer ? nextDriverDevelopmentPlans[d.id] : undefined;
     const { driver, result } = developmentStep(curve, d, state.randomSeed, {
       seasonYear: nextYear,
       academyBoost: isPlayer ? academyBoost : 0,
+      planEffect: developmentPlanEffect(plan),
+      planFocus: plan?.focus,
     });
+    if (plan) {
+      nextDriverDevelopmentPlans[d.id] = closeDevelopmentPlanSeason(
+        plan,
+        nextYear,
+        result.overallBefore,
+        result.overallAfter,
+      );
+    }
     if (isPlayer && Math.abs(result.overallAfter - result.overallBefore) >= 0.2) {
       const dir = result.overallAfter >= result.overallBefore ? 'improved to' : 'slipped to';
       developmentNotes.push(
@@ -1539,6 +1567,18 @@ export function advanceSeason(state: GameState, nextBundle?: SeasonBundle): Game
   );
 
   const now = new Date().toISOString();
+  const retainedDevelopmentSubjectIds = new Set([
+    ...gridFilled.drivers.filter((driver) => driver.teamId === state.selectedTeamId).map((driver) => driver.id),
+    ...nextAcademy.map((member) => member.id),
+  ]);
+  const retainedDriverDevelopmentPlans = Object.fromEntries(
+    Object.entries(nextDriverDevelopmentPlans)
+      .filter(([driverId]) => retainedDevelopmentSubjectIds.has(driverId))
+      .map(([driverId, plan]) => [
+        driverId,
+        plan.mentorId && retainedDevelopmentSubjectIds.has(plan.mentorId) ? plan : { ...plan, mentorId: undefined },
+      ]),
+  );
   const nextState: GameState = {
     ...state,
     updatedAt: now,
@@ -1573,6 +1613,7 @@ export function advanceSeason(state: GameState, nextBundle?: SeasonBundle): Game
       ? { ...refreshScoutingNetwork(state.scouting, nextFacilities)!, reports: {}, activeAssignments: [] }
       : state.scouting,
     developmentCurves: nextCurves,
+    driverDevelopmentPlans: retainedDriverDevelopmentPlans,
     universeHistory: nextUniverseHistory,
     aiTeamStates: aiRollover.states,
     aiPrincipals,

@@ -245,14 +245,14 @@ export function TeamHQ() {
                <div className="mt-2 text-xs font-medium text-sky-300">{responsibility.status}</div>
                <div className="mt-2 flex flex-wrap items-center gap-2">
                  <span className="rounded border border-neutral-700 bg-neutral-900/50 px-2 py-1 text-[10px] uppercase tracking-wide text-neutral-400">{responsibility.policyLabel}</span>
-                 {(responsibility.id === 'race-engineering' || responsibility.id === 'staff-recruitment' || responsibility.id === 'staff-contracts') && (
+                 {(responsibility.id === 'race-engineering' || responsibility.id === 'staff-recruitment' || responsibility.id === 'staff-contracts' || responsibility.id === 'driver-development') && (
                    <select
                      className="rounded border border-neutral-700 bg-neutral-950 px-2 py-1 text-[10px] text-neutral-300"
                      value={responsibility.policy}
                      aria-label={`${responsibility.area} delegation policy`}
                      onChange={(event) => dispatch({
                        type: 'SET_STAFF_RESPONSIBILITY_POLICY',
-                       responsibility: responsibility.id as 'race-engineering' | 'staff-recruitment' | 'staff-contracts',
+                       responsibility: responsibility.id as 'race-engineering' | 'staff-recruitment' | 'staff-contracts' | 'driver-development',
                        policy: event.target.value as StaffResponsibilityPolicy,
                      })}
                    >

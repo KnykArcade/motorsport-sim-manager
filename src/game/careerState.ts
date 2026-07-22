@@ -33,7 +33,7 @@ import type { DriverRelationship, DriverPromise, TeamOrderDecision } from '../ty
 import type { RegulationProposal, RegulationVoteResult } from '../types/politicsTypes';
 import type { HistoricalEventHook, FiredEvent } from '../types/eventHookTypes';
 import type { ScoutingState } from '../types/scoutingTypes';
-import type { DriverDevelopmentCurve } from '../types/developmentCurveTypes';
+import type { DriverDevelopmentCurve, DriverDevelopmentPlan } from '../types/developmentCurveTypes';
 import type { TeamTechnicalMap, TechnicalAdvisorPriority } from '../types/technicalTypes';
 import type { MotorsportUniverseState, UniverseHistory } from '../types/universeTypes';
 import type { AITeamState, TeamMemoryEntry } from '../types/aiTeamTypes';
@@ -199,6 +199,9 @@ export type GameState = {
   scouting?: ScoutingState;
   // 12. Driver aging & development curves, keyed by driverId.
   developmentCurves?: Record<string, DriverDevelopmentCurve>;
+  // Player-directed individual plans for race, reserve, test, and academy
+  // drivers. Optional so older saves retain balanced development by default.
+  driverDevelopmentPlans?: Record<string, DriverDevelopmentPlan>;
   // 13. Universe records / history database.
   universeHistory?: UniverseHistory;
   // Persistent rosters and contracts for every championship active in this
