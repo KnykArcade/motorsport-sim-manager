@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useGame } from '../game/GameContext';
 import { teamById } from '../game/careerState';
 import { careerMarketBundle } from '../sim/careerMarketEngine';
@@ -17,7 +18,7 @@ import { formatMoney, ratingColor } from '../components/ui';
 import type { ScoutedEntityType, VisibleRating } from '../types/scoutingTypes';
 import type { IntelligenceAction, IntelligenceReport } from '../types/phase18Types';
 import { INTELLIGENCE_INVESTIGATION_COST, intelligenceConfidenceLabel } from '../sim/phase18IntelligenceEngine';
-import { scoutingAbilitySummary, scoutingAssignments } from './scoutingViewModel';
+import { scoutingAbilitySummary, scoutingAssignments, scoutingComparison } from './scoutingViewModel';
 
 type Tab = 'intelligence' | 'senior' | 'youth';
 
@@ -30,8 +31,10 @@ const SKILL_LABELS: { key: string; label: string }[] = [
 
 export function Scouting() {
   const { state, dispatch } = useGame();
+  const navigate = useNavigate();
   const [tab, setTab] = useState<Tab>('intelligence');
   const [intelFilter, setIntelFilter] = useState<'Active' | 'History'>('Active');
+  const [comparisonIds, setComparisonIds] = useState<string[]>([]);
 
   const bundle = useMemo(
     () => (state ? careerMarketBundle(state) : undefined),
@@ -80,7 +83,32 @@ export function Scouting() {
     scouting.networkAccuracy,
     targetNames,
     tab === 'senior' ? 'Driver' : tab === 'youth' ? 'YouthProspect' : undefined,
+    scouting.activeAssignments,
   );
+  const shortlist = (scouting.shortlist ?? []).filter((entry) =>
+    tab === 'senior' ? entry.entityType === 'Driver' : tab === 'youth' ? entry.entityType === 'YouthProspect' : false,
+  );
+  const shortlistTargets = shortlist.flatMap((entry) => {
+    const target = entry.entityType === 'Driver'
+      ? bundle?.drivers.find((driver) => driver.id === entry.entityId)
+      : bundle?.youth.find((prospect) => prospect.id === entry.entityId);
+    if (!target) return [];
+    return [{
+      entityId: target.id,
+      name: target.name,
+      entityType: entry.entityType,
+      view: view({ id: target.id, skills: target.skills, potential: target.potential }, entry.entityType),
+    }];
+  });
+  const comparisons = scoutingComparison(
+    shortlistTargets.filter((target) => comparisonIds.includes(target.entityId)),
+  );
+
+  function toggleComparison(entityId: string) {
+    setComparisonIds((current) => current.includes(entityId)
+      ? current.filter((id) => id !== entityId)
+      : current.length < 3 ? [...current, entityId] : current);
+  }
 
   return (
     <WorkspaceScreen className="era-feature-screen era-scouting">
@@ -160,10 +188,40 @@ export function Scouting() {
                   <div><span className="font-semibold text-neutral-200">{assignment.name}</span><span className="ml-2 text-neutral-500">{assignment.entityType === 'YouthProspect' ? 'Youth prospect' : assignment.entityType}</span></div>
                   <div className="text-neutral-400">Coverage {assignment.scoutingLevel}% · Knowledge {assignment.knowledgePercentage}%</div>
                   <div className="h-1.5 overflow-hidden rounded-full bg-neutral-800"><div className="h-full bg-[var(--era-accent-strong)]" style={{ width: `${assignment.knowledgePercentage}%` }} /></div>
+                  <button type="button" className="text-left text-red-300 hover:text-red-200 sm:col-span-3" onClick={() => dispatch({ type: 'CANCEL_SCOUTING_ASSIGNMENT', entityId: assignment.entityId, entityType: assignment.entityType })}>Cancel assignment</button>
                 </div>
               ))}
             </div>
           ) : <p className="text-sm text-neutral-500">No outstanding assignments in this target group.</p>}
+        </Panel>
+      )}
+
+      {tab !== 'intelligence' && (
+        <Panel title={`Recruitment Shortlist (${shortlistTargets.length})`}>
+          {shortlistTargets.length ? (
+            <div className="space-y-2">
+              {shortlistTargets.map((target) => {
+                const selected = comparisonIds.includes(target.entityId);
+                const limitReached = comparisonIds.length >= 3 && !selected;
+                return (
+                  <div key={target.entityId} className="flex flex-wrap items-center justify-between gap-2 rounded border border-neutral-800 bg-neutral-950/35 p-2 text-xs">
+                    <div><span className="font-semibold text-neutral-200">{target.name}</span><span className="ml-2 text-neutral-500">{Math.round(target.view.accuracy * 100)}% knowledge</span></div>
+                    <div className="flex gap-2">
+                      <Button variant="ghost" className="px-2 py-1 text-xs" disabled={limitReached} title={limitReached ? 'Compare up to three targets at once' : undefined} onClick={() => toggleComparison(target.entityId)}>{selected ? 'Remove comparison' : 'Compare'}</Button>
+                      {target.entityType === 'Driver' && <Button variant="primary" className="px-2 py-1 text-xs" onClick={() => navigate(`/market?target=${encodeURIComponent(target.entityId)}`)}>Approach driver →</Button>}
+                      <Button variant="ghost" className="px-2 py-1 text-xs text-red-300" onClick={() => dispatch({ type: 'TOGGLE_SCOUTING_SHORTLIST', entityId: target.entityId, entityType: target.entityType })}>Remove</Button>
+                    </div>
+                  </div>
+                );
+              })}
+              {comparisons.length >= 2 && (
+                <div className="grid gap-2 border-t border-neutral-800 pt-3 md:grid-cols-2 xl:grid-cols-3">
+                  {comparisons.map((target) => <ComparisonCard key={target.entityId} target={target} />)}
+                </div>
+              )}
+              {comparisons.length === 1 && <p className="text-xs text-neutral-500">Select one or two more shortlisted targets to compare.</p>}
+            </div>
+          ) : <p className="text-sm text-neutral-500">No targets shortlisted in this group.</p>}
         </Panel>
       )}
 
@@ -183,7 +241,11 @@ export function Scouting() {
                 view={view({ id: d.id, skills: d.skills, potential: d.potential }, 'Driver')}
                 cost={costOf(d.id, 'Driver')}
                 budget={budget}
+                assigned={(scouting.activeAssignments ?? []).some((entry) => entry.entityId === d.id && entry.entityType === 'Driver')}
+                shortlisted={shortlist.some((entry) => entry.entityId === d.id)}
                 onScout={() => dispatch({ type: 'SCOUT_TARGET', entityId: d.id, entityType: 'Driver' as ScoutedEntityType })}
+                onToggleShortlist={() => dispatch({ type: 'TOGGLE_SCOUTING_SHORTLIST', entityId: d.id, entityType: 'Driver' })}
+                onApproach={() => navigate(`/market?target=${encodeURIComponent(d.id)}`)}
               />
             ))}
         </div>
@@ -205,7 +267,10 @@ export function Scouting() {
                 view={view({ id: y.id, skills: y.skills, potential: y.potential }, 'YouthProspect')}
                 cost={costOf(y.id, 'YouthProspect')}
                 budget={budget}
+                assigned={(scouting.activeAssignments ?? []).some((entry) => entry.entityId === y.id && entry.entityType === 'YouthProspect')}
+                shortlisted={shortlist.some((entry) => entry.entityId === y.id)}
                 onScout={() => dispatch({ type: 'SCOUT_TARGET', entityId: y.id, entityType: 'YouthProspect' as ScoutedEntityType })}
+                onToggleShortlist={() => dispatch({ type: 'TOGGLE_SCOUTING_SHORTLIST', entityId: y.id, entityType: 'YouthProspect' })}
               />
             ))}
         </div>
@@ -325,14 +390,22 @@ function ScoutCard({
   view,
   cost,
   budget,
+  assigned,
+  shortlisted,
   onScout,
+  onToggleShortlist,
+  onApproach,
 }: {
   title: string;
   subtitle: string;
   view: FogView;
   cost: number;
   budget: number;
+  assigned: boolean;
+  shortlisted: boolean;
   onScout: () => void;
+  onToggleShortlist: () => void;
+  onApproach?: () => void;
 }) {
   const ability = scoutingAbilitySummary(view);
   const accPct = ability.knowledgePercentage;
@@ -385,6 +458,8 @@ function ScoutCard({
       <div className="mt-3 border-t border-neutral-800 pt-2">
         {view.maxed ? (
           <span className="text-xs text-green-400">Best available report. Track performance still matters.</span>
+        ) : assigned ? (
+          <Button variant="primary" className="w-full px-2 py-1 text-xs" disabled title="This assignment advances automatically after each race">Assignment active · advances each round</Button>
         ) : (
           <>
             <Button
@@ -400,8 +475,28 @@ function ScoutCard({
             )}
           </>
         )}
+        <div className="mt-2 grid grid-cols-2 gap-2">
+          <Button variant="ghost" className="px-2 py-1 text-xs" onClick={onToggleShortlist}>{shortlisted ? 'Remove shortlist' : 'Add to shortlist'}</Button>
+          {onApproach ? <Button variant="ghost" className="px-2 py-1 text-xs" onClick={onApproach}>Approach →</Button> : <Button variant="ghost" className="px-2 py-1 text-xs" disabled title="Youth prospects are signed through the Driver Market academy section">Academy route</Button>}
+        </div>
       </div>
     </Panel>
+  );
+}
+
+function ComparisonCard({ target }: { target: ReturnType<typeof scoutingComparison>[number] }) {
+  const current = target.currentStars
+    ? `${target.currentStars[0].toFixed(1)}–${target.currentStars[1].toFixed(1)}★`
+    : 'Unknown';
+  return (
+    <div className="rounded border border-neutral-800 bg-neutral-950/40 p-3">
+      <div className="font-semibold text-neutral-100">{target.name}</div>
+      <div className="mt-2 grid grid-cols-2 gap-2 text-xs">
+        <div><div className="text-neutral-500">Current ability</div><div className="font-semibold text-amber-300">{current}</div></div>
+        <div><div className="text-neutral-500">Potential</div><div className="font-semibold text-amber-300">{target.potentialStars[0].toFixed(1)}–{target.potentialStars[1].toFixed(1)}★</div></div>
+      </div>
+      <div className="mt-2 text-[11px] text-neutral-500">Knowledge confidence: {target.knowledgePercentage}%</div>
+    </div>
   );
 }
 
