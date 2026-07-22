@@ -86,7 +86,7 @@ export type UniverseDriverAbsence = {
   driverId: string;
   driverName: string;
   teamId: string;
-  injuryType: 'Concussion' | 'Hand injury' | 'Leg injury' | 'Back injury' | 'Illness';
+  injuryType: 'Concussion' | 'Hand injury' | 'Back injury';
   startRound: number;
   expectedReturnRound: number;
   replacement: UniverseReplacementDriver;

@@ -90,6 +90,7 @@ export type RaceEventContext = {
   wasFavoredInOrders: boolean;
   wasDisadvantagedInOrders: boolean;
   carReliabilityDNF: boolean;
+  incidentResponsibility?: 'driver' | 'car' | 'racing' | 'other';
   strategyRiskLevel: 'conservative' | 'balanced' | 'aggressive';
   pointsScored: number;
   podium: boolean;
@@ -105,25 +106,35 @@ export function reactToRaceResult(
 
   // --- Race finish ---
   if (ctx.dnf) {
-    const carBlame = ctx.carReliabilityDNF;
+    const responsibility = ctx.incidentResponsibility
+      ?? (ctx.carReliabilityDNF ? 'car' : 'driver');
+    const carBlame = responsibility === 'car';
+    const racingIncident = responsibility === 'racing';
     updates.push({
       driverId: ctx.driverId,
-      selfConfidenceDelta: carBlame ? -2 : -8,
-      trustInCarDelta: carBlame ? -10 : -6,
-      frustrationDelta: carBlame ? 7 : 6,
-      teamTrustInDriverDelta: carBlame ? -4 : -2,
+      selfConfidenceDelta: carBlame ? -2 : racingIncident ? -3 : -9,
+      trustInCarDelta: carBlame ? -12 : racingIncident ? -1 : -4,
+      trustInTeamDelta: carBlame ? -7 : 0,
+      trustInPrincipalDelta: carBlame ? -3 : 0,
+      frustrationDelta: carBlame ? 8 : racingIncident ? 3 : 7,
+      teamTrustInDriverDelta: carBlame ? 0 : racingIncident ? 0 : -7,
       moraleDelta: -4,
-      reason: carBlame ? 'DNF from car failure' : 'DNF from incident',
+      reason: carBlame
+        ? 'Car failure caused retirement'
+        : racingIncident
+          ? 'Racing incident outside driver control'
+          : 'Driver-caused crash',
     });
-    if (!carBlame && ctx.strategyRiskLevel === 'aggressive') {
+    if (responsibility === 'driver' && ctx.strategyRiskLevel === 'aggressive') {
       updates.push({
         driverId: ctx.driverId,
         selfConfidenceDelta: -3,
-        trustInCarDelta: -5,
-        trustInPrincipalDelta: -2,
+        trustInCarDelta: -2,
+        trustInTeamDelta: -4,
+        trustInPrincipalDelta: -5,
         teamTrustInDriverDelta: -3,
         frustrationDelta: 4,
-        reason: 'Aggressive stint ended in incident',
+        reason: 'Risky strategy contributed to crash',
       });
     }
   } else {

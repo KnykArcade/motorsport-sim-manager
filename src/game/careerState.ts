@@ -45,6 +45,18 @@ import type { CharacterInteractionState } from '../types/characterInteractionTyp
 import type { PersonnelCareerTenure } from '../types/personnelCareerTypes';
 import type { TransferCalendarState } from '../types/transferCalendarTypes';
 
+export type RaceDriverAbsence = {
+  driverId: string;
+  driverName: string;
+  teamId: string;
+  injuryType: 'Concussion' | 'Hand injury' | 'Back injury';
+  startRound: number;
+  expectedReturnRound: number;
+  replacementDriverId: string;
+  replacementName: string;
+  seatIndex: number;
+};
+
 export type GameState = {
   id: string;
   createdAt: string;
@@ -74,6 +86,9 @@ export type GameState = {
   marketContractNegotiation?: MarketContractNegotiation;
   staffContractNegotiation?: StaffContractNegotiation;
   transferCalendar?: TransferCalendarState;
+  // Exceptional crash-only absences for the player's race line-up. The reserve
+  // is promoted and the original seat holder restored automatically.
+  raceDriverAbsences?: RaceDriverAbsence[];
 
   pointsSystemId: string;
   regulationSetId: string;

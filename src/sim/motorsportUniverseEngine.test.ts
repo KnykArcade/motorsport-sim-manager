@@ -8,7 +8,7 @@ import { careerMarketBundle } from './careerMarketEngine';
 import {
   ensureMotorsportUniverse,
   advanceOffscreenChampionshipsAfterPlayerRace,
-  offscreenInjuryRate,
+  offscreenSevereCrashInjuryRate,
   performanceRenewalProbability,
   simulateOffscreenChampionshipRound,
   simulateOffscreenChampionshipSeason,
@@ -106,7 +106,7 @@ describe('persistent multi-series universe', () => {
     expect(second.liveSeason?.driverStandings.reduce((wins, standing) => wins + standing.wins, 0)).toBe(2);
   });
 
-  it('creates deterministic injuries, named substitutes, recovery windows, and era-aware rates', () => {
+  it('creates only rare severe-crash absences with named substitutes and one-to-two-race recovery windows', () => {
     const championship = career().motorsportUniverse!.championships.NASCAR!;
     const seed = Array.from({ length: 500 }, (_, index) => `injury-seed-${index}`).find((candidate) =>
       (simulateOffscreenChampionshipRound(championship, candidate).driverAbsences?.length ?? 0) > 0,
@@ -118,9 +118,13 @@ describe('persistent multi-series universe', () => {
     const absence = first.driverAbsences![0];
     expect(absence.replacement.name.length).toBeGreaterThan(0);
     expect(absence.replacement.replacesDriverId).toBe(absence.driverId);
-    expect(absence.expectedReturnRound).toBeGreaterThan(absence.startRound);
+    expect(absence.startRound).toBe(2);
+    expect(absence.expectedReturnRound - absence.startRound).toBeGreaterThanOrEqual(1);
+    expect(absence.expectedReturnRound - absence.startRound).toBeLessThanOrEqual(2);
+    expect(absence.injuryType).not.toBe('Illness');
     expect(first.liveSeason?.driverNames?.[absence.replacement.driverId]).toBe(absence.replacement.name);
-    expect(offscreenInjuryRate('NASCAR', 1998)).toBeGreaterThan(offscreenInjuryRate('NASCAR', 2026));
+    expect(offscreenSevereCrashInjuryRate('NASCAR', 1998)).toBeLessThan(0.01);
+    expect(offscreenSevereCrashInjuryRate('NASCAR', 1998)).toBeGreaterThan(offscreenSevereCrashInjuryRate('NASCAR', 2026));
   });
 
   it('ticks every other active series and creates state-backed world news', () => {

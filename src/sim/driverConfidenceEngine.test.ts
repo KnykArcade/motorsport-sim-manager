@@ -127,6 +127,8 @@ describe('driverConfidenceEngine — race result reactions', () => {
     const applied = applyConfidenceUpdates({ d1: rel }, updates);
     expect(applied.d1.trustInCar).toBeLessThan(55);
     expect(applied.d1.frustration).toBeGreaterThan(20);
+    expect(applied.d1.trustInTeam).toBeLessThan(57);
+    expect(applied.d1.teamTrustInDriver).toBe(55);
   });
 
   it('DNF from crash hurts self-confidence more than car failure', () => {
@@ -151,6 +153,32 @@ describe('driverConfidenceEngine — race result reactions', () => {
     const aggressiveApplied = applyConfidenceUpdates({ d1: rel }, aggressiveUpdates);
     expect(aggressiveApplied.d1.trustInCar).toBeLessThan(balancedApplied.d1.trustInCar);
     expect(aggressiveApplied.d1.trustInPrincipal).toBeLessThan(balancedApplied.d1.trustInPrincipal);
+  });
+
+  it('a driver-caused crash hurts self-belief and the team\'s trust in the driver most', () => {
+    const rel = baseRel();
+    const applied = applyConfidenceUpdates({ d1: rel }, reactToRaceResult(rel, baseCtx({
+      dnf: true,
+      incidentResponsibility: 'driver',
+      finishingPosition: 99,
+      pointsScored: 0,
+    })));
+    expect(applied.d1.selfConfidence).toBeLessThan(55);
+    expect(applied.d1.teamTrustInDriver).toBeLessThan(50);
+    expect(applied.d1.trustInTeam).toBe(55);
+  });
+
+  it('an unavoidable racing incident has only a mild confidence impact and no blame-based trust penalty', () => {
+    const rel = baseRel();
+    const applied = applyConfidenceUpdates({ d1: rel }, reactToRaceResult(rel, baseCtx({
+      dnf: true,
+      incidentResponsibility: 'racing',
+      finishingPosition: 99,
+      pointsScored: 0,
+    })));
+    expect(applied.d1.selfConfidence).toBe(57);
+    expect(applied.d1.trustInTeam).toBe(55);
+    expect(applied.d1.teamTrustInDriver).toBe(55);
   });
 
   it('clean finishes rebuild trust in the car over time', () => {
