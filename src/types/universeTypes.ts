@@ -69,6 +69,27 @@ export type UniverseLiveSeason = {
   teamStandings: StandingsEntry[];
   raceResults: UniverseRaceSummary[];
   schedule: UniverseScheduledRace[];
+  // Optional for live seasons created before substitute identity tracking.
+  driverNames?: Record<string, string>;
+};
+
+export type UniverseReplacementDriver = {
+  driverId: string;
+  registryDriverId?: string;
+  name: string;
+  teamId: string;
+  series: Series;
+  replacesDriverId: string;
+};
+
+export type UniverseDriverAbsence = {
+  driverId: string;
+  driverName: string;
+  teamId: string;
+  injuryType: 'Concussion' | 'Hand injury' | 'Leg injury' | 'Back injury' | 'Illness';
+  startRound: number;
+  expectedReturnRound: number;
+  replacement: UniverseReplacementDriver;
 };
 
 export type UniverseDriverMovement = {
@@ -96,6 +117,8 @@ export type UniverseChampionshipState = {
   movementHistory?: UniverseDriverMovement[];
   // Optional for saves created before championships advanced round-by-round.
   liveSeason?: UniverseLiveSeason;
+  // Optional for saves created before off-screen driver availability existed.
+  driverAbsences?: UniverseDriverAbsence[];
 };
 
 export type MotorsportUniverseState = {
