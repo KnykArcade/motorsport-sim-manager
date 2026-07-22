@@ -78,10 +78,38 @@ describe('inboxViewModel', () => {
       drivers: base.drivers.map((driver) =>
         driver.teamId === base.selectedTeamId ? { ...driver, contractYearsRemaining: 1 } : driver),
     };
-    const item = inboxMessages(state).find((message) => message.id === 'inbox-contracts-expiring');
+    const driver = state.drivers.find((candidate) => candidate.teamId === state.selectedTeamId);
+    const item = driver
+      ? inboxMessages(state).find((message) => message.id === `inbox-driver-contract-${driver.id}`)
+      : undefined;
     expect(item).toBeDefined();
     expect(item?.actionable).toBe(true);
-    expect(item?.route).toBe('/drivers');
+    expect(item?.route).toBe(`/drivers/${encodeURIComponent(driver?.id ?? '')}/negotiate`);
+    expect(item?.routeLabel).toBe('Open Negotiation');
+  });
+
+  it('keeps single-season contract alerts on the existing Drivers screen', () => {
+    const base = createNewGame({
+      gameMode: 'SingleSeason',
+      seasonYear: 1995,
+      series: 'F1',
+      teamId: 't-benetton',
+      seed: 'inbox-single-season-contract',
+    });
+    const state: GameState = {
+      ...base,
+      drivers: base.drivers.map((driver) =>
+        driver.teamId === base.selectedTeamId ? { ...driver, contractYearsRemaining: 1 } : driver),
+    };
+    const driver = state.drivers.find((candidate) => candidate.teamId === state.selectedTeamId);
+    const item = driver
+      ? inboxMessages(state).find((message) => message.id === `inbox-driver-contract-${driver.id}`)
+      : undefined;
+
+    expect(item).toMatchObject({
+      route: '/drivers',
+      routeLabel: 'Open Drivers',
+    });
   });
 
   it('surfaces vacant and expiring staff roles as people actions', () => {
