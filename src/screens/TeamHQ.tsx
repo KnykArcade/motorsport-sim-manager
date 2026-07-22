@@ -423,6 +423,7 @@ function CommandDeskItem({ item, onOpen }: { item: CommandAgendaItem; onOpen: ()
         {item.blocking && <span className="shrink-0 text-[9px] font-bold uppercase text-red-300">Must respond</span>}
       </div>
       <div className="mt-1 text-[10px] text-neutral-500">{item.owner}</div>
+      <div className="mt-1 text-[10px] font-semibold uppercase tracking-wide text-amber-300">{item.timingLabel}</div>
       <div className="mt-1 text-[11px] leading-4 text-neutral-400">{item.whyNow}</div>
       <div className="mt-1 text-[10px] font-semibold text-sky-300">{item.routeLabel} →</div>
     </button>

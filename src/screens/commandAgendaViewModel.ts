@@ -2,7 +2,7 @@ import type { GameState } from '../game/careerState';
 import { currentRace } from '../game/careerState';
 import { getCareerPhase } from '../game/careerPhaseEngine';
 import { workflowDestination } from '../components/layoutWorkflow';
-import { inboxMessages, type InboxMessage } from './inboxViewModel';
+import { inboxMessages, inboxTimingLabel, type InboxMessage } from './inboxViewModel';
 
 export type CommandAgendaItem = {
   id: string;
@@ -15,6 +15,7 @@ export type CommandAgendaItem = {
   routeLabel: string;
   blocking: boolean;
   round?: number;
+  timingLabel: string;
 };
 
 export type CommandChange = {
@@ -64,6 +65,7 @@ function toAgendaItem(message: InboxMessage): CommandAgendaItem {
     routeLabel: message.routeLabel,
     blocking: Boolean(message.blocking),
     round: message.round,
+    timingLabel: inboxTimingLabel(message.timing ?? 'monitor'),
   };
 }
 
@@ -135,7 +137,7 @@ export function commandAgenda(state: GameState): CommandAgenda {
     : messages.filter((message) => message.actionable).map(toAgendaItem);
   const nextAction = actionItems[0] ?? null;
   const dueThisWeek = actionItems
-    .filter((item) => item.id !== nextAction?.id && item.blocking)
+    .filter((item) => item.id !== nextAction?.id && item.timingLabel === 'Due this week')
     .slice(0, 3);
   const recommendations = actionItems
     .filter((item) => item.id !== nextAction?.id && item.kind === 'recommended')

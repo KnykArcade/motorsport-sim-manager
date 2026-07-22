@@ -25,6 +25,7 @@ export type InboxCategory =
   | 'news';
 
 export type InboxMessageKind = 'must_respond' | 'recommended' | 'news';
+export type InboxTiming = 'due_this_week' | 'before_next_race' | 'season_end' | 'monitor';
 
 export type InboxMessage = {
   id: string;
@@ -48,6 +49,7 @@ export type InboxMessage = {
   /** Sort key within a severity band: newer first. Round-based where known. */
   round?: number;
   timestamp?: string;
+  timing?: InboxTiming;
 };
 
 const SEVERITY_ORDER: Record<InboxSeverity, number> = { critical: 0, action: 1, info: 2 };
@@ -376,6 +378,32 @@ function withTaskSemantics(message: InboxMessage): InboxMessage {
   };
 }
 
+export function inboxTimingLabel(timing: InboxTiming): string {
+  switch (timing) {
+    case 'due_this_week':
+      return 'Due this week';
+    case 'before_next_race':
+      return 'Before next race';
+    case 'season_end':
+      return 'Season end';
+    case 'monitor':
+      return 'Monitor';
+  }
+}
+
+export function inboxTimingForMessage(state: GameState, message: InboxMessage): InboxTiming {
+  const text = `${message.title} ${message.body ?? ''}`.toLowerCase();
+  if (message.blocking) return 'due_this_week';
+  if (text.includes('after this season') || text.includes('season end') || text.includes('expiring')) {
+    return 'season_end';
+  }
+  if (!message.actionable || message.kind === 'news') return 'monitor';
+  const currentRound = state.calendar[state.currentRaceIndex]?.round ?? state.currentRaceIndex + 1;
+  return message.round !== undefined && message.round <= currentRound + 1
+    ? 'before_next_race'
+    : 'due_this_week';
+}
+
 /**
  * The full inbox feed: pinned action items first (critical, then action),
  * then the news/stories stream, newest first within each band.
@@ -396,6 +424,7 @@ export function inboxMessages(state: GameState): InboxMessage[] {
   const dismissed = new Set(state.inboxDismissed ?? []);
   return [...actionItems, ...newsMessages(state)]
     .map(withTaskSemantics)
+    .map((message) => ({ ...message, timing: inboxTimingForMessage(state, message) }))
     .filter((message) => message.blocking || !dismissed.has(message.id))
     .sort((a, b) =>
       Number(b.actionable) - Number(a.actionable)
