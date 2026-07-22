@@ -11,6 +11,7 @@ import type {
   UniverseLiveSeason,
 } from '../types/universeTypes';
 import type { Series } from '../types/gameTypes';
+import { worldDriverAvailability } from './worldAvailabilityViewModel';
 import { LegacyArchive } from '../components/history/LegacyArchive';
 import {
   MetricStrip,
@@ -202,6 +203,7 @@ export function WorldGrid({
     <div className="space-y-4">
       {entries.map((championship) => {
         const drivers = new Map(championship.drivers.map((driver) => [driver.driverId, driver]));
+        const availability = worldDriverAvailability(championship);
         return (
           <Panel key={championship.series}>
             <div className="mb-3 flex items-baseline justify-between gap-3">
@@ -215,9 +217,15 @@ export function WorldGrid({
                   <div className="mt-1 space-y-0.5">
                     {team.driverIds.map((driverId) => {
                       const driver = drivers.get(driverId);
+                      const status = availability.get(driverId);
                       return (
                         <div key={driverId} className="flex justify-between gap-3 text-xs">
-                          <span className="text-neutral-300">{driver?.name ?? driverId}</span>
+                          <span className="text-neutral-300">
+                            {driver?.name ?? driverId}
+                            {status?.status === 'Injured' && (
+                              <span className="ml-1 text-rose-300">Injured · {status.replacementName} deputising</span>
+                            )}
+                          </span>
                           {driver && (
                             <span className="whitespace-nowrap text-neutral-500">
                               {driver.contractYearsRemaining} yr{driver.contractYearsRemaining === 1 ? '' : 's'}
@@ -321,7 +329,11 @@ export function WorldLiveSeasonCard({
   championship: UniverseChampionshipState;
   live: UniverseLiveSeason;
 }) {
-  const driverNames = new Map(championship.drivers.map((driver) => [driver.driverId, driver.name]));
+  const driverNames = new Map([
+    ...championship.drivers.map((driver) => [driver.driverId, driver.name] as const),
+    ...Object.entries(live.driverNames ?? {}),
+    ...(championship.driverAbsences ?? []).map((absence) => [absence.replacement.driverId, absence.replacement.name] as const),
+  ]);
   const latest = live.raceResults.at(-1);
   const next = live.schedule[live.completedRaces];
   return (

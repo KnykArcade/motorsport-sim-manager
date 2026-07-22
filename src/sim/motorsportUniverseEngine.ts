@@ -10,6 +10,7 @@ import type {
   UniverseChampionshipSeason,
   UniverseChampionshipState,
   UniverseDriverContract,
+  UniverseDriverAbsence,
   UniverseDriverMovement,
   UniverseLiveSeason,
   UniverseRaceSummary,
@@ -270,6 +271,79 @@ function retirementRate(series: Series, year: number): number {
   return year < 2000 ? 0.16 : 0.11;
 }
 
+export function offscreenInjuryRate(series: Series, year: number): number {
+  if (series === 'NASCAR') return year < 2000 ? 0.07 : 0.05;
+  if (series === 'F1') return year < 2000 ? 0.06 : 0.04;
+  return year < 2000 ? 0.065 : 0.045;
+}
+
+const INJURY_TYPES: UniverseDriverAbsence['injuryType'][] = [
+  'Concussion', 'Hand injury', 'Leg injury', 'Back injury', 'Illness',
+];
+
+function replacementForAbsence(
+  championship: UniverseChampionshipState,
+  driver: UniverseDriverContract,
+  round: number,
+  seed: string,
+): UniverseDriverAbsence['replacement'] | undefined {
+  const occupied = new Set(championship.drivers.map((entry) => canonicalNameOf(entry.name)));
+  const candidate = registryList(getMasterRegistry())
+    .filter((entry) => eligibleCandidate(entry, championship.seasonYear, occupied))
+    .sort((a, b) =>
+      candidateScore(b, championship.series, championship.seasonYear, seed)
+      - candidateScore(a, championship.series, championship.seasonYear, seed)
+      || a.driverId.localeCompare(b.driverId),
+    )[Math.floor(hash01(`${seed}-${championship.series}-${championship.seasonYear}-${round}-${driver.driverId}-replacement`) * 8)];
+  if (!candidate) return undefined;
+  return {
+    driverId: `sub-${championship.series}-${championship.seasonYear}-${driver.driverId}-${round}`,
+    registryDriverId: candidate.driverId,
+    name: candidate.displayName,
+    teamId: driver.teamId,
+    series: championship.series,
+    replacesDriverId: driver.driverId,
+  };
+}
+
+function absencesForRound(
+  championship: UniverseChampionshipState,
+  round: number,
+  seed: string,
+): UniverseDriverAbsence[] {
+  const previous = championship.driverAbsences ?? [];
+  const continuing = previous.filter((absence) => absence.expectedReturnRound > round);
+  const returningIds = new Set(
+    previous.filter((absence) => absence.expectedReturnRound <= round).map((absence) => absence.driverId),
+  );
+  if (continuing.length >= 2) return continuing;
+  const eventRoll = hash01(`${seed}-${championship.seasonYear}-${championship.series}-${round}-injury-event`);
+  if (eventRoll >= offscreenInjuryRate(championship.series, championship.seasonYear)) return continuing;
+  const unavailable = new Set([...continuing.map((absence) => absence.driverId), ...returningIds]);
+  const candidates = championship.drivers.filter((driver) => !unavailable.has(driver.driverId));
+  if (candidates.length === 0) return continuing;
+  const driver = candidates[
+    Math.floor(hash01(`${seed}-${championship.series}-${championship.seasonYear}-${round}-injury-driver`) * candidates.length)
+  ];
+  const replacement = replacementForAbsence(championship, driver, round, seed);
+  if (!replacement) return continuing;
+  const duration = 1 + Math.floor(
+    hash01(`${seed}-${championship.series}-${championship.seasonYear}-${round}-${driver.driverId}-injury-duration`) * 4,
+  );
+  const injuryType = INJURY_TYPES[Math.floor(
+    hash01(`${seed}-${championship.series}-${championship.seasonYear}-${round}-${driver.driverId}-injury-type`) * INJURY_TYPES.length,
+  )];
+  return [...continuing, {
+    driverId: driver.driverId,
+    driverName: driver.name,
+    teamId: driver.teamId,
+    injuryType,
+    startRound: round,
+    expectedReturnRound: round + duration,
+    replacement,
+  }];
+}
+
 function fallbackRaceCount(series: Series): number {
   if (series === 'NASCAR') return 36;
   if (series === 'F1') return 22;
@@ -305,6 +379,7 @@ function initialLiveSeason(championship: UniverseChampionshipState): UniverseLiv
     teamStandings: championship.teams.map((team) => emptyStanding(team.teamId)),
     raceResults: [],
     schedule,
+    driverNames: Object.fromEntries(championship.drivers.map((driver) => [driver.driverId, driver.name])),
   };
 }
 
@@ -327,12 +402,21 @@ export function simulateOffscreenChampionshipRound(
   if (live.completedRaces >= live.totalRaces) return { ...championship, liveSeason: live };
 
   const round = live.completedRaces + 1;
+  const driverAbsences = absencesForRound(championship, round, seed);
   const bundle = getCachedBundle(championship.seasonYear, championship.series);
   const points = getPointsSystem(bundle?.season.pointsSystemId ?? 'pts-modern').pointsByPosition;
-  const driverTable = standingMap(live.driverStandings, championship.drivers.map((driver) => driver.driverId));
+  const driverTable = standingMap(live.driverStandings, [
+    ...championship.drivers.map((driver) => driver.driverId),
+    ...driverAbsences.map((absence) => absence.replacement.driverId),
+  ]);
   const teamTable = standingMap(live.teamStandings, championship.teams.map((team) => team.teamId));
   const teamById = new Map(championship.teams.map((team) => [team.teamId, team]));
-  const classified = championship.drivers.map((driver) => {
+  const absenceByDriver = new Map(driverAbsences.map((absence) => [absence.driverId, absence]));
+  const classified = championship.drivers.map((primaryDriver) => {
+    const absence = absenceByDriver.get(primaryDriver.driverId);
+    const driver: UniverseDriverContract = absence
+      ? { ...absence.replacement, contractYearsRemaining: 1 }
+      : primaryDriver;
     const team = teamById.get(driver.teamId);
     const ability = normalizedOverall(driver, championship.series, championship.seasonYear);
     const noise = hash01(`${seed}-${championship.seasonYear}-${championship.series}-${round}-${driver.driverId}-pace`);
@@ -383,12 +467,17 @@ export function simulateOffscreenChampionshipRound(
 
   return {
     ...championship,
+    driverAbsences,
     liveSeason: {
       ...live,
       completedRaces: round,
       driverStandings: sortedStandings(driverTable),
       teamStandings: sortedStandings(teamTable),
       raceResults: [...live.raceResults, raceSummary],
+      driverNames: {
+        ...(live.driverNames ?? Object.fromEntries(championship.drivers.map((driver) => [driver.driverId, driver.name]))),
+        ...Object.fromEntries(driverAbsences.map((absence) => [absence.replacement.driverId, absence.replacement.name])),
+      },
     },
   };
 }
@@ -420,6 +509,32 @@ export function advanceOffscreenChampionshipsAfterPlayerRace(state: GameState): 
         category: 'championship',
         priority: 'normal',
       });
+      const priorAbsences = new Map((current.driverAbsences ?? []).map((absence) => [absence.driverId, absence]));
+      const nextAbsences = new Map((next.driverAbsences ?? []).map((absence) => [absence.driverId, absence]));
+      for (const absence of nextAbsences.values()) {
+        if (priorAbsences.has(absence.driverId)) continue;
+        news.push({
+          id: `world-injury-${state.seasonYear}-${series}-${absence.driverId}-${absence.startRound}`,
+          round: latest.round,
+          headline: `${series}: ${absence.driverName} ruled out`,
+          body: `${absence.driverName} will miss racing with a ${absence.injuryType.toLowerCase()}. ${absence.replacement.name} steps into the seat for ${next.teams.find((team) => team.teamId === absence.teamId)?.name ?? 'the team'}, with a return targeted for round ${absence.expectedReturnRound}.`,
+          timestamp: new Date(Date.UTC(state.seasonYear, 0, Math.max(1, state.currentRaceIndex + 1))).toISOString(),
+          category: 'paddock',
+          priority: 'high',
+        });
+      }
+      for (const absence of priorAbsences.values()) {
+        if (nextAbsences.has(absence.driverId)) continue;
+        news.push({
+          id: `world-return-${state.seasonYear}-${series}-${absence.driverId}-${latest.round}`,
+          round: latest.round,
+          headline: `${series}: ${absence.driverName} cleared to return`,
+          body: `${absence.driverName} has recovered from a ${absence.injuryType.toLowerCase()} and returns to the race seat. ${absence.replacement.name}'s temporary spell is complete.`,
+          timestamp: new Date(Date.UTC(state.seasonYear, 0, Math.max(1, state.currentRaceIndex + 1))).toISOString(),
+          category: 'paddock',
+          priority: 'normal',
+        });
+      }
     }
   }
   return {
@@ -452,7 +567,10 @@ export function simulateOffscreenChampionshipSeason(
     driverChampionName: championship.drivers.find((driver) => driver.driverId === driverChampionId)?.name,
     teamChampionId,
     teamChampionName: championship.teams.find((team) => team.teamId === teamChampionId)?.name,
-    driverNames: Object.fromEntries(championship.drivers.map((driver) => [driver.driverId, driver.name])),
+    driverNames: {
+      ...Object.fromEntries(championship.drivers.map((driver) => [driver.driverId, driver.name])),
+      ...(live.driverNames ?? {}),
+    },
     teamNames: Object.fromEntries(championship.teams.map((team) => [team.teamId, team.name])),
     driverStandings,
     teamStandings,

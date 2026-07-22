@@ -8,6 +8,7 @@ import { careerMarketBundle } from './careerMarketEngine';
 import {
   ensureMotorsportUniverse,
   advanceOffscreenChampionshipsAfterPlayerRace,
+  offscreenInjuryRate,
   performanceRenewalProbability,
   simulateOffscreenChampionshipRound,
   simulateOffscreenChampionshipSeason,
@@ -85,7 +86,8 @@ describe('persistent multi-series universe', () => {
     const second = simulateOffscreenChampionshipSeason(championship, 'standings-seed');
     expect(second).toEqual(first);
     expect(first.completedRaces).toBe(getSeasonBundle(1998, 'NASCAR')!.season.calendar.length);
-    expect(first.driverStandings).toHaveLength(championship.drivers.length);
+    expect(first.driverStandings.length).toBeGreaterThanOrEqual(championship.drivers.length);
+    expect(championship.drivers.every((driver) => first.driverStandings.some((standing) => standing.entityId === driver.driverId))).toBe(true);
     expect(first.teamStandings).toHaveLength(championship.teams.length);
     expect(first.driverChampionId).toBe(first.driverStandings[0].entityId);
     expect(first.teamChampionId).toBe(first.teamStandings[0].entityId);
@@ -102,6 +104,23 @@ describe('persistent multi-series universe', () => {
     expect(first.liveSeason?.raceResults).toHaveLength(1);
     expect(second.liveSeason?.completedRaces).toBe(2);
     expect(second.liveSeason?.driverStandings.reduce((wins, standing) => wins + standing.wins, 0)).toBe(2);
+  });
+
+  it('creates deterministic injuries, named substitutes, recovery windows, and era-aware rates', () => {
+    const championship = career().motorsportUniverse!.championships.NASCAR!;
+    const seed = Array.from({ length: 500 }, (_, index) => `injury-seed-${index}`).find((candidate) =>
+      (simulateOffscreenChampionshipRound(championship, candidate).driverAbsences?.length ?? 0) > 0,
+    );
+    expect(seed).toBeDefined();
+    const first = simulateOffscreenChampionshipRound(championship, seed!);
+    const repeated = simulateOffscreenChampionshipRound(championship, seed!);
+    expect(first).toEqual(repeated);
+    const absence = first.driverAbsences![0];
+    expect(absence.replacement.name.length).toBeGreaterThan(0);
+    expect(absence.replacement.replacesDriverId).toBe(absence.driverId);
+    expect(absence.expectedReturnRound).toBeGreaterThan(absence.startRound);
+    expect(first.liveSeason?.driverNames?.[absence.replacement.driverId]).toBe(absence.replacement.name);
+    expect(offscreenInjuryRate('NASCAR', 1998)).toBeGreaterThan(offscreenInjuryRate('NASCAR', 2026));
   });
 
   it('ticks every other active series and creates state-backed world news', () => {
