@@ -50,6 +50,7 @@ import { staffResponsibilities } from './staffResponsibilitiesViewModel';
 import { staffRecommendations } from './staffRecommendationsViewModel';
 import { commandAgenda } from './commandAgendaViewModel';
 import type { CommandAgendaItem } from './commandAgendaViewModel';
+import { aroundTheWorldEntries, canViewWorldStandings } from './worldStandingsViewModel';
 
 export function TeamHQ() {
   const { state, dispatch } = useGame();
@@ -80,6 +81,9 @@ export function TeamHQ() {
   const responsibilities = staffResponsibilities(state);
   const recommendations = staffRecommendations(state);
   const agenda = commandAgenda(state);
+  const worldEntries = canViewWorldStandings(state.gameMode)
+    ? aroundTheWorldEntries(state.series, state.motorsportUniverse)
+    : [];
 
   return (
     <WorkspaceScreen className="era-feature-screen era-team-hq">
@@ -180,6 +184,26 @@ export function TeamHQ() {
             ))}
           </div>
         </section>
+      )}
+
+      {worldEntries.length > 0 && (
+        <Panel title="Around the World" actions={<Button className="px-2 py-1 text-xs" variant="ghost" onClick={() => navigate('/standings')}>Open world standings →</Button>}>
+          <div className="grid gap-2 md:grid-cols-2 xl:grid-cols-4">
+            {worldEntries.map((entry) => (
+              <div key={entry.series} className="rounded border border-neutral-800 bg-neutral-950/40 p-3">
+                <div className="text-[10px] font-black uppercase tracking-[0.14em] text-neutral-500">{entry.seasonYear} {entry.series}</div>
+                {entry.hasCompletedSeason ? (
+                  <>
+                    <div className="mt-1 text-sm font-semibold text-neutral-200">Reigning champion: {entry.championName}</div>
+                    <div className="mt-0.5 text-xs text-neutral-500">Team champion: {entry.teamChampionName ?? '—'}</div>
+                  </>
+                ) : (
+                  <div className="mt-1 text-sm text-neutral-400">Current grid active · no completed season yet</div>
+                )}
+              </div>
+            ))}
+          </div>
+        </Panel>
       )}
 
       <Panel title="Staff responsibilities" actions={<span className="text-xs text-neutral-500">Advisory ownership · you retain final control</span>}>
