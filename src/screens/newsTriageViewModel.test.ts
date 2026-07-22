@@ -29,4 +29,18 @@ describe('newsTriage', () => {
       timestamp: '1995-01-01T00:00:00.000Z',
     })).toBeUndefined();
   });
+
+  it('routes academy news to the owning driver market screen', () => {
+    const state = createNewGame({ gameMode: 'Career', seasonYear: 1995, series: 'F1', teamId: 't-benetton', seed: 'news-triage-academy' });
+    expect(newsTriage(state, {
+      id: 'news-academy',
+      headline: 'Academy report',
+      category: 'youth_academy',
+      priority: 'high',
+      timestamp: '1995-01-01T00:00:00.000Z',
+    })).toMatchObject({
+      route: '/market',
+      routeLabel: 'Open Driver Market',
+    });
+  });
 });

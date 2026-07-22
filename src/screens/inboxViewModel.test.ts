@@ -244,6 +244,37 @@ describe('inboxViewModel', () => {
     expect(dismissed.news).toHaveLength(1);
   });
 
+  it('keeps required blockers visible after a dismiss action', () => {
+    const base = newState();
+    const state: GameState = {
+      ...base,
+      careerPhase: {
+        ...base.careerPhase!,
+        paddockEvents: [{
+          id: 'required-dismiss',
+          weekId: 'week-1',
+          season: base.seasonYear,
+          series: base.series,
+          round: 1,
+          category: 'general_team',
+          title: 'Required decision',
+          description: 'This must be resolved.',
+          severity: 'critical',
+          isRequiredDecision: true,
+          options: [{ id: 'option-a', label: 'Approve', description: 'Approve.' }],
+          effectsApplied: false,
+          createdAt: '2026-01-01T00:00:00.000Z',
+        }],
+      },
+    };
+    const messageId = 'inbox-paddock-required-dismiss';
+    const dismissed = gameReducer(state, { type: 'DISMISS_INBOX_MESSAGES', messageIds: [messageId] }) as GameState;
+    expect(inboxMessages(dismissed).find((message) => message.id === messageId)).toMatchObject({
+      blocking: true,
+      kind: 'must_respond',
+    });
+  });
+
   it('tracks read state through MARK_INBOX_READ', () => {
     const state = newState();
     const before = unreadInboxCount(state);
