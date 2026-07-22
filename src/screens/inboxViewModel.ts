@@ -16,6 +16,7 @@ import { staffRecommendations } from './staffRecommendationsViewModel';
 import { newsTriage } from './newsTriageViewModel';
 import { careerMarketBundle } from '../sim/careerMarketEngine';
 import { getStaffPool } from '../data';
+import { effectiveAccuracy } from '../sim/scoutingEngine';
 
 export type InboxSeverity = 'critical' | 'action' | 'info';
 
@@ -180,6 +181,59 @@ function paddockMessages(state: GameState): InboxMessage[] {
       round: item.round,
     });
   }
+
+  const scouting = state.scouting;
+  if (scouting) {
+    const bundle = careerMarketBundle(state);
+    const targetNames = new Map([
+      ...(bundle?.drivers ?? []).map((driver) => [driver.id, driver.name] as const),
+      ...(bundle?.youth ?? []).map((prospect) => [prospect.id, prospect.name] as const),
+    ]);
+    const activeAssignments = scouting.activeAssignments ?? [];
+    const shortlisted = scouting.shortlist ?? [];
+
+    for (const assignment of activeAssignments) {
+      const report = scouting.reports[assignment.entityId];
+      if (!report) continue;
+      const name = targetNames.get(assignment.entityId) ?? assignment.entityId;
+      const tab = assignment.entityType === 'YouthProspect' ? 'youth' : 'senior';
+      const knowledge = Math.round(effectiveAccuracy(report.scoutingLevel, scouting.networkAccuracy) * 100);
+      messages.push({
+        id: `inbox-scouting-assignment-${assignment.entityType}-${assignment.entityId}`,
+        severity: 'action',
+        category: 'paddock',
+        title: `Scouting assignment in progress: ${name}`,
+        body: `${report.scoutingLevel}% coverage · ${knowledge}% estimated knowledge. The report advances after each race.`,
+        route: `/scouting?tab=${tab}&target=${encodeURIComponent(assignment.entityId)}`,
+        routeLabel: 'Review Scouting',
+        actionable: true,
+        source: 'Scouting department',
+        whyItMatters: 'Building knowledge narrows uncertainty before you commit recruitment budget or a seat.',
+      });
+    }
+
+    for (const entry of shortlisted) {
+      const name = targetNames.get(entry.entityId) ?? entry.entityId;
+      const route = entry.entityType === 'Driver'
+        ? `/market?target=${encodeURIComponent(entry.entityId)}`
+        : `/scouting?tab=youth&target=${encodeURIComponent(entry.entityId)}`;
+      messages.push({
+        id: `inbox-scouting-shortlist-${entry.entityType}-${entry.entityId}`,
+        severity: 'action',
+        category: 'people',
+        title: `Shortlisted recruitment target: ${name}`,
+        body: entry.entityType === 'Driver'
+          ? 'Compare the target with the live market before deciding whether to approach.'
+          : 'Review the youth report and decide whether this prospect belongs in your academy plan.',
+        route,
+        routeLabel: entry.entityType === 'Driver' ? 'Review Market Target' : 'Review Youth Target',
+        actionable: true,
+        source: 'Recruitment desk',
+        whyItMatters: 'A shortlist is your staff-approved watchlist; the next decision is still yours.',
+      });
+    }
+
+  }
   return messages;
 }
 
@@ -193,12 +247,15 @@ function peopleMessages(state: GameState): InboxMessage[] {
     ...getStaffPool(state.seasonYear, state.series).map((staff) => [staff.id, staff.name] as const),
   ]);
   for (const report of Object.values(state.scouting?.reports ?? {}).filter((entry) => entry.scoutingLevel >= 100)) {
+    const tab = report.entityType === 'YouthProspect' ? 'youth' : report.entityType === 'Staff' ? 'staff' : 'senior';
     messages.push({
       id: `inbox-scouting-complete-${report.entityType}-${report.entityId}`,
       severity: 'action', category: 'people',
       title: `Scouting report complete: ${recruitmentNames.get(report.entityId) ?? report.entityId}`,
       body: `${report.entityType} report has reached the best available knowledge. Review, compare, shortlist, or open negotiations.`,
-      route: '/scouting', routeLabel: 'Open Recruitment Centre', actionable: true,
+      route: `/scouting?tab=${tab}&target=${encodeURIComponent(report.entityId)}`,
+      routeLabel: 'Open Scouting Report',
+      actionable: true,
       round: currentRound,
     });
   }

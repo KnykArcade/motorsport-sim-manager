@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useGame } from '../game/GameContext';
 import { teamById } from '../game/careerState';
 import { getStaffPool } from '../data';
@@ -33,9 +33,12 @@ const SKILL_LABELS: { key: string; label: string }[] = [
 export function Scouting() {
   const { state, dispatch } = useGame();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [tab, setTab] = useState<Tab>('intelligence');
   const [intelFilter, setIntelFilter] = useState<'Active' | 'History'>('Active');
   const [comparisonIds, setComparisonIds] = useState<string[]>([]);
+  const requestedTab = searchParams.get('tab');
+  const focusedTargetId = searchParams.get('target');
 
   const bundle = useMemo(
     () => (state ? careerMarketBundle(state) : undefined),
@@ -85,17 +88,21 @@ export function Scouting() {
     ...(bundle?.youth ?? []).map((prospect) => [prospect.id, prospect.name] as const),
     ...staffTargets.map((staff) => [staff.id, staff.name] as const),
   ]);
+  const activeTab = requestedTab === 'senior' || requestedTab === 'youth' || requestedTab === 'intelligence' || requestedTab === 'staff'
+    ? requestedTab
+    : tab;
+  const focusedTargetName = focusedTargetId ? targetNames[focusedTargetId] : undefined;
   const assignments = scoutingAssignments(
     scouting.reports,
     scouting.networkAccuracy,
     targetNames,
-    tab === 'senior' ? 'Driver' : tab === 'youth' ? 'YouthProspect' : tab === 'staff' ? 'Staff' : undefined,
+    activeTab === 'senior' ? 'Driver' : activeTab === 'youth' ? 'YouthProspect' : activeTab === 'staff' ? 'Staff' : undefined,
     scouting.activeAssignments,
     state.seasonYear,
     currentRound,
   );
   const shortlist = (scouting.shortlist ?? []).filter((entry) =>
-    tab === 'senior' ? entry.entityType === 'Driver' : tab === 'youth' ? entry.entityType === 'YouthProspect' : tab === 'staff' ? entry.entityType === 'Staff' : false,
+    activeTab === 'senior' ? entry.entityType === 'Driver' : activeTab === 'youth' ? entry.entityType === 'YouthProspect' : activeTab === 'staff' ? entry.entityType === 'Staff' : false,
   );
   const shortlistTargets = shortlist.flatMap((entry) => {
     const target = entry.entityType === 'Driver'
@@ -139,7 +146,7 @@ export function Scouting() {
         <WorkspaceMetric label="Investigation cost" value={formatMoney(INTELLIGENCE_INVESTIGATION_COST)} detail="Per paddock report" />
       </MetricStrip>
 
-      <WorkspaceTabs items={scoutingTabs} active={tab} onChange={setTab} ariaLabel="Recruitment intelligence sections" />
+      <WorkspaceTabs items={scoutingTabs} active={activeTab} onChange={setTab} ariaLabel="Recruitment intelligence sections" />
 
       <WorkspaceBody>
       <div className="ui-decision-strip flex flex-wrap items-center justify-between gap-2 rounded-lg border px-3 py-2.5">
@@ -159,7 +166,20 @@ export function Scouting() {
         </span>
       </div>
 
-      {tab === 'intelligence' && (
+      {focusedTargetId && (
+        <Panel title="Scouting handoff">
+          {focusedTargetName ? (
+            <p className="text-sm text-neutral-300">
+              <span className="font-semibold">{focusedTargetName}</span> is the focused recruitment target.
+              Review the current report, knowledge level, and next scouting action below.
+            </p>
+          ) : (
+            <p className="text-sm text-amber-300">This target is no longer available in the current scouting market.</p>
+          )}
+        </Panel>
+      )}
+
+      {activeTab === 'intelligence' && (
         <IntelligenceDashboard
           state={state}
           budget={budget}
@@ -169,7 +189,7 @@ export function Scouting() {
         />
       )}
 
-      {tab !== 'intelligence' && <Panel title="Scouting Network">
+      {activeTab !== 'intelligence' && <Panel title="Scouting Network">
         <div className="flex items-center gap-3">
           <div className="text-sm text-neutral-400">Network accuracy</div>
           <div className="h-2 w-40 overflow-hidden rounded-full bg-neutral-800">
@@ -185,17 +205,17 @@ export function Scouting() {
         </div>
       </Panel>}
 
-      {tab !== 'intelligence' && <Panel title="Recruitment Focus">
+      {activeTab !== 'intelligence' && <Panel title="Recruitment Focus">
         <div className="grid gap-2 md:grid-cols-4">
           <label className="text-xs text-neutral-400">Name<input className="mt-1 w-full rounded border border-neutral-700 bg-neutral-950 px-2 py-1.5" value={focus.search ?? ''} onChange={(event) => updateFocus({ search: event.target.value })} placeholder="Search targets" /></label>
-          {(tab === 'senior' || tab === 'youth') && <label className="text-xs text-neutral-400">Maximum age<input className="mt-1 w-full rounded border border-neutral-700 bg-neutral-950 px-2 py-1.5" type="number" min={16} max={60} value={focus.maxAge ?? 60} onChange={(event) => updateFocus({ maxAge: Number(event.target.value) })} /></label>}
-          {tab === 'staff' && <label className="text-xs text-neutral-400">Staff role<select className="mt-1 w-full rounded border border-neutral-700 bg-neutral-950 px-2 py-1.5" value={focus.staffRole ?? 'All'} onChange={(event) => updateFocus({ staffRole: event.target.value })}><option>All</option>{[...new Set(staffTargets.map((staff) => staff.role))].map((role) => <option key={role}>{role}</option>)}</select></label>}
-          {tab === 'senior' && <label className="text-xs text-neutral-400">Contract status<select className="mt-1 w-full rounded border border-neutral-700 bg-neutral-950 px-2 py-1.5" value={focus.contractStatus ?? 'All'} onChange={(event) => updateFocus({ contractStatus: event.target.value as 'All' | 'Available' | 'Expiring' })}><option>All</option><option>Available</option><option>Expiring</option></select></label>}
+          {(activeTab === 'senior' || activeTab === 'youth') && <label className="text-xs text-neutral-400">Maximum age<input className="mt-1 w-full rounded border border-neutral-700 bg-neutral-950 px-2 py-1.5" type="number" min={16} max={60} value={focus.maxAge ?? 60} onChange={(event) => updateFocus({ maxAge: Number(event.target.value) })} /></label>}
+          {activeTab === 'staff' && <label className="text-xs text-neutral-400">Staff role<select className="mt-1 w-full rounded border border-neutral-700 bg-neutral-950 px-2 py-1.5" value={focus.staffRole ?? 'All'} onChange={(event) => updateFocus({ staffRole: event.target.value })}><option>All</option>{[...new Set(staffTargets.map((staff) => staff.role))].map((role) => <option key={role}>{role}</option>)}</select></label>}
+          {activeTab === 'senior' && <label className="text-xs text-neutral-400">Contract status<select className="mt-1 w-full rounded border border-neutral-700 bg-neutral-950 px-2 py-1.5" value={focus.contractStatus ?? 'All'} onChange={(event) => updateFocus({ contractStatus: event.target.value as 'All' | 'Available' | 'Expiring' })}><option>All</option><option>Available</option><option>Expiring</option></select></label>}
           <label className="mt-5 flex items-center gap-2 text-xs text-neutral-300"><input type="checkbox" checked={focus.affordableOnly ?? false} onChange={(event) => updateFocus({ affordableOnly: event.target.checked })} />Affordable scouting only</label>
         </div>
       </Panel>}
 
-      {tab !== 'intelligence' && !bundle && (
+      {activeTab !== 'intelligence' && !bundle && (
         <Panel>
           <p className="text-sm text-neutral-400">
             No market data is available for the {state.seasonYear} {state.series} season.
@@ -203,7 +223,7 @@ export function Scouting() {
         </Panel>
       )}
 
-      {tab !== 'intelligence' && (
+      {activeTab !== 'intelligence' && (
         <Panel title={`Scouting Assignments (${assignments.length})`}>
           {assignments.length > 0 ? (
             <div className="divide-y divide-neutral-800/70">
@@ -220,7 +240,7 @@ export function Scouting() {
         </Panel>
       )}
 
-      {tab !== 'intelligence' && (
+      {activeTab !== 'intelligence' && (
         <Panel title={`Recruitment Shortlist (${shortlistTargets.length})`}>
           {shortlistTargets.length ? (
             <div className="space-y-2">
@@ -250,7 +270,7 @@ export function Scouting() {
         </Panel>
       )}
 
-      {bundle && tab === 'senior' && (
+      {bundle && activeTab === 'senior' && (
         <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
           {[...bundle.drivers]
             .filter((driver) => !focus.search || driver.name.toLowerCase().includes(focus.search.toLowerCase()))
@@ -281,7 +301,7 @@ export function Scouting() {
         </div>
       )}
 
-      {bundle && tab === 'youth' && (
+      {bundle && activeTab === 'youth' && (
         <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
           {[...bundle.youth]
             .filter((prospect) => !focus.search || prospect.name.toLowerCase().includes(focus.search.toLowerCase()))
@@ -311,7 +331,7 @@ export function Scouting() {
         </div>
       )}
 
-      {tab === 'staff' && (
+      {activeTab === 'staff' && (
         <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
           {staffTargets
             .filter((staff) => !focus.search || staff.name.toLowerCase().includes(focus.search.toLowerCase()))
