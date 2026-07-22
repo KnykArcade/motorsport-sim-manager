@@ -29,6 +29,7 @@ import type { PaddockEvent, PaddockEventCategory } from '../types/careerPhaseTyp
 import type { AdvisorRecommendation } from '../types/phase18Types';
 import { RaceWeekendPackageSelection } from './RaceWeekendPackageSelection';
 import { defaultPaddockTab, type PaddockAgendaTab, type PaddockPeopleSection } from './paddockAgendaViewModel';
+import { buildWeeklyStory } from './weeklyStoryViewModel';
 import { CharacterDossierButton } from '../components/characterCards/CharacterDossier';
 import { DriverDossierButton } from '../components/driverCards/DriverDossier';
 import { internalCharacterInfluence } from '../sim/characterInfluenceEngine';
@@ -242,6 +243,7 @@ export function PaddockWeek() {
     dispatch({ type: 'ADVANCE_TO_PRE_RACE_BRIEFING' });
     navigate('/briefing');
   };
+  const weeklyStory = buildWeeklyStory(state);
 
   return (
     <WorkspaceScreen className="era-feature-screen era-paddock-week">
@@ -310,6 +312,25 @@ export function PaddockWeek() {
       />
 
       <WorkspaceBody className="space-y-4">
+      {weeklyStory && (
+        <Panel title={`Returned from ${weeklyStory.raceLabel}`}>
+          <p className="text-xs leading-5 text-neutral-500">{weeklyStory.summary}</p>
+          <div className="mt-3 grid gap-2 md:grid-cols-2 xl:grid-cols-3">
+            {weeklyStory.groups.filter((group) => group.owner !== 'Race review').map((group) => (
+              <div key={group.owner} className="rounded border border-neutral-800 bg-neutral-950/30 p-2">
+                <div className="text-[10px] font-black uppercase tracking-wide text-violet-300">{group.owner}</div>
+                {group.items.map((item) => (
+                  <button key={item.id} type="button" className="mt-2 block w-full text-left" onClick={() => navigate(item.route)}>
+                    <div className="text-xs font-semibold text-neutral-200">{item.title}</div>
+                    <div className="mt-1 text-[10px] leading-4 text-neutral-500">{item.reason}</div>
+                    <div className="mt-1 text-[10px] font-semibold text-sky-300">{item.routeLabel} →</div>
+                  </button>
+                ))}
+              </div>
+            ))}
+          </div>
+        </Panel>
+      )}
       {/* Paddock News */}
       {activeTab === 'overview' && <div className="grid gap-4 lg:grid-cols-2">
         <NewsPanel
