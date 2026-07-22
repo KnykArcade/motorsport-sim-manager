@@ -14,6 +14,13 @@ export type AroundTheWorldEntry = {
   championName?: string;
   teamChampionName?: string;
   hasCompletedSeason: boolean;
+  liveLeaderName?: string;
+  liveLeaderPoints?: number;
+  completedRaces: number;
+  totalRaces: number;
+  latestWinnerName?: string;
+  latestRaceName?: string;
+  nextRaceName?: string;
 };
 
 export function canViewWorldStandings(gameMode: GameMode): boolean {
@@ -59,5 +66,16 @@ export function aroundTheWorldEntries(
       championName: option.latestSeason?.driverChampionName ?? option.latestSeason?.driverChampionId,
       teamChampionName: option.latestSeason?.teamChampionName ?? option.latestSeason?.teamChampionId,
       hasCompletedSeason: Boolean(option.latestSeason),
+      liveLeaderName: option.championship!.drivers.find(
+        (driver) => driver.driverId === option.championship!.liveSeason?.driverStandings[0]?.entityId,
+      )?.name,
+      liveLeaderPoints: option.championship!.liveSeason?.driverStandings[0]?.points,
+      completedRaces: option.championship!.liveSeason?.completedRaces ?? 0,
+      totalRaces: option.championship!.liveSeason?.totalRaces ?? 0,
+      latestWinnerName: option.championship!.liveSeason?.raceResults.at(-1)?.winnerDriverName,
+      latestRaceName: option.championship!.liveSeason?.raceResults.at(-1)?.raceName,
+      nextRaceName: option.championship!.liveSeason?.schedule[
+        option.championship!.liveSeason?.completedRaces ?? 0
+      ]?.raceName,
     }));
 }

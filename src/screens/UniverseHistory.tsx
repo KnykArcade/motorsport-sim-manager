@@ -8,6 +8,7 @@ import type {
   UniverseChampionshipSeason,
   UniverseChampionshipState,
   UniverseDriverMovement,
+  UniverseLiveSeason,
 } from '../types/universeTypes';
 import type { Series } from '../types/gameTypes';
 import { LegacyArchive } from '../components/history/LegacyArchive';
@@ -307,6 +308,54 @@ export function WorldSeasonCard({ season }: { season: UniverseChampionshipSeason
               </tr>
             ))}
           </tbody>
+        </table>
+      </div>
+    </Panel>
+  );
+}
+
+export function WorldLiveSeasonCard({
+  championship,
+  live,
+}: {
+  championship: UniverseChampionshipState;
+  live: UniverseLiveSeason;
+}) {
+  const driverNames = new Map(championship.drivers.map((driver) => [driver.driverId, driver.name]));
+  const latest = live.raceResults.at(-1);
+  const next = live.schedule[live.completedRaces];
+  return (
+    <Panel>
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <div className="font-bold text-neutral-100">{live.seasonYear} {championship.series} · Live season</div>
+          <div className="mt-0.5 text-sm text-neutral-300">
+            Leader: {driverNames.get(live.driverStandings[0]?.entityId ?? '') ?? 'No standings yet'}
+            {live.driverStandings[0] ? ` · ${Math.round(live.driverStandings[0].points)} pts` : ''}
+          </div>
+        </div>
+        <div className="text-xs text-neutral-500">{live.completedRaces} of {live.totalRaces} rounds</div>
+      </div>
+      <div className="mt-3 grid gap-2 sm:grid-cols-2">
+        <div className="rounded border border-neutral-800 bg-neutral-950/35 p-2 text-xs text-neutral-400">
+          <span className="font-semibold text-neutral-200">Latest:</span>{' '}
+          {latest ? `${latest.winnerDriverName ?? 'Unknown winner'} won ${latest.raceName}` : 'No races completed'}
+        </div>
+        <div className="rounded border border-neutral-800 bg-neutral-950/35 p-2 text-xs text-neutral-400">
+          <span className="font-semibold text-neutral-200">Next:</span>{' '}
+          {next ? `${next.raceName} · ${next.trackName}` : live.completedRaces ? 'Season complete' : 'Schedule unavailable'}
+        </div>
+      </div>
+      <div className="mt-3 overflow-x-auto">
+        <table className="w-full text-sm">
+          <thead><tr className="text-left text-[10px] uppercase tracking-wide text-neutral-500"><th className="py-1 pr-2">Pos</th><th className="py-1 pr-2">Driver</th><Th>Points</Th><Th>Wins</Th><Th>Podiums</Th></tr></thead>
+          <tbody>{live.driverStandings.slice(0, 5).map((standing, index) => (
+            <tr key={standing.entityId} className="border-t border-neutral-800/60">
+              <td className="py-1 pr-2 text-neutral-500">{index + 1}</td>
+              <td className="py-1 pr-2 font-medium text-neutral-200">{driverNames.get(standing.entityId) ?? standing.entityId}</td>
+              <Td highlight={index === 0}>{Math.round(standing.points)}</Td><Td>{standing.wins}</Td><Td>{standing.podiums}</Td>
+            </tr>
+          ))}</tbody>
         </table>
       </div>
     </Panel>
