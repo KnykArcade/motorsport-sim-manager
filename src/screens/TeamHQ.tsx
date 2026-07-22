@@ -30,7 +30,7 @@ import {
   WorkspaceScreen,
   WorkspaceTabs,
 } from '../components/workspace/Workspace';
-import { formatMoney, ratingColor } from '../components/ui';
+import { ratingColor } from '../components/ui';
 import { activeUpgradePrograms } from '../sim/technicalAdapters';
 import { actionableInboxCount, unreadInboxCount } from './inboxViewModel';
 import {
@@ -46,6 +46,7 @@ import type { GameMode } from '../types/gameTypes';
 import type { TeamPrincipal } from '../types/principalTypes';
 import type { StaffResponsibilityPolicy } from '../types/staffTypes';
 import { TEAM_HQ_TABS, type TeamHQTab } from './teamHQViewModel';
+import { commandLoopGuide } from './commandLoopGuideViewModel';
 import { staffResponsibilities } from './staffResponsibilitiesViewModel';
 import { staffRecommendations } from './staffRecommendationsViewModel';
 import { commandAgenda } from './commandAgendaViewModel';
@@ -84,6 +85,7 @@ export function TeamHQ() {
   const worldEntries = canViewWorldStandings(state.gameMode)
     ? aroundTheWorldEntries(state.series, state.motorsportUniverse)
     : [];
+  const guide = commandLoopGuide(state);
 
   return (
     <WorkspaceScreen className="era-feature-screen era-team-hq">
@@ -101,11 +103,28 @@ export function TeamHQ() {
       />
 
       <MetricStrip>
-        <WorkspaceMetric label="Budget" value={team ? formatMoney(team.budget) : '—'} detail="Available team balance" />
-        <WorkspaceMetric label="Team morale" value={`${Math.round(team?.morale ?? 0)}%`} detail="Current organization mood" />
-        <WorkspaceMetric label="Reputation" value={Math.round(team?.reputation ?? 0)} detail="Market standing" />
+        <WorkspaceMetric label="Inbox actions" value={inboxActionable} detail="Decisions and recommendations waiting" />
+        <WorkspaceMetric label="Next race" value={race ? `R${race.round}` : '—'} detail={race?.gpName ?? 'No race scheduled'} />
         <WorkspaceMetric label="Active projects" value={activeUpgradePrograms(state).length} detail="Development in progress" />
       </MetricStrip>
+      {guide && (
+        <Panel title={guide.title} actions={<span className="text-xs text-sky-300">Start here</span>}>
+          <p className="text-sm leading-6 text-neutral-300">{guide.summary}</p>
+          <div className="mt-3 grid gap-2 md:grid-cols-2">
+            {guide.steps.map((step) => (
+              <div key={step.number} className="rounded border border-neutral-800 bg-neutral-950/30 p-3">
+                <div className="flex items-start gap-2">
+                  <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-sky-500/15 text-[10px] font-black text-sky-300">{step.number}</span>
+                  <div>
+                    <div className="text-xs font-semibold text-neutral-200">{step.title}</div>
+                    <p className="mt-1 text-xs leading-5 text-neutral-500">{step.detail}</p>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </Panel>
+      )}
 
       <section className="rounded-lg border border-neutral-800 bg-neutral-950/35 p-3">
         <div className="flex flex-wrap items-start justify-between gap-3">

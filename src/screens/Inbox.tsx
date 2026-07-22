@@ -23,6 +23,7 @@ import {
 } from './inboxViewModel';
 import { workflowDestination } from '../components/layoutWorkflow';
 import { buildManagerOfficeFollowUps } from './managerOfficeFollowUpViewModel';
+import { commandLoopGuide } from './commandLoopGuideViewModel';
 
 type InboxFilter = 'all' | 'action' | InboxCategory;
 type InboxSection = 'all' | InboxMessageKind;
@@ -81,6 +82,7 @@ export function Inbox() {
   const unread = messages.filter((message) => !read.has(message.id));
   const round = state.calendar[state.currentRaceIndex]?.round ?? state.currentRaceIndex + 1;
   const workflow = workflowDestination(state);
+  const guide = commandLoopGuide(state);
   const activeReviewRace = state.careerPhase?.currentPhase === 'post_race_review'
     && state.careerPhase.lastCompletedRaceId
     ? state.calendar.find((race) => race.id === state.careerPhase?.lastCompletedRaceId)
@@ -118,6 +120,22 @@ export function Inbox() {
           </Button>
         )}
       />
+      {guide && (
+        <Panel title={guide.title} actions={<span className="text-xs text-sky-300">Start here</span>}>
+          <p className="text-xs leading-5 text-neutral-400">{guide.summary}</p>
+          <div className="mt-3 grid gap-2 md:grid-cols-4">
+            {guide.steps.map((step) => (
+              <div key={step.number} className="rounded border border-neutral-800 bg-neutral-950/30 p-2">
+                <div className="flex items-center gap-2">
+                  <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-sky-500/15 text-[10px] font-black text-sky-300">{step.number}</span>
+                  <span className="text-[10px] font-black uppercase tracking-wide text-neutral-300">{step.title}</span>
+                </div>
+                <p className="mt-2 text-[11px] leading-4 text-neutral-500">{step.detail}</p>
+              </div>
+            ))}
+          </div>
+        </Panel>
+      )}
       <MetricStrip>
         <WorkspaceMetric label="Must Respond" value={`${mustRespondInboxCount(state)}`} detail="Blocks phase progression" />
         <WorkspaceMetric label="Recommended" value={`${recommendedInboxCount(state)}`} detail="Decisions worth reviewing" />
