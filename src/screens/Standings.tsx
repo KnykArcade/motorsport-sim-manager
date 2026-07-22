@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useGame } from '../game/GameContext';
 import { StandingsTable } from '../components/StandingsTable';
 import { CompactPagination } from '../components/CompactPagination';
+import { Panel } from '../components/Panel';
 import {
   MetricStrip,
   WorkspaceBody,
@@ -16,12 +17,22 @@ import {
   standingsPage,
   type StandingsTab,
 } from './seasonOverviewViewModel';
+import { WorldGrid, WorldSeasonCard } from './UniverseHistory';
+import type { Series } from '../types/gameTypes';
+import { canViewWorldStandings, worldChampionshipOptions } from './worldStandingsViewModel';
 
 export function Standings() {
   const { state } = useGame();
   const [tab, setTab] = useState<StandingsTab>('drivers');
   const [page, setPage] = useState(0);
+  const [selectedSeries, setSelectedSeries] = useState<Series | null>(null);
   if (!state) return null;
+
+  const activeSeries = selectedSeries ?? state.series;
+  const worldEnabled = canViewWorldStandings(state.gameMode);
+  const championshipOptions = worldChampionshipOptions(state.series, state.motorsportUniverse);
+  const selectedChampionship = championshipOptions.find((entry) => entry.series === activeSeries);
+  const viewingPlayerSeries = activeSeries === state.series;
 
   const driverName = (id: string) => state.drivers.find((driver) => driver.id === id)?.name ?? id;
   const teamName = (id: string) => state.teams.find((team) => team.id === id)?.name ?? id;
@@ -46,6 +57,11 @@ export function Standings() {
     setPage(0);
   }
 
+  function selectSeries(nextSeries: Series) {
+    setSelectedSeries(nextSeries);
+    setPage(0);
+  }
+
   return (
     <WorkspaceScreen className="era-feature-screen era-standings-screen">
       <WorkspaceHeader
@@ -53,6 +69,45 @@ export function Standings() {
         title="Championship Standings"
         subtitle={`Drivers and constructors after round ${Math.min(state.currentRaceIndex, state.calendar.length)} of ${state.calendar.length}.`}
       />
+
+      {worldEnabled && championshipOptions.length > 1 && (
+        <div className="rounded-lg border border-neutral-800 bg-neutral-950/35 p-3">
+          <label className="text-[10px] font-black uppercase tracking-[0.14em] text-neutral-500" htmlFor="championship-selector">Championship</label>
+          <select
+            id="championship-selector"
+            className="mt-1 w-full rounded border border-neutral-700 bg-neutral-950 px-3 py-2 text-sm font-semibold text-neutral-200 sm:w-auto"
+            value={activeSeries}
+            onChange={(event) => selectSeries(event.target.value as Series)}
+          >
+            {championshipOptions.map((option) => (
+              <option key={option.series} value={option.series}>
+                {option.series}{option.isPlayerSeries ? ' · Your championship' : ''}
+              </option>
+            ))}
+          </select>
+        </div>
+      )}
+
+      {!viewingPlayerSeries ? (
+        <WorkspaceBody className="space-y-4">
+          {selectedChampionship?.championship ? (
+            <>
+              <WorldGrid championships={{ [activeSeries]: selectedChampionship.championship }} showMovements={false} />
+              {selectedChampionship.latestSeason ? (
+                <div>
+                  <div className="mb-2 text-xs font-black uppercase tracking-[0.14em] text-neutral-500">Most recent completed season</div>
+                  <WorldSeasonCard season={selectedChampionship.latestSeason} />
+                </div>
+              ) : (
+                <Panel><p className="text-sm text-neutral-400">No completed season is available yet. This championship's current teams, drivers, and contract years are shown above.</p></Panel>
+              )}
+            </>
+          ) : (
+            <Panel><p className="text-sm text-neutral-400">This championship is not populated in the current universe.</p></Panel>
+          )}
+        </WorkspaceBody>
+      ) : (
+      <>
 
       <MetricStrip>
         <WorkspaceMetric label={`${tab === 'drivers' ? 'Driver' : 'Constructor'} leader`} value={leader ? (tab === 'drivers' ? driverName(leader.entityId) : teamName(leader.entityId)) : 'No results'} detail={`${leader?.points ?? 0} points`} />
@@ -83,6 +138,8 @@ export function Standings() {
       />
       <CompactPagination noun={tab} total={entries.length} page={safePage} pageCount={tabPageCount} pageSize={STANDINGS_PAGE_SIZE} onPage={setPage} />
       </WorkspaceBody>
+      </>
+      )}
     </WorkspaceScreen>
   );
 }
