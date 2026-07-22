@@ -268,6 +268,7 @@ export function createNewGame(options: NewGameOptions): GameState {
     completedRaceResults: {},
     qualifyingResults: {},
     raceEvents: {},
+    performanceAnalytics: { snapshots: [] },
     carSetups,
     driverStandings: [],
     constructorStandings: [],

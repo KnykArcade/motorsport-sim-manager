@@ -44,6 +44,7 @@ import type { ContractClauseType, Phase18FoundationState } from '../types/phase1
 import type { CharacterInteractionState } from '../types/characterInteractionTypes';
 import type { PersonnelCareerTenure } from '../types/personnelCareerTypes';
 import type { TransferCalendarState } from '../types/transferCalendarTypes';
+import type { PerformanceAnalyticsState } from '../types/performanceAnalyticsTypes';
 
 export type RaceDriverAbsence = {
   driverId: string;
@@ -96,6 +97,9 @@ export type GameState = {
   completedRaceResults: Record<string, RaceResult[]>;
   qualifyingResults: Record<string, QualifyingResult[]>;
   raceEvents: Record<string, RaceEvent[]>;
+  // Compact, evidence-backed race snapshots used by the Motorsport Data Hub.
+  // Older saves derive basic trends from their existing classifications.
+  performanceAnalytics?: PerformanceAnalyticsState;
 
   // Player-tuned engineering setup per driver (Car Setup Workshop). Optional so
   // older saves load cleanly; reducers/UI fall back to a balanced default.

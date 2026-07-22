@@ -116,6 +116,7 @@ export function PostRaceReview() {
         subtitle={<>{race.trackName} · Round {race.round} of {state.calendar.length}{!isActiveReview && ' · Historical (read-only)'}</>}
         actions={<div className="flex flex-wrap justify-end gap-2">
           <Button variant="ghost" onClick={() => navigate('/hq')}>Manager Office</Button>
+          <Button variant="ghost" onClick={() => navigate(`/performance?raceId=${raceId}`)}>Open Data Hub</Button>
           {isActiveReview && (
             state.seasonComplete ? (
               <Button variant="primary" onClick={() => navigate('/season-review')}>Season Review →</Button>

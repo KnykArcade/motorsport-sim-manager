@@ -20,6 +20,7 @@ export const NAVIGATION_ITEMS: ReadonlyArray<NavigationItem> = [
   { to: '/standings', label: 'Standings', icon: 'ST', group: 'race' },
   { to: '/news', label: 'News Center', icon: 'NW', group: 'race' },
   { to: '/history', label: 'Race History', icon: 'RH', group: 'race' },
+  { to: '/performance', label: 'Data Hub', icon: 'DH', group: 'race' },
   { to: '/records', label: 'Universe History', icon: 'UH', group: 'race' },
 
   { to: '/teams', label: 'Team Overview', icon: 'TM', group: 'team' },

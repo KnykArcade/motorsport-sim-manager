@@ -41,6 +41,13 @@ const ICON_PATHS: Record<string, ReactNode> = {
       <path d="M3 5v4h4" />
     </>
   ),
+  '/performance': (
+    <>
+      <path d="M4 20V4M4 20h16" />
+      <path d="M7 16l4-5 3 2 5-7" />
+      <circle cx="7" cy="16" r="1" /><circle cx="11" cy="11" r="1" /><circle cx="14" cy="13" r="1" /><circle cx="19" cy="6" r="1" />
+    </>
+  ),
   '/records': (
     <>
       <path d="M8 4h8v5a4 4 0 0 1-8 0z" />
