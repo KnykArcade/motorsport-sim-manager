@@ -364,7 +364,21 @@ export function LiveRace() {
     }
     const { results, events, breakdowns } = finalizeResults(live, engine.context);
     committed.current = true;
-    dispatch({ type: 'COMMIT_LIVE_RACE', results, events, breakdowns, teamOrders: teamOrders.current });
+    dispatch({
+      type: 'COMMIT_LIVE_RACE',
+      results,
+      events,
+      breakdowns,
+      teamOrders: teamOrders.current,
+      analytics: {
+        drivers: Object.fromEntries(live.cars.map((car) => [car.driverId, {
+          pitStops: car.pit.stopsMade,
+          representativePitStopSeconds: car.pit.lastPitStopTime ?? undefined,
+          finalTireWear: Math.round(car.tire.wear * 10) / 10,
+          tireDegRate: Math.round(car.tireDegRate * 100) / 100,
+        }])),
+      },
+    });
     const podiumSnapshot = buildPodiumSnapshot(results, state.selectedTeamId, driverName, teamColor);
     if (podiumSnapshot.hasPlayerDriver) {
       setPodium(podiumSnapshot);

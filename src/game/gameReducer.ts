@@ -163,6 +163,8 @@ import type { RecruitmentFocus, ScoutedEntityType } from '../types/scoutingTypes
 import type { StaffMember } from '../types/staffTypes';
 import type { StaffResponsibilityId, StaffResponsibilityPolicy } from '../types/staffTypes';
 import type { DriverDevelopmentFocus } from '../types/developmentCurveTypes';
+import type { LiveRaceAnalyticsInput } from '../types/performanceAnalyticsTypes';
+import { buildRaceAnalyticsSnapshot, recordRaceAnalytics } from '../sim/performanceAnalyticsEngine';
 import {
   applyMentalResilienceRecovery,
   assignDevelopmentFocus,
@@ -275,6 +277,7 @@ export type GameAction =
       breakdowns: Record<string, ScoreBreakdown>;
       teamOrders?: TeamOrderDecision[];
       strategyRiskByDriver?: Record<string, 'conservative' | 'balanced' | 'aggressive'>;
+      analytics?: LiveRaceAnalyticsInput;
     }
   | { type: 'START_DEVELOPMENT'; projectId: string; rushed?: boolean }
   | { type: 'RUSH_DEVELOPMENT'; projectId: string }
@@ -736,6 +739,7 @@ export function gameReducer(state: GameState | null, action: GameAction): GameSt
         action.breakdowns,
         action.teamOrders ?? [],
         action.strategyRiskByDriver,
+        action.analytics,
       );
       return enterPostRaceReview(applied, race.id);
     }
@@ -2193,6 +2197,7 @@ function applyRaceResults(
   breakdowns: Record<string, ScoreBreakdown>,
   teamOrders: TeamOrderDecision[] = [],
   strategyRiskByDriver?: Record<string, 'conservative' | 'balanced' | 'aggressive'>,
+  analytics?: LiveRaceAnalyticsInput,
 ): GameState {
   const legacyTechnical = fromUnifiedTechnical(state);
   const qualifying = state.qualifyingResults[race.id] ?? [];
@@ -2652,6 +2657,15 @@ function applyRaceResults(
     state.randomSeed,
   );
   const raceArchive = [...(state.raceArchive ?? []), archiveEntry];
+  const analyticsSnapshot = buildRaceAnalyticsSnapshot({
+    state,
+    race,
+    results,
+    qualifying,
+    breakdowns,
+    live: analytics,
+  });
+  const performanceAnalytics = recordRaceAnalytics(state.performanceAnalytics, analyticsSnapshot);
 
   // Advance the calendar.
   const calendar = state.calendar.map((r) => (r.id === race.id ? { ...r, completed: true } : r));
@@ -2672,6 +2686,7 @@ function applyRaceResults(
     aiTeamStates,
     finance: [...(state.finance ?? []), ...financeTxns],
     raceArchive,
+    performanceAnalytics,
     driverRelationships,
     driverPromises,
     teamOrderHistory,

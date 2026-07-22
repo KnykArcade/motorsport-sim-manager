@@ -28,6 +28,7 @@ const Sponsors = lazy(() => import('../screens/Sponsors').then((m) => ({ default
 const Staff = lazy(() => import('../screens/Staff').then((m) => ({ default: m.Staff })));
 const RaceHistory = lazy(() => import('../screens/RaceHistory').then((m) => ({ default: m.RaceHistory })));
 const DataViewer = lazy(() => import('../screens/DataViewer').then((m) => ({ default: m.DataViewer })));
+const PerformanceDataHub = lazy(() => import('../screens/PerformanceDataHub').then((m) => ({ default: m.PerformanceDataHub })));
 const TeamPrincipal = lazy(() => import('../screens/TeamPrincipal').then((m) => ({ default: m.TeamPrincipal })));
 const Relationships = lazy(() => import('../screens/Relationships').then((m) => ({ default: m.Relationships })));
 const RivalRelationships = lazy(() => import('../screens/RivalRelationships').then((m) => ({ default: m.RivalRelationships })));
@@ -287,6 +288,7 @@ export default function App() {
           <Route path="/curves" element={<ModeGuard route="/curves"><DriverCurves /></ModeGuard>} />
           <Route path="/records" element={<InGame><UniverseHistory /></InGame>} />
           <Route path="/history" element={<InGame><RaceHistory /></InGame>} />
+          <Route path="/performance" element={<InGame><PerformanceDataHub /></InGame>} />
           <Route path="/weekend" element={<RaceWeekendPhaseGuard><RaceWeekend /></RaceWeekendPhaseGuard>} />
           <Route path="/live-race/:raceId" element={<LiveRaceGuard><LiveRace /></LiveRaceGuard>} />
           <Route path="/results/:raceId" element={<InGame><RaceResults /></InGame>} />
