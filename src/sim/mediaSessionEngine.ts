@@ -11,11 +11,16 @@ import type {
   MediaState,
 } from '../types/mediaTypes';
 import { applyPublicReaction } from './publicReputationEngine';
+import {
+  mediaPressureState,
+  recordJournalistAnswer,
+  rememberedFollowUp,
+} from './mediaPressureEngine';
 
 const clamp = (value: number): number => Math.max(0, Math.min(100, Math.round(value)));
 
 function mediaState(state: GameState): MediaState {
-  return state.media ?? { sessions: [], declinedDuties: 0 };
+  return mediaPressureState(state);
 }
 
 function sessionId(state: GameState, type: MediaSessionType, round: number, raceId?: string): string {
@@ -208,6 +213,11 @@ export function createMediaSession(
   const id = sessionId(state, type, round, raceId);
   if (current.sessions.some((session) => session.id === id)) return state;
   const teamName = selectedTeam(state)?.name ?? 'Team';
+  const baseQuestions = questionsFor(state, type, id, raceId);
+  const followUp = rememberedFollowUp(state, id, baseQuestions.length + 1);
+  const crisis = type === 'Crisis'
+    ? current.crises?.find((entry) => entry.status === 'Open')
+    : undefined;
   const session: MediaSession = {
     id,
     type,
@@ -217,8 +227,9 @@ export function createMediaSession(
     title: titleFor(type, teamName),
     trigger: trigger ?? `${type} media obligations`,
     status: 'Pending',
-    questions: questionsFor(state, type, id, raceId),
+    questions: followUp ? [...baseQuestions, followUp] : baseQuestions,
     answers: [],
+    crisisId: crisis?.id,
   };
   return { ...state, media: { ...current, sessions: [session, ...current.sessions].slice(0, 80) } };
 }
@@ -440,7 +451,7 @@ export function answerMediaQuestion(
         : style === 'Confrontational'
           ? 1
           : 0;
-  return applyPublicReaction(nextState, {
+  const withPublicReaction = applyPublicReaction(nextState, {
     trigger: style === 'Confrontational' ? 'Controversy' : 'MediaResponse',
     delta: publicDelta,
     sentiment: style === 'Confrontational' || style === 'Demanding' ? 'Mixed' : undefined,
@@ -453,6 +464,14 @@ export function answerMediaQuestion(
     round: session.round,
     idSuffix: `${questionId}-${style}`,
   });
+  return recordJournalistAnswer(
+    withPublicReaction,
+    session.id,
+    questionEntry,
+    style,
+    answer.response,
+    session.round,
+  );
 }
 
 export function declineMediaSession(state: GameState, sessionIdValue: string): GameState {
@@ -523,6 +542,8 @@ export function declineMediaSession(state: GameState, sessionIdValue: string): G
 
 export function shouldCreateCrisisSession(state: GameState): boolean {
   return Boolean(
+    state.media?.crises?.some((crisis) => crisis.status === 'Open')
+    ||
     state.boardroom?.ultimatum
     || state.commercial?.sponsors.some((sponsor) => sponsor.relationshipStatus === 'Breach')
     || (state.teamReputations?.[state.selectedTeamId]?.ownerPatience ?? 100) <= 20,

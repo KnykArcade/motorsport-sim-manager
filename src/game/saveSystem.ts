@@ -28,6 +28,7 @@ import { ensurePersonnelCareerLedger } from '../sim/personnelCareerLedgerEngine'
 import { withLegacyTechnicalCompat } from '../sim/technicalAdapters';
 import { toUnifiedTechnical } from '../sim/technicalModel';
 import type { TeamResearchMap } from '../types/rdTypes';
+import { ensureMediaPressureState } from '../sim/mediaPressureEngine';
 
 const SAVE_KEY = 'msm:save:v1';
 const SETTINGS_KEY = 'msm:settings:v1';
@@ -95,7 +96,7 @@ export function migrateGameState(state: GameState): GameState {
   });
   patched.characterInteractions = ensureCharacterInteractionState(patched.characterInteractions);
   patched.saveSchemaVersion = CURRENT_SAVE_SCHEMA_VERSION;
-  const migrated = ensureCharacterFutureIntentions(ensureCharacterBreakingPoints(ensureCharacterMandates(ensureCharacterInitiatives(ensureCharacterInfluence(ensureCharacterConnections(ensureCharacterAmbitions(ensureCharacterOpinions(syncNarratives(ensureRivalRelationships(ensureFailureInvestigationState(ensurePreseasonHubState(ensureContractClauses(patched as GameState)))))))))))));
+  const migrated = ensureMediaPressureState(ensureCharacterFutureIntentions(ensureCharacterBreakingPoints(ensureCharacterMandates(ensureCharacterInitiatives(ensureCharacterInfluence(ensureCharacterConnections(ensureCharacterAmbitions(ensureCharacterOpinions(syncNarratives(ensureRivalRelationships(ensureFailureInvestigationState(ensurePreseasonHubState(ensureContractClauses(patched as GameState))))))))))))));
   const finalized = ensurePersonnelCareerLedger(migrated);
   return withLegacyTechnicalCompat(finalized);
 }

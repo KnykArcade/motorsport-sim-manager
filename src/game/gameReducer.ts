@@ -282,6 +282,11 @@ import {
   declineMediaSession,
   shouldCreateCrisisSession,
 } from '../sim/mediaSessionEngine';
+import {
+  makePublicMediaPromise,
+  processMediaPressureAfterRace,
+  resolveMediaCrisis,
+} from '../sim/mediaPressureEngine';
 import type { MediaResponseStyle } from '../types/mediaTypes';
 
 export type GameAction =
@@ -349,6 +354,8 @@ export type GameAction =
   | { type: 'REQUEST_BOARD_FUNDING'; category: BoardFundingCategory }
   | { type: 'ANSWER_MEDIA_QUESTION'; sessionId: string; questionId: string; style: MediaResponseStyle }
   | { type: 'DECLINE_MEDIA_SESSION'; sessionId: string }
+  | { type: 'MAKE_PUBLIC_MEDIA_PROMISE'; sessionId: string; questionId: string }
+  | { type: 'RESOLVE_MEDIA_CRISIS'; crisisId: string; resolution: 'TransparentBriefing' | 'PrivateInvestigation' | 'DenyAndDeflect' }
   | { type: 'ACCEPT_JOB_OFFER'; offerId: string }
   | { type: 'DECLINE_JOB_OFFER'; offerId: string }
   | { type: 'SET_REGULATION_VOTE'; proposalId: string; vote: RegulationVote }
@@ -737,6 +744,16 @@ export function gameReducer(state: GameState | null, action: GameAction): GameSt
     case 'DECLINE_MEDIA_SESSION': {
       if (!state) return state;
       return declineMediaSession(state, action.sessionId);
+    }
+
+    case 'MAKE_PUBLIC_MEDIA_PROMISE': {
+      if (!state) return state;
+      return makePublicMediaPromise(state, action.sessionId, action.questionId);
+    }
+
+    case 'RESOLVE_MEDIA_CRISIS': {
+      if (!state) return state;
+      return resolveMediaCrisis(state, action.crisisId, action.resolution);
     }
 
     case 'RUN_QUALIFYING': {
@@ -2995,7 +3012,14 @@ function applyRaceResults(
     race.round,
     results,
   ));
-  let mediaState = createMediaSession(withUnifiedTechnical(finalized, {
+  const withMediaPressure = processMediaPressureAfterRace(
+    finalized,
+    playerResults,
+    results,
+    race.round,
+    race.id,
+  );
+  let mediaState = createMediaSession(withUnifiedTechnical(withMediaPressure, {
     activeDevelopmentProjects,
     completedDevelopmentProjects,
   }), 'PostRace', race.round, race.id, `${race.gpName} race result`);
