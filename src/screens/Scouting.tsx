@@ -16,20 +16,30 @@ import {
 } from '../components/workspace/Workspace';
 import { fogView, scoutingCost, staffScoutTarget, type FogView, type ScoutTarget } from '../sim/scoutingEngine';
 import { formatMoney, ratingColor } from '../components/ui';
-import type { ScoutedEntityType, VisibleRating } from '../types/scoutingTypes';
+import type { ScoutedEntityType } from '../types/scoutingTypes';
 import type { IntelligenceAction, IntelligenceReport } from '../types/phase18Types';
 import { INTELLIGENCE_INVESTIGATION_COST, intelligenceConfidenceLabel } from '../sim/phase18IntelligenceEngine';
-import { scoutingAbilitySummary, scoutingAssignments, scoutingComparison, scoutingReportFreshness } from './scoutingViewModel';
+import {
+  scoutingAssignments,
+  scoutingComparison,
+  scoutingReportFreshness,
+  sortScoutingListItems,
+  type ScoutingListItem,
+  type ScoutingListSort,
+  type ScoutingListSortKey,
+} from './scoutingViewModel';
 import { recruitmentDecisionDesk } from './recruitmentDecisionViewModel';
 
 type Tab = 'intelligence' | 'senior' | 'youth' | 'staff';
-
-const SKILL_LABELS: { key: string; label: string }[] = [
-  { key: 'cornering', label: 'Cornering' },
-  { key: 'braking', label: 'Braking' },
-  { key: 'overtakingRacecraft', label: 'Overtaking' },
-  { key: 'enduranceConsistency', label: 'Consistency' },
-];
+type ScoutingTargetRow = ScoutingListItem & {
+  subtitle: string;
+  assigned: boolean;
+  shortlisted: boolean;
+  onScout: () => void;
+  onToggleShortlist: () => void;
+  onApproach?: () => void;
+  freshness?: 'Fresh' | 'Current' | 'Stale';
+};
 
 export function Scouting() {
   const { state, dispatch } = useGame();
@@ -38,6 +48,7 @@ export function Scouting() {
   const [tab, setTab] = useState<Tab>('intelligence');
   const [intelFilter, setIntelFilter] = useState<'Active' | 'History'>('Active');
   const [comparisonIds, setComparisonIds] = useState<string[]>([]);
+  const [scoutingSort, setScoutingSort] = useState<ScoutingListSort>({ key: 'overall', direction: 'desc' });
   const requestedTab = searchParams.get('tab');
   const focusedTargetId = searchParams.get('target');
 
@@ -126,6 +137,70 @@ export function Scouting() {
   const comparisons = scoutingComparison(
     shortlistTargets.filter((target) => comparisonIds.includes(target.entityId)),
   );
+
+  const seniorRows: ScoutingTargetRow[] = (bundle?.drivers ?? [])
+    .filter((driver) => !focus.search || driver.name.toLowerCase().includes(focus.search.toLowerCase()))
+    .filter((driver) => !focus.maxAge || driver.age <= focus.maxAge)
+    .filter((driver) => !focus.affordableOnly || costOf(driver.id, 'Driver') <= budget)
+    .filter((driver) => !focus.contractStatus || focus.contractStatus === 'All' || driver.marketStatus.toLowerCase().includes(focus.contractStatus.toLowerCase()))
+    .map((driver) => {
+      const targetView = view({ id: driver.id, skills: driver.skills, potential: driver.potential }, 'Driver');
+      return {
+        id: driver.id,
+        name: driver.name,
+        subtitle: `${driver.nationality} · ${driver.age} · ${driver.context}`,
+        view: targetView,
+        cost: costOf(driver.id, 'Driver'),
+        knowledge: Math.round(targetView.accuracy * 100),
+        assigned: (scouting.activeAssignments ?? []).some((entry) => entry.entityId === driver.id && entry.entityType === 'Driver'),
+        shortlisted: shortlist.some((entry) => entry.entityId === driver.id),
+        onScout: () => dispatch({ type: 'SCOUT_TARGET', entityId: driver.id, entityType: 'Driver' }),
+        onToggleShortlist: () => dispatch({ type: 'TOGGLE_SCOUTING_SHORTLIST', entityId: driver.id, entityType: 'Driver' }),
+        onApproach: () => navigate(`/market?target=${encodeURIComponent(driver.id)}`),
+        freshness: scouting.reports[driver.id] ? scoutingReportFreshness(scouting.reports[driver.id].lastUpdated, state.seasonYear, currentRound) : undefined,
+      };
+    });
+  const youthRows: ScoutingTargetRow[] = (bundle?.youth ?? [])
+    .filter((prospect) => !focus.search || prospect.name.toLowerCase().includes(focus.search.toLowerCase()))
+    .filter((prospect) => !focus.maxAge || prospect.age <= focus.maxAge)
+    .filter((prospect) => !focus.affordableOnly || costOf(prospect.id, 'YouthProspect') <= budget)
+    .map((prospect) => {
+      const targetView = view({ id: prospect.id, skills: prospect.skills, potential: prospect.potential }, 'YouthProspect');
+      return {
+        id: prospect.id,
+        name: prospect.name,
+        subtitle: `${prospect.nationality} · age ${prospect.age} · ${prospect.currentLevel}`,
+        view: targetView,
+        cost: costOf(prospect.id, 'YouthProspect'),
+        knowledge: Math.round(targetView.accuracy * 100),
+        assigned: (scouting.activeAssignments ?? []).some((entry) => entry.entityId === prospect.id && entry.entityType === 'YouthProspect'),
+        shortlisted: shortlist.some((entry) => entry.entityId === prospect.id),
+        onScout: () => dispatch({ type: 'SCOUT_TARGET', entityId: prospect.id, entityType: 'YouthProspect' }),
+        onToggleShortlist: () => dispatch({ type: 'TOGGLE_SCOUTING_SHORTLIST', entityId: prospect.id, entityType: 'YouthProspect' }),
+        freshness: scouting.reports[prospect.id] ? scoutingReportFreshness(scouting.reports[prospect.id].lastUpdated, state.seasonYear, currentRound) : undefined,
+      };
+    });
+  const staffRows: ScoutingTargetRow[] = staffTargets
+    .filter((staff) => !focus.search || staff.name.toLowerCase().includes(focus.search.toLowerCase()))
+    .filter((staff) => !focus.staffRole || focus.staffRole === 'All' || staff.role === focus.staffRole)
+    .filter((staff) => !focus.affordableOnly || costOf(staff.id, 'Staff') <= budget)
+    .map((staff) => {
+      const targetView = view(staffScoutTarget(staff), 'Staff');
+      return {
+        id: staff.id,
+        name: staff.name,
+        subtitle: `${staff.nationality} · ${staff.role} · ${staff.contractYearsRemaining ?? 2} contract yrs`,
+        view: targetView,
+        cost: costOf(staff.id, 'Staff'),
+        knowledge: Math.round(targetView.accuracy * 100),
+        assigned: (scouting.activeAssignments ?? []).some((entry) => entry.entityId === staff.id && entry.entityType === 'Staff'),
+        shortlisted: shortlist.some((entry) => entry.entityId === staff.id),
+        onScout: () => dispatch({ type: 'SCOUT_TARGET', entityId: staff.id, entityType: 'Staff' }),
+        onToggleShortlist: () => dispatch({ type: 'TOGGLE_SCOUTING_SHORTLIST', entityId: staff.id, entityType: 'Staff' }),
+        onApproach: () => navigate(`/staff/${encodeURIComponent(staff.id)}/negotiate`),
+        freshness: scouting.reports[staff.id] ? scoutingReportFreshness(scouting.reports[staff.id].lastUpdated, state.seasonYear, currentRound) : undefined,
+      };
+    });
 
   function toggleComparison(entityId: string) {
     setComparisonIds((current) => current.includes(entityId)
@@ -287,80 +362,9 @@ export function Scouting() {
         </Panel>
       )}
 
-      {bundle && activeTab === 'senior' && (
-        <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
-          {[...bundle.drivers]
-            .filter((driver) => !focus.search || driver.name.toLowerCase().includes(focus.search.toLowerCase()))
-            .filter((driver) => !focus.maxAge || driver.age <= focus.maxAge)
-            .filter((driver) => !focus.affordableOnly || costOf(driver.id, 'Driver') <= budget)
-            .filter((driver) => !focus.contractStatus || focus.contractStatus === 'All' || driver.marketStatus.toLowerCase().includes(focus.contractStatus.toLowerCase()))
-            .sort(
-              (a, b) =>
-                viewMidpoint(view({ id: b.id, skills: b.skills, potential: b.potential }, 'Driver')) -
-                viewMidpoint(view({ id: a.id, skills: a.skills, potential: a.potential }, 'Driver')),
-            )
-            .map((d) => (
-              <ScoutCard
-                key={d.id}
-                title={d.name}
-                subtitle={`${d.nationality} · ${d.age} · ${d.context}`}
-                view={view({ id: d.id, skills: d.skills, potential: d.potential }, 'Driver')}
-                cost={costOf(d.id, 'Driver')}
-                budget={budget}
-                assigned={(scouting.activeAssignments ?? []).some((entry) => entry.entityId === d.id && entry.entityType === 'Driver')}
-                shortlisted={shortlist.some((entry) => entry.entityId === d.id)}
-                onScout={() => dispatch({ type: 'SCOUT_TARGET', entityId: d.id, entityType: 'Driver' as ScoutedEntityType })}
-                onToggleShortlist={() => dispatch({ type: 'TOGGLE_SCOUTING_SHORTLIST', entityId: d.id, entityType: 'Driver' })}
-                onApproach={() => navigate(`/market?target=${encodeURIComponent(d.id)}`)}
-                freshness={scouting.reports[d.id] ? scoutingReportFreshness(scouting.reports[d.id].lastUpdated, state.seasonYear, currentRound) : undefined}
-              />
-            ))}
-        </div>
-      )}
-
-      {bundle && activeTab === 'youth' && (
-        <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
-          {[...bundle.youth]
-            .filter((prospect) => !focus.search || prospect.name.toLowerCase().includes(focus.search.toLowerCase()))
-            .filter((prospect) => !focus.maxAge || prospect.age <= focus.maxAge)
-            .filter((prospect) => !focus.affordableOnly || costOf(prospect.id, 'YouthProspect') <= budget)
-            .sort(
-              (a, b) =>
-                viewMidpoint(view({ id: b.id, skills: b.skills, potential: b.potential }, 'YouthProspect')) -
-                viewMidpoint(view({ id: a.id, skills: a.skills, potential: a.potential }, 'YouthProspect')),
-            )
-            .map((y) => (
-              <ScoutCard
-                key={y.id}
-                title={y.name}
-                subtitle={`${y.nationality} · age ${y.age} · ${y.currentLevel}`}
-                view={view({ id: y.id, skills: y.skills, potential: y.potential }, 'YouthProspect')}
-                cost={costOf(y.id, 'YouthProspect')}
-                budget={budget}
-                assigned={(scouting.activeAssignments ?? []).some((entry) => entry.entityId === y.id && entry.entityType === 'YouthProspect')}
-                shortlisted={shortlist.some((entry) => entry.entityId === y.id)}
-                onScout={() => dispatch({ type: 'SCOUT_TARGET', entityId: y.id, entityType: 'YouthProspect' as ScoutedEntityType })}
-                onToggleShortlist={() => dispatch({ type: 'TOGGLE_SCOUTING_SHORTLIST', entityId: y.id, entityType: 'YouthProspect' })}
-                onApproach={() => navigate('/market')}
-                freshness={scouting.reports[y.id] ? scoutingReportFreshness(scouting.reports[y.id].lastUpdated, state.seasonYear, currentRound) : undefined}
-              />
-            ))}
-        </div>
-      )}
-
-      {activeTab === 'staff' && (
-        <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
-          {staffTargets
-            .filter((staff) => !focus.search || staff.name.toLowerCase().includes(focus.search.toLowerCase()))
-            .filter((staff) => !focus.staffRole || focus.staffRole === 'All' || staff.role === focus.staffRole)
-            .filter((staff) => !focus.affordableOnly || costOf(staff.id, 'Staff') <= budget)
-            .sort((a, b) => b.rating - a.rating || a.name.localeCompare(b.name))
-            .map((staff) => {
-              const target = staffScoutTarget(staff);
-              return <ScoutCard key={staff.id} title={staff.name} subtitle={`${staff.nationality} · ${staff.role} · ${staff.contractYearsRemaining ?? 2} contract yrs`} view={view(target, 'Staff')} cost={costOf(staff.id, 'Staff')} budget={budget} assigned={(scouting.activeAssignments ?? []).some((entry) => entry.entityId === staff.id && entry.entityType === 'Staff')} shortlisted={shortlist.some((entry) => entry.entityId === staff.id)} onScout={() => dispatch({ type: 'SCOUT_TARGET', entityId: staff.id, entityType: 'Staff' })} onToggleShortlist={() => dispatch({ type: 'TOGGLE_SCOUTING_SHORTLIST', entityId: staff.id, entityType: 'Staff' })} onApproach={() => navigate(`/staff/${encodeURIComponent(staff.id)}/negotiate`)} skillLabels={[{ key: 'technical', label: 'Expertise' }]} freshness={scouting.reports[staff.id] ? scoutingReportFreshness(scouting.reports[staff.id].lastUpdated, state.seasonYear, currentRound) : undefined} />;
-            })}
-        </div>
-      )}
+      {bundle && activeTab === 'senior' && <ScoutingTargetList items={seniorRows} budget={budget} sort={scoutingSort} onSort={(key) => updateScoutingSort(key, setScoutingSort)} />}
+      {bundle && activeTab === 'youth' && <ScoutingTargetList items={youthRows} budget={budget} sort={scoutingSort} onSort={(key) => updateScoutingSort(key, setScoutingSort)} />}
+      {activeTab === 'staff' && <ScoutingTargetList items={staffRows} budget={budget} sort={scoutingSort} onSort={(key) => updateScoutingSort(key, setScoutingSort)} />}
       </WorkspaceBody>
     </WorkspaceScreen>
   );
@@ -470,108 +474,109 @@ function potentialText(view: FogView): string {
   return `${lo.toFixed(1)}–${hi.toFixed(1)}`;
 }
 
-function ScoutCard({
-  title,
-  subtitle,
-  view,
-  cost,
+function updateScoutingSort(
+  key: ScoutingListSortKey,
+  setSort: React.Dispatch<React.SetStateAction<ScoutingListSort>>,
+) {
+  setSort((current) => current.key === key
+    ? { key, direction: current.direction === 'asc' ? 'desc' : 'asc' }
+    : { key, direction: key === 'name' ? 'asc' : 'desc' });
+}
+
+function ScoutingTargetList({
+  items,
   budget,
-  assigned,
-  shortlisted,
-  onScout,
-  onToggleShortlist,
-  onApproach,
-  skillLabels = SKILL_LABELS,
-  freshness,
+  sort,
+  onSort,
 }: {
-  title: string;
-  subtitle: string;
-  view: FogView;
-  cost: number;
+  items: ScoutingTargetRow[];
   budget: number;
-  assigned: boolean;
-  shortlisted: boolean;
-  onScout: () => void;
-  onToggleShortlist: () => void;
-  onApproach?: () => void;
-  skillLabels?: { key: string; label: string }[];
-  freshness?: 'Fresh' | 'Current' | 'Stale';
+  sort: ScoutingListSort;
+  onSort: (key: ScoutingListSortKey) => void;
 }) {
-  const ability = scoutingAbilitySummary(view);
-  const accPct = ability.knowledgePercentage;
-  const affordable = cost <= budget;
+  const ordered = sortScoutingListItems(items, sort) as ScoutingTargetRow[];
   return (
-    <Panel>
-      <div className="mb-1 flex items-start justify-between gap-2">
-        <div>
-          <div className="font-bold text-neutral-100">{title}</div>
-          <div className="text-xs text-neutral-500">{subtitle}</div>
-        </div>
-        <div className="text-right">
-          <span className="rounded bg-neutral-800 px-2 py-0.5 text-xs font-semibold text-[var(--era-accent-strong)]">
-            {overallText(view)}
-          </span>
-          <div className="mt-0.5 text-[10px] text-neutral-500">
-            POT <span className="text-[var(--era-accent-strong)]">{potentialText(view)}</span>
-          </div>
-        </div>
-      </div>
-
-      <div className="mb-2 grid grid-cols-2 gap-2 rounded border border-neutral-800 bg-neutral-950/35 p-2 text-xs">
-        <AbilityReadout label="Current ability" stars={ability.currentStars} range={ability.currentRange} />
-        <AbilityReadout label="Potential ability" stars={ability.potentialStars} range={ability.potentialRange} />
-      </div>
-
-      <div className="mb-2">
-        <div className="mb-0.5 flex items-center justify-between text-[11px]">
-          <span className="text-neutral-500">Scouting accuracy</span>
-          <span className="tabular-nums text-neutral-400">{accPct}%</span>
-        </div>
-        <div className="h-1.5 w-full overflow-hidden rounded-full bg-neutral-800">
-          <div
-            className="h-full"
-            style={{ width: `${accPct}%`, backgroundColor: ratingColor(accPct) }}
-          />
-        </div>
-      </div>
-      {freshness && <div className={`mb-2 text-[10px] font-semibold uppercase tracking-wide ${freshness === 'Stale' ? 'text-amber-300' : 'text-neutral-500'}`}>Report freshness: {freshness}{freshness === 'Stale' ? ' · knowledge may be outdated' : ''}</div>}
-
-      <div className="grid grid-cols-1 gap-1">
-        {skillLabels.map((s) => (
-          <SkillRow key={s.key} label={s.label} value={view.skills[s.key]} />
-        ))}
-      </div>
-
-      <p className="mt-2 text-[11px] italic text-neutral-500">
-        {view.maxed ? 'Best available report - ratings remain projected ranges.' : view.notes[0]}
-      </p>
-
-      <div className="mt-3 border-t border-neutral-800 pt-2">
-        {view.maxed ? (
-          <span className="text-xs text-green-400">Best available report. Track performance still matters.</span>
-        ) : assigned ? (
-          <Button variant="primary" className="w-full px-2 py-1 text-xs" disabled title="This assignment advances automatically after each race">Assignment active · advances each round</Button>
-        ) : (
-          <>
-            <Button
-              variant="primary"
-              className="w-full px-2 py-1 text-xs"
-              disabled={!affordable}
-              onClick={onScout}
-            >
-              Scout this target — {formatMoney(cost)}
-            </Button>
-            {!affordable && (
-              <p className="mt-1 text-center text-[11px] text-red-400">Insufficient budget</p>
-            )}
-          </>
-        )}
-        <div className="mt-2 grid grid-cols-2 gap-2">
-          <Button variant="ghost" className="px-2 py-1 text-xs" onClick={onToggleShortlist}>{shortlisted ? 'Remove shortlist' : 'Add to shortlist'}</Button>
-          {onApproach ? <Button variant="ghost" className="px-2 py-1 text-xs" onClick={onApproach}>Approach →</Button> : <Button variant="ghost" className="px-2 py-1 text-xs" disabled title="Youth prospects are signed through the Driver Market academy section">Academy route</Button>}
-        </div>
+    <Panel title={`Scouting Targets (${items.length})`} className="overflow-hidden">
+      <div className="overflow-x-auto rounded border border-neutral-800">
+        <table className="w-full min-w-[1080px] border-collapse text-xs">
+          <thead className="bg-neutral-900/70 text-left text-[10px] uppercase tracking-wide text-neutral-500">
+            <tr>
+              <ScoutingSortHeader label="Target" sortKey="name" sort={sort} onSort={onSort} />
+              <ScoutingSortHeader label="OVR" sortKey="overall" sort={sort} onSort={onSort} />
+              <ScoutingSortHeader label="POT" sortKey="potential" sort={sort} onSort={onSort} />
+              <ScoutingSortHeader label="Knowledge" sortKey="knowledge" sort={sort} onSort={onSort} />
+              <ScoutingSortHeader label="Cost" sortKey="cost" sort={sort} onSort={onSort} />
+              <th className="px-2 py-2">Status</th>
+              <th className="px-2 py-2">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {ordered.map((item) => {
+              const affordable = item.cost <= budget;
+              return (
+                <tr key={item.id} className={`border-t border-neutral-800/70 align-middle hover:bg-neutral-900/60 ${item.shortlisted ? 'bg-sky-500/5' : ''}`}>
+                  <td className="px-2 py-2">
+                    <div className="font-semibold text-neutral-100">{item.name}</div>
+                    <div className="text-[10px] text-neutral-500">{item.subtitle}</div>
+                  </td>
+                  <td className="px-2 py-2 tabular-nums text-amber-300">{overallText(item.view)}</td>
+                  <td className="px-2 py-2 tabular-nums text-sky-300">{potentialText(item.view)}</td>
+                  <td className="px-2 py-2 tabular-nums text-neutral-300">{item.knowledge}%</td>
+                  <td className={`px-2 py-2 tabular-nums ${affordable ? 'text-neutral-300' : 'text-red-300'}`}>{formatMoney(item.cost)}</td>
+                  <td className="px-2 py-2">
+                    <div className="flex flex-wrap gap-1">
+                      {item.shortlisted && <span className="rounded bg-sky-500/15 px-1.5 py-0.5 text-[9px] text-sky-300">Shortlist</span>}
+                      {item.assigned && <span className="rounded bg-amber-500/15 px-1.5 py-0.5 text-[9px] text-amber-300">Assigned</span>}
+                      {item.view.maxed && <span className="rounded bg-emerald-500/15 px-1.5 py-0.5 text-[9px] text-emerald-300">Report ready</span>}
+                      {item.freshness && <span className={`rounded bg-neutral-800 px-1.5 py-0.5 text-[9px] ${item.freshness === 'Stale' ? 'text-amber-300' : 'text-neutral-400'}`}>{item.freshness}</span>}
+                    </div>
+                  </td>
+                  <td className="px-2 py-2">
+                    <div className="flex min-w-[260px] flex-wrap gap-1">
+                      {item.view.maxed ? (
+                        <span className="px-2 py-1 text-[10px] text-emerald-300">Best report</span>
+                      ) : item.assigned ? (
+                        <span className="px-2 py-1 text-[10px] text-amber-300">Assignment active</span>
+                      ) : (
+                        <Button variant="primary" className="px-2 py-1 text-[10px]" disabled={!affordable} onClick={item.onScout}>
+                          {affordable ? `Scout ${formatMoney(item.cost)}` : 'Over budget'}
+                        </Button>
+                      )}
+                      <Button variant="ghost" className="px-2 py-1 text-[10px]" onClick={item.onToggleShortlist}>
+                        {item.shortlisted ? 'Remove shortlist' : 'Shortlist'}
+                      </Button>
+                      {item.onApproach && <Button variant="ghost" className="px-2 py-1 text-[10px]" onClick={item.onApproach}>Approach →</Button>}
+                    </div>
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+        {ordered.length === 0 && <div className="px-3 py-8 text-center text-sm text-neutral-500">No targets match the current recruitment focus.</div>}
       </div>
     </Panel>
+  );
+}
+
+function ScoutingSortHeader({
+  label,
+  sortKey,
+  sort,
+  onSort,
+}: {
+  label: string;
+  sortKey: ScoutingListSortKey;
+  sort: ScoutingListSort;
+  onSort: (key: ScoutingListSortKey) => void;
+}) {
+  const active = sort.key === sortKey;
+  return (
+    <th className="px-2 py-2">
+      <button type="button" className="inline-flex items-center gap-1 hover:text-neutral-200" onClick={() => onSort(sortKey)}>
+        {label}<span className="text-[9px]">{active ? (sort.direction === 'asc' ? '▲' : '▼') : '↕'}</span>
+      </button>
+    </th>
   );
 }
 
@@ -591,35 +596,6 @@ function ComparisonCard({ target }: { target: ReturnType<typeof scoutingComparis
   );
 }
 
-function AbilityReadout({ label, stars, range }: { label: string; stars?: [number, number]; range?: [number, number] }) {
-  return (
-    <div>
-      <div className="text-[10px] uppercase tracking-wide text-neutral-500">{label}</div>
-      <div className="mt-0.5 font-semibold text-amber-300">{stars ? `${stars[0].toFixed(1)}–${stars[1].toFixed(1)}★` : 'Unknown'}</div>
-      <div className="text-[10px] text-neutral-500">{range ? `${range[0].toFixed(1)}–${range[1].toFixed(1)}` : 'Insufficient knowledge'}</div>
-    </div>
-  );
-}
-
-function SkillRow({ label, value }: { label: string; value: VisibleRating }) {
-  const known = value !== 'Unknown';
-  const [lo, hi] = Array.isArray(value) ? value : typeof value === 'number' ? [value, value] : [0, 0];
-  const mid = known ? (lo + hi) / 2 : 0;
-  const pct = known ? mid : 0;
-  const color = known ? ratingColor(mid) : '#52525b';
-  return (
-    <div className="flex items-center gap-2 text-xs">
-      <span className="w-24 text-neutral-400">{label}</span>
-      <div className="h-2 flex-1 overflow-hidden rounded-full bg-neutral-800">
-        {known && <div className="h-full rounded-full" style={{ width: `${pct}%`, backgroundColor: color }} />}
-      </div>
-      <span className={`w-20 text-right tabular-nums ${known ? 'text-neutral-200' : 'text-neutral-600'}`}>
-        {known ? `${lo.toFixed(1)}-${hi.toFixed(1)}` : '??'}
-      </span>
-    </div>
-  );
-}
-
 function overallText(view: FogView): string {
   const values = Object.values(view.skills).filter((v): v is number | [number, number] => v !== 'Unknown');
   if (values.length === 0) return 'OVR ??';
@@ -627,14 +603,4 @@ function overallText(view: FogView): string {
   const avg = mids.reduce((sum, v) => sum + v, 0) / mids.length;
   const uncertainty = Math.max(4, (1 - view.accuracy) * 22);
   return `${Math.max(1, avg - uncertainty).toFixed(1)}-${Math.min(100, avg + uncertainty).toFixed(1)}`;
-}
-
-function viewMidpoint(view: FogView): number {
-  const values = Object.values(view.skills).filter((v): v is number | [number, number] => v !== 'Unknown');
-  if (values.length > 0) {
-    const mids = values.map((v) => (Array.isArray(v) ? (v[0] + v[1]) / 2 : v));
-    return mids.reduce((sum, v) => sum + v, 0) / mids.length;
-  }
-  const [lo, hi] = view.potential.range;
-  return (lo + hi) / 2;
 }

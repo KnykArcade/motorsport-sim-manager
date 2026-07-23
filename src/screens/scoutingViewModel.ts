@@ -36,6 +36,50 @@ export type ScoutingComparisonTarget = {
 
 export type ScoutingComparisonRow = Omit<ScoutingComparisonTarget, 'view'> & ScoutingAbilitySummary;
 
+export type ScoutingListSortKey = 'name' | 'overall' | 'potential' | 'knowledge' | 'cost';
+
+export type ScoutingListSort = {
+  key: ScoutingListSortKey;
+  direction: 'asc' | 'desc';
+};
+
+export type ScoutingListItem = {
+  id: string;
+  name: string;
+  view: FogView;
+  cost: number;
+  knowledge: number;
+};
+
+export function sortScoutingListItems(
+  items: readonly ScoutingListItem[],
+  sort: ScoutingListSort,
+): ScoutingListItem[] {
+  const direction = sort.direction === 'asc' ? 1 : -1;
+  return [...items].sort((left, right) => {
+    const leftValue = scoutingListSortValue(left, sort.key);
+    const rightValue = scoutingListSortValue(right, sort.key);
+    if (leftValue < rightValue) return -1 * direction;
+    if (leftValue > rightValue) return direction;
+    return left.name.localeCompare(right.name);
+  });
+}
+
+function scoutingListSortValue(item: ScoutingListItem, key: ScoutingListSortKey): number | string {
+  if (key === 'name') return item.name;
+  if (key === 'cost') return item.cost;
+  if (key === 'knowledge') return item.knowledge;
+  if (key === 'potential') return (item.view.potential.range[0] + item.view.potential.range[1]) / 2;
+  const ratings = Object.values(item.view.skills).filter((value): value is number | [number, number] => value !== 'Unknown');
+  if (ratings.length === 0) return 0;
+  return ratings.reduce<number>((sum, value) => sum + ratingMidpoint(value), 0) / ratings.length;
+}
+
+function ratingMidpoint(value: number | [number, number]): number {
+  if (typeof value === 'number') return value;
+  return value.reduce((sum, point) => sum + point, 0) / value.length;
+}
+
 function stars(rating: number): number {
   return Math.max(0.5, Math.min(5, Math.round((rating / 20) * 2) / 2));
 }
