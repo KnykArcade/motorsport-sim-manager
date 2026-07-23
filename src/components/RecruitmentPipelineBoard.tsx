@@ -7,6 +7,7 @@ import { recruitmentPipeline, type RecruitmentPipelineStage } from '../screens/r
 const stageTone: Record<RecruitmentPipelineStage, string> = {
   Scouting: 'text-neutral-400 border-neutral-700',
   'Decision ready': 'text-sky-300 border-sky-800',
+  'Negotiation active': 'text-emerald-300 border-emerald-800',
   'Rival pressure': 'text-amber-300 border-amber-800',
   'Queued signing': 'text-violet-300 border-violet-800',
   'Confirmed move': 'text-neutral-400 border-neutral-700',
@@ -33,7 +34,13 @@ export function RecruitmentPipelineBoard({ state, compact = false }: { state: Ga
               <p className="mt-1 text-xs leading-5 text-neutral-400">{item.detail}</p>
               <div className="mt-2 flex flex-wrap items-center justify-between gap-2">
                 <span className="text-[10px] text-neutral-500">
-                  {item.deadline ? `Deadline: ${item.deadline}` : item.rivalTeam ? `Destination: ${item.rivalTeam}` : 'No deadline set'}
+                  {item.attemptsRemaining !== undefined
+                    ? `${item.attemptsRemaining} attempt${item.attemptsRemaining === 1 ? '' : 's'} remaining`
+                    : item.deadline
+                      ? `Deadline: ${item.deadline}`
+                      : item.rivalTeam
+                        ? `Destination: ${item.rivalTeam}`
+                        : 'No deadline set'}
                 </span>
                 <Button variant="ghost" className="px-2 py-1 text-xs" onClick={() => navigate(item.nextAction.route)}>
                   {item.nextAction.label} →
