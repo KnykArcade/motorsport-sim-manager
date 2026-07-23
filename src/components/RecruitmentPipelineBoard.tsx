@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import type { GameState } from '../game/careerState';
 import { Button } from './Button';
@@ -15,11 +16,33 @@ const stageTone: Record<RecruitmentPipelineStage, string> = {
 
 export function RecruitmentPipelineBoard({ state, compact = false }: { state: GameState; compact?: boolean }) {
   const navigate = useNavigate();
+  const [filter, setFilter] = useState<'all' | 'needs_action' | 'history'>('needs_action');
   const items = recruitmentPipeline(state);
-  const visible = compact ? items.slice(0, 4) : items;
+  const activeItems = items.filter((item) => item.lifecycle === 'active');
+  const actionItems = items.filter((item) => item.needsAction);
+  const historyItems = items.filter((item) => item.lifecycle === 'history');
+  const filteredItems = filter === 'all' ? items : filter === 'history' ? historyItems : actionItems;
+  const visible = compact ? filteredItems.slice(0, 4) : filteredItems;
+  const filterLabel = filter === 'history' ? 'Recent outcomes' : filter === 'all' ? 'All targets' : 'Needs action';
 
   return (
-    <Panel title="Recruitment pipeline" actions={<span className="text-xs text-neutral-500">{items.length} active target{items.length === 1 ? '' : 's'}</span>}>
+    <Panel title={`Recruitment pipeline · ${filterLabel}`} actions={<span className="text-xs text-neutral-500">{activeItems.length} active · {historyItems.length} history</span>}>
+      <div className="mb-3 flex flex-wrap gap-1 border-b border-neutral-800 pb-2">
+        {([
+          ['needs_action', `Needs action (${actionItems.length})`],
+          ['all', `All (${items.length})`],
+          ['history', `History (${historyItems.length})`],
+        ] as const).map(([value, label]) => (
+          <button
+            key={value}
+            type="button"
+            className={`rounded px-2 py-1 text-[10px] font-semibold uppercase tracking-wide ${filter === value ? 'bg-sky-500/15 text-sky-300' : 'text-neutral-500 hover:text-neutral-300'}`}
+            onClick={() => setFilter(value)}
+          >
+            {label}
+          </button>
+        ))}
+      </div>
       {visible.length > 0 ? (
         <div className="space-y-2">
           {visible.map((item) => (
@@ -48,14 +71,16 @@ export function RecruitmentPipelineBoard({ state, compact = false }: { state: Ga
               </div>
             </div>
           ))}
-          {compact && items.length > visible.length && (
+          {compact && filteredItems.length > visible.length && (
             <Button variant="secondary" className="w-full px-2 py-1 text-xs" onClick={() => navigate('/market')}>
-              Open Recruitment Center ({items.length}) →
+              Open Recruitment Center ({filteredItems.length}) →
             </Button>
           )}
         </div>
       ) : (
-        <p className="text-sm text-neutral-500">No active recruitment targets. Use Scouting to build the next shortlist.</p>
+        <p className="text-sm text-neutral-500">
+          {filter === 'history' ? 'No completed recruitment outcomes yet.' : 'No recruitment decisions need attention. Use Scouting to build the next shortlist.'}
+        </p>
       )}
     </Panel>
   );

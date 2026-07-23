@@ -173,4 +173,54 @@ describe('recruitmentPipeline', () => {
       },
     }));
   });
+
+  it('moves signed market drivers into history instead of active work', () => {
+    const base = newState();
+    const driver = careerMarketBundle(base).drivers[0];
+    const state: GameState = {
+      ...base,
+      signedMarketIds: [driver.id],
+      scouting: {
+        ...base.scouting!,
+        shortlist: [{ entityId: driver.id, entityType: 'Driver' }],
+      },
+    };
+
+    expect(recruitmentPipeline(state)).toContainEqual(expect.objectContaining({
+      entityId: driver.id,
+      stage: 'Confirmed move',
+      lifecycle: 'history',
+      needsAction: false,
+    }));
+  });
+
+  it('keeps confirmed rival movement in history with no active decision', () => {
+    const base = newState();
+    const driver = careerMarketBundle(base).drivers[0];
+    const state: GameState = {
+      ...base,
+      transferCalendar: {
+        lastProcessedRound: 1,
+        stories: [{
+          id: 'pipeline-confirmed',
+          targetType: 'MarketDriver',
+          targetId: driver.id,
+          targetName: driver.name,
+          destinationTeamId: 'rival-team',
+          destinationTeamName: 'Rival GP',
+          outcome: 'RivalOffer',
+          stage: 'Confirmed',
+          startedRound: 1,
+          deadlineRound: 2,
+        }],
+      },
+    };
+
+    expect(recruitmentPipeline(state)).toContainEqual(expect.objectContaining({
+      entityId: driver.id,
+      lifecycle: 'history',
+      needsAction: false,
+      nextAction: { label: 'Review Market Outcome', route: `/market?target=${encodeURIComponent(driver.id)}` },
+    }));
+  });
 });
