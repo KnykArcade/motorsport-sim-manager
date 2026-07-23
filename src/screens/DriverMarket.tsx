@@ -799,6 +799,7 @@ function YouthTab({
   const [youthTab, setYouthTab] = useState<YouthMarketTab>('academy');
   const [academyPage, setAcademyPage] = useState(0);
   const [prospectPage, setProspectPage] = useState(0);
+  const [prospectSort, setProspectSort] = useState<YouthProspectSort>({ key: 'potential', direction: 'desc' });
   const academyByProspect = new Set(academy.map((a) => a.prospectId));
   const available = prospects.filter((p) => !academyByProspect.has(p.id));
   const academyFull = academy.length >= academyCapacity;
@@ -808,7 +809,8 @@ function YouthTab({
   const visibleAcademy = marketPage(orderedAcademy, safeAcademyPage);
   const prospectPageCount = marketPageCount(available.length);
   const safeProspectPage = Math.min(prospectPage, prospectPageCount - 1);
-  const visibleProspects = marketPage(available, safeProspectPage);
+  const orderedProspects = [...available].sort((left, right) => compareYouthProspects(left, right, prospectSort));
+  const visibleProspects = marketPage(orderedProspects, safeProspectPage);
 
   return (
     <div className="space-y-3">
@@ -946,75 +948,57 @@ function YouthTab({
           <h2 className="mb-2 text-lg font-semibold text-neutral-100">
             Youth Prospects ({available.length} open / {prospects.length} total)
           </h2>
-          <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
-            {visibleProspects.map((y) => {
-              const preferred = preferredSeries(y.seriesPreferences);
-              return (
-              <Panel key={y.id}>
-                <div className="mb-1 flex items-start justify-between gap-2">
-                  <div>
-                    <div className="font-bold text-neutral-100">{y.name}</div>
-                    <div className="text-xs text-neutral-500">
-                      {y.nationality} · age {y.age} · {y.currentLevel}
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <span className="rounded bg-neutral-800 px-2 py-0.5 text-xs font-semibold text-sky-300">
-                      POT {potLabel(y.id, y.skills, y.potential, 'YouthProspect')}
-                    </span>
-                    <div className="mt-0.5 text-[10px] text-neutral-500">
-                      now {readoutForMarketOverall(state, y.id, y.skills, y.potential, y.overall, 'YouthProspect').label}
-                    </div>
-                  </div>
-                </div>
-                <div className="mb-2 flex flex-wrap gap-1 text-[10px]">
-                  {y.academyEligibleNow && <Tag tone="good">Eligible now</Tag>}
-                  {preferred && <Tag tone={preferred === state.series ? 'good' : 'neutral'}>Prefers {preferred}</Tag>}
-                  <Tag>{y.riskLevel} risk</Tag>
-                  <Tag>~{y.yearsUntilF1Ready}y to F1</Tag>
-                </div>
-                <div className="mb-2">
-                  <DriverDossierButton
-                    state={state}
-                    subject={{ type: 'academy', driver: y }}
-                    context={`${y.currentLevel} - youth prospect`}
-                    focus="development"
-                  />
-                </div>
-                <div className="mb-2">
-                  <ScoutingWidget target={{ id: y.id, skills: y.skills, potential: y.potential }} entityType="YouthProspect" compact />
-                </div>
-                <TopSkills state={state} id={y.id} skills={y.skills} potential={y.potential} entityType="YouthProspect" />
-                <div className="mt-3 grid grid-cols-2 gap-2 text-xs">
-                  <Stat label="Signing">
-                    <Money m={y.signingCost} />
-                  </Stat>
-                  <Stat label="Academy/yr">
-                    <Money m={y.yearlyAcademyCost} />
-                  </Stat>
-                </div>
-                <div className="mt-3 border-t border-neutral-800 pt-2">
-                  <Button
-                    variant="primary"
-                    className="w-full px-2 py-1 text-xs"
-                    disabled={academyFull || toMoney(y.signingCost) > budget}
-                    onClick={() => onSignYouth(y.id)}
-                  >
-                    {academyFull
-                      ? 'Academy full'
-                      : toMoney(y.signingCost) > budget
-                        ? 'Insufficient budget'
-                        : 'Add to Academy'}
-                  </Button>
-                </div>
-                <p className="mt-2 text-[11px] text-neutral-400">{y.suggestedPath}</p>
-              </Panel>
-              );
-            })}
+          <div className="overflow-x-auto rounded border border-neutral-800">
+            <table className="w-full min-w-[980px] border-collapse text-xs">
+              <thead className="bg-neutral-900/70 text-left text-[10px] uppercase tracking-wide text-neutral-500">
+                <tr>
+                  <th className="px-2 py-2">Prospect</th>
+                  <YouthSortHeader label="Age" sortKey="age" sort={prospectSort} onSort={(key) => setProspectSort((current) => current.key === key ? { key, direction: current.direction === 'asc' ? 'desc' : 'asc' } : { key, direction: 'asc' })} />
+                  <th className="px-2 py-2">Level</th>
+                  <YouthSortHeader label="OVR" sortKey="overall" sort={prospectSort} onSort={(key) => setProspectSort((current) => current.key === key ? { key, direction: current.direction === 'asc' ? 'desc' : 'asc' } : { key, direction: 'desc' })} />
+                  <YouthSortHeader label="POT" sortKey="potential" sort={prospectSort} onSort={(key) => setProspectSort((current) => current.key === key ? { key, direction: current.direction === 'asc' ? 'desc' : 'asc' } : { key, direction: 'desc' })} />
+                  <YouthSortHeader label="Ready" sortKey="yearsUntilF1Ready" sort={prospectSort} onSort={(key) => setProspectSort((current) => current.key === key ? { key, direction: current.direction === 'asc' ? 'desc' : 'asc' } : { key, direction: 'asc' })} />
+                  <th className="px-2 py-2">Risk</th>
+                  <th className="px-2 py-2">Signing</th>
+                  <th className="px-2 py-2">Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                {visibleProspects.map((y) => (
+                  <tr key={y.id} className="border-t border-neutral-800/70 align-middle hover:bg-neutral-900/60">
+                    <td className="px-2 py-2">
+                      <div className="flex items-center gap-2">
+                        <DriverDossierButton state={state} subject={{ type: 'academy', driver: y }} context={`${y.currentLevel} - youth prospect`} focus="development" />
+                        <div>
+                          <div className="font-semibold text-neutral-100">{y.name}</div>
+                          <div className="text-[10px] text-neutral-500">{y.nationality}</div>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-2 py-2 tabular-nums text-neutral-300">{y.age}</td>
+                    <td className="px-2 py-2 text-neutral-400">{y.currentLevel}</td>
+                    <td className="px-2 py-2 tabular-nums text-neutral-300">{readoutForMarketOverall(state, y.id, y.skills, y.potential, y.overall, 'YouthProspect').label}</td>
+                    <td className="px-2 py-2 tabular-nums text-sky-300">{potLabel(y.id, y.skills, y.potential, 'YouthProspect')}</td>
+                    <td className="px-2 py-2 tabular-nums text-neutral-300">{y.academyEligibleNow ? 'Now' : `~${y.yearsUntilF1Ready}y`}</td>
+                    <td className="px-2 py-2 text-neutral-400">{y.riskLevel}</td>
+                    <td className="px-2 py-2 tabular-nums text-neutral-300"><Money m={y.signingCost} /></td>
+                    <td className="px-2 py-2">
+                      <div className="flex items-center gap-1">
+                        <ScoutingWidget target={{ id: y.id, skills: y.skills, potential: y.potential }} entityType="YouthProspect" compact />
+                        <Button variant="primary" className="px-2 py-1 text-[10px]" disabled={academyFull || toMoney(y.signingCost) > budget} onClick={() => onSignYouth(y.id)}>
+                          {academyFull ? 'Full' : toMoney(y.signingCost) > budget ? 'Over budget' : 'Add'}
+                        </Button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            {visibleProspects.length === 0 && <div className="px-3 py-8 text-center text-sm text-neutral-500">No prospects are available.</div>}
           </div>
           <MarketPagination
             label="Youth prospects"
-            total={available.length}
+            total={orderedProspects.length}
             page={safeProspectPage}
             pageCount={prospectPageCount}
             onPage={setProspectPage}
@@ -1038,6 +1022,39 @@ function Tag({
     warn: 'bg-amber-500/15 text-amber-300',
   };
   return <span className={`rounded px-1.5 py-0.5 ${tones[tone]}`}>{children}</span>;
+}
+
+type YouthProspectSortKey = 'name' | 'age' | 'overall' | 'potential' | 'yearsUntilF1Ready';
+type YouthProspectSort = { key: YouthProspectSortKey; direction: 'asc' | 'desc' };
+
+function compareYouthProspects(left: YouthProspect, right: YouthProspect, sort: YouthProspectSort): number {
+  const leftValue = sort.key === 'name' ? left.name : left[sort.key];
+  const rightValue = sort.key === 'name' ? right.name : right[sort.key];
+  const direction = sort.direction === 'asc' ? 1 : -1;
+  if (leftValue < rightValue) return -1 * direction;
+  if (leftValue > rightValue) return direction;
+  return left.name.localeCompare(right.name);
+}
+
+function YouthSortHeader({
+  label,
+  sortKey,
+  sort,
+  onSort,
+}: {
+  label: string;
+  sortKey: YouthProspectSortKey;
+  sort: YouthProspectSort;
+  onSort: (key: YouthProspectSortKey) => void;
+}) {
+  const active = sort.key === sortKey;
+  return (
+    <th className="px-2 py-2">
+      <button type="button" className="inline-flex items-center gap-1 hover:text-neutral-200" onClick={() => onSort(sortKey)}>
+        {label}<span className="text-[9px]">{active ? (sort.direction === 'asc' ? '▲' : '▼') : '↕'}</span>
+      </button>
+    </th>
+  );
 }
 
 function MarketPagination({
@@ -1075,15 +1092,6 @@ function MarketPagination({
       >
         Next
       </Button>
-    </div>
-  );
-}
-
-function Stat({ label, children }: { label: string; children: React.ReactNode }) {
-  return (
-    <div className="rounded bg-neutral-800/50 px-2 py-1">
-      <div className="text-[10px] uppercase tracking-wide text-neutral-500">{label}</div>
-      <div className="font-semibold tabular-nums text-neutral-200">{children}</div>
     </div>
   );
 }
