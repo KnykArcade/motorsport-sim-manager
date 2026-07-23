@@ -11,8 +11,8 @@ import { isAcademyReady } from '../sim/driverMarketEngine';
 import { academyCapacityFor } from '../sim/teamRatingsEngine';
 import { toMoney } from '../sim/financeEngine';
 import { thirdDriverMidSeasonFee } from '../sim/contractEngine';
-import { competingBidFor } from '../sim/driverBiddingEngine';
 import { preferredSeries } from '../sim/seriesPreferenceEngine';
+import { fogView, scoutingCost } from '../sim/scoutingEngine';
 import { Panel } from '../components/Panel';
 import { StatBar } from '../components/StatBar';
 import { Button } from '../components/Button';
@@ -48,6 +48,16 @@ import {
   marketPageCount,
   type YouthMarketTab,
 } from './driverMarketViewModel';
+import {
+  DEFAULT_DRIVER_MARKET_FILTERS,
+  DRIVER_MARKET_VIEWS,
+  filterMarketDrivers,
+  sortMarketDrivers,
+  type DriverMarketFilters,
+  type DriverMarketSort,
+  type DriverMarketSortKey,
+  type DriverMarketView,
+} from './driverMarketListViewModel';
 import { transferCalendarView } from './transferCalendarViewModel';
 import { recruitmentDecisionDesk } from './recruitmentDecisionViewModel';
 import { RecruitmentPipelineBoard } from '../components/RecruitmentPipelineBoard';
@@ -59,7 +69,9 @@ export function DriverMarket() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const [tab, setTab] = useState<Tab>('senior');
-  const [seniorPage, setSeniorPage] = useState(0);
+  const [marketView, setMarketView] = useState<DriverMarketView>('overview');
+  const [marketFilters, setMarketFilters] = useState<DriverMarketFilters>(DEFAULT_DRIVER_MARKET_FILTERS);
+  const [marketSort, setMarketSort] = useState<DriverMarketSort>({ key: 'overall', direction: 'desc' });
   const approachedTargetId = searchParams.get('target');
 
   const bundle = useMemo(
@@ -72,9 +84,6 @@ export function DriverMarket() {
   const seniorDrivers = [...(bundle?.drivers ?? [])].sort((a, b) =>
     Number(b.id === approachedTargetId) - Number(a.id === approachedTargetId),
   );
-  const seniorPageCount = marketPageCount(seniorDrivers.length);
-  const safeSeniorPage = Math.min(seniorPage, seniorPageCount - 1);
-  const visibleSeniorDrivers = marketPage(seniorDrivers, safeSeniorPage);
 
   if (!state) return null;
 
@@ -104,6 +113,45 @@ export function DriverMarket() {
   ];
   const transferView = transferCalendarView(state);
   const approachedDecisionDesk = approachedTargetId ? recruitmentDecisionDesk(state, approachedTargetId) : null;
+  const shortlistedIds = new Set(
+    (state.scouting?.shortlist ?? [])
+      .filter((entry) => entry.entityType === 'Driver')
+      .map((entry) => entry.entityId),
+  );
+  const scoutedIds = new Set(
+    Object.entries(state.scouting?.reports ?? {})
+      .filter(([, report]) => report.scoutingLevel > 0)
+      .map(([id]) => id),
+  );
+  const filteredSeniorDrivers = filterMarketDrivers(seniorDrivers, marketFilters, {
+    budget,
+    shortlistedIds,
+    scoutedIds,
+  });
+  const sortedSeniorDrivers = sortMarketDrivers(filteredSeniorDrivers, marketSort, {
+    overall: (driver) => readoutForMarketOverall(state, driver.id, driver.skills, driver.potential, driver.overall).value,
+    potential: (driver) => readoutForPotential(state, driver.id, driver.skills, driver.potential).value,
+    knowledge: (driver) => state.scouting?.reports?.[driver.id]?.scoutingLevel ?? 0,
+  });
+  const orderedSeniorDrivers = approachedTargetId
+    ? [
+        ...sortedSeniorDrivers.filter((driver) => driver.id === approachedTargetId),
+        ...sortedSeniorDrivers.filter((driver) => driver.id !== approachedTargetId),
+      ]
+    : sortedSeniorDrivers;
+  const marketStatuses = [...new Set(seniorDrivers.map((driver) => driver.marketStatus))].sort();
+  const marketContexts = [...new Set(seniorDrivers.map((driver) => driver.context))].sort();
+
+  const updateMarketFilter = <K extends keyof DriverMarketFilters>(key: K, value: DriverMarketFilters[K]) => {
+    setMarketFilters((current) => ({ ...current, [key]: value }));
+  };
+
+  const updateMarketSort = (key: DriverMarketSortKey) => {
+    setMarketSort((current) => ({
+      key,
+      direction: current.key === key && current.direction === 'desc' ? 'asc' : 'desc',
+    }));
+  };
 
   // Fogged potential label: scouting narrows the range without confirming truth.
   const potLabel = (id: string, skills: MarketSkillRatings, potential: number, entityType: ScoutedEntityType = 'Driver'): string =>
@@ -245,46 +293,36 @@ export function DriverMarket() {
       )}
 
       {bundle && tab === 'senior' && (
-        <div className="space-y-3">
-          <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
-            {visibleSeniorDrivers.map((d) => {
-              const interest = marketDriverOfferInterest(state, d, orgOverall, carOverall);
-              return (
-                <SeniorCard
-                  key={d.id}
-                  state={state}
-                  d={d}
-                  offseason={offseason}
-                  seats={seats}
-                  signed={signedMarketIds.has(d.id)}
-                  pending={signingBySource.get(d.id)}
-                  potLabel={potLabel(d.id, d.skills, d.potential)}
-                  affordable={toMoney(d.buyoutCost) <= budget}
-                  canSignThird={canSignThird}
-                  canSignRaceDriver={canSignRaceDriver}
-                  thirdFee={thirdDriverMidSeasonFee(d.salary, racesRemaining, state.calendar.length)}
-                  budget={budget}
-                  seatName={seatName}
-                  interest={interest}
-                  competingBid={competingBidFor(d, state.randomSeed)}
-                  onNegotiate={(seatDriverId) => navigate(`/market/${encodeURIComponent(d.id)}/negotiate/${encodeURIComponent(seatDriverId)}`)}
-                  onSignThird={() => dispatch({ type: 'SIGN_THIRD_DRIVER', marketId: d.id })}
-                  onSignRaceDriver={() => dispatch({ type: 'SIGN_RACE_DRIVER', marketId: d.id })}
-                  onRelease={(seatDriverId) =>
-                    dispatch({ type: 'RELEASE_SIGNING', seatDriverId })
-                  }
-                />
-              );
-            })}
-          </div>
-          <MarketPagination
-            label="Senior drivers"
-            total={seniorDrivers.length}
-            page={safeSeniorPage}
-            pageCount={seniorPageCount}
-            onPage={setSeniorPage}
-          />
-        </div>
+        <SeniorMarketList
+          state={state}
+          drivers={orderedSeniorDrivers}
+          view={marketView}
+          filters={marketFilters}
+          marketStatuses={marketStatuses}
+          marketContexts={marketContexts}
+          sort={marketSort}
+          affordableBudget={budget}
+          shortlistedIds={shortlistedIds}
+          scoutedIds={scoutedIds}
+          signedMarketIds={signedMarketIds}
+          pendingBySource={signingBySource}
+          offseason={offseason}
+          seats={seats}
+          canSignThird={canSignThird}
+          canSignRaceDriver={canSignRaceDriver}
+          thirdFee={(driver) => thirdDriverMidSeasonFee(driver.salary, racesRemaining, state.calendar.length)}
+          seatName={seatName}
+          orgOverall={orgOverall}
+          carOverall={carOverall}
+          onViewChange={setMarketView}
+          onFilterChange={updateMarketFilter}
+          onSort={updateMarketSort}
+          onNavigate={navigate}
+          onScout={(marketId) => dispatch({ type: 'SCOUT_TARGET', entityId: marketId, entityType: 'Driver' })}
+          onSignThird={(marketId) => dispatch({ type: 'SIGN_THIRD_DRIVER', marketId })}
+          onSignRaceDriver={(marketId) => dispatch({ type: 'SIGN_RACE_DRIVER', marketId })}
+          onRelease={(seatDriverId) => dispatch({ type: 'RELEASE_SIGNING', seatDriverId })}
+        />
       )}
 
       {bundle && tab === 'youth' && !singleSeason && (
@@ -311,6 +349,367 @@ export function DriverMarket() {
       )}
       </WorkspaceBody>
     </WorkspaceScreen>
+  );
+}
+
+function SeniorMarketList({
+  state,
+  drivers,
+  view,
+  filters,
+  marketStatuses,
+  marketContexts,
+  sort,
+  affordableBudget,
+  shortlistedIds,
+  scoutedIds,
+  signedMarketIds,
+  pendingBySource,
+  offseason,
+  seats,
+  canSignThird,
+  canSignRaceDriver,
+  thirdFee,
+  seatName,
+  orgOverall,
+  carOverall,
+  onViewChange,
+  onFilterChange,
+  onSort,
+  onNavigate,
+  onScout,
+  onSignThird,
+  onSignRaceDriver,
+  onRelease,
+}: {
+  state: NonNullable<ReturnType<typeof useGame>['state']>;
+  drivers: MarketDriver[];
+  view: DriverMarketView;
+  filters: DriverMarketFilters;
+  marketStatuses: string[];
+  marketContexts: string[];
+  sort: DriverMarketSort;
+  affordableBudget: number;
+  shortlistedIds: Set<string>;
+  scoutedIds: Set<string>;
+  signedMarketIds: Set<string>;
+  pendingBySource: Map<string, SeatSigning>;
+  offseason: boolean;
+  seats: Driver[];
+  canSignThird: boolean;
+  canSignRaceDriver: boolean;
+  thirdFee: (driver: MarketDriver) => number;
+  seatName: (id: string) => string;
+  orgOverall: number;
+  carOverall: number;
+  onViewChange: (view: DriverMarketView) => void;
+  onFilterChange: <K extends keyof DriverMarketFilters>(key: K, value: DriverMarketFilters[K]) => void;
+  onSort: (key: DriverMarketSortKey) => void;
+  onNavigate: (route: string) => void;
+  onScout: (marketId: string) => void;
+  onSignThird: (marketId: string) => void;
+  onSignRaceDriver: (marketId: string) => void;
+  onRelease: (seatDriverId: string) => void;
+}) {
+  const viewLabel: Record<DriverMarketView, string> = {
+    overview: 'Overview',
+    scouting: 'Scouting',
+    contract: 'Contract',
+  };
+
+  return (
+    <Panel className="overflow-hidden">
+      <div className="border-b border-neutral-800 pb-3">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <div>
+            <div className="text-[10px] font-bold uppercase tracking-[0.14em] text-neutral-500">Senior scouting list</div>
+            <div className="text-xs text-neutral-400">
+              {drivers.length} targets · click a column to sort · select a name for the full dossier
+            </div>
+          </div>
+          <div className="flex gap-1 rounded border border-neutral-800 bg-neutral-950/60 p-1" aria-label="Senior market views">
+            {DRIVER_MARKET_VIEWS.map((option) => (
+              <button
+                key={option}
+                type="button"
+                aria-pressed={view === option}
+                onClick={() => onViewChange(option)}
+                className={`rounded px-2 py-1 text-[10px] font-semibold uppercase tracking-wide ${
+                  view === option ? 'bg-sky-500/15 text-sky-300' : 'text-neutral-500 hover:text-neutral-300'
+                }`}
+              >
+                {viewLabel[option]}
+              </button>
+            ))}
+          </div>
+        </div>
+        <div className="mt-3 grid gap-2 md:grid-cols-4">
+          <input
+            value={filters.query}
+            onChange={(event) => onFilterChange('query', event.target.value)}
+            placeholder="Search name, nationality, context"
+            aria-label="Search senior market"
+            className="rounded border border-neutral-700 bg-neutral-950 px-2 py-1.5 text-xs text-neutral-200 placeholder:text-neutral-600"
+          />
+          <select
+            value={filters.marketStatus}
+            onChange={(event) => onFilterChange('marketStatus', event.target.value)}
+            aria-label="Market status filter"
+            className="rounded border border-neutral-700 bg-neutral-950 px-2 py-1.5 text-xs text-neutral-200"
+          >
+            <option>All</option>
+            {marketStatuses.map((status) => <option key={status}>{status}</option>)}
+          </select>
+          <select
+            value={filters.context}
+            onChange={(event) => onFilterChange('context', event.target.value)}
+            aria-label="Market context filter"
+            className="rounded border border-neutral-700 bg-neutral-950 px-2 py-1.5 text-xs text-neutral-200"
+          >
+            <option>All</option>
+            {marketContexts.map((context) => <option key={context}>{context}</option>)}
+          </select>
+          <input
+            value={filters.maxAge}
+            onChange={(event) => onFilterChange('maxAge', event.target.value)}
+            type="number"
+            min="1"
+            max="60"
+            placeholder="Max age"
+            aria-label="Maximum age filter"
+            className="rounded border border-neutral-700 bg-neutral-950 px-2 py-1.5 text-xs text-neutral-200 placeholder:text-neutral-600"
+          />
+        </div>
+        <div className="mt-2 flex flex-wrap gap-3 text-xs text-neutral-400">
+          <label className="flex items-center gap-1.5">
+            <input type="checkbox" checked={filters.affordableOnly} onChange={(event) => onFilterChange('affordableOnly', event.target.checked)} />
+            Affordable
+          </label>
+          <label className="flex items-center gap-1.5">
+            <input type="checkbox" checked={filters.shortlistedOnly} onChange={(event) => onFilterChange('shortlistedOnly', event.target.checked)} />
+            Shortlisted
+          </label>
+          <label className="flex items-center gap-1.5">
+            <input type="checkbox" checked={filters.scoutedOnly} onChange={(event) => onFilterChange('scoutedOnly', event.target.checked)} />
+            Scouted
+          </label>
+          <label className="flex items-center gap-1.5">
+            <input type="checkbox" checked={filters.f1ReadyOnly} onChange={(event) => onFilterChange('f1ReadyOnly', event.target.checked)} />
+            F1-ready
+          </label>
+          <span className="ml-auto text-[10px] text-neutral-600">Budget {formatMoney(affordableBudget)}</span>
+        </div>
+      </div>
+
+      <div className="mt-3 overflow-x-auto rounded border border-neutral-800">
+        <table className="w-full min-w-[1080px] border-collapse text-xs">
+          <thead className="bg-neutral-900/70 text-left text-[10px] uppercase tracking-wide text-neutral-500">
+            <tr>
+              <th className="px-2 py-2">Driver</th>
+              <SortableHeader label="Age" sortKey="age" sort={sort} onSort={onSort} />
+              <th className="px-2 py-2">Context</th>
+              <SortableHeader label="OVR" sortKey="overall" sort={sort} onSort={onSort} />
+              <SortableHeader label="POT" sortKey="potential" sort={sort} onSort={onSort} />
+              {view === 'scouting' && <SortableHeader label="Knowledge" sortKey="knowledge" sort={sort} onSort={onSort} />}
+              {view !== 'contract' && <SortableHeader label="F1-ready" sortKey="f1Readiness" sort={sort} onSort={onSort} />}
+              {view === 'contract' && (
+                <>
+                  <SortableHeader label="Salary" sortKey="salary" sort={sort} onSort={onSort} />
+                  <SortableHeader label="Buyout" sortKey="buyout" sort={sort} onSort={onSort} />
+                </>
+              )}
+              <th className="px-2 py-2">Status</th>
+              <th className="px-2 py-2">Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            {drivers.map((driver) => (
+              <SeniorMarketRow
+                key={driver.id}
+                state={state}
+                driver={driver}
+                view={view}
+                shortlisted={shortlistedIds.has(driver.id)}
+                scouted={scoutedIds.has(driver.id)}
+                signed={signedMarketIds.has(driver.id)}
+                pending={pendingBySource.get(driver.id)}
+                offseason={offseason}
+                seats={seats}
+                canSignThird={canSignThird}
+                canSignRaceDriver={canSignRaceDriver}
+                thirdFee={thirdFee(driver)}
+                seatName={seatName}
+                orgOverall={orgOverall}
+                carOverall={carOverall}
+                onNavigate={onNavigate}
+                onScout={() => onScout(driver.id)}
+                onSignThird={() => onSignThird(driver.id)}
+                onSignRaceDriver={() => onSignRaceDriver(driver.id)}
+                onRelease={onRelease}
+              />
+            ))}
+          </tbody>
+        </table>
+        {drivers.length === 0 && <div className="px-3 py-8 text-center text-sm text-neutral-500">No targets match these filters.</div>}
+      </div>
+    </Panel>
+  );
+}
+
+function SortableHeader({
+  label,
+  sortKey,
+  sort,
+  onSort,
+}: {
+  label: string;
+  sortKey: DriverMarketSortKey;
+  sort: DriverMarketSort;
+  onSort: (key: DriverMarketSortKey) => void;
+}) {
+  const active = sort.key === sortKey;
+  return (
+    <th className="px-2 py-2">
+      <button type="button" className="inline-flex items-center gap-1 hover:text-neutral-200" onClick={() => onSort(sortKey)}>
+        {label}
+        <span className="text-[9px]">{active ? (sort.direction === 'asc' ? '▲' : '▼') : '↕'}</span>
+      </button>
+    </th>
+  );
+}
+
+function SeniorMarketRow({
+  state,
+  driver,
+  view,
+  shortlisted,
+  scouted,
+  signed,
+  pending,
+  offseason,
+  seats,
+  canSignThird,
+  canSignRaceDriver,
+  thirdFee,
+  seatName,
+  orgOverall,
+  carOverall,
+  onNavigate,
+  onScout,
+  onSignThird,
+  onSignRaceDriver,
+  onRelease,
+}: {
+  state: NonNullable<ReturnType<typeof useGame>['state']>;
+  driver: MarketDriver;
+  view: DriverMarketView;
+  shortlisted: boolean;
+  scouted: boolean;
+  signed: boolean;
+  pending?: SeatSigning;
+  offseason: boolean;
+  seats: Driver[];
+  canSignThird: boolean;
+  canSignRaceDriver: boolean;
+  thirdFee: number;
+  seatName: (id: string) => string;
+  orgOverall: number;
+  carOverall: number;
+  onNavigate: (route: string) => void;
+  onScout: () => void;
+  onSignThird: () => void;
+  onSignRaceDriver: () => void;
+  onRelease: (seatDriverId: string) => void;
+}) {
+  const report = state.scouting?.reports?.[driver.id];
+  const scouting = state.scouting ? fogView(
+    { id: driver.id, skills: driver.skills, potential: driver.potential },
+    report,
+    state.scouting.networkAccuracy,
+    state.randomSeed,
+    'Driver',
+  ) : null;
+  const scoutingLevel = report?.scoutingLevel ?? 0;
+  const cost = scoutingCost('Driver', scoutingLevel);
+  const budget = state.teams.find((team) => team.id === state.selectedTeamId)?.budget ?? 0;
+  const overall = readoutForMarketOverall(state, driver.id, driver.skills, driver.potential, driver.overall);
+  const potential = readoutForPotential(state, driver.id, driver.skills, driver.potential);
+  const interest = marketDriverOfferInterest(state, driver, orgOverall, carOverall);
+  const preferred = preferredSeries(driver.seriesPreferences);
+  const rowClass = `${shortlisted ? 'bg-sky-500/5' : ''} ${scouted ? '' : 'opacity-90'}`;
+
+  return (
+    <tr className={`border-t border-neutral-800/70 align-middle hover:bg-neutral-900/60 ${rowClass}`}>
+      <td className="px-2 py-2">
+        <div className="flex items-center gap-2">
+          <DriverDossierButton state={state} subject={{ type: 'market', driver }} context={`${driver.context} - ${driver.marketStatus}`} focus="market" />
+          <div className="min-w-0">
+            <div className="flex items-center gap-1.5">
+              <span className="font-semibold text-neutral-100">{driver.name}</span>
+              {shortlisted && <span className="rounded bg-sky-500/15 px-1 py-0.5 text-[9px] text-sky-300">SHORTLIST</span>}
+            </div>
+            <div className="truncate text-[10px] text-neutral-500">{driver.nationality} · {driver.primaryRole}</div>
+          </div>
+        </div>
+      </td>
+      <td className="px-2 py-2 tabular-nums text-neutral-300">{driver.age}</td>
+      <td className="px-2 py-2 text-neutral-400">
+        <div>{driver.context}</div>
+        <div className="text-[10px] text-neutral-600">{preferred ? `Prefers ${preferred}` : 'No preference'}</div>
+      </td>
+      <td className="px-2 py-2 tabular-nums text-amber-300">{overall.label}</td>
+      <td className="px-2 py-2 tabular-nums text-sky-300">{potential.label}</td>
+      {view === 'scouting' && <td className="px-2 py-2 tabular-nums text-neutral-300">{scoutingLevel}%</td>}
+      {view !== 'contract' && <td className="px-2 py-2 tabular-nums text-neutral-300">{driver.f1Readiness.toFixed(0)}</td>}
+      {view === 'contract' && (
+        <>
+          <td className="px-2 py-2 tabular-nums text-neutral-300"><Money m={driver.salary} /></td>
+          <td className="px-2 py-2 tabular-nums text-neutral-300"><Money m={driver.buyoutCost} /></td>
+        </>
+      )}
+      <td className="px-2 py-2">
+        <div className="flex flex-wrap gap-1">
+          <Tag>{driver.marketStatus}</Tag>
+          {driver.immediateF1Eligible && <Tag tone="good">F1-ready</Tag>}
+          {scouting?.maxed && <Tag tone="good">Report ready</Tag>}
+        </div>
+      </td>
+      <td className="px-2 py-2">
+        <div className="flex min-w-[170px] flex-wrap items-center gap-1">
+          {!scouting?.maxed && (
+            <Button
+              variant="secondary"
+              className="px-2 py-1 text-[10px]"
+              disabled={cost > budget}
+              title={cost > budget ? 'Insufficient budget' : undefined}
+              onClick={onScout}
+            >
+              Scout {formatMoney(cost)}
+            </Button>
+          )}
+          {signed ? (
+            <span className="text-[10px] text-neutral-500">Signed</span>
+          ) : pending ? (
+            <>
+              <span className="text-[10px] text-green-300">Queued → {seatName(pending.seatDriverId)}</span>
+              <button className="text-[10px] text-red-400 hover:text-red-300" onClick={() => onRelease(pending.seatDriverId)}>Cancel</button>
+            </>
+          ) : canSignRaceDriver ? (
+            <Button variant="primary" className="px-2 py-1 text-[10px]" disabled={toMoney(driver.buyoutCost) > budget} onClick={onSignRaceDriver}>Sign</Button>
+          ) : offseason && (interest ?? 0) >= 20 ? (
+            seats.map((seat) => (
+              <Button key={seat.id} variant="ghost" className="px-2 py-1 text-[10px]" onClick={() => onNavigate(`/market/${encodeURIComponent(driver.id)}/negotiate/${encodeURIComponent(seat.id)}`)}>
+                Negotiate #{seat.number}
+              </Button>
+            ))
+          ) : canSignThird && thirdFee <= budget ? (
+            <Button variant="primary" className="px-2 py-1 text-[10px]" onClick={onSignThird}>3rd driver</Button>
+          ) : (
+            <button type="button" className="text-[10px] text-sky-300 hover:text-sky-200" onClick={() => onNavigate(`/market?target=${encodeURIComponent(driver.id)}`)}>Review</button>
+          )}
+        </div>
+      </td>
+    </tr>
   );
 }
 
@@ -345,20 +744,6 @@ function Money({ m }: { m: number }) {
   return <>{formatMoney(m * 1_000_000)}</>;
 }
 
-// A driver's interest in a cross-series move: colour + short label.
-function interestTone(interest: number): string {
-  if (interest >= 60) return 'text-green-400';
-  if (interest >= 40) return 'text-amber-300';
-  return 'text-red-400';
-}
-
-function interestLabel(interest: number): string {
-  if (interest >= 70) return 'keen';
-  if (interest >= 50) return 'open';
-  if (interest >= 35) return 'reluctant';
-  return 'unwilling';
-}
-
 // Buttons to assign an incoming driver to one of the player's seats.
 function SeatButtons({
   seats,
@@ -377,178 +762,6 @@ function SeatButtons({
         </Button>
       ))}
     </div>
-  );
-}
-
-function SeniorCard({
-  state,
-  d,
-  offseason,
-  seats,
-  signed,
-  pending,
-  potLabel,
-  affordable,
-  canSignThird,
-  canSignRaceDriver,
-  thirdFee,
-  budget,
-  seatName,
-  interest,
-  competingBid,
-  onNegotiate,
-  onSignThird,
-  onSignRaceDriver,
-  onRelease,
-}: {
-  state: NonNullable<ReturnType<typeof useGame>['state']>;
-  d: MarketDriver;
-  offseason: boolean;
-  seats: Driver[];
-  signed: boolean;
-  pending?: SeatSigning;
-  potLabel: string;
-  affordable: boolean;
-  canSignThird: boolean;
-  canSignRaceDriver: boolean;
-  thirdFee: number;
-  budget: number;
-  seatName: (id: string) => string;
-  interest?: number;
-  competingBid: number;
-  onNegotiate: (seatDriverId: string) => void;
-  onSignThird: () => void;
-  onSignRaceDriver: () => void;
-  onRelease: (seatDriverId: string) => void;
-}) {
-  const overallReadout = readoutForMarketOverall(state, d.id, d.skills, d.potential, d.overall);
-  const preferred = preferredSeries(d.seriesPreferences);
-  return (
-    <Panel>
-      <div className="mb-1 flex items-start justify-between gap-2">
-        <div>
-          <div className="flex items-center gap-2">
-            <span className="font-bold text-neutral-100">{d.name}</span>
-            {d.marketPool === 'crossSeries' && (
-              <span className="rounded bg-sky-900/70 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-sky-300">
-                Crossover
-              </span>
-            )}
-          </div>
-          <div className="text-xs text-neutral-500">
-            {d.nationality} · {d.age} · {d.context}
-          </div>
-        </div>
-        <div className="text-right">
-          <span className="rounded bg-neutral-800 px-2 py-0.5 text-xs font-semibold text-amber-300">
-            {overallReadout.label}
-          </span>
-          <div className="mt-0.5 text-[10px] text-neutral-500">POT {potLabel}</div>
-        </div>
-      </div>
-
-      <div className="mb-2">
-        <DriverDossierButton
-          state={state}
-          subject={{ type: 'market', driver: d }}
-          context={`${d.context} - ${d.marketStatus}`}
-          focus="market"
-        />
-      </div>
-      <div className="mb-2">
-        <ScoutingWidget target={{ id: d.id, skills: d.skills, potential: d.potential }} entityType="Driver" compact />
-      </div>
-
-      <div className="mb-2 flex flex-wrap gap-1 text-[10px]">
-        <Tag>{d.marketStatus}</Tag>
-        <Tag>{d.primaryRole}</Tag>
-        {preferred && <Tag tone={preferred === state.series ? 'good' : 'neutral'}>Prefers {preferred}</Tag>}
-        {d.immediateF1Eligible && <Tag tone="good">F1-ready</Tag>}
-        <Tag tone="warn">{d.negotiationDifficulty} difficulty</Tag>
-      </div>
-
-      <TopSkills state={state} id={d.id} skills={d.skills} potential={d.potential} />
-
-      <div className="mt-3 grid grid-cols-3 gap-2 text-xs">
-        <Stat label="Salary/yr">
-          <Money m={d.salary} />
-        </Stat>
-        <Stat label="Buyout">
-          <Money m={d.buyoutCost} />
-        </Stat>
-        <Stat label="Sponsor/yr">
-          <Money m={d.sponsorValue} />
-        </Stat>
-      </div>
-
-      <div className="mt-3 border-t border-neutral-800 pt-2">
-        {signed ? (
-          <span className="text-xs text-neutral-500">Already racing for you.</span>
-        ) : canSignRaceDriver ? (
-          <Button
-            variant="primary"
-            className="w-full px-2 py-1 text-xs"
-            disabled={!affordable}
-            title={affordable ? undefined : 'Insufficient budget for this signing'}
-            onClick={onSignRaceDriver}
-          >
-            Sign as Race Driver ({(d.buyoutCost).toFixed(1)}M)
-          </Button>
-        ) : pending ? (
-          <div className="flex items-center justify-between text-xs">
-            <span className="text-green-300">Queued → replaces {seatName(pending.seatDriverId)}</span>
-            <button
-              className="text-red-400 hover:text-red-300"
-              onClick={() => onRelease(pending.seatDriverId)}
-            >
-              Cancel
-            </button>
-          </div>
-        ) : offseason && !affordable ? (
-          <span className="text-xs text-red-400">Buyout exceeds budget.</span>
-        ) : offseason ? (
-          <div className="space-y-2">
-            <div className="flex items-center justify-between text-[11px] text-neutral-400">
-              <span>Rival interest</span>
-              {competingBid > 0 ? (
-                <span className="tabular-nums text-amber-300">~<Money m={competingBid} /></span>
-              ) : (
-                <span className="text-neutral-500">None</span>
-              )}
-            </div>
-            {interest != null && (
-              <div className="flex items-center justify-between text-[11px] text-neutral-400">
-                <span>Series interest</span>
-                <span className={`tabular-nums font-semibold ${interestTone(interest)}`}>
-                  {Math.round(interest)}/100 · {interestLabel(interest)}
-                </span>
-              </div>
-            )}
-            {interest != null && interest < 20 ? (
-              <span className="text-xs text-red-400">
-                Won't switch series — not interested in this move at any price.
-              </span>
-            ) : (
-              <>
-                <SeatButtons seats={seats} label="Negotiate →" onPick={onNegotiate} />
-              </>
-            )}
-          </div>
-        ) : canSignThird && thirdFee > budget ? (
-          <span className="text-xs text-red-400">
-            3rd-driver fee {formatMoney(thirdFee)} exceeds budget.
-          </span>
-        ) : canSignThird ? (
-          <Button variant="primary" className="w-full px-2 py-1 text-xs" onClick={onSignThird}>
-            Sign as 3rd driver — {formatMoney(thirdFee)}
-          </Button>
-        ) : (
-          <span className="text-xs text-neutral-600">Signings open in the offseason.</span>
-        )}
-      </div>
-
-      {d.notes && <p className="mt-2 text-[11px] italic text-neutral-500">{d.notes}</p>}
-    </Panel>
   );
 }
 
