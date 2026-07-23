@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { FogView } from '../sim/scoutingEngine';
 import type { ScoutingReport } from '../types/scoutingTypes';
-import { scoutingAbilitySummary, scoutingAssignments, scoutingComparison, scoutingReportFreshness } from './scoutingViewModel';
+import { scoutingAbilitySummary, scoutingAssignments, scoutingComparison, scoutingReportFreshness, sortScoutingListItems } from './scoutingViewModel';
 
 const view: FogView = {
   accuracy: 0.6, revealed: false, maxed: false,
@@ -50,5 +50,22 @@ describe('scouting view model', () => {
     expect(scoutingReportFreshness('2026-01-01T00:00:00.000Z', 2026, 2)).toBe('Fresh');
     expect(scoutingReportFreshness('2026-01-01T00:00:00.000Z', 2026, 5)).toBe('Current');
     expect(scoutingReportFreshness('2026-01-01T00:00:00.000Z', 2026, 12)).toBe('Stale');
+  });
+
+  it('sorts scouting targets by fogged ability, knowledge, and cost', () => {
+    const item = (id: string, overall: number, cost: number, knowledge: number) => ({
+      id,
+      name: id.toUpperCase(),
+      view: {
+        ...view,
+        skills: { cornering: overall, braking: overall },
+      },
+      cost,
+      knowledge,
+    });
+    const items = [item('a', 60, 100, 80), item('b', 80, 50, 30)];
+    expect(sortScoutingListItems(items, { key: 'overall', direction: 'desc' }).map((entry) => entry.id)).toEqual(['b', 'a']);
+    expect(sortScoutingListItems(items, { key: 'knowledge', direction: 'desc' }).map((entry) => entry.id)).toEqual(['a', 'b']);
+    expect(sortScoutingListItems(items, { key: 'cost', direction: 'asc' }).map((entry) => entry.id)).toEqual(['b', 'a']);
   });
 });
