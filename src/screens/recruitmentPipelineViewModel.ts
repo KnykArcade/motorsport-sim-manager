@@ -10,11 +10,15 @@ export type RecruitmentPipelineStage =
   | 'Queued signing'
   | 'Confirmed move';
 
+export type RecruitmentPipelineLifecycle = 'active' | 'history';
+
 export type RecruitmentPipelineItem = {
   entityId: string;
   entityType: ScoutedEntityType;
   name: string;
   stage: RecruitmentPipelineStage;
+  lifecycle: RecruitmentPipelineLifecycle;
+  needsAction: boolean;
   detail: string;
   deadline?: string;
   rivalTeam?: string;
@@ -64,6 +68,7 @@ function pipelineStage(
   const signing = (state.pendingSignings ?? []).find(
     (entry) => entry.source === 'market' && entry.sourceId === desk.entityId,
   );
+  const signed = (state.signedMarketIds ?? []).includes(desk.entityId);
   const marketNegotiation = state.marketContractNegotiation?.marketId === desk.entityId
     ? state.marketContractNegotiation
     : undefined;
@@ -90,6 +95,8 @@ function pipelineStage(
     return {
       ...desk,
       stage: 'Negotiation active',
+      lifecycle: 'active',
+      needsAction: true,
       detail: activeNegotiation.response === 'countered'
         ? 'The representative has countered; review the response before spending another attempt.'
         : activeNegotiation.response === 'refused'
@@ -105,9 +112,24 @@ function pipelineStage(
     return {
       ...desk,
       stage: 'Queued signing',
+      lifecycle: 'active',
+      needsAction: true,
       detail: 'Queued for the next season; lineup confirmation remains player-controlled.',
       deadline: 'Season end',
       nextAction: { label: 'Confirm Lineup', route: '/offseason' },
+    };
+  }
+  if (signed) {
+    return {
+      ...desk,
+      stage: 'Confirmed move',
+      lifecycle: 'history',
+      needsAction: false,
+      detail: 'This market driver has already been signed and is no longer an active target.',
+      nextAction: {
+        label: 'Review Market Outcome',
+        route: `/market?target=${encodeURIComponent(desk.entityId)}`,
+      },
     };
   }
   if (marketStory?.stage === 'Contested' || marketStory?.stage === 'Offer') {
@@ -115,6 +137,8 @@ function pipelineStage(
     return {
       ...desk,
       stage: 'Rival pressure',
+      lifecycle: 'active',
+      needsAction: true,
       detail: contested
         ? 'Your queued bid is being challenged before the market deadline.'
         : `${marketStory.destinationTeamName} is pursuing this target.`,
@@ -130,6 +154,8 @@ function pipelineStage(
     return {
       ...desk,
       stage: 'Confirmed move',
+      lifecycle: 'history',
+      needsAction: false,
       detail: `The market move to ${marketStory.destinationTeamName} is confirmed for the next season.`,
       rivalTeam: marketStory.destinationTeamName,
       nextAction: {
@@ -142,6 +168,8 @@ function pipelineStage(
   return {
     ...desk,
     stage: ready ? 'Decision ready' : 'Scouting',
+    lifecycle: 'active',
+    needsAction: true,
     detail: desk.recommendation,
   };
 }
@@ -165,7 +193,8 @@ export function recruitmentPipeline(state: GameState): RecruitmentPipelineItem[]
         Scouting: 3,
         'Confirmed move': 4,
       };
-      return order[a.stage] - order[b.stage]
+      return Number(a.lifecycle === 'history') - Number(b.lifecycle === 'history')
+        || order[a.stage] - order[b.stage]
         || Number(a.negotiationState === 'countered') * -1
         || a.name.localeCompare(b.name);
     });
