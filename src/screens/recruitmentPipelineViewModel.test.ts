@@ -1,5 +1,6 @@
 import '../testDataSetup';
 import { describe, expect, it } from 'vitest';
+import { getStaffPool } from '../data';
 import { createNewGame } from '../game/initialCareer';
 import { careerMarketBundle } from '../sim/careerMarketEngine';
 import type { GameState } from '../game/careerState';
@@ -102,6 +103,74 @@ describe('recruitmentPipeline', () => {
       stage: 'Queued signing',
       deadline: 'Season end',
       nextAction: { label: 'Confirm Lineup', route: '/offseason' },
+    }));
+  });
+
+  it('routes an active market negotiation to the exact seat negotiation screen', () => {
+    const base = newState();
+    const driver = careerMarketBundle(base).drivers[0];
+    const seat = base.drivers.find((entry) => entry.teamId === base.selectedTeamId);
+    if (!seat) throw new Error('Expected a selected-team seat');
+    const state: GameState = {
+      ...base,
+      marketContractNegotiation: {
+        marketId: driver.id,
+        seatDriverId: seat.id,
+        offeredBid: 4,
+        askingBid: 5,
+        offeredSalary: 1,
+        askingSalary: 1.2,
+        years: 3,
+        clauseType: 'EqualTreatment',
+        acceptanceLikelihood: 50,
+        attemptsRemaining: 2,
+        response: 'countered',
+        counterBid: 4.5,
+      },
+    };
+
+    expect(recruitmentPipeline(state)).toContainEqual(expect.objectContaining({
+      entityId: driver.id,
+      stage: 'Negotiation active',
+      negotiationState: 'countered',
+      attemptsRemaining: 2,
+      nextAction: {
+        label: 'Review Counter',
+        route: `/market/${encodeURIComponent(driver.id)}/negotiate/${encodeURIComponent(seat.id)}`,
+      },
+    }));
+  });
+
+  it('routes an active staff refusal back to the exact staff negotiation', () => {
+    const base = newState();
+    const staff = getStaffPool(base.seasonYear, base.series)[0];
+    if (!staff) throw new Error('Expected a staff member');
+    const state: GameState = {
+      ...base,
+      scouting: {
+        ...base.scouting!,
+        shortlist: [{ entityId: staff.id, entityType: 'Staff' }],
+      },
+      staffContractNegotiation: {
+        staffId: staff.id,
+        mode: 'hire',
+        offerMultiplier: 1,
+        askingMultiplier: 1.4,
+        years: 2,
+        acceptanceLikelihood: 30,
+        attemptsRemaining: 0,
+        response: 'refused',
+      },
+    };
+
+    expect(recruitmentPipeline(state)).toContainEqual(expect.objectContaining({
+      entityId: staff.id,
+      stage: 'Negotiation active',
+      negotiationState: 'refused',
+      nextAction: {
+        label: 'Improve Offer',
+        route: `/staff/${encodeURIComponent(staff.id)}/negotiate`,
+      },
     }));
   });
 });
