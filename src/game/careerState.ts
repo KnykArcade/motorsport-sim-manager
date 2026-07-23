@@ -25,7 +25,7 @@ import type { RaceArchiveEntry } from '../types/historyTypes';
 import type { WeekendPractice } from '../types/practiceTypes';
 import type { CommercialState } from '../types/sponsorTypes';
 import type { EngineState } from '../types/engineTypes';
-import type { TeamReputation, TeamExpectation, ExpectationReview } from '../types/expectationTypes';
+import type { TeamReputation, TeamExpectation, ExpectationReview, BoardroomState } from '../types/expectationTypes';
 import type { TeamPrincipalProfile, JobOffer, TeamPrincipal } from '../types/principalTypes';
 import type { TeamOrganizationRatings } from '../types/teamRatingsTypes';
 import type { FacilitiesState } from '../types/facilityTypes';
@@ -173,6 +173,9 @@ export type GameState = {
   teamReputations?: Record<string, TeamReputation>;
   teamExpectations?: Record<string, TeamExpectation>;
   expectationReviews?: ExpectationReview[];
+  // Interactive owner mandate, review and funding history. Optional so older
+  // saves can lazily initialize the boardroom without migration data loss.
+  boardroom?: BoardroomState;
   // 5. Team Principal profile + outstanding job offers/rumors.
   principal?: TeamPrincipalProfile;
   jobOffers?: JobOffer[];

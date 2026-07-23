@@ -95,6 +95,8 @@ import {
   sponsorTerminationBuyout,
 } from '../sim/commercialEngine';
 import type { SponsorContractTerms } from '../types/sponsorTypes';
+import type { BoardFundingCategory, BoardroomMandateLevel } from '../types/expectationTypes';
+import { chooseMandate, processBoardroomAfterRace, requestBoardFunding } from '../sim/boardroomEngine';
 import { developmentSuccessBonus, extendedStaffSalaryMillions, staffExtensionSigningFee, staffRatingOutOfTen, staffReleaseCost } from '../sim/staffEngine';
 import {
   FACILITY_SPECS,
@@ -331,6 +333,8 @@ export type GameAction =
   | { type: 'ACCEPT_SPONSOR_COUNTER'; negotiationId: string }
   | { type: 'CANCEL_SPONSOR_NEGOTIATION'; negotiationId: string }
   | { type: 'TERMINATE_SPONSOR'; sponsorId: string }
+  | { type: 'SELECT_BOARDROOM_MANDATE'; mandate: BoardroomMandateLevel }
+  | { type: 'REQUEST_BOARD_FUNDING'; category: BoardFundingCategory }
   | { type: 'ACCEPT_JOB_OFFER'; offerId: string }
   | { type: 'DECLINE_JOB_OFFER'; offerId: string }
   | { type: 'SET_REGULATION_VOTE'; proposalId: string; vote: RegulationVote }
@@ -1010,6 +1014,16 @@ export function gameReducer(state: GameState | null, action: GameAction): GameSt
     case 'TERMINATE_SPONSOR': {
       if (!state) return state;
       return terminateSponsor(state, action.sponsorId);
+    }
+
+    case 'SELECT_BOARDROOM_MANDATE': {
+      if (!state) return state;
+      return chooseMandate(state, action.mandate);
+    }
+
+    case 'REQUEST_BOARD_FUNDING': {
+      if (!state) return state;
+      return requestBoardFunding(state, action.category);
     }
 
     case 'SIGN_ENGINE_DEAL': {
@@ -2861,7 +2875,10 @@ function applyRaceResults(
     currentRaceIndex: seasonComplete ? state.currentRaceIndex : nextIndex,
     seasonComplete,
   };
-  completedState = applyRarePlayerCrashAbsence(completedState, race.round, results);
+  completedState = processBoardroomAfterRace(
+    applyRarePlayerCrashAbsence(completedState, race.round, results),
+    race.round,
+  );
   const worldTick = advanceOffscreenChampionshipsAfterPlayerRace(completedState);
   completedState = {
     ...completedState,

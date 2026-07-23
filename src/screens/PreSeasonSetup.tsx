@@ -29,7 +29,12 @@ import {
 } from '../components/workspace/Workspace';
 import { isPreseasonChecklistComplete, getPreseasonApprovals } from '../game/careerPhaseEngine';
 import { getGameModeLabel } from '../game/modeRestrictions';
-import { OWNER_PERSONALITY_LABELS, OWNER_PERSONALITY_DESCRIPTIONS } from '../types/expectationTypes';
+import {
+  OWNER_PERSONALITY_LABELS,
+  OWNER_PERSONALITY_DESCRIPTIONS,
+  type BoardroomMandateLevel,
+} from '../types/expectationTypes';
+import { MANDATE_OPTIONS } from '../sim/boardroomEngine';
 import type { CarLaunchApproach, PreseasonTestingFocus } from '../types/phase18Types';
 import { PRESEASON_FLAW_FIX_COST, PRESEASON_TESTING_COST, preseasonProgramFor } from '../sim/phase18PreseasonEngine';
 import { PRIZE_MONEY_PER_POINT } from '../sim/financeEngine';
@@ -444,6 +449,27 @@ export function PreSeasonSetup() {
                 {expectation.minimumConstructorPosition && (
                   <div className="text-xs text-neutral-500">Target: P{expectation.minimumConstructorPosition} or better</div>
                 )}
+                {!isSingleSeason && !state.boardroom?.mandate && (
+                  <div className="mt-3 grid gap-2 md:grid-cols-3">
+                    {(Object.keys(MANDATE_OPTIONS) as BoardroomMandateLevel[]).map((mandate) => (
+                      <button
+                        key={mandate}
+                        type="button"
+                        onClick={() => dispatch({ type: 'SELECT_BOARDROOM_MANDATE', mandate })}
+                        className="rounded-lg border border-neutral-700 bg-neutral-950/40 p-3 text-left hover:border-emerald-500/50"
+                      >
+                        <div className="font-semibold text-neutral-100">{mandate}</div>
+                        <div className="mt-1 text-xs text-neutral-400">{MANDATE_OPTIONS[mandate].description}</div>
+                        <div className="mt-2 text-xs text-emerald-300">${MANDATE_OPTIONS[mandate].fundingMillions}M support</div>
+                      </button>
+                    ))}
+                  </div>
+                )}
+                {state.boardroom?.mandate && (
+                  <div className="mt-3 rounded-lg border border-emerald-500/20 bg-emerald-500/5 p-3 text-xs text-emerald-200">
+                    {state.boardroom.mandate} mandate agreed · ${state.boardroom.mandateFundingMillions ?? 0}M support · {state.boardroom.mandateJobRisk ?? 'Standard'} job risk
+                  </div>
+                )}
               </div>
             ) : (
               <p className="text-sm text-neutral-500">
@@ -454,7 +480,8 @@ export function PreSeasonSetup() {
               <Button
                 variant="primary"
                 onClick={() => approveTab('seasonObjectives')}
-                disabled={approvals.seasonObjectives}
+                disabled={approvals.seasonObjectives || (!isSingleSeason && !state.boardroom?.mandate)}
+                title={!isSingleSeason && !state.boardroom?.mandate ? 'Choose a board mandate first' : undefined}
               >
                 {approvals.seasonObjectives ? 'Confirmed' : 'Confirm Season Objective'}
               </Button>
