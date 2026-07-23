@@ -8,6 +8,8 @@ import {
   sponsorInstallmentPayment,
   racePerformanceBonuses,
   evaluateSeasonObjectives,
+  evaluateRoundSponsorObjectives,
+  objectiveDeadlineRound,
   rollSponsorRenewals,
   averageSponsorConfidence,
   generateSponsorOffers,
@@ -78,6 +80,120 @@ describe('commercialEngine', () => {
     const avg = (sponsors: typeof bad.sponsors) =>
       averageSponsorConfidence({ teamId: 't', sponsors, commercialReputation: 0 });
     expect(avg(bad.sponsors)).toBeLessThan(avg(good.sponsors));
+  });
+
+  it('uses championship rounds for midseason deadlines and pays an early completion once', () => {
+    const c = buildInitialCommercial(williams, williamsDrivers, 'living', 'Formula 1');
+    const midseason = c.sponsors.flatMap((sponsor) => sponsor.objectives).find((objective) => objective.deadline === 'midseason')!;
+    expect(objectiveDeadlineRound(midseason, 17)).toBe(9);
+    const first = evaluateRoundSponsorObjectives(c, {
+      round: 3,
+      totalRounds: 17,
+      constructorPosition: 5,
+      points: 1,
+      wins: 0,
+      failedToQualify: false,
+      teamRaceResults: 2,
+      expectedEntries: 2,
+      reliabilityDnfs: 0,
+      withdrawnOrMissingEntries: 0,
+    });
+    const resolved = first.commercial.sponsors.flatMap((sponsor) => sponsor.objectives).find((objective) => objective.id === midseason.id)!;
+    expect(resolved.status).toBe('Met');
+    expect(resolved.resolvedRound).toBe(3);
+    expect(first.payouts.some((payout) => payout.label.includes(midseason.description))).toBe(true);
+
+    const repeated = evaluateRoundSponsorObjectives(first.commercial, {
+      round: 4,
+      totalRounds: 17,
+      constructorPosition: 5,
+      points: 2,
+      wins: 0,
+      failedToQualify: false,
+      teamRaceResults: 2,
+      expectedEntries: 2,
+      reliabilityDnfs: 0,
+      withdrawnOrMissingEntries: 0,
+    });
+    expect(repeated.payouts.some((payout) => payout.label.includes(midseason.description))).toBe(false);
+  });
+
+  it('fails an unmet objective only at its deadline and issues warnings from real evidence', () => {
+    const c = buildInitialCommercial(williams, williamsDrivers, 'living-fail', 'Formula 1');
+    const pressured = {
+      ...c,
+      sponsors: c.sponsors.map((sponsor) => ({ ...sponsor, confidence: 43, relationshipStatus: 'Monitoring' as const })),
+    };
+    const before = evaluateRoundSponsorObjectives(pressured, {
+      round: 8,
+      totalRounds: 17,
+      constructorPosition: 12,
+      points: 0,
+      wins: 0,
+      failedToQualify: true,
+      teamRaceResults: 1,
+      expectedEntries: 2,
+      reliabilityDnfs: 1,
+      withdrawnOrMissingEntries: 1,
+      publicControversies: 1,
+    });
+    expect(before.commercial.sponsors.flatMap((sponsor) => sponsor.objectives).filter((objective) => objective.deadline === 'midseason').every((objective) => objective.status === 'Pending')).toBe(true);
+    expect(before.reviews.some((review) => review.kind === 'Warning' || review.kind === 'Breach')).toBe(true);
+
+    const deadline = evaluateRoundSponsorObjectives(before.commercial, {
+      round: 9,
+      totalRounds: 17,
+      constructorPosition: 12,
+      points: 0,
+      wins: 0,
+      failedToQualify: true,
+      teamRaceResults: 2,
+      expectedEntries: 2,
+      reliabilityDnfs: 0,
+      withdrawnOrMissingEntries: 0,
+    });
+    expect(deadline.commercial.sponsors.flatMap((sponsor) => sponsor.objectives).filter((objective) => objective.deadline === 'midseason').every((objective) => objective.status === 'Failed')).toBe(true);
+    expect(deadline.payouts.some((payout) => payout.amount < 0)).toBe(true);
+  });
+
+  it('tracks driver-linked sponsor treatment separately', () => {
+    const c = buildInitialCommercial(williams, williamsDrivers, 'linked', 'Formula 1');
+    const linkedSponsor = c.sponsors.find((sponsor) => sponsor.linkedDriverId)!;
+    const next = evaluateRoundSponsorObjectives(c, {
+      round: 1,
+      totalRounds: 16,
+      constructorPosition: 5,
+      points: 0,
+      wins: 0,
+      failedToQualify: false,
+      teamRaceResults: 1,
+      expectedEntries: 2,
+      reliabilityDnfs: 0,
+      withdrawnOrMissingEntries: 1,
+      linkedDriverResults: { [linkedSponsor.linkedDriverId!]: { raced: false, finished: false, points: 0 } },
+    });
+    expect(next.commercial.sponsors.find((sponsor) => sponsor.id === linkedSponsor.id)!.confidence).toBeLessThan(linkedSponsor.confidence);
+  });
+
+  it('can revise a season-end position target at the midseason review', () => {
+    const c = buildInitialCommercial(williams, williamsDrivers, 'revision', 'Formula 1');
+    const target = c.sponsors.flatMap((sponsor) => sponsor.objectives).find((objective) => objective.category === 'Performance' && objective.targetValue)!;
+    const review = evaluateRoundSponsorObjectives(c, {
+      round: 8,
+      totalRounds: 16,
+      constructorPosition: 1,
+      points: 100,
+      wins: 4,
+      failedToQualify: false,
+      teamRaceResults: 2,
+      expectedEntries: 2,
+      reliabilityDnfs: 0,
+      withdrawnOrMissingEntries: 0,
+    });
+    const revised = review.commercial.sponsors.flatMap((sponsor) => sponsor.objectives).find((objective) => objective.id === target.id)!;
+    expect(revised.originalTargetValue).toBe(target.targetValue);
+    expect(revised.targetValue).toBe((target.targetValue ?? 2) - 1);
+    expect(review.reviews.some((item) => item.kind === 'Revision')).toBe(true);
   });
 
   it('renews or replaces sponsors at the offseason and keeps a title sponsor', () => {

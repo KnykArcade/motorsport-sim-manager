@@ -22,8 +22,8 @@ const CATEGORY_TRIAGE: Partial<Record<NewsCategory, Omit<NewsTriage, 'owner'>>> 
     recommendation: 'Review the commercial update and its effect on team income.',
     whyItMatters: 'Commercial confidence affects the budget available for the next management cycle.',
     consequence: 'A missed commercial signal can leave the team underfunded later.',
-    route: '/finance',
-    routeLabel: 'Open Finance',
+    route: '/sponsors?tab=objectives',
+    routeLabel: 'Open Sponsor Objectives',
   },
   development: {
     recommendation: 'Review the technical update against the current programme priorities.',

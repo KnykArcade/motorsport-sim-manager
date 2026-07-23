@@ -71,8 +71,8 @@ describe('modeRestrictions', () => {
     it('restricts engine supplier in Single Season', () => {
       expect(isRouteRestricted('/engine', 'SingleSeason')).toBe(true);
     });
-    it('restricts sponsors in Single Season', () => {
-      expect(isRouteRestricted('/sponsors', 'SingleSeason')).toBe(true);
+    it('keeps sponsor objectives available in Single Season', () => {
+      expect(isRouteRestricted('/sponsors', 'SingleSeason')).toBe(false);
     });
     it('does not restrict HQ in Single Season', () => {
       expect(isRouteRestricted('/hq', 'SingleSeason')).toBe(false);
@@ -122,7 +122,7 @@ describe('modeRestrictions', () => {
       expect(hidden.has('/politics')).toBe(true);
       expect(hidden.has('/offseason')).toBe(true);
       expect(hidden.has('/engine')).toBe(true);
-      expect(hidden.has('/sponsors')).toBe(true);
+      expect(hidden.has('/sponsors')).toBe(false);
       // Core screens are NOT hidden.
       expect(hidden.has('/hq')).toBe(false);
       expect(hidden.has('/calendar')).toBe(false);
@@ -207,7 +207,7 @@ describe('modeRestrictions', () => {
       expect(info!.focus).toBeTruthy();
     });
     it('returns structured info for each restricted route', () => {
-      const routes = ['/scouting', '/curves', '/politics', '/offseason', '/engine', '/sponsors'];
+      const routes = ['/scouting', '/curves', '/politics', '/offseason', '/engine'];
       for (const route of routes) {
         const info = getRouteRestrictionInfo(route, 'SingleSeason');
         expect(info).toBeDefined();
@@ -218,6 +218,7 @@ describe('modeRestrictions', () => {
     });
     it('returns undefined for allowed routes', () => {
       expect(getRouteRestrictionInfo('/hq', 'SingleSeason')).toBeUndefined();
+      expect(getRouteRestrictionInfo('/sponsors', 'SingleSeason')).toBeUndefined();
       expect(getRouteRestrictionInfo('/calendar', 'SingleSeason')).toBeUndefined();
     });
     it('returns undefined for Career mode', () => {

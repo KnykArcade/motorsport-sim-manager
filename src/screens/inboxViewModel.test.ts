@@ -521,6 +521,38 @@ describe('inboxViewModel', () => {
     }));
   });
 
+  it('routes sponsor warnings and commercial news to the objective workspace', () => {
+    const base = newState();
+    const firstSponsor = base.commercial!.sponsors[0];
+    const state: GameState = {
+      ...base,
+      commercial: {
+        ...base.commercial!,
+        sponsors: base.commercial!.sponsors.map((sponsor) => sponsor.id === firstSponsor.id
+          ? { ...sponsor, confidence: 18, relationshipStatus: 'Breach' }
+          : sponsor),
+      },
+      news: [{
+        id: 'sponsor-breach',
+        headline: 'Sponsor issues breach notice',
+        category: 'sponsor',
+        priority: 'critical',
+        timestamp: '1995-01-01T00:00:00.000Z',
+      }],
+    };
+    expect(inboxMessages(state)).toContainEqual(expect.objectContaining({
+      id: 'inbox-sponsor-relationships-at-risk',
+      severity: 'critical',
+      route: '/sponsors?tab=objectives',
+      actionable: true,
+    }));
+    expect(inboxMessages(state)).toContainEqual(expect.objectContaining({
+      id: 'inbox-news-sponsor-breach',
+      route: '/sponsors?tab=objectives',
+      actionable: true,
+    }));
+  });
+
   it('removes explicitly dismissed Inbox items without changing the source news', () => {
     const state = newState();
     const withNews = {

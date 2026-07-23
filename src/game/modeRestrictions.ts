@@ -26,7 +26,6 @@ const SINGLE_SEASON_RESTRICTED_ROUTES = new Set([
   '/politics',
   '/offseason',
   '/engine',
-  '/sponsors',
 ]);
 
 // Nav items hidden from the sidebar in Single Season mode.
@@ -36,7 +35,6 @@ export const SINGLE_SEASON_HIDDEN_NAV = new Set([
   '/politics',
   '/offseason',
   '/engine',
-  '/sponsors',
 ]);
 
 // Nav items hidden from the sidebar in Career mode (none — full access).
@@ -54,7 +52,6 @@ const FEATURE_RESTRICTIONS: Record<GameMode, Set<RestrictedFeature>> = {
     'dev_curves',
     'offseason',
     'engine_supplier',
-    'sponsors',
     'politics',
     'job_market',
     'future_contracts',
