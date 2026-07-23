@@ -198,8 +198,8 @@ export function TeamPrincipal() {
                 </div>
               </div>
               <div className="flex gap-2 text-xs">
-                <Tag>Cohesion {Math.round(culture.cohesion)}</Tag>
-                <Tag>Stability {Math.round(culture.stability)}</Tag>
+                <Tag>Cohesion: {culture.cohesion >= 70 ? 'United' : culture.cohesion >= 45 ? 'Mixed' : 'Fragmented'}</Tag>
+                <Tag>Stability: {culture.stability >= 70 ? 'Settled' : culture.stability >= 45 ? 'Watchful' : 'Volatile'}</Tag>
               </div>
             </div>
             <div className="grid gap-x-6 gap-y-2 md:grid-cols-2">
@@ -208,9 +208,9 @@ export function TeamPrincipal() {
               ))}
             </div>
             <div className="mt-4 grid gap-2 text-xs sm:grid-cols-3">
-              <ModifierCard label="Development outcomes" value={leadershipModifiers.developmentSuccessBonus} />
-              <ModifierCard label="Morale influence" value={leadershipModifiers.moraleEffectMultiplier - 1} />
-              <ModifierCard label="Race preparation" value={leadershipModifiers.preparationEffectMultiplier - 1} />
+              <ModifierCard label="Development outcomes" value={modifierOutlook(leadershipModifiers.developmentSuccessBonus)} />
+              <ModifierCard label="Morale influence" value={modifierOutlook(leadershipModifiers.moraleEffectMultiplier - 1)} />
+              <ModifierCard label="Race preparation" value={modifierOutlook(leadershipModifiers.preparationEffectMultiplier - 1)} />
             </div>
           </Panel>
       )}
@@ -389,16 +389,21 @@ function RatingBar({ label, value, max, compact = false }: { label: string; valu
   );
 }
 
-function ModifierCard({ label, value }: { label: string; value: number }) {
-  const percent = Math.round(value * 100);
+function ModifierCard({ label, value }: { label: string; value: string }) {
   return (
     <div className="rounded border border-neutral-800 bg-neutral-900/40 p-2 text-neutral-400">
       <div>{label}</div>
-      <div className={`font-semibold ${percent > 0 ? 'text-green-400' : percent < 0 ? 'text-red-400' : 'text-neutral-300'}`}>
-        {percent > 0 ? '+' : ''}{percent}%
-      </div>
+      <div className="font-semibold text-neutral-200">{value}</div>
     </div>
   );
+}
+
+function modifierOutlook(value: number): string {
+  if (value >= 0.05) return 'Strong positive';
+  if (value > 0.005) return 'Slight positive';
+  if (value <= -0.05) return 'Clear concern';
+  if (value < -0.005) return 'Slight concern';
+  return 'Neutral';
 }
 
 function splitLabel(value: string): string {

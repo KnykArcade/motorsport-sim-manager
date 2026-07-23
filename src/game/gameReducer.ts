@@ -271,6 +271,13 @@ import { resolveCharacterDispute } from '../sim/characterDisputeEngine';
 import { resolveCharacterInitiative } from '../sim/characterInitiativeEngine';
 import { resolveCharacterBreakingPoint } from '../sim/characterBreakingPointEngine';
 import { refreshCharacterFutureIntentions, staffFutureIntentContractModifier } from '../sim/characterFutureIntentEngine';
+import {
+  answerMediaQuestion,
+  createMediaSession,
+  declineMediaSession,
+  shouldCreateCrisisSession,
+} from '../sim/mediaSessionEngine';
+import type { MediaResponseStyle } from '../types/mediaTypes';
 
 export type GameAction =
   | { type: 'NEW_GAME'; options: NewGameOptions }
@@ -335,6 +342,8 @@ export type GameAction =
   | { type: 'TERMINATE_SPONSOR'; sponsorId: string }
   | { type: 'SELECT_BOARDROOM_MANDATE'; mandate: BoardroomMandateLevel }
   | { type: 'REQUEST_BOARD_FUNDING'; category: BoardFundingCategory }
+  | { type: 'ANSWER_MEDIA_QUESTION'; sessionId: string; questionId: string; style: MediaResponseStyle }
+  | { type: 'DECLINE_MEDIA_SESSION'; sessionId: string }
   | { type: 'ACCEPT_JOB_OFFER'; offerId: string }
   | { type: 'DECLINE_JOB_OFFER'; offerId: string }
   | { type: 'SET_REGULATION_VOTE'; proposalId: string; vote: RegulationVote }
@@ -713,6 +722,16 @@ export function gameReducer(state: GameState | null, action: GameAction): GameSt
     case 'SET_LAST_WORKSPACE': {
       if (!state || state.lastWorkspace === action.workspace) return state;
       return { ...state, lastWorkspace: action.workspace };
+    }
+
+    case 'ANSWER_MEDIA_QUESTION': {
+      if (!state) return state;
+      return answerMediaQuestion(state, action.sessionId, action.questionId, action.style);
+    }
+
+    case 'DECLINE_MEDIA_SESSION': {
+      if (!state) return state;
+      return declineMediaSession(state, action.sessionId);
     }
 
     case 'RUN_QUALIFYING': {
@@ -1288,7 +1307,15 @@ export function gameReducer(state: GameState | null, action: GameAction): GameSt
       // Use enterPreRaceBriefingFromPreseason for the preseason path so that
       // preseasonSetupComplete and preseasonDecisionsComplete are set.
       if (phase === 'pre_season_setup') return enterPreRaceBriefingFromPreseason(ensureDefaultRaceWeekendPackage(state));
-      return enterPreRaceBriefing(state);
+      const briefing = enterPreRaceBriefing(state);
+      const race = currentRace(briefing);
+      return createMediaSession(
+        briefing,
+        'PreRace',
+        race?.round ?? briefing.currentRaceIndex + 1,
+        race?.id,
+        race ? `${race.gpName} pre-race availability` : 'Pre-race availability',
+      );
     }
 
     case 'ADVANCE_TO_RACE_WEEKEND': {
@@ -1318,7 +1345,8 @@ export function gameReducer(state: GameState | null, action: GameAction): GameSt
       const youthNews = generateCareerYouthAcademyNews(preseasonCtx);
       const allPreseasonNews = deduplicateNews(state.news, [...preseasonNews, ...youthNews]);
       const withNews = { ...state, news: [...allPreseasonNews, ...state.news].slice(0, 80) };
-      return enterPreRaceBriefingFromPreseason(ensureDefaultRaceWeekendPackage(withNews));
+      const briefing = enterPreRaceBriefingFromPreseason(ensureDefaultRaceWeekendPackage(withNews));
+      return createMediaSession(briefing, 'Preseason', 0, undefined, 'Opening media day');
     }
 
     case 'GENERATE_PADDOCK_EVENTS': {
@@ -2267,12 +2295,19 @@ function runQualifying(state: GameState, playerDecisions: QualifyingDecision[]):
   const qualNews = generateCareerQualifyingNews(qualCtx, results, driverNames, teamNames);
   const dedupedQualNews = deduplicateNews(state.news, qualNews);
 
-  return {
+  const qualifiedState: GameState = {
     ...state,
     cars,
     qualifyingResults: { ...state.qualifyingResults, [race.id]: results },
     news: [...dedupedQualNews, ...state.news].slice(0, 80),
   };
+  return createMediaSession(
+    qualifiedState,
+    'PostQualifying',
+    race.round,
+    race.id,
+    `${race.gpName} qualifying result`,
+  );
 }
 
 function getRacePrepFocusEffectForQualifying(state: GameState): RacePrepFocusEffect | undefined {
@@ -2894,10 +2929,20 @@ function applyRaceResults(
     race.round,
     results,
   ));
-  return withUnifiedTechnical(finalized, {
+  let mediaState = createMediaSession(withUnifiedTechnical(finalized, {
     activeDevelopmentProjects,
     completedDevelopmentProjects,
-  });
+  }), 'PostRace', race.round, race.id, `${race.gpName} race result`);
+  if (shouldCreateCrisisSession(mediaState)) {
+    mediaState = createMediaSession(
+      mediaState,
+      'Crisis',
+      race.round,
+      race.id,
+      'Board, sponsor, or team pressure requires a public response',
+    );
+  }
+  return mediaState;
 }
 
 function partsRound(state: GameState): number {

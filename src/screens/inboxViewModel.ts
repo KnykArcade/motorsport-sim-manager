@@ -130,6 +130,25 @@ function technicalMessages(state: GameState): InboxMessage[] {
 
 function paddockMessages(state: GameState): InboxMessage[] {
   const messages: InboxMessage[] = [];
+  for (const session of (state.media?.sessions ?? []).filter((entry) => entry.status === 'Pending')) {
+    const crisis = session.type === 'Crisis';
+    messages.push({
+      id: `inbox-${session.id}`,
+      severity: crisis ? 'critical' : 'action',
+      category: 'paddock',
+      title: crisis ? `Crisis media response: ${session.title}` : `Media availability: ${session.title}`,
+      body: `${session.questions.length - session.answers.length} question${session.questions.length - session.answers.length === 1 ? '' : 's'} remain. You may answer or decline the session.`,
+      route: '/news?tab=media',
+      routeLabel: 'Open Media Session',
+      actionable: true,
+      blocking: false,
+      kind: 'recommended',
+      source: 'Communications team',
+      whyItMatters: 'Your response can change driver trust, owner patience, sponsor confidence, rival respect, team culture, and public standing.',
+      round: session.round,
+      timing: crisis ? 'due_this_week' : 'before_next_race',
+    });
+  }
   const unresolved = (state.careerPhase?.paddockEvents ?? []).filter((event) => !event.resolvedOptionId && (event.options?.length ?? 0) > 0);
   for (const event of unresolved) {
     const destination = paddockEventDestination(event);

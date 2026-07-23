@@ -281,7 +281,7 @@ export function PrincipalCreator({
       </div>
 
       {/* BOTTOM — summary + modifiers + confirm */}
-      <Section title="Final Profile & Gameplay Modifiers">
+      <Section title="Final Profile & Leadership Effects">
         <div className="grid gap-4 md:grid-cols-2">
           <p className="text-sm text-neutral-300">
             <span className="font-semibold text-neutral-100">
@@ -294,13 +294,12 @@ export function PrincipalCreator({
           </p>
           <div className="flex flex-wrap content-start gap-1.5">
             {Object.keys(modifiers).length === 0 ? (
-              <span className="text-xs text-neutral-500">No net modifiers from these choices.</span>
+              <span className="text-xs text-neutral-500">A balanced profile with no dominant gameplay influence.</span>
             ) : (
               (Object.keys(modifiers) as PrincipalModifierKey[])
                 .sort((a, b) => Math.abs(modifiers[b] ?? 0) - Math.abs(modifiers[a] ?? 0))
                 .map((key) => {
                   const v = modifiers[key] ?? 0;
-                  const pct = `${v > 0 ? '+' : ''}${Math.round(v * 100)}%`;
                   return (
                     <span
                       key={key}
@@ -310,7 +309,7 @@ export function PrincipalCreator({
                           : 'bg-red-500/15 text-red-300'
                       }`}
                     >
-                      {MODIFIER_LABELS[key]} {pct}
+                      {MODIFIER_LABELS[key]} · {v > 0.045 ? 'Strong influence' : v > 0 ? 'Supporting influence' : v < -0.045 ? 'Clear weakness' : 'Minor tradeoff'}
                     </span>
                   );
                 })
@@ -495,5 +494,4 @@ function TraitAdjust({ label, value, onChange }: { label: string; value: number;
     </label>
   );
 }
-
 

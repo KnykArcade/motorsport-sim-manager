@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import type { NewsItem, NewsCategory, NewsPriority } from '../types/gameTypes';
 import {
   categoryLabel,
@@ -20,6 +20,7 @@ import {
   WorkspaceScreen,
   WorkspaceTabs,
 } from '../components/workspace/Workspace';
+import { MediaSessionsPanel } from './MediaSessionsPanel';
 
 const ALL_CATEGORIES: (NewsCategory | 'all')[] = [
   'all',
@@ -46,7 +47,10 @@ const ALL_PRIORITIES: (NewsPriority | 'all')[] = ['all', 'critical', 'high', 'no
 export function NewsCenter() {
   const { state } = useGame();
   const navigate = useNavigate();
-  const [view, setView] = useState<'feed' | 'storylines'>('feed');
+  const [searchParams, setSearchParams] = useSearchParams();
+  type NewsView = 'feed' | 'storylines' | 'media';
+  const initialView = searchParams.get('tab') === 'media' ? 'media' : searchParams.get('tab') === 'storylines' ? 'storylines' : 'feed';
+  const [view, setView] = useState<NewsView>(initialView);
   const [categoryFilter, setCategoryFilter] = useState<NewsCategory | 'all'>('all');
   const [priorityFilter, setPriorityFilter] = useState<NewsPriority | 'all'>('all');
   const [teamFilter, setTeamFilter] = useState<'all' | 'myTeam'>('all');
@@ -141,6 +145,13 @@ export function NewsCenter() {
     setRoundFilter('all');
     setSearchQuery('');
   };
+  const setNewsView = (next: NewsView) => {
+    setView(next);
+    const params = new URLSearchParams(searchParams);
+    if (next === 'feed') params.delete('tab');
+    else params.set('tab', next);
+    setSearchParams(params, { replace: true });
+  };
 
   return (
     <WorkspaceScreen>
@@ -157,12 +168,13 @@ export function NewsCenter() {
         <WorkspaceMetric label="Story archive" value={archiveCount} detail={`${storylines.length} connected storylines`} />
       </MetricStrip>
       <WorkspaceTabs
-        items={[{ id: 'feed', label: 'News Feed' }, { id: 'storylines', label: 'Storylines' }]}
+        items={[{ id: 'feed', label: 'News Feed' }, { id: 'storylines', label: 'Storylines' }, { id: 'media', label: 'Media Sessions' }]}
         active={view}
-        onChange={setView}
+        onChange={setNewsView}
         ariaLabel="News Center sections"
       />
       <WorkspaceBody className="space-y-3">
+      {view === 'media' && <MediaSessionsPanel />}
 
       {/* Filter Controls */}
       {view === 'feed' && <div className="ui-news-filter-panel space-y-3 rounded-lg border p-3">
@@ -306,7 +318,7 @@ export function NewsCenter() {
       </div>}
 
       {/* News List */}
-      {view === 'feed' ? <div className="space-y-2">
+      {view === 'feed' && <div className="space-y-2">
         {filteredNews.length === 0 && (
           <div className="py-8 text-center text-neutral-500">
             No news stories match the current filters.
@@ -325,7 +337,8 @@ export function NewsCenter() {
             </button>
           </div>
         )}
-      </div> : <StorylineList storylines={storylines} />}
+      </div>}
+      {view === 'storylines' && <StorylineList storylines={storylines} />}
       </WorkspaceBody>
     </WorkspaceScreen>
   );

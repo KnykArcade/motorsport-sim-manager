@@ -45,6 +45,7 @@ import type { CharacterInteractionState } from '../types/characterInteractionTyp
 import type { PersonnelCareerTenure } from '../types/personnelCareerTypes';
 import type { TransferCalendarState } from '../types/transferCalendarTypes';
 import type { PerformanceAnalyticsState } from '../types/performanceAnalyticsTypes';
+import type { MediaState } from '../types/mediaTypes';
 
 export type RaceDriverAbsence = {
   driverId: string;
@@ -150,6 +151,9 @@ export type GameState = {
   technicalManagementMode?: TechnicalManagementMode;
 
   news: NewsItem[];
+  // Press conferences and interviews generated from actual career events.
+  // Optional so careers created before the media phase load without migration.
+  media?: MediaState;
   // Inbox message ids the player has read. Optional for save compat.
   inboxRead?: string[];
   // Inbox items the player explicitly dismissed. Optional for save compat.
