@@ -125,6 +125,7 @@ import { ensureCharacterFutureIntentions } from '../sim/characterFutureIntentEng
 import { executePersonnelMoves } from '../sim/personnelMoveEngine';
 import { rolloverAIStaffRosters } from '../sim/aiStaffRosterEngine';
 import { reconcilePersonnelCareerLedger } from '../sim/personnelCareerLedgerEngine';
+import { buildInitialPublicReputation } from '../sim/publicReputationEngine';
 
 // Annual sponsorship the player's team earns, driven by reputation and the
 // appeal (overall rating) of its driver line-up. Invented but ties sponsorship
@@ -1592,6 +1593,11 @@ export function advanceSeason(state: GameState, nextBundle?: SeasonBundle): Game
     cars: carsWithPitCrewSync,
     teams: teamsWithOpsSync,
     teamOrgRatings: updatedOrgRatings,
+    publicReputation: state.publicReputation ? {
+      ...state.publicReputation,
+      momentum: Math.round(state.publicReputation.momentum * 0.5),
+      lastUpdatedRound: 0,
+    } : state.publicReputation,
     aiAcademies: aiOffseason.aiAcademies,
     facilities: nextFacilities,
     engine: aiOffseason.engine ?? nextEngine,
@@ -1764,6 +1770,13 @@ function applyPrincipalMove(state: GameState, newTeamId: string): GameState {
     facilities,
     engine,
     aiTeamStates,
+    publicReputation: buildInitialPublicReputation(
+      newTeam,
+      state.principal?.reputation ?? newTeam.reputation,
+      state.teamOrgRatings?.[newTeamId],
+      state.teamReputations?.[newTeamId]?.fanExpectation ?? newTeam.reputation,
+      state.teamReputations?.[newTeamId]?.historicalPrestige ?? newTeam.reputation,
+    ),
   };
   return {
     ...nextState,

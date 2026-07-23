@@ -1,6 +1,6 @@
 import type { Sponsor, SponsorObjective } from '../types/sponsorTypes';
 
-export type SponsorsWorkspaceTab = 'portfolio' | 'opportunities' | 'negotiations' | 'objectives' | 'owner';
+export type SponsorsWorkspaceTab = 'portfolio' | 'opportunities' | 'negotiations' | 'objectives' | 'public' | 'owner';
 
 export const SPONSORS_WORKSPACE_TABS: ReadonlyArray<{
   id: SponsorsWorkspaceTab;
@@ -10,6 +10,7 @@ export const SPONSORS_WORKSPACE_TABS: ReadonlyArray<{
   { id: 'opportunities', label: 'Opportunities' },
   { id: 'negotiations', label: 'Negotiations' },
   { id: 'objectives', label: 'Objectives & Bonuses' },
+  { id: 'public', label: 'Fans & Reputation' },
   { id: 'owner', label: 'Boardroom' },
 ];
 

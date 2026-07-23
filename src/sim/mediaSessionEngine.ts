@@ -10,6 +10,7 @@ import type {
   MediaSessionType,
   MediaState,
 } from '../types/mediaTypes';
+import { applyPublicReaction } from './publicReputationEngine';
 
 const clamp = (value: number): number => Math.max(0, Math.min(100, Math.round(value)));
 
@@ -425,11 +426,33 @@ export function answerMediaQuestion(
     sessions: current.sessions.map((entry) => entry.id === session.id ? nextSession : entry),
   };
   const news = responseNews(effects.state, session, questionEntry, answer);
-  return {
+  const nextState: GameState = {
     ...effects.state,
     media: nextMedia,
     news: [news, ...effects.state.news.filter((item) => item.id !== news.id)].slice(0, 80),
   };
+  const publicDelta = style === 'Protective'
+    ? 2
+    : style === 'Diplomatic'
+      ? 1
+      : style === 'Evasive'
+        ? -3
+        : style === 'Confrontational'
+          ? 1
+          : 0;
+  return applyPublicReaction(nextState, {
+    trigger: style === 'Confrontational' ? 'Controversy' : 'MediaResponse',
+    delta: publicDelta,
+    sentiment: style === 'Confrontational' || style === 'Demanding' ? 'Mixed' : undefined,
+    headline: style === 'Evasive'
+      ? 'Supporters frustrated by evasive media response'
+      : style === 'Protective'
+        ? 'Public backing for the team earns supporter approval'
+        : `${style} answer shapes the public mood`,
+    detail: answer.reaction,
+    round: session.round,
+    idSuffix: `${questionId}-${style}`,
+  });
 }
 
 export function declineMediaSession(state: GameState, sessionIdValue: string): GameState {
@@ -476,7 +499,7 @@ export function declineMediaSession(state: GameState, sessionIdValue: string): G
     careerPhase: state.careerPhase?.currentPhase,
     teamId: state.selectedTeamId,
   };
-  return {
+  return applyPublicReaction({
     ...state,
     principal,
     teamReputations,
@@ -486,7 +509,16 @@ export function declineMediaSession(state: GameState, sessionIdValue: string): G
       sessions: current.sessions.map((entry) => entry.id === session.id ? nextSession : entry),
     },
     news: [news, ...state.news.filter((item) => item.id !== news.id)].slice(0, 80),
-  };
+  }, {
+    trigger: 'MediaResponse',
+    delta: session.type === 'Crisis' ? -5 : -2,
+    headline: 'Media absence weakens public confidence',
+    detail: session.type === 'Crisis'
+      ? 'Supporters expected leadership during a crisis and interpret the absence as a lack of accountability.'
+      : 'Missing an optional media duty creates some distance between the team and its supporters.',
+    round: session.round,
+    idSuffix: `${session.id}-declined`,
+  });
 }
 
 export function shouldCreateCrisisSession(state: GameState): boolean {

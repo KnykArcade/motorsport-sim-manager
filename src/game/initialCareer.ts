@@ -23,6 +23,7 @@ import { createInitialScoutingState } from '../sim/scoutingEngine';
 import { seedDevelopmentCurves } from '../sim/developmentCurveEngine';
 import { createInitialUniverseHistory } from '../sim/universeHistoryEngine';
 import { buildAllTeamOrganizationRatings } from '../sim/teamRatingsEngine';
+import { buildInitialPublicReputation } from '../sim/publicReputationEngine';
 import { buildAllAITeamStates } from '../sim/aiTeamEngine';
 import { createInitialTeamResearchMap } from '../sim/rdEngine';
 import { createInitialTeamPartsMap } from '../sim/partsEngine';
@@ -292,6 +293,13 @@ export function createNewGame(options: NewGameOptions): GameState {
     teamPrincipal,
     aiPrincipals,
     teamOrgRatings,
+    publicReputation: buildInitialPublicReputation(
+      playerTeam,
+      principal?.reputation ?? teamPrincipal?.reputation ?? playerTeam?.reputation ?? 50,
+      teamOrgRatings[options.teamId],
+      teamReputations[options.teamId]?.fanExpectation ?? playerTeam?.reputation ?? 50,
+      teamReputations[options.teamId]?.historicalPrestige ?? playerTeam?.reputation ?? 50,
+    ),
     driverRelationships,
     teamOrderHistory: [],
     regulationProposals,

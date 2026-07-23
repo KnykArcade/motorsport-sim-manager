@@ -50,6 +50,10 @@ describe('sponsor selection', () => {
     expect(next.commercial!.sponsors.length).toBe(funded.commercial!.sponsors.length - 1);
     expect(next.teams.find((team) => team.id === state.selectedTeamId)!.budget).toBeLessThan(beforeBudget);
     expect(next.commercial!.commercialReputation).toBeLessThan(funded.commercial!.commercialReputation);
+    expect(next.publicReputation!.recentReactions[0]).toMatchObject({
+      trigger: 'SponsorDecision',
+      sentiment: 'Negative',
+    });
   });
 
   it('blocks signing when the portfolio is at capacity', () => {

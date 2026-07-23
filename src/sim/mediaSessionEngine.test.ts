@@ -49,6 +49,7 @@ describe('media session engine', () => {
     expect(diplomatic.principal!.attributes.mediaImage).toBeGreaterThan(principalMedia);
     expect(diplomatic.teamReputations![initial.selectedTeamId].ownerPatience).toBeGreaterThanOrEqual(ownerPatience);
     expect(diplomatic.media!.sessions[0].status).toBe('Pending');
+    expect(diplomatic.publicReputation!.recentReactions[0].trigger).toBe('MediaResponse');
 
     const completed = answerMediaQuestion(diplomatic, session.id, session.questions[1].id, 'Protective');
     expect(completed.media!.sessions[0].status).toBe('Completed');
@@ -80,6 +81,7 @@ describe('media session engine', () => {
     expect(declined.principal!.attributes.mediaImage).toBeLessThan(beforeMedia);
     expect(declined.teamReputations![initial.selectedTeamId].ownerPatience).toBeLessThan(beforeOwner);
     expect(declined.news[0].headline).toContain('declines');
+    expect(declined.publicReputation!.fanConfidence).toBeLessThan(initial.publicReputation!.fanConfidence);
   });
 
   it('does not permit a second answer or repeat decline to apply consequences twice', () => {

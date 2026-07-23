@@ -34,6 +34,7 @@ describe('sponsorsViewModel', () => {
       'opportunities',
       'negotiations',
       'objectives',
+      'public',
       'owner',
     ]);
   });
