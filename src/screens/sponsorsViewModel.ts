@@ -1,6 +1,6 @@
 import type { Sponsor, SponsorObjective } from '../types/sponsorTypes';
 
-export type SponsorsWorkspaceTab = 'portfolio' | 'opportunities' | 'objectives' | 'owner';
+export type SponsorsWorkspaceTab = 'portfolio' | 'opportunities' | 'negotiations' | 'objectives' | 'owner';
 
 export const SPONSORS_WORKSPACE_TABS: ReadonlyArray<{
   id: SponsorsWorkspaceTab;
@@ -8,6 +8,7 @@ export const SPONSORS_WORKSPACE_TABS: ReadonlyArray<{
 }> = [
   { id: 'portfolio', label: 'Portfolio' },
   { id: 'opportunities', label: 'Opportunities' },
+  { id: 'negotiations', label: 'Negotiations' },
   { id: 'objectives', label: 'Objectives & Bonuses' },
   { id: 'owner', label: 'Owner' },
 ];
@@ -36,4 +37,3 @@ export function sponsorObjectiveSummary(sponsors: Sponsor[]) {
     { Pending: 0, Met: 0, Failed: 0 } as Record<NonNullable<SponsorObjective['status']>, number>,
   );
 }
-

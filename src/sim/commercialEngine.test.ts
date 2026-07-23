@@ -14,6 +14,11 @@ import {
   averageSponsorConfidence,
   generateSponsorOffers,
   sponsorSlotCapacity,
+  beginSponsorNegotiation,
+  resolveSponsorNegotiation,
+  sponsorContractTerms,
+  sponsorTerminationBuyout,
+  expireSponsorNegotiations,
 } from './commercialEngine';
 import { toMoney } from './financeEngine';
 
@@ -244,6 +249,44 @@ describe('commercialEngine', () => {
     expect(generateSponsorOffers(williams, c, 's', 1996, 'Formula 1').some((o) => o.type === 'Title')).toBe(false);
     const noTitle = { ...c, sponsors: c.sponsors.filter((s) => s.type !== 'Title') };
     expect(generateSponsorOffers(williams, noTitle, 's', 1996, 'Formula 1').some((o) => o.type === 'Title')).toBe(true);
+  });
+
+  it('runs deterministic negotiations with counters, patience, and exact contract terms', () => {
+    const commercial = buildInitialCommercial(williams, williamsDrivers, 'talks', 'Formula 1');
+    const sponsor = generateSponsorOffers(williams, commercial, 'talks', 1996, 'Formula 1')[0];
+    const talk = beginSponsorNegotiation(sponsor, 'New', 2, 16);
+    const baseTerms = sponsorContractTerms(sponsor);
+    const accepted = resolveSponsorNegotiation(talk, sponsor, baseTerms, 80, 'talks');
+    expect(accepted.negotiation.status).toBe('Accepted');
+    expect(accepted.signedSponsor).toMatchObject({ annualValue: baseTerms.annualValue, contractYearsRemaining: baseTerms.contractYears });
+
+    const demanding = { ...baseTerms, annualValue: baseTerms.annualValue * 1.3, bonusMultiplier: 1.4, objectiveLevel: 'Flexible' as const };
+    const response = resolveSponsorNegotiation(talk, sponsor, demanding, 50, 'talks');
+    expect(['Countered', 'Rejected']).toContain(response.negotiation.status);
+    expect(response.negotiation.attempts).toBe(1);
+  });
+
+  it('calculates larger termination protection for title deals', () => {
+    const commercial = buildInitialCommercial(williams, williamsDrivers, 'buyout', 'Formula 1');
+    const title = commercial.sponsors.find((sponsor) => sponsor.type === 'Title')!;
+    const secondary = commercial.sponsors.find((sponsor) => sponsor.type === 'Secondary')!;
+    expect(sponsorTerminationBuyout(title)).toBeGreaterThan(sponsorTerminationBuyout(secondary));
+  });
+
+  it('refreshes opportunity ids every four championship rounds', () => {
+    const commercial = buildInitialCommercial(williams, williamsDrivers, 'market', 'Formula 1');
+    const first = generateSponsorOffers(williams, commercial, 'market', 1996, 'Formula 1', 1);
+    const nextWindow = generateSponsorOffers(williams, commercial, 'market', 1996, 'Formula 1', 4);
+    expect(nextWindow.map((offer) => offer.id)).not.toEqual(first.map((offer) => offer.id));
+  });
+
+  it('withdraws unresolved offers when their championship-round deadline passes', () => {
+    const commercial = buildInitialCommercial(williams, williamsDrivers, 'deadline', 'Formula 1');
+    const sponsor = generateSponsorOffers(williams, commercial, 'deadline', 1996, 'Formula 1')[0];
+    const negotiation = { ...beginSponsorNegotiation(sponsor, 'New', 1, 16), deadlineRound: 3 };
+    const expired = expireSponsorNegotiations({ ...commercial, negotiations: [negotiation] }, 3);
+    expect(expired.negotiations?.[0].status).toBe('Withdrawn');
+    expect(expired.unavailableOfferIds).toContain(sponsor.id);
   });
 
   it('reports zero income for undefined commercial state', () => {

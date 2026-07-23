@@ -84,12 +84,17 @@ import {
   staffNegotiationScore,
 } from '../sim/personnelNegotiationEngine';
 import {
+  beginSponsorNegotiation,
+  expireSponsorNegotiations,
   generateSponsorOffers,
   evaluateRoundSponsorObjectives,
   racePerformanceBonuses,
+  resolveSponsorNegotiation,
   sponsorInstallmentPayment,
   sponsorSlotCapacity,
+  sponsorTerminationBuyout,
 } from '../sim/commercialEngine';
+import type { SponsorContractTerms } from '../types/sponsorTypes';
 import { developmentSuccessBonus, extendedStaffSalaryMillions, staffExtensionSigningFee, staffRatingOutOfTen, staffReleaseCost } from '../sim/staffEngine';
 import {
   FACILITY_SPECS,
@@ -321,6 +326,11 @@ export type GameAction =
   | { type: 'SIGN_ENGINE_DEAL'; supplierId: string; dealType: EngineDealType }
   | { type: 'SIGN_SPONSOR'; offerId: string }
   | { type: 'DROP_SPONSOR'; sponsorId: string }
+  | { type: 'START_SPONSOR_RENEWAL'; sponsorId: string }
+  | { type: 'SUBMIT_SPONSOR_NEGOTIATION'; negotiationId: string; terms: SponsorContractTerms }
+  | { type: 'ACCEPT_SPONSOR_COUNTER'; negotiationId: string }
+  | { type: 'CANCEL_SPONSOR_NEGOTIATION'; negotiationId: string }
+  | { type: 'TERMINATE_SPONSOR'; sponsorId: string }
   | { type: 'ACCEPT_JOB_OFFER'; offerId: string }
   | { type: 'DECLINE_JOB_OFFER'; offerId: string }
   | { type: 'SET_REGULATION_VOTE'; proposalId: string; vote: RegulationVote }
@@ -963,7 +973,43 @@ export function gameReducer(state: GameState | null, action: GameAction): GameSt
 
     case 'DROP_SPONSOR': {
       if (!state) return state;
-      return dropSponsor(state, action.sponsorId);
+      return terminateSponsor(state, action.sponsorId);
+    }
+
+    case 'START_SPONSOR_RENEWAL': {
+      if (!state) return state;
+      return startSponsorRenewal(state, action.sponsorId);
+    }
+
+    case 'SUBMIT_SPONSOR_NEGOTIATION': {
+      if (!state) return state;
+      return submitSponsorNegotiation(state, action.negotiationId, action.terms);
+    }
+
+    case 'ACCEPT_SPONSOR_COUNTER': {
+      if (!state) return state;
+      const negotiation = state.commercial?.negotiations?.find((item) => item.id === action.negotiationId);
+      return negotiation?.counterTerms
+        ? submitSponsorNegotiation(state, action.negotiationId, negotiation.counterTerms)
+        : state;
+    }
+
+    case 'CANCEL_SPONSOR_NEGOTIATION': {
+      if (!state?.commercial) return state;
+      return {
+        ...state,
+        commercial: {
+          ...state.commercial,
+          negotiations: (state.commercial.negotiations ?? []).map((item) => item.id === action.negotiationId
+            ? { ...item, status: 'Cancelled' as const, outcomeMessage: 'The team ended negotiations.' }
+            : item),
+        },
+      };
+    }
+
+    case 'TERMINATE_SPONSOR': {
+      if (!state) return state;
+      return terminateSponsor(state, action.sponsorId);
     }
 
     case 'SIGN_ENGINE_DEAL': {
@@ -1945,9 +1991,8 @@ function signEngineDeal(state: GameState, supplierId: string, dealType: EngineDe
   };
 }
 
-// Sign a sponsor from the available offers into an open portfolio slot. Blocked
-// when the portfolio is at capacity (sized by commercial tier) or the deal is no
-// longer on offer. The deal's annual value feeds next season's income.
+// Open talks with an available sponsor. SIGN_SPONSOR remains as a compatibility
+// action name for old UI/save event streams, but it no longer signs instantly.
 function signSponsor(state: GameState, offerId: string): GameState {
   const commercial = state.commercial;
   const team = state.teams.find((t) => t.id === state.selectedTeamId);
@@ -1959,34 +2004,98 @@ function signSponsor(state: GameState, offerId: string): GameState {
     state.randomSeed,
     state.seasonYear,
     state.series,
+    state.currentRaceIndex,
   );
   const offer = offers.find((o) => o.id === offerId);
   if (!offer) return state;
   if (commercial.sponsors.some((s) => s.id === offer.id)) return state;
-  const sponsorNews: NewsItem = {
-    id: `news-sponsor-${offer.id}-${state.seasonYear}`,
-    headline: `${team.name} signs new sponsor: ${offer.name}`,
-    body: `A new commercial partnership strengthens the team's financial position.`,
-    timestamp: new Date().toISOString(),
-    category: 'sponsor',
-    priority: 'normal',
-    careerPhase: getCareerPhase(state),
-    teamId: team.id,
-  };
+  const active = (commercial.negotiations ?? []).some((item) => item.sponsorId === offer.id && ['Draft', 'Countered'].includes(item.status));
+  if (active) return state;
+  const negotiation = beginSponsorNegotiation(offer, 'New', state.currentRaceIndex, state.calendar.length);
   return {
     ...state,
-    commercial: { ...commercial, sponsors: [...commercial.sponsors, offer] },
-    news: [sponsorNews, ...state.news].slice(0, 80),
+    commercial: { ...commercial, negotiations: [...(commercial.negotiations ?? []), negotiation].slice(-40) },
   };
 }
 
-// Drop a sponsor from the portfolio to free a slot (e.g. to take a bigger deal).
-function dropSponsor(state: GameState, sponsorId: string): GameState {
+function startSponsorRenewal(state: GameState, sponsorId: string): GameState {
   const commercial = state.commercial;
   if (!commercial) return state;
-  const sponsors = commercial.sponsors.filter((s) => s.id !== sponsorId);
-  if (sponsors.length === commercial.sponsors.length) return state;
-  return { ...state, commercial: { ...commercial, sponsors } };
+  const sponsor = commercial.sponsors.find((item) => item.id === sponsorId);
+  if (!sponsor || sponsor.contractYearsRemaining > 1) return state;
+  if ((commercial.negotiations ?? []).some((item) => item.sponsorId === sponsorId && ['Draft', 'Countered'].includes(item.status))) return state;
+  const negotiation = beginSponsorNegotiation(sponsor, 'Renewal', state.currentRaceIndex, state.calendar.length);
+  return { ...state, commercial: { ...commercial, negotiations: [...(commercial.negotiations ?? []), negotiation].slice(-40) } };
+}
+
+function submitSponsorNegotiation(state: GameState, negotiationId: string, terms: SponsorContractTerms): GameState {
+  const commercial = state.commercial;
+  const team = state.teams.find((item) => item.id === state.selectedTeamId);
+  if (!commercial || !team || state.currentRaceIndex > state.calendar.length) return state;
+  const negotiation = (commercial.negotiations ?? []).find((item) => item.id === negotiationId);
+  if (!negotiation || state.currentRaceIndex > negotiation.deadlineRound) return state;
+  const sponsor = negotiation.kind === 'Renewal'
+    ? commercial.sponsors.find((item) => item.id === negotiation.sponsorId)
+    : generateSponsorOffers(team, commercial, state.randomSeed, state.seasonYear, state.series, negotiation.openedRound).find((item) => item.id === negotiation.sponsorId);
+  if (!sponsor) return state;
+  const result = resolveSponsorNegotiation(negotiation, sponsor, terms, commercial.commercialReputation, state.randomSeed);
+  let sponsors = commercial.sponsors;
+  let news = state.news;
+  if (result.signedSponsor) {
+    const signedSponsor = negotiation.kind === 'Renewal'
+      ? { ...result.signedSponsor, contractYearsRemaining: result.signedSponsor.contractYearsRemaining + 1 }
+      : result.signedSponsor;
+    sponsors = negotiation.kind === 'Renewal'
+      ? sponsors.map((item) => item.id === sponsor.id ? signedSponsor : item)
+      : sponsors.length < sponsorSlotCapacity(team) ? [...sponsors, signedSponsor] : sponsors;
+    const completed = sponsors.some((item) => item.id === signedSponsor.id);
+    if (completed) {
+      const sponsorNews: NewsItem = {
+        id: `news-sponsor-${negotiation.id}-${state.seasonYear}`,
+        headline: negotiation.kind === 'Renewal' ? `${team.name} renews ${sponsor.name}` : `${team.name} signs new sponsor: ${sponsor.name}`,
+        body: `${result.signedSponsor.contractYearsRemaining}-year agreement worth $${result.signedSponsor.annualValue}M annually.`,
+        timestamp: new Date().toISOString(), category: 'sponsor', priority: 'normal', careerPhase: getCareerPhase(state), teamId: team.id,
+      };
+      news = [sponsorNews, ...news].slice(0, 80);
+    }
+  }
+  return {
+    ...state,
+    commercial: {
+      ...commercial,
+      sponsors,
+      negotiations: (commercial.negotiations ?? []).map((item) => item.id === negotiationId ? result.negotiation : item),
+      unavailableOfferIds: ['Rejected', 'Withdrawn'].includes(result.negotiation.status)
+        ? [...new Set([...(commercial.unavailableOfferIds ?? []), sponsor.id])]
+        : commercial.unavailableOfferIds,
+    },
+    news,
+  };
+}
+
+function terminateSponsor(state: GameState, sponsorId: string): GameState {
+  const commercial = state.commercial;
+  if (!commercial || state.gameMode === 'SingleSeason') return state;
+  const sponsor = commercial.sponsors.find((item) => item.id === sponsorId);
+  if (!sponsor) return state;
+  const buyout = sponsorTerminationBuyout(sponsor);
+  if (toMoney(buyout) > playerBudget(state)) return state;
+  const charged = applyTransaction(state, makeTransaction(state.seasonYear, 'Sponsorship', `Sponsor termination: ${sponsor.name}`, -toMoney(buyout), state.currentRaceIndex));
+  const reputationHit = sponsor.type === 'Title' ? 6 : 3;
+  const sponsors = commercial.sponsors
+    .filter((item) => item.id !== sponsorId)
+    .map((item) => ({ ...item, confidence: Math.max(0, item.confidence - (sponsor.type === 'Title' ? 3 : 1)) }));
+  const news: NewsItem = {
+    id: `news-sponsor-termination-${sponsor.id}-${state.seasonYear}-${state.currentRaceIndex}`,
+    headline: `${sponsor.name} partnership terminated early`,
+    body: `${charged.teams.find((item) => item.id === state.selectedTeamId)?.name ?? 'The team'} paid a $${buyout}M buyout. The decision has damaged its commercial standing.`,
+    timestamp: new Date().toISOString(), category: 'sponsor', priority: sponsor.type === 'Title' ? 'high' : 'normal', careerPhase: getCareerPhase(state), teamId: state.selectedTeamId,
+  };
+  return {
+    ...charged,
+    commercial: { ...commercial, sponsors, commercialReputation: Math.max(0, commercial.commercialReputation - reputationHit) },
+    news: [news, ...charged.news].slice(0, 80),
+  };
 }
 
 // Accept a firm job offer from a rival team. The move is queued and takes effect
@@ -2433,6 +2542,7 @@ function applyRaceResults(
   let commercial = state.commercial;
   const sponsorReviewNews: NewsItem[] = [];
   if (commercial) {
+    commercial = expireSponsorNegotiations(commercial, race.round);
     const constructorIndex = constructorStandings.findIndex((entry) => entry.entityId === state.selectedTeamId);
     const constructorEntry = constructorIndex >= 0 ? constructorStandings[constructorIndex] : undefined;
     const seasonPlayerResults = allResults.flat().filter((result) => result.teamId === state.selectedTeamId);

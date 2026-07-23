@@ -61,6 +61,38 @@ export type SponsorBonus = {
   amount: number; // $M paid per trigger
 };
 
+export type SponsorObjectiveLevel = 'Flexible' | 'Standard' | 'Stretch';
+
+export type SponsorContractTerms = {
+  annualValue: number;
+  contractYears: number;
+  bonusMultiplier: number;
+  objectiveLevel: SponsorObjectiveLevel;
+};
+
+export type SponsorNegotiationStatus =
+  | 'Draft'
+  | 'Countered'
+  | 'Accepted'
+  | 'Rejected'
+  | 'Withdrawn'
+  | 'Cancelled';
+
+export type SponsorNegotiation = {
+  id: string;
+  sponsorId: string;
+  sponsorName: string;
+  kind: 'New' | 'Renewal';
+  status: SponsorNegotiationStatus;
+  openedRound: number;
+  deadlineRound: number;
+  patience: number;
+  attempts: number;
+  proposedTerms: SponsorContractTerms;
+  counterTerms?: SponsorContractTerms;
+  outcomeMessage?: string;
+};
+
 export type Sponsor = {
   id: string;
   name: string;
@@ -84,4 +116,8 @@ export type CommercialState = {
   // Cached commercial reputation used when courting new sponsors (0-100).
   commercialReputation: number;
   reviews?: SponsorReview[];
+  // Optional for backward compatibility with saves created before negotiated
+  // sponsor contracts. Completed talks remain as a compact commercial history.
+  negotiations?: SponsorNegotiation[];
+  unavailableOfferIds?: string[];
 };

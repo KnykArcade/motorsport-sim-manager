@@ -12,6 +12,8 @@ import type {
   Sponsor,
   SponsorBonus,
   SponsorObjective,
+  SponsorContractTerms,
+  SponsorNegotiation,
   SponsorRelationshipStatus,
   SponsorReview,
 } from '../types/sponsorTypes';
@@ -21,6 +23,143 @@ import { toMoney } from './financeEngine';
 // Round a $M value to whole cents, avoiding binary-float display noise.
 function round2(n: number): number {
   return Math.round(n * 100) / 100;
+}
+
+function clamp(n: number, min: number, max: number): number {
+  return Math.max(min, Math.min(max, n));
+}
+
+export function sponsorContractTerms(sponsor: Sponsor): SponsorContractTerms {
+  return {
+    annualValue: sponsor.annualValue,
+    contractYears: sponsor.contractYearsRemaining,
+    bonusMultiplier: 1,
+    objectiveLevel: 'Standard',
+  };
+}
+
+export function sponsorTerminationBuyout(sponsor: Sponsor): number {
+  const protection = sponsor.type === 'Title' ? 0.35 : sponsor.type === 'DriverLinked' ? 0.3 : 0.25;
+  return round2(sponsor.annualValue * Math.max(1, sponsor.contractYearsRemaining) * protection);
+}
+
+export function beginSponsorNegotiation(
+  sponsor: Sponsor,
+  kind: SponsorNegotiation['kind'],
+  round: number,
+  totalRounds: number,
+): SponsorNegotiation {
+  const openedRound = clamp(round, 0, Math.max(0, totalRounds));
+  return {
+    id: `sponsor-talk-${kind.toLowerCase()}-${sponsor.id}-${openedRound}`,
+    sponsorId: sponsor.id,
+    sponsorName: sponsor.name,
+    kind,
+    status: 'Draft',
+    openedRound,
+    deadlineRound: Math.min(totalRounds, Math.max(openedRound + 2, Math.ceil(totalRounds * 0.75))),
+    patience: kind === 'Renewal' ? clamp(Math.round(sponsor.confidence / 20), 2, 5) : 3,
+    attempts: 0,
+    proposedTerms: sponsorContractTerms(sponsor),
+  };
+}
+
+function adjustedObjectives(sponsor: Sponsor, level: SponsorContractTerms['objectiveLevel']): SponsorObjective[] {
+  const targetShift = level === 'Flexible' ? 1 : level === 'Stretch' ? -1 : 0;
+  return sponsor.objectives.map((objective) => {
+    if (!objective.targetValue || objective.category !== 'Performance') return { ...objective };
+    const targetValue = Math.max(1, objective.targetValue + targetShift);
+    return {
+      ...objective,
+      targetValue,
+      description: objective.description.replace(/top \d+/, `top ${targetValue}`),
+    };
+  });
+}
+
+export function applySponsorTerms(sponsor: Sponsor, terms: SponsorContractTerms): Sponsor {
+  const annualValue = round2(clamp(terms.annualValue, sponsor.annualValue * 0.65, sponsor.annualValue * 1.5));
+  const bonusMultiplier = clamp(terms.bonusMultiplier, 0.5, 2);
+  return {
+    ...sponsor,
+    annualValue,
+    contractYearsRemaining: clamp(Math.round(terms.contractYears), 1, 5),
+    bonusTerms: sponsor.bonusTerms.map((bonus) => {
+      const amount = round2(bonus.amount * bonusMultiplier);
+      return { ...bonus, amount, description: bonus.description.replace(/\$[\d.]+M/, `$${amount}M`) };
+    }),
+    objectives: adjustedObjectives(sponsor, terms.objectiveLevel),
+    confidence: Math.min(100, sponsor.confidence + 2),
+    relationshipStatus: sponsor.confidence + 2 >= 70 ? 'Secure' : sponsor.relationshipStatus,
+  };
+}
+
+export type SponsorNegotiationResult = {
+  negotiation: SponsorNegotiation;
+  signedSponsor?: Sponsor;
+};
+
+// The acceptance calculation stays hidden from the UI, but every term the
+// player is bargaining over is explicit. Outcomes are deterministic for saves.
+export function resolveSponsorNegotiation(
+  negotiation: SponsorNegotiation,
+  sponsor: Sponsor,
+  terms: SponsorContractTerms,
+  commercialReputation: number,
+  seed: string,
+): SponsorNegotiationResult {
+  if (!['Draft', 'Countered'].includes(negotiation.status)) return { negotiation };
+  const attempts = negotiation.attempts + 1;
+  const patience = negotiation.patience - 1;
+  const base = sponsorContractTerms(sponsor);
+  const valuePressure = (terms.annualValue / Math.max(0.1, base.annualValue) - 1) * 75;
+  const bonusPressure = (terms.bonusMultiplier - 1) * 18;
+  const objectiveTrade = terms.objectiveLevel === 'Flexible' ? 12 : terms.objectiveLevel === 'Stretch' ? -7 : 0;
+  const termTrade = terms.contractYears >= 3 ? -4 : terms.contractYears === 1 ? 5 : 0;
+  const reputationHelp = (commercialReputation - 50) * 0.18;
+  const renewalHelp = negotiation.kind === 'Renewal' ? (sponsor.confidence - 50) * 0.2 : 0;
+  const noise = createSeededRandom(deriveSeed(seed, negotiation.id, attempts)).range(-5, 5);
+  const pressure = valuePressure + bonusPressure + objectiveTrade + termTrade - reputationHelp - renewalHelp + noise;
+
+  if (pressure <= 13) {
+    return {
+      negotiation: { ...negotiation, status: 'Accepted', attempts, patience, proposedTerms: terms, outcomeMessage: `${sponsor.name} accepted the complete contract package.` },
+      signedSponsor: applySponsorTerms(sponsor, terms),
+    };
+  }
+  if (patience <= 0 || pressure >= 48) {
+    const withdrawn = patience <= 0;
+    return {
+      negotiation: { ...negotiation, status: withdrawn ? 'Withdrawn' : 'Rejected', attempts, patience: Math.max(0, patience), proposedTerms: terms, outcomeMessage: withdrawn ? `${sponsor.name} ended talks after losing patience.` : `${sponsor.name} rejected the proposal as too far from its position.` },
+    };
+  }
+
+  const counterTerms: SponsorContractTerms = {
+    annualValue: round2((terms.annualValue + base.annualValue) / 2),
+    contractYears: clamp(Math.round((terms.contractYears + base.contractYears) / 2), 1, 5),
+    bonusMultiplier: round2((terms.bonusMultiplier + 1) / 2),
+    objectiveLevel: terms.objectiveLevel === 'Flexible' ? 'Standard' : terms.objectiveLevel,
+  };
+  return {
+    negotiation: { ...negotiation, status: 'Countered', attempts, patience, proposedTerms: terms, counterTerms, outcomeMessage: `${sponsor.name} made a counteroffer and expects a timely response.` },
+  };
+}
+
+export function expireSponsorNegotiations(commercial: CommercialState, completedRound: number): CommercialState {
+  let changed = false;
+  const negotiations = (commercial.negotiations ?? []).map((negotiation) => {
+    if (!['Draft', 'Countered'].includes(negotiation.status) || completedRound < negotiation.deadlineRound) return negotiation;
+    changed = true;
+    return {
+      ...negotiation,
+      status: 'Withdrawn' as const,
+      patience: 0,
+      outcomeMessage: `${negotiation.sponsorName} withdrew after the negotiation deadline passed.`,
+    };
+  });
+  if (!changed) return commercial;
+  const expiredIds = negotiations.filter((item) => item.status === 'Withdrawn').map((item) => item.sponsorId);
+  return { ...commercial, negotiations, unavailableOfferIds: [...new Set([...(commercial.unavailableOfferIds ?? []), ...expiredIds])] };
 }
 
 // Generic, era-agnostic sponsor brand pools (no real licensing). Picked
@@ -556,6 +695,8 @@ export function rollSponsorRenewals(
       ...commercial,
       sponsors: kept,
       commercialReputation: Math.round(team.reputation * 0.6 + commercialTier(team.reputation) * 8),
+      negotiations: [],
+      unavailableOfferIds: [],
     },
     notes,
   };
@@ -587,8 +728,10 @@ export function generateSponsorOffers(
   seed: string,
   year: number,
   series: string,
+  round = 0,
 ): Sponsor[] {
-  const rng = createSeededRandom(deriveSeed(seed, 'sponsor-offers', team.id, year, series));
+  const marketWindow = Math.floor(Math.max(0, round) / 4);
+  const rng = createSeededRandom(deriveSeed(seed, 'sponsor-offers', team.id, year, series, marketWindow));
   const tier = commercialTier(team.reputation);
   const current = commercial?.sponsors ?? [];
   const usedNames = new Set(current.map((s) => s.name));
@@ -608,11 +751,11 @@ export function generateSponsorOffers(
   if (!current.some((s) => s.type === 'Title')) {
     offers.push(
       buildSponsor(
-        `${team.id}-offer-${year}-title`,
+        `${team.id}-offer-${year}-w${marketWindow}-title`,
         pickUnique(TITLE_BRANDS),
         'Title',
         5 + tier * 8 + rng.range(0, 3),
-        [makeBonus(`${team.id}-offer-${year}-title-win`, 'PerWin', 1 + tier * 0.5)],
+        [makeBonus(`${team.id}-offer-${year}-w${marketWindow}-title-win`, 'PerWin', 1 + tier * 0.5)],
         [OBJECTIVE_TEMPLATES[1](tier)],
         55 + tier * 3,
         rng.int(2, 3),
@@ -623,11 +766,11 @@ export function generateSponsorOffers(
   for (let i = 0; i < 2; i++) {
     offers.push(
       buildSponsor(
-        `${team.id}-offer-${year}-sec-${i}`,
+        `${team.id}-offer-${year}-w${marketWindow}-sec-${i}`,
         pickUnique(SECONDARY_BRANDS),
         'Secondary',
         1.5 + tier * 2 + rng.range(0, 2),
-        [makeBonus(`${team.id}-offer-${year}-sec-${i}-pod`, 'PerPodium', 0.3 + tier * 0.15)],
+        [makeBonus(`${team.id}-offer-${year}-w${marketWindow}-sec-${i}-pod`, 'PerPodium', 0.3 + tier * 0.15)],
         i === 0 ? [OBJECTIVE_TEMPLATES[0](tier)] : [],
         52 + tier * 3,
         rng.int(1, 3),
@@ -637,18 +780,19 @@ export function generateSponsorOffers(
 
   offers.push(
     buildSponsor(
-      `${team.id}-offer-${year}-tech`,
+      `${team.id}-offer-${year}-w${marketWindow}-tech`,
       pickUnique(TECH_BRANDS),
       'TechnicalPartner',
       1 + tier * 1.5,
-      [makeBonus(`${team.id}-offer-${year}-tech-pole`, 'PerPole', 0.2 + tier * 0.1)],
+      [makeBonus(`${team.id}-offer-${year}-w${marketWindow}-tech-pole`, 'PerPole', 0.2 + tier * 0.1)],
       [OBJECTIVE_TEMPLATES[2](tier)],
       55 + tier * 3,
       rng.int(2, 3),
     ),
   );
 
-  return offers.filter((o) => !signedIds.has(o.id));
+  const unavailable = new Set(commercial?.unavailableOfferIds ?? []);
+  return offers.filter((o) => !signedIds.has(o.id) && !unavailable.has(o.id));
 }
 
 // Average sponsor confidence (0-100), used for UI and reputation feedback.
