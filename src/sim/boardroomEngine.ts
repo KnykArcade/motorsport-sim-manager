@@ -258,7 +258,10 @@ function conductReview(state: GameState, round: number, stage: BoardroomReviewSt
   const sponsorConfidence = state.commercial?.sponsors.length
     ? state.commercial.sponsors.reduce((sum, sponsor) => sum + sponsor.confidence, 0) / state.commercial.sponsors.length
     : 35;
-  const reputationScore = state.teamReputations?.[state.selectedTeamId]?.reputation ?? team?.reputation ?? 50;
+  const publicStanding = state.publicReputation;
+  const reputationScore = publicStanding
+    ? Math.round((publicStanding.teamStanding + publicStanding.principalStanding + publicStanding.fanConfidence) / 3)
+    : state.teamReputations?.[state.selectedTeamId]?.reputation ?? team?.reputation ?? 50;
   const assessments = [
     assessment('Results', resultsScore, `The team is P${standingIndex >= 0 ? standingIndex + 1 : '—'} against the board’s P${target} reference.`),
     assessment('Finances', financialScore, team && team.budget >= 0 ? 'The team remains financially controlled.' : 'The team is operating beyond its available budget.'),
@@ -266,7 +269,9 @@ function conductReview(state: GameState, round: number, stage: BoardroomReviewSt
     assessment('DriverManagement', driverScore, driverScore >= 50 ? 'The race-team relationship is broadly stable.' : 'Driver trust is becoming a boardroom concern.'),
     assessment('Academy', academyScore, (state.academy?.length ?? 0) > 0 ? 'The academy has an active development pathway.' : 'There is no visible academy pipeline.'),
     assessment('Sponsors', sponsorConfidence, `Sponsor relationships are ${sponsorConfidence >= 60 ? 'healthy' : sponsorConfidence >= 40 ? 'being monitored' : 'under pressure'}.`),
-    assessment('Reputation', reputationScore, `The team’s paddock standing is ${reputationScore >= 65 ? 'strong' : reputationScore >= 40 ? 'stable' : 'fragile'}.`),
+    assessment('Reputation', reputationScore, publicStanding
+      ? `Public support is ${publicStanding.momentum >= 20 ? 'building' : publicStanding.momentum <= -20 ? 'fading' : 'steady'}, alongside the team’s wider paddock standing.`
+      : `The team’s paddock standing is ${reputationScore >= 65 ? 'strong' : reputationScore >= 40 ? 'stable' : 'fragile'}.`),
   ];
   const personality = state.teamReputations?.[state.selectedTeamId]?.ownerPersonality;
   const weighted = assessments.reduce((sum, item) => {

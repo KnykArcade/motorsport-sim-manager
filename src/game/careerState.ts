@@ -46,6 +46,7 @@ import type { PersonnelCareerTenure } from '../types/personnelCareerTypes';
 import type { TransferCalendarState } from '../types/transferCalendarTypes';
 import type { PerformanceAnalyticsState } from '../types/performanceAnalyticsTypes';
 import type { MediaState } from '../types/mediaTypes';
+import type { PublicReputationState } from '../types/publicReputationTypes';
 
 export type RaceDriverAbsence = {
   driverId: string;
@@ -154,6 +155,9 @@ export type GameState = {
   // Press conferences and interviews generated from actual career events.
   // Optional so careers created before the media phase load without migration.
   media?: MediaState;
+  // Living supporter confidence, public expectations, team identity, and
+  // principal/team standing. Optional so older careers initialize lazily.
+  publicReputation?: PublicReputationState;
   // Inbox message ids the player has read. Optional for save compat.
   inboxRead?: string[];
   // Inbox items the player explicitly dismissed. Optional for save compat.

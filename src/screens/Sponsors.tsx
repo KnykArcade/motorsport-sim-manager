@@ -20,6 +20,13 @@ import {
   type BoardroomMandateLevel,
 } from '../types/expectationTypes';
 import { MANDATE_OPTIONS } from '../sim/boardroomEngine';
+import {
+  publicConfidenceLabel,
+  publicExpectationLabel,
+  publicMomentumLabel,
+  publicReputationFor,
+  publicStandingLabel,
+} from '../sim/publicReputationEngine';
 import { CharacterDossierButton } from '../components/characterCards/CharacterDossier';
 import {
   SPONSORS_WORKSPACE_TABS,
@@ -96,6 +103,7 @@ export function Sponsors() {
 
   const expectation = state.teamExpectations?.[state.selectedTeamId];
   const reputation = state.teamReputations?.[state.selectedTeamId];
+  const publicStanding = publicReputationFor(state);
   const sponsors = commercial?.sponsors ?? [];
   const used = sponsors.length;
   const negotiations = commercial?.negotiations ?? [];
@@ -295,6 +303,80 @@ export function Sponsors() {
                 </>
               )}
             </Panel>
+          )}
+
+          {tab === 'public' && (
+            <div className="space-y-3">
+              <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+                <Panel title="Team Identity">
+                  <div className="text-lg font-bold text-neutral-100">{publicStanding.identity}</div>
+                  <p className="mt-1 text-xs leading-5 text-neutral-500">
+                    Results are judged through the expectations attached to this team’s history, resources, and competitive position.
+                  </p>
+                </Panel>
+                <Panel title="Fan Confidence">
+                  <div className="text-lg font-bold text-neutral-100">{publicConfidenceLabel(publicStanding.fanConfidence)}</div>
+                  <p className="mt-1 text-xs leading-5 text-neutral-500">Support changes with results, reliability, drivers, team orders, sponsors, and public leadership.</p>
+                </Panel>
+                <Panel title="Public Momentum">
+                  <div className="text-lg font-bold text-neutral-100">{publicMomentumLabel(publicStanding.momentum)}</div>
+                  <p className="mt-1 text-xs leading-5 text-neutral-500">Sustained momentum can help or hurt sponsor appeal, commercial standing, and owner reviews.</p>
+                </Panel>
+                <Panel title="Fan Expectation">
+                  <div className="text-lg font-bold text-neutral-100">{publicExpectationLabel(publicStanding.fanExpectation)}</div>
+                  <p className="mt-1 text-xs leading-5 text-neutral-500">Success gradually raises the standard; rebuilding teams receive more patience than established powers.</p>
+                </Panel>
+              </div>
+
+              <div className="grid gap-3 lg:grid-cols-[0.75fr_1.25fr]">
+                <Panel title="Public Standing">
+                  <div className="space-y-3">
+                    <div className="rounded border border-neutral-800 bg-neutral-950/40 p-3">
+                      <div className="text-[10px] font-semibold uppercase tracking-wide text-neutral-500">Team</div>
+                      <div className="mt-1 text-sm font-semibold text-neutral-200">{publicStandingLabel(publicStanding.teamStanding)}</div>
+                    </div>
+                    <div className="rounded border border-neutral-800 bg-neutral-950/40 p-3">
+                      <div className="text-[10px] font-semibold uppercase tracking-wide text-neutral-500">Team Principal</div>
+                      <div className="mt-1 text-sm font-semibold text-neutral-200">{publicStandingLabel(publicStanding.principalStanding)}</div>
+                    </div>
+                    <p className="text-xs leading-5 text-neutral-500">
+                      Team prestige and the principal’s personal reputation move separately. The underlying calculations remain private.
+                    </p>
+                  </div>
+                </Panel>
+
+                <Panel title="Recent Public Reaction">
+                  {publicStanding.recentReactions.length === 0 ? (
+                    <p className="text-sm text-neutral-500">The season has not yet produced a meaningful supporter reaction.</p>
+                  ) : (
+                    <div className="space-y-2">
+                      {publicStanding.recentReactions.slice(0, 8).map((reaction) => (
+                        <article key={reaction.id} className="rounded border border-neutral-800 bg-neutral-950/35 p-3">
+                          <div className="flex items-start justify-between gap-3">
+                            <div>
+                              <div className="text-sm font-semibold text-neutral-200">{reaction.headline}</div>
+                              <div className="mt-1 text-xs leading-5 text-neutral-500">{reaction.detail}</div>
+                            </div>
+                            <span className={`shrink-0 rounded px-2 py-1 text-[10px] font-semibold uppercase tracking-wide ${
+                              reaction.sentiment === 'Positive'
+                                ? 'bg-green-500/10 text-green-300'
+                                : reaction.sentiment === 'Negative'
+                                  ? 'bg-red-500/10 text-red-300'
+                                  : 'bg-amber-500/10 text-amber-300'
+                            }`}>
+                              {reaction.sentiment}
+                            </span>
+                          </div>
+                          <div className="mt-2 text-[10px] uppercase tracking-wide text-neutral-600">
+                            {reaction.round > 0 ? `Round ${reaction.round}` : 'Preseason'} · {reaction.trigger.replace(/([A-Z])/g, ' $1').trim()}
+                          </div>
+                        </article>
+                      ))}
+                    </div>
+                  )}
+                </Panel>
+              </div>
+            </div>
           )}
 
           {tab === 'owner' && (

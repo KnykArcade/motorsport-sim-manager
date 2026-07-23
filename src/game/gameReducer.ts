@@ -26,6 +26,11 @@ import {
 import { updateMorale } from '../sim/moraleEngine';
 import { generateRaceNews } from '../sim/newsEngine';
 import { classifyDnfCause } from '../sim/dnfModel';
+import {
+  applyPublicReaction,
+  processRacePublicReaction,
+  recordMandateReaction,
+} from '../sim/publicReputationEngine';
 import { advanceOffscreenChampionshipsAfterPlayerRace } from '../sim/motorsportUniverseEngine';
 import { progressTransferCalendar } from '../sim/transferCalendarEngine';
 import {
@@ -1037,7 +1042,8 @@ export function gameReducer(state: GameState | null, action: GameAction): GameSt
 
     case 'SELECT_BOARDROOM_MANDATE': {
       if (!state) return state;
-      return chooseMandate(state, action.mandate);
+      const chosen = chooseMandate(state, action.mandate);
+      return chosen === state ? state : recordMandateReaction(chosen, action.mandate);
     }
 
     case 'REQUEST_BOARD_FUNDING': {
@@ -1682,7 +1688,7 @@ function queueSigning(
   const others = (state.pendingSignings ?? []).filter(
     (s) => s.seatDriverId !== seatDriverId && s.sourceId !== sourceId,
   );
-  return {
+  const nextState: GameState = {
     ...state,
     pendingSignings: [...others, {
       seatDriverId, source, sourceId, name, bid,
@@ -1691,6 +1697,38 @@ function queueSigning(
       clauseType: terms?.clauseType,
     }],
   };
+  const incomingOverall = source === 'market'
+    ? careerMarketBundle(state).drivers.find((driver) => driver.id === sourceId)?.overall
+    : source === 'reserve'
+      ? state.drivers.find((driver) => driver.id === sourceId)?.ratings.overall
+      : state.academy?.find((driver) => driver.id === sourceId)?.overall;
+  const outgoingOverall = seat.ratings.overall;
+  const delta = incomingOverall === undefined
+    ? 0
+    : incomingOverall >= outgoingOverall + 5
+      ? 3
+      : incomingOverall < outgoingOverall - 5
+        ? -3
+        : 1;
+  const withSigning = applyPublicReaction(nextState, {
+    trigger: 'DriverSigning',
+    delta,
+    headline: `${name} move sparks supporter debate`,
+    detail: incomingOverall !== undefined && incomingOverall >= outgoingOverall + 5
+      ? `Supporters see ${name} as a clear competitive upgrade.`
+      : incomingOverall !== undefined && incomingOverall < outgoingOverall - 5
+        ? `Replacing ${seat.name} with ${name} is being questioned on sporting merit.`
+        : `Supporters are weighing ${name}’s potential against the loss of ${seat.name}.`,
+    idSuffix: `${seatDriverId}-${sourceId}`,
+  });
+  return applyPublicReaction(withSigning, {
+    trigger: 'DriverRelease',
+    delta: seat.morale >= 70 || seat.confidence >= 70 ? -2 : 0,
+    sentiment: 'Mixed',
+    headline: `${seat.name} departure changes the team’s public identity`,
+    detail: 'Driver popularity, recent performance, and the quality of the replacement shape how the departure is received.',
+    idSuffix: seatDriverId,
+  });
 }
 
 // Hire a specialist: charge the one-off signing fee (must be affordable) and
@@ -2101,7 +2139,7 @@ function submitSponsorNegotiation(state: GameState, negotiationId: string, terms
       news = [sponsorNews, ...news].slice(0, 80);
     }
   }
-  return {
+  const nextState: GameState = {
     ...state,
     commercial: {
       ...commercial,
@@ -2113,6 +2151,19 @@ function submitSponsorNegotiation(state: GameState, negotiationId: string, terms
     },
     news,
   };
+  return result.signedSponsor
+    ? applyPublicReaction(nextState, {
+        trigger: 'SponsorDecision',
+        delta: negotiation.kind === 'Renewal' ? 1 : 2,
+        headline: negotiation.kind === 'Renewal'
+          ? `${sponsor.name} renewal reassures supporters`
+          : `${sponsor.name} partnership strengthens the team’s public outlook`,
+        detail: negotiation.kind === 'Renewal'
+          ? 'Continuity with an established partner is viewed as a sign of commercial stability.'
+          : 'The new agreement adds resources and visibility, while supporters consider how the partnership fits the team’s identity.',
+        idSuffix: negotiation.id,
+      })
+    : nextState;
 }
 
 function terminateSponsor(state: GameState, sponsorId: string): GameState {
@@ -2133,11 +2184,19 @@ function terminateSponsor(state: GameState, sponsorId: string): GameState {
     body: `${charged.teams.find((item) => item.id === state.selectedTeamId)?.name ?? 'The team'} paid a $${buyout}M buyout. The decision has damaged its commercial standing.`,
     timestamp: new Date().toISOString(), category: 'sponsor', priority: sponsor.type === 'Title' ? 'high' : 'normal', careerPhase: getCareerPhase(state), teamId: state.selectedTeamId,
   };
-  return {
+  return applyPublicReaction({
     ...charged,
     commercial: { ...commercial, sponsors, commercialReputation: Math.max(0, commercial.commercialReputation - reputationHit) },
     news: [news, ...charged.news].slice(0, 80),
-  };
+  }, {
+    trigger: 'SponsorDecision',
+    delta: sponsor.type === 'Title' ? -7 : -4,
+    headline: `${sponsor.name} split provokes supporter concern`,
+    detail: sponsor.type === 'Title'
+      ? 'Ending a title partnership early creates questions about stability, identity, and the team’s commercial direction.'
+      : 'Supporters understand that partnerships change, but the early termination adds uncertainty around the team.',
+    idSuffix: sponsor.id,
+  });
 }
 
 // Accept a firm job offer from a rival team. The move is queued and takes effect
@@ -2910,6 +2969,13 @@ function applyRaceResults(
     currentRaceIndex: seasonComplete ? state.currentRaceIndex : nextIndex,
     seasonComplete,
   };
+  completedState = processRacePublicReaction(
+    completedState,
+    playerResults,
+    teamOrders.length,
+    race.round,
+    race.id,
+  );
   completedState = processBoardroomAfterRace(
     applyRarePlayerCrashAbsence(completedState, race.round, results),
     race.round,
