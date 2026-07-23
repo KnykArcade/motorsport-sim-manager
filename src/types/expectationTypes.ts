@@ -68,3 +68,76 @@ export type ExpectationReview = {
   patienceDelta: number;
   summary: string;
 };
+
+export type BoardroomMandateLevel = 'Conservative' | 'Expected' | 'Ambitious';
+
+export type BoardroomReviewStage = 'EarlySeason' | 'Midseason' | 'Postseason';
+
+export type BoardroomAssessmentArea =
+  | 'Results'
+  | 'Finances'
+  | 'CarDevelopment'
+  | 'DriverManagement'
+  | 'Academy'
+  | 'Sponsors'
+  | 'Reputation';
+
+export type BoardroomAreaAssessment = {
+  area: BoardroomAssessmentArea;
+  assessment: 'Strong' | 'Acceptable' | 'Concern';
+  summary: string;
+};
+
+export type BoardroomReview = {
+  id: string;
+  teamId: string;
+  seasonYear: number;
+  round: number;
+  stage: BoardroomReviewStage;
+  assessments: BoardroomAreaAssessment[];
+  verdict: 'Impressed' | 'Satisfied' | 'Concerned' | 'Ultimatum';
+  patienceDelta: number;
+  summary: string;
+};
+
+export type BoardFundingCategory =
+  | 'TechnicalDevelopment'
+  | 'Facilities'
+  | 'StaffRecruitment'
+  | 'DriverContracts'
+  | 'AcademyInvestment'
+  | 'EmergencySupport';
+
+export type BoardFundingRequestStatus =
+  | 'Approved'
+  | 'Denied'
+  | 'Conditional'
+  | 'Fulfilled'
+  | 'Breached';
+
+export type BoardFundingRequest = {
+  id: string;
+  category: BoardFundingCategory;
+  requestedMillions: number;
+  approvedMillions: number;
+  requestedRound: number;
+  status: BoardFundingRequestStatus;
+  response: string;
+  condition?: string;
+  deadlineRound?: number;
+};
+
+export type BoardroomState = {
+  mandate?: BoardroomMandateLevel;
+  mandateFundingMillions?: number;
+  mandateJobRisk?: 'Limited' | 'Standard' | 'High';
+  reviews: BoardroomReview[];
+  fundingRequests: BoardFundingRequest[];
+  ultimatum?: {
+    issuedRound: number;
+    deadlineRound: number;
+    requirement: string;
+  };
+  autonomy: 'Restricted' | 'Standard' | 'Trusted';
+  contractExtensionYears: number;
+};

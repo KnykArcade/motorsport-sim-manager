@@ -10,7 +10,7 @@ export const SPONSORS_WORKSPACE_TABS: ReadonlyArray<{
   { id: 'opportunities', label: 'Opportunities' },
   { id: 'negotiations', label: 'Negotiations' },
   { id: 'objectives', label: 'Objectives & Bonuses' },
-  { id: 'owner', label: 'Owner' },
+  { id: 'owner', label: 'Boardroom' },
 ];
 
 export const SPONSOR_PAGE_SIZE = 4;

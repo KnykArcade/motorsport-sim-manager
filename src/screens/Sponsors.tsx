@@ -3,6 +3,7 @@ import { useSearchParams } from 'react-router-dom';
 import { useGame } from '../game/GameContext';
 import { teamById } from '../game/careerState';
 import { Panel } from '../components/Panel';
+import { Button } from '../components/Button';
 import { formatMoney } from '../components/ui';
 import {
   sponsorAnnualIncome,
@@ -12,7 +13,13 @@ import {
   sponsorTerminationBuyout,
 } from '../sim/commercialEngine';
 import type { Sponsor, SponsorContractTerms, SponsorNegotiation } from '../types/sponsorTypes';
-import { OWNER_PERSONALITY_LABELS, OWNER_PERSONALITY_DESCRIPTIONS } from '../types/expectationTypes';
+import {
+  OWNER_PERSONALITY_LABELS,
+  OWNER_PERSONALITY_DESCRIPTIONS,
+  type BoardFundingCategory,
+  type BoardroomMandateLevel,
+} from '../types/expectationTypes';
+import { MANDATE_OPTIONS } from '../sim/boardroomEngine';
 import { CharacterDossierButton } from '../components/characterCards/CharacterDossier';
 import {
   SPONSORS_WORKSPACE_TABS,
@@ -38,6 +45,15 @@ const TYPE_LABEL: Record<Sponsor['type'], string> = {
   PayDriver: 'Pay Driver',
   OneRace: 'One-Race',
 };
+
+const FUNDING_OPTIONS: Array<{ id: BoardFundingCategory; label: string }> = [
+  { id: 'TechnicalDevelopment', label: 'Technical development' },
+  { id: 'Facilities', label: 'Facilities' },
+  { id: 'StaffRecruitment', label: 'Staff recruitment' },
+  { id: 'DriverContracts', label: 'Driver contracts' },
+  { id: 'AcademyInvestment', label: 'Academy investment' },
+  { id: 'EmergencySupport', label: 'Emergency support' },
+];
 
 function confidenceTone(confidence: number): string {
   if (confidence >= 70) return 'text-green-300';
@@ -282,9 +298,10 @@ export function Sponsors() {
           )}
 
           {tab === 'owner' && (
-            <div className="grid gap-3 lg:grid-cols-2">
+            <div className="space-y-3">
+              <div className="grid gap-3 lg:grid-cols-2">
               <Panel
-                title="Owner Expectations"
+                title="Board Mandate"
                 actions={
                   <CharacterDossierButton state={state} subject={{ type: 'owner', teamId: state.selectedTeamId }}>
                     Owner Card
@@ -300,37 +317,125 @@ export function Sponsors() {
                 ) : (
                   <p className="text-sm text-neutral-500">No owner expectations are recorded.</p>
                 )}
+                {!state.boardroom?.mandate && state.currentRaceIndex === 0 && state.gameMode !== 'SingleSeason' && (
+                  <div className="mt-3 grid gap-2">
+                    {(Object.keys(MANDATE_OPTIONS) as BoardroomMandateLevel[]).map((mandate) => {
+                      const option = MANDATE_OPTIONS[mandate];
+                      return (
+                        <button
+                          key={mandate}
+                          type="button"
+                          onClick={() => dispatch({ type: 'SELECT_BOARDROOM_MANDATE', mandate })}
+                          className="rounded-lg border border-neutral-700 bg-neutral-950/40 p-3 text-left hover:border-emerald-500/50"
+                        >
+                          <div className="flex items-center justify-between gap-2">
+                            <span className="font-semibold text-neutral-100">{mandate}</span>
+                            <span className="text-xs text-emerald-300">${option.fundingMillions}M support</span>
+                          </div>
+                          <div className="mt-1 text-xs text-neutral-400">{option.description}</div>
+                          <div className="mt-1 text-[10px] uppercase tracking-wide text-neutral-500">{option.jobRisk} job risk</div>
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
+                {state.boardroom?.mandate && (
+                  <div className="mt-3 rounded-lg border border-emerald-500/20 bg-emerald-500/5 p-3 text-sm">
+                    <div className="font-semibold text-emerald-200">{state.boardroom.mandate} mandate agreed</div>
+                    <div className="mt-1 text-xs text-neutral-400">
+                      ${state.boardroom.mandateFundingMillions ?? 0}M support · {state.boardroom.mandateJobRisk ?? 'Standard'} job risk · {state.boardroom.autonomy} autonomy
+                    </div>
+                  </div>
+                )}
               </Panel>
 
-              <Panel title="Owner Reviews">
-                {ownerReviews.length === 0 ? (
-                  <p className="text-sm text-neutral-500">No completed season reviews yet.</p>
+              <Panel title="Funding Requests">
+                {state.gameMode === 'SingleSeason' ? (
+                  <p className="text-sm text-neutral-500">Funding requests are unavailable in Single Season. Formal performance reviews remain active.</p>
                 ) : (
-                  <>
-                    <div className="space-y-2 text-sm">
-                      {visibleOwnerReviews.map((review) => (
-                        <div
-                          key={`${review.teamId}-${review.seasonYear}`}
-                          className="grid grid-cols-[3rem_minmax(0,1fr)_2rem] gap-2 rounded-lg border border-neutral-800 bg-neutral-950/30 p-2"
+                  <div className="space-y-3">
+                    <p className="text-xs text-neutral-500">Requests are judged against owner personality, confidence, recent requests, and team circumstances. Repeated requests can reduce patience.</p>
+                    <div className="grid grid-cols-2 gap-2">
+                      {FUNDING_OPTIONS.map((option) => (
+                        (() => {
+                          const alreadyRequested = (state.boardroom?.fundingRequests ?? []).some((request) =>
+                            request.category === option.id && request.requestedRound === state.currentRaceIndex);
+                          const activeRequest = (state.boardroom?.fundingRequests ?? []).some((request) =>
+                            request.category === option.id && ['Approved', 'Conditional'].includes(request.status));
+                          const disabled = state.seasonComplete || alreadyRequested || activeRequest;
+                          return (
+                        <Button
+                          key={option.id}
+                          variant="ghost"
+                          disabled={disabled}
+                          title={alreadyRequested ? 'Already requested this round' : activeRequest ? 'An active funding decision already exists' : undefined}
+                          onClick={() => dispatch({ type: 'REQUEST_BOARD_FUNDING', category: option.id })}
                         >
-                          <span className="text-neutral-500">{review.seasonYear}</span>
-                          <span className={review.primaryObjectiveMet ? 'text-green-300' : 'text-red-300'}>
-                            {review.summary}
-                          </span>
-                          <span className="text-right tabular-nums text-neutral-400">
-                            {review.patienceDelta >= 0 ? '+' : ''}{review.patienceDelta}
-                          </span>
-                        </div>
+                          Request {option.label}
+                        </Button>
+                          );
+                        })()
                       ))}
                     </div>
-                    <CompactPagination
-                      page={safeOwnerReviewPage}
-                      pageCount={ownerReviewPageCount}
-                      total={ownerReviews.length}
-                      noun="reviews"
-                      onPageChange={setOwnerReviewPage}
-                    />
-                  </>
+                    {(state.boardroom?.fundingRequests ?? []).slice().reverse().slice(0, 4).map((request) => (
+                      <div key={request.id} className="rounded-lg border border-neutral-800 bg-neutral-950/30 p-2 text-xs">
+                        <div className="flex justify-between gap-2">
+                          <span className="font-semibold text-neutral-200">{FUNDING_OPTIONS.find((item) => item.id === request.category)?.label}</span>
+                          <span className={request.status === 'Approved' || request.status === 'Fulfilled' ? 'text-green-300' : request.status === 'Denied' || request.status === 'Breached' ? 'text-red-300' : 'text-amber-300'}>{request.status}</span>
+                        </div>
+                        <div className="mt-1 text-neutral-400">{request.response}</div>
+                        <div className="mt-1 text-neutral-500">${request.approvedMillions}M of ${request.requestedMillions}M released{request.deadlineRound ? ` · deadline round ${request.deadlineRound}` : ''}</div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </Panel>
+              </div>
+
+              {state.boardroom?.ultimatum && (
+                <Panel title="Owner Ultimatum">
+                  <div className="rounded-lg border border-red-500/30 bg-red-500/10 p-3 text-sm text-red-200">
+                    {state.boardroom.ultimatum.requirement} Deadline: round {state.boardroom.ultimatum.deadlineRound}.
+                  </div>
+                </Panel>
+              )}
+
+              <Panel title="Formal Owner Reviews">
+                {(state.boardroom?.reviews ?? []).length === 0 && ownerReviews.length === 0 ? (
+                  <p className="text-sm text-neutral-500">The early-season, midseason, and postseason reviews have not occurred yet.</p>
+                ) : (
+                  <div className="space-y-3">
+                    {(state.boardroom?.reviews ?? []).slice().reverse().map((review) => (
+                      <div key={review.id} className="rounded-lg border border-neutral-800 bg-neutral-950/30 p-3">
+                        <div className="flex items-center justify-between gap-2">
+                          <div className="font-semibold text-neutral-100">{review.stage.replace('Season', '-season')} review · Round {review.round}</div>
+                          <span className={review.verdict === 'Impressed' ? 'text-green-300' : review.verdict === 'Satisfied' ? 'text-sky-300' : 'text-red-300'}>{review.verdict}</span>
+                        </div>
+                        <div className="mt-1 text-xs text-neutral-400">{review.summary}</div>
+                        <div className="mt-3 grid gap-2 md:grid-cols-2 xl:grid-cols-3">
+                          {review.assessments.map((item) => (
+                            <div key={item.area} className="rounded border border-neutral-800 p-2 text-xs">
+                              <div className="flex justify-between gap-2"><span className="font-semibold text-neutral-300">{item.area}</span><span className={item.assessment === 'Strong' ? 'text-green-300' : item.assessment === 'Concern' ? 'text-red-300' : 'text-amber-300'}>{item.assessment}</span></div>
+                              <div className="mt-1 text-neutral-500">{item.summary}</div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    ))}
+                    {ownerReviews.length > 0 && (
+                      <>
+                        <div className="border-t border-neutral-800 pt-3 text-xs font-semibold uppercase tracking-wide text-neutral-500">Completed season history</div>
+                        {visibleOwnerReviews.map((review) => (
+                          <div key={`${review.teamId}-${review.seasonYear}`} className="grid grid-cols-[3rem_minmax(0,1fr)_2rem] gap-2 rounded-lg border border-neutral-800 bg-neutral-950/30 p-2 text-sm">
+                            <span className="text-neutral-500">{review.seasonYear}</span>
+                            <span className={review.primaryObjectiveMet ? 'text-green-300' : 'text-red-300'}>{review.summary}</span>
+                            <span className="text-right tabular-nums text-neutral-400">{review.patienceDelta >= 0 ? '+' : ''}{review.patienceDelta}</span>
+                          </div>
+                        ))}
+                        <CompactPagination page={safeOwnerReviewPage} pageCount={ownerReviewPageCount} total={ownerReviews.length} noun="reviews" onPageChange={setOwnerReviewPage} />
+                      </>
+                    )}
+                  </div>
                 )}
               </Panel>
             </div>
