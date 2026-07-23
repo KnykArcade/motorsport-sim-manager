@@ -31,7 +31,7 @@ import { ADVISOR_ROLE_LABELS } from '../sim/phase18AdvisorEngine';
 import { contractClauseLabel } from '../sim/phase18ContractClauseEngine';
 import { CharacterDossierButton } from '../components/characterCards/CharacterDossier';
 import type { GameState } from '../game/careerState';
-import { characterFutureIntentLabel } from '../sim/characterFutureIntentEngine';
+import { characterFutureIntentLabel, characterFutureIntentRenewalOutlook } from '../sim/characterFutureIntentEngine';
 import { staffEmployer, staffPoachingCompensation } from '../sim/aiStaffRosterEngine';
 import {
   STAFF_PAGE_SIZE,
@@ -256,7 +256,7 @@ export function Staff() {
                     <p className="mt-1 text-[11px] text-neutral-400">{clause.description}</p>
                     <div className="mt-1 text-[10px] text-red-300">Risk: {clause.breachConsequence}</div>
                   </> : <div className="mt-2 text-[11px] text-neutral-500">Standard employment terms · no special clause.</div>}
-                  {futureIntent && <div className="mt-2 text-[10px] text-amber-300">{characterFutureIntentLabel(futureIntent.target, futureIntent.status)} · renewal modifier {futureIntent.negotiationModifier > 0 ? '+' : ''}{futureIntent.negotiationModifier}</div>}
+                  {futureIntent && <div className="mt-2 text-[10px] text-amber-300">{characterFutureIntentLabel(futureIntent.target, futureIntent.status)} · {characterFutureIntentRenewalOutlook(futureIntent.status)}</div>}
                   <CharacterDossierButton state={state} subject={{ type: 'staff', staff: member }} className="mt-2 w-full">Open Personnel File</CharacterDossierButton>
                 </div>;
               })}
@@ -599,7 +599,7 @@ function StaffCard({
       <div className="mt-3 border-t border-neutral-800 pt-2">
         {hired ? (
           <div className="space-y-2">
-            {futureIntent && <div className={`rounded border px-2 py-1.5 text-[10px] ${futureIntent.status === 'WantsExit' ? 'border-red-500/35 bg-red-500/10' : futureIntent.status === 'TestingMarket' ? 'border-amber-500/35 bg-amber-500/10' : 'border-emerald-500/25 bg-emerald-500/5'}`}><div className="flex justify-between gap-2"><strong className="text-neutral-200">{characterFutureIntentLabel(futureIntent.target, futureIntent.status)}</strong><span className="text-neutral-500">Renewal {futureIntent.negotiationModifier > 0 ? '+' : ''}{futureIntent.negotiationModifier}</span></div><p className="mt-1 text-neutral-400">{futureIntent.reason}</p></div>}
+            {futureIntent && <div className={`rounded border px-2 py-1.5 text-[10px] ${futureIntent.status === 'WantsExit' ? 'border-red-500/35 bg-red-500/10' : futureIntent.status === 'TestingMarket' ? 'border-amber-500/35 bg-amber-500/10' : 'border-emerald-500/25 bg-emerald-500/5'}`}><div className="flex justify-between gap-2"><strong className="text-neutral-200">{characterFutureIntentLabel(futureIntent.target, futureIntent.status)}</strong><span className="text-neutral-500">{characterFutureIntentRenewalOutlook(futureIntent.status)}</span></div><p className="mt-1 text-neutral-400">{futureIntent.reason}</p></div>}
             {state.gameMode !== 'SingleSeason' && !state.seasonComplete && yearsLeft < 5 && <Button variant="ghost" className="w-full px-2 py-1 text-xs" onClick={onExtend}>Open contract negotiation</Button>}
             {latestOffer && <div className={`rounded border px-2 py-1 text-[10px] ${accepted ? 'border-green-500/35 bg-green-500/10 text-green-300' : 'border-red-500/35 bg-red-500/10 text-red-300'}`}><strong>{accepted ? 'Accepted' : 'Refused'}:</strong> {latestOffer.headline}<p className="mt-0.5 text-neutral-400">{latestOffer.body}</p></div>}
             <Button variant="danger" className="w-full px-2 py-1 text-xs" disabled={staffReleaseCost(s) > teamById(state, state.selectedTeamId)!.budget} onClick={onFire}>

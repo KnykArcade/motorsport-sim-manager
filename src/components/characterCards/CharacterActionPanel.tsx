@@ -25,7 +25,7 @@ import { influenceForTarget } from '../../sim/characterInfluenceEngine';
 import { initiativesForTarget } from '../../sim/characterInitiativeEngine';
 import { mandatesForTarget } from '../../sim/characterMandateEngine';
 import { breakingPointsForTarget, stabilityForTarget } from '../../sim/characterBreakingPointEngine';
-import { characterFutureIntentLabel, futureIntentForTarget } from '../../sim/characterFutureIntentEngine';
+import { characterFutureIntentLabel, characterFutureIntentRenewalOutlook, futureIntentForTarget } from '../../sim/characterFutureIntentEngine';
 
 type Props = {
   state: GameState;
@@ -148,16 +148,16 @@ export function CharacterActionPanel({ state, target, initialSection = 'overview
           )}
           {stability && (
             <div className={`mt-3 rounded border p-2.5 ${stability.band === 'BreakingPoint' ? 'border-red-800/70 bg-red-950/25' : stability.band === 'Unsettled' ? 'border-amber-800/60 bg-amber-950/20' : 'border-neutral-800 bg-neutral-900/70'}`}>
-              <div className="flex items-center justify-between gap-2"><div><div className="text-[10px] font-bold uppercase tracking-[0.14em] text-neutral-500">Relationship stability</div><strong className="mt-0.5 block text-xs text-neutral-200">{stability.band}</strong></div><span className={`text-sm font-bold ${stability.band === 'BreakingPoint' ? 'text-red-300' : stability.band === 'Unsettled' ? 'text-amber-300' : 'text-neutral-300'}`}>{stability.score}/100</span></div>
+              <div className="flex items-center justify-between gap-2"><div><div className="text-[10px] font-bold uppercase tracking-[0.14em] text-neutral-500">Relationship stability</div><strong className="mt-0.5 block text-xs text-neutral-200">{stability.band}</strong></div><span className={`text-[10px] font-bold uppercase tracking-wide ${stability.band === 'BreakingPoint' ? 'text-red-300' : stability.band === 'Unsettled' ? 'text-amber-300' : 'text-neutral-300'}`}>{stability.band === 'BreakingPoint' ? 'Immediate risk' : stability.band === 'Unsettled' ? 'Needs attention' : 'Stable'}</span></div>
               <p className="mt-1 line-clamp-2 text-[10px] leading-relaxed text-neutral-500">{stability.reasons.join(' · ') || 'No major destabilizing pressure is currently recorded.'}</p>
               {activeBreakingPoint && <div className="mt-2 rounded border border-red-900/50 bg-red-950/30 px-2 py-1.5 text-[10px] font-semibold text-red-300">Required response pending in Paddock Week</div>}
             </div>
           )}
           {futureIntent && (
             <div className={`mt-3 rounded border p-2.5 ${futureIntent.status === 'WantsExit' ? 'border-red-800/70 bg-red-950/25' : futureIntent.status === 'TestingMarket' ? 'border-amber-800/60 bg-amber-950/20' : 'border-emerald-900/50 bg-emerald-950/10'}`}>
-              <div className="flex items-center justify-between gap-2"><div><div className="text-[10px] font-bold uppercase tracking-[0.14em] text-neutral-500">Future intention</div><strong className="mt-0.5 block text-xs text-neutral-200">{characterFutureIntentLabel(target, futureIntent.status)}</strong></div><span className="text-[10px] font-semibold text-neutral-400">Leverage {futureIntent.leverage}</span></div>
+              <div className="flex items-center justify-between gap-2"><div><div className="text-[10px] font-bold uppercase tracking-[0.14em] text-neutral-500">Future intention</div><strong className="mt-0.5 block text-xs text-neutral-200">{characterFutureIntentLabel(target, futureIntent.status)}</strong></div><span className="text-[10px] font-semibold text-neutral-400">{futureIntent.leverage >= 70 ? 'Strong leverage' : futureIntent.leverage >= 40 ? 'Moderate leverage' : 'Limited leverage'}</span></div>
               <p className="mt-1 text-[10px] leading-relaxed text-neutral-500">{futureIntent.reason}</p>
-              {target.type === 'Driver' && futureIntent.negotiationModifier !== 0 && <div className={`mt-1 text-[10px] font-semibold ${futureIntent.negotiationModifier > 0 ? 'text-emerald-300' : 'text-red-300'}`}>Renewal willingness {futureIntent.negotiationModifier > 0 ? '+' : ''}{futureIntent.negotiationModifier}</div>}
+              {target.type === 'Driver' && <div className={`mt-1 text-[10px] font-semibold ${futureIntent.status === 'Committed' ? 'text-emerald-300' : futureIntent.status === 'OpenToTalk' ? 'text-neutral-300' : 'text-red-300'}`}>{characterFutureIntentRenewalOutlook(futureIntent.status)}</div>}
             </div>
           )}
           {activeInitiative && (

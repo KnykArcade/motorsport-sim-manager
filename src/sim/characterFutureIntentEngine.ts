@@ -56,6 +56,13 @@ export function characterFutureIntentLabel(target: CharacterInteractionTarget, s
   return 'Wants to leave';
 }
 
+export function characterFutureIntentRenewalOutlook(status: CharacterFutureIntentStatus): string {
+  if (status === 'Committed') return 'Renewal outlook: favorable';
+  if (status === 'OpenToTalk') return 'Renewal outlook: negotiable';
+  if (status === 'TestingMarket') return 'Renewal outlook: difficult';
+  return 'Renewal outlook: very unlikely';
+}
+
 function reasonFor(target: CharacterInteractionTarget, status: CharacterFutureIntentStatus, profile: CharacterStabilityProfile): string {
   const pressure = profile.reasons[0]?.toLowerCase() ?? 'the current relationship outlook';
   if (status === 'Committed') return `${target.name} sees enough stability to remain invested in the current project.`;

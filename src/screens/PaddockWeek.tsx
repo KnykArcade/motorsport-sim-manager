@@ -35,7 +35,7 @@ import { DriverDossierButton } from '../components/driverCards/DriverDossier';
 import { internalCharacterInfluence } from '../sim/characterInfluenceEngine';
 import { activeCharacterMandates } from '../sim/characterMandateEngine';
 import { unstableCharacterStability } from '../sim/characterBreakingPointEngine';
-import { atRiskFutureIntentions, characterFutureIntentLabel } from '../sim/characterFutureIntentEngine';
+import { atRiskFutureIntentions, characterFutureIntentLabel, characterFutureIntentRenewalOutlook } from '../sim/characterFutureIntentEngine';
 import {
   advisorCouncilReadForOption,
   relationshipStakeholdersForDecision,
@@ -422,7 +422,7 @@ export function PaddockWeek() {
             <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
               {unstableCharacters.map((profile) => (
                 <article key={`${profile.target.type}-${profile.target.id}`} className={`rounded-lg border p-3 ${profile.band === 'BreakingPoint' ? 'border-red-900/60 bg-red-950/15' : 'border-amber-900/50 bg-amber-950/10'}`}>
-                  <div className="flex items-start justify-between gap-2"><div><strong className="block text-xs text-neutral-200">{profile.target.name}</strong><span className="text-[10px] text-neutral-500">{profile.target.type}</span></div><span className={`text-[10px] font-bold ${profile.band === 'BreakingPoint' ? 'text-red-300' : 'text-amber-300'}`}>{profile.band} · {profile.score}</span></div>
+                  <div className="flex items-start justify-between gap-2"><div><strong className="block text-xs text-neutral-200">{profile.target.name}</strong><span className="text-[10px] text-neutral-500">{profile.target.type}</span></div><span className={`text-[10px] font-bold ${profile.band === 'BreakingPoint' ? 'text-red-300' : 'text-amber-300'}`}>{profile.band}</span></div>
                   <p className="mt-2 line-clamp-2 text-[10px] leading-relaxed text-neutral-400">{profile.reasons.join(' · ') || 'Recent relationship pressure is accumulating.'}</p>
                 </article>
               ))}
@@ -437,7 +437,7 @@ export function PaddockWeek() {
                 <article key={`${intent.target.type}-${intent.target.id}`} className={`rounded-lg border p-3 ${intent.status === 'WantsExit' ? 'border-red-900/60 bg-red-950/15' : 'border-amber-900/50 bg-amber-950/10'}`}>
                   <div className="flex items-start justify-between gap-2"><div><strong className="block text-xs text-neutral-200">{intent.target.name}</strong><span className="text-[10px] text-neutral-500">{intent.target.type}</span></div><span className={`text-[10px] font-bold ${intent.status === 'WantsExit' ? 'text-red-300' : 'text-amber-300'}`}>{characterFutureIntentLabel(intent.target, intent.status)}</span></div>
                   <p className="mt-2 line-clamp-2 text-[10px] leading-relaxed text-neutral-400">{intent.reason}</p>
-                  <div className="mt-2 flex justify-between text-[10px] text-neutral-500"><span>Leverage {intent.leverage}</span>{(intent.target.type === 'Driver' || intent.target.type === 'Staff') && <span>Renewal {intent.negotiationModifier}</span>}</div>
+                  <div className="mt-2 flex justify-between text-[10px] text-neutral-500"><span>{intent.leverage >= 70 ? 'Strong leverage' : intent.leverage >= 40 ? 'Moderate leverage' : 'Limited leverage'}</span>{(intent.target.type === 'Driver' || intent.target.type === 'Staff') && <span>{characterFutureIntentRenewalOutlook(intent.status)}</span>}</div>
                 </article>
               ))}
             </div>
