@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { useGame } from '../game/GameContext';
 import { teamById } from '../game/careerState';
 import { Panel } from '../components/Panel';
@@ -43,9 +44,21 @@ function confidenceTone(confidence: number): string {
   return 'text-red-300';
 }
 
+function relationshipLabel(sponsor: Sponsor): string {
+  if (sponsor.confidence <= 20) return 'Breach';
+  if (sponsor.confidence <= 40) return 'Warning';
+  if (sponsor.confidence <= 65) return 'Monitoring';
+  return 'Secure';
+}
+
 export function Sponsors() {
   const { state, dispatch } = useGame();
-  const [tab, setTab] = useState<SponsorsWorkspaceTab>('portfolio');
+  const [searchParams, setSearchParams] = useSearchParams();
+  const requestedTab = searchParams.get('tab');
+  const initialTab = SPONSORS_WORKSPACE_TABS.some((item) => item.id === requestedTab)
+    ? requestedTab as SponsorsWorkspaceTab
+    : 'portfolio';
+  const [tab, setTab] = useState<SponsorsWorkspaceTab>(initialTab);
   const [sponsorListPage, setSponsorListPage] = useState(0);
   const [ownerReviewPage, setOwnerReviewPage] = useState(0);
 
@@ -84,6 +97,7 @@ export function Sponsors() {
 
   function selectTab(nextTab: SponsorsWorkspaceTab) {
     setTab(nextTab);
+    setSearchParams(nextTab === 'portfolio' ? {} : { tab: nextTab }, { replace: true });
     if (nextTab === 'portfolio' || nextTab === 'objectives') setSponsorListPage(0);
   }
 
@@ -156,6 +170,7 @@ export function Sponsors() {
                       <SponsorPortfolioCard
                         key={sponsor.id}
                         sponsor={sponsor}
+                        canDrop={state.gameMode !== 'SingleSeason'}
                         onDrop={() => dispatch({ type: 'DROP_SPONSOR', sponsorId: sponsor.id })}
                       />
                     ))}
@@ -197,7 +212,7 @@ export function Sponsors() {
                     <SponsorOfferCard
                       key={offer.id}
                       offer={offer}
-                      disabled={slotsFull}
+                      disabled={slotsFull || state.gameMode === 'SingleSeason'}
                       onSign={() => dispatch({ type: 'SIGN_SPONSOR', offerId: offer.id })}
                     />
                   ))}
@@ -218,7 +233,7 @@ export function Sponsors() {
               }
             >
               <p className="mb-3 text-xs text-neutral-500">
-                Objectives currently settle at season end. A recorded midseason deadline is descriptive until an in-season sponsor checkpoint is implemented.
+                Objective progress is reviewed after every championship round. Rewards pay immediately; missed deadlines settle once at their listed round.
               </p>
               {sponsors.length === 0 ? (
                 <p className="text-sm text-neutral-500">Sign a sponsor to receive objectives and bonuses.</p>
@@ -304,9 +319,11 @@ export function Sponsors() {
 
 function SponsorPortfolioCard({
   sponsor,
+  canDrop,
   onDrop,
 }: {
   sponsor: Sponsor;
+  canDrop: boolean;
   onDrop: () => void;
 }) {
   return (
@@ -320,18 +337,19 @@ function SponsorPortfolioCard({
       </div>
       <div className="mt-3 space-y-1.5 text-xs">
         <Row label="Confidence" value={`${sponsor.confidence} / 100`} valueClass={confidenceTone(sponsor.confidence)} />
+        <Row label="Relationship" value={relationshipLabel(sponsor)} valueClass={confidenceTone(sponsor.confidence)} />
         <Row label="Contract" value={`${sponsor.contractYearsRemaining} yr left`} />
         <Row label="Renewal chance" value={`${Math.round(sponsor.renewalChance * 100)}%`} />
         <Row label="Objectives" value={`${sponsor.objectives.length}`} />
       </div>
-      <button
+      {canDrop && <button
         type="button"
         onClick={onDrop}
         title="Ends this sponsor relationship immediately. No termination fee is modeled."
         className="mt-3 w-full rounded border border-neutral-700 px-2 py-1 text-xs font-semibold text-red-300 hover:border-red-500/60 hover:bg-red-500/10"
       >
         Drop sponsor
-      </button>
+      </button>}
     </div>
   );
 }
@@ -398,10 +416,12 @@ function SponsorTermsCard({ sponsor }: { sponsor: Sponsor }) {
                 <ObjectiveStatus status={objective.status} />
               </div>
               <div className="mt-0.5 text-[10px] text-neutral-500">
-                {objective.deadline ? `Deadline: ${objective.deadline}` : 'No deadline'}
+                {objective.deadlineRound ? `Deadline: round ${objective.deadlineRound}` : objective.deadline ? `Deadline: ${objective.deadline}` : 'No deadline'}
                 {objective.reward ? ` · Reward +$${objective.reward}M` : ''}
                 {objective.penalty ? ` · Miss -$${objective.penalty}M and confidence` : ''}
               </div>
+              {objective.progressLabel && <div className="mt-1 text-[10px] font-medium text-neutral-400">Progress: {objective.progressLabel}</div>}
+              {objective.revisionNote && <div className="mt-1 text-[10px] text-amber-300">Revised: {objective.revisionNote}</div>}
             </div>
           ))}
         </div>

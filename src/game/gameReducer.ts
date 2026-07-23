@@ -85,6 +85,7 @@ import {
 } from '../sim/personnelNegotiationEngine';
 import {
   generateSponsorOffers,
+  evaluateRoundSponsorObjectives,
   racePerformanceBonuses,
   sponsorInstallmentPayment,
   sponsorSlotCapacity,
@@ -2426,6 +2427,60 @@ function applyRaceResults(
     );
   }
 
+  // Living sponsor objectives use the same authoritative race-completion
+  // boundary as standings and finance. Rewards and penalties are therefore
+  // booked once, immediately when the objective resolves.
+  let commercial = state.commercial;
+  const sponsorReviewNews: NewsItem[] = [];
+  if (commercial) {
+    const constructorIndex = constructorStandings.findIndex((entry) => entry.entityId === state.selectedTeamId);
+    const constructorEntry = constructorIndex >= 0 ? constructorStandings[constructorIndex] : undefined;
+    const seasonPlayerResults = allResults.flat().filter((result) => result.teamId === state.selectedTeamId);
+    const expectedEntries = activeDriversForTeam(state, state.selectedTeamId).length;
+    const linkedDriverResults = Object.fromEntries(
+      state.drivers
+        .filter((driver) => driver.teamId === state.selectedTeamId)
+        .map((driver) => {
+          const result = playerResults.find((entry) => entry.driverId === driver.id);
+          return [driver.id, { raced: Boolean(result && result.status !== 'DNS'), finished: result?.status === 'Finished', points: result?.points ?? 0 }];
+        }),
+    );
+    const review = evaluateRoundSponsorObjectives(commercial, {
+      round: race.round,
+      totalRounds: totalRaces,
+      constructorPosition: constructorIndex >= 0 ? constructorIndex + 1 : state.teams.length,
+      points: constructorEntry?.points ?? 0,
+      wins: constructorEntry?.wins ?? 0,
+      failedToQualify: seasonPlayerResults.some((result) => result.status === 'DNS'),
+      teamRaceResults: playerResults.length,
+      expectedEntries,
+      reliabilityDnfs: playerResults.filter((result) => result.status === 'DNF' && classifyDnfCause(result.incidents.join(' ')) === 'Mechanical').length,
+      withdrawnOrMissingEntries: Math.max(
+        Math.max(0, expectedEntries - playerResults.length),
+        playerResults.filter((result) => result.status === 'DNS' || result.status === 'DSQ').length,
+      ),
+      linkedDriverResults,
+      publicControversies: state.news.filter((item) => item.round === race.round && item.category === 'paddock' && (item.priority === 'high' || item.priority === 'critical')).length,
+    });
+    commercial = review.commercial;
+    for (const payout of review.payouts) {
+      const team = teams.find((entry) => entry.id === state.selectedTeamId);
+      if (team) team.budget += payout.amount;
+      financeTxns.push(makeTransaction(state.seasonYear, 'Sponsorship', `${race.gpName}: ${payout.label}`, payout.amount, race.round));
+    }
+    sponsorReviewNews.push(...review.reviews.map((item) => ({
+      id: `news-sponsor-review-${item.id}`,
+      round: item.round,
+      headline: item.headline,
+      body: item.detail,
+      timestamp: new Date().toISOString(),
+      category: 'sponsor' as const,
+      priority: item.kind === 'Breach' ? 'critical' as const : item.kind === 'Warning' || item.kind === 'Deadline' ? 'high' as const : 'normal' as const,
+      careerPhase: 'post_race_review',
+      teamId: state.selectedTeamId,
+    })));
+  }
+
   // Apply crash damage, then the standard between-race recovery.
   cars = cars.map((c) => ({
     ...c,
@@ -2607,6 +2662,7 @@ function applyRaceResults(
   const mergedRaceNews = mergeNewsWithSpamControl(state.news, news, careerRaceNews);
   news.length = 0;
   news.push(...mergedRaceNews);
+  news.push(...sponsorReviewNews);
 
   // Generate driver drama news from confidence, trust, ego, morale, promise,
   // and teammate rivalry events.
@@ -2687,6 +2743,7 @@ function applyRaceResults(
     finance: [...(state.finance ?? []), ...financeTxns],
     raceArchive,
     performanceAnalytics,
+    commercial,
     driverRelationships,
     driverPromises,
     teamOrderHistory,

@@ -12,6 +12,8 @@ import type {
   Sponsor,
   SponsorBonus,
   SponsorObjective,
+  SponsorRelationshipStatus,
+  SponsorReview,
 } from '../types/sponsorTypes';
 import { createSeededRandom, deriveSeed } from './random';
 import { toMoney } from './financeEngine';
@@ -138,6 +140,7 @@ function buildSponsor(
     confidence,
     contractYearsRemaining,
     renewalChance: Math.min(0.95, 0.4 + confidence / 200),
+    relationshipStatus: confidence >= 70 ? 'Secure' : 'Monitoring',
     linkedDriverId,
   };
 }
@@ -303,6 +306,147 @@ export type SeasonCommercialContext = {
   failedToQualify: boolean;
 };
 
+export type RoundCommercialContext = SeasonCommercialContext & {
+  round: number;
+  totalRounds: number;
+  teamRaceResults: number;
+  expectedEntries: number;
+  reliabilityDnfs: number;
+  withdrawnOrMissingEntries: number;
+  linkedDriverResults?: Record<string, { raced: boolean; finished: boolean; points: number }>;
+  publicControversies?: number;
+};
+
+export type RoundCommercialReview = {
+  commercial: CommercialState;
+  payouts: CommercialPayout[];
+  reviews: SponsorReview[];
+};
+
+function relationshipStatus(confidence: number): SponsorRelationshipStatus {
+  if (confidence <= 20) return 'Breach';
+  if (confidence <= 40) return 'Warning';
+  if (confidence <= 65) return 'Monitoring';
+  return 'Secure';
+}
+
+export function objectiveDeadlineRound(objective: SponsorObjective, totalRounds: number): number {
+  if (objective.deadlineRound) return Math.max(1, Math.min(totalRounds, objective.deadlineRound));
+  return objective.deadline === 'midseason' ? Math.ceil(totalRounds / 2) : totalRounds;
+}
+
+function objectiveProgress(
+  objective: SponsorObjective,
+  ctx: SeasonCommercialContext,
+): { value: number; label: string } {
+  if (objective.category === 'Performance' && objective.targetValue) {
+    return { value: ctx.constructorPosition, label: `P${ctx.constructorPosition} / target P${objective.targetValue}` };
+  }
+  if (objective.category === 'Performance') return { value: ctx.points, label: `${ctx.points} championship points` };
+  if (objective.category === 'Reliability') return { value: ctx.failedToQualify ? 0 : 1, label: ctx.failedToQualify ? 'Qualification failure recorded' : 'No qualification failures' };
+  if (objective.category === 'Marketability') return { value: ctx.wins, label: `${ctx.wins} / ${objective.targetValue ?? 1} wins` };
+  return { value: ctx.points, label: `${ctx.points} championship points` };
+}
+
+function sponsorEvidenceDelta(sponsor: Sponsor, ctx: RoundCommercialContext): number {
+  let delta = 0;
+  const positionTarget = sponsor.objectives.find((objective) => objective.category === 'Performance' && objective.targetValue && (objective.status ?? 'Pending') === 'Pending')?.targetValue;
+  if (positionTarget) delta += ctx.constructorPosition <= positionTarget ? 1 : -1;
+  if (ctx.reliabilityDnfs > 0) delta -= Math.min(4, ctx.reliabilityDnfs * 2);
+  if (ctx.withdrawnOrMissingEntries > 0) delta -= Math.min(8, ctx.withdrawnOrMissingEntries * 4);
+  if (ctx.publicControversies) delta -= Math.min(5, ctx.publicControversies * 2);
+  if (sponsor.linkedDriverId) {
+    const linked = ctx.linkedDriverResults?.[sponsor.linkedDriverId];
+    if (!linked?.raced) delta -= 4;
+    else if (linked.points > 0) delta += 2;
+    else if (!linked.finished) delta -= 2;
+  }
+  return delta;
+}
+
+function canResolveEarly(objective: SponsorObjective): boolean {
+  // Only cumulative achievements are irreversible before their deadline.
+  // Championship position and season-long reliability must remain open until
+  // the specified review round because later races can still change them.
+  return (objective.category === 'Performance' && !objective.targetValue)
+    || objective.category === 'Marketability';
+}
+
+// Evaluate sponsor relationships after every championship round. Objectives can
+// complete early, while failures resolve only once their real round deadline is
+// reached. This makes repeat calls idempotent and keeps old saves compatible.
+export function evaluateRoundSponsorObjectives(
+  commercial: CommercialState,
+  ctx: RoundCommercialContext,
+): RoundCommercialReview {
+  const payouts: CommercialPayout[] = [];
+  const reviews: SponsorReview[] = [];
+  const sponsors = commercial.sponsors.map((sponsor) => {
+    let confidence = sponsor.confidence;
+    const evidenceDelta = sponsorEvidenceDelta(sponsor, ctx);
+    if (evidenceDelta !== 0) confidence = Math.max(0, Math.min(100, confidence + evidenceDelta));
+    const objectives = sponsor.objectives.map((objective) => {
+      let workingObjective = objective;
+      if (
+        ctx.round === Math.ceil(ctx.totalRounds / 2)
+        && (objective.status ?? 'Pending') === 'Pending'
+        && objective.category === 'Performance'
+        && objective.targetValue
+        && objective.deadline === 'seasonend'
+        && objective.originalTargetValue === undefined
+      ) {
+        const revisedTarget = ctx.constructorPosition <= objective.targetValue - 2
+          ? Math.max(1, objective.targetValue - 1)
+          : ctx.constructorPosition >= objective.targetValue + 3 && sponsor.confidence >= 45
+            ? Math.min(objective.targetValue + 1, ctx.constructorPosition - 1)
+            : objective.targetValue;
+        if (revisedTarget !== objective.targetValue) {
+          const revisionNote = revisedTarget < objective.targetValue
+            ? `Strong results raised the target from P${objective.targetValue} to P${revisedTarget}.`
+            : `The midseason review revised the target from P${objective.targetValue} to P${revisedTarget}.`;
+          workingObjective = {
+            ...objective,
+            originalTargetValue: objective.targetValue,
+            targetValue: revisedTarget,
+            description: objective.description.replace(/top \d+/, `top ${revisedTarget}`),
+            revisionNote,
+          };
+          reviews.push({ id: `${sponsor.id}-${objective.id}-revised-r${ctx.round}`, sponsorId: sponsor.id, round: ctx.round, kind: 'Revision', headline: `${sponsor.name} revises its season expectation`, detail: revisionNote, confidenceDelta: 0 });
+        }
+      }
+      const deadlineRound = objectiveDeadlineRound(workingObjective, ctx.totalRounds);
+      const progress = objectiveProgress(workingObjective, ctx);
+      if (workingObjective.status && workingObjective.status !== 'Pending') {
+        return { ...workingObjective, deadlineRound, progressValue: progress.value, progressLabel: progress.label };
+      }
+      const met = objectiveMet(workingObjective, ctx);
+      if (met && (ctx.round >= deadlineRound || canResolveEarly(workingObjective))) {
+        confidence = Math.min(100, confidence + 6);
+        if (workingObjective.reward) payouts.push({ sponsorId: sponsor.id, sponsorName: sponsor.name, label: `${sponsor.name}: ${workingObjective.description} completed`, amount: toMoney(workingObjective.reward) });
+        reviews.push({ id: `${sponsor.id}-${workingObjective.id}-met-r${ctx.round}`, sponsorId: sponsor.id, round: ctx.round, kind: 'Progress', headline: `${sponsor.name} objective completed`, detail: `${workingObjective.description}. ${progress.label}.`, confidenceDelta: 6 });
+        return { ...workingObjective, deadlineRound, progressValue: progress.value, progressLabel: progress.label, lastReviewedRound: ctx.round, resolvedRound: ctx.round, status: 'Met' as const };
+      }
+      if (ctx.round >= deadlineRound) {
+        confidence = Math.max(0, confidence - 10);
+        if (workingObjective.penalty) payouts.push({ sponsorId: sponsor.id, sponsorName: sponsor.name, label: `${sponsor.name}: missed "${workingObjective.description}"`, amount: -toMoney(workingObjective.penalty) });
+        reviews.push({ id: `${sponsor.id}-${workingObjective.id}-failed-r${ctx.round}`, sponsorId: sponsor.id, round: ctx.round, kind: 'Deadline', headline: `${sponsor.name} objective missed`, detail: `${workingObjective.description}. Deadline was round ${deadlineRound}; ${progress.label}.`, confidenceDelta: -10 });
+        return { ...workingObjective, deadlineRound, progressValue: progress.value, progressLabel: progress.label, lastReviewedRound: ctx.round, resolvedRound: ctx.round, status: 'Failed' as const };
+      }
+      if (ctx.round === Math.ceil(ctx.totalRounds / 2)) {
+        reviews.push({ id: `${sponsor.id}-${workingObjective.id}-mid-r${ctx.round}`, sponsorId: sponsor.id, round: ctx.round, kind: 'Midseason', headline: `${sponsor.name} midseason review`, detail: `${workingObjective.description}: ${progress.label}. Deadline round ${deadlineRound}.`, confidenceDelta: 0 });
+      }
+      return { ...workingObjective, deadlineRound, progressValue: progress.value, progressLabel: progress.label, lastReviewedRound: ctx.round };
+    });
+    const previousStatus = sponsor.relationshipStatus ?? relationshipStatus(sponsor.confidence);
+    const nextStatus = relationshipStatus(confidence);
+    if ((nextStatus === 'Warning' || nextStatus === 'Breach') && nextStatus !== previousStatus) {
+      reviews.push({ id: `${sponsor.id}-${nextStatus.toLowerCase()}-r${ctx.round}`, sponsorId: sponsor.id, round: ctx.round, kind: nextStatus, headline: nextStatus === 'Breach' ? `${sponsor.name} issues breach notice` : `${sponsor.name} warns the team`, detail: nextStatus === 'Breach' ? 'The commercial relationship is at immediate risk after unmet expectations and recent team performance.' : 'Sponsor confidence has fallen into a formal warning range.', confidenceDelta: confidence - sponsor.confidence });
+    }
+    return { ...sponsor, confidence, objectives, relationshipStatus: nextStatus, lastReviewRound: ctx.round, renewalChance: Math.min(0.95, 0.4 + confidence / 200) };
+  });
+  return { commercial: { ...commercial, sponsors, reviews: [...(commercial.reviews ?? []), ...reviews].slice(-100) }, payouts, reviews };
+}
+
 // Evaluate each sponsor objective at season end, returning the updated sponsors,
 // the net reward/penalty (raw dollars), confidence movement and a summary line
 // per resolved objective.
@@ -424,7 +568,7 @@ export function sponsorRenewalProbability(
 }
 
 function resetObjectives(objectives: SponsorObjective[]): SponsorObjective[] {
-  return objectives.map((o) => ({ ...o, status: 'Pending' }));
+  return objectives.map((o) => ({ ...o, status: 'Pending', deadlineRound: undefined, progressValue: undefined, progressLabel: undefined, lastReviewedRound: undefined, resolvedRound: undefined, originalTargetValue: undefined, revisionNote: undefined }));
 }
 
 // How many sponsor slots a team can hold at once, sized by commercial tier so a

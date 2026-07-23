@@ -484,6 +484,34 @@ function peopleMessages(state: GameState): InboxMessage[] {
 
 function businessMessages(state: GameState): InboxMessage[] {
   const messages: InboxMessage[] = [];
+  const endangeredSponsors = (state.commercial?.sponsors ?? []).filter((sponsor) =>
+    sponsor.relationshipStatus === 'Warning' || sponsor.relationshipStatus === 'Breach' || sponsor.confidence <= 40,
+  );
+  if (endangeredSponsors.length > 0) {
+    messages.push({
+      id: 'inbox-sponsor-relationships-at-risk',
+      severity: endangeredSponsors.some((sponsor) => sponsor.relationshipStatus === 'Breach' || sponsor.confidence <= 20) ? 'critical' : 'action',
+      category: 'business',
+      title: `${endangeredSponsors.length} sponsor relationship${endangeredSponsors.length === 1 ? '' : 's'} at risk`,
+      body: endangeredSponsors.map((sponsor) => `${sponsor.name}: ${sponsor.relationshipStatus ?? 'Warning'}`).join(' · '),
+      route: '/sponsors?tab=objectives',
+      routeLabel: 'Review Sponsor Objectives',
+      actionable: true,
+    });
+  }
+  const expiringSponsors = (state.commercial?.sponsors ?? []).filter((sponsor) => sponsor.contractYearsRemaining <= 1);
+  if (expiringSponsors.length > 0) {
+    messages.push({
+      id: 'inbox-sponsor-contracts-expiring',
+      severity: 'action',
+      category: 'business',
+      title: `${expiringSponsors.length} sponsor contract${expiringSponsors.length === 1 ? '' : 's'} entering final season`,
+      body: expiringSponsors.map((sponsor) => sponsor.name).join(' · '),
+      route: '/sponsors?tab=portfolio',
+      routeLabel: 'Review Sponsor Portfolio',
+      actionable: true,
+    });
+  }
   const openVotes = (state.regulationProposals ?? []).filter((proposal) => proposal.playerVote === undefined);
   if (openVotes.length > 0) {
     messages.push({

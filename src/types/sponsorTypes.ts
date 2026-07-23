@@ -27,10 +27,29 @@ export type SponsorObjective = {
   description: string;
   category: SponsorObjectiveCategory;
   targetValue?: number;
-  deadline?: string; // ISO date or 'midseason' | 'seasonend' marker
+  deadline?: string; // Legacy marker; in-season evaluation converts this to a championship round.
+  deadlineRound?: number;
+  progressValue?: number;
+  progressLabel?: string;
+  lastReviewedRound?: number;
+  resolvedRound?: number;
+  originalTargetValue?: number;
+  revisionNote?: string;
   reward?: number; // $M bonus on completion
   penalty?: number; // $M / confidence hit on failure
   status?: 'Pending' | 'Met' | 'Failed';
+};
+
+export type SponsorRelationshipStatus = 'Secure' | 'Monitoring' | 'Warning' | 'Breach';
+
+export type SponsorReview = {
+  id: string;
+  sponsorId: string;
+  round: number;
+  kind: 'Progress' | 'Midseason' | 'Revision' | 'Deadline' | 'Warning' | 'Breach';
+  headline: string;
+  detail: string;
+  confidenceDelta: number;
 };
 
 // A conditional performance bonus (e.g. per win / per podium / points threshold).
@@ -52,6 +71,8 @@ export type Sponsor = {
   confidence: number; // 0-100
   contractYearsRemaining: number;
   renewalChance: number; // 0-1
+  relationshipStatus?: SponsorRelationshipStatus;
+  lastReviewRound?: number;
   // Optional linkage when the sponsor is tied to a specific driver.
   linkedDriverId?: string;
 };
@@ -62,4 +83,5 @@ export type CommercialState = {
   sponsors: Sponsor[];
   // Cached commercial reputation used when courting new sponsors (0-100).
   commercialReputation: number;
+  reviews?: SponsorReview[];
 };

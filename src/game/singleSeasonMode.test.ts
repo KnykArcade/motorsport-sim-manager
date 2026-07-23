@@ -74,9 +74,9 @@ describe('Single Season mode integration', () => {
       expect(hidden.has('/engine')).toBe(true);
     });
 
-    it('hides Sponsors from nav in Single Season', () => {
+    it('keeps Sponsors in nav for race-by-race objective reviews', () => {
       const hidden = getHiddenNavRoutes('SingleSeason');
-      expect(hidden.has('/sponsors')).toBe(true);
+      expect(hidden.has('/sponsors')).toBe(false);
     });
 
     it('does not hide core screens in Single Season', () => {

@@ -345,10 +345,10 @@ describe('F1 1990s garage hotspots', () => {
 });
 
 describe('F1 1990s hub mode restrictions', () => {
-  it('does not show long-term quick actions in Single Season mode', () => {
+  it('keeps sponsor reviews but hides other long-term quick actions in Single Season mode', () => {
     const labels = buildQuickActions(makeState(1994, 'SingleSeason')).map((action) => action.label);
     expect(labels).not.toContain('Scouting & Intelligence');
-    expect(labels).not.toContain('Sponsorship');
+    expect(labels).toContain('Sponsorship');
     expect(labels).not.toContain('Regulation Updates');
   });
 
