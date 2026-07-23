@@ -43,6 +43,14 @@ import {
   staffTabFromQuery,
   type StaffWorkspaceTab,
 } from './staffViewModel';
+import {
+  DEFAULT_STAFF_RECRUITMENT_FILTERS,
+  filterStaffRecruitmentCandidates,
+  sortStaffRecruitmentCandidates,
+  type StaffRecruitmentFilters,
+  type StaffRecruitmentSort,
+  type StaffRecruitmentSortKey,
+} from './staffRecruitmentListViewModel';
 
 type StaffMarketView = 'available' | 'rivals';
 
@@ -54,7 +62,8 @@ export function Staff() {
   const selectedStaffId = searchParams.get('staffId');
   const activeRole = staffRoleFromQuery(searchParams.get('role'));
   const [marketView, setMarketView] = useState<StaffMarketView>('available');
-  const [candidatePage, setCandidatePage] = useState(0);
+  const [recruitmentFilters, setRecruitmentFilters] = useState<StaffRecruitmentFilters>(DEFAULT_STAFF_RECRUITMENT_FILTERS);
+  const [recruitmentSort, setRecruitmentSort] = useState<StaffRecruitmentSort>({ key: 'rating', direction: 'desc' });
   const [councilPage, setCouncilPage] = useState(0);
   const [contractPage, setContractPage] = useState(0);
   if (!state) return null;
@@ -87,13 +96,21 @@ export function Staff() {
   const roleCandidates = pool
     .filter((s) => !hiredById.has(s.id) && s.role === activeRole && (marketView === 'rivals' ? employerByStaffId.has(s.id) : !employerByStaffId.has(s.id)));
   const candidates = [...roleCandidates].sort((a, b) => b.rating - a.rating);
-  const pageCount = staffPageCount(candidates.length);
-  const page = Math.min(candidatePage, pageCount - 1);
-  const visibleCandidates = staffPage(candidates, page);
-  const selectedMarketStaff = candidates.find((member) => member.id === selectedStaffId);
-  const marketCandidates = selectedMarketStaff && !visibleCandidates.some((member) => member.id === selectedMarketStaff.id)
-    ? [selectedMarketStaff, ...visibleCandidates]
-    : visibleCandidates;
+  const recruitmentCandidates = candidates.map((staff) => {
+    const employerTeamId = employerByStaffId.get(staff.id) ?? staffEmployer(state.aiStaff, staff.id);
+    const employer = state.teams.find((team) => team.id === employerTeamId);
+    const poachingCost = employerTeamId ? staffPoachingCompensation(staff) : 0;
+    const totalCost = toMoney(staff.signingFee) + poachingCost + (current ? staffReleaseCost(current) : 0);
+    return {
+      ...staff,
+      employerName: employer?.name,
+      poachingCost,
+      totalCost,
+      affordable: totalCost <= budget,
+    };
+  });
+  const filteredRecruitmentCandidates = filterStaffRecruitmentCandidates(recruitmentCandidates, recruitmentFilters, budget);
+  const orderedRecruitmentCandidates = sortStaffRecruitmentCandidates(filteredRecruitmentCandidates, recruitmentSort);
   const councilPageCount = staffPageCount(councilActivity.length);
   const safeCouncilPage = Math.min(councilPage, councilPageCount - 1);
   const visibleCouncilActivity = staffPage(councilActivity, safeCouncilPage);
@@ -124,7 +141,14 @@ export function Staff() {
     const next = new URLSearchParams(searchParams);
     next.set('role', nextRole);
     setSearchParams(next);
-    setCandidatePage(0);
+  };
+  const updateRecruitmentFilter = <K extends keyof StaffRecruitmentFilters>(key: K, value: StaffRecruitmentFilters[K]) => {
+    setRecruitmentFilters((currentFilters) => ({ ...currentFilters, [key]: value }));
+  };
+  const updateRecruitmentSort = (key: StaffRecruitmentSortKey) => {
+    setRecruitmentSort((currentSort) => currentSort.key === key
+      ? { key, direction: currentSort.direction === 'asc' ? 'desc' : 'asc' }
+      : { key, direction: key === 'name' ? 'asc' : 'desc' });
   };
 
   return (
@@ -253,7 +277,7 @@ export function Staff() {
               key={role}
               type="button"
               aria-pressed={isActive}
-              onClick={() => { setActiveRole(role); setCandidatePage(0); }}
+              onClick={() => setActiveRole(role)}
               className={`-mb-px rounded-t-md border-b-2 px-3 py-2 text-sm font-medium transition-colors ${
                 isActive
                   ? 'border-amber-500 text-neutral-100'
@@ -302,42 +326,182 @@ export function Staff() {
       )}
 
       {tab === 'market' && <div className="flex gap-1 rounded-lg border border-neutral-800 bg-neutral-950/70 p-1" aria-label="Staff market sections">
-        <button type="button" onClick={() => { setMarketView('available'); setCandidatePage(0); }} className={`flex-1 rounded px-3 py-2 text-xs font-semibold ${marketView === 'available' ? 'bg-emerald-500/15 text-emerald-300' : 'text-neutral-500 hover:text-neutral-200'}`}>Available Market</button>
-        <button type="button" onClick={() => { setMarketView('rivals'); setCandidatePage(0); }} className={`flex-1 rounded px-3 py-2 text-xs font-semibold ${marketView === 'rivals' ? 'bg-orange-500/15 text-orange-300' : 'text-neutral-500 hover:text-neutral-200'}`}>Rival Team Staff</button>
+        <button type="button" onClick={() => setMarketView('available')} className={`flex-1 rounded px-3 py-2 text-xs font-semibold ${marketView === 'available' ? 'bg-emerald-500/15 text-emerald-300' : 'text-neutral-500 hover:text-neutral-200'}`}>Available Market</button>
+        <button type="button" onClick={() => setMarketView('rivals')} className={`flex-1 rounded px-3 py-2 text-xs font-semibold ${marketView === 'rivals' ? 'bg-orange-500/15 text-orange-300' : 'text-neutral-500 hover:text-neutral-200'}`}>Rival Team Staff</button>
       </div>}
 
       {tab === 'market' && <Panel title={`${activeRole} · ${marketView === 'available' ? 'Available' : 'Employed by Rivals'}`}>
         <p className="mb-3 text-xs text-neutral-500">{marketView === 'available' ? ROLE_EFFECT[activeRole] : 'These specialists are under contract. Hiring one pays their employer compensation and will affect the relationship between the teams.'}</p>
-        <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
-          {marketCandidates.map((s) => {
-            const employerTeamId = employerByStaffId.get(s.id) ?? staffEmployer(state.aiStaff, s.id);
-            const employer = state.teams.find((team) => team.id === employerTeamId);
-            const poachingCost = employerTeamId ? staffPoachingCompensation(s) : 0;
-            return (
-            <StaffCard
-              key={s.id}
-              state={state}
-              s={s}
-              hired={hiredById.has(s.id)}
-              current={current?.id === s.id}
-              highlighted={s.id === selectedStaffId}
-              affordable={toMoney(s.signingFee) + poachingCost + (current && current.id !== s.id ? staffReleaseCost(current) : 0) <= budget}
-              replacementCost={current && current.id !== s.id ? staffReleaseCost(current) : 0}
-              employerName={employer?.name}
-              poachingCost={poachingCost}
-              latestOffer={contractOfferNews.find((item) => item.id.includes(`-${s.id}-`))}
-              futureIntent={state.characterInteractions?.futureIntentions.find((entry) => entry.target.type === 'Staff' && entry.target.id === s.id)}
-              onHire={() => navigate(`/staff/${encodeURIComponent(s.id)}/negotiate`)}
-              onFire={() => dispatch({ type: 'FIRE_STAFF', staffId: s.id })}
-              onExtend={() => navigate(`/staff/${encodeURIComponent(s.id)}/negotiate`)}
-            />
-          );})}
-        </div>
-        {visibleCandidates.length === 0 && <p className="text-sm text-neutral-500">No {activeRole.toLowerCase()} candidates are listed in this section.</p>}
-        {candidates.length > 0 && <StaffPagination label="Candidates" total={candidates.length} page={page} pageCount={pageCount} onPage={setCandidatePage} />}
+        <StaffRecruitmentList
+          state={state}
+          candidates={orderedRecruitmentCandidates}
+          current={current}
+          budget={budget}
+          filters={recruitmentFilters}
+          sort={recruitmentSort}
+          selectedStaffId={selectedStaffId}
+          marketView={marketView}
+          onFilterChange={updateRecruitmentFilter}
+          onSort={updateRecruitmentSort}
+          onOpenNegotiation={(staffId) => navigate(`/staff/${encodeURIComponent(staffId)}/negotiate`)}
+        />
       </Panel>}
       </WorkspaceBody>
     </WorkspaceScreen>
+  );
+}
+
+function StaffRecruitmentList({
+  state,
+  candidates,
+  current,
+  budget,
+  filters,
+  sort,
+  selectedStaffId,
+  marketView,
+  onFilterChange,
+  onSort,
+  onOpenNegotiation,
+}: {
+  state: GameState;
+  candidates: ReturnType<typeof filterStaffRecruitmentCandidates>;
+  current?: StaffMember;
+  budget: number;
+  filters: StaffRecruitmentFilters;
+  sort: StaffRecruitmentSort;
+  selectedStaffId: string | null;
+  marketView: StaffMarketView;
+  onFilterChange: <K extends keyof StaffRecruitmentFilters>(key: K, value: StaffRecruitmentFilters[K]) => void;
+  onSort: (key: StaffRecruitmentSortKey) => void;
+  onOpenNegotiation: (staffId: string) => void;
+}) {
+  return (
+    <div className="overflow-x-auto rounded border border-neutral-800">
+      <div className="border-b border-neutral-800 bg-neutral-950/50 p-3">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <div className="text-xs text-neutral-400">
+            {candidates.length} candidates · click a column to sort · select a name for the personnel file
+          </div>
+          <div className="flex flex-wrap gap-3 text-xs text-neutral-400">
+            <label className="flex items-center gap-1.5">
+              <input type="checkbox" checked={filters.affordableOnly} onChange={(event) => onFilterChange('affordableOnly', event.target.checked)} />
+              Affordable
+            </label>
+            <label className="flex items-center gap-1.5">
+              <input type="checkbox" checked={filters.underContractOnly} onChange={(event) => onFilterChange('underContractOnly', event.target.checked)} />
+              Under contract
+            </label>
+            <span className="text-[10px] text-neutral-600">Budget {formatMoney(budget)}</span>
+          </div>
+        </div>
+        <input
+          value={filters.query}
+          onChange={(event) => onFilterChange('query', event.target.value)}
+          placeholder="Search name, nationality, role, employer"
+          aria-label="Search staff recruitment"
+          className="mt-2 w-full rounded border border-neutral-700 bg-neutral-950 px-2 py-1.5 text-xs text-neutral-200 placeholder:text-neutral-600"
+        />
+      </div>
+      <table className="w-full min-w-[920px] border-collapse text-xs">
+        <thead className="bg-neutral-900/70 text-left text-[10px] uppercase tracking-wide text-neutral-500">
+          <tr>
+            <StaffSortableHeader label="Staff" sortKey="name" sort={sort} onSort={onSort} />
+            <th className="px-2 py-2">Role</th>
+            <StaffSortableHeader label="Rating" sortKey="rating" sort={sort} onSort={onSort} />
+            <th className="px-2 py-2">Employer</th>
+            <StaffSortableHeader label="Salary" sortKey="salary" sort={sort} onSort={onSort} />
+            <StaffSortableHeader label="Fee" sortKey="signingFee" sort={sort} onSort={onSort} />
+            {marketView === 'rivals' && <StaffSortableHeader label="Poaching" sortKey="poachingCost" sort={sort} onSort={onSort} />}
+            <StaffSortableHeader label="Total cost" sortKey="totalCost" sort={sort} onSort={onSort} />
+            <th className="px-2 py-2">Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          {candidates.map((candidate) => (
+            <StaffRecruitmentRow
+              key={candidate.id}
+              state={state}
+              candidate={candidate}
+              current={current}
+              selected={candidate.id === selectedStaffId}
+              onOpenNegotiation={onOpenNegotiation}
+            />
+          ))}
+        </tbody>
+      </table>
+      {candidates.length === 0 && <div className="px-3 py-8 text-center text-sm text-neutral-500">No candidates match these filters.</div>}
+    </div>
+  );
+}
+
+function StaffSortableHeader({
+  label,
+  sortKey,
+  sort,
+  onSort,
+}: {
+  label: string;
+  sortKey: StaffRecruitmentSortKey;
+  sort: StaffRecruitmentSort;
+  onSort: (key: StaffRecruitmentSortKey) => void;
+}) {
+  const active = sort.key === sortKey;
+  return (
+    <th className="px-2 py-2">
+      <button type="button" className="inline-flex items-center gap-1 hover:text-neutral-200" onClick={() => onSort(sortKey)}>
+        {label}<span className="text-[9px]">{active ? (sort.direction === 'asc' ? '▲' : '▼') : '↕'}</span>
+      </button>
+    </th>
+  );
+}
+
+function StaffRecruitmentRow({
+  state,
+  candidate,
+  current,
+  selected,
+  onOpenNegotiation,
+}: {
+  state: GameState;
+  candidate: ReturnType<typeof filterStaffRecruitmentCandidates>[number];
+  current?: StaffMember;
+  selected: boolean;
+  onOpenNegotiation: (staffId: string) => void;
+}) {
+  return (
+    <tr className={`border-t border-neutral-800/70 align-middle hover:bg-neutral-900/60 ${selected ? 'bg-amber-500/10' : ''}`}>
+      <td className="px-2 py-2">
+        <div className="flex items-center gap-2">
+          <CharacterDossierButton state={state} subject={{ type: 'staff', staff: candidate }} className="shrink-0">
+            File
+          </CharacterDossierButton>
+          <div className="min-w-0">
+            <div className="font-semibold text-neutral-100">{candidate.name}</div>
+            <div className="truncate text-[10px] text-neutral-500">{candidate.nationality}</div>
+          </div>
+        </div>
+      </td>
+      <td className="px-2 py-2 text-neutral-400">{candidate.role}</td>
+      <td className="px-2 py-2 tabular-nums text-amber-300">{staffRatingOutOfTen(candidate.rating).toFixed(1)}</td>
+      <td className="px-2 py-2 text-neutral-400">{candidate.employerName ?? 'Free agent'}</td>
+      <td className="px-2 py-2 tabular-nums text-neutral-300">{formatMoney(toMoney(candidate.salary))}</td>
+      <td className="px-2 py-2 tabular-nums text-neutral-300">{formatMoney(toMoney(candidate.signingFee))}</td>
+      {candidate.employerName && <td className="px-2 py-2 tabular-nums text-neutral-300">{formatMoney(candidate.poachingCost)}</td>}
+      <td className={`px-2 py-2 tabular-nums ${candidate.affordable ? 'text-emerald-300' : 'text-red-300'}`}>{formatMoney(candidate.totalCost)}</td>
+      <td className="px-2 py-2">
+        <Button
+          variant="primary"
+          className="px-2 py-1 text-[10px]"
+          disabled={!candidate.affordable}
+          onClick={() => onOpenNegotiation(candidate.id)}
+        >
+          {candidate.affordable
+            ? `${candidate.employerName ? 'Poach' : 'Hire'}${current ? ' / replace' : ''}`
+            : 'Insufficient budget'}
+        </Button>
+      </td>
+    </tr>
   );
 }
 

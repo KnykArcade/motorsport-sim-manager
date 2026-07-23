@@ -34,6 +34,7 @@ export function Drivers() {
   const navigate = useNavigate();
   const [tab, setTab] = useState<DriversTab>('lineup');
   const [directoryPage, setDirectoryPage] = useState(0);
+  const [driverSort, setDriverSort] = useState<DriverSort>({ key: 'overall', direction: 'desc' });
   if (!state) return null;
 
   const teamName = (id: string) => state.teams.find((t) => t.id === id)?.name ?? id;
@@ -42,11 +43,14 @@ export function Drivers() {
   const ordered = state.drivers;
   const directoryPageCount = driverDirectoryPageCount(ordered.length);
   const safeDirectoryPage = Math.min(directoryPage, directoryPageCount - 1);
-  const visibleDirectoryDrivers = driverDirectoryPage(ordered, safeDirectoryPage);
+  const orderedDirectoryDrivers = [...ordered].sort((left, right) => compareDrivers(left, right, driverSort));
+  const visibleDirectoryDrivers = driverDirectoryPage(orderedDirectoryDrivers, safeDirectoryPage);
 
   const playerTeam = teamById(state, state.selectedTeamId);
   const raceSeats = activeDriversForTeam(state, state.selectedTeamId);
   const reserves = reserveDriversForTeam(state, state.selectedTeamId);
+  const sortedRaceSeats = [...raceSeats].sort((left, right) => compareDrivers(left, right, driverSort));
+  const sortedReserves = [...reserves].sort((left, right) => compareDrivers(left, right, driverSort));
   const teamBudget = playerTeam?.budget ?? 0;
   const canNegotiateContracts = state.gameMode !== 'SingleSeason' && !state.seasonComplete;
   const openNegotiation = (driverId: string) => {
@@ -112,46 +116,20 @@ export function Drivers() {
             </h2>
             <span className="text-xs text-neutral-500">Only two cars per team race</span>
           </div>
-          <div className="grid gap-3 md:grid-cols-2">
-            {[0, 1].map((seat) => {
-              const driver = raceSeats[seat];
-              return (
-                <div key={seat} className="rounded border border-neutral-700 bg-neutral-900/60 p-3">
-                  <div className="text-xs uppercase tracking-wide text-neutral-500">
-                    Car {seat + 1}
-                  </div>
-                  {driver ? (
-                    <>
-                      <div className="mt-1 flex flex-wrap items-center justify-between gap-2">
-                        <div>
-                          <span className="font-bold text-neutral-100">
-                            #{driver.number} {driver.name}
-                          </span>
-                          <span className="ml-2 rounded bg-neutral-800 px-2 py-0.5 text-xs font-semibold text-amber-300">
-                            {driver.ratings.overall.toFixed(1)}
-                          </span>
-                        </div>
-                        <DriverDossierButton
-                          state={state}
-                          subject={{ type: 'driver', driver }}
-                          context={`Car ${seat + 1} - ${playerTeam.name}`}
-                          focus="relationship"
-                        />
-                      </div>
-                      <ContractExtensionControls
-                        driver={driver}
-                        canNegotiate={canNegotiateContracts}
-                        latestOffer={latestContractOffer(driver.id)}
-                        onOpen={openNegotiation}
-                      />
-                    </>
-                  ) : (
-                    <div className="mt-1 text-sm text-neutral-500">Empty seat</div>
-                  )}
-                </div>
-              );
-            })}
-          </div>
+          <DriverRosterTable
+            state={state}
+            drivers={sortedRaceSeats}
+            sort={driverSort}
+            onSort={(key) => setDriverSort((current) => current.key === key
+              ? { key, direction: current.direction === 'asc' ? 'desc' : 'asc' }
+              : { key, direction: 'desc' })}
+            seatLabel={(driver) => `Car ${raceSeats.findIndex((entry) => entry.id === driver.id) + 1}`}
+            context={(driver) => `Car ${raceSeats.findIndex((entry) => entry.id === driver.id) + 1} - ${playerTeam.name}`}
+            focus="relationship"
+            canNegotiate={canNegotiateContracts}
+            latestContractOffer={latestContractOffer}
+            onOpenNegotiation={openNegotiation}
+          />
 
           {contractOfferNews.length > 0 && (
             <div className="mt-4 rounded border border-neutral-800 bg-neutral-950/45 p-3">
@@ -175,52 +153,29 @@ export function Drivers() {
       {tab === 'reserves' && playerTeam && (
         <Panel title={`Reserve Drivers — ${playerTeam.name}`}>
           {reserves.length > 0 ? (
-            <div className="grid gap-3 lg:grid-cols-2">
-              {reserves.map((reserve) => (
-                <div key={reserve.id} className="rounded border border-neutral-800 bg-neutral-900/40 p-3">
-                  <div className="flex flex-wrap items-center justify-between gap-2">
-                    <span className="text-sm font-semibold text-neutral-200">
-                      #{reserve.number} {reserve.name}{' '}
-                      <span className="text-xs text-amber-300/80">{reserve.ratings.overall.toFixed(1)}</span>
-                      {reserve.contractType === 'third' && (
-                        <span className="ml-2 rounded bg-sky-500/15 px-1.5 py-0.5 text-[10px] text-sky-300">
-                          3rd driver
-                        </span>
-                      )}
-                    </span>
-                    <div className="flex flex-wrap gap-2">
-                      <DriverDossierButton
-                        state={state}
-                        subject={{ type: 'driver', driver: reserve }}
-                        context={`Reserve - ${playerTeam.name}`}
-                        focus="development"
-                      />
-                      {[0, 1].map((seat) => (
-                        <Button
-                          key={seat}
-                          variant="ghost"
-                          onClick={() =>
-                            dispatch({
-                              type: 'SWAP_RACE_DRIVER',
-                              seatIndex: seat,
-                              reserveDriverId: reserve.id,
-                            })
-                          }
-                        >
-                          → Car {seat + 1}
-                        </Button>
-                      ))}
-                    </div>
-                  </div>
-                  <ContractExtensionControls
-                    driver={reserve}
-                    canNegotiate={canNegotiateContracts}
-                    latestOffer={latestContractOffer(reserve.id)}
-                    onOpen={openNegotiation}
-                  />
-                </div>
+            <DriverRosterTable
+              state={state}
+              drivers={sortedReserves}
+              sort={driverSort}
+              onSort={(key) => setDriverSort((current) => current.key === key
+                ? { key, direction: current.direction === 'asc' ? 'desc' : 'asc' }
+                : { key, direction: 'desc' })}
+              seatLabel={(driver) => driver.contractType === 'third' ? '3rd driver' : 'Reserve'}
+              context={() => `Reserve - ${playerTeam.name}`}
+              focus="development"
+              canNegotiate={canNegotiateContracts}
+              latestContractOffer={latestContractOffer}
+              onOpenNegotiation={openNegotiation}
+              reserveActions={(driver) => [0, 1].map((seat) => (
+                <Button
+                  key={seat}
+                  variant="ghost"
+                  onClick={() => dispatch({ type: 'SWAP_RACE_DRIVER', seatIndex: seat, reserveDriverId: driver.id })}
+                >
+                  → Car {seat + 1}
+                </Button>
               ))}
-            </div>
+            />
           ) : (
             <div className="rounded border border-dashed border-neutral-700 px-4 py-8 text-center text-sm text-neutral-500">
               No reserve or test drivers are currently signed.
@@ -236,10 +191,10 @@ export function Drivers() {
               <table className="w-full border-collapse text-sm">
                 <thead>
                   <tr className="border-b border-neutral-800">
-                    <th className="px-2 py-1.5 text-left">#</th>
-                    <th className="px-2 py-1.5 text-left">Driver</th>
+                    <th className="px-2 py-1.5 text-left"><DriverSortHeader label="#" sortKey="number" sort={driverSort} onSort={(key) => setDriverSort((current) => current.key === key ? { key, direction: current.direction === 'asc' ? 'desc' : 'asc' } : { key, direction: 'asc' })} /></th>
+                    <th className="px-2 py-1.5 text-left"><DriverSortHeader label="Driver" sortKey="name" sort={driverSort} onSort={(key) => setDriverSort((current) => current.key === key ? { key, direction: current.direction === 'asc' ? 'desc' : 'asc' } : { key, direction: 'asc' })} /></th>
                     <th className="px-2 py-1.5 text-left">Team</th>
-                    <th className="px-2 py-1.5 text-right">OVR</th>
+                    <th className="px-2 py-1.5 text-right"><DriverSortHeader label="OVR" sortKey="overall" sort={driverSort} onSort={(key) => setDriverSort((current) => current.key === key ? { key, direction: current.direction === 'asc' ? 'desc' : 'asc' } : { key, direction: 'desc' })} /></th>
                     <th className="px-2 py-1.5 text-right">Qual</th>
                     <th className="px-2 py-1.5 text-right">Pace</th>
                     <th className="px-2 py-1.5 text-right">Mor</th>
@@ -324,6 +279,119 @@ function RatingCell({ readout }: { readout: ReturnType<typeof readoutForDriverRa
     <td className="px-2 py-1.5 text-right tabular-nums font-semibold" style={{ color }}>
       {readout.label}
     </td>
+  );
+}
+
+type DriverSortKey = 'name' | 'number' | 'overall' | 'morale' | 'confidence';
+type DriverSort = { key: DriverSortKey; direction: 'asc' | 'desc' };
+type RosterDriver = NonNullable<ReturnType<typeof useGame>['state']>['drivers'][number];
+
+function compareDrivers(left: RosterDriver, right: RosterDriver, sort: DriverSort): number {
+  const value = (driver: RosterDriver): number | string => {
+    if (sort.key === 'name') return driver.name;
+    if (sort.key === 'number') return driver.number;
+    if (sort.key === 'overall') return driver.ratings.overall;
+    if (sort.key === 'morale') return driver.morale;
+    return driver.confidence;
+  };
+  const leftValue = value(left);
+  const rightValue = value(right);
+  const direction = sort.direction === 'asc' ? 1 : -1;
+  if (leftValue < rightValue) return -1 * direction;
+  if (leftValue > rightValue) return direction;
+  return left.name.localeCompare(right.name);
+}
+
+function DriverRosterTable({
+  state,
+  drivers,
+  sort,
+  onSort,
+  seatLabel,
+  context,
+  focus,
+  canNegotiate,
+  latestContractOffer,
+  onOpenNegotiation,
+  reserveActions,
+}: {
+  state: NonNullable<ReturnType<typeof useGame>['state']>;
+  drivers: RosterDriver[];
+  sort: DriverSort;
+  onSort: (key: DriverSortKey) => void;
+  seatLabel: (driver: RosterDriver) => string;
+  context: (driver: RosterDriver) => string;
+  focus: 'relationship' | 'development';
+  canNegotiate: boolean;
+  latestContractOffer: (driverId: string) => NonNullable<ReturnType<typeof useGame>['state']>['news'][number] | undefined;
+  onOpenNegotiation: (driverId: string) => void;
+  reserveActions?: (driver: RosterDriver) => React.ReactNode;
+}) {
+  return (
+    <div className="overflow-x-auto rounded border border-neutral-800">
+      <table className="w-full min-w-[760px] border-collapse text-xs">
+        <thead className="bg-neutral-900/70 text-left text-[10px] uppercase tracking-wide text-neutral-500">
+          <tr>
+            <th className="px-2 py-2">Seat</th>
+            <DriverSortHeader label="Driver" sortKey="name" sort={sort} onSort={onSort} />
+            <DriverSortHeader label="OVR" sortKey="overall" sort={sort} onSort={onSort} />
+            <DriverSortHeader label="Morale" sortKey="morale" sort={sort} onSort={onSort} />
+            <DriverSortHeader label="Confidence" sortKey="confidence" sort={sort} onSort={onSort} />
+            <th className="px-2 py-2">Contract</th>
+            <th className="px-2 py-2">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {drivers.map((driver) => (
+            <tr key={driver.id} className="border-t border-neutral-800/70 align-middle hover:bg-neutral-900/60">
+              <td className="px-2 py-2 text-neutral-400">{seatLabel(driver)}</td>
+              <td className="px-2 py-2">
+                <div className="flex items-center gap-2">
+                  <DriverDossierButton state={state} subject={{ type: 'driver', driver }} context={context(driver)} focus={focus} />
+                  <span className="font-semibold text-neutral-100">#{driver.number} {driver.name}</span>
+                </div>
+              </td>
+              <td className="px-2 py-2 tabular-nums text-amber-300">{driver.ratings.overall.toFixed(1)}</td>
+              <td className="px-2 py-2 tabular-nums" style={{ color: ratingColor(driver.morale) }}>{driver.morale.toFixed(0)}</td>
+              <td className="px-2 py-2 tabular-nums" style={{ color: ratingColor(driver.confidence) }}>{driver.confidence.toFixed(0)}</td>
+              <td className="px-2 py-2">
+                <ContractExtensionControls
+                  driver={driver}
+                  canNegotiate={canNegotiate}
+                  latestOffer={latestContractOffer(driver.id)}
+                  onOpen={onOpenNegotiation}
+                />
+              </td>
+              <td className="px-2 py-2">
+                <div className="flex flex-wrap gap-1">{reserveActions?.(driver)}</div>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      {drivers.length === 0 && <div className="px-3 py-8 text-center text-sm text-neutral-500">No drivers are currently listed.</div>}
+    </div>
+  );
+}
+
+function DriverSortHeader({
+  label,
+  sortKey,
+  sort,
+  onSort,
+}: {
+  label: string;
+  sortKey: DriverSortKey;
+  sort: DriverSort;
+  onSort: (key: DriverSortKey) => void;
+}) {
+  const active = sort.key === sortKey;
+  return (
+    <th className="px-2 py-2">
+      <button type="button" className="inline-flex items-center gap-1 hover:text-neutral-200" onClick={() => onSort(sortKey)}>
+        {label}<span className="text-[9px]">{active ? (sort.direction === 'asc' ? '▲' : '▼') : '↕'}</span>
+      </button>
+    </th>
   );
 }
 
