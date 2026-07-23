@@ -6,7 +6,10 @@ import {
   sponsorObjectiveSummary,
   sponsorPage,
   sponsorPageCount,
+  sortSponsorNegotiations,
+  sortSponsorOffers,
 } from './sponsorsViewModel';
+import type { SponsorNegotiation } from '../types/sponsorTypes';
 
 function sponsor(id: string, statuses: Array<'Pending' | 'Met' | 'Failed'> = []): Sponsor {
   return {
@@ -53,5 +56,27 @@ describe('sponsorsViewModel', () => {
       sponsor('a', ['Pending', 'Met']),
       sponsor('b', ['Failed', 'Pending']),
     ])).toEqual({ Pending: 2, Met: 1, Failed: 1 });
+  });
+
+  it('sorts sponsor opportunities and negotiations by decision-relevant values', () => {
+    const offers = [
+      { ...sponsor('a'), annualValue: 2, confidence: 60 },
+      { ...sponsor('b'), annualValue: 5, confidence: 40 },
+    ];
+    expect(sortSponsorOffers(offers, { key: 'annualValue', direction: 'desc' }).map((item) => item.id)).toEqual(['b', 'a']);
+    const negotiation = (id: string, patience: number, value: number): SponsorNegotiation => ({
+      id,
+      sponsorId: id,
+      sponsorName: id,
+      kind: 'New',
+      status: 'Draft',
+      openedRound: 1,
+      deadlineRound: 4,
+      patience,
+      attempts: 1,
+      proposedTerms: { annualValue: value, contractYears: 2, bonusMultiplier: 1, objectiveLevel: 'Standard' },
+    });
+    expect(sortSponsorNegotiations([negotiation('a', 40, 2), negotiation('b', 80, 5)], { key: 'patience', direction: 'desc' }).map((item) => item.id)).toEqual(['b', 'a']);
+    expect(sortSponsorNegotiations([negotiation('a', 40, 2), negotiation('b', 80, 5)], { key: 'annualValue', direction: 'desc' }).map((item) => item.id)).toEqual(['b', 'a']);
   });
 });
