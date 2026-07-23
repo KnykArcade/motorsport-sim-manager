@@ -28,10 +28,11 @@ function sponsor(id: string, statuses: Array<'Pending' | 'Met' | 'Failed'> = [])
 }
 
 describe('sponsorsViewModel', () => {
-  it('defines the four compact sponsor workspaces', () => {
+  it('defines the sponsor workspaces including negotiated contracts', () => {
     expect(SPONSORS_WORKSPACE_TABS.map((tab) => tab.id)).toEqual([
       'portfolio',
       'opportunities',
+      'negotiations',
       'objectives',
       'owner',
     ]);
@@ -53,4 +54,3 @@ describe('sponsorsViewModel', () => {
     ])).toEqual({ Pending: 2, Met: 1, Failed: 1 });
   });
 });
-

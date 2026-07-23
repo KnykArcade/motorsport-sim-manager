@@ -9,8 +9,9 @@ import {
   averageSponsorConfidence,
   generateSponsorOffers,
   sponsorSlotCapacity,
+  sponsorTerminationBuyout,
 } from '../sim/commercialEngine';
-import type { Sponsor } from '../types/sponsorTypes';
+import type { Sponsor, SponsorContractTerms, SponsorNegotiation } from '../types/sponsorTypes';
 import { OWNER_PERSONALITY_LABELS, OWNER_PERSONALITY_DESCRIPTIONS } from '../types/expectationTypes';
 import { CharacterDossierButton } from '../components/characterCards/CharacterDossier';
 import {
@@ -70,7 +71,7 @@ export function Sponsors() {
   const offers = useMemo(
     () =>
       state && team
-        ? generateSponsorOffers(team, commercial, state.randomSeed, state.seasonYear, state.series)
+        ? generateSponsorOffers(team, commercial, state.randomSeed, state.seasonYear, state.series, state.currentRaceIndex)
         : [],
     [state, team, commercial],
   );
@@ -81,6 +82,8 @@ export function Sponsors() {
   const reputation = state.teamReputations?.[state.selectedTeamId];
   const sponsors = commercial?.sponsors ?? [];
   const used = sponsors.length;
+  const negotiations = commercial?.negotiations ?? [];
+  const activeNegotiations = negotiations.filter((item) => item.status === 'Draft' || item.status === 'Countered');
   const slotsFull = used >= capacity;
   const objectiveSummary = sponsorObjectiveSummary(sponsors);
   const totalRaces = state.calendar.length;
@@ -128,7 +131,7 @@ export function Sponsors() {
           <WorkspaceTabs
             items={SPONSORS_WORKSPACE_TABS.map((workspace) => ({
               id: workspace.id,
-              label: `${workspace.label}${workspace.id === 'opportunities' ? ` (${offers.length})` : workspace.id === 'objectives' ? ` (${objectiveSummary.Pending})` : ''}`,
+              label: `${workspace.label}${workspace.id === 'opportunities' ? ` (${offers.length})` : workspace.id === 'negotiations' ? ` (${activeNegotiations.length})` : workspace.id === 'objectives' ? ` (${objectiveSummary.Pending})` : ''}`,
             }))}
             active={tab}
             onChange={selectTab}
@@ -170,8 +173,10 @@ export function Sponsors() {
                       <SponsorPortfolioCard
                         key={sponsor.id}
                         sponsor={sponsor}
-                        canDrop={state.gameMode !== 'SingleSeason'}
-                        onDrop={() => dispatch({ type: 'DROP_SPONSOR', sponsorId: sponsor.id })}
+                        canManage={state.gameMode !== 'SingleSeason'}
+                        canAffordBuyout={(team?.budget ?? 0) >= sponsorTerminationBuyout(sponsor) * 1_000_000}
+                        onRenew={() => dispatch({ type: 'START_SPONSOR_RENEWAL', sponsorId: sponsor.id })}
+                        onTerminate={() => dispatch({ type: 'TERMINATE_SPONSOR', sponsorId: sponsor.id })}
                       />
                     ))}
                   </div>
@@ -197,8 +202,7 @@ export function Sponsors() {
               }
             >
               <p className="mb-3 text-xs text-neutral-500">
-                Signing fills a portfolio slot. Guaranteed value follows the standard 25% upfront and
-                75% race-installment cash flow. {slotsFull && (
+                Opening talks reserves no slot. Sponsors may accept, counter, reject, or withdraw as patience and the deadline run down. {slotsFull && (
                   <span className="text-red-300">
                     Portfolio full ({used}/{capacity}) — drop a sponsor before signing another.
                   </span>
@@ -214,6 +218,27 @@ export function Sponsors() {
                       offer={offer}
                       disabled={slotsFull || state.gameMode === 'SingleSeason'}
                       onSign={() => dispatch({ type: 'SIGN_SPONSOR', offerId: offer.id })}
+                    />
+                  ))}
+                </div>
+              )}
+            </Panel>
+          )}
+
+          {tab === 'negotiations' && (
+            <Panel title="Contract Negotiations" actions={<span className="text-xs text-neutral-500">Terms are exact; acceptance logic remains private</span>}>
+              {negotiations.length === 0 ? (
+                <p className="text-sm text-neutral-500">No sponsor talks have been opened.</p>
+              ) : (
+                <div className="grid gap-3 lg:grid-cols-2">
+                  {[...negotiations].reverse().map((negotiation) => (
+                    <SponsorNegotiationCard
+                      key={negotiation.id}
+                      negotiation={negotiation}
+                      disabled={state.gameMode === 'SingleSeason'}
+                      onSubmit={(terms) => dispatch({ type: 'SUBMIT_SPONSOR_NEGOTIATION', negotiationId: negotiation.id, terms })}
+                      onAcceptCounter={() => dispatch({ type: 'ACCEPT_SPONSOR_COUNTER', negotiationId: negotiation.id })}
+                      onCancel={() => dispatch({ type: 'CANCEL_SPONSOR_NEGOTIATION', negotiationId: negotiation.id })}
                     />
                   ))}
                 </div>
@@ -319,12 +344,16 @@ export function Sponsors() {
 
 function SponsorPortfolioCard({
   sponsor,
-  canDrop,
-  onDrop,
+  canManage,
+  canAffordBuyout,
+  onRenew,
+  onTerminate,
 }: {
   sponsor: Sponsor;
-  canDrop: boolean;
-  onDrop: () => void;
+  canManage: boolean;
+  canAffordBuyout: boolean;
+  onRenew: () => void;
+  onTerminate: () => void;
 }) {
   return (
     <div className="rounded-lg border border-neutral-800 bg-neutral-900/40 p-3">
@@ -342,14 +371,10 @@ function SponsorPortfolioCard({
         <Row label="Renewal chance" value={`${Math.round(sponsor.renewalChance * 100)}%`} />
         <Row label="Objectives" value={`${sponsor.objectives.length}`} />
       </div>
-      {canDrop && <button
-        type="button"
-        onClick={onDrop}
-        title="Ends this sponsor relationship immediately. No termination fee is modeled."
-        className="mt-3 w-full rounded border border-neutral-700 px-2 py-1 text-xs font-semibold text-red-300 hover:border-red-500/60 hover:bg-red-500/10"
-      >
-        Drop sponsor
-      </button>}
+      {canManage && <div className="mt-3 grid grid-cols-2 gap-2">
+        <button type="button" disabled={sponsor.contractYearsRemaining > 1} onClick={onRenew} className="rounded border border-neutral-700 px-2 py-1 text-xs font-semibold text-neutral-200 enabled:hover:border-emerald-500/60 disabled:text-neutral-600">Renew</button>
+        <button type="button" disabled={!canAffordBuyout} onClick={onTerminate} title={canAffordBuyout ? `Immediate buyout: $${sponsorTerminationBuyout(sponsor)}M` : `Cannot afford the $${sponsorTerminationBuyout(sponsor)}M buyout`} className="rounded border border-neutral-700 px-2 py-1 text-xs font-semibold text-red-300 enabled:hover:border-red-500/60 enabled:hover:bg-red-500/10 disabled:cursor-not-allowed disabled:text-neutral-600">Buy out ${sponsorTerminationBuyout(sponsor)}M</button>
+      </div>}
     </div>
   );
 }
@@ -389,8 +414,36 @@ function SponsorOfferCard({
         onClick={onSign}
         className="mt-2 w-full rounded bg-emerald-600 px-2 py-1.5 text-xs font-semibold text-white enabled:hover:bg-emerald-500 disabled:cursor-not-allowed disabled:bg-neutral-800 disabled:text-neutral-500"
       >
-        {disabled ? 'No free slot' : 'Sign sponsor'}
+        {disabled ? 'No free slot' : 'Open negotiations'}
       </button>
+    </div>
+  );
+}
+
+function SponsorNegotiationCard({ negotiation, disabled, onSubmit, onAcceptCounter, onCancel }: {
+  negotiation: SponsorNegotiation;
+  disabled: boolean;
+  onSubmit: (terms: SponsorContractTerms) => void;
+  onAcceptCounter: () => void;
+  onCancel: () => void;
+}) {
+  const [terms, setTerms] = useState<SponsorContractTerms>(negotiation.counterTerms ?? negotiation.proposedTerms);
+  const active = negotiation.status === 'Draft' || negotiation.status === 'Countered';
+  return (
+    <div className="rounded-lg border border-neutral-800 bg-neutral-900/40 p-3">
+      <div className="flex items-start justify-between gap-2">
+        <div><div className="font-semibold text-neutral-100">{negotiation.sponsorName}</div><div className="text-[10px] uppercase tracking-wide text-neutral-500">{negotiation.kind} deal · deadline round {negotiation.deadlineRound}</div></div>
+        <span className={active ? 'text-amber-300' : negotiation.status === 'Accepted' ? 'text-green-300' : 'text-neutral-400'}>{negotiation.status}</span>
+      </div>
+      <div className="mt-3 grid grid-cols-2 gap-2 text-xs">
+        <label className="text-neutral-400">Annual value ($M)<input type="number" step="0.1" value={terms.annualValue} disabled={!active || disabled} onChange={(event) => setTerms({ ...terms, annualValue: Number(event.target.value) })} className="mt-1 w-full rounded border border-neutral-700 bg-neutral-950 px-2 py-1 text-neutral-100" /></label>
+        <label className="text-neutral-400">Years<input type="number" min="1" max="5" value={terms.contractYears} disabled={!active || disabled} onChange={(event) => setTerms({ ...terms, contractYears: Number(event.target.value) })} className="mt-1 w-full rounded border border-neutral-700 bg-neutral-950 px-2 py-1 text-neutral-100" /></label>
+        <label className="text-neutral-400">Bonus multiplier<input type="number" step="0.1" min="0.5" max="2" value={terms.bonusMultiplier} disabled={!active || disabled} onChange={(event) => setTerms({ ...terms, bonusMultiplier: Number(event.target.value) })} className="mt-1 w-full rounded border border-neutral-700 bg-neutral-950 px-2 py-1 text-neutral-100" /></label>
+        <label className="text-neutral-400">Objectives<select value={terms.objectiveLevel} disabled={!active || disabled} onChange={(event) => setTerms({ ...terms, objectiveLevel: event.target.value as SponsorContractTerms['objectiveLevel'] })} className="mt-1 w-full rounded border border-neutral-700 bg-neutral-950 px-2 py-1 text-neutral-100"><option>Flexible</option><option>Standard</option><option>Stretch</option></select></label>
+      </div>
+      <div className="mt-2 text-xs text-neutral-500">Patience: {negotiation.patience} · Attempts: {negotiation.attempts}{negotiation.outcomeMessage ? ` · ${negotiation.outcomeMessage}` : ''}</div>
+      {negotiation.counterTerms && active && <div className="mt-2 rounded border border-amber-500/20 bg-amber-500/5 p-2 text-xs text-amber-200">Counter: ${negotiation.counterTerms.annualValue}M · {negotiation.counterTerms.contractYears} years · {negotiation.counterTerms.bonusMultiplier}× bonuses · {negotiation.counterTerms.objectiveLevel} objectives</div>}
+      {active && !disabled && <div className="mt-3 flex gap-2"><button type="button" onClick={() => onSubmit(terms)} className="rounded bg-emerald-600 px-3 py-1 text-xs font-semibold text-white">Submit proposal</button>{negotiation.counterTerms && <button type="button" onClick={onAcceptCounter} className="rounded border border-amber-500/40 px-3 py-1 text-xs font-semibold text-amber-200">Accept counter</button>}<button type="button" onClick={onCancel} className="ml-auto text-xs text-neutral-500">End talks</button></div>}
     </div>
   );
 }
