@@ -186,5 +186,13 @@ export function buildTeamPrincipal(draft: PrincipalDraft): TeamPrincipal {
     riskTolerance,
     ...traits,
     reputation,
+    skillAttributes: {
+      mediaImage: traits.commercialSkill,
+      boardConfidence: traits.politicalSkill,
+      financialDiscipline: traits.commercialSkill,
+      driverManagement: traits.driverManagement,
+      development: traits.developmentFocus,
+      strategy: traits.raceStrategy,
+    },
   };
 }

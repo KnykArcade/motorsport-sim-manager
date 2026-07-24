@@ -71,6 +71,9 @@ export type TeamPrincipal = {
   commercialSkill: number;
   politicalSkill: number;
   reputation: number;
+  // Creation-time allocation; carried into the career as available Principal Points.
+  skillAttributes?: PrincipalAttributes;
+  skillPoints?: number;
 };
 
 // Named gameplay modifiers a principal's choices contribute. Each value is a

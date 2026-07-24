@@ -174,7 +174,7 @@ import type { EngineDealType } from '../types/engineTypes';
 import type { RegulationVote } from '../types/politicsTypes';
 import type { RDBranchId, RDProjectStartRequest } from '../types/rdTypes';
 import type { RecruitmentFocus, ScoutedEntityType } from '../types/scoutingTypes';
-import type { StaffMember } from '../types/staffTypes';
+import { ROLE_PRINCIPAL_POINT_ATTRIBUTE, type StaffMember, type StaffRole } from '../types/staffTypes';
 import type { StaffResponsibilityId, StaffResponsibilityPolicy } from '../types/staffTypes';
 import type { DriverDevelopmentFocus } from '../types/developmentCurveTypes';
 import type { LiveRaceAnalyticsInput } from '../types/performanceAnalyticsTypes';
@@ -340,6 +340,7 @@ export type GameAction =
     }
   | { type: 'CLEAR_ACADEMY_DECISION'; academyId: string }
   | { type: 'HIRE_STAFF'; staffId: string }
+  | { type: 'UPGRADE_STAFF_DEPARTMENT'; role: StaffRole }
   | { type: 'FIRE_STAFF'; staffId: string }
   | { type: 'EXTEND_STAFF_CONTRACT'; staffId: string; years: number; offerMultiplier?: number }
   | { type: 'PERFORM_CHARACTER_INTERACTION'; target: CharacterInteractionTarget; action: CharacterInteractionAction }
@@ -1003,6 +1004,10 @@ export function gameReducer(state: GameState | null, action: GameAction): GameSt
     case 'HIRE_STAFF': {
       if (!state) return state;
       return hireStaff(state, action.staffId);
+    }
+    case 'UPGRADE_STAFF_DEPARTMENT': {
+      if (!state?.principal) return state;
+      return upgradeStaffDepartment(state, action.role);
     }
 
     case 'FIRE_STAFF': {
@@ -1766,6 +1771,44 @@ function queueSigning(
 
 // Hire a specialist: charge the one-off signing fee (must be affordable) and
 // add them to the roster. One member per role — a new hire replaces the old.
+function upgradeStaffDepartment(state: GameState, role: StaffRole): GameState {
+  const principal = state.principal;
+  if (!principal || principal.skillPoints < 1) return state;
+  const roster = state.staff ?? [];
+  const current = roster.find((member) => member.role === role);
+  const baseRating = current
+    ? (current.rating <= 10 ? current.rating * 10 : current.rating)
+    : 50;
+  const nextRating = Math.min(100, baseRating + 10);
+  if (nextRating <= baseRating) return state;
+  const attribute = ROLE_PRINCIPAL_POINT_ATTRIBUTE[role];
+  const nextPrincipal = {
+    ...principal,
+    skillPoints: principal.skillPoints - 1,
+    spentSkillPoints: {
+      ...principal.spentSkillPoints,
+      [attribute]: (principal.spentSkillPoints[attribute] ?? 0) + 1,
+    },
+  };
+  const nextStaff = current
+    ? roster.map((member) => member.id === current.id ? { ...member, rating: nextRating } : member)
+    : [
+      ...roster,
+      {
+        id: `department-${state.selectedTeamId}-${role.toLowerCase().replace(/\s+/g, '-')}`,
+        name: role,
+        role,
+        nationality: 'Team',
+        rating: nextRating,
+        salary: 0,
+        signingFee: 0,
+        contractYearsRemaining: undefined,
+        bio: 'A permanent team department improved through Principal Points.',
+      },
+    ];
+  return { ...state, principal: nextPrincipal, staff: nextStaff };
+}
+
 function hireStaff(state: GameState, staffId: string, offerMultiplier = 1, contractYears = 2): GameState {
   const roster = state.staff ?? [];
   if (roster.some((s) => s.id === staffId)) return state;

@@ -1,34 +1,26 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useState, type ReactNode } from 'react';
 import { Button } from '../components/Button';
-import {
-  BACKGROUNDS,
-  DEVELOPMENT_PHILOSOPHIES,
-  DRIVER_MANAGEMENT_STYLES,
-  MANAGEMENT_STYLES,
-  MEDIA_PERSONALITIES,
-  MODIFIER_LABELS,
-  NATIONALITIES,
-  RACE_STRATEGY_PHILOSOPHIES,
-  RISK_TOLERANCES,
-  STRENGTHS,
-  optionById,
-  type PrincipalOption,
-} from '../data/principal/principalOptions';
-import {
-  buildTeamPrincipal,
-  computePrincipalModifiers,
-  defaultPrincipalDraft,
-  type PrincipalDraft,
-} from '../sim/principalCreator';
-import type { PrincipalModifierKey, TeamPrincipal } from '../types/principalTypes';
+import { NATIONALITIES } from '../data/principal/principalOptions';
+import { buildTeamPrincipal, defaultPrincipalDraft, type PrincipalDraft } from '../sim/principalCreator';
+import type { PrincipalAttributes, TeamPrincipal } from '../types/principalTypes';
 
 const STARTING_LEVELS = [
-  { id: 'rookie', label: 'Rookie', badge: 'NAT B', points: 300, reputation: -4, level: 1 },
-  { id: 'veteran', label: 'Veteran', badge: 'INT B', points: 400, reputation: 4, level: 4 },
-  { id: 'superstar', label: 'Superstar', badge: 'INT A', points: 520, reputation: 12, level: 7 },
+  { id: 'rookie', label: 'Rookie', badge: 'NAT B', points: 30, reputation: -4, level: 1 },
+  { id: 'veteran', label: 'Veteran', badge: 'INT B', points: 40, reputation: 4, level: 4 },
+  { id: 'superstar', label: 'Superstar', badge: 'INT A', points: 52, reputation: 12, level: 7 },
 ] as const;
 
+const ATTRIBUTE_INFO: Record<keyof PrincipalAttributes, { label: string; effect: string }> = {
+  mediaImage: { label: 'Media Image', effect: 'Improves public reaction and media handling around the team.' },
+  boardConfidence: { label: 'Board Confidence', effect: 'Strengthens owner support and protects job security.' },
+  financialDiscipline: { label: 'Financial Discipline', effect: 'Improves budget control and commercial decision quality.' },
+  driverManagement: { label: 'Driver Management', effect: 'Supports driver morale, development, and lineup decisions.' },
+  development: { label: 'Development', effect: 'Improves car-development outcomes and technical direction.' },
+  strategy: { label: 'Strategy', effect: 'Improves setup feedback and in-race decision quality.' },
+};
+
 type StartingLevelId = (typeof STARTING_LEVELS)[number]['id'];
+type AttributeKey = keyof PrincipalAttributes;
 
 export function PrincipalCreator({
   teamName,
@@ -45,453 +37,170 @@ export function PrincipalCreator({
 }) {
   const [draft, setDraft] = useState<PrincipalDraft>(defaultPrincipalDraft);
   const [startingLevel, setStartingLevel] = useState<StartingLevelId>('rookie');
-  const set = <K extends keyof PrincipalDraft>(key: K, value: PrincipalDraft[K]) =>
-    setDraft((d) => ({ ...d, [key]: value }));
-
-  const principal = useMemo(() => buildTeamPrincipal(draft), [draft]);
-  const levelSpec = STARTING_LEVELS.find((level) => level.id === startingLevel) ?? STARTING_LEVELS[0];
-  const [traitPoints, setTraitPoints] = useState({
-    driverManagement: principal.driverManagement,
-    developmentFocus: principal.developmentFocus,
-    raceStrategy: principal.raceStrategy,
-    commercialSkill: principal.commercialSkill,
-    politicalSkill: principal.politicalSkill,
-    riskTolerance: principal.riskTolerance,
+  const [attributes, setAttributes] = useState<PrincipalAttributes>({
+    mediaImage: 0,
+    boardConfidence: 0,
+    financialDiscipline: 0,
+    driverManagement: 0,
+    development: 0,
+    strategy: 0,
   });
-  const spentPoints = Object.values(traitPoints).reduce((sum, value) => sum + value, 0);
+  const levelSpec = STARTING_LEVELS.find((level) => level.id === startingLevel) ?? STARTING_LEVELS[0];
+  const spentPoints = Object.values(attributes).reduce((sum, value) => sum + value, 0);
   const pointsRemaining = levelSpec.points - spentPoints;
-  const adjustedPrincipal = useMemo<TeamPrincipal>(
-    () => ({
-      ...principal,
-      ...traitPoints,
-      startingLevel,
-      traitPointBudget: levelSpec.points,
-      reputation: Math.max(0, Math.min(100, principal.reputation + levelSpec.reputation)),
-    }),
-    [levelSpec.points, levelSpec.reputation, principal, startingLevel, traitPoints],
-  );
-  const modifiers = useMemo(() => computePrincipalModifiers(principal), [principal]);
+  const basePrincipal = useMemo(() => buildTeamPrincipal(draft), [draft]);
+  const adjustedPrincipal = useMemo<TeamPrincipal>(() => ({
+    ...basePrincipal,
+    startingLevel,
+    traitPointBudget: levelSpec.points,
+    skillPoints: pointsRemaining,
+    skillAttributes: attributes,
+    mediaImage: attributes.mediaImage,
+    driverManagement: attributes.driverManagement,
+    developmentFocus: attributes.development,
+    raceStrategy: attributes.strategy,
+    commercialSkill: attributes.financialDiscipline,
+    politicalSkill: attributes.boardConfidence,
+    reputation: Math.max(0, Math.min(100, basePrincipal.reputation + levelSpec.reputation)),
+  }), [attributes, basePrincipal, levelSpec.points, levelSpec.reputation, pointsRemaining, startingLevel]);
 
-  const initials =
-    draft.name
-      .trim()
-      .split(/\s+/)
-      .map((w) => w[0])
-      .filter(Boolean)
-      .slice(0, 2)
-      .join('')
-      .toUpperCase() || '??';
-
-  const label = (list: PrincipalOption[], id: string) => optionById(list, id)?.label ?? '—';
-  const credential = credentialBadge(adjustedPrincipal.reputation, spentPoints);
-  const confirmDisabled = !draft.name.trim() || pointsRemaining !== 0;
-  const applyStartingLevel = (id: StartingLevelId) => {
-    const spec = STARTING_LEVELS.find((level) => level.id === id) ?? STARTING_LEVELS[0];
-    setStartingLevel(id);
-    setTraitPoints((current) => fitTraitBudget(current, spec.points));
-  };
-  const setTrait = (key: keyof typeof traitPoints, value: number) => {
-    setTraitPoints((current) => {
-      const next = { ...current, [key]: value };
-      const total = Object.values(next).reduce((sum, v) => sum + v, 0);
-      return total > levelSpec.points ? current : next;
+  const set = <K extends keyof PrincipalDraft>(key: K, value: PrincipalDraft[K]) =>
+    setDraft((current) => ({ ...current, [key]: value }));
+  const setAttribute = (key: AttributeKey, value: number) => {
+    setAttributes((current) => {
+      const next = { ...current, [key]: Math.max(0, Math.min(100, value)) };
+      return Object.values(next).reduce((sum, entry) => sum + entry, 0) <= levelSpec.points ? next : current;
     });
   };
+  const applyStartingLevel = (id: StartingLevelId) => {
+    setStartingLevel(id);
+    setAttributes((current) => fitAttributeBudget(current, STARTING_LEVELS.find((level) => level.id === id)?.points ?? 30));
+  };
+  const initials = draft.name.trim().split(/\s+/).map((word) => word[0]).filter(Boolean).slice(0, 2).join('').toUpperCase() || '??';
+  const canConfirm = !!draft.name.trim();
 
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <div className="text-xs font-semibold uppercase tracking-[0.3em] text-amber-500">
-            Paddock Credentials
-          </div>
-          <h2 className="mt-1 text-xl font-bold text-neutral-100">Register your Team Principal</h2>
+          <div className="text-xs font-semibold uppercase tracking-[0.3em] text-amber-500">Principal Points</div>
+          <h2 className="mt-1 text-xl font-bold text-neutral-100">Build your Team Principal</h2>
           <p className="text-sm text-neutral-400">
-            Your dossier for <span className="text-neutral-200">{teamName}</span>. Your background and
-            style shape how the team performs.
+            Choose your identity, then invest as many or as few points as you want. Unspent points carry into your career.
           </p>
         </div>
-        <Button variant="primary" disabled={confirmDisabled} onClick={() => onConfirm(adjustedPrincipal)}>
-          {!draft.name.trim() ? 'Name your principal' : pointsRemaining !== 0 ? 'Allocate all preset points' : confirmLabel}
+        <Button variant="primary" disabled={!canConfirm} onClick={() => onConfirm(adjustedPrincipal)}>
+          {canConfirm ? confirmLabel : 'Name your principal'}
         </Button>
       </div>
 
-      <div className="grid gap-4 lg:grid-cols-12">
-        {/* LEFT — credential card */}
-        <div className="lg:col-span-3">
+      <div className="grid gap-4 lg:grid-cols-[minmax(220px,0.3fr)_minmax(0,1fr)]">
+        <div className="space-y-3">
           <div className="overflow-hidden rounded-xl border border-neutral-700 bg-gradient-to-b from-neutral-900 to-neutral-950">
-            <div
-              className="flex items-center justify-between px-4 py-2 text-[10px] font-bold uppercase tracking-widest text-neutral-950"
-              style={{ backgroundColor: teamColor ?? '#f59e0b' }}
-            >
-              <span>FIA Paddock ID</span>
-              <span>Principal</span>
+            <div className="px-4 py-2 text-[10px] font-bold uppercase tracking-widest text-neutral-950" style={{ backgroundColor: teamColor ?? '#f59e0b' }}>
+              FIA Paddock ID
             </div>
             <div className="flex items-center gap-3 p-4">
-              <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-lg border border-neutral-700 bg-neutral-800 text-2xl font-black text-neutral-200">
-                {initials}
-              </div>
+              <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-lg border border-neutral-700 bg-neutral-800 text-xl font-black text-neutral-200">{initials}</div>
               <div className="min-w-0">
-                <div className="truncate text-lg font-bold text-neutral-100">
-                  {draft.name.trim() || 'Unnamed Principal'}
-                </div>
+                <div className="truncate text-lg font-bold text-neutral-100">{draft.name.trim() || 'Unnamed Principal'}</div>
                 <div className="text-xs text-amber-400">{teamName}</div>
-                <div className="mt-1 text-[11px] text-neutral-500">
-                  {draft.nationality ?? '—'} · Age {draft.age ?? '—'}
-                </div>
+                <div className="mt-1 text-[11px] text-neutral-500">{draft.nationality} · Age {draft.age}</div>
               </div>
             </div>
-            <dl className="space-y-1.5 border-t border-neutral-800 px-4 py-3 text-xs">
-              <CardRow label="Background" value={label(BACKGROUNDS, draft.background)} />
-              <CardRow label="Management" value={label(MANAGEMENT_STYLES, draft.managementStyle)} />
-              <CardRow label="Strength" value={label(STRENGTHS, draft.primaryStrength)} />
-              <CardRow label="Weakness" value={label(STRENGTHS, draft.weakness)} tone="warn" />
-              <CardRow label="Media" value={label(MEDIA_PERSONALITIES, draft.mediaPersonality)} />
-            </dl>
-            <div className="grid grid-cols-3 gap-px border-t border-neutral-800 bg-neutral-800 text-center">
-              <Pip label="Rep" value={adjustedPrincipal.reputation} />
-              <Pip label="Badge" value={credential.short} />
-              <Pip label="Risk" value={adjustedPrincipal.riskTolerance} />
+            <div className="grid grid-cols-2 gap-px border-t border-neutral-800 bg-neutral-800 text-center">
+              <Pip label="Level" value={levelSpec.label} />
+              <Pip label="Available" value={pointsRemaining} />
             </div>
           </div>
-        </div>
-
-        {/* CENTER — profile + identity */}
-        <div className="space-y-3 lg:col-span-5">
-          <Section title="Profile">
-            <div className="grid grid-cols-2 gap-3">
+          <Section title="Identity">
+            <div className="space-y-3">
               <Field label="Name">
-                <input
-                  type="text"
-                  value={draft.name}
-                  onChange={(e) => set('name', e.target.value)}
-                  placeholder="e.g. Alex Carter"
-                  className="w-full rounded-md border border-neutral-700 bg-neutral-900 px-2 py-1.5 text-sm text-neutral-100 outline-none focus:border-amber-500"
-                />
+                <input type="text" value={draft.name} onChange={(event) => set('name', event.target.value)} placeholder="e.g. Alex Carter" className="w-full rounded-md border border-neutral-700 bg-neutral-900 px-2 py-1.5 text-sm text-neutral-100 outline-none focus:border-amber-500" />
               </Field>
               <Field label="Nationality">
-                <Select value={draft.nationality ?? ''} onChange={(v) => set('nationality', v)}>
-                  {NATIONALITIES.map((n) => (
-                    <option key={n} value={n}>
-                      {n}
-                    </option>
-                  ))}
+                <Select value={draft.nationality ?? ''} onChange={(value) => set('nationality', value)}>
+                  {NATIONALITIES.map((nationality) => <option key={nationality} value={nationality}>{nationality}</option>)}
                 </Select>
               </Field>
               <Field label={`Age — ${draft.age}`}>
-                <input
-                  type="range"
-                  min={28}
-                  max={70}
-                  value={draft.age ?? 42}
-                  onChange={(e) => set('age', Number(e.target.value))}
-                  className="w-full accent-amber-500"
-                />
-              </Field>
-            </div>
-          </Section>
-
-          <Section title="Background">
-            <OptionGrid
-              options={BACKGROUNDS}
-              selected={draft.background}
-              onSelect={(id) => set('background', id)}
-            />
-          </Section>
-
-          <Section title="Management Style">
-            <OptionGrid
-              options={MANAGEMENT_STYLES}
-              selected={draft.managementStyle}
-              onSelect={(id) => set('managementStyle', id)}
-            />
-          </Section>
-
-          <Section title="Strengths & Weakness">
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-              <Field label="Primary Strength">
-                <OptionSelect list={STRENGTHS} value={draft.primaryStrength} onChange={(v) => set('primaryStrength', v)} />
-              </Field>
-              <Field label="Secondary Strength">
-                <OptionSelect list={STRENGTHS} value={draft.secondaryStrength} onChange={(v) => set('secondaryStrength', v)} />
-              </Field>
-              <Field label="Weakness">
-                <OptionSelect list={STRENGTHS} value={draft.weakness} onChange={(v) => set('weakness', v)} />
+                <input type="range" min={28} max={70} value={draft.age ?? 42} onChange={(event) => set('age', Number(event.target.value))} className="w-full accent-amber-500" />
               </Field>
             </div>
           </Section>
         </div>
 
-        {/* RIGHT — philosophy */}
-        <div className="space-y-3 lg:col-span-4">
-          <Section title="Philosophy">
-            <div className="space-y-3">
-              <Field label="Management Philosophy">
-                <OptionSelect list={MANAGEMENT_STYLES} value={draft.managementStyle} onChange={(v) => set('managementStyle', v)} />
-              </Field>
-              <Field label="Race Strategy Style">
-                <OptionSelect list={RACE_STRATEGY_PHILOSOPHIES} value={draft.raceStrategyPhilosophy} onChange={(v) => set('raceStrategyPhilosophy', v)} />
-              </Field>
-              <Field label="Driver Management Style">
-                <OptionSelect list={DRIVER_MANAGEMENT_STYLES} value={draft.driverManagementStyle} onChange={(v) => set('driverManagementStyle', v)} />
-              </Field>
-              <Field label="Development Philosophy">
-                <OptionSelect list={DEVELOPMENT_PHILOSOPHIES} value={draft.developmentPhilosophy} onChange={(v) => set('developmentPhilosophy', v)} />
-              </Field>
-              <Field label="Media Personality">
-                <OptionSelect list={MEDIA_PERSONALITIES} value={draft.mediaPersonality} onChange={(v) => set('mediaPersonality', v)} />
-              </Field>
-              <Field label="Risk Tolerance">
-                <OptionSelect list={RISK_TOLERANCES} value={draft.riskTolerance} onChange={(v) => set('riskTolerance', v)} />
-              </Field>
-            </div>
-          </Section>
-
-          <Section title="Trait Profile">
-            <div className={`mb-3 rounded border px-2 py-1 text-xs ${pointsRemaining === 0 ? 'border-green-500/30 bg-green-500/10 text-green-300' : 'border-amber-500/30 bg-amber-500/10 text-amber-300'}`}>
-              {credential.label} · {levelSpec.label} preset · {pointsRemaining} point{pointsRemaining === 1 ? '' : 's'} remaining
-            </div>
-            <div className="mb-3 grid grid-cols-3 gap-2">
-              {STARTING_LEVELS.map((level) => (
-                <button
-                  key={level.id}
-                  type="button"
-                  onClick={() => applyStartingLevel(level.id)}
-                  className={`rounded-lg border px-2 py-2 text-left text-xs transition ${
-                    startingLevel === level.id
-                      ? 'border-amber-500 bg-amber-500/10 text-neutral-100'
-                      : 'border-neutral-800 bg-neutral-900/40 text-neutral-300 hover:border-neutral-600'
-                  }`}
-                >
-                  <div className="font-bold">{level.label}</div>
-                  <div className="mt-0.5 text-[10px] text-neutral-500">{level.points} pts · {level.badge}</div>
-                </button>
-              ))}
-            </div>
-            <div className="grid grid-cols-2 gap-2">
-              <TraitAdjust label="Driver Mgmt" value={traitPoints.driverManagement} onChange={(v) => setTrait('driverManagement', v)} />
-              <TraitAdjust label="Development" value={traitPoints.developmentFocus} onChange={(v) => setTrait('developmentFocus', v)} />
-              <TraitAdjust label="Race Strategy" value={traitPoints.raceStrategy} onChange={(v) => setTrait('raceStrategy', v)} />
-              <TraitAdjust label="Commercial" value={traitPoints.commercialSkill} onChange={(v) => setTrait('commercialSkill', v)} />
-              <TraitAdjust label="Political" value={traitPoints.politicalSkill} onChange={(v) => setTrait('politicalSkill', v)} />
-              <TraitAdjust label="Risk" value={traitPoints.riskTolerance} onChange={(v) => setTrait('riskTolerance', v)} />
-            </div>
-          </Section>
-        </div>
+        <Section title="Skill-point allocation">
+          <div className="mb-3 flex flex-wrap items-center justify-between gap-2 rounded border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-xs text-amber-200">
+            <span>{levelSpec.label} · {levelSpec.points} Principal Points</span>
+            <strong>{pointsRemaining} unspent · carried into career</strong>
+          </div>
+          <div className="mb-4 grid gap-2 sm:grid-cols-3">
+            {STARTING_LEVELS.map((level) => (
+              <button key={level.id} type="button" onClick={() => applyStartingLevel(level.id)} className={`rounded-lg border px-2 py-2 text-left text-xs transition ${startingLevel === level.id ? 'border-amber-500 bg-amber-500/10 text-neutral-100' : 'border-neutral-800 bg-neutral-900/40 text-neutral-300 hover:border-neutral-600'}`}>
+                <div className="font-bold">{level.label}</div>
+                <div className="mt-0.5 text-[10px] text-neutral-500">{level.points} points · {level.badge}</div>
+              </button>
+            ))}
+          </div>
+          <div className="grid gap-3 md:grid-cols-2">
+            {(Object.keys(ATTRIBUTE_INFO) as AttributeKey[]).map((key) => (
+              <TraitAdjust key={key} label={ATTRIBUTE_INFO[key].label} value={attributes[key]} description={ATTRIBUTE_INFO[key].effect} onChange={(value) => setAttribute(key, value)} />
+            ))}
+          </div>
+          <div className="mt-4 rounded-lg border border-neutral-800 bg-neutral-950/50 p-3 text-xs text-neutral-400">
+            These attributes become your career profile ratings. Principal Points earned from progression can later improve departments on the Staff screen.
+          </div>
+        </Section>
       </div>
 
-      {/* BOTTOM — summary + modifiers + confirm */}
-      <Section title="Final Profile & Leadership Effects">
-        <div className="grid gap-4 md:grid-cols-2">
-          <p className="text-sm text-neutral-300">
-            <span className="font-semibold text-neutral-100">
-              {draft.name.trim() || 'Your principal'}
-            </span>{' '}
-            — a {label(BACKGROUNDS, draft.background).toLowerCase()} running {teamName} as a{' '}
-            {label(MANAGEMENT_STYLES, draft.managementStyle).toLowerCase()}. Strongest in{' '}
-            {label(STRENGTHS, draft.primaryStrength).toLowerCase()}, weakest in{' '}
-            {label(STRENGTHS, draft.weakness).toLowerCase()}.
+      <Section title="Confirm profile">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <p className="max-w-2xl text-sm text-neutral-300">
+            {draft.name.trim() || 'Your principal'} will lead {teamName} with <strong className="text-neutral-100">{pointsRemaining} Principal Points</strong> available after creation. Spending zero points is allowed.
           </p>
-          <div className="flex flex-wrap content-start gap-1.5">
-            {Object.keys(modifiers).length === 0 ? (
-              <span className="text-xs text-neutral-500">A balanced profile with no dominant gameplay influence.</span>
-            ) : (
-              (Object.keys(modifiers) as PrincipalModifierKey[])
-                .sort((a, b) => Math.abs(modifiers[b] ?? 0) - Math.abs(modifiers[a] ?? 0))
-                .map((key) => {
-                  const v = modifiers[key] ?? 0;
-                  return (
-                    <span
-                      key={key}
-                      className={`rounded px-2 py-0.5 text-[11px] font-medium ${
-                        v >= 0
-                          ? 'bg-green-500/15 text-green-300'
-                          : 'bg-red-500/15 text-red-300'
-                      }`}
-                    >
-                      {MODIFIER_LABELS[key]} · {v > 0.045 ? 'Strong influence' : v > 0 ? 'Supporting influence' : v < -0.045 ? 'Clear weakness' : 'Minor tradeoff'}
-                    </span>
-                  );
-                })
-            )}
+          <div className="flex gap-2">
+            <Button variant="ghost" onClick={onBack}>← Back</Button>
+            <Button variant="primary" disabled={!canConfirm} onClick={() => onConfirm(adjustedPrincipal)}>
+              {canConfirm ? confirmLabel : 'Name your principal'}
+            </Button>
           </div>
-        </div>
-        <div className="mt-4 flex justify-between">
-          <Button variant="ghost" onClick={onBack}>
-            ← Back
-          </Button>
-          <Button variant="primary" disabled={confirmDisabled} onClick={() => onConfirm(adjustedPrincipal)}>
-            {!draft.name.trim() ? 'Name your principal' : pointsRemaining !== 0 ? 'Allocate all preset points' : confirmLabel}
-          </Button>
         </div>
       </Section>
     </div>
   );
 }
 
-function fitTraitBudget<T extends Record<string, number>>(current: T, target: number): T {
-  const entries = Object.entries(current) as [keyof T, number][];
-  const total = entries.reduce((sum, [, value]) => sum + value, 0);
-  if (total === target) return current;
-  const scaled = Object.fromEntries(
-    entries.map(([key, value]) => [key, Math.max(0, Math.min(100, Math.round((value / Math.max(1, total)) * target)))]),
-  ) as T;
-  let diff = target - Object.values(scaled).reduce((sum, value) => sum + Number(value), 0);
-  const keys = entries.map(([key]) => key);
-  let cursor = 0;
-  while (diff !== 0 && keys.length > 0 && cursor < 1000) {
-    const key = keys[cursor % keys.length];
-    const value = Number(scaled[key]);
-    if (diff > 0 && value < 100) {
-      scaled[key] = (value + 1) as T[keyof T];
-      diff--;
-    } else if (diff < 0 && value > 0) {
-      scaled[key] = (value - 1) as T[keyof T];
-      diff++;
-    }
-    cursor++;
+function fitAttributeBudget(current: PrincipalAttributes, target: number): PrincipalAttributes {
+  const total = Object.values(current).reduce((sum, value) => sum + value, 0);
+  if (total === 0) return current;
+  const entries = Object.entries(current) as [AttributeKey, number][];
+  const scaled = Object.fromEntries(entries.map(([key, value]) => [key, Math.floor((value / total) * target)])) as PrincipalAttributes;
+  let remaining = target - Object.values(scaled).reduce((sum, value) => sum + value, 0);
+  for (const key of Object.keys(scaled) as AttributeKey[]) {
+    if (remaining <= 0) break;
+    scaled[key] += 1;
+    remaining -= 1;
   }
   return scaled;
 }
 
-function Section({ title, children }: { title: string; children: React.ReactNode }) {
-  return (
-    <div className="rounded-xl border border-neutral-800 bg-neutral-900/40 p-4">
-      <h3 className="mb-3 text-xs font-semibold uppercase tracking-wide text-neutral-400">{title}</h3>
-      {children}
-    </div>
-  );
+function Section({ title, children }: { title: string; children: ReactNode }) {
+  return <div className="rounded-xl border border-neutral-800 bg-neutral-900/40 p-4"><h3 className="mb-3 text-xs font-semibold uppercase tracking-wide text-neutral-400">{title}</h3>{children}</div>;
 }
 
-function Field({ label, children }: { label: string; children: React.ReactNode }) {
-  return (
-    <label className="block">
-      <span className="mb-1 block text-[11px] uppercase tracking-wide text-neutral-500">{label}</span>
-      {children}
-    </label>
-  );
+function Field({ label, children }: { label: string; children: ReactNode }) {
+  return <label className="block"><span className="mb-1 block text-[10px] font-semibold uppercase tracking-wide text-neutral-500">{label}</span>{children}</label>;
 }
 
-function Select({
-  value,
-  onChange,
-  children,
-}: {
-  value: string;
-  onChange: (v: string) => void;
-  children: React.ReactNode;
-}) {
-  return (
-    <select
-      value={value}
-      onChange={(e) => onChange(e.target.value)}
-      className="w-full rounded-md border border-neutral-700 bg-neutral-900 px-2 py-1.5 text-sm text-neutral-100 outline-none focus:border-amber-500"
-    >
-      {children}
-    </select>
-  );
+function Select({ value, onChange, children }: { value: string; onChange: (value: string) => void; children: ReactNode }) {
+  return <select value={value} onChange={(event) => onChange(event.target.value)} className="w-full rounded-md border border-neutral-700 bg-neutral-900 px-2 py-1.5 text-sm text-neutral-100 outline-none focus:border-amber-500">{children}</select>;
 }
 
-function OptionSelect({
-  list,
-  value,
-  onChange,
-}: {
-  list: { id: string; label: string; description?: string }[];
-  value: string;
-  onChange: (v: string) => void;
-}) {
-  const desc = list.find((o) => o.id === value)?.description;
-  return (
-    <div>
-      <Select value={value} onChange={onChange}>
-        {list.map((o) => (
-          <option key={o.id} value={o.id}>
-            {o.label}
-          </option>
-        ))}
-      </Select>
-      {desc && <p className="mt-1 text-[11px] text-neutral-500">{desc}</p>}
-    </div>
-  );
+function TraitAdjust({ label, value, description, onChange }: { label: string; value: number; description: string; onChange: (value: number) => void }) {
+  return <div className="rounded-lg border border-neutral-800 bg-neutral-950/50 p-3"><div className="flex items-center justify-between gap-2"><span className="text-sm font-semibold text-neutral-100">{label}</span><span className="tabular-nums text-sm font-bold text-amber-300">{value}</span></div><input aria-label={label} type="range" min={0} max={100} value={value} onChange={(event) => onChange(Number(event.target.value))} className="mt-2 w-full accent-amber-500" /><p className="mt-1 text-[11px] text-neutral-500">{description}</p></div>;
 }
 
-function OptionGrid({
-  options,
-  selected,
-  onSelect,
-}: {
-  options: PrincipalOption[];
-  selected: string;
-  onSelect: (id: string) => void;
-}) {
-  return (
-    <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
-      {options.map((o) => {
-        const active = o.id === selected;
-        return (
-          <button
-            key={o.id}
-            type="button"
-            onClick={() => onSelect(o.id)}
-            title={o.description}
-            className={`rounded-lg border px-2.5 py-2 text-left text-xs transition ${
-              active
-                ? 'border-amber-500 bg-amber-500/10 text-neutral-100'
-                : 'border-neutral-800 bg-neutral-900/40 text-neutral-300 hover:border-neutral-600'
-            }`}
-          >
-            <div className="font-semibold">{o.label}</div>
-          </button>
-        );
-      })}
-    </div>
-  );
+function Pip({ label, value }: { label: string; value: string | number }) {
+  return <div className="bg-neutral-950/60 px-2 py-2"><div className="text-[10px] uppercase tracking-wide text-neutral-500">{label}</div><div className="font-bold text-neutral-200">{value}</div></div>;
 }
-
-function CardRow({ label, value, tone }: { label: string; value: string; tone?: 'warn' }) {
-  return (
-    <div className="flex items-center justify-between gap-2">
-      <dt className="text-neutral-500">{label}</dt>
-      <dd className={`truncate font-medium ${tone === 'warn' ? 'text-amber-300' : 'text-neutral-200'}`}>
-        {value}
-      </dd>
-    </div>
-  );
-}
-
-function Pip({ label, value }: { label: string; value: number | string }) {
-  return (
-    <div className="bg-neutral-950 py-2">
-      <div className="text-sm font-bold text-neutral-100">{value}</div>
-      <div className="text-[9px] uppercase tracking-wide text-neutral-500">{label}</div>
-    </div>
-  );
-}
-
-function credentialBadge(reputation: number, spentPoints: number): { label: string; short: string } {
-  if (reputation >= 70 || spentPoints >= 410) return { label: 'International A Credential', short: 'INT A' };
-  if (reputation >= 58 || spentPoints >= 390) return { label: 'International B Credential', short: 'INT B' };
-  if (reputation >= 48 || spentPoints >= 370) return { label: 'National A Credential', short: 'NAT A' };
-  return { label: 'National B Credential', short: 'NAT B' };
-}
-
-function TraitAdjust({ label, value, onChange }: { label: string; value: number; onChange: (value: number) => void }) {
-  return (
-    <label className="rounded-md border border-neutral-800 bg-neutral-900/40 px-2 py-1.5">
-      <div className="flex items-center justify-between">
-        <span className="text-[11px] text-neutral-400">{label}</span>
-        <span className="text-xs font-bold text-neutral-100">{value}</span>
-      </div>
-      <input
-        type="range"
-        min={0}
-        max={100}
-        value={value}
-        onChange={(e) => onChange(Number(e.target.value))}
-        className="mt-1 w-full accent-amber-500"
-      />
-    </label>
-  );
-}
-

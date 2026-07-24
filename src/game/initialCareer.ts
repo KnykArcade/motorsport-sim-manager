@@ -187,6 +187,12 @@ export function createNewGame(options: NewGameOptions): GameState {
   // Seed the job-market profile's starting reputation from the created identity.
   if (principal && teamPrincipal) {
     principal.reputation = Math.round((principal.reputation + teamPrincipal.reputation) / 2);
+    if (teamPrincipal.skillAttributes) {
+      principal.attributes = { ...principal.attributes, ...teamPrincipal.skillAttributes };
+    }
+    if (teamPrincipal.skillPoints != null) {
+      principal.skillPoints += teamPrincipal.skillPoints;
+    }
     if (teamPrincipal.startingLevel === 'veteran') {
       principal.level = Math.max(principal.level, 4);
       principal.skillPoints = Math.max(principal.skillPoints, 4);
