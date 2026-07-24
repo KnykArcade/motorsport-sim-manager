@@ -4,10 +4,12 @@ import type { RaceResult } from '../types/gameTypes';
 import {
   answerMediaQuestion,
   createMediaSession,
+  declineMediaSession,
 } from './mediaSessionEngine';
 import {
   ensureMediaPressureState,
   makePublicMediaPromise,
+  mediaPressureAfterTeamMove,
   mediaPressureState,
   processMediaPressureAfterRace,
   resolveMediaCrisis,
@@ -238,6 +240,170 @@ describe('persistent media pressure engine', () => {
 
     expect(next.media!.storyThreads?.some((story) =>
       story.scope === 'AI' && story.teamId === rival.id && story.category === 'Reliability')).toBe(true);
+  });
+
+  it('escalates repeated AI-team evidence and publishes a paddock reaction for each new race', () => {
+    const initial = career('media-ai-escalation');
+    const rival = initial.teams.find((team) => team.id !== initial.selectedTeamId)!;
+    const rivalDrivers = initial.drivers.filter((driver) => driver.teamId === rival.id).slice(0, 2);
+    const results = rivalDrivers.map((driver) =>
+      result(driver.id, rival.id, null, 'DNF', ['Engine failure']));
+
+    const first = processMediaPressureAfterRace(initial, [], results, 1, initial.calendar[0].id);
+    const firstStory = first.media!.storyThreads!.find((story) => story.teamId === rival.id)!;
+    const second = processMediaPressureAfterRace(first, [], results, 2, initial.calendar[1].id);
+    const secondStory = second.media!.storyThreads!.find((story) => story.id === firstStory.id)!;
+    const third = processMediaPressureAfterRace(second, [], results, 3, initial.calendar[2].id);
+    const thirdStory = third.media!.storyThreads!.find((story) => story.id === firstStory.id)!;
+
+    expect(secondStory.pressure).toBeGreaterThan(firstStory.pressure);
+    expect(secondStory.sourceIds).toEqual([initial.calendar[0].id, initial.calendar[1].id]);
+    expect(thirdStory.stage).toBe('Flashpoint');
+    expect(third.news.some((item) =>
+      item.id.includes(initial.calendar[2].id)
+      && item.headline.includes('pressure escalates'))).toBe(true);
+  });
+
+  it('preserves promises, stories, crises, and journalist memory when media duties are declined', () => {
+    let state = createMediaSession(career('media-decline-preservation'), 'PreRace', 1, 'race-1');
+    const session = state.media!.sessions[0];
+    state = {
+      ...state,
+      media: {
+        ...mediaPressureState(state),
+        journalistMemory: [{
+          id: 'memory-existing',
+          topic: 'Performance',
+          style: 'Diplomatic',
+          statement: 'An earlier statement.',
+          seasonYear: state.seasonYear,
+          round: 0,
+          sessionId: 'earlier-session',
+          questionId: 'earlier-question',
+        }],
+        publicPromises: [{
+          id: 'promise-existing',
+          type: 'Results',
+          statement: 'Score points.',
+          seasonYear: state.seasonYear,
+          createdRound: 0,
+          deadlineRound: 3,
+          status: 'Active',
+          sourceSessionId: 'earlier-session',
+          sourceQuestionId: 'earlier-question',
+        }],
+        storyThreads: [{
+          id: 'story-existing',
+          scope: 'Player',
+          teamId: state.selectedTeamId,
+          category: 'Reliability',
+          headline: 'Existing story',
+          summary: 'Existing story summary.',
+          stage: 'Escalating',
+          pressure: 60,
+          status: 'Active',
+          createdSeasonYear: state.seasonYear,
+          createdRound: 0,
+          updatedSeasonYear: state.seasonYear,
+          updatedRound: 0,
+          sourceIds: ['existing-source'],
+        }],
+        crises: [{
+          id: 'crisis-existing',
+          kind: 'InternalLeak',
+          headline: 'Existing crisis',
+          detail: 'Existing crisis detail.',
+          seasonYear: state.seasonYear,
+          round: 0,
+          status: 'Open',
+        }],
+      },
+    };
+    const before = mediaPressureState(state);
+    const declined = declineMediaSession(state, session.id);
+
+    expect(declined.media!.journalistMemory).toEqual(before.journalistMemory);
+    expect(declined.media!.publicPromises).toEqual(before.publicPromises);
+    expect(declined.media!.storyThreads).toEqual(before.storyThreads);
+    expect(declined.media!.crises).toEqual(before.crises);
+    expect(declined.media!.sessions[0].status).toBe('Declined');
+  });
+
+  it('closes former-team obligations on a job move while retaining history and AI stories', () => {
+    const state = career('media-team-move');
+    const rival = state.teams.find((team) => team.id !== state.selectedTeamId)!;
+    const pressure = mediaPressureAfterTeamMove({
+      ...state,
+      media: {
+        sessions: [],
+        declinedDuties: 1,
+        journalistMemory: [],
+        managementStanding: 55,
+        publicPromises: [{
+          id: 'move-promise',
+          type: 'Results',
+          statement: 'Deliver points.',
+          seasonYear: state.seasonYear,
+          createdRound: 1,
+          deadlineRound: 4,
+          status: 'Active',
+          sourceSessionId: 'move-session',
+          sourceQuestionId: 'move-question',
+        }],
+        crises: [{
+          id: 'move-crisis',
+          kind: 'DriverConflict',
+          headline: 'Old-team conflict',
+          detail: 'The conflict belongs to the former team.',
+          seasonYear: state.seasonYear,
+          round: 2,
+          status: 'Open',
+        }],
+        storyThreads: [{
+          id: 'move-player-story',
+          scope: 'Player',
+          teamId: state.selectedTeamId,
+          category: 'DriverConflict',
+          headline: 'Old-team story',
+          summary: 'The old team remains under pressure.',
+          stage: 'Escalating',
+          pressure: 65,
+          status: 'Active',
+          createdSeasonYear: state.seasonYear,
+          createdRound: 1,
+          updatedSeasonYear: state.seasonYear,
+          updatedRound: 2,
+          sourceIds: ['old-event'],
+        }, {
+          id: 'move-ai-story',
+          scope: 'AI',
+          teamId: rival.id,
+          category: 'Reliability',
+          headline: 'AI-team story',
+          summary: 'A separate rival story remains active.',
+          stage: 'Escalating',
+          pressure: 60,
+          status: 'Active',
+          createdSeasonYear: state.seasonYear,
+          createdRound: 1,
+          updatedSeasonYear: state.seasonYear,
+          updatedRound: 2,
+          sourceIds: ['ai-event'],
+        }],
+      },
+    }, state.selectedTeamId, rival.id);
+
+    expect(pressure.publicPromises![0]).toMatchObject({ status: 'Expired' });
+    expect(pressure.crises![0]).toMatchObject({ status: 'Resolved' });
+    expect(pressure.storyThreads!.find((story) => story.id === 'move-player-story')).toMatchObject({
+      status: 'Resolved',
+      stage: 'Resolved',
+      pressure: 0,
+    });
+    expect(pressure.storyThreads!.find((story) => story.id === 'move-ai-story')).toMatchObject({
+      status: 'Active',
+      scope: 'AI',
+    });
   });
 
   it('creates and resolves sponsor and driver crises through explicit management decisions', () => {
