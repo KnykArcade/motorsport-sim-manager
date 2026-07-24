@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, type ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useGame } from '../game/GameContext';
 import {
@@ -25,7 +25,6 @@ import {
   WorkspaceHeader,
   WorkspaceMetric,
   WorkspaceScreen,
-  WorkspaceTabs,
 } from '../components/workspace/Workspace';
 import { isPreseasonChecklistComplete, getPreseasonApprovals } from '../game/careerPhaseEngine';
 import { getGameModeLabel } from '../game/modeRestrictions';
@@ -40,6 +39,72 @@ import { PRESEASON_FLAW_FIX_COST, PRESEASON_TESTING_COST, preseasonProgramFor } 
 import { PRIZE_MONEY_PER_POINT } from '../sim/financeEngine';
 
 type PreseasonTab = 'teamOverview' | 'budget' | 'driverLineup' | 'carDevelopment' | 'sponsorsEngine' | 'seasonObjectives' | 'roundOnePreview';
+
+const PRESEASON_BRIEFINGS: Array<{
+  id: PreseasonTab;
+  order: string;
+  title: string;
+  eyebrow: string;
+  summary: string;
+  confirmLabel: string;
+}> = [
+  {
+    id: 'teamOverview',
+    order: '1',
+    title: 'Welcome to the season',
+    eyebrow: 'Owner introduction',
+    summary: 'Team identity, principal reputation, regulations, and the broad season picture.',
+    confirmLabel: 'Confirm Team Introduction',
+  },
+  {
+    id: 'budget',
+    order: '2',
+    title: 'Owner briefing',
+    eyebrow: 'Finance and budget',
+    summary: 'Available money, spending priorities, and the financial runway for the first steps.',
+    confirmLabel: 'Confirm Budget Review',
+  },
+  {
+    id: 'driverLineup',
+    order: '3',
+    title: 'Team briefing',
+    eyebrow: 'Driver line-up',
+    summary: 'Your race drivers, reserves, and whether the grid is ready to go for Round 1.',
+    confirmLabel: 'Confirm Race Lineup',
+  },
+  {
+    id: 'carDevelopment',
+    order: '4',
+    title: 'Technical briefing',
+    eyebrow: 'Car and development',
+    summary: 'Launch plan, testing programme, readiness, and any hidden flaws to correct.',
+    confirmLabel: 'Confirm Development Plan',
+  },
+  {
+    id: 'sponsorsEngine',
+    order: '5',
+    title: 'Commercial briefing',
+    eyebrow: 'Sponsors and engine',
+    summary: 'Sponsor confidence and engine-supplier context before the race season begins.',
+    confirmLabel: 'Confirm Sponsor & Engine Setup',
+  },
+  {
+    id: 'seasonObjectives',
+    order: '6',
+    title: 'Owner mandate',
+    eyebrow: 'Season objectives',
+    summary: 'The results target, board expectations, and any mandate decisions to lock in.',
+    confirmLabel: 'Confirm Season Objective',
+  },
+  {
+    id: 'roundOnePreview',
+    order: '7',
+    title: 'Race 1 preview',
+    eyebrow: 'Opening weekend',
+    summary: 'Track demands and the first-race outlook so you know what is coming next.',
+    confirmLabel: 'Confirm Round 1 Preview',
+  },
+];
 
 const LAUNCH_OPTIONS: Array<{ id: CarLaunchApproach; label: string; description: string }> = [
   { id: 'Measured', label: 'Measured Reveal', description: 'Protect expectations and give engineers a calm start.' },
@@ -81,9 +146,9 @@ export function PreSeasonSetup() {
   const approvals = getPreseasonApprovals(state);
   const checklistComplete = isPreseasonChecklistComplete(state);
 
-  // Calculate progress count.
+  const activeBriefing = PRESEASON_BRIEFINGS.find((briefing) => briefing.id === activeTab) ?? PRESEASON_BRIEFINGS[0];
   const approvedCount = Object.values(approvals).filter(Boolean).length;
-  const totalTabs = 7;
+  const totalTabs = PRESEASON_BRIEFINGS.length;
 
   const advanceToBriefing = () => {
     if (!checklistComplete) return;
@@ -93,8 +158,8 @@ export function PreSeasonSetup() {
 
   const approveTab = (tabId: PreseasonTab) => {
     dispatch({ type: 'APPROVE_PRESEASON_TAB', tabId });
-    const currentIndex = tabs.findIndex((tab) => tab.id === tabId);
-    const nextTab = tabs[currentIndex + 1];
+    const currentIndex = PRESEASON_BRIEFINGS.findIndex((tab) => tab.id === tabId);
+    const nextTab = PRESEASON_BRIEFINGS[currentIndex + 1];
     if (nextTab) setActiveTab(nextTab.id);
   };
 
@@ -106,17 +171,6 @@ export function PreSeasonSetup() {
 
   // Season objectives (from team expectations).
   const expectation = state.teamExpectations?.[state.selectedTeamId];
-
-  // Tab definitions.
-  const tabs: ReadonlyArray<{ id: PreseasonTab; label: string }> = [
-    { id: 'teamOverview', label: `${approvals.teamOverview ? '✓ ' : ''}Team Overview` },
-    { id: 'budget', label: `${approvals.budget ? '✓ ' : ''}Budget / Finance` },
-    { id: 'driverLineup', label: `${approvals.driverLineup ? '✓ ' : ''}Driver Line-up` },
-    { id: 'carDevelopment', label: `${approvals.carDevelopment ? '✓ ' : ''}Car & Development` },
-    { id: 'sponsorsEngine', label: `${approvals.sponsorsEngine ? '✓ ' : ''}Sponsors / Engine` },
-    { id: 'seasonObjectives', label: `${approvals.seasonObjectives ? '✓ ' : ''}Season Objectives` },
-    { id: 'roundOnePreview', label: `${approvals.roundOnePreview ? '✓ ' : ''}Round 1 Preview` },
-  ];
 
   // Driver lineup validation: NASCAR requires 1 race driver, all other series 2.
   const hasValidLineup = activeDrivers.length >= minDrivers;
@@ -158,90 +212,138 @@ export function PreSeasonSetup() {
           {preseasonProgram?.testingCompleted ? `${preseasonProgram.readiness.overall}% readiness` : 'Testing not complete'}
         </span>
       </div>
-      <WorkspaceTabs items={tabs} active={activeTab} onChange={setActiveTab} ariaLabel="Preseason review sections" />
       <WorkspaceBody className="space-y-4">
-
-      {/* Tab Content */}
-      <div className="space-y-6">
-
-        {/* Season Preview News */}
-        {activeTab === 'teamOverview' && <div className="grid gap-4 lg:grid-cols-2">
-          <NewsPanel
-            news={state.news}
-            title="Season Preview"
-            maxItems={4}
-            categoryFilter={['preseason', 'driver_market', 'financial']}
-            emptyMessage="Season preview stories will appear here."
-          />
-          <NewsPanel
-            news={state.news}
-            title="Youth Academy Watch"
-            maxItems={3}
-            categoryFilter={['youth_academy']}
-            emptyMessage="No youth academy news this season."
-          />
-        </div>}
-        {activeTab === 'teamOverview' && (
-          <Panel title="Team Overview">
-            <div className="grid gap-4 sm:grid-cols-2">
-              <div>
-                <div className="text-xs font-semibold uppercase text-neutral-500">Team</div>
-                <div className="text-sm text-neutral-200">{team?.name}</div>
-              </div>
-              <div>
-                <div className="text-xs font-semibold uppercase text-neutral-500">Reputation</div>
-                <div className="text-sm text-neutral-200">{Math.round(team?.reputation ?? 0)}</div>
-              </div>
-              <div>
-                <div className="text-xs font-semibold uppercase text-neutral-500">Team Morale</div>
-                <div className="text-sm text-neutral-200">{Math.round(team?.morale ?? 0)}%</div>
-              </div>
-              <div>
-                <div className="text-xs font-semibold uppercase text-neutral-500">Budget</div>
-                <div className="text-sm text-neutral-200">{team ? formatMoney(team.budget) : '—'}</div>
+      <div className="grid gap-4 xl:grid-cols-[minmax(0,1.2fr)_minmax(0,0.8fr)]">
+        <Panel title="Welcome to the season" actions={<span className="text-xs font-semibold uppercase tracking-wide text-neutral-500">Start here</span>}>
+          <div className="grid gap-4 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)]">
+            <div className="space-y-3">
+              <p className="text-sm text-neutral-300">
+                This is your preseason onboarding desk: a quick introduction to the team, then a short set of season-start briefings to confirm before Round 1.
+              </p>
+              <div className="grid gap-3 sm:grid-cols-2">
+                <InfoBlock label="Team" value={team?.name ?? '—'} detail={`Reputation ${Math.round(team?.reputation ?? 0)} · Morale ${Math.round(team?.morale ?? 0)}%`} />
+                <InfoBlock label="Team Principal" value={state.principal?.name ?? 'Your principal'} detail={`Level ${state.principal?.level ?? 0} · ${Math.round(state.principal?.reputation ?? 0)} reputation`} />
+                <InfoBlock label="Budget" value={team ? formatMoney(team.budget) : '—'} detail={preseasonProgram?.testingCompleted ? `${preseasonProgram.testingFocus} testing complete` : 'Testing programme still pending'} />
+                <InfoBlock label="Grid readiness" value={`${activeDrivers.length}/${minDrivers}`} detail={hasValidLineup ? 'Lineup is ready for Race 1' : 'Driver signing still required'} />
               </div>
             </div>
-            {(() => {
-              const regSet = getRegulationSet(state.regulationSetId);
-              if (!regSet) return null;
-              return (
-                <div className="mt-4">
-                  <RegulationPanel regulationSet={regSet} seasonYear={state.seasonYear} locked={isSingleSeason} compact />
+            <div className="space-y-3">
+              <div className="rounded-lg border border-neutral-800 bg-neutral-950/50 p-3">
+                <div className="text-xs font-semibold uppercase tracking-wide text-neutral-500">Drivers</div>
+                <div className="mt-2 space-y-2">
+                  {activeDrivers.map((driver) => (
+                    <div key={driver.id} className="flex items-center justify-between gap-2 text-sm">
+                      <span className="text-neutral-200">{driver.name}</span>
+                      <span className="text-neutral-500">#{driver.number} · OVR {driver.ratings.overall}</span>
+                    </div>
+                  ))}
+                  {drivers.length > activeDrivers.length && (
+                    <div className="text-xs text-neutral-500">
+                      Reserve drivers: {drivers.slice(activeDrivers.length).map((driver) => driver.name).join(', ')}
+                    </div>
+                  )}
                 </div>
-              );
-            })()}
-            <div className="mt-4 flex justify-end">
-              <Button
-                variant="primary"
-                onClick={() => approveTab('teamOverview')}
-                disabled={approvals.teamOverview}
-              >
-                {approvals.teamOverview ? 'Confirmed' : 'Confirm Team Overview'}
-              </Button>
+              </div>
+              {(() => {
+                const regSet = getRegulationSet(state.regulationSetId);
+                if (!regSet) return null;
+                return <RegulationPanel regulationSet={regSet} seasonYear={state.seasonYear} locked={isSingleSeason} compact />;
+              })()}
+            </div>
+          </div>
+        </Panel>
+
+        <div className="space-y-3">
+          <Panel title="Season progress" actions={<span className="text-xs font-semibold uppercase tracking-wide text-neutral-500">{approvedCount}/{totalTabs} confirmed</span>}>
+            <div className="space-y-2">
+              {PRESEASON_BRIEFINGS.map((briefing, index) => {
+                const approved = approvals[briefing.id];
+                const isActive = activeTab === briefing.id;
+                return (
+                  <button
+                    key={briefing.id}
+                    type="button"
+                    onClick={() => setActiveTab(briefing.id)}
+                    className={`flex w-full items-start gap-3 rounded-lg border px-3 py-3 text-left transition ${
+                      isActive
+                        ? 'border-[var(--era-accent)] bg-[var(--era-accent-soft)]'
+                        : 'border-neutral-800 bg-neutral-950/40 hover:border-neutral-700'
+                    }`}
+                  >
+                    <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-neutral-700 bg-neutral-900 text-xs font-bold text-neutral-200">
+                      {approved ? '✓' : briefing.order}
+                    </span>
+                    <span className="min-w-0 flex-1">
+                      <span className="flex flex-wrap items-center gap-2">
+                        <span className="text-sm font-semibold text-neutral-100">{briefing.title}</span>
+                        <span className="text-[10px] uppercase tracking-wide text-neutral-500">{briefing.eyebrow}</span>
+                      </span>
+                      <span className="mt-1 block text-xs text-neutral-400">{briefing.summary}</span>
+                    </span>
+                    <span className="shrink-0 text-[10px] font-semibold uppercase tracking-wide text-neutral-500">
+                      {approved ? 'Done' : index === 0 ? 'Intro' : 'Next task'}
+                    </span>
+                  </button>
+                );
+              })}
             </div>
           </Panel>
+        </div>
+      </div>
+
+      <div className="space-y-4">
+        {activeTab === 'teamOverview' && (
+          <BriefingPanel
+            briefing={activeBriefing}
+            status={approvals.teamOverview}
+            onConfirm={() => approveTab('teamOverview')}
+            confirmDisabled={approvals.teamOverview}
+          >
+            <div className="grid gap-4 lg:grid-cols-2">
+              <NewsPanel
+                news={state.news}
+                title="Season preview"
+                maxItems={4}
+                categoryFilter={['preseason', 'driver_market', 'financial']}
+                emptyMessage="Season preview stories will appear here."
+              />
+              <NewsPanel
+                news={state.news}
+                title="Youth academy watch"
+                maxItems={3}
+                categoryFilter={['youth_academy']}
+                emptyMessage="No youth academy news this season."
+              />
+            </div>
+            <div className="mt-4 grid gap-4 sm:grid-cols-2">
+              <InfoBlock label="Reputation" value={Math.round(team?.reputation ?? 0)} detail="Owner expectations and early reputation" />
+              <InfoBlock label="Morale" value={`${Math.round(team?.morale ?? 0)}%`} detail="How settled the team is entering preseason" />
+            </div>
+          </BriefingPanel>
         )}
 
         {activeTab === 'budget' && (
-          <Panel title="Budget / Financial Review">
+          <BriefingPanel
+            briefing={activeBriefing}
+            status={approvals.budget}
+            onConfirm={() => approveTab('budget')}
+            confirmDisabled={approvals.budget}
+          >
             <div className="text-sm text-neutral-200">{team ? formatMoney(team.budget) : '—'}</div>
             <div className="mt-2 text-xs text-neutral-500">
               Race points generate {formatMoney(PRIZE_MONEY_PER_POINT)} in prize money per point. Budget is used for development, staff, facilities, and race packages.
             </div>
-            <div className="mt-4 flex justify-end">
-              <Button
-                variant="primary"
-                onClick={() => approveTab('budget')}
-                disabled={approvals.budget}
-              >
-                {approvals.budget ? 'Approved' : 'Approve Budget Review'}
-              </Button>
-            </div>
-          </Panel>
+          </BriefingPanel>
         )}
 
         {activeTab === 'driverLineup' && (
-          <Panel title="Driver Lineup Review">
+          <BriefingPanel
+            briefing={activeBriefing}
+            status={approvals.driverLineup}
+            onConfirm={() => approveTab('driverLineup')}
+            confirmDisabled={approvals.driverLineup || !hasValidLineup}
+            secondaryAction={!hasValidLineup ? <Button variant="secondary" onClick={() => navigate('/market')}>Visit Driver Market</Button> : undefined}
+          >
             <ul className="space-y-2">
               {activeDrivers.map((d) => (
                 <li key={d.id} className="flex items-center justify-between text-sm">
@@ -265,25 +367,16 @@ export function PreSeasonSetup() {
                 </p>
               </div>
             )}
-            <div className="mt-4 flex justify-end gap-2">
-              {!hasValidLineup && (
-                <Button variant="secondary" onClick={() => navigate('/market')}>
-                  Visit Driver Market
-                </Button>
-              )}
-              <Button
-                variant="primary"
-                onClick={() => approveTab('driverLineup')}
-                disabled={approvals.driverLineup || !hasValidLineup}
-              >
-                {approvals.driverLineup ? 'Confirmed' : 'Confirm Race Lineup'}
-              </Button>
-            </div>
-          </Panel>
+          </BriefingPanel>
         )}
 
         {activeTab === 'carDevelopment' && (
-          <Panel title="Car & Development Overview">
+          <BriefingPanel
+            briefing={activeBriefing}
+            status={approvals.carDevelopment}
+            onConfirm={() => approveTab('carDevelopment')}
+            confirmDisabled={approvals.carDevelopment || !canConfirmDevelopment}
+          >
             {carRatings && (
               <div className="grid gap-3 sm:grid-cols-3 lg:grid-cols-5">
                 <StatChip label="Power" value={carRatings.enginePower.toFixed(1)} />
@@ -296,7 +389,7 @@ export function PreSeasonSetup() {
             <div className="mt-5 space-y-4 border-t border-neutral-800 pt-4">
               <div>
                 <div className="flex items-center justify-between gap-2">
-                  <h3 className="text-sm font-semibold text-neutral-100">1. Car Launch</h3>
+                  <h3 className="text-sm font-semibold text-neutral-100">Car launch</h3>
                   <span className={`rounded px-2 py-0.5 text-[10px] font-semibold uppercase ${preseasonProgram?.launchCompleted ? 'bg-emerald-500/15 text-emerald-300' : 'bg-amber-500/15 text-amber-300'}`}>{preseasonProgram?.launchCompleted ? preseasonProgram.launchApproach : 'Decision required'}</span>
                 </div>
                 <p className="mt-1 text-xs text-neutral-500">The launch sets sponsor expectations, team morale, and the public tone before testing.</p>
@@ -304,10 +397,9 @@ export function PreSeasonSetup() {
                   {LAUNCH_OPTIONS.map((option) => <button key={option.id} type="button" onClick={() => dispatch({ type: 'COMPLETE_CAR_LAUNCH', approach: option.id })} className="rounded-lg border border-neutral-700 bg-neutral-900/50 p-3 text-left hover:border-[var(--era-accent)]"><div className="text-xs font-semibold text-[var(--era-accent-strong)]">{option.label}</div><p className="mt-1 text-[11px] text-neutral-400">{option.description}</p></button>)}
                 </div>}
               </div>
-
               <div>
                 <div className="flex items-center justify-between gap-2">
-                  <h3 className="text-sm font-semibold text-neutral-100">2. Testing Programme</h3>
+                  <h3 className="text-sm font-semibold text-neutral-100">Testing programme</h3>
                   <span className={`rounded px-2 py-0.5 text-[10px] font-semibold uppercase ${preseasonProgram?.testingCompleted ? 'bg-emerald-500/15 text-emerald-300' : 'bg-amber-500/15 text-amber-300'}`}>{preseasonProgram?.testingCompleted ? preseasonProgram.testingFocus : preseasonProgram?.launchCompleted ? 'Choose focus' : 'Launch first'}</span>
                 </div>
                 {!preseasonProgram?.testingCompleted && <div className="mt-3 grid gap-2 md:grid-cols-2 xl:grid-cols-5">
@@ -322,9 +414,8 @@ export function PreSeasonSetup() {
                   {preseasonProgram.testingReports.map((report) => <div key={report.day} className="rounded border border-neutral-800 bg-neutral-900/45 p-3"><div className="text-xs font-semibold text-neutral-100">{report.headline}</div><p className="mt-1 text-[11px] text-neutral-400">{report.summary}</p><div className="mt-2 flex justify-between text-[10px] text-neutral-500"><span>Pace {report.paceSignal}</span><span>Reliability {report.reliabilitySignal}</span><span>Confidence {report.confidence}%</span></div></div>)}
                 </div>}
               </div>
-
               {preseasonProgram?.testingCompleted && <div>
-                <h3 className="text-sm font-semibold text-neutral-100">Race 1 Readiness</h3>
+                <h3 className="text-sm font-semibold text-neutral-100">Race 1 readiness</h3>
                 <div className="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-5">
                   <ReadinessChip label="Overall" value={preseasonProgram.readiness.overall} />
                   <ReadinessChip label="Pace" value={preseasonProgram.readiness.pace} />
@@ -333,9 +424,8 @@ export function PreSeasonSetup() {
                   <ReadinessChip label="Knowledge" value={preseasonProgram.readiness.knowledge} />
                 </div>
               </div>}
-
               {preseasonProgram?.hiddenFlaws.some((flaw) => flaw.discovered) && <div className="rounded-lg border border-orange-500/35 bg-orange-500/5 p-3">
-                <h3 className="text-sm font-semibold text-orange-200">Discovered Technical Issues</h3>
+                <h3 className="text-sm font-semibold text-orange-200">Discovered technical issues</h3>
                 <div className="mt-2 space-y-2">{preseasonProgram.hiddenFlaws.filter((flaw) => flaw.discovered).map((flaw) => { const insufficientBudget = (team?.budget ?? 0) < PRESEASON_FLAW_FIX_COST; return <div key={flaw.id} className="flex flex-wrap items-center justify-between gap-2 text-xs"><div><span className="font-semibold text-neutral-200">{flaw.area}</span><span className="ml-2 text-neutral-400">{flaw.description}</span></div>{flaw.resolved ? <span className="text-emerald-300">Corrected</span> : <Button variant="ghost" className="px-2 py-1 text-[11px]" disabled={insufficientBudget} title={insufficientBudget ? `Needs ${formatMoney(PRESEASON_FLAW_FIX_COST)}` : undefined} onClick={() => dispatch({ type: 'RESOLVE_PRESEASON_FLAW', flawId: flaw.id })}>{insufficientBudget ? `Insufficient budget · ${formatMoney(PRESEASON_FLAW_FIX_COST)}` : `Correct before Race 1 (${formatMoney(PRESEASON_FLAW_FIX_COST)})`}</Button>}</div>; })}</div>
               </div>}
             </div>
@@ -353,20 +443,16 @@ export function PreSeasonSetup() {
                 Visit the Development screen to assign projects to available slots.
               </div>
             )}
-            <div className="mt-4 flex justify-end">
-              <Button
-                variant="primary"
-                onClick={() => approveTab('carDevelopment')}
-                disabled={approvals.carDevelopment || !canConfirmDevelopment}
-              >
-                {approvals.carDevelopment ? 'Confirmed' : canConfirmDevelopment ? 'Confirm Development Plan' : 'Complete Launch & Testing First'}
-              </Button>
-            </div>
-          </Panel>
+          </BriefingPanel>
         )}
 
         {activeTab === 'sponsorsEngine' && (
-          <Panel title="Sponsors / Engine Supplier">
+          <BriefingPanel
+            briefing={activeBriefing}
+            status={approvals.sponsorsEngine}
+            onConfirm={() => approveTab('sponsorsEngine')}
+            confirmDisabled={approvals.sponsorsEngine}
+          >
             <div className="space-y-4">
               <div>
                 <div className="text-xs font-semibold uppercase text-neutral-500 mb-2">Sponsors</div>
@@ -417,20 +503,16 @@ export function PreSeasonSetup() {
                 )}
               </div>
             </div>
-            <div className="mt-4 flex justify-end">
-              <Button
-                variant="primary"
-                onClick={() => approveTab('sponsorsEngine')}
-                disabled={approvals.sponsorsEngine}
-              >
-                {approvals.sponsorsEngine ? 'Confirmed' : 'Confirm Sponsor & Engine Setup'}
-              </Button>
-            </div>
-          </Panel>
+          </BriefingPanel>
         )}
 
         {activeTab === 'seasonObjectives' && (
-          <Panel title="Season Objectives">
+          <BriefingPanel
+            briefing={activeBriefing}
+            status={approvals.seasonObjectives}
+            onConfirm={() => approveTab('seasonObjectives')}
+            confirmDisabled={approvals.seasonObjectives || (!isSingleSeason && !state.boardroom?.mandate)}
+          >
             {expectation ? (
               <div className="space-y-1 text-sm">
                 {state.teamReputations?.[state.selectedTeamId]?.ownerPersonality && (
@@ -476,21 +558,16 @@ export function PreSeasonSetup() {
                 {isSingleSeason ? 'Historical replay mode — no custom objectives.' : 'Objectives will be set based on team reputation.'}
               </p>
             )}
-            <div className="mt-4 flex justify-end">
-              <Button
-                variant="primary"
-                onClick={() => approveTab('seasonObjectives')}
-                disabled={approvals.seasonObjectives || (!isSingleSeason && !state.boardroom?.mandate)}
-                title={!isSingleSeason && !state.boardroom?.mandate ? 'Choose a board mandate first' : undefined}
-              >
-                {approvals.seasonObjectives ? 'Confirmed' : 'Confirm Season Objective'}
-              </Button>
-            </div>
-          </Panel>
+          </BriefingPanel>
         )}
 
         {activeTab === 'roundOnePreview' && (
-          <Panel title="Round 1 Preview">
+          <BriefingPanel
+            briefing={activeBriefing}
+            status={approvals.roundOnePreview}
+            onConfirm={() => approveTab('roundOnePreview')}
+            confirmDisabled={approvals.roundOnePreview}
+          >
             {race && track ? (
               <>
                 <div className="text-sm text-neutral-200">{race.gpName} — {race.trackName}</div>
@@ -503,7 +580,7 @@ export function PreSeasonSetup() {
                   <p className="mt-1 text-xs text-neutral-400">Testing readiness modifies the opening-round car baseline. Any unresolved hidden flaw can reduce reliability.</p>
                 </div>}
                 {(preseasonHub?.rivalReports.length ?? 0) > 0 && <div className="mt-4">
-                  <h3 className="text-sm font-semibold text-neutral-100">Rival Testing Watch</h3>
+                  <h3 className="text-sm font-semibold text-neutral-100">Rival testing watch</h3>
                   <p className="mt-1 text-xs text-neutral-500">Fuel loads and run plans are unknown. Treat every claim as an estimate.</p>
                   <div className="mt-2 grid gap-2 md:grid-cols-2">{preseasonHub!.rivalReports.slice(0, 4).map((report) => <div key={report.id} className="rounded border border-neutral-800 bg-neutral-900/45 p-2.5"><div className="flex justify-between gap-2 text-[10px] uppercase text-neutral-500"><span>{state.teams.find((entry) => entry.id === report.teamId)?.name ?? report.teamId}</span><span>{report.assessment} · {report.confidence}%</span></div><p className="mt-1 text-xs text-neutral-300">{report.claim}</p></div>)}</div>
                 </div>}
@@ -511,20 +588,56 @@ export function PreSeasonSetup() {
             ) : (
               <p className="text-sm text-neutral-500">Race data not available.</p>
             )}
-            <div className="mt-4 flex justify-end">
-              <Button
-                variant="primary"
-                onClick={() => approveTab('roundOnePreview')}
-                disabled={approvals.roundOnePreview}
-              >
-                {approvals.roundOnePreview ? 'Confirmed' : 'Confirm Round 1 Preview'}
-              </Button>
-            </div>
-          </Panel>
+          </BriefingPanel>
         )}
       </div>
       </WorkspaceBody>
     </WorkspaceScreen>
+  );
+}
+
+function BriefingPanel({
+  briefing,
+  status,
+  onConfirm,
+  confirmDisabled,
+  secondaryAction,
+  children,
+}: {
+  briefing: { title: string; eyebrow: string; confirmLabel: string };
+  status: boolean;
+  onConfirm: () => void;
+  confirmDisabled: boolean;
+  secondaryAction?: ReactNode;
+  children: ReactNode;
+}) {
+  return (
+    <Panel
+      title={briefing.title}
+      actions={<span className="text-xs font-semibold uppercase tracking-wide text-neutral-500">{briefing.eyebrow}</span>}
+    >
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-2 rounded-lg border border-neutral-800 bg-neutral-950/40 px-3 py-2 text-xs">
+        <span className={status ? 'text-emerald-300' : 'text-neutral-400'}>{status ? 'Briefing confirmed' : 'Review and confirm when ready'}</span>
+        <span className="text-neutral-500">A short season-start task, not a permanent setting.</span>
+      </div>
+      {children}
+      <div className="mt-4 flex flex-wrap justify-end gap-2">
+        {secondaryAction}
+        <Button variant="primary" onClick={onConfirm} disabled={confirmDisabled}>
+          {status ? 'Confirmed' : briefing.confirmLabel}
+        </Button>
+      </div>
+    </Panel>
+  );
+}
+
+function InfoBlock({ label, value, detail }: { label: string; value: ReactNode; detail: string }) {
+  return (
+    <div className="rounded-lg border border-neutral-800 bg-neutral-950/50 p-3">
+      <div className="text-[10px] uppercase tracking-wide text-neutral-500">{label}</div>
+      <div className="mt-1 text-sm font-semibold text-neutral-100">{value}</div>
+      <div className="mt-1 text-xs text-neutral-500">{detail}</div>
+    </div>
   );
 }
 
