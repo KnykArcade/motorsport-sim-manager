@@ -9,7 +9,9 @@ import { ratingColor } from '../components/ui';
 import {
   computePoliticalInfluence,
   influenceByTeam,
+  regulationVotingLocked,
   resolveProposal,
+  seasonMidpointRound,
 } from '../sim/politicsEngine';
 import type { RegulationProposal, RegulationVote } from '../types/politicsTypes';
 import {
@@ -64,6 +66,9 @@ export function Politics() {
   const regSet = getRegulationSet(state.regulationSetId);
   const votedCount = proposals.filter((proposal) => proposal.playerVote).length;
   const unvotedCount = proposals.length - votedCount;
+  const currentRound = state.careerPhase?.currentRound ?? state.currentRaceIndex + 1;
+  const lockRound = seasonMidpointRound(state.calendar.length);
+  const votingLocked = regulationVotingLocked(currentRound, state.calendar.length);
 
   return (
     <WorkspaceScreen>
@@ -91,7 +96,9 @@ export function Politics() {
           <div className="min-w-0">
             <div className="font-semibold text-neutral-100">Governance operations desk</div>
             <div className="truncate text-neutral-400">
-              {unvotedCount > 0
+              {votingLocked
+                ? `Voting locked after the season midpoint (round ${lockRound}). Existing votes will settle at rollover.`
+                : unvotedCount > 0
                 ? `${unvotedCount} regulation proposal${unvotedCount === 1 ? '' : 's'} still need your vote.`
                 : 'All current regulation proposals have a recorded vote.'}
             </div>
@@ -153,6 +160,7 @@ export function Politics() {
                   influence={influence}
                   playerTeamId={playerId}
                   onVote={(vote) => dispatch({ type: 'SET_REGULATION_VOTE', proposalId: p.id, vote })}
+                  votingLocked={votingLocked}
                 />
               ))}
             </div>
@@ -206,12 +214,14 @@ function ProposalCard({
   influence,
   playerTeamId,
   onVote,
+  votingLocked,
 }: {
   proposal: RegulationProposal;
   teamName: (id: string) => string;
   influence: Record<string, number>;
   playerTeamId: string;
   onVote: (vote: RegulationVote) => void;
+  votingLocked: boolean;
 }) {
   // Live projection with the player's current vote applied.
   const projected = resolveProposal(proposal, influence, playerTeamId);
@@ -278,6 +288,7 @@ function ProposalCard({
               variant={active ? 'primary' : 'secondary'}
               className="flex-1 px-2 py-1 text-xs"
               onClick={() => onVote(vote)}
+              disabled={votingLocked}
             >
               {vote}
             </Button>
@@ -289,6 +300,9 @@ function ProposalCard({
           You are voting <span className="text-neutral-300">{proposal.playerVote}</span>. Click again
           to clear.
         </p>
+      )}
+      {votingLocked && (
+        <p className="mt-1.5 text-[11px] text-amber-300">Voting is locked after the season midpoint; this proposal will resolve at rollover.</p>
       )}
     </div>
   );

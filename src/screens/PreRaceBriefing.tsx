@@ -45,6 +45,7 @@ export function PreRaceBriefing() {
   const { state, dispatch } = useGame();
   const navigate = useNavigate();
   const [tab, setTab] = useState<PreRaceBriefingTab>('overview');
+  const [selectedPrepFocus, setSelectedPrepFocus] = useState<string | null>(null);
   if (!state) return null;
 
   const race = currentRace(state);
@@ -57,7 +58,9 @@ export function PreRaceBriefing() {
   if (!race || !track) return null;
 
   const phaseState = getOrCreatePhaseState(state);
-  const prepFocus = RACE_PREP_FOCUS_INFO[phaseState.racePrepFocus ?? 'balanced'] ?? RACE_PREP_FOCUS_INFO.balanced;
+  const activePrepFocus = selectedPrepFocus ?? phaseState.racePrepFocus ?? 'balanced';
+  const prepFocus = RACE_PREP_FOCUS_INFO[activePrepFocus] ?? RACE_PREP_FOCUS_INFO.balanced;
+  const prepConfirmed = (phaseState.racePrepFocusConfirmed ?? !!phaseState.racePrepFocus) && activePrepFocus === phaseState.racePrepFocus;
   const selectedPackage = state.raceWeekendPackage?.raceId === race.id ? state.raceWeekendPackage : undefined;
   const selectedPackageDef = selectedPackage ? RACE_WEEKEND_PACKAGES[selectedPackage.packageType] : undefined;
   const regulationSet = getRegulationSet(state.regulationSetId);
@@ -70,11 +73,13 @@ export function PreRaceBriefing() {
   const sponsors = state.commercial?.sponsors ?? [];
   const strategySuggestion = strategyForTrack(track);
   const hasValidLineup = activeDrivers.length >= minDrivers;
-  const canEnterWeekend = !!selectedPackage && hasValidLineup;
+  const canEnterWeekend = !!selectedPackage && hasValidLineup && prepConfirmed;
   const weekendBlockedReason = !selectedPackage
     ? 'Select a race package in Paddock Week first'
     : !hasValidLineup
       ? `Sign ${minDrivers - activeDrivers.length} more active race driver${minDrivers - activeDrivers.length === 1 ? '' : 's'}`
+      : !prepConfirmed
+        ? 'Confirm a race preparation focus'
       : undefined;
 
   const enterRaceWeekend = () => {
@@ -145,7 +150,27 @@ export function PreRaceBriefing() {
       {tab === 'preparation' && (
         <div className="grid gap-3 lg:grid-cols-2">
           <Panel title="Race Preparation Focus">
-            <div className="text-sm font-semibold text-neutral-100">{prepFocus.label}</div>
+            <div className="grid gap-2 sm:grid-cols-2">
+              {Object.entries(RACE_PREP_FOCUS_INFO).map(([id, focus]) => (
+                <button
+                  key={id}
+                  type="button"
+                  onClick={() => setSelectedPrepFocus(id)}
+                  className={`rounded border p-2 text-left ${activePrepFocus === id ? 'border-amber-500 bg-amber-500/10' : 'border-neutral-800 hover:border-neutral-600'}`}
+                >
+                  <div className="text-xs font-semibold text-neutral-100">{focus.label}</div>
+                  <div className="mt-1 text-[10px] leading-4 text-neutral-500">{focus.description}</div>
+                </button>
+              ))}
+            </div>
+            <Button
+              className="mt-3 w-full"
+              variant={prepConfirmed ? 'secondary' : 'primary'}
+              disabled={prepConfirmed}
+              onClick={() => dispatch({ type: 'CONFIRM_RACE_PREP_FOCUS', focus: activePrepFocus })}
+            >
+              {prepConfirmed ? `Confirmed: ${prepFocus.label}` : `Confirm ${prepFocus.label}`}
+            </Button>
             <p className="mt-2 text-sm text-neutral-300">{prepFocus.description}</p>
             <div className="mt-2 text-xs text-neutral-500">Duration: next race only.</div>
           </Panel>

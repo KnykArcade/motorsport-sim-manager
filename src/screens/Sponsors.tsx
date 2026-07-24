@@ -89,6 +89,7 @@ export function Sponsors() {
     : 'portfolio';
   const [tab, setTab] = useState<SponsorsWorkspaceTab>(initialTab);
   const [sponsorListPage, setSponsorListPage] = useState(0);
+  const [selectedSponsorId, setSelectedSponsorId] = useState<string | null>(null);
   const [ownerReviewPage, setOwnerReviewPage] = useState(0);
   const [offerSort, setOfferSort] = useState<SponsorSort<SponsorOfferSortKey>>({ key: 'annualValue', direction: 'desc' });
   const [negotiationSort, setNegotiationSort] = useState<SponsorSort<SponsorNegotiationSortKey>>({ key: 'deadlineRound', direction: 'asc' });
@@ -124,6 +125,7 @@ export function Sponsors() {
   const sponsorListPageCount = sponsorPageCount(sponsors.length);
   const safeSponsorListPage = Math.min(sponsorListPage, sponsorListPageCount - 1);
   const visibleSponsors = sponsorPage(sponsors, safeSponsorListPage);
+  const selectedSponsor = sponsors.find((sponsor) => sponsor.id === selectedSponsorId) ?? sponsors[0];
   const ownerReviews = [...(state.expectationReviews ?? [])]
     .filter((review) => review.teamId === state.selectedTeamId)
     .reverse();
@@ -200,27 +202,33 @@ export function Sponsors() {
               {sponsors.length === 0 ? (
                 <p className="text-sm text-neutral-500">No sponsors are currently signed.</p>
               ) : (
-                <>
-                  <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
-                    {visibleSponsors.map((sponsor) => (
-                      <SponsorPortfolioCard
+                <div className="grid gap-3 lg:grid-cols-[minmax(190px,0.3fr)_minmax(0,1fr)]">
+                  <div className="space-y-1 rounded-lg border border-neutral-800 bg-neutral-950/40 p-2">
+                    {sponsors.map((sponsor) => (
+                      <button
                         key={sponsor.id}
-                        sponsor={sponsor}
-                        canManage={state.gameMode !== 'SingleSeason'}
-                        canAffordBuyout={(team?.budget ?? 0) >= sponsorTerminationBuyout(sponsor) * 1_000_000}
-                        onRenew={() => dispatch({ type: 'START_SPONSOR_RENEWAL', sponsorId: sponsor.id })}
-                        onTerminate={() => dispatch({ type: 'TERMINATE_SPONSOR', sponsorId: sponsor.id })}
-                      />
+                        type="button"
+                        onClick={() => setSelectedSponsorId(sponsor.id)}
+                        className={`w-full rounded border px-3 py-2 text-left ${selectedSponsor?.id === sponsor.id ? 'border-amber-500 bg-amber-500/10' : 'border-transparent hover:border-neutral-700 hover:bg-neutral-900/70'}`}
+                      >
+                        <div className="truncate text-sm font-semibold text-neutral-100">{sponsor.name}</div>
+                        <div className="mt-0.5 text-[10px] uppercase tracking-wide text-neutral-500">
+                          {TYPE_LABEL[sponsor.type] === 'Technical Partner' ? 'Technical' : TYPE_LABEL[sponsor.type] === 'Driver-Linked' ? 'Driver link' : TYPE_LABEL[sponsor.type]}
+                        </div>
+                      </button>
                     ))}
                   </div>
-                  <CompactPagination
-                    page={safeSponsorListPage}
-                    pageCount={sponsorListPageCount}
-                    total={sponsors.length}
-                    noun="sponsors"
-                    onPageChange={setSponsorListPage}
-                  />
-                </>
+                  {selectedSponsor && (
+                    <SponsorPortfolioCard
+                      sponsor={selectedSponsor}
+                      canManage={state.gameMode !== 'SingleSeason'}
+                      canAffordBuyout={(team?.budget ?? 0) >= sponsorTerminationBuyout(selectedSponsor) * 1_000_000}
+                      onRenew={() => dispatch({ type: 'START_SPONSOR_RENEWAL', sponsorId: selectedSponsor.id })}
+                      onTerminate={() => dispatch({ type: 'TERMINATE_SPONSOR', sponsorId: selectedSponsor.id })}
+                      detailed
+                    />
+                  )}
+                </div>
               )}
             </Panel>
           )}
@@ -538,12 +546,14 @@ function SponsorPortfolioCard({
   canAffordBuyout,
   onRenew,
   onTerminate,
+  detailed = false,
 }: {
   sponsor: Sponsor;
   canManage: boolean;
   canAffordBuyout: boolean;
   onRenew: () => void;
   onTerminate: () => void;
+  detailed?: boolean;
 }) {
   return (
     <div className="rounded-lg border border-neutral-800 bg-neutral-900/40 p-3">
@@ -561,6 +571,19 @@ function SponsorPortfolioCard({
         <Row label="Renewal chance" value={`${Math.round(sponsor.renewalChance * 100)}%`} />
         <Row label="Objectives" value={`${sponsor.objectives.length}`} />
       </div>
+      {detailed && sponsor.objectives.length > 0 && (
+        <div className="mt-4 rounded border border-neutral-800 bg-neutral-950/40 p-3">
+          <div className="mb-2 text-[10px] font-black uppercase tracking-wide text-neutral-500">Objectives</div>
+          <div className="space-y-1.5">
+            {sponsor.objectives.map((objective) => (
+              <div key={objective.id} className="text-xs text-neutral-300">
+                <span>{objective.description}</span>
+                <span className="ml-2 text-[10px] text-neutral-500">{objective.status}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
       {canManage && <div className="mt-3 grid grid-cols-2 gap-2">
         <button type="button" disabled={sponsor.contractYearsRemaining > 1} onClick={onRenew} className="rounded border border-neutral-700 px-2 py-1 text-xs font-semibold text-neutral-200 enabled:hover:border-emerald-500/60 disabled:text-neutral-600">Renew</button>
         <button type="button" disabled={!canAffordBuyout} onClick={onTerminate} title={canAffordBuyout ? `Immediate buyout: $${sponsorTerminationBuyout(sponsor)}M` : `Cannot afford the $${sponsorTerminationBuyout(sponsor)}M buyout`} className="rounded border border-neutral-700 px-2 py-1 text-xs font-semibold text-red-300 enabled:hover:border-red-500/60 enabled:hover:bg-red-500/10 disabled:cursor-not-allowed disabled:text-neutral-600">Buy out ${sponsorTerminationBuyout(sponsor)}M</button>

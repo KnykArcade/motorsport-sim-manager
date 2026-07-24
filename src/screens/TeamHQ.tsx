@@ -108,6 +108,7 @@ export function TeamHQ() {
         <WorkspaceMetric label="Next race" value={race ? `R${race.round}` : '—'} detail={race?.gpName ?? 'No race scheduled'} />
         <WorkspaceMetric label="Active projects" value={activeUpgradePrograms(state).length} detail="Development in progress" />
       </MetricStrip>
+      <WorkspaceBody className="space-y-4">
       {guide && (
         <Panel title={guide.title} actions={<span className="text-xs text-sky-300">Start here</span>}>
           <p className="text-sm leading-6 text-neutral-300">{guide.summary}</p>
@@ -298,7 +299,6 @@ export function TeamHQ() {
 
       <WorkspaceTabs items={TEAM_HQ_TABS} active={tab} onChange={setTab} ariaLabel="Team HQ command center" />
 
-      <WorkspaceBody>
         <div className="space-y-4">
           <div className="grid gap-4 lg:grid-cols-2">
         <div className={`space-y-4 ${tab === 'organization' ? 'lg:col-span-2' : ''}`}>

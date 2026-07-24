@@ -66,6 +66,7 @@ export function defaultCareerPhaseState(): CareerPhaseState {
     paddockEvents: [],
     announcedCompletedProjectIds: [],
     racePrepFocusApplied: false,
+    racePrepFocusConfirmed: false,
     budgetFocusBonusApplied: false,
     preseasonChecklist: defaultPreseasonChecklist(),
     preseasonApprovals: defaultPreseasonApprovals(),
@@ -188,6 +189,7 @@ export function enterPaddockWeek(state: GameState): GameState {
       // Reset race prep focus for the new paddock week — a new focus will be
       // chosen from the paddock events and applied to the next race.
       racePrepFocusApplied: false,
+      racePrepFocusConfirmed: false,
       budgetFocusBonusApplied: false,
     },
   };
@@ -594,6 +596,7 @@ export function resolvePaddockEvent(
       careerPhase: {
         ...updatedState.careerPhase!,
         racePrepFocus: optionId,
+        racePrepFocusConfirmed: true,
       },
     };
     // Generate a news item for the focus selection.

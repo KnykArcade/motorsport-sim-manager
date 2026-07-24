@@ -71,6 +71,7 @@ import { getMaxQualifiers, getStaffPool } from '../data';
 import { careerMarketBundle } from '../sim/careerMarketEngine';
 import { marketDriverToDriver, signProspectToAcademy } from '../sim/driverMarketEngine';
 import { academyCapacityFor } from '../sim/teamRatingsEngine';
+import { regulationVotingLocked } from '../sim/politicsEngine';
 import { makeTransaction, PRIZE_MONEY_PER_POINT, toMoney } from '../sim/financeEngine';
 import { driverExtensionSigningFee, extendedDriverSalaryMillions, thirdDriverMidSeasonFee, thirdDriverSalary } from '../sim/contractEngine';
 import {
@@ -307,6 +308,7 @@ export type GameAction =
   | { type: 'START_DEVELOPMENT'; projectId: string; rushed?: boolean }
   | { type: 'RUSH_DEVELOPMENT'; projectId: string }
   | { type: 'SET_RESEARCH_FOCUS'; branchId: RDBranchId }
+  | { type: 'CONFIRM_RACE_PREP_FOCUS'; focus: string }
   | { type: 'START_RD_PROJECT'; request: RDProjectStartRequest }
   | { type: 'START_PART_MANUFACTURING'; partType: PartType; quantity?: number }
   | { type: 'FIT_PART'; partId: string; driverId: string }
@@ -815,6 +817,18 @@ export function gameReducer(state: GameState | null, action: GameAction): GameSt
       return withTechnicalProjection(setResearchFocusAction(state, action.branchId));
     }
 
+    case 'CONFIRM_RACE_PREP_FOCUS': {
+      if (!state?.careerPhase) return state;
+      return {
+        ...state,
+        careerPhase: {
+          ...state.careerPhase,
+          racePrepFocus: action.focus,
+          racePrepFocusConfirmed: true,
+        },
+      };
+    }
+
     case 'START_RD_PROJECT': {
       if (!state || isSingleSeasonMode(state.gameMode)) return state;
       return withTechnicalProjection(startRDProject(state, action.request));
@@ -1090,6 +1104,8 @@ export function gameReducer(state: GameState | null, action: GameAction): GameSt
 
     case 'SET_REGULATION_VOTE': {
       if (!state) return state;
+      const currentRound = state.careerPhase?.currentRound ?? state.currentRaceIndex + 1;
+      if (regulationVotingLocked(currentRound, state.calendar.length)) return state;
       const proposal = (state.regulationProposals ?? []).find((item) => item.id === action.proposalId);
       const nextVote = proposal?.playerVote === action.vote ? undefined : action.vote;
       const voted = {

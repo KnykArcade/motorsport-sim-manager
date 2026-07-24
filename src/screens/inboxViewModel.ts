@@ -292,15 +292,15 @@ function peopleMessages(state: GameState): InboxMessage[] {
       id: `inbox-market-outcome-${story.id}`,
       severity: contested ? 'critical' : 'action',
       category: 'people',
-      title: contested ? `Contested signing: ${story.targetName}` : `Rival offer for ${story.targetName}`,
+      title: contested ? `Contested signing: ${story.targetName}` : `Market update: ${story.targetName}`,
       body: contested
         ? `${story.targetName} is attracting a rival bid. Review your queued offer before the deadline.`
-        : `${story.destinationTeamName} has opened an offer before your recruitment decision is locked.`,
+        : `${story.destinationTeamName} has made an offer for ${story.targetName}. You can ignore the development or counter with your own offer; it does not block progression.`,
       route: `/market?target=${encodeURIComponent(story.targetId)}`,
-      routeLabel: contested ? 'Review Contested Bid' : 'Review Rival Offer',
+      routeLabel: contested ? 'Review Contested Bid' : 'Review Market',
       actionable: true,
       blocking: false,
-      kind: 'must_respond',
+      kind: contested ? 'must_respond' : 'recommended',
       source: 'Transfer desk',
       whyItMatters: 'Market availability can change before you reach the next meaningful recruitment decision.',
       round: story.deadlineRound,
@@ -599,7 +599,7 @@ function withTaskSemantics(message: InboxMessage): InboxMessage {
   return {
     ...message,
     kind,
-    blocking: kind === 'must_respond',
+    blocking: message.blocking ?? (kind === 'must_respond'),
     source: message.source ?? SOURCE_LABELS[message.category],
     whyItMatters: message.whyItMatters ?? WHY_IT_MATTERS[message.category],
   };
