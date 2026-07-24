@@ -30,7 +30,6 @@ export function MediaSessionsPanel() {
     ?? sessions[0];
   const completed = sessions.filter((session) => session.status === 'Completed').length;
   const crises = pending.filter((session) => session.type === 'Crisis').length;
-  const activePromises = pressure.publicPromises?.filter((promise) => promise.status === 'Active') ?? [];
   const activeStories = pressure.storyThreads?.filter((story) => story.status === 'Active') ?? [];
   const recentPromises = pressure.publicPromises ?? [];
   const recentStories = pressure.storyThreads ?? [];

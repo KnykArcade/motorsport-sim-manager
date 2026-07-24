@@ -170,7 +170,6 @@ export function recordJournalistAnswer(
 }
 
 function promiseSpec(
-  state: GameState,
   question: MediaQuestion,
 ): { type: PublicMediaPromiseType; statement: string; driverId?: string } | undefined {
   switch (question.topic) {
@@ -193,7 +192,7 @@ function promiseSpec(
 
 export function canMakePublicMediaPromise(state: GameState, question: MediaQuestion): boolean {
   const media = mediaPressureState(state);
-  const spec = promiseSpec(state, question);
+  const spec = promiseSpec(question);
   return Boolean(spec && !(media.publicPromises ?? []).some((promise) =>
     promise.status === 'Active' && promise.type === spec.type));
 }
@@ -207,7 +206,7 @@ export function makePublicMediaPromise(
   const session = media.sessions.find((entry) => entry.id === sessionId);
   const question = session?.questions.find((entry) => entry.id === questionId);
   if (!session || !question || !session.answers.some((answer) => answer.questionId === questionId)) return state;
-  const spec = promiseSpec(state, question);
+  const spec = promiseSpec(question);
   if (!spec || !canMakePublicMediaPromise(state, question)) return state;
   const finalRound = Math.max(1, state.calendar.length);
   const deadlineRound = Math.min(finalRound, Math.max(session.round + 3, 1));

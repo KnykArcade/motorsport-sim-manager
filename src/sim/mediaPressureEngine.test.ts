@@ -144,7 +144,6 @@ function career(seed = 'media-pressure', gameMode: GameState['gameMode'] = 'Care
 }
 
 function result(
-  state: GameState,
   driverId: string,
   teamId: string,
   position: number | null,
@@ -206,7 +205,7 @@ describe('persistent media pressure engine', () => {
     expect(promise).toMatchObject({ type: 'Results', status: 'Active', deadlineRound: 3 });
 
     const driver = state.drivers.find((entry) => entry.teamId === state.selectedTeamId)!;
-    const raceResult = result(state, driver.id, state.selectedTeamId, 4, 'Finished');
+    const raceResult = result(driver.id, state.selectedTeamId, 4, 'Finished');
     state = processMediaPressureAfterRace(state, [raceResult], [raceResult], 1, state.calendar[0].id);
     expect(state.media!.publicPromises![0].status).toBe('Kept');
   });
@@ -222,7 +221,7 @@ describe('persistent media pressure engine', () => {
     );
     const before = state.media!.managementStanding!;
     const driver = state.drivers.find((entry) => entry.teamId === state.selectedTeamId)!;
-    const noPoints = result(state, driver.id, state.selectedTeamId, 12, 'Finished');
+    const noPoints = result(driver.id, state.selectedTeamId, 12, 'Finished');
     state = processMediaPressureAfterRace(state, [noPoints], [noPoints], 3, state.calendar[2].id);
 
     expect(state.media!.publicPromises![0].status).toBe('Broken');
@@ -234,7 +233,7 @@ describe('persistent media pressure engine', () => {
     const rival = state.teams.find((team) => team.id !== state.selectedTeamId)!;
     const rivalDrivers = state.drivers.filter((driver) => driver.teamId === rival.id).slice(0, 2);
     const results = rivalDrivers.map((driver) =>
-      result(state, driver.id, rival.id, null, 'DNF', ['Engine failure']));
+      result(driver.id, rival.id, null, 'DNF', ['Engine failure']));
     const next = processMediaPressureAfterRace(state, [], results, 1, state.calendar[0].id);
 
     expect(next.media!.storyThreads?.some((story) =>
@@ -275,7 +274,7 @@ describe('persistent media pressure engine', () => {
     );
     const reputation = state.principal!.reputation;
     const driver = state.drivers.find((entry) => entry.teamId === state.selectedTeamId)!;
-    const scored = result(state, driver.id, state.selectedTeamId, 4, 'Finished');
+    const scored = result(driver.id, state.selectedTeamId, 4, 'Finished');
     state = processMediaPressureAfterRace(state, [scored], [scored], 1, state.calendar[0].id);
 
     expect(state.media!.publicPromises![0].status).toBe('Kept');
