@@ -69,6 +69,33 @@ describe('media session engine', () => {
     expect(answered.media!.sessions[0].answers[0].reaction).not.toMatch(/[+-]\d|%/);
   });
 
+  it('keeps rival relationship scores on their signed -100 to 100 scale', () => {
+    const initial = createMediaSession(career('media-rival-range'), 'Preseason', 0);
+    const rivalEntry = Object.entries(initial.phase18!.rivalRelationships).find(([, relationship]) =>
+      relationship.teamAId === initial.selectedTeamId || relationship.teamBId === initial.selectedTeamId)!;
+    const [rivalryId, rivalry] = rivalEntry;
+    const pressured: GameState = {
+      ...initial,
+      phase18: {
+        ...initial.phase18!,
+        rivalRelationships: {
+          ...initial.phase18!.rivalRelationships,
+          [rivalryId]: { ...rivalry, score: -99, sportingRespect: 0 },
+        },
+      },
+    };
+    const session = pressured.media!.sessions[0];
+    const answered = answerMediaQuestion(
+      pressured,
+      session.id,
+      session.questions[0].id,
+      'Confrontational',
+    );
+
+    expect(answered.phase18!.rivalRelationships[rivalryId].score).toBe(-100);
+    expect(answered.phase18!.rivalRelationships[rivalryId].sportingRespect).toBe(0);
+  });
+
   it('allows optional duties to be declined with real owner, sponsor, and media consequences', () => {
     const initial = createMediaSession(career('media-decline'), 'PreRace', 1, 'race-1');
     const session = initial.media!.sessions[0];

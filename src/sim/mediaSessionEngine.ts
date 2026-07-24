@@ -18,6 +18,7 @@ import {
 } from './mediaPressureEngine';
 
 const clamp = (value: number): number => Math.max(0, Math.min(100, Math.round(value)));
+const clampRelationship = (value: number): number => Math.max(-100, Math.min(100, Math.round(value)));
 
 function mediaState(state: GameState): MediaState {
   return mediaPressureState(state);
@@ -361,7 +362,7 @@ function applyStakeholderEffects(
         relationship.teamAId === state.selectedTeamId || relationship.teamBId === state.selectedTeamId
           ? {
               ...relationship,
-              score: clamp(relationship.score + rivalDelta),
+              score: clampRelationship(relationship.score + rivalDelta),
               sportingRespect: clamp(relationship.sportingRespect + rivalDelta),
             }
           : relationship,
@@ -524,6 +525,7 @@ export function declineMediaSession(state: GameState, sessionIdValue: string): G
     teamReputations,
     commercial,
     media: {
+      ...current,
       declinedDuties: current.declinedDuties + 1,
       sessions: current.sessions.map((entry) => entry.id === session.id ? nextSession : entry),
     },

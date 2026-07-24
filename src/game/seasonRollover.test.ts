@@ -57,6 +57,113 @@ describe('academy progression', () => {
 });
 
 describe('advanceSeason', () => {
+  it('applies media-pressure cleanup when an accepted job offer changes the player team', () => {
+    const base = newOffseasonState();
+    const formerTeamId = base.selectedTeamId;
+    const destination = base.teams.find((team) => team.id !== formerTeamId)!;
+    const observer = base.teams.find((team) =>
+      team.id !== formerTeamId && team.id !== destination.id) ?? destination;
+    const offerId = 'phase6-cleanup-job-offer';
+    const state: GameState = {
+      ...base,
+      careerMobilityMode: 'TeamLock',
+      jobOffers: [{
+        id: offerId,
+        teamId: destination.id,
+        seasonYear: base.seasonYear,
+        contractYears: 2,
+        objective: 'Lead the next phase',
+        prestige: destination.reputation,
+        budgetTier: 'Competitive',
+        kind: 'Offer',
+        expiresSeasonYear: base.seasonYear + 1,
+      }],
+      acceptedJobOfferId: offerId,
+      media: {
+        sessions: [{
+          id: 'old-team-pending-session',
+          type: 'PostRace',
+          seasonYear: base.seasonYear,
+          round: base.calendar.length,
+          title: 'Old-team media duty',
+          trigger: 'Old-team race result',
+          status: 'Pending',
+          questions: [{
+            id: 'old-team-question',
+            topic: 'Performance',
+            prompt: 'What happens next?',
+            context: 'The season has ended.',
+            teamId: formerTeamId,
+          }],
+          answers: [],
+        }],
+        declinedDuties: 0,
+        journalistMemory: [],
+        managementStanding: 50,
+        publicPromises: [{
+          id: 'old-team-promise',
+          type: 'Results',
+          statement: 'The former team will score points.',
+          seasonYear: base.seasonYear,
+          createdRound: 1,
+          deadlineRound: base.calendar.length,
+          status: 'Active',
+          sourceSessionId: 'old-team-session',
+          sourceQuestionId: 'old-team-question',
+        }],
+        crises: [{
+          id: 'old-team-crisis',
+          kind: 'InternalLeak',
+          headline: 'Former-team crisis',
+          detail: 'This issue belongs to the former team.',
+          seasonYear: base.seasonYear,
+          round: base.calendar.length,
+          status: 'Open',
+        }],
+        storyThreads: [{
+          id: 'old-team-story',
+          scope: 'Player',
+          teamId: formerTeamId,
+          category: 'InternalLeak',
+          headline: 'Former-team story',
+          summary: 'This story belongs to the former team.',
+          stage: 'Flashpoint',
+          pressure: 85,
+          status: 'Active',
+          createdSeasonYear: base.seasonYear,
+          createdRound: 1,
+          updatedSeasonYear: base.seasonYear,
+          updatedRound: base.calendar.length,
+          sourceIds: ['old-team-event'],
+        }, {
+          id: 'unrelated-ai-story',
+          scope: 'AI',
+          teamId: observer.id,
+          category: 'Reliability',
+          headline: 'Separate AI story',
+          summary: 'This story belongs elsewhere in the paddock.',
+          stage: 'Escalating',
+          pressure: 60,
+          status: 'Active',
+          createdSeasonYear: base.seasonYear,
+          createdRound: 1,
+          updatedSeasonYear: base.seasonYear,
+          updatedRound: base.calendar.length,
+          sourceIds: ['ai-team-event'],
+        }],
+      },
+    };
+
+    const next = advanceSeason(state);
+
+    expect(next.selectedTeamId).toBe(destination.id);
+    expect(next.media!.sessions.some((session) => session.id === 'old-team-pending-session')).toBe(false);
+    expect(next.media!.publicPromises!.find((promise) => promise.id === 'old-team-promise')).toMatchObject({ status: 'Expired' });
+    expect(next.media!.crises!.find((crisis) => crisis.id === 'old-team-crisis')).toMatchObject({ status: 'Resolved' });
+    expect(next.media!.storyThreads!.find((story) => story.id === 'old-team-story')).toMatchObject({ status: 'Resolved', stage: 'Resolved' });
+    expect(next.media!.storyThreads!.find((story) => story.id === 'unrelated-ai-story')).toMatchObject({ status: 'Active', scope: 'AI' });
+  });
+
   it('ages retained staff contracts and pays only retained specialists', () => {
     const base = newOffseasonState();
     const candidate = getStaffPool(base.seasonYear, base.series)[0];

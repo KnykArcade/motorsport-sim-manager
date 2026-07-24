@@ -1,5 +1,5 @@
 import type { GameState } from '../game/careerState';
-import type { RaceResult } from '../types/gameTypes';
+import type { NewsItem, RaceResult } from '../types/gameTypes';
 import type {
   JournalistMemory,
   MediaCrisis,
@@ -82,11 +82,16 @@ function upsertStory(
     pressure: number;
     round: number;
     sourceId: string;
+    repeatPressure?: number;
   },
 ): GameState {
   const media = mediaPressureState(state);
   const existing = media.storyThreads?.find((story) => story.id === input.id);
-  const pressure = clamp(Math.max(existing?.pressure ?? 0, input.pressure));
+  const isNewSource = !existing?.sourceIds.includes(input.sourceId);
+  const repeatedPressure = existing && isNewSource
+    ? existing.pressure + (input.repeatPressure ?? 0)
+    : existing?.pressure ?? 0;
+  const pressure = clamp(Math.max(repeatedPressure, input.pressure));
   const stage: MediaStoryThread['stage'] =
     pressure >= 80 ? 'Flashpoint' : pressure >= 50 ? 'Escalating' : 'Emerging';
   const story: MediaStoryThread = {
@@ -111,6 +116,43 @@ function upsertStory(
       ...media,
       storyThreads: [story, ...(media.storyThreads ?? []).filter((entry) => entry.id !== story.id)].slice(0, 80),
     },
+  };
+}
+
+export function mediaPressureAfterTeamMove(
+  state: GameState,
+  previousTeamId: string,
+  nextTeamId: string,
+): MediaState {
+  const media = mediaPressureState(state);
+  if (previousTeamId === nextTeamId) return media;
+  const nextTeamName = state.teams.find((team) => team.id === nextTeamId)?.name ?? 'the new team';
+  const transitionOutcome = `Closed when the principal left the former team to join ${nextTeamName}.`;
+  return {
+    ...media,
+    sessions: media.sessions.filter((session) =>
+      session.status !== 'Pending'
+      || !session.questions.some((question) => question.teamId === previousTeamId)),
+    publicPromises: (media.publicPromises ?? []).map((promise) =>
+      promise.status === 'Active'
+        ? { ...promise, status: 'Expired' as const, outcome: transitionOutcome }
+        : promise),
+    crises: (media.crises ?? []).map((crisis) =>
+      crisis.status === 'Open'
+        ? { ...crisis, status: 'Resolved' as const, outcome: transitionOutcome }
+        : crisis),
+    storyThreads: (media.storyThreads ?? []).map((story) =>
+      story.scope === 'Player' && story.teamId === previousTeamId && story.status === 'Active'
+        ? {
+            ...story,
+            status: 'Resolved' as const,
+            stage: 'Resolved' as const,
+            pressure: 0,
+            summary: `${story.summary} ${transitionOutcome}`,
+            updatedSeasonYear: state.seasonYear,
+            updatedRound: state.careerPhase?.currentRound ?? story.updatedRound,
+          }
+        : story),
   };
 }
 
@@ -331,21 +373,50 @@ function generateAIStories(state: GameState, allResults: RaceResult[], round: nu
     const doubleDnf = results.length >= 2 && results.every((result) => result.status !== 'Finished');
     const incidentTotal = results.reduce((total, result) => total + result.incidents.length, 0);
     if (!doubleDnf && incidentTotal < 3) continue;
+    const storyId = `media-story-${state.seasonYear}-ai-${teamId}-reliability`;
+    const existing = mediaPressureState(next).storyThreads?.find((story) => story.id === storyId);
+    if (existing?.sourceIds.includes(raceId)) continue;
+    const occurrence = (existing?.sourceIds.length ?? 0) + 1;
+    const repeated = occurrence > 1;
     next = upsertStory(next, {
-      id: `media-story-${state.seasonYear}-ai-${teamId}-reliability`,
+      id: storyId,
       scope: 'AI',
       teamId,
       category: doubleDnf ? 'Reliability' : 'PerformanceRumor',
       headline: doubleDnf
         ? `${team?.name ?? teamId} faces growing reliability pressure`
         : `${team?.name ?? teamId} paddock rumors intensify`,
-      summary: doubleDnf
-        ? 'A double retirement has triggered questions about technical leadership and the direction of the programme.'
-        : 'Repeated incidents have prompted scrutiny of the team’s drivers and operational standards.',
+      summary: repeated
+        ? `${team?.name ?? teamId} has produced another race of the same troubling evidence. Paddock scrutiny is intensifying after ${occurrence} separate incidents.`
+        : doubleDnf
+          ? 'A double retirement has triggered questions about technical leadership and the direction of the programme.'
+          : 'Repeated incidents have prompted scrutiny of the team’s drivers and operational standards.',
       pressure: doubleDnf ? 62 : 42,
       round,
       sourceId: raceId,
+      repeatPressure: doubleDnf ? 18 : 12,
     });
+    const story = mediaPressureState(next).storyThreads?.find((entry) => entry.id === storyId);
+    if (!story) continue;
+    const news: NewsItem = {
+      id: `news-${storyId}-${raceId}`,
+      round,
+      headline: repeated
+        ? `${team?.name ?? teamId} pressure escalates after another troubled race`
+        : story.headline,
+      body: repeated
+        ? `${story.summary} The recurring pattern has moved the story to ${story.stage.toLowerCase()} status.`
+        : `${story.summary} Rival teams, journalists, and supporters are watching how the programme responds.`,
+      timestamp: new Date().toISOString(),
+      category: 'paddock',
+      priority: story.stage === 'Flashpoint' ? 'high' : 'normal',
+      careerPhase: state.careerPhase?.currentPhase,
+      teamId,
+    };
+    next = {
+      ...next,
+      news: [news, ...next.news.filter((item) => item.id !== news.id)].slice(0, 80),
+    };
   }
   return next;
 }

@@ -72,6 +72,7 @@ import {
   type PrincipalSeasonOutcome,
 } from '../sim/principalEngine';
 import { buildInitialCommercial } from '../sim/commercialEngine';
+import { mediaPressureAfterTeamMove } from '../sim/mediaPressureEngine';
 import { createInitialFacilities } from '../sim/facilityEngine';
 import { rolloverRelationships, syncDriverRelationshipsForTeam } from '../sim/relationshipEngine';
 import { rolloverConfidence, checkExpiredPromises, applyPromiseResolution, computeConfidenceState, evaluatePromisesAtSeasonEnd, resolvePromise, contractLoyaltyModifier, evaluateWants } from '../sim/driverConfidenceEngine';
@@ -1770,6 +1771,7 @@ function applyPrincipalMove(state: GameState, newTeamId: string): GameState {
     facilities,
     engine,
     aiTeamStates,
+    media: mediaPressureAfterTeamMove(state, state.selectedTeamId, newTeamId),
     publicReputation: buildInitialPublicReputation(
       newTeam,
       state.principal?.reputation ?? newTeam.reputation,
