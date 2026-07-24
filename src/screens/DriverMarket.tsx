@@ -25,7 +25,6 @@ import {
   WorkspaceTabs,
 } from '../components/workspace/Workspace';
 import { DriverDossierButton } from '../components/driverCards/DriverDossier';
-import { ScoutingWidget } from '../components/scouting/ScoutingWidget';
 import {
   readoutForMarketOverall,
   readoutForMarketSkill,
@@ -43,10 +42,8 @@ import type {
 import type { Driver } from '../types/gameTypes';
 import {
   MARKET_PAGE_SIZE,
-  YOUTH_MARKET_TABS,
   marketPage,
   marketPageCount,
-  type YouthMarketTab,
 } from './driverMarketViewModel';
 import {
   DEFAULT_DRIVER_MARKET_FILTERS,
@@ -344,6 +341,9 @@ export function DriverMarket() {
           }
           onReleaseSigning={(seatDriverId) =>
             dispatch({ type: 'RELEASE_SIGNING', seatDriverId })
+          }
+          onScoutYouth={(youthId) =>
+            dispatch({ type: 'SCOUT_TARGET', entityId: youthId, entityType: 'YouthProspect' })
           }
         />
       )}
@@ -780,6 +780,7 @@ function YouthTab({
   onReleaseAcademy,
   onPromote,
   onReleaseSigning,
+  onScoutYouth,
 }: {
   prospects: YouthProspect[];
   academy: AcademyMember[];
@@ -795,8 +796,8 @@ function YouthTab({
   onReleaseAcademy: (academyId: string) => void;
   onPromote: (academyId: string, seatDriverId: string) => void;
   onReleaseSigning: (seatDriverId: string) => void;
+  onScoutYouth: (youthId: string) => void;
 }) {
-  const [youthTab, setYouthTab] = useState<YouthMarketTab>('academy');
   const [academyPage, setAcademyPage] = useState(0);
   const [prospectPage, setProspectPage] = useState(0);
   const [prospectSort, setProspectSort] = useState<YouthProspectSort>({ key: 'potential', direction: 'desc' });
@@ -814,28 +815,17 @@ function YouthTab({
 
   return (
     <div className="space-y-3">
-      <nav
-        className="grid grid-cols-2 gap-1 rounded-lg border border-neutral-800 bg-neutral-950/70 p-1"
-        aria-label="Youth market sections"
-      >
-        {YOUTH_MARKET_TABS.map((item) => (
-          <button
-            key={item.id}
-            type="button"
-            onClick={() => setYouthTab(item.id)}
-            aria-current={youthTab === item.id ? 'page' : undefined}
-            className={`rounded px-3 py-2 text-xs font-semibold transition-colors ${
-              youthTab === item.id
-                ? 'bg-sky-500 text-neutral-950'
-                : 'text-neutral-400 hover:bg-neutral-900 hover:text-neutral-100'
-            }`}
-          >
-            {item.label} ({item.id === 'academy' ? academy.length : available.length})
-          </button>
-        ))}
-      </nav>
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <div>
+          <h2 className="text-lg font-semibold text-neutral-100">Youth Academy &amp; Prospect Market</h2>
+          <p className="text-xs text-neutral-500">All academy members and open prospects in one management view.</p>
+        </div>
+        <span className={`rounded px-2 py-0.5 text-xs font-semibold ${academyFull ? 'bg-amber-500/15 text-amber-300' : 'bg-neutral-800 text-neutral-300'}`}>
+          Academy Slots: {academy.length} / {academyCapacity}
+        </span>
+      </div>
 
-      {youthTab === 'academy' && (
+      <div>
         <div>
           <div className="mb-2 flex items-center justify-between gap-2">
             <h2 className="text-lg font-semibold text-neutral-100">Your Academy</h2>
@@ -941,9 +931,9 @@ function YouthTab({
             />
           )}
         </div>
-      )}
+      </div>
 
-      {youthTab === 'prospects' && (
+      <div>
         <div>
           <h2 className="mb-2 text-lg font-semibold text-neutral-100">
             Youth Prospects ({available.length} open / {prospects.length} total)
@@ -984,7 +974,14 @@ function YouthTab({
                     <td className="px-2 py-2 tabular-nums text-neutral-300"><Money m={y.signingCost} /></td>
                     <td className="px-2 py-2">
                       <div className="flex items-center gap-1">
-                        <ScoutingWidget target={{ id: y.id, skills: y.skills, potential: y.potential }} entityType="YouthProspect" compact />
+                        <Button
+                          variant="secondary"
+                          className="px-2 py-1 text-[10px]"
+                          onClick={() => onScoutYouth(y.id)}
+                          disabled={!!state.scouting?.reports?.[y.id]?.scoutingLevel && state.scouting.reports[y.id].scoutingLevel >= 100}
+                        >
+                          {state.scouting?.reports?.[y.id]?.scoutingLevel && state.scouting.reports[y.id].scoutingLevel >= 100 ? 'Scouted' : 'Scout'}
+                        </Button>
                         <Button variant="primary" className="px-2 py-1 text-[10px]" disabled={academyFull || toMoney(y.signingCost) > budget} onClick={() => onSignYouth(y.id)}>
                           {academyFull ? 'Full' : toMoney(y.signingCost) > budget ? 'Over budget' : 'Add'}
                         </Button>
@@ -1004,7 +1001,7 @@ function YouthTab({
             onPage={setProspectPage}
           />
         </div>
-      )}
+      </div>
     </div>
   );
 }

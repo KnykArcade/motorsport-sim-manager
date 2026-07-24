@@ -136,11 +136,12 @@ describe('inboxViewModel', () => {
 
     expect(inboxMessages(state)).toContainEqual(expect.objectContaining({
       id: 'inbox-market-outcome-market-offer-1',
-      title: 'Rival offer for Market Driver',
+      title: 'Market update: Market Driver',
       route: '/market?target=market-driver-1',
-      routeLabel: 'Review Rival Offer',
-      kind: 'must_respond',
-      timing: 'due_this_week',
+      routeLabel: 'Review Market',
+      kind: 'recommended',
+      blocking: false,
+      timing: 'before_next_race',
     }));
   });
 

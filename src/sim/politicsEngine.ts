@@ -28,6 +28,14 @@ function clampStance(n: number): number {
   return Math.max(-100, Math.min(100, n));
 }
 
+export function seasonMidpointRound(totalRounds: number): number {
+  return Math.ceil(totalRounds / 2);
+}
+
+export function regulationVotingLocked(currentRound: number, totalRounds: number): boolean {
+  return currentRound > seasonMidpointRound(totalRounds);
+}
+
 const CAR_KEYS: (keyof CarRatings)[] = [
   'enginePower',
   'aeroEfficiency',

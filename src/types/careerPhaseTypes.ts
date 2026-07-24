@@ -124,6 +124,7 @@ export type CareerPhaseState = {
   paddockEvents: PaddockEvent[];
   announcedCompletedProjectIds: string[];
   racePrepFocus?: string;
+  racePrepFocusConfirmed?: boolean;
   racePrepFocusApplied: boolean;
   budgetFocusBonusApplied: boolean;
   // Legacy checklist for backward compatibility with old saves.

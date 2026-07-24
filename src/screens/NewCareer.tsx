@@ -13,8 +13,6 @@ import type { GameMode, Series } from '../types/gameTypes';
 import type { TeamPrincipal } from '../types/principalTypes';
 
 type Step = 'mode' | 'setup' | 'team' | 'principal';
-
-
 export function NewCareer() {
   const navigate = useNavigate();
   const { dispatch } = useGame();
@@ -360,36 +358,58 @@ export function NewCareer() {
                 Create Principal
               </Button>
             </div>
-            <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
-              {activeBundle.teams.map((team) => {
-                const car = activeBundle.cars.find((c) => c.id === team.carId);
-                const drivers = activeBundle.drivers.filter((d) => d.teamId === team.id);
-                const ratings = car ? effectiveCarRatings(car) : null;
-                const selected = selectedTeamId === team.id;
-                return (
-                  <button
-                    key={team.id}
-                    onClick={() => setSelectedTeamId(team.id)}
-                    className={`rounded-xl border p-4 text-left transition-colors ${
-                      selected
-                        ? 'border-amber-500 bg-amber-500/10'
-                        : 'border-neutral-800 bg-neutral-900/40 hover:border-neutral-600'
-                    }`}
-                  >
-                    <div className="mb-2 flex items-center justify-between">
+            <div className="grid min-h-0 gap-3 lg:grid-cols-[minmax(220px,0.35fr)_minmax(0,1fr)]">
+              <div className="max-h-[min(620px,65vh)] space-y-1 overflow-y-auto rounded-xl border border-neutral-800 bg-neutral-950/40 p-2">
+                {activeBundle.teams.map((team) => {
+                  const selected = selectedTeamId === team.id;
+                  return (
+                    <button
+                      key={team.id}
+                      type="button"
+                      onClick={() => setSelectedTeamId(team.id)}
+                      className={`w-full rounded-lg border px-3 py-3 text-left transition-colors ${
+                        selected
+                          ? 'border-amber-500 bg-amber-500/10'
+                          : 'border-transparent hover:border-neutral-700 hover:bg-neutral-900/70'
+                      }`}
+                    >
                       <div className="flex items-center gap-2">
-                        <span className="h-5 w-1.5 rounded-sm" style={{ backgroundColor: team.color }} />
-                        <span className="font-bold text-neutral-100">{team.name}</span>
+                        <span className="h-6 w-1.5 shrink-0 rounded-sm" style={{ backgroundColor: team.color }} />
+                        <span className="min-w-0 flex-1 truncate font-bold text-neutral-100">{team.name}</span>
+                        <span className="rounded bg-neutral-800 px-2 py-0.5 text-[10px] uppercase text-neutral-400">{team.difficulty}</span>
                       </div>
-                      <span className="rounded bg-neutral-800 px-2 py-0.5 text-[10px] uppercase text-neutral-400">
-                        {team.difficulty}
-                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+              {selectedTeam && (() => {
+                const car = activeBundle.cars.find((c) => c.id === selectedTeam.carId);
+                const drivers = activeBundle.drivers.filter((d) => d.teamId === selectedTeam.id);
+                const ratings = car ? effectiveCarRatings(car) : null;
+                return (
+                  <div className="rounded-xl border border-neutral-800 bg-neutral-900/40 p-4">
+                    <div className="mb-3 flex flex-wrap items-start justify-between gap-2">
+                      <div className="flex items-center gap-2">
+                        <span className="h-7 w-2 rounded-sm" style={{ backgroundColor: selectedTeam.color }} />
+                        <div>
+                          <h3 className="text-lg font-bold text-neutral-100">{selectedTeam.name}</h3>
+                          <p className="text-xs uppercase tracking-wide text-neutral-500">{selectedTeam.difficulty} challenge</p>
+                        </div>
+                      </div>
+                      <div className="text-right text-xs text-neutral-500">
+                        <div>Budget <span className="font-semibold text-neutral-200">{formatMoney(selectedTeam.budget)}</span></div>
+                        <div>Expected finish <span className="font-semibold text-neutral-200">P{selectedTeam.expectedStanding}</span></div>
+                      </div>
                     </div>
-                    <div className="mb-3 text-xs text-neutral-400">
-                      {drivers.map((d) => `#${d.number} ${d.name}`).join('  •  ')}
+                    <div className="mb-4 rounded-lg border border-neutral-800 bg-neutral-950/40 p-3">
+                      <div className="mb-2 text-[10px] font-black uppercase tracking-[0.14em] text-neutral-500">Driver lineup</div>
+                      <div className="flex flex-wrap gap-2 text-sm text-neutral-300">
+                        {drivers.map((driver) => <span key={driver.id} className="rounded bg-neutral-800 px-2 py-1">#{driver.number} {driver.name}</span>)}
+                      </div>
                     </div>
                     {ratings && (
-                      <div className="space-y-1">
+                      <div className="space-y-2">
+                        <div className="text-[10px] font-black uppercase tracking-[0.14em] text-neutral-500">Car & operations ratings</div>
                         <StatBar label="Engine" value={ratings.enginePower} max={100} />
                         <StatBar label="Aero" value={ratings.aeroEfficiency} max={100} />
                         <StatBar label="Mech Grip" value={ratings.mechanicalGrip} max={100} />
@@ -397,13 +417,9 @@ export function NewCareer() {
                         <StatBar label="Pit Crew" value={ratings.pitCrewOperations} max={100} />
                       </div>
                     )}
-                    <div className="mt-3 flex items-center justify-between text-xs text-neutral-500">
-                      <span>Budget {formatMoney(team.budget)}</span>
-                      <span>Exp. P{team.expectedStanding}</span>
-                    </div>
-                  </button>
+                  </div>
                 );
-              })}
+              })()}
             </div>
             <div className="flex justify-between">
               <Button variant="ghost" onClick={() => setStep('setup')}>
@@ -497,6 +513,4 @@ function ModeCard({
     </button>
   );
 }
-
-
 
