@@ -30,6 +30,7 @@ export type MediaQuestion = {
   context: string;
   driverId?: string;
   teamId?: string;
+  challengeMemoryId?: string;
 };
 
 export type MediaAnswer = {
@@ -53,9 +54,95 @@ export type MediaSession = {
   questions: MediaQuestion[];
   answers: MediaAnswer[];
   consequenceSummary?: string;
+  crisisId?: string;
+};
+
+export type JournalistMemory = {
+  id: string;
+  topic: MediaQuestionTopic;
+  style: MediaResponseStyle;
+  statement: string;
+  seasonYear: number;
+  round: number;
+  sessionId: string;
+  questionId: string;
+};
+
+export type PublicMediaPromiseType =
+  | 'Results'
+  | 'Reliability'
+  | 'DriverSupport'
+  | 'SponsorResolution'
+  | 'BoardTarget';
+
+export type PublicMediaPromise = {
+  id: string;
+  type: PublicMediaPromiseType;
+  statement: string;
+  seasonYear: number;
+  createdRound: number;
+  deadlineRound: number;
+  status: 'Active' | 'Kept' | 'Broken' | 'Expired';
+  sourceSessionId: string;
+  sourceQuestionId: string;
+  driverId?: string;
+  outcome?: string;
+};
+
+export type MediaStoryCategory =
+  | 'Contradiction'
+  | 'Scandal'
+  | 'InternalLeak'
+  | 'SponsorDispute'
+  | 'DriverConflict'
+  | 'Reliability'
+  | 'PerformanceRumor';
+
+export type MediaStoryThread = {
+  id: string;
+  scope: 'Player' | 'AI';
+  teamId: string;
+  category: MediaStoryCategory;
+  headline: string;
+  summary: string;
+  stage: 'Emerging' | 'Escalating' | 'Flashpoint' | 'Cooling' | 'Resolved';
+  pressure: number;
+  status: 'Active' | 'Resolved';
+  createdSeasonYear: number;
+  createdRound: number;
+  updatedSeasonYear: number;
+  updatedRound: number;
+  sourceIds: string[];
+  lastStakeholderReactionSeasonYear?: number;
+  lastStakeholderReactionRound?: number;
+};
+
+export type MediaCrisisKind =
+  | 'Scandal'
+  | 'InternalLeak'
+  | 'SponsorDispute'
+  | 'DriverConflict';
+
+export type MediaCrisis = {
+  id: string;
+  kind: MediaCrisisKind;
+  headline: string;
+  detail: string;
+  seasonYear: number;
+  round: number;
+  status: 'Open' | 'Resolved';
+  linkedDriverId?: string;
+  linkedSponsorId?: string;
+  resolution?: 'TransparentBriefing' | 'PrivateInvestigation' | 'DenyAndDeflect';
+  outcome?: string;
 };
 
 export type MediaState = {
   sessions: MediaSession[];
   declinedDuties: number;
+  journalistMemory?: JournalistMemory[];
+  publicPromises?: PublicMediaPromise[];
+  storyThreads?: MediaStoryThread[];
+  crises?: MediaCrisis[];
+  managementStanding?: number;
 };
