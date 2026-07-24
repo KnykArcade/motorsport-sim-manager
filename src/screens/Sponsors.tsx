@@ -33,6 +33,11 @@ import {
   sponsorObjectiveSummary,
   sponsorPage,
   sponsorPageCount,
+  sortSponsorNegotiations,
+  sortSponsorOffers,
+  type SponsorNegotiationSortKey,
+  type SponsorOfferSortKey,
+  type SponsorSort,
   type SponsorsWorkspaceTab,
 } from './sponsorsViewModel';
 import {
@@ -85,6 +90,8 @@ export function Sponsors() {
   const [tab, setTab] = useState<SponsorsWorkspaceTab>(initialTab);
   const [sponsorListPage, setSponsorListPage] = useState(0);
   const [ownerReviewPage, setOwnerReviewPage] = useState(0);
+  const [offerSort, setOfferSort] = useState<SponsorSort<SponsorOfferSortKey>>({ key: 'annualValue', direction: 'desc' });
+  const [negotiationSort, setNegotiationSort] = useState<SponsorSort<SponsorNegotiationSortKey>>({ key: 'deadlineRound', direction: 'asc' });
 
   const commercial = state?.commercial;
   const annual = useMemo(() => sponsorAnnualIncome(commercial), [commercial]);
@@ -108,6 +115,8 @@ export function Sponsors() {
   const used = sponsors.length;
   const negotiations = commercial?.negotiations ?? [];
   const activeNegotiations = negotiations.filter((item) => item.status === 'Draft' || item.status === 'Countered');
+  const orderedOffers = sortSponsorOffers(offers, offerSort);
+  const orderedNegotiations = sortSponsorNegotiations(negotiations, negotiationSort);
   const slotsFull = used >= capacity;
   const objectiveSummary = sponsorObjectiveSummary(sponsors);
   const totalRaces = state.calendar.length;
@@ -235,16 +244,13 @@ export function Sponsors() {
               {offers.length === 0 ? (
                 <p className="text-sm text-neutral-500">No new sponsor deals are on offer right now.</p>
               ) : (
-                <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
-                  {offers.map((offer) => (
-                    <SponsorOfferCard
-                      key={offer.id}
-                      offer={offer}
-                      disabled={slotsFull || state.gameMode === 'SingleSeason'}
-                      onSign={() => dispatch({ type: 'SIGN_SPONSOR', offerId: offer.id })}
-                    />
-                  ))}
-                </div>
+                <SponsorOffersTable
+                  offers={orderedOffers}
+                  disabled={slotsFull || state.gameMode === 'SingleSeason'}
+                  sort={offerSort}
+                  onSort={(key) => updateOfferSort(key, setOfferSort)}
+                  onSign={(offerId) => dispatch({ type: 'SIGN_SPONSOR', offerId })}
+                />
               )}
             </Panel>
           )}
@@ -254,18 +260,15 @@ export function Sponsors() {
               {negotiations.length === 0 ? (
                 <p className="text-sm text-neutral-500">No sponsor talks have been opened.</p>
               ) : (
-                <div className="grid gap-3 lg:grid-cols-2">
-                  {[...negotiations].reverse().map((negotiation) => (
-                    <SponsorNegotiationCard
-                      key={negotiation.id}
-                      negotiation={negotiation}
-                      disabled={state.gameMode === 'SingleSeason'}
-                      onSubmit={(terms) => dispatch({ type: 'SUBMIT_SPONSOR_NEGOTIATION', negotiationId: negotiation.id, terms })}
-                      onAcceptCounter={() => dispatch({ type: 'ACCEPT_SPONSOR_COUNTER', negotiationId: negotiation.id })}
-                      onCancel={() => dispatch({ type: 'CANCEL_SPONSOR_NEGOTIATION', negotiationId: negotiation.id })}
-                    />
-                  ))}
-                </div>
+                <SponsorNegotiationsTable
+                  negotiations={orderedNegotiations}
+                  disabled={state.gameMode === 'SingleSeason'}
+                  sort={negotiationSort}
+                  onSort={(key) => updateNegotiationSort(key, setNegotiationSort)}
+                  onSubmit={(negotiationId, terms) => dispatch({ type: 'SUBMIT_SPONSOR_NEGOTIATION', negotiationId, terms })}
+                  onAcceptCounter={(negotiationId) => dispatch({ type: 'ACCEPT_SPONSOR_COUNTER', negotiationId })}
+                  onCancel={(negotiationId) => dispatch({ type: 'CANCEL_SPONSOR_NEGOTIATION', negotiationId })}
+                />
               )}
             </Panel>
           )}
@@ -566,73 +569,193 @@ function SponsorPortfolioCard({
   );
 }
 
-function SponsorOfferCard({
-  offer,
+function updateOfferSort(
+  key: SponsorOfferSortKey,
+  setSort: React.Dispatch<React.SetStateAction<SponsorSort<SponsorOfferSortKey>>>,
+) {
+  setSort((current) => current.key === key
+    ? { key, direction: current.direction === 'asc' ? 'desc' : 'asc' }
+    : { key, direction: key === 'name' || key === 'type' ? 'asc' : 'desc' });
+}
+
+function updateNegotiationSort(
+  key: SponsorNegotiationSortKey,
+  setSort: React.Dispatch<React.SetStateAction<SponsorSort<SponsorNegotiationSortKey>>>,
+) {
+  setSort((current) => current.key === key
+    ? { key, direction: current.direction === 'asc' ? 'desc' : 'asc' }
+    : { key, direction: key === 'sponsorName' || key === 'status' ? 'asc' : 'desc' });
+}
+
+function SponsorOffersTable({
+  offers,
   disabled,
+  sort,
+  onSort,
   onSign,
 }: {
-  offer: Sponsor;
+  offers: Sponsor[];
   disabled: boolean;
-  onSign: () => void;
+  sort: SponsorSort<SponsorOfferSortKey>;
+  onSort: (key: SponsorOfferSortKey) => void;
+  onSign: (offerId: string) => void;
 }) {
-  const objective = offer.objectives[0];
-  const bonus = offer.bonusTerms[0];
   return (
-    <div className="rounded-lg border border-neutral-800 bg-neutral-900/40 p-3">
-      <div className="flex items-start justify-between gap-2">
-        <div className="min-w-0">
-          <div className="truncate font-semibold text-neutral-100" title={offer.name}>{offer.name}</div>
-          <div className="mt-0.5 text-[10px] uppercase tracking-wide text-neutral-500">{TYPE_LABEL[offer.type]}</div>
-        </div>
-        <span className="shrink-0 font-semibold tabular-nums text-green-300">${offer.annualValue}M</span>
-      </div>
-      <div className="mt-2 space-y-1 text-[11px] leading-snug text-neutral-400">
-        <div>{offer.contractYearsRemaining} year term · confidence {offer.confidence}</div>
-        <div className="min-h-7 text-neutral-500">
-          {objective
-            ? `Target: ${objective.description}${objective.reward ? ` · +$${objective.reward}M` : ''}${objective.penalty ? ` / -$${objective.penalty}M` : ''}`
-            : 'No performance objective'}
-        </div>
-        <div className="min-h-7 text-neutral-500">{bonus ? `Bonus: ${bonus.description}` : 'No performance bonus'}</div>
-      </div>
-      <button
-        type="button"
-        disabled={disabled}
-        onClick={onSign}
-        className="mt-2 w-full rounded bg-emerald-600 px-2 py-1.5 text-xs font-semibold text-white enabled:hover:bg-emerald-500 disabled:cursor-not-allowed disabled:bg-neutral-800 disabled:text-neutral-500"
-      >
-        {disabled ? 'No free slot' : 'Open negotiations'}
-      </button>
+    <div className="overflow-x-auto rounded border border-neutral-800">
+      <table className="w-full min-w-[920px] border-collapse text-xs">
+        <thead className="bg-neutral-900/70 text-left text-[10px] uppercase tracking-wide text-neutral-500">
+          <tr>
+            <SponsorSortHeader label="Sponsor" sortKey="name" sort={sort} onSort={onSort} />
+            <SponsorSortHeader label="Type" sortKey="type" sort={sort} onSort={onSort} />
+            <SponsorSortHeader label="Annual value" sortKey="annualValue" sort={sort} onSort={onSort} />
+            <SponsorSortHeader label="Confidence" sortKey="confidence" sort={sort} onSort={onSort} />
+            <SponsorSortHeader label="Term" sortKey="contractYears" sort={sort} onSort={onSort} />
+            <th className="px-2 py-2">Objective / bonus</th>
+            <th className="px-2 py-2">Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          {offers.map((offer) => (
+            <tr key={offer.id} className="border-t border-neutral-800/70 align-middle hover:bg-neutral-900/60">
+              <td className="px-2 py-2 font-semibold text-neutral-100">{offer.name}</td>
+              <td className="px-2 py-2 text-neutral-400">{TYPE_LABEL[offer.type]}</td>
+              <td className="px-2 py-2 tabular-nums text-emerald-300">${offer.annualValue}M</td>
+              <td className={`px-2 py-2 tabular-nums ${confidenceTone(offer.confidence)}`}>{offer.confidence}/100</td>
+              <td className="px-2 py-2 tabular-nums text-neutral-300">{offer.contractYearsRemaining} yr</td>
+              <td className="max-w-[420px] px-2 py-2 text-[11px] text-neutral-400">
+                {offer.objectives[0]?.description ?? 'No performance objective'}
+                {offer.bonusTerms[0] && <span className="ml-2 text-neutral-500">· {offer.bonusTerms[0].description}</span>}
+              </td>
+              <td className="px-2 py-2">
+                <Button variant="primary" className="px-2 py-1 text-[10px]" disabled={disabled} onClick={() => onSign(offer.id)}>
+                  {disabled ? 'No free slot' : 'Open negotiations'}
+                </Button>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
     </div>
   );
 }
 
-function SponsorNegotiationCard({ negotiation, disabled, onSubmit, onAcceptCounter, onCancel }: {
+function SponsorNegotiationsTable({
+  negotiations,
+  disabled,
+  sort,
+  onSort,
+  onSubmit,
+  onAcceptCounter,
+  onCancel,
+}: {
+  negotiations: SponsorNegotiation[];
+  disabled: boolean;
+  sort: SponsorSort<SponsorNegotiationSortKey>;
+  onSort: (key: SponsorNegotiationSortKey) => void;
+  onSubmit: (negotiationId: string, terms: SponsorContractTerms) => void;
+  onAcceptCounter: (negotiationId: string) => void;
+  onCancel: (negotiationId: string) => void;
+}) {
+  return (
+    <div className="overflow-x-auto rounded border border-neutral-800">
+      <table className="w-full min-w-[1180px] border-collapse text-xs">
+        <thead className="bg-neutral-900/70 text-left text-[10px] uppercase tracking-wide text-neutral-500">
+          <tr>
+            <SponsorNegotiationSortHeader label="Sponsor" sortKey="sponsorName" sort={sort} onSort={onSort} />
+            <SponsorNegotiationSortHeader label="Status" sortKey="status" sort={sort} onSort={onSort} />
+            <SponsorNegotiationSortHeader label="Deadline" sortKey="deadlineRound" sort={sort} onSort={onSort} />
+            <SponsorNegotiationSortHeader label="Patience" sortKey="patience" sort={sort} onSort={onSort} />
+            <SponsorNegotiationSortHeader label="Attempts" sortKey="attempts" sort={sort} onSort={onSort} />
+            <SponsorNegotiationSortHeader label="Annual value" sortKey="annualValue" sort={sort} onSort={onSort} />
+            <th className="px-2 py-2">Terms / actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {negotiations.map((negotiation) => (
+            <SponsorNegotiationRow
+              key={negotiation.id}
+              negotiation={negotiation}
+              disabled={disabled}
+              onSubmit={onSubmit}
+              onAcceptCounter={onAcceptCounter}
+              onCancel={onCancel}
+            />
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+function SponsorNegotiationRow({
+  negotiation,
+  disabled,
+  onSubmit,
+  onAcceptCounter,
+  onCancel,
+}: {
   negotiation: SponsorNegotiation;
   disabled: boolean;
-  onSubmit: (terms: SponsorContractTerms) => void;
-  onAcceptCounter: () => void;
-  onCancel: () => void;
+  onSubmit: (negotiationId: string, terms: SponsorContractTerms) => void;
+  onAcceptCounter: (negotiationId: string) => void;
+  onCancel: (negotiationId: string) => void;
 }) {
   const [terms, setTerms] = useState<SponsorContractTerms>(negotiation.counterTerms ?? negotiation.proposedTerms);
   const active = negotiation.status === 'Draft' || negotiation.status === 'Countered';
   return (
-    <div className="rounded-lg border border-neutral-800 bg-neutral-900/40 p-3">
-      <div className="flex items-start justify-between gap-2">
-        <div><div className="font-semibold text-neutral-100">{negotiation.sponsorName}</div><div className="text-[10px] uppercase tracking-wide text-neutral-500">{negotiation.kind} deal · deadline round {negotiation.deadlineRound}</div></div>
-        <span className={active ? 'text-amber-300' : negotiation.status === 'Accepted' ? 'text-green-300' : 'text-neutral-400'}>{negotiation.status}</span>
-      </div>
-      <div className="mt-3 grid grid-cols-2 gap-2 text-xs">
-        <label className="text-neutral-400">Annual value ($M)<input type="number" step="0.1" value={terms.annualValue} disabled={!active || disabled} onChange={(event) => setTerms({ ...terms, annualValue: Number(event.target.value) })} className="mt-1 w-full rounded border border-neutral-700 bg-neutral-950 px-2 py-1 text-neutral-100" /></label>
-        <label className="text-neutral-400">Years<input type="number" min="1" max="5" value={terms.contractYears} disabled={!active || disabled} onChange={(event) => setTerms({ ...terms, contractYears: Number(event.target.value) })} className="mt-1 w-full rounded border border-neutral-700 bg-neutral-950 px-2 py-1 text-neutral-100" /></label>
-        <label className="text-neutral-400">Bonus multiplier<input type="number" step="0.1" min="0.5" max="2" value={terms.bonusMultiplier} disabled={!active || disabled} onChange={(event) => setTerms({ ...terms, bonusMultiplier: Number(event.target.value) })} className="mt-1 w-full rounded border border-neutral-700 bg-neutral-950 px-2 py-1 text-neutral-100" /></label>
-        <label className="text-neutral-400">Objectives<select value={terms.objectiveLevel} disabled={!active || disabled} onChange={(event) => setTerms({ ...terms, objectiveLevel: event.target.value as SponsorContractTerms['objectiveLevel'] })} className="mt-1 w-full rounded border border-neutral-700 bg-neutral-950 px-2 py-1 text-neutral-100"><option>Flexible</option><option>Standard</option><option>Stretch</option></select></label>
-      </div>
-      <div className="mt-2 text-xs text-neutral-500">Patience: {negotiation.patience} · Attempts: {negotiation.attempts}{negotiation.outcomeMessage ? ` · ${negotiation.outcomeMessage}` : ''}</div>
-      {negotiation.counterTerms && active && <div className="mt-2 rounded border border-amber-500/20 bg-amber-500/5 p-2 text-xs text-amber-200">Counter: ${negotiation.counterTerms.annualValue}M · {negotiation.counterTerms.contractYears} years · {negotiation.counterTerms.bonusMultiplier}× bonuses · {negotiation.counterTerms.objectiveLevel} objectives</div>}
-      {active && !disabled && <div className="mt-3 flex gap-2"><button type="button" onClick={() => onSubmit(terms)} className="rounded bg-emerald-600 px-3 py-1 text-xs font-semibold text-white">Submit proposal</button>{negotiation.counterTerms && <button type="button" onClick={onAcceptCounter} className="rounded border border-amber-500/40 px-3 py-1 text-xs font-semibold text-amber-200">Accept counter</button>}<button type="button" onClick={onCancel} className="ml-auto text-xs text-neutral-500">End talks</button></div>}
-    </div>
+    <tr className="border-t border-neutral-800/70 align-top hover:bg-neutral-900/60">
+      <td className="px-2 py-2 font-semibold text-neutral-100">{negotiation.sponsorName}<div className="text-[10px] font-normal uppercase tracking-wide text-neutral-500">{negotiation.kind}</div></td>
+      <td className={`px-2 py-2 ${active ? 'text-amber-300' : negotiation.status === 'Accepted' ? 'text-emerald-300' : 'text-neutral-400'}`}>{negotiation.status}</td>
+      <td className="px-2 py-2 tabular-nums text-neutral-300">R{negotiation.deadlineRound}</td>
+      <td className="px-2 py-2 tabular-nums text-neutral-300">{negotiation.patience}</td>
+      <td className="px-2 py-2 tabular-nums text-neutral-300">{negotiation.attempts}</td>
+      <td className="px-2 py-2 tabular-nums text-emerald-300">${(negotiation.counterTerms?.annualValue ?? negotiation.proposedTerms.annualValue).toFixed(1)}M</td>
+      <td className="px-2 py-2">
+        <div className="flex min-w-[480px] flex-wrap items-end gap-1">
+          <label className="text-[10px] text-neutral-500">Value<input type="number" step="0.1" value={terms.annualValue} disabled={!active || disabled} onChange={(event) => setTerms({ ...terms, annualValue: Number(event.target.value) })} className="mt-0.5 w-20 rounded border border-neutral-700 bg-neutral-950 px-1.5 py-1 text-neutral-100" /></label>
+          <label className="text-[10px] text-neutral-500">Years<input type="number" min="1" max="5" value={terms.contractYears} disabled={!active || disabled} onChange={(event) => setTerms({ ...terms, contractYears: Number(event.target.value) })} className="mt-0.5 w-16 rounded border border-neutral-700 bg-neutral-950 px-1.5 py-1 text-neutral-100" /></label>
+          <label className="text-[10px] text-neutral-500">Bonus<select value={terms.bonusMultiplier} disabled={!active || disabled} onChange={(event) => setTerms({ ...terms, bonusMultiplier: Number(event.target.value) })} className="mt-0.5 w-16 rounded border border-neutral-700 bg-neutral-950 px-1.5 py-1 text-neutral-100"><option value="0.5">0.5×</option><option value="1">1×</option><option value="1.5">1.5×</option><option value="2">2×</option></select></label>
+          <label className="text-[10px] text-neutral-500">Objectives<select value={terms.objectiveLevel} disabled={!active || disabled} onChange={(event) => setTerms({ ...terms, objectiveLevel: event.target.value as SponsorContractTerms['objectiveLevel'] })} className="mt-0.5 w-24 rounded border border-neutral-700 bg-neutral-950 px-1.5 py-1 text-neutral-100"><option>Flexible</option><option>Standard</option><option>Stretch</option></select></label>
+          {active && !disabled && <Button variant="primary" className="px-2 py-1 text-[10px]" onClick={() => onSubmit(negotiation.id, terms)}>Submit</Button>}
+          {negotiation.counterTerms && active && !disabled && <Button variant="ghost" className="px-2 py-1 text-[10px] text-amber-200" onClick={() => onAcceptCounter(negotiation.id)}>Accept counter</Button>}
+          {active && !disabled && <Button variant="ghost" className="px-2 py-1 text-[10px] text-neutral-500" onClick={() => onCancel(negotiation.id)}>End talks</Button>}
+        </div>
+        <div className="mt-1 text-[10px] text-neutral-500">{negotiation.outcomeMessage ?? (negotiation.counterTerms ? `Counter: $${negotiation.counterTerms.annualValue}M · ${negotiation.counterTerms.contractYears} years` : 'Player proposal pending')}</div>
+      </td>
+    </tr>
   );
+}
+
+function SponsorSortHeader({
+  label,
+  sortKey,
+  sort,
+  onSort,
+}: {
+  label: string;
+  sortKey: SponsorOfferSortKey;
+  sort: SponsorSort<SponsorOfferSortKey>;
+  onSort: (key: SponsorOfferSortKey) => void;
+}) {
+  return <th className="px-2 py-2"><button type="button" className="inline-flex items-center gap-1 hover:text-neutral-200" onClick={() => onSort(sortKey)}>{label}<SortArrow active={sort.key === sortKey} direction={sort.direction} /></button></th>;
+}
+
+function SponsorNegotiationSortHeader({
+  label,
+  sortKey,
+  sort,
+  onSort,
+}: {
+  label: string;
+  sortKey: SponsorNegotiationSortKey;
+  sort: SponsorSort<SponsorNegotiationSortKey>;
+  onSort: (key: SponsorNegotiationSortKey) => void;
+}) {
+  return <th className="px-2 py-2"><button type="button" className="inline-flex items-center gap-1 hover:text-neutral-200" onClick={() => onSort(sortKey)}>{label}<SortArrow active={sort.key === sortKey} direction={sort.direction} /></button></th>;
+}
+
+function SortArrow({ active, direction }: { active: boolean; direction: 'asc' | 'desc' }) {
+  return <span className="text-[9px]">{active ? (direction === 'asc' ? '▲' : '▼') : '↕'}</span>;
 }
 
 function SponsorTermsCard({ sponsor }: { sponsor: Sponsor }) {

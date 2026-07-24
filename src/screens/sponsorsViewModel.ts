@@ -1,4 +1,4 @@
-import type { Sponsor, SponsorObjective } from '../types/sponsorTypes';
+import type { Sponsor, SponsorNegotiation, SponsorObjective } from '../types/sponsorTypes';
 
 export type SponsorsWorkspaceTab = 'portfolio' | 'opportunities' | 'negotiations' | 'objectives' | 'public' | 'owner';
 
@@ -37,4 +37,51 @@ export function sponsorObjectiveSummary(sponsors: Sponsor[]) {
     },
     { Pending: 0, Met: 0, Failed: 0 } as Record<NonNullable<SponsorObjective['status']>, number>,
   );
+}
+
+export type SponsorOfferSortKey = 'name' | 'type' | 'annualValue' | 'confidence' | 'contractYears';
+export type SponsorNegotiationSortKey = 'sponsorName' | 'status' | 'deadlineRound' | 'patience' | 'attempts' | 'annualValue';
+
+export type SponsorSort<Key extends string> = {
+  key: Key;
+  direction: 'asc' | 'desc';
+};
+
+export function sortSponsorOffers(offers: readonly Sponsor[], sort: SponsorSort<SponsorOfferSortKey>): Sponsor[] {
+  const direction = sort.direction === 'asc' ? 1 : -1;
+  return [...offers].sort((left, right) => {
+    const leftValue = sponsorOfferSortValue(left, sort.key);
+    const rightValue = sponsorOfferSortValue(right, sort.key);
+    if (leftValue < rightValue) return -1 * direction;
+    if (leftValue > rightValue) return direction;
+    return left.name.localeCompare(right.name);
+  });
+}
+
+export function sortSponsorNegotiations(
+  negotiations: readonly SponsorNegotiation[],
+  sort: SponsorSort<SponsorNegotiationSortKey>,
+): SponsorNegotiation[] {
+  const direction = sort.direction === 'asc' ? 1 : -1;
+  return [...negotiations].sort((left, right) => {
+    const leftValue = sponsorNegotiationSortValue(left, sort.key);
+    const rightValue = sponsorNegotiationSortValue(right, sort.key);
+    if (leftValue < rightValue) return -1 * direction;
+    if (leftValue > rightValue) return direction;
+    return left.sponsorName.localeCompare(right.sponsorName);
+  });
+}
+
+function sponsorOfferSortValue(sponsor: Sponsor, key: SponsorOfferSortKey): number | string {
+  if (key === 'name') return sponsor.name;
+  if (key === 'type') return sponsor.type;
+  if (key === 'contractYears') return sponsor.contractYearsRemaining;
+  return sponsor[key];
+}
+
+function sponsorNegotiationSortValue(negotiation: SponsorNegotiation, key: SponsorNegotiationSortKey): number | string {
+  if (key === 'sponsorName') return negotiation.sponsorName;
+  if (key === 'status') return negotiation.status;
+  if (key === 'annualValue') return negotiation.counterTerms?.annualValue ?? negotiation.proposedTerms.annualValue;
+  return negotiation[key];
 }
