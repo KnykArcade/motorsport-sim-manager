@@ -210,7 +210,6 @@ export function PaddockWeek() {
   const unstableCharacters = unstableCharacterStability(state).slice(0, 6);
   const atRiskIntentions = atRiskFutureIntentions(state).slice(0, 6);
   const expiringDrivers = state.gameMode === 'SingleSeason' ? [] : state.drivers.filter((driver) => driver.teamId === state.selectedTeamId && (driver.contractYearsRemaining ?? 1) <= 1);
-  const expiringStaff = state.gameMode === 'SingleSeason' ? [] : (state.staff ?? []).filter((member) => (member.contractYearsRemaining ?? 2) <= 1);
   const pendingPersonnelMoves = (state.characterInteractions?.personnelMoves ?? [])
     .filter((move) => move.status === 'Pending' && move.effectiveSeason === state.seasonYear + 1);
   const peopleAttentionCount = unresolvedCharacterRequests.length
@@ -354,7 +353,7 @@ export function PaddockWeek() {
         <WorkspaceTabs
           items={[
             { id: 'attention' as const, label: `Needs Attention (${peopleAttentionCount})` },
-            { id: 'support' as const, label: `Support & Mandates (${activeMandates.length + unstableCharacters.length + atRiskIntentions.length + expiringDrivers.length + expiringStaff.length + pendingPersonnelMoves.length})` },
+            { id: 'support' as const, label: `Support & Mandates (${activeMandates.length + unstableCharacters.length + atRiskIntentions.length + expiringDrivers.length + pendingPersonnelMoves.length})` },
             { id: 'resolved' as const, label: `Resolved This Week (${resolvedCharacterRequests.length + resolvedCharacterDisputes.length + resolvedCharacterInitiatives.length + resolvedCharacterBreakingPoints.length})` },
           ]}
           active={activePeopleSection}
@@ -454,17 +453,6 @@ export function PaddockWeek() {
             </div>
           </Panel>
         )}
-        {activePeopleSection === 'support' && expiringStaff.length > 0 && (
-          <Panel title="Expiring Staff Contracts">
-            <p className="mb-3 text-xs text-neutral-500">These specialists leave at season rollover unless an extension is accepted. Renew them in the Staff screen or plan to recruit from the real era and series staff pool; an expired role remains vacant.</p>
-            <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
-              {expiringStaff.map((member) => {
-                const intent = state.characterInteractions?.futureIntentions.find((entry) => entry.target.type === 'Staff' && entry.target.id === member.id);
-                return <article key={member.id} className="rounded-lg border border-red-900/50 bg-red-950/10 p-3"><div className="flex items-start justify-between gap-2"><div><strong className="block text-xs text-neutral-200">{member.name}</strong><span className="text-[10px] text-neutral-500">{member.role}</span></div><span className="text-[10px] font-bold text-red-300">Expires this year</span></div><p className="mt-2 text-[10px] text-neutral-400">{intent ? characterFutureIntentLabel(intent.target, intent.status) : 'Future undecided'}</p></article>;
-              })}
-            </div>
-          </Panel>
-        )}
         {activePeopleSection === 'attention' && unresolvedCharacterBreakingPoints.length > 0 && (
           <Panel title="Character Breaking Point" className="border-red-700/40">
             <p className="mb-3 text-xs text-neutral-500">Repeated decisions have pushed this relationship beyond ordinary weekly pressure. Your response is required and will be remembered.</p>
@@ -532,7 +520,7 @@ export function PaddockWeek() {
         {activePeopleSection === 'resolved' && resolvedCharacterInitiatives.length > 0 && <Panel title="Initiatives Answered This Week"><div className="grid gap-3 xl:grid-cols-2">{resolvedCharacterInitiatives.map((event) => { const initiative = state.characterInteractions?.initiatives.find((entry) => entry.id === event.characterInitiative?.initiativeId); return <article key={event.id} className="rounded-lg border border-fuchsia-900/40 bg-fuchsia-950/10 p-3"><div className="flex items-center justify-between gap-3"><strong className="text-sm text-neutral-200">{event.characterInitiative?.target.name}</strong><span className="rounded bg-fuchsia-500/10 px-2 py-1 text-[10px] font-semibold uppercase text-fuchsia-300">{initiative?.status ?? 'Resolved'}</span></div><div className="mt-1 text-xs font-semibold text-amber-300">{initiative?.optionLabel}</div><p className="mt-1 text-xs text-neutral-400">{initiative?.outcome}</p></article>; })}</div></Panel>}
         {activePeopleSection === 'resolved' && resolvedCharacterBreakingPoints.length > 0 && <Panel title="Breaking Points Addressed"><div className="grid gap-3 xl:grid-cols-2">{resolvedCharacterBreakingPoints.map((event) => { const entry = state.characterInteractions?.breakingPoints.find((item) => item.id === event.characterBreakingPoint?.breakingPointId); return <article key={event.id} className="rounded-lg border border-red-900/40 bg-red-950/10 p-3"><div className="flex items-center justify-between gap-3"><strong className="text-sm text-neutral-200">{event.characterBreakingPoint?.target.name}</strong><span className="rounded bg-red-500/10 px-2 py-1 text-[10px] font-semibold uppercase text-red-300">{entry?.status ?? 'Addressed'}</span></div><div className="mt-1 text-xs font-semibold text-amber-300">{entry?.optionLabel}</div><p className="mt-1 text-xs text-neutral-400">{entry?.outcome}</p></article>; })}</div></Panel>}
         {activePeopleSection === 'attention' && unresolvedCharacterRequests.length === 0 && unresolvedCharacterDisputes.length === 0 && unresolvedCharacterInitiatives.length === 0 && unresolvedCharacterBreakingPoints.length === 0 && <Panel title="Needs Attention"><p className="text-sm text-neutral-500">No character requires a decision this week.</p></Panel>}
-        {activePeopleSection === 'support' && internalInfluence.length === 0 && activeMandates.length === 0 && unstableCharacters.length === 0 && atRiskIntentions.length === 0 && expiringDrivers.length === 0 && expiringStaff.length === 0 && pendingPersonnelMoves.length === 0 && <Panel title="Support & Mandates"><p className="text-sm text-neutral-500">No internal support, delegated mandates, unstable relationships, retention risks, planned moves, or expiring contracts are currently recorded.</p></Panel>}
+        {activePeopleSection === 'support' && internalInfluence.length === 0 && activeMandates.length === 0 && unstableCharacters.length === 0 && atRiskIntentions.length === 0 && expiringDrivers.length === 0 && pendingPersonnelMoves.length === 0 && <Panel title="Support & Mandates"><p className="text-sm text-neutral-500">No internal support, delegated mandates, unstable relationships, planned moves, or expiring driver contracts are currently recorded.</p></Panel>}
         {activePeopleSection === 'resolved' && resolvedCharacterRequests.length === 0 && resolvedCharacterDisputes.length === 0 && resolvedCharacterInitiatives.length === 0 && resolvedCharacterBreakingPoints.length === 0 && <Panel title="Resolved This Week"><p className="text-sm text-neutral-500">No people decisions have been resolved this week.</p></Panel>}
       </div>}
 

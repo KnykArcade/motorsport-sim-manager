@@ -15,18 +15,17 @@ const STATUS_STYLES: Record<ExternalTalentContext['status'], string> = {
 type Props = {
   context: ExternalTalentContext;
   onReviewDrivers: () => void;
-  onReviewStaff: () => void;
+  onReviewStaff?: () => void;
 };
 
-export function ExternalTalentBoard({ context, onReviewDrivers, onReviewStaff }: Props) {
+export function ExternalTalentBoard({ context, onReviewDrivers }: Props) {
   const hasDriverContext = context.openRaceSeats > 0 || context.targets.some((target) => target.kind === 'Driver');
-  const hasStaffContext = context.staffVacancies > 0 || context.targets.some((target) => target.kind === 'Staff');
   const move = externalTalentManagementMove(context);
 
   return (
     <Panel title="External Talent · Authority #8">
       <p className="mb-3 text-xs text-neutral-400">
-        Other drivers and staff stay low priority until you create a recruitment context. Only saved scouting, approaches, vacancies, and pending agreements appear here.
+        Other drivers stay low priority until you create a recruitment context. Only saved scouting and pending agreements appear here.
       </p>
       <div className={`rounded-lg border p-3 ${STATUS_STYLES[context.status]}`}>
         <div className="flex flex-wrap items-start justify-between gap-3">
@@ -39,10 +38,9 @@ export function ExternalTalentBoard({ context, onReviewDrivers, onReviewStaff }:
           </span>
         </div>
 
-        <div className="mt-3 grid grid-cols-3 gap-1.5">
+        <div className="mt-3 grid grid-cols-2 gap-1.5">
           <Metric label="Live targets" value={`${context.targets.length}`} />
           <Metric label="Open seats" value={`${context.openRaceSeats}`} />
-          <Metric label="Staff vacancies" value={`${context.staffVacancies}`} />
         </div>
 
         <ul className="mt-3 space-y-1 text-[11px] text-neutral-300">
@@ -83,7 +81,6 @@ export function ExternalTalentBoard({ context, onReviewDrivers, onReviewStaff }:
 
         <div className="mt-3 flex flex-wrap gap-3">
           {hasDriverContext && <button type="button" onClick={onReviewDrivers} className="text-[11px] font-semibold text-[var(--era-accent-strong)] hover:underline">Review driver market →</button>}
-          {hasStaffContext && <button type="button" onClick={onReviewStaff} className="text-[11px] font-semibold text-[var(--era-accent-strong)] hover:underline">Review staff market →</button>}
         </div>
       </div>
     </Panel>

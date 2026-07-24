@@ -141,7 +141,7 @@ describe('recruitmentPipeline', () => {
     }));
   });
 
-  it('routes an active staff refusal back to the exact staff negotiation', () => {
+  it('does not surface staff negotiations in the recruitment pipeline', () => {
     const base = newState();
     const staff = getStaffPool(base.seasonYear, base.series)[0];
     if (!staff) throw new Error('Expected a staff member');
@@ -163,15 +163,7 @@ describe('recruitmentPipeline', () => {
       },
     };
 
-    expect(recruitmentPipeline(state)).toContainEqual(expect.objectContaining({
-      entityId: staff.id,
-      stage: 'Negotiation active',
-      negotiationState: 'refused',
-      nextAction: {
-        label: 'Improve Offer',
-        route: `/staff/${encodeURIComponent(staff.id)}/negotiate`,
-      },
-    }));
+    expect(recruitmentPipeline(state).some((item) => item.entityId === staff.id)).toBe(false);
   });
 
   it('moves signed market drivers into history instead of active work', () => {

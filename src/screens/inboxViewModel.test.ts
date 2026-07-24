@@ -377,15 +377,8 @@ describe('inboxViewModel', () => {
     }));
   });
 
-  it('surfaces vacant and expiring staff roles as people actions', () => {
+  it('does not surface department vacancies or contract prompts', () => {
     const base = newState();
-    const vacant = inboxMessages({ ...base, staff: [] }).find((message) => message.id === 'inbox-staff-vacancy-technical-director');
-    expect(vacant).toMatchObject({
-      actionable: true,
-      route: '/staff?tab=market&role=Technical%20Director',
-      title: 'Technical Director position vacant',
-    });
-
     const staffMember: StaffMember = {
       id: 'staff-td',
       name: 'Test Director',
@@ -397,51 +390,13 @@ describe('inboxViewModel', () => {
       contractYearsRemaining: 1,
       bio: 'Test staff member',
     };
-    const expiring = inboxMessages({
+    const messages = inboxMessages({
       ...base,
       staff: [staffMember],
-    }).find((message) => message.id === 'inbox-staff-contract-staff-td');
-    expect(expiring).toMatchObject({
-      actionable: true,
-      route: '/staff?tab=contracts&staffId=staff-td',
     });
-    expect(expiring?.title).toContain(staffMember.name);
-  });
-
-  it('replaces generic staff alerts with advisory candidate and renewal priorities', () => {
-    const base = newState();
-    const state: GameState = {
-      ...base,
-      staff: [{
-        id: 'staff-td',
-        name: 'Test Director',
-        role: 'Technical Director',
-        nationality: 'GBR',
-        rating: 8,
-        salary: 1,
-        signingFee: 1,
-        contractYearsRemaining: 1,
-        bio: 'Test staff member',
-      }],
-      staffResponsibilityPolicies: {
-        'staff-recruitment': 'staff_advisory',
-        'staff-contracts': 'staff_advisory',
-      },
-    };
-    const messages = inboxMessages(state);
-    const recruitment = messages.find((message) => message.id.startsWith('inbox-staff-recruitment-'));
-    const contract = messages.find((message) => message.id === 'inbox-staff-contract-staff-td');
-    expect(recruitment).toMatchObject({
-      actionable: true,
-      route: expect.stringMatching(/^\/staff\?tab=market&role=.*&staffId=/),
-      source: 'People operations desk',
-    });
-    expect(contract).toMatchObject({
-      actionable: true,
-      route: '/staff?tab=contracts&staffId=staff-td',
-      source: 'People operations desk',
-    });
-    expect(messages.some((message) => message.id === 'inbox-staff-vacancy-race-engineer')).toBe(false);
+    expect(messages.some((message) => message.id.startsWith('inbox-staff-vacancy-'))).toBe(false);
+    expect(messages.some((message) => message.id.startsWith('inbox-staff-contract-'))).toBe(false);
+    expect(messages.some((message) => message.title.toLowerCase().includes('recruitment priority'))).toBe(false);
   });
 
   it('surfaces open regulation votes and low budget', () => {

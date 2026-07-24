@@ -79,7 +79,7 @@ describe('character future intent engine', () => {
     expect(generateExpiringDriverContractEvents({ ...finalStretch, currentRaceIndex: 0 })).toHaveLength(0);
   });
 
-  it('warns about expiring staff contracts during the final three races', () => {
+  it('does not create contract prompts for permanent departments', () => {
     const base = freshState();
     const candidate = getStaffPool(base.seasonYear, base.series)[0];
     const hired = gameReducer(base, { type: 'HIRE_STAFF', staffId: candidate.id })!;
@@ -88,9 +88,7 @@ describe('character future intent engine', () => {
       currentRaceIndex: hired.calendar.length - 2,
       staff: hired.staff!.map((member) => ({ ...member, contractYearsRemaining: 1 })),
     };
-    const events = generateExpiringStaffContractEvents(finalStretch);
-    expect(events.some((event) => event.title.includes(candidate.name))).toBe(true);
-    expect(events[0].description).toContain('expires at season rollover');
+    expect(generateExpiringStaffContractEvents(finalStretch)).toHaveLength(0);
     expect(generateExpiringStaffContractEvents({ ...finalStretch, currentRaceIndex: 0 })).toHaveLength(0);
   });
 

@@ -43,7 +43,7 @@ function targetIds(state: GameState): string[] {
         entityType: report.entityType,
       })),
     ]) {
-      ids.add(`${target.entityType}:${target.entityId}`);
+      if (target.entityType !== 'Staff') ids.add(`${target.entityType}:${target.entityId}`);
     }
   }
   for (const story of state.transferCalendar?.stories ?? []) {
@@ -54,7 +54,6 @@ function targetIds(state: GameState): string[] {
   }
   if (state.marketContractNegotiation) ids.add(`Driver:${state.marketContractNegotiation.marketId}`);
   if (state.contractNegotiation) ids.add(`Driver:${state.contractNegotiation.driverId}`);
-  if (state.staffContractNegotiation) ids.add(`Staff:${state.staffContractNegotiation.staffId}`);
   return [...ids];
 }
 

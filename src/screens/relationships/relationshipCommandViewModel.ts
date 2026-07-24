@@ -128,7 +128,7 @@ function relationshipManagementRead(signal: Omit<RelationshipDeskSignal, 'manage
       posture: 'Read the market',
       read: `${urgentPrefix}; early movement may keep options open before the market tightens.`,
       caution: 'Moving too early can commit resources before the right target is clear.',
-      watch: 'Open seats, staff vacancies, and whether preferred targets start disappearing.',
+      watch: 'Open seats and whether preferred targets start disappearing.',
     };
   }
 

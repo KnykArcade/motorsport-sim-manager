@@ -8,11 +8,9 @@ import { developmentSlots } from '../sim/facilityEngine';
 import { technicalDirectorProposals } from '../sim/technicalAdvisorEngine';
 import { technicalStateForTeam } from '../sim/technicalAdapters';
 import type { NewsItem } from '../types/gameTypes';
-import { STAFF_ROLES } from '../types/staffTypes';
 import { currentRelationshipCommandSnapshot } from './relationships/relationshipCommandViewModel';
 import { relationshipInboxMessage } from './relationshipInboxViewModel';
 import { paddockEventDestination } from './paddockAgendaViewModel';
-import { staffRecommendations } from './staffRecommendationsViewModel';
 import { newsTriage } from './newsTriageViewModel';
 import { careerMarketBundle } from '../sim/careerMarketEngine';
 import { getStaffPool } from '../data';
@@ -265,8 +263,8 @@ function peopleMessages(state: GameState): InboxMessage[] {
     ...careerMarketBundle(state).youth.map((prospect) => [prospect.id, prospect.name] as const),
     ...getStaffPool(state.seasonYear, state.series).map((staff) => [staff.id, staff.name] as const),
   ]);
-  for (const report of Object.values(state.scouting?.reports ?? {}).filter((entry) => entry.scoutingLevel >= 100)) {
-    const tab = report.entityType === 'YouthProspect' ? 'youth' : report.entityType === 'Staff' ? 'staff' : 'senior';
+  for (const report of Object.values(state.scouting?.reports ?? {}).filter((entry) => entry.scoutingLevel >= 100 && entry.entityType !== 'Staff')) {
+    const tab = report.entityType === 'YouthProspect' ? 'youth' : 'senior';
     messages.push({
       id: `inbox-scouting-complete-${report.entityType}-${report.entityId}`,
       severity: 'action', category: 'people',
@@ -324,28 +322,6 @@ function peopleMessages(state: GameState): InboxMessage[] {
     });
   }
   const staff = state.staff ?? [];
-  const recommendations = staffRecommendations(state);
-  const recommendedRecruitmentRoles = new Set(
-    recommendations.filter((item) => item.kind === 'recruitment').map((item) => item.role),
-  );
-  const recommendedContractIds = new Set(
-    recommendations.filter((item) => item.kind === 'contract').map((item) => item.id.replace('staff-contract-', '')),
-  );
-  const hiredRoles = new Set(staff.map((member) => member.role));
-  const vacantRoles = STAFF_ROLES.filter((role) => !hiredRoles.has(role));
-  vacantRoles.forEach((role) => {
-    if (recommendedRecruitmentRoles.has(role)) return;
-    messages.push({
-      id: `inbox-staff-vacancy-${role.toLowerCase().replaceAll(' ', '-')}`,
-      severity: 'action',
-      category: 'people',
-      title: `${role} position vacant`,
-      body: 'Recruitment is available before the next race phase.',
-      route: `/staff?tab=market&role=${encodeURIComponent(role)}`,
-      routeLabel: 'Open Recruitment',
-      actionable: true,
-    });
-  });
 
   const race = currentRace(state);
   const raceEngineer = staff.find((member) => member.role === 'Race Engineer');
@@ -364,37 +340,6 @@ function peopleMessages(state: GameState): InboxMessage[] {
       round: race.round,
     });
   }
-
-  for (const recommendation of recommendations) {
-    messages.push({
-      id: `inbox-${recommendation.id}`,
-      severity: 'action',
-      category: 'people',
-      title: recommendation.recommendation,
-      body: `${recommendation.target} · ${recommendation.expectedBenefit}`,
-      route: recommendation.route,
-      routeLabel: recommendation.routeLabel,
-      actionable: true,
-      source: recommendation.owner,
-      whyItMatters: `${recommendation.whyItMatters} ${recommendation.consequence}`,
-      round: currentRound,
-    });
-  }
-
-  const expiringStaff = staff.filter((member) => (member.contractYearsRemaining ?? 99) <= 1);
-  expiringStaff.forEach((member) => {
-    if (recommendedContractIds.has(member.id)) return;
-    messages.push({
-      id: `inbox-staff-contract-${member.id}`,
-      severity: 'action',
-      category: 'people',
-      title: `${member.name}'s contract expires after this season`,
-      body: `${member.role} · Review renewal terms before the next season.`,
-      route: `/staff?tab=contracts&staffId=${encodeURIComponent(member.id)}`,
-      routeLabel: 'Open Contracts',
-      actionable: true,
-    });
-  });
 
   const duePromises = (state.driverPromises ?? []).filter((promise) =>
     promise.status === 'active'
@@ -450,19 +395,6 @@ function peopleMessages(state: GameState): InboxMessage[] {
       title: negotiation.response === 'countered' ? 'Agent counter requires a response' : 'External driver offer was rejected',
       body: `${negotiation.attemptsRemaining} negotiation attempt${negotiation.attemptsRemaining === 1 ? '' : 's'} remaining.`,
       route: `/market/${encodeURIComponent(negotiation.marketId)}/negotiate/${encodeURIComponent(negotiation.seatDriverId)}`,
-      routeLabel: negotiation.response === 'countered' ? 'Review Counter' : 'Improve Offer', actionable: true,
-      round: currentRound,
-    });
-  }
-
-  if (state.staffContractNegotiation?.response === 'countered' || state.staffContractNegotiation?.response === 'refused') {
-    const negotiation = state.staffContractNegotiation;
-    messages.push({
-      id: `inbox-staff-negotiation-${negotiation.staffId}`,
-      severity: 'action', category: 'people',
-      title: negotiation.response === 'countered' ? 'Staff representative counter requires a response' : 'Staff offer was rejected',
-      body: `${negotiation.attemptsRemaining} negotiation attempt${negotiation.attemptsRemaining === 1 ? '' : 's'} remaining.`,
-      route: `/staff/${encodeURIComponent(negotiation.staffId)}/negotiate`,
       routeLabel: negotiation.response === 'countered' ? 'Review Counter' : 'Improve Offer', actionable: true,
       round: currentRound,
     });

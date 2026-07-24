@@ -2,7 +2,6 @@ import { useMemo, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useGame } from '../game/GameContext';
 import { teamById } from '../game/careerState';
-import { getStaffPool } from '../data';
 import { careerMarketBundle } from '../sim/careerMarketEngine';
 import { Panel } from '../components/Panel';
 import { Button } from '../components/Button';
@@ -14,7 +13,7 @@ import {
   WorkspaceScreen,
   WorkspaceTabs,
 } from '../components/workspace/Workspace';
-import { fogView, scoutingCost, staffScoutTarget, type FogView, type ScoutTarget } from '../sim/scoutingEngine';
+import { fogView, scoutingCost, type FogView, type ScoutTarget } from '../sim/scoutingEngine';
 import { formatMoney, ratingColor } from '../components/ui';
 import type { ScoutedEntityType } from '../types/scoutingTypes';
 import type { IntelligenceAction, IntelligenceReport } from '../types/phase18Types';
@@ -30,7 +29,7 @@ import {
 } from './scoutingViewModel';
 import { recruitmentDecisionDesk } from './recruitmentDecisionViewModel';
 
-type Tab = 'intelligence' | 'senior' | 'youth' | 'staff';
+type Tab = 'intelligence' | 'senior' | 'youth';
 type ScoutingTargetRow = ScoutingListItem & {
   subtitle: string;
   assigned: boolean;
@@ -89,18 +88,15 @@ export function Scouting() {
     { id: 'intelligence', label: `Paddock Intelligence (${activeIntelligence})` },
     { id: 'senior', label: `Senior Targets (${bundle?.drivers.length ?? 0})` },
     { id: 'youth', label: `Youth Targets (${bundle?.youth.length ?? 0})` },
-    { id: 'staff', label: `Staff Targets (${getStaffPool(state.seasonYear, state.series).length})` },
   ];
-  const staffTargets = getStaffPool(state.seasonYear, state.series);
   const focus = scouting.recruitmentFocus ?? {};
   const currentRound = state.calendar[state.currentRaceIndex]?.round ?? state.currentRaceIndex + 1;
   const updateFocus = (patch: Partial<typeof focus>) => dispatch({ type: 'SET_RECRUITMENT_FOCUS', focus: { ...focus, ...patch } });
   const targetNames = Object.fromEntries([
     ...(bundle?.drivers ?? []).map((driver) => [driver.id, driver.name] as const),
     ...(bundle?.youth ?? []).map((prospect) => [prospect.id, prospect.name] as const),
-    ...staffTargets.map((staff) => [staff.id, staff.name] as const),
   ]);
-  const activeTab = requestedTab === 'senior' || requestedTab === 'youth' || requestedTab === 'intelligence' || requestedTab === 'staff'
+  const activeTab = requestedTab === 'senior' || requestedTab === 'youth' || requestedTab === 'intelligence'
     ? requestedTab
     : tab;
   const focusedTargetName = focusedTargetId ? targetNames[focusedTargetId] : undefined;
@@ -109,24 +105,22 @@ export function Scouting() {
     scouting.reports,
     scouting.networkAccuracy,
     targetNames,
-    activeTab === 'senior' ? 'Driver' : activeTab === 'youth' ? 'YouthProspect' : activeTab === 'staff' ? 'Staff' : undefined,
+    activeTab === 'senior' ? 'Driver' : activeTab === 'youth' ? 'YouthProspect' : undefined,
     scouting.activeAssignments,
     state.seasonYear,
     currentRound,
   );
   const shortlist = (scouting.shortlist ?? []).filter((entry) =>
-    activeTab === 'senior' ? entry.entityType === 'Driver' : activeTab === 'youth' ? entry.entityType === 'YouthProspect' : activeTab === 'staff' ? entry.entityType === 'Staff' : false,
+    activeTab === 'senior' ? entry.entityType === 'Driver' : activeTab === 'youth' ? entry.entityType === 'YouthProspect' : false,
   );
   const shortlistTargets = shortlist.flatMap((entry) => {
     const target = entry.entityType === 'Driver'
       ? bundle?.drivers.find((driver) => driver.id === entry.entityId)
       : entry.entityType === 'YouthProspect'
         ? bundle?.youth.find((prospect) => prospect.id === entry.entityId)
-        : staffTargets.find((staff) => staff.id === entry.entityId);
+      : undefined;
     if (!target) return [];
-    const scoutTarget = entry.entityType === 'Staff'
-      ? staffScoutTarget(target as (typeof staffTargets)[number])
-      : { id: target.id, skills: (target as (NonNullable<typeof bundle>['drivers'][number])).skills, potential: (target as (NonNullable<typeof bundle>['drivers'][number])).potential };
+    const scoutTarget = { id: target.id, skills: (target as (NonNullable<typeof bundle>['drivers'][number])).skills, potential: (target as (NonNullable<typeof bundle>['drivers'][number])).potential };
     return [{
       entityId: target.id,
       name: target.name,
@@ -180,28 +174,6 @@ export function Scouting() {
         freshness: scouting.reports[prospect.id] ? scoutingReportFreshness(scouting.reports[prospect.id].lastUpdated, state.seasonYear, currentRound) : undefined,
       };
     });
-  const staffRows: ScoutingTargetRow[] = staffTargets
-    .filter((staff) => !focus.search || staff.name.toLowerCase().includes(focus.search.toLowerCase()))
-    .filter((staff) => !focus.staffRole || focus.staffRole === 'All' || staff.role === focus.staffRole)
-    .filter((staff) => !focus.affordableOnly || costOf(staff.id, 'Staff') <= budget)
-    .map((staff) => {
-      const targetView = view(staffScoutTarget(staff), 'Staff');
-      return {
-        id: staff.id,
-        name: staff.name,
-        subtitle: `${staff.nationality} · ${staff.role} · ${staff.contractYearsRemaining ?? 2} contract yrs`,
-        view: targetView,
-        cost: costOf(staff.id, 'Staff'),
-        knowledge: Math.round(targetView.accuracy * 100),
-        assigned: (scouting.activeAssignments ?? []).some((entry) => entry.entityId === staff.id && entry.entityType === 'Staff'),
-        shortlisted: shortlist.some((entry) => entry.entityId === staff.id),
-        onScout: () => dispatch({ type: 'SCOUT_TARGET', entityId: staff.id, entityType: 'Staff' }),
-        onToggleShortlist: () => dispatch({ type: 'TOGGLE_SCOUTING_SHORTLIST', entityId: staff.id, entityType: 'Staff' }),
-        onApproach: () => navigate(`/staff/${encodeURIComponent(staff.id)}/negotiate`),
-        freshness: scouting.reports[staff.id] ? scoutingReportFreshness(scouting.reports[staff.id].lastUpdated, state.seasonYear, currentRound) : undefined,
-      };
-    });
-
   function toggleComparison(entityId: string) {
     setComparisonIds((current) => current.includes(entityId)
       ? current.filter((id) => id !== entityId)
@@ -301,7 +273,6 @@ export function Scouting() {
         <div className="grid gap-2 md:grid-cols-4">
           <label className="text-xs text-neutral-400">Name<input className="mt-1 w-full rounded border border-neutral-700 bg-neutral-950 px-2 py-1.5" value={focus.search ?? ''} onChange={(event) => updateFocus({ search: event.target.value })} placeholder="Search targets" /></label>
           {(activeTab === 'senior' || activeTab === 'youth') && <label className="text-xs text-neutral-400">Maximum age<input className="mt-1 w-full rounded border border-neutral-700 bg-neutral-950 px-2 py-1.5" type="number" min={16} max={60} value={focus.maxAge ?? 60} onChange={(event) => updateFocus({ maxAge: Number(event.target.value) })} /></label>}
-          {activeTab === 'staff' && <label className="text-xs text-neutral-400">Staff role<select className="mt-1 w-full rounded border border-neutral-700 bg-neutral-950 px-2 py-1.5" value={focus.staffRole ?? 'All'} onChange={(event) => updateFocus({ staffRole: event.target.value })}><option>All</option>{[...new Set(staffTargets.map((staff) => staff.role))].map((role) => <option key={role}>{role}</option>)}</select></label>}
           {activeTab === 'senior' && <label className="text-xs text-neutral-400">Contract status<select className="mt-1 w-full rounded border border-neutral-700 bg-neutral-950 px-2 py-1.5" value={focus.contractStatus ?? 'All'} onChange={(event) => updateFocus({ contractStatus: event.target.value as 'All' | 'Available' | 'Expiring' })}><option>All</option><option>Available</option><option>Expiring</option></select></label>}
           <label className="mt-5 flex items-center gap-2 text-xs text-neutral-300"><input type="checkbox" checked={focus.affordableOnly ?? false} onChange={(event) => updateFocus({ affordableOnly: event.target.checked })} />Affordable scouting only</label>
         </div>
@@ -345,7 +316,6 @@ export function Scouting() {
                     <div className="flex gap-2">
                       <Button variant="ghost" className="px-2 py-1 text-xs" disabled={limitReached} title={limitReached ? 'Compare up to three targets at once' : undefined} onClick={() => toggleComparison(target.entityId)}>{selected ? 'Remove comparison' : 'Compare'}</Button>
                       {target.entityType === 'Driver' && <Button variant="primary" className="px-2 py-1 text-xs" onClick={() => navigate(`/market?target=${encodeURIComponent(target.entityId)}`)}>Approach driver →</Button>}
-                      {target.entityType === 'Staff' && <Button variant="primary" className="px-2 py-1 text-xs" onClick={() => navigate(`/staff/${encodeURIComponent(target.entityId)}/negotiate`)}>Approach staff →</Button>}
                       <Button variant="ghost" className="px-2 py-1 text-xs text-red-300" onClick={() => dispatch({ type: 'TOGGLE_SCOUTING_SHORTLIST', entityId: target.entityId, entityType: target.entityType })}>Remove</Button>
                     </div>
                   </div>
@@ -364,7 +334,6 @@ export function Scouting() {
 
       {bundle && activeTab === 'senior' && <ScoutingTargetList items={seniorRows} budget={budget} sort={scoutingSort} onSort={(key) => updateScoutingSort(key, setScoutingSort)} />}
       {bundle && activeTab === 'youth' && <ScoutingTargetList items={youthRows} budget={budget} sort={scoutingSort} onSort={(key) => updateScoutingSort(key, setScoutingSort)} />}
-      {activeTab === 'staff' && <ScoutingTargetList items={staffRows} budget={budget} sort={scoutingSort} onSort={(key) => updateScoutingSort(key, setScoutingSort)} />}
       </WorkspaceBody>
     </WorkspaceScreen>
   );

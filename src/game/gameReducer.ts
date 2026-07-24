@@ -1840,10 +1840,10 @@ function hireStaff(state: GameState, staffId: string, offerMultiplier = 1, contr
   const hireTeam = state.teams.find((t) => t.id === state.selectedTeamId);
   const staffNews: NewsItem = {
     id: `news-staff-hire-${recruit.id}-${state.seasonYear}`,
-    headline: `${hireTeam?.name ?? 'The team'} appoints ${recruit.name} as ${recruit.role}`,
+    headline: `${hireTeam?.name ?? 'The team'} appoints ${recruit.name} to its ${recruit.role} department`,
     body: replaced
-      ? `${recruit.name} replaces ${replaced.name}. The appointment includes a ${appliedYears === 2 ? 'two' : appliedYears}-year contract and ${formatStaffMoney(severance)} in early-release compensation.${employer ? ` ${employer.name} receives ${formatStaffMoney(poachingCompensation)} in contract compensation.` : ''}`
-      : `The team strengthens its technical department with a new ${recruit.role} on a ${appliedYears === 2 ? 'two' : appliedYears}-year contract.${employer ? ` ${recruit.name} leaves ${employer.name}, which receives ${formatStaffMoney(poachingCompensation)} in contract compensation.` : ''}`,
+      ? `${recruit.name} replaces ${replaced.name} in the department. The transition includes ${formatStaffMoney(severance)} in early-release compensation.${employer ? ` ${employer.name} receives ${formatStaffMoney(poachingCompensation)} in transition compensation.` : ''}`
+      : `The team strengthens its ${recruit.role} department with a new specialist.${employer ? ` ${recruit.name} leaves ${employer.name}, which receives ${formatStaffMoney(poachingCompensation)} in transition compensation.` : ''}`,
     timestamp: new Date().toISOString(),
     category: 'development',
     priority: 'normal',
@@ -1888,8 +1888,8 @@ function fireStaff(state: GameState, staffId: string): GameState {
     : state;
   const news: NewsItem = {
     id: `news-staff-release-${member.id}-${state.seasonYear}-${state.currentRaceIndex}`,
-    headline: `${member.name} leaves the ${member.role} position`,
-    body: `${state.teams.find((team) => team.id === state.selectedTeamId)?.name ?? 'The team'} ended the contract early and paid ${formatStaffMoney(severance)} in compensation. The role is now vacant.`,
+    headline: `${member.name} leaves the ${member.role} department`,
+    body: `${state.teams.find((team) => team.id === state.selectedTeamId)?.name ?? 'The team'} ended the arrangement early and paid ${formatStaffMoney(severance)} in compensation. The department returns to its baseline rating.`,
     timestamp: new Date().toISOString(),
     category: 'development',
     priority: 'normal',
@@ -1932,8 +1932,8 @@ function extendStaffContract(state: GameState, staffId: string, years: number, o
       ? `${member.name} agrees to a ${appliedYears}-year extension`
       : `${member.name} turns down the contract offer`,
     body: accepted
-      ? `${team?.name ?? 'The team'} secured its ${member.role} with a revised long-term package.`
-      : `${member.name} is not ready to recommit on those terms. Improve the offer or repair the working relationship before season rollover. Interest score: ${score}.`,
+      ? `${team?.name ?? 'The team'} secured continuity for its ${member.role} department.`
+      : `${member.name} is not ready to recommit on those terms. Review the department's continuity plan before season rollover. Interest score: ${score}.`,
     timestamp: new Date().toISOString(),
     category: 'development',
     priority: accepted ? 'normal' : 'high',

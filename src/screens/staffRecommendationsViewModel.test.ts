@@ -9,25 +9,16 @@ describe('staffRecommendationsViewModel', () => {
     expect(staffRecommendations(state)).toEqual([]);
   });
 
-  it('recommends exact vacancy candidates with confidence and player boundary', () => {
+  it('does not create recruitment recommendations for permanent departments', () => {
     const state = createNewGame({ gameMode: 'Career', seasonYear: 1995, series: 'F1', teamId: 't-benetton', seed: 'staff-c-candidates' });
-    const recommendations = staffRecommendations({
+    expect(staffRecommendations({
       ...state,
       staff: [],
       staffResponsibilityPolicies: { 'staff-recruitment': 'staff_advisory' },
-    });
-    const recommendation = recommendations.find((item) => item.kind === 'recruitment');
-    expect(recommendation).toMatchObject({
-      responsibility: 'staff-recruitment',
-      owner: 'People operations desk',
-      route: expect.stringMatching(/^\/staff\?tab=market&role=.*&staffId=/),
-      routeLabel: 'Review Candidate',
-    });
-    expect(['Low', 'Normal', 'High']).toContain(recommendation?.confidence);
-    expect(recommendation?.consequence).toContain('remain your decision');
+    })).toEqual([]);
   });
 
-  it('prioritizes expiring staff renewals without creating an offer', () => {
+  it('does not create contract recommendations for permanent departments', () => {
     const state = createNewGame({ gameMode: 'Career', seasonYear: 1995, series: 'F1', teamId: 't-benetton', seed: 'staff-c-contracts' });
     const staff = {
       id: 'staff-contract-test',
@@ -40,16 +31,10 @@ describe('staffRecommendationsViewModel', () => {
       contractYearsRemaining: 1,
       bio: 'Test staff member',
     };
-    const recommendations = staffRecommendations({
+    expect(staffRecommendations({
       ...state,
       staff: [staff],
       staffResponsibilityPolicies: { 'staff-contracts': 'staff_advisory' },
-    });
-    expect(recommendations[0]).toMatchObject({
-      kind: 'contract',
-      route: `/staff?tab=contracts&staffId=${staff?.id}`,
-      routeLabel: 'Review Contract',
-    });
-    expect(recommendations[0]?.recommendation).toContain('renewal review');
+    })).toEqual([]);
   });
 });
