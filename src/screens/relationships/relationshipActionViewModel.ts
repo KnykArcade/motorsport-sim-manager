@@ -245,11 +245,11 @@ export function externalTalentManagementMove(context: ExternalTalentContext): Re
       rationale: context.reasons[0] ?? 'A specialist role is vacant.',
       expectedEffect: 'Protects staff coverage and department execution.',
       preview: {
-        target: 'Specialist vacancy',
+      target: 'Department capacity',
         expectedChange: 'Operational coverage pressure should ease.',
         relationshipEffect: 'Staff-market momentum and department confidence should stabilize.',
         tradeoff: 'May consume budget or settle for a specialist who is available rather than ideal.',
-        bestUse: 'Use when a staff vacancy is visibly hurting operations or department trust.',
+      bestUse: 'Use when department capacity is visibly hurting operations or department trust.',
         constraint: 'Hiring still depends on available staff and budget.',
       },
     };

@@ -250,7 +250,7 @@ function TechnicalBriefingPanel({ state, onNavigate }: { state: GameState; onNav
   return (
     <Panel
       title="Technical Director's briefing"
-      actions={<span className="text-xs text-neutral-500">{director ? `${director.name} · Technical Director` : 'No Technical Director hired — baseline recommendations'}</span>}
+      actions={<span className="text-xs text-neutral-500">{director ? `${director.name} · Technical Director department` : 'Technical Director department · Level 5 baseline'}</span>}
     >
       {proposals.length === 0 ? (
         <p className="text-sm text-neutral-500">No recommendations this round — the technical programme is in good shape.</p>

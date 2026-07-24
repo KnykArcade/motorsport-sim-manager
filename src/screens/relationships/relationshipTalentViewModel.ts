@@ -1,4 +1,3 @@
-import { getStaffPool } from '../../data';
 import {
   activeDriversForTeam,
   maxRaceDriversForSeries,
@@ -7,7 +6,6 @@ import {
 import { isPreseason } from '../../game/rosterEnforcement';
 import { careerMarketBundle } from '../../sim/careerMarketEngine';
 import type { RelationshipAttentionStatus } from '../../sim/relationshipAttentionEngine';
-import { STAFF_ROLES } from '../../types/staffTypes';
 
 export type ExternalTalentTarget = {
   id: string;
@@ -81,7 +79,7 @@ export function externalTalentContext(input: TalentContextInput): ExternalTalent
     reasons.push(`${input.openRaceSeats} race seat${input.openRaceSeats === 1 ? '' : 's'} remain open for the next signing window.`);
   }
   if (input.staffVacancies > 0) {
-    reasons.push(`${input.staffVacancies} specialist role${input.staffVacancies === 1 ? ' is' : 's are'} vacant.`);
+    reasons.push(`${input.staffVacancies} department rating${input.staffVacancies === 1 ? ' is' : 's are'} below plan.`);
   }
   if (input.pendingDrivers.length > 0) {
     reasons.push(`${input.pendingDrivers.length} external driver signing${input.pendingDrivers.length === 1 ? ' is' : 's are'} pending.`);
@@ -109,7 +107,6 @@ export function externalTalentContext(input: TalentContextInput): ExternalTalent
 }
 
 export function currentExternalTalentContext(state: GameState): ExternalTalentContext {
-  const currentStaffIds = new Set((state.staff ?? []).map((staff) => staff.id));
   const pendingDrivers = (state.pendingSignings ?? [])
     .filter((signing) => signing.source === 'market')
     .map((signing) => ({ id: signing.sourceId, name: signing.name }));
@@ -131,24 +128,12 @@ export function currentExternalTalentContext(state: GameState): ExternalTalentCo
       scoutingLevel: report.scoutingLevel,
       accuracy: report.accuracy,
     }));
-  const staffInterest = Object.entries(state.characterInteractions?.recruitmentInterest ?? {})
-    .filter(([id, interest]) => interest > 0 && !currentStaffIds.has(id));
-  const staffById = staffInterest.length > 0
-    ? new Map([
-      ...getStaffPool(state.seasonYear, state.series).map((staff) => [staff.id, staff.name] as const),
-      ...Object.values(state.aiStaff ?? {}).flat().map((staff) => [staff.id, staff.name] as const),
-    ])
-    : new Map<string, string>();
-  const approachedStaff = staffInterest
-    .map(([id, interest]) => ({ id, name: staffById.get(id) ?? id, interest }));
-  const filledStaffRoles = new Set((state.staff ?? []).map((staff) => staff.role));
-
   return externalTalentContext({
     preseason: isPreseason(state),
     openRaceSeats: Math.max(0, maxRaceDriversForSeries(state.series) - activeDriversForTeam(state, state.selectedTeamId).length),
-    staffVacancies: STAFF_ROLES.filter((role) => !filledStaffRoles.has(role)).length,
+    staffVacancies: 0,
     pendingDrivers,
     scoutedDrivers,
-    approachedStaff,
+    approachedStaff: [],
   });
 }

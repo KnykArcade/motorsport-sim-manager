@@ -106,7 +106,7 @@ export function staffHiredNews(
     `${teamName} hires ${staffName} as ${role}`,
     'ai_team',
     'normal',
-    `${teamName} has appointed ${staffName} as their new ${role}, bolstering their off-track operations.`,
+    `${teamName} has appointed ${staffName} to lead their ${role} department, bolstering off-track operations.`,
     teamId,
   );
 }
@@ -152,7 +152,7 @@ const DRAMA_EVENTS: DramaEvent[] = [
     priority: 'normal',
   },
   {
-    headline: 'Technical director poached by rival',
+    headline: 'Technical department leadership changes at rival',
     body: 'A key technical figure has been linked with a move to a rival outfit, sending shockwaves through the paddock.',
     category: 'ai_team',
     priority: 'high',

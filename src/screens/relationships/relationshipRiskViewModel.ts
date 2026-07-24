@@ -62,7 +62,7 @@ export function externalTalentRiskIfIgnored(context: ExternalTalentContext): str
       : 'Leaving the seat open narrows the next signing window and lets rivals secure preferred targets first.';
   }
   if (context.staffVacancies > 0) {
-    return 'Vacant specialist roles leave their operational benefits uncovered while suitable candidates may move elsewhere.';
+    return 'Department capacity remains below plan while suitable development opportunities may move elsewhere.';
   }
   return 'Scouting knowledge and recruitment interest can lose value if a rival secures the target first.';
 }

@@ -37,11 +37,11 @@ function withStaffOutlook(state: GameState, status: 'Committed' | 'WantsExit', m
 }
 
 describe('staff contracts', () => {
-  it('hires specialists on a visible two-year contract', () => {
+  it('adds a specialist to a department with legacy contract terms', () => {
     const hired = hireFirst(freshState());
     expect(hired.staff).toHaveLength(1);
     expect(hired.staff![0].contractYearsRemaining).toBe(2);
-    expect(hired.news[0].body).toContain('two-year contract');
+    expect(hired.news[0].body).toContain('department with a new specialist');
   });
 
   it('lets a committed specialist accept an extension', () => {
@@ -66,7 +66,7 @@ describe('staff contracts', () => {
     expect(refused.news[0].headline).toContain('turns down');
   });
 
-  it('charges compensation for an early release and leaves the role vacant', () => {
+  it('charges compensation for an early release and returns the department to baseline', () => {
     const state = hireFirst(freshState());
     const member = state.staff![0];
     const expected = staffReleaseCost(member);
@@ -74,7 +74,7 @@ describe('staff contracts', () => {
     const released = gameReducer(state, { type: 'FIRE_STAFF', staffId: member.id })!;
     expect(released.staff).toHaveLength(0);
     expect(released.teams.find((team) => team.id === state.selectedTeamId)!.budget).toBe(beforeBudget - expected);
-    expect(released.news[0].body).toContain('role is now vacant');
+    expect(released.news[0].body).toContain('department returns to its baseline rating');
   });
 
   it('lets the player poach a named rival specialist with compensation and no duplicate roster entry', () => {
@@ -92,7 +92,7 @@ describe('staff contracts', () => {
     expect(hired.aiStaff?.[employerTeamId].some((member) => member.id === candidate.id)).toBe(false);
     expect(Object.values(hired.aiStaff ?? {}).flat().some((member) => member.id === candidate.id)).toBe(false);
     expect(hired.teams.find((team) => team.id === employerTeamId)!.budget).toBe(employerBudget + compensation);
-    expect(hired.news[0].body).toContain('contract compensation');
+    expect(hired.news[0].body).toContain('transition compensation');
     const career = hired.personnelCareerHistory?.filter((tenure) => tenure.kind === 'Staff' && tenure.personId === candidate.id) ?? [];
     expect(career).toHaveLength(2);
     expect(career.find((tenure) => tenure.teamId === employerTeamId)?.endedSeason).toBe(base.seasonYear);

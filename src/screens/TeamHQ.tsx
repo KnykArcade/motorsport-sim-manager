@@ -44,7 +44,6 @@ import { calculateAcademyCapacity } from '../sim/teamRatingsEngine';
 import type { TeamOrganizationRatings } from '../types/teamRatingsTypes';
 import type { GameMode } from '../types/gameTypes';
 import type { TeamPrincipal } from '../types/principalTypes';
-import type { StaffResponsibilityPolicy } from '../types/staffTypes';
 import { TEAM_HQ_TABS, type TeamHQTab } from './teamHQViewModel';
 import { commandLoopGuide } from './commandLoopGuideViewModel';
 import { staffResponsibilities } from './staffResponsibilitiesViewModel';
@@ -55,7 +54,7 @@ import { aroundTheWorldEntries, canViewWorldStandings } from './worldStandingsVi
 import { RecruitmentPipelineBoard } from '../components/RecruitmentPipelineBoard';
 
 export function TeamHQ() {
-  const { state, dispatch } = useGame();
+  const { state } = useGame();
   const navigate = useNavigate();
   const [tab, setTab] = useState<TeamHQTab>('race');
   if (!state) return null;
@@ -235,7 +234,7 @@ export function TeamHQ() {
         </Panel>
       )}
 
-      <Panel title="Staff responsibilities" actions={<span className="text-xs text-neutral-500">Advisory ownership · you retain final control</span>}>
+      <Panel title="Staff departments" actions={<Button className="px-2 py-1 text-xs" variant="ghost" onClick={() => navigate('/staff')}>Manage Principal Points →</Button>}>
         <div className="grid gap-2 md:grid-cols-2">
           {responsibilities.map((responsibility) => (
             <div key={responsibility.id} className="rounded border border-neutral-800 bg-neutral-950/30 p-3">
@@ -249,22 +248,6 @@ export function TeamHQ() {
                <div className="mt-2 text-xs font-medium text-sky-300">{responsibility.status}</div>
                <div className="mt-2 flex flex-wrap items-center gap-2">
                  <span className="rounded border border-neutral-700 bg-neutral-900/50 px-2 py-1 text-[10px] uppercase tracking-wide text-neutral-400">{responsibility.policyLabel}</span>
-                 {(responsibility.id === 'race-engineering' || responsibility.id === 'staff-recruitment' || responsibility.id === 'staff-contracts' || responsibility.id === 'driver-development') && (
-                   <select
-                     className="rounded border border-neutral-700 bg-neutral-950 px-2 py-1 text-[10px] text-neutral-300"
-                     value={responsibility.policy}
-                     aria-label={`${responsibility.area} delegation policy`}
-                     onChange={(event) => dispatch({
-                       type: 'SET_STAFF_RESPONSIBILITY_POLICY',
-                       responsibility: responsibility.id as 'race-engineering' | 'staff-recruitment' | 'staff-contracts' | 'driver-development',
-                       policy: event.target.value as StaffResponsibilityPolicy,
-                     })}
-                   >
-                     <option value="player">Player-led</option>
-                     <option value="staff_advisory">Staff advisory</option>
-                     {responsibility.id === 'race-engineering' && <option value="staff_prepare_player_approval">Staff-prepared · player approval</option>}
-                   </select>
-                 )}
                </div>
                <p className="mt-1 text-xs leading-5 text-neutral-400">{responsibility.effect}</p>
                <p className="mt-1 text-xs leading-5 text-neutral-500">{responsibility.detail}</p>

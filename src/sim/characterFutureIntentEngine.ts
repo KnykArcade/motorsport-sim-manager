@@ -165,31 +165,8 @@ export function generateExpiringDriverContractEvents(state: GameState): PaddockE
 }
 
 export function generateExpiringStaffContractEvents(state: GameState): PaddockEvent[] {
-  if (state.gameMode === 'SingleSeason') return [];
-  const round = roundOf(state);
-  const racesRemaining = Math.max(0, state.calendar.length - state.currentRaceIndex);
-  if (racesRemaining > 3) return [];
-  const weekId = state.careerPhase?.paddockWeekId ?? `pw-${state.seasonYear}-${round}`;
-  return (state.staff ?? [])
-    .filter((member) => (member.contractYearsRemaining ?? 2) <= 1)
-    .map((member) => {
-      const intent = state.characterInteractions?.futureIntentions.find((entry) => entry.target.type === 'Staff' && entry.target.id === member.id);
-      const intentLabel = intent ? characterFutureIntentLabel(intent.target, intent.status) : 'Future undecided';
-      return {
-        id: `pe-${weekId}-expiring-staff-contract-${member.id}`,
-        weekId,
-        season: state.seasonYear,
-        series: state.series,
-        round,
-        category: 'staff' as const,
-        title: `Staff contract decision required: ${member.name}`,
-        description: `${member.name}'s ${member.role} deal expires at season rollover. Current intention: ${intentLabel}. Extend the contract in the Staff screen or prepare to recruit a replacement.`,
-        severity: intent?.status === 'WantsExit' ? 'major' as const : 'minor' as const,
-        isRequiredDecision: false,
-        effectsApplied: true,
-        createdAt: new Date(Date.UTC(state.seasonYear, 0, Math.max(1, round + 1))).toISOString(),
-      };
-    });
+  void state;
+  return [];
 }
 
 export function futureIntentForTarget(state: GameState, target: CharacterInteractionTarget): CharacterFutureIntent | undefined {
