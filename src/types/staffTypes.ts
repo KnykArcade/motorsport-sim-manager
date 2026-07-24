@@ -51,3 +51,10 @@ export const ROLE_EFFECT: Record<StaffRole, string> = {
   'Pit Crew Chief': 'Sharpens pit-stop execution.',
   Strategist: 'Better in-race strategy calls.',
 };
+
+export const ROLE_PRINCIPAL_POINT_ATTRIBUTE: Record<StaffRole, 'development' | 'strategy' | 'financialDiscipline'> = {
+  'Technical Director': 'development',
+  'Race Engineer': 'strategy',
+  'Pit Crew Chief': 'financialDiscipline',
+  Strategist: 'strategy',
+};
