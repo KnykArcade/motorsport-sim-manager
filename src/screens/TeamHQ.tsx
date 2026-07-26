@@ -1,6 +1,37 @@
-import { useState, type ReactNode } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useGame } from '../game/GameContext';
+import { Button } from '../components/Button';
+import { DriverDossierButton } from '../components/driverCards/DriverDossier';
+import {
+  FmDecisionBar,
+  FmKeyValue,
+  FmListButton,
+  FmPane,
+  FmPaneBody,
+  FmPaneHeader,
+  FmWorkspaceGrid,
+} from '../components/workspace/FmPane';
+import { Panel } from '../components/Panel';
+import { RegulationPanel } from '../components/RegulationPanel';
+import { StandingsTable } from '../components/StandingsTable';
+import { StatBar } from '../components/StatBar';
+import { TrackDemandBars } from '../components/TrackDemandBars';
+import { workflowDestination } from '../components/layoutWorkflow';
+import {
+  WorkspaceBody,
+  WorkspaceHeader,
+  WorkspaceScreen,
+  WorkspaceTabs,
+} from '../components/workspace/Workspace';
+import { ratingColor } from '../components/ui';
+import { getRegulationSet, getTrackById } from '../data';
+import {
+  BACKGROUNDS,
+  MANAGEMENT_STYLES,
+  STRENGTHS,
+  optionById,
+  type PrincipalOption,
+} from '../data/principal/principalOptions';
 import {
   activeDriversForTeam,
   carForTeam,
@@ -9,49 +40,19 @@ import {
   minRaceDriversForSeries,
   teamById,
 } from '../game/careerState';
-import { effectiveCarRatings } from '../sim/trackFitEngine';
-import { getGameModeLabel, isRouteRestricted, isSingleSeasonMode } from '../game/modeRestrictions';
-import { getTrackById, getRegulationSet } from '../data';
-import { Panel } from '../components/Panel';
-import { Button } from '../components/Button';
-import { RegulationPanel } from '../components/RegulationPanel';
-import { StatBar } from '../components/StatBar';
-import { StandingsTable } from '../components/StandingsTable';
-import { NewsFeed } from '../components/NewsFeed';
-import { NewsPanel } from '../components/NewsPanel';
-import { TrackDemandBars } from '../components/TrackDemandBars';
-import { DriverDossierButton } from '../components/driverCards/DriverDossier';
-import { workflowDestination } from '../components/layoutWorkflow';
-import {
-  MetricStrip,
-  WorkspaceBody,
-  WorkspaceHeader,
-  WorkspaceMetric,
-  WorkspaceScreen,
-  WorkspaceTabs,
-} from '../components/workspace/Workspace';
-import { ratingColor } from '../components/ui';
+import { useGame } from '../game/GameContext';
+import { getGameModeLabel, isSingleSeasonMode } from '../game/modeRestrictions';
 import { activeUpgradePrograms } from '../sim/technicalAdapters';
-import { actionableInboxCount, unreadInboxCount } from './inboxViewModel';
-import {
-  BACKGROUNDS,
-  MANAGEMENT_STYLES,
-  STRENGTHS,
-  optionById,
-  type PrincipalOption,
-} from '../data/principal/principalOptions';
 import { calculateAcademyCapacity } from '../sim/teamRatingsEngine';
-import type { TeamOrganizationRatings } from '../types/teamRatingsTypes';
-import type { GameMode } from '../types/gameTypes';
+import { effectiveCarRatings } from '../sim/trackFitEngine';
 import type { TeamPrincipal } from '../types/principalTypes';
-import { TEAM_HQ_TABS, type TeamHQTab } from './teamHQViewModel';
-import { commandLoopGuide } from './commandLoopGuideViewModel';
-import { staffResponsibilities } from './staffResponsibilitiesViewModel';
+import type { TeamOrganizationRatings } from '../types/teamRatingsTypes';
+import { commandAgenda, type CommandAgendaItem } from './commandAgendaViewModel';
+import { actionableInboxCount, unreadInboxCount } from './inboxViewModel';
 import { staffRecommendations } from './staffRecommendationsViewModel';
-import { commandAgenda } from './commandAgendaViewModel';
-import type { CommandAgendaItem } from './commandAgendaViewModel';
+import { staffResponsibilities } from './staffResponsibilitiesViewModel';
+import { TEAM_HQ_TABS, type TeamHQTab } from './teamHQViewModel';
 import { aroundTheWorldEntries, canViewWorldStandings } from './worldStandingsViewModel';
-import { RecruitmentPipelineBoard } from '../components/RecruitmentPipelineBoard';
 
 export function TeamHQ() {
   const { state } = useGame();
@@ -65,17 +66,11 @@ export function TeamHQ() {
   const race = currentRace(state);
   const track = race ? getTrackById(race.trackId) : undefined;
   const ratings = car ? effectiveCarRatings(car) : null;
-
   const principal = state.teamPrincipal;
   const orgRatings = state.teamOrgRatings?.[state.selectedTeamId];
-
   const activeDrivers = activeDriversForTeam(state, state.selectedTeamId);
   const minDrivers = minRaceDriversForSeries(state.series);
   const hasEnoughDrivers = activeDrivers.length >= minDrivers;
-
-  const driverName = (id: string) => state.drivers.find((d) => d.id === id)?.name ?? id;
-  const teamName = (id: string) => state.teams.find((t) => t.id === id)?.name ?? id;
-  const teamColor = (id: string) => state.teams.find((t) => t.id === id)?.color;
   const workflow = workflowDestination(state);
   const inboxUnread = unreadInboxCount(state);
   const inboxActionable = actionableInboxCount(state);
@@ -85,423 +80,260 @@ export function TeamHQ() {
   const worldEntries = canViewWorldStandings(state.gameMode)
     ? aroundTheWorldEntries(state.series, state.motorsportUniverse)
     : [];
-  const guide = commandLoopGuide(state);
+
+  const driverName = (id: string) => state.drivers.find((driver) => driver.id === id)?.name ?? id;
+  const teamName = (id: string) => state.teams.find((candidate) => candidate.id === id)?.name ?? id;
+  const teamColor = (id: string) => state.teams.find((candidate) => candidate.id === id)?.color;
+
+  const primaryAction = state.seasonComplete
+    ? { label: 'Season Review', route: '/season-review' }
+    : hasEnoughDrivers
+      ? { label: `Open ${workflow.context}`, route: workflow.to }
+      : { label: `Fill Race Seats (${activeDrivers.length}/${minDrivers})`, route: '/market' };
 
   return (
-    <WorkspaceScreen className="era-feature-screen era-team-hq">
+    <WorkspaceScreen className="era-feature-screen era-team-hq ui-phase2-home">
       <WorkspaceHeader
-        eyebrow="Manager Office"
-        title={`${team?.name ?? 'Team'} — Manager Office`}
+        eyebrow="Manager home"
+        title={team?.name ?? 'Team'}
         subtitle={`${state.seasonYear} ${state.series} · ${getGameModeLabel(state.gameMode)}${race ? ` · Round ${race.round} of ${state.calendar.length}` : ''}`}
-        actions={state.seasonComplete ? (
-          <Button variant="primary" onClick={() => navigate('/season-review')}>Season Review →</Button>
-        ) : hasEnoughDrivers ? (
-          <Button variant="primary" onClick={() => navigate(workflow.to)}>Open {workflow.context} →</Button>
-        ) : (
-          <Button variant="primary" onClick={() => navigate('/market')}>Fill Race Seats ({activeDrivers.length}/{minDrivers}) →</Button>
-        )}
+        actions={<Button variant="primary" onClick={() => navigate(primaryAction.route)}>{primaryAction.label} →</Button>}
       />
-
-      <MetricStrip>
-        <WorkspaceMetric label="Inbox actions" value={inboxActionable} detail="Decisions and recommendations waiting" />
-        <WorkspaceMetric label="Next race" value={race ? `R${race.round}` : '—'} detail={race?.gpName ?? 'No race scheduled'} />
-        <WorkspaceMetric label="Active projects" value={activeUpgradePrograms(state).length} detail="Development in progress" />
-      </MetricStrip>
-      <WorkspaceBody className="space-y-4">
-      {guide && (
-        <Panel title={guide.title} actions={<span className="text-xs text-sky-300">Start here</span>}>
-          <p className="text-sm leading-6 text-neutral-300">{guide.summary}</p>
-          <div className="mt-3 grid gap-2 md:grid-cols-2">
-            {guide.steps.map((step) => (
-              <div key={step.number} className="rounded border border-neutral-800 bg-neutral-950/30 p-3">
-                <div className="flex items-start gap-2">
-                  <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-sky-500/15 text-[10px] font-black text-sky-300">{step.number}</span>
-                  <div>
-                    <div className="text-xs font-semibold text-neutral-200">{step.title}</div>
-                    <p className="mt-1 text-xs leading-5 text-neutral-500">{step.detail}</p>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </Panel>
-      )}
-
-      <section className="rounded-lg border border-neutral-800 bg-neutral-950/35 p-3">
-        <div className="flex flex-wrap items-start justify-between gap-3">
-          <div className="flex min-w-0 items-start gap-3">
-            <span className="ui-decision-strip-pulse mt-1" aria-hidden="true" />
-            <div className="min-w-0">
-              <div className="text-[10px] font-black uppercase tracking-[0.14em] text-neutral-400">Manager Office · Command desk</div>
-              <div className="mt-1 text-lg font-bold text-neutral-100">{agenda.headline}</div>
-              <p className="mt-1 max-w-2xl text-xs leading-5 text-neutral-400">{agenda.subheadline}</p>
-            </div>
-          </div>
-          <div className="flex flex-wrap items-center gap-2">
-            <Button className="px-3 py-1.5 text-xs" onClick={() => navigate('/inbox')}>
-              Open Inbox {inboxUnread > 0 ? `(${inboxUnread})` : ''} →
-            </Button>
-            <Button
-              variant="primary"
-              className="px-3 py-1.5 text-xs"
-              onClick={() => navigate(agenda.continueAction.route)}
-              disabled={agenda.continueAction.disabled}
-              title={agenda.continueAction.disabledReason}
-            >
-              {agenda.continueAction.label} →
-            </Button>
-          </div>
-        </div>
-        <div className="mt-3 grid gap-2 md:grid-cols-3">
-          <CommandDeskColumn title="Next decision">
-            {agenda.nextAction ? (
-              <CommandDeskItem item={agenda.nextAction} onOpen={() => navigate(agenda.nextAction!.route)} />
-            ) : (
-              <p className="text-xs leading-5 text-neutral-500">No unresolved action is waiting. Review the next phase when ready.</p>
-            )}
-          </CommandDeskColumn>
-          <CommandDeskColumn title="This week">
-            {agenda.dueThisWeek.length > 0 ? agenda.dueThisWeek.map((item) => (
-              <CommandDeskItem key={item.id} item={item} onOpen={() => navigate(item.route)} />
-            )) : (
-              <p className="text-xs leading-5 text-neutral-500">No additional blocking decisions are due in this management window.</p>
-            )}
-          </CommandDeskColumn>
-          <CommandDeskColumn title="What changed">
-            {agenda.recentChanges.length > 0 ? agenda.recentChanges.map((change) => (
-              <button key={change.id} type="button" className="block w-full rounded border border-neutral-800 bg-neutral-950/40 p-2 text-left hover:border-neutral-600" onClick={() => navigate(change.route)}>
-                <div className="text-xs font-semibold text-neutral-200">{change.title}</div>
-                <div className="mt-1 text-[11px] leading-4 text-neutral-500">{change.detail}</div>
-                <div className="mt-1 text-[10px] font-semibold text-sky-300">{change.routeLabel} →</div>
-              </button>
-            )) : (
-              <p className="text-xs leading-5 text-neutral-500">No new changes have been added to the command desk.</p>
-            )}
-          </CommandDeskColumn>
-        </div>
-        <div className="mt-3 flex flex-wrap items-center justify-between gap-2 border-t border-neutral-800 pt-2 text-[11px] text-neutral-500">
-          <span>Next event: <strong className="text-neutral-300">{agenda.nextEvent.label}</strong> · {agenda.nextEvent.detail}</span>
-          <span>{inboxActionable} action{inboxActionable === 1 ? '' : 's'} · {activeDrivers.length}/{minDrivers} race seats filled{race ? ` · ${race.gpName}` : ''}</span>
-        </div>
-      </section>
-      {agenda.weeklyStory && (
-        <section className="rounded-lg border border-violet-900/50 bg-violet-950/10 p-3">
-          <div className="text-[10px] font-black uppercase tracking-[0.14em] text-violet-300">Manager Office · Returned from last race</div>
-          <div className="mt-1 text-sm font-semibold text-neutral-100">{agenda.weeklyStory.headline}</div>
-          <p className="mt-1 text-xs leading-5 text-neutral-400">{agenda.weeklyStory.summary}</p>
-          <div className="mt-3 grid gap-2 md:grid-cols-2 xl:grid-cols-3">
-            {agenda.weeklyStory.groups.map((group) => (
-              <div key={group.owner} className="rounded border border-neutral-800 bg-neutral-950/35 p-2">
-                <div className="text-[10px] font-black uppercase tracking-wide text-violet-200">{group.owner}</div>
-                {group.items.slice(0, 2).map((item) => (
-                  <button key={item.id} type="button" className="mt-2 block w-full text-left" onClick={() => navigate(item.route)}>
-                    <div className="text-xs font-semibold text-neutral-200">{item.title}</div>
-                    <div className="mt-1 text-[10px] leading-4 text-neutral-500">{item.reason}</div>
-                    <div className="mt-1 text-[10px] font-semibold text-sky-300">{item.routeLabel} →</div>
-                  </button>
-                ))}
-              </div>
-            ))}
-          </div>
-        </section>
-      )}
-
-      <RecruitmentPipelineBoard state={state} compact />
-
-      {worldEntries.length > 0 && (
-        <Panel title="Around the World" actions={<Button className="px-2 py-1 text-xs" variant="ghost" onClick={() => navigate('/standings')}>Open world standings →</Button>}>
-          <div className="grid gap-2 md:grid-cols-2 xl:grid-cols-4">
-            {worldEntries.map((entry) => (
-              <div key={entry.series} className="rounded border border-neutral-800 bg-neutral-950/40 p-3">
-                <div className="text-[10px] font-black uppercase tracking-[0.14em] text-neutral-500">{entry.seasonYear} {entry.series}</div>
-                {entry.completedRaces > 0 ? (
-                  <>
-                    <div className="mt-1 text-sm font-semibold text-neutral-200">Leader: {entry.liveLeaderName ?? '—'} · {Math.round(entry.liveLeaderPoints ?? 0)} pts</div>
-                    <div className="mt-0.5 text-xs text-neutral-500">Round {entry.completedRaces}/{entry.totalRaces}{entry.latestWinnerName ? ` · ${entry.latestWinnerName} won ${entry.latestRaceName}` : ''}</div>
-                    <div className="mt-0.5 text-xs text-sky-300">Next: {entry.nextRaceName ?? 'Season complete'}</div>
-                  </>
-                ) : entry.hasCompletedSeason ? (
-                  <>
-                    <div className="mt-1 text-sm font-semibold text-neutral-200">Reigning champion: {entry.championName}</div>
-                    <div className="mt-0.5 text-xs text-neutral-500">Team champion: {entry.teamChampionName ?? '—'}</div>
-                  </>
-                ) : (
-                  <div className="mt-1 text-sm text-neutral-400">Current grid active · no completed season yet</div>
-                )}
-              </div>
-            ))}
-          </div>
-        </Panel>
-      )}
-
-      <Panel title="Staff departments" actions={<Button className="px-2 py-1 text-xs" variant="ghost" onClick={() => navigate('/staff')}>Manage Principal Points →</Button>}>
-        <div className="grid gap-2 md:grid-cols-2">
-          {responsibilities.map((responsibility) => (
-            <div key={responsibility.id} className="rounded border border-neutral-800 bg-neutral-950/30 p-3">
-              <div className="flex flex-wrap items-start justify-between gap-2">
-                <div>
-                  <div className="text-[10px] font-black uppercase tracking-[0.14em] text-neutral-500">{responsibility.area}</div>
-                  <div className="mt-1 text-sm font-semibold text-neutral-200">{responsibility.owner}</div>
-                </div>
-                <span className="rounded border border-neutral-700 bg-neutral-900/50 px-2 py-1 text-[10px] uppercase tracking-wide text-neutral-400">{responsibility.role}</span>
-                </div>
-               <div className="mt-2 text-xs font-medium text-sky-300">{responsibility.status}</div>
-               <div className="mt-2 flex flex-wrap items-center gap-2">
-                 <span className="rounded border border-neutral-700 bg-neutral-900/50 px-2 py-1 text-[10px] uppercase tracking-wide text-neutral-400">{responsibility.policyLabel}</span>
-               </div>
-               <p className="mt-1 text-xs leading-5 text-neutral-400">{responsibility.effect}</p>
-               <p className="mt-1 text-xs leading-5 text-neutral-500">{responsibility.detail}</p>
-               <p className="mt-1 text-xs leading-5 text-neutral-500">{responsibility.approvalBoundary}</p>
-              <Button className="mt-2 px-2 py-1 text-xs" variant="ghost" onClick={() => navigate(responsibility.route)}>{responsibility.routeLabel} →</Button>
-            </div>
-         ))}
-       </div>
-      </Panel>
-      {recommendations.length > 0 && (
-        <Panel title="Staff recommendations" actions={<span className="text-xs text-neutral-500">Advisory only · personnel decisions remain yours</span>}>
-          <div className="grid gap-3 md:grid-cols-2">
-            {recommendations.map((recommendation) => (
-              <div key={recommendation.id} className="rounded border border-amber-900/60 bg-amber-950/10 p-3">
-                <div className="flex flex-wrap items-start justify-between gap-2">
-                  <div>
-                    <div className="text-[10px] font-black uppercase tracking-[0.14em] text-neutral-500">{recommendation.kind === 'recruitment' ? 'Recruitment priority' : 'Renewal priority'}</div>
-                    <div className="mt-1 text-sm font-semibold text-neutral-200">{recommendation.target}</div>
-                  </div>
-                  <span className="rounded border border-neutral-700 bg-neutral-900/50 px-2 py-1 text-[10px] uppercase tracking-wide text-neutral-400">{recommendation.confidence} confidence</span>
-                </div>
-                <p className="mt-2 text-xs font-medium text-amber-300">{recommendation.recommendation}</p>
-                <p className="mt-1 text-xs leading-5 text-neutral-400"><span className="font-semibold text-neutral-200">Why:</span> {recommendation.whyItMatters}</p>
-                <p className="mt-1 text-xs leading-5 text-neutral-400"><span className="font-semibold text-neutral-200">Benefit:</span> {recommendation.expectedBenefit}</p>
-                <p className="mt-1 text-xs leading-5 text-neutral-500"><span className="font-semibold text-neutral-300">Boundary:</span> {recommendation.consequence}</p>
-                <Button className="mt-2 px-2 py-1 text-xs" variant="ghost" onClick={() => navigate(recommendation.route)}>{recommendation.routeLabel} →</Button>
-              </div>
-            ))}
-          </div>
-        </Panel>
-      )}
-
       <WorkspaceTabs items={TEAM_HQ_TABS} active={tab} onChange={setTab} ariaLabel="Team HQ command center" />
-
-        <div className="space-y-4">
-          <div className="grid gap-4 lg:grid-cols-2">
-        <div className={`space-y-4 ${tab === 'organization' ? 'lg:col-span-2' : ''}`}>
-          {/* Next race briefing */}
-          {tab === 'race' && race && track && !state.seasonComplete && (
-            <Panel
-              title={`Next Race · Round ${race.round}`}
-              actions={
-                hasEnoughDrivers ? (
-                  <Button onClick={() => navigate('/weekend')}>Enter Weekend →</Button>
-                ) : (
-                  <Button onClick={() => navigate('/market')}>Sign Drivers →</Button>
-                )
-              }
-            >
-              {!hasEnoughDrivers && (
-                <div className="mb-3 rounded border border-amber-600/50 bg-amber-900/20 px-3 py-2 text-sm text-amber-300">
-                  ⚠ Your team has only {activeDrivers.length} active race driver{activeDrivers.length === 1 ? '' : 's'}. Sign at least {minDrivers} driver{minDrivers === 1 ? '' : 's'} before entering the race weekend.
-                </div>
-              )}
-              <div className="grid gap-4 md:grid-cols-2">
-                <div>
-                  <div className="text-lg font-bold text-neutral-100">{race.gpName}</div>
-                  <div className="text-sm text-neutral-400">{race.trackName}</div>
-                  <div className="mt-2 inline-block rounded bg-neutral-800 px-2 py-0.5 text-xs text-neutral-300">
-                    {track.archetype}
-                  </div>
-                  <div className="mt-3 text-xs text-neutral-500">
-                    {race.laps} laps · {race.distanceKm ?? '—'} km
-                  </div>
-                </div>
-                <TrackDemandBars track={track} />
-              </div>
-            </Panel>
-          )}
-
-          {/* Car performance */}
-          {tab === 'car' && ratings && (
-            <Panel title="Car Performance">
-              <div className="grid gap-2 md:grid-cols-2">
-                <StatBar label="Engine Power" value={ratings.enginePower} max={100} />
-                <StatBar label="Aero Efficiency" value={ratings.aeroEfficiency} max={100} />
-                <StatBar label="Mechanical Grip" value={ratings.mechanicalGrip} max={100} />
-                <StatBar label="Reliability" value={ratings.reliability} max={100} />
-                <StatBar label="Pit Crew Ops" value={ratings.pitCrewOperations} max={100} />
-                <StatBar label="Condition" value={car?.condition ?? 0} max={100} />
-              </div>
-            </Panel>
-          )}
-
-          {/* Team organization ratings */}
-          {tab === 'organization' && orgRatings && (
-            <TeamRatingsPanel ratings={orgRatings} academyUsed={(state.academy ?? []).length} />
-          )}
-
-          {tab === 'news' && (
-            <Panel title="Top Stories">
-              <NewsFeed items={state.news} limit={4} />
-            </Panel>
-          )}
-          {tab === 'race' && state.seasonComplete && (
-            <Panel title="Season Complete">
-              <div className="flex items-center justify-between gap-4">
-                <p className="text-sm text-neutral-400">Review the completed season and prepare the next chapter.</p>
-                <Button variant="primary" onClick={() => navigate('/season-review')}>
-                  Open Season Review →
-                </Button>
-              </div>
-            </Panel>
-          )}
-
-          {/* Drivers */}
-          {tab === 'personnel' && (
-            <Panel title="Drivers">
-              <div className="grid gap-3 sm:grid-cols-2">
-                {drivers.map((d) => (
-                  <div key={d.id} className="rounded-lg border border-neutral-800 bg-neutral-900/40 p-3">
-                  <div className="flex items-center justify-between gap-2">
-                    <div className="flex items-center gap-2">
-                      <MoraleDot morale={d.morale} />
-                      <span className="font-semibold text-neutral-100">#{d.number} {d.name}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs text-neutral-500">OVR {d.ratings.overall.toFixed(1)}</span>
-                      <DriverDossierButton
-                        state={state}
-                        subject={{ type: 'driver', driver: d }}
-                        context="Team HQ"
-                        focus="relationship"
-                      />
-                    </div>
-                  </div>
-                  <div className="mt-2 space-y-1">
-                    <StatBar label="Morale" value={d.morale} max={100} />
-                    <StatBar label="Confidence" value={d.confidence} max={100} />
-                    <StatBar label="Qualifying" value={d.ratings.qualifying} max={100} />
-                    <StatBar label="Race Pace" value={d.ratings.racePace} max={100} />
-                  </div>
-                  </div>
+      <WorkspaceBody>
+        {tab === 'race' && (
+          <FmWorkspaceGrid>
+            <FmPane>
+              <FmPaneHeader title="Weekly agenda" meta={`${inboxActionable} must respond · ${inboxUnread} unread`} />
+              <FmPaneBody>
+                {agenda.nextAction && (
+                  <AgendaListItem item={agenda.nextAction} active onOpen={() => navigate(agenda.nextAction!.route)} />
+                )}
+                {agenda.dueThisWeek.map((item) => (
+                  <AgendaListItem key={item.id} item={item} onOpen={() => navigate(item.route)} />
                 ))}
+                {!agenda.nextAction && agenda.dueThisWeek.length === 0 && (
+                  <div className="ui-inbox-empty">No unresolved management action is waiting.</div>
+                )}
+                <FmListButton onClick={() => navigate('/inbox')}>
+                  <span className="ui-news-list-source">Inbox</span>
+                  <strong>Open all messages</strong>
+                  <span>{inboxUnread} unread · {inboxActionable} actionable</span>
+                </FmListButton>
+              </FmPaneBody>
+            </FmPane>
+
+            <FmPane>
+              <FmPaneHeader title={agenda.headline} meta={agenda.subheadline} />
+              <FmPaneBody className="ui-home-center">
+                {race && track && !state.seasonComplete ? (
+                  <section className="ui-home-next-race">
+                    <div>
+                      <span className="ui-fm-section-label">Next event · Round {race.round}</span>
+                      <h2>{race.gpName}</h2>
+                      <p>{race.trackName} · {track.archetype} · {race.laps} laps · {race.distanceKm ?? '—'} km</p>
+                      {!hasEnoughDrivers && <strong>Race entry blocked: {activeDrivers.length}/{minDrivers} seats filled.</strong>}
+                    </div>
+                    <TrackDemandBars track={track} />
+                  </section>
+                ) : (
+                  <section className="ui-home-next-race">
+                    <div>
+                      <span className="ui-fm-section-label">Season status</span>
+                      <h2>Season complete</h2>
+                      <p>Review the completed season and prepare the next chapter.</p>
+                    </div>
+                  </section>
+                )}
+
+                {agenda.weeklyStory && (
+                  <section className="ui-home-development">
+                    <span className="ui-fm-section-label">Returned from last race</span>
+                    <h3>{agenda.weeklyStory.headline}</h3>
+                    <p>{agenda.weeklyStory.summary}</p>
+                    <div>
+                      {agenda.weeklyStory.groups.flatMap((group) => group.items.slice(0, 2).map((item) => (
+                        <button key={item.id} type="button" onClick={() => navigate(item.route)}>
+                          <strong>{item.title}</strong>
+                          <span>{item.reason}</span>
+                          <small>{item.routeLabel} →</small>
+                        </button>
+                      )))}
+                    </div>
+                  </section>
+                )}
+
+                <section className="ui-home-development">
+                  <span className="ui-fm-section-label">Recent developments</span>
+                  <div>
+                    {agenda.recentChanges.map((change) => (
+                      <button key={change.id} type="button" onClick={() => navigate(change.route)}>
+                        <strong>{change.title}</strong>
+                        <span>{change.detail}</span>
+                        <small>{change.routeLabel} →</small>
+                      </button>
+                    ))}
+                    {agenda.recentChanges.length === 0 && <p>No new changes have been added to the manager home.</p>}
+                  </div>
+                </section>
+
+                <section className="ui-home-development">
+                  <span className="ui-fm-section-label">Department responsibilities</span>
+                  <div>
+                    {responsibilities.slice(0, 4).map((responsibility) => (
+                      <button key={responsibility.id} type="button" onClick={() => navigate(responsibility.route)}>
+                        <strong>{responsibility.area} · {responsibility.owner}</strong>
+                        <span>{responsibility.status} — {responsibility.effect}</span>
+                        <small>{responsibility.routeLabel} →</small>
+                      </button>
+                    ))}
+                  </div>
+                </section>
+              </FmPaneBody>
+            </FmPane>
+
+            <FmPane>
+              <FmPaneHeader title="Team context" meta={race?.gpName ?? 'Season complete'} />
+              <FmPaneBody className="ui-news-context-pane">
+                <section>
+                  <h3>Current status</h3>
+                  <FmKeyValue label="Next event" value={agenda.nextEvent.label} />
+                  <FmKeyValue label="Budget" value={team ? formatBudget(team.budget) : '—'} />
+                  <FmKeyValue label="Morale" value={`${Math.round(team?.morale ?? 0)}%`} />
+                  <FmKeyValue label="Car condition" value={`${Math.round(car?.condition ?? 0)}%`} />
+                  <FmKeyValue label="Active projects" value={activeUpgradePrograms(state).length} />
+                  <FmKeyValue label="Race seats" value={`${activeDrivers.length}/${minDrivers}`} />
+                </section>
+                <section>
+                  <h3>Department advice</h3>
+                  {recommendations.slice(0, 3).map((recommendation) => (
+                    <button key={recommendation.id} type="button" className="ui-home-context-link" onClick={() => navigate(recommendation.route)}>
+                      <strong>{recommendation.target}</strong>
+                      <span>{recommendation.recommendation}</span>
+                    </button>
+                  ))}
+                  {recommendations.length === 0 && <p>No staff recommendation is waiting.</p>}
+                </section>
+                <section>
+                  <h3>Championship snapshot</h3>
+                  {state.constructorStandings.slice(0, 5).map((entry, index) => (
+                    <FmKeyValue key={entry.entityId} label={`${index + 1}. ${teamName(entry.entityId)}`} value={Math.round(entry.points)} />
+                  ))}
+                </section>
+                {worldEntries.length > 0 && (
+                  <section>
+                    <h3>Around the world</h3>
+                    {worldEntries.slice(0, 3).map((entry) => (
+                      <div key={entry.series} className="ui-home-world-row">
+                        <strong>{entry.series}</strong>
+                        <span>{entry.completedRaces > 0 ? `${entry.liveLeaderName ?? '—'} · ${Math.round(entry.liveLeaderPoints ?? 0)} pts` : entry.championName ?? 'Season opening'}</span>
+                      </div>
+                    ))}
+                  </section>
+                )}
+              </FmPaneBody>
+            </FmPane>
+          </FmWorkspaceGrid>
+        )}
+
+        {tab !== 'race' && (
+          <div className="ui-fm-scroll-column">
+            {tab === 'car' && ratings && (
+              <div className="grid gap-4 lg:grid-cols-2">
+                <Panel title="Car Performance">
+                  <div className="grid gap-2 md:grid-cols-2">
+                    <StatBar label="Engine Power" value={ratings.enginePower} max={100} />
+                    <StatBar label="Aero Efficiency" value={ratings.aeroEfficiency} max={100} />
+                    <StatBar label="Mechanical Grip" value={ratings.mechanicalGrip} max={100} />
+                    <StatBar label="Reliability" value={ratings.reliability} max={100} />
+                    <StatBar label="Pit Crew Ops" value={ratings.pitCrewOperations} max={100} />
+                    <StatBar label="Condition" value={car?.condition ?? 0} max={100} />
+                  </div>
+                </Panel>
+                {(() => {
+                  const regulationSet = getRegulationSet(state.regulationSetId);
+                  return regulationSet ? (
+                    <RegulationPanel regulationSet={regulationSet} seasonYear={state.seasonYear} locked={isSingleSeasonMode(state.gameMode)} compact />
+                  ) : null;
+                })()}
               </div>
-            </Panel>
-          )}
-        </div>
-
-        <div className="space-y-4">
-          {tab === 'car' && (() => {
-            const regSet = getRegulationSet(state.regulationSetId);
-            if (!regSet) return null;
-            return (
-              <RegulationPanel
-                regulationSet={regSet}
-                seasonYear={state.seasonYear}
-                locked={isSingleSeasonMode(state.gameMode)}
-                compact
-              />
-            );
-          })()}
-
-          {tab === 'personnel' && principal && <PrincipalPanel principal={principal} />}
-
-          {tab === 'race' && (
-            <Panel title="Quick Actions">
-              <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
-              <Button onClick={() => navigate('/calendar')}>Calendar</Button>
-              <Button onClick={() => navigate('/standings')}>Standings</Button>
-              <Button onClick={() => navigate('/history')}>Race History</Button>
-              <Button onClick={() => navigate('/drivers')}>Drivers</Button>
-              <Button onClick={() => navigate('/technical')}>Technical Center</Button>
-              <Button onClick={() => navigate('/inbox')}>Inbox</Button>
-              <Button onClick={() => navigate('/finance')}>Finance</Button>
-              <Button onClick={() => navigate('/staff')}>Staff</Button>
-              <Button onClick={() => navigate('/principal')}>Principal</Button>
-              <Button onClick={() => navigate('/relationships')}>Relationships</Button>
-              <QuickActionButton label="Regulations" route="/politics" navigate={navigate} mode={state.gameMode} />
-              <QuickActionButton label="Scouting" route="/scouting" navigate={navigate} mode={state.gameMode} />
-              <QuickActionButton label="Dev Curves" route="/curves" navigate={navigate} mode={state.gameMode} />
-              <Button onClick={() => navigate('/records')}>Universe History</Button>
-              <Button onClick={() => navigate('/data')}>Team Data</Button>
-              <Button onClick={() => navigate('/settings')}>Settings</Button>
+            )}
+            {tab === 'organization' && orgRatings && <TeamRatingsPanel ratings={orgRatings} academyUsed={(state.academy ?? []).length} />}
+            {tab === 'personnel' && (
+              <div className="grid gap-4 lg:grid-cols-[1.5fr_0.8fr]">
+                <Panel title="Drivers">
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    {drivers.map((driver) => (
+                      <div key={driver.id} className="rounded border border-neutral-800 bg-neutral-900/40 p-3">
+                        <div className="flex items-center justify-between gap-2">
+                          <span className="font-semibold text-neutral-100">#{driver.number} {driver.name}</span>
+                          <DriverDossierButton state={state} subject={{ type: 'driver', driver }} context="Team HQ" focus="relationship" />
+                        </div>
+                        <div className="mt-2 space-y-1">
+                          <StatBar label="Morale" value={driver.morale} max={100} />
+                          <StatBar label="Confidence" value={driver.confidence} max={100} />
+                          <StatBar label="Qualifying" value={driver.ratings.qualifying} max={100} />
+                          <StatBar label="Race Pace" value={driver.ratings.racePace} max={100} />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </Panel>
+                {principal && <PrincipalPanel principal={principal} />}
               </div>
-            </Panel>
-          )}
-
-          {tab === 'news' && (
-            <NewsPanel
-              news={state.news}
-              title="My Team News"
-              maxItems={4}
-              teamId={state.selectedTeamId}
-              emptyMessage="No team-specific news yet."
-            />
-          )}
-        </div>
-      </div>
-
-      {tab === 'standings' && (
-        <div className="grid gap-4 lg:grid-cols-2">
-          <StandingsTable
-            title="Drivers' Championship"
-            entries={state.driverStandings.slice(0, 8)}
-            nameOf={driverName}
-            subtitleOf={(id) => teamName(state.drivers.find((d) => d.id === id)?.teamId ?? '')}
-            highlightId={drivers[0]?.id}
-          />
-          <StandingsTable
-            title="Constructors' Championship"
-            entries={state.constructorStandings.slice(0, 8)}
-            nameOf={teamName}
-            colorOf={teamColor}
-            highlightId={state.selectedTeamId}
-          />
-        </div>
-      )}
-        </div>
+            )}
+            {tab === 'news' && (
+              <Panel title="Top Team Stories">
+                <div className="grid gap-2 lg:grid-cols-2">
+                  <div>
+                    <NewsList items={state.news.slice(0, 8)} />
+                  </div>
+                  <div className="border-l border-neutral-800 pl-3">
+                    <NewsList items={state.news.filter((item) => item.teamId === state.selectedTeamId).slice(0, 8)} />
+                  </div>
+                </div>
+              </Panel>
+            )}
+            {tab === 'standings' && (
+              <div className="grid gap-4 lg:grid-cols-2">
+                <StandingsTable
+                  title="Drivers' Championship"
+                  entries={state.driverStandings.slice(0, 8)}
+                  nameOf={driverName}
+                  subtitleOf={(id) => teamName(state.drivers.find((driver) => driver.id === id)?.teamId ?? '')}
+                  highlightId={drivers[0]?.id}
+                />
+                <StandingsTable
+                  title="Constructors' Championship"
+                  entries={state.constructorStandings.slice(0, 8)}
+                  nameOf={teamName}
+                  colorOf={teamColor}
+                  highlightId={state.selectedTeamId}
+                />
+              </div>
+            )}
+          </div>
+        )}
       </WorkspaceBody>
+      {tab === 'race' && (
+        <FmDecisionBar
+          actions={<Button variant="primary" onClick={() => navigate(agenda.continueAction.route)} disabled={agenda.continueAction.disabled} title={agenda.continueAction.disabledReason}>{agenda.continueAction.label} →</Button>}
+        >
+          <strong className="text-neutral-200">Next event: {agenda.nextEvent.label}</strong> · {agenda.nextEvent.detail}
+        </FmDecisionBar>
+      )}
     </WorkspaceScreen>
   );
 }
 
-function CommandDeskColumn({ title, children }: { title: string; children: ReactNode }) {
+function AgendaListItem({ item, active = false, onOpen }: { item: CommandAgendaItem; active?: boolean; onOpen: () => void }) {
   return (
-    <div className="rounded border border-neutral-800 bg-neutral-900/25 p-2.5">
-      <div className="mb-2 text-[10px] font-black uppercase tracking-[0.14em] text-neutral-500">{title}</div>
-      <div className="space-y-2">{children}</div>
-    </div>
-  );
-}
-
-function CommandDeskItem({ item, onOpen }: { item: CommandAgendaItem; onOpen: () => void }) {
-  return (
-    <button type="button" className="block w-full rounded border border-neutral-800 bg-neutral-950/40 p-2 text-left hover:border-neutral-600" onClick={onOpen}>
-      <div className="flex items-start justify-between gap-2">
-        <div className="text-xs font-semibold text-neutral-200">{item.title}</div>
-        {item.blocking && <span className="shrink-0 text-[9px] font-bold uppercase text-red-300">Must respond</span>}
-      </div>
-      <div className="mt-1 text-[10px] text-neutral-500">{item.owner}</div>
-      <div className="mt-1 text-[10px] font-semibold uppercase tracking-wide text-amber-300">{item.timingLabel}</div>
-      <div className="mt-1 text-[11px] leading-4 text-neutral-400">{item.whyNow}</div>
-      <div className="mt-1 text-[10px] font-semibold text-sky-300">{item.routeLabel} →</div>
-    </button>
-  );
-}
-
-function MoraleDot({ morale }: { morale: number }) {
-  const color =
-    morale >= 75 ? 'bg-green-500' :
-    morale >= 50 ? 'bg-yellow-500' :
-    morale >= 30 ? 'bg-orange-500' :
-    'bg-red-500';
-  const label =
-    morale >= 75 ? 'High morale' :
-    morale >= 50 ? 'Stable' :
-    morale >= 30 ? 'Low morale' :
-    'Critical';
-  return (
-    <span
-      className={`inline-block h-2.5 w-2.5 rounded-full ${color}`}
-      title={label}
-    />
+    <FmListButton active={active} urgent={item.blocking} onClick={onOpen}>
+      <span className="ui-news-list-source">{item.owner} · {item.timingLabel}</span>
+      <strong>{item.title}</strong>
+      <span>{item.whyNow}</span>
+      <small>{item.routeLabel} →</small>
+    </FmListButton>
   );
 }
 
@@ -509,25 +341,11 @@ function PrincipalPanel({ principal }: { principal: TeamPrincipal }) {
   const labelOf = (list: PrincipalOption[], id: string) => optionById(list, id)?.label ?? id;
   return (
     <Panel title="Team Principal">
-      <div className="flex items-center gap-3">
-        <div className="flex h-12 w-12 items-center justify-center rounded-lg border border-neutral-700 bg-neutral-800 text-lg font-black text-neutral-200">
-          {principal.name
-            .trim()
-            .split(/\s+/)
-            .map((w) => w[0])
-            .filter(Boolean)
-            .slice(0, 2)
-            .join('')
-            .toUpperCase() || '??'}
-        </div>
-        <div className="min-w-0">
-          <div className="truncate font-bold text-neutral-100">{principal.name}</div>
-          <div className="text-xs text-neutral-500">
-            {labelOf(BACKGROUNDS, principal.background)}
-            {principal.nationality ? ` · ${principal.nationality}` : ''}
-            {principal.age ? ` · ${principal.age}` : ''}
-          </div>
-        </div>
+      <div className="text-lg font-bold text-neutral-100">{principal.name}</div>
+      <div className="mt-1 text-xs text-neutral-500">
+        {labelOf(BACKGROUNDS, principal.background)}
+        {principal.nationality ? ` · ${principal.nationality}` : ''}
+        {principal.age ? ` · ${principal.age}` : ''}
       </div>
       <div className="mt-3 space-y-1 text-xs">
         <Row label="Management" value={labelOf(MANAGEMENT_STYLES, principal.managementStyle)} />
@@ -546,13 +364,7 @@ function PrincipalPanel({ principal }: { principal: TeamPrincipal }) {
   );
 }
 
-function TeamRatingsPanel({
-  ratings,
-  academyUsed,
-}: {
-  ratings: TeamOrganizationRatings;
-  academyUsed: number;
-}) {
+function TeamRatingsPanel({ ratings, academyUsed }: { ratings: TeamOrganizationRatings; academyUsed: number }) {
   const capacity = calculateAcademyCapacity(ratings);
   const rows: { label: string; value: number }[] = [
     { label: 'Car Performance', value: ratings.carPerformance },
@@ -572,29 +384,16 @@ function TeamRatingsPanel({
     { label: 'Youth Academy', value: ratings.youthAcademy },
   ];
   return (
-    <Panel
-      title="Team Rating"
-      actions={
-        <div className="flex items-baseline gap-1">
-          <span className="text-2xl font-black text-amber-400">{ratings.overallTeamRating}</span>
-          <span className="text-xs text-neutral-500">/ 100</span>
-        </div>
-      }
-    >
-      <div className="mb-3 flex items-center justify-between rounded-lg border border-neutral-800 bg-neutral-900/60 px-3 py-2 text-sm">
-        <span className="text-neutral-400">Academy Capacity</span>
-        <span className="font-semibold text-neutral-100">
-          {academyUsed} / {capacity} slot{capacity === 1 ? '' : 's'}
-        </span>
-      </div>
+    <Panel title="Team Rating" actions={<strong className="text-xl text-amber-400">{ratings.overallTeamRating}/100</strong>}>
+      <div className="mb-3 text-sm text-neutral-400">Academy capacity: <strong className="text-neutral-100">{academyUsed}/{capacity}</strong></div>
       <div className="grid gap-x-4 gap-y-1.5 sm:grid-cols-2">
-        {rows.map((r) => (
-          <div key={r.label} className="flex items-center gap-2 text-xs">
-            <span className="w-28 shrink-0 text-neutral-400">{r.label}</span>
+        {rows.map((row) => (
+          <div key={row.label} className="flex items-center gap-2 text-xs">
+            <span className="w-28 shrink-0 text-neutral-400">{row.label}</span>
             <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-neutral-800">
-              <div className="h-full" style={{ width: `${r.value}%`, backgroundColor: ratingColor(r.value) }} />
+              <div className="h-full" style={{ width: `${row.value}%`, backgroundColor: ratingColor(row.value) }} />
             </div>
-            <span className="w-6 text-right tabular-nums text-neutral-300">{r.value}</span>
+            <span className="w-6 text-right tabular-nums text-neutral-300">{row.value}</span>
           </div>
         ))}
       </div>
@@ -602,40 +401,28 @@ function TeamRatingsPanel({
   );
 }
 
-function Row({ label, value }: { label: string; value: string }) {
+function NewsList({ items }: { items: Array<{ id: string; headline: string; body?: string }> }) {
+  if (items.length === 0) return <p className="text-sm text-neutral-500">No team news yet.</p>;
   return (
-    <div className="flex items-center justify-between gap-2">
-      <span className="text-neutral-500">{label}</span>
-      <span className="truncate font-medium text-neutral-200">{value}</span>
+    <div className="space-y-2">
+      {items.map((item) => (
+        <article key={item.id} className="border-b border-neutral-800 pb-2">
+          <strong className="text-xs text-neutral-200">{item.headline}</strong>
+          {item.body && <p className="mt-1 text-[11px] text-neutral-500">{item.body}</p>}
+        </article>
+      ))}
     </div>
   );
+}
+
+function Row({ label, value }: { label: string; value: string }) {
+  return <div className="flex items-center justify-between gap-2"><span className="text-neutral-500">{label}</span><span className="truncate font-medium text-neutral-200">{value}</span></div>;
 }
 
 function MiniStat({ label, value }: { label: string; value: number }) {
-  return (
-    <div className="rounded-md border border-neutral-800 bg-neutral-900/40 px-2 py-1 text-center">
-      <div className="text-sm font-bold text-neutral-100">{value}</div>
-      <div className="text-[9px] uppercase tracking-wide text-neutral-500">{label}</div>
-    </div>
-  );
+  return <div className="rounded border border-neutral-800 bg-neutral-900/40 px-2 py-1 text-center"><div className="text-sm font-bold text-neutral-100">{value}</div><div className="text-[9px] uppercase tracking-wide text-neutral-500">{label}</div></div>;
 }
 
-function QuickActionButton({
-  label,
-  route,
-  navigate,
-  mode,
-}: {
-  label: string;
-  route: string;
-  navigate: (path: string) => void;
-  mode: GameMode | undefined;
-}) {
-  const locked = isRouteRestricted(route, mode);
-  return (
-    <Button onClick={() => navigate(route)}>
-      {locked && <span className="mr-1 text-amber-500">🔒</span>}
-      {label}
-    </Button>
-  );
+function formatBudget(value: number): string {
+  return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', notation: 'compact', maximumFractionDigits: 1 }).format(value);
 }

@@ -110,3 +110,11 @@ export function storylineChapterCounts(storylines: NewsStoryline[]): Map<string,
   }
   return counts;
 }
+
+export function selectedNewsItem(items: NewsItem[], selectedId?: string): NewsItem | undefined {
+  return items.find((item) => item.id === selectedId) ?? items[0];
+}
+
+export function selectedNewsStoryline(storylines: NewsStoryline[], selectedId?: string): NewsStoryline | undefined {
+  return storylines.find((storyline) => storyline.id === selectedId) ?? storylines[0];
+}

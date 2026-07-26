@@ -1,25 +1,37 @@
 import { useMemo, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import type { NewsItem, NewsCategory, NewsPriority } from '../types/gameTypes';
+import type { NewsCategory, NewsItem, NewsPriority } from '../types/gameTypes';
 import {
   categoryLabel,
-  priorityColor,
   filterNewsByCategory,
   filterNewsByPriority,
-  filterNewsByTeam,
   filterNewsBySeason,
+  filterNewsByTeam,
   isMajorStory,
+  priorityColor,
 } from '../sim/careerNewsEngine';
 import { useGame } from '../game/GameContext';
-import { buildNewsStorylines, storylineChapterCounts, type NewsStoryline } from './newsCenterViewModel';
 import {
-  MetricStrip,
+  buildNewsStorylines,
+  selectedNewsItem,
+  selectedNewsStoryline,
+  storylineChapterCounts,
+  type NewsStoryline,
+} from './newsCenterViewModel';
+import {
   WorkspaceBody,
   WorkspaceHeader,
-  WorkspaceMetric,
   WorkspaceScreen,
   WorkspaceTabs,
 } from '../components/workspace/Workspace';
+import {
+  FmKeyValue,
+  FmListButton,
+  FmPane,
+  FmPaneBody,
+  FmPaneHeader,
+  FmWorkspaceGrid,
+} from '../components/workspace/FmPane';
 import { MediaSessionsPanel } from './MediaSessionsPanel';
 
 const ALL_CATEGORIES: (NewsCategory | 'all')[] = [
@@ -43,14 +55,16 @@ const ALL_CATEGORIES: (NewsCategory | 'all')[] = [
 ];
 
 const ALL_PRIORITIES: (NewsPriority | 'all')[] = ['all', 'critical', 'high', 'normal', 'low'];
+type NewsView = 'feed' | 'storylines' | 'media';
 
 export function NewsCenter() {
   const { state } = useGame();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
-  type NewsView = 'feed' | 'storylines' | 'media';
   const initialView = searchParams.get('tab') === 'media' ? 'media' : searchParams.get('tab') === 'storylines' ? 'storylines' : 'feed';
   const [view, setView] = useState<NewsView>(initialView);
+  const [selectedNewsId, setSelectedNewsId] = useState<string>();
+  const [selectedStorylineId, setSelectedStorylineId] = useState<string>();
   const [categoryFilter, setCategoryFilter] = useState<NewsCategory | 'all'>('all');
   const [priorityFilter, setPriorityFilter] = useState<NewsPriority | 'all'>('all');
   const [teamFilter, setTeamFilter] = useState<'all' | 'myTeam'>('all');
@@ -69,72 +83,45 @@ export function NewsCenter() {
 
   const filteredNews = useMemo(() => {
     let items = allNews;
-    if (categoryFilter !== 'all') {
-      items = filterNewsByCategory(items, categoryFilter);
-    }
-    if (priorityFilter !== 'all') {
-      items = filterNewsByPriority(items, priorityFilter);
-    }
-    if (teamFilter === 'myTeam') {
-      items = filterNewsByTeam(items, state?.selectedTeamId);
-    }
-    if (seasonFilter !== 'all') {
-      items = filterNewsBySeason(items, seasonFilter);
-    }
-    if (majorOnly) {
-      items = items.filter(isMajorStory);
-    }
-    if (roundFilter !== 'all') {
-      items = items.filter((n) => n.round === roundFilter);
-    }
+    if (categoryFilter !== 'all') items = filterNewsByCategory(items, categoryFilter);
+    if (priorityFilter !== 'all') items = filterNewsByPriority(items, priorityFilter);
+    if (teamFilter === 'myTeam') items = filterNewsByTeam(items, state?.selectedTeamId);
+    if (seasonFilter !== 'all') items = filterNewsBySeason(items, seasonFilter);
+    if (majorOnly) items = items.filter(isMajorStory);
+    if (roundFilter !== 'all') items = items.filter((item) => item.round === roundFilter);
     if (searchQuery.trim()) {
-      const q = searchQuery.toLowerCase().trim();
-      items = items.filter(
-        (n) =>
-          n.headline.toLowerCase().includes(q) ||
-          (n.body?.toLowerCase().includes(q) ?? false),
-      );
+      const query = searchQuery.toLowerCase().trim();
+      items = items.filter((item) => item.headline.toLowerCase().includes(query) || item.body?.toLowerCase().includes(query));
     }
     return sortNewsNewestFirst(items);
-  }, [allNews, categoryFilter, priorityFilter, teamFilter, seasonFilter, majorOnly, roundFilter, searchQuery, state?.selectedTeamId]);
+  }, [allNews, categoryFilter, majorOnly, priorityFilter, roundFilter, searchQuery, seasonFilter, state?.selectedTeamId, teamFilter]);
 
   const availableSeasons = useMemo(() => {
     const seasons = new Set<number>();
-    for (const n of [...(state?.news ?? []), ...(state?.newsArchive ?? [])]) {
-      try {
-        seasons.add(new Date(n.timestamp).getFullYear());
-      } catch { /* skip */ }
+    for (const item of [...(state?.news ?? []), ...(state?.newsArchive ?? [])]) {
+      const year = new Date(item.timestamp).getFullYear();
+      if (Number.isFinite(year)) seasons.add(year);
     }
-    return Array.from(seasons).sort((a, b) => b - a);
+    return [...seasons].sort((a, b) => b - a);
   }, [state?.news, state?.newsArchive]);
 
   const availableRounds = useMemo(() => {
     const rounds = new Set<number>();
-    for (const n of allNews) {
-      if (n.round != null) rounds.add(n.round);
-    }
-    return Array.from(rounds).sort((a, b) => a - b);
+    for (const item of allNews) if (item.round != null) rounds.add(item.round);
+    return [...rounds].sort((a, b) => a - b);
   }, [allNews]);
 
-  const archiveCount = state?.newsArchive?.length ?? 0;
   const storylines = useMemo(() => {
     const items = [...(state?.newsArchive ?? []), ...(state?.news ?? [])];
     const teamNames = Object.fromEntries((state?.teams ?? []).map((team) => [team.id, team.name]));
     const driverNames = Object.fromEntries((state?.drivers ?? []).map((driver) => [driver.id, driver.name]));
     return buildNewsStorylines(items, teamNames, driverNames);
-  }, [state?.newsArchive, state?.news, state?.teams, state?.drivers]);
-  const chapterCounts = useMemo(() => storylineChapterCounts(storylines), [storylines]);
-  const attentionCount = (state?.news ?? []).filter((item) => item.priority === 'critical' || item.priority === 'high').length;
-  const teamReportCount = filterNewsByTeam(state?.news ?? [], state?.selectedTeamId).length;
+  }, [state?.drivers, state?.news, state?.newsArchive, state?.teams]);
 
-  const hasActiveFilters =
-    categoryFilter !== 'all' ||
-    priorityFilter !== 'all' ||
-    teamFilter !== 'all' ||
-    seasonFilter !== 'all' ||
-    majorOnly ||
-    roundFilter !== 'all' ||
-    searchQuery.trim() !== '';
+  const chapterCounts = useMemo(() => storylineChapterCounts(storylines), [storylines]);
+  const selectedNews = selectedNewsItem(filteredNews, selectedNewsId);
+  const selectedStoryline = selectedNewsStoryline(storylines, selectedStorylineId);
+  const attentionCount = (state?.news ?? []).filter((item) => item.priority === 'critical' || item.priority === 'high').length;
 
   const clearAllFilters = () => {
     setCategoryFilter('all');
@@ -145,6 +132,7 @@ export function NewsCenter() {
     setRoundFilter('all');
     setSearchQuery('');
   };
+
   const setNewsView = (next: NewsView) => {
     setView(next);
     const params = new URLSearchParams(searchParams);
@@ -154,193 +142,276 @@ export function NewsCenter() {
   };
 
   return (
-    <WorkspaceScreen>
+    <WorkspaceScreen className="ui-phase2-news">
       <WorkspaceHeader
         eyebrow="Media & intelligence"
         title="News Center"
-        subtitle={`Season ${state?.seasonYear ?? '—'} · Round ${state?.careerPhase?.currentRound ?? '—'} · Reports and developing stories from the shared universe`}
+        subtitle={`Season ${state?.seasonYear ?? '—'} · Round ${state?.careerPhase?.currentRound ?? '—'} · ${attentionCount} priority report${attentionCount === 1 ? '' : 's'}`}
         actions={<button type="button" onClick={() => navigate('/stories')} className="ui-inline-action rounded border px-3 py-1.5 text-xs font-semibold">Open Paddock Stories</button>}
       />
-      <MetricStrip>
-        <WorkspaceMetric label="Current reports" value={state?.news?.length ?? 0} detail={`${filteredNews.length} match this view`} />
-        <WorkspaceMetric label="Priority reports" value={attentionCount} detail="Critical or high priority" />
-        <WorkspaceMetric label="My team" value={teamReportCount} detail="Current team reports" />
-        <WorkspaceMetric label="Story archive" value={archiveCount} detail={`${storylines.length} connected storylines`} />
-      </MetricStrip>
       <WorkspaceTabs
-        items={[{ id: 'feed', label: 'News Feed' }, { id: 'storylines', label: 'Storylines' }, { id: 'media', label: 'Media Sessions' }]}
+        items={[{ id: 'feed', label: 'News Feed' }, { id: 'storylines', label: `Storylines (${storylines.length})` }, { id: 'media', label: 'Media Sessions' }]}
         active={view}
         onChange={setNewsView}
         ariaLabel="News Center sections"
       />
-      <WorkspaceBody className="space-y-3">
-      {view === 'media' && <MediaSessionsPanel />}
-
-      {/* Filter Controls */}
-      {view === 'feed' && <div className="ui-news-filter-panel space-y-3 rounded-lg border p-3">
-        {/* Search + Quick Toggles */}
-        <div className="flex flex-wrap items-center gap-2">
-          <input
-            type="text"
-            placeholder="Search headlines..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="ui-news-search flex-1 min-w-[180px] rounded border px-3 py-1.5 text-sm text-neutral-200 placeholder:text-neutral-600"
-          />
-          <label className="flex items-center gap-1 text-xs text-neutral-400">
-            <input
-              type="checkbox"
-              checked={majorOnly}
-              onChange={(e) => setMajorOnly(e.target.checked)}
-              className="accent-amber-600"
-            />
-            Major stories only
-          </label>
-          {hasActiveFilters && (
-            <button
-              onClick={clearAllFilters}
-              className="rounded bg-neutral-800 px-2 py-1 text-xs text-neutral-400 hover:bg-neutral-700 hover:text-neutral-200"
-            >
-              ✕ Clear filters
-            </button>
-          )}
-        </div>
-
-        {/* Category Filter */}
-        <div>
-          <label className="mb-1 block text-xs font-medium text-neutral-400">Category</label>
-          <div className="flex flex-wrap gap-1">
-            {ALL_CATEGORIES.map((cat) => (
-              <button
-                key={cat}
-                onClick={() => setCategoryFilter(cat)}
-                className={`rounded px-2 py-0.5 text-xs transition-colors ${
-                  categoryFilter === cat
-                    ? 'bg-blue-600 text-white'
-                    : 'bg-neutral-800 text-neutral-400 hover:bg-neutral-700'
-                }`}
-              >
-                {cat === 'all' ? 'All' : categoryLabel(cat)}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* Priority + Team + Season + Round Filters */}
-        <div className="flex flex-wrap gap-4">
-          <div>
-            <label className="mb-1 block text-xs font-medium text-neutral-400">Priority</label>
-            <div className="flex gap-1">
-              {ALL_PRIORITIES.map((pri) => (
-                <button
-                  key={pri}
-                  onClick={() => setPriorityFilter(pri)}
-                  className={`rounded px-2 py-0.5 text-xs capitalize transition-colors ${
-                    priorityFilter === pri
-                      ? 'bg-blue-600 text-white'
-                      : 'bg-neutral-800 text-neutral-400 hover:bg-neutral-700'
-                  }`}
-                >
-                  {pri === 'all' ? 'All' : pri}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <div>
-            <label className="mb-1 block text-xs font-medium text-neutral-400">Team</label>
-            <div className="flex gap-1">
-              <button
-                onClick={() => setTeamFilter('all')}
-                className={`rounded px-2 py-0.5 text-xs transition-colors ${
-                  teamFilter === 'all'
-                    ? 'bg-blue-600 text-white'
-                    : 'bg-neutral-800 text-neutral-400 hover:bg-neutral-700'
-                }`}
-              >
-                All Teams
-              </button>
-              <button
-                onClick={() => setTeamFilter('myTeam')}
-                className={`rounded px-2 py-0.5 text-xs transition-colors ${
-                  teamFilter === 'myTeam'
-                    ? 'bg-blue-600 text-white'
-                    : 'bg-neutral-800 text-neutral-400 hover:bg-neutral-700'
-                }`}
-              >
-                My Team
-              </button>
-            </div>
-          </div>
-
-          <div>
-            <label className="mb-1 block text-xs font-medium text-neutral-400">Season</label>
-            <select
-              value={seasonFilter}
-              onChange={(e) => setSeasonFilter(e.target.value === 'all' ? 'all' : Number(e.target.value))}
-              className="rounded bg-neutral-800 px-2 py-0.5 text-xs text-neutral-200"
-            >
-              <option value="all">All Seasons</option>
-              {availableSeasons.map((s) => (
-                <option key={s} value={s}>{s}</option>
-              ))}
-            </select>
-          </div>
-
-          {availableRounds.length > 0 && (
-            <div>
-              <label className="mb-1 block text-xs font-medium text-neutral-400">Round</label>
-              <select
-                value={roundFilter}
-                onChange={(e) => setRoundFilter(e.target.value === 'all' ? 'all' : Number(e.target.value))}
-                className="rounded bg-neutral-800 px-2 py-0.5 text-xs text-neutral-200"
-              >
-                <option value="all">All Rounds</option>
-                {availableRounds.map((r) => (
-                  <option key={r} value={r}>Round {r}</option>
+      <WorkspaceBody>
+        {view === 'media' && <MediaSessionsPanel />}
+        {view === 'feed' && (
+          <FmWorkspaceGrid>
+            <FmPane>
+              <FmPaneHeader title="Reports" meta={`${filteredNews.length} shown · ${state?.news?.length ?? 0} current`} />
+              <FmPaneBody className="ui-news-list-pane">
+                <NewsFilters
+                  searchQuery={searchQuery}
+                  setSearchQuery={setSearchQuery}
+                  categoryFilter={categoryFilter}
+                  setCategoryFilter={setCategoryFilter}
+                  priorityFilter={priorityFilter}
+                  setPriorityFilter={setPriorityFilter}
+                  teamFilter={teamFilter}
+                  setTeamFilter={setTeamFilter}
+                  seasonFilter={seasonFilter}
+                  setSeasonFilter={setSeasonFilter}
+                  roundFilter={roundFilter}
+                  setRoundFilter={setRoundFilter}
+                  majorOnly={majorOnly}
+                  setMajorOnly={setMajorOnly}
+                  showArchive={showArchive}
+                  setShowArchive={setShowArchive}
+                  availableSeasons={availableSeasons}
+                  availableRounds={availableRounds}
+                  clearAllFilters={clearAllFilters}
+                />
+                {filteredNews.slice(0, displayLimit).map((item) => (
+                  <FmListButton
+                    key={item.id}
+                    active={selectedNews?.id === item.id}
+                    urgent={item.priority === 'critical' || item.priority === 'high'}
+                    onClick={() => setSelectedNewsId(item.id)}
+                  >
+                    <span className="ui-news-list-source">{categoryLabel(item.category)}</span>
+                    <strong>{item.headline}</strong>
+                    <span>{item.body ?? 'No additional report detail.'}</span>
+                    <small>{item.round != null ? `Round ${item.round}` : formatTimestamp(item.timestamp)}</small>
+                  </FmListButton>
                 ))}
-              </select>
-            </div>
-          )}
+                {filteredNews.length === 0 && <EmptyState>No news stories match the current filters.</EmptyState>}
+                {filteredNews.length > displayLimit && (
+                  <button type="button" className="ui-fm-load-more" onClick={() => setDisplayLimit((value) => value + 50)}>
+                    Show {Math.min(50, filteredNews.length - displayLimit)} more
+                  </button>
+                )}
+              </FmPaneBody>
+            </FmPane>
 
-          <div className="flex items-end">
-            <label className="flex items-center gap-1 text-xs text-neutral-400">
-              <input
-                type="checkbox"
-                checked={showArchive}
-                onChange={(e) => setShowArchive(e.target.checked)}
-                className="accent-blue-600"
-              />
-              Include Archive
-            </label>
-          </div>
-        </div>
-      </div>}
+            <FmPane>
+              <FmPaneHeader title={selectedNews ? categoryLabel(selectedNews.category) : 'Selected report'} meta={selectedNews ? formatTimestamp(selectedNews.timestamp) : 'No report selected'} />
+              <FmPaneBody className="ui-news-reader">
+                {selectedNews ? (
+                  <article>
+                    <div className="ui-news-reader-flags">
+                      <span className={priorityColor(selectedNews.priority)}>{selectedNews.priority ?? 'normal'} priority</span>
+                      {isMajorStory(selectedNews) && <span>Major story</span>}
+                      {chapterCounts.get(selectedNews.id) && (
+                        <span>Chapter {chapterCounts.get(selectedNews.id)?.chapter}/{chapterCounts.get(selectedNews.id)?.total}</span>
+                      )}
+                    </div>
+                    <h2>{selectedNews.headline}</h2>
+                    <p>{selectedNews.body ?? 'No additional report detail was recorded.'}</p>
+                  </article>
+                ) : <EmptyState>Select a report to read it.</EmptyState>}
+              </FmPaneBody>
+            </FmPane>
 
-      {/* News List */}
-      {view === 'feed' && <div className="space-y-2">
-        {filteredNews.length === 0 && (
-          <div className="py-8 text-center text-neutral-500">
-            No news stories match the current filters.
-          </div>
+            <NewsContextPane item={selectedNews} state={state} archiveCount={state?.newsArchive?.length ?? 0} storylines={storylines} />
+          </FmWorkspaceGrid>
         )}
-        {filteredNews.slice(0, displayLimit).map((item) => (
-          <NewsCard key={item.id} item={item} chapter={chapterCounts.get(item.id)} />
-        ))}
-        {filteredNews.length > displayLimit && (
-          <div className="py-3 text-center">
-            <button
-              className="rounded-lg border border-neutral-700 bg-neutral-800/50 px-4 py-2 text-sm text-neutral-300 hover:bg-neutral-800"
-              onClick={() => setDisplayLimit((d) => d + 50)}
-            >
-              Show {Math.min(50, filteredNews.length - displayLimit)} more ({filteredNews.length - displayLimit} remaining)
-            </button>
-          </div>
+        {view === 'storylines' && (
+          <StorylineWorkspace
+            storylines={storylines}
+            selected={selectedStoryline}
+            onSelect={setSelectedStorylineId}
+          />
         )}
-      </div>}
-      {view === 'storylines' && <StorylineList storylines={storylines} />}
       </WorkspaceBody>
     </WorkspaceScreen>
+  );
+}
+
+function NewsFilters({
+  searchQuery,
+  setSearchQuery,
+  categoryFilter,
+  setCategoryFilter,
+  priorityFilter,
+  setPriorityFilter,
+  teamFilter,
+  setTeamFilter,
+  seasonFilter,
+  setSeasonFilter,
+  roundFilter,
+  setRoundFilter,
+  majorOnly,
+  setMajorOnly,
+  showArchive,
+  setShowArchive,
+  availableSeasons,
+  availableRounds,
+  clearAllFilters,
+}: {
+  searchQuery: string;
+  setSearchQuery: (value: string) => void;
+  categoryFilter: NewsCategory | 'all';
+  setCategoryFilter: (value: NewsCategory | 'all') => void;
+  priorityFilter: NewsPriority | 'all';
+  setPriorityFilter: (value: NewsPriority | 'all') => void;
+  teamFilter: 'all' | 'myTeam';
+  setTeamFilter: (value: 'all' | 'myTeam') => void;
+  seasonFilter: number | 'all';
+  setSeasonFilter: (value: number | 'all') => void;
+  roundFilter: number | 'all';
+  setRoundFilter: (value: number | 'all') => void;
+  majorOnly: boolean;
+  setMajorOnly: (value: boolean) => void;
+  showArchive: boolean;
+  setShowArchive: (value: boolean) => void;
+  availableSeasons: number[];
+  availableRounds: number[];
+  clearAllFilters: () => void;
+}) {
+  return (
+    <div className="ui-news-compact-filters">
+      <input type="search" placeholder="Search reports" value={searchQuery} onChange={(event) => setSearchQuery(event.target.value)} />
+      <div className="grid grid-cols-2 gap-1">
+        <select value={categoryFilter} onChange={(event) => setCategoryFilter(event.target.value as NewsCategory | 'all')}>
+          {ALL_CATEGORIES.map((category) => <option key={category} value={category}>{category === 'all' ? 'All categories' : categoryLabel(category)}</option>)}
+        </select>
+        <select value={priorityFilter} onChange={(event) => setPriorityFilter(event.target.value as NewsPriority | 'all')}>
+          {ALL_PRIORITIES.map((priority) => <option key={priority} value={priority}>{priority === 'all' ? 'All priorities' : `${priority} priority`}</option>)}
+        </select>
+        <select value={teamFilter} onChange={(event) => setTeamFilter(event.target.value as 'all' | 'myTeam')}>
+          <option value="all">All teams</option>
+          <option value="myTeam">My team</option>
+        </select>
+        <select value={seasonFilter} onChange={(event) => setSeasonFilter(event.target.value === 'all' ? 'all' : Number(event.target.value))}>
+          <option value="all">All seasons</option>
+          {availableSeasons.map((season) => <option key={season} value={season}>{season}</option>)}
+        </select>
+        <select value={roundFilter} onChange={(event) => setRoundFilter(event.target.value === 'all' ? 'all' : Number(event.target.value))}>
+          <option value="all">All rounds</option>
+          {availableRounds.map((round) => <option key={round} value={round}>Round {round}</option>)}
+        </select>
+        <button type="button" onClick={clearAllFilters}>Clear filters</button>
+      </div>
+      <label><input type="checkbox" checked={majorOnly} onChange={(event) => setMajorOnly(event.target.checked)} /> Major only</label>
+      <label><input type="checkbox" checked={showArchive} onChange={(event) => setShowArchive(event.target.checked)} /> Include archive</label>
+    </div>
+  );
+}
+
+function NewsContextPane({
+  item,
+  state,
+  archiveCount,
+  storylines,
+}: {
+  item?: NewsItem;
+  state: ReturnType<typeof useGame>['state'];
+  archiveCount: number;
+  storylines: NewsStoryline[];
+}) {
+  const team = item?.teamId ? state?.teams.find((candidate) => candidate.id === item.teamId) : undefined;
+  const driver = item?.driverId ? state?.drivers.find((candidate) => candidate.id === item.driverId) : undefined;
+  const storyline = item ? storylines.find((candidate) => candidate.chapters.some((chapter) => chapter.id === item.id)) : undefined;
+  return (
+    <FmPane>
+      <FmPaneHeader title="Report context" meta="State-backed detail" />
+      <FmPaneBody className="ui-news-context-pane">
+        {item ? (
+          <>
+            <section>
+              <h3>Report</h3>
+              <FmKeyValue label="Category" value={categoryLabel(item.category)} />
+              <FmKeyValue label="Priority" value={item.priority ?? 'normal'} />
+              <FmKeyValue label="Round" value={item.round ?? '—'} />
+              <FmKeyValue label="Season archive" value={archiveCount} />
+            </section>
+            <section>
+              <h3>Subject</h3>
+              <FmKeyValue label="Driver" value={driver?.name ?? '—'} />
+              <FmKeyValue label="Team" value={team?.name ?? '—'} />
+              <FmKeyValue label="Storyline" value={storyline?.status ?? 'Standalone'} />
+              {storyline && <p>{storyline.summary}</p>}
+            </section>
+          </>
+        ) : <EmptyState>No report context available.</EmptyState>}
+      </FmPaneBody>
+    </FmPane>
+  );
+}
+
+function StorylineWorkspace({
+  storylines,
+  selected,
+  onSelect,
+}: {
+  storylines: NewsStoryline[];
+  selected?: NewsStoryline;
+  onSelect: (id: string) => void;
+}) {
+  return (
+    <FmWorkspaceGrid>
+      <FmPane>
+        <FmPaneHeader title="Developing stories" meta={`${storylines.length} connected threads`} />
+        <FmPaneBody>
+          {storylines.map((storyline) => (
+            <FmListButton key={storyline.id} active={selected?.id === storyline.id} urgent={storyline.status === 'Escalating'} onClick={() => onSelect(storyline.id)}>
+              <span className="ui-news-list-source">{storyline.subjectType} · {storyline.status}</span>
+              <strong>{storyline.title}</strong>
+              <span>{storyline.summary}</span>
+              <small>{storyline.chapters.length} chapters</small>
+            </FmListButton>
+          ))}
+          {storylines.length === 0 && <EmptyState>Continuing storylines appear after connected reports are generated.</EmptyState>}
+        </FmPaneBody>
+      </FmPane>
+      <FmPane>
+        <FmPaneHeader title={selected?.title ?? 'Selected storyline'} meta={selected ? `${selected.status} · ${selected.chapters.length} chapters` : 'No storyline selected'} />
+        <FmPaneBody className="ui-news-reader">
+          {selected ? (
+            <article>
+              <h2>{selected.title}</h2>
+              <p>{selected.summary}</p>
+              <div className="ui-news-timeline">
+                {selected.chapters.map((chapter, index) => (
+                  <section key={chapter.id}>
+                    <small>Chapter {selected.chapters.length - index}{chapter.round != null ? ` · R${chapter.round}` : ''}</small>
+                    <h3>{chapter.headline}</h3>
+                    {chapter.body && <p>{chapter.body}</p>}
+                  </section>
+                ))}
+              </div>
+            </article>
+          ) : <EmptyState>Select a storyline to inspect its chronology.</EmptyState>}
+        </FmPaneBody>
+      </FmPane>
+      <FmPane>
+        <FmPaneHeader title="Story context" meta="Trend and pressure" />
+        <FmPaneBody className="ui-news-context-pane">
+          {selected ? (
+            <section>
+              <h3>Status</h3>
+              <FmKeyValue label="State" value={selected.status} />
+              <FmKeyValue label="Subject" value={selected.subjectType} />
+              <FmKeyValue label="Latest round" value={selected.latestRound ?? '—'} />
+              <FmKeyValue label="Reports" value={selected.chapters.length} />
+              <p>{selected.status === 'Escalating' ? 'Recent reporting contains critical pressure.' : selected.status === 'Developing' ? 'Recent reports are forming a stronger sustained trend.' : 'This thread remains active without immediate escalation.'}</p>
+            </section>
+          ) : <EmptyState>No storyline context available.</EmptyState>}
+        </FmPaneBody>
+      </FmPane>
+    </FmWorkspaceGrid>
   );
 }
 
@@ -354,94 +425,11 @@ function sortNewsNewestFirst(items: NewsItem[]): NewsItem[] {
   });
 }
 
-function NewsCard({ item, chapter }: { item: NewsItem; chapter?: { chapter: number; total: number } }) {
-  const priColor = priorityColor(item.priority);
-  const catLabel = categoryLabel(item.category);
-
-  return (
-    <article className={`ui-news-card rounded-lg border p-3 ${
-      item.priority === 'critical' ? 'border-red-600/40' :
-      item.priority === 'high' ? 'border-amber-600/30' :
-      'border-neutral-800'
-    }`}>
-      <div className="flex items-start justify-between gap-2">
-        <div className="flex-1">
-          <h3 className={`text-sm font-semibold ${priColor}`}>{item.headline}</h3>
-          {item.body && <p className="mt-1 text-xs text-neutral-400">{item.body}</p>}
-        </div>
-        <div className="flex flex-col items-end gap-1">
-          {item.category && (
-            <span className="rounded bg-neutral-800 px-1.5 py-0.5 text-[10px] text-neutral-400">
-              {catLabel}
-            </span>
-          )}
-          {item.priority && (
-            <span className={`text-[10px] capitalize ${priColor}`}>
-              {item.priority}
-            </span>
-          )}
-          {chapter && (
-            <span className="rounded bg-amber-950/50 px-1.5 py-0.5 text-[10px] text-amber-300">
-              Chapter {chapter.chapter}/{chapter.total}
-            </span>
-          )}
-        </div>
-      </div>
-      {item.round != null && (
-        <div className="mt-1 text-[10px] text-neutral-600">Round {item.round}</div>
-      )}
-    </article>
-  );
+function formatTimestamp(timestamp: string): string {
+  const date = new Date(timestamp);
+  return Number.isFinite(date.getTime()) ? date.toLocaleDateString() : timestamp;
 }
 
-function StorylineList({ storylines }: { storylines: NewsStoryline[] }) {
-  if (storylines.length === 0) {
-    return (
-      <div className="rounded-lg border border-neutral-800 bg-neutral-900/40 py-10 text-center text-sm text-neutral-500">
-        Continuing storylines will appear after a driver or team generates multiple connected reports.
-      </div>
-    );
-  }
-  return (
-    <div className="grid gap-3 lg:grid-cols-2">
-      {storylines.map((storyline) => (
-        <article key={storyline.id} className="rounded-lg border border-neutral-800 bg-neutral-900/50 p-4">
-          <div className="flex items-start justify-between gap-3">
-            <div>
-              <div className="text-[10px] font-semibold uppercase tracking-[0.16em] text-neutral-500">
-                {storyline.subjectType} storyline{storyline.latestRound ? ` · Through round ${storyline.latestRound}` : ''}
-              </div>
-              <h3 className="mt-1 text-base font-bold text-neutral-100">{storyline.title}</h3>
-            </div>
-            <span className={`rounded px-2 py-1 text-[10px] font-semibold ${
-              storyline.status === 'Escalating'
-                ? 'bg-red-950/60 text-red-300'
-                : storyline.status === 'Developing'
-                  ? 'bg-amber-950/60 text-amber-300'
-                  : 'bg-blue-950/60 text-blue-300'
-            }`}>
-              {storyline.status}
-            </span>
-          </div>
-          <p className="mt-2 text-xs leading-relaxed text-neutral-400">{storyline.summary}</p>
-          <div className="mt-4 space-y-2">
-            {storyline.chapters.slice(0, 4).map((chapter, index) => (
-              <div key={chapter.id} className="rounded border border-neutral-800 bg-neutral-950/55 p-3">
-                <div className="flex items-center justify-between gap-3">
-                  <div className="text-xs font-semibold text-neutral-200">{chapter.headline}</div>
-                  <span className="shrink-0 text-[10px] text-neutral-600">
-                    Chapter {storyline.chapters.length - index}{chapter.round != null ? ` · R${chapter.round}` : ''}
-                  </span>
-                </div>
-                {chapter.body && <p className="mt-1 text-[11px] leading-relaxed text-neutral-500">{chapter.body}</p>}
-              </div>
-            ))}
-          </div>
-          {storyline.chapters.length > 4 && (
-            <div className="mt-2 text-[10px] text-neutral-600">{storyline.chapters.length - 4} earlier chapters remain in the searchable feed.</div>
-          )}
-        </article>
-      ))}
-    </div>
-  );
+function EmptyState({ children }: { children: React.ReactNode }) {
+  return <div className="ui-inbox-empty">{children}</div>;
 }
