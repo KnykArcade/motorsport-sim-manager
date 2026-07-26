@@ -1,6 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import type { JobOffer } from '../types/principalTypes';
-import { PRINCIPAL_COMMAND_TABS, PRINCIPAL_OFFERS_PER_PAGE, principalJobOfferPage } from './teamPrincipalViewModel';
+import {
+  PRINCIPAL_COMMAND_TABS,
+  PRINCIPAL_OFFERS_PER_PAGE,
+  principalJobOfferPage,
+  selectedPrincipalJobOffer,
+} from './teamPrincipalViewModel';
 
 function offer(index: number): JobOffer {
   return {
@@ -29,5 +34,12 @@ describe('Team Principal command center model', () => {
     expect(principalJobOfferPage(offers, 1).map((entry) => entry.id)).toEqual(['offer-3', 'offer-4', 'offer-5']);
     expect(principalJobOfferPage(offers, 99).map((entry) => entry.id)).toEqual(['offer-6', 'offer-7']);
     expect(principalJobOfferPage(offers, -1).map((entry) => entry.id)).toEqual(['offer-0', 'offer-1', 'offer-2']);
+  });
+
+  it('keeps a selected offer visible and falls back to the first current offer', () => {
+    const offers = [offer(1), offer(2)];
+    expect(selectedPrincipalJobOffer(offers, 'offer-2')).toBe(offers[1]);
+    expect(selectedPrincipalJobOffer(offers, 'missing')).toBe(offers[0]);
+    expect(selectedPrincipalJobOffer([], 'missing')).toBeUndefined();
   });
 });

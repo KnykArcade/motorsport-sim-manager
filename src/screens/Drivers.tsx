@@ -1,16 +1,22 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useGame } from '../game/GameContext';
-import { Panel } from '../components/Panel';
 import { Button } from '../components/Button';
 import {
-  MetricStrip,
   WorkspaceBody,
   WorkspaceHeader,
-  WorkspaceMetric,
   WorkspaceScreen,
   WorkspaceTabs,
 } from '../components/workspace/Workspace';
+import {
+  FmDecisionBar,
+  FmKeyValue,
+  FmListButton,
+  FmPane,
+  FmPaneBody,
+  FmPaneHeader,
+  FmWorkspaceGrid,
+} from '../components/workspace/FmPane';
 import { DriverDossierButton } from '../components/driverCards/DriverDossier';
 import { ScoutingWidget } from '../components/scouting/ScoutingWidget';
 import { formatMoney, ratingColor } from '../components/ui';
@@ -22,10 +28,10 @@ import {
   teamById,
 } from '../game/careerState';
 import {
-  DRIVER_DIRECTORY_PAGE_SIZE,
   DRIVERS_TABS,
   driverDirectoryPage,
   driverDirectoryPageCount,
+  selectedDriver,
   type DriversTab,
 } from './driversViewModel';
 
@@ -35,6 +41,7 @@ export function Drivers() {
   const [tab, setTab] = useState<DriversTab>('lineup');
   const [directoryPage, setDirectoryPage] = useState(0);
   const [driverSort, setDriverSort] = useState<DriverSort>({ key: 'overall', direction: 'desc' });
+  const [selectedDriverId, setSelectedDriverId] = useState<string>();
   if (!state) return null;
 
   const teamName = (id: string) => state.teams.find((t) => t.id === id)?.name ?? id;
@@ -70,215 +77,182 @@ export function Drivers() {
         ? `${item.label} (${reserves.length})`
         : `${item.label} (${ordered.length})`,
   }));
+  const driversInView = tab === 'lineup'
+    ? sortedRaceSeats
+    : tab === 'reserves'
+      ? sortedReserves
+      : visibleDirectoryDrivers;
+  const selected = selectedDriver(driversInView, selectedDriverId);
+  const selectedIsPlayer = selected?.teamId === state.selectedTeamId;
+  const selectedSeatIndex = selected ? raceSeats.findIndex((driver) => driver.id === selected.id) : -1;
+  const selectedRole = selectedSeatIndex >= 0
+    ? `Car ${selectedSeatIndex + 1}`
+    : selected?.contractType === 'third'
+      ? 'Third driver'
+      : selected?.contractType === 'reserve' || selected?.contractType === 'test'
+        ? 'Reserve / test'
+        : 'Grid driver';
+  const setDriversTab = (next: DriversTab) => {
+    setTab(next);
+    setSelectedDriverId(undefined);
+    if (next === 'directory') setDirectoryPage(0);
+  };
 
   return (
-    <WorkspaceScreen className="era-feature-screen era-drivers">
+    <WorkspaceScreen className="era-feature-screen era-drivers ui-team-people-screen">
       <WorkspaceHeader
         eyebrow="Recruitment center"
         title="Drivers"
         subtitle={`${playerTeam?.name ?? 'Team'} · lineup, contracts, reserves, and grid directory`}
       />
+      <WorkspaceTabs items={driverTabs} active={tab} onChange={setDriversTab} ariaLabel="Driver roster sections" />
 
-      <MetricStrip>
-        <WorkspaceMetric label="Race seats" value={`${raceSeats.length} / 2`} detail={raceSeats.length >= 2 ? 'Lineup complete' : 'Action required'} />
-        <WorkspaceMetric label="Reserve drivers" value={reserves.length} detail="Third, reserve, and test roles" />
-        <WorkspaceMetric label="Expiring contracts" value={expiringContracts} detail="One season or less remaining" />
-        <WorkspaceMetric label="Driver budget" value={formatMoney(teamBudget)} detail="Available team balance" />
-      </MetricStrip>
-
-      <WorkspaceTabs items={driverTabs} active={tab} onChange={setTab} ariaLabel="Driver roster sections" />
-
-      <WorkspaceBody>
-      <div className="ui-decision-strip flex flex-wrap items-center justify-between gap-2 rounded-lg border px-3 py-2.5">
-        <div className="flex min-w-0 items-center gap-2 text-xs">
-          <span className="ui-decision-strip-pulse" aria-hidden="true" />
-          <div className="min-w-0">
-            <div className="font-semibold text-neutral-100">Roster operations desk</div>
-            <div className="truncate text-neutral-400">
-              {raceSeats.length < 2
-                ? `Action required: ${2 - raceSeats.length} race seat${2 - raceSeats.length === 1 ? '' : 's'} still open.`
-                : expiringContracts > 0
-                  ? `${expiringContracts} contract${expiringContracts === 1 ? '' : 's'} need attention before the next signing window.`
-                  : 'Race lineup is complete and no immediate contract review is due.'}
-            </div>
-          </div>
-        </div>
-        <span className="shrink-0 text-[10px] font-semibold uppercase tracking-wide text-neutral-500">
-          {raceSeats.length}/2 race seats filled
-        </span>
-      </div>
-
-      {tab === 'lineup' && playerTeam && (
-        <Panel className="ring-1 ring-amber-500/60">
-          <div className="mb-3 flex items-center justify-between">
-            <h2 className="text-lg font-semibold text-neutral-100">
-              Your Race Lineup — {playerTeam.name}
-            </h2>
-            <span className="text-xs text-neutral-500">Only two cars per team race</span>
-          </div>
-          <DriverRosterTable
-            state={state}
-            drivers={sortedRaceSeats}
-            sort={driverSort}
-            onSort={(key) => setDriverSort((current) => current.key === key
-              ? { key, direction: current.direction === 'asc' ? 'desc' : 'asc' }
-              : { key, direction: 'desc' })}
-            seatLabel={(driver) => `Car ${raceSeats.findIndex((entry) => entry.id === driver.id) + 1}`}
-            context={(driver) => `Car ${raceSeats.findIndex((entry) => entry.id === driver.id) + 1} - ${playerTeam.name}`}
-            focus="relationship"
-            canNegotiate={canNegotiateContracts}
-            latestContractOffer={latestContractOffer}
-            onOpenNegotiation={openNegotiation}
-          />
-
-          {contractOfferNews.length > 0 && (
-            <div className="mt-4 rounded border border-neutral-800 bg-neutral-950/45 p-3">
-              <div className="mb-2 text-xs font-semibold uppercase tracking-wide text-neutral-400">Recent Contract Responses</div>
-              <div className="space-y-1.5">
-                {contractOfferNews.slice(0, 3).map((item) => (
-                  <div key={item.id} className="flex items-start justify-between gap-3 text-xs">
-                    <span className={item.id.includes('-accepted-') ? 'font-semibold text-green-300' : 'font-semibold text-red-300'}>
-                      {item.headline}
-                    </span>
-                    <span className="shrink-0 text-neutral-500">News Center</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-        </Panel>
-      )}
-
-      {tab === 'reserves' && playerTeam && (
-        <Panel title={`Reserve Drivers — ${playerTeam.name}`}>
-          {reserves.length > 0 ? (
-            <DriverRosterTable
-              state={state}
-              drivers={sortedReserves}
-              sort={driverSort}
-              onSort={(key) => setDriverSort((current) => current.key === key
-                ? { key, direction: current.direction === 'asc' ? 'desc' : 'asc' }
-                : { key, direction: 'desc' })}
-              seatLabel={(driver) => driver.contractType === 'third' ? '3rd driver' : 'Reserve'}
-              context={() => `Reserve - ${playerTeam.name}`}
-              focus="development"
-              canNegotiate={canNegotiateContracts}
-              latestContractOffer={latestContractOffer}
-              onOpenNegotiation={openNegotiation}
-              reserveActions={(driver) => [0, 1].map((seat) => (
-                <Button
-                  key={seat}
-                  variant="ghost"
-                  onClick={() => dispatch({ type: 'SWAP_RACE_DRIVER', seatIndex: seat, reserveDriverId: driver.id })}
+      <WorkspaceBody className="overflow-hidden">
+        <FmWorkspaceGrid columns="three">
+          <FmPane>
+            <FmPaneHeader title={tab === 'lineup' ? 'Race Lineup' : tab === 'reserves' ? 'Reserve Drivers' : 'Grid Directory'} meta={`${driversInView.length} in view`} />
+            <div className="ui-team-list-tools">
+              <label>
+                Sort
+                <select
+                  value={driverSort.key}
+                  onChange={(event) => setDriverSort({ key: event.target.value as DriverSortKey, direction: event.target.value === 'name' || event.target.value === 'number' ? 'asc' : 'desc' })}
                 >
-                  → Car {seat + 1}
-                </Button>
+                  <option value="overall">Overall</option>
+                  <option value="name">Name</option>
+                  <option value="number">Number</option>
+                  <option value="morale">Morale</option>
+                  <option value="confidence">Confidence</option>
+                </select>
+              </label>
+              <button type="button" onClick={() => setDriverSort((current) => ({ ...current, direction: current.direction === 'asc' ? 'desc' : 'asc' }))}>
+                {driverSort.direction === 'asc' ? 'Ascending' : 'Descending'}
+              </button>
+            </div>
+            <FmPaneBody className="overflow-auto">
+              {driversInView.map((driver) => (
+                <FmListButton key={driver.id} active={selected?.id === driver.id} onClick={() => setSelectedDriverId(driver.id)}>
+                  <span className="ui-news-list-source">#{driver.number} · {teamName(driver.teamId)}</span>
+                  <strong><i style={{ backgroundColor: teamColor(driver.teamId) }} />{driver.name}</strong>
+                  <span>OVR {readoutForDriverRating(state, driver, 'overall').label} · Morale {driver.morale.toFixed(0)}</span>
+                  <small>{driver.teamId === state.selectedTeamId ? (raceSeats.some((entry) => entry.id === driver.id) ? 'Race driver' : 'Reserve / test') : 'Rival driver'}</small>
+                </FmListButton>
               ))}
-            />
-          ) : (
-            <div className="rounded border border-dashed border-neutral-700 px-4 py-8 text-center text-sm text-neutral-500">
-              No reserve or test drivers are currently signed.
-            </div>
-          )}
-        </Panel>
-      )}
+              {driversInView.length === 0 && <div className="ui-inbox-empty">No drivers are available in this section.</div>}
+            </FmPaneBody>
+            {tab === 'directory' && (
+              <div className="ui-team-list-pagination">
+                <button type="button" onClick={() => { setDirectoryPage(Math.max(0, safeDirectoryPage - 1)); setSelectedDriverId(undefined); }} disabled={safeDirectoryPage === 0}>Previous</button>
+                <span>{safeDirectoryPage + 1} / {directoryPageCount}</span>
+                <button type="button" onClick={() => { setDirectoryPage(Math.min(directoryPageCount - 1, safeDirectoryPage + 1)); setSelectedDriverId(undefined); }} disabled={safeDirectoryPage >= directoryPageCount - 1}>Next</button>
+              </div>
+            )}
+          </FmPane>
 
-      {tab === 'directory' && (
-        <>
-          <Panel title="Grid Directory" className="mb-3">
-            <div className="overflow-x-auto">
-              <table className="w-full border-collapse text-sm">
-                <thead>
-                  <tr className="border-b border-neutral-800">
-                    <th className="px-2 py-1.5 text-left"><DriverSortHeader label="#" sortKey="number" sort={driverSort} onSort={(key) => setDriverSort((current) => current.key === key ? { key, direction: current.direction === 'asc' ? 'desc' : 'asc' } : { key, direction: 'asc' })} /></th>
-                    <th className="px-2 py-1.5 text-left"><DriverSortHeader label="Driver" sortKey="name" sort={driverSort} onSort={(key) => setDriverSort((current) => current.key === key ? { key, direction: current.direction === 'asc' ? 'desc' : 'asc' } : { key, direction: 'asc' })} /></th>
-                    <th className="px-2 py-1.5 text-left">Team</th>
-                    <th className="px-2 py-1.5 text-right"><DriverSortHeader label="OVR" sortKey="overall" sort={driverSort} onSort={(key) => setDriverSort((current) => current.key === key ? { key, direction: current.direction === 'asc' ? 'desc' : 'asc' } : { key, direction: 'desc' })} /></th>
-                    <th className="px-2 py-1.5 text-right">Qual</th>
-                    <th className="px-2 py-1.5 text-right">Pace</th>
-                    <th className="px-2 py-1.5 text-right">Mor</th>
-                    <th className="px-2 py-1.5 text-right">Con</th>
-                    <th className="px-2 py-1.5 text-left">Intel</th>
-                    <th className="px-2 py-1.5 text-right">Card</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {visibleDirectoryDrivers.map((d) => {
-                    const isPlayer = d.teamId === state.selectedTeamId;
-                    return (
-                      <tr key={d.id} className={`border-b border-neutral-900 ${isPlayer ? 'bg-amber-500/5' : ''}`}>
-                        <td className="px-2 py-1.5 text-left tabular-nums text-neutral-400">
-                          <span className="inline-flex items-center gap-2">
-                            <span className="h-4 w-1 shrink-0 rounded-sm" style={{ backgroundColor: teamColor(d.teamId) }} />
-                            {d.number}
-                          </span>
-                        </td>
-                        <td className="px-2 py-1.5 text-left font-semibold text-neutral-100">{d.name}</td>
-                        <td className="px-2 py-1.5 text-left text-xs text-neutral-400">{teamName(d.teamId)}</td>
-                        <RatingCell readout={readoutForDriverRating(state, d, 'overall')} />
-                        <RatingCell readout={readoutForDriverRating(state, d, 'qualifying')} />
-                        <RatingCell readout={readoutForDriverRating(state, d, 'racePace')} />
-                        <td className="px-2 py-1.5 text-right tabular-nums font-semibold" style={{ color: ratingColor(d.morale) }}>{d.morale.toFixed(0)}</td>
-                        <td className="px-2 py-1.5 text-right tabular-nums font-semibold" style={{ color: ratingColor(d.confidence) }}>{d.confidence.toFixed(0)}</td>
-                        <td className="px-2 py-1.5 text-left">
-                          {isPlayer ? (
-                            <span className="text-xs text-neutral-600">—</span>
-                          ) : (
-                            <ScoutingWidget target={driverScoutTarget(d)} entityType="Driver" compact />
-                          )}
-                        </td>
-                        <td className="px-2 py-1.5 text-right">
-                          <DriverDossierButton
-                            state={state}
-                            subject={{ type: 'driver', driver: d }}
-                            context={teamName(d.teamId)}
-                            focus={isPlayer ? 'relationship' : 'identity'}
-                          />
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
-          </Panel>
-          <div className="flex items-center justify-between gap-3 rounded-lg border border-neutral-800 bg-neutral-950/60 px-3 py-2">
-            <Button
-              variant="secondary"
-              className="px-3 py-1 text-xs"
-              onClick={() => setDirectoryPage(Math.max(0, safeDirectoryPage - 1))}
-              disabled={safeDirectoryPage === 0}
-            >
-              Previous
-            </Button>
-            <span className="text-xs text-neutral-500">
-              Drivers {ordered.length ? safeDirectoryPage * DRIVER_DIRECTORY_PAGE_SIZE + 1 : 0}–
-              {Math.min(ordered.length, (safeDirectoryPage + 1) * DRIVER_DIRECTORY_PAGE_SIZE)} of {ordered.length} ·
-              Page {safeDirectoryPage + 1} of {directoryPageCount}
-            </span>
-            <Button
-              variant="secondary"
-              className="px-3 py-1 text-xs"
-              onClick={() => setDirectoryPage(Math.min(directoryPageCount - 1, safeDirectoryPage + 1))}
-              disabled={safeDirectoryPage >= directoryPageCount - 1}
-            >
-              Next
-            </Button>
-          </div>
-        </>
-      )}
+          <FmPane className="ui-driver-profile-pane">
+            {selected ? (
+              <>
+                <FmPaneHeader title={`#${selected.number} ${selected.name}`} meta={`${selectedRole} · ${teamName(selected.teamId)}`} />
+                <FmPaneBody className="ui-driver-profile-body overflow-auto">
+                  <section className="ui-profile-identity-strip">
+                    <div className="ui-profile-number" style={{ borderColor: teamColor(selected.teamId) }}>{selected.number}</div>
+                    <div>
+                      <span>{selectedRole}</span>
+                      <h2>{selected.name}</h2>
+                      <p>{teamName(selected.teamId)} · {selected.contractYearsRemaining ?? 1} year contract</p>
+                    </div>
+                    <DriverDossierButton
+                      state={state}
+                      subject={{ type: 'driver', driver: selected }}
+                      context={`${selectedRole} · ${teamName(selected.teamId)}`}
+                      focus={selectedIsPlayer ? (tab === 'reserves' ? 'development' : 'relationship') : 'identity'}
+                    />
+                  </section>
+                  <section>
+                    <h3 className="ui-fm-section-label">Driver attributes</h3>
+                    <div className="ui-driver-attribute-grid">
+                      <DriverAttribute label="Overall" value={readoutForDriverRating(state, selected, 'overall').label} score={selectedIsPlayer ? selected.ratings.overall : undefined} />
+                      <DriverAttribute label="Qualifying" value={readoutForDriverRating(state, selected, 'qualifying').label} score={selectedIsPlayer ? selected.ratings.qualifying : undefined} />
+                      <DriverAttribute label="Race pace" value={readoutForDriverRating(state, selected, 'racePace').label} score={selectedIsPlayer ? selected.ratings.racePace : undefined} />
+                      <DriverAttribute label="Morale" value={selected.morale.toFixed(0)} score={selected.morale} />
+                      <DriverAttribute label="Confidence" value={selected.confidence.toFixed(0)} score={selected.confidence} />
+                      <DriverAttribute label="Composure" value={selected.ratings.composure.toFixed(0)} score={selected.ratings.composure} />
+                    </div>
+                  </section>
+                  {selectedIsPlayer && (
+                    <section className="ui-driver-contract-block">
+                      <h3 className="ui-fm-section-label">Contract and role</h3>
+                      <ContractExtensionControls driver={selected} canNegotiate={canNegotiateContracts} latestOffer={latestContractOffer(selected.id)} onOpen={openNegotiation} />
+                      {tab === 'reserves' && (
+                        <div className="ui-driver-seat-actions">
+                          {[0, 1].map((seat) => (
+                            <Button key={seat} variant="ghost" onClick={() => dispatch({ type: 'SWAP_RACE_DRIVER', seatIndex: seat, reserveDriverId: selected.id })}>Move to Car {seat + 1}</Button>
+                          ))}
+                        </div>
+                      )}
+                    </section>
+                  )}
+                  {!selectedIsPlayer && (
+                    <section>
+                      <h3 className="ui-fm-section-label">Recruitment intelligence</h3>
+                      <ScoutingWidget target={driverScoutTarget(selected)} entityType="Driver" compact />
+                    </section>
+                  )}
+                </FmPaneBody>
+              </>
+            ) : <FmPaneBody className="ui-inbox-empty">Select a driver to open their profile.</FmPaneBody>}
+          </FmPane>
+
+          <FmPane>
+            <FmPaneHeader title="Driver Context" meta={playerTeam?.name ?? 'Team'} />
+            <FmPaneBody className="ui-team-context-pane overflow-auto">
+              <section>
+                <h3>Roster status</h3>
+                <FmKeyValue label="Race seats" value={`${raceSeats.length}/2`} />
+                <FmKeyValue label="Reserves" value={reserves.length} />
+                <FmKeyValue label="Expiring" value={expiringContracts} />
+                <FmKeyValue label="Budget" value={formatMoney(teamBudget)} />
+              </section>
+              {selected && (
+                <>
+                  <section>
+                    <h3>Selected driver</h3>
+                    <FmKeyValue label="Role" value={selectedRole} />
+                    <FmKeyValue label="Contract" value={`${selected.contractYearsRemaining ?? 1} yr`} />
+                    <FmKeyValue label="Morale" value={selected.morale.toFixed(0)} />
+                    <FmKeyValue label="Confidence" value={selected.confidence.toFixed(0)} />
+                  </section>
+                  <section>
+                    <h3>Next action</h3>
+                    <p>{selectedIsPlayer ? 'Review the driver relationship, development plan, or contract position.' : 'Use the scouting report before making a recruitment decision.'}</p>
+                    {selectedIsPlayer && <button type="button" onClick={() => navigate('/curves')}>Open development plans →</button>}
+                  </section>
+                </>
+              )}
+            </FmPaneBody>
+          </FmPane>
+        </FmWorkspaceGrid>
       </WorkspaceBody>
+      <FmDecisionBar>
+        <strong className="text-neutral-200">
+          {raceSeats.length < 2
+            ? `${2 - raceSeats.length} race seat${2 - raceSeats.length === 1 ? '' : 's'} still open`
+            : expiringContracts
+              ? `${expiringContracts} contract${expiringContracts === 1 ? '' : 's'} need attention`
+              : 'Race lineup complete'}
+        </strong>
+        <span> · {raceSeats.length}/2 seats filled</span>
+      </FmDecisionBar>
     </WorkspaceScreen>
   );
 }
 
-function RatingCell({ readout }: { readout: ReturnType<typeof readoutForDriverRating> }) {
-  const color = readout.value != null ? ratingColor(readout.value) : '#6b7280';
+function DriverAttribute({ label, value, score }: { label: string; value: string; score?: number }) {
   return (
-    <td className="px-2 py-1.5 text-right tabular-nums font-semibold" style={{ color }}>
-      {readout.label}
-    </td>
+    <div>
+      <span>{label}</span>
+      <strong style={{ color: score == null ? undefined : ratingColor(score) }}>{value}</strong>
+    </div>
   );
 }
 
@@ -300,99 +274,6 @@ function compareDrivers(left: RosterDriver, right: RosterDriver, sort: DriverSor
   if (leftValue < rightValue) return -1 * direction;
   if (leftValue > rightValue) return direction;
   return left.name.localeCompare(right.name);
-}
-
-function DriverRosterTable({
-  state,
-  drivers,
-  sort,
-  onSort,
-  seatLabel,
-  context,
-  focus,
-  canNegotiate,
-  latestContractOffer,
-  onOpenNegotiation,
-  reserveActions,
-}: {
-  state: NonNullable<ReturnType<typeof useGame>['state']>;
-  drivers: RosterDriver[];
-  sort: DriverSort;
-  onSort: (key: DriverSortKey) => void;
-  seatLabel: (driver: RosterDriver) => string;
-  context: (driver: RosterDriver) => string;
-  focus: 'relationship' | 'development';
-  canNegotiate: boolean;
-  latestContractOffer: (driverId: string) => NonNullable<ReturnType<typeof useGame>['state']>['news'][number] | undefined;
-  onOpenNegotiation: (driverId: string) => void;
-  reserveActions?: (driver: RosterDriver) => React.ReactNode;
-}) {
-  return (
-    <div className="overflow-x-auto rounded border border-neutral-800">
-      <table className="w-full min-w-[760px] border-collapse text-xs">
-        <thead className="bg-neutral-900/70 text-left text-[10px] uppercase tracking-wide text-neutral-500">
-          <tr>
-            <th className="px-2 py-2">Seat</th>
-            <DriverSortHeader label="Driver" sortKey="name" sort={sort} onSort={onSort} />
-            <DriverSortHeader label="OVR" sortKey="overall" sort={sort} onSort={onSort} />
-            <DriverSortHeader label="Morale" sortKey="morale" sort={sort} onSort={onSort} />
-            <DriverSortHeader label="Confidence" sortKey="confidence" sort={sort} onSort={onSort} />
-            <th className="px-2 py-2">Contract</th>
-            <th className="px-2 py-2">Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {drivers.map((driver) => (
-            <tr key={driver.id} className="border-t border-neutral-800/70 align-middle hover:bg-neutral-900/60">
-              <td className="px-2 py-2 text-neutral-400">{seatLabel(driver)}</td>
-              <td className="px-2 py-2">
-                <div className="flex items-center gap-2">
-                  <DriverDossierButton state={state} subject={{ type: 'driver', driver }} context={context(driver)} focus={focus} />
-                  <span className="font-semibold text-neutral-100">#{driver.number} {driver.name}</span>
-                </div>
-              </td>
-              <td className="px-2 py-2 tabular-nums text-amber-300">{driver.ratings.overall.toFixed(1)}</td>
-              <td className="px-2 py-2 tabular-nums" style={{ color: ratingColor(driver.morale) }}>{driver.morale.toFixed(0)}</td>
-              <td className="px-2 py-2 tabular-nums" style={{ color: ratingColor(driver.confidence) }}>{driver.confidence.toFixed(0)}</td>
-              <td className="px-2 py-2">
-                <ContractExtensionControls
-                  driver={driver}
-                  canNegotiate={canNegotiate}
-                  latestOffer={latestContractOffer(driver.id)}
-                  onOpen={onOpenNegotiation}
-                />
-              </td>
-              <td className="px-2 py-2">
-                <div className="flex flex-wrap gap-1">{reserveActions?.(driver)}</div>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-      {drivers.length === 0 && <div className="px-3 py-8 text-center text-sm text-neutral-500">No drivers are currently listed.</div>}
-    </div>
-  );
-}
-
-function DriverSortHeader({
-  label,
-  sortKey,
-  sort,
-  onSort,
-}: {
-  label: string;
-  sortKey: DriverSortKey;
-  sort: DriverSort;
-  onSort: (key: DriverSortKey) => void;
-}) {
-  const active = sort.key === sortKey;
-  return (
-    <th className="px-2 py-2">
-      <button type="button" className="inline-flex items-center gap-1 hover:text-neutral-200" onClick={() => onSort(sortKey)}>
-        {label}<span className="text-[9px]">{active ? (sort.direction === 'asc' ? '▲' : '▼') : '↕'}</span>
-      </button>
-    </th>
-  );
 }
 
 function ContractExtensionControls({

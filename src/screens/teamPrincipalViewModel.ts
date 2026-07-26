@@ -17,3 +17,10 @@ export function principalJobOfferPage(offers: JobOffer[], page: number): JobOffe
   const safePage = Math.max(0, Math.min(lastPage, page));
   return offers.slice(safePage * PRINCIPAL_OFFERS_PER_PAGE, (safePage + 1) * PRINCIPAL_OFFERS_PER_PAGE);
 }
+
+export function selectedPrincipalJobOffer(
+  offers: JobOffer[],
+  selectedId?: string,
+): JobOffer | undefined {
+  return offers.find((offer) => offer.id === selectedId) ?? offers[0];
+}

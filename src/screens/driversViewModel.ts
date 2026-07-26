@@ -21,3 +21,9 @@ export function driverDirectoryPage<T>(drivers: T[], page: number): T[] {
   );
 }
 
+export function selectedDriver<T extends { id: string }>(
+  drivers: T[],
+  selectedId?: string,
+): T | undefined {
+  return drivers.find((driver) => driver.id === selectedId) ?? drivers[0];
+}
