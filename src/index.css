@@ -5267,3 +5267,744 @@ body {
     grid-template-columns: minmax(210px, 0.72fr) minmax(360px, 1.48fr) minmax(205px, 0.68fr);
   }
 }
+
+/* Phase 6: FM-style championships, records, and archive workspaces. */
+.ui-main-content[data-route="/standings"],
+.ui-main-content[data-route="/history"],
+.ui-main-content[data-route="/records"] {
+  overflow: hidden;
+  padding: 0;
+}
+
+.ui-main-content[data-route="/standings"] .ui-workspace-screen,
+.ui-main-content[data-route="/history"] .ui-workspace-screen,
+.ui-main-content[data-route="/records"] .ui-workspace-screen {
+  height: 100%;
+  gap: 0;
+  overflow: hidden;
+}
+
+.ui-main-content[data-route="/standings"] .ui-workspace-header,
+.ui-main-content[data-route="/history"] .ui-workspace-header,
+.ui-main-content[data-route="/records"] .ui-workspace-header {
+  padding: 0.55rem 0.75rem;
+}
+
+.ui-championship-body,
+.ui-race-history-body,
+.ui-records-body {
+  overflow: hidden;
+}
+
+.ui-championship-selector {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  color: #85858c;
+  font-size: 0.52rem;
+  font-weight: 800;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+}
+
+.ui-championship-selector select {
+  border: 1px solid #48484e;
+  border-radius: 1px;
+  background: #18181a;
+  padding: 0.36rem 0.5rem;
+  color: #d8d8dc;
+  font-size: 0.57rem;
+  font-weight: 700;
+}
+
+.ui-championship-grid,
+.ui-race-history-grid,
+.ui-records-grid,
+.ui-season-archive-grid,
+.ui-legacy-grid {
+  height: 100%;
+}
+
+.ui-championship-grid.is-three {
+  grid-template-columns: minmax(205px, 0.66fr) minmax(430px, 1.65fr) minmax(220px, 0.7fr);
+}
+
+.ui-championship-list-pane .ui-fm-list-button span,
+.ui-race-archive-list .ui-fm-list-button span,
+.ui-record-category-pane .ui-fm-list-button span,
+.ui-career-record-grid .ui-fm-list-button span,
+.ui-season-archive-grid .ui-fm-list-button span,
+.ui-world-season-grid .ui-fm-list-button span,
+.ui-legacy-timeline-pane .ui-fm-list-button span,
+.ui-world-grid-layout .ui-fm-list-button span {
+  display: block;
+  color: #85858c;
+  font-size: 0.49rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.ui-championship-list-pane .ui-fm-list-button strong,
+.ui-race-archive-list .ui-fm-list-button strong,
+.ui-record-category-pane .ui-fm-list-button strong,
+.ui-career-record-grid .ui-fm-list-button strong,
+.ui-season-archive-grid .ui-fm-list-button strong,
+.ui-world-season-grid .ui-fm-list-button strong,
+.ui-legacy-timeline-pane .ui-fm-list-button strong,
+.ui-world-grid-layout .ui-fm-list-button strong {
+  display: block;
+  margin-top: 0.12rem;
+  color: #e0e0e3;
+  font-size: 0.62rem;
+}
+
+.ui-championship-list-pane .ui-fm-list-button small,
+.ui-race-archive-list .ui-fm-list-button small,
+.ui-record-category-pane .ui-fm-list-button small,
+.ui-career-record-grid .ui-fm-list-button small,
+.ui-season-archive-grid .ui-fm-list-button small,
+.ui-world-season-grid .ui-fm-list-button small,
+.ui-legacy-timeline-pane .ui-fm-list-button small,
+.ui-world-grid-layout .ui-fm-list-button small {
+  display: block;
+  margin-top: 0.14rem;
+  color: #74747b;
+  font-size: 0.5rem;
+}
+
+.ui-championship-list-pane .ui-fm-list-button.is-player:not(.is-active) {
+  border-left-color: #d49a36;
+}
+
+.ui-championship-table-pane,
+.ui-race-archive-detail,
+.ui-record-ranking-pane,
+.ui-season-detail-pane,
+.ui-world-season-detail,
+.ui-career-detail-pane {
+  background: #252528;
+}
+
+.ui-championship-table-pane > :last-child,
+.ui-race-archive-detail > :last-child {
+  flex: 0 0 auto;
+  border-top: 1px solid #3a3a3f;
+  background: #1d1d20;
+  padding: 0.42rem 0.6rem;
+}
+
+.ui-championship-context-pane .ui-fm-pane-body,
+.ui-race-archive-context .ui-fm-pane-body,
+.ui-record-holder-pane .ui-fm-pane-body,
+.ui-career-detail-pane .ui-fm-pane-body,
+.ui-legacy-detail-pane .ui-fm-pane-body {
+  overflow: auto;
+  padding: 0.7rem;
+}
+
+.ui-championship-profile,
+.ui-race-dossier-head,
+.ui-record-profile {
+  margin-bottom: 0.65rem;
+  border-left: 3px solid #bd3558;
+  background: #29292d;
+  padding: 0.6rem;
+}
+
+.ui-championship-profile span,
+.ui-race-dossier-head span,
+.ui-record-profile span {
+  display: block;
+  color: #898990;
+  font-size: 0.49rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.ui-championship-profile strong,
+.ui-race-dossier-head strong,
+.ui-record-profile strong {
+  display: block;
+  margin-top: 0.12rem;
+  color: #eeeeef;
+  font-size: 0.82rem;
+}
+
+.ui-championship-profile small,
+.ui-race-dossier-head small,
+.ui-record-profile small {
+  display: block;
+  margin-top: 0.12rem;
+  color: #8d8d94;
+  font-size: 0.53rem;
+}
+
+.ui-championship-progress {
+  margin-top: 0.8rem;
+  color: #85858c;
+  font-size: 0.52rem;
+}
+
+.ui-championship-progress > strong {
+  float: right;
+  color: #d8d8dc;
+}
+
+.ui-championship-progress > div,
+.ui-legacy-significance {
+  height: 4px;
+  margin-top: 0.35rem;
+  overflow: hidden;
+  background: #3b3b40;
+}
+
+.ui-championship-progress i,
+.ui-legacy-significance i {
+  display: block;
+  height: 100%;
+  background: #bd3558;
+}
+
+.ui-championship-world-body {
+  overflow: auto;
+  padding: 0.6rem;
+}
+
+.ui-championship-world-grid {
+  display: grid;
+  grid-template-columns: minmax(280px, 0.9fr) minmax(420px, 1.4fr) minmax(280px, 0.9fr);
+  gap: 1px;
+  min-height: 100%;
+  background: #111113;
+}
+
+.ui-race-history-grid.is-three {
+  grid-template-columns: minmax(210px, 0.65fr) minmax(440px, 1.65fr) minmax(225px, 0.7fr);
+}
+
+.ui-race-story-filter {
+  display: flex;
+  gap: 1px;
+  background: #111113;
+}
+
+.ui-race-story-filter button {
+  background: #202023;
+  padding: 0.32rem 0.45rem;
+  color: #85858c;
+  font-size: 0.5rem;
+  font-weight: 750;
+}
+
+.ui-race-story-filter button.is-active {
+  background: #7d1d36;
+  color: #fff;
+}
+
+.ui-race-story-list {
+  display: grid;
+  gap: 1px;
+  background: #343439;
+}
+
+.ui-race-story-list > div {
+  display: grid;
+  grid-template-columns: 52px minmax(0, 1fr);
+  gap: 0.55rem;
+  background: #222225;
+  padding: 0.55rem;
+}
+
+.ui-race-story-list span {
+  color: #d5a14d;
+  font-size: 0.54rem;
+  font-weight: 800;
+}
+
+.ui-race-story-list p {
+  color: #c2c2c7;
+  font-size: 0.61rem;
+  line-height: 1.5;
+}
+
+.ui-race-podium {
+  margin-top: 0.75rem;
+  border-top: 1px solid #3a3a3f;
+  padding-top: 0.65rem;
+}
+
+.ui-race-podium > span {
+  color: #85858c;
+  font-size: 0.5rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.ui-race-podium > div {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  border-bottom: 1px solid #343439;
+  padding: 0.42rem 0;
+}
+
+.ui-race-podium i {
+  color: #d7a64e;
+  font-size: 0.52rem;
+  font-style: normal;
+}
+
+.ui-race-podium strong {
+  color: #d3d3d7;
+  font-size: 0.58rem;
+}
+
+.ui-records-grid.is-three {
+  grid-template-columns: minmax(220px, 0.7fr) minmax(430px, 1.55fr) minmax(225px, 0.72fr);
+}
+
+.ui-record-scope-switch {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1px;
+  border-bottom: 1px solid #3a3a3f;
+  background: #111113;
+  padding: 0.4rem;
+}
+
+.ui-record-scope-switch button {
+  background: #242427;
+  padding: 0.38rem;
+  color: #8e8e95;
+  font-size: 0.53rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.ui-record-scope-switch button.is-active {
+  background: #7d1d36;
+  color: #fff;
+}
+
+.ui-record-table,
+.ui-archive-standings table {
+  width: 100%;
+  border-collapse: collapse;
+  color: #c8c8cd;
+  font-size: 0.58rem;
+}
+
+.ui-record-table th,
+.ui-archive-standings th {
+  border-bottom: 1px solid #48484e;
+  padding: 0.45rem;
+  color: #85858c;
+  font-size: 0.49rem;
+  font-weight: 800;
+  text-align: left;
+  text-transform: uppercase;
+}
+
+.ui-record-table td,
+.ui-archive-standings td {
+  border-bottom: 1px solid #37373c;
+  padding: 0.48rem;
+}
+
+.ui-record-table tbody tr {
+  cursor: pointer;
+}
+
+.ui-record-table tbody tr:hover {
+  background: #2b2b2f;
+}
+
+.ui-record-table tbody tr.is-selected {
+  background: #3a242b;
+  box-shadow: inset 3px 0 #d13d61;
+}
+
+.ui-record-table .is-numeric {
+  text-align: right;
+}
+
+.ui-record-table strong {
+  color: #e0e0e3;
+}
+
+.ui-record-season-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+  margin-top: 0.75rem;
+}
+
+.ui-record-season-tags span {
+  border: 1px solid #44444a;
+  background: #29292d;
+  padding: 0.2rem 0.32rem;
+  color: #9b9ba2;
+  font-size: 0.48rem;
+}
+
+.ui-career-record-grid,
+.ui-world-season-grid {
+  height: 100%;
+}
+
+.ui-career-record-grid.is-two,
+.ui-world-season-grid.is-two {
+  grid-template-columns: minmax(245px, 0.72fr) minmax(500px, 1.7fr);
+}
+
+.ui-record-dossier {
+  max-width: 560px;
+}
+
+.ui-season-archive-grid.is-three {
+  grid-template-columns: minmax(210px, 0.65fr) minmax(430px, 1.45fr) minmax(260px, 0.85fr);
+}
+
+.ui-season-champions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1px;
+  margin-bottom: 0.75rem;
+  background: #3a3a3f;
+}
+
+.ui-season-champions > div {
+  background: #29292d;
+  padding: 0.55rem;
+}
+
+.ui-season-champions span,
+.ui-world-live-events span {
+  display: block;
+  color: #85858c;
+  font-size: 0.48rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.ui-season-champions strong,
+.ui-world-live-events strong {
+  display: block;
+  margin-top: 0.13rem;
+  color: #e2e2e5;
+  font-size: 0.62rem;
+}
+
+.ui-archive-standings + .ui-archive-standings {
+  margin-top: 0.8rem;
+}
+
+.ui-archive-standings .ui-fm-section-label {
+  margin-bottom: 0.25rem;
+}
+
+.ui-season-race-list {
+  margin: 0.3rem 0 0.8rem;
+}
+
+.ui-season-race-list > div {
+  display: grid;
+  grid-template-columns: 34px minmax(0, 1fr);
+  gap: 0.4rem;
+  border-bottom: 1px solid #37373c;
+  padding: 0.38rem 0;
+}
+
+.ui-season-race-list > div > span {
+  color: #9b9ba2;
+  font-size: 0.5rem;
+}
+
+.ui-season-race-list strong,
+.ui-season-race-list small {
+  display: block;
+}
+
+.ui-season-race-list strong {
+  color: #d6d6da;
+  font-size: 0.56rem;
+}
+
+.ui-season-race-list small {
+  margin-top: 0.1rem;
+  color: #7d7d84;
+  font-size: 0.48rem;
+}
+
+.ui-season-storylines {
+  margin: 0.3rem 0 0.8rem;
+}
+
+.ui-season-storylines p {
+  border-left: 2px solid #55555b;
+  margin-bottom: 0.3rem;
+  padding: 0.3rem 0.45rem;
+  color: #9d9da4;
+  font-size: 0.54rem;
+  line-height: 1.5;
+}
+
+.ui-world-grid-layout {
+  display: grid;
+  grid-template-columns: minmax(210px, 0.62fr) minmax(520px, 1.75fr);
+  gap: 1px;
+  height: 100%;
+  overflow: hidden;
+  background: #111113;
+}
+
+.ui-world-team-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.45rem;
+}
+
+.ui-world-team-card {
+  border: 1px solid #3d3d42;
+  background: #252528;
+  padding: 0.55rem;
+}
+
+.ui-world-team-card > span {
+  color: #808087;
+  font-size: 0.47rem;
+  text-transform: uppercase;
+}
+
+.ui-world-team-card > strong {
+  display: block;
+  margin-top: 0.12rem;
+  color: #e0e0e3;
+  font-size: 0.63rem;
+}
+
+.ui-world-team-card > div {
+  border-top: 1px solid #3a3a3f;
+  margin-top: 0.38rem;
+  padding-top: 0.38rem;
+}
+
+.ui-world-team-card p,
+.ui-world-team-card small {
+  display: block;
+}
+
+.ui-world-team-card p {
+  color: #cbcbcf;
+  font-size: 0.56rem;
+}
+
+.ui-world-team-card small {
+  margin-top: 0.1rem;
+  color: #77777e;
+  font-size: 0.47rem;
+}
+
+.ui-world-team-card em {
+  display: block;
+  margin-top: 0.15rem;
+  color: #dc7d91;
+  font-size: 0.48rem;
+  font-style: normal;
+}
+
+.ui-world-movement-ledger,
+.ui-world-race-summary {
+  margin-top: 0.9rem;
+}
+
+.ui-world-movement-ledger > div:not(.ui-fm-section-label) {
+  border-bottom: 1px solid #37373c;
+  padding: 0.42rem 0;
+}
+
+.ui-world-movement-ledger span {
+  color: #7f7f86;
+  font-size: 0.47rem;
+  text-transform: uppercase;
+}
+
+.ui-world-movement-ledger p,
+.ui-world-movement-ledger > p {
+  color: #a9a9af;
+  font-size: 0.54rem;
+}
+
+.ui-world-movement-ledger strong {
+  color: #d6d6da;
+}
+
+.ui-world-live-events {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.4rem;
+  margin-bottom: 0.75rem;
+}
+
+.ui-world-season-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+  border-bottom: 1px solid #414146;
+  padding-bottom: 0.4rem;
+}
+
+.ui-world-season-heading strong {
+  color: #e2e2e5;
+  font-size: 0.66rem;
+}
+
+.ui-world-season-heading span {
+  color: #808087;
+  font-size: 0.49rem;
+  text-transform: uppercase;
+}
+
+.ui-world-live-events > div {
+  border-left: 2px solid #55555b;
+  background: #29292d;
+  padding: 0.5rem;
+}
+
+.ui-world-race-summary > div:not(.ui-fm-section-label) {
+  display: grid;
+  grid-template-columns: 34px minmax(0, 1fr) minmax(110px, 0.7fr);
+  gap: 0.45rem;
+  border-bottom: 1px solid #37373c;
+  padding: 0.36rem 0;
+  color: #85858c;
+  font-size: 0.52rem;
+}
+
+.ui-world-race-summary strong {
+  color: #d2d2d6;
+}
+
+.ui-legacy-grid.is-three {
+  grid-template-columns: minmax(215px, 0.68fr) minmax(420px, 1.45fr) minmax(245px, 0.8fr);
+}
+
+.ui-legacy-tab-list {
+  display: grid;
+  gap: 1px;
+  background: #111113;
+}
+
+.ui-legacy-tab-list button {
+  border-left: 3px solid transparent;
+  background: #222225;
+  padding: 0.55rem;
+  text-align: left;
+}
+
+.ui-legacy-tab-list button.is-active {
+  border-left-color: #d13d61;
+  background: #3a242b;
+}
+
+.ui-legacy-tab-list span,
+.ui-legacy-tab-list strong,
+.ui-legacy-tab-list small {
+  display: block;
+}
+
+.ui-legacy-tab-list span {
+  float: right;
+  color: #d4a250;
+  font-size: 0.58rem;
+  font-weight: 800;
+}
+
+.ui-legacy-tab-list strong {
+  color: #dfdfe2;
+  font-size: 0.61rem;
+}
+
+.ui-legacy-tab-list small {
+  margin-top: 0.14rem;
+  color: #77777e;
+  font-size: 0.49rem;
+}
+
+.ui-legacy-score {
+  margin: 0.6rem;
+  border: 1px solid #44444a;
+  background: #29292d;
+  padding: 0.6rem;
+}
+
+.ui-legacy-score span,
+.ui-legacy-score strong,
+.ui-legacy-score small {
+  display: block;
+}
+
+.ui-legacy-score span {
+  color: #85858c;
+  font-size: 0.48rem;
+  text-transform: uppercase;
+}
+
+.ui-legacy-score strong {
+  margin-top: 0.1rem;
+  color: #e1b45d;
+  font-size: 1.1rem;
+}
+
+.ui-legacy-score small {
+  margin-top: 0.15rem;
+  color: #74747b;
+  font-size: 0.47rem;
+}
+
+.ui-legacy-dossier > span {
+  color: #9a9aa1;
+  font-size: 0.5rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.ui-legacy-dossier > strong {
+  display: block;
+  margin-top: 0.25rem;
+  color: #ececee;
+  font-size: 0.8rem;
+}
+
+.ui-legacy-dossier > p {
+  margin: 0.55rem 0;
+  color: #a7a7ad;
+  font-size: 0.58rem;
+  line-height: 1.6;
+}
+
+@media (max-width: 1320px) {
+  .ui-championship-grid.is-three,
+  .ui-race-history-grid.is-three,
+  .ui-records-grid.is-three,
+  .ui-season-archive-grid.is-three,
+  .ui-legacy-grid.is-three {
+    grid-template-columns: minmax(200px, 0.66fr) minmax(390px, 1.5fr) minmax(205px, 0.68fr);
+  }
+
+  .ui-championship-world-grid {
+    grid-template-columns: minmax(250px, 0.85fr) minmax(390px, 1.35fr) minmax(250px, 0.85fr);
+  }
+}
+
+@media (max-width: 900px) {
+  .ui-championship-world-grid {
+    grid-template-columns: minmax(320px, 1fr);
+  }
+
+  .ui-world-team-grid {
+    grid-template-columns: minmax(260px, 1fr);
+  }
+}
