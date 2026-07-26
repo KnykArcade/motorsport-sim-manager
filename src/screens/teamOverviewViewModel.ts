@@ -28,3 +28,12 @@ export function teamOverviewPage<T>(rows: T[], page: number): T[] {
   const safePage = Math.max(0, Math.min(pageCount - 1, page));
   return rows.slice(safePage * TEAM_OVERVIEW_PAGE_SIZE, (safePage + 1) * TEAM_OVERVIEW_PAGE_SIZE);
 }
+
+export function selectedTeamOverviewRow<T extends { teamId: string; isPlayer?: boolean }>(
+  rows: T[],
+  selectedId?: string | null,
+): T | undefined {
+  return rows.find((row) => row.teamId === selectedId)
+    ?? rows.find((row) => row.isPlayer)
+    ?? rows[0];
+}

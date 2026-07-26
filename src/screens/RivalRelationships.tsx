@@ -1,32 +1,44 @@
 import { useState } from 'react';
-import { Button } from '../components/Button';
-import { Panel } from '../components/Panel';
 import { formatMoney } from '../components/ui';
-import { useGame } from '../game/GameContext';
-import { RIVAL_ACTION_COST, rivalActionContext, rivalActionUsedThisRound, rivalRelationshipLabel } from '../sim/phase18RivalRelationshipEngine';
-import type { RivalAction, RivalRelationship } from '../types/phase18Types';
-import { RivalPrincipalBriefing } from './rivals/RivalPrincipalBriefing';
-import { rivalPrincipalBrief } from './rivals/rivalPrincipalBriefViewModel';
 import {
-  MetricStrip,
+  FmKeyValue,
+  FmListButton,
+  FmPane,
+  FmPaneBody,
+  FmPaneHeader,
+  FmWorkspaceGrid,
+} from '../components/workspace/FmPane';
+import {
   WorkspaceBody,
   WorkspaceHeader,
-  WorkspaceMetric,
   WorkspaceScreen,
   WorkspaceTabs,
 } from '../components/workspace/Workspace';
+import { useGame } from '../game/GameContext';
+import {
+  RIVAL_ACTION_COST,
+  rivalActionContext,
+  rivalActionUsedThisRound,
+  rivalRelationshipLabel,
+} from '../sim/phase18RivalRelationshipEngine';
+import type { RivalAction, RivalRelationship } from '../types/phase18Types';
+import { RivalPrincipalBriefing } from './rivals/RivalPrincipalBriefing';
+import { rivalPrincipalBrief } from './rivals/rivalPrincipalBriefViewModel';
 
-type RivalTab = 'matrix' | 'dossier' | 'activity';
-const PAGE_SIZE = 6;
+type RivalTab = 'dossier' | 'actions' | 'activity';
+const PAGE_SIZE = 8;
 
 export function RivalRelationships() {
   const { state, dispatch } = useGame();
-  const [tab, setTab] = useState<RivalTab>('matrix');
+  const [tab, setTab] = useState<RivalTab>('dossier');
   const [page, setPage] = useState(0);
   const [selectedId, setSelectedId] = useState<string>();
   if (!state) return null;
+
   const playerId = state.selectedTeamId;
-  const relationships = Object.values(state.phase18?.rivalRelationships ?? {}).filter((item) => item.teamAId === playerId || item.teamBId === playerId).sort((a, b) => a.score - b.score);
+  const relationships = Object.values(state.phase18?.rivalRelationships ?? {})
+    .filter((item) => item.teamAId === playerId || item.teamBId === playerId)
+    .sort((a, b) => a.score - b.score);
   const rivalIdOf = (item: RivalRelationship) => item.teamAId === playerId ? item.teamBId : item.teamAId;
   const teamName = (id: string) => state.teams.find((team) => team.id === id)?.name ?? id;
   const selected = relationships.find((item) => rivalIdOf(item) === selectedId) ?? relationships[0];
@@ -34,75 +46,215 @@ export function RivalRelationships() {
   const budget = state.teams.find((team) => team.id === playerId)?.budget ?? 0;
   const currentRound = state.careerPhase?.currentRound ?? state.currentRaceIndex + 1;
   const pageCount = Math.max(1, Math.ceil(relationships.length / PAGE_SIZE));
-  const visible = relationships.slice(page * PAGE_SIZE, page * PAGE_SIZE + PAGE_SIZE);
-  const activity = relationships.flatMap((relationship) => relationship.history.map((event) => ({ ...event, rivalId: rivalIdOf(relationship) }))).sort((a, b) => b.seasonYear - a.seasonYear || (b.round ?? 0) - (a.round ?? 0)).slice(0, 10);
+  const safePage = Math.min(page, pageCount - 1);
+  const visible = relationships.slice(safePage * PAGE_SIZE, safePage * PAGE_SIZE + PAGE_SIZE);
+  const activity = relationships
+    .flatMap((relationship) => relationship.history.map((event) => ({ ...event, rivalId: rivalIdOf(relationship) })))
+    .sort((a, b) => b.seasonYear - a.seasonYear || (b.round ?? 0) - (a.round ?? 0));
+  const selectedActivity = selectedRivalId
+    ? activity.filter((event) => event.rivalId === selectedRivalId).slice(0, 12)
+    : [];
   const closestAlly = [...relationships].sort((a, b) => b.score - a.score)[0];
   const bitterestRival = relationships[0];
   const selectedBrief = selected && selectedRivalId
     ? rivalPrincipalBrief(state, selected, selectedRivalId)
     : undefined;
 
-  return <WorkspaceScreen>
-    <WorkspaceHeader eyebrow="People center" title="Rival Relationships" subtitle="Sporting respect, political alignment, commercial trust, and technical suspicion across the paddock" />
-    <MetricStrip>
-      <WorkspaceMetric label="Closest ally" value={closestAlly ? teamName(rivalIdOf(closestAlly)) : '—'} detail="Highest overall relationship" />
-      <WorkspaceMetric label="Bitterest rival" value={bitterestRival ? teamName(rivalIdOf(bitterestRival)) : '—'} detail="Lowest overall relationship" />
-      <WorkspaceMetric label="Technical rivals" value={relationships.filter((item) => item.tags.includes('TechnicalRival')).length} detail={`${relationships.length} tracked teams`} />
-      <WorkspaceMetric label="Open tensions" value={relationships.filter((item) => item.score <= -15).length} detail={`Action budget ${formatMoney(budget)}`} />
-    </MetricStrip>
-    <WorkspaceTabs
-      items={[{ id: 'matrix', label: 'Relationship Matrix' }, { id: 'dossier', label: 'Rival Dossier & Actions' }, { id: 'activity', label: `Activity History (${activity.length})` }]}
-      active={tab}
-      onChange={setTab}
-      ariaLabel="Rival relationship sections"
-    />
-    <WorkspaceBody className="space-y-4">
-    <div className="ui-decision-strip flex flex-wrap items-center justify-between gap-2 rounded-lg border px-3 py-2.5">
-      <div className="flex min-w-0 items-center gap-2 text-xs">
-        <span className="ui-decision-strip-pulse" aria-hidden="true" />
-        <div className="min-w-0">
-          <div className="font-semibold text-neutral-100">Rivalry operations desk</div>
-          <div className="truncate text-neutral-400">
-            {relationships.filter((item) => item.score <= -15).length > 0
-              ? `${relationships.filter((item) => item.score <= -15).length} open tension${relationships.filter((item) => item.score <= -15).length === 1 ? '' : 's'} may require a paddock response.`
-              : 'No rivalry is currently at open-tension level.'}
-          </div>
-        </div>
-      </div>
-      <span className="shrink-0 text-[10px] font-semibold uppercase tracking-wide text-neutral-500">
-        {formatMoney(budget)} action budget
-      </span>
-    </div>
-
-    {tab === 'matrix' && <Panel title="Team-to-Team Matrix">
-      <div className="grid gap-2 md:grid-cols-2 xl:grid-cols-3">{visible.map((item) => { const rivalId = rivalIdOf(item); return <button key={item.id} type="button" onClick={() => { setSelectedId(rivalId); setTab('dossier'); }} className="rounded-lg border border-neutral-800 bg-neutral-900/45 p-3 text-left hover:border-amber-500/45"><div className="flex items-center justify-between"><span className="font-semibold text-neutral-100">{teamName(rivalId)}</span><Score value={item.score} /></div><div className="mt-1 text-xs text-neutral-500">{rivalRelationshipLabel(item.score)}</div><div className="mt-3 grid grid-cols-2 gap-x-3 gap-y-1 text-[11px] text-neutral-400"><span>Respect <b className="text-neutral-200">{item.sportingRespect}</b></span><span>Politics <b className="text-neutral-200">{item.politicalAlignment}</b></span><span>Trust <b className="text-neutral-200">{item.commercialTrust}</b></span><span>Suspicion <b className="text-neutral-200">{item.technicalSuspicion}</b></span></div><div className="mt-2 flex flex-wrap gap-1">{item.tags.slice(0, 3).map((tag) => <span key={tag} className="rounded bg-neutral-800 px-1.5 py-0.5 text-[9px] text-neutral-400">{splitLabel(tag)}</span>)}</div></button>; })}</div>
-      {pageCount > 1 && <div className="mt-4 flex items-center justify-center gap-2"><Button variant="ghost" disabled={page === 0} onClick={() => setPage((value) => Math.max(0, value - 1))}>Previous</Button><span className="text-xs text-neutral-500">Page {page + 1} of {pageCount}</span><Button variant="ghost" disabled={page >= pageCount - 1} onClick={() => setPage((value) => Math.min(pageCount - 1, value + 1))}>Next</Button></div>}
-    </Panel>}
-
-    {tab === 'dossier' && selected && selectedRivalId && <Panel title="Rival Dossier">
-      <WorkspaceTabs
-        items={relationships.map((item) => ({ id: rivalIdOf(item), label: teamName(rivalIdOf(item)) }))}
-        active={selectedRivalId}
-        onChange={setSelectedId}
-        ariaLabel="Rival dossiers"
+  return (
+    <WorkspaceScreen className="ui-team-people-screen">
+      <WorkspaceHeader
+        eyebrow="People center"
+        title="Rival Relationships"
+        subtitle="Paddock dossiers, political posture, technical suspicion, and management actions"
       />
-      <div className="grid gap-4 lg:grid-cols-2"><div className="rounded-lg border border-neutral-800 bg-neutral-900/40 p-4"><div className="flex items-start justify-between"><div><h2 className="text-lg font-bold text-neutral-100">{teamName(selectedRivalId)}</h2><p className="text-xs text-neutral-500">{rivalRelationshipLabel(selected.score)}</p></div><Score value={selected.score} /></div><div className="mt-4 grid grid-cols-2 gap-3"><Meter label="Sporting respect" value={selected.sportingRespect} /><Meter label="Political alignment" value={(selected.politicalAlignment + 100) / 2} display={selected.politicalAlignment} /><Meter label="Commercial trust" value={selected.commercialTrust} /><Meter label="Technical suspicion" value={selected.technicalSuspicion} danger /></div><div className="mt-4 flex flex-wrap gap-1">{selected.tags.map((tag) => <span key={tag} className="rounded bg-[var(--era-accent-soft)] px-2 py-1 text-[10px] text-[var(--era-accent-strong)]">{splitLabel(tag)}</span>)}</div></div>
-      <div className="rounded-lg border border-neutral-800 bg-neutral-900/40 p-4"><h3 className="font-semibold text-neutral-100">Management Actions</h3><p className="mt-1 text-xs text-neutral-500">Each action can be used once per rival in a round. Different actions remain available until used.</p><div className="mt-3 grid gap-2 sm:grid-cols-2">{(['OpenDialogue', 'TechnicalExchange', 'ScoutPersonnel', 'FileProtest'] as RivalAction[]).map((action) => {
-        const used = rivalActionUsedThisRound(state, selectedRivalId, action);
-        const insufficientBudget = budget < RIVAL_ACTION_COST[action];
-        const disabledReason = used ? `Already used against this rival in round ${currentRound}` : insufficientBudget ? 'Insufficient budget' : undefined;
-        const context = rivalActionContext(state, selectedRivalId, action);
-        return <button key={action} type="button" disabled={used || insufficientBudget} title={disabledReason} onClick={() => dispatch({ type: 'TAKE_RIVAL_ACTION', rivalTeamId: selectedRivalId, action })} className="rounded border border-neutral-700 bg-neutral-950/50 p-3 text-left enabled:hover:border-amber-500/50 disabled:opacity-40"><div className="flex items-start justify-between gap-2"><span className="text-xs font-semibold text-amber-300">{splitLabel(action)}</span><span className="shrink-0 text-right">{used && <span className="block rounded bg-neutral-800 px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wide text-neutral-400">Used R{currentRound}</span>}{context && <span className={`mt-0.5 block text-[8px] font-black uppercase tracking-wide ${context.fit === 'Favored' ? 'text-emerald-300' : context.fit === 'Risky' ? 'text-red-300' : 'text-neutral-400'}`}>{context.fit}</span>}</span></div><p className="mt-1 text-[10px] text-neutral-500">{actionDescription(action)}</p>{context && <p className="mt-1 text-[9px] leading-relaxed text-neutral-500">{context.effectPreview} {context.reason}</p>}<div className={`mt-2 text-[10px] ${insufficientBudget && !used ? 'text-red-300' : 'text-neutral-400'}`}>{used ? `Available again in round ${currentRound + 1}` : insufficientBudget ? `Needs ${formatMoney(RIVAL_ACTION_COST[action])}` : RIVAL_ACTION_COST[action] ? formatMoney(RIVAL_ACTION_COST[action]) : 'No cost'}</div></button>;
-      })}</div></div></div>
-      {selectedBrief && <RivalPrincipalBriefing brief={selectedBrief} />}
-    </Panel>}
+      <WorkspaceTabs
+        items={[
+          { id: 'dossier', label: 'Rival Dossier' },
+          { id: 'actions', label: 'Management Actions' },
+          { id: 'activity', label: `Activity (${activity.length})` },
+        ]}
+        active={tab}
+        onChange={setTab}
+        ariaLabel="Rival relationship sections"
+      />
+      <WorkspaceBody className="overflow-hidden">
+        <FmWorkspaceGrid columns="three">
+          <FmPane>
+            <FmPaneHeader title="Paddock Relationships" meta={`${relationships.length} tracked teams`} />
+            <FmPaneBody className="overflow-auto">
+              {visible.map((relationship) => {
+                const rivalId = rivalIdOf(relationship);
+                return (
+                  <FmListButton
+                    key={relationship.id}
+                    active={selectedRivalId === rivalId}
+                    urgent={relationship.score <= -15}
+                    onClick={() => setSelectedId(rivalId)}
+                  >
+                    <span className="ui-news-list-source">{rivalRelationshipLabel(relationship.score)}</span>
+                    <strong>{teamName(rivalId)}</strong>
+                    <span>{signed(relationship.score)} relationship · {relationship.sportingRespect} respect</span>
+                    <small>{relationship.tags.slice(0, 2).map(splitLabel).join(' · ') || 'No defining tags'}</small>
+                  </FmListButton>
+                );
+              })}
+              {relationships.length === 0 && <div className="ui-inbox-empty">No rival relationships are currently tracked.</div>}
+            </FmPaneBody>
+            {pageCount > 1 && (
+              <div className="ui-team-list-pagination">
+                <button type="button" onClick={() => { setPage(Math.max(0, safePage - 1)); setSelectedId(undefined); }} disabled={safePage === 0}>Previous</button>
+                <span>{safePage + 1} / {pageCount}</span>
+                <button type="button" onClick={() => { setPage(Math.min(pageCount - 1, safePage + 1)); setSelectedId(undefined); }} disabled={safePage >= pageCount - 1}>Next</button>
+              </div>
+            )}
+          </FmPane>
 
-    {tab === 'activity' && <Panel title="Relationship Activity">{activity.length === 0 ? <p className="text-sm text-neutral-500">No major relationship events have occurred yet.</p> : <div className="grid gap-2 md:grid-cols-2">{activity.map((event) => <div key={event.id} className="rounded border border-neutral-800 bg-neutral-900/40 p-3"><div className="flex justify-between text-[10px] uppercase text-neutral-500"><span>{teamName(event.rivalId)} · {event.category}</span><span>{event.seasonYear}{event.round ? ` R${event.round}` : ''}</span></div><p className="mt-1 text-xs text-neutral-300">{event.reason}</p><div className={`mt-1 text-[10px] ${event.amount >= 0 ? 'text-emerald-300' : 'text-red-300'}`}>{event.amount >= 0 ? '+' : ''}{event.amount} relationship</div></div>)}</div>}</Panel>}
-    </WorkspaceBody>
-  </WorkspaceScreen>;
+          <FmPane className="ui-rival-dossier-pane">
+            {selected && selectedRivalId ? (
+              <>
+                <FmPaneHeader title={teamName(selectedRivalId)} meta={rivalRelationshipLabel(selected.score)} />
+                <FmPaneBody className="ui-rival-dossier-body overflow-auto">
+                  {tab === 'dossier' && (
+                    <>
+                      <section className="ui-rival-score-header">
+                        <div><span>Overall relationship</span><strong>{signed(selected.score)}</strong></div>
+                        <p>{selected.tags.length ? selected.tags.map(splitLabel).join(' · ') : 'No defining rivalry tags recorded.'}</p>
+                      </section>
+                      <section className="ui-rival-meter-grid">
+                        <Meter label="Sporting respect" value={selected.sportingRespect} />
+                        <Meter label="Political alignment" value={(selected.politicalAlignment + 100) / 2} display={selected.politicalAlignment} />
+                        <Meter label="Commercial trust" value={selected.commercialTrust} />
+                        <Meter label="Technical suspicion" value={selected.technicalSuspicion} danger />
+                      </section>
+                      {selectedBrief && <RivalPrincipalBriefing brief={selectedBrief} />}
+                    </>
+                  )}
+                  {tab === 'actions' && (
+                    <section>
+                      <h3 className="ui-fm-section-label">Management actions</h3>
+                      <p className="ui-fm-detail-copy">Each action can be used once per rival per round. The original cost, fit, and disabled-reason rules remain in force.</p>
+                      <div className="ui-rival-action-grid">
+                        {(['OpenDialogue', 'TechnicalExchange', 'ScoutPersonnel', 'FileProtest'] as RivalAction[]).map((action) => {
+                          const used = rivalActionUsedThisRound(state, selectedRivalId, action);
+                          const insufficientBudget = budget < RIVAL_ACTION_COST[action];
+                          const context = rivalActionContext(state, selectedRivalId, action);
+                          const disabledReason = used
+                            ? `Already used against this rival in round ${currentRound}`
+                            : insufficientBudget
+                              ? 'Insufficient budget'
+                              : undefined;
+                          return (
+                            <button
+                              key={action}
+                              type="button"
+                              disabled={used || insufficientBudget}
+                              title={disabledReason}
+                              onClick={() => dispatch({ type: 'TAKE_RIVAL_ACTION', rivalTeamId: selectedRivalId, action })}
+                            >
+                              <span>{context?.fit ?? 'Neutral'}</span>
+                              <strong>{splitLabel(action)}</strong>
+                              <p>{actionDescription(action)}</p>
+                              {context && <small>{context.effectPreview} {context.reason}</small>}
+                              <em>
+                                {used
+                                  ? `Available round ${currentRound + 1}`
+                                  : insufficientBudget
+                                    ? `Needs ${formatMoney(RIVAL_ACTION_COST[action])}`
+                                    : RIVAL_ACTION_COST[action]
+                                      ? formatMoney(RIVAL_ACTION_COST[action])
+                                      : 'No cost'}
+                              </em>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </section>
+                  )}
+                  {tab === 'activity' && (
+                    <section className="ui-rival-activity">
+                      <h3 className="ui-fm-section-label">Activity history</h3>
+                      {selectedActivity.length
+                        ? selectedActivity.map((event) => (
+                          <article key={event.id}>
+                            <span>{event.seasonYear}{event.round ? ` · Round ${event.round}` : ''} · {event.category}</span>
+                            <strong>{event.reason}</strong>
+                            <em>{signed(event.amount)} relationship</em>
+                          </article>
+                        ))
+                        : <p className="ui-fm-detail-copy">No major relationship events have occurred with this team.</p>}
+                    </section>
+                  )}
+                </FmPaneBody>
+              </>
+            ) : <FmPaneBody className="ui-inbox-empty">Select a rival team to open its dossier.</FmPaneBody>}
+          </FmPane>
+
+          <FmPane>
+            <FmPaneHeader title="Paddock Context" meta={`Round ${currentRound}`} />
+            <FmPaneBody className="ui-team-context-pane overflow-auto">
+              <section>
+                <h3>Relationship field</h3>
+                <FmKeyValue label="Closest ally" value={closestAlly ? teamName(rivalIdOf(closestAlly)) : '—'} />
+                <FmKeyValue label="Bitterest rival" value={bitterestRival ? teamName(rivalIdOf(bitterestRival)) : '—'} />
+                <FmKeyValue label="Open tensions" value={relationships.filter((item) => item.score <= -15).length} />
+                <FmKeyValue label="Action budget" value={formatMoney(budget)} />
+              </section>
+              {selected && (
+                <>
+                  <section>
+                    <h3>Selected team</h3>
+                    <FmKeyValue label="Relationship" value={signed(selected.score)} />
+                    <FmKeyValue label="Respect" value={selected.sportingRespect} />
+                    <FmKeyValue label="Politics" value={selected.politicalAlignment} />
+                    <FmKeyValue label="Trust" value={selected.commercialTrust} />
+                    <FmKeyValue label="Suspicion" value={selected.technicalSuspicion} />
+                  </section>
+                  <section>
+                    <h3>Action rule</h3>
+                    <p>Each action remains limited to once per rival in the current round. Disabled actions show the exact reason.</p>
+                  </section>
+                </>
+              )}
+            </FmPaneBody>
+          </FmPane>
+        </FmWorkspaceGrid>
+      </WorkspaceBody>
+    </WorkspaceScreen>
+  );
 }
 
-function splitLabel(value: string): string { return value.replace(/([A-Z])/g, ' $1').trim(); }
-function actionDescription(action: RivalAction): string { if (action === 'OpenDialogue') return 'Lower tension and improve political alignment.'; if (action === 'TechnicalExchange') return 'Build trust and reduce copying suspicion.'; if (action === 'ScoutPersonnel') return 'Monitor staff and drivers, increasing market tension.'; return 'Challenge suspected illegality; success depends on technical suspicion.'; }
-function Score({ value }: { value: number }) { const tone = value >= 15 ? 'text-emerald-300' : value <= -15 ? 'text-red-300' : 'text-amber-300'; return <span className={`text-lg font-bold tabular-nums ${tone}`}>{value > 0 ? '+' : ''}{value}</span>; }
-function Meter({ label, value, display, danger }: { label: string; value: number; display?: number; danger?: boolean }) { const pct = Math.max(0, Math.min(100, value)); return <div><div className="flex justify-between text-[10px] text-neutral-500"><span>{label}</span><span>{display ?? Math.round(value)}</span></div><div className="mt-1 h-1.5 overflow-hidden rounded bg-neutral-800"><div className={`h-full ${danger ? 'bg-orange-500' : 'bg-[var(--era-accent)]'}`} style={{ width: `${pct}%` }} /></div></div>; }
+function splitLabel(value: string): string {
+  return value.replace(/([A-Z])/g, ' $1').trim();
+}
+
+function signed(value: number): string {
+  return `${value > 0 ? '+' : ''}${value}`;
+}
+
+function actionDescription(action: RivalAction): string {
+  if (action === 'OpenDialogue') return 'Lower tension and improve political alignment.';
+  if (action === 'TechnicalExchange') return 'Build trust and reduce copying suspicion.';
+  if (action === 'ScoutPersonnel') return 'Monitor staff and drivers, increasing market tension.';
+  return 'Challenge suspected illegality; success depends on technical suspicion.';
+}
+
+function Meter({
+  label,
+  value,
+  display,
+  danger,
+}: {
+  label: string;
+  value: number;
+  display?: number;
+  danger?: boolean;
+}) {
+  const pct = Math.max(0, Math.min(100, value));
+  return (
+    <div>
+      <span>{label}</span>
+      <strong>{display ?? Math.round(value)}</strong>
+      <i><b className={danger ? 'is-danger' : ''} style={{ width: `${pct}%` }} /></i>
+    </div>
+  );
+}

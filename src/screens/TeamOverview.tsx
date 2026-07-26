@@ -16,18 +16,24 @@ import {
   type TeamTrend,
 } from '../sim/teamOverviewEngine';
 import type { AIFinancialHealth } from '../types/aiTeamTypes';
-import { Button } from '../components/Button';
 import {
-  MetricStrip,
   WorkspaceBody,
   WorkspaceHeader,
-  WorkspaceMetric,
   WorkspaceScreen,
   WorkspaceTabs,
 } from '../components/workspace/Workspace';
 import {
+  FmKeyValue,
+  FmListButton,
+  FmPane,
+  FmPaneBody,
+  FmPaneHeader,
+  FmWorkspaceGrid,
+} from '../components/workspace/FmPane';
+import {
   TEAM_DETAIL_TABS,
   TEAM_OVERVIEW_PAGE_SIZE,
+  selectedTeamOverviewRow,
   teamOverviewPage,
   teamOverviewPageCount,
   type TeamDetailTab,
@@ -71,28 +77,6 @@ const TREND_STYLE: Record<TeamTrend, { color: string; icon: string }> = {
   FinancialTrouble: { color: '#ef4444', icon: '⚠' },
 };
 
-const RATING_COLUMNS: { key: SortKey; label: string; field: keyof TeamOverviewRow }[] = [
-  { key: 'overallRating', label: 'Overall', field: 'overallRating' },
-  { key: 'carRating', label: 'Car', field: 'carRating' },
-  { key: 'driverRating', label: 'Drivers', field: 'driverRating' },
-  { key: 'developmentRating', label: 'Dev', field: 'developmentRating' },
-  { key: 'facilitiesRating', label: 'Facil.', field: 'facilitiesRating' },
-  { key: 'staffRating', label: 'Staff', field: 'staffRating' },
-  { key: 'engineRating', label: 'Engine', field: 'engineRating' },
-  { key: 'academyRating', label: 'Acad.', field: 'academyRating' },
-  { key: 'raceOpsRating', label: 'Ops', field: 'raceOpsRating' },
-  { key: 'pitCrewRating', label: 'Pit', field: 'pitCrewRating' },
-  { key: 'reliabilityRating', label: 'Rel.', field: 'reliabilityRating' },
-  { key: 'reputationRating', label: 'Rep.', field: 'reputationRating' },
-];
-
-function teamPositionBadgeClass(position: number): string {
-  if (position === 1) return 'bg-amber-400/90 text-neutral-900';
-  if (position === 2) return 'bg-slate-300/80 text-neutral-900';
-  if (position === 3) return 'bg-orange-700/80 text-orange-50';
-  return 'bg-neutral-800 text-neutral-300';
-}
-
 function sortValue(row: TeamOverviewRow, key: SortKey): number {
   if (key === 'championshipPosition') return row.championshipPosition ?? 999;
   if (key === 'financialHealth') return HEALTH_ORDER.indexOf(row.financialHealth);
@@ -111,10 +95,6 @@ export function TeamOverview() {
   const [page, setPage] = useState(0);
 
   const rows = useMemo(() => (state ? buildTeamOverview(state) : []), [state]);
-  const detail = useMemo(
-    () => (state && selectedId ? buildTeamOverviewDetail(state, selectedId) : undefined),
-    [state, selectedId],
-  );
 
   if (!state) return null;
 
@@ -131,6 +111,8 @@ export function TeamOverview() {
   const pageCount = teamOverviewPageCount(sorted.length);
   const safePage = Math.min(page, pageCount - 1);
   const visibleRows = teamOverviewPage(sorted, safePage);
+  const selectedRow = selectedTeamOverviewRow(sorted, selectedId);
+  const detail = selectedRow ? buildTeamOverviewDetail(state, selectedRow.teamId) : undefined;
   const playerRow = rows.find((row) => row.isPlayer);
   const fieldAverage = rows.length
     ? rows.reduce((total, row) => total + row.overallRating, 0) / rows.length
@@ -141,31 +123,12 @@ export function TeamOverview() {
   const leader = rows.find((row) => row.championshipPosition === 1) ?? rows[0];
 
   return (
-    <WorkspaceScreen className="era-feature-screen era-team-overview">
+    <WorkspaceScreen className="era-feature-screen era-team-overview ui-team-people-screen">
       <WorkspaceHeader
         eyebrow="Team universe"
         title="Organization Profiles"
         subtitle={`Compare every ${state.series} team across performance, personnel, operations and finance.`}
       />
-
-      <MetricStrip>
-        <WorkspaceMetric label="Organizations" value={rows.length} detail={`${state.seasonYear} ${state.series}`} />
-        <WorkspaceMetric
-          label="My team"
-          value={playerRow?.championshipPosition ? `P${playerRow.championshipPosition}` : 'Not ranked'}
-          detail={playerRow ? `${playerRow.overallRating.toFixed(1)} overall` : 'No selected team'}
-        />
-        <WorkspaceMetric
-          label="Championship leader"
-          value={leader?.name ?? 'Not established'}
-          detail={leader ? `${leader.points} points · ${leader.wins} wins` : undefined}
-        />
-        <WorkspaceMetric
-          label="Field health"
-          value={`${financiallyPressed} under pressure`}
-          detail={`${fieldAverage.toFixed(1)} average rating`}
-        />
-      </MetricStrip>
 
       <WorkspaceTabs
         items={[
@@ -182,206 +145,127 @@ export function TeamOverview() {
         ariaLabel="Organization list filters"
       />
 
-      <WorkspaceBody className="flex flex-col overflow-hidden">
-        <Panel className="flex min-h-0 flex-1 flex-col overflow-hidden">
-          <div className="flex shrink-0 flex-wrap items-center justify-between gap-3 border-b border-neutral-800 px-3 py-2">
-            <div>
-              <div className="text-[10px] font-bold uppercase tracking-[0.14em] text-neutral-500">
-                Organization command list
-              </div>
-              <div className="text-xs text-neutral-400">
-                Select a row to open its full management profile · {sorted.length} organizations in view
-              </div>
-            </div>
-            <label className="flex items-center gap-2 text-xs text-neutral-400">
-              Sort by
-              <select
-                value={sortKey}
-                onChange={(e) => {
-                  setSortKey(e.target.value as SortKey);
-                  setPage(0);
-                  setSelectedId(null);
-                }}
-                className="rounded-md border border-neutral-700 bg-neutral-900 px-2 py-1 text-sm text-neutral-200"
-              >
-                <option value="championshipPosition">Championship</option>
-                <option value="overallRating">Overall Rating</option>
-                <option value="carRating">Car Rating</option>
-                <option value="driverRating">Driver Rating</option>
-                <option value="developmentRating">Development</option>
-                <option value="facilitiesRating">Facilities</option>
-                <option value="staffRating">Staff</option>
-                <option value="engineRating">Engine</option>
-                <option value="academyRating">Academy</option>
-                <option value="financeRating">Financial Rating</option>
-                <option value="financialHealth">Financial Health</option>
-                <option value="budget">Budget</option>
-                <option value="sponsorIncome">Sponsor Income</option>
-              </select>
-            </label>
-          </div>
-        <div className="min-h-0 flex-1 overflow-auto">
-          <table className="w-full min-w-[1100px] border-collapse text-sm">
-            <thead>
-              <tr className="border-b border-neutral-800 text-left text-[11px] uppercase tracking-wide text-neutral-500">
-                <th className="px-2 py-2">#</th>
-                <th className="px-2 py-2">Team</th>
-                <th className="px-2 py-2">Health</th>
-                <th className="px-2 py-2 text-right">Budget</th>
-                <th className="px-2 py-2 text-right">Sponsor</th>
-                {RATING_COLUMNS.map((c) => (
-                  <th key={c.key} className="px-2 py-2 text-center">
-                    {c.label}
-                  </th>
-                ))}
-                <th className="px-2 py-2">Trend</th>
-              </tr>
-            </thead>
-            <tbody>
-              {visibleRows.map((row, i) => (
-                <tr
-                  key={row.teamId}
-                  onClick={() => setSelectedId(selectedId === row.teamId ? null : row.teamId)}
-                  aria-selected={selectedId === row.teamId}
-                  title={`Open ${row.name} organization profile`}
-                  className={`cursor-pointer border-b border-neutral-900 transition-colors hover:bg-neutral-800/40 ${
-                    row.isPlayer ? 'bg-amber-500/5' : ''
-                  } ${selectedId === row.teamId ? 'bg-neutral-800/60' : ''}`}
+      <WorkspaceBody className="overflow-hidden">
+        <FmWorkspaceGrid columns="three">
+          <FmPane>
+            <FmPaneHeader
+              title="Organizations"
+              meta={`${sorted.length} teams · ${state.seasonYear}`}
+            />
+            <div className="ui-team-list-tools">
+              <label>
+                Sort
+                <select
+                  value={sortKey}
+                  onChange={(event) => {
+                    setSortKey(event.target.value as SortKey);
+                    setPage(0);
+                    setSelectedId(null);
+                  }}
                 >
-                    <td className="px-2 py-2">
-                      {(() => {
-                        const position = row.championshipPosition ?? safePage * TEAM_OVERVIEW_PAGE_SIZE + i + 1;
-                        return (
-                          <span className={`inline-flex h-5 min-w-[1.25rem] items-center justify-center rounded px-1 text-xs font-bold tabular-nums ${teamPositionBadgeClass(position)}`}>
-                            {position}
-                          </span>
-                        );
-                      })()}
-                    </td>
-                    <td className="px-2 py-2">
-                      <div className="flex items-center gap-2">
-                        <span className="h-4 w-1.5 rounded-sm" style={{ backgroundColor: row.color }} />
-                        <span className="font-medium text-neutral-100">{row.name}</span>
-                        {row.isPlayer && (
-                          <span className="rounded bg-amber-500/20 px-1.5 py-0.5 text-[10px] font-semibold text-amber-300">
-                            YOU
-                          </span>
-                        )}
-                      </div>
-                      {row.archetypeLabel && (
-                        <div className="text-[11px] text-neutral-500">{row.archetypeLabel}</div>
-                      )}
-                      {row.philosophyLabel && (
-                        <div className="text-[10px] text-neutral-600">{row.philosophyLabel}</div>
-                      )}
-                    </td>
-                    <td className="px-2 py-2">
-                      <span
-                        className="rounded px-1.5 py-0.5 text-xs font-semibold"
-                        style={{
-                          color: HEALTH_COLOR[row.financialHealth],
-                          backgroundColor: `${HEALTH_COLOR[row.financialHealth]}22`,
-                        }}
-                      >
-                        {HEALTH_LABELS[row.financialHealth]}
-                      </span>
-                    </td>
-                    <td className="px-2 py-2 text-right tabular-nums text-neutral-300">
-                      {formatMoney(row.budget)}
-                    </td>
-                    <td className="px-2 py-2 text-right tabular-nums text-neutral-400">
-                      {formatMoney(row.sponsorIncome)}
-                    </td>
-                    {RATING_COLUMNS.map((c) => (
-                      <td key={c.key} className="px-2 py-2 text-center">
-                        <RatingBadge value={row[c.field] as number} />
-                      </td>
-                    ))}
-                    <td className="px-2 py-2">
-                      <span
-                        className="inline-flex items-center gap-1 text-xs font-medium"
-                        style={{ color: TREND_STYLE[row.trend].color }}
-                      >
-                        {TREND_STYLE[row.trend].icon} {TREND_LABELS[row.trend]}
-                      </span>
-                    </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-        <div className="flex shrink-0 items-center justify-between gap-3 border-t border-neutral-800 px-3 py-2">
-          <Button
-            variant="secondary"
-            className="px-3 py-1 text-xs"
-            onClick={() => setPage(Math.max(0, safePage - 1))}
-            disabled={safePage === 0}
-          >
-            Previous
-          </Button>
-          <span className="text-xs text-neutral-500">
-            Teams {sorted.length ? safePage * TEAM_OVERVIEW_PAGE_SIZE + 1 : 0}–
-            {Math.min(sorted.length, (safePage + 1) * TEAM_OVERVIEW_PAGE_SIZE)} of {sorted.length} · Page{' '}
-            {safePage + 1} of {pageCount}
-          </span>
-          <Button
-            variant="secondary"
-            className="px-3 py-1 text-xs"
-            onClick={() => setPage(Math.min(pageCount - 1, safePage + 1))}
-            disabled={safePage >= pageCount - 1}
-          >
-            Next
-          </Button>
-        </div>
-        </Panel>
+                  <option value="championshipPosition">Championship</option>
+                  <option value="overallRating">Overall rating</option>
+                  <option value="carRating">Car rating</option>
+                  <option value="driverRating">Driver rating</option>
+                  <option value="developmentRating">Development</option>
+                  <option value="facilitiesRating">Facilities</option>
+                  <option value="staffRating">Staff</option>
+                  <option value="engineRating">Engine</option>
+                  <option value="academyRating">Academy</option>
+                  <option value="financeRating">Financial rating</option>
+                  <option value="financialHealth">Financial health</option>
+                  <option value="budget">Budget</option>
+                </select>
+              </label>
+            </div>
+            <FmPaneBody className="overflow-auto">
+              {visibleRows.map((row, index) => {
+                const position = row.championshipPosition ?? safePage * TEAM_OVERVIEW_PAGE_SIZE + index + 1;
+                return (
+                  <FmListButton
+                    key={row.teamId}
+                    active={selectedRow?.teamId === row.teamId}
+                    onClick={() => setSelectedId(row.teamId)}
+                  >
+                    <span className="ui-news-list-source">
+                      P{position} · {HEALTH_LABELS[row.financialHealth]}
+                    </span>
+                    <strong>
+                      <i style={{ backgroundColor: row.color }} />{row.name}{row.isPlayer ? ' · You' : ''}
+                    </strong>
+                    <span>{row.overallRating.toFixed(1)} overall · {formatMoney(row.budget)}</span>
+                    <small>{TREND_LABELS[row.trend]} · {row.archetypeLabel ?? 'Team profile'}</small>
+                  </FmListButton>
+                );
+              })}
+            </FmPaneBody>
+            <div className="ui-team-list-pagination">
+              <button type="button" onClick={() => setPage(Math.max(0, safePage - 1))} disabled={safePage === 0}>Previous</button>
+              <span>{safePage + 1} / {pageCount}</span>
+              <button type="button" onClick={() => setPage(Math.min(pageCount - 1, safePage + 1))} disabled={safePage >= pageCount - 1}>Next</button>
+            </div>
+          </FmPane>
+
+          <FmPane className="ui-team-profile-pane">
+            {detail && selectedRow ? (
+              <>
+                <FmPaneHeader
+                  title={selectedRow.name}
+                  meta={`${selectedRow.championshipPosition ? `P${selectedRow.championshipPosition}` : 'Unranked'} · ${selectedRow.points} points`}
+                />
+                <TeamDetail detail={detail} />
+              </>
+            ) : (
+              <FmPaneBody className="ui-inbox-empty">No organization is available.</FmPaneBody>
+            )}
+          </FmPane>
+
+          <FmPane>
+            <FmPaneHeader title="Organization Context" meta={`${state.series} field`} />
+            <FmPaneBody className="ui-team-context-pane overflow-auto">
+              {selectedRow && (
+                <>
+                  <section>
+                    <h3>Selected team</h3>
+                    <FmKeyValue label="Overall" value={selectedRow.overallRating.toFixed(1)} />
+                    <FmKeyValue label="Car" value={selectedRow.carRating.toFixed(1)} />
+                    <FmKeyValue label="Drivers" value={selectedRow.driverRating.toFixed(1)} />
+                    <FmKeyValue label="Development" value={selectedRow.developmentRating.toFixed(1)} />
+                    <FmKeyValue label="Financial health" value={HEALTH_LABELS[selectedRow.financialHealth]} />
+                  </section>
+                  <section>
+                    <h3>Field comparison</h3>
+                    <FmKeyValue label="Leader" value={leader?.name ?? 'Not established'} />
+                    <FmKeyValue label="Field average" value={fieldAverage.toFixed(1)} />
+                    <FmKeyValue label="Under pressure" value={financiallyPressed} />
+                    <FmKeyValue label="My team" value={playerRow?.championshipPosition ? `P${playerRow.championshipPosition}` : 'Not ranked'} />
+                  </section>
+                  <section>
+                    <h3>Current direction</h3>
+                    <p>{TREND_LABELS[selectedRow.trend]} · {selectedRow.philosophyLabel ?? selectedRow.archetypeLabel ?? 'No philosophy recorded'}</p>
+                  </section>
+                </>
+              )}
+            </FmPaneBody>
+          </FmPane>
+        </FmWorkspaceGrid>
       </WorkspaceBody>
-      {selectedId && detail && <TeamDetail detail={detail} onClose={() => setSelectedId(null)} />}
     </WorkspaceScreen>
   );
 }
 
 function TeamDetail({
   detail,
-  onClose,
 }: {
   detail: NonNullable<ReturnType<typeof buildTeamOverviewDetail>>;
-  onClose: () => void;
 }) {
   const { state } = useGame();
   const [tab, setTab] = useState<TeamDetailTab>('overview');
   const { row } = detail;
   return (
-    <div
-      className="fixed inset-0 z-[90] flex items-center justify-center bg-black/80 p-3 backdrop-blur-sm"
-      role="dialog"
-      aria-modal="true"
-      aria-label={`${row.name} team dossier`}
-    >
-      <div
-        className="flex max-h-[92vh] w-full max-w-6xl flex-col overflow-hidden rounded-xl border border-neutral-700 bg-neutral-950 shadow-2xl"
-        style={{ borderTopColor: row.color, borderTopWidth: 4 }}
-      >
-        <header className="flex items-center justify-between gap-4 border-b border-neutral-800 bg-neutral-900/80 px-5 py-3">
-          <div>
-            <div className="text-[10px] font-semibold uppercase tracking-[0.2em] text-neutral-500">Team universe dossier</div>
-            <h2 className="text-xl font-bold text-neutral-100">{row.name}</h2>
-          </div>
-          <button
-            type="button"
-            onClick={onClose}
-            className="rounded border border-neutral-700 px-3 py-1.5 text-xs text-neutral-300 hover:bg-neutral-800"
-          >
-            Close
-          </button>
-        </header>
-        <MetricStrip>
-          <WorkspaceMetric label="Championship" value={row.championshipPosition ? `P${row.championshipPosition}` : '—'} detail={`${row.points} points · ${row.wins} wins`} />
-          <WorkspaceMetric label="Overall" value={row.overallRating.toFixed(1)} detail="Organization rating" />
-          <WorkspaceMetric label="Financial health" value={HEALTH_LABELS[row.financialHealth]} detail={formatMoney(row.budget)} />
-          <WorkspaceMetric label="Trend" value={TREND_LABELS[row.trend]} detail={row.archetypeLabel ?? 'Team identity'} />
-        </MetricStrip>
+    <>
         <WorkspaceTabs items={TEAM_DETAIL_TABS} active={tab} onChange={setTab} ariaLabel="Team dossier sections" />
-        <div className="min-h-0 flex-1 overflow-y-auto p-4">
+        <div className="ui-team-profile-body min-h-0 flex-1 overflow-y-auto p-3">
           {tab === 'overview' && (
             <Panel
               title={row.name}
@@ -726,8 +610,7 @@ function TeamDetail({
         </Panel>
       )}
         </div>
-      </div>
-    </div>
+    </>
   );
 }
 

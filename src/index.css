@@ -3734,3 +3734,638 @@ body {
     padding: 0 0.4rem;
   }
 }
+
+/* Phase 3: FM-style team and people workspaces. */
+.ui-main-content[data-route="/teams"],
+.ui-main-content[data-route="/drivers"],
+.ui-main-content[data-route="/curves"],
+.ui-main-content[data-route="/principal"],
+.ui-main-content[data-route="/relationships"],
+.ui-main-content[data-route="/rivals"] {
+  overflow: hidden;
+  padding: 0;
+}
+
+.ui-main-content[data-route="/teams"] .ui-workspace-screen,
+.ui-main-content[data-route="/drivers"] .ui-workspace-screen,
+.ui-main-content[data-route="/curves"] .ui-workspace-screen,
+.ui-main-content[data-route="/principal"] .ui-workspace-screen,
+.ui-main-content[data-route="/relationships"] .ui-workspace-screen,
+.ui-main-content[data-route="/rivals"] .ui-workspace-screen {
+  height: 100%;
+  gap: 0;
+  overflow: hidden;
+}
+
+.ui-team-people-screen > .ui-workspace-header {
+  padding: 0.55rem 0.75rem;
+}
+
+.ui-team-people-screen > .ui-workspace-body {
+  overflow: hidden;
+}
+
+.ui-team-list-tools {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: end;
+  gap: 0.35rem;
+  border-bottom: 1px solid #3a3a3f;
+  background: #242427;
+  padding: 0.42rem;
+}
+
+.ui-team-list-tools label {
+  display: grid;
+  flex: 1;
+  gap: 0.18rem;
+  color: #85858c;
+  font-size: 0.49rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.ui-team-list-tools select,
+.ui-team-list-tools button {
+  min-width: 0;
+  border: 1px solid #44444a;
+  border-radius: 1px;
+  background: #18181a;
+  padding: 0.32rem 0.4rem;
+  color: #cfcfd3;
+  font-size: 0.55rem;
+  font-weight: 600;
+  letter-spacing: normal;
+  text-transform: none;
+}
+
+.ui-team-list-tools button {
+  color: #d47a92;
+}
+
+.ui-fm-list-button strong i {
+  display: inline-block;
+  height: 0.65rem;
+  width: 0.18rem;
+  margin-right: 0.35rem;
+  border-radius: 1px;
+  vertical-align: -0.05rem;
+}
+
+.ui-team-list-pagination {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: space-between;
+  border-top: 1px solid #3a3a3f;
+  background: #202023;
+  padding: 0.4rem 0.5rem;
+  color: #85858c;
+  font-size: 0.52rem;
+}
+
+.ui-team-list-pagination button {
+  color: #d47a92;
+  font-weight: 750;
+}
+
+.ui-team-list-pagination button:disabled {
+  color: #56565c;
+}
+
+.ui-team-profile-pane,
+.ui-driver-profile-pane,
+.ui-relationship-profile-pane,
+.ui-rival-dossier-pane {
+  background: #252528;
+}
+
+.ui-team-profile-body,
+.ui-driver-profile-body,
+.ui-relationship-profile-body,
+.ui-rival-dossier-body {
+  background: #252528;
+}
+
+.ui-team-profile-body .rounded-lg,
+.ui-driver-profile-body .rounded-lg,
+.ui-relationship-profile-body .rounded-lg,
+.ui-rival-dossier-body .rounded-lg {
+  border-radius: 2px;
+}
+
+.ui-team-context-pane {
+  background: #1d1d20;
+  padding: 0.35rem 0.6rem 0.8rem;
+}
+
+.ui-team-context-pane section {
+  padding: 0.7rem 0;
+}
+
+.ui-team-context-pane section + section {
+  border-top: 1px solid #39393e;
+}
+
+.ui-team-context-pane h3,
+.ui-principal-offer-detail h3 {
+  margin-bottom: 0.35rem;
+  color: #cfcfd3;
+  font-size: 0.55rem;
+  font-weight: 850;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.ui-team-context-pane p,
+.ui-principal-offer-detail p {
+  color: #8f8f96;
+  font-size: 0.56rem;
+  line-height: 1.55;
+}
+
+.ui-team-context-pane button {
+  margin-top: 0.55rem;
+  color: #dc8098;
+  font-size: 0.57rem;
+  font-weight: 750;
+}
+
+.ui-profile-identity-strip {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 0.8rem;
+  border-bottom: 1px solid #414146;
+  background: #202023;
+  padding: 0.75rem;
+}
+
+.ui-profile-number {
+  display: flex;
+  height: 3rem;
+  width: 3rem;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid #7b1c36;
+  background: #161618;
+  color: #ededee;
+  font-size: 1rem;
+  font-weight: 900;
+}
+
+.ui-profile-identity-strip span {
+  color: #9a9aa1;
+  font-size: 0.5rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.ui-profile-identity-strip h2 {
+  margin-top: 0.08rem;
+  color: #f1f1f2;
+  font-size: 1rem;
+  font-weight: 850;
+}
+
+.ui-profile-identity-strip p {
+  margin-top: 0.15rem;
+  color: #898990;
+  font-size: 0.56rem;
+}
+
+.ui-driver-profile-body > section:not(.ui-profile-identity-strip) {
+  padding: 0.8rem;
+}
+
+.ui-driver-profile-body > section + section {
+  border-top: 1px solid #3b3b40;
+}
+
+.ui-driver-attribute-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1px;
+  margin-top: 0.5rem;
+  background: #414146;
+}
+
+.ui-driver-attribute-grid > div {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #202023;
+  padding: 0.48rem 0.55rem;
+}
+
+.ui-driver-attribute-grid span {
+  color: #96969d;
+  font-size: 0.56rem;
+}
+
+.ui-driver-attribute-grid strong {
+  color: #e1e1e4;
+  font-size: 0.68rem;
+}
+
+.ui-driver-seat-actions,
+.ui-relationship-actions,
+.ui-principal-offer-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-top: 0.6rem;
+}
+
+.ui-development-plan-header {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 0.8rem;
+  border-bottom: 1px solid #3b3b40;
+  padding-bottom: 0.6rem;
+}
+
+.ui-development-plan-header strong,
+.ui-development-plan-header span {
+  display: block;
+}
+
+.ui-development-plan-header strong {
+  color: #dedee1;
+  font-size: 0.7rem;
+}
+
+.ui-development-plan-header span {
+  margin-top: 0.15rem;
+  color: #8d8d94;
+  font-size: 0.54rem;
+}
+
+.ui-development-plan-fields {
+  display: grid;
+  gap: 0.65rem;
+  margin-top: 0.65rem;
+}
+
+.ui-development-plan-fields label {
+  color: #8d8d94;
+  font-size: 0.51rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.ui-development-plan-fields select {
+  display: block;
+  width: 100%;
+  margin-top: 0.25rem;
+  border: 1px solid #49494f;
+  border-radius: 1px;
+  background: #18181a;
+  padding: 0.4rem;
+  color: #d1d1d5;
+  font-size: 0.58rem;
+  font-weight: 600;
+  letter-spacing: normal;
+  text-transform: none;
+}
+
+.ui-development-plan-fields label span {
+  display: block;
+  margin-top: 0.25rem;
+  color: #74747b;
+  font-size: 0.52rem;
+  font-weight: 500;
+  letter-spacing: normal;
+  line-height: 1.45;
+  text-transform: none;
+}
+
+.ui-principal-profile-strip {
+  display: grid;
+  grid-template-columns: auto minmax(180px, 1fr) repeat(3, minmax(90px, 0.25fr));
+  align-items: stretch;
+  gap: 1px;
+  border-bottom: 1px solid #3e3e43;
+  background: #3e3e43;
+}
+
+.ui-principal-monogram,
+.ui-principal-profile-name,
+.ui-principal-profile-stat {
+  background: #202023;
+  padding: 0.6rem 0.75rem;
+}
+
+.ui-principal-monogram {
+  display: flex;
+  min-width: 3.2rem;
+  align-items: center;
+  justify-content: center;
+  border-left: 3px solid #b52249;
+  color: #ededee;
+  font-weight: 900;
+}
+
+.ui-principal-profile-name span,
+.ui-principal-profile-name strong,
+.ui-principal-profile-name small,
+.ui-principal-profile-stat span,
+.ui-principal-profile-stat strong {
+  display: block;
+}
+
+.ui-principal-profile-name span,
+.ui-principal-profile-stat span {
+  color: #818188;
+  font-size: 0.49rem;
+  font-weight: 800;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+}
+
+.ui-principal-profile-name strong {
+  margin-top: 0.12rem;
+  color: #ebebed;
+  font-size: 0.82rem;
+}
+
+.ui-principal-profile-name small {
+  margin-top: 0.1rem;
+  color: #898990;
+  font-size: 0.52rem;
+}
+
+.ui-principal-profile-stat strong {
+  margin-top: 0.18rem;
+  color: #e0e0e3;
+  font-size: 0.8rem;
+}
+
+.ui-principal-career-layout {
+  display: grid;
+  min-height: 0;
+  grid-template-rows: auto minmax(360px, 1fr);
+  gap: 0.65rem;
+}
+
+.ui-principal-market {
+  min-height: 360px;
+  overflow: hidden;
+  border: 1px solid #3a3a3f;
+}
+
+.ui-principal-offer-detail {
+  padding: 0.8rem;
+}
+
+.ui-principal-offer-detail section + section {
+  margin-top: 0.8rem;
+  border-top: 1px solid #3b3b40;
+  padding-top: 0.8rem;
+}
+
+.ui-relationship-profile-body {
+  padding: 0.75rem;
+}
+
+.ui-relationship-profile-body > section + section {
+  margin-top: 0.75rem;
+  border-top: 1px solid #3c3c41;
+  padding-top: 0.75rem;
+}
+
+.ui-relationship-status {
+  border-left: 3px solid #4c4c52;
+  background: #202023;
+  padding: 0.65rem;
+}
+
+.ui-relationship-status.is-MustActNow {
+  border-left-color: #d13d61;
+}
+
+.ui-relationship-status.is-WatchClosely {
+  border-left-color: #d49a36;
+}
+
+.ui-relationship-status.is-Stable {
+  border-left-color: #4ca77b;
+}
+
+.ui-relationship-status span,
+.ui-relationship-status strong {
+  display: block;
+}
+
+.ui-relationship-status span {
+  color: #d8a4b2;
+  font-size: 0.52rem;
+  font-weight: 850;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.ui-relationship-status strong {
+  margin-top: 0.2rem;
+  color: #e2e2e4;
+  font-size: 0.75rem;
+}
+
+.ui-relationship-status p,
+.ui-relationship-profile-body section > p,
+.ui-relationship-profile-body li {
+  margin-top: 0.3rem;
+  color: #9999a0;
+  font-size: 0.58rem;
+  line-height: 1.55;
+}
+
+.ui-relationship-profile-body section article {
+  border-bottom: 1px solid #38383d;
+  padding: 0.45rem 0;
+}
+
+.ui-relationship-profile-body section article strong,
+.ui-relationship-profile-body section article span {
+  display: block;
+}
+
+.ui-relationship-profile-body section article strong {
+  color: #cfcfd3;
+  font-size: 0.59rem;
+}
+
+.ui-relationship-profile-body section article span {
+  margin-top: 0.1rem;
+  color: #707077;
+  font-size: 0.49rem;
+}
+
+.ui-rival-dossier-body {
+  padding: 0.75rem;
+}
+
+.ui-rival-score-header {
+  border-left: 3px solid #b52249;
+  background: #202023;
+  padding: 0.7rem;
+}
+
+.ui-rival-score-header div {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.ui-rival-score-header span {
+  color: #93939a;
+  font-size: 0.55rem;
+}
+
+.ui-rival-score-header strong {
+  color: #e6e6e8;
+  font-size: 1rem;
+}
+
+.ui-rival-score-header p {
+  margin-top: 0.3rem;
+  color: #7f7f86;
+  font-size: 0.53rem;
+}
+
+.ui-rival-meter-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.7rem;
+  margin: 0.8rem 0;
+}
+
+.ui-rival-meter-grid > div {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 0.25rem;
+}
+
+.ui-rival-meter-grid span,
+.ui-rival-meter-grid strong {
+  color: #96969d;
+  font-size: 0.54rem;
+}
+
+.ui-rival-meter-grid i {
+  grid-column: 1 / -1;
+  height: 0.25rem;
+  overflow: hidden;
+  background: #3d3d42;
+}
+
+.ui-rival-meter-grid b {
+  display: block;
+  height: 100%;
+  background: #bd2c51;
+}
+
+.ui-rival-meter-grid b.is-danger {
+  background: #d67a31;
+}
+
+.ui-rival-action-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1px;
+  margin-top: 0.7rem;
+  background: #414146;
+}
+
+.ui-rival-action-grid button {
+  background: #202023;
+  padding: 0.65rem;
+  text-align: left;
+}
+
+.ui-rival-action-grid button:hover:not(:disabled) {
+  background: #35242a;
+}
+
+.ui-rival-action-grid button:disabled {
+  opacity: 0.45;
+}
+
+.ui-rival-action-grid span,
+.ui-rival-action-grid strong,
+.ui-rival-action-grid small,
+.ui-rival-action-grid em {
+  display: block;
+}
+
+.ui-rival-action-grid span {
+  color: #d07a91;
+  font-size: 0.48rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.ui-rival-action-grid strong {
+  margin-top: 0.15rem;
+  color: #dedee1;
+  font-size: 0.62rem;
+}
+
+.ui-rival-action-grid p,
+.ui-rival-action-grid small {
+  margin-top: 0.25rem;
+  color: #8e8e95;
+  font-size: 0.52rem;
+  line-height: 1.45;
+}
+
+.ui-rival-action-grid em {
+  margin-top: 0.45rem;
+  color: #c7a36e;
+  font-size: 0.51rem;
+  font-style: normal;
+}
+
+.ui-rival-activity article {
+  border-bottom: 1px solid #3a3a3f;
+  padding: 0.6rem 0;
+}
+
+.ui-rival-activity span,
+.ui-rival-activity strong,
+.ui-rival-activity em {
+  display: block;
+}
+
+.ui-rival-activity span {
+  color: #77777e;
+  font-size: 0.49rem;
+  text-transform: uppercase;
+}
+
+.ui-rival-activity strong {
+  margin-top: 0.2rem;
+  color: #cdccd1;
+  font-size: 0.59rem;
+}
+
+.ui-rival-activity em {
+  margin-top: 0.2rem;
+  color: #d27a91;
+  font-size: 0.52rem;
+  font-style: normal;
+}
+
+@media (max-width: 980px) {
+  .ui-principal-profile-strip {
+    grid-template-columns: auto minmax(180px, 1fr) repeat(2, minmax(80px, 0.25fr));
+  }
+
+  .ui-principal-profile-stat:last-child {
+    display: none;
+  }
+}

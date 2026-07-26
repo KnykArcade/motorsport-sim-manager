@@ -6,7 +6,6 @@ import { Panel } from '../components/Panel';
 import { Button } from '../components/Button';
 import { RENEW_THRESHOLD, SACK_THRESHOLD } from '../sim/principalEngine';
 import { ratingColor } from '../components/ui';
-import type { JobOffer } from '../types/principalTypes';
 import { DEPARTMENT_IDS, TEAM_CULTURE_AXES } from '../types/phase18Types';
 import {
   cultureDescriptor,
@@ -19,16 +18,23 @@ import {
   PRINCIPAL_COMMAND_TABS,
   PRINCIPAL_OFFERS_PER_PAGE,
   principalJobOfferPage,
+  selectedPrincipalJobOffer,
   type PrincipalCommandTab,
 } from './teamPrincipalViewModel';
 import {
-  MetricStrip,
   WorkspaceBody,
   WorkspaceHeader,
-  WorkspaceMetric,
   WorkspaceScreen,
   WorkspaceTabs,
 } from '../components/workspace/Workspace';
+import {
+  FmKeyValue,
+  FmListButton,
+  FmPane,
+  FmPaneBody,
+  FmPaneHeader,
+  FmWorkspaceGrid,
+} from '../components/workspace/FmPane';
 
 export function TeamPrincipal() {
   const { state, dispatch } = useGame();
@@ -36,6 +42,7 @@ export function TeamPrincipal() {
   const [activeTab, setActiveTab] = useState<PrincipalCommandTab>(() =>
     searchParams.get('tab') === 'career' ? 'career' : 'standing');
   const [offerPage, setOfferPage] = useState(0);
+  const [selectedOfferId, setSelectedOfferId] = useState<string>();
   if (!state) return null;
 
   const principal = state.principal;
@@ -60,41 +67,26 @@ export function TeamPrincipal() {
   const offerPageCount = Math.max(1, Math.ceil(offers.length / PRINCIPAL_OFFERS_PER_PAGE));
   const safeOfferPage = Math.min(offerPage, offerPageCount - 1);
   const visibleOffers = principalJobOfferPage(offers, safeOfferPage);
+  const selectedOffer = selectedPrincipalJobOffer(visibleOffers, selectedOfferId);
 
   return (
-    <WorkspaceScreen>
+    <WorkspaceScreen className="ui-team-people-screen">
       <WorkspaceHeader
         eyebrow="People center"
         title="Team Principal"
         subtitle={`${principal.name} · ${currentTeam?.name ?? 'Between teams'} · Reputation, leadership identity, and career standing`}
+        actions={<CharacterDossierButton state={state} subject={{ type: 'playerPrincipal' }}>Character Card</CharacterDossierButton>}
       />
-      <MetricStrip>
-        <WorkspaceMetric label="Reputation" value={principal.reputation} detail={`${principal.careerStats.seasonsCompleted} seasons completed`} />
-        <WorkspaceMetric label="Job security" value={`${principal.jobSecurity}/100`} detail={principal.jobSecurity < SACK_THRESHOLD ? 'Position at immediate risk' : principal.jobSecurity < RENEW_THRESHOLD ? 'Board expects improvement' : 'Board backing is secure'} />
-        <WorkspaceMetric label="Contract" value={`${principal.contractYearsRemaining} yr`} detail="Current managerial agreement" />
-        <WorkspaceMetric label="Career market" value={offers.length} detail={accepted ? 'Next-season move accepted' : 'Active rival approaches'} />
-      </MetricStrip>
-      <div className="ui-decision-strip flex flex-wrap items-center justify-between gap-2 rounded-lg border px-3 py-2.5">
-        <div className="flex min-w-0 items-center gap-2 text-xs">
-          <span className="ui-decision-strip-pulse" aria-hidden="true" />
-          <div className="min-w-0">
-            <div className="font-semibold text-neutral-100">Principal command desk</div>
-            <div className="truncate text-neutral-400">
-              {principal.jobSecurity < SACK_THRESHOLD
-                ? 'Job security is at immediate risk. Board confidence and results require urgent attention.'
-                : accepted
-                  ? 'A next-season career move is accepted. Review the transition before the current contract closes.'
-                  : offers.length > 0
-                    ? `${offers.length} career approach${offers.length === 1 ? '' : 'es'} are available for review.`
-                    : principal.jobSecurity < RENEW_THRESHOLD
-                      ? 'The board expects improvement before contract renewal becomes secure.'
-                      : 'Your current position is stable. Continue building reputation and leadership identity.'}
-            </div>
-          </div>
+      <div className="ui-principal-profile-strip">
+        <div className="ui-principal-monogram">{principal.name.split(/\s+/).map((part) => part[0]).join('').slice(0, 2)}</div>
+        <div className="ui-principal-profile-name">
+          <span>Team Principal</span>
+          <strong>{principal.name}</strong>
+          <small>{currentTeam?.name ?? 'Between teams'} · {principal.contractYearsRemaining} year contract</small>
         </div>
-        <span className="shrink-0 text-[10px] font-semibold uppercase tracking-wide text-neutral-500">
-          {principal.jobSecurity}/100 job security
-        </span>
+        <div className="ui-principal-profile-stat"><span>Reputation</span><strong>{principal.reputation}</strong></div>
+        <div className="ui-principal-profile-stat"><span>Job security</span><strong className={securityTone(principal.jobSecurity)}>{principal.jobSecurity}</strong></div>
+        <div className="ui-principal-profile-stat"><span>Career market</span><strong>{offers.length}</strong></div>
       </div>
       <WorkspaceTabs
         items={PRINCIPAL_COMMAND_TABS.map((item) => ({ id: item.id, label: `${item.label}${item.id === 'career' && offers.length ? ` (${offers.length})` : ''}` }))}
@@ -102,7 +94,7 @@ export function TeamPrincipal() {
         onChange={setActiveTab}
         ariaLabel="Team Principal command center sections"
       />
-      <WorkspaceBody className="space-y-4">
+      <WorkspaceBody className="space-y-3">
       <p className="text-[11px] text-neutral-500">{PRINCIPAL_COMMAND_TABS.find((item) => item.id === activeTab)?.description}</p>
 
       {activeTab === 'standing' && (
@@ -236,7 +228,7 @@ export function TeamPrincipal() {
       )}
 
       {activeTab === 'career' && (
-        <div className="space-y-4">
+        <div className="ui-principal-career-layout">
           <Panel title="Career Record">
             <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
               <Metric label="Race Wins" value={String(principal.careerStats.raceWins)} />
@@ -247,35 +239,60 @@ export function TeamPrincipal() {
             </div>
           </Panel>
 
-          <Panel title="Job Market">
-            {offers.length === 0 ? (
-              <p className="text-sm text-neutral-400">
-                No rival teams are approaching you right now. Strong results draw more interest.
-              </p>
-            ) : (
-              <>
-                <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+          <div className="ui-principal-market">
+            <FmWorkspaceGrid columns="two">
+              <FmPane>
+                <FmPaneHeader title="Job Market" meta={`${offers.length} approaches`} />
+                <FmPaneBody className="overflow-auto">
                   {visibleOffers.map((offer) => (
-                    <OfferCard
-                      key={offer.id}
-                      offer={offer}
-                      teamName={teamById(state, offer.teamId)?.name ?? offer.teamId}
-                      accepted={accepted === offer.id}
-                      onAccept={() => dispatch({ type: 'ACCEPT_JOB_OFFER', offerId: offer.id })}
-                      onDecline={() => dispatch({ type: 'DECLINE_JOB_OFFER', offerId: offer.id })}
-                    />
+                    <FmListButton key={offer.id} active={selectedOffer?.id === offer.id} urgent={offer.kind === 'Offer'} onClick={() => setSelectedOfferId(offer.id)}>
+                      <span className="ui-news-list-source">{offer.kind === 'Offer' ? 'Firm offer' : 'Rumor'} · {offer.contractYears} years</span>
+                      <strong>{teamById(state, offer.teamId)?.name ?? offer.teamId}</strong>
+                      <span>{offer.objective}</span>
+                      <small>Prestige {offer.prestige} · {offer.budgetTier}</small>
+                    </FmListButton>
                   ))}
-                </div>
+                  {offers.length === 0 && <div className="ui-inbox-empty">No rival team is approaching you right now.</div>}
+                </FmPaneBody>
                 {offerPageCount > 1 && (
-                  <div className="mt-3 flex items-center justify-between gap-3 border-t border-neutral-800 pt-3">
-                    <Button variant="secondary" className="px-3 py-1 text-xs" onClick={() => setOfferPage(Math.max(0, safeOfferPage - 1))} disabled={safeOfferPage === 0}>Previous</Button>
-                    <span className="text-xs text-neutral-500">Offer page {safeOfferPage + 1} of {offerPageCount}</span>
-                    <Button variant="secondary" className="px-3 py-1 text-xs" onClick={() => setOfferPage(Math.min(offerPageCount - 1, safeOfferPage + 1))} disabled={safeOfferPage >= offerPageCount - 1}>Next</Button>
+                  <div className="ui-team-list-pagination">
+                    <button type="button" onClick={() => { setOfferPage(Math.max(0, safeOfferPage - 1)); setSelectedOfferId(undefined); }} disabled={safeOfferPage === 0}>Previous</button>
+                    <span>{safeOfferPage + 1} / {offerPageCount}</span>
+                    <button type="button" onClick={() => { setOfferPage(Math.min(offerPageCount - 1, safeOfferPage + 1)); setSelectedOfferId(undefined); }} disabled={safeOfferPage >= offerPageCount - 1}>Next</button>
                   </div>
                 )}
-              </>
-            )}
-          </Panel>
+              </FmPane>
+              <FmPane>
+                <FmPaneHeader title={selectedOffer ? teamById(state, selectedOffer.teamId)?.name ?? selectedOffer.teamId : 'Offer Detail'} meta={selectedOffer?.kind ?? 'Career market'} />
+                <FmPaneBody className="ui-principal-offer-detail overflow-auto">
+                  {selectedOffer ? (
+                    <>
+                      <section>
+                        <h3>{selectedOffer.kind === 'Offer' ? 'Formal approach' : 'Informal interest'}</h3>
+                        <p>{selectedOffer.objective}</p>
+                        <FmKeyValue label="Prestige" value={selectedOffer.prestige} />
+                        <FmKeyValue label="Budget tier" value={selectedOffer.budgetTier} />
+                        <FmKeyValue label="Contract" value={`${selectedOffer.contractYears} years`} />
+                        <FmKeyValue label="Expires" value={selectedOffer.expiresSeasonYear} />
+                      </section>
+                      <section className="ui-principal-offer-actions">
+                        {selectedOffer.kind !== 'Offer' ? (
+                          <p>Informal interest only. No action is currently available.</p>
+                        ) : accepted === selectedOffer.id ? (
+                          <Button variant="secondary" onClick={() => dispatch({ type: 'ACCEPT_JOB_OFFER', offerId: selectedOffer.id })}>Accepted — click to cancel</Button>
+                        ) : (
+                          <>
+                            <Button variant="primary" onClick={() => dispatch({ type: 'ACCEPT_JOB_OFFER', offerId: selectedOffer.id })}>Accept for next season</Button>
+                            <Button variant="secondary" onClick={() => dispatch({ type: 'DECLINE_JOB_OFFER', offerId: selectedOffer.id })}>Decline</Button>
+                          </>
+                        )}
+                      </section>
+                    </>
+                  ) : <div className="ui-inbox-empty">Select an approach to review it.</div>}
+                </FmPaneBody>
+              </FmPane>
+            </FmWorkspaceGrid>
+          </div>
         </div>
       )}
       </WorkspaceBody>
@@ -304,60 +321,6 @@ function JobSecurityBar({ value }: { value: number }) {
         <div className="h-full" style={{ width: `${clamped}%`, backgroundColor: color }} />
       </div>
       <p className="mt-1 text-xs text-neutral-500">{label}</p>
-    </div>
-  );
-}
-
-function OfferCard({
-  offer,
-  teamName,
-  accepted,
-  onAccept,
-  onDecline,
-}: {
-  offer: JobOffer;
-  teamName: string;
-  accepted: boolean;
-  onAccept: () => void;
-  onDecline: () => void;
-}) {
-  const firm = offer.kind === 'Offer';
-  return (
-    <div className="rounded-lg border border-neutral-800 bg-neutral-900/40 p-3">
-      <div className="mb-1 flex items-center justify-between">
-        <span className="font-bold text-neutral-100">{teamName}</span>
-        <span
-          className={`rounded px-1.5 py-0.5 text-[10px] uppercase tracking-wide ${
-            firm ? 'bg-[var(--era-accent-soft)] text-[var(--era-accent-strong)]' : 'bg-neutral-800 text-neutral-400'
-          }`}
-        >
-          {firm ? 'Firm Offer' : 'Rumor'}
-        </span>
-      </div>
-      <p className="text-xs text-neutral-400">{offer.objective}</p>
-      <div className="mt-2 flex flex-wrap gap-1 text-[10px]">
-        <Tag>Prestige {offer.prestige}</Tag>
-        <Tag>{offer.budgetTier}</Tag>
-        <Tag>{offer.contractYears}-yr deal</Tag>
-      </div>
-      <div className="mt-2">
-        {!firm ? (
-          <div className="text-center text-[11px] text-neutral-500">Informal interest only</div>
-        ) : accepted ? (
-          <Button variant="secondary" className="w-full px-2 py-1 text-xs" onClick={onAccept}>
-            Accepted — click to cancel
-          </Button>
-        ) : (
-          <div className="flex gap-2">
-            <Button variant="primary" className="flex-1 px-2 py-1 text-xs" onClick={onAccept}>
-              Accept for next season
-            </Button>
-            <Button variant="secondary" className="px-2 py-1 text-xs" onClick={onDecline}>
-              Decline
-            </Button>
-          </div>
-        )}
-      </div>
     </div>
   );
 }

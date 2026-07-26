@@ -23,16 +23,22 @@ import {
   testingAllocationUsed,
   TOTAL_TESTING_ALLOCATION,
 } from '../sim/driverDevelopmentPlanEngine';
-import { CompactPagination } from '../components/CompactPagination';
 import { CURVE_PAGE_SIZE, compactPage, pageCount } from './seasonOverviewViewModel';
 import {
-  MetricStrip,
   WorkspaceBody,
   WorkspaceHeader,
-  WorkspaceMetric,
   WorkspaceScreen,
   WorkspaceTabs,
 } from '../components/workspace/Workspace';
+import {
+  FmKeyValue,
+  FmListButton,
+  FmPane,
+  FmPaneBody,
+  FmPaneHeader,
+  FmWorkspaceGrid,
+} from '../components/workspace/FmPane';
+import { selectedDriver } from './driversViewModel';
 
 type Tab = 'mine' | 'grid';
 
@@ -46,6 +52,7 @@ export function DriverCurves() {
   const { state, dispatch } = useGame();
   const [tab, setTab] = useState<Tab>('mine');
   const [page, setPage] = useState(0);
+  const [selectedId, setSelectedId] = useState<string>();
 
   const curves = useMemo(() => state?.developmentCurves ?? {}, [state]);
 
@@ -63,6 +70,30 @@ export function DriverCurves() {
   const tabPageCount = pageCount(sorted.length, CURVE_PAGE_SIZE);
   const safePage = Math.min(page, tabPageCount - 1);
   const visibleDrivers = compactPage(sorted, safePage, CURVE_PAGE_SIZE);
+  const academySubjects = tab === 'mine'
+    ? (state.academy ?? []).map((member) => ({
+      id: member.id,
+      name: member.name,
+      role: 'Academy',
+      driver: undefined,
+      curve: undefined,
+      age: undefined,
+    }))
+    : [];
+  const visibleSubjects = [
+    ...visibleDrivers.map((item) => ({
+      id: item.driver.id,
+      name: item.driver.name,
+      role: item.driver.contractType === 'reserve' || item.driver.contractType === 'third' || item.driver.contractType === 'test'
+        ? 'Reserve / test'
+        : 'Race driver',
+      driver: item.driver,
+      curve: item.curve,
+      age: item.age,
+    })),
+    ...academySubjects,
+  ];
+  const selectedSubject = selectedDriver(visibleSubjects, selectedId);
   const phaseCounts = sorted.reduce(
     (counts, item) => {
       counts[developmentPhase(item.curve, item.age)] += 1;
@@ -74,21 +105,16 @@ export function DriverCurves() {
   function selectTab(nextTab: Tab) {
     setTab(nextTab);
     setPage(0);
+    setSelectedId(undefined);
   }
 
   return (
-    <WorkspaceScreen className="era-feature-screen era-driver-curves-screen">
+    <WorkspaceScreen className="era-feature-screen era-driver-curves-screen ui-team-people-screen">
       <WorkspaceHeader
         eyebrow="Driver intelligence"
         title="Development Curves"
         subtitle="Track current ability, projected ceilings, and the age curve shaping every driver."
       />
-      <MetricStrip>
-        <WorkspaceMetric label="Your drivers" value={mine.length} detail="Team development dossiers" />
-        <WorkspaceMetric label="Grid tracked" value={state.drivers.length} detail="Current driver pool" />
-        <WorkspaceMetric label="Developing" value={phaseCounts.Developing} detail="Still climbing toward peak" />
-        <WorkspaceMetric label="Peak / declining" value={`${phaseCounts.Peak} / ${phaseCounts.Declining}`} detail="Mature and late-career profiles" />
-      </MetricStrip>
       <WorkspaceTabs
         items={[
           { id: 'mine' as const, label: `Your Drivers · ${mine.length}` },
@@ -98,103 +124,131 @@ export function DriverCurves() {
         onChange={selectTab}
         ariaLabel="Driver development views"
       />
-      <WorkspaceBody className="space-y-3">
-      {tab === 'mine' && (
-        <DevelopmentPlanBoard state={state} dispatch={dispatch} />
-      )}
-      <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
-        {visibleDrivers.map(({ driver, curve, age }) => (
-            <CurveCard key={driver.id} driver={driver} curve={curve} age={age} />
-          ))}
-      </div>
-      <CompactPagination noun="drivers" total={sorted.length} page={safePage} pageCount={tabPageCount} pageSize={CURVE_PAGE_SIZE} onPage={setPage} />
+      <WorkspaceBody className="overflow-hidden">
+        <FmWorkspaceGrid columns="three">
+          <FmPane>
+            <FmPaneHeader title={tab === 'mine' ? 'Development Plans' : 'Grid Development'} meta={`${visibleSubjects.length} in view`} />
+            <FmPaneBody className="overflow-auto">
+              {visibleSubjects.map((subject) => {
+                const phase = subject.driver && subject.curve && subject.age != null
+                  ? developmentPhase(subject.curve, subject.age)
+                  : undefined;
+                return (
+                  <FmListButton key={subject.id} active={selectedSubject?.id === subject.id} onClick={() => setSelectedId(subject.id)}>
+                    <span className="ui-news-list-source">{subject.role}{phase ? ` · ${phase}` : ''}</span>
+                    <strong>{subject.name}</strong>
+                    <span>{subject.driver ? `OVR ${subject.driver.ratings.overall.toFixed(1)} · age ${subject.age}` : 'Academy development programme'}</span>
+                    <small>{subject.curve ? `Ceiling ${subject.curve.potentialCeiling.toFixed(1)}` : 'Long-term development plan'}</small>
+                  </FmListButton>
+                );
+              })}
+              {visibleSubjects.length === 0 && <div className="ui-inbox-empty">No development subjects are available.</div>}
+            </FmPaneBody>
+            {tab === 'grid' && (
+              <div className="ui-team-list-pagination">
+                <button type="button" onClick={() => { setPage(Math.max(0, safePage - 1)); setSelectedId(undefined); }} disabled={safePage === 0}>Previous</button>
+                <span>{safePage + 1} / {tabPageCount}</span>
+                <button type="button" onClick={() => { setPage(Math.min(tabPageCount - 1, safePage + 1)); setSelectedId(undefined); }} disabled={safePage >= tabPageCount - 1}>Next</button>
+              </div>
+            )}
+          </FmPane>
+          <FmPane className="ui-driver-profile-pane">
+            {selectedSubject ? (
+              <>
+                <FmPaneHeader title={selectedSubject.name} meta={selectedSubject.role} />
+                <FmPaneBody className="ui-driver-profile-body overflow-auto">
+                  {selectedSubject.driver && selectedSubject.curve && selectedSubject.age != null && (
+                    <CurveCard driver={selectedSubject.driver} curve={selectedSubject.curve} age={selectedSubject.age} />
+                  )}
+                  {tab === 'mine' && (
+                    <DevelopmentPlanEditor
+                      state={state}
+                      dispatch={dispatch}
+                      subject={{ id: selectedSubject.id, name: selectedSubject.name, role: selectedSubject.role }}
+                    />
+                  )}
+                </FmPaneBody>
+              </>
+            ) : <FmPaneBody className="ui-inbox-empty">Select a driver to review development.</FmPaneBody>}
+          </FmPane>
+          <FmPane>
+            <FmPaneHeader title="Staff Context" meta="Development department" />
+            <FmPaneBody className="ui-team-context-pane overflow-auto">
+              <section>
+                <h3>Programme capacity</h3>
+                <FmKeyValue label="Testing used" value={`${testingAllocationUsed(state)}/${TOTAL_TESTING_ALLOCATION}`} />
+                <FmKeyValue label="Your drivers" value={mine.length} />
+                <FmKeyValue label="Grid tracked" value={state.drivers.length} />
+              </section>
+              <section>
+                <h3>Age curve</h3>
+                <FmKeyValue label="Developing" value={phaseCounts.Developing} />
+                <FmKeyValue label="At peak" value={phaseCounts.Peak} />
+                <FmKeyValue label="Declining" value={phaseCounts.Declining} />
+              </section>
+              {selectedSubject && tab === 'mine' && (
+                <section>
+                  <h3>Recommendation</h3>
+                  <p>Staff suggest {DRIVER_DEVELOPMENT_FOCUS_LABELS[developmentRecommendation(state, selectedSubject.id)].toLowerCase()}.</p>
+                </section>
+              )}
+            </FmPaneBody>
+          </FmPane>
+        </FmWorkspaceGrid>
       </WorkspaceBody>
     </WorkspaceScreen>
   );
 }
 
-function DevelopmentPlanBoard({
+function DevelopmentPlanEditor({
   state,
   dispatch,
+  subject,
 }: {
   state: NonNullable<ReturnType<typeof useGame>['state']>;
   dispatch: ReturnType<typeof useGame>['dispatch'];
+  subject: { id: string; name: string; role: string };
 }) {
-  const drivers = state.drivers
-    .filter((driver) => driver.teamId === state.selectedTeamId)
-    .map((driver) => ({ id: driver.id, name: driver.name, role: driver.contractType === 'reserve' || driver.contractType === 'third' || driver.contractType === 'test' ? 'Reserve / test' : 'Race driver' }));
-  const academy = (state.academy ?? []).map((member) => ({ id: member.id, name: member.name, role: 'Academy' }));
-  const subjects = [...drivers, ...academy];
   const used = testingAllocationUsed(state);
+  const plan = planForDriver(state, subject.id);
+  const recommendation = developmentRecommendation(state, subject.id);
+  const mentors = mentorCandidates(state, subject.id);
+  const available = TOTAL_TESTING_ALLOCATION - testingAllocationUsed(state, subject.id);
 
   return (
-    <Panel>
-      <div className="mb-3 flex flex-wrap items-start justify-between gap-3">
+    <Panel title="Individual Development Plan">
+      <div className="ui-development-plan-header">
         <div>
-          <h2 className="font-bold text-neutral-100">Individual development plans</h2>
-          <p className="mt-1 text-xs text-neutral-500">
-            Direct each driver’s long-term work. Staff recommendations are advisory; only your selections change a plan.
-          </p>
+          <strong>{subject.name}</strong>
+          <span>{subject.role} · {plan.status} · {satisfactionLabel(plan.satisfaction)}</span>
         </div>
-        <div className="rounded bg-neutral-800/70 px-3 py-2 text-right text-xs">
-          <div className="uppercase tracking-wide text-neutral-500">Testing allocation</div>
-          <div className="font-semibold text-neutral-200">{used} / {TOTAL_TESTING_ALLOCATION}</div>
-        </div>
+        <span>{used}/{TOTAL_TESTING_ALLOCATION} testing</span>
       </div>
-      <div className="space-y-2">
-        {subjects.map((subject) => {
-          const plan = planForDriver(state, subject.id);
-          const recommendation = developmentRecommendation(state, subject.id);
-          const mentors = mentorCandidates(state, subject.id);
-          const available = TOTAL_TESTING_ALLOCATION - testingAllocationUsed(state, subject.id);
-          return (
-            <div key={subject.id} className="grid gap-2 rounded border border-neutral-800 bg-neutral-950/30 p-3 lg:grid-cols-[1.1fr_1.4fr_1fr_1.2fr] lg:items-center">
-              <div>
-                <div className="font-semibold text-neutral-200">{subject.name}</div>
-                <div className="text-[11px] text-neutral-500">{subject.role} · {plan.status} · {satisfactionLabel(plan.satisfaction)}</div>
-              </div>
-              <label className="text-[10px] uppercase tracking-wide text-neutral-500">
-                Focus
-                <select
-                  className="mt-1 w-full rounded border border-neutral-700 bg-neutral-900 px-2 py-1.5 text-xs normal-case tracking-normal text-neutral-200"
-                  value={plan.focus}
-                  onChange={(event) => dispatch({ type: 'SET_DRIVER_DEVELOPMENT_FOCUS', driverId: subject.id, focus: event.target.value as DriverDevelopmentFocus })}
-                >
-                  {(Object.keys(DRIVER_DEVELOPMENT_FOCUS_LABELS) as DriverDevelopmentFocus[]).map((focus) => (
-                    <option key={focus} value={focus}>{DRIVER_DEVELOPMENT_FOCUS_LABELS[focus]}</option>
-                  ))}
-                </select>
-                <span className="mt-1 block normal-case tracking-normal text-neutral-600">Staff suggest {DRIVER_DEVELOPMENT_FOCUS_LABELS[recommendation].toLowerCase()}</span>
-                <span className="mt-1 block normal-case tracking-normal text-neutral-600">{DRIVER_DEVELOPMENT_FOCUS_DESCRIPTIONS[plan.focus]}</span>
-              </label>
-              <label className="text-[10px] uppercase tracking-wide text-neutral-500">
-                Testing share
-                <select
-                  className="mt-1 w-full rounded border border-neutral-700 bg-neutral-900 px-2 py-1.5 text-xs normal-case tracking-normal text-neutral-200"
-                  value={plan.testingAllocation}
-                  onChange={(event) => dispatch({ type: 'SET_DRIVER_TESTING_ALLOCATION', driverId: subject.id, allocation: Number(event.target.value) })}
-                >
-                  {[0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100]
-                    .filter((allocation) => allocation === plan.testingAllocation || allocation <= available)
-                    .map((allocation) => <option key={allocation} value={allocation}>{allocation}%</option>)}
-                </select>
-              </label>
-              <label className="text-[10px] uppercase tracking-wide text-neutral-500">
-                Mentor
-                <select
-                  className="mt-1 w-full rounded border border-neutral-700 bg-neutral-900 px-2 py-1.5 text-xs normal-case tracking-normal text-neutral-200"
-                  value={plan.mentorId ?? ''}
-                  onChange={(event) => dispatch({ type: 'SET_DRIVER_DEVELOPMENT_MENTOR', driverId: subject.id, mentorId: event.target.value || undefined })}
-                >
-                  <option value="">No mentor</option>
-                  {mentors.map((mentor) => <option key={mentor.id} value={mentor.id}>{mentor.name}</option>)}
-                </select>
-                <span className="mt-1 block normal-case tracking-normal text-neutral-600">{progressLabel(plan.progress)}</span>
-              </label>
-            </div>
-          );
-        })}
-        {subjects.length === 0 && <p className="text-sm text-neutral-500">No contracted or academy drivers are available for planning.</p>}
+      <div className="ui-development-plan-fields">
+        <label>
+          Focus
+          <select value={plan.focus} onChange={(event) => dispatch({ type: 'SET_DRIVER_DEVELOPMENT_FOCUS', driverId: subject.id, focus: event.target.value as DriverDevelopmentFocus })}>
+            {(Object.keys(DRIVER_DEVELOPMENT_FOCUS_LABELS) as DriverDevelopmentFocus[]).map((focus) => <option key={focus} value={focus}>{DRIVER_DEVELOPMENT_FOCUS_LABELS[focus]}</option>)}
+          </select>
+          <span>Staff suggest {DRIVER_DEVELOPMENT_FOCUS_LABELS[recommendation].toLowerCase()}</span>
+          <span>{DRIVER_DEVELOPMENT_FOCUS_DESCRIPTIONS[plan.focus]}</span>
+        </label>
+        <label>
+          Testing share
+          <select value={plan.testingAllocation} onChange={(event) => dispatch({ type: 'SET_DRIVER_TESTING_ALLOCATION', driverId: subject.id, allocation: Number(event.target.value) })}>
+            {[0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100]
+              .filter((allocation) => allocation === plan.testingAllocation || allocation <= available)
+              .map((allocation) => <option key={allocation} value={allocation}>{allocation}%</option>)}
+          </select>
+        </label>
+        <label>
+          Mentor
+          <select value={plan.mentorId ?? ''} onChange={(event) => dispatch({ type: 'SET_DRIVER_DEVELOPMENT_MENTOR', driverId: subject.id, mentorId: event.target.value || undefined })}>
+            <option value="">No mentor</option>
+            {mentors.map((mentor) => <option key={mentor.id} value={mentor.id}>{mentor.name}</option>)}
+          </select>
+          <span>{progressLabel(plan.progress)}</span>
+        </label>
       </div>
     </Panel>
   );

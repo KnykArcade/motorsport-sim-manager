@@ -4,6 +4,7 @@ import {
   TEAM_OVERVIEW_PAGE_SIZE,
   teamOverviewPage,
   teamOverviewPageCount,
+  selectedTeamOverviewRow,
 } from './teamOverviewViewModel';
 
 describe('Team Overview view model', () => {
@@ -27,5 +28,15 @@ describe('Team Overview view model', () => {
     expect(teamOverviewPage(teams, 11)).toEqual(teams.slice(88, 95));
     expect(teamOverviewPage(teams, 99)).toEqual(teams.slice(88, 95));
     expect(teamOverviewPage(teams, -1)).toEqual(teams.slice(0, 8));
+  });
+
+  it('keeps a selected organization visible and otherwise prioritizes the player team', () => {
+    const teams = [
+      { teamId: 'rival', isPlayer: false },
+      { teamId: 'player', isPlayer: true },
+    ];
+    expect(selectedTeamOverviewRow(teams, 'rival')).toBe(teams[0]);
+    expect(selectedTeamOverviewRow(teams, 'missing')).toBe(teams[1]);
+    expect(selectedTeamOverviewRow([], 'missing')).toBeUndefined();
   });
 });

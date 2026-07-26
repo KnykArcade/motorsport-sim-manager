@@ -6,6 +6,7 @@ import type { GameState } from '../game/careerState';
 import { Panel } from '../components/Panel';
 import { Button } from '../components/Button';
 import { DriverDossierButton } from '../components/driverCards/DriverDossier';
+import { CharacterDossierButton } from '../components/characterCards/CharacterDossier';
 import { ratingColor } from '../components/ui';
 import { TEAM_ORDER_SPECS } from '../sim/relationshipEngine';
 import {
@@ -38,13 +39,20 @@ import {
 import type { CollectiveStakeholderProfile } from './relationships/relationshipStakeholderViewModel';
 import { currentRelationshipCommandSnapshot } from './relationships/relationshipCommandViewModel';
 import {
-  MetricStrip,
   WorkspaceBody,
   WorkspaceHeader,
-  WorkspaceMetric,
   WorkspaceScreen,
   WorkspaceTabs,
 } from '../components/workspace/Workspace';
+import {
+  FmDecisionBar,
+  FmKeyValue,
+  FmListButton,
+  FmPane,
+  FmPaneBody,
+  FmPaneHeader,
+  FmWorkspaceGrid,
+} from '../components/workspace/FmPane';
 
 const ORDER_LABEL: Record<TeamOrder, string> = Object.fromEntries(
   TEAM_ORDER_SPECS.map((s) => [s.order, s.label]),
@@ -190,7 +198,9 @@ function loyaltyRiskText(modifier: number): string {
 }
 
 export function Relationships() {
-  const [activeSection, setActiveSection] = useState<'overview' | 'activity' | 'race' | 'reserve' | 'clauses' | 'orders'>('overview');
+  const [activeSection, setActiveSection] = useState<'overview' | 'hierarchy' | 'activity' | 'race' | 'reserve' | 'clauses' | 'orders'>('overview');
+  const [selectedRelationshipId, setSelectedRelationshipId] = useState<string>();
+  const [selectedDriverId, setSelectedDriverId] = useState<string>();
   const { state, dispatch } = useGame();
   const navigate = useNavigate();
   if (!state) return null;
@@ -233,6 +243,17 @@ export function Relationships() {
   const activeDeskSignal = deskSignal?.status === 'MustActNow' || deskSignal?.status === 'WatchClosely' ? deskSignal : undefined;
   const activeManagementRead = activeDeskSignal?.managementRead;
   const ownerPriority = relationshipPriorities.find((profile) => profile.target.type === 'Owner');
+  const selectedRelationship = relationshipPriorities.find(
+    (profile) => `${profile.target.type}:${profile.target.id}` === selectedRelationshipId,
+  ) ?? ownerPriority ?? relationshipPriorities[0];
+  const selectedRelationshipActivity = selectedRelationship
+    ? relationshipActivity.filter((item) => item.targetName === selectedRelationship.target.name).slice(0, 5)
+    : [];
+  const selectedRelationshipPromises = selectedRelationship?.target.type === 'Driver'
+    ? allPromises.filter((promise) => promise.driverId === selectedRelationship.target.id)
+    : [];
+  const driversInSection = activeSection === 'reserve' ? reserveDrivers : activeDrivers;
+  const selectedSectionDriver = driversInSection.find((driver) => driver.id === selectedDriverId) ?? driversInSection[0];
   const driverContractYears = (id: string) =>
     state.drivers.find((d) => d.id === id)?.contractYearsRemaining ?? 0;
 
@@ -261,26 +282,17 @@ export function Relationships() {
   };
 
   return (
-    <WorkspaceScreen>
+    <WorkspaceScreen className="ui-team-people-screen">
       <WorkspaceHeader
         eyebrow="People center"
         title="Relationship Command Center"
         subtitle="Who holds authority, who has influence, and which relationship needs attention now"
         actions={<Button variant="ghost" onClick={() => navigate('/rivals')}>Rival Matrix</Button>}
       />
-      <MetricStrip>
-        <WorkspaceMetric label="Must act now" value={commandSummary.mustActNow} detail="Across all hierarchy tiers" />
-        <WorkspaceMetric label="Watch closely" value={commandSummary.watchClosely} detail="Across all hierarchy tiers" />
-        <WorkspaceMetric
-          label="Owner standing"
-          value={ownerPriority ? relationshipStatusLabel(ownerPriority.status) : 'Unavailable'}
-          detail={ownerPriority ? `Authority #1 · influence ${ownerPriority.influence}` : 'No owner profile'}
-        />
-        <WorkspaceMetric label="Active promises" value={activePromiseCount} detail="Binding management commitments" />
-      </MetricStrip>
       <WorkspaceTabs
         items={[
-          { id: 'overview', label: `Priority Board (${commandSummary.active})` },
+          { id: 'overview', label: `People Files (${relationshipPriorities.length})` },
+          { id: 'hierarchy', label: `Hierarchy & Stakeholders (${commandSummary.active})` },
           { id: 'activity', label: followUpTabLabel(relationshipActivitySummarySnapshot.activeFollowUps, relationshipActivityCount) },
           { id: 'race', label: 'Race Drivers' },
           { id: 'reserve', label: `Reserve (${reserveDrivers.length})` },
@@ -288,50 +300,127 @@ export function Relationships() {
           { id: 'orders', label: `Team Orders (${orders.length})` },
         ]}
         active={activeSection}
-        onChange={setActiveSection}
+        onChange={(next) => {
+          setActiveSection(next);
+          if (next === 'race' || next === 'reserve') setSelectedDriverId(undefined);
+        }}
         ariaLabel="Relationship management sections"
       />
-      <WorkspaceBody className="space-y-4">
-        <div className="ui-decision-strip flex flex-wrap items-start justify-between gap-3 rounded-lg border px-3 py-2.5">
-          <div className="flex min-w-0 flex-1 items-start gap-2 text-xs">
-            <span className="ui-decision-strip-pulse mt-1" aria-hidden="true" />
-            <div className="min-w-0 space-y-1">
-              <div className="font-semibold text-neutral-100">People operations desk</div>
-              <div className="text-neutral-400">
-                {activeDeskSignal
-                  ? `${activeDeskSignal.title}: ${activeDeskSignal.reason}`
-                  : urgentRelationshipFollowUp
-                    ? `Follow-up: ${urgentRelationshipFollowUp.targetName} · ${urgentRelationshipFollowUp.followUp.label}`
-                    : 'No immediate relationship response is required. Keep the owner and core team aligned.'}
-              </div>
-              {activeManagementRead && (
-                <div className="grid gap-1 text-[11px] text-neutral-500 md:grid-cols-2">
-                  <div>
-                    <span className="font-semibold text-neutral-300">{activeManagementRead.posture}:</span>{' '}
-                    {activeManagementRead.read}
-                  </div>
-                  <div>
-                    <span className="font-semibold text-neutral-300">Watch:</span>{' '}
-                    {activeManagementRead.watch}
-                  </div>
-                  <div className="md:col-span-2">
-                    <span className="font-semibold text-neutral-300">Caution:</span>{' '}
-                    {activeManagementRead.caution}
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-          <span className="shrink-0 text-[10px] font-semibold uppercase tracking-wide text-neutral-500">
-            {deskSignal
-              ? `${relationshipStatusLabel(deskSignal.status)} · Authority #${deskSignal.rank}`
-              : urgentRelationshipFollowUp
-                ? `${urgentRelationshipFollowUp.followUp.cadence === 'Immediate' ? 'Immediate' : 'Next round'} follow-up`
-                : 'No active profiles'}
-          </span>
-        </div>
-
+      <WorkspaceBody className="space-y-3 overflow-hidden">
       {activeSection === 'overview' && (
+        <FmWorkspaceGrid columns="three">
+          <FmPane>
+            <FmPaneHeader title="Relationship Hierarchy" meta={`${relationshipPriorities.length} people`} />
+            <FmPaneBody className="overflow-auto">
+              {relationshipPriorities.map((profile) => (
+                <FmListButton
+                  key={`${profile.target.type}:${profile.target.id}`}
+                  active={selectedRelationship?.target.type === profile.target.type && selectedRelationship.target.id === profile.target.id}
+                  urgent={profile.status === 'MustActNow'}
+                  onClick={() => setSelectedRelationshipId(`${profile.target.type}:${profile.target.id}`)}
+                >
+                  <span className="ui-news-list-source">Authority #{profile.authorityRank} · {profile.target.type}</span>
+                  <strong>{profile.target.name}</strong>
+                  <span>{relationshipStatusLabel(profile.status)} · Influence {profile.influence}</span>
+                  <small>{profile.reasons[0]}</small>
+                </FmListButton>
+              ))}
+            </FmPaneBody>
+          </FmPane>
+          <FmPane className="ui-relationship-profile-pane">
+            {selectedRelationship ? (
+              <>
+                <FmPaneHeader title={selectedRelationship.target.name} meta={`${selectedRelationship.target.type} · Authority #${selectedRelationship.authorityRank}`} />
+                <FmPaneBody className="ui-relationship-profile-body overflow-auto">
+                  <section className={`ui-relationship-status is-${selectedRelationship.status}`}>
+                    <span>{relationshipStatusLabel(selectedRelationship.status)}</span>
+                    <strong>Influence {selectedRelationship.influence}</strong>
+                    <p>{selectedRelationship.authorityLabel}</p>
+                  </section>
+                  <section>
+                    <h3 className="ui-fm-section-label">Current relationship read</h3>
+                    <ul>{selectedRelationship.reasons.map((reason) => <li key={reason}>{reason}</li>)}</ul>
+                  </section>
+                  <section>
+                    <h3 className="ui-fm-section-label">Management options</h3>
+                    <div className="ui-relationship-actions">
+                      {selectedRelationship.target.type === 'Driver' && state.drivers.find((driver) => driver.id === selectedRelationship.target.id) && (
+                        <DriverDossierButton
+                          state={state}
+                          subject={{ type: 'driver', driver: state.drivers.find((driver) => driver.id === selectedRelationship.target.id)! }}
+                          focus="relationship"
+                          actionIntent
+                        >
+                          Open driver conversation
+                        </DriverDossierButton>
+                      )}
+                      {selectedRelationship.target.type === 'Owner' && selectedRelationship.target.teamId && (
+                        <CharacterDossierButton state={state} subject={{ type: 'owner', teamId: selectedRelationship.target.teamId }} initialTab="actions">
+                          Open owner meeting
+                        </CharacterDossierButton>
+                      )}
+                      {selectedRelationship.target.type === 'Staff' && state.staff?.find((staff) => staff.id === selectedRelationship.target.id) && (
+                        <CharacterDossierButton
+                          state={state}
+                          subject={{ type: 'staff', staff: state.staff.find((staff) => staff.id === selectedRelationship.target.id)! }}
+                          initialTab="actions"
+                        >
+                          Open staff meeting
+                        </CharacterDossierButton>
+                      )}
+                      {selectedRelationship.target.type === 'RivalPrincipal' && selectedRelationship.target.teamId && (
+                        <CharacterDossierButton state={state} subject={{ type: 'aiPrincipal', teamId: selectedRelationship.target.teamId }} initialTab="actions">
+                          Choose paddock action
+                        </CharacterDossierButton>
+                      )}
+                      <Button variant="secondary" onClick={() => handleReviewRelationship(selectedRelationship)}>Open related workspace</Button>
+                    </div>
+                  </section>
+                  <section>
+                    <h3 className="ui-fm-section-label">Recent activity</h3>
+                    {selectedRelationshipActivity.length
+                      ? selectedRelationshipActivity.map((item) => <article key={item.id}><strong>{item.title}</strong><span>{item.seasonYear} · Round {item.round}</span><p>{item.detail}</p></article>)
+                      : <p>No recent relationship event is recorded.</p>}
+                  </section>
+                </FmPaneBody>
+              </>
+            ) : <FmPaneBody className="ui-inbox-empty">No relationship profile is available.</FmPaneBody>}
+          </FmPane>
+          <FmPane>
+            <FmPaneHeader title="Risk & Commitments" meta="People management" />
+            <FmPaneBody className="ui-team-context-pane overflow-auto">
+              <section>
+                <h3>Command summary</h3>
+                <FmKeyValue label="Must act now" value={commandSummary.mustActNow} />
+                <FmKeyValue label="Watch closely" value={commandSummary.watchClosely} />
+                <FmKeyValue label="Stable" value={commandSummary.stable} />
+                <FmKeyValue label="Active promises" value={activePromiseCount} />
+              </section>
+              {selectedRelationship && (
+                <>
+                  <section>
+                    <h3>Selected profile</h3>
+                    <FmKeyValue label="Authority" value={`#${selectedRelationship.authorityRank}`} />
+                    <FmKeyValue label="Influence" value={selectedRelationship.influence} />
+                    <FmKeyValue label="Action window" value={selectedRelationship.actionWindow} />
+                    <FmKeyValue label="Status" value={relationshipStatusLabel(selectedRelationship.status)} />
+                  </section>
+                  {selectedRelationship.target.type === 'Driver' && (
+                    <section>
+                      <h3>Driver promises</h3>
+                      <FmKeyValue label="Active" value={selectedRelationshipPromises.filter((promise) => promise.status === 'active').length} />
+                      <FmKeyValue label="Kept" value={selectedRelationshipPromises.filter((promise) => promise.status === 'kept').length} />
+                      <FmKeyValue label="Broken" value={selectedRelationshipPromises.filter((promise) => promise.status === 'broken').length} />
+                    </section>
+                  )}
+                </>
+              )}
+            </FmPaneBody>
+          </FmPane>
+        </FmWorkspaceGrid>
+      )}
+
+      {activeSection === 'hierarchy' && (
         <RelationshipPriorityBoard
           state={state}
           profiles={relationshipPriorities}
@@ -350,72 +439,41 @@ export function Relationships() {
       {activeSection === 'activity' && <RelationshipActivityPanel state={state} />}
 
       {/* Race Drivers Section */}
-      {activeSection === 'race' && <div>
-        <h2 className="mb-3 text-sm font-semibold uppercase text-neutral-500">Race Drivers</h2>
-        <div className="grid gap-4 lg:grid-cols-2">
-          {activeDrivers.map((d) => {
-            const rel = rels[d.id];
-            if (!rel) {
-              return (
-                <Panel key={d.id} title={driverName(d.id)}>
-                  <div className="mb-2 flex items-center gap-2">
-                    <span className="rounded bg-[var(--era-accent-soft)] px-1.5 py-0.5 text-[10px] uppercase tracking-wide text-[var(--era-accent-strong)]">
-                      Race Driver
-                    </span>
-                    <span className="text-[11px] text-neutral-500">Relationship data initializing...</span>
-                  </div>
-                </Panel>
-              );
-            }
-            return (
-              <DriverCard
-                key={d.id}
-                rel={rel}
-                driverName={driverName}
-                promises={allPromises.filter((p) => p.driverId === d.id)}
-                contractYears={driverContractYears(d.id)}
-                state={state}
-                isRaceDriver
-                onMakePromise={handleMakePromise}
-              />
-            );
-          })}
-        </div>
-      </div>}
-
-      {/* Reserve / Third Driver Section */}
-      {activeSection === 'reserve' && reserveDrivers.length > 0 && (
-        <div>
-          <h2 className="mb-3 text-sm font-semibold uppercase text-neutral-500">Reserve / Third Driver</h2>
-          <div className="grid gap-4 lg:grid-cols-2">
-            {reserveDrivers.map((d) => {
-              const rel = rels[d.id];
-              if (!rel) {
+      {(activeSection === 'race' || activeSection === 'reserve') && driversInSection.length > 0 && (
+        <FmWorkspaceGrid columns="two">
+          <FmPane>
+            <FmPaneHeader title={activeSection === 'race' ? 'Race Drivers' : 'Reserve / Third Driver'} meta={`${driversInSection.length} drivers`} />
+            <FmPaneBody className="overflow-auto">
+              {driversInSection.map((driver) => {
+                const relationship = rels[driver.id];
                 return (
-                  <Panel key={d.id} title={driverName(d.id)}>
-                    <div className="mb-2 flex items-center gap-2">
-                      <span className="rounded bg-neutral-800 px-1.5 py-0.5 text-[10px] uppercase tracking-wide text-neutral-400">
-                        Reserve
-                      </span>
-                      <span className="text-[11px] text-neutral-500">Relationship data initializing...</span>
-                    </div>
-                  </Panel>
+                  <FmListButton key={driver.id} active={selectedSectionDriver?.id === driver.id} onClick={() => setSelectedDriverId(driver.id)}>
+                    <span className="ui-news-list-source">#{driver.number} · {activeSection === 'race' ? 'Race driver' : 'Reserve'}</span>
+                    <strong>{driver.name}</strong>
+                    <span>{relationship ? `${computeConfidenceState(relationship)} · ${overallConfidenceScore(relationship)} confidence` : 'Relationship data initializing'}</span>
+                    <small>{allPromises.filter((promise) => promise.driverId === driver.id && promise.status === 'active').length} active promises</small>
+                  </FmListButton>
                 );
-              }
-              return (
+              })}
+            </FmPaneBody>
+          </FmPane>
+          <FmPane>
+            <FmPaneHeader title={selectedSectionDriver?.name ?? 'Driver Relationship'} meta={activeSection === 'race' ? 'Race driver' : 'Reserve / third driver'} />
+            <FmPaneBody className="overflow-auto p-3">
+              {selectedSectionDriver && rels[selectedSectionDriver.id] ? (
                 <DriverCard
-                  key={d.id}
-                  rel={rel}
+                  rel={rels[selectedSectionDriver.id]}
                   driverName={driverName}
-                  promises={allPromises.filter((p) => p.driverId === d.id)}
-                  contractYears={driverContractYears(d.id)}
+                  promises={allPromises.filter((promise) => promise.driverId === selectedSectionDriver.id)}
+                  contractYears={driverContractYears(selectedSectionDriver.id)}
                   state={state}
+                  isRaceDriver={activeSection === 'race'}
                   onMakePromise={handleMakePromise}
                 />
-              );
-            })}
-          </div>
-        </div>
+              ) : <div className="ui-inbox-empty">Relationship data is initializing.</div>}
+            </FmPaneBody>
+          </FmPane>
+        </FmWorkspaceGrid>
       )}
       {activeSection === 'reserve' && reserveDrivers.length === 0 && <Panel title="Reserve / Third Driver"><p className="text-sm text-neutral-500">No reserve or third driver is currently signed.</p></Panel>}
 
@@ -489,6 +547,16 @@ export function Relationships() {
         )}
       </Panel>}
       </WorkspaceBody>
+      <FmDecisionBar>
+        <strong className="text-neutral-200">
+          {activeDeskSignal
+            ? `${activeDeskSignal.title}: ${activeDeskSignal.reason}`
+            : urgentRelationshipFollowUp
+              ? `Follow-up: ${urgentRelationshipFollowUp.targetName} · ${urgentRelationshipFollowUp.followUp.label}`
+              : 'No immediate relationship response is required'}
+        </strong>
+        {activeManagementRead && <span> · {activeManagementRead.posture}</span>}
+      </FmDecisionBar>
     </WorkspaceScreen>
   );
 }

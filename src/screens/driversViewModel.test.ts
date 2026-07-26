@@ -4,6 +4,7 @@ import {
   DRIVERS_TABS,
   driverDirectoryPage,
   driverDirectoryPageCount,
+  selectedDriver,
 } from './driversViewModel';
 
 describe('drivers view model', () => {
@@ -20,5 +21,12 @@ describe('drivers view model', () => {
     expect(driverDirectoryPage(drivers, 15)).toEqual(drivers.slice(90, 95));
     expect(driverDirectoryPage(drivers, 99)).toEqual(drivers.slice(90, 95));
     expect(driverDirectoryPage(drivers, -1)).toEqual(drivers.slice(0, 6));
+  });
+
+  it('keeps a selected driver visible and falls back to the first available driver', () => {
+    const drivers = [{ id: 'one' }, { id: 'two' }];
+    expect(selectedDriver(drivers, 'two')).toBe(drivers[1]);
+    expect(selectedDriver(drivers, 'missing')).toBe(drivers[0]);
+    expect(selectedDriver([], 'one')).toBeUndefined();
   });
 });
