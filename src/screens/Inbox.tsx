@@ -1,16 +1,9 @@
 import { useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useGame } from '../game/GameContext';
+import { currentRace, teamById } from '../game/careerState';
 import { Button } from '../components/Button';
-import { Panel } from '../components/Panel';
-import {
-  MetricStrip,
-  WorkspaceBody,
-  WorkspaceHeader,
-  WorkspaceMetric,
-  WorkspaceScreen,
-  WorkspaceTabs,
-} from '../components/workspace/Workspace';
+import { FmPane, FmPaneBody, FmPaneHeader } from '../components/workspace/FmPane';
 import {
   inboxMessages,
   inboxTimingLabel,
@@ -29,7 +22,7 @@ type InboxFilter = 'all' | 'action' | InboxCategory;
 type InboxSection = 'all' | InboxMessageKind;
 
 const FILTERS: ReadonlyArray<{ id: InboxFilter; label: string }> = [
-  { id: 'all', label: 'All' },
+  { id: 'all', label: 'All categories' },
   { id: 'action', label: 'Needs attention' },
   { id: 'technical', label: 'Technical' },
   { id: 'paddock', label: 'Paddock' },
@@ -39,11 +32,23 @@ const FILTERS: ReadonlyArray<{ id: InboxFilter; label: string }> = [
 ];
 
 const SECTIONS: ReadonlyArray<{ id: InboxSection; label: string }> = [
-  { id: 'all', label: 'All items' },
+  { id: 'all', label: 'All Items' },
   { id: 'must_respond', label: 'Must Respond' },
   { id: 'recommended', label: 'Recommended' },
-  { id: 'news', label: 'News & stories' },
+  { id: 'news', label: 'News & Stories' },
 ];
+
+const SEVERITY_LABELS: Record<InboxSeverity, string> = {
+  critical: 'Critical',
+  action: 'Action',
+  info: 'Information',
+};
+
+const KIND_LABELS: Record<InboxMessageKind, string> = {
+  must_respond: 'Must Respond',
+  recommended: 'Recommended',
+  news: 'News',
+};
 
 function filterFromQuery(value: string | null): InboxFilter {
   return FILTERS.some((filter) => filter.id === value) ? value as InboxFilter : 'all';
@@ -53,23 +58,33 @@ function sectionFromQuery(value: string | null): InboxSection {
   return SECTIONS.some((section) => section.id === value) ? value as InboxSection : 'all';
 }
 
-const SEVERITY_BADGES: Record<InboxSeverity, { label: string; className: string }> = {
-  critical: { label: 'Critical', className: 'bg-red-500/20 text-red-300 border-red-500/40' },
-  action: { label: 'Action', className: 'bg-amber-500/20 text-amber-300 border-amber-500/40' },
-  info: { label: 'FYI', className: 'bg-neutral-700/40 text-neutral-400 border-neutral-600/40' },
-};
+function messageDate(message: InboxMessage): string {
+  if (message.timestamp) {
+    const date = new Date(message.timestamp);
+    if (!Number.isNaN(date.getTime())) {
+      return new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric' }).format(date);
+    }
+  }
+  return message.round !== undefined ? `Round ${message.round}` : 'Current';
+}
 
-const KIND_BADGES: Record<InboxMessageKind, { label: string; className: string }> = {
-  must_respond: { label: 'Must Respond', className: 'bg-red-500/20 text-red-300 border-red-500/40' },
-  recommended: { label: 'Recommended', className: 'bg-amber-500/20 text-amber-300 border-amber-500/40' },
-  news: { label: 'News', className: 'bg-neutral-700/40 text-neutral-400 border-neutral-600/40' },
-};
+function countForSection(messages: InboxMessage[], section: InboxSection): number {
+  return section === 'all'
+    ? messages.length
+    : messages.filter((message) => message.kind === section).length;
+}
+
+function countForFilter(messages: InboxMessage[], filter: InboxFilter): number {
+  if (filter === 'all') return messages.length;
+  if (filter === 'action') return messages.filter((message) => message.actionable).length;
+  return messages.filter((message) => message.category === filter).length;
+}
 
 export function Inbox() {
   const { state, dispatch } = useGame();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
-  const [expandedId, setExpandedId] = useState<string>();
+  const [selectedId, setSelectedId] = useState<string>();
   if (!state) return null;
 
   const filter = filterFromQuery(searchParams.get('category'));
@@ -79,13 +94,15 @@ export function Inbox() {
   const filtered = messages.filter((message) =>
     (filter === 'all' ? true : filter === 'action' ? message.actionable : message.category === filter)
     && (section === 'all' || message.kind === section));
-  const unread = messages.filter((message) => !read.has(message.id));
-  const round = state.calendar[state.currentRaceIndex]?.round ?? state.currentRaceIndex + 1;
+  const selectedMessage = filtered.find((message) => message.id === selectedId) ?? filtered[0];
+  const unreadCount = messages.filter((message) => !read.has(message.id)).length;
+  const team = teamById(state, state.selectedTeamId);
+  const race = currentRace(state);
   const workflow = workflowDestination(state);
   const guide = commandLoopGuide(state);
   const activeReviewRace = state.careerPhase?.currentPhase === 'post_race_review'
     && state.careerPhase.lastCompletedRaceId
-    ? state.calendar.find((race) => race.id === state.careerPhase?.lastCompletedRaceId)
+    ? state.calendar.find((entry) => entry.id === state.careerPhase?.lastCompletedRaceId)
     : undefined;
   const followUps = activeReviewRace
     ? buildManagerOfficeFollowUps({
@@ -96,185 +113,231 @@ export function Inbox() {
       actionMessages: messages.filter((message) => message.kind !== 'news'),
     })
     : undefined;
+
   const setInboxQuery = (key: 'category' | 'section', value: string) => {
     const next = new URLSearchParams(searchParams);
     if (value === 'all') next.delete(key);
     else next.set(key, value);
+    setSelectedId(undefined);
     setSearchParams(next);
   };
 
-  const openMessage = (message: InboxMessage) => {
+  const selectMessage = (message: InboxMessage) => {
     if (!read.has(message.id)) dispatch({ type: 'MARK_INBOX_READ', messageIds: [message.id] });
-    setExpandedId((current) => (current === message.id ? undefined : message.id));
+    setSelectedId(message.id);
+  };
+
+  const dismissSelected = () => {
+    if (!selectedMessage || selectedMessage.blocking) return;
+    dispatch({ type: 'DISMISS_INBOX_MESSAGES', messageIds: [selectedMessage.id] });
+    setSelectedId(undefined);
   };
 
   return (
-    <WorkspaceScreen className="era-feature-screen">
-      <WorkspaceHeader
-        eyebrow="Inbox"
-        title="Inbox"
-        subtitle={`${state.seasonYear} ${state.series} · Round ${round}`}
-        actions={(
-          <Button variant="primary" onClick={() => navigate(workflow.to)}>
-            {workflow.label} →
-          </Button>
-        )}
-      />
-      {guide && (
-        <Panel title={guide.title} actions={<span className="text-xs text-sky-300">Start here</span>}>
-          <p className="text-xs leading-5 text-neutral-400">{guide.summary}</p>
-          <div className="mt-3 grid gap-2 md:grid-cols-4">
-            {guide.steps.map((step) => (
-              <div key={step.number} className="rounded border border-neutral-800 bg-neutral-950/30 p-2">
-                <div className="flex items-center gap-2">
-                  <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-sky-500/15 text-[10px] font-black text-sky-300">{step.number}</span>
-                  <span className="text-[10px] font-black uppercase tracking-wide text-neutral-300">{step.title}</span>
-                </div>
-                <p className="mt-2 text-[11px] leading-4 text-neutral-500">{step.detail}</p>
-              </div>
-            ))}
-          </div>
-        </Panel>
-      )}
-      <MetricStrip>
-        <WorkspaceMetric label="Must Respond" value={`${mustRespondInboxCount(state)}`} detail="Blocks phase progression" />
-        <WorkspaceMetric label="Recommended" value={`${recommendedInboxCount(state)}`} detail="Decisions worth reviewing" />
-        <WorkspaceMetric label="News" value={`${messages.filter((message) => message.kind === 'news').length}`} detail="Stories in your feed" />
-        <WorkspaceMetric label="Unread" value={`${unread.length}`} detail="Messages you haven't opened" />
-      </MetricStrip>
-      <WorkspaceTabs
-        items={SECTIONS}
-        active={section}
-        onChange={(nextSection) => setInboxQuery('section', nextSection)}
-        ariaLabel="Inbox sections"
-      />
-      <WorkspaceTabs
-        items={FILTERS}
-        active={filter}
-        onChange={(nextFilter) => setInboxQuery('category', nextFilter)}
-        ariaLabel="Inbox category filters"
-      />
-      <WorkspaceBody className="space-y-2">
-        {followUps && (
-          <Panel title={`Manager Office · ${followUps.raceLabel}`}>
-            <p className="mb-3 text-xs text-neutral-500">What changed in the race and what still needs your attention.</p>
-            <div className="grid gap-3 lg:grid-cols-2">
-              <FollowUpColumn title="What changed" items={followUps.changed} navigate={navigate} />
-              <FollowUpColumn title="What needs action" items={followUps.action} navigate={navigate} />
-            </div>
-          </Panel>
-        )}
-        <div className="flex justify-end">
+    <div className="ui-inbox-screen">
+      <div className="ui-inbox-toolbar">
+        <div className="ui-inbox-view-tabs" role="tablist" aria-label="Inbox views">
+          {SECTIONS.map((item) => (
+            <button
+              key={item.id}
+              type="button"
+              role="tab"
+              aria-selected={section === item.id}
+              className={section === item.id ? 'is-active' : ''}
+              onClick={() => setInboxQuery('section', item.id)}
+            >
+              {item.label}
+              <span>{countForSection(messages, item.id)}</span>
+            </button>
+          ))}
+        </div>
+        <div className="ui-inbox-toolbar-summary">
+          <span><strong>{mustRespondInboxCount(state)}</strong> must respond</span>
+          <span><strong>{recommendedInboxCount(state)}</strong> recommended</span>
+          <span><strong>{unreadCount}</strong> unread</span>
           <Button
-            className="px-2 py-1 text-xs"
+            className="px-2 py-1 text-[10px]"
             onClick={() => dispatch({ type: 'MARK_INBOX_READ', messageIds: messages.map((message) => message.id) })}
           >
             Mark all read
           </Button>
         </div>
-        {filtered.length === 0 ? (
-          <p className="py-8 text-center text-sm text-neutral-500">Nothing here — enjoy the quiet week.</p>
-        ) : (
-          <div className="space-y-5">
-            {SECTIONS.filter((item) => item.id !== 'all' && (section === 'all' || item.id === section)).map((item) => {
-              const sectionMessages = filtered.filter((message) => message.kind === item.id);
-              if (sectionMessages.length === 0) return null;
-              return (
-                <section key={item.id} aria-labelledby={`inbox-section-${item.id}`}>
-                  <div className="mb-2 flex items-center justify-between gap-3">
-                    <h2 id={`inbox-section-${item.id}`} className="text-xs font-black uppercase tracking-[0.14em] text-neutral-400">
-                      {item.label}
-                    </h2>
-                    <span className="text-[10px] uppercase tracking-wide text-neutral-600">{sectionMessages.length} item{sectionMessages.length === 1 ? '' : 's'}</span>
+      </div>
+
+      <div className="ui-inbox-grid">
+        <FmPane className="ui-inbox-folders" ariaLabel="Inbox folders">
+          <FmPaneHeader title="Folders" meta={`${messages.length} total items`} />
+          <FmPaneBody>
+            <div className="ui-inbox-folder-list">
+              {FILTERS.map((item) => (
+                <button
+                  key={item.id}
+                  type="button"
+                  className={filter === item.id ? 'is-active' : ''}
+                  onClick={() => setInboxQuery('category', item.id)}
+                >
+                  <span>{item.label}</span>
+                  <strong>{countForFilter(messages, item.id)}</strong>
+                </button>
+              ))}
+            </div>
+            <div className="ui-inbox-folder-note">
+              Required decisions remain visible until resolved.
+            </div>
+          </FmPaneBody>
+        </FmPane>
+
+        <FmPane className="ui-inbox-list" ariaLabel="Message list">
+          <FmPaneHeader
+            title={SECTIONS.find((item) => item.id === section)?.label ?? 'All Items'}
+            meta={`${filtered.length} item${filtered.length === 1 ? '' : 's'} in this view`}
+          />
+          <FmPaneBody>
+            {filtered.length === 0 ? (
+              <div className="ui-inbox-empty">Nothing here — enjoy the quiet week.</div>
+            ) : (
+              <div className="ui-inbox-message-list">
+                {filtered.map((message) => {
+                  const unread = !read.has(message.id);
+                  const active = selectedMessage?.id === message.id;
+                  return (
+                    <button
+                      key={message.id}
+                      type="button"
+                      className={`ui-inbox-message ${active ? 'is-active' : ''} ${unread ? 'is-unread' : ''}`}
+                      onClick={() => selectMessage(message)}
+                      aria-pressed={active}
+                    >
+                      <span className={`ui-inbox-severity is-${message.severity}`} aria-label={SEVERITY_LABELS[message.severity]} />
+                      <span className="ui-inbox-message-copy">
+                        <span className="ui-inbox-message-source">{message.source}</span>
+                        <strong>{message.title}</strong>
+                        <span className="ui-inbox-message-preview">{message.body ?? message.whyItMatters}</span>
+                      </span>
+                      <span className="ui-inbox-message-meta">
+                        <span>{messageDate(message)}</span>
+                        {unread && <i aria-label="Unread" />}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+          </FmPaneBody>
+        </FmPane>
+
+        <FmPane className="ui-inbox-reader" ariaLabel="Selected message">
+          {selectedMessage ? (
+            <>
+              <FmPaneHeader
+                title={selectedMessage.source}
+                meta={`${messageDate(selectedMessage)} · ${selectedMessage.category}`}
+              />
+              <FmPaneBody className="ui-inbox-reader-body">
+                <article>
+                  <div className="ui-inbox-reader-flags">
+                    <span className={`is-${selectedMessage.kind ?? 'news'}`}>
+                      {KIND_LABELS[selectedMessage.kind ?? 'news']}
+                    </span>
+                    {selectedMessage.timing && <span>{inboxTimingLabel(selectedMessage.timing)}</span>}
+                    {selectedMessage.blocking && <span className="is-blocking">Blocks advancement</span>}
                   </div>
-                  <ul className="space-y-1.5">
-                    {sectionMessages.map((message) => {
-              const badge = SEVERITY_BADGES[message.severity];
-              const kindBadge = KIND_BADGES[message.kind ?? 'news'];
-              const isRead = read.has(message.id);
-              const expanded = expandedId === message.id;
-              return (
-                <li key={message.id} className={`rounded border ${isRead ? 'border-neutral-800/60 bg-neutral-950/30' : 'border-neutral-700 bg-neutral-900/50'}`}>
-                  <button
-                    type="button"
-                    className="flex w-full flex-wrap items-center gap-3 px-3 py-2 text-left"
-                    onClick={() => openMessage(message)}
-                    aria-expanded={expanded}
-                  >
-                    <span className={`rounded border px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide ${badge.className}`}>{badge.label}</span>
-                    <span className={`rounded border px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide ${kindBadge.className}`}>{kindBadge.label}</span>
-                    <span className={`min-w-0 flex-1 text-sm ${isRead ? 'text-neutral-400' : 'font-semibold text-neutral-100'}`}>{message.title}</span>
-                    <span className="text-[10px] uppercase tracking-wide text-neutral-600">{message.category}</span>
-                    {!isRead && <span aria-label="Unread" className="h-2 w-2 rounded-full bg-[var(--era-accent-strong)]" />}
-                  </button>
-                  {expanded && (
-                    <div className="border-t border-neutral-800/60 px-3 py-2">
-                      <div className="mb-2 flex flex-wrap gap-x-4 gap-y-1 text-[10px] uppercase tracking-wide text-neutral-500">
-                        <span>Owner: {message.source}</span>
-                        {message.timing && <span className="text-amber-300">{inboxTimingLabel(message.timing)}</span>}
-                        {message.blocking && <span className="text-red-300">Blocks advancement</span>}
-                      </div>
-                      {message.body && <p className="text-sm leading-6 text-neutral-300">{message.body}</p>}
-                      {message.whyItMatters && <p className="mt-2 text-xs leading-5 text-neutral-500">Why it matters: {message.whyItMatters}</p>}
-                      <div className="mt-2">
-                        <div className="flex flex-wrap gap-2">
-                          <Button className="px-2 py-1 text-xs" variant="primary" onClick={() => navigate(message.route)}>
-                            {message.routeLabel} →
-                          </Button>
-                          {!message.blocking && (
-                            <Button
-                              className="px-2 py-1 text-xs"
-                              onClick={() => {
-                                dispatch({ type: 'DISMISS_INBOX_MESSAGES', messageIds: [message.id] });
-                                setExpandedId(undefined);
-                              }}
-                            >
-                              Dismiss
-                            </Button>
-                          )}
-                        </div>
-                      </div>
+                  <h2>{selectedMessage.title}</h2>
+                  {selectedMessage.body && <p className="ui-inbox-reader-message">{selectedMessage.body}</p>}
+                  {selectedMessage.whyItMatters && (
+                    <div className="ui-inbox-why">
+                      <strong>Why this matters</strong>
+                      <p>{selectedMessage.whyItMatters}</p>
                     </div>
                   )}
-                </li>
-              );
-                    })}
-                  </ul>
-                </section>
-              );
-            })}
-          </div>
-        )}
-      </WorkspaceBody>
-    </WorkspaceScreen>
+                </article>
+              </FmPaneBody>
+              <div className="ui-inbox-action-bar">
+                <Button variant="primary" onClick={() => navigate(selectedMessage.route)}>
+                  {selectedMessage.routeLabel} →
+                </Button>
+                {!selectedMessage.blocking && (
+                  <Button onClick={dismissSelected}>Dismiss</Button>
+                )}
+              </div>
+            </>
+          ) : (
+            <div className="ui-inbox-empty">Select a folder with messages to continue.</div>
+          )}
+        </FmPane>
+
+        <FmPane className="ui-inbox-context" ariaLabel="Message context">
+          <FmPaneHeader title="Context" meta="Live game state" />
+          <FmPaneBody className="ui-inbox-context-body">
+            {selectedMessage && (
+              <ContextSection title="Selected item">
+                <ContextRow label="Owner" value={selectedMessage.source ?? '—'} />
+                <ContextRow label="Type" value={KIND_LABELS[selectedMessage.kind ?? 'news']} />
+                <ContextRow label="Priority" value={SEVERITY_LABELS[selectedMessage.severity]} />
+                <ContextRow label="Category" value={selectedMessage.category} />
+                {selectedMessage.timing && <ContextRow label="Timing" value={inboxTimingLabel(selectedMessage.timing)} />}
+              </ContextSection>
+            )}
+
+            <ContextSection title="Team">
+              <ContextRow label="Team" value={team?.name ?? '—'} />
+              <ContextRow label="Series" value={state.series} />
+              <ContextRow label="Season" value={String(state.seasonYear)} />
+            </ContextSection>
+
+            <ContextSection title="Next event">
+              <ContextRow label="Event" value={race?.gpName ?? 'Season complete'} />
+              {race && <ContextRow label="Round" value={`${race.round} of ${state.calendar.length}`} />}
+              {race && <ContextRow label="Circuit" value={race.trackName} />}
+            </ContextSection>
+
+            <ContextSection title="Current workflow">
+              <p className="ui-inbox-context-callout">{workflow.reason}</p>
+              <button type="button" onClick={() => navigate(workflow.to)}>{workflow.label} →</button>
+            </ContextSection>
+
+            {followUps && (
+              <ContextSection title={`Manager Office · ${followUps.raceLabel}`}>
+                {[...followUps.changed, ...followUps.action].map((item) => (
+                  <button key={item.id} type="button" className="ui-inbox-context-link" onClick={() => navigate(item.route)}>
+                    <strong>{item.title}</strong>
+                    <span>{item.routeLabel} →</span>
+                  </button>
+                ))}
+              </ContextSection>
+            )}
+
+            {guide && (
+              <ContextSection title={guide.title}>
+                <p className="ui-inbox-context-callout">{guide.summary}</p>
+                <ol className="ui-inbox-guide-steps">
+                  {guide.steps.map((step) => (
+                    <li key={step.number}><strong>{step.number}</strong><span>{step.title}</span></li>
+                  ))}
+                </ol>
+              </ContextSection>
+            )}
+          </FmPaneBody>
+        </FmPane>
+      </div>
+    </div>
   );
 }
 
-function FollowUpColumn({
-  title,
-  items,
-  navigate,
-}: {
-  title: string;
-  items: ReturnType<typeof buildManagerOfficeFollowUps>['changed'];
-  navigate: (to: string) => void;
-}) {
+function ContextSection({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <div>
-      <h2 className="mb-2 text-xs font-black uppercase tracking-[0.14em] text-neutral-400">{title}</h2>
-      {items.length === 0 ? (
-        <p className="rounded border border-neutral-800 bg-neutral-950/30 p-3 text-xs text-neutral-500">Nothing new here.</p>
-      ) : (
-        <div className="space-y-1.5">
-          {items.map((item) => (
-            <div key={item.id} className="rounded border border-neutral-800 bg-neutral-950/30 p-3">
-              <div className="text-sm font-semibold text-neutral-200">{item.title}</div>
-              <p className="mt-1 text-xs leading-5 text-neutral-500">{item.detail}</p>
-              <Button className="mt-2 px-2 py-1 text-xs" variant="ghost" onClick={() => navigate(item.route)}>{item.routeLabel} →</Button>
-            </div>
-          ))}
-        </div>
-      )}
+    <section className="ui-inbox-context-section">
+      <h3>{title}</h3>
+      {children}
+    </section>
+  );
+}
+
+function ContextRow({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="ui-inbox-context-row">
+      <span>{label}</span>
+      <strong>{value}</strong>
     </div>
   );
 }

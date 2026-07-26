@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { useGame } from '../game/GameContext';
 import { Panel } from '../components/Panel';
 import { RatingBadge } from '../components/RatingBadge';
@@ -100,8 +101,12 @@ function sortValue(row: TeamOverviewRow, key: SortKey): number {
 
 export function TeamOverview() {
   const { state } = useGame();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const requestedFilter = searchParams.get('filter');
+  const filter: Filter = requestedFilter === 'player' || requestedFilter === 'rivals'
+    ? requestedFilter
+    : 'all';
   const [sortKey, setSortKey] = useState<SortKey>('championshipPosition');
-  const [filter, setFilter] = useState<Filter>('all');
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [page, setPage] = useState(0);
 
@@ -170,7 +175,7 @@ export function TeamOverview() {
         ]}
         active={filter}
         onChange={(next) => {
-          setFilter(next);
+          setSearchParams(next === 'all' ? {} : { filter: next }, { replace: true });
           setPage(0);
           setSelectedId(null);
         }}

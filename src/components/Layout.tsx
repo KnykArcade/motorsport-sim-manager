@@ -2,14 +2,18 @@ import { useMemo, useState, type ReactNode } from 'react';
 import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { useGame } from '../game/GameContext';
 import { teamById, currentRace } from '../game/careerState';
-import { formatMoney } from './ui';
 import { getHiddenNavRoutes, getGameModeLabel } from '../game/modeRestrictions';
 import { EraThemeProvider } from '../theme/EraThemeContext';
 import { getEraTheme, getEraThemeConfig } from '../theme/eraTheme';
-import { visibleNavigationGroups } from './layoutNavigation';
+import {
+  isNavigationItemActive,
+  routePath,
+  visibleNavigationGroups,
+} from './layoutNavigation';
+import { contextualNavigationForRoute, pageIdentityForRoute } from './layoutContext';
 import { workflowDestination } from './layoutWorkflow';
 import { NavIcon } from './NavIcon';
-import { unreadInboxCount } from '../screens/inboxViewModel';
+import { mustRespondInboxCount, unreadInboxCount } from '../screens/inboxViewModel';
 
 export function Layout({ children }: { children: ReactNode }) {
   const { state, saveNow } = useGame();
@@ -20,10 +24,16 @@ export function Layout({ children }: { children: ReactNode }) {
   const race = state ? currentRace(state) : undefined;
   const hiddenRoutes = getHiddenNavRoutes(state?.gameMode);
   const navigationGroups = visibleNavigationGroups(hiddenRoutes);
+  const contextualNavigation = contextualNavigationForRoute(location.pathname, hiddenRoutes);
+  const pageIdentity = pageIdentityForRoute(location.pathname, location.search);
   const era = getEraTheme(state?.series, state?.seasonYear);
   const eraConfig = getEraThemeConfig(era);
   const workflow = state ? workflowDestination(state) : undefined;
   const inboxUnread = useMemo(() => (state ? unreadInboxCount(state) : 0), [state]);
+  const mustRespond = useMemo(() => (state ? mustRespondInboxCount(state) : 0), [state]);
+  const currentRound = state
+    ? Math.min(state.currentRaceIndex + 1, Math.max(1, state.calendar.length))
+    : 0;
 
   const goTo = (to: string) => {
     setMobileNavigationOpen(false);
@@ -42,15 +52,15 @@ export function Layout({ children }: { children: ReactNode }) {
           />
         )}
 
-        <aside className={`era-sidebar ui-sidebar fixed inset-y-0 left-0 z-40 flex w-56 shrink-0 flex-col transition-transform lg:static lg:translate-x-0 ${mobileNavigationOpen ? 'translate-x-0' : '-translate-x-full'}`}>
-          <div className="era-brand border-b px-4 py-3">
-            <div className="era-brand-kicker text-[10px] font-semibold uppercase tracking-[0.18em]">Motorsport</div>
+        <aside className={`era-sidebar ui-sidebar fixed inset-y-0 left-0 z-40 flex w-52 shrink-0 flex-col transition-transform lg:static lg:translate-x-0 ${mobileNavigationOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+          <div className="era-brand ui-brand border-b px-3 py-3">
+            <div className="era-brand-kicker text-[9px] font-bold uppercase tracking-[0.2em]">Motorsport</div>
             <div className="text-sm font-black tracking-wide text-neutral-100">History Manager</div>
             <div className="mt-2 flex items-center justify-between gap-2">
-              <span className="era-era-chip inline-flex rounded px-2 py-0.5 text-[9px] font-semibold uppercase tracking-wide">
-                {eraConfig.label}
+              <span className="era-era-chip inline-flex px-1.5 py-0.5 text-[8px] font-bold uppercase tracking-wide">
+                {state?.seasonYear ?? eraConfig.shortLabel} · {state?.series ?? 'Career'}
               </span>
-              <button type="button" className="text-xs text-neutral-500 hover:text-neutral-200 lg:hidden" onClick={() => setMobileNavigationOpen(false)}>
+              <button type="button" className="text-[10px] text-neutral-500 hover:text-neutral-200 lg:hidden" onClick={() => setMobileNavigationOpen(false)}>
                 Close
               </button>
             </div>
@@ -60,25 +70,27 @@ export function Layout({ children }: { children: ReactNode }) {
             {navigationGroups.map((group) => (
               <section key={group.id} className="ui-sidebar-group">
                 <h2>{group.label}</h2>
-                <div className="space-y-0.5">
-                  {group.items.map((item) => (
-                    <NavLink
-                      key={item.to}
-                      to={item.to}
-                      onClick={() => setMobileNavigationOpen(false)}
-                      className={({ isActive }) =>
-                        `era-nav-link flex items-center gap-2.5 rounded px-2.5 py-1.5 text-xs transition-colors ${isActive ? 'is-active font-semibold' : ''}`
-                      }
-                    >
-                      <NavIcon to={item.to} className="era-nav-icon h-4 w-4 shrink-0" />
-                      <span className="truncate">{item.label}</span>
-                      {item.to === '/inbox' && inboxUnread > 0 && (
-                        <span className="ml-auto rounded-full bg-[var(--era-accent-strong)] px-1.5 py-0.5 text-[9px] font-bold leading-none text-black">
-                          {inboxUnread > 99 ? '99+' : inboxUnread}
-                        </span>
-                      )}
-                    </NavLink>
-                  ))}
+                <div>
+                  {group.items.map((navItem) => {
+                    const active = isNavigationItemActive(navItem, location.pathname, location.search);
+                    return (
+                      <NavLink
+                        key={navItem.to}
+                        to={navItem.to}
+                        onClick={() => setMobileNavigationOpen(false)}
+                        aria-current={active ? 'page' : undefined}
+                        className={`era-nav-link flex items-center gap-2 px-2.5 py-1.5 text-[11px] transition-colors ${active ? 'is-active font-semibold' : ''}`}
+                      >
+                        <NavIcon to={routePath(navItem.to)} className="era-nav-icon h-3.5 w-3.5 shrink-0" />
+                        <span className="truncate">{navItem.label}</span>
+                        {navItem.to === '/inbox' && (mustRespond > 0 || inboxUnread > 0) && (
+                          <span className={`ml-auto min-w-5 px-1 py-0.5 text-center text-[8px] font-black leading-none ${mustRespond > 0 ? 'ui-nav-urgent' : 'ui-nav-unread'}`}>
+                            {(mustRespond || inboxUnread) > 99 ? '99+' : mustRespond || inboxUnread}
+                          </span>
+                        )}
+                      </NavLink>
+                    );
+                  })}
                 </div>
               </section>
             ))}
@@ -86,18 +98,18 @@ export function Layout({ children }: { children: ReactNode }) {
 
           <div className="era-sidebar-actions border-t p-2">
             <div className="grid grid-cols-2 gap-1">
-              <button onClick={saveNow} className="era-nav-action rounded px-2 py-1.5 text-left text-xs">Save</button>
-              <button onClick={() => goTo('/settings')} className="era-nav-action rounded px-2 py-1.5 text-left text-xs">Settings</button>
+              <button onClick={saveNow} className="era-nav-action px-2 py-1.5 text-left text-[10px]">Save</button>
+              <button onClick={() => goTo('/settings')} className="era-nav-action px-2 py-1.5 text-left text-[10px]">Settings</button>
             </div>
-            <button onClick={() => goTo('/')} className="era-nav-action mt-1 w-full rounded px-2 py-1.5 text-left text-xs">Main Menu</button>
+            <button onClick={() => goTo('/')} className="era-nav-action mt-1 w-full px-2 py-1.5 text-left text-[10px]">Main Menu</button>
           </div>
         </aside>
 
         <div className="flex min-w-0 flex-1 flex-col">
-          <header className="era-topbar ui-topbar flex min-h-14 shrink-0 items-center gap-3 border-b px-3 lg:px-4">
+          <header className="era-topbar ui-topbar flex min-h-[58px] shrink-0 items-center gap-3 border-b px-3">
             <button
               type="button"
-              className="era-nav-action rounded px-2 py-1.5 text-xs lg:hidden"
+              className="era-nav-action px-2 py-1.5 text-xs lg:hidden"
               onClick={() => setMobileNavigationOpen(true)}
               aria-label="Open navigation"
             >
@@ -109,24 +121,51 @@ export function Layout({ children }: { children: ReactNode }) {
               <button type="button" className="ui-history-button" aria-label="Go forward" onClick={() => navigate(1)}>›</button>
             </div>
 
+            <div className="ui-page-identity min-w-0 flex-1">
+              <div className="ui-page-section">{pageIdentity.section}</div>
+              <h1>{pageIdentity.title}</h1>
+            </div>
+
             {team && (
-              <div className="flex min-w-0 flex-1 items-center gap-2.5">
+              <div className="ui-topbar-team hidden min-w-0 items-center gap-2 xl:flex">
                 <span className="ui-team-badge shrink-0" style={{ backgroundColor: team.color }} aria-hidden="true">
                   {team.name.slice(0, 2).toUpperCase()}
                 </span>
                 <div className="min-w-0">
-                  <div className="truncate text-sm font-bold text-neutral-100">{team.name}</div>
-                  <div className="truncate text-[10px] uppercase tracking-wide text-neutral-500">{state?.series} · {getGameModeLabel(state?.gameMode)}</div>
+                  <div className="max-w-40 truncate text-[11px] font-bold text-neutral-100">{team.name}</div>
+                  <div className="truncate text-[8px] uppercase tracking-wide text-neutral-500">{getGameModeLabel(state?.gameMode)}</div>
                 </div>
               </div>
             )}
 
-            <div className="ui-topbar-metrics hidden shrink-0 items-center md:flex">
-              {state && <TopbarMetric label="Season" value={String(state.seasonYear)} />}
-              {state && <TopbarMetric label="Round" value={`${Math.min(state.currentRaceIndex + 1, state.calendar.length)} / ${state.calendar.length}`} />}
-              {team && <TopbarMetric label="Budget" value={formatMoney(team.budget)} />}
-              {race && !state?.seasonComplete && <TopbarMetric label="Next event" value={race.gpName} />}
-            </div>
+            <button
+              type="button"
+              className={`ui-must-respond hidden shrink-0 md:block ${mustRespond > 0 ? 'has-items' : ''}`}
+              onClick={() => goTo('/inbox?section=must_respond')}
+            >
+              <span>Must Respond</span>
+              <strong>{mustRespond}</strong>
+            </button>
+
+            {state && (
+              <div className="ui-season-context hidden shrink-0 lg:grid">
+                <div>
+                  <span>Season</span>
+                  <strong>{state.seasonYear}</strong>
+                </div>
+                <div>
+                  <span>Round</span>
+                  <strong>{currentRound}/{state.calendar.length}</strong>
+                </div>
+              </div>
+            )}
+
+            {race && !state?.seasonComplete && (
+              <div className="ui-next-event hidden min-w-0 max-w-48 shrink xl:block">
+                <span>Next Event · R{race.round}</span>
+                <strong>{race.gpName}</strong>
+              </div>
+            )}
 
             {workflow && (
               <button
@@ -135,26 +174,33 @@ export function Layout({ children }: { children: ReactNode }) {
                 onClick={() => goTo(workflow.to)}
                 title={`Open ${workflow.context}. Progression remains controlled inside that workspace.`}
               >
-                <span className="hidden text-[9px] font-semibold uppercase tracking-wide opacity-70 xl:block">{workflow.context}</span>
-                <span>{workflow.label} →</span>
+                <span className="hidden text-[8px] font-semibold uppercase tracking-wide opacity-70 xl:block">{workflow.context}</span>
+                <span>{workflow.blocked ? `Review (${workflow.blockerCount})` : 'Continue'} →</span>
               </button>
             )}
           </header>
 
-          <main className="era-content ui-main-content min-h-0 flex-1 overflow-auto p-3 lg:p-4" data-route={location.pathname}>
+          <nav className="ui-context-navigation flex shrink-0 items-stretch overflow-x-auto" aria-label={`${pageIdentity.section} navigation`}>
+            {contextualNavigation.map((navItem) => {
+              const active = isNavigationItemActive(navItem, location.pathname, location.search);
+              return (
+                <NavLink
+                  key={navItem.to}
+                  to={navItem.to}
+                  aria-current={active ? 'page' : undefined}
+                  className={active ? 'is-active' : ''}
+                >
+                  {navItem.label}
+                </NavLink>
+              );
+            })}
+          </nav>
+
+          <main className="era-content ui-main-content min-h-0 flex-1 overflow-auto p-3" data-route={location.pathname}>
             {children}
           </main>
         </div>
       </div>
     </EraThemeProvider>
-  );
-}
-
-function TopbarMetric({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="era-topbar-metric max-w-40 text-right">
-      <div className="text-[9px] font-semibold uppercase tracking-wide">{label}</div>
-      <div className="truncate text-xs font-bold">{value}</div>
-    </div>
   );
 }
