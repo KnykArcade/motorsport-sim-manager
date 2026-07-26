@@ -7,7 +7,7 @@ import { getRouteRestrictionInfo } from '../game/modeRestrictions';
 import { developmentSlots } from '../sim/facilityEngine';
 import { formatMoney } from '../components/ui';
 import { Panel } from '../components/Panel';
-import { WorkspaceBody, WorkspaceHeader, WorkspaceMetric, WorkspaceScreen, WorkspaceTabs, MetricStrip } from '../components/workspace/Workspace';
+import { WorkspaceBody, WorkspaceHeader, WorkspaceScreen, WorkspaceTabs } from '../components/workspace/Workspace';
 import { TechnicalTable, TechnicalTableCell, TechnicalTableHead, TechnicalTableRow } from '../components/TechnicalTable';
 import { activeDriversForTeam } from '../game/careerState';
 import { carWithFittedParts } from '../sim/partsEngine';
@@ -22,33 +22,22 @@ import type { TechnicalManagementMode } from '../types/partsTypes';
 import type { TechnicalAdvisorPriority } from '../types/technicalTypes';
 import { inboxMessages } from './inboxViewModel';
 import { DEFAULT_PARTS_AUTOMATION_BUDGET_CAP } from '../sim/partsAutomationEngine';
+import {
+  TECHNICAL_SECTIONS,
+  technicalSectionFromQuery,
+  type TechnicalSection,
+} from './technicalCommercialViewModel';
 
 const UnifiedDevelopmentBody = lazy(() => import('./UnifiedDevelopment').then((m) => ({ default: m.UnifiedDevelopmentBody })));
 const FacilitiesBody = lazy(() => import('./Facilities').then((m) => ({ default: m.FacilitiesBody })));
 const EngineSupplierBody = lazy(() => import('./EngineSupplier').then((m) => ({ default: m.EngineSupplierBody })));
 const PartsInventoryPanel = lazy(() => import('../components/development/PartsInventoryPanel').then((m) => ({ default: m.PartsInventoryPanel })));
 
-type TechnicalSection = 'command' | 'development' | 'parts' | 'facilities' | 'engine';
-
-const sections: ReadonlyArray<{ id: TechnicalSection; label: string }> = [
-  { id: 'command', label: 'Command' },
-  { id: 'development', label: 'Development' },
-  { id: 'parts', label: 'Parts & Factory' },
-  { id: 'facilities', label: 'Facilities' },
-  { id: 'engine', label: 'Engine' },
-];
-
-function sectionFromQuery(value: string | null): TechnicalSection {
-  return sections.some((section) => section.id === value)
-    ? value as TechnicalSection
-    : 'command';
-}
-
 export function TechnicalCenter() {
   const { state } = useGame();
   const [searchParams, setSearchParams] = useSearchParams();
-  const [section, setSection] = useState<TechnicalSection>(() => sectionFromQuery(searchParams.get('section')));
-  const activeSection = searchParams.has('section') ? sectionFromQuery(searchParams.get('section')) : section;
+  const [section, setSection] = useState<TechnicalSection>(() => technicalSectionFromQuery(searchParams.get('section')));
+  const activeSection = searchParams.has('section') ? technicalSectionFromQuery(searchParams.get('section')) : section;
   const navigateTechnicalSection = (next: TechnicalSection) => {
     setSection(next);
     setSearchParams(next === 'command' ? {} : { section: next });
@@ -63,25 +52,27 @@ export function TechnicalCenter() {
   const lockInfo = getRouteRestrictionInfo('/engine', state.gameMode);
 
   return (
-    <WorkspaceScreen className="era-feature-screen era-technical-screen">
+    <WorkspaceScreen className="era-feature-screen era-technical-screen ui-technical-commercial-screen">
       <WorkspaceHeader
         eyebrow="Technical center"
         title="Technical Center"
         subtitle={`${team?.name ?? 'Team'} · ${state.seasonYear} ${state.series}`}
+        actions={(
+          <div className="ui-technical-header-readout">
+            <span><strong>{activeUpgrades.length + (research?.activeProjects.length ?? 0)}/{slots}</strong> capacity</span>
+            <span><strong>{formatMoney(team?.budget ?? 0)}</strong> budget</span>
+            <span><strong>{research?.tpp.balance ?? 0}</strong> TPP</span>
+            <span><strong>{(parts?.manufacturingQueue.length ?? 0) + (state.facilities?.pendingUpgrades.length ?? 0)}</strong> operations queued</span>
+          </div>
+        )}
       />
-      <MetricStrip>
-        <WorkspaceMetric label="Technical capacity" value={`${activeUpgrades.length + (research?.activeProjects.length ?? 0)}/${slots}`} detail="Development + research slots in use" />
-        <WorkspaceMetric label="Technical budget" value={formatMoney(team?.budget ?? 0)} detail={`${research?.tpp.balance ?? 0} TPP · cash funds operations`} />
-        <WorkspaceMetric label="Technical pipeline" value={`${activeUpgrades.length + (research?.activeProjects.length ?? 0)}`} detail={`${activeUpgrades.length} development · ${research?.activeProjects.length ?? 0} research`} />
-        <WorkspaceMetric label="Operations queue" value={`${parts?.manufacturingQueue.length ?? 0} factory`} detail={`${state.facilities?.pendingUpgrades.length ?? 0} facility upgrades pending`} />
-      </MetricStrip>
       <WorkspaceTabs
-        items={sections}
+        items={TECHNICAL_SECTIONS}
         active={activeSection}
         onChange={navigateTechnicalSection}
         ariaLabel="Technical Center sections"
       />
-      <WorkspaceBody className="space-y-4">
+      <WorkspaceBody className="overflow-hidden">
         <Suspense fallback={<div className="py-8 text-center text-sm text-neutral-500">Loading…</div>}>
           {activeSection === 'command' && <CommandPanel state={state} onNavigate={navigateTechnicalSection} />}
           {activeSection === 'development' && <UnifiedDevelopmentBody />}
@@ -111,7 +102,7 @@ function CommandPanel({ state, onNavigate }: { state: GameState; onNavigate: (se
     state.facilities?.pendingUpgrades.some((upgrade) => upgrade.weeksRemaining <= 1) ? 'A facility upgrade completes at the next rollover.' : undefined,
   ].filter((alert): alert is string => !!alert);
   return (
-    <div className="space-y-4">
+    <div className="ui-technical-command-grid">
       <OperatingPlanPanel state={state} />
       <TechnicalBriefingPanel state={state} onNavigate={onNavigate} />
       <Panel title="Car performance snapshot">

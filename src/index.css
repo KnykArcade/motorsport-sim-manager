@@ -4806,3 +4806,464 @@ body {
     grid-template-columns: minmax(500px, 1.6fr) minmax(210px, 0.7fr);
   }
 }
+
+/* Phase 5: FM-style technical and commercial workspaces. */
+.ui-main-content[data-route="/technical"],
+.ui-main-content[data-route="/finance"],
+.ui-main-content[data-route="/sponsors"],
+.ui-main-content[data-route="/politics"] {
+  overflow: hidden;
+  padding: 0;
+}
+
+.ui-main-content[data-route="/technical"] .ui-workspace-screen,
+.ui-main-content[data-route="/finance"] .ui-workspace-screen,
+.ui-main-content[data-route="/sponsors"] .ui-workspace-screen,
+.ui-main-content[data-route="/politics"] .ui-workspace-screen {
+  height: 100%;
+  gap: 0;
+  overflow: hidden;
+}
+
+.ui-main-content[data-route="/technical"] .ui-workspace-header,
+.ui-main-content[data-route="/finance"] .ui-workspace-header,
+.ui-main-content[data-route="/sponsors"] .ui-workspace-header,
+.ui-main-content[data-route="/politics"] .ui-workspace-header {
+  padding: 0.55rem 0.75rem;
+}
+
+.ui-technical-header-readout {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 0.25rem;
+}
+
+.ui-technical-header-readout span {
+  border-left: 1px solid #49494f;
+  padding: 0.16rem 0.45rem;
+  color: #85858c;
+  font-size: 0.5rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.ui-technical-header-readout strong {
+  display: block;
+  color: #dedee2;
+  font-size: 0.62rem;
+  text-transform: none;
+}
+
+.ui-technical-command-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.45rem;
+  height: 100%;
+  overflow: auto;
+  padding: 0.5rem;
+}
+
+.ui-technical-command-grid > :nth-child(3),
+.ui-technical-command-grid > :nth-child(4),
+.ui-technical-command-grid > :last-child {
+  grid-column: 1 / -1;
+}
+
+.ui-development-program-workspace,
+.ui-facilities-workspace {
+  display: flex;
+  min-height: 460px;
+  flex: 1 1 auto;
+  flex-direction: column;
+  overflow: hidden;
+  border: 1px solid #3a3a3f;
+}
+
+.ui-development-program-grid.is-three {
+  grid-template-columns: minmax(245px, 0.76fr) minmax(390px, 1.55fr) minmax(225px, 0.72fr);
+}
+
+.ui-development-filters {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.35rem;
+  border-bottom: 1px solid #39393e;
+  padding: 0.5rem;
+}
+
+.ui-development-filters label {
+  display: grid;
+  gap: 0.15rem;
+  color: #85858c;
+  font-size: 0.5rem;
+}
+
+.ui-development-filters select,
+.ui-technical-search input,
+.ui-finance-season-select,
+.ui-sponsor-negotiation-fields input,
+.ui-sponsor-negotiation-fields select {
+  min-width: 0;
+  border: 1px solid #48484e;
+  border-radius: 1px;
+  background: #18181a;
+  padding: 0.38rem 0.45rem;
+  color: #d2d2d6;
+  font-size: 0.56rem;
+}
+
+.ui-development-program-list .ui-fm-list-button span,
+.ui-facility-record-list .ui-fm-list-button span,
+.ui-engine-market-workspace .ui-fm-list-button span,
+.era-sponsors-screen .ui-fm-list-button span,
+.ui-politics-proposal-grid .ui-fm-list-button span,
+.ui-parts-garage-grid .ui-fm-list-button span {
+  display: block;
+  color: #84848b;
+  font-size: 0.48rem;
+  font-weight: 750;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.ui-development-program-list .ui-fm-list-button strong,
+.ui-facility-record-list .ui-fm-list-button strong,
+.ui-engine-market-workspace .ui-fm-list-button strong,
+.era-sponsors-screen .ui-fm-list-button strong,
+.ui-politics-proposal-grid .ui-fm-list-button strong,
+.ui-parts-garage-grid .ui-fm-list-button strong {
+  display: block;
+  margin-top: 0.12rem;
+  color: #e0e0e3;
+  font-size: 0.61rem;
+}
+
+.ui-development-program-list .ui-fm-list-button small,
+.ui-facility-record-list .ui-fm-list-button small,
+.ui-engine-market-workspace .ui-fm-list-button small,
+.era-sponsors-screen .ui-fm-list-button small,
+.ui-politics-proposal-grid .ui-fm-list-button small,
+.ui-parts-garage-grid .ui-fm-list-button small {
+  display: block;
+  margin-top: 0.15rem;
+  color: #74747b;
+  font-size: 0.5rem;
+}
+
+.ui-development-program-detail,
+.ui-facility-detail-pane,
+.ui-engine-package-comparison,
+.ui-sponsor-detail-pane,
+.ui-sponsor-negotiation-detail,
+.ui-politics-proposal-detail,
+.ui-parts-car-detail {
+  background: #252528;
+}
+
+.ui-development-program-detail .ui-fm-pane-body,
+.ui-development-program-context .ui-fm-pane-body,
+.ui-facility-detail-pane .ui-fm-pane-body,
+.ui-facility-context-pane .ui-fm-pane-body,
+.ui-engine-contract-context .ui-fm-pane-body,
+.ui-sponsor-detail-pane .ui-fm-pane-body,
+.ui-sponsor-context-pane .ui-fm-pane-body,
+.ui-sponsor-negotiation-detail .ui-fm-pane-body,
+.ui-politics-context-pane .ui-fm-pane-body,
+.ui-parts-context-pane .ui-fm-pane-body {
+  padding: 0.7rem;
+}
+
+.ui-technical-dossier section + section {
+  margin-top: 0.8rem;
+  border-top: 1px solid #3a3a3f;
+  padding-top: 0.8rem;
+}
+
+.ui-technical-dossier h3 {
+  color: #cfcfd3;
+  font-size: 0.54rem;
+  font-weight: 850;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+}
+
+.ui-technical-dossier p {
+  margin-top: 0.3rem;
+  color: #9a9aa1;
+  font-size: 0.57rem;
+  line-height: 1.6;
+}
+
+.ui-technical-dossier .ui-technical-muted,
+.ui-technical-muted {
+  color: #77777e;
+}
+
+.ui-technical-warning {
+  color: #d8a14b !important;
+}
+
+.ui-technical-empty {
+  padding: 0.8rem;
+  color: #7d7d84;
+  font-size: 0.58rem;
+  line-height: 1.5;
+}
+
+.ui-technical-mode-warning {
+  border-bottom: 1px solid #714e26;
+  background: #382b1d;
+  padding: 0.5rem 0.7rem;
+  color: #e0b06b;
+  font-size: 0.56rem;
+}
+
+.ui-facilities-grid.is-three {
+  grid-template-columns: minmax(240px, 0.78fr) minmax(380px, 1.42fr) minmax(235px, 0.75fr);
+}
+
+.ui-facility-group-list {
+  display: grid;
+  gap: 1px;
+  border-bottom: 1px solid #3a3a3f;
+  background: #111113;
+}
+
+.ui-facility-group-list button {
+  border-left: 3px solid transparent;
+  background: #202023;
+  padding: 0.45rem 0.55rem;
+  text-align: left;
+}
+
+.ui-facility-group-list button.is-active {
+  border-left-color: #d13d61;
+  background: #38242a;
+}
+
+.ui-facility-group-list strong,
+.ui-facility-group-list span {
+  display: block;
+}
+
+.ui-facility-group-list strong {
+  color: #d4d4d8;
+  font-size: 0.57rem;
+}
+
+.ui-facility-group-list span {
+  margin-top: 0.12rem;
+  color: #74747b;
+  font-size: 0.49rem;
+}
+
+.ui-facility-impact-list {
+  display: grid;
+  gap: 1px;
+  background: #333338;
+}
+
+.ui-facility-impact-list > div {
+  background: #222225;
+  padding: 0.45rem 0.5rem;
+}
+
+.ui-facility-impact-list span,
+.ui-facility-impact-list strong,
+.ui-facility-impact-list small {
+  display: block;
+}
+
+.ui-facility-impact-list span {
+  color: #85858c;
+  font-size: 0.49rem;
+  text-transform: uppercase;
+}
+
+.ui-facility-impact-list strong {
+  margin-top: 0.08rem;
+  color: #e0e0e3;
+  font-size: 0.68rem;
+}
+
+.ui-facility-impact-list small {
+  color: #707077;
+  font-size: 0.48rem;
+}
+
+.ui-engine-market-workspace {
+  min-height: 455px;
+  overflow: hidden;
+  border: 1px solid #3a3a3f;
+}
+
+.ui-engine-market-grid {
+  min-height: 455px;
+}
+
+.ui-engine-market-grid.is-three {
+  grid-template-columns: minmax(225px, 0.72fr) minmax(420px, 1.55fr) minmax(225px, 0.73fr);
+}
+
+.ui-technical-search {
+  display: grid;
+  gap: 0.2rem;
+  border-bottom: 1px solid #39393e;
+  padding: 0.5rem;
+  color: #85858c;
+  font-size: 0.5rem;
+}
+
+.ui-engine-package-comparison .ui-fm-pane-body {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-content: start;
+  gap: 0.4rem;
+  padding: 0.55rem;
+}
+
+.ui-engine-package-comparison .ui-fm-pane-body > div {
+  border-radius: 1px;
+}
+
+.ui-finance-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.ui-finance-overview-grid {
+  min-height: 430px;
+  border: 1px solid #3a3a3f;
+}
+
+.ui-finance-overview-grid.is-three {
+  grid-template-columns: minmax(250px, 1fr) minmax(250px, 1fr) minmax(235px, 0.78fr);
+}
+
+.ui-finance-overview-grid .ui-fm-pane-body {
+  padding: 0.7rem;
+}
+
+.ui-sponsor-portfolio-grid,
+.ui-sponsor-opportunity-grid,
+.ui-sponsor-negotiation-grid,
+.ui-politics-proposal-grid,
+.ui-parts-garage-grid {
+  min-height: 445px;
+  border: 1px solid #3a3a3f;
+}
+
+.ui-sponsor-portfolio-grid.is-three,
+.ui-sponsor-opportunity-grid.is-three,
+.ui-sponsor-negotiation-grid.is-three {
+  grid-template-columns: minmax(225px, 0.72fr) minmax(390px, 1.5fr) minmax(225px, 0.72fr);
+}
+
+.ui-sponsor-detail-pane .rounded-lg,
+.ui-sponsor-detail-pane .rounded {
+  border-radius: 1px;
+}
+
+.ui-sponsor-sort-button {
+  color: #a4a4aa;
+  font-size: 0.5rem;
+  font-weight: 700;
+}
+
+.ui-sponsor-negotiation-fields {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.55rem;
+}
+
+.ui-sponsor-negotiation-fields label {
+  display: grid;
+  gap: 0.25rem;
+  color: #8f8f96;
+  font-size: 0.52rem;
+  font-weight: 700;
+}
+
+.ui-sponsor-counter {
+  margin-top: 0.7rem;
+  border-left: 3px solid #d49a36;
+  background: #32291d;
+  padding: 0.55rem;
+  color: #e1b36b;
+  font-size: 0.57rem;
+}
+
+.ui-sponsor-negotiation-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-top: 0.7rem;
+}
+
+.ui-politics-proposal-grid.is-three {
+  grid-template-columns: minmax(230px, 0.72fr) minmax(420px, 1.52fr) minmax(225px, 0.72fr);
+}
+
+.ui-politics-proposal-detail .ui-fm-pane-body {
+  padding: 0.6rem;
+}
+
+.ui-politics-proposal-detail .rounded-lg {
+  border-radius: 1px;
+}
+
+.ui-parts-factory-workspace {
+  min-height: 0;
+  overflow: auto;
+  padding: 0.5rem;
+}
+
+.ui-parts-factory-summary {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.6rem;
+  border: 1px solid #3a3a3f;
+  background: #252528;
+  padding: 0.45rem 0.6rem;
+  color: #85858c;
+  font-size: 0.53rem;
+}
+
+.ui-parts-factory-summary strong {
+  margin-right: auto;
+  color: #ededee;
+  font-size: 0.64rem;
+  text-transform: uppercase;
+}
+
+.ui-parts-garage-grid.is-three {
+  grid-template-columns: minmax(210px, 0.68fr) minmax(440px, 1.58fr) minmax(220px, 0.72fr);
+}
+
+.ui-parts-fitted-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.4rem;
+  padding: 0.55rem;
+}
+
+.ui-parts-fitted-list > div {
+  border-radius: 1px;
+}
+
+@media (max-width: 1320px) {
+  .ui-development-program-grid.is-three,
+  .ui-facilities-grid.is-three,
+  .ui-engine-market-grid.is-three,
+  .ui-sponsor-portfolio-grid.is-three,
+  .ui-sponsor-opportunity-grid.is-three,
+  .ui-sponsor-negotiation-grid.is-three,
+  .ui-politics-proposal-grid.is-three,
+  .ui-parts-garage-grid.is-three,
+  .ui-finance-overview-grid.is-three {
+    grid-template-columns: minmax(210px, 0.72fr) minmax(360px, 1.48fr) minmax(205px, 0.68fr);
+  }
+}

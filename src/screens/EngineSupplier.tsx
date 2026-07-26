@@ -11,7 +11,6 @@ import { toMoney } from '../sim/financeEngine';
 import { Panel } from '../components/Panel';
 import { ratingColor } from '../components/ui';
 import { Button } from '../components/Button';
-import { TechnicalTable, TechnicalTableCell, TechnicalTableHead, TechnicalTableRow } from '../components/TechnicalTable';
 import type { EngineState, EngineSupplierDeal } from '../types/engineTypes';
 import {
   ENGINE_WORKSPACE_TABS,
@@ -23,6 +22,14 @@ import {
   WorkspaceBody,
   WorkspaceTabs,
 } from '../components/workspace/Workspace';
+import {
+  FmKeyValue,
+  FmListButton,
+  FmPane,
+  FmPaneBody,
+  FmPaneHeader,
+  FmWorkspaceGrid,
+} from '../components/workspace/FmPane';
 
 function moneyMillions(value: number): string {
   return `$${value.toFixed(value % 1 === 0 ? 0 : 2)}M`;
@@ -77,7 +84,6 @@ export function EngineSupplierBody() {
           singleSeason={state.gameMode === 'SingleSeason'}
           visibleSuppliers={filteredSupplierGroups}
           selectedGroup={selectedGroup}
-          selectedSupplier={selectedSupplier}
           totalSuppliers={filteredSupplierGroups.length}
           supplierFilter={supplierFilter}
           onSupplierFilter={setSupplierFilter}
@@ -177,7 +183,6 @@ function SupplierMarket({
   singleSeason,
   visibleSuppliers,
   selectedGroup,
-  selectedSupplier,
   totalSuppliers,
   supplierFilter,
   onSupplierFilter,
@@ -192,7 +197,6 @@ function SupplierMarket({
   singleSeason: boolean;
   visibleSuppliers: ReturnType<typeof groupEngineOffers>;
   selectedGroup?: ReturnType<typeof groupEngineOffers>[number];
-  selectedSupplier: string;
   totalSuppliers: number;
   supplierFilter: string;
   onSupplierFilter: (value: string) => void;
@@ -200,50 +204,80 @@ function SupplierMarket({
   onSign: (offer: EngineOffer) => void;
 }) {
   return (
-    <Panel
-      title="Supplier Market"
-      actions={<span className="text-xs text-neutral-500">Choose a supplier, then compare every tier you qualify for</span>}
-    >
+    <div className="ui-engine-market-workspace">
       {singleSeason && (
-        <div className="mb-3 rounded-lg border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-xs text-amber-200">
+        <div className="ui-technical-mode-warning">
           Engine negotiations are disabled in Single Season mode because agreements begin next season.
         </div>
       )}
-      <label className="mb-3 flex items-center gap-2 text-xs text-neutral-500">
-        Filter suppliers
-        <input value={supplierFilter} onChange={(event) => onSupplierFilter(event.target.value)} placeholder="Search supplier…" className="rounded border border-neutral-700 bg-neutral-900 px-2 py-1 text-neutral-200 placeholder:text-neutral-600" />
-      </label>
-      <TechnicalTable>
-        <TechnicalTableHead><TechnicalTableRow><TechnicalTableCell header>Supplier</TechnicalTableCell><TechnicalTableCell header>Base power</TechnicalTableCell><TechnicalTableCell header>Reliability</TechnicalTableCell><TechnicalTableCell header>Prestige</TechnicalTableCell><TechnicalTableCell header>Tiers</TechnicalTableCell><TechnicalTableCell header>Compare</TechnicalTableCell></TechnicalTableRow></TechnicalTableHead>
-        <tbody>
-        {visibleSuppliers.map((group) => {
-          const supplier = group.offers[0]?.supplier;
-          const active = (selectedSupplier || visibleSuppliers[0]?.supplierName) === group.supplierName;
-          return <TechnicalTableRow key={group.supplierName} className={active ? 'bg-sky-500/10' : ''}><TechnicalTableCell className="font-bold text-neutral-100">{group.supplierName}</TechnicalTableCell><TechnicalTableCell>{supplier?.basePower}</TechnicalTableCell><TechnicalTableCell>{supplier?.baseReliability}</TechnicalTableCell><TechnicalTableCell>{supplier?.prestige}</TechnicalTableCell><TechnicalTableCell>{group.offers.length}</TechnicalTableCell><TechnicalTableCell><Button className="px-2 py-1 text-xs" variant={active ? 'primary' : 'secondary'} onClick={() => onSelectSupplier(group.supplierName)}>{active ? 'Selected' : 'Compare tiers'}</Button></TechnicalTableCell></TechnicalTableRow>;
-        })}
-        </tbody>
-      </TechnicalTable>
+      <FmWorkspaceGrid columns="three" className="ui-engine-market-grid">
+        <FmPane>
+          <FmPaneHeader title="Supplier market" meta={`${totalSuppliers} suppliers available`} />
+          <FmPaneBody className="overflow-auto">
+            <label className="ui-technical-search">
+              <span>Filter suppliers</span>
+              <input value={supplierFilter} onChange={(event) => onSupplierFilter(event.target.value)} placeholder="Search supplier…" />
+            </label>
+            {visibleSuppliers.map((group) => {
+              const supplier = group.offers[0]?.supplier;
+              const active = selectedGroup?.supplierName === group.supplierName;
+              return (
+                <FmListButton key={group.supplierName} active={active} onClick={() => onSelectSupplier(group.supplierName)}>
+                  <span>{group.offers.length} package tier{group.offers.length === 1 ? '' : 's'}</span>
+                  <strong>{group.supplierName}</strong>
+                  <small>Power {supplier?.basePower} · Reliability {supplier?.baseReliability} · Prestige {supplier?.prestige}</small>
+                </FmListButton>
+              );
+            })}
+          </FmPaneBody>
+        </FmPane>
 
-      {selectedGroup ? (
-        <div className="mt-3 grid gap-2 md:grid-cols-3 xl:grid-cols-5">
-          {selectedGroup.offers.map((offer) => (
-            <EngineOfferCard
-              key={offer.dealType}
-              offer={offer}
-              current={current}
-              pending={pending}
-              pendingFee={pendingFee}
-              budget={budget}
-              inPreseasonSetup={inPreseasonSetup}
-              singleSeason={singleSeason}
-              onSign={() => onSign(offer)}
-            />
-          ))}
-        </div>
-      ) : <p className="mt-3 text-sm text-neutral-500">No engine offers are available.</p>}
+        <FmPane className="ui-engine-package-comparison">
+          <FmPaneHeader title={selectedGroup?.supplierName ?? 'Package comparison'} meta="Every eligible supply tier" />
+          <FmPaneBody className="overflow-auto">
+            {selectedGroup ? selectedGroup.offers.map((offer) => (
+              <EngineOfferCard
+                key={offer.dealType}
+                offer={offer}
+                current={current}
+                pending={pending}
+                pendingFee={pendingFee}
+                budget={budget}
+                inPreseasonSetup={inPreseasonSetup}
+                singleSeason={singleSeason}
+                onSign={() => onSign(offer)}
+              />
+            )) : <p className="ui-technical-empty">No engine offers are available.</p>}
+          </FmPaneBody>
+        </FmPane>
 
-      <div className="mt-2 text-xs text-neutral-500">{totalSuppliers} suppliers available · select a row to compare deal tiers.</div>
-    </Panel>
+        <FmPane className="ui-engine-contract-context">
+          <FmPaneHeader title="Contract context" meta="Current → next season" />
+          <FmPaneBody className="overflow-auto">
+            <div className="ui-technical-dossier">
+              <section>
+                <h3>Current package</h3>
+                <FmKeyValue label="Supplier" value={current?.supplierName ?? 'No active deal'} />
+                <FmKeyValue label="Tier" value={current ? ENGINE_DEAL_SPECS[current.dealType].label : '—'} />
+                <FmKeyValue label="Annual cost" value={current ? moneyMillions(current.annualCost) : '—'} />
+                <FmKeyValue label="Term" value={current ? `${current.contractYearsRemaining} year${current.contractYearsRemaining === 1 ? '' : 's'}` : '—'} />
+              </section>
+              <section>
+                <h3>Pending package</h3>
+                <FmKeyValue label="Supplier" value={pending?.supplierName ?? 'Current deal continues'} />
+                <FmKeyValue label="Tier" value={pending ? ENGINE_DEAL_SPECS[pending.dealType].label : 'No change queued'} />
+                <FmKeyValue label="Immediate fee paid" value={pendingFee > 0 ? moneyMillions(pendingFee) : 'None'} />
+                <FmKeyValue label="Team cash" value={moneyMillions(budget / 1_000_000)} />
+              </section>
+              <section>
+                <h3>Activation rule</h3>
+                <p>Annual supply costs are billed at rollover. Midseason changes can require an immediate buyout, net of any previously paid pending-deal fee.</p>
+              </section>
+            </div>
+          </FmPaneBody>
+        </FmPane>
+      </FmWorkspaceGrid>
+    </div>
   );
 }
 

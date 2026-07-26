@@ -36,6 +36,19 @@ import { activeUpgradePrograms, completedUpgradePrograms, researchStateFromTechn
 import { RDTreePanel } from '../components/development/RDTreePanel';
 import { TppExplainer } from '../components/development/TppExplainer';
 import { WorkspaceBody, WorkspaceTabs } from '../components/workspace/Workspace';
+import {
+  FmDecisionBar,
+  FmKeyValue,
+  FmListButton,
+  FmPane,
+  FmPaneBody,
+  FmPaneHeader,
+  FmWorkspaceGrid,
+} from '../components/workspace/FmPane';
+import {
+  selectedTechnicalRecord,
+  technicalActionDisabledReason,
+} from './technicalCommercialViewModel';
 
 type UnifiedTab = 'programs' | 'in-progress' | 'tree' | 'history';
 type ProgramFilter = 'All' | 'Quick Upgrade' | 'Research';
@@ -49,13 +62,6 @@ const OUTCOME_COLORS: Record<DevelopmentOutcome, string> = {
   RareBackfire: 'text-red-500',
 };
 
-const RISK_COLORS: Record<string, string> = {
-  Safe: 'text-green-400',
-  Standard: 'text-neutral-300',
-  Aggressive: 'text-orange-400',
-  Experimental: 'text-red-400',
-};
-
 export function UnifiedDevelopmentBody() {
   const { state, dispatch } = useGame();
   const [tab, setTab] = useState<UnifiedTab>('programs');
@@ -63,6 +69,7 @@ export function UnifiedDevelopmentBody() {
   const [area, setArea] = useState('All');
   const [risk, setRisk] = useState('All');
   const [sort, setSort] = useState<'cost' | 'duration'>('cost');
+  const [selectedProgramId, setSelectedProgramId] = useState<string>();
   if (!state) return null;
   const currentState = state;
 
@@ -120,6 +127,23 @@ export function UnifiedDevelopmentBody() {
         ? aCost - bCost
         : durationRoundsForBand(a.durationBand, state.calendar.length) - durationRoundsForBand(b.durationBand, state.calendar.length);
     });
+  const programRecords = [
+    ...conventionalProjects.map((project) => ({
+      id: `quick:${project.id}`,
+      kind: 'quick' as const,
+      title: project.name,
+      subtitle: `${project.category} · ${project.riskLevel ?? 'Standard'}`,
+      project,
+    })),
+    ...researchPrograms.map((node) => ({
+      id: `research:${node.id}`,
+      kind: 'research' as const,
+      title: researchRequests[node.id].displayName,
+      subtitle: `${rdBranchLabelForSeries(node.branchId, state.series)} · Tier ${node.tier}`,
+      node,
+    })),
+  ];
+  const selectedProgram = selectedTechnicalRecord(programRecords, selectedProgramId);
 
   const effectSummary = (project: DevelopmentProject) => {
     const effects = Object.entries(project.currentSeasonEffects ?? {}).map(([key, value]) => `+${value} ${key}`);
@@ -163,49 +187,142 @@ export function UnifiedDevelopmentBody() {
       {capacityFull && <div className="rounded-lg border border-orange-500/30 bg-orange-500/5 p-3 text-sm text-orange-300">All technical capacity is in use. Start actions are disabled until capacity is freed.</div>}
 
       {tab === 'programs' && (
-        <Panel title="Technical programs" actions={<TppExplainer />}>
-          <div className="mb-3 flex flex-wrap gap-2">
-            <FilterSelect label="Horizon" value={horizon} options={['Quick Upgrade', 'Research']} onChange={(value) => setHorizon(value as ProgramFilter)} />
-            <FilterSelect label="Branch / category" value={area} options={areas} onChange={setArea} />
-            <FilterSelect label="Risk" value={risk} options={risks} onChange={setRisk} />
-            <FilterSelect label="Sort" value={sort} options={['cost', 'duration']} onChange={(value) => setSort(value as 'cost' | 'duration')} />
-          </div>
-          <TechnicalTable>
-            <TechnicalTableHead><TechnicalTableRow><TechnicalTableCell header>Program</TechnicalTableCell><TechnicalTableCell header>Horizon / area</TechnicalTableCell><TechnicalTableCell header>Cost</TechnicalTableCell><TechnicalTableCell header>Duration</TechnicalTableCell><TechnicalTableCell header>Risk</TechnicalTableCell><TechnicalTableCell header>Expected effect</TechnicalTableCell><TechnicalTableCell header>Action</TechnicalTableCell></TechnicalTableRow></TechnicalTableHead>
-            <tbody>
-              {conventionalProjects.map((project) => {
-                const facilityLevel = relevantFacilityLevel(state.facilities, project.category);
-                const size = project.projectSize ?? 'Medium';
-                const riskLevel = project.riskLevel ?? 'Standard';
-                const adjustedDuration = computeAdjustedDuration(project.durationRaces, facilityLevel, size);
-                const rushCost = Math.round(project.cost * RUSH_COST_MULTIPLIER());
-                const allowed = isDevelopmentProjectAllowedForMode(project, state.gameMode);
-                const canStart = !capacityFull && allowed && budget >= project.cost;
-                return (
-                  <TechnicalTableRow key={`quick-${project.id}`}>
-                    <TechnicalTableCell><div className="font-semibold text-neutral-100">{project.name}</div><details className="text-neutral-500"><summary className="cursor-pointer">Details</summary><div className="mt-1 space-y-1">Facility L{Math.round(facilityLevel)} · Impact ×{facilityImpactMultiplier(facilityLevel).toFixed(1)} · {Math.round(project.carryoverRate * 100)}% carryover<div>{outcomeSummary(project)}</div>{project.risk && <div className="text-orange-400/80">⚠ {project.risk}</div>}{!allowed && <div className="text-amber-400">Future-only in Single Season</div>}</div></details></TechnicalTableCell>
-                    <TechnicalTableCell><span className="text-[var(--era-accent-strong)]">Quick Upgrade</span><div className="text-neutral-500">{project.category} · {project.horizon}</div></TechnicalTableCell>
-                    <TechnicalTableCell className="font-semibold tabular-nums">{formatMoney(project.cost)}<div className="text-neutral-500">Rush {formatMoney(rushCost)}</div></TechnicalTableCell>
-                    <TechnicalTableCell>{adjustedDuration} races<div className="text-neutral-500">Base {project.durationRaces}</div></TechnicalTableCell>
-                    <TechnicalTableCell className={RISK_COLORS[riskLevel]}>{riskLevel}<div className="text-neutral-500">{size}</div></TechnicalTableCell>
-                    <TechnicalTableCell className="max-w-xs text-neutral-400">{effectSummary(project)}</TechnicalTableCell>
-                    <TechnicalTableCell><div className="flex flex-col gap-1"><Button className="px-2 py-1 text-xs" variant={canStart ? 'primary' : 'secondary'} disabled={!canStart} onClick={() => dispatch({ type: 'START_DEVELOPMENT', projectId: project.id })}>{!allowed ? 'Future-only' : capacityFull ? 'No capacity' : budget < project.cost ? 'No budget' : 'Start'}</Button><Button className="px-2 py-1 text-xs" variant={!capacityFull && allowed && budget >= rushCost ? 'primary' : 'secondary'} disabled={capacityFull || !allowed || budget < rushCost} onClick={() => dispatch({ type: 'START_DEVELOPMENT', projectId: project.id, rushed: true })}>{!allowed ? 'Future-only' : capacityFull ? 'No capacity' : budget < rushCost ? 'No budget' : `Rush ${formatMoney(rushCost)}`}</Button></div></TechnicalTableCell>
-                  </TechnicalTableRow>
-                );
-              })}
-              {researchPrograms.map((node) => {
-                const request = researchRequests[node.id];
-                const cashCost = adjustedResearchCashCost(cashCostForBand(node.cashCostBand, budget, state.series, state.seasonYear), research);
-                const tppCost = tppCostForBand(node.tppCostBand);
-                const duration = adjustedResearchDuration(durationRoundsForBand(node.durationBand, state.calendar.length), research);
-                const effects = request.modifierTemplates.filter((modifier) => modifier.scope !== 'risk').map((modifier) => `${modifier.target} ${modifier.value >= 0 ? '+' : ''}${modifier.value}`).join(' · ');
-                const canStart = !capacityFull && !singleSeason && budget >= cashCost && research.tpp.balance >= tppCost;
-                return <TechnicalTableRow key={`research-${node.id}`}><TechnicalTableCell><div className="font-semibold text-neutral-100">{request.displayName}</div><details className="text-neutral-500"><summary className="cursor-pointer">Details</summary><div className="mt-1 space-y-1">Tier {node.tier} · {node.path}<div>Prerequisites: {node.unlockRequirement || 'None'}</div><div>{request.availabilityLabel}{request.availabilityReason ? ` · ${request.availabilityReason}` : ''}</div><div>{node.mainEffects}</div>{node.tradeoffsAndRisks && <div className="text-orange-400/80">⚠ {node.tradeoffsAndRisks}</div>}</div></details></TechnicalTableCell><TechnicalTableCell><span className="text-blue-300">Research</span><div className="text-neutral-500">{rdBranchLabelForSeries(node.branchId, state.series)}</div></TechnicalTableCell><TechnicalTableCell className="font-semibold tabular-nums">{formatMoney(cashCost)}<div className="text-neutral-500">{tppCost} TPP</div></TechnicalTableCell><TechnicalTableCell>{duration} rounds<div className="text-neutral-500">Tier {node.tier}</div></TechnicalTableCell><TechnicalTableCell className={RISK_COLORS[request.riskLevel]}>{request.riskLevel}</TechnicalTableCell><TechnicalTableCell className="max-w-xs text-neutral-400">{effects || 'Persistent research modifier'}<div className="text-neutral-500">{node.partsUnlocked || node.mainEffects}</div></TechnicalTableCell><TechnicalTableCell><Button className="px-2 py-1 text-xs" variant={canStart ? 'primary' : 'secondary'} disabled={!canStart} onClick={() => dispatch({ type: 'START_RD_PROJECT', request })}>{singleSeason ? 'Career only' : capacityFull ? 'No capacity' : budget < cashCost ? 'No budget' : research.tpp.balance < tppCost ? 'No TPP' : 'Start research'}</Button></TechnicalTableCell></TechnicalTableRow>;
-              })}
-              {conventionalProjects.length === 0 && researchPrograms.length === 0 && <TechnicalTableRow><TechnicalTableCell className="text-center text-neutral-500">No actionable programs match these filters. Open Tree to inspect locked or completed research.</TechnicalTableCell></TechnicalTableRow>}
-            </tbody>
-          </TechnicalTable>
-        </Panel>
+        <div className="ui-development-program-workspace">
+          <FmWorkspaceGrid columns="three" className="ui-development-program-grid">
+            <FmPane className="ui-development-program-list">
+              <FmPaneHeader title="Available programs" meta={`${programRecords.length} matching`} actions={<TppExplainer />} />
+              <FmPaneBody className="overflow-auto">
+                <div className="ui-development-filters">
+                  <FilterSelect label="Horizon" value={horizon} options={['Quick Upgrade', 'Research']} onChange={(value) => setHorizon(value as ProgramFilter)} />
+                  <FilterSelect label="Area" value={area} options={areas} onChange={setArea} />
+                  <FilterSelect label="Risk" value={risk} options={risks} onChange={setRisk} />
+                  <FilterSelect label="Sort" value={sort} options={['cost', 'duration']} onChange={(value) => setSort(value as 'cost' | 'duration')} />
+                </div>
+                {programRecords.map((program) => (
+                  <FmListButton
+                    key={program.id}
+                    active={selectedProgram?.id === program.id}
+                    onClick={() => setSelectedProgramId(program.id)}
+                  >
+                    <span>{program.kind === 'quick' ? 'Quick upgrade' : 'Research'}</span>
+                    <strong>{program.title}</strong>
+                    <small>{program.subtitle}</small>
+                  </FmListButton>
+                ))}
+                {programRecords.length === 0 && <p className="ui-technical-empty">No actionable programs match these filters. Open Tree to inspect locked or completed research.</p>}
+              </FmPaneBody>
+            </FmPane>
+
+            <FmPane className="ui-development-program-detail">
+              <FmPaneHeader title={selectedProgram?.title ?? 'Program dossier'} meta={selectedProgram?.subtitle} />
+              <FmPaneBody className="overflow-auto">
+                {selectedProgram?.kind === 'quick' && (() => {
+                  const project = selectedProgram.project;
+                  const facilityLevel = relevantFacilityLevel(state.facilities, project.category);
+                  const size = project.projectSize ?? 'Medium';
+                  const riskLevel = project.riskLevel ?? 'Standard';
+                  const adjustedDuration = computeAdjustedDuration(project.durationRaces, facilityLevel, size);
+                  return (
+                    <div className="ui-technical-dossier">
+                      <section>
+                        <h3>Expected outcome</h3>
+                        <p>{effectSummary(project)}</p>
+                        <p className="ui-technical-muted">{outcomeSummary(project)}</p>
+                      </section>
+                      <section>
+                        <FmKeyValue label="Programme" value="Quick Upgrade" />
+                        <FmKeyValue label="Category" value={project.category} />
+                        <FmKeyValue label="Cost" value={formatMoney(project.cost)} />
+                        <FmKeyValue label="Duration" value={`${adjustedDuration} races · base ${project.durationRaces}`} />
+                        <FmKeyValue label="Risk / size" value={`${riskLevel} · ${size}`} />
+                        <FmKeyValue label="Carryover" value={`${Math.round(project.carryoverRate * 100)}%`} />
+                      </section>
+                      <section>
+                        <h3>Facility effect</h3>
+                        <p>Relevant facility level {Math.round(facilityLevel)} · impact ×{facilityImpactMultiplier(facilityLevel).toFixed(1)}.</p>
+                        {project.risk && <p className="ui-technical-warning">{project.risk}</p>}
+                      </section>
+                    </div>
+                  );
+                })()}
+                {selectedProgram?.kind === 'research' && (() => {
+                  const node = selectedProgram.node;
+                  const request = researchRequests[node.id];
+                  const cashCost = adjustedResearchCashCost(cashCostForBand(node.cashCostBand, budget, state.series, state.seasonYear), research);
+                  const tppCost = tppCostForBand(node.tppCostBand);
+                  const duration = adjustedResearchDuration(durationRoundsForBand(node.durationBand, state.calendar.length), research);
+                  const effects = request.modifierTemplates.filter((modifier) => modifier.scope !== 'risk').map((modifier) => `${modifier.target} ${modifier.value >= 0 ? '+' : ''}${modifier.value}`).join(' · ');
+                  return (
+                    <div className="ui-technical-dossier">
+                      <section>
+                        <h3>Research outcome</h3>
+                        <p>{effects || 'Persistent research modifier'}</p>
+                        <p className="ui-technical-muted">{node.partsUnlocked || node.mainEffects}</p>
+                      </section>
+                      <section>
+                        <FmKeyValue label="Programme" value="Multi-year research" />
+                        <FmKeyValue label="Branch" value={rdBranchLabelForSeries(node.branchId, state.series)} />
+                        <FmKeyValue label="Cost" value={`${formatMoney(cashCost)} · ${tppCost} TPP`} />
+                        <FmKeyValue label="Duration" value={`${duration} rounds`} />
+                        <FmKeyValue label="Tier / risk" value={`${node.tier} · ${request.riskLevel}`} />
+                        <FmKeyValue label="Prerequisites" value={node.unlockRequirement || 'None'} />
+                      </section>
+                      <section>
+                        <h3>Availability</h3>
+                        <p>{request.availabilityLabel}{request.availabilityReason ? ` · ${request.availabilityReason}` : ''}</p>
+                        {node.tradeoffsAndRisks && <p className="ui-technical-warning">{node.tradeoffsAndRisks}</p>}
+                      </section>
+                    </div>
+                  );
+                })()}
+              </FmPaneBody>
+            </FmPane>
+
+            <FmPane className="ui-development-program-context">
+              <FmPaneHeader title="Technical Director" meta="Programme context" />
+              <FmPaneBody className="overflow-auto">
+                <div className="ui-technical-dossier">
+                  <section>
+                    <FmKeyValue label="Available cash" value={formatMoney(budget)} />
+                    <FmKeyValue label="Research points" value={`${research.tpp.balance} TPP`} />
+                    <FmKeyValue label="Capacity" value={`${usedCapacity}/${capacity} in use`} />
+                    <FmKeyValue label="Success support" value={`+${Math.round(totalSuccessBonus * 100)}%`} />
+                  </section>
+                  <section>
+                    <h3>Advisor readout</h3>
+                    <p>{capacityFull ? 'Complete an active programme before committing another technical slot.' : 'Capacity is available for a new technical programme.'}</p>
+                    <p className="ui-technical-muted">Every cost, duration, outcome range, prerequisite, and mode restriction is taken from the live technical state.</p>
+                  </section>
+                </div>
+              </FmPaneBody>
+            </FmPane>
+          </FmWorkspaceGrid>
+
+          <FmDecisionBar actions={selectedProgram && (() => {
+            if (selectedProgram.kind === 'quick') {
+              const project = selectedProgram.project;
+              const rushCost = Math.round(project.cost * RUSH_COST_MULTIPLIER());
+              const allowed = isDevelopmentProjectAllowedForMode(project, state.gameMode);
+              const startReason = technicalActionDisabledReason({ modeAllowed: allowed, capacityFull, cashAvailable: budget, cashCost: project.cost });
+              const rushReason = technicalActionDisabledReason({ modeAllowed: allowed, capacityFull, cashAvailable: budget, cashCost: rushCost });
+              return (
+                <>
+                  <Button variant="secondary" disabled={!!startReason} title={startReason} onClick={() => dispatch({ type: 'START_DEVELOPMENT', projectId: project.id })}>Start · {formatMoney(project.cost)}</Button>
+                  <Button variant="primary" disabled={!!rushReason} title={rushReason} onClick={() => dispatch({ type: 'START_DEVELOPMENT', projectId: project.id, rushed: true })}>Rush · {formatMoney(rushCost)}</Button>
+                </>
+              );
+            }
+            const node = selectedProgram.node;
+            const request = researchRequests[node.id];
+            const cashCost = adjustedResearchCashCost(cashCostForBand(node.cashCostBand, budget, state.series, state.seasonYear), research);
+            const tppCost = tppCostForBand(node.tppCostBand);
+            const disabledReason = technicalActionDisabledReason({ modeAllowed: !singleSeason, capacityFull, cashAvailable: budget, cashCost, tppAvailable: research.tpp.balance, tppCost });
+            return <Button variant="primary" disabled={!!disabledReason} title={disabledReason} onClick={() => dispatch({ type: 'START_RD_PROJECT', request })}>Start research · {formatMoney(cashCost)} · {tppCost} TPP</Button>;
+          })()}>
+            <strong>{selectedProgram?.title ?? 'Select a technical programme'}</strong>
+            <span>{selectedProgram ? 'Review the complete dossier and commit the selected programme.' : 'No programme matches the current filters.'}</span>
+          </FmDecisionBar>
+        </div>
       )}
 
       {tab === 'in-progress' && <InProgressPanel />}

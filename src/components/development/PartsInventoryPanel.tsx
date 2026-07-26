@@ -1,7 +1,14 @@
 import { useState } from 'react';
 import { Button } from '../Button';
-import { Panel } from '../Panel';
 import { TechnicalTable, TechnicalTableCell, TechnicalTableHead, TechnicalTableRow } from '../TechnicalTable';
+import {
+  FmKeyValue,
+  FmListButton,
+  FmPane,
+  FmPaneBody,
+  FmPaneHeader,
+  FmWorkspaceGrid,
+} from '../workspace/FmPane';
 import { formatMoney } from '../ui';
 import { activeDriversForTeam, teamById } from '../../game/careerState';
 import { useGame } from '../../game/GameContext';
@@ -51,8 +58,9 @@ export function PartsInventoryPanel() {
     .sort((a, b) => PART_TYPES.indexOf(a.type) - PART_TYPES.indexOf(b.type) || b.condition - a.condition);
 
   return (
-    <Panel title="Parts & Factory">
-      <div className="mb-3 flex flex-wrap gap-3 text-xs text-neutral-500">
+    <div className="ui-parts-factory-workspace">
+      <div className="ui-parts-factory-summary">
+        <strong>Parts & Factory</strong>
         <span>Garage {fittedCount}/{drivers.length * PART_TYPES.length}</span>
         <span>Spares {spareCount}</span>
         <span>Repair {repairCount}</span>
@@ -112,52 +120,68 @@ export function PartsInventoryPanel() {
       </nav>
 
       {view === 'fitted' && selectedDriver && (
-        <div className="mt-4">
-          <div className="mb-3 flex flex-wrap gap-2">
-            {drivers.map((driver) => (
-              <button
-                key={driver.id}
-                type="button"
-                onClick={() => setSelectedDriverId(driver.id)}
-                aria-current={selectedDriver.id === driver.id ? 'page' : undefined}
-                className={`rounded px-3 py-1.5 text-xs font-semibold ${selectedDriver.id === driver.id ? 'bg-blue-600 text-white' : 'bg-neutral-800 text-neutral-300 hover:bg-neutral-700'}`}
-              >
-                {driver.name} · Car #{driver.number}
-              </button>
-            ))}
-          </div>
-          <div className="grid gap-4">
-            {[selectedDriver].map((driver) => (
-              <div key={driver.id} className="rounded-xl border border-neutral-800 bg-neutral-900/40 p-4">
-            <div className="mb-3 flex items-center justify-between gap-3">
-              <div>
-                <div className="text-sm font-semibold text-neutral-100">{driver.name}</div>
-                <div className="text-xs text-neutral-500">Car #{driver.number} fitted components</div>
+        <FmWorkspaceGrid columns="three" className="ui-parts-garage-grid">
+          <FmPane>
+            <FmPaneHeader title="Race cars" meta={`${drivers.length} active drivers`} />
+            <FmPaneBody className="overflow-auto">
+              {drivers.map((driver) => (
+                <FmListButton
+                  key={driver.id}
+                  active={selectedDriver.id === driver.id}
+                  onClick={() => setSelectedDriverId(driver.id)}
+                >
+                  <span>Car #{driver.number}</span>
+                  <strong>{driver.name}</strong>
+                  <small>{fittedPartsForDriver(parts, driver.id).length}/{PART_TYPES.length} components fitted</small>
+                </FmListButton>
+              ))}
+            </FmPaneBody>
+          </FmPane>
+          <FmPane className="ui-parts-car-detail">
+            <FmPaneHeader title={selectedDriver.name} meta={`Car #${selectedDriver.number} fitted components`} />
+            <FmPaneBody className="overflow-auto">
+              <div className="ui-parts-fitted-list">
+                {PART_TYPES.map((type) => {
+                  const fitted = fittedPartsForDriver(parts, selectedDriver.id).find((part) => part.type === type);
+                  const bestSpare = availableSpareParts(parts, type)[0];
+                  return (
+                    <FittedPartRow
+                      key={type}
+                      type={type}
+                      label={seriesPartLabel(type, state.series)}
+                      part={fitted}
+                      spare={bestSpare}
+                      onFit={() => bestSpare && dispatch({ type: 'FIT_PART', partId: bestSpare.id, driverId: selectedDriver.id })}
+                    />
+                  );
+                })}
               </div>
-              <div className="text-xs text-neutral-500">
-                {fittedPartsForDriver(parts, driver.id).length}/{PART_TYPES.length} fitted
+            </FmPaneBody>
+          </FmPane>
+          <FmPane className="ui-parts-context-pane">
+            <FmPaneHeader title="Factory recommendation" meta={`Replace below ${AUTO_REPAIR_CONDITION_THRESHOLD}%`} />
+            <FmPaneBody className="overflow-auto">
+              <div className="ui-technical-dossier">
+                <section>
+                  <FmKeyValue label="Fitted components" value={`${fittedCount}`} />
+                  <FmKeyValue label="Available spares" value={`${spareCount}`} />
+                  <FmKeyValue label="Under repair" value={`${repairCount}`} />
+                  <FmKeyValue label="Factory queue" value={`${parts.manufacturingQueue.length}/3`} />
+                </section>
+                <section>
+                  <h3>Automation policy</h3>
+                  <FmKeyValue label="Auto-fit" value={automation.autoFit ? 'Enabled' : 'Manual'} />
+                  <FmKeyValue label="Auto-repair" value={automation.autoRepair ? 'Enabled' : 'Manual'} />
+                  <FmKeyValue label="Auto-restock" value={automation.autoRestock ? 'Enabled' : 'Manual'} />
+                </section>
+                <section>
+                  <h3>Engineer readout</h3>
+                  <p>Fit stronger spares before demanding tracks and send worn components to repair before condition increases pace loss or mechanical risk.</p>
+                </section>
               </div>
-            </div>
-            <div className="grid gap-2 md:grid-cols-2">
-              {PART_TYPES.map((type) => {
-                const fitted = fittedPartsForDriver(parts, driver.id).find((part) => part.type === type);
-                const bestSpare = availableSpareParts(parts, type)[0];
-                return (
-                  <FittedPartRow
-                    key={type}
-                    type={type}
-                    label={seriesPartLabel(type, state.series)}
-                    part={fitted}
-                    spare={bestSpare}
-                    onFit={() => bestSpare && dispatch({ type: 'FIT_PART', partId: bestSpare.id, driverId: driver.id })}
-                  />
-                );
-              })}
-            </div>
-              </div>
-            ))}
-          </div>
-        </div>
+            </FmPaneBody>
+          </FmPane>
+        </FmWorkspaceGrid>
       )}
 
       {view === 'manufacturing' && (
@@ -225,7 +249,7 @@ export function PartsInventoryPanel() {
           )}
         </div>
       )}
-    </Panel>
+    </div>
   );
 }
 
