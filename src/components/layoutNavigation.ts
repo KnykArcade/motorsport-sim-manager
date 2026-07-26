@@ -8,46 +8,49 @@ export type NavigationItem = {
 };
 
 export const NAVIGATION_GROUPS: ReadonlyArray<{ id: NavigationGroupId; label: string }> = [
-  { id: 'race', label: 'Race' },
+  { id: 'race', label: 'Management' },
   { id: 'team', label: 'Team' },
   { id: 'world', label: 'World' },
 ];
 
+/**
+ * FM-style primary navigation. Secondary destinations remain available through
+ * the contextual navigation bar so no route or game system is removed.
+ */
 export const NAVIGATION_ITEMS: ReadonlyArray<NavigationItem> = [
-  { to: '/hq', label: 'Manager Office', icon: 'HQ', group: 'race' },
+  { to: '/hq', label: 'Home', icon: 'HQ', group: 'race' },
   { to: '/inbox', label: 'Inbox', icon: 'IB', group: 'race' },
-  { to: '/calendar', label: 'Calendar', icon: 'CA', group: 'race' },
-  { to: '/standings', label: 'Standings', icon: 'ST', group: 'race' },
-  { to: '/news', label: 'News Center', icon: 'NW', group: 'race' },
-  { to: '/history', label: 'Race History', icon: 'RH', group: 'race' },
+  { to: '/weekend', label: 'Race Strategy', icon: 'RS', group: 'race' },
   { to: '/performance', label: 'Data Hub', icon: 'DH', group: 'race' },
-  { to: '/records', label: 'Universe History', icon: 'UH', group: 'race' },
+  { to: '/calendar', label: 'Calendar', icon: 'CA', group: 'race' },
 
-  { to: '/teams', label: 'Team Overview', icon: 'TM', group: 'team' },
+  { to: '/teams', label: 'Team', icon: 'TM', group: 'team' },
   { to: '/drivers', label: 'Drivers', icon: 'DR', group: 'team' },
+  { to: '/staff', label: 'Departments', icon: 'DP', group: 'team' },
+  { to: '/scouting', label: 'Scouting', icon: 'SC', group: 'team' },
   { to: '/market', label: 'Driver Market', icon: 'MK', group: 'team' },
-  { to: '/scouting', label: 'Intelligence', icon: 'IN', group: 'team' },
-  { to: '/technical', label: 'Technical', icon: 'RD', group: 'team' },
   { to: '/finance', label: 'Finance', icon: '$', group: 'team' },
-  { to: '/sponsors', label: 'Sponsors', icon: 'SP', group: 'team' },
-  { to: '/staff', label: 'Staff', icon: 'SF', group: 'team' },
+  { to: '/technical', label: 'Technical', icon: 'RD', group: 'team' },
 
-  { to: '/principal', label: 'Principal', icon: 'TP', group: 'world' },
-  { to: '/relationships', label: 'Driver Relations', icon: 'DR', group: 'world' },
-  { to: '/rivals', label: 'Team Rivalries', icon: 'RV', group: 'world' },
-  { to: '/stories', label: 'Paddock Stories', icon: 'PS', group: 'world' },
-  { to: '/politics', label: 'Regulations', icon: 'RG', group: 'world' },
-  { to: '/curves', label: 'Dev Curves', icon: 'DC', group: 'world' },
-  { to: '/data', label: 'Data Viewer', icon: 'DT', group: 'world' },
-  { to: '/settings', label: 'Settings', icon: 'SE', group: 'world' },
+  { to: '/standings', label: 'Championships', icon: 'CH', group: 'world' },
+  { to: '/teams?filter=player', label: 'Team Info', icon: 'TI', group: 'world' },
+  { to: '/sponsors?tab=owner', label: 'Owner Vision', icon: 'OV', group: 'world' },
 ];
 
+export function routePath(to: string): string {
+  return to.split('?')[0];
+}
+
 export function navigationGroupForRoute(pathname: string): NavigationGroupId {
-  return NAVIGATION_ITEMS.find((item) => pathname === item.to || pathname.startsWith(`${item.to}/`))?.group ?? 'race';
+  const direct = NAVIGATION_ITEMS.find((item) => {
+    const path = routePath(item.to);
+    return pathname === path || pathname.startsWith(`${path}/`);
+  });
+  return direct?.group ?? 'race';
 }
 
 export function navigationItemsForGroup(group: NavigationGroupId, hiddenRoutes: Set<string>) {
-  return NAVIGATION_ITEMS.filter((item) => item.group === group && !hiddenRoutes.has(item.to));
+  return NAVIGATION_ITEMS.filter((item) => item.group === group && !hiddenRoutes.has(routePath(item.to)));
 }
 
 export function visibleNavigationGroups(hiddenRoutes: Set<string>) {
@@ -55,4 +58,25 @@ export function visibleNavigationGroups(hiddenRoutes: Set<string>) {
     ...group,
     items: navigationItemsForGroup(group.id, hiddenRoutes),
   })).filter((group) => group.items.length > 0);
+}
+
+export function isNavigationItemActive(
+  item: NavigationItem,
+  pathname: string,
+  search: string,
+): boolean {
+  const path = routePath(item.to);
+  if (pathname !== path && !pathname.startsWith(`${path}/`)) return false;
+
+  const itemQuery = new URLSearchParams(item.to.split('?')[1] ?? '');
+  const locationQuery = new URLSearchParams(search);
+  if (itemQuery.size > 0) {
+    return [...itemQuery].every(([key, value]) => locationQuery.get(key) === value);
+  }
+
+  // The general Team destination should not also appear active when the
+  // dedicated Team Info or Owner Vision query is selected.
+  if (path === '/teams' && locationQuery.get('filter') === 'player') return false;
+  if (path === '/sponsors' && locationQuery.get('tab') === 'owner') return false;
+  return true;
 }
