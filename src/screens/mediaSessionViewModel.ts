@@ -32,3 +32,11 @@ export function mediaSessionUrgency(session: MediaSession): 'critical' | 'recomm
   if (session.status !== 'Pending') return 'complete';
   return session.type === 'Crisis' ? 'critical' : 'recommended';
 }
+
+export function selectedMediaSession(
+  sessions: MediaSession[],
+  pending: MediaSession[],
+  selectedId?: string,
+): MediaSession | undefined {
+  return sessions.find((session) => session.id === selectedId) ?? pending[0] ?? sessions[0];
+}

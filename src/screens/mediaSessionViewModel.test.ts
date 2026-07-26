@@ -5,6 +5,7 @@ import {
   mediaSessionProgress,
   mediaSessionTypeLabel,
   mediaSessionUrgency,
+  selectedMediaSession,
 } from './mediaSessionViewModel';
 
 const session = (overrides: Partial<MediaSession> = {}): MediaSession => ({
@@ -45,5 +46,14 @@ describe('media session view model', () => {
     expect(mediaSessionUrgency(session())).toBe('recommended');
     expect(mediaSessionUrgency(session({ type: 'Crisis' }))).toBe('critical');
     expect(mediaSessionTypeLabel('PostQualifying')).toBe('Post-qualifying');
+  });
+
+  it('keeps a selected interview visible and otherwise prioritizes pending work', () => {
+    const completed = session({ id: 'completed', status: 'Completed' });
+    const pending = session({ id: 'pending' });
+    expect(selectedMediaSession([completed, pending], [pending], 'completed')).toBe(completed);
+    expect(selectedMediaSession([completed, pending], [pending], 'missing')).toBe(pending);
+    expect(selectedMediaSession([completed], [], 'missing')).toBe(completed);
+    expect(selectedMediaSession([], [], 'missing')).toBeUndefined();
   });
 });

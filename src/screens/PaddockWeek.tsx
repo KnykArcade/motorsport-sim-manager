@@ -45,13 +45,20 @@ import {
   relationshipTargetLabel,
 } from './relationships/relationshipPriorityViewModel';
 import {
-  MetricStrip,
   WorkspaceBody,
   WorkspaceHeader,
-  WorkspaceMetric,
   WorkspaceScreen,
   WorkspaceTabs,
 } from '../components/workspace/Workspace';
+import {
+  FmDecisionBar,
+  FmKeyValue,
+  FmListButton,
+  FmPane,
+  FmPaneBody,
+  FmPaneHeader,
+  FmWorkspaceGrid,
+} from '../components/workspace/FmPane';
 
 const CATEGORY_LABELS: Record<PaddockEventCategory, string> = {
   development: 'Development / Factory',
@@ -257,42 +264,8 @@ export function PaddockWeek() {
               {pendingCount} required decision{pendingCount > 1 ? 's' : ''} pending
             </span>
           )}
-          <Button
-            variant="primary"
-            onClick={advanceToBriefing}
-            disabled={!canAdvance}
-            title={canAdvance ? 'Advance to Pre-Race Briefing' : 'Resolve required decisions and select a race package first'}
-          >
-            Advance to Briefing →
-          </Button>
         </>}
       />
-
-      <MetricStrip>
-        <WorkspaceMetric label="Budget" value={team ? formatMoney(team.budget) : '—'} detail={`${activeDrivers.length}/2 active drivers`} />
-        <WorkspaceMetric label="Team readiness" value={`${Math.round(team?.morale ?? 0)}% morale`} detail={`${Math.round(car?.condition ?? 0)}% car condition`} />
-        <WorkspaceMetric label="Development" value={`${activeUpgradePrograms(state).length}/${slots} slots`} detail="Active technical projects" />
-        <WorkspaceMetric label="Required actions" value={pendingCount} detail={packageSelected ? `${unresolvedCount} decisions unresolved` : 'Race package still required'} />
-      </MetricStrip>
-
-      <div className="ui-decision-strip flex flex-wrap items-center justify-between gap-2 rounded-lg border px-3 py-2">
-          <div className="flex items-center gap-2 text-xs">
-            <span className="ui-decision-strip-pulse" aria-hidden="true" />
-            <span className="font-semibold text-neutral-100">Paddock operations desk</span>
-            <span className="text-neutral-400">
-              {!packageSelected
-                ? 'Select the race package before advancing.'
-                : pendingCount > 0
-                  ? `${pendingCount} decision${pendingCount === 1 ? '' : 's'} remain before briefing.`
-                  : 'All required decisions are complete. Review the debrief before briefing.'}
-            </span>
-          </div>
-          <span className="text-[10px] font-semibold uppercase tracking-wide text-neutral-500">
-            {operationsAttentionCount + peopleAttentionCount > 0
-              ? `${operationsAttentionCount + peopleAttentionCount} attention item${operationsAttentionCount + peopleAttentionCount === 1 ? '' : 's'}`
-              : 'Ready for briefing'}
-          </span>
-      </div>
 
       <WorkspaceTabs
         items={[
@@ -310,7 +283,75 @@ export function PaddockWeek() {
         ariaLabel="Paddock Week sections"
       />
 
-      <WorkspaceBody className="space-y-4">
+      <WorkspaceBody>
+      <FmWorkspaceGrid>
+      <FmPane>
+        <FmPaneHeader title="Weekly agenda" meta={`${pendingCount} required · ${storyDecisions.length} optional`} />
+        <FmPaneBody>
+          {!packageSelected && (
+            <FmListButton urgent active={activeTab === 'decisions'} onClick={() => updatePaddockQuery('tab', 'decisions')}>
+              <span className="ui-news-list-source">Race operations · required</span>
+              <strong>Select weekend package</strong>
+              <span>Choose the resources and preparation package for {race?.gpName ?? 'the next race'}.</span>
+            </FmListButton>
+          )}
+          {nonCharacterUnresolved.map((event) => (
+            <FmListButton
+              key={event.id}
+              urgent
+              active={focusedEventId === event.id}
+              onClick={() => {
+                const next = new URLSearchParams(searchParams);
+                next.set('tab', 'decisions');
+                next.set('focus', event.id);
+                setSearchParams(next);
+              }}
+            >
+              <span className="ui-news-list-source">{CATEGORY_LABELS[event.category]} · required</span>
+              <strong>{event.title}</strong>
+              <span>{event.description}</span>
+            </FmListButton>
+          ))}
+          {[...unresolvedCharacterRequests, ...unresolvedCharacterDisputes, ...unresolvedCharacterInitiatives, ...unresolvedCharacterBreakingPoints].map((event) => (
+            <FmListButton
+              key={event.id}
+              urgent
+              active={focusedEventId === event.id}
+              onClick={() => {
+                const next = new URLSearchParams(searchParams);
+                next.set('tab', 'people');
+                next.set('section', 'attention');
+                next.set('focus', event.id);
+                setSearchParams(next);
+              }}
+            >
+              <span className="ui-news-list-source">People · attention</span>
+              <strong>{event.title}</strong>
+              <span>{event.description}</span>
+            </FmListButton>
+          ))}
+          {storyDecisions.map((event) => (
+            <FmListButton
+              key={event.id}
+              active={focusedEventId === event.id}
+              onClick={() => {
+                const next = new URLSearchParams(searchParams);
+                next.set('tab', 'decisions');
+                next.set('focus', event.id);
+                setSearchParams(next);
+              }}
+            >
+              <span className="ui-news-list-source">Story response · optional</span>
+              <strong>{event.title}</strong>
+              <span>{event.description}</span>
+            </FmListButton>
+          ))}
+          {pendingCount === 0 && storyDecisions.length === 0 && (
+            <div className="ui-inbox-empty">The weekly agenda is clear. Review updates or advance to briefing.</div>
+          )}
+        </FmPaneBody>
+      </FmPane>
+      <div className="ui-fm-scroll-column space-y-4">
       {weeklyStory && (
         <Panel title={`Returned from ${weeklyStory.raceLabel}`}>
           <p className="text-xs leading-5 text-neutral-500">{weeklyStory.summary}</p>
@@ -647,7 +688,54 @@ export function PaddockWeek() {
           <HubSection title={CATEGORY_LABELS[visibleUpdateCategory]} events={eventsByCategory[visibleUpdateCategory] ?? []} />
         </> : <Panel title="Team Updates"><p className="text-sm text-neutral-500">No major updates this week.</p></Panel>}
       </div>}
+      </div>
+      <FmPane>
+        <FmPaneHeader title="Management context" meta={race?.gpName ?? 'Next event'} />
+        <FmPaneBody className="ui-news-context-pane">
+          <section>
+            <h3>Progress gate</h3>
+            <FmKeyValue label="Required decisions" value={unresolvedCount} />
+            <FmKeyValue label="Weekend package" value={packageSelected ? 'Selected' : 'Required'} />
+            <FmKeyValue label="Status" value={canAdvance ? 'Ready' : 'Blocked'} />
+          </section>
+          <section>
+            <h3>Team readiness</h3>
+            <FmKeyValue label="Budget" value={team ? formatMoney(team.budget) : '—'} />
+            <FmKeyValue label="Active drivers" value={`${activeDrivers.length}/2`} />
+            <FmKeyValue label="Morale" value={`${Math.round(team?.morale ?? 0)}%`} />
+            <FmKeyValue label="Car condition" value={`${Math.round(car?.condition ?? 0)}%`} />
+            <FmKeyValue label="Development" value={`${activeUpgradePrograms(state).length}/${slots} slots`} />
+          </section>
+          <section>
+            <h3>Advisor room</h3>
+            <FmKeyValue label="Recommendations" value={state.phase18?.advisorRecommendations?.length ?? 0} />
+            <FmKeyValue label="Resolved debriefs" value={advisorDebrief.length} />
+            <FmKeyValue label="People attention" value={peopleAttentionCount} />
+            <p>Advisor and relationship consequences remain visible inside each selected decision.</p>
+          </section>
+        </FmPaneBody>
+      </FmPane>
+      </FmWorkspaceGrid>
       </WorkspaceBody>
+      <FmDecisionBar
+        actions={(
+          <Button
+            variant="primary"
+            onClick={advanceToBriefing}
+            disabled={!canAdvance}
+            title={canAdvance ? 'Advance to Pre-Race Briefing' : 'Resolve required decisions and select a race package first'}
+          >
+            Advance to Briefing →
+          </Button>
+        )}
+      >
+        <strong className="text-neutral-200">Paddock week:</strong>{' '}
+        {!packageSelected
+          ? 'Select the race package before advancing.'
+          : pendingCount > 0
+            ? `${pendingCount} required decision${pendingCount === 1 ? '' : 's'} remain before briefing.`
+            : 'All required decisions are complete. You may advance to the pre-race briefing.'}
+      </FmDecisionBar>
     </WorkspaceScreen>
   );
 }

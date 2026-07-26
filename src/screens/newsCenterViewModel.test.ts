@@ -1,6 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import type { NewsItem } from '../types/gameTypes';
-import { buildNewsStorylines, storylineChapterCounts } from './newsCenterViewModel';
+import {
+  buildNewsStorylines,
+  selectedNewsItem,
+  selectedNewsStoryline,
+  storylineChapterCounts,
+} from './newsCenterViewModel';
 
 const item = (overrides: Partial<NewsItem> & Pick<NewsItem, 'id' | 'headline'>): NewsItem => ({
   timestamp: '1995-01-01T00:00:00.000Z',
@@ -48,5 +53,22 @@ describe('News Center storylines', () => {
   it('does not create false chapters when the archive and current feed overlap', () => {
     const duplicate = item({ id: 'same', headline: 'Repeated storage entry', teamId: 'team-1' });
     expect(buildNewsStorylines([duplicate, duplicate], { 'team-1': 'Team' }, {})).toEqual([]);
+  });
+
+  it('keeps list/detail selection stable and falls back to the first visible record', () => {
+    const reports = [
+      item({ id: 'first', headline: 'First report' }),
+      item({ id: 'second', headline: 'Second report' }),
+    ];
+    expect(selectedNewsItem(reports, 'second')?.id).toBe('second');
+    expect(selectedNewsItem(reports, 'filtered-out')?.id).toBe('first');
+    expect(selectedNewsItem([], 'second')).toBeUndefined();
+
+    const storylines = buildNewsStorylines([
+      item({ id: 's1', headline: 'First chapter', teamId: 'team-1', round: 1 }),
+      item({ id: 's2', headline: 'Second chapter', teamId: 'team-1', round: 2 }),
+    ], { 'team-1': 'Team' }, {});
+    expect(selectedNewsStoryline(storylines, storylines[0].id)).toBe(storylines[0]);
+    expect(selectedNewsStoryline(storylines, 'missing')).toBe(storylines[0]);
   });
 });
