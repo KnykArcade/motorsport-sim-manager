@@ -16,6 +16,7 @@ type Props = {
   highlightId?: string;
   title?: string;
   positionOffset?: number;
+  onSelect?: (entityId: string) => void;
 };
 
 export function StandingsTable({
@@ -26,6 +27,7 @@ export function StandingsTable({
   highlightId,
   title,
   positionOffset = 0,
+  onSelect,
 }: Props) {
   const leaderPoints = entries.reduce((max, e) => Math.max(max, e.points), 0);
   return (
@@ -55,7 +57,8 @@ export function StandingsTable({
             return (
               <tr
                 key={e.entityId}
-                className={`border-t border-neutral-800/60 ${isPlayer ? 'bg-amber-500/10' : 'hover:bg-neutral-900/40'}`}
+                onClick={() => onSelect?.(e.entityId)}
+                className={`border-t border-neutral-800/60 ${onSelect ? 'cursor-pointer' : ''} ${isPlayer ? 'bg-amber-500/10' : 'hover:bg-neutral-900/40'}`}
               >
                 <td className="px-3 py-1.5">
                   <span className={`inline-flex h-5 min-w-[1.25rem] items-center justify-center rounded px-1 text-xs font-bold tabular-nums ${positionBadgeClass(position)}`}>

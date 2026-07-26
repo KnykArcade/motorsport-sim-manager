@@ -10,17 +10,27 @@ import type {
   UniverseDriverMovement,
   UniverseLiveSeason,
 } from '../types/universeTypes';
-import type { Series } from '../types/gameTypes';
+import type { Series, StandingsEntry } from '../types/gameTypes';
 import { worldDriverAvailability } from './worldAvailabilityViewModel';
 import { LegacyArchive } from '../components/history/LegacyArchive';
 import {
-  MetricStrip,
   WorkspaceBody,
   WorkspaceHeader,
-  WorkspaceMetric,
   WorkspaceScreen,
   WorkspaceTabs,
 } from '../components/workspace/Workspace';
+import {
+  DRIVER_RECORD_METRICS,
+  TEAM_RECORD_METRICS,
+  driverRecordRanking,
+  selectedRecord,
+  sortedCareerSeasons,
+  sortedMovements,
+  sortedWorldSeasons,
+  teamRecordRanking,
+  type DriverRecordMetric,
+  type TeamRecordMetric,
+} from './championshipRecordsViewModel';
 
 type Tab = 'records' | 'legacy' | 'drivers' | 'teams' | 'seasons' | 'world' | 'grid';
 
@@ -28,48 +38,40 @@ export function UniverseHistory() {
   const { state } = useGame();
   const [tab, setTab] = useState<Tab>('records');
   const [recordView, setRecordView] = useState<'drivers' | 'teams'>('drivers');
+  const [driverMetric, setDriverMetric] = useState<DriverRecordMetric>('wins');
+  const [teamMetric, setTeamMetric] = useState<TeamRecordMetric>('wins');
+  const [selectedCareerId, setSelectedCareerId] = useState<string | null>(null);
+  const [selectedSeasonKey, setSelectedSeasonKey] = useState<string | null>(null);
+  const [selectedWorldSeasonKey, setSelectedWorldSeasonKey] = useState<string | null>(null);
 
   const history = state?.universeHistory;
-
   const nameOfDriver = useMemo(() => {
-    const fromState = new Map((state?.drivers ?? []).map((d) => [d.id, d.name] as const));
-    return (id?: string) =>
-      id ? history?.driverCareerStats[id]?.name ?? fromState.get(id) ?? id : '—';
+    const fromState = new Map((state?.drivers ?? []).map((driver) => [driver.id, driver.name] as const));
+    return (id?: string) => id ? history?.driverCareerStats[id]?.name ?? fromState.get(id) ?? id : '—';
   }, [state, history]);
   const nameOfTeam = useMemo(() => {
-    const fromState = new Map((state?.teams ?? []).map((t) => [t.id, t.name] as const));
-    return (id?: string) =>
-      id ? history?.teamCareerStats[id]?.name ?? fromState.get(id) ?? id : '—';
+    const fromState = new Map((state?.teams ?? []).map((team) => [team.id, team.name] as const));
+    return (id?: string) => id ? history?.teamCareerStats[id]?.name ?? fromState.get(id) ?? id : '—';
   }, [state, history]);
 
   if (!state) return null;
 
-  const seasons = history?.seasons ?? [];
+  const seasons = sortedCareerSeasons(history?.seasons ?? []);
   const drivers = Object.values(history?.driverCareerStats ?? {});
   const teams = Object.values(history?.teamCareerStats ?? {});
-  const worldSeasons = Object.values(state.motorsportUniverse?.championships ?? {})
-    .flatMap((championship) => championship?.seasonHistory ?? [])
-    .sort((a, b) => b.seasonYear - a.seasonYear || a.series.localeCompare(b.series));
+  const worldSeasons = sortedWorldSeasons(
+    Object.values(state.motorsportUniverse?.championships ?? {})
+      .flatMap((championship) => championship?.seasonHistory ?? []),
+  );
   const worldChampionships = state.motorsportUniverse?.championships ?? {};
   const worldSeatCount = Object.values(worldChampionships)
     .reduce((total, championship) => total + (championship?.drivers.length ?? 0), 0);
 
   if (seasons.length === 0 && worldSeasons.length === 0 && worldSeatCount === 0) {
     return (
-      <WorkspaceScreen className="era-feature-screen era-universe-history-screen">
-        <WorkspaceHeader
-          eyebrow="World archive"
-          title="Universe History"
-          subtitle={`${state.seasonYear} ${state.series} · Your alternate history record book`}
-        />
-        <WorkspaceBody className="space-y-3">
-          <Panel>
-            <p className="text-sm text-neutral-400">
-              No seasons recorded yet. Finish a season to start building your universe's record book —
-              champions, race winners, poles and career stats are archived at each offseason.
-            </p>
-          </Panel>
-        </WorkspaceBody>
+      <WorkspaceScreen className="era-feature-screen era-universe-history-screen ui-records-screen">
+        <WorkspaceHeader eyebrow="World archive" title="Records" subtitle={`${state.seasonYear} ${state.series} · Your alternate-history record book`} />
+        <WorkspaceBody><Panel><p className="text-sm text-neutral-400">No seasons recorded yet. Finish a season to begin the archive.</p></Panel></WorkspaceBody>
       </WorkspaceScreen>
     );
   }
@@ -77,110 +79,276 @@ export function UniverseHistory() {
   const tabs = [
     { id: 'records' as const, label: 'Records' },
     { id: 'legacy' as const, label: 'Legacy' },
-    { id: 'drivers' as const, label: `Drivers · ${drivers.length}` },
-    { id: 'teams' as const, label: `Teams · ${teams.length}` },
-    { id: 'seasons' as const, label: `Seasons · ${seasons.length}` },
-    { id: 'world' as const, label: `Championships · ${worldSeasons.length}` },
-    { id: 'grid' as const, label: `World Grid · ${worldSeatCount}` },
+    { id: 'drivers' as const, label: `Drivers (${drivers.length})` },
+    { id: 'teams' as const, label: `Teams (${teams.length})` },
+    { id: 'seasons' as const, label: `Career History (${seasons.length})` },
+    { id: 'world' as const, label: `World Championships (${worldSeasons.length})` },
+    { id: 'grid' as const, label: `World Grid (${worldSeatCount})` },
   ];
 
   return (
-    <WorkspaceScreen className="era-feature-screen era-universe-history-screen">
+    <WorkspaceScreen className="era-feature-screen era-universe-history-screen ui-records-screen">
       <WorkspaceHeader
         eyebrow="World archive"
-        title="Universe History"
-        subtitle={`${state.seasonYear} ${state.series} · Champions, records, movements, and legacy`}
+        title="Records and History"
+        subtitle={`${state.seasonYear} ${state.series} · Champions, leaderboards, movements, and legacy`}
       />
-      <MetricStrip>
-        <WorkspaceMetric label="Archived seasons" value={seasons.length} detail="Player career seasons" />
-        <WorkspaceMetric label="Drivers tracked" value={drivers.length} detail="Career records in archive" />
-        <WorkspaceMetric label="Teams tracked" value={teams.length} detail="Team records in archive" />
-        <WorkspaceMetric label="World history" value={worldSeasons.length} detail={`${worldSeatCount} current grid seats`} />
-      </MetricStrip>
-      <WorkspaceTabs items={tabs} active={tab} onChange={setTab} ariaLabel="Universe history sections" />
-      <WorkspaceBody className="space-y-3">
-
-      {tab === 'records' && (
-        <div className="space-y-3">
-          <div className="flex gap-1 rounded-lg border border-neutral-800 bg-neutral-950/70 p-1">
-            <TabButton active={recordView === 'drivers'} onClick={() => setRecordView('drivers')}>Driver Records</TabButton>
-            <TabButton active={recordView === 'teams'} onClick={() => setRecordView('teams')}>Team Records</TabButton>
-          </div>
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          {recordView === 'drivers' ? <>
-          <RecordCard
-            label="Most Race Wins"
-            holder={nameOfDriver(history?.records.mostWinsDriverId)}
-            value={drivers.find((d) => d.driverId === history?.records.mostWinsDriverId)?.wins}
+      <WorkspaceTabs items={tabs} active={tab} onChange={(next) => { setTab(next); setSelectedCareerId(null); }} ariaLabel="Records and history sections" />
+      <WorkspaceBody className="ui-records-body">
+        {tab === 'records' && (
+          <RecordsWorkspace
+            drivers={drivers}
+            teams={teams}
+            scope={recordView}
+            onScope={(scope) => { setRecordView(scope); setSelectedCareerId(null); }}
+            driverMetric={driverMetric}
+            teamMetric={teamMetric}
+            onDriverMetric={(metric) => { setDriverMetric(metric); setSelectedCareerId(null); }}
+            onTeamMetric={(metric) => { setTeamMetric(metric); setSelectedCareerId(null); }}
+            selectedId={selectedCareerId}
+            onSelect={setSelectedCareerId}
           />
-          <RecordCard
-            label="Most Drivers' Titles"
-            holder={nameOfDriver(history?.records.mostTitlesDriverId)}
-            value={drivers.find((d) => d.driverId === history?.records.mostTitlesDriverId)?.driverTitles}
+        )}
+        {tab === 'legacy' && <LegacyArchive legacy={state.phase18!.legacy} />}
+        {tab === 'drivers' && <DriverCareerWorkspace drivers={drivers} selectedId={selectedCareerId} onSelect={setSelectedCareerId} />}
+        {tab === 'teams' && <TeamCareerWorkspace teams={teams} selectedId={selectedCareerId} onSelect={setSelectedCareerId} />}
+        {tab === 'seasons' && (
+          <SeasonArchive
+            seasons={seasons}
+            selectedKey={selectedSeasonKey}
+            onSelect={setSelectedSeasonKey}
+            nameOfDriver={nameOfDriver}
+            nameOfTeam={nameOfTeam}
           />
-          <RecordCard
-            label="Most Poles"
-            holder={nameOfDriver(history?.records.mostPolesDriverId)}
-            value={drivers.find((d) => d.driverId === history?.records.mostPolesDriverId)?.poles}
+        )}
+        {tab === 'world' && (
+          <WorldSeasonArchive
+            seasons={worldSeasons}
+            selectedKey={selectedWorldSeasonKey}
+            onSelect={setSelectedWorldSeasonKey}
           />
-          <RecordCard label="Most Podiums" holder={nameOfDriver(history?.records.mostPodiumsDriverId)} value={drivers.find((d) => d.driverId === history?.records.mostPodiumsDriverId)?.podiums} />
-          <RecordCard label="Most Fastest Laps" holder={nameOfDriver(history?.records.mostFastestLapsDriverId)} value={drivers.find((d) => d.driverId === history?.records.mostFastestLapsDriverId)?.fastestLaps} />
-          <RecordCard label="Most Career Points" holder={nameOfDriver(history?.records.mostPointsDriverId)} value={drivers.find((d) => d.driverId === history?.records.mostPointsDriverId)?.points} />
-          </> : <>
-          <RecordCard
-            label="Most Constructor Wins"
-            holder={nameOfTeam(history?.records.mostWinsTeamId)}
-            value={teams.find((t) => t.teamId === history?.records.mostWinsTeamId)?.wins}
-          />
-          <RecordCard
-            label="Most Constructors' Titles"
-            holder={nameOfTeam(history?.records.mostTitlesTeamId)}
-            value={teams.find((t) => t.teamId === history?.records.mostTitlesTeamId)?.constructorTitles}
-          />
-          <RecordCard label="Most Team Podiums" holder={nameOfTeam(history?.records.mostPodiumsTeamId)} value={teams.find((t) => t.teamId === history?.records.mostPodiumsTeamId)?.podiums} />
-          <RecordCard label="Most Team Poles" holder={nameOfTeam(history?.records.mostPolesTeamId)} value={teams.find((t) => t.teamId === history?.records.mostPolesTeamId)?.poles} />
-          <RecordCard label="Most Team Points" holder={nameOfTeam(history?.records.mostPointsTeamId)} value={teams.find((t) => t.teamId === history?.records.mostPointsTeamId)?.points} />
-          </>}
-          </div>
-        </div>
-      )}
-
-      {tab === 'legacy' && <LegacyArchive legacy={state.phase18!.legacy} />}
-
-      {tab === 'drivers' && <DriverTable drivers={drivers} />}
-      {tab === 'teams' && <TeamTable teams={teams} />}
-      {tab === 'seasons' && (
-        <div className="space-y-3">
-          {[...seasons]
-            .sort((a, b) => b.seasonYear - a.seasonYear)
-            .map((s) => (
-              <SeasonCard
-                key={`${s.seasonYear}-${s.series}`}
-                season={s}
-                nameOfDriver={nameOfDriver}
-                nameOfTeam={nameOfTeam}
-              />
-            ))}
-        </div>
-      )}
-      {tab === 'world' && (
-        <div className="space-y-3">
-          {worldSeasons.length > 0 ? (
-            worldSeasons.map((season) => (
-              <WorldSeasonCard key={`${season.seasonYear}-${season.series}`} season={season} />
-            ))
-          ) : (
-            <Panel>
-              <p className="text-sm text-neutral-400">
-                Off-screen championship results will appear after the first completed season.
-              </p>
-            </Panel>
-          )}
-        </div>
-      )}
-      {tab === 'grid' && <WorldGrid championships={worldChampionships} />}
+        )}
+        {tab === 'grid' && <WorldGrid championships={worldChampionships} />}
       </WorkspaceBody>
     </WorkspaceScreen>
+  );
+}
+
+function RecordsWorkspace({
+  drivers,
+  teams,
+  scope,
+  onScope,
+  driverMetric,
+  teamMetric,
+  onDriverMetric,
+  onTeamMetric,
+  selectedId,
+  onSelect,
+}: {
+  drivers: DriverCareerStats[];
+  teams: TeamCareerStats[];
+  scope: 'drivers' | 'teams';
+  onScope: (scope: 'drivers' | 'teams') => void;
+  driverMetric: DriverRecordMetric;
+  teamMetric: TeamRecordMetric;
+  onDriverMetric: (metric: DriverRecordMetric) => void;
+  onTeamMetric: (metric: TeamRecordMetric) => void;
+  selectedId: string | null;
+  onSelect: (id: string) => void;
+}) {
+  const driverRows = driverRecordRanking(drivers, driverMetric);
+  const teamRows = teamRecordRanking(teams, teamMetric);
+  const selectedDriver = selectedRecord(driverRows, selectedId, (entry) => entry.driverId);
+  const selectedTeam = selectedRecord(teamRows, selectedId, (entry) => entry.teamId);
+  const metricLabel = scope === 'drivers'
+    ? DRIVER_RECORD_METRICS.find((entry) => entry.id === driverMetric)?.label
+    : TEAM_RECORD_METRICS.find((entry) => entry.id === teamMetric)?.label;
+
+  return (
+    <div className="ui-fm-workspace-grid is-three ui-records-grid">
+      <section className="ui-fm-pane ui-record-category-pane">
+        <div className="ui-fm-pane-header">
+          <div><div className="ui-fm-pane-title">Record categories</div><div className="ui-fm-pane-meta">Choose a career leaderboard</div></div>
+        </div>
+        <div className="ui-record-scope-switch">
+          <button type="button" className={scope === 'drivers' ? 'is-active' : ''} onClick={() => onScope('drivers')}>Drivers</button>
+          <button type="button" className={scope === 'teams' ? 'is-active' : ''} onClick={() => onScope('teams')}>Teams</button>
+        </div>
+        <div className="ui-fm-pane-body">
+          {scope === 'drivers'
+            ? DRIVER_RECORD_METRICS.map((metric) => (
+              <button key={metric.id} type="button" className={`ui-fm-list-button ${driverMetric === metric.id ? 'is-active' : ''}`} onClick={() => onDriverMetric(metric.id)}>
+                <span>Driver record</span><strong>{metric.label}</strong><small>{drivers.length} eligible careers</small>
+              </button>
+            ))
+            : TEAM_RECORD_METRICS.map((metric) => (
+              <button key={metric.id} type="button" className={`ui-fm-list-button ${teamMetric === metric.id ? 'is-active' : ''}`} onClick={() => onTeamMetric(metric.id)}>
+                <span>Team record</span><strong>{metric.label}</strong><small>{teams.length} eligible teams</small>
+              </button>
+            ))}
+        </div>
+      </section>
+
+      <section className="ui-fm-pane ui-record-ranking-pane">
+        <div className="ui-fm-pane-header">
+          <div><div className="ui-fm-pane-title">{metricLabel}</div><div className="ui-fm-pane-meta">Full career leaderboard</div></div>
+        </div>
+        <div className="ui-fm-pane-body ui-fm-scroll-column">
+          <table className="ui-record-table">
+            <thead><tr><th>Pos</th><th>{scope === 'drivers' ? 'Driver' : 'Team'}</th><th className="is-numeric">{metricLabel}</th><th className="is-numeric">Wins</th><th className="is-numeric">Points</th></tr></thead>
+            <tbody>
+              {scope === 'drivers'
+                ? driverRows.map((entry, index) => (
+                  <tr key={entry.driverId} className={selectedDriver?.driverId === entry.driverId ? 'is-selected' : ''} onClick={() => onSelect(entry.driverId)}>
+                    <td>P{index + 1}</td><td><strong>{entry.name}</strong></td><td className="is-numeric">{Math.round(entry[driverMetric])}</td><td className="is-numeric">{entry.wins}</td><td className="is-numeric">{Math.round(entry.points)}</td>
+                  </tr>
+                ))
+                : teamRows.map((entry, index) => (
+                  <tr key={entry.teamId} className={selectedTeam?.teamId === entry.teamId ? 'is-selected' : ''} onClick={() => onSelect(entry.teamId)}>
+                    <td>P{index + 1}</td><td><strong>{entry.name}</strong></td><td className="is-numeric">{Math.round(entry[teamMetric])}</td><td className="is-numeric">{entry.wins}</td><td className="is-numeric">{Math.round(entry.points)}</td>
+                  </tr>
+                ))}
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section className="ui-fm-pane ui-record-holder-pane">
+        <div className="ui-fm-pane-header">
+          <div><div className="ui-fm-pane-title">Record-holder profile</div><div className="ui-fm-pane-meta">{scope === 'drivers' ? selectedDriver?.name : selectedTeam?.name}</div></div>
+        </div>
+        <div className="ui-fm-pane-body">
+          {scope === 'drivers' && selectedDriver ? <DriverDossier driver={selectedDriver} /> : null}
+          {scope === 'teams' && selectedTeam ? <TeamDossier team={selectedTeam} /> : null}
+          {scope === 'drivers' && !selectedDriver ? <EmptyArchive /> : null}
+          {scope === 'teams' && !selectedTeam ? <EmptyArchive /> : null}
+        </div>
+      </section>
+    </div>
+  );
+}
+
+function DriverCareerWorkspace({ drivers, selectedId, onSelect }: { drivers: DriverCareerStats[]; selectedId: string | null; onSelect: (id: string) => void }) {
+  const rows = driverRecordRanking(drivers, 'driverTitles');
+  const selected = selectedRecord(rows, selectedId, (entry) => entry.driverId);
+  return (
+    <div className="ui-fm-workspace-grid is-two ui-career-record-grid">
+      <section className="ui-fm-pane">
+        <div className="ui-fm-pane-header"><div><div className="ui-fm-pane-title">Driver archive</div><div className="ui-fm-pane-meta">Titles, wins, and total contribution</div></div></div>
+        <div className="ui-fm-pane-body">{rows.map((entry) => (
+          <button key={entry.driverId} type="button" className={`ui-fm-list-button ${selected?.driverId === entry.driverId ? 'is-active' : ''}`} onClick={() => onSelect(entry.driverId)}>
+            <span>{entry.driverTitles} titles · {entry.starts} starts</span><strong>{entry.name}</strong><small>{entry.wins} wins · {Math.round(entry.points)} points</small>
+          </button>
+        ))}</div>
+      </section>
+      <section className="ui-fm-pane ui-career-detail-pane">
+        <div className="ui-fm-pane-header"><div><div className="ui-fm-pane-title">Driver career dossier</div><div className="ui-fm-pane-meta">{selected?.name}</div></div></div>
+        <div className="ui-fm-pane-body">{selected ? <DriverDossier driver={selected} /> : <EmptyArchive />}</div>
+      </section>
+    </div>
+  );
+}
+
+function TeamCareerWorkspace({ teams, selectedId, onSelect }: { teams: TeamCareerStats[]; selectedId: string | null; onSelect: (id: string) => void }) {
+  const rows = teamRecordRanking(teams, 'constructorTitles');
+  const selected = selectedRecord(rows, selectedId, (entry) => entry.teamId);
+  return (
+    <div className="ui-fm-workspace-grid is-two ui-career-record-grid">
+      <section className="ui-fm-pane">
+        <div className="ui-fm-pane-header"><div><div className="ui-fm-pane-title">Team archive</div><div className="ui-fm-pane-meta">Titles, victories, and championship entries</div></div></div>
+        <div className="ui-fm-pane-body">{rows.map((entry) => (
+          <button key={entry.teamId} type="button" className={`ui-fm-list-button ${selected?.teamId === entry.teamId ? 'is-active' : ''}`} onClick={() => onSelect(entry.teamId)}>
+            <span>{entry.constructorTitles} titles · {entry.entries} entries</span><strong>{entry.name}</strong><small>{entry.wins} wins · {Math.round(entry.points)} points</small>
+          </button>
+        ))}</div>
+      </section>
+      <section className="ui-fm-pane ui-career-detail-pane">
+        <div className="ui-fm-pane-header"><div><div className="ui-fm-pane-title">Team career dossier</div><div className="ui-fm-pane-meta">{selected?.name}</div></div></div>
+        <div className="ui-fm-pane-body">{selected ? <TeamDossier team={selected} /> : <EmptyArchive />}</div>
+      </section>
+    </div>
+  );
+}
+
+function SeasonArchive({
+  seasons,
+  selectedKey,
+  onSelect,
+  nameOfDriver,
+  nameOfTeam,
+}: {
+  seasons: SeasonHistoryRecord[];
+  selectedKey: string | null;
+  onSelect: (key: string) => void;
+  nameOfDriver: (id?: string) => string;
+  nameOfTeam: (id?: string) => string;
+}) {
+  const keyOf = (season: SeasonHistoryRecord) => `${season.seasonYear}-${season.series}`;
+  const selected = selectedRecord(seasons, selectedKey, keyOf);
+  return (
+    <div className="ui-fm-workspace-grid is-three ui-season-archive-grid">
+      <section className="ui-fm-pane">
+        <div className="ui-fm-pane-header"><div><div className="ui-fm-pane-title">Season archive</div><div className="ui-fm-pane-meta">Newest completed season first</div></div></div>
+        <div className="ui-fm-pane-body">{seasons.map((season) => (
+          <button key={keyOf(season)} type="button" className={`ui-fm-list-button ${selected && keyOf(selected) === keyOf(season) ? 'is-active' : ''}`} onClick={() => onSelect(keyOf(season))}>
+            <span>{season.series}</span><strong>{season.seasonYear} season</strong><small>{season.raceResults.length} races · {season.majorStorylines.length} storylines</small>
+          </button>
+        ))}</div>
+      </section>
+      <section className="ui-fm-pane ui-season-detail-pane">
+        <div className="ui-fm-pane-header"><div><div className="ui-fm-pane-title">Season dossier</div><div className="ui-fm-pane-meta">{selected ? `${selected.seasonYear} ${selected.series}` : 'No season selected'}</div></div></div>
+        <div className="ui-fm-pane-body ui-fm-scroll-column">
+          {selected ? (
+            <>
+              <div className="ui-season-champions">
+                <div><span>Driver champion</span><strong>{nameOfDriver(selected.driverChampionId)}</strong></div>
+                <div><span>Team champion</span><strong>{nameOfTeam(selected.constructorChampionId)}</strong></div>
+              </div>
+              <ArchiveStandings title="Final driver standings" rows={selected.finalDriverStandings} nameOf={nameOfDriver} />
+              <ArchiveStandings title="Final team standings" rows={selected.finalConstructorStandings} nameOf={nameOfTeam} />
+            </>
+          ) : <EmptyArchive />}
+        </div>
+      </section>
+      <section className="ui-fm-pane ui-season-context-pane">
+        <div className="ui-fm-pane-header"><div><div className="ui-fm-pane-title">Season story</div><div className="ui-fm-pane-meta">Race winners and major events</div></div></div>
+        <div className="ui-fm-pane-body ui-fm-scroll-column">
+          {selected ? (
+            <>
+              <div className="ui-fm-section-label">Race archive</div>
+              <div className="ui-season-race-list">{selected.raceResults.map((race) => (
+                <div key={race.raceId}><span>R{race.round}</span><p><strong>{race.gpName}</strong><small>Winner {nameOfDriver(race.winnerDriverId)}{race.poleDriverId ? ` · Pole ${nameOfDriver(race.poleDriverId)}` : ''}</small></p></div>
+              ))}</div>
+              <div className="ui-fm-section-label">Major storylines</div>
+              <div className="ui-season-storylines">{selected.majorStorylines.length ? selected.majorStorylines.map((story, index) => <p key={`${index}-${story}`}>{story}</p>) : <p>No major storyline was archived.</p>}</div>
+              {selected.regulationChanges.length > 0 && <><div className="ui-fm-section-label">Regulation changes</div><div className="ui-season-storylines">{selected.regulationChanges.map((change, index) => <p key={`${index}-${change}`}>{change}</p>)}</div></>}
+            </>
+          ) : <EmptyArchive />}
+        </div>
+      </section>
+    </div>
+  );
+}
+
+function WorldSeasonArchive({ seasons, selectedKey, onSelect }: { seasons: UniverseChampionshipSeason[]; selectedKey: string | null; onSelect: (key: string) => void }) {
+  const keyOf = (season: UniverseChampionshipSeason) => `${season.seasonYear}-${season.series}`;
+  const selected = selectedRecord(seasons, selectedKey, keyOf);
+  return (
+    <div className="ui-fm-workspace-grid is-two ui-world-season-grid">
+      <section className="ui-fm-pane">
+        <div className="ui-fm-pane-header"><div><div className="ui-fm-pane-title">World championships</div><div className="ui-fm-pane-meta">Completed off-screen series</div></div></div>
+        <div className="ui-fm-pane-body">{seasons.map((season) => (
+          <button key={keyOf(season)} type="button" className={`ui-fm-list-button ${selected && keyOf(selected) === keyOf(season) ? 'is-active' : ''}`} onClick={() => onSelect(keyOf(season))}>
+            <span>{season.series}</span><strong>{season.seasonYear} championship</strong><small>{season.driverChampionName ?? season.driverChampionId ?? 'No champion'} · {season.completedRaces} races</small>
+          </button>
+        ))}</div>
+      </section>
+      <section className="ui-fm-pane ui-world-season-detail">
+        <div className="ui-fm-pane-header"><div><div className="ui-fm-pane-title">Championship dossier</div><div className="ui-fm-pane-meta">{selected ? `${selected.seasonYear} ${selected.series}` : 'No season selected'}</div></div></div>
+        <div className="ui-fm-pane-body ui-fm-scroll-column">{selected ? <WorldSeasonCard season={selected} expanded /> : <EmptyArchive />}</div>
+      </section>
+    </div>
   );
 }
 
@@ -194,66 +362,53 @@ export function WorldGrid({
   const entries = Object.values(championships)
     .filter((championship): championship is UniverseChampionshipState => Boolean(championship))
     .sort((a, b) => a.series.localeCompare(b.series));
-  const movements = entries
-    .flatMap((championship) => championship.movementHistory ?? [])
-    .sort((a, b) => b.effectiveYear - a.effectiveYear || a.series.localeCompare(b.series) || a.id.localeCompare(b.id))
-    .slice(0, 30);
+  const [selectedSeries, setSelectedSeries] = useState<Series | null>(entries[0]?.series ?? null);
+  const selected = entries.find((entry) => entry.series === selectedSeries) ?? entries[0];
+  const movements = sortedMovements(entries.flatMap((championship) => championship.movementHistory ?? []));
+  const availability = selected ? worldDriverAvailability(selected) : new Map();
+  const drivers = new Map(selected?.drivers.map((driver) => [driver.driverId, driver]) ?? []);
+
+  if (!selected) return <EmptyArchive />;
 
   return (
-    <div className="space-y-4">
-      {entries.map((championship) => {
-        const drivers = new Map(championship.drivers.map((driver) => [driver.driverId, driver]));
-        const availability = worldDriverAvailability(championship);
-        return (
-          <Panel key={championship.series}>
-            <div className="mb-3 flex items-baseline justify-between gap-3">
-              <div className="font-bold text-neutral-100">{championship.series}</div>
-              <div className="text-xs text-neutral-500">{championship.seasonYear} grid</div>
-            </div>
-            <div className="grid gap-2 md:grid-cols-2 xl:grid-cols-3">
-              {championship.teams.map((team) => (
-                <div key={team.teamId} className="rounded border border-neutral-800 bg-neutral-950/40 p-2.5">
-                  <div className="text-sm font-semibold text-neutral-200">{team.name}</div>
-                  <div className="mt-1 space-y-0.5">
-                    {team.driverIds.map((driverId) => {
-                      const driver = drivers.get(driverId);
-                      const status = availability.get(driverId);
-                      return (
-                        <div key={driverId} className="flex justify-between gap-3 text-xs">
-                          <span className="text-neutral-300">
-                            {driver?.name ?? driverId}
-                            {status?.status === 'Injured' && (
-                              <span className="ml-1 text-rose-300">Injured · {status.replacementName} deputising</span>
-                            )}
-                          </span>
-                          {driver && (
-                            <span className="whitespace-nowrap text-neutral-500">
-                              {driver.contractYearsRemaining} yr{driver.contractYearsRemaining === 1 ? '' : 's'}
-                            </span>
-                          )}
-                        </div>
-                      );
-                    })}
+    <div className="ui-world-grid-layout">
+      <section className="ui-fm-pane">
+        <div className="ui-fm-pane-header"><div><div className="ui-fm-pane-title">Series and teams</div><div className="ui-fm-pane-meta">{entries.length} active championships</div></div></div>
+        <div className="ui-fm-pane-body">
+          {entries.map((championship) => (
+            <button key={championship.series} type="button" className={`ui-fm-list-button ${selected.series === championship.series ? 'is-active' : ''}`} onClick={() => setSelectedSeries(championship.series)}>
+              <span>{championship.seasonYear} grid</span><strong>{championship.series}</strong><small>{championship.teams.length} teams · {championship.drivers.length} drivers</small>
+            </button>
+          ))}
+        </div>
+      </section>
+      <section className="ui-fm-pane ui-world-grid-detail">
+        <div className="ui-fm-pane-header"><div><div className="ui-fm-pane-title">{selected.series} world grid</div><div className="ui-fm-pane-meta">Drivers, contracts, injuries, and replacements</div></div></div>
+        <div className="ui-fm-pane-body ui-fm-scroll-column">
+          <div className="ui-world-team-grid">{selected.teams.map((team) => (
+            <div key={team.teamId} className="ui-world-team-card">
+              <span>{team.seatCount} seat{team.seatCount === 1 ? '' : 's'} · Reputation {team.reputation}</span>
+              <strong>{team.name}</strong>
+              {team.driverIds.map((driverId) => {
+                const driver = drivers.get(driverId);
+                const status = availability.get(driverId);
+                return (
+                  <div key={driverId}>
+                    <p>{driver?.name ?? driverId}<small>{driver ? `${driver.contractYearsRemaining} yr${driver.contractYearsRemaining === 1 ? '' : 's'} remaining` : 'Contract unavailable'}</small></p>
+                    {status?.status === 'Injured' && <em>Injured · {status.replacementName} deputising</em>}
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
-          </Panel>
-        );
-      })}
-
-      {showMovements && <Panel>
-        <div className="font-bold text-neutral-100">Recent Driver Moves</div>
-        {movements.length > 0 ? (
-          <div className="mt-2 divide-y divide-neutral-800/70">
-            {movements.map((movement) => <MovementRow key={movement.id} movement={movement} />)}
-          </div>
-        ) : (
-          <p className="mt-2 text-sm text-neutral-400">
-            Driver renewals, releases, transfers and signings will appear after the first offseason.
-          </p>
-        )}
-      </Panel>}
+          ))}</div>
+          {showMovements && (
+            <div className="ui-world-movement-ledger">
+              <div className="ui-fm-section-label">Recent Driver Moves · movement ledger</div>
+              {movements.length ? movements.map((movement) => <MovementRow key={movement.id} movement={movement} />) : <p>No renewals, releases, transfers, or signings have been archived yet.</p>}
+            </div>
+          )}
+        </div>
+      </section>
     </div>
   );
 }
@@ -266,69 +421,34 @@ function MovementRow({ movement }: { movement: UniverseDriverMovement }) {
       : movement.kind === 'transfer'
         ? `moved from ${movement.fromTeamName ?? 'another team'} to ${movement.toTeamName ?? 'a new team'}`
         : `signed for ${movement.toTeamName ?? 'a new team'}`;
+  return <div><span>{movement.effectiveYear} · {movement.series}</span><p><strong>{movement.driverName}</strong> {detail}</p></div>;
+}
+
+export function WorldSeasonCard({ season, expanded = false }: { season: UniverseChampionshipSeason; expanded?: boolean }) {
+  const driverRows = expanded ? season.driverStandings : season.driverStandings.slice(0, 5);
   return (
-    <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 py-2 text-sm">
-      <div>
-        <span className="font-semibold text-neutral-200">{movement.driverName}</span>{' '}
-        <span className="text-neutral-400">{detail}</span>
+    <div className="ui-world-season-card">
+      <div className="ui-world-season-heading">
+        <strong>{season.seasonYear} {season.series}</strong>
+        <span>{season.completedRaces} races</span>
       </div>
-      <div className="text-xs text-neutral-500">{movement.effectiveYear} · {movement.series}</div>
+      <div className="ui-season-champions">
+        <div><span>Driver champion</span><strong>{season.driverChampionName ?? season.driverChampionId ?? '—'}</strong></div>
+        <div><span>Team champion</span><strong>{season.teamChampionName ?? season.teamChampionId ?? '—'}</strong></div>
+      </div>
+      <ArchiveStandings title="Driver standings" rows={driverRows} nameOf={(id) => season.driverNames[id] ?? id} />
+      {expanded && <ArchiveStandings title="Team standings" rows={season.teamStandings} nameOf={(id) => season.teamNames[id] ?? id} />}
+      {expanded && season.raceResults && season.raceResults.length > 0 && (
+        <div className="ui-world-race-summary">
+          <div className="ui-fm-section-label">Race winners</div>
+          {season.raceResults.map((race) => <div key={race.raceId}><span>R{race.round}</span><strong>{race.raceName}</strong><small>{race.winnerDriverName ?? race.winnerDriverId ?? 'Unknown winner'}</small></div>)}
+        </div>
+      )}
     </div>
   );
 }
 
-export function WorldSeasonCard({ season }: { season: UniverseChampionshipSeason }) {
-  const topFive = season.driverStandings.slice(0, 5);
-  return (
-    <Panel>
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <div>
-          <div className="font-bold text-neutral-100">{season.seasonYear} {season.series}</div>
-          <div className="mt-0.5 text-sm text-neutral-300">
-            🏆 {season.driverChampionName ?? season.driverChampionId ?? '—'}
-            <span className="text-neutral-500"> · </span>
-            {season.teamChampionName ?? season.teamChampionId ?? '—'}
-          </div>
-        </div>
-        <div className="text-xs text-neutral-500">{season.completedRaces} races</div>
-      </div>
-      <div className="mt-3 overflow-x-auto">
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="text-left text-[10px] uppercase tracking-wide text-neutral-500">
-              <th className="py-1 pr-2">Pos</th>
-              <th className="py-1 pr-2">Driver</th>
-              <Th>Points</Th>
-              <Th>Wins</Th>
-              <Th>Podiums</Th>
-            </tr>
-          </thead>
-          <tbody>
-            {topFive.map((standing, index) => (
-              <tr key={standing.entityId} className="border-t border-neutral-800/60">
-                <td className="py-1 pr-2 text-neutral-500">{index + 1}</td>
-                <td className="py-1 pr-2 font-medium text-neutral-200">
-                  {season.driverNames[standing.entityId] ?? standing.entityId}
-                </td>
-                <Td highlight={index === 0}>{Math.round(standing.points)}</Td>
-                <Td>{standing.wins}</Td>
-                <Td>{standing.podiums}</Td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    </Panel>
-  );
-}
-
-export function WorldLiveSeasonCard({
-  championship,
-  live,
-}: {
-  championship: UniverseChampionshipState;
-  live: UniverseLiveSeason;
-}) {
+export function WorldLiveSeasonCard({ championship, live }: { championship: UniverseChampionshipState; live: UniverseLiveSeason }) {
   const driverNames = new Map([
     ...championship.drivers.map((driver) => [driver.driverId, driver.name] as const),
     ...Object.entries(live.driverNames ?? {}),
@@ -337,234 +457,64 @@ export function WorldLiveSeasonCard({
   const latest = live.raceResults.at(-1);
   const next = live.schedule[live.completedRaces];
   return (
-    <Panel>
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <div>
-          <div className="font-bold text-neutral-100">{live.seasonYear} {championship.series} · Live season</div>
-          <div className="mt-0.5 text-sm text-neutral-300">
-            Leader: {driverNames.get(live.driverStandings[0]?.entityId ?? '') ?? 'No standings yet'}
-            {live.driverStandings[0] ? ` · ${Math.round(live.driverStandings[0].points)} pts` : ''}
-          </div>
-        </div>
-        <div className="text-xs text-neutral-500">{live.completedRaces} of {live.totalRaces} rounds</div>
+    <div className="ui-world-live-card">
+      <div className="ui-season-champions">
+        <div><span>Championship leader</span><strong>{driverNames.get(live.driverStandings[0]?.entityId ?? '') ?? 'No standings yet'}</strong></div>
+        <div><span>Season progress</span><strong>{live.completedRaces} / {live.totalRaces}</strong></div>
       </div>
-      <div className="mt-3 grid gap-2 sm:grid-cols-2">
-        <div className="rounded border border-neutral-800 bg-neutral-950/35 p-2 text-xs text-neutral-400">
-          <span className="font-semibold text-neutral-200">Latest:</span>{' '}
-          {latest ? `${latest.winnerDriverName ?? 'Unknown winner'} won ${latest.raceName}` : 'No races completed'}
-        </div>
-        <div className="rounded border border-neutral-800 bg-neutral-950/35 p-2 text-xs text-neutral-400">
-          <span className="font-semibold text-neutral-200">Next:</span>{' '}
-          {next ? `${next.raceName} · ${next.trackName}` : live.completedRaces ? 'Season complete' : 'Schedule unavailable'}
-        </div>
+      <div className="ui-world-live-events">
+        <div><span>Latest result</span><strong>{latest ? `${latest.winnerDriverName ?? 'Unknown winner'} won ${latest.raceName}` : 'No races completed'}</strong></div>
+        <div><span>Next round</span><strong>{next ? `${next.raceName} · ${next.trackName}` : live.completedRaces ? 'Season complete' : 'Schedule unavailable'}</strong></div>
       </div>
-      <div className="mt-3 overflow-x-auto">
-        <table className="w-full text-sm">
-          <thead><tr className="text-left text-[10px] uppercase tracking-wide text-neutral-500"><th className="py-1 pr-2">Pos</th><th className="py-1 pr-2">Driver</th><Th>Points</Th><Th>Wins</Th><Th>Podiums</Th></tr></thead>
-          <tbody>{live.driverStandings.slice(0, 5).map((standing, index) => (
-            <tr key={standing.entityId} className="border-t border-neutral-800/60">
-              <td className="py-1 pr-2 text-neutral-500">{index + 1}</td>
-              <td className="py-1 pr-2 font-medium text-neutral-200">{driverNames.get(standing.entityId) ?? standing.entityId}</td>
-              <Td highlight={index === 0}>{Math.round(standing.points)}</Td><Td>{standing.wins}</Td><Td>{standing.podiums}</Td>
-            </tr>
-          ))}</tbody>
-        </table>
-      </div>
-    </Panel>
+      <ArchiveStandings title="Live driver standings" rows={live.driverStandings.slice(0, 8)} nameOf={(id) => driverNames.get(id) ?? id} />
+    </div>
   );
 }
 
-function RecordCard({
-  label,
-  holder,
-  value,
-}: {
-  label: string;
-  holder: string;
-  value?: number;
-}) {
+function DriverDossier({ driver }: { driver: DriverCareerStats }) {
   return (
-    <Panel>
-      <div className="text-[10px] uppercase tracking-wide text-neutral-500">{label}</div>
-      <div className="mt-1 text-lg font-bold text-neutral-100">{holder}</div>
-      {value != null && (
-        <div className="text-sm font-semibold text-amber-300">{value}</div>
-      )}
-    </Panel>
+    <div className="ui-record-dossier">
+      <div className="ui-record-profile"><span>Driver career</span><strong>{driver.name}</strong><small>{driver.seasonsContested.length} seasons contested</small></div>
+      <div className="ui-fm-key-value"><span>Drivers' titles</span><strong>{driver.driverTitles}</strong></div>
+      <div className="ui-fm-key-value"><span>Race wins</span><strong>{driver.wins}</strong></div>
+      <div className="ui-fm-key-value"><span>Podiums</span><strong>{driver.podiums}</strong></div>
+      <div className="ui-fm-key-value"><span>Pole positions</span><strong>{driver.poles}</strong></div>
+      <div className="ui-fm-key-value"><span>Fastest laps</span><strong>{driver.fastestLaps}</strong></div>
+      <div className="ui-fm-key-value"><span>Starts</span><strong>{driver.starts}</strong></div>
+      <div className="ui-fm-key-value"><span>Career points</span><strong>{Math.round(driver.points)}</strong></div>
+      <div className="ui-fm-key-value"><span>Win rate</span><strong>{driver.starts ? `${((driver.wins / driver.starts) * 100).toFixed(1)}%` : '—'}</strong></div>
+      <div className="ui-record-season-tags">{driver.seasonsContested.map((season) => <span key={season}>{season}</span>)}</div>
+    </div>
   );
 }
 
-function DriverTable({ drivers }: { drivers: DriverCareerStats[] }) {
-  const rows = [...drivers].sort(
-    (a, b) => b.driverTitles - a.driverTitles || b.wins - a.wins || b.points - a.points,
-  );
+function TeamDossier({ team }: { team: TeamCareerStats }) {
   return (
-    <Panel>
-      <div className="overflow-x-auto">
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="text-left text-[10px] uppercase tracking-wide text-neutral-500">
-              <th className="py-1 pr-2">Driver</th>
-              <Th>Titles</Th>
-              <Th>Wins</Th>
-              <Th>Podiums</Th>
-              <Th>Poles</Th>
-              <Th>FL</Th>
-              <Th>Starts</Th>
-              <Th>Points</Th>
-            </tr>
-          </thead>
-          <tbody>
-            {rows.map((d) => (
-              <tr key={d.driverId} className="border-t border-neutral-800/60">
-                <td className="py-1 pr-2 font-medium text-neutral-200">{d.name}</td>
-                <Td highlight={d.driverTitles > 0}>{d.driverTitles}</Td>
-                <Td>{d.wins}</Td>
-                <Td>{d.podiums}</Td>
-                <Td>{d.poles}</Td>
-                <Td>{d.fastestLaps}</Td>
-                <Td>{d.starts}</Td>
-                <Td>{Math.round(d.points)}</Td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    </Panel>
+    <div className="ui-record-dossier">
+      <div className="ui-record-profile"><span>Team career</span><strong>{team.name}</strong><small>{team.seasonsContested.length} seasons contested</small></div>
+      <div className="ui-fm-key-value"><span>Constructors' titles</span><strong>{team.constructorTitles}</strong></div>
+      <div className="ui-fm-key-value"><span>Race wins</span><strong>{team.wins}</strong></div>
+      <div className="ui-fm-key-value"><span>Podiums</span><strong>{team.podiums}</strong></div>
+      <div className="ui-fm-key-value"><span>Pole positions</span><strong>{team.poles}</strong></div>
+      <div className="ui-fm-key-value"><span>Championship entries</span><strong>{team.entries}</strong></div>
+      <div className="ui-fm-key-value"><span>Career points</span><strong>{Math.round(team.points)}</strong></div>
+      <div className="ui-fm-key-value"><span>Wins per entry</span><strong>{team.entries ? (team.wins / team.entries).toFixed(2) : '—'}</strong></div>
+      <div className="ui-record-season-tags">{team.seasonsContested.map((season) => <span key={season}>{season}</span>)}</div>
+    </div>
   );
 }
 
-function TeamTable({ teams }: { teams: TeamCareerStats[] }) {
-  const rows = [...teams].sort(
-    (a, b) => b.constructorTitles - a.constructorTitles || b.wins - a.wins || b.points - a.points,
-  );
+function ArchiveStandings({ title, rows, nameOf }: { title: string; rows: StandingsEntry[]; nameOf: (id: string) => string }) {
   return (
-    <Panel>
-      <div className="overflow-x-auto">
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="text-left text-[10px] uppercase tracking-wide text-neutral-500">
-              <th className="py-1 pr-2">Team</th>
-              <Th>Titles</Th>
-              <Th>Wins</Th>
-              <Th>Podiums</Th>
-              <Th>Poles</Th>
-              <Th>Entries</Th>
-              <Th>Points</Th>
-            </tr>
-          </thead>
-          <tbody>
-            {rows.map((t) => (
-              <tr key={t.teamId} className="border-t border-neutral-800/60">
-                <td className="py-1 pr-2 font-medium text-neutral-200">{t.name}</td>
-                <Td highlight={t.constructorTitles > 0}>{t.constructorTitles}</Td>
-                <Td>{t.wins}</Td>
-                <Td>{t.podiums}</Td>
-                <Td>{t.poles}</Td>
-                <Td>{t.entries}</Td>
-                <Td>{Math.round(t.points)}</Td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    </Panel>
+    <div className="ui-archive-standings">
+      <div className="ui-fm-section-label">{title}</div>
+      <table><thead><tr><th>Pos</th><th>Name</th><th>Pts</th><th>W</th><th>Pod</th></tr></thead>
+        <tbody>{rows.map((row, index) => <tr key={row.entityId}><td>P{index + 1}</td><td>{nameOf(row.entityId)}</td><td>{Math.round(row.points)}</td><td>{row.wins}</td><td>{row.podiums}</td></tr>)}</tbody>
+      </table>
+    </div>
   );
 }
 
-function SeasonCard({
-  season,
-  nameOfDriver,
-  nameOfTeam,
-}: {
-  season: SeasonHistoryRecord;
-  nameOfDriver: (id?: string) => string;
-  nameOfTeam: (id?: string) => string;
-}) {
-  const [open, setOpen] = useState(false);
-  return (
-    <Panel>
-      <div className="flex items-start justify-between gap-3">
-        <div>
-          <div className="font-bold text-neutral-100">
-            {season.seasonYear} {season.series}
-          </div>
-          <div className="mt-0.5 text-sm text-neutral-300">
-            🏆 {nameOfDriver(season.driverChampionId)}
-            <span className="text-neutral-500"> · </span>
-            {nameOfTeam(season.constructorChampionId)}
-          </div>
-        </div>
-        <button
-          onClick={() => setOpen((o) => !o)}
-          className="rounded bg-neutral-800 px-2 py-1 text-xs text-neutral-300 hover:bg-neutral-700"
-        >
-          {open ? 'Hide' : `${season.raceResults.length} races`}
-        </button>
-      </div>
-
-      {season.majorStorylines.length > 0 && (
-        <ul className="mt-2 space-y-0.5 text-xs text-neutral-400">
-          {season.majorStorylines.map((s, i) => (
-            <li key={i}>• {s}</li>
-          ))}
-        </ul>
-      )}
-
-      {open && (
-        <div className="mt-3 space-y-1 text-xs">
-          {season.raceResults.map((r) => (
-            <div
-              key={r.raceId}
-              className="flex items-center justify-between border-t border-neutral-800/60 py-1"
-            >
-              <span className="text-neutral-400">
-                R{r.round} · {r.gpName}
-              </span>
-              <span className="text-neutral-200">
-                🥇 {nameOfDriver(r.winnerDriverId)}
-                {r.poleDriverId && (
-                  <span className="text-neutral-500"> · pole {nameOfDriver(r.poleDriverId)}</span>
-                )}
-              </span>
-            </div>
-          ))}
-        </div>
-      )}
-    </Panel>
-  );
-}
-
-function Th({ children }: { children: React.ReactNode }) {
-  return <th className="px-2 py-1 text-right">{children}</th>;
-}
-function Td({ children, highlight }: { children: React.ReactNode; highlight?: boolean }) {
-  return (
-    <td className={`px-2 py-1 text-right tabular-nums ${highlight ? 'font-semibold text-amber-300' : 'text-neutral-300'}`}>
-      {children}
-    </td>
-  );
-}
-
-function TabButton({
-  active,
-  onClick,
-  children,
-}: {
-  active: boolean;
-  onClick: () => void;
-  children: React.ReactNode;
-}) {
-  return (
-    <button
-      onClick={onClick}
-      className={`rounded-md px-3 py-1.5 text-sm ${
-        active
-          ? 'bg-amber-500 font-semibold text-neutral-950'
-          : 'bg-neutral-800 text-neutral-300 hover:bg-neutral-700'
-      }`}
-    >
-      {children}
-    </button>
-  );
+function EmptyArchive() {
+  return <p className="ui-technical-empty">No archived data is available in this section yet.</p>;
 }
