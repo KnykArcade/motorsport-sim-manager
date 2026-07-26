@@ -17,13 +17,18 @@ import { Panel } from '../components/Panel';
 import { StatBar } from '../components/StatBar';
 import { Button } from '../components/Button';
 import {
-  MetricStrip,
   WorkspaceBody,
   WorkspaceHeader,
-  WorkspaceMetric,
   WorkspaceScreen,
   WorkspaceTabs,
 } from '../components/workspace/Workspace';
+import {
+  FmKeyValue,
+  FmPane,
+  FmPaneBody,
+  FmPaneHeader,
+  FmWorkspaceGrid,
+} from '../components/workspace/FmPane';
 import { DriverDossierButton } from '../components/driverCards/DriverDossier';
 import {
   readoutForMarketOverall,
@@ -44,6 +49,7 @@ import {
   MARKET_PAGE_SIZE,
   marketPage,
   marketPageCount,
+  selectedMarketDriver,
 } from './driverMarketViewModel';
 import {
   DEFAULT_DRIVER_MARKET_FILTERS,
@@ -155,25 +161,19 @@ export function DriverMarket() {
     readoutForPotential(state, id, skills, potential, entityType).label;
 
   return (
-    <WorkspaceScreen className="era-feature-screen era-driver-market">
+    <WorkspaceScreen className="era-feature-screen era-driver-market ui-recruitment-screen">
       <WorkspaceHeader
         eyebrow="Recruitment center"
         title="Driver Market"
         subtitle={singleSeason
           ? `Current-season driver management for ${state.seasonYear}.`
           : `One shared universe market · recruit for ${state.seasonYear + 1} and develop under-18 talent.`}
+        actions={<span className="ui-recruitment-header-status">{formatMoney(budget)} available</span>}
       />
-
-      <MetricStrip>
-        <WorkspaceMetric label="Available budget" value={formatMoney(budget)} detail="Team balance" />
-        <WorkspaceMetric label="Open race seats" value={Math.max(0, openRaceSeats)} detail={preseason ? 'Preseason requirement' : 'Next signing window'} />
-        <WorkspaceMetric label="Academy" value={`${academy.length} / ${academyCapacity}`} detail="Current prospects · capacity" />
-        <WorkspaceMetric label="Scouting accuracy" value={`${Math.round((state.scouting?.networkAccuracy ?? 0) * 100)}%`} detail="Controls rating uncertainty" />
-      </MetricStrip>
 
       <WorkspaceTabs items={marketTabs} active={tab} onChange={setTab} ariaLabel="Driver market sections" />
 
-      <WorkspaceBody>
+      <WorkspaceBody className="ui-driver-market-workspace">
       <div className="ui-decision-strip flex flex-wrap items-center justify-between gap-2 rounded-lg border px-3 py-2.5">
         <div className="flex min-w-0 items-center gap-2 text-xs">
           <span className="ui-decision-strip-pulse" aria-hidden="true" />
@@ -416,9 +416,13 @@ function SeniorMarketList({
     scouting: 'Scouting',
     contract: 'Contract',
   };
+  const [selectedId, setSelectedId] = useState<string>();
+  const selected = selectedMarketDriver(drivers, selectedId);
 
   return (
-    <Panel className="overflow-hidden">
+    <FmWorkspaceGrid columns="two" className="ui-driver-market-grid">
+      <FmPane className="ui-driver-market-list-pane">
+      <FmPaneBody className="overflow-auto">
       <div className="border-b border-neutral-800 pb-3">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <div>
@@ -528,6 +532,7 @@ function SeniorMarketList({
                 key={driver.id}
                 state={state}
                 driver={driver}
+                selected={selected?.id === driver.id}
                 view={view}
                 shortlisted={shortlistedIds.has(driver.id)}
                 scouted={scoutedIds.has(driver.id)}
@@ -541,6 +546,7 @@ function SeniorMarketList({
                 seatName={seatName}
                 orgOverall={orgOverall}
                 carOverall={carOverall}
+                onSelect={() => setSelectedId(driver.id)}
                 onNavigate={onNavigate}
                 onScout={() => onScout(driver.id)}
                 onSignThird={() => onSignThird(driver.id)}
@@ -552,7 +558,110 @@ function SeniorMarketList({
         </table>
         {drivers.length === 0 && <div className="px-3 py-8 text-center text-sm text-neutral-500">No targets match these filters.</div>}
       </div>
-    </Panel>
+      </FmPaneBody>
+      </FmPane>
+      <MarketDriverContext
+        state={state}
+        driver={selected}
+        view={view}
+        shortlisted={selected ? shortlistedIds.has(selected.id) : false}
+        offseason={offseason}
+        seats={seats}
+        orgOverall={orgOverall}
+        carOverall={carOverall}
+        onNavigate={onNavigate}
+        onScout={selected ? () => onScout(selected.id) : undefined}
+      />
+    </FmWorkspaceGrid>
+  );
+}
+
+function MarketDriverContext({
+  state,
+  driver,
+  view,
+  shortlisted,
+  offseason,
+  seats,
+  orgOverall,
+  carOverall,
+  onNavigate,
+  onScout,
+}: {
+  state: NonNullable<ReturnType<typeof useGame>['state']>;
+  driver?: MarketDriver;
+  view: DriverMarketView;
+  shortlisted: boolean;
+  offseason: boolean;
+  seats: Driver[];
+  orgOverall: number;
+  carOverall: number;
+  onNavigate: (route: string) => void;
+  onScout?: () => void;
+}) {
+  if (!driver) {
+    return (
+      <FmPane className="ui-driver-market-context-pane">
+        <FmPaneHeader title="Target Dossier" meta="No selection" />
+        <FmPaneBody><div className="ui-inbox-empty">Select a driver to review recruitment context.</div></FmPaneBody>
+      </FmPane>
+    );
+  }
+
+  const report = state.scouting?.reports?.[driver.id];
+  const scoutingLevel = report?.scoutingLevel ?? 0;
+  const scouting = state.scouting ? fogView(
+    { id: driver.id, skills: driver.skills, potential: driver.potential },
+    report,
+    state.scouting.networkAccuracy,
+    state.randomSeed,
+    'Driver',
+  ) : null;
+  const cost = scoutingCost('Driver', scoutingLevel);
+  const budget = state.teams.find((team) => team.id === state.selectedTeamId)?.budget ?? 0;
+  const overall = readoutForMarketOverall(state, driver.id, driver.skills, driver.potential, driver.overall);
+  const potential = readoutForPotential(state, driver.id, driver.skills, driver.potential);
+  const interest = marketDriverOfferInterest(state, driver, orgOverall, carOverall);
+
+  return (
+    <FmPane className="ui-driver-market-context-pane">
+      <FmPaneHeader title={driver.name} meta={`${driver.marketStatus} · ${view}`} />
+      <FmPaneBody className="overflow-auto">
+        <section className="ui-market-driver-identity">
+          <span>{driver.nationality} · age {driver.age}</span>
+          <strong>{overall.label} OVR · {potential.label} POT</strong>
+          <p>{driver.context} · {driver.primaryRole}</p>
+        </section>
+        <section>
+          <FmKeyValue label="Scouting knowledge" value={`${scoutingLevel}%`} />
+          <FmKeyValue label="Offer interest" value={interest == null ? 'Unknown' : `${Math.round(interest)}%`} />
+          <FmKeyValue label="Salary" value={<Money m={driver.salary} />} />
+          <FmKeyValue label="Compensation" value={<Money m={driver.buyoutCost} />} />
+          <FmKeyValue label="F1 readiness" value={driver.f1Readiness.toFixed(0)} />
+          <FmKeyValue label="Shortlist" value={shortlisted ? 'Included' : 'Not included'} />
+        </section>
+        <section>
+          <h3>Recruitment assessment</h3>
+          <p>{driver.suggestedUse}</p>
+          <p>{driver.notes || 'No additional state-backed recruitment note is available.'}</p>
+        </section>
+        <section className="ui-market-context-actions">
+          <DriverDossierButton state={state} subject={{ type: 'market', driver }} context={`${driver.context} - ${driver.marketStatus}`} focus="market" />
+          {!scouting?.maxed && (
+            <Button variant="secondary" disabled={cost > budget} title={cost > budget ? 'Insufficient budget' : undefined} onClick={onScout}>
+              Scout {formatMoney(cost)}
+            </Button>
+          )}
+          {offseason && (interest ?? 0) >= 20
+            ? seats.map((seat) => (
+              <Button key={seat.id} variant="primary" onClick={() => onNavigate(`/market/${encodeURIComponent(driver.id)}/negotiate/${encodeURIComponent(seat.id)}`)}>
+                Negotiate for #{seat.number}
+              </Button>
+            ))
+            : <Button variant="ghost" onClick={() => onNavigate(`/market?target=${encodeURIComponent(driver.id)}`)}>Review target</Button>}
+        </section>
+      </FmPaneBody>
+    </FmPane>
   );
 }
 
@@ -581,6 +690,7 @@ function SortableHeader({
 function SeniorMarketRow({
   state,
   driver,
+  selected,
   view,
   shortlisted,
   scouted,
@@ -594,6 +704,7 @@ function SeniorMarketRow({
   seatName,
   orgOverall,
   carOverall,
+  onSelect,
   onNavigate,
   onScout,
   onSignThird,
@@ -602,6 +713,7 @@ function SeniorMarketRow({
 }: {
   state: NonNullable<ReturnType<typeof useGame>['state']>;
   driver: MarketDriver;
+  selected: boolean;
   view: DriverMarketView;
   shortlisted: boolean;
   scouted: boolean;
@@ -615,6 +727,7 @@ function SeniorMarketRow({
   seatName: (id: string) => string;
   orgOverall: number;
   carOverall: number;
+  onSelect: () => void;
   onNavigate: (route: string) => void;
   onScout: () => void;
   onSignThird: () => void;
@@ -636,7 +749,7 @@ function SeniorMarketRow({
   const potential = readoutForPotential(state, driver.id, driver.skills, driver.potential);
   const interest = marketDriverOfferInterest(state, driver, orgOverall, carOverall);
   const preferred = preferredSeries(driver.seriesPreferences);
-  const rowClass = `${shortlisted ? 'bg-sky-500/5' : ''} ${scouted ? '' : 'opacity-90'}`;
+  const rowClass = `${selected ? 'ui-market-row-selected' : ''} ${shortlisted ? 'bg-sky-500/5' : ''} ${scouted ? '' : 'opacity-90'}`;
 
   return (
     <tr className={`border-t border-neutral-800/70 align-middle hover:bg-neutral-900/60 ${rowClass}`}>
@@ -645,7 +758,7 @@ function SeniorMarketRow({
           <DriverDossierButton state={state} subject={{ type: 'market', driver }} context={`${driver.context} - ${driver.marketStatus}`} focus="market" />
           <div className="min-w-0">
             <div className="flex items-center gap-1.5">
-              <span className="font-semibold text-neutral-100">{driver.name}</span>
+              <button type="button" className="font-semibold text-neutral-100 hover:text-sky-200" onClick={onSelect}>{driver.name}</button>
               {shortlisted && <span className="rounded bg-sky-500/15 px-1 py-0.5 text-[9px] text-sky-300">SHORTLIST</span>}
             </div>
             <div className="truncate text-[10px] text-neutral-500">{driver.nationality} · {driver.primaryRole}</div>

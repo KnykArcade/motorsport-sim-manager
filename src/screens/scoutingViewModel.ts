@@ -51,6 +51,16 @@ export type ScoutingListItem = {
   knowledge: number;
 };
 
+export function selectedScoutingTarget<T extends { id: string }>(
+  targets: readonly T[],
+  selectedId?: string,
+  focusedId?: string | null,
+): T | undefined {
+  return targets.find((target) => target.id === selectedId)
+    ?? targets.find((target) => target.id === focusedId)
+    ?? targets[0];
+}
+
 export function sortScoutingListItems(
   items: readonly ScoutingListItem[],
   sort: ScoutingListSort,

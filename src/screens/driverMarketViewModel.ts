@@ -16,3 +16,13 @@ export function marketPage<T>(entries: T[], page: number): T[] {
   const safePage = Math.max(0, Math.min(pageCount - 1, page));
   return entries.slice(safePage * MARKET_PAGE_SIZE, (safePage + 1) * MARKET_PAGE_SIZE);
 }
+
+export function selectedMarketDriver<T extends { id: string }>(
+  drivers: readonly T[],
+  selectedId?: string,
+  approachedId?: string | null,
+): T | undefined {
+  return drivers.find((driver) => driver.id === selectedId)
+    ?? drivers.find((driver) => driver.id === approachedId)
+    ?? drivers[0];
+}

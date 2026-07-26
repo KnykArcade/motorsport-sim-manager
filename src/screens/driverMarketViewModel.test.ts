@@ -4,6 +4,7 @@ import {
   YOUTH_MARKET_TABS,
   marketPage,
   marketPageCount,
+  selectedMarketDriver,
 } from './driverMarketViewModel';
 import type { MarketDriver } from '../types/marketTypes';
 import {
@@ -26,6 +27,14 @@ describe('driver market view model', () => {
     expect(marketPage(entries, 31)).toEqual(entries.slice(93, 95));
     expect(marketPage(entries, 99)).toEqual(entries.slice(93, 95));
     expect(marketPage(entries, -1)).toEqual(entries.slice(0, 3));
+  });
+
+  it('keeps a selected driver visible before an approached URL target or first fallback', () => {
+    const drivers = [{ id: 'one' }, { id: 'two' }, { id: 'three' }];
+    expect(selectedMarketDriver(drivers, 'two', 'three')).toBe(drivers[1]);
+    expect(selectedMarketDriver(drivers, 'missing', 'three')).toBe(drivers[2]);
+    expect(selectedMarketDriver(drivers, 'missing', 'missing')).toBe(drivers[0]);
+    expect(selectedMarketDriver([], 'one')).toBeUndefined();
   });
 });
 

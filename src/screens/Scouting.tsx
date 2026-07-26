@@ -6,13 +6,18 @@ import { careerMarketBundle } from '../sim/careerMarketEngine';
 import { Panel } from '../components/Panel';
 import { Button } from '../components/Button';
 import {
-  MetricStrip,
   WorkspaceBody,
   WorkspaceHeader,
-  WorkspaceMetric,
   WorkspaceScreen,
   WorkspaceTabs,
 } from '../components/workspace/Workspace';
+import {
+  FmKeyValue,
+  FmPane,
+  FmPaneBody,
+  FmPaneHeader,
+  FmWorkspaceGrid,
+} from '../components/workspace/FmPane';
 import { fogView, scoutingCost, type FogView, type ScoutTarget } from '../sim/scoutingEngine';
 import { formatMoney, ratingColor } from '../components/ui';
 import type { ScoutedEntityType } from '../types/scoutingTypes';
@@ -20,8 +25,10 @@ import type { IntelligenceAction, IntelligenceReport } from '../types/phase18Typ
 import { INTELLIGENCE_INVESTIGATION_COST, intelligenceConfidenceLabel } from '../sim/phase18IntelligenceEngine';
 import {
   scoutingAssignments,
+  scoutingAbilitySummary,
   scoutingComparison,
   scoutingReportFreshness,
+  selectedScoutingTarget,
   sortScoutingListItems,
   type ScoutingListItem,
   type ScoutingListSort,
@@ -181,19 +188,13 @@ export function Scouting() {
   }
 
   return (
-    <WorkspaceScreen className="era-feature-screen era-scouting">
+    <WorkspaceScreen className="era-feature-screen era-scouting ui-recruitment-screen">
       <WorkspaceHeader
         eyebrow="Recruitment center"
         title="Intelligence"
         subtitle="Ratings and potential remain estimates until your scouting network builds sufficient knowledge."
+        actions={<span className="ui-recruitment-header-status">{networkPct}% network · {formatMoney(budget)} budget</span>}
       />
-
-      <MetricStrip>
-        <WorkspaceMetric label="Network accuracy" value={`${networkPct}%`} detail="Baseline confidence" />
-        <WorkspaceMetric label="Active intelligence" value={activeIntelligence} detail="Paddock claims under review" />
-        <WorkspaceMetric label="Scouting budget" value={formatMoney(budget)} detail="Available team balance" />
-        <WorkspaceMetric label="Investigation cost" value={formatMoney(INTELLIGENCE_INVESTIGATION_COST)} detail="Per paddock report" />
-      </MetricStrip>
 
       <WorkspaceTabs items={scoutingTabs} active={activeTab} onChange={setTab} ariaLabel="Recruitment intelligence sections" />
 
@@ -346,25 +347,21 @@ function IntelligenceDashboard({ state, budget, filter, onFilter, onAction }: {
   onFilter: (filter: 'Active' | 'History') => void;
   onAction: (reportId: string, action: IntelligenceAction) => void;
 }) {
+  const [selectedId, setSelectedId] = useState<string>();
   const allReports = state.phase18?.intelligenceReports ?? [];
   const reports = allReports.filter((report) => filter === 'Active'
     ? (report.status ?? 'Active') === 'Active'
     : (report.status ?? 'Active') !== 'Active').slice().reverse();
   const teamName = (id?: string) => state.teams.find((team) => team.id === id)?.name ?? id ?? 'Unknown team';
   const activeCount = allReports.filter((report) => (report.status ?? 'Active') === 'Active').length;
+  const selected = reports.find((report) => report.id === selectedId) ?? reports[0];
   return (
-    <div className="space-y-4">
-      <div className="grid gap-3 sm:grid-cols-3">
-        <IntelKpi label="Active reports" value={String(activeCount)} detail="Claims still being assessed" />
-        <IntelKpi label="Resolved history" value={String(allReports.length - activeCount)} detail="Confirmed, disputed, or expired" />
-        <IntelKpi label="Investigation cost" value={formatMoney(INTELLIGENCE_INVESTIGATION_COST)} detail="May expose false or misleading claims" />
-      </div>
-      <Panel>
-        <div className="mb-3 flex flex-wrap items-start justify-between gap-3">
-          <div>
-            <h2 className="font-semibold text-neutral-100">Paddock Intelligence</h2>
-            <p className="mt-1 max-w-3xl text-xs text-neutral-400">Reports may be true, incomplete, misleading, or false. Confidence measures evidence quality, not certainty.</p>
-          </div>
+    <FmWorkspaceGrid columns="three" className="ui-intelligence-grid">
+      <FmPane>
+        <FmPaneHeader
+          title="Paddock Intelligence"
+          meta={`${reports.length} ${filter.toLowerCase()} reports`}
+          actions={
           <WorkspaceTabs
             items={[
               { id: 'Active' as const, label: `Active (${activeCount})` },
@@ -374,18 +371,46 @@ function IntelligenceDashboard({ state, budget, filter, onFilter, onAction }: {
             onChange={onFilter}
             ariaLabel="Intelligence report status"
           />
-        </div>
-        {reports.length === 0 ? (
-          <div className="rounded border border-dashed border-neutral-700 p-5 text-center text-sm text-neutral-500">
+          }
+        />
+        <FmPaneBody className="overflow-auto">
+          {reports.map((report) => (
+            <button
+              key={report.id}
+              type="button"
+              className={`ui-intelligence-list-item ${selected?.id === report.id ? 'is-active' : ''}`}
+              onClick={() => setSelectedId(report.id)}
+            >
+              <span>{report.category ?? report.subjectType} · {report.source}</span>
+              <strong>{report.title}</strong>
+              <small>{teamName(report.targetTeamId)} · {report.assessment} · {report.confidence}% confidence</small>
+            </button>
+          ))}
+          {reports.length === 0 && (
+            <div className="ui-inbox-empty">
             {filter === 'Active' ? 'No active reports yet. New intelligence arrives during paddock weeks.' : 'No resolved intelligence history yet.'}
           </div>
-        ) : (
-          <div className="grid gap-3 xl:grid-cols-2">
-            {reports.map((report) => <IntelligenceCard key={report.id} report={report} teamName={teamName} budget={budget} onAction={onAction} />)}
-          </div>
-        )}
-      </Panel>
-    </div>
+          )}
+        </FmPaneBody>
+      </FmPane>
+      <FmPane className="ui-intelligence-detail-pane">
+        <FmPaneHeader title={selected?.title ?? 'Report Detail'} meta={selected ? `${selected.assessment} · ${selected.confidence}% confidence` : 'No selection'} />
+        <FmPaneBody className="overflow-auto">
+          {selected
+            ? <IntelligenceCard report={selected} teamName={teamName} budget={budget} onAction={onAction} />
+            : <div className="ui-inbox-empty">Select a report to inspect it.</div>}
+        </FmPaneBody>
+      </FmPane>
+      <FmPane className="ui-intelligence-context-pane">
+        <FmPaneHeader title="Intelligence Context" meta="Evidence, not certainty" />
+        <FmPaneBody className="overflow-auto">
+          <IntelKpi label="Active reports" value={String(activeCount)} detail="Claims still being assessed" />
+          <IntelKpi label="Resolved history" value={String(allReports.length - activeCount)} detail="Confirmed, disputed, or expired" />
+          <IntelKpi label="Investigation cost" value={formatMoney(INTELLIGENCE_INVESTIGATION_COST)} detail="May expose false or misleading claims" />
+          <p className="ui-intelligence-guidance">Reports may be true, incomplete, misleading, or false. Confidence measures evidence quality, not certainty.</p>
+        </FmPaneBody>
+      </FmPane>
+    </FmWorkspaceGrid>
   );
 }
 
@@ -464,8 +489,13 @@ function ScoutingTargetList({
   onSort: (key: ScoutingListSortKey) => void;
 }) {
   const ordered = sortScoutingListItems(items, sort) as ScoutingTargetRow[];
+  const [selectedId, setSelectedId] = useState<string>();
+  const selected = selectedScoutingTarget(ordered, selectedId);
   return (
-    <Panel title={`Scouting Targets (${items.length})`} className="overflow-hidden">
+    <FmWorkspaceGrid columns="two" className="ui-scouting-target-grid">
+      <FmPane className="ui-scouting-target-list">
+      <FmPaneHeader title="Scouting Targets" meta={`${items.length} matching targets`} />
+      <FmPaneBody className="overflow-auto">
       <div className="overflow-x-auto rounded border border-neutral-800">
         <table className="w-full min-w-[1080px] border-collapse text-xs">
           <thead className="bg-neutral-900/70 text-left text-[10px] uppercase tracking-wide text-neutral-500">
@@ -483,9 +513,9 @@ function ScoutingTargetList({
             {ordered.map((item) => {
               const affordable = item.cost <= budget;
               return (
-                <tr key={item.id} className={`border-t border-neutral-800/70 align-middle hover:bg-neutral-900/60 ${item.shortlisted ? 'bg-sky-500/5' : ''}`}>
+                <tr key={item.id} className={`border-t border-neutral-800/70 align-middle hover:bg-neutral-900/60 ${selected?.id === item.id ? 'ui-market-row-selected' : ''} ${item.shortlisted ? 'bg-sky-500/5' : ''}`}>
                   <td className="px-2 py-2">
-                    <div className="font-semibold text-neutral-100">{item.name}</div>
+                    <button type="button" className="font-semibold text-neutral-100 hover:text-sky-200" onClick={() => setSelectedId(item.id)}>{item.name}</button>
                     <div className="text-[10px] text-neutral-500">{item.subtitle}</div>
                   </td>
                   <td className="px-2 py-2 tabular-nums text-amber-300">{overallText(item.view)}</td>
@@ -524,7 +554,54 @@ function ScoutingTargetList({
         </table>
         {ordered.length === 0 && <div className="px-3 py-8 text-center text-sm text-neutral-500">No targets match the current recruitment focus.</div>}
       </div>
-    </Panel>
+      </FmPaneBody>
+      </FmPane>
+      <ScoutingTargetContext target={selected} budget={budget} />
+    </FmWorkspaceGrid>
+  );
+}
+
+function ScoutingTargetContext({ target, budget }: { target?: ScoutingTargetRow; budget: number }) {
+  if (!target) {
+    return (
+      <FmPane className="ui-scouting-target-context">
+        <FmPaneHeader title="Target Dossier" meta="No selection" />
+        <FmPaneBody><div className="ui-inbox-empty">Select a target to review the current scouting report.</div></FmPaneBody>
+      </FmPane>
+    );
+  }
+  const summary = scoutingAbilitySummary(target.view);
+  const currentAbility = summary.currentRange
+    ? `${summary.currentRange[0].toFixed(1)}–${summary.currentRange[1].toFixed(1)}`
+    : 'Unknown';
+  return (
+    <FmPane className="ui-scouting-target-context">
+      <FmPaneHeader title={target.name} meta={target.freshness ?? 'No stored report'} />
+      <FmPaneBody className="overflow-auto">
+        <section className="ui-scouting-target-identity">
+          <span>{target.subtitle}</span>
+          <strong>{currentAbility} CA · {potentialText(target.view)} PA</strong>
+          <p>{target.knowledge}% scouting knowledge</p>
+        </section>
+        <section>
+          <FmKeyValue label="Current ability range" value={currentAbility} />
+          <FmKeyValue label="Potential range" value={potentialText(target.view)} />
+          <FmKeyValue label="Knowledge" value={`${target.knowledge}%`} />
+          <FmKeyValue label="Report status" value={target.view.maxed ? 'Best report ready' : target.assigned ? 'Assignment active' : 'Unassigned'} />
+          <FmKeyValue label="Scouting cost" value={formatMoney(target.cost)} />
+          <FmKeyValue label="Shortlist" value={target.shortlisted ? 'Included' : 'Not included'} />
+        </section>
+        <section className="ui-market-context-actions">
+          {!target.view.maxed && !target.assigned && (
+            <Button variant="primary" disabled={target.cost > budget} title={target.cost > budget ? 'Insufficient budget' : undefined} onClick={target.onScout}>
+              {target.cost > budget ? 'Over budget' : `Scout ${formatMoney(target.cost)}`}
+            </Button>
+          )}
+          <Button variant="secondary" onClick={target.onToggleShortlist}>{target.shortlisted ? 'Remove shortlist' : 'Add to shortlist'}</Button>
+          {target.onApproach && <Button variant="ghost" onClick={target.onApproach}>Approach driver</Button>}
+        </section>
+      </FmPaneBody>
+    </FmPane>
   );
 }
 

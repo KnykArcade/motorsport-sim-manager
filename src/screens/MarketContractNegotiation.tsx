@@ -3,8 +3,15 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { useGame } from '../game/GameContext';
 import { careerMarketBundle } from '../sim/careerMarketEngine';
 import { Button } from '../components/Button';
-import { Panel } from '../components/Panel';
-import { MetricStrip, WorkspaceBody, WorkspaceHeader, WorkspaceMetric, WorkspaceScreen } from '../components/workspace/Workspace';
+import { WorkspaceBody, WorkspaceHeader, WorkspaceScreen } from '../components/workspace/Workspace';
+import {
+  FmDecisionBar,
+  FmKeyValue,
+  FmPane,
+  FmPaneBody,
+  FmPaneHeader,
+  FmWorkspaceGrid,
+} from '../components/workspace/FmPane';
 import { formatMoney } from '../components/ui';
 import { marketNegotiationView } from './personnelNegotiationViewModel';
 
@@ -22,32 +29,107 @@ export function MarketContractNegotiation() {
   }, [dispatch, driver, seat, state]);
 
   if (!state) return null;
-  if (!driver || !seat) return <WorkspaceScreen><WorkspaceHeader eyebrow="Contract desk" title="Negotiation unavailable" subtitle="The driver or replacement seat is no longer available." /><WorkspaceBody><Button onClick={() => navigate('/market')}>Back to Driver Market</Button></WorkspaceBody></WorkspaceScreen>;
+  if (!driver || !seat) {
+    return (
+      <WorkspaceScreen>
+        <WorkspaceHeader eyebrow="Contract desk" title="Negotiation unavailable" subtitle="The driver or replacement seat is no longer available." />
+        <WorkspaceBody><Button onClick={() => navigate('/market')}>Back to Driver Market</Button></WorkspaceBody>
+      </WorkspaceScreen>
+    );
+  }
   const negotiation = state.marketContractNegotiation?.marketId === driver.id ? state.marketContractNegotiation : undefined;
-  if (!negotiation) return <WorkspaceScreen><WorkspaceHeader eyebrow="Contract desk" title={`Opening talks with ${driver.name}`} subtitle="Preparing the agent's demands and rival-market position." /></WorkspaceScreen>;
+  if (!negotiation) {
+    return <WorkspaceScreen><WorkspaceHeader eyebrow="Contract desk" title={`Opening talks with ${driver.name}`} subtitle="Preparing the agent's demands and rival-market position." /></WorkspaceScreen>;
+  }
+
   const view = marketNegotiationView(state, negotiation);
-  const tone = view.tone === 'positive' ? 'border-green-500/40 bg-green-500/10 text-green-300' : view.tone === 'warning' ? 'border-amber-500/40 bg-amber-500/10 text-amber-300' : 'border-red-500/40 bg-red-500/10 text-red-300';
+  const tone = view.tone === 'positive' ? 'is-positive' : view.tone === 'warning' ? 'is-warning' : 'is-negative';
+  const budget = state.teams.find((team) => team.id === state.selectedTeamId)?.budget ?? 0;
   const update = (patch: { offeredBid?: number; offeredSalary?: number; years?: number }) => dispatch({ type: 'UPDATE_MARKET_CONTRACT_NEGOTIATION', ...patch });
+
   return (
-    <WorkspaceScreen>
-      <WorkspaceHeader eyebrow="Driver recruitment" title={`Negotiate with ${driver.name}`} subtitle={`Pre-contract agreement to replace ${seat.name}. Rival interest and compensation remain deterministic.`} actions={<Button variant="ghost" onClick={() => { dispatch({ type: 'CANCEL_MARKET_CONTRACT_NEGOTIATION' }); navigate('/market'); }}>Cancel talks</Button>} />
-      <MetricStrip>
-        <WorkspaceMetric label="Agent compensation demand" value={`$${negotiation.askingBid.toFixed(1)}M`} detail="Includes rival leverage" />
-        <WorkspaceMetric label="Salary demand" value={`$${negotiation.askingSalary.toFixed(1)}M`} detail="Annual wage" />
-        <WorkspaceMetric label="Attempts remaining" value={negotiation.attemptsRemaining} detail="A refusal consumes one attempt" />
-        <WorkspaceMetric label="Immediate commitment" value={formatMoney(view.immediateCost)} detail="Charged if the rollover signing succeeds" />
-      </MetricStrip>
-      <WorkspaceBody className="space-y-4">
-        {negotiation.response === 'countered' && <Panel title="Agent counter"><p className="text-sm text-amber-200">The agent will continue at a compensation bid of ${negotiation.counterBid?.toFixed(1)}M.</p><Button className="mt-2 px-2 py-1 text-xs" onClick={() => update({ offeredBid: negotiation.counterBid })}>Match counter</Button></Panel>}
-        {negotiation.response === 'refused' && <Panel title="Talks ended"><p className="text-sm text-red-300">The package was too far from expectations or the negotiation ran out of patience.</p></Panel>}
-        <div className="grid gap-4 lg:grid-cols-[1.4fr_1fr]">
-          <Panel title="Your package">
-            <label className="block text-xs font-semibold text-neutral-300">Compensation bid · ${negotiation.offeredBid.toFixed(1)}M<input className="mt-2 w-full accent-amber-400" type="range" min={driver.buyoutCost} max={Math.max(negotiation.askingBid * 1.5, driver.buyoutCost + 1)} step={0.1} value={negotiation.offeredBid} onChange={(event) => update({ offeredBid: Number(event.target.value) })} /></label>
-            <label className="mt-5 block text-xs font-semibold text-neutral-300">Annual wage · ${negotiation.offeredSalary.toFixed(1)}M<input className="mt-2 w-full accent-amber-400" type="range" min={Math.max(0.1, driver.salary * 0.75)} max={driver.salary * 2.5} step={0.1} value={negotiation.offeredSalary} onChange={(event) => update({ offeredSalary: Number(event.target.value) })} /></label>
-            <label className="mt-5 block text-xs font-semibold text-neutral-300">Contract length<select className="mt-2 w-full rounded border border-neutral-700 bg-neutral-950 px-3 py-2" value={negotiation.years} onChange={(event) => update({ years: Number(event.target.value) })}>{[1,2,3,4,5].map((years) => <option key={years} value={years}>{years} year{years === 1 ? '' : 's'}</option>)}</select></label>
-          </Panel>
-          <Panel title="Agent response"><div className={`rounded border p-3 text-sm font-bold ${tone}`}>{view.label}</div><p className="mt-3 text-xs leading-5 text-neutral-400">The readout combines series interest, team pull, wage, term, compensation, and the deterministic rival bid.</p><Button variant="primary" className="mt-5 w-full" disabled={!view.canSubmit} title={view.disabledReason} onClick={() => dispatch({ type: 'SUBMIT_MARKET_CONTRACT_NEGOTIATION' })}>Submit formal offer</Button>{view.disabledReason && <p className="mt-2 text-xs text-red-300">{view.disabledReason}</p>}</Panel>
-        </div>
+    <WorkspaceScreen className="ui-recruitment-screen ui-negotiation-room">
+      <WorkspaceHeader
+        eyebrow="Driver recruitment"
+        title={`Negotiate with ${driver.name}`}
+        subtitle={`Pre-contract agreement to replace ${seat.name}. Rival interest and compensation remain deterministic.`}
+        actions={<Button variant="ghost" onClick={() => { dispatch({ type: 'CANCEL_MARKET_CONTRACT_NEGOTIATION' }); navigate('/market'); }}>Walk away</Button>}
+      />
+      <WorkspaceBody className="overflow-hidden">
+        <FmWorkspaceGrid columns="three" className="ui-negotiation-grid">
+          <FmPane className="ui-negotiation-agent-pane">
+            <FmPaneHeader title="Driver & Agent" meta={`${negotiation.attemptsRemaining} attempts remaining`} />
+            <FmPaneBody className="overflow-auto">
+              <section className="ui-negotiation-identity">
+                <span>External target</span>
+                <strong>{driver.name}</strong>
+                <p>{driver.nationality} · age {driver.age} · {driver.marketStatus}</p>
+              </section>
+              <section>
+                <h3>Agent demands</h3>
+                <FmKeyValue label="Compensation" value={`$${negotiation.askingBid.toFixed(1)}M`} />
+                <FmKeyValue label="Annual wage" value={`$${negotiation.askingSalary.toFixed(1)}M`} />
+                <FmKeyValue label="Replacement seat" value={`${seat.name} · #${seat.number}`} />
+                <FmKeyValue label="Attempts remaining" value={negotiation.attemptsRemaining} />
+              </section>
+              {negotiation.response === 'countered' && (
+                <section className="ui-negotiation-response is-warning">
+                  <strong>Agent counter</strong>
+                  <p>The agent will continue at a compensation bid of ${negotiation.counterBid?.toFixed(1)}M.</p>
+                  <Button variant="secondary" onClick={() => update({ offeredBid: negotiation.counterBid })}>Match counter</Button>
+                </section>
+              )}
+              {negotiation.response === 'refused' && (
+                <section className="ui-negotiation-response is-negative">
+                  <strong>Talks ended</strong>
+                  <p>The package was too far from expectations or the negotiation ran out of patience.</p>
+                </section>
+              )}
+            </FmPaneBody>
+          </FmPane>
+
+          <FmPane className="ui-negotiation-terms-pane">
+            <FmPaneHeader title="Recruitment Package" meta="Editable terms" />
+            <FmPaneBody className="ui-negotiation-fields overflow-auto">
+              <label>Compensation bid <strong>${negotiation.offeredBid.toFixed(1)}M</strong>
+                <input type="range" min={driver.buyoutCost} max={Math.max(negotiation.askingBid * 1.5, driver.buyoutCost + 1)} step={0.1} value={negotiation.offeredBid} onChange={(event) => update({ offeredBid: Number(event.target.value) })} />
+              </label>
+              <label>Annual wage <strong>${negotiation.offeredSalary.toFixed(1)}M</strong>
+                <input type="range" min={Math.max(0.1, driver.salary * 0.75)} max={driver.salary * 2.5} step={0.1} value={negotiation.offeredSalary} onChange={(event) => update({ offeredSalary: Number(event.target.value) })} />
+              </label>
+              <label>Contract length
+                <select value={negotiation.years} onChange={(event) => update({ years: Number(event.target.value) })}>
+                  {[1, 2, 3, 4, 5].map((years) => <option key={years} value={years}>{years} year{years === 1 ? '' : 's'}</option>)}
+                </select>
+              </label>
+              <section className="ui-negotiation-seat-summary">
+                <span>Incoming driver</span><strong>{driver.name}</strong>
+                <span>Replaces</span><strong>{seat.name}</strong>
+              </section>
+            </FmPaneBody>
+          </FmPane>
+
+          <FmPane className="ui-negotiation-context-pane">
+            <FmPaneHeader title="Agent Response" meta="Rival leverage included" />
+            <FmPaneBody className="overflow-auto">
+              <div className={`ui-negotiation-likelihood ${tone}`}>{view.label}</div>
+              <p>The assessment combines series interest, team pull, wage, term, compensation, and the deterministic rival bid.</p>
+              <section>
+                <FmKeyValue label="Immediate commitment" value={formatMoney(view.immediateCost)} />
+                <FmKeyValue label="Available budget" value={formatMoney(budget)} />
+                <FmKeyValue label="Buyout baseline" value={`$${driver.buyoutCost.toFixed(1)}M`} />
+                <FmKeyValue label="Contract maximum" value="5 years" />
+              </section>
+              {view.disabledReason && <div className="ui-negotiation-disabled">{view.disabledReason}</div>}
+            </FmPaneBody>
+          </FmPane>
+        </FmWorkspaceGrid>
+        <FmDecisionBar
+          actions={<Button variant="primary" disabled={!view.canSubmit} title={view.disabledReason} onClick={() => dispatch({ type: 'SUBMIT_MARKET_CONTRACT_NEGOTIATION' })}>Submit formal offer</Button>}
+        >
+          <strong>{driver.name} → replace {seat.name}</strong>
+          <span>{view.disabledReason ?? `${view.label}; immediate commitment ${formatMoney(view.immediateCost)}.`}</span>
+        </FmDecisionBar>
       </WorkspaceBody>
     </WorkspaceScreen>
   );

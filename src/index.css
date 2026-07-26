@@ -4369,3 +4369,440 @@ body {
     display: none;
   }
 }
+
+/* Phase 4: FM-style recruitment, contracts, and permanent departments. */
+.ui-main-content[data-route="/scouting"],
+.ui-main-content[data-route="/market"],
+.ui-main-content[data-route="/drivers/negotiate"],
+.ui-main-content[data-route="/staff"],
+.ui-main-content[data-route="/staff/negotiate"] {
+  overflow: hidden;
+  padding: 0;
+}
+
+.ui-recruitment-screen {
+  height: 100%;
+  gap: 0;
+  overflow: hidden;
+}
+
+.ui-recruitment-screen > .ui-workspace-header {
+  padding: 0.55rem 0.75rem;
+}
+
+.ui-recruitment-header-status {
+  border: 1px solid #713044;
+  border-radius: 1px;
+  background: #321e25;
+  padding: 0.32rem 0.5rem;
+  color: #e0a2b2;
+  font-size: 0.56rem;
+  font-weight: 750;
+}
+
+.ui-driver-market-workspace {
+  padding: 0.55rem;
+}
+
+.ui-driver-market-grid,
+.ui-scouting-target-grid {
+  min-height: 430px;
+  border: 1px solid #3b3b40;
+}
+
+.ui-driver-market-grid.is-two,
+.ui-scouting-target-grid.is-two {
+  grid-template-columns: minmax(590px, 1.75fr) minmax(235px, 0.7fr);
+}
+
+.ui-driver-market-list-pane,
+.ui-scouting-target-list {
+  background: #242427;
+}
+
+.ui-driver-market-list-pane > .ui-fm-pane-body,
+.ui-scouting-target-list > .ui-fm-pane-body {
+  padding: 0.55rem;
+}
+
+.ui-market-row-selected {
+  box-shadow: inset 3px 0 #d13d61;
+  background: #35242a;
+}
+
+.ui-driver-market-context-pane,
+.ui-scouting-target-context {
+  background: #1d1d20;
+}
+
+.ui-driver-market-context-pane .ui-fm-pane-body,
+.ui-scouting-target-context .ui-fm-pane-body {
+  padding: 0.7rem;
+}
+
+.ui-driver-market-context-pane section + section,
+.ui-scouting-target-context section + section {
+  margin-top: 0.75rem;
+  border-top: 1px solid #39393e;
+  padding-top: 0.75rem;
+}
+
+.ui-market-driver-identity,
+.ui-scouting-target-identity {
+  border-left: 3px solid #b52249;
+  background: #252528;
+  padding: 0.65rem;
+}
+
+.ui-market-driver-identity span,
+.ui-market-driver-identity strong,
+.ui-market-driver-identity p,
+.ui-scouting-target-identity span,
+.ui-scouting-target-identity strong,
+.ui-scouting-target-identity p {
+  display: block;
+}
+
+.ui-market-driver-identity span,
+.ui-scouting-target-identity span {
+  color: #85858c;
+  font-size: 0.52rem;
+}
+
+.ui-market-driver-identity strong,
+.ui-scouting-target-identity strong {
+  margin-top: 0.2rem;
+  color: #ededee;
+  font-size: 0.74rem;
+}
+
+.ui-market-driver-identity p,
+.ui-scouting-target-identity p,
+.ui-driver-market-context-pane section > p,
+.ui-intelligence-guidance {
+  margin-top: 0.28rem;
+  color: #919198;
+  font-size: 0.55rem;
+  line-height: 1.5;
+}
+
+.ui-driver-market-context-pane h3,
+.ui-negotiation-room h3,
+.ui-staff-profile-body h3,
+.ui-staff-upgrade-context h3 {
+  color: #cfcfd3;
+  font-size: 0.54rem;
+  font-weight: 850;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+}
+
+.ui-market-context-actions {
+  display: grid;
+  gap: 0.38rem;
+}
+
+.ui-intelligence-grid {
+  min-height: 460px;
+  border: 1px solid #3b3b40;
+}
+
+.ui-intelligence-list-item {
+  display: block;
+  width: 100%;
+  border-bottom: 1px solid #37373c;
+  border-left: 3px solid transparent;
+  background: #222225;
+  padding: 0.58rem;
+  text-align: left;
+}
+
+.ui-intelligence-list-item:hover,
+.ui-intelligence-list-item.is-active {
+  background: #35242a;
+}
+
+.ui-intelligence-list-item.is-active {
+  border-left-color: #d13d61;
+}
+
+.ui-intelligence-list-item span,
+.ui-intelligence-list-item strong,
+.ui-intelligence-list-item small {
+  display: block;
+}
+
+.ui-intelligence-list-item span {
+  color: #8c8c93;
+  font-size: 0.48rem;
+  text-transform: uppercase;
+}
+
+.ui-intelligence-list-item strong {
+  margin-top: 0.14rem;
+  color: #dedee1;
+  font-size: 0.59rem;
+}
+
+.ui-intelligence-list-item small {
+  margin-top: 0.2rem;
+  color: #74747b;
+  font-size: 0.5rem;
+}
+
+.ui-intelligence-detail-pane .ui-fm-pane-body,
+.ui-intelligence-context-pane .ui-fm-pane-body {
+  padding: 0.65rem;
+}
+
+.ui-intelligence-context-pane .rounded-lg {
+  margin-bottom: 0.5rem;
+  border-radius: 1px;
+}
+
+.ui-negotiation-grid {
+  height: 100%;
+}
+
+.ui-negotiation-agent-pane,
+.ui-negotiation-context-pane,
+.ui-staff-upgrade-context {
+  background: #1d1d20;
+}
+
+.ui-negotiation-terms-pane,
+.ui-staff-department-profile {
+  background: #252528;
+}
+
+.ui-negotiation-agent-pane .ui-fm-pane-body,
+.ui-negotiation-context-pane .ui-fm-pane-body,
+.ui-negotiation-terms-pane .ui-fm-pane-body,
+.ui-staff-department-profile .ui-fm-pane-body,
+.ui-staff-upgrade-context .ui-fm-pane-body {
+  padding: 0.75rem;
+}
+
+.ui-negotiation-agent-pane section + section,
+.ui-negotiation-context-pane section + section,
+.ui-staff-upgrade-context section + section {
+  margin-top: 0.8rem;
+  border-top: 1px solid #3a3a3f;
+  padding-top: 0.8rem;
+}
+
+.ui-negotiation-identity {
+  border-left: 3px solid #b52249;
+  background: #252528;
+  padding: 0.7rem;
+}
+
+.ui-negotiation-identity span,
+.ui-negotiation-identity strong,
+.ui-negotiation-identity p {
+  display: block;
+}
+
+.ui-negotiation-identity span {
+  color: #88888f;
+  font-size: 0.5rem;
+  font-weight: 800;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+}
+
+.ui-negotiation-identity strong {
+  margin-top: 0.18rem;
+  color: #efeff0;
+  font-size: 0.9rem;
+}
+
+.ui-negotiation-identity p,
+.ui-negotiation-context-pane p,
+.ui-negotiation-response p {
+  margin-top: 0.25rem;
+  color: #929299;
+  font-size: 0.56rem;
+  line-height: 1.55;
+}
+
+.ui-negotiation-fields {
+  display: grid;
+  align-content: start;
+  gap: 1rem;
+}
+
+.ui-negotiation-fields label {
+  display: grid;
+  gap: 0.4rem;
+  color: #a1a1a8;
+  font-size: 0.58rem;
+  font-weight: 750;
+}
+
+.ui-negotiation-fields label strong {
+  color: #e5e5e7;
+  font-size: 0.72rem;
+}
+
+.ui-negotiation-fields input[type="range"] {
+  width: 100%;
+  accent-color: #c12c52;
+}
+
+.ui-negotiation-fields select {
+  width: 100%;
+  border: 1px solid #48484e;
+  border-radius: 1px;
+  background: #18181a;
+  padding: 0.48rem 0.55rem;
+  color: #d2d2d6;
+  font-size: 0.6rem;
+}
+
+.ui-negotiation-likelihood,
+.ui-negotiation-response,
+.ui-negotiation-disabled {
+  border-left: 3px solid #8b8b92;
+  background: #252528;
+  padding: 0.68rem;
+  color: #d1d1d5;
+  font-size: 0.64rem;
+  font-weight: 800;
+}
+
+.ui-negotiation-likelihood.is-positive,
+.ui-negotiation-response.is-positive {
+  border-left-color: #4ca77b;
+}
+
+.ui-negotiation-likelihood.is-warning,
+.ui-negotiation-response.is-warning {
+  border-left-color: #d49a36;
+}
+
+.ui-negotiation-likelihood.is-negative,
+.ui-negotiation-response.is-negative,
+.ui-negotiation-disabled {
+  border-left-color: #d13d61;
+}
+
+.ui-negotiation-response button {
+  margin-top: 0.55rem;
+}
+
+.ui-negotiation-seat-summary {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 0.4rem;
+  border-top: 1px solid #414146;
+  padding-top: 0.8rem;
+  color: #86868d;
+  font-size: 0.58rem;
+}
+
+.ui-negotiation-seat-summary strong {
+  color: #d0d0d4;
+  text-align: right;
+}
+
+.ui-fm-decision-bar strong,
+.ui-fm-decision-bar span {
+  display: block;
+}
+
+.ui-fm-decision-bar strong {
+  color: #d6d6d9;
+  font-size: 0.63rem;
+}
+
+.ui-fm-decision-bar span {
+  margin-top: 0.1rem;
+  color: #85858c;
+  font-size: 0.54rem;
+}
+
+.ui-staff-departments-grid.is-three {
+  grid-template-columns: minmax(220px, 0.75fr) minmax(390px, 1.45fr) minmax(240px, 0.8fr);
+}
+
+.ui-staff-rating-block {
+  border-left: 3px solid #b52249;
+  background: #202023;
+  padding: 0.8rem;
+}
+
+.ui-staff-rating-block span,
+.ui-staff-rating-block strong {
+  display: block;
+}
+
+.ui-staff-rating-block span {
+  color: #88888f;
+  font-size: 0.52rem;
+  text-transform: uppercase;
+}
+
+.ui-staff-rating-block strong {
+  margin-top: 0.15rem;
+  color: #ededee;
+  font-size: 1.4rem;
+}
+
+.ui-staff-rating-block div {
+  height: 0.28rem;
+  margin-top: 0.55rem;
+  background: #424247;
+}
+
+.ui-staff-rating-block i {
+  display: block;
+  height: 100%;
+  background: #c12c52;
+}
+
+.ui-staff-profile-body section + section {
+  margin-top: 0.85rem;
+  border-top: 1px solid #3a3a3f;
+  padding-top: 0.85rem;
+}
+
+.ui-staff-profile-body p,
+.ui-staff-upgrade-context p,
+.ui-staff-compatibility-copy p {
+  margin-top: 0.3rem;
+  color: #96969d;
+  font-size: 0.58rem;
+  line-height: 1.6;
+}
+
+.ui-staff-compatibility-copy {
+  padding: 0.8rem;
+}
+
+.ui-staff-compatibility-copy > strong {
+  color: #e0e0e3;
+  font-size: 0.72rem;
+}
+
+.ui-staff-compatibility-copy .ui-fm-key-value:first-of-type {
+  margin-top: 0.8rem;
+}
+
+@media (max-width: 1120px) {
+  .ui-driver-market-grid.is-two,
+  .ui-scouting-target-grid.is-two {
+    grid-template-columns: minmax(540px, 1.6fr) minmax(220px, 0.7fr);
+  }
+
+  .ui-staff-departments-grid.is-three {
+    grid-template-columns: minmax(210px, 0.7fr) minmax(390px, 1.5fr);
+  }
+}
+
+@media (max-width: 760px) {
+  .ui-driver-market-grid.is-two,
+  .ui-scouting-target-grid.is-two {
+    grid-template-columns: minmax(500px, 1.6fr) minmax(210px, 0.7fr);
+  }
+}
