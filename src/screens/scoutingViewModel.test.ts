@@ -1,7 +1,14 @@
 import { describe, expect, it } from 'vitest';
 import type { FogView } from '../sim/scoutingEngine';
 import type { ScoutingReport } from '../types/scoutingTypes';
-import { scoutingAbilitySummary, scoutingAssignments, scoutingComparison, scoutingReportFreshness, sortScoutingListItems } from './scoutingViewModel';
+import {
+  scoutingAbilitySummary,
+  scoutingAssignments,
+  scoutingComparison,
+  scoutingReportFreshness,
+  selectedScoutingTarget,
+  sortScoutingListItems,
+} from './scoutingViewModel';
 
 const view: FogView = {
   accuracy: 0.6, revealed: false, maxed: false,
@@ -67,5 +74,13 @@ describe('scouting view model', () => {
     expect(sortScoutingListItems(items, { key: 'overall', direction: 'desc' }).map((entry) => entry.id)).toEqual(['b', 'a']);
     expect(sortScoutingListItems(items, { key: 'knowledge', direction: 'desc' }).map((entry) => entry.id)).toEqual(['a', 'b']);
     expect(sortScoutingListItems(items, { key: 'cost', direction: 'asc' }).map((entry) => entry.id)).toEqual(['b', 'a']);
+  });
+
+  it('keeps a selected target visible, then honors a focused URL target, then falls back', () => {
+    const targets = [{ id: 'one' }, { id: 'two' }, { id: 'three' }];
+    expect(selectedScoutingTarget(targets, 'two', 'three')).toBe(targets[1]);
+    expect(selectedScoutingTarget(targets, 'missing', 'three')).toBe(targets[2]);
+    expect(selectedScoutingTarget(targets, 'missing', 'missing')).toBe(targets[0]);
+    expect(selectedScoutingTarget([], 'one')).toBeUndefined();
   });
 });

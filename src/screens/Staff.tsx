@@ -1,16 +1,27 @@
+import { useState } from 'react';
 import { useGame } from '../game/GameContext';
 import { Button } from '../components/Button';
-import { Panel } from '../components/Panel';
 import {
-  MetricStrip,
   WorkspaceBody,
   WorkspaceHeader,
-  WorkspaceMetric,
   WorkspaceScreen,
 } from '../components/workspace/Workspace';
-import { ROLE_EFFECT, STAFF_ROLES, type StaffRole } from '../types/staffTypes';
+import {
+  FmDecisionBar,
+  FmKeyValue,
+  FmListButton,
+  FmPane,
+  FmPaneBody,
+  FmPaneHeader,
+  FmWorkspaceGrid,
+} from '../components/workspace/FmPane';
+import type { StaffRole } from '../types/staffTypes';
 import type { GameState } from '../game/careerState';
 import type { GameAction } from '../game/gameReducer';
+import {
+  selectedStaffDepartment,
+  staffDepartmentRows,
+} from './staffDepartmentViewModel';
 
 export function Staff() {
   const { state, dispatch } = useGame();
@@ -26,79 +37,110 @@ function StaffDepartments({
   state: GameState;
   dispatch: (action: GameAction) => void;
 }) {
+  const [selectedRole, setSelectedRole] = useState<StaffRole>();
   const principalPoints = state.principal?.skillPoints ?? 0;
-  const roster = state.staff ?? [];
+  const departments = staffDepartmentRows(state.staff, principalPoints);
+  const selected = selectedStaffDepartment(departments, selectedRole);
 
   return (
-    <WorkspaceScreen>
+    <WorkspaceScreen className="ui-recruitment-screen ui-staff-departments-screen">
       <WorkspaceHeader
-        eyebrow="Principal Points"
+        eyebrow="People · Departments"
         title="Team Departments"
         subtitle="Your Technical Director, Race Engineer, Pit Crew Chief, and Strategist are permanent departments. Improve their ratings with Principal Points."
         actions={
-          <span className="rounded border border-amber-500/30 bg-amber-500/10 px-2 py-1 text-xs font-semibold text-amber-200">
+          <span className="ui-recruitment-header-status">
             {principalPoints} Principal Points available
           </span>
         }
       />
-      <MetricStrip>
-        <WorkspaceMetric label="Departments" value={`${STAFF_ROLES.length}`} detail="Always active for your team" />
-        <WorkspaceMetric label="Principal Points" value={`${principalPoints}`} detail="Earned through principal progression" />
-        <WorkspaceMetric label="Technical effect" value={ROLE_EFFECT['Technical Director']} detail="Department ratings feed existing simulation bonuses" />
-      </MetricStrip>
-      <WorkspaceBody className="space-y-4">
-        <div className="rounded-lg border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-xs text-amber-100">
-          Staff departments replace personnel transactions on this screen. Existing staff records and simulation bonuses remain intact; each point raises a department by one rating level.
-        </div>
-        <div className="grid gap-3 md:grid-cols-2">
-          {STAFF_ROLES.map((role) => (
-            <DepartmentCard
-              key={role}
-              role={role}
-              rating={departmentRating(roster, role)}
-              principalPoints={principalPoints}
-              onUpgrade={() => dispatch({ type: 'UPGRADE_STAFF_DEPARTMENT', role })}
-            />
-          ))}
-        </div>
+      <WorkspaceBody className="overflow-hidden">
+        <FmWorkspaceGrid columns="three" className="ui-staff-departments-grid">
+          <FmPane>
+            <FmPaneHeader title="Departments" meta={`${departments.length} permanent units`} />
+            <FmPaneBody className="overflow-auto">
+              {departments.map((department) => (
+                <FmListButton
+                  key={department.role}
+                  active={selected?.role === department.role}
+                  onClick={() => setSelectedRole(department.role)}
+                >
+                  <span>Level {department.level}</span>
+                  <strong>{department.role}</strong>
+                  <span>{department.rating}/100 rating</span>
+                  <small>{department.rating >= 100 ? 'Maximum rating' : `${100 - department.rating} points to maximum`}</small>
+                </FmListButton>
+              ))}
+            </FmPaneBody>
+          </FmPane>
+
+          <FmPane className="ui-staff-department-profile">
+            <FmPaneHeader title={selected?.role ?? 'Department'} meta={selected ? `Level ${selected.level}` : undefined} />
+            <FmPaneBody className="overflow-auto">
+              {selected && (
+                <div className="ui-staff-profile-body">
+                  <section className="ui-staff-rating-block">
+                    <span>Department performance</span>
+                    <strong>{selected.rating}</strong>
+                    <div role="progressbar" aria-label={`${selected.role} rating`} aria-valuemin={0} aria-valuemax={100} aria-valuenow={selected.rating}>
+                      <i style={{ width: `${selected.rating}%` }} />
+                    </div>
+                  </section>
+                  <section>
+                    <h3>Simulation effect</h3>
+                    <p>{selected.effect}</p>
+                  </section>
+                  <section>
+                    <h3>Improvement recommendation</h3>
+                    <p>
+                      {selected.rating >= 100
+                        ? 'This department is already operating at the maximum modeled level.'
+                        : selected.rating >= 80
+                          ? 'A strong department. Invest when this specialty is central to the team plan.'
+                          : selected.rating >= 60
+                            ? 'A dependable department with room for meaningful performance gains.'
+                            : 'A priority development area that can materially limit team execution.'}
+                    </p>
+                  </section>
+                </div>
+              )}
+            </FmPaneBody>
+          </FmPane>
+
+          <FmPane className="ui-staff-upgrade-context">
+            <FmPaneHeader title="Principal Development" meta={`${principalPoints} points available`} />
+            <FmPaneBody className="overflow-auto">
+              <section>
+                <h3>Permanent department model</h3>
+                <p>Staff records and their existing simulation bonuses remain intact. Personnel hiring and contract transactions are not part of this management model.</p>
+              </section>
+              {selected && (
+                <section>
+                  <FmKeyValue label="Selected department" value={selected.role} />
+                  <FmKeyValue label="Current level" value={`${selected.level} · ${selected.rating}/100`} />
+                  <FmKeyValue label="Upgrade cost" value="1 Principal Point" />
+                  <FmKeyValue label="Result" value="+1 rating level" />
+                </section>
+              )}
+            </FmPaneBody>
+          </FmPane>
+        </FmWorkspaceGrid>
+        <FmDecisionBar
+          actions={selected && (
+            <Button
+              variant="primary"
+              disabled={!selected.canImprove}
+              title={selected.disabledReason}
+              onClick={() => dispatch({ type: 'UPGRADE_STAFF_DEPARTMENT', role: selected.role })}
+            >
+              {selected.rating >= 100 ? 'Department maxed' : 'Spend 1 Principal Point'}
+            </Button>
+          )}
+        >
+          <strong>{selected?.role ?? 'Select a department'}</strong>
+          <span>{selected?.disabledReason ?? 'Upgrade the selected department by one rating level.'}</span>
+        </FmDecisionBar>
       </WorkspaceBody>
     </WorkspaceScreen>
   );
-}
-
-function DepartmentCard({
-  role,
-  rating,
-  principalPoints,
-  onUpgrade,
-}: {
-  role: StaffRole;
-  rating: number;
-  principalPoints: number;
-  onUpgrade: () => void;
-}) {
-  const level = Math.max(1, Math.round(rating / 10));
-  const canImprove = rating < 100 && principalPoints > 0;
-
-  return (
-    <Panel title={role} actions={<span className="text-xs font-semibold text-amber-300">Level {level} · {rating}/100</span>}>
-      <p className="text-sm text-neutral-400">{ROLE_EFFECT[role]}</p>
-      <div className="mt-3 h-2 overflow-hidden rounded-full bg-neutral-800" role="progressbar" aria-label={`${role} rating`} aria-valuemin={0} aria-valuemax={100} aria-valuenow={rating}>
-        <div className="h-full rounded-full bg-amber-500 transition-all" style={{ width: `${rating}%` }} />
-      </div>
-      <div className="mt-2 flex items-center justify-between gap-2 text-xs text-neutral-500">
-        <span>Existing role rating · no contract transaction required</span>
-        <span>{rating >= 100 ? 'Maximum' : `${100 - rating} rating to max`}</span>
-      </div>
-      <Button variant="primary" className="mt-3 w-full" disabled={!canImprove} onClick={onUpgrade}>
-        {rating >= 100 ? 'Department maxed' : principalPoints > 0 ? 'Spend 1 Principal Point' : 'No Principal Points available'}
-      </Button>
-    </Panel>
-  );
-}
-
-function departmentRating(roster: GameState['staff'], role: StaffRole): number {
-  const member = roster?.find((entry) => entry.role === role);
-  if (!member) return 50;
-  return Math.max(0, Math.min(100, member.rating <= 10 ? member.rating * 10 : member.rating));
 }
