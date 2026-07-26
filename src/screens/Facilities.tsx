@@ -20,8 +20,8 @@ import {
   WorkspaceBody,
   WorkspaceTabs,
 } from '../components/workspace/Workspace';
-import { formatMoney, ratingColor } from '../components/ui';
-import type { Facility, FacilitySpecialization } from '../types/facilityTypes';
+import { formatMoney } from '../components/ui';
+import type { FacilitySpecialization } from '../types/facilityTypes';
 import {
   FACILITY_SPECIALIZATION_LABELS,
   FACILITY_SPECIALIZATION_DESCRIPTIONS,
@@ -33,6 +33,19 @@ import {
   type FacilitiesWorkspaceTab,
   type FacilityPortfolioGroupId,
 } from './facilitiesViewModel';
+import {
+  FmDecisionBar,
+  FmKeyValue,
+  FmListButton,
+  FmPane,
+  FmPaneBody,
+  FmPaneHeader,
+  FmWorkspaceGrid,
+} from '../components/workspace/FmPane';
+import {
+  facilityUpgradeDisabledReason,
+  selectedTechnicalRecord,
+} from './technicalCommercialViewModel';
 
 const EFFECT_LABELS: Record<string, string> = {
   developmentSuccess: 'Dev success',
@@ -56,6 +69,7 @@ export function FacilitiesBody() {
   const { state, dispatch } = useGame();
   const [tab, setTab] = useState<FacilitiesWorkspaceTab>('planner');
   const [portfolioGroup, setPortfolioGroup] = useState<FacilityPortfolioGroupId>('development');
+  const [selectedFacilityId, setSelectedFacilityId] = useState<string>();
 
   if (!state) return null;
 
@@ -77,6 +91,7 @@ export function FacilitiesBody() {
     facilitiesState.facilities,
     selectedGroup.id,
   );
+  const selectedFacility = selectedTechnicalRecord(visibleFacilities, selectedFacilityId);
 
   const impacts = [
     {
@@ -152,56 +167,112 @@ export function FacilitiesBody() {
           {formatMoney(budget)} available
         </span>
       </div>
-      <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
-        {impacts.map((impact) => <ImpactCard key={impact.label} {...impact} />)}
-      </div>
-      <p className="text-xs text-neutral-500">
-        Values include the active {FACILITY_SPECIALIZATION_LABELS[specialization]} focus.
-        Development slots are based on the average level of the entire facility portfolio.
-      </p>
-
       {tab === 'planner' && (
-        <Panel
-          title="Upgrade Planner"
-          actions={
-            <span className="text-xs text-neutral-500">
-              {selectedGroup.description}
-            </span>
-          }
-        >
-          <div className="mb-3 flex gap-1" aria-label="Facility groups">
-            {FACILITY_PORTFOLIO_GROUPS.map((group) => (
-              <button
-                key={group.id}
-                type="button"
-                aria-pressed={portfolioGroup === group.id}
-                onClick={() => setPortfolioGroup(group.id)}
-                className={`flex-1 rounded-md px-2 py-1.5 text-xs font-semibold ${
-                  portfolioGroup === group.id
-                    ? 'bg-[var(--era-accent-soft)] text-[var(--era-accent-strong)]'
-                    : 'bg-neutral-950/30 text-neutral-500 hover:bg-neutral-800 hover:text-neutral-300'
-                }`}
-              >
-                {group.label}
-              </button>
-            ))}
-          </div>
-          <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
-            {visibleFacilities.map((facility) => (
-              <FacilityCard
-                key={facility.id}
-                facility={facility}
-                pending={pendingIds.has(facility.id)}
-                affordable={toMoney(upgradeCostFor(facility)) <= budget}
-                boosted={SPECIALIZATION_FACILITIES[specialization].includes(facility.type)}
-                effectiveEffects={effectiveFacilityEffects(facility, facilitiesState)}
-                onUpgrade={() =>
-                  dispatch({ type: 'UPGRADE_FACILITY', facilityId: facility.id })
-                }
+        <div className="ui-facilities-workspace">
+          <FmWorkspaceGrid columns="three" className="ui-facilities-grid">
+            <FmPane>
+              <FmPaneHeader title="Facility groups" meta={selectedGroup.description} />
+              <FmPaneBody className="overflow-auto">
+                <div className="ui-facility-group-list" aria-label="Facility groups">
+                  {FACILITY_PORTFOLIO_GROUPS.map((group) => (
+                    <button
+                      key={group.id}
+                      type="button"
+                      aria-pressed={portfolioGroup === group.id}
+                      onClick={() => setPortfolioGroup(group.id)}
+                      className={portfolioGroup === group.id ? 'is-active' : ''}
+                    >
+                      <strong>{group.label}</strong>
+                      <span>{group.description}</span>
+                    </button>
+                  ))}
+                </div>
+                <div className="ui-facility-record-list">
+                  {visibleFacilities.map((facility) => {
+                    const specification = FACILITY_SPECS[facility.type];
+                    return (
+                      <FmListButton
+                        key={facility.id}
+                        active={selectedFacility?.id === facility.id}
+                        urgent={pendingIds.has(facility.id)}
+                        onClick={() => setSelectedFacilityId(facility.id)}
+                      >
+                        <span>{pendingIds.has(facility.id) ? 'Construction queued' : `Level ${facility.level}/${facility.maxLevel}`}</span>
+                        <strong>{specification.label}</strong>
+                        <small>{SPECIALIZATION_FACILITIES[specialization].includes(facility.type) ? '25% specialization bonus' : 'Standard effect'}</small>
+                      </FmListButton>
+                    );
+                  })}
+                </div>
+              </FmPaneBody>
+            </FmPane>
+
+            <FmPane className="ui-facility-detail-pane">
+              <FmPaneHeader
+                title={selectedFacility ? FACILITY_SPECS[selectedFacility.type].label : 'Facility profile'}
+                meta={selectedFacility ? `Level ${selectedFacility.level} of ${selectedFacility.maxLevel}` : undefined}
               />
-            ))}
-          </div>
-        </Panel>
+              <FmPaneBody className="overflow-auto">
+                {selectedFacility && (
+                  <div className="ui-technical-dossier">
+                    <section>
+                      <h3>Purpose</h3>
+                      <p>{FACILITY_SPECS[selectedFacility.type].description}</p>
+                    </section>
+                    <section>
+                      <FmKeyValue label="Current level" value={`${selectedFacility.level}/${selectedFacility.maxLevel}`} />
+                      <FmKeyValue label="Construction status" value={pendingIds.has(selectedFacility.id) ? 'Paid · activates next season' : 'Available for planning'} />
+                      <FmKeyValue label="Upgrade cost" value={canUpgrade(selectedFacility) ? formatMoney(toMoney(upgradeCostFor(selectedFacility))) : 'Maximum level'} />
+                      <FmKeyValue label="Specialization" value={SPECIALIZATION_FACILITIES[specialization].includes(selectedFacility.type) ? FACILITY_SPECIALIZATION_LABELS[specialization] : 'No active boost'} />
+                    </section>
+                    <section>
+                      <h3>Effective benefits</h3>
+                      <div className="ui-facility-effect-list">
+                        {Object.entries(effectiveFacilityEffects(selectedFacility, facilitiesState)).map(([key, value]) => (
+                          <FmKeyValue key={key} label={EFFECT_LABELS[key] ?? key} value={formatEffect(key, value)} />
+                        ))}
+                      </div>
+                    </section>
+                  </div>
+                )}
+              </FmPaneBody>
+            </FmPane>
+
+            <FmPane className="ui-facility-context-pane">
+              <FmPaneHeader title="Portfolio effects" meta={FACILITY_SPECIALIZATION_LABELS[specialization]} />
+              <FmPaneBody className="overflow-auto">
+                <div className="ui-facility-impact-list">
+                  {impacts.map((impact) => (
+                    <div key={impact.label}>
+                      <span>{impact.label}</span>
+                      <strong>{impact.value}</strong>
+                      <small>{impact.detail}</small>
+                    </div>
+                  ))}
+                </div>
+                <p className="ui-technical-muted">Values include the active specialization. Development slots use the average level of the complete portfolio.</p>
+              </FmPaneBody>
+            </FmPane>
+          </FmWorkspaceGrid>
+          <FmDecisionBar actions={selectedFacility && (() => {
+            const pending = pendingIds.has(selectedFacility.id);
+            const affordable = toMoney(upgradeCostFor(selectedFacility)) <= budget;
+            const disabledReason = facilityUpgradeDisabledReason({ maxed: !canUpgrade(selectedFacility), pending, affordable });
+            return (
+              <Button
+                variant="primary"
+                disabled={!!disabledReason}
+                title={disabledReason}
+                onClick={() => dispatch({ type: 'UPGRADE_FACILITY', facilityId: selectedFacility.id })}
+              >
+                Upgrade to L{Math.min(selectedFacility.maxLevel, selectedFacility.level + 1)} · {formatMoney(toMoney(upgradeCostFor(selectedFacility)))}
+              </Button>
+            );
+          })()}>
+            <strong>{selectedFacility ? FACILITY_SPECS[selectedFacility.type].label : 'Select a facility'}</strong>
+            <span>{selectedFacility ? facilityUpgradeDisabledReason({ maxed: !canUpgrade(selectedFacility), pending: pendingIds.has(selectedFacility.id), affordable: toMoney(upgradeCostFor(selectedFacility)) <= budget }) ?? 'The selected upgrade will join the construction queue.' : 'Choose a facility to review its effects and upgrade eligibility.'}</span>
+          </FmDecisionBar>
+        </div>
       )}
 
       {tab === 'specialization' && (
@@ -268,90 +339,4 @@ export function FacilitiesBody() {
 
 export function Facilities() {
   return <FacilitiesBody />;
-}
-
-function FacilityCard({
-  facility,
-  pending,
-  affordable,
-  boosted,
-  effectiveEffects,
-  onUpgrade,
-}: {
-  facility: Facility;
-  pending: boolean;
-  affordable: boolean;
-  boosted: boolean;
-  effectiveEffects: Record<string, number>;
-  onUpgrade: () => void;
-}) {
-  const specification = FACILITY_SPECS[facility.type];
-  const maxed = !canUpgrade(facility);
-  const fillPct = facility.maxLevel > 0 ? (facility.level / facility.maxLevel) * 100 : 0;
-  const fillColor = ratingColor(fillPct);
-
-  return (
-    <div className="rounded-lg border border-neutral-800 bg-neutral-900/40 p-3">
-      <div className="mb-1 flex items-start justify-between gap-2">
-        <div>
-          <div className="font-bold text-neutral-100">{specification.label}</div>
-          {boosted && <div className="text-[10px] font-semibold text-amber-300">25% focus bonus</div>}
-        </div>
-        <span className="rounded bg-neutral-800 px-1.5 py-0.5 text-[10px] font-semibold text-neutral-300">
-          L{facility.level} / {facility.maxLevel}
-        </span>
-      </div>
-      <p className="mb-2 text-[11px] text-neutral-500">{specification.description}</p>
-
-      <div className="mb-2 flex h-1.5 gap-0.5">
-        {Array.from({ length: facility.maxLevel }).map((_, index) => (
-          <div
-            key={index}
-            className="flex-1 rounded-sm"
-            style={{ backgroundColor: index < facility.level ? fillColor : '#262626' }}
-          />
-        ))}
-      </div>
-
-      <div className="flex flex-wrap gap-1">
-        {Object.entries(effectiveEffects).map(([key, value]) => (
-          <span
-            key={key}
-            className="rounded bg-neutral-800/60 px-1.5 py-0.5 text-[10px] text-neutral-300"
-          >
-            {EFFECT_LABELS[key] ?? key} {formatEffect(key, value)}
-          </span>
-        ))}
-      </div>
-
-      <div className="mt-3 border-t border-neutral-800 pt-2">
-        {maxed ? (
-          <div className="text-center text-xs text-neutral-500">Fully upgraded</div>
-        ) : pending ? (
-          <div className="text-center text-xs text-sky-300">Paid · Activates next season</div>
-        ) : (
-          <Button
-            variant="primary"
-            className="w-full px-2 py-1 text-xs"
-            disabled={!affordable}
-            onClick={onUpgrade}
-          >
-            {affordable
-              ? `Upgrade to L${facility.level + 1} · ${formatMoney(toMoney(upgradeCostFor(facility)))}`
-              : `Need ${formatMoney(toMoney(upgradeCostFor(facility)))}`}
-          </Button>
-        )}
-      </div>
-    </div>
-  );
-}
-
-function ImpactCard({ label, value, detail }: { label: string; value: string; detail: string }) {
-  return (
-    <div className="rounded-lg border border-neutral-800 bg-neutral-950/30 p-3">
-      <div className="text-xs uppercase tracking-wide text-neutral-500">{label}</div>
-      <div className="mt-0.5 text-xl font-bold text-neutral-100">{value}</div>
-      <div className="mt-1 text-[11px] leading-snug text-neutral-600">{detail}</div>
-    </div>
-  );
 }

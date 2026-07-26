@@ -15,13 +15,23 @@ import {
 } from '../sim/politicsEngine';
 import type { RegulationProposal, RegulationVote } from '../types/politicsTypes';
 import {
-  MetricStrip,
   WorkspaceBody,
   WorkspaceHeader,
-  WorkspaceMetric,
   WorkspaceScreen,
   WorkspaceTabs,
 } from '../components/workspace/Workspace';
+import {
+  FmKeyValue,
+  FmListButton,
+  FmPane,
+  FmPaneBody,
+  FmPaneHeader,
+  FmWorkspaceGrid,
+} from '../components/workspace/FmPane';
+import {
+  regulationVotingStatus,
+  selectedTechnicalRecord,
+} from './technicalCommercialViewModel';
 
 const VOTES: RegulationVote[] = ['Support', 'Oppose', 'Abstain'];
 
@@ -37,6 +47,7 @@ const TABS: { key: TabKey; label: string }[] = [
 export function Politics() {
   const { state, dispatch } = useGame();
   const [activeTab, setActiveTab] = useState<TabKey>('regulations');
+  const [selectedProposalId, setSelectedProposalId] = useState<string>();
   if (!state) return null;
 
   const proposals = state.regulationProposals ?? [];
@@ -69,6 +80,7 @@ export function Politics() {
   const currentRound = state.careerPhase?.currentRound ?? state.currentRaceIndex + 1;
   const lockRound = seasonMidpointRound(state.calendar.length);
   const votingLocked = regulationVotingLocked(currentRound, state.calendar.length);
+  const selectedProposal = selectedTechnicalRecord(proposals, selectedProposalId);
 
   return (
     <WorkspaceScreen>
@@ -76,13 +88,15 @@ export function Politics() {
         eyebrow="Technical governance"
         title="Regulations & Politics"
         subtitle={`Lobby and vote on the rules taking effect in ${effectiveYear}; results settle at season rollover`}
+        actions={(
+          <div className="ui-technical-header-readout">
+            <span><strong>{playerInfluence}</strong> influence</span>
+            <span><strong>#{playerRank > 0 ? playerRank : '—'}</strong> grid rank</span>
+            <span><strong>{votedCount}/{proposals.length}</strong> votes set</span>
+            <span><strong>{effectiveYear}</strong> effective season</span>
+          </div>
+        )}
       />
-      <MetricStrip>
-        <WorkspaceMetric label="Political influence" value={playerInfluence} detail={playerRank > 0 ? `Rank ${playerRank} of ${ranked.length}` : 'No grid rank'} />
-        <WorkspaceMetric label="Open proposals" value={proposals.length} detail={`${votedCount} votes currently set`} />
-        <WorkspaceMetric label="Effective season" value={effectiveYear} detail="Next regulation settlement" />
-        <WorkspaceMetric label="Recorded votes" value={history.length} detail={`${history.filter((result) => result.passed).length} proposals passed`} />
-      </MetricStrip>
       <WorkspaceTabs
         items={TABS.map((tab) => ({ id: tab.key, label: `${tab.label}${tab.key === 'proposals' ? ` (${proposals.length})` : ''}` }))}
         active={activeTab}
@@ -96,11 +110,7 @@ export function Politics() {
           <div className="min-w-0">
             <div className="font-semibold text-neutral-100">Governance operations desk</div>
             <div className="truncate text-neutral-400">
-              {votingLocked
-                ? `Voting locked after the season midpoint (round ${lockRound}). Existing votes will settle at rollover.`
-                : unvotedCount > 0
-                ? `${unvotedCount} regulation proposal${unvotedCount === 1 ? '' : 's'} still need your vote.`
-                : 'All current regulation proposals have a recorded vote.'}
+              {regulationVotingStatus(votingLocked, unvotedCount, lockRound)}
             </div>
           </div>
         </div>
@@ -147,25 +157,58 @@ export function Politics() {
       )}
 
       {activeTab === 'proposals' && (
-        <Panel title={`Open Proposals — vote for ${effectiveYear}`}>
-          {proposals.length === 0 ? (
-            <p className="text-sm text-neutral-400">No proposals are on the table right now.</p>
-          ) : (
-            <div className="space-y-3">
-              {proposals.map((p) => (
+        <FmWorkspaceGrid columns="three" className="ui-politics-proposal-grid">
+          <FmPane>
+            <FmPaneHeader title="Open proposals" meta={`${unvotedCount} awaiting vote`} />
+            <FmPaneBody className="overflow-auto">
+              {proposals.map((proposal) => (
+                <FmListButton
+                  key={proposal.id}
+                  active={selectedProposal?.id === proposal.id}
+                  urgent={!proposal.playerVote && !votingLocked}
+                  onClick={() => setSelectedProposalId(proposal.id)}
+                >
+                  <span>{proposal.category} · {proposal.playerVote ?? 'No vote set'}</span>
+                  <strong>{proposal.title}</strong>
+                  <small>Effective {proposal.seasonYearEffective}</small>
+                </FmListButton>
+              ))}
+              {proposals.length === 0 && <p className="ui-technical-empty">No proposals are on the table right now.</p>}
+            </FmPaneBody>
+          </FmPane>
+          <FmPane className="ui-politics-proposal-detail">
+            <FmPaneHeader title={selectedProposal?.title ?? 'Proposal dossier'} meta={selectedProposal?.category} />
+            <FmPaneBody className="overflow-auto">
+              {selectedProposal && (
                 <ProposalCard
-                  key={p.id}
-                  proposal={p}
+                  proposal={selectedProposal}
                   teamName={teamName}
                   influence={influence}
                   playerTeamId={playerId}
-                  onVote={(vote) => dispatch({ type: 'SET_REGULATION_VOTE', proposalId: p.id, vote })}
+                  onVote={(vote) => dispatch({ type: 'SET_REGULATION_VOTE', proposalId: selectedProposal.id, vote })}
                   votingLocked={votingLocked}
                 />
-              ))}
-            </div>
-          )}
-        </Panel>
+              )}
+            </FmPaneBody>
+          </FmPane>
+          <FmPane className="ui-politics-context-pane">
+            <FmPaneHeader title="Voting context" meta={`Effective ${effectiveYear}`} />
+            <FmPaneBody className="overflow-auto">
+              <div className="ui-technical-dossier">
+                <section>
+                  <FmKeyValue label="Your influence" value={`${playerInfluence}`} />
+                  <FmKeyValue label="Grid rank" value={playerRank > 0 ? `#${playerRank} of ${ranked.length}` : 'Unranked'} />
+                  <FmKeyValue label="Vote lock" value={votingLocked ? `Locked after round ${lockRound}` : `Open through round ${lockRound}`} />
+                  <FmKeyValue label="Recorded history" value={`${history.length} votes`} />
+                </section>
+                <section>
+                  <h3>Settlement</h3>
+                  <p>Projected blocs include each team’s political influence and current position. Recorded votes lock at midpoint and resolve at season rollover.</p>
+                </section>
+              </div>
+            </FmPaneBody>
+          </FmPane>
+        </FmWorkspaceGrid>
       )}
 
       {activeTab === 'history' && (

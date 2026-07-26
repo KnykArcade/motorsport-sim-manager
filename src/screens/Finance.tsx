@@ -6,13 +6,18 @@ import { projectedAnnualCosts, summarize } from '../sim/financeEngine';
 import { totalStaffSalary } from '../sim/staffEngine';
 import { Panel } from '../components/Panel';
 import {
-  MetricStrip,
   WorkspaceBody,
   WorkspaceHeader,
-  WorkspaceMetric,
   WorkspaceScreen,
   WorkspaceTabs,
 } from '../components/workspace/Workspace';
+import {
+  FmKeyValue,
+  FmPane,
+  FmPaneBody,
+  FmPaneHeader,
+  FmWorkspaceGrid,
+} from '../components/workspace/FmPane';
 import { formatMoney } from '../components/ui';
 import type { FinanceCategory } from '../types/financeTypes';
 import {
@@ -23,6 +28,7 @@ import {
   type FinanceTransactionFilter,
   type FinanceWorkspaceTab,
 } from './financeViewModel';
+import { financeCoverageLabel } from './technicalCommercialViewModel';
 
 const CATEGORY_ORDER: FinanceCategory[] = [
   'Prize Money',
@@ -108,35 +114,33 @@ export function Finance() {
         eyebrow="Operations center"
         title="Finance"
         subtitle={`${team?.name ?? 'Team'} · budget, commitments, and ledger`}
-        actions={seasons.length > 1 ? (
-          <select
-            aria-label="Finance season"
-            value={activeSeason}
-            onChange={(event) => {
-              setSeason(Number(event.target.value));
-              setTransactionPage(0);
-            }}
-            className="rounded-md border border-neutral-700 bg-neutral-900 px-3 py-1.5 text-sm text-neutral-200"
-          >
-            {seasons.map((availableSeason) => (
-              <option key={availableSeason} value={availableSeason}>
-                {availableSeason} season
-              </option>
-            ))}
-          </select>
-        ) : undefined}
+        actions={(
+          <div className="ui-finance-header-actions">
+            <div className="ui-technical-header-readout">
+              <span><strong>{formatMoney(team?.budget ?? 0)}</strong> balance</span>
+              <span><strong>{formatMoney(summary.net)}</strong> {activeSeason} net</span>
+              <span><strong>{financeCoverageLabel(annualCoverage)}</strong> coverage</span>
+            </div>
+            {seasons.length > 1 && (
+              <select
+                aria-label="Finance season"
+                value={activeSeason}
+                onChange={(event) => {
+                  setSeason(Number(event.target.value));
+                  setTransactionPage(0);
+                }}
+                className="ui-finance-season-select"
+              >
+                {seasons.map((availableSeason) => (
+                  <option key={availableSeason} value={availableSeason}>
+                    {availableSeason} season
+                  </option>
+                ))}
+              </select>
+            )}
+          </div>
+        )}
       />
-
-      <MetricStrip>
-        <WorkspaceMetric label="Balance" value={formatMoney(team?.budget ?? 0)} detail="Available cash" />
-        <WorkspaceMetric label={`${activeSeason} income`} value={formatMoney(summary.income)} detail="Recorded transactions" />
-        <WorkspaceMetric label={`${activeSeason} expenses`} value={formatMoney(summary.expense)} detail="Recorded transactions" />
-        <WorkspaceMetric
-          label={`${activeSeason} Net`}
-          value={formatMoney(summary.net)}
-          detail={summary.net >= 0 ? 'Positive season balance' : 'Negative season balance'}
-        />
-      </MetricStrip>
 
       <WorkspaceTabs
         items={FINANCE_WORKSPACE_TABS.map((workspace) => ({
@@ -148,7 +152,7 @@ export function Finance() {
         ariaLabel="Finance workspaces"
       />
 
-      <WorkspaceBody>
+      <WorkspaceBody className="overflow-hidden">
         <div className="ui-decision-strip flex flex-wrap items-center justify-between gap-2 rounded-lg border px-3 py-2.5">
           <div className="flex min-w-0 items-center gap-2 text-xs">
             <span className="ui-decision-strip-pulse" aria-hidden="true" />
@@ -168,24 +172,37 @@ export function Finance() {
           </span>
         </div>
         {tab === 'overview' && (
-        <Panel title={`${activeSeason} Income and Expenses`}>
-          {transactions.length === 0 ? (
-            <p className="text-sm text-neutral-500">No transactions recorded for {activeSeason} yet.</p>
-          ) : (
-            <div className="grid gap-5 lg:grid-cols-2">
-              <CategoryGroup
-                title="Income Sources"
-                categories={incomeCategories}
-                byCategory={summary.byCategory}
-              />
-              <CategoryGroup
-                title="Expense Sources"
-                categories={expenseCategories}
-                byCategory={summary.byCategory}
-              />
-            </div>
-          )}
-        </Panel>
+          <FmWorkspaceGrid columns="three" className="ui-finance-overview-grid">
+            <FmPane>
+              <FmPaneHeader title="Income sources" meta={formatMoney(summary.income)} />
+              <FmPaneBody className="overflow-auto">
+                <CategoryGroup title={`${activeSeason} recorded income`} categories={incomeCategories} byCategory={summary.byCategory} />
+              </FmPaneBody>
+            </FmPane>
+            <FmPane>
+              <FmPaneHeader title="Expense sources" meta={formatMoney(summary.expense)} />
+              <FmPaneBody className="overflow-auto">
+                <CategoryGroup title={`${activeSeason} recorded expenses`} categories={expenseCategories} byCategory={summary.byCategory} />
+              </FmPaneBody>
+            </FmPane>
+            <FmPane className="ui-finance-position-pane">
+              <FmPaneHeader title="Cash position" meta={financeCoverageLabel(annualCoverage)} />
+              <FmPaneBody className="overflow-auto">
+                <div className="ui-technical-dossier">
+                  <section>
+                    <FmKeyValue label="Available balance" value={formatMoney(team?.budget ?? 0)} />
+                    <FmKeyValue label={`${activeSeason} income`} value={formatMoney(summary.income)} />
+                    <FmKeyValue label={`${activeSeason} expenses`} value={formatMoney(summary.expense)} />
+                    <FmKeyValue label={`${activeSeason} net`} value={formatMoney(summary.net)} />
+                  </section>
+                  <section>
+                    <h3>Finance recommendation</h3>
+                    <p>{summary.net < 0 ? 'The season ledger is in deficit. Protect cash before committing discretionary technical or commercial spending.' : annualCoverage !== null && annualCoverage < 1 ? 'Current cash does not fully cover known annual commitments.' : 'The recorded ledger and known commitments remain within the current cash position.'}</p>
+                  </section>
+                </div>
+              </FmPaneBody>
+            </FmPane>
+          </FmWorkspaceGrid>
       )}
 
         {tab === 'commitments' && (

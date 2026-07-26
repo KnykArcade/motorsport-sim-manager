@@ -41,13 +41,20 @@ import {
   type SponsorsWorkspaceTab,
 } from './sponsorsViewModel';
 import {
-  MetricStrip,
   WorkspaceBody,
   WorkspaceHeader,
-  WorkspaceMetric,
   WorkspaceScreen,
   WorkspaceTabs,
 } from '../components/workspace/Workspace';
+import {
+  FmKeyValue,
+  FmListButton,
+  FmPane,
+  FmPaneBody,
+  FmPaneHeader,
+  FmWorkspaceGrid,
+} from '../components/workspace/FmPane';
+import { selectedTechnicalRecord } from './technicalCommercialViewModel';
 
 const TYPE_LABEL: Record<Sponsor['type'], string> = {
   Title: 'Title',
@@ -90,6 +97,8 @@ export function Sponsors() {
   const [tab, setTab] = useState<SponsorsWorkspaceTab>(initialTab);
   const [sponsorListPage, setSponsorListPage] = useState(0);
   const [selectedSponsorId, setSelectedSponsorId] = useState<string | null>(null);
+  const [selectedOfferId, setSelectedOfferId] = useState<string | null>(null);
+  const [selectedNegotiationId, setSelectedNegotiationId] = useState<string | null>(null);
   const [ownerReviewPage, setOwnerReviewPage] = useState(0);
   const [offerSort, setOfferSort] = useState<SponsorSort<SponsorOfferSortKey>>({ key: 'annualValue', direction: 'desc' });
   const [negotiationSort, setNegotiationSort] = useState<SponsorSort<SponsorNegotiationSortKey>>({ key: 'deadlineRound', direction: 'asc' });
@@ -118,10 +127,10 @@ export function Sponsors() {
   const activeNegotiations = negotiations.filter((item) => item.status === 'Draft' || item.status === 'Countered');
   const orderedOffers = sortSponsorOffers(offers, offerSort);
   const orderedNegotiations = sortSponsorNegotiations(negotiations, negotiationSort);
+  const selectedOffer = selectedTechnicalRecord(orderedOffers, selectedOfferId);
+  const selectedNegotiation = selectedTechnicalRecord(orderedNegotiations, selectedNegotiationId);
   const slotsFull = used >= capacity;
   const objectiveSummary = sponsorObjectiveSummary(sponsors);
-  const totalRaces = state.calendar.length;
-  const nextRaceInstallment = totalRaces > 0 ? Math.round((annual * 0.75) / totalRaces) : 0;
   const sponsorListPageCount = sponsorPageCount(sponsors.length);
   const safeSponsorListPage = Math.min(sponsorListPage, sponsorListPageCount - 1);
   const visibleSponsors = sponsorPage(sponsors, safeSponsorListPage);
@@ -145,6 +154,14 @@ export function Sponsors() {
         eyebrow="Commercial center"
         title="Sponsors & Commercial"
         subtitle={`${team?.name ?? 'Team'} · Partnerships, targets, bonuses, and owner pressure`}
+        actions={commercial ? (
+          <div className="ui-technical-header-readout">
+            <span><strong>{used}/{capacity}</strong> sponsor slots</span>
+            <span><strong>{formatMoney(annual)}</strong> guaranteed</span>
+            <span><strong>{commercial.commercialReputation}/100</strong> reputation</span>
+            <span><strong>{averageConfidence}/100</strong> confidence</span>
+          </div>
+        ) : undefined}
       />
 
       {!commercial ? (
@@ -157,12 +174,6 @@ export function Sponsors() {
         </WorkspaceBody>
       ) : (
         <>
-          <MetricStrip>
-            <WorkspaceMetric label="Sponsor capacity" value={`${used}/${capacity}`} detail={slotsFull ? 'Portfolio full' : `${capacity - used} slots available`} />
-            <WorkspaceMetric label="Guaranteed income" value={formatMoney(annual)} detail="Annual contracted value" />
-            <WorkspaceMetric label="Race installment" value={formatMoney(nextRaceInstallment)} detail="75% paid across the calendar" />
-            <WorkspaceMetric label="Commercial standing" value={`${commercial.commercialReputation}/100`} detail={`${averageConfidence}/100 average confidence`} />
-          </MetricStrip>
           <WorkspaceTabs
             items={SPONSORS_WORKSPACE_TABS.map((workspace) => ({
               id: workspace.id,
@@ -195,29 +206,28 @@ export function Sponsors() {
           </div>
 
           {tab === 'portfolio' && (
-            <Panel
-              title="Active Sponsor Portfolio"
-              actions={<span className="text-xs text-neutral-500">25% upfront · 75% across race installments</span>}
-            >
-              {sponsors.length === 0 ? (
-                <p className="text-sm text-neutral-500">No sponsors are currently signed.</p>
-              ) : (
-                <div className="grid gap-3 lg:grid-cols-[minmax(190px,0.3fr)_minmax(0,1fr)]">
-                  <div className="space-y-1 rounded-lg border border-neutral-800 bg-neutral-950/40 p-2">
-                    {sponsors.map((sponsor) => (
-                      <button
-                        key={sponsor.id}
-                        type="button"
-                        onClick={() => setSelectedSponsorId(sponsor.id)}
-                        className={`w-full rounded border px-3 py-2 text-left ${selectedSponsor?.id === sponsor.id ? 'border-amber-500 bg-amber-500/10' : 'border-transparent hover:border-neutral-700 hover:bg-neutral-900/70'}`}
-                      >
-                        <div className="truncate text-sm font-semibold text-neutral-100">{sponsor.name}</div>
-                        <div className="mt-0.5 text-[10px] uppercase tracking-wide text-neutral-500">
-                          {TYPE_LABEL[sponsor.type] === 'Technical Partner' ? 'Technical' : TYPE_LABEL[sponsor.type] === 'Driver-Linked' ? 'Driver link' : TYPE_LABEL[sponsor.type]}
-                        </div>
-                      </button>
-                    ))}
-                  </div>
+            <FmWorkspaceGrid columns="three" className="ui-sponsor-portfolio-grid">
+              <FmPane>
+                <FmPaneHeader title="Active portfolio" meta={`${used}/${capacity} slots`} />
+                <FmPaneBody className="overflow-auto">
+                  {sponsors.map((sponsor) => (
+                    <FmListButton
+                      key={sponsor.id}
+                      active={selectedSponsor?.id === sponsor.id}
+                      urgent={sponsor.confidence <= 40}
+                      onClick={() => setSelectedSponsorId(sponsor.id)}
+                    >
+                      <span>{TYPE_LABEL[sponsor.type]}</span>
+                      <strong>{sponsor.name}</strong>
+                      <small>${sponsor.annualValue}M · confidence {sponsor.confidence}</small>
+                    </FmListButton>
+                  ))}
+                  {sponsors.length === 0 && <p className="ui-technical-empty">No sponsors are currently signed.</p>}
+                </FmPaneBody>
+              </FmPane>
+              <FmPane className="ui-sponsor-detail-pane">
+                <FmPaneHeader title={selectedSponsor?.name ?? 'Sponsor profile'} meta={selectedSponsor ? TYPE_LABEL[selectedSponsor.type] : undefined} />
+                <FmPaneBody className="overflow-auto">
                   {selectedSponsor && (
                     <SponsorPortfolioCard
                       sponsor={selectedSponsor}
@@ -228,57 +238,155 @@ export function Sponsors() {
                       detailed
                     />
                   )}
-                </div>
-              )}
-            </Panel>
+                </FmPaneBody>
+              </FmPane>
+              <FmPane className="ui-sponsor-context-pane">
+                <FmPaneHeader title="Commercial context" meta="Portfolio position" />
+                <FmPaneBody className="overflow-auto">
+                  <div className="ui-technical-dossier">
+                    <section>
+                      <FmKeyValue label="Guaranteed annual income" value={formatMoney(annual)} />
+                      <FmKeyValue label="Available slots" value={`${Math.max(0, capacity - used)}`} />
+                      <FmKeyValue label="Average confidence" value={`${averageConfidence}/100`} />
+                      <FmKeyValue label="Commercial reputation" value={`${commercial.commercialReputation}/100`} />
+                    </section>
+                    <section>
+                      <h3>Payment structure</h3>
+                      <p>25% is paid up front and 75% is distributed across race installments. Objectives and bonuses settle from the existing commercial rules.</p>
+                    </section>
+                  </div>
+                </FmPaneBody>
+              </FmPane>
+            </FmWorkspaceGrid>
           )}
 
           {tab === 'opportunities' && (
-            <Panel
-              title="Available Opportunities"
-              actions={
-                <span className="text-xs text-neutral-500">
-                  Deal quality reflects commercial reputation {commercial.commercialReputation}
-                </span>
-              }
-            >
-              <p className="mb-3 text-xs text-neutral-500">
-                Opening talks reserves no slot. Sponsors may accept, counter, reject, or withdraw as patience and the deadline run down. {slotsFull && (
-                  <span className="text-red-300">
-                    Portfolio full ({used}/{capacity}) — drop a sponsor before signing another.
-                  </span>
-                )}
-              </p>
-              {offers.length === 0 ? (
-                <p className="text-sm text-neutral-500">No new sponsor deals are on offer right now.</p>
-              ) : (
-                <SponsorOffersTable
-                  offers={orderedOffers}
-                  disabled={slotsFull || state.gameMode === 'SingleSeason'}
-                  sort={offerSort}
-                  onSort={(key) => updateOfferSort(key, setOfferSort)}
-                  onSign={(offerId) => dispatch({ type: 'SIGN_SPONSOR', offerId })}
+            <FmWorkspaceGrid columns="three" className="ui-sponsor-opportunity-grid">
+              <FmPane>
+                <FmPaneHeader
+                  title="Available opportunities"
+                  meta={`${orderedOffers.length} offers`}
+                  actions={<button type="button" className="ui-sponsor-sort-button" onClick={() => updateOfferSort('annualValue', setOfferSort)}>Sort value {offerSort.direction === 'asc' ? '▲' : '▼'}</button>}
                 />
-              )}
-            </Panel>
+                <FmPaneBody className="overflow-auto">
+                  {orderedOffers.map((offer) => (
+                    <FmListButton key={offer.id} active={selectedOffer?.id === offer.id} onClick={() => setSelectedOfferId(offer.id)}>
+                      <span>{TYPE_LABEL[offer.type]}</span>
+                      <strong>{offer.name}</strong>
+                      <small>${offer.annualValue}M · {offer.contractYearsRemaining} years · confidence {offer.confidence}</small>
+                    </FmListButton>
+                  ))}
+                  {orderedOffers.length === 0 && <p className="ui-technical-empty">No new sponsor deals are on offer right now.</p>}
+                </FmPaneBody>
+              </FmPane>
+              <FmPane className="ui-sponsor-detail-pane">
+                <FmPaneHeader title={selectedOffer?.name ?? 'Opportunity dossier'} meta={selectedOffer ? TYPE_LABEL[selectedOffer.type] : undefined} />
+                <FmPaneBody className="overflow-auto">
+                  {selectedOffer && (
+                    <div className="ui-technical-dossier">
+                      <section>
+                        <FmKeyValue label="Annual value" value={`$${selectedOffer.annualValue}M`} />
+                        <FmKeyValue label="Contract term" value={`${selectedOffer.contractYearsRemaining} years`} />
+                        <FmKeyValue label="Opening confidence" value={`${selectedOffer.confidence}/100`} />
+                        <FmKeyValue label="Renewal outlook" value={`${Math.round(selectedOffer.renewalChance * 100)}%`} />
+                      </section>
+                      <section>
+                        <h3>Objectives</h3>
+                        {selectedOffer.objectives.map((objective) => <p key={objective.id}>{objective.description}</p>)}
+                        {selectedOffer.objectives.length === 0 && <p>No performance objective.</p>}
+                      </section>
+                      <section>
+                        <h3>Performance bonuses</h3>
+                        {selectedOffer.bonusTerms.map((bonus) => <p key={bonus.id}>{bonus.description}</p>)}
+                        {selectedOffer.bonusTerms.length === 0 && <p>No bonus terms.</p>}
+                      </section>
+                      <Button
+                        variant="primary"
+                        disabled={slotsFull || state.gameMode === 'SingleSeason'}
+                        title={state.gameMode === 'SingleSeason' ? 'Sponsor changes are locked in Single Season.' : slotsFull ? 'The sponsor portfolio is full.' : undefined}
+                        onClick={() => dispatch({ type: 'SIGN_SPONSOR', offerId: selectedOffer.id })}
+                      >
+                        Open negotiations
+                      </Button>
+                    </div>
+                  )}
+                </FmPaneBody>
+              </FmPane>
+              <FmPane className="ui-sponsor-context-pane">
+                <FmPaneHeader title="Deal context" meta={`Reputation ${commercial.commercialReputation}`} />
+                <FmPaneBody className="overflow-auto">
+                  <div className="ui-technical-dossier">
+                    <section>
+                      <FmKeyValue label="Portfolio capacity" value={`${used}/${capacity}`} />
+                      <FmKeyValue label="Open negotiation slots" value={slotsFull ? 'Portfolio full' : `${capacity - used} available`} />
+                      <FmKeyValue label="Active talks" value={`${activeNegotiations.length}`} />
+                    </section>
+                    <section>
+                      <h3>Recruitment rule</h3>
+                      <p>Opening talks reserves no slot. The sponsor may accept, counter, reject, or withdraw as patience and the deadline run down.</p>
+                    </section>
+                  </div>
+                </FmPaneBody>
+              </FmPane>
+            </FmWorkspaceGrid>
           )}
 
           {tab === 'negotiations' && (
-            <Panel title="Contract Negotiations" actions={<span className="text-xs text-neutral-500">Terms are exact; acceptance logic remains private</span>}>
-              {negotiations.length === 0 ? (
-                <p className="text-sm text-neutral-500">No sponsor talks have been opened.</p>
-              ) : (
-                <SponsorNegotiationsTable
-                  negotiations={orderedNegotiations}
-                  disabled={state.gameMode === 'SingleSeason'}
-                  sort={negotiationSort}
-                  onSort={(key) => updateNegotiationSort(key, setNegotiationSort)}
-                  onSubmit={(negotiationId, terms) => dispatch({ type: 'SUBMIT_SPONSOR_NEGOTIATION', negotiationId, terms })}
-                  onAcceptCounter={(negotiationId) => dispatch({ type: 'ACCEPT_SPONSOR_COUNTER', negotiationId })}
-                  onCancel={(negotiationId) => dispatch({ type: 'CANCEL_SPONSOR_NEGOTIATION', negotiationId })}
+            <FmWorkspaceGrid columns="three" className="ui-sponsor-negotiation-grid">
+              <FmPane>
+                <FmPaneHeader
+                  title="Contract negotiations"
+                  meta={`${activeNegotiations.length} active`}
+                  actions={<button type="button" className="ui-sponsor-sort-button" onClick={() => updateNegotiationSort('deadlineRound', setNegotiationSort)}>Sort deadline {negotiationSort.direction === 'asc' ? '▲' : '▼'}</button>}
                 />
-              )}
-            </Panel>
+                <FmPaneBody className="overflow-auto">
+                  {orderedNegotiations.map((negotiation) => (
+                    <FmListButton
+                      key={negotiation.id}
+                      active={selectedNegotiation?.id === negotiation.id}
+                      urgent={negotiation.status === 'Countered' || negotiation.patience <= 25}
+                      onClick={() => setSelectedNegotiationId(negotiation.id)}
+                    >
+                      <span>{negotiation.status} · deadline R{negotiation.deadlineRound}</span>
+                      <strong>{negotiation.sponsorName}</strong>
+                      <small>Patience {negotiation.patience} · {negotiation.attempts} attempts</small>
+                    </FmListButton>
+                  ))}
+                  {orderedNegotiations.length === 0 && <p className="ui-technical-empty">No sponsor talks have been opened.</p>}
+                </FmPaneBody>
+              </FmPane>
+              <FmPane className="ui-sponsor-negotiation-detail">
+                <FmPaneHeader title={selectedNegotiation?.sponsorName ?? 'Negotiation room'} meta={selectedNegotiation?.status} />
+                <FmPaneBody className="overflow-auto">
+                  {selectedNegotiation && (
+                    <SponsorNegotiationEditor
+                      negotiation={selectedNegotiation}
+                      disabled={state.gameMode === 'SingleSeason'}
+                      onSubmit={(negotiationId, terms) => dispatch({ type: 'SUBMIT_SPONSOR_NEGOTIATION', negotiationId, terms })}
+                      onAcceptCounter={(negotiationId) => dispatch({ type: 'ACCEPT_SPONSOR_COUNTER', negotiationId })}
+                      onCancel={(negotiationId) => dispatch({ type: 'CANCEL_SPONSOR_NEGOTIATION', negotiationId })}
+                    />
+                  )}
+                </FmPaneBody>
+              </FmPane>
+              <FmPane className="ui-sponsor-context-pane">
+                <FmPaneHeader title="Agent context" meta="Exact terms · private acceptance" />
+                <FmPaneBody className="overflow-auto">
+                  <div className="ui-technical-dossier">
+                    <section>
+                      <FmKeyValue label="Status" value={selectedNegotiation?.status ?? 'No talks selected'} />
+                      <FmKeyValue label="Deadline" value={selectedNegotiation ? `Round ${selectedNegotiation.deadlineRound}` : '—'} />
+                      <FmKeyValue label="Patience" value={selectedNegotiation ? `${selectedNegotiation.patience}` : '—'} />
+                      <FmKeyValue label="Attempts" value={selectedNegotiation ? `${selectedNegotiation.attempts}` : '—'} />
+                    </section>
+                    <section>
+                      <h3>Negotiation rule</h3>
+                      <p>Terms are exact, while acceptance logic remains private. Counters, refusals, patience, attempts, and deadlines continue using the existing commercial engine.</p>
+                    </section>
+                  </div>
+                </FmPaneBody>
+              </FmPane>
+            </FmWorkspaceGrid>
           )}
 
           {tab === 'objectives' && (
@@ -592,6 +700,44 @@ function SponsorPortfolioCard({
   );
 }
 
+function SponsorNegotiationEditor({
+  negotiation,
+  disabled,
+  onSubmit,
+  onAcceptCounter,
+  onCancel,
+}: {
+  negotiation: SponsorNegotiation;
+  disabled: boolean;
+  onSubmit: (negotiationId: string, terms: SponsorContractTerms) => void;
+  onAcceptCounter: (negotiationId: string) => void;
+  onCancel: (negotiationId: string) => void;
+}) {
+  const [terms, setTerms] = useState<SponsorContractTerms>(negotiation.counterTerms ?? negotiation.proposedTerms);
+  const active = negotiation.status === 'Draft' || negotiation.status === 'Countered';
+  return (
+    <div className="ui-sponsor-negotiation-editor">
+      <div className="ui-sponsor-negotiation-fields">
+        <label>Annual value<input type="number" step="0.1" value={terms.annualValue} disabled={!active || disabled} onChange={(event) => setTerms({ ...terms, annualValue: Number(event.target.value) })} /></label>
+        <label>Contract years<input type="number" min="1" max="5" value={terms.contractYears} disabled={!active || disabled} onChange={(event) => setTerms({ ...terms, contractYears: Number(event.target.value) })} /></label>
+        <label>Bonus multiplier<select value={terms.bonusMultiplier} disabled={!active || disabled} onChange={(event) => setTerms({ ...terms, bonusMultiplier: Number(event.target.value) })}><option value="0.5">0.5×</option><option value="1">1×</option><option value="1.5">1.5×</option><option value="2">2×</option></select></label>
+        <label>Objective level<select value={terms.objectiveLevel} disabled={!active || disabled} onChange={(event) => setTerms({ ...terms, objectiveLevel: event.target.value as SponsorContractTerms['objectiveLevel'] })}><option>Flexible</option><option>Standard</option><option>Stretch</option></select></label>
+      </div>
+      {negotiation.counterTerms && (
+        <div className="ui-sponsor-counter">
+          Counter: ${negotiation.counterTerms.annualValue}M · {negotiation.counterTerms.contractYears} years · {negotiation.counterTerms.objectiveLevel} objectives
+        </div>
+      )}
+      <p className="ui-technical-muted">{negotiation.outcomeMessage ?? 'Player proposal pending.'}</p>
+      <div className="ui-sponsor-negotiation-actions">
+        <Button variant="primary" disabled={!active || disabled} onClick={() => onSubmit(negotiation.id, terms)}>Submit terms</Button>
+        {negotiation.counterTerms && <Button variant="secondary" disabled={!active || disabled} onClick={() => onAcceptCounter(negotiation.id)}>Accept counter</Button>}
+        <Button variant="ghost" disabled={!active || disabled} onClick={() => onCancel(negotiation.id)}>End talks</Button>
+      </div>
+    </div>
+  );
+}
+
 function updateOfferSort(
   key: SponsorOfferSortKey,
   setSort: React.Dispatch<React.SetStateAction<SponsorSort<SponsorOfferSortKey>>>,
@@ -608,177 +754,6 @@ function updateNegotiationSort(
   setSort((current) => current.key === key
     ? { key, direction: current.direction === 'asc' ? 'desc' : 'asc' }
     : { key, direction: key === 'sponsorName' || key === 'status' ? 'asc' : 'desc' });
-}
-
-function SponsorOffersTable({
-  offers,
-  disabled,
-  sort,
-  onSort,
-  onSign,
-}: {
-  offers: Sponsor[];
-  disabled: boolean;
-  sort: SponsorSort<SponsorOfferSortKey>;
-  onSort: (key: SponsorOfferSortKey) => void;
-  onSign: (offerId: string) => void;
-}) {
-  return (
-    <div className="overflow-x-auto rounded border border-neutral-800">
-      <table className="w-full min-w-[920px] border-collapse text-xs">
-        <thead className="bg-neutral-900/70 text-left text-[10px] uppercase tracking-wide text-neutral-500">
-          <tr>
-            <SponsorSortHeader label="Sponsor" sortKey="name" sort={sort} onSort={onSort} />
-            <SponsorSortHeader label="Type" sortKey="type" sort={sort} onSort={onSort} />
-            <SponsorSortHeader label="Annual value" sortKey="annualValue" sort={sort} onSort={onSort} />
-            <SponsorSortHeader label="Confidence" sortKey="confidence" sort={sort} onSort={onSort} />
-            <SponsorSortHeader label="Term" sortKey="contractYears" sort={sort} onSort={onSort} />
-            <th className="px-2 py-2">Objective / bonus</th>
-            <th className="px-2 py-2">Action</th>
-          </tr>
-        </thead>
-        <tbody>
-          {offers.map((offer) => (
-            <tr key={offer.id} className="border-t border-neutral-800/70 align-middle hover:bg-neutral-900/60">
-              <td className="px-2 py-2 font-semibold text-neutral-100">{offer.name}</td>
-              <td className="px-2 py-2 text-neutral-400">{TYPE_LABEL[offer.type]}</td>
-              <td className="px-2 py-2 tabular-nums text-emerald-300">${offer.annualValue}M</td>
-              <td className={`px-2 py-2 tabular-nums ${confidenceTone(offer.confidence)}`}>{offer.confidence}/100</td>
-              <td className="px-2 py-2 tabular-nums text-neutral-300">{offer.contractYearsRemaining} yr</td>
-              <td className="max-w-[420px] px-2 py-2 text-[11px] text-neutral-400">
-                {offer.objectives[0]?.description ?? 'No performance objective'}
-                {offer.bonusTerms[0] && <span className="ml-2 text-neutral-500">· {offer.bonusTerms[0].description}</span>}
-              </td>
-              <td className="px-2 py-2">
-                <Button variant="primary" className="px-2 py-1 text-[10px]" disabled={disabled} onClick={() => onSign(offer.id)}>
-                  {disabled ? 'No free slot' : 'Open negotiations'}
-                </Button>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
-  );
-}
-
-function SponsorNegotiationsTable({
-  negotiations,
-  disabled,
-  sort,
-  onSort,
-  onSubmit,
-  onAcceptCounter,
-  onCancel,
-}: {
-  negotiations: SponsorNegotiation[];
-  disabled: boolean;
-  sort: SponsorSort<SponsorNegotiationSortKey>;
-  onSort: (key: SponsorNegotiationSortKey) => void;
-  onSubmit: (negotiationId: string, terms: SponsorContractTerms) => void;
-  onAcceptCounter: (negotiationId: string) => void;
-  onCancel: (negotiationId: string) => void;
-}) {
-  return (
-    <div className="overflow-x-auto rounded border border-neutral-800">
-      <table className="w-full min-w-[1180px] border-collapse text-xs">
-        <thead className="bg-neutral-900/70 text-left text-[10px] uppercase tracking-wide text-neutral-500">
-          <tr>
-            <SponsorNegotiationSortHeader label="Sponsor" sortKey="sponsorName" sort={sort} onSort={onSort} />
-            <SponsorNegotiationSortHeader label="Status" sortKey="status" sort={sort} onSort={onSort} />
-            <SponsorNegotiationSortHeader label="Deadline" sortKey="deadlineRound" sort={sort} onSort={onSort} />
-            <SponsorNegotiationSortHeader label="Patience" sortKey="patience" sort={sort} onSort={onSort} />
-            <SponsorNegotiationSortHeader label="Attempts" sortKey="attempts" sort={sort} onSort={onSort} />
-            <SponsorNegotiationSortHeader label="Annual value" sortKey="annualValue" sort={sort} onSort={onSort} />
-            <th className="px-2 py-2">Terms / actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {negotiations.map((negotiation) => (
-            <SponsorNegotiationRow
-              key={negotiation.id}
-              negotiation={negotiation}
-              disabled={disabled}
-              onSubmit={onSubmit}
-              onAcceptCounter={onAcceptCounter}
-              onCancel={onCancel}
-            />
-          ))}
-        </tbody>
-      </table>
-    </div>
-  );
-}
-
-function SponsorNegotiationRow({
-  negotiation,
-  disabled,
-  onSubmit,
-  onAcceptCounter,
-  onCancel,
-}: {
-  negotiation: SponsorNegotiation;
-  disabled: boolean;
-  onSubmit: (negotiationId: string, terms: SponsorContractTerms) => void;
-  onAcceptCounter: (negotiationId: string) => void;
-  onCancel: (negotiationId: string) => void;
-}) {
-  const [terms, setTerms] = useState<SponsorContractTerms>(negotiation.counterTerms ?? negotiation.proposedTerms);
-  const active = negotiation.status === 'Draft' || negotiation.status === 'Countered';
-  return (
-    <tr className="border-t border-neutral-800/70 align-top hover:bg-neutral-900/60">
-      <td className="px-2 py-2 font-semibold text-neutral-100">{negotiation.sponsorName}<div className="text-[10px] font-normal uppercase tracking-wide text-neutral-500">{negotiation.kind}</div></td>
-      <td className={`px-2 py-2 ${active ? 'text-amber-300' : negotiation.status === 'Accepted' ? 'text-emerald-300' : 'text-neutral-400'}`}>{negotiation.status}</td>
-      <td className="px-2 py-2 tabular-nums text-neutral-300">R{negotiation.deadlineRound}</td>
-      <td className="px-2 py-2 tabular-nums text-neutral-300">{negotiation.patience}</td>
-      <td className="px-2 py-2 tabular-nums text-neutral-300">{negotiation.attempts}</td>
-      <td className="px-2 py-2 tabular-nums text-emerald-300">${(negotiation.counterTerms?.annualValue ?? negotiation.proposedTerms.annualValue).toFixed(1)}M</td>
-      <td className="px-2 py-2">
-        <div className="flex min-w-[480px] flex-wrap items-end gap-1">
-          <label className="text-[10px] text-neutral-500">Value<input type="number" step="0.1" value={terms.annualValue} disabled={!active || disabled} onChange={(event) => setTerms({ ...terms, annualValue: Number(event.target.value) })} className="mt-0.5 w-20 rounded border border-neutral-700 bg-neutral-950 px-1.5 py-1 text-neutral-100" /></label>
-          <label className="text-[10px] text-neutral-500">Years<input type="number" min="1" max="5" value={terms.contractYears} disabled={!active || disabled} onChange={(event) => setTerms({ ...terms, contractYears: Number(event.target.value) })} className="mt-0.5 w-16 rounded border border-neutral-700 bg-neutral-950 px-1.5 py-1 text-neutral-100" /></label>
-          <label className="text-[10px] text-neutral-500">Bonus<select value={terms.bonusMultiplier} disabled={!active || disabled} onChange={(event) => setTerms({ ...terms, bonusMultiplier: Number(event.target.value) })} className="mt-0.5 w-16 rounded border border-neutral-700 bg-neutral-950 px-1.5 py-1 text-neutral-100"><option value="0.5">0.5×</option><option value="1">1×</option><option value="1.5">1.5×</option><option value="2">2×</option></select></label>
-          <label className="text-[10px] text-neutral-500">Objectives<select value={terms.objectiveLevel} disabled={!active || disabled} onChange={(event) => setTerms({ ...terms, objectiveLevel: event.target.value as SponsorContractTerms['objectiveLevel'] })} className="mt-0.5 w-24 rounded border border-neutral-700 bg-neutral-950 px-1.5 py-1 text-neutral-100"><option>Flexible</option><option>Standard</option><option>Stretch</option></select></label>
-          {active && !disabled && <Button variant="primary" className="px-2 py-1 text-[10px]" onClick={() => onSubmit(negotiation.id, terms)}>Submit</Button>}
-          {negotiation.counterTerms && active && !disabled && <Button variant="ghost" className="px-2 py-1 text-[10px] text-amber-200" onClick={() => onAcceptCounter(negotiation.id)}>Accept counter</Button>}
-          {active && !disabled && <Button variant="ghost" className="px-2 py-1 text-[10px] text-neutral-500" onClick={() => onCancel(negotiation.id)}>End talks</Button>}
-        </div>
-        <div className="mt-1 text-[10px] text-neutral-500">{negotiation.outcomeMessage ?? (negotiation.counterTerms ? `Counter: $${negotiation.counterTerms.annualValue}M · ${negotiation.counterTerms.contractYears} years` : 'Player proposal pending')}</div>
-      </td>
-    </tr>
-  );
-}
-
-function SponsorSortHeader({
-  label,
-  sortKey,
-  sort,
-  onSort,
-}: {
-  label: string;
-  sortKey: SponsorOfferSortKey;
-  sort: SponsorSort<SponsorOfferSortKey>;
-  onSort: (key: SponsorOfferSortKey) => void;
-}) {
-  return <th className="px-2 py-2"><button type="button" className="inline-flex items-center gap-1 hover:text-neutral-200" onClick={() => onSort(sortKey)}>{label}<SortArrow active={sort.key === sortKey} direction={sort.direction} /></button></th>;
-}
-
-function SponsorNegotiationSortHeader({
-  label,
-  sortKey,
-  sort,
-  onSort,
-}: {
-  label: string;
-  sortKey: SponsorNegotiationSortKey;
-  sort: SponsorSort<SponsorNegotiationSortKey>;
-  onSort: (key: SponsorNegotiationSortKey) => void;
-}) {
-  return <th className="px-2 py-2"><button type="button" className="inline-flex items-center gap-1 hover:text-neutral-200" onClick={() => onSort(sortKey)}>{label}<SortArrow active={sort.key === sortKey} direction={sort.direction} /></button></th>;
-}
-
-function SortArrow({ active, direction }: { active: boolean; direction: 'asc' | 'desc' }) {
-  return <span className="text-[9px]">{active ? (direction === 'asc' ? '▲' : '▼') : '↕'}</span>;
 }
 
 function SponsorTermsCard({ sponsor }: { sponsor: Sponsor }) {
