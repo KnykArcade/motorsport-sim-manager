@@ -440,6 +440,46 @@ body {
   padding-right: 0.15rem;
 }
 
+.ui-setup-focus-shell {
+  gap: 0.45rem;
+}
+
+.ui-setup-focus-shell .ui-workspace-body {
+  overflow: hidden;
+  padding-right: 0;
+}
+
+.ui-setup-grid {
+  grid-template-columns: minmax(165px, 0.52fr) minmax(390px, 1.55fr) minmax(245px, 0.82fr);
+}
+
+.ui-setup-components,
+.ui-setup-adjustments,
+.ui-setup-analysis {
+  scrollbar-width: thin;
+  scrollbar-color: rgb(82 82 91) transparent;
+}
+
+.ui-setup-actions {
+  min-height: 2.65rem;
+}
+
+@media (max-width: 1180px) {
+  .ui-setup-grid {
+    grid-template-columns: 155px minmax(360px, 1.45fr) minmax(225px, 0.78fr);
+  }
+}
+
+@media (max-width: 900px) {
+  .ui-setup-focus-shell .ui-workspace-body {
+    overflow: auto;
+  }
+
+  .ui-setup-workspace {
+    min-width: 720px;
+  }
+}
+
 .ui-decision-strip {
   border-color: color-mix(in srgb, var(--era-accent) 38%, var(--era-border));
   background: linear-gradient(90deg, var(--era-accent-soft), var(--era-panel-bg));

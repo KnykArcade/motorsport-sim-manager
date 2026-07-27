@@ -7,13 +7,15 @@ export function WeekendCommandMeeting({
   recommendations,
   onResolve,
   onContinue,
+  compact = false,
 }: {
   recommendations: AdvisorRecommendation[];
   onResolve: (
     recommendation: AdvisorRecommendation,
     resolution: WeekendRecommendationResolution,
   ) => void;
-  onContinue: () => void;
+  onContinue?: () => void;
+  compact?: boolean;
 }) {
   const pending = recommendations.filter((recommendation) => recommendation.status === 'Pending').length;
   const conflicting = recommendations.some(
@@ -28,12 +30,12 @@ export function WeekendCommandMeeting({
 
   return (
     <Panel
-      title="Weekend Command Meeting"
-      actions={(
+      title={compact ? 'Contextual Staff Advice' : 'Weekend Command Meeting'}
+      actions={onContinue ? (
         <Button variant="primary" onClick={onContinue}>
           {pending > 0 ? `Continue with ${pending} pending →` : 'Continue to Track Briefing →'}
         </Button>
-      )}
+      ) : undefined}
     >
       <div className="mb-4 grid gap-3 lg:grid-cols-[1.35fr_1fr]">
         <div>
@@ -58,7 +60,7 @@ export function WeekendCommandMeeting({
         </div>
       </div>
 
-      <div className="grid gap-3 xl:grid-cols-3">
+      <div className={`grid gap-3 ${compact ? '' : 'xl:grid-cols-3'}`}>
         {recommendations.map((recommendation) => {
           const resolved = recommendation.status !== 'Pending';
           return (
