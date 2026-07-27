@@ -12,7 +12,8 @@ export type RaceWeekendPhase =
   | 'quali-review'
   | 'race-strategy'
   | 'race-instructions'
-  | 'plan-board';
+  | 'plan-board'
+  | 'garage-address';
 
 export const PRE_RACE_BRIEFING_TABS: ReadonlyArray<{ id: PreRaceBriefingTab; label: string }> = [
   { id: 'overview', label: 'Race Overview' },
@@ -60,6 +61,7 @@ export const RACE_WEEKEND_PHASES: ReadonlyArray<{ id: RaceWeekendPhase; label: s
   { id: 'race-strategy', label: 'Race Strategy' },
   { id: 'race-instructions', label: 'Instructions' },
   { id: 'plan-board', label: 'Plan Board' },
+  { id: 'garage-address', label: 'Garage Address' },
 ];
 
 export function visibleRaceWeekendPhases(minimumPackage: boolean) {

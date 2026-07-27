@@ -32,6 +32,7 @@ import { actionableInboxCount } from './inboxViewModel';
 import { weekendForecast } from '../sim/weatherEngine';
 import { RACE_WEEKEND_PACKAGES } from '../sim/raceWeekendPackageEngine';
 import { buildPostRaceCausalDebrief } from './postRaceDebriefViewModel';
+import { garageAddressForRace } from '../sim/garageLeadershipEngine';
 
 export function PostRaceReview() {
   const { raceId } = useParams();
@@ -90,6 +91,7 @@ export function PostRaceReview() {
     : item);
   const inboxActions = actionableInboxCount(state);
   const weekendPractice = state.weekendPractice?.raceId === raceId ? state.weekendPractice : undefined;
+  const garageAddress = garageAddressForRace(state, raceId);
   const causalDebrief = track ? buildPostRaceCausalDebrief({
     raceId,
     playerResults,
@@ -191,6 +193,66 @@ export function PostRaceReview() {
                     <Button key={item.route} variant="ghost" onClick={() => navigate(item.route)} title={item.reason}>{item.label} →</Button>
                   ))}
                 </div>
+              )}
+            </Panel>
+          )}
+
+          {activeTab === 'overview' && garageAddress && (
+            <Panel title="Leadership Accountability">
+              <div className="flex flex-wrap items-start justify-between gap-3">
+                <div>
+                  <div className="text-sm font-semibold text-neutral-100">
+                    {garageAddress.messageLabel}
+                    {garageAddress.delegated ? ' · delegated to assistant' : ''}
+                  </div>
+                  <p className="mt-1 text-xs text-neutral-500">
+                    Assistant recommendation: {garageAddress.recommendedTone === garageAddress.tone
+                      ? 'followed'
+                      : 'overruled'} · {garageAddress.recommendationReason}
+                  </p>
+                </div>
+                {garageAddress.accountability && (
+                  <span className={`rounded px-2 py-1 text-[10px] font-semibold uppercase tracking-wide ${
+                    garageAddress.accountability.trustOutcome === 'BuiltTrust'
+                      ? 'bg-emerald-500/10 text-emerald-300'
+                      : garageAddress.accountability.trustOutcome === 'DamagedTrust'
+                        ? 'bg-orange-500/10 text-orange-300'
+                        : 'bg-neutral-800 text-neutral-300'
+                  }`}>
+                    {garageAddress.accountability.trustOutcome.replace(/([A-Z])/g, ' $1').trim()}
+                  </span>
+                )}
+              </div>
+              <div className="mt-4 grid gap-2 md:grid-cols-2">
+                {garageAddress.reactions.map((reaction) => (
+                  <div key={reaction.driverId} className="rounded border border-neutral-800 bg-neutral-900/40 p-3">
+                    <div className="flex items-center justify-between gap-3 text-sm">
+                      <span className="font-semibold text-neutral-100">{driverName(reaction.driverId)}</span>
+                      <span className={reaction.fit > 0 ? 'text-emerald-300' : reaction.fit < 0 ? 'text-orange-300' : 'text-neutral-300'}>
+                        {reaction.reaction}
+                      </span>
+                    </div>
+                    <p className="mt-1 text-xs text-neutral-500">{reaction.reason}</p>
+                  </div>
+                ))}
+              </div>
+              {garageAddress.followUp && (
+                <p className="mt-3 text-xs text-sky-200">
+                  Individual follow-up: {garageAddress.followUp.label} with {driverName(garageAddress.followUp.driverId)}. {garageAddress.followUp.reason}
+                </p>
+              )}
+              {garageAddress.accountability ? (
+                <div className="mt-4 rounded border border-neutral-800 bg-neutral-950/35 p-3">
+                  <div className="text-sm font-semibold text-neutral-200">{garageAddress.accountability.resultSummary}</div>
+                  <p className="mt-1 text-xs text-neutral-400">{garageAddress.accountability.planComparison}</p>
+                  <ul className="mt-2 space-y-1 text-[11px] text-neutral-500">
+                    {garageAddress.accountability.supportingEvidence.map((evidence) => (
+                      <li key={evidence}>{evidence}</li>
+                    ))}
+                  </ul>
+                </div>
+              ) : (
+                <p className="mt-3 text-xs text-neutral-500">Accountability will be recorded when the race result is finalized.</p>
               )}
             </Panel>
           )}

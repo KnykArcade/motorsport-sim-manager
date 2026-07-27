@@ -198,7 +198,8 @@ export function computeRaceOutcome(context: RaceContext): RaceOutcome {
       strategy,
       instruction,
       teamRating,
-      context.confidenceModifierByDriver?.[e.driver.id] ?? 0,
+      (context.confidenceModifierByDriver?.[e.driver.id] ?? 0)
+        + (context.garageAddressEffectsByDriver?.[e.driver.id]?.performanceModifier ?? 0),
     );
 
     // Apply Race Weekend Package pace modifier.
@@ -261,7 +262,8 @@ export function computeRaceOutcome(context: RaceContext): RaceOutcome {
       context.track,
       instruction.mistakeModifier + setupRiskAggression,
       (grid <= 6 ? 0.5 : 0) + setupHandlingPressure,
-    ) * prepMistakeMultiplier;
+    ) * prepMistakeMultiplier
+      * (context.garageAddressEffectsByDriver?.[e.driver.id]?.mistakeRiskMultiplier ?? 1);
 
     const incidents: string[] = [];
     let status: RaceResult['status'] = 'Finished';

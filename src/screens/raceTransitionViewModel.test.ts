@@ -53,6 +53,7 @@ describe('race transition view model', () => {
       'race-strategy',
       'race-instructions',
       'plan-board',
+      'garage-address',
     ]);
     expect(canOpenRaceWeekendPhase('practice', 'briefing', true)).toBe(false);
   });

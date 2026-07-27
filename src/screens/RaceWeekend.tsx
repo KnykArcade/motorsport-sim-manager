@@ -63,8 +63,10 @@ import {
 import { buildWeekendPlan } from './weekendPlanViewModel';
 import { WeekendCommandMeeting } from './WeekendCommandMeeting';
 import { WeekendPlanBoard } from './WeekendPlanBoard';
+import { GarageAddress } from './GarageAddress';
 import { buildWeekendPlanBoard } from './weekendPlanBoardViewModel';
 import { weekendCommandRecommendations } from '../sim/weekendCommandEngine';
+import { garageAddressForRace } from '../sim/garageLeadershipEngine';
 import type { Driver, Track, StandingsEntry } from '../types/gameTypes';
 import type { WeatherState } from '../types/liveTypes';
 import type { CarSetup } from '../types/setupTypes';
@@ -229,6 +231,7 @@ export function RaceWeekend() {
     qualifyingDecisions: playerDrivers.map((driver) => qualiFor(driver.id)),
     raceDecisions: playerDrivers.map((driver) => raceFor(driver.id)),
   });
+  const garageAddress = garageAddressForRace(state, race.id);
   const tabs = visiblePhases.map((item) => ({
     ...item,
     disabled: !canOpenRaceWeekendPhase(item.id, unlockedPhase, isMinPackage),
@@ -247,7 +250,8 @@ export function RaceWeekend() {
     else if (phase === 'quali-review') moveTo(isMinPackage ? 'race-strategy' : 'setup');
     else if (phase === 'race-strategy') moveTo('race-instructions');
     else if (phase === 'race-instructions') moveTo('plan-board');
-    else confirmPlanAndStartRace();
+    else if (phase === 'plan-board') confirmPlanAndContinue();
+    else if (garageAddress) startLiveRace();
   };
   const advanceLabel = phase === 'hub' ? 'Open Command Meeting'
     : phase === 'command-meeting' ? 'Open Briefing'
@@ -258,7 +262,8 @@ export function RaceWeekend() {
       : phase === 'quali-review' ? (isMinPackage ? 'Choose Strategy' : 'Finalise Setup')
         : phase === 'race-strategy' ? 'Set Instructions'
           : phase === 'race-instructions' ? 'Review Weekend Plan'
-            : 'Confirm Plan & Start Race';
+            : phase === 'plan-board' ? 'Confirm Plan & Continue'
+              : garageAddress ? 'Start Live Race' : 'Deliver Garage Address';
 
   function resolveWeekendRecommendation(
     recommendation: AdvisorRecommendation,
@@ -306,9 +311,14 @@ export function RaceWeekend() {
     });
   }
 
-  function confirmPlanAndStartRace() {
+  function confirmPlanAndContinue() {
     if (!planBoard.canConfirm || !planBoard.snapshot) return;
     dispatch({ type: 'CONFIRM_WEEKEND_PLAN', plan: planBoard.snapshot });
+    moveTo('garage-address');
+  }
+
+  function startLiveRace() {
+    if (!garageAddress) return;
     navigate(`/live-race/${race!.id}`, {
       state: { decisions: playerDrivers.map((driver) => raceFor(driver.id)) },
     });
@@ -462,7 +472,28 @@ export function RaceWeekend() {
         <WeekendPlanBoard
           board={planBoard}
           onEdit={moveTo}
-          onConfirm={confirmPlanAndStartRace}
+          onConfirm={confirmPlanAndContinue}
+        />
+      )}
+
+      {phase === 'garage-address' && (
+        <GarageAddress
+          state={state}
+          raceId={race.id}
+          record={garageAddress}
+          onDeliver={(tone, delegated) => dispatch({
+            type: 'DELIVER_GARAGE_ADDRESS',
+            raceId: race.id,
+            tone,
+            delegated,
+          })}
+          onFollowUp={(driverId, followUp) => dispatch({
+            type: 'ADD_GARAGE_FOLLOW_UP',
+            raceId: race.id,
+            driverId,
+            followUp,
+          })}
+          onStartRace={startLiveRace}
         />
       )}
     </>
@@ -476,7 +507,16 @@ export function RaceWeekend() {
         subtitle={`${race.trackName} · Round ${race.round} of ${state.calendar.length} · ${phaseTitle}`}
         actions={<>
           <Button variant="ghost" onClick={() => navigate('/hq')}>Manager Office</Button>
-          <Button variant="primary" onClick={advanceFromCurrent}>{advanceLabel} →</Button>
+          <Button
+            variant="primary"
+            onClick={advanceFromCurrent}
+            disabled={phase === 'garage-address' && !garageAddress}
+            title={phase === 'garage-address' && !garageAddress
+              ? 'Deliver or delegate the one-time garage address before starting the race'
+              : advanceLabel}
+          >
+            {advanceLabel} →
+          </Button>
         </>}
       />
 
@@ -484,12 +524,22 @@ export function RaceWeekend() {
         <WorkspaceMetric label="Weekend stage" value={`${raceWeekendPhaseIndex(phase, isMinPackage) + 1}/${visiblePhases.length}`} detail={phaseTitle} />
         <WorkspaceMetric label="Practice" value={isMinPackage ? 'Package skip' : `${completedPracticeSessions}/${totalPracticeSessions}`} detail={isMinPackage ? 'Baseline setup enforced' : 'Sessions completed'} />
         <WorkspaceMetric label="Qualifying" value={qualifyingResults ? 'Complete' : 'Pending'} detail={bestPlayerGrid ? `Best player car P${bestPlayerGrid}` : 'Grid not set'} />
-        <WorkspaceMetric label="Race gate" value={phase === 'plan-board' && planBoard.canConfirm ? 'Ready' : 'In progress'} detail={planBoard.blockedReason ?? state.raceWeekendPackage?.packageType ?? 'No package'} />
+        <WorkspaceMetric
+          label="Race gate"
+          value={garageAddress ? 'Ready' : 'In progress'}
+          detail={garageAddress
+            ? `${garageAddress.messageLabel}${garageAddress.delegated ? ' · delegated' : ''}`
+            : phase === 'garage-address' ? 'Garage address required' : planBoard.blockedReason ?? state.raceWeekendPackage?.packageType ?? 'No package'}
+        />
       </MetricStrip>
       <SeasonWorkflowRail
         active="weekend"
         context={`${race.gpName} · ${phaseTitle}`}
-        blocker={phase === 'plan-board' && planBoard.canConfirm ? undefined : planBoard.blockedReason ?? `${visiblePhases.length - raceWeekendPhaseIndex(phase, isMinPackage) - 1} weekend stage${visiblePhases.length - raceWeekendPhaseIndex(phase, isMinPackage) - 1 === 1 ? '' : 's'} remain`}
+        blocker={garageAddress
+          ? undefined
+          : phase === 'garage-address'
+            ? 'Deliver or delegate the garage address before starting the race'
+            : planBoard.blockedReason ?? `${visiblePhases.length - raceWeekendPhaseIndex(phase, isMinPackage) - 1} weekend stage${visiblePhases.length - raceWeekendPhaseIndex(phase, isMinPackage) - 1 === 1 ? '' : 's'} remain`}
       />
 
       <WorkspaceTabs

@@ -118,6 +118,11 @@ export type RaceContext = {
   };
   // Confidence performance modifier by driver ID (from driverConfidenceEngine).
   confidenceModifierByDriver?: Record<string, number>;
+  // Small, race-only effects from the one pre-race garage address.
+  garageAddressEffectsByDriver?: Record<string, {
+    performanceModifier: number;
+    mistakeRiskMultiplier: number;
+  }>;
   // Driver relationships by driver ID (trust / ego). Used for AI disagreement beats.
   driverRelationships?: Record<string, import('./relationshipTypes').DriverRelationship>;
 };

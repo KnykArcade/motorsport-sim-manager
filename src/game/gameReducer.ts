@@ -291,6 +291,8 @@ import {
 import type { MediaResponseStyle } from '../types/mediaTypes';
 import type {
   ConfirmedWeekendPlan,
+  GarageAddressTone,
+  GarageFollowUpType,
   WeekendRecommendationResolution,
 } from '../types/weekendLeadershipTypes';
 import {
@@ -298,6 +300,11 @@ import {
   ensureWeekendCommandRecommendations,
   resolveWeekendCommandRecommendation,
 } from '../sim/weekendCommandEngine';
+import {
+  addGarageFollowUp,
+  deliverGarageAddress,
+  evaluateGarageAddressAfterRace,
+} from '../sim/garageLeadershipEngine';
 
 export type GameAction =
   | { type: 'NEW_GAME'; options: NewGameOptions }
@@ -324,6 +331,8 @@ export type GameAction =
       resolution: WeekendRecommendationResolution;
     }
   | { type: 'CONFIRM_WEEKEND_PLAN'; plan: ConfirmedWeekendPlan }
+  | { type: 'DELIVER_GARAGE_ADDRESS'; raceId: string; tone: GarageAddressTone; delegated?: boolean }
+  | { type: 'ADD_GARAGE_FOLLOW_UP'; raceId: string; driverId: string; followUp: GarageFollowUpType }
   | { type: 'START_RD_PROJECT'; request: RDProjectStartRequest }
   | { type: 'START_PART_MANUFACTURING'; partType: PartType; quantity?: number }
   | { type: 'FIT_PART'; partId: string; driverId: string }
@@ -857,6 +866,16 @@ export function gameReducer(state: GameState | null, action: GameAction): GameSt
     case 'CONFIRM_WEEKEND_PLAN': {
       if (!state || getCareerPhase(state) !== 'race_weekend') return state;
       return confirmWeekendPlan(state, action.plan);
+    }
+
+    case 'DELIVER_GARAGE_ADDRESS': {
+      if (!state || getCareerPhase(state) !== 'race_weekend') return state;
+      return deliverGarageAddress(state, action.raceId, action.tone, action.delegated);
+    }
+
+    case 'ADD_GARAGE_FOLLOW_UP': {
+      if (!state || getCareerPhase(state) !== 'race_weekend') return state;
+      return addGarageFollowUp(state, action.raceId, action.driverId, action.followUp);
     }
 
     case 'START_RD_PROJECT': {
@@ -3120,7 +3139,7 @@ function applyRaceResults(
       'Board, sponsor, or team pressure requires a public response',
     );
   }
-  return mediaState;
+  return evaluateGarageAddressAfterRace(mediaState, race.id, results);
 }
 
 function partsRound(state: GameState): number {

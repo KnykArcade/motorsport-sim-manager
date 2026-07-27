@@ -21,9 +21,9 @@ export function WeekendPlanBoard({
             variant="primary"
             onClick={onConfirm}
             disabled={!board.canConfirm}
-            title={board.blockedReason ?? 'Confirm the final plan and start the live race'}
+            title={board.blockedReason ?? 'Confirm the final plan and continue to the garage address'}
           >
-            Confirm Plan &amp; Start Race →
+            Confirm Plan &amp; Continue →
           </Button>
         )}
       >

@@ -109,7 +109,9 @@ export function createLiveRace(context: RaceContext, options: LiveRaceOptions): 
 
     const teamRating = options.teamRaceOps[e.driver.teamId];
     const pkgEffects = context.packageEffectsByTeam?.[e.driver.teamId];
-    const confidenceModifier = context.confidenceModifierByDriver?.[e.driver.id] ?? 0;
+    const confidenceModifier =
+      (context.confidenceModifierByDriver?.[e.driver.id] ?? 0)
+      + (context.garageAddressEffectsByDriver?.[e.driver.id]?.performanceModifier ?? 0);
     const teamPitIntensity = options.pitIntensityByTeam?.[e.driver.teamId] ?? 'Standard';
     const { score: paceScore } = calculateRacePace(e.driver, e.car, track, setup, strategy, instruction, teamRating, confidenceModifier);
     // Per-team weekend form so the live race shares the quick race's variation.
@@ -167,7 +169,9 @@ export function createLiveRace(context: RaceContext, options: LiveRaceOptions): 
       track,
       instruction.mistakeModifier + setupRiskAggression,
       (grid <= 6 ? 0.5 : 0) + setupHandlingPressure,
-    ) * prepMistakeMultiplier * (pkgEffects?.operationalRiskMultiplier ?? 1);
+    ) * prepMistakeMultiplier
+      * (pkgEffects?.operationalRiskMultiplier ?? 1)
+      * (context.garageAddressEffectsByDriver?.[e.driver.id]?.mistakeRiskMultiplier ?? 1);
     const baseMistakeRisk = perLapFailureRisk(perRaceMistake * 0.7, totalLaps);
 
     const pitPlan = buildPitPlan(strategy, totalLaps);
