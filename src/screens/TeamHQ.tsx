@@ -49,6 +49,7 @@ import type { TeamPrincipal } from '../types/principalTypes';
 import type { TeamOrganizationRatings } from '../types/teamRatingsTypes';
 import { commandAgenda, type CommandAgendaItem } from './commandAgendaViewModel';
 import { actionableInboxCount, unreadInboxCount } from './inboxViewModel';
+import { managerHomeSnapshot } from './managerHomeViewModel';
 import { staffRecommendations } from './staffRecommendationsViewModel';
 import { staffResponsibilities } from './staffResponsibilitiesViewModel';
 import { TEAM_HQ_TABS, type TeamHQTab } from './teamHQViewModel';
@@ -76,6 +77,7 @@ export function TeamHQ() {
   const inboxActionable = actionableInboxCount(state);
   const responsibilities = staffResponsibilities(state);
   const recommendations = staffRecommendations(state);
+  const home = managerHomeSnapshot(state);
   const agenda = commandAgenda(state);
   const worldEntries = canViewWorldStandings(state.gameMode)
     ? aroundTheWorldEntries(state.series, state.motorsportUniverse)
@@ -163,6 +165,23 @@ export function TeamHQ() {
                   </section>
                 )}
 
+                {home.previousRace && (
+                  <section className="ui-home-development">
+                    <span className="ui-fm-section-label">Previous race · Round {home.previousRace.round}</span>
+                    <h3>{home.previousRace.raceName} · {home.previousRace.headline}</h3>
+                    <p>{home.previousRace.summary} · Recent team form {home.recentTeamForm}</p>
+                    <div>
+                      {home.previousRace.results.map((result) => (
+                        <button key={result.driverId} type="button" onClick={() => navigate(home.previousRace!.route)}>
+                          <strong>{result.driverName} · {result.positionLabel}</strong>
+                          <span>{result.points} point{result.points === 1 ? '' : 's'} · {result.status}</span>
+                          <small>Open Race Report →</small>
+                        </button>
+                      ))}
+                    </div>
+                  </section>
+                )}
+
                 <section className="ui-home-development">
                   <span className="ui-fm-section-label">Recent developments</span>
                   <div>
@@ -208,14 +227,26 @@ export function TeamHQ() {
                   <h3>Department advice</h3>
                   {recommendations.slice(0, 3).map((recommendation) => (
                     <button key={recommendation.id} type="button" className="ui-home-context-link" onClick={() => navigate(recommendation.route)}>
-                      <strong>{recommendation.target}</strong>
-                      <span>{recommendation.recommendation}</span>
+                      <strong>{recommendation.owner} · {recommendation.confidence} confidence</strong>
+                      <span>{recommendation.target}: {recommendation.recommendation}</span>
+                      <small>{recommendation.whyItMatters}</small>
                     </button>
                   ))}
-                  {recommendations.length === 0 && <p>No staff recommendation is waiting.</p>}
+                  {recommendations.length === 0 && <p>No evidence-backed staff concern is waiting.</p>}
+                </section>
+                <section>
+                  <h3>Driver highlights</h3>
+                  {home.driverHighlights.map((driver) => (
+                    <button key={driver.driverId} type="button" className="ui-home-context-link" onClick={() => navigate(driver.route)}>
+                      <strong>{driver.name} · {driver.championshipPosition ? `P${driver.championshipPosition}` : 'Unranked'} · {driver.points} pts</strong>
+                      <span>Form {driver.recentForm} · Morale {Math.round(driver.morale)}% · Confidence {Math.round(driver.confidence)}%</span>
+                      <small>{driver.principalTrust == null ? 'Principal trust not yet established' : `Principal trust ${Math.round(driver.principalTrust)}%`}</small>
+                    </button>
+                  ))}
                 </section>
                 <section>
                   <h3>Championship snapshot</h3>
+                  <FmKeyValue label="Your team" value={home.teamChampionshipPosition ? `P${home.teamChampionshipPosition} · ${Math.round(home.teamPoints)} pts` : `${Math.round(home.teamPoints)} pts`} />
                   {state.constructorStandings.slice(0, 5).map((entry, index) => (
                     <FmKeyValue key={entry.entityId} label={`${index + 1}. ${teamName(entry.entityId)}`} value={Math.round(entry.points)} />
                   ))}
