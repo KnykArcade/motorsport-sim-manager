@@ -16,6 +16,7 @@ import { getEraTheme, getEraThemeConfig } from '../../../theme/eraTheme';
 import { ratingColor } from '../../../components/ui';
 import { formatLiveTimingDelta } from '../../../sim/liveTimingGapEngine';
 import { RaceControlStrip } from '../RaceControlStrip';
+import { useDialogAccessibility } from '../../../components/useDialogAccessibility';
 
 const SAFETY_CAR_PIT_LOSS_FACTOR = 0.4;
 
@@ -33,6 +34,7 @@ type Props = {
   activeRecs: AnalyticsRecommendation[];
   needsDecision: boolean;
   pausedByDnf?: boolean;
+  playbackBlockedReason?: string;
   aiDnfFlash?: { lap: number; entries: Array<{ driverId: string; cause: string }> } | null;
   decisionSecondsLeft: number | null;
   playing: boolean;
@@ -71,6 +73,7 @@ export function F11990sLiveRaceScreen({
   activeRecs,
   needsDecision,
   pausedByDnf = false,
+  playbackBlockedReason,
   aiDnfFlash,
   decisionSecondsLeft,
   playing,
@@ -164,6 +167,7 @@ export function F11990sLiveRaceScreen({
             playing={playing}
             speed={speed}
             canAdvance={canAdvance}
+            blockedReason={playbackBlockedReason}
             finished={finished}
             onTogglePlay={onTogglePlay}
             onStep={onStep}
@@ -634,6 +638,7 @@ function PlaybackPanel({
   playing,
   speed,
   canAdvance,
+  blockedReason,
   finished,
   onTogglePlay,
   onStep,
@@ -644,6 +649,7 @@ function PlaybackPanel({
   playing: boolean;
   speed: Speed;
   canAdvance: boolean;
+  blockedReason?: string;
   finished: boolean;
   onTogglePlay: () => void;
   onStep: () => void;
@@ -656,27 +662,52 @@ function PlaybackPanel({
       title="Real-Time Mode"
       headerRight={
         finished ? (
-          <button onClick={onFinishRace} className="rounded border border-amber-500 bg-amber-400 px-2 py-0.5 text-[10px] font-black uppercase text-black hover:bg-amber-300">
+          <button type="button" onClick={onFinishRace} className="rounded border border-amber-500 bg-amber-400 px-2 py-0.5 text-[10px] font-black uppercase text-black hover:bg-amber-300">
             Post-Race Report
           </button>
         ) : (
           <div className="flex shrink-0 gap-0.5">
-            <button onClick={onTogglePlay} disabled={!canAdvance} className="rounded border border-zinc-700 bg-zinc-900 px-1.5 py-0.5 text-[10px] font-bold text-zinc-300 hover:border-amber-400 disabled:opacity-40">
+            <button
+              type="button"
+              onClick={onTogglePlay}
+              disabled={!canAdvance}
+              title={!canAdvance ? blockedReason : undefined}
+              aria-label={playing ? 'Pause race' : 'Play race'}
+              aria-pressed={playing}
+              className="rounded border border-zinc-700 bg-zinc-900 px-1.5 py-0.5 text-[10px] font-bold text-zinc-300 hover:border-amber-400 disabled:opacity-40"
+            >
               {playing ? 'II' : '>'}
             </button>
-            <button onClick={onStep} disabled={!canAdvance || playing} className="rounded border border-zinc-700 bg-zinc-900 px-1.5 py-0.5 text-[10px] font-bold text-zinc-300 hover:border-amber-400 disabled:opacity-40">
+            <button
+              type="button"
+              onClick={onStep}
+              disabled={!canAdvance || playing}
+              title={playing ? 'Pause the race before advancing one lap.' : !canAdvance ? blockedReason : undefined}
+              aria-label="Advance one lap"
+              className="rounded border border-zinc-700 bg-zinc-900 px-1.5 py-0.5 text-[10px] font-bold text-zinc-300 hover:border-amber-400 disabled:opacity-40"
+            >
               +1
             </button>
             {([1, 5, 15, 30] as Speed[]).map((s) => (
               <button
                 key={s}
+                type="button"
                 onClick={() => onSpeed(s)}
+                aria-label={`Set playback speed to ${s} times`}
+                aria-pressed={speed === s}
                 className={`rounded border px-1.5 py-0.5 text-[10px] font-bold ${speed === s ? 'border-amber-400 bg-amber-400/20 text-amber-200' : 'border-zinc-700 bg-zinc-900 text-zinc-300 hover:border-amber-400'}`}
               >
                 {s}x
               </button>
             ))}
-            <button onClick={onSkipToEnd} disabled={!canAdvance} className="rounded border border-zinc-700 bg-zinc-900 px-1.5 py-0.5 text-[10px] font-bold text-zinc-300 hover:border-amber-400 disabled:opacity-40">
+            <button
+              type="button"
+              onClick={onSkipToEnd}
+              disabled={!canAdvance}
+              title={!canAdvance ? blockedReason : undefined}
+              aria-label="Skip to end of race"
+              className="rounded border border-zinc-700 bg-zinc-900 px-1.5 py-0.5 text-[10px] font-bold text-zinc-300 hover:border-amber-400 disabled:opacity-40"
+            >
               End
             </button>
           </div>
@@ -1284,19 +1315,28 @@ function StrategyDeskModal({
   onChange: (driverId: string, next: { intensity: PitIntensity; exitMode: PaceMode }) => void;
   onClose: () => void;
 }) {
+  const titleId = 'f1-strategy-desk-title';
+  const { dialogRef, initialFocusRef } = useDialogAccessibility(true, onClose);
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/72 p-4" onClick={onClose}>
       <div
+        ref={dialogRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={titleId}
         className="w-full max-w-3xl overflow-hidden rounded-xl border-2 border-amber-500/65 bg-[#14120f] shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between border-b border-amber-500/25 px-4 py-3">
           <div>
-            <div className="text-[10px] font-black uppercase tracking-wide text-amber-300">Strategy Desk</div>
+            <div id={titleId} className="text-[10px] font-black uppercase tracking-wide text-amber-300">Strategy Desk</div>
             <div className="text-xs text-zinc-400">Queue pit intensity and exit mode here; the PIT button uses this selection.</div>
           </div>
           <button
+            ref={initialFocusRef}
+            type="button"
             onClick={onClose}
+            aria-label="Close strategy desk"
             className="rounded border border-zinc-700 px-2 py-1 text-[10px] font-bold uppercase text-zinc-300 hover:border-amber-400 hover:text-amber-200"
           >
             Close

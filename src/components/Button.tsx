@@ -10,6 +10,7 @@ type Props = ButtonHTMLAttributes<HTMLButtonElement> & {
 export function Button({ variant = 'secondary', className = '', children, ...rest }: Props) {
   return (
     <button
+      type="button"
       {...rest}
       className={`era-button era-button-${variant} inline-flex items-center justify-center gap-2 px-4 py-2 text-sm transition-colors disabled:cursor-not-allowed disabled:opacity-40 ${className}`}
     >

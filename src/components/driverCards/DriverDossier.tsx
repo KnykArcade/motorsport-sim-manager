@@ -20,6 +20,7 @@ import { getEraTheme, getEraThemeConfig, type MotorsportEraTheme } from '../../t
 import { CharacterActionPanel } from '../characterCards/CharacterActionPanel';
 import { DRIVER_DEVELOPMENT_FOCUS_LABELS } from '../../types/developmentCurveTypes';
 import { planForDriver } from '../../sim/driverDevelopmentPlanEngine';
+import { useDialogAccessibility } from '../useDialogAccessibility';
 
 type DriverSubject =
   | { type: 'driver'; driver: Driver }
@@ -295,10 +296,18 @@ function DriverDossierModal({
   const shellClass = `driver-dossier ${dossierClassFor(eraTheme)}`;
   const coreRatings = dossierRatingRows(state, subject, profile.ratings);
   const showsIn = (...tabs: DossierFocus[]) => tabs.includes(activeTab);
+  const { dialogRef, initialFocusRef } = useDialogAccessibility(true, onClose);
 
   return (
-    <div className="driver-dossier-overlay" role="dialog" aria-modal="true" aria-label={`${profile.name} driver card`}>
-      <div className={shellClass} data-era={eraTheme}>
+    <div className="driver-dossier-overlay">
+      <div
+        ref={dialogRef}
+        className={shellClass}
+        data-era={eraTheme}
+        role="dialog"
+        aria-modal="true"
+        aria-label={`${profile.name} driver card`}
+      >
         <div className="driver-dossier-topbar">
           <div>
             <div className="driver-dossier-kicker">{nineties ? 'Personnel file' : 'Driver intelligence file'}</div>
@@ -307,7 +316,7 @@ function DriverDossierModal({
           </div>
           <div className="driver-dossier-actions">
             <span className="driver-dossier-era">{eraConfig.label}</span>
-            <button onClick={onClose} aria-label="Close driver card">Close</button>
+            <button ref={initialFocusRef} type="button" onClick={onClose} aria-label="Close driver card">Close</button>
           </div>
         </div>
 
@@ -318,6 +327,7 @@ function DriverDossierModal({
               type="button"
               role="tab"
               aria-selected={activeTab === tab}
+              tabIndex={activeTab === tab ? 0 : -1}
               className={activeTab === tab ? 'active' : ''}
               onClick={() => setActiveTab(tab)}
             >

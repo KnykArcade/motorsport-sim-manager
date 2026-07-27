@@ -98,10 +98,10 @@ export function Layout({ children }: { children: ReactNode }) {
 
           <div className="era-sidebar-actions border-t p-2">
             <div className="grid grid-cols-2 gap-1">
-              <button onClick={saveNow} className="era-nav-action px-2 py-1.5 text-left text-[10px]">Save</button>
-              <button onClick={() => goTo('/settings')} className="era-nav-action px-2 py-1.5 text-left text-[10px]">Settings</button>
+              <button type="button" onClick={saveNow} className="era-nav-action px-2 py-1.5 text-left text-[10px]">Save</button>
+              <button type="button" onClick={() => goTo('/settings')} className="era-nav-action px-2 py-1.5 text-left text-[10px]">Settings</button>
             </div>
-            <button onClick={() => goTo('/')} className="era-nav-action mt-1 w-full px-2 py-1.5 text-left text-[10px]">Main Menu</button>
+            <button type="button" onClick={() => goTo('/')} className="era-nav-action mt-1 w-full px-2 py-1.5 text-left text-[10px]">Main Menu</button>
           </div>
         </aside>
 

@@ -19,6 +19,15 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
+:where(button, a, input, select, textarea, [tabindex]):focus-visible {
+  outline: 2px solid var(--era-accent-strong, #f2b94b);
+  outline-offset: 2px;
+}
+
+:where(button, input, select, textarea):disabled {
+  cursor: not-allowed;
+}
+
 .ui-menu-shell {
   background:
     radial-gradient(circle at 14% 8%, rgba(245, 158, 11, 0.1), transparent 28%),

@@ -42,7 +42,7 @@ import { CrashZoomOverlay } from './liveRace/CrashZoomOverlay';
 import { advanceTrackProgress, reconcileTrackProgressForward, sectorPlaybackIntervalMs } from '../sim/trackMapInterpolation';
 import { RaceControlStrip } from './liveRace/RaceControlStrip';
 import { SelectedDriverPanel } from './liveRace/SelectedDriverPanel';
-import { selectedLiveCar } from './entryRacePresentationViewModel';
+import { liveRaceAdvanceBlockedReason, selectedLiveCar } from './entryRacePresentationViewModel';
 
 type Speed = 1 | 5 | 15 | 30;
 
@@ -392,6 +392,12 @@ export function LiveRace() {
   };
 
   const finished = live.phase === 'finished';
+  const playbackBlockedReason = liveRaceAdvanceBlockedReason({
+    finished,
+    blockingPrompt,
+    needsDecision,
+    pausedByDnf: !!dnfAlert,
+  });
   const leader = live.cars.find((c) => c.position === 1 && c.running);
   const representativeLapTime =
     leader?.lastLapTime && leader.lastLapTime > 0
@@ -458,8 +464,12 @@ export function LiveRace() {
       {!finished ? (
         <>
           <button
+            type="button"
             onClick={() => setPlaying((p) => !p)}
-            disabled={blockingPrompt || needsDecision || !!dnfAlert}
+            disabled={!!playbackBlockedReason}
+            title={playbackBlockedReason}
+            aria-label={playing ? 'Pause race' : 'Play race'}
+            aria-pressed={playing}
             className={`rounded px-3 py-1 text-xs font-bold ${
               playing ? 'bg-slate-700 text-slate-100' : 'bg-emerald-600 text-white'
             } disabled:opacity-40`}
@@ -467,8 +477,11 @@ export function LiveRace() {
             {playing ? '❚❚' : '▶'}
           </button>
           <button
+            type="button"
             onClick={step}
-            disabled={playing || blockingPrompt || needsDecision || !!dnfAlert}
+            disabled={playing || !!playbackBlockedReason}
+            title={playing ? 'Pause the race before advancing one lap.' : playbackBlockedReason}
+            aria-label="Advance one lap"
             className="rounded bg-slate-800 px-2 py-1 text-xs font-semibold text-slate-200 hover:bg-slate-700 disabled:opacity-40"
           >
             +1
@@ -477,7 +490,10 @@ export function LiveRace() {
             {([1, 5, 15, 30] as Speed[]).map((s) => (
               <button
                 key={s}
+                type="button"
                 onClick={() => setSpeed(s)}
+                aria-label={`Set playback speed to ${s} times`}
+                aria-pressed={speed === s}
                 className={`rounded px-1.5 py-1 text-[10px] font-bold ${
                   speed === s ? 'bg-amber-500 text-neutral-950' : 'bg-slate-800 text-slate-300 hover:bg-slate-700'
                 }`}
@@ -487,15 +503,20 @@ export function LiveRace() {
             ))}
           </div>
           <button
+            type="button"
             onClick={skipToEnd}
-            disabled={blockingPrompt || needsDecision || !!dnfAlert}
+            disabled={!!playbackBlockedReason}
+            title={playbackBlockedReason}
+            aria-label="Skip to end of race"
             className="rounded bg-slate-800 px-2 py-1 text-xs font-semibold text-slate-200 hover:bg-slate-700 disabled:opacity-40"
           >
             ⏩
           </button>
           <button
+            type="button"
             onClick={() => setModal('orders')}
             disabled={!playerCars.some((c) => c.running)}
+            title={!playerCars.some((c) => c.running) ? 'Team orders require at least one player car still running.' : undefined}
             className="rounded bg-slate-800 px-2 py-1 text-[11px] font-semibold text-slate-200 hover:bg-slate-700 disabled:opacity-40"
           >
             Orders
@@ -503,6 +524,7 @@ export function LiveRace() {
         </>
       ) : (
         <button
+          type="button"
           onClick={finishRace}
           className="rounded bg-amber-500 px-3 py-1 text-xs font-bold text-neutral-950 hover:bg-amber-400"
         >
@@ -527,6 +549,7 @@ export function LiveRace() {
           activeRecs={activeRecs}
           needsDecision={needsDecision}
           pausedByDnf={!!dnfAlert}
+          playbackBlockedReason={playbackBlockedReason}
           aiDnfFlash={aiDnfFlash}
           decisionSecondsLeft={needsDecision ? decisionSecondsLeft ?? DECISION_COUNTDOWN_SECONDS : null}
           playing={playing}

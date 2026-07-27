@@ -19,6 +19,7 @@ import { interactionHistoryForTarget } from '../../sim/characterInteractionEngin
 import { CharacterActionPanel } from './CharacterActionPanel';
 import { personnelCareerFor } from '../../sim/personnelCareerLedgerEngine';
 import type { PersonnelCareerKind } from '../../types/personnelCareerTypes';
+import { useDialogAccessibility } from '../useDialogAccessibility';
 
 export type CharacterDossierSubject =
   | { type: 'playerPrincipal' }
@@ -419,9 +420,17 @@ function CharacterDossierModal({ state, subject, model, initialTab, onClose }: {
   const navigate = useNavigate();
   const interactionTarget = interactionTargetFor(state, subject, model);
   const interactionHistory = interactionTarget ? interactionHistoryForTarget(state, interactionTarget) : [];
+  const { dialogRef, initialFocusRef } = useDialogAccessibility(true, onClose);
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 p-3 backdrop-blur-sm" role="dialog" aria-modal="true" aria-label={`${model.name} character dossier`}>
-      <div className="flex max-h-[92vh] w-full max-w-5xl flex-col overflow-hidden rounded-xl border border-neutral-700 bg-neutral-950 shadow-2xl" style={{ borderTopColor: model.accent, borderTopWidth: 4 }}>
+    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 p-3 backdrop-blur-sm">
+      <div
+        ref={dialogRef}
+        className="flex max-h-[92vh] w-full max-w-5xl flex-col overflow-hidden rounded-xl border border-neutral-700 bg-neutral-950 shadow-2xl"
+        style={{ borderTopColor: model.accent, borderTopWidth: 4 }}
+        role="dialog"
+        aria-modal="true"
+        aria-label={`${model.name} character dossier`}
+      >
         <header className="flex flex-wrap items-start justify-between gap-4 border-b border-neutral-800 bg-neutral-900/80 px-5 py-4">
           <div className="flex min-w-0 items-center gap-4">
             <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-lg border text-xl font-black" style={{ borderColor: model.accent, color: model.accent, backgroundColor: `${model.accent}18` }}>
@@ -433,14 +442,24 @@ function CharacterDossierModal({ state, subject, model, initialTab, onClose }: {
               <p className="text-sm text-neutral-400">{model.role} · <span style={{ color: model.accent }}>{model.organization}</span></p>
             </div>
           </div>
-          <button type="button" onClick={onClose} className="rounded border border-neutral-700 px-3 py-1.5 text-xs text-neutral-300 hover:bg-neutral-800" aria-label="Close character dossier">Close</button>
+          <button ref={initialFocusRef} type="button" onClick={onClose} className="rounded border border-neutral-700 px-3 py-1.5 text-xs text-neutral-300 hover:bg-neutral-800" aria-label="Close character dossier">Close</button>
         </header>
 
-        <nav className="flex gap-1 border-b border-neutral-800 bg-neutral-950 px-4 pt-2" aria-label="Character dossier sections">
+        <div className="flex gap-1 border-b border-neutral-800 bg-neutral-950 px-4 pt-2" role="tablist" aria-label="Character dossier sections">
           {(['profile', 'standing', 'actions', 'history'] as DossierTab[]).map((item) => (
-            <button key={item} type="button" onClick={() => setTab(item)} className={`rounded-t-md border-b-2 px-4 py-2 text-xs font-semibold capitalize ${tab === item ? 'border-amber-400 text-amber-300' : 'border-transparent text-neutral-500 hover:text-neutral-200'}`}>{item}</button>
+            <button
+              key={item}
+              type="button"
+              role="tab"
+              aria-selected={tab === item}
+              tabIndex={tab === item ? 0 : -1}
+              onClick={() => setTab(item)}
+              className={`rounded-t-md border-b-2 px-4 py-2 text-xs font-semibold capitalize ${tab === item ? 'border-amber-400 text-amber-300' : 'border-transparent text-neutral-500 hover:text-neutral-200'}`}
+            >
+              {item}
+            </button>
           ))}
-        </nav>
+        </div>
 
         <div className="min-h-0 flex-1 overflow-y-auto p-5">
           {tab === 'profile' && (

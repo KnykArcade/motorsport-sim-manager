@@ -39,21 +39,23 @@ export function WorkspaceTabs<T extends string>({
   ariaLabel: string;
 }) {
   return (
-    <nav className="ui-workspace-tabs flex shrink-0 items-center overflow-x-auto" aria-label={ariaLabel}>
+    <div className="ui-workspace-tabs flex shrink-0 items-center overflow-x-auto" role="tablist" aria-label={ariaLabel}>
       {items.map((item) => (
         <button
           key={item.id}
           type="button"
+          role="tab"
           onClick={() => onChange(item.id)}
           disabled={item.disabled}
           title={item.disabled ? item.disabledReason : undefined}
-          aria-current={active === item.id ? 'page' : undefined}
+          aria-selected={active === item.id}
+          tabIndex={active === item.id ? 0 : -1}
           className={active === item.id ? 'is-active' : ''}
         >
           {item.label}
         </button>
       ))}
-    </nav>
+    </div>
   );
 }
 

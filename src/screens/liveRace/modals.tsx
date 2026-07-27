@@ -2,22 +2,35 @@
 // detailed pit strategy, and team orders live here rather than taking permanent
 // vertical space on the main screen.
 
-import type { ReactNode } from 'react';
+import { useId, type ReactNode } from 'react';
 import type { LiveCarState, PaceMode, PitIntensity } from '../../types/liveTypes';
 import type { RaceEvent } from '../../types/simTypes';
 import type { TeamOrder } from '../../types/relationshipTypes';
 import { TEAM_ORDER_SPECS } from '../../sim/relationshipEngine';
+import { useDialogAccessibility } from '../../components/useDialogAccessibility';
 
 export function Modal({ title, onClose, children }: { title: string; onClose: () => void; children: ReactNode }) {
+  const titleId = useId();
+  const { dialogRef, initialFocusRef } = useDialogAccessibility(true, onClose);
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4" onClick={onClose}>
       <div
+        ref={dialogRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={titleId}
         className="flex max-h-[80vh] w-full max-w-2xl flex-col overflow-hidden rounded-xl border border-slate-700 bg-[#111725]"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex shrink-0 items-center justify-between border-b border-slate-700 px-4 py-2.5">
-          <h3 className="text-sm font-bold uppercase tracking-wider text-slate-200">{title}</h3>
-          <button onClick={onClose} className="rounded px-2 py-0.5 text-slate-400 hover:bg-slate-800 hover:text-slate-100">
+          <h3 id={titleId} className="text-sm font-bold uppercase tracking-wider text-slate-200">{title}</h3>
+          <button
+            ref={initialFocusRef}
+            type="button"
+            onClick={onClose}
+            aria-label={`Close ${title}`}
+            className="rounded px-2 py-0.5 text-slate-400 hover:bg-slate-800 hover:text-slate-100"
+          >
             ✕
           </button>
         </div>
@@ -86,8 +99,10 @@ export function StrategyModal({
               </div>
               <p className={`mt-1 text-xs font-medium ${open ? 'text-emerald-300' : 'text-slate-300'}`}>{status}</p>
               <button
+                type="button"
                 onClick={() => onPit(c.driverId)}
                 disabled={!canPit}
+                title={!canPit ? (finished ? 'The race has finished.' : 'This car cannot make a pit call right now.') : undefined}
                 className={`mt-2 w-full rounded py-1.5 text-sm font-bold ${
                   canPit ? (c.pit.pitRequested ? 'bg-amber-600 text-white hover:bg-amber-500' : 'bg-sky-600 text-white hover:bg-sky-500') : 'bg-slate-800 text-slate-600'
                 }`}
@@ -139,8 +154,10 @@ export function TeamOrdersModal({
                   favoredOptions.map((c) => (
                     <button
                       key={c.driverId}
+                      type="button"
                       onClick={() => onOrder(spec.order, c.driverId)}
                       disabled={disabled}
+                      title={disabled ? 'Needs both player cars running.' : undefined}
                       className="rounded bg-slate-700 px-3 py-1 text-xs font-semibold text-slate-100 hover:bg-slate-600 disabled:opacity-40"
                     >
                       {nameOf(c.driverId)}
@@ -148,8 +165,10 @@ export function TeamOrdersModal({
                   ))
                 ) : (
                   <button
+                    type="button"
                     onClick={() => onOrder(spec.order)}
                     disabled={disabled}
+                    title={disabled ? 'Needs both player cars running.' : undefined}
                     className="rounded bg-slate-700 px-3 py-1 text-xs font-semibold text-slate-100 hover:bg-slate-600 disabled:opacity-40"
                   >
                     Issue

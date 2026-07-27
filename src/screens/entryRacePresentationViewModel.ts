@@ -113,6 +113,24 @@ export function selectedLiveCar(
     ?? cars[0];
 }
 
+export function liveRaceAdvanceBlockedReason({
+  finished,
+  blockingPrompt,
+  needsDecision,
+  pausedByDnf,
+}: {
+  finished: boolean;
+  blockingPrompt: boolean;
+  needsDecision: boolean;
+  pausedByDnf: boolean;
+}): string | undefined {
+  if (finished) return 'The race is complete. Open the post-race report.';
+  if (pausedByDnf) return 'A retirement alert must be acknowledged before the race can continue.';
+  if (blockingPrompt) return 'Resolve the active race-control prompt before the race can continue.';
+  if (needsDecision) return 'Review the pending pit-wall decision before the race can continue.';
+  return undefined;
+}
+
 export type RaceStoryFilter = 'all' | 'priority' | 'incidents' | 'strategy' | 'battles' | 'control';
 
 export function filterRaceStory(

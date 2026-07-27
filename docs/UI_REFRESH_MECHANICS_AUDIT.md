@@ -136,7 +136,7 @@ explicit as their screens are migrated.
 | Commercial reputation and sponsor confidence appeared as separate ratings without enough context. | Clarified | Commercial reputation remains identified as the driver of offer quality; average confidence stays visible as the relationship-health measure governing renewal prospects. |
 | A compact sponsor list could hide objective failures and owner pressure. | Prevented | Pending objective count remains in the primary tabs, full reward/penalty terms remain visible, and owner expectations and reviews retain their dedicated workspace. |
 | Some objectives store a `midseason` deadline even though the current engine evaluates every unresolved sponsor objective at season end. | Exposed gap | The Objectives workspace states the real settlement timing instead of implying an in-season checkpoint exists. A future gameplay phase can implement the missing midseason evaluation. |
-| Sponsor actions could bypass portfolio or mode rules. | Preserved | Opportunity signing still uses the existing generated offer IDs and slot-capacity gate, while central mode restrictions continue to keep sponsor management out of locked historical Single Season careers. |
+| Sponsor actions could bypass portfolio or mode rules. | Preserved | Opportunity signing still uses the existing generated offer IDs and slot-capacity gate. Single Season keeps the commercial workspace available for objectives, confidence, and reviews while central restrictions block every contract-changing action. |
 | Dropping a sponsor might imply a modeled termination fee or negotiation process. | Clarified | The current simulation removes the sponsor immediately and does not model a termination fee. The refresh does not invent a charge or negotiation state. |
 | Commercial cards could imply rival financial figures are disclosed. | Prevented | This workspace only shows the player team's persisted sponsor contracts; rival sponsor values remain labeled as estimates on the organization screens. |
 
@@ -211,3 +211,22 @@ explicit as their screens are migrated.
 | The consequence of skipping a failure investigation was buried inside the investigation card. | Exposed | Unresolved case count and risk points remain visible above every tab, and the screen explains that unresolved risk feeds the implemented reliability penalty applied to future races. |
 | A technical-review tab could become a decorative incident summary. | Prevented | Investigation depth, budget costs, findings, response costs, reliability changes, driver morale, sponsor confidence, finance transactions, and AI activity retain their existing engine-backed actions and data. |
 | Historical reviews could expose current-state actions or imply that old budget and car-condition values were preserved snapshots. | Prevented | Historical reviews remain read-only. Their metrics explicitly identify current finance and condition values as unavailable rather than presenting current state as historical data. |
+
+## Final consistency pass findings
+
+| Finding | Status | Resolution |
+| --- | --- | --- |
+| Single Season setup metadata described all sponsor management as locked even though the route intentionally preserves objectives, confidence, and formal reviews. | Fixed | Setup messaging now identifies sponsor **contract changes** as the locked capability and explicitly preserves the read-only/performance-review parts of the commercial workspace. Route and reducer restrictions are unchanged. |
+| Shared workspace tabs used page-navigation semantics while screen-specific tabs used tab semantics. | Fixed | Shared workspace tabs now expose a consistent tablist/tab/selected contract, preserve disabled reasons, and keep only the active tab in the keyboard sequence. |
+| Shared buttons could inherit form-submit behavior when a screen placed them inside a form. | Fixed | The shared Button defaults to `type="button"` while still allowing an explicit submit override. |
+| Live-race playback controls used symbols without consistent accessible names, selected-speed state, or blocker explanations. | Fixed | Shared and 1990s F1 playback controls now expose equivalent play, pause, step, speed, skip, and post-race labels. Engine-backed prompt, decision, retirement-alert, finished, and playing blockers are explained without changing availability. |
+| Selecting a driver from the shared timing tower depended on clicking the table row. | Fixed | The existing selection action now also has a named, keyboard-focusable button in each driver row; table data and selection fallback are unchanged. |
+| Dialog behavior varied between driver dossiers, character dossiers, live-race panels, strategy, and the 1990s garage overlay. | Fixed | These presentations now share Escape-to-close, initial focus, focus containment, focus restoration, modal labeling, and explicit close controls. |
+| Keyboard focus was highly visible in the special 1990s presentation but inconsistent across the shared FM shell. | Fixed | A single high-contrast focus-visible treatment now applies to interactive controls throughout the application while retaining era colors. |
+
+## Final action-surface guarantee
+
+Phase 9 changes presentation metadata, shared control semantics, focus behavior,
+and explanatory copy only. No reducer action, simulation calculation, balance
+constant, save field, progression gate, route declaration, or route restriction
+was added, removed, or changed.
