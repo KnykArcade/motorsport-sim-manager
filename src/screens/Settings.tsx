@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useGame } from '../game/GameContext';
 import { Panel } from '../components/Panel';
@@ -14,6 +15,7 @@ import {
 export function Settings() {
   const { state, dispatch, settings, setSettings } = useGame();
   const navigate = useNavigate();
+  const [section, setSection] = useState<'gameplay' | 'damage' | 'career' | 'save'>('gameplay');
 
   const mobilityMode = state?.careerMobilityMode ?? 'StandardCareer';
 
@@ -31,8 +33,28 @@ export function Settings() {
         <WorkspaceMetric label="Reliability" value={`${settings.reliabilityStrictness.toFixed(2)}×`} detail="Mechanical stress strictness" />
         <WorkspaceMetric label="Save data" value={hasSave() ? 'Available' : 'Empty'} detail={state ? 'Active career loaded' : 'Main menu only'} />
       </MetricStrip>
-      <WorkspaceBody className="mx-auto w-full max-w-3xl space-y-4">
+      <WorkspaceBody className="ui-settings-workspace">
+      <nav className="ui-settings-navigation" aria-label="Settings categories">
+        {([
+          { id: 'gameplay', label: 'Gameplay', detail: 'Simulation presentation' },
+          { id: 'damage', label: 'Damage & Reliability', detail: 'Race realism profile' },
+          { id: 'career', label: 'Career Mobility', detail: state ? 'Job security and movement' : 'Available in a career' },
+          { id: 'save', label: 'Save Management', detail: 'Active career data' },
+        ] as const).map((item) => (
+          <button
+            key={item.id}
+            type="button"
+            className={`ui-fm-list-button ${section === item.id ? 'is-active' : ''}`}
+            onClick={() => setSection(item.id)}
+          >
+            <strong>{item.label}</strong>
+            <span>{item.detail}</span>
+          </button>
+        ))}
+      </nav>
+      <div className="ui-settings-detail">
 
+      {section === 'gameplay' && (
       <Panel title="Gameplay">
         <label className="flex items-center justify-between">
           <div>
@@ -49,7 +71,9 @@ export function Settings() {
           />
         </label>
       </Panel>
+      )}
 
+      {section === 'damage' && (
       <Panel title="Damage / Repair">
         <div className="space-y-4">
           {([
@@ -93,8 +117,9 @@ export function Settings() {
           ))}
         </div>
       </Panel>
+      )}
 
-      {state && (
+      {section === 'career' && state && (
         <Panel title="Career Mobility">
           <div className="space-y-3">
             <div className="text-xs text-neutral-500">
@@ -131,11 +156,24 @@ export function Settings() {
           </div>
         </Panel>
       )}
+      {section === 'career' && !state && (
+        <Panel title="Career Mobility">
+          <div className="ui-settings-explanation">
+            Career mobility is stored inside a career. Load or create a game to choose Standard Career, Team Lock, or Sandbox.
+          </div>
+        </Panel>
+      )}
 
+      {section === 'save' && (
       <Panel title="Save Data">
-        <div className="flex items-center justify-between">
-          <div className="text-sm text-neutral-400">
-            {hasSave() ? 'A save exists in this browser.' : 'No save found.'}
+        <div className="ui-settings-danger-zone">
+          <div>
+            <div className="text-sm font-semibold text-neutral-200">Active career slot</div>
+            <div className="mt-1 text-xs text-neutral-500">
+              {hasSave()
+                ? 'Deleting this save removes the current career and cannot be undone.'
+                : 'No saved career is currently stored.'}
+            </div>
           </div>
           <Button
             variant="danger"
@@ -151,6 +189,8 @@ export function Settings() {
           </Button>
         </div>
       </Panel>
+      )}
+      </div>
       </WorkspaceBody>
     </WorkspaceScreen>
   );

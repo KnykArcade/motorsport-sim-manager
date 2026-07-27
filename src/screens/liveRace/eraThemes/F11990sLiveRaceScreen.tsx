@@ -15,6 +15,7 @@ import { PIT_INTENSITY_ORDER } from '../../../sim/pitIntensityData';
 import { getEraTheme, getEraThemeConfig } from '../../../theme/eraTheme';
 import { ratingColor } from '../../../components/ui';
 import { formatLiveTimingDelta } from '../../../sim/liveTimingGapEngine';
+import { RaceControlStrip } from '../RaceControlStrip';
 
 const SAFETY_CAR_PIT_LOSS_FACTOR = 0.4;
 
@@ -154,6 +155,7 @@ export function F11990sLiveRaceScreen({
         weatherNext={forecast[1]?.condition ?? null}
         onExit={onExit}
       />
+      <RaceControlStrip live={live} compact />
 
       <main className="relative grid min-h-0 flex-1 grid-cols-1 gap-2 p-2 lg:grid-cols-[minmax(235px,0.68fr)_minmax(440px,1.58fr)_minmax(320px,1.02fr)]">
         <aside className="grid min-h-0 grid-rows-[minmax(0,1.6fr)_auto_minmax(0,1fr)] gap-2">

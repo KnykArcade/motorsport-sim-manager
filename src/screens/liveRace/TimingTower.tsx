@@ -16,10 +16,14 @@ export function TimingTower({
   cars,
   nameOf,
   colorOf,
+  selectedDriverId,
+  onSelectDriver,
 }: {
   cars: LiveCarState[];
   nameOf: (id: string) => string;
   colorOf: (id: string) => string;
+  selectedDriverId?: string;
+  onSelectDriver?: (driverId: string) => void;
 }) {
   const [tab, setTab] = useState<Tab>('Overview');
   return (
@@ -45,7 +49,15 @@ export function TimingTower({
         <table className="w-full text-[11px]">
           <tbody>
             {cars.map((c) => (
-              <Row key={c.driverId} car={c} tab={tab} name={nameOf(c.driverId)} color={colorOf(c.teamId)} />
+              <Row
+                key={c.driverId}
+                car={c}
+                tab={tab}
+                name={nameOf(c.driverId)}
+                color={colorOf(c.teamId)}
+                selected={selectedDriverId === c.driverId}
+                onSelect={onSelectDriver}
+              />
             ))}
           </tbody>
         </table>
@@ -54,7 +66,21 @@ export function TimingTower({
   );
 }
 
-function Row({ car, tab, name, color }: { car: LiveCarState; tab: Tab; name: string; color: string }) {
+function Row({
+  car,
+  tab,
+  name,
+  color,
+  selected,
+  onSelect,
+}: {
+  car: LiveCarState;
+  tab: Tab;
+  name: string;
+  color: string;
+  selected: boolean;
+  onSelect?: (driverId: string) => void;
+}) {
   const finishedRace = car.status === 'Finished';
   const dnf = !car.running && !finishedRace;
   const classified = car.running || finishedRace;
@@ -65,7 +91,8 @@ function Row({ car, tab, name, color }: { car: LiveCarState; tab: Tab; name: str
 
   return (
     <tr
-      className={`border-t border-slate-800/50 ${car.isPlayer ? 'bg-amber-500/10' : ''} ${
+      onClick={() => onSelect?.(car.driverId)}
+      className={`border-t border-slate-800/50 ${onSelect ? 'cursor-pointer hover:bg-slate-800/60' : ''} ${selected ? 'bg-sky-500/15' : car.isPlayer ? 'bg-amber-500/10' : ''} ${
         dnf ? 'opacity-40' : ''
       }`}
     >
