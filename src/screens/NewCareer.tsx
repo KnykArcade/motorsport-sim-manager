@@ -9,10 +9,12 @@ import { formatMoney } from '../components/ui';
 import { hasSave } from '../game/saveSystem';
 import { PrincipalCreator } from './PrincipalCreator';
 import { SINGLE_SEASON_LOCKED_FEATURES, isSingleSeasonMode } from '../game/modeRestrictions';
+import { EntryStageRail } from '../components/EntryStageRail';
+import type { EntryStep } from './entryRacePresentationViewModel';
 import type { GameMode, Series } from '../types/gameTypes';
 import type { TeamPrincipal } from '../types/principalTypes';
 
-type Step = 'mode' | 'setup' | 'team' | 'principal';
+type Step = EntryStep;
 export function NewCareer() {
   const navigate = useNavigate();
   const { dispatch } = useGame();
@@ -162,7 +164,15 @@ export function NewCareer() {
           </div>
         </div>
 
-        <Steps step={step} />
+        <div className="ui-entry-workspace-grid">
+          <EntryStageRail
+            active={step}
+            onSelect={(target) => {
+              const order: Step[] = ['mode', 'setup', 'team', 'principal'];
+              if (order.indexOf(target) <= order.indexOf(step)) setStep(target);
+            }}
+          />
+          <main className="ui-entry-workspace-body">
 
         {step === 'mode' && (
           <div className="space-y-4">
@@ -192,7 +202,7 @@ export function NewCareer() {
             {isSingleSeasonMode(mode) && (
               <div className="rounded-lg border border-amber-800/40 bg-amber-900/10 p-4">
                 <div className="flex items-center gap-2">
-                  <span className="text-lg text-amber-400">🔒</span>
+                  <span className="rounded border border-amber-600/50 px-1.5 py-0.5 text-[10px] font-black uppercase text-amber-300">Locked</span>
                   <span className="text-sm font-semibold text-amber-300">What's locked in Single Season Mode</span>
                 </div>
                 <div className="mt-3 grid gap-2 sm:grid-cols-2">
@@ -448,34 +458,9 @@ export function NewCareer() {
             }}
           />
         )}
-      </div>
-    </div>
-  );
-}
-
-function Steps({ step }: { step: Step }) {
-  const order: Step[] = ['mode', 'setup', 'team', 'principal'];
-  const labels: Record<Step, string> = {
-    mode: 'Game Mode',
-    setup: 'Series & Year',
-    team: 'Team',
-    principal: 'Principal',
-  };
-  return (
-    <div className="ui-stepper mb-8 flex items-center gap-2 overflow-x-auto rounded-lg border px-3 py-2 text-xs">
-      {order.map((s, i) => (
-        <div key={s} className="flex items-center gap-2">
-          <span
-            className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-xs font-bold ${
-              step === s ? 'bg-amber-500 text-neutral-950' : 'bg-neutral-800 text-neutral-400'
-            }`}
-          >
-            {i + 1}
-          </span>
-          <span className={step === s ? 'text-neutral-100' : 'text-neutral-500'}>{labels[s]}</span>
-          {i < order.length - 1 && <span className="mx-1 text-neutral-700">→</span>}
+          </main>
         </div>
-      ))}
+      </div>
     </div>
   );
 }
@@ -513,4 +498,3 @@ function ModeCard({
     </button>
   );
 }
-

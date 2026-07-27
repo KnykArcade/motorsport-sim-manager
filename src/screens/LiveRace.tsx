@@ -40,6 +40,9 @@ import { F11990sLiveRaceScreen } from './liveRace/eraThemes/F11990sLiveRaceScree
 import { getLiveRaceEraTheme, shouldUseF11990sLiveRaceScreen } from './liveRace/eraThemes/getLiveRaceEraTheme';
 import { CrashZoomOverlay } from './liveRace/CrashZoomOverlay';
 import { advanceTrackProgress, reconcileTrackProgressForward, sectorPlaybackIntervalMs } from '../sim/trackMapInterpolation';
+import { RaceControlStrip } from './liveRace/RaceControlStrip';
+import { SelectedDriverPanel } from './liveRace/SelectedDriverPanel';
+import { selectedLiveCar } from './entryRacePresentationViewModel';
 
 type Speed = 1 | 5 | 15 | 30;
 
@@ -85,6 +88,7 @@ export function LiveRace() {
   const [dnfAlert, setDnfAlert] = useState<DnfAlert | null>(null);
   const [aiDnfFlash, setAiDnfFlash] = useState<DnfAlert | null>(null);
   const [decisionSecondsLeft, setDecisionSecondsLeft] = useState<number | null>(null);
+  const [selectedDriverId, setSelectedDriverId] = useState<string | null>(null);
   const dismissCrash = useCallback(
     () => setLive((s) => (s ? { ...s, lastIncident: undefined } : s)),
     [],
@@ -428,6 +432,7 @@ export function LiveRace() {
     live.cars.filter((c) => c.isPlayer),
     seatOrderIds,
   );
+  const focusedCar = selectedLiveCar(live.cars, selectedDriverId, seatOrderIds);
   const forecast = buildForecast(live, engine.context.track);
   const activeRecs = finished ? [] : live.recommendations;
   const monitor = buildAnalyticsMonitor(live, seatOrderIds);
@@ -604,10 +609,17 @@ export function LiveRace() {
         controls={controls}
         onExit={() => navigate('/hq')}
       />
+      <RaceControlStrip live={live} compact />
 
       <div className="grid min-h-0 flex-1 grid-cols-1 gap-2 p-2 lg:grid-cols-[minmax(280px,0.95fr)_minmax(320px,1.15fr)_minmax(320px,1fr)]">
         {/* Left — timing tower */}
-        <TimingTower cars={live.cars} nameOf={driverName} colorOf={teamColor} />
+        <TimingTower
+          cars={live.cars}
+          nameOf={driverName}
+          colorOf={teamColor}
+          selectedDriverId={focusedCar?.driverId}
+          onSelectDriver={setSelectedDriverId}
+        />
 
         {/* Center — large track map (fills) + compact event log (fixed height) */}
         <div className="relative flex min-h-0 flex-col gap-2 overflow-hidden">
@@ -624,7 +636,13 @@ export function LiveRace() {
             driver-card slot that fills the remaining space and splits it evenly
             between the two cards. The analytics panel height never changes with
             decision count, the cards never get pushed down, and nothing scrolls. */}
-        <div className="grid min-h-0 grid-rows-[auto_1fr] gap-2 overflow-hidden">
+        <div className="grid min-h-0 grid-rows-[auto_auto_1fr] gap-2 overflow-hidden">
+          <SelectedDriverPanel
+            car={focusedCar}
+            name={focusedCar ? driverName(focusedCar.driverId) : ''}
+            team={focusedCar ? teamName(focusedCar.teamId) : ''}
+            color={focusedCar ? teamColor(focusedCar.teamId) : '#888'}
+          />
           {!finished && (
             <RecommendationsPanel
               recs={activeRecs}

@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useGame } from '../game/GameContext';
 import { loadSavedGame } from '../game/GameContext';
@@ -5,14 +6,17 @@ import { hasSave } from '../game/saveSystem';
 import { initializeMasterRegistry } from '../data';
 import { ensureMotorsportUniverse } from '../sim/motorsportUniverseEngine';
 import { resumeDestination } from '../components/layoutWorkflow';
+import { savedCareerSummary } from './entryRacePresentationViewModel';
 
 export function MainMenu() {
   const navigate = useNavigate();
   const { dispatch } = useGame();
   const saveExists = hasSave();
+  const [savedCareer] = useState(() => loadSavedGame());
+  const careerSummary = savedCareer ? savedCareerSummary(savedCareer) : null;
 
   const onContinue = async () => {
-    const saved = loadSavedGame();
+    const saved = savedCareer ?? loadSavedGame();
     if (saved) {
       // Load full season data for the master registry (career market engine).
       await initializeMasterRegistry(saved.seasonYear, saved.series);
@@ -35,11 +39,12 @@ export function MainMenu() {
           </div>
         </header>
 
-        <main className="grid flex-1 items-center gap-8 py-10 lg:grid-cols-[1.2fr_0.8fr] lg:gap-16">
-          <section>
+        <main className="grid min-h-0 flex-1 gap-6 py-6 lg:grid-cols-[minmax(0,1.15fr)_minmax(360px,0.85fr)]">
+          <section className="ui-menu-command-copy flex min-h-0 flex-col justify-between">
+            <div>
             <div className="ui-menu-kicker">The paddock is waiting</div>
             <h1 className="mt-3 max-w-2xl text-5xl font-black tracking-[-0.04em] text-neutral-50 sm:text-7xl">
-              Every season is a story.
+              Run the whole paddock.
             </h1>
             <p className="mt-5 max-w-xl text-base leading-7 text-neutral-400 sm:text-lg">
               Take control of a team, shape your organisation, and replay motorsport history
@@ -50,19 +55,40 @@ export function MainMenu() {
               <span className="ui-menu-chip">19 IndyCar seasons</span>
               <span className="ui-menu-chip">Deterministic simulation</span>
             </div>
+            </div>
+            <div className="ui-menu-operating-note">
+              <span>Manager command</span>
+              <strong>Build the organisation, prepare each weekend, and call every race from the pit wall.</strong>
+            </div>
           </section>
 
-          <section className="ui-menu-actions">
-            <div className="ui-menu-panel-label">Start or resume career</div>
-            <div className="mt-3 space-y-2">
+          <section className="ui-menu-actions flex min-h-0 flex-col">
+            <div className="ui-menu-panel-label">Career command</div>
+            <div className="mt-3 grid gap-2">
               <MenuButton primary onClick={() => navigate('/new')}>
                 <span>New Game</span>
-                <span className="text-xs opacity-70">Choose a series, era, and team →</span>
+                <span className="text-xs opacity-70">Create a new motorsport universe</span>
               </MenuButton>
               <MenuButton onClick={onContinue} disabled={!saveExists}>
                 <span>Continue</span>
-                <span className="text-xs opacity-60">{saveExists ? 'Resume your saved paddock' : 'No saved career available'}</span>
+                <span className="text-xs opacity-60">{careerSummary?.nextAction ?? 'No saved career available'}</span>
               </MenuButton>
+            </div>
+            <div className={`ui-menu-save-dossier mt-3 ${careerSummary ? '' : 'is-empty'}`}>
+              <div className="ui-menu-save-heading">
+                <span>Active save</span>
+                <small>{careerSummary?.updated ?? 'No career stored'}</small>
+              </div>
+              {careerSummary ? (
+                <div className="ui-menu-save-grid">
+                  <SaveMetric label="Competition" value={careerSummary.title} />
+                  <SaveMetric label="Team" value={careerSummary.team} />
+                  <SaveMetric label="Current round" value={careerSummary.round} />
+                  <SaveMetric label="Workflow" value={careerSummary.stage} />
+                </div>
+              ) : (
+                <p>Start a new game to create the active career slot.</p>
+              )}
             </div>
             <div className="mt-5 grid grid-cols-2 gap-2">
               <MenuButton compact onClick={() => navigate('/data')}>Data Viewer</MenuButton>
@@ -80,6 +106,15 @@ export function MainMenu() {
           <span>Local save · No backend required</span>
         </footer>
       </div>
+    </div>
+  );
+}
+
+function SaveMetric({ label, value }: { label: string; value: string }) {
+  return (
+    <div>
+      <span>{label}</span>
+      <strong>{value}</strong>
     </div>
   );
 }

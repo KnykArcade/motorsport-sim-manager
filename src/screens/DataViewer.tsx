@@ -22,7 +22,6 @@ import {
   WorkspaceHeader,
   WorkspaceMetric,
   WorkspaceScreen,
-  WorkspaceTabs,
 } from '../components/workspace/Workspace';
 
 type Tab =
@@ -48,10 +47,23 @@ const TABS: { id: Tab; label: string }[] = [
   { id: 'registry', label: 'Master Registry' },
 ];
 
+const TAB_CONTEXT: Record<Tab, { description: string; fields: string }> = {
+  calendar: { description: 'The complete selected-season schedule and race distances.', fields: 'Round, event, circuit, laps, distance' },
+  tracks: { description: 'Circuit characteristics and setup-demand ratings used by the simulation.', fields: 'Archetype, attributes, aero, power, mechanical, risk' },
+  teams: { description: 'Historical entrants with their initial budget, reputation, expectations, and lineup.', fields: 'Team, drivers, budget, reputation, expected finish, difficulty' },
+  drivers: { description: 'The selected season grid and its state-backed driver ratings.', fields: 'Number, driver, team, overall, pace, racecraft, composure' },
+  cars: { description: 'Team car and pit-operations ratings at the start of the selected season.', fields: 'Engine, aero, grip, reliability, pit crew' },
+  points: { description: 'The points table assigned to the selected championship.', fields: 'Finishing position and points awarded' },
+  setups: { description: 'Global setup options and their deterministic performance trade-offs.', fields: 'Downforce, speed, grip, braking, tyres, pace, risk' },
+  development: { description: 'Available car-development projects and their cost, timing, and carryover.', fields: 'Category, horizon, cost, races, success, carryover' },
+  registry: { description: 'The canonical driver registry shared across historical seasons and career markets.', fields: 'Identity, eligibility, career status, ratings, season records' },
+};
+
 const seasonKey = (year: number, series: Series) => `${year}-${series}`;
 
 export function DataViewer() {
   const [tab, setTab] = useState<Tab>('calendar');
+  const [query, setQuery] = useState('');
   const navigate = useNavigate();
   const { state } = useGame();
   const [registryReady, setRegistryReady] = useState(false);
@@ -122,7 +134,7 @@ export function DataViewer() {
         subtitle={`${choice.label} · Read-only source data and simulation reference tables`}
         actions={<Button variant="ghost" onClick={() => navigate(-1)}>← Back</Button>}
       />
-      <div className="flex flex-wrap items-center gap-3">
+      <div className="ui-data-viewer-toolbar">
         <label className="text-[10px] font-bold uppercase tracking-[0.14em] text-neutral-500" htmlFor="data-viewer-season">Season dataset</label>
         <select
           id="data-viewer-season"
@@ -136,9 +148,13 @@ export function DataViewer() {
             </option>
           ))}
         </select>
-        <p className="text-xs text-neutral-500">
-          Read-only seed data from <code className="rounded bg-neutral-800 px-1 py-0.5 text-[10px]">src/data/</code>.
-        </p>
+        <input
+          value={query}
+          onChange={(event) => setQuery(event.target.value)}
+          placeholder={`Search ${TABS.find((item) => item.id === tab)?.label.toLowerCase()}…`}
+          aria-label="Search selected dataset"
+        />
+        <span>Read-only research workspace</span>
       </div>
       <MetricStrip>
         <WorkspaceMetric label="Calendar rounds" value={activeBundle?.season.calendar.length ?? '—'} detail="Selected season schedule" />
@@ -146,27 +162,73 @@ export function DataViewer() {
         <WorkspaceMetric label="Drivers" value={activeBundle?.drivers.length ?? '—'} detail="Loaded entries" />
         <WorkspaceMetric label="Registry" value={registryReady ? 'Ready' : 'Loading'} detail="Master data index" />
       </MetricStrip>
-      <WorkspaceTabs items={TABS} active={tab} onChange={setTab} ariaLabel="Data viewer sections" />
       <WorkspaceBody>
-        <div className="overflow-x-auto rounded-lg border border-neutral-800 bg-[var(--era-panel-bg)]">
+        <div className="ui-data-viewer-grid">
+          <nav className="ui-data-viewer-categories" aria-label="Data viewer sections">
+            <div className="ui-fm-pane-header">
+              <div>
+                <div className="ui-fm-pane-title">Dataset categories</div>
+                <div className="ui-fm-pane-meta">{TABS.length} read-only tables</div>
+              </div>
+            </div>
+            <div className="ui-fm-pane-body">
+              {TABS.map((item) => (
+                <button
+                  key={item.id}
+                  type="button"
+                  className={`ui-fm-list-button ${tab === item.id ? 'is-active' : ''}`}
+                  onClick={() => {
+                    setTab(item.id);
+                    setQuery('');
+                  }}
+                >
+                  <strong>{item.label}</strong>
+                  <span>{TAB_CONTEXT[item.id].fields}</span>
+                </button>
+              ))}
+            </div>
+          </nav>
+          <section className="ui-data-viewer-table">
           {tab === 'registry' ? (
-            registryReady ? <RegistryTable /> : <p className="p-6 text-sm text-neutral-400">Loading registry data...</p>
+            registryReady ? <RegistryTable query={query} /> : <p className="p-6 text-sm text-neutral-400">Loading registry data...</p>
           ) : loadingBundle ? (
             <p className="p-6 text-sm text-neutral-400">Loading season data…</p>
           ) : !activeBundle ? (
             <p className="p-6 text-sm text-neutral-400">No data for this season.</p>
           ) : (
             <>
-              {tab === 'calendar' && <CalendarTable bundle={activeBundle} />}
-              {tab === 'tracks' && <TracksTable bundle={activeBundle} />}
-              {tab === 'teams' && <TeamsTable bundle={activeBundle} />}
-              {tab === 'drivers' && <DriversTable bundle={activeBundle} />}
-              {tab === 'cars' && <CarsTable bundle={activeBundle} />}
-              {tab === 'points' && <PointsTable bundle={activeBundle} />}
-              {tab === 'setups' && <SetupsTable />}
-              {tab === 'development' && <DevTable />}
+              {tab === 'calendar' && <CalendarTable bundle={activeBundle} query={query} />}
+              {tab === 'tracks' && <TracksTable bundle={activeBundle} query={query} />}
+              {tab === 'teams' && <TeamsTable bundle={activeBundle} query={query} />}
+              {tab === 'drivers' && <DriversTable bundle={activeBundle} query={query} />}
+              {tab === 'cars' && <CarsTable bundle={activeBundle} query={query} />}
+              {tab === 'points' && <PointsTable bundle={activeBundle} query={query} />}
+              {tab === 'setups' && <SetupsTable query={query} />}
+              {tab === 'development' && <DevTable query={query} />}
             </>
           )}
+          </section>
+          <aside className="ui-data-viewer-context">
+            <div className="ui-fm-pane-header">
+              <div>
+                <div className="ui-fm-pane-title">Dataset context</div>
+                <div className="ui-fm-pane-meta">{choice.label}</div>
+              </div>
+            </div>
+            <div className="ui-fm-scroll-column">
+              <div className="ui-fm-section-label">{TABS.find((item) => item.id === tab)?.label}</div>
+              <p className="ui-fm-detail-copy mt-2">{TAB_CONTEXT[tab].description}</p>
+              <div className="mt-4">
+                <div className="ui-fm-key-value"><span>Access</span><strong>Read only</strong></div>
+                <div className="ui-fm-key-value"><span>Season</span><strong>{choice.label}</strong></div>
+                <div className="ui-fm-key-value"><span>Fields</span><strong>{TAB_CONTEXT[tab].fields}</strong></div>
+                <div className="ui-fm-key-value"><span>Search</span><strong>{query.trim() || 'All records'}</strong></div>
+              </div>
+              <p className="mt-4 text-[11px] leading-5 text-neutral-500">
+                Values are loaded from the game&apos;s source datasets. Editing is intentionally disabled.
+              </p>
+            </div>
+          </aside>
         </div>
       </WorkspaceBody>
     </WorkspaceScreen>
@@ -195,14 +257,14 @@ function Td({ children }: { children: React.ReactNode }) {
   return <td className="whitespace-nowrap px-3 py-1.5 text-sm text-neutral-200">{children}</td>;
 }
 
-function CalendarTable({ bundle }: { bundle: SeasonBundle }) {
+function CalendarTable({ bundle, query }: { bundle: SeasonBundle; query: string }) {
   return (
     <table className="w-full">
       <thead className="bg-neutral-900/60">
         <tr><Th>#</Th><Th>Grand Prix</Th><Th>Track</Th><Th>Laps</Th><Th>Distance</Th></tr>
       </thead>
       <tbody>
-        {bundle.season.calendar.map((r) => (
+        {bundle.season.calendar.filter((r) => matchesSearch(query, r.gpName, r.trackName, r.round)).map((r) => (
           <tr key={r.id} className="border-t border-neutral-800/60">
             <Td>{r.round}</Td><Td>{r.gpName}</Td><Td>{r.trackName}</Td><Td>{r.laps}</Td><Td>{r.distanceKm ?? '—'} km</Td>
           </tr>
@@ -212,7 +274,7 @@ function CalendarTable({ bundle }: { bundle: SeasonBundle }) {
   );
 }
 
-function TracksTable({ bundle }: { bundle: SeasonBundle }) {
+function TracksTable({ bundle, query }: { bundle: SeasonBundle; query: string }) {
   return (
     <table className="w-full">
       <thead className="bg-neutral-900/60">
@@ -222,7 +284,7 @@ function TracksTable({ bundle }: { bundle: SeasonBundle }) {
         </tr>
       </thead>
       <tbody>
-        {seasonTracks(bundle).map((t) => (
+        {seasonTracks(bundle).filter((t) => matchesSearch(query, t.name, t.archetype)).map((t) => (
           <tr key={t.id} className="border-t border-neutral-800/60">
             <Td>{t.name}</Td>
             <Td><span className="rounded bg-neutral-800 px-1.5 py-0.5 text-xs">{t.archetype}</span></Td>
@@ -242,7 +304,7 @@ function TracksTable({ bundle }: { bundle: SeasonBundle }) {
   );
 }
 
-function TeamsTable({ bundle }: { bundle: SeasonBundle }) {
+function TeamsTable({ bundle, query }: { bundle: SeasonBundle; query: string }) {
   const { teams, drivers }: { teams: Team[]; drivers: Driver[] } = bundle;
   return (
     <table className="w-full">
@@ -250,7 +312,7 @@ function TeamsTable({ bundle }: { bundle: SeasonBundle }) {
         <tr><Th>Team</Th><Th>Drivers</Th><Th>Budget</Th><Th>Reputation</Th><Th>Exp.</Th><Th>Difficulty</Th></tr>
       </thead>
       <tbody>
-        {teams.map((t) => (
+        {teams.filter((t) => matchesSearch(query, t.name, t.difficulty, t.expectedStanding)).map((t) => (
           <tr key={t.id} className="border-t border-neutral-800/60">
             <Td>
               <span className="inline-flex items-center gap-2">
@@ -270,7 +332,7 @@ function TeamsTable({ bundle }: { bundle: SeasonBundle }) {
   );
 }
 
-function DriversTable({ bundle }: { bundle: SeasonBundle }) {
+function DriversTable({ bundle, query }: { bundle: SeasonBundle; query: string }) {
   const { teams, drivers }: { teams: Team[]; drivers: Driver[] } = bundle;
   const teamName = (id: string) => teams.find((t) => t.id === id)?.name ?? id;
   return (
@@ -279,7 +341,7 @@ function DriversTable({ bundle }: { bundle: SeasonBundle }) {
         <tr><Th>#</Th><Th>Driver</Th><Th>Team</Th><Th>OVR</Th><Th>Quali</Th><Th>Race</Th><Th>Corner</Th><Th>Overtake</Th><Th>Composure</Th></tr>
       </thead>
       <tbody>
-        {[...drivers].sort((a, b) => b.ratings.overall - a.ratings.overall).map((d) => (
+        {[...drivers].filter((d) => matchesSearch(query, d.name, teamName(d.teamId), d.number)).sort((a, b) => b.ratings.overall - a.ratings.overall).map((d) => (
           <tr key={d.id} className="border-t border-neutral-800/60">
             <Td>{d.number}</Td><Td>{d.name}</Td><Td>{teamName(d.teamId)}</Td>
             <Td><RatingBadge value={d.ratings.overall} /></Td>
@@ -292,7 +354,7 @@ function DriversTable({ bundle }: { bundle: SeasonBundle }) {
   );
 }
 
-function CarsTable({ bundle }: { bundle: SeasonBundle }) {
+function CarsTable({ bundle, query }: { bundle: SeasonBundle; query: string }) {
   const { teams, cars }: { teams: Team[]; cars: Car[] } = bundle;
   const teamName = (id: string) => teams.find((t) => t.id === id)?.name ?? id;
   return (
@@ -301,7 +363,7 @@ function CarsTable({ bundle }: { bundle: SeasonBundle }) {
         <tr><Th>Team</Th><Th>Engine</Th><Th>Aero</Th><Th>Mech Grip</Th><Th>Reliability</Th><Th>Pit Crew</Th></tr>
       </thead>
       <tbody>
-        {cars.map((c) => (
+        {cars.filter((c) => matchesSearch(query, teamName(c.teamId))).map((c) => (
           <tr key={c.id} className="border-t border-neutral-800/60">
             <Td>{teamName(c.teamId)}</Td>
             <Td><RatingBadge value={c.ratings.enginePower} /></Td>
@@ -316,13 +378,13 @@ function CarsTable({ bundle }: { bundle: SeasonBundle }) {
   );
 }
 
-function PointsTable({ bundle }: { bundle: SeasonBundle }) {
+function PointsTable({ bundle, query }: { bundle: SeasonBundle; query: string }) {
   const pts = getPointsSystem(bundle.season.pointsSystemId);
   return (
     <table className="w-full">
       <thead className="bg-neutral-900/60"><tr><Th>Position</Th><Th>Points</Th></tr></thead>
       <tbody>
-        {Object.entries(pts.pointsByPosition).map(([pos, p]) => (
+        {Object.entries(pts.pointsByPosition).filter(([pos, p]) => matchesSearch(query, pos, p)).map(([pos, p]) => (
           <tr key={pos} className="border-t border-neutral-800/60"><Td>P{pos}</Td><Td>{p}</Td></tr>
         ))}
       </tbody>
@@ -330,14 +392,14 @@ function PointsTable({ bundle }: { bundle: SeasonBundle }) {
   );
 }
 
-function SetupsTable() {
+function SetupsTable({ query }: { query: string }) {
   return (
     <table className="w-full">
       <thead className="bg-neutral-900/60">
         <tr><Th>Setup</Th><Th>DF</Th><Th>Top Spd</Th><Th>Mech</Th><Th>Brake</Th><Th>Tire</Th><Th>Quali</Th><Th>Race</Th><Th>Risk</Th></tr>
       </thead>
       <tbody>
-        {setupOptions.map((s) => (
+        {setupOptions.filter((s) => matchesSearch(query, s.name)).map((s) => (
           <tr key={s.id} className="border-t border-neutral-800/60">
             <Td>{s.name}</Td><Td>{s.downforce}</Td><Td>{s.topSpeed}</Td><Td>{s.mechanicalGrip}</Td>
             <Td>{s.brakingStability}</Td><Td>{s.tirePreservation}</Td><Td>{s.qualifyingBoost}</Td>
@@ -349,9 +411,8 @@ function SetupsTable() {
   );
 }
 
-function RegistryTable() {
+function RegistryTable({ query }: { query: string }) {
   const all = useMemo(() => registryList(), []);
-  const [query, setQuery] = useState('');
   const q = query.trim().toLowerCase();
   const rows = useMemo(() => {
     const filtered = q
@@ -368,12 +429,6 @@ function RegistryTable() {
   return (
     <div>
       <div className="flex flex-wrap items-center gap-3 border-b border-neutral-800 p-3">
-        <input
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          placeholder="Search name / id / nationality…"
-          className="w-64 rounded-md border border-neutral-700 bg-neutral-900 px-3 py-1.5 text-sm text-neutral-200"
-        />
         <span className="text-xs text-neutral-500">
           {all.length} canonical drivers · showing {rows.length}
         </span>
@@ -409,14 +464,14 @@ function RegistryTable() {
   );
 }
 
-function DevTable() {
+function DevTable({ query }: { query: string }) {
   return (
     <table className="w-full">
       <thead className="bg-neutral-900/60">
         <tr><Th>Project</Th><Th>Category</Th><Th>Horizon</Th><Th>Cost</Th><Th>Races</Th><Th>Success</Th><Th>Carryover</Th></tr>
       </thead>
       <tbody>
-        {developmentProjectCatalog.map((p) => (
+        {developmentProjectCatalog.filter((p) => matchesSearch(query, p.name, p.category, p.horizon)).map((p) => (
           <tr key={p.id} className="border-t border-neutral-800/60">
             <Td>{p.name}</Td><Td>{p.category}</Td><Td>{p.horizon}</Td>
             <Td>${(p.cost / 1_000_000).toFixed(1)}M</Td><Td>{p.durationRaces}</Td>
@@ -426,4 +481,10 @@ function DevTable() {
       </tbody>
     </table>
   );
+}
+
+function matchesSearch(query: string, ...values: Array<string | number | undefined>): boolean {
+  const normalized = query.trim().toLowerCase();
+  if (!normalized) return true;
+  return values.some((value) => String(value ?? '').toLowerCase().includes(normalized));
 }
