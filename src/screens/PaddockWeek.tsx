@@ -22,6 +22,7 @@ import {
 } from '../sim/phase18AdvisorEngine';
 import { getGameModeLabel } from '../game/modeRestrictions';
 import { Panel } from '../components/Panel';
+import { SeasonWorkflowRail } from '../components/workspace/SeasonWorkflowRail';
 import { Button } from '../components/Button';
 import { NewsPanel } from '../components/NewsPanel';
 import { formatMoney } from '../components/ui';
@@ -265,6 +266,12 @@ export function PaddockWeek() {
             </span>
           )}
         </>}
+      />
+
+      <SeasonWorkflowRail
+        active="paddock"
+        context={race ? `Preparing for ${race.gpName}` : `Round ${phaseState.currentRound + 1} preparation`}
+        blocker={pendingCount > 0 ? `${pendingCount} required decision${pendingCount === 1 ? '' : 's'} pending` : !packageSelected ? 'Weekend package not selected' : undefined}
       />
 
       <WorkspaceTabs

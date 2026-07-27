@@ -4,6 +4,7 @@ import { useGame } from '../game/GameContext';
 import { getTrackById } from '../data';
 import { buildPostRaceSummary, getCareerPhase, getOrCreatePhaseState } from '../game/careerPhaseEngine';
 import { Panel } from '../components/Panel';
+import { SeasonWorkflowRail } from '../components/workspace/SeasonWorkflowRail';
 import { Button } from '../components/Button';
 import { RaceResultTable } from '../components/RaceResultTable';
 import { StandingsTable } from '../components/StandingsTable';
@@ -143,6 +144,11 @@ export function PostRaceReview() {
         <WorkspaceMetric label="Car condition" value={isActiveReview ? `${Math.round(summary?.carCondition ?? 0)}%` : 'Read only'} detail={isActiveReview ? 'Current team car condition' : `${results.length} classified records`} />
         <WorkspaceMetric label="Technical risk" value={technicalRisk.unresolvedCount > 0 ? `${technicalRisk.unresolvedCount} unresolved` : 'Clear'} detail={technicalRisk.unresolvedCount > 0 ? `${technicalRisk.unresolvedRisk} active risk points` : `${technicalRisk.caseCount} case(s) recorded`} />
       </MetricStrip>
+      <SeasonWorkflowRail
+        active="review"
+        context={`${race.gpName} · ${isActiveReview ? 'Active debrief' : 'Historical review'}`}
+        blocker={isActiveReview && technicalRisk.unresolvedCount > 0 ? `${technicalRisk.unresolvedCount} technical case${technicalRisk.unresolvedCount === 1 ? '' : 's'} unresolved` : undefined}
+      />
       {isActiveReview && technicalRisk.unresolvedCount > 0 && (
         <div className="shrink-0 rounded border border-orange-500/30 bg-orange-500/5 px-3 py-2 text-[11px] text-orange-200">
           Technical review is optional, but continuing with {technicalRisk.unresolvedCount} unresolved case{technicalRisk.unresolvedCount === 1 ? '' : 's'} keeps a reliability penalty active for future races.

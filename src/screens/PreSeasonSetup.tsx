@@ -14,6 +14,7 @@ import { effectiveCarRatings } from '../sim/trackFitEngine';
 import { developmentSlots } from '../sim/facilityEngine';
 import { activeUpgradePrograms } from '../sim/technicalAdapters';
 import { Panel } from '../components/Panel';
+import { SeasonWorkflowRail } from '../components/workspace/SeasonWorkflowRail';
 import { Button } from '../components/Button';
 import { RegulationPanel } from '../components/RegulationPanel';
 import { TrackDemandBars } from '../components/TrackDemandBars';
@@ -196,6 +197,11 @@ export function PreSeasonSetup() {
         <WorkspaceMetric label="Race line-up" value={`${activeDrivers.length}/${minDrivers}`} detail={hasValidLineup ? 'Required seats filled' : 'Driver signing required'} />
         <WorkspaceMetric label="Race 1 readiness" value={preseasonProgram?.testingCompleted ? `${preseasonProgram.readiness.overall}%` : 'Pending'} detail={race?.gpName ?? 'Opening event unavailable'} />
       </MetricStrip>
+      <SeasonWorkflowRail
+        active="preseason"
+        context={race ? `Preparing for ${race.gpName}` : `${state.seasonYear} season preparation`}
+        blocker={checklistComplete ? undefined : advanceBlockedReason}
+      />
       <div className="ui-decision-strip flex flex-wrap items-center justify-between gap-2 rounded-lg border px-3 py-2.5">
         <div className="flex min-w-0 items-center gap-2 text-xs">
           <span className="ui-decision-strip-pulse" aria-hidden="true" />

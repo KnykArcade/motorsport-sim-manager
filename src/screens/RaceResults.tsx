@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useGame } from '../game/GameContext';
 import { getTrackById } from '../data';
 import { Panel } from '../components/Panel';
+import { SeasonWorkflowRail } from '../components/workspace/SeasonWorkflowRail';
 import { Button } from '../components/Button';
 import { RaceResultTable } from '../components/RaceResultTable';
 import { NewsFeed } from '../components/NewsFeed';
@@ -89,6 +90,7 @@ export function RaceResults() {
         />
         <WorkspaceMetric label="Race story" value={events.length} detail={events.length === 1 ? 'Recorded event' : 'Recorded events'} />
       </MetricStrip>
+      <SeasonWorkflowRail active="review" context={`${race.gpName} · Result recorded`} />
       <WorkspaceTabs items={RACE_RESULTS_TABS} active={tab} onChange={selectTab} ariaLabel="Race result sections" />
       <WorkspaceBody className="space-y-3">
       {tab === 'summary' && (
