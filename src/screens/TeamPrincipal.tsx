@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useGame } from '../game/GameContext';
 import { teamById } from '../game/careerState';
 import { Panel } from '../components/Panel';
@@ -17,7 +17,11 @@ import { CharacterDossierButton } from '../components/characterCards/CharacterDo
 import {
   PRINCIPAL_COMMAND_TABS,
   PRINCIPAL_OFFERS_PER_PAGE,
+  principalCareerTimeline,
+  principalCommitmentRows,
   principalJobOfferPage,
+  principalRelationshipRows,
+  principalTabFromQuery,
   selectedPrincipalJobOffer,
   type PrincipalCommandTab,
 } from './teamPrincipalViewModel';
@@ -38,9 +42,9 @@ import {
 
 export function TeamPrincipal() {
   const { state, dispatch } = useGame();
+  const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const [activeTab, setActiveTab] = useState<PrincipalCommandTab>(() =>
-    searchParams.get('tab') === 'career' ? 'career' : 'standing');
+  const [activeTab, setActiveTab] = useState<PrincipalCommandTab>(() => principalTabFromQuery(searchParams.get('tab')));
   const [offerPage, setOfferPage] = useState(0);
   const [selectedOfferId, setSelectedOfferId] = useState<string>();
   if (!state) return null;
@@ -68,6 +72,11 @@ export function TeamPrincipal() {
   const safeOfferPage = Math.min(offerPage, offerPageCount - 1);
   const visibleOffers = principalJobOfferPage(offers, safeOfferPage);
   const selectedOffer = selectedPrincipalJobOffer(visibleOffers, selectedOfferId);
+  const relationships = principalRelationshipRows(state);
+  const commitments = principalCommitmentRows(state);
+  const careerTimeline = principalCareerTimeline(state);
+  const expectation = state.teamExpectations?.[state.selectedTeamId];
+  const createdPrincipal = state.teamPrincipal;
 
   return (
     <WorkspaceScreen className="ui-team-people-screen">
@@ -132,8 +141,67 @@ export function TeamPrincipal() {
               <Metric label="Development" value={String(principal.attributes.development)} />
               <Metric label="Strategy" value={String(principal.attributes.strategy)} />
             </div>
+            {createdPrincipal && (
+              <div className="mt-4 border-t border-neutral-800 pt-3 text-xs text-neutral-400">
+                <div className="grid gap-2 sm:grid-cols-2">
+                  <FmKeyValue label="Background" value={humanize(createdPrincipal.background)} />
+                  <FmKeyValue label="Management style" value={humanize(createdPrincipal.managementStyle)} />
+                  <FmKeyValue label="Primary strength" value={humanize(createdPrincipal.primaryStrength)} />
+                  <FmKeyValue label="Race philosophy" value={humanize(createdPrincipal.raceStrategyPhilosophy)} />
+                </div>
+              </div>
+            )}
+          </Panel>
+          <Panel title="Board Targets">
+            <FmKeyValue label="Primary objective" value={expectation?.primaryObjective ?? 'No current owner target'} />
+            <FmKeyValue label="Constructor minimum" value={expectation?.minimumConstructorPosition ? `P${expectation.minimumConstructorPosition}` : 'Not specified'} />
+            <FmKeyValue label="Target points" value={expectation?.targetPoints ?? 'Not specified'} />
+            <FmKeyValue label="Required wins" value={expectation?.requiredWins ?? 'Not specified'} />
+            <FmKeyValue label="Board autonomy" value={state.boardroom?.autonomy ?? 'Standard'} />
           </Panel>
         </div>
+      )}
+
+      {activeTab === 'relationships' && (
+        <FmWorkspaceGrid columns="two">
+          <FmPane>
+            <FmPaneHeader title="Driver Relationships" meta={`${relationships.length} active drivers`} />
+            <FmPaneBody className="overflow-auto">
+              {relationships.map((relationship) => (
+                <FmListButton
+                  key={relationship.driverId}
+                  urgent={relationship.trust < 35 || relationship.frustration >= 80}
+                  onClick={() => navigate(`/relationships?driver=${encodeURIComponent(relationship.driverId)}`)}
+                >
+                  <span className="ui-news-list-source">Trust {Math.round(relationship.trust)}% · Frustration {Math.round(relationship.frustration)}%</span>
+                  <strong>{relationship.driverName}</strong>
+                  <span>Morale {Math.round(relationship.morale)}% · Confidence {Math.round(relationship.confidence)}%</span>
+                  <small>{relationship.activePromises} active promise{relationship.activePromises === 1 ? '' : 's'} · Open relationship file →</small>
+                </FmListButton>
+              ))}
+            </FmPaneBody>
+          </FmPane>
+          <FmPane>
+            <FmPaneHeader title="Leadership Commitments" meta={`${commitments.length} active`} />
+            <FmPaneBody className="overflow-auto">
+              {commitments.map((commitment) => (
+                <article key={commitment.id} className="border-b border-neutral-800 p-3 text-xs">
+                  <div className="flex items-center justify-between gap-3 text-[10px] uppercase tracking-wide text-neutral-500">
+                    <span>{commitment.scope}</span>
+                    <span>Due {commitment.due}</span>
+                  </div>
+                  <strong className="mt-1 block text-neutral-100">{commitment.title}</strong>
+                  <p className="mt-1 text-neutral-400">{commitment.detail}</p>
+                  <small className="mt-2 block text-amber-300">{commitment.status}</small>
+                </article>
+              ))}
+              {commitments.length === 0 && <div className="ui-inbox-empty">No active driver, department, or public commitment.</div>}
+            </FmPaneBody>
+            <div className="border-t border-neutral-800 p-2">
+              <Button variant="secondary" onClick={() => navigate('/relationships')}>Open Relationship Center</Button>
+            </div>
+          </FmPane>
+        </FmWorkspaceGrid>
       )}
 
       {identity && activeTab === 'identity' && (
@@ -236,6 +304,24 @@ export function TeamPrincipal() {
               <Metric label="Drivers' Titles" value={String(principal.careerStats.driverTitles)} />
               <Metric label="Constructors' Titles" value={String(principal.careerStats.constructorTitles)} />
               <Metric label="Teams Managed" value={String(principal.careerStats.teamsManaged.length)} />
+            </div>
+            <div className="mt-4 border-t border-neutral-800 pt-3">
+              <div className="text-[10px] font-semibold uppercase tracking-wide text-neutral-500">Career timeline</div>
+              <div className="mt-2 grid gap-2 lg:grid-cols-2">
+                {careerTimeline.map((entry) => (
+                  <article key={entry.id} className="rounded border border-neutral-800 bg-neutral-900/40 p-3 text-xs">
+                    <div className="flex items-start justify-between gap-3">
+                      <div>
+                        <strong className="block text-neutral-100">{entry.teamName}</strong>
+                        <span className="text-neutral-500">{entry.role}</span>
+                      </div>
+                      <Tag>{entry.seasons}</Tag>
+                    </div>
+                    <p className="mt-2 text-neutral-400">{entry.joinedReason}</p>
+                    {entry.leftReason && <p className="mt-1 text-neutral-500">Departure: {entry.leftReason}</p>}
+                  </article>
+                ))}
+              </div>
             </div>
           </Panel>
 
@@ -371,4 +457,11 @@ function modifierOutlook(value: number): string {
 
 function splitLabel(value: string): string {
   return value.replace(/([a-z])([A-Z])/g, '$1 $2');
+}
+
+function humanize(value: string): string {
+  return value
+    .replace(/_/g, ' ')
+    .replace(/([a-z])([A-Z])/g, '$1 $2')
+    .replace(/\b\w/g, (character) => character.toUpperCase());
 }

@@ -3714,6 +3714,14 @@ body {
   font-size: 0.51rem;
 }
 
+.ui-home-context-link small {
+  display: block;
+  margin-top: 0.18rem;
+  color: #6f6f76;
+  font-size: 0.48rem;
+  line-height: 1.35;
+}
+
 .ui-home-world-row {
   border-bottom: 1px solid #36363b;
   padding: 0.35rem 0;
