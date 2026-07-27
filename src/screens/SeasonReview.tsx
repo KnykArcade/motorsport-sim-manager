@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useGame } from '../game/GameContext';
-import { Panel } from '../components/Panel';
 import { SeasonWorkflowRail } from '../components/workspace/SeasonWorkflowRail';
 import { Button } from '../components/Button';
 import { StandingsTable } from '../components/StandingsTable';
@@ -14,6 +13,14 @@ import {
   WorkspaceScreen,
   WorkspaceTabs,
 } from '../components/workspace/Workspace';
+import {
+  FmDecisionBar,
+  FmKeyValue,
+  FmPane,
+  FmPaneBody,
+  FmPaneHeader,
+  FmWorkspaceGrid,
+} from '../components/workspace/FmPane';
 import { isSingleSeasonMode } from '../game/modeRestrictions';
 import { ARCHETYPE_SPECS, TRAIT_LABELS } from '../sim/aiTeamEngine';
 import {
@@ -82,72 +89,115 @@ export function SeasonReview() {
       </MetricStrip>
       <SeasonWorkflowRail active="season" context={`${state.seasonYear} ${state.series} championship complete`} />
       <WorkspaceTabs items={SEASON_REVIEW_TABS} active={tab} onChange={selectTab} ariaLabel="Season review sections" />
-      <WorkspaceBody className="space-y-3">
+      <WorkspaceBody className="ui-phase14-workspace">
 
       {tab === 'honours' && (
-        <div className="grid gap-3 lg:grid-cols-2">
-          <Panel title="World Champion">
-            <div className="text-2xl font-bold text-amber-300">{champion ? driverName(champion.entityId) : '—'}</div>
-            <div className="text-sm text-neutral-400">{champion ? `${champion.points} pts · ${champion.wins} wins · ${champion.podiums} podiums` : ''}</div>
-          </Panel>
-          <Panel title="Constructors’ Champion">
-            <div className="text-2xl font-bold text-amber-300">{constructorChampion ? teamName(constructorChampion.entityId) : '—'}</div>
-            <div className="text-sm text-neutral-400">{constructorChampion ? `${constructorChampion.points} pts · ${constructorChampion.wins} wins` : ''}</div>
-            <ChampionIdentity teamId={constructorChampion?.entityId} />
-          </Panel>
-          <div className="lg:col-span-2">
-            <Panel title="Your Team’s Season">
-              <p className="text-sm text-neutral-300">
-                {teamName(state.selectedTeamId)} finished <span className="font-semibold text-neutral-100">P{playerTeamPosition}</span> in the Constructors’ Championship with {playerStanding?.points ?? 0} points.
-              </p>
-            </Panel>
-          </div>
-        </div>
+        <FmWorkspaceGrid className="ui-season-review-grid">
+          <FmPane>
+            <FmPaneHeader title="World champion" meta="Drivers' championship" />
+            <FmPaneBody className="ui-phase14-hero-pane">
+              <span>Champion</span>
+              <strong>{champion ? driverName(champion.entityId) : '—'}</strong>
+              <small>{champion ? `${champion.points} pts · ${champion.wins} wins · ${champion.podiums} podiums` : ''}</small>
+            </FmPaneBody>
+          </FmPane>
+          <FmPane>
+            <FmPaneHeader title="Constructors' champion" meta="Team honours" />
+            <FmPaneBody className="ui-phase14-hero-pane">
+              <span>Champion team</span>
+              <strong>{constructorChampion ? teamName(constructorChampion.entityId) : '—'}</strong>
+              <small>{constructorChampion ? `${constructorChampion.points} pts · ${constructorChampion.wins} wins` : ''}</small>
+              <ChampionIdentity teamId={constructorChampion?.entityId} />
+            </FmPaneBody>
+          </FmPane>
+          <FmPane>
+            <FmPaneHeader title="Your season" meta={teamName(state.selectedTeamId)} />
+            <FmPaneBody className="ui-phase14-pane-body">
+              <div className="ui-phase14-dossier">
+                <section>
+                  <h3>Final outcome</h3>
+                  <FmKeyValue label="Position" value={`P${playerTeamPosition}`} />
+                  <FmKeyValue label="Points" value={playerStanding?.points ?? 0} />
+                  <FmKeyValue label="Rounds" value={state.calendar.length} />
+                </section>
+                <section>
+                  <h3>Assessment</h3>
+                  <p>{teamName(state.selectedTeamId)} finished P{playerTeamPosition} in the Constructors’ Championship with {playerStanding?.points ?? 0} points.</p>
+                </section>
+              </div>
+            </FmPaneBody>
+          </FmPane>
+        </FmWorkspaceGrid>
       )}
 
       {tab === 'drivers' && (
-        <StandingsTable
-          title="Final Drivers’ Standings"
-          entries={transitionPage(state.driverStandings, safePage)}
-          nameOf={driverName}
-          subtitleOf={teamOfDriver}
-          positionOffset={safePage * RESULT_PAGE_SIZE}
-        />
+        <FmPane>
+          <FmPaneHeader title="Final drivers' standings" meta={`${state.driverStandings.length} classified`} />
+          <FmPaneBody className="overflow-auto">
+            <StandingsTable
+              title="Final Drivers’ Standings"
+              entries={transitionPage(state.driverStandings, safePage)}
+              nameOf={driverName}
+              subtitleOf={teamOfDriver}
+              positionOffset={safePage * RESULT_PAGE_SIZE}
+            />
+          </FmPaneBody>
+        </FmPane>
       )}
 
       {tab === 'constructors' && (
-        <StandingsTable
-          title="Final Constructors’ Standings"
-          entries={transitionPage(state.constructorStandings, safePage)}
-          nameOf={teamName}
-          colorOf={teamColor}
-          highlightId={state.selectedTeamId}
-          positionOffset={safePage * RESULT_PAGE_SIZE}
-        />
+        <FmPane>
+          <FmPaneHeader title="Final constructors' standings" meta={`${state.constructorStandings.length} classified`} />
+          <FmPaneBody className="overflow-auto">
+            <StandingsTable
+              title="Final Constructors’ Standings"
+              entries={transitionPage(state.constructorStandings, safePage)}
+              nameOf={teamName}
+              colorOf={teamColor}
+              highlightId={state.selectedTeamId}
+              positionOffset={safePage * RESULT_PAGE_SIZE}
+            />
+          </FmPaneBody>
+        </FmPane>
       )}
 
       {tab === 'next' && (
-        <Panel title="What’s Next?">
-          {state.gameMode === 'Career' ? (
-            <div className="flex flex-wrap gap-3">
-              <Button variant="primary" onClick={() => navigate('/offseason')}>Enter Offseason →</Button>
-              <Button onClick={() => navigate('/')}>Main Menu</Button>
-            </div>
-          ) : (
-            <div className="space-y-3">
-              {isSingleSeasonMode(state.gameMode) && (
-                <div className="rounded-lg border border-amber-800/40 bg-amber-900/10 p-3 text-sm text-amber-300">
-                  Single Season Mode covers one historical year only. Offseason, multi-year development, and season advance are not available. Replay the season or convert the save to Career Mode to continue.
-                </div>
-              )}
-              <div className="flex flex-wrap gap-3">
-                <Button variant="primary" onClick={replaySeason}>Replay Season</Button>
-                <Button onClick={() => navigate('/offseason')}>Convert to Career</Button>
-                <Button onClick={() => navigate('/')}>Return to Main Menu</Button>
+        <div className="ui-phase14-decision-workspace">
+          <FmPane>
+            <FmPaneHeader title="Season transition" meta={state.gameMode} />
+            <FmPaneBody className="ui-phase14-pane-body">
+              <div className="ui-phase14-dossier">
+                <section>
+                  <h3>{state.gameMode === 'Career' ? 'Continue the career' : 'Choose the next save path'}</h3>
+                  <p>{state.gameMode === 'Career'
+                    ? 'The offseason processes driver movement, technical carryover, commercial reviews, and the next championship.'
+                    : 'Single Season saves can replay the same year or convert into a multi-year Career before continuing.'}</p>
+                </section>
+                {isSingleSeasonMode(state.gameMode) && (
+                  <section className="is-warning">
+                    <h3>Single Season boundary</h3>
+                    <p>Offseason, multi-year development, and season advance remain locked until the save is converted to Career.</p>
+                  </section>
+                )}
               </div>
-            </div>
-          )}
-        </Panel>
+            </FmPaneBody>
+          </FmPane>
+          <FmDecisionBar actions={state.gameMode === 'Career' ? (
+            <>
+              <Button onClick={() => navigate('/')}>Main Menu</Button>
+              <Button variant="primary" onClick={() => navigate('/offseason')}>Enter Offseason →</Button>
+            </>
+          ) : (
+            <>
+              <Button onClick={() => navigate('/')}>Main Menu</Button>
+              <Button onClick={() => navigate('/offseason')}>Convert to Career</Button>
+              <Button variant="primary" onClick={replaySeason}>Replay Season</Button>
+            </>
+          )}>
+            <strong className="text-neutral-200">Next meaningful step:</strong>{' '}
+            {state.gameMode === 'Career' ? 'review the transition into next season.' : 'choose whether this save ends, replays, or becomes a career.'}
+          </FmDecisionBar>
+        </div>
       )}
 
       {activeStandings.length > 0 && (
@@ -169,7 +219,7 @@ export function SeasonReview() {
     if (!ai) return null;
     const spec = ARCHETYPE_SPECS[ai.archetype];
     return (
-      <div className="mt-3 rounded-md border border-neutral-800 bg-neutral-900/40 p-2">
+      <div className="ui-season-champion-identity">
         {spec && <div className="text-xs text-neutral-400"><span className="font-semibold text-neutral-300">{spec.label}</span> — {spec.description}</div>}
         {ai.philosophy && <div className="mt-2 flex flex-wrap gap-1">{ai.philosophy.traits.map((trait) => <span key={trait} className="rounded bg-neutral-800 px-1.5 py-0.5 text-[10px] text-neutral-300">{TRAIT_LABELS[trait]}</span>)}</div>}
       </div>

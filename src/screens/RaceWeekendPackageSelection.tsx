@@ -84,7 +84,7 @@ export function RaceWeekendPackageSelection({ onConfirm, eraTheme }: Props) {
   ) : null;
 
   return (
-    <div className={`space-y-4 ${eraTheme === 'f1-1990s' ? 'text-neutral-100' : ''}`}>
+    <div className={`ui-race-package-workspace ${eraTheme === 'f1-1990s' ? 'text-neutral-100' : ''}`}>
       <Panel
         title={eraTheme === 'f1-1990s' ? '1990s Garage Package Desk' : 'Race Weekend Package Selection'}
         actions={confirmButton}

@@ -1,7 +1,6 @@
 import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '../components/Button';
-import { Panel } from '../components/Panel';
 import {
   MetricStrip,
   WorkspaceBody,
@@ -13,6 +12,14 @@ import {
 import { useGame } from '../game/GameContext';
 import { buildPerformanceDataHub } from './performanceDataHubViewModel';
 import type { AnalyticsEvidenceLevel } from '../types/performanceAnalyticsTypes';
+import {
+  FmKeyValue,
+  FmListButton,
+  FmPane,
+  FmPaneBody,
+  FmPaneHeader,
+  FmWorkspaceGrid,
+} from '../components/workspace/FmPane';
 
 type HubTab = 'overview' | 'drivers' | 'tracks' | 'rivals';
 
@@ -60,22 +67,28 @@ export function PerformanceDataHub() {
           : `${hub.raceCount} race snapshot${hub.raceCount === 1 ? '' : 's'} available; ${hub.telemetryRaceCount} include detailed live pit and tire telemetry. Missing historical measurements remain unavailable rather than estimated.`}
       </div>
       <WorkspaceTabs items={TABS} active={tab} onChange={setTab} ariaLabel="Data Hub sections" />
-      <WorkspaceBody className="space-y-4">
+      <WorkspaceBody className="ui-phase14-workspace">
         {tab === 'overview' && (
-          <>
-            <div className="grid gap-3 lg:grid-cols-3">
+          <FmWorkspaceGrid className="ui-performance-review-grid">
+            <FmPane>
+              <FmPaneHeader title="Evidence indicators" meta={`${evidenceMetrics.length} live measures`} />
+              <FmPaneBody>
               {evidenceMetrics.map((metric) => (
-                <Panel key={metric.id} title={metric.label} actions={<EvidenceBadge level={metric.confidence} />}>
-                  <div className="text-2xl font-semibold text-neutral-100">{metric.value}</div>
-                  <p className="mt-1 text-xs text-neutral-500">{metric.detail}</p>
-                  <p className={`mt-3 text-xs font-semibold ${trendColor(metric.trend)}`}>{metric.trend}</p>
-                </Panel>
+                <FmListButton key={metric.id}>
+                  <span>{metric.label}</span>
+                  <strong>{metric.value}</strong>
+                  <small>{metric.detail}</small>
+                  <em className={trendColor(metric.trend)}>{metric.trend} · {metric.confidence} confidence</em>
+                </FmListButton>
               ))}
-            </div>
-            <Panel title="Engineer Conclusions" actions={<span className="text-xs text-neutral-500">Every claim links to stored evidence</span>}>
-              <div className="grid gap-3 xl:grid-cols-2">
+              </FmPaneBody>
+            </FmPane>
+            <FmPane>
+              <FmPaneHeader title="Engineer conclusions" meta="Every claim links to stored evidence" />
+              <FmPaneBody className="overflow-auto">
+                <div className="ui-performance-finding-list">
                 {hub.findings.map((finding) => (
-                  <div key={finding.id} className="rounded-lg border border-neutral-800 bg-neutral-950/50 p-4">
+                  <article key={finding.id}>
                     <div className="flex items-start justify-between gap-3">
                       <div>
                         <h3 className="font-semibold text-neutral-100">{finding.title}</h3>
@@ -90,17 +103,42 @@ export function PerformanceDataHub() {
                       <span className={`text-xs font-semibold ${trendColor(finding.trend)}`}>{finding.trend}</span>
                       <Button variant="ghost" onClick={() => navigate(finding.actionRoute)}>{finding.actionLabel} →</Button>
                     </div>
-                  </div>
+                  </article>
                 ))}
-              </div>
-            </Panel>
-          </>
+                </div>
+              </FmPaneBody>
+            </FmPane>
+            <FmPane>
+              <FmPaneHeader title="Analysis context" meta={`${hub.raceCount} race snapshots`} />
+              <FmPaneBody className="ui-phase14-pane-body">
+                <div className="ui-phase14-dossier">
+                  <section>
+                    <h3>Evidence coverage</h3>
+                    <FmKeyValue label="Race snapshots" value={hub.raceCount} />
+                    <FmKeyValue label="Live telemetry" value={hub.telemetryRaceCount} />
+                    <FmKeyValue label="Findings" value={hub.findings.length} />
+                  </section>
+                  <section>
+                    <h3>Interpretation rule</h3>
+                    <p>Missing measurements remain unavailable. The engineering team does not invent certainty where the save has no evidence.</p>
+                  </section>
+                  <section>
+                    <h3>Next review</h3>
+                    <Button variant="ghost" className="w-full" onClick={() => navigate('/history')}>Open raw race history →</Button>
+                  </section>
+                </div>
+              </FmPaneBody>
+            </FmPane>
+          </FmWorkspaceGrid>
         )}
 
         {tab === 'drivers' && (
-          <Panel title="Driver and Teammate Comparison" actions={<Button variant="ghost" onClick={() => navigate('/curves')}>Open Development Plans →</Button>}>
-            {hub.drivers.length === 0 ? <EmptyState text="No player-team driver results are available yet." /> : (
-              <table className="w-full text-sm">
+          <FmWorkspaceGrid columns="two" className="ui-performance-table-grid">
+            <FmPane>
+              <FmPaneHeader title="Driver and teammate comparison" meta={`${hub.drivers.length} team drivers`} />
+              <FmPaneBody className="overflow-auto">
+              {hub.drivers.length === 0 ? <EmptyState text="No player-team driver results are available yet." /> : (
+                <table className="w-full text-sm">
                 <thead><tr className="border-b border-neutral-800 text-left text-[10px] uppercase tracking-wide text-neutral-500">
                   <th className="pb-2">Driver</th><th className="pb-2">Races</th><th className="pb-2">Avg grid</th><th className="pb-2">Avg finish</th><th className="pb-2">Places/race</th><th className="pb-2">Finish rate</th><th className="pb-2">Consistency</th>
                 </tr></thead>
@@ -115,15 +153,29 @@ export function PerformanceDataHub() {
                     <td className="py-3 text-neutral-400">{driver.consistency == null ? 'Building baseline' : `±${driver.consistency.toFixed(1)} places`}</td>
                   </tr>
                 ))}</tbody>
-              </table>
-            )}
-          </Panel>
+                </table>
+              )}
+              </FmPaneBody>
+            </FmPane>
+            <FmPane>
+              <FmPaneHeader title="Driver context" meta="Stored race evidence" />
+              <FmPaneBody className="ui-phase14-pane-body">
+                <div className="ui-phase14-dossier">
+                  <section><h3>Reading the comparison</h3><p>Grid-to-finish movement, finish rate, and consistency separate race execution from one-lap starting position.</p></section>
+                  <section><h3>Development route</h3><Button variant="ghost" className="w-full" onClick={() => navigate('/curves')}>Open development plans →</Button></section>
+                </div>
+              </FmPaneBody>
+            </FmPane>
+          </FmWorkspaceGrid>
         )}
 
         {tab === 'tracks' && (
-          <Panel title="Performance by Circuit Type" actions={<Button variant="ghost" onClick={() => navigate('/briefing?tab=preparation')}>Open Race Preparation →</Button>}>
-            {hub.tracks.length === 0 ? <EmptyState text="Complete races on more circuit types to build this comparison." /> : (
-              <table className="w-full text-sm">
+          <FmWorkspaceGrid columns="two" className="ui-performance-table-grid">
+            <FmPane>
+              <FmPaneHeader title="Performance by circuit type" meta={`${hub.tracks.length} circuit profiles`} />
+              <FmPaneBody className="overflow-auto">
+              {hub.tracks.length === 0 ? <EmptyState text="Complete races on more circuit types to build this comparison." /> : (
+                <table className="w-full text-sm">
                 <thead><tr className="border-b border-neutral-800 text-left text-[10px] uppercase tracking-wide text-neutral-500">
                   <th className="pb-2">Circuit type</th><th className="pb-2">Races</th><th className="pb-2">Avg grid</th><th className="pb-2">Avg finish</th><th className="pb-2">Places/race</th><th className="pb-2">Setup</th><th className="pb-2">Tire wear</th><th className="pb-2">Points</th><th className="pb-2">Finish rate</th>
                 </tr></thead>
@@ -140,23 +192,39 @@ export function PerformanceDataHub() {
                     <td className="py-3 text-neutral-400">{Math.round(track.finishRate * 100)}%</td>
                   </tr>
                 ))}</tbody>
-              </table>
-            )}
-          </Panel>
+                </table>
+              )}
+              </FmPaneBody>
+            </FmPane>
+            <FmPane>
+              <FmPaneHeader title="Circuit context" meta="Preparation consequence" />
+              <FmPaneBody className="ui-phase14-pane-body">
+                <div className="ui-phase14-dossier">
+                  <section><h3>Use this evidence</h3><p>Compare circuit types before choosing race preparation and setup priorities for the next weekend.</p></section>
+                  <section><h3>Preparation route</h3><Button variant="ghost" className="w-full" onClick={() => navigate('/briefing?tab=preparation')}>Open race preparation →</Button></section>
+                </div>
+              </FmPaneBody>
+            </FmPane>
+          </FmWorkspaceGrid>
         )}
 
         {tab === 'rivals' && (
-          <>
-            <Panel title="Select Direct Rival">
+          <FmWorkspaceGrid className="ui-performance-rival-grid">
+            <FmPane>
+              <FmPaneHeader title="Direct rival" meta="Choose comparison team" />
+              <FmPaneBody className="ui-phase14-pane-body">
               <label className="block max-w-md text-xs text-neutral-500">
                 Rival team
                 <select value={rivalTeamId} onChange={(event) => setRivalTeamId(event.target.value)} className="mt-1 w-full rounded border border-neutral-700 bg-neutral-950 px-3 py-2 text-sm text-neutral-200">
                   {state.teams.filter((team) => team.id !== state.selectedTeamId).map((team) => <option key={team.id} value={team.id}>{team.name}</option>)}
                 </select>
               </label>
-            </Panel>
+              </FmPaneBody>
+            </FmPane>
             {hub.rival ? (
-              <Panel title={`${teamName(state.selectedTeamId)} vs ${teamName(hub.rival.teamId)}`} actions={<EvidenceBadge level={hub.rival.confidence} />}>
+              <FmPane>
+                <FmPaneHeader title={`${teamName(state.selectedTeamId)} vs ${teamName(hub.rival.teamId)}`} meta={`${hub.rival.racesCompared} shared races`} actions={<EvidenceBadge level={hub.rival.confidence} />} />
+                <FmPaneBody className="ui-phase14-pane-body">
                 <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
                   <Comparison label="Points" player={String(hub.rival.playerPoints)} rival={String(hub.rival.rivalPoints)} />
                   <Comparison label="Average finish" player={position(hub.rival.playerAverageFinish)} rival={position(hub.rival.rivalAverageFinish)} />
@@ -164,9 +232,19 @@ export function PerformanceDataHub() {
                   <Comparison label="Shared evidence" player={`${hub.rival.racesCompared} races`} rival={`${hub.rival.racesCompared} races`} />
                 </div>
                 <p className="mt-4 text-xs text-neutral-500">Classification comparisons are high-integrity race records. Detailed rival pit and tire conclusions appear only when those measurements were captured.</p>
-              </Panel>
-            ) : <EmptyState text="Select a rival team to compare season evidence." />}
-          </>
+                </FmPaneBody>
+              </FmPane>
+            ) : <FmPane><FmPaneBody><EmptyState text="Select a rival team to compare season evidence." /></FmPaneBody></FmPane>}
+            <FmPane>
+              <FmPaneHeader title="Rival intelligence" meta="Confidence and limits" />
+              <FmPaneBody className="ui-phase14-pane-body">
+                <div className="ui-phase14-dossier">
+                  <section><h3>Comparison basis</h3><p>Only shared completed races are compared. The view does not estimate hidden rival telemetry.</p></section>
+                  <section><h3>Current sample</h3><FmKeyValue label="Shared races" value={hub.rival?.racesCompared ?? 0} /><FmKeyValue label="Confidence" value={hub.rival?.confidence ?? 'Unavailable'} /></section>
+                </div>
+              </FmPaneBody>
+            </FmPane>
+          </FmWorkspaceGrid>
         )}
       </WorkspaceBody>
     </WorkspaceScreen>

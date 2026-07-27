@@ -126,7 +126,7 @@ export function Offseason() {
         </span>
       </div>
       <WorkspaceTabs items={tabs} active={tab} onChange={setTab} ariaLabel="Offseason management sections" />
-      <WorkspaceBody className="space-y-4">
+      <WorkspaceBody className="ui-phase14-workspace ui-offseason-workspace">
 
       {tab === 'overview' && <>
         <Panel title="Transition Readiness">

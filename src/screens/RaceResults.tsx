@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useGame } from '../game/GameContext';
 import { getTrackById } from '../data';
-import { Panel } from '../components/Panel';
 import { SeasonWorkflowRail } from '../components/workspace/SeasonWorkflowRail';
 import { Button } from '../components/Button';
 import { RaceResultTable } from '../components/RaceResultTable';
@@ -25,6 +24,13 @@ import {
   WorkspaceScreen,
   WorkspaceTabs,
 } from '../components/workspace/Workspace';
+import {
+  FmKeyValue,
+  FmPane,
+  FmPaneBody,
+  FmPaneHeader,
+  FmWorkspaceGrid,
+} from '../components/workspace/FmPane';
 
 export function RaceResults() {
   const { raceId } = useParams();
@@ -92,76 +98,141 @@ export function RaceResults() {
       </MetricStrip>
       <SeasonWorkflowRail active="review" context={`${race.gpName} · Result recorded`} />
       <WorkspaceTabs items={RACE_RESULTS_TABS} active={tab} onChange={selectTab} ariaLabel="Race result sections" />
-      <WorkspaceBody className="space-y-3">
+      <WorkspaceBody className="ui-phase14-workspace">
       {tab === 'summary' && (
-        <div className="grid gap-3 lg:grid-cols-2">
-          <Panel title="Your Team">
+        <FmWorkspaceGrid className="ui-race-review-grid">
+          <FmPane>
+            <FmPaneHeader title="Your team" meta={`${playerResults.length} classified entries`} />
+            <FmPaneBody className="ui-phase14-pane-body">
             {playerResults.length === 0 ? <Empty>No team result was recorded.</Empty> : (
-              <div className="grid gap-2 sm:grid-cols-2">
+              <div className="ui-result-team-list">
                 {playerResults.map((result) => (
-                  <div key={result.driverId} className="rounded-lg border border-neutral-800 bg-neutral-950/40 p-3">
-                    <div className="text-sm font-semibold text-neutral-100">{driverName(result.driverId)}</div>
-                    <div className="mt-1 text-xl font-bold text-amber-300">
-                      {result.position ? `P${result.position}` : result.status}
-                    </div>
-                    <div className="text-xs text-neutral-500">Started P{result.gridPosition} · {result.points} pts</div>
-                  </div>
+                  <article key={result.driverId} className="ui-result-driver-row">
+                    <span>{driverName(result.driverId)}</span>
+                    <strong>{result.position ? `P${result.position}` : result.status}</strong>
+                    <small>Started P{result.gridPosition} · {result.points} pts</small>
+                  </article>
                 ))}
               </div>
             )}
-          </Panel>
-          <Panel title="Track Impact"><p className="text-sm text-neutral-300">{trackImpact}</p></Panel>
-          <div className="lg:col-span-2">
-            <Panel title="Headlines">
+            </FmPaneBody>
+          </FmPane>
+          <FmPane>
+            <FmPaneHeader title="Race headlines" meta={`${state.news.filter((item) => item.round === race.round).length} reports`} />
+            <FmPaneBody className="ui-phase14-pane-body">
               <NewsFeed items={state.news.filter((item) => item.round === race.round)} />
-            </Panel>
-          </div>
-        </div>
+            </FmPaneBody>
+          </FmPane>
+          <FmPane>
+            <FmPaneHeader title="Result context" meta={race.trackName} />
+            <FmPaneBody className="ui-phase14-pane-body">
+              <div className="ui-phase14-dossier">
+                <section>
+                  <h3>Track impact</h3>
+                  <p>{trackImpact}</p>
+                </section>
+                <section>
+                  <h3>Winning entry</h3>
+                  <FmKeyValue label="Driver" value={winner ? driverName(winner.driverId) : '—'} />
+                  <FmKeyValue label="Team" value={winner ? teamName(winner.teamId) : '—'} />
+                  <FmKeyValue label="Points" value={winner?.points ?? 0} />
+                </section>
+                <section>
+                  <h3>Your outcome</h3>
+                  <FmKeyValue label="Best finish" value={playerResults[0]?.position ? `P${playerResults[0].position}` : 'No classified finish'} />
+                  <FmKeyValue label="Team points" value={playerResults.reduce((total, result) => total + result.points, 0)} />
+                </section>
+              </div>
+            </FmPaneBody>
+          </FmPane>
+        </FmWorkspaceGrid>
       )}
 
       {tab === 'classification' && (
-        <Panel title="Race Classification">
-          <RaceResultTable
-            results={transitionPage(results, safePage)}
-            nameOf={driverName}
-            teamNameOf={teamName}
-            colorOf={teamColor}
-            highlightTeamId={state.selectedTeamId}
-          />
-        </Panel>
+        <FmWorkspaceGrid columns="two" className="ui-race-classification-grid">
+          <FmPane>
+            <FmPaneHeader title="Race classification" meta={`${results.length} entries`} />
+            <FmPaneBody className="overflow-auto">
+              <RaceResultTable
+                results={transitionPage(results, safePage)}
+                nameOf={driverName}
+                teamNameOf={teamName}
+                colorOf={teamColor}
+                highlightTeamId={state.selectedTeamId}
+              />
+            </FmPaneBody>
+          </FmPane>
+          <FmPane>
+            <FmPaneHeader title="Classification context" meta="Selected team result" />
+            <FmPaneBody className="ui-phase14-pane-body">
+              <div className="ui-phase14-dossier">
+                {playerResults.map((result) => (
+                  <section key={result.driverId}>
+                    <h3>{driverName(result.driverId)}</h3>
+                    <FmKeyValue label="Finish" value={result.position ? `P${result.position}` : result.status} />
+                    <FmKeyValue label="Grid" value={`P${result.gridPosition}`} />
+                    <FmKeyValue label="Points" value={result.points} />
+                  </section>
+                ))}
+              </div>
+            </FmPaneBody>
+          </FmPane>
+        </FmWorkspaceGrid>
       )}
 
       {tab === 'story' && (
-        <Panel title="Race Event Log">
-          {events.length === 0 ? <Empty>Quiet race — no major incidents.</Empty> : (
-            <div className="grid gap-2 md:grid-cols-2">
-              {transitionPage(events, safePage, EVENT_PAGE_SIZE).map((event, index) => (
-                <div key={`${event.lap}-${index}-${event.text}`} className="flex gap-3 rounded-lg border border-neutral-800 bg-neutral-950/40 px-3 py-2 text-sm">
-                  <span className="w-12 shrink-0 font-semibold tabular-nums text-amber-300">Lap {event.lap}</span>
-                  <span className="text-neutral-300">{event.text}</span>
+        <FmWorkspaceGrid columns="two" className="ui-race-story-grid">
+          <FmPane>
+            <FmPaneHeader title="Race event log" meta={`${events.length} recorded events`} />
+            <FmPaneBody className="overflow-auto">
+              {events.length === 0 ? <div className="ui-phase14-pane-body"><Empty>Quiet race — no major incidents.</Empty></div> : (
+                <div className="ui-race-event-list">
+                  {transitionPage(events, safePage, EVENT_PAGE_SIZE).map((event, index) => (
+                    <article key={`${event.lap}-${index}-${event.text}`}>
+                      <strong>Lap {event.lap}</strong>
+                      <span>{event.text}</span>
+                    </article>
+                  ))}
                 </div>
-              ))}
-            </div>
-          )}
-        </Panel>
+              )}
+            </FmPaneBody>
+          </FmPane>
+          <FmPane>
+            <FmPaneHeader title="Story context" meta="Race record" />
+            <FmPaneBody className="ui-phase14-pane-body">
+              <div className="ui-phase14-dossier">
+                <section><h3>Event volume</h3><FmKeyValue label="Recorded" value={events.length} /><FmKeyValue label="Round" value={race.round} /></section>
+                <section><h3>Track influence</h3><p>{trackImpact}</p></section>
+              </div>
+            </FmPaneBody>
+          </FmPane>
+        </FmWorkspaceGrid>
       )}
 
       {tab === 'championships' && (
-        <>
-          <div className="grid grid-cols-2 gap-1 rounded-lg border border-neutral-800 bg-neutral-950/70 p-1">
-            <SubTab active={championship === 'drivers'} onClick={() => { setChampionship('drivers'); setPage(0); }}>Drivers</SubTab>
-            <SubTab active={championship === 'constructors'} onClick={() => { setChampionship('constructors'); setPage(0); }}>Constructors</SubTab>
-          </div>
-          <StandingsTable
-            title={championship === 'drivers' ? "Drivers' Championship" : "Constructors' Championship"}
-            entries={transitionPage(activeStandings, safePage)}
-            nameOf={championship === 'drivers' ? driverName : teamName}
-            subtitleOf={championship === 'drivers' ? teamOfDriver : undefined}
-            colorOf={championship === 'constructors' ? teamColor : undefined}
-            highlightId={championship === 'constructors' ? state.selectedTeamId : undefined}
-            positionOffset={safePage * RESULT_PAGE_SIZE}
-          />
-        </>
+        <FmWorkspaceGrid columns="two" className="ui-race-championship-grid">
+          <FmPane>
+            <FmPaneHeader title={championship === 'drivers' ? "Drivers' championship" : "Constructors' championship"} meta={`After round ${race.round}`} />
+            <FmPaneBody className="overflow-auto">
+              <StandingsTable
+                title={championship === 'drivers' ? "Drivers' Championship" : "Constructors' Championship"}
+                entries={transitionPage(activeStandings, safePage)}
+                nameOf={championship === 'drivers' ? driverName : teamName}
+                subtitleOf={championship === 'drivers' ? teamOfDriver : undefined}
+                colorOf={championship === 'constructors' ? teamColor : undefined}
+                highlightId={championship === 'constructors' ? state.selectedTeamId : undefined}
+                positionOffset={safePage * RESULT_PAGE_SIZE}
+              />
+            </FmPaneBody>
+          </FmPane>
+          <FmPane>
+            <FmPaneHeader title="Championship view" meta="Choose classification" />
+            <FmPaneBody>
+              <SubTab active={championship === 'drivers'} onClick={() => { setChampionship('drivers'); setPage(0); }}>Drivers</SubTab>
+              <SubTab active={championship === 'constructors'} onClick={() => { setChampionship('constructors'); setPage(0); }}>Constructors</SubTab>
+            </FmPaneBody>
+          </FmPane>
+        </FmWorkspaceGrid>
       )}
 
       {activeEntries.length > 0 && (
@@ -180,7 +251,7 @@ export function RaceResults() {
 }
 
 function SubTab({ active, onClick, children }: { active: boolean; onClick: () => void; children: React.ReactNode }) {
-  return <button type="button" onClick={onClick} aria-pressed={active} className={`rounded px-3 py-2 text-xs font-semibold ${active ? 'bg-sky-500/20 text-sky-200' : 'text-neutral-500 hover:bg-neutral-900 hover:text-neutral-200'}`}>{children}</button>;
+  return <button type="button" onClick={onClick} aria-pressed={active} className={`ui-phase14-choice ${active ? 'is-active' : ''}`}>{children}</button>;
 }
 
 function Empty({ children }: { children: React.ReactNode }) {

@@ -157,14 +157,14 @@ export function PostRaceReview() {
         </div>
       )}
       <WorkspaceTabs items={tabs} active={activeTab} onChange={setActiveTab} ariaLabel="Post-race review sections" />
-      <WorkspaceBody className="space-y-3">
+      <WorkspaceBody className="ui-phase14-workspace ui-post-race-workspace">
 
       {activeTab === 'investigation' && (
         <FailureInvestigationPanel state={state} raceId={raceId} isActiveReview={isActiveReview} dispatch={dispatch} />
       )}
 
-      {activeTab !== 'investigation' && <div className={`grid gap-6 ${activeTab === 'overview' ? 'xl:grid-cols-5' : ''}`}>
-        <div className={`space-y-6 ${activeTab === 'overview' ? 'xl:col-span-3' : ''}`}>
+      {activeTab !== 'investigation' && <div className={`ui-post-race-grid ${activeTab === 'overview' ? 'is-overview' : ''}`}>
+        <div className="ui-post-race-primary">
           {activeTab === 'classification' && <Panel title="Race Classification">
             <RaceResultTable
               results={results}
@@ -301,7 +301,7 @@ export function PostRaceReview() {
           )}
         </div>
 
-        {(activeTab === 'overview' || activeTab === 'championships') && <div className={`space-y-4 ${activeTab === 'overview' ? 'xl:col-span-2' : ''}`}>
+        {(activeTab === 'overview' || activeTab === 'championships') && <div className="ui-post-race-context">
           {activeTab === 'overview' && <Panel title="Driver Performance">
             <ul className="space-y-2">
               {playerResults.map((r) => {

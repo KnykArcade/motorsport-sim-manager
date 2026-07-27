@@ -218,8 +218,8 @@ export function PreSeasonSetup() {
           {preseasonProgram?.testingCompleted ? `${preseasonProgram.readiness.overall}% readiness` : 'Testing not complete'}
         </span>
       </div>
-      <WorkspaceBody className="space-y-4">
-      <div className="grid gap-4 xl:grid-cols-[minmax(0,1.2fr)_minmax(0,0.8fr)]">
+      <WorkspaceBody className="ui-phase14-workspace ui-preseason-workspace">
+      <div className="ui-preseason-command-grid">
         <Panel title="Welcome to the season" actions={<span className="text-xs font-semibold uppercase tracking-wide text-neutral-500">Start here</span>}>
           <div className="grid gap-4 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)]">
             <div className="space-y-3">
@@ -259,7 +259,7 @@ export function PreSeasonSetup() {
           </div>
         </Panel>
 
-        <div className="space-y-3">
+        <div className="ui-preseason-briefing-list">
           <Panel title="Season progress" actions={<span className="text-xs font-semibold uppercase tracking-wide text-neutral-500">{approvedCount}/{totalTabs} confirmed</span>}>
             <div className="space-y-2">
               {PRESEASON_BRIEFINGS.map((briefing, index) => {
