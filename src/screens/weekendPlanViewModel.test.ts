@@ -31,8 +31,8 @@ describe('weekendPlanViewModel', () => {
       knowledgeGaps: { setup: 0.2, tire: 0.8, reliability: 0.5 },
     });
 
-    expect(plan.nextPhase).toBe('briefing');
-    expect(plan.nextLabel).toBe('Track Briefing');
+    expect(plan.nextPhase).toBe('command-meeting');
+    expect(plan.nextLabel).toBe('Command Meeting');
     expect(plan.knowledgePriority).toBe('Setup');
     expect(plan.qualifyingRecommendation.length).toBeGreaterThan(0);
     expect(plan.raceRecommendation.length).toBeGreaterThan(0);

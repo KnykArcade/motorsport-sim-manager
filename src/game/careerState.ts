@@ -47,6 +47,7 @@ import type { TransferCalendarState } from '../types/transferCalendarTypes';
 import type { PerformanceAnalyticsState } from '../types/performanceAnalyticsTypes';
 import type { MediaState } from '../types/mediaTypes';
 import type { PublicReputationState } from '../types/publicReputationTypes';
+import type { ConfirmedWeekendPlan } from '../types/weekendLeadershipTypes';
 
 export type RaceDriverAbsence = {
   driverId: string;
@@ -258,6 +259,10 @@ export type GameState = {
   raceWeekendPackage?: RaceWeekendPackageSelection;
   // History of package selections across the season.
   raceWeekendPackageHistory?: RaceWeekendPackageSelection[];
+  // Final, state-backed weekend plans. The current race is replaced if the
+  // player reconfirms before starting; completed plans remain available to the
+  // post-race review and future career history.
+  weekendPlans?: ConfirmedWeekendPlan[];
   // AI team package selections for the current weekend, keyed by teamId.
   aiRaceWeekendPackages?: Record<string, RaceWeekendPackageSelection>;
 
