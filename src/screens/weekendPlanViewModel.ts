@@ -27,6 +27,7 @@ export type WeekendPlan = {
 
 const PHASE_LABELS: Record<RaceWeekendPhase, string> = {
   hub: 'Weekend Plan',
+  'command-meeting': 'Command Meeting',
   briefing: 'Track Briefing',
   practice: 'Practice',
   setup: 'Car Setup',
@@ -34,6 +35,7 @@ const PHASE_LABELS: Record<RaceWeekendPhase, string> = {
   'quali-review': 'Qualifying Review',
   'race-strategy': 'Race Strategy',
   'race-instructions': 'Driver Instructions',
+  'plan-board': 'Weekend Plan Board',
 };
 
 export function nextWeekendPhase(
@@ -41,14 +43,16 @@ export function nextWeekendPhase(
   isMinPackage: boolean,
   qualifyingComplete: boolean,
 ): RaceWeekendPhase {
-  if (phase === 'hub') return 'briefing';
+  if (phase === 'hub') return 'command-meeting';
+  if (phase === 'command-meeting') return 'briefing';
   if (phase === 'briefing') return isMinPackage ? 'quali-run' : 'practice';
   if (phase === 'practice') return 'setup';
   if (phase === 'setup') return qualifyingComplete ? 'race-strategy' : 'quali-run';
   if (phase === 'quali-run') return 'quali-review';
   if (phase === 'quali-review') return isMinPackage ? 'race-strategy' : 'setup';
   if (phase === 'race-strategy') return 'race-instructions';
-  return 'race-instructions';
+  if (phase === 'race-instructions') return 'plan-board';
+  return 'plan-board';
 }
 
 export function buildWeekendPlan(input: {

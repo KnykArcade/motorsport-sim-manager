@@ -4,13 +4,15 @@ export type RaceResultsTab = 'summary' | 'classification' | 'story' | 'champions
 export type SeasonReviewTab = 'honours' | 'drivers' | 'constructors' | 'next';
 export type RaceWeekendPhase =
   | 'hub'
+  | 'command-meeting'
   | 'briefing'
   | 'practice'
   | 'setup'
   | 'quali-run'
   | 'quali-review'
   | 'race-strategy'
-  | 'race-instructions';
+  | 'race-instructions'
+  | 'plan-board';
 
 export const PRE_RACE_BRIEFING_TABS: ReadonlyArray<{ id: PreRaceBriefingTab; label: string }> = [
   { id: 'overview', label: 'Race Overview' },
@@ -49,6 +51,7 @@ export const SEASON_REVIEW_TABS: ReadonlyArray<{ id: SeasonReviewTab; label: str
 
 export const RACE_WEEKEND_PHASES: ReadonlyArray<{ id: RaceWeekendPhase; label: string }> = [
   { id: 'hub', label: 'Weekend Hub' },
+  { id: 'command-meeting', label: 'Command Meeting' },
   { id: 'briefing', label: 'Briefing' },
   { id: 'practice', label: 'Practice' },
   { id: 'setup', label: 'Car Setup' },
@@ -56,6 +59,7 @@ export const RACE_WEEKEND_PHASES: ReadonlyArray<{ id: RaceWeekendPhase; label: s
   { id: 'quali-review', label: 'Qualifying Review' },
   { id: 'race-strategy', label: 'Race Strategy' },
   { id: 'race-instructions', label: 'Instructions' },
+  { id: 'plan-board', label: 'Plan Board' },
 ];
 
 export function visibleRaceWeekendPhases(minimumPackage: boolean) {

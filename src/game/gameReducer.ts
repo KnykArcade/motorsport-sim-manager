@@ -289,6 +289,15 @@ import {
   resolveMediaCrisis,
 } from '../sim/mediaPressureEngine';
 import type { MediaResponseStyle } from '../types/mediaTypes';
+import type {
+  ConfirmedWeekendPlan,
+  WeekendRecommendationResolution,
+} from '../types/weekendLeadershipTypes';
+import {
+  confirmWeekendPlan,
+  ensureWeekendCommandRecommendations,
+  resolveWeekendCommandRecommendation,
+} from '../sim/weekendCommandEngine';
 
 export type GameAction =
   | { type: 'NEW_GAME'; options: NewGameOptions }
@@ -309,6 +318,12 @@ export type GameAction =
   | { type: 'RUSH_DEVELOPMENT'; projectId: string }
   | { type: 'SET_RESEARCH_FOCUS'; branchId: RDBranchId }
   | { type: 'CONFIRM_RACE_PREP_FOCUS'; focus: string }
+  | {
+      type: 'RESOLVE_WEEKEND_RECOMMENDATION';
+      recommendationId: string;
+      resolution: WeekendRecommendationResolution;
+    }
+  | { type: 'CONFIRM_WEEKEND_PLAN'; plan: ConfirmedWeekendPlan }
   | { type: 'START_RD_PROJECT'; request: RDProjectStartRequest }
   | { type: 'START_PART_MANUFACTURING'; partType: PartType; quantity?: number }
   | { type: 'FIT_PART'; partId: string; driverId: string }
@@ -828,6 +843,20 @@ export function gameReducer(state: GameState | null, action: GameAction): GameSt
           racePrepFocusConfirmed: true,
         },
       };
+    }
+
+    case 'RESOLVE_WEEKEND_RECOMMENDATION': {
+      if (!state || getCareerPhase(state) !== 'race_weekend') return state;
+      return resolveWeekendCommandRecommendation(
+        state,
+        action.recommendationId,
+        action.resolution,
+      );
+    }
+
+    case 'CONFIRM_WEEKEND_PLAN': {
+      if (!state || getCareerPhase(state) !== 'race_weekend') return state;
+      return confirmWeekendPlan(state, action.plan);
     }
 
     case 'START_RD_PROJECT': {
@@ -1367,7 +1396,7 @@ export function gameReducer(state: GameState | null, action: GameAction): GameSt
       if (getCareerPhase(state) !== 'pre_race_briefing') return state;
       if (!hasPackageForCurrentRace(state)) return state;
       if (activeDriversForTeam(state, state.selectedTeamId).length < minRaceDriversForSeries(state.series)) return state;
-      return enterRaceWeekend(state);
+      return ensureWeekendCommandRecommendations(enterRaceWeekend(state));
     }
 
     case 'COMPLETE_PRESEASON_SETUP': {

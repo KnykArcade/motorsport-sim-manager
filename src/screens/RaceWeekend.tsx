@@ -61,10 +61,16 @@ import {
   type RaceWeekendPhase,
 } from './raceTransitionViewModel';
 import { buildWeekendPlan } from './weekendPlanViewModel';
+import { WeekendCommandMeeting } from './WeekendCommandMeeting';
+import { WeekendPlanBoard } from './WeekendPlanBoard';
+import { buildWeekendPlanBoard } from './weekendPlanBoardViewModel';
+import { weekendCommandRecommendations } from '../sim/weekendCommandEngine';
 import type { Driver, Track, StandingsEntry } from '../types/gameTypes';
 import type { WeatherState } from '../types/liveTypes';
 import type { CarSetup } from '../types/setupTypes';
 import type { QualifyingDecision, QualifyingFormat, RaceDecision } from '../types/simTypes';
+import type { AdvisorRecommendation } from '../types/phase18Types';
+import type { WeekendRecommendationResolution } from '../types/weekendLeadershipTypes';
 
 type Phase = RaceWeekendPhase;
 
@@ -189,12 +195,6 @@ export function RaceWeekend() {
     moveTo('quali-review');
   };
 
-  const startLiveRace = () => {
-    navigate(`/live-race/${race.id}`, {
-      state: { decisions: playerDrivers.map((d) => raceFor(d.id)) },
-    });
-  };
-
   // Practice and Car Setup are laid out as full-height, no-page-scroll screens:
   // the header/stepper/forecast stay pinned and only the phase's own internal
   // panels scroll. Other phases flow normally inside the scroll wrapper.
@@ -221,6 +221,14 @@ export function RaceWeekend() {
   const bestPlayerGrid = qualifyingResults
     ?.filter((result) => result.teamId === state.selectedTeamId)
     .reduce<number | undefined>((best, result) => best === undefined ? result.position : Math.min(best, result.position), undefined);
+  const weekendRecommendations = weekendCommandRecommendations(state);
+  const planBoard = buildWeekendPlanBoard({
+    state,
+    forecast,
+    setups: resolvedSetups,
+    qualifyingDecisions: playerDrivers.map((driver) => qualiFor(driver.id)),
+    raceDecisions: playerDrivers.map((driver) => raceFor(driver.id)),
+  });
   const tabs = visiblePhases.map((item) => ({
     ...item,
     disabled: !canOpenRaceWeekendPhase(item.id, unlockedPhase, isMinPackage),
@@ -228,7 +236,8 @@ export function RaceWeekend() {
   }));
 
   const advanceFromCurrent = () => {
-    if (phase === 'hub') moveTo('briefing');
+    if (phase === 'hub') moveTo('command-meeting');
+    else if (phase === 'command-meeting') moveTo('briefing');
     else if (phase === 'briefing') moveTo(isMinPackage ? 'quali-run' : 'practice');
     else if (phase === 'practice') moveTo('setup');
     else if (phase === 'setup') {
@@ -237,16 +246,73 @@ export function RaceWeekend() {
     } else if (phase === 'quali-run') runQualifying();
     else if (phase === 'quali-review') moveTo(isMinPackage ? 'race-strategy' : 'setup');
     else if (phase === 'race-strategy') moveTo('race-instructions');
-    else startLiveRace();
+    else if (phase === 'race-instructions') moveTo('plan-board');
+    else confirmPlanAndStartRace();
   };
-  const advanceLabel = phase === 'hub' ? 'Open Briefing'
+  const advanceLabel = phase === 'hub' ? 'Open Command Meeting'
+    : phase === 'command-meeting' ? 'Open Briefing'
     : phase === 'briefing' ? (isMinPackage ? 'Prepare Qualifying' : 'Open Practice')
       : phase === 'practice' ? 'Open Car Setup'
         : phase === 'setup' ? (qualifyingResults ? 'Choose Strategy' : 'Plan Qualifying')
           : phase === 'quali-run' ? 'Simulate Qualifying'
-            : phase === 'quali-review' ? (isMinPackage ? 'Choose Strategy' : 'Finalise Setup')
-              : phase === 'race-strategy' ? 'Set Instructions'
-                : 'Start Live Race';
+      : phase === 'quali-review' ? (isMinPackage ? 'Choose Strategy' : 'Finalise Setup')
+        : phase === 'race-strategy' ? 'Set Instructions'
+          : phase === 'race-instructions' ? 'Review Weekend Plan'
+            : 'Confirm Plan & Start Race';
+
+  function resolveWeekendRecommendation(
+    recommendation: AdvisorRecommendation,
+    resolution: WeekendRecommendationResolution,
+  ) {
+    if (resolution === 'Accepted' || resolution === 'Delegated') {
+      if (recommendation.targetPhase === 'race-strategy' && recommendation.recommendedOptionId) {
+        setRaceOverrides((previous) => Object.fromEntries(
+          playerDrivers.map((driver) => [
+            driver.id,
+            {
+              ...previous[driver.id],
+              strategyId: recommendation.recommendedOptionId as RaceDecision['strategyId'],
+            },
+          ]),
+        ));
+      }
+      if (recommendation.targetPhase === 'race-instructions' && recommendation.recommendedOptionId) {
+        setRaceOverrides((previous) => Object.fromEntries(
+          playerDrivers.map((driver) => [
+            driver.id,
+            {
+              ...previous[driver.id],
+              instructionId: recommendation.recommendedOptionId as RaceDecision['instructionId'],
+            },
+          ]),
+        ));
+      }
+      if (recommendation.targetPhase === 'quali-run' && recommendation.recommendedOptionId) {
+        setQualiOverrides((previous) => Object.fromEntries(
+          playerDrivers.map((driver) => [
+            driver.id,
+            {
+              ...previous[driver.id],
+              runPlanId: recommendation.recommendedOptionId as QualifyingDecision['runPlanId'],
+            },
+          ]),
+        ));
+      }
+    }
+    dispatch({
+      type: 'RESOLVE_WEEKEND_RECOMMENDATION',
+      recommendationId: recommendation.id,
+      resolution,
+    });
+  }
+
+  function confirmPlanAndStartRace() {
+    if (!planBoard.canConfirm || !planBoard.snapshot) return;
+    dispatch({ type: 'CONFIRM_WEEKEND_PLAN', plan: planBoard.snapshot });
+    navigate(`/live-race/${race!.id}`, {
+      state: { decisions: playerDrivers.map((driver) => raceFor(driver.id)) },
+    });
+  }
   const phaseContent = (
     <>
       {phase === 'hub' && forecast && (
@@ -256,7 +322,15 @@ export function RaceWeekend() {
           track={track}
           forecast={forecast}
           plan={weekendPlan}
-          onNext={() => moveTo('briefing')}
+          onNext={() => moveTo('command-meeting')}
+        />
+      )}
+
+      {phase === 'command-meeting' && (
+        <WeekendCommandMeeting
+          recommendations={weekendRecommendations}
+          onResolve={resolveWeekendRecommendation}
+          onContinue={() => moveTo('briefing')}
         />
       )}
 
@@ -379,8 +453,16 @@ export function RaceWeekend() {
           recommendedId={recommendedInstruction(track, forecast?.Race).optionId}
           recommendedReason={recommendedInstruction(track, forecast?.Race).reason}
           onBack={() => moveTo('race-strategy')}
-          onNext={startLiveRace}
-          nextLabel="Start Live Race ->"
+          onNext={() => moveTo('plan-board')}
+          nextLabel="Review Weekend Plan ->"
+        />
+      )}
+
+      {phase === 'plan-board' && (
+        <WeekendPlanBoard
+          board={planBoard}
+          onEdit={moveTo}
+          onConfirm={confirmPlanAndStartRace}
         />
       )}
     </>
@@ -402,12 +484,12 @@ export function RaceWeekend() {
         <WorkspaceMetric label="Weekend stage" value={`${raceWeekendPhaseIndex(phase, isMinPackage) + 1}/${visiblePhases.length}`} detail={phaseTitle} />
         <WorkspaceMetric label="Practice" value={isMinPackage ? 'Package skip' : `${completedPracticeSessions}/${totalPracticeSessions}`} detail={isMinPackage ? 'Baseline setup enforced' : 'Sessions completed'} />
         <WorkspaceMetric label="Qualifying" value={qualifyingResults ? 'Complete' : 'Pending'} detail={bestPlayerGrid ? `Best player car P${bestPlayerGrid}` : 'Grid not set'} />
-        <WorkspaceMetric label="Race gate" value={phase === 'race-instructions' ? 'Ready' : 'In progress'} detail={state.raceWeekendPackage?.packageType ?? 'No package'} />
+        <WorkspaceMetric label="Race gate" value={phase === 'plan-board' && planBoard.canConfirm ? 'Ready' : 'In progress'} detail={planBoard.blockedReason ?? state.raceWeekendPackage?.packageType ?? 'No package'} />
       </MetricStrip>
       <SeasonWorkflowRail
         active="weekend"
         context={`${race.gpName} · ${phaseTitle}`}
-        blocker={phase === 'race-instructions' ? undefined : `${visiblePhases.length - raceWeekendPhaseIndex(phase, isMinPackage) - 1} weekend stage${visiblePhases.length - raceWeekendPhaseIndex(phase, isMinPackage) - 1 === 1 ? '' : 's'} remain`}
+        blocker={phase === 'plan-board' && planBoard.canConfirm ? undefined : planBoard.blockedReason ?? `${visiblePhases.length - raceWeekendPhaseIndex(phase, isMinPackage) - 1} weekend stage${visiblePhases.length - raceWeekendPhaseIndex(phase, isMinPackage) - 1 === 1 ? '' : 's'} remain`}
       />
 
       <WorkspaceTabs

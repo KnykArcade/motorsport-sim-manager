@@ -46,11 +46,13 @@ describe('race transition view model', () => {
   it('removes practice and setup only for the minimum operations package', () => {
     expect(visibleRaceWeekendPhases(true).map((phase) => phase.id)).toEqual([
       'hub',
+      'command-meeting',
       'briefing',
       'quali-run',
       'quali-review',
       'race-strategy',
       'race-instructions',
+      'plan-board',
     ]);
     expect(canOpenRaceWeekendPhase('practice', 'briefing', true)).toBe(false);
   });

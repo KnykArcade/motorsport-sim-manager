@@ -82,6 +82,13 @@ export type AdvisorRecommendation = {
   expiresSeasonYear?: number;
   expiresRound?: number;
   departmentId?: DepartmentId;
+  // Weekend-command metadata. Optional so older saves and non-weekend advice
+  // retain the original compact shape.
+  evidence?: string[];
+  expectedBenefit?: string;
+  risk?: string;
+  targetPhase?: string;
+  resolutionMode?: import('./weekendLeadershipTypes').WeekendRecommendationResolution;
 };
 
 export type DepartmentId =
