@@ -25,6 +25,7 @@ import {
 } from './raceWeekendHubData';
 import type { QuickAction, RaceWeekendHubCallbacks, RaceWeekendHubProps } from './types';
 import type { GarageTaskBoardItem } from './types';
+import { useDialogAccessibility } from '../../useDialogAccessibility';
 
 export function F11990sRaceWeekendHub({
   state,
@@ -51,6 +52,10 @@ export function F11990sRaceWeekendHub({
   const standingsRows = buildStandingsRows(state);
   const metrics = topBarMetrics(state, race);
   const showingModule = activePhase !== 'hub' && !!moduleContent;
+  const { dialogRef, initialFocusRef } = useDialogAccessibility<HTMLElement>(
+    showingModule,
+    () => onPhase('hub'),
+  );
   const garageTheme = garageThemeForTeamEra('f1-1990-1994', team);
   const garageSceneImage = garageTheme.sceneImageOverride ?? garageTheme.templateImage;
   const garageThemeStyle = {
@@ -177,15 +182,21 @@ export function F11990sRaceWeekendHub({
           </section>
 
           {showingModule && (
-            <div className="f1-1990s-module-overlay" role="dialog" aria-modal="true" aria-label={moduleTitle ?? 'Garage module'}>
+            <div className="f1-1990s-module-overlay">
               <div className="f1-1990s-module-backdrop" onClick={() => onPhase('hub')} aria-hidden="true" />
-              <section className="f1-1990s-module-window">
+              <section
+                ref={dialogRef}
+                className="f1-1990s-module-window"
+                role="dialog"
+                aria-modal="true"
+                aria-label={moduleTitle ?? 'Garage module'}
+              >
                 <header className="flex items-center justify-between gap-3 border-b border-amber-500/25 px-4 py-3">
                   <div>
                     <div className="text-lg font-black uppercase text-amber-300">{moduleTitle ?? 'Garage Module'}</div>
                     <div className="text-[10px] uppercase text-neutral-500">1990-94 garage overlay - Hub remains active behind this task</div>
                   </div>
-                  <button type="button" className="f1-1990s-secondary-button" onClick={() => onPhase('hub')}>
+                  <button ref={initialFocusRef} type="button" className="f1-1990s-secondary-button" onClick={() => onPhase('hub')}>
                     Garage Overview
                   </button>
                 </header>

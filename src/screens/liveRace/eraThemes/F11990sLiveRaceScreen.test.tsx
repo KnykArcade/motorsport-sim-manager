@@ -202,6 +202,10 @@ describe('F11990sLiveRaceScreen', () => {
     expect(html).toContain('1  M. Schumacher  Benetton Renault');
     expect(html).toContain('Team Radio');
     expect(html).toContain('Pit Window');
+    expect(html).toContain('aria-label="Play race"');
+    expect(html).toContain('aria-label="Advance one lap"');
+    expect(html).toContain('aria-label="Set playback speed to 1 times"');
+    expect(html).toContain('aria-label="Skip to end of race"');
   });
 
   it('renders the full timing field instead of truncating the tower', () => {

@@ -84,7 +84,7 @@ function ModeGuard({ route, children }: { route: string; children: ReactNode }) 
       <Layout>
         <div className="mx-auto max-w-2xl space-y-4">
           <div className="flex items-center gap-3">
-            <span className="flex h-10 w-10 items-center justify-center rounded-full border border-amber-600/40 bg-amber-900/20 text-xl text-amber-400">🔒</span>
+            <span className="flex h-10 w-10 items-center justify-center rounded-full border border-amber-600/40 bg-amber-900/20 text-[9px] font-black tracking-wide text-amber-400" aria-hidden="true">LOCK</span>
             <h1 className="text-2xl font-bold text-neutral-100">{lockInfo.title}</h1>
           </div>
           <div className="rounded-lg border border-neutral-800 bg-neutral-900/40 p-4">
@@ -95,10 +95,10 @@ function ModeGuard({ route, children }: { route: string; children: ReactNode }) 
             <p className="mt-1 text-sm text-sky-200">{lockInfo.focus}</p>
           </div>
           <div className="flex flex-wrap gap-2 pt-2">
-            <button onClick={() => navigate('/hq')} className="rounded-lg bg-neutral-800 px-4 py-2 text-sm text-neutral-200 hover:bg-neutral-700">← Back to Team HQ</button>
-            <button onClick={() => navigate('/calendar')} className="rounded-lg bg-neutral-800 px-4 py-2 text-sm text-neutral-200 hover:bg-neutral-700">Calendar</button>
-            <button onClick={() => navigate('/technical')} className="rounded-lg bg-neutral-800 px-4 py-2 text-sm text-neutral-200 hover:bg-neutral-700">Technical Center</button>
-            <button onClick={() => navigate('/standings')} className="rounded-lg bg-neutral-800 px-4 py-2 text-sm text-neutral-200 hover:bg-neutral-700">Standings</button>
+            <button type="button" onClick={() => navigate('/hq')} className="rounded-lg bg-neutral-800 px-4 py-2 text-sm text-neutral-200 hover:bg-neutral-700">← Back to Team HQ</button>
+            <button type="button" onClick={() => navigate('/calendar')} className="rounded-lg bg-neutral-800 px-4 py-2 text-sm text-neutral-200 hover:bg-neutral-700">Calendar</button>
+            <button type="button" onClick={() => navigate('/technical')} className="rounded-lg bg-neutral-800 px-4 py-2 text-sm text-neutral-200 hover:bg-neutral-700">Technical Center</button>
+            <button type="button" onClick={() => navigate('/standings')} className="rounded-lg bg-neutral-800 px-4 py-2 text-sm text-neutral-200 hover:bg-neutral-700">Standings</button>
           </div>
         </div>
       </Layout>
@@ -294,7 +294,7 @@ export default function App() {
           <Route path="/results/:raceId" element={<InGame><RaceResults /></InGame>} />
           <Route path="/season-review" element={<InGame><SeasonReview /></InGame>} />
           <Route path="/offseason" element={<ModeGuard route="/offseason"><Offseason /></ModeGuard>} />
-      <Route path="/news" element={<InGame><NewsCenter /></InGame>} />
+          <Route path="/news" element={<InGame><NewsCenter /></InGame>} />
 
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>

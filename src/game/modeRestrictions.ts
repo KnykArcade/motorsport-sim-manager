@@ -174,11 +174,6 @@ const SINGLE_SEASON_ROUTE_REASONS: Record<string, { title: string; reason: strin
     reason: 'Engine supplier deals are locked to historical data in Single Season Mode. Each team uses the engine they historically ran that year.',
     focus: 'Engine performance is still reflected in your car stats and development.',
   },
-  '/sponsors': {
-    title: 'Sponsors Locked',
-    reason: 'Sponsor deals are locked to historical data in Single Season Mode. Commercial income is pre-set for each team.',
-    focus: 'Sponsor confidence still changes with your on-track performance.',
-  },
 };
 
 // Human-readable explanation for why a route is restricted.
@@ -204,7 +199,10 @@ export function getRouteRestrictionInfo(route: string, mode: GameMode | undefine
 export const SINGLE_SEASON_LOCKED_FEATURES: { label: string; description: string }[] = [
   { label: 'Youth Academy & Scouting', description: 'No scouting or academy prospects — driver lineups are historical.' },
   { label: 'Engine Supplier Choice', description: 'Engine deals are auto-assigned to match the historical season.' },
-  { label: 'Sponsor Management', description: 'Sponsors are pre-set; commercial income is locked to history.' },
+  {
+    label: 'Sponsor Contract Changes',
+    description: 'Contracts are pre-set, but sponsor objectives, confidence, and formal performance reviews remain available.',
+  },
   { label: 'Regulation Voting', description: 'Regulations are fixed to the selected year — no political influence.' },
   { label: 'Offseason & Multi-Year', description: 'No offseason budget allocation, development carryover, or season advance.' },
   { label: 'Future Contracts', description: 'No signing drivers for next year — all contracts are single-season.' },

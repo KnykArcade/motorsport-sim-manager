@@ -13,6 +13,7 @@ import {
   getRouteRestrictionInfo,
   getGameModeLabel,
   isDevelopmentProjectAllowedForMode,
+  SINGLE_SEASON_LOCKED_FEATURES,
 } from './modeRestrictions';
 
 describe('modeRestrictions', () => {
@@ -226,6 +227,17 @@ describe('modeRestrictions', () => {
     });
     it('returns undefined for Sandbox mode', () => {
       expect(getRouteRestrictionInfo('/scouting', 'Sandbox')).toBeUndefined();
+    });
+  });
+
+  describe('Single Season setup messaging', () => {
+    it('describes sponsor contract changes as locked while preserving objectives and reviews', () => {
+      const sponsorEntry = SINGLE_SEASON_LOCKED_FEATURES.find((entry) => entry.label.includes('Sponsor'));
+      expect(sponsorEntry).toEqual({
+        label: 'Sponsor Contract Changes',
+        description: 'Contracts are pre-set, but sponsor objectives, confidence, and formal performance reviews remain available.',
+      });
+      expect(getRouteRestrictionInfo('/sponsors', 'SingleSeason')).toBeUndefined();
     });
   });
 

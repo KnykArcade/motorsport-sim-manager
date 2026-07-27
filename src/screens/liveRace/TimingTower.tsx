@@ -32,11 +32,15 @@ export function TimingTower({
         <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-400">Timing Tower</span>
         <span className="text-[10px] text-slate-500">{cars.filter((c) => c.running).length} running</span>
       </div>
-      <div className="flex shrink-0 gap-1 border-b border-slate-700/40 px-2 py-1">
+      <div className="flex shrink-0 gap-1 border-b border-slate-700/40 px-2 py-1" role="tablist" aria-label="Timing tower views">
         {TABS.map((t) => (
           <button
             key={t}
+            type="button"
+            role="tab"
             onClick={() => setTab(t)}
+            aria-selected={tab === t}
+            tabIndex={tab === t ? 0 : -1}
             className={`rounded px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide transition-colors ${
               tab === t ? 'bg-amber-500 text-neutral-950' : 'text-slate-400 hover:bg-slate-800'
             }`}
@@ -101,7 +105,17 @@ function Row({
         <DeltaTag grid={car.grid} position={car.position} muted={!classified} />
       </td>
       <td className="py-1 pl-1">
-        <span className="flex items-center gap-1.5">
+        <button
+          type="button"
+          onClick={(event) => {
+            event.stopPropagation();
+            onSelect?.(car.driverId);
+          }}
+          disabled={!onSelect}
+          aria-label={`Focus ${name}`}
+          aria-pressed={selected}
+          className="flex w-full items-center gap-1.5 text-left disabled:cursor-default"
+        >
           <span className="h-3 w-1 shrink-0 rounded-sm" style={{ backgroundColor: color }} />
           <span className="min-w-0">
             <span className={`block truncate ${car.isPlayer ? 'font-semibold text-amber-200' : 'text-slate-200'}`}>
@@ -113,7 +127,7 @@ function Row({
               </span>
             )}
           </span>
-        </span>
+        </button>
       </td>
       {tab === 'Overview' && (
         <>

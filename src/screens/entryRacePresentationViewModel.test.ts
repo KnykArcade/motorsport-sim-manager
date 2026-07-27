@@ -4,6 +4,7 @@ import type { LiveCarState, LiveRaceState } from '../types/liveTypes';
 import {
   entryStepState,
   filterRaceStory,
+  liveRaceAdvanceBlockedReason,
   raceControlPresentation,
   savedCareerSummary,
   selectedLiveCar,
@@ -66,6 +67,33 @@ describe('entry and race presentation view model', () => {
     expect(selectedLiveCar(cars, 'missing', ['player'])?.driverId).toBe('player');
     expect(selectedLiveCar(cars, 'missing')?.driverId).toBe('leader');
     expect(selectedLiveCar([], 'missing')).toBeUndefined();
+  });
+
+  it('explains every live-race playback blocker in priority order', () => {
+    expect(liveRaceAdvanceBlockedReason({
+      finished: false,
+      blockingPrompt: false,
+      needsDecision: false,
+      pausedByDnf: true,
+    })).toContain('retirement alert');
+    expect(liveRaceAdvanceBlockedReason({
+      finished: false,
+      blockingPrompt: true,
+      needsDecision: true,
+      pausedByDnf: false,
+    })).toContain('race-control prompt');
+    expect(liveRaceAdvanceBlockedReason({
+      finished: false,
+      blockingPrompt: false,
+      needsDecision: true,
+      pausedByDnf: false,
+    })).toContain('pit-wall decision');
+    expect(liveRaceAdvanceBlockedReason({
+      finished: false,
+      blockingPrompt: false,
+      needsDecision: false,
+      pausedByDnf: false,
+    })).toBeUndefined();
   });
 
   it('filters the race story without inventing events', () => {
