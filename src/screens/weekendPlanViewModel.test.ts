@@ -9,6 +9,7 @@ describe('weekendPlanViewModel', () => {
   it('keeps the minimum package on the shortest valid path', () => {
     expect(nextWeekendPhase('briefing', true, false)).toBe('quali-run');
     expect(nextWeekendPhase('quali-review', true, true)).toBe('race-strategy');
+    expect(nextWeekendPhase('plan-board', true, true)).toBe('garage-address');
   });
 
   it('prioritizes the largest knowledge gap and exposes advisor context', () => {

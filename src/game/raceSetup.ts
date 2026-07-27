@@ -41,6 +41,7 @@ import { applyPreseasonCarModifier } from '../sim/phase18PreseasonEngine';
 import { applyFailureRiskModifier } from '../sim/phase18FailureInvestigationEngine';
 import type { LiveRaceMeta, LiveRaceOptions } from '../sim/liveRaceEngine';
 import { computeRacePrepFocusEffect, getOrCreatePhaseState } from './careerPhaseEngine';
+import { garageAddressRaceEffects } from '../sim/garageLeadershipEngine';
 
 // Build the derived session setups for the player's tuned car setups, plus a
 // lookup from driverId to the setup id to use for the given session trim. Cars
@@ -207,6 +208,7 @@ export function buildRaceContext(
     },
     confidenceModifierByDriver,
     driverRelationships,
+    garageAddressEffectsByDriver: garageAddressRaceEffects(state, race.id),
   };
 
   return { context, track, raceId: race.id, totalLaps: race.laps };

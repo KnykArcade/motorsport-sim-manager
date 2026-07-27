@@ -36,6 +36,7 @@ const PHASE_LABELS: Record<RaceWeekendPhase, string> = {
   'race-strategy': 'Race Strategy',
   'race-instructions': 'Driver Instructions',
   'plan-board': 'Weekend Plan Board',
+  'garage-address': 'Garage Address',
 };
 
 export function nextWeekendPhase(
@@ -52,7 +53,7 @@ export function nextWeekendPhase(
   if (phase === 'quali-review') return isMinPackage ? 'race-strategy' : 'setup';
   if (phase === 'race-strategy') return 'race-instructions';
   if (phase === 'race-instructions') return 'plan-board';
-  return 'plan-board';
+  return 'garage-address';
 }
 
 export function buildWeekendPlan(input: {

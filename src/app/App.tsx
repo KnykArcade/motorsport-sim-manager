@@ -5,6 +5,7 @@ import type { ReactNode } from 'react';
 import { GameProvider, useGame } from '../game/GameContext';
 import { canEnterRaceWeekend } from '../game/rosterEnforcement';
 import { currentRace } from '../game/careerState';
+import { garageAddressForRace } from '../sim/garageLeadershipEngine';
 import { Layout } from '../components/Layout';
 import { MainMenu } from '../screens/MainMenu';
 import { NewCareer } from '../screens/NewCareer';
@@ -129,6 +130,7 @@ function LiveRaceGuard({ children }: { children: ReactNode }) {
   if (!check.allowed) return <Navigate to="/market" replace />;
   const race = currentRace(state);
   if (!race || (raceId && race.id !== raceId)) return <Navigate to="/weekend" replace />;
+  if (!garageAddressForRace(state, race.id)) return <Navigate to="/weekend" replace />;
   return <>{children}</>;
 }
 

@@ -47,7 +47,10 @@ import type { TransferCalendarState } from '../types/transferCalendarTypes';
 import type { PerformanceAnalyticsState } from '../types/performanceAnalyticsTypes';
 import type { MediaState } from '../types/mediaTypes';
 import type { PublicReputationState } from '../types/publicReputationTypes';
-import type { ConfirmedWeekendPlan } from '../types/weekendLeadershipTypes';
+import type {
+  ConfirmedWeekendPlan,
+  GarageAddressRecord,
+} from '../types/weekendLeadershipTypes';
 
 export type RaceDriverAbsence = {
   driverId: string;
@@ -263,6 +266,9 @@ export type GameState = {
   // player reconfirms before starting; completed plans remain available to the
   // post-race review and future career history.
   weekendPlans?: ConfirmedWeekendPlan[];
+  // One bounded, race-specific leadership intervention per event. Effects are
+  // consumed only while building that race; the record remains for debriefing.
+  garageAddresses?: GarageAddressRecord[];
   // AI team package selections for the current weekend, keyed by teamId.
   aiRaceWeekendPackages?: Record<string, RaceWeekendPackageSelection>;
 
