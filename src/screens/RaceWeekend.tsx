@@ -40,7 +40,6 @@ import {
   recommendedInstruction,
 } from '../sim/weekendAdvisorEngine';
 import { Panel } from '../components/Panel';
-import { SeasonWorkflowRail } from '../components/workspace/SeasonWorkflowRail';
 import { Button } from '../components/Button';
 import { TrackDemandBars } from '../components/TrackDemandBars';
 import { SetupWorkshop, type WorkshopPractice } from '../components/SetupWorkshop';
@@ -54,17 +53,17 @@ import {
   WorkspaceTabs,
 } from '../components/workspace/Workspace';
 import {
-  RACE_WEEKEND_PHASES,
-  canOpenRaceWeekendPhase,
+  RACE_WEEKEND_SECTIONS,
+  canOpenRaceWeekendSection,
   raceWeekendPhaseIndex,
-  visibleRaceWeekendPhases,
+  raceWeekendSectionForPhase,
+  type RaceWeekendSection,
   type RaceWeekendPhase,
 } from './raceTransitionViewModel';
 import { buildWeekendPlan } from './weekendPlanViewModel';
 import { WeekendCommandMeeting } from './WeekendCommandMeeting';
-import { WeekendPlanBoard } from './WeekendPlanBoard';
 import { GarageAddress } from './GarageAddress';
-import { buildWeekendPlanBoard } from './weekendPlanBoardViewModel';
+import { buildWeekendPlanBoard, type WeekendPlanBoard as WeekendPlanBoardModel } from './weekendPlanBoardViewModel';
 import { weekendCommandRecommendations } from '../sim/weekendCommandEngine';
 import { garageAddressForRace } from '../sim/garageLeadershipEngine';
 import type { Driver, Track, StandingsEntry } from '../types/gameTypes';
@@ -72,11 +71,14 @@ import type { WeatherState } from '../types/liveTypes';
 import type { CarSetup } from '../types/setupTypes';
 import type { QualifyingDecision, QualifyingFormat, RaceDecision } from '../types/simTypes';
 import type { AdvisorRecommendation } from '../types/phase18Types';
-import type { WeekendRecommendationResolution } from '../types/weekendLeadershipTypes';
+import type {
+  GarageAddressRecord,
+  GarageAddressTone,
+  GarageFollowUpType,
+  WeekendRecommendationResolution,
+} from '../types/weekendLeadershipTypes';
 
 type Phase = RaceWeekendPhase;
-
-const PHASE_ORDER = RACE_WEEKEND_PHASES;
 
 export function RaceWeekend() {
   const { state, dispatch, settings } = useGame();
@@ -177,7 +179,6 @@ export function RaceWeekend() {
   if (!state || !race || !track || !autoSetups || !forecast) return null;
 
   const isMinPackage = state.raceWeekendPackage?.packageType === 'MandatoryMinimum';
-  const visiblePhases = visibleRaceWeekendPhases(isMinPackage);
   const unlockedPhase = qualifyingResults
     && raceWeekendPhaseIndex('quali-review', isMinPackage) > raceWeekendPhaseIndex(furthestPhase, isMinPackage)
     ? 'quali-review'
@@ -201,7 +202,6 @@ export function RaceWeekend() {
   // the header/stepper/forecast stay pinned and only the phase's own internal
   // panels scroll. Other phases flow normally inside the scroll wrapper.
   const fullHeightPhase = phase === 'practice' || phase === 'setup';
-  const phaseTitle = PHASE_ORDER.find((p) => p.id === phase)?.label ?? 'Weekend Hub';
   const completedPracticeSessions = state.weekendPractice?.raceId === race.id
     ? state.weekendPractice.sessions.filter((session) => session.completed).length
     : 0;
@@ -231,39 +231,53 @@ export function RaceWeekend() {
     qualifyingDecisions: playerDrivers.map((driver) => qualiFor(driver.id)),
     raceDecisions: playerDrivers.map((driver) => raceFor(driver.id)),
   });
+  const confirmedPlan = state.weekendPlans?.find((plan) => plan.raceId === race.id);
   const garageAddress = garageAddressForRace(state, race.id);
-  const tabs = visiblePhases.map((item) => ({
+  const activeSection = raceWeekendSectionForPhase(phase, !!qualifyingResults);
+  const tabs = RACE_WEEKEND_SECTIONS.map((item) => ({
     ...item,
-    disabled: !canOpenRaceWeekendPhase(item.id, unlockedPhase, isMinPackage),
-    disabledReason: `Complete ${phaseTitle} before opening this stage`,
+    disabled: !canOpenRaceWeekendSection(item.id, unlockedPhase, isMinPackage),
+    disabledReason: item.id === 'practice-setup' && isMinPackage
+      ? 'Skipped by the minimum operations package'
+      : `Complete the current management stage before opening ${item.label}`,
   }));
 
+  const openSection = (section: RaceWeekendSection) => {
+    if (!canOpenRaceWeekendSection(section, unlockedPhase, isMinPackage)) return;
+    if (section === 'overview') moveTo('hub');
+    else if (section === 'practice-setup') moveTo('practice');
+    else if (section === 'qualifying') moveTo(qualifyingResults ? 'quali-review' : 'quali-run');
+    else moveTo(confirmedPlan ? 'garage-address' : 'race-strategy');
+  };
+
   const advanceFromCurrent = () => {
-    if (phase === 'hub') moveTo('command-meeting');
-    else if (phase === 'command-meeting') moveTo('briefing');
-    else if (phase === 'briefing') moveTo(isMinPackage ? 'quali-run' : 'practice');
+    if (phase === 'hub' || phase === 'command-meeting' || phase === 'briefing') {
+      moveTo(isMinPackage ? 'quali-run' : 'practice');
+    }
     else if (phase === 'practice') moveTo('setup');
     else if (phase === 'setup') {
       commitSetups();
       moveTo(qualifyingResults ? 'race-strategy' : 'quali-run');
     } else if (phase === 'quali-run') runQualifying();
     else if (phase === 'quali-review') moveTo(isMinPackage ? 'race-strategy' : 'setup');
-    else if (phase === 'race-strategy') moveTo('race-instructions');
-    else if (phase === 'race-instructions') moveTo('plan-board');
-    else if (phase === 'plan-board') confirmPlanAndContinue();
+    else if (phase === 'race-strategy' || phase === 'race-instructions' || phase === 'plan-board') {
+      if (!confirmedPlan) confirmPlanAndContinue();
+      else if (garageAddress) startLiveRace();
+      else moveTo('garage-address');
+    }
     else if (garageAddress) startLiveRace();
   };
-  const advanceLabel = phase === 'hub' ? 'Open Command Meeting'
-    : phase === 'command-meeting' ? 'Open Briefing'
-    : phase === 'briefing' ? (isMinPackage ? 'Prepare Qualifying' : 'Open Practice')
+  const advanceLabel = phase === 'hub' || phase === 'command-meeting' || phase === 'briefing'
+    ? (isMinPackage ? 'Prepare Qualifying' : 'Begin Practice & Setup')
       : phase === 'practice' ? 'Open Car Setup'
         : phase === 'setup' ? (qualifyingResults ? 'Choose Strategy' : 'Plan Qualifying')
           : phase === 'quali-run' ? 'Simulate Qualifying'
       : phase === 'quali-review' ? (isMinPackage ? 'Choose Strategy' : 'Finalise Setup')
-        : phase === 'race-strategy' ? 'Set Instructions'
-          : phase === 'race-instructions' ? 'Review Weekend Plan'
-            : phase === 'plan-board' ? 'Confirm Plan & Continue'
-              : garageAddress ? 'Start Live Race' : 'Deliver Garage Address';
+        : phase === 'race-strategy' || phase === 'race-instructions' || phase === 'plan-board'
+          ? confirmedPlan
+            ? garageAddress ? 'Start Live Race' : 'Open Garage Address'
+            : 'Confirm Race Plan'
+          : garageAddress ? 'Start Live Race' : 'Deliver Garage Address';
 
   function resolveWeekendRecommendation(
     recommendation: AdvisorRecommendation,
@@ -325,27 +339,29 @@ export function RaceWeekend() {
   }
   const phaseContent = (
     <>
-      {phase === 'hub' && forecast && (
-        <WeekendHub
-          state={state}
-          race={race}
-          track={track}
-          forecast={forecast}
-          plan={weekendPlan}
-          onNext={() => moveTo('command-meeting')}
-        />
-      )}
-
-      {phase === 'command-meeting' && (
-        <WeekendCommandMeeting
-          recommendations={weekendRecommendations}
-          onResolve={resolveWeekendRecommendation}
-          onContinue={() => moveTo('briefing')}
-        />
-      )}
-
-      {phase === 'briefing' && (
-        <Briefing track={track} race={race} isMinPackage={isMinPackage} onNext={() => moveTo(isMinPackage ? 'quali-run' : 'practice')} />
+      {(phase === 'hub' || phase === 'command-meeting' || phase === 'briefing') && forecast && (
+        <div className="space-y-4">
+          <WeekendHub
+            state={state}
+            race={race}
+            track={track}
+            forecast={forecast}
+            plan={weekendPlan}
+          />
+          <div className="grid gap-4 xl:grid-cols-[1.45fr_1fr]">
+            <WeekendCommandMeeting
+              recommendations={weekendRecommendations}
+              onResolve={resolveWeekendRecommendation}
+              compact
+            />
+            <Briefing track={track} race={race} isMinPackage={isMinPackage} compact />
+          </div>
+          <div className="flex justify-end">
+            <Button variant="primary" onClick={() => moveTo(isMinPackage ? 'quali-run' : 'practice')}>
+              {isMinPackage ? 'Continue to qualifying' : 'Continue to practice & setup'}
+            </Button>
+          </div>
+        </div>
       )}
 
       {phase === 'practice' && !isMinPackage && (
@@ -364,9 +380,14 @@ export function RaceWeekend() {
           track={track}
           drivers={playerDrivers}
           setups={resolvedSetups}
+          baselineSetups={Object.fromEntries(playerDrivers.map((driver) => [
+            driver.id,
+            sanitizeSetupProfile(state.carSetups?.[driver.id] ?? BALANCED_SETUP),
+          ]))}
           car={carForTeam(state, state.selectedTeamId)}
           practice={workshopPractice}
           setupLock={setupLock}
+          stage={qualifyingResults ? 'PostQualifying' : 'Initial'}
           onChangeParam={(driverId, key, value) =>
             setSetupDraft((p) => ({
               ...p,
@@ -433,54 +454,35 @@ export function RaceWeekend() {
         />
       )}
 
-      {phase === 'race-strategy' && (
-        <DecisionPhase
-          title="Pre-Race Strategy Selection"
-          subtitle="The grid is set. Pick a pit/tyre strategy for each driver - you can still adapt live during the race."
-          drivers={playerDrivers}
-          options={raceStrategies.map((s) => ({ id: s.id, name: s.name, description: s.description }))}
-          valueFor={(id) => raceFor(id).strategyId}
-          onSelect={(driverId, optId) =>
-            setRaceOverrides((p) => ({ ...p, [driverId]: { ...p[driverId], strategyId: optId as RaceDecision['strategyId'] } }))
-          }
-          recommendedId={recommendedRaceStrategy(track, forecast?.Race).optionId}
-          recommendedReason={recommendedRaceStrategy(track, forecast?.Race).reason}
-          onBack={() => moveTo('quali-review')}
-          onNext={() => moveTo('race-instructions')}
-        />
-      )}
-
-      {phase === 'race-instructions' && (
-        <DecisionPhase
-          title="Driver Race Instructions"
-          subtitle="Set how hard each driver pushes during the race."
-          drivers={playerDrivers}
-          options={driverInstructions.map((s) => ({ id: s.id, name: s.name, description: s.description }))}
-          valueFor={(id) => raceFor(id).instructionId}
-          onSelect={(driverId, optId) =>
-            setRaceOverrides((p) => ({ ...p, [driverId]: { ...p[driverId], instructionId: optId as RaceDecision['instructionId'] } }))
-          }
-          recommendedId={recommendedInstruction(track, forecast?.Race).optionId}
-          recommendedReason={recommendedInstruction(track, forecast?.Race).reason}
-          onBack={() => moveTo('race-strategy')}
-          onNext={() => moveTo('plan-board')}
-          nextLabel="Review Weekend Plan ->"
-        />
-      )}
-
-      {phase === 'plan-board' && (
-        <WeekendPlanBoard
-          board={planBoard}
-          onEdit={moveTo}
-          onConfirm={confirmPlanAndContinue}
-        />
-      )}
-
-      {phase === 'garage-address' && (
-        <GarageAddress
+      {(phase === 'race-strategy'
+        || phase === 'race-instructions'
+        || phase === 'plan-board'
+        || phase === 'garage-address') && (
+        <RacePlanStage
           state={state}
           raceId={race.id}
-          record={garageAddress}
+          drivers={playerDrivers}
+          board={planBoard}
+          strategyFor={(driverId) => raceFor(driverId).strategyId}
+          instructionFor={(driverId) => raceFor(driverId).instructionId}
+          onStrategy={(driverId, strategyId) =>
+            setRaceOverrides((previous) => ({
+              ...previous,
+              [driverId]: { ...previous[driverId], strategyId },
+            }))
+          }
+          onInstruction={(driverId, instructionId) =>
+            setRaceOverrides((previous) => ({
+              ...previous,
+              [driverId]: { ...previous[driverId], instructionId },
+            }))
+          }
+          strategyRecommendation={recommendedRaceStrategy(track, forecast.Race)}
+          instructionRecommendation={recommendedInstruction(track, forecast.Race)}
+          confirmed={!!confirmedPlan}
+          garageAddress={garageAddress}
+          onEdit={moveTo}
+          onConfirm={confirmPlanAndContinue}
           onDeliver={(tone, delegated) => dispatch({
             type: 'DELIVER_GARAGE_ADDRESS',
             raceId: race.id,
@@ -500,63 +502,60 @@ export function RaceWeekend() {
   );
 
   return (
-    <WorkspaceScreen className="era-feature-screen era-race-weekend">
-      <WorkspaceHeader
-        eyebrow="Race operations"
-        title={race.gpName}
-        subtitle={`${race.trackName} · Round ${race.round} of ${state.calendar.length} · ${phaseTitle}`}
-        actions={<>
-          <Button variant="ghost" onClick={() => navigate('/hq')}>Manager Office</Button>
-          <Button
-            variant="primary"
-            onClick={advanceFromCurrent}
-            disabled={phase === 'garage-address' && !garageAddress}
-            title={phase === 'garage-address' && !garageAddress
-              ? 'Deliver or delegate the one-time garage address before starting the race'
-              : advanceLabel}
-          >
-            {advanceLabel} →
-          </Button>
-        </>}
-      />
+    <WorkspaceScreen className={`era-feature-screen era-race-weekend ${phase === 'setup' ? 'ui-setup-focus-shell' : ''}`}>
+      {phase !== 'setup' && (
+        <>
+          <WorkspaceHeader
+            eyebrow="Race operations"
+            title={race.gpName}
+            subtitle={`${race.trackName} · Round ${race.round} of ${state.calendar.length} · ${RACE_WEEKEND_SECTIONS.find((section) => section.id === activeSection)?.label}`}
+            actions={<>
+              <Button variant="ghost" onClick={() => navigate('/hq')}>Manager Office</Button>
+              <Button
+                variant="primary"
+                onClick={advanceFromCurrent}
+                disabled={phase === 'garage-address' && !garageAddress}
+                title={phase === 'garage-address' && !garageAddress
+                  ? 'Deliver or delegate the one-time garage address before starting the race'
+                  : advanceLabel}
+              >
+                {advanceLabel} →
+              </Button>
+            </>}
+          />
 
-      <MetricStrip>
-        <WorkspaceMetric label="Weekend stage" value={`${raceWeekendPhaseIndex(phase, isMinPackage) + 1}/${visiblePhases.length}`} detail={phaseTitle} />
-        <WorkspaceMetric label="Practice" value={isMinPackage ? 'Package skip' : `${completedPracticeSessions}/${totalPracticeSessions}`} detail={isMinPackage ? 'Baseline setup enforced' : 'Sessions completed'} />
-        <WorkspaceMetric label="Qualifying" value={qualifyingResults ? 'Complete' : 'Pending'} detail={bestPlayerGrid ? `Best player car P${bestPlayerGrid}` : 'Grid not set'} />
-        <WorkspaceMetric
-          label="Race gate"
-          value={garageAddress ? 'Ready' : 'In progress'}
-          detail={garageAddress
-            ? `${garageAddress.messageLabel}${garageAddress.delegated ? ' · delegated' : ''}`
-            : phase === 'garage-address' ? 'Garage address required' : planBoard.blockedReason ?? state.raceWeekendPackage?.packageType ?? 'No package'}
-        />
-      </MetricStrip>
-      <SeasonWorkflowRail
-        active="weekend"
-        context={`${race.gpName} · ${phaseTitle}`}
-        blocker={garageAddress
-          ? undefined
-          : phase === 'garage-address'
-            ? 'Deliver or delegate the garage address before starting the race'
-            : planBoard.blockedReason ?? `${visiblePhases.length - raceWeekendPhaseIndex(phase, isMinPackage) - 1} weekend stage${visiblePhases.length - raceWeekendPhaseIndex(phase, isMinPackage) - 1 === 1 ? '' : 's'} remain`}
-      />
+          <MetricStrip>
+            <WorkspaceMetric
+              label="Management stage"
+              value={`${RACE_WEEKEND_SECTIONS.findIndex((section) => section.id === activeSection) + 1}/4`}
+              detail={RACE_WEEKEND_SECTIONS.find((section) => section.id === activeSection)?.label}
+            />
+            <WorkspaceMetric label="Practice" value={isMinPackage ? 'Package skip' : `${completedPracticeSessions}/${totalPracticeSessions}`} detail={isMinPackage ? 'Baseline setup enforced' : 'Sessions completed'} />
+            <WorkspaceMetric label="Qualifying" value={qualifyingResults ? 'Complete' : 'Pending'} detail={bestPlayerGrid ? `Best player car P${bestPlayerGrid}` : 'Grid not set'} />
+            <WorkspaceMetric
+              label="Race gate"
+              value={garageAddress ? 'Ready' : confirmedPlan ? 'Leadership pending' : 'Plan in progress'}
+              detail={garageAddress
+                ? `${garageAddress.messageLabel}${garageAddress.delegated ? ' · delegated' : ''}`
+                : planBoard.blockedReason ?? state.raceWeekendPackage?.packageType ?? 'No package'}
+            />
+          </MetricStrip>
+        </>
+      )}
 
       <WorkspaceTabs
         items={tabs}
-        active={phase}
-        onChange={(next) => {
-          if (canOpenRaceWeekendPhase(next, unlockedPhase, isMinPackage)) moveTo(next);
-        }}
-        ariaLabel="Race weekend stages"
+        active={activeSection}
+        onChange={openSection}
+        ariaLabel="Race weekend management stages"
       />
 
-      {forecast && phase !== 'hub' && (
+      {forecast && phase !== 'hub' && phase !== 'setup' && (
         <div className="shrink-0">
           <ForecastBanner
             forecast={forecast}
             highlight={
-              phase === 'practice' || phase === 'setup'
+              phase === 'practice'
                 ? 'Practice'
                 : phase === 'quali-run' || phase === 'quali-review'
                 ? 'Qualifying'
@@ -573,21 +572,218 @@ export function RaceWeekend() {
   );
 }
 
-function Briefing({ track, race, isMinPackage, onNext }: { track: Track; race: { laps: number; distanceKm?: number; gpName: string }; isMinPackage: boolean; onNext: () => void }) {
+function RacePlanStage({
+  state,
+  raceId,
+  drivers,
+  board,
+  strategyFor,
+  instructionFor,
+  onStrategy,
+  onInstruction,
+  strategyRecommendation,
+  instructionRecommendation,
+  confirmed,
+  garageAddress,
+  onEdit,
+  onConfirm,
+  onDeliver,
+  onFollowUp,
+  onStartRace,
+}: {
+  state: NonNullable<ReturnType<typeof useGame>['state']>;
+  raceId: string;
+  drivers: Driver[];
+  board: WeekendPlanBoardModel;
+  strategyFor: (driverId: string) => RaceDecision['strategyId'];
+  instructionFor: (driverId: string) => RaceDecision['instructionId'];
+  onStrategy: (driverId: string, strategyId: RaceDecision['strategyId']) => void;
+  onInstruction: (driverId: string, instructionId: RaceDecision['instructionId']) => void;
+  strategyRecommendation: { optionId: string; reason: string };
+  instructionRecommendation: { optionId: string; reason: string };
+  confirmed: boolean;
+  garageAddress?: GarageAddressRecord;
+  onEdit: (phase: RaceWeekendPhase) => void;
+  onConfirm: () => void;
+  onDeliver: (tone: GarageAddressTone, delegated?: boolean) => void;
+  onFollowUp: (driverId: string, followUp: GarageFollowUpType) => void;
+  onStartRace: () => void;
+}) {
+  return (
+    <div className="grid items-start gap-3 xl:grid-cols-[minmax(0,1.55fr)_minmax(300px,0.75fr)]">
+      <div className="min-w-0 space-y-3">
+        <Panel title="Strategy & Driver Instructions">
+          <div className="grid gap-3 md:grid-cols-2">
+            {drivers.map((driver) => (
+              <section key={driver.id} className="rounded border border-neutral-800 bg-neutral-950/35 p-3">
+                <div className="mb-3 flex items-center justify-between gap-3 border-b border-neutral-800 pb-2">
+                  <h2 className="text-sm font-bold text-neutral-100">#{driver.number} {driver.name}</h2>
+                  {confirmed && (
+                    <span className="rounded bg-emerald-500/15 px-2 py-0.5 text-[10px] font-bold uppercase text-emerald-300">
+                      Plan confirmed
+                    </span>
+                  )}
+                </div>
+
+                <div className="text-[10px] font-bold uppercase tracking-wide text-neutral-500">Race strategy</div>
+                <p className="mt-1 text-[11px] text-emerald-300">
+                  Staff recommendation: {raceStrategies.find((item) => item.id === strategyRecommendation.optionId)?.name}. {strategyRecommendation.reason}
+                </p>
+                <div className="mt-2 grid gap-1.5">
+                  {raceStrategies.map((strategy) => {
+                    const selected = strategyFor(driver.id) === strategy.id;
+                    return (
+                      <button
+                        key={strategy.id}
+                        type="button"
+                        disabled={confirmed}
+                        onClick={() => onStrategy(driver.id, strategy.id)}
+                        className={`rounded border px-2.5 py-2 text-left ${
+                          selected
+                            ? 'border-amber-500/60 bg-amber-500/10'
+                            : 'border-neutral-800 bg-neutral-900/45 hover:border-neutral-600'
+                        } disabled:cursor-not-allowed disabled:opacity-65`}
+                      >
+                        <div className="text-xs font-semibold text-neutral-100">{strategy.name}</div>
+                        <div className="mt-0.5 text-[10px] leading-4 text-neutral-500">{strategy.description}</div>
+                      </button>
+                    );
+                  })}
+                </div>
+
+                <div className="mt-4 text-[10px] font-bold uppercase tracking-wide text-neutral-500">Driver instruction</div>
+                <p className="mt-1 text-[11px] text-sky-300">
+                  Staff recommendation: {driverInstructions.find((item) => item.id === instructionRecommendation.optionId)?.name}. {instructionRecommendation.reason}
+                </p>
+                <div className="mt-2 grid gap-1.5">
+                  {driverInstructions.map((instruction) => {
+                    const selected = instructionFor(driver.id) === instruction.id;
+                    return (
+                      <button
+                        key={instruction.id}
+                        type="button"
+                        disabled={confirmed}
+                        onClick={() => onInstruction(driver.id, instruction.id)}
+                        className={`rounded border px-2.5 py-2 text-left ${
+                          selected
+                            ? 'border-sky-500/60 bg-sky-500/10'
+                            : 'border-neutral-800 bg-neutral-900/45 hover:border-neutral-600'
+                        } disabled:cursor-not-allowed disabled:opacity-65`}
+                      >
+                        <div className="text-xs font-semibold text-neutral-100">{instruction.name}</div>
+                        <div className="mt-0.5 text-[10px] leading-4 text-neutral-500">{instruction.description}</div>
+                      </button>
+                    );
+                  })}
+                </div>
+              </section>
+            ))}
+          </div>
+        </Panel>
+
+        {confirmed && (
+          <GarageAddress
+            state={state}
+            raceId={raceId}
+            record={garageAddress}
+            onDeliver={onDeliver}
+            onFollowUp={onFollowUp}
+            onStartRace={onStartRace}
+          />
+        )}
+      </div>
+
+      <aside className="space-y-3 xl:sticky xl:top-0">
+        <Panel
+          title="Persistent Race Plan"
+          actions={!confirmed ? (
+            <Button
+              variant="primary"
+              disabled={!board.canConfirm}
+              title={board.blockedReason ?? 'Confirm this plan and continue to garage leadership'}
+              onClick={onConfirm}
+            >
+              Confirm plan
+            </Button>
+          ) : undefined}
+        >
+          <p className={board.canConfirm || confirmed ? 'text-xs text-neutral-300' : 'text-xs text-orange-300'}>
+            {confirmed ? 'The competitive plan is locked. Complete the garage address below to start the race.' : board.summary}
+          </p>
+
+          <div className="mt-3 space-y-2">
+            {board.drivers.map((driver) => (
+              <div key={driver.driverId} className="rounded border border-neutral-800 bg-neutral-950/45 p-2.5 text-[11px]">
+                <div className="flex items-center justify-between gap-2">
+                  <strong className="text-neutral-100">{driver.driverName}</strong>
+                  <span className="font-semibold text-neutral-300">{driver.grid}</span>
+                </div>
+                <dl className="mt-2 space-y-1">
+                  <PlanFact label="Setup" value={`${driver.setupConfidence}% · ${driver.parcFerme}`} />
+                  <PlanFact label="Strategy" value={driver.raceStrategy} />
+                  <PlanFact label="Instruction" value={driver.instruction} />
+                </dl>
+              </div>
+            ))}
+          </div>
+
+          <div className="mt-3 flex flex-wrap gap-1.5">
+            <Button variant="ghost" className="px-2 py-1 text-[10px]" onClick={() => onEdit('quali-review')}>Grid</Button>
+            <Button variant="ghost" className="px-2 py-1 text-[10px]" onClick={() => onEdit('setup')}>Setups</Button>
+          </div>
+
+          {board.warnings.length > 0 && (
+            <div className="mt-3 border-t border-neutral-800 pt-3">
+              <div className="text-[10px] font-bold uppercase tracking-wide text-orange-300">
+                Warnings · {board.warnings.length}
+              </div>
+              <ul className="mt-2 space-y-1.5 text-[10px] leading-4 text-orange-200/80">
+                {board.warnings.map((warning) => <li key={warning}>{warning}</li>)}
+              </ul>
+            </div>
+          )}
+        </Panel>
+      </aside>
+    </div>
+  );
+}
+
+function PlanFact({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="grid grid-cols-[4.5rem_minmax(0,1fr)] gap-2">
+      <dt className="text-neutral-500">{label}</dt>
+      <dd className="text-right text-neutral-300">{value}</dd>
+    </div>
+  );
+}
+
+function Briefing({
+  track,
+  race,
+  isMinPackage,
+  onNext,
+  compact = false,
+}: {
+  track: Track;
+  race: { laps: number; distanceKm?: number; gpName: string };
+  isMinPackage: boolean;
+  onNext?: () => void;
+  compact?: boolean;
+}) {
   const strategicNotes = briefingStrategicNotes(track);
   const ratingNotes = briefingRatingNotes(track);
   const nextLabel = isMinPackage ? 'Begin Qualifying Prep ->' : 'Begin Practice Prep ->';
   return (
     <Panel
       title="Track Briefing"
-      actions={<Button variant="primary" onClick={onNext}>{nextLabel}</Button>}
+      actions={onNext ? <Button variant="primary" onClick={onNext}>{nextLabel}</Button> : undefined}
     >
       {isMinPackage && (
         <div className="mb-4 rounded-lg border border-red-500/40 bg-red-500/10 px-4 py-3 text-sm text-red-300">
           <span className="font-bold">Minimum Operations Package:</span> Practice sessions and car setup changes are disabled. The team will run with the baseline setup and no practice data.
         </div>
       )}
-      <div className="grid gap-6 md:grid-cols-2">
+      <div className={`grid gap-4 ${compact ? '' : 'md:grid-cols-2'}`}>
         <div>
           <div className="text-xl font-bold text-neutral-100">{race.gpName}</div>
           <div className="text-sm text-neutral-400">{track.name}</div>
@@ -615,7 +811,7 @@ function Briefing({ track, race, isMinPackage, onNext }: { track: Track; race: {
         </div>
       </div>
 
-      <div className="mt-4 grid gap-3 md:grid-cols-2">
+      <div className={`mt-4 grid gap-3 ${compact ? '' : 'md:grid-cols-2'}`}>
         <InfoBox label="Strategic Notes" text={strategicNotes} />
         <InfoBox label="Rating Notes" text={ratingNotes} />
       </div>
@@ -1284,7 +1480,7 @@ function WeekendHub({
   track: Track;
   forecast: WeekendForecast;
   plan: ReturnType<typeof buildWeekendPlan>;
-  onNext: () => void;
+  onNext?: () => void;
 }) {
   const calendarLength = state.calendar.length;
   const completed = state.calendar.filter((r) => r.completed).length;
@@ -1409,7 +1605,7 @@ function WeekendHub({
 
       <div className="flex items-center justify-between">
         <div className="text-xs text-neutral-500">{completed} of {calendarLength} rounds completed this season.</div>
-        <Button variant="primary" onClick={onNext}>Enter Race Weekend →</Button>
+        {onNext && <Button variant="primary" onClick={onNext}>Enter Race Weekend →</Button>}
       </div>
     </div>
   );

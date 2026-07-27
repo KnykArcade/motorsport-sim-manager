@@ -14,6 +14,7 @@ export type RaceWeekendPhase =
   | 'race-instructions'
   | 'plan-board'
   | 'garage-address';
+export type RaceWeekendSection = 'overview' | 'practice-setup' | 'qualifying' | 'race-plan';
 
 export const PRE_RACE_BRIEFING_TABS: ReadonlyArray<{ id: PreRaceBriefingTab; label: string }> = [
   { id: 'overview', label: 'Race Overview' },
@@ -63,6 +64,38 @@ export const RACE_WEEKEND_PHASES: ReadonlyArray<{ id: RaceWeekendPhase; label: s
   { id: 'plan-board', label: 'Plan Board' },
   { id: 'garage-address', label: 'Garage Address' },
 ];
+
+export const RACE_WEEKEND_SECTIONS: ReadonlyArray<{ id: RaceWeekendSection; label: string }> = [
+  { id: 'overview', label: 'Weekend Overview' },
+  { id: 'practice-setup', label: 'Practice & Setup' },
+  { id: 'qualifying', label: 'Qualifying' },
+  { id: 'race-plan', label: 'Race Plan' },
+];
+
+export function raceWeekendSectionForPhase(
+  phase: RaceWeekendPhase,
+  qualifyingComplete: boolean,
+): RaceWeekendSection {
+  if (phase === 'hub' || phase === 'command-meeting' || phase === 'briefing') return 'overview';
+  if (phase === 'practice' || (phase === 'setup' && !qualifyingComplete)) return 'practice-setup';
+  if (phase === 'quali-run' || phase === 'quali-review' || phase === 'setup') return 'qualifying';
+  return 'race-plan';
+}
+
+export function canOpenRaceWeekendSection(
+  candidate: RaceWeekendSection,
+  furthestPhase: RaceWeekendPhase,
+  minimumPackage: boolean,
+): boolean {
+  if (candidate === 'overview') return true;
+  if (candidate === 'practice-setup') {
+    return !minimumPackage && raceWeekendPhaseIndex(furthestPhase, minimumPackage) >= raceWeekendPhaseIndex('practice', false);
+  }
+  if (candidate === 'qualifying') {
+    return raceWeekendPhaseIndex(furthestPhase, minimumPackage) >= raceWeekendPhaseIndex('quali-run', minimumPackage);
+  }
+  return raceWeekendPhaseIndex(furthestPhase, minimumPackage) >= raceWeekendPhaseIndex('race-strategy', minimumPackage);
+}
 
 export function visibleRaceWeekendPhases(minimumPackage: boolean) {
   return minimumPackage

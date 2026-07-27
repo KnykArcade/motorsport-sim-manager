@@ -6,10 +6,13 @@ import {
   RACE_RESULTS_TABS,
   RESULT_PAGE_SIZE,
   SEASON_REVIEW_TABS,
+  RACE_WEEKEND_SECTIONS,
+  canOpenRaceWeekendSection,
   canOpenRaceWeekendPhase,
   postRaceReviewRisk,
   postRaceReviewTabFromQuery,
   visibleRaceWeekendPhases,
+  raceWeekendSectionForPhase,
   transitionPage,
   transitionPageCount,
 } from './raceTransitionViewModel';
@@ -41,6 +44,22 @@ describe('race transition view model', () => {
     expect(canOpenRaceWeekendPhase('setup', 'practice', false)).toBe(false);
     expect(canOpenRaceWeekendPhase('race-strategy', 'quali-review', false)).toBe(false);
     expect(canOpenRaceWeekendPhase('briefing', 'quali-review', false)).toBe(true);
+  });
+
+  it('presents the weekend as four management stages while preserving internal gates', () => {
+    expect(RACE_WEEKEND_SECTIONS.map((section) => section.id)).toEqual([
+      'overview',
+      'practice-setup',
+      'qualifying',
+      'race-plan',
+    ]);
+    expect(raceWeekendSectionForPhase('command-meeting', false)).toBe('overview');
+    expect(raceWeekendSectionForPhase('setup', false)).toBe('practice-setup');
+    expect(raceWeekendSectionForPhase('setup', true)).toBe('qualifying');
+    expect(raceWeekendSectionForPhase('garage-address', true)).toBe('race-plan');
+    expect(canOpenRaceWeekendSection('qualifying', 'quali-run', false)).toBe(true);
+    expect(canOpenRaceWeekendSection('race-plan', 'quali-review', false)).toBe(false);
+    expect(canOpenRaceWeekendSection('practice-setup', 'quali-run', true)).toBe(false);
   });
 
   it('removes practice and setup only for the minimum operations package', () => {
