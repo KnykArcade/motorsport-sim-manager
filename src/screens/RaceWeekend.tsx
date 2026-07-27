@@ -40,6 +40,7 @@ import {
   recommendedInstruction,
 } from '../sim/weekendAdvisorEngine';
 import { Panel } from '../components/Panel';
+import { SeasonWorkflowRail } from '../components/workspace/SeasonWorkflowRail';
 import { Button } from '../components/Button';
 import { TrackDemandBars } from '../components/TrackDemandBars';
 import { SetupWorkshop, type WorkshopPractice } from '../components/SetupWorkshop';
@@ -403,6 +404,11 @@ export function RaceWeekend() {
         <WorkspaceMetric label="Qualifying" value={qualifyingResults ? 'Complete' : 'Pending'} detail={bestPlayerGrid ? `Best player car P${bestPlayerGrid}` : 'Grid not set'} />
         <WorkspaceMetric label="Race gate" value={phase === 'race-instructions' ? 'Ready' : 'In progress'} detail={state.raceWeekendPackage?.packageType ?? 'No package'} />
       </MetricStrip>
+      <SeasonWorkflowRail
+        active="weekend"
+        context={`${race.gpName} · ${phaseTitle}`}
+        blocker={phase === 'race-instructions' ? undefined : `${visiblePhases.length - raceWeekendPhaseIndex(phase, isMinPackage) - 1} weekend stage${visiblePhases.length - raceWeekendPhaseIndex(phase, isMinPackage) - 1 === 1 ? '' : 's'} remain`}
+      />
 
       <WorkspaceTabs
         items={tabs}

@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useGame } from '../game/GameContext';
 import { Panel } from '../components/Panel';
+import { SeasonWorkflowRail } from '../components/workspace/SeasonWorkflowRail';
 import { Button } from '../components/Button';
 import { StandingsTable } from '../components/StandingsTable';
 import { CompactPagination } from '../components/CompactPagination';
@@ -79,6 +80,7 @@ export function SeasonReview() {
         <WorkspaceMetric label="Your team" value={playerTeamPosition > 0 ? `P${playerTeamPosition}` : '—'} detail={`${playerStanding?.points ?? 0} championship points`} />
         <WorkspaceMetric label="Season record" value={`${state.calendar.length} rounds`} detail={`${state.driverStandings.length} drivers classified`} />
       </MetricStrip>
+      <SeasonWorkflowRail active="season" context={`${state.seasonYear} ${state.series} championship complete`} />
       <WorkspaceTabs items={SEASON_REVIEW_TABS} active={tab} onChange={selectTab} ariaLabel="Season review sections" />
       <WorkspaceBody className="space-y-3">
 

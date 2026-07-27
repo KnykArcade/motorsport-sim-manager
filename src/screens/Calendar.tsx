@@ -1,9 +1,17 @@
 import { useState } from 'react';
 import { useGame } from '../game/GameContext';
 import { getTrackById, getRegulationSet } from '../data';
-import { Panel } from '../components/Panel';
 import { RatingBadge } from '../components/RatingBadge';
 import { CompactPagination } from '../components/CompactPagination';
+import { SeasonWorkflowRail } from '../components/workspace/SeasonWorkflowRail';
+import {
+  FmKeyValue,
+  FmListButton,
+  FmPane,
+  FmPaneBody,
+  FmPaneHeader,
+  FmWorkspaceGrid,
+} from '../components/workspace/FmPane';
 import {
   MetricStrip,
   WorkspaceBody,
@@ -19,11 +27,13 @@ import {
   pageCount,
   type CalendarTab,
 } from './seasonOverviewViewModel';
+import { selectedWorkflowEntry, workflowStageForPhase } from './seasonRaceWorkflowViewModel';
 
 export function Calendar() {
   const { state } = useGame();
   const [tab, setTab] = useState<CalendarTab>('schedule');
   const [page, setPage] = useState(0);
+  const [selectedRaceId, setSelectedRaceId] = useState<string>();
   if (!state) return null;
 
   const driverName = (id: string) => state.drivers.find((driver) => driver.id === id)?.name ?? id;
@@ -35,6 +45,10 @@ export function Calendar() {
   const completedCount = state.calendar.filter((race) => race.completed).length;
   const remainingCount = state.calendar.length - completedCount;
   const nextRace = state.calendar.find((race) => !race.completed);
+  const selectedRace = selectedWorkflowEntry(visibleEntries, selectedRaceId, nextRace?.id);
+  const selectedTrack = selectedRace ? getTrackById(selectedRace.trackId) : undefined;
+  const selectedResults = selectedRace ? state.completedRaceResults[selectedRace.id] : undefined;
+  const selectedWinner = selectedResults?.find((result) => result.position === 1);
 
   function selectTab(nextTab: CalendarTab) {
     setTab(nextTab);
@@ -57,6 +71,11 @@ export function Calendar() {
         <WorkspaceMetric label="Next event" value={nextRace?.gpName ?? 'Season complete'} detail={nextRace ? `Round ${nextRace.round} · ${nextRace.trackName}` : undefined} />
       </MetricStrip>
 
+      <SeasonWorkflowRail
+        active={workflowStageForPhase(state.careerPhase?.currentPhase, state.seasonComplete)}
+        context={nextRace ? `Round ${nextRace.round} · ${nextRace.gpName}` : 'Championship complete'}
+      />
+
       <WorkspaceTabs
         items={[
           { id: 'schedule' as const, label: `Remaining Schedule (${remainingCount})` },
@@ -67,43 +86,68 @@ export function Calendar() {
         ariaLabel="Calendar sections"
       />
 
-      <WorkspaceBody>
-      <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
-        {visibleEntries.map((race) => {
-          const track = getTrackById(race.trackId);
-          const isCurrent = race.round === state.currentRaceIndex + 1 && !state.seasonComplete;
-          const results = state.completedRaceResults[race.id];
-          const winner = results?.find((result) => result.position === 1);
-          return (
-            <Panel key={race.id} className={isCurrent ? 'ring-1 ring-amber-500' : ''}>
-              <div className="flex items-start justify-between gap-2">
-                <div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs font-bold text-neutral-500">R{race.round}</span>
-                    {isCurrent && <Badge tone="next">NEXT</Badge>}
-                    {race.completed && <Badge tone="done">DONE</Badge>}
+      <WorkspaceBody className="flex flex-col">
+      <FmWorkspaceGrid className="ui-season-calendar-grid">
+        <FmPane className="ui-season-calendar-list">
+          <FmPaneHeader title={tab === 'schedule' ? 'Remaining rounds' : 'Completed rounds'} meta={`${entries.length} events · page ${safePage + 1} of ${tabPageCount}`} />
+          <FmPaneBody>
+            {visibleEntries.map((race) => {
+              const isCurrent = race.round === state.currentRaceIndex + 1 && !state.seasonComplete;
+              return (
+                <FmListButton key={race.id} active={selectedRace?.id === race.id} urgent={isCurrent} onClick={() => setSelectedRaceId(race.id)}>
+                  <span className="ui-news-list-source">Round {race.round} · {race.completed ? 'Complete' : isCurrent ? 'Current' : 'Upcoming'}</span>
+                  <strong>{race.gpName}</strong>
+                  <span>{race.trackName} · {race.laps} laps</span>
+                </FmListButton>
+              );
+            })}
+            {visibleEntries.length === 0 && <div className="ui-inbox-empty">No races are listed in this section.</div>}
+          </FmPaneBody>
+        </FmPane>
+
+        <FmPane className="ui-season-calendar-detail">
+          <FmPaneHeader
+            title={selectedRace?.gpName ?? 'Event dossier'}
+            meta={selectedRace ? `${selectedRace.trackName} · Round ${selectedRace.round}` : 'Select a race'}
+            actions={selectedRace?.completed ? <Badge tone="done">DONE</Badge> : selectedRace?.id === nextRace?.id ? <Badge tone="next">NEXT</Badge> : undefined}
+          />
+          <FmPaneBody className="ui-fm-scroll-column">
+            {selectedRace ? (
+              <>
+                <div className="ui-fm-key-value-stack">
+                  <FmKeyValue label="Distance" value={`${selectedRace.laps} laps · ${selectedRace.distanceKm ?? '—'} km`} />
+                  <FmKeyValue label="Circuit type" value={selectedTrack?.archetype ?? 'Unavailable'} />
+                  <FmKeyValue label="Primary setup" value={selectedTrack?.setupProfile.primarySetupProfile ?? 'Unavailable'} />
+                  <FmKeyValue label="Status" value={selectedRace.completed ? 'Complete' : selectedRace.id === nextRace?.id ? 'Next race' : 'Scheduled'} />
+                </div>
+                {selectedTrack && (
+                  <div className="mt-3 flex flex-wrap gap-1.5">
+                    <RatingBadge label="Aero" value={selectedTrack.setupProfile.aeroDemand} />
+                    <RatingBadge label="Pwr" value={selectedTrack.setupProfile.powerDemand} />
+                    <RatingBadge label="Mech" value={selectedTrack.setupProfile.mechanicalDemand} />
+                    <RatingBadge label="Risk" value={selectedTrack.setupProfile.riskDemand} />
                   </div>
-                  <div className="mt-1 font-bold text-neutral-100">{race.gpName}</div>
-                  <div className="text-xs text-neutral-400">{race.trackName}</div>
-                </div>
-                {track && <span className="rounded bg-neutral-800 px-2 py-0.5 text-[10px] text-neutral-300">{track.archetype}</span>}
+                )}
+                {selectedTrack?.setupProfile.strategyNotes && <p className="ui-season-calendar-notes">{selectedTrack.setupProfile.strategyNotes}</p>}
+              </>
+            ) : <div className="ui-inbox-empty">Select a race to open its dossier.</div>}
+          </FmPaneBody>
+        </FmPane>
+
+        <FmPane className="ui-season-calendar-context">
+          <FmPaneHeader title="Round context" meta={selectedRace?.completed ? 'Recorded outcome' : 'Preparation outlook'} />
+          <FmPaneBody>
+            {selectedRace ? (
+              <div className="ui-fm-key-value-stack">
+                <FmKeyValue label="Winner" value={selectedWinner ? driverName(selectedWinner.driverId) : 'Not yet raced'} />
+                <FmKeyValue label="Classification" value={selectedResults ? `${selectedResults.length} entries` : 'Pending'} />
+                <FmKeyValue label="Season progress" value={`${completedCount}/${state.calendar.length} complete`} />
+                <FmKeyValue label="Next action" value={selectedRace.id === nextRace?.id ? 'Open current race workflow' : selectedRace.completed ? 'Review result archive' : 'Monitor preparation'} />
               </div>
-              <div className="mt-2 text-xs text-neutral-500">{race.laps} laps · {race.distanceKm ?? '—'} km</div>
-              {track && <>
-                <div className="mt-2 flex flex-wrap gap-1.5">
-                  <RatingBadge label="Aero" value={track.setupProfile.aeroDemand} />
-                  <RatingBadge label="Pwr" value={track.setupProfile.powerDemand} />
-                  <RatingBadge label="Mech" value={track.setupProfile.mechanicalDemand} />
-                  <RatingBadge label="Risk" value={track.setupProfile.riskDemand} />
-                </div>
-                <div className="mt-2 truncate text-xs text-neutral-500"><span className="text-neutral-400">Setup:</span> {track.setupProfile.primarySetupProfile}</div>
-              </>}
-              {winner && <div className="mt-2 text-xs font-semibold text-amber-300">Winner · {driverName(winner.driverId)}</div>}
-            </Panel>
-          );
-        })}
-      </div>
-      {visibleEntries.length === 0 && <Panel><p className="text-sm text-neutral-500">No races are listed in this section.</p></Panel>}
+            ) : <div className="ui-inbox-empty">No event context is available.</div>}
+          </FmPaneBody>
+        </FmPane>
+      </FmWorkspaceGrid>
       <CompactPagination noun="races" total={entries.length} page={safePage} pageCount={tabPageCount} pageSize={CALENDAR_PAGE_SIZE} onPage={setPage} />
       </WorkspaceBody>
     </WorkspaceScreen>

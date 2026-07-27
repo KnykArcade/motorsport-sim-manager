@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useGame } from '../game/GameContext';
 import { Panel } from '../components/Panel';
+import { SeasonWorkflowRail } from '../components/workspace/SeasonWorkflowRail';
 import { Button } from '../components/Button';
 import { DriverDossierButton } from '../components/driverCards/DriverDossier';
 import {
@@ -97,6 +98,11 @@ export function Offseason() {
         <WorkspaceMetric label="Academy rights" value={`${academyDecisionCount}/${promotionEligible.length}`} detail={unresolvedAcademyRights ? `${unresolvedAcademyRights} optional choice${unresolvedAcademyRights === 1 ? '' : 's'} unresolved` : 'All eligible drivers resolved'} />
         <WorkspaceMetric label="Market movement" value={marketMovement} detail={`${atRiskReserves.length} reserve driver${atRiskReserves.length === 1 ? '' : 's'} at risk`} />
       </MetricStrip>
+      <SeasonWorkflowRail
+        active="offseason"
+        context={`${state.seasonYear} → ${nextYear} transition`}
+        blocker={!state.seasonComplete ? 'Current season is not complete' : advancing ? 'Loading next season data' : undefined}
+      />
       <div className="ui-decision-strip flex flex-wrap items-center justify-between gap-2 rounded-lg border px-3 py-2.5">
         <div className="flex min-w-0 items-center gap-2 text-xs">
           <span className="ui-decision-strip-pulse" aria-hidden="true" />

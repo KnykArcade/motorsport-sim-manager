@@ -14,6 +14,7 @@ import { getOrCreatePhaseState } from '../game/careerPhaseEngine';
 import { ARCHETYPE_SPECS } from '../sim/aiTeamEngine';
 import { RACE_WEEKEND_PACKAGES } from '../sim/raceWeekendPackageEngine';
 import { Panel } from '../components/Panel';
+import { SeasonWorkflowRail } from '../components/workspace/SeasonWorkflowRail';
 import { Button } from '../components/Button';
 import { TrackDemandBars } from '../components/TrackDemandBars';
 import { NewsPanel } from '../components/NewsPanel';
@@ -112,6 +113,11 @@ export function PreRaceBriefing() {
         <WorkspaceMetric label="Race package" value={selectedPackageDef?.label ?? 'Not selected'} detail={selectedPackage ? formatMoney(selectedPackage.cost) : 'Required before weekend entry'} />
         <WorkspaceMetric label="Weekend gate" value={canEnterWeekend ? 'Ready' : 'Blocked'} detail={weekendBlockedReason ?? `${activeDrivers.length}/${minDrivers} active drivers · ${team ? formatMoney(team.budget) : '—'}`} />
       </MetricStrip>
+      <SeasonWorkflowRail
+        active="briefing"
+        context={`${race.gpName} · ${race.trackName}`}
+        blocker={canEnterWeekend ? undefined : weekendBlockedReason}
+      />
       {!canEnterWeekend && <div className="shrink-0 rounded border border-orange-500/25 bg-orange-500/5 px-3 py-2 text-[11px] text-orange-200">Weekend entry is blocked: {weekendBlockedReason}.</div>}
       <WorkspaceTabs items={PRE_RACE_BRIEFING_TABS} active={tab} onChange={setTab} ariaLabel="Pre-race briefing sections" />
       <WorkspaceBody className="space-y-3">
