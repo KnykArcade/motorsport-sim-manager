@@ -74,6 +74,11 @@ describe('Single Season mode integration', () => {
       expect(hidden.has('/engine')).toBe(true);
     });
 
+    it('hides the multi-season Team Planner in Single Season', () => {
+      expect(getHiddenNavRoutes('SingleSeason').has('/planner')).toBe(true);
+      expect(isRouteRestricted('/planner', 'SingleSeason')).toBe(true);
+    });
+
     it('keeps Sponsors in nav for race-by-race objective reviews', () => {
       const hidden = getHiddenNavRoutes('SingleSeason');
       expect(hidden.has('/sponsors')).toBe(false);

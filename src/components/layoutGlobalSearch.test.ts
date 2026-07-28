@@ -52,4 +52,16 @@ describe('FM-style global object search', () => {
     const results = searchGlobalIndex(globalSearchIndex(state), team.name);
     expect(results[0].id).toBe(`team:${team.id}`);
   });
+
+  it('connects the player organization to the Team Planner only in multi-season modes', () => {
+    const career = createState();
+    const player = career.teams.find((team) => team.id === career.selectedTeamId)!;
+    const careerResult = searchGlobalIndex(globalSearchIndex(career), player.name)[0];
+    expect(careerResult.actions).toContainEqual({ label: 'Team planner', to: '/planner' });
+
+    const singleSeason = createState('SingleSeason');
+    const historicalPlayer = singleSeason.teams.find((team) => team.id === singleSeason.selectedTeamId)!;
+    const singleResult = searchGlobalIndex(globalSearchIndex(singleSeason), historicalPlayer.name)[0];
+    expect(singleResult.actions.map((action) => action.label)).not.toContain('Team planner');
+  });
 });

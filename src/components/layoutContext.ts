@@ -28,9 +28,10 @@ const CONTEXT_GROUPS: ReadonlyArray<ContextGroup> = [
     ],
   },
   {
-    routes: ['/teams', '/drivers', '/principal', '/relationships', '/rivals'],
+    routes: ['/teams', '/planner', '/drivers', '/principal', '/relationships', '/rivals'],
     items: [
       item('/teams?filter=player', 'My Team'),
+      item('/planner', 'Team Planner'),
       item('/principal', 'Principal'),
       item('/relationships', 'Driver Relations'),
       item('/rivals', 'Rivalries'),
@@ -87,6 +88,7 @@ const PAGE_IDENTITIES: ReadonlyArray<{ route: string; identity: PageIdentity }> 
   { route: '/season-review', identity: { section: 'Race Strategy', title: 'Season Review' } },
   { route: '/offseason', identity: { section: 'Race Strategy', title: 'Offseason' } },
   { route: '/teams', identity: { section: 'Team', title: 'Team' } },
+  { route: '/planner', identity: { section: 'Team', title: 'Team Planner' } },
   { route: '/drivers', identity: { section: 'Team', title: 'Drivers' } },
   { route: '/principal', identity: { section: 'Team', title: 'Team Principal' } },
   { route: '/relationships', identity: { section: 'Team', title: 'Driver Relations' } },

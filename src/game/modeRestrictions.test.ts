@@ -123,6 +123,7 @@ describe('modeRestrictions', () => {
       expect(hidden.has('/politics')).toBe(true);
       expect(hidden.has('/offseason')).toBe(true);
       expect(hidden.has('/engine')).toBe(true);
+      expect(hidden.has('/planner')).toBe(true);
       expect(hidden.has('/sponsors')).toBe(false);
       // Core screens are NOT hidden.
       expect(hidden.has('/hq')).toBe(false);

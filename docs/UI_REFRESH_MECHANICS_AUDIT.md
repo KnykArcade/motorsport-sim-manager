@@ -245,3 +245,19 @@ Phase 15 does not add a route, remove a progression guard, change a simulation
 formula, alter setup balance, or introduce an external-simulator dependency.
 The only new persistence is a race-scoped browser-session UI draft; authoritative
 career and simulation state continue to use the existing reducer and save system.
+
+## Phase 19 Motorsport Team Planner findings
+
+| Finding | Status | Resolution |
+| --- | --- | --- |
+| The player had to mentally combine Drivers, Recruitment, Staff, Technical, Commercial, Finance, and Offseason to understand future readiness. | Fixed | Team Planner now presents the current season, next season, and season after next from the same authoritative career data. |
+| Current contracts could look like future commitments even when they expire before a planning horizon. | Fixed | Driver, reserve, staff, engine, and sponsor commitments are projected only through the seasons their existing contract years cover. Pending driver and engine deals begin in their real next-season window. |
+| Comparing a shortlisted or academy driver in a future seat could accidentally be mistaken for a signing. | Prevented | What-if placements are browser-session UI state only. They do not dispatch a contract action, charge budget, alter morale, replace a driver, or enter the saved career. |
+| A future-seat gap did not lead directly to the existing recruitment work. | Fixed | Required vacancies, weak positions, expiring contracts, and selected candidates link to the existing scouting, market, negotiation, development, finance, and offseason workspaces. |
+| Long-term budget comparisons could imply a complete financial forecast. | Clarified | Projected headroom includes only currently known recurring driver, academy, staff, engine, and sponsor commitments. Prize money, unsigned future offers, and hypothetical placements are explicitly excluded. |
+| Active technical work could be charged again merely because it carries into a future season. | Prevented | Technical programmes and locked research focus appear as carryover commitments with zero additional planner charge; their real costs remain governed by the existing technical engine. |
+| Multi-season planning could appear in historical Single Season mode. | Prevented | The route and contextual entry are hidden and guarded in Single Season while remaining available in Career and Sandbox. |
+
+Phase 19 adds one guarded planning route and browser-session what-if state. It
+does not add a reducer action, save field, simulation formula, contract rule,
+morale effect, injury/substitute system, or season-rollover mutation.

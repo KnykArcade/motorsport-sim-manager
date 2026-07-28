@@ -50,6 +50,7 @@ const PreSeasonSetup = lazy(() => import('../screens/PreSeasonSetup').then((m) =
 const NewsCenter = lazy(() => import('../screens/NewsCenter').then((m) => ({ default: m.NewsCenter })));
 const Inbox = lazy(() => import('../screens/Inbox').then((m) => ({ default: m.Inbox })));
 const Scouting = lazy(() => import('../screens/Scouting').then((m) => ({ default: m.Scouting })));
+const TeamPlanner = lazy(() => import('../screens/TeamPlanner').then((m) => ({ default: m.TeamPlanner })));
 
 // Wrap in-game screens with the dashboard layout and redirect to the menu when
 // there is no active game.
@@ -269,6 +270,7 @@ export default function App() {
           <Route path="/calendar" element={<InGame><Calendar /></InGame>} />
           <Route path="/standings" element={<InGame><Standings /></InGame>} />
           <Route path="/teams" element={<InGame><TeamOverview /></InGame>} />
+          <Route path="/planner" element={<ModeGuard route="/planner"><TeamPlanner /></ModeGuard>} />
           <Route path="/drivers" element={<InGame><Drivers /></InGame>} />
           <Route path="/drivers/:driverId/negotiate" element={<InGame><DriverContractNegotiation /></InGame>} />
           <Route path="/market/:marketId/negotiate/:seatDriverId" element={<InGame><MarketContractNegotiation /></InGame>} />

@@ -109,7 +109,10 @@ export function globalSearchIndex(
       actions: allowedActions([
         { label: 'Open profile', to },
         ...(team.id === state.selectedTeamId
-          ? [{ label: 'Team relationships', to: '/relationships' }]
+          ? [
+              ...(state.gameMode === 'SingleSeason' ? [] : [{ label: 'Team planner', to: '/planner' }]),
+              { label: 'Team relationships', to: '/relationships' },
+            ]
           : [{ label: 'Rival context', to: '/rivals' }]),
       ], hiddenRoutes),
     });

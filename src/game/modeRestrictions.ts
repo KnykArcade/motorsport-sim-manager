@@ -26,6 +26,7 @@ const SINGLE_SEASON_RESTRICTED_ROUTES = new Set([
   '/politics',
   '/offseason',
   '/engine',
+  '/planner',
 ]);
 
 // Nav items hidden from the sidebar in Single Season mode.
@@ -35,6 +36,7 @@ export const SINGLE_SEASON_HIDDEN_NAV = new Set([
   '/politics',
   '/offseason',
   '/engine',
+  '/planner',
 ]);
 
 // Nav items hidden from the sidebar in Career mode (none — full access).
@@ -173,6 +175,11 @@ const SINGLE_SEASON_ROUTE_REASONS: Record<string, { title: string; reason: strin
     title: 'Engine Supplier Locked',
     reason: 'Engine supplier deals are locked to historical data in Single Season Mode. Each team uses the engine they historically ran that year.',
     focus: 'Engine performance is still reflected in your car stats and development.',
+  },
+  '/planner': {
+    title: 'Team Planner Locked',
+    reason: 'The Team Planner compares contracts, seats, staff, suppliers, sponsors, and technical commitments across multiple future seasons. Single Season Mode covers one historical year only.',
+    focus: 'Use Drivers, Team, Finance, and Technical to review the current historical season.',
   },
 };
 

@@ -6,6 +6,7 @@ describe('contextual shell navigation', () => {
     expect(pageIdentityForRoute('/inbox')).toEqual({ section: 'Management', title: 'Inbox' });
     expect(pageIdentityForRoute('/teams', '?filter=player')).toEqual({ section: 'Team', title: 'Team Info' });
     expect(pageIdentityForRoute('/sponsors', '?tab=owner')).toEqual({ section: 'Team', title: 'Owner Vision' });
+    expect(pageIdentityForRoute('/planner')).toEqual({ section: 'Team', title: 'Team Planner' });
     expect(pageIdentityForRoute('/live-race/race-3')).toEqual({ section: 'Race Strategy', title: 'Live Race' });
   });
 
@@ -17,6 +18,7 @@ describe('contextual shell navigation', () => {
     ]);
     expect(contextualNavigationForRoute('/standings', new Set()).map((item) => item.to)).toContain('/records');
     expect(contextualNavigationForRoute('/technical', new Set()).map((item) => item.to)).toContain('/politics');
+    expect(contextualNavigationForRoute('/teams', new Set()).map((item) => item.to)).toContain('/planner');
   });
 
   it('removes mode-restricted contextual routes', () => {
@@ -25,5 +27,6 @@ describe('contextual shell navigation', () => {
     expect(routes).not.toContain('/scouting');
     expect(routes).not.toContain('/curves');
     expect(routes).toEqual([]);
+    expect(contextualNavigationForRoute('/teams', new Set(['/planner'])).map((item) => item.to)).not.toContain('/planner');
   });
 });
