@@ -6718,3 +6718,361 @@ body {
     display: none;
   }
 }
+
+/* Phase 14: finish the FM-style conversion of race and season transition
+   screens. These workspaces use fixed information panes and one persistent
+   decision surface instead of stacks of detached legacy cards. */
+.ui-phase14-workspace {
+  display: flex;
+  min-height: 0;
+  flex-direction: column;
+  gap: 0.45rem;
+  overflow: hidden;
+  border: 1px solid #3a3a3f;
+  background: #111113;
+  padding: 0;
+}
+
+.ui-phase14-workspace > .ui-fm-workspace-grid,
+.ui-phase14-workspace > .ui-phase14-decision-workspace,
+.ui-phase14-workspace > .ui-fm-pane {
+  min-height: 0;
+  flex: 1 1 auto;
+}
+
+.ui-phase14-pane-body {
+  padding: 0.75rem;
+}
+
+.ui-phase14-dossier {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.ui-phase14-dossier > section {
+  border: 1px solid #3a3a3f;
+  background: #1c1c1f;
+  padding: 0.65rem;
+}
+
+.ui-phase14-dossier > section.is-warning {
+  border-color: #7b5124;
+  background: #2b2116;
+}
+
+.ui-phase14-dossier h3 {
+  margin-bottom: 0.35rem;
+  color: #b9b9be;
+  font-size: 0.58rem;
+  font-weight: 850;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+}
+
+.ui-phase14-dossier p {
+  color: #9b9ba2;
+  font-size: 0.68rem;
+  line-height: 1.55;
+}
+
+.ui-phase14-decision-workspace {
+  display: flex;
+  min-height: 0;
+  flex-direction: column;
+}
+
+.ui-phase14-decision-workspace > .ui-fm-pane {
+  min-height: 0;
+  flex: 1 1 auto;
+}
+
+.ui-phase14-choice {
+  display: block;
+  width: 100%;
+  border-bottom: 1px solid #35353a;
+  border-left: 3px solid transparent;
+  padding: 0.65rem;
+  color: #929299;
+  font-size: 0.68rem;
+  font-weight: 750;
+  text-align: left;
+}
+
+.ui-phase14-choice:hover {
+  background: #29292d;
+  color: #ededee;
+}
+
+.ui-phase14-choice.is-active {
+  border-left-color: #d13d61;
+  background: #3a242b;
+  color: #fff;
+}
+
+.ui-phase14-hero-pane {
+  display: flex;
+  min-height: 0;
+  flex-direction: column;
+  justify-content: center;
+  padding: 1rem;
+}
+
+.ui-phase14-hero-pane > span {
+  color: #85858c;
+  font-size: 0.58rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.ui-phase14-hero-pane > strong {
+  margin-top: 0.25rem;
+  color: #f5c96a;
+  font-size: clamp(1.25rem, 2.4vw, 2rem);
+  line-height: 1.05;
+}
+
+.ui-phase14-hero-pane > small {
+  margin-top: 0.35rem;
+  color: #929299;
+  font-size: 0.67rem;
+}
+
+.ui-season-champion-identity {
+  margin-top: 0.75rem;
+  border-top: 1px solid #3a3a3f;
+  padding-top: 0.65rem;
+}
+
+.ui-result-team-list,
+.ui-race-event-list,
+.ui-performance-finding-list {
+  display: grid;
+}
+
+.ui-result-driver-row,
+.ui-race-event-list > article,
+.ui-performance-finding-list > article {
+  border-bottom: 1px solid #35353a;
+  background: #222225;
+  padding: 0.7rem;
+}
+
+.ui-result-driver-row:hover,
+.ui-race-event-list > article:hover,
+.ui-performance-finding-list > article:hover {
+  background: #29292d;
+}
+
+.ui-result-driver-row > span,
+.ui-result-driver-row > strong,
+.ui-result-driver-row > small {
+  display: block;
+}
+
+.ui-result-driver-row > span {
+  color: #d6d6da;
+  font-size: 0.72rem;
+  font-weight: 750;
+}
+
+.ui-result-driver-row > strong {
+  margin-top: 0.15rem;
+  color: #f5c96a;
+  font-size: 1.15rem;
+}
+
+.ui-result-driver-row > small {
+  color: #85858c;
+  font-size: 0.58rem;
+}
+
+.ui-race-event-list > article {
+  display: grid;
+  grid-template-columns: 62px minmax(0, 1fr);
+  gap: 0.5rem;
+  color: #b7b7bc;
+  font-size: 0.68rem;
+}
+
+.ui-race-event-list > article strong {
+  color: #e0b45a;
+  font-size: 0.62rem;
+}
+
+.ui-performance-review-grid {
+  grid-template-columns: minmax(185px, 0.58fr) minmax(390px, 1.7fr) minmax(210px, 0.72fr);
+}
+
+.ui-performance-table-grid {
+  grid-template-columns: minmax(520px, 1.65fr) minmax(220px, 0.55fr);
+}
+
+.ui-performance-rival-grid {
+  grid-template-columns: minmax(190px, 0.5fr) minmax(390px, 1.45fr) minmax(210px, 0.6fr);
+}
+
+.ui-performance-review-grid .ui-fm-list-button em {
+  display: block;
+  margin-top: 0.28rem;
+  font-size: 0.55rem;
+  font-style: normal;
+}
+
+.ui-performance-finding-list > article h3 {
+  font-size: 0.76rem;
+}
+
+.ui-race-review-grid,
+.ui-season-review-grid,
+.ui-briefing-grid {
+  grid-template-columns: minmax(210px, 0.72fr) minmax(360px, 1.35fr) minmax(215px, 0.72fr);
+}
+
+.ui-race-classification-grid,
+.ui-race-story-grid,
+.ui-race-championship-grid {
+  grid-template-columns: minmax(520px, 1.7fr) minmax(220px, 0.55fr);
+}
+
+.ui-briefing-team-grid {
+  grid-template-columns: repeat(2, minmax(320px, 1fr));
+}
+
+.ui-briefing-paddock-grid {
+  display: grid;
+  min-height: 0;
+  flex: 1 1 auto;
+  grid-template-columns: minmax(280px, 1fr) minmax(280px, 1fr) minmax(210px, 0.7fr);
+  gap: 1px;
+  overflow: hidden;
+  background: #111113;
+}
+
+.ui-briefing-paddock-grid > * {
+  min-height: 0;
+  overflow: auto;
+  border-radius: 0 !important;
+}
+
+.ui-post-race-workspace,
+.ui-offseason-workspace,
+.ui-preseason-workspace {
+  overflow: auto;
+  padding: 1px;
+}
+
+.ui-post-race-grid {
+  display: grid;
+  min-height: 0;
+  grid-template-columns: 1fr;
+  gap: 1px;
+  background: #111113;
+}
+
+.ui-post-race-grid.is-overview {
+  grid-template-columns: minmax(440px, 1.55fr) minmax(260px, 0.75fr);
+}
+
+.ui-post-race-primary,
+.ui-post-race-context {
+  display: grid;
+  align-content: start;
+  gap: 1px;
+  min-width: 0;
+}
+
+.ui-post-race-workspace .era-panel,
+.ui-offseason-workspace > .era-panel,
+.ui-preseason-workspace .era-panel,
+.ui-race-package-workspace > .era-panel {
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+
+.ui-post-race-workspace .era-panel-body,
+.ui-offseason-workspace > .era-panel > .era-panel-body,
+.ui-preseason-workspace .era-panel-body,
+.ui-race-package-workspace > .era-panel > .era-panel-body {
+  padding: 0.7rem;
+}
+
+.ui-offseason-workspace {
+  display: grid;
+  grid-template-columns: minmax(430px, 1.45fr) minmax(260px, 0.75fr);
+  align-content: start;
+  gap: 1px;
+  background: #111113;
+}
+
+.ui-offseason-workspace > .era-panel:only-child {
+  grid-column: 1 / -1;
+}
+
+.ui-offseason-workspace .rounded,
+.ui-preseason-workspace .rounded-lg,
+.ui-race-package-workspace .rounded-lg {
+  border-radius: 2px;
+}
+
+.ui-preseason-command-grid {
+  display: grid;
+  grid-template-columns: minmax(430px, 1.45fr) minmax(250px, 0.7fr);
+  gap: 1px;
+  background: #111113;
+}
+
+.ui-preseason-briefing-list {
+  min-width: 0;
+}
+
+.ui-preseason-workspace > .space-y-4 {
+  margin-top: 1px;
+}
+
+.ui-race-package-workspace {
+  display: grid;
+  grid-template-columns: minmax(480px, 1.5fr) minmax(280px, 0.7fr);
+  gap: 1px;
+  background: #111113;
+}
+
+.ui-race-package-workspace > .era-panel:first-child {
+  grid-row: span 2;
+}
+
+@media (max-width: 1180px) {
+  .ui-performance-review-grid,
+  .ui-race-review-grid,
+  .ui-season-review-grid,
+  .ui-briefing-grid {
+    grid-template-columns: minmax(175px, 0.6fr) minmax(350px, 1.45fr) minmax(195px, 0.65fr);
+  }
+
+  .ui-performance-rival-grid {
+    grid-template-columns: minmax(175px, 0.48fr) minmax(360px, 1.3fr) minmax(190px, 0.55fr);
+  }
+}
+
+@media (max-width: 900px) {
+  .ui-phase14-workspace {
+    overflow: auto;
+  }
+
+  .ui-phase14-workspace > .ui-fm-workspace-grid,
+  .ui-briefing-paddock-grid {
+    min-width: 760px;
+    min-height: 470px;
+  }
+
+  .ui-post-race-grid.is-overview,
+  .ui-offseason-workspace,
+  .ui-preseason-command-grid,
+  .ui-race-package-workspace {
+    grid-template-columns: minmax(390px, 1fr);
+  }
+
+  .ui-race-package-workspace > .era-panel:first-child {
+    grid-row: auto;
+  }
+}

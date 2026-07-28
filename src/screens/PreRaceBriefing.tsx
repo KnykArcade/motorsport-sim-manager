@@ -13,7 +13,6 @@ import { effectiveCarRatings } from '../sim/trackFitEngine';
 import { getOrCreatePhaseState } from '../game/careerPhaseEngine';
 import { ARCHETYPE_SPECS } from '../sim/aiTeamEngine';
 import { RACE_WEEKEND_PACKAGES } from '../sim/raceWeekendPackageEngine';
-import { Panel } from '../components/Panel';
 import { SeasonWorkflowRail } from '../components/workspace/SeasonWorkflowRail';
 import { Button } from '../components/Button';
 import { TrackDemandBars } from '../components/TrackDemandBars';
@@ -32,6 +31,15 @@ import {
   PRE_RACE_BRIEFING_TABS,
   type PreRaceBriefingTab,
 } from './raceTransitionViewModel';
+import {
+  FmDecisionBar,
+  FmKeyValue,
+  FmListButton,
+  FmPane,
+  FmPaneBody,
+  FmPaneHeader,
+  FmWorkspaceGrid,
+} from '../components/workspace/FmPane';
 
 const RACE_PREP_FOCUS_INFO: Record<string, { label: string; description: string }> = {
   balanced: { label: 'Balanced Preparation', description: 'Slight consistency and mistake-reduction bonus for this race.' },
@@ -120,11 +128,13 @@ export function PreRaceBriefing() {
       />
       {!canEnterWeekend && <div className="shrink-0 rounded border border-orange-500/25 bg-orange-500/5 px-3 py-2 text-[11px] text-orange-200">Weekend entry is blocked: {weekendBlockedReason}.</div>}
       <WorkspaceTabs items={PRE_RACE_BRIEFING_TABS} active={tab} onChange={setTab} ariaLabel="Pre-race briefing sections" />
-      <WorkspaceBody className="space-y-3">
+      <WorkspaceBody className="ui-phase14-workspace">
 
       {tab === 'overview' && (
-        <div className="grid gap-3 lg:grid-cols-[1.4fr_1fr]">
-          <Panel title="Race Details">
+        <FmWorkspaceGrid className="ui-briefing-grid">
+          <FmPane>
+            <FmPaneHeader title="Circuit brief" meta={`${track.archetype} · Round ${race.round}`} />
+            <FmPaneBody className="ui-phase14-pane-body overflow-auto">
             <div className="grid gap-3 sm:grid-cols-4">
               <Detail label="Grand Prix" value={race.gpName} />
               <Detail label="Track" value={track.name} />
@@ -139,8 +149,11 @@ export function PreRaceBriefing() {
                 <Rule label="DRS" value={regulationSet.drsEnabled ? 'Enabled' : 'Not in use'} />
               </div>
             )}
-          </Panel>
-          <Panel title="Strategy Focus">
+            </FmPaneBody>
+          </FmPane>
+          <FmPane>
+            <FmPaneHeader title="Strategy focus" meta="Track-led recommendation" />
+            <FmPaneBody className="ui-phase14-pane-body">
             <p className="text-sm text-neutral-300">{strategySuggestion}</p>
             {carRatings && (
               <div className="mt-3 grid gap-2 sm:grid-cols-3 lg:grid-cols-1">
@@ -149,38 +162,59 @@ export function PreRaceBriefing() {
                 <StatChip label="Reliability" value={carRatings.reliability.toFixed(1)} />
               </div>
             )}
-          </Panel>
-        </div>
+            </FmPaneBody>
+          </FmPane>
+          <FmPane>
+            <FmPaneHeader title="Weekend gate" meta={canEnterWeekend ? 'Ready' : 'Action required'} />
+            <FmPaneBody className="ui-phase14-pane-body">
+              <div className="ui-phase14-dossier">
+                <section>
+                  <h3>Entry checks</h3>
+                  <FmKeyValue label="Race package" value={selectedPackageDef?.label ?? 'Not selected'} />
+                  <FmKeyValue label="Race drivers" value={`${activeDrivers.length}/${minDrivers}`} />
+                  <FmKeyValue label="Preparation" value={prepConfirmed ? prepFocus.label : 'Not confirmed'} />
+                </section>
+                <section className={canEnterWeekend ? '' : 'is-warning'}>
+                  <h3>{canEnterWeekend ? 'Ready to enter' : 'Blocking action'}</h3>
+                  <p>{weekendBlockedReason ?? 'All mandatory race-weekend preparation has been completed.'}</p>
+                </section>
+              </div>
+            </FmPaneBody>
+          </FmPane>
+        </FmWorkspaceGrid>
       )}
 
       {tab === 'preparation' && (
-        <div className="grid gap-3 lg:grid-cols-2">
-          <Panel title="Race Preparation Focus">
-            <div className="grid gap-2 sm:grid-cols-2">
+        <div className="ui-phase14-decision-workspace">
+        <FmWorkspaceGrid className="ui-briefing-grid">
+          <FmPane>
+            <FmPaneHeader title="Race preparation focus" meta="One race only" />
+            <FmPaneBody>
               {Object.entries(RACE_PREP_FOCUS_INFO).map(([id, focus]) => (
-                <button
+                <FmListButton
                   key={id}
-                  type="button"
                   onClick={() => setSelectedPrepFocus(id)}
-                  className={`rounded border p-2 text-left ${activePrepFocus === id ? 'border-amber-500 bg-amber-500/10' : 'border-neutral-800 hover:border-neutral-600'}`}
+                  active={activePrepFocus === id}
                 >
-                  <div className="text-xs font-semibold text-neutral-100">{focus.label}</div>
-                  <div className="mt-1 text-[10px] leading-4 text-neutral-500">{focus.description}</div>
-                </button>
+                  <strong>{focus.label}</strong>
+                  <small>{focus.description}</small>
+                </FmListButton>
               ))}
-            </div>
-            <Button
-              className="mt-3 w-full"
-              variant={prepConfirmed ? 'secondary' : 'primary'}
-              disabled={prepConfirmed}
-              onClick={() => dispatch({ type: 'CONFIRM_RACE_PREP_FOCUS', focus: activePrepFocus })}
-            >
-              {prepConfirmed ? `Confirmed: ${prepFocus.label}` : `Confirm ${prepFocus.label}`}
-            </Button>
-            <p className="mt-2 text-sm text-neutral-300">{prepFocus.description}</p>
-            <div className="mt-2 text-xs text-neutral-500">Duration: next race only.</div>
-          </Panel>
-          <Panel title="Race Operations Package">
+            </FmPaneBody>
+          </FmPane>
+          <FmPane>
+            <FmPaneHeader title={prepFocus.label} meta={prepConfirmed ? 'Confirmed plan' : 'Draft selection'} />
+            <FmPaneBody className="ui-phase14-pane-body">
+              <div className="ui-phase14-dossier">
+                <section><h3>Expected effect</h3><p>{prepFocus.description}</p></section>
+                <section><h3>Decision scope</h3><FmKeyValue label="Duration" value="Next race only" /><FmKeyValue label="Status" value={prepConfirmed ? 'Confirmed' : 'Draft'} /></section>
+                <section><h3>Development status</h3><FmKeyValue label="Active projects" value={activeUpgradePrograms(state).length} /><FmKeyValue label="Completed" value={completedUpgradePrograms(state).length} /></section>
+              </div>
+            </FmPaneBody>
+          </FmPane>
+          <FmPane>
+            <FmPaneHeader title="Race operations package" meta={selectedPackageDef?.label ?? 'Not selected'} />
+            <FmPaneBody className="ui-phase14-pane-body">
             {selectedPackage && selectedPackageDef ? (
               <div className="space-y-2">
                 <div className="flex items-center justify-between gap-2">
@@ -195,73 +229,72 @@ export function PreRaceBriefing() {
                 </div>
               </div>
             ) : <p className="text-sm text-orange-300">No race package selected. Return to Paddock Week before entering the weekend.</p>}
-          </Panel>
-          <div className="lg:col-span-2">
-            <Panel title="Development Status">
-              <div className="text-sm text-neutral-300">{activeUpgradePrograms(state).length} active project(s) · {completedUpgradePrograms(state).length} completed this season</div>
-              {activeUpgradePrograms(state).length > 0 && (
-                <div className="mt-3 grid gap-2 md:grid-cols-2">
-                  {activeUpgradePrograms(state).slice(0, 6).map((project) => (
-                    <div key={project.id} className="rounded border border-neutral-800 bg-neutral-950/40 px-3 py-2 text-sm text-neutral-400">
-                      <span className="font-medium text-neutral-200">{project.name}</span> · {project.progressRaces}/{project.adjustedDurationRaces ?? project.durationRaces} races
-                    </div>
-                  ))}
-                </div>
-              )}
-            </Panel>
-          </div>
+            </FmPaneBody>
+          </FmPane>
+        </FmWorkspaceGrid>
+        <FmDecisionBar actions={<Button
+          variant={prepConfirmed ? 'secondary' : 'primary'}
+          disabled={prepConfirmed}
+          onClick={() => dispatch({ type: 'CONFIRM_RACE_PREP_FOCUS', focus: activePrepFocus })}
+        >
+          {prepConfirmed ? `Confirmed: ${prepFocus.label}` : `Confirm ${prepFocus.label}`}
+        </Button>}>
+          <strong className="text-neutral-200">Preparation decision:</strong> {prepFocus.description}
+        </FmDecisionBar>
         </div>
       )}
 
       {tab === 'team' && (
-        <div className="grid gap-3 lg:grid-cols-2">
-          <Panel title="Driver Status">
-            <div className="grid gap-2 sm:grid-cols-2">
+        <FmWorkspaceGrid columns="two" className="ui-briefing-team-grid">
+          <FmPane>
+            <FmPaneHeader title="Driver status" meta={`${activeDrivers.length}/${minDrivers} required`} />
+            <FmPaneBody>
               {activeDrivers.map((driver) => (
-                <div key={driver.id} className="rounded border border-neutral-800 bg-neutral-950/40 p-3">
-                  <div className="text-sm font-semibold text-neutral-100">{driver.name}</div>
-                  <div className="mt-1 text-xs text-neutral-400">Morale {Math.round(driver.morale)}% · Confidence {Math.round(driver.confidence)}%</div>
-                </div>
+                <FmListButton key={driver.id}>
+                  <strong>{driver.name}</strong>
+                  <small>Morale {Math.round(driver.morale)}% · Confidence {Math.round(driver.confidence)}%</small>
+                </FmListButton>
               ))}
-            </div>
             {activeDrivers.length < minDrivers && <p className="mt-3 text-sm text-orange-400">Only {activeDrivers.length} active driver(s). Complete the required race lineup before entering.</p>}
-          </Panel>
-          <Panel title="Key Rivals">
-            <div className="space-y-2">
+            </FmPaneBody>
+          </FmPane>
+          <FmPane>
+            <FmPaneHeader title="Key rivals" meta="Championship position" />
+            <FmPaneBody>
               {rivals.map((rival) => {
                 const ai = state.aiTeamStates?.[rival.entityId];
                 const spec = ai ? ARCHETYPE_SPECS[ai.archetype] : undefined;
                 return (
-                  <div key={rival.entityId} className="rounded border border-neutral-800 bg-neutral-950/40 px-3 py-2">
-                    <div className="flex justify-between text-sm"><span className="font-medium text-neutral-200">P{rival.position} {state.teams.find((entry) => entry.id === rival.entityId)?.name ?? rival.entityId}</span><span className="text-neutral-400">{rival.points} pts</span></div>
-                    {spec && <div className="mt-1 text-[11px] text-neutral-500">{spec.label} · {spec.description.split(';')[0]}.</div>}
-                  </div>
+                  <FmListButton key={rival.entityId}>
+                    <span>P{rival.position} · {rival.points} pts</span>
+                    <strong>{state.teams.find((entry) => entry.id === rival.entityId)?.name ?? rival.entityId}</strong>
+                    {spec && <small>{spec.label} · {spec.description.split(';')[0]}.</small>}
+                  </FmListButton>
                 );
               })}
               {rivals.length === 0 && <p className="text-sm text-neutral-500">No rival data available.</p>}
-            </div>
-          </Panel>
-        </div>
+            </FmPaneBody>
+          </FmPane>
+        </FmWorkspaceGrid>
       )}
 
       {tab === 'paddock' && (
-        <div className="grid gap-3 lg:grid-cols-2">
+        <div className="ui-briefing-paddock-grid">
           <NewsPanel news={state.news} title="Race Preview" maxItems={4} categoryFilter={['preseason', 'ai_team', 'championship']} emptyMessage="No race preview stories." />
           <NewsPanel news={state.news} title="Paddock Watch" maxItems={4} categoryFilter={['development', 'ai_team', 'financial']} emptyMessage="No paddock news." />
-          <div className="lg:col-span-2">
-            <Panel title="Sponsor Confidence">
+          <FmPane>
+            <FmPaneHeader title="Sponsor confidence" meta={`${sponsors.length} active partners`} />
+            <FmPaneBody>
               {sponsors.length === 0 ? <p className="text-sm text-neutral-500">No active sponsors.</p> : (
-                <div className="grid gap-2 md:grid-cols-2">
-                  {sponsors.map((sponsor) => (
-                    <div key={sponsor.id} className="flex items-center justify-between rounded border border-neutral-800 bg-neutral-950/40 px-3 py-2 text-sm">
-                      <span className="font-medium text-neutral-200">{sponsor.name}</span>
-                      <span className={sponsor.confidence > 50 ? 'text-emerald-300' : 'text-orange-300'}>{sponsor.confidence > 50 ? 'Satisfied' : 'Unsatisfied'} · {Math.round(sponsor.confidence)}%</span>
-                    </div>
-                  ))}
-                </div>
+                sponsors.map((sponsor) => (
+                    <FmListButton key={sponsor.id}>
+                      <strong>{sponsor.name}</strong>
+                      <small className={sponsor.confidence > 50 ? 'text-emerald-300' : 'text-orange-300'}>{sponsor.confidence > 50 ? 'Satisfied' : 'Unsatisfied'} · {Math.round(sponsor.confidence)}%</small>
+                    </FmListButton>
+                ))
               )}
-            </Panel>
-          </div>
+            </FmPaneBody>
+          </FmPane>
         </div>
       )}
       </WorkspaceBody>
