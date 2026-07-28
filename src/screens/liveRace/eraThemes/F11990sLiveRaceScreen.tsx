@@ -11,12 +11,23 @@ import type { GameState } from '../../../game/careerState';
 import { overallConfidenceScore } from '../../../sim/driverConfidenceEngine';
 import { fmtLap, fmtSector, tyreLetter } from '../dashboardFormat';
 import type { ForecastEntry } from '../forecast';
-import { PIT_INTENSITY_ORDER } from '../../../sim/pitIntensityData';
 import { getEraTheme, getEraThemeConfig } from '../../../theme/eraTheme';
 import { ratingColor } from '../../../components/ui';
 import { formatLiveTimingDelta } from '../../../sim/liveTimingGapEngine';
 import { RaceControlStrip } from '../RaceControlStrip';
-import { useDialogAccessibility } from '../../../components/useDialogAccessibility';
+import {
+  LiveRaceDataWorkspace,
+  LiveRaceStrategyDrawer,
+  LiveRaceWorkspaceToolbar,
+} from '../LiveRaceWorkspace';
+import type {
+  LiveRaceDelegationProfile,
+  LiveRaceWorkspacePreferences,
+} from '../liveRaceWorkspaceModel';
+import {
+  buildEngineerCheckpointSummary,
+  driverIdForRaceEvent,
+} from '../liveRaceWorkspaceModel';
 
 const SAFETY_CAR_PIT_LOSS_FACTOR = 0.4;
 
@@ -32,6 +43,9 @@ type Props = {
   forecast: ForecastEntry[];
   monitor: AnalyticsMonitor;
   activeRecs: AnalyticsRecommendation[];
+  workspacePreferences: LiveRaceWorkspacePreferences;
+  delegationProfile: LiveRaceDelegationProfile;
+  autoPauseNotice: string | null;
   needsDecision: boolean;
   pausedByDnf?: boolean;
   playbackBlockedReason?: string;
@@ -49,6 +63,12 @@ type Props = {
   onOpenOrders: (driverId?: string) => void;
   onOpenStrategy: () => void;
   onOpenLog: () => void;
+  onWorkspacePreferences: (
+    update: LiveRaceWorkspacePreferences
+      | ((current: LiveRaceWorkspacePreferences) => LiveRaceWorkspacePreferences),
+  ) => void;
+  onResetWorkspacePreferences: () => void;
+  onFocusDriver: (driverId: string) => void;
   onExit: () => void;
   onFinishRace: () => void;
   onPit: (driverId: string, decision?: { intensity?: PitIntensity; exitMode?: PaceMode }) => void;
@@ -70,7 +90,11 @@ export function F11990sLiveRaceScreen({
   rotation,
   playerCars,
   forecast,
+  monitor,
   activeRecs,
+  workspacePreferences,
+  delegationProfile,
+  autoPauseNotice,
   needsDecision,
   pausedByDnf = false,
   playbackBlockedReason,
@@ -87,6 +111,9 @@ export function F11990sLiveRaceScreen({
   onSkipToEnd,
   onOpenOrders,
   onOpenLog,
+  onWorkspacePreferences,
+  onResetWorkspacePreferences,
+  onFocusDriver,
   onExit,
   onFinishRace,
   onPit,
@@ -98,12 +125,16 @@ export function F11990sLiveRaceScreen({
   crashOverlay,
 }: Props) {
   const finished = live.phase === 'finished';
-  const focusCars = driverFocusCars(playerCars, live.cars);
+  const [focusedDriverId, setFocusedDriverId] = useState<string | null>(null);
+  const focusDriver = (driverId: string) => {
+    setFocusedDriverId(driverId);
+    onFocusDriver(driverId);
+  };
+  const focusCars = driverFocusCars(playerCars, live.cars, focusedDriverId);
   const leader = live.cars.find((c) => c.position === 1 && (c.running || c.status === 'Finished'));
   const raceTime = formatElapsed(leader?.totalTime ?? 0);
   const airTemp = forecast[0]?.temp ?? (live.weather.wet ? 18 : 22);
   const trackTemp = airTemp + (live.weather.wet ? 2 : 6);
-  const [strategyDeskOpen, setStrategyDeskOpen] = useState(false);
   const [pitStrategyByDriver, setPitStrategyByDriver] = useState<
     Record<string, { intensity: PitIntensity; exitMode: PaceMode }>
   >({});
@@ -113,6 +144,7 @@ export function F11990sLiveRaceScreen({
   const decisionRecs = live.safetyCar.active ? [] : activeRecs.filter((rec) => rec.status === 'pending' && rec.priority !== 'low');
   const lapHistory = useLapHistory(live.currentLap, focusCars);
   const { outcomes, recordOutcome } = useDecisionOutcomes(live.recommendations, live.currentLap);
+  const engineerSummary = buildEngineerCheckpointSummary(live, playerCars);
   const handleAccept = (rec: AnalyticsRecommendation, actionOverride?: RecAction) => {
     const action = actionOverride ?? rec.action;
     recordOutcome(
@@ -159,7 +191,26 @@ export function F11990sLiveRaceScreen({
         onExit={onExit}
       />
       <RaceControlStrip live={live} compact />
+      <LiveRaceWorkspaceToolbar
+        preferences={workspacePreferences}
+        delegation={delegationProfile}
+        autoPauseNotice={autoPauseNotice}
+        onPreferences={onWorkspacePreferences}
+        onReset={onResetWorkspacePreferences}
+      />
 
+      {workspacePreferences.viewMode === 'data' ? (
+        <LiveRaceDataWorkspace
+          live={live}
+          playerCars={playerCars}
+          monitor={monitor}
+          activeRecs={activeRecs}
+          preferences={workspacePreferences}
+          nameOf={nameOf}
+          teamNameOf={teamNameOf}
+          onFocusDriver={focusDriver}
+        />
+      ) : (
       <main className="relative grid min-h-0 flex-1 grid-cols-1 gap-2 p-2 lg:grid-cols-[minmax(235px,0.68fr)_minmax(440px,1.58fr)_minmax(320px,1.02fr)]">
         <aside className="grid min-h-0 grid-rows-[minmax(0,1.6fr)_auto_minmax(0,1fr)] gap-2">
           <RetroTimingTower cars={live.cars} nameOf={nameOf} colorOf={colorOf} />
@@ -175,7 +226,15 @@ export function F11990sLiveRaceScreen({
             onSkipToEnd={onSkipToEnd}
             onFinishRace={onFinishRace}
           />
-          <RetroEventLog events={live.events} onOpenFull={onOpenLog} alert={alert} aiDnfFlash={aiDnfFlash ?? null} nameOf={nameOf} />
+          <RetroEventLog
+            events={live.events}
+            cars={live.cars}
+            onOpenFull={onOpenLog}
+            onFocusDriver={focusDriver}
+            alert={alert}
+            aiDnfFlash={aiDnfFlash ?? null}
+            nameOf={nameOf}
+          />
         </aside>
 
         <section className="grid min-h-0 grid-rows-[minmax(0,1fr)_minmax(126px,0.22fr)] gap-2">
@@ -195,7 +254,10 @@ export function F11990sLiveRaceScreen({
           <div className="grid min-h-0 gap-2 lg:grid-cols-[0.95fr_0.88fr]">
             <RetroPanel title="Team Radio" className="min-h-0">
               <div className="h-[calc(100%-37px)] overflow-y-auto p-2 text-[12px]">
-                <div className="text-zinc-500" />
+                <div className="font-bold text-zinc-100">{engineerSummary.checkpoint}: {engineerSummary.headline}</div>
+                <ul className="mt-2 space-y-1 text-[10px] text-zinc-400">
+                  {engineerSummary.bullets.map((bullet) => <li key={bullet}>• {bullet}</li>)}
+                </ul>
               </div>
             </RetroPanel>
             <RetroPanel title="Pit Window" className="min-h-0">
@@ -245,7 +307,10 @@ export function F11990sLiveRaceScreen({
               onPit={(decision) => onPit(car.driverId, decision ?? pitStrategyFor(pitStrategyByDriver, car))}
               onMode={(mode) => onMode(car.driverId, mode)}
               onOrders={() => onOpenOrders(car.driverId)}
-              onStrategyDesk={() => setStrategyDeskOpen(true)}
+              onStrategyDesk={() => onWorkspacePreferences((current) => ({
+                ...current,
+                strategyDrawerOpen: true,
+              }))}
               onAccept={handleAccept}
               onModify={handleModify}
               onIgnore={handleIgnore}
@@ -255,21 +320,23 @@ export function F11990sLiveRaceScreen({
           <TelemetrySectorTimes cars={focusCars} nameOf={nameOf} />
         </aside>
       </main>
-
-      {strategyDeskOpen && (
-        <StrategyDeskModal
-          playerCars={playerCars}
-          strategyByDriver={pitStrategyByDriver}
-          nameOf={nameOf}
-          onClose={() => setStrategyDeskOpen(false)}
-          onChange={(driverId, next) =>
-            setPitStrategyByDriver((prev) => ({
-              ...prev,
-              [driverId]: next,
-            }))
-          }
-        />
       )}
+
+      <LiveRaceStrategyDrawer
+        open={workspacePreferences.strategyDrawerOpen}
+        live={live}
+        playerCars={playerCars}
+        strategyByDriver={pitStrategyByDriver}
+        nameOf={nameOf}
+        onClose={() => onWorkspacePreferences((current) => ({ ...current, strategyDrawerOpen: false }))}
+        onPit={(driverId, decision) => onPit(driverId, decision)}
+        onChange={(driverId, next) =>
+          setPitStrategyByDriver((prev) => ({
+            ...prev,
+            [driverId]: next,
+          }))
+        }
+      />
 
       <div className="sr-only" aria-live="polite">
         1990s F1 live race screen. Lap {live.currentLap} of {live.totalLaps}. {activeRecs.length} pit wall recommendations.
@@ -514,13 +581,17 @@ function GridDelta({ grid, position }: { grid: number; position: number }) {
 
 function RetroEventLog({
   events,
+  cars,
   onOpenFull,
+  onFocusDriver,
   alert,
   aiDnfFlash,
   nameOf,
 }: {
   events: LiveRaceState['events'];
+  cars: LiveCarState[];
   onOpenFull: () => void;
+  onFocusDriver: (driverId: string) => void;
   alert: string | null;
   aiDnfFlash: { lap: number; entries: Array<{ driverId: string; cause: string }> } | null;
   nameOf: (driverId: string) => string;
@@ -530,7 +601,12 @@ function RetroEventLog({
   const filtered = tab === 'Lap Log' ? events : events.filter((event) => retroEventBucket(event) === tab);
   return (
     <RetroPanel title="Race Events" className="flex h-full min-h-0 flex-col">
-      <RaceEventAlerts alert={alert} aiDnfFlash={aiDnfFlash} nameOf={nameOf} />
+      <RaceEventAlerts
+        alert={alert}
+        aiDnfFlash={aiDnfFlash}
+        nameOf={nameOf}
+        onFocusDriver={onFocusDriver}
+      />
       <div className="flex shrink-0 border-b border-zinc-800 px-2 py-1">
         {(['Lap Log', 'Incidents', 'Battles', 'Status'] as const).map((item) => (
           <button
@@ -545,11 +621,24 @@ function RetroEventLog({
         ))}
       </div>
       <div className="min-h-0 flex-1 space-y-0.5 overflow-y-auto p-2 text-[10px]">
-        {filtered.slice().reverse().map((event, index) => (
-          <div key={`${event.lap}-${index}`}>
-            <span className="line-clamp-1 text-zinc-200">L{event.lap}: {event.text}</span>
-          </div>
-        ))}
+        {filtered.slice().reverse().map((event, index) => {
+          const driverId = driverIdForRaceEvent(event.text, cars, nameOf);
+          return driverId ? (
+            <button
+              key={`${event.lap}-${index}`}
+              type="button"
+              onClick={() => onFocusDriver(driverId)}
+              className="block w-full rounded px-1 text-left hover:bg-amber-500/10"
+              title={`Focus ${nameOf(driverId)}`}
+            >
+              <span className="line-clamp-1 text-zinc-200">L{event.lap}: {event.text} →</span>
+            </button>
+          ) : (
+            <div key={`${event.lap}-${index}`}>
+              <span className="line-clamp-1 text-zinc-200">L{event.lap}: {event.text}</span>
+            </div>
+          );
+        })}
         {filtered.length === 0 && <div className="text-zinc-500">No {tab.toLowerCase()} updates yet.</div>}
         <button onClick={onOpenFull} className="text-[10px] uppercase text-amber-300 hover:text-amber-200">
           Full event log
@@ -563,10 +652,12 @@ function RaceEventAlerts({
   alert,
   aiDnfFlash,
   nameOf,
+  onFocusDriver,
 }: {
   alert: string | null;
   aiDnfFlash: { lap: number; entries: Array<{ driverId: string; cause: string }> } | null;
   nameOf: (driverId: string) => string;
+  onFocusDriver: (driverId: string) => void;
 }) {
   if (!alert && !aiDnfFlash) return null;
   const safetyCar = !!alert?.startsWith('Safety Car');
@@ -586,9 +677,14 @@ function RaceEventAlerts({
         <div className="animate-pulse rounded border-2 border-red-600 bg-red-950/95 px-2 py-1 text-red-100">
           <div className="text-[9px] font-black uppercase tracking-wide text-red-300">Race Alert - Retirement (Lap {aiDnfFlash.lap})</div>
           {aiDnfFlash.entries.map((entry) => (
-            <div key={entry.driverId} className="text-[10px] font-bold uppercase leading-tight">
-              {shortName(nameOf(entry.driverId)).toUpperCase()} - {entry.cause}
-            </div>
+            <button
+              key={entry.driverId}
+              type="button"
+              onClick={() => onFocusDriver(entry.driverId)}
+              className="block w-full text-left text-[10px] font-bold uppercase leading-tight hover:text-white"
+            >
+              {shortName(nameOf(entry.driverId)).toUpperCase()} - {entry.cause} →
+            </button>
           ))}
         </div>
       )}
@@ -1148,49 +1244,6 @@ function DriverAlertCard({
   );
 }
 
-function PitDecisionControls({
-  intensity,
-  exitMode,
-  onIntensity,
-  onExitMode,
-}: {
-  intensity: PitIntensity;
-  exitMode: PaceMode;
-  onIntensity: (value: PitIntensity) => void;
-  onExitMode: (value: PaceMode) => void;
-}) {
-  return (
-    <div className="space-y-1">
-      <div className="grid grid-cols-4 gap-1">
-        {PIT_INTENSITY_ORDER.map((value) => (
-          <button
-            key={value}
-            onClick={() => onIntensity(value)}
-            className={`rounded-sm px-1 py-1.5 text-[9px] font-bold uppercase ${
-              intensity === value ? 'bg-amber-300 text-black' : 'bg-zinc-900 text-zinc-400 hover:bg-zinc-800'
-            }`}
-          >
-            {value}
-          </button>
-        ))}
-      </div>
-      <div className="grid grid-cols-6 gap-1">
-        {DISPLAY_MODES.map((mode) => (
-          <button
-            key={mode}
-            onClick={() => onExitMode(mode)}
-            className={`rounded-sm px-1 py-1.5 text-[9px] font-bold uppercase ${
-              exitMode === mode ? 'bg-emerald-300 text-black' : 'bg-zinc-900 text-zinc-400 hover:bg-zinc-800'
-            }`}
-          >
-            {modeLabel(mode)}
-          </button>
-        ))}
-      </div>
-    </div>
-  );
-}
-
 function TrustReadout({
   trust,
 }: {
@@ -1254,8 +1307,13 @@ function driverTrustFor(state: GameState, driverId: string) {
       };
 }
 
-function driverFocusCars(playerCars: LiveCarState[], cars: LiveCarState[]): LiveCarState[] {
-  const focus = [...playerCars];
+function driverFocusCars(
+  playerCars: LiveCarState[],
+  cars: LiveCarState[],
+  selectedDriverId?: string | null,
+): LiveCarState[] {
+  const selected = cars.find((car) => car.driverId === selectedDriverId);
+  const focus = selected ? [selected, ...playerCars.filter((car) => car.driverId !== selected.driverId)] : [...playerCars];
   for (const car of cars) {
     if (focus.length >= 2) break;
     if (!focus.some((existing) => existing.driverId === car.driverId)) focus.push(car);
@@ -1300,96 +1358,6 @@ function safetyCarPitSaving(car: LiveCarState | null): number {
   const greenLoss = car?.pitLossBase ?? 0;
   const scLoss = Math.round(Math.max(0, greenLoss * SAFETY_CAR_PIT_LOSS_FACTOR) * 10) / 10;
   return Math.round(Math.max(0, greenLoss - scLoss) * 10) / 10;
-}
-
-function StrategyDeskModal({
-  playerCars,
-  strategyByDriver,
-  nameOf,
-  onChange,
-  onClose,
-}: {
-  playerCars: LiveCarState[];
-  strategyByDriver: Record<string, { intensity: PitIntensity; exitMode: PaceMode }>;
-  nameOf: (driverId: string) => string;
-  onChange: (driverId: string, next: { intensity: PitIntensity; exitMode: PaceMode }) => void;
-  onClose: () => void;
-}) {
-  const titleId = 'f1-strategy-desk-title';
-  const { dialogRef, initialFocusRef } = useDialogAccessibility(true, onClose);
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/72 p-4" onClick={onClose}>
-      <div
-        ref={dialogRef}
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby={titleId}
-        className="w-full max-w-3xl overflow-hidden rounded-xl border-2 border-amber-500/65 bg-[#14120f] shadow-2xl"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <div className="flex items-center justify-between border-b border-amber-500/25 px-4 py-3">
-          <div>
-            <div id={titleId} className="text-[10px] font-black uppercase tracking-wide text-amber-300">Strategy Desk</div>
-            <div className="text-xs text-zinc-400">Queue pit intensity and exit mode here; the PIT button uses this selection.</div>
-          </div>
-          <button
-            ref={initialFocusRef}
-            type="button"
-            onClick={onClose}
-            aria-label="Close strategy desk"
-            className="rounded border border-zinc-700 px-2 py-1 text-[10px] font-bold uppercase text-zinc-300 hover:border-amber-400 hover:text-amber-200"
-          >
-            Close
-          </button>
-        </div>
-        <div className="max-h-[70vh] overflow-y-auto p-4">
-          <div className="grid gap-4 lg:grid-cols-2">
-            {playerCars.map((car) => {
-              const strategy = strategyByDriver[car.driverId] ?? {
-                intensity: car.pit.intensity ?? car.pit.intensityDefault ?? 'Standard',
-                exitMode: car.pit.exitMode ?? 'Conservative',
-              };
-              return (
-                <div key={car.driverId} className="rounded-lg border border-zinc-800 bg-black/40 p-3">
-                  <div className="flex items-center justify-between gap-2">
-                    <div className="min-w-0">
-                      <div className="truncate text-sm font-bold text-zinc-100">{nameOf(car.driverId)}</div>
-                      <div className="text-[10px] uppercase tracking-wide text-zinc-500">
-                        {strategy.intensity} · exits {strategy.exitMode}
-                      </div>
-                    </div>
-                    <button
-                      onClick={() =>
-                        onChange(car.driverId, {
-                          intensity: car.pit.intensity ?? car.pit.intensityDefault ?? 'Standard',
-                          exitMode: car.pit.exitMode ?? 'Conservative',
-                        })
-                      }
-                      className="rounded border border-zinc-700 px-2 py-1 text-[10px] font-bold uppercase text-zinc-300 hover:border-amber-400 hover:text-amber-200"
-                    >
-                      Reset
-                    </button>
-                  </div>
-                  <div className="mt-3">
-                    <div className="mb-1 text-[9px] font-bold uppercase tracking-wide text-zinc-500">Pit intensity</div>
-                    <PitDecisionControls
-                      intensity={strategy.intensity}
-                      exitMode={strategy.exitMode}
-                      onIntensity={(value) => onChange(car.driverId, { ...strategy, intensity: value })}
-                      onExitMode={(value) => onChange(car.driverId, { ...strategy, exitMode: value })}
-                    />
-                  </div>
-                  <div className="mt-3 rounded border border-zinc-800 bg-zinc-950/60 px-2 py-1 text-[10px] text-zinc-400">
-                    Apply this with the driver box PIT button when you are ready to box.
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      </div>
-    </div>
-  );
 }
 
 function radioLines(

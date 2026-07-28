@@ -24,7 +24,6 @@ import { Button } from '../components/Button';
 import { getCarDamagePercent } from '../components/raceMarkerAssets';
 import type { TrackDot } from '../components/RaceTrack2D';
 import type { AnalyticsRecommendation, LiveRaceState, PaceMode, PitIntensity, RecAction } from '../types/liveTypes';
-import type { RaceResult } from '../types/gameTypes';
 import type { RaceDecision } from '../types/simTypes';
 import type { TeamOrder, TeamOrderDecision } from '../types/relationshipTypes';
 import { TopStatusBar } from './liveRace/TopStatusBar';
@@ -43,6 +42,12 @@ import { advanceTrackProgress, reconcileTrackProgressForward, sectorPlaybackInte
 import { RaceControlStrip } from './liveRace/RaceControlStrip';
 import { SelectedDriverPanel } from './liveRace/SelectedDriverPanel';
 import { liveRaceAdvanceBlockedReason, selectedLiveCar } from './entryRacePresentationViewModel';
+import {
+  canDelegateLiveRaceRecommendation,
+  liveRaceAutoPauseReason,
+  liveRaceDelegationProfile,
+  useLiveRaceWorkspacePreferences,
+} from './liveRace/liveRaceWorkspaceModel';
 
 type Speed = 1 | 5 | 15 | 30;
 
@@ -84,11 +89,25 @@ export function LiveRace() {
   const animatedTrackProgressRef = useRef<Record<string, number>>({});
   const [modal, setModal] = useState<'log' | 'strategy' | 'orders' | null>(null);
   const [ordersFocusDriverId, setOrdersFocusDriverId] = useState<string | null>(null);
-  const [podium, setPodium] = useState<PodiumSnapshot | null>(null);
   const [dnfAlert, setDnfAlert] = useState<DnfAlert | null>(null);
   const [aiDnfFlash, setAiDnfFlash] = useState<DnfAlert | null>(null);
   const [decisionSecondsLeft, setDecisionSecondsLeft] = useState<number | null>(null);
   const [selectedDriverId, setSelectedDriverId] = useState<string | null>(null);
+  const [autoPauseNotice, setAutoPauseNotice] = useState<string | null>(null);
+  const {
+    preferences: workspacePreferences,
+    setPreferences: setWorkspacePreferences,
+    resetPreferences: resetWorkspacePreferences,
+  } = useLiveRaceWorkspacePreferences(state?.id ?? 'unavailable');
+  const delegationProfile = useMemo(
+    () => state ? liveRaceDelegationProfile(state) : {
+      policy: 'player' as const,
+      owner: 'Strategist department',
+      confidence: 50,
+      confidenceLabel: 'Low' as const,
+    },
+    [state],
+  );
   const dismissCrash = useCallback(
     () => setLive((s) => (s ? { ...s, lastIncident: undefined } : s)),
     [],
@@ -107,17 +126,31 @@ export function LiveRace() {
   );
 
   // Recommendations that pause the race and run a decision countdown.
-  const decisionRecs = live ? live.recommendations.filter((r) => requiresDecision(r)) : [];
-  const needsDecision = !!live && live.phase !== 'finished' && decisionRecs.length > 0;
+  const decisionRecs = live
+    ? live.recommendations.filter((r) =>
+        requiresDecision(r) && !canDelegateLiveRaceRecommendation(r, delegationProfile),
+      )
+    : [];
+  const needsDecision = !!live
+    && live.phase !== 'finished'
+    && workspacePreferences.autoPause.engineerMessages
+    && decisionRecs.length > 0;
   // Stable key so the countdown resets only when the pending decision set changes.
-  const decisionKey = decisionRecs
-    .map((r) => r.id)
-    .sort()
-    .join(',');
+  const decisionKey = needsDecision
+    ? decisionRecs
+        .map((r) => r.id)
+        .sort()
+        .join(',')
+    : '';
 
   const advanceLiveSector = useCallback(
     (s: LiveRaceState): LiveRaceState => {
       const next = stepLiveSector(s, engine!.meta);
+      const pauseReason = liveRaceAutoPauseReason(s, next, workspacePreferences.autoPause);
+      if (pauseReason) {
+        setPlaying(false);
+        setAutoPauseNotice(pauseReason);
+      }
       const alert = dnfAlertFromTransition(s, next);
       if (alert) {
         const playerEntries = alert.entries.filter((entry) => entry.isPlayer);
@@ -132,7 +165,7 @@ export function LiveRace() {
       }
       return next;
     },
-    [engine],
+    [engine, workspacePreferences.autoPause],
   );
 
   // Playback loop — steps a sector on an interval while playing, paused on prompts
@@ -242,6 +275,46 @@ export function LiveRace() {
     const id = setInterval(tick, 250);
     return () => clearInterval(id);
   }, [decisionKey, engine]);
+
+  const delegatedRecommendationKey = live
+    ? live.recommendations
+        .filter((rec) => canDelegateLiveRaceRecommendation(rec, delegationProfile))
+        .map((rec) => rec.id)
+        .sort()
+        .join(',')
+    : '';
+
+  useEffect(() => {
+    if (!engine || !delegatedRecommendationKey) return;
+    let cancelled = false;
+    queueMicrotask(() => {
+      if (cancelled) return;
+      setLive((current) => {
+        if (!current) return current;
+        const routine = current.recommendations.filter((rec) =>
+          canDelegateLiveRaceRecommendation(rec, delegationProfile),
+        );
+        if (routine.length === 0) return current;
+        return routine.reduce((next, rec) => {
+          const applied = applyRecommendationAction(next, rec.id, rec.action, engine.meta, 'accepted');
+          return {
+            ...applied,
+            events: [
+              ...applied.events,
+              {
+                lap: applied.currentLap,
+                category: 'strategy' as const,
+                text: `${delegationProfile.owner} handled routine call: ${rec.action.label}.`,
+              },
+            ],
+          };
+        }, current);
+      });
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [delegatedRecommendationKey, delegationProfile, engine]);
 
   if (!state || !engine || !live) {
     return (
@@ -357,11 +430,6 @@ export function LiveRace() {
     setLive((s) => (s ? pendingRecs(s).reduce((acc, r) => ignoreRecommendation(acc, r.id, engine.meta), s) : s));
 
   const finishRace = () => {
-    if (podium) {
-      setPodium(null);
-      navigate(`/post-race/${raceId}`);
-      return;
-    }
     if (committed.current) {
       navigate(`/post-race/${raceId}`);
       return;
@@ -383,11 +451,6 @@ export function LiveRace() {
         }])),
       },
     });
-    const podiumSnapshot = buildPodiumSnapshot(results, state.selectedTeamId, driverName, teamColor);
-    if (podiumSnapshot.hasPlayerDriver) {
-      setPodium(podiumSnapshot);
-      return;
-    }
     navigate(`/post-race/${raceId}`);
   };
 
@@ -547,6 +610,9 @@ export function LiveRace() {
           forecast={forecast}
           monitor={monitor}
           activeRecs={activeRecs}
+          workspacePreferences={workspacePreferences}
+          delegationProfile={delegationProfile}
+          autoPauseNotice={autoPauseNotice}
           needsDecision={needsDecision}
           pausedByDnf={!!dnfAlert}
           playbackBlockedReason={playbackBlockedReason}
@@ -567,6 +633,9 @@ export function LiveRace() {
           }}
           onOpenStrategy={() => setModal('strategy')}
           onOpenLog={() => setModal('log')}
+          onWorkspacePreferences={setWorkspacePreferences}
+          onResetWorkspacePreferences={resetWorkspacePreferences}
+          onFocusDriver={setSelectedDriverId}
           onExit={() => navigate('/hq')}
           onFinishRace={finishRace}
           onPit={pitNow}
@@ -613,7 +682,6 @@ export function LiveRace() {
             }}
           />
         )}
-        {podium && <PodiumOverlay podium={podium} onContinue={finishRace} />}
       </>
     );
   }
@@ -752,15 +820,9 @@ export function LiveRace() {
           onClose={() => setModal(null)}
         />
       )}
-      {podium && <PodiumOverlay podium={podium} onContinue={finishRace} />}
     </div>
   );
 }
-
-type PodiumSnapshot = {
-  hasPlayerDriver: boolean;
-  podium: Array<{ position: number; driver: string; teamColor: string; isPlayer: boolean }>;
-};
 
 function dnfAlertFromTransition(previous: LiveRaceState, next: LiveRaceState): DnfAlert | null {
   const previousRunning = new Map(previous.cars.map((car) => [car.driverId, car.running]));
@@ -769,59 +831,6 @@ function dnfAlertFromTransition(previous: LiveRaceState, next: LiveRaceState): D
     .map((car) => ({ driverId: car.driverId, cause: car.lastIncident ?? 'Retired', isPlayer: car.isPlayer }));
   if (entries.length === 0) return null;
   return { lap: next.currentLap, entries };
-}
-
-function buildPodiumSnapshot(
-  results: RaceResult[],
-  playerTeamId: string,
-  nameOf: (driverId: string) => string,
-  colorOf: (teamId: string) => string,
-): PodiumSnapshot {
-  const podium = results
-    .filter((r) => r.position != null && r.position <= 3)
-    .sort((a, b) => (a.position ?? 99) - (b.position ?? 99))
-    .map((r) => ({
-      position: r.position ?? 99,
-      driver: nameOf(r.driverId),
-      teamColor: colorOf(r.teamId),
-      isPlayer: r.teamId === playerTeamId,
-    }));
-  return { podium, hasPlayerDriver: podium.some((r) => r.isPlayer) };
-}
-
-function PodiumOverlay({ podium, onContinue }: { podium: PodiumSnapshot; onContinue: () => void }) {
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/78 p-4 backdrop-blur-sm">
-      <div className="w-full max-w-3xl overflow-hidden rounded-lg border border-amber-400/50 bg-neutral-950 shadow-2xl">
-        <div className="border-b border-amber-500/25 px-5 py-4">
-          <div className="text-xs font-bold uppercase tracking-wide text-amber-300">Podium Ceremony</div>
-          <div className="mt-1 text-2xl font-black uppercase text-neutral-100">Top Three Finish</div>
-        </div>
-        <div className="grid items-end gap-3 px-5 py-6 sm:grid-cols-3">
-          {[2, 1, 3].map((position) => {
-            const entry = podium.podium.find((p) => p.position === position);
-            const height = position === 1 ? 'h-40' : position === 2 ? 'h-32' : 'h-24';
-            return (
-              <div key={position} className="flex flex-col items-center gap-2">
-                <div className={`flex w-full flex-col items-center justify-center rounded-t border border-neutral-700 bg-neutral-900 ${height}`}>
-                  <div className="text-3xl font-black text-amber-300">P{position}</div>
-                  <div className={`mt-2 h-2 w-16 rounded ${entry ? '' : 'bg-neutral-800'}`} style={{ backgroundColor: entry?.teamColor }} />
-                  <div className={`mt-3 max-w-full px-2 text-center text-sm font-bold ${entry?.isPlayer ? 'text-amber-200' : 'text-neutral-200'}`}>
-                    {entry?.driver ?? '-'}
-                  </div>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-        <div className="flex justify-end border-t border-neutral-800 px-5 py-4">
-          <button onClick={onContinue} className="rounded bg-amber-500 px-4 py-2 text-sm font-bold uppercase text-neutral-950 hover:bg-amber-400">
-            Post-Race Report
-          </button>
-        </div>
-      </div>
-    </div>
-  );
 }
 
 function DnfOverlay({
