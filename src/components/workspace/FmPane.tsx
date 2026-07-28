@@ -43,13 +43,28 @@ export function FmPaneBody({
   className = '',
   bodyRef,
   onScroll,
+  ariaLabel,
+  tabIndex,
 }: {
   children: ReactNode;
   className?: string;
   bodyRef?: Ref<HTMLDivElement>;
   onScroll?: UIEventHandler<HTMLDivElement>;
+  ariaLabel?: string;
+  tabIndex?: number;
 }) {
-  return <div ref={bodyRef} onScroll={onScroll} className={`ui-fm-pane-body min-h-0 ${className}`}>{children}</div>;
+  return (
+    <div
+      ref={bodyRef}
+      onScroll={onScroll}
+      className={`ui-fm-pane-body min-h-0 ${className}`}
+      role={ariaLabel ? 'region' : undefined}
+      aria-label={ariaLabel}
+      tabIndex={tabIndex}
+    >
+      {children}
+    </div>
+  );
 }
 
 export function FmWorkspaceGrid({
