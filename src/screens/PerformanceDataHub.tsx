@@ -471,7 +471,14 @@ function DataHubViewCustomizer({
           <h3>Named views</h3>
           <div className="ui-save-view-row">
             <input value={viewName} onChange={(event) => onViewName(event.target.value)} placeholder="View name" maxLength={40} />
-            <Button variant="primary" onClick={onSaveView} disabled={!viewName.trim()}>Save current</Button>
+            <Button
+              variant="primary"
+              onClick={onSaveView}
+              disabled={!viewName.trim()}
+              title={!viewName.trim() ? 'Enter a view name before saving this layout.' : undefined}
+            >
+              Save current
+            </Button>
           </div>
           <div className="ui-saved-view-list">
             {preferences.namedViews.map((view) => (
@@ -543,11 +550,36 @@ function ColumnEditor<T extends string>({
         const index = selected.indexOf(column);
         return (
           <div key={column} className={index >= 0 ? 'is-visible' : ''}>
-            <label><input type="checkbox" checked={index >= 0} disabled={column === required} onChange={() => toggle(column)} />{labels[column]}</label>
+            <label title={column === required ? `${labels[column]} is required to identify each row.` : undefined}>
+              <input
+                type="checkbox"
+                checked={index >= 0}
+                disabled={column === required}
+                onChange={() => toggle(column)}
+                aria-label={`${index >= 0 ? 'Hide' : 'Show'} ${labels[column]} column`}
+              />
+              {labels[column]}
+            </label>
             {index >= 0 && (
               <span>
-                <button type="button" onClick={() => onChange(moveItem(selected, column, -1))} disabled={index === 0}>←</button>
-                <button type="button" onClick={() => onChange(moveItem(selected, column, 1))} disabled={index === selected.length - 1}>→</button>
+                <button
+                  type="button"
+                  onClick={() => onChange(moveItem(selected, column, -1))}
+                  disabled={index === 0}
+                  title={index === 0 ? `${labels[column]} is already the first visible column.` : undefined}
+                  aria-label={`Move ${labels[column]} column earlier`}
+                >
+                  ←
+                </button>
+                <button
+                  type="button"
+                  onClick={() => onChange(moveItem(selected, column, 1))}
+                  disabled={index === selected.length - 1}
+                  title={index === selected.length - 1 ? `${labels[column]} is already the last visible column.` : undefined}
+                  aria-label={`Move ${labels[column]} column later`}
+                >
+                  →
+                </button>
                 <input
                   type="range"
                   min={70}

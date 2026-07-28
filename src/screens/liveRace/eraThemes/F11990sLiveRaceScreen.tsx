@@ -1022,6 +1022,11 @@ function DriverFocus({
 }) {
   const tyre = tyreLetter(car.tire.compound);
   const canPit = car.running && !car.pit.inPitThisLap && !finished;
+  const driverActionUnavailableReason = !car.running
+    ? 'Driver controls are unavailable because this car is no longer running.'
+    : finished
+      ? 'Driver controls are unavailable because the race has finished.'
+      : undefined;
   const gapToTeammate =
     teammate && teammate.running && car.running ? car.gapToLeader - teammate.gapToLeader : null;
   return (
@@ -1034,6 +1039,7 @@ function DriverFocus({
             <button
               onClick={onOrders}
               disabled={!car.running || finished}
+              title={driverActionUnavailableReason}
               className="rounded border border-amber-500/55 bg-amber-500/10 px-2 py-0.5 text-[9px] font-black uppercase text-amber-300 hover:bg-amber-500/20 disabled:border-zinc-800 disabled:bg-zinc-950 disabled:text-zinc-600"
             >
               Team Orders
@@ -1041,6 +1047,7 @@ function DriverFocus({
             <button
               onClick={onStrategyDesk}
               disabled={!car.running || finished}
+              title={driverActionUnavailableReason}
               className="rounded border border-amber-500/55 bg-amber-500/10 px-2 py-0.5 text-[9px] font-black uppercase text-amber-300 hover:bg-amber-500/20 disabled:border-zinc-800 disabled:bg-zinc-950 disabled:text-zinc-600"
             >
               Strategy Desk
@@ -1055,6 +1062,11 @@ function DriverFocus({
             <button
               onClick={() => onPit()}
               disabled={!canPit}
+              title={
+                car.pit.inPitThisLap
+                  ? 'Pit controls are unavailable while the car is already in the pit lane.'
+                  : driverActionUnavailableReason
+              }
               className="shrink-0 rounded border border-amber-500/50 px-2 py-1 text-[9px] font-bold uppercase text-amber-300 hover:bg-amber-500/10 disabled:border-zinc-800 disabled:text-zinc-600"
             >
               {car.pit.pitRequested ? 'Cancel Pit' : 'Pit'}

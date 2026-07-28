@@ -364,7 +364,12 @@ export function NewCareer() {
                 <h2 className="text-xl font-bold text-neutral-100">Select Team</h2>
                 <p className="text-sm text-neutral-400">{year} {series}</p>
               </div>
-              <Button variant="primary" disabled={!selectedTeamId} onClick={() => setStep('principal')}>
+              <Button
+                variant="primary"
+                disabled={!selectedTeamId}
+                title={!selectedTeamId ? 'Select a team before creating your principal.' : undefined}
+                onClick={() => setStep('principal')}
+              >
                 Create Principal
               </Button>
             </div>
@@ -435,7 +440,12 @@ export function NewCareer() {
               <Button variant="ghost" onClick={() => setStep('setup')}>
                 ← Back
               </Button>
-              <Button variant="primary" disabled={!selectedTeamId} onClick={() => setStep('principal')}>
+              <Button
+                variant="primary"
+                disabled={!selectedTeamId}
+                title={!selectedTeamId ? 'Select a team before creating your principal.' : undefined}
+                onClick={() => setStep('principal')}
+              >
                 Create Principal
               </Button>
             </div>
