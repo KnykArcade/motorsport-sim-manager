@@ -121,6 +121,13 @@ const TESTING_OPTIONS: Array<{ id: PreseasonTestingFocus; label: string; descrip
   { id: 'Experimental', label: 'Experimental Programme', description: 'Highest pace upside with extra reliability and flaw risk.' },
 ];
 
+const ROUTINE_PRESEASON_TABS: PreseasonTab[] = [
+  'teamOverview',
+  'budget',
+  'sponsorsEngine',
+  'roundOnePreview',
+];
+
 export function PreSeasonSetup() {
   const { state, dispatch } = useGame();
   const navigate = useNavigate();
@@ -154,7 +161,7 @@ export function PreSeasonSetup() {
   const advanceToBriefing = () => {
     if (!checklistComplete) return;
     dispatch({ type: 'COMPLETE_PRESEASON_SETUP' });
-    navigate('/briefing');
+    navigate('/briefing?tab=preparation');
   };
 
   const approveTab = (tabId: PreseasonTab) => {
@@ -176,6 +183,12 @@ export function PreSeasonSetup() {
   // Driver lineup validation: NASCAR requires 1 race driver, all other series 2.
   const hasValidLineup = activeDrivers.length >= minDrivers;
   const remainingApprovals = totalTabs - approvedCount;
+  const pendingRoutineApprovals = ROUTINE_PRESEASON_TABS.filter((tabId) => !approvals[tabId]);
+  const acknowledgeRoutineBriefings = () => {
+    for (const tabId of pendingRoutineApprovals) {
+      dispatch({ type: 'APPROVE_PRESEASON_TAB', tabId });
+    }
+  };
   const advanceBlockedReason = checklistComplete ? undefined : `${remainingApprovals} review${remainingApprovals === 1 ? '' : 's'} remaining`;
 
   return (
@@ -214,9 +227,16 @@ export function PreSeasonSetup() {
             </div>
           </div>
         </div>
-        <span className="shrink-0 text-[10px] font-semibold uppercase tracking-wide text-neutral-500">
-          {preseasonProgram?.testingCompleted ? `${preseasonProgram.readiness.overall}% readiness` : 'Testing not complete'}
-        </span>
+        <div className="flex shrink-0 items-center gap-2">
+          {pendingRoutineApprovals.length > 0 && (
+            <Button variant="ghost" onClick={acknowledgeRoutineBriefings}>
+              Acknowledge routine briefings ({pendingRoutineApprovals.length})
+            </Button>
+          )}
+          <span className="text-[10px] font-semibold uppercase tracking-wide text-neutral-500">
+            {preseasonProgram?.testingCompleted ? `${preseasonProgram.readiness.overall}% readiness` : 'Testing not complete'}
+          </span>
+        </div>
       </div>
       <WorkspaceBody className="ui-phase14-workspace ui-preseason-workspace">
       <div className="ui-preseason-command-grid">

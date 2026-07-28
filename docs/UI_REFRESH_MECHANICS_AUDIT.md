@@ -230,3 +230,18 @@ Phase 9 changes presentation metadata, shared control semantics, focus behavior,
 and explanatory copy only. No reducer action, simulation calculation, balance
 constant, save field, progression gate, route declaration, or route restriction
 was added, removed, or changed.
+
+## Phase 15 full game-flow findings
+
+| Finding | Status | Resolution |
+| --- | --- | --- |
+| The global progression control said only Continue or Review, so the player still had to infer the next meaningful task. | Fixed | The control now shows the exact workflow action and uses its state-backed reason as the explanation. Required paddock decisions retain their blocker count. |
+| Paddock and preseason handoffs opened the informational briefing overview before the actual preparation decision. | Fixed | Both handoffs and the global workflow route now deep-link to the race-preparation focus. Briefing tabs and an unconfirmed focus remain in the URL when the player leaves and returns. |
+| Race Weekend stored its active stage, setup changes, qualifying choices, and race choices only in the mounted component. | Fixed | A race-scoped session draft restores the exact internal stage and unconfirmed choices after navigation. The draft is rejected for another race and cleared when the live race begins. |
+| Delegation existed one recommendation at a time and preseason presented routine acknowledgements beside consequential decisions. | Fixed | Weekend staff advice can be delegated in one action. Preseason can acknowledge four routine briefings together while driver lineup, technical programme, and owner mandate remain explicit player decisions. |
+| At 1024x720, persistent context could consume too much of the remaining decision height. | Fixed | The supported 720p floor uses a compact top bar, workspace header, metric strip, tabs, and season rail. Wider 1366 and 1920 layouts retain the full detail hierarchy. |
+
+Phase 15 does not add a route, remove a progression guard, change a simulation
+formula, alter setup balance, or introduce an external-simulator dependency.
+The only new persistence is a race-scoped browser-session UI draft; authoritative
+career and simulation state continue to use the existing reducer and save system.

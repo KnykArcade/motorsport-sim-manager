@@ -1,5 +1,5 @@
-import { useMemo, useState, type ReactNode } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useEffect, useMemo, useState, type ReactNode } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useGame } from '../game/GameContext';
 import { activeDriversForTeam, carForTeam, currentRace } from '../game/careerState';
 import { lastBreakdowns } from '../game/gameReducer';
@@ -56,6 +56,8 @@ import {
   RACE_WEEKEND_SECTIONS,
   canOpenRaceWeekendSection,
   raceWeekendPhaseIndex,
+  raceWeekendPhaseForSection,
+  raceWeekendSectionFromQuery,
   raceWeekendSectionForPhase,
   type RaceWeekendSection,
   type RaceWeekendPhase,
@@ -77,14 +79,18 @@ import type {
   GarageFollowUpType,
   WeekendRecommendationResolution,
 } from '../types/weekendLeadershipTypes';
+import {
+  clearRaceWeekendUiDraft,
+  readRaceWeekendUiDraft,
+  writeRaceWeekendUiDraft,
+} from './raceWeekendDraftStorage';
 
 type Phase = RaceWeekendPhase;
 
 export function RaceWeekend() {
   const { state, dispatch, settings } = useGame();
   const navigate = useNavigate();
-  const [phase, setPhase] = useState<Phase>('hub');
-  const [furthestPhase, setFurthestPhase] = useState<Phase>('hub');
+  const [searchParams, setSearchParams] = useSearchParams();
 
   const race = state ? currentRace(state) : undefined;
   const track = race ? getTrackById(race.trackId) : undefined;
@@ -97,6 +103,52 @@ export function RaceWeekend() {
     [state],
   );
   const qualifyingResults = state && race ? state.qualifyingResults[race.id] : undefined;
+  const isMinPackage = state?.raceWeekendPackage?.packageType === 'MandatoryMinimum';
+  const confirmedPlan = state && race
+    ? state.weekendPlans?.find((plan) => plan.raceId === race.id)
+    : undefined;
+  const garageAddress = state && race ? garageAddressForRace(state, race.id) : undefined;
+  const storedDraft = useMemo(
+    () => race
+      ? readRaceWeekendUiDraft(
+        typeof window === 'undefined' ? undefined : window.sessionStorage,
+        race.id,
+      )
+      : undefined,
+    [race],
+  );
+  const requestedSection = raceWeekendSectionFromQuery(searchParams.get('stage'));
+  const progressPhase: Phase = confirmedPlan
+    ? 'garage-address'
+    : qualifyingResults
+      ? 'quali-review'
+      : 'hub';
+  const requestedPhase = requestedSection
+    ? storedDraft
+      && raceWeekendSectionForPhase(storedDraft.phase, !!qualifyingResults) === requestedSection
+        ? storedDraft.phase
+        : raceWeekendPhaseForSection(
+          requestedSection,
+          !!qualifyingResults,
+          isMinPackage,
+          !!confirmedPlan,
+        )
+    : undefined;
+  const storedPhase = storedDraft
+    && raceWeekendPhaseIndex(storedDraft.phase, isMinPackage) >= 0
+    ? storedDraft.phase
+    : undefined;
+  const [phase, setPhase] = useState<Phase>(requestedPhase ?? storedPhase ?? progressPhase);
+  const [furthestPhase, setFurthestPhase] = useState<Phase>(() => {
+    const candidate = storedDraft?.furthestPhase;
+    if (
+      candidate
+      && raceWeekendPhaseIndex(candidate, isMinPackage) >= raceWeekendPhaseIndex(progressPhase, isMinPackage)
+    ) {
+      return candidate;
+    }
+    return progressPhase;
+  });
   const setupLock = useMemo(() => {
     if (!state || !track) return undefined;
     const profile = selectRaceRuleProfile(state.series, state.seasonYear, track);
@@ -111,12 +163,30 @@ export function RaceWeekend() {
   // The player tunes the base engineering setup in the Car Setup phase; the team
   // still derives a distinct qualifying trim (Saturday) and race trim (Sunday)
   // automatically. For run plan / strategy / instructions we store overrides.
-  const [qualiOverrides, setQualiOverrides] = useState<Record<string, Partial<QualifyingDecision>>>({});
-  const [raceOverrides, setRaceOverrides] = useState<Record<string, Partial<RaceDecision>>>({});
+  const [qualiOverrides, setQualiOverrides] = useState<Record<string, Partial<QualifyingDecision>>>(
+    storedDraft?.qualifyingOverrides ?? {},
+  );
+  const [raceOverrides, setRaceOverrides] = useState<Record<string, Partial<RaceDecision>>>(
+    storedDraft?.raceOverrides ?? {},
+  );
 
   // Unsaved edits made in the Car Setup phase, layered over the committed setups
   // in game state. Resolved into a complete per-driver map for the children.
-  const [setupDraft, setSetupDraft] = useState<Record<string, CarSetup>>({});
+  const [setupDraft, setSetupDraft] = useState<Record<string, CarSetup>>(storedDraft?.setupDraft ?? {});
+  useEffect(() => {
+    if (!race) return;
+    writeRaceWeekendUiDraft(
+      typeof window === 'undefined' ? undefined : window.sessionStorage,
+      {
+        raceId: race.id,
+        phase,
+        furthestPhase,
+        setupDraft,
+        qualifyingOverrides: qualiOverrides,
+        raceOverrides,
+      },
+    );
+  }, [race, phase, furthestPhase, setupDraft, qualiOverrides, raceOverrides]);
   // Always resolve to a COMPLETE, numeric setup per driver so the workshop and
   // its score maths never see undefined fields (which produced "NaN–NaN"). The
   // baseline exists from career start / rollover; sanitize is a final guard.
@@ -178,7 +248,6 @@ export function RaceWeekend() {
 
   if (!state || !race || !track || !autoSetups || !forecast) return null;
 
-  const isMinPackage = state.raceWeekendPackage?.packageType === 'MandatoryMinimum';
   const unlockedPhase = qualifyingResults
     && raceWeekendPhaseIndex('quali-review', isMinPackage) > raceWeekendPhaseIndex(furthestPhase, isMinPackage)
     ? 'quali-review'
@@ -186,6 +255,9 @@ export function RaceWeekend() {
   const moveTo = (next: Phase) => {
     if (raceWeekendPhaseIndex(next, isMinPackage) < 0) return;
     setPhase(next);
+    const nextQuery = new URLSearchParams(searchParams);
+    nextQuery.set('stage', raceWeekendSectionForPhase(next, !!qualifyingResults));
+    setSearchParams(nextQuery, { replace: true });
     setFurthestPhase((current) => (
       raceWeekendPhaseIndex(next, isMinPackage) > raceWeekendPhaseIndex(current, isMinPackage)
         ? next
@@ -231,8 +303,6 @@ export function RaceWeekend() {
     qualifyingDecisions: playerDrivers.map((driver) => qualiFor(driver.id)),
     raceDecisions: playerDrivers.map((driver) => raceFor(driver.id)),
   });
-  const confirmedPlan = state.weekendPlans?.find((plan) => plan.raceId === race.id);
-  const garageAddress = garageAddressForRace(state, race.id);
   const activeSection = raceWeekendSectionForPhase(phase, !!qualifyingResults);
   const tabs = RACE_WEEKEND_SECTIONS.map((item) => ({
     ...item,
@@ -333,6 +403,10 @@ export function RaceWeekend() {
 
   function startLiveRace() {
     if (!garageAddress) return;
+    clearRaceWeekendUiDraft(
+      typeof window === 'undefined' ? undefined : window.sessionStorage,
+      race!.id,
+    );
     navigate(`/live-race/${race!.id}`, {
       state: { decisions: playerDrivers.map((driver) => raceFor(driver.id)) },
     });
@@ -352,6 +426,13 @@ export function RaceWeekend() {
             <WeekendCommandMeeting
               recommendations={weekendRecommendations}
               onResolve={resolveWeekendRecommendation}
+              onDelegateAll={() => {
+                for (const recommendation of weekendRecommendations) {
+                  if (recommendation.status === 'Pending') {
+                    resolveWeekendRecommendation(recommendation, 'Delegated');
+                  }
+                }
+              }}
               compact
             />
             <Briefing track={track} race={race} isMinPackage={isMinPackage} compact />

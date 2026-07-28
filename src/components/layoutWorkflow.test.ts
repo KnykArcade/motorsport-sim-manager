@@ -14,8 +14,8 @@ describe('layout workflow destination', () => {
   it.each([
     ['pre_season_setup', '/preseason'],
     ['paddock_week', '/paddock'],
-    ['pre_race_briefing', '/briefing'],
-    ['race_weekend', '/weekend'],
+    ['pre_race_briefing', '/briefing?tab=preparation'],
+    ['race_weekend', '/weekend?stage=overview'],
   ])('opens the %s workspace without advancing state', (phase, expectedRoute) => {
     const state = stateFor(phase);
     const snapshot = structuredClone(state);
@@ -27,8 +27,8 @@ describe('layout workflow destination', () => {
 
   it('uses action-specific labels for the phase handoff', () => {
     expect(workflowDestination(stateFor('pre_season_setup')).label).toBe('Open Preseason Review');
-    expect(workflowDestination(stateFor('pre_race_briefing')).label).toBe('Review Race Briefing');
-    expect(workflowDestination(stateFor('race_weekend')).label).toBe('Continue Race Weekend');
+    expect(workflowDestination(stateFor('pre_race_briefing')).label).toBe('Set Preparation Focus');
+    expect(workflowDestination(stateFor('race_weekend')).label).toBe('Open Weekend Overview');
   });
 
   it('routes Continue to the first required paddock decision', () => {
@@ -63,6 +63,28 @@ describe('layout workflow destination', () => {
     expect(workflowDestination(state).to).toBe('/post-race/race-6');
   });
 
+  it('deep-links to the reached race-weekend stage', () => {
+    const state = stateFor('race_weekend', {
+      currentRaceIndex: 0,
+      calendar: [{ id: 'race-1' }],
+      qualifyingResults: { 'race-1': [{ position: 1 }] },
+      weekendPlans: [],
+    });
+
+    expect(workflowDestination(state)).toMatchObject({
+      to: '/weekend?stage=qualifying',
+      label: 'Review Qualifying',
+    });
+
+    expect(workflowDestination({
+      ...state,
+      weekendPlans: [{ raceId: 'race-1' }],
+    } as unknown as GameState)).toMatchObject({
+      to: '/weekend?stage=race-plan',
+      label: 'Complete Race Plan',
+    });
+  });
+
   it('prioritizes season review after the season is complete', () => {
     expect(workflowDestination(stateFor('race_weekend', { seasonComplete: true })).to).toBe('/season-review');
   });
@@ -75,7 +97,7 @@ describe('layout workflow destination', () => {
   });
 
   it('falls back to the phase workspace for non-game routes', () => {
-    expect(resumeDestination(stateFor('race_weekend', { lastWorkspace: '/settings' }))).toBe('/weekend');
+    expect(resumeDestination(stateFor('race_weekend', { lastWorkspace: '/settings' }))).toBe('/weekend?stage=overview');
     expect(isResumableWorkspace('/post-race/race-1')).toBe(true);
     expect(isResumableWorkspace('/live-race/race-1')).toBe(false);
   });

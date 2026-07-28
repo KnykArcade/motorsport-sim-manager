@@ -1,4 +1,4 @@
-import type { GameState } from '../game/careerState';
+import { currentRace, type GameState } from '../game/careerState';
 import { getCareerPhase } from '../game/careerPhaseEngine';
 import type { CareerPhase } from '../types/careerPhaseTypes';
 import { paddockEventDestination } from '../screens/paddockAgendaViewModel';
@@ -65,24 +65,63 @@ export function workflowDestination(state: GameState): WorkflowDestination {
       }
     case 'pre_race_briefing':
       return {
-        to: '/briefing',
-        label: 'Review Race Briefing',
-        context: 'Race briefing',
+        to: '/briefing?tab=preparation',
+        label: 'Set Preparation Focus',
+        context: 'Race preparation',
         phase,
         blocked: false,
         blockerCount: 0,
-        reason: 'Confirm the race plan and enter the weekend.',
+        reason: 'Confirm the race preparation focus, then enter the weekend.',
       };
-    case 'race_weekend':
+    case 'race_weekend': {
+      const race = Array.isArray(state.calendar) ? currentRace(state) : undefined;
+      const qualifyingComplete = !!(race && state.qualifyingResults?.[race.id]);
+      const planConfirmed = !!(race && state.weekendPlans?.some((plan) => plan.raceId === race.id));
+      const practiceStarted = !!(
+        race
+        && state.weekendPractice?.raceId === race.id
+        && state.weekendPractice.sessions?.some((session) => session.completed)
+      );
+      const stage = planConfirmed
+        ? 'race-plan'
+        : qualifyingComplete
+          ? 'qualifying'
+          : practiceStarted
+            ? 'practice-setup'
+            : 'overview';
+      const detail = stage === 'race-plan'
+        ? {
+          label: 'Complete Race Plan',
+          context: 'Race plan',
+          reason: 'Finish leadership preparation and start the race.',
+        }
+        : stage === 'qualifying'
+          ? {
+            label: 'Review Qualifying',
+            context: 'Qualifying',
+            reason: 'Review the grid, finalise the setup, and prepare the race plan.',
+          }
+          : stage === 'practice-setup'
+            ? {
+              label: 'Continue Practice & Setup',
+              context: 'Practice and setup',
+              reason: 'Resume the active engineering work without repeating the overview.',
+            }
+            : {
+              label: 'Open Weekend Overview',
+              context: 'Race weekend',
+              reason: 'Review staff advice and begin the weekend programme.',
+            };
       return {
-        to: '/weekend',
-        label: 'Continue Race Weekend',
-        context: 'Race weekend',
+        to: `/weekend?stage=${stage}`,
+        label: detail.label,
+        context: detail.context,
         phase,
         blocked: false,
         blockerCount: 0,
-        reason: 'Complete the current weekend stage; recommendations remain available.',
+        reason: detail.reason,
       };
+    }
     case 'post_race_review': {
       const raceId = state.careerPhase?.lastCompletedRaceId;
       return raceId

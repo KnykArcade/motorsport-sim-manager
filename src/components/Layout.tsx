@@ -170,12 +170,14 @@ export function Layout({ children }: { children: ReactNode }) {
             {workflow && (
               <button
                 type="button"
-                className="ui-continue-button min-w-28 shrink-0"
+                className="ui-continue-button min-w-32 shrink-0"
                 onClick={() => goTo(workflow.to)}
-                title={`Open ${workflow.context}. Progression remains controlled inside that workspace.`}
+                title={workflow.reason}
               >
-                <span className="hidden text-[8px] font-semibold uppercase tracking-wide opacity-70 xl:block">{workflow.context}</span>
-                <span>{workflow.blocked ? `Review (${workflow.blockerCount})` : 'Continue'} →</span>
+                <span className="text-[8px] font-semibold uppercase tracking-wide opacity-70">
+                  {workflow.blocked ? `${workflow.blockerCount} required` : workflow.context}
+                </span>
+                <span>{workflow.label} →</span>
               </button>
             )}
           </header>
