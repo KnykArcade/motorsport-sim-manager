@@ -4178,6 +4178,36 @@ body {
   line-height: 1.6;
 }
 
+.ui-inbox-confirmation {
+  margin-top: 1rem;
+  border: 1px solid #7a2941;
+  border-left: 3px solid #d13d61;
+  background: #2b1d22;
+  padding: 0.7rem 0.8rem;
+}
+
+.ui-inbox-confirmation > strong {
+  color: #e09aab;
+  font-size: 0.53rem;
+  font-weight: 850;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.ui-inbox-confirmation h3 {
+  margin-top: 0.25rem;
+  color: #f1f1f2;
+  font-size: 0.72rem;
+  font-weight: 800;
+}
+
+.ui-inbox-confirmation p {
+  margin-top: 0.4rem;
+  color: #b8b8bd;
+  font-size: 0.62rem;
+  line-height: 1.55;
+}
+
 .ui-inbox-action-bar {
   display: flex;
   min-height: 52px;
@@ -4187,6 +4217,7 @@ body {
   border-top: 1px solid #3a3a3f;
   background: #1d1d20;
   padding: 0.55rem 0.75rem;
+  flex-wrap: wrap;
 }
 
 .ui-inbox-action-bar .era-button {

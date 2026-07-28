@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react';
+import type { ReactNode, Ref, UIEventHandler } from 'react';
 
 export function FmPane({
   children,
@@ -39,11 +39,15 @@ export function FmPaneHeader({
 export function FmPaneBody({
   children,
   className = '',
+  bodyRef,
+  onScroll,
 }: {
   children: ReactNode;
   className?: string;
+  bodyRef?: Ref<HTMLDivElement>;
+  onScroll?: UIEventHandler<HTMLDivElement>;
 }) {
-  return <div className={`ui-fm-pane-body min-h-0 ${className}`}>{children}</div>;
+  return <div ref={bodyRef} onScroll={onScroll} className={`ui-fm-pane-body min-h-0 ${className}`}>{children}</div>;
 }
 
 export function FmWorkspaceGrid({

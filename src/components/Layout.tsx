@@ -13,7 +13,7 @@ import {
 import { contextualNavigationForRoute, pageIdentityForRoute } from './layoutContext';
 import { workflowDestination } from './layoutWorkflow';
 import { NavIcon } from './NavIcon';
-import { mustRespondInboxCount, unreadInboxCount } from '../screens/inboxViewModel';
+import { inboxMessages, mustRespondInboxCount, unreadInboxCount } from '../screens/inboxViewModel';
 
 export function Layout({ children }: { children: ReactNode }) {
   const { state, saveNow } = useGame();
@@ -31,6 +31,11 @@ export function Layout({ children }: { children: ReactNode }) {
   const workflow = state ? workflowDestination(state) : undefined;
   const inboxUnread = useMemo(() => (state ? unreadInboxCount(state) : 0), [state]);
   const mustRespond = useMemo(() => (state ? mustRespondInboxCount(state) : 0), [state]);
+  const blockingMessages = useMemo(
+    () => state ? inboxMessages(state).filter((message) => message.blocking) : [],
+    [state],
+  );
+  const firstBlockingMessage = blockingMessages[0];
   const currentRound = state
     ? Math.min(state.currentRaceIndex + 1, Math.max(1, state.calendar.length))
     : 0;
@@ -171,13 +176,17 @@ export function Layout({ children }: { children: ReactNode }) {
               <button
                 type="button"
                 className="ui-continue-button min-w-32 shrink-0"
-                onClick={() => goTo(workflow.to)}
-                title={workflow.reason}
+                onClick={() => goTo(firstBlockingMessage
+                  ? `/inbox?section=must_respond&message=${encodeURIComponent(firstBlockingMessage.id)}`
+                  : workflow.to)}
+                title={firstBlockingMessage
+                  ? `${firstBlockingMessage.title} must be resolved before advancement.`
+                  : workflow.reason}
               >
                 <span className="text-[8px] font-semibold uppercase tracking-wide opacity-70">
-                  {workflow.blocked ? `${workflow.blockerCount} required` : workflow.context}
+                  {firstBlockingMessage ? `${blockingMessages.length} required` : workflow.blocked ? `${workflow.blockerCount} required` : workflow.context}
                 </span>
-                <span>{workflow.label} →</span>
+                <span>{firstBlockingMessage ? 'Respond in Inbox' : workflow.label} →</span>
               </button>
             )}
           </header>

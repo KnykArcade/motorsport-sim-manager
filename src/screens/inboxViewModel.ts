@@ -15,6 +15,7 @@ import { newsTriage } from './newsTriageViewModel';
 import { careerMarketBundle } from '../sim/careerMarketEngine';
 import { getStaffPool } from '../data';
 import { effectiveAccuracy } from '../sim/scoutingEngine';
+import { weekendCommandRecommendations } from '../sim/weekendCommandEngine';
 import type { StaffResponsibilityId } from '../types/staffTypes';
 import {
   staffResponsibilities,
@@ -344,13 +345,22 @@ function peopleMessages(state: GameState): InboxMessage[] {
 
   const race = currentRace(state);
   const raceEngineer = staff.find((member) => member.role === 'Race Engineer');
-  if (race && !race.completed && raceEngineer && state.staffResponsibilityPolicies?.['race-engineering'] === 'staff_prepare_player_approval') {
+  const pendingWeekendRecommendations = race
+    ? weekendCommandRecommendations(state).filter((recommendation) => recommendation.status === 'Pending')
+    : [];
+  if (
+    race
+    && !race.completed
+    && raceEngineer
+    && pendingWeekendRecommendations.length > 0
+    && state.staffResponsibilityPolicies?.['race-engineering'] === 'staff_prepare_player_approval'
+  ) {
     messages.push({
       id: `inbox-weekend-plan-${race.id}`,
       severity: 'action',
       category: 'people',
       title: `${raceEngineer.name} prepared the weekend plan`,
-      body: 'Review the staff recommendation before approving qualifying and race decisions.',
+      body: `${pendingWeekendRecommendations.length} staff recommendation${pendingWeekendRecommendations.length === 1 ? '' : 's'} prepared for the active weekend.`,
       route: '/weekend',
       routeLabel: 'Open Weekend Plan',
       actionable: true,

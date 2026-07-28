@@ -8,8 +8,8 @@ function source(relativePath: string): string {
 describe('Phase 15 game-flow usability contract', () => {
   it('shows the exact next action instead of a generic Continue label', () => {
     const layout = source('../components/Layout.tsx');
-    expect(layout).toContain('{workflow.label} →');
-    expect(layout).toContain('title={workflow.reason}');
+    expect(layout).toContain("firstBlockingMessage ? 'Respond in Inbox' : workflow.label");
+    expect(layout).toContain(': workflow.reason}');
   });
 
   it('routes handoffs directly to the required race-preparation decision', () => {
