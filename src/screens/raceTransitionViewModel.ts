@@ -37,6 +37,12 @@ export function postRaceReviewTabFromQuery(value: string | null): PostRaceReview
     : 'overview';
 }
 
+export function preRaceBriefingTabFromQuery(value: string | null): PreRaceBriefingTab {
+  return PRE_RACE_BRIEFING_TABS.some((tab) => tab.id === value)
+    ? value as PreRaceBriefingTab
+    : 'overview';
+}
+
 export const RACE_RESULTS_TABS: ReadonlyArray<{ id: RaceResultsTab; label: string }> = [
   { id: 'summary', label: 'Summary' },
   { id: 'classification', label: 'Classification' },
@@ -80,6 +86,24 @@ export function raceWeekendSectionForPhase(
   if (phase === 'practice' || (phase === 'setup' && !qualifyingComplete)) return 'practice-setup';
   if (phase === 'quali-run' || phase === 'quali-review' || phase === 'setup') return 'qualifying';
   return 'race-plan';
+}
+
+export function raceWeekendSectionFromQuery(value: string | null): RaceWeekendSection | undefined {
+  return RACE_WEEKEND_SECTIONS.some((section) => section.id === value)
+    ? value as RaceWeekendSection
+    : undefined;
+}
+
+export function raceWeekendPhaseForSection(
+  section: RaceWeekendSection,
+  qualifyingComplete: boolean,
+  minimumPackage: boolean,
+  planConfirmed: boolean,
+): RaceWeekendPhase {
+  if (section === 'overview') return 'hub';
+  if (section === 'practice-setup') return minimumPackage ? 'quali-run' : 'practice';
+  if (section === 'qualifying') return qualifyingComplete ? 'quali-review' : 'quali-run';
+  return planConfirmed ? 'garage-address' : 'race-strategy';
 }
 
 export function canOpenRaceWeekendSection(

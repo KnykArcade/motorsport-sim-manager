@@ -248,7 +248,7 @@ export function PaddockWeek() {
 
   const advanceToBriefing = () => {
     dispatch({ type: 'ADVANCE_TO_PRE_RACE_BRIEFING' });
-    navigate('/briefing');
+    navigate('/briefing?tab=preparation');
   };
   const weeklyStory = buildWeeklyStory(state);
 
@@ -730,9 +730,9 @@ export function PaddockWeek() {
             variant="primary"
             onClick={advanceToBriefing}
             disabled={!canAdvance}
-            title={canAdvance ? 'Advance to Pre-Race Briefing' : 'Resolve required decisions and select a race package first'}
+            title={canAdvance ? 'Open the required race preparation decision' : 'Resolve required decisions and select a race package first'}
           >
-            Advance to Briefing →
+            Set Race Preparation Focus →
           </Button>
         )}
       >
@@ -741,7 +741,7 @@ export function PaddockWeek() {
           ? 'Select the race package before advancing.'
           : pendingCount > 0
             ? `${pendingCount} required decision${pendingCount === 1 ? '' : 's'} remain before briefing.`
-            : 'All required decisions are complete. You may advance to the pre-race briefing.'}
+            : 'All required decisions are complete. Set the race preparation focus next.'}
       </FmDecisionBar>
     </WorkspaceScreen>
   );

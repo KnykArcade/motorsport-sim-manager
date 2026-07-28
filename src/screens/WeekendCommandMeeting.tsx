@@ -6,6 +6,7 @@ import type { WeekendRecommendationResolution } from '../types/weekendLeadership
 export function WeekendCommandMeeting({
   recommendations,
   onResolve,
+  onDelegateAll,
   onContinue,
   compact = false,
 }: {
@@ -14,6 +15,7 @@ export function WeekendCommandMeeting({
     recommendation: AdvisorRecommendation,
     resolution: WeekendRecommendationResolution,
   ) => void;
+  onDelegateAll?: () => void;
   onContinue?: () => void;
   compact?: boolean;
 }) {
@@ -31,10 +33,19 @@ export function WeekendCommandMeeting({
   return (
     <Panel
       title={compact ? 'Contextual Staff Advice' : 'Weekend Command Meeting'}
-      actions={onContinue ? (
-        <Button variant="primary" onClick={onContinue}>
-          {pending > 0 ? `Continue with ${pending} pending →` : 'Continue to Track Briefing →'}
-        </Button>
+      actions={(onContinue || (onDelegateAll && pending > 0)) ? (
+        <div className="flex flex-wrap gap-2">
+          {onDelegateAll && pending > 0 && (
+            <Button variant="ghost" onClick={onDelegateAll}>
+              Delegate remaining ({pending})
+            </Button>
+          )}
+          {onContinue && (
+            <Button variant="primary" onClick={onContinue}>
+              {pending > 0 ? `Continue with ${pending} pending →` : 'Continue to Track Briefing →'}
+            </Button>
+          )}
+        </div>
       ) : undefined}
     >
       <div className="mb-4 grid gap-3 lg:grid-cols-[1.35fr_1fr]">

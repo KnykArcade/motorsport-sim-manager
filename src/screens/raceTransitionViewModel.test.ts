@@ -11,7 +11,10 @@ import {
   canOpenRaceWeekendPhase,
   postRaceReviewRisk,
   postRaceReviewTabFromQuery,
+  preRaceBriefingTabFromQuery,
   visibleRaceWeekendPhases,
+  raceWeekendPhaseForSection,
+  raceWeekendSectionFromQuery,
   raceWeekendSectionForPhase,
   transitionPage,
   transitionPageCount,
@@ -39,6 +42,11 @@ describe('race transition view model', () => {
     expect(postRaceReviewTabFromQuery(null)).toBe('overview');
   });
 
+  it('opens the exact pre-race decision from a deep link', () => {
+    expect(preRaceBriefingTabFromQuery('preparation')).toBe('preparation');
+    expect(preRaceBriefingTabFromQuery('unknown')).toBe('overview');
+  });
+
   it('keeps race-weekend tabs behind the reached workflow stage', () => {
     expect(canOpenRaceWeekendPhase('practice', 'practice', false)).toBe(true);
     expect(canOpenRaceWeekendPhase('setup', 'practice', false)).toBe(false);
@@ -60,6 +68,15 @@ describe('race transition view model', () => {
     expect(canOpenRaceWeekendSection('qualifying', 'quali-run', false)).toBe(true);
     expect(canOpenRaceWeekendSection('race-plan', 'quali-review', false)).toBe(false);
     expect(canOpenRaceWeekendSection('practice-setup', 'quali-run', true)).toBe(false);
+  });
+
+  it('resumes a requested weekend section at its next meaningful internal step', () => {
+    expect(raceWeekendSectionFromQuery('practice-setup')).toBe('practice-setup');
+    expect(raceWeekendSectionFromQuery('unknown')).toBeUndefined();
+    expect(raceWeekendPhaseForSection('practice-setup', false, false, false)).toBe('practice');
+    expect(raceWeekendPhaseForSection('practice-setup', false, true, false)).toBe('quali-run');
+    expect(raceWeekendPhaseForSection('qualifying', true, false, false)).toBe('quali-review');
+    expect(raceWeekendPhaseForSection('race-plan', true, false, true)).toBe('garage-address');
   });
 
   it('removes practice and setup only for the minimum operations package', () => {

@@ -332,6 +332,9 @@ body {
   font-weight: 900;
   line-height: 1.1;
   text-transform: uppercase;
+  max-width: 15rem;
+  padding: 0.35rem 0.7rem;
+  white-space: nowrap;
 }
 
 .ui-continue-button:hover {
@@ -533,6 +536,66 @@ body {
   .ui-workspace-screen {
     height: 100%;
     min-height: 0;
+  }
+}
+
+/* Phase 15: preserve a usable decision area at the supported 1024x720 floor.
+   Wider 1366 and 1920 layouts retain the full information hierarchy. */
+@media (min-width: 1024px) and (max-height: 760px) {
+  .ui-app-shell .ui-topbar {
+    min-height: 50px;
+  }
+
+  .ui-main-content {
+    padding: 0.5rem;
+  }
+
+  .ui-workspace-screen {
+    gap: 0.4rem;
+  }
+
+  .ui-workspace-header {
+    min-height: 2.25rem;
+  }
+
+  .ui-workspace-header h1 {
+    font-size: 1.05rem;
+  }
+
+  .ui-workspace-metric {
+    padding: 0.35rem 0.6rem;
+  }
+
+  .ui-workspace-metric-value {
+    font-size: 0.82rem;
+  }
+
+  .ui-workspace-metric-detail {
+    display: none;
+  }
+
+  .ui-workspace-tabs {
+    min-height: 1.9rem;
+  }
+
+  .ui-workspace-tabs button {
+    padding-block: 0.32rem 0.25rem;
+  }
+
+  .ui-season-workflow-rail {
+    min-height: 42px;
+  }
+
+  .ui-season-workflow-context,
+  .ui-season-workflow-rail li {
+    padding-block: 0.35rem;
+  }
+}
+
+@media (max-width: 1180px) {
+  .ui-continue-button {
+    max-width: 12rem;
+    font-size: 0.62rem;
   }
 }
 

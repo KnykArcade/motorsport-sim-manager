@@ -38,7 +38,7 @@ describe('entry and race presentation view model', () => {
       team: 'Williams Renault',
       round: 'Round 2/2 · Argentine Grand Prix',
       stage: 'Race weekend',
-      nextAction: 'Continue Race Weekend',
+      nextAction: 'Open Weekend Overview',
     });
   });
 

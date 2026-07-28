@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useGame } from '../game/GameContext';
 import {
   activeDriversForTeam,
@@ -29,6 +29,7 @@ import {
 } from '../components/workspace/Workspace';
 import {
   PRE_RACE_BRIEFING_TABS,
+  preRaceBriefingTabFromQuery,
   type PreRaceBriefingTab,
 } from './raceTransitionViewModel';
 import {
@@ -53,6 +54,7 @@ const RACE_PREP_FOCUS_INFO: Record<string, { label: string; description: string 
 export function PreRaceBriefing() {
   const { state, dispatch } = useGame();
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [tab, setTab] = useState<PreRaceBriefingTab>('overview');
   const [selectedPrepFocus, setSelectedPrepFocus] = useState<string | null>(null);
   if (!state) return null;
@@ -67,7 +69,10 @@ export function PreRaceBriefing() {
   if (!race || !track) return null;
 
   const phaseState = getOrCreatePhaseState(state);
-  const activePrepFocus = selectedPrepFocus ?? phaseState.racePrepFocus ?? 'balanced';
+  const requestedPrepFocus = searchParams.get('prep');
+  const activePrepFocus = requestedPrepFocus && RACE_PREP_FOCUS_INFO[requestedPrepFocus]
+    ? requestedPrepFocus
+    : selectedPrepFocus ?? phaseState.racePrepFocus ?? 'balanced';
   const prepFocus = RACE_PREP_FOCUS_INFO[activePrepFocus] ?? RACE_PREP_FOCUS_INFO.balanced;
   const prepConfirmed = (phaseState.racePrepFocusConfirmed ?? !!phaseState.racePrepFocus) && activePrepFocus === phaseState.racePrepFocus;
   const selectedPackage = state.raceWeekendPackage?.raceId === race.id ? state.raceWeekendPackage : undefined;
@@ -90,6 +95,22 @@ export function PreRaceBriefing() {
       : !prepConfirmed
         ? 'Confirm a race preparation focus'
       : undefined;
+  const activeTab = searchParams.has('tab')
+    ? preRaceBriefingTabFromQuery(searchParams.get('tab'))
+    : tab;
+  const selectTab = (nextTab: PreRaceBriefingTab) => {
+    setTab(nextTab);
+    const next = new URLSearchParams(searchParams);
+    next.set('tab', nextTab);
+    setSearchParams(next, { replace: true });
+  };
+  const selectPrepFocus = (focusId: string) => {
+    setSelectedPrepFocus(focusId);
+    const next = new URLSearchParams(searchParams);
+    next.set('tab', 'preparation');
+    next.set('prep', focusId);
+    setSearchParams(next, { replace: true });
+  };
 
   const enterRaceWeekend = () => {
     if (!canEnterWeekend) return;
@@ -127,10 +148,10 @@ export function PreRaceBriefing() {
         blocker={canEnterWeekend ? undefined : weekendBlockedReason}
       />
       {!canEnterWeekend && <div className="shrink-0 rounded border border-orange-500/25 bg-orange-500/5 px-3 py-2 text-[11px] text-orange-200">Weekend entry is blocked: {weekendBlockedReason}.</div>}
-      <WorkspaceTabs items={PRE_RACE_BRIEFING_TABS} active={tab} onChange={setTab} ariaLabel="Pre-race briefing sections" />
+      <WorkspaceTabs items={PRE_RACE_BRIEFING_TABS} active={activeTab} onChange={selectTab} ariaLabel="Pre-race briefing sections" />
       <WorkspaceBody className="ui-phase14-workspace">
 
-      {tab === 'overview' && (
+      {activeTab === 'overview' && (
         <FmWorkspaceGrid className="ui-briefing-grid">
           <FmPane>
             <FmPaneHeader title="Circuit brief" meta={`${track.archetype} · Round ${race.round}`} />
@@ -184,7 +205,7 @@ export function PreRaceBriefing() {
         </FmWorkspaceGrid>
       )}
 
-      {tab === 'preparation' && (
+      {activeTab === 'preparation' && (
         <div className="ui-phase14-decision-workspace">
         <FmWorkspaceGrid className="ui-briefing-grid">
           <FmPane>
@@ -193,7 +214,7 @@ export function PreRaceBriefing() {
               {Object.entries(RACE_PREP_FOCUS_INFO).map(([id, focus]) => (
                 <FmListButton
                   key={id}
-                  onClick={() => setSelectedPrepFocus(id)}
+                  onClick={() => selectPrepFocus(id)}
                   active={activePrepFocus === id}
                 >
                   <strong>{focus.label}</strong>
@@ -244,7 +265,7 @@ export function PreRaceBriefing() {
         </div>
       )}
 
-      {tab === 'team' && (
+      {activeTab === 'team' && (
         <FmWorkspaceGrid columns="two" className="ui-briefing-team-grid">
           <FmPane>
             <FmPaneHeader title="Driver status" meta={`${activeDrivers.length}/${minDrivers} required`} />
@@ -278,7 +299,7 @@ export function PreRaceBriefing() {
         </FmWorkspaceGrid>
       )}
 
-      {tab === 'paddock' && (
+      {activeTab === 'paddock' && (
         <div className="ui-briefing-paddock-grid">
           <NewsPanel news={state.news} title="Race Preview" maxItems={4} categoryFilter={['preseason', 'ai_team', 'championship']} emptyMessage="No race preview stories." />
           <NewsPanel news={state.news} title="Paddock Watch" maxItems={4} categoryFilter={['development', 'ai_team', 'financial']} emptyMessage="No paddock news." />
