@@ -41,6 +41,10 @@ import {
   FmPaneHeader,
   FmWorkspaceGrid,
 } from '../components/workspace/FmPane';
+import { buildPerformanceDataHub } from './performanceDataHubViewModel';
+import { useInformationViewPreferences } from './informationViewPreferences';
+import { WhyChangedButton } from '../components/WhyChanged';
+import { setupConfidenceExplanation } from './explanationViewModel';
 
 const RACE_PREP_FOCUS_INFO: Record<string, { label: string; description: string }> = {
   balanced: { label: 'Balanced Preparation', description: 'Slight consistency and mistake-reduction bonus for this race.' },
@@ -57,6 +61,7 @@ export function PreRaceBriefing() {
   const [searchParams, setSearchParams] = useSearchParams();
   const [tab, setTab] = useState<PreRaceBriefingTab>('overview');
   const [selectedPrepFocus, setSelectedPrepFocus] = useState<string | null>(null);
+  const { preferences } = useInformationViewPreferences(state?.id ?? 'no-career');
   if (!state) return null;
 
   const race = currentRace(state);
@@ -86,6 +91,8 @@ export function PreRaceBriefing() {
     .slice(0, 3);
   const sponsors = state.commercial?.sponsors ?? [];
   const strategySuggestion = strategyForTrack(track);
+  const pinnedFindings = buildPerformanceDataHub(state).findings
+    .filter((finding) => preferences.pinnedFindingIds.includes(finding.id));
   const hasValidLineup = activeDrivers.length >= minDrivers;
   const canEnterWeekend = !!selectedPackage && hasValidLineup && prepConfirmed;
   const weekendBlockedReason = !selectedPackage
@@ -181,6 +188,23 @@ export function PreRaceBriefing() {
                 <StatChip label="Power" value={carRatings.enginePower.toFixed(1)} />
                 <StatChip label="Aero" value={carRatings.aeroEfficiency.toFixed(1)} />
                 <StatChip label="Reliability" value={carRatings.reliability.toFixed(1)} />
+              </div>
+            )}
+            {activeDrivers[0] && (
+              <div className="ui-explanation-actions">
+                <WhyChangedButton explanation={setupConfidenceExplanation(state, activeDrivers[0], track)} label={`Explain ${activeDrivers[0].name} setup`} />
+              </div>
+            )}
+            {pinnedFindings.length > 0 && (
+              <div className="ui-pinned-strategy-findings">
+                <h3>Pinned analysis</h3>
+                {pinnedFindings.map((finding) => (
+                  <button type="button" key={finding.id} onClick={() => navigate('/performance')}>
+                    <strong>{finding.title}</strong>
+                    <span>{finding.conclusion}</span>
+                    <small>{finding.confidence} confidence · {finding.trend}</small>
+                  </button>
+                ))}
               </div>
             )}
             </FmPaneBody>

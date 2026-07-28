@@ -1,6 +1,8 @@
 import { useMemo, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useGame } from '../game/GameContext';
+import { WhyChangedButton } from '../components/WhyChanged';
+import { intelligenceExplanation, scoutingUncertaintyExplanation } from './explanationViewModel';
 import { teamById } from '../game/careerState';
 import { careerMarketBundle } from '../sim/careerMarketEngine';
 import { Panel } from '../components/Panel';
@@ -267,6 +269,7 @@ export function Scouting() {
           <span className="ml-auto text-xs text-neutral-400">
             Budget: <span className="font-semibold text-neutral-200">{formatMoney(budget)}</span>
           </span>
+          <WhyChangedButton explanation={scoutingUncertaintyExplanation(state)} label="Explain uncertainty" />
         </div>
       </Panel>}
 
@@ -394,7 +397,13 @@ function IntelligenceDashboard({ state, budget, filter, onFilter, onAction }: {
         </FmPaneBody>
       </FmPane>
       <FmPane className="ui-intelligence-detail-pane">
-        <FmPaneHeader title={selected?.title ?? 'Report Detail'} meta={selected ? `${selected.assessment} · ${selected.confidence}% confidence` : 'No selection'} />
+        <FmPaneHeader
+          title={selected?.title ?? 'Report Detail'}
+          meta={selected ? `${selected.assessment} · ${selected.confidence}% confidence` : 'No selection'}
+          actions={selected && intelligenceExplanation(state, selected.id)
+            ? <WhyChangedButton explanation={intelligenceExplanation(state, selected.id)!} label="Explain confidence" />
+            : undefined}
+        />
         <FmPaneBody className="overflow-auto">
           {selected
             ? <IntelligenceCard report={selected} teamName={teamName} budget={budget} onAction={onAction} />

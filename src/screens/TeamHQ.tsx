@@ -54,11 +54,16 @@ import { staffRecommendations } from './staffRecommendationsViewModel';
 import { staffResponsibilities } from './staffResponsibilitiesViewModel';
 import { TEAM_HQ_TABS, type TeamHQTab } from './teamHQViewModel';
 import { aroundTheWorldEntries, canViewWorldStandings } from './worldStandingsViewModel';
+import { WhyChangedButton } from '../components/WhyChanged';
+import { teamMoraleExplanation, teamReputationExplanation } from './explanationViewModel';
+import { buildPerformanceDataHub } from './performanceDataHubViewModel';
+import { useInformationViewPreferences } from './informationViewPreferences';
 
 export function TeamHQ() {
   const { state } = useGame();
   const navigate = useNavigate();
   const [tab, setTab] = useState<TeamHQTab>('race');
+  const { preferences } = useInformationViewPreferences(state?.id ?? 'no-career');
   if (!state) return null;
 
   const team = teamById(state, state.selectedTeamId);
@@ -82,6 +87,8 @@ export function TeamHQ() {
   const worldEntries = canViewWorldStandings(state.gameMode)
     ? aroundTheWorldEntries(state.series, state.motorsportUniverse)
     : [];
+  const dataHub = buildPerformanceDataHub(state);
+  const pinnedFindings = dataHub.findings.filter((finding) => preferences.pinnedFindingIds.includes(finding.id));
 
   const driverName = (id: string) => state.drivers.find((driver) => driver.id === id)?.name ?? id;
   const teamName = (id: string) => state.teams.find((candidate) => candidate.id === id)?.name ?? id;
@@ -222,7 +229,23 @@ export function TeamHQ() {
                   <FmKeyValue label="Car condition" value={`${Math.round(car?.condition ?? 0)}%`} />
                   <FmKeyValue label="Active projects" value={activeUpgradePrograms(state).length} />
                   <FmKeyValue label="Race seats" value={`${activeDrivers.length}/${minDrivers}`} />
+                  <div className="ui-explanation-actions">
+                    <WhyChangedButton explanation={teamMoraleExplanation(state)} label="Explain morale" />
+                    <WhyChangedButton explanation={teamReputationExplanation(state)} label="Explain reputation" />
+                  </div>
                 </section>
+                {pinnedFindings.length > 0 && (
+                  <section>
+                    <h3>Pinned Data Hub findings</h3>
+                    {pinnedFindings.map((finding) => (
+                      <button key={finding.id} type="button" className="ui-home-context-link" onClick={() => navigate('/performance')}>
+                        <strong>{finding.title} · {finding.confidence} confidence</strong>
+                        <span>{finding.conclusion}</span>
+                        <small>{finding.trend} · Open Data Hub →</small>
+                      </button>
+                    ))}
+                  </section>
+                )}
                 <section>
                   <h3>Department advice</h3>
                   {recommendations.slice(0, 3).map((recommendation) => (
