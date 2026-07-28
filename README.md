@@ -24,27 +24,22 @@ The game ships with **37 seasons of F1 data (1990–2026)** and **19 seasons of 
 
 Vite · React · TypeScript (strict) · React Router · Tailwind CSS.
 
-## Getting started
+## Run in GitHub Codespaces
 
-To run the game locally:
+1. Open this repository on GitHub.
+2. Select **Code**, then **Codespaces**, then **Create codespace on main**.
+3. Wait for the setup to finish. The Codespace installs the locked dependencies automatically with Node 22.
+4. Run `npm run dev` in the Codespaces terminal.
 
-```bash
-npm install
-npm run dev
-```
+Port 5173 is forwarded automatically and the game opens in a cloud preview tab. The development server intentionally starts only when requested and stops when the Codespace stops.
 
-Then open the local browser link printed by the dev server, usually:
-
-```text
-http://localhost:5173/
-```
-
-The project is pinned to Node 22 in `.nvmrc`. If your terminal ever shows an unsupported Node warning, switch back to Node 22 and rerun the two commands above.
+After this configuration changes, rebuild any Codespace created before the change so it receives the pinned runtime and forwarded-port settings.
 
 Optional developer checks:
 
 ```bash
 npm run build
+npm run check:runtime
 npm run typecheck
 npm run lint
 npm run test
