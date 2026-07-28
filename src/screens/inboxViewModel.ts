@@ -15,6 +15,11 @@ import { newsTriage } from './newsTriageViewModel';
 import { careerMarketBundle } from '../sim/careerMarketEngine';
 import { getStaffPool } from '../data';
 import { effectiveAccuracy } from '../sim/scoutingEngine';
+import type { StaffResponsibilityId } from '../types/staffTypes';
+import {
+  staffResponsibilities,
+  staffResponsibilityPolicy,
+} from './staffResponsibilitiesViewModel';
 
 export type InboxSeverity = 'critical' | 'action' | 'info';
 
@@ -51,6 +56,10 @@ export type InboxMessage = {
   round?: number;
   timestamp?: string;
   timing?: InboxTiming;
+  /** Responsibility policy that governs this routine item, when applicable. */
+  responsibility?: StaffResponsibilityId;
+  /** Safe routine information that can leave the Inbox when confidently delegated. */
+  routineDelegatable?: boolean;
 };
 
 const SEVERITY_ORDER: Record<InboxSeverity, number> = { critical: 0, action: 1, info: 2 };
@@ -93,6 +102,8 @@ function technicalMessages(state: GameState): InboxMessage[] {
       route: '/technical',
       routeLabel: 'Open Technical Center',
       actionable: true,
+      responsibility: 'technical',
+      routineDelegatable: false,
     });
   }
 
@@ -108,6 +119,8 @@ function technicalMessages(state: GameState): InboxMessage[] {
       route: '/technical?section=parts',
       routeLabel: 'Open Parts & Factory',
       actionable: true,
+      responsibility: 'technical',
+      routineDelegatable: false,
     });
   }
 
@@ -121,6 +134,8 @@ function technicalMessages(state: GameState): InboxMessage[] {
       route: '/technical?section=development',
       routeLabel: 'Open Technical Center',
       actionable: false,
+      responsibility: 'technical',
+      routineDelegatable: true,
     });
   }
   return messages;
@@ -226,6 +241,8 @@ function paddockMessages(state: GameState): InboxMessage[] {
         actionable: true,
         source: 'Scouting department',
         whyItMatters: 'Building knowledge narrows uncertainty before you commit recruitment budget or a seat.',
+        responsibility: 'staff-recruitment',
+        routineDelegatable: true,
       });
     }
 
@@ -247,6 +264,8 @@ function paddockMessages(state: GameState): InboxMessage[] {
         actionable: true,
         source: 'Recruitment desk',
         whyItMatters: 'A shortlist is your staff-approved watchlist; the next decision is still yours.',
+        responsibility: 'staff-recruitment',
+        routineDelegatable: false,
       });
     }
 
@@ -338,6 +357,8 @@ function peopleMessages(state: GameState): InboxMessage[] {
       source: 'Race engineering',
       whyItMatters: 'A prepared recommendation reduces routine workload without taking away your consequential race decisions.',
       round: race.round,
+      responsibility: 'race-engineering',
+      routineDelegatable: true,
     });
   }
 
@@ -358,6 +379,8 @@ function peopleMessages(state: GameState): InboxMessage[] {
       routeLabel: 'Open Driver Relations',
       actionable: true,
       round: promise.dueRound,
+      responsibility: 'driver-development',
+      routineDelegatable: false,
     });
   }
 
@@ -585,12 +608,25 @@ export function inboxMessages(state: GameState): InboxMessage[] {
   return [...actionItems, ...newsMessages(state)]
     .map(withTaskSemantics)
     .map((message) => ({ ...message, timing: inboxTimingForMessage(state, message) }))
+    .filter((message) => !isRoutineInboxWorkHandledByStaff(state, message))
     .filter((message) => message.blocking || !dismissed.has(message.id))
     .sort((a, b) =>
       Number(b.actionable) - Number(a.actionable)
       || SEVERITY_ORDER[a.severity] - SEVERITY_ORDER[b.severity]
       || (b.round ?? 0) - (a.round ?? 0)
       || a.id.localeCompare(b.id));
+}
+
+/**
+ * Only routine, explicitly tagged messages can leave the player's Inbox. This
+ * keeps contracts, promises, major spending, and every blocking item visible
+ * regardless of the policy chosen on the Staff Responsibilities screen.
+ */
+export function isRoutineInboxWorkHandledByStaff(state: GameState, message: InboxMessage): boolean {
+  if (message.blocking || !message.routineDelegatable || !message.responsibility) return false;
+  if (staffResponsibilityPolicy(state, message.responsibility) !== 'staff_execute_routine') return false;
+  const responsibility = staffResponsibilities(state).find((item) => item.id === message.responsibility);
+  return responsibility?.confidenceLabel !== 'Low';
 }
 
 export function unreadInboxCount(state: GameState): number {

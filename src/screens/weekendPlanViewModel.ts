@@ -76,11 +76,14 @@ export function buildWeekendPlan(input: {
   priorities.sort((a, b) => b[1] - a[1]);
   const knowledgePriority = priorities[0][1] <= 0 ? 'Complete' : priorities[0][0];
 
-  const staffRecommendation = input.raceEngineer && input.racePreparationPolicy === 'staff_prepare_player_approval'
+  const staffRecommendation = input.raceEngineer
+    && (input.racePreparationPolicy === 'staff_advisory' || input.racePreparationPolicy === 'staff_prepare_player_approval')
     ? {
         owner: `${input.raceEngineer.name} · ${staffRatingOutOfTen(input.raceEngineer.rating).toFixed(1)}/10`,
         confidence: Math.round(50 + staffRatingOutOfTen(input.raceEngineer.rating) * 5),
-        summary: 'Race Engineer has prepared the weekend recommendations from the forecast and current knowledge gaps.',
+        summary: input.racePreparationPolicy === 'staff_prepare_player_approval'
+          ? 'Race Engineer has prepared the weekend recommendations from the forecast and current knowledge gaps.'
+          : 'Race Engineer has added advice from the forecast and current knowledge gaps.',
         approvalBoundary: 'You still approve the qualifying run, race strategy, and driver instructions.',
       }
     : undefined;
