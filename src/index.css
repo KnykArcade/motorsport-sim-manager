@@ -3346,6 +3346,25 @@ body {
   overflow: hidden;
 }
 
+.ui-main-content[data-route="/paddock"] .ui-paddock-week-body {
+  display: flex;
+  min-height: 0;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.ui-main-content[data-route="/paddock"] .ui-paddock-week-body > .ui-fm-workspace-grid {
+  min-height: 0;
+  height: 100%;
+}
+
+.ui-paddock-week-body .ui-fm-pane-body,
+.ui-paddock-week-body .ui-fm-scroll-column {
+  overscroll-behavior: contain;
+  scrollbar-color: rgb(82 82 91) transparent;
+  scrollbar-width: thin;
+}
+
 @media (max-width: 1120px) {
   .ui-fm-workspace-grid.is-three {
     grid-template-columns: minmax(205px, 0.72fr) minmax(360px, 1.7fr);

@@ -290,11 +290,11 @@ export function PaddockWeek() {
         ariaLabel="Paddock Week sections"
       />
 
-      <WorkspaceBody>
+      <WorkspaceBody className="ui-paddock-week-body">
       <FmWorkspaceGrid>
       <FmPane>
         <FmPaneHeader title="Weekly agenda" meta={`${pendingCount} required · ${storyDecisions.length} optional`} />
-        <FmPaneBody>
+        <FmPaneBody ariaLabel="Weekly agenda" tabIndex={0}>
           {!packageSelected && (
             <FmListButton urgent active={activeTab === 'decisions'} onClick={() => updatePaddockQuery('tab', 'decisions')}>
               <span className="ui-news-list-source">Race operations · required</span>
@@ -358,7 +358,7 @@ export function PaddockWeek() {
           )}
         </FmPaneBody>
       </FmPane>
-      <div className="ui-fm-scroll-column space-y-4">
+      <div className="ui-fm-scroll-column space-y-4" role="region" aria-label="Paddock week decisions" tabIndex={0}>
       {weeklyStory && (
         <Panel title={`Returned from ${weeklyStory.raceLabel}`}>
           <p className="text-xs leading-5 text-neutral-500">{weeklyStory.summary}</p>
@@ -698,7 +698,7 @@ export function PaddockWeek() {
       </div>
       <FmPane>
         <FmPaneHeader title="Management context" meta={race?.gpName ?? 'Next event'} />
-        <FmPaneBody className="ui-news-context-pane">
+        <FmPaneBody className="ui-news-context-pane" ariaLabel="Management context" tabIndex={0}>
           <section>
             <h3>Progress gate</h3>
             <FmKeyValue label="Required decisions" value={unresolvedCount} />
