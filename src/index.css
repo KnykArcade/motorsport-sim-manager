@@ -483,6 +483,261 @@ body {
   }
 }
 
+/* Phase 19: FM-style multi-season organization planner. */
+.ui-main-content[data-route="/planner"] .ui-workspace-screen {
+  min-height: 0;
+  height: 100%;
+}
+
+.ui-team-planner-safe {
+  border: 1px solid color-mix(in srgb, var(--era-accent) 42%, #2d2d31);
+  background: color-mix(in srgb, var(--era-accent-soft) 62%, #17171a);
+  padding: 5px 9px;
+  color: #d5d5d8;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.045em;
+  text-transform: uppercase;
+}
+
+.ui-team-planner-grid {
+  height: 100%;
+}
+
+.ui-team-planner-grid.is-three {
+  grid-template-columns: minmax(265px, 0.86fr) minmax(300px, 1fr) minmax(330px, 1.08fr);
+}
+
+.ui-team-planner-seat {
+  margin: 7px;
+  border: 1px solid #343439;
+  border-left: 3px solid #55555d;
+  background: #1d1d20;
+  padding: 9px;
+}
+
+.ui-team-planner-seat.is-secure {
+  border-left-color: #22c55e;
+}
+
+.ui-team-planner-seat.is-warning {
+  border-left-color: #f59e0b;
+}
+
+.ui-team-planner-seat.is-danger {
+  border-left-color: #ef4444;
+}
+
+.ui-team-planner-seat > header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.ui-team-planner-seat > header div {
+  min-width: 0;
+}
+
+.ui-team-planner-seat > header span,
+.ui-team-planner-seat > header strong {
+  display: block;
+}
+
+.ui-team-planner-seat > header span,
+.ui-team-planner-seat label {
+  color: #818188;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.055em;
+  text-transform: uppercase;
+}
+
+.ui-team-planner-seat > header strong {
+  margin-top: 2px;
+  color: #dedee1;
+  font-size: 11px;
+}
+
+.ui-team-planner-seat > header em {
+  color: #9a9aa1;
+  font-size: 9px;
+  font-style: normal;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.ui-team-planner-seat-name {
+  margin-top: 8px;
+  color: #f4f4f5;
+  font-size: 15px;
+  font-weight: 850;
+}
+
+.ui-team-planner-seat p {
+  margin-top: 2px;
+  color: #9a9aa1;
+  font-size: 10px;
+  line-height: 1.35;
+}
+
+.ui-team-planner-seat label {
+  display: block;
+  margin-top: 9px;
+}
+
+.ui-team-planner-seat select {
+  display: block;
+  width: 100%;
+  margin-top: 4px;
+  border: 1px solid #3c3c42;
+  border-radius: 2px;
+  background: #151517;
+  padding: 6px;
+  color: #dedee1;
+  font-size: 10px;
+  text-transform: none;
+}
+
+.ui-team-planner-candidates .ui-fm-list-button {
+  grid-template-columns: minmax(0, 1fr) auto;
+}
+
+.ui-team-planner-candidates .ui-fm-list-button > span:last-child {
+  text-align: right;
+}
+
+.ui-team-planner-candidate-detail {
+  flex: 0 0 auto;
+  border-top: 1px solid #343439;
+  background: #19191c;
+  padding: 8px;
+}
+
+.ui-team-planner-candidate-detail .era-button {
+  width: 100%;
+  margin-top: 7px;
+}
+
+.ui-team-planner-empty {
+  padding: 18px 12px;
+  color: #9a9aa1;
+  text-align: center;
+}
+
+.ui-team-planner-empty strong {
+  display: block;
+  color: #dedee1;
+  font-size: 12px;
+}
+
+.ui-team-planner-empty p {
+  margin: 5px 0 12px;
+  font-size: 10px;
+}
+
+.ui-team-planner-gap-list,
+.ui-team-planner-commitment-group {
+  border-bottom: 1px solid #343439;
+  padding: 8px;
+}
+
+.ui-team-planner-gap-list h3,
+.ui-team-planner-commitment-group h3 {
+  margin-bottom: 5px;
+  color: #818188;
+  font-size: 9px;
+  font-weight: 900;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.ui-team-planner-gap-list button,
+.ui-team-planner-commitment-group button {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  border-top: 1px solid #2d2d31;
+  background: transparent;
+  padding: 7px 4px;
+  color: #b9b9bf;
+  text-align: left;
+}
+
+.ui-team-planner-gap-list button {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+}
+
+.ui-team-planner-gap-list button strong,
+.ui-team-planner-gap-list button span {
+  grid-column: 1;
+}
+
+.ui-team-planner-gap-list button em {
+  grid-column: 2;
+  grid-row: 1 / span 2;
+}
+
+.ui-team-planner-gap-list button.required {
+  border-left: 2px solid #ef4444;
+  padding-left: 7px;
+}
+
+.ui-team-planner-gap-list button.warning {
+  border-left: 2px solid #f59e0b;
+  padding-left: 7px;
+}
+
+.ui-team-planner-gap-list button strong,
+.ui-team-planner-commitment-group button strong {
+  display: block;
+  color: #dedee1;
+  font-size: 10px;
+}
+
+.ui-team-planner-gap-list button span,
+.ui-team-planner-commitment-group button small,
+.ui-team-planner-commitment-group > p,
+.ui-team-planner-clear {
+  display: block;
+  color: #818188;
+  font-size: 9px;
+  line-height: 1.35;
+}
+
+.ui-team-planner-gap-list button em,
+.ui-team-planner-commitment-group button em {
+  color: #6db7df;
+  font-size: 9px;
+  font-style: normal;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.ui-team-planner-commitment-group button em.positive {
+  color: #4ade80;
+}
+
+.ui-team-planner-commitment-group button em.warning {
+  color: #fbbf24;
+}
+
+@media (max-width: 1180px) {
+  .ui-team-planner-grid.is-three {
+    grid-template-columns: minmax(230px, 0.8fr) minmax(275px, 0.95fr) minmax(285px, 1fr);
+  }
+}
+
+@media (max-width: 900px) {
+  .ui-team-planner-grid.is-three {
+    min-width: 820px;
+    grid-template-columns: minmax(240px, 0.8fr) minmax(275px, 0.95fr) minmax(300px, 1fr);
+  }
+}
+
 /* Phase 18: FM-style global navigation, search, history, and object browsing. */
 .ui-history-menu {
   position: relative;

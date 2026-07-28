@@ -37,6 +37,7 @@ export function routePath(to: string): string {
 }
 
 export function navigationGroupForRoute(pathname: string): NavigationGroupId {
+  if (pathname === '/planner' || pathname.startsWith('/planner/')) return 'team';
   const direct = NAVIGATION_ITEMS.find((item) => {
     const path = routePath(item.to);
     return pathname === path || pathname.startsWith(`${path}/`);

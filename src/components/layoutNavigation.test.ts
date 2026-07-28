@@ -29,6 +29,7 @@ describe('FM-style primary navigation', () => {
   it('opens the group containing the current route', () => {
     expect(navigationGroupForRoute('/calendar')).toBe('race');
     expect(navigationGroupForRoute('/technical')).toBe('team');
+    expect(navigationGroupForRoute('/planner')).toBe('team');
     expect(navigationGroupForRoute('/standings')).toBe('world');
     expect(navigationGroupForRoute('/unknown')).toBe('race');
   });
